@@ -1722,10 +1722,13 @@ function simLoadPhotos(closedSrc, openSrc) {
       updateSimulator();
     }
   };
-  const onError = () => { ++done; };  // 失敗してもSVGモードのまま
+  const onError = (e) => {
+    ++done;
+    // ファイルが見つからない場合はSVGのまま（エラーは出さない）
+    console.info('[Simulator] 写真読み込み失敗:', e.target?.src, '→ SVGモードで継続');
+  };
   const mk = src => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     img.onload  = onLoad;
     img.onerror = onError;
     img.src = src;
@@ -1754,6 +1757,20 @@ function _renderSimCanvas() {
   canvas.height = img.naturalHeight;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(img, 0, 0);
+
+  // ── HSL色置換（ピクセルデータ取得が必要）──
+  // file://で開いた場合はCanvasセキュリティ制限でgetImageDataが失敗する。
+  // その場合は写真をそのまま表示（色変更なし）し、ヒントを表示する。
+  let canReplace = true;
+  try {
+    ctx.getImageData(0, 0, 1, 1);  // 権限チェック（失敗すると例外）
+  } catch(e) {
+    canReplace = false;
+    const hint = document.getElementById('simHint');
+    if (hint) hint.innerHTML = '📷 写真表示中（色変更はGitHub Pages上で有効）<br><small style="color:#b05a00">ローカルファイルでは色変更不可</small>';
+  }
+
+  if (!canReplace) return;  // 写真だけ表示して終了
 
   const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const d  = id.data;
