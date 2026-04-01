@@ -355,6 +355,21 @@ body{
 .sell-box .s-val span{font-size:14px}
 .sell-box .s-note{font-size:11px;opacity:.7;margin-top:4px}
 
+/* ── COLOR SIMULATOR ── */
+.sim-wrap{margin-bottom:14px;border:1px solid #ede0d4;border-radius:10px;overflow:hidden;background:#fff}
+.sim-tabs{display:flex;border-bottom:1px solid #ede0d4}
+.sim-tab{flex:1;padding:7px 4px;font-size:11px;font-weight:600;border:none;background:#faf7f4;cursor:pointer;color:#8a6644;font-family:inherit;transition:all .12s;border-bottom:2px solid transparent;letter-spacing:.02em}
+.sim-tab.active{background:#fff;color:#6b3a1f;border-bottom-color:#6b3a1f}
+.sim-tab:hover:not(.active){background:#fdf0e5;color:#6b3a1f}
+.sim-stage{padding:14px 12px;background:#f0ebe4;display:flex;justify-content:center;align-items:center;min-height:130px;position:relative}
+.sim-stage svg,.sim-stage canvas{width:100%;max-width:248px;height:auto;display:block;border-radius:4px}
+.sim-stage canvas{border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.sim-info{display:flex;flex-wrap:wrap;gap:5px;padding:7px 10px;background:#faf7f4;border-top:1px solid #ede0d4}
+.sim-chip{display:flex;align-items:center;gap:4px;font-size:10px;color:#5a3a20;background:#fff;border:1px solid #ede0d4;border-radius:12px;padding:2px 8px;white-space:nowrap}
+.sim-dot{width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,.18);flex-shrink:0;transition:background .2s}
+.sim-hint{font-size:10px;color:#a07850;padding:5px 10px 8px;text-align:center;line-height:1.5}
+.sim-photo-note{font-size:10px;color:#b05a00;background:#fff8ee;border-top:1px solid #ffe0b2;padding:5px 10px;text-align:center}
+
 /* ── PRINT ── */
 @media print{
   .topbar,.sidebar,.filter-bar,.no-print{display:none!important}
@@ -530,6 +545,21 @@ body{
 <!-- ═══════════ SIDEBAR ═══════════ -->
 <div class="sidebar">
   <div class="sidebar-title">📋 現在の見積もり</div>
+
+  <!-- ══ カラーシミュレーター ══ -->
+  <div class="sim-wrap" id="simWrap">
+    <div class="sim-tabs">
+      <button class="sim-tab active" onclick="simSwitchView('closed',this)">📕 閉じた状態</button>
+      <button class="sim-tab" onclick="simSwitchView('open',this)">📖 開いた状態</button>
+    </div>
+    <div class="sim-stage" id="simStage"></div>
+    <div class="sim-info">
+      <span class="sim-chip"><span class="sim-dot" id="dotCover" style="background:#c68642"></span>表紙</span>
+      <span class="sim-chip"><span class="sim-dot" id="dotStitch" style="background:#e8d5b0"></span>ステッチ</span>
+      <span class="sim-chip"><span class="sim-dot" id="dotMetal" style="background:#c8c8c8"></span>金具</span>
+    </div>
+    <div class="sim-hint" id="simHint">革・カラーを選択するとリアルタイムで更新されます</div>
+  </div>
 
   <div class="total-box" id="costBox">
     <div class="t-lbl" id="costBoxLabel">合計金額（税込）</div>
@@ -1027,6 +1057,11 @@ function buildLeatherGrid() {
       div.classList.add('selected');
       sel.leather = d.name;
       prices.leather = d.dsPrice;   // ds単価 (¥/ds)
+      // 革タグから色ヒントを設定（カラー未選択時のみ）
+      if (!simState.colorPicked) {
+        simState.coverHex = getLeatherColorHint(d.tags);
+        updateSimulator();
+      }
       updateSummary();
     };
     grid.appendChild(div);
@@ -1065,6 +1100,10 @@ function buildColorGrid() {
       document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
       sw.classList.add('selected');
       sel.color = c.name; prices.color = 0;
+      // シミュレーター：カラースウォッチの正確な色を適用
+      simState.coverHex = c.hex;
+      simState.colorPicked = true;
+      updateSimulator();
       updateSummary();
     };
     const lbl = document.createElement('div');
@@ -1389,6 +1428,8 @@ function buildStitchColors() {
       document.querySelectorAll('[data-key="stitchColor"]').forEach(b=>b.classList.remove('selected'));
       btn.classList.add('selected');
       sel.stitchColor = c.name; prices.stitchColor = c.price;
+      simState.stitchHex = STITCH_HEX[c.name] || '#ddd0a8';
+      updateSimulator();
       updateSummary();
     };
     g.appendChild(btn);
@@ -1408,8 +1449,333 @@ function resetAll() {
   document.getElementById('stampTextOpt').classList.add('hide');
   document.getElementById('stitchColorOpt').classList.add('hide');
   sel = {}; prices = {};
+  simState.coverHex    = '#c68642';
+  simState.stitchHex   = '#ddd0a8';
+  simState.metalHex    = '#b8b8b8';
+  simState.colorPicked = false;
   updateSummary();
+  updateSimulator();
 }
+
+// ═══════════════════════════════════════════════════
+// ▼▼▼  カラーシミュレーター  ▼▼▼
+// ═══════════════════════════════════════════════════
+
+// ── 金具・ステッチカラー → HEXマッピング ──
+const METAL_HEX = {
+  'シルバー':    '#b8b8b8',
+  'ゴールド':    '#c8a030',
+  'アンティーク':'#8a6a30',
+  'ブラック':    '#3a3a3a',
+};
+const STITCH_HEX = {
+  '生成り':  '#ddd0a8',
+  'ブラック':'#2a2a2a',
+  'ブラウン':'#7a4a28',
+  'ホワイト':'#f0ece5',
+  'レッド':  '#c01c1c',
+  'ネイビー':'#1a2e5a',
+  'その他':  '#888888',
+};
+
+// 革タグ → 大まかな色ヒント（カラー未選択時のデフォルト）
+function getLeatherColorHint(tags) {
+  if (!tags) return '#c68642';
+  if (tags.some(t => t.includes('ダーク'))) return '#2a2a2a';
+  if (tags.some(t => t.includes('ブラウン'))) return '#6b3a1f';
+  if (tags.some(t => t.includes('レッド'))) return '#b01c1c';
+  if (tags.some(t => t.includes('ブルー'))) return '#1a3a7a';
+  if (tags.some(t => t.includes('グリーン'))) return '#3a6030';
+  if (tags.some(t => t.includes('イエロー'))) return '#c8a030';
+  if (tags.some(t => t.includes('ナチュラル'))) return '#c68642';
+  return '#c68642';
+}
+
+// ── シミュレーター状態 ──
+const simState = {
+  view:       'closed',
+  coverHex:   '#c68642',   // キャメル（デフォルト）
+  stitchHex:  '#ddd0a8',   // 生成り
+  metalHex:   '#b8b8b8',   // シルバー
+  colorPicked: false,       // カラー（STEP4）が明示的に選ばれたか
+  // Canvas実写真モード用（写真が届いたら下記を設定して mode='canvas' に切り替え）
+  mode:       'svg',        // 'svg' | 'canvas'
+  imgClosed:  null,         // HTMLImageElement — 閉じた状態写真
+  imgOpen:    null,         // HTMLImageElement — 開いた状態写真
+  masks:      {},           // { 'cover_closed': HTMLImageElement, ... }
+};
+
+// ── カラーユーティリティ ──
+function _hexToHsl(hex) {
+  const r=parseInt(hex.slice(1,3),16)/255, g=parseInt(hex.slice(3,5),16)/255, b=parseInt(hex.slice(5,7),16)/255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h=0, s=0, l=(max+min)/2;
+  if (max!==min) {
+    const d=max-min; s=l>0.5?d/(2-max-min):d/(max+min);
+    if(max===r) h=((g-b)/d+(g<b?6:0))/6;
+    else if(max===g) h=((b-r)/d+2)/6;
+    else h=((r-g)/d+4)/6;
+  }
+  return [h*360, s*100, l*100];
+}
+function _hslToHex(h,s,l) {
+  h/=360; s/=100; l/=100;
+  const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
+  const hue2=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+  return '#'+[hue2(p,q,h+1/3),hue2(p,q,h),hue2(p,q,h-1/3)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('');
+}
+function _adj(hex, dL) {
+  const [h,s,l]=_hexToHsl(hex);
+  return _hslToHex(h, s, Math.max(5, Math.min(95, l+dL)));
+}
+function _rgbToHsl(r,g,b) {
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b);
+  let h=0,s=0,l=(max+min)/2;
+  if(max!==min){const d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);if(max===r)h=((g-b)/d+(g<b?6:0))*60;else if(max===g)h=((b-r)/d+2)*60;else h=((r-g)/d+4)*60;}
+  return [h,s*100,l*100];
+}
+function _hslToRgb(h,s,l) {
+  h/=360;s/=100;l/=100;
+  const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;
+  const hue2=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+  return [Math.round(hue2(p,q,h+1/3)*255),Math.round(hue2(p,q,h)*255),Math.round(hue2(p,q,h-1/3)*255)];
+}
+
+// ── SVG：閉じた状態 ──
+function _svgClosed(c,cDk,cLt,stc,mc,mcLt,mcDk) {
+  return `<svg viewBox="0 0 268 184" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cg_c" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,.32)"/>
+      <stop offset="42%" stop-color="rgba(255,255,255,.04)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,.24)"/>
+    </linearGradient>
+    <linearGradient id="sg_c" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(0,0,0,.38)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </linearGradient>
+    <linearGradient id="bg_c" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,.18)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,.22)"/>
+    </linearGradient>
+    <filter id="fs_c" x="-8%" y="-8%" width="120%" height="130%">
+      <feDropShadow dx="3" dy="5" stdDeviation="6" flood-color="rgba(0,0,0,.28)"/>
+    </filter>
+  </defs>
+  <!-- 落ち影 -->
+  <ellipse cx="140" cy="179" rx="93" ry="5.5" fill="rgba(0,0,0,.14)"/>
+  <!-- スパイン（背表紙） -->
+  <rect x="22" y="14" width="15" height="152" rx="3 0 0 3" fill="${cDk}"/>
+  <rect x="22" y="14" width="15" height="152" rx="3 0 0 3" fill="url(#sg_c)"/>
+  <!-- 表紙本体 -->
+  <rect x="33" y="9" width="214" height="158" rx="5" fill="${c}" filter="url(#fs_c)"/>
+  <rect x="33" y="9" width="214" height="158" rx="5" fill="url(#cg_c)"/>
+  <!-- ベルト -->
+  <rect x="33" y="72" width="185" height="26" rx="3" fill="${cDk}"/>
+  <rect x="33" y="72" width="185" height="26" rx="3" fill="url(#bg_c)" opacity=".55"/>
+  <!-- スナップ（金具） -->
+  <circle cx="228" cy="85" r="14.5" fill="${mc}"/>
+  <circle cx="228" cy="85" r="10.5" fill="${mcLt}"/>
+  <circle cx="228" cy="85" r="4.5" fill="${mcDk}"/>
+  <circle cx="228" cy="85" r="2" fill="${mcLt}" opacity=".6"/>
+  <!-- ステッチ（外周） -->
+  <rect x="43" y="19" width="195" height="138" rx="4" fill="none" stroke="${stc}" stroke-width="1.3" stroke-dasharray="5,3.5" opacity=".85"/>
+  <!-- ステッチ（ベルト縁） -->
+  <line x1="43" y1="79" x2="210" y2="79" stroke="${stc}" stroke-width="1" stroke-dasharray="4,3" opacity=".72"/>
+  <line x1="43" y1="91" x2="210" y2="91" stroke="${stc}" stroke-width="1" stroke-dasharray="4,3" opacity=".72"/>
+  <!-- リング穴（側面） -->
+  <circle cx="40" cy="51" r="4.5" fill="${cDk}" opacity=".65"/>
+  <circle cx="40" cy="85" r="4.5" fill="${cDk}" opacity=".65"/>
+  <circle cx="40" cy="119" r="4.5" fill="${cDk}" opacity=".65"/>
+  <!-- 右端ハイライト -->
+  <line x1="245" y1="12" x2="245" y2="164" stroke="rgba(255,255,255,.17)" stroke-width="1.5"/>
+</svg>`;
+}
+
+// ── SVG：開いた状態 ──
+function _svgOpen(c,cDk,cLt,stc,mc,mcLt,mcDk) {
+  return `<svg viewBox="0 0 290 184" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cg_o" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,.28)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,.2)"/>
+    </linearGradient>
+    <linearGradient id="il_o" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${cLt}" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="${cLt}" stop-opacity=".12"/>
+    </linearGradient>
+    <linearGradient id="ir_o" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="${cLt}" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="${cLt}" stop-opacity=".12"/>
+    </linearGradient>
+  </defs>
+  <!-- 落ち影 -->
+  <ellipse cx="145" cy="179" rx="112" ry="5" fill="rgba(0,0,0,.13)"/>
+  <!-- 左表紙（外面） -->
+  <rect x="8" y="10" width="124" height="155" rx="5 0 0 5" fill="${c}"/>
+  <rect x="8" y="10" width="124" height="155" rx="5 0 0 5" fill="url(#cg_o)"/>
+  <!-- 左内張り（やや明るい革色） -->
+  <rect x="12" y="14" width="116" height="147" rx="3 0 0 3" fill="${cLt}" opacity=".22"/>
+  <rect x="12" y="14" width="116" height="147" rx="3 0 0 3" fill="url(#il_o)"/>
+  <!-- 右表紙（外面） -->
+  <rect x="158" y="10" width="124" height="155" rx="0 5 5 0" fill="${c}"/>
+  <rect x="158" y="10" width="124" height="155" rx="0 5 5 0" fill="url(#cg_o)"/>
+  <!-- 右内張り -->
+  <rect x="162" y="14" width="116" height="147" rx="0 3 3 0" fill="${cLt}" opacity=".22"/>
+  <rect x="162" y="14" width="116" height="147" rx="0 3 3 0" fill="url(#ir_o)"/>
+  <!-- カードポケット（右） -->
+  <rect x="166" y="20" width="104" height="58" rx="3" fill="${cDk}" opacity=".18"/>
+  <line x1="166" y1="78" x2="270" y2="78" stroke="${cDk}" stroke-width="1" opacity=".35"/>
+  <rect x="166" y="83" width="104" height="52" rx="3" fill="${cDk}" opacity=".11"/>
+  <!-- スパイン（中央） -->
+  <rect x="132" y="10" width="26" height="155" fill="${cDk}"/>
+  <!-- リング機構（金具） -->
+  <rect x="130" y="34" width="30" height="7" rx="2.5" fill="${mc}" opacity=".92"/>
+  <rect x="130" y="60" width="30" height="7" rx="2.5" fill="${mc}" opacity=".92"/>
+  <rect x="130" y="86" width="30" height="7" rx="2.5" fill="${mc}" opacity=".92"/>
+  <rect x="130" y="112" width="30" height="7" rx="2.5" fill="${mc}" opacity=".92"/>
+  <rect x="130" y="138" width="30" height="7" rx="2.5" fill="${mc}" opacity=".92"/>
+  <!-- Dリング形状 -->
+  <path d="M145 41 A10 10 0 0 0 145 27 L132 27 L132 41 Z" fill="${mcLt}" opacity=".9"/>
+  <path d="M145 67 A10 10 0 0 0 145 53 L132 53 L132 67 Z" fill="${mcLt}" opacity=".9"/>
+  <path d="M145 93 A10 10 0 0 0 145 79 L132 79 L132 93 Z" fill="${mcLt}" opacity=".9"/>
+  <path d="M145 119 A10 10 0 0 0 145 105 L132 105 L132 119 Z" fill="${mcLt}" opacity=".9"/>
+  <path d="M145 145 A10 10 0 0 0 145 131 L132 131 L132 145 Z" fill="${mcLt}" opacity=".9"/>
+  <!-- ステッチ（左表紙） -->
+  <rect x="17" y="18" width="106" height="139" rx="3 0 0 3" fill="none" stroke="${stc}" stroke-width="1.2" stroke-dasharray="5,3.5" opacity=".8"/>
+  <!-- ステッチ（右表紙） -->
+  <rect x="167" y="18" width="106" height="139" rx="0 3 3 0" fill="none" stroke="${stc}" stroke-width="1.2" stroke-dasharray="5,3.5" opacity=".8"/>
+  <!-- 左端ハイライト -->
+  <line x1="11" y1="13" x2="11" y2="162" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
+</svg>`;
+}
+
+// ── シミュレーター描画更新 ──
+function updateSimulator() {
+  const { coverHex, stitchHex, metalHex, view } = simState;
+  const c   = coverHex;
+  const cDk = _adj(c, -20);
+  const cLt = _adj(c,  24);
+  const stc = stitchHex;
+  const mc  = metalHex;
+  const mcLt = _adj(mc, 16);
+  const mcDk = _adj(mc, -22);
+
+  const stage = document.getElementById('simStage');
+  if (!stage) return;
+
+  if (simState.mode === 'canvas') {
+    _renderSimCanvas();
+  } else {
+    stage.innerHTML = view === 'closed'
+      ? _svgClosed(c,cDk,cLt,stc,mc,mcLt,mcDk)
+      : _svgOpen(c,cDk,cLt,stc,mc,mcLt,mcDk);
+  }
+
+  // 色ドット更新
+  const dc=document.getElementById('dotCover');   if(dc) dc.style.background=c;
+  const ds=document.getElementById('dotStitch');  if(ds) ds.style.background=stc;
+  const dm=document.getElementById('dotMetal');   if(dm) dm.style.background=mc;
+
+  // ヒント更新
+  const hint = document.getElementById('simHint');
+  if (hint) {
+    const parts=[];
+    if(sel.leather) parts.push(sel.leather.split(' ').slice(0,2).join(' '));
+    if(sel.color)   parts.push(sel.color);
+    if(sel.stitch && sel.stitch!=='なし（標準）') parts.push(sel.stitch);
+    if(sel.metal)   parts.push(sel.metal+'金具');
+    hint.textContent = parts.length
+      ? parts.join(' ／ ')
+      : '革・カラーを選択するとリアルタイムで更新されます';
+  }
+}
+
+function simSwitchView(v, btn) {
+  simState.view = v;
+  document.querySelectorAll('.sim-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  updateSimulator();
+}
+
+// ── Canvas実写真モード ──
+// 使い方（写真が準備できたら呼び出す）:
+//   simLoadPhotos('closed.png', 'open.png');
+function simLoadPhotos(closedSrc, openSrc) {
+  let loaded = 0;
+  const check = () => { if(++loaded===2){ simState.mode='canvas'; updateSimulator(); } };
+  simState.imgClosed = new Image();
+  simState.imgClosed.onload = check;
+  simState.imgClosed.src = closedSrc;
+  simState.imgOpen = new Image();
+  simState.imgOpen.onload = check;
+  simState.imgOpen.src = openSrc;
+}
+
+function _renderSimCanvas() {
+  const stage = document.getElementById('simStage');
+  if (!stage) return;
+  let canvas = stage.querySelector('canvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.style.cssText = 'max-width:100%;height:auto;display:block;border-radius:6px';
+    stage.innerHTML = '';
+    stage.appendChild(canvas);
+  }
+  const img = simState.view==='closed' ? simState.imgClosed : simState.imgOpen;
+  if (!img || !img.complete) return;
+  canvas.width  = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  // パーツ別マスクを使ったHSL色置換
+  const parts = [
+    { hex: simState.coverHex,  maskKey: 'cover_'+simState.view },
+    { hex: simState.stitchHex, maskKey: 'stitch_'+simState.view },
+    { hex: simState.metalHex,  maskKey: 'metal_'+simState.view },
+  ];
+  parts.forEach(p => {
+    const mask = simState.masks[p.maskKey];
+    _simApplyColor(canvas, ctx, p.hex, mask);
+  });
+}
+
+// マスク画像（白=置換対象）を使ったHSL色置換。L値保持で革の質感を維持。
+function _simApplyColor(canvas, ctx, targetHex, maskImg) {
+  const [tH, tS] = _hexToHsl(targetHex);
+  const w=canvas.width, h=canvas.height;
+  const id = ctx.getImageData(0,0,w,h);
+  const d  = id.data;
+  let mask = null;
+  if (maskImg && maskImg.complete) {
+    const mc=document.createElement('canvas'); mc.width=w; mc.height=h;
+    mc.getContext('2d').drawImage(maskImg,0,0,w,h);
+    mask = mc.getContext('2d').getImageData(0,0,w,h).data;
+  }
+  for (let i=0;i<d.length;i+=4) {
+    if (d[i+3]<10) continue;
+    if (mask && mask[i]<128) continue;  // マスク外はスキップ
+    const [,, oL] = _rgbToHsl(d[i],d[i+1],d[i+2]);
+    if (oL>5 && oL<95) {  // 純黒・純白は保持
+      const [nr,ng,nb] = _hslToRgb(tH, tS, oL);  // Lは元の明度を維持 → 質感保持
+      d[i]=nr; d[i+1]=ng; d[i+2]=nb;
+    }
+  }
+  ctx.putImageData(id,0,0);
+}
+
+// ── マスク画像読み込みヘルパー ──
+// 使い方: simLoadMasks({ cover_closed:'cover_c.png', cover_open:'cover_o.png', ... });
+function simLoadMasks(maskMap) {
+  Object.entries(maskMap).forEach(([key, src]) => {
+    const img = new Image();
+    img.onload = () => { simState.masks[key]=img; if(simState.mode==='canvas') updateSimulator(); };
+    img.src = src;
+  });
+}
+
+// ═══════════════════════════════════════════════════
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', () => {
@@ -1426,7 +1792,11 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   buildLeatherGrid();
   buildColorGrid();
-  buildOptGrid(document.getElementById('metalGrid'), METALS, 'metal');
+  buildOptGrid(document.getElementById('metalGrid'), METALS, 'metal', (el, d) => {
+    defaultSelect(el, d, 'metal');
+    simState.metalHex = METAL_HEX[d.name] || '#b8b8b8';
+    updateSimulator();
+  });
   buildOptGrid(document.getElementById('stitchGrid'), STITCHES, 'stitch', handleStitchSelect);
   buildStitchColors();
   // Accessories: pen/coin mixed
@@ -1450,7 +1820,9 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('discountRate').addEventListener('input', updateSummary);
   document.getElementById('taxRate').addEventListener('change', updateSummary);
   updateSummary();
+  updateSimulator();  // 初期表示
 });
+
 </script>
 </body>
 </html>
