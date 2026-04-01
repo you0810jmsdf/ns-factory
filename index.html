@@ -554,9 +554,10 @@ body{
     </div>
     <div class="sim-stage" id="simStage"></div>
     <div class="sim-info">
-      <span class="sim-chip"><span class="sim-dot" id="dotCover" style="background:#c68642"></span>表紙</span>
-      <span class="sim-chip"><span class="sim-dot" id="dotStitch" style="background:#e8d5b0"></span>ステッチ</span>
-      <span class="sim-chip"><span class="sim-dot" id="dotMetal" style="background:#c8c8c8"></span>金具</span>
+      <span class="sim-chip"><span class="sim-dot" id="dotCover" style="background:#c68642"></span>フラップ</span>
+      <span class="sim-chip"><span class="sim-dot" id="dotBase"  style="background:#c8a070"></span>ベース</span>
+      <span class="sim-chip"><span class="sim-dot" id="dotStitch" style="background:#ddd0a8"></span>ステッチ</span>
+      <span class="sim-chip"><span class="sim-dot" id="dotMetal" style="background:#b8b8b8"></span>金具</span>
     </div>
     <div class="sim-hint" id="simHint">革・カラーを選択するとリアルタイムで更新されます</div>
   </div>
@@ -1450,6 +1451,7 @@ function resetAll() {
   document.getElementById('stitchColorOpt').classList.add('hide');
   sel = {}; prices = {};
   simState.coverHex    = '#c68642';
+  simState.baseHex     = '#c8a070';
   simState.stitchHex   = '#ddd0a8';
   simState.metalHex    = '#b8b8b8';
   simState.colorPicked = false;
@@ -1493,16 +1495,22 @@ function getLeatherColorHint(tags) {
 
 // ── シミュレーター状態 ──
 const simState = {
-  view:       'closed',
-  coverHex:   '#c68642',   // キャメル（デフォルト）
-  stitchHex:  '#ddd0a8',   // 生成り
-  metalHex:   '#b8b8b8',   // シルバー
-  colorPicked: false,       // カラー（STEP4）が明示的に選ばれたか
-  // Canvas実写真モード用（写真が届いたら下記を設定して mode='canvas' に切り替え）
-  mode:       'svg',        // 'svg' | 'canvas'
-  imgClosed:  null,         // HTMLImageElement — 閉じた状態写真
-  imgOpen:    null,         // HTMLImageElement — 開いた状態写真
-  masks:      {},           // { 'cover_closed': HTMLImageElement, ... }
+  view:        'closed',
+  coverHex:    '#c68642',   // フラップ主素材（キャメル デフォルト）
+  baseHex:     '#c8a070',   // ベース革（ナチュラルタン デフォルト）
+  stitchHex:   '#ddd0a8',   // ステッチ
+  metalHex:    '#b8b8b8',   // 金具
+  colorPicked: false,        // カラー（STEP4）が明示的に選ばれたか
+  // ── Canvas実写真モード ──
+  // simLoadPhotos('closed.png','open.png') を呼ぶと自動的にcanvasモードへ切替
+  mode:       'svg',         // 'svg' | 'canvas'
+  imgClosed:  null,          // HTMLImageElement — 閉じた状態写真
+  imgOpen:    null,          // HTMLImageElement — 開いた状態写真
+  // 元写真のパーツ色相（製品ごとに調整）
+  flapHueCenter:  178,       // フラップ: ターコイズ系 H≈178°
+  flapHueTol:      40,       // 許容色相差（±40°）
+  baseHueCenter:   30,       // ベース: ナチュラルタン H≈30°
+  baseHueTol:      20,       // 許容色相差（±20°）
 };
 
 // ── カラーユーティリティ ──
@@ -1541,6 +1549,7 @@ function _hslToRgb(h,s,l) {
   const hue2=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
   return [Math.round(hue2(p,q,h+1/3)*255),Math.round(hue2(p,q,h)*255),Math.round(hue2(p,q,h-1/3)*255)];
 }
+function _hueDist(a,b){const d=Math.abs(a-b)%360;return d>180?360-d:d;}
 
 // ── SVG：閉じた状態 ──
 function _svgClosed(c,cDk,cLt,stc,mc,mcLt,mcDk) {
@@ -1674,9 +1683,10 @@ function updateSimulator() {
   }
 
   // 色ドット更新
-  const dc=document.getElementById('dotCover');   if(dc) dc.style.background=c;
-  const ds=document.getElementById('dotStitch');  if(ds) ds.style.background=stc;
-  const dm=document.getElementById('dotMetal');   if(dm) dm.style.background=mc;
+  const dc=document.getElementById('dotCover');  if(dc) dc.style.background=c;
+  const db=document.getElementById('dotBase');   if(db) db.style.background=simState.baseHex;
+  const ds=document.getElementById('dotStitch'); if(ds) ds.style.background=stc;
+  const dm=document.getElementById('dotMetal');  if(dm) dm.style.background=mc;
 
   // ヒント更新
   const hint = document.getElementById('simHint');
@@ -1700,79 +1710,93 @@ function simSwitchView(v, btn) {
 }
 
 // ── Canvas実写真モード ──
-// 使い方（写真が準備できたら呼び出す）:
-//   simLoadPhotos('closed.png', 'open.png');
+// 写真ファイルをリポジトリに置いたら自動的にcanvasモードへ切り替わる。
+// ファイルが存在しない場合はSVGモードのまま継続（エラーにならない）。
 function simLoadPhotos(closedSrc, openSrc) {
-  let loaded = 0;
-  const check = () => { if(++loaded===2){ simState.mode='canvas'; updateSimulator(); } };
-  simState.imgClosed = new Image();
-  simState.imgClosed.onload = check;
-  simState.imgClosed.src = closedSrc;
-  simState.imgOpen = new Image();
-  simState.imgOpen.onload = check;
-  simState.imgOpen.src = openSrc;
+  const hint = document.getElementById('simHint');
+  let done = 0;
+  const total = 2;
+  const onLoad = () => {
+    if (++done === total) {
+      simState.mode = 'canvas';
+      updateSimulator();
+    }
+  };
+  const onError = () => { ++done; };  // 失敗してもSVGモードのまま
+  const mk = src => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload  = onLoad;
+    img.onerror = onError;
+    img.src = src;
+    return img;
+  };
+  simState.imgClosed = mk(closedSrc);
+  simState.imgOpen   = mk(openSrc);
 }
 
+// ── Canvas実写真レンダリング（色相範囲検出 / マスク不要）──
+// 透明PNG前提。各パーツを色相で自動識別してHSL置換。L値保持で革の質感を維持。
 function _renderSimCanvas() {
   const stage = document.getElementById('simStage');
   if (!stage) return;
   let canvas = stage.querySelector('canvas');
   if (!canvas) {
     canvas = document.createElement('canvas');
-    canvas.style.cssText = 'max-width:100%;height:auto;display:block;border-radius:6px';
+    canvas.style.cssText = 'max-width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.22)';
     stage.innerHTML = '';
     stage.appendChild(canvas);
   }
   const img = simState.view==='closed' ? simState.imgClosed : simState.imgOpen;
   if (!img || !img.complete) return;
+
   canvas.width  = img.naturalWidth;
   canvas.height = img.naturalHeight;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(img, 0, 0);
-  // パーツ別マスクを使ったHSL色置換
-  const parts = [
-    { hex: simState.coverHex,  maskKey: 'cover_'+simState.view },
-    { hex: simState.stitchHex, maskKey: 'stitch_'+simState.view },
-    { hex: simState.metalHex,  maskKey: 'metal_'+simState.view },
-  ];
-  parts.forEach(p => {
-    const mask = simState.masks[p.maskKey];
-    _simApplyColor(canvas, ctx, p.hex, mask);
-  });
-}
 
-// マスク画像（白=置換対象）を使ったHSL色置換。L値保持で革の質感を維持。
-function _simApplyColor(canvas, ctx, targetHex, maskImg) {
-  const [tH, tS] = _hexToHsl(targetHex);
-  const w=canvas.width, h=canvas.height;
-  const id = ctx.getImageData(0,0,w,h);
+  const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const d  = id.data;
-  let mask = null;
-  if (maskImg && maskImg.complete) {
-    const mc=document.createElement('canvas'); mc.width=w; mc.height=h;
-    mc.getContext('2d').drawImage(maskImg,0,0,w,h);
-    mask = mc.getContext('2d').getImageData(0,0,w,h).data;
-  }
-  for (let i=0;i<d.length;i+=4) {
-    if (d[i+3]<10) continue;
-    if (mask && mask[i]<128) continue;  // マスク外はスキップ
-    const [,, oL] = _rgbToHsl(d[i],d[i+1],d[i+2]);
-    if (oL>5 && oL<95) {  // 純黒・純白は保持
-      const [nr,ng,nb] = _hslToRgb(tH, tS, oL);  // Lは元の明度を維持 → 質感保持
+
+  // 置換先の色相・彩度
+  const [tFlapH, tFlapS] = _hexToHsl(simState.coverHex);
+  const [tBaseH, tBaseS] = _hexToHsl(simState.baseHex);
+  const [tMetH,  tMetS]  = _hexToHsl(simState.metalHex);
+
+  const fHC = simState.flapHueCenter, fHT = simState.flapHueTol;
+  const bHC = simState.baseHueCenter, bHT = simState.baseHueTol;
+
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i+3] < 30) continue;   // 透明ピクセル（PNG alpha）はスキップ
+
+    const [oH, oS, oL] = _rgbToHsl(d[i], d[i+1], d[i+2]);
+    if (oL < 4 || oL > 96) continue;  // 純黒・純白はそのまま保持
+
+    if (_hueDist(oH, fHC) < fHT && oS > 24) {
+      // ── フラップ/ポケット（ターコイズ等の主素材） ──
+      const [nr, ng, nb] = _hslToRgb(tFlapH, tFlapS, oL);
+      d[i]=nr; d[i+1]=ng; d[i+2]=nb;
+    } else if (_hueDist(oH, bHC) < bHT && oS > 5 && oS < 62 && oL > 30) {
+      // ── ベース革（ナチュラルタン等） ──
+      const [nr, ng, nb] = _hslToRgb(tBaseH, tBaseS, oL);
+      d[i]=nr; d[i+1]=ng; d[i+2]=nb;
+    } else if (oS < 13 && oL > 36 && oL < 80) {
+      // ── 金具（シルバー・低彩度金属色） ──
+      const [nr, ng, nb] = _hslToRgb(tMetH, Math.min(tMetS, 22), oL);
       d[i]=nr; d[i+1]=ng; d[i+2]=nb;
     }
   }
-  ctx.putImageData(id,0,0);
+  ctx.putImageData(id, 0, 0);
 }
 
-// ── マスク画像読み込みヘルパー ──
-// 使い方: simLoadMasks({ cover_closed:'cover_c.png', cover_open:'cover_o.png', ... });
-function simLoadMasks(maskMap) {
-  Object.entries(maskMap).forEach(([key, src]) => {
-    const img = new Image();
-    img.onload = () => { simState.masks[key]=img; if(simState.mode==='canvas') updateSimulator(); };
-    img.src = src;
-  });
+// ── 製品写真の元色相を後から調整する場合 ──
+// 例: simSetProductHue(160, 38, 25, 18);
+function simSetProductHue(flapCenter, flapTol, baseCenter, baseTol) {
+  simState.flapHueCenter = flapCenter;
+  simState.flapHueTol    = flapTol;
+  simState.baseHueCenter = baseCenter;
+  simState.baseHueTol    = baseTol;
+  if (simState.mode === 'canvas') updateSimulator();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1820,7 +1844,15 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('discountRate').addEventListener('input', updateSummary);
   document.getElementById('taxRate').addEventListener('change', updateSummary);
   updateSummary();
-  updateSimulator();  // 初期表示
+  updateSimulator();  // 初期表示（SVGモード）
+
+  // ── 実写真の自動読み込み ──
+  // Photoroomで書き出した透明PNG（背景透過）をリポジトリに置くと
+  // 自動でCanvasモードに切り替わる。ファイルがなければSVGのまま。
+  simLoadPhotos(
+    '20250421_045533504_iOS-Photoroom.png',   // 閉じた状態
+    '20250421_045553480_iOS-Photoroom.png'    // 開いた状態
+  );
 });
 
 </script>
