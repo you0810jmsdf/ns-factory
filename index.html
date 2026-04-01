@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>システム手帳 フルオーダーメイド 見積もり</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#f5f0eb;color:#2c1a0e;font-size:14px;line-height:1.6;
+}
+
+/* ── LAYOUT ── */
+.app{display:flex;min-height:100vh;flex-direction:column}
+.topbar{
+  background:linear-gradient(135deg,#3d1a08 0%,#6b3a1f 100%);
+  color:#fff;padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,0.25);
+}
+.topbar h1{font-size:16px;font-weight:700;letter-spacing:0.06em}
+.topbar p{font-size:11px;opacity:0.75;margin-top:2px}
+
+.main{display:grid;grid-template-columns:1fr 320px;gap:0;flex:1}
+@media(max-width:820px){.main{grid-template-columns:1fr}}
+
+.content{padding:24px 20px;overflow:hidden}
+.sidebar{
+  background:#fff;border-left:1px solid #ede0d4;
+  padding:20px 16px;
+  position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;
+}
+@media(max-width:820px){
+  .sidebar{position:static;height:auto;border-left:none;border-top:2px solid #ede0d4}
+}
+
+/* ── SECTION ── */
+.section{margin-bottom:32px}
+.section-title{
+  font-size:15px;font-weight:700;color:#6b3a1f;
+  margin-bottom:14px;padding-bottom:8px;
+  border-bottom:2px solid #e8d4c0;
+  display:flex;align-items:center;gap:8px;
+}
+.section-title .num{
+  width:24px;height:24px;border-radius:50%;
+  background:#6b3a1f;color:#fff;
+  font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.section-title .badge{
+  font-size:10px;font-weight:600;padding:2px 7px;
+  border-radius:20px;background:#fdf0e5;color:#6b3a1f;
+  border:1px solid #e8c9a8;
+}
+
+/* ── SEARCH / FILTER ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-input{
+  flex:1;min-width:160px;
+  border:2px solid #ede0d4;border-radius:8px;
+  padding:7px 12px;font-size:13px;
+  background:#faf7f4;outline:none;font-family:inherit;
+  transition:border-color .15s;
+}
+.filter-input:focus{border-color:#b5895a;background:#fff}
+.filter-tags{display:flex;gap:6px;flex-wrap:wrap}
+.filter-tag{
+  padding:4px 10px;border-radius:20px;
+  border:1px solid #d4b896;background:#faf7f4;
+  font-size:11px;font-weight:600;color:#6b3a1f;
+  cursor:pointer;transition:all .12s;white-space:nowrap;
+}
+.filter-tag.active{background:#6b3a1f;color:#fff;border-color:#6b3a1f}
+.filter-tag:hover:not(.active){background:#fdf0e5}
+
+/* ── IMAGE CARD GRID ── */
+.img-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;
+}
+.img-card{
+  border:2px solid #ede0d4;border-radius:10px;
+  overflow:hidden;background:#fff;
+  cursor:pointer;transition:all .15s;
+  position:relative;
+}
+.img-card:hover{border-color:#b5895a;transform:translateY(-2px);box-shadow:0 6px 20px rgba(107,58,31,.12)}
+.img-card.selected{border-color:#6b3a1f;box-shadow:0 0 0 3px rgba(107,58,31,.15)}
+.img-card.selected::after{
+  content:'✓';
+  position:absolute;top:6px;right:6px;
+  width:22px;height:22px;border-radius:50%;
+  background:#6b3a1f;color:#fff;
+  font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.img-card.hidden{display:none}
+.card-img{
+  width:100%;aspect-ratio:4/3;object-fit:cover;
+  background:#f0e8df;
+  display:block;
+}
+.card-img-placeholder{
+  width:100%;aspect-ratio:4/3;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:11px;color:#a07850;padding:8px;text-align:center;
+  line-height:1.4;
+}
+.card-body{padding:8px 10px 10px}
+.card-name{font-size:12px;font-weight:700;color:#2c1a0e;margin-bottom:2px}
+.card-sub{font-size:10px;color:#8a6644;line-height:1.3;min-height:26px}
+.card-price{font-size:12px;font-weight:700;color:#6b3a1f;margin-top:4px}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.card-tag{
+  font-size:9px;padding:2px 5px;border-radius:10px;
+  background:#fdf0e5;color:#8a6644;border:1px solid #e8c9a8;
+}
+
+/* ── SMALL OPTION GRID (ring, metal, etc.) ── */
+.opt-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:10px;
+}
+.opt-card{
+  border:2px solid #ede0d4;border-radius:10px;
+  overflow:hidden;background:#fff;
+  cursor:pointer;transition:all .15s;position:relative;
+}
+.opt-card:hover{border-color:#b5895a;transform:translateY(-2px)}
+.opt-card.selected{border-color:#6b3a1f;box-shadow:0 0 0 3px rgba(107,58,31,.12)}
+.opt-card.selected::after{
+  content:'✓';position:absolute;top:5px;right:5px;
+  width:18px;height:18px;border-radius:50%;
+  background:#6b3a1f;color:#fff;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.opt-img{width:100%;aspect-ratio:3/2;object-fit:cover;background:#f0e8df;display:block}
+.opt-img-ph{
+  width:100%;aspect-ratio:3/2;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+.opt-body{padding:6px 8px 8px}
+.opt-name{font-size:12px;font-weight:700;color:#2c1a0e}
+.opt-sub{font-size:10px;color:#8a6644;margin-top:1px}
+.opt-price{font-size:11px;font-weight:700;color:#6b3a1f;margin-top:3px}
+
+/* ── TOGGLE BTN ── */
+.toggle-row{display:flex;gap:8px;flex-wrap:wrap}
+.tog{
+  padding:8px 14px;border-radius:8px;
+  border:2px solid #ede0d4;background:#faf7f4;
+  font-size:13px;cursor:pointer;transition:all .12s;
+  white-space:nowrap;font-family:inherit;color:#2c1a0e;
+}
+.tog:hover{border-color:#b5895a}
+.tog.selected{border-color:#6b3a1f;background:#fdf0e5;font-weight:700;color:#6b3a1f}
+
+/* ── NUM FIELD ── */
+.num-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.num-label{font-size:13px;color:#5a3a20;min-width:100px;font-weight:500}
+.num-field{
+  display:flex;align-items:center;
+  border:2px solid #ede0d4;border-radius:8px;overflow:hidden;
+}
+.num-field button{
+  width:34px;height:34px;border:none;background:#faf7f4;
+  font-size:18px;cursor:pointer;color:#6b3a1f;transition:background .12s;
+}
+.num-field button:hover{background:#fdf0e5}
+.num-field input{
+  width:50px;text-align:center;border:none;
+  border-left:1px solid #ede0d4;border-right:1px solid #ede0d4;
+  font-size:14px;font-weight:600;padding:5px 0;outline:none;background:#fff;
+}
+.num-note{font-size:11px;color:#a07850}
+
+/* ── TEXT / TEXTAREA ── */
+.t-input{
+  width:100%;border:2px solid #ede0d4;border-radius:8px;
+  padding:9px 12px;font-size:14px;outline:none;
+  background:#faf7f4;transition:border-color .15s;font-family:inherit;
+}
+.t-input:focus{border-color:#b5895a;background:#fff}
+
+/* ── SUB OPTION ── */
+.sub-opt{
+  margin-top:12px;padding-top:12px;
+  border-top:1px dashed #ede0d4;
+}
+.sub-opt.hide{display:none}
+
+/* ── COLOR GRID ── */
+.color-grid{display:flex;flex-wrap:wrap;gap:10px}
+.color-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.color-swatch{
+  width:40px;height:40px;border-radius:50%;
+  cursor:pointer;border:3px solid transparent;
+  transition:all .15s;position:relative;
+}
+.color-swatch:hover{transform:scale(1.1)}
+.color-swatch.selected{border-color:#2c1a0e}
+.color-swatch.selected::after{
+  content:'✓';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:rgba(255,255,255,.9);font-weight:700;
+}
+.color-lbl{font-size:10px;color:#8a6644;text-align:center;width:44px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── SIDEBAR ── */
+.sidebar-title{
+  font-size:14px;font-weight:700;color:#6b3a1f;
+  margin-bottom:12px;padding-bottom:8px;
+  border-bottom:2px solid #ede0d4;
+}
+.summary-list{list-style:none;margin-bottom:12px}
+.summary-list li{
+  display:flex;justify-content:space-between;
+  font-size:12px;padding:4px 0;
+  border-bottom:1px solid #f5ede4;
+}
+.summary-list li.lbl{
+  font-size:10px;color:#a07850;
+  border-bottom:none;margin-top:6px;
+}
+.total-box{
+  background:linear-gradient(135deg,#6b3a1f,#8a4e2a);
+  color:#fff;border-radius:10px;padding:14px 12px;
+  margin-bottom:12px;
+}
+.total-box .t-lbl{font-size:11px;opacity:.8;margin-bottom:4px}
+.total-box .t-val{font-size:24px;font-weight:800}
+.total-box .t-val span{font-size:13px;font-weight:400}
+
+.ctrl-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap}
+.ctrl-lbl{font-size:11px;color:#5a3a20;min-width:56px}
+.ctrl-in{
+  flex:1;min-width:60px;
+  border:2px solid #ede0d4;border-radius:6px;
+  padding:5px 6px;font-size:13px;text-align:right;
+  outline:none;background:#faf7f4;font-family:inherit;
+}
+.ctrl-in:focus{border-color:#b5895a;background:#fff}
+
+.btn{
+  width:100%;padding:11px 12px;border:none;border-radius:8px;
+  font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;margin-bottom:7px;transition:all .15s;
+  letter-spacing:.03em;
+}
+.btn-primary{background:#6b3a1f;color:#fff}
+.btn-primary:hover{background:#7d4525}
+.btn-outline{background:#fff;color:#6b3a1f;border:2px solid #6b3a1f}
+.btn-outline:hover{background:#fdf0e5}
+.btn-ghost{background:#f5f0eb;color:#6b3a1f}
+.btn-ghost:hover{background:#ede0d4}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.45);z-index:100;
+  align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:#fff;border-radius:14px;padding:26px 22px;
+  max-width:480px;width:100%;
+  box-shadow:0 8px 40px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;
+}
+.modal h2{font-size:16px;color:#6b3a1f;margin-bottom:16px;font-weight:700}
+.modal .f{margin-bottom:12px}
+.modal .f label{display:block;font-size:12px;font-weight:600;color:#5a3a20;margin-bottom:4px}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#a07850}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions .btn{margin:0;flex:1}
+
+
+
+/* ── BRAND GRID ── */
+.brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.brand-card{
+  border:2px solid #ede0d4;border-radius:10px;padding:12px 10px;
+  background:#fff;cursor:pointer;transition:all .15s;text-align:center;position:relative;
+}
+.brand-card:hover{border-color:#b5895a;transform:translateY(-2px);box-shadow:0 4px 14px rgba(107,58,31,.1)}
+.brand-card.selected{border-color:#6b3a1f;box-shadow:0 0 0 3px rgba(107,58,31,.15)}
+.brand-card.selected::after{
+  content:'✓';position:absolute;top:5px;right:7px;
+  width:18px;height:18px;border-radius:50%;
+  background:#6b3a1f;color:#fff;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-icon{font-size:28px;line-height:1;margin-bottom:5px}
+.brand-name{font-size:13px;font-weight:700;color:#3d1a08;margin-bottom:2px}
+.brand-sub{font-size:10px;color:#a07850;line-height:1.4;margin-bottom:5px}
+.brand-badge{
+  font-size:11px;font-weight:700;
+  background:#fdf0e5;color:#b05a00;
+  border:1px solid #e8c9a8;border-radius:5px;
+  padding:1px 6px;display:inline-block;
+}
+.ring-section-lbl{
+  font-size:12px;font-weight:600;color:#5a3a20;
+  margin:14px 0 8px;padding:5px 8px;
+  background:#faf7f4;border-radius:6px;
+  display:flex;align-items:center;gap:6px;
+}
+.ring-section-lbl.klause{background:#fdf0e5;color:#b05a00}
+.area-badge{
+  font-size:10px;padding:1px 5px;border-radius:4px;
+  background:#ffe9cc;color:#b05a00;font-weight:700;
+}
+/* ── PLATFORM GRID ── */
+.platform-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;
+}
+.platform-card{
+  border:2px solid #ede0d4;border-radius:10px;padding:12px 10px;
+  background:#fff;cursor:pointer;transition:all .15s;text-align:center;
+  position:relative;
+}
+.platform-card:hover{border-color:#b5895a;transform:translateY(-2px);box-shadow:0 4px 14px rgba(107,58,31,.1)}
+.platform-card.selected{border-color:#6b3a1f;box-shadow:0 0 0 3px rgba(107,58,31,.15)}
+.platform-card.selected::after{
+  content:'✓';position:absolute;top:5px;right:7px;
+  width:18px;height:18px;border-radius:50%;
+  background:#6b3a1f;color:#fff;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.plat-icon{font-size:24px;line-height:1;margin-bottom:5px}
+.plat-name{font-size:12px;font-weight:700;color:#3d1a08;margin-bottom:2px}
+.plat-sub{font-size:10px;color:#a07850;margin-bottom:5px}
+.plat-fee{
+  font-size:13px;font-weight:700;
+  background:#fdf0e5;color:#6b3a1f;
+  border-radius:6px;padding:2px 6px;display:inline-block;
+}
+.plat-note{font-size:10px;color:#a07850;margin-top:3px}
+
+/* ── SELL PRICE BOX ── */
+.sell-box{
+  background:linear-gradient(135deg,#3d1a08,#6b3a1f);color:#fff;
+  border-radius:10px;padding:14px;margin-top:12px;
+}
+.sell-box .s-lbl{font-size:11px;opacity:.8;margin-bottom:3px}
+.sell-box .s-val{font-size:26px;font-weight:700;letter-spacing:-.01em}
+.sell-box .s-val span{font-size:14px}
+.sell-box .s-note{font-size:11px;opacity:.7;margin-top:4px}
+
+/* ── PRINT ── */
+@media print{
+  .topbar,.sidebar,.filter-bar,.no-print{display:none!important}
+  .main{display:block}
+  .content{padding:10px}
+  .img-card,.opt-card{break-inside:avoid}
+  #printBlock{display:block!important}
+}
+#printBlock{display:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:500px){
+  .img-grid{grid-template-columns:repeat(2,1fr)}
+  .opt-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <h1>🧵 システム手帳 フルオーダーメイド 見積もり</h1>
+    <p>各項目を選択してリアルタイムで概算金額を確認できます</p>
+  </div>
+  <button class="tog no-print" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff;font-size:12px;" onclick="resetAll()">🔄 リセット</button>
+</div>
+
+<div class="main">
+<!-- ═══════════ CONTENT ═══════════ -->
+<div class="content">
+
+<!-- ══ STEP 1: BRAND ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">1</span> ブランド・構造タイプ <span class="badge">必須</span></div>
+  <div class="brand-grid" id="brandGrid"></div>
+</div>
+
+<!-- ══ STEP 2: SIZE ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">2</span> 手帳サイズ <span class="badge">必須</span></div>
+  <div class="opt-grid" id="sizeGrid"></div>
+</div>
+
+<!-- ══ STEP 2: LEATHER ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">3</span> レザー素材 <span class="badge">必須</span></div>
+  <div class="filter-bar">
+    <input type="text" class="filter-input" placeholder="🔍 革を検索..." id="leatherSearch" oninput="filterLeather()">
+    <div class="filter-tags" id="leatherTags"></div>
+  </div>
+  <div class="img-grid" id="leatherGrid"></div>
+</div>
+
+<!-- ══ STEP 3: COLOR ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">4</span> カラー <span class="badge">必須</span></div>
+  <div class="color-grid" id="colorGrid"></div>
+  <p style="font-size:11px;color:#a07850;margin-top:8px">※ 選択した革素材によって展開カラーは異なります。詳細はお問い合わせください</p>
+</div>
+
+<!-- ══ STEP 4: RING ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">5</span> リング仕様</div>
+  <div class="ring-section-lbl">⭕ 通常リング <span class="area-badge">革×1</span> <span style="font-size:10px;color:#a07850;font-weight:400">アリエク仕入れ ¥1,000/本</span></div>
+  <div class="opt-grid" id="ringNormalGrid"></div>
+  <div class="ring-section-lbl klause">🔒 クラウゼリング（スライドロック式） <span class="area-badge">革×2</span></div>
+  <p style="font-size:11px;color:#a07850;margin:-6px 0 8px">ネット販売参考価格×2で設定 ／ 調査日: 2026年3月14日</p>
+  <div class="opt-grid" id="ringKlauseGrid"></div>
+  <div class="ring-section-lbl" style="margin-top:18px">金具カラー</div>
+  <div class="opt-grid" id="metalGrid"></div>
+</div>
+
+<!-- ══ STEP 5: STITCH ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">6</span> ステッチ・コバ</div>
+  <div class="opt-grid" id="stitchGrid"></div>
+  <div class="sub-opt hide" id="stitchColorOpt">
+    <p style="font-size:12px;color:#8a6644;margin-bottom:8px">ステッチカラー</p>
+    <div class="toggle-row" id="stitchColorGrid"></div>
+  </div>
+</div>
+
+<!-- ══ STEP 6: INTERIOR ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">7</span> 内装・ポケット</div>
+  <div class="opt-grid" id="accessoryGrid"></div>
+  <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+    <div class="num-row">
+      <span class="num-label">カードポケット</span>
+      <div class="num-field">
+        <button onclick="changeNum('cardPocket',-1)">−</button>
+        <input type="number" id="cardPocket" value="0" min="0" max="20" readonly>
+        <button onclick="changeNum('cardPocket',1)">＋</button>
+      </div>
+      <span class="num-note">1枚 +¥500</span>
+    </div>
+    <div class="num-row">
+      <span class="num-label">内ポケット（フラップ）</span>
+      <div class="num-field">
+        <button onclick="changeNum('innerPocket',-1)">−</button>
+        <input type="number" id="innerPocket" value="0" min="0" max="10" readonly>
+        <button onclick="changeNum('innerPocket',1)">＋</button>
+      </div>
+      <span class="num-note">1枚 +¥800</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STEP 7: STAMP ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">8</span> 刻印・スタンプ</div>
+  <div class="opt-grid" id="stampGrid"></div>
+  <div class="sub-opt hide" id="stampTextOpt">
+    <p style="font-size:12px;color:#8a6644;margin-bottom:6px">刻印内容</p>
+    <input type="text" class="t-input" id="stampText" placeholder="例：YUKI / イニシャル T.Y. / 山田太郎">
+  </div>
+</div>
+
+
+<!-- ══ STEP 8: PLATFORM ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">9</span> 販売プラットフォーム</div>
+  <div class="platform-grid" id="platformGrid"></div>
+  <div class="sub-opt" id="customFeeOpt" style="display:none;margin-top:12px">
+    <label style="font-size:12px;font-weight:600;color:#5a3a20">手数料率（%）</label>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+      <input type="number" class="ctrl-in" id="customFeeRate" min="0" max="50" step="0.1" value="0" style="width:80px">
+      <span style="font-size:13px;color:#6b3a1f">%（税込）</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STEP 9: QTY ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">10</span> 数量</div>
+  <div class="num-row">
+    <span class="num-label">注文数</span>
+    <div class="num-field">
+      <button onclick="changeNum('qty',-1)">−</button>
+      <input type="number" id="qty" value="1" min="1" max="100" readonly>
+      <button onclick="changeNum('qty',1)">＋</button>
+    </div>
+    <span class="num-note" id="qtyNote">5個以上 → 5%割引 / 10個以上 → 10%割引</span>
+  </div>
+</div>
+
+<!-- ══ STEP 9: REMARKS ══ -->
+<div class="section">
+  <div class="section-title"><span class="num">11</span> ご要望・備考</div>
+  <textarea class="t-input" id="remarks" rows="4" placeholder="特別なご要望、参考デザイン、参照URL、納期ご希望などをご記入ください"></textarea>
+</div>
+
+<!-- BOTTOM ACTIONS -->
+<div class="toggle-row no-print" style="gap:10px;margin-bottom:40px">
+  <button class="tog" style="flex:1" onclick="window.print()">🖨️ 印刷 / PDF</button>
+  <button class="tog" style="flex:2;background:#6b3a1f;color:#fff;border-color:#6b3a1f;font-weight:700;" onclick="openEmailModal()">📧 この内容でお問い合わせ</button>
+</div>
+
+<!-- PRINT BLOCK -->
+<div id="printBlock" style="margin-top:30px">
+  <hr style="border:1px solid #ccc;margin-bottom:16px">
+  <h3 style="font-size:16px;color:#6b3a1f;margin-bottom:12px">見積もり詳細（印刷用）</h3>
+  <div id="printDetail"></div>
+  <p style="font-size:11px;color:#666;margin-top:16px">
+    ※本見積もりは概算です。正式なお見積もりはご注文確認後にお送りします。<br>
+    ※価格は税込表示です。納期はご相談ください。
+  </p>
+</div>
+</div><!-- /content -->
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<div class="sidebar">
+  <div class="sidebar-title">📋 現在の見積もり</div>
+
+  <div class="total-box" id="costBox">
+    <div class="t-lbl" id="costBoxLabel">合計金額（税込）</div>
+    <div class="t-val" id="totalDisplay">¥0 <span>円</span></div>
+  </div>
+  <div class="sell-box" id="sellBox" style="display:none">
+    <div class="s-lbl">🏷 推奨出品価格（税込・手数料込）</div>
+    <div class="s-val" id="sellDisplay">¥0 <span>円</span></div>
+    <div class="s-note" id="sellNote"></div>
+  </div>
+
+  <ul class="summary-list" id="summaryList">
+    <li><span style="color:#a07850">未選択</span><span>―</span></li>
+  </ul>
+
+  <div class="ctrl-row">
+    <span class="ctrl-lbl">割引率</span>
+    <input type="number" class="ctrl-in" id="discountRate" min="0" max="50" step="1" value="0"> %
+  </div>
+  <div class="ctrl-row">
+    <span class="ctrl-lbl">消費税</span>
+    <select class="ctrl-in" id="taxRate">
+      <option value="10">10%</option>
+      <option value="8">8%</option>
+      <option value="0">非課税</option>
+    </select>
+  </div>
+
+  <div style="margin-top:14px">
+    <button class="btn btn-primary no-print" onclick="openEmailModal()">📧 お問い合わせ</button>
+    <button class="btn btn-outline no-print" onclick="window.print()">🖨️ 印刷 / PDF保存</button>
+    <button class="btn btn-ghost no-print" onclick="resetAll()">🔄 すべてリセット</button>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- EMAIL MODAL -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEmailModal()">✕</button>
+    <h2>📧 お問い合わせ・見積もり依頼</h2>
+    <div class="f"><label>お名前 *</label><input type="text" class="t-input" id="iName" placeholder="山田 太郎"></div>
+    <div class="f"><label>メールアドレス *</label><input type="email" class="t-input" id="iEmail" placeholder="example@mail.com"></div>
+    <div class="f"><label>電話番号（任意）</label><input type="tel" class="t-input" id="iTel" placeholder="090-0000-0000"></div>
+    <div class="f"><label>見積もり内容</label><textarea class="t-input" id="iEst" rows="8" readonly></textarea></div>
+    <div class="f"><label>追加メッセージ</label><textarea class="t-input" id="iMsg" rows="3" placeholder="ご質問・ご要望などをご自由にご記入ください"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeEmailModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="sendEmail()">📤 メール送信</button>
+    </div>
+    <p style="font-size:11px;color:#a07850;margin-top:10px;text-align:center">※ メールクライアントが起動します</p>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   ▼▼▼  データ設定エリア  ▼▼▼
+   画像URLを差し替えるだけで反映されます
+   image: '' のままにすると絵文字プレースホルダーを表示
+   kawamuraleather.com などから画像URLをコピーして貼り付けてください
+   ═══════════════════════════════════════════════════ */
+
+// ── 画像URLベース ──
+// _th = 約40px極小サムネイル → _m = 中サイズ（約300px）に変更
+const I = (id, ext='jpg') => `https://img07.shop-pro.jp/PA01426/148/product/${id}_m.${ext}`;
+
+// ── 国産ヌメ革 基準単価（¥/ds） ──
+const NUMER_DS_PRICE = 95;
+
+// ── ds計算パラメータ ──
+const MARGIN_MM        = 10;    // 表紙の余白（各辺 mm）：リフィルより各辺+10mm = 縦横+20mm
+const RING_SPINE_RATIO = 3;     // スパイン幅 = リング内径 × この値（20mm→60mm）
+const WASTE_RATE       = 0.30;  // 半裁革の使用不可部分（約30%）
+const WASTE_FACTOR     = 1 / (1 - WASTE_RATE);  // ≈ 1.4286：必要購入量 = 使用量 ÷ (1 - ロス率)
+const CRAFT_MULTIPLIER = 1.5;   // 工賃込み倍率（縫製・コバ磨き等を革材料費に上乗せ）
+
+
+// ── ブランド（構造タイプ）一覧 ──
+// areaMulti = 革面積倍率（2 = 革使用量がSimplistの2倍）
+const BRAND_INIT_DESIGN_FEE = 1000;  // 「その他」選択時の初度設計費（1回のみ）
+
+const BRANDS = [
+  { id:'simplist',  name:'Simplist',   sub:'シンプル構造（外張のみ）',       areaMulti:1, hasInitFee:false, emoji:'📓', badge:'' },
+  { id:'npad',      name:'N-Pad',      sub:'芯材入りパッド構造（内張あり）',  areaMulti:2, hasInitFee:false, emoji:'📔', badge:'革×2' },
+  { id:'nthrough',  name:'N-therough', sub:'クリア挟み込み構造（裏表革）',   areaMulti:2, hasInitFee:false, emoji:'📒', badge:'革×2' },
+  { id:'other',     name:'その他',     sub:'既存モデル外・初度設計費あり',    areaMulti:1, hasInitFee:true,  emoji:'✨', badge:'要設計' },
+];
+
+// ── クラウゼリング ネット販売参考価格（税込 ニッケル/シルバー）──
+// 調査日: 2026年3月14日 ソース: leathercraft.jp / leatherworks-j.com 等
+// ツール内設定価格 = 下記参考価格 × 2（ネット販売価格の2倍）
+const KLAUSE_RETAIL = { r15:1650, r20:2000, r25:2500, r30:3000 };
+
+// ── 革一覧（カワムラレザー取り扱い品・実画像） ──
+// ※ dsPrice = ds（デシ平方）あたりの素材単価。国産ヌメ革基準 ¥95/ds。
+const LEATHERS = [
+
+  // ════════════════════════════════════════
+  // ALASKA / アラスカ（La Perla Azzurra）
+  // 植物タンニン鞣し・ロウ引き・厚2.0〜2.2mm・16色
+  // ════════════════════════════════════════
+  { id:'ska01', name:'ALASKA ナチュラル',    sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('140336842'), tags:['ALASKA','タンニン鞣し','ロウ引き','ナチュラル系'] },
+  { id:'ska10', name:'ALASKA チョコ',        sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('141891418'), tags:['ALASKA','タンニン鞣し','ロウ引き','ブラウン系'] },
+  { id:'ska08', name:'ALASKA ブラウン',      sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('155535485'), tags:['ALASKA','タンニン鞣し','ロウ引き','ブラウン系'] },
+  { id:'ska12', name:'ALASKA ブラック',      sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('141893632'), tags:['ALASKA','タンニン鞣し','ロウ引き','ダーク系'] },
+  { id:'ska13', name:'ALASKA グレー',        sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('148270635','png'), tags:['ALASKA','タンニン鞣し','ロウ引き','ダーク系'] },
+  { id:'ska42', name:'ALASKA アイボリー',    sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('141898992'), tags:['ALASKA','タンニン鞣し','ロウ引き','ナチュラル系'] },
+  { id:'ska33', name:'ALASKA レッド',        sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('155536219'), tags:['ALASKA','タンニン鞣し','ロウ引き','レッド系'] },
+  { id:'ska06', name:'ALASKA ラズベリー',    sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('152578868'), tags:['ALASKA','タンニン鞣し','ロウ引き','レッド系'] },
+  { id:'ska41', name:'ALASKA ピンク',        sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('155536107'), tags:['ALASKA','タンニン鞣し','ロウ引き','レッド系'] },
+  { id:'ska31', name:'ALASKA オレンジ',      sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('152578876'), tags:['ALASKA','タンニン鞣し','ロウ引き','イエロー系'] },
+  { id:'ska40', name:'ALASKA イエロー',      sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('155535744'), tags:['ALASKA','タンニン鞣し','ロウ引き','イエロー系'] },
+  { id:'ska43', name:'ALASKA グリーン',      sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('155535799'), tags:['ALASKA','タンニン鞣し','ロウ引き','グリーン系'] },
+  { id:'ska05', name:'ALASKA ビリジアン',    sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('170150207'), tags:['ALASKA','タンニン鞣し','ロウ引き','グリーン系'] },
+  { id:'ska34', name:'ALASKA ターコイズ',    sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('155536414'), tags:['ALASKA','タンニン鞣し','ロウ引き','ブルー系'] },
+  { id:'ska16', name:'ALASKA ブルー',        sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('148270455'), tags:['ALASKA','タンニン鞣し','ロウ引き','ブルー系'] },
+  { id:'ska46', name:'ALASKA アイスブルー',  sub:'La Perla Azzurra / ロウ引き',  dsPrice:160,    image:I('170150003'), tags:['ALASKA','タンニン鞣し','ロウ引き','ブルー系'] },
+
+  // ════════════════════════════════════════
+  // MARGOT FOG / マルゴー フォグ（Virgilio Conceria Artigiana）
+  // 植物タンニン鞣し・霞がかった独特の表情・11色
+  // ════════════════════════════════════════
+  { id:'mfog_nat',  name:'MARGOT FOG ナチュラーレ', sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174217652'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','ナチュラル系'] },
+  { id:'mfog_brn',  name:'MARGOT FOG ブラウン',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174217655'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','ブラウン系'] },
+  { id:'mfog_cas',  name:'MARGOT FOG カスターニャ', sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174217690'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','ブラウン系'] },
+  { id:'mfog_ner',  name:'MARGOT FOG ネロ（黒）',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174218268'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','ダーク系'] },
+  { id:'mfog_top',  name:'MARGOT FOG トッポ（灰）', sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174218224'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','ダーク系'] },
+  { id:'mfog_fux',  name:'MARGOT FOG フクシア',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174217697'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'mfog_fra',  name:'MARGOT FOG フラゴラ',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174217708'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'mfog_gir',  name:'MARGOT FOG ジラソーレ',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174217715'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','イエロー系'] },
+  { id:'mfog_all',  name:'MARGOT FOG アローロ',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174217722'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','グリーン系'] },
+  { id:'mfog_cob',  name:'MARGOT FOG コバルト',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174218213'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','ブルー系'] },
+  { id:'mfog_nav',  name:'MARGOT FOG ネイビー',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:160, image:I('174218218'), tags:['MARGOT FOG','タンニン鞣し','Virgilio','ブルー系'] },
+
+  // ════════════════════════════════════════
+  // MARGOT / マルゴー（Virgilio Conceria Artigiana）
+  // 植物タンニン鞣し・豊富なカラー展開・20色
+  // ════════════════════════════════════════
+  { id:'mg_nat',  name:'MARGOT ナチュラーレ',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('166876687'), tags:['MARGOT','タンニン鞣し','Virgilio','ナチュラル系'] },
+  { id:'mg_fie',  name:'MARGOT フィエーノ',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('183827901'), tags:['MARGOT','タンニン鞣し','Virgilio','ナチュラル系'] },
+  { id:'mg_brn',  name:'MARGOT ブラウン',       sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('142042272'), tags:['MARGOT','タンニン鞣し','Virgilio','ブラウン系'] },
+  { id:'mg_cas',  name:'MARGOT カスターニャ',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('166876910'), tags:['MARGOT','タンニン鞣し','Virgilio','ブラウン系'] },
+  { id:'mg_dkb',  name:'MARGOT ダークブラウン', sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('140633333'), tags:['MARGOT','タンニン鞣し','Virgilio','ブラウン系'] },
+  { id:'mg_bos',  name:'MARGOT ボスコ',         sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('183828000'), tags:['MARGOT','タンニン鞣し','Virgilio','ブラウン系'] },
+  { id:'mg_ner',  name:'MARGOT ネロ（黒）',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('142026525'), tags:['MARGOT','タンニン鞣し','Virgilio','ダーク系'] },
+  { id:'mg_top',  name:'MARGOT トッポ（灰）',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('158805672'), tags:['MARGOT','タンニン鞣し','Virgilio','ダーク系'] },
+  { id:'mg_fra',  name:'MARGOT フラゴラ',       sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('158805363'), tags:['MARGOT','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'mg_fux',  name:'MARGOT フクシア',       sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('166877020'), tags:['MARGOT','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'mg_bur',  name:'MARGOT バーガンディ',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('183827962'), tags:['MARGOT','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'mg_ros',  name:'MARGOT ローサ（桃）',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('188691265'), tags:['MARGOT','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'mg_lil',  name:'MARGOT リラ（薄紫）',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('166876967'), tags:['MARGOT','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'mg_gir',  name:'MARGOT ジラソーレ',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('142042006','png'), tags:['MARGOT','タンニン鞣し','Virgilio','イエロー系'] },
+  { id:'mg_man',  name:'MARGOT マンダリーノ',   sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('158805358'), tags:['MARGOT','タンニン鞣し','Virgilio','イエロー系'] },
+  { id:'mg_men',  name:'MARGOT メンタ（薄緑）', sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('166877083'), tags:['MARGOT','タンニン鞣し','Virgilio','グリーン系'] },
+  { id:'mg_all',  name:'MARGOT アローロ',       sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('158805427'), tags:['MARGOT','タンニン鞣し','Virgilio','グリーン系'] },
+  { id:'mg_olm',  name:'MARGOT オルモ',         sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('183786767'), tags:['MARGOT','タンニン鞣し','Virgilio','グリーン系'] },
+  { id:'mg_tur',  name:'MARGOT トルケーゼ',     sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('170334361'), tags:['MARGOT','タンニン鞣し','Virgilio','ブルー系'] },
+  { id:'mg_nav',  name:'MARGOT ネイビー',       sub:'Virgilio / 植物タンニン鞣し', dsPrice:155, image:I('158805629'), tags:['MARGOT','タンニン鞣し','Virgilio','ブルー系'] },
+
+  // ════════════════════════════════════════
+  // LINEA VASCA Box / リネア ヴァスカ ボックス（Virgilio Conceria Artigiana）
+  // 植物タンニン鞣し・ボックスカーフ仕上げ・13色
+  // ════════════════════════════════════════
+  { id:'lvb_ses',  name:'LINEA VASCA Box セサンタ（60）',   sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657027'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ナチュラル系'] },
+  { id:'lvb_nat',  name:'LINEA VASCA Box ナチュラーレ',     sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('180707714'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ナチュラル系'] },
+  { id:'lvb_cas',  name:'LINEA VASCA Box カスターニャ',     sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657044'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ブラウン系'] },
+  { id:'lvb_dkb',  name:'LINEA VASCA Box ダークブラウン',   sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657035'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ブラウン系'] },
+  { id:'lvb_ner',  name:'LINEA VASCA Box ネロ（黒）',       sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657087'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ダーク系'] },
+  { id:'lvb_top',  name:'LINEA VASCA Box トッポ（灰）',     sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657080'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ダーク系'] },
+  { id:'lvb_fra',  name:'LINEA VASCA Box フラゴラ',         sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657051'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'lvb_fux',  name:'LINEA VASCA Box フクシア',         sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657048'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','レッド系'] },
+  { id:'lvb_ver',  name:'LINEA VASCA Box ヴェルデ（緑）',   sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657054'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','グリーン系'] },
+  { id:'lvb_ort',  name:'LINEA VASCA Box オルティーカ',     sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657061'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','グリーン系'] },
+  { id:'lvb_tur',  name:'LINEA VASCA Box トルケーゼ',       sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('180707715'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ブルー系'] },
+  { id:'lvb_cob',  name:'LINEA VASCA Box コバルト',         sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657065'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ブルー系'] },
+  { id:'lvb_nav',  name:'LINEA VASCA Box ネイビー',         sub:'Virgilio / ボックスカーフ仕上げ', dsPrice:170, image:I('174657071'), tags:['LINEA VASCA Box','タンニン鞣し','Virgilio','ブルー系'] },
+
+  // ════════════════════════════════════════
+  // MARIANO / マリアーノ（La Perla Azzurra）★NEW
+  // 植物タンニン鞣し・新定番・7色
+  // ════════════════════════════════════════
+  { id:'mano01', name:'MARIANO ナチュラル',    sub:'La Perla Azzurra / 植物タンニン鞣し ★NEW', dsPrice:165, image:I('189376345'), tags:['MARIANO','タンニン鞣し','La Perla Azzurra','ナチュラル系','NEW'] },
+  { id:'mano06', name:'MARIANO ブラウン',      sub:'La Perla Azzurra / 植物タンニン鞣し ★NEW', dsPrice:165, image:I('189376351'), tags:['MARIANO','タンニン鞣し','La Perla Azzurra','ブラウン系','NEW'] },
+  { id:'mano32', name:'MARIANO ダークブラウン',sub:'La Perla Azzurra / 植物タンニン鞣し ★NEW', dsPrice:165, image:I('189376357'), tags:['MARIANO','タンニン鞣し','La Perla Azzurra','ブラウン系','NEW'] },
+  { id:'mano07', name:'MARIANO ブラック',      sub:'La Perla Azzurra / 植物タンニン鞣し ★NEW', dsPrice:165, image:I('189376385'), tags:['MARIANO','タンニン鞣し','La Perla Azzurra','ダーク系','NEW'] },
+  { id:'mano13', name:'MARIANO グレー',        sub:'La Perla Azzurra / 植物タンニン鞣し ★NEW', dsPrice:165, image:I('189376376'), tags:['MARIANO','タンニン鞣し','La Perla Azzurra','ダーク系','NEW'] },
+  { id:'mano08', name:'MARIANO オリーブ',      sub:'La Perla Azzurra / 植物タンニン鞣し ★NEW', dsPrice:165, image:I('189376362'), tags:['MARIANO','タンニン鞣し','La Perla Azzurra','グリーン系','NEW'] },
+  { id:'mano18', name:'MARIANO ネイビー',      sub:'La Perla Azzurra / 植物タンニン鞣し ★NEW', dsPrice:165, image:I('189376367'), tags:['MARIANO','タンニン鞣し','La Perla Azzurra','ブルー系','NEW'] },
+
+  // ここに革を追加（コピー→貼り付けで増やせます）
+  // { id:'xxx', name:'革名', sub:'説明', price:追加金額,
+  //   image:I('画像ID'), tags:['タグ1','タグ2'] },
+];
+
+// ── サイズ一覧 ──
+// w/h = リフィル寸法（mm）。表紙サイズはコード内で +MARGIN_MM×2 して計算。
+// baseCost = 革代を除く製作費（税抜）。price = baseCost（カード表示用）。
+const SIZES = [
+  // w/h = リフィル寸法（mm） ／ 表紙は +MARGIN_MM×2 で算出
+  { id:'micro5',   name:'Micro 5',          sub:'5穴 超小型ミニマム手帳',    w:54,  h:84,  baseCost:16000, price:16000, emoji:'📎', image:'' },
+  { id:'micro5sq', name:'Micro 5 スクエア', sub:'5穴 スクエア変形サイズ',    w:84,  h:84,  baseCost:16000, price:16000, emoji:'🔲', image:'' },
+  { id:'mini6',    name:'mini 6',           sub:'6穴 コンパクト定番サイズ',  w:67,  h:105, baseCost:20000, price:20000, emoji:'📒', image:'' },
+  { id:'mini6sq',  name:'mini 6 スクエア',  sub:'6穴 スクエア変形サイズ',    w:105, h:105, baseCost:20000, price:20000, emoji:'🔳', image:'' },
+  { id:'a6',       name:'A6',               sub:'6穴 スタンダードA判',       w:105, h:148, baseCost:26000, price:26000, emoji:'📓', image:'' },
+  { id:'bible',    name:'バイブル',          sub:'6穴 パーソナルサイズ定番',  w:95,  h:171, baseCost:26000, price:26000, emoji:'📔', image:'' },
+  { id:'a5',       name:'A5',               sub:'6穴 最も一般的な大判',      w:148, h:210, baseCost:32000, price:32000, emoji:'📕', image:'' },
+];
+
+// ── リング一覧 ──
+// 通常リング: アリエク仕入れ ¥1,000/本（全サイズ共通）
+// クラウゼリング: KLAUSE_RETAIL × 2 / isKlause:true で革面積×2
+const RINGS = [
+  // ─ 通常リング（アリエク仕入れ ¥1,000/本）─
+  { id:'r15',  name:'15mm',         sub:'薄型・スマート',   id_mm:15, price:1000, isKlause:false, emoji:'⭕', image:'' },
+  { id:'r20',  name:'20mm',         sub:'標準サイズ',       id_mm:20, price:1000, isKlause:false, emoji:'⭕', image:'' },
+  { id:'r25',  name:'25mm',         sub:'厚めリング',       id_mm:25, price:1000, isKlause:false, emoji:'🔵', image:'' },
+  { id:'r30',  name:'30mm',         sub:'大容量タイプ',     id_mm:30, price:1000, isKlause:false, emoji:'🔵', image:'' },
+  // ─ クラウゼリング（スライドロック式 / 革面積×2 / ネット販売価格×2）─
+  { id:'kl15', name:'クラウゼ 15mm', sub:'スライドロック式', id_mm:15, price:KLAUSE_RETAIL.r15*2, isKlause:true, emoji:'🔒', image:'' },
+  { id:'kl20', name:'クラウゼ 20mm', sub:'スライドロック式', id_mm:20, price:KLAUSE_RETAIL.r20*2, isKlause:true, emoji:'🔒', image:'' },
+  { id:'kl25', name:'クラウゼ 25mm', sub:'スライドロック式', id_mm:25, price:KLAUSE_RETAIL.r25*2, isKlause:true, emoji:'🔒', image:'' },
+  { id:'kl30', name:'クラウゼ 30mm', sub:'スライドロック式', id_mm:30, price:KLAUSE_RETAIL.r30*2, isKlause:true, emoji:'🔒', image:'' },
+];
+
+// ── 金具カラー ──
+const METALS = [
+  { id:'silver', name:'シルバー',    sub:'定番・清潔感',  price:0,   emoji:'⚪', image:'' },
+  { id:'gold',   name:'ゴールド',    sub:'上品・華やか',  price:500, emoji:'🟡', image:'' },
+  { id:'antique',name:'アンティーク',sub:'レトロな風合い',price:500, emoji:'🟠', image:'' },
+  { id:'black',  name:'ブラック',    sub:'クール・モダン', price:500, emoji:'⚫', image:'' },
+];
+
+// ── ステッチ ──
+const STITCHES = [
+  { id:'none',   name:'なし（標準）',      sub:'コバ切りっぱなし',  price:0,    emoji:'✂️',  image:'' },
+  { id:'koba',   name:'コバ仕上げ',        sub:'磨き・ヘリ返し',    price:1500, emoji:'💎',  image:'' },
+  { id:'saddle', name:'手縫い（サドル）',  sub:'一目一目手縫い',     price:5000, emoji:'🧵',  image:'' },
+  { id:'machine',name:'ミシン縫い',        sub:'均一・スッキリ',     price:3000, emoji:'⚙️',  image:'' },
+];
+
+// ── 刻印 ──
+const STAMPS = [
+  { id:'s_none',    name:'なし',                    sub:'',                          price:0,    hasInitFee:false, emoji:'📄', image:'' },
+  { id:'s_1char',   name:'1文字刻印',               sub:'イニシャルなど',             price:1000, hasInitFee:false, emoji:'🔤', image:'' },
+  { id:'s_name',    name:'ネーム（〜10文字）',       sub:'名前・フレーズ',             price:2500, hasInitFee:false, emoji:'✍️',  image:'' },
+  { id:'s_design',  name:'デザイン刻印',            sub:'ロゴ・絵柄など',             price:4000, hasInitFee:false, emoji:'🎨', image:'' },
+  { id:'s_other',   name:'その他（オリジナル）',     sub:'既存モデル外・初度設計費あり', price:5000, hasInitFee:true,  emoji:'✨', image:'' },
+];
+
+// ── アクセサリー（ペンホルダー・小銭入れ）──
+const ACCESSORIES = [
+  { id:'pen0',  name:'ペンホルダー なし', sub:'',          price:0,    emoji:'📝', image:'', key:'pen' },
+  { id:'pen1',  name:'ペンホルダー 1本', sub:'スリム型',  price:800,  emoji:'✒️',  image:'', key:'pen' },
+  { id:'pen2',  name:'ペンホルダー 2本', sub:'ダブル',    price:1500, emoji:'✒️',  image:'', key:'pen' },
+  { id:'coin0', name:'小銭入れ なし',    sub:'',          price:0,    emoji:'💼', image:'', key:'coin' },
+  { id:'coin1', name:'小銭入れ あり',    sub:'マチ付き',  price:3000, emoji:'👛', image:'', key:'coin' },
+];
+
+// ── ステッチカラー ──
+const STITCH_COLORS = [
+  { id:'sc_nat',   name:'生成り',   price:0 },
+  { id:'sc_blk',   name:'ブラック', price:0 },
+  { id:'sc_brn',   name:'ブラウン', price:0 },
+  { id:'sc_wht',   name:'ホワイト', price:0 },
+  { id:'sc_red',   name:'レッド',   price:500 },
+  { id:'sc_navy',  name:'ネイビー', price:500 },
+  { id:'sc_other', name:'その他',   price:500 },
+];
+
+// ── カラースウォッチ ──
+const COLORS = [
+  { name:'ブラック',      hex:'#1a1a1a' },
+  { name:'ネイビー',      hex:'#1a2e5a' },
+  { name:'ダークブラウン',hex:'#3b1c0c' },
+  { name:'チョコ',        hex:'#5c3317' },
+  { name:'バーガンディ',  hex:'#6d1a2a' },
+  { name:'キャメル',      hex:'#c68642' },
+  { name:'タン',          hex:'#d4a26a' },
+  { name:'ナチュラル',    hex:'#e8d5b0', border:true },
+  { name:'オリーブ',      hex:'#5a6230' },
+  { name:'グリーン',      hex:'#2e6b3e' },
+  { name:'レッド',        hex:'#b01c1c' },
+  { name:'ホワイト',      hex:'#f0ece5', border:true },
+  { name:'グレー',        hex:'#7a7a7a' },
+  { name:'ベージュ',      hex:'#c9b090', border:true },
+];
+
+
+// ── 販売プラットフォーム一覧（2025年3月現在 / 調査日時：2026年3月14日） ──
+// ※ fee は税込手数料率（%）。手数料は各プラットフォームの規約変更により変動します。
+// ※ 出品価格 = 原価合計 ÷ (1 - fee/100) で逆算します。
+const PLATFORMS = [
+  { id:'direct',   name:'直販',          sub:'店頭・自社サイト',     fee:0,     note:'手数料なし',                              emoji:'🏪', src:'' },
+  { id:'minne',    name:'minne',          sub:'ハンドメイド最大手',   fee:9.6,   note:'9.6%（税込）2025年11月改定後',            emoji:'🌸', src:'help.minne.com' },
+  { id:'creema',   name:'Creema',         sub:'デザイン系マーケット', fee:10.67, note:'10.67%（税込）2025年11月改定後',          emoji:'🎨', src:'creema.jp' },
+  { id:'mercari',  name:'メルカリShops',  sub:'集客力が高い',         fee:10,    note:'10%（税込・送料含む）',                   emoji:'📦', src:'support.mercari-shops.com' },
+  { id:'iichi',    name:'iichi',          sub:'高品質・厳選系',       fee:20,    note:'20%（税込・送料除く）',                   emoji:'💎', src:'iichi.com' },
+  { id:'base',     name:'BASE',           sub:'自社ネットショップ',   fee:6.6,   note:'6.6%+¥40/件（スタンダードプラン）',       emoji:'🛒', src:'thebase.com/price/' },
+  { id:'stores',   name:'STORES',         sub:'フリープラン',         fee:5.5,   note:'5.5%（フリープラン）',                    emoji:'🏬', src:'stores.fun/ec/pricing' },
+  { id:'custom',   name:'カスタム',       sub:'手数料を直接入力',     fee:0,     note:'入力した手数料率を使用',                  emoji:'⚙️',  src:'' },
+];
+
+// ── メール送信先 ──
+const MAIL_TO = 'you0810jmsdf@gmail.com';
+
+/* ═══════════════════════════════════════════════════
+   ▲▲▲  データ設定エリアここまで  ▲▲▲
+   ═══════════════════════════════════════════════════ */
+
+// ── STATE ──
+let sel = {};
+let prices = {};
+
+// ── RENDER HELPERS ──
+function imgOrEmoji(image, emoji, cls='opt-img', phCls='opt-img-ph') {
+  if (image && image.trim()) {
+    return `<img class="${cls}" src="${image}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="${phCls}" style="display:none;font-size:28px">${emoji||'🟫'}</div>`;
+  }
+  return `<div class="${phCls}" style="font-size:${cls==='card-img'?'36px':'28px'}">${emoji||'🟫'}</div>`;
+}
+
+function buildOptGrid(el, data, stateKey, onSelect) {
+  el.innerHTML = '';
+  data.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'opt-card';
+    div.dataset.id = d.id;
+    div.dataset.key = stateKey || d.key;
+    div.dataset.price = d.price;
+    const priceStr = d.w != null
+      ? `${d.w}×${d.h}mm / 製作費 ¥${d.price.toLocaleString()}`
+      : d.price > 0 ? `+¥${d.price.toLocaleString()}` : (d.price === 0 ? '標準' : `¥${Math.abs(d.price).toLocaleString()}`);
+    div.innerHTML = `
+      ${imgOrEmoji(d.image, d.emoji)}
+      <div class="opt-body">
+        <div class="opt-name">${d.name}</div>
+        <div class="opt-sub">${d.sub||''}</div>
+        <div class="opt-price">${priceStr}</div>
+      </div>`;
+    div.onclick = () => { if(onSelect) onSelect(div, d); else defaultSelect(div, d, stateKey); };
+    el.appendChild(div);
+  });
+}
+
+function defaultSelect(el, d, stateKey) {
+  const key = stateKey || el.dataset.key;
+  document.querySelectorAll(`.opt-card[data-key="${key}"]`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel[key]        = d.name;
+  sel[key + 'Id'] = d.id;   // IDも保持（ds動的計算で使用）
+  prices[key]     = d.price;
+  updateSummary();
+}
+
+
+
+// ── BUILD BRAND GRID ──
+function buildBrandGrid() {
+  const grid = document.getElementById('brandGrid');
+  grid.innerHTML = '';
+  BRANDS.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'brand-card';
+    div.dataset.id = b.id;
+    div.innerHTML = `
+      <div class="brand-icon">${b.emoji}</div>
+      <div class="brand-name">${b.name}</div>
+      <div class="brand-sub">${b.sub}</div>
+      ${b.badge ? `<div class="brand-badge">${b.badge}</div>` : ''}`;
+    div.onclick = () => {
+      document.querySelectorAll('.brand-card').forEach(c => c.classList.remove('selected'));
+      div.classList.add('selected');
+      sel.brand   = b.name;
+      sel.brandId = b.id;
+      // 初度設計費：ブランド「その他」選択時のみ加算（刻印の初度設計費と合算される）
+      prices.brandInitFee = b.hasInitFee ? BRAND_INIT_DESIGN_FEE : 0;
+      updateSummary();
+    };
+    grid.appendChild(div);
+  });
+}
+
+// ── BUILD RING GRIDS (normal + klause split) ──
+function buildRingGrids() {
+  const normalData  = RINGS.filter(r => !r.isKlause);
+  const klauseData  = RINGS.filter(r =>  r.isKlause);
+
+  [['ringNormalGrid', normalData], ['ringKlauseGrid', klauseData]].forEach(([elId, data]) => {
+    const el = document.getElementById(elId);
+    el.innerHTML = '';
+    data.forEach(d => {
+      const div = document.createElement('div');
+      div.className = 'opt-card';
+      div.dataset.id  = d.id;
+      div.dataset.key = 'ring';
+      const priceStr = d.isKlause
+        ? `¥${d.price.toLocaleString()}（参考価格×2）`
+        : `¥${d.price.toLocaleString()}`;
+      div.innerHTML = `
+        ${imgOrEmoji(d.image, d.emoji)}
+        <div class="opt-body">
+          <div class="opt-name">${d.name}</div>
+          <div class="opt-sub">${d.sub}</div>
+          <div class="opt-price">${priceStr}</div>
+          ${d.isKlause ? '<div class="opt-sub" style="color:#b05a00;font-size:10px">革面積×2</div>' : ''}
+        </div>`;
+      div.onclick = () => {
+        document.querySelectorAll('.opt-card[data-key="ring"]').forEach(c => c.classList.remove('selected'));
+        div.classList.add('selected');
+        sel.ring   = d.name;
+        sel.ringId = d.id;
+        prices.ring = d.price;
+        updateSummary();
+      };
+      el.appendChild(div);
+    });
+  });
+}
+
+// ── BUILD PLATFORM GRID ──
+function buildPlatformGrid() {
+  const grid = document.getElementById('platformGrid');
+  grid.innerHTML = '';
+  PLATFORMS.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'platform-card';
+    div.dataset.id = p.id;
+    const feeStr = p.fee > 0 ? p.fee + '%' : '0%';
+    div.innerHTML = `
+      <div class="plat-icon">${p.emoji}</div>
+      <div class="plat-name">${p.name}</div>
+      <div class="plat-sub">${p.sub}</div>
+      <div class="plat-fee">${feeStr}</div>
+      <div class="plat-note">${p.note}</div>`;
+    div.onclick = () => {
+      document.querySelectorAll('.platform-card').forEach(c => c.classList.remove('selected'));
+      div.classList.add('selected');
+      sel.platform    = p.name;
+      sel.platformId  = p.id;
+      prices.platform = p.fee;
+      const customOpt = document.getElementById('customFeeOpt');
+      if (p.id === 'custom') {
+        customOpt.style.display = 'block';
+        prices.platform = parseFloat(document.getElementById('customFeeRate').value) || 0;
+      } else {
+        customOpt.style.display = 'none';
+      }
+      updateSummary();
+    };
+    grid.appendChild(div);
+  });
+  // Custom fee input listener
+  document.getElementById('customFeeRate').addEventListener('input', () => {
+    if (sel.platformId === 'custom') {
+      prices.platform = parseFloat(document.getElementById('customFeeRate').value) || 0;
+      updateSummary();
+    }
+  });
+}
+
+// ── BUILD LEATHER GRID ──
+function buildLeatherGrid() {
+  const grid = document.getElementById('leatherGrid');
+  grid.innerHTML = '';
+  // Tags
+  const allTags = [...new Set(LEATHERS.flatMap(l => l.tags))];
+  const tagEl = document.getElementById('leatherTags');
+  tagEl.innerHTML = '<span class="filter-tag active" data-tag="all" onclick="setLeatherTag(this)">すべて</span>';
+  allTags.forEach(t => {
+    const s = document.createElement('span');
+    s.className = 'filter-tag'; s.dataset.tag = t; s.textContent = t;
+    s.onclick = () => setLeatherTag(s);
+    tagEl.appendChild(s);
+  });
+  LEATHERS.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'img-card';
+    div.dataset.id = d.id;
+    div.dataset.tags = d.tags.join(',');
+    div.dataset.name = d.name;
+    const priceStr = `¥${d.dsPrice}/ds`;
+    div.innerHTML = `
+      ${imgOrEmoji(d.image, d.emoji, 'card-img', 'card-img-placeholder')}
+      <div class="card-body">
+        <div class="card-name">${d.name}</div>
+        <div class="card-sub">${d.sub}</div>
+        <div class="card-price">${priceStr}</div>
+        <div class="card-tags">${d.tags.map(t=>`<span class="card-tag">${t}</span>`).join('')}</div>
+      </div>`;
+    div.onclick = () => {
+      document.querySelectorAll('.img-card').forEach(c => c.classList.remove('selected'));
+      div.classList.add('selected');
+      sel.leather = d.name;
+      prices.leather = d.dsPrice;   // ds単価 (¥/ds)
+      updateSummary();
+    };
+    grid.appendChild(div);
+  });
+}
+
+function setLeatherTag(el) {
+  document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  filterLeather();
+}
+function filterLeather() {
+  const q = document.getElementById('leatherSearch').value.toLowerCase();
+  const activeTag = document.querySelector('.filter-tag.active')?.dataset.tag || 'all';
+  document.querySelectorAll('.img-card').forEach(c => {
+    const name = c.dataset.name?.toLowerCase() || '';
+    const tags = c.dataset.tags || '';
+    const matchQ = !q || name.includes(q) || tags.toLowerCase().includes(q);
+    const matchT = activeTag === 'all' || tags.includes(activeTag);
+    c.classList.toggle('hidden', !(matchQ && matchT));
+  });
+}
+
+// ── BUILD COLOR GRID ──
+function buildColorGrid() {
+  const g = document.getElementById('colorGrid');
+  COLORS.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'color-item';
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch';
+    sw.style.background = c.hex;
+    if (c.border) sw.style.boxShadow = '0 0 0 1px #d4b896 inset';
+    sw.title = c.name;
+    sw.onclick = () => {
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      sel.color = c.name; prices.color = 0;
+      updateSummary();
+    };
+    const lbl = document.createElement('div');
+    lbl.className = 'color-lbl'; lbl.textContent = c.name;
+    item.appendChild(sw); item.appendChild(lbl);
+    g.appendChild(item);
+  });
+}
+
+// ── NUM FIELD ──
+function changeNum(field, delta) {
+  const el = document.getElementById(field);
+  let v = parseInt(el.value) + delta;
+  v = field === 'qty' ? Math.max(1, Math.min(100, v)) : Math.max(0, Math.min(20, v));
+  el.value = v;
+  sel[field] = v; prices[field] = null;
+  updateSummary();
+}
+
+// ── SUMMARY ──
+function updateSummary() {
+  const qty = parseInt(document.getElementById('qty').value) || 1;
+  const discRate = parseFloat(document.getElementById('discountRate').value) || 0;
+  const taxRate = parseFloat(document.getElementById('taxRate').value) || 10;
+  const cardP = parseInt(document.getElementById('cardPocket').value) || 0;
+  const innerP = parseInt(document.getElementById('innerPocket').value) || 0;
+
+  // ── 動的ds計算：リフィル寸法 × リングサイズから実面積を算出 ──
+  const sizeObj  = SIZES.find(s => s.id === sel.sizeId);
+  const ringObj  = RINGS.find(r => r.id === sel.ringId) || { id_mm: 20 };  // デフォルト20mm
+  let sizeDs = 0;
+  let coverW = 0, coverH = 0, spineW = 0;
+
+  // ── ブランド×リング 面積倍率 ──
+  const brandObj    = BRANDS.find(b => b.id === sel.brandId);
+  const brandMulti  = brandObj ? brandObj.areaMulti : 1;
+  const ringIsKlause = !!(RINGS.find(r => r.id === sel.ringId)?.isKlause);
+  const ringMulti   = ringIsKlause ? 2 : 1;
+  const areaMultiplier = brandMulti * ringMulti;  // 例: N-Pad + クラウゼ = 2×2 = 4
+
+  if (sizeObj) {
+    coverW = sizeObj.w + 2 * MARGIN_MM;          // 表紙幅（mm）
+    coverH = sizeObj.h + 2 * MARGIN_MM;          // 表紙高さ（mm）
+    spineW = ringObj.id_mm * RING_SPINE_RATIO;   // スパイン幅（mm）
+    const totalMm2 = 2 * coverW * coverH + spineW * coverH;  // 裏表+スパイン
+    sizeDs = Math.round((totalMm2 / 10000) * WASTE_FACTOR * areaMultiplier * 10) / 10;  // ds（小数1桁）
+  }
+
+  const baseCostBase = prices.size  || 0;                       // サイズ基本製作費（Simplist基準）
+  const baseCost     = baseCostBase * brandMulti;               // 構造タイプ倍率を適用（N-Pad/N-therough = ×2）
+  const leatherDsP   = prices.leather || 0;                     // 選択革のds単価
+  const leatherCost  = Math.round(sizeDs * leatherDsP * CRAFT_MULTIPLIER);  // 工賃込み革材料費
+
+  let opts = 0;
+  ['ring','metal','stitch','stitchColor','pen','coin','stamp'].forEach(k => opts += (prices[k]||0));
+  opts += cardP * 500 + innerP * 800;
+
+  // 初度設計費：ブランド「その他」＋刻印「その他」を合算（各1回限り・qty倍しない）
+  const initDesignFee = (prices.brandInitFee || 0) + (prices.initDesignFee || 0);
+
+  const unit   = baseCost + leatherCost + opts;
+  const sub    = unit * qty;
+  const volRate = qty >= 10 ? 0.10 : qty >= 5 ? 0.05 : 0;
+  const volDisc = Math.round(sub * volRate);
+  const afterVol = sub - volDisc;
+  const manDisc  = Math.round(afterVol * discRate / 100);
+  const afterDisc = afterVol - manDisc;
+  const tax   = Math.round((afterDisc + initDesignFee) * taxRate / 100);
+  const total = afterDisc + initDesignFee + tax;
+
+  // Build list
+  const list = document.getElementById('summaryList');
+  list.innerHTML = '';
+  const add = (l, r, cls) => {
+    const li = document.createElement('li');
+    if(cls) li.classList.add(cls);
+    li.innerHTML = `<span>${l}</span><span>${r}</span>`;
+    list.appendChild(li);
+  };
+
+  if (!baseCost) {
+    add('サイズを選択してください', '―');
+  } else {
+    add('▶ 本体', '', 'lbl-title');
+    const baseCostLabel = brandMulti > 1
+      ? `製作費 (${sel.size||'―'}) × ${brandMulti} [${sel.brand||''}]`
+      : `製作費 (${sel.size||'―'})`;
+    add(baseCostLabel, `¥${baseCost.toLocaleString()}`);
+    if (sel.leather) {
+      const multiParts = [];
+      if (brandMulti > 1) multiParts.push(`${sel.brand||''}×${brandMulti}`);
+      if (ringMulti  > 1) multiParts.push(`クラウゼ×${ringMulti}`);
+      const multiLabel = areaMultiplier > 1
+        ? ` [面積×${areaMultiplier}${multiParts.length ? ': '+multiParts.join(' + ') : ''}]`
+        : '';
+      const wasteNote = `ロス${Math.round(WASTE_RATE*100)}%込`;
+      const dsLine = sizeDs > 0
+        ? `${sizeDs}ds（${wasteNote}）× ¥${leatherDsP}/ds × ${CRAFT_MULTIPLIER}倍${multiLabel}`
+        : `¥${leatherDsP}/ds × ${CRAFT_MULTIPLIER}倍${multiLabel}`;
+      add(`革材料費: ${sel.leather}`, `¥${leatherCost.toLocaleString()}`);
+      add(dsLine, '', 'lbl');
+      if (sizeObj) {
+        add(`表紙${coverW}×${coverH}mm・スパイン${spineW}mm`, '', 'lbl');
+      }
+    } else {
+      add('革材料費', '革を選択してください');
+    }
+    if(sel.color) add(`カラー: ${sel.color}`, '―');
+    if(sel.ring)  add(`リング: ${sel.ring}`, prices.ring ? `+¥${prices.ring.toLocaleString()}` : '標準');
+    if(sel.metal) add(`金具: ${sel.metal}`, prices.metal ? `+¥${prices.metal.toLocaleString()}` : '標準');
+    add('▶ カスタム', '', 'lbl-title');
+    if(sel.stitch) add(`ステッチ: ${sel.stitch}`, prices.stitch ? `+¥${prices.stitch.toLocaleString()}` : '標準');
+    if(sel.stitchColor) add(`ステッチ色: ${sel.stitchColor}`, prices.stitchColor ? `+¥${prices.stitchColor.toLocaleString()}` : '―');
+    if(cardP > 0)  add(`カードポケット×${cardP}`, `+¥${(cardP * 500).toLocaleString()}`);
+    if(innerP > 0) add(`内ポケット×${innerP}`, `+¥${(innerP * 800).toLocaleString()}`);
+    if(sel.pen  && sel.pen  !== 'ペンホルダー なし') add(`ペンホルダー: ${sel.pen}`,  `+¥${prices.pen.toLocaleString()}`);
+    if(sel.coin && sel.coin !== '小銭入れ なし')      add('小銭入れ', `+¥${prices.coin.toLocaleString()}`);
+    if(sel.stamp && sel.stamp !== 'なし')              add(`刻印: ${sel.stamp}`, `+¥${prices.stamp.toLocaleString()}`);
+    if(prices.brandInitFee > 0) add(`✨ 初度設計費・構造設計（1回のみ）`, `+¥${prices.brandInitFee.toLocaleString()}`);
+    if(prices.initDesignFee > 0) add(`✨ 初度設計費・刻印デザイン（1回のみ）`, `+¥${prices.initDesignFee.toLocaleString()}`);
+    if(initDesignFee > 1000) add(`　初度設計費 合計`, `+¥${initDesignFee.toLocaleString()}`);
+    add('▶ 合計', '', 'lbl-title');
+    add('1個単価（税抜）', `¥${unit.toLocaleString()}`);
+    add(`×${qty}個`, `¥${sub.toLocaleString()}`);
+    if(volDisc > 0) add(`ボリューム割引(${volRate * 100}%)`, `−¥${volDisc.toLocaleString()}`);
+    if(manDisc > 0) add(`割引(${discRate}%)`, `−¥${manDisc.toLocaleString()}`);
+    if(taxRate > 0) add(`消費税(${taxRate}%)`, `¥${tax.toLocaleString()}`);
+    add('原価概算（税込）', `¥${total.toLocaleString()}`);
+  }
+
+  // ── プラットフォーム手数料 & 推奨出品価格 ──────────────────────
+  const platformFeeRate = prices.platform || 0;
+  let sellPrice = total;
+  let platformFeeAmt = 0;
+  if (platformFeeRate > 0) {
+    sellPrice = Math.ceil(total / (1 - platformFeeRate / 100) / 10) * 10;  // ¥10単位で切り上げ
+    platformFeeAmt = sellPrice - total;
+    if (baseCost > 0) {
+      add('▶ 販売価格', '', 'lbl-title');
+      add(`${sel.platform||'プラットフォーム'} 手数料(${platformFeeRate}%)`, `+¥${platformFeeAmt.toLocaleString()}`);
+      add('🏷 推奨出品価格', `¥${sellPrice.toLocaleString()}`);
+    }
+  }
+
+  // totalDisplay: コスト表示
+  document.getElementById('totalDisplay').innerHTML = `¥${total.toLocaleString()} <span>円</span>`;
+  document.getElementById('costBoxLabel').textContent = '製作原価概算（税込）';
+
+  // sellBox: 出品価格表示
+  const sellBox = document.getElementById('sellBox');
+  const sellDisplay = document.getElementById('sellDisplay');
+  const sellNote = document.getElementById('sellNote');
+  if (platformFeeRate > 0 && baseCost > 0) {
+    sellBox.style.display = 'block';
+    sellDisplay.innerHTML = `¥${sellPrice.toLocaleString()} <span>円</span>`;
+    const platObj = PLATFORMS.find(p => p.id === sel.platformId);
+    sellNote.textContent = `${sel.platform||''} 手数料${platformFeeRate}% (+¥${platformFeeAmt.toLocaleString()}) を含む`;
+    if (platObj && platObj.src) sellNote.textContent += ` ／ 出典: ${platObj.src}`;
+  } else {
+    sellBox.style.display = 'none';
+    document.getElementById('costBoxLabel').textContent = '合計金額（税込）';
+  }
+
+  // qty note
+  const note = document.getElementById('qtyNote');
+  note.textContent = qty >= 10 ? '✅ 10個以上: 10%割引適用中！' : qty >= 5 ? '✅ 5個以上: 5%割引適用中！' : '5個以上 → 5% / 10個以上 → 10%割引';
+
+  buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, coverW, coverH, spineW, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier, initDesignFee);
+}
+
+function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, coverW, coverH, spineW, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier=1, initDesignFee=0) {
+  const d = document.getElementById('printDetail');
+  const r = (l, v, b) => `<tr><td style="padding:5px 8px;border-bottom:1px solid #eee;${b?'font-weight:700':''}">${l}</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right;${b?'font-weight:700':''}">${v}</td></tr>`;
+  let h = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+  h += r('ブランド', sel.brand||'未選択');
+  h += r('サイズ', sel.size||'未選択');
+  if(coverW) h += r('表紙寸法', `${coverW}×${coverH}mm（スパイン${spineW}mm）`);
+  if(areaMultiplier > 1) h += r('構造タイプ倍率', `製作費・革面積 × ${areaMultiplier}（${sel.brand||''}）`);
+  h += r('レザー', sel.leather||'未選択');
+  if(sel.leather && sizeDs > 0) {
+    const multiNote = areaMultiplier > 1 ? ` (面積×${areaMultiplier})` : '';
+    h += r('革面積 × ds単価 × 工賃倍率' + multiNote, `${sizeDs}ds × ¥${leatherDsP}/ds × ${CRAFT_MULTIPLIER} = ¥${leatherCost.toLocaleString()}`);
+  }
+  h += r('カラー', sel.color||'未選択');
+  h += r('リング', sel.ring||'未選択');
+  h += r('金具', sel.metal||'未選択');
+  h += r('ステッチ', sel.stitch||'未選択');
+  if(sel.stitchColor) h += r('ステッチ色', sel.stitchColor);
+  h += r('カードポケット', `${document.getElementById('cardPocket').value}枚`);
+  h += r('内ポケット', `${document.getElementById('innerPocket').value}枚`);
+  h += r('ペンホルダー', sel.pen||'未選択');
+  h += r('小銭入れ', sel.coin||'未選択');
+  h += r('刻印', sel.stamp||'未選択');
+  if(initDesignFee > 0) h += r('✨ 初度設計費（1回のみ）', `¥${initDesignFee.toLocaleString()}`);
+  const st = document.getElementById('stampText').value;
+  if(st) h += r('刻印内容', st);
+  const rem = document.getElementById('remarks').value;
+  if(rem) h += r('備考', rem);
+  h += r('━━━━━━━', '━━━━━━━');
+  h += r('製作費（革代除く）', `¥${baseCost.toLocaleString()}`);
+  h += r('革材料費', `¥${leatherCost.toLocaleString()}`);
+  h += r('1個単価（税抜）', `¥${unit.toLocaleString()}`);
+  h += r('数量', `${qty}個`);
+  h += r('小計', `¥${sub.toLocaleString()}`);
+  if(volDisc > 0) h += r(`ボリューム割引(${volRate*100}%)`, `−¥${volDisc.toLocaleString()}`);
+  if(manDisc > 0) h += r(`割引(${discRate}%)`, `−¥${manDisc.toLocaleString()}`);
+  h += r(`消費税(${taxRate}%)`, `¥${tax.toLocaleString()}`);
+  h += r('原価概算（税込）', `¥${total.toLocaleString()}`);
+  if (platformFeeRate > 0) {
+    h += r(`${sel.platform||''}手数料 (${platformFeeRate}%)`, `+¥${(platformFeeAmt||0).toLocaleString()}`);
+    h += r('🏷 推奨出品価格', `¥${(sellPrice||total).toLocaleString()}`, true);
+  } else {
+    h += r('合計（税込）', `¥${total.toLocaleString()}`, true);
+  }
+  h += '</table>';
+  d.innerHTML = h;
+}
+
+// ── EMAIL ──
+function buildEstText() {
+  const qty = document.getElementById('qty').value;
+  const discRate = document.getElementById('discountRate').value;
+  const taxRate = document.getElementById('taxRate').value;
+  const st = document.getElementById('stampText').value;
+  const rem = document.getElementById('remarks').value;
+  let t = '【システム手帳 フルオーダーメイド 見積もり内容】\n────────────────\n';
+  const _sObj = SIZES.find(s => s.id === sel.sizeId);
+  const _rObj = RINGS.find(r => r.id === sel.ringId) || { id_mm: 20 };
+  let _sDs = 0;
+  if (_sObj) {
+    const _cw = _sObj.w + 2 * MARGIN_MM, _ch = _sObj.h + 2 * MARGIN_MM;
+    const _sw = _rObj.id_mm * RING_SPINE_RATIO;
+    _sDs = Math.round(((2 * _cw * _ch + _sw * _ch) / 10000) * WASTE_FACTOR * 10) / 10;
+  }
+  const _lDsP = prices.leather || 0;
+  const _lCost = Math.round(_sDs * _lDsP * CRAFT_MULTIPLIER);
+  const _leatherDetail = (sel.leather && _sDs > 0) ? `${sel.leather}（${_sDs}ds × ¥${_lDsP}/ds × ${CRAFT_MULTIPLIER}倍 = ¥${_lCost.toLocaleString()}）` : (sel.leather||'未選択');
+  t += `サイズ：${sel.size||'未選択'}\nレザー：${_leatherDetail}\nカラー：${sel.color||'未選択'}\n`;
+  t += `リング：${sel.ring||'未選択'}\n金具：${sel.metal||'未選択'}\nステッチ：${sel.stitch||'未選択'}\n`;
+  if(sel.stitchColor) t += `ステッチカラー：${sel.stitchColor}\n`;
+  t += `カードポケット：${document.getElementById('cardPocket').value}枚\n`;
+  t += `内ポケット：${document.getElementById('innerPocket').value}枚\n`;
+  t += `ペンホルダー：${sel.pen||'未選択'}\n小銭入れ：${sel.coin||'未選択'}\n`;
+  t += `刻印：${sel.stamp||'未選択'}\n`;
+  if(st) t += `刻印内容：${st}\n`;
+  t += `数量：${qty}個\n`;
+  if(discRate>0) t += `割引率：${discRate}%\n`;
+  t += `消費税：${taxRate}%\n`;
+  t += `\n製作原価概算（税込）：${document.getElementById('totalDisplay').textContent.trim()}\n`;
+  const _pfRate = prices.platform || 0;
+  if (sel.platform && _pfRate > 0) {
+    t += `販売プラットフォーム：${sel.platform}（手数料${_pfRate}%）\n`;
+    t += `推奨出品価格：${document.getElementById('sellDisplay').textContent.trim()}\n`;
+  }
+  if(rem) t += `\n【ご要望・備考】\n${rem}\n`;
+  t += '────────────────\n';
+  return t;
+}
+function openEmailModal() {
+  document.getElementById('iEst').value = buildEstText();
+  document.getElementById('emailModal').classList.add('open');
+}
+function closeEmailModal() { document.getElementById('emailModal').classList.remove('open'); }
+function sendEmail() {
+  const name = document.getElementById('iName').value.trim();
+  const email = document.getElementById('iEmail').value.trim();
+  if(!name){alert('お名前をご入力ください');return}
+  if(!email||!email.includes('@')){alert('正しいメールアドレスをご入力ください');return}
+  const tel = document.getElementById('iTel').value.trim();
+  const msg = document.getElementById('iMsg').value.trim();
+  const est = document.getElementById('iEst').value;
+  const subj = encodeURIComponent(`【見積もり依頼】システム手帳フルオーダー - ${name}様`);
+  let body = `お名前：${name}\nメール：${email}`;
+  if(tel) body += `\n電話：${tel}`;
+  body += `\n\n${est}`;
+  if(msg) body += `\n【追加メッセージ】\n${msg}`;
+  window.location.href = `mailto:${MAIL_TO}?subject=${subj}&body=${encodeURIComponent(body)}`;
+  setTimeout(closeEmailModal, 500);
+}
+
+// ── STITCH SHOW/HIDE ──
+function handleStitchSelect(el, d) {
+  document.querySelectorAll('.opt-card[data-key="stitch"]').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.stitch = d.name; prices.stitch = d.price;
+  const opt = document.getElementById('stitchColorOpt');
+  if(d.id !== 'none') { opt.classList.remove('hide'); }
+  else { opt.classList.add('hide'); sel.stitchColor=null; prices.stitchColor=0; }
+  updateSummary();
+}
+
+// ── STAMP SHOW/HIDE ──
+function handleStampSelect(el, d) {
+  document.querySelectorAll('.opt-card[data-key="stamp"]').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.stamp = d.name; prices.stamp = d.price;
+  // 初度設計費：「その他（オリジナル）」選択時のみ ¥1,000 を1回計上
+  prices.initDesignFee = d.hasInitFee ? 1000 : 0;
+  const opt = document.getElementById('stampTextOpt');
+  if(d.id !== 's_none') opt.classList.remove('hide');
+  else opt.classList.add('hide');
+  updateSummary();
+}
+
+// ── ACCESSORY (pen/coin separate keys) ──
+function handleAccessorySelect(el, d) {
+  const key = d.key;
+  document.querySelectorAll(`.opt-card[data-key="${key}"]`).forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel[key] = d.name; prices[key] = d.price;
+  updateSummary();
+}
+
+// ── STITCH COLOR ──
+function buildStitchColors() {
+  const g = document.getElementById('stitchColorGrid');
+  STITCH_COLORS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'tog'; btn.dataset.key = 'stitchColor';
+    btn.textContent = c.name + (c.price ? ` +¥${c.price}` : '');
+    btn.onclick = () => {
+      document.querySelectorAll('[data-key="stitchColor"]').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      sel.stitchColor = c.name; prices.stitchColor = c.price;
+      updateSummary();
+    };
+    g.appendChild(btn);
+  });
+}
+
+// ── RESET ──
+function resetAll() {
+  if(!confirm('入力内容をすべてリセットしますか？'))return;
+  document.querySelectorAll('.opt-card,.img-card,.color-swatch,.tog,.platform-card,.brand-card').forEach(e=>e.classList.remove('selected'));
+  ['cardPocket','innerPocket'].forEach(id=>document.getElementById(id).value=0);
+  document.getElementById('qty').value = 1;
+  document.getElementById('stampText').value = '';
+  document.getElementById('remarks').value = '';
+  document.getElementById('discountRate').value = 0;
+  document.getElementById('taxRate').value = 10;
+  document.getElementById('stampTextOpt').classList.add('hide');
+  document.getElementById('stitchColorOpt').classList.add('hide');
+  sel = {}; prices = {};
+  updateSummary();
+}
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  buildBrandGrid();
+  buildPlatformGrid();
+  buildRingGrids();
+  buildOptGrid(document.getElementById('sizeGrid'), SIZES, 'size', (el, d) => {
+    document.querySelectorAll('.opt-card[data-key="size"]').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    sel.size   = d.name;
+    sel.sizeId = d.id;            // リフィル寸法の参照に使用
+    prices.size = d.baseCost;     // 製作費（革代抜き）
+    updateSummary();
+  });
+  buildLeatherGrid();
+  buildColorGrid();
+  buildOptGrid(document.getElementById('metalGrid'), METALS, 'metal');
+  buildOptGrid(document.getElementById('stitchGrid'), STITCHES, 'stitch', handleStitchSelect);
+  buildStitchColors();
+  // Accessories: pen/coin mixed
+  const accEl = document.getElementById('accessoryGrid');
+  accEl.innerHTML = '';
+  ACCESSORIES.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'opt-card';
+    div.dataset.key = d.key;
+    div.innerHTML = `
+      ${imgOrEmoji(d.image, d.emoji)}
+      <div class="opt-body">
+        <div class="opt-name">${d.name}</div>
+        <div class="opt-sub">${d.sub}</div>
+        <div class="opt-price">${d.price>0?'+¥'+d.price.toLocaleString():'標準'}</div>
+      </div>`;
+    div.onclick = () => handleAccessorySelect(div, d);
+    accEl.appendChild(div);
+  });
+  buildOptGrid(document.getElementById('stampGrid'), STAMPS, 'stamp', handleStampSelect);
+  document.getElementById('discountRate').addEventListener('input', updateSummary);
+  document.getElementById('taxRate').addEventListener('change', updateSummary);
+  updateSummary();
+});
+</script>
+</body>
+</html>
