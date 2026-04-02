@@ -1,0 +1,569 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N's Factory &#12459;&#12521;&#12540;&#12471;&#12511;&#12517;&#12524;&#12540;&#12479;&#12540;</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN',sans-serif;background:#f0ede8;min-height:100vh;padding:16px}
+.wrapper{max-width:660px;margin:0 auto}
+h1{text-align:center;font-size:1.05em;color:#3a3028;margin-bottom:14px;letter-spacing:.05em;font-weight:700}
+h1 span{display:block;font-size:.75em;color:#7a6a5a;font-weight:400;margin-top:2px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab-btn{flex:1;padding:9px 4px;border:2px solid #c8b89a;background:#fff;cursor:pointer;border-radius:6px;font-size:13px;color:#5a4a3a;transition:all .2s;font-family:inherit}
+.tab-btn.active{border-color:#5a7a6a;background:#5a7a6a;color:#fff}
+.canvas-wrap{background:#1a1a1a;border-radius:10px;overflow:hidden;margin-bottom:18px;display:flex;justify-content:center;align-items:center;min-height:200px;position:relative}
+#canvas{display:block;max-width:100%;height:auto}
+.canvas-status{color:#888;font-size:13px;padding:20px}
+.panel{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.ctrl-label{font-size:12px;font-weight:700;color:#5a4a3a;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ctrl-label .badge{background:#e8ddd0;border-radius:4px;padding:1px 6px;font-size:11px;color:#7a6a5a;font-weight:400}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.sw-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.sw-dot{width:34px;height:34px;border-radius:50%;border:2.5px solid transparent;transition:all .18s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sw-item:hover .sw-dot{transform:scale(1.12)}
+.sw-item.selected .sw-dot{border-color:#333;transform:scale(1.12);box-shadow:0 0 0 3px rgba(0,0,0,.15)}
+.sw-name{font-size:9px;color:#888;max-width:36px;text-align:center;line-height:1.2}
+.result-box{background:#fff;border-radius:10px;padding:13px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);font-size:13px;color:#5a4a3a;line-height:1.7}
+.result-box strong{color:#3a2a1a}
+.consult-btn{width:100%;padding:14px;background:#5a7a6a;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-family:inherit;font-weight:700;letter-spacing:.05em;transition:background .2s;margin-bottom:8px}
+.consult-btn:hover{background:#4a6a5a}
+.consult-btn:active{background:#3a5a4a}
+.estimate-btn{width:100%;padding:14px;background:#6b3a1f;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-family:inherit;font-weight:700;letter-spacing:.05em;transition:background .2s;margin-bottom:8px}
+.estimate-btn:hover{background:#7d4525}
+.back-btn{width:100%;padding:10px;background:#fff;color:#6b3a1f;border:2px solid #6b3a1f;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:8px}
+.back-btn:hover{background:#fdf0e5}
+.note{font-size:11px;color:#9a8a7a;text-align:center;margin-top:10px;line-height:1.6}
+.preview-only .wrapper{max-width:100%}
+.preview-only h1{font-size:.95em;margin-bottom:10px}
+.preview-only .canvas-wrap{margin-bottom:10px;min-height:160px}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <h1>N's Factory<span id="component-subtitle">&#12459;&#12521;&#12540;&#12471;&#12511;&#12517;&#12524;&#12540;&#12479;&#12540;</span></h1>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-outer" onclick="switchView('outer')">&#22806;&#35013;</button>
+    <button class="tab-btn" id="tab-inner" onclick="switchView('inner')">&#20869;&#35013;</button>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas"></canvas>
+    <div class="canvas-status" id="canvas-status" hidden>&#30011;&#20687;&#12434;&#35501;&#12415;&#36796;&#12415;&#20013;&#12391;&#12377;...</div>
+  </div>
+
+  <div class="panel">
+    <div class="ctrl-label" id="label-color">&#12459;&#12521;&#12540; <span class="badge">&#21336;&#19968;&#33394;</span></div>
+    <div class="swatches" id="sw-color"></div>
+  </div>
+
+  <div class="result-box" id="result-box"></div>
+
+  <button class="consult-btn" onclick="handleConsult()">&#12371;&#12398;&#32068;&#12415;&#21512;&#12431;&#12379;&#12391;&#30456;&#35527;&#12377;&#12427;</button>
+  <button class="estimate-btn" id="estimate-btn" onclick="goToEstimate()">&#12371;&#12398;&#33394;&#12391;&#35211;&#31309;&#12418;&#12426;&#12434;&#38283;&#12367;</button>
+  <p class="note">&#20889;&#30495;&#12505;&#12540;&#12473;&#12398;&#12503;&#12524;&#12499;&#12517;&#12540;&#12391;&#12377;&#12290;&#33394;&#21619;&#12399;&#30446;&#23433;&#12392;&#12375;&#12390;&#12372;&#30906;&#35469;&#12367;&#12384;&#12373;&#12356;&#12290;</p>
+</div>
+
+<script>
+const DEFAULT_COLORS = [
+  { name:'\u30ca\u30c1\u30e5\u30e9\u30eb', hex:'#C4A882' },
+  { name:'\u30d3\u30ea\u30b8\u30a2\u30f3', hex:'#3D8A70' },
+  { name:'\u30e9\u30ba\u30d9\u30ea\u30fc', hex:'#C03060' },
+  { name:'\u30d6\u30e9\u30a6\u30f3', hex:'#7A4025' },
+  { name:'\u30c1\u30e7\u30b3', hex:'#3C1E10' },
+  { name:'\u30d6\u30e9\u30c3\u30af', hex:'#1C1C1C' },
+  { name:'\u30b0\u30ec\u30fc', hex:'#7A7878' },
+  { name:'\u30d6\u30eb\u30fc', hex:'#2C50A0' },
+  { name:'\u30aa\u30ec\u30f3\u30b8', hex:'#CC6018' },
+  { name:'\u30ec\u30c3\u30c9', hex:'#C02030' },
+  { name:'\u30bf\u30fc\u30b3\u30a4\u30ba', hex:'#40B0A0' },
+  { name:'\u30a4\u30a8\u30ed\u30fc', hex:'#C8A820' },
+  { name:'\u30d4\u30f3\u30af', hex:'#E05880' },
+  { name:'\u30a2\u30a4\u30dc\u30ea\u30fc', hex:'#E8E0C8' },
+  { name:'\u30b0\u30ea\u30fc\u30f3', hex:'#4A7835' },
+  { name:'\u30a2\u30a4\u30b9\u30d6\u30eb\u30fc', hex:'#90C0D8' }
+];
+let COLORS = [...DEFAULT_COLORS];
+
+const sel = { color: '\u30bf\u30fc\u30b3\u30a4\u30ba' };
+let currentView = 'outer';
+let currentComponent = 'main';
+let currentComponentLabel = '\u672c\u4f53';
+let currentBrandId = '';
+let isEmbedded = false;
+let isPreviewOnly = false;
+
+const DEFAULT_IMAGE_PATHS = {
+  outer: '../order_estimate/color sample base/20250421_045533504_iOS-Photoroom.jpg',
+  inner: '../order_estimate/color sample base/20250421_045553480_iOS-Photoroom.jpg'
+};
+const IMAGES = {
+  outer: new URL(DEFAULT_IMAGE_PATHS.outer, location.href).toString(),
+  inner: new URL(DEFAULT_IMAGE_PATHS.inner, location.href).toString()
+};
+const imageSources = { ...IMAGES };
+const imgElCache = {};
+const origDataCache = {};
+let previewNotifyTimer = null;
+let lastPreviewSignature = '';
+
+function hexToRgb(hex) {
+  return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+}
+
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  if (max === min) {
+    h = 0; s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      default: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return [h * 360, s * 100, l * 100];
+}
+
+function hslToRgb(h, s, l) {
+  h /= 360; s /= 100; l /= 100;
+  if (s === 0) {
+    const v = Math.round(l * 255);
+    return [v, v, v];
+  }
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const hue2rgb = (p0, q0, t) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p0 + (q0 - p0) * 6 * t;
+    if (t < 1 / 2) return q0;
+    if (t < 2 / 3) return p0 + (q0 - p0) * (2 / 3 - t) * 6;
+    return p0;
+  };
+  return [
+    Math.round(hue2rgb(p, q, h + 1 / 3) * 255),
+    Math.round(hue2rgb(p, q, h) * 255),
+    Math.round(hue2rgb(p, q, h - 1 / 3) * 255)
+  ];
+}
+
+function hueDist(a, b) {
+  const d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+}
+
+function colorHex(name) {
+  return (COLORS.find(c => c.name === name) || {}).hex || null;
+}
+
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function rangeSoftScore(value, min, max, feather = 10) {
+  if (value >= min && value <= max) return 1;
+  if (value < min) return clamp01(1 - ((min - value) / feather));
+  return clamp01(1 - ((value - max) / feather));
+}
+
+function blendChannel(from, to, amount) {
+  return Math.round(from + ((to - from) * amount));
+}
+
+function normalizeBrandId(brandId) {
+  return (brandId || '').replace(/(_kl|-kl)$/i, '');
+}
+
+function isUnifiedExteriorBrand(brandId = currentBrandId) {
+  const normalized = normalizeBrandId(brandId);
+  return normalized === 'simplist';
+}
+
+function getBrandTintProfile(brandId = currentBrandId) {
+  const normalized = normalizeBrandId(brandId);
+  if (normalized === 'simplist_kl' || /(^|[_-])kl([_-]|$)/i.test(brandId || '')) {
+    return {
+      directColorize: true,
+      satTargetWeight: 1.0,
+      satSourceWeight: 0,
+      satMin: 48,
+      satMax: 100,
+      blendBase: 1.0,
+      blendBoost: 0,
+      lightnessPull: 0,
+    };
+  }
+  return {
+    directColorize: false,
+    satTargetWeight: 0.72,
+    satSourceWeight: 0.18,
+    satMin: 18,
+    satMax: 82,
+    blendBase: 0.42,
+    blendBoost: 0.38,
+    lightnessPull: 0,
+  };
+}
+
+function updateComponentLabels() {
+  document.getElementById('component-subtitle').textContent = `${currentComponentLabel} \u30ab\u30e9\u30fc\u30b7\u30df\u30e5\u30ec\u30fc\u30bf\u30fc`;
+  document.getElementById('label-color').innerHTML = `${currentView === 'outer' ? '\u5916\u88c5\u30ab\u30e9\u30fc' : '\u5185\u88c5\u30ab\u30e9\u30fc'} <span class="badge">\u5358\u4e00\u8272</span>`;
+}
+
+function getModelAssetBrandCandidates() {
+  if (!currentBrandId) return [];
+  const ids = [currentBrandId];
+  const aliasMap = {
+    npad: ['npad_flap', 'npad-flap'],
+    npadw: ['npad_W', 'npad-w'],
+    nthrough: ['nthetough']
+  };
+  if (aliasMap[currentBrandId]) ids.push(...aliasMap[currentBrandId]);
+  if (!currentBrandId.endsWith('_kl')) ids.push(`${currentBrandId}_kl`);
+  if (currentBrandId.endsWith('_kl')) ids.push(currentBrandId.replace(/_kl$/, ''));
+  return [...new Set(ids)];
+}
+
+function getModelAssetPathCandidates(brandId, view, ext) {
+  const viewCandidates = view === 'outer' ? ['outer', 'closed', 'close'] : ['inner', 'open'];
+  const variants = [];
+  for (const candidateView of viewCandidates) {
+    variants.push(
+      `${brandId}-${candidateView}.${ext}`,
+      `${brandId}_${candidateView}.${ext}`,
+      `${brandId.replace(/_/g, '-')}-${candidateView}.${ext}`,
+      `${brandId.replace(/-/g, '_')}-${candidateView}.${ext}`
+    );
+  }
+  return [...new Set(variants)];
+}
+
+function buildModelAssetUrl(path) {
+  return new URL(`./assets/models/${encodeURIComponent(path)}`, location.href).toString();
+}
+
+function probeImage(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(src);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+async function resolveImageSource(view) {
+  const exts = ['png', 'jpg', 'jpeg', 'webp'];
+  for (const brandId of getModelAssetBrandCandidates()) {
+    for (const ext of exts) {
+      for (const path of getModelAssetPathCandidates(brandId, view, ext)) {
+        const found = await probeImage(buildModelAssetUrl(path));
+        if (found) return found;
+      }
+    }
+  }
+  return IMAGES[view];
+}
+
+function notifyParent() {
+  if (!isEmbedded || window.parent === window) return;
+  window.parent.postMessage({
+    type: 'nsfactory-color-update',
+    component: currentComponent,
+    color: sel.color
+  }, '*');
+}
+
+function notifyParentPreview() {
+  if (!isEmbedded || window.parent === window) return;
+  const canvas = document.getElementById('canvas');
+  if (!canvas || !canvas.width || !canvas.height) return;
+  const signature = [
+    currentComponent,
+    currentView,
+    sel.color,
+    currentBrandId,
+    imageSources[currentView] || ''
+  ].join('|');
+  if (signature === lastPreviewSignature) return;
+  lastPreviewSignature = signature;
+  window.parent.postMessage({
+    type: 'nsfactory-color-preview',
+    component: currentComponent,
+    componentLabel: currentComponentLabel,
+    brand: currentBrandId,
+    view: currentView,
+    color: sel.color,
+    imageDataUrl: canvas.toDataURL('image/jpeg', 0.85)
+  }, '*');
+}
+
+function scheduleParentPreviewNotify() {
+  if (!isEmbedded || window.parent === window) return;
+  if (previewNotifyTimer) window.clearTimeout(previewNotifyTimer);
+  previewNotifyTimer = window.setTimeout(() => {
+    previewNotifyTimer = null;
+    notifyParentPreview();
+  }, 80);
+}
+
+function processPixels(srcData) {
+  const data = new Uint8ClampedArray(srcData.data);
+  const colorHexValue = colorHex(sel.color);
+  const colorHSL = colorHexValue ? rgbToHsl(...hexToRgb(colorHexValue)) : null;
+  if (!colorHSL) return data;
+  return processSingleColorPixels(data, srcData.width, srcData.height, colorHSL);
+}
+
+function sampleBackgroundColor(data, width, height) {
+  const points = [
+    [12, 12],
+    [width - 13, 12],
+    [12, height - 13],
+    [width - 13, height - 13]
+  ];
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let count = 0;
+  for (const [x, y] of points) {
+    const px = clamp(Math.round(x), 0, width - 1);
+    const py = clamp(Math.round(y), 0, height - 1);
+    const i = ((py * width) + px) * 4;
+    r += data[i];
+    g += data[i + 1];
+    b += data[i + 2];
+    count += 1;
+  }
+  return [Math.round(r / count), Math.round(g / count), Math.round(b / count)];
+}
+
+function processSingleColorPixels(data, width, height, targetHSL) {
+  const bg = sampleBackgroundColor(data, width, height);
+  const tinted = new Uint8ClampedArray(data);
+  for (let i = 0; i < tinted.length; i += 4) {
+    const a = tinted[i + 3];
+    if (a < 30) continue;
+    const r = tinted[i];
+    const g = tinted[i + 1];
+    const b = tinted[i + 2];
+    const dr = r - bg[0];
+    const dg = g - bg[1];
+    const db = b - bg[2];
+    const bgDistance = Math.sqrt((dr * dr) + (dg * dg) + (db * db));
+    if (bgDistance < 18) continue;
+    const [, os, ol] = rgbToHsl(r, g, b);
+    if (ol < 3 || ol > 97) continue;
+    const objectScore = clamp01((bgDistance - 18) / 72);
+    const lightMask = rangeSoftScore(ol, 8, 90, 16);
+    const satMask = os < 4 ? 0.65 : 1;
+    const mask = clamp01(objectScore * lightMask * satMask);
+    if (mask < 0.12) continue;
+    const isNeutralTarget = targetHSL[1] < 10;
+    const isBlackTarget = targetHSL[2] < 16;
+    const leatherSat = isNeutralTarget
+      ? clamp((os * 0.25) + (targetHSL[1] * 0.35), 0, 14)
+      : clamp((targetHSL[1] * 0.86) + (os * 0.18), 22, 96);
+    const targetLightness = isBlackTarget
+      ? clamp((ol * 0.44) + (targetHSL[2] * 0.56), 4, 42)
+      : clamp((ol * 0.72) + (targetHSL[2] * 0.28), 6, 88);
+    const [nr, ng, nb] = hslToRgb(targetHSL[0], leatherSat, targetLightness);
+    const blend = isNeutralTarget
+      ? (0.74 + (mask * 0.16))
+      : (0.64 + (mask * 0.24));
+    tinted[i] = blendChannel(r, nr, blend);
+    tinted[i + 1] = blendChannel(g, ng, blend);
+    tinted[i + 2] = blendChannel(b, nb, blend);
+  }
+  return tinted;
+}
+
+function ensureOriginalImageData(view, imgEl) {
+  if (origDataCache[view]) return origDataCache[view];
+  const off = document.createElement('canvas');
+  off.width = imgEl.naturalWidth;
+  off.height = imgEl.naturalHeight;
+  const oc = off.getContext('2d');
+  oc.drawImage(imgEl, 0, 0);
+  try {
+    origDataCache[view] = oc.getImageData(0, 0, off.width, off.height);
+  } catch (err) {
+    origDataCache[view] = null;
+  }
+  return origDataCache[view];
+}
+
+function render() {
+  const canvas = document.getElementById('canvas');
+  const status = document.getElementById('canvas-status');
+  const imgEl = imgElCache[currentView];
+  if (!imgEl || !imgEl.naturalWidth) {
+    status.hidden = false;
+    return;
+  }
+  status.hidden = true;
+  canvas.width = imgEl.naturalWidth;
+  canvas.height = imgEl.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  const orig = ensureOriginalImageData(currentView, imgEl);
+  if (!orig) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(imgEl, 0, 0);
+    scheduleParentPreviewNotify();
+    return;
+  }
+  const processed = processPixels(orig);
+  ctx.putImageData(new ImageData(processed, orig.width, orig.height), 0, 0);
+  scheduleParentPreviewNotify();
+}
+
+async function loadImages() {
+  const status = document.getElementById('canvas-status');
+  status.hidden = false;
+  const views = ['outer', 'inner'];
+  await Promise.all(views.map(async view => {
+    imageSources[view] = await resolveImageSource(view);
+  }));
+  await Promise.all(views.map(view => new Promise(resolve => {
+    const img = new Image();
+    imgElCache[view] = img;
+    origDataCache[view] = null;
+    img.onload = () => resolve();
+    img.onerror = () => {
+      if (imageSources[view] !== IMAGES[view]) {
+        imageSources[view] = IMAGES[view];
+        img.src = imageSources[view];
+        return;
+      }
+      resolve();
+    };
+    img.src = imageSources[view];
+  })));
+  render();
+}
+
+function buildSwatches(containerId, partKey) {
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  COLORS.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'sw-item' + (sel[partKey] === c.name ? ' selected' : '');
+    item.title = c.name;
+    item.innerHTML = `<div class="sw-dot" style="background:${c.hex}"></div><div class="sw-name">${c.name}</div>`;
+    item.addEventListener('click', () => {
+      sel[partKey] = c.name;
+      wrap.querySelectorAll('.sw-item').forEach(el => el.classList.remove('selected'));
+      item.classList.add('selected');
+      render();
+      updateResult();
+      notifyParent();
+    });
+    wrap.appendChild(item);
+  });
+}
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById('tab-outer').classList.toggle('active', view === 'outer');
+  document.getElementById('tab-inner').classList.toggle('active', view === 'inner');
+  updateComponentLabels();
+  render();
+}
+
+function updateResult() {
+  const box = document.getElementById('result-box');
+  const colorValue = colorHex(sel.color) || '';
+  box.innerHTML = `
+    <strong>${currentComponentLabel}\u306e\u9078\u629e\u4e2d\u30ab\u30e9\u30fc</strong><br>
+    ${currentView === 'outer' ? '\u5916\u88c5' : '\u5185\u88c5'}<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${colorValue};vertical-align:middle;margin:0 4px;border:1px solid #ccc"></span>${sel.color}`;
+  notifyParent();
+}
+
+const ESTIMATE_URL = '../order_estimate/leather-order-estimate-v2.html';
+function goToEstimate() {
+  const url = new URL(ESTIMATE_URL, location.href);
+  url.searchParams.set('color', sel.color);
+  url.searchParams.set('component', currentComponent);
+  url.searchParams.set('from', 'simulator');
+  window.open(url.toString(), '_blank');
+}
+
+function handleConsult() {
+  const text = `${currentComponentLabel}\u30ab\u30e9\u30fc\u306e\u76f8\u8ac7\n${currentView === 'outer' ? '\u5916\u88c5' : '\u5185\u88c5'}: ${sel.color}\n\n\u73fe\u5728\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u76f8\u8ac7\u3057\u305f\u3044\u3067\u3059\u3002`;
+  const box = document.getElementById('result-box');
+  box.innerHTML = `<strong>\u76f8\u8ac7\u7528\u30c6\u30ad\u30b9\u30c8\u3092\u8868\u793a\u3057\u307e\u3057\u305f</strong><br><br><textarea style="width:100%;height:120px;font-size:12px;border:1px solid #ddd;border-radius:6px;padding:8px;resize:none;font-family:inherit" readonly onclick="this.select()">${text}</textarea>`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.consult-btn');
+      btn.textContent = '\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f';
+      setTimeout(() => { btn.textContent = '\u3053\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u76f8\u8ac7\u3059\u308b'; }, 2500);
+    }).catch(() => {});
+  }
+}
+
+(function applyUrlParams() {
+  const p = new URLSearchParams(location.search);
+  const colorParam = p.get('color') || p.get('flap') || p.get('leather') || p.get('base');
+  const paletteParam = p.get('palette');
+  isEmbedded = p.get('embed') === '1';
+  isPreviewOnly = p.get('preview') === '1';
+  currentComponent = p.get('component') || 'main';
+  currentBrandId = p.get('brand') || '';
+  currentComponentLabel = p.get('componentLabel') || (currentComponent === 'main' ? '\u672c\u4f53' : '\u30d1\u30fc\u30c4');
+  if (paletteParam) {
+    try {
+      const parsed = JSON.parse(paletteParam);
+      if (Array.isArray(parsed) && parsed.length) {
+        COLORS = parsed.filter(item => item && item.name && item.hex);
+      }
+    } catch (_) {}
+  }
+  if (colorParam && COLORS.find(c => c.name === colorParam)) sel.color = colorParam;
+  updateComponentLabels();
+
+  if (isEmbedded) {
+    document.getElementById('estimate-btn').style.display = 'none';
+    const consultBtn = document.querySelector('.consult-btn');
+    if (consultBtn) consultBtn.style.display = 'none';
+    const note = document.querySelector('.note');
+    if (note) note.style.display = 'none';
+  }
+
+  if (isPreviewOnly) {
+    document.body.classList.add('preview-only');
+    document.querySelectorAll('.panel').forEach(el => el.style.display = 'none');
+    const resultBox = document.getElementById('result-box');
+    if (resultBox) resultBox.style.display = 'none';
+    const consultBtn = document.querySelector('.consult-btn');
+    if (consultBtn) consultBtn.style.display = 'none';
+    const estimateBtn = document.getElementById('estimate-btn');
+    if (estimateBtn) estimateBtn.style.display = 'none';
+    const note = document.querySelector('.note');
+    if (note) note.style.display = 'none';
+  }
+
+  if (!isEmbedded && p.get('from') === 'estimate') {
+    const backBtn = document.createElement('button');
+    backBtn.className = 'back-btn';
+    backBtn.textContent = '\u898b\u7a4d\u3082\u308a\u30da\u30fc\u30b8\u306b\u623b\u308b';
+    backBtn.onclick = () => history.back();
+    document.querySelector('.consult-btn').before(backBtn);
+  }
+})();
+
+buildSwatches('sw-color', 'color');
+updateResult();
+loadImages();
+</script>
+</body>
+</html>

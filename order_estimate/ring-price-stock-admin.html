@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リング価格・在庫 管理画面</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#f5f0eb;
+  color:#2c1a0e;
+}
+.page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:10;
+  padding:16px 20px;
+  color:#fff;
+  background:linear-gradient(135deg,#3d1a08 0%,#6b3a1f 100%);
+  box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.topbar h1{
+  margin:0;
+  font-size:18px;
+}
+.topbar p{
+  margin:4px 0 0;
+  font-size:12px;
+  opacity:.82;
+}
+.top-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:10px;
+}
+.top-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  text-decoration:none;
+  border:1px solid rgba(255,255,255,.24);
+  font-size:12px;
+  font-weight:700;
+}
+.top-link:hover{
+  background:rgba(255,255,255,.22);
+}
+.main{
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.panel{
+  background:#fff;
+  border:1px solid #eadccf;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 4px 16px rgba(107,58,31,.06);
+}
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+.btn{
+  border:none;
+  border-radius:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  font:inherit;
+  font-weight:700;
+  color:#fff;
+  background:#6b3a1f;
+}
+.btn.sub{
+  background:#8c6a4a;
+}
+.btn.light{
+  background:#d7c1aa;
+  color:#4a2a18;
+}
+.btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+.meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;
+  margin-top:10px;
+  font-size:12px;
+  color:#7a5a3f;
+}
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border-radius:999px;
+  padding:4px 10px;
+  background:#fdf0e5;
+  color:#6b3a1f;
+  border:1px solid #ebcfb3;
+}
+.status-pill.warn{
+  background:#fff3dd;
+  color:#8a5a00;
+  border-color:#f0d29c;
+}
+.status-pill.good{
+  background:#edf8f0;
+  color:#29613d;
+  border-color:#bddfca;
+}
+.crawl-log{
+  margin-top:10px;
+  padding:12px;
+  border:1px solid #eadccf;
+  border-radius:12px;
+  background:#fffaf6;
+  font-size:12px;
+  color:#6c533c;
+  white-space:pre-wrap;
+}
+.filters{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+}
+.field label{
+  display:block;
+  margin-bottom:5px;
+  font-size:12px;
+  font-weight:700;
+  color:#6b3a1f;
+}
+.field input,.field select{
+  width:100%;
+  border:1px solid #dcc7b1;
+  border-radius:10px;
+  padding:9px 10px;
+  font:inherit;
+  background:#fffdfb;
+}
+.table-wrap{
+  overflow:auto;
+  border:1px solid #eadccf;
+  border-radius:12px;
+}
+table{
+  width:max-content;
+  min-width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:12px;
+}
+th,td{
+  border-right:1px solid #efe3d7;
+  border-bottom:1px solid #efe3d7;
+  padding:7px;
+  vertical-align:top;
+  background:#fff;
+}
+th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#f8f1ea;
+  color:#6b3a1f;
+  font-size:11px;
+  text-align:left;
+  white-space:nowrap;
+}
+td:first-child,th:first-child{
+  position:sticky;
+  left:0;
+  z-index:1;
+  background:#fffaf6;
+}
+th:first-child{
+  z-index:3;
+  background:#f3e5d8;
+}
+td input[type="text"],td input[type="number"],td select{
+  width:100%;
+  min-width:110px;
+  border:1px solid #dbc6b1;
+  border-radius:8px;
+  padding:7px 8px;
+  font:inherit;
+  background:#fff;
+}
+td input.short{
+  min-width:78px;
+}
+td input.url{
+  min-width:220px;
+}
+td .check{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-width:64px;
+}
+td .row-actions{
+  display:flex;
+  gap:6px;
+}
+.mini-btn{
+  border:none;
+  border-radius:8px;
+  padding:7px 9px;
+  cursor:pointer;
+  font:inherit;
+  font-size:11px;
+  font-weight:700;
+}
+.mini-btn.copy{
+  background:#e6f1ea;
+  color:#265f3f;
+}
+.mini-btn.delete{
+  background:#fce7e3;
+  color:#8d2d20;
+}
+tr.row-low-stock td{
+  background:#fff8ed;
+}
+tr.row-out-stock td{
+  background:#fff1ef;
+}
+.diff-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.diff-badge.up{
+  background:#fde8e4;
+  color:#9b2c1a;
+}
+.diff-badge.down{
+  background:#e8f5ea;
+  color:#256443;
+}
+.diff-badge.same{
+  background:#eef2f4;
+  color:#52616d;
+}
+.diff-stack{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:140px;
+}
+.hint{
+  font-size:12px;
+  color:#7d644d;
+  line-height:1.6;
+}
+.danger{
+  color:#8d2d20;
+}
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+}
+.form-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:12px;
+}
+.add-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+}
+.preview-box{
+  margin-top:12px;
+  padding:12px;
+  border:1px solid #eadccf;
+  border-radius:12px;
+  background:#fffaf6;
+  font-size:12px;
+  color:#6a5138;
+  line-height:1.7;
+}
+.review-list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.review-card{
+  border:1px solid #eadccf;
+  border-radius:12px;
+  background:#fffaf6;
+  padding:12px;
+}
+.review-head{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+}
+.review-title{
+  font-size:13px;
+  font-weight:700;
+  color:#5a321c;
+}
+.review-meta{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:8px;
+  font-size:12px;
+  color:#6c533c;
+}
+.review-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+.mini-btn.adopt{
+  background:#e8f5ea;
+  color:#256443;
+}
+.mini-btn.reject{
+  background:#fce7e3;
+  color:#8d2d20;
+}
+.empty-note{
+  padding:14px;
+  border:1px dashed #d8c1ab;
+  border-radius:12px;
+  background:#fffaf6;
+  font-size:12px;
+  color:#7d644d;
+}
+.stock-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.stock-card{
+  border:1px solid #eadccf;
+  border-radius:12px;
+  background:#fffaf6;
+  padding:12px;
+}
+.stock-card.low{
+  background:#fff8ed;
+  border-color:#efd2ab;
+}
+.stock-card.critical{
+  background:#ffe6e1;
+  border-color:#e7a79a;
+  box-shadow:0 0 0 2px rgba(180,52,34,.08);
+}
+.stock-card.out{
+  background:#fff1ef;
+  border-color:#f2c6bf;
+}
+.stock-card-head{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:8px;
+  align-items:center;
+}
+.stock-card-title{
+  font-size:13px;
+  font-weight:700;
+  color:#5a321c;
+}
+.crawl-mark{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:2px 8px;
+  border-radius:999px;
+  background:#fff0f0;
+  color:#b42318;
+  border:1px solid #f0b8b5;
+  font-size:10px;
+  font-weight:700;
+}
+.stock-card-meta{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:8px;
+  font-size:12px;
+  color:#6c533c;
+}
+.stock-card-edit{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:8px;
+}
+.stock-edit-field label{
+  display:block;
+  margin-bottom:4px;
+  font-size:11px;
+  font-weight:700;
+  color:#6b3a1f;
+}
+.stock-edit-field input,.stock-edit-field select{
+  width:100%;
+  border:1px solid #dbc6b1;
+  border-radius:8px;
+  padding:7px 8px;
+  font:inherit;
+  background:#fff;
+  font-size:12px;
+}
+.stock-checks{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  margin-top:10px;
+  font-size:12px;
+  color:#5a321c;
+}
+.stock-checks label{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+}
+.stock-toolbar{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:10px;
+}
+.stock-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  margin-top:12px;
+}
+.stock-empty{
+  padding:14px;
+  border:1px dashed #d8c1ab;
+  border-radius:12px;
+  background:#fffaf6;
+  font-size:12px;
+  color:#7d644d;
+}
+.table-row-target{
+  animation:rowFlash 1.6s ease;
+}
+@keyframes rowFlash{
+  0%{background:#fff1cc}
+  100%{background:transparent}
+}
+@media(max-width:720px){
+  .main{padding:12px}
+  .panel{padding:12px}
+  .stock-toolbar{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <h1>リング価格・在庫 管理画面</h1>
+    <p>`ring-price-stock.csv` を一覧編集する簡易ページ。見積もりシミュレーションの候補制御と価格管理の基礎画面です。</p>
+    <div class="top-links">
+      <a class="top-link" href="./leather-order-estimate-v2.html">見積もり画面へ戻る</a>
+      <a class="top-link" href="./ring-price-stock.csv" download>正本CSVを開く</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しいリング候補を追加</h2>
+      <div class="hint">
+        未登録の規格 / リング種別 / 径 / 色を、全件テーブルを開かずに追加します。たとえば `Mini6 / 通常リング / 20mm / Black` のような行をここから作れます。
+      </div>
+      <div class="add-grid" style="margin-top:12px">
+        <div class="field">
+          <label for="newPlannerType">手帳種別</label>
+          <select id="newPlannerType">
+            <option value="Micro5">Micro5</option>
+            <option value="Mini6" selected>Mini6</option>
+            <option value="Bible">Bible</option>
+            <option value="A6">A6</option>
+            <option value="A5">A5</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="newSeries">リング種別</label>
+          <select id="newSeries">
+            <option value="normal">通常リング</option>
+            <option value="klause">クラウゼリング</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="newSizeMm">リング径</label>
+          <input id="newSizeMm" type="number" min="8" step="1" value="20">
+        </div>
+        <div class="field">
+          <label for="newColorId">色ID</label>
+          <select id="newColorId">
+            <option value="silver">silver</option>
+            <option value="gold">gold</option>
+            <option value="pinkgold">pinkgold</option>
+            <option value="black" selected>black</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="newColorLabel">色名</label>
+          <input id="newColorLabel" type="text" value="ブラック">
+        </div>
+        <div class="field">
+          <label for="newFinishLabel">仕上げ名</label>
+          <input id="newFinishLabel" type="text" value="ブラック">
+        </div>
+        <div class="field">
+          <label for="newPriceJpy">見積総額</label>
+          <input id="newPriceJpy" type="number" min="0" step="1" value="1500">
+        </div>
+        <div class="field">
+          <label for="newStockQty">在庫数</label>
+          <input id="newStockQty" type="number" min="0" step="1" value="1">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" id="addPresetRowBtn">この条件で追加</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="controls">
+        <button class="btn" id="reloadBtn">CSV再読込</button>
+        <button class="btn sub" id="openFileBtn">ローカルCSVを開く</button>
+        <button class="btn" id="saveFileBtn" disabled>直接上書き保存</button>
+        <button class="btn light" id="downloadBtn">CSVダウンロード</button>
+        <button class="btn light" id="addRowBtn">行を追加</button>
+        <button class="btn sub" id="runCrawlBtn">巡回実行</button>
+        <a class="btn light" id="openCrawlResultsBtn" href="./ring-price-crawl-results.csv" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center">巡回結果CSV</a>
+      </div>
+      <div class="meta">
+        <span class="status-pill" id="sourcePill">読込元: 初期化中</span>
+        <span class="status-pill" id="dirtyPill">状態: 保存済み</span>
+        <span class="status-pill" id="countPill">行数: 0</span>
+        <span class="status-pill" id="diffPill">価格差分: 0件</span>
+        <span class="status-pill" id="crawlPill">巡回: 未実行</span>
+        <span class="status-pill" id="crawlTimePill">最新巡回: 未確認</span>
+      </div>
+      <div class="hint" style="margin-top:10px">
+        `直接上書き保存` は対応ブラウザで、かつ `ローカルCSVを開く` からファイルを選択したときに使えます。
+        それ以外は `CSVダウンロード` で保存してください。`巡回実行` は `start-ring-price-crawl-server.bat` を起動しているときに使えます。
+      </div>
+      <div class="crawl-log" id="crawlLog">巡回サーバー待機中です。未起動の場合は `start-ring-price-crawl-server.bat` を実行してください。</div>
+    </div>
+
+    <div class="panel">
+      <div class="filters">
+        <div class="field">
+          <label for="searchInput">検索</label>
+          <input id="searchInput" type="text" placeholder="ring_id / 色 / サイズ / メモ">
+        </div>
+        <div class="field">
+          <label for="plannerFilter">手帳種別</label>
+          <select id="plannerFilter">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="seriesFilter">系列</label>
+          <select id="seriesFilter">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="visibleFilter">表示条件</label>
+          <select id="visibleFilter">
+            <option value="">すべて</option>
+            <option value="visible">見積もり表示のみ</option>
+            <option value="checked">check_enabled=TRUE のみ</option>
+            <option value="monitor">monitor_enabled=TRUE のみ</option>
+            <option value="stocked">在庫ありのみ</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">在庫クイック検索</h2>
+      <div class="stock-toolbar">
+        <div class="field">
+          <label for="stockSearchInput">在庫検索</label>
+          <input id="stockSearchInput" type="text" placeholder="ring_id / サイズ / 色 / 仕上げ / メモ">
+        </div>
+        <div class="field">
+          <label for="stockPlannerFilter">手帳種別</label>
+          <select id="stockPlannerFilter">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="stockOnlyFilter">在庫状態</label>
+          <select id="stockOnlyFilter">
+            <option value="">すべて</option>
+            <option value="in_stock">在庫あり</option>
+            <option value="low_stock">残りわずか</option>
+            <option value="out_of_stock">在庫なし</option>
+            <option value="preorder">取寄</option>
+            <option value="backorder">入荷待ち</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="stockSeriesFilter">系列</label>
+          <select id="stockSeriesFilter">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="stockSortFilter">在庫ソート</label>
+          <select id="stockSortFilter">
+            <option value="default">標準順</option>
+            <option value="qty_asc">在庫数 昇順</option>
+            <option value="qty_desc">在庫数 降順</option>
+          </select>
+        </div>
+      </div>
+      <div class="stock-actions">
+        <button class="btn" id="stockSaveBtn">この内容を保存</button>
+        <span class="hint">在庫クイック検索で編集した内容を保存します。ローカルCSVを開いている場合は上書き保存し、それ以外はCSVをダウンロードします。</span>
+      </div>
+      <div class="stock-list" id="stockList" style="margin-top:12px"></div>
+    </div>
+
+    <details class="panel">
+      <summary style="cursor:pointer;font-weight:700;color:#6b3a1f">全件テーブルを開く（補助ビュー）</summary>
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <div class="panel">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">巡回結果レビュー</h2>
+      <div class="hint">
+        価格差分がある候補だけを一覧表示します。`採用する` は優先ソースと見積価格へ反映し、`不採用` はその候補スロットをクリアします。
+      </div>
+      <div class="review-list" id="reviewList" style="margin-top:12px"></div>
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しい価格情報を反映</h2>
+      <div class="hint">
+        新たに見つけた価格情報を、ブラウザ上から現在のCSVデータへ取り込みます。保存は `直接上書き保存` または `CSVダウンロード` で確定します。
+      </div>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="field">
+          <label for="entryTarget">対象行</label>
+          <select id="entryTarget"></select>
+        </div>
+        <div class="field">
+          <label for="entrySourceSlot">反映先スロット</label>
+          <select id="entrySourceSlot">
+            <option value="1">source_1</option>
+            <option value="2">source_2</option>
+            <option value="3">source_3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="entryShop">ショップ名</label>
+          <input id="entryShop" type="text" placeholder="例: leathercraft.jp">
+        </div>
+        <div class="field">
+          <label for="entryUrl">URL</label>
+          <input id="entryUrl" type="text" placeholder="https://...">
+        </div>
+        <div class="field">
+          <label for="entryPrice">商品価格</label>
+          <input id="entryPrice" type="number" min="0" step="1" placeholder="5000">
+        </div>
+        <div class="field">
+          <label for="entryShipping">送料</label>
+          <input id="entryShipping" type="number" min="0" step="1" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="entryChecked">確認日</label>
+          <input id="entryChecked" type="date">
+        </div>
+        <div class="field">
+          <label for="entryPreferred">優先ソース化</label>
+          <select id="entryPreferred">
+            <option value="yes">はい</option>
+            <option value="no">いいえ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="entryMonitor">価格監視</label>
+          <select id="entryMonitor">
+            <option value="keep">現状維持</option>
+            <option value="true">TRUEにする</option>
+            <option value="false">FALSEにする</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" id="applyEntryBtn">価格情報を反映</button>
+        <button class="btn light" id="resetEntryBtn">フォームをクリア</button>
+      </div>
+      <div class="preview-box" id="entryPreview">
+        対象行を選ぶと、ここに現在の優先ソースと価格差分の見込みを表示します。
+      </div>
+    </div>
+
+    <div class="panel hint">
+      管理者画面の今後の想定:
+      在庫数、在庫状態、価格、参照URL、表示ON/OFFをこの画面から修正し、
+      最終的には巡回結果の確認や価格差分の反映もここで扱える形に広げる。
+    </div>
+  </div>
+</div>
+
+<input id="fallbackFileInput" type="file" accept=".csv,text/csv" style="display:none">
+
+<script>
+const CSV_URL = new URL('./ring-price-stock.csv', location.href).toString();
+const BOOLEAN_FIELDS = new Set(['check_enabled','ui_visible','monitor_enabled']);
+const NUMBER_FIELDS = new Set(['size_mm','ui_order','price_jpy','stock_qty','lead_time_days','price_min_jpy','price_max_jpy','preferred_source_price_jpy','preferred_source_shipping_jpy','source_price_1_jpy','source_price_2_jpy','source_price_3_jpy','source_shipping_1_jpy','source_shipping_2_jpy','source_shipping_3_jpy']);
+const URL_FIELDS = new Set(['preferred_source_url','source_url_1','source_url_2','source_url_3']);
+const STOCK_STATUS_OPTIONS = ['in_stock','low_stock','out_of_stock','unknown','preorder','backorder'];
+const EXTRA_HEADERS = ['planner_type','preferred_source_shipping_jpy','source_shipping_1_jpy','source_shipping_2_jpy','source_shipping_3_jpy','crawl_updated_flag','crawl_updated_at_jst','crawl_updated_run_id','crawl_updated_from_shop'];
+const CRAWL_SERVER_URL = 'http://127.0.0.1:8766';
+const HEADER_ORDER = [
+  'planner_type','ring_id','series','series_label','size_label','size_mm','color_id','color_label','finish_label',
+  'check_enabled','ui_visible','ui_order','price_jpy','stock_status','stock_qty','lead_time_days','monitor_enabled',
+  'price_min_jpy','price_max_jpy','preferred_source_shop','preferred_source_url','preferred_source_price_jpy','preferred_source_shipping_jpy','preferred_last_checked',
+  'source_shop_1','source_url_1','source_price_1_jpy','source_shipping_1_jpy','source_checked_1',
+  'source_shop_2','source_url_2','source_price_2_jpy','source_shipping_2_jpy','source_checked_2',
+  'source_shop_3','source_url_3','source_price_3_jpy','source_shipping_3_jpy','source_checked_3',
+  'crawl_updated_flag','crawl_updated_at_jst','crawl_updated_run_id','crawl_updated_from_shop','note'
+];
+
+let headers = [];
+let rows = [];
+let filteredRows = [];
+let fileHandle = null;
+let dirty = false;
+
+function rowKey(row) {
+  return [row.planner_type, row.ring_id, row.color_id, row.size_label].filter(Boolean).join(' / ');
+}
+
+function parseCsvLine(line) {
+  const out = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (ch === ',' && !inQuotes) {
+      out.push(cur);
+      cur = '';
+      continue;
+    }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+function parseCsv(text) {
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(line => line.length > 0);
+  if (!lines.length) return { headers: [], rows: [] };
+  const parsedHeaders = parseCsvLine(lines[0]);
+  const parsedRows = lines.slice(1).map(line => {
+    const cols = parseCsvLine(line);
+    const row = {};
+    parsedHeaders.forEach((key, idx) => {
+      row[key] = cols[idx] ?? '';
+    });
+    return row;
+  });
+  return { headers: parsedHeaders, rows: parsedRows };
+}
+
+function getOrderedHeaders() {
+  return [
+    ...HEADER_ORDER.filter(header => headers.includes(header)),
+    ...headers.filter(header => !HEADER_ORDER.includes(header)),
+  ];
+}
+
+function escapeCsv(value) {
+  const str = String(value ?? '');
+  if (/[",\r\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
+  return str;
+}
+
+function toCsv() {
+  const lines = [];
+  const orderedHeaders = getOrderedHeaders();
+  lines.push(orderedHeaders.map(escapeCsv).join(','));
+  rows.forEach(row => {
+    lines.push(orderedHeaders.map(header => escapeCsv(row[header] ?? '')).join(','));
+  });
+  return '\uFEFF' + lines.join('\r\n');
+}
+
+function boolValue(v) {
+  return String(v || '').toUpperCase() === 'TRUE';
+}
+
+function numberValue(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function ensureHeadersAndRows() {
+  EXTRA_HEADERS.forEach(header => {
+    if (!headers.includes(header)) headers.push(header);
+  });
+  rows.forEach(row => {
+    EXTRA_HEADERS.forEach(header => {
+      if (!(header in row)) row[header] = '';
+    });
+  });
+}
+
+function getPreferredTotal(row) {
+  return numberValue(row.preferred_source_price_jpy) + numberValue(row.preferred_source_shipping_jpy);
+}
+
+function getSourceTotal(row, idx) {
+  return numberValue(row[`source_price_${idx}_jpy`]) + numberValue(row[`source_shipping_${idx}_jpy`]);
+}
+
+function hasStock(row) {
+  const status = String(row.stock_status || '').toLowerCase();
+  const qty = numberValue(row.stock_qty);
+  if (status === 'preorder' || status === 'backorder') return true;
+  if (status === 'in_stock' || status === 'low_stock') return qty > 0;
+  return false;
+}
+
+function setDirty(nextDirty) {
+  dirty = nextDirty;
+  document.getElementById('dirtyPill').textContent = `状態: ${dirty ? '未保存' : '保存済み'}`;
+}
+
+function updateMeta(sourceLabel = null) {
+  if (sourceLabel) document.getElementById('sourcePill').textContent = `読込元: ${sourceLabel}`;
+  document.getElementById('countPill').textContent = `行数: ${rows.length}`;
+  document.getElementById('saveFileBtn').disabled = !fileHandle;
+  const diffCount = rows.filter(row => getPriceDiffs(row).length > 0).length;
+  const diffPill = document.getElementById('diffPill');
+  diffPill.textContent = `価格差分: ${diffCount}件`;
+  diffPill.className = `status-pill ${diffCount > 0 ? 'warn' : 'good'}`;
+}
+
+function buildSeriesFilter() {
+  const select = document.getElementById('seriesFilter');
+  const stockSelect = document.getElementById('stockSeriesFilter');
+  const plannerSelect = document.getElementById('plannerFilter');
+  const stockPlannerSelect = document.getElementById('stockPlannerFilter');
+  const current = select.value;
+  const stockCurrent = stockSelect.value;
+  const plannerCurrent = plannerSelect.value;
+  const stockPlannerCurrent = stockPlannerSelect.value;
+  const values = [...new Set(rows.map(row => row.series).filter(Boolean))].sort();
+  const plannerValues = [...new Set(rows.map(row => String(row.planner_type || '').trim()).filter(Boolean))].sort();
+  select.innerHTML = '<option value="">すべて</option>';
+  stockSelect.innerHTML = '<option value="">すべて</option>';
+  plannerSelect.innerHTML = '<option value="">すべて</option>';
+  stockPlannerSelect.innerHTML = '<option value="">すべて</option>';
+  values.forEach(value => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = value;
+    select.appendChild(opt);
+    const stockOpt = document.createElement('option');
+    stockOpt.value = value;
+    stockOpt.textContent = value;
+    stockSelect.appendChild(stockOpt);
+  });
+  plannerValues.forEach(value => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = value;
+    plannerSelect.appendChild(opt);
+    const stockOpt = document.createElement('option');
+    stockOpt.value = value;
+    stockOpt.textContent = value;
+    stockPlannerSelect.appendChild(stockOpt);
+  });
+  select.value = values.includes(current) ? current : '';
+  stockSelect.value = values.includes(stockCurrent) ? stockCurrent : '';
+  plannerSelect.value = plannerValues.includes(plannerCurrent) ? plannerCurrent : '';
+  stockPlannerSelect.value = plannerValues.includes(stockPlannerCurrent) ? stockPlannerCurrent : '';
+}
+
+function buildTargetOptions() {
+  const select = document.getElementById('entryTarget');
+  const current = select.value;
+  select.innerHTML = '';
+  rows.forEach((row, index) => {
+    const opt = document.createElement('option');
+    opt.value = String(index);
+    opt.textContent = `${rowKey(row)} (${row.series_label || row.series || ''})`;
+    select.appendChild(opt);
+  });
+  select.value = current && rows[Number(current)] ? current : '0';
+  updateEntryPreview();
+}
+
+function getPriceDiffs(row) {
+  const preferred = getPreferredTotal(row);
+  const diffs = [];
+  [1, 2, 3].forEach(idx => {
+    const price = getSourceTotal(row, idx);
+    const shop = row[`source_shop_${idx}`];
+    if (!shop || !price || !preferred) return;
+    const delta = price - preferred;
+    if (delta === 0) return diffs.push({ idx, shop, delta, label: '同額', cls: 'same' });
+    diffs.push({
+      idx,
+      shop,
+      delta,
+      label: delta > 0 ? `+¥${delta.toLocaleString()}` : `-¥${Math.abs(delta).toLocaleString()}`,
+      cls: delta > 0 ? 'up' : 'down'
+    });
+  });
+  return diffs;
+}
+
+function buildReviewItems() {
+  const items = [];
+  rows.forEach((row, rowIndex) => {
+    const preferredPrice = getPreferredTotal(row);
+    [1, 2, 3].forEach(slot => {
+      const shop = row[`source_shop_${slot}`];
+      const url = row[`source_url_${slot}`];
+      const price = getSourceTotal(row, slot);
+      const checked = row[`source_checked_${slot}`];
+      const shipping = numberValue(row[`source_shipping_${slot}_jpy`]);
+      if (!shop || !price) return;
+      const delta = preferredPrice ? (price - preferredPrice) : 0;
+      if (preferredPrice && delta === 0) return;
+      items.push({
+        rowIndex,
+        slot,
+        key: rowKey(row),
+        shop,
+        url,
+        price,
+        shipping,
+        checked,
+        preferredPrice,
+        preferredShop: row.preferred_source_shop || '未設定',
+        delta,
+      });
+    });
+  });
+  return items;
+}
+
+function renderReviewList() {
+  const el = document.getElementById('reviewList');
+  const items = buildReviewItems();
+  el.innerHTML = '';
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-note">現在、レビュー待ちの巡回結果はありません。</div>';
+    return;
+  }
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    const deltaLabel = item.preferredPrice
+      ? (item.delta > 0 ? `+¥${item.delta.toLocaleString()}` : item.delta < 0 ? `-¥${Math.abs(item.delta).toLocaleString()}` : '±0')
+      : '優先価格未設定';
+    const deltaClass = !item.preferredPrice ? 'same' : item.delta > 0 ? 'up' : item.delta < 0 ? 'down' : 'same';
+    card.innerHTML = `
+      <div class="review-head">
+        <div class="review-title">${item.key}</div>
+        <span class="diff-badge ${deltaClass}">${item.shop}: ${deltaLabel}</span>
+      </div>
+      <div class="review-meta">
+        <div><strong>現在の優先:</strong> ${item.preferredShop}</div>
+        <div><strong>優先総額:</strong> ${item.preferredPrice ? `¥${item.preferredPrice.toLocaleString()}` : '未設定'}</div>
+        <div><strong>候補総額:</strong> ¥${item.price.toLocaleString()}</div>
+        <div><strong>候補送料:</strong> ¥${item.shipping.toLocaleString()}</div>
+        <div><strong>確認日:</strong> ${item.checked || '未設定'}</div>
+        <div style="grid-column:1 / -1"><strong>URL:</strong> ${item.url || '未設定'}</div>
+      </div>
+      <div class="review-actions">
+        <button class="mini-btn adopt" data-row="${item.rowIndex}" data-slot="${item.slot}">採用する</button>
+        <button class="mini-btn reject" data-row="${item.rowIndex}" data-slot="${item.slot}">不採用</button>
+      </div>
+    `;
+    el.appendChild(card);
+  });
+
+  el.querySelectorAll('.mini-btn.adopt').forEach(btn => {
+    btn.addEventListener('click', () => adoptReviewCandidate(Number(btn.dataset.row), Number(btn.dataset.slot)));
+  });
+  el.querySelectorAll('.mini-btn.reject').forEach(btn => {
+    btn.addEventListener('click', () => rejectReviewCandidate(Number(btn.dataset.row), Number(btn.dataset.slot)));
+  });
+}
+
+function renderStockList() {
+  const el = document.getElementById('stockList');
+  const q = document.getElementById('stockSearchInput').value.trim().toLowerCase();
+  const plannerFilter = document.getElementById('stockPlannerFilter').value;
+  const statusFilter = document.getElementById('stockOnlyFilter').value;
+  const seriesFilter = document.getElementById('stockSeriesFilter').value;
+  const sortFilter = document.getElementById('stockSortFilter').value;
+  const items = rows.filter(row => {
+    if (seriesFilter && row.series !== seriesFilter) return false;
+    if (plannerFilter) {
+      if (String(row.planner_type || '').trim() !== plannerFilter) return false;
+    }
+    if (statusFilter && row.stock_status !== statusFilter) return false;
+    if (!q) return true;
+    return [
+      row.planner_type,
+      row.ring_id,
+      row.size_label,
+      row.color_label,
+      row.finish_label,
+      row.note,
+      row.series_label,
+      row.stock_status,
+    ].some(v => String(v || '').toLowerCase().includes(q));
+  });
+  if (sortFilter === 'qty_asc') {
+    items.sort((a, b) => numberValue(a.stock_qty) - numberValue(b.stock_qty));
+  } else if (sortFilter === 'qty_desc') {
+    items.sort((a, b) => numberValue(b.stock_qty) - numberValue(a.stock_qty));
+  }
+  el.innerHTML = '';
+  if (!items.length) {
+    el.innerHTML = '<div class="stock-empty">該当する在庫データはありません。</div>';
+    return;
+  }
+  items.forEach(row => {
+    const status = String(row.stock_status || '').toLowerCase();
+    const qty = numberValue(row.stock_qty);
+    const card = document.createElement('div');
+    const isCritical = status === 'low_stock' && qty <= 1;
+    const crawlUpdated = boolValue(row.crawl_updated_flag);
+    card.className = `stock-card ${isCritical ? 'critical' : status === 'low_stock' ? 'low' : status === 'out_of_stock' ? 'out' : ''}`;
+    const statusLabel =
+      status === 'in_stock' ? `在庫あり (${qty})` :
+      status === 'low_stock' ? (qty <= 1 ? `残り1個` : `残りわずか (${qty})`) :
+      status === 'out_of_stock' ? '在庫なし' :
+      status === 'preorder' ? '取寄対応' :
+      status === 'backorder' ? '入荷待ち' : '未確認';
+    const rowIndex = rows.indexOf(row);
+    card.innerHTML = `
+      <div class="stock-card-head">
+        <div class="stock-card-title">
+          ${crawlUpdated ? `<span class="crawl-mark">巡回更新</span> ` : ''}${rowKey(row)} / ${row.color_label || row.color_id || ''}
+        </div>
+        <span class="diff-badge ${status === 'out_of_stock' ? 'up' : status === 'low_stock' ? 'same' : 'down'}">${statusLabel}</span>
+      </div>
+      <div class="stock-card-meta">
+        <div><strong>手帳種別:</strong> ${row.planner_type || '未設定'}</div>
+        <div><strong>系列:</strong> ${row.series_label || row.series || '未設定'}</div>
+        <div><strong>見積総額:</strong> ${row.price_jpy ? `¥${numberValue(row.price_jpy).toLocaleString()}` : '未設定'}</div>
+        <div><strong>表示:</strong> ${boolValue(row.ui_visible) ? 'ON' : 'OFF'}</div>
+        <div><strong>候補:</strong> ${boolValue(row.check_enabled) ? 'ON' : 'OFF'}</div>
+        ${crawlUpdated ? `<div style="grid-column:1 / -1;color:#b42318"><strong>更新:</strong> ${row.crawl_updated_at_jst || '時刻未設定'} / ${row.crawl_updated_from_shop || '巡回元未設定'}</div>` : ''}
+      </div>
+      <div class="stock-card-edit">
+        <div class="stock-edit-field">
+          <label>在庫状態</label>
+          <select data-stock-edit="status" data-row="${rowIndex}">
+            ${STOCK_STATUS_OPTIONS.map(opt => `<option value="${opt}"${opt === row.stock_status ? ' selected' : ''}>${opt}</option>`).join('')}
+          </select>
+        </div>
+        <div class="stock-edit-field">
+          <label>在庫数</label>
+          <input type="number" min="0" step="1" value="${qty}" data-stock-edit="qty" data-row="${rowIndex}">
+        </div>
+        <div class="stock-edit-field">
+          <label>見積価格</label>
+          <input type="number" min="0" step="1" value="${row.price_jpy || ''}" data-stock-edit="price" data-row="${rowIndex}">
+        </div>
+      </div>
+      <div class="stock-checks">
+        <label><input type="checkbox" data-stock-edit="visible" data-row="${rowIndex}" ${boolValue(row.ui_visible) ? 'checked' : ''}>見積もり表示</label>
+        <label><input type="checkbox" data-stock-edit="checked" data-row="${rowIndex}" ${boolValue(row.check_enabled) ? 'checked' : ''}>候補有効</label>
+        <label><input type="checkbox" data-stock-edit="monitor" data-row="${rowIndex}" ${boolValue(row.monitor_enabled) ? 'checked' : ''}>価格監視</label>
+      </div>
+      <div class="review-actions">
+        <button class="mini-btn copy" data-jump-row="${rowIndex}">この行へジャンプ</button>
+      </div>
+    `;
+    el.appendChild(card);
+  });
+  el.querySelectorAll('[data-stock-edit]').forEach(input => {
+    input.addEventListener('change', () => {
+      const row = rows[Number(input.dataset.row)];
+      if (!row) return;
+      const kind = input.dataset.stockEdit;
+      if (kind === 'status') row.stock_status = input.value;
+      if (kind === 'qty') row.stock_qty = input.value;
+      if (kind === 'price') row.price_jpy = input.value;
+      if (kind === 'visible') row.ui_visible = input.checked ? 'TRUE' : 'FALSE';
+      if (kind === 'checked') row.check_enabled = input.checked ? 'TRUE' : 'FALSE';
+      if (kind === 'monitor') row.monitor_enabled = input.checked ? 'TRUE' : 'FALSE';
+      setDirty(true);
+      applyFilters(false);
+    });
+  });
+  el.querySelectorAll('[data-jump-row]').forEach(btn => {
+    btn.addEventListener('click', () => jumpToTableRow(Number(btn.dataset.jumpRow)));
+  });
+}
+
+function renderTable() {
+  const head = document.getElementById('tableHead');
+  const body = document.getElementById('tableBody');
+  const orderedHeaders = getOrderedHeaders();
+  head.innerHTML = '';
+  body.innerHTML = '';
+
+  const headRow = document.createElement('tr');
+  const actionTh = document.createElement('th');
+  actionTh.textContent = '操作';
+  headRow.appendChild(actionTh);
+  const diffTh = document.createElement('th');
+  diffTh.textContent = '価格差分';
+  headRow.appendChild(diffTh);
+  orderedHeaders.forEach(header => {
+    const th = document.createElement('th');
+    th.textContent = header;
+    headRow.appendChild(th);
+  });
+  head.appendChild(headRow);
+
+  filteredRows.forEach((row, visibleIndex) => {
+    const tr = document.createElement('tr');
+    const rowIndex = rows.indexOf(row);
+    tr.id = `table-row-${rowIndex}`;
+    const stockStatus = String(row.stock_status || '').toLowerCase();
+    if (stockStatus === 'low_stock') tr.classList.add('row-low-stock');
+    if (stockStatus === 'out_of_stock') tr.classList.add('row-out-stock');
+
+    const actionTd = document.createElement('td');
+    const actions = document.createElement('div');
+    actions.className = 'row-actions';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'mini-btn copy';
+    copyBtn.textContent = '複製';
+    copyBtn.onclick = () => {
+      const actualIndex = rows.indexOf(row);
+      const clone = { ...row };
+      rows.splice(actualIndex + 1, 0, clone);
+      setDirty(true);
+      applyFilters();
+    };
+    actions.appendChild(copyBtn);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'mini-btn delete';
+    deleteBtn.textContent = '削除';
+    deleteBtn.onclick = () => {
+      const actualIndex = rows.indexOf(row);
+      rows.splice(actualIndex, 1);
+      setDirty(true);
+      applyFilters();
+    };
+    actions.appendChild(deleteBtn);
+
+    actionTd.appendChild(actions);
+    tr.appendChild(actionTd);
+
+    const diffTd = document.createElement('td');
+    const diffWrap = document.createElement('div');
+    diffWrap.className = 'diff-stack';
+    const diffs = getPriceDiffs(row);
+    if (diffs.length) {
+      diffs.forEach(diff => {
+        const span = document.createElement('span');
+        span.className = `diff-badge ${diff.cls}`;
+        span.textContent = `${diff.shop}: ${diff.label}`;
+        diffWrap.appendChild(span);
+      });
+    } else {
+      const span = document.createElement('span');
+      span.className = 'diff-badge same';
+      span.textContent = '差分なし';
+      diffWrap.appendChild(span);
+    }
+    diffTd.appendChild(diffWrap);
+    tr.appendChild(diffTd);
+
+    orderedHeaders.forEach(header => {
+      const td = document.createElement('td');
+      let input;
+
+      if (BOOLEAN_FIELDS.has(header)) {
+        const wrap = document.createElement('div');
+        wrap.className = 'check';
+        input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = boolValue(row[header]);
+        input.onchange = () => {
+          row[header] = input.checked ? 'TRUE' : 'FALSE';
+          setDirty(true);
+          if (header === 'ui_visible' || header === 'check_enabled' || header === 'monitor_enabled') applyFilters();
+        };
+        wrap.appendChild(input);
+        td.appendChild(wrap);
+      } else if (header === 'stock_status') {
+        input = document.createElement('select');
+        STOCK_STATUS_OPTIONS.forEach(optValue => {
+          const opt = document.createElement('option');
+          opt.value = optValue;
+          opt.textContent = optValue;
+          input.appendChild(opt);
+        });
+        input.value = row[header] || 'unknown';
+        input.onchange = () => {
+          row[header] = input.value;
+          setDirty(true);
+          applyFilters();
+        };
+        td.appendChild(input);
+      } else {
+        input = document.createElement('input');
+        input.type = NUMBER_FIELDS.has(header) ? 'number' : 'text';
+        input.value = row[header] ?? '';
+        if (NUMBER_FIELDS.has(header)) input.step = '1';
+        input.className = NUMBER_FIELDS.has(header) ? 'short' : (URL_FIELDS.has(header) ? 'url' : '');
+        input.oninput = () => {
+          row[header] = input.value;
+          setDirty(true);
+          if (header === 'series' || header === 'stock_qty' || header === 'ring_id' || header === 'color_label' || header === 'note') applyFilters(false);
+        };
+        td.appendChild(input);
+      }
+
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
+  });
+}
+
+function applyFilters(rebuildSeries = true) {
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const planner = document.getElementById('plannerFilter').value;
+  const series = document.getElementById('seriesFilter').value;
+  const visible = document.getElementById('visibleFilter').value;
+
+  filteredRows = rows.filter(row => {
+    if (planner) {
+      if (String(row.planner_type || '').trim() !== planner) return false;
+    }
+    if (series && row.series !== series) return false;
+    if (visible === 'visible' && !boolValue(row.ui_visible)) return false;
+    if (visible === 'checked' && !boolValue(row.check_enabled)) return false;
+    if (visible === 'monitor' && !boolValue(row.monitor_enabled)) return false;
+    if (visible === 'stocked' && !hasStock(row)) return false;
+    if (!search) return true;
+    return headers.some(header => String(row[header] ?? '').toLowerCase().includes(search));
+  });
+
+  if (rebuildSeries) buildSeriesFilter();
+  renderTable();
+  renderStockList();
+  renderReviewList();
+  updateMeta();
+  buildTargetOptions();
+}
+
+async function loadFromText(text, sourceLabel) {
+  const parsed = parseCsv(text);
+  headers = parsed.headers;
+  rows = parsed.rows;
+  ensureHeadersAndRows();
+  filteredRows = rows.slice();
+  setDirty(false);
+  updateMeta(sourceLabel);
+  applyFilters();
+}
+
+async function loadDefaultCsv() {
+  if (location.protocol === 'file:') {
+    fileHandle = null;
+    headers = [];
+    rows = [];
+    filteredRows = [];
+    setDirty(false);
+    updateMeta('file表示のため自動読込なし');
+    buildSeriesFilter();
+    buildTargetOptions();
+    renderTable();
+    renderStockList();
+    renderReviewList();
+    return;
+  }
+  const res = await fetch(CSV_URL, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`CSV読込失敗: HTTP ${res.status}`);
+  const text = await res.text();
+  fileHandle = null;
+  await loadFromText(text, 'ring-price-stock.csv');
+}
+
+async function openLocalFile() {
+  if (!window.showOpenFilePicker) {
+    document.getElementById('fallbackFileInput').click();
+    return;
+  }
+  const [handle] = await window.showOpenFilePicker({
+    multiple: false,
+    types: [{
+      description: 'CSV files',
+      accept: { 'text/csv': ['.csv'] }
+    }]
+  });
+  const file = await handle.getFile();
+  const text = await file.text();
+  fileHandle = handle;
+  await loadFromText(text, file.name);
+}
+
+async function saveToOpenedFile() {
+  if (!fileHandle) return;
+  const writable = await fileHandle.createWritable();
+  await writable.write(toCsv());
+  await writable.close();
+  setDirty(false);
+}
+
+async function saveCurrentData() {
+  if (fileHandle) {
+    await saveToOpenedFile();
+    return;
+  }
+  downloadCsv();
+}
+
+function downloadCsv() {
+  const blob = new Blob([toCsv()], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ring-price-stock.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  setDirty(false);
+}
+
+function addRow() {
+  const row = {};
+  headers.forEach(header => {
+    if (BOOLEAN_FIELDS.has(header)) row[header] = 'FALSE';
+    else if (header === 'stock_status') row[header] = 'unknown';
+    else row[header] = '';
+  });
+  row.check_enabled = 'TRUE';
+  row.ui_visible = 'TRUE';
+  rows.push(row);
+  setDirty(true);
+  applyFilters();
+}
+
+function buildRingId(plannerType, series, sizeMm) {
+  const plannerMap = {
+    Micro5: 'm5',
+    Mini6: 'm6',
+    Bible: 'b',
+    A6: 'a6',
+    A5: 'a5',
+  };
+  const plannerPrefix = plannerMap[plannerType] || plannerType.toLowerCase();
+  const seriesPrefix = series === 'klause' ? 'k' : 'n';
+  return `${plannerPrefix}${seriesPrefix}${sizeMm}`;
+}
+
+function buildSeriesLabel(series) {
+  return series === 'klause' ? 'クラウゼリング' : '通常リング';
+}
+
+function addPresetRow() {
+  const plannerType = document.getElementById('newPlannerType').value;
+  const series = document.getElementById('newSeries').value;
+  const sizeMm = String(document.getElementById('newSizeMm').value || '').trim();
+  const colorId = document.getElementById('newColorId').value.trim();
+  const colorLabel = document.getElementById('newColorLabel').value.trim();
+  const finishLabel = document.getElementById('newFinishLabel').value.trim();
+  const priceJpy = document.getElementById('newPriceJpy').value.trim();
+  const stockQty = document.getElementById('newStockQty').value.trim();
+  if (!plannerType || !series || !sizeMm || !colorId || !colorLabel) {
+    alert('手帳種別 / リング種別 / リング径 / 色ID / 色名は必須です。');
+    return;
+  }
+  const ringId = buildRingId(plannerType, series, sizeMm);
+  const exists = rows.some(row =>
+    row.planner_type === plannerType &&
+    row.ring_id === ringId &&
+    row.color_id === colorId
+  );
+  if (exists) {
+    alert('同じ planner_type / ring_id / color_id の行が既にあります。');
+    return;
+  }
+  const row = {};
+  headers.forEach(header => {
+    if (BOOLEAN_FIELDS.has(header)) row[header] = 'FALSE';
+    else if (header === 'stock_status') row[header] = 'unknown';
+    else row[header] = '';
+  });
+  row.planner_type = plannerType;
+  row.ring_id = ringId;
+  row.series = series;
+  row.series_label = buildSeriesLabel(series);
+  row.size_label = `${sizeMm}mm`;
+  row.size_mm = sizeMm;
+  row.color_id = colorId;
+  row.color_label = colorLabel;
+  row.finish_label = finishLabel || colorLabel;
+  row.check_enabled = 'TRUE';
+  row.ui_visible = 'TRUE';
+  row.ui_order = String(rows.length ? Math.max(...rows.map(r => numberValue(r.ui_order))) + 1 : 10);
+  row.price_jpy = priceJpy || '0';
+  row.stock_status = numberValue(stockQty) > 0 ? 'in_stock' : 'out_of_stock';
+  row.stock_qty = stockQty || '0';
+  row.monitor_enabled = 'FALSE';
+  rows.push(row);
+  setDirty(true);
+  applyFilters();
+  document.getElementById('entryTarget').value = String(rows.length - 1);
+  updateEntryPreview();
+}
+
+function updateEntryPreview() {
+  const preview = document.getElementById('entryPreview');
+  const index = Number(document.getElementById('entryTarget').value || 0);
+  const row = rows[index];
+  if (!row) {
+    preview.textContent = '対象行を選ぶと、ここに現在の優先ソースと価格差分の見込みを表示します。';
+    return;
+  }
+  const preferredShop = row.preferred_source_shop || '未設定';
+  const preferredPrice = getPreferredTotal(row) ? `¥${getPreferredTotal(row).toLocaleString()}` : '未設定';
+  const preferredDate = row.preferred_last_checked || '未設定';
+  const diffs = getPriceDiffs(row);
+  preview.innerHTML = `
+    <div><strong>対象:</strong> ${rowKey(row)}</div>
+    <div><strong>現在の優先ソース:</strong> ${preferredShop}</div>
+    <div><strong>優先総額:</strong> ${preferredPrice}</div>
+    <div><strong>最終確認日:</strong> ${preferredDate}</div>
+    <div><strong>価格差分:</strong> ${diffs.length ? diffs.map(diff => `${diff.shop} ${diff.label}`).join(' / ') : '差分なし'}</div>
+  `;
+}
+
+function resetEntryForm() {
+  document.getElementById('entryShop').value = '';
+  document.getElementById('entryUrl').value = '';
+  document.getElementById('entryPrice').value = '';
+  document.getElementById('entryShipping').value = '';
+  document.getElementById('entryChecked').value = '';
+  document.getElementById('entryPreferred').value = 'yes';
+  document.getElementById('entryMonitor').value = 'keep';
+  document.getElementById('entrySourceSlot').value = '1';
+  updateEntryPreview();
+}
+
+function applyPriceEntry() {
+  const index = Number(document.getElementById('entryTarget').value || 0);
+  const row = rows[index];
+  if (!row) return alert('対象行を選択してください。');
+
+  const slot = document.getElementById('entrySourceSlot').value;
+  const shop = document.getElementById('entryShop').value.trim();
+  const url = document.getElementById('entryUrl').value.trim();
+  const price = document.getElementById('entryPrice').value.trim();
+  const shipping = document.getElementById('entryShipping').value.trim();
+  const checked = document.getElementById('entryChecked').value.trim();
+  const preferred = document.getElementById('entryPreferred').value;
+  const monitor = document.getElementById('entryMonitor').value;
+
+  if (!shop) return alert('ショップ名を入力してください。');
+  if (!url) return alert('URLを入力してください。');
+  if (!price) return alert('確認価格を入力してください。');
+
+  row[`source_shop_${slot}`] = shop;
+  row[`source_url_${slot}`] = url;
+  row[`source_price_${slot}_jpy`] = price;
+  row[`source_shipping_${slot}_jpy`] = shipping || '0';
+  row[`source_checked_${slot}`] = checked || new Date().toISOString().slice(0, 10);
+
+  if (preferred === 'yes') {
+    row.preferred_source_shop = shop;
+    row.preferred_source_url = url;
+    row.preferred_source_price_jpy = price;
+    row.preferred_source_shipping_jpy = shipping || '0';
+    row.preferred_last_checked = row[`source_checked_${slot}`];
+    row.price_jpy = String(numberValue(price) + numberValue(shipping));
+  }
+
+  const numericPrice = numberValue(price) + numberValue(shipping);
+  const minPrice = numberValue(row.price_min_jpy);
+  const maxPrice = numberValue(row.price_max_jpy);
+  row.price_min_jpy = minPrice ? String(Math.min(minPrice, numericPrice)) : String(numericPrice);
+  row.price_max_jpy = maxPrice ? String(Math.max(maxPrice, numericPrice)) : String(numericPrice);
+
+  if (monitor === 'true') row.monitor_enabled = 'TRUE';
+  if (monitor === 'false') row.monitor_enabled = 'FALSE';
+
+  setDirty(true);
+  applyFilters(false);
+}
+
+function adoptReviewCandidate(rowIndex, slot) {
+  const row = rows[rowIndex];
+  if (!row) return;
+  const shop = row[`source_shop_${slot}`];
+  const url = row[`source_url_${slot}`];
+  const price = row[`source_price_${slot}_jpy`];
+  const shipping = row[`source_shipping_${slot}_jpy`] || '0';
+  const checked = row[`source_checked_${slot}`];
+  if (!shop || !price) return;
+  row.preferred_source_shop = shop;
+  row.preferred_source_url = url;
+  row.preferred_source_price_jpy = price;
+  row.preferred_source_shipping_jpy = shipping;
+  row.preferred_last_checked = checked;
+  row.price_jpy = String(numberValue(price) + numberValue(shipping));
+  setDirty(true);
+  applyFilters(false);
+}
+
+function rejectReviewCandidate(rowIndex, slot) {
+  const row = rows[rowIndex];
+  if (!row) return;
+  row[`source_shop_${slot}`] = '';
+  row[`source_url_${slot}`] = '';
+  row[`source_price_${slot}_jpy`] = '';
+  row[`source_shipping_${slot}_jpy`] = '';
+  row[`source_checked_${slot}`] = '';
+  setDirty(true);
+  applyFilters(false);
+}
+
+function jumpToTableRow(rowIndex) {
+  const el = document.getElementById(`table-row-${rowIndex}`);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.remove('table-row-target');
+  void el.offsetWidth;
+  el.classList.add('table-row-target');
+}
+
+function setCrawlStatus(text, cls = '') {
+  const pill = document.getElementById('crawlPill');
+  pill.textContent = `巡回: ${text}`;
+  pill.className = `status-pill ${cls}`.trim();
+}
+
+function setCrawlLog(text) {
+  document.getElementById('crawlLog').textContent = text;
+}
+
+function setLatestCrawlTime(text, cls = '') {
+  const pill = document.getElementById('crawlTimePill');
+  pill.textContent = `最新巡回: ${text}`;
+  pill.className = `status-pill ${cls}`.trim();
+}
+
+function formatUnixTime(ts) {
+  if (!ts) return '未確認';
+  const d = new Date(Number(ts) * 1000);
+  if (Number.isNaN(d.getTime())) return '未確認';
+  return d.toLocaleString('ja-JP');
+}
+
+async function checkCrawlServer() {
+  try {
+    const res = await fetch(`${CRAWL_SERVER_URL}/health`, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    setCrawlStatus('接続OK', 'good');
+    fetchLatestCrawlInfo().catch(() => {});
+    return true;
+  } catch (err) {
+    setCrawlStatus('未接続', 'warn');
+    setLatestCrawlTime('未接続', 'warn');
+    setCrawlLog('巡回サーバーに接続できません。start-ring-price-crawl-server.bat を起動してから再度お試しください。');
+    return false;
+  }
+}
+
+async function fetchLatestCrawlInfo() {
+  const res = await fetch(`${CRAWL_SERVER_URL}/latest-results`, { cache: 'no-cache' });
+  if (!res.ok) {
+    setLatestCrawlTime('結果なし');
+    return;
+  }
+  const data = await res.json();
+  setLatestCrawlTime(formatUnixTime(data.updated_at), 'good');
+}
+
+async function runCrawl() {
+  const ok = await checkCrawlServer();
+  if (!ok) {
+    alert('巡回サーバーが起動していません。start-ring-price-crawl-server.bat を先に実行してください。');
+    return;
+  }
+  setCrawlStatus('実行中', 'warn');
+  setCrawlLog('価格巡回を実行しています...');
+  const btn = document.getElementById('runCrawlBtn');
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${CRAWL_SERVER_URL}/run-crawl`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.stderr || data.stdout || `HTTP ${res.status}`);
+    setCrawlStatus('完了', 'good');
+    setCrawlLog(data.stdout || '巡回が完了しました。');
+    await fetchLatestCrawlInfo();
+  } catch (err) {
+    setCrawlStatus('失敗', 'warn');
+    setCrawlLog(`巡回実行に失敗しました。\n${err.message}`);
+    alert(`巡回実行に失敗しました: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('reloadBtn').addEventListener('click', () => {
+  if (location.protocol === 'file:') {
+    openLocalFile().catch(err => alert(`ファイルを開けませんでした: ${err.message}`));
+    return;
+  }
+  loadDefaultCsv().catch(err => alert(err.message));
+});
+document.getElementById('openFileBtn').addEventListener('click', () => {
+  openLocalFile().catch(err => alert(`ファイルを開けませんでした: ${err.message}`));
+});
+document.getElementById('saveFileBtn').addEventListener('click', () => {
+  saveToOpenedFile().catch(err => alert(`保存に失敗しました: ${err.message}`));
+});
+document.getElementById('runCrawlBtn').addEventListener('click', () => {
+  runCrawl().catch(err => alert(`巡回実行に失敗しました: ${err.message}`));
+});
+document.getElementById('stockSaveBtn').addEventListener('click', () => {
+  saveCurrentData().catch(err => alert(`保存に失敗しました: ${err.message}`));
+});
+document.getElementById('downloadBtn').addEventListener('click', downloadCsv);
+document.getElementById('addRowBtn').addEventListener('click', addRow);
+document.getElementById('addPresetRowBtn').addEventListener('click', addPresetRow);
+document.getElementById('searchInput').addEventListener('input', () => applyFilters(false));
+document.getElementById('plannerFilter').addEventListener('change', () => applyFilters(false));
+document.getElementById('seriesFilter').addEventListener('change', () => applyFilters(false));
+document.getElementById('visibleFilter').addEventListener('change', () => applyFilters(false));
+document.getElementById('stockSearchInput').addEventListener('input', () => renderStockList());
+document.getElementById('stockPlannerFilter').addEventListener('change', () => renderStockList());
+document.getElementById('stockOnlyFilter').addEventListener('change', () => renderStockList());
+document.getElementById('stockSeriesFilter').addEventListener('change', () => renderStockList());
+document.getElementById('stockSortFilter').addEventListener('change', () => renderStockList());
+document.getElementById('entryTarget').addEventListener('change', updateEntryPreview);
+document.getElementById('applyEntryBtn').addEventListener('click', applyPriceEntry);
+document.getElementById('resetEntryBtn').addEventListener('click', resetEntryForm);
+document.getElementById('fallbackFileInput').addEventListener('change', async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const text = await file.text();
+  fileHandle = null;
+  await loadFromText(text, file.name);
+  event.target.value = '';
+});
+
+window.addEventListener('beforeunload', (event) => {
+  if (!dirty) return;
+  event.preventDefault();
+  event.returnValue = '';
+});
+
+loadDefaultCsv().catch(err => {
+  document.getElementById('sourcePill').textContent = '読込元: 失敗';
+  if (location.protocol === 'file:') {
+    return;
+  }
+  alert(`初期CSVの読込に失敗しました: ${err.message}`);
+});
+checkCrawlServer().catch(() => {});
+</script>
+</body>
+</html>
