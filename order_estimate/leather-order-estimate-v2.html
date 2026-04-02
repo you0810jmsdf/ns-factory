@@ -526,7 +526,24 @@ body{
     color:#fff;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap;
   }
   .content{padding:16px 12px 80px}
-  .sidebar{display:none!important}
+  .main{grid-template-columns:1fr}
+  .sidebar{
+    display:block!important;
+    order:-1;
+    position:sticky;
+    top:58px;
+    height:auto;
+    max-height:62vh;
+    overflow-y:auto;
+    border-left:none;
+    border-top:none;
+    border-bottom:2px solid #ede0d4;
+    box-shadow:0 10px 28px rgba(58,28,10,.12);
+    z-index:20;
+  }
+  .sidebar-preview-frame{height:220px}
+  .summary-list li{font-size:11px}
+  .total-box{margin-bottom:10px}
 }
 
 /* ── RESPONSIVE ── */
@@ -1736,33 +1753,8 @@ function renderComponentSwatches(partKey, selectedColor) {
 function renderSidebarPreviewGallery(activeComponents = getActiveColorComponents()) {
   const gallery = document.getElementById('sidebarColorGallery');
   if (!gallery) return;
-  const items = activeComponents
-    .map(meta => {
-      const outerSrc = getComponentPreviewImage(meta.key, 'outer') || getSidebarFallbackImage();
-      if (!outerSrc) return '';
-      const isActive = meta.key === activeColorComponentKey;
-      return `
-        <button type="button" onclick="setActiveColorComponent('${meta.key}')" style="
-          display:flex;align-items:center;gap:8px;width:100%;padding:8px;
-          border-radius:8px;border:${isActive ? '2px solid #5a7a6a' : '1px solid #d7ebe3'};
-          background:${isActive ? '#f0f7f4' : '#fff'};cursor:pointer;text-align:left">
-          <img src="${outerSrc}" alt="${meta.label} のプレビュー" style="width:64px;height:48px;object-fit:cover;border-radius:6px;background:#eee;flex:none">
-          <div style="min-width:0">
-            <div style="font-size:12px;font-weight:700;color:#2c1a0e">${meta.label}</div>
-            <div style="font-size:10px;color:#6f7f78">${formatComponentColorSummary(meta.key)}</div>
-          </div>
-        </button>`;
-    })
-    .filter(Boolean);
-  if (!items.length) {
-    gallery.innerHTML = '';
-    gallery.style.display = 'none';
-    return;
-  }
-  gallery.innerHTML = `
-    <div style="font-size:11px;font-weight:700;color:#6b3a1f;margin-bottom:6px">保存済み写真プレビュー</div>
-    <div style="display:flex;flex-direction:column;gap:8px">${items.join('')}</div>`;
-  gallery.style.display = 'block';
+  gallery.innerHTML = '';
+  gallery.style.display = 'none';
 }
 
 function refreshSidebarColorPreview() {
