@@ -1823,9 +1823,32 @@ function setActiveColorComponent(componentKey) {
   refreshSidebarColorPreview();
 }
 
+function syncComponentColorEditorUI() {
+  const section = document.getElementById('componentColorSection');
+  if (!section || !section.querySelector('.component-color-editor')) return;
+  const active = getActiveColorComponents();
+  const currentMeta = getComponentMeta(activeColorComponentKey);
+  const cfg = getComponentColorConfig(activeColorComponentKey);
+  const heading = section.querySelector('.component-color-card h4');
+  const summary = section.querySelector('.component-color-card p');
+  const grid = section.querySelector('.component-swatch-grid');
+  if (heading) heading.textContent = `${currentMeta.label} の色設定`;
+  if (summary) summary.textContent = formatComponentColorSummary(activeColorComponentKey);
+  if (grid) grid.innerHTML = renderComponentSwatches('color', cfg.color);
+  section.querySelectorAll('.component-chip').forEach((chip, index) => {
+    const meta = active[index];
+    if (!meta) return;
+    chip.classList.toggle('active', meta.key === activeColorComponentKey);
+    const chipSummary = chip.querySelector('.component-chip-summary');
+    if (chipSummary) chipSummary.textContent = formatComponentColorSummary(meta.key);
+  });
+}
+
 function updateComponentColorValue(partKey, colorName) {
   setComponentColorConfig(activeColorComponentKey, { color: colorName }, { custom: true });
-  updateSummary();
+  updateSummary({ preserveComponentEditor: true });
+  syncComponentColorEditorUI();
+  refreshSidebarColorPreview();
 }
 
 function renderComponentSwatches(partKey, selectedColor) {
@@ -2502,7 +2525,7 @@ function changeNum(field, delta) {
 }
 
 // ── SUMMARY ──
-function updateSummary() {
+function updateSummary(options = {}) {
   ensureComponentColors();
   const qty = parseInt(document.getElementById('qty').value) || 1;
   const discRate = parseFloat(document.getElementById('discountRate').value) || 0;
@@ -2681,7 +2704,7 @@ function updateSummary() {
   const note = document.getElementById('qtyNote');
   note.textContent = qty >= 10 ? '✅ 10個以上: 10%割引適用中！' : qty >= 5 ? '✅ 5個以上: 5%割引適用中！' : '5個以上 → 5% / 10個以上 → 10%割引';
 
-  renderComponentColorControls();
+  if (!options.preserveComponentEditor) renderComponentColorControls();
   refreshSidebarColorPreview();
   buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, coverW, coverH, spineW, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier, initDesignFee);
 }
