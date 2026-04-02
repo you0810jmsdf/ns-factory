@@ -570,6 +570,7 @@ body{
     <p>各項目を選択してリアルタイムで概算金額を確認できます</p>
   </div>
   <div class="topbar-actions no-print">
+    <button class="tog" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff;font-size:12px;" onclick="goBackToParentSite()">↩ 元のサイト</button>
     <a class="tog" href="./ring-price-stock-admin.html" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff;font-size:12px;text-decoration:none;">🗂 管理画面</a>
     <button class="tog" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff;font-size:12px;" onclick="resetAll()">🔄 リセット</button>
   </div>
@@ -1444,7 +1445,7 @@ function getLeatherPaletteEntries(leatherId = sel.leatherId) {
 function getBrandFlapMode(brandId = sel.brandId) {
   if (brandId === 'npad') return 'fixed_on';
   if (brandId === 'npad_nf') return 'fixed_off';
-  return 'optional';
+  return 'hidden';
 }
 
 function isFlapPriceOptional(brandId = sel.brandId) {
@@ -1466,6 +1467,8 @@ function updateFlapOptionUI() {
   const note = document.getElementById('flapNote');
   if (!btnNo || !btnYes || !note) return;
 
+  if (row) row.style.display = mode === 'hidden' ? 'none' : '';
+
   btnNo.disabled = mode !== 'optional';
   btnYes.disabled = mode !== 'optional';
   btnNo.style.opacity = mode === 'optional' ? '1' : '0.6';
@@ -1477,8 +1480,11 @@ function updateFlapOptionUI() {
   } else if (mode === 'fixed_off') {
     window._flapOn = false;
     note.textContent = '構造タイプで決定（N-Pad non flap）';
-  } else {
+  } else if (mode === 'optional') {
     note.textContent = '+¥3,000';
+  } else {
+    window._flapOn = false;
+    note.textContent = '対象外';
   }
 
   if (row) row.dataset.mode = mode;
@@ -1630,6 +1636,25 @@ function buildSimulatorUrl(componentKey) {
   url.searchParams.set('brand', getSimulatorBrandId());
   url.searchParams.set('from', 'estimate');
   return url.toString();
+}
+
+function goBackToParentSite() {
+  const configured = document.querySelector('meta[name="nsfactory-parent-site-url"]')?.content?.trim()
+    || document.documentElement?.dataset?.parentSiteUrl?.trim()
+    || window.NS_FACTORY_PARENT_SITE_URL;
+  if (configured) {
+    window.location.href = new URL(configured, location.href).toString();
+    return;
+  }
+  if (document.referrer) {
+    window.location.href = document.referrer;
+    return;
+  }
+  if (window.history.length > 1) {
+    window.history.back();
+    return;
+  }
+  window.location.href = new URL('../index.html', location.href).toString();
 }
 
 function openColorEditorModal(componentKey) {
