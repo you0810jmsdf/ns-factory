@@ -586,6 +586,7 @@ body{
   }
   .summary-list li{font-size:11px}
   .total-box{margin-bottom:10px}
+  #inlineColorPreview{display:block}
 }
 
 /* ── RESPONSIVE ── */
@@ -652,19 +653,25 @@ body{
 </div>
 
 <div class="section">
-  <div class="section-title"><span class="num">3</span> カラーシミュレーション <span class="badge">先に色を決める</span></div>
-  <div id="componentColorSection" style="margin-bottom:16px"></div>
-</div>
-
-<!-- ══ STEP 4: LEATHER ══ -->
-<div class="section">
-  <div class="section-title"><span class="num">4</span> レザー素材 <span class="badge">必須</span></div>
+  <div class="section-title"><span class="num">3</span> レザー素材 <span class="badge">必須</span></div>
   <div class="filter-bar">
     <input type="text" class="filter-input" placeholder="🔍 革を検索..." id="leatherSearch" oninput="filterLeather()">
     <div class="filter-tags" id="leatherTags"></div>
   </div>
   <div id="patchworkNote" style="display:none;font-size:11px;color:#b06820;background:#fff8ee;border:1px solid #e8c87a;border-radius:6px;padding:6px 10px;margin-bottom:8px">🎨 パッチワーク加工ON：革を複数選択できます（ds単価は¥160固定）</div>
   <div class="img-grid" id="leatherGrid"></div>
+</div>
+
+<div class="section">
+  <div class="section-title"><span class="num">4</span> カラーシミュレーション <span class="badge">色を見ながら調整</span></div>
+  <div id="componentColorSection" style="margin-bottom:16px"></div>
+  <div class="sidebar-preview no-print" id="inlineColorPreview" style="display:none">
+    <div class="sidebar-preview-head">
+      <h3 id="inlineColorPreviewTitle">本体のカラーシミュレーション</h3>
+      <p>スマホではこの位置で色を見ながら調整できます</p>
+    </div>
+    <iframe id="inlineColorFrame" class="sidebar-preview-frame" title="本体カラーシミュレーションのプレビュー"></iframe>
+  </div>
 </div>
 
 
@@ -1803,22 +1810,31 @@ function refreshSidebarColorPreview() {
   const box = document.getElementById('sidebarColorPreview');
   const frame = document.getElementById('sidebarColorFrame');
   const title = document.getElementById('sidebarColorPreviewTitle');
+  const inlineBox = document.getElementById('inlineColorPreview');
+  const inlineFrame = document.getElementById('inlineColorFrame');
+  const inlineTitle = document.getElementById('inlineColorPreviewTitle');
   if (!box || !frame || !title) return;
   if (!hasAlaskaLeatherSelected()) {
     box.style.display = 'none';
     frame.src = 'about:blank';
+    if (inlineBox) inlineBox.style.display = 'none';
+    if (inlineFrame) inlineFrame.src = 'about:blank';
     renderSidebarPreviewGallery([]);
     return;
   }
   const active = getActiveColorComponents();
   const meta = getComponentMeta(activeColorComponentKey);
-  title.textContent = `${meta.label} のカラーシミュレーション`;
+  const previewTitle = `${meta.label} のカラーシミュレーション`;
+  title.textContent = previewTitle;
+  if (inlineTitle) inlineTitle.textContent = previewTitle;
   const url = new URL(buildSimulatorUrl(activeColorComponentKey));
   url.searchParams.set('embed', '1');
   url.searchParams.set('preview', '1');
   const nextSrc = url.toString();
   if (frame.src !== nextSrc) frame.src = nextSrc;
+  if (inlineFrame && inlineFrame.src !== nextSrc) inlineFrame.src = nextSrc;
   box.style.display = 'block';
+  if (inlineBox) inlineBox.style.display = 'block';
   renderSidebarPreviewGallery(active);
 }
 
