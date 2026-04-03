@@ -210,9 +210,10 @@ body{
 .ring-text-card{
   min-width:88px;
   border:1.5px solid #d9c2ac;
-  border-radius:999px;
+  border-radius:28px;
   background:#fffdfb;
-  padding:7px 12px 8px;
+  padding:10px 14px 12px;
+  min-height:92px;
   cursor:pointer;
   transition:all .12s;
   position:relative;
@@ -230,8 +231,8 @@ body{
 .ring-text-card.selected::after{
   content:'✓';
   position:absolute;
-  top:-5px;
-  right:-3px;
+  top:8px;
+  right:8px;
   width:16px;
   height:16px;
   border-radius:50%;
@@ -247,19 +248,20 @@ body{
   font-size:12px;
   font-weight:700;
   color:#2c1a0e;
-  line-height:1.1;
+  line-height:1.2;
+  margin-right:16px;
 }
 .ring-text-sub{
   font-size:10px;
   color:#8a6644;
-  margin-top:2px;
-  line-height:1.2;
+  margin-top:4px;
+  line-height:1.35;
 }
 .ring-text-meta{
   font-size:10px;
   color:#b05a00;
-  margin-top:2px;
-  line-height:1.2;
+  margin-top:4px;
+  line-height:1.35;
 }
 
 /* ── TOGGLE BTN ── */
@@ -748,12 +750,12 @@ body{
 <!-- ══ STEP 5: RING ══ -->
 <div class="section">
   <div class="section-title"><span class="num">5</span> リング仕様</div>
-  <div class="ring-section-lbl">⭕ 通常リング <span class="area-badge">革×1</span></div>
+<div class="ring-section-lbl">⭕ 通常リング</div>
   <div class="opt-grid" id="ringNormalGrid"></div>
   <div id="klauseSection" class="klause-section">
-  <div class="ring-section-lbl klause">🔒 クラウゼリング（スライドロック式） <span class="area-badge">革×2</span></div>
+  <div class="ring-section-lbl klause">🔒 クラウゼリング（スライドロック式）</div>
   <div id="klauseNote" style="display:none;font-size:11px;color:#b05a00;background:#fff8f0;border:1px solid #e8c9a8;border-radius:6px;padding:7px 10px;margin-bottom:8px">⚠ この構造タイプはクラウゼリング非対応です</div>
-  <div id="klausePadNote" style="display:none;font-size:11px;color:#4a7a30;background:#f0f7ec;border:1px solid #b5d9a0;border-radius:6px;padding:7px 10px;margin-bottom:8px">ℹ pad加工により革面積はすでに×2のため、クラウゼリング追加時に革面積の追加増加はありません</div>
+  <div id="klausePadNote" style="display:none"></div>
   <div class="opt-grid" id="ringKlauseGrid"></div>
   </div>
   <div class="ring-section-lbl" style="margin-top:18px">金具カラー</div>
@@ -2311,7 +2313,7 @@ function updateKlauseSection() {
   const noPadMulti = brandObj ? brandObj.krauseNoMulti : false;
   sec.classList.toggle('disabled', !allowed);
   if (note)    note.style.display    = (!allowed)              ? 'block' : 'none';
-  if (padNote) padNote.style.display = (allowed && noPadMulti) ? 'block' : 'none';
+  if (padNote) padNote.style.display = 'none';
 }
 
 // ── BUILD RING GRIDS (normal + klause split) ──
@@ -2341,7 +2343,6 @@ function buildRingGrids(sizeId) {
         div.innerHTML = `
           <div class="ring-text-name">${d.name}</div>
           <div class="ring-text-sub">${d.sub}</div>
-          ${d.isKlause ? '<div class="ring-text-meta">革面積×2</div>' : ''}
           ${latestCrawlRow ? `<div class="crawl-update-note">巡回更新 ${latestCrawlRow.crawl_updated_at_jst || ''}</div>` : ''}
           ${ringStockText ? `<div class="ring-text-meta">${ringStockText}</div>` : ''}`;
       if (OUT_OF_STOCK.has(d.id)) div.classList.add('oos');
