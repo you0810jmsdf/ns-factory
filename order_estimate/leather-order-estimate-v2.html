@@ -2743,12 +2743,7 @@ function updateSummary(options = {}) {
     const ratioSuffix = leatherRatio !== 1 ? ` [${sel.leather||''} ×${leatherRatio.toFixed(2)}]` : '';
     const baseCostLabel = `製作費（${sel.size||'―'})${multiSuffix}${ratioSuffix}`;
     add(baseCostLabel, `¥${baseCost.toLocaleString()}`);
-    if (sel.leather) {
-      if (sizeObj) {
-        const dsNote = sizeDs > 0 ? `参考${sizeDs}ds（ロス${Math.round(WASTE_RATE*100)}%込）` : '';
-        add(`表紙${coverW}×${coverH}mm・スパイン${spineW}mm　${dsNote}`, '', 'lbl');
-      }
-    } else {
+    if (!sel.leather) {
       add('革素材', '革を選択してください');
     }
     if(sel.ring)  add(`リング: ${sel.ring}`, prices.ring ? `+¥${prices.ring.toLocaleString()}` : '標準');
