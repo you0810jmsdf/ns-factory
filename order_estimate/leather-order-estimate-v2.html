@@ -624,6 +624,7 @@ body{
   .brand-grid{grid-template-columns:repeat(2,1fr)!important}
   .img-grid{grid-template-columns:repeat(2,1fr)}
   .opt-grid{grid-template-columns:repeat(2,1fr)}
+  .mobile-hide-color-sim{display:none!important}
   .ring-text-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .ring-text-card{
     min-width:0;
@@ -719,8 +720,8 @@ body{
 </div>
 
 <div class="section">
-  <div class="section-title"><span class="num">4</span> カラーシミュレーション <span class="badge">色を見ながら調整</span></div>
-  <div id="componentColorSection" style="margin-bottom:16px"></div>
+<div class="section-title mobile-hide-color-sim"><span class="num">4</span> カラーシミュレーション <span class="badge">色を見ながら調整</span></div>
+<div id="componentColorSection" class="mobile-hide-color-sim" style="margin-bottom:16px"></div>
   <div class="sidebar-preview no-print" id="inlineColorPreview" style="display:none">
     <div class="sidebar-preview-head">
       <h3 id="inlineColorPreviewTitle">本体のカラーシミュレーション</h3>
