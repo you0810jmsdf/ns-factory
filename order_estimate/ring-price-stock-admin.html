@@ -123,6 +123,32 @@ body{
   gap:10px;
   align-items:center;
 }
+.action-guides{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+  margin-top:12px;
+}
+.action-guide{
+  padding:10px 12px;
+  border:1px solid #eadccf;
+  border-radius:12px;
+  background:#fffaf6;
+}
+.action-guide strong{
+  display:block;
+  margin-bottom:4px;
+  font-size:12px;
+  color:#6b3a1f;
+}
+.action-guide span{
+  font-size:12px;
+  color:#6c533c;
+  line-height:1.6;
+}
+.advanced-only{
+  display:none !important;
+}
 .btn{
   border:none;
   border-radius:10px;
@@ -508,6 +534,11 @@ tr.row-out-stock td{
   align-items:center;
   margin-top:12px;
 }
+.inline-note{
+  font-size:12px;
+  color:#7d644d;
+  line-height:1.6;
+}
 .stock-empty{
   padding:14px;
   border:1px dashed #d8c1ab;
@@ -548,7 +579,7 @@ tr.row-out-stock td{
 <div class="page">
   <div class="topbar">
     <h1>リング価格・在庫 管理画面</h1>
-    <p>`ring-price-stock.csv` を一覧編集する簡易ページ。見積もりシミュレーションの候補制御と価格管理の基礎画面です。</p>
+    <p>在庫数・在庫状態・見積価格を確認して修正するための管理画面です。必要な内容だけ直して、CSVへ保存する用途に絞っています。</p>
     <div class="top-links">
       <a class="top-link" href="./leather-order-estimate-v2.html">見積もり画面へ戻る</a>
       <a class="top-link" href="./ring-price-stock.csv" download>正本CSVを開く</a>
@@ -556,7 +587,7 @@ tr.row-out-stock td{
   </div>
 
   <div class="main">
-    <div class="panel">
+    <div class="panel advanced-only">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しいリング候補を追加</h2>
       <div class="hint">
         未登録の規格 / リング種別 / 径 / 色を、全件テーブルを開かずに追加します。たとえば `Mini6 / 通常リング / 20mm / Black` のような行をここから作れます。
@@ -616,27 +647,59 @@ tr.row-out-stock td{
 
     <div class="panel">
       <div class="controls">
-        <button class="btn" id="reloadBtn">CSV再読込</button>
+        <button class="btn light" id="reloadBtn">公開CSVを再読込</button>
         <button class="btn sub" id="openFileBtn">ローカルCSVを開く</button>
-        <button class="btn" id="saveFileBtn">この内容を保存</button>
+        <button class="btn" id="saveFileBtn">CSVへ保存</button>
         <button class="btn light" id="downloadBtn">CSVダウンロード</button>
-        <button class="btn light" id="addRowBtn">行を追加</button>
-        <button class="btn sub" id="runCrawlBtn">巡回実行</button>
-        <a class="btn light" id="openCrawlResultsBtn" href="./ring-price-crawl-results.csv" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center">巡回結果CSV</a>
+        <button class="btn sub" id="setGithubTokenBtn">GitHubトークン設定</button>
+        <button class="btn" id="publishGithubBtn">GitHubへ反映</button>
+        <button class="btn light advanced-only" id="addRowBtn">行を追加</button>
+        <button class="btn sub advanced-only" id="runCrawlBtn">巡回実行</button>
+        <a class="btn light advanced-only" id="openCrawlResultsBtn" href="./ring-price-crawl-results.csv" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center">巡回結果CSV</a>
+      </div>
+      <div class="action-guides">
+        <div class="action-guide">
+          <strong>公開CSVを再読込</strong>
+          <span>編集をやり直したいときに、今公開されている `ring-price-stock.csv` を読み直します。</span>
+        </div>
+        <div class="action-guide">
+          <strong>ローカルCSVを開く</strong>
+          <span>実際に更新したい手元の `ring-price-stock.csv` を開きます。通常はここから始めれば大丈夫です。</span>
+        </div>
+        <div class="action-guide">
+          <strong>この内容を保存</strong>
+          <span>開いているCSVへ保存します。対応ブラウザでは上書き保存、それ以外では保存先選択またはダウンロードになります。</span>
+        </div>
+        <div class="action-guide">
+          <strong>CSVダウンロード</strong>
+          <span>編集結果をCSVとして書き出します。控え保存や、手動で差し替えるときに使います。</span>
+        </div>
+        <div class="action-guide">
+          <strong>GitHubトークン設定</strong>
+          <span>GitHubへ直接反映するときのトークンを、このブラウザのセッション中だけ保持します。</span>
+        </div>
+        <div class="action-guide">
+          <strong>GitHubへ反映</strong>
+          <span>現在のCSV内容を GitHub リポジトリへ直接保存します。GitHub Pages 側のCSVもこの更新で置き換わります。</span>
+        </div>
       </div>
       <div class="meta">
         <span class="status-pill" id="sourcePill">読込元: 初期化中</span>
         <span class="status-pill" id="dirtyPill">状態: 保存済み</span>
         <span class="status-pill" id="countPill">行数: 0</span>
-        <span class="status-pill" id="diffPill">価格差分: 0件</span>
-        <span class="status-pill" id="crawlPill">巡回: 未実行</span>
-        <span class="status-pill" id="crawlTimePill">最新巡回: 未確認</span>
+        <span class="status-pill warn" id="githubTokenPill">GitHub: トークン未設定</span>
+        <span class="status-pill advanced-only" id="diffPill">価格差分: 0件</span>
+        <span class="status-pill advanced-only" id="crawlPill">巡回: 未実行</span>
+        <span class="status-pill advanced-only" id="crawlTimePill">最新巡回: 未確認</span>
       </div>
       <div class="hint" style="margin-top:10px">
-        `直接上書き保存` は対応ブラウザで、かつ `ローカルCSVを開く` からファイルを選択したときに使えます。
-        それ以外は `CSVダウンロード` で保存してください。`巡回実行` は `start-ring-price-crawl-server.bat` を起動しているときに使えます。
+        おすすめの流れは `ローカルCSVを開く` → 在庫や価格を修正 → `GitHubへ反映` です。
+        GitHubへ直接反映しない場合は、`CSVへ保存` または `CSVダウンロード` を使ってください。
       </div>
-      <div class="crawl-log" id="crawlLog">巡回サーバー待機中です。未起動の場合は `start-ring-price-crawl-server.bat` を実行してください。</div>
+      <div class="inline-note" style="margin-top:8px">
+        `CSVへ保存` と下の `在庫変更を保存` は同じ保存処理です。上は全体操作用、下は在庫一覧の近くに置いたショートカットです。
+      </div>
+      <div class="crawl-log advanced-only" id="crawlLog">巡回サーバー待機中です。未起動の場合は `start-ring-price-crawl-server.bat` を実行してください。</div>
     </div>
 
     <div class="panel">
@@ -710,13 +773,13 @@ tr.row-out-stock td{
         </div>
       </div>
       <div class="stock-actions">
-        <button class="btn" id="stockSaveBtn">この内容を保存</button>
-        <span class="hint">在庫クイック検索で編集した内容を保存します。ローカルCSVを開いている場合は上書き保存し、それ以外はCSVをダウンロードします。</span>
+        <button class="btn" id="stockSaveBtn">在庫変更を保存</button>
+        <span class="hint">この一覧で直した在庫数・在庫状態・見積価格を保存します。機能は上の `CSVへ保存` と同じです。</span>
       </div>
       <div class="stock-list" id="stockList" style="margin-top:12px"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel advanced-only">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">全件テーブル</h2>
       <div class="hint">正本CSVの全行をここで直接編集できます。価格が反映されないときは、`planner_type / ring_id / color_id / price_jpy / stock_status / stock_qty` をまず確認してください。</div>
       <div class="table-wrap" style="margin-top:12px">
@@ -727,7 +790,7 @@ tr.row-out-stock td{
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel advanced-only">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">巡回結果レビュー</h2>
       <div class="hint">
         価格差分がある候補だけを一覧表示します。`採用する` は優先ソースと見積価格へ反映し、`不採用` はその候補スロットをクリアします。
@@ -735,7 +798,7 @@ tr.row-out-stock td{
       <div class="review-list" id="reviewList" style="margin-top:12px"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel advanced-only">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しい価格情報を反映</h2>
       <div class="hint">
         新たに見つけた価格情報を、ブラウザ上から現在のCSVデータへ取り込みます。保存は `直接上書き保存` または `CSVダウンロード` で確定します。
@@ -811,6 +874,11 @@ tr.row-out-stock td{
 <script>
 const ADMIN_PASSWORD = 'glJy4399';
 const ADMIN_SESSION_KEY = 'nsfactory-ring-admin-auth';
+const GITHUB_TOKEN_SESSION_KEY = 'nsfactory-ring-admin-github-token';
+const GITHUB_REPO_OWNER = 'you0810jmsdf';
+const GITHUB_REPO_NAME = 'ns-factory';
+const GITHUB_REPO_BRANCH = 'main';
+const GITHUB_CSV_PATH = 'order_estimate/ring-price-stock.csv';
 
 function unlockAdmin() {
   const overlay = document.getElementById('authOverlay');
@@ -882,6 +950,125 @@ let rows = [];
 let filteredRows = [];
 let fileHandle = null;
 let dirty = false;
+
+function getGitHubToken() {
+  try {
+    return sessionStorage.getItem(GITHUB_TOKEN_SESSION_KEY) || '';
+  } catch (err) {
+    return '';
+  }
+}
+
+function setGitHubToken(token) {
+  try {
+    if (token) sessionStorage.setItem(GITHUB_TOKEN_SESSION_KEY, token);
+    else sessionStorage.removeItem(GITHUB_TOKEN_SESSION_KEY);
+  } catch (err) {
+    // ignore
+  }
+  updateGitHubTokenPill();
+}
+
+function updateGitHubTokenPill() {
+  const pill = document.getElementById('githubTokenPill');
+  if (!pill) return;
+  const hasToken = !!getGitHubToken();
+  pill.textContent = hasToken ? 'GitHub: トークン設定済み' : 'GitHub: トークン未設定';
+  pill.className = `status-pill ${hasToken ? 'good' : 'warn'}`;
+}
+
+function promptGitHubToken() {
+  const current = getGitHubToken();
+  const input = window.prompt(
+    'GitHub Personal Access Token を入力してください。\n必要権限: Contents read/write\n空欄で送信すると保存済みトークンを削除します。',
+    current
+  );
+  if (input === null) return false;
+  setGitHubToken(input.trim());
+  return true;
+}
+
+function utf8ToBase64(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+async function publishToGitHub() {
+  let token = getGitHubToken();
+  if (!token) {
+    const accepted = promptGitHubToken();
+    if (!accepted) return;
+    token = getGitHubToken();
+  }
+  if (!token) {
+    alert('GitHubトークンが未設定のため、反映を中止しました。');
+    return;
+  }
+
+  const btn = document.getElementById('publishGithubBtn');
+  const originalLabel = btn?.textContent || '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'GitHubへ反映中...';
+  }
+
+  const apiUrl = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/${GITHUB_CSV_PATH}`;
+  try {
+    const currentRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(GITHUB_REPO_BRANCH)}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json'
+      }
+    });
+
+    if (currentRes.status === 401 || currentRes.status === 403) {
+      throw new Error('GitHubトークンの権限不足、または無効な可能性があります。');
+    }
+    if (!currentRes.ok) {
+      throw new Error(`現在のCSV取得に失敗しました: HTTP ${currentRes.status}`);
+    }
+
+    const currentData = await currentRes.json();
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `Update ring-price-stock.csv via admin page (${new Date().toISOString()})`,
+        content: utf8ToBase64(toCsv()),
+        sha: currentData.sha,
+        branch: GITHUB_REPO_BRANCH
+      })
+    });
+
+    if (putRes.status === 401 || putRes.status === 403) {
+      throw new Error('GitHubへの書き込み権限がありません。Contents: write を確認してください。');
+    }
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => null);
+      throw new Error(errData?.message || `GitHub反映に失敗しました: HTTP ${putRes.status}`);
+    }
+
+    setDirty(false);
+    document.getElementById('sourcePill').textContent = '読込元: GitHub反映済み';
+    alert('GitHub の ring-price-stock.csv を更新しました。GitHub Pages 反映まで少し待つ場合があります。');
+  } catch (err) {
+    alert(`GitHub反映に失敗しました: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalLabel || 'GitHubへ反映';
+    }
+  }
+}
 
 function rowKey(row) {
   return [row.planner_type, row.ring_id, row.color_id, row.size_label].filter(Boolean).join(' / ');
@@ -1783,6 +1970,12 @@ document.getElementById('openFileBtn').addEventListener('click', () => {
 document.getElementById('saveFileBtn').addEventListener('click', () => {
   saveCurrentData().catch(err => alert(`保存に失敗しました: ${err.message}`));
 });
+document.getElementById('setGithubTokenBtn').addEventListener('click', () => {
+  promptGitHubToken();
+});
+document.getElementById('publishGithubBtn').addEventListener('click', () => {
+  publishToGitHub().catch(err => alert(`GitHub反映に失敗しました: ${err.message}`));
+});
 document.getElementById('runCrawlBtn').addEventListener('click', () => {
   runCrawl().catch(err => alert(`巡回実行に失敗しました: ${err.message}`));
 });
@@ -1832,6 +2025,7 @@ loadDefaultCsv().catch(err => {
   }
   alert(`初期CSVの読込に失敗しました: ${err.message}`);
 });
+updateGitHubTokenPill();
 checkCrawlServer().catch(() => {});
 </script>
 </body>
