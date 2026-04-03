@@ -2166,9 +2166,44 @@ function csvNum(v, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-function getRingCatalogRows(ringId) {
+const SIZE_TO_PLANNER_TYPE = {
+  micro5: 'Micro5',
+  micro5sq: 'Micro5',
+  mini6: 'Mini6',
+  mini6sq: 'Mini6',
+  bible: 'Bible',
+  a6: 'A6',
+  a5: 'A5',
+};
+
+const PLANNER_RING_PREFIX = {
+  Micro5: 'm5',
+  Mini6: 'm6',
+  Bible: 'b',
+  A6: 'a6',
+  A5: 'a5',
+};
+
+function getPlannerTypeForSize(sizeId = sel.sizeId) {
+  return SIZE_TO_PLANNER_TYPE[sizeId] || '';
+}
+
+function getRingCatalogIds(ringId, plannerType = getPlannerTypeForSize()) {
+  const ids = [ringId];
+  const ring = RINGS.find(r => r.id === ringId);
+  const plannerPrefix = PLANNER_RING_PREFIX[plannerType];
+  if (ring && plannerPrefix) {
+    ids.push(`${plannerPrefix}${ring.isKlause ? 'k' : 'n'}${csvNum(ring.id_mm, ring.id_mm)}`);
+  }
+  return [...new Set(ids)];
+}
+
+function getRingCatalogRows(ringId, plannerType = getPlannerTypeForSize()) {
+  const ringIds = getRingCatalogIds(ringId, plannerType);
   return RING_PRICE_ROWS
-    .filter(row => row.ring_id === ringId && csvBool(row.check_enabled) && csvBool(row.ui_visible))
+    .filter(row => ringIds.includes(row.ring_id)
+      && (!plannerType || !String(row.planner_type || '').trim() || String(row.planner_type || '').trim() === plannerType)
+      && csvBool(row.check_enabled) && csvBool(row.ui_visible))
     .sort((a, b) => csvNum(a.ui_order, 9999) - csvNum(b.ui_order, 9999));
 }
 
@@ -2189,12 +2224,12 @@ function formatStockText(row) {
   return '在庫なし';
 }
 
-function getAvailableRingCatalogRows(ringId) {
-  return getRingCatalogRows(ringId).filter(rowHasStock);
+function getAvailableRingCatalogRows(ringId, plannerType = getPlannerTypeForSize()) {
+  return getRingCatalogRows(ringId, plannerType).filter(rowHasStock);
 }
 
-function getRingBasePrice(ringId, fallback = 0) {
-  const rows = getAvailableRingCatalogRows(ringId);
+function getRingBasePrice(ringId, fallback = 0, plannerType = getPlannerTypeForSize()) {
+  const rows = getAvailableRingCatalogRows(ringId, plannerType);
   if (!rows.length) return fallback;
   return Math.min(...rows.map(row => csvNum(row.price_jpy, fallback)));
 }
@@ -2359,7 +2394,8 @@ function updateKlauseSection() {
 // ── BUILD RING GRIDS (normal + klause split) ──
 function buildRingGrids(sizeId) {
   const isMicro5   = sizeId === 'micro5' || sizeId === 'micro5sq';
-  const ringEnabled = (ring) => !RING_PRICE_ROWS.length || getAvailableRingCatalogRows(ring.id).length > 0;
+  const plannerType = getPlannerTypeForSize(sizeId);
+  const ringEnabled = (ring) => !RING_PRICE_ROWS.length || getAvailableRingCatalogRows(ring.id, plannerType).length > 0;
   const normalData  = RINGS.filter(r => !r.isKlause && !(r.notMicro5 && isMicro5) && ringEnabled(r));
   const klauseData  = RINGS.filter(r =>  r.isKlause && !(r.micro5Only && !isMicro5) && ringEnabled(r));
 
@@ -2372,7 +2408,7 @@ function buildRingGrids(sizeId) {
       div.className = 'ring-text-card';
       div.dataset.id  = d.id;
       div.dataset.key = 'ring';
-      const stockRows = getAvailableRingCatalogRows(d.id);
+      const stockRows = getAvailableRingCatalogRows(d.id, plannerType);
       const totalStockQty = stockRows.reduce((sum, row) => sum + csvNum(row.stock_qty, 0), 0);
         const ringStockText = stockRows.length
           ? (totalStockQty > 0 ? `在庫 ${stockRows.length}色 / ${totalStockQty}` : `在庫 ${stockRows.length}色`)
