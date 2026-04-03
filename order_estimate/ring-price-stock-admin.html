@@ -668,7 +668,7 @@ tr.row-out-stock td{
         </div>
         <div class="action-guide">
           <strong>この内容を保存</strong>
-          <span>開いているCSVへ保存します。対応ブラウザでは上書き保存、それ以外では保存先選択またはダウンロードになります。</span>
+          <span>開いているローカルCSVへ保存します。GitHubへ公開反映したいだけなら、これは押さずに `GitHubへ反映` だけで大丈夫です。</span>
         </div>
         <div class="action-guide">
           <strong>CSVダウンロード</strong>
@@ -694,7 +694,7 @@ tr.row-out-stock td{
       </div>
       <div class="hint" style="margin-top:10px">
         おすすめの流れは `ローカルCSVを開く` → 在庫や価格を修正 → `GitHubへ反映` です。
-        GitHubへ直接反映しない場合は、`CSVへ保存` または `CSVダウンロード` を使ってください。
+        GitHubへ公開反映したいだけなら、`CSVへ保存` は不要です。ローカルにも残したいときだけ使ってください。
       </div>
       <div class="inline-note" style="margin-top:8px">
         `CSVへ保存` と下の `在庫変更を保存` は同じ保存処理です。上は全体操作用、下は在庫一覧の近くに置いたショートカットです。
@@ -1638,10 +1638,19 @@ async function openLocalFile() {
 
 async function saveToOpenedFile() {
   if (!fileHandle) return;
-  const writable = await fileHandle.createWritable();
-  await writable.write(toCsv());
-  await writable.close();
-  setDirty(false);
+  try {
+    const writable = await fileHandle.createWritable();
+    await writable.write(toCsv());
+    await writable.close();
+    setDirty(false);
+  } catch (err) {
+    const message = String(err?.message || '');
+    if (err?.name === 'InvalidStateError' || message.includes('state cached')) {
+      fileHandle = null;
+      throw new Error('開いていたローカルCSVとの接続が切れました。もう一度「ローカルCSVを開く」で開き直すか、そのまま「GitHubへ反映」を使ってください。');
+    }
+    throw err;
+  }
 }
 
 async function saveCurrentData() {
