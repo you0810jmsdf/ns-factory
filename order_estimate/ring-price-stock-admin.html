@@ -557,7 +557,7 @@ tr.row-out-stock td{
       <div class="controls">
         <button class="btn" id="reloadBtn">CSV再読込</button>
         <button class="btn sub" id="openFileBtn">ローカルCSVを開く</button>
-        <button class="btn" id="saveFileBtn" disabled>直接上書き保存</button>
+        <button class="btn" id="saveFileBtn">この内容を保存</button>
         <button class="btn light" id="downloadBtn">CSVダウンロード</button>
         <button class="btn light" id="addRowBtn">行を追加</button>
         <button class="btn sub" id="runCrawlBtn">巡回実行</button>
@@ -655,15 +655,16 @@ tr.row-out-stock td{
       <div class="stock-list" id="stockList" style="margin-top:12px"></div>
     </div>
 
-    <details class="panel">
-      <summary style="cursor:pointer;font-weight:700;color:#6b3a1f">全件テーブルを開く（補助ビュー）</summary>
+    <div class="panel">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">全件テーブル</h2>
+      <div class="hint">正本CSVの全行をここで直接編集できます。価格が反映されないときは、`planner_type / ring_id / color_id / price_jpy / stock_status / stock_qty` をまず確認してください。</div>
       <div class="table-wrap" style="margin-top:12px">
         <table>
           <thead id="tableHead"></thead>
           <tbody id="tableBody"></tbody>
         </table>
       </div>
-    </details>
+    </div>
 
     <div class="panel">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">巡回結果レビュー</h2>
@@ -882,7 +883,7 @@ function setDirty(nextDirty) {
 function updateMeta(sourceLabel = null) {
   if (sourceLabel) document.getElementById('sourcePill').textContent = `読込元: ${sourceLabel}`;
   document.getElementById('countPill').textContent = `行数: ${rows.length}`;
-  document.getElementById('saveFileBtn').disabled = !fileHandle;
+  document.getElementById('saveFileBtn').disabled = false;
   const diffCount = rows.filter(row => getPriceDiffs(row).length > 0).length;
   const diffPill = document.getElementById('diffPill');
   diffPill.textContent = `価格差分: ${diffCount}件`;
@@ -1679,7 +1680,7 @@ document.getElementById('openFileBtn').addEventListener('click', () => {
   openLocalFile().catch(err => alert(`ファイルを開けませんでした: ${err.message}`));
 });
 document.getElementById('saveFileBtn').addEventListener('click', () => {
-  saveToOpenedFile().catch(err => alert(`保存に失敗しました: ${err.message}`));
+  saveCurrentData().catch(err => alert(`保存に失敗しました: ${err.message}`));
 });
 document.getElementById('runCrawlBtn').addEventListener('click', () => {
   runCrawl().catch(err => alert(`巡回実行に失敗しました: ${err.message}`));
