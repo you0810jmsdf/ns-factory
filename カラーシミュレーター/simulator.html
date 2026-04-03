@@ -517,6 +517,7 @@ function handleConsult() {
   const paletteParam = p.get('palette');
   isEmbedded = p.get('embed') === '1';
   isPreviewOnly = p.get('preview') === '1';
+  currentView = p.get('view') === 'inner' ? 'inner' : 'outer';
   currentComponent = p.get('component') || 'main';
   currentBrandId = p.get('brand') || '';
   currentComponentLabel = p.get('componentLabel') || (currentComponent === 'main' ? '\u672c\u4f53' : '\u30d1\u30fc\u30c4');

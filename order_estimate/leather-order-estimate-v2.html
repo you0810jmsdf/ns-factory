@@ -346,7 +346,25 @@ body{
 .component-color-card p{font-size:11px;color:#7a6b5d;margin-bottom:12px}
 .component-inline-preview{
   margin-top:14px;background:#f7f2ed;border:1px solid #eadbcb;border-radius:12px;
-  padding:10px;
+  padding:10px;position:relative;
+}
+.component-preview-toggle-row{display:flex;gap:8px;margin-bottom:8px}
+.component-preview-toggle{
+  flex:1;padding:8px 4px;border:1px solid #c8b89a;background:#fff;cursor:pointer;
+  border-radius:8px;font-size:12px;font-weight:700;color:#5a4a3a;font-family:inherit;
+}
+.component-preview-toggle.active{border-color:#5a7a6a;background:#5a7a6a;color:#fff}
+.component-preview-image-wrap{
+  background:#1a1a1a;border-radius:10px;overflow:hidden;min-height:200px;
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+.component-preview-image{width:100%;height:auto;display:none;object-fit:contain}
+.component-preview-empty{
+  color:#d8d0c7;font-size:11px;line-height:1.6;padding:22px;text-align:center;
+}
+.component-preview-probe{
+  position:absolute;left:-9999px;top:auto;width:1px;height:1px;border:0;
+  opacity:0;pointer-events:none;
 }
 .component-parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .component-part-title{font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:8px}
@@ -1500,6 +1518,7 @@ const LEATHER_COLOR_FAMILY_RULES = [
 // ── STATE ──
 let sel = {};
 let prices = {};
+let componentInlinePreviewView = 'outer';
 let activeColorComponentKey = 'main';
 
 function isUnifiedExteriorBrand(brandId = sel.brandId) {
@@ -1823,6 +1842,12 @@ function setActiveColorComponent(componentKey) {
   refreshSidebarColorPreview();
 }
 
+function setComponentInlinePreviewView(view) {
+  componentInlinePreviewView = view === 'inner' ? 'inner' : 'outer';
+  syncComponentInlinePreviewViewUI();
+  refreshSidebarColorPreview();
+}
+
 function syncComponentColorEditorUI() {
   const section = document.getElementById('componentColorSection');
   if (!section || !section.querySelector('.component-color-editor')) return;
@@ -1842,6 +1867,7 @@ function syncComponentColorEditorUI() {
     const chipSummary = chip.querySelector('.component-chip-summary');
     if (chipSummary) chipSummary.textContent = formatComponentColorSummary(meta.key);
   });
+  syncComponentInlinePreviewViewUI();
 }
 
 function updateComponentColorValue(partKey, colorName) {
@@ -1865,6 +1891,25 @@ function renderSidebarPreviewGallery(activeComponents = getActiveColorComponents
   if (!gallery) return;
   gallery.innerHTML = '';
   gallery.style.display = 'none';
+}
+
+function syncComponentInlinePreviewViewUI() {
+  const image = document.getElementById('componentInlinePreviewImage');
+  const empty = document.getElementById('componentInlinePreviewEmpty');
+  if (!image || !empty) return;
+  document.querySelectorAll('.component-preview-toggle').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === componentInlinePreviewView);
+  });
+  const src = getComponentPreviewImage(activeColorComponentKey, componentInlinePreviewView);
+  if (src) {
+    image.src = src;
+    image.style.display = 'block';
+    empty.style.display = 'none';
+  } else {
+    image.removeAttribute('src');
+    image.style.display = 'none';
+    empty.style.display = 'block';
+  }
 }
 
 function refreshSidebarColorPreview() {
@@ -1896,6 +1941,7 @@ function refreshSidebarColorPreview() {
   const url = new URL(buildSimulatorUrl(activeColorComponentKey));
   url.searchParams.set('embed', '1');
   url.searchParams.set('preview', '1');
+  url.searchParams.set('view', componentInlinePreviewView);
   const nextSrc = url.toString();
   if (frame && frame.src !== nextSrc) frame.src = nextSrc;
   if (inlineFrame && inlineFrame.src !== nextSrc) inlineFrame.src = nextSrc;
@@ -1903,6 +1949,7 @@ function refreshSidebarColorPreview() {
   if (box) box.style.display = 'block';
   if (inlineBox) inlineBox.style.display = 'none';
   if (componentBox) componentBox.style.display = 'block';
+  syncComponentInlinePreviewViewUI();
   renderSidebarPreviewGallery(active);
 }
 
@@ -1952,7 +1999,15 @@ function renderComponentColorControls() {
             <h3 id="componentInlinePreviewTitle">${currentMeta.label} のカラーシミュレーション</h3>
             <p>色を選ぶと、この直下のプレビューが切り替わります。</p>
           </div>
-          <iframe id="componentInlinePreviewFrame" class="sidebar-preview-frame" title="${currentMeta.label} カラーシミュレーションのプレビュー"></iframe>
+          <div class="component-preview-toggle-row">
+            <button type="button" class="component-preview-toggle active" data-view="outer" onclick="setComponentInlinePreviewView('outer')">外装</button>
+            <button type="button" class="component-preview-toggle" data-view="inner" onclick="setComponentInlinePreviewView('inner')">内装</button>
+          </div>
+          <div class="component-preview-image-wrap">
+            <img id="componentInlinePreviewImage" class="component-preview-image" alt="${currentMeta.label} のカラーシミュレーション結果">
+            <div id="componentInlinePreviewEmpty" class="component-preview-empty">プレビューを読み込み中です。数秒待っても表示されない場合は、もう一度色を選び直してください。</div>
+          </div>
+          <iframe id="componentInlinePreviewFrame" class="component-preview-probe" title="${currentMeta.label} カラーシミュレーションのプレビュー"></iframe>
         </div>
       </div>
     </div>`;
@@ -2844,7 +2899,10 @@ window.addEventListener('message', (event) => {
   }
   if (data.type === 'nsfactory-color-preview' && data.imageDataUrl) {
     const changed = setComponentPreviewImage(data.component, data.view || 'outer', data.imageDataUrl);
-    if (changed) renderSidebarPreviewGallery();
+    if (changed) {
+      if (data.component === activeColorComponentKey) syncComponentInlinePreviewViewUI();
+      renderSidebarPreviewGallery();
+    }
   }
 });
 function sendEmail() {
