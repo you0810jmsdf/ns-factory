@@ -392,6 +392,18 @@ body{
 .sidebar-preview-frame{
   width:100%;height:320px;border:none;border-radius:10px;background:#f0ede8;
 }
+.sidebar-preview-image-wrap{
+  background:#1a1a1a;border-radius:10px;overflow:hidden;min-height:320px;
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+.sidebar-preview-image{width:100%;height:auto;display:none;object-fit:contain;position:relative;z-index:2}
+.sidebar-preview-empty{
+  color:#d8d0c7;font-size:12px;line-height:1.6;padding:22px;text-align:center;position:relative;z-index:2;
+}
+.sidebar-preview-probe{
+  position:absolute;inset:0;width:100%;height:100%;border:0;
+  opacity:.01;pointer-events:none;z-index:1;background:#1a1a1a;
+}
 
 .sidebar-title{
   font-size:14px;font-weight:700;color:#6b3a1f;
@@ -608,6 +620,7 @@ body{
   .sidebar-preview-head h3{font-size:11px}
   .sidebar-preview-head p{font-size:9px}
   .sidebar-preview-frame{height:170px}
+  .sidebar-preview-image-wrap{min-height:170px}
   .summary-list{
     max-height:180px;
     overflow-y:auto;
@@ -930,7 +943,11 @@ body{
       <h3 id="sidebarColorPreviewTitle">カラーシミュレーション</h3>
       <p>右側で写真を見ながら、左側で色を選べます</p>
     </div>
-    <iframe id="sidebarColorFrame" class="sidebar-preview-frame" title="カラーシミュレーションのプレビュー"></iframe>
+    <div class="sidebar-preview-image-wrap">
+      <img id="sidebarColorImage" class="sidebar-preview-image" alt="カラーシミュレーション結果">
+      <div id="sidebarColorEmpty" class="sidebar-preview-empty">プレビューを生成中です…</div>
+      <iframe id="sidebarColorFrame" class="sidebar-preview-probe" title="カラーシミュレーションのプレビュー"></iframe>
+    </div>
     <div id="sidebarColorGallery" style="display:none;margin-top:10px"></div>
   </div>
 
@@ -1926,6 +1943,35 @@ function syncComponentInlinePreviewViewUI() {
   }
 }
 
+function syncSidebarPreviewImageUI() {
+  const image = document.getElementById('sidebarColorImage');
+  const empty = document.getElementById('sidebarColorEmpty');
+  if (!image || !empty) return;
+  const src = getComponentPreviewImage(activeColorComponentKey, componentInlinePreviewView);
+  if (src) {
+    empty.textContent = 'プレビューを生成中です…';
+    empty.style.display = 'block';
+    image.style.display = 'none';
+    image.onload = () => {
+      image.style.display = 'block';
+      empty.style.display = 'none';
+    };
+    image.onerror = () => {
+      image.style.display = 'none';
+      empty.textContent = 'プレビュー表示に失敗しました。';
+      empty.style.display = 'block';
+    };
+    if (image.src !== src) image.src = src;
+  } else {
+    image.removeAttribute('src');
+    image.style.display = 'none';
+    image.onload = null;
+    image.onerror = null;
+    empty.textContent = 'プレビューを生成中です…';
+    empty.style.display = 'block';
+  }
+}
+
 function refreshSidebarColorPreview() {
   const box = document.getElementById('sidebarColorPreview');
   const frame = document.getElementById('sidebarColorFrame');
@@ -1963,6 +2009,7 @@ function refreshSidebarColorPreview() {
   if (box) box.style.display = 'block';
   if (inlineBox) inlineBox.style.display = 'none';
   if (componentBox) componentBox.style.display = 'block';
+  syncSidebarPreviewImageUI();
   syncComponentInlinePreviewViewUI();
   renderSidebarPreviewGallery(active);
 }
@@ -2914,6 +2961,7 @@ window.addEventListener('message', (event) => {
   if (data.type === 'nsfactory-color-preview' && data.imageDataUrl) {
     const changed = setComponentPreviewImage(data.component, data.view || 'outer', data.imageDataUrl);
     if (changed) {
+      if (data.component === activeColorComponentKey) syncSidebarPreviewImageUI();
       if (data.component === activeColorComponentKey) syncComponentInlinePreviewViewUI();
       renderSidebarPreviewGallery();
     }
