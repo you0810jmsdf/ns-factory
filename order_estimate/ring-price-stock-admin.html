@@ -57,6 +57,53 @@ body{
 .top-link:hover{
   background:rgba(255,255,255,.22);
 }
+.auth-overlay{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(44,26,14,.62);
+  backdrop-filter:blur(4px);
+}
+.auth-card{
+  width:min(420px,100%);
+  background:#fff;
+  border:1px solid #eadccf;
+  border-radius:18px;
+  padding:22px;
+  box-shadow:0 18px 40px rgba(44,26,14,.22);
+}
+.auth-card h2{
+  margin:0 0 8px;
+  font-size:20px;
+  color:#6b3a1f;
+}
+.auth-card p{
+  margin:0 0 14px;
+  font-size:13px;
+  color:#7a5a3f;
+  line-height:1.6;
+}
+.auth-error{
+  min-height:18px;
+  margin:8px 0 0;
+  font-size:12px;
+  color:#b42318;
+}
+.auth-actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+.auth-actions .btn{
+  flex:1;
+}
+.auth-locked{
+  overflow:hidden;
+}
 .main{
   padding:18px;
   display:flex;
@@ -484,6 +531,20 @@ tr.row-out-stock td{
 </style>
 </head>
 <body>
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <h2>管理画面パスワード</h2>
+    <p>管理画面を開くにはパスワード入力が必要です。同じブラウザでは再入力を省略します。</p>
+    <div class="field">
+      <label for="authPassword">パスワード</label>
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="パスワードを入力">
+    </div>
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-actions">
+      <button class="btn" id="authSubmitBtn">ログイン</button>
+    </div>
+  </div>
+</div>
 <div class="page">
   <div class="topbar">
     <h1>リング価格・在庫 管理画面</h1>
@@ -748,6 +809,57 @@ tr.row-out-stock td{
 <input id="fallbackFileInput" type="file" accept=".csv,text/csv" style="display:none">
 
 <script>
+const ADMIN_PASSWORD = 'glJy4399';
+const ADMIN_SESSION_KEY = 'nsfactory-ring-admin-auth';
+
+function unlockAdmin() {
+  const overlay = document.getElementById('authOverlay');
+  if (overlay) overlay.style.display = 'none';
+  document.body.classList.remove('auth-locked');
+}
+
+function lockAdmin() {
+  const overlay = document.getElementById('authOverlay');
+  if (overlay) overlay.style.display = 'flex';
+  document.body.classList.add('auth-locked');
+}
+
+function checkAdminSession() {
+  try {
+    return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok';
+  } catch (err) {
+    return false;
+  }
+}
+
+function saveAdminSession() {
+  try {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, 'ok');
+  } catch (err) {
+    // ignore
+  }
+}
+
+function submitAdminPassword() {
+  const input = document.getElementById('authPassword');
+  const error = document.getElementById('authError');
+  if (!input) return;
+  if (input.value === ADMIN_PASSWORD) {
+    saveAdminSession();
+    if (error) error.textContent = '';
+    unlockAdmin();
+    return;
+  }
+  if (error) error.textContent = 'パスワードが違います。';
+  input.select();
+}
+
+if (checkAdminSession()) {
+  unlockAdmin();
+} else {
+  lockAdmin();
+}
+
 const CSV_URL = new URL('./ring-price-stock.csv', location.href).toString();
 const BOOLEAN_FIELDS = new Set(['check_enabled','ui_visible','monitor_enabled']);
 const NUMBER_FIELDS = new Set(['size_mm','ui_order','price_jpy','stock_qty','lead_time_days','price_min_jpy','price_max_jpy','preferred_source_price_jpy','preferred_source_shipping_jpy','source_price_1_jpy','source_price_2_jpy','source_price_3_jpy','source_shipping_1_jpy','source_shipping_2_jpy','source_shipping_3_jpy']);
@@ -1703,6 +1815,14 @@ window.addEventListener('beforeunload', (event) => {
   if (!dirty) return;
   event.preventDefault();
   event.returnValue = '';
+});
+
+document.getElementById('authSubmitBtn')?.addEventListener('click', submitAdminPassword);
+document.getElementById('authPassword')?.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    submitAdminPassword();
+  }
 });
 
 loadDefaultCsv().catch(err => {
