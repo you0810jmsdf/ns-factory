@@ -943,11 +943,7 @@ body{
       <h3 id="sidebarColorPreviewTitle">カラーシミュレーション</h3>
       <p>右側で写真を見ながら、左側で色を選べます</p>
     </div>
-    <div class="sidebar-preview-image-wrap">
-      <img id="sidebarColorImage" class="sidebar-preview-image" alt="カラーシミュレーション結果">
-      <div id="sidebarColorEmpty" class="sidebar-preview-empty">プレビューを生成中です…</div>
-      <iframe id="sidebarColorFrame" class="sidebar-preview-probe" title="カラーシミュレーションのプレビュー"></iframe>
-    </div>
+    <iframe id="sidebarColorFrame" class="sidebar-preview-frame" title="カラーシミュレーションのプレビュー"></iframe>
     <div id="sidebarColorGallery" style="display:none;margin-top:10px"></div>
   </div>
 
@@ -1911,29 +1907,6 @@ function renderSidebarPreviewGallery(activeComponents = getActiveColorComponents
   gallery.style.display = 'none';
 }
 
-function buildPreviewProbeKey(componentKey) {
-  return [
-    componentKey,
-    getSimulatorBrandId(),
-    JSON.stringify(getLeatherPaletteEntries())
-  ].join('|');
-}
-
-function postPreviewStateToFrame(frame, componentKey) {
-  if (!frame?.contentWindow) return;
-  const meta = getComponentMeta(componentKey);
-  const cfg = getComponentColorConfig(componentKey);
-  frame.contentWindow.postMessage({
-    type: 'nsfactory-estimate-preview-state',
-    component: componentKey,
-    componentLabel: meta.label,
-    color: cfg.color || '',
-    view: componentInlinePreviewView,
-    brand: getSimulatorBrandId(),
-    palette: getLeatherPaletteEntries()
-  }, '*');
-}
-
 function syncComponentInlinePreviewViewUI() {
   const image = document.getElementById('componentInlinePreviewImage');
   const empty = document.getElementById('componentInlinePreviewEmpty');
@@ -1962,35 +1935,6 @@ function syncComponentInlinePreviewViewUI() {
     image.onload = null;
     image.onerror = null;
     empty.textContent = 'プレビューを読み込み中です。数秒待っても表示されない場合は、もう一度色を選び直してください。';
-    empty.style.display = 'block';
-  }
-}
-
-function syncSidebarPreviewImageUI() {
-  const image = document.getElementById('sidebarColorImage');
-  const empty = document.getElementById('sidebarColorEmpty');
-  if (!image || !empty) return;
-  const src = getComponentPreviewImage(activeColorComponentKey, componentInlinePreviewView);
-  if (src) {
-    empty.textContent = 'プレビューを生成中です…';
-    empty.style.display = 'block';
-    image.style.display = 'none';
-    image.onload = () => {
-      image.style.display = 'block';
-      empty.style.display = 'none';
-    };
-    image.onerror = () => {
-      image.style.display = 'none';
-      empty.textContent = 'プレビュー表示に失敗しました。';
-      empty.style.display = 'block';
-    };
-    if (image.src !== src) image.src = src;
-  } else {
-    image.removeAttribute('src');
-    image.style.display = 'none';
-    image.onload = null;
-    image.onerror = null;
-    empty.textContent = 'プレビューを生成中です…';
     empty.style.display = 'block';
   }
 }
@@ -2026,23 +1970,12 @@ function refreshSidebarColorPreview() {
   url.searchParams.set('preview', '1');
   url.searchParams.set('view', componentInlinePreviewView);
   const nextSrc = url.toString();
-  if (frame && frame.src !== 'about:blank') frame.src = 'about:blank';
+  if (frame && frame.src !== nextSrc) frame.src = nextSrc;
   if (inlineFrame && inlineFrame.src !== 'about:blank') inlineFrame.src = 'about:blank';
-  if (componentFrame) {
-    const nextKey = buildPreviewProbeKey(activeColorComponentKey);
-    if (componentFrame.dataset.probeKey !== nextKey) {
-      componentFrame.dataset.probeKey = nextKey;
-      componentFrame.onload = () => postPreviewStateToFrame(componentFrame, activeColorComponentKey);
-      componentFrame.src = nextSrc;
-    } else {
-      postPreviewStateToFrame(componentFrame, activeColorComponentKey);
-    }
-  }
+  if (componentFrame && componentFrame.src !== 'about:blank') componentFrame.src = 'about:blank';
   if (box) box.style.display = 'block';
   if (inlineBox) inlineBox.style.display = 'none';
-  if (componentBox) componentBox.style.display = 'block';
-  syncSidebarPreviewImageUI();
-  syncComponentInlinePreviewViewUI();
+  if (componentBox) componentBox.style.display = 'none';
   renderSidebarPreviewGallery(active);
 }
 
@@ -2993,8 +2926,6 @@ window.addEventListener('message', (event) => {
   if (data.type === 'nsfactory-color-preview' && data.imageDataUrl) {
     const changed = setComponentPreviewImage(data.component, data.view || 'outer', data.imageDataUrl);
     if (changed) {
-      if (data.component === activeColorComponentKey) syncSidebarPreviewImageUI();
-      if (data.component === activeColorComponentKey) syncComponentInlinePreviewViewUI();
       renderSidebarPreviewGallery();
     }
   }
