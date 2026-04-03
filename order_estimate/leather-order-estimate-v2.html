@@ -2266,16 +2266,19 @@ function getMetalOptions() {
     const ringRows = getAvailableRingCatalogRows(sel.ringId);
     if (!ringRows.length) return [];
     const ringBasePrice = getRingBasePrice(sel.ringId, 0);
+    const ringObj = RINGS.find(r => r.id === sel.ringId);
+    const isKlauseRing = !!ringObj?.isKlause;
+    const klauseImages = KLAUSE_RING_IMAGES.kl20 || {};
     return ringRows.map(row => {
       const metal = baseMetals[row.color_id] || {};
-      const image = sel.ringId === 'kl20'
-        ? (KLAUSE_RING_IMAGES.kl20[row.color_id] || metal.image || '')
+      const image = isKlauseRing
+        ? (klauseImages[row.color_id] || metal.image || '')
         : (metal.image || '');
         return {
           ...metal,
           id: row.color_id,
           name: row.color_label || metal.name || row.color_id,
-          sub: sel.ringId === 'kl20' ? 'クラウゼ 20mm 実写' : (row.finish_label || metal.sub || ''),
+          sub: isKlauseRing ? 'クラウゼ 実写見本' : (row.finish_label || metal.sub || ''),
         price: Math.max(0, csvNum(row.price_jpy, ringBasePrice) - ringBasePrice),
           image,
           stockStatus: row.stock_status,
