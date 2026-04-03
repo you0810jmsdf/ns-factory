@@ -1042,29 +1042,8 @@ function renderReviewList() {
 
 function renderStockList() {
   const el = document.getElementById('stockList');
-  const q = document.getElementById('stockSearchInput').value.trim().toLowerCase();
-  const plannerFilter = document.getElementById('stockPlannerFilter').value;
-  const statusFilter = document.getElementById('stockOnlyFilter').value;
-  const seriesFilter = document.getElementById('stockSeriesFilter').value;
   const sortFilter = document.getElementById('stockSortFilter').value;
-  const items = rows.filter(row => {
-    if (seriesFilter && row.series !== seriesFilter) return false;
-    if (plannerFilter) {
-      if (String(row.planner_type || '').trim() !== plannerFilter) return false;
-    }
-    if (statusFilter && row.stock_status !== statusFilter) return false;
-    if (!q) return true;
-    return [
-      row.planner_type,
-      row.ring_id,
-      row.size_label,
-      row.color_label,
-      row.finish_label,
-      row.note,
-      row.series_label,
-      row.stock_status,
-    ].some(v => String(v || '').toLowerCase().includes(q));
-  });
+  const items = filteredRows.slice();
   if (sortFilter === 'qty_asc') {
     items.sort((a, b) => numberValue(a.stock_qty) - numberValue(b.stock_qty));
   } else if (sortFilter === 'qty_desc') {
@@ -1284,20 +1263,17 @@ function renderTable() {
 }
 
 function applyFilters(rebuildSeries = true) {
-  const search = document.getElementById('searchInput').value.trim().toLowerCase();
-  const planner = document.getElementById('plannerFilter').value;
-  const series = document.getElementById('seriesFilter').value;
-  const visible = document.getElementById('visibleFilter').value;
+  const search = document.getElementById('stockSearchInput').value.trim().toLowerCase();
+  const planner = document.getElementById('stockPlannerFilter').value;
+  const series = document.getElementById('stockSeriesFilter').value;
+  const visible = document.getElementById('stockOnlyFilter').value;
 
   filteredRows = rows.filter(row => {
     if (planner) {
       if (String(row.planner_type || '').trim() !== planner) return false;
     }
     if (series && row.series !== series) return false;
-    if (visible === 'visible' && !boolValue(row.ui_visible)) return false;
-    if (visible === 'checked' && !boolValue(row.check_enabled)) return false;
-    if (visible === 'monitor' && !boolValue(row.monitor_enabled)) return false;
-    if (visible === 'stocked' && !hasStock(row)) return false;
+    if (visible && row.stock_status !== visible) return false;
     if (!search) return true;
     return headers.some(header => String(row[header] ?? '').toLowerCase().includes(search));
   });
@@ -1704,14 +1680,11 @@ document.getElementById('stockSaveBtn').addEventListener('click', () => {
 document.getElementById('downloadBtn').addEventListener('click', downloadCsv);
 document.getElementById('addRowBtn').addEventListener('click', addRow);
 document.getElementById('addPresetRowBtn').addEventListener('click', addPresetRow);
-document.getElementById('searchInput').addEventListener('input', () => applyFilters(false));
-document.getElementById('plannerFilter').addEventListener('change', () => applyFilters(false));
-document.getElementById('seriesFilter').addEventListener('change', () => applyFilters(false));
-document.getElementById('visibleFilter').addEventListener('change', () => applyFilters(false));
-document.getElementById('stockSearchInput').addEventListener('input', () => renderStockList());
-document.getElementById('stockPlannerFilter').addEventListener('change', () => renderStockList());
-document.getElementById('stockOnlyFilter').addEventListener('change', () => renderStockList());
-document.getElementById('stockSeriesFilter').addEventListener('change', () => renderStockList());
+document.querySelector('.filters')?.closest('.panel')?.remove();
+document.getElementById('stockSearchInput').addEventListener('input', () => applyFilters(false));
+document.getElementById('stockPlannerFilter').addEventListener('change', () => applyFilters(false));
+document.getElementById('stockOnlyFilter').addEventListener('change', () => applyFilters(false));
+document.getElementById('stockSeriesFilter').addEventListener('change', () => applyFilters(false));
 document.getElementById('stockSortFilter').addEventListener('change', () => renderStockList());
 document.getElementById('entryTarget').addEventListener('change', updateEntryPreview);
 document.getElementById('applyEntryBtn').addEventListener('click', applyPriceEntry);
