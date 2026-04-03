@@ -1680,7 +1680,8 @@ document.getElementById('stockSaveBtn').addEventListener('click', () => {
 document.getElementById('downloadBtn').addEventListener('click', downloadCsv);
 document.getElementById('addRowBtn').addEventListener('click', addRow);
 document.getElementById('addPresetRowBtn').addEventListener('click', addPresetRow);
-document.querySelector('.filters')?.closest('.panel')?.remove();
+const legacyFilterPanel = document.querySelector('.filters')?.closest('.panel');
+if (legacyFilterPanel) legacyFilterPanel.style.display = 'none';
 document.getElementById('stockSearchInput').addEventListener('input', () => applyFilters(false));
 document.getElementById('stockPlannerFilter').addEventListener('change', () => applyFilters(false));
 document.getElementById('stockOnlyFilter').addEventListener('change', () => applyFilters(false));
