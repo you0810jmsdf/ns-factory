@@ -575,11 +575,26 @@ body{
 
 /* ── PRINT ── */
 @media print{
-  .topbar,.sidebar,.filter-bar,.no-print{display:none!important}
-  .main{display:block}
-  .content{padding:10px}
-  .img-card,.opt-card{break-inside:avoid}
-  #printBlock{display:block!important}
+  body{background:#fff}
+  .topbar,.content,.filter-bar,.no-print,.mobile-bar,#printBlock{display:none!important}
+  .app,.main{display:block!important}
+  .sidebar{
+    display:block!important;
+    position:static!important;
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    border:none!important;
+    box-shadow:none!important;
+    background:#fff!important;
+  }
+  .sidebar .ctrl-row{display:none!important}
+  .sidebar .summary-list,
+  .sidebar .total-box,
+  .sidebar .sell-box,
+  .sidebar .sidebar-preview{break-inside:avoid}
 }
 #printBlock{display:none}
 
