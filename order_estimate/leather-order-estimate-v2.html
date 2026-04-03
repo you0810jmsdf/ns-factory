@@ -1911,6 +1911,29 @@ function renderSidebarPreviewGallery(activeComponents = getActiveColorComponents
   gallery.style.display = 'none';
 }
 
+function buildPreviewProbeKey(componentKey) {
+  return [
+    componentKey,
+    getSimulatorBrandId(),
+    JSON.stringify(getLeatherPaletteEntries())
+  ].join('|');
+}
+
+function postPreviewStateToFrame(frame, componentKey) {
+  if (!frame?.contentWindow) return;
+  const meta = getComponentMeta(componentKey);
+  const cfg = getComponentColorConfig(componentKey);
+  frame.contentWindow.postMessage({
+    type: 'nsfactory-estimate-preview-state',
+    component: componentKey,
+    componentLabel: meta.label,
+    color: cfg.color || '',
+    view: componentInlinePreviewView,
+    brand: getSimulatorBrandId(),
+    palette: getLeatherPaletteEntries()
+  }, '*');
+}
+
 function syncComponentInlinePreviewViewUI() {
   const image = document.getElementById('componentInlinePreviewImage');
   const empty = document.getElementById('componentInlinePreviewEmpty');
@@ -2003,9 +2026,18 @@ function refreshSidebarColorPreview() {
   url.searchParams.set('preview', '1');
   url.searchParams.set('view', componentInlinePreviewView);
   const nextSrc = url.toString();
-  if (frame && frame.src !== nextSrc) frame.src = nextSrc;
-  if (inlineFrame && inlineFrame.src !== nextSrc) inlineFrame.src = nextSrc;
-  if (componentFrame && componentFrame.src !== nextSrc) componentFrame.src = nextSrc;
+  if (frame && frame.src !== 'about:blank') frame.src = 'about:blank';
+  if (inlineFrame && inlineFrame.src !== 'about:blank') inlineFrame.src = 'about:blank';
+  if (componentFrame) {
+    const nextKey = buildPreviewProbeKey(activeColorComponentKey);
+    if (componentFrame.dataset.probeKey !== nextKey) {
+      componentFrame.dataset.probeKey = nextKey;
+      componentFrame.onload = () => postPreviewStateToFrame(componentFrame, activeColorComponentKey);
+      componentFrame.src = nextSrc;
+    } else {
+      postPreviewStateToFrame(componentFrame, activeColorComponentKey);
+    }
+  }
   if (box) box.style.display = 'block';
   if (inlineBox) inlineBox.style.display = 'none';
   if (componentBox) componentBox.style.display = 'block';

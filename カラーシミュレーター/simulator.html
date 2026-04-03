@@ -284,6 +284,29 @@ function notifyParent() {
   }, '*');
 }
 
+function applyPreviewStateMessage(data) {
+  let shouldReloadImages = false;
+  if (data.brand !== undefined && data.brand !== currentBrandId) {
+    currentBrandId = data.brand || '';
+    shouldReloadImages = true;
+  }
+  if (data.component) currentComponent = data.component;
+  if (data.componentLabel) currentComponentLabel = data.componentLabel;
+  if (data.view) currentView = data.view === 'inner' ? 'inner' : 'outer';
+  if (Array.isArray(data.palette) && data.palette.length) {
+    COLORS = data.palette.filter(item => item && item.name && item.hex);
+  }
+  if (data.color && COLORS.find(c => c.name === data.color)) {
+    sel.color = data.color;
+  }
+  updateComponentLabels();
+  if (shouldReloadImages) {
+    loadImages();
+    return;
+  }
+  render();
+}
+
 function notifyParentPreview() {
   if (!isEmbedded || window.parent === window) return;
   const canvas = document.getElementById('canvas');
@@ -561,6 +584,12 @@ function handleConsult() {
     document.querySelector('.consult-btn').before(backBtn);
   }
 })();
+
+window.addEventListener('message', (event) => {
+  const data = event.data;
+  if (!data || data.type !== 'nsfactory-estimate-preview-state') return;
+  applyPreviewStateMessage(data);
+});
 
 buildSwatches('sw-color', 'color');
 updateResult();
