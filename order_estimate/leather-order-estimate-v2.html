@@ -1305,8 +1305,8 @@ const ACCESSORIES = [
   { id:'pen0',  name:'ペンホルダー なし', sub:'',          price:0,    emoji:'📝', image:'', key:'pen' },
   { id:'pen1',  name:'ペンホルダー 1本', sub:'スリム型',  price:800,  emoji:'✒️',  image:'', key:'pen' },
   { id:'pen2',  name:'ペンホルダー 2本', sub:'ダブル',    price:1500, emoji:'✒️',  image:'', key:'pen' },
-  { id:'coin0', name:'小銭入れ なし',    sub:'',          price:0,    emoji:'💼', image:'', key:'coin' },
-  { id:'coin1', name:'小銭入れ あり',    sub:'マチ付き',  price:3000, emoji:'👛', image:'', key:'coin' },
+  { id:'coin0', name:'小銭入れ 標準',    sub:'標準',      price:0,    emoji:'💼', image:'', key:'coin' },
+  { id:'coin1', name:'小銭入れ マチ付き', sub:'マチ付き',  price:3000, emoji:'👛', image:'', key:'coin' },
 ];
 
 const COLOR_SIM_COMPONENTS = [
@@ -1717,8 +1717,7 @@ function getActiveColorComponents() {
   items.push(getComponentMeta('main'));
   if (isUnifiedExteriorBrand()) return items;
   if (sel.pen && sel.pen !== 'ペンホルダー なし') items.push(getComponentMeta('pen'));
-  if (sel.coin && sel.coin !== '小銭入れ なし') items.push(getComponentMeta('coin'));
-  if (isFlapEffectivelyOn()) items.push(getComponentMeta('flap'));
+  if (sel.coin && prices.coin > 0) items.push(getComponentMeta('coin'));
   if ((window._freePocket || 'none') !== 'none') items.push(getComponentMeta('freePocket'));
   if ((window._innerPocketSide || 'none') !== 'none') items.push(getComponentMeta('innerPocket'));
   if ((parseInt(document.getElementById('cardPocketCC')?.value, 10) || 0) > 0) items.push(getComponentMeta('cardPocket'));
@@ -2075,6 +2074,25 @@ function buildOptGrid(el, data, stateKey, onSelect) {
           <div class="opt-price">${priceStr}</div>
         </div>`;
     div.onclick = () => { if(onSelect) onSelect(div, d); else defaultSelect(div, d, stateKey); };
+    el.appendChild(div);
+  });
+}
+
+function buildAccessoryTextGrid(el, data, onSelect) {
+  el.innerHTML = '';
+  el.classList.add('ring-text-grid');
+  data.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'ring-text-card';
+    div.dataset.id = d.id;
+    div.dataset.key = d.key;
+    div.dataset.price = d.price;
+    const priceStr = d.price > 0 ? `+¥${d.price.toLocaleString()}` : '標準';
+    div.innerHTML = `
+      <div class="ring-text-name">${d.name}</div>
+      <div class="ring-text-sub">${d.sub || '標準'}</div>
+      <div class="ring-text-meta">${priceStr}</div>`;
+    div.onclick = () => { if(onSelect) onSelect(div, d); };
     el.appendChild(div);
   });
 }
@@ -2733,7 +2751,7 @@ function updateSummary(options = {}) {
     if(window._clearWindowSide !== 'none') add(`クリア窓枠(${sideLabel(window._clearWindowSide)})`, `+¥${(sideCount(window._clearWindowSide)*3000).toLocaleString()}`);
     if(window._patchworkSide   !== 'none') add(`パッチワーク加工(${sideLabel(window._patchworkSide)})`,   `+¥${(sideCount(window._patchworkSide)*5000).toLocaleString()}`);
     if(sel.pen  && sel.pen  !== 'ペンホルダー なし') add(`ペンホルダー: ${sel.pen}`,  `+¥${prices.pen.toLocaleString()}`);
-    if(sel.coin && sel.coin !== '小銭入れ なし')      add('小銭入れ', `+¥${prices.coin.toLocaleString()}`);
+    if(sel.coin && prices.coin > 0)      add('小銭入れ', `+¥${prices.coin.toLocaleString()}`);
     if(sel.stamp && sel.stamp !== 'なし')              add(`刻印: ${sel.stamp}`, `+¥${prices.stamp.toLocaleString()}`);
     if(prices.brandInitFee > 0) add(`✨ 初度設計費・構造設計（1回のみ）`, `+¥${prices.brandInitFee.toLocaleString()}`);
     if(prices.initDesignFee > 0) add(`✨ 初度設計費・刻印デザイン（1回のみ）`, `+¥${prices.initDesignFee.toLocaleString()}`);
@@ -2975,7 +2993,7 @@ function handleStampSelect(el, d) {
 // ── ACCESSORY (pen/coin separate keys) ──
 function handleAccessorySelect(el, d) {
   const key = d.key;
-  document.querySelectorAll(`.opt-card[data-key="${key}"]`).forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll(`#accessoryGrid [data-key="${key}"]`).forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
   sel[key] = d.name; prices[key] = d.price;
   if (key === 'pen' || key === 'coin') getComponentColorConfig(key);
@@ -3062,7 +3080,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   // なし をデフォルト選択
   document.querySelector('.opt-card[data-key="wrapping"][data-id="wrap_none"]')?.classList.add('selected');
-  buildOptGrid(document.getElementById('accessoryGrid'), ACCESSORIES, null, handleAccessorySelect);
+buildAccessoryTextGrid(document.getElementById('accessoryGrid'), ACCESSORIES, handleAccessorySelect);
   buildOptGrid(document.getElementById('stampGrid'), STAMPS, 'stamp', handleStampSelect);
   document.getElementById('discountRate').addEventListener('input', updateSummary);
   document.getElementById('taxRate').addEventListener('change', updateSummary);
