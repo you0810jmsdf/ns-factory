@@ -581,7 +581,7 @@ tr.row-out-stock td{
     <div class="panel">
       <div class="filters">
         <div class="field">
-          <label for="searchInput">検索</label>
+          <label for="searchInput">全件テーブル検索</label>
           <input id="searchInput" type="text" placeholder="ring_id / 色 / サイズ / メモ">
         </div>
         <div class="field">
@@ -1374,7 +1374,20 @@ async function saveCurrentData() {
     await saveToOpenedFile();
     return;
   }
+  if (window.showOpenFilePicker) {
+    const [handle] = await window.showOpenFilePicker({
+      multiple: false,
+      types: [{
+        description: 'CSV files',
+        accept: { 'text/csv': ['.csv'] }
+      }]
+    });
+    fileHandle = handle;
+    await saveToOpenedFile();
+    return;
+  }
   downloadCsv();
+  alert('このブラウザでは直接上書き保存できないため、CSVをダウンロード保存しました。');
 }
 
 function downloadCsv() {
