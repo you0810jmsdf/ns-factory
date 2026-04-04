@@ -1015,6 +1015,18 @@ body{
   </div>
 </div>
 
+<!-- RESET CONFIRM MODAL -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal" style="max-width:340px;text-align:center">
+    <p style="font-size:15px;font-weight:700;margin-bottom:8px">🔄 すべてリセット</p>
+    <p style="font-size:13px;color:#7a5c3a;margin-bottom:0">入力内容をすべてリセットしますか？</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('resetModal').classList.remove('open')">キャンセル</button>
+      <button class="btn btn-primary" onclick="document.getElementById('resetModal').classList.remove('open');doResetAll()">リセットする</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════════════
    ▼▼▼  データ設定エリア  ▼▼▼
@@ -3104,7 +3116,9 @@ function buildStitchColors() {
 
 // ── RESET ──
 function resetAll() {
-  if(!confirm('入力内容をすべてリセットしますか？'))return;
+  document.getElementById('resetModal').classList.add('open');
+}
+function doResetAll() {
   document.querySelectorAll('.opt-card,.ring-text-card,.img-card,.tog,.platform-card,.brand-card,.sc-swatch').forEach(e=>e.classList.remove('selected'));
   ['cardPocket','innerPocket'].forEach(id=>document.getElementById(id).value=0);
   document.getElementById('qty').value = 1;
