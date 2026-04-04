@@ -2972,9 +2972,41 @@ function buildEstText() {
 }
 // ── PRINT ──
 function openPrint() {
-  const url = new URL(location.href);
-  url.searchParams.set('autoprint', '1');
-  window.open(url.toString(), '_blank');
+  const totalHtml  = document.getElementById('costBox').innerHTML;
+  const sellBox    = document.getElementById('sellBox');
+  const sellHtml   = sellBox.style.display !== 'none' ? sellBox.innerHTML : '';
+  const detailHtml = document.getElementById('printDetail').innerHTML;
+  const date = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric'});
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<title>N's factory 見積もり</title>
+<style>
+body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif;margin:24px;color:#2c1a0e;background:#fff}
+h1{font-size:18px;color:#6b3a1f;margin-bottom:4px}
+.date{font-size:12px;color:#a07850;margin-bottom:16px}
+.total-box{background:linear-gradient(135deg,#6b3a1f,#8a4e2a);color:#fff;border-radius:10px;padding:14px 12px;margin-bottom:12px;display:inline-block;min-width:220px}
+.t-lbl{font-size:11px;opacity:.8;margin-bottom:4px}
+.t-val{font-size:24px;font-weight:800}
+.t-val span{font-size:13px;font-weight:400}
+.sell-box{background:#f5f0eb;border-radius:8px;padding:10px 12px;margin-bottom:12px;display:inline-block;min-width:220px;margin-left:8px}
+.s-lbl{font-size:11px;color:#5a3a20;margin-bottom:3px}
+.s-val{font-size:22px;font-weight:700;color:#6b3a1f}
+.s-val span{font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}
+td{padding:5px 8px;border-bottom:1px solid #eee}
+td:last-child{text-align:right}
+.note{font-size:11px;color:#666;margin-top:16px}
+@media print{@page{margin:15mm}}
+</style></head><body>
+<h1>📋 N's factory システム手帳フルオーダー 見積もり</h1>
+<div class="date">${date} 作成</div>
+<div class="total-box">${totalHtml}</div>${sellHtml ? `<div class="sell-box">${sellHtml}</div>` : ''}
+${detailHtml}
+<p class="note">※本見積もりは概算です。正式なお見積もりはご注文確認後にお送りします。<br>※価格は税込表示です。納期はご相談ください。</p>
+</body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 600);
 }
 
 function openEmailModal() {
@@ -3136,11 +3168,6 @@ buildAccessoryTextGrid(document.getElementById('accessoryGrid'), ACCESSORIES, ha
   applyComponentColorParams(new URLSearchParams(location.search));
   activeColorComponentKey = new URLSearchParams(location.search).get('component') || 'main';
   updateSummary();
-
-  // ── 自動印刷（iframe外で新タブ開いた場合） ─────────────────────────
-  if (new URLSearchParams(location.search).get('autoprint') === '1') {
-    setTimeout(() => window.print(), 800);
-  }
 
   // ── URLパラメータで革を自動選択 ──────────────────────────────────────
   const urlParams = new URLSearchParams(location.search);
