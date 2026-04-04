@@ -1028,6 +1028,9 @@ body{
 // 商品ページで実配信されている元画像を使う
 const I = (id, ext='jpg') => `https://img07.shop-pro.jp/PA01426/148/product/${id}.${ext}`;
 
+// 管理者モード: URLに ?admin=1 を付けると内部情報を表示
+const isAdmin = new URLSearchParams(location.search).has('admin');
+
 // ── レーザー刻印不可のため手作業対応。基準単価はALASKA相当に統一 ──
 const NUMER_DS_PRICE = 160;
 
@@ -2756,8 +2759,8 @@ function updateSummary(options = {}) {
     add('▶ 本体', '', 'lbl-title');
     const multiParts = [];
     if (ringMulti  > 1) multiParts.push(`クラウゼ×${ringMulti}`);
-    const multiSuffix = ringMulti > 1 ? ` [×${ringMulti}: ${multiParts.join('+')}]` : '';
-    const ratioSuffix = leatherRatio !== 1 ? ` [${sel.leather||''} ×${leatherRatio.toFixed(2)}]` : '';
+    const multiSuffix = isAdmin && ringMulti > 1 ? ` [×${ringMulti}: ${multiParts.join('+')}]` : '';
+    const ratioSuffix = isAdmin && leatherRatio !== 1 ? ` [${sel.leather||''} ×${leatherRatio.toFixed(2)}]` : '';
     const baseCostLabel = `製作費（${sel.size||'―'})${multiSuffix}${ratioSuffix}`;
     add(baseCostLabel, `¥${baseCost.toLocaleString()}`);
     if (!sel.leather) {
@@ -2849,9 +2852,9 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   h += r('ブランド', sel.brand||'未選択');
   h += r('サイズ', sel.size||'未選択');
   if(coverW) h += r('表紙寸法', `${coverW}×${coverH}mm（スパイン${spineW}mm）`);
-  if(areaMultiplier > 1) h += r('構造タイプ倍率', `製作費・革面積 × ${areaMultiplier}（${sel.brand||''}）`);
+  if(isAdmin && areaMultiplier > 1) h += r('構造タイプ倍率', `製作費・革面積 × ${areaMultiplier}（${sel.brand||''}）`);
   h += r('レザー', sel.leather||'未選択');
-  if(sel.leather) {
+  if(isAdmin && sel.leather) {
     const _ratio = leatherDsP > 0 ? (leatherDsP / NUMER_DS_PRICE).toFixed(2) : '1.00';
     const _rNote = leatherDsP !== NUMER_DS_PRICE ? `（ヌメ革¥${NUMER_DS_PRICE}/ds × ${_ratio}）` : '（ヌメ革 基準）';
     h += r(`革素材 ds比率 ${_rNote}`, sizeDs > 0 ? `参考面積 ${sizeDs}ds` : '―');
@@ -2884,7 +2887,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   const rem = document.getElementById('remarks').value;
   if(rem) h += r('備考', rem);
   h += r('━━━━━━━', '━━━━━━━');
-  h += r('製作費（ヌメ革基準・面積比掛け）', `¥${baseCost.toLocaleString()}`);
+  if(isAdmin) h += r('製作費（ヌメ革基準・面積比掛け）', `¥${baseCost.toLocaleString()}`);
   h += r('1個単価（税抜）', `¥${unit.toLocaleString()}`);
   h += r('数量', `${qty}個`);
   h += r('小計', `¥${sub.toLocaleString()}`);
