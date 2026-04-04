@@ -989,14 +989,6 @@ body{
     <span class="ctrl-lbl">割引率</span>
     <input type="number" class="ctrl-in" id="discountRate" min="0" max="50" step="1" value="0"> %
   </div>
-  <div class="ctrl-row">
-    <span class="ctrl-lbl">消費税</span>
-    <select class="ctrl-in" id="taxRate">
-      <option value="10">10%</option>
-      <option value="8">8%</option>
-      <option value="0">非課税</option>
-    </select>
-  </div>
 
   <div style="margin-top:14px">
     <button class="btn btn-primary no-print" onclick="openEmailModal()">📧 お問い合わせ</button>
@@ -2690,7 +2682,7 @@ function updateSummary(options = {}) {
   ensureComponentColors();
   const qty = parseInt(document.getElementById('qty').value) || 1;
   const discRate = parseFloat(document.getElementById('discountRate').value) || 0;
-  const taxRate = parseFloat(document.getElementById('taxRate').value) || 10;
+  const taxRate = 10;
   const cardPCC   = parseInt(document.getElementById('cardPocketCC').value)  || 0;
   const dkanCount  = parseInt(document.getElementById('dkanCount').value) || 0;
   const wrappingObj = WRAPPING.find(w => w.id === (window._wrapping || 'wrap_none')) || WRAPPING[0];
@@ -2929,7 +2921,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
 function buildEstText() {
   const qty = document.getElementById('qty').value;
   const discRate = document.getElementById('discountRate').value;
-  const taxRate = document.getElementById('taxRate').value;
+  const taxRate = 10;
   const st = document.getElementById('stampText').value;
   const rem = document.getElementById('remarks').value;
   let t = '【システム手帳 フルオーダーメイド 見積もり内容】\n────────────────\n';
@@ -3085,7 +3077,6 @@ function resetAll() {
   document.getElementById('stampText').value = '';
   document.getElementById('remarks').value = '';
   document.getElementById('discountRate').value = 0;
-  document.getElementById('taxRate').value = 10;
   document.getElementById('stampTextOpt').classList.add('hide');
   document.getElementById('dkanCount').value = 0;
   setFreePocket('none');
@@ -3139,7 +3130,6 @@ window.addEventListener('DOMContentLoaded', () => {
 buildAccessoryTextGrid(document.getElementById('accessoryGrid'), ACCESSORIES, handleAccessorySelect);
   buildOptGrid(document.getElementById('stampGrid'), STAMPS, 'stamp', handleStampSelect);
   document.getElementById('discountRate').addEventListener('input', updateSummary);
-  document.getElementById('taxRate').addEventListener('change', updateSummary);
   applyComponentColorParams(new URLSearchParams(location.search));
   activeColorComponentKey = new URLSearchParams(location.search).get('component') || 'main';
   updateSummary();
