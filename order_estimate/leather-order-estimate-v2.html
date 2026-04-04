@@ -2851,7 +2851,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   let h = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
   h += r('ブランド', sel.brand||'未選択');
   h += r('サイズ', sel.size||'未選択');
-  if(coverW) h += r('本体サイズ（片面）', `${coverW}×${coverH}mm`);
+  if(coverW) h += r('本体サイズ（片面）', `横${coverW}mm × 縦${coverH}mm`);
   if(coverW) h += r('開いた状態の横幅', `${coverW * 2 + spineW}mm（表裏${coverW}mm×2＋背表紙${spineW}mm）`);
   if(isAdmin && areaMultiplier > 1) h += r('構造タイプ倍率', `製作費・革面積 × ${areaMultiplier}（${sel.brand||''}）`);
   h += r('レザー', sel.leather||'未選択');
