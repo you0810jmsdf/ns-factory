@@ -579,7 +579,7 @@ tr.row-out-stock td{
 <div class="page">
   <div class="topbar">
     <h1>リング価格・在庫 管理画面</h1>
-    <p>在庫数・在庫状態・見積価格を確認して修正するための管理画面です。必要な内容だけ直して、CSVへ保存する用途に絞っています。</p>
+    <p>在庫数・在庫状態・見積価格を確認して修正し、そのまま GitHub 上の公開CSVへ反映するための管理画面です。</p>
     <div class="top-links">
       <a class="top-link" href="./leather-order-estimate-v2.html">見積もり画面へ戻る</a>
       <a class="top-link" href="./ring-price-stock.csv" download>正本CSVを開く</a>
@@ -648,8 +648,6 @@ tr.row-out-stock td{
     <div class="panel">
       <div class="controls">
         <button class="btn light" id="reloadBtn">公開CSVを再読込</button>
-        <button class="btn sub" id="openFileBtn">ローカルCSVを開く</button>
-        <button class="btn" id="saveFileBtn">CSVへ保存</button>
         <button class="btn light" id="downloadBtn">CSVダウンロード</button>
         <button class="btn sub" id="setGithubTokenBtn">GitHubトークン設定</button>
         <button class="btn" id="publishGithubBtn">GitHubへ反映</button>
@@ -663,16 +661,8 @@ tr.row-out-stock td{
           <span>編集をやり直したいときに、今公開されている `ring-price-stock.csv` を読み直します。</span>
         </div>
         <div class="action-guide">
-          <strong>ローカルCSVを開く</strong>
-          <span>実際に更新したい手元の `ring-price-stock.csv` を開きます。通常はここから始めれば大丈夫です。</span>
-        </div>
-        <div class="action-guide">
-          <strong>この内容を保存</strong>
-          <span>開いているローカルCSVへ保存します。GitHubへ公開反映したいだけなら、これは押さずに `GitHubへ反映` だけで大丈夫です。</span>
-        </div>
-        <div class="action-guide">
           <strong>CSVダウンロード</strong>
-          <span>編集結果をCSVとして書き出します。控え保存や、手動で差し替えるときに使います。</span>
+          <span>編集結果をCSVとして書き出します。バックアップを残したいときや、内容確認用の控えに使います。</span>
         </div>
         <div class="action-guide">
           <strong>GitHubトークン設定</strong>
@@ -693,11 +683,11 @@ tr.row-out-stock td{
         <span class="status-pill advanced-only" id="crawlTimePill">最新巡回: 未確認</span>
       </div>
       <div class="hint" style="margin-top:10px">
-        おすすめの流れは `ローカルCSVを開く` → 在庫や価格を修正 → `GitHubへ反映` です。
-        GitHubへ公開反映したいだけなら、`CSVへ保存` は不要です。ローカルにも残したいときだけ使ってください。
+        おすすめの流れは `公開CSVを再読込` → 在庫や価格を修正 → `GitHubへ反映` です。
+        `CSVダウンロード` はバックアップ用です。公開データを更新する本操作は `GitHubへ反映` です。
       </div>
       <div class="inline-note" style="margin-top:8px">
-        `CSVへ保存` と下の `在庫変更を保存` は同じ保存処理です。上は全体操作用、下は在庫一覧の近くに置いたショートカットです。
+        この画面ではローカルCSVの読込・保存は使いません。必要なら `CSVダウンロード` でその時点の内容を控えとして残せます。
       </div>
       <div class="crawl-log advanced-only" id="crawlLog">巡回サーバー待機中です。未起動の場合は `start-ring-price-crawl-server.bat` を実行してください。</div>
     </div>
@@ -773,8 +763,8 @@ tr.row-out-stock td{
         </div>
       </div>
       <div class="stock-actions">
-        <button class="btn" id="stockSaveBtn">在庫変更を保存</button>
-        <span class="hint">この一覧で直した在庫数・在庫状態・見積価格を保存します。機能は上の `CSVへ保存` と同じです。</span>
+        <button class="btn" id="stockSaveBtn">GitHubへ反映</button>
+        <span class="hint">この一覧で直した在庫数・在庫状態・見積価格を、そのまま GitHub 上の公開CSVへ反映します。</span>
       </div>
       <div class="stock-list" id="stockList" style="margin-top:12px"></div>
     </div>
@@ -1182,7 +1172,6 @@ function setDirty(nextDirty) {
 function updateMeta(sourceLabel = null) {
   if (sourceLabel) document.getElementById('sourcePill').textContent = `読込元: ${sourceLabel}`;
   document.getElementById('countPill').textContent = `行数: ${rows.length}`;
-  document.getElementById('saveFileBtn').disabled = false;
   const diffCount = rows.filter(row => getPriceDiffs(row).length > 0).length;
   const diffPill = document.getElementById('diffPill');
   diffPill.textContent = `価格差分: ${diffCount}件`;
@@ -1647,7 +1636,7 @@ async function saveToOpenedFile() {
     const message = String(err?.message || '');
     if (err?.name === 'InvalidStateError' || message.includes('state cached')) {
       fileHandle = null;
-      throw new Error('開いていたローカルCSVとの接続が切れました。もう一度「ローカルCSVを開く」で開き直すか、そのまま「GitHubへ反映」を使ってください。');
+      throw new Error('ローカルファイルへの保存接続が切れました。この画面では通常「GitHubへ反映」を使ってください。必要ならページを再読込してからCSVをダウンロードしてください。');
     }
     throw err;
   }
@@ -1973,12 +1962,6 @@ document.getElementById('reloadBtn').addEventListener('click', () => {
   }
   loadDefaultCsv().catch(err => alert(err.message));
 });
-document.getElementById('openFileBtn').addEventListener('click', () => {
-  openLocalFile().catch(err => alert(`ファイルを開けませんでした: ${err.message}`));
-});
-document.getElementById('saveFileBtn').addEventListener('click', () => {
-  saveCurrentData().catch(err => alert(`保存に失敗しました: ${err.message}`));
-});
 document.getElementById('setGithubTokenBtn').addEventListener('click', () => {
   promptGitHubToken();
 });
@@ -1989,7 +1972,7 @@ document.getElementById('runCrawlBtn').addEventListener('click', () => {
   runCrawl().catch(err => alert(`巡回実行に失敗しました: ${err.message}`));
 });
 document.getElementById('stockSaveBtn').addEventListener('click', () => {
-  saveCurrentData().catch(err => alert(`保存に失敗しました: ${err.message}`));
+  publishToGitHub().catch(err => alert(`GitHub反映に失敗しました: ${err.message}`));
 });
 document.getElementById('downloadBtn').addEventListener('click', downloadCsv);
 document.getElementById('addRowBtn').addEventListener('click', addRow);
