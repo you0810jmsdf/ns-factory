@@ -734,6 +734,7 @@ body{
 <div class="section">
   <div class="section-title"><span class="num">2</span> 手帳リフィルサイズ <span class="badge">必須</span></div>
   <div class="opt-grid" id="sizeGrid"></div>
+  <p style="font-size:11px;color:#a07850;margin:8px 0 0">※寸法については目安で記載しています。リフィル端からの余裕など、希望があれば自由記述欄にお願いします。</p>
 </div>
 
 <div class="section">
@@ -2865,6 +2866,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   h += r('サイズ', sel.size||'未選択');
   if(coverW) h += r('本体サイズ（片面）', `横${coverW}mm × 縦${coverH}mm`);
   if(coverW) h += r('開いた状態の横幅', `${coverW * 2 + spineW}mm（表裏${coverW}mm×2＋背表紙${spineW}mm）`);
+  if(coverW) h += `<tr><td colspan="2" style="padding:4px 8px 8px;font-size:11px;color:#888">※寸法は目安です。リフィル端からの余裕など希望があれば自由記述欄にご記入ください。</td></tr>`;
   if(isAdmin && areaMultiplier > 1) h += r('構造タイプ倍率', `製作費・革面積 × ${areaMultiplier}（${sel.brand||''}）`);
   h += r('レザー', sel.leather||'未選択');
   if(isAdmin && sel.leather) {
