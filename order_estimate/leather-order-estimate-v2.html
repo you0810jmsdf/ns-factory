@@ -2809,7 +2809,6 @@ function updateSummary(options = {}) {
     add(`×${qty}個`, `¥${sub.toLocaleString()}`);
     if(volDisc > 0) add(`ボリューム割引(${volRate * 100}%)`, `−¥${volDisc.toLocaleString()}`);
     if(manDisc > 0) add(`割引(${discRate}%)`, `−¥${manDisc.toLocaleString()}`);
-    if(taxRate > 0) add(`消費税(${taxRate}%)`, `¥${tax.toLocaleString()}`);
     add('原価概算（税込）', `¥${total.toLocaleString()}`);
   }
 
@@ -2905,7 +2904,6 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   h += r('小計', `¥${sub.toLocaleString()}`);
   if(volDisc > 0) h += r(`ボリューム割引(${volRate*100}%)`, `−¥${volDisc.toLocaleString()}`);
   if(manDisc > 0) h += r(`割引(${discRate}%)`, `−¥${manDisc.toLocaleString()}`);
-  h += r(`消費税(${taxRate}%)`, `¥${tax.toLocaleString()}`);
   h += r('原価概算（税込）', `¥${total.toLocaleString()}`);
   if (platformFeeRate > 0) {
     h += r(`${sel.platform||''}手数料 (${platformFeeRate}%)`, `+¥${(platformFeeAmt||0).toLocaleString()}`);
@@ -2921,7 +2919,6 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
 function buildEstText() {
   const qty = document.getElementById('qty').value;
   const discRate = document.getElementById('discountRate').value;
-  const taxRate = 10;
   const st = document.getElementById('stampText').value;
   const rem = document.getElementById('remarks').value;
   let t = '【システム手帳 フルオーダーメイド 見積もり内容】\n────────────────\n';
@@ -2963,7 +2960,6 @@ function buildEstText() {
   if(st) t += `刻印内容：${st}\n`;
   t += `数量：${qty}個\n`;
   if(discRate>0) t += `割引率：${discRate}%\n`;
-  t += `消費税：${taxRate}%\n`;
   t += `\n製作原価概算（税込）：${document.getElementById('totalDisplay').textContent.trim()}\n`;
   const _pfRate = prices.platform || 0;
   if (sel.platform && _pfRate > 0) {
