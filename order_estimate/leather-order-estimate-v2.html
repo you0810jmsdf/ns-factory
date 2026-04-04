@@ -2977,36 +2977,45 @@ function openPrint() {
   const sellHtml   = sellBox.style.display !== 'none' ? sellBox.innerHTML : '';
   const detailHtml = document.getElementById('printDetail').innerHTML;
   const date = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric'});
+  const css = [
+    "body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif;margin:24px;color:#2c1a0e;background:#fff}",
+    'h1{font-size:18px;color:#6b3a1f;margin-bottom:4px}',
+    '.date{font-size:12px;color:#a07850;margin-bottom:16px}',
+    '.total-box{background:linear-gradient(135deg,#6b3a1f,#8a4e2a);color:#fff;border-radius:10px;padding:14px 12px;margin-bottom:12px;display:inline-block;min-width:220px}',
+    '.t-lbl{font-size:11px;opacity:.8;margin-bottom:4px}',
+    '.t-val{font-size:24px;font-weight:800}',
+    '.t-val span{font-size:13px;font-weight:400}',
+    '.sell-box{background:#f5f0eb;border-radius:8px;padding:10px 12px;margin-bottom:12px;display:inline-block;min-width:220px;margin-left:8px}',
+    '.s-lbl{font-size:11px;color:#5a3a20;margin-bottom:3px}',
+    '.s-val{font-size:22px;font-weight:700;color:#6b3a1f}',
+    '.s-val span{font-size:13px}',
+    'table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}',
+    'td{padding:5px 8px;border-bottom:1px solid #eee}',
+    'td:last-child{text-align:right}',
+    '.note{font-size:11px;color:#666;margin-top:16px}',
+    '@media print{@page{margin:15mm}}'
+  ].join('');
+  const sellDiv = sellHtml ? '<div class="sell-box">' + sellHtml + '</div>' : '';
+  const body = [
+    '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">',
+    '<title>N\'s factory \u898b\u7a4d\u3082\u308a</title>',
+    '<style>' + css + '</style></head><body>',
+    '<h1>\uD83D\uDCCB N\'s factory \u30b7\u30b9\u30c6\u30e0\u624b\u5e33\u30d5\u30eb\u30aa\u30fc\u30c0\u30fc \u898b\u7a4d\u3082\u308a</h1>',
+    '<div class="date">' + date + ' \u4f5c\u6210</div>',
+    '<div class="total-box">' + totalHtml + '</div>' + sellDiv,
+    detailHtml,
+    '<p class="note">\u203b\u672c\u898b\u7a4d\u3082\u308a\u306f\u6982\u7b97\u3067\u3059\u3002\u6b63\u5f0f\u306a\u304a\u898b\u7a4d\u3082\u308a\u306f\u3054\u6ce8\u6587\u78ba\u8a8d\u5f8c\u306b\u304a\u9001\u308a\u3057\u307e\u3059\u3002<br>\u203b\u4fa1\u683c\u306f\u7a0e\u8fbc\u8868\u793a\u3067\u3059\u3002\u7d0d\u671f\u306f\u3054\u76f8\u8ac7\u304f\u3060\u3055\u3044\u3002</p>',
+    '</body></html>'
+  ].join('');
   const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
-<title>N's factory 見積もり</title>
-<style>
-body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',Meiryo,sans-serif;margin:24px;color:#2c1a0e;background:#fff}
-h1{font-size:18px;color:#6b3a1f;margin-bottom:4px}
-.date{font-size:12px;color:#a07850;margin-bottom:16px}
-.total-box{background:linear-gradient(135deg,#6b3a1f,#8a4e2a);color:#fff;border-radius:10px;padding:14px 12px;margin-bottom:12px;display:inline-block;min-width:220px}
-.t-lbl{font-size:11px;opacity:.8;margin-bottom:4px}
-.t-val{font-size:24px;font-weight:800}
-.t-val span{font-size:13px;font-weight:400}
-.sell-box{background:#f5f0eb;border-radius:8px;padding:10px 12px;margin-bottom:12px;display:inline-block;min-width:220px;margin-left:8px}
-.s-lbl{font-size:11px;color:#5a3a20;margin-bottom:3px}
-.s-val{font-size:22px;font-weight:700;color:#6b3a1f}
-.s-val span{font-size:13px}
-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}
-td{padding:5px 8px;border-bottom:1px solid #eee}
-td:last-child{text-align:right}
-.note{font-size:11px;color:#666;margin-top:16px}
-@media print{@page{margin:15mm}}
-</style></head><body>
-<h1>📋 N's factory システム手帳フルオーダー 見積もり</h1>
-<div class="date">${date} 作成</div>
-<div class="total-box">${totalHtml}</div>${sellHtml ? `<div class="sell-box">${sellHtml}</div>` : ''}
-${detailHtml}
-<p class="note">※本見積もりは概算です。正式なお見積もりはご注文確認後にお送りします。<br>※価格は税込表示です。納期はご相談ください。</p>
-</body></html>`);
+  if (!w) {
+    alert('\u30dd\u30c3\u30d7\u30a2\u30c3\u30d7\u304c\u30d6\u30ed\u30c3\u30af\u3055\u308c\u307e\u3057\u305f\u3002\n\u30d6\u30e9\u30a6\u30b6\u306e\u30dd\u30c3\u30d7\u30a2\u30c3\u30d7\u8a31\u53ef\u3092\u30aa\u30f3\u306b\u3057\u3066\u304b\u3089\u518d\u5ea6\u304a\u8a66\u3057\u304f\u3060\u3055\u3044\u3002');
+    return;
+  }
+  w.document.write(body);
   w.document.close();
   w.focus();
-  setTimeout(() => w.print(), 600);
+  setTimeout(function(){ w.print(); }, 600);
 }
 
 function openEmailModal() {
