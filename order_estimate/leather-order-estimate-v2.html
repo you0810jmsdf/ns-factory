@@ -942,7 +942,7 @@ body{
 
 <!-- BOTTOM ACTIONS -->
 <div class="toggle-row no-print" style="gap:10px;margin-bottom:40px">
-  <button class="tog" style="flex:1" onclick="window.print()">🖨️ 印刷 / PDF</button>
+  <button class="tog" style="flex:1" onclick="openPrint()">🖨️ 印刷 / PDF</button>
   <button class="tog" style="flex:2;background:#6b3a1f;color:#fff;border-color:#6b3a1f;font-weight:700;" onclick="openEmailModal()">📧 この内容でお問い合わせ</button>
 </div>
 
@@ -992,7 +992,7 @@ body{
 
   <div style="margin-top:14px">
     <button class="btn btn-primary no-print" onclick="openEmailModal()">📧 お問い合わせ</button>
-    <button class="btn btn-outline no-print" onclick="window.print()">🖨️ 印刷 / PDF保存</button>
+    <button class="btn btn-outline no-print" onclick="openPrint()">🖨️ 印刷 / PDF保存</button>
     <button class="btn btn-ghost no-print" onclick="resetAll()">🔄 すべてリセット</button>
   </div>
 </div>
@@ -2970,6 +2970,13 @@ function buildEstText() {
   t += '────────────────\n';
   return t;
 }
+// ── PRINT ──
+function openPrint() {
+  const url = new URL(location.href);
+  url.searchParams.set('autoprint', '1');
+  window.open(url.toString(), '_blank');
+}
+
 function openEmailModal() {
   document.getElementById('iEst').value = buildEstText();
   document.getElementById('emailModal').classList.add('open');
@@ -3129,6 +3136,11 @@ buildAccessoryTextGrid(document.getElementById('accessoryGrid'), ACCESSORIES, ha
   applyComponentColorParams(new URLSearchParams(location.search));
   activeColorComponentKey = new URLSearchParams(location.search).get('component') || 'main';
   updateSummary();
+
+  // ── 自動印刷（iframe外で新タブ開いた場合） ─────────────────────────
+  if (new URLSearchParams(location.search).get('autoprint') === '1') {
+    setTimeout(() => window.print(), 800);
+  }
 
   // ── URLパラメータで革を自動選択 ──────────────────────────────────────
   const urlParams = new URLSearchParams(location.search);
