@@ -3120,22 +3120,30 @@ function resetAll() {
 }
 function doResetAll() {
   document.querySelectorAll('.opt-card,.ring-text-card,.img-card,.tog,.platform-card,.brand-card,.sc-swatch').forEach(e=>e.classList.remove('selected'));
-  ['cardPocket','innerPocket'].forEach(id=>document.getElementById(id).value=0);
+  ['cardPocket','innerPocket','cardPocketCC','dkanCount'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
   document.getElementById('qty').value = 1;
   document.getElementById('stampText').value = '';
   document.getElementById('remarks').value = '';
   if(document.getElementById('discountRate')) document.getElementById('discountRate').value = 0;
   document.getElementById('stampTextOpt').classList.add('hide');
-  document.getElementById('dkanCount').value = 0;
   setFreePocket('none');
   setInnerPocket('none');
   setSlitSide('none');
   setClearWindowSide('none');
   setPatchworkSide('none');
   window._flapOn = false;
+  window._wrapping = 'wrap_none';
   sel = {}; prices = {};
+  // 合計表示を直接リセット
+  document.getElementById('totalDisplay').innerHTML = '¥0 <span>円</span>';
+  const mBar = document.getElementById('mobileTotalBar');
+  if (mBar) mBar.textContent = '¥0 円';
+  document.getElementById('costBoxLabel').textContent = '合計金額（税込）';
+  document.getElementById('summaryList').innerHTML = '<li><span style="color:#a07850">未選択</span><span>―</span></li>';
+  const sellBox = document.getElementById('sellBox');
+  if (sellBox) sellBox.style.display = 'none';
   updateFlapOptionUI();
-  updateSummary();
+  try { updateSummary(); } catch(e) { console.warn('updateSummary after reset:', e); }
 }
 
 // ── INIT ──
