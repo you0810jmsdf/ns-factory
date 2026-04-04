@@ -624,14 +624,6 @@ tr.row-out-stock td{
           </select>
         </div>
         <div class="field">
-          <label for="newColorLabel">色名</label>
-          <input id="newColorLabel" type="text" value="ブラック">
-        </div>
-        <div class="field">
-          <label for="newFinishLabel">仕上げ名</label>
-          <input id="newFinishLabel" type="text" value="ブラック">
-        </div>
-        <div class="field">
           <label for="newPriceJpy">見積総額</label>
           <input id="newPriceJpy" type="number" min="0" step="1" value="1500">
         </div>
@@ -644,6 +636,9 @@ tr.row-out-stock td{
         <button class="btn" id="addPresetRowBtn">この条件で追加</button>
       </div>
       <div class="inline-note" style="margin-top:8px">
+        `色名` と `仕上げ名` は `色ID` に合わせて自動設定されます。
+      </div>
+      <div class="inline-note" style="margin-top:4px">
         追加しただけでは公開CSVはまだ更新されません。最後に上か下の `GitHubへ反映` で見積もりサイトへ反映します。
       </div>
     </div>
@@ -1709,17 +1704,27 @@ function buildSeriesLabel(series) {
   return series === 'klause' ? 'クラウゼリング' : '通常リング';
 }
 
+function buildColorLabel(colorId) {
+  const labelMap = {
+    silver: 'シルバー',
+    gold: 'ゴールド',
+    pinkgold: 'ピンクゴールド',
+    black: 'ブラック'
+  };
+  return labelMap[colorId] || colorId;
+}
+
 function addPresetRow() {
   const plannerType = document.getElementById('newPlannerType').value;
   const series = document.getElementById('newSeries').value;
   const sizeMm = String(document.getElementById('newSizeMm').value || '').trim();
   const colorId = document.getElementById('newColorId').value.trim();
-  const colorLabel = document.getElementById('newColorLabel').value.trim();
-  const finishLabel = document.getElementById('newFinishLabel').value.trim();
+  const colorLabel = buildColorLabel(colorId);
+  const finishLabel = colorLabel;
   const priceJpy = document.getElementById('newPriceJpy').value.trim();
   const stockQty = document.getElementById('newStockQty').value.trim();
-  if (!plannerType || !series || !sizeMm || !colorId || !colorLabel) {
-    alert('手帳種別 / リング種別 / リング径 / 色ID / 色名は必須です。');
+  if (!plannerType || !series || !sizeMm || !colorId) {
+    alert('手帳種別 / リング種別 / リング径 / 色IDは必須です。');
     return;
   }
   const ringId = buildRingId(plannerType, series, sizeMm);
