@@ -555,6 +555,12 @@ body{
 .sc-num{font-size:7px;color:#6b4423;text-align:center;line-height:11px;padding:1px 0}
 .sc-swatch:hover{border-color:#b5895a}
 .sc-swatch.selected{border-color:#6b3a1f;box-shadow:0 0 0 2px rgba(107,58,31,.15)}
+.sc-swatch.thread-oos{opacity:.35;cursor:not-allowed;filter:grayscale(1);position:relative}
+.sc-swatch.thread-oos::after{
+  content:'なし';position:absolute;top:3px;right:3px;
+  font-size:8px;background:#c0392b;color:#fff;padding:1px 4px;
+  border-radius:999px;font-weight:bold;
+}
 
 /* ── 在庫切れ ── */
 .oos{opacity:0.38;cursor:not-allowed;pointer-events:none;position:relative}
@@ -1128,7 +1134,10 @@ const KLAUSE_RING_IMAGES = {
   },
 };
 const RING_PRICE_CSV_URL = new URL('./ring-price-stock.csv', location.href).toString();
+const THREAD_STOCK_CSV_URL = new URL('./stitch-thread-stock.csv', location.href).toString();
 let RING_PRICE_ROWS = [];
+let THREAD_STOCK_ROWS = [];
+let THREAD_STOCK_MAP = new Map();
 const npadFlapBrand = BRANDS.find(b => b.id === 'npad');
 if (npadFlapBrand) {
   npadFlapBrand.name = 'N-Pad flap';
@@ -2281,6 +2290,29 @@ async function loadRingPriceCatalog() {
   }
 }
 
+async function loadThreadStockCatalog() {
+  try {
+    const res = await fetch(THREAD_STOCK_CSV_URL, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    THREAD_STOCK_ROWS = parseCsv(text);
+    THREAD_STOCK_MAP = new Map(
+      THREAD_STOCK_ROWS
+        .filter(row => row.thread_id)
+        .map(row => [row.thread_id, row])
+    );
+  } catch (err) {
+    console.warn('Thread stock CSV load failed:', err);
+    THREAD_STOCK_ROWS = [];
+    THREAD_STOCK_MAP = new Map();
+  }
+}
+
+function isThreadAvailable(thread) {
+  const stock = THREAD_STOCK_MAP.get(thread.id);
+  return !stock || csvBool(stock.available);
+}
+
 function getMetalOptions() {
   const baseMetals = Object.fromEntries(METALS.map(m => [m.id, m]));
   if (RING_PRICE_ROWS.length) {
@@ -3129,12 +3161,14 @@ function buildStitchColors() {
   const g = document.getElementById('stitchColorGrid');
   g.className = 'sc-grid';
   STITCH_COLORS.forEach(c => {
+    const available = isThreadAvailable(c);
     const div = document.createElement('div');
-    div.className = 'sc-swatch';
+    div.className = `sc-swatch ${available ? '' : 'thread-oos'}`.trim();
     div.dataset.key = 'stitchColor';
-    div.title = c.name;
+    div.title = available ? c.name : `${c.name}（在庫なし）`;
     div.innerHTML = `<img src="${c.image}" alt="${c.name}" loading="lazy"><div class="sc-num">${c.label}</div>`;
     div.onclick = () => {
+      if (!available) return;
       document.querySelectorAll('.sc-swatch').forEach(b => b.classList.remove('selected'));
       div.classList.add('selected');
       sel.stitchColor = c.name; prices.stitchColor = c.price;
@@ -3178,7 +3212,7 @@ function doResetAll() {
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', () => {
-  loadRingPriceCatalog().finally(() => {
+  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog()]).finally(() => {
   buildBrandGrid();
   syncNpadFlapImageFromSimulator();
   updateFlapOptionUI();
