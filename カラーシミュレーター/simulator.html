@@ -34,6 +34,8 @@ h1 span{display:block;font-size:.75em;color:#7a6a5a;font-weight:400;margin-top:2
 .estimate-btn:hover{background:#7d4525}
 .back-btn{width:100%;padding:10px;background:#fff;color:#6b3a1f;border:2px solid #6b3a1f;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:8px}
 .back-btn:hover{background:#fdf0e5}
+.lp-return-btn{display:block;width:100%;padding:12px;background:#fff;color:#3a3028;border:1px solid #d9cbbb;border-radius:8px;font-size:14px;text-align:center;text-decoration:none;font-family:inherit;font-weight:700;margin-bottom:8px;transition:background .2s,border-color .2s}
+.lp-return-btn:hover{background:#faf6f0;border-color:#c8b89a}
 .note{font-size:11px;color:#9a8a7a;text-align:center;margin-top:10px;line-height:1.6}
 .preview-only .wrapper{max-width:100%}
 .preview-only h1{font-size:.95em;margin-bottom:10px}
@@ -67,6 +69,7 @@ h1 span{display:block;font-size:.75em;color:#7a6a5a;font-weight:400;margin-top:2
   </a>
   <span class="lp-nav-spacer"></span>
   <div class="lp-nav-links">
+    <a href="../index.html" class="lp-nav-link">LPへ戻る</a>
     <a href="https://sites.google.com/view/ns-factory/home" class="lp-nav-link">過去作品</a>
     <a href="https://sites.google.com/view/ns-factory/home" class="lp-nav-link">ワークショップ</a>
     <a href="https://sites.google.com/view/ns-factory/home" class="lp-nav-link">道具紹介</a>
@@ -95,6 +98,7 @@ h1 span{display:block;font-size:.75em;color:#7a6a5a;font-weight:400;margin-top:2
 
   <button class="consult-btn" onclick="handleConsult()">&#12371;&#12398;&#32068;&#12415;&#21512;&#12431;&#12379;&#12391;&#30456;&#35527;&#12377;&#12427;</button>
   <button class="estimate-btn" id="estimate-btn" onclick="goToEstimate()">&#12371;&#12398;&#33394;&#12391;&#35211;&#31309;&#12418;&#12426;&#12434;&#38283;&#12367;</button>
+  <a class="lp-return-btn" id="lp-return-btn" href="../index.html">LPへ戻る</a>
   <p class="note">&#20889;&#30495;&#12505;&#12540;&#12473;&#12398;&#12503;&#12524;&#12499;&#12517;&#12540;&#12391;&#12377;&#12290;&#33394;&#21619;&#12399;&#30446;&#23433;&#12392;&#12375;&#12390;&#12372;&#30906;&#35469;&#12367;&#12384;&#12373;&#12356;&#12290;</p>
 </div>
 
@@ -589,6 +593,8 @@ function handleConsult() {
 
   if (isEmbedded) {
     document.getElementById('estimate-btn').style.display = 'none';
+    const lpReturnBtn = document.getElementById('lp-return-btn');
+    if (lpReturnBtn) lpReturnBtn.style.display = 'none';
     const consultBtn = document.querySelector('.consult-btn');
     if (consultBtn) consultBtn.style.display = 'none';
     const note = document.querySelector('.note');
@@ -604,6 +610,8 @@ function handleConsult() {
     if (consultBtn) consultBtn.style.display = 'none';
     const estimateBtn = document.getElementById('estimate-btn');
     if (estimateBtn) estimateBtn.style.display = 'none';
+    const lpReturnBtn = document.getElementById('lp-return-btn');
+    if (lpReturnBtn) lpReturnBtn.style.display = 'none';
     const note = document.querySelector('.note');
     if (note) note.style.display = 'none';
   }
@@ -635,6 +643,7 @@ loadImages();
       <p class="lp-footer-tagline">世界にひとつだけのオリジナルを<br>千葉県印西市 中司 祐樹</p>
     </div>
     <div class="lp-footer-links">
+      <a href="../index.html" class="lp-footer-link">LPへ戻る</a>
       <a href="https://linktr.ee/you0810jmsdf" class="lp-footer-link">各種販売サイト</a>
       <a href="../order_estimate/leather-order-estimate-v2.html" class="lp-footer-link">見積もりシミュレータ</a>
       <a href="https://lin.ee/S9v9P2H" class="lp-footer-link">LINE 公式アカウント</a>
