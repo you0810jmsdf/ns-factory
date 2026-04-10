@@ -38,9 +38,46 @@ h1 span{display:block;font-size:.75em;color:#7a6a5a;font-weight:400;margin-top:2
 .preview-only .wrapper{max-width:100%}
 .preview-only h1{font-size:.95em;margin-bottom:10px}
 .preview-only .canvas-wrap{margin-bottom:10px;min-height:160px}
+/* ── LP Nav & Footer ── */
+.lp-nav{position:sticky;top:0;z-index:200;height:56px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid #E8E8ED;display:flex;align-items:center;padding:0 24px;gap:16px;font-family:-apple-system,'SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN',Meiryo,sans-serif}
+.lp-nav-brand{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:600;color:#1D1D1F;text-decoration:none;flex-shrink:0;letter-spacing:-.02em}
+.lp-nav-brand svg{width:28px;height:28px;flex-shrink:0}
+.lp-nav-spacer{flex:1}
+.lp-nav-links{display:flex;align-items:center;gap:4px}
+.lp-nav-link{font-size:13px;color:#636366;padding:6px 10px;border-radius:8px;text-decoration:none;transition:background .2s,color .2s;white-space:nowrap}
+.lp-nav-link:hover{background:#F5F5F7;color:#1D1D1F}
+.lp-nav-cta{font-size:13px;font-weight:600;padding:7px 14px;border-radius:9999px;background:#A0785A;color:#fff;text-decoration:none;transition:opacity .2s;white-space:nowrap}
+.lp-nav-cta:hover{opacity:.85}
+.lp-footer{background:#1D1D1F;color:rgba(255,255,255,.6);padding:40px 24px 28px;font-family:-apple-system,'SF Pro Text','Hiragino Sans',Meiryo,sans-serif}
+.lp-footer-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:start}
+.lp-footer-brand{font-size:17px;font-weight:700;color:#fff;margin-bottom:6px}
+.lp-footer-tagline{font-size:13px;line-height:1.6}
+.lp-footer-links{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.lp-footer-link{font-size:13px;color:rgba(255,255,255,.55);text-decoration:none;transition:color .2s}
+.lp-footer-link:hover{color:#fff}
+.lp-footer-bottom{max-width:960px;margin:24px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:rgba(255,255,255,.35)}
+@media(max-width:768px){.lp-nav-links{display:none}.lp-footer-inner{grid-template-columns:1fr}.lp-footer-links{align-items:flex-start}}
 </style>
 </head>
 <body>
+<!-- LP NAV -->
+<nav class="lp-nav">
+  <a href="../index.html" class="lp-nav-brand">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="28" rx="8" fill="#A0785A"/>
+      <path d="M7 21V9l7-2 7 2v12" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M14 7v14M10 11h1.5M10 14h1.5M16.5 11H18M16.5 14H18" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+    N's factory
+  </a>
+  <span class="lp-nav-spacer"></span>
+  <div class="lp-nav-links">
+    <a href="https://sites.google.com/view/ns-factory/home" class="lp-nav-link">過去作品</a>
+    <a href="https://sites.google.com/view/ns-factory/home" class="lp-nav-link">ワークショップ</a>
+    <a href="https://sites.google.com/view/ns-factory/home" class="lp-nav-link">道具紹介</a>
+  </div>
+  <a href="../order_estimate/leather-order-estimate-v2.html" class="lp-nav-cta">見積もりシミュレータ</a>
+</nav>
 <div class="wrapper">
   <h1>N's Factory<span id="component-subtitle">&#12459;&#12521;&#12540;&#12471;&#12511;&#12517;&#12524;&#12540;&#12479;&#12540;</span></h1>
 
@@ -595,5 +632,24 @@ buildSwatches('sw-color', 'color');
 updateResult();
 loadImages();
 </script>
+<!-- LP FOOTER -->
+<footer class="lp-footer">
+  <div class="lp-footer-inner">
+    <div>
+      <div class="lp-footer-brand">N's factory</div>
+      <p class="lp-footer-tagline">世界にひとつだけのオリジナルを<br>千葉県印西市 中司 祐樹</p>
+    </div>
+    <div class="lp-footer-links">
+      <a href="https://linktr.ee/you0810jmsdf" class="lp-footer-link">各種販売サイト</a>
+      <a href="../order_estimate/leather-order-estimate-v2.html" class="lp-footer-link">見積もりシミュレータ</a>
+      <a href="https://lin.ee/S9v9P2H" class="lp-footer-link">LINE 公式アカウント</a>
+      <a href="mailto:you0810jmsfd@gmail.com" class="lp-footer-link">メール</a>
+    </div>
+  </div>
+  <div class="lp-footer-bottom">
+    <span>© 2024–2026 N's factory. All rights reserved.</span>
+    <span>Leather Craft · System Planner · Order Made</span>
+  </div>
+</footer>
 </body>
 </html>
