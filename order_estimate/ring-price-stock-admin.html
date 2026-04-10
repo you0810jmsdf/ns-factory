@@ -157,6 +157,15 @@ body{
 .admin-section-hidden{
   display:none !important;
 }
+.github-publish-panel{
+  background:#fffdfb;
+}
+.publish-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
 .action-guides{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -601,6 +610,24 @@ tr.row-out-stock td{
   background:#fff4f1;
   border-color:#edc5bb;
 }
+.thread-stock-main{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.thread-swatch{
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  border:2px solid rgba(74,42,24,.18);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.45),0 1px 4px rgba(44,26,14,.14);
+  flex:0 0 auto;
+}
+.thread-stock-card.off .thread-swatch{
+  opacity:.45;
+  filter:grayscale(.5);
+}
 .thread-stock-name{
   font-weight:700;
   color:#4d2b17;
@@ -660,6 +687,18 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="thread" role="tab" aria-selected="false">ステッチ糸在庫</button>
     </div>
     <div class="admin-tab-note" id="adminTabNote">リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。</div>
+
+    <div class="panel github-publish-panel">
+      <div class="publish-actions">
+        <button class="btn light" id="githubTokenBtn">GitHubトークン設定</button>
+        <span class="status-pill" id="githubTokenPill">GitHub: トークン未設定</span>
+        <button class="btn sub ring-publish-action" id="publishGithubBtn">リングCSVをGitHubへ反映</button>
+        <button class="btn sub thread-publish-action admin-section-hidden" id="publishThreadGithubBtn">糸在庫CSVをGitHubへ反映</button>
+      </div>
+      <div class="hint" style="margin-top:8px">
+        GitHubへ直接反映する場合は、Contents read/write 権限のトークンをこのブラウザのセッション中だけ保持します。ページを閉じると再設定が必要です。
+      </div>
+    </div>
 
     <div class="panel ring-section">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しいリング候補を追加</h2>
@@ -946,6 +985,7 @@ const GITHUB_REPO_OWNER = 'you0810jmsdf';
 const GITHUB_REPO_NAME = 'ns-factory';
 const GITHUB_REPO_BRANCH = 'main';
 const GITHUB_CSV_PATH = 'order_estimate/ring-price-stock.csv';
+const THREAD_STOCK_CSV_PATH = 'order_estimate/stitch-thread-stock.csv';
 
 function unlockAdmin() {
   const overlay = document.getElementById('authOverlay');
@@ -997,6 +1037,100 @@ if (checkAdminSession()) {
 
 const CSV_URL = new URL('./ring-price-stock.csv', location.href).toString();
 const THREAD_STOCK_CSV_URL = new URL('./stitch-thread-stock.csv', location.href).toString();
+const THREAD_SWATCH_COLORS = {
+  "sc_2": "#CE2E00",
+  "sc_4": "#F0EADE",
+  "sc_6": "#E5CD44",
+  "sc_7": "#DB8900",
+  "sc_9": "#F5C844",
+  "sc_11": "#CCBEBE",
+  "sc_13": "#DFA1AC",
+  "sc_14": "#CB181E",
+  "sc_15": "#7D0703",
+  "sc_16": "#4A0303",
+  "sc_17": "#002C88",
+  "sc_18": "#0F2E51",
+  "sc_19": "#02050D",
+  "sc_21": "#F68A73",
+  "sc_23": "#E0B6D8",
+  "sc_24": "#D5E1E7",
+  "sc_25": "#65AAE2",
+  "sc_26": "#6BA17F",
+  "sc_28": "#6BA17F",
+  "sc_31": "#0F1C1D",
+  "sc_32": "#17171B",
+  "sc_33": "#BBABA2",
+  "sc_34": "#968B84",
+  "sc_35": "#6D6870",
+  "sc_36": "#0047AE",
+  "sc_37": "#7CA3A6",
+  "sc_38": "#7C7E7A",
+  "sc_39": "#D8D6D0",
+  "sc_41": "#26434A",
+  "sc_42": "#647579",
+  "sc_45": "#0A5E6C",
+  "sc_46": "#FCDCE1",
+  "sc_47": "#EFBEDD",
+  "sc_48": "#B52D6E",
+  "sc_49": "#CBAFF6",
+  "sc_52": "#C7DFAC",
+  "sc_53": "#74DAED",
+  "sc_55": "#00B1D3",
+  "sc_57": "#AD873E",
+  "sc_61": "#3C3B36",
+  "sc_100": "#FFFBF7",
+  "sc_101": "#F0E8DB",
+  "sc_102": "#F0E5D7",
+  "sc_103": "#FFDCC7",
+  "sc_104": "#FFC239",
+  "sc_105": "#F78D30",
+  "sc_106": "#F3D0A0",
+  "sc_108": "#DDB988",
+  "sc_109": "#D9885B",
+  "sc_113": "#008D90",
+  "sc_114": "#4E2E12",
+  "sc_121": "#AEAA75",
+  "sc_123": "#815628",
+  "sc_124": "#DE571E",
+  "sc_125": "#663724",
+  "sc_126": "#672B1F",
+  "sc_128": "#672B1F",
+  "sc_129": "#2C1611",
+  "sc_132": "#5E501C",
+  "sc_134": "#93256E",
+  "sc_136": "#625B32",
+  "sc_137": "#CAA273",
+  "sc_140": "#EC5B53",
+  "sc_143": "#E1AE5C",
+  "sc_144": "#FFB870",
+  "sc_145": "#CE692E",
+  "sc_146": "#A7340C",
+  "sc_147": "#6F2428",
+  "sc_148": "#D0643B",
+  "sc_149": "#FFC486",
+  "sc_150": "#DCC097",
+  "sc_151": "#D2BB9E",
+  "sc_152": "#B57227",
+  "sc_153": "#C34559",
+  "sc_154": "#B98A8A",
+  "sc_155": "#A8715A",
+  "sc_156": "#B77D4B",
+  "sc_157": "#AC8F80",
+  "sc_170": "#B1854B",
+  "sc_171": "#CD6C00",
+  "sc_172": "#673119",
+  "sc_173": "#9F6F4D",
+  "sc_174": "#8D714D",
+  "sc_175": "#8D8484",
+  "sc_176": "#0F0A0C",
+  "sc_177": "#2B797F",
+  "sc_178": "#2AC4F6",
+  "sc_179": "#1C4F80",
+  "sc_180": "#70419B",
+  "sc_181": "#2B3E70",
+  "sc_black": "#000000",
+  "sc_white": "#FFFFFF"
+};
 const BOOLEAN_FIELDS = new Set(['check_enabled','ui_visible','monitor_enabled']);
 const NUMBER_FIELDS = new Set(['size_mm','ui_order','price_jpy','stock_qty','lead_time_days','price_min_jpy','price_max_jpy','preferred_source_price_jpy','preferred_source_shipping_jpy','source_price_1_jpy','source_price_2_jpy','source_price_3_jpy','source_shipping_1_jpy','source_shipping_2_jpy','source_shipping_3_jpy']);
 const URL_FIELDS = new Set(['preferred_source_url','source_url_1','source_url_2','source_url_3']);
@@ -1068,7 +1202,7 @@ function utf8ToBase64(text) {
   return btoa(binary);
 }
 
-async function publishToGitHub() {
+async function publishCsvToGitHub({ path, fileName, csvText, buttonId, onSuccess }) {
   let token = getGitHubToken();
   if (!token) {
     const accepted = promptGitHubToken();
@@ -1080,14 +1214,14 @@ async function publishToGitHub() {
     return;
   }
 
-  const btn = document.getElementById('publishGithubBtn');
+  const btn = document.getElementById(buttonId);
   const originalLabel = btn?.textContent || '';
   if (btn) {
     btn.disabled = true;
     btn.textContent = 'GitHubへ反映中...';
   }
 
-  const apiUrl = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/${GITHUB_CSV_PATH}`;
+  const apiUrl = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/${path}`;
   try {
     const currentRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(GITHUB_REPO_BRANCH)}`, {
       headers: {
@@ -1112,8 +1246,8 @@ async function publishToGitHub() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: `Update ring-price-stock.csv via admin page (${new Date().toISOString()})`,
-        content: utf8ToBase64(toCsv()),
+        message: `Update ${fileName} via admin page (${new Date().toISOString()})`,
+        content: utf8ToBase64(csvText),
         sha: currentData.sha,
         branch: GITHUB_REPO_BRANCH
       })
@@ -1127,9 +1261,8 @@ async function publishToGitHub() {
       throw new Error(errData?.message || `GitHub反映に失敗しました: HTTP ${putRes.status}`);
     }
 
-    setDirty(false);
-    document.getElementById('sourcePill').textContent = '読込元: GitHub反映済み';
-    alert('GitHub の ring-price-stock.csv を更新しました。GitHub Pages 反映まで少し待つ場合があります。');
+    onSuccess?.();
+    alert(`GitHub の ${fileName} を更新しました。GitHub Pages 反映まで少し待つ場合があります。`);
   } catch (err) {
     alert(`GitHub反映に失敗しました: ${err.message}`);
   } finally {
@@ -1138,6 +1271,32 @@ async function publishToGitHub() {
       btn.textContent = originalLabel || 'GitHubへ反映';
     }
   }
+}
+
+function publishRingToGitHub() {
+  return publishCsvToGitHub({
+    path: GITHUB_CSV_PATH,
+    fileName: 'ring-price-stock.csv',
+    csvText: toCsv(),
+    buttonId: 'publishGithubBtn',
+    onSuccess: () => {
+      setDirty(false);
+      document.getElementById('sourcePill').textContent = '読込元: GitHub反映済み';
+    }
+  });
+}
+
+function publishThreadStockToGitHub() {
+  return publishCsvToGitHub({
+    path: THREAD_STOCK_CSV_PATH,
+    fileName: 'stitch-thread-stock.csv',
+    csvText: threadStockToCsv(),
+    buttonId: 'publishThreadGithubBtn',
+    onSuccess: () => {
+      threadDirty = false;
+      updateThreadMeta();
+    }
+  });
 }
 
 function rowKey(row) {
@@ -1704,6 +1863,11 @@ function updateThreadMeta() {
   pill.className = `status-pill ${threadDirty ? 'warn' : 'good'}`;
 }
 
+function getThreadSwatchColor(row) {
+  const id = String(row.thread_id || '').trim();
+  return THREAD_SWATCH_COLORS[id] || '#d8c1ab';
+}
+
 function renderThreadStockList() {
   const el = document.getElementById('threadStockList');
   if (!el) return;
@@ -1715,12 +1879,16 @@ function renderThreadStockList() {
   el.innerHTML = '';
   threadRows.forEach((row, index) => {
     const available = boolValue(row.available);
+    const swatchColor = getThreadSwatchColor(row);
     const card = document.createElement('label');
     card.className = `thread-stock-card ${available ? '' : 'off'}`.trim();
     card.innerHTML = `
-      <div>
-        <div class="thread-stock-name">${row.name || row.thread_id || '未設定'}</div>
-        <div class="thread-stock-label">${row.label || ''}${row.note ? ` / ${row.note}` : ''}</div>
+      <div class="thread-stock-main">
+        <span class="thread-swatch" style="background:${swatchColor}" title="${row.name || row.thread_id || ''}"></span>
+        <div>
+          <div class="thread-stock-name">${row.name || row.thread_id || '未設定'}</div>
+          <div class="thread-stock-label">${row.label || ''}${row.note ? ` / ${row.note}` : ''}</div>
+        </div>
       </div>
       <input type="checkbox" data-thread-row="${index}" ${available ? 'checked' : ''} aria-label="${row.name || row.thread_id || ''} 在庫あり">
     `;
@@ -2135,6 +2303,13 @@ document.getElementById('reloadThreadBtn').addEventListener('click', () => {
   loadThreadStockCsv().catch(err => alert(err.message));
 });
 document.getElementById('downloadThreadBtn').addEventListener('click', downloadThreadStockCsv);
+document.getElementById('githubTokenBtn').addEventListener('click', promptGitHubToken);
+document.getElementById('publishGithubBtn').addEventListener('click', () => {
+  publishRingToGitHub().catch(err => alert(`GitHub反映に失敗しました: ${err.message}`));
+});
+document.getElementById('publishThreadGithubBtn').addEventListener('click', () => {
+  publishThreadStockToGitHub().catch(err => alert(`GitHub反映に失敗しました: ${err.message}`));
+});
 document.getElementById('runCrawlBtn').addEventListener('click', () => {
   runCrawl().catch(err => alert(`巡回実行に失敗しました: ${err.message}`));
 });
@@ -2171,6 +2346,12 @@ function setAdminTab(tab) {
   document.querySelectorAll('.thread-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThread);
   });
+  document.querySelectorAll('.ring-publish-action').forEach(el => {
+    el.classList.toggle('admin-section-hidden', isThread);
+  });
+  document.querySelectorAll('.thread-publish-action').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isThread);
+  });
   document.querySelectorAll('[data-admin-tab]').forEach(btn => {
     const active = btn.dataset.adminTab === tab;
     btn.classList.toggle('active', active);
@@ -2202,6 +2383,7 @@ document.getElementById('authPassword')?.addEventListener('keydown', (event) => 
   }
 });
 
+updateGitHubTokenPill();
 loadDefaultCsv().catch(err => {
   document.getElementById('sourcePill').textContent = '読込元: 失敗';
   if (location.protocol === 'file:') {
