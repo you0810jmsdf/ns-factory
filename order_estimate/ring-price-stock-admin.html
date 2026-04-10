@@ -674,7 +674,7 @@ tr.row-out-stock td{
 <div class="page">
   <div class="topbar">
     <h1>リング価格・在庫 管理画面</h1>
-    <p>GitHub Pages 上の公開CSVを確認するための管理画面です。修正はローカルファイルで行い、その後 GitHub へ push する運用に統一します。</p>
+    <p>GitHub 上のCSVを正本として、在庫・価格・ステッチ糸の有無をこの画面から確認し、必要な変更を直接 GitHub へ反映します。</p>
     <div class="top-links">
       <a class="top-link" href="./leather-order-estimate-v2.html">見積もり画面へ戻る</a>
       <a class="top-link" href="./ring-price-stock.csv" download>正本CSVを開く</a>
@@ -692,18 +692,18 @@ tr.row-out-stock td{
       <div class="publish-actions">
         <button class="btn light" id="githubTokenBtn">GitHubトークン設定</button>
         <span class="status-pill" id="githubTokenPill">GitHub: トークン未設定</span>
-        <button class="btn sub ring-publish-action" id="publishGithubBtn">リングCSVをGitHubへ反映</button>
-        <button class="btn sub thread-publish-action admin-section-hidden" id="publishThreadGithubBtn">糸在庫CSVをGitHubへ反映</button>
+        <button class="btn sub ring-publish-action" id="publishGithubBtn">リング在庫をGitHubへ反映</button>
+        <button class="btn sub thread-publish-action admin-section-hidden" id="publishThreadGithubBtn">糸在庫をGitHubへ反映</button>
       </div>
       <div class="hint" style="margin-top:8px">
-        GitHubへ直接反映する場合は、Contents read/write 権限のトークンをこのブラウザのセッション中だけ保持します。ページを閉じると再設定が必要です。
+        PCローカルのCSVは基本使いません。GitHubへ直接反映する場合は、Contents read/write 権限のトークンをこのブラウザのセッション中だけ保持します。ページを閉じると再設定が必要です。
       </div>
     </div>
 
     <div class="panel ring-section">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しいリング候補を追加</h2>
       <div class="hint">
-        未登録のリングをここで試し入力できます。正式に追加するときは、内容を確認したうえでローカルの `ring-price-stock.csv` を修正して GitHub へ push してください。
+        未登録のリングをここで試し入力できます。内容を確認したら、上の `リング在庫をGitHubへ反映` で GitHub 上の `ring-price-stock.csv` を直接更新します。
       </div>
       <div class="add-grid" style="margin-top:12px">
         <div class="field">
@@ -752,14 +752,14 @@ tr.row-out-stock td{
         `色名` と `仕上げ名` は `色ID` に合わせて自動設定されます。
       </div>
       <div class="inline-note" style="margin-top:4px">
-        この画面で追加した内容はブラウザ内だけの変更です。必要なら `CSVダウンロード` で控えを書き出し、ローカルファイル側へ反映してください。
+        この画面で追加した内容は、GitHubへ反映するまではブラウザ内だけの変更です。公開データへ反映する場合は、上の GitHub 反映ボタンを使ってください。
       </div>
     </div>
 
     <div class="panel ring-section">
       <div class="controls">
         <button class="btn light" id="reloadBtn">公開CSVを再読込</button>
-        <button class="btn light" id="downloadBtn">CSVダウンロード</button>
+        <button class="btn light" id="downloadBtn">控えCSVダウンロード</button>
         <button class="btn light advanced-only" id="addRowBtn">行を追加</button>
         <button class="btn sub advanced-only" id="runCrawlBtn">巡回実行</button>
         <a class="btn light advanced-only" id="openCrawlResultsBtn" href="./ring-price-crawl-results.csv" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center">巡回結果CSV</a>
@@ -770,8 +770,8 @@ tr.row-out-stock td{
           <span>編集をやり直したいときに、今公開されている `ring-price-stock.csv` を読み直します。</span>
         </div>
         <div class="action-guide">
-          <strong>CSVダウンロード</strong>
-          <span>表示中の内容をCSVとして書き出します。ローカルで修正を続けるときや、差し替え確認用の控えに使います。</span>
+          <strong>控えCSVダウンロード</strong>
+          <span>表示中の内容をCSVとして書き出します。通常は不要ですが、手元に控えを残したいときだけ使います。</span>
         </div>
       </div>
       <div class="meta">
@@ -783,11 +783,11 @@ tr.row-out-stock td{
         <span class="status-pill advanced-only" id="crawlTimePill">最新巡回: 未確認</span>
       </div>
       <div class="hint" style="margin-top:10px">
-        おすすめの流れは `公開CSVを再読込` → 内容確認 → ローカルの `ring-price-stock.csv` を修正 → GitHub へ push です。
-        このページ上の編集は公開データへ直接保存されません。必要なら `CSVダウンロード` で作業用の控えを残してください。
+        おすすめの流れは `公開CSVを再読込` → 内容確認・編集 → `リング在庫をGitHubへ反映` です。
+        このページ上の編集は、GitHubへ反映するまで公開データには保存されません。
       </div>
       <div class="inline-note" style="margin-top:8px">
-        在庫や価格の正式な変更元はローカルファイルです。GitHub Pages は確認用、公開反映は push 後に行います。
+        在庫や価格の正式な変更元は GitHub 上のCSVです。GitHub Pages は反映まで少し時間がかかる場合があります。
       </div>
       <div class="crawl-log advanced-only" id="crawlLog">巡回サーバー待機中です。未起動の場合は `start-ring-price-crawl-server.bat` を実行してください。</div>
     </div>
@@ -796,11 +796,11 @@ tr.row-out-stock td{
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">ステッチ糸 在庫（有無）</h2>
       <div class="hint">
         ステッチ糸は長さではなく、使えるかどうかだけを管理します。チェックONが在庫あり、OFFが在庫なしです。
-        正式な変更は `stitch-thread-stock.csv` をローカルで修正して GitHub へ push してください。
+        正式な変更は、上の `糸在庫をGitHubへ反映` で GitHub 上の `stitch-thread-stock.csv` を直接更新します。
       </div>
       <div class="controls" style="margin-top:12px">
         <button class="btn light" id="reloadThreadBtn">糸在庫CSVを再読込</button>
-        <button class="btn" id="downloadThreadBtn">糸在庫CSVダウンロード</button>
+        <button class="btn light" id="downloadThreadBtn">糸在庫の控えCSVダウンロード</button>
         <span class="status-pill" id="threadCountPill">糸色: 初期化中</span>
       </div>
       <div class="thread-stock-list" id="threadStockList">
@@ -879,8 +879,8 @@ tr.row-out-stock td{
         </div>
       </div>
       <div class="stock-actions">
-        <button class="btn" id="stockSaveBtn">この内容をCSVダウンロード</button>
-        <span class="hint">この一覧で試した変更内容をCSVとして書き出せます。正式な反映はローカルファイル修正後の GitHub push で行います。</span>
+        <button class="btn light" id="stockSaveBtn">控えCSVダウンロード</button>
+        <span class="hint">この一覧で試した変更内容を控えCSVとして書き出せます。正式な反映は上の `リング在庫をGitHubへ反映` で行います。</span>
       </div>
       <div class="stock-list" id="stockList" style="margin-top:12px"></div>
     </div>
@@ -907,7 +907,7 @@ tr.row-out-stock td{
     <div class="panel ring-section advanced-only">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しい価格情報を反映</h2>
       <div class="hint">
-        新たに見つけた価格情報を、ブラウザ上から現在のCSVデータへ取り込みます。保存は `直接上書き保存` または `CSVダウンロード` で確定します。
+        新たに見つけた価格情報を、ブラウザ上から現在のCSVデータへ取り込みます。確定は上の `リング在庫をGitHubへ反映` で行います。
       </div>
       <div class="form-grid" style="margin-top:12px">
         <div class="field">
@@ -1950,7 +1950,7 @@ async function saveToOpenedFile() {
     const message = String(err?.message || '');
     if (err?.name === 'InvalidStateError' || message.includes('state cached')) {
       fileHandle = null;
-      throw new Error('ローカルファイルへの保存接続が切れました。必要ならページを再読込してからCSVをダウンロードし、ローカルファイル側で修正を続けてください。');
+      throw new Error('ファイル保存接続が切れました。現在の運用では、画面上の GitHub 反映ボタンを使って GitHub 上のCSVへ直接保存してください。');
     }
     throw err;
   }
@@ -1974,7 +1974,7 @@ async function saveCurrentData() {
     return;
   }
   downloadCsv();
-  alert('このブラウザでは直接上書き保存できないため、CSVをダウンロード保存しました。');
+  alert('CSVを控えとしてダウンロードしました。公開データへ反映する場合は、GitHub反映ボタンを使ってください。');
 }
 
 function downloadCsv() {
@@ -1986,7 +1986,6 @@ function downloadCsv() {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  setDirty(false);
 }
 
 function downloadThreadStockCsv() {
@@ -1998,7 +1997,6 @@ function downloadThreadStockCsv() {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  threadDirty = false;
   updateThreadMeta();
 }
 
