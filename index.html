@@ -3,44 +3,665 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>N's factory 見積もりページ</title>
-<meta http-equiv="refresh" content="0; url=./order_estimate/leather-order-estimate-v2.html">
+<title>N's factory — 世界にひとつだけのオリジナルを</title>
+<meta name="description" content="直接、作家と使用者がつながり、自分だけの革小物（手帳、その他）、ハンコ、アクリル製品、木工製品を創ることを目的としたサイトです。">
 <style>
-body{
-  margin:0;
-  min-height:100vh;
+/* ── Design Tokens ────────────────────────────────── */
+:root {
+  --color-primary:       #1D1D1F;
+  --color-primary-hover: #3A3A3C;
+  --color-accent:        #A0785A;
+  --color-accent-light:  #F3ECE4;
+  --color-accent-dark:   #7A5540;
+  --color-bg:            #FFFFFF;
+  --color-bg-sub:        #F5F5F7;
+  --color-border:        #E8E8ED;
+  --color-text:          #1D1D1F;
+  --color-text-sub:      #636366;
+  --color-text-mute:     #AEAEB2;
+  --shadow-xs:  0 1px 3px rgba(0,0,0,.06);
+  --shadow-sm:  0 2px 8px rgba(0,0,0,.08);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  20px;
+  --radius-full:9999px;
+  --transition-base: .2s ease;
+  --transition-slow: .35s ease;
+  font-family: -apple-system,'SF Pro Display','SF Pro Text',
+               'Hiragino Sans','Hiragino Kaku Gothic ProN',
+               'Yu Gothic',Meiryo,sans-serif;
+}
+
+/* ── Reset ──────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--color-bg);color:var(--color-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* ── Navigation ─────────────────────────────────────── */
+.nav{
+  position:sticky;top:0;z-index:100;
+  height:56px;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--color-border);
+  display:flex;align-items:center;
+  padding:0 24px;
+  gap:16px;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:10px;
+  font-size:17px;font-weight:600;letter-spacing:-.02em;
+  color:var(--color-text);
+  flex-shrink:0;
+}
+.nav-brand svg{width:28px;height:28px;flex-shrink:0}
+.nav-spacer{flex:1}
+.nav-links{
+  display:flex;align-items:center;gap:4px;
+}
+.nav-link{
+  font-size:13px;color:var(--color-text-sub);
+  padding:6px 10px;border-radius:var(--radius-sm);
+  transition:background var(--transition-base),color var(--transition-base);
+  white-space:nowrap;
+}
+.nav-link:hover{background:var(--color-bg-sub);color:var(--color-text)}
+.nav-cta{
+  font-size:13px;font-weight:600;
+  padding:7px 14px;border-radius:var(--radius-full);
+  background:var(--color-accent);color:#fff;
+  transition:opacity var(--transition-base);
+  white-space:nowrap;
+}
+.nav-cta:hover{opacity:.85}
+
+/* ── Hero ───────────────────────────────────────────── */
+.hero{
+  position:relative;
+  min-height:520px;
+  background:#111;
+  overflow:hidden;
   display:grid;
-  place-items:center;
-  background:#f5f0eb;
-  color:#2c1a0e;
-  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  grid-template-columns:1fr 1fr;
+  align-items:stretch;
+}
+.hero-content{
+  position:relative;z-index:2;
+  padding:80px 56px 80px 64px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.hero-eyebrow{
+  font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--color-accent);margin-bottom:16px;
+}
+.hero-title{
+  font-size:clamp(32px,4vw,52px);
+  font-weight:700;line-height:1.2;
+  letter-spacing:-.03em;
+  color:#FFFFFF;
+  margin-bottom:24px;
+}
+.hero-desc{
+  font-size:15px;line-height:1.75;
+  color:rgba(255,255,255,.65);
+  max-width:400px;
+  margin-bottom:36px;
+}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:15px;font-weight:600;
+  padding:12px 22px;border-radius:var(--radius-sm);
+  transition:opacity var(--transition-base),transform var(--transition-base);
+}
+.btn:hover{opacity:.85;transform:translateY(-1px)}
+.btn-primary{background:var(--color-accent);color:#fff}
+.btn-ghost{
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.2);
+}
+.btn-ghost:hover{background:rgba(255,255,255,.18)}
+.hero-photo{
+  position:relative;overflow:hidden;
+}
+.hero-photo img{
+  width:100%;height:100%;object-fit:cover;
+  filter:brightness(.85);
+}
+.hero-photo-placeholder{
+  width:100%;height:100%;min-height:520px;
+  background:linear-gradient(135deg,#2a1810 0%,#5a3020 50%,#8a5030 100%);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.3);font-size:13px;text-align:center;
+  padding:32px;
+}
+
+/* ── Section wrapper ────────────────────────────────── */
+.section{padding:72px 24px}
+.section-inner{max-width:960px;margin:0 auto}
+.section-header{margin-bottom:40px}
+.section-label{
+  font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--color-accent);margin-bottom:8px;
+}
+.section-title{
+  font-size:clamp(22px,3vw,28px);font-weight:700;
+  letter-spacing:-.02em;line-height:1.3;
+}
+.section-divider{
+  border:none;border-top:1px solid var(--color-border);
+  margin:0;
+}
+
+/* ── Quick Links ────────────────────────────────────── */
+.quick-links{
+  background:var(--color-bg-sub);
+  padding:48px 24px;
+  border-top:1px solid var(--color-border);
+  border-bottom:1px solid var(--color-border);
+}
+.quick-links-inner{
+  max-width:960px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+}
+.quick-links-text{
+  font-size:17px;font-weight:600;letter-spacing:-.01em;
+}
+.quick-links-text span{
+  display:block;font-size:13px;font-weight:400;
+  color:var(--color-text-sub);margin-top:4px;
+}
+.pill-links{display:flex;flex-wrap:wrap;gap:8px}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:500;
+  padding:8px 16px;border-radius:var(--radius-full);
+  border:1px solid var(--color-border);
+  background:var(--color-bg);
+  color:var(--color-text);
+  transition:background var(--transition-base),border-color var(--transition-base),
+             box-shadow var(--transition-base),transform var(--transition-base);
+  box-shadow:var(--shadow-xs);
+}
+.pill:hover{
+  background:var(--color-accent-light);
+  border-color:var(--color-accent);
+  box-shadow:var(--shadow-sm);
+  transform:translateY(-1px);
+}
+.pill-accent{
+  background:var(--color-accent);color:#fff;border-color:var(--color-accent);
+}
+.pill-accent:hover{background:var(--color-accent-dark);border-color:var(--color-accent-dark)}
+
+/* ── Cards ──────────────────────────────────────────── */
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:16px;
 }
 .card{
-  width:min(92vw,560px);
-  padding:32px 28px;
-  border:1px solid #e3d3c2;
-  border-radius:20px;
-  background:#fffaf6;
-  box-shadow:0 12px 36px rgba(80,40,16,.08);
+  background:var(--color-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  padding:28px;
+  box-shadow:var(--shadow-xs);
+  transition:transform var(--transition-base),box-shadow var(--transition-base);
+  display:flex;flex-direction:column;gap:12px;
 }
-h1{font-size:28px;line-height:1.3;margin-bottom:12px}
-p{margin:0 0 16px}
-a{
-  display:inline-block;
-  padding:12px 18px;
-  border-radius:12px;
-  background:#7a421f;
-  color:#fff;
-  text-decoration:none;
-  font-weight:700;
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.card-icon{
+  width:44px;height:44px;
+  background:var(--color-accent-light);
+  border-radius:var(--radius-md);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  flex-shrink:0;
+}
+.card-title{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.card-desc{font-size:13px;color:var(--color-text-sub);line-height:1.6}
+.card-link{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:13px;font-weight:600;color:var(--color-accent);
+  margin-top:auto;padding-top:8px;
+  transition:gap var(--transition-base);
+}
+.card-link:hover{gap:8px}
+.card-link::after{content:'→'}
+
+/* ── Order CTA ──────────────────────────────────────── */
+.order-section{background:var(--color-bg-sub)}
+.order-cta-box{
+  background:var(--color-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-xl);
+  padding:40px;
+  display:flex;align-items:center;gap:32px;
+  flex-wrap:wrap;
+  box-shadow:var(--shadow-sm);
+}
+.order-cta-text{flex:1;min-width:200px}
+.order-cta-text h3{font-size:20px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+.order-cta-text p{font-size:14px;color:var(--color-text-sub);line-height:1.6}
+.order-cta-actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:14px;font-weight:600;
+  padding:10px 20px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--color-primary);
+  color:var(--color-primary);
+  background:transparent;
+  transition:background var(--transition-base),color var(--transition-base),
+             opacity var(--transition-base),transform var(--transition-base);
+}
+.btn-outline:hover{background:var(--color-primary);color:#fff;transform:translateY(-1px)}
+
+/* ── Progress links ─────────────────────────────────── */
+.progress-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:12px;
+}
+.progress-link{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;
+  background:var(--color-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  font-size:14px;font-weight:500;
+  color:var(--color-text);
+  box-shadow:var(--shadow-xs);
+  transition:transform var(--transition-base),box-shadow var(--transition-base),
+             border-color var(--transition-base);
+}
+.progress-link:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-sm);
+  border-color:var(--color-accent);
+}
+.progress-link::after{content:'→';color:var(--color-accent);font-weight:700}
+
+/* ── Contact ────────────────────────────────────────── */
+.contact-box{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:24px;flex-wrap:wrap;
+  background:var(--color-accent-light);
+  border:1px solid #e8d5c4;
+  border-radius:var(--radius-xl);
+  padding:36px 40px;
+}
+.contact-box h3{font-size:20px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+.contact-box p{font-size:14px;color:var(--color-text-sub);line-height:1.6}
+.btn-accent{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:14px;font-weight:600;
+  padding:11px 22px;border-radius:var(--radius-sm);
+  background:var(--color-accent);color:#fff;
+  transition:opacity var(--transition-base),transform var(--transition-base);
+  white-space:nowrap;flex-shrink:0;
+}
+.btn-accent:hover{opacity:.85;transform:translateY(-1px)}
+
+/* ── Accordion (NEWS) ───────────────────────────────── */
+.accordion{
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  background:var(--color-bg);
+}
+.accordion-item + .accordion-item{border-top:1px solid var(--color-border)}
+.accordion-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px;
+  font-size:15px;font-weight:600;
+  color:var(--color-text);
+  background:transparent;
+  transition:background var(--transition-base);
+  cursor:pointer;border:none;font-family:inherit;text-align:left;
+}
+.accordion-btn:hover{background:var(--color-bg-sub)}
+.accordion-chevron{
+  width:20px;height:20px;
+  border:2px solid var(--color-text-mute);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:transform var(--transition-base),border-color var(--transition-base);
+  font-size:11px;color:var(--color-text-mute);
+}
+.accordion-btn[aria-expanded="true"] .accordion-chevron{
+  transform:rotate(180deg);
+  border-color:var(--color-accent);
+  color:var(--color-accent);
+}
+.accordion-body{
+  overflow:hidden;
+  max-height:0;
+  transition:max-height .4s ease;
+}
+.accordion-body.open{max-height:1200px}
+.accordion-content{
+  padding:4px 24px 24px;
+  font-size:14px;line-height:1.8;
+  color:var(--color-text-sub);
+  border-top:1px solid var(--color-border);
+}
+.accordion-content ul{padding-left:20px;margin-top:12px}
+.accordion-content li{margin-bottom:8px}
+
+/* ── 特定商取引法 ────────────────────────────────────── */
+.tokusho{background:var(--color-bg-sub)}
+.tokusho-table{
+  width:100%;border-collapse:collapse;
+  font-size:14px;
+  background:var(--color-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  box-shadow:var(--shadow-xs);
+}
+.tokusho-table th,.tokusho-table td{
+  padding:14px 20px;
+  text-align:left;
+  border-bottom:1px solid var(--color-border);
+}
+.tokusho-table tr:last-child th,
+.tokusho-table tr:last-child td{border-bottom:none}
+.tokusho-table th{
+  width:160px;
+  font-weight:600;font-size:13px;
+  background:var(--color-bg-sub);
+  color:var(--color-text-sub);
+  vertical-align:top;
+  white-space:nowrap;
+}
+.tokusho-table td{color:var(--color-text)}
+
+/* ── Footer ─────────────────────────────────────────── */
+.footer{
+  background:var(--color-primary);
+  color:rgba(255,255,255,.6);
+  padding:48px 24px 32px;
+}
+.footer-inner{
+  max-width:960px;margin:0 auto;
+  display:grid;grid-template-columns:1fr auto;gap:32px;align-items:start;
+  flex-wrap:wrap;
+}
+.footer-brand{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px}
+.footer-tagline{font-size:13px;line-height:1.6}
+.footer-links{
+  display:flex;flex-direction:column;gap:8px;align-items:flex-end;
+}
+.footer-link{
+  font-size:13px;color:rgba(255,255,255,.55);
+  transition:color var(--transition-base);
+}
+.footer-link:hover{color:#fff}
+.footer-bottom{
+  max-width:960px;margin:32px auto 0;
+  padding-top:20px;
+  border-top:1px solid rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-size:12px;color:rgba(255,255,255,.35);
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media(max-width:768px){
+  .hero{grid-template-columns:1fr;min-height:auto}
+  .hero-content{padding:56px 24px 40px}
+  .hero-photo{display:none}
+  .nav-links{display:none}
+  .footer-inner{grid-template-columns:1fr}
+  .footer-links{align-items:flex-start}
+  .order-cta-box{padding:28px 24px}
+  .contact-box{padding:28px 24px}
+  .tokusho-table th{width:120px;font-size:12px;padding:12px 14px}
+  .tokusho-table td{padding:12px 14px;font-size:13px}
+}
+@media(max-width:480px){
+  .section{padding:52px 16px}
+  .quick-links{padding:36px 16px}
 }
 </style>
 </head>
 <body>
-  <main class="card">
-    <h1>N's factory 見積もりページ</h1>
-    <p>見積もりページへ移動します。自動で移動しない場合は下のボタンを押してください。</p>
-    <a href="./order_estimate/leather-order-estimate-v2.html">見積もりページを開く</a>
-  </main>
+
+<!-- ── Navigation ── -->
+<nav class="nav">
+  <a href="#" class="nav-brand">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="14" cy="14" r="13" stroke="#A0785A" stroke-width="1.5"/>
+      <ellipse cx="10" cy="11" rx="2" ry="2.8" fill="#A0785A"/>
+      <ellipse cx="18" cy="11" rx="2" ry="2.8" fill="#A0785A"/>
+      <circle cx="9.5" cy="10" r=".8" fill="#1D1D1F"/>
+      <circle cx="17.5" cy="10" r=".8" fill="#1D1D1F"/>
+      <path d="M11 15.5 Q14 18 17 15.5" stroke="#A0785A" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+      <path d="M7.5 8 L10 11M20.5 8 L18 11" stroke="#A0785A" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    N's factory
+  </a>
+  <span class="nav-spacer"></span>
+  <div class="nav-links">
+    <a href="https://sites.google.com/view/ns-factory/home" class="nav-link">過去作品</a>
+    <a href="https://sites.google.com/view/ns-factory/home" class="nav-link">ワークショップ</a>
+    <a href="https://sites.google.com/view/ns-factory/home" class="nav-link">道具紹介</a>
+  </div>
+  <a href="./order_estimate/leather-order-estimate-v2.html" class="nav-cta">見積もりシミュレータ</a>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">N's factory — Leather Craft</p>
+    <h1 class="hero-title">世界にひとつだけの<br>オリジナルを</h1>
+    <p class="hero-desc">
+      直接、作家と使用者がつながり、自分だけの革小物（手帳、その他）、
+      ハンコ、アクリル製品、木工製品を創ることを目的としたサイトです。<br><br>
+      使用する革、構成、刻印、色など自分の好みにアレンジできます。
+    </p>
+    <div class="hero-actions">
+      <a href="./order_estimate/leather-order-estimate-v2.html" class="btn btn-primary">見積もりシミュレータ</a>
+      <a href="https://lin.ee/S9v9P2H" class="btn btn-ghost">LINEで問い合わせ</a>
+    </div>
+  </div>
+  <div class="hero-photo">
+    <img src="assets/artisan.jpg" alt="作家 中司 祐樹">
+  </div>
+</section>
+
+<!-- ── Quick Links ── -->
+<div class="quick-links">
+  <div class="quick-links-inner">
+    <div class="quick-links-text">
+      各種リンクサイト
+      <span>Creema / minne / BASE / メルカリ ほか</span>
+    </div>
+    <div class="pill-links">
+      <a href="https://linktr.ee/you0810jmsdf" class="pill pill-accent">すべての販売サイトを見る →</a>
+      <a href="https://sites.google.com/view/ns-factory/home" class="pill">N's factory 最新作</a>
+      <a href="https://sites.google.com/view/ns-factory/home" class="pill">過去作品紹介</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── Order Section ── -->
+<section class="section order-section">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">Order Made</p>
+      <h2 class="section-title">オーダーメイド依頼</h2>
+    </div>
+    <div class="order-cta-box">
+      <div class="order-cta-text">
+        <h3>システム手帳フルオーダー</h3>
+        <p>サイズ・革の種類・金具・刻印まで、すべて自分好みに。<br>シミュレータで概算額をその場で確認できます。</p>
+      </div>
+      <div class="order-cta-actions">
+        <a href="./order_estimate/leather-order-estimate-v2.html" class="btn-accent">見積もりシミュレータを開く</a>
+        <a href="https://lin.ee/S9v9P2H" class="btn-outline">LINEで相談する</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ── Features Cards ── -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">What We Make</p>
+      <h2 class="section-title">制作できるもの</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📔</div>
+        <h3 class="card-title">システム手帳</h3>
+        <p class="card-desc">M5 / Mini6 / A5 / A6 / A7 など各サイズ対応。革・金具・刻印まで完全カスタム。</p>
+        <a href="./order_estimate/leather-order-estimate-v2.html" class="card-link">見積もりを出す</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">👜</div>
+        <h3 class="card-title">革小物・雑貨</h3>
+        <p class="card-desc">キーケース、カードホルダー、コインケースなど。日常に寄り添う革小物を手作りで。</p>
+        <a href="https://sites.google.com/view/ns-factory/home" class="card-link">作品を見る</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔨</div>
+        <h3 class="card-title">リメイク・リペア</h3>
+        <p class="card-desc">思い出の革製品のリメイク・修理も承ります。まずはお気軽にご相談ください。</p>
+        <a href="https://sites.google.com/view/ns-factory/home" class="card-link">実績を見る</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">✏️</div>
+        <h3 class="card-title">ワークショップ</h3>
+        <p class="card-desc">カルチャースクール（JOYFUL HONDA）での体験教室。自分の作品を作る喜びを体験。</p>
+        <a href="https://sites.google.com/view/ns-factory/home" class="card-link">詳細を見る</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ── Progress ── -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">Order Status</p>
+      <h2 class="section-title">オーダーメイド進捗確認</h2>
+    </div>
+    <div class="progress-grid">
+      <a href="https://sites.google.com/view/ns-factory/order_organizer" class="progress-link">手帳（Mini6・A6以外）</a>
+      <a href="https://sites.google.com/view/ns-factory/mini6" class="progress-link">Mini6 手帳</a>
+      <a href="https://sites.google.com/view/ns-factory/a6" class="progress-link">A6 手帳</a>
+      <a href="https://sites.google.com/view/ns-factory/order_etc" class="progress-link">手帳以外のオーダー</a>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ── Contact ── -->
+<section class="section">
+  <div class="section-inner">
+    <div class="contact-box">
+      <div>
+        <h3>作家に直接メールを送る</h3>
+        <p>「こんなもの作れますか？」等、気軽にお問合せください。<br>SNS の DM でも大丈夫です！</p>
+      </div>
+      <a href="mailto:you0810jmsfd@gmail.com" class="btn-accent">メールで問い合わせる</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── NEWS ── -->
+<section class="section" style="background:var(--color-bg-sub)">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">News</p>
+      <h2 class="section-title">お知らせ</h2>
+    </div>
+    <div class="accordion">
+      <div class="accordion-item">
+        <button class="accordion-btn" aria-expanded="false" onclick="toggleAccordion(this)">
+          <span>過去のお知らせ（2024年）</span>
+          <span class="accordion-chevron">▾</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <ul>
+              <li>2024年 — 各種ECサイト（Creema / minne / BASE / メルカリ / ラクマ / PayPayフリマ / Pinkoi）にて販売中</li>
+              <li>2024年 — Pinkoi（アジア向けECサイト）への出店開始</li>
+              <li>2024年 — JOYFUL HONDA カルチャースクール レザークラフト講座 開講</li>
+              <li>2024年 — システム手帳フルオーダー見積もりシミュレータ 公開</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 特定商取引法 ── -->
+<section class="section tokusho">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">Legal</p>
+      <h2 class="section-title">特定商取引法に基づく表記</h2>
+    </div>
+    <table class="tokusho-table">
+      <tr><th>販売業者</th><td>中司 祐樹（屋号：N's factory）</td></tr>
+      <tr><th>所在地</th><td>千葉県印西市（詳細は請求により開示）</td></tr>
+      <tr><th>電話番号</th><td>請求があった場合に遅滞なく開示いたします</td></tr>
+      <tr><th>メールアドレス</th><td>you0810jmsfd@gmail.com</td></tr>
+      <tr><th>販売価格</th><td>各商品ページに記載（税込）</td></tr>
+      <tr><th>送料</th><td>実費（注文確定後にご案内）</td></tr>
+      <tr><th>お支払い方法</th><td>各ECサイトの規定に準ずる</td></tr>
+      <tr><th>引渡し時期</th><td>オーダーメイド品：制作完了後の発送。通常2〜4週間程度</td></tr>
+      <tr><th>返品・交換</th><td>オーダーメイド品の性質上、原則返品不可。不良品の場合を除く</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">N's factory</div>
+      <p class="footer-tagline">世界にひとつだけのオリジナルを<br>千葉県印西市 中司 祐樹</p>
+    </div>
+    <div class="footer-links">
+      <a href="https://linktr.ee/you0810jmsdf" class="footer-link">各種販売サイト</a>
+      <a href="./order_estimate/leather-order-estimate-v2.html" class="footer-link">見積もりシミュレータ</a>
+      <a href="https://lin.ee/S9v9P2H" class="footer-link">LINE 公式アカウント</a>
+      <a href="mailto:you0810jmsfd@gmail.com" class="footer-link">メール</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024–2026 N's factory. All rights reserved.</span>
+    <span>Leather Craft · System Planner · Order Made</span>
+  </div>
+</footer>
+
+<script>
+function toggleAccordion(btn) {
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', String(!expanded));
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open', !expanded);
+}
+</script>
 </body>
 </html>
