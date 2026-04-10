@@ -123,6 +123,40 @@ body{
   gap:10px;
   align-items:center;
 }
+.admin-tabs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:6px;
+  border:1px solid #eadccf;
+  border-radius:14px;
+  background:#fff8f1;
+}
+.admin-tab-btn{
+  border:none;
+  border-radius:10px;
+  padding:10px 16px;
+  cursor:pointer;
+  font:inherit;
+  font-size:13px;
+  font-weight:800;
+  color:#6b3a1f;
+  background:transparent;
+}
+.admin-tab-btn.active{
+  color:#fff;
+  background:#6b3a1f;
+  box-shadow:0 2px 8px rgba(107,58,31,.18);
+}
+.admin-tab-note{
+  margin:-4px 0 2px;
+  font-size:12px;
+  color:#7d644d;
+  line-height:1.6;
+}
+.admin-section-hidden{
+  display:none !important;
+}
 .action-guides{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -621,7 +655,13 @@ tr.row-out-stock td{
   </div>
 
   <div class="main">
-    <div class="panel">
+    <div class="admin-tabs" role="tablist" aria-label="管理対象の切り替え">
+      <button class="admin-tab-btn active" type="button" data-admin-tab="ring" role="tab" aria-selected="true">リング在庫</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="thread" role="tab" aria-selected="false">ステッチ糸在庫</button>
+    </div>
+    <div class="admin-tab-note" id="adminTabNote">リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。</div>
+
+    <div class="panel ring-section">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しいリング候補を追加</h2>
       <div class="hint">
         未登録のリングをここで試し入力できます。正式に追加するときは、内容を確認したうえでローカルの `ring-price-stock.csv` を修正して GitHub へ push してください。
@@ -677,7 +717,7 @@ tr.row-out-stock td{
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel ring-section">
       <div class="controls">
         <button class="btn light" id="reloadBtn">公開CSVを再読込</button>
         <button class="btn light" id="downloadBtn">CSVダウンロード</button>
@@ -713,7 +753,7 @@ tr.row-out-stock td{
       <div class="crawl-log advanced-only" id="crawlLog">巡回サーバー待機中です。未起動の場合は `start-ring-price-crawl-server.bat` を実行してください。</div>
     </div>
 
-    <div class="panel">
+    <div class="panel thread-section admin-section-hidden">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">ステッチ糸 在庫（有無）</h2>
       <div class="hint">
         ステッチ糸は長さではなく、使えるかどうかだけを管理します。チェックONが在庫あり、OFFが在庫なしです。
@@ -729,7 +769,7 @@ tr.row-out-stock td{
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel ring-section">
       <div class="filters">
         <div class="field">
           <label for="searchInput">全件テーブル検索</label>
@@ -760,7 +800,7 @@ tr.row-out-stock td{
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel ring-section">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">在庫クイック検索</h2>
       <div class="stock-toolbar">
         <div class="field">
@@ -806,7 +846,7 @@ tr.row-out-stock td{
       <div class="stock-list" id="stockList" style="margin-top:12px"></div>
     </div>
 
-    <div class="panel advanced-only">
+    <div class="panel ring-section advanced-only">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">全件テーブル</h2>
       <div class="hint">正本CSVの全行をここで直接編集できます。価格が反映されないときは、`planner_type / ring_id / color_id / price_jpy / stock_status / stock_qty` をまず確認してください。</div>
       <div class="table-wrap" style="margin-top:12px">
@@ -817,7 +857,7 @@ tr.row-out-stock td{
       </div>
     </div>
 
-    <div class="panel advanced-only">
+    <div class="panel ring-section advanced-only">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">巡回結果レビュー</h2>
       <div class="hint">
         価格差分がある候補だけを一覧表示します。`採用する` は優先ソースと見積価格へ反映し、`不採用` はその候補スロットをクリアします。
@@ -825,7 +865,7 @@ tr.row-out-stock td{
       <div class="review-list" id="reviewList" style="margin-top:12px"></div>
     </div>
 
-    <div class="panel advanced-only">
+    <div class="panel ring-section advanced-only">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">新しい価格情報を反映</h2>
       <div class="hint">
         新たに見つけた価格情報を、ブラウザ上から現在のCSVデータへ取り込みます。保存は `直接上書き保存` または `CSVダウンロード` で確定します。
@@ -888,7 +928,7 @@ tr.row-out-stock td{
       </div>
     </div>
 
-    <div class="panel hint">
+    <div class="panel ring-section hint">
       管理者画面の今後の想定:
       在庫数、在庫状態、価格、参照URL、表示ON/OFFをこの画面から修正し、
       最終的には巡回結果の確認や価格差分の反映もここで扱える形に広げる。
@@ -2121,6 +2161,31 @@ document.getElementById('fallbackFileInput').addEventListener('change', async (e
   fileHandle = null;
   await loadFromText(text, file.name);
   event.target.value = '';
+});
+
+function setAdminTab(tab) {
+  const isThread = tab === 'thread';
+  document.querySelectorAll('.ring-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', isThread);
+  });
+  document.querySelectorAll('.thread-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isThread);
+  });
+  document.querySelectorAll('[data-admin-tab]').forEach(btn => {
+    const active = btn.dataset.adminTab === tab;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', String(active));
+  });
+  const note = document.getElementById('adminTabNote');
+  if (note) {
+    note.textContent = isThread
+      ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
+      : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
+  }
+}
+
+document.querySelectorAll('[data-admin-tab]').forEach(btn => {
+  btn.addEventListener('click', () => setAdminTab(btn.dataset.adminTab));
 });
 
 window.addEventListener('beforeunload', (event) => {
