@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>リメイク・リペア実績 | N's factory</title>
+  <meta name="description" content="N's factory リメイク・リペア オーダー実績一覧。思い出の革製品のリメイク・修理を承ります。">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --tan: #A0785A; --tan-light: #C4956A; --charcoal: #1D1D1F;
+      --gray: #6E6E73; --bg: #F5F5F7; --white: #FFFFFF;
+      --green: #2E7D32; --green-light: #E8F5E9;
+      --amber: #E65100; --amber-light: #FFF3E0;
+      --blue: #1565C0; --blue-light: #E3F2FD;
+      --purple: #6A1B9A; --purple-light: #F3E5F5;
+      --red-light: #FFEBEE; --red: #C62828;
+      --radius: 14px;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; background: var(--bg); color: var(--charcoal); line-height: 1.7; }
+
+    /* ── Nav ── */
+    .lp-nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; gap: 24px;
+      padding: 0 32px; height: 64px;
+      background: rgba(245,245,247,0.88);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .lp-nav-brand { font-size: 17px; font-weight: 700; color: var(--tan); text-decoration: none; }
+    .lp-nav-spacer { flex: 1; }
+    .lp-nav-links { display: flex; gap: 6px; }
+    .lp-nav-link { padding: 6px 14px; border-radius: 20px; font-size: 14px; color: var(--charcoal); text-decoration: none; transition: background .2s; white-space: nowrap; }
+    .lp-nav-link:hover { background: rgba(0,0,0,0.06); }
+    .lp-nav-link.active { background: rgba(160,120,90,0.15); color: var(--tan); font-weight: 600; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: var(--gray); font-size: 14px; margin-bottom: 32px; }
+    h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--tan); }
+    h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+    .section { margin-bottom: 40px; }
+
+    /* ── Notice ── */
+    .notice {
+      background: var(--amber-light); border-left: 4px solid var(--amber);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 16px 20px; margin-bottom: 32px;
+    }
+    .notice h3 { color: var(--amber); font-size: 14px; margin-bottom: 8px; }
+    .notice ul { padding-left: 18px; font-size: 13px; }
+    .notice li { margin-bottom: 4px; }
+    .notice strong { color: var(--amber); }
+
+    /* ── Progress Table ── */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,.08); background: var(--white); margin-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { background: rgba(160,120,90,.12); padding: 10px 14px; text-align: left; font-weight: 600; white-space: nowrap; border-bottom: 1px solid rgba(0,0,0,.08); }
+    tbody tr { border-bottom: 1px solid rgba(0,0,0,.05); cursor: pointer; transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(160,120,90,.06); }
+    tbody td { padding: 10px 14px; vertical-align: middle; }
+    .num-cell { font-weight: 700; color: var(--tan); text-align: center; }
+
+    /* ── Status badges ── */
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .badge-done     { background: var(--green-light);  color: var(--green); }
+    .badge-received { background: var(--blue-light);   color: var(--blue); }
+    .badge-wip      { background: var(--amber-light);  color: var(--amber); }
+    .badge-waiting  { background: #F5F5F5; color: var(--gray); }
+    .badge-stopped  { background: var(--red-light); color: var(--red); }
+    .badge-remake   { background: var(--purple-light); color: var(--purple); }
+    .badge-repair   { background: var(--blue-light);   color: var(--blue); }
+
+    /* ── Case Cards ── */
+    .case-grid { display: grid; gap: 16px; }
+    .case-card {
+      background: var(--white); border-radius: var(--radius);
+      box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow: hidden;
+    }
+    .case-header {
+      padding: 14px 20px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(0,0,0,.06); cursor: pointer;
+      user-select: none;
+    }
+    .case-num { font-size: 13px; font-weight: 700; color: var(--tan); min-width: 28px; }
+    .case-title { font-size: 15px; font-weight: 700; flex: 1; }
+    .case-toggle { color: var(--gray); font-size: 12px; transition: transform .2s; }
+    .case-body { padding: 18px 20px; display: none; }
+    .case-body.open { display: block; }
+    .case-dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 13px; margin-bottom: 14px; }
+    .case-dl dt { color: var(--gray); white-space: nowrap; font-weight: 500; }
+    .case-dl dd { }
+
+    /* ── Timeline ── */
+    .timeline { list-style: none; padding-left: 0; }
+    .timeline li {
+      position: relative; padding: 4px 0 4px 22px;
+      font-size: 13px; color: var(--charcoal);
+    }
+    .timeline li::before {
+      content: ''; position: absolute; left: 6px; top: 10px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--tan-light);
+    }
+    .timeline li::after {
+      content: ''; position: absolute; left: 8px; top: 16px;
+      width: 2px; height: calc(100% - 6px);
+      background: rgba(160,120,90,.2);
+    }
+    .timeline li:last-child::after { display: none; }
+    .tl-date { font-weight: 600; color: var(--tan); margin-right: 8px; }
+
+    /* ── Section divider ── */
+    .section-label {
+      display: flex; align-items: center; gap: 10px;
+      margin: 28px 0 14px; font-size: 13px; font-weight: 600; color: var(--gray);
+    }
+    .section-label::before, .section-label::after {
+      content: ''; flex: 1; height: 1px; background: rgba(0,0,0,.1);
+    }
+
+    /* ── CTA ── */
+    .cta-box {
+      background: linear-gradient(135deg, #3E2723 0%, #5D4037 100%);
+      border-radius: var(--radius); padding: 28px 24px; text-align: center; color: #fff;
+      margin-top: 40px;
+    }
+    .cta-box h2 { border: none; color: #fff; font-size: 20px; margin-bottom: 8px; padding: 0; }
+    .cta-box p { font-size: 14px; opacity: .85; margin-bottom: 20px; }
+    .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .cta-btn {
+      padding: 11px 26px; border-radius: 26px; font-size: 14px; font-weight: 700;
+      text-decoration: none; transition: opacity .2s;
+    }
+    .cta-btn:hover { opacity: .85; }
+    .cta-btn-line { background: #06C755; color: #fff; }
+    .cta-btn-mail { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.4); }
+
+    /* ── Footer ── */
+    .lp-footer { border-top: 1px solid rgba(0,0,0,.08); padding: 20px 32px; font-size: 12px; color: var(--gray); text-align: center; }
+    .lp-footer a { color: var(--tan); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="lp-nav">
+  <a href="./index.html" class="lp-nav-brand">N's factory</a>
+  <div class="lp-nav-spacer"></div>
+  <div class="lp-nav-links">
+    <a href="https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec" class="lp-nav-link" target="_blank">作品紹介</a>
+    <a href="./remake_repair.html" class="lp-nav-link active">リメイク・リペア</a>
+    <a href="./workshop.html" class="lp-nav-link">JHCS管理</a>
+    <a href="./ring-price-stock-admin.html" class="lp-nav-link">管理画面</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>🔨 リメイク・リペア</h1>
+  <p class="subtitle">オーダー実績・進捗一覧 | N's factory</p>
+
+  <!-- お願い -->
+  <div class="notice">
+    <h3>⚠️ お願い（注意事項）</h3>
+    <ul>
+      <li>基本的にはオーダーを受けた順番（上から）で作業を実施しますが、細部検討に時間を要する等で一時的に順番が前後することがあります。</li>
+      <li>作業内容確認のためメール等でご連絡しますが、<strong>返信がない状態で2週間が経過した場合はオーダーリストから削除</strong>いたします。</li>
+    </ul>
+  </div>
+
+  <!-- 進捗サマリー -->
+  <div class="section">
+    <h2>作業進捗一覧</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>依頼者</th><th>分類</th><th>種別</th><th>ステータス</th></tr>
+        </thead>
+        <tbody>
+          <tr onclick="toggleCase('c1')">
+            <td class="num-cell">1</td>
+            <td>Yurika様</td>
+            <td>ティッシュケース・リップケース</td>
+            <td><span class="badge badge-remake">リメイク</span></td>
+            <td><span class="badge badge-received">受領評価済</span></td>
+          </tr>
+          <tr onclick="toggleCase('c2')">
+            <td class="num-cell">2</td>
+            <td>Yurika様</td>
+            <td>キーケース</td>
+            <td><span class="badge badge-repair">リペア</span></td>
+            <td><span class="badge badge-received">受領評価済</span></td>
+          </tr>
+          <tr onclick="toggleCase('c3')">
+            <td class="num-cell">3</td>
+            <td>TKB様</td>
+            <td>バッグ（ブランド）</td>
+            <td><span class="badge badge-repair">リペア</span></td>
+            <td><span class="badge badge-done">作業完了</span></td>
+          </tr>
+          <tr onclick="toggleCase('c4')">
+            <td class="num-cell">4</td>
+            <td>N様</td>
+            <td>キーケース</td>
+            <td><span class="badge badge-repair">リペア</span></td>
+            <td><span class="badge badge-done">作業完了</span></td>
+          </tr>
+          <tr onclick="toggleCase('c5')">
+            <td class="num-cell">5</td>
+            <td>Akira様</td>
+            <td>ランドセル</td>
+            <td><span class="badge badge-repair">リペア</span></td>
+            <td><span class="badge badge-done">作業完了</span></td>
+          </tr>
+          <tr onclick="toggleCase('c6')">
+            <td class="num-cell">6</td>
+            <td>Hassy様</td>
+            <td>ポーチ（ブランド）</td>
+            <td><span class="badge badge-repair">リペア</span></td>
+            <td><span class="badge badge-done">作業完了</span></td>
+          </tr>
+          <tr onclick="toggleCase('c7')">
+            <td class="num-cell">7</td>
+            <td>Yurika様</td>
+            <td>リメイクポーチ</td>
+            <td><span class="badge badge-remake">リメイク</span></td>
+            <td><span class="badge badge-done">作業完了</span></td>
+          </tr>
+          <tr onclick="toggleCase('c8')">
+            <td class="num-cell">8</td>
+            <td>Onita様</td>
+            <td>ランドセル → パスケース・キーケース</td>
+            <td><span class="badge badge-remake">リメイク</span></td>
+            <td><span class="badge badge-done">作業完了</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px; color:var(--gray); margin-top:6px;">各行をクリックすると詳細が展開されます。</p>
+  </div>
+
+  <!-- 案件詳細 -->
+  <div class="section">
+    <h2>案件詳細</h2>
+    <div class="case-grid">
+
+      <!-- Case 1 -->
+      <div class="case-card" id="c1">
+        <div class="case-header" onclick="toggleCase('c1')">
+          <span class="case-num">#1</span>
+          <span class="case-title">Yurika様 ― ティッシュケース・リップケース（KURUMU）</span>
+          <span class="badge badge-remake">リメイク</span>
+          <span class="badge badge-received">受領評価済</span>
+          <span class="case-toggle">▼</span>
+        </div>
+        <div class="case-body" id="c1-body">
+          <dl class="case-dl">
+            <dt>BEFORE</dt><dd>文庫本カバー、栞</dd>
+            <dt>AFTER</dt><dd>当店オリジナルリップケース KURUMU ×1、ティッシュケース</dd>
+            <dt>内容</dt><dd>依頼主保有品を組み合わせたパッチワークリメイク</dd>
+            <dt>決済手段</dt><dd>メルカリ</dd>
+          </dl>
+          <ul class="timeline">
+            <li><span class="tl-date">2025.6</span>リメイク依頼</li>
+            <li><span class="tl-date">2025.6</span>リメイク・確認・発送</li>
+            <li><span class="tl-date">2025.6</span>受領・評価済</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Case 2 -->
+      <div class="case-card" id="c2">
+        <div class="case-header" onclick="toggleCase('c2')">
+          <span class="case-num">#2</span>
+          <span class="case-title">Yurika様 ― キーケース</span>
+          <span class="badge badge-repair">リペア</span>
+          <span class="badge badge-received">受領評価済</span>
+          <span class="case-toggle">▼</span>
+        </div>
+        <div class="case-body" id="c2-body">
+          <dl class="case-dl">
+            <dt>内容</dt><dd>依頼主保有品を組み合わせたパッチワークリメイク。当店オリジナル刻印を追加。不足する革は当店のヌメ革使用。</dd>
+          </dl>
+          <ul class="timeline">
+            <li><span class="tl-date">2024.7.14</span>作業依頼・依頼主発送</li>
+            <li><span class="tl-date">2024.7.15</span>設計</li>
+            <li><span class="tl-date">2024.7</span>リメイク素材受領・リメイク作業・確認</li>
+            <li><span class="tl-date">2024.7</span>発送</li>
+            <li><span class="tl-date">2024.7</span>受領・評価済</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Case 3 -->
+      <div class="case-card" id="c3">
+        <div class="case-header" onclick="toggleCase('c3')">
+          <span class="case-num">#3</span>
+          <span class="case-title">TKB様 ― バッグ（ブランド）</span>
+          <span class="badge badge-repair">リペア</span>
+          <span class="badge badge-done">作業完了</span>
+          <span class="case-toggle">▼</span>
+        </div>
+        <div class="case-body" id="c3-body">
+          <dl class="case-dl">
+            <dt>内容</dt><dd>代替パーツ交換</dd>
+          </dl>
+          <ul class="timeline">
+            <li><span class="tl-date">2024.6.8</span>作業依頼・作業・引渡し（依頼から引渡しまで約2時間）</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Case 4 -->
+      <div class="case-card" id="c4">
+        <div class="case-header" onclick="toggleCase('c4')">
+          <span class="case-num">#4</span>
+          <span class="case-title">N様 ― キーケース</span>
+          <span class="badge badge-repair">リペア</span>
+          <span class="badge badge-done">作業完了</span>
+          <span class="case-toggle">▼</span>
+        </div>
+        <div class="case-body" id="c4-body">
+          <dl class="case-dl">
+            <dt>内容</dt><dd>破損部補強</dd>
+          </dl>
+          <ul class="timeline">
+            <li><span class="tl-date">2024.3.15</span>作業依頼</li>
+            <li><span class="tl-date">2024.3.16</span>作業・引渡し</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Case 5 -->
+      <div class="case-card" id="c5">
+        <div class="case-header" onclick="toggleCase('c5')">
+          <span class="case-num">#5</span>
+          <span class="case-title">Akira様 ― ランドセル</span>
+          <span class="badge badge-repair">リペア</span>
+          <span class="badge badge-done">作業完了</span>
+          <span class="case-toggle">▼</span>
+        </div>
+        <div class="case-body" id="c5-body">
+          <dl class="case-dl">
+            <dt>内容</dt><dd>破損部補修</dd>
+          </dl>
+          <ul class="timeline">
+            <li><span class="tl-date">2019.10.18</span>依頼・作業・引渡し</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Case 6 -->
+      <div class="case-card" id="c6">
+        <div class="case-header" onclick="toggleCase('c6')">
+          <span class="case-num">#6</span>
+          <span class="case-title">Hassy様 ― ポーチ（ブランド）</span>
+          <span class="badge badge-repair">リペア</span>
+          <span class="badge badge-done">作業完了</span>
+          <span class="case-toggle">▼</span>
+        </div>
+        <div class="case-body" id="c6-body">
+          <dl class="case-dl">
+            <dt>内容</dt><dd>破損部補修</dd>
+          </dl>
+          <ul class="timeline">
+            <li><span class="tl-date">2020.5.11</span>依頼</li>
+            <li><span class="tl-date">2020.5.12</span>作業</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Case 7 -->
+      <div class="case-card" id="c7">
+        <div class="case-header" onclick="toggleCase('c7')">
+          <span class="case-num">#7</span>
+          <span class="case-title">Yurika様 ― リメイクポーチ（サイズ変更 W12×H8cm）</span>
+          <span class="badge badge-remake">リメイク</span>
+          <span class="badge badge-done">作業完了</span>
+          <span class="case-toggle">▼</span>
+        </div>
+        <div class="case-body" id="c7-body">
+          <dl class="case-dl">
+            <dt>内容</dt><dd>依頼主保有品を組み合わせたパッチワークリメイク。元ブランドの刻印と当店オリジナル刻印の両方を刻印。不足する革は当店のヌメ革使用。</dd>
+            <dt>サイズ</dt><dd>横12cm × 縦8cm</dd>
+          </dl>
+          <ul class="timeline">
+            <li><span class="tl-date">2024.7.7</span>作業依頼・依頼主発送</li>
+            <li><span class="tl-date">2024.7.9</span>リメイク素材受領・設計</li>
+            <li><span class="tl-date">2024.7.10</span>リメイク作業・確認</li>
+            <li><span class="tl-date">2024.7.11</span>発送</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Case 8 -->
+      <div class="case-card" id="c8">
+        <div class="case-header" onclick="toggleCase('c8')">
+          <span class="case-num">#8</span>
+          <span class="case-title">Onita様 ― ランドセル → パスケース・キーケース</span>
+          <span class="badge badge-remake">リメイク</span>
+          <span class="badge badge-done">作業完了</span>
+          <span class="case-toggle">▼</span>
+        </div>
+        <div class="case-body" id="c8-body">
+          <dl class="case-dl">
+            <dt>内容</dt><dd>ランドセルをパスケース・キーケースへリメイク</dd>
+          </dl>
+          <ul class="timeline">
+            <li><span class="tl-date">2020.3.14</span>作業依頼</li>
+            <li><span class="tl-date">2020.3.15</span>作業</li>
+            <li><span class="tl-date">2020.3</span>完了</li>
+          </ul>
+        </div>
+      </div>
+
+    </div><!-- /case-grid -->
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box">
+    <h2>リメイク・リペアのご相談</h2>
+    <p>思い出の革製品を新しい形に。まずはお気軽にご連絡ください。</p>
+    <div class="cta-buttons">
+      <a href="https://lin.ee/XOcD2pd" class="cta-btn cta-btn-line" target="_blank">💬 LINEで相談する</a>
+      <a href="mailto:you0810jmsdf@gmail.com" class="cta-btn cta-btn-mail">✉️ メールで相談する</a>
+    </div>
+  </div>
+</div>
+
+<footer class="lp-footer">
+  © N's factory | 千葉県印西市 |
+  <a href="mailto:you0810jmsdf@gmail.com">you0810jmsdf@gmail.com</a>
+</footer>
+
+<script>
+  function toggleCase(id) {
+    const body = document.getElementById(id + '-body');
+    const card = document.getElementById(id);
+    const toggle = card.querySelector('.case-toggle');
+    const isOpen = body.classList.toggle('open');
+    toggle.style.transform = isOpen ? 'rotate(180deg)' : '';
+  }
+</script>
+</body>
+</html>
