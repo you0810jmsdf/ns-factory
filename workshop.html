@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ワークショップ・教室 | N's factory</title>
+  <meta name="description" content="N's factory の革工芸ワークショップ・カルチャースクール教室案内。JOYFUL HONDA カルチャースクールにてレザークラフト教室を開講中。">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --tan: #A0785A;
+      --tan-light: #C4956A;
+      --charcoal: #1D1D1F;
+      --gray: #6E6E73;
+      --bg: #F5F5F7;
+      --white: #FFFFFF;
+      --radius: 18px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+      background: var(--bg);
+      color: var(--charcoal);
+      line-height: 1.6;
+    }
+
+    /* ── LP Nav ── */
+    .lp-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 32px;
+      height: 64px;
+      background: rgba(245,245,247,0.82);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .lp-nav-brand { display: flex; align-items: center; text-decoration: none; }
+    .lp-nav-spacer { flex: 1; }
+    .lp-nav-links { display: flex; gap: 8px; }
+    .lp-nav-link {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      color: var(--charcoal);
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .lp-nav-link:hover { background: rgba(0,0,0,0.06); }
+    .lp-nav-link.active { background: rgba(160,120,90,0.12); color: var(--tan); font-weight: 600; }
+    .lp-nav-cta {
+      padding: 8px 18px;
+      border-radius: 20px;
+      background: var(--tan);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+    .lp-nav-cta:hover { background: var(--tan-light); }
+    @media (max-width: 640px) {
+      .lp-nav { padding: 0 16px; gap: 12px; }
+      .lp-nav-links { display: none; }
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 80px 24px 60px;
+      text-align: center;
+      background: linear-gradient(160deg, #fff 0%, var(--bg) 100%);
+    }
+    .hero-eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      color: var(--tan);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-size: clamp(32px, 6vw, 56px);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--charcoal);
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .hero-desc {
+      font-size: 17px;
+      color: var(--gray);
+      max-width: 560px;
+      margin: 0 auto 36px;
+    }
+    .hero-cta {
+      display: inline-block;
+      padding: 14px 32px;
+      border-radius: 30px;
+      background: var(--tan);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+    }
+    .hero-cta:hover { background: var(--tan-light); transform: translateY(-1px); }
+
+    /* ── Section ── */
+    .section { padding: 64px 24px; max-width: 960px; margin: 0 auto; }
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: 15px;
+      color: var(--gray);
+      margin-bottom: 40px;
+    }
+
+    /* ── Classroom Info ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+    .info-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .info-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--tan);
+      margin-bottom: 8px;
+    }
+    .info-card-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--charcoal);
+      line-height: 1.5;
+    }
+    .info-card-note {
+      font-size: 13px;
+      color: var(--gray);
+      margin-top: 6px;
+    }
+
+    /* ── Gallery ── */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .gallery-item {
+      background: var(--white);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .gallery-item:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.12); }
+    .gallery-item img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+    }
+    .gallery-item-caption {
+      padding: 14px 16px;
+    }
+    .gallery-item-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 4px;
+    }
+    .gallery-item-desc {
+      font-size: 13px;
+      color: var(--gray);
+    }
+
+    /* ── Flow ── */
+    .flow-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .flow-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 24px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .flow-item:last-child { border-bottom: none; }
+    .flow-num {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--tan);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .flow-body h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .flow-body p { font-size: 14px; color: var(--gray); }
+
+    /* ── CTA Banner ── */
+    .cta-banner {
+      background: linear-gradient(135deg, var(--tan) 0%, #7B5A3E 100%);
+      border-radius: var(--radius);
+      padding: 56px 32px;
+      text-align: center;
+      margin: 0 24px 64px;
+    }
+    .cta-banner h2 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+    .cta-banner p { font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 32px; }
+    .cta-banner a {
+      display: inline-block;
+      padding: 14px 36px;
+      border-radius: 30px;
+      background: #fff;
+      color: var(--tan);
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform .15s;
+    }
+    .cta-banner a:hover { transform: translateY(-2px); }
+
+    /* ── LP Footer ── */
+    .lp-footer {
+      background: var(--charcoal);
+      color: rgba(255,255,255,0.7);
+      padding: 48px 32px 32px;
+    }
+    .lp-footer-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .lp-footer-brand { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .lp-footer-tagline { font-size: 13px; line-height: 1.7; }
+    .lp-footer-links { display: flex; flex-direction: column; gap: 10px; }
+    .lp-footer-link {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .lp-footer-link:hover { color: #fff; }
+    .lp-footer-bottom {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      font-size: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav class="lp-nav">
+  <a href="./index.html" class="lp-nav-brand">
+    <img src="./assets/logo.png" alt="N's factory" style="height:40px;width:auto;display:block;">
+  </a>
+  <span class="lp-nav-spacer"></span>
+  <div class="lp-nav-links">
+    <a href="https://sites.google.com/view/ns-factory/home" class="lp-nav-link">過去作品</a>
+    <a href="./workshop.html" class="lp-nav-link active">ワークショップ</a>
+    <a href="https://sites.google.com/view/ns-factory/home" class="lp-nav-link">道具紹介</a>
+  </div>
+  <a href="./order_estimate/leather-order-estimate-v2.html" class="lp-nav-cta">見積もりシミュレータ</a>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <p class="hero-eyebrow">N's factory — Workshop &amp; Class</p>
+  <h1 class="hero-title">革工芸 ワークショップ<br>＆ カルチャー教室</h1>
+  <p class="hero-desc">自分の手で革を縫い、世界にひとつだけの作品を作る体験を。初心者から丁寧にサポートします。</p>
+  <a href="https://lin.ee/XOcD2pd" class="hero-cta">公式LINEでお問合せ</a>
+</section>
+
+<!-- ── 教室情報 ── -->
+<div class="section">
+  <h2 class="section-title">教室情報</h2>
+  <p class="section-sub">カルチャースクール（JOYFUL HONDA）でレザークラフト教室を開講中です。</p>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-label">開催場所</div>
+      <div class="info-card-value">JOYFUL HONDA<br>カルチャースクール</div>
+      <div class="info-card-note">ジョイフルホンダ内 カルチャー教室</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">講師</div>
+      <div class="info-card-value">中司 祐樹</div>
+      <div class="info-card-note">N's factory 代表 / レザークラフト作家</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">対象</div>
+      <div class="info-card-value">初心者歓迎</div>
+      <div class="info-card-note">道具・材料は教室でご用意します</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">体験入会</div>
+      <div class="info-card-value">受付中</div>
+      <div class="info-card-note">まずは体験から。詳細はLINEまたはスクールへ</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 製作作品ギャラリー ── -->
+<div class="section" style="padding-top:0;">
+  <h2 class="section-title">製作できる作品</h2>
+  <p class="section-sub">教室で実際に製作できる作品の一例です。レベルに合わせてステップアップできます。</p>
+  <div class="gallery">
+
+    <div class="gallery-item">
+      <img src="./assets/workshop/coin-case.jpg" alt="スクエアコインケース">
+      <div class="gallery-item-caption">
+        <div class="gallery-item-name">スクエアコインケース</div>
+        <div class="gallery-item-desc">初心者に人気。コンパクトで実用的なコインケース。</div>
+      </div>
+    </div>
+
+    <div class="gallery-item">
+      <img src="./assets/workshop/patchwork-planner.jpg" alt="パッチワークシステム手帳">
+      <div class="gallery-item-caption">
+        <div class="gallery-item-name">パッチワークシステム手帳</div>
+        <div class="gallery-item-desc">複数の革を組み合わせたオリジナルシステム手帳。</div>
+      </div>
+    </div>
+
+    <div class="gallery-item">
+      <img src="./assets/workshop/mini-tote.jpg" alt="ミニトートバッグ">
+      <div class="gallery-item-caption">
+        <div class="gallery-item-name">ミニトートバッグ</div>
+        <div class="gallery-item-desc">毎日使えるコンパクトなレザートートバッグ。</div>
+      </div>
+    </div>
+
+    <div class="gallery-item">
+      <img src="./assets/workshop/glasses-case.jpg" alt="メガネケース">
+      <div class="gallery-item-caption">
+        <div class="gallery-item-name">メガネケース</div>
+        <div class="gallery-item-desc">大切なメガネを守る、本革製のハードケース。</div>
+      </div>
+    </div>
+
+    <div class="gallery-item">
+      <img src="./assets/workshop/wallet.jpg" alt="ウォレット（トラッカーズ）">
+      <div class="gallery-item-caption">
+        <div class="gallery-item-name">ウォレット（トラッカーズ）</div>
+        <div class="gallery-item-desc">使い込むほどに味が出る、本格派の長財布。</div>
+      </div>
+    </div>
+
+    <div class="gallery-item">
+      <img src="./assets/workshop/pouch.jpg" alt="セカンドポーチ">
+      <div class="gallery-item-caption">
+        <div class="gallery-item-name">セカンドポーチ</div>
+        <div class="gallery-item-desc">シンプルで使いやすい、革製のセカンドポーチ。</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── 受講の流れ ── -->
+<div class="section" style="padding-top:0;">
+  <h2 class="section-title">受講の流れ</h2>
+  <p class="section-sub">はじめての方も安心してご参加いただけます。</p>
+  <ul class="flow-list">
+    <li class="flow-item">
+      <div class="flow-num">1</div>
+      <div class="flow-body">
+        <h3>お問い合わせ</h3>
+        <p>公式LINEまたはカルチャースクールへお気軽にお問い合わせください。</p>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="flow-num">2</div>
+      <div class="flow-body">
+        <h3>体験入会</h3>
+        <p>まずは体験で教室の雰囲気を感じてください。道具・材料は全てご用意します。</p>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="flow-num">3</div>
+      <div class="flow-body">
+        <h3>入会・カリキュラム開始</h3>
+        <p>ご自身のペースで作品づくりを進めていただけます。初心者から丁寧に指導します。</p>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="flow-num">4</div>
+      <div class="flow-body">
+        <h3>作品の完成・ステップアップ</h3>
+        <p>習得した技術をもとに、より高度な作品にもチャレンジできます。</p>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- ── CTA ── -->
+<div style="max-width:960px;margin:0 auto;">
+  <div class="cta-banner">
+    <h2>まずはお気軽にご相談を</h2>
+    <p>体験入会のご予約・教室に関するご質問は<br>公式LINEからお気軽にどうぞ。</p>
+    <a href="https://lin.ee/XOcD2pd">公式LINEでお問合せ</a>
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<footer class="lp-footer">
+  <div class="lp-footer-inner">
+    <div>
+      <div class="lp-footer-brand">N's factory</div>
+      <p class="lp-footer-tagline">世界にひとつだけのオリジナルを<br>千葉県印西市 中司 祐樹</p>
+    </div>
+    <div class="lp-footer-links">
+      <a href="https://linktr.ee/you0810jmsdf" class="lp-footer-link">各種販売サイト</a>
+      <a href="https://lin.ee/XOcD2pd" class="lp-footer-link">LINE 公式アカウント</a>
+      <a href="mailto:you0810jmsfd@gmail.com" class="lp-footer-link">メール</a>
+    </div>
+  </div>
+  <div class="lp-footer-bottom">
+    <span>© 2024–2026 N's factory. All rights reserved.</span>
+    <span>Leather Craft · Workshop · Order Made</span>
+  </div>
+</footer>
+
+</body>
+</html>
