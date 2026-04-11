@@ -3,21 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>リメイク・リペア実績 | N's factory</title>
-  <meta name="description" content="N's factory リメイク・リペア オーダー実績一覧。思い出の革製品のリメイク・修理を承ります。">
+  <title>リメイク・リペア管理 | N's factory</title>
+  <meta name="description" content="N's factory リメイク・リペア 案件管理・実績一覧。思い出の革製品のリメイク・修理を承ります。">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --tan: #A0785A; --tan-light: #C4956A; --charcoal: #1D1D1F;
-      --gray: #6E6E73; --bg: #F5F5F7; --white: #FFFFFF;
+      --tan: #A0785A; --tan-light: #C4956A; --tan-bg: rgba(160,120,90,.1);
+      --charcoal: #1D1D1F; --gray: #6E6E73; --bg: #F5F5F7; --white: #FFFFFF;
       --green: #2E7D32; --green-light: #E8F5E9;
       --amber: #E65100; --amber-light: #FFF3E0;
       --blue: #1565C0; --blue-light: #E3F2FD;
       --purple: #6A1B9A; --purple-light: #F3E5F5;
-      --red-light: #FFEBEE; --red: #C62828;
-      --radius: 14px;
+      --red: #C62828; --red-light: #FFEBEE;
+      --radius: 14px; --shadow: 0 1px 4px rgba(0,0,0,.08);
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; background: var(--bg); color: var(--charcoal); line-height: 1.7; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+           background: var(--bg); color: var(--charcoal); line-height: 1.7; }
+
+    /* ── Setup Banner ── */
+    .setup-banner {
+      background: #FFF8E1; border-bottom: 1px solid #FFE082;
+      padding: 10px 20px; display: flex; align-items: center; gap: 12px;
+      font-size: 13px; flex-wrap: wrap;
+    }
+    .setup-banner strong { color: #E65100; }
+    .setup-banner button {
+      background: #E65100; color: #fff; border: none; border-radius: 20px;
+      padding: 5px 14px; font-size: 12px; cursor: pointer; white-space: nowrap;
+    }
+    .setup-banner button:hover { background: #BF360C; }
 
     /* ── Nav ── */
     .lp-nav {
@@ -32,110 +46,208 @@
     .lp-nav-brand { font-size: 17px; font-weight: 700; color: var(--tan); text-decoration: none; }
     .lp-nav-spacer { flex: 1; }
     .lp-nav-links { display: flex; gap: 6px; }
-    .lp-nav-link { padding: 6px 14px; border-radius: 20px; font-size: 14px; color: var(--charcoal); text-decoration: none; transition: background .2s; white-space: nowrap; }
+    .lp-nav-link { padding: 6px 14px; border-radius: 20px; font-size: 14px; color: var(--charcoal);
+                   text-decoration: none; transition: background .2s; white-space: nowrap; }
     .lp-nav-link:hover { background: rgba(0,0,0,0.06); }
     .lp-nav-link.active { background: rgba(160,120,90,0.15); color: var(--tan); font-weight: 600; }
 
     /* ── Layout ── */
-    .container { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+    .container { max-width: 960px; margin: 0 auto; padding: 32px 20px 100px; }
     h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
-    .subtitle { color: var(--gray); font-size: 14px; margin-bottom: 32px; }
+    .subtitle { color: var(--gray); font-size: 14px; margin-bottom: 24px; }
     h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--tan); }
-    h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
     .section { margin-bottom: 40px; }
+
+    /* ── Page Header ── */
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; padding-top: 4px; }
+
+    /* ── Buttons ── */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 22px;
+           font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; text-decoration: none; }
+    .btn-primary { background: var(--tan); color: #fff; }
+    .btn-primary:hover { background: var(--tan-light); }
+    .btn-ghost { background: transparent; color: var(--gray); border: 1px solid rgba(0,0,0,.15); }
+    .btn-ghost:hover { background: rgba(0,0,0,.05); }
+    .btn-danger { background: var(--red-light); color: var(--red); border: none; }
+    .btn-danger:hover { background: #FFCDD2; }
+    .btn-sm { padding: 4px 12px; font-size: 12px; }
+
+    /* ── Stats ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+                 padding: 14px 16px; text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 800; color: var(--tan); line-height: 1.1; }
+    .stat-label { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+    /* ── Filter ── */
+    .filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-tab { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
+                  background: rgba(0,0,0,.05); color: var(--gray); border: none; cursor: pointer; transition: all .2s; }
+    .filter-tab.active { background: var(--tan); color: #fff; }
+    .filter-tab:hover:not(.active) { background: rgba(0,0,0,.1); }
+
+    /* ── Import Notice ── */
+    .import-notice {
+      background: var(--green-light); border: 1px solid rgba(46,125,50,.3); border-radius: var(--radius);
+      padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .import-notice p { font-size: 13px; color: var(--green); flex: 1; }
 
     /* ── Notice ── */
     .notice {
       background: var(--amber-light); border-left: 4px solid var(--amber);
       border-radius: 0 var(--radius) var(--radius) 0;
-      padding: 16px 20px; margin-bottom: 32px;
+      padding: 14px 18px; margin-bottom: 28px;
     }
-    .notice h3 { color: var(--amber); font-size: 14px; margin-bottom: 8px; }
+    .notice h3 { color: var(--amber); font-size: 14px; margin-bottom: 6px; }
     .notice ul { padding-left: 18px; font-size: 13px; }
-    .notice li { margin-bottom: 4px; }
+    .notice li { margin-bottom: 3px; }
     .notice strong { color: var(--amber); }
 
     /* ── Progress Table ── */
-    .table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,.08); background: var(--white); margin-bottom: 8px; }
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow); background: var(--white); margin-bottom: 8px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    thead th { background: rgba(160,120,90,.12); padding: 10px 14px; text-align: left; font-weight: 600; white-space: nowrap; border-bottom: 1px solid rgba(0,0,0,.08); }
+    thead th { background: rgba(160,120,90,.12); padding: 10px 14px; text-align: left;
+               font-weight: 600; white-space: nowrap; border-bottom: 1px solid rgba(0,0,0,.08); }
     tbody tr { border-bottom: 1px solid rgba(0,0,0,.05); cursor: pointer; transition: background .15s; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: rgba(160,120,90,.06); }
     tbody td { padding: 10px 14px; vertical-align: middle; }
     .num-cell { font-weight: 700; color: var(--tan); text-align: center; }
 
-    /* ── Status badges ── */
+    /* ── Badges ── */
     .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
     .badge-done     { background: var(--green-light);  color: var(--green); }
-    .badge-received { background: var(--blue-light);   color: var(--blue); }
+    .badge-received { background: #E3F2FD;             color: #0D47A1; }
     .badge-wip      { background: var(--amber-light);  color: var(--amber); }
-    .badge-waiting  { background: #F5F5F5; color: var(--gray); }
-    .badge-stopped  { background: var(--red-light); color: var(--red); }
+    .badge-waiting  { background: #F5F5F5;             color: var(--gray); }
+    .badge-stopped  { background: var(--red-light);    color: var(--red); }
     .badge-remake   { background: var(--purple-light); color: var(--purple); }
     .badge-repair   { background: var(--blue-light);   color: var(--blue); }
 
     /* ── Case Cards ── */
-    .case-grid { display: grid; gap: 16px; }
-    .case-card {
-      background: var(--white); border-radius: var(--radius);
-      box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow: hidden;
-    }
+    .case-grid { display: grid; gap: 14px; }
+    .case-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
     .case-header {
-      padding: 14px 20px; display: flex; align-items: center; gap: 10px;
-      border-bottom: 1px solid rgba(0,0,0,.06); cursor: pointer;
-      user-select: none;
+      padding: 14px 18px; display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid rgba(0,0,0,.06); cursor: pointer; user-select: none;
     }
-    .case-num { font-size: 13px; font-weight: 700; color: var(--tan); min-width: 28px; }
-    .case-title { font-size: 15px; font-weight: 700; flex: 1; }
-    .case-toggle { color: var(--gray); font-size: 12px; transition: transform .2s; }
-    .case-body { padding: 18px 20px; display: none; }
+    .case-num { font-size: 13px; font-weight: 700; color: var(--tan); min-width: 26px; }
+    .case-title { font-size: 15px; font-weight: 700; flex: 1; min-width: 0; }
+    .case-header-badges { display: flex; gap: 4px; flex-shrink: 0; flex-wrap: wrap; }
+    .case-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .case-toggle { color: var(--gray); font-size: 12px; transition: transform .25s; flex-shrink: 0; margin-left: 4px; }
+    .btn-icon { background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 8px;
+                font-size: 14px; line-height: 1; color: var(--gray); transition: background .15s; }
+    .btn-icon:hover { background: rgba(0,0,0,.07); }
+    .btn-icon.del:hover { background: var(--red-light); color: var(--red); }
+
+    .case-body { padding: 16px 18px; display: none; border-top: 1px solid rgba(0,0,0,.05); }
     .case-body.open { display: block; }
-    .case-dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 13px; margin-bottom: 14px; }
+
+    .case-dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; font-size: 13px; margin-bottom: 14px; }
     .case-dl dt { color: var(--gray); white-space: nowrap; font-weight: 500; }
-    .case-dl dd { }
 
     /* ── Timeline ── */
-    .timeline { list-style: none; padding-left: 0; }
-    .timeline li {
-      position: relative; padding: 4px 0 4px 22px;
-      font-size: 13px; color: var(--charcoal);
-    }
-    .timeline li::before {
-      content: ''; position: absolute; left: 6px; top: 10px;
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--tan-light);
-    }
-    .timeline li::after {
-      content: ''; position: absolute; left: 8px; top: 16px;
-      width: 2px; height: calc(100% - 6px);
-      background: rgba(160,120,90,.2);
-    }
+    .timeline { list-style: none; padding-left: 0; margin-bottom: 14px; }
+    .timeline li { position: relative; padding: 4px 0 4px 22px; font-size: 13px; }
+    .timeline li::before { content: ''; position: absolute; left: 6px; top: 10px;
+                           width: 6px; height: 6px; border-radius: 50%; background: var(--tan-light); }
+    .timeline li::after  { content: ''; position: absolute; left: 8px; top: 16px;
+                           width: 2px; height: calc(100% - 6px); background: rgba(160,120,90,.2); }
     .timeline li:last-child::after { display: none; }
     .tl-date { font-weight: 600; color: var(--tan); margin-right: 8px; }
 
-    /* ── Section divider ── */
-    .section-label {
-      display: flex; align-items: center; gap: 10px;
-      margin: 28px 0 14px; font-size: 13px; font-weight: 600; color: var(--gray);
+    /* ── Carousel ── */
+    .carousel-wrap { margin: 12px 0 14px; border-radius: 10px; overflow: hidden; background: #111; position: relative; }
+    .carousel-track { display: flex; transition: transform .35s ease; }
+    .carousel-track img { min-width: 100%; max-height: 320px; object-fit: contain; display: block; }
+    .car-btn { position: absolute; top: 50%; transform: translateY(-50%);
+               background: rgba(0,0,0,.55); color: #fff; border: none; border-radius: 50%;
+               width: 36px; height: 36px; font-size: 20px; line-height: 1;
+               cursor: pointer; display: flex; align-items: center; justify-content: center;
+               transition: background .2s; z-index: 2; }
+    .car-btn:hover { background: rgba(0,0,0,.8); }
+    .car-prev { left: 8px; }
+    .car-next { right: 8px; }
+    .car-dots { display: flex; justify-content: center; gap: 6px; padding: 8px;
+                background: rgba(0,0,0,.65); }
+    .car-dot  { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.4);
+                cursor: pointer; transition: background .2s; border: none; }
+    .car-dot.active { background: #fff; }
+    .car-counter { position: absolute; top: 8px; right: 10px; background: rgba(0,0,0,.55);
+                   color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 12px; z-index: 2; }
+    .img-loading { padding: 40px; text-align: center; color: var(--gray); font-size: 13px; background: #f0f0f0; }
+    .img-empty { padding: 20px; text-align: center; color: var(--gray); font-size: 12px; }
+
+    /* ── FAB ── */
+    .fab { position: fixed; bottom: 28px; right: 28px; z-index: 50;
+           width: 56px; height: 56px; border-radius: 50%; background: var(--tan);
+           color: #fff; font-size: 28px; line-height: 1; border: none; cursor: pointer;
+           box-shadow: 0 4px 14px rgba(0,0,0,.25); transition: all .2s;
+           display: flex; align-items: center; justify-content: center; }
+    .fab:hover { background: var(--tan-light); transform: scale(1.08); }
+
+    /* ── Modal ── */
+    .modal-overlay { position: fixed; inset: 0; z-index: 200;
+                     background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center;
+                     padding: 20px; }
+    .modal-box { background: var(--white); border-radius: 18px; width: 100%; max-width: 680px;
+                 max-height: 90vh; display: flex; flex-direction: column;
+                 box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+    .modal-header { padding: 18px 22px 14px; display: flex; align-items: center; justify-content: space-between;
+                    border-bottom: 1px solid rgba(0,0,0,.08); flex-shrink: 0; }
+    .modal-header h3 { font-size: 17px; font-weight: 700; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--gray);
+                   padding: 2px 8px; border-radius: 8px; line-height: 1; }
+    .modal-close:hover { background: rgba(0,0,0,.07); }
+    .modal-body { padding: 18px 22px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 14px 22px; display: flex; justify-content: flex-end; gap: 8px;
+                    border-top: 1px solid rgba(0,0,0,.08); flex-shrink: 0; }
+
+    /* ── Form ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--gray);
+                        margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid rgba(0,0,0,.18); border-radius: 10px;
+      font-size: 14px; font-family: inherit; background: var(--white); color: var(--charcoal);
+      transition: border-color .2s; appearance: none;
     }
-    .section-label::before, .section-label::after {
-      content: ''; flex: 1; height: 1px; background: rgba(0,0,0,.1);
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--tan);
     }
+    .form-group textarea { resize: vertical; line-height: 1.6; }
+    .field-hint { font-size: 11px; color: var(--gray); margin-top: 4px; }
+
+    /* ── Timeline Editor ── */
+    .tl-edit-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .tl-edit-date { width: 130px; flex-shrink: 0; }
+    .tl-edit-text { flex: 1; }
+    .btn-rm-tl { background: none; border: none; color: var(--gray); cursor: pointer; font-size: 18px;
+                 padding: 0 4px; line-height: 1; border-radius: 6px; }
+    .btn-rm-tl:hover { background: var(--red-light); color: var(--red); }
+    .btn-add-tl { background: none; border: 1px dashed rgba(0,0,0,.25); border-radius: 10px;
+                  padding: 6px 14px; font-size: 13px; color: var(--gray); cursor: pointer;
+                  width: 100%; margin-top: 4px; transition: all .2s; }
+    .btn-add-tl:hover { border-color: var(--tan); color: var(--tan); background: var(--tan-bg); }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--gray); }
+    .empty-state p { font-size: 14px; margin-top: 8px; }
 
     /* ── CTA ── */
-    .cta-box {
-      background: linear-gradient(135deg, #3E2723 0%, #5D4037 100%);
-      border-radius: var(--radius); padding: 28px 24px; text-align: center; color: #fff;
-      margin-top: 40px;
-    }
+    .cta-box { background: linear-gradient(135deg, #3E2723 0%, #5D4037 100%);
+               border-radius: var(--radius); padding: 28px 24px; text-align: center; color: #fff;
+               margin-top: 40px; }
     .cta-box h2 { border: none; color: #fff; font-size: 20px; margin-bottom: 8px; padding: 0; }
     .cta-box p { font-size: 14px; opacity: .85; margin-bottom: 20px; }
     .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .cta-btn {
-      padding: 11px 26px; border-radius: 26px; font-size: 14px; font-weight: 700;
-      text-decoration: none; transition: opacity .2s;
-    }
+    .cta-btn { padding: 11px 26px; border-radius: 26px; font-size: 14px; font-weight: 700;
+               text-decoration: none; transition: opacity .2s; }
     .cta-btn:hover { opacity: .85; }
     .cta-btn-line { background: #06C755; color: #fff; }
     .cta-btn-mail { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.4); }
@@ -143,9 +255,31 @@
     /* ── Footer ── */
     .lp-footer { border-top: 1px solid rgba(0,0,0,.08); padding: 20px 32px; font-size: 12px; color: var(--gray); text-align: center; }
     .lp-footer a { color: var(--tan); text-decoration: none; }
+
+    /* ── Spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(0,0,0,.15);
+               border-top-color: var(--tan); border-radius: 50%; animation: spin .7s linear infinite; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .lp-nav { padding: 0 16px; gap: 12px; }
+      .container { padding: 20px 16px 100px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .form-row { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; }
+      .case-header { flex-wrap: wrap; }
+      .case-title { font-size: 14px; }
+    }
   </style>
 </head>
 <body>
+
+<!-- Setup Banner -->
+<div id="setup-banner" class="setup-banner" style="display:none">
+  <span>📋 <strong>GAS URL未設定</strong> — スプレッドシートと連携すると案件の追加・編集・削除が可能になります。</span>
+  <button onclick="promptGasUrl()">GAS URL を設定する</button>
+</div>
 
 <!-- Nav -->
 <nav class="lp-nav">
@@ -160,10 +294,45 @@
 </nav>
 
 <div class="container">
-  <h1>🔨 リメイク・リペア</h1>
-  <p class="subtitle">オーダー実績・進捗一覧 | N's factory</p>
 
-  <!-- お願い -->
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>🔨 リメイク・リペア</h1>
+      <p class="subtitle">案件管理・実績一覧 | N's factory</p>
+    </div>
+    <div class="header-actions" id="header-actions" style="display:none">
+      <button class="btn btn-primary" onclick="openModal()">＋ 新規案件</button>
+      <button class="btn btn-ghost btn-sm" onclick="changeGasUrl()">⚙</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="stat-num" id="stat-total">―</div><div class="stat-label">総件数</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-remake">―</div><div class="stat-label">リメイク</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-repair">―</div><div class="stat-label">リペア</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-wip">―</div><div class="stat-label">進行中</div></div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all"    onclick="setFilter('all')">全て</button>
+      <button class="filter-tab"        data-filter="wip"    onclick="setFilter('wip')">進行中</button>
+      <button class="filter-tab"        data-filter="done"   onclick="setFilter('done')">完了</button>
+      <button class="filter-tab"        data-filter="remake" onclick="setFilter('remake')">リメイク</button>
+      <button class="filter-tab"        data-filter="repair" onclick="setFilter('repair')">リペア</button>
+    </div>
+  </div>
+
+  <!-- Import notice -->
+  <div id="import-notice" class="import-notice" style="display:none">
+    <p>✅ GAS連携完了。既存の8件データをスプレッドシートにインポートできます。</p>
+    <button class="btn btn-primary btn-sm" onclick="importSeedData()">過去データをインポート</button>
+  </div>
+
+  <!-- Notice -->
   <div class="notice">
     <h3>⚠️ お願い（注意事項）</h3>
     <ul>
@@ -172,252 +341,28 @@
     </ul>
   </div>
 
-  <!-- 進捗サマリー -->
+  <!-- Progress Table -->
   <div class="section">
     <h2>作業進捗一覧</h2>
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>#</th><th>依頼者</th><th>分類</th><th>種別</th><th>ステータス</th></tr>
+          <tr><th>#</th><th>依頼者</th><th>品物</th><th>カテゴリ</th><th>ステータス</th><th>受付日</th></tr>
         </thead>
-        <tbody>
-          <tr onclick="toggleCase('c1')">
-            <td class="num-cell">1</td>
-            <td>Yurika様</td>
-            <td>ティッシュケース・リップケース</td>
-            <td><span class="badge badge-remake">リメイク</span></td>
-            <td><span class="badge badge-received">受領評価済</span></td>
-          </tr>
-          <tr onclick="toggleCase('c2')">
-            <td class="num-cell">2</td>
-            <td>Yurika様</td>
-            <td>キーケース</td>
-            <td><span class="badge badge-repair">リペア</span></td>
-            <td><span class="badge badge-received">受領評価済</span></td>
-          </tr>
-          <tr onclick="toggleCase('c3')">
-            <td class="num-cell">3</td>
-            <td>TKB様</td>
-            <td>バッグ（ブランド）</td>
-            <td><span class="badge badge-repair">リペア</span></td>
-            <td><span class="badge badge-done">作業完了</span></td>
-          </tr>
-          <tr onclick="toggleCase('c4')">
-            <td class="num-cell">4</td>
-            <td>N様</td>
-            <td>キーケース</td>
-            <td><span class="badge badge-repair">リペア</span></td>
-            <td><span class="badge badge-done">作業完了</span></td>
-          </tr>
-          <tr onclick="toggleCase('c5')">
-            <td class="num-cell">5</td>
-            <td>Akira様</td>
-            <td>ランドセル</td>
-            <td><span class="badge badge-repair">リペア</span></td>
-            <td><span class="badge badge-done">作業完了</span></td>
-          </tr>
-          <tr onclick="toggleCase('c6')">
-            <td class="num-cell">6</td>
-            <td>Hassy様</td>
-            <td>ポーチ（ブランド）</td>
-            <td><span class="badge badge-repair">リペア</span></td>
-            <td><span class="badge badge-done">作業完了</span></td>
-          </tr>
-          <tr onclick="toggleCase('c7')">
-            <td class="num-cell">7</td>
-            <td>Yurika様</td>
-            <td>リメイクポーチ</td>
-            <td><span class="badge badge-remake">リメイク</span></td>
-            <td><span class="badge badge-done">作業完了</span></td>
-          </tr>
-          <tr onclick="toggleCase('c8')">
-            <td class="num-cell">8</td>
-            <td>Onita様</td>
-            <td>ランドセル → パスケース・キーケース</td>
-            <td><span class="badge badge-remake">リメイク</span></td>
-            <td><span class="badge badge-done">作業完了</span></td>
-          </tr>
+        <tbody id="progress-tbody">
+          <tr><td colspan="6" style="padding:20px; text-align:center; color:var(--gray);">
+            <span class="spinner"></span>
+          </td></tr>
         </tbody>
       </table>
     </div>
     <p style="font-size:12px; color:var(--gray); margin-top:6px;">各行をクリックすると詳細が展開されます。</p>
   </div>
 
-  <!-- 案件詳細 -->
+  <!-- Case Cards -->
   <div class="section">
     <h2>案件詳細</h2>
-    <div class="case-grid">
-
-      <!-- Case 1 -->
-      <div class="case-card" id="c1">
-        <div class="case-header" onclick="toggleCase('c1')">
-          <span class="case-num">#1</span>
-          <span class="case-title">Yurika様 ― ティッシュケース・リップケース（KURUMU）</span>
-          <span class="badge badge-remake">リメイク</span>
-          <span class="badge badge-received">受領評価済</span>
-          <span class="case-toggle">▼</span>
-        </div>
-        <div class="case-body" id="c1-body">
-          <dl class="case-dl">
-            <dt>BEFORE</dt><dd>文庫本カバー、栞</dd>
-            <dt>AFTER</dt><dd>当店オリジナルリップケース KURUMU ×1、ティッシュケース</dd>
-            <dt>内容</dt><dd>依頼主保有品を組み合わせたパッチワークリメイク</dd>
-            <dt>決済手段</dt><dd>メルカリ</dd>
-          </dl>
-          <ul class="timeline">
-            <li><span class="tl-date">2025.6</span>リメイク依頼</li>
-            <li><span class="tl-date">2025.6</span>リメイク・確認・発送</li>
-            <li><span class="tl-date">2025.6</span>受領・評価済</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Case 2 -->
-      <div class="case-card" id="c2">
-        <div class="case-header" onclick="toggleCase('c2')">
-          <span class="case-num">#2</span>
-          <span class="case-title">Yurika様 ― キーケース</span>
-          <span class="badge badge-repair">リペア</span>
-          <span class="badge badge-received">受領評価済</span>
-          <span class="case-toggle">▼</span>
-        </div>
-        <div class="case-body" id="c2-body">
-          <dl class="case-dl">
-            <dt>内容</dt><dd>依頼主保有品を組み合わせたパッチワークリメイク。当店オリジナル刻印を追加。不足する革は当店のヌメ革使用。</dd>
-          </dl>
-          <ul class="timeline">
-            <li><span class="tl-date">2024.7.14</span>作業依頼・依頼主発送</li>
-            <li><span class="tl-date">2024.7.15</span>設計</li>
-            <li><span class="tl-date">2024.7</span>リメイク素材受領・リメイク作業・確認</li>
-            <li><span class="tl-date">2024.7</span>発送</li>
-            <li><span class="tl-date">2024.7</span>受領・評価済</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Case 3 -->
-      <div class="case-card" id="c3">
-        <div class="case-header" onclick="toggleCase('c3')">
-          <span class="case-num">#3</span>
-          <span class="case-title">TKB様 ― バッグ（ブランド）</span>
-          <span class="badge badge-repair">リペア</span>
-          <span class="badge badge-done">作業完了</span>
-          <span class="case-toggle">▼</span>
-        </div>
-        <div class="case-body" id="c3-body">
-          <dl class="case-dl">
-            <dt>内容</dt><dd>代替パーツ交換</dd>
-          </dl>
-          <ul class="timeline">
-            <li><span class="tl-date">2024.6.8</span>作業依頼・作業・引渡し（依頼から引渡しまで約2時間）</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Case 4 -->
-      <div class="case-card" id="c4">
-        <div class="case-header" onclick="toggleCase('c4')">
-          <span class="case-num">#4</span>
-          <span class="case-title">N様 ― キーケース</span>
-          <span class="badge badge-repair">リペア</span>
-          <span class="badge badge-done">作業完了</span>
-          <span class="case-toggle">▼</span>
-        </div>
-        <div class="case-body" id="c4-body">
-          <dl class="case-dl">
-            <dt>内容</dt><dd>破損部補強</dd>
-          </dl>
-          <ul class="timeline">
-            <li><span class="tl-date">2024.3.15</span>作業依頼</li>
-            <li><span class="tl-date">2024.3.16</span>作業・引渡し</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Case 5 -->
-      <div class="case-card" id="c5">
-        <div class="case-header" onclick="toggleCase('c5')">
-          <span class="case-num">#5</span>
-          <span class="case-title">Akira様 ― ランドセル</span>
-          <span class="badge badge-repair">リペア</span>
-          <span class="badge badge-done">作業完了</span>
-          <span class="case-toggle">▼</span>
-        </div>
-        <div class="case-body" id="c5-body">
-          <dl class="case-dl">
-            <dt>内容</dt><dd>破損部補修</dd>
-          </dl>
-          <ul class="timeline">
-            <li><span class="tl-date">2019.10.18</span>依頼・作業・引渡し</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Case 6 -->
-      <div class="case-card" id="c6">
-        <div class="case-header" onclick="toggleCase('c6')">
-          <span class="case-num">#6</span>
-          <span class="case-title">Hassy様 ― ポーチ（ブランド）</span>
-          <span class="badge badge-repair">リペア</span>
-          <span class="badge badge-done">作業完了</span>
-          <span class="case-toggle">▼</span>
-        </div>
-        <div class="case-body" id="c6-body">
-          <dl class="case-dl">
-            <dt>内容</dt><dd>破損部補修</dd>
-          </dl>
-          <ul class="timeline">
-            <li><span class="tl-date">2020.5.11</span>依頼</li>
-            <li><span class="tl-date">2020.5.12</span>作業</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Case 7 -->
-      <div class="case-card" id="c7">
-        <div class="case-header" onclick="toggleCase('c7')">
-          <span class="case-num">#7</span>
-          <span class="case-title">Yurika様 ― リメイクポーチ（サイズ変更 W12×H8cm）</span>
-          <span class="badge badge-remake">リメイク</span>
-          <span class="badge badge-done">作業完了</span>
-          <span class="case-toggle">▼</span>
-        </div>
-        <div class="case-body" id="c7-body">
-          <dl class="case-dl">
-            <dt>内容</dt><dd>依頼主保有品を組み合わせたパッチワークリメイク。元ブランドの刻印と当店オリジナル刻印の両方を刻印。不足する革は当店のヌメ革使用。</dd>
-            <dt>サイズ</dt><dd>横12cm × 縦8cm</dd>
-          </dl>
-          <ul class="timeline">
-            <li><span class="tl-date">2024.7.7</span>作業依頼・依頼主発送</li>
-            <li><span class="tl-date">2024.7.9</span>リメイク素材受領・設計</li>
-            <li><span class="tl-date">2024.7.10</span>リメイク作業・確認</li>
-            <li><span class="tl-date">2024.7.11</span>発送</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Case 8 -->
-      <div class="case-card" id="c8">
-        <div class="case-header" onclick="toggleCase('c8')">
-          <span class="case-num">#8</span>
-          <span class="case-title">Onita様 ― ランドセル → パスケース・キーケース</span>
-          <span class="badge badge-remake">リメイク</span>
-          <span class="badge badge-done">作業完了</span>
-          <span class="case-toggle">▼</span>
-        </div>
-        <div class="case-body" id="c8-body">
-          <dl class="case-dl">
-            <dt>内容</dt><dd>ランドセルをパスケース・キーケースへリメイク</dd>
-          </dl>
-          <ul class="timeline">
-            <li><span class="tl-date">2020.3.14</span>作業依頼</li>
-            <li><span class="tl-date">2020.3.15</span>作業</li>
-            <li><span class="tl-date">2020.3</span>完了</li>
-          </ul>
-        </div>
-      </div>
-
-    </div><!-- /case-grid -->
+    <div class="case-grid" id="case-grid"></div>
   </div>
 
   <!-- CTA -->
@@ -429,21 +374,555 @@
       <a href="mailto:you0810jmsdf@gmail.com" class="cta-btn cta-btn-mail">✉️ メールで相談する</a>
     </div>
   </div>
-</div>
+
+</div><!-- /container -->
 
 <footer class="lp-footer">
   © N's factory | 千葉県印西市 |
   <a href="mailto:you0810jmsdf@gmail.com">you0810jmsdf@gmail.com</a>
 </footer>
 
+<!-- FAB -->
+<button id="fab" class="fab" onclick="openModal()" style="display:none" title="新規案件追加">＋</button>
+
+<!-- Modal -->
+<div id="modal-overlay" class="modal-overlay" style="display:none" onclick="closeModalOnOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">新規案件</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>依頼者 *</label>
+          <input type="text" id="f-client" placeholder="例: Yurika様">
+        </div>
+        <div class="form-group">
+          <label>品物 *</label>
+          <input type="text" id="f-item" placeholder="例: キーケース">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>カテゴリ</label>
+          <select id="f-category">
+            <option value="リメイク">リメイク</option>
+            <option value="リペア">リペア</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ステータス</label>
+          <select id="f-status">
+            <option value="受付済">受付済</option>
+            <option value="作業中">作業中</option>
+            <option value="作業完了">作業完了</option>
+            <option value="受領評価済">受領評価済</option>
+            <option value="中断">中断</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>受付日</label>
+          <input type="text" id="f-startDate" placeholder="例: 2025.6.1">
+        </div>
+        <div class="form-group">
+          <label>完了日</label>
+          <input type="text" id="f-endDate" placeholder="例: 2025.6.15">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>内容・説明</label>
+        <textarea id="f-description" rows="3" placeholder="作業内容の詳細"></textarea>
+      </div>
+      <div class="form-group">
+        <label>タイムライン</label>
+        <div id="tl-rows"></div>
+        <button type="button" class="btn-add-tl" onclick="addTlRow()">＋ 行を追加</button>
+      </div>
+      <div class="form-group">
+        <label>Google Drive フォルダID（画像カルーセル用）</label>
+        <input type="text" id="f-folderId" placeholder="例: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs">
+        <p class="field-hint">DriveフォルダのURL末尾のID。フォルダ・ファイルは「リンクを知っている全員が閲覧可」に設定してください。</p>
+      </div>
+      <div class="form-group">
+        <label>メモ（BEFORE/AFTER・決済手段など）</label>
+        <textarea id="f-memo" rows="3" placeholder="BEFORE: \nAFTER: \n決済: "></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveRecord()">保存する</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  function toggleCase(id) {
-    const body = document.getElementById(id + '-body');
-    const card = document.getElementById(id);
-    const toggle = card.querySelector('.case-toggle');
-    const isOpen = body.classList.toggle('open');
-    toggle.style.transform = isOpen ? 'rotate(180deg)' : '';
+/* ── 定数 ─────────────────────────────────── */
+const GAS_KEY = 'rr_gas_url';
+
+/* ── シードデータ（GAS未設定時の表示 / インポート用） ── */
+const SEED = [
+  { '依頼者':'Yurika様', '品物':'ティッシュケース・リップケース（KURUMU）', 'カテゴリ':'リメイク',
+    'ステータス':'受領評価済', '受付日':'2025.6', '完了日':'2025.6',
+    '説明':'依頼主保有品を組み合わせたパッチワークリメイク',
+    'タイムライン':[{date:'2025.6',text:'リメイク依頼'},{date:'2025.6',text:'リメイク・確認・発送'},{date:'2025.6',text:'受領・評価済'}],
+    'DriveフォルダID':'', 'メモ':'BEFORE: 文庫本カバー、栞\nAFTER: 当店オリジナルリップケース KURUMU ×1、ティッシュケース\n決済: メルカリ' },
+  { '依頼者':'Yurika様', '品物':'キーケース', 'カテゴリ':'リペア',
+    'ステータス':'受領評価済', '受付日':'2024.7.14', '完了日':'2024.7',
+    '説明':'依頼主保有品を組み合わせたパッチワークリメイク。当店オリジナル刻印を追加。不足する革は当店のヌメ革使用。',
+    'タイムライン':[{date:'2024.7.14',text:'作業依頼・依頼主発送'},{date:'2024.7.15',text:'設計'},{date:'2024.7',text:'リメイク素材受領・リメイク作業・確認'},{date:'2024.7',text:'発送'},{date:'2024.7',text:'受領・評価済'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { '依頼者':'TKB様', '品物':'バッグ（ブランド）', 'カテゴリ':'リペア',
+    'ステータス':'作業完了', '受付日':'2024.6.8', '完了日':'2024.6.8',
+    '説明':'代替パーツ交換',
+    'タイムライン':[{date:'2024.6.8',text:'作業依頼・作業・引渡し（依頼から引渡しまで約2時間）'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { '依頼者':'N様', '品物':'キーケース', 'カテゴリ':'リペア',
+    'ステータス':'作業完了', '受付日':'2024.3.15', '完了日':'2024.3.16',
+    '説明':'破損部補強',
+    'タイムライン':[{date:'2024.3.15',text:'作業依頼'},{date:'2024.3.16',text:'作業・引渡し'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { '依頼者':'Akira様', '品物':'ランドセル', 'カテゴリ':'リペア',
+    'ステータス':'作業完了', '受付日':'2019.10.18', '完了日':'2019.10.18',
+    '説明':'破損部補修',
+    'タイムライン':[{date:'2019.10.18',text:'依頼・作業・引渡し'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { '依頼者':'Hassy様', '品物':'ポーチ（ブランド）', 'カテゴリ':'リペア',
+    'ステータス':'作業完了', '受付日':'2020.5.11', '完了日':'2020.5.12',
+    '説明':'破損部補修',
+    'タイムライン':[{date:'2020.5.11',text:'依頼'},{date:'2020.5.12',text:'作業'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { '依頼者':'Yurika様', '品物':'リメイクポーチ（サイズ変更 W12×H8cm）', 'カテゴリ':'リメイク',
+    'ステータス':'作業完了', '受付日':'2024.7.7', '完了日':'2024.7.11',
+    '説明':'依頼主保有品を組み合わせたパッチワークリメイク。元ブランドの刻印と当店オリジナル刻印の両方を刻印。不足する革は当店のヌメ革使用。',
+    'タイムライン':[{date:'2024.7.7',text:'作業依頼・依頼主発送'},{date:'2024.7.9',text:'リメイク素材受領・設計'},{date:'2024.7.10',text:'リメイク作業・確認'},{date:'2024.7.11',text:'発送'}],
+    'DriveフォルダID':'', 'メモ':'サイズ: 横12cm × 縦8cm' },
+  { '依頼者':'Onita様', '品物':'ランドセル → パスケース・キーケース', 'カテゴリ':'リメイク',
+    'ステータス':'作業完了', '受付日':'2020.3.14', '完了日':'2020.3',
+    '説明':'ランドセルをパスケース・キーケースへリメイク',
+    'タイムライン':[{date:'2020.3.14',text:'作業依頼'},{date:'2020.3.15',text:'作業'},{date:'2020.3',text:'完了'}],
+    'DriveフォルダID':'', 'メモ':'' }
+];
+
+/* ── 状態 ─────────────────────────────────── */
+let gasUrl      = localStorage.getItem(GAS_KEY) || '';
+let allRecords  = [];
+let activeFilter = 'all';
+const carState  = {};
+const imgCache  = {};
+
+/* ── 初期化 ──────────────────────────────── */
+window.addEventListener('DOMContentLoaded', init);
+
+function init() {
+  if (gasUrl) {
+    document.getElementById('header-actions').style.display = 'flex';
+    document.getElementById('fab').style.display = 'flex';
+    loadRecords();
+  } else {
+    document.getElementById('setup-banner').style.display = 'flex';
+    renderAll(SEED);
   }
+}
+
+/* ── GAS URL 管理 ────────────────────────── */
+function promptGasUrl() {
+  const url = prompt('GAS Web App URL を貼り付けてください\n（https://script.google.com/macros/s/.../exec）', gasUrl);
+  if (url === null) return;
+  gasUrl = url.trim();
+  localStorage.setItem(GAS_KEY, gasUrl);
+  location.reload();
+}
+function changeGasUrl() { promptGasUrl(); }
+
+/* ── データ読み込み ───────────────────────── */
+async function loadRecords() {
+  try {
+    const res = await fetch(gasUrl);
+    const json = await res.json();
+    allRecords = json.records || [];
+    renderAll(allRecords);
+    // GAS設定済みで空ならインポートの提案
+    if (allRecords.length === 0) {
+      document.getElementById('import-notice').style.display = 'flex';
+    }
+  } catch (e) {
+    console.error(e);
+    showMsg('GAS への接続に失敗しました。URLを確認してください。', true);
+    renderAll(SEED);
+  }
+}
+
+/* ── 全体描画 ─────────────────────────────── */
+function renderAll(records) {
+  updateStats(records);
+  const filtered = filterRecords(records);
+  renderTable(filtered);
+  renderCards(filtered);
+}
+
+/* ── 統計 ────────────────────────────────── */
+function updateStats(records) {
+  document.getElementById('stat-total').textContent  = records.length;
+  document.getElementById('stat-remake').textContent = records.filter(r => r['カテゴリ'] === 'リメイク').length;
+  document.getElementById('stat-repair').textContent = records.filter(r => r['カテゴリ'] === 'リペア').length;
+  document.getElementById('stat-wip').textContent    = records.filter(r => ['受付済','作業中'].includes(r['ステータス'])).length;
+}
+
+/* ── フィルター ───────────────────────────── */
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.dataset.filter === f));
+  const src = gasUrl ? allRecords : SEED;
+  const filtered = filterRecords(src);
+  renderTable(filtered);
+  renderCards(filtered);
+}
+
+function filterRecords(records) {
+  switch (activeFilter) {
+    case 'wip':    return records.filter(r => ['受付済','作業中'].includes(r['ステータス']));
+    case 'done':   return records.filter(r => ['作業完了','受領評価済'].includes(r['ステータス']));
+    case 'remake': return records.filter(r => r['カテゴリ'] === 'リメイク');
+    case 'repair': return records.filter(r => r['カテゴリ'] === 'リペア');
+    default:       return records;
+  }
+}
+
+/* ── バッジヘルパー ───────────────────────── */
+function statusCls(s) {
+  return { '受領評価済':'badge-received', '作業完了':'badge-done',
+           '作業中':'badge-wip', '受付済':'badge-waiting', '中断':'badge-stopped' }[s] || 'badge-waiting';
+}
+function catCls(c) { return c === 'リメイク' ? 'badge-remake' : 'badge-repair'; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── テーブル描画 ─────────────────────────── */
+function renderTable(records) {
+  const tbody = document.getElementById('progress-tbody');
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>該当する案件がありません。</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = records.map((r, i) => {
+    const id = r['ID'] || `seed-${i}`;
+    return `<tr onclick="scrollToCard('card-${esc(id)}')">
+      <td class="num-cell">${i + 1}</td>
+      <td>${esc(r['依頼者'])}</td>
+      <td>${esc(r['品物'])}</td>
+      <td><span class="badge ${catCls(r['カテゴリ'])}">${esc(r['カテゴリ'])}</span></td>
+      <td><span class="badge ${statusCls(r['ステータス'])}">${esc(r['ステータス'])}</span></td>
+      <td>${esc(r['受付日'])}</td>
+    </tr>`;
+  }).join('');
+}
+
+function scrollToCard(cardId) {
+  const el = document.getElementById(cardId);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const body = el.querySelector('.case-body');
+  if (body && !body.classList.contains('open')) toggleCase(cardId);
+}
+
+/* ── カード描画 ───────────────────────────── */
+function renderCards(records) {
+  const grid = document.getElementById('case-grid');
+  if (!records.length) {
+    grid.innerHTML = '<div class="empty-state"><p>該当する案件がありません。</p></div>';
+    return;
+  }
+  const isAdmin = !!gasUrl;
+  grid.innerHTML = records.map((r, i) => {
+    const id  = r['ID'] || `seed-${i}`;
+    const tl  = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    const fid = r['DriveフォルダID'] || '';
+    const memo = r['メモ'] || '';
+
+    return `
+    <div class="case-card" id="card-${esc(id)}">
+      <div class="case-header" onclick="toggleCase('card-${esc(id)}')">
+        <span class="case-num">#${i + 1}</span>
+        <span class="case-title">${esc(r['依頼者'])} ― ${esc(r['品物'])}</span>
+        <span class="case-header-badges">
+          <span class="badge ${catCls(r['カテゴリ'])}">${esc(r['カテゴリ'])}</span>
+          <span class="badge ${statusCls(r['ステータス'])}">${esc(r['ステータス'])}</span>
+        </span>
+        ${isAdmin ? `<span class="case-actions" onclick="event.stopPropagation()">
+          <button class="btn-icon" onclick="openModal('${esc(id)}')" title="編集">✏️</button>
+          <button class="btn-icon del" onclick="deleteRecord('${esc(id)}')" title="削除">🗑</button>
+        </span>` : ''}
+        <span class="case-toggle" id="toggle-card-${esc(id)}">▼</span>
+      </div>
+      <div class="case-body" id="body-card-${esc(id)}">
+        <dl class="case-dl">
+          ${r['受付日'] ? `<dt>受付日</dt><dd>${esc(r['受付日'])}</dd>` : ''}
+          ${r['完了日'] ? `<dt>完了日</dt><dd>${esc(r['完了日'])}</dd>` : ''}
+          ${r['説明']   ? `<dt>内容</dt><dd>${esc(r['説明'])}</dd>` : ''}
+          ${memo ? memo.split('\n').map(l => {
+            const parts = l.split(':');
+            return parts.length > 1 ? `<dt>${esc(parts[0])}</dt><dd>${esc(parts.slice(1).join(':').trim())}</dd>` : '';
+          }).join('') : ''}
+        </dl>
+        ${tl.length ? `<ul class="timeline">${tl.map(t => `<li><span class="tl-date">${esc(t.date)}</span>${esc(t.text)}</li>`).join('')}</ul>` : ''}
+        ${fid ? `<div id="carousel-${esc(id)}" data-folderid="${esc(fid)}"><div class="img-loading"><span class="spinner"></span></div></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── アコーディオン ───────────────────────── */
+function toggleCase(cardId) {
+  const body   = document.getElementById(`body-${cardId}`);
+  const toggle = document.getElementById(`toggle-${cardId}`);
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (toggle) toggle.style.transform = isOpen ? 'rotate(180deg)' : '';
+
+  // 画像の遅延ロード
+  if (isOpen && gasUrl) {
+    const carDiv = body.querySelector('[data-folderid]');
+    if (carDiv && !carDiv.dataset.loaded) {
+      carDiv.dataset.loaded = '1';
+      loadImages(carDiv.id, carDiv.dataset.folderid);
+    }
+  }
+}
+
+/* ── 画像読み込み ─────────────────────────── */
+async function loadImages(carDivId, folderId) {
+  const el = document.getElementById(carDivId);
+  if (!el) return;
+  if (imgCache[folderId]) { renderCarousel(el, imgCache[folderId]); return; }
+  try {
+    const res  = await fetch(`${gasUrl}?action=images&folderId=${encodeURIComponent(folderId)}`);
+    const json = await res.json();
+    if (!json.ok || !json.images.length) { el.innerHTML = '<div class="img-empty">画像なし（DriveフォルダIDを確認してください）</div>'; return; }
+    imgCache[folderId] = json.images;
+    renderCarousel(el, json.images);
+  } catch {
+    el.innerHTML = '<div class="img-empty">画像の読み込みに失敗しました。</div>';
+  }
+}
+
+function renderCarousel(el, images) {
+  const cid = el.id;
+  el.innerHTML = `
+    <div class="carousel-wrap">
+      <div class="carousel-track" id="ctrack-${cid}">
+        ${images.map(img => `<img src="${esc(img.url)}" alt="${esc(img.name)}" loading="lazy">`).join('')}
+      </div>
+      ${images.length > 1 ? `
+        <button class="car-btn car-prev" onclick="carMove('${cid}',-1)">‹</button>
+        <button class="car-btn car-next" onclick="carMove('${cid}', 1)">›</button>
+        <div class="car-counter" id="ccnt-${cid}">1 / ${images.length}</div>
+        <div class="car-dots" id="cdots-${cid}">
+          ${images.map((_,i) => `<button class="car-dot ${i===0?'active':''}" onclick="carGo('${cid}',${i})"></button>`).join('')}
+        </div>
+      ` : ''}
+    </div>`;
+  carState[cid] = 0;
+}
+
+function carMove(cid, dir) {
+  const track = document.getElementById(`ctrack-${cid}`);
+  if (!track) return;
+  const count = track.children.length;
+  carState[cid] = ((carState[cid] || 0) + dir + count) % count;
+  carApply(cid, track, count);
+}
+function carGo(cid, idx) {
+  const track = document.getElementById(`ctrack-${cid}`);
+  if (!track) return;
+  carState[cid] = idx;
+  carApply(cid, track, track.children.length);
+}
+function carApply(cid, track, count) {
+  const i = carState[cid];
+  track.style.transform = `translateX(-${i * 100}%)`;
+  const cnt = document.getElementById(`ccnt-${cid}`);
+  if (cnt) cnt.textContent = `${i + 1} / ${count}`;
+  const dots = document.getElementById(`cdots-${cid}`);
+  if (dots) dots.querySelectorAll('.car-dot').forEach((d, j) => d.classList.toggle('active', j === i));
+}
+
+/* ── モーダル開く ─────────────────────────── */
+function openModal(id) {
+  document.getElementById('modal-overlay').style.display = 'flex';
+  document.getElementById('tl-rows').innerHTML = '';
+  document.getElementById('edit-id').value = '';
+
+  if (id) {
+    // 編集モード
+    const src = gasUrl ? allRecords : SEED;
+    const r = src.find(x => String(x['ID']) === String(id));
+    if (!r) return;
+    document.getElementById('modal-title').textContent = '案件を編集';
+    document.getElementById('save-btn').textContent = '更新する';
+    document.getElementById('edit-id').value   = id;
+    document.getElementById('f-client').value  = r['依頼者']    || '';
+    document.getElementById('f-item').value    = r['品物']      || '';
+    document.getElementById('f-category').value = r['カテゴリ'] || 'リメイク';
+    document.getElementById('f-status').value  = r['ステータス'] || '受付済';
+    document.getElementById('f-startDate').value = r['受付日']  || '';
+    document.getElementById('f-endDate').value   = r['完了日']  || '';
+    document.getElementById('f-description').value = r['説明']  || '';
+    document.getElementById('f-folderId').value  = r['DriveフォルダID'] || '';
+    document.getElementById('f-memo').value      = r['メモ']    || '';
+    const tl = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    tl.forEach(t => addTlRow(t.date, t.text));
+  } else {
+    // 追加モード
+    document.getElementById('modal-title').textContent = '新規案件';
+    document.getElementById('save-btn').textContent = '保存する';
+    ['f-client','f-item','f-startDate','f-endDate','f-description','f-folderId','f-memo'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-category').value = 'リメイク';
+    document.getElementById('f-status').value   = '受付済';
+    addTlRow();
+  }
+}
+function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+function closeModalOnOverlay(e) { if (e.target.id === 'modal-overlay') closeModal(); }
+
+/* ── タイムライン行 ───────────────────────── */
+function addTlRow(date = '', text = '') {
+  const wrap = document.getElementById('tl-rows');
+  const row = document.createElement('div');
+  row.className = 'tl-edit-row';
+  row.innerHTML = `
+    <input type="text" class="form-group tl-edit-date" placeholder="例: 2025.6.1" value="${esc(date)}" style="padding:8px 10px; border:1px solid rgba(0,0,0,.18); border-radius:10px; font-size:13px;">
+    <input type="text" class="form-group tl-edit-text" placeholder="内容" value="${esc(text)}" style="flex:1; padding:8px 10px; border:1px solid rgba(0,0,0,.18); border-radius:10px; font-size:13px;">
+    <button type="button" class="btn-rm-tl" onclick="this.parentElement.remove()">×</button>`;
+  wrap.appendChild(row);
+}
+
+function getTlRows() {
+  return [...document.querySelectorAll('.tl-edit-row')].map(row => ({
+    date: row.querySelector('.tl-edit-date').value.trim(),
+    text: row.querySelector('.tl-edit-text').value.trim()
+  })).filter(t => t.date || t.text);
+}
+
+/* ── 保存 ─────────────────────────────────── */
+async function saveRecord() {
+  if (!gasUrl) { showMsg('GAS URLが設定されていません。', true); return; }
+  const client = document.getElementById('f-client').value.trim();
+  const item   = document.getElementById('f-item').value.trim();
+  if (!client || !item) { showMsg('依頼者と品物は必須です。', true); return; }
+
+  const editId = document.getElementById('edit-id').value;
+  const body = {
+    action:      editId ? 'update' : 'add',
+    id:          editId || undefined,
+    client,
+    item,
+    category:    document.getElementById('f-category').value,
+    status:      document.getElementById('f-status').value,
+    startDate:   document.getElementById('f-startDate').value.trim(),
+    endDate:     document.getElementById('f-endDate').value.trim(),
+    description: document.getElementById('f-description').value.trim(),
+    timeline:    getTlRows(),
+    folderId:    document.getElementById('f-folderId').value.trim(),
+    memo:        document.getElementById('f-memo').value.trim()
+  };
+
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '保存中…'; btn.disabled = true;
+  try {
+    const res  = await fetch(gasUrl, { method:'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+    if (json.ok) {
+      closeModal();
+      showMsg(editId ? '更新しました。' : '案件を追加しました。');
+      await loadRecords();
+    } else {
+      showMsg('保存に失敗しました: ' + (json.error || ''), true);
+    }
+  } catch (e) {
+    showMsg('通信エラー: ' + e.message, true);
+  } finally {
+    btn.textContent = editId ? '更新する' : '保存する'; btn.disabled = false;
+  }
+}
+
+/* ── 削除 ─────────────────────────────────── */
+async function deleteRecord(id) {
+  if (!gasUrl) return;
+  const src = allRecords;
+  const r = src.find(x => String(x['ID']) === String(id));
+  const label = r ? `${r['依頼者']} ― ${r['品物']}` : id;
+  if (!confirm(`「${label}」を削除しますか？\nこの操作は元に戻せません。`)) return;
+  try {
+    const res  = await fetch(gasUrl, { method:'POST', body: JSON.stringify({ action:'delete', id }) });
+    const json = await res.json();
+    if (json.ok) {
+      showMsg('削除しました。');
+      await loadRecords();
+    } else {
+      showMsg('削除に失敗しました: ' + (json.error || ''), true);
+    }
+  } catch (e) {
+    showMsg('通信エラー: ' + e.message, true);
+  }
+}
+
+/* ── シードデータのインポート ─────────────── */
+async function importSeedData() {
+  if (!gasUrl) return;
+  if (!confirm('8件の過去データをスプレッドシートにインポートしますか？')) return;
+  const records = SEED.map(r => ({
+    client:      r['依頼者'],
+    item:        r['品物'],
+    category:    r['カテゴリ'],
+    status:      r['ステータス'],
+    startDate:   r['受付日'],
+    endDate:     r['完了日'],
+    description: r['説明'],
+    timeline:    r['タイムライン'],
+    folderId:    r['DriveフォルダID'],
+    memo:        r['メモ']
+  }));
+  try {
+    const res  = await fetch(gasUrl, { method:'POST', body: JSON.stringify({ action:'import', records }) });
+    const json = await res.json();
+    if (json.ok) {
+      document.getElementById('import-notice').style.display = 'none';
+      showMsg('インポート完了しました。');
+      await loadRecords();
+    } else {
+      showMsg('インポートに失敗しました: ' + (json.error || ''), true);
+    }
+  } catch (e) {
+    showMsg('通信エラー: ' + e.message, true);
+  }
+}
+
+/* ── トースト通知 ─────────────────────────── */
+function showMsg(msg, isError = false) {
+  let el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    Object.assign(el.style, {
+      position:'fixed', bottom:'80px', left:'50%', transform:'translateX(-50%)',
+      padding:'10px 22px', borderRadius:'24px', fontSize:'13px', fontWeight:'600',
+      zIndex:'999', boxShadow:'0 4px 14px rgba(0,0,0,.2)', transition:'opacity .3s',
+      whiteSpace:'nowrap'
+    });
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.background = isError ? '#C62828' : '#2E7D32';
+  el.style.color = '#fff';
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+}
 </script>
 </body>
 </html>

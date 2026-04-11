@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オーダー進捗 — N's factory</title>
+  <style>
+    :root {
+      --color-primary:      #1D1D1F;
+      --color-accent:       #A0785A;
+      --color-accent-light: #F3ECE4;
+      --color-accent-dark:  #7A5540;
+      --color-bg:           #FFFFFF;
+      --color-bg-sub:       #F5F5F7;
+      --color-border:       #E8E8ED;
+      --color-text:         #1D1D1F;
+      --color-text-sub:     #636366;
+      --color-text-mute:    #AEAEB2;
+      --color-error:        #FF3B30;
+      --color-success:      #34C759;
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family: -apple-system,'SF Pro Display','Hiragino Sans','Yu Gothic',Meiryo,sans-serif;
+      background: var(--color-bg-sub);
+      color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--color-border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 200;
+    }
+    .navbar-brand { font-size:.95rem; font-weight:600; letter-spacing:.06em; color:var(--color-primary); text-decoration:none; }
+    .navbar-links { display:flex; gap:4px; align-items:center; }
+    .navbar-links a {
+      padding:5px 14px; border-radius:20px; font-size:13px;
+      color:var(--color-accent-dark); text-decoration:none;
+      border:1.5px solid var(--color-accent); transition:background .2s,color .2s;
+      white-space:nowrap; font-weight:500;
+    }
+    .navbar-links a:hover { background:var(--color-accent); color:#fff; }
+
+    /* ── Setup banner ── */
+    #setup-banner {
+      display:none; background:#FFF9C4; border-bottom:1px solid #F0E060;
+      padding:10px 20px; font-size:.82rem; color:#5D4037; text-align:center;
+    }
+    #setup-banner a { color:var(--color-accent-dark); font-weight:600; cursor:pointer; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg,var(--color-accent-dark) 0%,var(--color-accent) 100%);
+      color:#fff; padding:28px 20px 20px; text-align:center;
+    }
+    .hero h1 { font-size:1.4rem; font-weight:700; letter-spacing:.08em; margin-bottom:4px; }
+    .hero p  { font-size:.82rem; opacity:.85; }
+
+    /* ── Size tabs ── */
+    .tab-bar {
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-border);
+      display: flex; overflow-x: auto; padding: 0 8px;
+      position: sticky; top: 52px; z-index: 100;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-btn {
+      flex-shrink: 0; padding: 13px 16px; font-size:.88rem;
+      font-weight:500; color:var(--color-text-sub); background:none;
+      border:none; border-bottom:3px solid transparent; cursor:pointer;
+      transition:color .2s, border-color .2s; white-space:nowrap;
+    }
+    .tab-btn.active { color:var(--color-accent-dark); border-bottom-color:var(--color-accent); font-weight:700; }
+
+    /* ── Content ── */
+    .content { max-width:780px; margin:0 auto; padding:16px 12px 120px; }
+
+    /* ── Stats ── */
+    .stats-row {
+      display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:14px;
+    }
+    @media(min-width:480px){ .stats-row{ grid-template-columns:repeat(4,1fr); } }
+    .stat-card {
+      background:var(--color-bg); border-radius:var(--radius-md);
+      border:1px solid var(--color-border); padding:12px 10px; text-align:center;
+    }
+    .stat-num { font-size:1.6rem; font-weight:700; color:var(--color-accent-dark); line-height:1; }
+    .stat-lbl { font-size:.72rem; color:var(--color-text-mute); margin-top:3px; }
+
+    /* ── Empty ── */
+    .empty { text-align:center; padding:60px 20px; color:var(--color-text-mute); font-size:.9rem; }
+
+    /* ── Order card ── */
+    .order-card {
+      background:var(--color-bg); border-radius:var(--radius-lg);
+      border:1px solid var(--color-border); margin-bottom:10px;
+      box-shadow:var(--shadow-sm); overflow:hidden;
+    }
+    .card-header {
+      display:flex; align-items:center; padding:14px 16px;
+      cursor:pointer; gap:10px; user-select:none;
+    }
+    .card-header:hover { background:var(--color-bg-sub); }
+    .order-no {
+      font-size:.72rem; font-weight:600; color:var(--color-text-mute);
+      letter-spacing:.04em; white-space:nowrap;
+    }
+    .card-title { flex:1; }
+    .card-title .item-name { font-size:.95rem; font-weight:600; }
+    .card-title .client-name { font-size:.78rem; color:var(--color-text-sub); margin-top:1px; }
+    .status-badge {
+      font-size:.72rem; font-weight:600; padding:3px 10px;
+      border-radius:99px; white-space:nowrap; flex-shrink:0;
+    }
+    .s-受付中       { background:#EEF2FF; color:#3730A3; }
+    .s-素材準備中   { background:#FFF7ED; color:#C2410C; }
+    .s-制作中       { background:#FFF9C4; color:#92400E; }
+    .s-仕上げ中     { background:#F0FDF4; color:#166534; }
+    .s-完成         { background:#DCFCE7; color:#15803D; }
+    .s-発送済み     { background:#E0F2FE; color:#0369A1; }
+    .s-お渡し済み   { background:#F3ECE4; color:#7A5540; }
+    .chevron { font-size:.8rem; color:var(--color-text-mute); transition:transform .25s; flex-shrink:0; }
+    .card-header.open .chevron { transform:rotate(180deg); }
+
+    .card-body {
+      display:none; border-top:1px solid var(--color-border);
+    }
+    .card-body.open { display:block; }
+    .card-inner { padding:14px 16px 16px; }
+
+    /* Dates row */
+    .dates-row { display:flex; gap:16px; margin-bottom:14px; flex-wrap:wrap; }
+    .date-item { font-size:.8rem; color:var(--color-text-sub); }
+    .date-item span { font-weight:600; color:var(--color-text); }
+
+    /* Timeline */
+    .tl-title { font-size:.8rem; font-weight:700; color:var(--color-accent-dark); margin-bottom:8px; letter-spacing:.04em; }
+    .timeline { position:relative; padding-left:20px; }
+    .timeline::before {
+      content:''; position:absolute; left:7px; top:6px; bottom:6px;
+      width:2px; background:var(--color-border);
+    }
+    .tl-item { position:relative; margin-bottom:12px; }
+    .tl-item:last-child { margin-bottom:0; }
+    .tl-dot {
+      position:absolute; left:-20px; top:4px;
+      width:8px; height:8px; border-radius:50%;
+      background:var(--color-accent); border:2px solid var(--color-bg);
+      box-shadow:0 0 0 2px var(--color-accent);
+    }
+    .tl-item:first-child .tl-dot { background:var(--color-success); box-shadow:0 0 0 2px var(--color-success); }
+    .tl-item:last-child .tl-dot  { background:var(--color-accent-dark); box-shadow:0 0 0 2px var(--color-accent-dark); }
+    .tl-date { font-size:.72rem; color:var(--color-text-mute); margin-bottom:1px; }
+    .tl-text { font-size:.88rem; color:var(--color-text); line-height:1.5; }
+
+    /* Carousel */
+    .carousel-wrap { margin-top:14px; }
+    .carousel-outer { position:relative; overflow:hidden; border-radius:var(--radius-md); background:var(--color-bg-sub); }
+    .carousel-track { display:flex; transition:transform .3s ease; }
+    .carousel-track img { flex-shrink:0; width:100%; height:220px; object-fit:cover; display:block; }
+    .car-btn {
+      position:absolute; top:50%; transform:translateY(-50%);
+      background:rgba(0,0,0,.45); color:#fff; border:none; cursor:pointer;
+      width:34px; height:34px; border-radius:50%; font-size:1rem;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .car-prev { left:8px; }
+    .car-next { right:8px; }
+    .car-dots { display:flex; justify-content:center; gap:5px; margin-top:7px; }
+    .car-dot { width:7px; height:7px; border-radius:50%; background:var(--color-border); cursor:pointer; transition:background .2s; }
+    .car-dot.active { background:var(--color-accent); }
+
+    /* Admin controls */
+    .admin-bar {
+      display:none; gap:8px; margin-top:14px; padding-top:14px;
+      border-top:1px dashed var(--color-border);
+    }
+    .admin-bar.visible { display:flex; }
+    .btn {
+      padding:8px 16px; border-radius:var(--radius-sm); font-size:.82rem;
+      font-weight:600; border:none; cursor:pointer; transition:opacity .2s;
+    }
+    .btn:hover { opacity:.82; }
+    .btn-edit   { background:var(--color-accent-light); color:var(--color-accent-dark); }
+    .btn-delete { background:#FFF0F0; color:var(--color-error); }
+
+    /* ── FAB ── */
+    #fab {
+      display:none; position:fixed; bottom:24px; right:20px;
+      width:52px; height:52px; border-radius:50%; border:none; cursor:pointer;
+      background:var(--color-accent-dark); color:#fff; font-size:1.4rem;
+      box-shadow:0 4px 14px rgba(0,0,0,.25); z-index:300;
+      align-items:center; justify-content:center; transition:transform .2s;
+    }
+    #fab:hover { transform:scale(1.08); }
+
+    /* ── Settings menu ── */
+    #settings-menu {
+      display:none; position:fixed; bottom:84px; right:20px; z-index:300;
+      background:var(--color-bg); border:1px solid var(--color-border);
+      border-radius:var(--radius-md); box-shadow:var(--shadow-md);
+      min-width:200px; overflow:hidden;
+    }
+    .sm-item {
+      padding:12px 16px; font-size:.85rem; cursor:pointer;
+      display:flex; align-items:center; gap:8px;
+      transition:background .15s;
+    }
+    .sm-item:hover { background:var(--color-bg-sub); }
+    .sm-sep { border-top:1px solid var(--color-border); }
+
+    /* ── Modal ── */
+    .modal-bg {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+      z-index:400; align-items:center; justify-content:center; padding:16px;
+    }
+    .modal-bg.open { display:flex; }
+    .modal {
+      background:var(--color-bg); border-radius:var(--radius-lg);
+      width:100%; max-width:520px; max-height:90vh; overflow-y:auto;
+      box-shadow:var(--shadow-md); padding:20px;
+    }
+    .modal h2 { font-size:1rem; font-weight:700; margin-bottom:16px; color:var(--color-accent-dark); }
+    .field { margin-bottom:12px; }
+    .field label { display:block; font-size:.78rem; font-weight:600; color:var(--color-text-sub); margin-bottom:4px; }
+    .field input, .field select, .field textarea {
+      width:100%; padding:9px 12px; border:1.5px solid var(--color-border);
+      border-radius:var(--radius-sm); font-size:.88rem; color:var(--color-text);
+      background:var(--color-bg); outline:none;
+      transition:border-color .2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--color-accent); }
+    .field textarea { min-height:60px; resize:vertical; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+    /* Timeline editor */
+    .tl-editor { border:1.5px solid var(--color-border); border-radius:var(--radius-sm); padding:10px; }
+    .tl-edit-row { display:flex; gap:6px; margin-bottom:6px; align-items:flex-start; }
+    .tl-edit-row input { flex:0 0 120px; padding:6px 8px; font-size:.82rem; }
+    .tl-edit-row input:last-of-type { flex:1; }
+    .tl-rm { background:#FFF0F0; color:var(--color-error); border:none; border-radius:6px;
+             width:28px; height:28px; cursor:pointer; font-size:1rem; flex-shrink:0; }
+    .btn-tl-add {
+      font-size:.78rem; color:var(--color-accent-dark); background:var(--color-accent-light);
+      border:none; border-radius:6px; padding:4px 10px; cursor:pointer; margin-top:2px;
+    }
+    .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+    .btn-primary { background:var(--color-accent-dark); color:#fff; }
+    .btn-cancel  { background:var(--color-bg-sub); color:var(--color-text-sub); }
+
+    /* ── Toast ── */
+    #toast {
+      display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+      background:#1D1D1F; color:#fff; padding:10px 20px; border-radius:var(--radius-full);
+      font-size:.82rem; z-index:500; white-space:nowrap; box-shadow:var(--shadow-md);
+    }
+    #toast.err { background:var(--color-error); }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="navbar-brand" href="index.html">N's factory</a>
+  <div class="navbar-links">
+    <a href="index.html">トップ</a>
+    <a href="remake_repair.html">リメイク</a>
+    <a href="order_estimate/leather-order-estimate-v2.html">見積もり</a>
+  </div>
+</nav>
+
+<!-- Setup banner -->
+<div id="setup-banner">
+  ⚠️ GAS URLが未設定です。<a onclick="openSettings()">設定する</a>（設定するまでは閲覧専用）
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>オーダーメイド 進捗確認</h1>
+  <p>受付番号・お名前でご自身のオーダーをご確認ください</p>
+</div>
+
+<!-- Size tab bar -->
+<div class="tab-bar" id="tab-bar">
+  <button class="tab-btn active" data-size="all">すべて</button>
+  <button class="tab-btn" data-size="mini6">mini6</button>
+  <button class="tab-btn" data-size="バイブル">バイブル</button>
+  <button class="tab-btn" data-size="A6">A6</button>
+  <button class="tab-btn" data-size="A5">A5</button>
+  <button class="tab-btn" data-size="M5">M5</button>
+  <button class="tab-btn" data-size="その他">その他</button>
+</div>
+
+<!-- Main content -->
+<div class="content">
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">受付総数</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-wip">—</div><div class="stat-lbl">制作中</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-done">—</div><div class="stat-lbl">完成・発送済み</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-size">—</div><div class="stat-lbl">表示中</div></div>
+  </div>
+
+  <!-- Search -->
+  <div class="field" style="margin-bottom:12px;">
+    <input type="text" id="search-box" placeholder="🔍 受付番号・お名前で絞り込み…" oninput="applyFilter()">
+  </div>
+
+  <!-- Order cards -->
+  <div id="order-grid"></div>
+</div>
+
+<!-- FAB -->
+<button id="fab" onclick="toggleSettingsMenu()">＋</button>
+
+<!-- Settings menu -->
+<div id="settings-menu">
+  <div class="sm-item" onclick="openModal(null)">📋 オーダーを追加</div>
+  <div class="sm-item sm-sep" onclick="openSettings()">⚙️ GAS URL 設定</div>
+  <div class="sm-item" onclick="loadRecords()">🔄 データ再読み込み</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal-bg" onclick="bgClose(event)">
+  <div class="modal" id="modal">
+    <h2 id="modal-title">オーダー追加</h2>
+    <input type="hidden" id="edit-id">
+    <div class="field-row">
+      <div class="field">
+        <label>依頼者名</label>
+        <input type="text" id="f-client" placeholder="例: 山田 様">
+      </div>
+      <div class="field">
+        <label>サイズ</label>
+        <select id="f-size">
+          <option value="mini6">mini6</option>
+          <option value="バイブル">バイブル</option>
+          <option value="A6">A6</option>
+          <option value="A5">A5</option>
+          <option value="M5">M5</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>品名・仕様</label>
+      <input type="text" id="f-item" placeholder="例: システム手帳 ダークブラウン×ヌメ革">
+    </div>
+    <div class="field">
+      <label>ステータス</label>
+      <select id="f-status">
+        <option>受付中</option>
+        <option>素材準備中</option>
+        <option>制作中</option>
+        <option>仕上げ中</option>
+        <option>完成</option>
+        <option>発送済み</option>
+        <option>お渡し済み</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>受付日</label>
+        <input type="date" id="f-start">
+      </div>
+      <div class="field">
+        <label>予定完了日</label>
+        <input type="date" id="f-end">
+      </div>
+    </div>
+    <div class="field">
+      <label>Drive フォルダID（任意）</label>
+      <input type="text" id="f-folder" placeholder="Googleドライブのフォルダid">
+    </div>
+    <div class="field">
+      <label>進捗タイムライン</label>
+      <div class="tl-editor">
+        <div id="tl-rows"></div>
+        <button class="btn-tl-add" onclick="addTlRow('','')">＋ 進捗を追加</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>メモ（非公開・管理用）</label>
+      <textarea id="f-memo" placeholder="顧客への連絡事項、メモ等（表示されません）"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+const GAS_KEY = 'op_gas_url';
+let gasUrl = localStorage.getItem(GAS_KEY) || '';
+let allRecords = [];
+let currentSize = 'all';
+const carState = {};
+const imgCache  = {};
+
+// ─── Init ────────────────────────────────────
+function init() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('f-start').value = today;
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSize = btn.dataset.size;
+      applyFilter();
+    });
+  });
+
+  if (!gasUrl) {
+    document.getElementById('setup-banner').style.display = 'block';
+    renderAll([]);
+  } else {
+    document.getElementById('fab').style.display = 'flex';
+    loadRecords();
+  }
+}
+
+// ─── GAS Load ────────────────────────────────
+async function loadRecords() {
+  if (!gasUrl) return;
+  try {
+    const res = await fetch(gasUrl);
+    const data = await res.json();
+    allRecords = data.records || [];
+    renderAll(allRecords);
+  } catch(e) {
+    showMsg('データ取得エラー: ' + e.message, true);
+    renderAll([]);
+  }
+}
+
+// ─── Render ──────────────────────────────────
+function renderAll(records) {
+  updateStats(records);
+  applyFilter();
+}
+
+function updateStats(records) {
+  const wip   = records.filter(r => ['受付中','素材準備中','制作中','仕上げ中'].includes(r['ステータス'])).length;
+  const done  = records.filter(r => ['完成','発送済み','お渡し済み'].includes(r['ステータス'])).length;
+  document.getElementById('stat-total').textContent = records.length;
+  document.getElementById('stat-wip').textContent   = wip;
+  document.getElementById('stat-done').textContent  = done;
+}
+
+function applyFilter() {
+  const q = (document.getElementById('search-box').value || '').trim().toLowerCase();
+  let filtered = allRecords;
+  if (currentSize !== 'all') filtered = filtered.filter(r => r['サイズ'] === currentSize);
+  if (q) filtered = filtered.filter(r =>
+    (r['受付番号']||'').toLowerCase().includes(q) ||
+    (r['依頼者']||'').toLowerCase().includes(q) ||
+    (r['品名']||'').toLowerCase().includes(q)
+  );
+  document.getElementById('stat-size').textContent = filtered.length;
+  renderCards(filtered);
+}
+
+function renderCards(records) {
+  const grid = document.getElementById('order-grid');
+  if (!records.length) {
+    grid.innerHTML = '<div class="empty">該当するオーダーはありません</div>';
+    return;
+  }
+  // Sort: WIP first, then by startDate desc
+  const ORDER = ['受付中','素材準備中','制作中','仕上げ中','完成','発送済み','お渡し済み'];
+  records = [...records].sort((a,b) => {
+    const si = ORDER.indexOf(a['ステータス']), sj = ORDER.indexOf(b['ステータス']);
+    if (si !== sj) return si - sj;
+    return (b['受付日']||'').localeCompare(a['受付日']||'');
+  });
+
+  grid.innerHTML = records.map(r => {
+    const id  = r['ID'];
+    const tl  = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    const cls = 's-' + (r['ステータス']||'受付中').replace(/\s/g,'');
+    const adminHtml = gasUrl
+      ? `<div class="admin-bar visible">
+           <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
+           <button class="btn btn-delete" onclick="deleteRecord('${id}')">🗑 削除</button>
+         </div>` : '';
+    const tlHtml = tl.length
+      ? tl.map(t => `<div class="tl-item"><div class="tl-dot"></div>
+          <div class="tl-date">${esc(t.date||'')}</div>
+          <div class="tl-text">${esc(t.text||'').replace(/\n/g,'<br>')}</div>
+         </div>`).join('')
+      : '<div style="font-size:.8rem;color:var(--color-text-mute)">進捗情報はまだありません</div>';
+    const folderId = r['DriveフォルダID']||'';
+    const carHtml  = folderId
+      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">📷 画像を読み込み中…</div></div>` : '';
+
+    return `<div class="order-card" id="card-${id}">
+      <div class="card-header" id="hdr-${id}" onclick="toggleCard('${id}')">
+        <div>
+          <div class="order-no">${esc(r['受付番号']||'')}</div>
+          <div style="font-size:.7rem;color:var(--color-text-mute)">${esc(r['サイズ']||'')}</div>
+        </div>
+        <div class="card-title">
+          <div class="item-name">${esc(r['品名']||'（品名未設定）')}</div>
+          <div class="client-name">${esc(r['依頼者']||'')}</div>
+        </div>
+        <span class="status-badge ${cls}">${esc(r['ステータス']||'')}</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="card-body" id="body-${id}">
+        <div class="card-inner">
+          <div class="dates-row">
+            <div class="date-item">受付日: <span>${esc(r['受付日']||'—')}</span></div>
+            <div class="date-item">予定完了: <span>${esc(r['予定完了日']||'—')}</span></div>
+          </div>
+          <div class="tl-title">📋 進捗タイムライン</div>
+          <div class="timeline">${tlHtml}</div>
+          ${carHtml}
+          ${adminHtml}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Card toggle ─────────────────────────────
+function toggleCard(id) {
+  const hdr  = document.getElementById('hdr-'  + id);
+  const body = document.getElementById('body-' + id);
+  const isOpen = body.classList.toggle('open');
+  hdr.classList.toggle('open', isOpen);
+  if (isOpen) lazyLoadImages(id);
+}
+
+function lazyLoadImages(id) {
+  const el = document.getElementById('car-' + id);
+  if (!el || el.dataset.loaded) return;
+  const folderId = el.dataset.folderid;
+  if (!folderId || !gasUrl) return;
+  el.dataset.loaded = '1';
+  fetch(`${gasUrl}?action=images&folderId=${folderId}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok && data.images && data.images.length) {
+        renderCarousel(el, data.images, id);
+      } else { el.innerHTML = ''; }
+    })
+    .catch(() => { el.innerHTML = ''; });
+}
+
+function renderCarousel(el, images, id) {
+  imgCache[id] = images;
+  carState[id] = 0;
+  el.outerHTML = `
+    <div class="carousel-outer" id="car-${id}">
+      <div class="carousel-track" id="track-${id}">
+        ${images.map(img=>`<img src="${img.url}" alt="${esc(img.name)}" loading="lazy">`).join('')}
+      </div>
+      ${images.length>1?`<button class="car-btn car-prev" onclick="carMove('${id}',-1)">‹</button>
+      <button class="car-btn car-next" onclick="carMove('${id}',1)">›</button>`:''}
+    </div>
+    ${images.length>1?`<div class="car-dots" id="dots-${id}">
+      ${images.map((_,i)=>`<div class="car-dot${i===0?' active':''}" onclick="carGo('${id}',${i})"></div>`).join('')}
+    </div>`:''}`;
+}
+
+function carMove(id, dir) {
+  const imgs = imgCache[id]||[];
+  carGo(id, ((carState[id]||0) + dir + imgs.length) % imgs.length);
+}
+function carGo(id, idx) {
+  carState[id] = idx;
+  const track = document.getElementById('track-' + id);
+  if (track) track.style.transform = `translateX(-${idx*100}%)`;
+  document.querySelectorAll(`#dots-${id} .car-dot`).forEach((d,i) =>
+    d.classList.toggle('active', i===idx));
+}
+
+// ─── Modal ───────────────────────────────────
+function openModal(id) {
+  closeSettingsMenu();
+  document.getElementById('modal-title').textContent = id ? 'オーダー編集' : 'オーダー追加';
+  document.getElementById('edit-id').value = id||'';
+  document.getElementById('tl-rows').innerHTML = '';
+
+  if (id) {
+    const r = allRecords.find(x => x['ID']===id);
+    if (!r) return;
+    document.getElementById('f-client').value = r['依頼者']||'';
+    document.getElementById('f-size').value   = r['サイズ']||'mini6';
+    document.getElementById('f-item').value   = r['品名']||'';
+    document.getElementById('f-status').value = r['ステータス']||'受付中';
+    document.getElementById('f-start').value  = r['受付日']||'';
+    document.getElementById('f-end').value    = r['予定完了日']||'';
+    document.getElementById('f-folder').value = r['DriveフォルダID']||'';
+    document.getElementById('f-memo').value   = r['メモ（非公開）']||'';
+    const tl = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    tl.forEach(t => addTlRow(t.date||'', t.text||''));
+  } else {
+    document.getElementById('f-client').value = '';
+    document.getElementById('f-size').value   = currentSize !== 'all' ? currentSize : 'mini6';
+    document.getElementById('f-item').value   = '';
+    document.getElementById('f-status').value = '受付中';
+    document.getElementById('f-start').value  = new Date().toISOString().slice(0,10);
+    document.getElementById('f-end').value    = '';
+    document.getElementById('f-folder').value = '';
+    document.getElementById('f-memo').value   = '';
+    addTlRow(new Date().toISOString().slice(0,10), 'ご注文ありがとうございます。受け付けいたしました。');
+  }
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
+function bgClose(e)   { if (e.target.id==='modal-bg') closeModal(); }
+
+function addTlRow(date, text) {
+  const row = document.createElement('div');
+  row.className = 'tl-edit-row';
+  row.innerHTML = `
+    <input type="date" value="${esc(date)}" placeholder="日付">
+    <input type="text" value="${esc(text)}" placeholder="進捗内容">
+    <button class="tl-rm" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('tl-rows').appendChild(row);
+}
+
+function getTlRows() {
+  return [...document.querySelectorAll('.tl-edit-row')].map(row => {
+    const inputs = row.querySelectorAll('input');
+    return { date: inputs[0].value, text: inputs[1].value };
+  }).filter(t => t.date||t.text);
+}
+
+// ─── Save ────────────────────────────────────
+async function saveRecord() {
+  if (!gasUrl) return showMsg('GAS URLが未設定です', true);
+  const id = document.getElementById('edit-id').value;
+  const payload = {
+    action: id ? 'update' : 'add',
+    id,
+    client:    document.getElementById('f-client').value.trim(),
+    size:      document.getElementById('f-size').value,
+    item:      document.getElementById('f-item').value.trim(),
+    status:    document.getElementById('f-status').value,
+    startDate: document.getElementById('f-start').value,
+    endDate:   document.getElementById('f-end').value,
+    folderId:  document.getElementById('f-folder').value.trim(),
+    memo:      document.getElementById('f-memo').value.trim(),
+    timeline:  getTlRows(),
+  };
+  try {
+    const res  = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.ok) {
+      closeModal();
+      showMsg(id ? '更新しました' : '追加しました（受付番号: ' + (data.orderNo||'') + '）');
+      await loadRecords();
+    } else { showMsg('エラー: ' + data.error, true); }
+  } catch(e) { showMsg('通信エラー: ' + e.message, true); }
+}
+
+// ─── Delete ──────────────────────────────────
+async function deleteRecord(id) {
+  if (!confirm('このオーダーを削除しますか？')) return;
+  try {
+    const res  = await fetch(gasUrl, { method:'POST', body:JSON.stringify({ action:'delete', id }) });
+    const data = await res.json();
+    if (data.ok) { showMsg('削除しました'); await loadRecords(); }
+    else showMsg('エラー: ' + data.error, true);
+  } catch(e) { showMsg('通信エラー: ' + e.message, true); }
+}
+
+// ─── Settings ────────────────────────────────
+function toggleSettingsMenu() {
+  const m = document.getElementById('settings-menu');
+  m.style.display = m.style.display === 'block' ? 'none' : 'block';
+  document.getElementById('fab').textContent = m.style.display === 'block' ? '×' : '＋';
+}
+function closeSettingsMenu() {
+  document.getElementById('settings-menu').style.display = 'none';
+  document.getElementById('fab').textContent = '＋';
+}
+
+function openSettings() {
+  closeSettingsMenu();
+  const url = prompt('GAS WebアプリのURLを入力してください:', gasUrl);
+  if (url === null) return;
+  gasUrl = url.trim();
+  if (gasUrl) {
+    localStorage.setItem(GAS_KEY, gasUrl);
+    document.getElementById('setup-banner').style.display = 'none';
+    document.getElementById('fab').style.display = 'flex';
+    loadRecords();
+  } else {
+    localStorage.removeItem(GAS_KEY);
+    document.getElementById('setup-banner').style.display = 'block';
+    document.getElementById('fab').style.display = 'none';
+    renderAll([]);
+  }
+}
+
+// ─── Toast ───────────────────────────────────
+function showMsg(msg, isErr=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = isErr ? 'err' : '';
+  t.style.display = 'block';
+  clearTimeout(t._to);
+  t._to = setTimeout(() => t.style.display='none', 3000);
+}
+
+// ─── Util ────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Close menu on outside click ─────────────
+document.addEventListener('click', e => {
+  const menu = document.getElementById('settings-menu');
+  const fab  = document.getElementById('fab');
+  if (menu.style.display==='block' && !menu.contains(e.target) && !fab.contains(e.target)) {
+    closeSettingsMenu();
+  }
+});
+
+init();
+</script>
+</body>
+</html>
