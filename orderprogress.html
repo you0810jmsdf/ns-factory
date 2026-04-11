@@ -410,6 +410,13 @@ let allRecords = [];
 let currentSize = 'all';
 const carState = {};
 const imgCache  = {};
+let localPhotos = {};  // mini6-photos.json から読み込み
+
+// ローカル写真インデックス読み込み
+fetch('mini6-photos.json')
+  .then(r => r.json())
+  .then(d => { localPhotos = d; })
+  .catch(() => {});
 
 // ─── Init ────────────────────────────────────
 function init() {
@@ -505,8 +512,13 @@ function renderCards(records) {
          </div>`).join('')
       : '<div style="font-size:.8rem;color:var(--color-text-mute)">進捗情報はまだありません</div>';
     const folderId = r['DriveフォルダID']||'';
+    const client   = r['依頼者']||'';
+    const hasLocal = !folderId && localPhotos[client] && localPhotos[client].length > 0;
     const carHtml  = folderId
-      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">📷 画像を読み込み中…</div></div>` : '';
+      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">📷 画像を読み込み中…</div></div>`
+      : hasLocal
+        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">📷 画像を読み込み中…</div></div>`
+        : '';
 
     return `<div class="order-card" id="card-${id}">
       <div class="card-header" id="hdr-${id}" onclick="toggleCard('${id}')">
@@ -549,9 +561,22 @@ function toggleCard(id) {
 function lazyLoadImages(id) {
   const el = document.getElementById('car-' + id);
   if (!el || el.dataset.loaded) return;
-  const folderId = el.dataset.folderid;
-  if (!folderId || !gasUrl) return;
   el.dataset.loaded = '1';
+
+  // ローカル写真（mini6-photos.json）
+  const localClient = el.dataset.localclient;
+  if (localClient) {
+    const urls = localPhotos[localClient] || [];
+    if (urls.length) {
+      const images = urls.map((u, i) => ({ url: u, name: localClient + '_' + (i+1) }));
+      renderCarousel(el, images, id);
+    } else { el.innerHTML = ''; }
+    return;
+  }
+
+  // Google Drive
+  const folderId = el.dataset.folderid;
+  if (!folderId || !gasUrl) { el.innerHTML = ''; return; }
   fetch(`${gasUrl}?action=images&folderId=${folderId}`)
     .then(r => r.json())
     .then(data => {
