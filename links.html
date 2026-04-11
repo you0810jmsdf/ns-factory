@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N's Factory | リンク集</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: #F5EFE6;
+      color: #3A2410;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* ヘッダー */
+    .header {
+      background: #5C3D2E;
+      color: #fff;
+      text-align: center;
+      padding: 36px 20px 28px;
+    }
+    .header .logo {
+      font-size: 26px;
+      font-weight: bold;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+    .header .tagline {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: #D4B896;
+      margin-bottom: 16px;
+    }
+    .header .site-btn {
+      display: inline-block;
+      background: #D4B896;
+      color: #3A2410;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 7px 18px;
+      border-radius: 20px;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: opacity 0.2s;
+    }
+    .header .site-btn:hover { opacity: 0.8; }
+
+    /* メインコンテナ */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* セクション */
+    .section {
+      margin-top: 28px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.18em;
+      color: #8B5E3C;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      padding-left: 10px;
+      border-left: 3px solid #8B5E3C;
+    }
+
+    /* リンクボタン */
+    .link-btn {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border: 1px solid #E0D0BC;
+      border-radius: 10px;
+      padding: 13px 16px;
+      margin-bottom: 10px;
+      text-decoration: none;
+      color: #3A2410;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(92,61,46,0.06);
+    }
+    .link-btn:hover {
+      background: #FDF6EE;
+      border-color: #B08060;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(92,61,46,0.12);
+    }
+    .link-btn:active {
+      transform: translateY(0);
+    }
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-right: 14px;
+    }
+    .btn-text {
+      flex: 1;
+    }
+    .btn-name {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+    .btn-desc {
+      font-size: 11px;
+      color: #8B6048;
+    }
+    .btn-arrow {
+      color: #C4A882;
+      font-size: 16px;
+      margin-left: 8px;
+    }
+
+    /* アイコン背景色 */
+    .icon-mercari    { background: #FF4B4B; }
+    .icon-mercarishop{ background: #FF6B35; }
+    .icon-minne      { background: #C8385A; }
+    .icon-creema     { background: #F4A460; color: #fff; }
+    .icon-rakuma     { background: #009900; }
+    .icon-paypay     { background: #E31937; }
+    .icon-stores     { background: #1A1A2E; }
+    .icon-pinkoi     { background: #FF6B9D; }
+    .icon-tsunagu    { background: #2E8B57; }
+    .icon-base       { background: #2D5BE3; }
+    .icon-facebook   { background: #1877F2; }
+    .icon-instagram  { background: linear-gradient(135deg, #F58529, #DD2A7B, #8134AF); }
+    .icon-threads    { background: #000; }
+    .icon-pinterest  { background: #E60023; }
+    .icon-x         { background: #000; }
+    .icon-mail       { background: #5C3D2E; }
+    .icon-line       { background: #06C755; }
+    .icon-cocola     { background: #4A90D9; }
+
+    /* 問い合わせボタン（メールは<a>タグ） */
+    .contact-btn {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border: 1px solid #E0D0BC;
+      border-radius: 10px;
+      padding: 13px 16px;
+      margin-bottom: 10px;
+      text-decoration: none;
+      color: #3A2410;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(92,61,46,0.06);
+      cursor: pointer;
+    }
+    .contact-btn:hover {
+      background: #FDF6EE;
+      border-color: #B08060;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(92,61,46,0.12);
+    }
+
+    /* フッター */
+    .footer {
+      text-align: center;
+      margin-top: 36px;
+      font-size: 11px;
+      color: #A08060;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="header">
+  <div class="logo">N's Factory</div>
+  <div class="tagline">― 手縫いレザークラフト ―</div>
+  <a class="site-btn" href="https://you0810jmsdf.github.io/ns-factory/" target="_blank">🏠 公式サイトを見る</a>
+</div>
+
+<div class="container">
+
+  <!-- ========== 販売サイト ========== -->
+  <div class="section">
+    <div class="section-title">販売サイト</div>
+
+    <a class="link-btn" href="https://www.mercari.com/jp/u/817617289/" target="_blank">
+      <div class="btn-icon icon-mercari" style="color:#fff;">🛍️</div>
+      <div class="btn-text">
+        <div class="btn-name">メルカリ</div>
+        <div class="btn-desc">フリマアプリ国内最大手</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://jp.mercari.com/shops/profile/asBNciBKzFGfpMU23wQB6N" target="_blank">
+      <div class="btn-icon icon-mercarishop" style="color:#fff;">🏪</div>
+      <div class="btn-text">
+        <div class="btn-name">メルカリShops</div>
+        <div class="btn-desc">メルカリのショップ機能</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://minne.com/@you0810jmsdg" target="_blank">
+      <div class="btn-icon icon-minne" style="color:#fff;">🌸</div>
+      <div class="btn-text">
+        <div class="btn-name">minne</div>
+        <div class="btn-desc">ハンドメイドマーケット</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://www.creema.jp/creator/2381876/item/onsale" target="_blank">
+      <div class="btn-icon icon-creema" style="color:#fff;">🎨</div>
+      <div class="btn-text">
+        <div class="btn-name">Creema</div>
+        <div class="btn-desc">クリエイターズマーケット</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://fril.jp/shop/bb5e3f221ea83990bd3bc9d29f40d5e0" target="_blank">
+      <div class="btn-icon icon-rakuma" style="color:#fff;">💚</div>
+      <div class="btn-text">
+        <div class="btn-name">ラクマ</div>
+        <div class="btn-desc">楽天のフリマアプリ</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://paypayfleamarket.yahoo.co.jp/user/p1346238" target="_blank">
+      <div class="btn-icon icon-paypay" style="color:#fff;">💳</div>
+      <div class="btn-text">
+        <div class="btn-name">PayPayフリマ</div>
+        <div class="btn-desc">PayPay残高で購入可</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://nsfactory.stores.jp/" target="_blank">
+      <div class="btn-icon icon-stores" style="color:#fff;">🛒</div>
+      <div class="btn-text">
+        <div class="btn-name">STORES</div>
+        <div class="btn-desc">N's Factory 公式ストア</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://pinkoi.com/inv/you0810jmsdf" target="_blank">
+      <div class="btn-icon icon-pinkoi" style="color:#fff;">🌷</div>
+      <div class="btn-text">
+        <div class="btn-name">Pinkoi</div>
+        <div class="btn-desc">アジア発のデザインECサイト</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://tsunagu-market.jp/shop-detail/store_01HGANP0TGMQNZYSRRVTBPTSQB/products" target="_blank">
+      <div class="btn-icon icon-tsunagu" style="color:#fff;">🌿</div>
+      <div class="btn-text">
+        <div class="btn-name">つなぐマーケット</div>
+        <div class="btn-desc">地産・こだわり品のマーケット</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://you0810jmsdf.base.shop/" target="_blank">
+      <div class="btn-icon icon-base" style="color:#fff;">🔵</div>
+      <div class="btn-text">
+        <div class="btn-name">BASE</div>
+        <div class="btn-desc">N's Factory ネットショップ</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+  </div>
+
+  <!-- ========== SNS ========== -->
+  <div class="section">
+    <div class="section-title">SNS・フォローはこちら</div>
+
+    <a class="link-btn" href="https://www.instagram.com/leathercraft_nsfactory/" target="_blank">
+      <div class="btn-icon icon-instagram" style="color:#fff;">📸</div>
+      <div class="btn-text">
+        <div class="btn-name">Instagram</div>
+        <div class="btn-desc">制作中の様子や完成写真を発信</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://www.threads.com/@leathercraft_nsfactory" target="_blank">
+      <div class="btn-icon icon-threads" style="color:#fff;">🧵</div>
+      <div class="btn-text">
+        <div class="btn-name">Threads</div>
+        <div class="btn-desc">日々のつぶやきはこちら</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://www.facebook.com/you0810jmsdf" target="_blank">
+      <div class="btn-icon icon-facebook" style="color:#fff;">👍</div>
+      <div class="btn-text">
+        <div class="btn-name">Facebook</div>
+        <div class="btn-desc">制作情報・イベント告知</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://www.pinterest.jp/you0810jmsdf/" target="_blank">
+      <div class="btn-icon icon-pinterest" style="color:#fff;">📌</div>
+      <div class="btn-text">
+        <div class="btn-name">Pinterest</div>
+        <div class="btn-desc">作品ギャラリー・デザインまとめ</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://twitter.com/tsukatch2010" target="_blank">
+      <div class="btn-icon icon-x" style="color:#fff;">✕</div>
+      <div class="btn-text">
+        <div class="btn-name">X（旧Twitter）</div>
+        <div class="btn-desc">日常のレザークラフト情報</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+  </div>
+
+  <!-- ========== 直接お問い合わせ ========== -->
+  <div class="section">
+    <div class="section-title">直接お問い合わせ・直接取引</div>
+
+    <a class="contact-btn" href="mailto:you0810jmsdf@gmail.com">
+      <div class="btn-icon icon-mail" style="color:#fff;">✉️</div>
+      <div class="btn-text">
+        <div class="btn-name">メール</div>
+        <div class="btn-desc">you0810jmsdf@gmail.com</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="contact-btn" href="https://lin.ee/55mjR4Q" target="_blank">
+      <div class="btn-icon icon-line" style="color:#fff;">💬</div>
+      <div class="btn-text">
+        <div class="btn-name">LINE</div>
+        <div class="btn-desc">直接取引・オーダーのご相談はLINEへ</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+  </div>
+
+  <!-- ========== 地域コミュニティ ========== -->
+  <div class="section">
+    <div class="section-title">地域コミュニティ</div>
+
+    <a class="link-btn" href="https://sites.google.com/view/cocola-project/home" target="_blank">
+      <div class="btn-icon icon-cocola" style="color:#fff;">🌱</div>
+      <div class="btn-text">
+        <div class="btn-name">COCoLa</div>
+        <div class="btn-desc">地域のつながりをつくるコミュニティ</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+  </div>
+
+</div>
+
+<div class="footer">
+  © N's Factory — 手縫いのレザークラフト工房
+</div>
+
+</body>
+</html>
