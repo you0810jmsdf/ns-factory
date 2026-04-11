@@ -12,11 +12,12 @@
       --green: #2E7D32; --green-light: #E8F5E9;
       --amber: #E65100; --amber-light: #FFF3E0;
       --blue: #1565C0; --blue-light: #E3F2FD;
+      --red: #C62828; --red-light: #FFEBEE;
       --radius: 14px;
     }
     body { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; background: var(--bg); color: var(--charcoal); line-height: 1.6; }
 
-    /* ── Nav ── */
+    /* Nav */
     .lp-nav {
       position: sticky; top: 0; z-index: 100;
       display: flex; align-items: center; gap: 24px;
@@ -33,14 +34,26 @@
     .lp-nav-link:hover { background: rgba(0,0,0,0.06); }
     .lp-nav-link.active { background: rgba(160,120,90,0.15); color: var(--tan); font-weight: 600; }
 
-    /* ── Layout ── */
-    .container { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+    /* Layout */
+    .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
     h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
     .subtitle { color: var(--gray); font-size: 14px; margin-bottom: 32px; }
     h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--tan); }
     .section { margin-bottom: 40px; }
 
-    /* ── Cards ── */
+    /* GAS URL Setup Banner */
+    .setup-banner {
+      background: #FFF8E1; border: 1px solid #FFD54F; border-radius: var(--radius);
+      padding: 16px 20px; margin-bottom: 32px; display: none;
+    }
+    .setup-banner.show { display: block; }
+    .setup-banner h3 { font-size: 15px; color: #E65100; margin-bottom: 8px; }
+    .setup-banner p { font-size: 13px; color: var(--charcoal); margin-bottom: 10px; }
+    .setup-row { display: flex; gap: 8px; align-items: center; }
+    .setup-row input { flex: 1; padding: 8px 12px; border: 1px solid rgba(0,0,0,.2); border-radius: 8px; font-size: 13px; }
+    .setup-row button { padding: 8px 18px; background: var(--tan); color: #fff; border: none; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
+    /* Cards */
     .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 16px; }
     .card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
     .card-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
@@ -51,57 +64,73 @@
     .badge-closed { background: var(--amber-light); color: var(--amber); }
     .badge-open { background: var(--green-light); color: var(--green); }
 
-    /* ── Curriculum ── */
+    /* Curriculum */
     .curriculum { list-style: none; display: grid; gap: 8px; }
-    .curriculum li { background: var(--white); border-radius: 10px; padding: 10px 16px; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; gap: 12px; align-items: flex-start; }
-    .curriculum .num { color: var(--tan); font-weight: 700; min-width: 52px; font-size: 13px; }
+    .curriculum li { background: var(--white); border-radius: 10px; padding: 10px 16px; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; gap: 12px; }
+    .curriculum .num { color: var(--tan); font-weight: 700; min-width: 72px; font-size: 13px; white-space: nowrap; }
 
-    /* ── Skills ── */
+    /* Skills */
     .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
     .skill-tag { background: rgba(160,120,90,.12); color: var(--tan); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
 
-    /* ── Record Form ── */
+    /* Stats */
+    .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .stat { background: var(--white); border-radius: 10px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); min-width: 110px; }
+    .stat-val { font-size: 28px; font-weight: 700; color: var(--tan); line-height: 1; }
+    .stat-label { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+    /* Toolbar */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .toolbar-right { display: flex; gap: 8px; }
+
+    /* Buttons */
+    .btn { padding: 8px 20px; border-radius: 22px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity .2s; }
+    .btn:hover { opacity: .82; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-primary { background: var(--tan); color: #fff; }
+    .btn-secondary { background: rgba(0,0,0,.08); color: var(--charcoal); }
+    .btn-danger { background: var(--red-light); color: var(--red); }
+    .btn-export { background: var(--blue-light); color: var(--blue); }
+    .btn-reload { background: rgba(160,120,90,.1); color: var(--tan); }
+
+    /* Form */
     .form-card { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 14px; }
     label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 4px; font-weight: 500; }
     input, select, textarea {
       width: 100%; padding: 9px 12px; border: 1px solid rgba(0,0,0,.15);
       border-radius: 8px; font-size: 14px; font-family: inherit;
-      background: var(--bg); color: var(--charcoal);
-      transition: border-color .2s;
+      background: var(--bg); color: var(--charcoal); transition: border-color .2s;
     }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--tan); background: var(--white); }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--tan); background: #fff; }
     textarea { resize: vertical; min-height: 72px; }
-    .form-actions { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
-    .btn { padding: 9px 22px; border-radius: 22px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: opacity .2s; }
-    .btn:hover { opacity: .85; }
-    .btn-primary { background: var(--tan); color: var(--white); }
-    .btn-secondary { background: rgba(0,0,0,.08); color: var(--charcoal); }
-    .btn-danger { background: #FFEBEE; color: #C62828; font-size: 12px; padding: 5px 12px; }
-    .btn-export { background: var(--blue-light); color: var(--blue); }
+    .form-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+    .form-msg { font-size: 13px; }
+    .form-msg.ok { color: var(--green); }
+    .form-msg.err { color: var(--red); }
 
-    /* ── Records Table ── */
-    .table-wrap { overflow-x: auto; }
+    /* Table */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,.08); background: var(--white); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    thead th { background: rgba(160,120,90,.1); padding: 10px 12px; text-align: left; font-weight: 600; font-size: 12px; white-space: nowrap; }
-    tbody tr { border-bottom: 1px solid rgba(0,0,0,.06); }
+    thead th { background: rgba(160,120,90,.12); padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12px; white-space: nowrap; border-bottom: 1px solid rgba(0,0,0,.08); }
+    tbody tr { border-bottom: 1px solid rgba(0,0,0,.05); }
+    tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: rgba(160,120,90,.04); }
-    tbody td { padding: 10px 12px; vertical-align: top; }
+    tbody td { padding: 10px 14px; vertical-align: top; }
     .td-date { white-space: nowrap; font-weight: 600; }
-    .td-class { white-space: nowrap; }
     .tag-a { color: var(--amber); font-weight: 700; }
     .tag-b { color: var(--blue); font-weight: 700; }
-    .td-memo { color: var(--gray); font-size: 12px; max-width: 280px; }
-    .empty-msg { text-align: center; padding: 32px; color: var(--gray); font-size: 14px; }
+    .td-memo { color: var(--gray); max-width: 260px; word-break: break-all; }
+    .td-work { max-width: 260px; word-break: break-all; }
+    .empty-msg { text-align: center; padding: 40px; color: var(--gray); font-size: 14px; }
 
-    /* ── Stats ── */
-    .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-    .stat { background: var(--white); border-radius: 10px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); min-width: 120px; }
-    .stat-val { font-size: 26px; font-weight: 700; color: var(--tan); line-height: 1; }
-    .stat-label { font-size: 12px; color: var(--gray); margin-top: 4px; }
+    /* Loading */
+    .loading { text-align: center; padding: 32px; color: var(--gray); font-size: 14px; }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(160,120,90,.3); border-top-color: var(--tan); border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Footer ── */
-    .lp-footer { border-top: 1px solid rgba(0,0,0,.08); padding: 20px 32px; font-size: 12px; color: var(--gray); text-align: center; margin-top: 40px; }
+    /* Footer */
+    .lp-footer { border-top: 1px solid rgba(0,0,0,.08); padding: 20px 32px; font-size: 12px; color: var(--gray); text-align: center; }
   </style>
 </head>
 <body>
@@ -120,6 +149,17 @@
 <div class="container">
   <h1>JHCS 講習実績管理</h1>
   <p class="subtitle">JOYFUL HONDA カルチャースクール 千葉ニュータウン店 ― レザークラフト講座</p>
+
+  <!-- GAS URL 未設定バナー -->
+  <div class="setup-banner" id="setup-banner">
+    <h3>⚙️ 初回設定: Google Apps Script のURLを登録してください</h3>
+    <p>スプレッドシートに接続するため、デプロイ済みのGASウェブアプリURLを入力してください。<br>
+    設定は端末に保存されます（一度だけ必要です）。</p>
+    <div class="setup-row">
+      <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+      <button onclick="saveGasUrl()">保存して接続</button>
+    </div>
+  </div>
 
   <!-- 教室概要 -->
   <div class="section">
@@ -170,44 +210,39 @@
   <div class="section">
     <h2>習得技術</h2>
     <div class="skill-tags">
-      <span class="skill-tag">革の染色</span>
-      <span class="skill-tag">裁断</span>
-      <span class="skill-tag">CADパターン設計</span>
-      <span class="skill-tag">ファスナー取り付け</span>
-      <span class="skill-tag">リベット打ち</span>
-      <span class="skill-tag">インターロッキング（イントレチャート）</span>
-      <span class="skill-tag">パッチワーク</span>
-      <span class="skill-tag">インレイ技法</span>
+      <span class="skill-tag">革の染色</span><span class="skill-tag">裁断</span>
+      <span class="skill-tag">CADパターン設計</span><span class="skill-tag">ファスナー取り付け</span>
+      <span class="skill-tag">リベット打ち</span><span class="skill-tag">インターロッキング（イントレチャート）</span>
+      <span class="skill-tag">パッチワーク</span><span class="skill-tag">インレイ技法</span>
     </div>
   </div>
 
   <!-- 実績一覧 -->
   <div class="section">
     <h2>講習実績</h2>
-    <div class="stats" id="stats">
-      <div class="stat"><div class="stat-val" id="stat-total">0</div><div class="stat-label">総回数</div></div>
-      <div class="stat"><div class="stat-val" id="stat-a">0</div><div class="stat-label">クラスA（木曜）</div></div>
-      <div class="stat"><div class="stat-val" id="stat-b">0</div><div class="stat-label">クラスB（日曜）</div></div>
-      <div class="stat"><div class="stat-val" id="stat-total-hours">0</div><div class="stat-label">累計時間</div></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="stat-total">―</div><div class="stat-label">総回数</div></div>
+      <div class="stat"><div class="stat-val" id="stat-a">―</div><div class="stat-label">クラスA（木曜）</div></div>
+      <div class="stat"><div class="stat-val" id="stat-b">―</div><div class="stat-label">クラスB（日曜）</div></div>
+      <div class="stat"><div class="stat-val" id="stat-hours">―</div><div class="stat-label">累計時間</div></div>
     </div>
-    <div style="display:flex; justify-content:flex-end; margin-bottom:12px; gap:8px;">
-      <button class="btn btn-export" onclick="exportCSV()">CSV出力</button>
+    <div class="toolbar">
+      <span id="last-updated" style="font-size:12px; color:var(--gray);"></span>
+      <div class="toolbar-right">
+        <button class="btn btn-reload" onclick="loadRecords()">🔄 再読み込み</button>
+        <button class="btn btn-export" onclick="exportCSV()">CSV出力</button>
+      </div>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>開催日</th>
-            <th>クラス</th>
-            <th>出席者数</th>
-            <th>実施時間</th>
-            <th>作業内容</th>
-            <th>メモ</th>
-            <th></th>
+            <th>開催日</th><th>クラス</th><th>出席者数</th><th>実施時間</th>
+            <th>作業内容</th><th>メモ</th><th>登録日時</th><th></th>
           </tr>
         </thead>
         <tbody id="records-body">
-          <tr><td colspan="7" class="empty-msg">まだ記録がありません。下のフォームから追加してください。</td></tr>
+          <tr><td colspan="8" class="loading"><span class="spinner"></span>読み込み中...</td></tr>
         </tbody>
       </table>
     </div>
@@ -250,140 +285,214 @@
         <textarea id="f-memo" placeholder="例: ○○さんがファスナー取り付けを完成。次回は金具取り付けへ。"></textarea>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" onclick="addRecord()">追加する</button>
+        <button class="btn btn-primary" id="btn-add" onclick="addRecord()">追加する</button>
         <button class="btn btn-secondary" onclick="clearForm()">クリア</button>
-        <span id="form-msg" style="font-size:13px; color:var(--green); margin-left:8px;"></span>
+        <span id="form-msg" class="form-msg"></span>
       </div>
     </div>
   </div>
 
-  <!-- データリセット -->
+  <!-- GAS URL 変更 -->
   <div style="text-align:right; margin-top:-20px;">
-    <button class="btn btn-danger" onclick="resetAll()">全データをリセット</button>
+    <button class="btn btn-secondary" style="font-size:12px;" onclick="changeGasUrl()">⚙️ GAS URL を変更</button>
   </div>
 </div>
 
-<footer class="lp-footer">© N's factory — JHCS 講習実績管理ページ</footer>
+<footer class="lp-footer">© N's factory — JHCS 講習実績管理 | データ保存先: Google スプレッドシート</footer>
 
 <script>
-  const STORAGE_KEY = 'jhcs_records_v1';
+  const GAS_URL_KEY = 'jhcs_gas_url';
+  let cachedRecords = [];
 
-  function load() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch { return []; }
+  // ── GAS URL 管理 ──────────────────────────────────
+  function getGasUrl() { return localStorage.getItem(GAS_URL_KEY) || ''; }
+
+  function saveGasUrl() {
+    const url = document.getElementById('gas-url-input').value.trim();
+    if (!url.startsWith('https://script.google.com/macros/s/')) {
+      alert('GAS ウェブアプリのURLを正しく入力してください。\n（https://script.google.com/macros/s/... で始まるURL）');
+      return;
+    }
+    localStorage.setItem(GAS_URL_KEY, url);
+    document.getElementById('setup-banner').classList.remove('show');
+    loadRecords();
   }
 
-  function save(records) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  function changeGasUrl() {
+    const cur = getGasUrl();
+    const url = prompt('GAS ウェブアプリのURLを入力してください:', cur);
+    if (url === null) return;
+    if (!url.startsWith('https://script.google.com/macros/s/')) {
+      alert('URLが正しくありません。'); return;
+    }
+    localStorage.setItem(GAS_URL_KEY, url);
+    loadRecords();
   }
 
-  function render() {
-    const records = load();
-    const tbody = document.getElementById('records-body');
+  // ── データ取得 ────────────────────────────────────
+  async function loadRecords() {
+    const url = getGasUrl();
+    if (!url) {
+      document.getElementById('setup-banner').classList.add('show');
+      document.getElementById('records-body').innerHTML =
+        '<tr><td colspan="8" class="empty-msg">GASのURLを設定してください（上のバナー）。</td></tr>';
+      return;
+    }
+    setTableLoading();
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      cachedRecords = data.records || [];
+      renderTable(cachedRecords);
+      document.getElementById('last-updated').textContent =
+        '最終更新: ' + new Date().toLocaleTimeString('ja-JP');
+    } catch(e) {
+      document.getElementById('records-body').innerHTML =
+        `<tr><td colspan="8" class="empty-msg">読み込みに失敗しました。GAS URLや公開設定を確認してください。<br><small>${e.message}</small></td></tr>`;
+    }
+  }
 
-    // Stats
-    const countA = records.filter(r => r.class === 'A').length;
-    const countB = records.filter(r => r.class === 'B').length;
-    const totalHours = records.reduce((s, r) => s + (parseFloat(r.hours) || 0), 0);
+  function setTableLoading() {
+    document.getElementById('records-body').innerHTML =
+      '<tr><td colspan="8" class="loading"><span class="spinner"></span>読み込み中...</td></tr>';
+  }
+
+  // ── テーブル描画 ──────────────────────────────────
+  function renderTable(records) {
+    const countA = records.filter(r => r['クラス'] === 'A').length;
+    const countB = records.filter(r => r['クラス'] === 'B').length;
+    const totalH = records.reduce((s, r) => s + (parseFloat(r['実施時間(h)']) || 0), 0);
     document.getElementById('stat-total').textContent = records.length;
     document.getElementById('stat-a').textContent = countA;
     document.getElementById('stat-b').textContent = countB;
-    document.getElementById('stat-total-hours').textContent = totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1);
+    document.getElementById('stat-hours').textContent = totalH % 1 === 0 ? totalH : totalH.toFixed(1);
 
-    if (records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">まだ記録がありません。下のフォームから追加してください。</td></tr>';
+    const tbody = document.getElementById('records-body');
+    if (!records.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">まだ記録がありません。下のフォームから追加してください。</td></tr>';
       return;
     }
 
-    // Sort newest first
-    const sorted = [...records].sort((a, b) => b.date.localeCompare(a.date));
-
-    tbody.innerHTML = sorted.map((r, i) => {
-      const classTag = r.class === 'A' ? '<span class="tag-a">A（木）</span>'
-                     : r.class === 'B' ? '<span class="tag-b">B（日）</span>'
-                     : `<span>${r.class}</span>`;
-      // Find original index for delete
-      const origIdx = records.findIndex(x => x.id === r.id);
+    const sorted = [...records].sort((a, b) => b['開催日'].localeCompare(a['開催日']));
+    tbody.innerHTML = sorted.map(r => {
+      const cls = r['クラス'];
+      const classTag = cls === 'A' ? '<span class="tag-a">A（木）</span>'
+                     : cls === 'B' ? '<span class="tag-b">B（日）</span>'
+                     : `<span>${esc(cls)}</span>`;
       return `<tr>
-        <td class="td-date">${r.date}</td>
-        <td class="td-class">${classTag}</td>
-        <td>${r.attendees ? r.attendees + '名' : '―'}</td>
-        <td>${r.hours ? r.hours + 'h' : '―'}</td>
-        <td>${escHtml(r.work || '―')}</td>
-        <td class="td-memo">${escHtml(r.memo || '')}</td>
-        <td><button class="btn btn-danger" onclick="deleteRecord('${r.id}')">削除</button></td>
+        <td class="td-date">${esc(r['開催日'])}</td>
+        <td>${classTag}</td>
+        <td>${r['出席者数'] ? r['出席者数'] + '名' : '―'}</td>
+        <td>${r['実施時間(h)'] ? r['実施時間(h)'] + 'h' : '―'}</td>
+        <td class="td-work">${esc(r['作業内容'] || '―')}</td>
+        <td class="td-memo">${esc(r['メモ'] || '')}</td>
+        <td style="font-size:11px; color:var(--gray); white-space:nowrap;">${esc(r['登録日時'] || '')}</td>
+        <td><button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteRecord('${esc(r['ID'])}')">削除</button></td>
       </tr>`;
     }).join('');
   }
 
-  function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  function addRecord() {
+  // ── 追記 ─────────────────────────────────────────
+  async function addRecord() {
     const date = document.getElementById('f-date').value;
     const cls  = document.getElementById('f-class').value;
     const msg  = document.getElementById('form-msg');
+    if (!date) { showMsg('err', '開催日を入力してください。'); return; }
+    if (!cls)  { showMsg('err', 'クラスを選択してください。'); return; }
 
-    if (!date) { msg.style.color='#C62828'; msg.textContent='開催日を入力してください。'; return; }
-    if (!cls)  { msg.style.color='#C62828'; msg.textContent='クラスを選択してください。'; return; }
+    const url = getGasUrl();
+    if (!url) { showMsg('err', 'GAS URLが設定されていません。'); return; }
 
-    const records = load();
-    records.push({
-      id: Date.now().toString(),
+    const btn = document.getElementById('btn-add');
+    btn.disabled = true; btn.textContent = '送信中...';
+
+    const body = {
+      action: 'add',
       date,
       class: cls,
       attendees: document.getElementById('f-attendees').value,
       hours: document.getElementById('f-hours').value,
       work: document.getElementById('f-work').value.trim(),
       memo: document.getElementById('f-memo').value.trim(),
-    });
-    save(records);
-    render();
-    clearForm();
-    msg.style.color = 'var(--green)';
-    msg.textContent = '追加しました！';
-    setTimeout(() => msg.textContent = '', 3000);
+    };
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showMsg('ok', '追加しました！');
+        clearForm();
+        await loadRecords();
+      } else {
+        showMsg('err', 'エラー: ' + (data.error || '不明'));
+      }
+    } catch(e) {
+      showMsg('err', '通信エラー: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '追加する';
+    }
   }
 
-  function deleteRecord(id) {
+  // ── 削除 ─────────────────────────────────────────
+  async function deleteRecord(id) {
     if (!confirm('この記録を削除しますか？')) return;
-    const records = load().filter(r => r.id !== id);
-    save(records);
-    render();
+    const url = getGasUrl();
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'delete', id }),
+      });
+      const data = await res.json();
+      if (data.ok) { await loadRecords(); }
+      else { alert('削除に失敗しました: ' + (data.error || '不明')); }
+    } catch(e) { alert('通信エラー: ' + e.message); }
   }
 
-  function clearForm() {
-    ['f-date','f-class','f-attendees','f-hours','f-work','f-memo'].forEach(id => {
-      const el = document.getElementById(id);
-      el.value = '';
-    });
-  }
-
-  function resetAll() {
-    if (!confirm('全ての実績データを削除します。この操作は元に戻せません。本当によろしいですか？')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    render();
-  }
-
+  // ── CSV出力 ───────────────────────────────────────
   function exportCSV() {
-    const records = load();
-    if (records.length === 0) { alert('記録がありません。'); return; }
-    const header = ['開催日','クラス','出席者数','実施時間(h)','作業内容','メモ'];
-    const rows = records.sort((a,b) => a.date.localeCompare(b.date)).map(r =>
-      [r.date, r.class === 'A' ? 'クラスA(木曜)' : r.class === 'B' ? 'クラスB(日曜)' : r.class,
-       r.attendees, r.hours, r.work, r.memo].map(v => `"${(v||'').replace(/"/g,'""')}"`).join(',')
-    );
-    const csv = '\uFEFF' + [header.join(','), ...rows].join('\r\n');
+    if (!cachedRecords.length) { alert('記録がありません。'); return; }
+    const headers = ['開催日','クラス','出席者数','実施時間(h)','作業内容','メモ','登録日時'];
+    const rows = [...cachedRecords]
+      .sort((a,b) => a['開催日'].localeCompare(b['開催日']))
+      .map(r => headers.map(h => `"${(r[h]||'').replace(/"/g,'""')}"`).join(','));
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
     a.download = `JHCS_実績_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
   }
 
-  // Init: set today's date
+  // ── ヘルパー ──────────────────────────────────────
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function showMsg(type, text) {
+    const el = document.getElementById('form-msg');
+    el.className = 'form-msg ' + type;
+    el.textContent = text;
+    if (type === 'ok') setTimeout(() => el.textContent = '', 4000);
+  }
+
+  function clearForm() {
+    ['f-date','f-class','f-attendees','f-hours','f-work','f-memo'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  }
+
+  // ── 初期化 ────────────────────────────────────────
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-  render();
+  if (getGasUrl()) {
+    loadRecords();
+  } else {
+    document.getElementById('setup-banner').classList.add('show');
+    document.getElementById('records-body').innerHTML =
+      '<tr><td colspan="8" class="empty-msg">GASのURLを設定してください（上のバナー）。</td></tr>';
+  }
 </script>
 </body>
 </html>
