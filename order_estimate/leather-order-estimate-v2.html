@@ -547,12 +547,12 @@ body{
 /* ── ステッチカラー スウォッチ ── */
 .sc-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .sc-swatch{
-  width:38px;border-radius:4px;cursor:pointer;
+  width:62px;border-radius:4px;cursor:pointer;
   border:2px solid transparent;display:flex;flex-direction:column;
   align-items:center;overflow:hidden;transition:border-color .15s;
 }
-.sc-swatch img{width:34px;height:22px;object-fit:cover;display:block}
-.sc-num{font-size:7px;color:#6b4423;text-align:center;line-height:11px;padding:1px 0}
+.sc-swatch img{width:100%;height:24px;object-fit:cover;display:block}
+.sc-num{font-size:9px;color:#6b4423;text-align:center;line-height:1.2;padding:2px 3px;min-height:24px;display:flex;align-items:center;justify-content:center}
 .sc-swatch:hover{border-color:#b5895a}
 .sc-swatch.selected{border-color:#6b3a1f;box-shadow:0 0 0 2px rgba(107,58,31,.15)}
 .sc-swatch.thread-oos{opacity:.35;cursor:not-allowed;filter:grayscale(1);position:relative}
@@ -2315,6 +2315,14 @@ function isThreadAvailable(thread) {
   return !stock || csvBool(stock.available);
 }
 
+function getThreadDisplay(thread) {
+  const stock = THREAD_STOCK_MAP.get(thread.id);
+  return {
+    name: stock?.name || thread.name,
+    label: stock?.label || thread.label
+  };
+}
+
 function getMetalOptions() {
   const baseMetals = Object.fromEntries(METALS.map(m => [m.id, m]));
   if (RING_PRICE_ROWS.length) {
@@ -3164,16 +3172,17 @@ function buildStitchColors() {
   g.className = 'sc-grid';
   STITCH_COLORS.forEach(c => {
     const available = isThreadAvailable(c);
+    const display = getThreadDisplay(c);
     const div = document.createElement('div');
     div.className = `sc-swatch ${available ? '' : 'thread-oos'}`.trim();
     div.dataset.key = 'stitchColor';
-    div.title = available ? c.name : `${c.name}（在庫なし）`;
-    div.innerHTML = `<img src="${c.image}" alt="${c.name}" loading="lazy"><div class="sc-num">${c.label}</div>`;
+    div.title = available ? display.name : `${display.name}（在庫なし）`;
+    div.innerHTML = `<img src="${c.image}" alt="${display.name}" loading="lazy"><div class="sc-num">${display.label}</div>`;
     div.onclick = () => {
       if (!available) return;
       document.querySelectorAll('.sc-swatch').forEach(b => b.classList.remove('selected'));
       div.classList.add('selected');
-      sel.stitchColor = c.name; prices.stitchColor = c.price;
+      sel.stitchColor = display.name; prices.stitchColor = c.price;
       updateSummary();
     };
     g.appendChild(div);
