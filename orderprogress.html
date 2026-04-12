@@ -484,8 +484,9 @@ async function loadRecords() {
     renderAll(allRecords);
   } catch(e) {
     gasReady = false;
-    const loaded = await loadFallbackRecords();
-    if (loaded) showMsg('GASに接続できないため転載データを表示しています');
+    gasUrl = '';
+    localStorage.removeItem(GAS_KEY);
+    await loadFallbackRecords();
   }
 }
 
