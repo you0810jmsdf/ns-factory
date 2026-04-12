@@ -412,6 +412,13 @@
 <script>
 // ─────────────────────────────────────────────
 const GAS_KEY = 'op_gas_url';
+const ADMIN_PASS = 'glJy4399';
+function checkAuth() {
+  if (sessionStorage.getItem('op_auth') === '1') return true;
+  const pw = prompt('管理者パスワードを入力してください:');
+  if (pw === ADMIN_PASS) { sessionStorage.setItem('op_auth', '1'); return true; }
+  return false;
+}
 let gasUrl = localStorage.getItem(GAS_KEY) || 'https://script.google.com/macros/s/AKfycbzLQaKkqDrChxrcZ2qS6iLRQUoNjdYs18DzNT6y_8fulcNddil9S8UAILtKAUyl3C8/exec';
 function fmtDate(s) {
   if (!s || s === '—') return '—';
@@ -747,6 +754,7 @@ async function deleteRecord(id) {
 
 // ─── Settings ────────────────────────────────
 function toggleSettingsMenu() {
+  if (!checkAuth()) return;
   const m = document.getElementById('settings-menu');
   m.style.display = m.style.display === 'block' ? 'none' : 'block';
   document.getElementById('fab').textContent = m.style.display === 'block' ? '×' : '＋';
