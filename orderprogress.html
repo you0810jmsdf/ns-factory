@@ -93,7 +93,11 @@
     .stat-card {
       background:var(--color-bg); border-radius:var(--radius-md);
       border:1px solid var(--color-border); padding:12px 10px; text-align:center;
+      transition:border-color .15s, box-shadow .15s, transform .15s;
     }
+    .stat-card[data-stat-filter] { cursor:pointer; }
+    .stat-card[data-stat-filter]:hover { border-color:var(--color-accent); box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+    .stat-card.active { border-color:var(--color-accent-dark); box-shadow:0 0 0 2px rgba(160,120,90,.16); }
     .stat-num { font-size:1.6rem; font-weight:700; color:var(--color-accent-dark); line-height:1; }
     .stat-lbl { font-size:.72rem; color:var(--color-text-mute); margin-top:3px; }
 
@@ -312,9 +316,9 @@
 <div class="content">
   <!-- Stats -->
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">受付総数</div></div>
-    <div class="stat-card"><div class="stat-num" id="stat-wip">—</div><div class="stat-lbl">制作中</div></div>
-    <div class="stat-card"><div class="stat-num" id="stat-done">—</div><div class="stat-lbl">完成・発送済み</div></div>
+    <div class="stat-card" data-stat-filter="all"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">受付総数</div></div>
+    <div class="stat-card" data-stat-filter="wip"><div class="stat-num" id="stat-wip">—</div><div class="stat-lbl">制作中</div></div>
+    <div class="stat-card" data-stat-filter="done"><div class="stat-num" id="stat-done">—</div><div class="stat-lbl">完成・発送済み</div></div>
     <div class="stat-card"><div class="stat-num" id="stat-size">—</div><div class="stat-lbl">表示中</div></div>
   </div>
 
@@ -456,6 +460,7 @@ function toInputDate(s) {
 }
 let allRecords = [];
 let currentSize = 'all';
+let currentStatFilter = 'all';
 const carState = {};
 const imgCache  = {};
 let localPhotos = {};  // mini6-photos.json から読み込み
@@ -476,6 +481,14 @@ function init() {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentSize = btn.dataset.size;
+      applyFilter();
+    });
+  });
+  document.querySelectorAll('.stat-card').forEach(card => {
+    card.addEventListener('click', () => {
+      if (!card.dataset.statFilter) return;
+      const next = card.dataset.statFilter || 'all';
+      currentStatFilter = (currentStatFilter === next && next !== 'all') ? 'all' : next;
       applyFilter();
     });
   });
@@ -538,23 +551,40 @@ function renderAll(records) {
 }
 
 function updateStats(records) {
-  const wip   = records.filter(r => ['見積書作成','設計中','受付中','素材準備中','制作中','仕上げ中'].includes(r['ステータス'])).length;
-  const done  = records.filter(r => ['完成','発送済み','お渡し済み'].includes(r['ステータス'])).length;
+  const wip   = records.filter(isWip).length;
+  const done  = records.filter(isDone).length;
   document.getElementById('stat-total').textContent = records.length;
   document.getElementById('stat-wip').textContent   = wip;
   document.getElementById('stat-done').textContent  = done;
+}
+
+function isDone(r) {
+  return ['完成','発送済み','お渡し済み'].includes(r['ステータス']);
+}
+function isWip(r) {
+  return !isDone(r);
 }
 
 function applyFilter() {
   const q = (document.getElementById('search-box').value || '').trim().toLowerCase();
   let filtered = allRecords;
   if (currentSize !== 'all') filtered = filtered.filter(r => r['サイズ'] === currentSize);
+  if (currentStatFilter === 'wip') filtered = filtered.filter(isWip);
+  if (currentStatFilter === 'done') filtered = filtered.filter(isDone);
   if (q) filtered = filtered.filter(r =>
     (r['受付番号']||'').toLowerCase().includes(q) ||
     (r['依頼者']||'').toLowerCase().includes(q) ||
     (r['品名']||'').toLowerCase().includes(q)
   );
   document.getElementById('stat-size').textContent = filtered.length;
+  document.querySelectorAll('.stat-card').forEach(card => {
+    if (!card.dataset.statFilter) {
+      card.classList.remove('active');
+      return;
+    }
+    const f = card.dataset.statFilter || 'all';
+    card.classList.toggle('active', currentStatFilter === f);
+  });
   renderCards(filtered);
 }
 
@@ -564,12 +594,15 @@ function renderCards(records) {
     grid.innerHTML = '<div class="empty">該当するオーダーはありません</div>';
     return;
   }
-  // Sort: WIP first, then by startDate desc
+  // Sort: unfinished first, then newest reception date first.
   const ORDER = ['見積書作成','設計中','受付中','素材準備中','制作中','仕上げ中','完成','発送済み','お渡し済み'];
   records = [...records].sort((a,b) => {
+    const groupDiff = Number(isDone(a)) - Number(isDone(b));
+    if (groupDiff) return groupDiff;
+    const dateDiff = (b['受付日']||'').localeCompare(a['受付日']||'');
+    if (dateDiff) return dateDiff;
     const si = ORDER.indexOf(a['ステータス']), sj = ORDER.indexOf(b['ステータス']);
-    if (si !== sj) return si - sj;
-    return (b['受付日']||'').localeCompare(a['受付日']||'');
+    return (si < 0 ? 99 : si) - (sj < 0 ? 99 : sj);
   });
 
   const STAMP_MAP = {
