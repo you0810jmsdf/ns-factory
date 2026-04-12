@@ -107,10 +107,14 @@
       box-shadow:var(--shadow-sm); overflow:hidden;
     }
     .card-header {
-      display:flex; align-items:center; padding:14px 16px;
+      display:flex; align-items:center; padding:10px 16px;
       cursor:pointer; gap:10px; user-select:none;
     }
     .card-header:hover { background:var(--color-bg-sub); }
+    .status-stamp {
+      flex-shrink:0; width:60px; height:60px;
+      object-fit:contain; border-radius:6px;
+    }
     .order-no {
       font-size:.72rem; font-weight:600; color:var(--color-text-mute);
       letter-spacing:.04em; white-space:nowrap;
@@ -511,10 +515,24 @@ function renderCards(records) {
     return (b['受付日']||'').localeCompare(a['受付日']||'');
   });
 
+  const STAMP_MAP = {
+    '受付中':     'assets/stamps/status_waiting.png',
+    '素材準備中': 'assets/stamps/status_material.png',
+    '制作中':     'assets/stamps/status_making.png',
+    '仕上げ中':   'assets/stamps/status_finishing.png',
+    '完成':       'assets/stamps/status_done.png',
+    '発送済み':   'assets/stamps/status_shipped.png',
+    'お渡し済み': 'assets/stamps/status_delivered.png',
+  };
+
   grid.innerHTML = records.map(r => {
     const id  = r['ID'];
     const tl  = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
     const cls = 's-' + (r['ステータス']||'受付中').replace(/\s/g,'');
+    const stampSrc = STAMP_MAP[r['ステータス']||'受付中'] || '';
+    const stampHtml = stampSrc
+      ? `<img class="status-stamp" src="${stampSrc}" alt="${esc(r['ステータス']||'')}">`
+      : '';
     const adminHtml = gasUrl
       ? `<div class="admin-bar visible">
            <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
@@ -537,6 +555,7 @@ function renderCards(records) {
 
     return `<div class="order-card" id="card-${id}">
       <div class="card-header" id="hdr-${id}" onclick="toggleCard('${id}')">
+        ${stampHtml}
         <div>
           <div class="order-no">${esc(r['受付番号']||'')}</div>
           <div style="font-size:.7rem;color:var(--color-text-mute)">${esc(r['サイズ']||'')}</div>
