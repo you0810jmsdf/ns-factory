@@ -654,15 +654,20 @@ function applyFilter() {
   const q = (document.getElementById('search-box').value || '').trim().toLowerCase();
 
   if (currentSize === 'リメイク・修理') {
-    let filtered = rrRecords;
+    // オーダー進捗GASのリメイク・修理レコード＋RR GAS/SEEDを統合
+    const opRr = allRecords.filter(r => r['サイズ'] === 'リメイク・修理')
+                           .map(r => ({...r, _type:'op'}));
+    const combined = [...opRr, ...rrRecords.map(r => ({...r, _type:'rr'}))];
+    let filtered = combined;
     if (q) filtered = filtered.filter(r =>
       (r['依頼者']||'').toLowerCase().includes(q) ||
-      (r['品物']||'').toLowerCase().includes(q) ||
-      (r['カテゴリ']||'').toLowerCase().includes(q)
+      (r['品物']||r['品名']||'').toLowerCase().includes(q) ||
+      (r['カテゴリ']||r['サイズ']||'').toLowerCase().includes(q) ||
+      (r['受付番号']||'').toLowerCase().includes(q)
     );
-    const rrWip  = filtered.filter(r => ['受付済','作業中'].includes(r['ステータス'])).length;
-    const rrDone = filtered.filter(r => ['作業完了','受領評価済'].includes(r['ステータス'])).length;
-    document.getElementById('stat-total').textContent = rrRecords.length;
+    const rrWip  = filtered.filter(r => ['受付済','作業中'].includes(r['ステータス']) || isWip(r)).length;
+    const rrDone = filtered.filter(r => ['作業完了','受領評価済'].includes(r['ステータス']) || isDone(r)).length;
+    document.getElementById('stat-total').textContent = combined.length;
     document.getElementById('stat-wip').textContent   = rrWip;
     document.getElementById('stat-done').textContent  = rrDone;
     document.getElementById('stat-size').textContent  = filtered.length;
@@ -795,10 +800,15 @@ function renderRrCards(records) {
   });
 
   grid.innerHTML = records.map(r => {
-    const id  = r['ID'];
-    const tl  = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
-    const cls = 's-' + (r['ステータス']||'受付済').replace(/\s/g,'');
+    const id      = r['ID'];
+    const isOp    = r._type === 'op';
+    const tl      = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    const cls     = 's-' + (r['ステータス']||'受付済').replace(/\s/g,'');
+    const itemName = r['品物'] || r['品名'] || '（品名未設定）';
     const catHtml = r['カテゴリ'] ? `<span class="cat-badge">${esc(r['カテゴリ'])}</span>` : '';
+    const headerSub = isOp
+      ? `<div class="order-no">${esc(r['受付番号']||'')}</div><div style="font-size:.7rem;color:var(--color-text-mute)">リメイク・修理</div>`
+      : `<div class="order-no">${esc(r['受付日']||'')}</div>${catHtml}`;
     const tlHtml = tl.length
       ? tl.map(t => `<div class="tl-item"><div class="tl-dot"></div>
           <div class="tl-date">${esc(t.date||'')}</div>
@@ -806,19 +816,29 @@ function renderRrCards(records) {
          </div>`).join('')
       : '<div style="font-size:.8rem;color:var(--color-text-mute)">進捗情報はまだありません</div>';
     const folderId = r['DriveフォルダID']||'';
-    const carHtml = folderId
-      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}" data-gastype="rr">📷 画像を読み込み中…</div></div>`
-      : '';
+    const gastype  = isOp ? '' : ' data-gastype="rr"';
+    const client   = r['依頼者']||'';
+    const hasLocal = isOp && !folderId && localPhotos[client] && localPhotos[client].length > 0;
+    const carHtml  = folderId
+      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}"${gastype}>📷 画像を読み込み中…</div></div>`
+      : hasLocal
+        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">📷 画像を読み込み中…</div></div>`
+        : '';
+    const endLabel = isOp ? '予定完了' : '完了日';
+    const endVal   = isOp ? fmtDate(r['予定完了日']||'—') : esc(r['完了日']||'—');
+    const desc     = r['説明']||'';
+    const adminHtml = isOp && gasReady && isAdmin()
+      ? `<div class="admin-bar visible">
+           <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
+           <button class="btn btn-delete" onclick="deleteRecord('${id}')">🗑 削除</button>
+         </div>` : '';
 
     return `<div class="order-card" id="card-${id}">
       <div class="card-header" id="hdr-${id}" onclick="toggleCard('${id}')">
-        <div>
-          <div class="order-no">${esc(r['受付日']||'')}</div>
-          ${catHtml}
-        </div>
+        <div>${headerSub}</div>
         <div class="card-title">
-          <div class="item-name">${esc(r['品物']||'（品名未設定）')}</div>
-          <div class="client-name">${esc(r['依頼者']||'')}</div>
+          <div class="item-name">${esc(itemName)}</div>
+          <div class="client-name">${esc(client)}</div>
         </div>
         <span class="status-badge ${cls}">${esc(r['ステータス']||'')}</span>
         <span class="chevron">▼</span>
@@ -826,13 +846,14 @@ function renderRrCards(records) {
       <div class="card-body" id="body-${id}">
         <div class="card-inner">
           <div class="dates-row">
-            <div class="date-item">受付日: <span>${esc(r['受付日']||'—')}</span></div>
-            <div class="date-item">完了日: <span>${esc(r['完了日']||'—')}</span></div>
+            <div class="date-item">受付日: <span>${fmtDate(r['受付日']||'—')}</span></div>
+            <div class="date-item">${endLabel}: <span>${endVal}</span></div>
           </div>
-          ${r['説明'] ? `<div style="font-size:.82rem;color:var(--color-text-sub);margin-bottom:8px">${esc(r['説明']).replace(/\n/g,'<br>')}</div>` : ''}
+          ${desc ? `<div style="font-size:.82rem;color:var(--color-text-sub);margin-bottom:8px">${esc(desc).replace(/\n/g,'<br>')}</div>` : ''}
           <div class="tl-title">📋 進捗タイムライン</div>
           <div class="timeline">${tlHtml}</div>
           ${carHtml}
+          ${adminHtml}
         </div>
       </div>
     </div>`;
