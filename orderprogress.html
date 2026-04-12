@@ -484,8 +484,8 @@ async function loadRecords() {
     renderAll(allRecords);
   } catch(e) {
     gasReady = false;
-    showMsg('GASデータ取得エラーのため転載データを表示します: ' + e.message, true);
-    await loadFallbackRecords();
+    const loaded = await loadFallbackRecords();
+    if (loaded) showMsg('GASに接続できないため転載データを表示しています');
   }
 }
 
@@ -496,9 +496,11 @@ async function loadFallbackRecords() {
     const data = await res.json();
     allRecords = data.records || [];
     renderAll(allRecords);
+    return true;
   } catch(e) {
     showMsg('転載データ取得エラー: ' + e.message, true);
     renderAll([]);
+    return false;
   }
 }
 
