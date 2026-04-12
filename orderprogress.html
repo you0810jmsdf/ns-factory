@@ -331,6 +331,7 @@
 <!-- Settings menu -->
 <div id="settings-menu">
   <div class="sm-item" id="sm-add-order" onclick="openModal(null)">📋 オーダーを追加</div>
+  <div class="sm-item" id="sm-import-data" onclick="importFallbackToGas()">📥 転載データをGASへ取り込み</div>
   <div class="sm-item sm-sep" onclick="exportJson()">💾 JSONエクスポート</div>
   <div class="sm-item sm-sep" onclick="openSettings()">⚙️ GAS URL 設定</div>
   <div class="sm-item" onclick="loadRecords()">🔄 データ再読み込み</div>
@@ -422,6 +423,7 @@ function checkAuth() {
 }
 let gasUrl = localStorage.getItem(GAS_KEY) || '';
 let gasReady = false;
+let gasRecordCount = null;
 function setAdminAvailable(available) {
   gasReady = available;
   document.getElementById('fab').style.display = 'flex';
@@ -430,6 +432,7 @@ function setAdminAvailable(available) {
   document.getElementById('sm-add-order').textContent = available
     ? '📋 オーダーを追加'
     : '📋 オーダーを追加（GAS設定後）';
+  document.getElementById('sm-import-data').style.display = available ? 'flex' : 'none';
   if (!available) closeModal();
 }
 function fmtDate(s) {
@@ -489,7 +492,13 @@ async function loadRecords() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     setAdminAvailable(true);
-    allRecords = data.records || [];
+    const gasRecords = data.records || [];
+    gasRecordCount = gasRecords.length;
+    allRecords = gasRecords;
+    if (gasRecords.length === 0) {
+      allRecords = await fetchFallbackRecords();
+      showMsg('GASが空のため転載データを表示しています。必要に応じてGASへ取り込んでください。');
+    }
     renderAll(allRecords);
   } catch(e) {
     gasUrl = '';
@@ -501,10 +510,7 @@ async function loadRecords() {
 
 async function loadFallbackRecords() {
   try {
-    const res = await fetch(FALLBACK_DATA_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    allRecords = data.records || [];
+    allRecords = await fetchFallbackRecords();
     renderAll(allRecords);
     return true;
   } catch(e) {
@@ -512,6 +518,13 @@ async function loadFallbackRecords() {
     renderAll([]);
     return false;
   }
+}
+
+async function fetchFallbackRecords() {
+  const res = await fetch(FALLBACK_DATA_URL);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return data.records || [];
 }
 
 // ─── Render ──────────────────────────────────
@@ -784,6 +797,47 @@ async function deleteRecord(id) {
     if (data.ok) { showMsg('削除しました'); await loadRecords(); }
     else showMsg('エラー: ' + data.error, true);
   } catch(e) { showMsg('通信エラー: ' + e.message, true); }
+}
+
+// ─── Import fallback data to GAS ─────────────
+function toGasImportRecord(r) {
+  return {
+    orderNo:   r['受付番号'] || '',
+    client:    r['依頼者'] || '',
+    size:      r['サイズ'] || '',
+    item:      r['品名'] || '',
+    status:    r['ステータス'] || '受付中',
+    startDate: r['受付日'] || '',
+    endDate:   r['予定完了日'] || '',
+    timeline:  Array.isArray(r['タイムライン']) ? r['タイムライン'] : [],
+    folderId:  r['DriveフォルダID'] || '',
+    memo:      r['メモ（非公開）'] || '',
+    createdAt: r['登録日時'] || ''
+  };
+}
+
+async function importFallbackToGas() {
+  closeSettingsMenu();
+  if (!gasReady || !gasUrl) {
+    if (confirm('GAS URL設定が必要です。設定しますか？')) openSettings();
+    return;
+  }
+  if (gasRecordCount && gasRecordCount > 0) {
+    showMsg('GAS側に既にデータがあります。重複防止のため取り込みを中止しました。', true);
+    return;
+  }
+  if (!confirm('転載データをGASへ取り込みますか？')) return;
+  try {
+    const fallback = await fetchFallbackRecords();
+    const payload = { action:'import', records:fallback.map(toGasImportRecord) };
+    const res = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload) });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'import failed');
+    showMsg('GASへ取り込みました');
+    await loadRecords();
+  } catch(e) {
+    showMsg('GAS取り込みエラー: ' + e.message, true);
+  }
 }
 
 // ─── Settings ────────────────────────────────
