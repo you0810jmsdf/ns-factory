@@ -126,6 +126,8 @@
       font-size:.72rem; font-weight:600; padding:3px 10px;
       border-radius:99px; white-space:nowrap; flex-shrink:0;
     }
+    .s-見積書作成   { background:#FDF2F8; color:#BE185D; }
+    .s-設計中       { background:#E0F2FE; color:#0369A1; }
     .s-受付中       { background:#EEF2FF; color:#3730A3; }
     .s-素材準備中   { background:#FFF7ED; color:#C2410C; }
     .s-制作中       { background:#FFF9C4; color:#92400E; }
@@ -367,6 +369,8 @@
     <div class="field">
       <label>ステータス</label>
       <select id="f-status">
+        <option>見積書作成</option>
+        <option>設計中</option>
         <option>受付中</option>
         <option>素材準備中</option>
         <option>制作中</option>
@@ -534,7 +538,7 @@ function renderAll(records) {
 }
 
 function updateStats(records) {
-  const wip   = records.filter(r => ['受付中','素材準備中','制作中','仕上げ中'].includes(r['ステータス'])).length;
+  const wip   = records.filter(r => ['見積書作成','設計中','受付中','素材準備中','制作中','仕上げ中'].includes(r['ステータス'])).length;
   const done  = records.filter(r => ['完成','発送済み','お渡し済み'].includes(r['ステータス'])).length;
   document.getElementById('stat-total').textContent = records.length;
   document.getElementById('stat-wip').textContent   = wip;
@@ -561,7 +565,7 @@ function renderCards(records) {
     return;
   }
   // Sort: WIP first, then by startDate desc
-  const ORDER = ['受付中','素材準備中','制作中','仕上げ中','完成','発送済み','お渡し済み'];
+  const ORDER = ['見積書作成','設計中','受付中','素材準備中','制作中','仕上げ中','完成','発送済み','お渡し済み'];
   records = [...records].sort((a,b) => {
     const si = ORDER.indexOf(a['ステータス']), sj = ORDER.indexOf(b['ステータス']);
     if (si !== sj) return si - sj;
@@ -569,6 +573,8 @@ function renderCards(records) {
   });
 
   const STAMP_MAP = {
+    '見積書作成': 'assets/stamps/status_estimate.png',
+    '設計中':     'assets/stamps/status_design.png',
     '受付中':     'assets/stamps/status_waiting.png',
     '素材準備中': 'assets/stamps/status_material.png',
     '制作中':     'assets/stamps/status_making.png',
