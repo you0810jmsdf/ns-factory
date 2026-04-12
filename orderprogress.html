@@ -331,6 +331,7 @@
 <!-- Settings menu -->
 <div id="settings-menu">
   <div class="sm-item" onclick="openModal(null)">📋 オーダーを追加</div>
+  <div class="sm-item sm-sep" onclick="exportJson()">💾 JSONエクスポート</div>
   <div class="sm-item sm-sep" onclick="openSettings()">⚙️ GAS URL 設定</div>
   <div class="sm-item" onclick="loadRecords()">🔄 データ再読み込み</div>
 </div>
@@ -781,6 +782,20 @@ function showMsg(msg, isErr=false) {
   t.style.display = 'block';
   clearTimeout(t._to);
   t._to = setTimeout(() => t.style.display='none', 3000);
+}
+
+// ─── JSON エクスポート ────────────────────────
+function exportJson() {
+  if (!allRecords.length) { showMsg('エクスポートするデータがありません', true); return; }
+  const label = new Date().toISOString().slice(0,10);
+  const blob = new Blob([JSON.stringify(allRecords, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `orderprogress_backup_${label}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showMsg('JSONをエクスポートしました');
+  document.getElementById('settings-menu').style.display = 'none';
 }
 
 // ─── Util ────────────────────────────────────
