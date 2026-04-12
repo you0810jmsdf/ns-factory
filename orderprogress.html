@@ -139,6 +139,17 @@
     .s-完成         { background:#DCFCE7; color:#15803D; }
     .s-発送済み     { background:#E0F2FE; color:#0369A1; }
     .s-お渡し済み   { background:#F3ECE4; color:#7A5540; }
+    /* リメイク・修理ステータス */
+    .s-受付済    { background:#EEF2FF; color:#3730A3; }
+    .s-作業中    { background:#FFF9C4; color:#92400E; }
+    .s-作業完了  { background:#DCFCE7; color:#15803D; }
+    .s-受領評価済{ background:#F3ECE4; color:#7A5540; }
+    .s-中断      { background:#F5F5F7; color:#636366; }
+    .cat-badge {
+      font-size:.72rem; font-weight:600; padding:2px 8px;
+      border-radius:99px; background:var(--color-accent-light); color:var(--color-accent-dark);
+      white-space:nowrap;
+    }
     .chevron { font-size:.8rem; color:var(--color-text-mute); transition:transform .25s; flex-shrink:0; }
     .card-header.open .chevron { transform:rotate(180deg); }
 
@@ -339,7 +350,8 @@
   <div class="sm-item" id="sm-add-order" onclick="openModal(null)">📋 オーダーを追加</div>
   <div class="sm-item" id="sm-import-data" onclick="importFallbackToGas()">📥 転載データをGASへ取り込み</div>
   <div class="sm-item sm-sep" onclick="exportJson()">💾 JSONエクスポート</div>
-  <div class="sm-item sm-sep" onclick="openSettings()">⚙️ GAS URL 設定</div>
+  <div class="sm-item sm-sep" onclick="openSettings()">⚙️ オーダー GAS URL 設定</div>
+  <div class="sm-item" onclick="openRrSettings()">🔧 リメイク・修理 GAS URL 設定</div>
   <div class="sm-item" onclick="loadRecords()">🔄 データ再読み込み</div>
 </div>
 
@@ -424,6 +436,49 @@ const GAS_KEY = 'op_gas_url';
 const ADMIN_PASS = 'glJy4399';
 const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
 const FALLBACK_DATA_URL = 'orderprogress-data.json';
+const RR_GAS_KEY = 'rr_gas_url';
+const RR_SEED = [
+  { 'ID':'seed-rr-0', '依頼者':'Yurika様', '品物':'ティッシュケース・リップケース（KURUMU）', 'カテゴリ':'リメイク',
+    'ステータス':'受領評価済', '受付日':'2025.6', '完了日':'2025.6',
+    '説明':'依頼主保有品を組み合わせたパッチワークリメイク',
+    'タイムライン':[{date:'2025.6',text:'リメイク依頼'},{date:'2025.6',text:'リメイク・確認・発送'},{date:'2025.6',text:'受領・評価済'}],
+    'DriveフォルダID':'', 'メモ':'BEFORE: 文庫本カバー、栞\nAFTER: 当店オリジナルリップケース KURUMU ×1、ティッシュケース\n決済: メルカリ' },
+  { 'ID':'seed-rr-1', '依頼者':'Yurika様', '品物':'キーケース', 'カテゴリ':'リペア',
+    'ステータス':'受領評価済', '受付日':'2024.7.14', '完了日':'2024.7',
+    '説明':'依頼主保有品を組み合わせたパッチワークリメイク。当店オリジナル刻印を追加。不足する革は当店のヌメ革使用。',
+    'タイムライン':[{date:'2024.7.14',text:'作業依頼・依頼主発送'},{date:'2024.7.15',text:'設計'},{date:'2024.7',text:'リメイク素材受領・リメイク作業・確認'},{date:'2024.7',text:'発送'},{date:'2024.7',text:'受領・評価済'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { 'ID':'seed-rr-2', '依頼者':'TKB様', '品物':'バッグ（ブランド）', 'カテゴリ':'リペア',
+    'ステータス':'作業完了', '受付日':'2024.6.8', '完了日':'2024.6.8',
+    '説明':'代替パーツ交換',
+    'タイムライン':[{date:'2024.6.8',text:'作業依頼・作業・引渡し（依頼から引渡しまで約2時間）'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { 'ID':'seed-rr-3', '依頼者':'N様', '品物':'キーケース', 'カテゴリ':'リペア',
+    'ステータス':'作業完了', '受付日':'2024.3.15', '完了日':'2024.3.16',
+    '説明':'破損部補強',
+    'タイムライン':[{date:'2024.3.15',text:'作業依頼'},{date:'2024.3.16',text:'作業・引渡し'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { 'ID':'seed-rr-4', '依頼者':'Akira様', '品物':'ランドセル', 'カテゴリ':'リペア',
+    'ステータス':'作業完了', '受付日':'2019.10.18', '完了日':'2019.10.18',
+    '説明':'破損部補修',
+    'タイムライン':[{date:'2019.10.18',text:'依頼・作業・引渡し'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { 'ID':'seed-rr-5', '依頼者':'Hassy様', '品物':'ポーチ（ブランド）', 'カテゴリ':'リペア',
+    'ステータス':'作業完了', '受付日':'2020.5.11', '完了日':'2020.5.12',
+    '説明':'破損部補修',
+    'タイムライン':[{date:'2020.5.11',text:'依頼'},{date:'2020.5.12',text:'作業'}],
+    'DriveフォルダID':'', 'メモ':'' },
+  { 'ID':'seed-rr-6', '依頼者':'Yurika様', '品物':'リメイクポーチ（サイズ変更 W12×H8cm）', 'カテゴリ':'リメイク',
+    'ステータス':'作業完了', '受付日':'2024.7.7', '完了日':'2024.7.11',
+    '説明':'依頼主保有品を組み合わせたパッチワークリメイク。元ブランドの刻印と当店オリジナル刻印の両方を刻印。不足する革は当店のヌメ革使用。',
+    'タイムライン':[{date:'2024.7.7',text:'作業依頼・依頼主発送'},{date:'2024.7.9',text:'リメイク素材受領・設計'},{date:'2024.7.10',text:'リメイク作業・確認'},{date:'2024.7.11',text:'発送'}],
+    'DriveフォルダID':'', 'メモ':'サイズ: 横12cm × 縦8cm' },
+  { 'ID':'seed-rr-7', '依頼者':'Onita様', '品物':'ランドセル → パスケース・キーケース', 'カテゴリ':'リメイク',
+    'ステータス':'作業完了', '受付日':'2020.3.14', '完了日':'2020.3',
+    '説明':'ランドセルをパスケース・キーケースへリメイク',
+    'タイムライン':[{date:'2020.3.14',text:'作業依頼'},{date:'2020.3.15',text:'作業'},{date:'2020.3',text:'完了'}],
+    'DriveフォルダID':'', 'メモ':'' }
+];
 function checkAuth() {
   if (sessionStorage.getItem('op_auth') === '1') return true;
   const pw = prompt('管理者パスワードを入力してください:');
@@ -436,6 +491,9 @@ function isAdmin() {
 let gasUrl = localStorage.getItem(GAS_KEY) || DEFAULT_GAS_URL;
 let gasReady = false;
 let gasRecordCount = null;
+let rrGasUrl = localStorage.getItem(RR_GAS_KEY) || '';
+let rrRecords = [];
+let rrLoaded = false;
 function setAdminAvailable(available) {
   gasReady = available;
   document.getElementById('fab').style.display = 'flex';
@@ -485,7 +543,8 @@ function init() {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentSize = btn.dataset.size;
-      applyFilter();
+      if (currentSize === 'リメイク・修理' && !rrLoaded) loadRrRecords();
+      else applyFilter();
     });
   });
   document.querySelectorAll('.stat-card').forEach(card => {
@@ -552,6 +611,24 @@ async function fetchFallbackRecords() {
   return data.records || [];
 }
 
+async function loadRrRecords() {
+  rrLoaded = true;
+  if (rrGasUrl) {
+    try {
+      const res = await fetch(rrGasUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      rrRecords = data.records || [];
+      if (!rrRecords.length) rrRecords = RR_SEED;
+    } catch(e) {
+      rrRecords = RR_SEED;
+    }
+  } else {
+    rrRecords = RR_SEED;
+  }
+  applyFilter();
+}
+
 // ─── Render ──────────────────────────────────
 function renderAll(records) {
   updateStats(records);
@@ -575,6 +652,25 @@ function isWip(r) {
 
 function applyFilter() {
   const q = (document.getElementById('search-box').value || '').trim().toLowerCase();
+
+  if (currentSize === 'リメイク・修理') {
+    let filtered = rrRecords;
+    if (q) filtered = filtered.filter(r =>
+      (r['依頼者']||'').toLowerCase().includes(q) ||
+      (r['品物']||'').toLowerCase().includes(q) ||
+      (r['カテゴリ']||'').toLowerCase().includes(q)
+    );
+    const rrWip  = filtered.filter(r => ['受付済','作業中'].includes(r['ステータス'])).length;
+    const rrDone = filtered.filter(r => ['作業完了','受領評価済'].includes(r['ステータス'])).length;
+    document.getElementById('stat-total').textContent = rrRecords.length;
+    document.getElementById('stat-wip').textContent   = rrWip;
+    document.getElementById('stat-done').textContent  = rrDone;
+    document.getElementById('stat-size').textContent  = filtered.length;
+    document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+    renderRrCards(filtered);
+    return;
+  }
+
   let filtered = allRecords;
   if (currentSize !== 'all') filtered = filtered.filter(r => r['サイズ'] === currentSize);
   if (currentStatFilter === 'wip') filtered = filtered.filter(isWip);
@@ -683,6 +779,66 @@ function renderCards(records) {
   }).join('');
 }
 
+function renderRrCards(records) {
+  const grid = document.getElementById('order-grid');
+  if (!records.length) {
+    grid.innerHTML = '<div class="empty">該当する案件はありません</div>';
+    return;
+  }
+  const ORDER_RR = ['受付済','作業中','作業完了','受領評価済','中断'];
+  records = [...records].sort((a,b) => {
+    const aDone = ['作業完了','受領評価済'].includes(a['ステータス']);
+    const bDone = ['作業完了','受領評価済'].includes(b['ステータス']);
+    const groupDiff = Number(aDone) - Number(bDone);
+    if (groupDiff) return groupDiff;
+    return (b['受付日']||'').localeCompare(a['受付日']||'');
+  });
+
+  grid.innerHTML = records.map(r => {
+    const id  = r['ID'];
+    const tl  = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    const cls = 's-' + (r['ステータス']||'受付済').replace(/\s/g,'');
+    const catHtml = r['カテゴリ'] ? `<span class="cat-badge">${esc(r['カテゴリ'])}</span>` : '';
+    const tlHtml = tl.length
+      ? tl.map(t => `<div class="tl-item"><div class="tl-dot"></div>
+          <div class="tl-date">${esc(t.date||'')}</div>
+          <div class="tl-text">${esc(t.text||'').replace(/\n/g,'<br>')}</div>
+         </div>`).join('')
+      : '<div style="font-size:.8rem;color:var(--color-text-mute)">進捗情報はまだありません</div>';
+    const folderId = r['DriveフォルダID']||'';
+    const carHtml = folderId
+      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}" data-gastype="rr">📷 画像を読み込み中…</div></div>`
+      : '';
+
+    return `<div class="order-card" id="card-${id}">
+      <div class="card-header" id="hdr-${id}" onclick="toggleCard('${id}')">
+        <div>
+          <div class="order-no">${esc(r['受付日']||'')}</div>
+          ${catHtml}
+        </div>
+        <div class="card-title">
+          <div class="item-name">${esc(r['品物']||'（品名未設定）')}</div>
+          <div class="client-name">${esc(r['依頼者']||'')}</div>
+        </div>
+        <span class="status-badge ${cls}">${esc(r['ステータス']||'')}</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="card-body" id="body-${id}">
+        <div class="card-inner">
+          <div class="dates-row">
+            <div class="date-item">受付日: <span>${esc(r['受付日']||'—')}</span></div>
+            <div class="date-item">完了日: <span>${esc(r['完了日']||'—')}</span></div>
+          </div>
+          ${r['説明'] ? `<div style="font-size:.82rem;color:var(--color-text-sub);margin-bottom:8px">${esc(r['説明']).replace(/\n/g,'<br>')}</div>` : ''}
+          <div class="tl-title">📋 進捗タイムライン</div>
+          <div class="timeline">${tlHtml}</div>
+          ${carHtml}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ─── Card toggle ─────────────────────────────
 function toggleCard(id) {
   const hdr  = document.getElementById('hdr-'  + id);
@@ -710,8 +866,9 @@ function lazyLoadImages(id) {
 
   // Google Drive
   const folderId = el.dataset.folderid;
-  if (!folderId || !gasUrl) { el.innerHTML = ''; return; }
-  fetch(`${gasUrl}?action=images&folderId=${folderId}`)
+  const useUrl = el.dataset.gastype === 'rr' ? rrGasUrl : gasUrl;
+  if (!folderId || !useUrl) { el.innerHTML = ''; return; }
+  fetch(`${useUrl}?action=images&folderId=${folderId}`)
     .then(r => r.json())
     .then(data => {
       if (data.ok && data.images && data.images.length) {
@@ -915,6 +1072,20 @@ function openSettings() {
     setAdminAvailable(false);
     loadFallbackRecords();
   }
+}
+
+function openRrSettings() {
+  closeSettingsMenu();
+  const url = prompt('リメイク・修理 GAS WebアプリのURLを入力してください:', rrGasUrl);
+  if (url === null) return;
+  rrGasUrl = url.trim();
+  rrLoaded = false;
+  if (rrGasUrl) {
+    localStorage.setItem(RR_GAS_KEY, rrGasUrl);
+  } else {
+    localStorage.removeItem(RR_GAS_KEY);
+  }
+  if (currentSize === 'リメイク・修理') loadRrRecords();
 }
 
 // ─── Toast ───────────────────────────────────
