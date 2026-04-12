@@ -422,6 +422,7 @@
 // ─────────────────────────────────────────────
 const GAS_KEY = 'op_gas_url';
 const ADMIN_PASS = 'glJy4399';
+const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
 const FALLBACK_DATA_URL = 'orderprogress-data.json';
 function checkAuth() {
   if (sessionStorage.getItem('op_auth') === '1') return true;
@@ -429,7 +430,10 @@ function checkAuth() {
   if (pw === ADMIN_PASS) { sessionStorage.setItem('op_auth', '1'); return true; }
   return false;
 }
-let gasUrl = localStorage.getItem(GAS_KEY) || '';
+function isAdmin() {
+  return sessionStorage.getItem('op_auth') === '1';
+}
+let gasUrl = localStorage.getItem(GAS_KEY) || DEFAULT_GAS_URL;
 let gasReady = false;
 let gasRecordCount = null;
 function setAdminAvailable(available) {
@@ -518,9 +522,13 @@ async function loadRecords() {
     }
     renderAll(allRecords);
   } catch(e) {
-    gasUrl = '';
-    localStorage.removeItem(GAS_KEY);
-    setAdminAvailable(false);
+    const savedUrl = localStorage.getItem(GAS_KEY) || '';
+    if (savedUrl && gasUrl === savedUrl && savedUrl !== DEFAULT_GAS_URL) {
+      localStorage.removeItem(GAS_KEY);
+      gasUrl = DEFAULT_GAS_URL;
+      return loadRecords();
+    }
+    gasReady = false;
     await loadFallbackRecords();
   }
 }
@@ -625,7 +633,7 @@ function renderCards(records) {
     const stampHtml = stampSrc
       ? `<img class="status-stamp" src="${stampSrc}" alt="${esc(r['ステータス']||'')}">`
       : '';
-    const adminHtml = gasReady
+    const adminHtml = gasReady && isAdmin()
       ? `<div class="admin-bar visible">
            <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
            <button class="btn btn-delete" onclick="deleteRecord('${id}')">🗑 削除</button>
@@ -744,6 +752,7 @@ function carGo(id, idx) {
 // ─── Modal ───────────────────────────────────
 function openModal(id) {
   closeSettingsMenu();
+  if (!isAdmin() && !checkAuth()) return;
   if (!gasReady || !gasUrl) {
     if (confirm('新規登録・編集にはGAS URL設定が必要です。設定しますか？')) openSettings();
     return;
@@ -829,6 +838,7 @@ async function saveRecord() {
 
 // ─── Delete ──────────────────────────────────
 async function deleteRecord(id) {
+  if (!isAdmin() && !checkAuth()) return;
   if (!confirm('このオーダーを削除しますか？')) return;
   try {
     const res  = await fetch(gasUrl, { method:'POST', body:JSON.stringify({ action:'delete', id }) });
@@ -882,6 +892,7 @@ async function importFallbackToGas() {
 // ─── Settings ────────────────────────────────
 function toggleSettingsMenu() {
   if (!checkAuth()) return;
+  applyFilter();
   const m = document.getElementById('settings-menu');
   m.style.display = m.style.display === 'block' ? 'none' : 'block';
   document.getElementById('fab').textContent = m.style.display === 'block' ? '×' : '＋';
