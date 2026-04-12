@@ -240,7 +240,7 @@
       transition:border-color .2s;
     }
     .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--color-accent); }
-    .field textarea { min-height:60px; resize:vertical; }
+    .field textarea { min-height:120px; resize:vertical; }
     .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
     /* Timeline editor */
@@ -406,6 +406,12 @@
 // ─────────────────────────────────────────────
 const GAS_KEY = 'op_gas_url';
 let gasUrl = localStorage.getItem(GAS_KEY) || 'https://script.google.com/macros/s/AKfycbzLQaKkqDrChxrcZ2qS6iLRQUoNjdYs18DzNT6y_8fulcNddil9S8UAILtKAUyl3C8/exec';
+function fmtDate(s) {
+  if (!s || s === '—') return '—';
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return s;
+  return `${m[1]}年${parseInt(m[2])}月${parseInt(m[3])}日`;
+}
 let allRecords = [];
 let currentSize = 'all';
 const carState = {};
@@ -536,8 +542,8 @@ function renderCards(records) {
       <div class="card-body" id="body-${id}">
         <div class="card-inner">
           <div class="dates-row">
-            <div class="date-item">受付日: <span>${esc(r['受付日']||'—')}</span></div>
-            <div class="date-item">予定完了: <span>${esc(r['予定完了日']||'—')}</span></div>
+            <div class="date-item">受付日: <span>${fmtDate(r['受付日']||'—')}</span></div>
+            <div class="date-item">予定完了: <span>${fmtDate(r['予定完了日']||'—')}</span></div>
           </div>
           <div class="tl-title">📋 進捗タイムライン</div>
           <div class="timeline">${tlHtml}</div>
