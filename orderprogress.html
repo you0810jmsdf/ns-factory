@@ -644,7 +644,7 @@ function updateStats(records) {
 }
 
 function isDone(r) {
-  return ['完成','発送済み','お渡し済み'].includes(r['ステータス']);
+  return ['完成','発送済み','お渡し済み','作業完了','受領評価済'].includes(r['ステータス']);
 }
 function isWip(r) {
   return !isDone(r);
@@ -675,6 +675,9 @@ function applyFilter() {
     renderRrCards(filtered);
     return;
   }
+
+  // リメイク・修理タブから戻った際にstatsをリセット
+  updateStats(allRecords);
 
   let filtered = allRecords;
   if (currentSize !== 'all') filtered = filtered.filter(r => r['サイズ'] === currentSize);
