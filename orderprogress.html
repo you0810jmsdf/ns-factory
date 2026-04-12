@@ -409,8 +409,17 @@ let gasUrl = localStorage.getItem(GAS_KEY) || 'https://script.google.com/macros/
 function fmtDate(s) {
   if (!s || s === '—') return '—';
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) return s;
-  return `${m[1]}年${parseInt(m[2])}月${parseInt(m[3])}日`;
+  if (m) return `${m[1]}年${parseInt(m[2])}月${parseInt(m[3])}日`;
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+  return s;
+}
+function toInputDate(s) {
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return d.toISOString().slice(0,10);
+  return '';
 }
 let allRecords = [];
 let currentSize = 'all';
@@ -635,8 +644,8 @@ function openModal(id) {
     document.getElementById('f-size').value   = r['サイズ']||'mini6';
     document.getElementById('f-item').value   = r['品名']||'';
     document.getElementById('f-status').value = r['ステータス']||'受付中';
-    document.getElementById('f-start').value  = r['受付日']||'';
-    document.getElementById('f-end').value    = r['予定完了日']||'';
+    document.getElementById('f-start').value  = toInputDate(r['受付日']||'');
+    document.getElementById('f-end').value    = toInputDate(r['予定完了日']||'');
     document.getElementById('f-folder').value = r['DriveフォルダID']||'';
     document.getElementById('f-memo').value   = r['メモ（非公開）']||'';
     const tl = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
