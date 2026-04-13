@@ -568,7 +568,7 @@
       if (data.ok && data.images && data.images.length) {
         carPhotos = data.images; carIdx = 0; renderCarousel();
       } else {
-        el.innerHTML = '<div class="loading">画像が見つかりませんでした。フォルダIDとDriveの共有設定を確認してください。</div>';
+        el.innerHTML = '<div class="loading">GAS応答: ' + JSON.stringify(data) + '</div>';
       }
     } catch(e) { el.innerHTML = '<div class="loading">読み込みに失敗しました: ' + e.message + '</div>'; }
   }
