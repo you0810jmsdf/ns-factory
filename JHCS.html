@@ -139,6 +139,10 @@
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
     .btn-edit { background: var(--amber-light); color: var(--amber); }
     .empty-msg { text-align: center; padding: 40px; color: var(--gray); font-size: 14px; }
+    .year-header td { background: rgba(160,120,90,.18); padding: 8px 14px; font-size: 13px; cursor: pointer; user-select: none; }
+    .year-header:hover td { background: rgba(160,120,90,.28); }
+    .year-toggle-icon { margin-right: 6px; font-size: 11px; display: inline-block; transition: transform .2s; }
+    .year-row.hidden { display: none; }
 
     /* Loading */
     .loading { text-align: center; padding: 32px; color: var(--gray); font-size: 14px; }
@@ -389,28 +393,49 @@
       return;
     }
 
-    const sorted = [...records].sort((a, b) => b['開催日'].localeCompare(a['開催日']));
-    tbody.innerHTML = sorted.map(r => {
-      const cls = r['クラス'];
-      const classTag = cls === 'A' ? '<span class="tag-a">A（木）</span>'
-                     : cls === 'B' ? '<span class="tag-b">B（日）</span>'
-                     : `<span>${esc(cls)}</span>`;
-      const memo = r['メモ'] || '';
-      const id = esc(r['ID']);
-      return `<tr>
-        <td class="td-date">${fmtDate(r['開催日'])}</td>
-        <td>${classTag}</td>
-        <td>${r['出席者数'] ? r['出席者数'] + '名' : '―'}</td>
-        <td>${r['実施時間(h)'] ? r['実施時間(h)'] + 'h' : '―'}</td>
-        <td class="td-work">${esc(r['作業内容'] || '―')}</td>
-        <td><div style="max-width:180px;word-break:break-word;color:var(--gray);font-size:12px;">${esc(memo)}</div></td>
-        <td style="font-size:11px; color:var(--gray); white-space:nowrap;">${fmtDate(r['登録日時'])}</td>
-        <td style="white-space:nowrap;">
-          <button class="btn btn-edit" style="padding:4px 10px;font-size:12px;" onclick="openEditModal('${id}')">✏️</button>
-          <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteRecord('${id}')">🗑</button>
+    const sorted = [...records].sort((a, b) => a['開催日'].localeCompare(b['開催日']));
+
+    // 年ごとにグループ化
+    const byYear = {};
+    sorted.forEach(r => {
+      const y = (r['開催日'] || '').slice(0, 4) || '不明';
+      if (!byYear[y]) byYear[y] = [];
+      byYear[y].push(r);
+    });
+
+    let html = '';
+    Object.keys(byYear).sort().forEach(year => {
+      const gid = 'yr-' + year;
+      html += `<tr class="year-header" onclick="toggleYear('${gid}')">
+        <td colspan="8">
+          <span class="year-toggle-icon" id="${gid}-icon">▼</span>
+          <strong>${year}年度</strong>
+          <span style="font-size:12px;color:var(--gray);margin-left:8px;">${byYear[year].length}回</span>
         </td>
       </tr>`;
-    }).join('');
+      byYear[year].forEach(r => {
+        const cls = r['クラス'];
+        const classTag = cls === 'A' ? '<span class="tag-a">A（木）</span>'
+                       : cls === 'B' ? '<span class="tag-b">B（日）</span>'
+                       : `<span>${esc(cls)}</span>`;
+        const memo = r['メモ'] || '';
+        const id = esc(r['ID']);
+        html += `<tr class="year-row ${gid}">
+          <td class="td-date">${fmtDate(r['開催日'])}</td>
+          <td>${classTag}</td>
+          <td>${r['出席者数'] ? r['出席者数'] + '名' : '―'}</td>
+          <td>${r['実施時間(h)'] ? r['実施時間(h)'] + 'h' : '―'}</td>
+          <td class="td-work">${esc(r['作業内容'] || '―')}</td>
+          <td><div style="max-width:180px;word-break:break-word;color:var(--gray);font-size:12px;">${esc(memo)}</div></td>
+          <td style="font-size:11px;color:var(--gray);white-space:nowrap;">${fmtDate(r['登録日時'])}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-edit" style="padding:4px 10px;font-size:12px;" onclick="openEditModal('${id}')">✏️</button>
+            <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteRecord('${id}')">🗑</button>
+          </td>
+        </tr>`;
+      });
+    });
+    tbody.innerHTML = html;
   }
 
   // ── 追記 ─────────────────────────────────────────
@@ -484,6 +509,15 @@
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
     a.download = `JHCS_実績_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
+  }
+
+  // ── 年度トグル ────────────────────────────────────
+  function toggleYear(gid) {
+    const rows = document.querySelectorAll('.' + gid);
+    const icon = document.getElementById(gid + '-icon');
+    const isHidden = rows[0] && rows[0].classList.contains('hidden');
+    rows.forEach(r => r.classList.toggle('hidden', !isHidden));
+    if (icon) icon.style.transform = isHidden ? '' : 'rotate(-90deg)';
   }
 
   // ── 編集モーダル ──────────────────────────────────
