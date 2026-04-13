@@ -396,7 +396,6 @@
                      : cls === 'B' ? '<span class="tag-b">B（日）</span>'
                      : `<span>${esc(cls)}</span>`;
       const memo = r['メモ'] || '';
-      const memoDisp = memo.length > 30 ? esc(memo.slice(0, 30)) + '…' : esc(memo);
       const id = esc(r['ID']);
       return `<tr>
         <td class="td-date">${fmtDate(r['開催日'])}</td>
@@ -404,7 +403,7 @@
         <td>${r['出席者数'] ? r['出席者数'] + '名' : '―'}</td>
         <td>${r['実施時間(h)'] ? r['実施時間(h)'] + 'h' : '―'}</td>
         <td class="td-work">${esc(r['作業内容'] || '―')}</td>
-        <td class="td-memo" title="${esc(memo)}">${memoDisp}</td>
+        <td><div style="max-width:160px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--gray);font-size:12px;" title="${esc(memo)}">${esc(memo)}</div></td>
         <td style="font-size:11px; color:var(--gray); white-space:nowrap;">${fmtDate(r['登録日時'])}</td>
         <td style="white-space:nowrap;">
           <button class="btn btn-edit" style="padding:4px 10px;font-size:12px;" onclick="openEditModal('${id}')">✏️</button>
