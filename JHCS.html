@@ -131,6 +131,19 @@
     .td-memo { color: var(--gray); max-width: 220px; word-break: break-word; }
     .td-work { max-width: 220px; word-break: break-word; }
 
+    /* Photo Carousel */
+    .photo-setup { background: #FFF8E1; border: 1px solid #FFD54F; border-radius: var(--radius); padding: 14px 18px; margin-bottom: 14px; font-size: 13px; }
+    .photo-setup p { color: var(--gray); margin: 4px 0 10px; }
+    .car-wrap { position: relative; border-radius: var(--radius); overflow: hidden; background: #f0f0f0; }
+    .car-track { display: flex; transition: transform .35s ease; }
+    .car-track img { flex-shrink: 0; width: 100%; max-height: 420px; object-fit: contain; background: #f0f0f0; display: block; }
+    .car-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.45); color: #fff; border: none; cursor: pointer; font-size: 26px; padding: 6px 14px; border-radius: 6px; }
+    .car-prev { left: 8px; } .car-next { right: 8px; }
+    .car-dots { text-align: center; padding: 10px 0 4px; }
+    .car-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: rgba(160,120,90,.3); margin: 0 3px; cursor: pointer; transition: background .2s; }
+    .car-dot.active { background: var(--tan); }
+    .car-counter { text-align: center; font-size: 12px; color: var(--gray); margin-bottom: 6px; }
+
     /* Edit Modal */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: center; justify-content: center; }
     .modal-overlay.open { display: flex; }
@@ -234,6 +247,25 @@
       <span class="skill-tag">CADパターン設計</span><span class="skill-tag">ファスナー取り付け</span>
       <span class="skill-tag">リベット打ち</span><span class="skill-tag">インターロッキング（イントレチャート）</span>
       <span class="skill-tag">パッチワーク</span><span class="skill-tag">インレイ技法</span>
+    </div>
+  </div>
+
+  <!-- 生徒作品集 -->
+  <div class="section">
+    <h2>生徒作品集</h2>
+    <div id="photo-setup-banner" class="photo-setup" style="display:none;">
+      <strong>📷 Google Drive フォルダIDを設定してください</strong>
+      <p>作品写真を保存したDriveフォルダのIDを入力するとカルーセル表示されます。</p>
+      <div class="setup-row">
+        <input type="text" id="photo-folder-input" placeholder="フォルダID（URLの末尾の文字列）">
+        <button onclick="savePhotoFolder()">設定</button>
+      </div>
+    </div>
+    <div id="photo-carousel">
+      <div class="loading">GASに接続するとここに作品写真が表示されます。</div>
+    </div>
+    <div style="text-align:right; margin-top:8px;">
+      <button class="btn btn-secondary" style="font-size:12px;" onclick="document.getElementById('photo-setup-banner').style.display='block'">⚙️ フォルダ変更</button>
     </div>
   </div>
 
@@ -426,7 +458,7 @@
           <td>${r['出席者数'] ? r['出席者数'] + '名' : '―'}</td>
           <td>${r['実施時間(h)'] ? r['実施時間(h)'] + 'h' : '―'}</td>
           <td class="td-work">${esc(r['作業内容'] || '―')}</td>
-          <td><div style="max-width:180px;word-break:break-word;color:var(--gray);font-size:12px;">${esc(memo)}</div></td>
+          <td><div style="max-width:180px;word-break:break-word;white-space:pre-wrap;color:var(--gray);font-size:12px;">${esc(memo)}</div></td>
           <td style="font-size:11px;color:var(--gray);white-space:nowrap;">${fmtDate(r['登録日時'])}</td>
           <td style="white-space:nowrap;">
             <button class="btn btn-edit" style="padding:4px 10px;font-size:12px;" onclick="openEditModal('${id}')">✏️</button>
@@ -509,6 +541,61 @@
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
     a.download = `JHCS_実績_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
+  }
+
+  // ── 生徒作品カルーセル ────────────────────────────
+  let carPhotos = [], carIdx = 0;
+
+  function getPhotoFolder() { return localStorage.getItem('jhcs_photos_folder') || ''; }
+  function savePhotoFolder() {
+    const v = document.getElementById('photo-folder-input').value.trim();
+    if (!v) return;
+    localStorage.setItem('jhcs_photos_folder', v);
+    document.getElementById('photo-setup-banner').style.display = 'none';
+    loadPhotos();
+  }
+
+  async function loadPhotos() {
+    const folderId = getPhotoFolder();
+    const url = getGasUrl();
+    const el = document.getElementById('photo-carousel');
+    if (!url) { el.innerHTML = '<div class="loading">GASに接続するとここに作品写真が表示されます。</div>'; return; }
+    if (!folderId) { document.getElementById('photo-setup-banner').style.display = 'block'; el.innerHTML = ''; return; }
+    el.innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+    try {
+      const res = await fetch(`${url}?action=images&folderId=${folderId}`);
+      const data = await res.json();
+      if (data.ok && data.images && data.images.length) {
+        carPhotos = data.images; carIdx = 0; renderCarousel();
+      } else {
+        el.innerHTML = '<div class="loading">画像が見つかりませんでした。フォルダIDとDriveの共有設定を確認してください。</div>';
+      }
+    } catch(e) { el.innerHTML = '<div class="loading">読み込みに失敗しました: ' + e.message + '</div>'; }
+  }
+
+  function renderCarousel() {
+    const el = document.getElementById('photo-carousel');
+    const n = carPhotos.length;
+    el.innerHTML = `
+      <div class="car-wrap">
+        <div class="car-track" id="car-track">
+          ${carPhotos.map(img => `<img src="${img.url}" alt="${esc(img.name)}" loading="lazy">`).join('')}
+        </div>
+        ${n > 1 ? `<button class="car-btn car-prev" onclick="carMove(-1)">‹</button><button class="car-btn car-next" onclick="carMove(1)">›</button>` : ''}
+      </div>
+      <div class="car-counter" id="car-counter"></div>
+      ${n > 1 ? `<div class="car-dots" id="car-dots">${carPhotos.map((_,i) => `<span class="car-dot" onclick="carGo(${i})"></span>`).join('')}</div>` : ''}`;
+    updateCar();
+  }
+
+  function carMove(d) { carGo(carIdx + d); }
+  function carGo(i) { carIdx = (i + carPhotos.length) % carPhotos.length; updateCar(); }
+  function updateCar() {
+    const track = document.getElementById('car-track');
+    if (track) track.style.transform = `translateX(-${carIdx * 100}%)`;
+    const counter = document.getElementById('car-counter');
+    if (counter) counter.textContent = `${carIdx + 1} / ${carPhotos.length}`;
+    document.querySelectorAll('.car-dot').forEach((d, i) => d.classList.toggle('active', i === carIdx));
   }
 
   // ── 年度トグル ────────────────────────────────────
@@ -617,6 +704,7 @@
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
   if (getGasUrl()) {
     loadRecords();
+    loadPhotos();
   } else {
     document.getElementById('setup-banner').classList.add('show');
     document.getElementById('records-body').innerHTML =
