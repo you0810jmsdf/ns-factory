@@ -265,7 +265,7 @@
       <div class="loading">GASに接続するとここに作品写真が表示されます。</div>
     </div>
     <div style="text-align:right; margin-top:8px;">
-      <button class="btn btn-secondary" style="font-size:12px;" onclick="document.getElementById('photo-setup-banner').style.display='block'">⚙️ フォルダ変更</button>
+      <button class="btn btn-secondary" style="font-size:12px;" onclick="(function(){var b=document.getElementById('photo-setup-banner');b.style.display='block';b.scrollIntoView({behavior:'smooth',block:'center'});})()">⚙️ フォルダ変更</button>
     </div>
   </div>
 
