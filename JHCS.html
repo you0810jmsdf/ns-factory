@@ -126,10 +126,18 @@
     tbody tr:hover { background: rgba(160,120,90,.04); }
     tbody td { padding: 10px 14px; vertical-align: top; }
     .td-date { white-space: nowrap; font-weight: 600; }
-    .tag-a { color: var(--amber); font-weight: 700; }
-    .tag-b { color: var(--blue); font-weight: 700; }
-    .td-memo { color: var(--gray); max-width: 260px; word-break: break-all; }
-    .td-work { max-width: 260px; word-break: break-all; }
+    .tag-a { color: var(--amber); font-weight: 700; white-space: nowrap; }
+    .tag-b { color: var(--blue); font-weight: 700; white-space: nowrap; }
+    .td-memo { color: var(--gray); max-width: 220px; word-break: break-word; }
+    .td-work { max-width: 220px; word-break: break-word; }
+
+    /* Edit Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: var(--white); border-radius: var(--radius); padding: 28px; width: min(480px, 95vw); max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+    .modal-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+    .btn-edit { background: var(--amber-light); color: var(--amber); }
     .empty-msg { text-align: center; padding: 40px; color: var(--gray); font-size: 14px; }
 
     /* Loading */
@@ -387,15 +395,21 @@
       const classTag = cls === 'A' ? '<span class="tag-a">A（木）</span>'
                      : cls === 'B' ? '<span class="tag-b">B（日）</span>'
                      : `<span>${esc(cls)}</span>`;
+      const memo = r['メモ'] || '';
+      const memoDisp = memo.length > 30 ? esc(memo.slice(0, 30)) + '…' : esc(memo);
+      const id = esc(r['ID']);
       return `<tr>
-        <td class="td-date">${esc(r['開催日'])}</td>
+        <td class="td-date">${fmtDate(r['開催日'])}</td>
         <td>${classTag}</td>
         <td>${r['出席者数'] ? r['出席者数'] + '名' : '―'}</td>
         <td>${r['実施時間(h)'] ? r['実施時間(h)'] + 'h' : '―'}</td>
         <td class="td-work">${esc(r['作業内容'] || '―')}</td>
-        <td class="td-memo">${esc(r['メモ'] || '')}</td>
-        <td style="font-size:11px; color:var(--gray); white-space:nowrap;">${esc(r['登録日時'] || '')}</td>
-        <td><button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteRecord('${esc(r['ID'])}')">削除</button></td>
+        <td class="td-memo" title="${esc(memo)}">${memoDisp}</td>
+        <td style="font-size:11px; color:var(--gray); white-space:nowrap;">${fmtDate(r['登録日時'])}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-edit" style="padding:4px 10px;font-size:12px;" onclick="openEditModal('${id}')">✏️</button>
+          <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteRecord('${id}')">🗑</button>
+        </td>
       </tr>`;
     }).join('');
   }
@@ -473,9 +487,83 @@
     a.click();
   }
 
+  // ── 編集モーダル ──────────────────────────────────
+  function openEditModal(id) {
+    const r = cachedRecords.find(x => x['ID'] == id);
+    if (!r) return;
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-date').value = toInputDate(r['開催日']);
+    document.getElementById('edit-class').value = r['クラス'] || '';
+    document.getElementById('edit-attendees').value = r['出席者数'] || '';
+    document.getElementById('edit-hours').value = r['実施時間(h)'] || '';
+    document.getElementById('edit-work').value = r['作業内容'] || '';
+    document.getElementById('edit-memo').value = r['メモ'] || '';
+    document.getElementById('edit-msg').textContent = '';
+    document.getElementById('edit-modal').classList.add('open');
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').classList.remove('open');
+  }
+
+  async function updateRecord() {
+    const id = document.getElementById('edit-id').value;
+    const date = document.getElementById('edit-date').value;
+    const cls  = document.getElementById('edit-class').value;
+    if (!date) { document.getElementById('edit-msg').className = 'form-msg err'; document.getElementById('edit-msg').textContent = '開催日を入力してください。'; return; }
+    const url = getGasUrl();
+    if (!url) return;
+    const btn = document.getElementById('btn-update');
+    btn.disabled = true; btn.textContent = '保存中...';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'update', id,
+          date, class: cls,
+          attendees: document.getElementById('edit-attendees').value,
+          hours: document.getElementById('edit-hours').value,
+          work: document.getElementById('edit-work').value.trim(),
+          memo: document.getElementById('edit-memo').value.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        closeEditModal();
+        await loadRecords();
+      } else {
+        document.getElementById('edit-msg').className = 'form-msg err';
+        document.getElementById('edit-msg').textContent = 'エラー: ' + (data.error || '不明');
+      }
+    } catch(e) {
+      document.getElementById('edit-msg').className = 'form-msg err';
+      document.getElementById('edit-msg').textContent = '通信エラー: ' + e.message;
+    } finally {
+      btn.disabled = false; btn.textContent = '保存する';
+    }
+  }
+
   // ── ヘルパー ──────────────────────────────────────
   function esc(s) {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function fmtDate(s) {
+    if (!s || s === '―' || s === '—') return s || '';
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${parseInt(m[1])}/${parseInt(m[2])}/${parseInt(m[3])}`;
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+    return s;
+  }
+
+  function toInputDate(s) {
+    if (!s) return '';
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+    return '';
   }
 
   function showMsg(type, text) {
@@ -503,5 +591,48 @@
   }
 </script>
 <script src="assets/access-counter.js"></script>
+
+<!-- 編集モーダル -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal-box">
+    <h3>✏️ 記録を編集</h3>
+    <input type="hidden" id="edit-id">
+    <div class="form-grid">
+      <div>
+        <label>開催日</label>
+        <input type="date" id="edit-date">
+      </div>
+      <div>
+        <label>クラス</label>
+        <select id="edit-class">
+          <option value="">選択</option>
+          <option value="A">A（木曜）</option>
+          <option value="B">B（日曜）</option>
+        </select>
+      </div>
+      <div>
+        <label>出席者数</label>
+        <input type="number" id="edit-attendees" min="0" max="20">
+      </div>
+      <div>
+        <label>実施時間 (h)</label>
+        <input type="number" id="edit-hours" min="0" max="24" step="0.5">
+      </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label>作業内容</label>
+      <input type="text" id="edit-work">
+    </div>
+    <div>
+      <label>メモ</label>
+      <textarea id="edit-memo" rows="3"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeEditModal()">キャンセル</button>
+      <button class="btn btn-primary" id="btn-update" onclick="updateRecord()">保存する</button>
+    </div>
+    <div id="edit-msg" class="form-msg" style="margin-top:8px; text-align:right;"></div>
+  </div>
+</div>
 </body>
 </html>

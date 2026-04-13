@@ -269,7 +269,7 @@
       transition:border-color .2s;
     }
     .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--color-accent); }
-    .field textarea { min-height:120px; resize:vertical; }
+    .field textarea { min-height:72px; resize:vertical; }
     .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
     /* Timeline editor */
@@ -514,11 +514,17 @@ function setAdminAvailable(available) {
 }
 function fmtDate(s) {
   if (!s || s === '—') return '—';
+  let year, month, day;
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (m) return `${m[1]}年${parseInt(m[2])}月${parseInt(m[3])}日`;
-  const d = new Date(s);
-  if (!isNaN(d.getTime())) return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
-  return s;
+  if (m) {
+    year = parseInt(m[1]); month = parseInt(m[2]); day = parseInt(m[3]);
+  } else {
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+      year = d.getFullYear(); month = d.getMonth()+1; day = d.getDate();
+    } else return s;
+  }
+  return `${year}/${month}/${day}`;
 }
 function toInputDate(s) {
   if (!s) return '';
@@ -744,7 +750,7 @@ function renderCards(records) {
     const stampHtml = stampSrc
       ? `<img class="status-stamp" src="${stampSrc}" alt="${esc(r['ステータス']||'')}">`
       : '';
-    const adminHtml = gasReady && isAdmin()
+    const adminHtml = gasReady
       ? `<div class="admin-bar visible">
            <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
            <button class="btn btn-delete" onclick="deleteRecord('${id}')">🗑 削除</button>
@@ -837,7 +843,7 @@ function renderRrCards(records) {
     const endLabel = isOp ? '予定完了' : '完了日';
     const endVal   = isOp ? fmtDate(r['予定完了日']||'—') : esc(r['完了日']||'—');
     const desc     = r['説明']||'';
-    const adminHtml = isOp && gasReady && isAdmin()
+    const adminHtml = isOp && gasReady
       ? `<div class="admin-bar visible">
            <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
            <button class="btn btn-delete" onclick="deleteRecord('${id}')">🗑 削除</button>
