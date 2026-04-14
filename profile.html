@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中司 祐樹 — N's factory</title>
+<meta name="description" content="中司 祐樹（N's factory）のプロフィール。千葉県印西市を拠点に、革工芸・システム手帳の製作、カルチャースクール講師、地域コミュニティ活動を展開する「先進工芸」作家。">
+<style>
+/* ── Design Tokens ────────────────────────────── */
+:root {
+  --black:        #000000;
+  --near-black:   #1d1d1f;
+  --light-gray:   #f5f5f7;
+  --white:        #ffffff;
+  --accent-blue:  #0071e3;
+  --link-blue:    #0066cc;
+  --bright-blue:  #2997ff;
+  --text-sub:     rgba(255,255,255,0.6);
+  --text-dark-sub:#636366;
+  --leather:      #8B6347;
+  --leather-light:#C4956A;
+  --leather-pale: #F3ECE4;
+  --dark-surface: #1a1a1c;
+  --dark-card:    #272729;
+  --radius-sm:    8px;
+  --radius-md:    12px;
+  --radius-full:  9999px;
+  font-family: -apple-system,'SF Pro Display','SF Pro Text',
+               'Hiragino Sans','Hiragino Kaku Gothic ProN',
+               'Yu Gothic',Meiryo,sans-serif;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--black);
+  color:var(--white);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+a { color:inherit; text-decoration:none; }
+img { display:block; max-width:100%; }
+
+/* ── Nav ─────────────────────────────────────── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  height:48px;
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 22px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.nav-logo {
+  font-size:18px; font-weight:600; letter-spacing:0.02em;
+  color:var(--white);
+}
+.nav-logo span { color:var(--leather-light); }
+.nav-links {
+  display:flex; gap:24px; list-style:none;
+}
+.nav-links a {
+  font-size:12px; color:rgba(255,255,255,0.8);
+  transition:color .2s;
+}
+.nav-links a:hover { color:var(--white); }
+.nav-back {
+  font-size:12px; color:rgba(255,255,255,0.6);
+  display:flex; align-items:center; gap:4px;
+  transition:color .2s;
+}
+.nav-back:hover { color:var(--white); }
+.nav-back::before { content:'‹'; font-size:16px; }
+
+/* ── Hero ────────────────────────────────────── */
+.hero {
+  min-height:100svh;
+  background:var(--black);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:80px 24px 60px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before {
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse 70% 60% at 60% 40%,
+    rgba(139,99,71,0.14) 0%, transparent 65%);
+  pointer-events:none;
+}
+.hero-inner {
+  max-width:980px; width:100%;
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:64px; align-items:center;
+  position:relative; z-index:1;
+}
+.hero-text { text-align:left; }
+.hero-eyebrow {
+  font-size:12px; font-weight:400; letter-spacing:0.18em;
+  color:var(--leather-light);
+  text-transform:uppercase;
+  margin-bottom:20px;
+  opacity:0; animation:fadeUp .8s .2s forwards;
+}
+.hero-name {
+  font-size:clamp(44px,6vw,80px);
+  font-weight:600;
+  line-height:1.04;
+  letter-spacing:-0.02em;
+  color:var(--white);
+  margin-bottom:8px;
+  opacity:0; animation:fadeUp .9s .35s forwards;
+}
+.hero-name-en {
+  font-size:clamp(13px,1.8vw,18px);
+  font-weight:300;
+  letter-spacing:0.28em;
+  color:rgba(255,255,255,0.38);
+  margin-bottom:32px;
+  opacity:0; animation:fadeUp .9s .45s forwards;
+}
+.hero-tagline {
+  font-size:clamp(16px,1.8vw,20px);
+  font-weight:400;
+  line-height:1.55;
+  letter-spacing:-0.01em;
+  color:rgba(255,255,255,0.72);
+  margin-bottom:40px;
+  opacity:0; animation:fadeUp 1s .6s forwards;
+}
+.hero-tagline strong {
+  color:var(--white);
+  font-weight:600;
+}
+.hero-cta-group {
+  display:flex; gap:12px; flex-wrap:wrap;
+  opacity:0; animation:fadeUp .9s .8s forwards;
+}
+.btn-primary {
+  background:var(--accent-blue);
+  color:var(--white);
+  padding:12px 22px;
+  border-radius:var(--radius-full);
+  font-size:17px; font-weight:400;
+  transition:background .2s, transform .15s;
+  cursor:pointer; border:none; display:inline-block;
+}
+.btn-primary:hover { background:#0077ed; }
+.btn-primary:active { transform:scale(0.97); }
+.btn-outline {
+  border:1px solid rgba(255,255,255,0.3);
+  color:var(--white);
+  padding:11px 22px;
+  border-radius:var(--radius-full);
+  font-size:17px; font-weight:400;
+  transition:border-color .2s, background .2s;
+  display:inline-block;
+}
+.btn-outline:hover { border-color:rgba(255,255,255,0.7); background:rgba(255,255,255,0.06); }
+
+/* Portrait */
+.hero-portrait-wrap {
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; animation:fadeUp 1s .4s forwards;
+}
+.hero-portrait-wrap::before {
+  content:'';
+  position:absolute;
+  inset:-24px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(196,149,106,0.22) 0%, transparent 70%);
+  animation:pulse 4s ease-in-out infinite;
+}
+.hero-portrait {
+  width:100%; max-width:420px;
+  aspect-ratio:3/4;
+  object-fit:cover;
+  border-radius:24px;
+  position:relative; z-index:1;
+  box-shadow:
+    0 0 0 1px rgba(196,149,106,0.2),
+    0 32px 80px rgba(0,0,0,0.7),
+    0 0 80px rgba(139,99,71,0.15);
+  filter:contrast(1.02) saturate(1.05);
+}
+.hero-portrait-placeholder {
+  width:100%; max-width:420px;
+  aspect-ratio:3/4;
+  border-radius:24px;
+  background:var(--dark-card);
+  border:1px dashed rgba(196,149,106,0.3);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:12px; color:rgba(255,255,255,0.25);
+  font-size:14px;
+}
+.hero-portrait-placeholder span { font-size:40px; }
+
+.hero-scroll {
+  position:absolute; bottom:32px; left:50%; transform:translateX(-50%);
+  font-size:11px; letter-spacing:0.15em; color:rgba(255,255,255,0.25);
+  text-transform:uppercase;
+  opacity:0; animation:fadeUp .8s 1.2s forwards;
+}
+.hero-scroll::after {
+  content:''; display:block; width:1px; height:28px;
+  background:rgba(255,255,255,0.15);
+  margin:8px auto 0;
+}
+
+@keyframes pulse {
+  0%,100% { transform:scale(1); opacity:.6; }
+  50%      { transform:scale(1.06); opacity:1; }
+}
+
+@media (max-width:768px) {
+  .hero-inner {
+    grid-template-columns:1fr;
+    gap:40px; text-align:center;
+  }
+  .hero-text { order:2; }
+  .hero-portrait-wrap { order:1; }
+  .hero-cta-group { justify-content:center; }
+  .hero-portrait { max-width:280px; }
+}
+
+/* ── Section Base ─────────────────────────────── */
+section { padding:100px 24px; }
+.section-inner { max-width:980px; margin:0 auto; }
+
+/* ── About ───────────────────────────────────── */
+.about {
+  background:var(--light-gray);
+  color:var(--near-black);
+}
+.about-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:64px;
+  align-items:center;
+}
+.about-eyebrow {
+  font-size:12px; font-weight:600; letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--leather);
+  margin-bottom:16px;
+}
+.about-heading {
+  font-size:clamp(32px,4vw,48px);
+  font-weight:600; line-height:1.08;
+  letter-spacing:-0.015em;
+  color:var(--near-black);
+  margin-bottom:24px;
+}
+.about-body {
+  font-size:17px; font-weight:400;
+  line-height:1.65; letter-spacing:-0.01em;
+  color:#3a3a3c;
+}
+.about-body + .about-body { margin-top:16px; }
+.about-stats {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:32px;
+}
+.stat-item {
+  border-left:2px solid var(--leather-light);
+  padding-left:16px;
+}
+.stat-number {
+  font-size:36px; font-weight:600; line-height:1;
+  color:var(--near-black); letter-spacing:-0.02em;
+  margin-bottom:4px;
+}
+.stat-number span { font-size:18px; font-weight:400; color:var(--leather); }
+.stat-label {
+  font-size:13px; color:var(--text-dark-sub); letter-spacing:0.02em;
+}
+
+/* ── Philosophy / 先進工芸 ─────────────────────── */
+.philosophy {
+  background:var(--black);
+  text-align:center;
+}
+.phil-eyebrow {
+  font-size:12px; font-weight:400; letter-spacing:0.25em;
+  text-transform:uppercase; color:var(--leather-light);
+  margin-bottom:20px;
+}
+.phil-heading {
+  font-size:clamp(40px,5.5vw,64px);
+  font-weight:600; line-height:1.06;
+  letter-spacing:-0.025em;
+  margin-bottom:24px;
+}
+.phil-heading em {
+  font-style:normal;
+  background:linear-gradient(135deg, var(--leather-light), #e8c99a, var(--leather-light));
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:shimmer 4s linear infinite;
+}
+.phil-body {
+  font-size:19px; font-weight:400;
+  line-height:1.6; letter-spacing:-0.01em;
+  color:rgba(255,255,255,0.72);
+  max-width:640px; margin:0 auto 64px;
+}
+.phil-pillars {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:2px;
+  background:rgba(255,255,255,0.06);
+  border-radius:var(--radius-md);
+  overflow:hidden;
+}
+.pillar {
+  background:var(--dark-card);
+  padding:40px 32px;
+  text-align:left;
+  transition:background .3s;
+}
+.pillar:hover { background:#2e2e30; }
+.pillar-icon {
+  font-size:28px; margin-bottom:20px;
+  display:block;
+}
+.pillar-title {
+  font-size:21px; font-weight:600;
+  line-height:1.2; letter-spacing:-0.01em;
+  margin-bottom:12px;
+}
+.pillar-desc {
+  font-size:14px; line-height:1.6;
+  color:rgba(255,255,255,0.55);
+  letter-spacing:-0.01em;
+}
+
+/* ── Activities ──────────────────────────────── */
+.activities {
+  background:var(--light-gray);
+  color:var(--near-black);
+}
+.section-eyebrow {
+  font-size:12px; font-weight:600; letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--leather);
+  text-align:center; margin-bottom:16px;
+}
+.section-heading {
+  font-size:clamp(32px,4vw,48px);
+  font-weight:600; line-height:1.08;
+  letter-spacing:-0.015em;
+  text-align:center; margin-bottom:56px;
+  color:var(--near-black);
+}
+.activity-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+.activity-card {
+  background:var(--white);
+  border-radius:var(--radius-md);
+  padding:40px 32px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+  transition:box-shadow .3s, transform .3s;
+}
+.activity-card:hover {
+  box-shadow:0 8px 32px rgba(0,0,0,0.12);
+  transform:translateY(-4px);
+}
+.activity-icon {
+  font-size:36px; margin-bottom:20px; display:block;
+}
+.activity-title {
+  font-size:21px; font-weight:600;
+  line-height:1.2; letter-spacing:-0.01em;
+  color:var(--near-black); margin-bottom:8px;
+}
+.activity-subtitle {
+  font-size:13px; font-weight:600;
+  letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--leather); margin-bottom:16px;
+}
+.activity-desc {
+  font-size:15px; line-height:1.65;
+  color:#636366;
+  letter-spacing:-0.01em;
+}
+.activity-tags {
+  display:flex; flex-wrap:wrap; gap:6px; margin-top:20px;
+}
+.tag {
+  font-size:12px; font-weight:500;
+  padding:4px 12px;
+  background:var(--leather-pale);
+  color:var(--leather);
+  border-radius:var(--radius-full);
+  letter-spacing:0.02em;
+}
+
+/* ── Shops ───────────────────────────────────── */
+.shops {
+  background:var(--near-black);
+  color:var(--white);
+  text-align:center;
+}
+.shops .section-eyebrow { color:var(--leather-light); }
+.shops .section-heading { color:var(--white); }
+.shop-grid {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:12px; margin-bottom:48px;
+}
+.shop-card {
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:var(--radius-md);
+  padding:28px 16px;
+  transition:background .25s, border-color .25s, transform .25s;
+  cursor:pointer; display:block;
+}
+.shop-card:hover {
+  background:rgba(255,255,255,0.1);
+  border-color:rgba(255,255,255,0.16);
+  transform:translateY(-2px);
+}
+.shop-name {
+  font-size:15px; font-weight:600;
+  margin-bottom:6px; letter-spacing:0.02em;
+}
+.shop-cat {
+  font-size:12px; color:rgba(255,255,255,0.45);
+  letter-spacing:0.04em;
+}
+.shops-link-group {
+  display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+}
+.btn-ghost-light {
+  border:1px solid rgba(255,255,255,0.25);
+  color:var(--bright-blue);
+  padding:10px 20px;
+  border-radius:var(--radius-full);
+  font-size:15px;
+  transition:border-color .2s, background .2s;
+  display:inline-block;
+}
+.btn-ghost-light:hover {
+  border-color:var(--bright-blue);
+  background:rgba(41,151,255,0.08);
+}
+
+/* ── Community ───────────────────────────────── */
+.community {
+  background:var(--black);
+  color:var(--white);
+}
+.community .section-eyebrow { color:var(--leather-light); text-align:center; }
+.community .section-heading { color:var(--white); }
+.comm-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.comm-card {
+  background:var(--dark-card);
+  border-radius:var(--radius-md);
+  padding:40px 36px;
+  position:relative; overflow:hidden;
+}
+.comm-card::before {
+  content:''; position:absolute;
+  top:0; left:0; width:3px; height:100%;
+  background:linear-gradient(to bottom, var(--leather-light), var(--leather));
+}
+.comm-tag {
+  font-size:11px; font-weight:600; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--leather-light);
+  margin-bottom:12px; display:block;
+}
+.comm-title {
+  font-size:22px; font-weight:600;
+  line-height:1.25; letter-spacing:-0.01em;
+  margin-bottom:16px;
+}
+.comm-desc {
+  font-size:15px; line-height:1.65;
+  color:rgba(255,255,255,0.6);
+}
+
+/* ── Contact ─────────────────────────────────── */
+.contact {
+  background:var(--light-gray);
+  color:var(--near-black);
+  text-align:center;
+}
+.contact .section-eyebrow { color:var(--leather); }
+.contact .section-heading { color:var(--near-black); }
+.contact-body {
+  font-size:17px; line-height:1.6;
+  color:#636366; max-width:500px;
+  margin:0 auto 36px;
+}
+.contact-info {
+  display:flex; gap:24px; justify-content:center;
+  flex-wrap:wrap; margin-bottom:40px;
+}
+.contact-item {
+  background:var(--white);
+  border-radius:var(--radius-sm);
+  padding:16px 24px;
+  font-size:14px;
+  color:var(--near-black);
+  box-shadow:0 1px 6px rgba(0,0,0,0.06);
+}
+.contact-item strong { display:block; font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--leather); margin-bottom:4px; }
+
+/* ── Footer ──────────────────────────────────── */
+footer {
+  background:var(--near-black);
+  padding:48px 24px;
+  text-align:center;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.footer-logo {
+  font-size:20px; font-weight:600; letter-spacing:0.03em;
+  color:var(--white); margin-bottom:8px;
+}
+.footer-logo span { color:var(--leather-light); }
+.footer-tagline {
+  font-size:13px; color:rgba(255,255,255,0.35);
+  letter-spacing:0.08em; margin-bottom:24px;
+}
+.footer-links {
+  display:flex; gap:20px; justify-content:center;
+  list-style:none; margin-bottom:32px; flex-wrap:wrap;
+}
+.footer-links a {
+  font-size:13px; color:rgba(255,255,255,0.5);
+  transition:color .2s;
+}
+.footer-links a:hover { color:var(--white); }
+.footer-copy {
+  font-size:12px; color:rgba(255,255,255,0.2);
+  letter-spacing:0.04em;
+}
+
+/* ── Animations ──────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position:0% center; }
+  100% { background-position:200% center; }
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity:0; transform:translateY(32px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+.reveal.visible {
+  opacity:1; transform:translateY(0);
+}
+.reveal-delay-1 { transition-delay:.1s; }
+.reveal-delay-2 { transition-delay:.2s; }
+.reveal-delay-3 { transition-delay:.3s; }
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width:768px) {
+  section { padding:72px 20px; }
+  .about-grid { grid-template-columns:1fr; gap:40px; }
+  .about-stats { gap:20px; }
+  .phil-pillars { grid-template-columns:1fr; gap:2px; }
+  .activity-grid { grid-template-columns:1fr; }
+  .shop-grid { grid-template-columns:repeat(2,1fr); }
+  .comm-grid { grid-template-columns:1fr; }
+  .nav-links { display:none; }
+}
+@media (max-width:480px) {
+  .shop-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Nav ───────────────────────────────────── -->
+<nav>
+  <a href="index.html" class="nav-back">N's factory</a>
+  <div class="nav-logo">N<span>'</span>s factory</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#philosophy">哲学</a></li>
+    <li><a href="#activities">活動</a></li>
+    <li><a href="#shops">ショップ</a></li>
+    <li><a href="#contact">連絡先</a></li>
+  </ul>
+</nav>
+
+<!-- ── Hero ──────────────────────────────────── -->
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <p class="hero-eyebrow">Leather Artisan · Inzai, Chiba</p>
+      <h1 class="hero-name">中司 祐樹</h1>
+      <p class="hero-name-en">NAKATSUKA YUKI</p>
+      <p class="hero-tagline">
+        手が覚えている技術と、<strong>時代が求める感性</strong>を結ぶ。<br>
+        革という素材を通じて、ひとつひとつ手仕事で世界をつくる。
+      </p>
+      <div class="hero-cta-group">
+        <a href="#shops" class="btn-primary">作品を見る</a>
+        <a href="#about" class="btn-outline">プロフィール</a>
+      </div>
+    </div>
+    <div class="hero-portrait-wrap">
+      <img src="assets/profile.jpg" alt="中司 祐樹 — N's factory" class="hero-portrait"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="hero-portrait-placeholder" style="display:none">
+        <span>🪡</span>
+        assets/profile.jpg を配置してください
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<!-- ── About ─────────────────────────────────── -->
+<section class="about" id="about">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div>
+        <p class="about-eyebrow">Profile</p>
+        <h2 class="about-heading">革工芸作家・<br>N's factory</h2>
+        <p class="about-body">
+          千葉県印西市を拠点に、システム手帳を主力としたレザークラフト製品の製造・販売を行う個人工房 N's factory を運営。使う人の暮らしに寄り添う「世界にひとつだけの革小物」を一点一点手製しています。
+        </p>
+        <p class="about-body" style="margin-top:16px;">
+          職人としての技術を地域に還元するため、カルチャースクール講師としてレザークラフトの楽しさを伝えながら、千葉ニュータウンの新たなコミュニティ形成にも取り組んでいます。
+        </p>
+      </div>
+      <div class="about-stats">
+        <div class="stat-item reveal reveal-delay-1">
+          <div class="stat-number">8<span>チャネル</span></div>
+          <div class="stat-label">販売プラットフォーム</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-2">
+          <div class="stat-number">1<span>点もの</span></div>
+          <div class="stat-label">完全受注・フルオーダー対応</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-1">
+          <div class="stat-number">印西<span>市</span></div>
+          <div class="stat-label">千葉県 制作拠点</div>
+        </div>
+        <div class="stat-item reveal reveal-delay-2">
+          <div class="stat-number">青色<span>申告</span></div>
+          <div class="stat-label">透明性ある事業運営</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Philosophy ─────────────────────────────── -->
+<section class="philosophy" id="philosophy">
+  <div class="section-inner">
+    <p class="phil-eyebrow reveal">Philosophy</p>
+    <h2 class="phil-heading reveal">
+      <em>先進工芸</em>という思想
+    </h2>
+    <p class="phil-body reveal">
+      伝統的な手仕事の精度と、デジタル時代のデザイン感覚を融合する。
+      古い技法を守ることと、新しい価値を創ることは矛盾しない。
+      N's factory が追い求めるのは、その交点にある「これからの工芸」。
+    </p>
+    <div class="phil-pillars">
+      <div class="pillar reveal reveal-delay-1">
+        <span class="pillar-icon">✦</span>
+        <h3 class="pillar-title">技の精度</h3>
+        <p class="pillar-desc">
+          縫い目の均一さ、コバの磨き、染色の深み。手仕事だからこそ宿る緻密さを、妥協なく追求する。
+        </p>
+      </div>
+      <div class="pillar reveal reveal-delay-2">
+        <span class="pillar-icon">◈</span>
+        <h3 class="pillar-title">設計の論理</h3>
+        <p class="pillar-desc">
+          使い手の動線を想像し、CADで型紙を設計。感覚だけでなくロジックで機能美を実現する。
+        </p>
+      </div>
+      <div class="pillar reveal reveal-delay-3">
+        <span class="pillar-icon">⬡</span>
+        <h3 class="pillar-title">関係の継続</h3>
+        <p class="pillar-desc">
+          作家と使い手の直接対話。オーダーから納品後まで続く関係が、革小物に意味を宿す。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Activities ─────────────────────────────── -->
+<section class="activities" id="activities">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Activities</p>
+    <h2 class="section-heading reveal">三つの顔</h2>
+    <div class="activity-grid">
+      <div class="activity-card reveal reveal-delay-1">
+        <span class="activity-icon">🪡</span>
+        <h3 class="activity-title">革工芸作家</h3>
+        <p class="activity-subtitle">Leather Artisan</p>
+        <p class="activity-desc">
+          システム手帳を主力に、財布・カードケース・ペンケースなど日常使いの革小物を製造・販売。フルオーダー対応で、世界にひとつだけの作品を届ける。
+        </p>
+        <div class="activity-tags">
+          <span class="tag">システム手帳</span>
+          <span class="tag">フルオーダー</span>
+          <span class="tag">ハンドスティッチ</span>
+        </div>
+      </div>
+      <div class="activity-card reveal reveal-delay-2">
+        <span class="activity-icon">📐</span>
+        <h3 class="activity-title">カルチャー講師</h3>
+        <p class="activity-subtitle">Craft Instructor</p>
+        <p class="activity-desc">
+          地域のカルチャースクールでレザークラフト講師を担当。革の楽しさと手仕事の喜びを次世代に伝える教育活動を展開。
+        </p>
+        <div class="activity-tags">
+          <span class="tag">レザークラフト教室</span>
+          <span class="tag">工芸普及</span>
+        </div>
+      </div>
+      <div class="activity-card reveal reveal-delay-3">
+        <span class="activity-icon">🏘️</span>
+        <h3 class="activity-title">地域コミュニティ</h3>
+        <p class="activity-subtitle">Community Leader</p>
+        <p class="activity-desc">
+          第27期印西市民アカデミー学生。千葉ニュータウンオープンコミュニティラボ「COCoLa」代表として、地域の人と人をつなぐ活動を推進。
+        </p>
+        <div class="activity-tags">
+          <span class="tag">印西市民アカデミー</span>
+          <span class="tag">COCoLa代表</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Shops ───────────────────────────────────── -->
+<section class="shops" id="shops">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Online Shops</p>
+    <h2 class="section-heading reveal">作品を見つける</h2>
+    <div class="shop-grid">
+      <a class="shop-card reveal reveal-delay-1" href="https://www.creema.jp/" target="_blank" rel="noopener">
+        <div class="shop-name">Creema</div>
+        <div class="shop-cat">ハンドメイド</div>
+      </a>
+      <a class="shop-card reveal reveal-delay-1" href="https://minne.com/" target="_blank" rel="noopener">
+        <div class="shop-name">minne</div>
+        <div class="shop-cat">ハンドメイド</div>
+      </a>
+      <a class="shop-card reveal reveal-delay-2" href="https://thebase.com/" target="_blank" rel="noopener">
+        <div class="shop-name">BASE</div>
+        <div class="shop-cat">公式ショップ</div>
+      </a>
+      <a class="shop-card reveal reveal-delay-2" href="https://store.shopping.yahoo.co.jp/" target="_blank" rel="noopener">
+        <div class="shop-name">STORE</div>
+        <div class="shop-cat">公式ショップ</div>
+      </a>
+      <a class="shop-card reveal reveal-delay-3" href="https://www.mercari.com/jp/" target="_blank" rel="noopener">
+        <div class="shop-name">メルカリ</div>
+        <div class="shop-cat">フリマ</div>
+      </a>
+      <a class="shop-card reveal reveal-delay-3" href="https://fril.jp/" target="_blank" rel="noopener">
+        <div class="shop-name">ラクマ</div>
+        <div class="shop-cat">フリマ</div>
+      </a>
+      <a class="shop-card reveal reveal-delay-3" href="https://paypayfleamarket.yahoo.co.jp/" target="_blank" rel="noopener">
+        <div class="shop-name">PayPayフリマ</div>
+        <div class="shop-cat">フリマ</div>
+      </a>
+      <a class="shop-card reveal reveal-delay-3" href="https://www.pinkoi.com/" target="_blank" rel="noopener">
+        <div class="shop-name">Pinkoi</div>
+        <div class="shop-cat">アジア向け</div>
+      </a>
+    </div>
+    <div class="shops-link-group reveal">
+      <a href="links.html" class="btn-ghost-light">すべてのリンクを見る →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Community ─────────────────────────────── -->
+<section class="community" id="community">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Community</p>
+    <h2 class="section-heading reveal">地域とともに</h2>
+    <div class="comm-grid">
+      <div class="comm-card reveal reveal-delay-1">
+        <span class="comm-tag">Education</span>
+        <h3 class="comm-title">第27期 印西市民アカデミー</h3>
+        <p class="comm-desc">
+          地域の学びのコミュニティで学生として参加。千葉・印西の地域課題と向き合いながら、市民としての視野を広げる活動を続けています。
+        </p>
+      </div>
+      <div class="comm-card reveal reveal-delay-2">
+        <span class="comm-tag">Community Lab</span>
+        <h3 class="comm-title">COCoLa — 千葉ニュータウン<br>オープンコミュニティラボ</h3>
+        <p class="comm-desc">
+          ChibaNT Open Community Lab（COCoLa）を代表として立ち上げ。千葉ニュータウンエリアの人と人・ことをつなぐオープンなコミュニティ拠点を目指す。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Contact ────────────────────────────────── -->
+<section class="contact" id="contact">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Contact</p>
+    <h2 class="section-heading reveal">お問い合わせ</h2>
+    <p class="contact-body reveal">
+      オーダーのご相談、コラボレーションのご提案、講師依頼など、お気軽にご連絡ください。
+    </p>
+    <div class="contact-info reveal">
+      <div class="contact-item">
+        <strong>拠点</strong>
+        千葉県印西市
+      </div>
+      <div class="contact-item">
+        <strong>屋号</strong>
+        N's factory
+      </div>
+      <div class="contact-item">
+        <strong>Link</strong>
+        <a href="links.html" style="color:#0066cc;">links ページへ</a>
+      </div>
+    </div>
+    <div class="reveal">
+      <a href="links.html" class="btn-primary">すべてのリンクを見る</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────── -->
+<footer>
+  <div class="footer-logo">N<span>'</span>s factory</div>
+  <p class="footer-tagline">先進工芸 · Advanced Craft · Inzai, Chiba</p>
+  <ul class="footer-links">
+    <li><a href="index.html">トップ</a></li>
+    <li><a href="profile.html">プロフィール</a></li>
+    <li><a href="links.html">リンク集</a></li>
+    <li><a href="orderprogress.html">オーダー進捗</a></li>
+  </ul>
+  <p class="footer-copy">Copyright © 2024 N's factory — 中司 祐樹. All rights reserved.</p>
+</footer>
+
+<!-- ── Scroll Reveal Script ───────────────────── -->
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin:'0px 0px -40px 0px' });
+reveals.forEach(el => io.observe(el));
+</script>
+</body>
+</html>
