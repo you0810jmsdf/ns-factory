@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作品集 | N's factory</title>
+  <meta name="description" content="N's factory のシステム手帳・革小物の作品集。オーダーメイド制作例を写真でご覧いただけます。">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ND1T7H067Y');
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #d8dee8;
+      --paper: #f7f8fa;
+      --white: #ffffff;
+      --accent: #2f6f73;
+      --accent-dark: #234f52;
+      --warm: #9a6a43;
+      --shadow: 0 10px 30px rgba(31, 41, 51, .10);
+      --radius: 8px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.7;
+    }
+    a { color: inherit; }
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 24px;
+      background: rgba(255,255,255,.92);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+    .nav-brand { font-size: 15px; font-weight: 800; text-decoration: none; }
+    .nav-spacer { flex: 1; }
+    .nav-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-link:hover { color: var(--ink); }
+    .hero {
+      padding: 64px 24px 34px;
+      background: linear-gradient(180deg, #ffffff 0%, #eef3f4 100%);
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-inner { max-width: 1080px; margin: 0 auto; }
+    .eyebrow {
+      color: var(--warm);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: clamp(32px, 6vw, 54px);
+      line-height: 1.15;
+      letter-spacing: 0;
+      margin-bottom: 16px;
+    }
+    .lead {
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .tools {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 22px 24px 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .search {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 13px;
+      font: inherit;
+      background: var(--white);
+      color: var(--ink);
+    }
+    .count {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .gallery {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 22px 24px 72px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 18px;
+    }
+    .work-card {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: 0 2px 10px rgba(31, 41, 51, .05);
+      cursor: pointer;
+      text-align: left;
+      color: inherit;
+      font: inherit;
+    }
+    .work-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+    .thumb {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+      background: #e9edf2;
+    }
+    .card-body { padding: 13px 14px 15px; }
+    .work-title { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
+    .work-meta { font-size: 12px; color: var(--muted); }
+    .empty, .error {
+      max-width: 1080px;
+      margin: 24px auto 72px;
+      padding: 28px 24px;
+      color: var(--muted);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      background: rgba(10, 16, 22, .78);
+      padding: 24px;
+    }
+    .modal.open {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+    }
+    .modal-head, .modal-foot {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--white);
+      gap: 12px;
+    }
+    .modal-title { font-size: 16px; font-weight: 800; }
+    .modal-count { color: rgba(255,255,255,.76); font-size: 13px; }
+    .modal-btn {
+      min-width: 44px;
+      min-height: 40px;
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.12);
+      color: var(--white);
+      font: inherit;
+      cursor: pointer;
+    }
+    .modal-stage {
+      max-width: 1100px;
+      width: 100%;
+      min-height: 0;
+      margin: 0 auto;
+      display: grid;
+      place-items: center;
+    }
+    .modal-img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: var(--radius);
+      object-fit: contain;
+      background: #111820;
+    }
+    .footer {
+      border-top: 1px solid var(--line);
+      padding: 22px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      background: var(--white);
+    }
+    @media (max-width: 720px) {
+      .nav { gap: 12px; overflow-x: auto; }
+      .hero { padding: 46px 18px 28px; }
+      .tools { grid-template-columns: 1fr; padding: 18px 18px 0; }
+      .gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); padding: 18px 18px 56px; gap: 12px; }
+      .modal { padding: 14px; }
+      .modal-foot { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="index.html" class="nav-brand">N's factory</a>
+    <span class="nav-spacer"></span>
+    <a href="works.html" class="nav-link">作品集</a>
+    <a href="orderprogress.html" class="nav-link">オーダー進捗</a>
+    <a href="JHCS.html" class="nav-link">JHCS講習案内</a>
+    <a href="links.html" class="nav-link">リンク集</a>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Works</p>
+      <h1>作品集</h1>
+      <p class="lead">システム手帳を中心に、これまで制作した革製品をまとめています。気になる作品は、写真を開いて細部までご覧ください。</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="tools">
+      <input id="search" class="search" type="search" placeholder="作品名・お客様名で探す" aria-label="作品名・お客様名で探す">
+      <div id="count" class="count">読み込み中</div>
+    </div>
+    <div id="gallery" class="gallery" aria-live="polite"></div>
+  </main>
+
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <div>
+        <div id="modal-title" class="modal-title"></div>
+        <div id="modal-count" class="modal-count"></div>
+      </div>
+      <button id="close-modal" class="modal-btn" type="button" aria-label="閉じる">×</button>
+    </div>
+    <div class="modal-stage">
+      <img id="modal-img" class="modal-img" src="" alt="">
+    </div>
+    <div class="modal-foot">
+      <button id="prev-photo" class="modal-btn" type="button">前へ</button>
+      <button id="next-photo" class="modal-btn" type="button">次へ</button>
+    </div>
+  </div>
+
+  <footer class="footer">© N's factory</footer>
+
+  <script>
+    const gallery = document.getElementById('gallery');
+    const count = document.getElementById('count');
+    const search = document.getElementById('search');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalCount = document.getElementById('modal-count');
+    const modalImg = document.getElementById('modal-img');
+    const closeModal = document.getElementById('close-modal');
+    const prevPhoto = document.getElementById('prev-photo');
+    const nextPhoto = document.getElementById('next-photo');
+    let works = [];
+    let filtered = [];
+    let activeWork = null;
+    let activeIndex = 0;
+
+    function normalize(value) {
+      return String(value || '').toLowerCase();
+    }
+
+    function render() {
+      const keyword = normalize(search.value).trim();
+      filtered = works.filter((work) => normalize(work.title).includes(keyword));
+      count.textContent = `${filtered.length}件 / 写真 ${filtered.reduce((sum, work) => sum + work.photos.length, 0)}枚`;
+
+      if (!filtered.length) {
+        gallery.innerHTML = '<div class="empty">該当する作品がありません。</div>';
+        return;
+      }
+
+      gallery.innerHTML = filtered.map((work, index) => `
+        <button class="work-card" type="button" data-index="${index}">
+          <img class="thumb" src="${work.photos[0]}" alt="${work.title}" loading="lazy">
+          <span class="card-body">
+            <span class="work-title">${work.title}</span>
+            <span class="work-meta">${work.photos.length}枚</span>
+          </span>
+        </button>
+      `).join('');
+    }
+
+    function openWork(work, index = 0) {
+      activeWork = work;
+      activeIndex = index;
+      updateModal();
+      modal.classList.add('open');
+      closeModal.focus();
+    }
+
+    function updateModal() {
+      if (!activeWork) return;
+      const total = activeWork.photos.length;
+      activeIndex = (activeIndex + total) % total;
+      modalTitle.textContent = activeWork.title;
+      modalCount.textContent = `${activeIndex + 1} / ${total}`;
+      modalImg.src = activeWork.photos[activeIndex];
+      modalImg.alt = activeWork.title;
+    }
+
+    gallery.addEventListener('click', (event) => {
+      const card = event.target.closest('.work-card');
+      if (!card) return;
+      const work = filtered[Number(card.dataset.index)];
+      openWork(work);
+      loadDrivePhotos(work).then(() => updateModal());
+    });
+
+    search.addEventListener('input', render);
+    closeModal.addEventListener('click', () => modal.classList.remove('open'));
+    prevPhoto.addEventListener('click', () => { activeIndex -= 1; updateModal(); });
+    nextPhoto.addEventListener('click', () => { activeIndex += 1; updateModal(); });
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) modal.classList.remove('open');
+    });
+    window.addEventListener('keydown', (event) => {
+      if (!modal.classList.contains('open')) return;
+      if (event.key === 'Escape') modal.classList.remove('open');
+      if (event.key === 'ArrowLeft') { activeIndex -= 1; updateModal(); }
+      if (event.key === 'ArrowRight') { activeIndex += 1; updateModal(); }
+    });
+
+    const LIVE_WORKS_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec?api=products';
+    const STATIC_SOURCES = ['works-data.json', 'mini6-photos.json'];
+
+    function toWorks(data) {
+      if (Array.isArray(data)) {
+        return data.map((item) => ({
+          id: item.id || item.name || item.title,
+          title: item.name || item.title || item.id || '作品',
+          folderId: item.folderId || '',
+          photosLoaded: !item.folderId,
+          photos: (item.photos && item.photos.length)
+            ? item.photos.map((photo) => photo.url || photo)
+            : [item.mainPhoto].filter(Boolean),
+        }));
+      }
+      return Object.entries(data || {}).map(([title, photos]) => ({ title, photos, folderId: '', photosLoaded: true }));
+    }
+
+    function applyData(data) {
+      works = toWorks(data)
+        .filter((work) => Array.isArray(work.photos) && work.photos.length)
+        .sort((a, b) => a.title.localeCompare(b.title, 'ja'));
+      render();
+    }
+
+    function fetchJson(url) {
+      return fetch(url, { cache: 'no-store' }).then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      });
+    }
+
+    function fetchJsonp(url, timeout = 8000) {
+      return new Promise((resolve, reject) => {
+        const callback = `worksCallback_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+        const script = document.createElement('script');
+        const timer = window.setTimeout(() => {
+          cleanup();
+          reject(new Error('JSONP timeout'));
+        }, timeout);
+
+        function cleanup() {
+          window.clearTimeout(timer);
+          delete window[callback];
+          script.remove();
+        }
+
+        window[callback] = (data) => {
+          cleanup();
+          resolve(data);
+        };
+        script.onerror = () => {
+          cleanup();
+          reject(new Error('JSONP failed'));
+        };
+        script.src = `${url}&callback=${encodeURIComponent(callback)}`;
+        document.head.appendChild(script);
+      });
+    }
+
+    function loadStatic(index = 0) {
+      if (index >= STATIC_SOURCES.length) {
+        throw new Error('No static source available');
+      }
+      return fetchJson(STATIC_SOURCES[index]).catch(() => loadStatic(index + 1));
+    }
+
+    function loadDrivePhotos(work) {
+      if (!work.folderId || work.photosLoaded) return Promise.resolve(work.photos);
+      const url = `${LIVE_WORKS_API.replace('api=products', 'api=photos')}&folderId=${encodeURIComponent(work.folderId)}`;
+      return fetchJsonp(url)
+        .then((photos) => {
+          const urls = (photos || []).map((photo) => photo.url || photo).filter(Boolean);
+          if (urls.length) work.photos = urls;
+          work.photosLoaded = true;
+          return work.photos;
+        })
+        .catch(() => {
+          work.photosLoaded = true;
+          return work.photos;
+        });
+    }
+
+    fetchJsonp(LIVE_WORKS_API)
+      .catch(() => loadStatic())
+      .then(applyData)
+      .catch(() => {
+        count.textContent = '読み込み失敗';
+        gallery.innerHTML = '<div class="error">作品データを読み込めませんでした。時間をおいて再読み込みしてください。</div>';
+      });
+  </script>
+</body>
+</html>
