@@ -133,8 +133,35 @@
       background: #e9edf2;
     }
     .card-body { padding: 13px 14px 15px; }
-    .work-title { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
-    .work-meta { font-size: 12px; color: var(--muted); }
+    .work-title { display: block; font-size: 15px; font-weight: 800; margin-bottom: 2px; }
+    .work-details {
+      display: grid;
+      gap: 4px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .work-desc {
+      display: -webkit-box;
+      margin-top: 8px;
+      overflow: hidden;
+      color: #4b5563;
+      font-size: 13px;
+      line-height: 1.55;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+    .thumb-placeholder {
+      display: grid;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      place-items: center;
+      background: #eef2f7;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .work-meta { display: block; margin-top: 8px; font-size: 12px; color: var(--muted); }
     .empty, .error {
       max-width: 1080px;
       margin: 24px auto 72px;
@@ -273,14 +300,40 @@
     let filtered = [];
     let activeWork = null;
     let activeIndex = 0;
+    let thumbObserver = null;
 
     function normalize(value) {
       return String(value || '').toLowerCase();
     }
 
+    function esc(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatPrice(value) {
+      const amount = Number(value || 0);
+      return amount > 0 ? `${amount.toLocaleString('ja-JP')}円` : '';
+    }
+
+    function compact(values) {
+      return values.filter(Boolean).join(' / ');
+    }
+
     function render() {
       const keyword = normalize(search.value).trim();
-      filtered = works.filter((work) => normalize(work.title).includes(keyword));
+      filtered = works.filter((work) => normalize([
+        work.title,
+        work.category,
+        work.material,
+        work.color,
+        work.size,
+        work.shortDesc,
+      ].join(' ')).includes(keyword));
       count.textContent = `${filtered.length}件 / 写真 ${filtered.reduce((sum, work) => sum + work.photos.length, 0)}枚`;
 
       if (!filtered.length) {
@@ -290,13 +343,21 @@
 
       gallery.innerHTML = filtered.map((work, index) => `
         <button class="work-card" type="button" data-index="${index}">
-          <img class="thumb" src="${work.photos[0]}" alt="${work.title}" loading="lazy">
+          ${work.photos[0]
+            ? `<img class="thumb" src="${esc(work.photos[0])}" alt="${esc(work.title)}" loading="lazy">`
+            : '<span class="thumb-placeholder">写真を読み込み中</span>'}
           <span class="card-body">
-            <span class="work-title">${work.title}</span>
-            <span class="work-meta">${work.photos.length}枚</span>
+            <span class="work-title">${esc(work.title)}</span>
+            <span class="work-details">
+              ${compact([work.category, work.material, work.color]) ? `<span>${esc(compact([work.category, work.material, work.color]))}</span>` : ''}
+              ${compact([work.size, formatPrice(work.price)]) ? `<span>${esc(compact([work.size, formatPrice(work.price)]))}</span>` : ''}
+            </span>
+            ${work.shortDesc ? `<span class="work-desc">${esc(work.shortDesc)}</span>` : ''}
+            <span class="work-meta">${work.photos.length || 'Drive'}枚</span>
           </span>
         </button>
       `).join('');
+      loadRenderedDrivePhotos();
     }
 
     function openWork(work, index = 0) {
@@ -321,8 +382,14 @@
       const card = event.target.closest('.work-card');
       if (!card) return;
       const work = filtered[Number(card.dataset.index)];
-      openWork(work);
-      loadDrivePhotos(work).then(() => updateModal());
+      if (!work.photosLoaded) {
+        loadDrivePhotos(work).then(() => {
+          if (work.photos.length) openWork(work);
+          render();
+        });
+        return;
+      }
+      if (work.photos.length) openWork(work);
     });
 
     search.addEventListener('input', render);
@@ -347,19 +414,39 @@
         return data.map((item) => ({
           id: item.id || item.name || item.title,
           title: item.name || item.title || item.id || '作品',
+          category: item.category || '',
+          material: item.material || '',
+          color: item.color || '',
+          size: item.size || '',
+          price: item.price || 0,
+          shortDesc: item.shortDesc || '',
           folderId: item.folderId || '',
           photosLoaded: !item.folderId,
-          photos: (item.photos && item.photos.length)
-            ? item.photos.map((photo) => photo.url || photo)
-            : [item.mainPhoto].filter(Boolean),
+          photosLoading: false,
+          photos: item.folderId
+            ? []
+            : ((item.photos && item.photos.length)
+              ? item.photos.map((photo) => photo.url || photo)
+              : [item.mainPhoto].filter(Boolean)),
         }));
       }
-      return Object.entries(data || {}).map(([title, photos]) => ({ title, photos, folderId: '', photosLoaded: true }));
+      return Object.entries(data || {}).map(([title, photos]) => ({
+        title,
+        photos,
+        folderId: '',
+        photosLoaded: true,
+        category: '',
+        material: '',
+        color: '',
+        size: '',
+        price: 0,
+        shortDesc: '',
+      }));
     }
 
     function applyData(data) {
       works = toWorks(data)
-        .filter((work) => Array.isArray(work.photos) && work.photos.length)
+        .filter((work) => work.folderId || (Array.isArray(work.photos) && work.photos.length))
         .sort((a, b) => a.title.localeCompare(b.title, 'ja'));
       render();
     }
@@ -408,18 +495,56 @@
 
     function loadDrivePhotos(work) {
       if (!work.folderId || work.photosLoaded) return Promise.resolve(work.photos);
+      if (work.photosLoading) return work.photosLoading;
       const url = `${LIVE_WORKS_API.replace('api=products', 'api=photos')}&folderId=${encodeURIComponent(work.folderId)}`;
-      return fetchJsonp(url)
+      work.photosLoading = fetchJsonp(url)
         .then((photos) => {
           const urls = (photos || []).map((photo) => photo.url || photo).filter(Boolean);
           if (urls.length) work.photos = urls;
           work.photosLoaded = true;
+          work.photosLoading = false;
           return work.photos;
         })
         .catch(() => {
           work.photosLoaded = true;
+          work.photosLoading = false;
           return work.photos;
         });
+      return work.photosLoading;
+    }
+
+    function loadRenderedDrivePhotos() {
+      const cards = Array.from(gallery.querySelectorAll('.work-card'));
+
+      function requestCardPhoto(card) {
+        const work = filtered[Number(card.dataset.index)];
+        if (!work || !work.folderId || work.photosLoaded || work.photosLoading) return;
+        loadDrivePhotos(work).then(() => {
+          if (filtered.includes(work)) render();
+        });
+      }
+
+      if (!('IntersectionObserver' in window)) {
+        cards.slice(0, 24).forEach(requestCardPhoto);
+        return;
+      }
+
+      if (!thumbObserver) {
+        thumbObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            thumbObserver.unobserve(entry.target);
+            requestCardPhoto(entry.target);
+          });
+        }, { rootMargin: '320px 0px' });
+      }
+
+      cards.forEach((card) => {
+        const work = filtered[Number(card.dataset.index)];
+        if (work && work.folderId && !work.photosLoaded && !work.photosLoading) {
+          thumbObserver.observe(card);
+        }
+      });
     }
 
     fetchJsonp(LIVE_WORKS_API)
