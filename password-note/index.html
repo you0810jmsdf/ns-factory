@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>N's notebook パスワード管理</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">N's notebook</div>
+    <div class="auth-title">パスワード管理</div>
+    <p class="auth-hint" id="login-hint">この端末だけで使う整理ノートを作成します。</p>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="master-pw">開くための合言葉</label>
+        <div class="input-wrap">
+          <input type="password" id="master-pw" required autocomplete="current-password" placeholder="忘れない合言葉を入力">
+          <button type="button" id="toggle-pw-btn" title="表示を切り替え">表示</button>
+        </div>
+      </div>
+
+      <div class="form-group" id="confirm-row" style="display:none">
+        <label for="master-pw-confirm">合言葉の確認</label>
+        <div class="input-wrap">
+          <input type="password" id="master-pw-confirm" autocomplete="new-password" placeholder="同じ合言葉をもう一度入力">
+        </div>
+      </div>
+
+      <button type="submit" id="login-btn" class="btn-primary" data-mode="login">開く</button>
+    </form>
+
+    <p class="auth-note">通常は販売者のサーバーへパスワード一覧を送信しません。合言葉を忘れると復旧できません。</p>
+    <button type="button" id="toggle-mode-btn" class="btn-text">初めて使う方はこちら</button>
+  </div>
+</div>
+
+<div id="app-screen">
+  <header>
+    <span class="app-title">N's notebook パスワード管理</span>
+    <button class="icon-btn print-btn" id="print-btn" style="display:none">
+      印刷 <span>(<span id="print-count">0</span>)</span>
+    </button>
+    <button class="icon-btn danger-btn" id="delete-selected-btn" style="display:none">
+      削除 <span>(<span id="delete-count">0</span>)</span>
+    </button>
+    <button class="icon-btn" id="sync-btn" style="display:none" title="家族共有データを読み込む">共有読込</button>
+    <button class="icon-btn" id="gist-btn" style="display:none" title="家族共有設定">共有設定</button>
+    <button class="icon-btn" id="logout-btn" title="閉じる">閉じる</button>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span>検索</span>
+      <input type="search" id="search-input" placeholder="サービス名、URL、担当者、メモで検索">
+    </div>
+    <select id="sort-select" class="sort-select">
+      <option value="updatedAt">更新順</option>
+      <option value="owner">担当者順</option>
+      <option value="title">名前順</option>
+    </select>
+    <span class="entry-count" id="entry-count">0件</span>
+    <button class="icon-btn" id="select-all-btn" onclick="toggleSelectAll()" style="display:none">すべて選択</button>
+    <button class="icon-btn" id="export-btn" title="暗号化済みの予備コピーを保存">予備コピー保存</button>
+    <button class="icon-btn" id="import-btn" title="暗号化済みの予備コピーを読み込む">予備コピー読込</button>
+    <input type="file" id="import-file" accept=".json,application/json" style="display:none">
+  </div>
+
+  <div id="entry-list"></div>
+
+  <button class="fab" id="add-btn" title="新しく登録">＋</button>
+</div>
+
+<div id="modal-backdrop"></div>
+<div id="entry-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 id="modal-title">登録内容の編集</h2>
+      <button class="btn-icon" id="close-modal-btn" title="閉じる">×</button>
+    </div>
+
+    <form id="entry-form">
+      <input type="hidden" id="e-id">
+      <div class="modal-body">
+        <div class="row-2">
+          <div class="field-row">
+            <label for="e-title">サービス名 *</label>
+            <input type="text" id="e-title" required placeholder="例: Amazon, Gmail">
+          </div>
+          <div class="field-row">
+            <label for="e-type">種類</label>
+            <select id="e-type">
+              <option value="website">Webサイト</option>
+              <option value="app">アプリ</option>
+              <option value="service">サービス</option>
+              <option value="other">その他</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field-row">
+            <label for="e-owner">担当者</label>
+            <input type="text" id="e-owner" placeholder="例: 太郎、花子">
+          </div>
+          <div class="field-row" id="url-row">
+            <label for="e-url">URL</label>
+            <input type="url" id="e-url" placeholder="https://...">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label for="e-desc">サービス概要</label>
+          <textarea id="e-desc" placeholder="何のために使うサービスか、家族への補足など"></textarea>
+        </div>
+
+        <div class="history-section">
+          <div class="history-section-header">
+            <span>履歴・メモ</span>
+            <button type="button" class="btn-add-history" id="add-history-btn">履歴を追加</button>
+          </div>
+          <div id="history-form"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-delete" id="delete-btn">削除</button>
+        <button type="button" class="btn-cancel" id="close-modal-btn2" onclick="closeModal()">キャンセル</button>
+        <button type="submit" class="btn-save">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="gist-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="gist-modal-title">
+  <div class="modal-card" style="max-width:480px">
+    <div class="modal-header">
+      <h2 id="gist-modal-title">家族共有設定（上級者向け）</h2>
+      <button class="btn-icon" onclick="closeGistModal()" title="閉じる">×</button>
+    </div>
+    <div class="modal-body" style="gap:12px">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:0">
+        GitHub Gistを使う上級者向け機能です。通常は設定せず、この端末だけで使う方法をおすすめします。
+      </p>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:0">
+        <a href="https://github.com/settings/tokens" target="_blank" rel="noopener" style="color:var(--accent)">github.com/settings/tokens</a>
+        でPersonal Access Tokenを発行します。scopeは <code>gist</code> のみにしてください。
+      </p>
+      <div class="field-row">
+        <label for="gist-token-input">GitHub接続キー</label>
+        <input type="password" id="gist-token-input" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+      </div>
+      <div class="field-row">
+        <label for="gist-id-input">Gist ID（家族から共有された場合のみ入力）</label>
+        <input type="text" id="gist-id-input" placeholder="空欄なら初回共有時に自動作成" autocomplete="off">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" onclick="closeGistModal()">キャンセル</button>
+      <button type="button" class="btn-save" onclick="saveGistSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="config.js?v=27"></script>
+<script src="js/crypto.js?v=27"></script>
+<script src="js/db.js?v=27"></script>
+<script src="js/gist.js?v=27"></script>
+<script src="js/print.js?v=27"></script>
+<script src="js/app.js?v=27"></script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
+</body>
+</html>
