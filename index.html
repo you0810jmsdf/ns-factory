@@ -43,6 +43,58 @@
                'Yu Gothic',Meiryo,sans-serif;
 }
 
+.notebook-highlight{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 360px;
+  gap:36px;
+  align-items:center;
+  padding:32px;
+  background:linear-gradient(135deg,#fff,var(--color-accent-light));
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+}
+.notebook-highlight h3{
+  font-size:28px;
+  line-height:1.35;
+  letter-spacing:-.02em;
+  margin-bottom:14px;
+}
+.notebook-highlight p{
+  color:var(--color-text-sub);
+  font-size:15px;
+  line-height:1.9;
+  margin-bottom:18px;
+}
+.notebook-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:18px 0 22px;
+}
+.notebook-tags span{
+  display:inline-flex;
+  padding:6px 10px;
+  border-radius:var(--radius-full);
+  background:#fff;
+  border:1px solid var(--color-border);
+  color:var(--color-accent-dark);
+  font-size:12px;
+  font-weight:600;
+}
+.notebook-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.notebook-image{
+  border-radius:var(--radius-md);
+  border:1px solid var(--color-border);
+  box-shadow:var(--shadow-md);
+  overflow:hidden;
+  background:#fff;
+}
+
 /* ── Reset ──────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -436,6 +488,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .contact-box{padding:28px 24px}
   .tokusho-table th{width:120px;font-size:12px;padding:12px 14px}
   .tokusho-table td{padding:12px 14px;font-size:13px}
+  .notebook-highlight{grid-template-columns:1fr;padding:24px}
+  .notebook-image{order:-1}
 }
 @media(max-width:480px){
   .section{padding:52px 16px}
@@ -454,6 +508,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   <div class="nav-links">
     <a href="./profile.html" class="nav-link">プロフィール</a>
     <a href="./works.html" class="nav-link">作品紹介</a>
+    <a href="./password-note.html" class="nav-link">N's notebook</a>
     <a href="./JHCS.html" class="nav-link">JHCS講習案内</a>
     <a href="#works" class="nav-link">道具紹介</a>
     <a href="./order_estimate/ring-price-stock-admin.html" class="nav-link">管理画面</a>
@@ -491,6 +546,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     </div>
     <div class="pill-links">
       <a href="links.html" class="pill pill-accent">各種リンクサイト</a>
+      <a href="./password-note.html" class="pill pill-accent">N's notebook パスワード管理</a>
       <a href="./profile.html" class="pill pill-accent">作家プロフィール</a>
     </div>
   </div>
@@ -512,6 +568,41 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <a href="./order_estimate/leather-order-estimate-v2.html" class="btn-accent">見積もりシミュレータを開く</a>
         <a href="https://lin.ee/XOcD2pd" class="btn-outline">公式LINEでお問合せ</a>
       </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ── N's notebook ── -->
+<section class="section" id="notebook">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">N's notebook</p>
+      <h2 class="section-title">A6システム手帳に、ログイン情報を紙でも残す。</h2>
+    </div>
+    <div class="notebook-highlight">
+      <div>
+        <h3>パスワード管理機能とA6リフィル作成機能をセットにしました。</h3>
+        <p>
+          N's notebook パスワード管理は、A6システム手帳ユーザー、終活として大切な情報を整理したい方、
+          そのご家族に向けたWeb版アプリです。ログイン情報を整理し、必要に応じてA6カードとして印刷できます。
+          6穴バインダーに綴じて、終活ノートや家族への引き継ぎ資料として保管できます。
+        </p>
+        <div class="notebook-tags">
+          <span>A6システム手帳</span>
+          <span>終活</span>
+          <span>家族への引き継ぎ</span>
+          <span>PDFマニュアル付き</span>
+        </div>
+        <div class="notebook-actions">
+          <a href="./password-note.html" class="btn-accent">詳しく見る</a>
+          <a href="https://nsfactory.stores.jp/items/69e2188ca2eab2f08c6a230a" class="btn-outline" target="_blank" rel="noopener">STORESで購入</a>
+        </div>
+      </div>
+      <a class="notebook-image" href="./password-note.html">
+        <img src="./assets/password-note-main.png" alt="N's notebook パスワード管理 A6リフィル">
+      </a>
     </div>
   </div>
 </section>
