@@ -22,7 +22,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PROJECT_ROOT = ROOT.parents[3]
+PROJECT_ROOT = ROOT.parents[2]
 SECURE_ENV = PROJECT_ROOT / "保全部" / ".env"
 LOCAL_ENV = ROOT / ".env"
 STATE_FILE = ROOT / ".monitor" / "site-watch-state.json"
