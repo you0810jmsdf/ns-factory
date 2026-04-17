@@ -213,6 +213,13 @@
       min-height: 0;
       margin: 0 auto;
       display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .modal-media {
+      min-height: 0;
+      display: grid;
       place-items: center;
     }
     .modal-img {
@@ -221,6 +228,59 @@
       border-radius: var(--radius);
       object-fit: contain;
       background: #111820;
+    }
+    .modal-detail {
+      overflow-y: auto;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: rgba(255,255,255,.95);
+      color: var(--ink);
+    }
+    .modal-detail-label {
+      color: var(--warm);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .modal-meta {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+    .modal-desc {
+      white-space: pre-wrap;
+      color: #374151;
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 18px;
+    }
+    .modal-actions {
+      display: grid;
+      gap: 10px;
+    }
+    .modal-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      background: var(--accent);
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .modal-cta.secondary {
+      background: var(--white);
+      color: var(--accent-dark);
     }
     .footer {
       border-top: 1px solid var(--line);
@@ -236,6 +296,10 @@
       .tools { grid-template-columns: 1fr; padding: 18px 18px 0; }
       .gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); padding: 18px 18px 56px; gap: 12px; }
       .modal { padding: 14px; }
+      .modal.open { grid-template-rows: auto minmax(0, 1fr) auto; }
+      .modal-stage { grid-template-columns: 1fr; overflow-y: auto; }
+      .modal-media { min-height: 42vh; }
+      .modal-img { max-height: 42vh; }
       .modal-foot { justify-content: center; }
     }
   </style>
@@ -275,7 +339,18 @@
       <button id="close-modal" class="modal-btn" type="button" aria-label="閉じる">×</button>
     </div>
     <div class="modal-stage">
-      <img id="modal-img" class="modal-img" src="" alt="">
+      <div class="modal-media">
+        <img id="modal-img" class="modal-img" src="" alt="">
+      </div>
+      <aside class="modal-detail">
+        <div class="modal-detail-label">Product</div>
+        <div id="modal-meta" class="modal-meta"></div>
+        <div id="modal-desc" class="modal-desc"></div>
+        <div class="modal-actions">
+          <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
+          <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
+        </div>
+      </aside>
     </div>
     <div class="modal-foot">
       <button id="prev-photo" class="modal-btn" type="button">前へ</button>
@@ -293,9 +368,15 @@
     const modalTitle = document.getElementById('modal-title');
     const modalCount = document.getElementById('modal-count');
     const modalImg = document.getElementById('modal-img');
+    const modalMeta = document.getElementById('modal-meta');
+    const modalDesc = document.getElementById('modal-desc');
+    const primaryOrderLink = document.getElementById('primary-order-link');
+    const secondaryOrderLink = document.getElementById('secondary-order-link');
     const closeModal = document.getElementById('close-modal');
     const prevPhoto = document.getElementById('prev-photo');
     const nextPhoto = document.getElementById('next-photo');
+    const ESTIMATE_URL = './order_estimate/leather-order-estimate-v2.html';
+    const LINE_URL = 'https://lin.ee/XOcD2pd';
     let works = [];
     let filtered = [];
     let activeWork = null;
@@ -322,6 +403,26 @@
 
     function compact(values) {
       return values.filter(Boolean).join(' / ');
+    }
+
+    function isSystemPlannerWork(work) {
+      const text = normalize([work.title, work.category].join(' '));
+      return /システム手帳|mini6|ミニ6|micro5|m5|バイブル|リングサポーター|リフィル/i.test(text);
+    }
+
+    function configureOrderLinks(work) {
+      const planner = isSystemPlannerWork(work);
+      const primary = planner
+        ? { href: ESTIMATE_URL, label: '見積もりシミュレーションへ' }
+        : { href: LINE_URL, label: '公式LINEで相談する' };
+      const secondary = planner
+        ? { href: LINE_URL, label: '公式LINEで相談する' }
+        : { href: ESTIMATE_URL, label: 'システム手帳の見積もりを見る' };
+
+      primaryOrderLink.href = primary.href;
+      primaryOrderLink.textContent = primary.label;
+      secondaryOrderLink.href = secondary.href;
+      secondaryOrderLink.textContent = secondary.label;
     }
 
     function render() {
@@ -376,6 +477,12 @@
       modalCount.textContent = `${activeIndex + 1} / ${total}`;
       modalImg.src = activeWork.photos[activeIndex];
       modalImg.alt = activeWork.title;
+      modalMeta.innerHTML = [
+        compact([activeWork.category, activeWork.material, activeWork.color]),
+        compact([activeWork.size, formatPrice(activeWork.price)]),
+      ].filter(Boolean).map((line) => `<div>${esc(line)}</div>`).join('');
+      modalDesc.textContent = activeWork.shortDesc || '詳細は公式LINEからお問い合わせください。';
+      configureOrderLinks(activeWork);
     }
 
     gallery.addEventListener('click', (event) => {
