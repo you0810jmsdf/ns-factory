@@ -1,0 +1,242 @@
+{
+  "updated": "2026-04-18",
+  "items": [
+    {
+      "name": "革包丁またはカッター",
+      "category": "切る・測る",
+      "description": "革を切断するための基本道具です。",
+      "links": [
+        { "label": "おすすめ", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303649551339", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "カッターマット",
+      "category": "切る・測る",
+      "description": "カッター使用時に机を保護する道具です。",
+      "links": [
+        { "label": "カッターマット", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303649935259", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ゴム糊",
+      "category": "貼る",
+      "description": "革の仮張り合わせに使用する消耗品です。",
+      "links": [
+        { "label": "300ml", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303651113367", "kind": "楽天ROOM" },
+        { "label": "1500ml", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700307230501323", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "のりべら",
+      "category": "貼る",
+      "description": "ゴム糊を塗るときに使用する道具です。",
+      "links": [
+        { "label": "のりべら", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303651748322", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "糸（ビニモMBT）",
+      "category": "縫う",
+      "description": "縫製用の糸です。",
+      "links": [
+        { "label": "5番 白 1000m", "url": "https://www.monotaro.com/p/3986/8019/?displayId=4", "kind": "参考" }
+      ]
+    },
+    {
+      "name": "糸切りハサミ",
+      "category": "縫う",
+      "description": "糸を切る道具です。",
+      "links": [
+        { "label": "糸切りハサミ", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303650524362", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "縫い針（短針）",
+      "category": "縫う",
+      "description": "革を手縫いするための針です。",
+      "links": [
+        { "label": "短針", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303647943149", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "丸キリ",
+      "category": "穴あけ",
+      "description": "型紙を革にけがいたり、丸穴をあける道具です。",
+      "links": [
+        { "label": "初心者向け", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303646627317", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "菱キリ",
+      "category": "穴あけ",
+      "description": "菱目をあける道具です。",
+      "links": [
+        { "label": "初心者向け 1", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700304002887129", "kind": "楽天ROOM" },
+        { "label": "初心者向け 2", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303646403217", "kind": "楽天ROOM" },
+        { "label": "菱キリ", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700302756501248", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ラウンドモール",
+      "category": "穴あけ",
+      "description": "菱目を打ったり、カービングをするための道具です。",
+      "links": [
+        { "label": "ラウンドモール", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303649222151", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "菱目打ち",
+      "category": "穴あけ",
+      "description": "菱目をあける道具です。",
+      "links": [
+        { "label": "初心者向け", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303648695159", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ディバイダ",
+      "category": "切る・測る",
+      "description": "菱目ラインをけがいたり、縫い線を整えるために使う道具です。",
+      "links": [
+        { "label": "初心者向け", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700319256171873", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ステッチングルーバー",
+      "category": "縫う",
+      "description": "ステッチラインに溝を引き、糸が切れにくいようにする道具です。",
+      "links": [
+        { "label": "初心者向け", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700319802511405", "kind": "楽天ROOM" },
+        { "label": "上級者向け", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700319256406107", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "押さえクリップ",
+      "category": "縫う",
+      "description": "2枚の革を合わせて穴をあける時のずれを抑える道具です。",
+      "links": [
+        { "label": "押さえクリップ", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700307703927123", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ポンチ",
+      "category": "穴あけ",
+      "description": "革に丸穴をあける道具です。",
+      "links": [
+        { "label": "初心者向け", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303652454241", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ヘリ落とし",
+      "category": "仕上げ",
+      "description": "革の縁を滑らかに整える道具です。",
+      "links": [
+        { "label": "ヘリ落とし", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700102398724120", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "トコノール",
+      "category": "仕上げ",
+      "description": "床面やコバの処理に使う仕上げ剤です。",
+      "links": [
+        { "label": "トコノール", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700260995952459", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "帆布",
+      "category": "仕上げ",
+      "description": "コバ磨きに使用する消耗品です。",
+      "links": [
+        { "label": "帆布", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303652861207", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "指サック",
+      "category": "縫う",
+      "description": "縫製時の指の保護や針の滑り止めに使用する道具です。",
+      "links": [
+        { "label": "指サック", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303646086906", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "平やっとこ",
+      "category": "縫う",
+      "description": "縫い針を引き抜く時などに使う道具です。",
+      "links": [
+        { "label": "初心者向け", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303647054184", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ワイヤレスはんだごて",
+      "category": "仕上げ",
+      "description": "ビニモMBTなど、糸の端末を熱処理する道具です。",
+      "links": [
+        { "label": "ワイヤレスはんだごて", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700276256110824", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ハンドプレス機",
+      "category": "金具・加工",
+      "description": "型抜きや刻印に使う道具です。",
+      "links": [
+        { "label": "ハンドプレス機", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700252604597292", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ベタ駒",
+      "category": "金具・加工",
+      "description": "カシメの頭を平たく仕上げる道具です。",
+      "links": [
+        { "label": "ベタ駒", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700273100340375", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ファスナ食い切り",
+      "category": "金具・加工",
+      "description": "ファスナーのムシを外す道具です。",
+      "links": [
+        { "label": "ファスナ食い切り", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700274249684151", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ワイドエッジャー",
+      "category": "仕上げ",
+      "description": "部分的に革漉きをする道具です。",
+      "links": [
+        { "label": "ワイドエッジャー", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700302758043435", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "やすり（サンドスティック）",
+      "category": "仕上げ",
+      "description": "コバを整える道具です。",
+      "links": [
+        { "label": "サンドスティック", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303647478126", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "スカイパー",
+      "category": "切る・測る",
+      "description": "手動で革漉きする道具です。",
+      "links": [
+        { "label": "スカイパー", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700303644525311", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "ネジ捻",
+      "category": "仕上げ",
+      "description": "縁を飾ったり、ステッチラインの溝をつける道具です。",
+      "links": [
+        { "label": "ネジ捻", "url": "https://room.rakuten.co.jp/you0810jmsdf/1800010041302336", "kind": "楽天ROOM" }
+      ]
+    },
+    {
+      "name": "イントレチャートパンチ",
+      "category": "応用技法",
+      "description": "レースを使った編み込み模様のために、規則的な平穴をあける道具です。",
+      "links": [
+        { "label": "7mm", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700322888143300", "kind": "楽天ROOM" },
+        { "label": "9mm", "url": "https://room.rakuten.co.jp/you0810jmsdf/1700322888788898", "kind": "楽天ROOM" }
+      ]
+    }
+  ]
+}
