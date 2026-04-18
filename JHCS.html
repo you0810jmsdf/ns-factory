@@ -93,6 +93,7 @@
     .notice-history summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--tan); }
     .notice-history-item { border-top: 1px solid rgba(0,0,0,.08); padding: 12px 0; }
     .notice-history-item:first-of-type { margin-top: 10px; }
+    .notice-history-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
     .notice-history-title { font-size: 14px; font-weight: 700; }
     .notice-history-text { margin-top: 4px; font-size: 13px; color: var(--gray); white-space: pre-wrap; word-break: break-word; }
 
@@ -466,7 +467,10 @@
     }
     list.innerHTML = history.map(item => `
       <div class="notice-history-item">
-        <div class="notice-history-title">${esc(item['タイトル'] || 'お知らせ')}</div>
+        <div class="notice-history-head">
+          <div class="notice-history-title">${esc(item['タイトル'] || 'お知らせ')}</div>
+          <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteNotice('${escAttr(item['ID'])}')">削除</button>
+        </div>
         <div class="notice-meta">掲載: ${fmtDateTime(item['更新日時'])} / 終了: ${fmtDateTime(item['掲載終了日時'])}</div>
         <div class="notice-history-text">${esc(item['本文'] || '')}</div>
       </div>`).join('');
@@ -570,6 +574,32 @@
       showNoticeMsg('err', '通信エラー: ' + e.message);
     } finally {
       btn.disabled = false; btn.textContent = '履歴として残す';
+    }
+  }
+
+  async function deleteNotice(id) {
+    const url = getGasUrl();
+    if (!url) { showNoticeMsg('err', 'GAS URLを設定してください。'); return; }
+    if (!id) { showNoticeMsg('err', '削除対象が見つかりません。'); return; }
+    if (!confirm('この過去のお知らせを削除します。よろしいですか？')) return;
+    const password = getNoticePassword();
+    if (!password) return;
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteNotice', id, password }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showNoticeMsg('ok', '過去のお知らせを削除しました。');
+        await loadNotice();
+      } else {
+        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
+        showNoticeMsg('err', 'エラー: ' + (data.error || '不明'));
+      }
+    } catch(e) {
+      showNoticeMsg('err', '通信エラー: ' + e.message);
     }
   }
 
@@ -865,6 +895,10 @@
   // ── ヘルパー ──────────────────────────────────────
   function esc(s) {
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function escAttr(s) {
+    return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
   function fmtDate(s) {
