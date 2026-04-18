@@ -74,11 +74,21 @@
 
     /* Curriculum */
     .curriculum { display: grid; gap: 10px; }
-    .curriculum-row { background: var(--white); border-radius: 10px; padding: 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-    .curriculum-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 8px; }
+    .curriculum-row { background: var(--white); border-radius: 10px; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; }
+    .curriculum-row summary { cursor: pointer; list-style: none; padding: 12px 16px; }
+    .curriculum-row summary::-webkit-details-marker { display: none; }
+    .curriculum-row summary::after { content: '+'; float: right; color: var(--tan); font-weight: 700; }
+    .curriculum-row[open] summary::after { content: '-'; }
+    .curriculum-body { padding: 0 16px 16px; }
+    .curriculum-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
     .curriculum-num { color: var(--tan); font-weight: 700; font-size: 13px; white-space: nowrap; }
-    .curriculum-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .curriculum-fields input[readonly] { background: transparent; border-color: transparent; padding-left: 0; padding-right: 0; }
+    .curriculum-title { color: var(--charcoal); font-size: 14px; margin-left: 10px; }
+    .curriculum-fields { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(220px, .85fr); gap: 14px; }
+    .curriculum-fields input[readonly], .curriculum-fields textarea[readonly] { background: transparent; border-color: transparent; padding-left: 0; padding-right: 0; }
+    .curriculum-fields textarea { min-height: 150px; }
+    .curriculum-photo { margin-top: 8px; border-radius: 8px; background: var(--bg); min-height: 120px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .curriculum-photo img { width: 100%; max-height: 280px; object-fit: contain; display: block; }
+    .curriculum-photo-empty { color: var(--gray); font-size: 13px; padding: 20px; text-align: center; }
     .curriculum-static { background: var(--white); border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 14px; }
     .curriculum-static strong { color: var(--tan); margin-right: 10px; }
 
@@ -185,6 +195,11 @@
 
     /* Footer */
     .lp-footer { border-top: 1px solid rgba(0,0,0,.08); padding: 20px 32px; font-size: 12px; color: var(--gray); text-align: center; }
+
+    @media (max-width: 760px) {
+      .curriculum-fields { grid-template-columns: 1fr; }
+      .curriculum-head { align-items: flex-start; flex-direction: column; }
+    }
   </style>
 </head>
 <body>
@@ -411,18 +426,18 @@
   let noticeDraft = { title: '', text: '' };
   let noticeAdminPassword = '';
   const DEFAULT_CURRICULUM = [
-    { '回': '1', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '更新日時': '' },
-    { '回': '2', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '更新日時': '' },
-    { '回': '3', '講習内容': 'ファスナー取り付け', '作品例': 'ラウンドファスナーペンケース', '更新日時': '' },
-    { '回': '4', '講習内容': '仕立て・仕上げ', '作品例': 'ラウンドファスナーペンケース', '更新日時': '' },
-    { '回': '5', '講習内容': '裁断・縫製', '作品例': 'システム手帳', '更新日時': '' },
-    { '回': '6', '講習内容': '金具取り付け・仕上げ', '作品例': 'システム手帳', '更新日時': '' },
-    { '回': '7', '講習内容': '小物制作', '作品例': 'キーケース / リップケース', '更新日時': '' },
-    { '回': '8', '講習内容': '小物制作', '作品例': 'サシェ / パスケース', '更新日時': '' },
-    { '回': '9', '講習内容': 'インレイ・インターロッキング技法', '作品例': 'システム手帳', '更新日時': '' },
-    { '回': '10', '講習内容': 'インレイ・インターロッキング技法', '作品例': '眼鏡ケース', '更新日時': '' },
-    { '回': '11', '講習内容': '応用制作', '作品例': 'システム手帳 / 眼鏡ケース', '更新日時': '' },
-    { '回': '12', '講習内容': '応用制作・仕上げ', '作品例': 'システム手帳 / 眼鏡ケース', '更新日時': '' }
+    { '回': '1', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '写真URL': '', '更新日時': '' },
+    { '回': '2', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '写真URL': '', '更新日時': '' },
+    { '回': '3', '講習内容': 'ファスナー取り付け', '作品例': 'ラウンドファスナーペンケース', '写真URL': '', '更新日時': '' },
+    { '回': '4', '講習内容': '仕立て・仕上げ', '作品例': 'ラウンドファスナーペンケース', '写真URL': '', '更新日時': '' },
+    { '回': '5', '講習内容': '裁断・縫製', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
+    { '回': '6', '講習内容': '金具取り付け・仕上げ', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
+    { '回': '7', '講習内容': '小物制作', '作品例': 'キーケース / リップケース', '写真URL': '', '更新日時': '' },
+    { '回': '8', '講習内容': '小物制作', '作品例': 'サシェ / パスケース', '写真URL': '', '更新日時': '' },
+    { '回': '9', '講習内容': 'インレイ・インターロッキング技法', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
+    { '回': '10', '講習内容': 'インレイ・インターロッキング技法', '作品例': '眼鏡ケース', '写真URL': '', '更新日時': '' },
+    { '回': '11', '講習内容': '応用制作', '作品例': 'システム手帳 / 眼鏡ケース', '写真URL': '', '更新日時': '' },
+    { '回': '12', '講習内容': '応用制作・仕上げ', '作品例': 'システム手帳 / 眼鏡ケース', '写真URL': '', '更新日時': '' }
   ];
 
   // ── GAS URL 管理 ──────────────────────────────────
@@ -660,30 +675,43 @@
     const el = document.getElementById('curriculum-list');
     el.innerHTML = normalized.map(item => {
       const lesson = escAttr(item['回']);
+      const content = item['講習内容'] || '';
+      const example = item['作品例'] || '';
+      const imageUrl = item['写真URL'] || '';
+      const photoUrl = normalizeImageUrl(imageUrl);
+      const summary = content ? content.replace(/\s+/g, ' ').slice(0, 44) : '講習内容未設定';
       return `
-        <div class="curriculum-row" data-lesson="${lesson}">
-          <div class="curriculum-head">
-            <div>
-              <span class="curriculum-num">第${esc(item['回'])}回</span>
-              <span class="notice-meta">更新: ${fmtDateTime(item['更新日時'])}</span>
+        <details class="curriculum-row" data-lesson="${lesson}">
+          <summary>
+            <span class="curriculum-num">第${esc(item['回'])}回</span>
+            <span class="curriculum-title">${esc(summary)}${content.length > 44 ? '...' : ''}</span>
+          </summary>
+          <div class="curriculum-body">
+            <div class="curriculum-head">
+              <div class="notice-meta">更新: ${fmtDateTime(item['更新日時'])}</div>
+              <div>
+                <button class="btn btn-secondary btn-cur-edit" style="padding:4px 10px;font-size:12px;" onclick="unlockCurriculum(${lesson})">編集</button>
+                <button class="btn btn-primary btn-cur-save" style="display:none;padding:4px 10px;font-size:12px;" onclick="saveCurriculum(${lesson})">保存</button>
+                <button class="btn btn-secondary btn-cur-cancel" style="display:none;padding:4px 10px;font-size:12px;" onclick="loadCurriculum()">キャンセル</button>
+              </div>
             </div>
-            <div>
-              <button class="btn btn-secondary btn-cur-edit" style="padding:4px 10px;font-size:12px;" onclick="unlockCurriculum(${lesson})">編集</button>
-              <button class="btn btn-primary btn-cur-save" style="display:none;padding:4px 10px;font-size:12px;" onclick="saveCurriculum(${lesson})">保存</button>
-              <button class="btn btn-secondary btn-cur-cancel" style="display:none;padding:4px 10px;font-size:12px;" onclick="loadCurriculum()">キャンセル</button>
+            <div class="curriculum-fields">
+              <div>
+                <label>講習内容</label>
+                <textarea class="cur-content" readonly>${esc(content)}</textarea>
+              </div>
+              <div>
+                <label>作品例</label>
+                <input type="text" class="cur-example" value="${escAttr(example)}" readonly>
+                <label style="margin-top:10px;">作品例写真URL</label>
+                <input type="text" class="cur-image" value="${escAttr(imageUrl)}" placeholder="Google Drive共有リンクまたは画像URL" readonly>
+                <div class="curriculum-photo">
+                  ${photoUrl ? `<img src="${escAttr(photoUrl)}" alt="${escAttr(example || `第${item['回']}回の作品例`)}" loading="lazy">` : '<div class="curriculum-photo-empty">作品例写真は未設定です。</div>'}
+                </div>
+              </div>
             </div>
           </div>
-          <div class="curriculum-fields">
-            <div>
-              <label>講習内容</label>
-              <input type="text" class="cur-content" value="${escAttr(item['講習内容'] || '')}" readonly>
-            </div>
-            <div>
-              <label>作品例</label>
-              <input type="text" class="cur-example" value="${escAttr(item['作品例'] || '')}" readonly>
-            </div>
-          </div>
-        </div>`;
+        </details>`;
     }).join('');
   }
 
@@ -691,7 +719,8 @@
     if (!getNoticePassword()) return;
     const row = document.querySelector(`.curriculum-row[data-lesson="${lesson}"]`);
     if (!row) return;
-    row.querySelectorAll('input').forEach(input => input.readOnly = false);
+    row.open = true;
+    row.querySelectorAll('input, textarea').forEach(input => input.readOnly = false);
     row.querySelector('.btn-cur-edit').style.display = 'none';
     row.querySelector('.btn-cur-save').style.display = '';
     row.querySelector('.btn-cur-cancel').style.display = '';
@@ -707,13 +736,14 @@
     if (!row) return;
     const content = row.querySelector('.cur-content').value.trim();
     const example = row.querySelector('.cur-example').value.trim();
-    if (!content && !example) { showCurriculumMsg('err', '講習内容または作品例を入力してください。'); return; }
+    const imageUrl = row.querySelector('.cur-image').value.trim();
+    if (!content && !example && !imageUrl) { showCurriculumMsg('err', '講習内容・作品例・写真URLのいずれかを入力してください。'); return; }
     const btn = row.querySelector('.btn-cur-save');
     btn.disabled = true; btn.textContent = '保存中...';
     try {
       const res = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveCurriculum', lesson, content, example, password }),
+        body: JSON.stringify({ action: 'saveCurriculum', lesson, content, example, imageUrl, password }),
       });
       const data = await res.json();
       if (data.ok) {
@@ -1026,6 +1056,14 @@
 
   function escAttr(s) {
     return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function normalizeImageUrl(url) {
+    const raw = String(url || '').trim();
+    if (!raw) return '';
+    const driveMatch = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/) || raw.match(/[?&]id=([^&]+)/);
+    if (driveMatch) return 'https://lh3.googleusercontent.com/d/' + driveMatch[1] + '=w1000';
+    return raw;
   }
 
   function fmtDate(s) {
