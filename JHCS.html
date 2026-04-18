@@ -81,6 +81,20 @@
     .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
     .skill-tag { background: rgba(160,120,90,.12); color: var(--tan); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
 
+    /* Notice */
+    .notice-board { background: var(--white); border-left: 4px solid var(--tan); border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 14px; }
+    .notice-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .notice-meta { font-size: 12px; color: var(--gray); margin-bottom: 12px; }
+    .notice-text { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+    .notice-empty { color: var(--gray); font-size: 14px; }
+    .notice-admin { margin-top: 14px; }
+    .notice-history { background: var(--white); border-radius: 10px; padding: 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .notice-history summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--tan); }
+    .notice-history-item { border-top: 1px solid rgba(0,0,0,.08); padding: 12px 0; }
+    .notice-history-item:first-of-type { margin-top: 10px; }
+    .notice-history-title { font-size: 14px; font-weight: 700; }
+    .notice-history-text { margin-top: 4px; font-size: 13px; color: var(--gray); white-space: pre-wrap; word-break: break-word; }
+
     /* Stats */
     .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
     .stat { background: var(--white); border-radius: 10px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); min-width: 110px; }
@@ -226,6 +240,36 @@
     <p style="font-size:13px; color:var(--gray);">※ 2025年9月は第2・第4日曜日に変更。2025年10月以降、木曜クラスが主要開講日。</p>
   </div>
 
+  <!-- お知らせ -->
+  <div class="section" id="notice-section">
+    <h2>お知らせ</h2>
+    <div class="notice-board" id="notice-current">
+      <div class="notice-empty">GAS URLを設定すると、次回予告・連絡事項を掲示できます。</div>
+    </div>
+    <details class="notice-history" id="notice-history-wrap">
+      <summary>過去のお知らせを見る</summary>
+      <div id="notice-history-list">
+        <div class="notice-empty">過去のお知らせはまだありません。</div>
+      </div>
+    </details>
+    <div class="form-card notice-admin">
+      <div class="form-grid">
+        <div>
+          <label for="notice-title-input">見出し</label>
+          <input type="text" id="notice-title-input" placeholder="例: 次回予告">
+        </div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label for="notice-text-input">掲載内容</label>
+        <textarea id="notice-text-input" placeholder="例: 次回はファスナー取り付けを進めます。必要な方は糸と金具を持参してください。"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="btn-notice-save" onclick="saveNotice()">お知らせを上書き</button>
+        <span id="notice-msg" class="form-msg"></span>
+      </div>
+    </div>
+  </div>
+
   <!-- カリキュラム -->
   <div class="section">
     <h2>カリキュラム（全24回）</h2>
@@ -355,6 +399,7 @@
 <script>
   const GAS_URL_KEY = 'jhcs_gas_url';
   let cachedRecords = [];
+  let cachedNotice = null;
 
   // ── GAS URL 管理 ──────────────────────────────────
   function getGasUrl() { return localStorage.getItem(GAS_URL_KEY) || ''; }
@@ -368,6 +413,8 @@
     localStorage.setItem(GAS_URL_KEY, url);
     document.getElementById('setup-banner').classList.remove('show');
     loadRecords();
+    loadNotice();
+    loadPhotos();
   }
 
   function changeGasUrl() {
@@ -379,6 +426,90 @@
     }
     localStorage.setItem(GAS_URL_KEY, url);
     loadRecords();
+    loadNotice();
+    loadPhotos();
+  }
+
+  // ── お知らせ ─────────────────────────────────────
+  async function loadNotice() {
+    const url = getGasUrl();
+    if (!url) {
+      document.getElementById('notice-current').innerHTML =
+        '<div class="notice-empty">GAS URLを設定すると、次回予告・連絡事項を掲示できます。</div>';
+      return;
+    }
+    try {
+      const res = await fetch(`${url}?action=notice`);
+      const data = await res.json();
+      cachedNotice = data.notice || null;
+      renderNotice(data.notice, data.history || []);
+    } catch(e) {
+      document.getElementById('notice-current').innerHTML =
+        `<div class="notice-empty">お知らせを読み込めませんでした。<br><small>${esc(e.message)}</small></div>`;
+    }
+  }
+
+  function renderNotice(notice, history) {
+    const current = document.getElementById('notice-current');
+    if (notice && (notice['タイトル'] || notice['本文'])) {
+      current.innerHTML = `
+        <div class="notice-title">${esc(notice['タイトル'] || 'お知らせ')}</div>
+        <div class="notice-meta">更新: ${fmtDateTime(notice['更新日時'])}</div>
+        <div class="notice-text">${esc(notice['本文'] || '')}</div>`;
+    } else {
+      current.innerHTML = '<div class="notice-empty">現在掲載中のお知らせはありません。</div>';
+    }
+
+    const list = document.getElementById('notice-history-list');
+    if (!history.length) {
+      list.innerHTML = '<div class="notice-empty">過去のお知らせはまだありません。</div>';
+      return;
+    }
+    list.innerHTML = history.map(item => `
+      <div class="notice-history-item">
+        <div class="notice-history-title">${esc(item['タイトル'] || 'お知らせ')}</div>
+        <div class="notice-meta">掲載: ${fmtDateTime(item['更新日時'])} / 終了: ${fmtDateTime(item['掲載終了日時'])}</div>
+        <div class="notice-history-text">${esc(item['本文'] || '')}</div>
+      </div>`).join('');
+  }
+
+  async function saveNotice() {
+    const url = getGasUrl();
+    const msg = document.getElementById('notice-msg');
+    const title = document.getElementById('notice-title-input').value.trim();
+    const text = document.getElementById('notice-text-input').value.trim();
+    if (!url) { showNoticeMsg('err', 'GAS URLを設定してください。'); return; }
+    if (!title && !text) { showNoticeMsg('err', '見出しまたは掲載内容を入力してください。'); return; }
+    if (cachedNotice && !confirm('現在のお知らせを履歴に移して、新しい内容を掲載します。よろしいですか？')) return;
+
+    const btn = document.getElementById('btn-notice-save');
+    btn.disabled = true; btn.textContent = '保存中...';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveNotice', title, text }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showNoticeMsg('ok', 'お知らせを更新しました。');
+        document.getElementById('notice-title-input').value = '';
+        document.getElementById('notice-text-input').value = '';
+        await loadNotice();
+      } else {
+        showNoticeMsg('err', 'エラー: ' + (data.error || '不明'));
+      }
+    } catch(e) {
+      showNoticeMsg('err', '通信エラー: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'お知らせを上書き';
+    }
+  }
+
+  function showNoticeMsg(type, text) {
+    const el = document.getElementById('notice-msg');
+    el.className = 'form-msg ' + type;
+    el.textContent = text;
+    if (type === 'ok') setTimeout(() => el.textContent = '', 4000);
   }
 
   // ── データ取得 ────────────────────────────────────
@@ -677,6 +808,16 @@
     return s;
   }
 
+  function fmtDateTime(s) {
+    if (!s) return '―';
+    const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+    if (m) {
+      const date = `${parseInt(m[1])}/${parseInt(m[2])}/${parseInt(m[3])}`;
+      return m[4] ? `${date} ${m[4]}:${m[5]}` : date;
+    }
+    return s;
+  }
+
   function toInputDate(s) {
     if (!s) return '';
     const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -704,6 +845,7 @@
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
   if (getGasUrl()) {
     loadRecords();
+    loadNotice();
     loadPhotos();
   } else {
     document.getElementById('setup-banner').classList.add('show');
