@@ -577,7 +577,11 @@
       const res = await fetch(AFFILIATE_LINKS_URL, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      staticItems = Array.isArray(data.items) ? data.items : [];
+      staticItems = (Array.isArray(data.items) ? data.items : []).map((item, index) => ({
+        ...item,
+        id: item.id || `static-${index + 1}`,
+        source: item.source || 'static'
+      }));
     } catch(e) {
       grid.innerHTML = `<div class="tool-empty">道具リンクを読み込めませんでした。affiliate-links.json を確認してください。<br><small>${esc(e.message)}</small></div>`;
       return;
@@ -590,16 +594,20 @@
         const res = await fetch(`${url}?action=affiliateLinks`, { cache: 'no-store' });
         const data = await res.json();
         if (data.ok && Array.isArray(data.items)) {
-          const byUrl = new Map();
+          const byKey = new Map();
           staticItems.forEach(item => {
-            const firstUrl = item.links && item.links[0] ? item.links[0].url : '';
-            byUrl.set(firstUrl || item.name, item);
+            byKey.set(item.id || getAffiliateFirstUrl(item) || item.name, item);
           });
           data.items.forEach(item => {
-            const firstUrl = item.links && item.links[0] ? item.links[0].url : '';
-            byUrl.set(firstUrl || item.id || item.name, item);
+            item.source = item.source || 'gas';
+            const firstUrl = getAffiliateFirstUrl(item);
+            const staticMatch = staticItems.find(staticItem =>
+              staticItem.id === item.id || (firstUrl && getAffiliateFirstUrl(staticItem) === firstUrl)
+            );
+            if (staticMatch) byKey.delete(staticMatch.id || getAffiliateFirstUrl(staticMatch) || staticMatch.name);
+            byKey.set(item.id || firstUrl || item.name, item);
           });
-          affiliateLinks = Array.from(byUrl.values());
+          affiliateLinks = Array.from(byKey.values());
         }
       } catch(e) {
         // GAS側が未更新の場合は静的JSONへフォールバックする
@@ -607,6 +615,10 @@
     }
     renderToolFilters();
     renderAffiliateLinks();
+  }
+
+  function getAffiliateFirstUrl(item) {
+    return item && item.links && item.links[0] ? item.links[0].url : '';
   }
 
   function renderToolFilters() {
@@ -647,12 +659,10 @@
             </a>
           `).join('')}
         </div>
-        ${item.id ? `
-          <div class="tool-card-actions ${affiliateAdminMode ? 'show' : ''}">
-            <button class="btn btn-secondary" onclick="openAffiliateModal('${escAttr(item.id)}')">編集</button>
-            <button class="btn btn-danger" onclick="deleteAffiliateLink('${escAttr(item.id)}')">削除</button>
-          </div>
-        ` : ''}
+        <div class="tool-card-actions ${affiliateAdminMode ? 'show' : ''}">
+          <button class="btn btn-secondary" onclick="openAffiliateModal('${escAttr(item.id)}')">編集</button>
+          ${item.source === 'static' ? '' : `<button class="btn btn-danger" onclick="deleteAffiliateLink('${escAttr(item.id)}')">削除</button>`}
+        </div>
       </article>
     `).join('');
   }
@@ -675,6 +685,7 @@
     document.getElementById('tool-description').value = item ? item.description || '' : '';
     document.getElementById('tool-label').value = firstLink.label || 'おすすめ';
     document.getElementById('tool-kind').value = firstLink.kind || '楽天ROOM';
+    document.getElementById('tool-links-extra').value = formatExtraToolLinks(item ? item.links || [] : []);
     document.getElementById('tool-modal-title').textContent = item ? '道具リンクを編集' : '道具リンクを追加';
     showToolMsg('', '');
     document.getElementById('tool-modal').classList.add('open');
@@ -720,11 +731,18 @@
     if (!url) { showToolMsg('err', 'GAS URLを設定してください。'); return; }
     const password = getNoticePassword();
     if (!password) return;
-    const linkUrl = document.getElementById('tool-url').value.trim();
+    let links = [];
+    try {
+      links = getToolFormLinks();
+    } catch(e) {
+      showToolMsg('err', e.message);
+      return;
+    }
+    const firstLink = links[0];
     const name = document.getElementById('tool-name').value.trim();
     const category = document.getElementById('tool-category').value.trim();
     const description = document.getElementById('tool-description').value.trim();
-    if (!linkUrl || !name) { showToolMsg('err', 'URLと道具名は必須です。'); return; }
+    if (!firstLink.url || !name) { showToolMsg('err', 'URLと道具名は必須です。'); return; }
     const btn = document.getElementById('btn-tool-save');
     btn.disabled = true; btn.textContent = '保存中...';
     try {
@@ -737,9 +755,10 @@
           name,
           category: category || 'その他',
           description,
-          linkLabel: document.getElementById('tool-label').value.trim() || 'おすすめ',
-          linkKind: document.getElementById('tool-kind').value.trim() || '楽天ROOM',
-          linkUrl,
+          linkLabel: firstLink.label,
+          linkKind: firstLink.kind,
+          linkUrl: firstLink.url,
+          links,
         }),
       });
       const data = await res.json();
@@ -780,6 +799,56 @@
       }
     } catch(e) {
       showToolMsg('err', '通信エラー: ' + e.message);
+    }
+  }
+
+  function formatExtraToolLinks(links) {
+    return (links || []).slice(1).map(link => {
+      const label = link.label || 'リンクを見る';
+      const kind = link.kind || '楽天ROOM';
+      return `${label} | ${link.url || ''} | ${kind}`;
+    }).join('\n');
+  }
+
+  function getToolFormLinks() {
+    const firstUrl = normalizeToolUrl(document.getElementById('tool-url').value.trim());
+    const firstLabel = document.getElementById('tool-label').value.trim() || 'おすすめ';
+    const firstKind = document.getElementById('tool-kind').value.trim() || '楽天ROOM';
+    if (!firstUrl) throw new Error('1つ目のリンクURLを入力してください。');
+    const links = [{ label: firstLabel, url: firstUrl, kind: firstKind }];
+    const extra = document.getElementById('tool-links-extra').value.split(/\r?\n/);
+    extra.forEach((line, index) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      const parts = trimmed.split('|').map(part => part.trim()).filter(Boolean);
+      let label = 'リンクを見る';
+      let url = '';
+      let kind = '楽天ROOM';
+      if (parts.length === 1) {
+        url = parts[0];
+      } else if (parts.length === 2) {
+        label = parts[0];
+        url = parts[1];
+      } else {
+        label = parts[0];
+        url = parts[1];
+        kind = parts.slice(2).join(' | ');
+      }
+      url = normalizeToolUrl(url);
+      if (!url) throw new Error(`追加リンク ${index + 1} 行目のURLを確認してください。`);
+      links.push({ label, url, kind });
+    });
+    return links;
+  }
+
+  function normalizeToolUrl(value) {
+    if (!value) return '';
+    try {
+      const url = new URL(value);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+      return url.href;
+    } catch(e) {
+      return '';
     }
   }
 
@@ -1503,9 +1572,9 @@
     <h3 id="tool-modal-title">道具リンクを追加</h3>
     <input type="hidden" id="tool-edit-id">
     <div style="margin-bottom:14px;">
-      <label for="tool-url">楽天ROOMなどのリンクURL <span style="color:red">*</span></label>
+      <label for="tool-url">1つ目のリンクURL <span style="color:red">*</span></label>
       <input type="url" id="tool-url" placeholder="https://room.rakuten.co.jp/you0810jmsdf/...">
-      <div class="tool-form-note">URLを貼って「ROOMから取得」を押すと、取得できた紹介文を下に入れます。</div>
+      <div class="tool-form-note">URLを貼って「ROOMから取得」を押すと、取得できた紹介文を下に入れます。カード内には下の追加リンクもまとめて表示できます。</div>
     </div>
     <div class="form-actions" style="margin-bottom:14px;">
       <button class="btn btn-export" id="btn-tool-preview" onclick="previewAffiliateLink()">ROOMから取得</button>
@@ -1540,6 +1609,11 @@
     <div>
       <label for="tool-description">紹介文</label>
       <textarea id="tool-description" rows="4" placeholder="講習ページに表示する紹介文"></textarea>
+    </div>
+    <div style="margin-top:14px;">
+      <label for="tool-links-extra">追加リンク</label>
+      <textarea id="tool-links-extra" rows="4" placeholder="表示名 | URL | 種別&#10;例: 1500ml | https://room.rakuten.co.jp/... | 楽天ROOM"></textarea>
+      <div class="tool-form-note">1行につき1リンク。`表示名 | URL | 種別` の順で入力します。URLだけの行も使えます。</div>
     </div>
     <div id="tool-modal-msg" class="form-msg" style="margin-top:10px;"></div>
     <div class="modal-actions">
