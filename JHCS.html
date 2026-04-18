@@ -440,7 +440,7 @@
       const gid = 'yr-' + year;
       html += `<tr class="year-header" onclick="toggleYear('${gid}')">
         <td colspan="8">
-          <span class="year-toggle-icon" id="${gid}-icon">▼</span>
+          <span class="year-toggle-icon" id="${gid}-icon">+</span>
           <strong>${year}年度</strong>
           <span style="font-size:12px;color:var(--gray);margin-left:8px;">${byYear[year].length}回</span>
         </td>
@@ -452,7 +452,7 @@
                        : `<span>${esc(cls)}</span>`;
         const memo = r['メモ'] || '';
         const id = esc(r['ID']);
-        html += `<tr class="year-row ${gid}">
+        html += `<tr class="year-row ${gid} hidden">
           <td class="td-date">${fmtDate(r['開催日'])}</td>
           <td>${classTag}</td>
           <td>${r['出席者数'] ? r['出席者数'] + '名' : '―'}</td>
@@ -604,7 +604,7 @@
     const icon = document.getElementById(gid + '-icon');
     const isHidden = rows[0] && rows[0].classList.contains('hidden');
     rows.forEach(r => r.classList.toggle('hidden', !isHidden));
-    if (icon) icon.style.transform = isHidden ? '' : 'rotate(-90deg)';
+    if (icon) icon.textContent = isHidden ? '-' : '+';
   }
 
   // ── 編集モーダル ──────────────────────────────────
