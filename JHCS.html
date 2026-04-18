@@ -87,7 +87,8 @@
     .notice-meta { font-size: 12px; color: var(--gray); margin-bottom: 12px; }
     .notice-text { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
     .notice-empty { color: var(--gray); font-size: 14px; }
-    .notice-admin { margin-top: 14px; }
+    .notice-board input[readonly], .notice-board textarea[readonly] { background: transparent; border-color: transparent; padding-left: 0; padding-right: 0; }
+    .notice-board textarea[readonly] { min-height: 96px; }
     .notice-history { background: var(--white); border-radius: 10px; padding: 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
     .notice-history summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--tan); }
     .notice-history-item { border-top: 1px solid rgba(0,0,0,.08); padding: 12px 0; }
@@ -244,7 +245,24 @@
   <div class="section" id="notice-section">
     <h2>お知らせ</h2>
     <div class="notice-board" id="notice-current">
-      <div class="notice-empty">GAS URLを設定すると、次回予告・連絡事項を掲示できます。</div>
+      <div class="form-grid">
+        <div>
+          <label for="notice-title-input">見出し</label>
+          <input type="text" id="notice-title-input" placeholder="例: 次回予告" readonly>
+        </div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label for="notice-text-input">掲載内容</label>
+        <textarea id="notice-text-input" placeholder="GAS URLを設定すると、次回予告・連絡事項を掲示できます。" readonly></textarea>
+      </div>
+      <div class="notice-meta" id="notice-updated">更新: ―</div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" id="btn-notice-edit" onclick="unlockNoticeEditor()">編集</button>
+        <button class="btn btn-primary" id="btn-notice-save" onclick="saveNoticeDraft()" style="display:none;">保存</button>
+        <button class="btn btn-secondary" id="btn-notice-cancel" onclick="cancelNoticeEdit()" style="display:none;">キャンセル</button>
+        <button class="btn btn-export" id="btn-notice-archive" onclick="archiveNotice()">履歴として残す</button>
+        <span id="notice-msg" class="form-msg"></span>
+      </div>
     </div>
     <details class="notice-history" id="notice-history-wrap">
       <summary>過去のお知らせを見る</summary>
@@ -252,22 +270,6 @@
         <div class="notice-empty">過去のお知らせはまだありません。</div>
       </div>
     </details>
-    <div class="form-card notice-admin">
-      <div class="form-grid">
-        <div>
-          <label for="notice-title-input">見出し</label>
-          <input type="text" id="notice-title-input" placeholder="例: 次回予告">
-        </div>
-      </div>
-      <div style="margin-bottom:14px;">
-        <label for="notice-text-input">掲載内容</label>
-        <textarea id="notice-text-input" placeholder="例: 次回はファスナー取り付けを進めます。必要な方は糸と金具を持参してください。"></textarea>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" id="btn-notice-save" onclick="saveNotice()">お知らせを上書き</button>
-        <span id="notice-msg" class="form-msg"></span>
-      </div>
-    </div>
   </div>
 
   <!-- カリキュラム -->
@@ -400,6 +402,8 @@
   const GAS_URL_KEY = 'jhcs_gas_url';
   let cachedRecords = [];
   let cachedNotice = null;
+  let noticeDraft = { title: '', text: '' };
+  let noticeAdminPassword = '';
 
   // ── GAS URL 管理 ──────────────────────────────────
   function getGasUrl() { return localStorage.getItem(GAS_URL_KEY) || ''; }
@@ -434,8 +438,7 @@
   async function loadNotice() {
     const url = getGasUrl();
     if (!url) {
-      document.getElementById('notice-current').innerHTML =
-        '<div class="notice-empty">GAS URLを設定すると、次回予告・連絡事項を掲示できます。</div>';
+      setNoticeFields('', '', '更新: ―');
       return;
     }
     try {
@@ -444,21 +447,17 @@
       cachedNotice = data.notice || null;
       renderNotice(data.notice, data.history || []);
     } catch(e) {
-      document.getElementById('notice-current').innerHTML =
-        `<div class="notice-empty">お知らせを読み込めませんでした。<br><small>${esc(e.message)}</small></div>`;
+      setNoticeFields('読み込みエラー', `お知らせを読み込めませんでした。\n${e.message}`, '更新: ―');
     }
   }
 
   function renderNotice(notice, history) {
-    const current = document.getElementById('notice-current');
     if (notice && (notice['タイトル'] || notice['本文'])) {
-      current.innerHTML = `
-        <div class="notice-title">${esc(notice['タイトル'] || 'お知らせ')}</div>
-        <div class="notice-meta">更新: ${fmtDateTime(notice['更新日時'])}</div>
-        <div class="notice-text">${esc(notice['本文'] || '')}</div>`;
+      setNoticeFields(notice['タイトル'] || 'お知らせ', notice['本文'] || '', `更新: ${fmtDateTime(notice['更新日時'])}`);
     } else {
-      current.innerHTML = '<div class="notice-empty">現在掲載中のお知らせはありません。</div>';
+      setNoticeFields('', '', '更新: ―');
     }
+    lockNoticeEditor();
 
     const list = document.getElementById('notice-history-list');
     if (!history.length) {
@@ -473,35 +472,104 @@
       </div>`).join('');
   }
 
-  async function saveNotice() {
+  function setNoticeFields(title, text, updatedText) {
+    document.getElementById('notice-title-input').value = title;
+    document.getElementById('notice-text-input').value = text;
+    document.getElementById('notice-updated').textContent = updatedText;
+    noticeDraft = { title, text };
+  }
+
+  function getNoticePassword() {
+    if (noticeAdminPassword) return noticeAdminPassword;
+    const pass = prompt('管理者パスワードを入力してください:');
+    if (pass === null) return '';
+    noticeAdminPassword = pass;
+    return pass;
+  }
+
+  function unlockNoticeEditor() {
+    if (!getNoticePassword()) return;
+    document.getElementById('notice-title-input').readOnly = false;
+    document.getElementById('notice-text-input').readOnly = false;
+    document.getElementById('btn-notice-edit').style.display = 'none';
+    document.getElementById('btn-notice-save').style.display = '';
+    document.getElementById('btn-notice-cancel').style.display = '';
+    document.getElementById('notice-title-input').focus();
+  }
+
+  function lockNoticeEditor() {
+    document.getElementById('notice-title-input').readOnly = true;
+    document.getElementById('notice-text-input').readOnly = true;
+    document.getElementById('btn-notice-edit').style.display = '';
+    document.getElementById('btn-notice-save').style.display = 'none';
+    document.getElementById('btn-notice-cancel').style.display = 'none';
+  }
+
+  function cancelNoticeEdit() {
+    setNoticeFields(noticeDraft.title, noticeDraft.text, document.getElementById('notice-updated').textContent);
+    lockNoticeEditor();
+    showNoticeMsg('ok', '編集を取り消しました。');
+  }
+
+  async function saveNoticeDraft() {
     const url = getGasUrl();
-    const msg = document.getElementById('notice-msg');
     const title = document.getElementById('notice-title-input').value.trim();
     const text = document.getElementById('notice-text-input').value.trim();
     if (!url) { showNoticeMsg('err', 'GAS URLを設定してください。'); return; }
     if (!title && !text) { showNoticeMsg('err', '見出しまたは掲載内容を入力してください。'); return; }
-    if (cachedNotice && !confirm('現在のお知らせを履歴に移して、新しい内容を掲載します。よろしいですか？')) return;
+    const password = getNoticePassword();
+    if (!password) return;
 
     const btn = document.getElementById('btn-notice-save');
     btn.disabled = true; btn.textContent = '保存中...';
     try {
       const res = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveNotice', title, text }),
+        body: JSON.stringify({ action: 'saveNoticeDraft', title, text, password }),
       });
       const data = await res.json();
       if (data.ok) {
-        showNoticeMsg('ok', 'お知らせを更新しました。');
-        document.getElementById('notice-title-input').value = '';
-        document.getElementById('notice-text-input').value = '';
+        showNoticeMsg('ok', 'お知らせを保存しました。');
+        lockNoticeEditor();
         await loadNotice();
       } else {
+        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
         showNoticeMsg('err', 'エラー: ' + (data.error || '不明'));
       }
     } catch(e) {
       showNoticeMsg('err', '通信エラー: ' + e.message);
     } finally {
-      btn.disabled = false; btn.textContent = 'お知らせを上書き';
+      btn.disabled = false; btn.textContent = '保存';
+    }
+  }
+
+  async function archiveNotice() {
+    const url = getGasUrl();
+    if (!url) { showNoticeMsg('err', 'GAS URLを設定してください。'); return; }
+    if (!cachedNotice) { showNoticeMsg('err', '履歴に残すお知らせがありません。'); return; }
+    if (!confirm('現在のお知らせを履歴に移します。掲示中のお知らせは空になります。よろしいですか？')) return;
+    const password = getNoticePassword();
+    if (!password) return;
+
+    const btn = document.getElementById('btn-notice-archive');
+    btn.disabled = true; btn.textContent = '処理中...';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'archiveNotice', password }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showNoticeMsg('ok', '現在のお知らせを履歴に移しました。');
+        await loadNotice();
+      } else {
+        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
+        showNoticeMsg('err', 'エラー: ' + (data.error || '不明'));
+      }
+    } catch(e) {
+      showNoticeMsg('err', '通信エラー: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '履歴として残す';
     }
   }
 
