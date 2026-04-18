@@ -73,9 +73,14 @@
     .badge-open { background: var(--green-light); color: var(--green); }
 
     /* Curriculum */
-    .curriculum { list-style: none; display: grid; gap: 8px; }
-    .curriculum li { background: var(--white); border-radius: 10px; padding: 10px 16px; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; gap: 12px; }
-    .curriculum .num { color: var(--tan); font-weight: 700; min-width: 72px; font-size: 13px; white-space: nowrap; }
+    .curriculum { display: grid; gap: 10px; }
+    .curriculum-row { background: var(--white); border-radius: 10px; padding: 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .curriculum-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 8px; }
+    .curriculum-num { color: var(--tan); font-weight: 700; font-size: 13px; white-space: nowrap; }
+    .curriculum-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .curriculum-fields input[readonly] { background: transparent; border-color: transparent; padding-left: 0; padding-right: 0; }
+    .curriculum-static { background: var(--white); border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 14px; }
+    .curriculum-static strong { color: var(--tan); margin-right: 10px; }
 
     /* Skills */
     .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -276,14 +281,13 @@
   <!-- カリキュラム -->
   <div class="section">
     <h2>カリキュラム（全24回）</h2>
-    <ul class="curriculum">
-      <li><span class="num">第1〜2回</span>道具の説明・CAD操作研修</li>
-      <li><span class="num">第3〜4回</span>ラウンドファスナーペンケース</li>
-      <li><span class="num">第5〜6回</span>システム手帳</li>
-      <li><span class="num">第7〜8回</span>キーケース / リップケース / サシェ / パスケース</li>
-      <li><span class="num">第9〜12回</span>インレイ・インターロッキング技法を用いたシステム手帳・眼鏡ケース</li>
-      <li><span class="num">第13〜24回</span>継続作品・自由選択デザイン</li>
-    </ul>
+    <div class="curriculum" id="curriculum-list">
+      <div class="loading">GASに接続するとカリキュラムを編集できます。</div>
+    </div>
+    <div class="curriculum-static" style="margin-top:10px;">
+      <strong>第13回以降</strong>自由課題
+    </div>
+    <div id="curriculum-msg" class="form-msg" style="margin-top:10px;"></div>
   </div>
 
   <!-- 習得技術 -->
@@ -292,7 +296,7 @@
     <div class="skill-tags">
       <span class="skill-tag">革の染色</span><span class="skill-tag">裁断</span>
       <span class="skill-tag">CADパターン設計</span><span class="skill-tag">ファスナー取り付け</span>
-      <span class="skill-tag">リベット打ち</span><span class="skill-tag">インターロッキング（イントレチャート）</span>
+      <span class="skill-tag">インターロッキング（イントレチャート）</span>
       <span class="skill-tag">パッチワーク</span><span class="skill-tag">インレイ技法</span>
     </div>
   </div>
@@ -403,8 +407,23 @@
   const GAS_URL_KEY = 'jhcs_gas_url';
   let cachedRecords = [];
   let cachedNotice = null;
+  let cachedCurriculum = [];
   let noticeDraft = { title: '', text: '' };
   let noticeAdminPassword = '';
+  const DEFAULT_CURRICULUM = [
+    { '回': '1', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '更新日時': '' },
+    { '回': '2', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '更新日時': '' },
+    { '回': '3', '講習内容': 'ファスナー取り付け', '作品例': 'ラウンドファスナーペンケース', '更新日時': '' },
+    { '回': '4', '講習内容': '仕立て・仕上げ', '作品例': 'ラウンドファスナーペンケース', '更新日時': '' },
+    { '回': '5', '講習内容': '裁断・縫製', '作品例': 'システム手帳', '更新日時': '' },
+    { '回': '6', '講習内容': '金具取り付け・仕上げ', '作品例': 'システム手帳', '更新日時': '' },
+    { '回': '7', '講習内容': '小物制作', '作品例': 'キーケース / リップケース', '更新日時': '' },
+    { '回': '8', '講習内容': '小物制作', '作品例': 'サシェ / パスケース', '更新日時': '' },
+    { '回': '9', '講習内容': 'インレイ・インターロッキング技法', '作品例': 'システム手帳', '更新日時': '' },
+    { '回': '10', '講習内容': 'インレイ・インターロッキング技法', '作品例': '眼鏡ケース', '更新日時': '' },
+    { '回': '11', '講習内容': '応用制作', '作品例': 'システム手帳 / 眼鏡ケース', '更新日時': '' },
+    { '回': '12', '講習内容': '応用制作・仕上げ', '作品例': 'システム手帳 / 眼鏡ケース', '更新日時': '' }
+  ];
 
   // ── GAS URL 管理 ──────────────────────────────────
   function getGasUrl() { return localStorage.getItem(GAS_URL_KEY) || ''; }
@@ -419,6 +438,7 @@
     document.getElementById('setup-banner').classList.remove('show');
     loadRecords();
     loadNotice();
+    loadCurriculum();
     loadPhotos();
   }
 
@@ -432,6 +452,7 @@
     localStorage.setItem(GAS_URL_KEY, url);
     loadRecords();
     loadNotice();
+    loadCurriculum();
     loadPhotos();
   }
 
@@ -605,6 +626,112 @@
 
   function showNoticeMsg(type, text) {
     const el = document.getElementById('notice-msg');
+    el.className = 'form-msg ' + type;
+    el.textContent = text;
+    if (type === 'ok') setTimeout(() => el.textContent = '', 4000);
+  }
+
+  // ── カリキュラム ─────────────────────────────────
+  async function loadCurriculum() {
+    const url = getGasUrl();
+    if (!url) {
+      renderCurriculum(DEFAULT_CURRICULUM);
+      return;
+    }
+    try {
+      const res = await fetch(`${url}?action=curriculum`);
+      const data = await res.json();
+      cachedCurriculum = data.curriculum && data.curriculum.length ? data.curriculum : DEFAULT_CURRICULUM;
+      renderCurriculum(cachedCurriculum);
+    } catch(e) {
+      cachedCurriculum = DEFAULT_CURRICULUM;
+      renderCurriculum(cachedCurriculum);
+      showCurriculumMsg('err', 'カリキュラムを読み込めませんでした: ' + e.message);
+    }
+  }
+
+  function renderCurriculum(rows) {
+    const byLesson = {};
+    rows.forEach(r => { byLesson[String(r['回'])] = r; });
+    const normalized = Array.from({ length: 12 }, (_, i) => {
+      const lesson = String(i + 1);
+      return byLesson[lesson] || DEFAULT_CURRICULUM[i];
+    });
+    const el = document.getElementById('curriculum-list');
+    el.innerHTML = normalized.map(item => {
+      const lesson = escAttr(item['回']);
+      return `
+        <div class="curriculum-row" data-lesson="${lesson}">
+          <div class="curriculum-head">
+            <div>
+              <span class="curriculum-num">第${esc(item['回'])}回</span>
+              <span class="notice-meta">更新: ${fmtDateTime(item['更新日時'])}</span>
+            </div>
+            <div>
+              <button class="btn btn-secondary btn-cur-edit" style="padding:4px 10px;font-size:12px;" onclick="unlockCurriculum(${lesson})">編集</button>
+              <button class="btn btn-primary btn-cur-save" style="display:none;padding:4px 10px;font-size:12px;" onclick="saveCurriculum(${lesson})">保存</button>
+              <button class="btn btn-secondary btn-cur-cancel" style="display:none;padding:4px 10px;font-size:12px;" onclick="loadCurriculum()">キャンセル</button>
+            </div>
+          </div>
+          <div class="curriculum-fields">
+            <div>
+              <label>講習内容</label>
+              <input type="text" class="cur-content" value="${escAttr(item['講習内容'] || '')}" readonly>
+            </div>
+            <div>
+              <label>作品例</label>
+              <input type="text" class="cur-example" value="${escAttr(item['作品例'] || '')}" readonly>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function unlockCurriculum(lesson) {
+    if (!getNoticePassword()) return;
+    const row = document.querySelector(`.curriculum-row[data-lesson="${lesson}"]`);
+    if (!row) return;
+    row.querySelectorAll('input').forEach(input => input.readOnly = false);
+    row.querySelector('.btn-cur-edit').style.display = 'none';
+    row.querySelector('.btn-cur-save').style.display = '';
+    row.querySelector('.btn-cur-cancel').style.display = '';
+    row.querySelector('.cur-content').focus();
+  }
+
+  async function saveCurriculum(lesson) {
+    const url = getGasUrl();
+    if (!url) { showCurriculumMsg('err', 'GAS URLを設定してください。'); return; }
+    const password = getNoticePassword();
+    if (!password) return;
+    const row = document.querySelector(`.curriculum-row[data-lesson="${lesson}"]`);
+    if (!row) return;
+    const content = row.querySelector('.cur-content').value.trim();
+    const example = row.querySelector('.cur-example').value.trim();
+    if (!content && !example) { showCurriculumMsg('err', '講習内容または作品例を入力してください。'); return; }
+    const btn = row.querySelector('.btn-cur-save');
+    btn.disabled = true; btn.textContent = '保存中...';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveCurriculum', lesson, content, example, password }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showCurriculumMsg('ok', `第${lesson}回を保存しました。`);
+        await loadCurriculum();
+      } else {
+        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
+        showCurriculumMsg('err', 'エラー: ' + (data.error || '不明'));
+      }
+    } catch(e) {
+      showCurriculumMsg('err', '通信エラー: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '保存';
+    }
+  }
+
+  function showCurriculumMsg(type, text) {
+    const el = document.getElementById('curriculum-msg');
     el.className = 'form-msg ' + type;
     el.textContent = text;
     if (type === 'ok') setTimeout(() => el.textContent = '', 4000);
@@ -948,8 +1075,10 @@
   if (getGasUrl()) {
     loadRecords();
     loadNotice();
+    loadCurriculum();
     loadPhotos();
   } else {
+    renderCurriculum(DEFAULT_CURRICULUM);
     document.getElementById('setup-banner').classList.add('show');
     document.getElementById('records-body').innerHTML =
       '<tr><td colspan="8" class="empty-msg">GASのURLを設定してください（上のバナー）。</td></tr>';
