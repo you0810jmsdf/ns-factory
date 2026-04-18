@@ -49,6 +49,26 @@
     h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--tan); }
     .section { margin-bottom: 40px; }
 
+    /* Hero photos */
+    .jhcs-hero-photos {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px; align-items: stretch; margin-bottom: 32px;
+    }
+    .jhcs-photo-panel {
+      background: var(--white); border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      overflow: hidden; min-height: 100%; display: flex; flex-direction: column;
+    }
+    .jhcs-photo-link { color: inherit; display: flex; flex-direction: column; flex: 1; text-decoration: none; }
+    .jhcs-photo-frame { background: #eeeeee; overflow: hidden; }
+    .jhcs-photo-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .jhcs-photo-frame.profile { aspect-ratio: 4 / 5; background: #fafafa; }
+    .jhcs-photo-frame.profile img { object-fit: contain; }
+    .jhcs-photo-frame.recruit { aspect-ratio: 4 / 5; background: #fafafa; }
+    .jhcs-photo-frame.recruit img { object-fit: contain; }
+    .jhcs-photo-caption { padding: 8px 12px 10px; font-size: 12px; color: var(--gray); line-height: 1.45; }
+    .jhcs-photo-caption strong { display: block; color: var(--charcoal); font-size: 14px; margin-bottom: 0; }
+    .jhcs-photo-cta { color: var(--tan); font-weight: 700; }
+
     /* GAS URL Setup Banner */
     .setup-banner {
       background: #FFF8E1; border: 1px solid #FFD54F; border-radius: var(--radius);
@@ -71,6 +91,36 @@
     .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 8px; }
     .badge-closed { background: var(--amber-light); color: var(--amber); }
     .badge-open { background: var(--green-light); color: var(--green); }
+
+    /* Affiliate links */
+    .affiliate-intro { color: var(--gray); font-size: 13px; margin-bottom: 14px; }
+    .tool-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .tool-filter-btn {
+      padding: 7px 12px; border: 1px solid rgba(160,120,90,.24); border-radius: 8px;
+      background: var(--white); color: var(--charcoal); font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .tool-filter-btn.active { background: rgba(160,120,90,.14); border-color: rgba(160,120,90,.5); color: var(--tan); }
+    .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+    .tool-card { background: var(--white); border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); display: flex; flex-direction: column; gap: 8px; }
+    .tool-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .tool-card-title { font-size: 15px; font-weight: 700; }
+    .tool-card-category { flex-shrink: 0; border-radius: 8px; padding: 2px 8px; background: rgba(160,120,90,.12); color: var(--tan); font-size: 11px; font-weight: 700; }
+    .tool-card-desc { color: var(--gray); font-size: 13px; }
+    .tool-link-list { display: grid; gap: 6px; margin-top: auto; }
+    .tool-link {
+      display: inline-flex; justify-content: space-between; align-items: center; gap: 8px;
+      border-radius: 8px; padding: 8px 10px; background: rgba(160,120,90,.1);
+      color: var(--tan); text-decoration: none; font-size: 13px; font-weight: 700;
+    }
+    .tool-link:hover { background: rgba(160,120,90,.18); }
+    .tool-link-note { color: var(--gray); font-size: 11px; font-weight: 500; }
+    .tool-empty { background: var(--white); border-radius: 8px; padding: 18px; color: var(--gray); font-size: 13px; text-align: center; }
+    .tool-admin-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tool-admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tool-card-actions { display: none; gap: 6px; margin-top: 2px; }
+    .tool-card-actions.show { display: flex; }
+    .tool-card-actions .btn { padding: 4px 10px; font-size: 12px; border-radius: 8px; }
+    .tool-form-note { color: var(--gray); font-size: 12px; margin-top: 6px; }
 
     /* Curriculum */
     .curriculum { display: grid; gap: 10px; }
@@ -197,6 +247,7 @@
     .lp-footer { border-top: 1px solid rgba(0,0,0,.08); padding: 20px 32px; font-size: 12px; color: var(--gray); text-align: center; }
 
     @media (max-width: 760px) {
+      .jhcs-hero-photos { grid-template-columns: 1fr; }
       .curriculum-fields { grid-template-columns: 1fr; }
       .curriculum-head { align-items: flex-start; flex-direction: column; }
     }
@@ -218,6 +269,29 @@
 <div class="container">
   <h1>JHCS 講習案内</h1>
   <p class="subtitle">JOYFUL HONDA カルチャースクール 千葉ニュータウン店 ― レザークラフト講座</p>
+
+  <div class="jhcs-hero-photos" aria-label="レザークラフト講座の写真">
+    <figure class="jhcs-photo-panel">
+      <div class="jhcs-photo-frame profile">
+        <img src="assets/jhcs/instructor-profile.jpg" alt="レザークラフト講座の講師プロフィール写真" loading="eager">
+      </div>
+      <figcaption class="jhcs-photo-caption">
+        <strong>講師と作品づくり</strong>
+        初心者から一緒に進めます。
+      </figcaption>
+    </figure>
+    <figure class="jhcs-photo-panel">
+      <a class="jhcs-photo-link" href="https://form.run/@joyfulhonda-cultureschool-enrollment-form-chibanewtown" target="_blank" rel="noopener">
+        <div class="jhcs-photo-frame recruit">
+          <img src="assets/jhcs/student-recruitment.png" alt="JOYFUL CULTURE SCHOOL 生徒募集" loading="eager">
+        </div>
+        <figcaption class="jhcs-photo-caption">
+          <strong>生徒募集中</strong>
+          <span class="jhcs-photo-cta">ジョイフルホンダカルチャースクールへ申し込む</span>
+        </figcaption>
+      </a>
+    </figure>
+  </div>
 
   <!-- GAS URL 未設定バナー -->
   <div class="setup-banner" id="setup-banner">
@@ -335,6 +409,26 @@
     </div>
   </div>
 
+  <!-- 道具リンク -->
+  <div class="section" id="affiliate-tools-section">
+    <h2>レザークラフト道具リンク</h2>
+    <p class="affiliate-intro">
+      講習で使う基本道具を中心に、N's factory が使用している道具をまとめています。
+      楽天ROOM経由のリンクから購入いただくと、ワークショップ用道具の整備費として活用します。
+    </p>
+    <div class="tool-admin-bar">
+      <div class="tool-filter" id="tool-filter"></div>
+      <div class="tool-admin-actions">
+        <button class="btn btn-primary" onclick="openAffiliateModal()">道具リンクを追加</button>
+        <button class="btn btn-secondary" id="btn-tool-admin" onclick="toggleAffiliateAdmin()">編集表示</button>
+      </div>
+    </div>
+    <div class="tool-grid" id="tool-grid">
+      <div class="tool-empty">道具リンクを読み込み中です。</div>
+    </div>
+    <div id="tool-msg" class="form-msg" style="margin-top:10px;"></div>
+  </div>
+
   <!-- 実績一覧 -->
   <div class="section">
     <h2>講習実績</h2>
@@ -420,9 +514,13 @@
 
 <script>
   const GAS_URL_KEY = 'jhcs_gas_url';
+  const AFFILIATE_LINKS_URL = 'affiliate-links.json';
   let cachedRecords = [];
   let cachedNotice = null;
   let cachedCurriculum = [];
+  let affiliateLinks = [];
+  let activeToolCategory = 'すべて';
+  let affiliateAdminMode = false;
   let noticeDraft = { title: '', text: '' };
   let noticeAdminPassword = '';
   const DEFAULT_CURRICULUM = [
@@ -469,6 +567,237 @@
     loadNotice();
     loadCurriculum();
     loadPhotos();
+  }
+
+  // ── 道具アフィリエイトリンク ─────────────────────
+  async function loadAffiliateLinks() {
+    const grid = document.getElementById('tool-grid');
+    let staticItems = [];
+    try {
+      const res = await fetch(AFFILIATE_LINKS_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      staticItems = Array.isArray(data.items) ? data.items : [];
+    } catch(e) {
+      grid.innerHTML = `<div class="tool-empty">道具リンクを読み込めませんでした。affiliate-links.json を確認してください。<br><small>${esc(e.message)}</small></div>`;
+      return;
+    }
+    affiliateLinks = staticItems;
+
+    const url = getGasUrl();
+    if (url) {
+      try {
+        const res = await fetch(`${url}?action=affiliateLinks`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok && Array.isArray(data.items)) {
+          const byUrl = new Map();
+          staticItems.forEach(item => {
+            const firstUrl = item.links && item.links[0] ? item.links[0].url : '';
+            byUrl.set(firstUrl || item.name, item);
+          });
+          data.items.forEach(item => {
+            const firstUrl = item.links && item.links[0] ? item.links[0].url : '';
+            byUrl.set(firstUrl || item.id || item.name, item);
+          });
+          affiliateLinks = Array.from(byUrl.values());
+        }
+      } catch(e) {
+        // GAS側が未更新の場合は静的JSONへフォールバックする
+      }
+    }
+    renderToolFilters();
+    renderAffiliateLinks();
+  }
+
+  function renderToolFilters() {
+    const filter = document.getElementById('tool-filter');
+    const categories = ['すべて', ...new Set(affiliateLinks.map(item => item.category).filter(Boolean))];
+    filter.innerHTML = categories.map(category => `
+      <button class="tool-filter-btn ${category === activeToolCategory ? 'active' : ''}" onclick="setToolCategory('${escAttr(category)}')">${esc(category)}</button>
+    `).join('');
+  }
+
+  function setToolCategory(category) {
+    activeToolCategory = category;
+    renderToolFilters();
+    renderAffiliateLinks();
+  }
+
+  function renderAffiliateLinks() {
+    const grid = document.getElementById('tool-grid');
+    const items = activeToolCategory === 'すべて'
+      ? affiliateLinks
+      : affiliateLinks.filter(item => item.category === activeToolCategory);
+    if (!items.length) {
+      grid.innerHTML = '<div class="tool-empty">このカテゴリの道具リンクはまだありません。</div>';
+      return;
+    }
+    grid.innerHTML = items.map(item => `
+      <article class="tool-card">
+        <div class="tool-card-head">
+          <div class="tool-card-title">${esc(item.name)}</div>
+          <div class="tool-card-category">${esc(item.category || 'その他')}</div>
+        </div>
+        <div class="tool-card-desc">${esc(item.description || '')}</div>
+        <div class="tool-link-list">
+          ${(item.links || []).map(link => `
+            <a class="tool-link" href="${escAttr(link.url)}" target="_blank" rel="noopener sponsored">
+              <span>${esc(link.label || 'リンクを見る')}</span>
+              <span class="tool-link-note">${esc(link.kind || 'affiliate')}</span>
+            </a>
+          `).join('')}
+        </div>
+        ${item.id ? `
+          <div class="tool-card-actions ${affiliateAdminMode ? 'show' : ''}">
+            <button class="btn btn-secondary" onclick="openAffiliateModal('${escAttr(item.id)}')">編集</button>
+            <button class="btn btn-danger" onclick="deleteAffiliateLink('${escAttr(item.id)}')">削除</button>
+          </div>
+        ` : ''}
+      </article>
+    `).join('');
+  }
+
+  function toggleAffiliateAdmin() {
+    if (!getNoticePassword()) return;
+    affiliateAdminMode = !affiliateAdminMode;
+    document.getElementById('btn-tool-admin').textContent = affiliateAdminMode ? '編集を隠す' : '編集表示';
+    renderAffiliateLinks();
+  }
+
+  function openAffiliateModal(id = '') {
+    if (!getNoticePassword()) return;
+    const item = affiliateLinks.find(x => String(x.id || '') === String(id)) || null;
+    const firstLink = item && item.links && item.links[0] ? item.links[0] : {};
+    document.getElementById('tool-edit-id').value = item ? item.id || '' : '';
+    document.getElementById('tool-url').value = firstLink.url || '';
+    document.getElementById('tool-name').value = item ? item.name || '' : '';
+    document.getElementById('tool-category').value = item ? item.category || '' : '';
+    document.getElementById('tool-description').value = item ? item.description || '' : '';
+    document.getElementById('tool-label').value = firstLink.label || 'おすすめ';
+    document.getElementById('tool-kind').value = firstLink.kind || '楽天ROOM';
+    document.getElementById('tool-modal-title').textContent = item ? '道具リンクを編集' : '道具リンクを追加';
+    showToolMsg('', '');
+    document.getElementById('tool-modal').classList.add('open');
+    document.getElementById('tool-url').focus();
+  }
+
+  function closeAffiliateModal() {
+    document.getElementById('tool-modal').classList.remove('open');
+  }
+
+  async function previewAffiliateLink() {
+    const url = getGasUrl();
+    const linkUrl = document.getElementById('tool-url').value.trim();
+    if (!url) { showToolMsg('err', 'GAS URLを設定してください。'); return; }
+    if (!linkUrl) { showToolMsg('err', '楽天ROOMなどのリンクURLを入力してください。'); return; }
+    const password = getNoticePassword();
+    if (!password) return;
+    const btn = document.getElementById('btn-tool-preview');
+    btn.disabled = true; btn.textContent = '取得中...';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'previewAffiliateLink', url: linkUrl, password }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
+        showToolMsg('err', '取得できませんでした: ' + (data.error || '不明'));
+        return;
+      }
+      if (data.name && !document.getElementById('tool-name').value.trim()) document.getElementById('tool-name').value = data.name;
+      if (data.description && !document.getElementById('tool-description').value.trim()) document.getElementById('tool-description').value = data.description;
+      showToolMsg('ok', '紹介文を取得しました。必要に応じて整えてから保存してください。');
+    } catch(e) {
+      showToolMsg('err', '通信エラー: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'ROOMから取得';
+    }
+  }
+
+  async function saveAffiliateLink() {
+    const url = getGasUrl();
+    if (!url) { showToolMsg('err', 'GAS URLを設定してください。'); return; }
+    const password = getNoticePassword();
+    if (!password) return;
+    const linkUrl = document.getElementById('tool-url').value.trim();
+    const name = document.getElementById('tool-name').value.trim();
+    const category = document.getElementById('tool-category').value.trim();
+    const description = document.getElementById('tool-description').value.trim();
+    if (!linkUrl || !name) { showToolMsg('err', 'URLと道具名は必須です。'); return; }
+    const btn = document.getElementById('btn-tool-save');
+    btn.disabled = true; btn.textContent = '保存中...';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'saveAffiliateLink',
+          password,
+          id: document.getElementById('tool-edit-id').value,
+          name,
+          category: category || 'その他',
+          description,
+          linkLabel: document.getElementById('tool-label').value.trim() || 'おすすめ',
+          linkKind: document.getElementById('tool-kind').value.trim() || '楽天ROOM',
+          linkUrl,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        closeAffiliateModal();
+        showToolMsg('ok', '道具リンクを保存しました。');
+        await loadAffiliateLinks();
+      } else {
+        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
+        showToolMsg('err', '保存できませんでした: ' + (data.error || '不明'));
+      }
+    } catch(e) {
+      showToolMsg('err', '通信エラー: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = '保存する';
+    }
+  }
+
+  async function deleteAffiliateLink(id) {
+    if (!id) { showToolMsg('err', '静的JSONの項目はページ上から削除できません。GASへ保存後に削除できます。'); return; }
+    const url = getGasUrl();
+    if (!url) { showToolMsg('err', 'GAS URLを設定してください。'); return; }
+    if (!confirm('この道具リンクを削除しますか？')) return;
+    const password = getNoticePassword();
+    if (!password) return;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteAffiliateLink', id, password }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToolMsg('ok', '道具リンクを削除しました。');
+        await loadAffiliateLinks();
+      } else {
+        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
+        showToolMsg('err', '削除できませんでした: ' + (data.error || '不明'));
+      }
+    } catch(e) {
+      showToolMsg('err', '通信エラー: ' + e.message);
+    }
+  }
+
+  function showToolMsg(type, text) {
+    ['tool-msg', 'tool-modal-msg'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'form-msg ' + type;
+      el.textContent = text;
+    });
+    if (type === 'ok') {
+      setTimeout(() => {
+        ['tool-msg', 'tool-modal-msg'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '';
+        });
+      }, 5000);
+    }
   }
 
   // ── お知らせ ─────────────────────────────────────
@@ -1110,6 +1439,7 @@
 
   // ── 初期化 ────────────────────────────────────────
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  loadAffiliateLinks();
   if (getGasUrl()) {
     loadRecords();
     loadNotice();
@@ -1164,6 +1494,58 @@
       <button class="btn btn-primary" id="btn-update" onclick="updateRecord()">保存する</button>
     </div>
     <div id="edit-msg" class="form-msg" style="margin-top:8px; text-align:right;"></div>
+  </div>
+</div>
+
+<!-- 道具リンク追加・編集モーダル -->
+<div class="modal-overlay" id="tool-modal" onclick="if(event.target===this)closeAffiliateModal()">
+  <div class="modal-box">
+    <h3 id="tool-modal-title">道具リンクを追加</h3>
+    <input type="hidden" id="tool-edit-id">
+    <div style="margin-bottom:14px;">
+      <label for="tool-url">楽天ROOMなどのリンクURL <span style="color:red">*</span></label>
+      <input type="url" id="tool-url" placeholder="https://room.rakuten.co.jp/you0810jmsdf/...">
+      <div class="tool-form-note">URLを貼って「ROOMから取得」を押すと、取得できた紹介文を下に入れます。</div>
+    </div>
+    <div class="form-actions" style="margin-bottom:14px;">
+      <button class="btn btn-export" id="btn-tool-preview" onclick="previewAffiliateLink()">ROOMから取得</button>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label for="tool-name">道具名 <span style="color:red">*</span></label>
+        <input type="text" id="tool-name" placeholder="例: ヘリ落とし">
+      </div>
+      <div>
+        <label for="tool-category">カテゴリ</label>
+        <input type="text" id="tool-category" list="tool-category-list" placeholder="例: 仕上げ">
+        <datalist id="tool-category-list">
+          <option value="切る・測る"></option>
+          <option value="貼る"></option>
+          <option value="縫う"></option>
+          <option value="穴あけ"></option>
+          <option value="仕上げ"></option>
+          <option value="金具・加工"></option>
+          <option value="応用技法"></option>
+        </datalist>
+      </div>
+      <div>
+        <label for="tool-label">リンク表示名</label>
+        <input type="text" id="tool-label" placeholder="おすすめ">
+      </div>
+      <div>
+        <label for="tool-kind">リンク種別</label>
+        <input type="text" id="tool-kind" placeholder="楽天ROOM">
+      </div>
+    </div>
+    <div>
+      <label for="tool-description">紹介文</label>
+      <textarea id="tool-description" rows="4" placeholder="講習ページに表示する紹介文"></textarea>
+    </div>
+    <div id="tool-modal-msg" class="form-msg" style="margin-top:10px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeAffiliateModal()">キャンセル</button>
+      <button class="btn btn-primary" id="btn-tool-save" onclick="saveAffiliateLink()">保存する</button>
+    </div>
   </div>
 </div>
 </body>
