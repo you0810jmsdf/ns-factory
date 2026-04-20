@@ -79,10 +79,32 @@
       color: var(--muted);
       font-size: 15px;
     }
+    .filters {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 20px 24px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--white);
+      color: var(--muted);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
     .tools {
       max-width: 1080px;
       margin: 0 auto;
-      padding: 22px 24px 0;
+      padding: 12px 24px 0;
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 12px;
@@ -323,6 +345,7 @@
   </header>
 
   <main>
+    <div id="filters" class="filters"></div>
     <div class="tools">
       <input id="search" class="search" type="search" placeholder="作品名・お客様名で探す" aria-label="作品名・お客様名で探す">
       <div id="count" class="count">読み込み中</div>
@@ -382,6 +405,7 @@
     let activeWork = null;
     let activeIndex = 0;
     let thumbObserver = null;
+    let activeCategory = '';
 
     function normalize(value) {
       return String(value || '').toLowerCase();
@@ -425,16 +449,35 @@
       secondaryOrderLink.textContent = secondary.label;
     }
 
+    function buildFilters() {
+      const categories = [...new Set(works.map((w) => w.category).filter(Boolean))];
+      const filtersEl = document.getElementById('filters');
+      filtersEl.innerHTML = ['', ...categories].map((cat) =>
+        `<button class="filter-btn${activeCategory === cat ? ' active' : ''}" type="button" data-cat="${esc(cat)}">${cat || 'すべて'}</button>`
+      ).join('');
+    }
+
+    document.getElementById('filters').addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      activeCategory = btn.dataset.cat;
+      buildFilters();
+      render();
+    });
+
     function render() {
       const keyword = normalize(search.value).trim();
-      filtered = works.filter((work) => normalize([
-        work.title,
-        work.category,
-        work.material,
-        work.color,
-        work.size,
-        work.shortDesc,
-      ].join(' ')).includes(keyword));
+      filtered = works.filter((work) => {
+        if (activeCategory && work.category !== activeCategory) return false;
+        return !keyword || normalize([
+          work.title,
+          work.category,
+          work.material,
+          work.color,
+          work.size,
+          work.shortDesc,
+        ].join(' ')).includes(keyword);
+      });
       count.textContent = `${filtered.length}件 / 写真 ${filtered.reduce((sum, work) => sum + work.photos.length, 0)}枚`;
 
       if (!filtered.length) {
@@ -555,6 +598,7 @@
       works = toWorks(data)
         .filter((work) => work.folderId || (Array.isArray(work.photos) && work.photos.length))
         .sort((a, b) => a.title.localeCompare(b.title, 'ja'));
+      buildFilters();
       render();
     }
 
