@@ -574,15 +574,18 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
 <hr class="section-divider">
 
-<!-- ── N's notebook ── -->
+<!-- ── N's notebook Series ── -->
 <section class="section" id="notebook">
   <div class="section-inner">
     <div class="section-header">
-      <p class="section-label">N's notebook</p>
-      <h2 class="section-title">A6システム手帳に、ログイン情報を紙でも残す。</h2>
+      <p class="section-label">N's notebook Series</p>
+      <h2 class="section-title">A6システム手帳ユーザーのための、Webツールシリーズ。</h2>
     </div>
-    <div class="notebook-highlight">
+
+    <!-- 01: パスワード管理 -->
+    <div class="notebook-highlight" style="margin-bottom:24px;">
       <div>
+        <p style="font-size:11px;font-weight:700;color:var(--color-text-mute);letter-spacing:.08em;margin-bottom:8px;">01 — パスワード管理</p>
         <h3>パスワード管理機能とA6リフィル作成機能をセットにしました。</h3>
         <p>
           N's notebook パスワード管理は、A6システム手帳ユーザー、終活として大切な情報を整理したい方、
@@ -604,6 +607,33 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <img src="./assets/password-note-main.png" alt="N's notebook パスワード管理 A6リフィル">
       </a>
     </div>
+
+    <!-- 02: A6リフィル印刷ツール -->
+    <div class="notebook-highlight" id="a6-print-tool">
+      <div>
+        <p style="font-size:11px;font-weight:700;color:var(--color-text-mute);letter-spacing:.08em;margin-bottom:8px;">02 — A6リフィル印刷ツール</p>
+        <h3>A6デイリースケジュールを、自由にレイアウトして印刷。</h3>
+        <p style="margin-bottom:10px;">
+          A4用紙1枚に4面のA6リフィルを自動配置。日付・時間グリッド・メモ欄のサイズ、穴ガイド位置、透かしテキストまで自由にカスタマイズできます。ブラウザだけで動作するため、インストール不要。印刷ボタン1クリックでそのまま出力できます。
+        </p>
+        <p style="font-size:13px;color:var(--color-accent);font-weight:700;margin-bottom:14px;">📋 １週間限定モニター公開中 — ぜひ使ってフィードバックをお寄せください</p>
+        <div class="notebook-tags">
+          <span>A6システム手帳</span>
+          <span>デイリーリフィル</span>
+          <span>無料・インストール不要</span>
+          <span>カスタマイズ自由</span>
+          <span>日英切替対応</span>
+        </div>
+        <div class="notebook-actions">
+          <a href="./a6-print-tool/" class="btn-accent">ツールを開く（無料）</a>
+          <a href="https://lin.ee/XOcD2pd" class="btn-outline" target="_blank" rel="noopener">LINEでフィードバックを送る</a>
+        </div>
+      </div>
+      <a class="notebook-image" href="./a6-print-tool/">
+        <img src="./assets/a6-print-tool-main.png" alt="A6リフィル印刷ツール — N's factory">
+      </a>
+    </div>
+
   </div>
 </section>
 
@@ -698,6 +728,19 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     </div>
     <div class="accordion">
       <div class="accordion-item">
+        <button class="accordion-btn" aria-expanded="true" onclick="toggleAccordion(this)">
+          <span>2026年のお知らせ</span>
+          <span class="accordion-chevron">▾</span>
+        </button>
+        <div class="accordion-body open">
+          <div class="accordion-content">
+            <ul>
+              <li>2026年4月 — N's notebook シリーズ第2弾「A6リフィル印刷ツール」１週間限定モニター公開（ブラウザ完結・無料・フィードバック募集中）</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
         <button class="accordion-btn" aria-expanded="false" onclick="toggleAccordion(this)">
           <span>過去のお知らせ（2024年）</span>
           <span class="accordion-chevron">▾</span>
@@ -747,6 +790,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     </div>
     <div class="footer-links">
       <a href="https://linktr.ee/you0810jmsdf" class="footer-link">各種販売サイト</a>
+      <a href="./a6-print-tool/" class="footer-link">A6印刷ツール</a>
       <a href="./order_estimate/leather-order-estimate-v2.html" class="footer-link">見積もりシミュレータ</a>
       <a href="./order_estimate/ring-price-stock-admin.html" class="footer-link">管理画面</a>
       <a href="https://lin.ee/XOcD2pd" class="footer-link">LINE 公式アカウント</a>
