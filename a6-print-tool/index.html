@@ -96,7 +96,9 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 .side-badge.front { background: rgba(126,200,227,0.2); border: 1px solid #7ec8e3; color: #7ec8e3; }
 .side-badge.back  { background: rgba(211,84,0,0.25);   border: 1px solid #d35400; color: #f0b27a; }
 #preview { margin-left: 0; padding: 60px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; max-width: 100vw; overflow-x: hidden; }
-body.panel-open #preview { margin-left: 280px; }
+@media screen and (min-width: 900px) {
+  body.panel-open #preview { margin-left: 280px; }
+}
 
 /* ===== A4ページ ===== */
 .a4-page {
@@ -788,6 +790,12 @@ function toggleSidebar() {
 // 更新履歴
 // ============================================================
 const HISTORY_ENTRIES = [
+  {
+    date: '2026-04-23',
+    symptom: 'スマートフォンで設定パネル（左上の☰メニュー）を開いた状態で編集画面を見ると、A4プレビューの左端がパネルの下に隠れて切れて見えてしまう不具合。',
+    cause: '設定パネルを開いた時、本来パソコン用に設定していた「プレビューを右へ280ピクセル分ずらす」処理がスマホでも適用されており、画面幅が足りないためA4ページが右にはみ出して左端が隠れていました。',
+    fix: '画面幅が900ピクセル未満（スマホ・小型タブレット）の場合は、パネル開時にプレビューをずらさないよう調整しました。スマホでは設定パネルがプレビューに重なって表示されますが、左右のはみ出しなく中央に表示されます。'
+  },
   {
     date: '2026-04-23',
     symptom: 'スマートフォン（特にiPhone）で印刷プレビューを開いたとき、①ページが画面の左右にはみ出す、②時間枠の細い罫線が消える、③メイン部分（時間枠・メモ欄）が消えてA6ページが詰まり、本来2ページのはずが5ページに増えてしまう不具合。',
