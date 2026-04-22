@@ -261,15 +261,19 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 .is-sat .date-num, .is-sat .date-wd { color: #2471a3; }
 
 /* N's factory ブランド（中央配置） */
+/* iOS Safari の text autosizing 閾値（≒16px）超えの font-size を指定し、
+   transform: scale() で本来の見た目サイズ（2.6mm）へ縮小。
+   これにより iOS の自動文字拡大による巨大化を回避する。 */
 .ns-brand {
   font-family: var(--font-brand, 'Times New Roman', Times, serif);
-  font-size: 2.6mm;
+  font-size: 5mm;
   color: #555;
   letter-spacing: 0.3mm;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
   bottom: 0.8mm;
+  transform: translateX(-50%) scale(0.52);
+  transform-origin: center bottom;
   white-space: nowrap;
 }
 
@@ -792,9 +796,15 @@ function toggleSidebar() {
 const HISTORY_ENTRIES = [
   {
     date: '2026-04-23',
+    symptom: 'iPhoneで開いたとき、ページ上部の「N\'s factory」ロゴ文字だけが他の文字に比べて極端に大きく表示される不具合（再対応版）。',
+    cause: 'iOS Safari には「画面に対して小さすぎる文字を読みやすく自動的に拡大する」機能があり、N\'s factoryロゴが指定サイズ（2.6mm ≒ 約10ピクセル）と小さかったため、自動拡大の対象となってロゴだけが巨大化していました。',
+    fix: 'N\'s factoryロゴの文字サイズ指定をiOSの自動拡大対象にならないサイズ（5mm ≒ 約19ピクセル）に引き上げたうえで、見た目のサイズを保つために画面表示時に約半分（52%）に縮小する処理を追加しました。これによりiOSの自動拡大が働かず、PC・スマホとも従来と同じ大きさで表示されます。前回（同日）当てた指定（自動拡大無効化）は別の崩れを引き起こしたため取り消し、今回の局所的な対応に切り替えました。'
+  },
+  {
+    date: '2026-04-23',
     symptom: '前回（同日）追加した「iOS用の文字サイズ自動拡大の無効化」を当てたところ、iPhone表示で日付の数字（23・25・27・29）と曜日文字（木曜・土曜・月曜・水曜）、月の英語表記（Apr）が逆に巨大化して重なり、ページ上部全体がさらに崩れる不具合が発生しました。',
     cause: 'iOS Safari は「画面全体を縮める指定（zoom）」と「文字サイズ自動拡大を切る指定」の組み合わせで不具合を起こす仕様があり、本来zoomで縮小されるはずの日付・曜日などの文字が、縮小を無視して指定通りの実寸サイズ（mm基準）で描画されてしまっていました。',
-    fix: '今回追加した自動拡大無効化の指定を取り消して、元の状態に戻しました。N\'s factoryロゴが大きく見える元々の症状については、別の方法（画面縮小の仕組み自体の変更など）で改めて対応を検討します。'
+    fix: '今回追加した自動拡大無効化の指定を取り消して、元の状態に戻しました。N\'s factoryロゴが大きく見える元々の症状については、別の方法（局所的な縮小処理）で改めて対応しました（同日の上のエントリ参照）。'
   },
   {
     date: '2026-04-23',
