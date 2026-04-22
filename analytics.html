@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アクセス解析 | N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+:root {
+  --bg:       #1D1D1F;
+  --bg-card:  #2C2C2E;
+  --bg-row:   #3A3A3C;
+  --accent:   #A0785A;
+  --text:     #F5F5F7;
+  --text-sub: #AEAEB2;
+  --border:   #48484A;
+  --green:    #30D158;
+  --red:      #FF453A;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Hiragino Sans", sans-serif;
+  min-height: 100vh;
+  padding: 24px 16px 48px;
+}
+h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 24px;
+  letter-spacing: .04em;
+}
+
+/* 認証 */
+#auth-screen {
+  max-width: 360px;
+  margin: 80px auto;
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+}
+#auth-screen h2 { font-size: 1.1rem; margin-bottom: 24px; color: var(--text-sub); }
+#auth-screen input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-row);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 16px;
+  outline: none;
+}
+#auth-screen input:focus { border-color: var(--accent); }
+#auth-screen button {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+#auth-error { color: var(--red); font-size: .85rem; margin-top: 12px; min-height: 20px; }
+
+/* メイン */
+#main { display: none; max-width: 800px; margin: 0 auto; }
+
+/* 期間切替 */
+.period-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.period-btn {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-sub);
+  font-size: .9rem;
+  cursor: pointer;
+  transition: .15s;
+}
+.period-btn:hover { border-color: var(--accent); color: var(--text); }
+.period-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+/* サマリーカード */
+.summary-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.card {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 20px;
+}
+.card .label { font-size: .8rem; color: var(--text-sub); margin-bottom: 8px; }
+.card .value { font-size: 2rem; font-weight: 700; letter-spacing: -.02em; }
+.card .value.green { color: var(--green); }
+.card .value.accent { color: var(--accent); }
+
+/* テーブル */
+.table-wrap {
+  background: var(--bg-card);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.table-header {
+  padding: 16px 20px 8px;
+  font-size: .85rem;
+  color: var(--text-sub);
+  font-weight: 600;
+  letter-spacing: .05em;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 12px 20px;
+  text-align: left;
+  font-size: .9rem;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  color: var(--text-sub);
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  background: var(--bg-row);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.03); }
+
+.page-path {
+  font-family: "SF Mono", "Menlo", monospace;
+  font-size: .82rem;
+  color: var(--text);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-wrap { width: 120px; }
+.bar-bg {
+  background: var(--bg-row);
+  border-radius: 4px;
+  height: 6px;
+  overflow: hidden;
+}
+.bar-fill {
+  background: var(--accent);
+  height: 100%;
+  border-radius: 4px;
+  transition: width .4s ease;
+}
+.num { text-align: right; font-weight: 600; }
+.users { color: var(--text-sub); text-align: right; font-size: .85rem; }
+
+/* ローディング */
+#loading {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-sub);
+  display: none;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#error-msg { color: var(--red); text-align: center; padding: 32px; display: none; font-size: .9rem; }
+</style>
+</head>
+<body>
+
+<!-- 認証画面 -->
+<div id="auth-screen">
+  <h2>アクセス解析</h2>
+  <input type="password" id="pw-input" placeholder="パスワード" />
+  <button onclick="login()">ログイン</button>
+  <div id="auth-error"></div>
+</div>
+
+<!-- メイン -->
+<div id="main">
+  <h1>アクセス解析ダッシュボード</h1>
+
+  <div class="period-bar">
+    <button class="period-btn" onclick="load(7)"  data-days="7">7日</button>
+    <button class="period-btn active" onclick="load(30)" data-days="30">30日</button>
+    <button class="period-btn" onclick="load(90)" data-days="90">90日</button>
+  </div>
+
+  <div class="summary-cards">
+    <div class="card">
+      <div class="label">ページビュー</div>
+      <div class="value accent" id="total-views">—</div>
+    </div>
+    <div class="card">
+      <div class="label">ユニークユーザー</div>
+      <div class="value green" id="total-users">—</div>
+    </div>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    データ取得中…
+  </div>
+  <div id="error-msg"></div>
+
+  <div class="table-wrap" id="table-wrap">
+    <div class="table-header">ページ別アクセス</div>
+    <table>
+      <thead>
+        <tr>
+          <th>ページ</th>
+          <th></th>
+          <th class="num">PV</th>
+          <th class="users">ユーザー</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// GAS WebアプリURL（デプロイ後に更新）
+var GAS_URL = "https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec";
+var ADMIN_KEY = "";
+var currentDays = 30;
+
+// ページ名マッピング
+var PAGE_NAMES = {
+  "/":                              "トップ",
+  "/ns-factory/":                   "トップ",
+  "/ns-factory/index.html":         "トップ",
+  "/ns-factory/works.html":         "作品一覧",
+  "/ns-factory/profile.html":       "プロフィール",
+  "/ns-factory/links.html":         "リンク集",
+  "/ns-factory/orderprogress.html": "注文進捗",
+  "/ns-factory/JHCS.html":          "JHCS",
+  "/ns-factory/password-note.html": "パスワード管理（LP）",
+  "/ns-factory/password-note/":     "パスワード管理（アプリ）",
+  "/ns-factory/password-note/index.html": "パスワード管理（アプリ）",
+  "/ns-factory/カラーシミュレーター/simulator.html": "カラーシミュレーター",
+  "/ns-factory/order_estimate/leather-order-estimate-v2.html": "見積もりツール",
+  "/ns-factory/order_estimate/ring-price-stock-admin.html":    "リング管理",
+  "/ns-factory/weekly-block/":      "週間ブロック印刷",
+  "/ns-factory/weekly-block/index.html": "週間ブロック印刷",
+  "/ns-factory/a6-print-tool/":     "A6印刷ツール",
+  "/ns-factory/a6-print-tool/index.html": "A6印刷ツール",
+  "/ns-factory/a6-print-tool/weekly_block.html": "A6週間ブロック",
+};
+
+function login() {
+  var pw = document.getElementById("pw-input").value;
+  if (!pw) return;
+  ADMIN_KEY = pw;
+  document.getElementById("auth-screen").style.display = "none";
+  document.getElementById("main").style.display = "block";
+  load(30);
+}
+
+document.getElementById("pw-input").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") login();
+});
+
+function load(days) {
+  currentDays = days;
+  document.querySelectorAll(".period-btn").forEach(function(b) {
+    b.classList.toggle("active", parseInt(b.dataset.days) === days);
+  });
+
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("table-wrap").style.display = "none";
+  document.getElementById("error-msg").style.display = "none";
+  document.getElementById("total-views").textContent = "—";
+  document.getElementById("total-users").textContent = "—";
+
+  var cbName = "ga4cb" + Date.now();
+  var script = document.createElement("script");
+  script.src = GAS_URL + "?api=analytics&key=" + encodeURIComponent(ADMIN_KEY)
+             + "&days=" + days + "&callback=" + cbName;
+
+  window[cbName] = function(data) {
+    delete window[cbName];
+    document.body.removeChild(script);
+    document.getElementById("loading").style.display = "none";
+
+    if (data.error) {
+      var em = document.getElementById("error-msg");
+      em.textContent = data.error === "unauthorized" ? "パスワードが違います" : "エラー: " + data.error;
+      em.style.display = "block";
+      return;
+    }
+
+    document.getElementById("total-views").textContent = (data.totals.views || 0).toLocaleString();
+    document.getElementById("total-users").textContent = (data.totals.users || 0).toLocaleString();
+
+    var maxViews = data.rows.length ? data.rows[0].views : 1;
+    var tbody = document.getElementById("table-body");
+    tbody.innerHTML = "";
+    data.rows.forEach(function(row) {
+      var name = PAGE_NAMES[row.page] || row.page;
+      var pct  = Math.round(row.views / maxViews * 100);
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td><span class="page-path" title="' + row.page + '">' + name + '</span></td>'
+        + '<td class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:' + pct + '%"></div></div></td>'
+        + '<td class="num">' + row.views.toLocaleString() + '</td>'
+        + '<td class="users">' + row.users.toLocaleString() + '</td>';
+      tbody.appendChild(tr);
+    });
+
+    if (!data.rows.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-sub);padding:32px">データなし</td></tr>';
+    }
+    document.getElementById("table-wrap").style.display = "block";
+  };
+
+  script.onerror = function() {
+    document.getElementById("loading").style.display = "none";
+    var em = document.getElementById("error-msg");
+    em.textContent = "GAS URLが設定されていません。analytics.html内のGAS_URLを更新してください。";
+    em.style.display = "block";
+  };
+
+  document.body.appendChild(script);
+}
+</script>
+</body>
+</html>
