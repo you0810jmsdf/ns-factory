@@ -443,8 +443,8 @@ body.panel-open #preview { margin-left: 280px; }
       <input type="month" id="monthPicker" onchange="render()">
     </div>
     <div class="btn-row">
-      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">奇数ページ</button>
-      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">偶数ページ</button>
+      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
+      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
     </div>
   </div>
 
@@ -456,7 +456,8 @@ body.panel-open #preview { margin-left: 280px; }
       <input type="date" id="startDate">
     </div>
     <div class="btn-row">
-      <button class="btn-toggle on" id="btnLang" onclick="toggleLang()">JA</button>
+      <button class="btn-toggle on" id="btnJA" onclick="setLang(false)">日本語</button>
+      <button class="btn-toggle" id="btnEN" onclick="setLang(true)">English</button>
     </div>
   </div>
 
@@ -620,8 +621,8 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-primary" onclick="window.print()">印刷</button>
     </div>
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
-      ① 開始日を選択 → 表面を印刷<br>
-      ② 同じ用紙を戻し「表面」ボタンで裏面に切替 → 追加印刷<br>
+      ① 開始日を選択 → 「表面」ONで印刷<br>
+      ② 同じ用紙を戻し「裏面」をON → 追加印刷<br>
       ③ 4分割にカット<br>
       ④ 左上→右上→左下→右下の順に重ねてリング綴じ
     </div>
@@ -705,9 +706,10 @@ function addDays(date, n) {
 // ============================================================
 // 言語切替
 // ============================================================
-function toggleLang() {
-  isEN = !isEN;
-  document.getElementById('btnLang').classList.toggle('on', !isEN);
+function setLang(en) {
+  isEN = en;
+  document.getElementById('btnJA').classList.toggle('on', !isEN);
+  document.getElementById('btnEN').classList.toggle('on', isEN);
   render();
 }
 
