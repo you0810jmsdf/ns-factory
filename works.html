@@ -304,6 +304,30 @@
       background: var(--white);
       color: var(--accent-dark);
     }
+    .modal-cta.is-disabled {
+      background: #d8dee8;
+      border-color: #d8dee8;
+      color: #667085;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .modal-cta.is-disabled.secondary {
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+    .badge-unavailable {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #b54238;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+    .work-card.is-unavailable .thumb,
+    .work-card.is-unavailable .thumb-placeholder { opacity: 0.55; filter: grayscale(0.4); }
     .footer {
       border-top: 1px solid var(--line);
       padding: 22px 24px;
@@ -436,6 +460,21 @@
 
     function configureOrderLinks(work) {
       const planner = isSystemPlannerWork(work);
+      const unavailable = !!(work.soldout || work.noRestock);
+      const disabledLabel = work.soldout ? 'SOLDOUT（販売終了）' : '再販予定なし';
+
+      if (unavailable) {
+        primaryOrderLink.classList.add('is-disabled');
+        primaryOrderLink.removeAttribute('href');
+        primaryOrderLink.removeAttribute('target');
+        primaryOrderLink.textContent = disabledLabel;
+        secondaryOrderLink.classList.add('is-disabled');
+        secondaryOrderLink.removeAttribute('href');
+        secondaryOrderLink.removeAttribute('target');
+        secondaryOrderLink.textContent = disabledLabel;
+        return;
+      }
+
       const primary = planner
         ? { href: ESTIMATE_URL, label: '見積もりシミュレーションへ' }
         : { href: LINE_URL, label: '公式LINEで相談する' };
@@ -443,9 +482,13 @@
         ? { href: LINE_URL, label: '公式LINEで相談する' }
         : { href: ESTIMATE_URL, label: 'システム手帳の見積もりを見る' };
 
+      primaryOrderLink.classList.remove('is-disabled');
       primaryOrderLink.href = primary.href;
+      primaryOrderLink.target = '_blank';
       primaryOrderLink.textContent = primary.label;
+      secondaryOrderLink.classList.remove('is-disabled');
       secondaryOrderLink.href = secondary.href;
+      secondaryOrderLink.target = '_blank';
       secondaryOrderLink.textContent = secondary.label;
     }
 
@@ -485,13 +528,20 @@
         return;
       }
 
-      gallery.innerHTML = filtered.map((work, index) => `
-        <button class="work-card" type="button" data-index="${index}">
+      gallery.innerHTML = filtered.map((work, index) => {
+        const unavailable = work.soldout || work.noRestock;
+        const badge = work.soldout
+          ? '<span class="badge-unavailable">SOLDOUT</span>'
+          : work.noRestock
+            ? '<span class="badge-unavailable">再販予定なし</span>'
+            : '';
+        return `
+        <button class="work-card${unavailable ? ' is-unavailable' : ''}" type="button" data-index="${index}">
           ${work.photos[0]
             ? `<img class="thumb" src="${esc(work.photos[0])}" alt="${esc(work.title)}" loading="lazy">`
             : '<span class="thumb-placeholder">写真を読み込み中</span>'}
           <span class="card-body">
-            <span class="work-title">${esc(work.title)}</span>
+            <span class="work-title">${esc(work.title)}${badge}</span>
             <span class="work-details">
               ${compact([work.category, work.material, work.color]) ? `<span>${esc(compact([work.category, work.material, work.color]))}</span>` : ''}
               ${compact([work.size, formatPrice(work.price)]) ? `<span>${esc(compact([work.size, formatPrice(work.price)]))}</span>` : ''}
@@ -500,7 +550,7 @@
             <span class="work-meta">${work.photos.length || 'Drive'}枚</span>
           </span>
         </button>
-      `).join('');
+      `;}).join('');
       loadRenderedDrivePhotos();
     }
 
@@ -570,6 +620,8 @@
           size: item.size || '',
           price: item.price || 0,
           shortDesc: item.shortDesc || '',
+          soldout: !!item.soldout,
+          noRestock: !!item.noRestock,
           folderId: item.folderId || '',
           photosLoaded: !item.folderId,
           photosLoading: false,
