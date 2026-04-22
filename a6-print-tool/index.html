@@ -100,6 +100,9 @@ body.panel-open #preview { margin-left: 280px; }
   box-shadow: 0 6px 24px rgba(0,0,0,0.3);
   zoom: 0.65;
   flex-shrink: 0;
+  overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 /* ===== A6スロット ===== */
@@ -108,6 +111,8 @@ body.panel-open #preview { margin-left: 280px; }
   width: 105mm;
   height: 143.5mm;
   overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .slot-TL { top: 5mm;     left: 0mm;    }
 .slot-TR { top: 5mm;     left: 105mm;  }
@@ -156,6 +161,10 @@ body.panel-open #preview { margin-left: 280px; }
   height: 143.5mm;
   display: flex;
   position: relative;
+  min-height: 0;
+  overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 /* 穴ストリップ */
@@ -201,8 +210,9 @@ body.panel-open #preview { margin-left: 280px; }
   flex-direction: column;
   padding: 0 2.5mm;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
-  position: relative;
 }
 
 /* 日付ヘッダー */
@@ -262,11 +272,12 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* 時間グリッド */
 .time-grid {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   border-bottom: 0.3mm solid #ccc;
   overflow: hidden;
+  min-height: 0;
 }
 .time-row {
   flex: 1;
@@ -421,8 +432,22 @@ body.panel-open #preview { margin-left: 280px; }
 @media print {
   body { background: white; margin: 0; padding: 0; }
   #ctrl-toggle-btn, #controls { display: none !important; }
-  #preview { padding: 0; margin-left: 0 !important; }
-  .a4-page { zoom: 1; box-shadow: none; margin: 0; break-after: page; }
+  #preview { padding: 0; margin-left: 0 !important; gap: 0 !important; }
+  .a4-page {
+    zoom: 1;
+    box-shadow: none;
+    margin: 0;
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    overflow: hidden;
+  }
+  .a4-page:last-child { break-after: auto; page-break-after: auto; }
+  .a6-slot, .daily-page {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
 @page { size: A4 portrait; margin: 0mm; }
 </style>
