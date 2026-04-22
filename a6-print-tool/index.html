@@ -179,7 +179,7 @@ body.panel-open #preview { margin-left: 280px; }
   position: absolute;
   top: 71.75mm;
   left: 0;
-  width: 100%;
+  width: 2mm;
   height: 0;
   border-top: 0.2mm dashed #bbb;
   pointer-events: none;
@@ -443,8 +443,8 @@ body.panel-open #preview { margin-left: 280px; }
       <input type="month" id="monthPicker" onchange="render()">
     </div>
     <div class="btn-row">
-      <button class="btn-toggle on" id="btnToggle" onclick="toggleSide()">表面</button>
-      <span class="side-badge front" id="sideBadge">表面（先に印刷）</span>
+      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">奇数ページ</button>
+      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">偶数ページ</button>
     </div>
   </div>
 
@@ -654,7 +654,8 @@ const OWL_PATH = `M 84.045202 154.08962 C 74.342376 153.72021 66.575763 156.2255
 // ============================================================
 // 状態
 // ============================================================
-let isFront   = true;
+let showFront = true;
+let showBack  = false;
 let isEN      = false;
 let startDate = new Date();
 
@@ -810,20 +811,13 @@ function handleImageUpload(e) {
 // ============================================================
 // 面切替
 // ============================================================
-function toggleSide() {
-  isFront = !isFront;
-  const btn   = document.getElementById('btnToggle');
-  const badge = document.getElementById('sideBadge');
-  if (isFront) {
-    btn.textContent   = '裏面を表示 ▶';
-    btn.className     = 'btn-toggle on';
-    badge.textContent = '表面（先に印刷）';
-    badge.className   = 'side-badge front';
+function togglePageSide(side) {
+  if (side === 'front') {
+    showFront = !showFront;
+    document.getElementById('btnOdd').classList.toggle('on', showFront);
   } else {
-    btn.textContent   = '◀ 表面を表示';
-    btn.className     = 'btn-toggle';
-    badge.textContent = '裏面（同じ用紙に追加印刷）';
-    badge.className   = 'side-badge back';
+    showBack = !showBack;
+    document.getElementById('btnEven').classList.toggle('on', showBack);
   }
   render();
 }
@@ -876,15 +870,20 @@ function render() {
 }
 
 function renderSingle() {
-  const map = isFront ? SLOT_MAP.front : SLOT_MAP.back;
-  const p   = getCommonParams();
-  const slots = {};
-  for (const [pos, dayOffset] of Object.entries(map)) {
-    const date = addDays(startDate, dayOffset);
-    slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
-      p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
+  const p = getCommonParams();
+  let html = '';
+  for (const [side, map] of [['front', SLOT_MAP.front], ['back', SLOT_MAP.back]]) {
+    if (side === 'front' && !showFront) continue;
+    if (side === 'back'  && !showBack)  continue;
+    const slots = {};
+    for (const [pos, dayOffset] of Object.entries(map)) {
+      const date = addDays(startDate, dayOffset);
+      slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
+        p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
+    }
+    html += makeA4HTML(slots, p.showCutLines);
   }
-  document.getElementById('preview').innerHTML = makeA4HTML(slots, p.showCutLines);
+  document.getElementById('preview').innerHTML = html;
 }
 
 function renderMonthly() {
@@ -893,23 +892,26 @@ function renderMonthly() {
   const [y, mo] = mp.split('-').map(Number);
   const daysInMonth = new Date(y, mo, 0).getDate();
   const sheetsNeeded = Math.ceil(daysInMonth / 8);
-  const map = isFront ? SLOT_MAP.front : SLOT_MAP.back;
-  const p   = getCommonParams();
+  const p = getCommonParams();
 
   let html = '';
-  for (let s = 0; s < sheetsNeeded; s++) {
-    const slots = {};
-    for (const pos of ['TL','TR','BL','BR']) {
-      const dayOffset = map[pos];
-      const dayNum    = s * 8 + dayOffset + 1;
-      if (dayNum <= daysInMonth) {
-        const date = new Date(y, mo - 1, dayNum);
-        slots[pos] = buildDailyPage(date, dayNum, HOLE_SIDE[pos],
-          p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo,
-          p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
+  for (const [side, map] of [['front', SLOT_MAP.front], ['back', SLOT_MAP.back]]) {
+    if (side === 'front' && !showFront) continue;
+    if (side === 'back'  && !showBack)  continue;
+    for (let s = 0; s < sheetsNeeded; s++) {
+      const slots = {};
+      for (const pos of ['TL','TR','BL','BR']) {
+        const dayOffset = map[pos];
+        const dayNum    = s * 8 + dayOffset + 1;
+        if (dayNum <= daysInMonth) {
+          const date = new Date(y, mo - 1, dayNum);
+          slots[pos] = buildDailyPage(date, dayNum, HOLE_SIDE[pos],
+            p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo,
+            p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
+        }
       }
+      html += makeA4HTML(slots, p.showCutLines);
     }
-    html += makeA4HTML(slots, p.showCutLines);
   }
   document.getElementById('preview').innerHTML = html;
 }
@@ -952,7 +954,7 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
   const ymStr   = `${date.getFullYear()}.${pad(date.getMonth()+1)}`;
   const wdLabel = isEN ? WD_EN[wd] : `${WD_JA[wd]}曜日`;
 
-  const bisectorHTML = showHoleBisect ? '<div class="hole-bisector"></div>' : '';
+  const bisectorHTML = (showHoleBisect && holeSide === 'left') ? '<div class="hole-bisector"></div>' : '';
   const holeStripStyle = !showHoles ? 'visibility:hidden' : (!showHoleLine ? 'border:none' : '');
   const holeStripAttr  = holeStripStyle ? ` style="${holeStripStyle}"` : '';
   const holesHTML = `<div class="hole-strip ${holeSide}"${holeStripAttr}>
