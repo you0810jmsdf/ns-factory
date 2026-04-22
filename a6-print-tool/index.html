@@ -428,10 +428,39 @@ body.panel-open #preview { margin-left: 280px; }
   opacity: var(--img-wm-opacity, 0.08);
 }
 
+/* ===== 更新履歴モーダル ===== */
+#historyModal {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.65); align-items: center; justify-content: center;
+}
+#historyModal.open { display: flex; }
+#historyModal .hm-box {
+  background: #fff; color: #222; width: min(860px, 92vw); max-height: 86vh;
+  border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+#historyModal .hm-head {
+  background: #1a1a2e; color: #7ec8e3; padding: 10px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+#historyModal .hm-head h3 { margin: 0; font-size: 14px; }
+#historyModal .hm-close {
+  background: transparent; color: #eee; border: 1px solid #555;
+  padding: 3px 10px; font-size: 12px; cursor: pointer;
+}
+#historyModal .hm-body { padding: 14px 16px; overflow-y: auto; font-size: 12px; line-height: 1.55; }
+#historyModal table { width: 100%; border-collapse: collapse; }
+#historyModal th, #historyModal td {
+  border: 1px solid #d0d0d0; padding: 7px 9px; vertical-align: top; text-align: left;
+}
+#historyModal th { background: #f2f4f7; font-weight: 600; white-space: nowrap; }
+#historyModal td.hm-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+#historyModal .hm-note { color: #666; font-size: 10.5px; margin-top: 10px; }
+
 /* ===== 印刷 ===== */
 @media print {
   body { background: white; margin: 0; padding: 0; }
-  #ctrl-toggle-btn, #controls { display: none !important; }
+  #ctrl-toggle-btn, #controls, #historyModal { display: none !important; }
   #preview { padding: 0; margin-left: 0 !important; gap: 0 !important; }
   .a4-page {
     zoom: 1;
@@ -660,10 +689,42 @@ body.panel-open #preview { margin-left: 280px; }
       ④ 左上→右上→左下→右下の順に重ねてリング綴じ
     </div>
   </div>
+
+  <!-- 更新履歴 -->
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHistory()" style="width:100%">📋 更新履歴</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== 印刷プレビュー ===== -->
 <div id="preview">
+</div>
+
+<!-- ===== 更新履歴モーダル ===== -->
+<div id="historyModal" onclick="if(event.target===this)closeHistory()">
+  <div class="hm-box">
+    <div class="hm-head">
+      <h3>📋 更新履歴</h3>
+      <button class="hm-close" onclick="closeHistory()">閉じる ✕</button>
+    </div>
+    <div class="hm-body">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:7em">発生日</th>
+            <th>症状</th>
+            <th>原因（やさしい説明）</th>
+            <th>対策（やさしい説明）</th>
+          </tr>
+        </thead>
+        <tbody id="historyTbody"></tbody>
+      </table>
+      <div class="hm-note">※ 新しい不具合と修正が確認され次第、このリストに追記していきます。</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -701,6 +762,36 @@ function toggleSidebar() {
   document.getElementById('controls').classList.toggle('open');
   document.body.classList.toggle('panel-open');
 }
+
+// ============================================================
+// 更新履歴
+// ============================================================
+const HISTORY_ENTRIES = [
+  {
+    date: '2026-04-22',
+    symptom: 'A4用紙4枚印刷時、上半分2面の「時間枠」と「メモ欄」が消えて、日付だけが印刷されていた。',
+    cause: '印刷時のページ区切り計算がわずかにずれ、上段スロット内の時間枠とメモ欄が「次のページ」側に押し出されて切り取られていた（画面プレビューでは正常に見えていた）。',
+    fix: '各A6スロット／A4用紙の内側で内容が分割されないよう「分割禁止」指定を追加し、さらに用紙ごとに確実に改ページするよう調整。上段・下段とも同じレイアウトで印刷されるようになった。'
+  }
+];
+
+function openHistory() {
+  const tb = document.getElementById('historyTbody');
+  tb.innerHTML = HISTORY_ENTRIES.map(e => `
+    <tr>
+      <td class="hm-date">${e.date}</td>
+      <td>${e.symptom}</td>
+      <td>${e.cause}</td>
+      <td>${e.fix}</td>
+    </tr>`).join('');
+  document.getElementById('historyModal').classList.add('open');
+}
+function closeHistory() {
+  document.getElementById('historyModal').classList.remove('open');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeHistory();
+});
 function toggleOpt(key, btnId) {
   opts[key] = !opts[key];
   document.getElementById(btnId).classList.toggle('on', opts[key]);
