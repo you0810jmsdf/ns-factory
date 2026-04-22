@@ -41,98 +41,47 @@ body {
   min-height: 100vh;
 }
 
-.controls {
-  background: #1e2d3d;
-  color: #fff;
-  padding: 10px 20px;
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  flex-wrap: wrap;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+#ctrl-toggle-btn {
+  position: fixed; top: 10px; left: 10px; z-index: 200;
+  width: 36px; height: 36px; border-radius: 6px;
+  background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-.controls h1 { font-size: 13px; font-weight: 700; white-space: nowrap; }
-.sep { width: 1px; height: 20px; background: rgba(255,255,255,0.2); flex-shrink: 0; }
-
-label.ctrl {
-  font-size: 11px;
-  color: #adb5bd;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
+#controls {
+  position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+  background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px;
+  font-size: 11px; z-index: 100;
+  transform: translateX(-100%); transition: transform 0.25s ease;
 }
-.ctrl input[type="date"],
-.ctrl select {
-  font-size: 11px;
-  padding: 4px 7px;
-  border-radius: 4px;
-  border: 1px solid #3d5268;
-  background: #2c3e50;
-  color: #ecf0f1;
-  font-family: inherit;
+#controls.open { transform: translateX(0); }
+#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; }
+.ctrl-section { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.ctrl-section h3 { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+.ctrl-row label { min-width: 80px; color: #ccc; }
+.ctrl-row input[type=range] { flex: 1; min-width: 80px; accent-color: #7ec8e3; }
+.ctrl-row input[type=date], .ctrl-row select, .ctrl-row input[type=text], .ctrl-row input[type=month] {
+  flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee;
+  padding: 3px 5px; border-radius: 3px; font-size: 10px;
 }
-.ctrl input[type="number"] {
-  font-size: 11px;
-  padding: 3px 5px;
-  border-radius: 4px;
-  border: 1px solid #3d5268;
-  background: #2c3e50;
-  color: #ecf0f1;
-  font-family: inherit;
-  width: 46px;
-  text-align: right;
+.ctrl-row input[type=number] {
+  width: 52px; background: #2a2a4a; border: 1px solid #444; color: #eee;
+  padding: 3px 5px; border-radius: 3px; font-size: 10px; text-align: right;
 }
-.ctrl input[type="checkbox"] {
-  accent-color: #2980b9;
-  width: 13px;
-  height: 13px;
-  cursor: pointer;
-}
-.btn {
-  padding: 6px 14px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: inherit;
-  white-space: nowrap;
-  transition: opacity 0.15s;
-}
-.btn:hover { opacity: 0.82; }
-.btn-toggle { background: #2980b9; color: #fff; }
-.btn-toggle.back { background: #d35400; }
-.btn-print  { background: #27ae60; color: #fff; }
-.btn-lang   { background: #6c5ce7; color: #fff; }
-
+.ctrl-row .val { min-width: 28px; text-align: right; color: #7ec8e3; font-size: 10px; }
+.btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; }
+.btn-primary { background: #7ec8e3; color: #1a1a2e; }
+.btn-secondary { background: #444; color: #eee; }
+.btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
+.btn-toggle.on { background: #7ec8e3; color: #1a1a2e; border-color: #7ec8e3; }
 .side-badge {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 10px;
-  white-space: nowrap;
+  font-size: 10px; padding: 2px 8px; border-radius: 8px; white-space: nowrap;
 }
-.side-badge.front { background: rgba(41,128,185,0.25); border: 1px solid #2980b9; color: #85c1e9; }
+.side-badge.front { background: rgba(126,200,227,0.2); border: 1px solid #7ec8e3; color: #7ec8e3; }
 .side-badge.back  { background: rgba(211,84,0,0.25);   border: 1px solid #d35400; color: #f0b27a; }
-
-.hint-bar {
-  background: #253545;
-  color: #7fb3d3;
-  font-size: 10.5px;
-  padding: 5px 20px;
-  line-height: 1.7;
-}
-
-.preview-outer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 28px 16px;
-  gap: 24px;
-}
+#preview { margin-left: 0; padding: 60px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+body.panel-open #preview { margin-left: 280px; }
 
 /* ===== A4ページ ===== */
 .a4-page {
@@ -460,28 +409,11 @@ label.ctrl {
   opacity: var(--img-wm-opacity, 0.08);
 }
 
-/* 設定パネル */
-.btn-settings { background: #6c5ce7; color: #fff; }
-#ctrlPanel {
-  background: #1e2d3d;
-  color: #fff;
-  padding: 8px 20px;
-  display: none;
-  gap: 14px;
-  align-items: center;
-  flex-wrap: wrap;
-  position: sticky;
-  top: 42px;
-  z-index: 99;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-#ctrlPanel.open { display: flex; }
-
 /* ===== 印刷 ===== */
 @media print {
   body { background: white; margin: 0; padding: 0; }
-  .controls, .hint-bar, #ctrlPanel { display: none !important; }
-  .preview-outer { padding: 0; }
+  #ctrl-toggle-btn, #controls { display: none !important; }
+  #preview { padding: 0; margin-left: 0 !important; }
   .a4-page { zoom: 1; box-shadow: none; margin: 0; break-after: page; }
 }
 @page { size: A4 portrait; margin: 0mm; }
@@ -489,143 +421,215 @@ label.ctrl {
 </head>
 <body>
 
-<!-- ===== コントロールバー（常時表示） ===== -->
-<div class="controls">
-  <h1>A6リフィル印刷ツール</h1>
-  <div class="sep"></div>
-  <label class="ctrl">開始日
-    <input type="date" id="startDate">
-  </label>
-  <label class="ctrl" title="印刷モード">モード
-    <select id="printMode" onchange="togglePrintMode()">
-      <option value="single">単ページ</option>
-      <option value="monthly">月単位</option>
-    </select>
-  </label>
-  <label class="ctrl" id="monthlyPickerCtrl" style="display:none" title="印刷する月">対象月
-    <input type="month" id="monthPicker" onchange="render()">
-  </label>
-  <div class="sep"></div>
-  <button class="btn btn-toggle" id="btnToggle" onclick="toggleSide()">裏面を表示 ▶</button>
-  <span class="side-badge front" id="sideBadge">表面（先に印刷）</span>
-  <button class="btn btn-lang" id="btnLang" onclick="toggleLang()">EN</button>
-  <div class="sep"></div>
-  <button class="btn btn-print" onclick="window.print()">印刷</button>
-  <button class="btn btn-settings" onclick="toggleSettings()">⚙ 設定</button>
-</div>
+<!-- ===== サイドバー開閉ボタン ===== -->
+<button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
 
-<!-- ===== 設定パネル（折りたたみ） ===== -->
-<div id="ctrlPanel">
-  <label class="ctrl" title="A4ページの4等分カット線">
-    <input type="checkbox" id="chkCutLines" checked onchange="render()"> カット線
-  </label>
-  <label class="ctrl" title="穴ストリップとページ本体の境界線">
-    <input type="checkbox" id="chkHoleLine" checked onchange="render()"> 穴仕切線
-  </label>
-  <label class="ctrl" title="穴ガイド円の印字">
-    <input type="checkbox" id="chkHoles" checked onchange="render()"> 穴ガイド
-  </label>
-  <label class="ctrl" title="穴の中心十字ガイド">
-    <input type="checkbox" id="chkHoleCenter" onchange="render()"> 穴中心
-  </label>
-  <div class="sep"></div>
-  <label class="ctrl" title="N's factoryフクロウロゴを薄く中央に表示">
-    <input type="checkbox" id="chkLogo" onchange="render()"> ロゴ透かし
-  </label>
-  <label class="ctrl" title="フクロウ横位置">フクロウX
-    <input type="number" id="owlWmX" value="0" min="-50" max="50" step="1" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl" title="フクロウ縦位置">フクロウY
-    <input type="number" id="owlWmY" value="0" min="-70" max="70" step="1" onchange="updateVars()">mm
-  </label>
-  <div class="sep"></div>
-  <label class="ctrl" title="任意テキストを透かしで表示">
-    <input type="checkbox" id="chkTextWm" onchange="render()"> テキスト透かし
-  </label>
-  <label class="ctrl" title="透かしテキスト内容">テキスト
-    <input type="text" id="textWmContent" value="N's factory" style="width:80px;font-size:11px;padding:3px 5px;border-radius:4px;border:1px solid #3d5268;background:#2c3e50;color:#ecf0f1;" oninput="render()">
-  </label>
-  <label class="ctrl" title="テキスト透かしサイズ">サイズ
-    <input type="number" id="textWmSize" value="20" min="3" max="60" step="1" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl" title="テキスト透かし角度">角度
-    <input type="number" id="textWmAngle" value="0" min="-180" max="180" step="5" onchange="updateVars()">°
-  </label>
-  <label class="ctrl" title="テキスト透かし横位置">WmX
-    <input type="number" id="textWmX" value="0" min="-50" max="50" step="1" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl" title="テキスト透かし縦位置">WmY
-    <input type="number" id="textWmY" value="0" min="-70" max="70" step="1" onchange="updateVars()">mm
-  </label>
-  <div class="sep"></div>
-  <label class="ctrl" title="カスタム画像透かし">
-    <input type="checkbox" id="chkImgWm" onchange="render()"> 画像透かし
-  </label>
-  <label class="ctrl">画像
-    <input type="file" id="imgWmFile" accept="image/*" onchange="handleImageUpload(event)" style="font-size:10px;color:#aaa;">
-  </label>
-  <label class="ctrl">ImgX
-    <input type="number" id="imgWmX" value="0" min="-50" max="50" step="1" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl">ImgY
-    <input type="number" id="imgWmY" value="0" min="-70" max="70" step="1" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl">ImgサイズS
-    <input type="number" id="imgWmSize" value="50" min="5" max="100" step="1" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl">Img透明度
-    <input type="number" id="imgWmOpacity" value="0.08" min="0.01" max="1" step="0.01" onchange="updateVars()">
-  </label>
-  <div class="sep"></div>
-  <label class="ctrl" title="英語3文字月名を右上に大きく表示">
-    <input type="checkbox" id="chkMonthAbbr" checked onchange="render()"> 月名（英）
-  </label>
-  <label class="ctrl" title="月カレンダーを表示">
-    <input type="checkbox" id="chkMonth" onchange="render()"> 月カレンダー
-  </label>
-  <label class="ctrl" title="月カレンダー上位置">CalTop
-    <input type="number" id="monthCalTop" value="1" min="-10" max="140" step="0.5" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl" title="月カレンダー右位置">CalRight
-    <input type="number" id="monthCalRight" value="1" min="-10" max="70" step="0.5" onchange="updateVars()">mm
-  </label>
-  <div class="sep"></div>
-  <label class="ctrl" title="時間グリッドの行の最小高さ（0=自動）">ライン間隔
-    <input type="number" id="lineSpacing" value="0" min="0" max="15" step="0.5" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl" title="メモ欄の罫線間隔">メモ間隔
-    <input type="number" id="memoGap" value="4" min="1" max="12" step="0.5" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl" title="時刻ラベルの文字サイズ">時刻文字
-    <input type="number" id="timeFontSize" value="1.9" min="1" max="4" step="0.1" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl" title="時刻ラベルの縦位置オフセット">時刻Y
-    <input type="number" id="timeLabelTop" value="0.3" min="-10" max="20" step="0.1" onchange="updateVars()">mm
-  </label>
-  <label class="ctrl" title="開始時刻">開始h
-    <input type="number" id="startHour" value="6" min="0" max="23" step="1" onchange="render()">
-  </label>
-  <label class="ctrl" title="終了時刻">終了h
-    <input type="number" id="endHour" value="22" min="0" max="23" step="1" onchange="render()">
-  </label>
-  <div class="sep"></div>
-  <label class="ctrl">ブランドfont <select id="fontBrand" onchange="updateFontVars()"></select></label>
-  <label class="ctrl">日付数字font <select id="fontDateNum" onchange="updateFontVars()"></select></label>
-  <label class="ctrl">曜日font <select id="fontDateWd" onchange="updateFontVars()"></select></label>
-  <label class="ctrl">月名font <select id="fontMonthAbbr" onchange="updateFontVars()"></select></label>
-  <label class="ctrl">透かしfont <select id="fontTextWm" onchange="updateFontVars()"></select></label>
-</div>
+<!-- ===== サイドバーコントロール ===== -->
+<div id="controls">
+  <h2>A6リフィル印刷ツール</h2>
 
-<div class="hint-bar">
-  【印刷手順】
-  ① 開始日を選択 → 表面を印刷
-  ② 同じ用紙をプリンタートレイに戻し「裏面を表示」に切替 → 追加印刷（長辺とじ両面）
-  ③ 4分割にカット
-  ④ 左上→右上→左下→右下の順に重ねてリング綴じ → 日付順に8ページ完成
+  <!-- 印刷モード -->
+  <div class="ctrl-section">
+    <h3>印刷モード</h3>
+    <div class="ctrl-row">
+      <label>モード</label>
+      <select id="printMode" onchange="togglePrintMode()">
+        <option value="single">単ページ</option>
+        <option value="monthly">月単位</option>
+      </select>
+    </div>
+    <div class="ctrl-row" id="monthlyPickerCtrl" style="display:none">
+      <label>対象月</label>
+      <input type="month" id="monthPicker" onchange="render()">
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnToggle" onclick="toggleSide()">表面</button>
+      <span class="side-badge front" id="sideBadge">表面（先に印刷）</span>
+    </div>
+  </div>
+
+  <!-- 日付設定 -->
+  <div class="ctrl-section">
+    <h3>日付設定</h3>
+    <div class="ctrl-row">
+      <label>開始日</label>
+      <input type="date" id="startDate">
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnLang" onclick="toggleLang()">JA</button>
+    </div>
+  </div>
+
+  <!-- 時間設定 -->
+  <div class="ctrl-section">
+    <h3>時間設定</h3>
+    <div class="ctrl-row">
+      <label>開始h</label>
+      <input type="range" id="startHour" min="0" max="23" step="1" value="6" oninput="document.getElementById('startHourVal').textContent=this.value;render()">
+      <span class="val" id="startHourVal">6</span>
+    </div>
+    <div class="ctrl-row">
+      <label>終了h</label>
+      <input type="range" id="endHour" min="0" max="23" step="1" value="22" oninput="document.getElementById('endHourVal').textContent=this.value;render()">
+      <span class="val" id="endHourVal">22</span>
+    </div>
+    <div class="ctrl-row">
+      <label>ライン間隔</label>
+      <input type="range" id="lineSpacing" min="0" max="15" step="0.5" value="0" oninput="document.getElementById('lineSpacingVal').textContent=this.value;updateVars()">
+      <span class="val" id="lineSpacingVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>メモ間隔</label>
+      <input type="range" id="memoGap" min="1" max="12" step="0.5" value="4" oninput="document.getElementById('memoGapVal').textContent=this.value;updateVars()">
+      <span class="val" id="memoGapVal">4</span>
+    </div>
+    <div class="ctrl-row">
+      <label>時刻文字</label>
+      <input type="range" id="timeFontSize" min="1" max="4" step="0.1" value="1.9" oninput="document.getElementById('timeFontSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="timeFontSizeVal">1.9</span>
+    </div>
+    <div class="ctrl-row">
+      <label>時刻Y</label>
+      <input type="range" id="timeLabelTop" min="-10" max="20" step="0.1" value="0.3" oninput="document.getElementById('timeLabelTopVal').textContent=this.value;updateVars()">
+      <span class="val" id="timeLabelTopVal">0.3</span>
+    </div>
+  </div>
+
+  <!-- 表示要素 -->
+  <div class="ctrl-section">
+    <h3>表示要素</h3>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnCutLines" onclick="toggleOpt('showCutLines','btnCutLines')">カット線</button>
+      <button class="btn-toggle on" id="btnHoleLine" onclick="toggleOpt('showHoleLine','btnHoleLine')">穴仕切線</button>
+      <button class="btn-toggle on" id="btnHoles" onclick="toggleOpt('showHoles','btnHoles')">穴ガイド</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle" id="btnHoleBisect" onclick="toggleOpt('showHoleBisect','btnHoleBisect')">穴中心</button>
+      <button class="btn-toggle" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
+      <button class="btn-toggle on" id="btnMonthAbbr" onclick="toggleOpt('showMonthAbbr','btnMonthAbbr')">月名（英）</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle" id="btnTextWm" onclick="toggleOpt('showTextWm','btnTextWm')">テキスト透かし</button>
+      <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
+      <button class="btn-toggle" id="btnMonthCal" onclick="toggleOpt('showMonthCal','btnMonthCal')">月カレンダー</button>
+    </div>
+  </div>
+
+  <!-- テキスト透かし -->
+  <div class="ctrl-section">
+    <h3>テキスト透かし</h3>
+    <div class="ctrl-row">
+      <label>テキスト</label>
+      <input type="text" id="textWmContent" value="N's factory" oninput="render()">
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="textWmSize" min="3" max="60" step="1" value="20" oninput="document.getElementById('textWmSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmSizeVal">20</span>
+    </div>
+    <div class="ctrl-row">
+      <label>角度</label>
+      <input type="range" id="textWmAngle" min="-180" max="180" step="5" value="0" oninput="document.getElementById('textWmAngleVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmAngleVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>X</label>
+      <input type="range" id="textWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('textWmXVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmXVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Y</label>
+      <input type="range" id="textWmY" min="-70" max="70" step="1" value="0" oninput="document.getElementById('textWmYVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmYVal">0</span>
+    </div>
+  </div>
+
+  <!-- 月間カレンダー位置 -->
+  <div class="ctrl-section">
+    <h3>月間カレンダー位置</h3>
+    <div class="ctrl-row">
+      <label>CalTop</label>
+      <input type="range" id="monthCalTop" min="-10" max="140" step="0.5" value="1" oninput="document.getElementById('monthCalTopVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalTopVal">1</span>
+    </div>
+    <div class="ctrl-row">
+      <label>CalRight</label>
+      <input type="range" id="monthCalRight" min="-10" max="70" step="0.5" value="1" oninput="document.getElementById('monthCalRightVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalRightVal">1</span>
+    </div>
+  </div>
+
+  <!-- フォント設定 -->
+  <div class="ctrl-section">
+    <h3>フォント設定</h3>
+    <div class="ctrl-row"><label>ブランド</label><select id="fontBrand" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>日付数字</label><select id="fontDateNum" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>曜日</label><select id="fontDateWd" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>月名</label><select id="fontMonthAbbr" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>透かし</label><select id="fontTextWm" onchange="updateFontVars()"></select></div>
+  </div>
+
+  <!-- フクロウ透かし位置 -->
+  <div class="ctrl-section">
+    <h3>フクロウ透かし位置</h3>
+    <div class="ctrl-row">
+      <label>X</label>
+      <input type="range" id="owlWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('owlWmXVal').textContent=this.value;updateVars()">
+      <span class="val" id="owlWmXVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Y</label>
+      <input type="range" id="owlWmY" min="-70" max="70" step="1" value="0" oninput="document.getElementById('owlWmYVal').textContent=this.value;updateVars()">
+      <span class="val" id="owlWmYVal">0</span>
+    </div>
+  </div>
+
+  <!-- 画像透かし -->
+  <div class="ctrl-section">
+    <h3>画像透かし</h3>
+    <div class="ctrl-row">
+      <label>画像</label>
+      <input type="file" id="imgWmFile" accept="image/*" onchange="handleImageUpload(event)" style="flex:1;font-size:10px;color:#aaa;">
+    </div>
+    <div class="ctrl-row">
+      <label>X</label>
+      <input type="range" id="imgWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('imgWmXVal').textContent=this.value;updateVars()">
+      <span class="val" id="imgWmXVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>Y</label>
+      <input type="range" id="imgWmY" min="-70" max="70" step="1" value="0" oninput="document.getElementById('imgWmYVal').textContent=this.value;updateVars()">
+      <span class="val" id="imgWmYVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="imgWmSize" min="5" max="100" step="1" value="50" oninput="document.getElementById('imgWmSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="imgWmSizeVal">50</span>
+    </div>
+    <div class="ctrl-row">
+      <label>透明度</label>
+      <input type="range" id="imgWmOpacity" min="0.01" max="1" step="0.01" value="0.08" oninput="document.getElementById('imgWmOpacityVal').textContent=this.value;updateVars()">
+      <span class="val" id="imgWmOpacityVal">0.08</span>
+    </div>
+  </div>
+
+  <!-- 印刷 -->
+  <div class="ctrl-section">
+    <h3>印刷</h3>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="window.print()">印刷</button>
+    </div>
+    <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
+      ① 開始日を選択 → 表面を印刷<br>
+      ② 同じ用紙を戻し「表面」ボタンで裏面に切替 → 追加印刷<br>
+      ③ 4分割にカット<br>
+      ④ 左上→右上→左下→右下の順に重ねてリング綴じ
+    </div>
+  </div>
 </div>
 
 <!-- ===== 印刷プレビュー ===== -->
-<div class="preview-outer" id="preview-outer">
+<div id="preview">
 </div>
 
 <script>
@@ -653,6 +657,20 @@ const OWL_PATH = `M 84.045202 154.08962 C 74.342376 153.72021 66.575763 156.2255
 let isFront   = true;
 let isEN      = false;
 let startDate = new Date();
+
+let opts = {
+  showCutLines: true, showHoleLine: true, showHoles: true, showHoleBisect: false,
+  showLogo: false, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false
+};
+function toggleSidebar() {
+  document.getElementById('controls').classList.toggle('open');
+  document.body.classList.toggle('panel-open');
+}
+function toggleOpt(key, btnId) {
+  opts[key] = !opts[key];
+  document.getElementById(btnId).classList.toggle('on', opts[key]);
+  render();
+}
 
 // ============================================================
 // 初期化
@@ -688,7 +706,7 @@ function addDays(date, n) {
 // ============================================================
 function toggleLang() {
   isEN = !isEN;
-  document.getElementById('btnLang').textContent = isEN ? 'JP' : 'EN';
+  document.getElementById('btnLang').classList.toggle('on', !isEN);
   render();
 }
 
@@ -776,9 +794,7 @@ function updateFontVars() {
 }
 
 // === MODULE: Settings Toggle ===
-function toggleSettings() {
-  document.getElementById('ctrlPanel').classList.toggle('open');
-}
+// toggleSidebar() is defined in the 状態 section above
 
 // === MODULE: ImageWatermark ===
 let customImgDataUrl = null;
@@ -800,12 +816,12 @@ function toggleSide() {
   const badge = document.getElementById('sideBadge');
   if (isFront) {
     btn.textContent   = '裏面を表示 ▶';
-    btn.className     = 'btn btn-toggle';
+    btn.className     = 'btn-toggle on';
     badge.textContent = '表面（先に印刷）';
     badge.className   = 'side-badge front';
   } else {
     btn.textContent   = '◀ 表面を表示';
-    btn.className     = 'btn btn-toggle back';
+    btn.className     = 'btn-toggle';
     badge.textContent = '裏面（同じ用紙に追加印刷）';
     badge.className   = 'side-badge back';
   }
@@ -819,15 +835,15 @@ function getCommonParams() {
   const startH = parseInt(document.getElementById('startHour').value) || 6;
   const endH   = parseInt(document.getElementById('endHour').value)   || 22;
   return {
-    showCutLines:   document.getElementById('chkCutLines').checked,
-    showHoleLine:   document.getElementById('chkHoleLine').checked,
-    showHoles:      document.getElementById('chkHoles').checked,
-    showHoleBisect: document.getElementById('chkHoleCenter').checked,
-    showLogo:       document.getElementById('chkLogo').checked,
-    showTextWm:     document.getElementById('chkTextWm').checked,
+    showCutLines:   opts.showCutLines,
+    showHoleLine:   opts.showHoleLine,
+    showHoles:      opts.showHoles,
+    showHoleBisect: opts.showHoleBisect,
+    showLogo:       opts.showLogo,
+    showTextWm:     opts.showTextWm,
     textWmContent:  document.getElementById('textWmContent').value,
-    showMonthAbbr:  document.getElementById('chkMonthAbbr').checked,
-    showImgWm:      document.getElementById('chkImgWm').checked,
+    showMonthAbbr:  opts.showMonthAbbr,
+    showImgWm:      opts.showImgWm,
     hours:          Array.from({length: Math.max(1, endH - startH + 1)}, (_, i) => i + startH),
   };
 }
@@ -868,7 +884,7 @@ function renderSingle() {
     slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
       p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
   }
-  document.getElementById('preview-outer').innerHTML = makeA4HTML(slots, p.showCutLines);
+  document.getElementById('preview').innerHTML = makeA4HTML(slots, p.showCutLines);
 }
 
 function renderMonthly() {
@@ -895,7 +911,7 @@ function renderMonthly() {
     }
     html += makeA4HTML(slots, p.showCutLines);
   }
-  document.getElementById('preview-outer').innerHTML = html;
+  document.getElementById('preview').innerHTML = html;
 }
 
 // ============================================================
@@ -956,7 +972,7 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
   const imgWmHTML   = (showImgWm && customImgDataUrl) ? `<img class="img-wm" src="${customImgDataUrl}" alt="">` : '';
   const monthAbbrHTML = showMonthAbbr ? `<div class="month-abbr-large">${MONTH_EN_ABB[date.getMonth()]}</div>` : '';
 
-  const showMonth = document.getElementById('chkMonth').checked;
+  const showMonth = opts.showMonthCal;
   const monthHTML = showMonth ? buildMonthCalHTML(date) : '';
 
   const timeRowsHTML = hours.map(h =>
