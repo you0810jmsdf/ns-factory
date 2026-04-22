@@ -737,14 +737,14 @@ body{
 
 <!-- LP NAV -->
 <nav class="lp-nav no-print">
-  <a href="../index.html" class="lp-nav-brand">
+  <a href="../" class="lp-nav-brand">
     <img src="../assets/logo.png" alt="N's factory" style="height:40px;width:auto;display:block;">
   </a>
   <span class="lp-nav-spacer"></span>
   <div class="lp-nav-links">
     <a href="https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec" class="lp-nav-link">作品紹介</a>
     <a href="../JHCS.html" class="lp-nav-link">JHCS講習案内</a>
-    <a href="../index.html#works" class="lp-nav-link">道具紹介</a>
+    <a href="../#works" class="lp-nav-link">道具紹介</a>
     <a href="./admin.html" class="lp-nav-link">管理画面</a>
   </div>
   <a href="../カラーシミュレーター/simulator.html" class="lp-nav-cta">カラーシミュレーター</a>
@@ -1846,7 +1846,7 @@ function goBackToParentSite() {
     window.history.back();
     return;
   }
-  window.location.href = new URL('../index.html', location.href).toString();
+  window.location.href = new URL('../', location.href).toString();
 }
 
 function openColorEditorModal(componentKey) {
