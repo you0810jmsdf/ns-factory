@@ -25,13 +25,6 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
   font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-#history-toggle-btn {
-  position: fixed; top: 10px; left: 54px; z-index: 200;
-  height: 36px; padding: 0 10px; border-radius: 6px;
-  background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
-  font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
-}
-#history-toggle-btn:hover { background: #2a2a4e; }
 /* === MODULE: History Modal === */
 #historyModal {
   display: none; position: fixed; inset: 0; z-index: 300;
@@ -297,7 +290,7 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: Print === */
 @media print {
   body { background: white; }
-  #ctrl-toggle-btn, #history-toggle-btn, #controls, #historyModal { display: none !important; }
+  #ctrl-toggle-btn, #controls, #historyModal { display: none !important; }
   #preview { margin-left: 0; padding: 0; }
   .a4-sheet { box-shadow: none; page-break-after: always; break-inside: avoid; page-break-inside: avoid; }
   .a4-sheet:last-child { page-break-after: avoid; }
@@ -309,7 +302,6 @@ body.panel-open #preview { margin-left: 280px; }
 
 <!-- === MODULE: Control Panel HTML === -->
 <button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
-<button id="history-toggle-btn" onclick="openHistory()" title="更新履歴を表示">📋 更新履歴</button>
 <div id="controls">
   <h2>N's factory<br>週間ブロック 印刷ツール</h2>
 
@@ -527,6 +519,14 @@ body.panel-open #preview { margin-left: 280px; }
     <h3>印刷</h3>
     <div class="btn-row">
       <button class="btn-primary" onclick="window.print()">印刷</button>
+    </div>
+  </div>
+
+  <!-- 更新履歴 -->
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHistory()" style="width:100%">📋 更新履歴</button>
     </div>
   </div>
 </div>
