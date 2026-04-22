@@ -589,6 +589,7 @@
     affiliateLinks = staticItems;
 
     const url = getGasUrl();
+    let hiddenIds = [];
     if (url) {
       try {
         const res = await fetch(`${url}?action=affiliateLinks`, { cache: 'no-store' });
@@ -609,9 +610,16 @@
           });
           affiliateLinks = Array.from(byKey.values());
         }
+        if (data.ok && Array.isArray(data.hiddenIds)) {
+          hiddenIds = data.hiddenIds.map(String);
+        }
       } catch(e) {
         // GAS側が未更新の場合は静的JSONへフォールバックする
       }
+    }
+    if (hiddenIds.length) {
+      const hiddenSet = new Set(hiddenIds);
+      affiliateLinks = affiliateLinks.filter(item => !hiddenSet.has(String(item.id || '')));
     }
     renderToolFilters();
     renderAffiliateLinks();
@@ -661,7 +669,7 @@
         </div>
         <div class="tool-card-actions ${affiliateAdminMode ? 'show' : ''}">
           <button class="btn btn-secondary" onclick="openAffiliateModal('${escAttr(item.id)}')">編集</button>
-          ${item.source === 'static' ? '' : `<button class="btn btn-danger" onclick="deleteAffiliateLink('${escAttr(item.id)}')">削除</button>`}
+          <button class="btn btn-danger" onclick="deleteAffiliateLink('${escAttr(item.id)}', ${item.source === 'static' ? 'true' : 'false'})">削除</button>
         </div>
       </article>
     `).join('');
@@ -694,36 +702,6 @@
 
   function closeAffiliateModal() {
     document.getElementById('tool-modal').classList.remove('open');
-  }
-
-  async function previewAffiliateLink() {
-    const url = getGasUrl();
-    const linkUrl = document.getElementById('tool-url').value.trim();
-    if (!url) { showToolMsg('err', 'GAS URLを設定してください。'); return; }
-    if (!linkUrl) { showToolMsg('err', '楽天ROOMなどのリンクURLを入力してください。'); return; }
-    const password = getNoticePassword();
-    if (!password) return;
-    const btn = document.getElementById('btn-tool-preview');
-    btn.disabled = true; btn.textContent = '取得中...';
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'previewAffiliateLink', url: linkUrl, password }),
-      });
-      const data = await res.json();
-      if (!data.ok) {
-        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
-        showToolMsg('err', '取得できませんでした: ' + (data.error || '不明'));
-        return;
-      }
-      if (data.name && !document.getElementById('tool-name').value.trim()) document.getElementById('tool-name').value = data.name;
-      if (data.description && !document.getElementById('tool-description').value.trim()) document.getElementById('tool-description').value = data.description;
-      showToolMsg('ok', '紹介文を取得しました。必要に応じて整えてから保存してください。');
-    } catch(e) {
-      showToolMsg('err', '通信エラー: ' + e.message);
-    } finally {
-      btn.disabled = false; btn.textContent = 'ROOMから取得';
-    }
   }
 
   async function saveAffiliateLink() {
@@ -777,11 +755,14 @@
     }
   }
 
-  async function deleteAffiliateLink(id) {
-    if (!id) { showToolMsg('err', '静的JSONの項目はページ上から削除できません。GASへ保存後に削除できます。'); return; }
+  async function deleteAffiliateLink(id, isStatic) {
+    if (!id) { showToolMsg('err', 'IDが取得できませんでした。'); return; }
     const url = getGasUrl();
     if (!url) { showToolMsg('err', 'GAS URLを設定してください。'); return; }
-    if (!confirm('この道具リンクを削除しますか？')) return;
+    const msg = isStatic
+      ? 'この道具リンク（元ファイル項目）を非表示にしますか？\n（削除ではなく非表示フラグを付けます。スプレッドシート「JHCS道具リンク_非表示」から解除可能）'
+      : 'この道具リンクを削除しますか？';
+    if (!confirm(msg)) return;
     const password = getNoticePassword();
     if (!password) return;
     try {
@@ -791,7 +772,7 @@
       });
       const data = await res.json();
       if (data.ok) {
-        showToolMsg('ok', '道具リンクを削除しました。');
+        showToolMsg('ok', isStatic ? '非表示にしました。' : '道具リンクを削除しました。');
         await loadAffiliateLinks();
       } else {
         if (data.error === 'Invalid admin password') noticeAdminPassword = '';
@@ -1574,10 +1555,7 @@
     <div style="margin-bottom:14px;">
       <label for="tool-url">1つ目のリンクURL <span style="color:red">*</span></label>
       <input type="url" id="tool-url" placeholder="https://room.rakuten.co.jp/you0810jmsdf/...">
-      <div class="tool-form-note">URLを貼って「ROOMから取得」を押すと、取得できた紹介文を下に入れます。カード内には下の追加リンクもまとめて表示できます。</div>
-    </div>
-    <div class="form-actions" style="margin-bottom:14px;">
-      <button class="btn btn-export" id="btn-tool-preview" onclick="previewAffiliateLink()">ROOMから取得</button>
+      <div class="tool-form-note">カード内には下の追加リンクもまとめて表示できます。</div>
     </div>
     <div class="form-grid">
       <div>
