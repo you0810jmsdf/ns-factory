@@ -15,13 +15,23 @@
   --memo-gap: 4mm;
   --time-font: 1.9mm;
   --time-label-top: 0.3mm;
-  --year-wm-font: 'Noto Sans JP', sans-serif;
   --text-wm-size: 20mm;
   --text-wm-angle: 0deg;
   --text-wm-x: 0mm;
   --text-wm-y: 0mm;
   --month-cal-top: 1mm;
   --month-cal-right: 1mm;
+  --font-brand:      'Times New Roman', Times, serif;
+  --font-date-num:   'Noto Sans JP', sans-serif;
+  --font-date-wd:    'Noto Sans JP', sans-serif;
+  --font-month-abbr: 'Times New Roman', Times, serif;
+  --font-text-wm:    'Noto Sans JP', sans-serif;
+  --owl-wm-x: 0mm;
+  --owl-wm-y: 0mm;
+  --img-wm-x: 0mm;
+  --img-wm-y: 0mm;
+  --img-wm-size: 50mm;
+  --img-wm-opacity: 0.08;
 }
 
 /* ===== 画面UI ===== */
@@ -254,6 +264,7 @@ label.ctrl {
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.5mm;
+  font-family: var(--font-date-num, 'Noto Sans JP', sans-serif);
 }
 .date-meta {
   display: flex;
@@ -261,13 +272,13 @@ label.ctrl {
   gap: 0.8mm;
 }
 .date-ym   { font-size: 2mm;   color: #999; letter-spacing: 0.3mm; }
-.date-wd   { font-size: 3.2mm; font-weight: 700; }
+.date-wd   { font-size: 3.2mm; font-weight: 700; font-family: var(--font-date-wd, 'Noto Sans JP', sans-serif); }
 .is-sun .date-num, .is-sun .date-wd { color: #c0392b; }
 .is-sat .date-num, .is-sat .date-wd { color: #2471a3; }
 
 /* N's factory ブランド（中央配置） */
 .ns-brand {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: var(--font-brand, 'Times New Roman', Times, serif);
   font-size: 2.6mm;
   color: #555;
   letter-spacing: 0.3mm;
@@ -280,7 +291,7 @@ label.ctrl {
 
 /* 月名（英語3文字）大表示 */
 .month-abbr-large {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: var(--font-month-abbr, 'Times New Roman', Times, serif);
   font-size: 7mm;
   font-weight: 700;
   color: #888;
@@ -367,8 +378,8 @@ label.ctrl {
   position: absolute;
   width: 38mm;
   height: 37.2mm;
-  top: 50%;
-  left: 50%;
+  top: calc(50% + var(--owl-wm-y, 0mm));
+  left: calc(50% + var(--owl-wm-x, 0mm));
   transform: translate(-50%, -50%);
   opacity: 0.07;
   pointer-events: none;
@@ -387,7 +398,7 @@ label.ctrl {
   pointer-events: none;
   z-index: 1;
   line-height: 1;
-  font-family: var(--year-wm-font, 'Noto Sans JP', sans-serif);
+  font-family: var(--font-text-wm, 'Noto Sans JP', sans-serif);
   white-space: nowrap;
 }
 
@@ -440,10 +451,36 @@ label.ctrl {
   font-weight: 700;
 }
 
+/* 画像透かし */
+.img-wm {
+  position: absolute; pointer-events: none; z-index: 1;
+  top: calc(50% + var(--img-wm-y, 0mm)); left: calc(50% + var(--img-wm-x, 0mm));
+  transform: translate(-50%, -50%);
+  width: var(--img-wm-size, 50mm); height: auto;
+  opacity: var(--img-wm-opacity, 0.08);
+}
+
+/* 設定パネル */
+.btn-settings { background: #6c5ce7; color: #fff; }
+#ctrlPanel {
+  background: #1e2d3d;
+  color: #fff;
+  padding: 8px 20px;
+  display: none;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 42px;
+  z-index: 99;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+#ctrlPanel.open { display: flex; }
+
 /* ===== 印刷 ===== */
 @media print {
   body { background: white; margin: 0; padding: 0; }
-  .controls, .hint-bar { display: none !important; }
+  .controls, .hint-bar, #ctrlPanel { display: none !important; }
   .preview-outer { padding: 0; }
   .a4-page { zoom: 1; box-shadow: none; margin: 0; break-after: page; }
 }
@@ -452,23 +489,13 @@ label.ctrl {
 </head>
 <body>
 
-<!-- ===== コントロールバー ===== -->
+<!-- ===== コントロールバー（常時表示） ===== -->
 <div class="controls">
   <h1>A6リフィル印刷ツール</h1>
   <div class="sep"></div>
   <label class="ctrl">開始日
     <input type="date" id="startDate">
   </label>
-  <label class="ctrl">レイアウト
-    <select id="layoutType" onchange="render()">
-      <option value="daily1">デイリー（1P/日）</option>
-    </select>
-  </label>
-  <div class="sep"></div>
-  <button class="btn btn-toggle" id="btnToggle" onclick="toggleSide()">裏面を表示 ▶</button>
-  <span class="side-badge front" id="sideBadge">表面（先に印刷）</span>
-  <button class="btn btn-lang" id="btnLang" onclick="toggleLang()">EN</button>
-  <div class="sep"></div>
   <label class="ctrl" title="印刷モード">モード
     <select id="printMode" onchange="togglePrintMode()">
       <option value="single">単ページ</option>
@@ -478,8 +505,17 @@ label.ctrl {
   <label class="ctrl" id="monthlyPickerCtrl" style="display:none" title="印刷する月">対象月
     <input type="month" id="monthPicker" onchange="render()">
   </label>
-  <button class="btn btn-print" onclick="window.print()">印刷</button>
   <div class="sep"></div>
+  <button class="btn btn-toggle" id="btnToggle" onclick="toggleSide()">裏面を表示 ▶</button>
+  <span class="side-badge front" id="sideBadge">表面（先に印刷）</span>
+  <button class="btn btn-lang" id="btnLang" onclick="toggleLang()">EN</button>
+  <div class="sep"></div>
+  <button class="btn btn-print" onclick="window.print()">印刷</button>
+  <button class="btn btn-settings" onclick="toggleSettings()">⚙ 設定</button>
+</div>
+
+<!-- ===== 設定パネル（折りたたみ） ===== -->
+<div id="ctrlPanel">
   <label class="ctrl" title="A4ページの4等分カット線">
     <input type="checkbox" id="chkCutLines" checked onchange="render()"> カット線
   </label>
@@ -492,23 +528,22 @@ label.ctrl {
   <label class="ctrl" title="穴の中心十字ガイド">
     <input type="checkbox" id="chkHoleCenter" onchange="render()"> 穴中心
   </label>
+  <div class="sep"></div>
   <label class="ctrl" title="N's factoryフクロウロゴを薄く中央に表示">
     <input type="checkbox" id="chkLogo" onchange="render()"> ロゴ透かし
   </label>
+  <label class="ctrl" title="フクロウ横位置">フクロウX
+    <input type="number" id="owlWmX" value="0" min="-50" max="50" step="1" onchange="updateVars()">mm
+  </label>
+  <label class="ctrl" title="フクロウ縦位置">フクロウY
+    <input type="number" id="owlWmY" value="0" min="-70" max="70" step="1" onchange="updateVars()">mm
+  </label>
+  <div class="sep"></div>
   <label class="ctrl" title="任意テキストを透かしで表示">
     <input type="checkbox" id="chkTextWm" onchange="render()"> テキスト透かし
   </label>
   <label class="ctrl" title="透かしテキスト内容">テキスト
     <input type="text" id="textWmContent" value="N's factory" style="width:80px;font-size:11px;padding:3px 5px;border-radius:4px;border:1px solid #3d5268;background:#2c3e50;color:#ecf0f1;" oninput="render()">
-  </label>
-  <label class="ctrl" title="透かしフォント">フォント
-    <select id="yearWmFont" onchange="updateVars()">
-      <option value="'Noto Sans JP',sans-serif">ゴシック</option>
-      <option value="'Noto Serif JP',serif">明朝</option>
-      <option value="'Times New Roman',Times,serif">Times</option>
-      <option value="Georgia,serif">Georgia</option>
-      <option value="Impact,sans-serif">Impact</option>
-    </select>
   </label>
   <label class="ctrl" title="テキスト透かしサイズ">サイズ
     <input type="number" id="textWmSize" value="20" min="3" max="60" step="1" onchange="updateVars()">mm
@@ -516,11 +551,30 @@ label.ctrl {
   <label class="ctrl" title="テキスト透かし角度">角度
     <input type="number" id="textWmAngle" value="0" min="-180" max="180" step="5" onchange="updateVars()">°
   </label>
-  <label class="ctrl" title="テキスト透かし横位置（中央からのオフセット）">WmX
+  <label class="ctrl" title="テキスト透かし横位置">WmX
     <input type="number" id="textWmX" value="0" min="-50" max="50" step="1" onchange="updateVars()">mm
   </label>
-  <label class="ctrl" title="テキスト透かし縦位置（中央からのオフセット）">WmY
+  <label class="ctrl" title="テキスト透かし縦位置">WmY
     <input type="number" id="textWmY" value="0" min="-70" max="70" step="1" onchange="updateVars()">mm
+  </label>
+  <div class="sep"></div>
+  <label class="ctrl" title="カスタム画像透かし">
+    <input type="checkbox" id="chkImgWm" onchange="render()"> 画像透かし
+  </label>
+  <label class="ctrl">画像
+    <input type="file" id="imgWmFile" accept="image/*" onchange="handleImageUpload(event)" style="font-size:10px;color:#aaa;">
+  </label>
+  <label class="ctrl">ImgX
+    <input type="number" id="imgWmX" value="0" min="-50" max="50" step="1" onchange="updateVars()">mm
+  </label>
+  <label class="ctrl">ImgY
+    <input type="number" id="imgWmY" value="0" min="-70" max="70" step="1" onchange="updateVars()">mm
+  </label>
+  <label class="ctrl">ImgサイズS
+    <input type="number" id="imgWmSize" value="50" min="5" max="100" step="1" onchange="updateVars()">mm
+  </label>
+  <label class="ctrl">Img透明度
+    <input type="number" id="imgWmOpacity" value="0.08" min="0.01" max="1" step="0.01" onchange="updateVars()">
   </label>
   <div class="sep"></div>
   <label class="ctrl" title="英語3文字月名を右上に大きく表示">
@@ -554,6 +608,12 @@ label.ctrl {
   <label class="ctrl" title="終了時刻">終了h
     <input type="number" id="endHour" value="22" min="0" max="23" step="1" onchange="render()">
   </label>
+  <div class="sep"></div>
+  <label class="ctrl">ブランドfont <select id="fontBrand" onchange="updateFontVars()"></select></label>
+  <label class="ctrl">日付数字font <select id="fontDateNum" onchange="updateFontVars()"></select></label>
+  <label class="ctrl">曜日font <select id="fontDateWd" onchange="updateFontVars()"></select></label>
+  <label class="ctrl">月名font <select id="fontMonthAbbr" onchange="updateFontVars()"></select></label>
+  <label class="ctrl">透かしfont <select id="fontTextWm" onchange="updateFontVars()"></select></label>
 </div>
 
 <div class="hint-bar">
@@ -608,6 +668,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   const mp = document.getElementById('monthPicker');
   mp.value = `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
+  initFontSelectors();
   updateVars();
   render();
 });
@@ -639,24 +700,95 @@ function updateVars() {
   const mg   = parseFloat(document.getElementById('memoGap').value)        || 4;
   const tf   = parseFloat(document.getElementById('timeFontSize').value)   || 1.9;
   const tlt  = parseFloat(document.getElementById('timeLabelTop').value)   || 0.3;
-  const font = document.getElementById('yearWmFont').value;
   const mct  = parseFloat(document.getElementById('monthCalTop').value)    || 1;
   const mcr  = parseFloat(document.getElementById('monthCalRight').value)  || 1;
   const tws  = parseFloat(document.getElementById('textWmSize').value)     || 20;
   const twa  = parseFloat(document.getElementById('textWmAngle').value)    || 0;
   const twx  = parseFloat(document.getElementById('textWmX').value)        || 0;
   const twy  = parseFloat(document.getElementById('textWmY').value)        || 0;
+  const owlX = parseFloat(document.getElementById('owlWmX').value)         || 0;
+  const owlY = parseFloat(document.getElementById('owlWmY').value)         || 0;
+  const imgX = parseFloat(document.getElementById('imgWmX').value)         || 0;
+  const imgY = parseFloat(document.getElementById('imgWmY').value)         || 0;
+  const imgSz= parseFloat(document.getElementById('imgWmSize').value)      || 50;
+  const imgOp= parseFloat(document.getElementById('imgWmOpacity').value)   || 0.08;
   document.documentElement.style.setProperty('--line-h',          sp   + 'mm');
   document.documentElement.style.setProperty('--memo-gap',        mg   + 'mm');
   document.documentElement.style.setProperty('--time-font',       tf   + 'mm');
   document.documentElement.style.setProperty('--time-label-top',  tlt  + 'mm');
-  document.documentElement.style.setProperty('--year-wm-font',    font);
   document.documentElement.style.setProperty('--month-cal-top',   mct  + 'mm');
   document.documentElement.style.setProperty('--month-cal-right', mcr  + 'mm');
   document.documentElement.style.setProperty('--text-wm-size',    tws  + 'mm');
   document.documentElement.style.setProperty('--text-wm-angle',   twa  + 'deg');
   document.documentElement.style.setProperty('--text-wm-x',       twx  + 'mm');
   document.documentElement.style.setProperty('--text-wm-y',       twy  + 'mm');
+  document.documentElement.style.setProperty('--owl-wm-x',        owlX + 'mm');
+  document.documentElement.style.setProperty('--owl-wm-y',        owlY + 'mm');
+  document.documentElement.style.setProperty('--img-wm-x',        imgX + 'mm');
+  document.documentElement.style.setProperty('--img-wm-y',        imgY + 'mm');
+  document.documentElement.style.setProperty('--img-wm-size',     imgSz + 'mm');
+  document.documentElement.style.setProperty('--img-wm-opacity',  imgOp);
+}
+
+// === MODULE: FontOptions ===
+const FONT_OPTIONS = [
+  { label: 'Times New Roman', value: "'Times New Roman', Times, serif" },
+  { label: 'Georgia',         value: "Georgia, serif" },
+  { label: 'Arial',           value: "Arial, sans-serif" },
+  { label: 'Noto Serif JP',   value: "'Noto Serif JP', serif" },
+  { label: 'Noto Sans JP',    value: "'Noto Sans JP', sans-serif" },
+  { label: '游明朝',           value: "'Yu Mincho', '游明朝', serif" },
+  { label: '游ゴシック',        value: "'Yu Gothic', '游ゴシック', sans-serif" },
+  { label: 'Stencil',         value: "Stencil, Impact, sans-serif" },
+  { label: 'Impact',          value: "Impact, Charcoal, sans-serif" },
+  { label: 'メイリオ',          value: "Meiryo, 'メイリオ', sans-serif" },
+];
+
+function initFontSelectors() {
+  const map = [
+    { id: 'fontBrand',      def: "'Times New Roman', Times, serif" },
+    { id: 'fontDateNum',    def: "'Noto Sans JP', sans-serif" },
+    { id: 'fontDateWd',     def: "'Noto Sans JP', sans-serif" },
+    { id: 'fontMonthAbbr',  def: "'Times New Roman', Times, serif" },
+    { id: 'fontTextWm',     def: "'Noto Sans JP', sans-serif" },
+  ];
+  map.forEach(({ id, def }) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    FONT_OPTIONS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value;
+      opt.textContent = f.label;
+      if (f.value === def) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function updateFontVars() {
+  const ids = ['fontBrand','fontDateNum','fontDateWd','fontMonthAbbr','fontTextWm'];
+  const vars = ['--font-brand','--font-date-num','--font-date-wd','--font-month-abbr','--font-text-wm'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) document.documentElement.style.setProperty(vars[i], el.value);
+  });
+  render();
+}
+
+// === MODULE: Settings Toggle ===
+function toggleSettings() {
+  document.getElementById('ctrlPanel').classList.toggle('open');
+}
+
+// === MODULE: ImageWatermark ===
+let customImgDataUrl = null;
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { customImgDataUrl = ev.target.result; render(); };
+  reader.readAsDataURL(file);
 }
 
 // ============================================================
@@ -695,6 +827,7 @@ function getCommonParams() {
     showTextWm:     document.getElementById('chkTextWm').checked,
     textWmContent:  document.getElementById('textWmContent').value,
     showMonthAbbr:  document.getElementById('chkMonthAbbr').checked,
+    showImgWm:      document.getElementById('chkImgWm').checked,
     hours:          Array.from({length: Math.max(1, endH - startH + 1)}, (_, i) => i + startH),
   };
 }
@@ -733,7 +866,7 @@ function renderSingle() {
   for (const [pos, dayOffset] of Object.entries(map)) {
     const date = addDays(startDate, dayOffset);
     slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
-      p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours);
+      p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
   }
   document.getElementById('preview-outer').innerHTML = makeA4HTML(slots, p.showCutLines);
 }
@@ -757,7 +890,7 @@ function renderMonthly() {
         const date = new Date(y, mo - 1, dayNum);
         slots[pos] = buildDailyPage(date, dayNum, HOLE_SIDE[pos],
           p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo,
-          p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours);
+          p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
       }
     }
     html += makeA4HTML(slots, p.showCutLines);
@@ -797,7 +930,7 @@ function buildMonthCalHTML(date) {
 // ============================================================
 // デイリーページHTML構築
 // ============================================================
-function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHoleBisect, showLogo, showTextWm, textWmContent, showMonthAbbr, hours) {
+function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHoleBisect, showLogo, showTextWm, textWmContent, showMonthAbbr, hours, showImgWm) {
   const wd      = date.getDay();
   const wdClass = wd === 0 ? 'is-sun' : wd === 6 ? 'is-sat' : '';
   const ymStr   = `${date.getFullYear()}.${pad(date.getMonth()+1)}`;
@@ -820,6 +953,7 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
     : '';
 
   const textWmHTML  = showTextWm  ? `<div class="text-watermark">${textWmContent}</div>` : '';
+  const imgWmHTML   = (showImgWm && customImgDataUrl) ? `<img class="img-wm" src="${customImgDataUrl}" alt="">` : '';
   const monthAbbrHTML = showMonthAbbr ? `<div class="month-abbr-large">${MONTH_EN_ABB[date.getMonth()]}</div>` : '';
 
   const showMonth = document.getElementById('chkMonth').checked;
@@ -839,6 +973,7 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
   ${holeSide === 'left' ? holesHTML : ''}
   <div class="page-body">
     ${watermarkHTML}
+    ${imgWmHTML}
     ${textWmHTML}
     ${monthHTML}
     <div class="date-header">
