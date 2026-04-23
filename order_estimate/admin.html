@@ -1337,7 +1337,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('githubTokenInput');
   const chk = document.getElementById('tokenSaveLocal');
 
-  form.addEventListener('submit', () => {
+  form.addEventListener('submit', e => {
+    e.preventDefault();
     const val = input.value.trim();
     setGitHubToken(val, chk.checked);
     _closeTokenModal(!!val);
@@ -2888,9 +2889,9 @@ checkCrawlServer().catch(() => {});
       Contents read/write 権限の <b>Personal Access Token</b> を入力してください。<br>
       ブラウザのパスワードマネージャーで保存すると、複数PCでも自動入力されます（Chrome/Edge のプロフィール同期が必要）。
     </p>
-    <form id="githubTokenForm" action="javascript:void(0)" method="post" autocomplete="on">
+    <form id="githubTokenForm" action="" method="post" autocomplete="on">
       <input type="text" name="username" value="ns-factory-admin" autocomplete="username"
-             style="position:absolute;left:-9999px;width:1px;height:1px" aria-hidden="true" tabindex="-1">
+             style="display:none" aria-hidden="true" tabindex="-1">
       <div class="token-input-row">
         <input type="password" id="githubTokenInput" name="password"
                autocomplete="current-password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" spellcheck="false">
