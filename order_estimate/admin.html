@@ -3004,8 +3004,18 @@ document.getElementById('stats-refresh-btn')?.addEventListener('click', () => {
 });
 
 document.querySelectorAll('[data-admin-tab]').forEach(btn => {
-  btn.addEventListener('click', () => setAdminTab(btn.dataset.adminTab));
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.adminTab;
+    history.replaceState(null, '', '#tab=' + tab);
+    setAdminTab(tab);
+  });
 });
+
+// F5リロード後もタブを復元
+(function() {
+  const m = location.hash.match(/[#&]tab=([^&]+)/);
+  if (m) setAdminTab(decodeURIComponent(m[1]));
+})();
 
 window.addEventListener('beforeunload', (event) => {
   if (!dirty && !threadDirty) return;
