@@ -112,6 +112,44 @@ body{
 .auth-locked{
   overflow:hidden;
 }
+.token-modal-overlay{
+  position:fixed;
+  inset:0;
+  z-index:900;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(44,26,14,.62);
+  backdrop-filter:blur(4px);
+}
+.token-modal-overlay.open{display:flex}
+.token-modal-card{
+  width:min(460px,100%);
+  background:#fff;
+  border:1px solid #eadccf;
+  border-radius:18px;
+  padding:22px;
+  box-shadow:0 18px 40px rgba(44,26,14,.22);
+}
+.token-modal-card h2{margin:0 0 6px;font-size:17px;color:#3d1a08}
+.token-modal-card .modal-desc{font-size:13px;color:#7a5a3f;line-height:1.6;margin:0 0 14px}
+.token-modal-card .modal-desc b{color:#3d1a08}
+.token-input-row{margin-bottom:10px}
+.token-input-row input[type="password"]{
+  width:100%;
+  padding:10px 12px;
+  border:1.5px solid #d4b896;
+  border-radius:8px;
+  font-size:14px;
+  font-family:monospace,monospace;
+  box-sizing:border-box;
+  outline:none;
+}
+.token-input-row input[type="password"]:focus{border-color:#6b3a1f;box-shadow:0 0 0 2px rgba(107,58,31,.15)}
+.token-save-opt{display:flex;align-items:center;gap:7px;font-size:13px;color:#5a3a20;margin-bottom:14px;cursor:pointer}
+.token-save-opt input{width:16px;height:16px;cursor:pointer;accent-color:#6b3a1f}
+.token-modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .main{
   padding:18px;
   display:flex;
@@ -705,7 +743,7 @@ tr.row-out-stock td{
         <button class="btn sub thread-publish-action admin-section-hidden" id="publishThreadGithubBtn">糸在庫をGitHubへ反映</button>
       </div>
       <div class="hint" style="margin-top:8px">
-        PCローカルのCSVは基本使いません。GitHubへ直接反映する場合は、Contents read/write 権限のトークンをこのブラウザのセッション中だけ保持します。ページを閉じると再設定が必要です。
+        PCローカルのCSVは基本使いません。GitHubへ直接反映する場合は、Contents read/write 権限のトークンを設定してください。「このブラウザに保存する」にチェックを入れると次回から自動入力されます。複数PCで使う場合はブラウザのパスワードマネージャーを利用してください。
       </div>
     </div>
 
@@ -1230,18 +1268,28 @@ let dirty = false;
 let threadRows = [];
 let threadDirty = false;
 
+const GITHUB_TOKEN_LOCAL_KEY = 'nsfactory-ring-admin-github-token-local';
+
 function getGitHubToken() {
   try {
-    return sessionStorage.getItem(GITHUB_TOKEN_SESSION_KEY) || '';
+    return sessionStorage.getItem(GITHUB_TOKEN_SESSION_KEY)
+        || localStorage.getItem(GITHUB_TOKEN_LOCAL_KEY)
+        || '';
   } catch (err) {
     return '';
   }
 }
 
-function setGitHubToken(token) {
+function setGitHubToken(token, persist) {
   try {
-    if (token) sessionStorage.setItem(GITHUB_TOKEN_SESSION_KEY, token);
-    else sessionStorage.removeItem(GITHUB_TOKEN_SESSION_KEY);
+    if (token) {
+      sessionStorage.setItem(GITHUB_TOKEN_SESSION_KEY, token);
+      if (persist) localStorage.setItem(GITHUB_TOKEN_LOCAL_KEY, token);
+      else localStorage.removeItem(GITHUB_TOKEN_LOCAL_KEY);
+    } else {
+      sessionStorage.removeItem(GITHUB_TOKEN_SESSION_KEY);
+      localStorage.removeItem(GITHUB_TOKEN_LOCAL_KEY);
+    }
   } catch (err) {
     // ignore
   }
@@ -1252,20 +1300,60 @@ function updateGitHubTokenPill() {
   const pill = document.getElementById('githubTokenPill');
   if (!pill) return;
   const hasToken = !!getGitHubToken();
-  pill.textContent = hasToken ? 'GitHub: トークン設定済み' : 'GitHub: トークン未設定';
+  const persisted = !!localStorage.getItem(GITHUB_TOKEN_LOCAL_KEY);
+  pill.textContent = hasToken
+    ? (persisted ? 'GitHub: トークン設定済み（保存中）' : 'GitHub: トークン設定済み')
+    : 'GitHub: トークン未設定';
   pill.className = `status-pill ${hasToken ? 'good' : 'warn'}`;
 }
 
+let _tokenModalResolve = null;
+
 function promptGitHubToken() {
-  const current = getGitHubToken();
-  const input = window.prompt(
-    'GitHub Personal Access Token を入力してください。\n必要権限: Contents read/write\n空欄で送信すると保存済みトークンを削除します。',
-    current
-  );
-  if (input === null) return false;
-  setGitHubToken(input.trim());
-  return true;
+  return new Promise(resolve => {
+    _tokenModalResolve = resolve;
+    const overlay = document.getElementById('tokenModalOverlay');
+    const input = document.getElementById('githubTokenInput');
+    const chk = document.getElementById('tokenSaveLocal');
+    const current = getGitHubToken();
+    input.value = current;
+    chk.checked = !!localStorage.getItem(GITHUB_TOKEN_LOCAL_KEY);
+    overlay.classList.add('open');
+    setTimeout(() => input.focus(), 50);
+  });
 }
+
+function _closeTokenModal(saved) {
+  const overlay = document.getElementById('tokenModalOverlay');
+  overlay.classList.remove('open');
+  if (_tokenModalResolve) {
+    _tokenModalResolve(saved);
+    _tokenModalResolve = null;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('githubTokenForm');
+  const input = document.getElementById('githubTokenInput');
+  const chk = document.getElementById('tokenSaveLocal');
+
+  form.addEventListener('submit', () => {
+    const val = input.value.trim();
+    setGitHubToken(val, chk.checked);
+    _closeTokenModal(!!val);
+  });
+  document.getElementById('tokenModalClear').addEventListener('click', () => {
+    input.value = '';
+    setGitHubToken('', false);
+    _closeTokenModal(false);
+  });
+  document.getElementById('tokenModalCancel').addEventListener('click', () => {
+    _closeTokenModal(false);
+  });
+  document.getElementById('tokenModalOverlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) _closeTokenModal(false);
+  });
+});
 
 function utf8ToBase64(text) {
   const bytes = new TextEncoder().encode(text);
@@ -1280,7 +1368,7 @@ function utf8ToBase64(text) {
 async function publishCsvToGitHub({ path, fileName, csvText, buttonId, onSuccess }) {
   let token = getGitHubToken();
   if (!token) {
-    const accepted = promptGitHubToken();
+    const accepted = await promptGitHubToken();
     if (!accepted) return;
     token = getGitHubToken();
   }
@@ -2792,5 +2880,31 @@ loadThreadStockCsv().catch(err => {
 checkCrawlServer().catch(() => {});
 </script>
 <script src="../assets/access-counter.js"></script>
+
+<div class="token-modal-overlay" id="tokenModalOverlay" role="dialog" aria-modal="true" aria-labelledby="tokenModalTitle">
+  <div class="token-modal-card">
+    <h2 id="tokenModalTitle">GitHub トークン設定</h2>
+    <p class="modal-desc">
+      Contents read/write 権限の <b>Personal Access Token</b> を入力してください。<br>
+      ブラウザのパスワードマネージャーで保存すると、複数PCでも自動入力されます（Chrome/Edge のプロフィール同期が必要）。
+    </p>
+    <form id="githubTokenForm" action="javascript:void(0)" method="post" autocomplete="on">
+      <input type="text" name="username" value="ns-factory-admin" autocomplete="username"
+             style="position:absolute;left:-9999px;width:1px;height:1px" aria-hidden="true" tabindex="-1">
+      <div class="token-input-row">
+        <input type="password" id="githubTokenInput" name="password"
+               autocomplete="current-password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" spellcheck="false">
+      </div>
+      <label class="token-save-opt">
+        <input type="checkbox" id="tokenSaveLocal"> このブラウザに保存する（ページを閉じても保持）
+      </label>
+      <div class="token-modal-actions">
+        <button type="button" class="btn light" id="tokenModalClear">クリア</button>
+        <button type="button" class="btn light" id="tokenModalCancel">キャンセル</button>
+        <button type="submit" class="btn" id="tokenModalSave">設定する</button>
+      </div>
+    </form>
+  </div>
+</div>
 </body>
 </html>
