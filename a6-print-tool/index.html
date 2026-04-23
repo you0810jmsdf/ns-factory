@@ -85,7 +85,7 @@ body {
 }
 .ctrl-row .val { min-width: 28px; text-align: right; color: #7ec8e3; font-size: 10px; }
 .btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
-button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; }
+button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; touch-action: manipulation; }
 .btn-primary { background: #7ec8e3; color: #1a1a2e; }
 .btn-secondary { background: #444; color: #eee; }
 .btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
@@ -819,6 +819,12 @@ function toggleSidebar() {
 // 更新履歴
 // ============================================================
 const HISTORY_ENTRIES = [
+  {
+    date: '2026-04-23',
+    symptom: 'iPhoneでサイドバーの印刷ボタンを押しても反応しない不具合。',
+    cause: 'iOS Safariはスクロールできる枠の中にあるボタンに対して、誤ってスクロール操作と認識しないよう300ミリ秒の待機時間を入れることがあります。この待機中にタップが無効と判断されると、ボタンが押されたことにならない場合があります。',
+    fix: 'ボタン全体に「これはタップ操作です（スクロールや拡大縮小ではない）」とブラウザに伝える設定（touch-action: manipulation）を追加しました。これにより待機時間がなくなり、サイドバー内のボタンがすぐに反応するようになります。'
+  },
   {
     date: '2026-04-23',
     symptom: 'iPhoneで月単位モードを印刷しようとすると、印刷プレビューで2ページ目以降がほぼ空白になってしまう不具合。',
