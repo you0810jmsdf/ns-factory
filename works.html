@@ -554,12 +554,20 @@
       loadRenderedDrivePhotos();
     }
 
+    const WORKS_LOG_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+
     function openWork(work, index = 0) {
       activeWork = work;
       activeIndex = index;
       updateModal();
       modal.classList.add('open');
       closeModal.focus();
+      try {
+        const s = document.createElement('script');
+        s.src = WORKS_LOG_URL + '?api=log&type=' + encodeURIComponent('商品閲覧') + '&name=' + encodeURIComponent(work.title || '');
+        s.onload = s.onerror = () => { if (s.parentNode) s.remove(); };
+        document.body.appendChild(s);
+      } catch(e) {}
     }
 
     function updateModal() {
