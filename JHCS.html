@@ -524,18 +524,18 @@
   let noticeDraft = { title: '', text: '' };
   let noticeAdminPassword = '';
   const DEFAULT_CURRICULUM = [
-    { '回': '1', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '写真URL': '', '更新日時': '' },
-    { '回': '2', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '写真URL': '', '更新日時': '' },
-    { '回': '3', '講習内容': 'ファスナー取り付け', '作品例': 'ラウンドファスナーペンケース', '写真URL': '', '更新日時': '' },
-    { '回': '4', '講習内容': '仕立て・仕上げ', '作品例': 'ラウンドファスナーペンケース', '写真URL': '', '更新日時': '' },
-    { '回': '5', '講習内容': '裁断・縫製', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
-    { '回': '6', '講習内容': '金具取り付け・仕上げ', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
-    { '回': '7', '講習内容': '小物制作', '作品例': 'キーケース / リップケース', '写真URL': '', '更新日時': '' },
-    { '回': '8', '講習内容': '小物制作', '作品例': 'サシェ / パスケース', '写真URL': '', '更新日時': '' },
-    { '回': '9', '講習内容': 'インレイ・インターロッキング技法', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
-    { '回': '10', '講習内容': 'インレイ・インターロッキング技法', '作品例': '眼鏡ケース', '写真URL': '', '更新日時': '' },
-    { '回': '11', '講習内容': '応用制作', '作品例': 'システム手帳 / 眼鏡ケース', '写真URL': '', '更新日時': '' },
-    { '回': '12', '講習内容': '応用制作・仕上げ', '作品例': 'システム手帳 / 眼鏡ケース', '写真URL': '', '更新日時': '' }
+    { '回': '1', 'タイトル': '', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '写真URL': '', '更新日時': '' },
+    { '回': '2', 'タイトル': '', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '写真URL': '', '更新日時': '' },
+    { '回': '3', 'タイトル': '', '講習内容': 'ファスナー取り付け', '作品例': 'ラウンドファスナーペンケース', '写真URL': '', '更新日時': '' },
+    { '回': '4', 'タイトル': '', '講習内容': '仕立て・仕上げ', '作品例': 'ラウンドファスナーペンケース', '写真URL': '', '更新日時': '' },
+    { '回': '5', 'タイトル': '', '講習内容': '裁断・縫製', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
+    { '回': '6', 'タイトル': '', '講習内容': '金具取り付け・仕上げ', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
+    { '回': '7', 'タイトル': '', '講習内容': '小物制作', '作品例': 'キーケース / リップケース', '写真URL': '', '更新日時': '' },
+    { '回': '8', 'タイトル': '', '講習内容': '小物制作', '作品例': 'サシェ / パスケース', '写真URL': '', '更新日時': '' },
+    { '回': '9', 'タイトル': '', '講習内容': 'インレイ・インターロッキング技法', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
+    { '回': '10', 'タイトル': '', '講習内容': 'インレイ・インターロッキング技法', '作品例': '眼鏡ケース', '写真URL': '', '更新日時': '' },
+    { '回': '11', 'タイトル': '', '講習内容': '応用制作', '作品例': 'システム手帳 / 眼鏡ケース', '写真URL': '', '更新日時': '' },
+    { '回': '12', 'タイトル': '', '講習内容': '応用制作・仕上げ', '作品例': 'システム手帳 / 眼鏡ケース', '写真URL': '', '更新日時': '' }
   ];
 
   // ── GAS URL 管理 ──────────────────────────────────
@@ -1054,16 +1054,18 @@
     const el = document.getElementById('curriculum-list');
     el.innerHTML = normalized.map(item => {
       const lesson = escAttr(item['回']);
+      const title = item['タイトル'] || '';
       const content = item['講習内容'] || '';
       const example = item['作品例'] || '';
       const imageUrl = item['写真URL'] || '';
       const photoUrl = normalizeImageUrl(imageUrl);
-      const summary = content ? content.replace(/\s+/g, ' ').slice(0, 44) : '講習内容未設定';
+      const summaryText = title || (content ? content.replace(/\s+/g, ' ').slice(0, 44) : '講習内容未設定');
+      const showEllipsis = !title && content.length > 44;
       return `
         <details class="curriculum-row" data-lesson="${lesson}">
           <summary>
             <span class="curriculum-num">第${esc(item['回'])}回</span>
-            <span class="curriculum-title">${esc(summary)}${content.length > 44 ? '...' : ''}</span>
+            <span class="curriculum-title">${esc(summaryText)}${showEllipsis ? '...' : ''}</span>
           </summary>
           <div class="curriculum-body">
             <div class="curriculum-head">
@@ -1076,7 +1078,9 @@
             </div>
             <div class="curriculum-fields">
               <div>
-                <label>講習内容</label>
+                <label>タイトル（見出し）</label>
+                <input type="text" class="cur-title" value="${escAttr(title)}" placeholder="例：ファスナー取り付け" readonly>
+                <label style="margin-top:10px;">講習内容</label>
                 <textarea class="cur-content" readonly>${esc(content)}</textarea>
               </div>
               <div>
@@ -1113,16 +1117,17 @@
     if (!password) return;
     const row = document.querySelector(`.curriculum-row[data-lesson="${lesson}"]`);
     if (!row) return;
+    const title = row.querySelector('.cur-title').value.trim();
     const content = row.querySelector('.cur-content').value.trim();
     const example = row.querySelector('.cur-example').value.trim();
     const imageUrl = row.querySelector('.cur-image').value.trim();
-    if (!content && !example && !imageUrl) { showCurriculumMsg('err', '講習内容・作品例・写真URLのいずれかを入力してください。'); return; }
+    if (!title && !content && !example && !imageUrl) { showCurriculumMsg('err', 'タイトル・講習内容・作品例・写真URLのいずれかを入力してください。'); return; }
     const btn = row.querySelector('.btn-cur-save');
     btn.disabled = true; btn.textContent = '保存中...';
     try {
       const res = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveCurriculum', lesson, content, example, imageUrl, password }),
+        body: JSON.stringify({ action: 'saveCurriculum', lesson, title, content, example, imageUrl, password }),
       });
       const data = await res.json();
       if (data.ok) {
