@@ -2958,6 +2958,10 @@ function statsLoad() {
   document.body.appendChild(script);
 }
 
+function statsH(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function statsRender(s) {
   document.getElementById('st-pv').textContent = (s.pageViews || 0).toLocaleString();
   document.getElementById('st-pv2').textContent = (s.productViews || 0).toLocaleString();
@@ -2965,13 +2969,13 @@ function statsRender(s) {
   document.getElementById('stats-summary').style.display = 'grid';
 
   const rankRows = s.ranking && s.ranking.length
-    ? s.ranking.map((r, i) => `<tr><td style="padding:6px 8px;text-align:center;font-weight:700;color:#d4a96a;border-bottom:1px solid #efe3d7">${i+1}</td><td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${esc(r.name)}</td><td style="padding:6px 8px;text-align:right;font-weight:700;border-bottom:1px solid #efe3d7">${r.count} 回</td></tr>`).join('')
+    ? s.ranking.map((r, i) => `<tr><td style="padding:6px 8px;text-align:center;font-weight:700;color:#d4a96a;border-bottom:1px solid #efe3d7">${i+1}</td><td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${statsH(r.name)}</td><td style="padding:6px 8px;text-align:right;font-weight:700;border-bottom:1px solid #efe3d7">${r.count} 回</td></tr>`).join('')
     : '<tr><td colspan="3" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
   document.getElementById('stats-ranking-rows').innerHTML = rankRows;
   document.getElementById('stats-ranking-wrap').style.display = 'block';
 
   const orderRows = s.recentOrders && s.recentOrders.length
-    ? s.recentOrders.map(o => `<tr><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${esc(o.date)}</td><td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${esc(o.product)}</td><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${esc(o.detail)}</td></tr>`).join('')
+    ? s.recentOrders.map(o => `<tr><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${statsH(o.date)}</td><td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${statsH(o.product)}</td><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${statsH(o.detail)}</td></tr>`).join('')
     : '<tr><td colspan="3" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
   document.getElementById('stats-orders-rows').innerHTML = orderRows;
   document.getElementById('stats-orders-wrap').style.display = 'block';
