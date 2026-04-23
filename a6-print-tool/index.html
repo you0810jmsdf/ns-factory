@@ -519,26 +519,12 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     margin: 0;
     width: 210mm;
     height: 297mm;
-    overflow: visible;
+    position: relative;
+    overflow: hidden;
     transform: none !important;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    padding-top: 5mm;
-    box-sizing: border-box;
   }
-  /* Override absolute positioning from base CSS — flex handles layout in print */
-  .a6-slot {
-    position: static !important;
-    top: auto !important;
-    left: auto !important;
-    flex: 0 0 105mm !important;
-    width: 105mm !important;
-    height: 143.5mm !important;
-    overflow: hidden !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
+  /* 印刷時は base CSS の absolute 配置（slot-TL/TR/BL/BR の top/left）をそのまま使う。
+     flex-wrap では iOS Safari で空スロット時にレイアウトが崩れるため absolute に戻す。 */
   .daily-page {
     break-inside: avoid;
     page-break-inside: avoid;
@@ -838,6 +824,12 @@ function toggleSidebar() {
 // 更新履歴
 // ============================================================
 const HISTORY_ENTRIES = [
+  {
+    date: '2026-04-23',
+    symptom: 'iPhoneの月単位モード印刷で、一部のシート（特に月末の25・27・29日のシート）でスロットの位置がずれて大半が空白になり、日付が左上だけに表示されてしまう不具合。',
+    cause: '直前の修正で、印刷時のA4ページ内レイアウトを「flex-wrap（要素を順番に並べて折り返す）」方式に変更していました。iOS Safariの印刷エンジンは flex-wrap の挙動が不安定で、ページによっては空スロット（例：4月31日は存在しない）があると他のスロットの配置が詰まったり左上に寄ってしまう現象が発生していました。',
+    fix: '印刷時のスロット配置を、元からあった「絶対配置（top/left で座標を直接指定する方式）」に戻しました。絶対配置は空スロットの有無に関係なく各スロットが常に同じ座標に描画されるため、どのシートでも2行×2列のレイアウトが安定します。flex-wrap の印刷用オーバーライドは削除しました。'
+  },
   {
     date: '2026-04-23',
     symptom: 'iPhoneでサイドバーの印刷ボタンを押しても反応しない不具合。',
