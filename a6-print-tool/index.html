@@ -101,25 +101,42 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 }
 
 /* ===== A4ページ ===== */
+/* iOS Safari では zoom がフォント座標系も縮小するため文字が自動拡大される。
+   transform: scale() は座標系を変えないため iOS の自動拡大を回避できる。
+   .a4-wrapper でレイアウト上のサイズを確保し、中の .a4-page を scale で縮小する。
+   注：印刷時に .a4-wrapper の position/overflow と .a4-page の transform-origin が
+   残っていると iOS Safari の印刷ページ送り計算に副作用が出るため、
+   これらは @media screen 内に閉じ込め、印刷時は素のブロック要素になるよう設計。 */
 .a4-page {
   width: 210mm;
   height: 297mm;
   background: white;
   position: relative;
   box-shadow: 0 6px 24px rgba(0,0,0,0.3);
-  flex-shrink: 0;
   overflow: hidden;
   break-inside: avoid;
   page-break-inside: avoid;
 }
 @media screen {
-  .a4-page { zoom: 0.65; }
+  .a4-wrapper {
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    width: calc(210mm * 0.65);
+    height: calc(297mm * 0.65);
+  }
+  .a4-page {
+    transform: scale(0.65);
+    transform-origin: top left;
+  }
 }
 @media screen and (max-width: 700px) {
-  .a4-page { zoom: 0.4; }
+  .a4-wrapper { width: calc(210mm * 0.4); height: calc(297mm * 0.4); }
+  .a4-page    { transform: scale(0.4); }
 }
 @media screen and (max-width: 480px) {
-  .a4-page { zoom: 0.32; }
+  .a4-wrapper { width: calc(210mm * 0.32); height: calc(297mm * 0.32); }
+  .a4-page    { transform: scale(0.32); }
 }
 
 /* ===== A6スロット ===== */
@@ -484,6 +501,14 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   html, body { background: white; margin: 0; padding: 0; width: 210mm; }
   #ctrl-toggle-btn, #history-toggle-btn, #controls, #historyModal { display: none !important; }
   #preview { padding: 0 !important; margin: 0 !important; gap: 0 !important; max-width: none !important; overflow: visible !important; display: block !important; }
+  /* .a4-wrapper は @media screen 内でのみ寸法/overflow を持つため、印刷時は素のブロック要素となる。
+     ここでは念のため明示的に auto/visible を強制し、利用者環境のユーザースタイル干渉を防ぐ。 */
+  .a4-wrapper {
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+  }
   .a4-page {
     box-shadow: none;
     margin: 0;
@@ -494,7 +519,7 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     overflow: hidden;
     transform: none !important;
   }
-  .a4-page:last-child { break-after: auto; page-break-after: auto; }
+  .a4-wrapper:last-child .a4-page { break-after: auto; page-break-after: auto; }
   .a6-slot, .daily-page {
     break-inside: avoid;
     page-break-inside: avoid;
@@ -796,6 +821,18 @@ function toggleSidebar() {
 const HISTORY_ENTRIES = [
   {
     date: '2026-04-23',
+    symptom: 'iPhoneで月単位モードを印刷しようとすると、印刷プレビューで2ページ目以降がほぼ空白になってしまう不具合。',
+    cause: '直前の修正で導入した「A4ページを包む外側の枠（.a4-wrapper）」に常時適用していた「位置設定（position: relative）」と「はみ出し非表示（overflow: hidden）」、ならびにA4ページ自体に残していた「変形の原点指定（transform-origin: top left）」が、iOS Safari の印刷ページ送り計算に副作用を起こし、1ページ目の後に続くページが切り取られて空白として描画されていました。',
+    fix: '.a4-wrapper の位置設定・はみ出し非表示と .a4-page の変形原点指定を「画面表示用（@media screen）」のときだけ有効になるように移動し、印刷時はこれらが完全にリセットされた素のブロック要素として扱われるようにしました。これにより iOS Safari の印刷エンジンが正しくページを区切れるようになり、月単位モードでも全ページが正常に印字されます。'
+  },
+  {
+    date: '2026-04-23',
+    symptom: 'iPhoneで開いたとき、日付の数字（23・25・27など）や曜日（木曜日・土曜日など）が大きく表示されてレイアウトが崩れる不具合。また月単位モードで一部のページ（主に裏面ページ）のレイアウトが崩れる不具合。',
+    cause: 'スマホ画面用に適用していた縮小方式（zoom）が、iOS Safariでは「文字の座標系も同時に縮める」仕組みになっており、縮小後の文字が極端に小さく見えると判断されて自動拡大が働いていました。また絶対配置で配置していたA6スロットの位置もzoom環境下では正しく計算されないことがあり、ページ崩れの原因になっていました。',
+    fix: '画面縮小の方式を zoom から transform: scale() に変更しました。transform は文字の座標系を変えないため iOS の自動拡大が働かなくなり、日付・曜日が正しいサイズで表示されます。またスロット位置の計算も正確になり、月単位モードの裏面ページも正常なレイアウトで表示されます。'
+  },
+  {
+    date: '2026-04-23',
     symptom: 'iPhoneで開いたとき、ページ上部の「N\'s factory」ロゴ文字だけが他の文字に比べて極端に大きく表示される不具合（再対応版）。',
     cause: 'iOS Safari には「画面に対して小さすぎる文字を読みやすく自動的に拡大する」機能があり、N\'s factoryロゴが指定サイズ（2.6mm ≒ 約10ピクセル）と小さかったため、自動拡大の対象となってロゴだけが巨大化していました。',
     fix: 'N\'s factoryロゴの文字サイズ指定をiOSの自動拡大対象にならないサイズ（5mm ≒ 約19ピクセル）に引き上げたうえで、見た目のサイズを保つために画面表示時に約半分（52%）に縮小する処理を追加しました。これによりiOSの自動拡大が働かず、PC・スマホとも従来と同じ大きさで表示されます。前回（同日）当てた指定（自動拡大無効化）は別の崩れを引き起こしたため取り消し、今回の局所的な対応に切り替えました。'
@@ -1020,12 +1057,12 @@ function getCommonParams() {
 }
 
 function makeA4HTML(slots, showCutLines) {
-  return `<div class="a4-page">
+  return `<div class="a4-wrapper"><div class="a4-page">
     ${showCutLines ? '<div class="cut-v"></div><div class="cut-h"></div><div class="crop-cross"></div>' : ''}
     ${['TL','TR','BL','BR'].map(pos =>
       `<div class="a6-slot slot-${pos}">${slots[pos] || ''}</div>`
     ).join('')}
-  </div>`;
+  </div></div>`;
 }
 
 // ============================================================
