@@ -732,6 +732,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn active" type="button" data-admin-tab="ring" role="tab" aria-selected="true">リング在庫</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="thread" role="tab" aria-selected="false">ステッチ糸在庫</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="analytics" role="tab" aria-selected="false">アクセス解析</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="stats" role="tab" aria-selected="false">アクセスログ</button>
     </div>
     <div class="admin-tab-note" id="adminTabNote">リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。</div>
 
@@ -1084,6 +1085,64 @@ tr.row-out-stock td{
           <tbody id="ga-rows"></tbody>
         </table>
       </div>
+    <!-- アクセスログタブ -->
+    <div class="panel stats-section admin-section-hidden" id="statsPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+        <div style="font-size:11px;color:#8a6a4a">過去30日間の集計（スプレッドシートのアクセスログシートより）</div>
+        <button id="stats-refresh-btn" type="button"
+          style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;cursor:pointer">
+          🔄 再読み込み
+        </button>
+      </div>
+      <div id="stats-loading" style="display:none;text-align:center;padding:32px;color:#8a6a4a">読み込み中…</div>
+      <div id="stats-error" style="display:none;color:#b42318;font-size:13px;padding:8px 0"></div>
+
+      <!-- サマリー -->
+      <div id="stats-summary" style="display:none;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">ページ閲覧</div>
+          <div id="st-pv" style="font-size:1.8rem;font-weight:800;color:#6b3a1f">—</div>
+        </div>
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">商品閲覧</div>
+          <div id="st-pv2" style="font-size:1.8rem;font-weight:800;color:#29613d">—</div>
+        </div>
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">オーダー依頼</div>
+          <div id="st-orders" style="font-size:1.8rem;font-weight:800;color:#c8553d">—</div>
+        </div>
+      </div>
+
+      <!-- 商品閲覧ランキング -->
+      <div id="stats-ranking-wrap" style="display:none;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:#6b3a1f;border-left:3px solid #d4a96a;padding-left:8px;margin-bottom:10px">商品閲覧ランキング（TOP10）</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="background:#fff0e5">
+              <th style="padding:6px 8px;text-align:center;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:36px">#</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf">商品名</th>
+              <th style="padding:6px 8px;text-align:right;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:80px">閲覧数</th>
+            </tr>
+          </thead>
+          <tbody id="stats-ranking-rows"></tbody>
+        </table>
+      </div>
+
+      <!-- 最近のオーダー依頼 -->
+      <div id="stats-orders-wrap" style="display:none;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px">
+        <div style="font-size:13px;font-weight:700;color:#6b3a1f;border-left:3px solid #d4a96a;padding-left:8px;margin-bottom:10px">最近のオーダー依頼</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="background:#fff0e5">
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:140px">日時</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf">商品名</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf">支払先 / 名前</th>
+            </tr>
+          </thead>
+          <tbody id="stats-orders-rows"></tbody>
+        </table>
+      </div>
+    </div>
     </div>
   </div>
 </div>
@@ -2515,8 +2574,9 @@ document.getElementById('fallbackFileInput').addEventListener('change', async (e
 function setAdminTab(tab) {
   const isThread = tab === 'thread';
   const isAnalytics = tab === 'analytics';
+  const isStats = tab === 'stats';
   document.querySelectorAll('.ring-section').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isThread || isAnalytics);
+    el.classList.toggle('admin-section-hidden', isThread || isAnalytics || isStats);
   });
   document.querySelectorAll('.thread-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThread);
@@ -2524,8 +2584,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.analytics-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isAnalytics);
   });
+  document.querySelectorAll('.stats-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isStats);
+  });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isThread || isAnalytics);
+    el.classList.toggle('admin-section-hidden', isThread || isAnalytics || isStats);
   });
   document.querySelectorAll('.thread-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThread);
@@ -2541,9 +2604,12 @@ function setAdminTab(tab) {
       ? 'Google Analytics 4 のアクセスデータをページ別に表示します。'
       : isThread
       ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
+      : isStats
+      ? '商品閲覧ランキングとオーダー依頼の履歴をスプレッドシートのアクセスログから表示します。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
   if (isAnalytics && !gaLoaded) gaLoad(7);
+  if (isStats && !statsLoaded) statsLoad();
 }
 
 // ── アクセス解析 ──
@@ -2854,6 +2920,65 @@ function gaDrawPageChart(dailyRows, days, topRows) {
 
 document.getElementById('ga-refresh-btn')?.addEventListener('click', () => {
   gaLoad(gaCurrentDays, true);
+});
+
+// ── アクセスログ統計 ──
+let statsLoaded = false;
+
+function statsLoad() {
+  statsLoaded = true;
+  document.getElementById('stats-loading').style.display = 'block';
+  document.getElementById('stats-summary').style.display = 'none';
+  document.getElementById('stats-ranking-wrap').style.display = 'none';
+  document.getElementById('stats-orders-wrap').style.display = 'none';
+  document.getElementById('stats-error').style.display = 'none';
+
+  const cbName = 'statsCb' + Date.now();
+  const script = document.createElement('script');
+  script.src = GAS_URL + '?api=stats&key=' + encodeURIComponent(ADMIN_PASSWORD) + '&callback=' + cbName;
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (script.parentNode) document.body.removeChild(script);
+    document.getElementById('stats-loading').style.display = 'none';
+    if (data.error) {
+      const em = document.getElementById('stats-error');
+      em.textContent = 'エラー: ' + data.error;
+      em.style.display = 'block';
+      return;
+    }
+    statsRender(data);
+  };
+  script.onerror = function() {
+    document.getElementById('stats-loading').style.display = 'none';
+    const em = document.getElementById('stats-error');
+    em.textContent = 'データ取得に失敗しました。';
+    em.style.display = 'block';
+  };
+  document.body.appendChild(script);
+}
+
+function statsRender(s) {
+  document.getElementById('st-pv').textContent = (s.pageViews || 0).toLocaleString();
+  document.getElementById('st-pv2').textContent = (s.productViews || 0).toLocaleString();
+  document.getElementById('st-orders').textContent = (s.orders || 0).toLocaleString();
+  document.getElementById('stats-summary').style.display = 'grid';
+
+  const rankRows = s.ranking && s.ranking.length
+    ? s.ranking.map((r, i) => `<tr><td style="padding:6px 8px;text-align:center;font-weight:700;color:#d4a96a;border-bottom:1px solid #efe3d7">${i+1}</td><td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${esc(r.name)}</td><td style="padding:6px 8px;text-align:right;font-weight:700;border-bottom:1px solid #efe3d7">${r.count} 回</td></tr>`).join('')
+    : '<tr><td colspan="3" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
+  document.getElementById('stats-ranking-rows').innerHTML = rankRows;
+  document.getElementById('stats-ranking-wrap').style.display = 'block';
+
+  const orderRows = s.recentOrders && s.recentOrders.length
+    ? s.recentOrders.map(o => `<tr><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${esc(o.date)}</td><td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${esc(o.product)}</td><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${esc(o.detail)}</td></tr>`).join('')
+    : '<tr><td colspan="3" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
+  document.getElementById('stats-orders-rows').innerHTML = orderRows;
+  document.getElementById('stats-orders-wrap').style.display = 'block';
+}
+
+document.getElementById('stats-refresh-btn')?.addEventListener('click', () => {
+  statsLoaded = false;
+  statsLoad();
 });
 
 document.querySelectorAll('[data-admin-tab]').forEach(btn => {
