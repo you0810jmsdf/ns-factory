@@ -501,26 +501,20 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   html, body { background: white; margin: 0; padding: 0; width: 210mm; }
   #ctrl-toggle-btn, #history-toggle-btn, #controls, #historyModal { display: none !important; }
   #preview { padding: 0 !important; margin: 0 !important; gap: 0 !important; max-width: none !important; overflow: visible !important; display: block !important; }
-  /* .a4-wrapper は @media screen 内でのみ寸法/overflow を持つため、印刷時は素のブロック要素となる。
-     改ページは内側の .a4-page ではなく外側の .a4-wrapper に指定する。
-     iOS Safari は内側要素の break-after をwrapper内改ページと誤解釈し空白ページを挿入するため。 */
-  .a4-wrapper {
-    width: auto !important;
-    height: auto !important;
-    overflow: visible !important;
-    position: static !important;
-    break-after: page;
-    page-break-after: always;
-  }
-  .a4-wrapper:last-child { break-after: auto !important; page-break-after: auto !important; }
+  /* display:contents でwrapperを印刷レイアウトから除外し .a4-page を#previewの直接の子として扱わせる。
+     iOS Safariのwrapperブロックによる空白ページ挿入を根本的に回避する。 */
+  .a4-wrapper { display: contents; }
   .a4-page {
     box-shadow: none;
     margin: 0;
+    break-after: page;
+    page-break-after: always;
     break-inside: avoid;
     page-break-inside: avoid;
     overflow: hidden;
     transform: none !important;
   }
+  .a4-page:last-child { break-after: auto !important; page-break-after: auto !important; }
   .a6-slot, .daily-page {
     break-inside: avoid;
     page-break-inside: avoid;
