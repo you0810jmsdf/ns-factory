@@ -501,21 +501,45 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   html, body { background: white; margin: 0; padding: 0; width: 210mm; }
   #ctrl-toggle-btn, #history-toggle-btn, #controls, #historyModal { display: none !important; }
   #preview { padding: 0 !important; margin: 0 !important; gap: 0 !important; max-width: none !important; overflow: visible !important; display: block !important; }
-  /* display:contents でwrapperを印刷レイアウトから除外し .a4-page を#previewの直接の子として扱わせる。
-     iOS Safariのwrapperブロックによる空白ページ挿入を根本的に回避する。 */
-  .a4-wrapper { display: contents; }
+  /* iOS Safari: display:contents は印刷モードで正しく動作しないため、
+     wrapper自体をページコンテナとして使い、break-afterをwrapperに移動。 */
+  .a4-wrapper {
+    display: block;
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    break-before: page;
+    page-break-before: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .a4-wrapper:first-child { break-before: auto !important; page-break-before: auto !important; }
   .a4-page {
     box-shadow: none;
     margin: 0;
-    break-after: page;
-    page-break-after: always;
+    width: 210mm;
+    height: 297mm;
+    overflow: visible;
+    transform: none !important;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    padding-top: 5mm;
+    box-sizing: border-box;
+  }
+  /* Override absolute positioning from base CSS — flex handles layout in print */
+  .a6-slot {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    flex: 0 0 105mm !important;
+    width: 105mm !important;
+    height: 143.5mm !important;
+    overflow: hidden !important;
     break-inside: avoid;
     page-break-inside: avoid;
-    overflow: hidden;
-    transform: none !important;
   }
-  .a4-page:last-child { break-after: auto !important; page-break-after: auto !important; }
-  .a6-slot, .daily-page {
+  .daily-page {
     break-inside: avoid;
     page-break-inside: avoid;
   }
