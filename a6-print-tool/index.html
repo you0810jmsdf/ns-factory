@@ -6,6 +6,8 @@
 <title>A6リフィル印刷ツール | N's factory</title>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -737,13 +739,15 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   <div class="ctrl-section">
     <h3>印刷</h3>
     <div class="btn-row">
-      <button class="btn-primary" onclick="window.print()">印刷</button>
+      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
+      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
     </div>
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
-      ① 開始日を選択 → 「表面」ONで印刷<br>
-      ② 同じ用紙を戻し「裏面」をON → 追加印刷<br>
-      ③ 4分割にカット<br>
-      ④ 左上→右上→左下→右下の順に重ねてリング綴じ
+      ① 開始日を選択 → 「表面」ONで「PDFを生成」<br>
+      ② 開いたPDFから印刷（iPhoneは共有→プリント）<br>
+      ③ 同じ用紙を戻し「裏面」をON → 再度PDF生成<br>
+      ④ 4分割にカット → 左上→右上→左下→右下の順に重ねてリング綴じ<br>
+      <span style="color:#aaa">※「印刷」ボタンは従来の直接印刷（PC向け）</span>
     </div>
   </div>
 
@@ -824,6 +828,12 @@ function toggleSidebar() {
 // 更新履歴
 // ============================================================
 const HISTORY_ENTRIES = [
+  {
+    date: '2026-04-23',
+    symptom: 'iPhoneの月単位モード印刷で、ページが正しく分かれず一部のシートが空白になる／スロット配置が崩れるなど、何度CSSを調整してもiPhoneの印刷プレビューが安定しない不具合。',
+    cause: 'iOS Safariの印刷エンジン（印刷プレビューを作る仕組み）は、PC版のChromeやSafariとは動作が大きく異なり、パソコン側でまったく同じ環境を再現することができません。このため、CSSの微調整だけでは確実な修正が難しく、修正と再発を繰り返していました。',
+    fix: '印刷ボタンの横に新しく「PDFを生成」ボタンを追加しました。このボタンを押すと、iPhoneの不安定な印刷機能を経由せずに、アプリ内で直接A4サイズのPDFファイルを作成してダウンロードします。作成されたPDFはファイルアプリや標準のビューアから開いて印刷できるため、iPhoneでも崩れずに印字できます。従来の「印刷」ボタン（PC向けの直接印刷）もそのまま残してあります。'
+  },
   {
     date: '2026-04-23',
     symptom: 'iPhoneの月単位モード印刷で、一部のシート（特に月末の25・27・29日のシート）でスロットの位置がずれて大半が空白になり、日付が左上だけに表示されてしまう不具合。',
@@ -1145,6 +1155,63 @@ function renderMonthly() {
     }
   }
   document.getElementById('preview').innerHTML = html;
+}
+
+// ============================================================
+// PDF生成（iOS Safari印刷エンジンを回避）
+// ============================================================
+async function generatePDF(ev) {
+  const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
+  const wrappers = document.querySelectorAll('#preview .a4-wrapper');
+  if (!wrappers.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
+  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
+
+  const orig = btn.textContent;
+  btn.disabled = true;
+
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
+  document.body.appendChild(stage);
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+    for (let i = 0; i < wrappers.length; i++) {
+      btn.textContent = `PDF生成中 ${i+1}/${wrappers.length}`;
+      const srcPage = wrappers[i].querySelector('.a4-page');
+      const clone = srcPage.cloneNode(true);
+      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      stage.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+      stage.removeChild(clone);
+
+      const img = canvas.toDataURL('image/jpeg', 0.88);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+    }
+
+    const fname = `a6-refill-${new Date().toISOString().slice(0,10)}.pdf`;
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) {
+    console.error(e);
+    alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (stage.parentNode) stage.parentNode.removeChild(stage);
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
 }
 
 // ============================================================
