@@ -692,15 +692,6 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     </div>
   </div>
 
-  <!-- フォント設定 -->
-  <div class="ctrl-section">
-    <h3>フォント設定</h3>
-    <div class="ctrl-row"><label>日付数字</label><select id="fontDateNum" onchange="updateFontVars()"></select></div>
-    <div class="ctrl-row"><label>曜日</label><select id="fontDateWd" onchange="updateFontVars()"></select></div>
-    <div class="ctrl-row"><label>月名</label><select id="fontMonthAbbr" onchange="updateFontVars()"></select></div>
-    <div class="ctrl-row"><label>透かし</label><select id="fontTextWm" onchange="updateFontVars()"></select></div>
-  </div>
-
   <!-- フクロウ透かし -->
   <div class="ctrl-section">
     <h3>フクロウ透かし</h3>
@@ -791,6 +782,15 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <div class="ctrl-row"><label>左右</label><input type="range" id="clX2" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal2').textContent=this.value;updateCL(2)"><span class="val" id="clXVal2">2</span></div>
       <div class="ctrl-row"><label>上下</label><input type="range" id="clY2" min="0" max="130" step="0.5" value="95" oninput="document.getElementById('clYVal2').textContent=this.value;updateCL(2)"><span class="val" id="clYVal2">95</span></div>
     </details>
+  </div>
+
+  <!-- フォント設定 -->
+  <div class="ctrl-section">
+    <h3>フォント設定</h3>
+    <div class="ctrl-row"><label>日付数字</label><select id="fontDateNum" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>曜日</label><select id="fontDateWd" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>月名</label><select id="fontMonthAbbr" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>透かし</label><select id="fontTextWm" onchange="updateFontVars()"></select></div>
   </div>
 
   <!-- 印刷 -->
@@ -893,6 +893,8 @@ const HISTORY_ENTRIES = [
     detail: 'サイズスライダーを動かすと横幅だけが広がり縦横比が崩れていました。フクロウロゴと同じく全体を均等に拡大・縮小する方式に変更しました。スライダーの値は倍率（1.0が標準）で表示されます。' },
   { date: '2026-04-25', type: 'improve', title: '各種表示ラベル・メニュー名を整理',
     detail: '操作パネルの表示名を整理しました。「穴ガイド」→「穴表示」、「穴中心」→「穴あけ中心線」、「月名（英）」→「月名表示」（日本語/英語切替に連動）、「月カレンダー」→「月間カレンダー」に統一。フクロウ透かしと月間カレンダーにサイズ・透明度の調整スライダーを追加しました。' },
+  { date: '2026-04-25', type: 'improve', title: '設定パネルのフォント設定の位置を変更',
+    detail: '設定パネル内のフォント設定セクションをチェックリストの直下（印刷ボタンの直前）に移動しました。関連する設定が近い位置にまとまり、操作しやすくなりました。' },
 ];
 
 function openHistory() {
