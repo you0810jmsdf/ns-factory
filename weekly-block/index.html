@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A6週間ブロックリフィル印刷ツール | N's factory</title>
 <!-- Google tag (gtag.js) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -546,7 +548,16 @@ body.panel-open #preview { margin-left: 280px; }
   <div class="ctrl-section">
     <h3>印刷</h3>
     <div class="btn-row">
-      <button class="btn-primary" onclick="window.print()">印刷</button>
+      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
+      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+    </div>
+    <div style="font-size:11px; color:#aaa; margin-top:6px; line-height:1.6;">
+      ① 開始日を選択 → 「表面」ONで「PDFを生成」<br>
+      ② 開いたPDFから印刷（iPhoneは共有→プリント）<br>
+      ③ 同じ用紙を戻し「裏面」をON → 再度PDF生成<br>
+      ※「印刷」ボタンは従来の直接印刷（PC向け）
+    </div>
+    <div class="btn-row" style="margin-top:6px;">
       <button class="btn-secondary" onclick="openHistory()">更新履歴</button>
     </div>
   </div>
@@ -975,6 +986,8 @@ const HISTORY_ENTRIES = [
     detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
   { date: '2026-04-26', type: 'improve', title: '表面・裏面ラベルをデイリー版と統一',
     detail: '「奇数ページ」「偶数ページ」と表示していたボタンと印刷ラベルを、デイリー版と同じ「表面」「裏面」に統一しました。' },
+  { date: '2026-04-26', type: 'feat', title: 'PDF生成機能を追加',
+    detail: 'デイリー版と同じ仕組みで、プレビューの内容をそのままPDFファイルに書き出せるようになりました。「PDFを生成」ボタンを押すと自動でダウンロードされます。両面印刷は「表面」でPDF生成 → 印刷 → 用紙を戻して「裏面」でPDF生成の順で行ってください。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -1053,6 +1066,50 @@ document.addEventListener('DOMContentLoaded', () => {
   initCLFontSelectors();
   renderSingle();
 });
+
+// === MODULE: PDF Generation ===
+async function generatePDF(ev) {
+  const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
+  const sheets = document.querySelectorAll('#preview .a4-sheet');
+  if (!sheets.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
+  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
+  const orig = btn.textContent;
+  btn.disabled = true;
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
+  document.body.appendChild(stage);
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    for (let i = 0; i < sheets.length; i++) {
+      btn.textContent = `PDF生成中 ${i+1}/${sheets.length}`;
+      const clone = sheets[i].cloneNode(true);
+      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      stage.appendChild(clone);
+      const canvas = await html2canvas(clone, {
+        scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false,
+      });
+      stage.removeChild(clone);
+      const img = canvas.toDataURL('image/jpeg', 0.88);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+    }
+    const fname = `a6-weekly-${new Date().toISOString().slice(0,10)}.pdf`;
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) {
+    console.error(e);
+    alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (stage.parentNode) stage.parentNode.removeChild(stage);
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
 </script>
 </body>
 </html>
