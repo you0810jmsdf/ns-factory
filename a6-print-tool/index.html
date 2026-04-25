@@ -664,12 +664,12 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   <div class="ctrl-section">
     <h3>月間カレンダー位置</h3>
     <div class="ctrl-row">
-      <label>上から</label>
+      <label>上下</label>
       <input type="range" id="monthCalTop" min="-10" max="140" step="0.5" value="1" oninput="document.getElementById('monthCalTopVal').textContent=this.value;updateVars()">
       <span class="val" id="monthCalTopVal">1</span>
     </div>
     <div class="ctrl-row">
-      <label>右から</label>
+      <label>左右</label>
       <input type="range" id="monthCalRight" min="-10" max="70" step="0.5" value="1" oninput="document.getElementById('monthCalRightVal').textContent=this.value;updateVars()">
       <span class="val" id="monthCalRightVal">1</span>
     </div>
@@ -740,8 +740,8 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems0" rows="5" oninput="updateCL(0)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont0" onchange="updateCL(0)"></select></div>
       <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize0" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(0)"><span class="val" id="clSizeVal0">2.5</span></div>
-      <div class="ctrl-row"><label>左から</label><input type="range" id="clX0" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal0').textContent=this.value;updateCL(0)"><span class="val" id="clXVal0">2</span></div>
-      <div class="ctrl-row"><label>上から</label><input type="range" id="clY0" min="0" max="130" step="0.5" value="15" oninput="document.getElementById('clYVal0').textContent=this.value;updateCL(0)"><span class="val" id="clYVal0">15</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX0" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal0').textContent=this.value;updateCL(0)"><span class="val" id="clXVal0">2</span></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY0" min="0" max="130" step="0.5" value="15" oninput="document.getElementById('clYVal0').textContent=this.value;updateCL(0)"><span class="val" id="clYVal0">15</span></div>
     </details>
     <!-- グループ1 -->
     <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
@@ -751,8 +751,8 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems1" rows="5" oninput="updateCL(1)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont1" onchange="updateCL(1)"></select></div>
       <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize1" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(1)"><span class="val" id="clSizeVal1">2.5</span></div>
-      <div class="ctrl-row"><label>左から</label><input type="range" id="clX1" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal1').textContent=this.value;updateCL(1)"><span class="val" id="clXVal1">2</span></div>
-      <div class="ctrl-row"><label>上から</label><input type="range" id="clY1" min="0" max="130" step="0.5" value="55" oninput="document.getElementById('clYVal1').textContent=this.value;updateCL(1)"><span class="val" id="clYVal1">55</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX1" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal1').textContent=this.value;updateCL(1)"><span class="val" id="clXVal1">2</span></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY1" min="0" max="130" step="0.5" value="55" oninput="document.getElementById('clYVal1').textContent=this.value;updateCL(1)"><span class="val" id="clYVal1">55</span></div>
     </details>
     <!-- グループ2 -->
     <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
@@ -762,8 +762,8 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems2" rows="5" oninput="updateCL(2)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont2" onchange="updateCL(2)"></select></div>
       <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize2" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(2)"><span class="val" id="clSizeVal2">2.5</span></div>
-      <div class="ctrl-row"><label>左から</label><input type="range" id="clX2" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal2').textContent=this.value;updateCL(2)"><span class="val" id="clXVal2">2</span></div>
-      <div class="ctrl-row"><label>上から</label><input type="range" id="clY2" min="0" max="130" step="0.5" value="95" oninput="document.getElementById('clYVal2').textContent=this.value;updateCL(2)"><span class="val" id="clYVal2">95</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX2" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal2').textContent=this.value;updateCL(2)"><span class="val" id="clXVal2">2</span></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY2" min="0" max="130" step="0.5" value="95" oninput="document.getElementById('clYVal2').textContent=this.value;updateCL(2)"><span class="val" id="clYVal2">95</span></div>
     </details>
   </div>
 
