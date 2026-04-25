@@ -304,8 +304,8 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="ctrl-row">
       <label>用紙面</label>
-      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">奇数ページ</button>
-      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">偶数ページ</button>
+      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
+      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
     </div>
     <div class="ctrl-row">
       <label>言語</label>
@@ -921,8 +921,8 @@ function renderSingle() {
   const pageNums = weekOffsets.map((_, i) => i + 1);
 
   let html = '';
-  if (showFront) html += `<div class="sheet-wrap"><div class="sheet-label">奇数ページ</div>${makeA4HTML(weekStartDates, pageNums, 'front')}</div>`;
-  if (showBack)  html += `<div class="sheet-wrap"><div class="sheet-label">偶数ページ</div>${makeA4HTML(weekStartDates, pageNums, 'back')}</div>`;
+  if (showFront) html += `<div class="sheet-wrap"><div class="sheet-label">表面</div>${makeA4HTML(weekStartDates, pageNums, 'front')}</div>`;
+  if (showBack)  html += `<div class="sheet-wrap"><div class="sheet-label">裏面</div>${makeA4HTML(weekStartDates, pageNums, 'back')}</div>`;
   if (!showFront && !showBack) html = '<p style="color:#666;font-size:12px;">ページ面を選択してください</p>';
   document.getElementById('preview').innerHTML = html;
 }
@@ -958,7 +958,7 @@ function renderMonthly() {
         pageNums.push(idx + 1);
       }
       html += `<div class="sheet-wrap">
-        <div class="sheet-label">Sheet ${s+1} · ${sideKey === 'front' ? '奇数ページ' : '偶数ページ'}</div>
+        <div class="sheet-label">Sheet ${s+1} · ${sideKey === 'front' ? '表面' : '裏面'}</div>
         ${makeA4HTML(weekStartDates, pageNums, sideKey)}
       </div>`;
     }
@@ -969,18 +969,12 @@ function renderMonthly() {
 
 // === MODULE: Update History ===
 const HISTORY_ENTRIES = [
-  {
-    date: '2026-04-22',
-    type: 'improve',
-    title: '印刷分割防止と更新履歴機能を追加（予防的改善）',
-    detail: '週間版では現時点で実害の報告はありませんが、デイリー版で発生した印刷時の面分割不具合と同じ構造を持つため、予防的に印刷分割防止指定を適用しました。あわせて更新履歴モーダルを追加しました。'
-  },
-  {
-    date: '2026-04-26',
-    type: 'feat',
-    title: 'チェックリスト表示機能を追加',
-    detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで設定でき、それぞれタイトル・項目（最大10行）・フォント・文字サイズ・X/Y位置を調整できます。'
-  }
+  { date: '2026-04-22', type: 'improve', title: '印刷分割防止と更新履歴機能を追加（予防的改善）',
+    detail: '週間版では現時点で実害の報告はありませんが、同じ仕組みで作っているデイリー版で「A4用紙の上半分2面の時間枠・メモ欄が印刷時に消える」不具合が発生しました。週間版も同じA4用紙に2面付けする構造のため、同じ症状が起こる可能性があったことから、デイリー版で効果があった「用紙や各面の内側で内容が勝手に分割されないようにする」指定を先回りで適用しました。あわせて、更新履歴を利用者ご自身で確認できるよう、この履歴画面をデイリー版と同じ形で追加しました。' },
+  { date: '2026-04-26', type: 'feat', title: 'チェックリスト表示機能を追加',
+    detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
+  { date: '2026-04-26', type: 'improve', title: '表面・裏面ラベルをデイリー版と統一',
+    detail: '「奇数ページ」「偶数ページ」と表示していたボタンと印刷ラベルを、デイリー版と同じ「表面」「裏面」に統一しました。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
