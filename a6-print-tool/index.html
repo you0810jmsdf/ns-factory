@@ -38,6 +38,10 @@
   --font-text-wm:    'Noto Sans JP', sans-serif;
   --owl-wm-x: 0mm;
   --owl-wm-y: 0mm;
+  --owl-wm-size: 38mm;
+  --owl-wm-opacity: 0.07;
+  --month-cal-size: 30mm;
+  --month-cal-opacity: 1;
   --img-wm-x: 0mm;
   --img-wm-y: 0mm;
   --img-wm-size: 50mm;
@@ -385,12 +389,12 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 /* フクロウロゴ透かし */
 .watermark-logo {
   position: absolute;
-  width: 38mm;
-  height: 37.2mm;
+  width: var(--owl-wm-size, 38mm);
+  height: auto;
   top: calc(50% + var(--owl-wm-y, 0mm));
   left: calc(50% + var(--owl-wm-x, 0mm));
   transform: translate(-50%, -50%);
-  opacity: 0.07;
+  opacity: var(--owl-wm-opacity, 0.07);
   pointer-events: none;
 }
 
@@ -416,8 +420,9 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   position: absolute;
   top: var(--month-cal-top, 1mm);
   right: var(--month-cal-right, 1mm);
-  width: 30mm;
+  width: var(--month-cal-size, 30mm);
   background: rgba(255,255,255,0.93);
+  opacity: var(--month-cal-opacity, 1);
   border-radius: 0.5mm;
   padding: 0 0 0.5mm;
   pointer-events: none;
@@ -660,9 +665,9 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     </div>
   </div>
 
-  <!-- 月間カレンダー位置 -->
+  <!-- 月間カレンダー -->
   <div class="ctrl-section">
-    <h3>月間カレンダー位置</h3>
+    <h3>月間カレンダー</h3>
     <div class="ctrl-row">
       <label>上下</label>
       <input type="range" id="monthCalTop" min="-10" max="140" step="0.5" value="1" oninput="document.getElementById('monthCalTopVal').textContent=this.value;updateVars()">
@@ -672,6 +677,16 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <label>左右</label>
       <input type="range" id="monthCalRight" min="-10" max="70" step="0.5" value="1" oninput="document.getElementById('monthCalRightVal').textContent=this.value;updateVars()">
       <span class="val" id="monthCalRightVal">1</span>
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="monthCalSize" min="15" max="60" step="0.5" value="30" oninput="document.getElementById('monthCalSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalSizeVal">30</span>
+    </div>
+    <div class="ctrl-row">
+      <label>透明度</label>
+      <input type="range" id="monthCalOpacity" min="0.1" max="1" step="0.01" value="1" oninput="document.getElementById('monthCalOpacityVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalOpacityVal">1</span>
     </div>
   </div>
 
@@ -684,9 +699,9 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     <div class="ctrl-row"><label>透かし</label><select id="fontTextWm" onchange="updateFontVars()"></select></div>
   </div>
 
-  <!-- フクロウ透かし位置 -->
+  <!-- フクロウ透かし -->
   <div class="ctrl-section">
-    <h3>フクロウ透かし位置</h3>
+    <h3>フクロウ透かし</h3>
     <div class="ctrl-row">
       <label>左右</label>
       <input type="range" id="owlWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('owlWmXVal').textContent=this.value;updateVars()">
@@ -696,6 +711,16 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <label>上下</label>
       <input type="range" id="owlWmY" min="-70" max="70" step="1" value="0" oninput="document.getElementById('owlWmYVal').textContent=this.value;updateVars()">
       <span class="val" id="owlWmYVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="owlWmSize" min="10" max="100" step="1" value="38" oninput="document.getElementById('owlWmSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="owlWmSizeVal">38</span>
+    </div>
+    <div class="ctrl-row">
+      <label>透明度</label>
+      <input type="range" id="owlWmOpacity" min="0.01" max="1" step="0.01" value="0.07" oninput="document.getElementById('owlWmOpacityVal').textContent=this.value;updateVars()">
+      <span class="val" id="owlWmOpacityVal">0.07</span>
     </div>
   </div>
 
@@ -985,8 +1010,12 @@ function updateVars() {
   const twa  = parseFloat(document.getElementById('textWmAngle').value)    || 0;
   const twx  = parseFloat(document.getElementById('textWmX').value)        || 0;
   const twy  = parseFloat(document.getElementById('textWmY').value)        || 0;
-  const owlX = parseFloat(document.getElementById('owlWmX').value)         || 0;
-  const owlY = parseFloat(document.getElementById('owlWmY').value)         || 0;
+  const owlX  = parseFloat(document.getElementById('owlWmX').value)        || 0;
+  const owlY  = parseFloat(document.getElementById('owlWmY').value)        || 0;
+  const owlSz = parseFloat(document.getElementById('owlWmSize').value)     || 38;
+  const owlOp = parseFloat(document.getElementById('owlWmOpacity').value)  || 0.07;
+  const mcSz  = parseFloat(document.getElementById('monthCalSize').value)  || 30;
+  const mcOp  = parseFloat(document.getElementById('monthCalOpacity').value) || 1;
   const imgX = parseFloat(document.getElementById('imgWmX').value)         || 0;
   const imgY = parseFloat(document.getElementById('imgWmY').value)         || 0;
   const imgSz= parseFloat(document.getElementById('imgWmSize').value)      || 50;
@@ -1003,6 +1032,10 @@ function updateVars() {
   document.documentElement.style.setProperty('--text-wm-y',       twy  + 'mm');
   document.documentElement.style.setProperty('--owl-wm-x',        owlX + 'mm');
   document.documentElement.style.setProperty('--owl-wm-y',        owlY + 'mm');
+  document.documentElement.style.setProperty('--owl-wm-size',     owlSz + 'mm');
+  document.documentElement.style.setProperty('--owl-wm-opacity',  owlOp);
+  document.documentElement.style.setProperty('--month-cal-size',  mcSz + 'mm');
+  document.documentElement.style.setProperty('--month-cal-opacity', mcOp);
   document.documentElement.style.setProperty('--img-wm-x',        imgX + 'mm');
   document.documentElement.style.setProperty('--img-wm-y',        imgY + 'mm');
   document.documentElement.style.setProperty('--img-wm-size',     imgSz + 'mm');
