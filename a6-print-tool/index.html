@@ -678,7 +678,6 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   <!-- フォント設定 -->
   <div class="ctrl-section">
     <h3>フォント設定</h3>
-    <div class="ctrl-row"><label>ブランド</label><select id="fontBrand" onchange="updateFontVars()"></select></div>
     <div class="ctrl-row"><label>日付数字</label><select id="fontDateNum" onchange="updateFontVars()"></select></div>
     <div class="ctrl-row"><label>曜日</label><select id="fontDateWd" onchange="updateFontVars()"></select></div>
     <div class="ctrl-row"><label>月名</label><select id="fontMonthAbbr" onchange="updateFontVars()"></select></div>
@@ -1026,7 +1025,6 @@ const FONT_OPTIONS = [
 
 function initFontSelectors() {
   const map = [
-    { id: 'fontBrand',      def: "'Times New Roman', Times, serif" },
     { id: 'fontDateNum',    def: "'Noto Sans JP', sans-serif" },
     { id: 'fontDateWd',     def: "'Noto Sans JP', sans-serif" },
     { id: 'fontMonthAbbr',  def: "'Times New Roman', Times, serif" },
@@ -1046,8 +1044,8 @@ function initFontSelectors() {
 }
 
 function updateFontVars() {
-  const ids = ['fontBrand','fontDateNum','fontDateWd','fontMonthAbbr','fontTextWm'];
-  const vars = ['--font-brand','--font-date-num','--font-date-wd','--font-month-abbr','--font-text-wm'];
+  const ids = ['fontDateNum','fontDateWd','fontMonthAbbr','fontTextWm'];
+  const vars = ['--font-date-num','--font-date-wd','--font-month-abbr','--font-text-wm'];
   ids.forEach((id, i) => {
     const el = document.getElementById(id);
     if (el) document.documentElement.style.setProperty(vars[i], el.value);
