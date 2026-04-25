@@ -4,16 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A6リフィル印刷ツール | N's factory</title>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-ND1T7H067Y');
-</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ===== リセット ===== */
@@ -57,13 +47,6 @@ body {
   background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
   font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-#history-toggle-btn {
-  position: fixed; top: 10px; left: 54px; z-index: 200;
-  height: 36px; padding: 0 10px; border-radius: 6px;
-  background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
-  font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
-}
-#history-toggle-btn:hover { background: #2a2a4e; }
 #controls {
   position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
   background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px;
@@ -87,7 +70,7 @@ body {
 }
 .ctrl-row .val { min-width: 28px; text-align: right; color: #7ec8e3; font-size: 10px; }
 .btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
-button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; touch-action: manipulation; }
+button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; }
 .btn-primary { background: #7ec8e3; color: #1a1a2e; }
 .btn-secondary { background: #444; color: #eee; }
 .btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
@@ -97,48 +80,18 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 }
 .side-badge.front { background: rgba(126,200,227,0.2); border: 1px solid #7ec8e3; color: #7ec8e3; }
 .side-badge.back  { background: rgba(211,84,0,0.25);   border: 1px solid #d35400; color: #f0b27a; }
-#preview { margin-left: 0; padding: 60px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; max-width: 100vw; overflow-x: hidden; }
-@media screen and (min-width: 900px) {
-  body.panel-open #preview { margin-left: 280px; }
-}
+#preview { margin-left: 0; padding: 60px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+body.panel-open #preview { margin-left: 280px; }
 
 /* ===== A4ページ ===== */
-/* iOS Safari では zoom がフォント座標系も縮小するため文字が自動拡大される。
-   transform: scale() は座標系を変えないため iOS の自動拡大を回避できる。
-   .a4-wrapper でレイアウト上のサイズを確保し、中の .a4-page を scale で縮小する。
-   注：印刷時に .a4-wrapper の position/overflow と .a4-page の transform-origin が
-   残っていると iOS Safari の印刷ページ送り計算に副作用が出るため、
-   これらは @media screen 内に閉じ込め、印刷時は素のブロック要素になるよう設計。 */
 .a4-page {
   width: 210mm;
   height: 297mm;
   background: white;
   position: relative;
   box-shadow: 0 6px 24px rgba(0,0,0,0.3);
-  overflow: hidden;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-@media screen {
-  .a4-wrapper {
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-    width: calc(210mm * 0.65);
-    height: calc(297mm * 0.65);
-  }
-  .a4-page {
-    transform: scale(0.65);
-    transform-origin: top left;
-  }
-}
-@media screen and (max-width: 700px) {
-  .a4-wrapper { width: calc(210mm * 0.4); height: calc(297mm * 0.4); }
-  .a4-page    { transform: scale(0.4); }
-}
-@media screen and (max-width: 480px) {
-  .a4-wrapper { width: calc(210mm * 0.32); height: calc(297mm * 0.32); }
-  .a4-page    { transform: scale(0.32); }
+  zoom: 0.65;
+  flex-shrink: 0;
 }
 
 /* ===== A6スロット ===== */
@@ -147,8 +100,6 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   width: 105mm;
   height: 143.5mm;
   overflow: hidden;
-  break-inside: avoid;
-  page-break-inside: avoid;
 }
 .slot-TL { top: 5mm;     left: 0mm;    }
 .slot-TR { top: 5mm;     left: 105mm;  }
@@ -197,10 +148,6 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   height: 143.5mm;
   display: flex;
   position: relative;
-  min-height: 0;
-  overflow: hidden;
-  break-inside: avoid;
-  page-break-inside: avoid;
 }
 
 /* 穴ストリップ */
@@ -246,9 +193,8 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   flex-direction: column;
   padding: 0 2.5mm;
   min-width: 0;
-  min-height: 0;
-  height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 /* 日付ヘッダー */
@@ -280,19 +226,15 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 .is-sat .date-num, .is-sat .date-wd { color: #2471a3; }
 
 /* N's factory ブランド（中央配置） */
-/* iOS Safari の text autosizing 閾値（≒16px）超えの font-size を指定し、
-   transform: scale() で本来の見た目サイズ（2.6mm）へ縮小。
-   これにより iOS の自動文字拡大による巨大化を回避する。 */
 .ns-brand {
   font-family: var(--font-brand, 'Times New Roman', Times, serif);
-  font-size: 5mm;
+  font-size: 2.6mm;
   color: #555;
   letter-spacing: 0.3mm;
   position: absolute;
   left: 50%;
+  transform: translateX(-50%);
   bottom: 0.8mm;
-  transform: translateX(-50%) scale(0.52);
-  transform-origin: center bottom;
   white-space: nowrap;
 }
 
@@ -312,21 +254,19 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 
 /* 時間グリッド */
 .time-grid {
-  flex: 0 0 auto;
-  height: calc(143.5mm - 13mm - 23mm - 3mm);
+  flex: 1;
   display: flex;
   flex-direction: column;
   border-bottom: 0.3mm solid #ccc;
   overflow: hidden;
-  min-height: 0;
 }
 .time-row {
-  flex: 1 1 0;
+  flex: 1;
   display: flex;
   align-items: stretch;
   min-height: var(--line-h, 0mm);
 }
-.time-row:not(:last-child) { border-bottom: 0.25mm solid #ebebeb; }
+.time-row:not(:last-child) { border-bottom: 0.2mm solid #ebebeb; }
 .time-row:nth-child(even)  { background: #fafafa; }
 .time-label {
   width: 7mm;
@@ -336,7 +276,7 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   padding: 0 1mm 0 0;
   transform: translateY(var(--time-label-top, 0.3mm));
   flex-shrink: 0;
-  border-right: 0.25mm solid #ddd;
+  border-right: 0.2mm solid #ddd;
   line-height: 1;
 }
 .time-fill { flex: 1; }
@@ -367,7 +307,7 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 .memo-line {
   flex-shrink: 0;
   height: 0;
-  border-bottom: 0.25mm solid #e5e5e5;
+  border-bottom: 0.2mm solid #e5e5e5;
 }
 
 /* ページ番号 */
@@ -469,72 +409,19 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   opacity: var(--img-wm-opacity, 0.08);
 }
 
-/* ===== 更新履歴モーダル ===== */
-#historyModal {
-  display: none; position: fixed; inset: 0; z-index: 300;
-  background: rgba(0,0,0,0.65); align-items: center; justify-content: center;
-}
-#historyModal.open { display: flex; }
-#historyModal .hm-box {
-  background: #fff; color: #222; width: min(860px, 92vw); max-height: 86vh;
-  border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-}
-#historyModal .hm-head {
-  background: #1a1a2e; color: #7ec8e3; padding: 10px 14px;
-  display: flex; justify-content: space-between; align-items: center;
-}
-#historyModal .hm-head h3 { margin: 0; font-size: 14px; }
-#historyModal .hm-close {
-  background: transparent; color: #eee; border: 1px solid #555;
-  padding: 3px 10px; font-size: 12px; cursor: pointer;
-}
-#historyModal .hm-body { padding: 14px 16px; overflow-y: auto; font-size: 12px; line-height: 1.55; }
-#historyModal table { width: 100%; border-collapse: collapse; }
-#historyModal th, #historyModal td {
-  border: 1px solid #d0d0d0; padding: 7px 9px; vertical-align: top; text-align: left;
-}
-#historyModal th { background: #f2f4f7; font-weight: 600; white-space: nowrap; }
-#historyModal td.hm-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
-#historyModal .hm-note { color: #666; font-size: 10.5px; margin-top: 10px; }
+/* ===== チェックリスト ===== */
+.cl-block { position: absolute; z-index: 3; pointer-events: none; line-height: 1.4; }
+.cl-title { font-weight: 700; padding-bottom: 0.3mm; border-bottom: 0.2mm solid #555; margin-bottom: 0.5mm; white-space: nowrap; }
+.cl-item { display: flex; align-items: center; gap: 0.6mm; white-space: nowrap; }
+.cl-checkbox { width: 1.2em; height: 1.2em; border: 0.2mm solid #555; flex-shrink: 0; display: inline-block; }
+.ctrl-row textarea { flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; resize: vertical; }
 
 /* ===== 印刷 ===== */
 @media print {
-  html, body { background: white; margin: 0; padding: 0; width: 210mm; }
-  #ctrl-toggle-btn, #history-toggle-btn, #controls, #historyModal { display: none !important; }
-  #preview { padding: 0 !important; margin: 0 !important; gap: 0 !important; max-width: none !important; overflow: visible !important; display: block !important; }
-  /* iOS Safari: display:contents は印刷モードで正しく動作しないため、
-     wrapper自体をページコンテナとして使い、break-afterをwrapperに移動。 */
-  .a4-wrapper {
-    display: block;
-    width: 210mm;
-    height: 297mm;
-    overflow: hidden;
-    break-before: page;
-    page-break-before: always;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-  .a4-wrapper:first-child { break-before: auto !important; page-break-before: auto !important; }
-  .a4-page {
-    box-shadow: none;
-    margin: 0;
-    width: 210mm;
-    height: 297mm;
-    position: relative;
-    overflow: hidden;
-    transform: none !important;
-  }
-  /* 印刷時は base CSS の absolute 配置（slot-TL/TR/BL/BR の top/left）をそのまま使う。
-     flex-wrap では iOS Safari で空スロット時にレイアウトが崩れるため absolute に戻す。 */
-  .daily-page {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-  .time-grid {
-    height: calc(143.5mm - 13mm - 23mm - 3mm) !important;
-    flex: 0 0 auto !important;
-  }
+  body { background: white; margin: 0; padding: 0; }
+  #ctrl-toggle-btn, #controls { display: none !important; }
+  #preview { padding: 0; margin-left: 0 !important; }
+  .a4-page { zoom: 1; box-shadow: none; margin: 0; break-after: page; }
 }
 @page { size: A4 portrait; margin: 0mm; }
 </style>
@@ -543,7 +430,6 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 
 <!-- ===== サイドバー開閉ボタン ===== -->
 <button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
-<button id="history-toggle-btn" onclick="openHistory()" title="更新履歴を表示">📋 更新履歴</button>
 
 <!-- ===== サイドバーコントロール ===== -->
 <div id="controls">
@@ -735,57 +621,61 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     </div>
   </div>
 
+  <!-- チェックリスト -->
+  <div class="ctrl-section">
+    <h3>チェックリスト</h3>
+    <!-- グループ0 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow0" onchange="toggleCL(0)"> グループ1</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle0" value="チェックリスト1" oninput="updateCL(0)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems0" rows="5" oninput="updateCL(0)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont0" onchange="updateCL(0)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize0" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(0)"><span class="val" id="clSizeVal0">2.5</span></div>
+      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX0" min="0" max="80" step="0.5" value="2" oninput="updateCL(0)"><span class="val" id="clXVal0">2</span></div>
+      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY0" min="0" max="130" step="0.5" value="15" oninput="updateCL(0)"><span class="val" id="clYVal0">15</span></div>
+    </details>
+    <!-- グループ1 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow1" onchange="toggleCL(1)"> グループ2</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle1" value="チェックリスト2" oninput="updateCL(1)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems1" rows="5" oninput="updateCL(1)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont1" onchange="updateCL(1)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize1" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(1)"><span class="val" id="clSizeVal1">2.5</span></div>
+      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX1" min="0" max="80" step="0.5" value="2" oninput="updateCL(1)"><span class="val" id="clXVal1">2</span></div>
+      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY1" min="0" max="130" step="0.5" value="55" oninput="updateCL(1)"><span class="val" id="clYVal1">55</span></div>
+    </details>
+    <!-- グループ2 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow2" onchange="toggleCL(2)"> グループ3</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle2" value="チェックリスト3" oninput="updateCL(2)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems2" rows="5" oninput="updateCL(2)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont2" onchange="updateCL(2)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize2" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(2)"><span class="val" id="clSizeVal2">2.5</span></div>
+      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX2" min="0" max="80" step="0.5" value="2" oninput="updateCL(2)"><span class="val" id="clXVal2">2</span></div>
+      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY2" min="0" max="130" step="0.5" value="95" oninput="updateCL(2)"><span class="val" id="clYVal2">95</span></div>
+    </details>
+  </div>
+
   <!-- 印刷 -->
   <div class="ctrl-section">
     <h3>印刷</h3>
     <div class="btn-row">
-      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
-      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+      <button class="btn-primary" onclick="window.print()">印刷</button>
     </div>
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
-      ① 開始日を選択 → 「表面」ONで「PDFを生成」<br>
-      ② 開いたPDFから印刷（iPhoneは共有→プリント）<br>
-      ③ 同じ用紙を戻し「裏面」をON → 再度PDF生成<br>
-      ④ 4分割にカット → 左上→右上→左下→右下の順に重ねてリング綴じ<br>
-      <span style="color:#aaa">※「印刷」ボタンは従来の直接印刷（PC向け）</span>
-    </div>
-  </div>
-
-  <!-- 更新履歴 -->
-  <div class="ctrl-section">
-    <h3>サポート</h3>
-    <div class="btn-row">
-      <button class="btn-secondary" onclick="openHistory()" style="width:100%">📋 更新履歴</button>
+      ① 開始日を選択 → 「表面」ONで印刷<br>
+      ② 同じ用紙を戻し「裏面」をON → 追加印刷<br>
+      ③ 4分割にカット<br>
+      ④ 左上→右上→左下→右下の順に重ねてリング綴じ
     </div>
   </div>
 </div>
 
 <!-- ===== 印刷プレビュー ===== -->
 <div id="preview">
-</div>
-
-<!-- ===== 更新履歴モーダル ===== -->
-<div id="historyModal" onclick="if(event.target===this)closeHistory()">
-  <div class="hm-box">
-    <div class="hm-head">
-      <h3>📋 更新履歴</h3>
-      <button class="hm-close" onclick="closeHistory()">閉じる ✕</button>
-    </div>
-    <div class="hm-body">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:7em">発生日</th>
-            <th>症状</th>
-            <th>原因（やさしい説明）</th>
-            <th>対策（やさしい説明）</th>
-          </tr>
-        </thead>
-        <tbody id="historyTbody"></tbody>
-      </table>
-      <div class="hm-note">※ 新しい不具合と修正が確認され次第、このリストに追記していきます。</div>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -823,90 +713,6 @@ function toggleSidebar() {
   document.getElementById('controls').classList.toggle('open');
   document.body.classList.toggle('panel-open');
 }
-
-// ============================================================
-// 更新履歴
-// ============================================================
-const HISTORY_ENTRIES = [
-  {
-    date: '2026-04-23',
-    symptom: 'iPhoneの月単位モード印刷で、ページが正しく分かれず一部のシートが空白になる／スロット配置が崩れるなど、何度CSSを調整してもiPhoneの印刷プレビューが安定しない不具合。',
-    cause: 'iOS Safariの印刷エンジン（印刷プレビューを作る仕組み）は、PC版のChromeやSafariとは動作が大きく異なり、パソコン側でまったく同じ環境を再現することができません。このため、CSSの微調整だけでは確実な修正が難しく、修正と再発を繰り返していました。',
-    fix: '印刷ボタンの横に新しく「PDFを生成」ボタンを追加しました。このボタンを押すと、iPhoneの不安定な印刷機能を経由せずに、アプリ内で直接A4サイズのPDFファイルを作成してダウンロードします。作成されたPDFはファイルアプリや標準のビューアから開いて印刷できるため、iPhoneでも崩れずに印字できます。従来の「印刷」ボタン（PC向けの直接印刷）もそのまま残してあります。'
-  },
-  {
-    date: '2026-04-23',
-    symptom: 'iPhoneの月単位モード印刷で、一部のシート（特に月末の25・27・29日のシート）でスロットの位置がずれて大半が空白になり、日付が左上だけに表示されてしまう不具合。',
-    cause: '直前の修正で、印刷時のA4ページ内レイアウトを「flex-wrap（要素を順番に並べて折り返す）」方式に変更していました。iOS Safariの印刷エンジンは flex-wrap の挙動が不安定で、ページによっては空スロット（例：4月31日は存在しない）があると他のスロットの配置が詰まったり左上に寄ってしまう現象が発生していました。',
-    fix: '印刷時のスロット配置を、元からあった「絶対配置（top/left で座標を直接指定する方式）」に戻しました。絶対配置は空スロットの有無に関係なく各スロットが常に同じ座標に描画されるため、どのシートでも2行×2列のレイアウトが安定します。flex-wrap の印刷用オーバーライドは削除しました。'
-  },
-  {
-    date: '2026-04-23',
-    symptom: 'iPhoneでサイドバーの印刷ボタンを押しても反応しない不具合。',
-    cause: 'iOS Safariはスクロールできる枠の中にあるボタンに対して、誤ってスクロール操作と認識しないよう300ミリ秒の待機時間を入れることがあります。この待機中にタップが無効と判断されると、ボタンが押されたことにならない場合があります。',
-    fix: 'ボタン全体に「これはタップ操作です（スクロールや拡大縮小ではない）」とブラウザに伝える設定（touch-action: manipulation）を追加しました。これにより待機時間がなくなり、サイドバー内のボタンがすぐに反応するようになります。'
-  },
-  {
-    date: '2026-04-23',
-    symptom: 'iPhoneで月単位モードを印刷しようとすると、印刷プレビューで2ページ目以降がほぼ空白になってしまう不具合。',
-    cause: '直前の修正で導入した「A4ページを包む外側の枠（.a4-wrapper）」に常時適用していた「位置設定（position: relative）」と「はみ出し非表示（overflow: hidden）」、ならびにA4ページ自体に残していた「変形の原点指定（transform-origin: top left）」が、iOS Safari の印刷ページ送り計算に副作用を起こし、1ページ目の後に続くページが切り取られて空白として描画されていました。',
-    fix: '.a4-wrapper の位置設定・はみ出し非表示と .a4-page の変形原点指定を「画面表示用（@media screen）」のときだけ有効になるように移動し、印刷時はこれらが完全にリセットされた素のブロック要素として扱われるようにしました。これにより iOS Safari の印刷エンジンが正しくページを区切れるようになり、月単位モードでも全ページが正常に印字されます。'
-  },
-  {
-    date: '2026-04-23',
-    symptom: 'iPhoneで開いたとき、日付の数字（23・25・27など）や曜日（木曜日・土曜日など）が大きく表示されてレイアウトが崩れる不具合。また月単位モードで一部のページ（主に裏面ページ）のレイアウトが崩れる不具合。',
-    cause: 'スマホ画面用に適用していた縮小方式（zoom）が、iOS Safariでは「文字の座標系も同時に縮める」仕組みになっており、縮小後の文字が極端に小さく見えると判断されて自動拡大が働いていました。また絶対配置で配置していたA6スロットの位置もzoom環境下では正しく計算されないことがあり、ページ崩れの原因になっていました。',
-    fix: '画面縮小の方式を zoom から transform: scale() に変更しました。transform は文字の座標系を変えないため iOS の自動拡大が働かなくなり、日付・曜日が正しいサイズで表示されます。またスロット位置の計算も正確になり、月単位モードの裏面ページも正常なレイアウトで表示されます。'
-  },
-  {
-    date: '2026-04-23',
-    symptom: 'iPhoneで開いたとき、ページ上部の「N\'s factory」ロゴ文字だけが他の文字に比べて極端に大きく表示される不具合（再対応版）。',
-    cause: 'iOS Safari には「画面に対して小さすぎる文字を読みやすく自動的に拡大する」機能があり、N\'s factoryロゴが指定サイズ（2.6mm ≒ 約10ピクセル）と小さかったため、自動拡大の対象となってロゴだけが巨大化していました。',
-    fix: 'N\'s factoryロゴの文字サイズ指定をiOSの自動拡大対象にならないサイズ（5mm ≒ 約19ピクセル）に引き上げたうえで、見た目のサイズを保つために画面表示時に約半分（52%）に縮小する処理を追加しました。これによりiOSの自動拡大が働かず、PC・スマホとも従来と同じ大きさで表示されます。前回（同日）当てた指定（自動拡大無効化）は別の崩れを引き起こしたため取り消し、今回の局所的な対応に切り替えました。'
-  },
-  {
-    date: '2026-04-23',
-    symptom: '前回（同日）追加した「iOS用の文字サイズ自動拡大の無効化」を当てたところ、iPhone表示で日付の数字（23・25・27・29）と曜日文字（木曜・土曜・月曜・水曜）、月の英語表記（Apr）が逆に巨大化して重なり、ページ上部全体がさらに崩れる不具合が発生しました。',
-    cause: 'iOS Safari は「画面全体を縮める指定（zoom）」と「文字サイズ自動拡大を切る指定」の組み合わせで不具合を起こす仕様があり、本来zoomで縮小されるはずの日付・曜日などの文字が、縮小を無視して指定通りの実寸サイズ（mm基準）で描画されてしまっていました。',
-    fix: '今回追加した自動拡大無効化の指定を取り消して、元の状態に戻しました。N\'s factoryロゴが大きく見える元々の症状については、別の方法（局所的な縮小処理）で改めて対応しました（同日の上のエントリ参照）。'
-  },
-  {
-    date: '2026-04-23',
-    symptom: 'スマートフォンで設定パネル（左上の☰メニュー）を開いた状態で編集画面を見ると、A4プレビューの左端がパネルの下に隠れて切れて見えてしまう不具合。',
-    cause: '設定パネルを開いた時、本来パソコン用に設定していた「プレビューを右へ280ピクセル分ずらす」処理がスマホでも適用されており、画面幅が足りないためA4ページが右にはみ出して左端が隠れていました。',
-    fix: '画面幅が900ピクセル未満（スマホ・小型タブレット）の場合は、パネル開時にプレビューをずらさないよう調整しました。スマホでは設定パネルがプレビューに重なって表示されますが、左右のはみ出しなく中央に表示されます。'
-  },
-  {
-    date: '2026-04-23',
-    symptom: 'スマートフォン（特にiPhone）で印刷プレビューを開いたとき、①ページが画面の左右にはみ出す、②時間枠の細い罫線が消える、③メイン部分（時間枠・メモ欄）が消えてA6ページが詰まり、本来2ページのはずが5ページに増えてしまう不具合。',
-    cause: 'スマホのブラウザでは、画面表示用の縮小指定（zoom）が印刷時にうまく解除されず、ページの大きさを誤認していました。さらに、時間枠の高さが「残りの空間に合わせて自動調整」する作りになっていたため、スマホでは高さが0になって枠ごと潰れてしまうケースがありました。罫線も極細（0.2mm）のため、低解像度のプレビューでは描画されないことがありました。',
-    fix: '①画面の幅に合わせてプレビュー倍率を自動調整するようにしました（スマホでも全体が画面内に収まります）。②印刷時はzoom指定を完全にリセットし、A4サイズの正確な位置で印字されるよう調整。③時間枠の高さを「自動」から「固定値（104.5mm）」に変更し、スマホでも潰れないようにしました。④細すぎる罫線（0.2mm→0.25mm）に統一し、プレビューでも確実に表示されるようにしました。これで5ページ問題・線消失・はみ出しの3点すべて解消されます。'
-  },
-  {
-    date: '2026-04-22',
-    symptom: 'A4用紙4枚印刷時、上半分2面の「時間枠」と「メモ欄」が消えて、日付だけが印刷されていた。',
-    cause: '印刷時のページ区切り計算がわずかにずれ、上段スロット内の時間枠とメモ欄が「次のページ」側に押し出されて切り取られていた（画面プレビューでは正常に見えていた）。',
-    fix: '各A6スロット／A4用紙の内側で内容が分割されないよう「分割禁止」指定を追加し、さらに用紙ごとに確実に改ページするよう調整。上段・下段とも同じレイアウトで印刷されるようになった。'
-  }
-];
-
-function openHistory() {
-  const tb = document.getElementById('historyTbody');
-  tb.innerHTML = HISTORY_ENTRIES.map(e => `
-    <tr>
-      <td class="hm-date">${e.date}</td>
-      <td>${e.symptom}</td>
-      <td>${e.cause}</td>
-      <td>${e.fix}</td>
-    </tr>`).join('');
-  document.getElementById('historyModal').classList.add('open');
-}
-function closeHistory() {
-  document.getElementById('historyModal').classList.remove('open');
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeHistory();
-});
 function toggleOpt(key, btnId) {
   opts[key] = !opts[key];
   document.getElementById(btnId).classList.toggle('on', opts[key]);
@@ -928,6 +734,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const mp = document.getElementById('monthPicker');
   mp.value = `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
   initFontSelectors();
+  initCLFontSelectors();
   updateVars();
   render();
 });
@@ -1084,12 +891,12 @@ function getCommonParams() {
 }
 
 function makeA4HTML(slots, showCutLines) {
-  return `<div class="a4-wrapper"><div class="a4-page">
+  return `<div class="a4-page">
     ${showCutLines ? '<div class="cut-v"></div><div class="cut-h"></div><div class="crop-cross"></div>' : ''}
     ${['TL','TR','BL','BR'].map(pos =>
       `<div class="a6-slot slot-${pos}">${slots[pos] || ''}</div>`
     ).join('')}
-  </div></div>`;
+  </div>`;
 }
 
 // ============================================================
@@ -1155,63 +962,6 @@ function renderMonthly() {
     }
   }
   document.getElementById('preview').innerHTML = html;
-}
-
-// ============================================================
-// PDF生成（iOS Safari印刷エンジンを回避）
-// ============================================================
-async function generatePDF(ev) {
-  const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
-  const wrappers = document.querySelectorAll('#preview .a4-wrapper');
-  if (!wrappers.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
-  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
-
-  const orig = btn.textContent;
-  btn.disabled = true;
-
-  const stage = document.createElement('div');
-  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
-  document.body.appendChild(stage);
-
-  try {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-
-    for (let i = 0; i < wrappers.length; i++) {
-      btn.textContent = `PDF生成中 ${i+1}/${wrappers.length}`;
-      const srcPage = wrappers[i].querySelector('.a4-page');
-      const clone = srcPage.cloneNode(true);
-      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
-      stage.appendChild(clone);
-
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        logging: false,
-      });
-      stage.removeChild(clone);
-
-      const img = canvas.toDataURL('image/jpeg', 0.88);
-      if (i > 0) pdf.addPage();
-      pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
-    }
-
-    const fname = `a6-refill-${new Date().toISOString().slice(0,10)}.pdf`;
-    const blob = pdf.output('blob');
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = fname; a.target = '_blank';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
-  } catch (e) {
-    console.error(e);
-    alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e));
-  } finally {
-    if (stage.parentNode) stage.parentNode.removeChild(stage);
-    btn.disabled = false;
-    btn.textContent = orig;
-  }
 }
 
 // ============================================================
@@ -1292,6 +1042,7 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
     ${imgWmHTML}
     ${textWmHTML}
     ${monthHTML}
+    ${buildChecklistsHTML()}
     <div class="date-header">
       <div class="date-num">${date.getDate()}</div>
       <div class="date-meta">
@@ -1310,6 +1061,58 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
   </div>
   ${holeSide === 'right' ? holesHTML : ''}
 </div>`;
+}
+
+// === MODULE: Checklist ===
+const clGroups = [
+  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
+  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 55 },
+  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 95 },
+];
+
+function initCLFontSelectors() {
+  for (let i = 0; i < 3; i++) {
+    const sel = document.getElementById(`clFont${i}`);
+    if (!sel) continue;
+    FONT_OPTIONS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value;
+      opt.textContent = f.label;
+      if (f.value === clGroups[i].font) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+function toggleCL(idx) {
+  clGroups[idx].show = document.getElementById(`clShow${idx}`).checked;
+  render();
+}
+
+function updateCL(idx) {
+  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
+  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
+  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
+  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
+  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
+  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
+  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
+  document.getElementById(`clXVal${idx}`).textContent    = clGroups[idx].x;
+  document.getElementById(`clYVal${idx}`).textContent    = clGroups[idx].y;
+  render();
+}
+
+function buildChecklistsHTML() {
+  return clGroups.map(g => {
+    if (!g.show) return '';
+    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
+    const itemsHTML = items.map(s =>
+      `<div class="cl-item"><span class="cl-checkbox"></span><span>${s.trim()}</span></div>`
+    ).join('');
+    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
+      (g.title ? `<div class="cl-title">${g.title}</div>` : '') +
+      itemsHTML + `</div>`;
+  }).join('');
 }
 </script>
 </body>
