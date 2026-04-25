@@ -636,6 +636,10 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
       <button class="btn-toggle" id="btnMonthCal" onclick="toggleOpt('showMonthCal','btnMonthCal')">月間カレンダー</button>
     </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnDateNum" onclick="toggleOpt('showDateNum','btnDateNum')">日付数字</button>
+      <button class="btn-toggle on" id="btnDateWd" onclick="toggleOpt('showDateWd','btnDateWd')">曜日</button>
+    </div>
   </div>
 
   <!-- テキスト透かし -->
@@ -860,7 +864,8 @@ let startDate = new Date();
 
 let opts = {
   showCutLines: true, showHoleLine: true, showHoles: true, showHoleBisect: false,
-  showLogo: false, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false
+  showLogo: false, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false,
+  showDateNum: true, showDateWd: true
 };
 function toggleSidebar() {
   document.getElementById('controls').classList.toggle('open');
@@ -871,6 +876,8 @@ function toggleSidebar() {
 // 更新履歴
 // ============================================================
 const HISTORY_ENTRIES = [
+  { date: '2026-04-25', type: 'feat', title: '日付数字・曜日を個別に非表示にできる機能を追加',
+    detail: '【追加機能】設定パネル「表示要素」セクションに「日付数字」「曜日」トグルボタンを追加しました。それぞれOFFにすると、デイリーページの日付数字（大きい数字）または曜日表示を非表示にして印刷できます。' },
   { date: '2026-04-22', type: 'fix', title: '印刷時に上段の時間枠・メモ欄が消える不具合を修正',
     detail: '【症状】A4用紙4枚印刷時、上半分2面の「時間枠」と「メモ欄」が消えて日付だけが印刷されていました。【原因】印刷時のページ区切り計算がわずかにずれ、上段スロット内の時間枠・メモ欄が「次のページ」側に押し出されて切り取られていました（画面プレビューでは正常に見えていました）。【対処】各A6スロット・A4用紙の内側で内容が分割されないよう「分割禁止」指定を追加し、用紙ごとに確実に改ページするよう調整しました。' },
   { date: '2026-04-23', type: 'fix', title: 'スマートフォンで3点の表示・印刷不具合を修正',
@@ -1138,6 +1145,8 @@ function getCommonParams() {
     textWmContent:  document.getElementById('textWmContent').value,
     showMonthAbbr:  opts.showMonthAbbr,
     showImgWm:      opts.showImgWm,
+    showDateNum:    opts.showDateNum,
+    showDateWd:     opts.showDateWd,
     hours:          Array.from({length: Math.max(1, endH - startH + 1)}, (_, i) => i + startH),
   };
 }
@@ -1179,7 +1188,7 @@ function renderSingle() {
     for (const [pos, dayOffset] of Object.entries(map)) {
       const date = addDays(startDate, dayOffset);
       slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
-        p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
+        p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd);
     }
     html += makeA4HTML(slots, p.showCutLines);
   }
@@ -1207,7 +1216,7 @@ function renderMonthly() {
           const date = new Date(y, mo - 1, dayNum);
           slots[pos] = buildDailyPage(date, dayNum, HOLE_SIDE[pos],
             p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo,
-            p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm);
+            p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd);
         }
       }
       html += makeA4HTML(slots, p.showCutLines);
@@ -1305,7 +1314,7 @@ function buildMonthCalHTML(date) {
 // ============================================================
 // デイリーページHTML構築
 // ============================================================
-function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHoleBisect, showLogo, showTextWm, textWmContent, showMonthAbbr, hours, showImgWm) {
+function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHoleBisect, showLogo, showTextWm, textWmContent, showMonthAbbr, hours, showImgWm, showDateNum, showDateWd) {
   const wd      = date.getDay();
   const wdClass = wd === 0 ? 'is-sun' : wd === 6 ? 'is-sat' : '';
   const ymStr   = `${date.getFullYear()}.${pad(date.getMonth()+1)}`;
@@ -1352,10 +1361,10 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
     ${textWmHTML}
     ${monthHTML}
     <div class="date-header">
-      <div class="date-num">${date.getDate()}</div>
+      ${showDateNum ? `<div class="date-num">${date.getDate()}</div>` : ''}
       <div class="date-meta">
         <div class="date-ym">${ymStr}</div>
-        <div class="date-wd">${wdLabel}</div>
+        ${showDateWd ? `<div class="date-wd">${wdLabel}</div>` : ''}
       </div>
       <div class="ns-brand">N's factory</div>
       ${monthAbbrHTML}
