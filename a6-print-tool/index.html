@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A6リフィル印刷ツール | N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ===== リセット ===== */
@@ -47,6 +57,13 @@ body {
   background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
   font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
+#history-toggle-btn {
+  position: fixed; top: 10px; left: 54px; z-index: 200;
+  height: 36px; padding: 0 10px; border-radius: 6px;
+  background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
+  font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+}
+#history-toggle-btn:hover { background: #2a2a4e; }
 #controls {
   position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
   background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px;
@@ -70,7 +87,7 @@ body {
 }
 .ctrl-row .val { min-width: 28px; text-align: right; color: #7ec8e3; font-size: 10px; }
 .btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
-button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; }
+button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; touch-action: manipulation; }
 .btn-primary { background: #7ec8e3; color: #1a1a2e; }
 .btn-secondary { background: #444; color: #eee; }
 .btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
@@ -80,18 +97,48 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 }
 .side-badge.front { background: rgba(126,200,227,0.2); border: 1px solid #7ec8e3; color: #7ec8e3; }
 .side-badge.back  { background: rgba(211,84,0,0.25);   border: 1px solid #d35400; color: #f0b27a; }
-#preview { margin-left: 0; padding: 60px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
-body.panel-open #preview { margin-left: 280px; }
+#preview { margin-left: 0; padding: 60px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; max-width: 100vw; overflow-x: hidden; }
+@media screen and (min-width: 900px) {
+  body.panel-open #preview { margin-left: 280px; }
+}
 
 /* ===== A4ページ ===== */
+/* iOS Safari では zoom がフォント座標系も縮小するため文字が自動拡大される。
+   transform: scale() は座標系を変えないため iOS の自動拡大を回避できる。
+   .a4-wrapper でレイアウト上のサイズを確保し、中の .a4-page を scale で縮小する。
+   注：印刷時に .a4-wrapper の position/overflow と .a4-page の transform-origin が
+   残っていると iOS Safari の印刷ページ送り計算に副作用が出るため、
+   これらは @media screen 内に閉じ込め、印刷時は素のブロック要素になるよう設計。 */
 .a4-page {
   width: 210mm;
   height: 297mm;
   background: white;
   position: relative;
   box-shadow: 0 6px 24px rgba(0,0,0,0.3);
-  zoom: 0.65;
-  flex-shrink: 0;
+  overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+@media screen {
+  .a4-wrapper {
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    width: calc(210mm * 0.65);
+    height: calc(297mm * 0.65);
+  }
+  .a4-page {
+    transform: scale(0.65);
+    transform-origin: top left;
+  }
+}
+@media screen and (max-width: 700px) {
+  .a4-wrapper { width: calc(210mm * 0.4); height: calc(297mm * 0.4); }
+  .a4-page    { transform: scale(0.4); }
+}
+@media screen and (max-width: 480px) {
+  .a4-wrapper { width: calc(210mm * 0.32); height: calc(297mm * 0.32); }
+  .a4-page    { transform: scale(0.32); }
 }
 
 /* ===== A6スロット ===== */
@@ -100,6 +147,8 @@ body.panel-open #preview { margin-left: 280px; }
   width: 105mm;
   height: 143.5mm;
   overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .slot-TL { top: 5mm;     left: 0mm;    }
 .slot-TR { top: 5mm;     left: 105mm;  }
@@ -148,6 +197,10 @@ body.panel-open #preview { margin-left: 280px; }
   height: 143.5mm;
   display: flex;
   position: relative;
+  min-height: 0;
+  overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 /* 穴ストリップ */
@@ -193,8 +246,9 @@ body.panel-open #preview { margin-left: 280px; }
   flex-direction: column;
   padding: 0 2.5mm;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
-  position: relative;
 }
 
 /* 日付ヘッダー */
@@ -226,15 +280,19 @@ body.panel-open #preview { margin-left: 280px; }
 .is-sat .date-num, .is-sat .date-wd { color: #2471a3; }
 
 /* N's factory ブランド（中央配置） */
+/* iOS Safari の text autosizing 閾値（≒16px）超えの font-size を指定し、
+   transform: scale() で本来の見た目サイズ（2.6mm）へ縮小。
+   これにより iOS の自動文字拡大による巨大化を回避する。 */
 .ns-brand {
   font-family: var(--font-brand, 'Times New Roman', Times, serif);
-  font-size: 2.6mm;
+  font-size: 5mm;
   color: #555;
   letter-spacing: 0.3mm;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
   bottom: 0.8mm;
+  transform: translateX(-50%) scale(0.52);
+  transform-origin: center bottom;
   white-space: nowrap;
 }
 
@@ -254,19 +312,21 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* 時間グリッド */
 .time-grid {
-  flex: 1;
+  flex: 0 0 auto;
+  height: calc(143.5mm - 13mm - 23mm - 3mm);
   display: flex;
   flex-direction: column;
   border-bottom: 0.3mm solid #ccc;
   overflow: hidden;
+  min-height: 0;
 }
 .time-row {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   align-items: stretch;
   min-height: var(--line-h, 0mm);
 }
-.time-row:not(:last-child) { border-bottom: 0.2mm solid #ebebeb; }
+.time-row:not(:last-child) { border-bottom: 0.25mm solid #ebebeb; }
 .time-row:nth-child(even)  { background: #fafafa; }
 .time-label {
   width: 7mm;
@@ -276,7 +336,7 @@ body.panel-open #preview { margin-left: 280px; }
   padding: 0 1mm 0 0;
   transform: translateY(var(--time-label-top, 0.3mm));
   flex-shrink: 0;
-  border-right: 0.2mm solid #ddd;
+  border-right: 0.25mm solid #ddd;
   line-height: 1;
 }
 .time-fill { flex: 1; }
@@ -307,7 +367,7 @@ body.panel-open #preview { margin-left: 280px; }
 .memo-line {
   flex-shrink: 0;
   height: 0;
-  border-bottom: 0.2mm solid #e5e5e5;
+  border-bottom: 0.25mm solid #e5e5e5;
 }
 
 /* ページ番号 */
@@ -409,7 +469,7 @@ body.panel-open #preview { margin-left: 280px; }
   opacity: var(--img-wm-opacity, 0.08);
 }
 
-/* ===== 更新履歴モーダル ===== */
+/* ===== 更新履歴オーバーレイ ===== */
 .history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
 .history-overlay.open { display:flex; }
 .history-box { background:#1a1a2e; color:#eee; border-radius:8px; padding:20px; width:min(480px,92vw); max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
@@ -434,10 +494,41 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* ===== 印刷 ===== */
 @media print {
-  body { background: white; margin: 0; padding: 0; }
-  #ctrl-toggle-btn, #controls { display: none !important; }
-  #preview { padding: 0; margin-left: 0 !important; }
-  .a4-page { zoom: 1; box-shadow: none; margin: 0; break-after: page; }
+  html, body { background: white; margin: 0; padding: 0; width: 210mm; }
+  #ctrl-toggle-btn, #history-toggle-btn, #controls, .history-overlay { display: none !important; }
+  #preview { padding: 0 !important; margin: 0 !important; gap: 0 !important; max-width: none !important; overflow: visible !important; display: block !important; }
+  /* iOS Safari: display:contents は印刷モードで正しく動作しないため、
+     wrapper自体をページコンテナとして使い、break-afterをwrapperに移動。 */
+  .a4-wrapper {
+    display: block;
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    break-before: page;
+    page-break-before: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .a4-wrapper:first-child { break-before: auto !important; page-break-before: auto !important; }
+  .a4-page {
+    box-shadow: none;
+    margin: 0;
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    overflow: hidden;
+    transform: none !important;
+  }
+  /* 印刷時は base CSS の absolute 配置（slot-TL/TR/BL/BR の top/left）をそのまま使う。
+     flex-wrap では iOS Safari で空スロット時にレイアウトが崩れるため absolute に戻す。 */
+  .daily-page {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .time-grid {
+    height: calc(143.5mm - 13mm - 23mm - 3mm) !important;
+    flex: 0 0 auto !important;
+  }
 }
 @page { size: A4 portrait; margin: 0mm; }
 </style>
@@ -446,6 +537,7 @@ body.panel-open #preview { margin-left: 280px; }
 
 <!-- ===== サイドバー開閉ボタン ===== -->
 <button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
+<button id="history-toggle-btn" onclick="openHistory()" title="更新履歴を表示">📋 更新履歴</button>
 
 <!-- ===== サイドバーコントロール ===== -->
 <div id="controls">
@@ -679,29 +771,38 @@ body.panel-open #preview { margin-left: 280px; }
   <div class="ctrl-section">
     <h3>印刷</h3>
     <div class="btn-row">
-      <button class="btn-primary" onclick="window.print()">印刷</button>
-      <button class="btn-secondary" onclick="openHistory()">更新履歴</button>
+      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
+      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
     </div>
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
-      ① 開始日を選択 → 「表面」ONで印刷<br>
-      ② 同じ用紙を戻し「裏面」をON → 追加印刷<br>
-      ③ 4分割にカット<br>
-      ④ 左上→右上→左下→右下の順に重ねてリング綴じ
+      ① 開始日を選択 → 「表面」ONで「PDFを生成」<br>
+      ② 開いたPDFから印刷（iPhoneは共有→プリント）<br>
+      ③ 同じ用紙を戻し「裏面」をON → 再度PDF生成<br>
+      ④ 4分割にカット → 左上→右上→左下→右下の順に重ねてリング綴じ<br>
+      <span style="color:#aaa">※「印刷」ボタンは従来の直接印刷（PC向け）</span>
+    </div>
+  </div>
+
+  <!-- 更新履歴 -->
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHistory()" style="width:100%">📋 更新履歴</button>
     </div>
   </div>
 </div>
 
-<!-- ===== 更新履歴モーダル ===== -->
+<!-- ===== 印刷プレビュー ===== -->
+<div id="preview">
+</div>
+
+<!-- ===== 更新履歴オーバーレイ ===== -->
 <div class="history-overlay" id="historyOverlay" onclick="if(event.target===this)closeHistory()">
   <div class="history-box">
     <button class="history-close" onclick="closeHistory()">✕ 閉じる</button>
     <h3>更新履歴</h3>
     <div id="historyList"></div>
   </div>
-</div>
-
-<!-- ===== 印刷プレビュー ===== -->
-<div id="preview">
 </div>
 
 <script>
@@ -739,6 +840,94 @@ function toggleSidebar() {
   document.getElementById('controls').classList.toggle('open');
   document.body.classList.toggle('panel-open');
 }
+
+// ============================================================
+// 更新履歴
+// ============================================================
+const HISTORY_ENTRIES = [
+  { date: '2026-04-22', type: 'fix', title: '印刷時に上段の時間枠・メモ欄が消える不具合を修正',
+    detail: '【症状】A4用紙4枚印刷時、上半分2面の「時間枠」と「メモ欄」が消えて日付だけが印刷されていました。【原因】印刷時のページ区切り計算がわずかにずれ、上段スロット内の時間枠・メモ欄が「次のページ」側に押し出されて切り取られていました（画面プレビューでは正常に見えていました）。【対処】各A6スロット・A4用紙の内側で内容が分割されないよう「分割禁止」指定を追加し、用紙ごとに確実に改ページするよう調整しました。' },
+  { date: '2026-04-23', type: 'fix', title: 'スマートフォンで3点の表示・印刷不具合を修正',
+    detail: '【症状】①ページが画面の左右にはみ出す ②時間枠の細い罫線が消える ③時間枠・メモ欄が消えてページが5枚に増える【原因】スマホではzoom縮小が印刷時に解除されずページサイズを誤認。時間枠の高さが自動調整のため潰れ、罫線が細すぎて描画されないことがありました。【対処】画面幅に合わせてプレビュー倍率を自動調整、印刷時のzoomをリセット、時間枠の高さを固定値に、罫線を0.25mmに統一しました。' },
+  { date: '2026-04-23', type: 'fix', title: 'スマホでサイドバー表示中にプレビューの左端が切れる不具合を修正',
+    detail: '【症状】スマホで設定パネル（☰メニュー）を開くと、A4プレビューの左端がパネルの下に隠れて切れて見えていました。【原因】PC用の「プレビューを右へ280px移動」処理がスマホでも適用されていたため、画面幅が足りずA4ページが右にはみ出していました。【対処】画面幅が900px未満の場合はパネル開時にプレビューをずらさないよう調整しました。' },
+  { date: '2026-04-23', type: 'fix', title: 'iPhoneでN\'sロゴ・日付・曜日が大きく表示されてレイアウトが崩れる不具合を修正',
+    detail: '【症状】iPhoneで開いたとき日付・曜日が大きく表示されてレイアウトが崩れ、また月単位モードの裏面ページのレイアウトも崩れていました。【原因】zoom縮小方式がiOS Safariでは文字座標系も縮め、自動拡大が働いていました。【対処】縮小方式をzoomからtransform: scale()に変更しました。またN\'sロゴは5mmに上げてscale(0.52)で縮小することでiOSの自動拡大を回避しています。' },
+  { date: '2026-04-23', type: 'fix', title: 'iPhone印刷プレビューで2ページ目以降が空白になる不具合を修正',
+    detail: '【症状】iPhoneで月単位モードを印刷しようとすると、印刷プレビューで2ページ目以降がほぼ空白になっていました。【原因】.a4-wrapperのposition:relativeとoverflow:hidden、および.a4-pageのtransform-origin指定がiOS Safariの印刷ページ送り計算に副作用を起こしていました。【対処】これらの指定を@media screenのみ有効にし、印刷時は素のブロック要素として扱われるようにしました。' },
+  { date: '2026-04-23', type: 'fix', title: 'iPhoneでサイドバーのボタンが反応しない不具合を修正',
+    detail: '【症状】iPhoneでサイドバーの印刷ボタンを押しても反応しないことがありました。【原因】iOS Safariはスクロール可能な枠内のボタンに300msの待機時間を入れる場合があり、この間タップが無効と判断されることがありました。【対処】ボタン全体にtouch-action: manipulationを追加し、待機時間をなくしました。' },
+  { date: '2026-04-23', type: 'fix', title: 'iPhoneの月単位モードで偶数ページ（裏面）が空白になる不具合を修正',
+    detail: '【症状】iPhoneの月単位モード印刷で一部シート（特に月末の25・27・29日）でスロット位置がずれ、大半が空白になっていました。【原因】flex-wrap方式のレイアウトでiOS Safariが空スロット存在時に配置を詰めてしまう不具合がありました。【対処】印刷時のスロット配置を絶対配置（top/left座標指定）に戻し、レイアウトを安定させました。' },
+  { date: '2026-04-23', type: 'improve', title: 'iPhoneの印刷不具合をPDF生成ボタンで回避できるようにしました',
+    detail: 'iPhoneのSafariは印刷エンジンの仕様がPC版と大きく異なり、CSS調整だけでは完全な修正が困難な状況でした。印刷ボタンの横に新しく「PDFを生成」ボタンを追加しました。このボタンを押すと、iPhoneの不安定な印刷機能を経由せずにアプリ内で直接A4サイズのPDFを作成してダウンロードします。作成されたPDFはファイルアプリや標準ビューアから開いて印刷できます。従来の「印刷」ボタンもそのまま残してあります。' },
+  { date: '2026-04-25', type: 'feat', title: 'チェックリスト表示機能を追加',
+    detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
+];
+
+function openHistory() {
+  const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
+  document.getElementById('historyList').innerHTML =
+    [...HISTORY_ENTRIES].reverse().map(e =>
+      `<div class="history-entry">
+        <span class="history-date">${e.date}</span>
+        <span class="history-type ${e.type}">${typeLabel[e.type] || e.type}</span>
+        <div class="history-title">${e.title}</div>
+        <div class="history-detail">${e.detail}</div>
+      </div>`
+    ).join('');
+  document.getElementById('historyOverlay').classList.add('open');
+}
+function closeHistory() {
+  document.getElementById('historyOverlay').classList.remove('open');
+}
+
+const clGroups = [
+  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
+  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 55 },
+  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 95 },
+];
+function initCLFontSelectors() {
+  for (let i = 0; i < 3; i++) {
+    const sel = document.getElementById(`clFont${i}`);
+    if (!sel) continue;
+    FONT_OPTIONS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value; opt.textContent = f.label;
+      if (f.value === clGroups[i].font) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+}
+function toggleCL(idx) { clGroups[idx].show = document.getElementById(`clShow${idx}`).checked; render(); }
+function updateCL(idx) {
+  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
+  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
+  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
+  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
+  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
+  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
+  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
+  document.getElementById(`clXVal${idx}`).textContent    = clGroups[idx].x;
+  document.getElementById(`clYVal${idx}`).textContent    = clGroups[idx].y;
+  render();
+}
+function buildChecklistsHTML() {
+  return clGroups.map(g => {
+    if (!g.show) return '';
+    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
+    const itemsHTML = items.map(s =>
+      `<div class="cl-item"><span class="cl-checkbox"></span><span>${s.trim()}</span></div>`
+    ).join('');
+    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
+      (g.title ? `<div class="cl-title">${g.title}</div>` : '') +
+      itemsHTML + `</div>`;
+  }).join('');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeHistory();
+});
 function toggleOpt(key, btnId) {
   opts[key] = !opts[key];
   document.getElementById(btnId).classList.toggle('on', opts[key]);
@@ -917,12 +1106,12 @@ function getCommonParams() {
 }
 
 function makeA4HTML(slots, showCutLines) {
-  return `<div class="a4-page">
+  return `<div class="a4-wrapper"><div class="a4-page">
     ${showCutLines ? '<div class="cut-v"></div><div class="cut-h"></div><div class="crop-cross"></div>' : ''}
     ${['TL','TR','BL','BR'].map(pos =>
       `<div class="a6-slot slot-${pos}">${slots[pos] || ''}</div>`
     ).join('')}
-  </div>`;
+  </div></div>`;
 }
 
 // ============================================================
@@ -988,6 +1177,63 @@ function renderMonthly() {
     }
   }
   document.getElementById('preview').innerHTML = html;
+}
+
+// ============================================================
+// PDF生成（iOS Safari印刷エンジンを回避）
+// ============================================================
+async function generatePDF(ev) {
+  const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
+  const wrappers = document.querySelectorAll('#preview .a4-wrapper');
+  if (!wrappers.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
+  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
+
+  const orig = btn.textContent;
+  btn.disabled = true;
+
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
+  document.body.appendChild(stage);
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+    for (let i = 0; i < wrappers.length; i++) {
+      btn.textContent = `PDF生成中 ${i+1}/${wrappers.length}`;
+      const srcPage = wrappers[i].querySelector('.a4-page');
+      const clone = srcPage.cloneNode(true);
+      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      stage.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+      stage.removeChild(clone);
+
+      const img = canvas.toDataURL('image/jpeg', 0.88);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+    }
+
+    const fname = `a6-refill-${new Date().toISOString().slice(0,10)}.pdf`;
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) {
+    console.error(e);
+    alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (stage.parentNode) stage.parentNode.removeChild(stage);
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
 }
 
 // ============================================================
@@ -1068,7 +1314,6 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
     ${imgWmHTML}
     ${textWmHTML}
     ${monthHTML}
-    ${buildChecklistsHTML()}
     <div class="date-header">
       <div class="date-num">${date.getDate()}</div>
       <div class="date-meta">
@@ -1084,101 +1329,10 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
       <div class="memo-lines">${memoLinesHTML}</div>
     </div>
     <div class="page-num">${pageNum}</div>
+    ${buildChecklistsHTML()}
   </div>
   ${holeSide === 'right' ? holesHTML : ''}
 </div>`;
-}
-
-// === MODULE: UpdateHistory ===
-const HISTORY_ENTRIES = [
-  { date: '2026-04-22', type: 'fix', title: '印刷時に上段の時間枠・メモ欄が消える不具合を修正',
-    detail: '【症状】A4用紙4枚印刷時、上半分2面の「時間枠」と「メモ欄」が消えて日付だけが印刷されていました。【原因】印刷時のページ区切り計算がわずかにずれ、上段スロット内の時間枠・メモ欄が「次のページ」側に押し出されて切り取られていました（画面プレビューでは正常に見えていました）。【対処】各A6スロット・A4用紙の内側で内容が分割されないよう「分割禁止」指定を追加し、用紙ごとに確実に改ページするよう調整しました。' },
-  { date: '2026-04-23', type: 'fix', title: 'スマートフォンで3点の表示・印刷不具合を修正',
-    detail: '【症状】スマートフォン（特にiPhone）で①ページが画面の左右にはみ出す、②時間枠の細い罫線が消える、③本来2ページのはずが5ページに増えてしまう不具合がありました。【原因】スマホのブラウザでは画面縮小指定が印刷時にうまく解除されず、また時間枠の高さが「自動調整」だったためスマホでは高さが0になって潰れていました。【対処】①画面幅に合わせてプレビュー倍率を自動調整、②印刷時はzoom指定を完全リセット、③時間枠の高さを固定値（104.5mm）に変更、④罫線を0.25mmに統一しました。' },
-  { date: '2026-04-23', type: 'fix', title: 'スマホでサイドバー表示中にプレビューの左端が切れる不具合を修正',
-    detail: '【症状】スマートフォンで設定パネル（☰メニュー）を開くと、A4プレビューの左端がパネルの下に隠れて見えていました。【原因】PC用に設定していた「パネルを開いたときプレビューを右に280px分ずらす」処理がスマホでも適用されており、画面幅が足りず左端が隠れていました。【対処】画面幅900px未満の場合はパネル開時にプレビューをずらさないよう調整しました。' },
-  { date: '2026-04-23', type: 'fix', title: 'iPhoneでN\'sロゴ・日付・曜日が大きく表示されてレイアウトが崩れる不具合を修正',
-    detail: '【症状】iPhoneで開いたとき、日付の数字や曜日・N\'sロゴが大きく表示されてレイアウトが崩れる、月単位モードで一部ページが崩れる不具合がありました。【原因】iOS Safariには小さすぎる文字を自動拡大する機能があり、N\'sロゴの指定サイズ（2.6mm）が対象になっていました。また画面縮小方式（zoom）と自動拡大機能との干渉も起きていました。【対処】画面縮小をzoomからtransform: scaleに変更し、N\'sロゴのフォントサイズを5mm相当に引き上げたうえで表示時に52%縮小する処理を追加しました。途中「自動拡大を無効化する方式」も試みましたが逆効果だったため即座に取り消しています。' },
-  { date: '2026-04-23', type: 'fix', title: 'iPhone印刷プレビューで2ページ目以降が空白になる不具合を修正',
-    detail: '【症状】iPhoneで月単位モードを印刷しようとすると、印刷プレビューで2ページ目以降がほぼ空白になっていました。【原因】A4ページを包む外側の枠に適用していた「position: relative」「overflow: hidden」やA4ページ自体の「transform-origin」が、iOS Safariの印刷ページ送り計算に副作用を起こしていました。【対処】これらの指定を「画面表示用」のときだけ有効にするよう移動し、印刷時は素のブロック要素として扱われるようにしました。' },
-  { date: '2026-04-23', type: 'fix', title: 'iPhoneでサイドバーのボタンが反応しない不具合を修正',
-    detail: '【症状】iPhoneでサイドバーの印刷ボタンを押しても反応しない場合がありました。【原因】iOS Safariはスクロールできる枠内のボタンに約300ミリ秒の待機時間を入れることがあり、この待機中にタップが無効と判断されていました。【対処】ボタンに「これはタップ操作です（スクロール・拡大縮小ではない）」とブラウザに伝える設定を追加し、待機時間なくすぐ反応するようにしました。' },
-  { date: '2026-04-23', type: 'fix', title: 'iPhoneの月単位モードで偶数ページ（裏面）が空白になる不具合を修正',
-    detail: '【症状】iPhoneで月単位モードを印刷すると、偶数ページが空白になっていました。【原因】ページ配置にflex-wrap方式を使っていましたが、iOS Safariの印刷エンジンではこの方式が不安定で、空スロット（例：4月31日は存在しない）があるとスロット配置が詰まって位置がずれていました。【対処】スロット配置を元の絶対座標指定方式（top/leftで位置を直接指定する方式）に戻し、どのシートでも2行×2列のレイアウトが安定するようにしました。' },
-  { date: '2026-04-23', type: 'improve', title: 'iPhoneの印刷不具合をPDF生成ボタンで回避できるようにしました',
-    detail: 'iPhoneのSafariは印刷エンジンの仕様がPC版と大きく異なり、CSS調整だけでは完全な修正が困難な状況でした。印刷ボタンの横に新しく「PDFを生成」ボタンを追加しました。このボタンを押すと、iPhoneの不安定な印刷機能を経由せずにアプリ内で直接A4サイズのPDFを作成してダウンロードします。作成されたPDFはファイルアプリや標準ビューアから開いて印刷できます。従来の「印刷」ボタンもそのまま残してあります。' },
-  { date: '2026-04-25', type: 'feat', title: 'チェックリスト表示機能を追加',
-    detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
-];
-
-function openHistory() {
-  const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
-  document.getElementById('historyList').innerHTML =
-    [...HISTORY_ENTRIES].reverse().map(e =>
-      `<div class="history-entry">
-        <span class="history-date">${e.date}</span>
-        <span class="history-type ${e.type}">${typeLabel[e.type] || e.type}</span>
-        <div class="history-title">${e.title}</div>
-        <div class="history-detail">${e.detail}</div>
-      </div>`
-    ).join('');
-  document.getElementById('historyOverlay').classList.add('open');
-}
-
-function closeHistory() {
-  document.getElementById('historyOverlay').classList.remove('open');
-}
-
-// === MODULE: Checklist ===
-const clGroups = [
-  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
-  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 55 },
-  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 95 },
-];
-
-function initCLFontSelectors() {
-  for (let i = 0; i < 3; i++) {
-    const sel = document.getElementById(`clFont${i}`);
-    if (!sel) continue;
-    FONT_OPTIONS.forEach(f => {
-      const opt = document.createElement('option');
-      opt.value = f.value;
-      opt.textContent = f.label;
-      if (f.value === clGroups[i].font) opt.selected = true;
-      sel.appendChild(opt);
-    });
-  }
-}
-
-function toggleCL(idx) {
-  clGroups[idx].show = document.getElementById(`clShow${idx}`).checked;
-  render();
-}
-
-function updateCL(idx) {
-  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
-  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
-  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
-  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
-  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
-  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
-  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
-  document.getElementById(`clXVal${idx}`).textContent    = clGroups[idx].x;
-  document.getElementById(`clYVal${idx}`).textContent    = clGroups[idx].y;
-  render();
-}
-
-function buildChecklistsHTML() {
-  return clGroups.map(g => {
-    if (!g.show) return '';
-    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
-    const itemsHTML = items.map(s =>
-      `<div class="cl-item"><span class="cl-checkbox"></span><span>${s.trim()}</span></div>`
-    ).join('');
-    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
-      (g.title ? `<div class="cl-title">${g.title}</div>` : '') +
-      itemsHTML + `</div>`;
-  }).join('');
 }
 </script>
 </body>
