@@ -740,8 +740,8 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems0" rows="5" oninput="updateCL(0)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont0" onchange="updateCL(0)"></select></div>
       <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize0" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(0)"><span class="val" id="clSizeVal0">2.5</span></div>
-      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX0" min="0" max="80" step="0.5" value="2" oninput="updateCL(0)"><span class="val" id="clXVal0">2</span></div>
-      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY0" min="0" max="130" step="0.5" value="15" oninput="updateCL(0)"><span class="val" id="clYVal0">15</span></div>
+      <div class="ctrl-row"><label>横位置</label><select id="clHSide0" onchange="updateCL(0)" style="width:3.2em;flex-shrink:0;"><option value="left">左</option><option value="right">右</option></select><input type="range" id="clH0" min="0" max="80" step="0.5" value="2" oninput="updateCL(0)"><span class="val" id="clHVal0">2</span>mm</div>
+      <div class="ctrl-row"><label>縦位置</label><select id="clVSide0" onchange="updateCL(0)" style="width:3.2em;flex-shrink:0;"><option value="top">上</option><option value="bottom">下</option></select><input type="range" id="clV0" min="0" max="130" step="0.5" value="15" oninput="updateCL(0)"><span class="val" id="clVVal0">15</span>mm</div>
     </details>
     <!-- グループ1 -->
     <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
@@ -751,8 +751,8 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems1" rows="5" oninput="updateCL(1)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont1" onchange="updateCL(1)"></select></div>
       <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize1" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(1)"><span class="val" id="clSizeVal1">2.5</span></div>
-      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX1" min="0" max="80" step="0.5" value="2" oninput="updateCL(1)"><span class="val" id="clXVal1">2</span></div>
-      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY1" min="0" max="130" step="0.5" value="55" oninput="updateCL(1)"><span class="val" id="clYVal1">55</span></div>
+      <div class="ctrl-row"><label>横位置</label><select id="clHSide1" onchange="updateCL(1)" style="width:3.2em;flex-shrink:0;"><option value="left">左</option><option value="right">右</option></select><input type="range" id="clH1" min="0" max="80" step="0.5" value="2" oninput="updateCL(1)"><span class="val" id="clHVal1">2</span>mm</div>
+      <div class="ctrl-row"><label>縦位置</label><select id="clVSide1" onchange="updateCL(1)" style="width:3.2em;flex-shrink:0;"><option value="top">上</option><option value="bottom">下</option></select><input type="range" id="clV1" min="0" max="130" step="0.5" value="55" oninput="updateCL(1)"><span class="val" id="clVVal1">55</span>mm</div>
     </details>
     <!-- グループ2 -->
     <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
@@ -762,8 +762,8 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems2" rows="5" oninput="updateCL(2)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont2" onchange="updateCL(2)"></select></div>
       <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize2" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(2)"><span class="val" id="clSizeVal2">2.5</span></div>
-      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX2" min="0" max="80" step="0.5" value="2" oninput="updateCL(2)"><span class="val" id="clXVal2">2</span></div>
-      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY2" min="0" max="130" step="0.5" value="95" oninput="updateCL(2)"><span class="val" id="clYVal2">95</span></div>
+      <div class="ctrl-row"><label>横位置</label><select id="clHSide2" onchange="updateCL(2)" style="width:3.2em;flex-shrink:0;"><option value="left">左</option><option value="right">右</option></select><input type="range" id="clH2" min="0" max="80" step="0.5" value="2" oninput="updateCL(2)"><span class="val" id="clHVal2">2</span>mm</div>
+      <div class="ctrl-row"><label>縦位置</label><select id="clVSide2" onchange="updateCL(2)" style="width:3.2em;flex-shrink:0;"><option value="top">上</option><option value="bottom">下</option></select><input type="range" id="clV2" min="0" max="130" step="0.5" value="95" oninput="updateCL(2)"><span class="val" id="clVVal2">95</span>mm</div>
     </details>
   </div>
 
@@ -883,9 +883,9 @@ function closeHistory() {
 }
 
 const clGroups = [
-  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
-  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 55 },
-  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 95 },
+  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, hSide: 'left', h: 2, vSide: 'top', v: 15 },
+  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, hSide: 'left', h: 2, vSide: 'top', v: 55 },
+  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, hSide: 'left', h: 2, vSide: 'top', v: 95 },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {
@@ -901,15 +901,17 @@ function initCLFontSelectors() {
 }
 function toggleCL(idx) { clGroups[idx].show = document.getElementById(`clShow${idx}`).checked; render(); }
 function updateCL(idx) {
-  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
-  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
-  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
-  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
-  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
-  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
+  clGroups[idx].title  = document.getElementById(`clTitle${idx}`).value;
+  clGroups[idx].items  = document.getElementById(`clItems${idx}`).value;
+  clGroups[idx].font   = document.getElementById(`clFont${idx}`).value;
+  clGroups[idx].size   = parseFloat(document.getElementById(`clSize${idx}`).value);
+  clGroups[idx].hSide  = document.getElementById(`clHSide${idx}`).value;
+  clGroups[idx].h      = parseFloat(document.getElementById(`clH${idx}`).value);
+  clGroups[idx].vSide  = document.getElementById(`clVSide${idx}`).value;
+  clGroups[idx].v      = parseFloat(document.getElementById(`clV${idx}`).value);
   document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
-  document.getElementById(`clXVal${idx}`).textContent    = clGroups[idx].x;
-  document.getElementById(`clYVal${idx}`).textContent    = clGroups[idx].y;
+  document.getElementById(`clHVal${idx}`).textContent    = clGroups[idx].h;
+  document.getElementById(`clVVal${idx}`).textContent    = clGroups[idx].v;
   render();
 }
 function buildChecklistsHTML() {
@@ -919,7 +921,7 @@ function buildChecklistsHTML() {
     const itemsHTML = items.map(s =>
       `<div class="cl-item"><span class="cl-checkbox"></span><span>${s.trim()}</span></div>`
     ).join('');
-    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
+    return `<div class="cl-block" style="${g.hSide}:${g.h}mm;${g.vSide}:${g.v}mm;font-size:${g.size}mm;font-family:${g.font};">` +
       (g.title ? `<div class="cl-title">${g.title}</div>` : '') +
       itemsHTML + `</div>`;
   }).join('');
