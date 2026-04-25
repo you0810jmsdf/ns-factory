@@ -40,7 +40,7 @@
   --owl-wm-y: 0mm;
   --owl-wm-size: 38mm;
   --owl-wm-opacity: 0.07;
-  --month-cal-size: 30mm;
+  --month-cal-scale: 1;
   --month-cal-opacity: 1;
   --img-wm-x: 0mm;
   --img-wm-y: 0mm;
@@ -420,13 +420,15 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
   position: absolute;
   top: var(--month-cal-top, 1mm);
   right: var(--month-cal-right, 1mm);
-  width: var(--month-cal-size, 30mm);
+  width: 30mm;
   background: rgba(255,255,255,0.93);
   opacity: var(--month-cal-opacity, 1);
   border-radius: 0.5mm;
   padding: 0 0 0.5mm;
   pointer-events: none;
   z-index: 2;
+  transform: scale(var(--month-cal-scale, 1));
+  transform-origin: top right;
 }
 .mc-header {
   font-size: 2mm;
@@ -680,8 +682,8 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     </div>
     <div class="ctrl-row">
       <label>サイズ</label>
-      <input type="range" id="monthCalSize" min="15" max="60" step="0.5" value="30" oninput="document.getElementById('monthCalSizeVal').textContent=this.value;updateVars()">
-      <span class="val" id="monthCalSizeVal">30</span>
+      <input type="range" id="monthCalSize" min="0.3" max="2.0" step="0.05" value="1" oninput="document.getElementById('monthCalSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalSizeVal">1</span>
     </div>
     <div class="ctrl-row">
       <label>透明度</label>
@@ -1016,7 +1018,7 @@ function updateVars() {
   const owlY  = parseFloat(document.getElementById('owlWmY').value)        || 0;
   const owlSz = parseFloat(document.getElementById('owlWmSize').value)     || 38;
   const owlOp = parseFloat(document.getElementById('owlWmOpacity').value)  || 0.07;
-  const mcSz  = parseFloat(document.getElementById('monthCalSize').value)  || 30;
+  const mcSz  = parseFloat(document.getElementById('monthCalSize').value)  || 1;
   const mcOp  = parseFloat(document.getElementById('monthCalOpacity').value) || 1;
   const imgX = parseFloat(document.getElementById('imgWmX').value)         || 0;
   const imgY = parseFloat(document.getElementById('imgWmY').value)         || 0;
@@ -1036,7 +1038,7 @@ function updateVars() {
   document.documentElement.style.setProperty('--owl-wm-y',        owlY + 'mm');
   document.documentElement.style.setProperty('--owl-wm-size',     owlSz + 'mm');
   document.documentElement.style.setProperty('--owl-wm-opacity',  owlOp);
-  document.documentElement.style.setProperty('--month-cal-size',  mcSz + 'mm');
+  document.documentElement.style.setProperty('--month-cal-scale', mcSz);
   document.documentElement.style.setProperty('--month-cal-opacity', mcOp);
   document.documentElement.style.setProperty('--img-wm-x',        imgX + 'mm');
   document.documentElement.style.setProperty('--img-wm-y',        imgY + 'mm');
