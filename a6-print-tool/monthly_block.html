@@ -100,7 +100,8 @@ body.panel-open #preview { margin-left: 280px; }
   width: 10mm; flex-shrink: 0; position: relative; background: #fff;
   display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
 }
-.hole-strip.right { order: 2; }
+.hole-strip.left  { border-right: 0.3mm solid #e0e0e0; }
+.hole-strip.right { order: 2; border-left: 0.3mm solid #e0e0e0; }
 .hole {
   position: absolute; width: 4mm; height: 4mm;
   border-radius: 50%; background: white; border: 0.3mm solid #bbb;
@@ -218,7 +219,7 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* MEMOエリア */
 .month-memo {
-  height: 18mm; flex-shrink: 0;
+  height: var(--memo-height, 18mm); flex-shrink: 0;
   border-top: 0.3mm solid #bbb;
   display: flex; flex-direction: column;
   padding: 0 1mm;
@@ -228,7 +229,7 @@ body.panel-open #preview { margin-left: 280px; }
   letter-spacing: 0.5mm; padding: 0.5mm 0 0.3mm;
 }
 .memo-lines { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
-.memo-line { height: 0; border-top: 0.2mm solid #ddd; }
+.memo-line { height: 0; border-top: var(--memo-line-width, 0.2mm) solid #ddd; }
 
 /* セル */
 .month-cells { flex: 1; display: flex; flex-direction: column; }
@@ -417,6 +418,16 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="btn-row">
       <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
+    </div>
+    <div class="ctrl-row"><label>MEMO高さ(mm)</label>
+      <input type="range" id="memoHeight" min="0" max="60" step="1" value="18"
+        oninput="setCSSVar('--memo-height', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">18</span>
+    </div>
+    <div class="ctrl-row"><label>MEMO罫線太さ(mm)</label>
+      <input type="range" id="memoLineWidth" min="0" max="1" step="0.05" value="0.2"
+        oninput="setCSSVar('--memo-line-width', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0.2</span>
     </div>
   </div>
 
@@ -1149,6 +1160,10 @@ const HISTORY_ENTRIES = [
     detail: '前回追加したセーフゾーン余白（3mm）を、A6カードの上下両端ではなくA4中央側（カット線側）のみに限定しました。具体的には、A4上半分のカード（TL/TR）は下端のみ、A4下半分のカード（BL/BR）は上端のみに3mmの余白を設けます。A6カードの外側端（A4の上下端）は余白なしとし、内容を端まで活用できるようにしました。' },
   { date: '2026-04-26', type: 'fix', title: '穴あけパンチガイドの表示位置と両面印刷時の表示を修正',
     detail: '①両面印刷モードでパンチガイド（二等分線の点線）が表示されない不具合を修正しました。これまでは左ページ（月火水）にしか表示されない仕様でしたが、両面印刷の右ページ側にも表示されるようになりました。②パンチガイドの位置をA4のカット線（中央）のすぐそばに移動しました。A4上半分のカード（TL/TR）は下端寄り（145mm）、下半分のカード（BL/BR）は上端寄り（3mm）に表示します。これによりカット時の目安として実用的な位置に配置されます。単票印刷時は従来通りカード中央に表示されます。' },
+  { date: '2026-04-27', type: 'fix', title: '「穴仕切線」トグルが効かない不具合を修正',
+    detail: '「表示要素」の「穴仕切線」ボタンをON/OFFしても見た目が変わらない不具合を修正しました。穴ストリップの境界線（本体と穴エリアの仕切り線）のCSS定義が抜けていたため、ON/OFFどちらでも線が出ない状態でした。デイリー版（index.html）と同じ淡いグレーの細線（0.3mm）を追加し、トグルで表示・非表示を切り替えられるようにしました。' },
+  { date: '2026-04-27', type: 'feat', title: 'MEMO欄の高さとMEMO罫線の太さをスライダーで調整可能に',
+    detail: '「表示要素」セクションの末尾に2つのスライダーを追加しました。①「MEMO高さ(mm)」：0〜60mmの範囲でMEMO欄の高さを変更でき、その分カレンダーマス（カレンダー部分とMEMO部分の比）が自動調整されます。0にすればMEMOを実質非表示にしてカレンダー最大化も可能です。②「MEMO罫線太さ(mm)」：0〜1mmの範囲でMEMO欄の罫線の太さを変更できます。0で罫線非表示、太くすれば濃い罫線にできます。' },
   { date: '2026-04-26', type: 'fix', title: '穴あけパンチガイドの仕様をデイリー版と統一',
     detail: 'パンチガイドの表示仕様をデイリー印刷ツール（index.html）と同じに揃えました。位置はA6リフィルの中心（3・4番目の穴の中間＝71.75mm）、表示は左ページ（穴が右辺にあるページ）のみ、見た目は細い淡色点線（0.2mm破線・幅2mm）です。前回の調整で見た目を強調しすぎたり位置を変更したりしていましたが、デイリー版と統一することで一貫した印象になります。' },
 ];
