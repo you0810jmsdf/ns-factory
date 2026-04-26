@@ -31,6 +31,8 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   --font-text-wm: 'Noto Sans JP', sans-serif;
   --owl-wm-x: 0mm;
   --owl-wm-y: 0mm;
+  --owl-wm-size: 60mm;
+  --owl-wm-opacity: 0.04;
   --img-wm-x: 0mm;
   --img-wm-y: 0mm;
   --img-wm-size: 50mm;
@@ -127,10 +129,10 @@ body.panel-open #preview { margin-left: 280px; }
   position: absolute;
   top: calc(50% + var(--owl-wm-y, 0mm)); left: calc(50% + var(--owl-wm-x, 0mm));
   transform: translate(-50%, -50%);
-  width: 60mm; height: 60mm;
+  width: var(--owl-wm-size, 60mm); height: var(--owl-wm-size, 60mm);
   pointer-events: none; z-index: 1;
 }
-.logo-wm svg { opacity: 0.04; }
+.logo-wm svg { opacity: var(--owl-wm-opacity, 0.04); }
 .text-wm {
   position: absolute; pointer-events: none; z-index: 1;
   font-size: var(--text-wm-size, 6mm); color: #888; opacity: 0.1;
@@ -149,7 +151,7 @@ body.panel-open #preview { margin-left: 280px; }
 }
 .punch-guide {
   position: absolute; left: 0; right: auto; width: 2mm;
-  top: 50%; height: 0;
+  top: 71.75mm; height: 0;
   border-top: 0.15mm dashed #bbb;
   pointer-events: none; z-index: 1;
 }
@@ -454,6 +456,18 @@ body.panel-open #preview { margin-left: 280px; }
         oninput="setCSSVar('--owl-wm-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
       <span class="val">0</span>mm
     </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="owlWmSize" min="10" max="100" step="1" value="60"
+        oninput="setCSSVar('--owl-wm-size', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">60</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>不透明度</label>
+      <input type="range" id="owlWmOpacity" min="0.01" max="0.3" step="0.01" value="0.04"
+        oninput="setCSSVar('--owl-wm-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)">
+      <span class="val">4</span>%
+    </div>
   </div>
 
   <div class="ctrl-section">
@@ -679,7 +693,7 @@ function getMonthGrid(y, m) {
 }
 
 // === MODULE: Hole Strip Builder ===
-function buildHoleStrip(side) {
+function buildHoleStrip(side, showPunchGuide) {
   if (!opts.showHoles && !opts.showHoleLine && !opts.showHoleBisect) return '';
   const lineStyle = opts.showHoleLine ? '' : 'border-right:none;border-left:none;';
   let inner = '';
@@ -688,10 +702,8 @@ function buildHoleStrip(side) {
       inner += `<div class="hole" style="top:${topMM}mm;"></div>`;
     });
   }
-  if (opts.showHoleBisect) {
-    HOLE_POSITIONS_MM.forEach(topMM => {
-      inner += `<div class="hole-bisect-line" style="top:${topMM}mm;"></div>`;
-    });
+  if (opts.showHoleBisect && showPunchGuide) {
+    inner += `<div class="punch-guide"></div>`;
   }
   return `<div class="hole-strip ${side}" style="${lineStyle}">${inner}</div>`;
 }
@@ -735,7 +747,7 @@ function buildRightPage(y, m, grid, holidays, holeSide) {
 }
 
 function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRight) {
-  const holeStrip = buildHoleStrip(holeSide);
+  const holeStrip = buildHoleStrip(holeSide, isLeft);
   const wm = buildWatermarks();
   const cl = buildChecklistsHTML();
 
@@ -776,12 +788,13 @@ function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRig
     return `<div class="month-col ${cd.cls}"><div class="col-day-header ${cd.cls}" style="font-family:var(--font-col-header)">${cd.label}</div><div class="month-cells">${cells}</div></div>`;
   }).join('');
 
-  // フッター（右ページのみ）
+  // フッター（右ページはコンテンツあり、左ページは高さ確保のみ）
   let footer = '';
-  if (isRight && opts.showMonthAbbr) {
-    footer = `<div class="month-footer">
-      <span class="footer-month-abbr" style="font-family:var(--font-month-abbr)">${MONTH_EN_ABB[m-1]}</span>
-    </div>`;
+  if (isRight) {
+    const content = opts.showMonthAbbr ? `<span class="footer-month-abbr" style="font-family:var(--font-month-abbr)">${MONTH_EN_ABB[m-1]}</span>` : '';
+    footer = `<div class="month-footer">${content}</div>`;
+  } else {
+    footer = `<div class="month-footer" style="border-top:none;"></div>`;
   }
 
   const memoLines = Array.from({length: 4}, () => '<div class="memo-line"></div>').join('');
@@ -939,6 +952,8 @@ const HISTORY_ENTRIES = [
     detail: 'A6サイズ見開き月間ブロックリフィルの印刷ツールを作成しました。左ページ（サイドバー＋月/火/水列）・右ページ（木/金/土/日列＋月略称フッター）の見開き構成で、任意の年・月範囲を生成できます。祝日表示（振替休日・国民の休日含む）、土日カラー、チェックリスト重ね印刷、各種透かし、フォント設定など週間版と同等の機能を備えています。' },
   { date: '2026-04-26', type: 'fix', title: '穴位置・曜日表示・MEMO欄・サイドバー表示を修正',
     detail: '①穴ストリップの左右を見開き構成に合わせて修正（左ページは右端、右ページは左端に穴）。②曜日ラベルを独立ヘッダー行から各列の内部先頭に移動し、各マスの上に正しく表示されるよう変更。③下部の余白をMEMO欄（罫線4本付き）に変更。④サイドバーで月数字の下に「4月」と重複表示されていた問題を修正し、英語略称（APR等）のみ表示に統一。' },
+  { date: '2026-04-26', type: 'fix', title: '穴パンチガイド・フクロウ透かし調整・日マス高さを修正',
+    detail: '①穴パンチガイドを3・4番目の穴の中間（71.75mm）に1本の点線として表示するよう変更し、左ページのみに限定。②フクロウ透かしのサイズと不透明度をスライダーで調整できるよう機能追加。③左右ページで日マスの高さが揃っていなかった問題を修正（左ページにも非表示の8mmフッター領域を確保することで統一）。' },
 ];
 
 function openHistory() {
