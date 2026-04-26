@@ -930,7 +930,7 @@ function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRig
     ${footer}
   </div>`;
 
-  const mirrorGuide = opts.showHoleBisect
+  const mirrorGuide = (opts.showHoleBisect && isDuplex)
     ? `<div class="punch-guide-mirror ${holeSide === 'left' ? 'on-right' : 'on-left'}"></div>`
     : '';
   return `<div class="monthly-page">
@@ -1192,6 +1192,8 @@ const HISTORY_ENTRIES = [
     detail: '両面印刷モード時にも、A4中心線を挟んで反対側（A4の外端側）にパンチガイドを表示するようになりました。各A6ページの左右両端の同じ高さ（71.75mm）に点線マークが入り、A4を切り離す前でもカット位置の目安を左右両側で確認できます。' },
   { date: '2026-04-27', type: 'feat', title: 'MEMO罫線の幅（横方向の長さ）をスライダーで調整可能に',
     detail: '「表示要素」セクションに「MEMO罫線幅(%)」スライダーを追加しました。10〜100%の範囲でMEMO欄の罫線の横方向の長さを変更できます。100%でMEMO欄いっぱいに罫線が引かれ、値を小さくすると左寄せで罫線が短くなります。罫線太さ（縦方向の太さ）のスライダーとあわせて、見た目の好みに合わせた調整が可能です。' },
+  { date: '2026-04-27', type: 'fix', title: '単票印刷モードではA4外端側のパンチガイドを非表示に',
+    detail: '単票印刷モード（両面印刷OFF）のとき、A4の外端側に追加表示していたパンチガイドを非表示にしました。単票印刷では1枚に1ページ分しか印刷しないためA4外端側のガイドは不要との判断です。両面印刷モード時は従来通り、A4中心線を挟んで両側にパンチガイドを表示します。' },
 ];
 
 function openHistory() {
