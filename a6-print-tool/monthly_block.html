@@ -871,7 +871,7 @@ function buildRightPage(y, m, grid, holidays, holeSide) {
 }
 
 function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRight) {
-  const holeStrip = buildHoleStrip(holeSide, true);
+  const holeStrip = buildHoleStrip(holeSide, opts.showHoleBisect && !isDuplex);
   const wm = buildWatermarks();
   const cl = buildChecklistsHTML();
 
@@ -1194,6 +1194,8 @@ const HISTORY_ENTRIES = [
     detail: '「表示要素」セクションに「MEMO罫線幅(%)」スライダーを追加しました。10〜100%の範囲でMEMO欄の罫線の横方向の長さを変更できます。100%でMEMO欄いっぱいに罫線が引かれ、値を小さくすると左寄せで罫線が短くなります。罫線太さ（縦方向の太さ）のスライダーとあわせて、見た目の好みに合わせた調整が可能です。' },
   { date: '2026-04-27', type: 'fix', title: '単票印刷モードではA4外端側のパンチガイドを非表示に',
     detail: '単票印刷モード（両面印刷OFF）のとき、A4の外端側に追加表示していたパンチガイドを非表示にしました。単票印刷では1枚に1ページ分しか印刷しないためA4外端側のガイドは不要との判断です。両面印刷モード時は従来通り、A4中心線を挟んで両側にパンチガイドを表示します。' },
+  { date: '2026-04-27', type: 'fix', title: '両面印刷モードではA4中央側のパンチガイドを非表示に',
+    detail: '両面印刷モードのとき、A4中央（カット線側）のパンチガイドを非表示にしました。両面印刷では穴あけ位置の目安はA4外端側のみに表示されます。単票印刷モード時は従来通り、A4中央側のみにパンチガイドを表示します。これにより単票・両面いずれのモードでも片側だけにガイドが表示され、見やすくなりました。' },
 ];
 
 function openHistory() {
