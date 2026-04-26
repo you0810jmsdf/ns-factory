@@ -807,9 +807,9 @@ function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRig
   </div>`;
 
   return `<div class="monthly-page">
+    ${wm}${cl}
     ${holeSide === 'left' ? holeStrip : ''}
     <div class="page-body">
-      ${wm}${cl}
       <div style="display:flex;flex-direction:row;flex:1;overflow:hidden;">
         ${sidebar}${gridArea}
       </div>
