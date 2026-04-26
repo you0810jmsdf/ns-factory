@@ -159,11 +159,13 @@ body.panel-open #preview { margin-left: 280px; }
   opacity: var(--img-wm-opacity, 0.08);
 }
 .punch-guide {
-  position: absolute; left: 0; width: 2mm;
+  position: absolute; width: 2mm;
   top: 71.75mm; height: 0;
   border-top: 0.2mm dashed #bbb;
   pointer-events: none;
 }
+.hole-strip.left  .punch-guide { left: 0; }
+.hole-strip.right .punch-guide { right: 0; }
 
 /* === MODULE: 月間ページ CSS === */
 .monthly-page {
@@ -856,7 +858,7 @@ function buildRightPage(y, m, grid, holidays, holeSide) {
 }
 
 function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRight) {
-  const holeStrip = buildHoleStrip(holeSide, holeSide === 'left');
+  const holeStrip = buildHoleStrip(holeSide, true);
   const wm = buildWatermarks();
   const cl = buildChecklistsHTML();
 
@@ -1166,6 +1168,8 @@ const HISTORY_ENTRIES = [
     detail: '「表示要素」セクションの末尾に2つのスライダーを追加しました。①「MEMO高さ(mm)」：0〜60mmの範囲でMEMO欄の高さを変更でき、その分カレンダーマス（カレンダー部分とMEMO部分の比）が自動調整されます。0にすればMEMOを実質非表示にしてカレンダー最大化も可能です。②「MEMO罫線太さ(mm)」：0〜1mmの範囲でMEMO欄の罫線の太さを変更できます。0で罫線非表示、太くすれば濃い罫線にできます。' },
   { date: '2026-04-26', type: 'fix', title: '穴あけパンチガイドの仕様をデイリー版と統一',
     detail: 'パンチガイドの表示仕様をデイリー印刷ツール（index.html）と同じに揃えました。位置はA6リフィルの中心（3・4番目の穴の中間＝71.75mm）、表示は左ページ（穴が右辺にあるページ）のみ、見た目は細い淡色点線（0.2mm破線・幅2mm）です。前回の調整で見た目を強調しすぎたり位置を変更したりしていましたが、デイリー版と統一することで一貫した印象になります。' },
+  { date: '2026-04-27', type: 'fix', title: '単票印刷モードで穴あけパンチガイドが片側にしか出ない不具合を修正',
+    detail: '両面印刷OFF（単票印刷モード）のとき、パンチガイドが右ページ側にしか表示されない不具合を修正しました。左ページ（月火水）の右辺にある穴ストリップにもパンチガイドが表示されるようになり、左右どちらのページでも穴あけ位置の目安が確認できます。穴ストリップが右辺にある場合は穴ストリップの右端（＝A4カット線寄り）にガイドが伸びるよう配置を調整しました。両面印刷ONのときの位置は従来通り変更ありません。' },
 ];
 
 function openHistory() {
