@@ -925,7 +925,7 @@ function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRig
     ${footer}
   </div>`;
 
-  const mirrorGuide = (!isDuplex && opts.showHoleBisect)
+  const mirrorGuide = opts.showHoleBisect
     ? `<div class="punch-guide-mirror ${holeSide === 'left' ? 'on-right' : 'on-left'}"></div>`
     : '';
   return `<div class="monthly-page">
@@ -1183,6 +1183,8 @@ const HISTORY_ENTRIES = [
     detail: '両面印刷OFF（単票印刷モード）のとき、パンチガイドが右ページ側にしか表示されない不具合を修正しました。左ページ（月火水）の右辺にある穴ストリップにもパンチガイドが表示されるようになり、左右どちらのページでも穴あけ位置の目安が確認できます。穴ストリップが右辺にある場合は穴ストリップの右端（＝A4カット線寄り）にガイドが伸びるよう配置を調整しました。両面印刷ONのときの位置は従来通り変更ありません。' },
   { date: '2026-04-27', type: 'feat', title: '単票印刷モードでパンチガイドをA4中心線に対して左右対称に追加表示',
     detail: '単票印刷モード時、A4中心線を挟んで反対側（A4の外端側）にもパンチガイドを表示するようになりました。これにより各A6ページの左右両端の同じ高さ（71.75mm）に点線マークが入り、A4を切り離す前でもカット位置の目安が左右両側で確認できます。両面印刷ONのときは従来通り中心線側のみに表示されます。' },
+  { date: '2026-04-27', type: 'feat', title: '両面印刷モードでもA4外端側にパンチガイドを左右対称に表示',
+    detail: '両面印刷モード時にも、A4中心線を挟んで反対側（A4の外端側）にパンチガイドを表示するようになりました。各A6ページの左右両端の同じ高さ（71.75mm）に点線マークが入り、A4を切り離す前でもカット位置の目安を左右両側で確認できます。' },
 ];
 
 function openHistory() {
