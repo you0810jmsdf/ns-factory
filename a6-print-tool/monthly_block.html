@@ -861,19 +861,22 @@ function renderMonths() {
   const holidays = getJPHolidays(y);
   let html = '';
 
+  // A4スロット位置による穴位置: 左列(TL/BL)=right, 右列(TR/BR)=left
+  const HS = { TL:'right', TR:'left', BL:'right', BR:'left' };
+
   if (!isDuplex) {
     // 片面モード: 2ヶ月ずつA4に並べる (TL=M1左, TR=M1右, BL=M2左, BR=M2右)
     for (let i = 0; i < months.length; i += 2) {
       const m1 = months[i];
       const m2 = months[i + 1] || null;
       const grid1 = getMonthGrid(y, m1);
-      const leftPage1  = buildLeftPage(y, m1, grid1, holidays, 'left');
-      const rightPage1 = buildRightPage(y, m1, grid1, holidays, 'right');
+      const leftPage1  = buildLeftPage(y, m1, grid1, holidays, HS.TL);
+      const rightPage1 = buildRightPage(y, m1, grid1, holidays, HS.TR);
       let leftPage2 = null, rightPage2 = null;
       if (m2) {
         const grid2 = getMonthGrid(y, m2);
-        leftPage2  = buildLeftPage(y, m2, grid2, holidays, 'left');
-        rightPage2 = buildRightPage(y, m2, grid2, holidays, 'right');
+        leftPage2  = buildLeftPage(y, m2, grid2, holidays, HS.BL);
+        rightPage2 = buildRightPage(y, m2, grid2, holidays, HS.BR);
       }
       const label1 = isEN ? `${MONTH_EN_ABB[m1-1]} ${y}` : `${y}年${m1}月`;
       const label2 = m2 ? (isEN ? `${MONTH_EN_ABB[m2-1]} ${y}` : `${y}年${m2}月`) : '';
@@ -888,28 +891,44 @@ function renderMonths() {
     // piece[0]   : 表=M1左,    裏=白紙
     // piece[k]   : 表=M[k-1]右, 裏=M[k]左  (k=1..N-1)
     // piece[N]   : 表=MN右,    裏=白紙
-    // 長辺綴じ両面では TL↔TR / BL↔BR が裏面で入れ替わるため
-    // 裏面スロット: [TL,TR,BL,BR] = [p[s+1].B, p[s].B, p[s+3].B, p[s+2].B]
-    // 裏面の穴位置は左右反転 (左ページ→holeSide='right', 右ページ→holeSide='left')
+    // 長辺綴じ: 裏面スロット [TL,TR,BL,BR] = [p[1].B, p[0].B, p[3].B, p[2].B]
+    // holeSideはA4スロット位置で決定 (表裏とも同じHS)
     const N = months.length;
     const grids = months.map(m => getMonthGrid(y, m));
-    const pieces = [];
-    pieces.push({ A: buildLeftPage(y, months[0], grids[0], holidays, 'left'), B: null });
+
+    // ページ定義（HTMLは後でholeSide確定時に生成）
+    const pieceDefs = [];
+    pieceDefs.push({ A: { type:'left',  mi:0 },   B: null });
     for (let k = 1; k < N; k++) {
-      pieces.push({
-        A: buildRightPage(y, months[k-1], grids[k-1], holidays, 'right'),
-        B: buildLeftPage(y, months[k], grids[k], holidays, 'right')
+      pieceDefs.push({
+        A: { type:'right', mi:k-1 },
+        B: { type:'left',  mi:k }
       });
     }
-    pieces.push({ A: buildRightPage(y, months[N-1], grids[N-1], holidays, 'right'), B: null });
+    pieceDefs.push({ A: { type:'right', mi:N-1 }, B: null });
 
-    const totalSheets = Math.ceil(pieces.length / 4);
+    const buildDef = (def, holeSide) => {
+      if (!def) return null;
+      const m = months[def.mi], g = grids[def.mi];
+      return def.type === 'left'
+        ? buildLeftPage(y, m, g, holidays, holeSide)
+        : buildRightPage(y, m, g, holidays, holeSide);
+    };
+
+    const positions = ['TL','TR','BL','BR'];
+    const totalSheets = Math.ceil(pieceDefs.length / 4);
     for (let s = 0; s < totalSheets; s++) {
       const b = s * 4;
-      const gA = i => (pieces[b+i] ? pieces[b+i].A : null);
-      const gB = i => (pieces[b+i] ? pieces[b+i].B : null);
-      const frontSlots = [gA(0), gA(1), gA(2), gA(3)];
-      const backSlots  = [gB(1), gB(0), gB(3), gB(2)];
+      const gAD = i => (pieceDefs[b+i] ? pieceDefs[b+i].A : null);
+      const gBD = i => (pieceDefs[b+i] ? pieceDefs[b+i].B : null);
+
+      // 表面: piece[0..3].A を [TL,TR,BL,BR] に配置
+      const frontSlots = [0,1,2,3].map(i => buildDef(gAD(i), HS[positions[i]]));
+
+      // 裏面: 長辺綴じでTL↔TR / BL↔BR が入れ替わるため swap
+      const backDefs = [gBD(1), gBD(0), gBD(3), gBD(2)];
+      const backSlots = backDefs.map((def, i) => buildDef(def, HS[positions[i]]));
+
       html += `<div class="sheet-wrap">
         <div class="sheet-label">シート${s+1}（表）</div>
         ${buildA4(frontSlots)}
@@ -1003,6 +1022,8 @@ const HISTORY_ENTRIES = [
     detail: '①穴パンチガイドを3・4番目の穴の中間（71.75mm）に1本の点線として表示するよう変更し、左ページのみに限定。②フクロウ透かしのサイズと不透明度をスライダーで調整できるよう機能追加。③左右ページで日マスの高さが揃っていなかった問題を修正（左ページにも非表示の8mmフッター領域を確保することで統一）。' },
   { date: '2026-04-26', type: 'fix', title: '印刷余白ゼロ化・両面印刷モード追加（正式版）',
     detail: '①ブラウザの印刷時デフォルト余白を@page{margin:0}で除去し、A4用紙でのA6カット位置がずれる問題を修正。②「両面印刷モード」ボタンを追加。ONにするとN月分をN+1枚のA6ピース構成（表裏A4シートペア）で出力します。ピース構成：piece[0]=1月左表／白紙裏、piece[k]=M[k-1]月右表／M[k]月左裏、piece[末尾]=最終月右表／白紙裏。プリンターの長辺綴じ両面設定で印刷後にA6カットすると、各ピースの表裏が正しい見開き順になります。' },
+  { date: '2026-04-26', type: 'fix', title: '穴ストリップ位置の修正（A4スロット基準に変更）',
+    detail: '穴ストリップの左右配置をページ種別（左/右ページ）ではなくA4上のスロット位置で決定するよう修正しました。左列スロット（TL・BL）は右端、右列スロット（TR・BR）は左端に統一され、切り取り後にどのスロットの紙も綴じ側が正しく内側になります。両面モードでも同じ基準を適用しています。' },
 ];
 
 function openHistory() {
