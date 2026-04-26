@@ -158,16 +158,11 @@ body.panel-open #preview { margin-left: 280px; }
   opacity: var(--img-wm-opacity, 0.08);
 }
 .punch-guide {
-  position: absolute; left: 50%; transform: translateX(-50%);
-  width: 8mm; top: 71.75mm; height: 0;
-  border-top: 0.4mm dashed #444;
-  pointer-events: none; z-index: 5;
+  position: absolute; left: 0; width: 2mm;
+  top: 71.75mm; height: 0;
+  border-top: 0.2mm dashed #bbb;
+  pointer-events: none;
 }
-/* A4面付け時は穴の中心軸上、カット線（A4中央）のすぐそばに配置 */
-.a4-sheet > .slot[data-pos="TL"] .punch-guide,
-.a4-sheet > .slot[data-pos="TR"] .punch-guide { top: 147mm; }
-.a4-sheet > .slot[data-pos="BL"] .punch-guide,
-.a4-sheet > .slot[data-pos="BR"] .punch-guide { top: 1.5mm; }
 
 /* === MODULE: 月間ページ CSS === */
 .monthly-page {
@@ -850,7 +845,7 @@ function buildRightPage(y, m, grid, holidays, holeSide) {
 }
 
 function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRight) {
-  const holeStrip = buildHoleStrip(holeSide, true);
+  const holeStrip = buildHoleStrip(holeSide, holeSide === 'left');
   const wm = buildWatermarks();
   const cl = buildChecklistsHTML();
 
@@ -1142,8 +1137,8 @@ const HISTORY_ENTRIES = [
     detail: 'iPhoneやiPadのSafariで印刷するとレイアウトが崩れる不具合を回避するため、「PDFを生成」ボタンを追加しました。ボタンを押すと現在プレビュー表示している全ページをA4のPDFファイルにまとめてダウンロードします。ダウンロードしたPDFを開いて共有メニュー→「プリント」から印刷してください。従来の「印刷」ボタン（パソコン向け直接印刷）も併設しています。' },
   { date: '2026-04-26', type: 'fix', title: 'フクロウ透かしの左半分が切れる不具合を修正',
     detail: 'ロゴ透かし（フクロウ）の左側部分が切り取られて表示される不具合を修正しました。SVG画像の表示範囲（viewBox）の指定が不適切で、フクロウのデザイン全体が枠内に収まっていなかったことが原因です。日次印刷ツール（index.html）と同じ正しい表示範囲に統一し、フクロウ全体が見えるようになりました。' },
-  { date: '2026-04-26', type: 'fix', title: '穴位置をA4用紙の外側に配置するよう変更',
-    detail: '穴ストリップの配置をA4用紙のスロット位置で決定するよう変更しました。TL（左上）・BL（左下）スロット＝左穴、TR（右上）・BR（右下）スロット＝右穴。これにより穴がA4用紙の外側（左右の端）に集まる配置になり、A4のままパンチ穴あけ機を使う場合に作業しやすくなります。両面印刷モードでも、各ページが配置されるスロット位置に応じて穴位置が自動決定されます。' },
+  { date: '2026-04-26', type: 'fix', title: '穴位置をページ種別ベース（綴じ後の見開き内側＝背側）で固定',
+    detail: '穴位置はページ種別で決定する方式に統一しました。月火水（左ページ）は右穴、木金土日（右ページ）は左穴。カット・両面印刷の長辺綴じを経て、リング綴じ後の見開きで「月火水｜木金土日」の左右順序になり、穴が背側（見開きの内側）に揃います。一時的にA4スロット基準（用紙外側）に変更していましたが、綴じ後の左右順序が崩れるため元の方式に戻しました。' },
   { date: '2026-04-26', type: 'fix', title: '両面印刷モードの面付けを実物の組立順に合わせて修正',
     detail: '両面印刷で出力したA4を切ってリングに綴じたときに月の並びがズレる不具合を修正しました。物理リーフを束ねて綴じると奇数番のリーフ（2枚目・4枚目…）は180度反転して重なるため、その分を考慮してA4面付け時に表裏を入れ替えるようにしました。実際に組み立てた現物の並び（表面：表紙／2月左／2月右／4月左、裏面：1月右／1月左／3月右／3月左）と一致することを確認済みです。' },
   { date: '2026-04-26', type: 'fix', title: 'プリンター余白による曜日・月略称の欠けを修正（セーフゾーン3mm）',
@@ -1154,6 +1149,8 @@ const HISTORY_ENTRIES = [
     detail: '前回追加したセーフゾーン余白（3mm）を、A6カードの上下両端ではなくA4中央側（カット線側）のみに限定しました。具体的には、A4上半分のカード（TL/TR）は下端のみ、A4下半分のカード（BL/BR）は上端のみに3mmの余白を設けます。A6カードの外側端（A4の上下端）は余白なしとし、内容を端まで活用できるようにしました。' },
   { date: '2026-04-26', type: 'fix', title: '穴あけパンチガイドの表示位置と両面印刷時の表示を修正',
     detail: '①両面印刷モードでパンチガイド（二等分線の点線）が表示されない不具合を修正しました。これまでは左ページ（月火水）にしか表示されない仕様でしたが、両面印刷の右ページ側にも表示されるようになりました。②パンチガイドの位置をA4のカット線（中央）のすぐそばに移動しました。A4上半分のカード（TL/TR）は下端寄り（145mm）、下半分のカード（BL/BR）は上端寄り（3mm）に表示します。これによりカット時の目安として実用的な位置に配置されます。単票印刷時は従来通りカード中央に表示されます。' },
+  { date: '2026-04-26', type: 'fix', title: '穴あけパンチガイドの仕様をデイリー版と統一',
+    detail: 'パンチガイドの表示仕様をデイリー印刷ツール（index.html）と同じに揃えました。位置はA6リフィルの中心（3・4番目の穴の中間＝71.75mm）、表示は左ページ（穴が右辺にあるページ）のみ、見た目は細い淡色点線（0.2mm破線・幅2mm）です。前回の調整で見た目を強調しすぎたり位置を変更したりしていましたが、デイリー版と統一することで一貫した印象になります。' },
 ];
 
 function openHistory() {
