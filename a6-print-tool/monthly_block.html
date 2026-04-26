@@ -746,7 +746,7 @@ function buildHoleStrip(side, showPunchGuide) {
 // === MODULE: PDF Generator (iOS Safari workaround) ===
 async function generatePDF(ev) {
   const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
-  const wrappers = document.querySelectorAll('#preview .a4-wrapper');
+  const wrappers = document.querySelectorAll('#preview .sheet-wrap');
   if (!wrappers.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
   if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
 
@@ -763,7 +763,8 @@ async function generatePDF(ev) {
 
     for (let i = 0; i < wrappers.length; i++) {
       btn.textContent = `PDF生成中 ${i+1}/${wrappers.length}`;
-      const srcPage = wrappers[i].querySelector('.a4-page');
+      const srcPage = wrappers[i].querySelector('.a4-sheet');
+      if (!srcPage) continue;
       const clone = srcPage.cloneNode(true);
       clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
       stage.appendChild(clone);
@@ -1137,6 +1138,8 @@ const HISTORY_ENTRIES = [
     detail: '両面印刷で出力したA4を切ってリングに綴じたときに月の並びがズレる不具合を修正しました。物理リーフを束ねて綴じると奇数番のリーフ（2枚目・4枚目…）は180度反転して重なるため、その分を考慮してA4面付け時に表裏を入れ替えるようにしました。実際に組み立てた現物の並び（表面：表紙／2月左／2月右／4月左、裏面：1月右／1月左／3月右／3月左）と一致することを確認済みです。' },
   { date: '2026-04-26', type: 'fix', title: 'プリンター余白による曜日・月略称の欠けを修正（セーフゾーン3mm）',
     detail: 'A4プリンターの上下端の印刷不可領域（約3mm）により、A4上半分のカード（TL/TR）の上端の曜日ヘッダーや、下半分のカード（BL/BR）の下端の月略称フッターが切れて印刷されない不具合を修正しました。各A6カードの内容表示領域に上下3mmのセーフゾーン余白を設けることで、プリンターの印刷可能範囲内に確実に収まるよう調整しました。これにより、12月の右ページを含むすべての月で曜日・月略称が正しく印刷され、カット後の上下スペースも統一されます。' },
+  { date: '2026-04-26', type: 'fix', title: '「PDFを生成」ボタンが動作しない不具合を修正',
+    detail: '「PDFを生成」ボタンを押すと「生成する内容がありません。先にプレビューを表示してください。」というメッセージが表示され、PDF生成ができない不具合を修正しました。プレビュー領域内のシート要素を取得するセレクタが古い名前（.a4-wrapper / .a4-page）のままだったため、実際のDOM構造（.sheet-wrap / .a4-sheet）と一致せず内容を検出できていませんでした。正しいクラス名に修正したことで、iPhone/iPad向けのPDF出力が正常に動作するようになりました。' },
 ];
 
 function openHistory() {
