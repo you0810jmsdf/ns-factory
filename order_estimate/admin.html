@@ -2639,6 +2639,42 @@ const GA_PAGE_NAMES = {
   '/ns-factory/a6-print-tool/index.html': 'A6印刷ツール',
   '/ns-factory/a6-print-tool/weekly_block.html': 'A6週間ブロック',
 };
+// 同一ページの複数URLを正規URLに統合するマッピング
+const GA_CANONICAL = {
+  '/':                                          '/ns-factory/',
+  '/ns-factory/index.html':                     '/ns-factory/',
+  '/ns-factory/weekly-block/index.html':        '/ns-factory/weekly-block/',
+  '/ns-factory/a6-print-tool/index.html':       '/ns-factory/a6-print-tool/',
+  '/ns-factory/password-note/index.html':       '/ns-factory/password-note/',
+};
+function gaMergePageRows(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const key = GA_CANONICAL[r.page] || r.page;
+    if (map.has(key)) {
+      const e = map.get(key);
+      e.views += r.views;
+      e.users += r.users;
+    } else {
+      map.set(key, { page: key, views: r.views, users: r.users });
+    }
+  });
+  return [...map.values()].sort((a, b) => b.views - a.views);
+}
+function gaMergeDailyRows(dailyRows) {
+  const map = new Map();
+  dailyRows.forEach(r => {
+    const key = (GA_CANONICAL[r.page] || r.page) + '|' + r.date;
+    if (map.has(key)) {
+      const e = map.get(key);
+      e.views += r.views;
+      e.users += r.users;
+    } else {
+      map.set(key, { page: GA_CANONICAL[r.page] || r.page, date: r.date, views: r.views, users: r.users });
+    }
+  });
+  return [...map.values()];
+}
 let gaLoaded = false;
 let gaCurrentDays = 7;
 // ページ別折れ線の表示状態（ページパス → 表示中かどうか）
@@ -2736,8 +2772,10 @@ function gaRender(data) {
     q.textContent = '';
   }
 
-  // テーブル
-  const maxV = data.rows.length ? data.rows[0].views : 1;
+  // テーブル（同一ページの複数URLを統合）
+  const mergedRows = gaMergePageRows(data.rows);
+  const mergedDailyRows = gaMergeDailyRows(data.dailyRows || []);
+  const maxV = mergedRows.length ? mergedRows[0].views : 1;
   function makeRow(r) {
     const name = GA_PAGE_NAMES[r.page] || r.page;
     const pct = Math.round(r.views / maxV * 100);
@@ -2748,8 +2786,8 @@ function gaRender(data) {
       + '<td style="padding:8px 10px;text-align:right;color:#8a6a4a;font-size:12px;border-bottom:1px solid #f0e6da">' + r.users.toLocaleString() + '</td>'
       + '</tr>';
   }
-  const newRows = data.rows.filter(r => !gaIsOld(r.page));
-  const oldRows = data.rows.filter(r => gaIsOld(r.page));
+  const newRows = mergedRows.filter(r => !gaIsOld(r.page));
+  const oldRows = mergedRows.filter(r => gaIsOld(r.page));
   let html = newRows.map(makeRow).join('') || '<tr><td colspan="4" style="text-align:center;color:#8a6a4a;padding:24px">データなし</td></tr>';
   if (oldRows.length) {
     html += '<tr><td colspan="4" style="background:#fff3e0;color:#8B5E3C;font-size:11px;font-weight:700;padding:6px 10px;letter-spacing:.04em">旧ページ（削除予定）</td></tr>';
@@ -2760,8 +2798,8 @@ function gaRender(data) {
 
   // グラフ
   if (Array.isArray(data.dailyRows) && data.dailyRows.length) {
-    gaDrawTotalChart(data.dailyRows, data.days);
-    gaDrawPageChart(data.dailyRows, data.days, data.rows);
+    gaDrawTotalChart(mergedDailyRows, data.days);
+    gaDrawPageChart(mergedDailyRows, data.days, mergedRows);
   }
 }
 
@@ -2916,7 +2954,7 @@ function gaDrawPageChart(dailyRows, days, topRows) {
     el.addEventListener('click', () => {
       const p = decodeURIComponent(el.dataset.gaPage);
       gaPageChartVisible[p] = !gaPageChartVisible[p];
-      if (gaLastData) gaDrawPageChart(gaLastData.dailyRows, gaLastData.days, gaLastData.rows);
+      if (gaLastData) gaDrawPageChart(gaMergeDailyRows(gaLastData.dailyRows || []), gaLastData.days, gaMergePageRows(gaLastData.rows));
     });
   });
 
