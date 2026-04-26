@@ -381,7 +381,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="btn-row">
       <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
-      <button class="btn-toggle" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
+      <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
     </div>
   </div>
 
@@ -595,7 +595,7 @@ let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
-  showImgWm: false, showHoliday: false
+  showImgWm: false, showHoliday: true
 };
 let lineCount = 3;
 let memoLineCount = 4;
