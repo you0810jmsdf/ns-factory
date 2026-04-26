@@ -861,9 +861,10 @@ function renderMonths() {
   const holidays = getJPHolidays(y);
   let html = '';
 
-  // 穴位置はA4スロット基準: 左列(TL/BL)=A4左端, 右列(TR/BR)=A4右端
-  const HS = { TL:'left', TR:'right', BL:'left', BR:'right' };
-  const positions = ['TL','TR','BL','BR'];
+  // 穴位置はページ種別ベース: 左ページ(月火水)=右穴, 右ページ(木金土日)=左穴（背側）
+  // 長辺綴じでも同一物理リーフの表裏で穴位置が一致する
+  const HOLE_FOR_LEFT  = 'right';  // 月火水ページの穴は右辺（背側）
+  const HOLE_FOR_RIGHT = 'left';   // 木金土日ページの穴は左辺（背側）
 
   if (!isDuplex) {
     // 片面モード: 2ヶ月ずつA4に並べる (TL=M1左, TR=M1右, BL=M2左, BR=M2右)
@@ -871,13 +872,13 @@ function renderMonths() {
       const m1 = months[i];
       const m2 = months[i + 1] || null;
       const grid1 = getMonthGrid(y, m1);
-      const leftPage1  = buildLeftPage(y, m1, grid1, holidays, HS.TL);
-      const rightPage1 = buildRightPage(y, m1, grid1, holidays, HS.TR);
+      const leftPage1  = buildLeftPage(y, m1, grid1, holidays, HOLE_FOR_LEFT);
+      const rightPage1 = buildRightPage(y, m1, grid1, holidays, HOLE_FOR_RIGHT);
       let leftPage2 = null, rightPage2 = null;
       if (m2) {
         const grid2 = getMonthGrid(y, m2);
-        leftPage2  = buildLeftPage(y, m2, grid2, holidays, HS.BL);
-        rightPage2 = buildRightPage(y, m2, grid2, holidays, HS.BR);
+        leftPage2  = buildLeftPage(y, m2, grid2, holidays, HOLE_FOR_LEFT);
+        rightPage2 = buildRightPage(y, m2, grid2, holidays, HOLE_FOR_RIGHT);
       }
       const label1 = isEN ? `${MONTH_EN_ABB[m1-1]} ${y}` : `${y}年${m1}月`;
       const label2 = m2 ? (isEN ? `${MONTH_EN_ABB[m2-1]} ${y}` : `${y}年${m2}月`) : '';
@@ -909,12 +910,12 @@ function renderMonths() {
     // A4の4スロット倍数になるよう末尾に空白リーフを追加
     while (leafs.length % 4 !== 0) leafs.push({ front: null, back: null });
 
-    const buildDef = (def, holeSide) => {
+    const buildDef = (def) => {
       if (!def) return null;
       const m = months[def.mi], g = grids[def.mi];
       return def.type === 'left'
-        ? buildLeftPage(y, m, g, holidays, holeSide)
-        : buildRightPage(y, m, g, holidays, holeSide);
+        ? buildLeftPage(y, m, g, holidays, HOLE_FOR_LEFT)
+        : buildRightPage(y, m, g, holidays, HOLE_FOR_RIGHT);
     };
 
     // 面付け表をconsoleに出力（デバッグ用）
@@ -931,8 +932,8 @@ function renderMonths() {
       // 裏面（長辺反転swap）: TL=leaf2.back, TR=leaf1.back, BL=leaf4.back, BR=leaf3.back
       const backDefs  = [L[1].back,  L[0].back,  L[3].back,  L[2].back];
 
-      const frontSlots = frontDefs.map((d, i) => buildDef(d, HS[positions[i]]));
-      const backSlots  = backDefs.map((d, i)  => buildDef(d, HS[positions[i]]));
+      const frontSlots = frontDefs.map(d => buildDef(d));
+      const backSlots  = backDefs.map(d => buildDef(d));
 
       console.log(`シート${s+1} 表 | TL:${labelDef(frontDefs[0])} TR:${labelDef(frontDefs[1])} BL:${labelDef(frontDefs[2])} BR:${labelDef(frontDefs[3])}`);
       console.log(`シート${s+1} 裏 | TL:${labelDef(backDefs[0])} TR:${labelDef(backDefs[1])} BL:${labelDef(backDefs[2])} BR:${labelDef(backDefs[3])}`);
@@ -1032,6 +1033,8 @@ const HISTORY_ENTRIES = [
     detail: '①ブラウザの印刷時デフォルト余白を@page{margin:0}で除去し、A4用紙でのA6カット位置がずれる問題を修正。②「両面印刷モード」ボタンを追加。ONにするとN月分をN+1枚のA6ピース構成（表裏A4シートペア）で出力します。ピース構成：piece[0]=1月左表／白紙裏、piece[k]=M[k-1]月右表／M[k]月左裏、piece[末尾]=最終月右表／白紙裏。プリンターの長辺綴じ両面設定で印刷後にA6カットすると、各ピースの表裏が正しい見開き順になります。' },
   { date: '2026-04-26', type: 'fix', title: '穴ストリップ位置をページ種別ベースに修正（左ページ=右辺、右ページ=左辺）',
     detail: '穴ストリップを見開きの背側に揃えるよう修正しました。左ページは右辺、右ページは左辺に穴を配置することで、A4上では中央線に穴が集まり、両面長辺綴じ印刷でも表裏の穴位置が物理的に一致します。切り分け後のA6リフィルは見開き内側（背側）に穴がくる左綴じバインダー対応の正しい配置になります。' },
+  { date: '2026-04-26', type: 'fix', title: '穴位置をページ種別ベース（背側）に変更',
+    detail: '穴位置をページ内容に基づいて決定するように変更しました。月火水ページ＝右辺に穴、木金土日ページ＝左辺に穴。これにより切り出してバインダーに綴じた見開きで「月火水｜右穴｜左穴｜木金土日」の正しい配置になります。長辺綴じでも同一物理リーフの表裏で穴位置が一致します。' },
   { date: '2026-04-26', type: 'fix', title: '両面印刷モードの面付けを物理リーフ方式に再設計（穴位置はA4スロット基準）',
     detail: '①穴位置をA4スロット基準に変更：TL/BL=A4左外端、TR/BR=A4右外端。切り出してA6左綴じバインダーに綴じると、各見開きで内側（背）に穴が来ます。②両面印刷を物理リーフ方式で再構築。N月分に対しN+1枚のリーフを生成し、leaf[1].表=白紙／裏=1月左、leaf[k].表=M(k-1)月右／裏=M(k)月左、leaf[N+1].表=最終月右／裏=白紙という物理構造で配置。長辺綴じの裏面スワップ（TL↔TR, BL↔BR）も自動適用。③面付け表をブラウザコンソールに出力してデバッグ可能に。' },
 ];
