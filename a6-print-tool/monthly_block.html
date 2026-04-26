@@ -13,6 +13,8 @@
   gtag('config', 'G-ND1T7H067Y');
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* === MODULE: Reset & Base === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -548,8 +550,13 @@ body.panel-open #preview { margin-left: 280px; }
   <div class="ctrl-section">
     <h3>印刷</h3>
     <div class="btn-row">
-      <button class="btn-primary" onclick="window.print()">印刷</button>
-      <button class="btn-secondary" onclick="openHistory()">更新履歴</button>
+      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
+      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+      <button class="btn-secondary" onclick="openHistory()" style="margin-left:6px">更新履歴</button>
+    </div>
+    <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
+      ※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>
+      ※ PCは「印刷」ボタンで直接印刷可
     </div>
   </div>
 </div>
@@ -714,13 +721,70 @@ function buildHoleStrip(side, showPunchGuide) {
   return `<div class="hole-strip ${side}" style="${lineStyle}">${inner}</div>`;
 }
 
+// === MODULE: PDF Generator (iOS Safari workaround) ===
+async function generatePDF(ev) {
+  const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
+  const wrappers = document.querySelectorAll('#preview .a4-wrapper');
+  if (!wrappers.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
+  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
+
+  const orig = btn.textContent;
+  btn.disabled = true;
+
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
+  document.body.appendChild(stage);
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+    for (let i = 0; i < wrappers.length; i++) {
+      btn.textContent = `PDF生成中 ${i+1}/${wrappers.length}`;
+      const srcPage = wrappers[i].querySelector('.a4-page');
+      const clone = srcPage.cloneNode(true);
+      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      stage.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+      stage.removeChild(clone);
+
+      const img = canvas.toDataURL('image/jpeg', 0.88);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+    }
+
+    const fname = `a6-monthly-${new Date().toISOString().slice(0,10)}.pdf`;
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) {
+    console.error(e);
+    alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (stage.parentNode) stage.parentNode.removeChild(stage);
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
 // === MODULE: Watermarks Builder ===
 function buildWatermarks() {
   let out = '';
   const wmText = document.getElementById('textWmContent') ? document.getElementById('textWmContent').value : "N's factory";
   if (opts.showLogo) {
-    out += `<div class="logo-wm"><svg viewBox="30 140 200 340" xmlns="http://www.w3.org/2000/svg">
-      <path d="${OWL_PATH}" fill="#888"/>
+    out += `<div class="logo-wm"><svg viewBox="0 0 323.67773 316.20041" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(89.827845,-154.05446)">
+        <path d="${OWL_PATH}" fill="#888"/>
+      </g>
     </svg></div>`;
   }
   if (opts.showTextWm) {
@@ -1037,6 +1101,10 @@ const HISTORY_ENTRIES = [
     detail: '穴位置をページ内容に基づいて決定するように変更しました。月火水ページ＝右辺に穴、木金土日ページ＝左辺に穴。これにより切り出してバインダーに綴じた見開きで「月火水｜右穴｜左穴｜木金土日」の正しい配置になります。長辺綴じでも同一物理リーフの表裏で穴位置が一致します。' },
   { date: '2026-04-26', type: 'fix', title: '両面印刷モードの面付けを物理リーフ方式に再設計（穴位置はA4スロット基準）',
     detail: '①穴位置をA4スロット基準に変更：TL/BL=A4左外端、TR/BR=A4右外端。切り出してA6左綴じバインダーに綴じると、各見開きで内側（背）に穴が来ます。②両面印刷を物理リーフ方式で再構築。N月分に対しN+1枚のリーフを生成し、leaf[1].表=白紙／裏=1月左、leaf[k].表=M(k-1)月右／裏=M(k)月左、leaf[N+1].表=最終月右／裏=白紙という物理構造で配置。長辺綴じの裏面スワップ（TL↔TR, BL↔BR）も自動適用。③面付け表をブラウザコンソールに出力してデバッグ可能に。' },
+  { date: '2026-04-26', type: 'feat', title: 'iPhone・iPad向けに「PDFを生成」ボタンを追加',
+    detail: 'iPhoneやiPadのSafariで印刷するとレイアウトが崩れる不具合を回避するため、「PDFを生成」ボタンを追加しました。ボタンを押すと現在プレビュー表示している全ページをA4のPDFファイルにまとめてダウンロードします。ダウンロードしたPDFを開いて共有メニュー→「プリント」から印刷してください。従来の「印刷」ボタン（パソコン向け直接印刷）も併設しています。' },
+  { date: '2026-04-26', type: 'fix', title: 'フクロウ透かしの左半分が切れる不具合を修正',
+    detail: 'ロゴ透かし（フクロウ）の左側部分が切り取られて表示される不具合を修正しました。SVG画像の表示範囲（viewBox）の指定が不適切で、フクロウのデザイン全体が枠内に収まっていなかったことが原因です。日次印刷ツール（index.html）と同じ正しい表示範囲に統一し、フクロウ全体が見えるようになりました。' },
 ];
 
 function openHistory() {
