@@ -213,6 +213,8 @@ body.panel-open #preview { margin-left: 280px; }
 .day-block.is-sat .day-num, .day-block.is-sat .day-wd { color: #3377cc; }
 .day-block.is-sun .day-label { background: #fff0f0; }
 .day-block.is-sun .day-num, .day-block.is-sun .day-wd { color: #cc3333; }
+.day-block.is-holiday .day-num, .day-block.is-holiday .day-wd { color: #cc3333; }
+.day-holiday { font-size: 1.4mm; color: #cc3333; line-height: 1.2; margin-top: 0.3mm; text-align: center; }
 
 /* 書き込みエリア（罫線） */
 .day-content {
@@ -389,6 +391,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="btn-row">
       <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
+      <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
     </div>
   </div>
 
@@ -608,7 +611,8 @@ let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
-  showImgWm: false
+  showImgWm: false,
+  showHoliday: true
 };
 let lineCount = 3;
 let memoLineCount = 4;
@@ -665,6 +669,61 @@ function setLang(en) {
   document.getElementById('btnJA').classList.toggle('on', !isEN);
   document.getElementById('btnEN').classList.toggle('on', isEN);
   rerender();
+}
+
+function getJPHolidays(y) {
+  const h = {};
+  const set = (m, d, name) => { h[`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`] = name; };
+  set(1,1,'元日'); set(1,13,'成人の日');
+  const jan13 = new Date(y,0,1); const janWd = jan13.getDay();
+  const successJan = new Date(y,0,1+(janWd<=1?(1-janWd+7)%7+7:(8-janWd)%7+7));
+  set(successJan.getMonth()+1, successJan.getDate(), '成人の日');
+  // 成人の日：1月第2月曜
+  const jan1 = new Date(y,0,1); const wd1 = jan1.getDay();
+  const seijin = new Date(y,0,1+(wd1===1?7:wd1===0?8:(8-wd1)%7+7));
+  set(seijin.getMonth()+1, seijin.getDate(), '成人の日');
+  set(2,11,'建国記念の日'); set(2,23,'天皇誕生日');
+  const syunbun = y>=2000 ? Math.floor(20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4)) : Math.floor(20.8357+0.242194*(y-1980)-Math.floor((y-1980)/4));
+  set(3, syunbun, '春分の日');
+  set(4,29,'昭和の日'); set(5,3,'憲法記念日'); set(5,4,'みどりの日'); set(5,5,'こどもの日');
+  // 海の日：7月第3月曜
+  const jul1 = new Date(y,6,1); const wdJ = jul1.getDay();
+  const umi = new Date(y,6,1+(wdJ===1?14:wdJ===0?15:(15-wdJ)%7+7));
+  set(umi.getMonth()+1, umi.getDate(), '海の日');
+  set(8,11,'山の日');
+  // 敬老の日：9月第3月曜
+  const sep1 = new Date(y,8,1); const wdS = sep1.getDay();
+  const keiro = new Date(y,8,1+(wdS===1?14:wdS===0?15:(15-wdS)%7+7));
+  set(keiro.getMonth()+1, keiro.getDate(), '敬老の日');
+  const shubun = y>=2000 ? Math.floor(23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4)) : Math.floor(23.2588+0.242194*(y-1980)-Math.floor((y-1980)/4));
+  set(9, shubun, '秋分の日');
+  // スポーツの日：10月第2月曜
+  const oct1 = new Date(y,9,1); const wdO = oct1.getDay();
+  const sports = new Date(y,9,1+(wdO===1?7:wdO===0?8:(8-wdO)%7+7));
+  set(sports.getMonth()+1, sports.getDate(), 'スポーツの日');
+  set(11,3,'文化の日'); set(11,23,'勤労感謝の日');
+  // 振替休日
+  const keys = Object.keys(h).sort();
+  const sub = {};
+  keys.forEach(k => {
+    const d = new Date(k); if (d.getDay()===0) {
+      let nd = new Date(d); nd.setDate(nd.getDate()+1);
+      while (h[`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`]) nd.setDate(nd.getDate()+1);
+      sub[`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`] = '振替休日';
+    }
+  });
+  Object.assign(h, sub);
+  // 国民の休日（祝日に挟まれた平日）
+  const allKeys = Object.keys(h).sort();
+  allKeys.forEach(k => {
+    const d = new Date(k); const prev = new Date(d); prev.setDate(prev.getDate()-1); const next = new Date(d); next.setDate(next.getDate()+1);
+    const fmt = x => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+    if (h[fmt(prev)] && !h[fmt(next)] && new Date(fmt(next)).getDay()!==0) {
+      const nn = new Date(next); nn.setDate(nn.getDate()+1);
+      if (h[fmt(nn)]) h[fmt(next)] = '国民の休日';
+    }
+  });
+  return h;
 }
 
 function toggleOpt(key, btnId) {
@@ -790,15 +849,20 @@ function buildMonthCalHTML(date) {
 }
 
 // === MODULE: Day Block Builder ===
-function buildDayBlock(date) {
+function buildDayBlock(date, holidays) {
   const wd = date.getDay();
-  const wdClass = wd===0?'is-sun':wd===6?'is-sat':'';
+  const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  const holName = opts.showHoliday && holidays && holidays[dateKey] ? holidays[dateKey] : '';
+  const isHol = holName && wd !== 0 && wd !== 6;
+  const wdClass = wd===0?'is-sun':wd===6?'is-sat':(isHol?'is-holiday':'');
   const wdLabel = isEN ? WD_EN_SHORT[wd] : WD_JA[wd];
   const linesHTML = Array(lineCount).fill('<div class="block-line"></div>').join('');
+  const holHTML = holName ? `<div class="day-holiday">${holName}</div>` : '';
   return `<div class="day-block ${wdClass}">
     <div class="day-label">
       <div class="day-num">${date.getDate()}</div>
       <div class="day-wd">${wdLabel}</div>
+      ${holHTML}
     </div>
     <div class="day-content">${linesHTML}</div>
   </div>`;
@@ -862,9 +926,12 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
   const yearStr = isEN ? `${ws.getFullYear()}` : `${ws.getFullYear()}`;
 
   // 7日分のブロック
+  const holidays = getJPHolidays(weekStart.getFullYear());
+  const nextYearHolidays = weekStart.getFullYear() !== weekEnd.getFullYear() ? getJPHolidays(weekEnd.getFullYear()) : null;
+  const allHolidays = nextYearHolidays ? Object.assign({}, holidays, nextYearHolidays) : holidays;
   let dayBlocksHTML = '';
   for (let i = 0; i < 7; i++) {
-    dayBlocksHTML += buildDayBlock(addDays(weekStart, i));
+    dayBlocksHTML += buildDayBlock(addDays(weekStart, i), allHolidays);
   }
 
   const pageNumHTML = `<div class="page-num-bar"><span>${pageNum}</span></div>`;
@@ -988,6 +1055,8 @@ const HISTORY_ENTRIES = [
     detail: 'デイリー版と同じ仕組みで、プレビューの内容をそのままPDFファイルに書き出せるようになりました。「PDFを生成」ボタンを押すと自動でダウンロードされます。表面・裏面を両方ONにした状態でPDFを生成し、プリンターの両面印刷設定で印刷してください。' },
   { date: '2026-04-26', type: 'fix', title: '月表示の色をページ内の日付と統一',
     detail: '月略称（例：APR）の文字色が薄く見づらかったため、日付番号と同じ色に統一しました。' },
+  { date: '2026-04-26', type: 'feat', title: '祝日表示機能を追加',
+    detail: '【追加機能】設定パネル「表示要素」セクションに「祝日表示」トグルボタンを追加しました。ONにすると日本の祝日・振替休日・国民の休日の名称が曜日欄に表示され、日付数字・曜日が赤色になります。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
