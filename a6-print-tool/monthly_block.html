@@ -158,16 +158,16 @@ body.panel-open #preview { margin-left: 280px; }
   opacity: var(--img-wm-opacity, 0.08);
 }
 .punch-guide {
-  position: absolute; left: 0; right: auto; width: 2mm;
+  position: absolute; left: 0; right: auto; width: 4mm;
   top: 71.75mm; height: 0;
-  border-top: 0.15mm dashed #bbb;
-  pointer-events: none; z-index: 1;
+  border-top: 0.4mm dashed #444;
+  pointer-events: none; z-index: 5;
 }
 /* A4面付け時はカット線（A4中央）に近い側に配置 */
 .a4-sheet > .slot[data-pos="TL"] .punch-guide,
-.a4-sheet > .slot[data-pos="TR"] .punch-guide { top: 145mm; }
+.a4-sheet > .slot[data-pos="TR"] .punch-guide { top: 138mm; }
 .a4-sheet > .slot[data-pos="BL"] .punch-guide,
-.a4-sheet > .slot[data-pos="BR"] .punch-guide { top: 3mm; }
+.a4-sheet > .slot[data-pos="BR"] .punch-guide { top: 10mm; }
 
 /* === MODULE: 月間ページ CSS === */
 .monthly-page {
