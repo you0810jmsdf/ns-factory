@@ -163,6 +163,11 @@ body.panel-open #preview { margin-left: 280px; }
   border-top: 0.15mm dashed #bbb;
   pointer-events: none; z-index: 1;
 }
+/* A4面付け時はカット線（A4中央）に近い側に配置 */
+.a4-sheet > .slot[data-pos="TL"] .punch-guide,
+.a4-sheet > .slot[data-pos="TR"] .punch-guide { top: 145mm; }
+.a4-sheet > .slot[data-pos="BL"] .punch-guide,
+.a4-sheet > .slot[data-pos="BR"] .punch-guide { top: 3mm; }
 
 /* === MODULE: 月間ページ CSS === */
 .monthly-page {
@@ -845,7 +850,7 @@ function buildRightPage(y, m, grid, holidays, holeSide) {
 }
 
 function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRight) {
-  const holeStrip = buildHoleStrip(holeSide, isLeft);
+  const holeStrip = buildHoleStrip(holeSide, true);
   const wm = buildWatermarks();
   const cl = buildChecklistsHTML();
 
@@ -1147,6 +1152,8 @@ const HISTORY_ENTRIES = [
     detail: '「PDFを生成」ボタンを押すと「生成する内容がありません。先にプレビューを表示してください。」というメッセージが表示され、PDF生成ができない不具合を修正しました。プレビュー領域内のシート要素を取得するセレクタが古い名前（.a4-wrapper / .a4-page）のままだったため、実際のDOM構造（.sheet-wrap / .a4-sheet）と一致せず内容を検出できていませんでした。正しいクラス名に修正したことで、iPhone/iPad向けのPDF出力が正常に動作するようになりました。' },
   { date: '2026-04-26', type: 'fix', title: 'セーフゾーンをA4中央側のみに限定',
     detail: '前回追加したセーフゾーン余白（3mm）を、A6カードの上下両端ではなくA4中央側（カット線側）のみに限定しました。具体的には、A4上半分のカード（TL/TR）は下端のみ、A4下半分のカード（BL/BR）は上端のみに3mmの余白を設けます。A6カードの外側端（A4の上下端）は余白なしとし、内容を端まで活用できるようにしました。' },
+  { date: '2026-04-26', type: 'fix', title: '穴あけパンチガイドの表示位置と両面印刷時の表示を修正',
+    detail: '①両面印刷モードでパンチガイド（二等分線の点線）が表示されない不具合を修正しました。これまでは左ページ（月火水）にしか表示されない仕様でしたが、両面印刷の右ページ側にも表示されるようになりました。②パンチガイドの位置をA4のカット線（中央）のすぐそばに移動しました。A4上半分のカード（TL/TR）は下端寄り（145mm）、下半分のカード（BL/BR）は上端寄り（3mm）に表示します。これによりカット時の目安として実用的な位置に配置されます。単票印刷時は従来通りカード中央に表示されます。' },
 ];
 
 function openHistory() {
