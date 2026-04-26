@@ -239,7 +239,7 @@ body.panel-open #preview { margin-left: 280px; }
   letter-spacing: 0.5mm; padding: 0.5mm 0 0.3mm;
 }
 .memo-lines { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
-.memo-line { height: 0; border-top: var(--memo-line-width, 0.2mm) solid #ddd; }
+.memo-line { height: 0; width: var(--memo-line-length, 100%); border-top: var(--memo-line-width, 0.2mm) solid #ddd; }
 
 /* セル */
 .month-cells { flex: 1; display: flex; flex-direction: column; }
@@ -438,6 +438,11 @@ body.panel-open #preview { margin-left: 280px; }
       <input type="range" id="memoLineWidth" min="0" max="1" step="0.05" value="0.2"
         oninput="setCSSVar('--memo-line-width', this.value+'mm'); this.nextElementSibling.textContent=this.value">
       <span class="val">0.2</span>
+    </div>
+    <div class="ctrl-row"><label>MEMO罫線幅(%)</label>
+      <input type="range" id="memoLineLength" min="10" max="100" step="1" value="100"
+        oninput="setCSSVar('--memo-line-length', this.value+'%'); this.nextElementSibling.textContent=this.value">
+      <span class="val">100</span>
     </div>
   </div>
 
@@ -1185,6 +1190,8 @@ const HISTORY_ENTRIES = [
     detail: '単票印刷モード時、A4中心線を挟んで反対側（A4の外端側）にもパンチガイドを表示するようになりました。これにより各A6ページの左右両端の同じ高さ（71.75mm）に点線マークが入り、A4を切り離す前でもカット位置の目安が左右両側で確認できます。両面印刷ONのときは従来通り中心線側のみに表示されます。' },
   { date: '2026-04-27', type: 'feat', title: '両面印刷モードでもA4外端側にパンチガイドを左右対称に表示',
     detail: '両面印刷モード時にも、A4中心線を挟んで反対側（A4の外端側）にパンチガイドを表示するようになりました。各A6ページの左右両端の同じ高さ（71.75mm）に点線マークが入り、A4を切り離す前でもカット位置の目安を左右両側で確認できます。' },
+  { date: '2026-04-27', type: 'feat', title: 'MEMO罫線の幅（横方向の長さ）をスライダーで調整可能に',
+    detail: '「表示要素」セクションに「MEMO罫線幅(%)」スライダーを追加しました。10〜100%の範囲でMEMO欄の罫線の横方向の長さを変更できます。100%でMEMO欄いっぱいに罫線が引かれ、値を小さくすると左寄せで罫線が短くなります。罫線太さ（縦方向の太さ）のスライダーとあわせて、見た目の好みに合わせた調整が可能です。' },
 ];
 
 function openHistory() {
