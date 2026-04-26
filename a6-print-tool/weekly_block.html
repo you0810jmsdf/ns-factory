@@ -188,6 +188,8 @@ body.panel-open #preview { margin-left: 280px; }
 .day-block.is-sat .day-num, .day-block.is-sat .day-wd { color: #3377cc; }
 .day-block.is-sun .day-label { background: #fff0f0; }
 .day-block.is-sun .day-num, .day-block.is-sun .day-wd { color: #cc3333; }
+.day-block.is-holiday .day-num, .day-block.is-holiday .day-wd { color: #cc3333; }
+.day-holiday { font-size: 1.4mm; color: #cc3333; line-height: 1.2; margin-top: 0.3mm; text-align: center; }
 
 /* 書き込みエリア（罫線） */
 .day-content {
@@ -379,6 +381,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="btn-row">
       <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
+      <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
     </div>
   </div>
 
@@ -592,7 +595,7 @@ let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
-  showImgWm: false
+  showImgWm: false, showHoliday: true
 };
 let lineCount = 3;
 let memoLineCount = 4;
@@ -630,6 +633,47 @@ function toDateVal(d) {
 
 function setCSSVar(name, val) {
   document.documentElement.style.setProperty(name, val);
+}
+
+// === MODULE: Japanese Holidays ===
+function getJPHolidays(y) {
+  const h = {};
+  const add = (m, d, name) => { h[`${y}-${pad(m)}-${pad(d)}`] = name; };
+  function nthWd(m, wd, n) {
+    const first = new Date(y, m - 1, 1).getDay();
+    return 1 + ((wd - first + 7) % 7) + (n - 1) * 7;
+  }
+  add(1, 1, '元日'); add(2, 11, '建国記念の日'); add(2, 23, '天皇誕生日');
+  add(4, 29, '昭和の日'); add(5, 3, '憲法記念日'); add(5, 4, 'みどりの日'); add(5, 5, 'こどもの日');
+  if (y >= 2016) add(8, 11, '山の日');
+  add(11, 3, '文化の日'); add(11, 23, '勤労感謝の日');
+  add(1, nthWd(1, 1, 2), '成人の日'); add(7, nthWd(7, 1, 3), '海の日');
+  add(9, nthWd(9, 1, 3), '敬老の日');
+  if (y >= 2000) add(10, nthWd(10, 1, 2), 'スポーツの日');
+  const shunbun = Math.floor(20.8431 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
+  add(3, shunbun, '春分の日');
+  const shubun = Math.floor(23.2488 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
+  add(9, shubun, '秋分の日');
+  const viburi = {};
+  for (const k of Object.keys(h)) {
+    const d = new Date(k);
+    if (d.getDay() === 0) {
+      let next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      while (h[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`]) next.setDate(next.getDate() + 1);
+      viburi[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`] = '振替休日';
+    }
+  }
+  Object.assign(h, viburi);
+  for (let m = 1; m <= 12; m++) {
+    const days = new Date(y, m, 0).getDate();
+    for (let d = 2; d < days; d++) {
+      const prev = `${y}-${pad(m)}-${pad(d-1)}`, cur = `${y}-${pad(m)}-${pad(d)}`, next = `${y}-${pad(m)}-${pad(d+1)}`;
+      const wd = new Date(y, m-1, d).getDay();
+      if (h[prev] && h[next] && !h[cur] && wd !== 0 && wd !== 6) h[cur] = '国民の休日';
+    }
+  }
+  return h;
 }
 
 // === MODULE: Toggle Controls ===
@@ -774,15 +818,20 @@ function buildMonthCalHTML(date) {
 }
 
 // === MODULE: Day Block Builder ===
-function buildDayBlock(date) {
+function buildDayBlock(date, holidays) {
   const wd = date.getDay();
-  const wdClass = wd===0?'is-sun':wd===6?'is-sat':'';
+  const dateKey = toDateVal(date);
+  const holName = opts.showHoliday && holidays && holidays[dateKey] ? holidays[dateKey] : '';
+  const isHol = holName && wd !== 0 && wd !== 6;
+  const wdClass = wd===0?'is-sun':wd===6?'is-sat':(isHol?'is-holiday':'');
   const wdLabel = isEN ? WD_EN_SHORT[wd] : WD_JA[wd];
   const linesHTML = Array(lineCount).fill('<div class="block-line"></div>').join('');
+  const holHTML = holName ? `<div class="day-holiday">${holName}</div>` : '';
   return `<div class="day-block ${wdClass}">
     <div class="day-label">
       <div class="day-num">${date.getDate()}</div>
       <div class="day-wd">${wdLabel}</div>
+      ${holHTML}
     </div>
     <div class="day-content">${linesHTML}</div>
   </div>`;
@@ -841,9 +890,12 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
   const yearStr = isEN ? `${ws.getFullYear()}` : `${ws.getFullYear()}`;
 
   // 7日分のブロック
+  const holidays = getJPHolidays(weekStart.getFullYear());
+  const nextYearHolidays = weekStart.getFullYear() !== weekEnd.getFullYear() ? getJPHolidays(weekEnd.getFullYear()) : null;
+  const allHolidays = nextYearHolidays ? Object.assign({}, holidays, nextYearHolidays) : holidays;
   let dayBlocksHTML = '';
   for (let i = 0; i < 7; i++) {
-    dayBlocksHTML += buildDayBlock(addDays(weekStart, i));
+    dayBlocksHTML += buildDayBlock(addDays(weekStart, i), allHolidays);
   }
 
   const pageNumHTML = `<div class="page-num-bar"><span>${pageNum}</span></div>`;
@@ -961,6 +1013,8 @@ const HISTORY_ENTRIES = [
     detail: '週間版では現時点で実害の報告はありませんが、同じ仕組みで作っているデイリー版で「A4用紙の上半分2面の時間枠・メモ欄が印刷時に消える」不具合が発生しました。週間版も同じA4用紙に2面付けする構造のため、同じ症状が起こる可能性があったことから、デイリー版で効果があった「用紙や各面の内側で内容が勝手に分割されないようにする」指定を先回りで適用しました。あわせて、更新履歴を利用者ご自身で確認できるよう、この履歴画面をデイリー版と同じ形で追加しました。' },
   { date: '2026-04-25', type: 'feat', title: 'チェックリスト表示機能を追加',
     detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
+  { date: '2026-04-26', type: 'feat', title: '祝日表示機能を追加',
+    detail: '【追加機能】設定パネル「表示要素」に「祝日表示」ボタンを追加しました。ONにすると、各曜日ラベル欄に祝日名（元日・春分の日・振替休日など）が赤字で表示されます。祝日は赤文字で強調されます。' },
 ];
 
 function openHistory() {
