@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A6週間ブロックリフィル印刷ツール | N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* === MODULE: Reset & Base === */
@@ -17,6 +25,37 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
   font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
+/* === MODULE: History Modal === */
+#historyModal {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.65);
+  align-items: center; justify-content: center;
+}
+#historyModal.open { display: flex; }
+.hm-box {
+  background: #fff; width: min(880px, 92vw); max-height: 86vh;
+  border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+.hm-head {
+  padding: 12px 16px; background: #1a1a2e; color: #7ec8e3;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 700; letter-spacing: 1px;
+}
+.hm-close {
+  background: transparent; color: #7ec8e3; border: 1px solid #7ec8e3;
+  padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;
+}
+.hm-close:hover { background: #7ec8e3; color: #1a1a2e; }
+.hm-body { padding: 14px 16px; overflow-y: auto; font-size: 12px; color: #222; }
+.hm-body table { width: 100%; border-collapse: collapse; }
+.hm-body th, .hm-body td {
+  border: 1px solid #ddd; padding: 8px 10px; vertical-align: top; text-align: left;
+}
+.hm-body th { background: #f4f4f8; font-size: 11px; color: #555; white-space: nowrap; }
+.hm-body td { line-height: 1.55; }
+.hm-body td.date { white-space: nowrap; color: #555; font-family: monospace; }
+.hm-empty { color: #888; padding: 20px; text-align: center; }
 #controls {
   position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
   background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px;
@@ -188,8 +227,6 @@ body.panel-open #preview { margin-left: 280px; }
 .day-block.is-sat .day-num, .day-block.is-sat .day-wd { color: #3377cc; }
 .day-block.is-sun .day-label { background: #fff0f0; }
 .day-block.is-sun .day-num, .day-block.is-sun .day-wd { color: #cc3333; }
-.day-block.is-holiday .day-num, .day-block.is-holiday .day-wd { color: #cc3333; }
-.day-holiday { font-size: 1.4mm; color: #cc3333; line-height: 1.2; margin-top: 0.3mm; text-align: center; }
 
 /* 書き込みエリア（罫線） */
 .day-content {
@@ -250,36 +287,14 @@ body.panel-open #preview { margin-left: 280px; }
   --img-wm-opacity: 0.08;
 }
 
-/* === MODULE: UpdateHistory === */
-.history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
-.history-overlay.open { display:flex; }
-.history-box { background:#1a1a2e; color:#eee; border-radius:8px; padding:20px; width:min(480px,92vw); max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
-.history-box h3 { font-size:13px; color:#7ec8e3; margin-bottom:12px; }
-.history-entry { border-top:1px solid #333; padding:10px 0; font-size:10px; line-height:1.6; }
-.history-entry:first-of-type { border-top:none; }
-.history-date { color:#aaa; font-size:9px; }
-.history-type { display:inline-block; padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; margin-left:6px; }
-.history-type.feat { background:#1a3a1a; color:#7ec8e3; }
-.history-type.fix  { background:#3a1a1a; color:#f0b27a; }
-.history-type.improve { background:#1a1a3a; color:#b27af0; }
-.history-title { font-weight:700; margin-top:3px; }
-.history-detail { color:#bbb; margin-top:2px; }
-.history-close { float:right; background:#444; color:#eee; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:10px; }
-
-/* === MODULE: Checklist === */
-.cl-block { position: absolute; z-index: 3; pointer-events: none; line-height: 1.4; }
-.cl-title { font-weight: 700; padding-bottom: 0.3mm; border-bottom: 0.2mm solid #555; margin-bottom: 0.5mm; white-space: nowrap; }
-.cl-item { display: flex; align-items: center; gap: 0.6mm; white-space: nowrap; }
-.cl-checkbox { width: 1.2em; height: 1.2em; border: 0.2mm solid #555; flex-shrink: 0; display: inline-block; }
-.ctrl-row textarea { flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; resize: vertical; }
-
 /* === MODULE: Print === */
 @media print {
   body { background: white; }
-  #controls { display: none; }
+  #ctrl-toggle-btn, #controls, #historyModal { display: none !important; }
   #preview { margin-left: 0; padding: 0; }
-  .a4-sheet { box-shadow: none; page-break-after: always; }
+  .a4-sheet { box-shadow: none; page-break-after: always; break-inside: avoid; page-break-inside: avoid; }
   .a4-sheet:last-child { page-break-after: avoid; }
+  .slot, .weekly-page { break-inside: avoid; page-break-inside: avoid; }
 }
 </style>
 </head>
@@ -298,8 +313,8 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="ctrl-row">
       <label>用紙面</label>
-      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
-      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
+      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">奇数ページ</button>
+      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">偶数ページ</button>
     </div>
     <div class="ctrl-row">
       <label>言語</label>
@@ -381,7 +396,6 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="btn-row">
       <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
-      <button class="btn-toggle" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
     </div>
   </div>
 
@@ -501,65 +515,48 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
   </div>
 
-  <!-- チェックリスト -->
-  <div class="ctrl-section">
-    <h3>チェックリスト</h3>
-    <!-- グループ0 -->
-    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
-      <label style="cursor:pointer;"><input type="checkbox" id="clShow0" onchange="toggleCL(0)"> グループ1</label>
-    </summary>
-      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle0" value="チェックリスト1" oninput="updateCL(0)"></div>
-      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems0" rows="5" oninput="updateCL(0)" placeholder="1行1項目（最大10）"></textarea></div>
-      <div class="ctrl-row"><label>フォント</label><select id="clFont0" onchange="updateCL(0)"></select></div>
-      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize0" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(0)"><span class="val" id="clSizeVal0">2.5</span></div>
-      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX0" min="0" max="80" step="0.5" value="2" oninput="updateCL(0)"><span class="val" id="clXVal0">2</span></div>
-      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY0" min="0" max="130" step="0.5" value="15" oninput="updateCL(0)"><span class="val" id="clYVal0">15</span></div>
-    </details>
-    <!-- グループ2 -->
-    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
-      <label style="cursor:pointer;"><input type="checkbox" id="clShow1" onchange="toggleCL(1)"> グループ2</label>
-    </summary>
-      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle1" value="チェックリスト2" oninput="updateCL(1)"></div>
-      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems1" rows="5" oninput="updateCL(1)" placeholder="1行1項目（最大10）"></textarea></div>
-      <div class="ctrl-row"><label>フォント</label><select id="clFont1" onchange="updateCL(1)"></select></div>
-      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize1" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(1)"><span class="val" id="clSizeVal1">2.5</span></div>
-      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX1" min="0" max="80" step="0.5" value="2" oninput="updateCL(1)"><span class="val" id="clXVal1">2</span></div>
-      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY1" min="0" max="130" step="0.5" value="55" oninput="updateCL(1)"><span class="val" id="clYVal1">55</span></div>
-    </details>
-    <!-- グループ3 -->
-    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
-      <label style="cursor:pointer;"><input type="checkbox" id="clShow2" onchange="toggleCL(2)"> グループ3</label>
-    </summary>
-      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle2" value="チェックリスト3" oninput="updateCL(2)"></div>
-      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems2" rows="5" oninput="updateCL(2)" placeholder="1行1項目（最大10）"></textarea></div>
-      <div class="ctrl-row"><label>フォント</label><select id="clFont2" onchange="updateCL(2)"></select></div>
-      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize2" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(2)"><span class="val" id="clSizeVal2">2.5</span></div>
-      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX2" min="0" max="80" step="0.5" value="2" oninput="updateCL(2)"><span class="val" id="clXVal2">2</span></div>
-      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY2" min="0" max="130" step="0.5" value="95" oninput="updateCL(2)"><span class="val" id="clYVal2">95</span></div>
-    </details>
-  </div>
-
   <div class="ctrl-section">
     <h3>印刷</h3>
     <div class="btn-row">
       <button class="btn-primary" onclick="window.print()">印刷</button>
-      <button class="btn-secondary" onclick="openHistory()">更新履歴</button>
     </div>
   </div>
-</div>
 
-<!-- === MODULE: UpdateHistory Modal === -->
-<div class="history-overlay" id="historyOverlay" onclick="if(event.target===this)closeHistory()">
-  <div class="history-box">
-    <button class="history-close" onclick="closeHistory()">✕ 閉じる</button>
-    <h3>更新履歴</h3>
-    <div id="historyList"></div>
+  <!-- 更新履歴 -->
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHistory()" style="width:100%">📋 更新履歴</button>
+    </div>
   </div>
 </div>
 
 <!-- === MODULE: Preview Area === -->
 <div id="preview">
   <p style="color:#666; font-size:12px; margin-bottom:10px;">← 左パネルで設定後、「単週」または「月次」を押してください</p>
+</div>
+
+<!-- === MODULE: Update History Modal === -->
+<div id="historyModal" onclick="if(event.target===this)closeHistory()">
+  <div class="hm-box">
+    <div class="hm-head">
+      <span>📋 更新履歴</span>
+      <button class="hm-close" onclick="closeHistory()">閉じる</button>
+    </div>
+    <div class="hm-body">
+      <table>
+        <thead>
+          <tr>
+            <th>発生日</th>
+            <th>症状</th>
+            <th>原因</th>
+            <th>対策</th>
+          </tr>
+        </thead>
+        <tbody id="historyTbody"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -595,7 +592,7 @@ let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
-  showImgWm: false, showHoliday: false
+  showImgWm: false
 };
 let lineCount = 3;
 let memoLineCount = 4;
@@ -633,47 +630,6 @@ function toDateVal(d) {
 
 function setCSSVar(name, val) {
   document.documentElement.style.setProperty(name, val);
-}
-
-// === MODULE: Japanese Holidays ===
-function getJPHolidays(y) {
-  const h = {};
-  const add = (m, d, name) => { h[`${y}-${pad(m)}-${pad(d)}`] = name; };
-  function nthWd(m, wd, n) {
-    const first = new Date(y, m - 1, 1).getDay();
-    return 1 + ((wd - first + 7) % 7) + (n - 1) * 7;
-  }
-  add(1, 1, '元日'); add(2, 11, '建国記念の日'); add(2, 23, '天皇誕生日');
-  add(4, 29, '昭和の日'); add(5, 3, '憲法記念日'); add(5, 4, 'みどりの日'); add(5, 5, 'こどもの日');
-  if (y >= 2016) add(8, 11, '山の日');
-  add(11, 3, '文化の日'); add(11, 23, '勤労感謝の日');
-  add(1, nthWd(1, 1, 2), '成人の日'); add(7, nthWd(7, 1, 3), '海の日');
-  add(9, nthWd(9, 1, 3), '敬老の日');
-  if (y >= 2000) add(10, nthWd(10, 1, 2), 'スポーツの日');
-  const shunbun = Math.floor(20.8431 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
-  add(3, shunbun, '春分の日');
-  const shubun = Math.floor(23.2488 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
-  add(9, shubun, '秋分の日');
-  const viburi = {};
-  for (const k of Object.keys(h)) {
-    const d = new Date(k);
-    if (d.getDay() === 0) {
-      let next = new Date(d);
-      next.setDate(next.getDate() + 1);
-      while (h[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`]) next.setDate(next.getDate() + 1);
-      viburi[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`] = '振替休日';
-    }
-  }
-  Object.assign(h, viburi);
-  for (let m = 1; m <= 12; m++) {
-    const days = new Date(y, m, 0).getDate();
-    for (let d = 2; d < days; d++) {
-      const prev = `${y}-${pad(m)}-${pad(d-1)}`, cur = `${y}-${pad(m)}-${pad(d)}`, next = `${y}-${pad(m)}-${pad(d+1)}`;
-      const wd = new Date(y, m-1, d).getDay();
-      if (h[prev] && h[next] && !h[cur] && wd !== 0 && wd !== 6) h[cur] = '国民の休日';
-    }
-  }
-  return h;
 }
 
 // === MODULE: Toggle Controls ===
@@ -818,20 +774,15 @@ function buildMonthCalHTML(date) {
 }
 
 // === MODULE: Day Block Builder ===
-function buildDayBlock(date, holidays) {
+function buildDayBlock(date) {
   const wd = date.getDay();
-  const dateKey = toDateVal(date);
-  const holName = opts.showHoliday && holidays && holidays[dateKey] ? holidays[dateKey] : '';
-  const isHol = holName && wd !== 0 && wd !== 6;
-  const wdClass = wd===0?'is-sun':wd===6?'is-sat':(isHol?'is-holiday':'');
+  const wdClass = wd===0?'is-sun':wd===6?'is-sat':'';
   const wdLabel = isEN ? WD_EN_SHORT[wd] : WD_JA[wd];
   const linesHTML = Array(lineCount).fill('<div class="block-line"></div>').join('');
-  const holHTML = holName ? `<div class="day-holiday">${holName}</div>` : '';
   return `<div class="day-block ${wdClass}">
     <div class="day-label">
       <div class="day-num">${date.getDate()}</div>
       <div class="day-wd">${wdLabel}</div>
-      ${holHTML}
     </div>
     <div class="day-content">${linesHTML}</div>
   </div>`;
@@ -844,13 +795,18 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
 
   // 穴ガイド
   const holeStripLeft = holeSide === 'left';
-  const holeItems = HOLE_POSITIONS_MM.map(pos => {
-    return opts.showHoles ? `<div class="hole" style="top:${pos}mm"></div>` : '';
-  }).join('');
-  const borderStyle = opts.showHoleLine
-    ? (holeStripLeft ? 'border-right:0.2mm solid #ddd;' : 'border-left:0.2mm solid #ddd;') : '';
-  const punchGuideHTML = (opts.showHoleBisect && holeStripLeft) ? `<div class="punch-guide"></div>` : '';
-  const holesHTML = `<div class="hole-strip ${holeStripLeft?'':'right'}" style="${borderStyle}">${holeItems}${punchGuideHTML}</div>`;
+  let holesHTML = '';
+  if (opts.showHoles || opts.showHoleLine || opts.showHoleBisect) {
+    const holeItems = HOLE_POSITIONS_MM.map(pos => {
+      return opts.showHoles ? `<div class="hole" style="top:${pos}mm"></div>` : '';
+    }).join('');
+
+    const borderStyle = opts.showHoleLine
+      ? (holeStripLeft ? 'border-right:0.2mm solid #ddd;' : 'border-left:0.2mm solid #ddd;') : '';
+
+    const punchGuideHTML = (opts.showHoleBisect && holeStripLeft) ? `<div class="punch-guide"></div>` : '';
+    holesHTML = `<div class="hole-strip ${holeStripLeft?'':'right'}" style="${borderStyle}">${holeItems}${punchGuideHTML}</div>`;
+  }
 
   // カット線
   let cutHTML = '';
@@ -890,12 +846,9 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
   const yearStr = isEN ? `${ws.getFullYear()}` : `${ws.getFullYear()}`;
 
   // 7日分のブロック
-  const holidays = getJPHolidays(weekStart.getFullYear());
-  const nextYearHolidays = weekStart.getFullYear() !== weekEnd.getFullYear() ? getJPHolidays(weekEnd.getFullYear()) : null;
-  const allHolidays = nextYearHolidays ? Object.assign({}, holidays, nextYearHolidays) : holidays;
   let dayBlocksHTML = '';
   for (let i = 0; i < 7; i++) {
-    dayBlocksHTML += buildDayBlock(addDays(weekStart, i), allHolidays);
+    dayBlocksHTML += buildDayBlock(addDays(weekStart, i));
   }
 
   const pageNumHTML = `<div class="page-num-bar"><span>${pageNum}</span></div>`;
@@ -913,7 +866,6 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
       ${logoHTML}
       ${textWmHTML}
       ${imgWmHTML}
-      ${buildChecklistsHTML()}
       <div class="weekly-page">
         <div class="week-header">
           <div class="week-meta">
@@ -961,8 +913,8 @@ function renderSingle() {
   const pageNums = weekOffsets.map((_, i) => i + 1);
 
   let html = '';
-  if (showFront) html += `<div class="sheet-wrap"><div class="sheet-label">表面</div>${makeA4HTML(weekStartDates, pageNums, 'front')}</div>`;
-  if (showBack)  html += `<div class="sheet-wrap"><div class="sheet-label">裏面</div>${makeA4HTML(weekStartDates, pageNums, 'back')}</div>`;
+  if (showFront) html += `<div class="sheet-wrap"><div class="sheet-label">奇数ページ</div>${makeA4HTML(weekStartDates, pageNums, 'front')}</div>`;
+  if (showBack)  html += `<div class="sheet-wrap"><div class="sheet-label">偶数ページ</div>${makeA4HTML(weekStartDates, pageNums, 'back')}</div>`;
   if (!showFront && !showBack) html = '<p style="color:#666;font-size:12px;">ページ面を選択してください</p>';
   document.getElementById('preview').innerHTML = html;
 }
@@ -998,7 +950,7 @@ function renderMonthly() {
         pageNums.push(idx + 1);
       }
       html += `<div class="sheet-wrap">
-        <div class="sheet-label">Sheet ${s+1} · ${sideKey === 'front' ? '表面' : '裏面'}</div>
+        <div class="sheet-label">Sheet ${s+1} · ${sideKey === 'front' ? '奇数ページ' : '偶数ページ'}</div>
         ${makeA4HTML(weekStartDates, pageNums, sideKey)}
       </div>`;
     }
@@ -1007,85 +959,41 @@ function renderMonthly() {
   document.getElementById('preview').innerHTML = html;
 }
 
-// === MODULE: UpdateHistory ===
+// === MODULE: Update History ===
 const HISTORY_ENTRIES = [
-  { date: '2026-04-22', type: 'improve', title: '印刷分割防止と更新履歴機能を追加（予防的改善）',
-    detail: '週間版では現時点で実害の報告はありませんが、同じ仕組みで作っているデイリー版で「A4用紙の上半分2面の時間枠・メモ欄が印刷時に消える」不具合が発生しました。週間版も同じA4用紙に2面付けする構造のため、同じ症状が起こる可能性があったことから、デイリー版で効果があった「用紙や各面の内側で内容が勝手に分割されないようにする」指定を先回りで適用しました。あわせて、更新履歴を利用者ご自身で確認できるよう、この履歴画面をデイリー版と同じ形で追加しました。' },
-  { date: '2026-04-25', type: 'feat', title: 'チェックリスト表示機能を追加',
-    detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
-  { date: '2026-04-26', type: 'feat', title: '祝日表示機能を追加',
-    detail: '【追加機能】設定パネル「表示要素」に「祝日表示」ボタンを追加しました。ONにすると、各曜日ラベル欄に祝日名（元日・春分の日・振替休日など）が赤字で表示されます。祝日は赤文字で強調されます。' },
-];
-
-function openHistory() {
-  const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
-  document.getElementById('historyList').innerHTML =
-    [...HISTORY_ENTRIES].reverse().map(e =>
-      `<div class="history-entry">
-        <span class="history-date">${e.date}</span>
-        <span class="history-type ${e.type}">${typeLabel[e.type] || e.type}</span>
-        <div class="history-title">${e.title}</div>
-        <div class="history-detail">${e.detail}</div>
-      </div>`
-    ).join('');
-  document.getElementById('historyOverlay').classList.add('open');
-}
-
-function closeHistory() {
-  document.getElementById('historyOverlay').classList.remove('open');
-}
-
-// === MODULE: Checklist ===
-const clGroups = [
-  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
-  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 55 },
-  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 95 },
-];
-
-function initCLFontSelectors() {
-  for (let i = 0; i < 3; i++) {
-    const sel = document.getElementById(`clFont${i}`);
-    if (!sel) continue;
-    FONT_OPTIONS.forEach(f => {
-      const opt = document.createElement('option');
-      opt.value = f.value;
-      opt.textContent = f.label;
-      if (f.value === clGroups[i].font) opt.selected = true;
-      sel.appendChild(opt);
-    });
+  {
+    date: '2026-04-22',
+    symptom: '（週間版では現時点で実害の報告はありません。予防的改善として記録します）',
+    cause: '同じ仕組みで作っているデイリー版（A6日別リフィル印刷ツール）で、A4用紙の上半分2面の「時間枠」や「メモ欄」が印刷時に消えるという不具合が発生しました。週間版も同じA4用紙に4面付けする構造のため、同じ症状が起こる可能性がありました。',
+    fix: 'デイリー版で効果があった「用紙や各面の内側で内容が勝手に分割されないようにする」指定を、念のため週間版にも先回りで適用しました（水平展開）。あわせて、更新履歴を利用者ご自身で確認できるよう、この履歴モーダルをデイリー版と同じ形で追加しました。'
   }
+];
+function renderHistory() {
+  const tbody = document.getElementById('historyTbody');
+  if (!tbody) return;
+  if (!HISTORY_ENTRIES.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="hm-empty">まだ履歴はありません。</td></tr>';
+    return;
+  }
+  tbody.innerHTML = HISTORY_ENTRIES.map(e => `
+    <tr>
+      <td class="date">${e.date}</td>
+      <td>${e.symptom}</td>
+      <td>${e.cause}</td>
+      <td>${e.fix}</td>
+    </tr>
+  `).join('');
 }
-
-function toggleCL(idx) {
-  clGroups[idx].show = document.getElementById(`clShow${idx}`).checked;
-  rerender();
+function openHistory() {
+  renderHistory();
+  document.getElementById('historyModal').classList.add('open');
 }
-
-function updateCL(idx) {
-  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
-  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
-  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
-  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
-  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
-  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
-  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
-  document.getElementById(`clXVal${idx}`).textContent    = clGroups[idx].x;
-  document.getElementById(`clYVal${idx}`).textContent    = clGroups[idx].y;
-  rerender();
+function closeHistory() {
+  document.getElementById('historyModal').classList.remove('open');
 }
-
-function buildChecklistsHTML() {
-  return clGroups.map(g => {
-    if (!g.show) return '';
-    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
-    const itemsHTML = items.map(s =>
-      `<div class="cl-item"><span class="cl-checkbox"></span><span>${s.trim()}</span></div>`
-    ).join('');
-    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
-      (g.title ? `<div class="cl-title">${g.title}</div>` : '') +
-      itemsHTML + `</div>`;
-  }).join('');
-}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeHistory();
+});
 
 // === MODULE: Init ===
 document.addEventListener('DOMContentLoaded', () => {
@@ -1094,7 +1002,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('monthPicker').value =
     `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
   initFontSelectors();
-  initCLFontSelectors();
   renderSingle();
 });
 </script>
