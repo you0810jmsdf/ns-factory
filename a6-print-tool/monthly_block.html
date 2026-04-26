@@ -292,16 +292,37 @@ body.panel-open #preview { margin-left: 280px; }
 }
 
 /* === MODULE: Print === */
-@page { margin: 0; }
+@page { size: 210mm 297mm; margin: 0; }
 @media print {
-  body { background: white; }
-  #controls { display: none; }
-  #ctrl-toggle-btn { display: none; }
-  #preview { margin-left: 0; padding: 0; }
-  .a4-sheet { transform: none; box-shadow: none; page-break-after: always; width: 210mm; height: 297mm; }
-  .a4-sheet:last-child { page-break-after: avoid; }
-  .sheet-wrap { width: 210mm; margin: 0; }
-  .sheet-label { display: none; }
+  html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: white; }
+  body.panel-open #preview { margin-left: 0 !important; }
+  #controls, #ctrl-toggle-btn, .history-overlay { display: none !important; }
+  #preview { margin: 0 !important; padding: 0 !important; width: 210mm !important; }
+  .sheet-wrap {
+    width: 210mm !important; height: 297mm !important;
+    margin: 0 !important; padding: 0 !important;
+    page-break-after: always; break-after: page;
+    page-break-inside: avoid; break-inside: avoid;
+    overflow: hidden; position: relative;
+  }
+  .sheet-wrap:last-child { page-break-after: auto; break-after: auto; }
+  .sheet-label { display: none !important; }
+  .a4-sheet {
+    transform: none !important; box-shadow: none !important;
+    width: 210mm !important; height: 297mm !important;
+    margin: 0 !important; padding: 0 !important;
+    display: block !important; position: relative !important;
+    overflow: hidden;
+  }
+  .a4-sheet > .slot {
+    position: absolute !important;
+    width: 105mm !important; height: 148.5mm !important;
+    margin: 0 !important; padding: 0 !important;
+  }
+  .a4-sheet > .slot:nth-of-type(1) { top: 0;       left: 0; }
+  .a4-sheet > .slot:nth-of-type(2) { top: 0;       left: 105mm; }
+  .a4-sheet > .slot:nth-of-type(3) { top: 148.5mm; left: 0; }
+  .a4-sheet > .slot:nth-of-type(4) { top: 148.5mm; left: 105mm; }
 }
 </style>
 </head>
