@@ -101,8 +101,8 @@ body.panel-open #preview { margin-left: 280px; }
 .slot.empty { background: white; }
 .slot.title-slot { background: white; display: flex; position: relative; }
 /* カット線付近の2mm余白（画面・印刷共通） */
-.a4-sheet > .slot[data-pos="TL"] { padding-right: 2mm; padding-bottom: 2mm; }
-.a4-sheet > .slot[data-pos="TR"] { padding-left:  2mm; padding-bottom: 2mm; }
+.a4-sheet > .slot[data-pos="TL"] { padding-top: 2mm; padding-right: 2mm; padding-bottom: 2mm; }
+.a4-sheet > .slot[data-pos="TR"] { padding-top: 2mm; padding-left:  2mm; padding-bottom: 2mm; }
 .a4-sheet > .slot[data-pos="BL"] { padding-right: 2mm; padding-top:    2mm; }
 .a4-sheet > .slot[data-pos="BR"] { padding-left:  2mm; padding-top:    2mm; }
 .title-text {
@@ -384,8 +384,8 @@ body.panel-open #preview { margin-left: 280px; }
     width: 105mm !important; height: 148.5mm !important;
     margin: 0 !important; padding: 0 !important;
   }
-  .a4-sheet > .slot[data-pos="TL"] { top: 0;       left: 0;      padding-right: 2mm !important; padding-bottom: 2mm !important; }
-  .a4-sheet > .slot[data-pos="TR"] { top: 0;       left: 105mm; padding-left:  2mm !important; padding-bottom: 2mm !important; }
+  .a4-sheet > .slot[data-pos="TL"] { top: 0;       left: 0;      padding-top: 2mm !important; padding-right: 2mm !important; padding-bottom: 2mm !important; }
+  .a4-sheet > .slot[data-pos="TR"] { top: 0;       left: 105mm; padding-top: 2mm !important; padding-left:  2mm !important; padding-bottom: 2mm !important; }
   .a4-sheet > .slot[data-pos="BL"] { top: 148.5mm; left: 0;      padding-right: 2mm !important; padding-top:    2mm !important; }
   .a4-sheet > .slot[data-pos="BR"] { top: 148.5mm; left: 105mm; padding-left:  2mm !important; padding-top:    2mm !important; }
 }
