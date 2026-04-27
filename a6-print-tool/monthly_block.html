@@ -315,8 +315,10 @@ body.panel-open #preview { margin-left: 280px; }
 .vert-cell-date { font-size:2.8mm; font-weight:700; line-height:1.2; font-family:var(--font-date,'Times New Roman',Times,serif); }
 .vert-cell-holiday { font-size:1.5mm; color:#aa4444; line-height:1.1; overflow:hidden; }
 .vert-memo { height:var(--memo-height,15mm); flex-shrink:0; border-top:0.3mm solid #555; padding:1mm 2mm; display:flex; flex-direction:column; }
-.vert-memo-lines { flex:1; display:flex; flex-direction:column; justify-content:space-around; gap:var(--memo-line-gap,0); }
+.vert-memo-lines { flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:var(--memo-line-gap,3mm); }
 .vert-memo-line { height:0; width:var(--memo-line-length,100%); border-bottom:var(--memo-line-width,0.15mm) solid #ccc; }
+.vert-cell-grid { display:grid; flex:1; overflow:hidden; min-height:0; }
+.vert-cell-grid-item { border-right:0.1mm solid #ddd; border-bottom:0.1mm solid #ddd; }
 
 /* === MODULE: UpdateHistory === */
 .history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
@@ -479,6 +481,17 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="btn-row">
       <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
+      <button class="btn-toggle on" id="btnCellGrid" onclick="toggleOpt('showCellGrid','btnCellGrid')">日マスグリッド</button>
+    </div>
+    <div class="ctrl-row"><label>グリッド列数</label>
+      <input type="range" id="cellGridCols" min="1" max="8" step="1" value="2"
+        oninput="opts.cellGridCols=+this.value; this.nextElementSibling.textContent=this.value; rerender()">
+      <span class="val">2</span>
+    </div>
+    <div class="ctrl-row"><label>グリッド行数</label>
+      <input type="range" id="cellGridRows" min="1" max="20" step="1" value="8"
+        oninput="opts.cellGridRows=+this.value; this.nextElementSibling.textContent=this.value; rerender()">
+      <span class="val">8</span>
     </div>
     <div class="ctrl-row"><label>MEMO高さ(mm)</label>
       <input type="range" id="memoHeight" min="0" max="60" step="1" value="18"
@@ -496,9 +509,9 @@ body.panel-open #preview { margin-left: 280px; }
       <span class="val">100</span>
     </div>
     <div class="ctrl-row"><label>MEMO罫線間隔(mm)</label>
-      <input type="range" id="memoLineGap" min="0" max="15" step="0.5" value="0"
+      <input type="range" id="memoLineGap" min="0" max="15" step="0.5" value="3"
         oninput="setCSSVar('--memo-line-gap', this.value+'mm'); this.nextElementSibling.textContent=this.value">
-      <span class="val">0</span>
+      <span class="val">3</span>
     </div>
   </div>
 
@@ -825,7 +838,8 @@ let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showTextWm: true,
-  showImgWm: false, showHoliday: true, showTitle: false
+  showImgWm: false, showHoliday: true, showTitle: false,
+  showCellGrid: true, cellGridCols: 2, cellGridRows: 8
 };
 let customImgDataUrl = null;
 let lastYear = null, lastStartM = null, lastEndM = null;
@@ -1158,9 +1172,13 @@ function buildVerticalMonth(y, m, holidays, holeSide) {
       const dateKey = `${y}-${pad(dateObj.getMonth()+1)}-${pad(d)}`;
       const hName = (opts.showHoliday && holidays[dateKey]) ? holidays[dateKey] : '';
       const cls = `${dayClasses[col]}${!inMonth?' out-of-month':''}${hName?' is-holiday':''}`;
+      const gridHTML = opts.showCellGrid
+        ? `<div class="vert-cell-grid" style="grid-template-columns:repeat(${opts.cellGridCols},1fr);grid-template-rows:repeat(${opts.cellGridRows},1fr);">${Array(opts.cellGridCols*opts.cellGridRows).fill('<div class="vert-cell-grid-item"></div>').join('')}</div>`
+        : '';
       return `<div class="vert-cell ${cls}">
         <div class="vert-cell-date">${inMonth ? d : ''}</div>
         ${(hName && inMonth) ? `<div class="vert-cell-holiday">${hName}</div>` : ''}
+        ${gridHTML}
       </div>`;
     }).join('');
     return `<div class="vert-week">${cellsHTML}</div>`;
@@ -1536,6 +1554,8 @@ const HISTORY_ENTRIES = [
     detail: '縦型レイアウトの両面印刷モードで、穴位置がA4の外端ではなく内側（カット線側）に来てしまう不具合を修正しました。横型ブロック版と同じ物理リーフ方式（奇数番リーフのfront/back入替＋長辺反転）をそのまま適用することで、シート表面・裏面ともA4の外端に穴が揃い、カット・綴じ後に正しい向きになります。あわせてカット線付近の2mm余白も維持されています。' },
   { date: '2026-04-28', type: 'fix', title: 'カット線付近の2mm余白を画面表示・印刷の両方に適用',
     detail: 'A4の縦中央線・横中央線（カット線）付近の2mm余白を、印刷時だけでなく画面プレビューにも常時適用するよう変更しました。これにより画面で確認した通りの余白で印刷され、カット線ぎりぎりに文字がかかって切れる問題を防ぎます。' },
+  { date: '2026-04-28', type: 'feat', title: '縦型レイアウトの各日マスにグリッド線を追加',
+    detail: '縦型マンスリーの各日マス内にグリッド線（初期値：横2列×縦8行）を表示できるようにしました。「表示要素」セクションの「日マスグリッド」ボタンでON/OFFを切り替えられます。「グリッド列数」（1〜8）「グリッド行数」（1〜20）スライダーでマス数を自由に変更でき、メモや予定を書き込む区切り線として活用できます。' },
 ];
 
 function openHistory() {
