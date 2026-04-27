@@ -93,7 +93,8 @@ body.panel-open #preview { margin-left: 280px; }
   width: 105mm; height: 148.5mm; position: relative; overflow: hidden;
   display: flex; flex-direction: row;
 }
-.slot.empty { background: #fafafa; }
+.slot.empty { background: white; }
+@media screen { .slot.empty { background: #fafafa; } }
 
 /* === MODULE: 穴ストリップ === */
 .hole-strip {
@@ -183,7 +184,7 @@ body.panel-open #preview { margin-left: 280px; }
 /* サイドバー（左ページのみ） */
 .month-sidebar {
   width: 13mm; flex-shrink: 0;
-  background: #f8f8f8; border-right: 0.3mm solid #ccc;
+  background: white; border-right: 0.3mm solid #ccc;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2mm;
 }
@@ -1209,7 +1210,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-04-27', type: 'feat', title: 'MEMO罫線の間隔（線と線の縦方向の隙間）をスライダーで調整可能に',
     detail: '「表示要素」セクションに「MEMO罫線間隔(mm)」スライダーを追加しました。0〜15mmの範囲でMEMO欄の罫線同士の縦方向の最小間隔を変更できます。0mmで従来通り（MEMO欄の高さに合わせて自動的に均等配置）、値を大きくすると罫線同士の間が広がります。罫線太さ・罫線幅のスライダーとあわせて、書きやすい行間に調整できます。' },
   { date: '2026-04-27', type: 'fix', title: '印刷時の灰色背景（余白ページ・サイドバー）を白に統一しインク節約',
-    detail: '印刷時に薄い灰色で出ていた「余白ページ（両面印刷の白紙ピース）」と「左ページのサイドバー（月数字エリア）」の背景色を白に変更しました。画面プレビュー上は従来通りエリアの境目が分かるよう薄い灰色で表示されますが、印刷出力時はすべて無色（白）になり、無駄なインク消費を抑えられます。' },
+    detail: '印刷時に薄い灰色で出ていた「余白ページ（両面印刷の白紙ピース）」と「左ページのサイドバー（月数字エリア）」の背景色を白に変更しました。余白ページは画面プレビューでは従来通り薄灰色で位置が分かるようにしつつ、印刷時のみ白にする方式に修正。サイドバーは右側の細い罫線で区別が付くため、画面・印刷とも白に統一しました。これにより、ブラウザの「背景のグラフィックを印刷」設定に関わらず、無駄なインク消費を確実に抑えられます。' },
 ];
 
 function openHistory() {
