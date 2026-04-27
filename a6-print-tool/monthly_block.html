@@ -1219,16 +1219,52 @@ function renderMonths() {
   const HOLE_FOR_RIGHT = 'left';
 
   if (layoutMode === 'vert') {
-    for (let i = 0; i < months.length; i += 4) {
-      const slots = [], labels = [];
-      for (let j = 0; j < 4; j++) {
-        const mi = i + j;
-        if (mi < months.length) {
-          slots.push(buildVerticalMonth(y, months[mi], holidays, 'left'));
-          labels.push(isEN ? `${MONTH_EN_ABB[months[mi]-1]} ${y}` : `${y}年${months[mi]}月`);
-        } else { slots.push(null); labels.push(''); }
+    if (!isDuplex) {
+      // 単票: A4に4か月
+      for (let i = 0; i < months.length; i += 4) {
+        const slots = [], labels = [];
+        for (let j = 0; j < 4; j++) {
+          const mi = i + j;
+          if (mi < months.length) {
+            slots.push(buildVerticalMonth(y, months[mi], holidays, 'left'));
+            labels.push(isEN ? `${MONTH_EN_ABB[months[mi]-1]} ${y}` : `${y}年${months[mi]}月`);
+          } else { slots.push(null); labels.push(''); }
+        }
+        html += `<div class="sheet-wrap"><div class="sheet-label">${labels.filter(Boolean).join(' / ')}</div>${buildA4(slots)}</div>`;
       }
-      html += `<div class="sheet-wrap"><div class="sheet-label">${labels.filter(Boolean).join(' / ')}</div>${buildA4(slots)}</div>`;
+    } else {
+      // 両面: Leaf1=M1(表)/タイトル(裏), Leaf k(k≥2)=M(2k-3)(表)/M(2k-2)(裏)
+      const N = months.length;
+      const leafs = [];
+      leafs.push({ front: { mi: 0 }, back: opts.showTitle ? { type:'title' } : null });
+      for (let i = 1; i < N; i += 2) {
+        leafs.push({ front: { mi: i }, back: i+1 < N ? { mi: i+1 } : null });
+      }
+      while (leafs.length % 4 !== 0) leafs.push({ front: null, back: null });
+
+      const buildVDef = (def, holeSide) => {
+        if (!def) return null;
+        if (def.type === 'title') {
+          const t = (document.getElementById('titleContent') || {}).value || '';
+          return `__TITLE__${t}`;
+        }
+        return buildVerticalMonth(y, months[def.mi], holidays, holeSide);
+      };
+
+      const totalSheets = leafs.length / 4;
+      for (let s = 0; s < totalSheets; s++) {
+        const b = s * 4;
+        const L = [leafs[b], leafs[b+1], leafs[b+2], leafs[b+3]];
+        // 表: TL=L0,TR=L1,BL=L2,BR=L3 すべて穴左
+        const frontSlots = L.map(lf => buildVDef(lf.front, 'left'));
+        // 裏: 長辺反転 TL↔TR BL↔BR, 穴右
+        const backSlots = [
+          buildVDef(L[1].back, 'right'), buildVDef(L[0].back, 'right'),
+          buildVDef(L[3].back, 'right'), buildVDef(L[2].back, 'right'),
+        ];
+        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(frontSlots)}</div>`;
+        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(backSlots)}</div>`;
+      }
     }
   } else if (!isDuplex) {
     for (let i = 0; i < months.length; i += 2) {
