@@ -1243,6 +1243,11 @@ function renderMonths() {
       }
       while (leafs.length % 4 !== 0) leafs.push({ front: null, back: null });
 
+      // 奇数番リーフのfront/backを入替（横ブロック版と同一ロジック）
+      for (let k = 1; k < leafs.length; k += 2) {
+        const t = leafs[k].front; leafs[k].front = leafs[k].back; leafs[k].back = t;
+      }
+
       const buildVDef = (def) => {
         if (!def) return null;
         if (def.type === 'title') {
@@ -1264,10 +1269,10 @@ function renderMonths() {
           buildVDef(L[0].front), buildVDef(L[1].front),
           buildVDef(L[2].front), buildVDef(L[3].front),
         ];
-        // 裏: 短辺反転(TL↔BL, TR↔BR) — back-BL→frontTL, back-BR→frontTR, back-TL→frontBL, back-TR→frontBR
+        // 裏: 長辺反転(TL↔TR, BL↔BR) — 横ブロック版と同一ロジック
         const backSlots = [
-          buildVDef(L[2].back), buildVDef(L[3].back),
-          buildVDef(L[0].back), buildVDef(L[1].back),
+          buildVDef(L[1].back), buildVDef(L[0].back),
+          buildVDef(L[3].back), buildVDef(L[2].back),
         ];
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(frontSlots)}</div>`;
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(backSlots)}</div>`;
@@ -1522,8 +1527,8 @@ const HISTORY_ENTRIES = [
     detail: '「レイアウト」切替ボタンを追加しました。「縦型」を選ぶと、A6に1か月分の縦グリッド（月曜〜日曜×6週）が収まるレイアウトで印刷できます。A4用紙1枚に4か月分を並べて印刷されます。穴は全ページ左側になります。' },
   { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に移動・「使い方」ヘルプを追加',
     detail: '①これまで操作パネル最上部に表示していた「印刷倍率100%」の注意書きを、実際に押す印刷ボタンの直下へ移動しました。印刷を始める直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／両面印刷の手順／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
-  { date: '2026-04-27', type: 'fix', title: '両面印刷（短辺とじ）で8・9・10・11月が抜ける不具合を修正／カット線付近に2mm余白を追加',
-    detail: '①実際に印刷したとき「8月の裏が白紙・9月がない・10月がない・11月の裏が白紙」になる不具合を修正しました。プリンターの両面印刷が「短辺とじ（上下反転）」方式だったため、表裏の割り当てがずれていました。短辺とじに合わせた正しい面付けに修正したことで、全月が正しい順序で印刷されます。②A4のカット線（中央の横線・縦線）付近に2mmの余白を設けました。カット後の仕上がりがきれいになり、カット位置が多少ずれても内容が欠けにくくなります。' },
+  { date: '2026-04-28', type: 'fix', title: '縦型両面印刷の面付けロジックを修正（穴がA4外端に揃わない不具合）',
+    detail: '縦型レイアウトの両面印刷モードで、穴位置がA4の外端ではなく内側（カット線側）に来てしまう不具合を修正しました。横型ブロック版と同じ物理リーフ方式（奇数番リーフのfront/back入替＋長辺反転）をそのまま適用することで、シート表面・裏面ともA4の外端に穴が揃い、カット・綴じ後に正しい向きになります。あわせてカット線付近の2mm余白も維持されています。' },
 ];
 
 function openHistory() {
