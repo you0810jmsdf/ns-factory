@@ -543,7 +543,52 @@ body.panel-open #preview { margin-left: 280px; }
     <h3>印刷</h3>
     <div class="btn-row">
       <button class="btn-primary" onclick="window.print()">印刷</button>
-      <button class="btn-secondary" onclick="openHistory()">更新履歴</button>
+      <button class="btn-secondary" onclick="openHelp()" style="margin-left:6px">使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="margin-left:6px">更新履歴</button>
+    </div>
+    <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
+      ⚠️ <strong>印刷時の注意</strong><br>
+      ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A6リフィルとして使えません。
+    </div>
+  </div>
+</div>
+
+<!-- === MODULE: Help Modal === -->
+<div class="history-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
+    <h3>使い方マニュアル（週間ブロック印刷ツール）</h3>
+    <div style="font-size:11px; line-height:1.7; color:#ddd;">
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>左メニューで <b>言語</b>・<b>開始年月</b>・<b>表示範囲</b> を設定</li>
+        <li>「単週」または「月次」ボタンでプレビュー生成</li>
+        <li>印刷ダイアログで <b>必ず「実際のサイズ（100%）」</b> を選ぶ</li>
+      </ol>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 各セクションの役割</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li><b>印刷モード</b>：言語・年月・表示週数の指定</li>
+        <li><b>表示要素</b>：祝日・土日カラー・穴印刷・パンチガイド・MEMO欄・罫線などのON/OFFと寸法</li>
+        <li><b>透かし</b>：ロゴ／テキスト／画像の透かしを各ページに重ねて印刷</li>
+        <li><b>チェックリスト</b>：任意のテキストを各ページに重ねて印刷</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 印刷時の注意</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>必ず「実際のサイズ（100%）」または「カスタム倍率：100%」を選択</li>
+        <li>「ページに合わせる」だと縮小されA6サイズが狂う</li>
+        <li>余白は本ツール側で0設定済み（ブラウザ余白設定は「なし」のまま）</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ このマニュアルをPDFで保存したいとき</p>
+      <p style="margin:4px 0;">この画面を開いた状態でブラウザの印刷（Ctrl+P / Cmd+P）から「PDFに保存」を選ぶと、マニュアルをPDFとして保存できます。</p>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>サイズが合わない → 印刷倍率100%を再確認</li>
+        <li>機能変更点を確認したい → 「更新履歴」ボタン</li>
+      </ul>
     </div>
   </div>
 </div>
@@ -1015,6 +1060,8 @@ const HISTORY_ENTRIES = [
     detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
   { date: '2026-04-26', type: 'feat', title: '祝日表示機能を追加',
     detail: '【追加機能】設定パネル「表示要素」に「祝日表示」ボタンを追加しました。ONにすると、各曜日ラベル欄に祝日名（元日・春分の日・振替休日など）が赤字で表示されます。祝日は赤文字で強調されます。' },
+  { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に表示・「使い方」ヘルプを追加',
+    detail: '①印刷ボタンの直下に「印刷倍率100%」の注意書きを表示するようにしました。印刷直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
 ];
 
 function openHistory() {
@@ -1034,6 +1081,9 @@ function openHistory() {
 function closeHistory() {
   document.getElementById('historyOverlay').classList.remove('open');
 }
+
+function openHelp()  { document.getElementById('helpOverlay').classList.add('open'); }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
 
 // === MODULE: Checklist ===
 const clGroups = [
