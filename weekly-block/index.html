@@ -554,12 +554,61 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
       <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
     </div>
+    <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
+      ⚠️ <strong>印刷時の注意</strong><br>
+      ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A6リフィルとして使えません。
+    </div>
     <div style="font-size:11px; color:#aaa; margin-top:6px; line-height:1.6;">
       表面・裏面を両方ONにして「PDFを生成」→ 両面印刷<br>
       ※「印刷」ボタンは従来の直接印刷（PC向け）
     </div>
     <div class="btn-row" style="margin-top:6px;">
-      <button class="btn-secondary" onclick="openHistory()">更新履歴</button>
+      <button class="btn-secondary" onclick="openHelp()">使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="margin-left:6px">更新履歴</button>
+    </div>
+  </div>
+</div>
+
+<!-- === MODULE: Help Modal === -->
+<div class="history-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
+    <h3>使い方マニュアル（週間ブロック印刷ツール）</h3>
+    <div style="font-size:12px; line-height:1.7; color:#ddd;">
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
+      <ol style="margin-left:18px;">
+        <li>左パネルで <b>言語・年月・表示週数</b> を設定</li>
+        <li><b>表示要素</b>（祝日・土日カラー・穴・パンチガイド・MEMO欄など）を必要に応じてON/OFF</li>
+        <li>必要なら <b>透かし</b>・<b>チェックリスト</b> を設定</li>
+        <li>表面・裏面を両方ONにして「PDFを生成」を押す（両面印刷用）</li>
+        <li>印刷ダイアログで <b>必ず「実際のサイズ（100%）」</b> を選ぶ</li>
+      </ol>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 各セクションの役割</p>
+      <ul style="margin-left:18px;">
+        <li><b>印刷モード</b>：言語・年月・表示週数の指定</li>
+        <li><b>表示要素</b>：祝日・土日カラー・穴印刷・パンチガイド・MEMO欄・罫線などのON/OFFと寸法</li>
+        <li><b>透かし</b>：ロゴ／テキスト／画像の透かしを各ページに重ねて印刷</li>
+        <li><b>チェックリスト</b>：任意のテキストを各ページに重ねて印刷</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 印刷時の注意</p>
+      <ul style="margin-left:18px;">
+        <li>印刷倍率は必ず <b>100%</b>（縮小しない）</li>
+        <li>用紙サイズは <b>A4</b>、向きは <b>縦</b></li>
+        <li>両面印刷時は「長辺とじ」推奨</li>
+        <li>「PDFを生成」→ プリンターの両面印刷設定で印刷するのが安定</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ PDF保存方法</p>
+      <p style="margin:4px 0;">この画面を開いた状態でブラウザの印刷（Ctrl+P / Cmd+P）から「PDFに保存」を選ぶと、マニュアルをPDFとして保存できます。</p>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
+      <ul style="margin-left:18px;">
+        <li>サイズが合わない → 印刷倍率100%を再確認</li>
+        <li>レイアウトが崩れる → ブラウザを最新版に更新／別ブラウザで試す</li>
+        <li>不具合報告は「更新履歴」ボタンから過去の修正内容を確認可</li>
+      </ul>
     </div>
   </div>
 </div>
@@ -1045,6 +1094,8 @@ function renderMonthly() {
 
 // === MODULE: Update History ===
 const HISTORY_ENTRIES = [
+  { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に表示・「使い方」ヘルプを追加',
+    detail: '①印刷ボタンの直下に「印刷倍率100%」の注意書きを表示するようにしました。印刷直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
   { date: '2026-04-22', type: 'improve', title: '印刷分割防止と更新履歴機能を追加（予防的改善）',
     detail: '週間版では現時点で実害の報告はありませんが、同じ仕組みで作っているデイリー版で「A4用紙の上半分2面の時間枠・メモ欄が印刷時に消える」不具合が発生しました。週間版も同じA4用紙に2面付けする構造のため、同じ症状が起こる可能性があったことから、デイリー版で効果があった「用紙や各面の内側で内容が勝手に分割されないようにする」指定を先回りで適用しました。あわせて、更新履歴を利用者ご自身で確認できるよう、この履歴画面をデイリー版と同じ形で追加しました。' },
   { date: '2026-04-26', type: 'feat', title: 'チェックリスト表示機能を追加',
@@ -1074,8 +1125,10 @@ function openHistory() {
 function closeHistory() {
   document.getElementById('historyOverlay').classList.remove('open');
 }
+function openHelp()  { document.getElementById('helpOverlay').classList.add('open'); }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeHistory();
+  if (e.key === 'Escape') { closeHistory(); closeHelp(); }
 });
 
 // === MODULE: Checklist ===
