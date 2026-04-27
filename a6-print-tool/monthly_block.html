@@ -369,11 +369,6 @@ body.panel-open #preview { margin-left: 280px; }
 <div id="controls">
   <h2>N's factory<br>月間ブロック 印刷ツール</h2>
 
-  <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:0 0 12px 0; font-size:12px; line-height:1.5;">
-    ⚠️ <strong>印刷時の注意</strong><br>
-    ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A6リフィルとして使えません。
-  </div>
-
   <div class="ctrl-section">
     <h3>印刷モード</h3>
     <div class="ctrl-row">
@@ -678,11 +673,69 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="btn-row">
       <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
       <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+      <button class="btn-secondary" onclick="openHelp()" style="margin-left:6px">使い方</button>
       <button class="btn-secondary" onclick="openHistory()" style="margin-left:6px">更新履歴</button>
+    </div>
+    <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
+      ⚠️ <strong>印刷時の注意</strong><br>
+      ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A6リフィルとして使えません。
     </div>
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
       ※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>
       ※ PCは「印刷」ボタンで直接印刷可
+    </div>
+  </div>
+</div>
+
+<!-- === MODULE: Help Modal === -->
+<div class="history-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
+    <h3>使い方マニュアル（月間ブロック印刷ツール）</h3>
+    <div style="font-size:11px; line-height:1.7; color:#ddd;">
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>左メニュー「印刷モード」で <b>言語</b>・<b>開始年月</b>・<b>月数</b> を設定</li>
+        <li>必要に応じて「両面印刷モード」をON（A4両面印刷 → カットで見開きA6になる）</li>
+        <li>プレビューを確認後、PCは「印刷」、スマホは「PDFを生成」</li>
+        <li>印刷ダイアログで <b>必ず「実際のサイズ（100%）」</b> を選ぶ</li>
+      </ol>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 各セクションの役割</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li><b>印刷モード</b>：言語・年月範囲・両面印刷／タイトルページ切替</li>
+        <li><b>表示要素</b>：祝日・土日カラー・穴印刷・パンチガイド・MEMO欄・罫線などのON/OFFと細かな寸法</li>
+        <li><b>透かし</b>：ロゴ（フクロウ）／テキスト／画像の透かしを各ページに重ねて印刷。タイトルページにも個別反映可能</li>
+        <li><b>タイトルページ</b>：両面印刷時、1ヶ月目左ページの裏（リーフ1表面）に表紙を入れる。複数行入力対応・角度・フォント変更可</li>
+        <li><b>チェックリスト</b>：任意のテキストを各ページに重ねて印刷</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 両面印刷の手順</p>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>「両面印刷モード」をON</li>
+        <li>プリンターの両面設定を <b>「長辺綴じ」</b> に</li>
+        <li>A4で印刷後、各シートを中央でカットしてA6に</li>
+        <li>カット後、束ねる順は画面の表示順そのまま</li>
+        <li>左綴じバインダーに綴じれば見開きの背側に穴が揃う</li>
+      </ol>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 印刷時の注意</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>必ず「実際のサイズ（100%）」または「カスタム倍率：100%」を選択</li>
+        <li>「ページに合わせる」だと縮小されA6サイズが狂う</li>
+        <li>余白は本ツール側で0設定済み（ブラウザ余白設定は「なし」のまま）</li>
+        <li>背景色印刷は不要（白紙ページ・サイドバーは白で出力）</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ このマニュアルをPDFで保存したいとき</p>
+      <p style="margin:4px 0;">この画面を開いた状態でブラウザの印刷（Ctrl+P / Cmd+P）から「PDFに保存」を選ぶと、マニュアルをPDFとして保存できます。</p>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>サイズが合わない → 印刷倍率100%を再確認</li>
+        <li>iPhone/iPadでレイアウトが崩れる → 「PDFを生成」を使用</li>
+        <li>機能変更点を確認したい → 「更新履歴」ボタン</li>
+      </ul>
     </div>
   </div>
 </div>
@@ -1324,6 +1377,8 @@ const HISTORY_ENTRIES = [
     detail: '両面印刷モードでカット後、1ヶ月目左ページの裏面（リーフ1の表面、通常は白紙）にタイトルテキストを印刷できるようにしました。左メニュー「タイトルページ」セクションで、ON/OFF切替・テキスト入力・X/Y位置・文字サイズ・角度・フォント選択が可能です。例：「2026 SCHEDULE」などを表紙として印刷できます。' },
   { date: '2026-04-27', type: 'fix', title: '印刷時の灰色背景（余白ページ・サイドバー）を白に統一しインク節約',
     detail: '印刷時に薄い灰色で出ていた「余白ページ（両面印刷の白紙ピース）」と「左ページのサイドバー（月数字エリア）」の背景色を白に変更しました。余白ページは画面プレビューでは従来通り薄灰色で位置が分かるようにしつつ、印刷時のみ白にする方式に修正。サイドバーは右側の細い罫線で区別が付くため、画面・印刷とも白に統一しました。これにより、ブラウザの「背景のグラフィックを印刷」設定に関わらず、無駄なインク消費を確実に抑えられます。' },
+  { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に移動・「使い方」ヘルプを追加',
+    detail: '①これまで操作パネル最上部に表示していた「印刷倍率100%」の注意書きを、実際に押す印刷ボタンの直下へ移動しました。印刷を始める直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／両面印刷の手順／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
 ];
 
 function openHistory() {
@@ -1343,6 +1398,9 @@ function openHistory() {
 function closeHistory() {
   document.getElementById('historyOverlay').classList.remove('open');
 }
+
+function openHelp()  { document.getElementById('helpOverlay').classList.add('open'); }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
 
 // === MODULE: Checklist ===
 const clGroups = [
