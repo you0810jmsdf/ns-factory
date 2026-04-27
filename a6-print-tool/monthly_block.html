@@ -39,6 +39,11 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   --img-wm-y: 0mm;
   --img-wm-size: 50mm;
   --img-wm-opacity: 0.08;
+  --title-x: 0mm;
+  --title-y: 0mm;
+  --title-size: 14mm;
+  --title-angle: 0deg;
+  --font-title: 'Noto Serif JP', serif;
 }
 
 /* === MODULE: Control Panel === */
@@ -95,6 +100,18 @@ body.panel-open #preview { margin-left: 280px; }
 }
 .slot.empty { background: white; }
 @media screen { .slot.empty { background: #fafafa; } }
+.slot.title-slot { background: white; display: block; position: relative; }
+.title-text {
+  position: absolute;
+  left: calc(50% + var(--title-x, 0mm));
+  top: calc(50% + var(--title-y, 0mm));
+  transform: translate(-50%, -50%) rotate(var(--title-angle, 0deg));
+  font-size: var(--title-size, 14mm);
+  font-family: var(--font-title, 'Noto Serif JP', serif);
+  font-weight: 700;
+  white-space: nowrap;
+  color: #000;
+}
 
 /* === MODULE: 穴ストリップ === */
 .hole-strip {
@@ -455,6 +472,45 @@ body.panel-open #preview { margin-left: 280px; }
   </div>
 
   <div class="ctrl-section">
+    <h3>タイトルページ（両面印刷時・1ヶ月目左ページの裏）</h3>
+    <div class="btn-row">
+      <button class="btn-toggle" id="btnTitle" onclick="toggleOpt('showTitle','btnTitle')">タイトル表示</button>
+    </div>
+    <div class="ctrl-row">
+      <label>テキスト</label>
+      <input type="text" id="titleContent" value="2026 SCHEDULE" style="flex:1" oninput="rerender()">
+    </div>
+    <div class="ctrl-row">
+      <label>X（左右）</label>
+      <input type="range" id="titleX" min="-50" max="50" step="1" value="0"
+        oninput="setCSSVar('--title-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>Y（上下）</label>
+      <input type="range" id="titleY" min="-70" max="70" step="1" value="0"
+        oninput="setCSSVar('--title-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>文字サイズ</label>
+      <input type="range" id="titleSize" min="3" max="60" step="0.5" value="14"
+        oninput="setCSSVar('--title-size', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">14</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>角度</label>
+      <input type="range" id="titleAngle" min="-90" max="90" step="1" value="0"
+        oninput="setCSSVar('--title-angle', this.value+'deg'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>°
+    </div>
+    <div class="ctrl-row">
+      <label>フォント</label>
+      <select id="fontTitle" onchange="updateFontVars()"></select>
+    </div>
+  </div>
+
+  <div class="ctrl-section">
     <h3>テキスト透かし</h3>
     <div class="ctrl-row">
       <label>テキスト</label>
@@ -666,7 +722,7 @@ let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showTextWm: true,
-  showImgWm: false, showHoliday: true
+  showImgWm: false, showHoliday: true, showTitle: false
 };
 let customImgDataUrl = null;
 let lastYear = null, lastStartM = null, lastEndM = null;
@@ -964,7 +1020,11 @@ function buildA4(slots) {
   positions.forEach((pos, i) => {
     const holeSide = HOLE_SIDE[pos];
     const content = slots[i];
-    if (content) {
+    if (content && typeof content === 'string' && content.startsWith('__TITLE__')) {
+      const titleText = content.slice(9);
+      const safe = String(titleText).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html += `<div class="slot title-slot" data-pos="${pos}"><div class="title-text">${safe}</div></div>`;
+    } else if (content) {
       html += `<div class="slot" data-pos="${pos}">${content}</div>`;
     } else {
       html += buildEmptySlot();
@@ -1040,8 +1100,18 @@ function renderMonths() {
       const t = leafs[k].front; leafs[k].front = leafs[k].back; leafs[k].back = t;
     }
 
+    // タイトル表示ON時：1ヶ月目左ページの裏（=リーフ1の表面）に挿入
+    // リーフ1は奇数番swap対象外なので front=null のまま。ここに 'title' 定義を入れる。
+    if (opts.showTitle && leafs.length > 0) {
+      leafs[0].front = { type: 'title' };
+    }
+
     const buildDef = (def) => {
       if (!def) return null;
+      if (def.type === 'title') {
+        const t = (document.getElementById('titleContent') || {}).value || '';
+        return `__TITLE__${t}`;
+      }
       const m = months[def.mi], g = grids[def.mi];
       return def.type === 'left'
         ? buildLeftPage(y, m, g, holidays, HOLE_FOR_LEFT)
@@ -1120,6 +1190,7 @@ function updateFontVars() {
   setCSSVar('--font-date-num',   get('fontDateNum'));
   setCSSVar('--font-month-abbr', get('fontMonthAbbr'));
   setCSSVar('--font-text-wm',    get('fontTextWm'));
+  setCSSVar('--font-title',      get('fontTitle'));
 }
 
 function handleImageUpload(e) {
@@ -1137,6 +1208,7 @@ function initFontSelectors() {
     { id: 'fontDateNum',    def: "'Noto Sans JP', sans-serif" },
     { id: 'fontMonthAbbr',  def: "'Times New Roman', Times, serif" },
     { id: 'fontTextWm',     def: "'Noto Sans JP', sans-serif" },
+    { id: 'fontTitle',      def: "'Noto Serif JP', serif" },
   ];
   selectors.forEach(({ id, def }) => {
     const sel = document.getElementById(id);
@@ -1209,6 +1281,8 @@ const HISTORY_ENTRIES = [
     detail: '「月略称」をOFFにしたとき、月略称表示の上にあった横罫線（フッター上端の罫線）も連動して非表示になるよう修正しました。これまでは月略称を消しても罫線だけが残ってしまい、右下に意図しない線が出ていました。今後はON時のみ罫線も表示され、OFF時は罫線ごと消えます。' },
   { date: '2026-04-27', type: 'feat', title: 'MEMO罫線の間隔（線と線の縦方向の隙間）をスライダーで調整可能に',
     detail: '「表示要素」セクションに「MEMO罫線間隔(mm)」スライダーを追加しました。0〜15mmの範囲でMEMO欄の罫線同士の縦方向の最小間隔を変更できます。0mmで従来通り（MEMO欄の高さに合わせて自動的に均等配置）、値を大きくすると罫線同士の間が広がります。罫線太さ・罫線幅のスライダーとあわせて、書きやすい行間に調整できます。' },
+  { date: '2026-04-27', type: 'feat', title: 'タイトルページ機能を追加（両面印刷時・1ヶ月目左ページの裏に表紙テキストを印刷可能）',
+    detail: '両面印刷モードでカット後、1ヶ月目左ページの裏面（リーフ1の表面、通常は白紙）にタイトルテキストを印刷できるようにしました。左メニュー「タイトルページ」セクションで、ON/OFF切替・テキスト入力・X/Y位置・文字サイズ・角度・フォント選択が可能です。例：「2026 SCHEDULE」などを表紙として印刷できます。' },
   { date: '2026-04-27', type: 'fix', title: '印刷時の灰色背景（余白ページ・サイドバー）を白に統一しインク節約',
     detail: '印刷時に薄い灰色で出ていた「余白ページ（両面印刷の白紙ピース）」と「左ページのサイドバー（月数字エリア）」の背景色を白に変更しました。余白ページは画面プレビューでは従来通り薄灰色で位置が分かるようにしつつ、印刷時のみ白にする方式に修正。サイドバーは右側の細い罫線で区別が付くため、画面・印刷とも白に統一しました。これにより、ブラウザの「背景のグラフィックを印刷」設定に関わらず、無駄なインク消費を確実に抑えられます。' },
 ];
