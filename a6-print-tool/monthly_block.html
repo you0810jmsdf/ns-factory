@@ -289,6 +289,71 @@ body.panel-open #preview { margin-left: 280px; }
   font-family: var(--font-month-abbr, 'Times New Roman', Times, serif);
 }
 
+/* === MODULE: 縦型月間 CSS === */
+.monthly-vert {
+  width: 100%; height: 100%; display: flex; flex-direction: row; position: relative;
+}
+.vert-content {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
+}
+.vert-header {
+  height: 13mm; flex-shrink: 0; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 2mm;
+  border-bottom: 0.3mm solid #555;
+}
+.vert-month-num {
+  font-size: 8mm; font-weight: 700; line-height: 1;
+  font-family: var(--font-month-num, 'Times New Roman', Times, serif);
+}
+.vert-month-name {
+  font-size: 3.5mm; font-weight: 700; letter-spacing: 0.5mm; text-align: right;
+  font-family: var(--font-month-abbr, 'Times New Roman', Times, serif);
+}
+.vert-year {
+  font-size: 2.8mm; color: #888; text-align: right;
+  font-family: var(--font-base, 'Noto Sans JP', sans-serif);
+}
+.vert-grid {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+}
+.vert-day-header-row {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  height: 6mm; flex-shrink: 0; border-bottom: 0.2mm solid #bbb;
+}
+.vert-day-header {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2mm; font-weight: 700; color: #555;
+}
+.vert-day-header.is-sat { color: #2255aa; }
+.vert-day-header.is-sun { color: #aa2222; }
+.vert-week-rows { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.vert-week {
+  flex: 1; display: grid; grid-template-columns: repeat(7, 1fr);
+  border-bottom: 0.15mm solid #ddd;
+}
+.vert-week:last-child { border-bottom: none; }
+.vert-cell {
+  border-right: 0.15mm solid #ddd; display: flex; flex-direction: column;
+  padding: 0.5mm; overflow: hidden;
+}
+.vert-cell:last-child { border-right: none; }
+.vert-cell.is-sat .vert-cell-date { color: #2255aa; }
+.vert-cell.is-sun .vert-cell-date { color: #aa2222; }
+.vert-cell.is-holiday .vert-cell-date { color: #aa2222; }
+.vert-cell.out-of-month { background: #f8f8f8; }
+.vert-cell-date {
+  font-size: 2.8mm; font-weight: 700; line-height: 1.2;
+  font-family: var(--font-date, 'Times New Roman', Times, serif);
+}
+.vert-cell-holiday { font-size: 1.5mm; color: #aa4444; line-height: 1.1; overflow: hidden; }
+.vert-memo {
+  height: var(--vert-memo-height, 15mm); flex-shrink: 0;
+  border-top: 0.3mm solid #555; padding: 1mm 2mm;
+  display: flex; flex-direction: column;
+}
+.vert-memo-lines { flex: 1; display: flex; flex-direction: column; justify-content: space-around; }
+.vert-memo-line { border-bottom: 0.15mm solid #ccc; }
+
 /* === MODULE: UpdateHistory === */
 .history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
 .history-overlay.open { display:flex; }
@@ -379,6 +444,11 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row">
       <label>両面印刷</label>
       <button class="btn-toggle" id="btnDuplex" onclick="toggleDuplex()">OFF</button>
+    </div>
+    <div class="ctrl-row">
+      <label>レイアウト</label>
+      <button class="btn-toggle on" id="btnBlock" onclick="setLayout('block')">横ブロック</button>
+      <button class="btn-toggle" id="btnVert" onclick="setLayout('vert')">縦型</button>
     </div>
   </div>
 
@@ -789,6 +859,7 @@ let opts = {
 let customImgDataUrl = null;
 let lastYear = null, lastStartM = null, lastEndM = null;
 let isDuplex = false;
+let layoutMode = 'block';
 
 // === MODULE: Utility Functions ===
 function pad(n) { return String(n).padStart(2,'0'); }
@@ -1091,6 +1162,61 @@ function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRig
   </div>`;
 }
 
+// === MODULE: 縦型月間ページ Builder ===
+function buildVerticalMonth(y, m, holidays, holeSide) {
+  const holeStrip = buildHoleStrip(holeSide, opts.showHoleBisect);
+  const wm = buildWatermarks();
+  const cl = buildChecklistsHTML();
+  const grid = getMonthGrid(y, m);
+
+  const dayLabels = isEN
+    ? ['MON','TUE','WED','THU','FRI','SAT','SUN']
+    : ['月','火','水','木','金','土','日'];
+  const dayClasses = ['','','','','','is-sat','is-sun'];
+
+  const headerHTML = `<div class="vert-header">
+    <div class="vert-month-num">${m}</div>
+    <div>
+      ${opts.showMonthAbbr ? `<div class="vert-month-name">${isEN ? MONTH_EN_ABB[m-1] : MONTH_JA[m-1]}</div>` : ''}
+      <div class="vert-year">${y}</div>
+    </div>
+  </div>`;
+
+  const dayHeaderRowHTML = `<div class="vert-day-header-row">
+    ${dayLabels.map((lbl, i) => `<div class="vert-day-header ${dayClasses[i]}">${lbl}</div>`).join('')}
+  </div>`;
+
+  const weeksHTML = grid.map(week => {
+    const cellsHTML = week.map((cell, col) => {
+      if (!cell) return `<div class="vert-cell out-of-month"></div>`;
+      const dateKey = `${y}-${pad(m)}-${pad(cell)}`;
+      const hName = (opts.showHoliday && holidays[dateKey]) ? holidays[dateKey] : '';
+      const cls = `${dayClasses[col]}${hName ? ' is-holiday' : ''}`;
+      return `<div class="vert-cell ${cls}">
+        <div class="vert-cell-date">${cell}</div>
+        ${hName ? `<div class="vert-cell-holiday">${hName}</div>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="vert-week">${cellsHTML}</div>`;
+  }).join('');
+
+  const memoLinesHTML = Array(4).fill('<div class="vert-memo-line"></div>').join('');
+  const memoHTML = `<div class="vert-memo"><div class="vert-memo-lines">${memoLinesHTML}</div></div>`;
+
+  const content = `${headerHTML}
+    <div class="vert-grid">
+      ${dayHeaderRowHTML}
+      <div class="vert-week-rows">${weeksHTML}</div>
+    </div>
+    ${memoHTML}`;
+
+  return `${holeSide === 'left' ? holeStrip : ''}
+    <div class="monthly-vert">${wm}${cl}
+      <div class="vert-content">${content}</div>
+    </div>
+    ${holeSide === 'right' ? holeStrip : ''}`;
+}
+
 // === MODULE: A4 Sheet Builder ===
 function buildEmptySlot() {
   return `<div class="slot empty"></div>`;
@@ -1138,7 +1264,26 @@ function renderMonths() {
   const HOLE_FOR_LEFT  = 'right';
   const HOLE_FOR_RIGHT = 'left';
 
-  if (!isDuplex) {
+  if (layoutMode === 'vert') {
+    for (let i = 0; i < months.length; i += 4) {
+      const slots = [], slotLabels = [];
+      for (let j = 0; j < 4; j++) {
+        const mi = i + j;
+        if (mi < months.length) {
+          slots.push(buildVerticalMonth(y, months[mi], holidays, 'left'));
+          slotLabels.push(isEN ? `${MONTH_EN_ABB[months[mi]-1]} ${y}` : `${y}年${months[mi]}月`);
+        } else {
+          slots.push(null);
+          slotLabels.push('');
+        }
+      }
+      const sheetLabel = slotLabels.filter(Boolean).join(' / ');
+      html += `<div class="sheet-wrap">
+        <div class="sheet-label">${sheetLabel}</div>
+        ${buildA4(slots)}
+      </div>`;
+    }
+  } else if (!isDuplex) {
     for (let i = 0; i < months.length; i += 2) {
       const m1 = months[i];
       const m2 = months[i + 1] || null;
@@ -1243,6 +1388,18 @@ function rerender() {
 }
 
 // === MODULE: UI Helpers ===
+function setLayout(mode) {
+  layoutMode = mode;
+  document.getElementById('btnBlock').classList.toggle('on', mode === 'block');
+  document.getElementById('btnVert').classList.toggle('on', mode === 'vert');
+  if (mode === 'vert' && isDuplex) {
+    isDuplex = false;
+    const db = document.getElementById('btnDuplex');
+    db.textContent = 'OFF'; db.classList.remove('on');
+  }
+  rerender();
+}
+
 function toggleSidebar() {
   document.body.classList.toggle('panel-open');
   document.getElementById('controls').classList.toggle('open');
@@ -1377,6 +1534,8 @@ const HISTORY_ENTRIES = [
     detail: '両面印刷モードでカット後、1ヶ月目左ページの裏面（リーフ1の表面、通常は白紙）にタイトルテキストを印刷できるようにしました。左メニュー「タイトルページ」セクションで、ON/OFF切替・テキスト入力・X/Y位置・文字サイズ・角度・フォント選択が可能です。例：「2026 SCHEDULE」などを表紙として印刷できます。' },
   { date: '2026-04-27', type: 'fix', title: '印刷時の灰色背景（余白ページ・サイドバー）を白に統一しインク節約',
     detail: '印刷時に薄い灰色で出ていた「余白ページ（両面印刷の白紙ピース）」と「左ページのサイドバー（月数字エリア）」の背景色を白に変更しました。余白ページは画面プレビューでは従来通り薄灰色で位置が分かるようにしつつ、印刷時のみ白にする方式に修正。サイドバーは右側の細い罫線で区別が付くため、画面・印刷とも白に統一しました。これにより、ブラウザの「背景のグラフィックを印刷」設定に関わらず、無駄なインク消費を確実に抑えられます。' },
+  { date: '2026-04-27', type: 'feat', title: '縦型マンスリーレイアウトを追加（A6に1か月・A4に4か月）',
+    detail: '「レイアウト」切替ボタンを追加しました。「縦型」を選ぶと、A6に1か月分の縦グリッド（月曜〜日曜×6週）が収まるレイアウトで印刷できます。A4用紙1枚に4か月分を並べて印刷されます。祝日・透かし・チェックリストなど既存の機能はそのまま使えます。穴は全ページ左側になります。' },
   { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に移動・「使い方」ヘルプを追加',
     detail: '①これまで操作パネル最上部に表示していた「印刷倍率100%」の注意書きを、実際に押す印刷ボタンの直下へ移動しました。印刷を始める直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／両面印刷の手順／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
 ];
