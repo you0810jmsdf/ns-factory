@@ -99,7 +99,7 @@ body.panel-open #preview { margin-left: 280px; }
   display: flex; flex-direction: row;
 }
 .slot.empty { background: white; }
-.slot.title-slot { background: white; display: block; position: relative; }
+.slot.title-slot { background: white; display: flex; position: relative; }
 .title-text {
   position: absolute;
   left: calc(50% + var(--title-x, 0mm));
@@ -1189,7 +1189,7 @@ function buildA4(slots) {
       const titleText = content.slice(9);
       const safe = String(titleText).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r?\n/g,'<br>');
       const tWm = buildTitleWatermarks();
-      html += `<div class="slot title-slot" data-pos="${pos}">${tWm}<div class="title-text">${safe}</div></div>`;
+      html += `<div class="slot title-slot" data-pos="${pos}">${buildHoleStrip('left', true)}${tWm}<div class="title-text">${safe}</div></div>`;
     } else if (content) {
       html += `<div class="slot" data-pos="${pos}">${content}</div>`;
     } else {
@@ -1242,12 +1242,14 @@ function renderMonths() {
       }
       while (leafs.length % 4 !== 0) leafs.push({ front: null, back: null });
 
-      const buildVDef = (def, holeSide) => {
+      const buildVDef = (def) => {
         if (!def) return null;
         if (def.type === 'title') {
           const t = (document.getElementById('titleContent') || {}).value || '';
           return `__TITLE__${t}`;
         }
+        // 奇数月→右穴、偶数月→左穴（月番号で決定）
+        const holeSide = months[def.mi] % 2 === 1 ? 'right' : 'left';
         return buildVerticalMonth(y, months[def.mi], holidays, holeSide);
       };
 
@@ -1255,15 +1257,15 @@ function renderMonths() {
       for (let s = 0; s < totalSheets; s++) {
         const b = s * 4;
         const L = [leafs[b], leafs[b+1], leafs[b+2], leafs[b+3]];
-        // 表: 外側統一 左列(TL,BL)→左穴、右列(TR,BR)→右穴
+        // 表: Jan(奇数→右)をTRへ、Feb(偶数→左)をTLへ配置し外側一致を最大化
         const frontSlots = [
-          buildVDef(L[0].front, 'left'),  buildVDef(L[1].front, 'right'),
-          buildVDef(L[2].front, 'left'),  buildVDef(L[3].front, 'right'),
+          buildVDef(L[1].front), buildVDef(L[0].front),
+          buildVDef(L[2].front), buildVDef(L[3].front),
         ];
-        // 裏: 長辺反転後も外側に穴が来るよう同じく左列→左・右列→右
+        // 裏: 長辺反転(TL↔TR, BL↔BR)後にTLへ来るleafはfrontTR=L[0]
         const backSlots = [
-          buildVDef(L[1].back, 'left'),  buildVDef(L[0].back, 'right'),
-          buildVDef(L[3].back, 'left'),  buildVDef(L[2].back, 'right'),
+          buildVDef(L[0].back), buildVDef(L[1].back),
+          buildVDef(L[3].back), buildVDef(L[2].back),
         ];
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(frontSlots)}</div>`;
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(backSlots)}</div>`;
