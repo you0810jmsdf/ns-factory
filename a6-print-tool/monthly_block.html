@@ -314,9 +314,9 @@ body.panel-open #preview { margin-left: 280px; }
 .vert-cell.is-holiday .vert-cell-date { color:#aa2222; } .vert-cell.out-of-month { background:#f8f8f8; }
 .vert-cell-date { font-size:2.8mm; font-weight:700; line-height:1.2; font-family:var(--font-date,'Times New Roman',Times,serif); }
 .vert-cell-holiday { font-size:1.5mm; color:#aa4444; line-height:1.1; overflow:hidden; }
-.vert-memo { height:15mm; flex-shrink:0; border-top:0.3mm solid #555; padding:1mm 2mm; display:flex; flex-direction:column; }
-.vert-memo-lines { flex:1; display:flex; flex-direction:column; justify-content:space-around; }
-.vert-memo-line { border-bottom:0.15mm solid #ccc; }
+.vert-memo { height:var(--memo-height,15mm); flex-shrink:0; border-top:0.3mm solid #555; padding:1mm 2mm; display:flex; flex-direction:column; }
+.vert-memo-lines { flex:1; display:flex; flex-direction:column; justify-content:space-around; gap:var(--memo-line-gap,0); }
+.vert-memo-line { height:0; width:var(--memo-line-length,100%); border-bottom:var(--memo-line-width,0.15mm) solid #ccc; }
 
 /* === MODULE: UpdateHistory === */
 .history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
