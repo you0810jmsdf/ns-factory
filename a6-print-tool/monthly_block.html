@@ -760,7 +760,6 @@ function getMonthGrid(y, m) {
 
 // === MODULE: Hole Strip Builder ===
 function buildHoleStrip(side, showPunchGuide) {
-  if (!opts.showHoles && !opts.showHoleLine && !opts.showHoleBisect) return '';
   const lineStyle = opts.showHoleLine ? '' : 'border-right:none;border-left:none;';
   let inner = '';
   if (opts.showHoles) {
@@ -1195,6 +1194,8 @@ const HISTORY_ENTRIES = [
     detail: '両面印刷モードのとき、A4中央（カット線側）のパンチガイドを非表示にしました。両面印刷では穴あけ位置の目安はA4外端側のみに表示されます。単票印刷モード時は従来通り、A4中央側のみにパンチガイドを表示します。これにより単票・両面いずれのモードでも片側だけにガイドが表示され、見やすくなりました。' },
   { date: '2026-04-27', type: 'fix', title: 'パンチガイドは穴のあるエリア内にのみ表示するよう統一',
     detail: 'パンチガイド（穴あけ位置の点線マーク）の表示仕様を整理しました。これまでは単票印刷時にA4両端、両面印刷時にA4両端＋中央と複雑になっていましたが、本来パンチガイドは「穴があるエリア」にしか必要ないため、穴ストリップ内にのみ表示するように統一しました。単票印刷時は穴のある側、両面印刷時はA4中央側（穴ストリップ）に表示され、それ以外の場所のガイドは表示されません。' },
+  { date: '2026-04-27', type: 'fix', title: '穴印刷OFFでカレンダー全体が横に広がる不具合を修正',
+    detail: '「穴印刷」「穴仕切線」「穴あけパンチガイド」を全部OFFにしたとき、穴ストリップ（左右の余白エリア・幅10mm）ごと消えてカレンダーが横に広がってしまう不具合を修正しました。今後は穴ストリップの枠は常に確保され、ON/OFFしても穴の○印やガイド線の表示有無だけが切り替わります。これによりレイアウトのズレなく安心して表示要素を切り替えられます。' },
 ];
 
 function openHistory() {
