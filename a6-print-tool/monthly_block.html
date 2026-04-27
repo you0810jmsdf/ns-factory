@@ -1233,10 +1233,11 @@ function renderMonths() {
         html += `<div class="sheet-wrap"><div class="sheet-label">${labels.filter(Boolean).join(' / ')}</div>${buildA4(slots)}</div>`;
       }
     } else {
-      // 両面: Leaf1=M1(表)/タイトル(裏), Leaf k(k≥2)=M(2k-3)(表)/M(2k-2)(裏)
+      // 両面: Leaf0=タイトル(表)/1月(裏), Leaf1=2月(表)/3月(裏), ...
+      // 表=偶数月orタイトル→左穴、裏=奇数月→右穴
       const N = months.length;
       const leafs = [];
-      leafs.push({ front: { mi: 0 }, back: opts.showTitle ? { type:'title' } : null });
+      leafs.push({ front: opts.showTitle ? { type:'title' } : null, back: { mi: 0 } });
       for (let i = 1; i < N; i += 2) {
         leafs.push({ front: { mi: i }, back: i+1 < N ? { mi: i+1 } : null });
       }
@@ -1257,14 +1258,16 @@ function renderMonths() {
       for (let s = 0; s < totalSheets; s++) {
         const b = s * 4;
         const L = [leafs[b], leafs[b+1], leafs[b+2], leafs[b+3]];
-        // 表: Jan(奇数→右)をTRへ、Feb(偶数→左)をTLへ配置し外側一致を最大化
+        // 表: TL=L[0](タイトル/左), TR=L[1](2月/左), BL=L[2](4月/左), BR=L[3](6月/左)
+        // L[0]→TL(外側✓), L[2]→BL(外側✓) が最大一致
         const frontSlots = [
-          buildVDef(L[1].front), buildVDef(L[0].front),
+          buildVDef(L[0].front), buildVDef(L[1].front),
           buildVDef(L[2].front), buildVDef(L[3].front),
         ];
-        // 裏: 長辺反転(TL↔TR, BL↔BR)後にTLへ来るleafはfrontTR=L[0]
+        // 裏: 長辺反転(TL↔TR, BL↔BR) — TLにはfrontTRのleaf(L[1].back)
+        // L[0].back=1月→裏TR(外側✓), L[2].back=5月→裏BR(外側✓)
         const backSlots = [
-          buildVDef(L[0].back), buildVDef(L[1].back),
+          buildVDef(L[1].back), buildVDef(L[0].back),
           buildVDef(L[3].back), buildVDef(L[2].back),
         ];
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(frontSlots)}</div>`;
