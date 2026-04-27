@@ -369,6 +369,11 @@ body.panel-open #preview { margin-left: 280px; }
 <div id="controls">
   <h2>N's factory<br>月間ブロック 印刷ツール</h2>
 
+  <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:0 0 12px 0; font-size:12px; line-height:1.5;">
+    ⚠️ <strong>印刷時の注意</strong><br>
+    ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A6リフィルとして使えません。
+  </div>
+
   <div class="ctrl-section">
     <h3>印刷モード</h3>
     <div class="ctrl-row">
@@ -505,6 +510,8 @@ body.panel-open #preview { margin-left: 280px; }
       <input type="range" id="titleAngle" min="-90" max="90" step="1" value="0"
         oninput="setCSSVar('--title-angle', this.value+'deg'); this.nextElementSibling.textContent=this.value">
       <span class="val">0</span>°
+      <button type="button" style="margin-left:4px;padding:2px 6px;font-size:11px"
+        onclick="document.getElementById('titleAngle').value=0; setCSSVar('--title-angle','0deg'); document.getElementById('titleAngle').nextElementSibling.textContent='0';">0</button>
     </div>
     <div class="ctrl-row">
       <label>フォント</label>
@@ -1307,6 +1314,8 @@ const HISTORY_ENTRIES = [
     detail: '「月略称」をOFFにしたとき、月略称表示の上にあった横罫線（フッター上端の罫線）も連動して非表示になるよう修正しました。これまでは月略称を消しても罫線だけが残ってしまい、右下に意図しない線が出ていました。今後はON時のみ罫線も表示され、OFF時は罫線ごと消えます。' },
   { date: '2026-04-27', type: 'feat', title: 'MEMO罫線の間隔（線と線の縦方向の隙間）をスライダーで調整可能に',
     detail: '「表示要素」セクションに「MEMO罫線間隔(mm)」スライダーを追加しました。0〜15mmの範囲でMEMO欄の罫線同士の縦方向の最小間隔を変更できます。0mmで従来通り（MEMO欄の高さに合わせて自動的に均等配置）、値を大きくすると罫線同士の間が広がります。罫線太さ・罫線幅のスライダーとあわせて、書きやすい行間に調整できます。' },
+  { date: '2026-04-27', type: 'improve', title: 'タイトル角度に「0」リセットボタン追加／印刷時の倍率設定の注意書きを上部に表示',
+    detail: 'タイトル角度スライダーで0°ぴったりに合わせにくかったため、横に「0」ボタンを追加し、ワンクリックで角度を0にリセットできるようにしました。また、印刷時に縮小されてしまうトラブルを防ぐため、左メニュー上部に「実際のサイズ（100%）を選択してください」という注意書きを目立つ形で常時表示しました。' },
   { date: '2026-04-27', type: 'improve', title: 'タイトルを複数行入力可能に／タイトルページに各透かしのON/OFFチェックを追加',
     detail: 'タイトルテキスト欄をテキストエリアに変更し、改行入力（複数行表示）に対応しました。さらに、タイトルページに「ロゴ／テキスト／画像」の各透かしを個別に挿入できるチェックボックスを追加。チェックを入れた透かしのみタイトルページに反映され、他のページに表示中の透かしと独立してON/OFFできます。' },
   { date: '2026-04-27', type: 'improve', title: '余白ページの薄灰色を完全に白へ／不要な「月次生成」ボタンを削除',
