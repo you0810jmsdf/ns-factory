@@ -100,6 +100,11 @@ body.panel-open #preview { margin-left: 280px; }
 }
 .slot.empty { background: white; }
 .slot.title-slot { background: white; display: flex; position: relative; }
+/* カット線付近の2mm余白（画面・印刷共通） */
+.a4-sheet > .slot[data-pos="TL"] { padding-right: 2mm; padding-bottom: 2mm; }
+.a4-sheet > .slot[data-pos="TR"] { padding-left:  2mm; padding-bottom: 2mm; }
+.a4-sheet > .slot[data-pos="BL"] { padding-right: 2mm; padding-top:    2mm; }
+.a4-sheet > .slot[data-pos="BR"] { padding-left:  2mm; padding-top:    2mm; }
 .title-text {
   position: absolute;
   left: calc(50% + var(--title-x, 0mm));
@@ -1529,6 +1534,8 @@ const HISTORY_ENTRIES = [
     detail: '①これまで操作パネル最上部に表示していた「印刷倍率100%」の注意書きを、実際に押す印刷ボタンの直下へ移動しました。印刷を始める直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／両面印刷の手順／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
   { date: '2026-04-28', type: 'fix', title: '縦型両面印刷の面付けロジックを修正（穴がA4外端に揃わない不具合）',
     detail: '縦型レイアウトの両面印刷モードで、穴位置がA4の外端ではなく内側（カット線側）に来てしまう不具合を修正しました。横型ブロック版と同じ物理リーフ方式（奇数番リーフのfront/back入替＋長辺反転）をそのまま適用することで、シート表面・裏面ともA4の外端に穴が揃い、カット・綴じ後に正しい向きになります。あわせてカット線付近の2mm余白も維持されています。' },
+  { date: '2026-04-28', type: 'fix', title: 'カット線付近の2mm余白を画面表示・印刷の両方に適用',
+    detail: 'A4の縦中央線・横中央線（カット線）付近の2mm余白を、印刷時だけでなく画面プレビューにも常時適用するよう変更しました。これにより画面で確認した通りの余白で印刷され、カット線ぎりぎりに文字がかかって切れる問題を防ぎます。' },
 ];
 
 function openHistory() {
