@@ -1255,15 +1255,15 @@ function renderMonths() {
       for (let s = 0; s < totalSheets; s++) {
         const b = s * 4;
         const L = [leafs[b], leafs[b+1], leafs[b+2], leafs[b+3]];
-        // 表: 左列(TL,BL)→右穴、右列(TR,BR)→左穴
+        // 表: 外側統一 左列(TL,BL)→左穴、右列(TR,BR)→右穴
         const frontSlots = [
-          buildVDef(L[0].front, 'right'), buildVDef(L[1].front, 'left'),
-          buildVDef(L[2].front, 'right'), buildVDef(L[3].front, 'left'),
+          buildVDef(L[0].front, 'left'),  buildVDef(L[1].front, 'right'),
+          buildVDef(L[2].front, 'left'),  buildVDef(L[3].front, 'right'),
         ];
-        // 裏: 長辺反転でTL↔TR BL↔BR入れ替え。穴は表と同じく左列→右・右列→左
+        // 裏: 長辺反転後も外側に穴が来るよう同じく左列→左・右列→右
         const backSlots = [
-          buildVDef(L[1].back, 'right'), buildVDef(L[0].back, 'left'),
-          buildVDef(L[3].back, 'right'), buildVDef(L[2].back, 'left'),
+          buildVDef(L[1].back, 'left'),  buildVDef(L[0].back, 'right'),
+          buildVDef(L[3].back, 'left'),  buildVDef(L[2].back, 'right'),
         ];
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(frontSlots)}</div>`;
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(backSlots)}</div>`;
