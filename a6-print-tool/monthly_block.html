@@ -1172,7 +1172,7 @@ function buildVerticalMonth(y, m, holidays, holeSide) {
       const dateKey = `${y}-${pad(dateObj.getMonth()+1)}-${pad(d)}`;
       const hName = (opts.showHoliday && holidays[dateKey]) ? holidays[dateKey] : '';
       const cls = `${dayClasses[col]}${!inMonth?' out-of-month':''}${hName?' is-holiday':''}`;
-      const gridHTML = opts.showCellGrid
+      const gridHTML = (opts.showCellGrid && inMonth)
         ? `<div class="vert-cell-grid" style="grid-template-columns:repeat(${opts.cellGridCols},1fr);grid-template-rows:repeat(${opts.cellGridRows},1fr);">${Array(opts.cellGridCols*opts.cellGridRows).fill('<div class="vert-cell-grid-item"></div>').join('')}</div>`
         : '';
       return `<div class="vert-cell ${cls}">
