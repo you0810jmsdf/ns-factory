@@ -871,7 +871,7 @@ function buildRightPage(y, m, grid, holidays, holeSide) {
 }
 
 function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRight) {
-  const holeStrip = buildHoleStrip(holeSide, opts.showHoleBisect && !isDuplex);
+  const holeStrip = buildHoleStrip(holeSide, opts.showHoleBisect);
   const wm = buildWatermarks();
   const cl = buildChecklistsHTML();
 
@@ -930,11 +930,8 @@ function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRig
     ${footer}
   </div>`;
 
-  const mirrorGuide = (opts.showHoleBisect && isDuplex)
-    ? `<div class="punch-guide-mirror ${holeSide === 'left' ? 'on-right' : 'on-left'}"></div>`
-    : '';
   return `<div class="monthly-page">
-    ${wm}${cl}${mirrorGuide}
+    ${wm}${cl}
     ${holeSide === 'left' ? holeStrip : ''}
     <div class="page-body">
       <div style="display:flex;flex-direction:row;flex:1;overflow:hidden;">
@@ -1196,6 +1193,8 @@ const HISTORY_ENTRIES = [
     detail: '単票印刷モード（両面印刷OFF）のとき、A4の外端側に追加表示していたパンチガイドを非表示にしました。単票印刷では1枚に1ページ分しか印刷しないためA4外端側のガイドは不要との判断です。両面印刷モード時は従来通り、A4中心線を挟んで両側にパンチガイドを表示します。' },
   { date: '2026-04-27', type: 'fix', title: '両面印刷モードではA4中央側のパンチガイドを非表示に',
     detail: '両面印刷モードのとき、A4中央（カット線側）のパンチガイドを非表示にしました。両面印刷では穴あけ位置の目安はA4外端側のみに表示されます。単票印刷モード時は従来通り、A4中央側のみにパンチガイドを表示します。これにより単票・両面いずれのモードでも片側だけにガイドが表示され、見やすくなりました。' },
+  { date: '2026-04-27', type: 'fix', title: 'パンチガイドは穴のあるエリア内にのみ表示するよう統一',
+    detail: 'パンチガイド（穴あけ位置の点線マーク）の表示仕様を整理しました。これまでは単票印刷時にA4両端、両面印刷時にA4両端＋中央と複雑になっていましたが、本来パンチガイドは「穴があるエリア」にしか必要ないため、穴ストリップ内にのみ表示するように統一しました。単票印刷時は穴のある側、両面印刷時はA4中央側（穴ストリップ）に表示され、それ以外の場所のガイドは表示されません。' },
 ];
 
 function openHistory() {
