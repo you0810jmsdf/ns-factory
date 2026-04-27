@@ -743,8 +743,6 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="btn-row">
       <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
       <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
-      <button class="btn-secondary" onclick="openHelp()" style="margin-left:6px">使い方</button>
-      <button class="btn-secondary" onclick="openHistory()" style="margin-left:6px">更新履歴</button>
     </div>
     <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
       ⚠️ <strong>印刷時の注意</strong><br>
@@ -753,6 +751,14 @@ body.panel-open #preview { margin-left: 280px; }
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
       ※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>
       ※ PCは「印刷」ボタンで直接印刷可
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHelp()" style="flex:1">📖 使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="flex:1;margin-left:6px">📋 更新履歴</button>
     </div>
   </div>
 </div>
@@ -1187,14 +1193,15 @@ function buildVerticalMonth(y, m, holidays, holeSide) {
   </div>`;
 
   const weeksHTML = grid.map(week => {
-    const cellsHTML = week.map((cell, col) => {
-      if (!cell) return `<div class="vert-cell out-of-month"></div>`;
-      const dateKey = `${y}-${pad(m)}-${pad(cell)}`;
+    const cellsHTML = week.map((dateObj, col) => {
+      const inMonth = dateObj.getMonth() + 1 === m;
+      const d = dateObj.getDate();
+      const dateKey = `${y}-${pad(dateObj.getMonth()+1)}-${pad(d)}`;
       const hName = (opts.showHoliday && holidays[dateKey]) ? holidays[dateKey] : '';
-      const cls = `${dayClasses[col]}${hName ? ' is-holiday' : ''}`;
+      const cls = `${dayClasses[col]}${!inMonth ? ' out-of-month' : ''}${hName ? ' is-holiday' : ''}`;
       return `<div class="vert-cell ${cls}">
-        <div class="vert-cell-date">${cell}</div>
-        ${hName ? `<div class="vert-cell-holiday">${hName}</div>` : ''}
+        <div class="vert-cell-date">${inMonth ? d : ''}</div>
+        ${(hName && inMonth) ? `<div class="vert-cell-holiday">${hName}</div>` : ''}
       </div>`;
     }).join('');
     return `<div class="vert-week">${cellsHTML}</div>`;
