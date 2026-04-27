@@ -1260,10 +1260,10 @@ function renderMonths() {
           buildVDef(L[0].front, 'left'),  buildVDef(L[1].front, 'right'),
           buildVDef(L[2].front, 'left'),  buildVDef(L[3].front, 'right'),
         ];
-        // 裏: 長辺反転でTL↔TR BL↔BR入れ替え。物理的外辺に穴が来るよう反転
+        // 裏: 長辺反転でTL↔TR BL↔BR入れ替え。穴は表と同じく左列→左・右列→右
         const backSlots = [
-          buildVDef(L[1].back, 'right'), buildVDef(L[0].back, 'left'),
-          buildVDef(L[3].back, 'right'), buildVDef(L[2].back, 'left'),
+          buildVDef(L[1].back, 'left'),  buildVDef(L[0].back, 'right'),
+          buildVDef(L[3].back, 'left'),  buildVDef(L[2].back, 'right'),
         ];
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(frontSlots)}</div>`;
         html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(backSlots)}</div>`;
