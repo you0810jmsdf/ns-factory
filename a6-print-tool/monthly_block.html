@@ -312,6 +312,8 @@ body.panel-open #preview { margin-left: 280px; }
 @page { size: 210mm 297mm; margin: 0; }
 @media print {
   html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: white; }
+  .slot.empty { background: white !important; }
+  .month-sidebar { background: white !important; }
   body.panel-open #preview { margin-left: 0 !important; }
   #controls, #ctrl-toggle-btn, .history-overlay { display: none !important; }
   #preview { margin: 0 !important; padding: 0 !important; width: 210mm !important; }
@@ -1206,6 +1208,8 @@ const HISTORY_ENTRIES = [
     detail: '「月略称」をOFFにしたとき、月略称表示の上にあった横罫線（フッター上端の罫線）も連動して非表示になるよう修正しました。これまでは月略称を消しても罫線だけが残ってしまい、右下に意図しない線が出ていました。今後はON時のみ罫線も表示され、OFF時は罫線ごと消えます。' },
   { date: '2026-04-27', type: 'feat', title: 'MEMO罫線の間隔（線と線の縦方向の隙間）をスライダーで調整可能に',
     detail: '「表示要素」セクションに「MEMO罫線間隔(mm)」スライダーを追加しました。0〜15mmの範囲でMEMO欄の罫線同士の縦方向の最小間隔を変更できます。0mmで従来通り（MEMO欄の高さに合わせて自動的に均等配置）、値を大きくすると罫線同士の間が広がります。罫線太さ・罫線幅のスライダーとあわせて、書きやすい行間に調整できます。' },
+  { date: '2026-04-27', type: 'fix', title: '印刷時の灰色背景（余白ページ・サイドバー）を白に統一しインク節約',
+    detail: '印刷時に薄い灰色で出ていた「余白ページ（両面印刷の白紙ピース）」と「左ページのサイドバー（月数字エリア）」の背景色を白に変更しました。画面プレビュー上は従来通りエリアの境目が分かるよう薄い灰色で表示されますが、印刷出力時はすべて無色（白）になり、無駄なインク消費を抑えられます。' },
 ];
 
 function openHistory() {
