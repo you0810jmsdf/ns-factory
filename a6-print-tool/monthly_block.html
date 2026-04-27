@@ -99,7 +99,6 @@ body.panel-open #preview { margin-left: 280px; }
   display: flex; flex-direction: row;
 }
 .slot.empty { background: white; }
-@media screen { .slot.empty { background: #fafafa; } }
 .slot.title-slot { background: white; display: block; position: relative; }
 .title-text {
   position: absolute;
@@ -372,9 +371,6 @@ body.panel-open #preview { margin-left: 280px; }
 
   <div class="ctrl-section">
     <h3>印刷モード</h3>
-    <div class="btn-row">
-      <button class="btn-primary" onclick="renderMonths()">月次生成</button>
-    </div>
     <div class="ctrl-row">
       <label>言語</label>
       <button class="btn-toggle on" id="btnJA" onclick="setLang(false)">日本語</button>
@@ -1281,6 +1277,8 @@ const HISTORY_ENTRIES = [
     detail: '「月略称」をOFFにしたとき、月略称表示の上にあった横罫線（フッター上端の罫線）も連動して非表示になるよう修正しました。これまでは月略称を消しても罫線だけが残ってしまい、右下に意図しない線が出ていました。今後はON時のみ罫線も表示され、OFF時は罫線ごと消えます。' },
   { date: '2026-04-27', type: 'feat', title: 'MEMO罫線の間隔（線と線の縦方向の隙間）をスライダーで調整可能に',
     detail: '「表示要素」セクションに「MEMO罫線間隔(mm)」スライダーを追加しました。0〜15mmの範囲でMEMO欄の罫線同士の縦方向の最小間隔を変更できます。0mmで従来通り（MEMO欄の高さに合わせて自動的に均等配置）、値を大きくすると罫線同士の間が広がります。罫線太さ・罫線幅のスライダーとあわせて、書きやすい行間に調整できます。' },
+  { date: '2026-04-27', type: 'improve', title: '余白ページの薄灰色を完全に白へ／不要な「月次生成」ボタンを削除',
+    detail: '両面印刷時の余白ページが画面プレビューでも薄灰色に見えていた点を、画面・印刷とも完全な白に統一しました。また、年月や言語を変更すると自動で再生成されるため、左メニュー上部の「月次生成」ボタンは不要となり削除しました。操作がシンプルになります。' },
   { date: '2026-04-27', type: 'feat', title: 'タイトルページ機能を追加（両面印刷時・1ヶ月目左ページの裏に表紙テキストを印刷可能）',
     detail: '両面印刷モードでカット後、1ヶ月目左ページの裏面（リーフ1の表面、通常は白紙）にタイトルテキストを印刷できるようにしました。左メニュー「タイトルページ」セクションで、ON/OFF切替・テキスト入力・X/Y位置・文字サイズ・角度・フォント選択が可能です。例：「2026 SCHEDULE」などを表紙として印刷できます。' },
   { date: '2026-04-27', type: 'fix', title: '印刷時の灰色背景（余白ページ・サイドバー）を白に統一しインク節約',
