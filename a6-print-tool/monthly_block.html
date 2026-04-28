@@ -1126,7 +1126,7 @@ function buildMonthlyPage(y, m, grid, holidays, holeSide, colDefs, isLeft, isRig
         ${blockGridHTML}
       </div>`;
     }).join('');
-    return `<div class="month-col ${cd.cls}">${opts.showDayHeader ? `<div class="col-day-header ${cd.cls}" style="font-family:var(--font-col-header)">${cd.label}</div>` : ''}<div class="month-cells">${cells}</div></div>`;
+    return `<div class="month-col ${cd.cls}"><div class="col-day-header ${cd.cls}" style="font-family:var(--font-col-header)">${opts.showDayHeader ? cd.label : ''}</div><div class="month-cells">${cells}</div></div>`;
   }).join('');
 
   // フッター（右ページはコンテンツあり、左ページは高さ確保のみ）
