@@ -486,6 +486,11 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
       <button class="btn-toggle on" id="btnCellGrid" onclick="toggleOpt('showCellGrid','btnCellGrid')">日マスグリッド</button>
     </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnMonthNum" onclick="toggleOpt('showMonthNum','btnMonthNum')">月</button>
+      <button class="btn-toggle on" id="btnDateNum" onclick="toggleOpt('showDateNum','btnDateNum')">日付</button>
+      <button class="btn-toggle on" id="btnDayHeader" onclick="toggleOpt('showDayHeader','btnDayHeader')">曜日</button>
+    </div>
     <div class="ctrl-row"><label>グリッド列数</label>
       <input type="range" id="cellGridCols" min="1" max="8" step="1" value="2"
         oninput="opts.cellGridCols=+this.value; this.nextElementSibling.textContent=this.value; rerender()">
@@ -842,7 +847,8 @@ let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showTextWm: true,
   showImgWm: false, showHoliday: true, showTitle: false,
-  showCellGrid: true, cellGridCols: 2, cellGridRows: 8
+  showCellGrid: true, cellGridCols: 2, cellGridRows: 8,
+  showMonthNum: true, showDateNum: true, showDayHeader: true
 };
 let customImgDataUrl = null;
 let lastYear = null, lastStartM = null, lastEndM = null;
@@ -1159,15 +1165,15 @@ function buildVerticalMonth(y, m, holidays, holeSide) {
   const dayLabels = isEN ? ['MON','TUE','WED','THU','FRI','SAT','SUN'] : ['月','火','水','木','金','土','日'];
   const dayClasses = ['','','','','','is-sat','is-sun'];
   const headerHTML = `<div class="vert-header">
-    <div class="vert-month-num">${m}</div>
+    ${opts.showMonthNum ? `<div class="vert-month-num">${m}</div>` : ''}
     <div>
       ${opts.showMonthAbbr ? `<div class="vert-month-name">${isEN ? MONTH_EN_ABB[m-1] : MONTH_JA[m-1]}</div>` : ''}
       <div class="vert-year">${y}</div>
     </div>
   </div>`;
-  const dayHeaderRowHTML = `<div class="vert-day-header-row">
+  const dayHeaderRowHTML = opts.showDayHeader ? `<div class="vert-day-header-row">
     ${dayLabels.map((lbl,i) => `<div class="vert-day-header ${dayClasses[i]}">${lbl}</div>`).join('')}
-  </div>`;
+  </div>` : '';
   const weeksHTML = grid.map(week => {
     const cellsHTML = week.map((dateObj, col) => {
       const inMonth = dateObj.getMonth()+1 === m;
@@ -1179,7 +1185,7 @@ function buildVerticalMonth(y, m, holidays, holeSide) {
         ? `<div class="vert-cell-grid" style="grid-template-columns:repeat(${opts.cellGridCols},1fr);grid-template-rows:repeat(${opts.cellGridRows},1fr);">${Array.from({length:opts.cellGridCols*opts.cellGridRows},(_,i)=>{const isLastCol=(i+1)%opts.cellGridCols===0;const isLastRow=i>=opts.cellGridCols*(opts.cellGridRows-1);return `<div class="vert-cell-grid-item${isLastCol?' last-col':''}${isLastRow?' last-row':''}"></div>`;}).join('')}</div>`
         : '';
       return `<div class="vert-cell ${cls}">
-        <div class="vert-cell-date">${inMonth ? d : ''}</div>
+        ${opts.showDateNum ? `<div class="vert-cell-date">${inMonth ? d : ''}</div>` : ''}
         ${(hName && inMonth) ? `<div class="vert-cell-holiday">${hName}</div>` : ''}
         ${gridHTML}
       </div>`;
@@ -1582,6 +1588,8 @@ const HISTORY_ENTRIES = [
     detail: '日マス内のグリッド線を細い実線から細い点線（0.1mm破線）に変更しました。あわせて、最終列の右端線・最終行の下端線を非表示にし、日マス自体の外枠と重複する線をなくしました。スッキリした見た目になります。' },
   { date: '2026-04-28', type: 'fix', title: 'MEMO罫線間隔が小さいとき下に大きな余白ができる不具合を修正',
     detail: 'MEMO罫線間隔スライダーを小さい値（0〜数mm）に設定したとき、罫線が上部に固まってMEMO欄の下半分が空白になってしまう不具合を修正しました。間隔=0mmのときは4本の罫線を均等配置、間隔>0mmのときはMEMO高さ÷間隔で罫線本数を自動計算してMEMO欄全体に引き伸ばすように変更しました。MEMO高さスライダーを変更したときも罫線本数が自動で更新されます。' },
+  { date: '2026-04-29', type: 'feat', title: '月・日付・曜日の表示ON/OFF機能を追加',
+    detail: '縦型レイアウトの「月数字」「日付」「曜日ヘッダー行」をそれぞれ個別にON/OFFできるトグルボタンを「表示要素」セクションに追加しました。月数字を非表示にすると年だけ残り、日付を非表示にすると日マスが空白、曜日をOFFにすると曜日ヘッダー行を省略できます。手帳の使い方に合わせてシンプルなレイアウトを作れます。' },
 ];
 
 function openHistory() {
