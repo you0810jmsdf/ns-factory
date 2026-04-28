@@ -551,12 +551,18 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="btn-row">
       <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
       <button class="btn-primary" onclick="window.print()">印刷</button>
-      <button class="btn-secondary" onclick="openHelp()" style="margin-left:6px">使い方</button>
-      <button class="btn-secondary" onclick="openHistory()" style="margin-left:6px">更新履歴</button>
     </div>
     <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
       ⚠️ <strong>印刷時の注意</strong><br>
       ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A6リフィルとして使えません。
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHelp()" style="flex:1">📖 使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="flex:1;margin-left:6px">📋 更新履歴</button>
     </div>
   </div>
 </div>
