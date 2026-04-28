@@ -4,16 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A6週間ブロックリフィル印刷ツール | N's factory</title>
-<!-- Google tag (gtag.js) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-ND1T7H067Y');
-</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* === MODULE: Reset & Base === */
@@ -27,21 +19,6 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
   font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-/* === MODULE: UpdateHistory === */
-.history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
-.history-overlay.open { display:flex; }
-.history-box { background:#1a1a2e; color:#eee; border-radius:8px; padding:20px; width:min(480px,92vw); max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
-.history-box h3 { font-size:13px; color:#7ec8e3; margin-bottom:12px; }
-.history-entry { border-top:1px solid #333; padding:10px 0; font-size:10px; line-height:1.6; }
-.history-entry:first-of-type { border-top:none; }
-.history-date { color:#aaa; font-size:9px; }
-.history-type { display:inline-block; padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; margin-left:6px; }
-.history-type.feat { background:#1a3a1a; color:#7ec8e3; }
-.history-type.fix  { background:#3a1a1a; color:#f0b27a; }
-.history-type.improve { background:#1a1a3a; color:#b27af0; }
-.history-title { font-weight:700; margin-top:3px; }
-.history-detail { color:#bbb; margin-top:2px; }
-.history-close { float:right; background:#444; color:#eee; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:10px; }
 #controls {
   position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
   background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px;
@@ -185,7 +162,7 @@ body.panel-open #preview { margin-left: 280px; }
   white-space: nowrap; font-family: var(--font-brand, 'Times New Roman', Times, serif);
 }
 .week-month-abbr {
-  margin-left: auto; font-size: 6mm; font-weight: 700; line-height: 1;
+  margin-left: auto; font-size: 6mm; font-weight: 700; color: #7ec8e3; line-height: 1;
   font-family: var(--font-month-abbr, 'Times New Roman', Times, serif);
 }
 
@@ -275,6 +252,22 @@ body.panel-open #preview { margin-left: 280px; }
   --img-wm-opacity: 0.08;
 }
 
+/* === MODULE: UpdateHistory === */
+.history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
+.history-overlay.open { display:flex; }
+.history-box { background:#1a1a2e; color:#eee; border-radius:8px; padding:20px; width:min(480px,92vw); max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+.history-box h3 { font-size:13px; color:#7ec8e3; margin-bottom:12px; }
+.history-entry { border-top:1px solid #333; padding:10px 0; font-size:10px; line-height:1.6; }
+.history-entry:first-of-type { border-top:none; }
+.history-date { color:#aaa; font-size:9px; }
+.history-type { display:inline-block; padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; margin-left:6px; }
+.history-type.feat { background:#1a3a1a; color:#7ec8e3; }
+.history-type.fix  { background:#3a1a1a; color:#f0b27a; }
+.history-type.improve { background:#1a1a3a; color:#b27af0; }
+.history-title { font-weight:700; margin-top:3px; }
+.history-detail { color:#bbb; margin-top:2px; }
+.history-close { float:right; background:#444; color:#eee; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:10px; }
+
 /* === MODULE: Checklist === */
 .cl-block { position: absolute; z-index: 3; pointer-events: none; line-height: 1.4; }
 .cl-title { font-weight: 700; padding-bottom: 0.3mm; border-bottom: 0.2mm solid #555; margin-bottom: 0.5mm; white-space: nowrap; }
@@ -285,11 +278,10 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: Print === */
 @media print {
   body { background: white; }
-  #ctrl-toggle-btn, #controls, #historyModal { display: none !important; }
+  #controls { display: none; }
   #preview { margin-left: 0; padding: 0; }
-  .a4-sheet { box-shadow: none; page-break-after: always; break-inside: avoid; page-break-inside: avoid; }
+  .a4-sheet { box-shadow: none; page-break-after: always; }
   .a4-sheet:last-child { page-break-after: avoid; }
-  .slot, .weekly-page { break-inside: avoid; page-break-inside: avoid; }
 }
 </style>
 </head>
@@ -392,6 +384,10 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="btn-row">
       <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
       <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnDateNum" onclick="toggleOpt('showDateNum','btnDateNum')">日付</button>
+      <button class="btn-toggle on" id="btnDayWd" onclick="toggleOpt('showDayWd','btnDayWd')">曜日</button>
     </div>
   </div>
 
@@ -511,12 +507,13 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
   </div>
 
+  <!-- チェックリスト -->
   <div class="ctrl-section">
     <h3>チェックリスト</h3>
-    <details>
-      <summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
-        <label style="cursor:pointer;"><input type="checkbox" id="clShow0" onchange="toggleCL(0)"> グループ1</label>
-      </summary>
+    <!-- グループ0 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow0" onchange="toggleCL(0)"> グループ1</label>
+    </summary>
       <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle0" value="チェックリスト1" oninput="updateCL(0)"></div>
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems0" rows="5" oninput="updateCL(0)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont0" onchange="updateCL(0)"></select></div>
@@ -524,10 +521,10 @@ body.panel-open #preview { margin-left: 280px; }
       <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX0" min="0" max="80" step="0.5" value="2" oninput="updateCL(0)"><span class="val" id="clXVal0">2</span></div>
       <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY0" min="0" max="130" step="0.5" value="15" oninput="updateCL(0)"><span class="val" id="clYVal0">15</span></div>
     </details>
-    <details>
-      <summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
-        <label style="cursor:pointer;"><input type="checkbox" id="clShow1" onchange="toggleCL(1)"> グループ2</label>
-      </summary>
+    <!-- グループ2 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow1" onchange="toggleCL(1)"> グループ2</label>
+    </summary>
       <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle1" value="チェックリスト2" oninput="updateCL(1)"></div>
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems1" rows="5" oninput="updateCL(1)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont1" onchange="updateCL(1)"></select></div>
@@ -535,10 +532,10 @@ body.panel-open #preview { margin-left: 280px; }
       <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX1" min="0" max="80" step="0.5" value="2" oninput="updateCL(1)"><span class="val" id="clXVal1">2</span></div>
       <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY1" min="0" max="130" step="0.5" value="55" oninput="updateCL(1)"><span class="val" id="clYVal1">55</span></div>
     </details>
-    <details>
-      <summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
-        <label style="cursor:pointer;"><input type="checkbox" id="clShow2" onchange="toggleCL(2)"> グループ3</label>
-      </summary>
+    <!-- グループ3 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow2" onchange="toggleCL(2)"> グループ3</label>
+    </summary>
       <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle2" value="チェックリスト3" oninput="updateCL(2)"></div>
       <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems2" rows="5" oninput="updateCL(2)" placeholder="1行1項目（最大10）"></textarea></div>
       <div class="ctrl-row"><label>フォント</label><select id="clFont2" onchange="updateCL(2)"></select></div>
@@ -552,23 +549,13 @@ body.panel-open #preview { margin-left: 280px; }
     <h3>印刷</h3>
     <div class="btn-row">
       <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
-      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+      <button class="btn-primary" onclick="window.print()">印刷</button>
+      <button class="btn-secondary" onclick="openHelp()" style="margin-left:6px">使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="margin-left:6px">更新履歴</button>
     </div>
     <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
       ⚠️ <strong>印刷時の注意</strong><br>
       ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A6リフィルとして使えません。
-    </div>
-    <div style="font-size:11px; color:#aaa; margin-top:6px; line-height:1.6;">
-      表面・裏面を両方ONにして「PDFを生成」→ 両面印刷<br>
-      ※「印刷」ボタンは従来の直接印刷（PC向け）
-    </div>
-  </div>
-
-  <div class="ctrl-section">
-    <h3>サポート</h3>
-    <div class="btn-row">
-      <button class="btn-secondary" onclick="openHelp()" style="flex:1">📖 使い方</button>
-      <button class="btn-secondary" onclick="openHistory()" style="flex:1;margin-left:6px">📋 更新履歴</button>
     </div>
   </div>
 </div>
@@ -578,18 +565,16 @@ body.panel-open #preview { margin-left: 280px; }
   <div class="history-box">
     <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
     <h3>使い方マニュアル（週間ブロック印刷ツール）</h3>
-    <div style="font-size:12px; line-height:1.7; color:#ddd;">
+    <div style="font-size:11px; line-height:1.7; color:#ddd;">
       <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
-      <ol style="margin-left:18px;">
-        <li>左パネルで <b>言語・年月・表示週数</b> を設定</li>
-        <li><b>表示要素</b>（祝日・土日カラー・穴・パンチガイド・MEMO欄など）を必要に応じてON/OFF</li>
-        <li>必要なら <b>透かし</b>・<b>チェックリスト</b> を設定</li>
-        <li>表面・裏面を両方ONにして「PDFを生成」を押す（両面印刷用）</li>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>左メニューで <b>言語</b>・<b>開始年月</b>・<b>表示範囲</b> を設定</li>
+        <li>「単週」または「月次」ボタンでプレビュー生成</li>
         <li>印刷ダイアログで <b>必ず「実際のサイズ（100%）」</b> を選ぶ</li>
       </ol>
 
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 各セクションの役割</p>
-      <ul style="margin-left:18px;">
+      <ul style="padding-left:18px; margin:4px 0;">
         <li><b>印刷モード</b>：言語・年月・表示週数の指定</li>
         <li><b>表示要素</b>：祝日・土日カラー・穴印刷・パンチガイド・MEMO欄・罫線などのON/OFFと寸法</li>
         <li><b>透かし</b>：ロゴ／テキスト／画像の透かしを各ページに重ねて印刷</li>
@@ -597,38 +582,36 @@ body.panel-open #preview { margin-left: 280px; }
       </ul>
 
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 印刷時の注意</p>
-      <ul style="margin-left:18px;">
-        <li>印刷倍率は必ず <b>100%</b>（縮小しない）</li>
-        <li>用紙サイズは <b>A4</b>、向きは <b>縦</b></li>
-        <li>両面印刷時は「長辺とじ」推奨</li>
-        <li>「PDFを生成」→ プリンターの両面印刷設定で印刷するのが安定</li>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>必ず「実際のサイズ（100%）」または「カスタム倍率：100%」を選択</li>
+        <li>「ページに合わせる」だと縮小されA6サイズが狂う</li>
+        <li>余白は本ツール側で0設定済み（ブラウザ余白設定は「なし」のまま）</li>
       </ul>
 
-      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ PDF保存方法</p>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ このマニュアルをPDFで保存したいとき</p>
       <p style="margin:4px 0;">この画面を開いた状態でブラウザの印刷（Ctrl+P / Cmd+P）から「PDFに保存」を選ぶと、マニュアルをPDFとして保存できます。</p>
 
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
-      <ul style="margin-left:18px;">
+      <ul style="padding-left:18px; margin:4px 0;">
         <li>サイズが合わない → 印刷倍率100%を再確認</li>
-        <li>レイアウトが崩れる → ブラウザを最新版に更新／別ブラウザで試す</li>
-        <li>不具合報告は「更新履歴」ボタンから過去の修正内容を確認可</li>
+        <li>機能変更点を確認したい → 「更新履歴」ボタン</li>
       </ul>
     </div>
+  </div>
+</div>
+
+<!-- === MODULE: UpdateHistory Modal === -->
+<div class="history-overlay" id="historyOverlay" onclick="if(event.target===this)closeHistory()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHistory()">✕ 閉じる</button>
+    <h3>更新履歴</h3>
+    <div id="historyList"></div>
   </div>
 </div>
 
 <!-- === MODULE: Preview Area === -->
 <div id="preview">
   <p style="color:#666; font-size:12px; margin-bottom:10px;">← 左パネルで設定後、「単週」または「月次」を押してください</p>
-</div>
-
-<!-- === MODULE: Update History Modal === -->
-<div id="historyOverlay" class="history-overlay" onclick="if(event.target===this)closeHistory()">
-  <div class="history-box">
-    <button class="history-close" onclick="closeHistory()">✕ 閉じる</button>
-    <h3>📋 更新履歴</h3>
-    <div id="historyList"></div>
-  </div>
 </div>
 
 <script>
@@ -664,8 +647,8 @@ let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
-  showImgWm: false,
-  showHoliday: true
+  showImgWm: false, showHoliday: true,
+  showDateNum: true, showDayWd: true
 };
 let lineCount = 3;
 let memoLineCount = 4;
@@ -705,6 +688,47 @@ function setCSSVar(name, val) {
   document.documentElement.style.setProperty(name, val);
 }
 
+// === MODULE: Japanese Holidays ===
+function getJPHolidays(y) {
+  const h = {};
+  const add = (m, d, name) => { h[`${y}-${pad(m)}-${pad(d)}`] = name; };
+  function nthWd(m, wd, n) {
+    const first = new Date(y, m - 1, 1).getDay();
+    return 1 + ((wd - first + 7) % 7) + (n - 1) * 7;
+  }
+  add(1, 1, '元日'); add(2, 11, '建国記念の日'); add(2, 23, '天皇誕生日');
+  add(4, 29, '昭和の日'); add(5, 3, '憲法記念日'); add(5, 4, 'みどりの日'); add(5, 5, 'こどもの日');
+  if (y >= 2016) add(8, 11, '山の日');
+  add(11, 3, '文化の日'); add(11, 23, '勤労感謝の日');
+  add(1, nthWd(1, 1, 2), '成人の日'); add(7, nthWd(7, 1, 3), '海の日');
+  add(9, nthWd(9, 1, 3), '敬老の日');
+  if (y >= 2000) add(10, nthWd(10, 1, 2), 'スポーツの日');
+  const shunbun = Math.floor(20.8431 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
+  add(3, shunbun, '春分の日');
+  const shubun = Math.floor(23.2488 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
+  add(9, shubun, '秋分の日');
+  const viburi = {};
+  for (const k of Object.keys(h)) {
+    const d = new Date(k);
+    if (d.getDay() === 0) {
+      let next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      while (h[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`]) next.setDate(next.getDate() + 1);
+      viburi[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`] = '振替休日';
+    }
+  }
+  Object.assign(h, viburi);
+  for (let m = 1; m <= 12; m++) {
+    const days = new Date(y, m, 0).getDate();
+    for (let d = 2; d < days; d++) {
+      const prev = `${y}-${pad(m)}-${pad(d-1)}`, cur = `${y}-${pad(m)}-${pad(d)}`, next = `${y}-${pad(m)}-${pad(d+1)}`;
+      const wd = new Date(y, m-1, d).getDay();
+      if (h[prev] && h[next] && !h[cur] && wd !== 0 && wd !== 6) h[cur] = '国民の休日';
+    }
+  }
+  return h;
+}
+
 // === MODULE: Toggle Controls ===
 function togglePageSide(side) {
   if (side === 'front') {
@@ -722,61 +746,6 @@ function setLang(en) {
   document.getElementById('btnJA').classList.toggle('on', !isEN);
   document.getElementById('btnEN').classList.toggle('on', isEN);
   rerender();
-}
-
-function getJPHolidays(y) {
-  const h = {};
-  const set = (m, d, name) => { h[`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`] = name; };
-  set(1,1,'元日'); set(1,13,'成人の日');
-  const jan13 = new Date(y,0,1); const janWd = jan13.getDay();
-  const successJan = new Date(y,0,1+(janWd<=1?(1-janWd+7)%7+7:(8-janWd)%7+7));
-  set(successJan.getMonth()+1, successJan.getDate(), '成人の日');
-  // 成人の日：1月第2月曜
-  const jan1 = new Date(y,0,1); const wd1 = jan1.getDay();
-  const seijin = new Date(y,0,1+(wd1===1?7:wd1===0?8:(8-wd1)%7+7));
-  set(seijin.getMonth()+1, seijin.getDate(), '成人の日');
-  set(2,11,'建国記念の日'); set(2,23,'天皇誕生日');
-  const syunbun = y>=2000 ? Math.floor(20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4)) : Math.floor(20.8357+0.242194*(y-1980)-Math.floor((y-1980)/4));
-  set(3, syunbun, '春分の日');
-  set(4,29,'昭和の日'); set(5,3,'憲法記念日'); set(5,4,'みどりの日'); set(5,5,'こどもの日');
-  // 海の日：7月第3月曜
-  const jul1 = new Date(y,6,1); const wdJ = jul1.getDay();
-  const umi = new Date(y,6,1+(wdJ===1?14:wdJ===0?15:(15-wdJ)%7+7));
-  set(umi.getMonth()+1, umi.getDate(), '海の日');
-  set(8,11,'山の日');
-  // 敬老の日：9月第3月曜
-  const sep1 = new Date(y,8,1); const wdS = sep1.getDay();
-  const keiro = new Date(y,8,1+(wdS===1?14:wdS===0?15:(15-wdS)%7+7));
-  set(keiro.getMonth()+1, keiro.getDate(), '敬老の日');
-  const shubun = y>=2000 ? Math.floor(23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4)) : Math.floor(23.2588+0.242194*(y-1980)-Math.floor((y-1980)/4));
-  set(9, shubun, '秋分の日');
-  // スポーツの日：10月第2月曜
-  const oct1 = new Date(y,9,1); const wdO = oct1.getDay();
-  const sports = new Date(y,9,1+(wdO===1?7:wdO===0?8:(8-wdO)%7+7));
-  set(sports.getMonth()+1, sports.getDate(), 'スポーツの日');
-  set(11,3,'文化の日'); set(11,23,'勤労感謝の日');
-  // 振替休日
-  const keys = Object.keys(h).sort();
-  const sub = {};
-  keys.forEach(k => {
-    const d = new Date(k); if (d.getDay()===0) {
-      let nd = new Date(d); nd.setDate(nd.getDate()+1);
-      while (h[`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`]) nd.setDate(nd.getDate()+1);
-      sub[`${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`] = '振替休日';
-    }
-  });
-  Object.assign(h, sub);
-  // 国民の休日（祝日に挟まれた平日）
-  const allKeys = Object.keys(h).sort();
-  allKeys.forEach(k => {
-    const d = new Date(k); const prev = new Date(d); prev.setDate(prev.getDate()-1); const next = new Date(d); next.setDate(next.getDate()+1);
-    const fmt = x => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
-    if (h[fmt(prev)] && !h[fmt(next)] && new Date(fmt(next)).getDay()!==0) {
-      const nn = new Date(next); nn.setDate(nn.getDate()+1);
-      if (h[fmt(nn)]) h[fmt(next)] = '国民の休日';
-    }
-  });
-  return h;
 }
 
 function toggleOpt(key, btnId) {
@@ -904,7 +873,7 @@ function buildMonthCalHTML(date) {
 // === MODULE: Day Block Builder ===
 function buildDayBlock(date, holidays) {
   const wd = date.getDay();
-  const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  const dateKey = toDateVal(date);
   const holName = opts.showHoliday && holidays && holidays[dateKey] ? holidays[dateKey] : '';
   const isHol = holName && wd !== 0 && wd !== 6;
   const wdClass = wd===0?'is-sun':wd===6?'is-sat':(isHol?'is-holiday':'');
@@ -913,8 +882,8 @@ function buildDayBlock(date, holidays) {
   const holHTML = holName ? `<div class="day-holiday">${holName}</div>` : '';
   return `<div class="day-block ${wdClass}">
     <div class="day-label">
-      <div class="day-num">${date.getDate()}</div>
-      <div class="day-wd">${wdLabel}</div>
+      ${opts.showDateNum ? `<div class="day-num">${date.getDate()}</div>` : ''}
+      ${opts.showDayWd ? `<div class="day-wd">${wdLabel}</div>` : ''}
       ${holHTML}
     </div>
     <div class="day-content">${linesHTML}</div>
@@ -928,18 +897,13 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
 
   // 穴ガイド
   const holeStripLeft = holeSide === 'left';
-  let holesHTML = '';
-  if (opts.showHoles || opts.showHoleLine || opts.showHoleBisect) {
-    const holeItems = HOLE_POSITIONS_MM.map(pos => {
-      return opts.showHoles ? `<div class="hole" style="top:${pos}mm"></div>` : '';
-    }).join('');
-
-    const borderStyle = opts.showHoleLine
-      ? (holeStripLeft ? 'border-right:0.2mm solid #ddd;' : 'border-left:0.2mm solid #ddd;') : '';
-
-    const punchGuideHTML = (opts.showHoleBisect && holeStripLeft) ? `<div class="punch-guide"></div>` : '';
-    holesHTML = `<div class="hole-strip ${holeStripLeft?'':'right'}" style="${borderStyle}">${holeItems}${punchGuideHTML}</div>`;
-  }
+  const holeItems = HOLE_POSITIONS_MM.map(pos => {
+    return opts.showHoles ? `<div class="hole" style="top:${pos}mm"></div>` : '';
+  }).join('');
+  const borderStyle = opts.showHoleLine
+    ? (holeStripLeft ? 'border-right:0.2mm solid #ddd;' : 'border-left:0.2mm solid #ddd;') : '';
+  const punchGuideHTML = (opts.showHoleBisect && holeStripLeft) ? `<div class="punch-guide"></div>` : '';
+  const holesHTML = `<div class="hole-strip ${holeStripLeft?'':'right'}" style="${borderStyle}">${holeItems}${punchGuideHTML}</div>`;
 
   // カット線
   let cutHTML = '';
@@ -1096,23 +1060,22 @@ function renderMonthly() {
   document.getElementById('preview').innerHTML = html;
 }
 
-// === MODULE: Update History ===
+// === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
-  { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に表示・「使い方」ヘルプを追加',
-    detail: '①印刷ボタンの直下に「印刷倍率100%」の注意書きを表示するようにしました。印刷直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
   { date: '2026-04-22', type: 'improve', title: '印刷分割防止と更新履歴機能を追加（予防的改善）',
     detail: '週間版では現時点で実害の報告はありませんが、同じ仕組みで作っているデイリー版で「A4用紙の上半分2面の時間枠・メモ欄が印刷時に消える」不具合が発生しました。週間版も同じA4用紙に2面付けする構造のため、同じ症状が起こる可能性があったことから、デイリー版で効果があった「用紙や各面の内側で内容が勝手に分割されないようにする」指定を先回りで適用しました。あわせて、更新履歴を利用者ご自身で確認できるよう、この履歴画面をデイリー版と同じ形で追加しました。' },
-  { date: '2026-04-26', type: 'feat', title: 'チェックリスト表示機能を追加',
+  { date: '2026-04-25', type: 'feat', title: 'チェックリスト表示機能を追加',
     detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
-  { date: '2026-04-26', type: 'improve', title: '表面・裏面ラベルをデイリー版と統一',
-    detail: '「奇数ページ」「偶数ページ」と表示していたボタンと印刷ラベルを、デイリー版と同じ「表面」「裏面」に統一しました。' },
-  { date: '2026-04-26', type: 'feat', title: 'PDF生成機能を追加',
-    detail: 'デイリー版と同じ仕組みで、プレビューの内容をそのままPDFファイルに書き出せるようになりました。「PDFを生成」ボタンを押すと自動でダウンロードされます。表面・裏面を両方ONにした状態でPDFを生成し、プリンターの両面印刷設定で印刷してください。' },
-  { date: '2026-04-26', type: 'fix', title: '月表示の色をページ内の日付と統一',
-    detail: '月略称（例：APR）の文字色が薄く見づらかったため、日付番号と同じ色に統一しました。' },
   { date: '2026-04-26', type: 'feat', title: '祝日表示機能を追加',
-    detail: '【追加機能】設定パネル「表示要素」セクションに「祝日表示」トグルボタンを追加しました。ONにすると日本の祝日・振替休日・国民の休日の名称が曜日欄に表示され、日付数字・曜日が赤色になります。' },
+    detail: '【追加機能】設定パネル「表示要素」に「祝日表示」ボタンを追加しました。ONにすると、各曜日ラベル欄に祝日名（元日・春分の日・振替休日など）が赤字で表示されます。祝日は赤文字で強調されます。' },
+  { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に表示・「使い方」ヘルプを追加',
+    detail: '①印刷ボタンの直下に「印刷倍率100%」の注意書きを表示するようにしました。印刷直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
+  { date: '2026-04-29', type: 'feat', title: '日付・曜日の表示ON/OFF機能を追加',
+    detail: '各日ブロックの「日付数字」と「曜日ラベル」をそれぞれ個別にON/OFFできるトグルボタンを「表示要素」セクションに追加しました。日付をOFFにすると日付数字が非表示に、曜日をOFFにすると曜日ラベルが非表示になります。シンプルなレイアウトや自分なりの使い方に合わせてカスタマイズできます。' },
+  { date: '2026-04-29', type: 'feat', title: 'PDF生成機能を追加・月略称の色を変更',
+    detail: '「PDFを生成」ボタンを追加しました。クリックするとプレビューに表示されている全ページをまとめてPDFファイルとして保存できます（html2canvas＋jsPDF使用）。あわせて、週見出し右端の月略称テキストの色を水色（#7ec8e3）に変更しました。' },
 ];
+
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
   document.getElementById('historyList').innerHTML =
@@ -1126,72 +1089,13 @@ function openHistory() {
     ).join('');
   document.getElementById('historyOverlay').classList.add('open');
 }
+
 function closeHistory() {
   document.getElementById('historyOverlay').classList.remove('open');
 }
+
 function openHelp()  { document.getElementById('helpOverlay').classList.add('open'); }
 function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeHistory(); closeHelp(); }
-});
-
-// === MODULE: Checklist ===
-const clGroups = [
-  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
-  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 55 },
-  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 95 },
-];
-function initCLFontSelectors() {
-  for (let i = 0; i < 3; i++) {
-    const sel = document.getElementById(`clFont${i}`);
-    if (!sel) continue;
-    FONT_OPTIONS.forEach(f => {
-      const opt = document.createElement('option');
-      opt.value = f.value; opt.textContent = f.label;
-      if (f.value === clGroups[i].font) opt.selected = true;
-      sel.appendChild(opt);
-    });
-  }
-}
-function toggleCL(idx) {
-  clGroups[idx].show = document.getElementById(`clShow${idx}`).checked;
-  rerender();
-}
-function updateCL(idx) {
-  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
-  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
-  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
-  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
-  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
-  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
-  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
-  document.getElementById(`clXVal${idx}`).textContent    = clGroups[idx].x;
-  document.getElementById(`clYVal${idx}`).textContent    = clGroups[idx].y;
-  rerender();
-}
-function buildChecklistsHTML() {
-  return clGroups.map(g => {
-    if (!g.show) return '';
-    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
-    const itemsHTML = items.map(s =>
-      `<div class="cl-item"><span class="cl-checkbox"></span><span>${s.trim()}</span></div>`
-    ).join('');
-    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
-      (g.title ? `<div class="cl-title">${g.title}</div>` : '') +
-      itemsHTML + `</div>`;
-  }).join('');
-}
-
-// === MODULE: Init ===
-document.addEventListener('DOMContentLoaded', () => {
-  const today = new Date();
-  document.getElementById('startDate').value = toDateVal(today);
-  document.getElementById('monthPicker').value =
-    `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
-  initFontSelectors();
-  initCLFontSelectors();
-  renderSingle();
-});
 
 // === MODULE: PDF Generation ===
 async function generatePDF(ev) {
@@ -1236,6 +1140,69 @@ async function generatePDF(ev) {
     btn.textContent = orig;
   }
 }
+
+// === MODULE: Checklist ===
+const clGroups = [
+  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
+  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 55 },
+  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 95 },
+];
+
+function initCLFontSelectors() {
+  for (let i = 0; i < 3; i++) {
+    const sel = document.getElementById(`clFont${i}`);
+    if (!sel) continue;
+    FONT_OPTIONS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value;
+      opt.textContent = f.label;
+      if (f.value === clGroups[i].font) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+function toggleCL(idx) {
+  clGroups[idx].show = document.getElementById(`clShow${idx}`).checked;
+  rerender();
+}
+
+function updateCL(idx) {
+  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
+  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
+  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
+  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
+  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
+  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
+  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
+  document.getElementById(`clXVal${idx}`).textContent    = clGroups[idx].x;
+  document.getElementById(`clYVal${idx}`).textContent    = clGroups[idx].y;
+  rerender();
+}
+
+function buildChecklistsHTML() {
+  return clGroups.map(g => {
+    if (!g.show) return '';
+    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
+    const itemsHTML = items.map(s =>
+      `<div class="cl-item"><span class="cl-checkbox"></span><span>${s.trim()}</span></div>`
+    ).join('');
+    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
+      (g.title ? `<div class="cl-title">${g.title}</div>` : '') +
+      itemsHTML + `</div>`;
+  }).join('');
+}
+
+// === MODULE: Init ===
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  document.getElementById('startDate').value = toDateVal(today);
+  document.getElementById('monthPicker').value =
+    `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
+  initFontSelectors();
+  initCLFontSelectors();
+  renderSingle();
+});
 </script>
 </body>
 </html>
