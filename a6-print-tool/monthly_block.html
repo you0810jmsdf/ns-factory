@@ -318,7 +318,9 @@ body.panel-open #preview { margin-left: 280px; }
 .vert-memo-lines { flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:var(--memo-line-gap,3mm); }
 .vert-memo-line { height:0; width:var(--memo-line-length,100%); border-bottom:var(--memo-line-width,0.15mm) solid #ccc; }
 .vert-cell-grid { display:grid; flex:1; overflow:hidden; min-height:0; }
-.vert-cell-grid-item { border-right:0.1mm solid #ddd; border-bottom:0.1mm solid #ddd; }
+.vert-cell-grid-item { border-right:0.1mm dotted #bbb; border-bottom:0.1mm dotted #bbb; }
+.vert-cell-grid-item.last-col { border-right:none; }
+.vert-cell-grid-item.last-row { border-bottom:none; }
 
 /* === MODULE: UpdateHistory === */
 .history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
@@ -1174,7 +1176,7 @@ function buildVerticalMonth(y, m, holidays, holeSide) {
       const hName = (opts.showHoliday && holidays[dateKey]) ? holidays[dateKey] : '';
       const cls = `${dayClasses[col]}${!inMonth?' out-of-month':''}${hName?' is-holiday':''}`;
       const gridHTML = (opts.showCellGrid && inMonth)
-        ? `<div class="vert-cell-grid" style="grid-template-columns:repeat(${opts.cellGridCols},1fr);grid-template-rows:repeat(${opts.cellGridRows},1fr);">${Array(opts.cellGridCols*opts.cellGridRows).fill('<div class="vert-cell-grid-item"></div>').join('')}</div>`
+        ? `<div class="vert-cell-grid" style="grid-template-columns:repeat(${opts.cellGridCols},1fr);grid-template-rows:repeat(${opts.cellGridRows},1fr);">${Array.from({length:opts.cellGridCols*opts.cellGridRows},(_,i)=>{const isLastCol=(i+1)%opts.cellGridCols===0;const isLastRow=i>=opts.cellGridCols*(opts.cellGridRows-1);return `<div class="vert-cell-grid-item${isLastCol?' last-col':''}${isLastRow?' last-row':''}"></div>`;}).join('')}</div>`
         : '';
       return `<div class="vert-cell ${cls}">
         <div class="vert-cell-date">${inMonth ? d : ''}</div>
@@ -1557,6 +1559,8 @@ const HISTORY_ENTRIES = [
     detail: 'A4の縦中央線・横中央線（カット線）付近の2mm余白を、印刷時だけでなく画面プレビューにも常時適用するよう変更しました。これにより画面で確認した通りの余白で印刷され、カット線ぎりぎりに文字がかかって切れる問題を防ぎます。' },
   { date: '2026-04-28', type: 'feat', title: '縦型レイアウトの各日マスにグリッド線を追加',
     detail: '縦型マンスリーの各日マス内にグリッド線（初期値：横2列×縦8行）を表示できるようにしました。「表示要素」セクションの「日マスグリッド」ボタンでON/OFFを切り替えられます。「グリッド列数」（1〜8）「グリッド行数」（1〜20）スライダーでマス数を自由に変更でき、メモや予定を書き込む区切り線として活用できます。' },
+  { date: '2026-04-28', type: 'improve', title: '日マスグリッド線を細い点線に変更・外周線を除去',
+    detail: '日マス内のグリッド線を細い実線から細い点線（0.1mm破線）に変更しました。あわせて、最終列の右端線・最終行の下端線を非表示にし、日マス自体の外枠と重複する線をなくしました。スッキリした見た目になります。' },
 ];
 
 function openHistory() {
