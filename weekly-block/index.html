@@ -162,7 +162,7 @@ body.panel-open #preview { margin-left: 280px; }
   white-space: nowrap; font-family: var(--font-brand, 'Times New Roman', Times, serif);
 }
 .week-month-abbr {
-  margin-left: auto; font-size: 6mm; font-weight: 700; color: #7ec8e3; line-height: 1;
+  margin-left: auto; font-size: 6mm; font-weight: 700; color: #000; line-height: 1;
   font-family: var(--font-month-abbr, 'Times New Roman', Times, serif);
 }
 
@@ -1077,6 +1077,8 @@ const HISTORY_ENTRIES = [
     detail: '「PDFを生成」ボタンを追加しました。クリックするとプレビューに表示されている全ページをまとめてPDFファイルとして保存できます（html2canvas＋jsPDF使用）。あわせて、週見出し右端の月略称テキストの色を水色（#7ec8e3）に変更しました。' },
   { date: '2026-04-29', type: 'feat', title: '日付範囲・週番号の表示ON/OFF機能を追加・カット余白2mm追加',
     detail: '①週見出し左上の「日付範囲（例：5/25–31）」と「週番号（例：W22·2026）」をまとめてON/OFFできるボタンを「表示要素」セクションに追加しました。②A4用紙中央のカット線付近で文字が切れないよう、左右ページの内側に2mmの余白を追加しました。' },
+  { date: '2026-04-29', type: 'fix', title: '右上の月略称テキストの色を黒に変更',
+    detail: '週ヘッダー右上に表示される月略称（例：MAY）の文字色を水色から黒（#000）に変更しました。' },
 ];
 
 function openHistory() {
