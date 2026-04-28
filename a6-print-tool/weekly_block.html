@@ -383,6 +383,10 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
       <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
     </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnDateNum" onclick="toggleOpt('showDateNum','btnDateNum')">日付</button>
+      <button class="btn-toggle on" id="btnDayWd" onclick="toggleOpt('showDayWd','btnDayWd')">曜日</button>
+    </div>
   </div>
 
   <div class="ctrl-section">
@@ -640,7 +644,8 @@ let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
-  showImgWm: false, showHoliday: true
+  showImgWm: false, showHoliday: true,
+  showDateNum: true, showDayWd: true
 };
 let lineCount = 3;
 let memoLineCount = 4;
@@ -874,8 +879,8 @@ function buildDayBlock(date, holidays) {
   const holHTML = holName ? `<div class="day-holiday">${holName}</div>` : '';
   return `<div class="day-block ${wdClass}">
     <div class="day-label">
-      <div class="day-num">${date.getDate()}</div>
-      <div class="day-wd">${wdLabel}</div>
+      ${opts.showDateNum ? `<div class="day-num">${date.getDate()}</div>` : ''}
+      ${opts.showDayWd ? `<div class="day-wd">${wdLabel}</div>` : ''}
       ${holHTML}
     </div>
     <div class="day-content">${linesHTML}</div>
@@ -1062,6 +1067,8 @@ const HISTORY_ENTRIES = [
     detail: '【追加機能】設定パネル「表示要素」に「祝日表示」ボタンを追加しました。ONにすると、各曜日ラベル欄に祝日名（元日・春分の日・振替休日など）が赤字で表示されます。祝日は赤文字で強調されます。' },
   { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に表示・「使い方」ヘルプを追加',
     detail: '①印刷ボタンの直下に「印刷倍率100%」の注意書きを表示するようにしました。印刷直前に目に入るので見落としを防げます。②新たに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
+  { date: '2026-04-29', type: 'feat', title: '日付・曜日の表示ON/OFF機能を追加',
+    detail: '各日ブロックの「日付数字」と「曜日ラベル」をそれぞれ個別にON/OFFできるトグルボタンを「表示要素」セクションに追加しました。日付をOFFにすると日付数字が非表示に、曜日をOFFにすると曜日ラベルが非表示になります。シンプルなレイアウトや自分なりの使い方に合わせてカスタマイズできます。' },
 ];
 
 function openHistory() {
