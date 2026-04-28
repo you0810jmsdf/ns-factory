@@ -498,7 +498,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="ctrl-row"><label>MEMO高さ(mm)</label>
       <input type="range" id="memoHeight" min="0" max="60" step="1" value="18"
-        oninput="setCSSVar('--memo-height', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+        oninput="setCSSVar('--memo-height', this.value+'mm'); this.nextElementSibling.textContent=this.value; updateMemoLines()">
       <span class="val">18</span>
     </div>
     <div class="ctrl-row"><label>MEMO罫線太さ(mm)</label>
@@ -513,7 +513,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="ctrl-row"><label>MEMO罫線間隔(mm)</label>
       <input type="range" id="memoLineGap" min="0" max="15" step="0.5" value="3"
-        oninput="setCSSVar('--memo-line-gap', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+        oninput="setCSSVar('--memo-line-gap', this.value+'mm'); this.nextElementSibling.textContent=this.value; updateMemoLines()">
       <span class="val">3</span>
     </div>
   </div>
@@ -1402,6 +1402,25 @@ function renderMonths() {
   }
 
   document.getElementById('preview').innerHTML = html;
+  updateMemoLines();
+}
+
+function updateMemoLines() {
+  const gap    = parseFloat(document.getElementById('memoLineGap').value) || 0;
+  const height = parseFloat(document.getElementById('memoHeight').value)  || 18;
+  let numLines, justify;
+  if (gap <= 0) {
+    numLines = 4;
+    justify  = 'space-between';
+  } else {
+    numLines = Math.max(2, Math.floor(height / gap) + 1);
+    justify  = 'flex-start';
+  }
+  const lineHTML = Array(numLines).fill('<div class="vert-memo-line"></div>').join('');
+  document.querySelectorAll('.vert-memo-lines').forEach(el => {
+    el.style.justifyContent = justify;
+    el.innerHTML = lineHTML;
+  });
 }
 
 function rerender() {
@@ -1561,6 +1580,8 @@ const HISTORY_ENTRIES = [
     detail: '縦型マンスリーの各日マス内にグリッド線（初期値：横2列×縦8行）を表示できるようにしました。「表示要素」セクションの「日マスグリッド」ボタンでON/OFFを切り替えられます。「グリッド列数」（1〜8）「グリッド行数」（1〜20）スライダーでマス数を自由に変更でき、メモや予定を書き込む区切り線として活用できます。' },
   { date: '2026-04-28', type: 'improve', title: '日マスグリッド線を細い点線に変更・外周線を除去',
     detail: '日マス内のグリッド線を細い実線から細い点線（0.1mm破線）に変更しました。あわせて、最終列の右端線・最終行の下端線を非表示にし、日マス自体の外枠と重複する線をなくしました。スッキリした見た目になります。' },
+  { date: '2026-04-28', type: 'fix', title: 'MEMO罫線間隔が小さいとき下に大きな余白ができる不具合を修正',
+    detail: 'MEMO罫線間隔スライダーを小さい値（0〜数mm）に設定したとき、罫線が上部に固まってMEMO欄の下半分が空白になってしまう不具合を修正しました。間隔=0mmのときは4本の罫線を均等配置、間隔>0mmのときはMEMO高さ÷間隔で罫線本数を自動計算してMEMO欄全体に引き伸ばすように変更しました。MEMO高さスライダーを変更したときも罫線本数が自動で更新されます。' },
 ];
 
 function openHistory() {
