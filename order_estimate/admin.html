@@ -1080,6 +1080,7 @@ tr.row-out-stock td{
               <th style="width:90px;border-bottom:1px solid #eadccf"></th>
               <th style="padding:8px 10px;text-align:right;color:#6b3a1f;font-size:11px;font-weight:700;border-bottom:1px solid #eadccf">PV</th>
               <th style="padding:8px 10px;text-align:right;color:#6b3a1f;font-size:11px;font-weight:700;border-bottom:1px solid #eadccf">ユーザー</th>
+              <th style="padding:8px 10px;text-align:right;color:#6b3a1f;font-size:11px;font-weight:700;border-bottom:1px solid #eadccf">最終アクセス</th>
             </tr>
           </thead>
           <tbody id="ga-rows"></tbody>
@@ -2638,6 +2639,11 @@ const GA_PAGE_NAMES = {
   '/ns-factory/a6-print-tool/':     'A6印刷ツール',
   '/ns-factory/a6-print-tool/daily_block.html': 'A6印刷ツール',
   '/ns-factory/a6-print-tool/weekly_block.html': 'A6週間ブロック',
+  '/ns-factory/a6-print-tool/monthly_block.html': 'A6月間ブロック',
+  '/ns-factory/order_estimate/ring-price-stock-admin.html': 'リング在庫管理',
+  '/view/ns-factory/home': 'ホーム（旧）',
+  '/view/ns-factory/bonji': 'bonji（旧）',
+  '/view/ns-factory/oeder': '注文フォーム（旧）',
 };
 // 同一ページの複数URLを正規URLに統合するマッピング
 const GA_CANONICAL = {
@@ -2775,22 +2781,30 @@ function gaRender(data) {
   // テーブル（同一ページの複数URLを統合）
   const mergedRows = gaMergePageRows(data.rows);
   const mergedDailyRows = gaMergeDailyRows(data.dailyRows || []);
+  const lastDateMap = {};
+  mergedDailyRows.forEach(r => {
+    if (!lastDateMap[r.page] || r.date > lastDateMap[r.page]) lastDateMap[r.page] = r.date;
+  });
   const maxV = mergedRows.length ? mergedRows[0].views : 1;
   function makeRow(r) {
-    const name = GA_PAGE_NAMES[r.page] || r.page;
+    const name = GA_PAGE_NAMES[r.page] || r.page.split('/').filter(Boolean).pop()?.replace(/\.html$/, '') || r.page;
     const pct = Math.round(r.views / maxV * 100);
+    const lastD = lastDateMap[r.page];
+    const lastDLabel = lastD ? gaFmtDateLabel(lastD) : '–';
+    const lastDColor = !lastD ? '#ccc' : (lastD < gaBuildDateAxis(7)[0] ? '#c8553d' : '#29613d');
     return '<tr>'
       + '<td style="padding:8px 10px;border-bottom:1px solid #f0e6da"><a href="https://you0810jmsdf.github.io' + r.page + '" target="_blank" style="color:#5C3D2E;text-decoration:underline dotted;font-size:13px" title="' + r.page + '">' + name + '</a></td>'
       + '<td style="padding:4px 6px;border-bottom:1px solid #f0e6da"><div style="background:#f0e6da;border-radius:4px;height:6px;overflow:hidden"><div style="background:#6b3a1f;height:100%;width:' + pct + '%"></div></div></td>'
       + '<td style="padding:8px 10px;text-align:right;font-weight:700;border-bottom:1px solid #f0e6da">' + r.views.toLocaleString() + '</td>'
       + '<td style="padding:8px 10px;text-align:right;color:#8a6a4a;font-size:12px;border-bottom:1px solid #f0e6da">' + r.users.toLocaleString() + '</td>'
+      + '<td style="padding:8px 10px;text-align:right;font-size:12px;font-weight:700;border-bottom:1px solid #f0e6da;color:' + lastDColor + '">' + lastDLabel + '</td>'
       + '</tr>';
   }
   const newRows = mergedRows.filter(r => !gaIsOld(r.page));
   const oldRows = mergedRows.filter(r => gaIsOld(r.page));
-  let html = newRows.map(makeRow).join('') || '<tr><td colspan="4" style="text-align:center;color:#8a6a4a;padding:24px">データなし</td></tr>';
+  let html = newRows.map(makeRow).join('') || '<tr><td colspan="5" style="text-align:center;color:#8a6a4a;padding:24px">データなし</td></tr>';
   if (oldRows.length) {
-    html += '<tr><td colspan="4" style="background:#fff3e0;color:#8B5E3C;font-size:11px;font-weight:700;padding:6px 10px;letter-spacing:.04em">旧ページ（削除予定）</td></tr>';
+    html += '<tr><td colspan="5" style="background:#fff3e0;color:#8B5E3C;font-size:11px;font-weight:700;padding:6px 10px;letter-spacing:.04em">旧ページ（削除予定）</td></tr>';
     html += oldRows.map(makeRow).join('');
   }
   document.getElementById('ga-rows').innerHTML = html;
