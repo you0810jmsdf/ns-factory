@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A6リフィル印刷ツール | N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===== リセット ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== カスタムプロパティ ===== */
+:root {
+  --line-h: 0mm;
+  --memo-gap: 4mm;
+  --time-font: 1.9mm;
+  --time-label-top: 0.3mm;
+  --text-wm-size: 20mm;
+  --text-wm-angle: 0deg;
+  --text-wm-x: 0mm;
+  --text-wm-y: 0mm;
+  --month-cal-top: 1mm;
+  --month-cal-right: 1mm;
+  --font-brand:      'Times New Roman', Times, serif;
+  --font-date-num:   'Noto Sans JP', sans-serif;
+  --font-date-wd:    'Noto Sans JP', sans-serif;
+  --font-month-abbr: 'Times New Roman', Times, serif;
+  --font-text-wm:    'Noto Sans JP', sans-serif;
+  --owl-wm-x: 0mm;
+  --owl-wm-y: 0mm;
+  --owl-wm-size: 38mm;
+  --owl-wm-opacity: 0.07;
+  --month-cal-scale: 1;
+  --month-cal-opacity: 1;
+  --img-wm-x: 0mm;
+  --img-wm-y: 0mm;
+  --img-wm-size: 50mm;
+  --img-wm-opacity: 0.08;
+}
+
+/* ===== 画面UI ===== */
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: #dde1e7;
+  min-height: 100vh;
+}
+
+#ctrl-toggle-btn {
+  position: fixed; top: 10px; left: 10px; z-index: 200;
+  width: 36px; height: 36px; border-radius: 6px;
+  background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+#history-toggle-btn {
+  position: fixed; top: 10px; left: 54px; z-index: 200;
+  height: 36px; padding: 0 10px; border-radius: 6px;
+  background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
+  font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+}
+#history-toggle-btn:hover { background: #2a2a4e; }
+#controls {
+  position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+  background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px;
+  font-size: 11px; z-index: 100;
+  transform: translateX(-100%); transition: transform 0.25s ease;
+}
+#controls.open { transform: translateX(0); }
+#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; }
+.ctrl-section { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.ctrl-section h3 { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+.ctrl-row label { min-width: 80px; color: #ccc; }
+.ctrl-row input[type=range] { flex: 1; min-width: 80px; accent-color: #7ec8e3; }
+.ctrl-row input[type=date], .ctrl-row select, .ctrl-row input[type=text], .ctrl-row input[type=month] {
+  flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee;
+  padding: 3px 5px; border-radius: 3px; font-size: 10px;
+}
+.ctrl-row input[type=number] {
+  width: 52px; background: #2a2a4a; border: 1px solid #444; color: #eee;
+  padding: 3px 5px; border-radius: 3px; font-size: 10px; text-align: right;
+}
+.ctrl-row .val { min-width: 28px; text-align: right; color: #7ec8e3; font-size: 10px; }
+.btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; touch-action: manipulation; }
+.btn-primary { background: #7ec8e3; color: #1a1a2e; }
+.btn-secondary { background: #444; color: #eee; }
+.btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
+.btn-toggle.on { background: #7ec8e3; color: #1a1a2e; border-color: #7ec8e3; }
+.side-badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 8px; white-space: nowrap;
+}
+.side-badge.front { background: rgba(126,200,227,0.2); border: 1px solid #7ec8e3; color: #7ec8e3; }
+.side-badge.back  { background: rgba(211,84,0,0.25);   border: 1px solid #d35400; color: #f0b27a; }
+#preview { margin-left: 0; padding: 60px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 24px; max-width: 100vw; overflow-x: hidden; }
+@media screen and (min-width: 900px) {
+  body.panel-open #preview { margin-left: 280px; }
+}
+
+/* ===== A4ページ ===== */
+/* iOS Safari では zoom がフォント座標系も縮小するため文字が自動拡大される。
+   transform: scale() は座標系を変えないため iOS の自動拡大を回避できる。
+   .a4-wrapper でレイアウト上のサイズを確保し、中の .a4-page を scale で縮小する。
+   注：印刷時に .a4-wrapper の position/overflow と .a4-page の transform-origin が
+   残っていると iOS Safari の印刷ページ送り計算に副作用が出るため、
+   これらは @media screen 内に閉じ込め、印刷時は素のブロック要素になるよう設計。 */
+.a4-page {
+  width: 210mm;
+  height: 297mm;
+  background: white;
+  position: relative;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+@media screen {
+  .a4-wrapper {
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    width: calc(210mm * 0.65);
+    height: calc(297mm * 0.65);
+  }
+  .a4-page {
+    transform: scale(0.65);
+    transform-origin: top left;
+  }
+}
+@media screen and (max-width: 700px) {
+  .a4-wrapper { width: calc(210mm * 0.4); height: calc(297mm * 0.4); }
+  .a4-page    { transform: scale(0.4); }
+}
+@media screen and (max-width: 480px) {
+  .a4-wrapper { width: calc(210mm * 0.32); height: calc(297mm * 0.32); }
+  .a4-page    { transform: scale(0.32); }
+}
+
+/* ===== A6スロット ===== */
+.a6-slot {
+  position: absolute;
+  width: 105mm;
+  height: 143.5mm;
+  overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.slot-TL { top: 5mm;     left: 0mm;    }
+.slot-TR { top: 5mm;     left: 105mm;  }
+.slot-BL { top: 148.5mm; left: 0mm;    }
+.slot-BR { top: 148.5mm; left: 105mm;  }
+
+/* ===== カット線・トンボ ===== */
+.cut-v {
+  position: absolute;
+  top: 0; left: 105mm;
+  width: 0; height: 297mm;
+  border-left: 0.35mm dashed #bbb;
+  pointer-events: none;
+}
+.cut-h {
+  position: absolute;
+  top: 148.5mm; left: 0;
+  width: 210mm; height: 0;
+  border-top: 0.35mm dashed #bbb;
+  pointer-events: none;
+}
+.crop-cross {
+  position: absolute;
+  left: 105mm; top: 148.5mm;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.crop-cross::before {
+  content: '';
+  position: absolute;
+  width: 5mm; height: 0.3mm;
+  background: #999;
+  top: -0.15mm; left: -2.5mm;
+}
+.crop-cross::after {
+  content: '';
+  position: absolute;
+  width: 0.3mm; height: 5mm;
+  background: #999;
+  top: -2.5mm; left: -0.15mm;
+}
+
+/* ===== デイリーページ本体 ===== */
+.daily-page {
+  width: 105mm;
+  height: 143.5mm;
+  display: flex;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* 穴ストリップ */
+.hole-strip {
+  width: 10mm;
+  flex-shrink: 0;
+  position: relative;
+}
+.hole-strip.left {
+  border-right: 0.3mm solid #e0e0e0;
+  order: -1;
+}
+.hole-strip.right {
+  border-left: 0.3mm solid #e0e0e0;
+  order: 1;
+}
+.hole {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3.5mm;
+  height: 3.5mm;
+  border: 0.3mm solid #c8c8c8;
+  border-radius: 50%;
+  background: white;
+}
+/* 穴ビセクターライン（3穴目と4穴目の中間=71.75mm） */
+.hole-bisector {
+  position: absolute;
+  top: 71.75mm;
+  left: 0;
+  width: 2mm;
+  height: 0;
+  border-top: 0.2mm dashed #bbb;
+  pointer-events: none;
+}
+
+/* ページコンテンツ */
+.page-body {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0 2.5mm;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 日付ヘッダー */
+.date-header {
+  height: 13mm;
+  flex-shrink: 0;
+  border-bottom: 0.45mm solid #222;
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+  padding: 1mm 0;
+  position: relative;
+}
+.date-num {
+  font-size: 9.5mm;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.5mm;
+  font-family: var(--font-date-num, 'Noto Sans JP', sans-serif);
+}
+.date-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8mm;
+}
+.date-ym   { font-size: 2mm;   color: #999; letter-spacing: 0.3mm; }
+.date-wd   { font-size: 3.2mm; font-weight: 700; font-family: var(--font-date-wd, 'Noto Sans JP', sans-serif); }
+.is-sun .date-num, .is-sun .date-wd { color: #c0392b; }
+.is-sat .date-num, .is-sat .date-wd { color: #2471a3; }
+.is-holiday .date-num, .is-holiday .date-wd { color: #c0392b; }
+.date-holiday { font-size: 2mm; color: #c0392b; line-height: 1.2; }
+
+/* N's factory ブランド（中央配置） */
+/* iOS Safari の text autosizing 閾値（≒16px）超えの font-size を指定し、
+   transform: scale() で本来の見た目サイズ（2.6mm）へ縮小。
+   これにより iOS の自動文字拡大による巨大化を回避する。 */
+.ns-brand {
+  font-family: var(--font-brand, 'Times New Roman', Times, serif);
+  font-size: 5mm;
+  color: #555;
+  letter-spacing: 0.3mm;
+  position: absolute;
+  left: 50%;
+  bottom: 0.8mm;
+  transform: translateX(-50%) scale(0.52);
+  transform-origin: center bottom;
+  white-space: nowrap;
+}
+
+/* 月名（英語3文字）大表示 */
+.month-abbr-large {
+  font-family: var(--font-month-abbr, 'Times New Roman', Times, serif);
+  font-size: 7mm;
+  font-weight: 700;
+  color: #888;
+  letter-spacing: 0.5mm;
+  margin-left: auto;
+  align-self: flex-end;
+  padding-bottom: 0.5mm;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* 時間グリッド */
+.time-grid {
+  flex: 0 0 auto;
+  height: calc(143.5mm - 13mm - 23mm - 3mm);
+  display: flex;
+  flex-direction: column;
+  border-bottom: 0.3mm solid #ccc;
+  overflow: hidden;
+  min-height: 0;
+}
+.time-row {
+  flex: 1 1 0;
+  display: flex;
+  align-items: stretch;
+  min-height: var(--line-h, 0mm);
+}
+.time-row:not(:last-child) { border-bottom: 0.25mm solid #ebebeb; }
+.time-row:nth-child(even)  { background: #fafafa; }
+.time-label {
+  width: 7mm;
+  font-size: var(--time-font, 1.9mm);
+  color: #bbb;
+  text-align: right;
+  padding: 0 1mm 0 0;
+  transform: translateY(var(--time-label-top, 0.3mm));
+  flex-shrink: 0;
+  border-right: 0.25mm solid #ddd;
+  line-height: 1;
+}
+.time-fill { flex: 1; }
+
+/* メモ欄 */
+.memo-section {
+  flex-shrink: 0;
+  height: 23mm;
+  padding-top: 1.5mm;
+  display: flex;
+  flex-direction: column;
+}
+.memo-title {
+  font-size: 1.8mm;
+  color: #bbb;
+  letter-spacing: 1mm;
+  margin-bottom: 1mm;
+  flex-shrink: 0;
+}
+.memo-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--memo-gap, 4mm);
+  overflow: hidden;
+  padding-top: 0.5mm;
+}
+.memo-line {
+  flex-shrink: 0;
+  height: 0;
+  border-bottom: 0.25mm solid #e5e5e5;
+}
+
+/* ページ番号 */
+.page-num {
+  flex-shrink: 0;
+  height: 3mm;
+  font-size: 1.8mm;
+  color: #d5d5d5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 0.5mm;
+}
+
+/* フクロウロゴ透かし */
+.watermark-logo {
+  position: absolute;
+  width: var(--owl-wm-size, 38mm);
+  height: auto;
+  top: calc(50% + var(--owl-wm-y, 0mm));
+  left: calc(50% + var(--owl-wm-x, 0mm));
+  transform: translate(-50%, -50%);
+  opacity: var(--owl-wm-opacity, 0.07);
+  pointer-events: none;
+}
+
+/* テキスト透かし */
+.text-watermark {
+  position: absolute;
+  top: calc(50% + var(--text-wm-y, 0mm));
+  left: calc(50% + var(--text-wm-x, 0mm));
+  transform: translate(-50%, -50%) rotate(var(--text-wm-angle, 0deg));
+  font-size: var(--text-wm-size, 20mm);
+  font-weight: 900;
+  color: #000;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 1;
+  line-height: 1;
+  font-family: var(--font-text-wm, 'Noto Sans JP', sans-serif);
+  white-space: nowrap;
+}
+
+/* ===== 月カレンダー ===== */
+.month-cal {
+  position: absolute;
+  top: var(--month-cal-top, 1mm);
+  right: var(--month-cal-right, 1mm);
+  width: 30mm;
+  background: rgba(255,255,255,0.93);
+  opacity: var(--month-cal-opacity, 1);
+  border-radius: 0.5mm;
+  padding: 0 0 0.5mm;
+  pointer-events: none;
+  z-index: 2;
+  transform: scale(var(--month-cal-scale, 1));
+  transform-origin: top right;
+}
+.mc-header {
+  font-size: 2mm;
+  font-weight: 700;
+  text-align: center;
+  padding: 1mm 0 0.5mm;
+  color: #333;
+  letter-spacing: 0.3mm;
+}
+.mc-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 0.5mm 0.5mm;
+  gap: 0;
+}
+.mc-wd {
+  font-size: 1.5mm;
+  text-align: center;
+  color: #aaa;
+  padding: 0.2mm 0;
+}
+.mc-wd.sun { color: #c0392b; }
+.mc-wd.sat { color: #2471a3; }
+.mc-day {
+  font-size: 1.8mm;
+  text-align: center;
+  padding: 0.3mm 0;
+  line-height: 1.2;
+}
+.mc-day.sun { color: #c0392b; }
+.mc-day.sat { color: #2471a3; }
+.mc-day.cur {
+  background: #222;
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+/* 画像透かし */
+.img-wm {
+  position: absolute; pointer-events: none; z-index: 1;
+  top: calc(50% + var(--img-wm-y, 0mm)); left: calc(50% + var(--img-wm-x, 0mm));
+  transform: translate(-50%, -50%);
+  width: var(--img-wm-size, 50mm); height: auto;
+  opacity: var(--img-wm-opacity, 0.08);
+}
+
+/* ===== 更新履歴オーバーレイ ===== */
+.history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
+.history-overlay.open { display:flex; }
+.history-box { background:#1a1a2e; color:#eee; border-radius:8px; padding:20px; width:min(480px,92vw); max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+.history-box h3 { font-size:13px; color:#7ec8e3; margin-bottom:12px; }
+.history-entry { border-top:1px solid #333; padding:10px 0; font-size:10px; line-height:1.6; }
+.history-entry:first-of-type { border-top:none; }
+.history-date { color:#aaa; font-size:9px; }
+.history-type { display:inline-block; padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; margin-left:6px; }
+.history-type.feat { background:#1a3a1a; color:#7ec8e3; }
+.history-type.fix  { background:#3a1a1a; color:#f0b27a; }
+.history-type.improve { background:#1a1a3a; color:#b27af0; }
+.history-title { font-weight:700; margin-top:3px; }
+.history-detail { color:#bbb; margin-top:2px; }
+.history-close { float:right; background:#444; color:#eee; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:10px; }
+
+/* ===== チェックリスト ===== */
+.cl-block { position: absolute; z-index: 3; pointer-events: none; line-height: 1.4; }
+.cl-title { font-weight: 700; padding-bottom: 0.3mm; border-bottom: 0.2mm solid #555; margin-bottom: 0.5mm; white-space: nowrap; }
+.cl-item { display: flex; align-items: center; gap: 0.6mm; white-space: nowrap; }
+.cl-checkbox { width: 1.2em; height: 1.2em; border: 0.2mm solid #555; flex-shrink: 0; display: inline-block; }
+.ctrl-row textarea { flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; resize: vertical; }
+
+/* ===== 印刷 ===== */
+@media print {
+  html, body { background: white; margin: 0; padding: 0; width: 210mm; }
+  #ctrl-toggle-btn, #history-toggle-btn, #controls, .history-overlay { display: none !important; }
+  #preview { padding: 0 !important; margin: 0 !important; gap: 0 !important; max-width: none !important; overflow: visible !important; display: block !important; }
+  /* iOS Safari: display:contents は印刷モードで正しく動作しないため、
+     wrapper自体をページコンテナとして使い、break-afterをwrapperに移動。 */
+  .a4-wrapper {
+    display: block;
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    break-before: page;
+    page-break-before: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .a4-wrapper:first-child { break-before: auto !important; page-break-before: auto !important; }
+  .a4-page {
+    box-shadow: none;
+    margin: 0;
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    overflow: hidden;
+    transform: none !important;
+  }
+  /* 印刷時は base CSS の absolute 配置（slot-TL/TR/BL/BR の top/left）をそのまま使う。
+     flex-wrap では iOS Safari で空スロット時にレイアウトが崩れるため absolute に戻す。 */
+  .daily-page {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .time-grid {
+    height: calc(143.5mm - 13mm - 23mm - 3mm) !important;
+    flex: 0 0 auto !important;
+  }
+}
+@page { size: A4 portrait; margin: 0mm; }
+</style>
+</head>
+<body>
+<style>
+/* === MODULE: Password Overlay === */
+#pw-overlay{position:fixed;inset:0;z-index:9999;background:rgba(15,15,15,.92);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;}
+.pw-card{background:#fff;border-radius:16px;padding:40px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.4);}
+.pw-logo{font-size:12px;color:#6e6e73;margin-bottom:10px;font-family:'Noto Sans JP',sans-serif;}
+.pw-title{font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:10px;line-height:1.4;font-family:'Noto Sans JP',sans-serif;}
+.pw-hint{font-size:13px;color:#6e6e73;margin-bottom:20px;line-height:1.6;font-family:'Noto Sans JP',sans-serif;}
+.pw-form{display:flex;gap:8px;margin-bottom:10px;}
+.pw-form input{flex:1;padding:10px 12px;border:1.5px solid #d2d2d7;border-radius:8px;font-size:15px;outline:none;}
+.pw-form input:focus{border-color:#06C755;}
+.pw-form button{padding:10px 18px;background:#06C755;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;}
+.pw-form button:hover{background:#05a847;}
+.pw-error{font-size:12px;color:#ff3b30;margin-bottom:10px;}
+.pw-line-link{font-size:12px;color:#06C755;text-decoration:none;display:block;margin-top:16px;}
+.pw-line-link:hover{text-decoration:underline;}
+</style>
+<div id="pw-overlay">
+  <div class="pw-card">
+    <div class="pw-logo">N's factory</div>
+    <p class="pw-title">A6デイリーリフィル印刷ツール</p>
+    <p class="pw-hint">公式LINEでご案内のパスワードを入力してください</p>
+    <div class="pw-form">
+      <input type="password" id="pw-input" placeholder="パスワード" autocomplete="off">
+      <button type="button" id="pw-btn">入力</button>
+    </div>
+    <p class="pw-error" id="pw-error" style="display:none">パスワードが違います</p>
+    <a href="https://lin.ee/qsmtY2N" class="pw-line-link" target="_blank" rel="noopener">パスワードがわからない方は公式LINEへ →</a>
+  </div>
+</div>
+
+<!-- ===== サイドバー開閉ボタン ===== -->
+<button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
+<button id="history-toggle-btn" onclick="openHistory()" title="更新履歴を表示">📋 更新履歴</button>
+
+<!-- ===== サイドバーコントロール ===== -->
+<div id="controls">
+  <h2>A6リフィル印刷ツール</h2>
+
+  <!-- 印刷モード -->
+  <div class="ctrl-section">
+    <h3>印刷モード</h3>
+    <div class="ctrl-row">
+      <label>モード</label>
+      <select id="printMode" onchange="togglePrintMode()">
+        <option value="single">単ページ</option>
+        <option value="monthly">月単位</option>
+      </select>
+    </div>
+    <div class="ctrl-row" id="monthlyPickerCtrl" style="display:none">
+      <label>対象月</label>
+      <input type="month" id="monthPicker" onchange="render()">
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
+      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
+    </div>
+  </div>
+
+  <!-- 日付設定 -->
+  <div class="ctrl-section">
+    <h3>日付設定</h3>
+    <div class="ctrl-row">
+      <label>開始日</label>
+      <input type="date" id="startDate">
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnJA" onclick="setLang(false)">日本語</button>
+      <button class="btn-toggle" id="btnEN" onclick="setLang(true)">English</button>
+    </div>
+  </div>
+
+  <!-- 時間設定 -->
+  <div class="ctrl-section">
+    <h3>時間設定</h3>
+    <div class="ctrl-row">
+      <label>開始h</label>
+      <input type="range" id="startHour" min="0" max="23" step="1" value="6" oninput="document.getElementById('startHourVal').textContent=this.value;render()">
+      <span class="val" id="startHourVal">6</span>
+    </div>
+    <div class="ctrl-row">
+      <label>終了h</label>
+      <input type="range" id="endHour" min="0" max="23" step="1" value="22" oninput="document.getElementById('endHourVal').textContent=this.value;render()">
+      <span class="val" id="endHourVal">22</span>
+    </div>
+    <div class="ctrl-row">
+      <label>ライン間隔</label>
+      <input type="range" id="lineSpacing" min="0" max="15" step="0.5" value="0" oninput="document.getElementById('lineSpacingVal').textContent=this.value;updateVars()">
+      <span class="val" id="lineSpacingVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>メモ間隔</label>
+      <input type="range" id="memoGap" min="1" max="12" step="0.5" value="4" oninput="document.getElementById('memoGapVal').textContent=this.value;updateVars()">
+      <span class="val" id="memoGapVal">4</span>
+    </div>
+    <div class="ctrl-row">
+      <label>時刻文字</label>
+      <input type="range" id="timeFontSize" min="1" max="4" step="0.1" value="1.9" oninput="document.getElementById('timeFontSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="timeFontSizeVal">1.9</span>
+    </div>
+    <div class="ctrl-row">
+      <label>時刻Y</label>
+      <input type="range" id="timeLabelTop" min="-10" max="20" step="0.1" value="0.3" oninput="document.getElementById('timeLabelTopVal').textContent=this.value;updateVars()">
+      <span class="val" id="timeLabelTopVal">0.3</span>
+    </div>
+  </div>
+
+  <!-- 表示要素 -->
+  <div class="ctrl-section">
+    <h3>表示要素</h3>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnCutLines" onclick="toggleOpt('showCutLines','btnCutLines')">カット線</button>
+      <button class="btn-toggle on" id="btnHoleLine" onclick="toggleOpt('showHoleLine','btnHoleLine')">穴仕切線</button>
+      <button class="btn-toggle on" id="btnHoles" onclick="toggleOpt('showHoles','btnHoles')">穴表示</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle" id="btnHoleBisect" onclick="toggleOpt('showHoleBisect','btnHoleBisect')">穴あけ中心線</button>
+      <button class="btn-toggle" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle" id="btnTextWm" onclick="toggleOpt('showTextWm','btnTextWm')">テキスト透かし</button>
+      <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
+      <button class="btn-toggle" id="btnMonthCal" onclick="toggleOpt('showMonthCal','btnMonthCal')">月間カレンダー</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnMonthAbbr" onclick="toggleOpt('showMonthAbbr','btnMonthAbbr')">月名表示</button>
+      <button class="btn-toggle on" id="btnDateNum" onclick="toggleOpt('showDateNum','btnDateNum')">日付数字</button>
+      <button class="btn-toggle on" id="btnDateWd" onclick="toggleOpt('showDateWd','btnDateWd')">曜日</button>
+      <button class="btn-toggle on" id="btnDateYm" onclick="toggleOpt('showDateYm','btnDateYm')">年月</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnTimeLabel" onclick="toggleOpt('showTimeLabel','btnTimeLabel')">時間数字</button>
+      <button class="btn-toggle on" id="btnTimeLine" onclick="toggleOpt('showTimeLine','btnTimeLine')">時間縦線</button>
+      <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
+    </div>
+  </div>
+
+  <!-- テキスト透かし -->
+  <div class="ctrl-section">
+    <h3>テキスト透かし</h3>
+    <div class="ctrl-row">
+      <label>テキスト</label>
+      <input type="text" id="textWmContent" value="N's factory" oninput="render()">
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="textWmSize" min="3" max="60" step="1" value="20" oninput="document.getElementById('textWmSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmSizeVal">20</span>
+    </div>
+    <div class="ctrl-row">
+      <label>角度</label>
+      <input type="range" id="textWmAngle" min="-180" max="180" step="5" value="0" oninput="document.getElementById('textWmAngleVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmAngleVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>左右</label>
+      <input type="range" id="textWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('textWmXVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmXVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>上下</label>
+      <input type="range" id="textWmY" min="-70" max="70" step="1" value="0" oninput="document.getElementById('textWmYVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmYVal">0</span>
+    </div>
+  </div>
+
+  <!-- 月間カレンダー -->
+  <div class="ctrl-section">
+    <h3>月間カレンダー</h3>
+    <div class="ctrl-row">
+      <label>上下</label>
+      <input type="range" id="monthCalTop" min="-10" max="140" step="0.5" value="1" oninput="document.getElementById('monthCalTopVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalTopVal">1</span>
+    </div>
+    <div class="ctrl-row">
+      <label>左右</label>
+      <input type="range" id="monthCalRight" min="-10" max="70" step="0.5" value="1" oninput="document.getElementById('monthCalRightVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalRightVal">1</span>
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="monthCalSize" min="0.3" max="2.0" step="0.05" value="1" oninput="document.getElementById('monthCalSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalSizeVal">1</span>
+    </div>
+    <div class="ctrl-row">
+      <label>透明度</label>
+      <input type="range" id="monthCalOpacity" min="0.1" max="1" step="0.01" value="1" oninput="document.getElementById('monthCalOpacityVal').textContent=this.value;updateVars()">
+      <span class="val" id="monthCalOpacityVal">1</span>
+    </div>
+  </div>
+
+  <!-- フクロウ透かし -->
+  <div class="ctrl-section">
+    <h3>フクロウ透かし</h3>
+    <div class="ctrl-row">
+      <label>左右</label>
+      <input type="range" id="owlWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('owlWmXVal').textContent=this.value;updateVars()">
+      <span class="val" id="owlWmXVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>上下</label>
+      <input type="range" id="owlWmY" min="-70" max="70" step="1" value="0" oninput="document.getElementById('owlWmYVal').textContent=this.value;updateVars()">
+      <span class="val" id="owlWmYVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="owlWmSize" min="10" max="100" step="1" value="38" oninput="document.getElementById('owlWmSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="owlWmSizeVal">38</span>
+    </div>
+    <div class="ctrl-row">
+      <label>透明度</label>
+      <input type="range" id="owlWmOpacity" min="0.01" max="1" step="0.01" value="0.07" oninput="document.getElementById('owlWmOpacityVal').textContent=this.value;updateVars()">
+      <span class="val" id="owlWmOpacityVal">0.07</span>
+    </div>
+  </div>
+
+  <!-- 画像透かし -->
+  <div class="ctrl-section">
+    <h3>画像透かし</h3>
+    <div class="ctrl-row">
+      <label>画像</label>
+      <input type="file" id="imgWmFile" accept="image/*" onchange="handleImageUpload(event)" style="flex:1;font-size:10px;color:#aaa;">
+    </div>
+    <div class="ctrl-row">
+      <label>左右</label>
+      <input type="range" id="imgWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('imgWmXVal').textContent=this.value;updateVars()">
+      <span class="val" id="imgWmXVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>上下</label>
+      <input type="range" id="imgWmY" min="-70" max="70" step="1" value="0" oninput="document.getElementById('imgWmYVal').textContent=this.value;updateVars()">
+      <span class="val" id="imgWmYVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="imgWmSize" min="5" max="100" step="1" value="50" oninput="document.getElementById('imgWmSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="imgWmSizeVal">50</span>
+    </div>
+    <div class="ctrl-row">
+      <label>透明度</label>
+      <input type="range" id="imgWmOpacity" min="0.01" max="1" step="0.01" value="0.08" oninput="document.getElementById('imgWmOpacityVal').textContent=this.value;updateVars()">
+      <span class="val" id="imgWmOpacityVal">0.08</span>
+    </div>
+  </div>
+
+  <!-- チェックリスト -->
+  <div class="ctrl-section">
+    <h3>チェックリスト</h3>
+    <!-- グループ0 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow0" onchange="toggleCL(0)"> グループ1</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle0" value="チェックリスト1" oninput="updateCL(0)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems0" rows="5" oninput="updateCL(0)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont0" onchange="updateCL(0)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize0" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(0)"><span class="val" id="clSizeVal0">2.5</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX0" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal0').textContent=this.value;updateCL(0)"><span class="val" id="clXVal0">2</span></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY0" min="0" max="130" step="0.5" value="15" oninput="document.getElementById('clYVal0').textContent=this.value;updateCL(0)"><span class="val" id="clYVal0">15</span></div>
+    </details>
+    <!-- グループ1 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow1" onchange="toggleCL(1)"> グループ2</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle1" value="チェックリスト2" oninput="updateCL(1)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems1" rows="5" oninput="updateCL(1)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont1" onchange="updateCL(1)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize1" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(1)"><span class="val" id="clSizeVal1">2.5</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX1" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal1').textContent=this.value;updateCL(1)"><span class="val" id="clXVal1">2</span></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY1" min="0" max="130" step="0.5" value="55" oninput="document.getElementById('clYVal1').textContent=this.value;updateCL(1)"><span class="val" id="clYVal1">55</span></div>
+    </details>
+    <!-- グループ2 -->
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow2" onchange="toggleCL(2)"> グループ3</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle2" value="チェックリスト3" oninput="updateCL(2)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems2" rows="5" oninput="updateCL(2)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont2" onchange="updateCL(2)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize2" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(2)"><span class="val" id="clSizeVal2">2.5</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX2" min="0" max="80" step="0.5" value="2" oninput="document.getElementById('clXVal2').textContent=this.value;updateCL(2)"><span class="val" id="clXVal2">2</span></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY2" min="0" max="130" step="0.5" value="95" oninput="document.getElementById('clYVal2').textContent=this.value;updateCL(2)"><span class="val" id="clYVal2">95</span></div>
+    </details>
+  </div>
+
+  <!-- フォント設定 -->
+  <div class="ctrl-section">
+    <h3>フォント設定</h3>
+    <div class="ctrl-row"><label>日付数字</label><select id="fontDateNum" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>曜日</label><select id="fontDateWd" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>月名</label><select id="fontMonthAbbr" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>透かし</label><select id="fontTextWm" onchange="updateFontVars()"></select></div>
+  </div>
+
+  <!-- 印刷 -->
+  <div class="ctrl-section">
+    <h3>印刷</h3>
+    <div class="btn-row">
+      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
+      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+    </div>
+    <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
+      ⚠️ <strong>印刷時の注意</strong><br>
+      ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A6リフィルとして使えません。
+    </div>
+    <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
+      ① 開始日を選択 → 「表面」ONで「PDFを生成」<br>
+      ② 開いたPDFから印刷（iPhoneは共有→プリント）<br>
+      ③ 同じ用紙を戻し「裏面」をON → 再度PDF生成<br>
+      ④ 4分割にカット → 左上→右上→左下→右下の順に重ねてリング綴じ<br>
+      <span style="color:#aaa">※「印刷」ボタンは従来の直接印刷（PC向け）</span>
+    </div>
+  </div>
+
+  <!-- 更新履歴 -->
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHelp()" style="flex:1">📖 使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="flex:1;margin-left:6px">📋 更新履歴</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 印刷プレビュー ===== -->
+<div id="preview">
+</div>
+
+<!-- ===== 使い方オーバーレイ ===== -->
+<div class="history-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
+    <h3>使い方マニュアル（デイリー印刷ツール）</h3>
+    <div style="font-size:11px; line-height:1.7; color:#ddd;">
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>左メニュー「日付設定」で <b>開始日</b> を選択</li>
+        <li>「表面」をON → 「PDFを生成」でPDFをダウンロード</li>
+        <li>ダウンロードしたPDFを印刷（iPhone/iPadは共有→プリント）</li>
+        <li>同じA4用紙をプリンターに戻し、「裏面」をONに切替→再度「PDFを生成」して印刷</li>
+        <li>4分割にカット → 左上→右上→左下→右下の順に重ねてリング綴じ</li>
+        <li>印刷ダイアログで <b>必ず「実際のサイズ（100%）」</b> を選ぶ</li>
+      </ol>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 各セクションの役割</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li><b>日付設定</b>：開始日と表面／裏面の切替</li>
+        <li><b>表示要素</b>：祝日・土日カラー・穴印刷・パンチガイド・時間軸・MEMO欄などのON/OFF</li>
+        <li><b>透かし</b>：ロゴ／テキスト／画像の透かしを各ページに重ねて印刷</li>
+        <li><b>フォント設定</b>：日付・曜日・月名・透かしのフォントを個別指定</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 印刷時の注意</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>必ず「実際のサイズ（100%）」または「カスタム倍率：100%」を選択</li>
+        <li>「ページに合わせる」だと縮小されA6サイズが狂う</li>
+        <li>余白は本ツール側で0設定済み（ブラウザ余白設定は「なし」のまま）</li>
+        <li>iPhone/iPadは「PDFを生成」を推奨（直接印刷だとレイアウトが崩れる場合あり）</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ このマニュアルをPDFで保存したいとき</p>
+      <p style="margin:4px 0;">この画面を開いた状態でブラウザの印刷（Ctrl+P / Cmd+P）から「PDFに保存」を選ぶと、マニュアルをPDFとして保存できます。</p>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>サイズが合わない → 印刷倍率100%を再確認</li>
+        <li>iPhone/iPadでレイアウトが崩れる → 「PDFを生成」を使用</li>
+        <li>機能変更点を確認したい → 「更新履歴」ボタン</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 更新履歴オーバーレイ ===== -->
+<div class="history-overlay" id="historyOverlay" onclick="if(event.target===this)closeHistory()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHistory()">✕ 閉じる</button>
+    <h3>更新履歴</h3>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 定数
+// ============================================================
+const WD_JA = ['日','月','火','水','木','金','土'];
+const WD_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+const HOLE_POSITIONS_MM = [14.75, 33.75, 52.75, 90.75, 109.75, 128.75];
+
+const SLOT_MAP = {
+  front: { TL:0, TR:2, BL:4, BR:6 },
+  back:  { TL:3, TR:1, BL:7, BR:5 }
+};
+
+const HOLE_SIDE = { TL:'left', TR:'right', BL:'left', BR:'right' };
+
+const OWL_PATH = `M 84.045202 154.08962 C 74.342376 153.72021 66.575763 156.22553 59.803014 162.15016 C 52.400852 168.8731 48.858024 176.12283 52.306921 185.56227 C 53.00894 186.94984 54.145651 191.34463 55.318639 193.36891 C 43.597631 193.28582 37.491668 195.36222 34.332311 201.01344 C 31.172954 206.66467 32.51024 209.75294 34.523718 212.74782 C 40.529201 220.94697 53.989997 220.37842 62.986608 218.24977 C 73.776887 214.54343 82.201949 206.98481 86.234655 195.68923 C 87.640514 192.00332 88.500775 192.27078 94.00028 192.1443 C 97.934826 192.05381 96.909988 190.04001 92.888952 190.02321 C 89.117166 190.00747 88.334264 189.47713 88.334264 186.94118 C 88.334264 183.29034 90.340945 172.70728 91.746374 168.95094 C 93.744162 163.61136 95.468404 162.2706 101.03153 161.72243 C 104.9379 161.3375 106.10236 160.92284 108.02567 159.23415 C 110.49685 157.06442 111.23535 154.79522 109.1663 155.73024 C 106.68328 156.85231 101.04888 156.72601 94.428014 155.39821 C 90.728406 154.65626 87.279477 154.21275 84.045202 154.08962 z M 76.736608 159.40798 C 79.865037 159.31714 83.200604 159.64494 86.689733 160.40993 C 89.79346 161.09042 92.334264 161.92551 92.334264 162.26735 C 92.334264 162.60918 91.168186 164.41773 89.742468 166.28493 C 85.884861 171.33708 83.884623 175.80571 82.709264 182.00173 C 82.129645 185.05722 81.414359 188.42392 81.006139 188.91579 C 80.53514 189.48331 78.678525 189.35019 76.086218 189.35719 C 71.923052 189.36759 71.231051 188.97322 71.019811 190.92751 C 71.559531 191.10296 72.572184 192.39635 74.982702 191.90602 C 76.89659 191.51671 79.382413 192.128 79.752233 192.49782 C 80.508222 193.25381 78.723545 199.35137 76.467077 203.72243 C 74.420169 207.68756 68.540842 213.16016 63.847936 215.47048 C 58.221432 218.24038 49.33315 218.78535 43.666296 216.7068 C 38.389721 214.77141 36.334264 212.26385 36.334264 207.76735 C 36.449454 200.47828 44.640522 195.68826 52.521764 196.02321 C 57.500549 196.01372 65.18778 198.46657 65.18778 198.46657 C 58.308717 195.61045 49.261948 180.11197 55.732702 170.99782 C 59.84161 163.71722 67.351323 159.68049 76.736608 159.40798 z M -23.566126 179.63844 C -24.363144 179.58397 -25.29085 179.7169 -26.359095 180.0779 C -28.185563 181.27464 -28.610727 183.34683 -27.261439 185.27321 C -26.543989 186.29748 -25.227167 186.38336 -23.704798 186.15993 C -21.319201 185.80979 -23.489954 193.8943 -23.489954 193.8943 C -18.860028 189.55444 -17.987001 180.01975 -23.566126 179.63844 z M -42.511439 190.44899 C -44.039135 190.27029 -45.597677 190.85642 -47.265345 192.36305 C -50.978931 195.71808 -51.361348 198.97743 -50.948939 211.32985 C -50.634809 220.73894 -50.155262 223.84114 -48.720423 230.13844 C -48.319744 231.89672 -47.662055 232.79071 -48.364954 232.55641 C -48.860974 232.39107 -50.438212 229.27663 -51.868861 225.63454 C -56.688246 213.36557 -59.211934 209.03196 -63.988001 204.8279 C -69.938008 199.59054 -76.507757 198.73446 -82.712611 203.92946 C -95.641726 215.05026 -89.127189 234.59913 -77.665736 244.72829 C -73.695546 248.7376 -71.774541 250.13271 -68.333704 251.49977 C -65.950374 252.44668 -63.449283 253.24868 -62.777064 253.28298 C -60.586954 253.39483 -61.998313 251.82618 -64.84347 250.9861 C -76.140152 247.65058 -84.310268 231.65962 -85.114954 230.23219 C -88.951266 221.43662 -87.326636 208.85478 -76.743861 205.65602 C -70.86512 204.77444 -66.968197 208.72796 -60.107142 222.52516 C -56.987425 228.79878 -56.010597 231.21574 -51.425501 244.01344 C -49.783403 248.59677 -48.122908 253.17113 -47.736048 254.17946 C -46.920689 256.30468 -45.661518 256.47745 -42.894251 254.84548 C -41.141673 253.8119 -40.962688 253.42363 -41.335657 251.43141 C -41.567207 250.1946 -42.004571 248.69396 -42.306361 248.09743 C -42.88466 246.95439 -45.428684 236.22189 -46.751673 229.34548 C -48.722561 219.10161 -49.586464 202.02222 -48.259486 199.54274 C -46.902057 197.00634 -45.212215 196.38746 -43.216517 197.69509 C -41.393289 198.88971 -37.621413 206.40327 -36.364954 211.34548 C -35.945485 212.99547 -34.357266 218.23203 -32.835657 222.98219 C -30.6491 229.80827 -29.496262 232.32398 -27.333704 234.98219 C -24.954887 237.90627 -24.239059 238.37288 -21.857142 238.5486 C -18.912865 238.7658 -16.839464 237.30253 -15.603236 234.13649 C -14.795366 232.06755 -14.834676 227.52706 -15.665736 227.01344 C -16.050795 226.77545 -16.333704 227.40668 -16.333704 228.50759 C -16.333704 232.60318 -19.311309 233.13377 -22.253626 229.56423 C -24.606834 226.70938 -25.870653 223.61823 -29.698939 211.34548 C -33.334235 199.69141 -34.958366 196.09972 -37.939173 193.11891 C -39.487062 191.57102 -40.983743 190.6277 -42.511439 190.44899 z M 154.66825 199.50563 C 153.68205 199.46754 152.59106 199.61024 151.98661 199.85719 C 151.55942 200.03172 149.98001 202.44679 148.36161 205.01344 C 144.15374 211.68689 143.86161 213.59544 141.56864 213.07399 C 137.0678 212.05044 137.83585 213.8148 140.28544 215.09352 C 141.88954 215.93089 140.46392 217.29095 137.33426 222.31227 C 136.05381 224.37687 133.06417 227.44785 135.6663 230.01344 C 137.42256 231.65692 140.88588 231.02632 143.57059 230.06032 C 146.72063 228.45329 147.78112 226.51612 146.74833 226.25368 C 146.15411 226.10268 144.70975 227.14008 143.62137 227.7029 C 141.84425 228.6221 140.97927 228.65544 140.62723 227.73805 C 140.25748 226.77449 144.18433 220.72587 146.25419 218.65602 C 147.91969 217.68319 150.98891 218.77337 152.00028 217.96852 C 152.01362 216.71548 149.29939 216.40673 148.63895 214.89821 C 148.63895 214.47746 150.81237 211.05172 153.02762 207.52712 C 155.24287 204.00251 156.90221 200.71973 156.71512 200.23219 C 156.53445 199.76137 155.65445 199.54372 154.66825 199.50563 z M 99.810827 200.87477 C 93.558213 200.78092 88.425059 207.32775 89.236608 214.28884 C 89.890337 219.3237 93.449458 222.62769 101.5452 218.94704 C 103.83033 220.73167 102.2351 221.20692 104.85966 221.84938 C 107.48421 222.49184 110.7829 220.17941 112.24051 217.50954 C 111.73214 217.71612 109.24399 218.34066 108.57841 218.16579 C 106.70819 217.67446 107.07228 217.49523 109.87723 211.40602 C 111.41502 208.06768 112.78601 207.02629 113.04716 203.94704 C 110.37711 203.13065 108.48642 203.67045 106.10575 203.51735 C 105.98723 202.49311 101.54459 200.90077 99.810827 200.87477 z M 101.34012 204.31423 C 101.96513 204.2959 102.57668 204.46415 103.16239 204.79469 C 105.39445 206.05434 103.90399 212.26978 100.89481 215.69704 C 98.797421 218.08584 97.514408 218.46586 95.50028 217.29274 C 93.960732 216.39604 94.026116 214.1747 95.709264 210.23415 C 97.470855 206.10991 99.465102 204.36921 101.34012 204.31423 z M 126.09598 207.44313 C 124.43941 207.49338 122.74199 207.96077 121.00614 208.84548 C 117.6737 210.54391 115.82085 213.36948 115.23466 217.64626 C 114.63861 221.99495 116.68996 224.39572 122.00028 225.56423 C 124.38301 226.08853 125.29794 225.96703 127.61942 224.81423 C 130.08858 223.58808 131.51973 221.3978 129.25809 222.30641 C 126.43597 223.1866 124.27186 224.07168 122.09208 221.93923 C 120.64951 219.87969 120.79304 217.72717 122.31864 214.37477 C 124.08204 210.49983 127.39665 209.27816 128.57059 210.00368 C 128.92352 210.22181 128.62666 211.10081 127.75223 212.02516 C 126.39784 213.45687 127.50108 214.2147 128.98466 215.33376 C 130.90343 216.7811 133.1708 215.95594 133.66239 213.68727 C 134.03123 211.98508 134.10993 210.12739 130.93973 208.54469 C 129.36856 207.7603 127.75255 207.39288 126.09598 207.44313 z M 7.7053581 207.58571 C 4.8680466 207.49271 1.909488 208.75628 0.58817063 211.52712 C -0.47979831 213.76676 -0.54190323 215.52075 0.60379563 217.64821 C 1.8415344 219.94655 3.2330952 220.65359 6.5452019 220.66969 C 10.964438 220.69112 12.54808 223.73174 9.2209831 225.98219 C 7.394915 227.21735 6.5599538 226.92972 5.359655 226.0818 C 6.0692643 224.59792 5.4932712 223.05235 3.5647331 222.86891 C 1.9464847 222.71499 0.74299814 223.19836 0.13699875 224.02712 C -1.0008801 225.58324 -0.57678831 226.18816 1.09403 228.31227 C 5.054546 231.57102 11.846859 228.60537 14.217077 224.41188 C 16.587295 220.21839 13.117028 215.34548 8.1643425 215.34548 C 4.0210666 215.34548 2.8042603 213.05472 4.3869988 211.71657 C 5.4138977 210.84836 6.117299 210.06796 7.5862175 210.94899 C 7.4522376 212.73166 9.1418508 213.62174 11.261999 213.08962 C 13.560586 212.51271 14.065939 210.61443 12.301061 209.18532 C 11.066457 208.1856 9.407745 207.64151 7.7053581 207.58571 z M 162.34598 220.84938 C 161.44019 220.81111 160.45925 220.8462 159.38895 220.9568 C 155.10776 221.3992 150.92338 225.9422 150.6663 230.95485 C 150.40922 235.96751 154.7533 239.99861 159.01786 239.75759 C 166.66116 239.3256 175.05877 230.16777 168.88895 223.24587 C 167.10881 221.75392 165.06335 220.96418 162.34598 220.84938 z M 163.74051 223.93923 C 167.61373 224.2371 166.84552 231.71363 160.24247 235.77712 C 152.69612 240.4211 155.88673 226.53357 161.80106 224.28298 C 162.54035 224.00165 163.1872 223.89667 163.74051 223.93923 z M 179.30692 232.08571 C 177.74894 232.16066 176.34622 232.50219 176.03934 233.33571 C 176.42759 233.34133 177.32759 233.78279 178.03934 234.31618 C 179.27062 235.23889 179.07476 235.53175 174.00028 240.33766 C 168.91903 245.14999 168.53103 245.76221 169.76395 246.69509 C 171.80414 248.23876 173.68358 247.28753 180.45536 244.31813 C 180.45536 244.31813 186.16069 242.26078 187.78153 241.55251 C 187.56525 243.33746 187.58678 243.96266 189.0745 244.62477 C 190.56222 245.28689 194.69289 244.21552 194.5413 240.25563 C 194.38971 236.29574 184.28419 240.25239 181.0413 241.29079 C 183.16197 238.7705 190.1627 234.05987 183.50809 232.43532 C 182.57885 232.20301 180.8649 232.01076 179.30692 232.08571 z M 24.459264 236.03298 C 23.950034 236.07579 23.584915 236.27098 23.367468 236.62282 C 23.159838 236.95877 21.783722 241.98508 20.308874 247.79079 C 15.244259 267.72758 12.363073 275.41648 5.5061394 287.29079 C 1.5037634 294.22181 0.18218329 297.12108 -1.546595 302.75563 C -5.7760908 316.54066 -4.9157558 332.95537 0.51199875 342.01344 C 1.280988 343.29677 3.0646639 345.74896 4.4768425 347.46462 C 7.3890996 351.0027 7.5544494 350.63376 1.2912956 354.59743 C -7.6980354 360.28636 -19.906174 373.7893 -26.810267 385.67946 C -32.865791 396.10824 -37.616112 409.99995 -39.056361 421.4861 C -40.197509 430.58696 -41.168124 429.95689 -26.161829 429.84743 C -18.165787 429.78911 -12.077228 430.05478 -9.99972 430.55251 C -8.1663918 430.99174 0.23296408 433.58521 8.6662956 436.31423 C 17.099617 439.04324 26.697994 441.97201 29.994421 442.82399 C 34.431656 443.97083 36.047254 444.67886 36.215124 445.55055 C 36.352914 446.266 34.914912 448.36962 32.553014 450.91188 C 28.804478 454.94665 25.00028 461.00476 25.00028 462.93727 C 25.00028 464.06286 26.624819 464.78211 27.986608 464.25954 C 28.529188 464.05133 29.64879 462.78566 30.474889 461.44704 C 32.616587 457.97665 36.373276 453.95824 37.072546 454.3904 C 37.399285 454.59234 37.666296 457.26677 37.666296 460.3318 C 37.666296 467.01165 37.982813 468.01344 40.088171 468.01344 C 42.244008 468.01344 43.00028 465.8552 43.00028 459.7068 C 43.00028 456.00407 43.239152 454.7307 43.988561 454.44313 C 45.04226 454.03878 47.879444 457.40416 51.150671 462.93923 C 53.139829 466.30496 53.689938 466.56207 55.347936 464.90407 C 57.534064 462.71795 54.555516 456.62567 48.482702 450.8611 C 45.105555 447.65537 44.965564 445.55216 48.176061 446.26735 C 49.17983 446.49095 54.459289 447.03739 59.908483 447.48219 C 66.722356 448.03839 69.917638 448.55738 70.142858 449.1443 C 70.322978 449.61368 69.096324 451.52767 67.416296 453.39626 C 63.970689 457.2286 59.972387 464.77525 60.566686 466.32399 C 61.429385 468.57213 63.446204 467.46162 65.982702 463.34548 C 68.00268 460.06754 70.29589 457.34548 71.037389 457.34548 C 71.296769 457.34548 71.724812 459.97112 71.988561 463.17946 C 72.252321 466.38779 72.761038 469.36987 73.117468 469.80641 C 73.809847 470.65442 75.683035 470.24153 76.490514 469.06227 C 76.759904 468.66885 76.985514 466.03855 76.990514 463.21852 C 76.996794 460.06213 77.298258 457.90886 77.773718 457.61501 C 78.544487 457.13865 81.311965 459.82722 85.369421 464.99391 C 87.648778 467.89641 89.00028 467.75267 89.00028 464.60719 C 89.00028 461.6845 87.635831 459.52431 82.728796 454.67946 C 76.676322 448.70367 76.863622 447.69864 84.334264 446.04274 C 92.532586 444.15732 102.33295 440.27231 110.00028 431.46462 C 105.71244 426.84729 103.09689 422.59944 104.53934 417.36891 C 105.98179 412.13839 111.19184 409.34548 113.97294 409.34548 C 117.98952 409.34548 118.55297 408.31341 118.55497 400.94118 C 118.54501 395.79466 118.19775 390.11335 117.58817 384.69509 C 127.03271 382.46333 128.90519 380.0928 137.0745 372.85915 C 142.30502 367.37859 146.60629 360.1326 149.05497 352.6736 C 150.59269 347.98947 153.00028 336.63912 153.00028 334.07594 C 153.00028 329.89057 160.68895 302.84824 166.72489 285.80641 C 168.80444 279.93504 168.78317 278.81681 166.57059 278.26149 C 163.48701 277.48755 149.00538 278.58371 139.00028 280.34743 C 124.62818 282.88097 114.28088 284.00287 105.33426 283.99587 C 89.220128 283.98422 84.429481 281.77928 65.00028 265.43532 C 62.616952 263.43044 60.517604 261.61113 60.334264 261.39235 C 60.150935 261.17356 57.876214 259.19874 55.279577 257.00368 C 38.660465 242.95477 28.023878 235.73331 24.459264 236.03298 z M 197.30301 246.04665 C 195.70869 246.00643 194.29076 246.20945 194.00028 246.67946 C 193.77367 247.04613 194.20624 247.34548 194.96122 247.34548 C 197.08441 247.34548 196.56337 248.81963 193.68973 250.94509 C 189.60392 253.96713 186.15033 256.43911 186.51591 258.8611 C 187.04798 261.77315 196.43973 263.09743 196.43973 263.09743 C 196.43973 263.09743 187.48295 265.68175 183.25809 264.39626 C 184.99317 263.56487 185.28448 261.50538 184.32255 259.66579 C 183.16299 258.26859 180.08772 258.44348 178.69169 259.9861 C 176.9521 261.90831 177.04615 264.57248 180.05692 266.20876 C 182.14402 267.34305 184.08873 267.30182 188.00028 266.97438 C 193.54019 266.51063 198.34272 265.53518 206.21122 261.83571 C 210.92065 259.62151 211.71994 258.36738 212.08231 256.9236 C 212.56042 255.01864 211.92218 253.52984 210.14676 252.40993 C 208.36215 251.28422 205.26091 254.00706 205.49247 256.53298 C 205.79342 259.81584 204.87846 260.35177 199.57255 260.30837 C 197.07259 260.28791 193.41864 260.13601 193.78739 258.68141 C 194.15614 257.2268 198.71935 255.4758 200.55692 253.21852 C 204.08105 249.79854 204.35232 248.23476 201.66044 246.87282 C 200.66746 246.37043 198.89734 246.08686 197.30301 246.04665 z M 28.043249 247.34548 C 35.348211 255.39014 41.682874 261.33898 49.666296 267.70485 C 62.247753 278.22369 67.145215 284.43326 70.008093 293.49587 C 70.843692 296.19585 73.5386 306.74843 69.902624 304.84548 C 66.239217 293.87109 58.088701 283.68047 47.582311 276.93727 C 36.707402 269.95754 31.564321 264.642 28.777624 257.49977 C 27.743765 254.85004 27.20127 247.34548 28.043249 247.34548 z M 37.390905 278.67946 C 38.724524 278.67946 40.334264 282.63727 40.334264 285.91774 C 40.334264 287.42727 39.83332 289.14892 39.150671 289.99196 C 37.975392 291.44337 37.962793 291.44414 36.777624 290.13454 C 35.280365 288.48008 34.537033 282.12338 35.607702 280.12282 C 36.032361 279.32934 36.835096 278.67946 37.390905 278.67946 z M 27.722936 280.84938 C 29.971779 281.49742 32.26918 286.85777 31.394811 290.34157 C 31.119462 291.43862 30.509773 292.01344 29.621374 292.01344 C 26.759927 292.01344 24.166217 281.88047 26.771764 280.88063 C 27.081708 280.76169 27.401673 280.75681 27.722936 280.84938 z M 18.373327 284.20094 C 20.492487 284.30447 24.334264 289.56771 24.334264 292.9861 C 24.334264 295.50077 22.158798 295.15655 19.775671 292.2654 C 17.627443 289.6592 16.482529 285.59761 17.586218 284.49391 C 17.802425 284.27771 18.07059 284.18615 18.373327 284.20094 z M 156.07841 285.2693 C 158.34495 285.13454 157.82506 286.76754 153.95731 290.85134 C 151.20968 293.62095 148.97016 295.12255 145.31473 296.6443 C 131.40693 301.96461 108.93723 295.48796 93.037389 308.96071 C 87.154275 313.36586 88.590316 309.18925 95.099889 302.96266 C 103.40423 295.10095 117.53639 290.55091 130.68973 290.01735 C 134.26979 290.01147 147.6037 287.58131 152.90458 285.96852 C 154.25813 285.55619 155.32289 285.31422 156.07841 285.2693 z M 11.136999 291.3279 C 14.454119 291.23283 20.221453 296.75209 18.861608 298.7654 C 17.3075 301.06632 7.1258909 293.89418 9.8928581 291.74001 C 10.238729 291.47073 10.663124 291.34148 11.136999 291.3279 z M 40.666296 296.39235 C 45.89398 296.39235 47.114821 296.62473 50.142858 298.20094 C 55.158273 300.81166 57.810632 303.39556 60.00028 307.80055 C 65.329985 318.52257 60.943356 331.87862 50.279577 337.3943 C 46.048841 339.58259 37.2809 339.88648 32.771764 338.00173 C 26.114311 335.21899 21.778945 330.13119 19.873327 322.86305 C 17.356449 313.26352 22.14087 302.91799 31.306921 298.14235 C 34.207398 296.63115 35.487021 296.39235 40.666296 296.39235 z M 7.6487175 299.11305 C 11.288622 299.15224 17.165767 302.24548 16.213171 304.45485 C 14.943042 307.40069 3.5693753 303.48348 5.0901238 300.23805 C 5.4703109 299.4267 6.4354159 299.09999 7.6487175 299.11305 z M 6.7327019 307.84743 C 10.141639 307.86668 14.45268 309.31185 14.179968 311.33376 C 13.743628 314.5688 2.1925699 312.73639 2.7561394 309.53688 C 2.9674779 308.33707 4.6873397 307.83588 6.7327019 307.84743 z M 129.83426 308.13649 C 130.56865 308.04653 131.14463 308.28057 131.40262 308.9529 C 131.90757 310.26878 129.87101 313.99957 127.45731 316.17946 C 124.26165 319.06558 122.5155 318.40396 123.34598 314.62282 C 124.01154 311.59256 127.63112 308.40637 129.83426 308.13649 z M 41.338171 308.88259 C 37.281075 308.84074 35.356259 310.52856 34.65653 311.22829 C 36.264368 313.33199 36.764724 314.92965 38.451452 317.07399 C 35.863654 317.64978 34.451205 318.07156 32.148718 318.56423 C 32.148718 320.23477 34.181969 325.32744 39.215124 326.28493 C 44.248269 327.24242 48.506035 323.60855 49.371374 318.45094 C 50.236713 313.29335 45.395267 308.92448 41.338171 308.88259 z M 136.33426 315.34548 C 137.75114 315.34548 138.33426 315.66706 138.33426 316.44899 C 138.33426 318.2296 135.00856 322.07734 132.59989 323.08376 C 130.03228 324.15657 130.0336 324.15615 129.44559 323.56813 C 127.56664 321.68918 132.88107 315.34548 136.33426 315.34548 z M 105.09989 315.45485 C 116.12761 315.0707 126.53383 323.62311 127.50223 335.68727 C 128.3149 345.81147 122.46419 354.89522 113.00028 358.2029 C 99.881031 362.78812 87.018308 354.9417 84.338171 340.72048 C 82.654612 331.78727 88.606118 321.13769 97.474889 317.21462 C 99.977572 316.10756 102.55503 315.5435 105.09989 315.45485 z M 7.5647331 316.66188 C 10.461565 316.65284 13.513556 317.41891 13.931921 318.84352 C 14.76866 321.69275 2.5282027 322.46697 2.1272331 319.12477 C 1.9267483 317.45367 4.667901 316.67093 7.5647331 316.66188 z M 140.65653 323.34548 C 142.71157 323.34548 143.6663 323.6268 143.6663 324.23024 C 143.6663 325.50905 141.03482 327.7874 138.17997 328.98024 C 135.01612 330.3022 133.72886 330.28432 133.20145 328.90993 C 132.91437 328.1618 133.56143 327.08964 135.21317 325.57594 C 137.22214 323.73487 138.17255 323.34548 140.65653 323.34548 z M 10.773718 324.09938 C 11.994555 324.02381 13.135878 324.3033 14.039343 324.97634 C 15.295481 325.91209 15.271814 326.00264 13.228796 328.06813 C 11.562527 329.75273 10.419592 330.26384 7.7405144 330.52126 C 3.7894683 330.90091 2.6142353 329.61613 4.7522331 327.25368 C 6.4857876 325.33812 8.738988 324.22534 10.773718 324.09938 z M 107.34794 328.99391 C 104.50963 328.65526 101.45144 329.66342 99.722936 331.80837 C 100.43072 332.81886 102.13065 335.35532 102.80692 336.5154 C 101.69094 336.98028 98.384204 338.31958 97.328405 338.45876 C 97.927084 342.63839 100.55332 345.49079 104.00028 346.18337 C 107.44724 346.87595 111.97284 345.35463 113.80301 341.57399 C 115.91424 337.21278 114.09391 332.11065 110.05497 329.78884 C 109.21516 329.36901 108.29404 329.1068 107.34794 328.99391 z M 140.40262 332.12477 C 143.16224 332.12438 146.01005 332.91053 146.21708 334.45485 C 146.63113 337.54352 135.41495 337.72683 135.11942 334.51735 C 134.97166 332.9126 137.64301 332.12517 140.40262 332.12477 z M 16.097936 332.15212 C 16.704574 332.21508 17.131108 332.35066 17.252233 332.54665 C 17.866813 333.54106 14.729186 337.00762 12.074499 338.26735 C 9.1215516 339.66862 7.8661567 339.62876 7.0549675 338.11305 C 6.0029886 336.1474 10.052803 332.62178 13.855749 332.19313 C 14.702928 332.09764 15.491298 332.08916 16.097936 332.15212 z M 20.201452 337.5779 C 20.517641 337.52104 20.790793 337.54878 21.002233 337.67946 C 22.395352 338.54045 21.592084 341.19899 19.222936 343.56813 C 16.611849 346.17922 13.666296 346.87764 13.666296 344.88649 C 13.666296 342.51743 17.988128 337.97591 20.201452 337.5779 z M 136.08817 339.87477 C 139.61918 339.55398 146.03411 341.92854 145.06083 344.28493 C 143.76312 347.42678 133.27596 344.42027 133.89872 341.19509 C 134.05441 340.38879 134.91117 339.9817 136.08817 339.87477 z M 69.701452 340.05837 C 72.126816 340.11285 73.53185 341.56761 74.972936 344.74391 C 76.969284 349.14407 76.715826 351.28855 73.662389 355.8611 C 71.521392 359.02179 64.872371 367.11432 60.004186 364.51344 C 59.845806 364.0551 59.40514 359.65 59.025671 354.72634 C 58.205661 344.08656 58.430162 343.48762 64.004186 341.40212 C 66.423853 340.4968 68.246234 340.02568 69.701452 340.05837 z M 26.150671 341.9568 C 26.611545 341.88674 27.064662 341.96267 27.494421 342.22243 C 29.495779 344.50148 24.699918 353.18595 21.045202 351.38844 C 19.339102 350.06055 22.924548 342.44726 26.150671 341.9568 z M 33.894811 344.88063 C 36.079479 345.71896 34.700836 353.76414 32.074499 355.50173 C 27.509723 358.44374 29.403646 345.22191 33.894811 344.88063 z M 49.244421 344.98024 C 52.069301 345.5247 53.930471 356.24807 51.164343 356.07204 C 48.213805 355.88428 45.533639 345.98032 48.666296 345.01344 C 48.862087 344.95301 49.056095 344.94394 49.244421 344.98024 z M 40.638952 346.44313 C 43.365338 346.3846 44.753836 356.97359 41.496374 357.88649 C 38.021747 358.86025 36.993825 348.27645 40.076452 346.60329 C 40.269115 346.49872 40.457193 346.44703 40.638952 346.44313 z M 133.88114 346.82399 C 136.94337 347.04468 142.32433 350.16634 141.65067 352.54079 C 140.75246 355.70671 131.12271 350.52953 131.90262 347.70485 C 132.0976 346.99868 132.8604 346.75043 133.88114 346.82399 z M 129.98466 353.67946 C 132.52546 353.15635 138.183 358.45999 136.90458 360.40602 C 135.44352 362.63006 127.46444 357.00115 129.11551 354.28688 C 129.3219 353.9476 129.62168 353.75419 129.98466 353.67946 z M 84.842077 356.24782 C 85.263903 356.25858 85.631027 356.3724 85.916296 356.60915 C 86.852235 357.38593 86.858285 357.68575 85.978796 359.38649 C 85.436416 360.43535 83.694257 362.05517 82.105749 362.9861 C 78.735822 364.96101 77.779124 365.0805 77.209264 363.59548 C 76.252917 361.10326 81.889297 356.17249 84.842077 356.24782 z M 124.74247 359.06618 C 127.97249 358.63516 133.29315 366.3879 130.74442 368.53298 C 128.02577 370.82104 121.66948 360.56332 124.12723 359.2654 C 124.32102 359.15982 124.52713 359.09491 124.74247 359.06618 z M 90.508093 362.01344 C 93.28601 362.01344 91.619727 367.04713 87.863561 370.00173 C 85.402164 371.93786 83.666296 371.7683 83.666296 369.59157 C 83.666296 367.64219 88.748534 362.01344 90.508093 362.01344 z M 118.92411 363.88259 C 122.04873 363.5627 125.42765 372.76348 123.46512 374.47634 C 121.37177 376.30339 115.033 365.8539 118.30301 364.0779 C 118.50739 363.9669 118.7158 363.90391 118.92411 363.88259 z M 97.074499 364.90993 C 97.385547 364.80762 97.690782 364.80061 97.980749 364.91188 C 99.641307 365.5491 99.074785 371.09917 97.060827 373.92751 C 95.254549 376.46419 93.838332 376.59683 93.258093 374.28493 C 92.452586 371.07557 94.897164 365.6261 97.074499 364.90993 z M 112.20536 366.01149 C 115.10713 365.75437 116.82978 376.09072 114.00614 377.01344 C 110.99424 377.99769 108.36441 368.08455 111.61161 366.20876 C 111.81456 366.09152 112.01191 366.02863 112.20536 366.01149 z M 104.92216 366.2029 C 105.23415 366.16856 105.53367 366.27925 105.80497 366.55055 C 106.88405 367.62963 107.29239 374.22233 106.38505 375.91774 C 105.23931 378.05857 103.72496 377.64614 102.56864 374.87868 C 101.74427 372.90566 101.68422 371.91784 102.27176 369.9568 C 102.94519 367.70912 103.98617 366.30592 104.92216 366.2029 z M 10.558874 367.45094 C 11.741635 367.48958 13.077727 367.74921 15.209264 368.25173 C 23.856566 370.29033 27.567142 375.14745 26.814733 383.44509 C 25.719164 395.52725 14.323256 407.49981 -1.3610481 413.04665 C -5.9795835 414.68002 -7.8928715 414.95993 -16.157923 415.20876 C -27.294452 415.54403 -27.212249 415.59923 -25.431361 408.91579 C -22.810353 399.07947 -14.86492 385.31538 -7.1422981 377.23219 C -1.6345936 371.46735 1.6719139 369.27617 6.8244988 367.97829 C 8.3457672 367.59509 9.3761124 367.41231 10.558874 367.45094 z M 45.273718 376.3279 C 47.852875 375.86278 62.664652 377.59126 67.972936 378.97634 C 70.158304 379.54656 73.308308 380.02012 74.972936 380.02712 C 76.637565 380.0345 79.950937 380.33502 82.334264 380.69509 C 84.717602 381.05516 88.916298 381.67131 91.666296 382.06618 C 99.873257 383.2446 109.6663 389.01948 109.6663 392.67946 C 109.6663 398.05179 106.90045 404.47405 102.14286 410.14626 C 98.22625 414.8158 96.334264 419.37699 96.334264 424.14821 L 96.334264 428.15212 L 92.385046 432.0154 C 89.665888 434.67608 87.271747 436.31448 84.693639 437.27907 C 78.741525 439.50605 73.801881 439.13798 65.00028 435.81032 C 59.623475 433.77748 50.001067 431.68904 41.666296 430.74587 C 33.559594 429.82851 30.873399 429.04704 28.263952 426.85134 C 25.438795 424.47412 24.333634 421.57383 24.334264 416.53493 C 24.334894 411.52971 26.50272 406.47566 31.228796 400.46657 C 34.853282 395.85811 37.334717 390.80866 38.004186 386.67946 C 38.908955 381.09895 41.822761 376.95024 45.273718 376.3279 z M 52.777624 383.82985 C 47.96592 383.64072 45.358398 385.45182 44.691686 388.57204 C 43.634627 393.51907 48.270979 397.02239 51.916296 394.97634 C 54.544483 393.50117 53.911841 390.89056 50.390905 391.88454 C 47.381648 392.73407 47.037563 389.82148 47.570593 388.29274 C 47.742772 387.79892 48.628802 386.62764 52.168249 386.81227 C 54.471246 386.9324 55.712042 387.0738 56.295202 387.85329 C 55.174013 394.95509 53.146425 407.66303 50.998327 416.43532 C 49.827458 421.2168 46.739505 425.16444 41.78153 424.79274 C 36.823565 424.42104 33.551309 419.25284 35.529577 415.55641 C 36.067996 414.55036 37.249909 413.19506 38.679968 414.11305 C 41.389385 415.85229 42.162931 413.74748 41.013952 412.36305 C 39.657293 410.72838 35.948034 410.7496 34.097936 412.72048 C 31.789099 415.18003 31.060286 420.82615 34.414343 424.1443 C 38.802348 428.48536 45.980762 429.04749 50.273718 424.3279 C 52.748275 421.60741 53.523499 418.5052 55.310827 409.30641 C 57.569985 397.67922 58.252554 395.20821 59.127233 395.49977 C 59.522793 395.63163 60.683329 398.42523 61.705358 401.70876 C 62.727377 404.99228 65.219573 413.02832 67.244421 419.56618 C 69.269259 426.10404 71.289805 431.8915 71.734655 432.42751 C 73.511533 434.56851 74.243213 432.09399 78.349889 410.01344 C 80.671087 397.53294 82.61517 392.38061 85.404577 391.32009 C 90.837571 389.25446 96.467077 392.0866 96.467077 396.88649 C 96.467077 400.26974 94.49822 402.03003 91.689733 400.8943 C 89.050436 399.82699 88.88114 402.92432 91.398718 404.17946 C 95.031834 405.99077 99.418249 401.82086 99.418249 396.62868 C 99.418249 388.78968 88.107277 384.55849 82.064733 389.99391 C 77.094238 394.78557 76.433362 404.78172 74.271764 412.27907 C 73.242075 410.23854 66.162589 391.11322 64.400671 386.43532 C 62.477913 385.88781 61.348481 385.47439 58.334264 384.71071 C 56.231226 384.17789 54.381525 383.89289 52.777624 383.82985 z`;
+
+// ============================================================
+// 状態
+// ============================================================
+let showFront = true;
+let showBack  = false;
+let isEN      = false;
+let startDate = new Date();
+
+let opts = {
+  showCutLines: true, showHoleLine: true, showHoles: true, showHoleBisect: false,
+  showLogo: false, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false,
+  showDateNum: true, showDateWd: true, showDateYm: true,
+  showTimeLabel: true, showTimeLine: true, showHoliday: true
+};
+function toggleSidebar() {
+  document.getElementById('controls').classList.toggle('open');
+  document.body.classList.toggle('panel-open');
+}
+
+// ============================================================
+// 更新履歴
+// ============================================================
+const HISTORY_ENTRIES = [
+  { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に表示・「使い方」ヘルプを追加',
+    detail: '①印刷ボタンの直下に「印刷倍率100%」の注意書きを表示するようにしました。印刷直前に目に入るので見落としを防げます。②サポートセクションに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
+  { date: '2026-04-25', type: 'feat', title: '時間数字・時間縦線を個別に非表示にできる機能を追加',
+    detail: '【追加機能】設定パネル「表示要素」に「時間数字」「時間縦線」トグルボタンを追加しました。両方OFFにすると時間欄が消えて全幅の罫線メモになります。時間数字だけOFFにすれば縦線は残したまま数字を消せます。縦線だけOFFにすれば数字は残したまま縦線を消せます。' },
+  { date: '2026-04-25', type: 'fix', title: '設定パネルの「月名表示」ボタンを日付数字の左へ移動',
+    detail: '【変更内容】「表示要素」セクションで「月名表示」ボタンが「ロゴ透かし」の右に配置されていましたが、日付に関連するボタン（日付数字・曜日・年月）と同じ行の先頭に移動しました。関連する項目がまとまり、操作しやすくなりました。' },
+  { date: '2026-04-25', type: 'feat', title: '年月（YYYY.MM）表示の非表示機能を追加',
+    detail: '【追加機能】設定パネル「表示要素」セクションに「年月」トグルボタンを追加しました。OFFにすると日付ヘッダーの「YYYY.MM」年月表示を非表示にして印刷できます。' },
+  { date: '2026-04-25', type: 'feat', title: '日付数字・曜日を個別に非表示にできる機能を追加',
+    detail: '【追加機能】設定パネル「表示要素」セクションに「日付数字」「曜日」トグルボタンを追加しました。それぞれOFFにすると、デイリーページの日付数字（大きい数字）または曜日表示を非表示にして印刷できます。' },
+  { date: '2026-04-22', type: 'fix', title: '印刷時に上段の時間枠・メモ欄が消える不具合を修正',
+    detail: '【症状】A4用紙4枚印刷時、上半分2面の「時間枠」と「メモ欄」が消えて日付だけが印刷されていました。【原因】印刷時のページ区切り計算がわずかにずれ、上段スロット内の時間枠・メモ欄が「次のページ」側に押し出されて切り取られていました（画面プレビューでは正常に見えていました）。【対処】各A6スロット・A4用紙の内側で内容が分割されないよう「分割禁止」指定を追加し、用紙ごとに確実に改ページするよう調整しました。' },
+  { date: '2026-04-23', type: 'fix', title: 'スマートフォンで3点の表示・印刷不具合を修正',
+    detail: '【症状】①ページが画面の左右にはみ出す ②時間枠の細い罫線が消える ③時間枠・メモ欄が消えてページが5枚に増える【原因】スマホではzoom縮小が印刷時に解除されずページサイズを誤認。時間枠の高さが自動調整のため潰れ、罫線が細すぎて描画されないことがありました。【対処】画面幅に合わせてプレビュー倍率を自動調整、印刷時のzoomをリセット、時間枠の高さを固定値に、罫線を0.25mmに統一しました。' },
+  { date: '2026-04-23', type: 'fix', title: 'スマホでサイドバー表示中にプレビューの左端が切れる不具合を修正',
+    detail: '【症状】スマホで設定パネル（☰メニュー）を開くと、A4プレビューの左端がパネルの下に隠れて切れて見えていました。【原因】PC用の「プレビューを右へ280px移動」処理がスマホでも適用されていたため、画面幅が足りずA4ページが右にはみ出していました。【対処】画面幅が900px未満の場合はパネル開時にプレビューをずらさないよう調整しました。' },
+  { date: '2026-04-23', type: 'fix', title: 'iPhoneでN\'sロゴ・日付・曜日が大きく表示されてレイアウトが崩れる不具合を修正',
+    detail: '【症状】iPhoneで開いたとき日付・曜日が大きく表示されてレイアウトが崩れ、また月単位モードの裏面ページのレイアウトも崩れていました。【原因】zoom縮小方式がiOS Safariでは文字座標系も縮め、自動拡大が働いていました。【対処】縮小方式をzoomからtransform: scale()に変更しました。またN\'sロゴは5mmに上げてscale(0.52)で縮小することでiOSの自動拡大を回避しています。' },
+  { date: '2026-04-23', type: 'fix', title: 'iPhone印刷プレビューで2ページ目以降が空白になる不具合を修正',
+    detail: '【症状】iPhoneで月単位モードを印刷しようとすると、印刷プレビューで2ページ目以降がほぼ空白になっていました。【原因】.a4-wrapperのposition:relativeとoverflow:hidden、および.a4-pageのtransform-origin指定がiOS Safariの印刷ページ送り計算に副作用を起こしていました。【対処】これらの指定を@media screenのみ有効にし、印刷時は素のブロック要素として扱われるようにしました。' },
+  { date: '2026-04-23', type: 'fix', title: 'iPhoneでサイドバーのボタンが反応しない不具合を修正',
+    detail: '【症状】iPhoneでサイドバーの印刷ボタンを押しても反応しないことがありました。【原因】iOS Safariはスクロール可能な枠内のボタンに300msの待機時間を入れる場合があり、この間タップが無効と判断されることがありました。【対処】ボタン全体にtouch-action: manipulationを追加し、待機時間をなくしました。' },
+  { date: '2026-04-23', type: 'fix', title: 'iPhoneの月単位モードで偶数ページ（裏面）が空白になる不具合を修正',
+    detail: '【症状】iPhoneの月単位モード印刷で一部シート（特に月末の25・27・29日）でスロット位置がずれ、大半が空白になっていました。【原因】flex-wrap方式のレイアウトでiOS Safariが空スロット存在時に配置を詰めてしまう不具合がありました。【対処】印刷時のスロット配置を絶対配置（top/left座標指定）に戻し、レイアウトを安定させました。' },
+  { date: '2026-04-23', type: 'improve', title: 'iPhoneの印刷不具合をPDF生成ボタンで回避できるようにしました',
+    detail: 'iPhoneのSafariは印刷エンジンの仕様がPC版と大きく異なり、CSS調整だけでは完全な修正が困難な状況でした。印刷ボタンの横に新しく「PDFを生成」ボタンを追加しました。このボタンを押すと、iPhoneの不安定な印刷機能を経由せずにアプリ内で直接A4サイズのPDFを作成してダウンロードします。作成されたPDFはファイルアプリや標準ビューアから開いて印刷できます。従来の「印刷」ボタンもそのまま残してあります。' },
+  { date: '2026-04-25', type: 'feat', title: 'チェックリスト表示機能を追加',
+    detail: '各ページにチェックリストを重ねて印刷できるようになりました。3グループまで登録でき、グループごとにタイトル・項目（最大10個）・フォント・文字サイズ・表示位置（XY）を設定できます。' },
+  { date: '2026-04-25', type: 'fix', title: '月間カレンダーのサイズ変更が横方向のみに拡大する不具合を修正',
+    detail: 'サイズスライダーを動かすと横幅だけが広がり縦横比が崩れていました。フクロウロゴと同じく全体を均等に拡大・縮小する方式に変更しました。スライダーの値は倍率（1.0が標準）で表示されます。' },
+  { date: '2026-04-25', type: 'improve', title: '各種表示ラベル・メニュー名を整理',
+    detail: '操作パネルの表示名を整理しました。「穴ガイド」→「穴表示」、「穴中心」→「穴あけ中心線」、「月名（英）」→「月名表示」（日本語/英語切替に連動）、「月カレンダー」→「月間カレンダー」に統一。フクロウ透かしと月間カレンダーにサイズ・透明度の調整スライダーを追加しました。' },
+  { date: '2026-04-25', type: 'improve', title: '設定パネルのフォント設定の位置を変更',
+    detail: '設定パネル内のフォント設定セクションをチェックリストの直下（印刷ボタンの直前）に移動しました。関連する設定が近い位置にまとまり、操作しやすくなりました。' },
+  { date: '2026-04-26', type: 'feat', title: '祝日表示機能を追加',
+    detail: '【追加機能】設定パネル「表示要素」セクションに「祝日表示」トグルボタンを追加しました。ONにすると日本の祝日・振替休日・国民の休日の名称が日付ヘッダーに表示され、日付数字・曜日が赤色になります。' },
+];
+
+function openHistory() {
+  const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
+  document.getElementById('historyList').innerHTML =
+    [...HISTORY_ENTRIES].reverse().map(e =>
+      `<div class="history-entry">
+        <span class="history-date">${e.date}</span>
+        <span class="history-type ${e.type}">${typeLabel[e.type] || e.type}</span>
+        <div class="history-title">${e.title}</div>
+        <div class="history-detail">${e.detail}</div>
+      </div>`
+    ).join('');
+  document.getElementById('historyOverlay').classList.add('open');
+}
+function openHelp()  { document.getElementById('helpOverlay').classList.add('open'); }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
+function closeHistory() {
+  document.getElementById('historyOverlay').classList.remove('open');
+}
+
+const clGroups = [
+  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
+  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 55 },
+  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 95 },
+];
+function initCLFontSelectors() {
+  for (let i = 0; i < 3; i++) {
+    const sel = document.getElementById(`clFont${i}`);
+    if (!sel) continue;
+    FONT_OPTIONS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value; opt.textContent = f.label;
+      if (f.value === clGroups[i].font) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+}
+function toggleCL(idx) { clGroups[idx].show = document.getElementById(`clShow${idx}`).checked; render(); }
+function updateCL(idx) {
+  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
+  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
+  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
+  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
+  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
+  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
+  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
+  render();
+}
+function buildChecklistsHTML() {
+  return clGroups.map(g => {
+    if (!g.show) return '';
+    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
+    const itemsHTML = items.map(s =>
+      `<div class="cl-item"><span class="cl-checkbox"></span><span>${s.trim()}</span></div>`
+    ).join('');
+    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
+      (g.title ? `<div class="cl-title">${g.title}</div>` : '') +
+      itemsHTML + `</div>`;
+  }).join('');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeHistory();
+});
+function toggleOpt(key, btnId) {
+  opts[key] = !opts[key];
+  document.getElementById(btnId).classList.toggle('on', opts[key]);
+  render();
+}
+
+// === MODULE: Japanese Holidays ===
+function getJPHolidays(y) {
+  const h = {};
+  const add = (m, d, name) => { h[`${y}-${pad(m)}-${pad(d)}`] = name; };
+  function nthWd(m, wd, n) {
+    const first = new Date(y, m - 1, 1).getDay();
+    return 1 + ((wd - first + 7) % 7) + (n - 1) * 7;
+  }
+  add(1, 1, '元日'); add(2, 11, '建国記念の日'); add(2, 23, '天皇誕生日');
+  add(4, 29, '昭和の日'); add(5, 3, '憲法記念日'); add(5, 4, 'みどりの日'); add(5, 5, 'こどもの日');
+  if (y >= 2016) add(8, 11, '山の日');
+  add(11, 3, '文化の日'); add(11, 23, '勤労感謝の日');
+  add(1, nthWd(1, 1, 2), '成人の日'); add(7, nthWd(7, 1, 3), '海の日');
+  add(9, nthWd(9, 1, 3), '敬老の日');
+  if (y >= 2000) add(10, nthWd(10, 1, 2), 'スポーツの日');
+  const shunbun = Math.floor(20.8431 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
+  add(3, shunbun, '春分の日');
+  const shubun = Math.floor(23.2488 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
+  add(9, shubun, '秋分の日');
+  const viburi = {};
+  for (const k of Object.keys(h)) {
+    const d = new Date(k);
+    if (d.getDay() === 0) {
+      let next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      while (h[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`]) next.setDate(next.getDate() + 1);
+      viburi[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`] = '振替休日';
+    }
+  }
+  Object.assign(h, viburi);
+  for (let m = 1; m <= 12; m++) {
+    const days = new Date(y, m, 0).getDate();
+    for (let d = 2; d < days; d++) {
+      const prev = `${y}-${pad(m)}-${pad(d-1)}`, cur = `${y}-${pad(m)}-${pad(d)}`, next = `${y}-${pad(m)}-${pad(d+1)}`;
+      const wd = new Date(y, m-1, d).getDay();
+      if (h[prev] && h[next] && !h[cur] && wd !== 0 && wd !== 6) h[cur] = '国民の休日';
+    }
+  }
+  return h;
+}
+
+// ============================================================
+// 初期化
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  const el = document.getElementById('startDate');
+  el.value  = toDateVal(today);
+  el.addEventListener('change', e => {
+    const [y,m,d] = e.target.value.split('-').map(Number);
+    startDate = new Date(y, m-1, d);
+    render();
+  });
+  const mp = document.getElementById('monthPicker');
+  mp.value = `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
+  initFontSelectors();
+  initCLFontSelectors();
+  updateVars();
+  render();
+});
+
+function toDateVal(d) {
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+// ============================================================
+// 言語切替
+// ============================================================
+function setLang(en) {
+  isEN = en;
+  document.getElementById('btnJA').classList.toggle('on', !isEN);
+  document.getElementById('btnEN').classList.toggle('on', isEN);
+  render();
+}
+
+// ============================================================
+// CSS変数更新
+// ============================================================
+function updateVars() {
+  const sp   = parseFloat(document.getElementById('lineSpacing').value)   || 0;
+  const mg   = parseFloat(document.getElementById('memoGap').value)        || 4;
+  const tf   = parseFloat(document.getElementById('timeFontSize').value)   || 1.9;
+  const tlt  = parseFloat(document.getElementById('timeLabelTop').value)   || 0.3;
+  const mct  = parseFloat(document.getElementById('monthCalTop').value)    || 1;
+  const mcr  = parseFloat(document.getElementById('monthCalRight').value)  || 1;
+  const tws  = parseFloat(document.getElementById('textWmSize').value)     || 20;
+  const twa  = parseFloat(document.getElementById('textWmAngle').value)    || 0;
+  const twx  = parseFloat(document.getElementById('textWmX').value)        || 0;
+  const twy  = parseFloat(document.getElementById('textWmY').value)        || 0;
+  const owlX  = parseFloat(document.getElementById('owlWmX').value)        || 0;
+  const owlY  = parseFloat(document.getElementById('owlWmY').value)        || 0;
+  const owlSz = parseFloat(document.getElementById('owlWmSize').value)     || 38;
+  const owlOp = parseFloat(document.getElementById('owlWmOpacity').value)  || 0.07;
+  const mcSz  = parseFloat(document.getElementById('monthCalSize').value)  || 1;
+  const mcOp  = parseFloat(document.getElementById('monthCalOpacity').value) || 1;
+  const imgX = parseFloat(document.getElementById('imgWmX').value)         || 0;
+  const imgY = parseFloat(document.getElementById('imgWmY').value)         || 0;
+  const imgSz= parseFloat(document.getElementById('imgWmSize').value)      || 50;
+  const imgOp= parseFloat(document.getElementById('imgWmOpacity').value)   || 0.08;
+  document.documentElement.style.setProperty('--line-h',          sp   + 'mm');
+  document.documentElement.style.setProperty('--memo-gap',        mg   + 'mm');
+  document.documentElement.style.setProperty('--time-font',       tf   + 'mm');
+  document.documentElement.style.setProperty('--time-label-top',  tlt  + 'mm');
+  document.documentElement.style.setProperty('--month-cal-top',   mct  + 'mm');
+  document.documentElement.style.setProperty('--month-cal-right', mcr  + 'mm');
+  document.documentElement.style.setProperty('--text-wm-size',    tws  + 'mm');
+  document.documentElement.style.setProperty('--text-wm-angle',   twa  + 'deg');
+  document.documentElement.style.setProperty('--text-wm-x',       twx  + 'mm');
+  document.documentElement.style.setProperty('--text-wm-y',       twy  + 'mm');
+  document.documentElement.style.setProperty('--owl-wm-x',        owlX + 'mm');
+  document.documentElement.style.setProperty('--owl-wm-y',        owlY + 'mm');
+  document.documentElement.style.setProperty('--owl-wm-size',     owlSz + 'mm');
+  document.documentElement.style.setProperty('--owl-wm-opacity',  owlOp);
+  document.documentElement.style.setProperty('--month-cal-scale', mcSz);
+  document.documentElement.style.setProperty('--month-cal-opacity', mcOp);
+  document.documentElement.style.setProperty('--img-wm-x',        imgX + 'mm');
+  document.documentElement.style.setProperty('--img-wm-y',        imgY + 'mm');
+  document.documentElement.style.setProperty('--img-wm-size',     imgSz + 'mm');
+  document.documentElement.style.setProperty('--img-wm-opacity',  imgOp);
+}
+
+// === MODULE: FontOptions ===
+const FONT_OPTIONS = [
+  { label: 'Times New Roman', value: "'Times New Roman', Times, serif" },
+  { label: 'Georgia',         value: "Georgia, serif" },
+  { label: 'Arial',           value: "Arial, sans-serif" },
+  { label: 'Noto Serif JP',   value: "'Noto Serif JP', serif" },
+  { label: 'Noto Sans JP',    value: "'Noto Sans JP', sans-serif" },
+  { label: '游明朝',           value: "'Yu Mincho', '游明朝', serif" },
+  { label: '游ゴシック',        value: "'Yu Gothic', '游ゴシック', sans-serif" },
+  { label: 'Stencil',         value: "Stencil, Impact, sans-serif" },
+  { label: 'Impact',          value: "Impact, Charcoal, sans-serif" },
+  { label: 'メイリオ',          value: "Meiryo, 'メイリオ', sans-serif" },
+];
+
+function initFontSelectors() {
+  const map = [
+    { id: 'fontDateNum',    def: "'Noto Sans JP', sans-serif" },
+    { id: 'fontDateWd',     def: "'Noto Sans JP', sans-serif" },
+    { id: 'fontMonthAbbr',  def: "'Times New Roman', Times, serif" },
+    { id: 'fontTextWm',     def: "'Noto Sans JP', sans-serif" },
+  ];
+  map.forEach(({ id, def }) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    FONT_OPTIONS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value;
+      opt.textContent = f.label;
+      if (f.value === def) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function updateFontVars() {
+  const ids = ['fontDateNum','fontDateWd','fontMonthAbbr','fontTextWm'];
+  const vars = ['--font-date-num','--font-date-wd','--font-month-abbr','--font-text-wm'];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) document.documentElement.style.setProperty(vars[i], el.value);
+  });
+  render();
+}
+
+// === MODULE: Settings Toggle ===
+// toggleSidebar() is defined in the 状態 section above
+
+// === MODULE: ImageWatermark ===
+let customImgDataUrl = null;
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { customImgDataUrl = ev.target.result; render(); };
+  reader.readAsDataURL(file);
+}
+
+// ============================================================
+// 面切替
+// ============================================================
+function togglePageSide(side) {
+  if (side === 'front') {
+    showFront = !showFront;
+    document.getElementById('btnOdd').classList.toggle('on', showFront);
+  } else {
+    showBack = !showBack;
+    document.getElementById('btnEven').classList.toggle('on', showBack);
+  }
+  render();
+}
+
+// ============================================================
+// レンダリング共通パラメータ取得
+// ============================================================
+function getCommonParams() {
+  const startH = parseInt(document.getElementById('startHour').value) || 6;
+  const endH   = parseInt(document.getElementById('endHour').value)   || 22;
+  return {
+    showCutLines:   opts.showCutLines,
+    showHoleLine:   opts.showHoleLine,
+    showHoles:      opts.showHoles,
+    showHoleBisect: opts.showHoleBisect,
+    showLogo:       opts.showLogo,
+    showTextWm:     opts.showTextWm,
+    textWmContent:  document.getElementById('textWmContent').value,
+    showMonthAbbr:  opts.showMonthAbbr,
+    showImgWm:      opts.showImgWm,
+    showDateNum:    opts.showDateNum,
+    showDateWd:     opts.showDateWd,
+    showDateYm:     opts.showDateYm,
+    showTimeLabel:  opts.showTimeLabel,
+    showTimeLine:   opts.showTimeLine,
+    showHoliday:    opts.showHoliday,
+    hours:          Array.from({length: Math.max(1, endH - startH + 1)}, (_, i) => i + startH),
+  };
+}
+
+function makeA4HTML(slots, showCutLines) {
+  return `<div class="a4-wrapper"><div class="a4-page">
+    ${showCutLines ? '<div class="cut-v"></div><div class="cut-h"></div><div class="crop-cross"></div>' : ''}
+    ${['TL','TR','BL','BR'].map(pos =>
+      `<div class="a6-slot slot-${pos}">${slots[pos] || ''}</div>`
+    ).join('')}
+  </div></div>`;
+}
+
+// ============================================================
+// 印刷モード切替
+// ============================================================
+function togglePrintMode() {
+  const mode = document.getElementById('printMode').value;
+  document.getElementById('monthlyPickerCtrl').style.display = mode === 'monthly' ? '' : 'none';
+  render();
+}
+
+// ============================================================
+// レンダリング
+// ============================================================
+function render() {
+  const mode = document.getElementById('printMode').value;
+  if (mode === 'monthly') renderMonthly();
+  else renderSingle();
+}
+
+function renderSingle() {
+  const p = getCommonParams();
+  let html = '';
+  for (const [side, map] of [['front', SLOT_MAP.front], ['back', SLOT_MAP.back]]) {
+    if (side === 'front' && !showFront) continue;
+    if (side === 'back'  && !showBack)  continue;
+    const slots = {};
+    for (const [pos, dayOffset] of Object.entries(map)) {
+      const date = addDays(startDate, dayOffset);
+      slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
+        p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd, p.showDateYm, p.showTimeLabel, p.showTimeLine, p.showHoliday);
+    }
+    html += makeA4HTML(slots, p.showCutLines);
+  }
+  document.getElementById('preview').innerHTML = html;
+}
+
+function renderMonthly() {
+  const mp = document.getElementById('monthPicker').value;
+  if (!mp) return;
+  const [y, mo] = mp.split('-').map(Number);
+  const daysInMonth = new Date(y, mo, 0).getDate();
+  const sheetsNeeded = Math.ceil(daysInMonth / 8);
+  const p = getCommonParams();
+
+  let html = '';
+  for (const [side, map] of [['front', SLOT_MAP.front], ['back', SLOT_MAP.back]]) {
+    if (side === 'front' && !showFront) continue;
+    if (side === 'back'  && !showBack)  continue;
+    for (let s = 0; s < sheetsNeeded; s++) {
+      const slots = {};
+      for (const pos of ['TL','TR','BL','BR']) {
+        const dayOffset = map[pos];
+        const dayNum    = s * 8 + dayOffset + 1;
+        if (dayNum <= daysInMonth) {
+          const date = new Date(y, mo - 1, dayNum);
+          slots[pos] = buildDailyPage(date, dayNum, HOLE_SIDE[pos],
+            p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo,
+            p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd, p.showDateYm, p.showTimeLabel, p.showTimeLine, p.showHoliday);
+        }
+      }
+      html += makeA4HTML(slots, p.showCutLines);
+    }
+  }
+  document.getElementById('preview').innerHTML = html;
+}
+
+// ============================================================
+// PDF生成（iOS Safari印刷エンジンを回避）
+// ============================================================
+async function generatePDF(ev) {
+  const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
+  const wrappers = document.querySelectorAll('#preview .a4-wrapper');
+  if (!wrappers.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
+  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
+
+  const orig = btn.textContent;
+  btn.disabled = true;
+
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
+  document.body.appendChild(stage);
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+    for (let i = 0; i < wrappers.length; i++) {
+      btn.textContent = `PDF生成中 ${i+1}/${wrappers.length}`;
+      const srcPage = wrappers[i].querySelector('.a4-page');
+      const clone = srcPage.cloneNode(true);
+      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      stage.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+      stage.removeChild(clone);
+
+      const img = canvas.toDataURL('image/jpeg', 0.88);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+    }
+
+    const fname = `a6-refill-${new Date().toISOString().slice(0,10)}.pdf`;
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) {
+    console.error(e);
+    alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (stage.parentNode) stage.parentNode.removeChild(stage);
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+// ============================================================
+// 月カレンダーHTML構築
+// ============================================================
+function buildMonthCalHTML(date) {
+  const y = date.getFullYear();
+  const m = date.getMonth();
+  const firstWd  = new Date(y, m, 1).getDay();
+  const lastDate = new Date(y, m + 1, 0).getDate();
+  const curDate  = date.getDate();
+
+  const wdLabels = isEN ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : ['日','月','火','水','木','金','土'];
+  const wdHeaders = wdLabels
+    .map((wd, i) => `<div class="mc-wd${i===0?' sun':i===6?' sat':''}">${wd}</div>`)
+    .join('');
+
+  let cells = '';
+  for (let i = 0; i < firstWd; i++) cells += '<div class="mc-day"></div>';
+  for (let d = 1; d <= lastDate; d++) {
+    const wd  = (firstWd + d - 1) % 7;
+    const cls = [wd===0?'sun':wd===6?'sat':'', d===curDate?'cur':''].filter(Boolean).join(' ');
+    cells += `<div class="mc-day${cls?' '+cls:''}">${d}</div>`;
+  }
+
+  return `<div class="month-cal">
+    <div class="mc-header">${y}.${pad(m+1)}</div>
+    <div class="mc-grid">${wdHeaders}${cells}</div>
+  </div>`;
+}
+
+// ============================================================
+// デイリーページHTML構築
+// ============================================================
+function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHoleBisect, showLogo, showTextWm, textWmContent, showMonthAbbr, hours, showImgWm, showDateNum, showDateWd, showDateYm, showTimeLabel, showTimeLine, showHoliday) {
+  const wd      = date.getDay();
+  const dateKey = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+  const holName = showHoliday ? (getJPHolidays(date.getFullYear())[dateKey] || '') : '';
+  const isHol   = holName && wd !== 0 && wd !== 6;
+  const wdClass = wd === 0 ? 'is-sun' : wd === 6 ? 'is-sat' : (isHol ? 'is-holiday' : '');
+  const ymStr   = `${date.getFullYear()}.${pad(date.getMonth()+1)}`;
+  const wdLabel = isEN ? WD_EN[wd] : `${WD_JA[wd]}曜日`;
+
+  const bisectorHTML = (showHoleBisect && holeSide === 'left') ? '<div class="hole-bisector"></div>' : '';
+  const holeStripStyle = !showHoles ? 'visibility:hidden' : (!showHoleLine ? 'border:none' : '');
+  const holeStripAttr  = holeStripStyle ? ` style="${holeStripStyle}"` : '';
+  const holesHTML = `<div class="hole-strip ${holeSide}"${holeStripAttr}>
+    ${bisectorHTML}
+    ${HOLE_POSITIONS_MM.map(p => `<div class="hole" style="top:${p}mm;"></div>`).join('')}
+  </div>`;
+
+  const watermarkHTML = showLogo
+    ? `<svg class="watermark-logo" viewBox="0 0 323.67773 316.20041" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(89.827845,-154.05446)">
+          <path d="${OWL_PATH}" fill="#000"/>
+        </g>
+       </svg>`
+    : '';
+
+  const textWmHTML  = showTextWm  ? `<div class="text-watermark">${textWmContent}</div>` : '';
+  const imgWmHTML   = (showImgWm && customImgDataUrl) ? `<img class="img-wm" src="${customImgDataUrl}" alt="">` : '';
+  const monthAbbrHTML = showMonthAbbr ? `<div class="month-abbr-large">${isEN ? MONTH_EN_ABB[date.getMonth()] : (date.getMonth()+1)+'月'}</div>` : '';
+
+  const showMonth = opts.showMonthCal;
+  const monthHTML = showMonth ? buildMonthCalHTML(date) : '';
+
+  const timeLabelStyle = (() => {
+    if (!showTimeLabel && !showTimeLine) return ' style="width:0;padding:0;border-right:none;overflow:hidden;"';
+    if (!showTimeLabel) return ' style="color:transparent;"';
+    if (!showTimeLine)  return ' style="border-right:none;"';
+    return '';
+  })();
+  const timeRowsHTML = hours.map(h =>
+    `<div class="time-row">
+      <div class="time-label"${timeLabelStyle}>${showTimeLabel ? h : ''}</div>
+      <div class="time-fill"></div>
+    </div>`
+  ).join('');
+
+  const memoLinesHTML = Array(5).fill('<div class="memo-line"></div>').join('');
+
+  return `
+<div class="daily-page ${wdClass}">
+  ${holeSide === 'left' ? holesHTML : ''}
+  <div class="page-body">
+    ${watermarkHTML}
+    ${imgWmHTML}
+    ${textWmHTML}
+    ${monthHTML}
+    <div class="date-header">
+      ${showDateNum ? `<div class="date-num">${date.getDate()}</div>` : ''}
+      <div class="date-meta">
+        ${showDateYm ? `<div class="date-ym">${ymStr}</div>` : ''}
+        ${showDateWd ? `<div class="date-wd">${wdLabel}</div>` : ''}
+        ${holName ? `<div class="date-holiday">${holName}</div>` : ''}
+      </div>
+      <div class="ns-brand">N's factory</div>
+      ${monthAbbrHTML}
+    </div>
+    <div class="time-grid">${timeRowsHTML}</div>
+    <div class="memo-section">
+      <div class="memo-title">MEMO</div>
+      <div class="memo-lines">${memoLinesHTML}</div>
+    </div>
+    <div class="page-num">${pageNum}</div>
+    ${buildChecklistsHTML()}
+  </div>
+  ${holeSide === 'right' ? holesHTML : ''}
+</div>`;
+}
+</script>
+<script>
+/* === MODULE: Password Auth === */
+(function(){
+  var KEY='nsf_auth';
+  if(sessionStorage.getItem(KEY)==='1'){document.getElementById('pw-overlay').style.display='none';return;}
+  function check(){
+    if(document.getElementById('pw-input').value==='nsfactory'){
+      sessionStorage.setItem(KEY,'1');
+      document.getElementById('pw-overlay').style.display='none';
+    }else{
+      document.getElementById('pw-error').style.display='block';
+    }
+  }
+  document.getElementById('pw-btn').addEventListener('click',check);
+  document.getElementById('pw-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+})();
+</script>
+</body>
+</html>
