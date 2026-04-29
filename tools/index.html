@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>N's factory ツール一覧</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ND1T7H067Y');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #f5f5f7;
+      min-height: 100vh;
+      color: #1d1d1f;
+    }
+
+    /* === MODULE: Password Overlay === */
+    #pw-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(15,15,15,.92);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pw-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,.4);
+    }
+    .pw-logo { font-size: 12px; color: #6e6e73; margin-bottom: 10px; }
+    .pw-title { font-size: 17px; font-weight: 700; color: #1d1d1f; margin-bottom: 10px; line-height: 1.4; }
+    .pw-hint { font-size: 13px; color: #6e6e73; margin-bottom: 20px; line-height: 1.6; }
+    .pw-form { display: flex; gap: 8px; margin-bottom: 10px; }
+    .pw-form input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1.5px solid #d2d2d7;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .pw-form input:focus { border-color: #06C755; }
+    .pw-form button {
+      padding: 10px 18px;
+      background: #06C755;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .pw-form button:hover { background: #05a847; }
+    .pw-error { font-size: 12px; color: #ff3b30; margin-bottom: 10px; }
+    .pw-line-link {
+      font-size: 12px;
+      color: #06C755;
+      text-decoration: none;
+      display: block;
+      margin-top: 16px;
+    }
+    .pw-line-link:hover { text-decoration: underline; }
+
+    /* === MODULE: Header === */
+    .site-header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 28px 24px 24px;
+      text-align: center;
+    }
+    .site-header .brand { font-size: 12px; color: #a0a0b0; margin-bottom: 6px; letter-spacing: 0.05em; }
+    .site-header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em; }
+    .site-header .subtitle { font-size: 13px; color: #a0a0b0; margin-top: 6px; }
+
+    /* === MODULE: Tool Cards === */
+    .tools-container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 28px 16px 60px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6e6e73;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      padding-left: 4px;
+    }
+
+    .tool-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .tool-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+    .tool-card:active { transform: translateY(0); }
+
+    .tool-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .icon-daily  { background: #e8f4f8; }
+    .icon-weekly { background: #e8f8ee; }
+    .icon-monthly{ background: #f8f0e8; }
+    .icon-pw     { background: #f0e8f8; }
+
+    .tool-info { flex: 1; min-width: 0; }
+    .tool-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .tool-desc { font-size: 12px; color: #6e6e73; }
+
+    .tool-arrow {
+      font-size: 18px;
+      color: #c7c7cc;
+      flex-shrink: 0;
+    }
+
+    /* === MODULE: Footer === */
+    .site-footer {
+      text-align: center;
+      padding: 24px 16px;
+      font-size: 11px;
+      color: #a0a0a0;
+      border-top: 1px solid #e5e5ea;
+    }
+    .site-footer a { color: #06C755; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- ===== PASSWORD OVERLAY ===== -->
+<div id="pw-overlay">
+  <div class="pw-card">
+    <div class="pw-logo">N's factory</div>
+    <p class="pw-title">ツール一覧</p>
+    <p class="pw-hint">公式LINEでご案内のパスワードを入力してください</p>
+    <div class="pw-form">
+      <input type="password" id="pw-input" placeholder="パスワード" autocomplete="off">
+      <button type="button" id="pw-btn">入力</button>
+    </div>
+    <p class="pw-error" id="pw-error" style="display:none">パスワードが違います</p>
+    <a href="https://lin.ee/qsmtY2N" class="pw-line-link" target="_blank" rel="noopener">パスワードがわからない方は公式LINEへ →</a>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header">
+  <div class="brand">N's factory</div>
+  <h1>ツール一覧</h1>
+  <p class="subtitle">公式LINE会員限定ツール</p>
+</header>
+
+<!-- ===== TOOL CARDS ===== -->
+<main class="tools-container">
+
+  <div class="section-label">手帳リフィル 印刷ツール</div>
+
+  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/daily-block/" target="_blank" rel="noopener">
+    <div class="tool-icon icon-daily">📅</div>
+    <div class="tool-info">
+      <div class="tool-name">A6 デイリーリフィル</div>
+      <div class="tool-desc">1日1ページ・時間軸付きデイリーログ</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </a>
+
+  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/weekly-block/" target="_blank" rel="noopener">
+    <div class="tool-icon icon-weekly">🗓️</div>
+    <div class="tool-info">
+      <div class="tool-name">A6 ウィークリーリフィル</div>
+      <div class="tool-desc">1週間のブロック式週間スケジュール</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </a>
+
+  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/monthly-block/" target="_blank" rel="noopener">
+    <div class="tool-icon icon-monthly">📆</div>
+    <div class="tool-info">
+      <div class="tool-name">A6 マンスリーリフィル</div>
+      <div class="tool-desc">月間ブロックカレンダー</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </a>
+
+  <div class="section-label" style="margin-top:24px;">その他のツール</div>
+
+  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/password-note/" target="_blank" rel="noopener">
+    <div class="tool-icon icon-pw">🔑</div>
+    <div class="tool-info">
+      <div class="tool-name">N's notebook パスワード管理</div>
+      <div class="tool-desc">端末内だけで動くパスワード整理ノート</div>
+    </div>
+    <div class="tool-arrow">›</div>
+  </a>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <p>© 2025 N's factory &nbsp;|&nbsp; <a href="https://lin.ee/qsmtY2N" target="_blank" rel="noopener">公式LINE</a></p>
+</footer>
+
+<script>
+(function(){
+  var KEY='nsf_auth';
+  if(sessionStorage.getItem(KEY)==='1'){document.getElementById('pw-overlay').style.display='none';return;}
+  function check(){
+    if(document.getElementById('pw-input').value==='nsfactory'){
+      sessionStorage.setItem(KEY,'1');
+      document.getElementById('pw-overlay').style.display='none';
+    }else{
+      document.getElementById('pw-error').style.display='block';
+    }
+  }
+  document.getElementById('pw-btn').addEventListener('click',check);
+  document.getElementById('pw-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+})();
+</script>
+
+</body>
+</html>
