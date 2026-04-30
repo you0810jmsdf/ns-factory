@@ -581,6 +581,21 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
       <h2 class="section-title">A6システム手帳ユーザーのための、Webツールシリーズ。</h2>
     </div>
 
+    <!-- ツール一覧バナー（2026年5月1日以降表示） -->
+    <div id="tools-hub-banner" style="display:none;background:linear-gradient(135deg,#06C755 0%,#05a847 100%);border-radius:16px;padding:24px 28px;margin-bottom:24px;color:#fff;">
+      <p style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:6px;">公式LINE会員限定</p>
+      <p style="font-size:18px;font-weight:700;margin-bottom:8px;">印刷ツール一覧はこちら</p>
+      <p style="font-size:13px;opacity:.9;margin-bottom:16px;line-height:1.6;">デイリー・ウィークリー・マンスリーリフィルとパスワード管理ツールをまとめてご利用いただけます。</p>
+      <a href="https://you0810jmsdf.github.io/ns-factory/tools/" target="_blank" rel="noopener" style="display:inline-block;background:#fff;color:#06C755;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">ツール一覧を開く →</a>
+    </div>
+    <script>
+    (function(){
+      if(new Date() >= new Date('2026-05-01T00:00:00+09:00')){
+        document.getElementById('tools-hub-banner').style.display='block';
+      }
+    })();
+    </script>
+
     <!-- 01: パスワード管理 -->
     <div class="notebook-highlight" style="margin-bottom:24px;">
       <div>
@@ -606,21 +621,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <img src="./assets/password-note-main.png" alt="N's notebook パスワード管理 A6リフィル">
       </a>
     </div>
-
-    <!-- ツール一覧バナー（2026年5月1日以降表示） -->
-    <div id="tools-hub-banner" style="display:none;background:linear-gradient(135deg,#06C755 0%,#05a847 100%);border-radius:16px;padding:24px 28px;margin-bottom:24px;color:#fff;">
-      <p style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:6px;">公式LINE会員限定</p>
-      <p style="font-size:18px;font-weight:700;margin-bottom:8px;">印刷ツール一覧はこちら</p>
-      <p style="font-size:13px;opacity:.9;margin-bottom:16px;line-height:1.6;">デイリー・ウィークリー・マンスリーリフィルとパスワード管理ツールをまとめてご利用いただけます。</p>
-      <a href="https://you0810jmsdf.github.io/ns-factory/tools/" target="_blank" rel="noopener" style="display:inline-block;background:#fff;color:#06C755;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">ツール一覧を開く →</a>
-    </div>
-    <script>
-    (function(){
-      if(new Date() >= new Date('2026-05-01T00:00:00+09:00')){
-        document.getElementById('tools-hub-banner').style.display='block';
-      }
-    })();
-    </script>
 
     <!-- 02: A6リフィル印刷ツール -->
     <div class="notebook-highlight" id="a6-print-tool">
