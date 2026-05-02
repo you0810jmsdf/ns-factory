@@ -298,6 +298,71 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .card-link:hover{gap:8px}
 .card-link::after{content:'→'}
 
+/* ── Staff ──────────────────────────────────────────── */
+.staff-section{background:var(--color-bg)}
+.staff-lead{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 320px;
+  gap:28px;
+  align-items:center;
+  margin-bottom:28px;
+  padding:30px;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  background:linear-gradient(135deg,#fff 0%,#fbf8f4 100%);
+  box-shadow:var(--shadow-sm);
+}
+.staff-lead p{
+  color:var(--color-text-sub);
+  font-size:14px;
+  line-height:1.8;
+  margin-top:12px;
+}
+.staff-lead-image{
+  border-radius:var(--radius-md);
+  overflow:hidden;
+  border:1px solid var(--color-border);
+  box-shadow:var(--shadow-md);
+  background:#111;
+}
+.staff-lead-image img{
+  width:100%;
+  aspect-ratio:4/5;
+  object-fit:cover;
+}
+.staff-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:16px;
+}
+.staff-card{
+  overflow:hidden;
+  background:var(--color-bg);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-xs);
+  transition:transform var(--transition-base),box-shadow var(--transition-base);
+}
+.staff-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.staff-card img{
+  width:100%;
+  aspect-ratio:4/5;
+  object-fit:cover;
+  background:#111;
+}
+.staff-card-body{padding:18px}
+.staff-role{
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:-.01em;
+  margin-bottom:6px;
+}
+.staff-copy{
+  color:var(--color-text-sub);
+  font-size:13px;
+  line-height:1.65;
+}
+
 /* ── Order CTA ──────────────────────────────────────── */
 .order-section{background:var(--color-bg-sub)}
 .order-cta-box{
@@ -490,6 +555,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .tokusho-table td{padding:12px 14px;font-size:13px}
   .notebook-highlight{grid-template-columns:1fr;padding:24px}
   .notebook-image{order:-1}
+  .staff-lead{grid-template-columns:1fr;padding:24px}
+  .staff-lead-image{order:-1}
 }
 @media(max-width:480px){
   .section{padding:52px 16px}
@@ -507,6 +574,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   <span class="nav-spacer"></span>
   <div class="nav-links">
     <a href="./profile.html" class="nav-link">プロフィール</a>
+    <a href="#staff" class="nav-link">スタッフ</a>
     <a href="./works.html" class="nav-link">作品紹介</a>
     <a href="./password-note.html" class="nav-link">N's notebook</a>
     <a href="./JHCS.html" class="nav-link">JHCS講習案内</a>
@@ -550,6 +618,91 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     </div>
   </div>
 </div>
+
+<hr class="section-divider">
+
+<!-- ── Staff ── -->
+<section class="section staff-section" id="staff">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">Staff</p>
+      <h2 class="section-title">N's factory を動かすスタッフ</h2>
+    </div>
+    <div class="staff-lead">
+      <div>
+        <h3 class="section-title">ひとつの工房に、複数の視点を。</h3>
+        <p>
+          N's factory では、制作・販売・広報・管理・保全・デジタル運用までを役割ごとに整理し、
+          小さな工房でも迷わず動ける体制をつくっています。お客様に届くひとつの作品の裏側で、
+          それぞれの幕僚が品質、段取り、発信、継続運用を支えます。
+        </p>
+      </div>
+      <div class="staff-lead-image">
+        <img src="./assets/staff/all agent.png" alt="N's factory スタッフ集合">
+      </div>
+    </div>
+    <div class="staff-grid">
+      <article class="staff-card">
+        <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主">
+        <div class="staff-card-body">
+          <h3 class="staff-role">個人事業主</h3>
+          <p class="staff-copy">事業全体の意思決定を担い、ビジョンを描き、すべての幕僚を率いて成果へつなげる総司令官。</p>
+        </div>
+      </article>
+      <article class="staff-card">
+        <img src="./assets/staff/sakusen.png" alt="作戦幕僚">
+        <div class="staff-card-body">
+          <h3 class="staff-role">作戦幕僚</h3>
+          <p class="staff-copy">戦略の立案、情報分析、次の一手の設計を担う頭脳派。</p>
+        </div>
+      </article>
+      <article class="staff-card">
+        <img src="./assets/staff/kanri.png" alt="監理幕僚">
+        <div class="staff-card-body">
+          <h3 class="staff-role">監理幕僚</h3>
+          <p class="staff-copy">資金管理、財務戦略、記録整理で経営の基盤を支える参謀。</p>
+        </div>
+      </article>
+      <article class="staff-card">
+        <img src="./assets/staff/kouhou.png" alt="後方幕僚">
+        <div class="staff-card-body">
+          <h3 class="staff-role">後方幕僚</h3>
+          <p class="staff-copy">物資調達、製造、補給計画をまとめ、制作現場を支える要。</p>
+        </div>
+      </article>
+      <article class="staff-card">
+        <img src="./assets/staff/hannbai.png" alt="販売幕僚">
+        <div class="staff-card-body">
+          <h3 class="staff-role">販売幕僚</h3>
+          <p class="staff-copy">営業戦略、交渉、販路拡大を通じて、収益と信頼を築く提案者。</p>
+        </div>
+      </article>
+      <article class="staff-card">
+        <img src="./assets/staff/pr.png" alt="広報幕僚">
+        <div class="staff-card-body">
+          <h3 class="staff-role">広報幕僚</h3>
+          <p class="staff-copy">情報発信、ブランド戦略、世界観づくりを担う発信者。</p>
+        </div>
+      </article>
+      <article class="staff-card">
+        <img src="./assets/staff/hozen.png" alt="保全幕僚">
+        <div class="staff-card-body">
+          <h3 class="staff-role">保全幕僚</h3>
+          <p class="staff-copy">設備・資産の保守、リスク管理、安定運用を守る守護者。</p>
+        </div>
+      </article>
+      <article class="staff-card">
+        <img src="./assets/staff/digital.png" alt="デジタル幕僚">
+        <div class="staff-card-body">
+          <h3 class="staff-role">デジタル幕僚</h3>
+          <p class="staff-copy">デジタル戦略、データ分析、DX推進を担う変革者。</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
 
 <!-- ── Order Section ── -->
 <section class="section order-section" id="estimate">
