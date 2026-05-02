@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>mini6週間ブロックリフィル印刷ツール | N's factory</title>
+<title>バイブル週間ブロックリフィル印刷ツール | N's factory</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -305,7 +305,7 @@ body.panel-open #preview { margin-left: 280px; }
 <div id="pw-overlay">
   <div class="pw-card">
     <div class="pw-logo">N's factory</div>
-    <p class="pw-title">mini6週間ブロックリフィル印刷ツール</p>
+    <p class="pw-title">バイブル週間ブロックリフィル印刷ツール</p>
     <p class="pw-hint">公式LINEでご案内のパスワードを入力してください</p>
     <div class="pw-form">
       <input type="password" id="pw-input" placeholder="パスワード" autocomplete="off">
@@ -319,7 +319,7 @@ body.panel-open #preview { margin-left: 280px; }
 <!-- === MODULE: Control Panel HTML === -->
 <button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
 <div id="controls">
-  <h2>N's factory<br>mini6週間ブロック 印刷ツール</h2>
+  <h2>N's factory<br>バイブル週間ブロック 印刷ツール</h2>
 
   <div class="ctrl-section">
     <h3>印刷モード</h3>
@@ -583,7 +583,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
       ⚠️ <strong>印刷時の注意</strong><br>
-      ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、mini6リフィルとして使えません。
+      ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、バイブルリフィルとして使えません。
     </div>
   </div>
 
@@ -620,7 +620,7 @@ body.panel-open #preview { margin-left: 280px; }
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 印刷時の注意</p>
       <ul style="padding-left:18px; margin:4px 0;">
         <li>必ず「実際のサイズ（100%）」または「カスタム倍率：100%」を選択</li>
-        <li>「ページに合わせる」だと縮小されmini6サイズが狂う</li>
+        <li>「ページに合わせる」だと縮小されバイブルサイズが狂う</li>
         <li>余白は本ツール側で0設定済み（ブラウザ余白設定は「なし」のまま）</li>
       </ul>
 
@@ -1098,7 +1098,7 @@ function renderMonthly() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
-  { date: '2026-05-02', type: 'feat', title: 'mini6週間ブロックリフィル印刷ツール 初版リリース', detail: '' },
+  { date: '2026-05-02', type: 'feat', title: 'バイブル週間ブロックリフィル印刷ツール 初版リリース', detail: '' },
 ];
 
 function openHistory() {
@@ -1149,7 +1149,7 @@ async function generatePDF(ev) {
       if (i > 0) pdf.addPage();
       pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
     }
-    const fname = `mini6-weekly-${new Date().toISOString().slice(0,10)}.pdf`;
+    const fname = `bible-weekly-${new Date().toISOString().slice(0,10)}.pdf`;
     const blob = pdf.output('blob');
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
