@@ -194,6 +194,74 @@
       padding-left: 4px;
     }
 
+    /* === MODULE: Refill Spec Accordion === */
+    .spec-accordion {
+      background: #fff;
+      border-radius: 18px;
+      margin-top: 24px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    }
+    .spec-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 20px;
+      cursor: pointer;
+      user-select: none;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .spec-toggle:hover { background: #f8f8fa; }
+    .spec-toggle-label { font-size: 13px; font-weight: 700; color: #1d1d1f; }
+    .spec-toggle-sub { font-size: 11px; color: #6e6e73; margin-top: 2px; }
+    .spec-toggle-icon { font-size: 18px; color: #c7c7cc; transition: transform .2s; flex-shrink: 0; }
+    .spec-accordion.open .spec-toggle-icon { transform: rotate(90deg); }
+    .spec-body {
+      display: none;
+      padding: 0 16px 20px;
+      border-top: 1px solid #f0f0f5;
+    }
+    .spec-accordion.open .spec-body { display: block; }
+    .spec-size-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6e6e73;
+      margin: 16px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .spec-table th {
+      background: #f5f5f7;
+      color: #6e6e73;
+      font-weight: 700;
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid #e5e5ea;
+    }
+    .spec-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f5f5f7;
+      color: #1d1d1f;
+      vertical-align: top;
+    }
+    .spec-table tr:last-child td { border-bottom: none; }
+    .spec-table .num { font-weight: 700; color: #1a1a2e; }
+    .spec-note { font-size: 11px; color: #a0a0a0; margin-top: 8px; line-height: 1.6; }
+    .spec-badge { display: inline-block; font-size: 10px; font-weight: 700; color: #fff; border-radius: 4px; padding: 1px 6px; margin-left: 4px; vertical-align: middle; }
+    .spec-badge-done { background: #06C755; }
+    .spec-badge-wip  { background: #ff9500; }
+    .spec-source { font-size: 10px; color: #a0a0a0; margin-top: 14px; line-height: 1.8; }
+    .spec-source a { color: #06C755; text-decoration: none; }
+
     /* === MODULE: Footer === */
     .site-footer {
       text-align: center;
@@ -298,6 +366,108 @@
     </a>
   </div>
 
+
+  <!-- ===== REFILL SPEC ACCORDION ===== -->
+  <div class="section-label" style="margin-top:24px;">リフィル規格一覧</div>
+  <div class="spec-accordion" id="spec-accordion">
+    <button class="spec-toggle" id="spec-toggle" aria-expanded="false">
+      <div>
+        <div class="spec-toggle-label">システム手帳リフィル 規格データ</div>
+        <div class="spec-toggle-sub">穴位置・リフィル寸法・開発状況</div>
+      </div>
+      <span class="spec-toggle-icon">›</span>
+    </button>
+    <div class="spec-body" id="spec-body">
+
+      <!-- サイズ寸法 -->
+      <div class="spec-size-title">サイズ一覧</div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>サイズ</th><th>通称</th><th>幅</th><th>高さ</th><th>穴数</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Micro 5</td><td>M5 / ミニ5穴</td><td class="num">62 mm</td><td class="num">105 mm</td><td>5穴</td></tr>
+          <tr><td>Pocket</td><td>mini6 / ポケット</td><td class="num">80 mm</td><td class="num">120 mm</td><td>6穴</td></tr>
+          <tr><td>Personal</td><td>バイブル / 聖書</td><td class="num">95 mm</td><td class="num">171 mm</td><td>6穴</td></tr>
+          <tr><td>A6 ※</td><td>A6（独自）</td><td class="num">105 mm</td><td class="num">148 mm</td><td>6穴</td></tr>
+          <tr><td>A5</td><td>A5 / デスク</td><td class="num">148 mm</td><td class="num">210 mm</td><td>6穴</td></tr>
+        </tbody>
+      </table>
+      <p class="spec-note">※ A6はN's factory独自サイズ（標準規格外）／穴径：JIS Z 8303準拠 6 ± 0.5 mm</p>
+
+      <!-- 穴位置 -->
+      <div class="spec-size-title">穴位置（上端から・mm）</div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>サイズ</th><th>穴1</th><th>穴2</th><th>穴3</th><th>穴4</th><th>穴5</th><th>穴6</th><th>構成</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>M5</td>
+            <td class="num">15</td><td class="num">34</td><td class="num">53</td><td class="num">72</td><td class="num">91</td><td>—</td>
+            <td style="font-size:11px;color:#6e6e73;">等間隔 19mm</td>
+          </tr>
+          <tr>
+            <td>mini6</td>
+            <td class="num">13</td><td class="num">32</td><td class="num">51</td><td class="num">70</td><td class="num">89</td><td class="num">108</td>
+            <td style="font-size:11px;color:#6e6e73;">等間隔 19mm</td>
+          </tr>
+          <tr>
+            <td>バイブル</td>
+            <td class="num">22</td><td class="num">41</td><td class="num">60</td><td class="num">111</td><td class="num">130</td><td class="num">149</td>
+            <td style="font-size:11px;color:#6e6e73;">2群×3穴<br>群間 50.8mm</td>
+          </tr>
+          <tr>
+            <td>A5</td>
+            <td class="num">32</td><td class="num">51</td><td class="num">70</td><td class="num">140</td><td class="num">159</td><td class="num">178</td>
+            <td style="font-size:11px;color:#6e6e73;">2群×3穴<br>群間 69.9mm</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="spec-note">群内間隔はすべて 19mm（¾インチ）共通。メーカーにより ±1〜2mm の誤差あり。</p>
+
+      <!-- 開発状況 -->
+      <div class="spec-size-title">ツール開発状況</div>
+      <table class="spec-table">
+        <thead>
+          <tr><th>サイズ</th><th>デイリー</th><th>ウィークリー</th><th>マンスリー</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>M5</td>
+            <td>—</td><td>—</td><td>—</td>
+          </tr>
+          <tr>
+            <td>mini6</td>
+            <td>—</td><td>—</td><td>—</td>
+          </tr>
+          <tr>
+            <td>バイブル</td>
+            <td>—</td>
+            <td><span class="spec-badge spec-badge-wip">試作中</span></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>A6（独自）</td>
+            <td><span class="spec-badge spec-badge-done">完成</span></td>
+            <td><span class="spec-badge spec-badge-done">完成</span></td>
+            <td><span class="spec-badge spec-badge-done">完成</span></td>
+          </tr>
+          <tr>
+            <td>A5</td>
+            <td>—</td><td>—</td><td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="spec-source">
+        出典：
+        <a href="https://philofaxy.blogspot.com/2012/01/great-organiser-hole-spacing-conspiracy.html" target="_blank" rel="noopener">Philofaxy - Hole Spacing</a>　／
+        <a href="https://www.slide-techo.com/2017/10/27/%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E6%89%8B%E5%B8%B3%E3%81%AE%E7%A9%B4%E3%81%AE%E8%A9%B1/" target="_blank" rel="noopener">スライド手帳 - 穴の話</a>
+      </p>
+    </div><!-- /.spec-body -->
+  </div><!-- /.spec-accordion -->
+
 </main>
 
 <!-- ===== FOOTER ===== -->
@@ -319,6 +489,16 @@
   }
   document.getElementById('pw-btn').addEventListener('click',check);
   document.getElementById('pw-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+})();
+
+// === MODULE: Spec Accordion ===
+(function(){
+  var btn = document.getElementById('spec-toggle');
+  var acc = document.getElementById('spec-accordion');
+  btn.addEventListener('click', function(){
+    var open = acc.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open);
+  });
 })();
 </script>
 
