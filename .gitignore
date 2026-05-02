@@ -1,3 +1,4 @@
 .env
 .monitor/
 .claude/
+node_modules/
