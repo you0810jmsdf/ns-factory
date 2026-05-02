@@ -335,8 +335,8 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle" id="btnModeDirect" onclick="setPrintMode('direct')">直接印刷</button>
     </div>
     <div class="btn-row">
-      <button class="btn-primary" onclick="renderSingle()">単週</button>
-      <button class="btn-primary" onclick="renderMonthly()">月次</button>
+      <button class="btn-toggle on" id="btnSingle" onclick="renderSingle()">単週</button>
+      <button class="btn-toggle" id="btnMonthly" onclick="renderMonthly()">月次</button>
     </div>
     <div class="ctrl-row">
       <label>用紙面</label>
@@ -1050,13 +1050,16 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
     const idx = map['C'];
     const ws = weekStartDates[idx];
     const pn = pageNums[idx];
+    const holeSide = sideKey === 'back' ? 'right' : 'left';
     const slot = ws
-      ? buildWeeklyPage(ws, pn, 'left')
+      ? buildWeeklyPage(ws, pn, holeSide)
       : '<div class="slot empty"></div>';
     return `<div class="a4-sheet mode-direct">${slot}</div>`;
   } else {
     const map = SLOT_MAP_2UP[sideKey];
-    const holeMap = HOLE_SIDE_2UP;
+    const holeMap = sideKey === 'back'
+      ? { L:'right', R:'left' }
+      : HOLE_SIDE_2UP;
     const positions = ['L','R'];
     const slots = positions.map(pos => {
       const idx = map[pos];
@@ -1072,6 +1075,8 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
 // === MODULE: Single Week Render ===
 function renderSingle() {
   lastRenderMode = 'single';
+  document.getElementById('btnSingle').classList.add('on');
+  document.getElementById('btnMonthly').classList.remove('on');
   const startDay = parseInt(document.getElementById('weekStartDay').value);
   const rawDate = document.getElementById('startDate').value || toDateVal(new Date());
   // 'T00:00:00' でローカル時刻として解釈しUTCずれを防ぐ
@@ -1091,6 +1096,8 @@ function renderSingle() {
 // === MODULE: Monthly Render ===
 function renderMonthly() {
   lastRenderMode = 'monthly';
+  document.getElementById('btnMonthly').classList.add('on');
+  document.getElementById('btnSingle').classList.remove('on');
   const startDay = parseInt(document.getElementById('weekStartDay').value);
   const monthVal = document.getElementById('monthPicker').value || '2026-04';
   const [y, m] = monthVal.split('-').map(Number);
