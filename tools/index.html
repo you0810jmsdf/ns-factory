@@ -100,43 +100,71 @@
       padding: 28px 16px 60px;
     }
 
-    .section-label {
+    .tools-top-label {
       font-size: 11px;
       font-weight: 700;
       color: #6e6e73;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 12px;
-      padding-left: 4px;
+      margin-bottom: 14px;
+      padding-left: 2px;
     }
+
+    /* === Size Groups === */
+    .size-group {
+      background: #fff;
+      border-radius: 18px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    }
+    .size-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 20px;
+      border-bottom: 1px solid #f0f0f5;
+    }
+    .size-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      border-radius: 6px;
+      padding: 3px 10px;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+    .badge-a6    { background: #3b82f6; }
+    .badge-bible { background: #8b5cf6; }
+    .size-label { font-size: 13px; font-weight: 700; color: #1d1d1f; }
+    .size-sub   { font-size: 11px; color: #b0b0ba; margin-left: auto; }
 
     .tool-card {
       display: flex;
       align-items: center;
       gap: 16px;
-      background: #fff;
-      border-radius: 14px;
-      padding: 18px 20px;
-      margin-bottom: 12px;
+      background: transparent;
+      border-radius: 0;
+      padding: 16px 20px;
+      margin-bottom: 0;
       text-decoration: none;
       color: inherit;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
-      transition: transform .15s, box-shadow .15s;
+      box-shadow: none;
+      border-bottom: 1px solid #f5f5f7;
+      transition: background .12s;
     }
-    .tool-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0,0,0,.12);
-    }
-    .tool-card:active { transform: translateY(0); }
+    .tool-card:last-child { border-bottom: none; }
+    .tool-card:hover { background: #f8f8fa; }
+    .tool-card:active { background: #f0f0f4; }
 
     .tool-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 20px;
       flex-shrink: 0;
     }
     .icon-daily  { background: #e8f4f8; }
@@ -145,15 +173,25 @@
     .icon-pw     { background: #f0e8f8; }
 
     .tool-info { flex: 1; min-width: 0; }
-    .tool-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .tool-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .tool-desc { font-size: 12px; color: #6e6e73; }
-    .tool-note { font-size: 11px; color: #06C755; margin-top: 4px; }
+    .tool-note { font-size: 11px; color: #06C755; margin-top: 3px; }
     .badge-beta { font-size: 10px; font-weight: 700; color: #fff; background: #ff9500; border-radius: 4px; padding: 1px 5px; letter-spacing: 0.03em; flex-shrink: 0; }
 
     .tool-arrow {
       font-size: 18px;
       color: #c7c7cc;
       flex-shrink: 0;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6e6e73;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      padding-left: 4px;
     }
 
     /* === MODULE: Footer === */
@@ -194,55 +232,71 @@
 <!-- ===== TOOL CARDS ===== -->
 <main class="tools-container">
 
-  <div class="section-label">手帳リフィル 印刷ツール</div>
+  <div class="tools-top-label">手帳リフィル 印刷ツール</div>
 
-  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/daily-block/" target="_blank" rel="noopener">
-    <div class="tool-icon icon-daily">📅</div>
-    <div class="tool-info">
-      <div class="tool-name">A6 デイリーリフィル</div>
-      <div class="tool-desc">1日1ページ・時間軸付きデイリーログ</div>
+  <!-- A6 -->
+  <div class="size-group">
+    <div class="size-header">
+      <span class="size-badge badge-a6">A6</span>
+      <span class="size-label">A6サイズ</span>
+      <span class="size-sub">105 × 148 mm</span>
     </div>
-    <div class="tool-arrow">›</div>
-  </a>
+    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/daily-block/" target="_blank" rel="noopener">
+      <div class="tool-icon icon-daily">📅</div>
+      <div class="tool-info">
+        <div class="tool-name">デイリーリフィル</div>
+        <div class="tool-desc">1日1ページ・時間軸付きデイリーログ</div>
+      </div>
+      <div class="tool-arrow">›</div>
+    </a>
+    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/weekly-block/" target="_blank" rel="noopener">
+      <div class="tool-icon icon-weekly">🗓️</div>
+      <div class="tool-info">
+        <div class="tool-name">ウィークリーリフィル</div>
+        <div class="tool-desc">1週間のブロック式週間スケジュール</div>
+      </div>
+      <div class="tool-arrow">›</div>
+    </a>
+    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/monthly-block/" target="_blank" rel="noopener">
+      <div class="tool-icon icon-monthly">📆</div>
+      <div class="tool-info">
+        <div class="tool-name">マンスリーリフィル</div>
+        <div class="tool-desc">月間ブロックカレンダー</div>
+      </div>
+      <div class="tool-arrow">›</div>
+    </a>
+  </div>
 
-  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/weekly-block/" target="_blank" rel="noopener">
-    <div class="tool-icon icon-weekly">🗓️</div>
-    <div class="tool-info">
-      <div class="tool-name">A6 ウィークリーリフィル</div>
-      <div class="tool-desc">1週間のブロック式週間スケジュール</div>
+  <!-- バイブル -->
+  <div class="size-group">
+    <div class="size-header">
+      <span class="size-badge badge-bible">バイブル</span>
+      <span class="size-label">バイブルサイズ</span>
+      <span class="size-sub">95 × 171 mm</span>
     </div>
-    <div class="tool-arrow">›</div>
-  </a>
+    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/bible-weekly/" target="_blank" rel="noopener">
+      <div class="tool-icon icon-weekly">🗓️</div>
+      <div class="tool-info">
+        <div class="tool-name">ウィークリーリフィル <span class="badge-beta">試作中</span></div>
+        <div class="tool-desc">1週間のブロック式週間スケジュール</div>
+        <div class="tool-note">モニター募集中 ／ 不具合・機能追加のご意見はLINEへ</div>
+      </div>
+      <div class="tool-arrow">›</div>
+    </a>
+  </div>
 
-  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/bible-weekly/" target="_blank" rel="noopener">
-    <div class="tool-icon icon-weekly">🗓️</div>
-    <div class="tool-info">
-      <div class="tool-name">バイブル ウィークリーリフィル <span class="badge-beta">試作中</span></div>
-      <div class="tool-desc">バイブルサイズ・1週間のブロック式週間スケジュール</div>
-      <div class="tool-note">モニター募集中 ／ 不具合・機能追加のご意見はLINEへ</div>
-    </div>
-    <div class="tool-arrow">›</div>
-  </a>
-
-  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/monthly-block/" target="_blank" rel="noopener">
-    <div class="tool-icon icon-monthly">📆</div>
-    <div class="tool-info">
-      <div class="tool-name">A6 マンスリーリフィル</div>
-      <div class="tool-desc">月間ブロックカレンダー</div>
-    </div>
-    <div class="tool-arrow">›</div>
-  </a>
-
-  <div class="section-label" style="margin-top:24px;">その他のツール</div>
-
-  <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/password-note/" target="_blank" rel="noopener">
-    <div class="tool-icon icon-pw">🔑</div>
-    <div class="tool-info">
-      <div class="tool-name">N's notebook パスワード管理</div>
-      <div class="tool-desc">端末内だけで動くパスワード整理ノート</div>
-    </div>
-    <div class="tool-arrow">›</div>
-  </a>
+  <!-- その他 -->
+  <div class="section-label" style="margin-top:8px;">その他のツール</div>
+  <div class="size-group">
+    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/password-note/" target="_blank" rel="noopener">
+      <div class="tool-icon icon-pw">🔑</div>
+      <div class="tool-info">
+        <div class="tool-name">N's notebook パスワード管理</div>
+        <div class="tool-desc">端末内だけで動くパスワード整理ノート</div>
+      </div>
+      <div class="tool-arrow">›</div>
+    </a>
+  </div>
 
 </main>
 
