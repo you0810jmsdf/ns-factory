@@ -354,7 +354,7 @@ body.panel-open #preview { margin-left: 280px; }
     <h3>日付・週設定</h3>
     <div class="ctrl-row" id="rowStartDate">
       <label>開始日</label>
-      <input type="date" id="startDate" onchange="renderSingle()">
+      <input type="date" id="startDate" onchange="renderSingle()" oninput="renderSingle()">
     </div>
     <div class="ctrl-row" id="rowMonthPicker" style="display:none">
       <label>年月</label>
