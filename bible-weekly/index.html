@@ -1016,7 +1016,15 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
         ${Array(memoLineCount).fill('<div class="memo-line"></div>').join('')}
       </div>` : '';
 
-  return `<div class="slot">
+  const cutLines = opts.showCutLine
+    ? `<div class="cut-line-h" style="top:0"></div>
+       <div class="cut-line-h" style="bottom:0"></div>
+       <div class="cut-line-v" style="left:0"></div>
+       <div class="cut-line-v" style="right:0"></div>`
+    : '';
+
+  return `<div class="slot" style="position:relative;">
+    ${cutLines}
     ${holeStripLeft ? holesHTML : ''}
     <div class="page-body" style="${holeStripLeft ? 'padding-right:2mm;' : 'padding-left:2mm;'}">
       ${logoHTML}
@@ -1044,13 +1052,6 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
 
 // === MODULE: A4シートビルダー ===
 function makeA4HTML(weekStartDates, pageNums, sideKey) {
-  const cutLines = opts.showCutLine
-    ? `<div class="cut-line-h" style="top:0"></div>
-       <div class="cut-line-h" style="bottom:0"></div>
-       <div class="cut-line-v" style="left:0"></div>
-       <div class="cut-line-v" style="right:0"></div>`
-    : '';
-
   if (printMode === 'direct') {
     const map = SLOT_MAP_DIRECT[sideKey];
     const idx = map['C'];
@@ -1060,7 +1061,7 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
     const slot = ws
       ? buildWeeklyPage(ws, pn, holeSide)
       : '<div class="slot empty"></div>';
-    return `<div class="a4-sheet mode-direct"><div class="slots-wrapper">${cutLines}${slot}</div></div>`;
+    return `<div class="a4-sheet mode-direct"><div class="slots-wrapper">${slot}</div></div>`;
   } else {
     const map = SLOT_MAP_2UP[sideKey];
     const holeMap = sideKey === 'back'
@@ -1074,7 +1075,7 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
       if (!ws) return '<div class="slot empty"></div>';
       return buildWeeklyPage(ws, pn, holeMap[pos]);
     });
-    return `<div class="a4-sheet mode-2up"><div class="slots-wrapper">${cutLines}${slots.join('')}</div></div>`;
+    return `<div class="a4-sheet mode-2up"><div class="slots-wrapper">${slots.join('')}</div></div>`;
   }
 }
 
