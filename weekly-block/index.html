@@ -101,11 +101,11 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: カット線 === */
 .cut-line-h {
   position: absolute; left: 0; right: 0; height: 0;
-  border-top: 0.2mm dashed #aaa; z-index: 5; pointer-events: none;
+  border-top: 0.1mm dashed #aaa; z-index: 5; pointer-events: none;
 }
 .cut-line-v {
   position: absolute; top: 0; bottom: 0; width: 0;
-  border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none;
+  border-left: 0.1mm dashed #aaa; z-index: 5; pointer-events: none;
 }
 
 /* === MODULE: カットガイドマーク === */
@@ -198,7 +198,7 @@ body.panel-open #preview { margin-left: 280px; }
 .day-label {
   width: var(--day-label-w, 15mm); flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  border-right: 0.15mm solid #e8e8e8;
+  border-right: 0.1mm solid #e0e0e0;
 }
 .day-num { font-size: var(--day-num-font, 6mm); font-weight: 700; line-height: 1; font-family: var(--font-date-num, 'Noto Sans JP', sans-serif); }
 .day-wd { font-size: var(--day-wd-font, 2.2mm); font-weight: 700; color: #555; line-height: 1; margin-top: 0.5mm; font-family: var(--font-date-wd, 'Noto Sans JP', sans-serif); }
@@ -1192,6 +1192,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-03', type: 'fix',  title: '日付欄の縦区切り線を細く・薄く修正（0.2mm #e0e0e0 → 0.15mm #e8e8e8）', detail: '' },
   { date: '2026-05-03', type: 'fix',  title: 'リフィル枠高さを170mmに修正（旧171mm）', detail: '' },
   { date: '2026-05-03', type: 'feat', title: 'フクロウ透かしのサイズ・不透明度を調整できるスライダーを追加', detail: '' },
+  { date: '2026-05-04', type: 'fix',  title: 'カット線・日付欄縦区切り線の線幅を細く修正（0.2mm→0.1mm）', detail: '' },
 ];
 
 function openHistory() {
