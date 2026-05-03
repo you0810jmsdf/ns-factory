@@ -67,7 +67,7 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* === MODULE: Slot (リフィル枠) === */
 .slot {
-  width: 95mm; height: 171mm; position: relative; overflow: hidden;
+  width: 95mm; height: 170mm; position: relative; overflow: hidden;
   display: flex; flex-direction: row; flex-shrink: 0;
 }
 .slot.empty { background: #fafafa; }
@@ -91,6 +91,11 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: ページ本体 === */
 .page-body {
   flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden;
+}
+
+/* === MODULE: スロットラッパー === */
+.slots-wrapper {
+  position: relative; display: flex; flex-direction: row;
 }
 
 /* === MODULE: カット線 === */
@@ -962,13 +967,6 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
   const punchGuideHTML = (opts.showHoleBisect && holeStripLeft) ? `<div class="punch-guide"></div>` : '';
   const holesHTML = `<div class="hole-strip ${holeStripLeft?'':'right'}" style="${borderStyle}">${holeItems}${punchGuideHTML}</div>`;
 
-  // カット線
-  let cutHTML = '';
-  if (opts.showCutLine) {
-    cutHTML = `<div class="cut-line-h" style="bottom:0"></div>
-               <div class="cut-line-v" style="${holeStripLeft?'right':'left'}:0"></div>`;
-  }
-
   // ロゴ透かし
   const logoHTML = opts.showLogo
     ? `<div class="logo-wm"><svg viewBox="0 0 230 480" width="60mm" height="60mm"><path d="${OWL_PATH}"/></svg></div>`
@@ -1021,7 +1019,6 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
   return `<div class="slot">
     ${holeStripLeft ? holesHTML : ''}
     <div class="page-body" style="${holeStripLeft ? 'padding-right:2mm;' : 'padding-left:2mm;'}">
-      ${cutHTML}
       ${logoHTML}
       ${textWmHTML}
       ${imgWmHTML}
@@ -1047,6 +1044,13 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
 
 // === MODULE: A4シートビルダー ===
 function makeA4HTML(weekStartDates, pageNums, sideKey) {
+  const cutLines = opts.showCutLine
+    ? `<div class="cut-line-h" style="top:0"></div>
+       <div class="cut-line-h" style="bottom:0"></div>
+       <div class="cut-line-v" style="left:0"></div>
+       <div class="cut-line-v" style="right:0"></div>`
+    : '';
+
   if (printMode === 'direct') {
     const map = SLOT_MAP_DIRECT[sideKey];
     const idx = map['C'];
@@ -1056,7 +1060,7 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
     const slot = ws
       ? buildWeeklyPage(ws, pn, holeSide)
       : '<div class="slot empty"></div>';
-    return `<div class="a4-sheet mode-direct">${slot}</div>`;
+    return `<div class="a4-sheet mode-direct"><div class="slots-wrapper">${cutLines}${slot}</div></div>`;
   } else {
     const map = SLOT_MAP_2UP[sideKey];
     const holeMap = sideKey === 'back'
@@ -1070,7 +1074,7 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
       if (!ws) return '<div class="slot empty"></div>';
       return buildWeeklyPage(ws, pn, holeMap[pos]);
     });
-    return `<div class="a4-sheet mode-2up">${slots.join('')}</div>`;
+    return `<div class="a4-sheet mode-2up"><div class="slots-wrapper">${cutLines}${slots.join('')}</div></div>`;
   }
 }
 
@@ -1154,6 +1158,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-03', type: 'improve', title: '週が月をまたぐ場合の月略称を「４月／５月」「APR／MAY」形式で表示', detail: '' },
   { date: '2026-05-03', type: 'fix',  title: '穴中心位置を実測値に修正（21.5/40.5/59.5/110.5/129.5/148.5mm）', detail: '' },
   { date: '2026-05-03', type: 'fix',  title: '穴径を実測値の5mmに修正（旧4mm）', detail: '' },
+  { date: '2026-05-03', type: 'fix',  title: 'リフィル枠高さを170mmに修正（旧171mm）', detail: '' },
 ];
 
 function openHistory() {
