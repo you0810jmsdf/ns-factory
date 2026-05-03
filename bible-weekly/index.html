@@ -667,7 +667,7 @@ const WD_JA      = ['日','月','火','水','木','金','土'];
 const WD_EN      = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const WD_EN_SHORT= ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-const HOLE_POSITIONS_MM = [22, 41, 60, 111, 130, 149];
+const HOLE_POSITIONS_MM = [21.5, 40.5, 59.5, 110.5, 129.5, 148.5];
 const SLOT_MAP_2UP    = { front:{L:0,R:2}, back:{L:3,R:1} }; // 表=W1/W3, 裏(印刷座標)=W4/W2
 const SLOT_MAP_DIRECT = { front:{C:0},    back:{C:1} };
 const HOLE_SIDE_2UP     = { L:'left', R:'left' };
@@ -1152,6 +1152,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-03', type: 'fix',  title: '両面印刷の週配置を修正（左ピース=W1表/W2裏・右ピース=W3表/W4裏）', detail: '' },
   { date: '2026-05-03', type: 'improve', title: '印刷モードの表記を「両面印刷」「片面印刷」に変更し、プレビューラベルに印刷順を明示', detail: '' },
   { date: '2026-05-03', type: 'improve', title: '週が月をまたぐ場合の月略称を「４月／５月」「APR／MAY」形式で表示', detail: '' },
+  { date: '2026-05-03', type: 'fix',  title: '穴中心位置を実測値に修正（21.5/40.5/59.5/110.5/129.5/148.5mm）', detail: '' },
 ];
 
 function openHistory() {
