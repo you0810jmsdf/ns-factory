@@ -93,6 +93,11 @@ body.panel-open #preview { margin-left: 280px; }
   flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden;
 }
 
+/* === MODULE: スロットラッパー === */
+.slots-wrapper {
+  position: relative; display: flex; flex-direction: row;
+}
+
 /* === MODULE: カット線 === */
 .cut-line-h {
   position: absolute; left: 0; right: 0; height: 0;
@@ -962,15 +967,6 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
   const punchGuideHTML = (opts.showHoleBisect && holeStripLeft) ? `<div class="punch-guide"></div>` : '';
   const holesHTML = `<div class="hole-strip ${holeStripLeft?'':'right'}" style="${borderStyle}">${holeItems}${punchGuideHTML}</div>`;
 
-  // カット線（slot直下に配置するため変数として保持）
-  let cutHTML = '';
-  if (opts.showCutLine) {
-    cutHTML = `<div class="cut-line-h" style="top:0"></div>
-               <div class="cut-line-h" style="bottom:0"></div>
-               <div class="cut-line-v" style="left:0"></div>
-               <div class="cut-line-v" style="right:0"></div>`;
-  }
-
   // ロゴ透かし
   const logoHTML = opts.showLogo
     ? `<div class="logo-wm"><svg viewBox="0 0 230 480" width="60mm" height="60mm"><path d="${OWL_PATH}"/></svg></div>`
@@ -1021,7 +1017,6 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
       </div>` : '';
 
   return `<div class="slot">
-    ${cutHTML}
     ${holeStripLeft ? holesHTML : ''}
     <div class="page-body" style="${holeStripLeft ? 'padding-right:2mm;' : 'padding-left:2mm;'}">
       ${logoHTML}
@@ -1049,6 +1044,13 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
 
 // === MODULE: A4シートビルダー ===
 function makeA4HTML(weekStartDates, pageNums, sideKey) {
+  const cutLines = opts.showCutLine
+    ? `<div class="cut-line-h" style="top:0"></div>
+       <div class="cut-line-h" style="bottom:0"></div>
+       <div class="cut-line-v" style="left:0"></div>
+       <div class="cut-line-v" style="right:0"></div>`
+    : '';
+
   if (printMode === 'direct') {
     const map = SLOT_MAP_DIRECT[sideKey];
     const idx = map['C'];
@@ -1058,7 +1060,7 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
     const slot = ws
       ? buildWeeklyPage(ws, pn, holeSide)
       : '<div class="slot empty"></div>';
-    return `<div class="a4-sheet mode-direct">${slot}</div>`;
+    return `<div class="a4-sheet mode-direct"><div class="slots-wrapper">${cutLines}${slot}</div></div>`;
   } else {
     const map = SLOT_MAP_2UP[sideKey];
     const holeMap = sideKey === 'back'
@@ -1072,7 +1074,7 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
       if (!ws) return '<div class="slot empty"></div>';
       return buildWeeklyPage(ws, pn, holeMap[pos]);
     });
-    return `<div class="a4-sheet mode-2up">${slots.join('')}</div>`;
+    return `<div class="a4-sheet mode-2up"><div class="slots-wrapper">${cutLines}${slots.join('')}</div></div>`;
   }
 }
 
