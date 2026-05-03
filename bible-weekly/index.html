@@ -79,7 +79,7 @@ body.panel-open #preview { margin-left: 280px; }
 }
 .hole-strip.right { order: 2; }
 .hole {
-  position: absolute; width: 4mm; height: 4mm;
+  position: absolute; width: 5mm; height: 5mm;
   border-radius: 50%; background: white; border: 0.3mm solid #bbb;
   left: 50%; transform: translateX(-50%);
 }
@@ -1153,6 +1153,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-03', type: 'improve', title: '印刷モードの表記を「両面印刷」「片面印刷」に変更し、プレビューラベルに印刷順を明示', detail: '' },
   { date: '2026-05-03', type: 'improve', title: '週が月をまたぐ場合の月略称を「４月／５月」「APR／MAY」形式で表示', detail: '' },
   { date: '2026-05-03', type: 'fix',  title: '穴中心位置を実測値に修正（21.5/40.5/59.5/110.5/129.5/148.5mm）', detail: '' },
+  { date: '2026-05-03', type: 'fix',  title: '穴径を実測値の5mmに修正（旧4mm）', detail: '' },
 ];
 
 function openHistory() {
