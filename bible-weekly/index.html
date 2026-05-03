@@ -967,7 +967,7 @@ function buildDayBlock(date, holidays) {
 }
 
 // === MODULE: Weekly Page Builder ===
-function buildWeeklyPage(weekStart, pageNum, holeSide) {
+function buildWeeklyPage(weekStart, pageNum, holeSide, hideRight = false) {
   const startDay = parseInt(document.getElementById('weekStartDay').value);
   const weekEnd = addDays(weekStart, 6);
 
@@ -1034,7 +1034,7 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
     ? `<div class="cut-line-h" style="top:0"></div>
        <div class="cut-line-h" style="bottom:0"></div>
        <div class="cut-line-v" style="left:0"></div>
-       <div class="cut-line-v" style="right:0"></div>`
+       ${hideRight ? '' : '<div class="cut-line-v" style="right:0"></div>'}`
     : '';
 
   return `<div class="slot" style="position:relative;">
@@ -1087,7 +1087,7 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
       const ws = weekStartDates[idx];
       const pn = pageNums[idx];
       if (!ws) return '<div class="slot empty"></div>';
-      return buildWeeklyPage(ws, pn, holeMap[pos]);
+      return buildWeeklyPage(ws, pn, holeMap[pos], pos === 'L');
     });
     return `<div class="a4-sheet mode-2up"><div class="slots-wrapper">${slots.join('')}</div></div>`;
   }
