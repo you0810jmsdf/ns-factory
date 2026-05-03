@@ -994,7 +994,9 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
     ? `${ws.getMonth()+1}/${ws.getDate()} – ${we.getDate()}`
     : `${ws.getMonth()+1}/${ws.getDate()} – ${we.getMonth()+1}/${we.getDate()}`;
   const weekNum = getWeekNumber(ws);
-  const monthAbbrText = isEN ? MONTH_EN_ABB[ws.getMonth()] : `${ws.getMonth()+1}月`;
+  const monthAbbrText = (ws.getMonth() !== we.getMonth())
+    ? (isEN ? `${MONTH_EN_ABB[ws.getMonth()]}／${MONTH_EN_ABB[we.getMonth()]}` : `${ws.getMonth()+1}月／${we.getMonth()+1}月`)
+    : (isEN ? MONTH_EN_ABB[ws.getMonth()] : `${ws.getMonth()+1}月`);
   const monthAbbr = opts.showMonthAbbr
     ? `<div class="week-month-abbr">${monthAbbrText}</div>` : '';
   const yearStr = isEN ? `${ws.getFullYear()}` : `${ws.getFullYear()}`;
@@ -1149,6 +1151,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-02', type: 'feat', title: '印刷形式の切り替え機能を追加（A4 2面 / 直接印刷）', detail: '' },
   { date: '2026-05-03', type: 'fix',  title: '両面印刷の週配置を修正（左ピース=W1表/W2裏・右ピース=W3表/W4裏）', detail: '' },
   { date: '2026-05-03', type: 'improve', title: '印刷モードの表記を「両面印刷」「片面印刷」に変更し、プレビューラベルに印刷順を明示', detail: '' },
+  { date: '2026-05-03', type: 'improve', title: '週が月をまたぐ場合の月略称を「４月／５月」「APR／MAY」形式で表示', detail: '' },
 ];
 
 function openHistory() {
