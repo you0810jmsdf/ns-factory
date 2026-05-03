@@ -437,6 +437,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="btn-row">
       <button class="btn-toggle on" id="btnHoleBisect" onclick="toggleOpt('showHoleBisect','btnHoleBisect')">穴あけパンチガイド</button>
       <button class="btn-toggle on" id="btnCutLine" onclick="toggleOpt('showCutLine','btnCutLine')">カット線</button>
+      <button class="btn-toggle on" id="btnCutGuide" onclick="toggleOpt('showCutGuide','btnCutGuide')">カットガイド</button>
     </div>
     <div class="btn-row">
       <button class="btn-toggle on" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
@@ -732,7 +733,7 @@ let showBack = false;
 let isEN = false;
 let printMode = '2up'; // '2up' | 'direct'
 let opts = {
-  showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
+  showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true, showCutGuide: true,
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
   showImgWm: false, showHoliday: true,
   showDateNum: true, showDayWd: true, showWeekMeta: true
@@ -1052,15 +1053,17 @@ function buildWeeklyPage(weekStart, pageNum, holeSide, hideRight = false) {
     ? `<div class="cut-line-h" style="top:0"></div>
        <div class="cut-line-h" style="bottom:0"></div>
        <div class="cut-line-v" style="left:0"></div>
-       ${hideRight ? '' : '<div class="cut-line-v" style="right:0"></div>'}
-       <div class="cut-corner" style="top:0;left:0"></div>
+       ${hideRight ? '' : '<div class="cut-line-v" style="right:0"></div>'}`
+    : '';
+  const cutGuide = opts.showCutGuide
+    ? `<div class="cut-corner" style="top:0;left:0"></div>
        <div class="cut-corner" style="bottom:0;left:0"></div>
        ${hideRight ? '' : '<div class="cut-corner" style="top:0;right:0"></div>'}
        ${hideRight ? '' : '<div class="cut-corner" style="bottom:0;right:0"></div>'}`
     : '';
 
   return `<div class="slot" style="position:relative;">
-    ${cutLines}
+    ${cutLines}${cutGuide}
     ${holeStripLeft ? holesHTML : ''}
     <div class="page-body" style="${holeStripLeft ? 'padding-right:2mm;' : 'padding-left:2mm;'}">
       ${logoHTML}
