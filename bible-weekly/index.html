@@ -477,23 +477,6 @@ body.panel-open #preview { margin-left: 280px; }
   </div>
 
   <div class="ctrl-section">
-    <h3>印刷位置オフセット（プリンタずれ補正）</h3>
-    <div class="ctrl-row">
-      <label>X（左右）</label>
-      <input type="range" id="printOffsetX" min="-10" max="10" step="0.5" value="0"
-        oninput="setCSSVar('--print-offset-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
-      <span class="val">0</span>mm
-    </div>
-    <div class="ctrl-row">
-      <label>Y（上下）</label>
-      <input type="range" id="printOffsetY" min="-10" max="10" step="0.5" value="0"
-        oninput="setCSSVar('--print-offset-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
-      <span class="val">0</span>mm
-    </div>
-    <div style="font-size:11px;color:#666;margin-top:4px">穴の位置が下にずれるならYをマイナス、右にずれるならXをマイナスに調整してください。</div>
-  </div>
-
-  <div class="ctrl-section">
     <h3>テキスト透かし</h3>
     <div class="ctrl-row">
       <label>テキスト</label>
@@ -669,6 +652,20 @@ body.panel-open #preview { margin-left: 280px; }
       ⚠️ <strong>印刷時の注意</strong><br>
       ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、バイブルリフィルとして使えません。
     </div>
+    <h3 style="margin-top:14px">印刷位置オフセット（プリンタずれ補正）</h3>
+    <div class="ctrl-row">
+      <label>X（左右）</label>
+      <input type="range" id="printOffsetX" min="-10" max="10" step="0.5" value="0"
+        oninput="setCSSVar('--print-offset-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>Y（上下）</label>
+      <input type="range" id="printOffsetY" min="-10" max="10" step="0.5" value="0"
+        oninput="setCSSVar('--print-offset-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div style="font-size:11px;color:#666;margin-top:4px">穴の位置が下にずれるならYをマイナス、右にずれるならXをマイナスに調整してください。</div>
   </div>
 
   <div class="ctrl-section">
