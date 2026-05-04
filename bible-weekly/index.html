@@ -1066,11 +1066,12 @@ function buildWeeklyPage(weekStart, pageNum, holeSide, hideRight = false) {
        <div class="cut-line-v" style="left:0"></div>
        ${hideRight ? '' : '<div class="cut-line-v" style="right:0"></div>'}`
     : '';
+  const cgVRight = hideRight ? '' : '<div class="cg-v-line" style="right:0;left:auto"></div>';
   const cutGuide = opts.showCutGuide
     ? `<div class="cut-guide-corner" style="top:0;left:0"><div class="cg-h-line" style="top:0"></div><div class="cg-v-line" style="left:0"></div></div>
        <div class="cut-guide-corner" style="bottom:0;left:0"><div class="cg-h-line" style="bottom:0"></div><div class="cg-v-line" style="left:0"></div></div>
-       <div class="cut-guide-corner" style="top:0;right:0"><div class="cg-h-line" style="top:0"></div><div class="cg-v-line" style="right:0;left:auto"></div></div>
-       <div class="cut-guide-corner" style="bottom:0;right:0"><div class="cg-h-line" style="bottom:0"></div><div class="cg-v-line" style="right:0;left:auto"></div></div>`
+       <div class="cut-guide-corner" style="top:0;right:0"><div class="cg-h-line" style="top:0"></div>${cgVRight}</div>
+       <div class="cut-guide-corner" style="bottom:0;right:0"><div class="cg-h-line" style="bottom:0"></div>${cgVRight}</div>`
     : '';
 
   return `<div class="slot" style="position:relative;">
