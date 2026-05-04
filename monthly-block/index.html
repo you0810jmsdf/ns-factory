@@ -431,6 +431,7 @@ body.panel-open #preview { margin-left: 280px; }
 <button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
 <div id="controls">
   <h2>N's factory<br>月間ブロック 印刷ツール</h2>
+  <div style="text-align:center;margin-bottom:6px"><button onclick="resetSettings()" style="font-size:11px;padding:2px 10px;cursor:pointer">設定リセット</button></div>
 
   <div class="ctrl-section">
     <h3>印刷モード</h3>
@@ -1442,6 +1443,7 @@ function renderMonths() {
 
   document.getElementById('preview').innerHTML = html;
   updateMemoLines();
+  saveSettings();
 }
 
 function updateMemoLines() {
@@ -1539,6 +1541,128 @@ function initFontSelectors() {
   });
 }
 
+// === MODULE: Settings Persistence ===
+const SETTINGS_KEY = 'nsf_a6_monthly_v1';
+
+function saveSettings() {
+  const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
+  const getChk = id => { const e = document.getElementById(id); return e ? e.checked : null; };
+  const s = {
+    memoHeight: get('memoHeight'), memoLineWidth: get('memoLineWidth'),
+    memoLineLength: get('memoLineLength'), memoLineGap: get('memoLineGap'),
+    titleContent: get('titleContent'),
+    titleWmLogo: getChk('titleWmLogo'), titleWmText: getChk('titleWmText'), titleWmImg: getChk('titleWmImg'),
+    titleX: get('titleX'), titleY: get('titleY'), titleSize: get('titleSize'), titleAngle: get('titleAngle'),
+    textWmContent: get('textWmContent'),
+    textWmX: get('textWmX'), textWmY: get('textWmY'), textWmSize: get('textWmSize'), textWmAngle: get('textWmAngle'),
+    fontSidebar: get('fontSidebar'), fontColHeader: get('fontColHeader'),
+    fontDateNum: get('fontDateNum'), fontMonthAbbr: get('fontMonthAbbr'),
+    fontTextWm: get('fontTextWm'), fontTitle: get('fontTitle'),
+    owlWmX: get('owlWmX'), owlWmY: get('owlWmY'), owlWmSize: get('owlWmSize'), owlWmOpacity: get('owlWmOpacity'),
+    imgWmX: get('imgWmX'), imgWmY: get('imgWmY'), imgWmSize: get('imgWmSize'), imgWmOpacity: get('imgWmOpacity'),
+    opts: { ...opts }, isEN, isDuplex, layoutMode
+  };
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+
+function loadSettings() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch(e) {}
+  if (!s) return;
+
+  function setRange(id, val, cssVar, unit) {
+    const el = document.getElementById(id);
+    if (!el || val == null) return;
+    el.value = val;
+    if (cssVar) setCSSVar(cssVar, val + unit);
+    const sp = el.nextElementSibling;
+    if (sp && sp.classList.contains('val')) sp.textContent = val;
+  }
+
+  setRange('memoHeight',    s.memoHeight,    '--memo-height',     'mm');
+  setRange('memoLineWidth', s.memoLineWidth, '--memo-line-width',  'mm');
+  setRange('memoLineLength',s.memoLineLength,'--memo-line-length', '%');
+  setRange('memoLineGap',   s.memoLineGap,   '--memo-line-gap',   'mm');
+
+  const tc = document.getElementById('titleContent');
+  if (tc && s.titleContent != null) tc.value = s.titleContent;
+  ['titleWmLogo','titleWmText','titleWmImg'].forEach(id => {
+    const el = document.getElementById(id); if (el && s[id] != null) el.checked = s[id];
+  });
+  setRange('titleX',     s.titleX,     '--title-x',     'mm');
+  setRange('titleY',     s.titleY,     '--title-y',     'mm');
+  setRange('titleSize',  s.titleSize,  '--title-size',  'mm');
+  setRange('titleAngle', s.titleAngle, '--title-angle', 'deg');
+
+  const twc = document.getElementById('textWmContent');
+  if (twc && s.textWmContent != null) twc.value = s.textWmContent;
+  setRange('textWmX',     s.textWmX,     '--text-wm-x',     'mm');
+  setRange('textWmY',     s.textWmY,     '--text-wm-y',     'mm');
+  setRange('textWmSize',  s.textWmSize,  '--text-wm-size',  'mm');
+  setRange('textWmAngle', s.textWmAngle, '--text-wm-angle', 'deg');
+
+  ['fontSidebar','fontColHeader','fontDateNum','fontMonthAbbr','fontTextWm','fontTitle'].forEach(id => {
+    const el = document.getElementById(id); if (el && s[id] != null) el.value = s[id];
+  });
+  updateFontVars();
+
+  setRange('owlWmX',    s.owlWmX,    '--owl-wm-x',   'mm');
+  setRange('owlWmY',    s.owlWmY,    '--owl-wm-y',   'mm');
+  setRange('owlWmSize', s.owlWmSize, '--owl-wm-size', 'mm');
+  if (s.owlWmOpacity != null) {
+    const el = document.getElementById('owlWmOpacity');
+    if (el) { el.value = s.owlWmOpacity; setCSSVar('--owl-wm-opacity', s.owlWmOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.owlWmOpacity * 100); }
+  }
+  setRange('imgWmX',    s.imgWmX,    '--img-wm-x',   'mm');
+  setRange('imgWmY',    s.imgWmY,    '--img-wm-y',   'mm');
+  setRange('imgWmSize', s.imgWmSize, '--img-wm-size', 'mm');
+  if (s.imgWmOpacity != null) {
+    const el = document.getElementById('imgWmOpacity');
+    if (el) { el.value = s.imgWmOpacity; setCSSVar('--img-wm-opacity', s.imgWmOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.imgWmOpacity * 100); }
+  }
+
+  if (s.opts) {
+    const btnMap = {
+      showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showHoleBisect: 'btnHoleBisect',
+      showCutLine: 'btnCutLine', showLogo: 'btnLogo', showMonthAbbr: 'btnMonthAbbr',
+      showTextWm: 'btnTextWm', showImgWm: 'btnImgWm', showHoliday: 'btnHoliday',
+      showTitle: 'btnTitle', showCellGrid: 'btnCellGrid',
+      showMonthNum: 'btnMonthNum', showDateNum: 'btnDateNum', showDayHeader: 'btnDayHeader'
+    };
+    for (const [key, btnId] of Object.entries(btnMap)) {
+      if (s.opts[key] != null) { opts[key] = s.opts[key]; const btn = document.getElementById(btnId); if (btn) btn.classList.toggle('on', !!s.opts[key]); }
+    }
+    if (s.opts.cellGridCols != null) {
+      opts.cellGridCols = +s.opts.cellGridCols;
+      const el = document.getElementById('cellGridCols');
+      if (el) { el.value = s.opts.cellGridCols; const sp = el.nextElementSibling; if (sp) sp.textContent = s.opts.cellGridCols; }
+    }
+    if (s.opts.cellGridRows != null) {
+      opts.cellGridRows = +s.opts.cellGridRows;
+      const el = document.getElementById('cellGridRows');
+      if (el) { el.value = s.opts.cellGridRows; const sp = el.nextElementSibling; if (sp) sp.textContent = s.opts.cellGridRows; }
+    }
+  }
+
+  if (s.isEN != null) { isEN = s.isEN; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); }
+  if (s.isDuplex != null) {
+    isDuplex = s.isDuplex;
+    const btn = document.getElementById('btnDuplex');
+    if (btn) { btn.textContent = isDuplex ? 'ON' : 'OFF'; btn.classList.toggle('on', isDuplex); }
+  }
+  if (s.layoutMode != null) {
+    layoutMode = s.layoutMode;
+    document.getElementById('btnBlock').classList.toggle('on', layoutMode === 'block');
+    document.getElementById('btnVert').classList.toggle('on', layoutMode === 'vert');
+  }
+}
+
+function resetSettings() {
+  if (!confirm('設定をリセットしますか？\nブラウザに保存された設定を削除してページを再読み込みします。')) return;
+  try { localStorage.removeItem(SETTINGS_KEY); } catch(e) {}
+  location.reload();
+}
+
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
   { date: '2026-04-26', type: 'feat', title: '月間ブロック印刷ツールを新規作成',
@@ -1625,6 +1749,8 @@ const HISTORY_ENTRIES = [
     detail: '縦型レイアウトの「月数字」「日付」「曜日ヘッダー行」をそれぞれ個別にON/OFFできるトグルボタンを「表示要素」セクションに追加しました。月数字を非表示にすると年だけ残り、日付を非表示にすると日マスが空白、曜日をOFFにすると曜日ヘッダー行を省略できます。手帳の使い方に合わせてシンプルなレイアウトを作れます。' },
   { date: '2026-04-29', type: 'fix', title: 'ブロックレイアウトで月・日付・曜日・日マスグリッドボタンが効かない不具合を修正',
     detail: '「月」「日付」「曜日」「日マスグリッド」のON/OFFボタンが、縦型レイアウトでは機能していたがブロックレイアウトでは変化しない不具合を修正しました。ブロックレイアウトの月数字（サイドバー）・日付数字・曜日ヘッダーにも各ボタンが対応し、日マスグリッドもブロックレイアウトの各日マス内に表示されるようになりました。' },
+  { date: '2026-05-04', type: 'feat', title: 'ブラウザに設定を自動保存・次回起動時に復元する機能を追加',
+    detail: '各種スライダー・トグルボタン・フォント選択・テキスト入力などすべての設定がブラウザのローカルストレージに自動保存されるようになりました。ページを閉じて再度開いたときも前回の設定がそのまま復元されます。設定をリセットしたい場合はツールタイトル直下の「設定リセット」ボタンを押してください。' },
 ];
 
 function openHistory() {
@@ -1706,6 +1832,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('yearPicker').value = today.getFullYear();
   initFontSelectors();
   initCLFontSelectors();
+  loadSettings();
   renderMonths();
 });
 </script>
