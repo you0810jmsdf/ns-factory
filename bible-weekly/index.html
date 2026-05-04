@@ -100,16 +100,18 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* === MODULE: カット線 === */
 .cut-line-h {
-  position: absolute; left: 0; right: 0; height: 1px;
-  background-image: repeating-linear-gradient(to right, #bbb 0px, #bbb 4px, transparent 4px, transparent 8px);
-  border: none; z-index: 5; pointer-events: none;
+  position: absolute; left: 0; right: 0;
+  height: 1px; box-sizing: border-box;
+  border-top: 1px dashed #bbb;
   transform: scaleY(0.5); transform-origin: center top;
+  z-index: 5; pointer-events: none;
 }
 .cut-line-v {
-  position: absolute; top: 0; bottom: 0; width: 1px;
-  background-image: repeating-linear-gradient(to bottom, #bbb 0px, #bbb 4px, transparent 4px, transparent 8px);
-  border: none; z-index: 5; pointer-events: none;
+  position: absolute; top: 0; bottom: 0;
+  width: 1px; box-sizing: border-box;
+  border-left: 1px dashed #bbb;
   transform: scaleX(0.5); transform-origin: left center;
+  z-index: 5; pointer-events: none;
 }
 
 /* === MODULE: カットガイドマーク === */
@@ -306,8 +308,8 @@ body.panel-open #preview { margin-left: 280px; }
   #preview { margin-left: 0; padding: 0; }
   .a4-sheet { box-shadow: none; page-break-after: always; }
   .a4-sheet:last-child { page-break-after: avoid; }
-  .cut-line-h { height: 0; background: none; border-top: 0.1mm dashed #aaa; transform: none; }
-  .cut-line-v { width: 0; background: none; border-left: 0.1mm dashed #aaa; transform: none; }
+  .cut-line-h { border-top: 0.1mm dashed #aaa; }
+  .cut-line-v { border-left: 0.1mm dashed #aaa; }
 }
 </style>
 </head>
