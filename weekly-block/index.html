@@ -102,10 +102,12 @@ body.panel-open #preview { margin-left: 280px; }
 .cut-line-h {
   position: absolute; left: 0; right: 0; height: 0;
   border-top: 0.1mm dashed #aaa; z-index: 5; pointer-events: none;
+  transform: scaleY(0.5); transform-origin: center top;
 }
 .cut-line-v {
   position: absolute; top: 0; bottom: 0; width: 0;
   border-left: 0.1mm dashed #aaa; z-index: 5; pointer-events: none;
+  transform: scaleX(0.5); transform-origin: left center;
 }
 
 /* === MODULE: カットガイドマーク === */
