@@ -100,13 +100,15 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* === MODULE: カット線 === */
 .cut-line-h {
-  position: absolute; left: 0; right: 0; height: 0;
-  border-top: 0.1mm dashed #aaa; z-index: 5; pointer-events: none;
+  position: absolute; left: 0; right: 0; height: 1px;
+  background-image: repeating-linear-gradient(to right, #bbb 0px, #bbb 4px, transparent 4px, transparent 8px);
+  border: none; z-index: 5; pointer-events: none;
   transform: scaleY(0.5); transform-origin: center top;
 }
 .cut-line-v {
-  position: absolute; top: 0; bottom: 0; width: 0;
-  border-left: 0.1mm dashed #aaa; z-index: 5; pointer-events: none;
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background-image: repeating-linear-gradient(to bottom, #bbb 0px, #bbb 4px, transparent 4px, transparent 8px);
+  border: none; z-index: 5; pointer-events: none;
   transform: scaleX(0.5); transform-origin: left center;
 }
 
@@ -304,6 +306,8 @@ body.panel-open #preview { margin-left: 280px; }
   #preview { margin-left: 0; padding: 0; }
   .a4-sheet { box-shadow: none; page-break-after: always; }
   .a4-sheet:last-child { page-break-after: avoid; }
+  .cut-line-h { height: 0; background: none; border-top: 0.1mm dashed #aaa; transform: none; }
+  .cut-line-v { width: 0; background: none; border-left: 0.1mm dashed #aaa; transform: none; }
 }
 </style>
 </head>
@@ -1195,6 +1199,8 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-03', type: 'fix',  title: 'リフィル枠高さを170mmに修正（旧171mm）', detail: '' },
   { date: '2026-05-03', type: 'feat', title: 'フクロウ透かしのサイズ・不透明度を調整できるスライダーを追加', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'カット線・日付欄縦区切り線の線幅を細く修正（0.2mm→0.1mm）', detail: '' },
+  { date: '2026-05-04', type: 'fix',  title: 'カット線（縦・横）の描画方式をグラデーション方式に変更し、画面表示でも細線が正しく表示されるよう修正', detail: '' },
+  { date: '2026-05-04', type: 'fix',  title: 'サイズスライダーを動かすとフクロウが斜め移動するバグを修正（SVG幅高を100%指定に変更）', detail: '' },
 ];
 
 function openHistory() {
