@@ -369,6 +369,12 @@ body.panel-open #preview { margin-left: 280px; }
   <h2>N's factory<br>バイブル週間ブロック 印刷ツール</h2>
 
   <div class="ctrl-section">
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="resetSettings()" style="font-size:9px;">設定リセット</button>
+    </div>
+  </div>
+
+  <div class="ctrl-section">
     <h3>印刷モード</h3>
     <div class="ctrl-row">
       <label>用紙形式</label>
@@ -758,6 +764,92 @@ let lineCount = 3;
 let memoLineCount = 2;
 let lastRenderMode = 'single';
 let customImgDataUrl = null;
+
+// === MODULE: Settings Persistence ===
+const SETTINGS_KEY = 'nsf_bible_weekly_v1';
+
+function saveSettings() {
+  const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
+  const s = {
+    weekStartDay: get('weekStartDay'),
+    dayLabelW: get('dayLabelW'), dayNumFont: get('dayNumFont'), dayWdFont: get('dayWdFont'),
+    dayBlockH: get('dayBlockH'), memoLineCount: get('memoLineCount'),
+    textWmContent: get('textWmContent'),
+    textWmX: get('textWmX'), textWmY: get('textWmY'),
+    textWmSize: get('textWmSize'), textWmAngle: get('textWmAngle'),
+    fontBrand: get('fontBrand'), fontDateNum: get('fontDateNum'),
+    fontDateWd: get('fontDateWd'), fontMonthAbbr: get('fontMonthAbbr'), fontTextWm: get('fontTextWm'),
+    opts: { ...opts }, isEN, printMode, showFront, showBack
+  };
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+
+function loadSettings() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch(e) {}
+  if (!s) return;
+
+  function setRange(id, val, cssVar, unit, spanId) {
+    const el = document.getElementById(id);
+    if (!el || val == null) return;
+    el.value = val;
+    if (cssVar) setCSSVar(cssVar, val + unit);
+    if (spanId) { const sp = document.getElementById(spanId); if (sp) sp.textContent = val; }
+    const sp2 = el.nextElementSibling;
+    if (sp2 && sp2.classList.contains('val')) sp2.textContent = val;
+  }
+
+  if (s.weekStartDay != null) document.getElementById('weekStartDay').value = s.weekStartDay;
+  setRange('dayLabelW',    s.dayLabelW,    '--day-label-w',   'mm');
+  setRange('dayNumFont',   s.dayNumFont,   '--day-num-font',  'mm');
+  setRange('dayWdFont',    s.dayWdFont,    '--day-wd-font',   'mm');
+  setRange('dayBlockH',    s.dayBlockH,    '--day-block-h',   'mm', 'dayBlockHVal');
+  setRange('memoLineCount',s.memoLineCount, null,              null, 'memoCountVal');
+  if (s.memoLineCount != null) memoLineCount = parseInt(s.memoLineCount);
+  setRange('textWmX',    s.textWmX,    '--text-wm-x',     'mm');
+  setRange('textWmY',    s.textWmY,    '--text-wm-y',     'mm');
+  setRange('textWmSize', s.textWmSize, '--text-wm-size',  'mm');
+  setRange('textWmAngle',s.textWmAngle,'--text-wm-angle', 'deg');
+  if (s.textWmContent != null) document.getElementById('textWmContent').value = s.textWmContent;
+
+  ['fontBrand','fontDateNum','fontDateWd','fontMonthAbbr','fontTextWm'].forEach(id => {
+    if (s[id] != null) { const el = document.getElementById(id); if (el) el.value = s[id]; }
+  });
+  updateFontVars();
+
+  if (s.opts) {
+    const btnMap = {
+      showHoles:'btnHoles', showHoleLine:'btnHoleLine', showHoleBisect:'btnHoleBisect',
+      showCutLine:'btnCutLine', showCutGuide:'btnCutGuide', showLogo:'btnLogo',
+      showMonthAbbr:'btnMonthAbbr', showMonthCal:'btnMonthCal', showTextWm:'btnTextWm',
+      showImgWm:'btnImgWm', showHoliday:'btnHoliday', showDateNum:'btnDateNum',
+      showDayWd:'btnDayWd', showWeekMeta:'btnWeekMeta'
+    };
+    for (const [key, btnId] of Object.entries(btnMap)) {
+      if (s.opts[key] != null) {
+        opts[key] = s.opts[key];
+        document.getElementById(btnId).classList.toggle('on', opts[key]);
+      }
+    }
+  }
+
+  if (s.isEN != null) setLang(s.isEN);
+  if (s.printMode != null) setPrintMode(s.printMode);
+  if (s.showFront != null) {
+    showFront = s.showFront;
+    document.getElementById('btnOdd').classList.toggle('on', showFront);
+  }
+  if (s.showBack != null) {
+    showBack = s.showBack;
+    document.getElementById('btnEven').classList.toggle('on', showBack);
+  }
+}
+
+function resetSettings() {
+  if (!confirm('設定をリセットしますか？\n（ページを再読み込みして初期値に戻します）')) return;
+  try { localStorage.removeItem(SETTINGS_KEY); } catch(e) {}
+  location.reload();
+}
 
 // === MODULE: Utility Functions ===
 function pad(n) { return String(n).padStart(2,'0'); }
@@ -1158,6 +1250,7 @@ function renderSingle() {
   if (showBack)  html += `<div class="sheet-wrap"><div class="sheet-label">${is2up ? '裏面（反転して印刷）W2・W4' : '裏面（片面）W3・W4'}</div>${makeA4HTML(weekStartDates, pageNums, 'back')}</div>`;
   if (!showFront && !showBack) html = '<p style="color:#666;font-size:12px;">ページ面を選択してください</p>';
   document.getElementById('preview').innerHTML = html;
+  saveSettings();
 }
 
 // === MODULE: Monthly Render ===
@@ -1202,6 +1295,7 @@ function renderMonthly() {
   }
 
   document.getElementById('preview').innerHTML = html;
+  saveSettings();
 }
 
 // === MODULE: UpdateHistory ===
@@ -1229,6 +1323,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-04', type: 'fix', title: '穴の位置を一律2mm上に修正（実機印刷でリフィルの事前パンチ穴と合うよう調整）', detail: '実印刷でカット後のリフィル上端〜最上穴・最下穴〜下端の距離が2mm下にずれていたため、HOLE_POSITIONS_MMを19.5/38.5/57.5/108.5/127.5/146.5に変更。' },
   { date: '2026-05-04', type: 'improve', title: '月間カレンダー「上端」スライダーの最大値を115mmから200mmに拡張', detail: '' },
   { date: '2026-05-04', type: 'fix', title: '穴位置をさらに1mm上に修正（18.5/37.5/56.5/107.5/126.5/145.5）', detail: '' },
+  { date: '2026-05-04', type: 'feat', title: '設定の自動保存・復元機能を追加（ページを開き直しても設定が保持されます）', detail: 'localStorageに保存。パネル上部の「設定リセット」ボタンで初期値に戻せます。' },
 ];
 
 function openHistory() {
@@ -1356,6 +1451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
   initFontSelectors();
   initCLFontSelectors();
+  loadSettings();
   renderSingle();
 });
 </script>
