@@ -592,6 +592,10 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
         <option value="monthly">月単位</option>
       </select>
     </div>
+    <div style="font-size:11px;color:#666;line-height:1.4;margin:4px 2px 6px">
+      ・<b>単ページ</b>：開始日から8日分（表4＋裏4）を作成。途中の日付から印刷したい時用。<br>
+      ・<b>月単位</b>：選択月の1日〜末日まで一括作成。月初にまとめて印刷する用。
+    </div>
     <div class="ctrl-row" id="monthlyPickerCtrl" style="display:none">
       <label>対象月</label>
       <input type="month" id="monthPicker" onchange="render()">
@@ -599,6 +603,23 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     <div class="btn-row">
       <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
       <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
+    </div>
+    <div class="ctrl-row" style="margin-top:6px">
+      <label>両面印刷方式</label>
+      <select id="duplexMode" onchange="onDuplexChange()">
+        <option value="manual">手動（表→裏の順）</option>
+        <option value="auto">自動両面プリンタ用（表裏交互）</option>
+      </select>
+    </div>
+    <div class="ctrl-row" id="bindEdgeCtrl" style="display:none">
+      <label>綴じ方向</label>
+      <select id="bindEdge" onchange="render()">
+        <option value="long">長辺綴じ（裏そのまま）</option>
+        <option value="short">短辺綴じ（裏180°回転）</option>
+      </select>
+    </div>
+    <div style="font-size:11px;color:#666;line-height:1.4;margin:4px 2px 0">
+      ※自動両面を選ぶと表裏が1ページずつ交互に並んだPDFになり、自動両面プリンタでそのまま印刷できます。
     </div>
   </div>
 
@@ -949,6 +970,8 @@ let showFront = true;
 let showBack  = false;
 let isEN      = false;
 let startDate = new Date();
+let duplexMode = 'manual';
+let bindEdge   = 'long';
 
 let opts = {
   showCutLines: true, showHoleLine: true, showHoles: true, showHoleBisect: false,
@@ -965,6 +988,8 @@ function toggleSidebar() {
 // 更新履歴
 // ============================================================
 const HISTORY_ENTRIES = [
+  { date: '2026-05-04', type: 'feat', title: '自動両面プリンタ対応・印刷モードの説明を追加',
+    detail: '【追加機能】①印刷モード（単ページ／月単位）の使い分け説明を画面に追加しました。「単ページ＝開始日から8日分（途中の日付から印刷したいとき用）」「月単位＝選択月の1日〜末日まで一括（月初にまとめて印刷する用）」が一目でわかります。②「両面印刷方式」セレクタを追加しました。「自動両面プリンタ用」を選ぶと、PDFが「表1→裏1→表2→裏2…」と1ページずつ交互に並び、自動両面プリンタでそのまま印刷できます（従来は表面まとめて→裏面まとめての順だったため、自動両面では順番がズレていました）。③「綴じ方向」セレクタを追加しました。短辺綴じ（上下めくり）の場合は裏面を180°回転して出力するので、めくった向きが揃います。長辺綴じ（左右めくり／システム手帳の通常）はそのままです。④自動両面選択時は表面・裏面の両方を自動でON固定にします。⑤設定はブラウザに保存され、次回起動時にも引き継がれます。' },
   { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に表示・「使い方」ヘルプを追加',
     detail: '①印刷ボタンの直下に「印刷倍率100%」の注意書きを表示するようにしました。印刷直前に目に入るので見落としを防げます。②サポートセクションに「使い方」ボタンを追加しました。クリックするとツールの使い方マニュアル（基本の流れ／各セクションの役割／印刷時の注意／PDF保存方法／困ったとき）が画面内にポップアップ表示され、いつでも参照できます。マニュアルはブラウザの印刷機能でPDF保存も可能です。' },
   { date: '2026-04-25', type: 'feat', title: '時間数字・時間縦線を個別に非表示にできる機能を追加',
@@ -1267,6 +1292,7 @@ function saveSettings() {
     fontDateNum: get('fontDateNum'), fontDateWd: get('fontDateWd'),
     fontMonthAbbr: get('fontMonthAbbr'), fontTextWm: get('fontTextWm'),
     printMode: get('printMode'),
+    duplexMode: get('duplexMode'), bindEdge: get('bindEdge'),
     opts: { ...opts }, showFront, showBack, isEN
   };
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
@@ -1324,6 +1350,19 @@ function loadSettings() {
       if (mCtrl) mCtrl.style.display = s.printMode === 'monthly' ? '' : 'none';
     }
   }
+
+  if (s.duplexMode != null) {
+    const dm = document.getElementById('duplexMode');
+    if (dm) dm.value = s.duplexMode;
+    duplexMode = s.duplexMode;
+  }
+  if (s.bindEdge != null) {
+    const be = document.getElementById('bindEdge');
+    if (be) be.value = s.bindEdge;
+    bindEdge = s.bindEdge;
+  }
+  const bec = document.getElementById('bindEdgeCtrl');
+  if (bec) bec.style.display = duplexMode === 'auto' ? '' : 'none';
 
   if (s.opts) {
     const btnMap = {
@@ -1411,8 +1450,9 @@ function getCommonParams() {
   };
 }
 
-function makeA4HTML(slots, showCutLines) {
-  return `<div class="a4-wrapper"><div class="a4-page">
+function makeA4HTML(slots, showCutLines, rotate180) {
+  const rot = rotate180 ? 'transform:rotate(180deg);' : '';
+  return `<div class="a4-wrapper"><div class="a4-page" style="${rot}">
     ${showCutLines ? '<div class="cut-v"></div><div class="cut-h"></div><div class="crop-cross"></div>' : ''}
     ${['TL','TR','BL','BR'].map(pos =>
       `<div class="a6-slot slot-${pos}">${slots[pos] || ''}</div>`
@@ -1429,6 +1469,17 @@ function togglePrintMode() {
   render();
 }
 
+function onDuplexChange() {
+  duplexMode = document.getElementById('duplexMode').value;
+  document.getElementById('bindEdgeCtrl').style.display = duplexMode === 'auto' ? '' : 'none';
+  if (duplexMode === 'auto') {
+    showFront = true; showBack = true;
+    const f = document.getElementById('btnOdd'); const b = document.getElementById('btnEven');
+    if (f) f.classList.add('on'); if (b) b.classList.add('on');
+  }
+  render();
+}
+
 // ============================================================
 // レンダリング
 // ============================================================
@@ -1438,22 +1489,47 @@ function render() {
   else renderSingle();
 }
 
+function buildSheetSingle(side, p) {
+  const map = SLOT_MAP[side];
+  const slots = {};
+  for (const [pos, dayOffset] of Object.entries(map)) {
+    const date = addDays(startDate, dayOffset);
+    slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
+      p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd, p.showDateYm, p.showTimeLabel, p.showTimeLine, p.showHoliday);
+  }
+  const rot180 = (side === 'back' && duplexMode === 'auto' && bindEdge === 'short');
+  return makeA4HTML(slots, p.showCutLines, rot180);
+}
+
 function renderSingle() {
   const p = getCommonParams();
   let html = '';
-  for (const [side, map] of [['front', SLOT_MAP.front], ['back', SLOT_MAP.back]]) {
-    if (side === 'front' && !showFront) continue;
-    if (side === 'back'  && !showBack)  continue;
-    const slots = {};
-    for (const [pos, dayOffset] of Object.entries(map)) {
-      const date = addDays(startDate, dayOffset);
-      slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
-        p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd, p.showDateYm, p.showTimeLabel, p.showTimeLine, p.showHoliday);
-    }
-    html += makeA4HTML(slots, p.showCutLines);
+  if (duplexMode === 'auto') {
+    html += buildSheetSingle('front', p);
+    html += buildSheetSingle('back',  p);
+  } else {
+    if (showFront) html += buildSheetSingle('front', p);
+    if (showBack)  html += buildSheetSingle('back',  p);
   }
   document.getElementById('preview').innerHTML = html;
   saveSettings();
+}
+
+function buildSheetMonthly(side, s, y, mo, daysInMonth, p) {
+  const map = SLOT_MAP[side];
+  const slots = {};
+  for (const pos of ['TL','TR','BL','BR']) {
+    const dayOffset = map[pos];
+    const dayNum    = s * 8 + dayOffset + 1;
+    if (dayNum <= daysInMonth) {
+      const date = new Date(y, mo - 1, dayNum);
+      slots[pos] = buildDailyPage(date, dayNum, HOLE_SIDE[pos],
+        p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo,
+        p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd, p.showDateYm, p.showTimeLabel, p.showTimeLine, p.showHoliday);
+    }
+  }
+  const rot180 = (side === 'back' && duplexMode === 'auto' && bindEdge === 'short');
+  return makeA4HTML(slots, p.showCutLines, rot180);
 }
 
 function renderMonthly() {
@@ -1465,22 +1541,18 @@ function renderMonthly() {
   const p = getCommonParams();
 
   let html = '';
-  for (const [side, map] of [['front', SLOT_MAP.front], ['back', SLOT_MAP.back]]) {
-    if (side === 'front' && !showFront) continue;
-    if (side === 'back'  && !showBack)  continue;
+  if (duplexMode === 'auto') {
     for (let s = 0; s < sheetsNeeded; s++) {
-      const slots = {};
-      for (const pos of ['TL','TR','BL','BR']) {
-        const dayOffset = map[pos];
-        const dayNum    = s * 8 + dayOffset + 1;
-        if (dayNum <= daysInMonth) {
-          const date = new Date(y, mo - 1, dayNum);
-          slots[pos] = buildDailyPage(date, dayNum, HOLE_SIDE[pos],
-            p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo,
-            p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd, p.showDateYm, p.showTimeLabel, p.showTimeLine, p.showHoliday);
-        }
+      html += buildSheetMonthly('front', s, y, mo, daysInMonth, p);
+      html += buildSheetMonthly('back',  s, y, mo, daysInMonth, p);
+    }
+  } else {
+    for (const side of ['front','back']) {
+      if (side === 'front' && !showFront) continue;
+      if (side === 'back'  && !showBack)  continue;
+      for (let s = 0; s < sheetsNeeded; s++) {
+        html += buildSheetMonthly(side, s, y, mo, daysInMonth, p);
       }
-      html += makeA4HTML(slots, p.showCutLines);
     }
   }
   document.getElementById('preview').innerHTML = html;
