@@ -588,13 +588,13 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     <div class="ctrl-row">
       <label>モード</label>
       <select id="printMode" onchange="togglePrintMode()">
-        <option value="single">単ページ</option>
-        <option value="monthly">月単位</option>
+        <option value="single">期間指定</option>
+        <option value="monthly">月指定</option>
       </select>
     </div>
     <div style="font-size:11px;color:#666;line-height:1.4;margin:4px 2px 6px">
-      ・<b>単ページ</b>：開始日から8日分（表4＋裏4）を作成。途中の日付から印刷したい時用。<br>
-      ・<b>月単位</b>：選択月の1日〜末日まで一括作成。月初にまとめて印刷する用。
+      ・<b>期間指定</b>：開始日〜終了日の範囲で作成。途中の日付から印刷したい時や複数月にまたがる場合に使用。<br>
+      ・<b>月指定</b>：選択月の1日〜末日まで一括作成。月初にまとめて印刷する用。
     </div>
     <div class="ctrl-row" id="monthlyPickerCtrl" style="display:none">
       <label>対象月</label>
@@ -629,6 +629,10 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
     <div class="ctrl-row">
       <label>開始日</label>
       <input type="date" id="startDate">
+    </div>
+    <div class="ctrl-row" id="endDateCtrl">
+      <label>終了日</label>
+      <input type="date" id="endDate">
     </div>
     <div class="btn-row">
       <button class="btn-toggle on" id="btnJA" onclick="setLang(false)">日本語</button>
@@ -970,6 +974,7 @@ let showFront = true;
 let showBack  = false;
 let isEN      = false;
 let startDate = new Date();
+let endDate   = new Date(startDate.getTime() + 7 * 86400000);
 let duplexMode = 'manual';
 let bindEdge   = 'long';
 
@@ -988,6 +993,8 @@ function toggleSidebar() {
 // 更新履歴
 // ============================================================
 const HISTORY_ENTRIES = [
+  { date: '2026-05-04', type: 'improve', title: '印刷モードを「期間指定」「月指定」に改称・終了日設定を追加',
+    detail: '「単ページ」を「期間指定」に、「月単位」を「月指定」に改称しました。期間指定モードに「終了日」入力欄を追加し、開始日〜終了日の任意の期間分のリフィルを作成できるようになりました。端数ページは空スロットで補完されます。' },
   { date: '2026-05-04', type: 'feat', title: '自動両面プリンタ対応・印刷モードの説明を追加',
     detail: '【追加機能】①印刷モード（単ページ／月単位）の使い分け説明を画面に追加しました。「単ページ＝開始日から8日分（途中の日付から印刷したいとき用）」「月単位＝選択月の1日〜末日まで一括（月初にまとめて印刷する用）」が一目でわかります。②「両面印刷方式」セレクタを追加しました。「自動両面プリンタ用」を選ぶと、PDFが「表1→裏1→表2→裏2…」と1ページずつ交互に並び、自動両面プリンタでそのまま印刷できます（従来は表面まとめて→裏面まとめての順だったため、自動両面では順番がズレていました）。③「綴じ方向」セレクタを追加しました。短辺綴じ（上下めくり）の場合は裏面を180°回転して出力するので、めくった向きが揃います。長辺綴じ（左右めくり／システム手帳の通常）はそのままです。④自動両面選択時は表面・裏面の両方を自動でON固定にします。⑤設定はブラウザに保存され、次回起動時にも引き継がれます。' },
   { date: '2026-04-27', type: 'improve', title: '「印刷時の注意」を印刷ボタンの下に表示・「使い方」ヘルプを追加',
@@ -1150,6 +1157,14 @@ window.addEventListener('DOMContentLoaded', () => {
   el.addEventListener('change', e => {
     const [y,m,d] = e.target.value.split('-').map(Number);
     startDate = new Date(y, m-1, d);
+    render();
+  });
+  const edEl = document.getElementById('endDate');
+  endDate = addDays(today, 7);
+  edEl.value = toDateVal(endDate);
+  edEl.addEventListener('change', e => {
+    const [y,m,d] = e.target.value.split('-').map(Number);
+    endDate = new Date(y, m-1, d);
     render();
   });
   const mp = document.getElementById('monthPicker');
@@ -1466,6 +1481,7 @@ function makeA4HTML(slots, showCutLines, rotate180) {
 function togglePrintMode() {
   const mode = document.getElementById('printMode').value;
   document.getElementById('monthlyPickerCtrl').style.display = mode === 'monthly' ? '' : 'none';
+  document.getElementById('endDateCtrl').style.display = mode === 'single' ? '' : 'none';
   render();
 }
 
@@ -1489,13 +1505,16 @@ function render() {
   else renderSingle();
 }
 
-function buildSheetSingle(side, p) {
+function buildSheetSingle(side, sheetIndex, totalDays, p) {
   const map = SLOT_MAP[side];
   const slots = {};
-  for (const [pos, dayOffset] of Object.entries(map)) {
-    const date = addDays(startDate, dayOffset);
-    slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
-      p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd, p.showDateYm, p.showTimeLabel, p.showTimeLine, p.showHoliday);
+  for (const [pos, slotOffset] of Object.entries(map)) {
+    const dayOffset = sheetIndex * 8 + slotOffset;
+    if (dayOffset < totalDays) {
+      const date = addDays(startDate, dayOffset);
+      slots[pos] = buildDailyPage(date, dayOffset + 1, HOLE_SIDE[pos],
+        p.showHoles, p.showHoleLine, p.showHoleBisect, p.showLogo, p.showTextWm, p.textWmContent, p.showMonthAbbr, p.hours, p.showImgWm, p.showDateNum, p.showDateWd, p.showDateYm, p.showTimeLabel, p.showTimeLine, p.showHoliday);
+    }
   }
   const rot180 = (side === 'back' && duplexMode === 'auto' && bindEdge === 'short');
   return makeA4HTML(slots, p.showCutLines, rot180);
@@ -1503,13 +1522,23 @@ function buildSheetSingle(side, p) {
 
 function renderSingle() {
   const p = getCommonParams();
+  const msPerDay = 86400000;
+  const totalDays = Math.max(1, Math.floor((endDate - startDate) / msPerDay) + 1);
+  const sheetsNeeded = Math.ceil(totalDays / 8);
   let html = '';
   if (duplexMode === 'auto') {
-    html += buildSheetSingle('front', p);
-    html += buildSheetSingle('back',  p);
+    for (let s = 0; s < sheetsNeeded; s++) {
+      html += buildSheetSingle('front', s, totalDays, p);
+      html += buildSheetSingle('back',  s, totalDays, p);
+    }
   } else {
-    if (showFront) html += buildSheetSingle('front', p);
-    if (showBack)  html += buildSheetSingle('back',  p);
+    for (const side of ['front', 'back']) {
+      if (side === 'front' && !showFront) continue;
+      if (side === 'back'  && !showBack)  continue;
+      for (let s = 0; s < sheetsNeeded; s++) {
+        html += buildSheetSingle(side, s, totalDays, p);
+      }
+    }
   }
   document.getElementById('preview').innerHTML = html;
   saveSettings();
