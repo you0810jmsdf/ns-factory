@@ -713,16 +713,6 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <input type="text" id="textWmContent" value="N's factory" oninput="render()">
     </div>
     <div class="ctrl-row">
-      <label>サイズ</label>
-      <input type="range" id="textWmSize" min="3" max="60" step="1" value="20" oninput="document.getElementById('textWmSizeVal').textContent=this.value;updateVars()">
-      <span class="val" id="textWmSizeVal">20</span>
-    </div>
-    <div class="ctrl-row">
-      <label>角度</label>
-      <input type="range" id="textWmAngle" min="-180" max="180" step="5" value="0" oninput="document.getElementById('textWmAngleVal').textContent=this.value;updateVars()">
-      <span class="val" id="textWmAngleVal">0</span>
-    </div>
-    <div class="ctrl-row">
       <label>左右</label>
       <input type="range" id="textWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('textWmXVal').textContent=this.value;updateVars()">
       <span class="val" id="textWmXVal">0</span>
@@ -731,6 +721,16 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
       <label>上下</label>
       <input type="range" id="textWmY" min="-70" max="70" step="1" value="0" oninput="document.getElementById('textWmYVal').textContent=this.value;updateVars()">
       <span class="val" id="textWmYVal">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="textWmSize" min="3" max="60" step="1" value="20" oninput="document.getElementById('textWmSizeVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmSizeVal">20</span>
+    </div>
+    <div class="ctrl-row">
+      <label>角度</label>
+      <input type="range" id="textWmAngle" min="-180" max="180" step="5" value="0" oninput="document.getElementById('textWmAngleVal').textContent=this.value;updateVars()">
+      <span class="val" id="textWmAngleVal">0</span>
     </div>
   </div>
 
