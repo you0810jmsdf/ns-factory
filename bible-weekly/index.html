@@ -721,7 +721,7 @@ const WD_JA      = ['日','月','火','水','木','金','土'];
 const WD_EN      = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const WD_EN_SHORT= ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-const HOLE_POSITIONS_MM = [19.5, 38.5, 57.5, 108.5, 127.5, 146.5];
+const HOLE_POSITIONS_MM = [18.5, 37.5, 56.5, 107.5, 126.5, 145.5];
 const SLOT_MAP_2UP    = { front:{L:0,R:2}, back:{L:3,R:1} }; // 表=W1/W3, 裏(印刷座標)=W4/W2
 const SLOT_MAP_DIRECT = { front:{L:0,R:1}, back:{L:2,R:3} }; // 片面2面: 表=W1/W2, 裏=W3/W4
 const HOLE_SIDE_2UP     = { L:'left', R:'left' };
@@ -1228,6 +1228,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-04', type: 'fix',  title: 'カットガイドコーナーマークがスロット境界で2本重複するバグを修正', detail: '' },
   { date: '2026-05-04', type: 'fix', title: '穴の位置を一律2mm上に修正（実機印刷でリフィルの事前パンチ穴と合うよう調整）', detail: '実印刷でカット後のリフィル上端〜最上穴・最下穴〜下端の距離が2mm下にずれていたため、HOLE_POSITIONS_MMを19.5/38.5/57.5/108.5/127.5/146.5に変更。' },
   { date: '2026-05-04', type: 'improve', title: '月間カレンダー「上端」スライダーの最大値を115mmから200mmに拡張', detail: '' },
+  { date: '2026-05-04', type: 'fix', title: '穴位置をさらに1mm上に修正（18.5/37.5/56.5/107.5/126.5/145.5）', detail: '' },
 ];
 
 function openHistory() {
