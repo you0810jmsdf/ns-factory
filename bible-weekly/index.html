@@ -115,10 +115,22 @@ body.panel-open #preview { margin-left: 280px; }
 }
 
 /* === MODULE: カットガイドマーク === */
-.cut-guide-mark {
+/* H/V別divに分離してscale統一（縦横太さ差異を防ぐ） */
+.cut-guide-corner {
   position: absolute; width: 3mm; height: 3mm;
-  border: 0.2mm dashed #aaa;
   z-index: 5; pointer-events: none;
+}
+.cg-h-line {
+  position: absolute; left: 0; width: 3mm;
+  height: 1px; box-sizing: border-box;
+  border-top: 1px dashed #bbb;
+  transform: scaleY(0.5); transform-origin: center top;
+}
+.cg-v-line {
+  position: absolute; top: 0; height: 3mm;
+  width: 1px; box-sizing: border-box;
+  border-left: 1px dashed #bbb;
+  transform: scaleX(0.5); transform-origin: left center;
 }
 
 /* === MODULE: ウォーターマーク（ロゴ） === */
@@ -310,6 +322,8 @@ body.panel-open #preview { margin-left: 280px; }
   .a4-sheet:last-child { page-break-after: avoid; }
   .cut-line-h { border-top: 0.1mm dashed #aaa; }
   .cut-line-v { border-left: 0.1mm dashed #aaa; }
+  .cg-h-line { transform: none; border-top: 0.1mm dashed #aaa; }
+  .cg-v-line { transform: none; border-left: 0.1mm dashed #aaa; }
 }
 </style>
 </head>
@@ -1053,10 +1067,10 @@ function buildWeeklyPage(weekStart, pageNum, holeSide, hideRight = false) {
        ${hideRight ? '' : '<div class="cut-line-v" style="right:0"></div>'}`
     : '';
   const cutGuide = opts.showCutGuide
-    ? `<div class="cut-guide-mark" style="top:0;left:0;border-bottom:none;border-right:none"></div>
-       <div class="cut-guide-mark" style="bottom:0;left:0;border-top:none;border-right:none"></div>
-       <div class="cut-guide-mark" style="top:0;right:0;border-bottom:none;border-left:none"></div>
-       <div class="cut-guide-mark" style="bottom:0;right:0;border-top:none;border-left:none"></div>`
+    ? `<div class="cut-guide-corner" style="top:0;left:0"><div class="cg-h-line" style="top:0"></div><div class="cg-v-line" style="left:0"></div></div>
+       <div class="cut-guide-corner" style="bottom:0;left:0"><div class="cg-h-line" style="bottom:0"></div><div class="cg-v-line" style="left:0"></div></div>
+       <div class="cut-guide-corner" style="top:0;right:0"><div class="cg-h-line" style="top:0"></div><div class="cg-v-line" style="right:0;left:auto"></div></div>
+       <div class="cut-guide-corner" style="bottom:0;right:0"><div class="cg-h-line" style="bottom:0"></div><div class="cg-v-line" style="right:0;left:auto"></div></div>`
     : '';
 
   return `<div class="slot" style="position:relative;">
