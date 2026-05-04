@@ -288,6 +288,8 @@ body.panel-open #preview { margin-left: 280px; }
   --img-wm-y: 0mm;
   --img-wm-size: 50mm;
   --img-wm-opacity: 0.08;
+  --print-offset-x: 0mm;
+  --print-offset-y: 0mm;
 }
 
 /* === MODULE: UpdateHistory === */
@@ -323,7 +325,7 @@ body.panel-open #preview { margin-left: 280px; }
   .sheet-wrap { margin-bottom: 0 !important; }
   body, html { margin: 0 !important; padding: 0 !important; }
   .sheet-label { display: none; }
-  .a4-sheet { box-shadow: none; page-break-after: always; break-after: page; }
+  .a4-sheet { box-shadow: none; page-break-after: always; break-after: page; transform: translate(var(--print-offset-x, 0mm), var(--print-offset-y, 0mm)); }
   .a4-sheet:last-child { page-break-after: avoid; break-after: avoid; }
   .cut-line-h { border-top: 0.1mm dashed #aaa; }
   .cut-line-v { border-left: 0.1mm dashed #aaa; }
@@ -472,6 +474,23 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle on" id="btnDayWd" onclick="toggleOpt('showDayWd','btnDayWd')">曜日</button>
       <button class="btn-toggle on" id="btnWeekMeta" onclick="toggleOpt('showWeekMeta','btnWeekMeta')">日付範囲・週番号</button>
     </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>印刷位置オフセット（プリンタずれ補正）</h3>
+    <div class="ctrl-row">
+      <label>X（左右）</label>
+      <input type="range" id="printOffsetX" min="-10" max="10" step="0.5" value="0"
+        oninput="setCSSVar('--print-offset-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>Y（上下）</label>
+      <input type="range" id="printOffsetY" min="-10" max="10" step="0.5" value="0"
+        oninput="setCSSVar('--print-offset-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div style="font-size:11px;color:#666;margin-top:4px">穴の位置が下にずれるならYをマイナス、右にずれるならXをマイナスに調整してください。</div>
   </div>
 
   <div class="ctrl-section">
@@ -1226,6 +1245,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-04', type: 'fix',  title: 'サイズスライダーを動かすとフクロウが斜め移動するバグを修正（SVG幅高を100%指定に変更）', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'カットガイドコーナーマークの縦線が太く見えるバグを修正（H線・V線を別divに分離してscale統一）', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'カットガイドコーナーマークがスロット境界で2本重複するバグを修正', detail: '' },
+  { date: '2026-05-04', type: 'feat', title: '印刷位置オフセット補正スライダーを追加（プリンタ機械的ずれ対応・X/Y各±10mm）', detail: '実機印刷で穴位置が紙の事前パンチ穴と2mmずれる問題に対応。コントロールパネルから印刷時のXY位置を微調整可能。' },
 ];
 
 function openHistory() {
