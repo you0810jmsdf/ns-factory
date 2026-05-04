@@ -314,12 +314,16 @@ body.panel-open #preview { margin-left: 280px; }
 .ctrl-row textarea { flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; resize: vertical; }
 
 /* === MODULE: Print === */
+@page { size: A4 portrait; margin: 0; }
 @media print {
   body { background: white; }
   #controls { display: none; }
+  #ctrl-toggle-btn { display: none; }
   #preview { margin-left: 0; padding: 0; }
-  .a4-sheet { box-shadow: none; page-break-after: always; }
-  .a4-sheet:last-child { page-break-after: avoid; }
+  .sheet-wrap { margin-bottom: 0; }
+  .sheet-label { display: none; }
+  .a4-sheet { box-shadow: none; page-break-after: always; break-after: page; }
+  .a4-sheet:last-child { page-break-after: avoid; break-after: avoid; }
   .cut-line-h { border-top: 0.1mm dashed #aaa; }
   .cut-line-v { border-left: 0.1mm dashed #aaa; }
   .cg-h-line { transform: none; border-top: 0.1mm dashed #aaa; }
@@ -1215,6 +1219,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-03', type: 'fix',  title: '日付欄の縦区切り線を細く・薄く修正（0.2mm #e0e0e0 → 0.15mm #e8e8e8）', detail: '' },
   { date: '2026-05-03', type: 'fix',  title: 'リフィル枠高さを170mmに修正（旧171mm）', detail: '' },
   { date: '2026-05-03', type: 'feat', title: 'フクロウ透かしのサイズ・不透明度を調整できるスライダーを追加', detail: '' },
+  { date: '2026-05-04', type: 'fix',  title: '印刷プレビューでレイアウトがずれ・縮小されるバグを修正（@pageにA4サイズ・マージン0を明示設定）', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'カット線・日付欄縦区切り線の線幅を細く修正（0.2mm→0.1mm）', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'カット線（縦・横）の描画方式をグラデーション方式に変更し、画面表示でも細線が正しく表示されるよう修正', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'サイズスライダーを動かすとフクロウが斜め移動するバグを修正（SVG幅高を100%指定に変更）', detail: '' },
