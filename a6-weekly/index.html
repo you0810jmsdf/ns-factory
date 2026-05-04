@@ -322,6 +322,9 @@ body.panel-open #preview { margin-left: 280px; }
 <button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
 <div id="controls">
   <h2>N's factory<br>週間ブロック 印刷ツール</h2>
+  <div class="btn-row" style="margin-bottom:8px;">
+    <button class="btn-toggle" style="font-size:9px;color:#f88;" onclick="resetSettings()">設定リセット</button>
+  </div>
 
   <div class="ctrl-section">
     <h3>印刷モード</h3>
@@ -705,6 +708,114 @@ let memoLineCount = 4;
 let lastRenderMode = 'single';
 let customImgDataUrl = null;
 
+// === MODULE: Settings Persistence ===
+const SETTINGS_KEY = 'nsf_a6_weekly_v1';
+
+function saveSettings() {
+  const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
+  const s = {
+    weekStartDay: get('weekStartDay'),
+    dayLabelW: get('dayLabelW'), dayNumFont: get('dayNumFont'), dayWdFont: get('dayWdFont'),
+    dayBlockH: get('dayBlockH'), memoLineCount: get('memoLineCount'),
+    textWmContent: get('textWmContent'),
+    textWmX: get('textWmX'), textWmY: get('textWmY'),
+    textWmSize: get('textWmSize'), textWmAngle: get('textWmAngle'),
+    monthCalTop: get('monthCalTop'), monthCalRight: get('monthCalRight'),
+    fontDateNum: get('fontDateNum'), fontDateWd: get('fontDateWd'),
+    fontMonthAbbr: get('fontMonthAbbr'), fontTextWm: get('fontTextWm'),
+    owlWmX: get('owlWmX'), owlWmY: get('owlWmY'),
+    owlWmSize: get('owlWmSize'), owlWmOpacity: get('owlWmOpacity'),
+    imgWmX: get('imgWmX'), imgWmY: get('imgWmY'),
+    imgWmSize: get('imgWmSize'), imgWmOpacity: get('imgWmOpacity'),
+    opts: { ...opts }, isEN, showFront, showBack
+  };
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+
+function loadSettings() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch(e) {}
+  if (!s) return;
+
+  function setRange(id, val, cssVar, unit) {
+    const el = document.getElementById(id);
+    if (!el || val == null) return;
+    el.value = val;
+    if (cssVar) setCSSVar(cssVar, val + unit);
+    const sp = el.nextElementSibling;
+    if (sp && sp.classList.contains('val')) sp.textContent = val;
+  }
+
+  const sd = document.getElementById('weekStartDay');
+  if (sd && s.weekStartDay != null) sd.value = s.weekStartDay;
+
+  setRange('dayLabelW', s.dayLabelW, '--day-label-w', 'mm');
+  setRange('dayNumFont', s.dayNumFont, '--day-num-font', 'mm');
+  setRange('dayWdFont', s.dayWdFont, '--day-wd-font', 'mm');
+
+  if (s.dayBlockH != null) {
+    const el = document.getElementById('dayBlockH');
+    if (el) { el.value = s.dayBlockH; setCSSVar('--day-block-h', s.dayBlockH + 'mm'); const sp = document.getElementById('dayBlockHVal'); if (sp) sp.textContent = s.dayBlockH; }
+  }
+  if (s.memoLineCount != null) {
+    const el = document.getElementById('memoLineCount');
+    if (el) { el.value = s.memoLineCount; memoLineCount = parseInt(s.memoLineCount); const sp = document.getElementById('memoCountVal'); if (sp) sp.textContent = s.memoLineCount; }
+  }
+
+  const twc = document.getElementById('textWmContent');
+  if (twc && s.textWmContent != null) twc.value = s.textWmContent;
+
+  setRange('textWmX', s.textWmX, '--text-wm-x', 'mm');
+  setRange('textWmY', s.textWmY, '--text-wm-y', 'mm');
+  setRange('textWmSize', s.textWmSize, '--text-wm-size', 'mm');
+  setRange('textWmAngle', s.textWmAngle, '--text-wm-angle', 'deg');
+  setRange('monthCalTop', s.monthCalTop, '--month-cal-top', 'mm');
+  setRange('monthCalRight', s.monthCalRight, '--month-cal-right', 'mm');
+
+  ['fontDateNum','fontDateWd','fontMonthAbbr','fontTextWm'].forEach(id => {
+    const el = document.getElementById(id); if (el && s[id] != null) el.value = s[id];
+  });
+  updateFontVars();
+
+  setRange('owlWmX', s.owlWmX, '--owl-wm-x', 'mm');
+  setRange('owlWmY', s.owlWmY, '--owl-wm-y', 'mm');
+  setRange('owlWmSize', s.owlWmSize, '--owl-wm-size', 'mm');
+  if (s.owlWmOpacity != null) {
+    const el = document.getElementById('owlWmOpacity');
+    if (el) { el.value = s.owlWmOpacity; setCSSVar('--owl-wm-opacity', s.owlWmOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.owlWmOpacity * 100); }
+  }
+  setRange('imgWmX', s.imgWmX, '--img-wm-x', 'mm');
+  setRange('imgWmY', s.imgWmY, '--img-wm-y', 'mm');
+  setRange('imgWmSize', s.imgWmSize, '--img-wm-size', 'mm');
+  if (s.imgWmOpacity != null) {
+    const el = document.getElementById('imgWmOpacity');
+    if (el) { el.value = s.imgWmOpacity; setCSSVar('--img-wm-opacity', s.imgWmOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.imgWmOpacity * 100); }
+  }
+
+  if (s.opts) {
+    const btnMap = {
+      showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showHoleBisect: 'btnHoleBisect',
+      showCutLine: 'btnCutLine', showLogo: 'btnLogo', showMonthAbbr: 'btnMonthAbbr',
+      showMonthCal: 'btnMonthCal', showTextWm: 'btnTextWm', showImgWm: 'btnImgWm',
+      showHoliday: 'btnHoliday', showDateNum: 'btnDateNum', showDayWd: 'btnDayWd',
+      showWeekMeta: 'btnWeekMeta'
+    };
+    for (const [key, btnId] of Object.entries(btnMap)) {
+      if (s.opts[key] != null) { opts[key] = s.opts[key]; const btn = document.getElementById(btnId); if (btn) btn.classList.toggle('on', !!s.opts[key]); }
+    }
+  }
+
+  if (s.isEN != null) { isEN = s.isEN; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); }
+  if (s.showFront != null) { showFront = s.showFront; document.getElementById('btnOdd').classList.toggle('on', showFront); }
+  if (s.showBack != null) { showBack = s.showBack; document.getElementById('btnEven').classList.toggle('on', showBack); }
+}
+
+function resetSettings() {
+  if (!confirm('設定をリセットしますか？\nブラウザに保存された設定を削除してページを再読み込みします。')) return;
+  try { localStorage.removeItem(SETTINGS_KEY); } catch(e) {}
+  location.reload();
+}
+
 // === MODULE: Utility Functions ===
 function pad(n) { return String(n).padStart(2,'0'); }
 
@@ -1068,6 +1179,7 @@ function renderSingle() {
   if (showBack)  html += `<div class="sheet-wrap"><div class="sheet-label">裏面</div>${makeA4HTML(weekStartDates, pageNums, 'back')}</div>`;
   if (!showFront && !showBack) html = '<p style="color:#666;font-size:12px;">ページ面を選択してください</p>';
   document.getElementById('preview').innerHTML = html;
+  saveSettings();
 }
 
 // === MODULE: Monthly Render ===
@@ -1108,6 +1220,7 @@ function renderMonthly() {
   }
 
   document.getElementById('preview').innerHTML = html;
+  saveSettings();
 }
 
 // === MODULE: UpdateHistory ===
@@ -1131,6 +1244,8 @@ const HISTORY_ENTRIES = [
   { date: '2026-04-29', type: 'fix', title: '「使い方」「更新履歴」をサポートセクションに移動',
     detail: '「使い方」と「更新履歴」ボタンが印刷セクションに混在していたため、デイリー版と同じく独立した「サポート」セクションに分離しました。' },
   { date: '2026-05-03', type: 'feat', title: 'フクロウ透かしのサイズ・不透明度を調整できるスライダーを追加', detail: '' },
+  { date: '2026-05-04', type: 'feat', title: '設定の自動保存・復元機能を追加',
+    detail: 'ラベル幅・メモ行数・フォント・透かし位置など全ての設定がブラウザに自動保存されるようになりました。次回アクセス時に前回の設定が自動的に復元されます。設定を初期状態に戻したい場合は、パネル上部の「設定リセット」ボタンをご利用ください。' },
 ];
 
 function openHistory() {
@@ -1258,6 +1373,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
   initFontSelectors();
   initCLFontSelectors();
+  loadSettings();
   renderSingle();
 });
 </script>
