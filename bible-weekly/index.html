@@ -1218,6 +1218,8 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-04', type: 'fix',  title: 'カット線・日付欄縦区切り線の線幅を細く修正（0.2mm→0.1mm）', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'カット線（縦・横）の描画方式をグラデーション方式に変更し、画面表示でも細線が正しく表示されるよう修正', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'サイズスライダーを動かすとフクロウが斜め移動するバグを修正（SVG幅高を100%指定に変更）', detail: '' },
+  { date: '2026-05-04', type: 'fix',  title: 'カットガイドコーナーマークの縦線が太く見えるバグを修正（H線・V線を別divに分離してscale統一）', detail: '' },
+  { date: '2026-05-04', type: 'fix',  title: 'カットガイドコーナーマークがスロット境界で2本重複するバグを修正', detail: '' },
 ];
 
 function openHistory() {
