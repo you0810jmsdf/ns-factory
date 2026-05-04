@@ -288,8 +288,6 @@ body.panel-open #preview { margin-left: 280px; }
   --img-wm-y: 0mm;
   --img-wm-size: 50mm;
   --img-wm-opacity: 0.08;
-  --print-offset-x: 0mm;
-  --print-offset-y: 0mm;
 }
 
 /* === MODULE: UpdateHistory === */
@@ -325,7 +323,7 @@ body.panel-open #preview { margin-left: 280px; }
   .sheet-wrap { margin-bottom: 0 !important; }
   body, html { margin: 0 !important; padding: 0 !important; }
   .sheet-label { display: none; }
-  .a4-sheet { box-shadow: none; page-break-after: always; break-after: page; transform: translate(var(--print-offset-x, 0mm), var(--print-offset-y, 0mm)); }
+  .a4-sheet { box-shadow: none; page-break-after: always; break-after: page; }
   .a4-sheet:last-child { page-break-after: avoid; break-after: avoid; }
   .cut-line-h { border-top: 0.1mm dashed #aaa; }
   .cut-line-v { border-left: 0.1mm dashed #aaa; }
@@ -652,20 +650,6 @@ body.panel-open #preview { margin-left: 280px; }
       ⚠️ <strong>印刷時の注意</strong><br>
       ブラウザの印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、バイブルリフィルとして使えません。
     </div>
-    <h3 style="margin-top:14px">印刷位置オフセット（プリンタずれ補正）</h3>
-    <div class="ctrl-row">
-      <label>X（左右）</label>
-      <input type="range" id="printOffsetX" min="-10" max="10" step="0.5" value="0"
-        oninput="setCSSVar('--print-offset-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
-      <span class="val">0</span>mm
-    </div>
-    <div class="ctrl-row">
-      <label>Y（上下）</label>
-      <input type="range" id="printOffsetY" min="-10" max="10" step="0.5" value="0"
-        oninput="setCSSVar('--print-offset-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
-      <span class="val">0</span>mm
-    </div>
-    <div style="font-size:11px;color:#666;margin-top:4px">穴の位置が下にずれるならYをマイナス、右にずれるならXをマイナスに調整してください。</div>
   </div>
 
   <div class="ctrl-section">
@@ -737,7 +721,7 @@ const WD_JA      = ['日','月','火','水','木','金','土'];
 const WD_EN      = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const WD_EN_SHORT= ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-const HOLE_POSITIONS_MM = [21.5, 40.5, 59.5, 110.5, 129.5, 148.5];
+const HOLE_POSITIONS_MM = [19.5, 38.5, 57.5, 108.5, 127.5, 146.5];
 const SLOT_MAP_2UP    = { front:{L:0,R:2}, back:{L:3,R:1} }; // 表=W1/W3, 裏(印刷座標)=W4/W2
 const SLOT_MAP_DIRECT = { front:{L:0,R:1}, back:{L:2,R:3} }; // 片面2面: 表=W1/W2, 裏=W3/W4
 const HOLE_SIDE_2UP     = { L:'left', R:'left' };
@@ -1242,7 +1226,7 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-04', type: 'fix',  title: 'サイズスライダーを動かすとフクロウが斜め移動するバグを修正（SVG幅高を100%指定に変更）', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'カットガイドコーナーマークの縦線が太く見えるバグを修正（H線・V線を別divに分離してscale統一）', detail: '' },
   { date: '2026-05-04', type: 'fix',  title: 'カットガイドコーナーマークがスロット境界で2本重複するバグを修正', detail: '' },
-  { date: '2026-05-04', type: 'feat', title: '印刷位置オフセット補正スライダーを追加（プリンタ機械的ずれ対応・X/Y各±10mm）', detail: '実機印刷で穴位置が紙の事前パンチ穴と2mmずれる問題に対応。コントロールパネルから印刷時のXY位置を微調整可能。' },
+  { date: '2026-05-04', type: 'fix', title: '穴の位置を一律2mm上に修正（実機印刷でリフィルの事前パンチ穴と合うよう調整）', detail: '実印刷でカット後のリフィル上端〜最上穴・最下穴〜下端の距離が2mm下にずれていたため、HOLE_POSITIONS_MMを19.5/38.5/57.5/108.5/127.5/146.5に変更。' },
 ];
 
 function openHistory() {
