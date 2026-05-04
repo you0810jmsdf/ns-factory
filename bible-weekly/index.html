@@ -101,11 +101,13 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: カット線 === */
 .cut-line-h {
   position: absolute; left: 0; right: 0; height: 0;
-  border-top: 0.2mm dashed #aaa; z-index: 5; pointer-events: none;
+  border-top: 0.1mm dashed #aaa; z-index: 5; pointer-events: none;
+  transform: scaleY(0.5); transform-origin: center top;
 }
 .cut-line-v {
   position: absolute; top: 0; bottom: 0; width: 0;
-  border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none;
+  border-left: 0.1mm dashed #aaa; z-index: 5; pointer-events: none;
+  transform: scaleX(0.5); transform-origin: left center;
 }
 
 /* === MODULE: カットガイドマーク === */
@@ -118,8 +120,8 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: ウォーターマーク（ロゴ） === */
 .logo-wm {
   position: absolute;
-  top: calc(50% + var(--owl-wm-y, 0mm)); left: calc(50% + var(--owl-wm-x, 0mm));
-  transform: translate(-50%, -50%);
+  top: calc(50% + var(--owl-wm-y, 0mm) - var(--owl-wm-size, 60mm) / 2);
+  left: calc(50% + var(--owl-wm-x, 0mm) - var(--owl-wm-size, 60mm) / 2);
   width: var(--owl-wm-size, 60mm); height: var(--owl-wm-size, 60mm);
   pointer-events: none; z-index: 1;
 }
@@ -198,7 +200,7 @@ body.panel-open #preview { margin-left: 280px; }
 .day-label {
   width: var(--day-label-w, 15mm); flex-shrink: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  border-right: 0.2mm solid #e0e0e0;
+  border-right: 0.1mm solid #e0e0e0;
 }
 .day-num { font-size: var(--day-num-font, 6mm); font-weight: 700; line-height: 1; font-family: var(--font-date-num, 'Noto Sans JP', sans-serif); }
 .day-wd { font-size: var(--day-wd-font, 2.2mm); font-weight: 700; color: #555; line-height: 1; margin-top: 0.5mm; font-family: var(--font-date-wd, 'Noto Sans JP', sans-serif); }
@@ -1189,8 +1191,10 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-03', type: 'fix',  title: '穴中心位置を実測値に修正（21.5/40.5/59.5/110.5/129.5/148.5mm）', detail: '' },
   { date: '2026-05-03', type: 'fix',  title: '穴径を実測値の5mmに修正（旧4mm）', detail: '' },
   { date: '2026-05-03', type: 'improve', title: '片面印刷モードを2面並び印刷に変更（用紙1枚に2週分を横並び配置）', detail: '' },
+  { date: '2026-05-03', type: 'fix',  title: '日付欄の縦区切り線を細く・薄く修正（0.2mm #e0e0e0 → 0.15mm #e8e8e8）', detail: '' },
   { date: '2026-05-03', type: 'fix',  title: 'リフィル枠高さを170mmに修正（旧171mm）', detail: '' },
   { date: '2026-05-03', type: 'feat', title: 'フクロウ透かしのサイズ・不透明度を調整できるスライダーを追加', detail: '' },
+  { date: '2026-05-04', type: 'fix',  title: 'カット線・日付欄縦区切り線の線幅を細く修正（0.2mm→0.1mm）', detail: '' },
 ];
 
 function openHistory() {
