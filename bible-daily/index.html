@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N's factory – バイブル デイリー ブロック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* === MODULE: Reset & Variables === */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --page-w-mm:95;
+  --page-h-mm:170;
+  --hole-w-mm:8;
+  --hole-h-mm:5;
+  --header-h-mm:15;
+  --footer-h-mm:3;
+  --memo-h-mm:8;
+  --grid-h-mm:calc(170mm - 15mm - 8mm - 3mm); /* 144mm */
+  --col-time-w-mm:10;
+  --col-task-w-mm:6;
+  --border-color:#bbb;
+  --light-border:#e0e0e0;
+  --accent:#4a6fa5;
+  --accent-light:#e8eff9;
+  --holiday-color:#c0392b;
+  --sat-color:#2980b9;
+  --font-main:'Noto Sans JP',sans-serif;
+  --font-serif:'Noto Serif JP',serif;
+  --base-px:3.7795; /* 1mm in px at 96dpi */
+}
+
+/* === MODULE: Auth === */
+#auth-overlay{
+  position:fixed;inset:0;background:#2c3e50;display:flex;
+  align-items:center;justify-content:center;z-index:9999;
+}
+.auth-box{
+  background:#fff;border-radius:12px;padding:40px 48px;text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);min-width:320px;
+}
+.auth-box h2{font-family:var(--font-serif);font-size:20px;margin-bottom:8px;color:#2c3e50}
+.auth-box p{font-size:12px;color:#888;margin-bottom:24px}
+.auth-box input{
+  width:100%;padding:10px 14px;border:2px solid #ddd;border-radius:8px;
+  font-size:16px;outline:none;transition:border .2s;
+}
+.auth-box input:focus{border-color:var(--accent)}
+.auth-box button{
+  margin-top:16px;width:100%;padding:10px;background:var(--accent);color:#fff;
+  border:none;border-radius:8px;font-size:15px;cursor:pointer;transition:opacity .2s;
+}
+.auth-box button:hover{opacity:.85}
+#auth-error{color:#e74c3c;font-size:13px;margin-top:8px;min-height:18px}
+
+/* === MODULE: App Shell === */
+#app{display:none;min-height:100vh;background:#f0f0f0;font-family:var(--font-main)}
+
+/* === MODULE: Control Panel === */
+#ctrl{
+  position:sticky;top:0;z-index:100;background:#2c3e50;color:#fff;
+  padding:8px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  font-size:13px;
+}
+#ctrl label{display:flex;align-items:center;gap:4px;white-space:nowrap}
+#ctrl input[type=date],#ctrl input[type=number],#ctrl select{
+  padding:3px 6px;border:1px solid #555;border-radius:4px;
+  background:#3d5166;color:#fff;font-size:12px;
+}
+#ctrl input[type=number]{width:54px}
+.ctrl-sep{width:1px;height:24px;background:#4a6278;margin:0 4px}
+#ctrl button{
+  padding:5px 12px;border:none;border-radius:5px;cursor:pointer;
+  font-size:12px;font-weight:500;transition:opacity .2s;
+}
+#btn-single{background:#27ae60;color:#fff}
+#btn-monthly{background:#8e44ad;color:#fff}
+#btn-pdf{background:#e67e22;color:#fff}
+#ctrl button:hover{opacity:.85}
+#status{margin-left:auto;font-size:11px;color:#aaa;min-width:120px;text-align:right}
+
+/* === MODULE: Preview Area === */
+#preview{padding:20px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
+
+/* === MODULE: A4 Sheet === */
+.a4-sheet{
+  width:210mm;height:297mm;background:#fff;position:relative;
+  box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;flex-direction:column;
+  overflow:hidden;
+  /* 2-up: 2 columns */
+}
+.a4-sheet.two-up{
+  flex-direction:row;
+}
+
+/* === MODULE: Daily Page === */
+.daily-page{
+  width:95mm;height:170mm;position:relative;
+  display:flex;flex-direction:column;overflow:hidden;
+  flex-shrink:0;
+}
+
+/* Hole strip */
+.hole-strip{
+  position:absolute;top:0;bottom:0;width:8mm;
+  background:#f8f8f8;border-right:0.3mm solid var(--border-color);
+  display:flex;flex-direction:column;justify-content:flex-start;
+  align-items:center;padding-top:0;z-index:2;
+}
+.hole-strip.right{
+  left:auto;right:0;
+  border-right:none;border-left:0.3mm solid var(--border-color);
+}
+.hole{
+  width:4mm;height:5mm;background:#fff;border:0.3mm solid #bbb;
+  border-radius:1mm;margin:0;
+  flex-shrink:0;
+}
+
+/* Page body (excludes hole strip) */
+.page-body{
+  position:absolute;top:0;bottom:0;right:0;
+  width:calc(95mm - 8mm); /* 87mm */
+  display:flex;flex-direction:column;
+}
+.page-body.hole-right{
+  left:0;right:8mm;
+}
+
+/* === MODULE: Header === */
+.daily-header{
+  height:15mm;display:flex;flex-direction:column;justify-content:center;
+  padding:1mm 2mm 1mm 2mm;border-bottom:0.5mm solid var(--accent);
+  position:relative;flex-shrink:0;
+}
+.daily-header .date-line{
+  display:flex;align-items:baseline;gap:3mm;
+}
+.daily-header .date-num{
+  font-size:10mm;font-weight:700;font-family:var(--font-serif);line-height:1;
+  color:#1a1a1a;
+}
+.daily-header .date-meta{
+  display:flex;flex-direction:column;gap:0.5mm;
+}
+.daily-header .dow{
+  font-size:3.5mm;font-weight:500;color:#444;
+}
+.daily-header .date-ymd{
+  font-size:2.5mm;color:#888;
+}
+.daily-header .holiday-label{
+  position:absolute;right:2mm;top:1.5mm;
+  font-size:2.2mm;color:var(--holiday-color);font-weight:700;
+  max-width:28mm;text-align:right;line-height:1.2;
+}
+/* mini month-cal overlay */
+.month-mini{
+  position:absolute;right:2mm;bottom:1mm;
+  font-size:1.8mm;line-height:1.4;color:#666;
+}
+.month-mini table{border-collapse:collapse}
+.month-mini td,.month-mini th{
+  width:3.5mm;text-align:center;padding:0;
+  font-size:1.8mm;
+}
+.month-mini .mc-sat{color:var(--sat-color)}
+.month-mini .mc-sun,.month-mini .mc-hol{color:var(--holiday-color)}
+.month-mini .mc-today{
+  background:var(--accent);color:#fff;border-radius:50%;
+  display:inline-block;width:3mm;height:3mm;line-height:3mm;
+}
+
+/* === MODULE: Time Grid === */
+.time-grid{
+  flex:1;display:flex;flex-direction:column;
+  border-bottom:0.3mm solid var(--border-color);
+  overflow:hidden;
+}
+.time-row{
+  flex:1;display:flex;border-bottom:0.2mm solid var(--light-border);
+  min-height:0;
+}
+.time-row:last-child{border-bottom:none}
+.time-row.hour-start{border-top:0.3mm solid var(--border-color)}
+.time-row.half-start{border-top:0.15mm dashed #ccc}
+
+.time-label{
+  width:10mm;flex-shrink:0;display:flex;align-items:flex-start;
+  justify-content:flex-end;padding-right:1mm;padding-top:0.3mm;
+  font-size:2.2mm;color:#666;font-family:'Courier New',monospace;
+  border-right:0.3mm solid var(--border-color);line-height:1;
+}
+.time-label.hide-label{visibility:hidden}
+
+.time-task{
+  width:6mm;flex-shrink:0;border-right:0.2mm solid var(--light-border);
+  background:#fafcff;
+}
+.time-body{
+  flex:1;
+}
+
+/* === MODULE: Memo Block === */
+.memo-block{
+  height:8mm;flex-shrink:0;padding:0.5mm 1.5mm;
+  border-top:0.3mm solid var(--border-color);
+  display:flex;flex-direction:column;
+}
+.memo-label{
+  font-size:2mm;color:#aaa;font-weight:500;line-height:1;margin-bottom:0.3mm;
+}
+.memo-lines{
+  flex:1;display:flex;flex-direction:column;justify-content:space-around;
+}
+.memo-line{
+  border-bottom:0.2mm solid var(--light-border);flex:1;
+}
+
+/* === MODULE: Page Number Bar === */
+.page-num-bar{
+  height:3mm;flex-shrink:0;display:flex;align-items:center;
+  justify-content:flex-end;padding:0 2mm;
+  background:#f8f8f8;border-top:0.2mm solid var(--light-border);
+}
+.page-num-bar span{font-size:2mm;color:#bbb}
+
+/* === MODULE: Settings Panel === */
+#settings-toggle{
+  position:fixed;right:16px;bottom:16px;z-index:200;
+  background:var(--accent);color:#fff;border:none;border-radius:50%;
+  width:44px;height:44px;font-size:20px;cursor:pointer;
+  box-shadow:0 4px 12px rgba(0,0,0,.3);
+}
+#settings-panel{
+  position:fixed;right:16px;bottom:68px;z-index:200;
+  background:#fff;border-radius:12px;padding:20px;min-width:280px;
+  box-shadow:0 8px 32px rgba(0,0,0,.2);display:none;
+  font-family:var(--font-main);font-size:13px;
+}
+#settings-panel h3{
+  font-size:14px;font-weight:700;margin-bottom:14px;color:#2c3e50;
+  border-bottom:1px solid #eee;padding-bottom:8px;
+}
+.srow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.srow label{color:#444;font-size:12px}
+.srow select,.srow input[type=number],.srow input[type=text]{
+  padding:4px 8px;border:1px solid #ddd;border-radius:6px;
+  font-size:12px;width:120px;
+}
+#btn-save-settings{
+  width:100%;margin-top:8px;padding:8px;background:var(--accent);color:#fff;
+  border:none;border-radius:8px;cursor:pointer;font-size:13px;
+}
+#btn-save-settings:hover{opacity:.85}
+#settings-saved{color:var(--accent);font-size:12px;text-align:center;margin-top:6px;min-height:16px}
+
+/* === MODULE: Print/PDF Overrides === */
+@media print{
+  #ctrl,#settings-toggle,#settings-panel,#auth-overlay{display:none!important}
+  #preview{padding:0}
+  .a4-sheet{box-shadow:none;margin:0;page-break-after:always}
+}
+</style>
+</head>
+<body>
+
+<!-- === MODULE: Auth Overlay === -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <h2>N's factory</h2>
+    <p>バイブル デイリー ブロック</p>
+    <input type="password" id="pw-input" placeholder="パスワードを入力" autocomplete="current-password">
+    <button onclick="tryAuth()">ログイン</button>
+    <div id="auth-error"></div>
+  </div>
+</div>
+
+<!-- === MODULE: App === -->
+<div id="app">
+
+  <!-- Control Panel -->
+  <div id="ctrl">
+    <label>開始日
+      <input type="date" id="inp-date">
+    </label>
+    <div class="ctrl-sep"></div>
+    <label>時間帯
+      <select id="sel-start-h"></select>〜<select id="sel-end-h"></select>
+    </label>
+    <label>刻み
+      <select id="sel-slot">
+        <option value="60">60分</option>
+        <option value="30" selected>30分</option>
+        <option value="15">15分</option>
+      </select>
+    </label>
+    <div class="ctrl-sep"></div>
+    <button id="btn-single" onclick="renderSingle()">4日プレビュー</button>
+    <button id="btn-monthly" onclick="renderMonthly()">月間プレビュー</button>
+    <button id="btn-pdf" onclick="generatePDF()">PDF出力</button>
+    <span id="status">準備完了</span>
+  </div>
+
+  <!-- Preview -->
+  <div id="preview"></div>
+
+  <!-- Settings Button -->
+  <button id="settings-toggle" title="設定" onclick="toggleSettings()">⚙</button>
+
+  <!-- Settings Panel -->
+  <div id="settings-panel">
+    <h3>⚙ 表示設定</h3>
+    <div class="srow"><label>開始時刻</label>
+      <select id="s-start-h"></select>
+    </div>
+    <div class="srow"><label>終了時刻</label>
+      <select id="s-end-h"></select>
+    </div>
+    <div class="srow"><label>刻み幅</label>
+      <select id="s-slot">
+        <option value="60">60分</option>
+        <option value="30">30分</option>
+        <option value="15">15分</option>
+      </select>
+    </div>
+    <div class="srow"><label>ミニカレンダー</label>
+      <select id="s-minical">
+        <option value="1">表示</option>
+        <option value="0">非表示</option>
+      </select>
+    </div>
+    <div class="srow"><label>メモ欄</label>
+      <select id="s-memo">
+        <option value="1">表示</option>
+        <option value="0">非表示</option>
+      </select>
+    </div>
+    <button id="btn-save-settings" onclick="saveSettings()">保存して反映</button>
+    <div id="settings-saved"></div>
+  </div>
+</div>
+
+<script>
+/* === MODULE: Auth === */
+(function(){
+  const ss = sessionStorage.getItem('nsf_auth');
+  if(ss === 'ok'){
+    document.getElementById('auth-overlay').style.display='none';
+    document.getElementById('app').style.display='block';
+    init();
+  }
+  document.getElementById('pw-input').addEventListener('keydown', e=>{
+    if(e.key==='Enter') tryAuth();
+  });
+})();
+function tryAuth(){
+  const v = document.getElementById('pw-input').value;
+  if(v === 'nsfactory'){
+    sessionStorage.setItem('nsf_auth','ok');
+    document.getElementById('auth-overlay').style.display='none';
+    document.getElementById('app').style.display='block';
+    init();
+  } else {
+    document.getElementById('auth-error').textContent='パスワードが違います';
+  }
+}
+
+/* === MODULE: Constants === */
+const HOLE_POSITIONS_MM = [18.5, 37.5, 56.5, 107.5, 126.5, 145.5];
+const PAGE_H_MM = 170;
+const PAGE_W_MM = 95;
+const HOLE_STRIP_W_MM = 8;
+// 2-up layout: front L=slot0 R=slot2, back L=slot3 R=slot1
+const SLOT_MAP_2UP = {
+  front: { L:0, R:2 },
+  back:  { L:3, R:1 }
+};
+// direct (single) layout
+const SLOT_MAP_DIRECT = {
+  front: { L:0, R:1 },
+  back:  { L:2, R:3 }
+};
+
+/* === MODULE: Settings === */
+const SETTINGS_KEY = 'nsf_bible_daily_v1';
+let CFG = {
+  startH: 6,
+  endH: 22,
+  slotMin: 30,
+  miniCal: 1,
+  showMemo: 1
+};
+function loadSettings(){
+  try{
+    const s = localStorage.getItem(SETTINGS_KEY);
+    if(s) Object.assign(CFG, JSON.parse(s));
+  }catch(e){}
+}
+function saveSettings(){
+  CFG.startH   = parseInt(document.getElementById('s-start-h').value);
+  CFG.endH     = parseInt(document.getElementById('s-end-h').value);
+  CFG.slotMin  = parseInt(document.getElementById('s-slot').value);
+  CFG.miniCal  = parseInt(document.getElementById('s-minical').value);
+  CFG.showMemo = parseInt(document.getElementById('s-memo').value);
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(CFG));
+  syncCtrlFromCFG();
+  document.getElementById('settings-saved').textContent = '✓ 保存しました';
+  setTimeout(()=>document.getElementById('settings-saved').textContent='', 2000);
+}
+function syncCtrlFromCFG(){
+  document.getElementById('sel-start-h').value = CFG.startH;
+  document.getElementById('sel-end-h').value   = CFG.endH;
+  document.getElementById('sel-slot').value     = CFG.slotMin;
+  document.getElementById('s-start-h').value   = CFG.startH;
+  document.getElementById('s-end-h').value     = CFG.endH;
+  document.getElementById('s-slot').value      = CFG.slotMin;
+  document.getElementById('s-minical').value   = CFG.miniCal;
+  document.getElementById('s-memo').value      = CFG.showMemo;
+}
+function toggleSettings(){
+  const p = document.getElementById('settings-panel');
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+}
+
+/* === MODULE: Init === */
+function init(){
+  loadSettings();
+  // populate hour selects
+  ['sel-start-h','sel-end-h','s-start-h','s-end-h'].forEach(id=>{
+    const el = document.getElementById(id);
+    for(let h=0;h<=23;h++){
+      const o = document.createElement('option');
+      o.value = h;
+      o.textContent = String(h).padStart(2,'0')+':00';
+      el.appendChild(o);
+    }
+  });
+  syncCtrlFromCFG();
+  // default date = today
+  const today = new Date();
+  document.getElementById('inp-date').value = fmtDate(today);
+}
+
+/* === MODULE: Date Utilities === */
+function fmtDate(d){ return d.toISOString().slice(0,10); }
+function parseDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
+const DOW_JP = ['日','月','火','水','木','金','土'];
+const DOW_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+/* === MODULE: Japanese Holidays (2025-2026) === */
+function getJPHolidays(){
+  return {
+    '2025-01-01':'元日','2025-01-13':'成人の日','2025-02-11':'建国記念の日',
+    '2025-02-23':'天皇誕生日','2025-03-20':'春分の日','2025-04-29':'昭和の日',
+    '2025-05-03':'憲法記念日','2025-05-04':'みどりの日','2025-05-05':'こどもの日',
+    '2025-05-06':'振替休日','2025-07-21':'海の日','2025-08-11':'山の日',
+    '2025-09-15':'敬老の日','2025-09-23':'秋分の日','2025-10-13':'体育の日',
+    '2025-11-03':'文化の日','2025-11-23':'勤労感謝の日','2025-11-24':'振替休日',
+    '2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日',
+    '2026-02-23':'天皇誕生日','2026-03-20':'春分の日','2026-04-29':'昭和の日',
+    '2026-05-03':'憲法記念日','2026-05-04':'みどりの日','2026-05-05':'こどもの日',
+    '2026-07-20':'海の日','2026-08-11':'山の日','2026-09-21':'敬老の日',
+    '2026-09-23':'秋分の日','2026-10-12':'体育の日','2026-11-03':'文化の日',
+    '2026-11-23':'勤労感謝の日'
+  };
+}
+
+/* === MODULE: Mini Calendar === */
+function buildMiniCal(date, holidays){
+  const y = date.getFullYear(), m = date.getMonth(), day = date.getDate();
+  const firstDow = new Date(y,m,1).getDay();
+  const totalDays = daysInMonth(y, m+1);
+  let html = `<table><tr>`;
+  ['日','月','火','水','木','金','土'].forEach((d,i)=>{
+    const cls = i===0?'mc-sun':i===6?'mc-sat':'';
+    html += `<th class="${cls}">${d}</th>`;
+  });
+  html += '</tr><tr>';
+  for(let i=0;i<firstDow;i++) html += '<td></td>';
+  let col = firstDow;
+  for(let d=1;d<=totalDays;d++){
+    const thisDate = fmtDate(new Date(y,m,d));
+    const dow = (firstDow + d - 1) % 7;
+    let cls = dow===0?'mc-sun':dow===6?'mc-sat':'';
+    if(holidays[thisDate]) cls = 'mc-hol';
+    const inner = d===day ? `<span class="mc-today">${d}</span>` : d;
+    html += `<td class="${cls}">${inner}</td>`;
+    col++;
+    if(col%7===0 && d<totalDays) html += '</tr><tr>';
+  }
+  html += '</tr></table>';
+  return html;
+}
+
+/* === MODULE: Build Daily Page === */
+function buildDailyPage(date, pageNum, holeSide, holidays){
+  const startH = parseInt(document.getElementById('sel-start-h').value);
+  const endH   = parseInt(document.getElementById('sel-end-h').value);
+  const slotMin= parseInt(document.getElementById('sel-slot').value);
+  const showMiniCal = CFG.miniCal;
+  const showMemo    = CFG.showMemo;
+
+  const ds = fmtDate(date);
+  const dow = date.getDay();
+  const isHol = !!holidays[ds];
+  const isSat = dow===6;
+  const isSun = dow===0;
+  const holeName = holidays[ds]||'';
+  const isWeekend = isSat||isSun||isHol;
+
+  const holeIsLeft = holeSide==='left';
+
+  // Hole strip
+  const holePositions = HOLE_POSITIONS_MM;
+  let holesHTML = '';
+  holePositions.forEach(pos=>{
+    holesHTML += `<div class="hole" style="margin-top:${pos}mm;margin-bottom:0;position:absolute;top:${pos}mm;left:2mm"></div>`;
+  });
+  const holeStripHTML = `<div class="hole-strip${holeIsLeft?'':' right'}" style="left:${holeIsLeft?'0':'auto'};right:${holeIsLeft?'auto':'0'}">${holesHTML}</div>`;
+
+  // DOW color
+  let dowColor = '#1a1a1a';
+  if(isSun||isHol) dowColor = 'var(--holiday-color)';
+  else if(isSat) dowColor = 'var(--sat-color)';
+
+  // Header
+  const miniCalHTML = showMiniCal
+    ? `<div class="month-mini">${buildMiniCal(date,holidays)}</div>`
+    : '';
+  const headerHTML = `
+    <div class="daily-header">
+      <div class="date-line">
+        <span class="date-num" style="color:${dowColor}">${date.getDate()}</span>
+        <div class="date-meta">
+          <span class="dow" style="color:${dowColor}">${DOW_JP[dow]}（${DOW_EN[dow]}）</span>
+          <span class="date-ymd">${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}</span>
+        </div>
+      </div>
+      ${holeName ? `<div class="holiday-label">${holeName}</div>` : ''}
+      ${miniCalHTML}
+    </div>`;
+
+  // Time Grid
+  const totalSlots = Math.ceil((endH - startH) * 60 / slotMin);
+  let rowsHTML = '';
+  for(let i=0;i<totalSlots;i++){
+    const totalMin = startH*60 + i*slotMin;
+    const h = Math.floor(totalMin/60);
+    const mm = totalMin%60;
+    const isHourStart = mm===0;
+    const isHalfStart = mm===30 && slotMin<=30;
+    let rowCls = 'time-row';
+    if(isHourStart) rowCls += ' hour-start';
+    else if(isHalfStart) rowCls += ' half-start';
+
+    let labelTxt = '';
+    let labelCls = 'time-label';
+    if(slotMin===60){ labelTxt = String(h).padStart(2,'0'); }
+    else if(slotMin===30){ labelTxt = isHourStart ? String(h).padStart(2,'0') : ''; if(!isHourStart) labelCls += ' hide-label'; }
+    else { // 15min
+      labelTxt = isHourStart ? String(h).padStart(2,'0') : (mm===30?'':'');
+      if(mm!==0&&mm!==30) labelCls += ' hide-label';
+    }
+
+    rowsHTML += `<div class="${rowCls}">
+      <div class="${labelCls}">${labelTxt}</div>
+      <div class="time-task"></div>
+      <div class="time-body"></div>
+    </div>`;
+  }
+  const gridHTML = `<div class="time-grid">${rowsHTML}</div>`;
+
+  // Memo
+  const memoHTML = showMemo ? `
+    <div class="memo-block">
+      <div class="memo-label">MEMO</div>
+      <div class="memo-lines">
+        <div class="memo-line"></div>
+        <div class="memo-line"></div>
+      </div>
+    </div>` : '';
+
+  // Page num bar
+  const pageNumHTML = `<div class="page-num-bar"><span>${pageNum}</span></div>`;
+
+  // Assemble
+  const bodyClass = holeIsLeft ? 'page-body' : 'page-body hole-right';
+  const bodyStyle = holeIsLeft
+    ? `style="left:8mm;right:0"`
+    : `style="left:0;right:8mm"`;
+
+  return `
+    <div class="daily-page">
+      ${holeStripHTML}
+      <div class="${bodyClass}" ${bodyStyle}>
+        ${headerHTML}
+        ${gridHTML}
+        ${memoHTML}
+        ${pageNumHTML}
+      </div>
+    </div>`;
+}
+
+/* === MODULE: Make A4 Sheet HTML === */
+function makeA4HTML(pages){
+  // pages: array of {html, holeSide}
+  // Always 2-up side by side
+  const [p0, p1] = pages;
+  return `<div class="a4-sheet two-up">${p0}${p1||''}</div>`;
+}
+
+/* === MODULE: Render Single (4 days) === */
+function renderSingle(){
+  const dateStr = document.getElementById('inp-date').value;
+  if(!dateStr){ alert('開始日を選択してください'); return; }
+  const startDate = parseDate(dateStr);
+  const holidays = getJPHolidays();
+  setStatus('プレビュー生成中…');
+  const preview = document.getElementById('preview');
+  preview.innerHTML = '';
+
+  // 4 days → 1 A4 sheet (2 pages front, 2 pages back)
+  const dates = [0,1,2,3].map(i=>addDays(startDate,i));
+
+  // Front: slot0(left=hole left), slot2(left=hole left → right page, hole also left for binding)
+  // 2-up: both holes on left side of each page sub-unit for standard left-bind
+  const frontL = buildDailyPage(dates[0], 1, 'left',  holidays);
+  const frontR = buildDailyPage(dates[1], 2, 'left',  holidays);
+  const backL  = buildDailyPage(dates[2], 3, 'left',  holidays);
+  const backR  = buildDailyPage(dates[3], 4, 'left',  holidays);
+
+  const frontSheet = makeA4HTML([frontL, frontR]);
+  const backSheet  = makeA4HTML([backL,  backR]);
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = frontSheet + backSheet;
+  preview.appendChild(wrapper);
+  setStatus('プレビュー完了');
+}
+
+/* === MODULE: Render Monthly === */
+function renderMonthly(){
+  const dateStr = document.getElementById('inp-date').value;
+  if(!dateStr){ alert('開始日を選択してください'); return; }
+  const startDate = parseDate(dateStr);
+  const y = startDate.getFullYear(), m = startDate.getMonth();
+  const total = daysInMonth(y, m+1);
+  const holidays = getJPHolidays();
+  setStatus('月間プレビュー生成中…');
+
+  const preview = document.getElementById('preview');
+  preview.innerHTML = '';
+
+  // All days of month, 4 per sheet
+  const allDays = [];
+  for(let d=1;d<=total;d++) allDays.push(new Date(y,m,d));
+
+  const wrapper = document.createElement('div');
+  let pageNum = 1;
+  for(let i=0;i<allDays.length;i+=4){
+    const group = allDays.slice(i, i+4);
+    while(group.length<4) group.push(null);
+    const pages = group.map((d,idx)=>{
+      if(!d) return '<div class="daily-page" style="background:#f8f8f8"></div>';
+      return buildDailyPage(d, pageNum++, 'left', holidays);
+    });
+    // front: idx0,1 / back: idx2,3
+    const frontSheet = makeA4HTML([pages[0], pages[1]]);
+    const backSheet  = makeA4HTML([pages[2], pages[3]]);
+    wrapper.innerHTML += frontSheet + backSheet;
+  }
+  preview.appendChild(wrapper);
+  setStatus(`月間プレビュー完了 (${allDays.length}日)`);
+}
+
+/* === MODULE: Generate PDF === */
+async function generatePDF(){
+  const dateStr = document.getElementById('inp-date').value;
+  if(!dateStr){ alert('開始日を選択してください'); return; }
+  const startDate = parseDate(dateStr);
+
+  setStatus('PDF生成中…');
+  await new Promise(r=>setTimeout(r,100));
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const sheets = document.querySelectorAll('.a4-sheet');
+  let first = true;
+
+  for(const sheet of sheets){
+    const canvas = await html2canvas(sheet, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor:'#ffffff'
+    });
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    if(!first) pdf.addPage();
+    pdf.addImage(imgData,'JPEG',0,0,210,297);
+    first = false;
+  }
+
+  const fname = `bible-daily-${dateStr}.pdf`;
+  pdf.save(fname);
+  setStatus(`PDF保存: ${fname}`);
+}
+
+/* === MODULE: Status === */
+function setStatus(msg){
+  document.getElementById('status').textContent = msg;
+}
+</script>
+</body>
+</html>
