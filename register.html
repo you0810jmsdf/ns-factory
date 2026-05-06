@@ -303,9 +303,9 @@ textarea{min-height:80px;resize:vertical}
     <div style="margin-top:10px;padding:12px;background:#fff;border:1px dashed #d9b466;border-radius:8px">
       <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 販売幕僚PR画像 — プロンプト生成</div>
       <p style="font-size:12px;color:#7a5a3f;margin:4px 0 10px;line-height:1.5">
-        販売幕僚（<code>hannbai.png</code>）が作品をPRするシーンのプロンプトを生成します。<br>
-        ボタンを押す → コピー → <b>ChatGPT-4o</b> または <b>Gemini 2.5 Flash Image（Nano Banana）</b>に貼り付け → 画像生成 → 完成した画像URLを下のThreads投稿欄に貼ります。<br>
-        <span style="color:#a04020">※プロンプトには「販売幕僚の参照画像URL」と「商品の参照画像URL」が含まれます。これらを読めるマルチモーダルAIで使用してください。</span>
+        販売幕僚（<code>hannbai.png</code>）が作品をPRするシーンを <b>ChatGPT-4o</b> または <b>Gemini 2.5 Flash Image（Nano Banana）</b>で生成します。<br>
+        <b>運用手順:</b> ①下の「販売幕僚画像」「商品画像」を順にDL → ②シーンボタンを押す → ③プロンプトをコピー → ④AIにプロンプト貼付＋<b>画像2枚を添付</b> → ⑤生成画像URLを下のThreads欄へ。<br>
+        <span style="color:#a04020">※URLでなく画像「添付」が必須です（AIはプロンプト内URLを自動取得しません）。</span>
       </p>
       <div id="prSceneButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(0)">📚 書斎で吟味</button>
@@ -314,8 +314,14 @@ textarea{min-height:80px;resize:vertical}
         <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(3)">📦 梱包机で発送準備</button>
         <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(4)">🛠️ アトリエ机で仕上げ確認</button>
       </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:#fff5e0;border:1px dashed #c9a84c;border-radius:6px">
+        <span style="font-size:12px;color:#5a3a20;font-weight:700">📥 参照画像をDL（AI添付用）:</span>
+        <button type="button" class="btn btn-secondary" style="padding:5px 10px;font-size:12px" onclick="downloadReferenceImage('https://you0810jmsdf.github.io/ns-factory/assets/staff/hannbai.png','hannbai_reference.png')">👤 販売幕僚画像</button>
+        <button type="button" class="btn btn-secondary" id="dlProductImageBtn" style="padding:5px 10px;font-size:12px" disabled onclick="downloadProductImage()">🎁 商品画像</button>
+        <span id="dlImageStatus" style="font-size:11px;color:#2a7a3a"></span>
+      </div>
       <div id="prPromptInfo" style="font-size:11px;color:#8a6a2e;margin-bottom:6px">商品: <span id="prProductInfo">（読込中）</span></div>
-      <textarea id="prPromptOutput" rows="14" placeholder="シーンボタンを押すと、販売幕僚画像URL＋商品画像URL＋生成指示を含む画像参照型プロンプトがここに生成されます…" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
+      <textarea id="prPromptOutput" rows="14" placeholder="シーンボタンを押すとプロンプトが生成されます。コピーしてChatGPT/Geminiへ貼付し、上でDLした画像2枚（販売幕僚＋商品）を必ず添付してください。" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
         <button type="button" class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="copyPrPrompt()">📋 コピー</button>
         <span id="prCopyStatus" style="font-size:12px;color:#2a7a3a"></span>
@@ -726,6 +732,9 @@ async function loadProduct() {
     };
     document.getElementById('prProductInfo').textContent =
       p.productId + ' — ' + (p.name || '') + ' / ' + (p.category || '') + ' / ' + (p.color || '') + ' ' + (p.material || '');
+    // 商品画像DLボタンの有効化（メイン画像が取れた場合のみ）
+    const _dlBtn = document.getElementById('dlProductImageBtn');
+    if (_dlBtn) _dlBtn.disabled = !_mainPh;
     resetThreadsSection();
 
     setAgentMsg('step1');
@@ -1282,41 +1291,81 @@ function generatePrPrompt(sceneIndex) {
   const scene = PR_SCENES[sceneIndex];
   if (!scene) return;
   const productDesc = buildProductDescriptor();
-  const productUrl = currentProductForPr.photoUrl || '';
   const productName = currentProductForPr.name || '';
   const productId = currentProductForPr.productId || '';
 
   const prompt = [
-    '【画像参照型プロンプト — ChatGPT-4o / Gemini 2.5 Flash Image (Nano Banana) 用】',
+    '【添付画像参照型プロンプト — ChatGPT-4o / Gemini 2.5 Flash Image (Nano Banana) 用】',
+    '※このプロンプトと一緒に、上のDLボタンで保存した「販売幕僚画像（hannbai_reference.png）」と「商品画像」の2枚を必ず添付してください。',
     '',
-    '## 参照画像（必ず両方を読み込んでください）',
-    '■ Reference Image 1 — The Artisan (販売幕僚 / N\'s factory Sales Adjutant):',
-    HANBAI_REFERENCE_URL,
+    '## Two attached reference images',
+    '  • Attached Image #1 = The Artisan (N\'s factory Sales Adjutant / 販売幕僚).',
+    '  • Attached Image #2 = The Product' + (productId ? ' (' + productId + (productName ? ' / ' + productName : '') + ')' : '') + '.',
     '',
-    '■ Reference Image 2 — The Product (' + productId + (productName ? ' / ' + productName : '') + '):',
-    productUrl || '（商品画像URL未取得：商品マスタにメイン画像を登録してください）',
+    '## Task',
+    'Generate ONE new photorealistic image that strictly preserves BOTH attached reference images:',
+    '  • From Attached Image #1: keep the artisan\'s EXACT face, hairstyle, skin tone, build, and outfit (deep crimson & gold brocade vest, black high-collared shirt). Do NOT invent a new person, do NOT change facial features.',
+    '  • From Attached Image #2: keep the product\'s EXACT shape, color, leather grain, stitching pattern, hardware, and proportions. The product in the output must be visually identical to the attached product photo — same model, same color, same details. Do NOT redesign, do NOT restyle, do NOT substitute a generic item.',
     '',
-    '## 生成指示',
-    'Generate a single new photorealistic image that strictly preserves BOTH references:',
-    '  • From Reference Image 1: keep the artisan\'s EXACT face, hairstyle, skin tone, and outfit (the deep crimson & gold brocade vest, black high-collared shirt). Do not invent a new person.',
-    '  • From Reference Image 2: keep the product\'s EXACT shape, color, leather grain, stitching, hardware, and proportions. Do not redesign or stylize the product. It must be visually identical to the reference photo.',
-    '',
-    '## シーン: ' + scene.title,
+    '## Scene: ' + scene.title,
     'Setting: ' + scene.setting,
-    'Action: The artisan from Reference Image 1 is ' + scene.action,
-    'The product appearing in the scene is the exact item from Reference Image 2 (a ' + productDesc + ').',
+    'Action: The artisan (from Attached Image #1) is ' + scene.action,
+    'The product appearing in the scene is the exact item from Attached Image #2 — a ' + productDesc + '. It must be clearly recognizable as the same product, not a stylized reinterpretation.',
     '',
-    '## スタイル',
+    '## Style',
     STYLE_BASE,
     '',
-    '## 出力',
-    '— Aspect ratio: 2:3 (vertical / portrait) —',
-    '— Single image, no collage, no split-screen, no reference thumbnails visible in the output —',
-    '— The artisan and product must be the SAME identity as the references; no facial drift, no product redesign —'
+    '## Output requirements',
+    '— Aspect ratio: 2:3 (vertical / portrait).',
+    '— Single image, no collage, no split-screen, no thumbnails of the reference images visible in the output.',
+    '— Same artisan identity and same product identity as the two attached references — no facial drift, no product redesign.'
   ].join('\n');
 
   document.getElementById('prPromptOutput').value = prompt;
   document.getElementById('prCopyStatus').textContent = '';
+}
+
+// ====== 参照画像のダウンロードヘルパー ======
+function downloadReferenceImage(url, filename) {
+  const status = document.getElementById('dlImageStatus');
+  if (status) status.textContent = '⏳ DL中…';
+  fetch(url, { mode: 'cors' })
+    .then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.blob();
+    })
+    .then(blob => {
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = filename || 'reference.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+      if (status) {
+        status.textContent = '✅ ' + (filename || 'DL完了');
+        setTimeout(() => { status.textContent = ''; }, 4000);
+      }
+    })
+    .catch(err => {
+      // CORS等で失敗した場合は新規タブで開いて手動保存に誘導
+      window.open(url, '_blank', 'noopener');
+      if (status) {
+        status.textContent = '⚠️ 直DL不可。新規タブを開いたので画像を右クリック→保存してください。';
+        setTimeout(() => { status.textContent = ''; }, 8000);
+      }
+      console.warn('downloadReferenceImage failed:', err);
+    });
+}
+
+function downloadProductImage() {
+  if (!currentProductForPr || !currentProductForPr.photoUrl) {
+    alert('商品画像がまだ取得できていません。');
+    return;
+  }
+  const pid = currentProductForPr.productId || 'product';
+  downloadReferenceImage(currentProductForPr.photoUrl, pid + '_reference.jpg');
 }
 
 function copyPrPrompt() {
