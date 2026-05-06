@@ -734,9 +734,11 @@ async function doRegister() {
       const mimeType = p.file.type;
       const filename = `photo_${String(i+1).padStart(2,'0')}_${p.file.name.replace(/[^\w.\-]/g,'_')}`;
 
-      const upPayload = { key: REGISTER_KEY, folderId, filename, mimeType, dataBase64 };
-      const upUrl = GAS_URL + '?api=uploadPhoto&payload=' + encodeURIComponent(JSON.stringify(upPayload));
-      const upRes = await fetch(upUrl);
+      const upPayload = { api: 'uploadPhoto', key: REGISTER_KEY, folderId, filename, mimeType, dataBase64 };
+      const upRes = await fetch(GAS_URL, {
+        method: 'POST',
+        body: new URLSearchParams({ payload: JSON.stringify(upPayload) })
+      });
       const upData = await upRes.json();
       if (!upData.ok) throw new Error(`写真${i+1}のアップロード失敗: ` + (upData.error || ''));
 
