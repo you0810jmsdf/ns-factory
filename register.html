@@ -304,7 +304,8 @@ textarea{min-height:80px;resize:vertical}
       <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 販売幕僚PR画像 — プロンプト生成</div>
       <p style="font-size:12px;color:#7a5a3f;margin:4px 0 10px;line-height:1.5">
         販売幕僚（<code>hannbai.png</code>）が作品をPRするシーンのプロンプトを生成します。<br>
-        ボタンを押す → コピー → 外部AIツール（Midjourney / DALL-E 等）に貼り付けて画像生成 → 完成した画像URLを下のThreads投稿欄に貼ります。
+        ボタンを押す → コピー → <b>ChatGPT-4o</b> または <b>Gemini 2.5 Flash Image（Nano Banana）</b>に貼り付け → 画像生成 → 完成した画像URLを下のThreads投稿欄に貼ります。<br>
+        <span style="color:#a04020">※プロンプトには「販売幕僚の参照画像URL」と「商品の参照画像URL」が含まれます。これらを読めるマルチモーダルAIで使用してください。</span>
       </p>
       <div id="prSceneButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(0)">📚 書斎で吟味</button>
@@ -314,7 +315,7 @@ textarea{min-height:80px;resize:vertical}
         <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(4)">🛠️ アトリエ机で仕上げ確認</button>
       </div>
       <div id="prPromptInfo" style="font-size:11px;color:#8a6a2e;margin-bottom:6px">商品: <span id="prProductInfo">（読込中）</span></div>
-      <textarea id="prPromptOutput" rows="8" placeholder="シーンボタンを押すとここにプロンプトが生成されます…" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
+      <textarea id="prPromptOutput" rows="14" placeholder="シーンボタンを押すと、販売幕僚画像URL＋商品画像URL＋生成指示を含む画像参照型プロンプトがここに生成されます…" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
         <button type="button" class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="copyPrPrompt()">📋 コピー</button>
         <span id="prCopyStatus" style="font-size:12px;color:#2a7a3a"></span>
@@ -716,9 +717,12 @@ async function loadProduct() {
 
     // 編集モードパネル表示 + PR画像プロンプト用の商品情報をセット
     document.getElementById('editModePanel').classList.remove('hidden');
+    const _mainPh = (mainPhotoIndex >= 0 && photos[mainPhotoIndex]) ? photos[mainPhotoIndex].url : (p.mainPhotoUrl || '');
     currentProductForPr = {
       productId: p.productId, name: p.name, category: p.category,
-      material: p.material, color: p.color, size: p.size
+      material: p.material, color: p.color, size: p.size,
+      photoUrl: _mainPh,
+      productPhotos: photos.map(ph => ph.url).filter(Boolean)
     };
     document.getElementById('prProductInfo').textContent =
       p.productId + ' — ' + (p.name || '') + ' / ' + (p.category || '') + ' / ' + (p.color || '') + ' ' + (p.material || '');
@@ -1218,15 +1222,11 @@ function resetAll() {
   goStep1();
 }
 
-// ====== PR画像プロンプト生成（販売幕僚キャラ統一・ゴシック世界観） ======
+// ====== PR画像プロンプト生成（画像参照型: ChatGPT-4o / Gemini Nano Banana 用） ======
 let currentProductForPr = null;
 
-const HANBAI_CHARACTER = [
-  'A poised East Asian male leather artisan in his 30s,',
-  'wearing a deep crimson and gold ornate brocade vest over a black high-collared shirt,',
-  'serene focused expression, neatly combed dark hair,',
-  'identical character consistency across scenes (same face, same outfit as the reference portrait of the "Sales Adjutant" of N\'s factory).'
-].join(' ');
+// 販売幕僚（artisan）参照画像の公開URL（GitHub Pages）
+const HANBAI_REFERENCE_URL = 'https://you0810jmsdf.github.io/ns-factory/assets/staff/hannbai.png';
 
 const STYLE_BASE = [
   'Cinematic photorealism, gothic dark vintage aesthetic,',
@@ -1240,27 +1240,27 @@ const PR_SCENES = [
   {
     title: '書斎で吟味',
     setting: 'In a candlelit gothic study lined with leather-bound antique books and dark walnut shelves, a heavy oak desk in the foreground, brass scales and an ink quill on the desk.',
-    action: 'examining a {PRODUCT} held carefully in both hands, gaze lowered with reverence, as if appraising a precious volume.'
+    action: 'examining the product held carefully in both hands, gaze lowered with reverence, as if appraising a precious volume.'
   },
   {
     title: 'ロウソク灯下で記帳',
     setting: 'At a heavy dark-wood writing desk by a tall arched window with velvet drapes, three beeswax candles in a wrought-iron holder, an open ledger and a fountain pen, leather books stacked nearby.',
-    action: 'placing a {PRODUCT} beside the open ledger, the artisan writing an entry by candlelight, the product catching the warm flame glow.'
+    action: 'placing the product beside the open ledger, the artisan writing an entry by candlelight, the product catching the warm flame glow.'
   },
   {
     title: '革棚の前で選定',
     setting: 'In a vintage leather workshop with floor-to-ceiling oak shelving filled with rolls of veg-tan leather, hanging brass tools, gas lamps casting warm amber light, sawdust and leather dust in the air.',
-    action: 'standing before the leather shelves, presenting a {PRODUCT} forward toward the viewer, as if introducing it from the workshop\'s finest selection.'
+    action: 'standing before the leather shelves, presenting the product forward toward the viewer, as if introducing it from the workshop\'s finest selection.'
   },
   {
     title: '梱包机で発送準備',
     setting: 'On a worn wooden packing bench: kraft paper, brown twine, a stick of red sealing wax with a brass seal, a small inkpad, an old brass scale, surrounded by warm tungsten light from a green-shaded banker\'s lamp.',
-    action: 'wrapping a {PRODUCT} in kraft paper and twine with careful, deliberate hands, preparing it for shipment, the product partly visible amid the wrapping.'
+    action: 'wrapping the product in kraft paper and twine with careful, deliberate hands, preparing it for shipment, the product partly visible amid the wrapping.'
   },
   {
     title: 'アトリエ机で仕上げ確認',
     setting: 'At a leather artisan\'s atelier bench cluttered with awls, edge slickers, beeswax, edge dyes, and a wooden burnisher, an old brass desk lamp casting focused warm light, dark stone walls in the background.',
-    action: 'inspecting the edge of a {PRODUCT} under the focused lamp light, holding the product close, fingertips tracing the burnished edge.'
+    action: 'inspecting the edge of the product under the focused lamp light, holding the product close, fingertips tracing the burnished edge.'
   }
 ];
 
@@ -1282,23 +1282,37 @@ function generatePrPrompt(sceneIndex) {
   const scene = PR_SCENES[sceneIndex];
   if (!scene) return;
   const productDesc = buildProductDescriptor();
-  const action = scene.action.replace('{PRODUCT}', productDesc);
+  const productUrl = currentProductForPr.photoUrl || '';
+  const productName = currentProductForPr.name || '';
+  const productId = currentProductForPr.productId || '';
 
   const prompt = [
-    `[Scene: ${scene.title}]`,
+    '【画像参照型プロンプト — ChatGPT-4o / Gemini 2.5 Flash Image (Nano Banana) 用】',
     '',
-    HANBAI_CHARACTER,
+    '## 参照画像（必ず両方を読み込んでください）',
+    '■ Reference Image 1 — The Artisan (販売幕僚 / N\'s factory Sales Adjutant):',
+    HANBAI_REFERENCE_URL,
     '',
-    scene.setting,
+    '■ Reference Image 2 — The Product (' + productId + (productName ? ' / ' + productName : '') + '):',
+    productUrl || '（商品画像URL未取得：商品マスタにメイン画像を登録してください）',
     '',
-    'The artisan is ' + action,
+    '## 生成指示',
+    'Generate a single new photorealistic image that strictly preserves BOTH references:',
+    '  • From Reference Image 1: keep the artisan\'s EXACT face, hairstyle, skin tone, and outfit (the deep crimson & gold brocade vest, black high-collared shirt). Do not invent a new person.',
+    '  • From Reference Image 2: keep the product\'s EXACT shape, color, leather grain, stitching, hardware, and proportions. Do not redesign or stylize the product. It must be visually identical to the reference photo.',
     '',
+    '## シーン: ' + scene.title,
+    'Setting: ' + scene.setting,
+    'Action: The artisan from Reference Image 1 is ' + scene.action,
+    'The product appearing in the scene is the exact item from Reference Image 2 (a ' + productDesc + ').',
+    '',
+    '## スタイル',
     STYLE_BASE,
     '',
-    `[Product: ${currentProductForPr.productId} — ${currentProductForPr.name || ''}]`,
-    '',
-    '— Aspect ratio: 2:3 (vertical) —',
-    '— Use the reference portrait of N\'s factory Sales Adjutant for character consistency —'
+    '## 出力',
+    '— Aspect ratio: 2:3 (vertical / portrait) —',
+    '— Single image, no collage, no split-screen, no reference thumbnails visible in the output —',
+    '— The artisan and product must be the SAME identity as the references; no facial drift, no product redesign —'
   ].join('\n');
 
   document.getElementById('prPromptOutput').value = prompt;
