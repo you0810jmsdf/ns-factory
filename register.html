@@ -559,20 +559,24 @@ const YEAR = '2026';
 const FIELD_MAP = { category: 'categories', material: 'materials', color: 'colors' };
 
 function fetchMasterData() {
-  const url = GAS_URL + '?api=getMasterData&key=' + REGISTER_KEY + '&cb=' + Date.now();
-  const script = document.createElement('script');
-  window._masterDataCb = function(data) {
-    document.head.removeChild(script);
-    if (!data.ok) { console.warn('getMasterData error:', data.error); setFallbackOptions(); return; }
-    ['category','material','color'].forEach(field => {
-      const sel = document.getElementById('f_' + field);
-      const items = data[FIELD_MAP[field]] || [];
-      sel.innerHTML = '<option value="">選択…</option>' +
-        items.map(v => `<option value="${v}">${v}</option>`).join('');
-    });
-  };
-  script.src = url + '&callback=_masterDataCb';
-  document.head.appendChild(script);
+  return new Promise((resolve) => {
+    const url = GAS_URL + '?api=getMasterData&key=' + REGISTER_KEY + '&cb=' + Date.now();
+    const script = document.createElement('script');
+    window._masterDataCb = function(data) {
+      document.head.removeChild(script);
+      if (!data.ok) { console.warn('getMasterData error:', data.error); setFallbackOptions(); resolve(); return; }
+      ['category','material','color'].forEach(field => {
+        const sel = document.getElementById('f_' + field);
+        const items = data[FIELD_MAP[field]] || [];
+        sel.innerHTML = '<option value="">選択…</option>' +
+          items.map(v => `<option value="${v}">${v}</option>`).join('');
+      });
+      resolve();
+    };
+    script.onerror = () => { try { document.head.removeChild(script); } catch(_){} setFallbackOptions(); resolve(); };
+    script.src = url + '&callback=_masterDataCb';
+    document.head.appendChild(script);
+  });
 }
 
 function fetchProductNames() {
@@ -619,23 +623,20 @@ function addNewOption(field) {
 }
 
 // ====== AUTH ======
-function checkAuth() {
+async function checkAuth() {
   const v = document.getElementById('authInput').value.trim();
   if (v === REGISTER_KEY) {
     document.getElementById('authOverlay').classList.add('hidden');
     document.body.classList.remove('auth-locked');
     fetchNextId();
-    fetchMasterData();
     fetchProductNames();
+    await fetchMasterData();
 
-    // ?edit=SKU パラメータがあれば自動で編集モードに移行
+    // ?edit=SKU パラメータがあれば自動で編集モードに移行（master ロード完了後なので race condition なし）
     const editId = new URLSearchParams(window.location.search).get('edit');
     if (editId) {
-      // マスターデータ読込後にloadProductを呼ぶ（select値設定のため）
-      setTimeout(() => {
-        document.getElementById('editProductId').value = editId;
-        loadProduct();
-      }, 1200);
+      document.getElementById('editProductId').value = editId;
+      loadProduct();
     }
   } else {
     document.getElementById('authError').textContent = 'パスワードが違います';
@@ -688,8 +689,6 @@ async function loadProduct() {
     const d = await jsonpCall({ api: 'getProductById', id, key: REGISTER_KEY });
     if (!d.ok) { alert('読込失敗: ' + (d.error || 'unknown')); return; }
     const p = d.product;
-    console.log('[loadProduct] product:', p);
-    console.log('[loadProduct] dropdown values -> category:', JSON.stringify(p.category), 'material:', JSON.stringify(p.material), 'color:', JSON.stringify(p.color));
     document.getElementById('f_name').value = p.name;
     setSelectValue('f_category', p.category);
     setSelectValue('f_material', p.material);
