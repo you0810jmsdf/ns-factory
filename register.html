@@ -181,6 +181,21 @@ textarea{min-height:80px;resize:vertical}
 .btn-secondary:hover{background:#fff8f1}
 .btn-danger{background:#b42318;color:#fff}
 .btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+/* ====== AI GENERATE ====== */
+.ai-gen-bar{
+  display:flex;align-items:center;gap:10px;
+  background:#fff8f1;border:1.5px solid #e8c99a;border-radius:10px;
+  padding:10px 14px;margin-bottom:16px;
+}
+.btn-ai{
+  flex-shrink:0;padding:7px 16px;
+  background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;
+  border:none;border-radius:8px;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.btn-ai:hover{opacity:.88;transform:translateY(-1px)}
+.btn-ai:disabled{background:#c4b5fd;cursor:not-allowed;transform:none}
+.ai-gen-hint{font-size:11px;color:#7a5a3f;line-height:1.5}
 /* ====== COMBO BOX ====== */
 .combo-wrap{display:flex;gap:6px;align-items:center}
 .combo-wrap select{flex:1}
@@ -381,6 +396,11 @@ textarea{min-height:80px;resize:vertical}
   <div id="step3" class="panel hidden">
     <div class="panel-title">Step 3 — 説明文・ハッシュタグ</div>
 
+    <div class="ai-gen-bar">
+      <button type="button" class="btn-ai" id="aiGenBtn" onclick="generateDesc()">✨ AI で生成</button>
+      <span class="ai-gen-hint">商品名・カテゴリ・素材・色から<br>説明文とハッシュタグを自動生成します</span>
+    </div>
+
     <div class="form-row">
       <label>短い説明<span class="req">*</span> <span style="font-weight:400;color:#a07050">（一覧・SNS用 60文字以内）</span></label>
       <input type="text" id="f_shortDesc" placeholder="例: 手縫いで仕上げたA5システム手帳。チョコブラウンのイタリアンレザーが特徴。" maxlength="120">
@@ -535,6 +555,42 @@ async function fetchNextId() {
     }
   } catch(e) {
     document.getElementById('nextIdPreview').textContent = '商品ID (登録時に自動採番)';
+  }
+}
+
+// ====== AI 説明文生成 ======
+async function generateDesc() {
+  const name     = val('f_name');
+  const category = document.getElementById('f_category').value;
+  const material = document.getElementById('f_material').value;
+  const color    = document.getElementById('f_color').value;
+
+  if (!name) { alert('商品名（Step1）を先に入力してください'); return; }
+
+  const btn = document.getElementById('aiGenBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 生成中…';
+
+  try {
+    const payload = JSON.stringify({
+      api: 'generateDesc', key: REGISTER_KEY,
+      name, category, material, color
+    });
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: new URLSearchParams({ payload })
+    });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || '生成失敗');
+    document.getElementById('f_shortDesc').value = d.shortDesc || '';
+    document.getElementById('f_longDesc').value  = d.longDesc  || '';
+    document.getElementById('f_hashtags').value  = d.hashtags  || '';
+    btn.textContent = '✅ 生成完了';
+    setTimeout(() => { btn.textContent = '✨ AI で生成'; btn.disabled = false; }, 2000);
+  } catch(e) {
+    alert('AI生成エラー: ' + e.message);
+    btn.textContent = '✨ AI で生成';
+    btn.disabled = false;
   }
 }
 
