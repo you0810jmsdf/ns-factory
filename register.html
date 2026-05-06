@@ -744,6 +744,7 @@ async function loadProduct() {
     document.getElementById('step1Title').textContent = 'Step 1 — 基本情報（編集中: ' + p.productId + '）';
     document.getElementById('nextIdPreview').textContent = '編集対象: ' + p.productId;
     document.getElementById('registerBtn').textContent = '💾 更新する';
+    history.replaceState({}, '', window.location.pathname + '?edit=' + encodeURIComponent(p.productId));
 
     // 編集モードパネル表示 + PR画像プロンプト用の商品情報をセット
     document.getElementById('editModePanel').classList.remove('hidden');
