@@ -283,13 +283,25 @@ textarea{min-height:80px;resize:vertical}
     </div>
   </div>
 
+  <!-- ====== EDIT MODE BAR ====== -->
+  <div id="editBar" class="panel" style="background:#fffbe9;border:1px solid #e8c878;padding:10px 14px;margin-bottom:10px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span style="font-weight:700;color:#5a3a20;font-size:13px">既存商品を編集:</span>
+      <input type="text" id="editProductId" placeholder="例: 2026-001" style="padding:6px 10px;border:1px solid #d8b888;border-radius:6px;width:140px;font-size:13px">
+      <button type="button" class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="loadProduct()">📂 読み込み</button>
+      <button type="button" id="newModeBtn" class="btn btn-secondary hidden" style="padding:6px 14px;font-size:12px" onclick="exitEditMode()">＋ 新規登録に戻る</button>
+      <span id="editModeBadge" class="hidden" style="background:#e85a4f;color:#fff;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700">編集モード</span>
+    </div>
+  </div>
+
   <!-- ====== STEP 1: 基本情報 ====== -->
   <div id="step1" class="panel">
-    <div class="panel-title">Step 1 — 基本情報</div>
+    <div class="panel-title" id="step1Title">Step 1 — 基本情報</div>
 
     <div class="form-row">
       <label>商品名<span class="req">*</span></label>
-      <input type="text" id="f_name" placeholder="例: システム手帳 A5 ブラック">
+      <input type="text" id="f_name" placeholder="例: システム手帳 A5 ブラック" list="dl_productNames" autocomplete="off">
+      <datalist id="dl_productNames"></datalist>
     </div>
 
     <div class="form-row-2">
@@ -498,6 +510,19 @@ function fetchMasterData() {
   document.head.appendChild(script);
 }
 
+function fetchProductNames() {
+  const url = GAS_URL + '?api=productNames&key=' + REGISTER_KEY + '&cb=' + Date.now();
+  const script = document.createElement('script');
+  window._productNamesCb = function(data) {
+    document.head.removeChild(script);
+    if (!data || !data.ok || !Array.isArray(data.names)) return;
+    const dl = document.getElementById('dl_productNames');
+    dl.innerHTML = data.names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+  };
+  script.src = url + '&callback=_productNamesCb';
+  document.head.appendChild(script);
+}
+
 function setFallbackOptions() {
   ['category','material','color'].forEach(field => {
     const sel = document.getElementById('f_' + field);
@@ -536,6 +561,7 @@ function checkAuth() {
     document.body.classList.remove('auth-locked');
     fetchNextId();
     fetchMasterData();
+    fetchProductNames();
   } else {
     document.getElementById('authError').textContent = 'パスワードが違います';
   }
@@ -556,6 +582,99 @@ async function fetchNextId() {
   } catch(e) {
     document.getElementById('nextIdPreview').textContent = '商品ID (登録時に自動採番)';
   }
+}
+
+// ====== EDIT MODE ======
+let isEditMode = false;
+let editingProductId = '';
+let editingFolderId = '';
+
+function jsonpCall(params) {
+  return new Promise((resolve, reject) => {
+    const cb = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
+    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 30000);
+    function cleanup() { try { delete window[cb]; document.head.removeChild(s); } catch(_){} clearTimeout(timer); }
+    window[cb] = (data) => { cleanup(); resolve(data); };
+    const qs = Object.entries(params).map(([k,v]) => k + '=' + encodeURIComponent(v)).join('&');
+    const s = document.createElement('script');
+    s.src = GAS_URL + '?' + qs + '&callback=' + cb + '&cb=' + Date.now();
+    s.onerror = () => { cleanup(); reject(new Error('network')); };
+    document.head.appendChild(s);
+  });
+}
+
+async function loadProduct() {
+  const id = document.getElementById('editProductId').value.trim();
+  if (!id) { alert('商品IDを入力してください'); return; }
+  try {
+    const d = await jsonpCall({ api: 'getProductById', id, key: REGISTER_KEY });
+    if (!d.ok) { alert('読込失敗: ' + (d.error || 'unknown')); return; }
+    const p = d.product;
+    document.getElementById('f_name').value = p.name;
+    setSelectValue('f_category', p.category);
+    setSelectValue('f_material', p.material);
+    setSelectValue('f_color', p.color);
+    document.getElementById('f_size').value  = p.size;
+    document.getElementById('f_hours').value = p.hours;
+    document.getElementById('f_cost').value  = p.cost;
+    document.getElementById('f_price').value = p.price;
+    document.getElementById('f_stock').value = p.stock;
+    document.getElementById('f_shortDesc').value = p.shortDesc;
+    document.getElementById('f_longDesc').value  = p.longDesc;
+    document.getElementById('f_hashtags').value  = p.hashtags;
+
+    photos = (d.photos || []).map(ph => ({
+      existing: true, fileId: ph.fileId, url: ph.url, filename: ph.filename
+    }));
+    mainPhotoIndex = photos.findIndex(ph => {
+      return p.mainPhotoUrl && ph.url === p.mainPhotoUrl;
+    });
+    if (mainPhotoIndex < 0 && photos.length > 0) mainPhotoIndex = 0;
+    renderPhotoGrid();
+
+    isEditMode = true;
+    editingProductId = p.productId;
+    editingFolderId  = p.folderId;
+    document.getElementById('editModeBadge').classList.remove('hidden');
+    document.getElementById('newModeBtn').classList.remove('hidden');
+    document.getElementById('step1Title').textContent = 'Step 1 — 基本情報（編集中: ' + p.productId + '）';
+    document.getElementById('nextIdPreview').textContent = '編集対象: ' + p.productId;
+    document.getElementById('registerBtn').textContent = '💾 更新する';
+    setAgentMsg('step1');
+  } catch(e) {
+    alert('読込エラー: ' + e.message);
+  }
+}
+
+function setSelectValue(id, v) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  if (sel.tagName === 'SELECT') {
+    let found = false;
+    for (let i=0; i<sel.options.length; i++) {
+      if (sel.options[i].value === v) { found = true; break; }
+    }
+    if (!found && v) {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      sel.appendChild(opt);
+    }
+    sel.value = v;
+  } else {
+    sel.value = v;
+  }
+}
+
+function exitEditMode() {
+  isEditMode = false;
+  editingProductId = '';
+  editingFolderId  = '';
+  document.getElementById('editModeBadge').classList.add('hidden');
+  document.getElementById('newModeBtn').classList.add('hidden');
+  document.getElementById('step1Title').textContent = 'Step 1 — 基本情報';
+  document.getElementById('editProductId').value = '';
+  document.getElementById('registerBtn').textContent = '✅ 登録する';
+  resetAll();
 }
 
 // ====== AI 説明文生成 ======
@@ -692,9 +811,11 @@ function renderPhotoGrid() {
   photos.forEach((p, i) => {
     const div = document.createElement('div');
     div.className = 'photo-thumb' + (i === mainPhotoIndex ? ' main-selected' : '');
+    const src = p.existing ? p.url : p.dataUrl;
     div.innerHTML = `
-      <img src="${p.dataUrl}" alt="写真${i+1}">
+      <img src="${src}" alt="写真${i+1}">
       ${i === mainPhotoIndex ? '<div class="main-badge">代表</div>' : ''}
+      ${p.existing ? '<div style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 5px;border-radius:3px">既存</div>' : ''}
       <button class="remove-btn" onclick="removePhoto(event,${i})">×</button>
     `;
     div.addEventListener('click', () => selectMain(i));
@@ -733,7 +854,7 @@ function buildConfirm() {
   tbl.innerHTML = rows.map(([k,v], i) => {
     if (k === '写真') {
       const imgs = photos.map((p, pi) =>
-        `<img src="${p.dataUrl}" class="confirm-photo${pi===mainPhotoIndex?' main-photo':''}" title="${pi===mainPhotoIndex?'代表写真':'写真'}">`
+        `<img src="${p.existing ? p.url : p.dataUrl}" class="confirm-photo${pi===mainPhotoIndex?' main-photo':''}" title="${pi===mainPhotoIndex?'代表写真':'写真'}">`
       ).join('');
       return `<tr><th>${k}</th><td><div class="confirm-photos">${imgs}</div><div class="text-sm" style="margin-top:4px">枠付き＝代表写真 （${photos.length}枚）</div></td></tr>`;
     }
@@ -753,71 +874,108 @@ async function doRegister() {
   showOnly('stepProgress');
 
   try {
-    // Step A: register
-    setProgress(10, '商品情報を登録中…', '商品マスターに行を追加しています…');
-    const payload = {
-      key: REGISTER_KEY,
-      name: val('f_name'),
-      category: val('f_category'),
-      material: val('f_material'),
-      color: val('f_color'),
-      size: val('f_size'),
-      hours: val('f_hours'),
-      cost: val('f_cost'),
-      price: val('f_price'),
-      stock: val('f_stock'),
-      shortDesc: val('f_shortDesc'),
-      longDesc: val('f_longDesc'),
-      hashtags: val('f_hashtags'),
-      year: YEAR,
-    };
-    const regUrl = GAS_URL + '?api=register&payload=' + encodeURIComponent(JSON.stringify(payload));
-    const regRes = await fetch(regUrl);
-    const regData = await regRes.json();
-    if (!regData.ok) throw new Error('register失敗: ' + (regData.error || JSON.stringify(regData)));
-
-    const { productId, folderId } = regData;
-    setProgress(25, '写真をアップロード中…', `商品ID <b>${productId}</b> で登録完了！\n写真をアップロードします…`);
-
-    // Step B: upload photos
-    let mainPhotoUrl = '';
-    for (let i = 0; i < photos.length; i++) {
-      const p = photos[i];
-      const pct = 25 + Math.round(65 * (i / photos.length));
-      setProgress(pct, `写真 ${i+1}/${photos.length} アップロード中…`, `写真 <b>${i+1}/${photos.length}</b> を Drive にアップロード中…`);
-
-      const dataBase64 = p.dataUrl.split(',')[1];
-      const mimeType = p.file.type;
-      const filename = `photo_${String(i+1).padStart(2,'0')}_${p.file.name.replace(/[^\w.\-]/g,'_')}`;
-
-      const upPayload = { api: 'uploadPhoto', key: REGISTER_KEY, folderId, filename, mimeType, dataBase64 };
-      const upRes = await fetch(GAS_URL, {
-        method: 'POST',
-        body: new URLSearchParams({ payload: JSON.stringify(upPayload) })
-      });
-      const upData = await upRes.json();
-      if (!upData.ok) throw new Error(`写真${i+1}のアップロード失敗: ` + (upData.error || ''));
-
-      if (i === mainPhotoIndex) mainPhotoUrl = upData.url;
+    if (isEditMode) {
+      await doUpdate();
+    } else {
+      await doNewRegister();
     }
-
-    // Step C: finalize
-    setProgress(95, '仕上げ中…', '代表写真を設定して、ステータスを「販売中」に更新します…');
-    const finPayload = { key: REGISTER_KEY, productId, mainPhotoUrl };
-    const finUrl = GAS_URL + '?api=finalize&payload=' + encodeURIComponent(JSON.stringify(finPayload));
-    const finRes = await fetch(finUrl);
-    const finData = await finRes.json();
-    if (!finData.ok) throw new Error('finalize失敗: ' + (finData.error || ''));
-
-    setProgress(100, '完了！', '登録完了です！');
-    document.getElementById('completeId').textContent = productId;
-    setTimeout(() => showOnly('stepComplete'), 800);
-
   } catch(e) {
     alert('❌ エラーが発生しました:\n' + e.message);
     showOnly('stepConfirm');
     document.getElementById('registerBtn').disabled = false;
   }
+}
+
+async function doNewRegister() {
+  // Step A: register
+  setProgress(10, '商品情報を登録中…', '商品マスターに行を追加しています…');
+  const payload = {
+    key: REGISTER_KEY,
+    name: val('f_name'), category: val('f_category'), material: val('f_material'),
+    color: val('f_color'), size: val('f_size'), hours: val('f_hours'),
+    cost: val('f_cost'), price: val('f_price'), stock: val('f_stock'),
+    shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
+    hashtags: val('f_hashtags'), year: YEAR,
+  };
+  const regUrl = GAS_URL + '?api=register&payload=' + encodeURIComponent(JSON.stringify(payload));
+  const regRes = await fetch(regUrl);
+  const regData = await regRes.json();
+  if (!regData.ok) throw new Error('register失敗: ' + (regData.error || JSON.stringify(regData)));
+
+  const { productId, folderId } = regData;
+  setProgress(25, '写真をアップロード中…', `商品ID <b>${productId}</b> で登録完了！\n写真をアップロードします…`);
+
+  let mainPhotoUrl = '';
+  for (let i = 0; i < photos.length; i++) {
+    const p = photos[i];
+    const pct = 25 + Math.round(65 * (i / photos.length));
+    setProgress(pct, `写真 ${i+1}/${photos.length} アップロード中…`, `写真 <b>${i+1}/${photos.length}</b> を Drive にアップロード中…`);
+    const url = await uploadOnePhoto(p, i, folderId);
+    if (i === mainPhotoIndex) mainPhotoUrl = url;
+  }
+
+  setProgress(95, '仕上げ中…', '代表写真を設定して、ステータスを「販売中」に更新します…');
+  const finPayload = { key: REGISTER_KEY, productId, mainPhotoUrl };
+  const finUrl = GAS_URL + '?api=finalize&payload=' + encodeURIComponent(JSON.stringify(finPayload));
+  const finRes = await fetch(finUrl);
+  const finData = await finRes.json();
+  if (!finData.ok) throw new Error('finalize失敗: ' + (finData.error || ''));
+
+  setProgress(100, '完了！', '登録完了です！');
+  document.getElementById('completeId').textContent = productId;
+  setTimeout(() => showOnly('stepComplete'), 800);
+}
+
+async function doUpdate() {
+  setProgress(10, '商品情報を更新中…', '商品マスターを更新しています…');
+
+  // 新規追加写真をアップロード
+  let mainPhotoUrl = '';
+  const mainP = photos[mainPhotoIndex];
+  if (mainP && mainP.existing) {
+    mainPhotoUrl = mainP.url;
+  }
+
+  for (let i = 0; i < photos.length; i++) {
+    const p = photos[i];
+    if (p.existing) continue;
+    const pct = 10 + Math.round(60 * (i / photos.length));
+    setProgress(pct, `新規写真 ${i+1} アップロード中…`, `写真 <b>${i+1}</b> を Drive にアップロード中…`);
+    const url = await uploadOnePhoto(p, i, editingFolderId);
+    if (i === mainPhotoIndex) mainPhotoUrl = url;
+  }
+
+  setProgress(80, '商品マスター更新中…', 'スプレッドシートを更新しています…');
+  const updPayload = {
+    key: REGISTER_KEY, productId: editingProductId,
+    name: val('f_name'), category: val('f_category'), material: val('f_material'),
+    color: val('f_color'), size: val('f_size'), hours: val('f_hours'),
+    cost: val('f_cost'), price: val('f_price'), stock: val('f_stock'),
+    shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
+    hashtags: val('f_hashtags'), mainPhotoUrl,
+  };
+  const updUrl = GAS_URL + '?api=updateProduct&payload=' + encodeURIComponent(JSON.stringify(updPayload));
+  const updRes = await fetch(updUrl);
+  const updData = await updRes.json();
+  if (!updData.ok) throw new Error('更新失敗: ' + (updData.error || ''));
+
+  setProgress(100, '完了！', '更新完了です！');
+  document.getElementById('completeId').textContent = editingProductId + '（更新）';
+  setTimeout(() => showOnly('stepComplete'), 800);
+}
+
+async function uploadOnePhoto(p, i, folderId) {
+  const dataBase64 = p.dataUrl.split(',')[1];
+  const mimeType = p.file.type;
+  const filename = `photo_${String(i+1).padStart(2,'0')}_${p.file.name.replace(/[^\w.\-]/g,'_')}`;
+  const upPayload = { api: 'uploadPhoto', key: REGISTER_KEY, folderId, filename, mimeType, dataBase64 };
+  const upRes = await fetch(GAS_URL, {
+    method: 'POST',
+    body: new URLSearchParams({ payload: JSON.stringify(upPayload) })
+  });
+  const upData = await upRes.json();
+  if (!upData.ok) throw new Error(`写真${i+1}のアップロード失敗: ` + (upData.error || ''));
+  return upData.url;
 }
 
 // ====== RESET ======
@@ -831,6 +989,14 @@ function resetAll() {
   document.getElementById('f_stock').value = '1';
   document.getElementById('photoGrid').innerHTML = '';
   document.getElementById('photoHint').style.display = 'none';
+  isEditMode = false;
+  editingProductId = '';
+  editingFolderId = '';
+  document.getElementById('editModeBadge').classList.add('hidden');
+  document.getElementById('newModeBtn').classList.add('hidden');
+  document.getElementById('step1Title').textContent = 'Step 1 — 基本情報';
+  document.getElementById('editProductId').value = '';
+  document.getElementById('registerBtn').textContent = '✅ 登録する';
   fetchNextId();
   goStep1();
 }
