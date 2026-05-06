@@ -295,6 +295,54 @@ textarea{min-height:80px;resize:vertical}
     </div>
   </div>
 
+  <!-- ====== EDIT MODE PANEL (PR画像プロンプト + Threads投稿) ====== -->
+  <div id="editModePanel" class="panel hidden" style="background:#fffaf0;border:1px solid #d9b466;padding:14px 16px;margin-bottom:12px">
+    <div class="panel-title" style="color:#8a6a2e">📣 編集モード — PR画像プロンプト生成 ＆ Threads投稿</div>
+
+    <!-- PR画像プロンプト生成 -->
+    <div style="margin-top:10px;padding:12px;background:#fff;border:1px dashed #d9b466;border-radius:8px">
+      <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 販売幕僚PR画像 — プロンプト生成</div>
+      <p style="font-size:12px;color:#7a5a3f;margin:4px 0 10px;line-height:1.5">
+        販売幕僚（<code>hannbai.png</code>）が作品をPRするシーンのプロンプトを生成します。<br>
+        ボタンを押す → コピー → 外部AIツール（Midjourney / DALL-E 等）に貼り付けて画像生成 → 完成した画像URLを下のThreads投稿欄に貼ります。
+      </p>
+      <div id="prSceneButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(0)">📚 書斎で吟味</button>
+        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(1)">🕯️ ロウソク灯下で記帳</button>
+        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(2)">🧰 革棚の前で選定</button>
+        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(3)">📦 梱包机で発送準備</button>
+        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(4)">🛠️ アトリエ机で仕上げ確認</button>
+      </div>
+      <div id="prPromptInfo" style="font-size:11px;color:#8a6a2e;margin-bottom:6px">商品: <span id="prProductInfo">（読込中）</span></div>
+      <textarea id="prPromptOutput" rows="8" placeholder="シーンボタンを押すとここにプロンプトが生成されます…" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <button type="button" class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="copyPrPrompt()">📋 コピー</button>
+        <span id="prCopyStatus" style="font-size:12px;color:#2a7a3a"></span>
+      </div>
+    </div>
+
+    <!-- Threads投稿 -->
+    <div id="threadsSection" style="margin-top:14px;padding:14px;background:#fff8ec;border:1px solid #d9b466;border-radius:8px">
+      <div style="font-weight:bold;color:#8a6a2e;margin-bottom:8px">📣 Threads に投稿</div>
+      <p style="font-size:12px;color:#5a4a2e;margin:4px 0 8px;line-height:1.5">
+        外部AIツールで生成した画像のURL（公開URL）を貼り付けて投稿してください。<br>
+        投稿文は AI が自動生成します。
+      </p>
+      <input type="url" id="bannerUrlInput" placeholder="https://... 画像の公開URL" style="width:100%;padding:8px 10px;border:1px solid #d8b888;border-radius:6px;font-size:13px;margin-bottom:8px">
+      <button type="button" id="threadsPostBtn" class="btn btn-primary" style="font-size:13px" onclick="doThreadsPost()">🚀 Threads に投稿</button>
+
+      <div id="threadsProgress" class="hidden" style="margin-top:10px;padding:8px 10px;background:#f0f4ff;border:1px solid #aac0e0;border-radius:6px;font-size:12px;color:#3a5a8a">
+        <span id="threadsProgressMsg">処理中…</span>
+      </div>
+      <div id="threadsResult" class="hidden" style="margin-top:10px;padding:10px;background:#eaf7e8;border:1px solid #8ac08a;border-radius:6px">
+        <div style="font-weight:bold;color:#2a7a3a;margin-bottom:6px">✅ 投稿完了</div>
+        <pre id="threadsResultText" style="white-space:pre-wrap;font-size:12px;margin:6px 0;font-family:inherit;color:#2a4a2a"></pre>
+        <a id="threadsResultLink" href="#" target="_blank" rel="noopener" class="btn btn-secondary" style="font-size:12px;display:inline-block">🔗 Threadsで確認</a>
+      </div>
+      <div id="threadsError" class="hidden" style="margin-top:10px;padding:10px;background:#ffeae8;border:1px solid #e5908a;border-radius:6px;font-size:12px;color:#8a2a2a"></div>
+    </div>
+  </div>
+
   <!-- ====== STEP 1: 基本情報 ====== -->
   <div id="step1" class="panel">
     <div class="panel-title" id="step1Title">Step 1 — 基本情報</div>
@@ -478,31 +526,12 @@ textarea{min-height:80px;resize:vertical}
       <div class="complete-id" id="completeId">NF2026_XXX</div>
       <p style="font-size:13px;color:#7a5a3f">商品マスターの「販売中」行を確認してください。</p>
 
-      <!-- ====== Threads 投稿セクション（任意・編集画面へ移植予定のため一時非表示 2026-05-06） ====== -->
-      <div id="threadsSection" style="display:none;margin-top:24px;padding:16px;background:#fff8ec;border:1px solid #d9b466;border-radius:8px;text-align:left">
-        <div style="font-weight:bold;color:#8a6a2e;margin-bottom:8px">📣 Threads に投稿する（任意）</div>
-        <p style="font-size:13px;color:#5a4a2e;margin:4px 0 12px">
-          バナー画像を制作したら、その公開URL（GitHub Pages / Drive 公開リンク等）を貼ってください。<br>
-          投稿文は AI が自動生成し、Threads に画像付きで投稿します。
+      <div style="margin-top:18px;padding:14px;background:#fff8ec;border:1px solid #d9b466;border-radius:8px;text-align:left">
+        <div style="font-weight:bold;color:#8a6a2e;margin-bottom:6px">📣 Threads に投稿するには</div>
+        <p style="font-size:13px;color:#5a4a2e;margin:4px 0 10px">
+          編集画面を開くと、販売幕僚PR画像のプロンプト生成と、Threads 投稿フォームが利用できます。
         </p>
-        <input type="text" id="bannerUrlInput" placeholder="https://... バナー画像の公開URL"
-               style="width:100%;padding:8px;border:1px solid #c9a84c;border-radius:4px;font-size:13px;margin-bottom:8px">
-        <button class="btn btn-primary" id="threadsPostBtn" onclick="doThreadsPost()">🚀 Threads に投稿</button>
-
-        <!-- 進捗表示 -->
-        <div id="threadsProgress" class="hidden" style="margin-top:12px;padding:8px;background:#fff;border-radius:4px">
-          <div id="threadsProgressMsg" style="font-size:13px;color:#5a4a2e">準備中…</div>
-        </div>
-
-        <!-- 結果表示 -->
-        <div id="threadsResult" class="hidden" style="margin-top:12px;padding:8px;background:#e8f5e8;border:1px solid #5a8a5a;border-radius:4px">
-          <div style="font-size:13px;color:#2e5a2e;font-weight:bold">✅ 投稿完了</div>
-          <div id="threadsResultText" style="font-size:12px;margin-top:4px;color:#3a5a3a;white-space:pre-wrap"></div>
-          <a id="threadsResultLink" href="#" target="_blank" style="display:inline-block;margin-top:6px;font-size:13px;color:#5a8a3a;font-weight:bold">投稿を見る →</a>
-        </div>
-
-        <!-- エラー表示 -->
-        <div id="threadsError" class="hidden" style="margin-top:12px;padding:8px;background:#fde8e8;border:1px solid #c45;border-radius:4px;font-size:13px;color:#a33"></div>
+        <a id="openEditLink" href="#" class="btn btn-primary" style="font-size:13px">📝 編集画面で開く（PR画像＋Threads投稿）</a>
       </div>
 
       <div class="btn-row" style="justify-content:center;margin-top:16px">
@@ -591,6 +620,16 @@ function checkAuth() {
     fetchNextId();
     fetchMasterData();
     fetchProductNames();
+
+    // ?edit=SKU パラメータがあれば自動で編集モードに移行
+    const editId = new URLSearchParams(window.location.search).get('edit');
+    if (editId) {
+      // マスターデータ読込後にloadProductを呼ぶ（select値設定のため）
+      setTimeout(() => {
+        document.getElementById('editProductId').value = editId;
+        loadProduct();
+      }, 1200);
+    }
   } else {
     document.getElementById('authError').textContent = 'パスワードが違います';
   }
@@ -667,12 +706,24 @@ async function loadProduct() {
     isEditMode = true;
     editingProductId = p.productId;
     editingFolderId  = p.folderId;
+    lastRegisteredProductId = p.productId;
     document.getElementById('editModeBadge').classList.remove('hidden');
     document.getElementById('newModeBtn').classList.remove('hidden');
     document.getElementById('deleteBtn').classList.remove('hidden');
     document.getElementById('step1Title').textContent = 'Step 1 — 基本情報（編集中: ' + p.productId + '）';
     document.getElementById('nextIdPreview').textContent = '編集対象: ' + p.productId;
     document.getElementById('registerBtn').textContent = '💾 更新する';
+
+    // 編集モードパネル表示 + PR画像プロンプト用の商品情報をセット
+    document.getElementById('editModePanel').classList.remove('hidden');
+    currentProductForPr = {
+      productId: p.productId, name: p.name, category: p.category,
+      material: p.material, color: p.color, size: p.size
+    };
+    document.getElementById('prProductInfo').textContent =
+      p.productId + ' — ' + (p.name || '') + ' / ' + (p.category || '') + ' / ' + (p.color || '') + ' ' + (p.material || '');
+    resetThreadsSection();
+
     setAgentMsg('step1');
   } catch(e) {
     alert('読込エラー: ' + e.message);
@@ -705,9 +756,14 @@ function exitEditMode() {
   document.getElementById('editModeBadge').classList.add('hidden');
   document.getElementById('newModeBtn').classList.add('hidden');
   document.getElementById('deleteBtn').classList.add('hidden');
+  document.getElementById('editModePanel').classList.add('hidden');
   document.getElementById('step1Title').textContent = 'Step 1 — 基本情報';
   document.getElementById('editProductId').value = '';
   document.getElementById('registerBtn').textContent = '✅ 登録する';
+  // URLパラメータ ?edit=... が残っていたら除去
+  if (window.location.search.includes('edit=')) {
+    history.replaceState({}, '', window.location.pathname);
+  }
   resetAll();
 }
 
@@ -979,6 +1035,9 @@ async function doNewRegister() {
   document.getElementById('completeId').textContent = productId;
   lastRegisteredProductId = productId;
   resetThreadsSection();
+  // 編集画面リンクのhrefを設定
+  const openLink = document.getElementById('openEditLink');
+  if (openLink) openLink.href = 'register.html?edit=' + encodeURIComponent(productId);
   setTimeout(() => showOnly('stepComplete'), 800);
 }
 
@@ -1016,10 +1075,14 @@ async function doUpdate() {
   if (!updData.ok) throw new Error('更新失敗: ' + (updData.error || ''));
 
   setProgress(100, '完了！', '更新完了です！');
-  document.getElementById('completeId').textContent = editingProductId + '（更新）';
   lastRegisteredProductId = editingProductId;
-  resetThreadsSection();
-  setTimeout(() => showOnly('stepComplete'), 800);
+
+  // 編集モードでは stepComplete に行かず、編集パネルに留まる（PR画像生成・Threads投稿のため）
+  setTimeout(() => {
+    showOnly('step1');
+    document.getElementById('editModePanel').classList.remove('hidden');
+    alert('✅ 更新が完了しました: ' + editingProductId + '\n\n引き続きPR画像のプロンプト生成・Threads投稿が行えます。');
+  }, 800);
 }
 
 // ====== THREADS POST FLOW ======
@@ -1147,11 +1210,114 @@ function resetAll() {
   document.getElementById('editModeBadge').classList.add('hidden');
   document.getElementById('newModeBtn').classList.add('hidden');
   document.getElementById('deleteBtn').classList.add('hidden');
+  document.getElementById('editModePanel').classList.add('hidden');
   document.getElementById('step1Title').textContent = 'Step 1 — 基本情報';
   document.getElementById('editProductId').value = '';
   document.getElementById('registerBtn').textContent = '✅ 登録する';
   fetchNextId();
   goStep1();
+}
+
+// ====== PR画像プロンプト生成（販売幕僚キャラ統一・ゴシック世界観） ======
+let currentProductForPr = null;
+
+const HANBAI_CHARACTER = [
+  'A poised East Asian male leather artisan in his 30s,',
+  'wearing a deep crimson and gold ornate brocade vest over a black high-collared shirt,',
+  'serene focused expression, neatly combed dark hair,',
+  'identical character consistency across scenes (same face, same outfit as the reference portrait of the "Sales Adjutant" of N\'s factory).'
+].join(' ');
+
+const STYLE_BASE = [
+  'Cinematic photorealism, gothic dark vintage aesthetic,',
+  'warm candlelight and gas-lamp glow as primary lighting, deep chiaroscuro shadows,',
+  'rich color palette of black, oxblood red, antique gold (#C9A84C), aged leather brown,',
+  'shallow depth of field, 85mm lens look, film grain, museum-quality atmosphere,',
+  'no text, no watermark, no logo, vertical composition (portrait orientation, 2:3).'
+].join(' ');
+
+const PR_SCENES = [
+  {
+    title: '書斎で吟味',
+    setting: 'In a candlelit gothic study lined with leather-bound antique books and dark walnut shelves, a heavy oak desk in the foreground, brass scales and an ink quill on the desk.',
+    action: 'examining a {PRODUCT} held carefully in both hands, gaze lowered with reverence, as if appraising a precious volume.'
+  },
+  {
+    title: 'ロウソク灯下で記帳',
+    setting: 'At a heavy dark-wood writing desk by a tall arched window with velvet drapes, three beeswax candles in a wrought-iron holder, an open ledger and a fountain pen, leather books stacked nearby.',
+    action: 'placing a {PRODUCT} beside the open ledger, the artisan writing an entry by candlelight, the product catching the warm flame glow.'
+  },
+  {
+    title: '革棚の前で選定',
+    setting: 'In a vintage leather workshop with floor-to-ceiling oak shelving filled with rolls of veg-tan leather, hanging brass tools, gas lamps casting warm amber light, sawdust and leather dust in the air.',
+    action: 'standing before the leather shelves, presenting a {PRODUCT} forward toward the viewer, as if introducing it from the workshop\'s finest selection.'
+  },
+  {
+    title: '梱包机で発送準備',
+    setting: 'On a worn wooden packing bench: kraft paper, brown twine, a stick of red sealing wax with a brass seal, a small inkpad, an old brass scale, surrounded by warm tungsten light from a green-shaded banker\'s lamp.',
+    action: 'wrapping a {PRODUCT} in kraft paper and twine with careful, deliberate hands, preparing it for shipment, the product partly visible amid the wrapping.'
+  },
+  {
+    title: 'アトリエ机で仕上げ確認',
+    setting: 'At a leather artisan\'s atelier bench cluttered with awls, edge slickers, beeswax, edge dyes, and a wooden burnisher, an old brass desk lamp casting focused warm light, dark stone walls in the background.',
+    action: 'inspecting the edge of a {PRODUCT} under the focused lamp light, holding the product close, fingertips tracing the burnished edge.'
+  }
+];
+
+function buildProductDescriptor() {
+  const p = currentProductForPr || {};
+  const cat = (p.category || 'leather goods').toLowerCase();
+  const color = (p.color || '').toLowerCase();
+  const material = (p.material || 'vegetable-tanned leather').toLowerCase();
+  const size = p.size ? `, size ${p.size}` : '';
+  const colorPart = color ? `${color} ` : '';
+  return `handcrafted ${colorPart}${material} ${cat}${size}`;
+}
+
+function generatePrPrompt(sceneIndex) {
+  if (!currentProductForPr) {
+    alert('先に商品を読み込んでください。');
+    return;
+  }
+  const scene = PR_SCENES[sceneIndex];
+  if (!scene) return;
+  const productDesc = buildProductDescriptor();
+  const action = scene.action.replace('{PRODUCT}', productDesc);
+
+  const prompt = [
+    `[Scene: ${scene.title}]`,
+    '',
+    HANBAI_CHARACTER,
+    '',
+    scene.setting,
+    '',
+    'The artisan is ' + action,
+    '',
+    STYLE_BASE,
+    '',
+    `[Product: ${currentProductForPr.productId} — ${currentProductForPr.name || ''}]`,
+    '',
+    '— Aspect ratio: 2:3 (vertical) —',
+    '— Use the reference portrait of N\'s factory Sales Adjutant for character consistency —'
+  ].join('\n');
+
+  document.getElementById('prPromptOutput').value = prompt;
+  document.getElementById('prCopyStatus').textContent = '';
+}
+
+function copyPrPrompt() {
+  const ta = document.getElementById('prPromptOutput');
+  if (!ta.value.trim()) { alert('まずシーンボタンを押してプロンプトを生成してください。'); return; }
+  ta.select();
+  try {
+    navigator.clipboard.writeText(ta.value).then(() => {
+      document.getElementById('prCopyStatus').textContent = '✅ コピーしました（外部AIツールに貼り付けてください）';
+      setTimeout(() => { document.getElementById('prCopyStatus').textContent = ''; }, 4000);
+    });
+  } catch(e) {
+    document.execCommand('copy');
+    document.getElementById('prCopyStatus').textContent = '✅ コピーしました';
+  }
 }
 </script>
 </body>
