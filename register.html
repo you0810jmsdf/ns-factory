@@ -303,10 +303,9 @@ textarea{min-height:80px;resize:vertical}
     <div style="margin-top:10px;padding:12px;background:#fff;border:1px dashed #d9b466;border-radius:8px">
       <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 幕僚PR画像 — プロンプト生成</div>
       <p style="font-size:12px;color:#7a5a3f;margin:4px 0 10px;line-height:1.5">
-        7幕僚（作戦・販売・監理・広報・後方・保全・デジタル）から好きな幕僚を選び、その幕僚が作品をPRするシーンを <b>ChatGPT-4o</b> または <b>Gemini 2.5 Flash Image（Nano Banana）</b>で生成します。生成画像の右下には<b>商品の実物写真</b>が「実物写真」キャプション付きのバッジとして挿入されます（実物写真は変形・再描画されません）。<br>
-        <b>運用手順:</b> ①セレクタで幕僚を選び「👤 選択画像をDL」 → ②「📁 ローカルパスをコピー」→ Win+Eでエクスプローラ起動→アドレスバーに貼付→商品IDで検索し<b>商品の実物写真</b>を取得 → ③シーンボタンを押す → ④プロンプトをコピー → ⑤AIにプロンプト貼付＋<b>画像2枚を添付（選択した幕僚＋商品の実物写真）</b> → ⑥生成画像URLを下のThreads欄へ。<br>
-        <span style="color:#a04020">※URLでなく実物写真の「添付」が必須です（AIはプロンプト内URLを自動取得しません）。</span><br>
-        <span style="color:#5a3a20">※任意ファイル名欄に <code>foo.png</code> など直接指定もOK（assets/staff/配下から取得）。</span>
+        人物プリセットまたは幕僚画像DLでArtisan画像を準備し、シーンボタンを押してプロンプトを生成。<b>ChatGPT-4o / Gemini 2.5 Flash Image</b>にプロンプトと画像2枚（人物＋商品実物写真）を添付して実行します。<br>
+        生成画像の<b>下部30〜35%</b>には商品の実物写真が等倍で挿入されます（再描画なし）。<br>
+        <span style="color:#a04020">※商品実物写真はURLでなく<b>添付</b>が必須です。</span>
       </p>
       <div id="prSceneButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(0)">📚 書斎で吟味</button>
@@ -331,6 +330,51 @@ textarea{min-height:80px;resize:vertical}
         <button type="button" class="btn btn-secondary" id="dlProductImageBtn" style="padding:5px 10px;font-size:12px" disabled onclick="openProductFolder()" title="ローカルGドライブの商品写真ルートをクリップボードにコピーします">📁 ローカルパスをコピー</button>
         <span id="dlImageStatus" style="font-size:11px;color:#2a7a3a"></span>
       </div>
+
+      <!-- ===== 人物プリセット ===== -->
+      <div style="background:#fff3e8;border:1px solid #d8b888;border-radius:6px;padding:10px;margin-bottom:8px">
+        <div style="font-weight:bold;color:#7a5a2e;font-size:12px;margin-bottom:6px">👤 人物プリセット</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+          <select id="personaPresetList" style="flex:1;min-width:120px;padding:4px 6px;font-size:12px;border:1px solid #c9a84c;border-radius:4px">
+            <option value="">— 保存済みプリセット —</option>
+          </select>
+          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="loadPersonaPreset()">📂 呼出</button>
+          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="deletePersonaPreset()">🗑 削除</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap">
+          <canvas id="personaPresetPreview" width="60" height="60" style="border:1px solid #c9a84c;border-radius:4px;background:#f5ede0;flex-shrink:0"></canvas>
+          <div style="flex:1;min-width:160px">
+            <input type="text" id="personaPresetName" placeholder="プリセット名（例: 販売幕僚A）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;margin-bottom:4px;box-sizing:border-box">
+            <textarea id="personaPresetText" rows="3" placeholder="人物像テキスト（例: 30s Japanese woman, leather artisan, casual workshop apron, warm smile）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
+          <label style="font-size:11px;color:#7a5a2e">写真添付:</label>
+          <input type="file" id="personaPresetImage" accept="image/*" style="font-size:11px" onchange="previewPersonaImage(this)">
+          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="savePersonaPreset()">💾 保存</button>
+          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="registerCurrentStaffAsPersona()">⭐ DL幕僚を登録</button>
+        </div>
+      </div>
+
+      <!-- ===== 背景プリセット ===== -->
+      <div style="background:#f0f8ff;border:1px solid #8ab4d8;border-radius:6px;padding:10px;margin-bottom:8px">
+        <div style="font-weight:bold;color:#2a5a7e;font-size:12px;margin-bottom:6px">🏞 背景プリセット</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+          <select id="scenePresetList" style="flex:1;min-width:120px;padding:4px 6px;font-size:12px;border:1px solid #8ab4d8;border-radius:4px">
+            <option value="">— 保存済みプリセット —</option>
+          </select>
+          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="loadScenePreset()">📂 呼出</button>
+          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="deleteScenePreset()">🗑 削除</button>
+        </div>
+        <input type="text" id="scenePresetName" placeholder="プリセット名（例: 工房デスク朝光）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #8ab4d8;border-radius:4px;margin-bottom:4px;box-sizing:border-box">
+        <textarea id="scenePresetText" rows="3" placeholder="背景テキスト（例: rustic wooden workshop desk, warm morning light from window, leather tools scattered）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #8ab4d8;border-radius:4px;resize:vertical;box-sizing:border-box"></textarea>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
+          <label style="font-size:11px;color:#2a5a7e">参考写真:</label>
+          <input type="file" id="scenePresetImage" accept="image/*" style="font-size:11px" onchange="previewSceneImage(this)">
+          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="saveScenePreset()">💾 保存</button>
+        </div>
+      </div>
+
       <div id="prPromptInfo" style="font-size:11px;color:#8a6a2e;margin-bottom:6px">商品: <span id="prProductInfo">（読込中）</span></div>
       <textarea id="prPromptOutput" rows="14" placeholder="シーンボタンを押すとプロンプトが生成されます。コピーしてChatGPT/Geminiへ貼付し、上でDLした画像2枚（販売幕僚＋商品）を必ず添付してください。" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
@@ -1440,32 +1484,36 @@ function generatePrPrompt(sceneIndex) {
   const productName = currentProductForPr.name || '';
   const productId = currentProductForPr.productId || '';
 
+  const personaText = (document.getElementById('personaPresetText') || {}).value || '';
+  const sceneExtraText = (document.getElementById('scenePresetText') || {}).value || '';
+
+  const artisanDesc = personaText
+    ? personaText
+    : 'N\'s factory Adjutant / 幕僚';
+  const settingDesc = scene.setting + (sceneExtraText ? ' Additionally: ' + sceneExtraText : '');
+
   const prompt = [
-    '【添付画像参照型プロンプト — ChatGPT-4o / Gemini 2.5 Flash Image (Nano Banana) 用】',
-    '※このプロンプトと一緒に、上のDLボタンで保存した「選択した幕僚画像」と「商品の実物写真（actual product photograph）」の2枚を必ず添付してください。商品の実物写真は生成画像の右下に「実物写真」キャプション付きバッジとして挿入され、変形・再描画は一切行いません。',
-    '',
     '## Two attached reference images',
-    '  • Attached Image #1 = The Artisan (N\'s factory Adjutant / 幕僚).',
+    '  • Attached Image #1 = The Artisan: ' + artisanDesc + '.',
     '  • Attached Image #2 = The Actual Product Photograph' + (productId ? ' (' + productId + (productName ? ' / ' + productName : '') + ')' : '') + ' — the real product photo, NOT a render.',
     '',
     '## Task',
-    'Generate ONE new photorealistic image that strictly preserves Attached Image #1 AND embeds Attached Image #2 verbatim as a caption-style badge:',
+    'Generate ONE new photorealistic image that strictly preserves Attached Image #1 AND embeds Attached Image #2 verbatim in the lower 30–35% of the output as a representative photo strip:',
     '  • From Attached Image #1: keep the artisan\'s EXACT face, hairstyle, skin tone, build, and outfit. Do NOT invent a new person, do NOT change facial features.',
-    '  • Attached Image #2 (the actual product photograph) MUST be inserted into the bottom-right corner of the output as a caption-style badge — pasted verbatim, pixel-faithful, with NO redrawing, NO restyling, NO color shift, NO perspective change, NO cropping of the product itself. Below the badge, place the small caption text "実物写真" (or "Actual Product Photo"). The badge has a thin neutral border and a subtle drop shadow so it reads as an inset photo, not as part of the scene.',
+    '  • Attached Image #2 MUST be placed pixel-faithful in the lower 30–35% of the output image as a full-width representative photo strip — NO redrawing, NO restyling, NO color shift, NO perspective change, NO cropping of the product. The strip sits flush with the bottom edge; place a thin neutral separator line above it and the small caption "実物写真 / Actual Product Photo" centered inside the strip.',
     '',
     '## Scene: ' + scene.title,
-    'Setting: ' + scene.setting,
+    'Setting: ' + settingDesc,
     'Action: The artisan (from Attached Image #1) is ' + scene.action,
-    'In the scene the artisan may hold or display a generic stand-in for a ' + productDesc + ', but the AUTHORITATIVE product representation is the inset badge in the bottom-right (Attached Image #2 itself). Viewers must recognize the product solely from that inset, which is the actual product photograph.',
+    'The artisan may hold or display a generic stand-in for a ' + productDesc + '. The AUTHORITATIVE product representation is the lower photo strip (Attached Image #2 itself).',
     '',
     '## Style',
     STYLE_BASE,
     '',
     '## Output requirements',
     '— Aspect ratio: 2:3 (vertical / portrait).',
-    '— Single composite image. The bottom-right inset is the only place the actual product appears verbatim; everywhere else is the generated scene.',
-    '— The inset badge occupies roughly 22–28% of the image width, bottom-right corner, with ~3% margin from the edges. Caption "実物写真" sits directly under the badge in a small clean sans-serif.',
-    '— Attached Image #2 must be inserted UNCHANGED (no AI re-rendering of the product). Treat it as a sticker / photo-in-photo. No facial drift on the artisan.'
+    '— Upper 65–70%: generated scene with artisan. Lower 30–35%: Attached Image #2 inserted verbatim as a representative photo strip (no AI re-rendering).',
+    '— No facial drift on the artisan.'
   ].join('\n');
 
   document.getElementById('prPromptOutput').value = prompt;
@@ -1564,6 +1612,183 @@ function copyPrPrompt() {
     document.getElementById('prCopyStatus').textContent = '✅ コピーしました';
   }
 }
+
+// ====== 人物・背景プリセット管理 ======
+let _personaImageDataUrl = '';
+let _sceneImageDataUrl = '';
+const PERSONA_STORE_KEY = 'nsfactory_persona_presets';
+const SCENE_STORE_KEY = 'nsfactory_scene_presets';
+
+function getPersonaPresets() {
+  try { return JSON.parse(localStorage.getItem(PERSONA_STORE_KEY) || '[]'); } catch(e) { return []; }
+}
+function getScenePresets() {
+  try { return JSON.parse(localStorage.getItem(SCENE_STORE_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function renderPersonaPresetList() {
+  const sel = document.getElementById('personaPresetList');
+  if (!sel) return;
+  const presets = getPersonaPresets();
+  sel.innerHTML = '<option value="">— 保存済みプリセット —</option>' +
+    presets.map((p, i) => '<option value="' + i + '">' + (p.name || '（名前なし）') + '</option>').join('');
+}
+function renderScenePresetList() {
+  const sel = document.getElementById('scenePresetList');
+  if (!sel) return;
+  const presets = getScenePresets();
+  sel.innerHTML = '<option value="">— 保存済みプリセット —</option>' +
+    presets.map((p, i) => '<option value="' + i + '">' + (p.name || '（名前なし）') + '</option>').join('');
+}
+
+function savePersonaPreset() {
+  const name = (document.getElementById('personaPresetName').value || '').trim();
+  const text = (document.getElementById('personaPresetText').value || '').trim();
+  if (!name) { alert('プリセット名を入力してください。'); return; }
+  const presets = getPersonaPresets();
+  const existing = presets.findIndex(function(p) { return p.name === name; });
+  const entry = { name: name, text: text, image: _personaImageDataUrl };
+  if (existing >= 0) { presets[existing] = entry; } else { presets.push(entry); }
+  localStorage.setItem(PERSONA_STORE_KEY, JSON.stringify(presets));
+  renderPersonaPresetList();
+  const sel = document.getElementById('personaPresetList');
+  const idx = presets.findIndex(function(p) { return p.name === name; });
+  if (sel && idx >= 0) sel.value = String(idx);
+  alert('✅ 人物プリセット「' + name + '」を保存しました。');
+}
+function loadPersonaPreset() {
+  const sel = document.getElementById('personaPresetList');
+  if (!sel || sel.value === '') return;
+  const presets = getPersonaPresets();
+  const preset = presets[parseInt(sel.value, 10)];
+  if (!preset) return;
+  document.getElementById('personaPresetName').value = preset.name || '';
+  document.getElementById('personaPresetText').value = preset.text || '';
+  _personaImageDataUrl = preset.image || '';
+  const canvas = document.getElementById('personaPresetPreview');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 60, 60);
+    if (_personaImageDataUrl) {
+      const img = new Image();
+      img.onload = function() { ctx.drawImage(img, 0, 0, 60, 60); };
+      img.src = _personaImageDataUrl;
+    }
+  }
+}
+function deletePersonaPreset() {
+  const sel = document.getElementById('personaPresetList');
+  if (!sel || sel.value === '') { alert('削除するプリセットを選んでください。'); return; }
+  const presets = getPersonaPresets();
+  const idx = parseInt(sel.value, 10);
+  const name = presets[idx] ? presets[idx].name : '';
+  if (!confirm('「' + name + '」を削除しますか？')) return;
+  presets.splice(idx, 1);
+  localStorage.setItem(PERSONA_STORE_KEY, JSON.stringify(presets));
+  renderPersonaPresetList();
+}
+
+function saveScenePreset() {
+  const name = (document.getElementById('scenePresetName').value || '').trim();
+  const text = (document.getElementById('scenePresetText').value || '').trim();
+  if (!name) { alert('プリセット名を入力してください。'); return; }
+  const presets = getScenePresets();
+  const existing = presets.findIndex(function(p) { return p.name === name; });
+  const entry = { name: name, text: text, image: _sceneImageDataUrl };
+  if (existing >= 0) { presets[existing] = entry; } else { presets.push(entry); }
+  localStorage.setItem(SCENE_STORE_KEY, JSON.stringify(presets));
+  renderScenePresetList();
+  const sel = document.getElementById('scenePresetList');
+  const idx = presets.findIndex(function(p) { return p.name === name; });
+  if (sel && idx >= 0) sel.value = String(idx);
+  alert('✅ 背景プリセット「' + name + '」を保存しました。');
+}
+function loadScenePreset() {
+  const sel = document.getElementById('scenePresetList');
+  if (!sel || sel.value === '') return;
+  const presets = getScenePresets();
+  const preset = presets[parseInt(sel.value, 10)];
+  if (!preset) return;
+  document.getElementById('scenePresetName').value = preset.name || '';
+  document.getElementById('scenePresetText').value = preset.text || '';
+  _sceneImageDataUrl = preset.image || '';
+}
+function deleteScenePreset() {
+  const sel = document.getElementById('scenePresetList');
+  if (!sel || sel.value === '') { alert('削除するプリセットを選んでください。'); return; }
+  const presets = getScenePresets();
+  const idx = parseInt(sel.value, 10);
+  const name = presets[idx] ? presets[idx].name : '';
+  if (!confirm('「' + name + '」を削除しますか？')) return;
+  presets.splice(idx, 1);
+  localStorage.setItem(SCENE_STORE_KEY, JSON.stringify(presets));
+  renderScenePresetList();
+}
+
+function previewPersonaImage(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _personaImageDataUrl = e.target.result;
+    const canvas = document.getElementById('personaPresetPreview');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = function() { ctx.clearRect(0, 0, 60, 60); ctx.drawImage(img, 0, 0, 60, 60); };
+    img.src = _personaImageDataUrl;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function previewSceneImage(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) { _sceneImageDataUrl = e.target.result; };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function registerCurrentStaffAsPersona() {
+  const sel = document.getElementById('staffImageSelector');
+  const customInput = document.getElementById('staffImageCustomName');
+  const customName = (customInput && customInput.value.trim()) || '';
+  const filename = customName || (sel && sel.value) || 'hannbai.png';
+  const url = 'assets/staff/' + filename;
+  const status = document.getElementById('dlImageStatus');
+  if (status) status.textContent = '⏳ 読込中…';
+  fetch(url)
+    .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.blob(); })
+    .then(function(blob) {
+      return new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function(e) { resolve(e.target.result); };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    })
+    .then(function(dataUrl) {
+      _personaImageDataUrl = dataUrl;
+      const canvas = document.getElementById('personaPresetPreview');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.onload = function() { ctx.clearRect(0, 0, 60, 60); ctx.drawImage(img, 0, 0, 60, 60); };
+        img.src = dataUrl;
+      }
+      const nameInput = document.getElementById('personaPresetName');
+      if (nameInput && !nameInput.value.trim()) {
+        nameInput.value = filename.replace(/\.png$/i, '');
+      }
+      if (status) {
+        status.textContent = '✅ 画像を読込みました。名前を確認して「保存」してください。';
+        setTimeout(function() { status.textContent = ''; }, 5000);
+      }
+    })
+    .catch(function(err) {
+      if (status) status.textContent = '❌ 読込失敗: ' + err.message;
+    });
+}
+
+renderPersonaPresetList();
+renderScenePresetList();
 </script>
 </body>
 </html>
