@@ -285,6 +285,17 @@
       line-height: 1.8;
       margin-bottom: 18px;
     }
+    .modal-availability {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      background: #b54238;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
     .modal-actions {
       display: grid;
       gap: 10px;
@@ -396,6 +407,7 @@
         <div class="modal-detail-label">Product</div>
         <div id="modal-meta" class="modal-meta"></div>
         <div id="modal-desc" class="modal-desc"></div>
+        <div id="modal-availability" class="modal-availability" hidden></div>
         <div class="modal-actions">
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
@@ -424,6 +436,7 @@
     const primaryOrderLink = document.getElementById('primary-order-link');
     const secondaryOrderLink = document.getElementById('secondary-order-link');
     const tertiaryOrderLink = document.getElementById('tertiary-order-link');
+    const availabilityNotice = document.getElementById('modal-availability');
     const closeModal = document.getElementById('close-modal');
     const prevPhoto = document.getElementById('prev-photo');
     const nextPhoto = document.getElementById('next-photo');
@@ -517,22 +530,22 @@
     function configureOrderLinks(work) {
       const planner = isSystemPlannerWork(work);
       const unavailable = !!(work.soldout || work.noRestock);
-      const disabledLabel = work.soldout ? 'SOLDOUT（販売終了）' : '再販予定なし';
+      const noticeLabel = work.soldout ? 'SOLDOUT（販売終了）' : '再販予定なし';
+
+      if (availabilityNotice) {
+        if (unavailable) {
+          availabilityNotice.hidden = false;
+          availabilityNotice.textContent = noticeLabel;
+        } else {
+          availabilityNotice.hidden = true;
+          availabilityNotice.textContent = '';
+        }
+      }
 
       if (unavailable) {
-        [primaryOrderLink, secondaryOrderLink].forEach((el) => {
-          el.hidden = false;
-          el.classList.add('is-disabled');
-          el.removeAttribute('href');
-          el.removeAttribute('target');
-          el.textContent = disabledLabel;
-        });
-        if (tertiaryOrderLink) {
-          tertiaryOrderLink.hidden = true;
-          tertiaryOrderLink.removeAttribute('href');
-          tertiaryOrderLink.removeAttribute('target');
-          tertiaryOrderLink.textContent = '';
-        }
+        applyLink(primaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
+        applyLink(secondaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
+        applyLink(tertiaryOrderLink, { href: LINKS_URL, label: 'お問い合わせ先一覧を見る' });
         return;
       }
 
