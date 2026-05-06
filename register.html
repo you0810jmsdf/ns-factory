@@ -290,6 +290,7 @@ textarea{min-height:80px;resize:vertical}
       <input type="text" id="editProductId" placeholder="例: 2026-001" style="padding:6px 10px;border:1px solid #d8b888;border-radius:6px;width:140px;font-size:13px">
       <button type="button" class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="loadProduct()">📂 読み込み</button>
       <button type="button" id="newModeBtn" class="btn btn-secondary hidden" style="padding:6px 14px;font-size:12px" onclick="exitEditMode()">＋ 新規登録に戻る</button>
+      <button type="button" id="deleteBtn" class="hidden" style="padding:6px 14px;font-size:12px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700" onclick="deleteProduct()">🗑️ この商品を削除</button>
       <span id="editModeBadge" class="hidden" style="background:#e85a4f;color:#fff;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700">編集モード</span>
     </div>
   </div>
@@ -637,6 +638,7 @@ async function loadProduct() {
     editingFolderId  = p.folderId;
     document.getElementById('editModeBadge').classList.remove('hidden');
     document.getElementById('newModeBtn').classList.remove('hidden');
+    document.getElementById('deleteBtn').classList.remove('hidden');
     document.getElementById('step1Title').textContent = 'Step 1 — 基本情報（編集中: ' + p.productId + '）';
     document.getElementById('nextIdPreview').textContent = '編集対象: ' + p.productId;
     document.getElementById('registerBtn').textContent = '💾 更新する';
@@ -671,10 +673,31 @@ function exitEditMode() {
   editingFolderId  = '';
   document.getElementById('editModeBadge').classList.add('hidden');
   document.getElementById('newModeBtn').classList.add('hidden');
+  document.getElementById('deleteBtn').classList.add('hidden');
   document.getElementById('step1Title').textContent = 'Step 1 — 基本情報';
   document.getElementById('editProductId').value = '';
   document.getElementById('registerBtn').textContent = '✅ 登録する';
   resetAll();
+}
+
+async function deleteProduct() {
+  if (!isEditMode || !editingProductId) {
+    alert('削除対象の商品が読み込まれていません。');
+    return;
+  }
+  const pid = editingProductId;
+  if (!confirm('商品「' + pid + '」を削除しますか？\n\n■ 処置内容\n・マスターシートのステータス列を「削除済」に変更します\n・サイト（works.html）では非表示になります\n・行データ・写真・Driveフォルダは残ります（復元可）\n\nこの操作を実行しますか？')) return;
+  try {
+    const d = await jsonpCall({ api: 'softDeleteProduct', productId: pid, key: REGISTER_KEY });
+    if (!d.ok) {
+      alert('削除失敗: ' + (d.error || 'unknown'));
+      return;
+    }
+    alert('削除しました: ' + pid + '\n（サイトでは非表示になります）');
+    exitEditMode();
+  } catch(e) {
+    alert('削除エラー: ' + e.message);
+  }
 }
 
 // ====== AI 説明文生成 ======
@@ -994,6 +1017,7 @@ function resetAll() {
   editingFolderId = '';
   document.getElementById('editModeBadge').classList.add('hidden');
   document.getElementById('newModeBtn').classList.add('hidden');
+  document.getElementById('deleteBtn').classList.add('hidden');
   document.getElementById('step1Title').textContent = 'Step 1 — 基本情報';
   document.getElementById('editProductId').value = '';
   document.getElementById('registerBtn').textContent = '✅ 登録する';
