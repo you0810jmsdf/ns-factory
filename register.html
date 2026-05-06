@@ -1787,6 +1787,59 @@ function registerCurrentStaffAsPersona() {
     });
 }
 
+function initDefaultScenePresets() {
+  var presets = getScenePresets();
+  var existingNames = presets.map(function(p) { return p.name; });
+  PR_SCENES.forEach(function(scene) {
+    if (existingNames.indexOf(scene.title) < 0) {
+      presets.push({ name: scene.title, text: scene.setting, image: '' });
+    }
+  });
+  localStorage.setItem(SCENE_STORE_KEY, JSON.stringify(presets));
+}
+
+function initDefaultPersonaPresets() {
+  var STAFF = [
+    { file: 'sakusen.png', name: '作戦幕僚' },
+    { file: 'hannbai.png', name: '販売幕僚' },
+    { file: 'kanri.png',   name: '監理幕僚' },
+    { file: 'pr.png',      name: '広報幕僚' },
+    { file: 'kouhou.png',  name: '後方幕僚' },
+    { file: 'hozen.png',   name: '保全幕僚' },
+    { file: 'digital.png', name: 'デジタル幕僚' }
+  ];
+  var presets = getPersonaPresets();
+  var existingNames = presets.map(function(p) { return p.name; });
+  var toFetch = STAFF.filter(function(s) { return existingNames.indexOf(s.name) < 0; });
+  if (toFetch.length === 0) return;
+  var idx = 0;
+  function fetchNext() {
+    if (idx >= toFetch.length) {
+      localStorage.setItem(PERSONA_STORE_KEY, JSON.stringify(presets));
+      renderPersonaPresetList();
+      return;
+    }
+    var s = toFetch[idx++];
+    fetch('assets/staff/' + s.file)
+      .then(function(res) { return res.ok ? res.blob() : Promise.reject(res.status); })
+      .then(function(blob) {
+        return new Promise(function(resolve) {
+          var reader = new FileReader();
+          reader.onload = function(e) { resolve(e.target.result); };
+          reader.readAsDataURL(blob);
+        });
+      })
+      .then(function(dataUrl) {
+        presets.push({ name: s.name, text: '', image: dataUrl });
+        fetchNext();
+      })
+      .catch(function() { fetchNext(); });
+  }
+  fetchNext();
+}
+
+initDefaultScenePresets();
+initDefaultPersonaPresets();
 renderPersonaPresetList();
 renderScenePresetList();
 </script>
