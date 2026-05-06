@@ -156,6 +156,7 @@
     }
     .card-body { padding: 13px 14px 15px; }
     .work-title { display: block; font-size: 15px; font-weight: 800; margin-bottom: 2px; }
+    .work-id { display: inline-block; margin-bottom: 4px; padding: 1px 6px; border-radius: 4px; background: #f1f3f5; color: #6b7280; font-size: 11px; font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.02em; }
     .work-details {
       display: grid;
       gap: 4px;
@@ -396,6 +397,7 @@
         <div class="modal-actions">
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
+          <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
         </div>
       </aside>
     </div>
@@ -419,11 +421,14 @@
     const modalDesc = document.getElementById('modal-desc');
     const primaryOrderLink = document.getElementById('primary-order-link');
     const secondaryOrderLink = document.getElementById('secondary-order-link');
+    const tertiaryOrderLink = document.getElementById('tertiary-order-link');
     const closeModal = document.getElementById('close-modal');
     const prevPhoto = document.getElementById('prev-photo');
     const nextPhoto = document.getElementById('next-photo');
     const ESTIMATE_URL = './order_estimate/leather-order-estimate-v2.html';
     const LINE_URL = 'https://lin.ee/XOcD2pd';
+    const MAIL_URL = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('作品に関するお問い合わせ');
+    const LINKS_URL = 'https://you0810jmsdf.github.io/ns-factory/links.html';
     let works = [];
     let filtered = [];
     let activeWork = null;
@@ -458,38 +463,53 @@
       return /システム手帳|mini6|ミニ6|micro5|m5|バイブル|リングサポーター|リフィル/i.test(text);
     }
 
+    function applyLink(el, conf) {
+      if (!el) return;
+      if (!conf) {
+        el.hidden = true;
+        el.removeAttribute('href');
+        el.removeAttribute('target');
+        el.textContent = '';
+        return;
+      }
+      el.hidden = false;
+      el.classList.remove('is-disabled');
+      el.href = conf.href;
+      el.target = '_blank';
+      el.textContent = conf.label;
+    }
+
     function configureOrderLinks(work) {
       const planner = isSystemPlannerWork(work);
       const unavailable = !!(work.soldout || work.noRestock);
       const disabledLabel = work.soldout ? 'SOLDOUT（販売終了）' : '再販予定なし';
 
       if (unavailable) {
-        primaryOrderLink.classList.add('is-disabled');
-        primaryOrderLink.removeAttribute('href');
-        primaryOrderLink.removeAttribute('target');
-        primaryOrderLink.textContent = disabledLabel;
-        secondaryOrderLink.classList.add('is-disabled');
-        secondaryOrderLink.removeAttribute('href');
-        secondaryOrderLink.removeAttribute('target');
-        secondaryOrderLink.textContent = disabledLabel;
+        [primaryOrderLink, secondaryOrderLink].forEach((el) => {
+          el.hidden = false;
+          el.classList.add('is-disabled');
+          el.removeAttribute('href');
+          el.removeAttribute('target');
+          el.textContent = disabledLabel;
+        });
+        if (tertiaryOrderLink) {
+          tertiaryOrderLink.hidden = true;
+          tertiaryOrderLink.removeAttribute('href');
+          tertiaryOrderLink.removeAttribute('target');
+          tertiaryOrderLink.textContent = '';
+        }
         return;
       }
 
-      const primary = planner
-        ? { href: ESTIMATE_URL, label: '見積もりシミュレーションへ' }
-        : { href: LINE_URL, label: '公式LINEで相談する' };
-      const secondary = planner
-        ? { href: LINE_URL, label: '公式LINEで相談する' }
-        : { href: ESTIMATE_URL, label: 'システム手帳の見積もりを見る' };
-
-      primaryOrderLink.classList.remove('is-disabled');
-      primaryOrderLink.href = primary.href;
-      primaryOrderLink.target = '_blank';
-      primaryOrderLink.textContent = primary.label;
-      secondaryOrderLink.classList.remove('is-disabled');
-      secondaryOrderLink.href = secondary.href;
-      secondaryOrderLink.target = '_blank';
-      secondaryOrderLink.textContent = secondary.label;
+      if (planner) {
+        applyLink(primaryOrderLink, { href: ESTIMATE_URL, label: '見積もりシミュレーションへ' });
+        applyLink(secondaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
+        applyLink(tertiaryOrderLink, null);
+      } else {
+        applyLink(primaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
+        applyLink(secondaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
+        applyLink(tertiaryOrderLink, { href: LINKS_URL, label: 'お問い合わせ先一覧を見る' });
+      }
     }
 
     function buildFilters() {
@@ -541,6 +561,7 @@
             ? `<img class="thumb" src="${esc(work.photos[0])}" alt="${esc(work.title)}" loading="lazy">`
             : '<span class="thumb-placeholder">写真を読み込み中</span>'}
           <span class="card-body">
+            ${work.id ? `<span class="work-id">ID: ${esc(work.id)}</span>` : ''}
             <span class="work-title">${esc(work.title)}${badge}</span>
             <span class="work-details">
               ${compact([work.category, work.material, work.color]) ? `<span>${esc(compact([work.category, work.material, work.color]))}</span>` : ''}
