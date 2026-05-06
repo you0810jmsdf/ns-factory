@@ -304,7 +304,7 @@ textarea{min-height:80px;resize:vertical}
       <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 販売幕僚PR画像 — プロンプト生成</div>
       <p style="font-size:12px;color:#7a5a3f;margin:4px 0 10px;line-height:1.5">
         販売幕僚（<code>hannbai.png</code>）が作品をPRするシーンを <b>ChatGPT-4o</b> または <b>Gemini 2.5 Flash Image（Nano Banana）</b>で生成します。<br>
-        <b>運用手順:</b> ①「販売幕僚画像」をDL → ②「商品フォルダを開く」で1枚選んでDL → ③シーンボタンを押す → ④プロンプトをコピー → ⑤AIにプロンプト貼付＋<b>画像2枚を添付</b> → ⑥生成画像URLを下のThreads欄へ。<br>
+        <b>運用手順:</b> ①「販売幕僚画像」をDL → ②「📁 ローカルパスをコピー」→ Win+Eでエクスプローラ起動→アドレスバーに貼付→商品IDで検索 → ③シーンボタンを押す → ④プロンプトをコピー → ⑤AIにプロンプト貼付＋<b>画像2枚を添付（販売幕僚＋商品画像）</b> → ⑥生成画像URLを下のThreads欄へ。<br>
         <span style="color:#a04020">※URLでなく画像「添付」が必須です（AIはプロンプト内URLを自動取得しません）。</span>
       </p>
       <div id="prSceneButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
@@ -317,7 +317,7 @@ textarea{min-height:80px;resize:vertical}
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:#fff5e0;border:1px dashed #c9a84c;border-radius:6px">
         <span style="font-size:12px;color:#5a3a20;font-weight:700">📥 参照画像をDL（AI添付用）:</span>
         <button type="button" class="btn btn-secondary" style="padding:5px 10px;font-size:12px" onclick="downloadReferenceImage('https://you0810jmsdf.github.io/ns-factory/assets/staff/hannbai.png','hannbai_reference.png')">👤 販売幕僚画像</button>
-        <button type="button" class="btn btn-secondary" id="dlProductImageBtn" style="padding:5px 10px;font-size:12px" disabled onclick="openProductFolder()">📂 商品フォルダを開く</button>
+        <button type="button" class="btn btn-secondary" id="dlProductImageBtn" style="padding:5px 10px;font-size:12px" disabled onclick="openProductFolder()" title="ローカルGドライブの商品写真ルートをクリップボードにコピーします">📁 ローカルパスをコピー</button>
         <span id="dlImageStatus" style="font-size:11px;color:#2a7a3a"></span>
       </div>
       <div id="prPromptInfo" style="font-size:11px;color:#8a6a2e;margin-bottom:6px">商品: <span id="prProductInfo">（読込中）</span></div>
@@ -732,9 +732,9 @@ async function loadProduct() {
     };
     document.getElementById('prProductInfo').textContent =
       p.productId + ' — ' + (p.name || '') + ' / ' + (p.category || '') + ' / ' + (p.color || '') + ' ' + (p.material || '');
-    // 商品フォルダボタンの有効化（folderId が取れた場合のみ）
+    // ローカルパスコピーボタンの有効化（productId が取れていれば検索キーとして使えるので有効化）
     const _dlBtn = document.getElementById('dlProductImageBtn');
-    if (_dlBtn) _dlBtn.disabled = !p.folderId;
+    if (_dlBtn) _dlBtn.disabled = !p.productId;
     resetThreadsSection();
 
     setAgentMsg('step1');
@@ -1360,17 +1360,37 @@ function downloadReferenceImage(url, filename) {
 }
 
 function openProductFolder() {
-  if (!editingFolderId) {
-    alert('商品フォルダIDが取得できていません。商品マスタのフォルダリンクを確認してください。');
-    return;
-  }
-  const url = 'https://drive.google.com/drive/folders/' + editingFolderId;
-  window.open(url, '_blank', 'noopener');
   const status = document.getElementById('dlImageStatus');
-  if (status) {
-    status.textContent = '📂 フォルダを新規タブで開きました。画像を右クリック→保存してください。';
-    setTimeout(() => { status.textContent = ''; }, 8000);
-  }
+  const localRoot = "G:\\マイドライブ\\N's factory site\\NsFactory_photos";
+  const pid = (currentProductForPr && currentProductForPr.productId) || editingProductId || '';
+  const guide = '📋 ローカルパスをコピー済 → <b>Win+E</b> でエクスプローラ起動 → アドレスバーに貼付Enter → 検索ボックスに <b style="color:#b00">' + (pid || '商品ID') + '</b> を入力 → 該当フォルダを開いて画像をChatGPTにDrag&Drop';
+  const writeClip = (txt) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(txt);
+    }
+    return new Promise((resolve, reject) => {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = txt; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+        document.body.appendChild(ta); ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('execCommand failed'));
+      } catch (e) { reject(e); }
+    });
+  };
+  writeClip(localRoot).then(() => {
+    if (status) {
+      status.innerHTML = guide;
+      setTimeout(() => { status.textContent = ''; }, 20000);
+    }
+  }).catch(err => {
+    console.warn('clipboard failed:', err);
+    if (status) {
+      status.innerHTML = '⚠️ コピー失敗。手動で開いてください: <code>' + localRoot + '</code> ／ 検索キー: <b>' + pid + '</b>';
+      setTimeout(() => { status.textContent = ''; }, 20000);
+    }
+  });
 }
 
 function copyPrPrompt() {
