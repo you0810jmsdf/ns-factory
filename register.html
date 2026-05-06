@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品登録 | N's factory</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#f5f0eb;
+  color:#2c1a0e;
+}
+/* ====== AUTH OVERLAY ====== */
+.auth-overlay{
+  position:fixed;inset:0;z-index:1000;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  background:rgba(44,26,14,.62);backdrop-filter:blur(4px);
+}
+.auth-overlay.hidden{display:none}
+.auth-card{
+  width:min(420px,100%);
+  background:#fff;border:1px solid #eadccf;border-radius:18px;
+  padding:28px;box-shadow:0 18px 40px rgba(44,26,14,.22);
+}
+.auth-card h2{margin:0 0 8px;font-size:20px;color:#6b3a1f}
+.auth-card p{margin:0 0 14px;font-size:13px;color:#7a5a3f;line-height:1.6}
+.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.auth-brand-logo{
+  width:48px;height:48px;border-radius:50%;
+  object-fit:cover;border:2px solid #eadccf;
+}
+.auth-brand-name{font-size:16px;font-weight:800;color:#3d1a08}
+.auth-brand-sub{font-size:11px;color:#7a5a3f}
+input[type="password"],input[type="text"],input[type="number"],textarea,select{
+  width:100%;padding:10px 12px;
+  border:1.5px solid #d4b896;border-radius:8px;
+  font-size:14px;font-family:inherit;outline:none;
+  background:#fff;color:#2c1a0e;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:#6b3a1f;box-shadow:0 0 0 2px rgba(107,58,31,.15);
+}
+.auth-error{min-height:18px;margin:8px 0 0;font-size:12px;color:#b42318}
+/* ====== TOPBAR ====== */
+.topbar{
+  position:sticky;top:0;z-index:10;padding:14px 20px;
+  background:linear-gradient(135deg,#3d1a08 0%,#6b3a1f 100%);
+  color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.topbar h1{margin:0;font-size:17px}
+.topbar p{margin:3px 0 0;font-size:11px;opacity:.8}
+/* ====== MAIN ====== */
+.page-body{padding:20px;max-width:680px;margin:0 auto}
+/* ====== AVATAR CHAT ====== */
+.agent-row{display:flex;align-items:flex-end;gap:12px;margin-bottom:18px}
+.agent-avatar{
+  width:56px;height:56px;border-radius:50%;
+  object-fit:cover;border:2px solid #eadccf;flex-shrink:0;
+}
+.agent-bubble{
+  background:#fff;border:1px solid #eadccf;border-radius:16px 16px 16px 4px;
+  padding:12px 16px;font-size:13px;color:#3d1a08;line-height:1.65;
+  box-shadow:0 2px 8px rgba(107,58,31,.08);
+  max-width:calc(100% - 80px);
+}
+.agent-bubble b{color:#6b3a1f}
+/* ====== STEP INDICATOR ====== */
+.step-indicator{
+  display:flex;align-items:center;gap:0;margin-bottom:22px;
+}
+.step-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;
+  background:#eadccf;color:#7a5a3f;flex-shrink:0;
+  transition:all .2s;
+}
+.step-dot.active{background:#6b3a1f;color:#fff;box-shadow:0 2px 8px rgba(107,58,31,.3)}
+.step-dot.done{background:#3d7a3f;color:#fff}
+.step-line{flex:1;height:2px;background:#eadccf}
+.step-label{
+  font-size:10px;color:#7a5a3f;text-align:center;margin-top:4px;white-space:nowrap;
+}
+.step-col{display:flex;flex-direction:column;align-items:center}
+/* ====== PANEL ====== */
+.panel{
+  background:#fff;border:1px solid #eadccf;border-radius:14px;
+  padding:20px;box-shadow:0 4px 16px rgba(107,58,31,.06);margin-bottom:16px;
+}
+.panel-title{font-size:15px;font-weight:800;color:#3d1a08;margin:0 0 16px}
+/* ====== FORM ====== */
+.form-row{margin-bottom:14px}
+.form-row label{
+  display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px;
+}
+.form-row label span.req{color:#b42318;margin-left:2px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+textarea{min-height:80px;resize:vertical}
+/* ====== PHOTO UPLOAD ====== */
+.photo-drop{
+  border:2px dashed #d4b896;border-radius:12px;padding:24px;
+  text-align:center;cursor:pointer;transition:all .2s;
+  background:#fffdfb;
+}
+.photo-drop:hover,.photo-drop.dragover{
+  border-color:#6b3a1f;background:#fff8f1;
+}
+.photo-drop-icon{font-size:32px;margin-bottom:8px}
+.photo-drop p{margin:0;font-size:13px;color:#7a5a3f}
+.photo-drop input[type="file"]{display:none}
+.photo-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  gap:10px;margin-top:14px;
+}
+.photo-thumb{
+  position:relative;border-radius:10px;overflow:hidden;
+  aspect-ratio:1;cursor:pointer;border:3px solid transparent;
+  transition:all .2s;
+}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-thumb.main-selected{border-color:#6b3a1f;box-shadow:0 0 0 2px rgba(107,58,31,.25)}
+.photo-thumb .main-badge{
+  position:absolute;top:4px;left:4px;
+  background:#6b3a1f;color:#fff;font-size:9px;font-weight:800;
+  padding:2px 6px;border-radius:999px;
+}
+.photo-thumb .remove-btn{
+  position:absolute;top:4px;right:4px;
+  background:rgba(44,26,14,.7);color:#fff;
+  border:none;border-radius:50%;width:20px;height:20px;
+  font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  line-height:1;
+}
+.photo-hint{font-size:12px;color:#7a5a3f;margin-top:8px}
+/* ====== CONFIRM TABLE ====== */
+.confirm-table{width:100%;border-collapse:collapse;font-size:13px}
+.confirm-table th{
+  text-align:left;padding:6px 8px;color:#7a5a3f;
+  font-size:11px;font-weight:700;width:120px;vertical-align:top;
+  border-bottom:1px solid #f0e8df;
+}
+.confirm-table td{
+  padding:6px 8px;color:#2c1a0e;border-bottom:1px solid #f0e8df;
+  word-break:break-all;
+}
+.confirm-photos{display:flex;gap:8px;flex-wrap:wrap}
+.confirm-photo{width:64px;height:64px;border-radius:8px;object-fit:cover;border:2px solid #eadccf}
+.confirm-photo.main-photo{border-color:#6b3a1f}
+/* ====== PROGRESS ====== */
+.progress-wrap{margin:14px 0}
+.progress-bar-bg{
+  background:#eadccf;border-radius:999px;height:10px;overflow:hidden;
+}
+.progress-bar-fill{
+  height:100%;background:linear-gradient(90deg,#6b3a1f,#a05a2c);
+  border-radius:999px;transition:width .3s;width:0%;
+}
+.progress-label{font-size:12px;color:#7a5a3f;margin-top:6px;text-align:center}
+/* ====== COMPLETE ====== */
+.complete-card{
+  text-align:center;padding:32px 20px;
+}
+.complete-icon{font-size:48px;margin-bottom:12px}
+.complete-id{
+  font-size:22px;font-weight:800;color:#6b3a1f;
+  background:#fff8f1;border:1px solid #eadccf;
+  border-radius:10px;padding:10px 24px;display:inline-block;margin:10px 0 16px;
+}
+/* ====== BUTTONS ====== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:11px 20px;border-radius:10px;border:none;cursor:pointer;
+  font:inherit;font-size:14px;font-weight:700;transition:all .2s;
+}
+.btn-primary{background:#6b3a1f;color:#fff}
+.btn-primary:hover{background:#3d1a08}
+.btn-primary:disabled{background:#d4b896;cursor:not-allowed}
+.btn-secondary{background:#fff;color:#6b3a1f;border:1.5px solid #d4b896}
+.btn-secondary:hover{background:#fff8f1}
+.btn-danger{background:#b42318;color:#fff}
+.btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+/* ====== UTILS ====== */
+.hidden{display:none!important}
+.text-sm{font-size:12px;color:#7a5a3f;margin-top:4px}
+.id-preview{
+  font-size:13px;color:#6b3a1f;font-weight:700;
+  background:#fff8f1;border:1px solid #eadccf;border-radius:8px;
+  padding:6px 10px;margin-top:6px;display:inline-block;
+}
+</style>
+</head>
+<body class="auth-locked">
+
+<!-- ====== AUTH OVERLAY ====== -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <img src="assets/staff/hannbai.png" class="auth-brand-logo" alt="販売幕僚">
+      <div>
+        <div class="auth-brand-name">N's factory</div>
+        <div class="auth-brand-sub">商品登録システム — 販売幕僚</div>
+      </div>
+    </div>
+    <h2>パスワードを入力</h2>
+    <p>このページは管理者専用です。REGISTER_KEY を入力してください。</p>
+    <input type="password" id="authInput" placeholder="パスワード" autocomplete="off">
+    <div class="auth-error" id="authError"></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" onclick="checkAuth()">ログイン</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== TOPBAR ====== -->
+<div class="topbar">
+  <h1>🛍️ 商品登録</h1>
+  <p>N's factory — 販売幕僚管理ツール</p>
+</div>
+
+<!-- ====== MAIN ====== -->
+<div class="page-body">
+
+  <!-- STEP INDICATOR -->
+  <div style="margin-bottom:24px;margin-top:8px">
+    <div class="step-indicator">
+      <div class="step-col">
+        <div class="step-dot active" id="stepDot1">1</div>
+        <div class="step-label">基本情報</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-col">
+        <div class="step-dot" id="stepDot2">2</div>
+        <div class="step-label">写真</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-col">
+        <div class="step-dot" id="stepDot3">3</div>
+        <div class="step-label">説明文</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-col">
+        <div class="step-dot" id="stepDot4">4</div>
+        <div class="step-label">確認</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVATAR ROW -->
+  <div class="agent-row">
+    <img src="assets/staff/hannbai.png" class="agent-avatar" alt="販売幕僚">
+    <div class="agent-bubble" id="agentMsg">
+      こんにちは！<b>販売幕僚</b>です。新しい商品を一緒に登録しましょう。<br>
+      まずは商品の基本情報を入力してください。
+    </div>
+  </div>
+
+  <!-- ====== STEP 1: 基本情報 ====== -->
+  <div id="step1" class="panel">
+    <div class="panel-title">Step 1 — 基本情報</div>
+
+    <div class="form-row">
+      <label>商品名<span class="req">*</span></label>
+      <input type="text" id="f_name" placeholder="例: システム手帳 A5 ブラック">
+    </div>
+
+    <div class="form-row-2">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">カテゴリ<span class="req">*</span></label>
+        <select id="f_category">
+          <option value="">選択してください</option>
+          <option>システム手帳</option>
+          <option>財布・小銭入れ</option>
+          <option>キーケース</option>
+          <option>カードケース</option>
+          <option>バッグ</option>
+          <option>ベルト</option>
+          <option>アクセサリー</option>
+          <option>その他</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">素材<span class="req">*</span></label>
+        <input type="text" id="f_material" placeholder="例: イタリアンレザー">
+      </div>
+    </div>
+
+    <div class="form-row-2">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">色<span class="req">*</span></label>
+        <input type="text" id="f_color" placeholder="例: チョコブラウン">
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">サイズ</label>
+        <input type="text" id="f_size" placeholder="例: A5 / 210×150×30mm">
+      </div>
+    </div>
+
+    <div class="form-row-2">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">所要時間（時間）</label>
+        <input type="number" id="f_hours" placeholder="例: 8" min="0" step="0.5">
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">原価（円）<span class="req">*</span></label>
+        <input type="number" id="f_cost" placeholder="例: 3500" min="0">
+      </div>
+    </div>
+
+    <div class="form-row-2">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">販売価格（円・税込）<span class="req">*</span></label>
+        <input type="number" id="f_price" placeholder="例: 18700" min="0">
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">在庫数<span class="req">*</span></label>
+        <input type="number" id="f_stock" placeholder="例: 1" min="0" value="1">
+      </div>
+    </div>
+
+    <div style="margin-top:8px">
+      <span class="id-preview" id="nextIdPreview">商品ID 取得中…</span>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep2()">次へ → 写真</button>
+    </div>
+  </div>
+
+  <!-- ====== STEP 2: 写真 ====== -->
+  <div id="step2" class="panel hidden">
+    <div class="panel-title">Step 2 — 商品写真</div>
+
+    <div class="photo-drop" id="photoDrop" onclick="document.getElementById('photoFileInput').click()"
+         ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+      <div class="photo-drop-icon">📷</div>
+      <p>クリックまたはドラッグ＆ドロップで写真を追加</p>
+      <p style="font-size:11px;margin-top:4px">JPG / PNG / WEBP・複数選択可</p>
+      <input type="file" id="photoFileInput" accept="image/*" multiple onchange="onFileSelect(event)">
+    </div>
+
+    <div class="photo-grid" id="photoGrid"></div>
+    <p class="photo-hint" id="photoHint" style="display:none">
+      👆 代表写真にしたい画像をクリックしてください（枠が付いた写真が代表写真になります）
+    </p>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep1()">← 戻る</button>
+      <button class="btn btn-primary" onclick="goStep3()">次へ → 説明文</button>
+    </div>
+  </div>
+
+  <!-- ====== STEP 3: 説明文 ====== -->
+  <div id="step3" class="panel hidden">
+    <div class="panel-title">Step 3 — 説明文・ハッシュタグ</div>
+
+    <div class="form-row">
+      <label>短い説明<span class="req">*</span> <span style="font-weight:400;color:#a07050">（一覧・SNS用 60文字以内）</span></label>
+      <input type="text" id="f_shortDesc" placeholder="例: 手縫いで仕上げたA5システム手帳。チョコブラウンのイタリアンレザーが特徴。" maxlength="120">
+    </div>
+
+    <div class="form-row">
+      <label>長い説明<span class="req">*</span> <span style="font-weight:400;color:#a07050">（EC商品ページ用）</span></label>
+      <textarea id="f_longDesc" style="min-height:120px" placeholder="素材・製法・こだわりポイントなど詳しく記載してください"></textarea>
+    </div>
+
+    <div class="form-row">
+      <label>ハッシュタグ <span style="font-weight:400;color:#a07050">（スペース区切り・#不要）</span></label>
+      <input type="text" id="f_hashtags" placeholder="例: レザークラフト システム手帳 ハンドメイド 手縫い">
+      <div class="text-sm">Instagram投稿用。5個以内推奨</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep2()">← 戻る</button>
+      <button class="btn btn-primary" onclick="goConfirm()">確認画面へ →</button>
+    </div>
+  </div>
+
+  <!-- ====== CONFIRM ====== -->
+  <div id="stepConfirm" class="panel hidden">
+    <div class="panel-title">確認 — 登録内容</div>
+
+    <table class="confirm-table" id="confirmTable"></table>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep3()">← 修正する</button>
+      <button class="btn btn-primary" id="registerBtn" onclick="doRegister()">✅ 登録する</button>
+    </div>
+  </div>
+
+  <!-- ====== PROGRESS ====== -->
+  <div id="stepProgress" class="panel hidden">
+    <div class="panel-title">登録中…</div>
+    <div class="agent-row" style="margin-bottom:12px">
+      <img src="assets/staff/hannbai.png" class="agent-avatar" alt="販売幕僚">
+      <div class="agent-bubble" id="progressMsg">商品情報を登録しています…</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-label" id="progressLabel">準備中…</div>
+    </div>
+  </div>
+
+  <!-- ====== COMPLETE ====== -->
+  <div id="stepComplete" class="panel hidden">
+    <div class="complete-card">
+      <div class="agent-row" style="justify-content:center;margin-bottom:16px">
+        <img src="assets/staff/hannbai.png" class="agent-avatar" alt="販売幕僚">
+        <div class="agent-bubble">
+          登録完了です！お疲れ様でした。<br>
+          商品マスターに追加し、写真もDriveに保存しました。
+        </div>
+      </div>
+      <div class="complete-icon">🎉</div>
+      <div>商品登録完了</div>
+      <div class="complete-id" id="completeId">NF2026_XXX</div>
+      <p style="font-size:13px;color:#7a5a3f">商品マスターの「販売中」行を確認してください。</p>
+      <div class="btn-row" style="justify-content:center">
+        <a href="works.html" class="btn btn-secondary">works.html を確認</a>
+        <button class="btn btn-primary" onclick="resetAll()">続けて登録する</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-body -->
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+const REGISTER_KEY = 'glJy4399';
+const YEAR = '2026';
+
+// ====== AUTH ======
+function checkAuth() {
+  const v = document.getElementById('authInput').value.trim();
+  if (v === REGISTER_KEY) {
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.body.classList.remove('auth-locked');
+    fetchNextId();
+  } else {
+    document.getElementById('authError').textContent = 'パスワードが違います';
+  }
+}
+document.getElementById('authInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkAuth();
+});
+
+// ====== NEXT ID PREVIEW ======
+async function fetchNextId() {
+  try {
+    const url = GAS_URL + '?api=nextId&year=' + YEAR + '&key=' + REGISTER_KEY + '&cb=' + Date.now();
+    const res = await fetch(url);
+    const d = await res.json();
+    if (d.ok || d.productId) {
+      document.getElementById('nextIdPreview').textContent = '次の商品ID: ' + (d.productId || d.nextId || '取得中');
+    }
+  } catch(e) {
+    document.getElementById('nextIdPreview').textContent = '商品ID (登録時に自動採番)';
+  }
+}
+
+// ====== AGENT MESSAGE ======
+const MSGS = {
+  step1: 'まずは商品の<b>基本情報</b>を入力してください。',
+  step2: '次は<b>商品写真</b>をアップロードします。複数枚選択できます。代表写真をクリックして選んでください。',
+  step3: '<b>説明文</b>とハッシュタグを入力します。EC各サイトの商品説明欄に使います。',
+  confirm: '入力内容を確認してください。問題なければ「登録する」ボタンを押してください。',
+};
+function setAgentMsg(key) {
+  const el = document.getElementById('agentMsg');
+  if (el) el.innerHTML = MSGS[key] || '';
+}
+
+// ====== STEP NAVIGATION ======
+function showOnly(id) {
+  ['step1','step2','step3','stepConfirm','stepProgress','stepComplete'].forEach(s => {
+    document.getElementById(s).classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+}
+function updateDots(active) {
+  for (let i = 1; i <= 4; i++) {
+    const d = document.getElementById('stepDot' + i);
+    d.className = 'step-dot' + (i < active ? ' done' : i === active ? ' active' : '');
+  }
+}
+function goStep1() { showOnly('step1'); updateDots(1); setAgentMsg('step1'); }
+function goStep2() {
+  if (!validateStep1()) return;
+  showOnly('step2'); updateDots(2); setAgentMsg('step2');
+}
+function goStep3() {
+  if (!validateStep2()) return;
+  showOnly('step3'); updateDots(3); setAgentMsg('step3');
+}
+function goConfirm() {
+  if (!validateStep3()) return;
+  buildConfirm();
+  showOnly('stepConfirm'); updateDots(4); setAgentMsg('confirm');
+}
+
+// ====== VALIDATION ======
+function err(msg) { alert('⚠ ' + msg); return false; }
+function val(id) { return document.getElementById(id).value.trim(); }
+
+function validateStep1() {
+  if (!val('f_name')) return err('商品名を入力してください');
+  if (!val('f_category')) return err('カテゴリを選択してください');
+  if (!val('f_material')) return err('素材を入力してください');
+  if (!val('f_color')) return err('色を入力してください');
+  if (!val('f_cost') || isNaN(+val('f_cost'))) return err('原価を数値で入力してください');
+  if (!val('f_price') || isNaN(+val('f_price'))) return err('販売価格を数値で入力してください');
+  if (val('f_stock') === '' || isNaN(+val('f_stock'))) return err('在庫数を数値で入力してください');
+  return true;
+}
+function validateStep2() {
+  if (photos.length === 0) return err('写真を1枚以上選択してください');
+  if (mainPhotoIndex < 0) return err('代表写真をクリックして選択してください');
+  return true;
+}
+function validateStep3() {
+  if (!val('f_shortDesc')) return err('短い説明を入力してください');
+  if (!val('f_longDesc')) return err('長い説明を入力してください');
+  return true;
+}
+
+// ====== PHOTO HANDLING ======
+let photos = []; // [{file, dataUrl}]
+let mainPhotoIndex = -1;
+
+function onDragOver(e) { e.preventDefault(); document.getElementById('photoDrop').classList.add('dragover'); }
+function onDragLeave(e) { document.getElementById('photoDrop').classList.remove('dragover'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('photoDrop').classList.remove('dragover');
+  addFiles(e.dataTransfer.files);
+}
+function onFileSelect(e) { addFiles(e.target.files); e.target.value = ''; }
+
+function addFiles(files) {
+  Array.from(files).forEach(f => {
+    if (!f.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      photos.push({ file: f, dataUrl: ev.target.result });
+      if (photos.length === 1) mainPhotoIndex = 0;
+      renderPhotoGrid();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  const hint = document.getElementById('photoHint');
+  grid.innerHTML = '';
+  photos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb' + (i === mainPhotoIndex ? ' main-selected' : '');
+    div.innerHTML = `
+      <img src="${p.dataUrl}" alt="写真${i+1}">
+      ${i === mainPhotoIndex ? '<div class="main-badge">代表</div>' : ''}
+      <button class="remove-btn" onclick="removePhoto(event,${i})">×</button>
+    `;
+    div.addEventListener('click', () => selectMain(i));
+    grid.appendChild(div);
+  });
+  hint.style.display = photos.length > 0 ? 'block' : 'none';
+}
+
+function selectMain(i) { mainPhotoIndex = i; renderPhotoGrid(); }
+function removePhoto(e, i) {
+  e.stopPropagation();
+  photos.splice(i, 1);
+  if (mainPhotoIndex >= photos.length) mainPhotoIndex = photos.length - 1;
+  if (photos.length === 0) mainPhotoIndex = -1;
+  renderPhotoGrid();
+}
+
+// ====== CONFIRM TABLE ======
+function buildConfirm() {
+  const rows = [
+    ['商品名', val('f_name')],
+    ['カテゴリ', val('f_category')],
+    ['素材', val('f_material')],
+    ['色', val('f_color')],
+    ['サイズ', val('f_size') || '—'],
+    ['所要時間', val('f_hours') ? val('f_hours') + '時間' : '—'],
+    ['原価', '¥' + Number(val('f_cost')).toLocaleString()],
+    ['販売価格', '¥' + Number(val('f_price')).toLocaleString() + '（税込）'],
+    ['在庫', val('f_stock') + '個'],
+    ['短い説明', val('f_shortDesc')],
+    ['長い説明', val('f_longDesc')],
+    ['ハッシュタグ', val('f_hashtags') || '—'],
+    ['写真', ''],
+  ];
+  const tbl = document.getElementById('confirmTable');
+  tbl.innerHTML = rows.map(([k,v], i) => {
+    if (k === '写真') {
+      const imgs = photos.map((p, pi) =>
+        `<img src="${p.dataUrl}" class="confirm-photo${pi===mainPhotoIndex?' main-photo':''}" title="${pi===mainPhotoIndex?'代表写真':'写真'}">`
+      ).join('');
+      return `<tr><th>${k}</th><td><div class="confirm-photos">${imgs}</div><div class="text-sm" style="margin-top:4px">枠付き＝代表写真 （${photos.length}枚）</div></td></tr>`;
+    }
+    return `<tr><th>${k}</th><td>${v.replace(/\n/g,'<br>')}</td></tr>`;
+  }).join('');
+}
+
+// ====== REGISTER FLOW ======
+function setProgress(pct, msg, agentMsg) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = msg;
+  if (agentMsg) document.getElementById('progressMsg').innerHTML = agentMsg;
+}
+
+async function doRegister() {
+  document.getElementById('registerBtn').disabled = true;
+  showOnly('stepProgress');
+
+  try {
+    // Step A: register
+    setProgress(10, '商品情報を登録中…', '商品マスターに行を追加しています…');
+    const payload = {
+      key: REGISTER_KEY,
+      name: val('f_name'),
+      category: val('f_category'),
+      material: val('f_material'),
+      color: val('f_color'),
+      size: val('f_size'),
+      hours: val('f_hours'),
+      cost: val('f_cost'),
+      price: val('f_price'),
+      stock: val('f_stock'),
+      shortDesc: val('f_shortDesc'),
+      longDesc: val('f_longDesc'),
+      hashtags: val('f_hashtags'),
+      year: YEAR,
+    };
+    const regUrl = GAS_URL + '?api=register&payload=' + encodeURIComponent(JSON.stringify(payload));
+    const regRes = await fetch(regUrl);
+    const regData = await regRes.json();
+    if (!regData.ok) throw new Error('register失敗: ' + (regData.error || JSON.stringify(regData)));
+
+    const { productId, folderId } = regData;
+    setProgress(25, '写真をアップロード中…', `商品ID <b>${productId}</b> で登録完了！\n写真をアップロードします…`);
+
+    // Step B: upload photos
+    let mainPhotoUrl = '';
+    for (let i = 0; i < photos.length; i++) {
+      const p = photos[i];
+      const pct = 25 + Math.round(65 * (i / photos.length));
+      setProgress(pct, `写真 ${i+1}/${photos.length} アップロード中…`, `写真 <b>${i+1}/${photos.length}</b> を Drive にアップロード中…`);
+
+      const dataBase64 = p.dataUrl.split(',')[1];
+      const mimeType = p.file.type;
+      const filename = `photo_${String(i+1).padStart(2,'0')}_${p.file.name.replace(/[^\w.\-]/g,'_')}`;
+
+      const upPayload = { key: REGISTER_KEY, folderId, filename, mimeType, dataBase64 };
+      const upUrl = GAS_URL + '?api=uploadPhoto&payload=' + encodeURIComponent(JSON.stringify(upPayload));
+      const upRes = await fetch(upUrl);
+      const upData = await upRes.json();
+      if (!upData.ok) throw new Error(`写真${i+1}のアップロード失敗: ` + (upData.error || ''));
+
+      if (i === mainPhotoIndex) mainPhotoUrl = upData.url;
+    }
+
+    // Step C: finalize
+    setProgress(95, '仕上げ中…', '代表写真を設定して、ステータスを「販売中」に更新します…');
+    const finPayload = { key: REGISTER_KEY, productId, mainPhotoUrl };
+    const finUrl = GAS_URL + '?api=finalize&payload=' + encodeURIComponent(JSON.stringify(finPayload));
+    const finRes = await fetch(finUrl);
+    const finData = await finRes.json();
+    if (!finData.ok) throw new Error('finalize失敗: ' + (finData.error || ''));
+
+    setProgress(100, '完了！', '登録完了です！');
+    document.getElementById('completeId').textContent = productId;
+    setTimeout(() => showOnly('stepComplete'), 800);
+
+  } catch(e) {
+    alert('❌ エラーが発生しました:\n' + e.message);
+    showOnly('stepConfirm');
+    document.getElementById('registerBtn').disabled = false;
+  }
+}
+
+// ====== RESET ======
+function resetAll() {
+  photos = [];
+  mainPhotoIndex = -1;
+  ['f_name','f_material','f_color','f_size','f_hours','f_cost','f_price','f_shortDesc','f_longDesc','f_hashtags'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f_category').value = '';
+  document.getElementById('f_stock').value = '1';
+  document.getElementById('photoGrid').innerHTML = '';
+  document.getElementById('photoHint').style.display = 'none';
+  fetchNextId();
+  goStep1();
+}
+</script>
+</body>
+</html>
