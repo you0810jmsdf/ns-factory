@@ -729,12 +729,30 @@ tr.row-out-stock td{
 
   <div class="main">
     <div class="admin-tabs" role="tablist" aria-label="管理対象の切り替え">
-      <button class="admin-tab-btn active" type="button" data-admin-tab="ring" role="tab" aria-selected="true">リング在庫</button>
+      <button class="admin-tab-btn active" type="button" data-admin-tab="calendar" role="tab" aria-selected="true">📅 経営カレンダー</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="ring" role="tab" aria-selected="false">リング在庫</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="thread" role="tab" aria-selected="false">ステッチ糸在庫</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="analytics" role="tab" aria-selected="false">アクセス解析</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="stats" role="tab" aria-selected="false">作品ページアクセスログ</button>
     </div>
-    <div class="admin-tab-note" id="adminTabNote">リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。</div>
+    <div class="admin-tab-note" id="adminTabNote">N's Factory 経営カレンダー。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。</div>
+
+    <!-- 経営カレンダータブ -->
+    <div class="panel calendar-section" id="calendarPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <div style="font-size:11px;color:#8a6a4a">経営戦略本部所管・パスワード認証済みで埋め込み表示</div>
+        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?key=glJy4399"
+           target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <iframe
+        src="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?key=glJy4399"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
+        title="N's Factory 経営カレンダー"
+        loading="lazy"></iframe>
+    </div>
 
     <div class="panel github-publish-panel">
       <div class="publish-actions">
@@ -2577,11 +2595,16 @@ document.getElementById('fallbackFileInput').addEventListener('change', async (e
 });
 
 function setAdminTab(tab) {
+  const isCalendar = tab === 'calendar';
   const isThread = tab === 'thread';
   const isAnalytics = tab === 'analytics';
   const isStats = tab === 'stats';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats;
+  document.querySelectorAll('.calendar-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isCalendar);
+  });
   document.querySelectorAll('.ring-section').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isThread || isAnalytics || isStats);
+    el.classList.toggle('admin-section-hidden', !isRing);
   });
   document.querySelectorAll('.thread-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThread);
@@ -2592,8 +2615,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.stats-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isStats);
   });
+  document.querySelectorAll('.github-publish-panel').forEach(el => {
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats);
+  });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isThread || isAnalytics || isStats);
+    el.classList.toggle('admin-section-hidden', !isRing);
   });
   document.querySelectorAll('.thread-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThread);
@@ -2605,7 +2631,9 @@ function setAdminTab(tab) {
   });
   const note = document.getElementById('adminTabNote');
   if (note) {
-    note.textContent = isAnalytics
+    note.textContent = isCalendar
+      ? "N's Factory 経営カレンダー。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。"
+      : isAnalytics
       ? 'Google Analytics 4 のアクセスデータをページ別に表示します。'
       : isThread
       ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
@@ -3065,10 +3093,10 @@ document.querySelectorAll('[data-admin-tab]').forEach(btn => {
   });
 });
 
-// F5リロード後もタブを復元
+// F5リロード後もタブを復元（無ければ calendar をデフォルト表示）
 (function() {
   const m = location.hash.match(/[#&]tab=([^&]+)/);
-  if (m) setAdminTab(decodeURIComponent(m[1]));
+  setAdminTab(m ? decodeURIComponent(m[1]) : 'calendar');
 })();
 
 window.addEventListener('beforeunload', (event) => {
