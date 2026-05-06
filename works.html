@@ -715,10 +715,11 @@
           soldout: !!item.soldout,
           noRestock: !!item.noRestock,
           folderId: item.folderId || '',
+          mainPhoto: item.mainPhoto || '',
           photosLoaded: !item.folderId,
           photosLoading: false,
           photos: item.folderId
-            ? []
+            ? (item.mainPhoto ? [item.mainPhoto] : [])
             : ((item.photos && item.photos.length)
               ? item.photos.map((photo) => photo.url || photo)
               : [item.mainPhoto].filter(Boolean)),
@@ -795,7 +796,24 @@
       work.photosLoading = fetchJsonp(url)
         .then((photos) => {
           const urls = (photos || []).map((photo) => photo.url || photo).filter(Boolean);
-          if (urls.length) work.photos = urls;
+          if (urls.length) {
+            // 代表写真（mainPhoto）の Drive ID と一致するものを先頭に並び替える
+            if (work.mainPhoto) {
+              const mainIdMatch = work.mainPhoto.match(/[?&]id=([^&]+)/);
+              const mainId = mainIdMatch ? mainIdMatch[1] : '';
+              if (mainId) {
+                const idx = urls.findIndex((u) => {
+                  const m = u.match(/[?&]id=([^&]+)/);
+                  return m && m[1] === mainId;
+                });
+                if (idx > 0) {
+                  const [main] = urls.splice(idx, 1);
+                  urls.unshift(main);
+                }
+              }
+            }
+            work.photos = urls;
+          }
           work.photosLoaded = true;
           work.photosLoading = false;
           return work.photos;
