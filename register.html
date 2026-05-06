@@ -328,15 +328,38 @@ textarea{min-height:80px;resize:vertical}
       </div>
     </div>
 
-    <!-- Threads投稿 -->
+    <!-- Threads投稿（2段階：①投稿文を生成 → 確認・編集 → ②投稿） -->
     <div id="threadsSection" style="margin-top:14px;padding:14px;background:#fff8ec;border:1px solid #d9b466;border-radius:8px">
       <div style="font-weight:bold;color:#8a6a2e;margin-bottom:8px">📣 Threads に投稿</div>
       <p style="font-size:12px;color:#5a4a2e;margin:4px 0 8px;line-height:1.5">
-        外部AIツールで生成した画像のURL（公開URL）を貼り付けて投稿してください。<br>
-        投稿文は AI が自動生成します。
+        ① まず投稿文を AI で生成し内容を確認 → ② 画像URL（公開URL）を1〜10枚指定 → ③ 投稿。<br>
+        2枚以上はカルーセル投稿（複数画像）として投稿されます。
       </p>
-      <input type="url" id="bannerUrlInput" placeholder="https://... 画像の公開URL" style="width:100%;padding:8px 10px;border:1px solid #d8b888;border-radius:6px;font-size:13px;margin-bottom:8px">
-      <button type="button" id="threadsPostBtn" class="btn btn-primary" style="font-size:13px" onclick="doThreadsPost()">🚀 Threads に投稿</button>
+
+      <!-- ステップ① 投稿文を生成 -->
+      <div style="margin-bottom:10px">
+        <button type="button" id="threadsGenBtn" class="btn btn-primary" style="font-size:13px" onclick="doGenerateThreadsText()">① 投稿文を生成</button>
+        <span id="threadsGenStatus" style="margin-left:10px;font-size:12px;color:#5a4a2e"></span>
+      </div>
+
+      <!-- ステップ② 生成された投稿文を確認・編集 -->
+      <div id="threadsEditArea" class="hidden" style="margin-top:6px">
+        <label style="display:block;font-size:12px;color:#5a4a2e;font-weight:bold;margin-bottom:4px">投稿文（必要なら編集してください）</label>
+        <textarea id="threadsPostTextArea" rows="8" style="width:100%;padding:8px 10px;border:1px solid #d8b888;border-radius:6px;font-size:13px;font-family:inherit;line-height:1.5;resize:vertical"></textarea>
+        <div id="threadsCharCount" style="font-size:11px;color:#5a4a2e;text-align:right;margin-top:2px">0 / 500</div>
+
+        <label style="display:block;font-size:12px;color:#5a4a2e;font-weight:bold;margin:10px 0 4px">画像URL（公開URL／1〜10枚）</label>
+        <div id="threadsImageInputs"></div>
+        <div style="margin-top:6px">
+          <button type="button" id="threadsAddImageBtn" class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="addThreadsImageInput()">＋ 画像URLを追加</button>
+          <span id="threadsImageCount" style="margin-left:10px;font-size:11px;color:#5a4a2e">1 / 10</span>
+        </div>
+
+        <div style="margin-top:12px">
+          <button type="button" id="threadsPublishBtn" class="btn btn-primary" style="font-size:13px" onclick="doPublishThreadsPost()">② この内容で Threads に投稿</button>
+          <button type="button" class="btn btn-secondary" style="font-size:12px;margin-left:8px" onclick="doGenerateThreadsText()">🔄 投稿文を作り直す</button>
+        </div>
+      </div>
 
       <div id="threadsProgress" class="hidden" style="margin-top:10px;padding:8px 10px;background:#f0f4ff;border:1px solid #aac0e0;border-radius:6px;font-size:12px;color:#3a5a8a">
         <span id="threadsProgressMsg">処理中…</span>
@@ -1099,11 +1122,23 @@ async function doUpdate() {
   }, 800);
 }
 
-// ====== THREADS POST FLOW ======
+// ====== THREADS POST FLOW (2段階：生成 → 確認 → 投稿) ======
+const THREADS_MAX_IMAGES = 10;
+
 function resetThreadsSection() {
-  document.getElementById('bannerUrlInput').value = '';
-  document.getElementById('threadsPostBtn').disabled = false;
-  document.getElementById('threadsPostBtn').textContent = '🚀 Threads に投稿';
+  document.getElementById('threadsGenBtn').disabled = false;
+  document.getElementById('threadsGenBtn').textContent = '① 投稿文を生成';
+  document.getElementById('threadsGenStatus').textContent = '';
+  document.getElementById('threadsEditArea').classList.add('hidden');
+  document.getElementById('threadsPostTextArea').value = '';
+  document.getElementById('threadsCharCount').textContent = '0 / 500';
+  document.getElementById('threadsImageInputs').innerHTML = '';
+  addThreadsImageInput();
+  const pubBtn = document.getElementById('threadsPublishBtn');
+  if (pubBtn) {
+    pubBtn.disabled = false;
+    pubBtn.textContent = '② この内容で Threads に投稿';
+  }
   document.getElementById('threadsProgress').classList.add('hidden');
   document.getElementById('threadsResult').classList.add('hidden');
   document.getElementById('threadsError').classList.add('hidden');
@@ -1120,8 +1155,6 @@ function showThreadsError(msg) {
   const el = document.getElementById('threadsError');
   el.classList.remove('hidden');
   el.textContent = '❌ ' + msg;
-  document.getElementById('threadsPostBtn').disabled = false;
-  document.getElementById('threadsPostBtn').textContent = '🔁 再試行';
 }
 
 function showThreadsResult(postUrl, postText) {
@@ -1139,62 +1172,157 @@ function showThreadsResult(postUrl, postText) {
   }
 }
 
-async function doThreadsPost() {
-  const bannerUrl = document.getElementById('bannerUrlInput').value.trim();
-  if (!bannerUrl) {
-    alert('バナー画像のURLを入力してください。');
-    document.getElementById('bannerUrlInput').focus();
+function addThreadsImageInput() {
+  const wrap = document.getElementById('threadsImageInputs');
+  const current = wrap.querySelectorAll('input.threads-image-url').length;
+  if (current >= THREADS_MAX_IMAGES) {
+    alert('画像URLは最大' + THREADS_MAX_IMAGES + '件までです。');
     return;
   }
-  if (!/^https?:\/\//i.test(bannerUrl)) {
-    alert('https:// または http:// で始まるURLを入力してください。');
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:6px';
+  const idx = current + 1;
+  row.innerHTML =
+    '<span style="width:22px;font-size:12px;color:#5a4a2e">' + idx + '.</span>' +
+    '<input type="url" class="threads-image-url" placeholder="https://... 画像の公開URL（' + (idx === 1 ? '必須' : '任意') + '）" style="flex:1;padding:6px 8px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' +
+    '<button type="button" class="btn btn-secondary" style="font-size:11px;padding:4px 8px" onclick="removeThreadsImageInput(this)">削除</button>';
+  wrap.appendChild(row);
+  updateThreadsImageCount();
+}
+
+function removeThreadsImageInput(btn) {
+  const wrap = document.getElementById('threadsImageInputs');
+  if (wrap.querySelectorAll('input.threads-image-url').length <= 1) {
+    alert('画像URL欄は最低1件必要です。');
     return;
   }
+  btn.closest('div').remove();
+  // 番号を振り直す
+  Array.from(wrap.children).forEach((row, i) => {
+    const span = row.querySelector('span');
+    if (span) span.textContent = (i + 1) + '.';
+  });
+  updateThreadsImageCount();
+}
+
+function updateThreadsImageCount() {
+  const n = document.querySelectorAll('#threadsImageInputs input.threads-image-url').length;
+  document.getElementById('threadsImageCount').textContent = n + ' / ' + THREADS_MAX_IMAGES;
+}
+
+function collectThreadsImageUrls() {
+  const inputs = document.querySelectorAll('#threadsImageInputs input.threads-image-url');
+  const urls = [];
+  for (const inp of inputs) {
+    const v = (inp.value || '').trim();
+    if (v) urls.push(v);
+  }
+  return urls;
+}
+
+async function doGenerateThreadsText() {
   if (!lastRegisteredProductId) {
     alert('商品IDが取得できませんでした。再度登録してください。');
     return;
   }
-
-  const btn = document.getElementById('threadsPostBtn');
-  btn.disabled = true;
-  btn.textContent = '投稿中…';
+  const genBtn = document.getElementById('threadsGenBtn');
+  const status = document.getElementById('threadsGenStatus');
+  genBtn.disabled = true;
+  genBtn.textContent = '生成中…';
+  status.textContent = 'AIが投稿文を作成しています…';
   document.getElementById('threadsError').classList.add('hidden');
   document.getElementById('threadsResult').classList.add('hidden');
-
-  setThreadsProgress('① 投稿文を AI で生成中…');
+  document.getElementById('threadsProgress').classList.add('hidden');
 
   try {
     const payload = {
       key: REGISTER_KEY,
       productId: lastRegisteredProductId,
-      bannerUrl: bannerUrl,
     };
-
-    // 進捗の段階表示（GAS 側は同期実行なのでメッセージは順次切り替え）
-    const progressTimer1 = setTimeout(() => setThreadsProgress('② Threads コンテナを作成中…'), 4000);
-    const progressTimer2 = setTimeout(() => setThreadsProgress('③ 画像処理待ち（最大2分）…'), 9000);
-    const progressTimer3 = setTimeout(() => setThreadsProgress('④ 投稿中…'), 60000);
-
-    // CORS回避のためJSONPで呼び出し（GAS実行時間が最大150秒程度なのでtimeoutを180秒に拡張）
     const data = await jsonpCall({
-      api: 'triggerThreadsPost',
+      api: 'generateThreadsPostText',
       key: REGISTER_KEY,
       payload: JSON.stringify(payload),
-    }, 180000);
-    clearTimeout(progressTimer1);
-    clearTimeout(progressTimer2);
-    clearTimeout(progressTimer3);
+    }, 60000);
+    if (!data.ok) throw new Error(data.error || JSON.stringify(data));
 
-    if (!data.ok) {
-      throw new Error(data.error || JSON.stringify(data));
-    }
-
-    showThreadsResult(data.postUrl, data.postText);
-    btn.textContent = '✅ 投稿済み';
+    document.getElementById('threadsPostTextArea').value = data.postText || '';
+    updateThreadsCharCount();
+    document.getElementById('threadsEditArea').classList.remove('hidden');
+    status.textContent = '✅ 生成完了。内容を確認し画像URLを指定したら「② 投稿」を押してください。';
+    genBtn.disabled = false;
+    genBtn.textContent = '① 投稿文を生成';
   } catch(e) {
-    showThreadsError(e.message || String(e));
+    status.textContent = '';
+    showThreadsError('投稿文の生成に失敗: ' + (e.message || String(e)));
+    genBtn.disabled = false;
+    genBtn.textContent = '🔁 再生成';
   }
 }
+
+function updateThreadsCharCount() {
+  const v = document.getElementById('threadsPostTextArea').value || '';
+  document.getElementById('threadsCharCount').textContent = v.length + ' / 500';
+}
+
+async function doPublishThreadsPost() {
+  if (!lastRegisteredProductId) {
+    alert('商品IDが取得できませんでした。再度登録してください。');
+    return;
+  }
+  const postText = (document.getElementById('threadsPostTextArea').value || '').trim();
+  if (!postText) { alert('投稿文が空です。'); return; }
+  const imageUrls = collectThreadsImageUrls();
+  if (imageUrls.length === 0) {
+    alert('画像URLを少なくとも1件入力してください。');
+    return;
+  }
+  for (const u of imageUrls) {
+    if (!/^https?:\/\//i.test(u)) {
+      alert('画像URLは https:// または http:// で始まる必要があります: ' + u);
+      return;
+    }
+  }
+  if (!confirm('この内容で Threads に投稿します。よろしいですか？\n\n画像 ' + imageUrls.length + ' 枚 ／ ' + postText.length + ' 文字')) return;
+
+  const pubBtn = document.getElementById('threadsPublishBtn');
+  pubBtn.disabled = true;
+  pubBtn.textContent = '投稿中…';
+  document.getElementById('threadsError').classList.add('hidden');
+  document.getElementById('threadsResult').classList.add('hidden');
+
+  setThreadsProgress(imageUrls.length === 1 ? '① コンテナを作成中…' : '① 子コンテナを作成中（' + imageUrls.length + '枚）…');
+  const t1 = setTimeout(() => setThreadsProgress('② 画像処理待ち（最大2分）…'), 6000);
+  const t2 = setTimeout(() => setThreadsProgress('③ 投稿中…'), 60000);
+
+  try {
+    const payload = {
+      key: REGISTER_KEY,
+      productId: lastRegisteredProductId,
+      postText: postText,
+      imageUrls: imageUrls,
+    };
+    const data = await jsonpCall({
+      api: 'publishThreadsPost',
+      key: REGISTER_KEY,
+      payload: JSON.stringify(payload),
+    }, 240000);
+    clearTimeout(t1); clearTimeout(t2);
+    if (!data.ok) throw new Error(data.error || JSON.stringify(data));
+
+    showThreadsResult(data.postUrl, data.postText);
+    pubBtn.textContent = '✅ 投稿済み';
+  } catch(e) {
+    clearTimeout(t1); clearTimeout(t2);
+    showThreadsError(e.message || String(e));
+    pubBtn.disabled = false;
+    pubBtn.textContent = '🔁 再投稿';
+  }
+}
+
+document.addEventListener('input', (ev) => {
+  if (ev.target && ev.target.id === 'threadsPostTextArea') updateThreadsCharCount();
+});
 
 async function uploadOnePhoto(p, i, folderId) {
   const dataBase64 = p.dataUrl.split(',')[1];
