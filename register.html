@@ -181,6 +181,18 @@ textarea{min-height:80px;resize:vertical}
 .btn-secondary:hover{background:#fff8f1}
 .btn-danger{background:#b42318;color:#fff}
 .btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+/* ====== COMBO BOX ====== */
+.combo-wrap{display:flex;gap:6px;align-items:center}
+.combo-wrap select{flex:1}
+.combo-add-btn{
+  flex-shrink:0;padding:0 10px;height:38px;
+  background:#fff;border:1.5px solid #d4b896;border-radius:8px;
+  font-size:16px;cursor:pointer;color:#6b3a1f;font-weight:700;
+  transition:all .2s;line-height:1;
+}
+.combo-add-btn:hover{background:#fff8f1;border-color:#6b3a1f}
+.combo-new{display:flex;gap:6px;margin-top:6px;align-items:center}
+.combo-new input{flex:1}
 /* ====== UTILS ====== */
 .hidden{display:none!important}
 .text-sm{font-size:12px;color:#7a5a3f;margin-top:4px}
@@ -268,28 +280,42 @@ textarea{min-height:80px;resize:vertical}
     <div class="form-row-2">
       <div>
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">カテゴリ<span class="req">*</span></label>
-        <select id="f_category">
-          <option value="">選択してください</option>
-          <option>システム手帳</option>
-          <option>財布・小銭入れ</option>
-          <option>キーケース</option>
-          <option>カードケース</option>
-          <option>バッグ</option>
-          <option>ベルト</option>
-          <option>アクセサリー</option>
-          <option>その他</option>
-        </select>
+        <div class="combo-wrap">
+          <select id="f_category"><option value="">読み込み中…</option></select>
+          <button type="button" class="combo-add-btn" onclick="showAddInput('category')">＋</button>
+        </div>
+        <div class="combo-new hidden" id="combo-new-category">
+          <input type="text" id="combo-input-category" placeholder="新しいカテゴリ名">
+          <button type="button" class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="addNewOption('category')">追加</button>
+          <button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px" onclick="hideAddInput('category')">✕</button>
+        </div>
       </div>
       <div>
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">素材<span class="req">*</span></label>
-        <input type="text" id="f_material" placeholder="例: イタリアンレザー">
+        <div class="combo-wrap">
+          <select id="f_material"><option value="">読み込み中…</option></select>
+          <button type="button" class="combo-add-btn" onclick="showAddInput('material')">＋</button>
+        </div>
+        <div class="combo-new hidden" id="combo-new-material">
+          <input type="text" id="combo-input-material" placeholder="新しい素材名">
+          <button type="button" class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="addNewOption('material')">追加</button>
+          <button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px" onclick="hideAddInput('material')">✕</button>
+        </div>
       </div>
     </div>
 
     <div class="form-row-2">
       <div>
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">色<span class="req">*</span></label>
-        <input type="text" id="f_color" placeholder="例: チョコブラウン">
+        <div class="combo-wrap">
+          <select id="f_color"><option value="">読み込み中…</option></select>
+          <button type="button" class="combo-add-btn" onclick="showAddInput('color')">＋</button>
+        </div>
+        <div class="combo-new hidden" id="combo-new-color">
+          <input type="text" id="combo-input-color" placeholder="新しいカラー名">
+          <button type="button" class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="addNewOption('color')">追加</button>
+          <button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px" onclick="hideAddInput('color')">✕</button>
+        </div>
       </div>
       <div>
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">サイズ</label>
@@ -432,6 +458,56 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt
 const REGISTER_KEY = 'glJy4399';
 const YEAR = '2026';
 
+// ====== MASTER DATA ======
+const FIELD_MAP = { category: 'categories', material: 'materials', color: 'colors' };
+
+function fetchMasterData() {
+  const url = GAS_URL + '?api=getMasterData&key=' + REGISTER_KEY + '&cb=' + Date.now();
+  const script = document.createElement('script');
+  window._masterDataCb = function(data) {
+    document.head.removeChild(script);
+    if (!data.ok) { console.warn('getMasterData error:', data.error); setFallbackOptions(); return; }
+    ['category','material','color'].forEach(field => {
+      const sel = document.getElementById('f_' + field);
+      const items = data[FIELD_MAP[field]] || [];
+      sel.innerHTML = '<option value="">選択…</option>' +
+        items.map(v => `<option value="${v}">${v}</option>`).join('');
+    });
+  };
+  script.src = url + '&callback=_masterDataCb';
+  document.head.appendChild(script);
+}
+
+function setFallbackOptions() {
+  ['category','material','color'].forEach(field => {
+    const sel = document.getElementById('f_' + field);
+    sel.innerHTML = '<option value="">（手動で入力）</option>';
+  });
+}
+
+function showAddInput(field) {
+  document.getElementById('combo-new-' + field).classList.remove('hidden');
+  document.getElementById('combo-input-' + field).focus();
+}
+function hideAddInput(field) {
+  document.getElementById('combo-new-' + field).classList.add('hidden');
+  document.getElementById('combo-input-' + field).value = '';
+}
+function addNewOption(field) {
+  const input = document.getElementById('combo-input-' + field);
+  const v = input.value.trim();
+  if (!v) { input.focus(); return; }
+  const sel = document.getElementById('f_' + field);
+  const exists = Array.from(sel.options).some(o => o.value === v);
+  if (!exists) {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  }
+  sel.value = v;
+  hideAddInput(field);
+}
+
 // ====== AUTH ======
 function checkAuth() {
   const v = document.getElementById('authInput').value.trim();
@@ -439,6 +515,7 @@ function checkAuth() {
     document.getElementById('authOverlay').classList.add('hidden');
     document.body.classList.remove('auth-locked');
     fetchNextId();
+    fetchMasterData();
   } else {
     document.getElementById('authError').textContent = 'パスワードが違います';
   }
