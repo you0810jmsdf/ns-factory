@@ -667,10 +667,10 @@ let editingFolderId = '';
 // ====== THREADS POST STATE ======
 let lastRegisteredProductId = '';
 
-function jsonpCall(params) {
+function jsonpCall(params, timeoutMs) {
   return new Promise((resolve, reject) => {
     const cb = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
-    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 30000);
+    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, timeoutMs || 30000);
     function cleanup() { try { delete window[cb]; document.head.removeChild(s); } catch(_){} clearTimeout(timer); }
     window[cb] = (data) => { cleanup(); resolve(data); };
     const qs = Object.entries(params).map(([k,v]) => k + '=' + encodeURIComponent(v)).join('&');
@@ -688,6 +688,8 @@ async function loadProduct() {
     const d = await jsonpCall({ api: 'getProductById', id, key: REGISTER_KEY });
     if (!d.ok) { alert('読込失敗: ' + (d.error || 'unknown')); return; }
     const p = d.product;
+    console.log('[loadProduct] product:', p);
+    console.log('[loadProduct] dropdown values -> category:', JSON.stringify(p.category), 'material:', JSON.stringify(p.material), 'color:', JSON.stringify(p.color));
     document.getElementById('f_name').value = p.name;
     setSelectValue('f_category', p.category);
     setSelectValue('f_material', p.material);
@@ -1168,19 +1170,22 @@ async function doThreadsPost() {
       productId: lastRegisteredProductId,
       bannerUrl: bannerUrl,
     };
-    const url = GAS_URL + '?api=triggerThreadsPost&payload=' + encodeURIComponent(JSON.stringify(payload));
 
     // 進捗の段階表示（GAS 側は同期実行なのでメッセージは順次切り替え）
     const progressTimer1 = setTimeout(() => setThreadsProgress('② Threads コンテナを作成中…'), 4000);
     const progressTimer2 = setTimeout(() => setThreadsProgress('③ 画像処理待ち（最大2分）…'), 9000);
     const progressTimer3 = setTimeout(() => setThreadsProgress('④ 投稿中…'), 60000);
 
-    const res = await fetch(url);
+    // CORS回避のためJSONPで呼び出し（GAS実行時間が最大150秒程度なのでtimeoutを180秒に拡張）
+    const data = await jsonpCall({
+      api: 'triggerThreadsPost',
+      key: REGISTER_KEY,
+      payload: JSON.stringify(payload),
+    }, 180000);
     clearTimeout(progressTimer1);
     clearTimeout(progressTimer2);
     clearTimeout(progressTimer3);
 
-    const data = await res.json();
     if (!data.ok) {
       throw new Error(data.error || JSON.stringify(data));
     }
