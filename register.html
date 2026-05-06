@@ -301,11 +301,12 @@ textarea{min-height:80px;resize:vertical}
 
     <!-- PR画像プロンプト生成 -->
     <div style="margin-top:10px;padding:12px;background:#fff;border:1px dashed #d9b466;border-radius:8px">
-      <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 販売幕僚PR画像 — プロンプト生成</div>
+      <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 幕僚PR画像 — プロンプト生成</div>
       <p style="font-size:12px;color:#7a5a3f;margin:4px 0 10px;line-height:1.5">
-        販売幕僚（<code>hannbai.png</code>）が作品をPRするシーンを <b>ChatGPT-4o</b> または <b>Gemini 2.5 Flash Image（Nano Banana）</b>で生成します。<br>
-        <b>運用手順:</b> ①「販売幕僚画像」をDL → ②「📁 ローカルパスをコピー」→ Win+Eでエクスプローラ起動→アドレスバーに貼付→商品IDで検索 → ③シーンボタンを押す → ④プロンプトをコピー → ⑤AIにプロンプト貼付＋<b>画像2枚を添付（販売幕僚＋商品画像）</b> → ⑥生成画像URLを下のThreads欄へ。<br>
-        <span style="color:#a04020">※URLでなく画像「添付」が必須です（AIはプロンプト内URLを自動取得しません）。</span>
+        7幕僚（作戦・販売・監理・広報・後方・保全・デジタル）から好きな幕僚を選び、その幕僚が作品をPRするシーンを <b>ChatGPT-4o</b> または <b>Gemini 2.5 Flash Image（Nano Banana）</b>で生成します。生成画像の右下には<b>商品の実物写真</b>が「実物写真」キャプション付きのバッジとして挿入されます（実物写真は変形・再描画されません）。<br>
+        <b>運用手順:</b> ①セレクタで幕僚を選び「👤 選択画像をDL」 → ②「📁 ローカルパスをコピー」→ Win+Eでエクスプローラ起動→アドレスバーに貼付→商品IDで検索し<b>商品の実物写真</b>を取得 → ③シーンボタンを押す → ④プロンプトをコピー → ⑤AIにプロンプト貼付＋<b>画像2枚を添付（選択した幕僚＋商品の実物写真）</b> → ⑥生成画像URLを下のThreads欄へ。<br>
+        <span style="color:#a04020">※URLでなく実物写真の「添付」が必須です（AIはプロンプト内URLを自動取得しません）。</span><br>
+        <span style="color:#5a3a20">※任意ファイル名欄に <code>foo.png</code> など直接指定もOK（assets/staff/配下から取得）。</span>
       </p>
       <div id="prSceneButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(0)">📚 書斎で吟味</button>
@@ -315,8 +316,18 @@ textarea{min-height:80px;resize:vertical}
         <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(4)">🛠️ アトリエ机で仕上げ確認</button>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:#fff5e0;border:1px dashed #c9a84c;border-radius:6px">
-        <span style="font-size:12px;color:#5a3a20;font-weight:700">📥 参照画像をDL（AI添付用）:</span>
-        <button type="button" class="btn btn-secondary" style="padding:5px 10px;font-size:12px" onclick="downloadReferenceImage('https://you0810jmsdf.github.io/ns-factory/assets/staff/hannbai.png','hannbai_reference.png')">👤 販売幕僚画像</button>
+        <span style="font-size:12px;color:#5a3a20;font-weight:700">📥 幕僚参照画像をDL:</span>
+        <select id="staffImageSelector" style="padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;background:#fff">
+          <option value="sakusen.png">作戦幕僚（sakusen.png）</option>
+          <option value="hannbai.png" selected>販売幕僚（hannbai.png）</option>
+          <option value="kanri.png">監理幕僚（kanri.png）</option>
+          <option value="pr.png">広報幕僚（pr.png）</option>
+          <option value="kouhou.png">後方幕僚(kouhou.png)</option>
+          <option value="hozen.png">保全幕僚（hozen.png）</option>
+          <option value="digital.png">デジタル幕僚（digital.png）</option>
+        </select>
+        <input type="text" id="staffImageCustomName" placeholder="任意ファイル名（例: foo.png）" style="padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;width:170px">
+        <button type="button" class="btn btn-secondary" style="padding:5px 10px;font-size:12px" onclick="downloadSelectedStaffImage()">👤 選択画像をDL</button>
         <button type="button" class="btn btn-secondary" id="dlProductImageBtn" style="padding:5px 10px;font-size:12px" disabled onclick="openProductFolder()" title="ローカルGドライブの商品写真ルートをクリップボードにコピーします">📁 ローカルパスをコピー</button>
         <span id="dlImageStatus" style="font-size:11px;color:#2a7a3a"></span>
       </div>
@@ -1431,29 +1442,30 @@ function generatePrPrompt(sceneIndex) {
 
   const prompt = [
     '【添付画像参照型プロンプト — ChatGPT-4o / Gemini 2.5 Flash Image (Nano Banana) 用】',
-    '※このプロンプトと一緒に、上のDLボタンで保存した「販売幕僚画像（hannbai_reference.png）」と「商品画像」の2枚を必ず添付してください。',
+    '※このプロンプトと一緒に、上のDLボタンで保存した「選択した幕僚画像」と「商品の実物写真（actual product photograph）」の2枚を必ず添付してください。商品の実物写真は生成画像の右下に「実物写真」キャプション付きバッジとして挿入され、変形・再描画は一切行いません。',
     '',
     '## Two attached reference images',
-    '  • Attached Image #1 = The Artisan (N\'s factory Sales Adjutant / 販売幕僚).',
-    '  • Attached Image #2 = The Product' + (productId ? ' (' + productId + (productName ? ' / ' + productName : '') + ')' : '') + '.',
+    '  • Attached Image #1 = The Artisan (N\'s factory Adjutant / 幕僚).',
+    '  • Attached Image #2 = The Actual Product Photograph' + (productId ? ' (' + productId + (productName ? ' / ' + productName : '') + ')' : '') + ' — the real product photo, NOT a render.',
     '',
     '## Task',
-    'Generate ONE new photorealistic image that strictly preserves BOTH attached reference images:',
-    '  • From Attached Image #1: keep the artisan\'s EXACT face, hairstyle, skin tone, build, and outfit (deep crimson & gold brocade vest, black high-collared shirt). Do NOT invent a new person, do NOT change facial features.',
-    '  • From Attached Image #2: keep the product\'s EXACT shape, color, leather grain, stitching pattern, hardware, and proportions. The product in the output must be visually identical to the attached product photo — same model, same color, same details. Do NOT redesign, do NOT restyle, do NOT substitute a generic item.',
+    'Generate ONE new photorealistic image that strictly preserves Attached Image #1 AND embeds Attached Image #2 verbatim as a caption-style badge:',
+    '  • From Attached Image #1: keep the artisan\'s EXACT face, hairstyle, skin tone, build, and outfit. Do NOT invent a new person, do NOT change facial features.',
+    '  • Attached Image #2 (the actual product photograph) MUST be inserted into the bottom-right corner of the output as a caption-style badge — pasted verbatim, pixel-faithful, with NO redrawing, NO restyling, NO color shift, NO perspective change, NO cropping of the product itself. Below the badge, place the small caption text "実物写真" (or "Actual Product Photo"). The badge has a thin neutral border and a subtle drop shadow so it reads as an inset photo, not as part of the scene.',
     '',
     '## Scene: ' + scene.title,
     'Setting: ' + scene.setting,
     'Action: The artisan (from Attached Image #1) is ' + scene.action,
-    'The product appearing in the scene is the exact item from Attached Image #2 — a ' + productDesc + '. It must be clearly recognizable as the same product, not a stylized reinterpretation.',
+    'In the scene the artisan may hold or display a generic stand-in for a ' + productDesc + ', but the AUTHORITATIVE product representation is the inset badge in the bottom-right (Attached Image #2 itself). Viewers must recognize the product solely from that inset, which is the actual product photograph.',
     '',
     '## Style',
     STYLE_BASE,
     '',
     '## Output requirements',
     '— Aspect ratio: 2:3 (vertical / portrait).',
-    '— Single image, no collage, no split-screen, no thumbnails of the reference images visible in the output.',
-    '— Same artisan identity and same product identity as the two attached references — no facial drift, no product redesign.'
+    '— Single composite image. The bottom-right inset is the only place the actual product appears verbatim; everywhere else is the generated scene.',
+    '— The inset badge occupies roughly 22–28% of the image width, bottom-right corner, with ~3% margin from the edges. Caption "実物写真" sits directly under the badge in a small clean sans-serif.',
+    '— Attached Image #2 must be inserted UNCHANGED (no AI re-rendering of the product). Treat it as a sticker / photo-in-photo. No facial drift on the artisan.'
   ].join('\n');
 
   document.getElementById('prPromptOutput').value = prompt;
@@ -1461,6 +1473,16 @@ function generatePrPrompt(sceneIndex) {
 }
 
 // ====== 参照画像のダウンロードヘルパー ======
+function downloadSelectedStaffImage(selectorId, customNameId) {
+  const sel = document.getElementById(selectorId || 'staffImageSelector');
+  const customInput = document.getElementById(customNameId || 'staffImageCustomName');
+  const customName = (customInput && customInput.value.trim()) || '';
+  const filename = customName || (sel && sel.value) || 'staff.png';
+  const url = 'assets/staff/' + filename;
+  const dlName = filename.replace(/\.png$/i, '_reference.png');
+  downloadReferenceImage(url, dlName);
+}
+
 function downloadReferenceImage(url, filename) {
   const status = document.getElementById('dlImageStatus');
   if (status) status.textContent = '⏳ DL中…';
