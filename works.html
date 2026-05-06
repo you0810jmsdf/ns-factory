@@ -156,7 +156,9 @@
     }
     .card-body { padding: 13px 14px 15px; }
     .work-title { display: block; font-size: 15px; font-weight: 800; margin-bottom: 2px; }
-    .work-id { display: inline-block; margin-bottom: 4px; padding: 1px 6px; border-radius: 4px; background: #f1f3f5; color: #6b7280; font-size: 11px; font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.02em; }
+    .work-id { display: inline-block; margin-bottom: 4px; padding: 1px 6px; border-radius: 4px; background: #f1f3f5; color: #6b7280; font-size: 11px; font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.02em; cursor: pointer; user-select: all; transition: background .15s, color .15s; }
+    .work-id:hover { background: #e2e8f0; color: #334155; }
+    .work-id.copied { background: #16a34a; color: #fff; }
     .work-details {
       display: grid;
       gap: 4px;
@@ -458,6 +460,39 @@
       return values.filter(Boolean).join(' / ');
     }
 
+    function copyWorkId(event, el) {
+      event.stopPropagation();
+      event.preventDefault();
+      const id = el.getAttribute('data-id') || '';
+      const original = el.textContent;
+      const done = () => {
+        el.classList.add('copied');
+        el.textContent = '✓ コピーしました';
+        setTimeout(() => {
+          el.classList.remove('copied');
+          el.textContent = original;
+        }, 900);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(id).then(done).catch(() => {
+          fallbackCopy(id); done();
+        });
+      } else {
+        fallbackCopy(id); done();
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
     function isSystemPlannerWork(work) {
       const text = normalize([work.title, work.category].join(' '));
       return /システム手帳|mini6|ミニ6|micro5|m5|バイブル|リングサポーター|リフィル/i.test(text);
@@ -561,7 +596,7 @@
             ? `<img class="thumb" src="${esc(work.photos[0])}" alt="${esc(work.title)}" loading="lazy">`
             : '<span class="thumb-placeholder">写真を読み込み中</span>'}
           <span class="card-body">
-            ${work.id ? `<span class="work-id">ID: ${esc(work.id)}</span>` : ''}
+            ${work.id ? `<span class="work-id" data-id="${esc(work.id)}" onclick="copyWorkId(event, this)" title="クリックでIDをコピー">ID: ${esc(work.id)}</span>` : ''}
             <span class="work-title">${esc(work.title)}${badge}</span>
             <span class="work-details">
               ${compact([work.category, work.material, work.color]) ? `<span>${esc(compact([work.category, work.material, work.color]))}</span>` : ''}
