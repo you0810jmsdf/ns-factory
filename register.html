@@ -341,18 +341,10 @@ textarea{min-height:80px;resize:vertical}
           <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="loadPersonaPreset()">📂 呼出</button>
           <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="deletePersonaPreset()">🗑 削除</button>
         </div>
-        <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap">
-          <canvas id="personaPresetPreview" width="60" height="60" style="border:1px solid #c9a84c;border-radius:4px;background:#f5ede0;flex-shrink:0"></canvas>
-          <div style="flex:1;min-width:160px">
-            <input type="text" id="personaPresetName" placeholder="プリセット名（例: 販売幕僚A）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;margin-bottom:4px;box-sizing:border-box">
-            <textarea id="personaPresetText" rows="3" placeholder="人物像テキスト（例: 30s Japanese woman, leather artisan, casual workshop apron, warm smile）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;resize:vertical;box-sizing:border-box"></textarea>
-          </div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
-          <label style="font-size:11px;color:#7a5a2e">写真添付:</label>
-          <input type="file" id="personaPresetImage" accept="image/*" style="font-size:11px" onchange="previewPersonaImage(this)">
+        <input type="text" id="personaPresetName" placeholder="プリセット名（例: 販売幕僚A）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;margin-bottom:4px;box-sizing:border-box">
+        <textarea id="personaPresetText" rows="3" placeholder="人物像テキスト（例: 30s Japanese woman, leather artisan, casual workshop apron, warm smile）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;resize:vertical;box-sizing:border-box"></textarea>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
           <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="savePersonaPreset()">💾 保存</button>
-          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="registerCurrentStaffAsPersona()">⭐ DL幕僚を登録</button>
         </div>
       </div>
 
@@ -368,9 +360,7 @@ textarea{min-height:80px;resize:vertical}
         </div>
         <input type="text" id="scenePresetName" placeholder="プリセット名（例: 工房デスク朝光）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #8ab4d8;border-radius:4px;margin-bottom:4px;box-sizing:border-box">
         <textarea id="scenePresetText" rows="3" placeholder="背景テキスト（例: rustic wooden workshop desk, warm morning light from window, leather tools scattered）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #8ab4d8;border-radius:4px;resize:vertical;box-sizing:border-box"></textarea>
-        <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap">
-          <label style="font-size:11px;color:#2a5a7e">参考写真:</label>
-          <input type="file" id="scenePresetImage" accept="image/*" style="font-size:11px" onchange="previewSceneImage(this)">
+        <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
           <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="saveScenePreset()">💾 保存</button>
         </div>
       </div>
@@ -1613,9 +1603,7 @@ function copyPrPrompt() {
   }
 }
 
-// ====== 人物・背景プリセット管理 ======
-let _personaImageDataUrl = '';
-let _sceneImageDataUrl = '';
+// ====== 人物・背景プリセット管理（テキストのみ）======
 const PERSONA_STORE_KEY = 'nsfactory_persona_presets';
 const SCENE_STORE_KEY = 'nsfactory_scene_presets';
 
@@ -1647,7 +1635,7 @@ function savePersonaPreset() {
   if (!name) { alert('プリセット名を入力してください。'); return; }
   const presets = getPersonaPresets();
   const existing = presets.findIndex(function(p) { return p.name === name; });
-  const entry = { name: name, text: text, image: _personaImageDataUrl };
+  const entry = { name: name, text: text };
   if (existing >= 0) { presets[existing] = entry; } else { presets.push(entry); }
   localStorage.setItem(PERSONA_STORE_KEY, JSON.stringify(presets));
   renderPersonaPresetList();
@@ -1664,17 +1652,6 @@ function loadPersonaPreset() {
   if (!preset) return;
   document.getElementById('personaPresetName').value = preset.name || '';
   document.getElementById('personaPresetText').value = preset.text || '';
-  _personaImageDataUrl = preset.image || '';
-  const canvas = document.getElementById('personaPresetPreview');
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, 60, 60);
-    if (_personaImageDataUrl) {
-      const img = new Image();
-      img.onload = function() { ctx.drawImage(img, 0, 0, 60, 60); };
-      img.src = _personaImageDataUrl;
-    }
-  }
 }
 function deletePersonaPreset() {
   const sel = document.getElementById('personaPresetList');
@@ -1694,7 +1671,7 @@ function saveScenePreset() {
   if (!name) { alert('プリセット名を入力してください。'); return; }
   const presets = getScenePresets();
   const existing = presets.findIndex(function(p) { return p.name === name; });
-  const entry = { name: name, text: text, image: _sceneImageDataUrl };
+  const entry = { name: name, text: text };
   if (existing >= 0) { presets[existing] = entry; } else { presets.push(entry); }
   localStorage.setItem(SCENE_STORE_KEY, JSON.stringify(presets));
   renderScenePresetList();
@@ -1711,7 +1688,6 @@ function loadScenePreset() {
   if (!preset) return;
   document.getElementById('scenePresetName').value = preset.name || '';
   document.getElementById('scenePresetText').value = preset.text || '';
-  _sceneImageDataUrl = preset.image || '';
 }
 function deleteScenePreset() {
   const sel = document.getElementById('scenePresetList');
@@ -1725,74 +1701,12 @@ function deleteScenePreset() {
   renderScenePresetList();
 }
 
-function previewPersonaImage(input) {
-  if (!input.files || !input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    _personaImageDataUrl = e.target.result;
-    const canvas = document.getElementById('personaPresetPreview');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = function() { ctx.clearRect(0, 0, 60, 60); ctx.drawImage(img, 0, 0, 60, 60); };
-    img.src = _personaImageDataUrl;
-  };
-  reader.readAsDataURL(input.files[0]);
-}
-function previewSceneImage(input) {
-  if (!input.files || !input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = function(e) { _sceneImageDataUrl = e.target.result; };
-  reader.readAsDataURL(input.files[0]);
-}
-
-function registerCurrentStaffAsPersona() {
-  const sel = document.getElementById('staffImageSelector');
-  const customInput = document.getElementById('staffImageCustomName');
-  const customName = (customInput && customInput.value.trim()) || '';
-  const filename = customName || (sel && sel.value) || 'hannbai.png';
-  const url = 'assets/staff/' + filename;
-  const status = document.getElementById('dlImageStatus');
-  if (status) status.textContent = '⏳ 読込中…';
-  fetch(url)
-    .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.blob(); })
-    .then(function(blob) {
-      return new Promise(function(resolve, reject) {
-        const reader = new FileReader();
-        reader.onload = function(e) { resolve(e.target.result); };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    })
-    .then(function(dataUrl) {
-      _personaImageDataUrl = dataUrl;
-      const canvas = document.getElementById('personaPresetPreview');
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        img.onload = function() { ctx.clearRect(0, 0, 60, 60); ctx.drawImage(img, 0, 0, 60, 60); };
-        img.src = dataUrl;
-      }
-      const nameInput = document.getElementById('personaPresetName');
-      if (nameInput && !nameInput.value.trim()) {
-        nameInput.value = filename.replace(/\.png$/i, '');
-      }
-      if (status) {
-        status.textContent = '✅ 画像を読込みました。名前を確認して「保存」してください。';
-        setTimeout(function() { status.textContent = ''; }, 5000);
-      }
-    })
-    .catch(function(err) {
-      if (status) status.textContent = '❌ 読込失敗: ' + err.message;
-    });
-}
-
 function initDefaultScenePresets() {
   var presets = getScenePresets();
   var existingNames = presets.map(function(p) { return p.name; });
   PR_SCENES.forEach(function(scene) {
     if (existingNames.indexOf(scene.title) < 0) {
-      presets.push({ name: scene.title, text: scene.setting, image: '' });
+      presets.push({ name: scene.title, text: scene.setting });
     }
   });
   localStorage.setItem(SCENE_STORE_KEY, JSON.stringify(presets));
@@ -1800,42 +1714,23 @@ function initDefaultScenePresets() {
 
 function initDefaultPersonaPresets() {
   var STAFF = [
-    { file: 'sakusen.png', name: '作戦幕僚' },
-    { file: 'hannbai.png', name: '販売幕僚' },
-    { file: 'kanri.png',   name: '監理幕僚' },
-    { file: 'pr.png',      name: '広報幕僚' },
-    { file: 'kouhou.png',  name: '後方幕僚' },
-    { file: 'hozen.png',   name: '保全幕僚' },
-    { file: 'digital.png', name: 'デジタル幕僚' }
+    { name: '作戦幕僚', text: '' },
+    { name: '販売幕僚', text: '' },
+    { name: '監理幕僚', text: '' },
+    { name: '広報幕僚', text: '' },
+    { name: '後方幕僚', text: '' },
+    { name: '保全幕僚', text: '' },
+    { name: 'デジタル幕僚', text: '' }
   ];
   var presets = getPersonaPresets();
   var existingNames = presets.map(function(p) { return p.name; });
-  var toFetch = STAFF.filter(function(s) { return existingNames.indexOf(s.name) < 0; });
-  if (toFetch.length === 0) return;
-  var idx = 0;
-  function fetchNext() {
-    if (idx >= toFetch.length) {
-      localStorage.setItem(PERSONA_STORE_KEY, JSON.stringify(presets));
-      renderPersonaPresetList();
-      return;
+  STAFF.forEach(function(s) {
+    if (existingNames.indexOf(s.name) < 0) {
+      presets.push({ name: s.name, text: s.text });
     }
-    var s = toFetch[idx++];
-    fetch('assets/staff/' + s.file)
-      .then(function(res) { return res.ok ? res.blob() : Promise.reject(res.status); })
-      .then(function(blob) {
-        return new Promise(function(resolve) {
-          var reader = new FileReader();
-          reader.onload = function(e) { resolve(e.target.result); };
-          reader.readAsDataURL(blob);
-        });
-      })
-      .then(function(dataUrl) {
-        presets.push({ name: s.name, text: '', image: dataUrl });
-        fetchNext();
-      })
-      .catch(function() { fetchNext(); });
-  }
-  fetchNext();
+  });
+  localStorage.setItem(PERSONA_STORE_KEY, JSON.stringify(presets));
+  renderPersonaPresetList();
 }
 
 initDefaultScenePresets();
