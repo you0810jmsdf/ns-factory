@@ -307,23 +307,6 @@ textarea{min-height:80px;resize:vertical}
         生成画像の<b>下部30〜35%</b>には商品の実物写真が等倍で挿入されます（再描画なし）。<br>
         <span style="color:#a04020">※商品実物写真はURLでなく<b>添付</b>が必須です。</span>
       </p>
-      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:#fff5e0;border:1px dashed #c9a84c;border-radius:6px">
-        <span style="font-size:12px;color:#5a3a20;font-weight:700">📥 幕僚参照画像をDL:</span>
-        <select id="staffImageSelector" style="padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;background:#fff">
-          <option value="sakusen.png">作戦幕僚（sakusen.png）</option>
-          <option value="hannbai.png" selected>販売幕僚（hannbai.png）</option>
-          <option value="kanri.png">監理幕僚（kanri.png）</option>
-          <option value="pr.png">広報幕僚（pr.png）</option>
-          <option value="kouhou.png">後方幕僚(kouhou.png)</option>
-          <option value="hozen.png">保全幕僚（hozen.png）</option>
-          <option value="digital.png">デジタル幕僚（digital.png）</option>
-        </select>
-        <input type="text" id="staffImageCustomName" placeholder="任意ファイル名（例: foo.png）" style="padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;width:170px">
-        <button type="button" class="btn btn-secondary" style="padding:5px 10px;font-size:12px" onclick="downloadSelectedStaffImage()">👤 選択画像をDL</button>
-        <button type="button" class="btn btn-secondary" id="dlProductImageBtn" style="padding:5px 10px;font-size:12px" disabled onclick="openProductFolder()" title="ローカルGドライブの商品写真ルートをクリップボードにコピーします">📁 ローカルパスをコピー</button>
-        <span id="dlImageStatus" style="font-size:11px;color:#2a7a3a"></span>
-      </div>
-
       <!-- ===== 人物プリセット ===== -->
       <div style="background:#fff3e8;border:1px solid #d8b888;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:bold;color:#7a5a2e;font-size:12px;margin-bottom:6px">👤 人物プリセット</div>
@@ -1420,33 +1403,6 @@ const STYLE_BASE = [
   'no text, no watermark, no logo, vertical composition (portrait orientation, 2:3).'
 ].join(' ');
 
-const PR_SCENES = [
-  {
-    title: '書斎で吟味',
-    setting: 'In a candlelit gothic study lined with leather-bound antique books and dark walnut shelves, a heavy oak desk in the foreground, brass scales and an ink quill on the desk.',
-    action: 'examining the product held carefully in both hands, gaze lowered with reverence, as if appraising a precious volume.'
-  },
-  {
-    title: 'ロウソク灯下で記帳',
-    setting: 'At a heavy dark-wood writing desk by a tall arched window with velvet drapes, three beeswax candles in a wrought-iron holder, an open ledger and a fountain pen, leather books stacked nearby.',
-    action: 'placing the product beside the open ledger, the artisan writing an entry by candlelight, the product catching the warm flame glow.'
-  },
-  {
-    title: '革棚の前で選定',
-    setting: 'In a vintage leather workshop with floor-to-ceiling oak shelving filled with rolls of veg-tan leather, hanging brass tools, gas lamps casting warm amber light, sawdust and leather dust in the air.',
-    action: 'standing before the leather shelves, presenting the product forward toward the viewer, as if introducing it from the workshop\'s finest selection.'
-  },
-  {
-    title: '梱包机で発送準備',
-    setting: 'On a worn wooden packing bench: kraft paper, brown twine, a stick of red sealing wax with a brass seal, a small inkpad, an old brass scale, surrounded by warm tungsten light from a green-shaded banker\'s lamp.',
-    action: 'wrapping the product in kraft paper and twine with careful, deliberate hands, preparing it for shipment, the product partly visible amid the wrapping.'
-  },
-  {
-    title: 'アトリエ机で仕上げ確認',
-    setting: 'At a leather artisan\'s atelier bench cluttered with awls, edge slickers, beeswax, edge dyes, and a wooden burnisher, an old brass desk lamp casting focused warm light, dark stone walls in the background.',
-    action: 'inspecting the edge of the product under the focused lamp light, holding the product close, fingertips tracing the burnished edge.'
-  }
-];
 
 function buildProductDescriptor() {
   const p = currentProductForPr || {};
