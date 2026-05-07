@@ -335,10 +335,9 @@ textarea{min-height:80px;resize:vertical}
       <div style="background:#fff3e8;border:1px solid #d8b888;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:bold;color:#7a5a2e;font-size:12px;margin-bottom:6px">👤 人物プリセット</div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
-          <select id="personaPresetList" style="flex:1;min-width:120px;padding:4px 6px;font-size:12px;border:1px solid #c9a84c;border-radius:4px">
+          <select id="personaPresetList" style="flex:1;min-width:120px;padding:4px 6px;font-size:12px;border:1px solid #c9a84c;border-radius:4px" onchange="loadPersonaPreset()">
             <option value="">— 保存済みプリセット —</option>
           </select>
-          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="loadPersonaPreset()">📂 呼出</button>
           <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="deletePersonaPreset()">🗑 削除</button>
         </div>
         <input type="text" id="personaPresetName" placeholder="プリセット名（例: 販売幕僚A）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;margin-bottom:4px;box-sizing:border-box">
@@ -352,10 +351,9 @@ textarea{min-height:80px;resize:vertical}
       <div style="background:#f0f8ff;border:1px solid #8ab4d8;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:bold;color:#2a5a7e;font-size:12px;margin-bottom:6px">🏞 背景プリセット</div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
-          <select id="scenePresetList" style="flex:1;min-width:120px;padding:4px 6px;font-size:12px;border:1px solid #8ab4d8;border-radius:4px">
+          <select id="scenePresetList" style="flex:1;min-width:120px;padding:4px 6px;font-size:12px;border:1px solid #8ab4d8;border-radius:4px" onchange="loadScenePreset()">
             <option value="">— 保存済みプリセット —</option>
           </select>
-          <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="loadScenePreset()">📂 呼出</button>
           <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="deleteScenePreset()">🗑 削除</button>
         </div>
         <input type="text" id="scenePresetName" placeholder="プリセット名（例: 工房デスク朝光）" style="width:100%;padding:4px 8px;font-size:12px;border:1px solid #8ab4d8;border-radius:4px;margin-bottom:4px;box-sizing:border-box">
@@ -1701,36 +1699,84 @@ function deleteScenePreset() {
   renderScenePresetList();
 }
 
-function initDefaultScenePresets() {
-  var presets = getScenePresets();
-  var existingNames = presets.map(function(p) { return p.name; });
-  PR_SCENES.forEach(function(scene) {
-    if (existingNames.indexOf(scene.title) < 0) {
-      presets.push({ name: scene.title, text: scene.setting });
-    }
-  });
-  localStorage.setItem(SCENE_STORE_KEY, JSON.stringify(presets));
-}
+var DEFAULT_PERSONA_NAMES = [
+  '20代_学生','20代_新社会人','20代_フリーランス','20代_アクティブ',
+  '30代_キャリア','30代_主婦','30代_ワーキングマザー','30代_クリエイター',
+  '40代_管理職','40代_専業主婦','40代_起業家','40代_文化系',
+  '50代_役職','50代_主婦','50代_趣味人','50代_社会活動家',
+  '60代_現役プロ','60代_アクティブ','60代_文化人','60代_趣味・孫と生活'
+];
+var DEFAULT_SCENE_NAMES = [
+  'カフェ_朝','カフェ_夕方','ナチュラルカフェ','オフィスデスク','ホームオフィス',
+  '書斎_クラシック','リビング_昼','キッチンテーブル','和室','図書館',
+  'ホテルラウンジ','窓際_晴天','ガーデンテーブル','ブックカフェ','新幹線_移動中',
+  '高層ビル_夜景','温泉旅館','カルチャースクール','ステーショナリーショップ','アトリエ_革工房'
+];
+var OLD_PERSONA_NAMES = ['作戦幕僚','販売幕僚','監理幕僚','広報幕僚','後方幕僚','保全幕僚','デジタル幕僚'];
+var OLD_SCENE_NAMES = ['📚 書斎で吟味','🕯️ ロウソク灯下で記帳','🧰 革棚の前で選定','📦 梱包机で発送準備','🛠️ アトリエ机で仕上げ確認'];
 
 function initDefaultPersonaPresets() {
-  var STAFF = [
-    { name: '作戦幕僚', text: '' },
-    { name: '販売幕僚', text: '' },
-    { name: '監理幕僚', text: '' },
-    { name: '広報幕僚', text: '' },
-    { name: '後方幕僚', text: '' },
-    { name: '保全幕僚', text: '' },
-    { name: 'デジタル幕僚', text: '' }
+  var DEFAULTS = [
+    { name: '20代_学生',         text: 'Japanese woman in her early 20s, university student, fresh casual style, slim figure, bright curious eyes, light knit top and jeans, carrying her leather planner notebook between classes' },
+    { name: '20代_新社会人',     text: 'Japanese woman in her mid-20s, new office worker, neat business casual, slender build, earnest focused expression, organizing her work schedule in a slim leather planner at her desk' },
+    { name: '20代_フリーランス', text: 'Japanese woman in her late 20s, freelancer, slightly bohemian creative style, relaxed confident posture, working at a café table with her leather system planner open' },
+    { name: '20代_アクティブ',   text: 'Japanese woman in her late 20s, active lifestyle, smart casual weekend look, energetic natural beauty, writing travel and hobby plans in her leather notebook' },
+    { name: '30代_キャリア',     text: 'Japanese woman in her early 30s, career professional, polished business attire, confident elegant posture, reviewing her leather system planner with precise handwriting' },
+    { name: '30代_主婦',         text: 'Japanese woman in her early 30s, stylish homemaker, relaxed feminine casual, warm gentle smile, using her leather notebook to plan household and family schedules' },
+    { name: '30代_ワーキングマザー', text: 'Japanese woman in her mid-30s, working mother, efficient smart casual, warm yet busy aura, quickly noting appointments in her leather planner between tasks' },
+    { name: '30代_クリエイター', text: 'Japanese woman in her late 30s, creative professional, artistic tasteful style, thoughtful focused expression, writing notes in her leather notebook at a tidy workspace' },
+    { name: '40代_管理職',       text: 'Japanese woman in her early 40s, mid-level manager, refined business professional look, assured natural authority, annotating her leather agenda with careful handwriting' },
+    { name: '40代_専業主婦',     text: 'Japanese woman in her mid-40s, accomplished homemaker, tasteful feminine style, calm composed expression, planning the week in her leather system planner at a cozy desk' },
+    { name: '40代_起業家',       text: 'Japanese woman in her late 40s, small business owner, creative polished look, energetic self-assured presence, writing business ideas in her custom leather planner' },
+    { name: '40代_文化系',       text: 'Japanese woman in her late 40s, arts and culture enthusiast, artistic classic style, graceful calm demeanor, recording gallery visits and cultural events in her leather notebook' },
+    { name: '50代_役職',         text: 'Japanese woman in her early 50s, senior department head, well-groomed conservative professional style, dignified reliable presence, reviewing annual schedule in her leather system planner' },
+    { name: '50代_主婦',         text: 'Japanese woman in her mid-50s, refined homemaker, classic elegant casual style, warm experienced aura, writing family memories and plans in her leather notebook' },
+    { name: '50代_趣味人',       text: 'Japanese woman in her late 50s, devoted hobbyist (tea ceremony, ikebana, or crafts), serene tasteful style, content focused expression, recording practice notes in her leather notebook' },
+    { name: '50代_社会活動家',   text: 'Japanese woman in her late 50s, active community volunteer, bright cheerful smart casual, energetic helpful aura, scheduling community events in her leather planner' },
+    { name: '60代_現役プロ',     text: 'Japanese woman in her early 60s, seasoned working professional, sharp conservative style, reliable experienced presence, making precise careful entries in her leather planner' },
+    { name: '60代_アクティブ',   text: 'Japanese woman in her mid-60s, active retiree, bright relaxed casual style, lively healthy bearing, planning travel and social activities in her leather notebook' },
+    { name: '60代_文化人',       text: 'Japanese woman in her late 60s, community cultural figure, dignified traditional Japanese style, warm wise graceful presence, writing in her leather planner with practiced elegant handwriting' },
+    { name: '60代_趣味・孫と生活', text: 'Japanese woman in her late 60s, gentle grandmother, soft classic style, serene kind expression, recording family events, recipes, and grandchildren\'s memories in her leather notebook' }
   ];
   var presets = getPersonaPresets();
+  presets = presets.filter(function(p) { return OLD_PERSONA_NAMES.indexOf(p.name) < 0; });
   var existingNames = presets.map(function(p) { return p.name; });
-  STAFF.forEach(function(s) {
-    if (existingNames.indexOf(s.name) < 0) {
-      presets.push({ name: s.name, text: s.text });
-    }
+  DEFAULTS.forEach(function(s) {
+    if (existingNames.indexOf(s.name) < 0) presets.push(s);
   });
   localStorage.setItem(PERSONA_STORE_KEY, JSON.stringify(presets));
-  renderPersonaPresetList();
+}
+
+function initDefaultScenePresets() {
+  var DEFAULTS = [
+    { name: 'カフェ_朝',              text: 'Bright modern café interior, wooden tables and chairs, soft morning natural light from large windows, steaming coffee cup beside open leather planner, warm peaceful atmosphere' },
+    { name: 'カフェ_夕方',            text: 'Cozy café at dusk, warm amber pendant lighting, soft background chatter, espresso cup and leather notebook open on small table, relaxed intimate evening atmosphere' },
+    { name: 'ナチュラルカフェ',       text: 'Organic natural café, reclaimed wood interior, potted plants on shelves, macramé wall decoration, earthy muted tones, warm diffused lighting, leather planner on rustic table' },
+    { name: 'オフィスデスク',         text: 'Modern clean office desk, neatly organized workspace, computer monitor in soft background blur, stationery and leather planner in foreground, professional focused atmosphere' },
+    { name: 'ホームオフィス',         text: 'Cozy home office corner, wooden bookshelf with books and small decorative items, warm desk lamp, leather system planner open on neat wooden desk, personal productive atmosphere' },
+    { name: '書斎_クラシック',        text: 'Classic study room, dark wood furniture, floor-to-ceiling bookshelves, warm amber lamp light, leather planner on polished antique desk, timeless intellectual atmosphere' },
+    { name: 'リビング_昼',            text: 'Comfortable living room, plush sofa with soft cushions, afternoon natural light, small potted plant on side table, leather notebook open on lap, relaxed domestic atmosphere' },
+    { name: 'キッチンテーブル',       text: 'Bright kitchen table in morning light, fresh flowers in small vase, coffee mug steaming, leather notebook laid open, peaceful cheerful domestic morning scene' },
+    { name: '和室',                    text: 'Traditional Japanese tatami room, low wooden writing desk, soft diffused light through shoji paper screen, neatly arranged stationery, leather notebook on the desk, calm serene atmosphere' },
+    { name: '図書館',                  text: 'Quiet library interior, rows of books in softly lit background, wooden study table with reading lamp, leather planner open beside reference books, studious peaceful atmosphere' },
+    { name: 'ホテルラウンジ',         text: 'Elegant hotel lounge, plush velvet seating, marble accent table, soft sophisticated indirect lighting, leather planner open on glass side table, luxurious refined atmosphere' },
+    { name: '窓際_晴天',              text: 'Bright window seat nook, white sheer curtains gently swaying, sunny outdoor garden view, leather planner open on cushioned window bench, fresh airy uplifting atmosphere' },
+    { name: 'ガーデンテーブル',       text: 'Outdoor garden patio, wrought iron table and chairs, natural greenery and flowers all around, dappled sunlight through tree canopy, leather notebook on rustic table, fresh natural relaxed atmosphere' },
+    { name: 'ブックカフェ',           text: 'Bookshop café corner, floor-to-ceiling shelves of books as backdrop, wooden stool and small café table, warm reading lamp, leather notebook open, literary cozy intimate atmosphere' },
+    { name: '新幹線_移動中',          text: 'Inside shinkansen bullet train seat, Japanese countryside passing through window, tray table unfolded, leather system planner open for travel planning, efficient modern travel atmosphere' },
+    { name: '高層ビル_夜景',          text: 'High-rise office lounge, floor-to-ceiling glass windows, city night lights twinkling below, sleek modern interior, leather planner on contemporary table, sophisticated urban night atmosphere' },
+    { name: '温泉旅館',               text: 'Traditional Japanese inn (ryokan) room, natural wood and washi interior, peaceful garden view through sliding glass door, low wooden table, leather planner open, restorative tranquil atmosphere' },
+    { name: 'カルチャースクール',     text: 'Arts and crafts classroom, long wooden workbench, organized creative tools and supplies, soft natural workshop lighting, leather planner open for scheduling, creative inspiring community atmosphere' },
+    { name: 'ステーショナリーショップ', text: 'Beautifully curated stationery boutique, neatly displayed notebooks pens and leather goods, warm display spot lighting, leather system planner open on counter, refined organized inspiring atmosphere' },
+    { name: 'アトリエ_革工房',        text: 'Leather craft atelier, wooden workbench with hand tools and leather scraps, rolls of natural leather in soft background, warm workshop lamp, leather planner open among craft materials, authentic artisan atmosphere' }
+  ];
+  var presets = getScenePresets();
+  presets = presets.filter(function(p) { return OLD_SCENE_NAMES.indexOf(p.name) < 0; });
+  var existingNames = presets.map(function(p) { return p.name; });
+  DEFAULTS.forEach(function(s) {
+    if (existingNames.indexOf(s.name) < 0) presets.push(s);
+  });
+  localStorage.setItem(SCENE_STORE_KEY, JSON.stringify(presets));
 }
 
 initDefaultScenePresets();
