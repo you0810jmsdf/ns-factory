@@ -303,17 +303,10 @@ textarea{min-height:80px;resize:vertical}
     <div style="margin-top:10px;padding:12px;background:#fff;border:1px dashed #d9b466;border-radius:8px">
       <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 幕僚PR画像 — プロンプト生成</div>
       <p style="font-size:12px;color:#7a5a3f;margin:4px 0 10px;line-height:1.5">
-        人物プリセットまたは幕僚画像DLでArtisan画像を準備し、シーンボタンを押してプロンプトを生成。<b>ChatGPT-4o / Gemini 2.5 Flash Image</b>にプロンプトと画像2枚（人物＋商品実物写真）を添付して実行します。<br>
+        ①人物プリセット・②背景プリセットを選択し、「プロンプト生成」を押してください。<b>ChatGPT-4o / Gemini 2.5 Flash Image</b>にプロンプトと画像2枚（人物＋商品実物写真）を添付して実行します。<br>
         生成画像の<b>下部30〜35%</b>には商品の実物写真が等倍で挿入されます（再描画なし）。<br>
         <span style="color:#a04020">※商品実物写真はURLでなく<b>添付</b>が必須です。</span>
       </p>
-      <div id="prSceneButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(0)">📚 書斎で吟味</button>
-        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(1)">🕯️ ロウソク灯下で記帳</button>
-        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(2)">🧰 革棚の前で選定</button>
-        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(3)">📦 梱包机で発送準備</button>
-        <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="generatePrPrompt(4)">🛠️ アトリエ机で仕上げ確認</button>
-      </div>
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:#fff5e0;border:1px dashed #c9a84c;border-radius:6px">
         <span style="font-size:12px;color:#5a3a20;font-weight:700">📥 幕僚参照画像をDL:</span>
         <select id="staffImageSelector" style="padding:4px 8px;font-size:12px;border:1px solid #c9a84c;border-radius:4px;background:#fff">
@@ -363,8 +356,12 @@ textarea{min-height:80px;resize:vertical}
         </div>
       </div>
 
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+        <button type="button" class="btn btn-primary" style="padding:8px 18px;font-size:13px;font-weight:bold" onclick="generatePrPrompt()">✨ プロンプト生成</button>
+        <span style="font-size:11px;color:#8a6a2e">人物・背景プリセットを選択してから押してください</span>
+      </div>
       <div id="prPromptInfo" style="font-size:11px;color:#8a6a2e;margin-bottom:6px">商品: <span id="prProductInfo">（読込中）</span></div>
-      <textarea id="prPromptOutput" rows="14" placeholder="シーンボタンを押すとプロンプトが生成されます。コピーしてChatGPT/Geminiへ貼付し、上でDLした画像2枚（販売幕僚＋商品）を必ず添付してください。" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
+      <textarea id="prPromptOutput" rows="14" placeholder="人物・背景プリセットを選んで「プロンプト生成」を押してください。生成後、コピーしてChatGPT/Geminiへ貼付し、画像2枚（人物＋商品実物写真）を必ず添付してください。" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
         <button type="button" class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="copyPrPrompt()">📋 コピー</button>
         <span id="prCopyStatus" style="font-size:12px;color:#2a7a3a"></span>
@@ -1461,24 +1458,29 @@ function buildProductDescriptor() {
   return `handcrafted ${colorPart}${material} ${cat}${size}`;
 }
 
-function generatePrPrompt(sceneIndex) {
+function generatePrPrompt() {
   if (!currentProductForPr) {
     alert('先に商品を読み込んでください。');
     return;
   }
-  const scene = PR_SCENES[sceneIndex];
-  if (!scene) return;
   const productDesc = buildProductDescriptor();
   const productName = currentProductForPr.name || '';
   const productId = currentProductForPr.productId || '';
 
   const personaText = (document.getElementById('personaPresetText') || {}).value || '';
-  const sceneExtraText = (document.getElementById('scenePresetText') || {}).value || '';
+  const sceneText   = (document.getElementById('scenePresetText')   || {}).value || '';
 
-  const artisanDesc = personaText
-    ? personaText
-    : 'N\'s factory Adjutant / 幕僚';
-  const settingDesc = scene.setting + (sceneExtraText ? ' Additionally: ' + sceneExtraText : '');
+  if (!personaText && !sceneText) {
+    alert('人物プリセットまたは背景プリセットを選択してください。');
+    return;
+  }
+
+  const artisanDesc = personaText || 'N\'s factory leather artisan';
+  const settingDesc = sceneText   || 'Natural workshop setting with warm ambient light';
+
+  const personaName = (document.getElementById('personaPresetName') || {}).value || '';
+  const sceneName   = (document.getElementById('scenePresetName')   || {}).value || '';
+  const sceneLabel  = [personaName, sceneName].filter(Boolean).join(' × ') || 'Custom Scene';
 
   const prompt = [
     '## Two attached reference images',
@@ -1490,9 +1492,9 @@ function generatePrPrompt(sceneIndex) {
     '  • From Attached Image #1: keep the artisan\'s EXACT face, hairstyle, skin tone, build, and outfit. Do NOT invent a new person, do NOT change facial features.',
     '  • Attached Image #2 MUST be placed pixel-faithful in the lower 30–35% of the output image as a full-width representative photo strip — NO redrawing, NO restyling, NO color shift, NO perspective change, NO cropping of the product. The strip sits flush with the bottom edge; place a thin neutral separator line above it and the small caption "実物写真 / Actual Product Photo" centered inside the strip.',
     '',
-    '## Scene: ' + scene.title,
+    '## Scene: ' + sceneLabel,
     'Setting: ' + settingDesc,
-    'Action: The artisan (from Attached Image #1) is ' + scene.action,
+    'Action: The artisan (from Attached Image #1) is naturally using or displaying the product — holding it with care, writing in it, or presenting it toward the viewer.',
     'The artisan may hold or display a generic stand-in for a ' + productDesc + '. The AUTHORITATIVE product representation is the lower photo strip (Attached Image #2 itself).',
     '',
     '## Style',
