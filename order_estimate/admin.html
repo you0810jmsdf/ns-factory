@@ -734,6 +734,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="thread" role="tab" aria-selected="false">ステッチ糸在庫</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="analytics" role="tab" aria-selected="false">アクセス解析</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="stats" role="tab" aria-selected="false">作品ページアクセスログ</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="threads-sns" role="tab" aria-selected="false">📣 Threads投稿管理</button>
     </div>
     <div class="admin-tab-note" id="adminTabNote">N's Factory 経営カレンダー。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。</div>
 
@@ -1167,6 +1168,45 @@ tr.row-out-stock td{
         </table>
       </div>
     </div>
+
+    <!-- Threads投稿管理タブ -->
+    <div class="panel threads-sns-section admin-section-hidden">
+      <div style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:800;color:#3d1a08;margin-bottom:6px">📣 Threads投稿管理</div>
+        <div style="font-size:12px;color:#7d644d;line-height:1.6">N's factory Threads自動投稿システム（Nsfactory-SNS-AutoPost）。リンクをクリックすると別タブで開きます。</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+        <a href="https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec?action=drafts" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">📝</span>
+          <span style="font-weight:800;font-size:13px">投稿候補一覧</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">承認待ちの下書きを確認・承認・編集・予約投稿する</span>
+        </a>
+        <a href="https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec?action=calendar" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">📅</span>
+          <span style="font-weight:800;font-size:13px">予約カレンダー</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">月別に予約投稿のスケジュールを確認する</span>
+        </a>
+        <a href="https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec?action=cache" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">📰</span>
+          <span style="font-weight:800;font-size:13px">Web情報キャッシュ</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">収集済みのレザークラフト関連記事・要約を確認する</span>
+        </a>
+        <a href="https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec?action=keywords" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">🔑</span>
+          <span style="font-weight:800;font-size:13px">キーワード管理</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">情報収集・投稿生成に使うキーワードを編集する</span>
+        </a>
+      </div>
+      <div style="padding:12px;background:#f0f7f3;border:1px solid #b8ddc8;border-radius:10px;font-size:12px;color:#29613d;line-height:1.6">
+        ⏰ <b>自動実行スケジュール：</b>毎朝8:00 投稿文自動生成 → メール通知 / 毎週月曜7:00 Web情報収集 / 5分ごと 予約投稿チェック<br>
+        📮 <b>Threadsアカウント：</b><a href="https://www.threads.com/@leathercraft_nsfactory" target="_blank" style="color:#29613d">@leathercraft_nsfactory</a>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -2599,7 +2639,8 @@ function setAdminTab(tab) {
   const isThread = tab === 'thread';
   const isAnalytics = tab === 'analytics';
   const isStats = tab === 'stats';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats;
+  const isThreadsSns = tab === 'threads-sns';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -2615,8 +2656,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.stats-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isStats);
   });
+  document.querySelectorAll('.threads-sns-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isThreadsSns);
+  });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -2639,6 +2683,8 @@ function setAdminTab(tab) {
       ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
       : isStats
       ? '商品閲覧ランキングとオーダー依頼の履歴をスプレッドシートのアクセスログから表示します。'
+      : isThreadsSns
+      ? 'Threads自動投稿システム（Nsfactory-SNS-AutoPost）。投稿候補の確認・承認・予約投稿を管理します。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
   if (isAnalytics && !gaLoaded) gaLoad(7);
