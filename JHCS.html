@@ -514,6 +514,7 @@
 
 <script>
   const GAS_URL_KEY = 'jhcs_gas_url';
+  const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbx07fbbOGbVxPjGNIARWTy_AbQK7KexzhW2Tv4xrheOoCz297min0aW8R2BvuaySkDf/exec';
   const AFFILIATE_LINKS_URL = 'affiliate-links.json';
   let cachedRecords = [];
   let cachedNotice = null;
@@ -539,7 +540,7 @@
   ];
 
   // ── GAS URL 管理 ──────────────────────────────────
-  function getGasUrl() { return localStorage.getItem(GAS_URL_KEY) || ''; }
+  function getGasUrl() { return localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL; }
 
   function saveGasUrl() {
     const url = document.getElementById('gas-url-input').value.trim();
@@ -1155,9 +1156,8 @@
   async function loadRecords() {
     const url = getGasUrl();
     if (!url) {
-      document.getElementById('setup-banner').classList.add('show');
       document.getElementById('records-body').innerHTML =
-        '<tr><td colspan="8" class="empty-msg">GASのURLを設定してください（上のバナー）。</td></tr>';
+        '<tr><td colspan="8" class="empty-msg">データを取得できませんでした。</td></tr>';
       return;
     }
     setTableLoading();
@@ -1502,9 +1502,8 @@
     loadPhotos();
   } else {
     renderCurriculum(DEFAULT_CURRICULUM);
-    document.getElementById('setup-banner').classList.add('show');
     document.getElementById('records-body').innerHTML =
-      '<tr><td colspan="8" class="empty-msg">GASのURLを設定してください（上のバナー）。</td></tr>';
+      '<tr><td colspan="8" class="empty-msg">データ読み込み中...</td></tr>';
   }
 </script>
 <script src="assets/access-counter.js"></script>
