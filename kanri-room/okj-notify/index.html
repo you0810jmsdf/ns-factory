@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OKJ BTC/JPY 通知設定 | 監理幕僚ROOM</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{
+  --ink:#1D1D1F;
+  --muted:#636366;
+  --line:#E8E8ED;
+  --soft:#F5F5F7;
+  --paper:#FFFFFF;
+  --accent:#A0785A;
+  --accent-soft:#F3ECE4;
+  --accent-dark:#7A5540;
+  --danger:#C0392B;
+  --ok:#2E7D32;
+  --radius:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.10);
+  font-family:-apple-system,'SF Pro Display','SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.nav{
+  position:sticky;top:0;z-index:10;height:56px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.nav-title{font-size:14px;font-weight:800;letter-spacing:.04em}
+.nav-spacer{flex:1}
+.nav-link{font-size:13px;color:var(--muted);padding:6px 10px;border-radius:var(--radius)}
+.nav-link:hover{background:var(--soft);color:var(--ink)}
+
+.wrap{max-width:720px;margin:0 auto;padding:48px 24px}
+.eyebrow{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;
+}
+h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
+.lead{color:var(--muted);font-size:14px;margin-bottom:32px}
+
+.status-line{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:12px;color:var(--muted);margin-bottom:24px;
+}
+.dot{width:8px;height:8px;border-radius:50%;background:#BDBDBD;display:inline-block}
+.dot.ok{background:var(--ok)}
+.dot.err{background:var(--danger)}
+
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:24px;margin-bottom:18px;
+}
+.card h2{
+  font-size:14px;font-weight:800;color:var(--accent-dark);
+  letter-spacing:.06em;text-transform:uppercase;
+  margin-bottom:6px;
+}
+.card .desc{font-size:13px;color:var(--muted);margin-bottom:18px}
+
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.field .hint{font-size:11px;color:var(--muted);margin-top:4px}
+.field input[type=text],
+.field input[type=number]{
+  width:100%;height:42px;padding:0 12px;
+  border:1px solid var(--line);border-radius:var(--radius);
+  font-size:14px;background:var(--soft);outline:none;
+  transition:border-color .15s,background .15s;
+  font-variant-numeric:tabular-nums;
+}
+.field input[readonly]{color:var(--muted);background:var(--soft)}
+.field input:focus{border-color:var(--accent);background:#fff}
+
+.toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0 14px;border-bottom:1px dashed var(--line);margin-bottom:14px;
+}
+.toggle:last-of-type{border-bottom:none}
+.toggle-meta strong{display:block;font-size:14px;margin-bottom:2px}
+.toggle-meta span{font-size:12px;color:var(--muted)}
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0;margin-left:14px}
+.switch input{opacity:0;width:0;height:0}
+.slider{
+  position:absolute;cursor:pointer;inset:0;
+  background:#D1D1D6;border-radius:999px;transition:.2s;
+}
+.slider::before{
+  content:'';position:absolute;height:20px;width:20px;left:3px;bottom:3px;
+  background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.switch input:checked + .slider{background:var(--accent)}
+.switch input:checked + .slider::before{transform:translateX(20px)}
+
+.actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;padding:0 22px;border:none;
+  border-radius:var(--radius);font-size:14px;font-weight:800;cursor:pointer;
+  transition:background .15s,opacity .15s;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.btn-ghost:hover{background:var(--soft);color:var(--ink)}
+
+.toast{
+  margin-top:18px;padding:12px 14px;border-radius:var(--radius);
+  font-size:13px;display:none;
+}
+.toast.show{display:block}
+.toast.ok{background:#E8F5E9;color:var(--ok);border:1px solid #C8E6C9}
+.toast.err{background:#FDECEA;color:var(--danger);border:1px solid #F5C6CB}
+
+.meta{
+  margin-top:12px;font-size:11px;color:var(--muted);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+
+/* 認証拒否時 */
+.locked{
+  min-height:60vh;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;text-align:center;padding:24px;
+}
+.locked p{font-size:14px;color:var(--muted)}
+.locked a{
+  display:inline-block;padding:10px 18px;background:var(--accent);color:#fff;
+  border-radius:var(--radius);font-size:13px;font-weight:800;
+}
+
+@media(max-width:520px){
+  .wrap{padding:32px 18px}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">OKJ BTC/JPY 通知設定</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="../">← ROOMへ戻る</a>
+</header>
+
+<!-- 未認証時 -->
+<section class="locked" id="locked" style="display:none">
+  <div class="eyebrow">UNAUTHORIZED</div>
+  <p>認証が必要です。ROOM 入口でパスワードを入力してください。</p>
+  <a href="../">ROOMへ移動</a>
+</section>
+
+<!-- 認証済み -->
+<main class="wrap" id="wrap" style="display:none">
+  <div class="eyebrow">OKJ NOTIFY / CONFIG</div>
+  <h1>BTC/JPY 通知設定</h1>
+  <p class="lead">GitHub Actions（*/5 分）で OKJ の BTC/JPY を取得し、ntfy.sh 経由で iPhone へ通知します。</p>
+
+  <div class="status-line">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">読み込み中…</span>
+  </div>
+
+  <!-- 通知先 -->
+  <section class="card">
+    <h2>通知先（ntfy.sh）</h2>
+    <p class="desc">iPhone 側 ntfy アプリで購読中のトピック。変更時は iPhone 側も再購読が必要です。</p>
+    <div class="field">
+      <label for="ntfyTopic">トピック</label>
+      <input type="text" id="ntfyTopic" maxlength="64">
+      <div class="hint">英数 / _ / - のみ。6〜64文字。</div>
+    </div>
+    <div class="field">
+      <label for="ntfyPriority">プライオリティ（1〜5）</label>
+      <input type="number" id="ntfyPriority" min="1" max="5" step="1">
+      <div class="hint">4 = high（推奨）、5 = max（音強制）。</div>
+    </div>
+  </section>
+
+  <!-- 帯通知 -->
+  <section class="card">
+    <h2>円幅トリガー（band_yen）</h2>
+    <p class="desc">10万円帯のように、帯を跨いだら通知。前回通知価格から帯番号が変わったら発火。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると円幅トリガーは発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="bandYenEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field">
+      <label for="bandYenStep">帯の幅（円）</label>
+      <input type="number" id="bandYenStep" min="1000" max="100000000" step="1000">
+      <div class="hint">推奨: 100,000（10万円）。範囲: 1,000〜100,000,000。</div>
+    </div>
+  </section>
+
+  <!-- %通知 -->
+  <section class="card">
+    <h2>%幅トリガー（band_percent）</h2>
+    <p class="desc">前回通知時の価格から ±X% 動いたら通知。閾値は通知都度に更新（band方式）。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると %幅トリガーは発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="bandPctEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field">
+      <label for="bandPctStep">変動率（％）</label>
+      <input type="number" id="bandPctStep" min="0.1" max="50" step="0.1">
+      <div class="hint">推奨: 1.0%。範囲: 0.1〜50.0。</div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button type="button" class="btn btn-primary" id="saveBtn" disabled>保存して GitHub へ反映</button>
+    <button type="button" class="btn btn-ghost" id="reloadBtn">最新を再読込</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="meta">
+    <span id="metaUpdated">updated_at: -</span>
+    <span id="metaSha">sha: -</span>
+  </div>
+</main>
+
+<script>
+(function(){
+  const AUTH_KEY = 'kanri_auth_token';
+  const PASSWORD = 'glJy4399';
+  const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzwAqNSsJqtr3ZxMNg2dfZliZ0y-_VZPmVvWdkATF5JuXrMQuFkHfsxcMLS7ziwJgR3/exec';
+
+  function isAuthed(){
+    try{
+      const raw = localStorage.getItem(AUTH_KEY);
+      if(!raw) return false;
+      const obj = JSON.parse(raw);
+      if(!obj || !obj.exp) return false;
+      if(Date.now() > obj.exp){
+        localStorage.removeItem(AUTH_KEY);
+        return false;
+      }
+      return obj.ok === true;
+    }catch(e){ return false; }
+  }
+
+  if(!isAuthed()){
+    document.getElementById('locked').style.display = 'flex';
+    return;
+  }
+  document.getElementById('wrap').style.display = 'block';
+
+  const $ = (id) => document.getElementById(id);
+  const statusDot  = $('statusDot');
+  const statusText = $('statusText');
+  const saveBtn    = $('saveBtn');
+  const reloadBtn  = $('reloadBtn');
+  const toast      = $('toast');
+  let currentSha = null;
+
+  function setStatus(state, text){
+    statusDot.className = 'dot' + (state ? ' ' + state : '');
+    statusText.textContent = text;
+  }
+  function showToast(kind, msg){
+    toast.className = 'toast show ' + kind;
+    toast.textContent = msg;
+    setTimeout(()=>{ toast.classList.remove('show'); }, 6000);
+  }
+  function lockUi(lock){
+    saveBtn.disabled = lock;
+    reloadBtn.disabled = lock;
+  }
+
+  async function loadConfig(){
+    setStatus('', '読み込み中…');
+    lockUi(true);
+    try{
+      const url = ENDPOINT + '?t=' + Date.now();
+      const res = await fetch(url, { method:'GET' });
+      const data = await res.json();
+      if(!data.ok){ throw new Error(data.error || 'unknown error'); }
+      const c = data.config || {};
+      $('ntfyTopic').value     = c.ntfy_topic || '';
+      $('ntfyPriority').value  = c.ntfy_priority || 4;
+      const by = (c.checks && c.checks.band_yen)     || {};
+      const bp = (c.checks && c.checks.band_percent) || {};
+      $('bandYenEnabled').checked = !!by.enabled;
+      $('bandYenStep').value      = by.step != null ? by.step : 100000;
+      $('bandPctEnabled').checked = !!bp.enabled;
+      $('bandPctStep').value      = bp.step != null ? bp.step : 1.0;
+      currentSha = data.sha;
+      $('metaUpdated').textContent = 'updated_at: ' + (c.updated_at || '-');
+      $('metaSha').textContent     = 'sha: ' + (data.sha ? data.sha.substring(0,8) : '-');
+      setStatus('ok', 'GitHub から読込完了');
+      lockUi(false);
+    }catch(err){
+      setStatus('err', 'GET 失敗: ' + (err.message || err));
+      showToast('err', 'GET 失敗: ' + (err.message || err));
+      reloadBtn.disabled = false;
+    }
+  }
+
+  function buildPayload(){
+    return {
+      ntfy_topic:    $('ntfyTopic').value.trim(),
+      ntfy_priority: Number($('ntfyPriority').value),
+      checks: {
+        band_yen: {
+          enabled: $('bandYenEnabled').checked,
+          step:    Number($('bandYenStep').value),
+        },
+        band_percent: {
+          enabled: $('bandPctEnabled').checked,
+          step:    Number($('bandPctStep').value),
+        },
+      },
+    };
+  }
+
+  async function saveConfig(){
+    setStatus('', '保存中…');
+    lockUi(true);
+    try{
+      const body = JSON.stringify({
+        action: 'updateConfig',
+        key:    PASSWORD,
+        config: buildPayload(),
+      });
+      // preflight 回避のため text/plain で送信
+      const res = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: body,
+      });
+      const data = await res.json();
+      if(!data.ok){ throw new Error(data.error || 'unknown error'); }
+      setStatus('ok', '保存完了');
+      showToast('ok', 'GitHub へ反映しました（commit: ' + (data.commit ? data.commit.substring(0,8) : '-') + '）');
+      await loadConfig();
+    }catch(err){
+      setStatus('err', '保存失敗: ' + (err.message || err));
+      showToast('err', '保存失敗: ' + (err.message || err));
+      lockUi(false);
+    }
+  }
+
+  saveBtn.addEventListener('click', saveConfig);
+  reloadBtn.addEventListener('click', loadConfig);
+  loadConfig();
+})();
+</script>
+
+</body>
+</html>
