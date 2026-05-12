@@ -2,3 +2,5 @@
 .monitor/
 .claude/
 node_modules/
+__pycache__/
+okcoin-state.json
