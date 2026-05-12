@@ -85,12 +85,25 @@ a{color:inherit;text-decoration:none}
 .hub{display:none;padding:64px 24px}
 .hub.active{display:block}
 .hub-inner{max-width:1040px;margin:0 auto}
+.hub-header{
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  margin-bottom:40px;
+}
+.hub-portrait{
+  width:104px;height:104px;border-radius:50%;
+  object-fit:cover;
+  border:3px solid #fff;
+  box-shadow:var(--shadow);
+  background:var(--soft);
+  flex-shrink:0;
+}
+.hub-header-text{flex:1;min-width:240px}
 .hub-eyebrow{
   color:var(--accent-dark);font-size:11px;font-weight:800;
   letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;
 }
 .hub h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.02em;margin-bottom:8px}
-.hub .lead{color:var(--muted);font-size:15px;margin-bottom:40px}
+.hub .lead{color:var(--muted);font-size:15px}
 
 .tool-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;
@@ -153,9 +166,14 @@ a{color:inherit;text-decoration:none}
 <!-- ROOM 本体 -->
 <main class="hub" id="hub">
   <div class="hub-inner">
-    <div class="hub-eyebrow">KANRI-ROOM / DASHBOARD</div>
-    <h1>監理幕僚ROOM</h1>
-    <p class="lead">資産・通知・経営指標を一元管理する管理者専用エリア。</p>
+    <div class="hub-header">
+      <img class="hub-portrait" src="../assets/staff/kanri.png" alt="監理幕僚">
+      <div class="hub-header-text">
+        <div class="hub-eyebrow">KANRI-ROOM / DASHBOARD</div>
+        <h1>監理幕僚ROOM</h1>
+        <p class="lead">資産・通知・経営指標を一元管理する管理者専用エリア。</p>
+      </div>
+    </div>
 
     <div class="section-label">通知設定</div>
     <div class="tool-grid">
