@@ -339,9 +339,13 @@ textarea{min-height:80px;resize:vertical}
         </div>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap">
         <button type="button" class="btn btn-primary" style="padding:8px 18px;font-size:13px;font-weight:bold" onclick="generatePrPrompt()">✨ プロンプト生成</button>
         <span style="font-size:11px;color:#8a6a2e">人物・背景プリセットを選択してから押してください</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap;padding:8px;background:#fff8ec;border:1px dashed #d8b888;border-radius:6px">
+        <button type="button" class="btn" style="padding:8px 18px;font-size:13px;font-weight:bold;background:#7a5a2e;color:#fff;border:none;border-radius:6px;cursor:pointer" onclick="generateHandwrittenPrPrompt()">✏️ 手書き風PR画像プロンプト生成</button>
+        <span style="font-size:11px;color:#8a6a2e">実物写真をそのまま使い、万年筆風スケッチ＋吹き出しで紹介文を合成（商品説明文を自動転用）</span>
       </div>
       <div id="prPromptInfo" style="font-size:11px;color:#8a6a2e;margin-bottom:6px">商品: <span id="prProductInfo">（読込中）</span></div>
       <textarea id="prPromptOutput" rows="14" placeholder="人物・背景プリセットを選んで「プロンプト生成」を押してください。生成後、コピーしてChatGPT/Geminiへ貼付し、画像2枚（人物＋商品実物写真）を必ず添付してください。" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
@@ -776,6 +780,7 @@ async function loadProduct() {
     currentProductForPr = {
       productId: p.productId, name: p.name, category: p.category,
       material: p.material, color: p.color, size: p.size,
+      shortDesc: p.shortDesc || '', longDesc: p.longDesc || '',
       photoUrl: _mainPh,
       productPhotos: photos.map(ph => ph.url).filter(Boolean)
     };
@@ -1464,6 +1469,75 @@ function generatePrPrompt() {
 
   document.getElementById('prPromptOutput').value = prompt;
   document.getElementById('prCopyStatus').textContent = '';
+}
+
+// ====== 手書き風PR画像プロンプト生成（実物写真保持＋万年筆スケッチ吹き出し合成） ======
+function generateHandwrittenPrPrompt() {
+  if (!currentProductForPr) {
+    alert('先に商品を読み込んでください。');
+    return;
+  }
+  const p = currentProductForPr;
+  const productId   = p.productId || '';
+  const productName = p.name || '';
+  const shortDesc   = (p.shortDesc || '').trim();
+  const longDesc    = (p.longDesc  || '').trim();
+  const descSource  = shortDesc || longDesc;
+
+  if (!descSource) {
+    alert('商品マスタに説明文（短い説明 / 長い説明）が登録されていません。Step3で入力してから再実行してください。');
+    return;
+  }
+
+  // 手書き吹き出しに入れる紹介文（短い説明を優先・なければ長い説明を120字で切る）
+  const captionText = shortDesc || (longDesc.length > 120 ? longDesc.slice(0, 118) + '…' : longDesc);
+
+  const productDesc = buildProductDescriptor();
+
+  const prompt = [
+    '## Attached reference image',
+    '  • Attached Image #1 = The Actual Product Photograph' + (productId ? ' (' + productId + (productName ? ' / ' + productName : '') + ')' : '') + ' — the real product photo, NOT a render.',
+    '',
+    '## Task',
+    'Generate ONE new image that uses Attached Image #1 verbatim as the central subject and overlays a hand-drawn fountain-pen sketch annotation layer around it (arrows + speech bubbles + handwritten Japanese caption). DO NOT redraw, restyle, recolor, recrop, or warp the product photo — it must remain pixel-faithful as the centerpiece.',
+    '',
+    '## Strict preservation rules for Attached Image #1',
+    '  • Place Attached Image #1 at the center of the canvas, occupying roughly 55–65% of the area, with generous white margin around it for the sketch annotations.',
+    '  • NO redrawing, NO restyling, NO color shift, NO perspective change, NO cropping of the product. Pixel-faithful.',
+    '  • A very subtle soft drop shadow under the photo is allowed for visual grounding, nothing else.',
+    '',
+    '## Annotation layer (drawn ON TOP of the white margin, not on the photo)',
+    'Style: hand-drawn fountain-pen ink sketch, fine thin lines (approx. 1.2–1.8pt equivalent), confident but slightly imperfect strokes, navy-black ink (#1a2138) on warm off-white paper background (#fbf6ec) with a faint paper grain.',
+    'Elements to draw around the product photo:',
+    '  • 2 to 4 thin curved arrows (hand-drawn, slightly wobbly) pointing from the margins toward key features of the product (e.g., stitching, edge finish, hardware, material texture).',
+    '  • 1 main hand-drawn speech bubble (cloud-style or rounded rectangle, hand-inked outline, slight imperfections) placed in the upper-right or upper-left margin.',
+    '  • 1 to 2 smaller annotation tags (small underlined keywords) near the arrow tips.',
+    '  • Optional tiny decorative ink doodles (a small star, a leaf, or a coin/stitch mark) — sparse, not crowded.',
+    '',
+    '## Handwritten Japanese caption (MUST be inside the main speech bubble, verbatim)',
+    '"""',
+    captionText,
+    '"""',
+    '  • Render the caption above in a casual handwritten Japanese style (looks like written with a fountain pen, slightly uneven baseline, natural rhythm). Do NOT translate. Do NOT paraphrase. Keep ALL kanji, kana, punctuation as given.',
+    '  • Caption text color: same navy-black ink (#1a2138). Slight ink bleed for realism.',
+    '  • Font feel: handwritten Japanese (NOT computer font, NOT block printing). Casual, friendly, but readable.',
+    '',
+    '## Background',
+    'A clean warm off-white paper texture (#fbf6ec) with very faint horizontal grain. No other scene, no people, no props. The product photo and the sketch annotations are the only content.',
+    '',
+    '## Product context (for choosing where to point the arrows)',
+    'Product: ' + productDesc + (productName ? ' — "' + productName + '"' : '') + '.',
+    '',
+    '## Output requirements',
+    '— Aspect ratio: 4:5 (slightly vertical) or 1:1 — choose whichever frames the photo + annotations best.',
+    '— The product photo (Attached Image #1) must remain perfectly intact and recognizable as a real photograph, not an illustration.',
+    '— All hand-drawn elements (arrows, bubbles, caption) must clearly look ink-on-paper, NOT digital vector.',
+    '— No watermark, no logo, no extra text outside the bubble/tags described above.'
+  ].join('\n');
+
+  document.getElementById('prPromptOutput').value = prompt;
+  document.getElementById('prCopyStatus').textContent = '✏️ 手書き風プロンプトを生成しました（実物写真1枚のみ添付すればOK）';
+  setTimeout(() => { document.getElementById('prCopyStatus').textContent = ''; }, 6000);
 }
 
 // ====== 参照画像のダウンロードヘルパー ======
