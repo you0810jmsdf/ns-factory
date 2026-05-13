@@ -13,6 +13,9 @@
   gtag('config', 'G-ND1T7H067Y');
 </script>
 <meta name="description" content="直接、作家と使用者がつながり、自分だけの革小物（手帳、その他）、ハンコ、アクリル製品、木工製品を創ることを目的としたサイトです。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ── Design Tokens ────────────────────────────────── */
 :root {
@@ -38,9 +41,7 @@
   --radius-full:9999px;
   --transition-base: .2s ease;
   --transition-slow: .35s ease;
-  font-family: -apple-system,'SF Pro Display','SF Pro Text',
-               'Hiragino Sans','Hiragino Kaku Gothic ProN',
-               'Yu Gothic',Meiryo,sans-serif;
+  font-family: 'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
 }
 
 .notebook-highlight{
@@ -373,6 +374,82 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 }
 .staff-card:hover .staff-link-text{color:var(--color-accent-dark)}
 
+/* ── Cinzel / Zen Old Mincho 適用 ───────────────────── */
+.section-title,
+h1,h2,h3{
+  font-family:'Cinzel','Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+}
+.staff-role{
+  font-family:'Cinzel','Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+}
+
+/* ── 個人事業主カード（総司令官・単独中央）────────────── */
+.staff-commander-wrap{
+  display:flex;
+  justify-content:center;
+  margin-bottom:32px;
+}
+.staff-commander{
+  position:relative;
+  width:min(320px,90vw);
+  overflow:visible;
+  background:var(--color-bg);
+  border:2px solid #c5a44e;
+  border-radius:var(--radius-lg);
+  box-shadow:
+    0 0 0 1px #f0d98a,
+    0 0 24px rgba(197,164,78,0.30),
+    var(--shadow-md);
+  transition:transform var(--transition-base),box-shadow var(--transition-base);
+}
+.staff-commander:hover{
+  transform:translateY(-4px);
+  box-shadow:
+    0 0 0 1px #f0d98a,
+    0 0 40px rgba(197,164,78,0.45),
+    var(--shadow-lg);
+}
+/* エンブレム装飾線（上） */
+.staff-commander::before{
+  content:'── ✦ ──';
+  position:absolute;
+  top:-14px; left:50%; transform:translateX(-50%);
+  background:var(--color-bg);
+  padding:0 10px;
+  font-size:11px;
+  letter-spacing:0.25em;
+  color:#c5a44e;
+  white-space:nowrap;
+  line-height:1;
+}
+/* エンブレム装飾線（下） */
+.staff-commander::after{
+  content:'── ✦ ──';
+  position:absolute;
+  bottom:-14px; left:50%; transform:translateX(-50%);
+  background:var(--color-bg);
+  padding:0 10px;
+  font-size:11px;
+  letter-spacing:0.25em;
+  color:#c5a44e;
+  white-space:nowrap;
+  line-height:1;
+}
+.staff-commander img{
+  width:100%;
+  aspect-ratio:4/5;
+  object-fit:cover;
+  background:#111;
+  border-radius:calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
+  display:block;
+}
+.staff-commander .staff-card-body{padding:20px 22px 22px;}
+.staff-commander .staff-role{
+  font-size:18px;
+  color:#8B6525;
+  letter-spacing:.04em;
+}
+
 /* ── Order CTA ──────────────────────────────────────── */
 .order-section{background:var(--color-bg-sub)}
 .order-cta-box{
@@ -623,8 +700,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <img src="./assets/staff/all agent.png" alt="N's factory スタッフ集合">
       </div>
     </div>
-    <div class="staff-grid">
-      <a class="staff-card" href="./profile.html" style="display:block;color:inherit;text-decoration:none;">
+    <!-- 個人事業主：単独中央 -->
+    <div class="staff-commander-wrap">
+      <a class="staff-commander" href="./profile.html" style="display:block;color:inherit;text-decoration:none;">
         <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主">
         <div class="staff-card-body">
           <h3 class="staff-role">個人事業主</h3>
@@ -635,6 +713,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           </div>
         </div>
       </a>
+    </div>
+    <!-- 幕僚グリッド -->
+    <div class="staff-grid">
       <article class="staff-card">
         <img src="./assets/staff/sakusen.png" alt="作戦幕僚">
         <div class="staff-card-body">
