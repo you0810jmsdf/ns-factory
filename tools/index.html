@@ -194,6 +194,67 @@
       padding-left: 4px;
     }
 
+    /* === MODULE: Notebook Series Cards (詳細形式) === */
+    .notebook-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      padding: 16px 20px 18px;
+      border-bottom: 1px solid #f5f5f7;
+      transition: background .12s;
+    }
+    .notebook-card:last-child { border-bottom: none; }
+    .notebook-card:hover { background: #f8f8fa; }
+    .notebook-card:active { background: #f0f0f4; }
+    .notebook-card-img {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f0f0f5;
+      margin-bottom: 12px;
+      aspect-ratio: 16 / 9;
+    }
+    .notebook-card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .notebook-card-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: #6e6e73;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .notebook-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1d1d1f;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .notebook-card-desc {
+      font-size: 12px;
+      color: #4a4a4f;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+    .notebook-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .notebook-card-tags span {
+      font-size: 10px;
+      font-weight: 500;
+      color: #6e6e73;
+      background: #f0f0f5;
+      border-radius: 4px;
+      padding: 3px 8px;
+      letter-spacing: 0.02em;
+    }
+
     /* === MODULE: Refill Spec Accordion === */
     .spec-accordion {
       background: #fff;
@@ -309,29 +370,50 @@
       <span class="size-label">A6サイズ</span>
       <span class="size-sub">105 × 148 mm</span>
     </div>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/a6-daily/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-daily">📅</div>
-      <div class="tool-info">
-        <div class="tool-name">デイリーリフィル</div>
-        <div class="tool-desc">1日1ページ・時間軸付きデイリーログ</div>
+    <a class="notebook-card" href="https://you0810jmsdf.github.io/ns-factory/a6-daily/" target="_blank" rel="noopener">
+      <div class="notebook-card-img">
+        <img src="../assets/a6-print-tool-main.png" alt="A6デイリーリフィル印刷ツール">
       </div>
-      <div class="tool-arrow">›</div>
+      <div class="notebook-card-num">02 — A6デイリーリフィル印刷ツール</div>
+      <div class="notebook-card-title">A6デイリースケジュールを、自由にレイアウトして印刷。</div>
+      <div class="notebook-card-desc">A4用紙1枚に4面のA6リフィルを自動配置。日付・時間グリッド・メモ欄のサイズ、穴ガイド位置、透かしテキストまで自由にカスタマイズできます。ブラウザだけで動作するため、インストール不要。印刷ボタン1クリックでそのまま出力できます。</div>
+      <div class="notebook-card-tags">
+        <span>A6システム手帳</span>
+        <span>デイリーリフィル</span>
+        <span>インストール不要</span>
+        <span>カスタマイズ自由</span>
+        <span>日英切替対応</span>
+      </div>
     </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/a6-weekly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-weekly">🗓️</div>
-      <div class="tool-info">
-        <div class="tool-name">ウィークリーリフィル</div>
-        <div class="tool-desc">1週間のブロック式週間スケジュール</div>
+    <a class="notebook-card" href="https://you0810jmsdf.github.io/ns-factory/a6-weekly/" target="_blank" rel="noopener">
+      <div class="notebook-card-img">
+        <img src="../assets/weekly-block-main.png" alt="A6週間ブロックリフィル印刷ツール">
       </div>
-      <div class="tool-arrow">›</div>
+      <div class="notebook-card-num">03 — A6週間ブロックリフィル印刷ツール</div>
+      <div class="notebook-card-title">週間ブロック型スケジュール帳を、ブラウザだけで自由に印刷。</div>
+      <div class="notebook-card-desc">曜日ブロック型のA6リフィルを自由にカスタマイズ。月曜・日曜始まり切替、土日カラー対応、月次一括印刷、日英切替など多彩なオプションを搭載。インストール不要、印刷ボタン1クリックで出力できます。</div>
+      <div class="notebook-card-tags">
+        <span>A6システム手帳</span>
+        <span>週間ブロック</span>
+        <span>インストール不要</span>
+        <span>月曜/日曜始まり</span>
+        <span>日英切替対応</span>
+      </div>
     </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/a6-monthly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-monthly">📆</div>
-      <div class="tool-info">
-        <div class="tool-name">マンスリーリフィル</div>
-        <div class="tool-desc">月間ブロックカレンダー</div>
+    <a class="notebook-card" href="https://you0810jmsdf.github.io/ns-factory/a6-monthly/" target="_blank" rel="noopener">
+      <div class="notebook-card-img">
+        <img src="../assets/monthly-block-main.png" alt="A6月間ブロックリフィル印刷ツール">
       </div>
-      <div class="tool-arrow">›</div>
+      <div class="notebook-card-num">04 — A6月間ブロックリフィル印刷ツール</div>
+      <div class="notebook-card-title">月間ブロック型スケジュール帳を、ブラウザだけで自由に印刷。</div>
+      <div class="notebook-card-desc">見開き2ページ構成のA6月間リフィルを自由にカスタマイズ。祝日・土日カラー対応、年月範囲を自由に指定、日英切替など多彩なオプションを搭載。インストール不要、印刷ボタン1クリックで出力できます。</div>
+      <div class="notebook-card-tags">
+        <span>A6システム手帳</span>
+        <span>月間ブロック</span>
+        <span>インストール不要</span>
+        <span>祝日対応</span>
+        <span>日英切替対応</span>
+      </div>
     </a>
   </div>
 
