@@ -278,6 +278,88 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     </div>
   </section>
 
+  <!-- MACD 通知 -->
+  <section class="card">
+    <h2>MACD トリガー（macd）</h2>
+    <p class="desc">指定した時間足の MACD とシグナルの交差方向が変わった瞬間に通知（signal_cross 方式）。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると MACD トリガーは発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="macdEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field">
+      <label for="macdGranularity">時間足（granularity）</label>
+      <select id="macdGranularity">
+        <option value="300">5分足（300秒）</option>
+        <option value="900">15分足（900秒）</option>
+        <option value="1800">30分足（1800秒）</option>
+        <option value="3600">1時間足（3600秒・推奨）</option>
+        <option value="7200">2時間足（7200秒）</option>
+        <option value="14400">4時間足（14400秒）</option>
+        <option value="21600">6時間足（21600秒）</option>
+        <option value="43200">12時間足（43200秒）</option>
+        <option value="86400">日足（86400秒）</option>
+      </select>
+      <div class="hint">OKJ API がサポートする粒度のみ。推奨: 1時間足。</div>
+    </div>
+    <div class="field" id="fieldMacdFast">
+      <label for="macdFast">短期 EMA（fast）</label>
+      <input type="number" id="macdFast" min="2" max="50" step="1">
+      <div class="hint">標準は 12。範囲: 2〜50 の整数。slow より小さい値である必要があります。</div>
+      <div class="err-msg">2〜50 かつ slow より小さい整数で入力してください。</div>
+    </div>
+    <div class="field" id="fieldMacdSlow">
+      <label for="macdSlow">長期 EMA（slow）</label>
+      <input type="number" id="macdSlow" min="3" max="100" step="1">
+      <div class="hint">標準は 26。範囲: 3〜100 の整数。fast より大きい値である必要があります。</div>
+      <div class="err-msg">3〜100 かつ fast より大きい整数で入力してください。</div>
+    </div>
+    <div class="field" id="fieldMacdSignal">
+      <label for="macdSignal">シグナル EMA（signal）</label>
+      <input type="number" id="macdSignal" min="2" max="50" step="1">
+      <div class="hint">標準は 9。範囲: 2〜50 の整数。</div>
+      <div class="err-msg">2〜50 の整数で入力してください。</div>
+    </div>
+    <div class="field">
+      <label for="macdMode">判定モード（mode）</label>
+      <input type="text" id="macdMode" value="signal_cross" readonly>
+      <div class="hint">MACD とシグナルの交差方向が変わったら通知（固定）。</div>
+    </div>
+  </section>
+
+  <!-- Fear & Greed 通知 -->
+  <section class="card">
+    <h2>Fear &amp; Greed トリガー（fear_greed）</h2>
+    <p class="desc">alternative.me の Crypto Fear &amp; Greed Index。極端ゾーンに入った瞬間だけ 1 回通知。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると Fear &amp; Greed トリガーは発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="fgEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field" id="fieldFgGreed">
+      <label for="fgGreed">Extreme Greed 閾値（extreme_greed）</label>
+      <input type="number" id="fgGreed" min="50" max="100" step="1">
+      <div class="hint">推奨: 75。範囲: 50〜100。extreme_fear より大きい値である必要があります。</div>
+      <div class="err-msg">50〜100 かつ extreme_fear より大きい値で入力してください。</div>
+    </div>
+    <div class="field" id="fieldFgFear">
+      <label for="fgFear">Extreme Fear 閾値（extreme_fear）</label>
+      <input type="number" id="fgFear" min="0" max="50" step="1">
+      <div class="hint">推奨: 25。範囲: 0〜50。extreme_greed より小さい値である必要があります。</div>
+      <div class="err-msg">0〜50 かつ extreme_greed より小さい値で入力してください。</div>
+    </div>
+  </section>
+
   <div class="actions">
     <button type="button" class="btn btn-primary" id="saveBtn" disabled>保存して GitHub へ反映</button>
     <button type="button" class="btn btn-ghost" id="reloadBtn">最新を再読込</button>
@@ -353,6 +435,8 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       const by = (c.checks && c.checks.band_yen)     || {};
       const bp = (c.checks && c.checks.band_percent) || {};
       const rs = (c.checks && c.checks.rsi)          || {};
+      const md = (c.checks && c.checks.macd)         || {};
+      const fg = (c.checks && c.checks.fear_greed)   || {};
       $('bandYenEnabled').checked = !!by.enabled;
       $('bandYenStep').value      = by.step != null ? by.step : 100000;
       $('bandPctEnabled').checked = !!bp.enabled;
@@ -362,11 +446,20 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       $('rsiPeriod').value          = rs.period      != null ? rs.period     : 14;
       $('rsiOverbought').value      = rs.overbought  != null ? rs.overbought : 70;
       $('rsiOversold').value        = rs.oversold    != null ? rs.oversold   : 30;
+      $('macdEnabled').checked      = md.enabled != null ? !!md.enabled : true;
+      $('macdGranularity').value    = String(md.granularity_sec != null ? md.granularity_sec : 3600);
+      $('macdFast').value           = md.fast   != null ? md.fast   : 12;
+      $('macdSlow').value           = md.slow   != null ? md.slow   : 26;
+      $('macdSignal').value         = md.signal != null ? md.signal : 9;
+      $('macdMode').value           = 'signal_cross';
+      $('fgEnabled').checked        = fg.enabled != null ? !!fg.enabled : true;
+      $('fgGreed').value            = fg.extreme_greed != null ? fg.extreme_greed : 75;
+      $('fgFear').value             = fg.extreme_fear  != null ? fg.extreme_fear  : 25;
       currentSha = data.sha;
       $('metaUpdated').textContent = 'updated_at: ' + (c.updated_at || '-');
       $('metaSha').textContent     = 'sha: ' + (data.sha ? data.sha.substring(0,8) : '-');
       setStatus('ok', 'GitHub から読込完了');
-      validateRsi();
+      validateAll();
       lockUi(false);
     }catch(err){
       setStatus('err', 'GET 失敗: ' + (err.message || err));
@@ -395,6 +488,18 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
           overbought:      Number($('rsiOverbought').value),
           oversold:        Number($('rsiOversold').value),
         },
+        macd: {
+          enabled:         $('macdEnabled').checked,
+          granularity_sec: Number($('macdGranularity').value),
+          fast:            Number($('macdFast').value),
+          slow:            Number($('macdSlow').value),
+          signal:          Number($('macdSignal').value),
+        },
+        fear_greed: {
+          enabled:       $('fgEnabled').checked,
+          extreme_greed: Number($('fgGreed').value),
+          extreme_fear:  Number($('fgFear').value),
+        },
       },
     };
   }
@@ -404,7 +509,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     if(!el) return;
     el.classList.toggle('invalid', !valid);
   }
-  function validateRsi(){
+  function validateAll(){
     const period     = Number($('rsiPeriod').value);
     const overbought = Number($('rsiOverbought').value);
     const oversold   = Number($('rsiOversold').value);
@@ -414,14 +519,34 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     setFieldValid('fieldRsiPeriod',     periodOk);
     setFieldValid('fieldRsiOverbought', overboughtOk);
     setFieldValid('fieldRsiOversold',   oversoldOk);
-    const ok = periodOk && overboughtOk && oversoldOk;
+
+    const fast   = Number($('macdFast').value);
+    const slow   = Number($('macdSlow').value);
+    const signal = Number($('macdSignal').value);
+    const fastOk   = Number.isInteger(fast)   && fast   >= 2 && fast   <= 50  && fast < slow;
+    const slowOk   = Number.isInteger(slow)   && slow   >= 3 && slow   <= 100 && slow > fast;
+    const signalOk = Number.isInteger(signal) && signal >= 2 && signal <= 50;
+    setFieldValid('fieldMacdFast',   fastOk);
+    setFieldValid('fieldMacdSlow',   slowOk);
+    setFieldValid('fieldMacdSignal', signalOk);
+
+    const greed = Number($('fgGreed').value);
+    const fear  = Number($('fgFear').value);
+    const greedOk = Number.isInteger(greed) && greed >= 50 && greed <= 100 && greed > fear;
+    const fearOk  = Number.isInteger(fear)  && fear  >= 0  && fear  <= 50  && fear  < greed;
+    setFieldValid('fieldFgGreed', greedOk);
+    setFieldValid('fieldFgFear',  fearOk);
+
+    const ok = periodOk && overboughtOk && oversoldOk
+            && fastOk && slowOk && signalOk
+            && greedOk && fearOk;
     saveBtn.disabled = !ok;
     return ok;
   }
 
   async function saveConfig(){
-    if(!validateRsi()){
-      showToast('err', 'RSI 設定に不備があります。閾値や範囲を確認してください。');
+    if(!validateAll()){
+      showToast('err', '設定に不備があります。閾値や範囲を確認してください。');
       return;
     }
     setStatus('', '保存中…');
@@ -452,8 +577,12 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 
   saveBtn.addEventListener('click', saveConfig);
   reloadBtn.addEventListener('click', loadConfig);
-  ['rsiPeriod','rsiOverbought','rsiOversold'].forEach(function(id){
-    document.getElementById(id).addEventListener('input', validateRsi);
+  [
+    'rsiPeriod','rsiOverbought','rsiOversold',
+    'macdFast','macdSlow','macdSignal',
+    'fgGreed','fgFear',
+  ].forEach(function(id){
+    document.getElementById(id).addEventListener('input', validateAll);
   });
   loadConfig();
 })();
