@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>作戦幕僚ROOM | N's factory</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{
+  --ink:#1D1D1F;
+  --muted:#636366;
+  --line:#E8E8ED;
+  --soft:#F5F5F7;
+  --paper:#FFFFFF;
+  --accent:#3B5BA5;
+  --accent-soft:#E8EEF8;
+  --accent-dark:#2A4380;
+  --danger:#C0392B;
+  --ok:#2E7D32;
+  --radius:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.10);
+  font-family:-apple-system,'SF Pro Display','SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.nav{
+  position:sticky;top:0;z-index:10;
+  height:56px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.nav-title{font-size:14px;font-weight:800;letter-spacing:.04em}
+.nav-spacer{flex:1}
+.nav-link{font-size:13px;color:var(--muted);padding:6px 10px;border-radius:var(--radius)}
+.nav-link:hover{background:var(--soft);color:var(--ink)}
+.logout-btn{
+  font-size:12px;color:var(--muted);
+  background:transparent;border:1px solid var(--line);
+  padding:6px 12px;border-radius:999px;cursor:pointer;
+}
+.logout-btn:hover{background:var(--soft);color:var(--ink)}
+
+/* Auth gate */
+.gate{
+  min-height:calc(100vh - 56px);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  background:linear-gradient(135deg,#fff,var(--accent-soft));
+}
+.gate-card{
+  width:100%;max-width:380px;
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:36px 28px;
+}
+.gate-eyebrow{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;
+}
+.gate-card h1{font-size:22px;letter-spacing:-.01em;margin-bottom:6px}
+.gate-card p{font-size:13px;color:var(--muted);margin-bottom:22px}
+.gate-card label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.gate-card input[type=password]{
+  width:100%;height:44px;padding:0 14px;
+  border:1px solid var(--line);border-radius:var(--radius);
+  font-size:15px;background:var(--soft);
+  outline:none;transition:border-color .15s,background .15s;
+}
+.gate-card input[type=password]:focus{border-color:var(--accent);background:#fff}
+.gate-card .submit{
+  width:100%;height:46px;margin-top:18px;
+  background:var(--accent);color:#fff;border:none;border-radius:var(--radius);
+  font-size:15px;font-weight:800;cursor:pointer;
+}
+.gate-card .submit:hover{background:var(--accent-dark)}
+.gate-msg{
+  margin-top:14px;font-size:12px;color:var(--danger);min-height:18px;
+}
+
+/* Hub */
+.hub{display:none;padding:64px 24px}
+.hub.active{display:block}
+.hub-inner{max-width:1040px;margin:0 auto}
+.hub-header{
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  margin-bottom:40px;
+}
+.hub-portrait{
+  width:104px;height:104px;border-radius:50%;
+  object-fit:cover;
+  border:3px solid #fff;
+  box-shadow:var(--shadow);
+  background:var(--soft);
+  flex-shrink:0;
+}
+.hub-header-text{flex:1;min-width:240px}
+.hub-eyebrow{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;
+}
+.hub h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.02em;margin-bottom:8px}
+.hub .lead{color:var(--muted);font-size:15px}
+
+.tool-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;
+}
+.tool-card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;transition:transform .15s,box-shadow .15s,border-color .15s;
+  display:flex;flex-direction:column;gap:10px;
+  cursor:pointer;
+}
+.tool-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--accent)}
+.tool-card.disabled{opacity:.5;cursor:not-allowed}
+.tool-card.disabled:hover{transform:none;box-shadow:none;border-color:var(--line)}
+.tool-card .tag{
+  display:inline-block;font-size:10px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent-dark);background:var(--accent-soft);
+  padding:3px 8px;border-radius:999px;width:fit-content;
+}
+.tool-card .tag.soon{color:var(--muted);background:var(--soft)}
+.tool-card h3{font-size:17px;letter-spacing:-.01em;margin-top:4px}
+.tool-card p{font-size:13px;color:var(--muted);line-height:1.7}
+
+.section-label{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;
+  margin:42px 0 14px;
+}
+
+@media(max-width:520px){
+  .hub{padding:40px 18px}
+  .tool-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">作戦幕僚ROOM</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="/">TOPへ戻る</a>
+  <button class="logout-btn" id="logoutBtn" style="display:none" onclick="logout()">ログアウト</button>
+</header>
+
+<!-- パスワードゲート -->
+<section class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-eyebrow">RESTRICTED</div>
+    <h1>作戦幕僚ROOM</h1>
+    <p>パスワードを入力してください。</p>
+    <form id="authForm" autocomplete="off">
+      <label for="pw">パスワード</label>
+      <input type="password" id="pw" name="pw" autocomplete="off" required>
+      <button type="submit" class="submit">入室</button>
+      <div class="gate-msg" id="gateMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ROOM 本体 -->
+<main class="hub" id="hub">
+  <div class="hub-inner">
+    <div class="hub-header">
+      <img class="hub-portrait" src="../assets/staff/sakusen.png" alt="作戦幕僚">
+      <div class="hub-header-text">
+        <div class="hub-eyebrow">SAKUSEN-ROOM / STRATEGY</div>
+        <h1>作戦幕僚ROOM</h1>
+        <p class="lead">戦略の立案、情報分析、次の一手を設計する司令部エリア。</p>
+      </div>
+    </div>
+
+    <div class="section-label">戦略管理</div>
+    <div class="tool-grid">
+      <a class="tool-card" href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec" target="_blank" rel="noopener">
+        <span class="tag">LIVE</span>
+        <h3>経営カレンダー</h3>
+        <p>期限付きタスク・スケジュールを一元管理。毎朝7:00に未完了タスクを自動通知。</p>
+      </a>
+      <a class="tool-card" href="https://note.com/you0810jmsdf/membership" target="_blank" rel="noopener">
+        <span class="tag">LIVE</span>
+        <h3>AI経営奮闘記（note）</h3>
+        <p>事業運営の戦略・気づきを発信する公開ノート。経営判断の記録・共有用。</p>
+      </a>
+    </div>
+
+    <div class="section-label">計画・記録</div>
+    <div class="tool-grid">
+      <div class="tool-card disabled">
+        <span class="tag soon">準備中</span>
+        <h3>戦略ダッシュボード</h3>
+        <p>KPI・販売チャネル別売上・進行中プロジェクトの一覧表示。後続フェーズで実装予定。</p>
+      </div>
+      <div class="tool-card disabled">
+        <span class="tag soon">準備中</span>
+        <h3>業務日誌ビューア</h3>
+        <p>各幕僚の作業ログを横断検索。意思決定の根拠を即時参照可能に。</p>
+      </div>
+      <div class="tool-card disabled">
+        <span class="tag soon">準備中</span>
+        <h3>優先タスクボード</h3>
+        <p>四半期重点施策と未着手タスクを一望。経営戦略の進捗監視。</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  const AUTH_KEY = 'sakusen_auth_token';
+  const PASSWORD = 'glJy4399';
+  const TTL_MS = 24 * 60 * 60 * 1000;
+
+  function isAuthed(){
+    try{
+      const raw = localStorage.getItem(AUTH_KEY);
+      if(!raw) return false;
+      const obj = JSON.parse(raw);
+      if(!obj || !obj.exp) return false;
+      if(Date.now() > obj.exp){
+        localStorage.removeItem(AUTH_KEY);
+        return false;
+      }
+      return obj.ok === true;
+    }catch(e){ return false; }
+  }
+
+  function setAuthed(){
+    localStorage.setItem(AUTH_KEY, JSON.stringify({
+      ok:true,
+      exp: Date.now() + TTL_MS,
+    }));
+  }
+
+  function showHub(){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('hub').classList.add('active');
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+  }
+
+  function showGate(){
+    document.getElementById('gate').style.display = 'flex';
+    document.getElementById('hub').classList.remove('active');
+    document.getElementById('logoutBtn').style.display = 'none';
+    setTimeout(()=>{ const el=document.getElementById('pw'); if(el) el.focus(); }, 60);
+  }
+
+  window.logout = function(){
+    localStorage.removeItem(AUTH_KEY);
+    showGate();
+  };
+
+  document.getElementById('authForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const pw = document.getElementById('pw').value;
+    const msg = document.getElementById('gateMsg');
+    if(pw === PASSWORD){
+      setAuthed();
+      showHub();
+    }else{
+      msg.textContent = 'パスワードが違います。';
+      document.getElementById('pw').value = '';
+    }
+  });
+
+  if(isAuthed()){ showHub(); } else { showGate(); }
+})();
+</script>
+
+</body>
+</html>
