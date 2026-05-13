@@ -328,8 +328,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 }
 .staff-lead-image img{
   width:100%;
-  aspect-ratio:4/5;
-  object-fit:cover;
+  height:auto;
+  object-fit:contain;
+  display:block;
 }
 .staff-grid{
   display:grid;
@@ -347,9 +348,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .staff-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
 .staff-card img{
   width:100%;
-  aspect-ratio:4/5;
-  object-fit:cover;
+  height:auto;
+  object-fit:contain;
   background:#111;
+  display:block;
 }
 .staff-card-body{padding:18px}
 .staff-role{
@@ -437,8 +439,8 @@ h1,h2,h3{
 }
 .staff-commander img{
   width:100%;
-  aspect-ratio:4/5;
-  object-fit:cover;
+  height:auto;
+  object-fit:contain;
   background:#111;
   border-radius:calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
   display:block;
