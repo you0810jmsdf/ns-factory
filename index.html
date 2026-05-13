@@ -452,6 +452,87 @@ h1,h2,h3{
   letter-spacing:.04em;
 }
 
+/* === 個人事業主カード（総司令官）：装飾整理版 === */
+.staff-commander{
+  position:relative;
+  width:min(360px,92vw);
+  background:var(--color-bg);
+  border:2px solid #c5a44e;
+  border-radius:var(--radius-lg);
+  box-shadow:0 0 0 1px #f0d98a, 0 0 24px rgba(197,164,78,0.30), var(--shadow-md);
+  padding-bottom:18px;
+}
+.commander-badge{
+  position:absolute;
+  top:-16px;
+  left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(180deg,#d4b25c 0%,#a07c2a 100%);
+  color:#fff;
+  font-family:'Cinzel','Zen Old Mincho',serif;
+  font-size:12px;
+  letter-spacing:.18em;
+  padding:6px 22px;
+  border-radius:999px;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  z-index:2;
+}
+.staff-commander-link{
+  display:block;
+  color:inherit;
+  text-decoration:none;
+}
+.staff-commander img{
+  width:100%;
+  height:auto;
+  object-fit:contain;
+  background:#111;
+  display:block;
+  border-bottom:1px solid #c5a44e;
+}
+.staff-commander .staff-card-body{
+  padding:18px 20px 8px;
+  text-align:center;
+}
+.staff-tagline{
+  font-family:'Zen Old Mincho',serif;
+  font-size:14px;
+  color:var(--color-text);
+  margin:0 0 14px;
+  line-height:1.5;
+}
+.staff-cta-primary{
+  display:inline-block;
+  min-height:38px;
+  padding:9px 26px;
+  background:linear-gradient(180deg,#d4b25c 0%,#a07c2a 100%);
+  color:#fff;
+  font-family:'Cinzel',serif;
+  font-size:13px;
+  letter-spacing:.08em;
+  border-radius:6px;
+  text-decoration:none;
+  box-shadow:0 2px 4px rgba(0,0,0,.15);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.staff-commander-link:hover .staff-cta-primary{
+  transform:translateY(-1px);
+  box-shadow:0 4px 8px rgba(0,0,0,.22);
+}
+.staff-cta-secondary{
+  display:block;
+  margin:14px auto 0;
+  text-align:center;
+  color:#8B6525;
+  font-size:12px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  text-decoration-color:rgba(139,101,37,0.4);
+}
+.staff-cta-secondary:hover{
+  text-decoration-color:#8B6525;
+}
+
 /* ── Order CTA ──────────────────────────────────────── */
 .order-section{background:var(--color-bg-sub)}
 .order-cta-box{
@@ -704,17 +785,17 @@ h1,h2,h3{
     </div>
     <!-- 個人事業主：単独中央 -->
     <div class="staff-commander-wrap">
-      <a class="staff-commander" href="./profile.html" style="display:block;color:inherit;text-decoration:none;">
-        <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主">
-        <div class="staff-card-body">
-          <h3 class="staff-role">個人事業主</h3>
-          <p class="staff-copy">事業全体の意思決定を担い、ビジョンを描き、すべての幕僚を率いて成果へつなげる総司令官。</p>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px;">
-            <span class="staff-link-text">→ プロフィールを見る</span>
-            <a href="https://note.com/you0810jmsdf/membership" class="staff-link-text" target="_blank" rel="noopener" style="display:block;" onclick="event.stopPropagation();">→ AI経営奮闘記（note）</a>
+      <div class="staff-commander">
+        <span class="commander-badge">総司令官</span>
+        <a href="./profile.html" class="staff-commander-link" aria-label="個人事業主のプロフィールを見る">
+          <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主（総司令官）。経営方針と行動指針を掲げる N's factory の指揮官。">
+          <div class="staff-card-body">
+            <p class="staff-tagline">事業全体を率いる総司令官</p>
+            <span class="staff-cta-primary">プロフィールを見る</span>
           </div>
-        </div>
-      </a>
+        </a>
+        <a href="https://note.com/you0810jmsdf/membership" class="staff-cta-secondary" target="_blank" rel="noopener">AI経営奮闘記（note）を読む →</a>
+      </div>
     </div>
     <!-- 幕僚グリッド -->
     <div class="staff-grid">
