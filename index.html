@@ -583,15 +583,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   </a>
   <span class="nav-spacer"></span>
   <div class="nav-links">
-    <a href="./profile.html" class="nav-link">プロフィール</a>
     <a href="#staff" class="nav-link">スタッフ</a>
-    <a href="./works.html" class="nav-link">作品紹介</a>
-    <a href="./password-note.html" class="nav-link">N's notebook</a>
-    <a href="./patterns/horseshoe-coin-case.html" class="nav-link">N's pattern</a>
-    <a href="./JHCS.html" class="nav-link">JHCS講習案内</a>
-    <a href="./order_estimate/admin.html" class="nav-link">管理画面</a>
   </div>
-  <a href="./order_estimate/leather-order-estimate-v2.html" class="nav-cta">見積もりシミュレータ</a>
 </nav>
 
 <!-- ── Hero ── -->
@@ -600,34 +593,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     <p class="hero-eyebrow">N's factory — Leather Craft</p>
     <h1 class="hero-title">世界にひとつだけの<br>オリジナルを</h1>
     <p class="hero-desc">
-      直接、作家と使用者がつながり、自分だけの革小物（手帳、その他）、
-      ハンコ、アクリル製品、木工製品を創ることを目的としたサイトです。<br><br>
-      使用する革、構成、刻印、色など自分の好みにアレンジできます。
+      革は語り、手は応える。<br>
+      作家と使い手が直接交わる場所で、世界にひとつだけの手帳・革小物・印章・アクリル・木工が生まれる。<br><br>
+      素材も意匠も、すべては貴方の手に委ねられる。
     </p>
-    <div class="hero-actions">
-      <a href="./order_estimate/leather-order-estimate-v2.html" class="btn btn-primary">見積もりシミュレータ</a>
-      <a href="https://lin.ee/qsmtY2N" class="btn btn-ghost">公式LINEでお問合せ</a>
-    </div>
   </div>
   <div class="hero-photo">
     <img src="assets/artisan.jpg" alt="作家 中司 祐樹">
   </div>
 </section>
-
-<!-- ── Quick Links ── -->
-<div class="quick-links" id="links">
-  <div class="quick-links-inner">
-    <div class="quick-links-text">
-      各種リンクサイト
-      <span>Creema / minne / BASE / メルカリ ほか</span>
-    </div>
-    <div class="pill-links">
-      <a href="links.html" class="pill pill-accent">各種リンクサイト</a>
-    </div>
-  </div>
-</div>
-
-<hr class="section-divider">
 
 <!-- ── Staff ── -->
 <section class="section staff-section" id="staff">
@@ -685,15 +659,21 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <div class="staff-card-body">
           <h3 class="staff-role">販売幕僚</h3>
           <p class="staff-copy">営業戦略、交渉、販路拡大を通じて、収益と信頼を築く提案者。</p>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px;">
+            <a href="./order_estimate/leather-order-estimate-v2.html" class="staff-link-text" style="display:block;">→ 見積もりシミュレータ</a>
+            <a href="./works.html" class="staff-link-text" style="display:block;">→ 作品集を見る</a>
+            <a href="./orderprogress.html" class="staff-link-text" style="display:block;">→ オーダー進捗を確認</a>
+          </div>
         </div>
       </article>
-      <article class="staff-card">
+      <a class="staff-card" href="./links.html" style="display:block;color:inherit;text-decoration:none;">
         <img src="./assets/staff/pr.png" alt="広報幕僚">
         <div class="staff-card-body">
           <h3 class="staff-role">広報幕僚</h3>
           <p class="staff-copy">情報発信、ブランド戦略、世界観づくりを担う発信者。</p>
+          <span class="staff-link-text">→ 各種リンクサイトを見る</span>
         </div>
-      </article>
+      </a>
       <a class="staff-card" href="./password-note.html" style="display:block;color:inherit;text-decoration:none;">
         <img src="./assets/staff/hozen.png" alt="保全幕僚">
         <div class="staff-card-body">
@@ -702,13 +682,14 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           <span class="staff-link-text">→ パスワードノートを見る</span>
         </div>
       </a>
-      <article class="staff-card">
+      <a class="staff-card" href="./tools/" style="display:block;color:inherit;text-decoration:none;">
         <img src="./assets/staff/digital.png" alt="デジタル幕僚">
         <div class="staff-card-body">
           <h3 class="staff-role">デジタル幕僚</h3>
           <p class="staff-copy">デジタル戦略、データ分析、DX推進を担う変革者。</p>
+          <span class="staff-link-text">→ ツール一覧を見る</span>
         </div>
-      </article>
+      </a>
       <a class="staff-card" href="./JHCS.html" style="display:block;color:inherit;text-decoration:none;">
         <img src="./assets/staff/jinji.png" alt="人事幕僚">
         <div class="staff-card-body">
@@ -723,28 +704,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
 <hr class="section-divider">
 
-<!-- ── Order Section ── -->
-<section class="section order-section" id="estimate">
-  <div class="section-inner">
-    <div class="section-header">
-      <p class="section-label">Order Made</p>
-      <h2 class="section-title">オーダーメイド依頼</h2>
-    </div>
-    <div class="order-cta-box">
-      <div class="order-cta-text">
-        <h3>システム手帳フルオーダー</h3>
-        <p>サイズ・革の種類・金具・刻印まで、すべて自分好みに。<br>シミュレータで概算額をその場で確認できます。</p>
-      </div>
-      <div class="order-cta-actions">
-        <a href="./order_estimate/leather-order-estimate-v2.html" class="btn-accent">見積もりシミュレータを開く</a>
-        <a href="https://lin.ee/qsmtY2N" class="btn-outline">公式LINEでお問合せ</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider">
-
 <!-- ── N's notebook Series ── -->
 <section class="section" id="notebook">
   <div class="section-inner">
@@ -752,21 +711,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
       <p class="section-label">N's notebook Series</p>
       <h2 class="section-title">A6システム手帳ユーザーのための、Webツールシリーズ。</h2>
     </div>
-
-    <!-- ツール一覧バナー（2026年5月1日以降表示） -->
-    <div id="tools-hub-banner" style="display:none;background:linear-gradient(135deg,#06C755 0%,#05a847 100%);border-radius:16px;padding:24px 28px;margin-bottom:24px;color:#fff;">
-      <p style="font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.8;margin-bottom:6px;">公式LINE会員限定</p>
-      <p style="font-size:18px;font-weight:700;margin-bottom:8px;">印刷ツール一覧はこちら</p>
-      <p style="font-size:13px;opacity:.9;margin-bottom:16px;line-height:1.6;">デイリー・ウィークリー・マンスリーリフィルとパスワード管理ツールをまとめてご利用いただけます。</p>
-      <a href="https://you0810jmsdf.github.io/ns-factory/tools/" target="_blank" rel="noopener" style="display:inline-block;background:#fff;color:#06C755;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">ツール一覧を開く →</a>
-    </div>
-    <script>
-    (function(){
-      if(new Date() >= new Date('2026-05-01T00:00:00+09:00')){
-        document.getElementById('tools-hub-banner').style.display='block';
-      }
-    })();
-    </script>
 
     <!-- 01: パスワード管理 -->
     <div class="notebook-highlight" style="margin-bottom:24px;">
@@ -783,9 +727,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           <span>終活</span>
           <span>家族への引き継ぎ</span>
           <span>PDFマニュアル付き</span>
-        </div>
-        <div class="notebook-actions">
-<a href="https://nsfactory.stores.jp/items/69e2188ca2eab2f08c6a230a" class="btn-outline" target="_blank" rel="noopener">STORESで購入</a>
         </div>
       </div>
       <a class="notebook-image" href="./password-note.html">
@@ -809,9 +750,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           <span>カスタマイズ自由</span>
           <span>日英切替対応</span>
         </div>
-        <div class="notebook-actions">
-          <a href="https://lin.ee/qsmtY2N" class="btn-accent" target="_blank" rel="noopener">公式LINEから利用する</a>
-        </div>
       </div>
       <a class="notebook-image" href="https://lin.ee/qsmtY2N" target="_blank" rel="noopener">
         <img src="./assets/a6-print-tool-main.png" alt="A6リフィル印刷ツール — N's factory">
@@ -834,9 +772,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           <span>月曜/日曜始まり</span>
           <span>日英切替対応</span>
         </div>
-        <div class="notebook-actions">
-          <a href="https://lin.ee/qsmtY2N" class="btn-accent" target="_blank" rel="noopener">公式LINEから利用する</a>
-        </div>
       </div>
       <a class="notebook-image" href="https://lin.ee/qsmtY2N" target="_blank" rel="noopener">
         <img src="./assets/weekly-block-main.png" alt="週間ブロックリフィル印刷ツール — N's factory">
@@ -858,9 +793,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           <span>インストール不要</span>
           <span>祝日対応</span>
           <span>日英切替対応</span>
-        </div>
-        <div class="notebook-actions">
-          <a href="https://lin.ee/qsmtY2N" class="btn-accent" target="_blank" rel="noopener">公式LINEから利用する</a>
         </div>
       </div>
       <a class="notebook-image" href="https://lin.ee/qsmtY2N" target="_blank" rel="noopener">
@@ -885,35 +817,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <div class="card-icon">📔</div>
         <h3 class="card-title">システム手帳</h3>
         <p class="card-desc">M5 / Mini6 / A5 / A6 / A7 など各サイズ対応。革・金具・刻印まで完全カスタム。</p>
-        <div style="display:flex;flex-direction:column;gap:4px;margin-top:auto;padding-top:8px;">
-          <a href="./works.html" class="card-link" style="margin-top:0;padding-top:0;">作品を見る</a>
-          <a href="./order_estimate/leather-order-estimate-v2.html" class="card-link" style="margin-top:0;padding-top:0;">見積もりを出す</a>
-        </div>
       </div>
       <div class="card">
         <div class="card-icon">👜</div>
         <h3 class="card-title">革小物・雑貨</h3>
         <p class="card-desc">キーケース、カードホルダー、コインケースなど。日常に寄り添う革小物を手作りで。</p>
-        <div style="display:flex;flex-direction:column;gap:4px;margin-top:auto;padding-top:8px;">
-          <a href="./works.html" class="card-link" style="margin-top:0;padding-top:0;">作品を見る</a>
-          <a href="https://lin.ee/qsmtY2N" class="card-link" style="margin-top:0;padding-top:0;">公式LINEでお問合せ</a>
-        </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<hr class="section-divider">
-
-<!-- ── Progress ── -->
-<section class="section" id="order-status">
-  <div class="section-inner">
-    <div class="section-header">
-      <p class="section-label">Order Status</p>
-      <h2 class="section-title">オーダーメイド進捗確認</h2>
-    </div>
-    <div class="progress-grid">
-      <a href="https://you0810jmsdf.github.io/ns-factory/orderprogress.html" class="progress-link">進捗を確認する</a>
     </div>
   </div>
 </section>
@@ -932,7 +841,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <div class="card-icon">✏️</div>
         <h3 class="card-title">体験教室</h3>
         <p class="card-desc">カルチャースクール（JOYFUL HONDA）での体験教室。自分の作品を作る喜びを体験。</p>
-        <a href="./JHCS.html" class="card-link">詳細を見る</a>
       </div>
     </div>
   </div>
