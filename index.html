@@ -362,6 +362,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   font-size:13px;
   line-height:1.65;
 }
+.staff-link-text{
+  display:inline-block;
+  margin-top:10px;
+  color:var(--color-accent);
+  font-size:13px;
+  font-weight:700;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.staff-card:hover .staff-link-text{color:var(--color-accent-dark)}
 
 /* ── Order CTA ──────────────────────────────────────── */
 .order-section{background:var(--color-bg-sub)}
@@ -597,7 +607,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     <div class="hero-actions">
       <a href="./order_estimate/leather-order-estimate-v2.html" class="btn btn-primary">見積もりシミュレータ</a>
       <a href="https://lin.ee/qsmtY2N" class="btn btn-ghost">公式LINEでお問合せ</a>
-      <a href="./profile.html" class="btn btn-ghost">作家プロフィール</a>
     </div>
   </div>
   <div class="hero-photo">
@@ -615,7 +624,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
     <div class="pill-links">
       <a href="links.html" class="pill pill-accent">各種リンクサイト</a>
       <a href="./password-note.html" class="pill pill-accent">N's notebook パスワード管理</a>
-      <a href="./profile.html" class="pill pill-accent">作家プロフィール</a>
     </div>
   </div>
 </div>
@@ -648,6 +656,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <div class="staff-card-body">
           <h3 class="staff-role">個人事業主</h3>
           <p class="staff-copy">事業全体の意思決定を担い、ビジョンを描き、すべての幕僚を率いて成果へつなげる総司令官。</p>
+          <span class="staff-link-text">→ プロフィールを見る</span>
         </div>
       </a>
       <article class="staff-card">
@@ -662,6 +671,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <div class="staff-card-body">
           <h3 class="staff-role">監理幕僚</h3>
           <p class="staff-copy">資金管理、財務戦略、記録整理で経営の基盤を支える参謀。</p>
+          <span class="staff-link-text">→ 監理ルームを見る</span>
         </div>
       </a>
       <article class="staff-card">
@@ -690,6 +700,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <div class="staff-card-body">
           <h3 class="staff-role">保全幕僚</h3>
           <p class="staff-copy">設備・資産の保守、リスク管理、安定運用を守る守護者。</p>
+          <span class="staff-link-text">→ パスワードノートを見る</span>
         </div>
       </a>
       <article class="staff-card">
@@ -704,6 +715,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <div class="staff-card-body">
           <h3 class="staff-role">人事幕僚</h3>
           <p class="staff-copy">人材育成、講習運営、学びの場づくりを担う育成者。</p>
+          <span class="staff-link-text">→ JHCS講習案内を見る</span>
         </div>
       </a>
     </div>
