@@ -533,6 +533,63 @@ h1,h2,h3{
   text-decoration-color:#8B6525;
 }
 
+/* === 幕僚カード（8枚）：バッジ＋金CTA統一版 === */
+.staff-grid .staff-card{
+  position:relative;
+  overflow:visible;
+  padding-bottom:6px;
+}
+.staff-grid .staff-card > img{
+  border-radius:calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+}
+.staff-badge{
+  position:absolute;
+  top:-12px;
+  left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(180deg,#e8d18a 0%,#b89647 100%);
+  color:#fff;
+  font-family:'Cinzel','Zen Old Mincho',serif;
+  font-size:11px;
+  letter-spacing:.16em;
+  padding:5px 16px;
+  border-radius:999px;
+  box-shadow:0 2px 5px rgba(0,0,0,.20);
+  white-space:nowrap;
+  z-index:2;
+}
+.staff-card-cta{
+  display:inline-block;
+  min-height:36px;
+  margin-top:12px;
+  padding:8px 20px;
+  background:linear-gradient(180deg,#d4b25c 0%,#a07c2a 100%);
+  color:#fff;
+  font-family:'Cinzel',serif;
+  font-size:12px;
+  letter-spacing:.08em;
+  border-radius:6px;
+  text-decoration:none;
+  box-shadow:0 2px 4px rgba(0,0,0,.15);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.staff-card:hover .staff-card-cta{
+  transform:translateY(-1px);
+  box-shadow:0 4px 8px rgba(0,0,0,.22);
+}
+.staff-card-sub-link{
+  display:block;
+  margin-top:8px;
+  color:#8B6525;
+  font-size:12px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  text-decoration-color:rgba(139,101,37,0.4);
+}
+.staff-card-sub-link:hover{
+  text-decoration-color:#8B6525;
+}
+
 /* ── Order CTA ──────────────────────────────────────── */
 .order-section{background:var(--color-bg-sub)}
 .order-cta-box{
@@ -800,70 +857,68 @@ h1,h2,h3{
     <!-- 幕僚グリッド -->
     <div class="staff-grid">
       <a class="staff-card" href="./sakusen-room/" style="display:block;color:inherit;text-decoration:none;">
+        <span class="staff-badge">作戦幕僚</span>
         <img src="./assets/staff/sakusen.png" alt="作戦幕僚">
         <div class="staff-card-body">
-          <h3 class="staff-role">作戦幕僚</h3>
           <p class="staff-copy">戦略の立案、情報分析、次の一手の設計を担う頭脳派。</p>
-          <span class="staff-link-text">→ 作戦室を見る</span>
+          <span class="staff-card-cta">作戦室を見る</span>
         </div>
       </a>
       <a class="staff-card" href="./kanri-room/" style="display:block;color:inherit;text-decoration:none;">
+        <span class="staff-badge">監理幕僚</span>
         <img src="./assets/staff/kanri.png" alt="監理幕僚">
         <div class="staff-card-body">
-          <h3 class="staff-role">監理幕僚</h3>
           <p class="staff-copy">資金管理、財務戦略、記録整理で経営の基盤を支える参謀。</p>
-          <span class="staff-link-text">→ 監理ルームを見る</span>
+          <span class="staff-card-cta">監理ルームを見る</span>
         </div>
       </a>
       <article class="staff-card">
+        <span class="staff-badge">後方幕僚</span>
         <img src="./assets/staff/kouhou.png" alt="後方幕僚">
         <div class="staff-card-body">
-          <h3 class="staff-role">後方幕僚</h3>
           <p class="staff-copy">物資調達、製造、補給計画をまとめ、制作現場を支える要。</p>
         </div>
       </article>
       <article class="staff-card">
+        <span class="staff-badge">販売幕僚</span>
         <img src="./assets/staff/hannbai.png" alt="販売幕僚">
         <div class="staff-card-body">
-          <h3 class="staff-role">販売幕僚</h3>
           <p class="staff-copy">営業戦略、交渉、販路拡大を通じて、収益と信頼を築く提案者。</p>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px;">
-            <a href="./order_estimate/leather-order-estimate-v2.html" class="staff-link-text" style="display:block;">→ 見積もりシミュレータ</a>
-            <a href="./works.html" class="staff-link-text" style="display:block;">→ 作品集を見る</a>
-            <a href="./orderprogress.html" class="staff-link-text" style="display:block;">→ オーダー進捗を確認</a>
-          </div>
+          <a href="./order_estimate/leather-order-estimate-v2.html" class="staff-card-cta">見積もりシミュレータ</a>
+          <a href="./works.html" class="staff-card-sub-link">→ 作品集を見る</a>
+          <a href="./orderprogress.html" class="staff-card-sub-link">→ オーダー進捗を確認</a>
         </div>
       </article>
       <a class="staff-card" href="./links.html" style="display:block;color:inherit;text-decoration:none;">
+        <span class="staff-badge">広報幕僚</span>
         <img src="./assets/staff/pr.png" alt="広報幕僚">
         <div class="staff-card-body">
-          <h3 class="staff-role">広報幕僚</h3>
           <p class="staff-copy">情報発信、ブランド戦略、世界観づくりを担う発信者。</p>
-          <span class="staff-link-text">→ 各種リンクサイトを見る</span>
+          <span class="staff-card-cta">リンク集を見る</span>
         </div>
       </a>
       <a class="staff-card" href="./password-note.html" style="display:block;color:inherit;text-decoration:none;">
+        <span class="staff-badge">保全幕僚</span>
         <img src="./assets/staff/hozen.png" alt="保全幕僚">
         <div class="staff-card-body">
-          <h3 class="staff-role">保全幕僚</h3>
           <p class="staff-copy">設備・資産の保守、リスク管理、安定運用を守る守護者。</p>
-          <span class="staff-link-text">→ パスワードノートを見る</span>
+          <span class="staff-card-cta">パスワードノートを見る</span>
         </div>
       </a>
       <a class="staff-card" href="./tools/" style="display:block;color:inherit;text-decoration:none;">
+        <span class="staff-badge">デジタル幕僚</span>
         <img src="./assets/staff/digital.png" alt="デジタル幕僚">
         <div class="staff-card-body">
-          <h3 class="staff-role">デジタル幕僚</h3>
           <p class="staff-copy">デジタル戦略、データ分析、DX推進を担う変革者。</p>
-          <span class="staff-link-text">→ ツール一覧を見る</span>
+          <span class="staff-card-cta">ツール一覧を見る</span>
         </div>
       </a>
       <a class="staff-card" href="./JHCS.html" style="display:block;color:inherit;text-decoration:none;">
+        <span class="staff-badge">人事幕僚</span>
         <img src="./assets/staff/jinji.png" alt="人事幕僚">
         <div class="staff-card-body">
-          <h3 class="staff-role">人事幕僚</h3>
           <p class="staff-copy">人材育成、講習運営、学びの場づくりを担う育成者。</p>
-          <span class="staff-link-text">→ JHCS講習案内を見る</span>
+          <span class="staff-card-cta">JHCS講習を見る</span>
         </div>
       </a>
     </div>
