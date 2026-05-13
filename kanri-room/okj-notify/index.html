@@ -69,7 +69,8 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 .field label{display:block;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px}
 .field .hint{font-size:11px;color:var(--muted);margin-top:4px}
 .field input[type=text],
-.field input[type=number]{
+.field input[type=number],
+.field select{
   width:100%;height:42px;padding:0 12px;
   border:1px solid var(--line);border-radius:var(--radius);
   font-size:14px;background:var(--soft);outline:none;
@@ -77,7 +78,10 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
   font-variant-numeric:tabular-nums;
 }
 .field input[readonly]{color:var(--muted);background:var(--soft)}
-.field input:focus{border-color:var(--accent);background:#fff}
+.field input:focus,.field select:focus{border-color:var(--accent);background:#fff}
+.field.invalid input,.field.invalid select{border-color:var(--danger);background:#FDECEA}
+.field .err-msg{display:none;font-size:11px;color:var(--danger);margin-top:4px}
+.field.invalid .err-msg{display:block}
 
 .toggle{
   display:flex;align-items:center;justify-content:space-between;
@@ -225,6 +229,55 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     </div>
   </section>
 
+  <!-- RSI 通知 -->
+  <section class="card">
+    <h2>RSI トリガー（rsi）</h2>
+    <p class="desc">指定した時間足の RSI が買われすぎ / 売られすぎゾーンに入った瞬間に通知（ゾーン遷移時のみ発火）。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると RSI トリガーは発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="rsiEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field">
+      <label for="rsiGranularity">時間足（granularity）</label>
+      <select id="rsiGranularity">
+        <option value="300">5分足（300秒）</option>
+        <option value="900">15分足（900秒）</option>
+        <option value="1800">30分足（1800秒）</option>
+        <option value="3600">1時間足（3600秒・推奨）</option>
+        <option value="7200">2時間足（7200秒）</option>
+        <option value="14400">4時間足（14400秒）</option>
+        <option value="21600">6時間足（21600秒）</option>
+        <option value="43200">12時間足（43200秒）</option>
+        <option value="86400">日足（86400秒）</option>
+      </select>
+      <div class="hint">OKJ API がサポートする粒度のみ。推奨: 1時間足。</div>
+    </div>
+    <div class="field" id="fieldRsiPeriod">
+      <label for="rsiPeriod">RSI 期間</label>
+      <input type="number" id="rsiPeriod" min="2" max="50" step="1">
+      <div class="hint">標準は 14。範囲: 2〜50 の整数。</div>
+      <div class="err-msg">2〜50 の整数で入力してください。</div>
+    </div>
+    <div class="field" id="fieldRsiOverbought">
+      <label for="rsiOverbought">買われすぎ閾値（overbought）</label>
+      <input type="number" id="rsiOverbought" min="50" max="100" step="1">
+      <div class="hint">推奨: 70。範囲: 50〜100。oversold より大きい値である必要があります。</div>
+      <div class="err-msg">50〜100 かつ oversold より大きい値で入力してください。</div>
+    </div>
+    <div class="field" id="fieldRsiOversold">
+      <label for="rsiOversold">売られすぎ閾値（oversold）</label>
+      <input type="number" id="rsiOversold" min="0" max="50" step="1">
+      <div class="hint">推奨: 30。範囲: 0〜50。overbought より小さい値である必要があります。</div>
+      <div class="err-msg">0〜50 かつ overbought より小さい値で入力してください。</div>
+    </div>
+  </section>
+
   <div class="actions">
     <button type="button" class="btn btn-primary" id="saveBtn" disabled>保存して GitHub へ反映</button>
     <button type="button" class="btn btn-ghost" id="reloadBtn">最新を再読込</button>
@@ -299,14 +352,21 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       $('ntfyPriority').value  = c.ntfy_priority || 4;
       const by = (c.checks && c.checks.band_yen)     || {};
       const bp = (c.checks && c.checks.band_percent) || {};
+      const rs = (c.checks && c.checks.rsi)          || {};
       $('bandYenEnabled').checked = !!by.enabled;
       $('bandYenStep').value      = by.step != null ? by.step : 100000;
       $('bandPctEnabled').checked = !!bp.enabled;
       $('bandPctStep').value      = bp.step != null ? bp.step : 1.0;
+      $('rsiEnabled').checked       = rs.enabled != null ? !!rs.enabled : true;
+      $('rsiGranularity').value     = String(rs.granularity_sec != null ? rs.granularity_sec : 3600);
+      $('rsiPeriod').value          = rs.period      != null ? rs.period     : 14;
+      $('rsiOverbought').value      = rs.overbought  != null ? rs.overbought : 70;
+      $('rsiOversold').value        = rs.oversold    != null ? rs.oversold   : 30;
       currentSha = data.sha;
       $('metaUpdated').textContent = 'updated_at: ' + (c.updated_at || '-');
       $('metaSha').textContent     = 'sha: ' + (data.sha ? data.sha.substring(0,8) : '-');
       setStatus('ok', 'GitHub から読込完了');
+      validateRsi();
       lockUi(false);
     }catch(err){
       setStatus('err', 'GET 失敗: ' + (err.message || err));
@@ -328,11 +388,42 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
           enabled: $('bandPctEnabled').checked,
           step:    Number($('bandPctStep').value),
         },
+        rsi: {
+          enabled:         $('rsiEnabled').checked,
+          granularity_sec: Number($('rsiGranularity').value),
+          period:          Number($('rsiPeriod').value),
+          overbought:      Number($('rsiOverbought').value),
+          oversold:        Number($('rsiOversold').value),
+        },
       },
     };
   }
 
+  function setFieldValid(id, valid){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.toggle('invalid', !valid);
+  }
+  function validateRsi(){
+    const period     = Number($('rsiPeriod').value);
+    const overbought = Number($('rsiOverbought').value);
+    const oversold   = Number($('rsiOversold').value);
+    const periodOk     = Number.isInteger(period) && period >= 2 && period <= 50;
+    const overboughtOk = Number.isFinite(overbought) && overbought >= 50 && overbought <= 100 && overbought > oversold;
+    const oversoldOk   = Number.isFinite(oversold)   && oversold   >= 0  && oversold   <= 50  && oversold   < overbought;
+    setFieldValid('fieldRsiPeriod',     periodOk);
+    setFieldValid('fieldRsiOverbought', overboughtOk);
+    setFieldValid('fieldRsiOversold',   oversoldOk);
+    const ok = periodOk && overboughtOk && oversoldOk;
+    saveBtn.disabled = !ok;
+    return ok;
+  }
+
   async function saveConfig(){
+    if(!validateRsi()){
+      showToast('err', 'RSI 設定に不備があります。閾値や範囲を確認してください。');
+      return;
+    }
     setStatus('', '保存中…');
     lockUi(true);
     try{
@@ -361,6 +452,9 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 
   saveBtn.addEventListener('click', saveConfig);
   reloadBtn.addEventListener('click', loadConfig);
+  ['rsiPeriod','rsiOverbought','rsiOversold'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', validateRsi);
+  });
   loadConfig();
 })();
 </script>
