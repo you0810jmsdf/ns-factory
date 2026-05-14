@@ -92,36 +92,6 @@
     .badge-closed { background: var(--amber-light); color: var(--amber); }
     .badge-open { background: var(--green-light); color: var(--green); }
 
-    /* Affiliate links */
-    .affiliate-intro { color: var(--gray); font-size: 13px; margin-bottom: 14px; }
-    .tool-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-    .tool-filter-btn {
-      padding: 7px 12px; border: 1px solid rgba(160,120,90,.24); border-radius: 8px;
-      background: var(--white); color: var(--charcoal); font-size: 13px; font-weight: 600; cursor: pointer;
-    }
-    .tool-filter-btn.active { background: rgba(160,120,90,.14); border-color: rgba(160,120,90,.5); color: var(--tan); }
-    .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
-    .tool-card { background: var(--white); border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); display: flex; flex-direction: column; gap: 8px; }
-    .tool-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .tool-card-title { font-size: 15px; font-weight: 700; }
-    .tool-card-category { flex-shrink: 0; border-radius: 8px; padding: 2px 8px; background: rgba(160,120,90,.12); color: var(--tan); font-size: 11px; font-weight: 700; }
-    .tool-card-desc { color: var(--gray); font-size: 13px; }
-    .tool-link-list { display: grid; gap: 6px; margin-top: auto; }
-    .tool-link {
-      display: inline-flex; justify-content: space-between; align-items: center; gap: 8px;
-      border-radius: 8px; padding: 8px 10px; background: rgba(160,120,90,.1);
-      color: var(--tan); text-decoration: none; font-size: 13px; font-weight: 700;
-    }
-    .tool-link:hover { background: rgba(160,120,90,.18); }
-    .tool-link-note { color: var(--gray); font-size: 11px; font-weight: 500; }
-    .tool-empty { background: var(--white); border-radius: 8px; padding: 18px; color: var(--gray); font-size: 13px; text-align: center; }
-    .tool-admin-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-    .tool-admin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .tool-card-actions { display: none; gap: 6px; margin-top: 2px; }
-    .tool-card-actions.show { display: flex; }
-    .tool-card-actions .btn { padding: 4px 10px; font-size: 12px; border-radius: 8px; }
-    .tool-form-note { color: var(--gray); font-size: 12px; margin-top: 6px; }
-
     /* Curriculum */
     .curriculum { display: grid; gap: 10px; }
     .curriculum-row { background: var(--white); border-radius: 10px; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden; }
@@ -409,26 +379,6 @@
     </div>
   </div>
 
-  <!-- 道具リンク -->
-  <div class="section" id="affiliate-tools-section">
-    <h2>レザークラフト道具リンク</h2>
-    <p class="affiliate-intro">
-      講習で使う基本道具を中心に、N's factory が使用している道具をまとめています。
-      楽天ROOM経由のリンクから購入いただくと、ワークショップ用道具の整備費として活用します。
-    </p>
-    <div class="tool-admin-bar">
-      <div class="tool-filter" id="tool-filter"></div>
-      <div class="tool-admin-actions">
-        <button class="btn btn-primary" onclick="openAffiliateModal()">道具リンクを追加</button>
-        <button class="btn btn-secondary" id="btn-tool-admin" onclick="toggleAffiliateAdmin()">編集表示</button>
-      </div>
-    </div>
-    <div class="tool-grid" id="tool-grid">
-      <div class="tool-empty">道具リンクを読み込み中です。</div>
-    </div>
-    <div id="tool-msg" class="form-msg" style="margin-top:10px;"></div>
-  </div>
-
   <!-- 実績一覧 -->
   <div class="section">
     <h2>講習実績</h2>
@@ -515,13 +465,9 @@
 <script>
   const GAS_URL_KEY = 'jhcs_gas_url';
   const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbx07fbbOGbVxPjGNIARWTy_AbQK7KexzhW2Tv4xrheOoCz297min0aW8R2BvuaySkDf/exec';
-  const AFFILIATE_LINKS_URL = 'affiliate-links.json';
   let cachedRecords = [];
   let cachedNotice = null;
   let cachedCurriculum = [];
-  let affiliateLinks = [];
-  let activeToolCategory = 'すべて';
-  let affiliateAdminMode = false;
   let noticeDraft = { title: '', text: '' };
   let noticeAdminPassword = '';
   const DEFAULT_CURRICULUM = [
@@ -568,287 +514,6 @@
     loadNotice();
     loadCurriculum();
     loadPhotos();
-  }
-
-  // ── 道具アフィリエイトリンク ─────────────────────
-  async function loadAffiliateLinks() {
-    const grid = document.getElementById('tool-grid');
-    let staticItems = [];
-    try {
-      const res = await fetch(AFFILIATE_LINKS_URL, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      staticItems = (Array.isArray(data.items) ? data.items : []).map((item, index) => ({
-        ...item,
-        id: item.id || `static-${index + 1}`,
-        source: item.source || 'static'
-      }));
-    } catch(e) {
-      grid.innerHTML = `<div class="tool-empty">道具リンクを読み込めませんでした。affiliate-links.json を確認してください。<br><small>${esc(e.message)}</small></div>`;
-      return;
-    }
-    affiliateLinks = staticItems;
-
-    const url = getGasUrl();
-    let hiddenIds = [];
-    if (url) {
-      try {
-        const res = await fetch(`${url}?action=affiliateLinks`, { cache: 'no-store' });
-        const data = await res.json();
-        if (data.ok && Array.isArray(data.items)) {
-          const byKey = new Map();
-          staticItems.forEach(item => {
-            byKey.set(item.id || getAffiliateFirstUrl(item) || item.name, item);
-          });
-          data.items.forEach(item => {
-            item.source = item.source || 'gas';
-            const firstUrl = getAffiliateFirstUrl(item);
-            const staticMatch = staticItems.find(staticItem =>
-              staticItem.id === item.id || (firstUrl && getAffiliateFirstUrl(staticItem) === firstUrl)
-            );
-            if (staticMatch) byKey.delete(staticMatch.id || getAffiliateFirstUrl(staticMatch) || staticMatch.name);
-            byKey.set(item.id || firstUrl || item.name, item);
-          });
-          affiliateLinks = Array.from(byKey.values());
-        }
-        if (data.ok && Array.isArray(data.hiddenIds)) {
-          hiddenIds = data.hiddenIds.map(String);
-        }
-      } catch(e) {
-        // GAS側が未更新の場合は静的JSONへフォールバックする
-      }
-    }
-    if (hiddenIds.length) {
-      const hiddenSet = new Set(hiddenIds);
-      affiliateLinks = affiliateLinks.filter(item => !hiddenSet.has(String(item.id || '')));
-    }
-    renderToolFilters();
-    renderAffiliateLinks();
-  }
-
-  function getAffiliateFirstUrl(item) {
-    return item && item.links && item.links[0] ? item.links[0].url : '';
-  }
-
-  function renderToolFilters() {
-    const filter = document.getElementById('tool-filter');
-    const categories = ['すべて', ...new Set(affiliateLinks.map(item => item.category).filter(Boolean))];
-    filter.innerHTML = categories.map(category => `
-      <button class="tool-filter-btn ${category === activeToolCategory ? 'active' : ''}" onclick="setToolCategory('${escAttr(category)}')">${esc(category)}</button>
-    `).join('');
-  }
-
-  function setToolCategory(category) {
-    activeToolCategory = category;
-    renderToolFilters();
-    renderAffiliateLinks();
-  }
-
-  function renderAffiliateLinks() {
-    const grid = document.getElementById('tool-grid');
-    const items = activeToolCategory === 'すべて'
-      ? affiliateLinks
-      : affiliateLinks.filter(item => item.category === activeToolCategory);
-    if (!items.length) {
-      grid.innerHTML = '<div class="tool-empty">このカテゴリの道具リンクはまだありません。</div>';
-      return;
-    }
-    grid.innerHTML = items.map(item => `
-      <article class="tool-card">
-        <div class="tool-card-head">
-          <div class="tool-card-title">${esc(item.name)}</div>
-          <div class="tool-card-category">${esc(item.category || 'その他')}</div>
-        </div>
-        <div class="tool-card-desc">${esc(item.description || '')}</div>
-        <div class="tool-link-list">
-          ${(item.links || []).map(link => `
-            <a class="tool-link" href="${escAttr(link.url)}" target="_blank" rel="noopener sponsored">
-              <span>${esc(link.label || 'リンクを見る')}</span>
-              <span class="tool-link-note">${esc(link.kind || 'affiliate')}</span>
-            </a>
-          `).join('')}
-        </div>
-        <div class="tool-card-actions ${affiliateAdminMode ? 'show' : ''}">
-          <button class="btn btn-secondary" onclick="openAffiliateModal('${escAttr(item.id)}')">編集</button>
-          <button class="btn btn-danger" onclick="deleteAffiliateLink('${escAttr(item.id)}', ${item.source === 'static' ? 'true' : 'false'})">削除</button>
-        </div>
-      </article>
-    `).join('');
-  }
-
-  function toggleAffiliateAdmin() {
-    if (!getNoticePassword()) return;
-    affiliateAdminMode = !affiliateAdminMode;
-    document.getElementById('btn-tool-admin').textContent = affiliateAdminMode ? '編集を隠す' : '編集表示';
-    renderAffiliateLinks();
-  }
-
-  function openAffiliateModal(id = '') {
-    if (!getNoticePassword()) return;
-    const item = affiliateLinks.find(x => String(x.id || '') === String(id)) || null;
-    const firstLink = item && item.links && item.links[0] ? item.links[0] : {};
-    document.getElementById('tool-edit-id').value = item ? item.id || '' : '';
-    document.getElementById('tool-url').value = firstLink.url || '';
-    document.getElementById('tool-name').value = item ? item.name || '' : '';
-    document.getElementById('tool-category').value = item ? item.category || '' : '';
-    document.getElementById('tool-description').value = item ? item.description || '' : '';
-    document.getElementById('tool-label').value = firstLink.label || 'おすすめ';
-    document.getElementById('tool-kind').value = firstLink.kind || '楽天ROOM';
-    document.getElementById('tool-links-extra').value = formatExtraToolLinks(item ? item.links || [] : []);
-    document.getElementById('tool-modal-title').textContent = item ? '道具リンクを編集' : '道具リンクを追加';
-    showToolMsg('', '');
-    document.getElementById('tool-modal').classList.add('open');
-    document.getElementById('tool-url').focus();
-  }
-
-  function closeAffiliateModal() {
-    document.getElementById('tool-modal').classList.remove('open');
-  }
-
-  async function saveAffiliateLink() {
-    const url = getGasUrl();
-    if (!url) { showToolMsg('err', 'GAS URLを設定してください。'); return; }
-    const password = getNoticePassword();
-    if (!password) return;
-    let links = [];
-    try {
-      links = getToolFormLinks();
-    } catch(e) {
-      showToolMsg('err', e.message);
-      return;
-    }
-    const firstLink = links[0];
-    const name = document.getElementById('tool-name').value.trim();
-    const category = document.getElementById('tool-category').value.trim();
-    const description = document.getElementById('tool-description').value.trim();
-    if (!firstLink.url || !name) { showToolMsg('err', 'URLと道具名は必須です。'); return; }
-    const btn = document.getElementById('btn-tool-save');
-    btn.disabled = true; btn.textContent = '保存中...';
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'saveAffiliateLink',
-          password,
-          id: document.getElementById('tool-edit-id').value,
-          name,
-          category: category || 'その他',
-          description,
-          linkLabel: firstLink.label,
-          linkKind: firstLink.kind,
-          linkUrl: firstLink.url,
-          links,
-        }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        closeAffiliateModal();
-        showToolMsg('ok', '道具リンクを保存しました。');
-        await loadAffiliateLinks();
-      } else {
-        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
-        showToolMsg('err', '保存できませんでした: ' + (data.error || '不明'));
-      }
-    } catch(e) {
-      showToolMsg('err', '通信エラー: ' + e.message);
-    } finally {
-      btn.disabled = false; btn.textContent = '保存する';
-    }
-  }
-
-  async function deleteAffiliateLink(id, isStatic) {
-    if (!id) { showToolMsg('err', 'IDが取得できませんでした。'); return; }
-    const url = getGasUrl();
-    if (!url) { showToolMsg('err', 'GAS URLを設定してください。'); return; }
-    const msg = isStatic
-      ? 'この道具リンク（元ファイル項目）を非表示にしますか？\n（削除ではなく非表示フラグを付けます。スプレッドシート「JHCS道具リンク_非表示」から解除可能）'
-      : 'この道具リンクを削除しますか？';
-    if (!confirm(msg)) return;
-    const password = getNoticePassword();
-    if (!password) return;
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'deleteAffiliateLink', id, password }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        showToolMsg('ok', isStatic ? '非表示にしました。' : '道具リンクを削除しました。');
-        await loadAffiliateLinks();
-      } else {
-        if (data.error === 'Invalid admin password') noticeAdminPassword = '';
-        showToolMsg('err', '削除できませんでした: ' + (data.error || '不明'));
-      }
-    } catch(e) {
-      showToolMsg('err', '通信エラー: ' + e.message);
-    }
-  }
-
-  function formatExtraToolLinks(links) {
-    return (links || []).slice(1).map(link => {
-      const label = link.label || 'リンクを見る';
-      const kind = link.kind || '楽天ROOM';
-      return `${label} | ${link.url || ''} | ${kind}`;
-    }).join('\n');
-  }
-
-  function getToolFormLinks() {
-    const firstUrl = normalizeToolUrl(document.getElementById('tool-url').value.trim());
-    const firstLabel = document.getElementById('tool-label').value.trim() || 'おすすめ';
-    const firstKind = document.getElementById('tool-kind').value.trim() || '楽天ROOM';
-    if (!firstUrl) throw new Error('1つ目のリンクURLを入力してください。');
-    const links = [{ label: firstLabel, url: firstUrl, kind: firstKind }];
-    const extra = document.getElementById('tool-links-extra').value.split(/\r?\n/);
-    extra.forEach((line, index) => {
-      const trimmed = line.trim();
-      if (!trimmed) return;
-      const parts = trimmed.split('|').map(part => part.trim()).filter(Boolean);
-      let label = 'リンクを見る';
-      let url = '';
-      let kind = '楽天ROOM';
-      if (parts.length === 1) {
-        url = parts[0];
-      } else if (parts.length === 2) {
-        label = parts[0];
-        url = parts[1];
-      } else {
-        label = parts[0];
-        url = parts[1];
-        kind = parts.slice(2).join(' | ');
-      }
-      url = normalizeToolUrl(url);
-      if (!url) throw new Error(`追加リンク ${index + 1} 行目のURLを確認してください。`);
-      links.push({ label, url, kind });
-    });
-    return links;
-  }
-
-  function normalizeToolUrl(value) {
-    if (!value) return '';
-    try {
-      const url = new URL(value);
-      if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
-      return url.href;
-    } catch(e) {
-      return '';
-    }
-  }
-
-  function showToolMsg(type, text) {
-    ['tool-msg', 'tool-modal-msg'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.className = 'form-msg ' + type;
-      el.textContent = text;
-    });
-    if (type === 'ok') {
-      setTimeout(() => {
-        ['tool-msg', 'tool-modal-msg'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.textContent = '';
-        });
-      }, 5000);
-    }
   }
 
   // ── お知らせ ─────────────────────────────────────
@@ -1494,7 +1159,6 @@
 
   // ── 初期化 ────────────────────────────────────────
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-  loadAffiliateLinks();
   if (getGasUrl()) {
     loadRecords();
     loadNotice();
@@ -1551,58 +1215,5 @@
   </div>
 </div>
 
-<!-- 道具リンク追加・編集モーダル -->
-<div class="modal-overlay" id="tool-modal" onclick="if(event.target===this)closeAffiliateModal()">
-  <div class="modal-box">
-    <h3 id="tool-modal-title">道具リンクを追加</h3>
-    <input type="hidden" id="tool-edit-id">
-    <div style="margin-bottom:14px;">
-      <label for="tool-url">1つ目のリンクURL <span style="color:red">*</span></label>
-      <input type="url" id="tool-url" placeholder="https://room.rakuten.co.jp/you0810jmsdf/...">
-      <div class="tool-form-note">カード内には下の追加リンクもまとめて表示できます。</div>
-    </div>
-    <div class="form-grid">
-      <div>
-        <label for="tool-name">道具名 <span style="color:red">*</span></label>
-        <input type="text" id="tool-name" placeholder="例: ヘリ落とし">
-      </div>
-      <div>
-        <label for="tool-category">カテゴリ</label>
-        <input type="text" id="tool-category" list="tool-category-list" placeholder="例: 仕上げ">
-        <datalist id="tool-category-list">
-          <option value="切る・測る"></option>
-          <option value="貼る"></option>
-          <option value="縫う"></option>
-          <option value="穴あけ"></option>
-          <option value="仕上げ"></option>
-          <option value="金具・加工"></option>
-          <option value="応用技法"></option>
-        </datalist>
-      </div>
-      <div>
-        <label for="tool-label">リンク表示名</label>
-        <input type="text" id="tool-label" placeholder="おすすめ">
-      </div>
-      <div>
-        <label for="tool-kind">リンク種別</label>
-        <input type="text" id="tool-kind" placeholder="楽天ROOM">
-      </div>
-    </div>
-    <div>
-      <label for="tool-description">紹介文</label>
-      <textarea id="tool-description" rows="4" placeholder="講習ページに表示する紹介文"></textarea>
-    </div>
-    <div style="margin-top:14px;">
-      <label for="tool-links-extra">追加リンク</label>
-      <textarea id="tool-links-extra" rows="4" placeholder="表示名 | URL | 種別&#10;例: 1500ml | https://room.rakuten.co.jp/... | 楽天ROOM"></textarea>
-      <div class="tool-form-note">1行につき1リンク。`表示名 | URL | 種別` の順で入力します。URLだけの行も使えます。</div>
-    </div>
-    <div id="tool-modal-msg" class="form-msg" style="margin-top:10px;"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeAffiliateModal()">キャンセル</button>
-      <button class="btn btn-primary" id="btn-tool-save" onclick="saveAffiliateLink()">保存する</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
