@@ -921,9 +921,8 @@ h1,h2,h3{
       </a>
       <div class="staff-tasks">
         <span class="staff-tasks-label">主な任務</span>
-        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec" target="_blank" rel="noopener">引き継ぎ書ビューア</a>
-        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec" target="_blank" rel="noopener">幕僚計画</a>
-        <a href="https://note.com/you0810jmsdf/membership" target="_blank" rel="noopener">AI経営奮闘記（note）</a>
+        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec" target="_blank" rel="noopener" onclick="return gateConfidential(event, this.href)">幕僚諸元（幕僚引継書） <span style="color:#c00;font-weight:700;">部外秘</span></a>
+        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec" target="_blank" rel="noopener" onclick="return gateConfidential(event, this.href)">幕僚計画 <span style="color:#c00;font-weight:700;">部外秘</span></a>
         <span class="soon">戦略ダッシュボード</span>
         <span class="soon">業務日誌ビューア</span>
         <span class="soon">優先タスクボード</span>
@@ -1139,6 +1138,16 @@ function toggleAccordion(btn) {
   btn.setAttribute('aria-expanded', String(!expanded));
   const body = btn.nextElementSibling;
   body.classList.toggle('open', !expanded);
+}
+function gateConfidential(e, url) {
+  e.preventDefault();
+  var pw = prompt('部外秘ページです。パスワードを入力してください');
+  if (pw === 'glJy4399') {
+    window.open(url, '_blank', 'noopener');
+  } else if (pw !== null) {
+    alert('パスワードが一致しません');
+  }
+  return false;
 }
 </script>
 <script src="assets/access-counter.js"></script>
