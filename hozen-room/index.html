@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>保全幕僚室 | N's factory</title>
+<meta name="description" content="N's factory 保全幕僚室。APIキー・トークン・認証情報を一元管理する保全部の入口。">
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{
+  --ink:#1D1D1F;
+  --muted:#636366;
+  --line:#E8E8ED;
+  --soft:#F5F5F7;
+  --paper:#FFFFFF;
+  --accent:#A0785A;
+  --accent-soft:#F3ECE4;
+  --accent-dark:#7A5540;
+  --danger:#C0392B;
+  --ok:#2E7D32;
+  --radius:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.10);
+  font-family:-apple-system,'SF Pro Display','SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.nav{
+  position:sticky;top:0;z-index:10;
+  height:56px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.nav-title{font-size:14px;font-weight:800;letter-spacing:.04em}
+.nav-spacer{flex:1}
+.nav-link{font-size:13px;color:var(--muted);padding:6px 10px;border-radius:var(--radius)}
+.nav-link:hover{background:var(--soft);color:var(--ink)}
+
+.hero{
+  padding:48px 24px 24px;
+  background:linear-gradient(135deg,#fff,var(--accent-soft));
+  border-bottom:1px solid var(--line);
+}
+.hero-inner{
+  max-width:1040px;margin:0 auto;
+  display:flex;align-items:center;gap:28px;flex-wrap:wrap;
+}
+.hero-portrait{
+  width:120px;height:120px;border-radius:50%;
+  object-fit:cover;
+  border:3px solid #fff;
+  box-shadow:var(--shadow);
+  background:var(--soft);
+  flex-shrink:0;
+}
+.hero-text{flex:1;min-width:240px}
+.hero-eyebrow{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;
+}
+.hero h1{font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin-bottom:6px}
+.hero .lead{color:var(--muted);font-size:14px}
+
+.hub{padding:48px 24px 80px}
+.hub-inner{max-width:1040px;margin:0 auto}
+
+.tool-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;
+}
+.tool-card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;transition:transform .15s,box-shadow .15s,border-color .15s;
+  display:flex;flex-direction:column;gap:10px;
+  cursor:pointer;
+}
+.tool-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--accent)}
+.tool-card.disabled{opacity:.5;cursor:not-allowed}
+.tool-card.disabled:hover{transform:none;box-shadow:none;border-color:var(--line)}
+.tool-card .tag{
+  display:inline-block;font-size:10px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent-dark);background:var(--accent-soft);
+  padding:3px 8px;border-radius:999px;width:fit-content;
+}
+.tool-card .tag.soon{color:var(--muted);background:var(--soft)}
+.tool-card h3{font-size:17px;letter-spacing:-.01em;margin-top:4px}
+.tool-card p{font-size:13px;color:var(--muted);line-height:1.7}
+
+.section-label{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;
+  margin:0 0 14px;
+}
+.tool-grid + .section-label{margin-top:42px}
+
+.note{
+  margin-top:32px;
+  padding:18px 20px;
+  background:var(--soft);border-radius:var(--radius);
+  font-size:13px;color:var(--muted);line-height:1.8;
+}
+
+@media(max-width:520px){
+  .hero{padding:32px 18px 20px}
+  .hero-portrait{width:96px;height:96px}
+  .hub{padding:36px 18px 64px}
+  .tool-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">保全幕僚室</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="/">TOPへ戻る</a>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <img class="hero-portrait" src="../assets/staff/hozen.png" alt="保全幕僚">
+    <div class="hero-text">
+      <div class="hero-eyebrow">HOZEN-SHITSU / SECURITY</div>
+      <h1>保全幕僚室</h1>
+      <p class="lead">APIキー・トークン・認証情報の一元管理、リスク管理、安定運用を担う保全部の入口です。</p>
+    </div>
+  </div>
+</section>
+
+<main class="hub">
+  <div class="hub-inner">
+
+    <div class="section-label">認証情報管理</div>
+    <div class="tool-grid">
+      <a class="tool-card" href="/password-note.html">
+        <span class="tag">LIVE</span>
+        <h3>パスワードノート</h3>
+        <p>各種サービスのID・パスワードを管理する内部用ノート。</p>
+      </a>
+      <div class="tool-card disabled">
+        <span class="tag soon">準備中</span>
+        <h3>APIキー台帳</h3>
+        <p>使用中のAPIキー・トークンの一覧と有効期限管理。後続フェーズで実装予定。</p>
+      </div>
+      <div class="tool-card disabled">
+        <span class="tag soon">準備中</span>
+        <h3>トークン棚卸し記録</h3>
+        <p>定期棚卸しの実施記録と未使用トークンの整理状況。後続フェーズで実装予定。</p>
+      </div>
+    </div>
+
+    <div class="section-label">リスク管理</div>
+    <div class="tool-grid">
+      <div class="tool-card disabled">
+        <span class="tag soon">準備中</span>
+        <h3>バックアップ状況</h3>
+        <p>OneDrive・GitHub・各種クラウドのバックアップ状況。後続フェーズで実装予定。</p>
+      </div>
+      <div class="tool-card disabled">
+        <span class="tag soon">準備中</span>
+        <h3>監視・通知ステータス</h3>
+        <p>各種監視・通知システムの稼働状況。後続フェーズで実装予定。</p>
+      </div>
+    </div>
+
+    <div class="note">
+      保全部は、APIキー・トークン・認証情報の一元管理、リスク管理、システムの安定運用を担当しています。<br>
+      機微情報を扱うため、本ページは検索エンジン対象外（noindex）に設定されています。
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
