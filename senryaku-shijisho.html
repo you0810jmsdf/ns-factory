@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N's factory 戦略指示書（部外秘）</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{
+  --ink:#1D1D1F;
+  --muted:#636366;
+  --line:#E8E8ED;
+  --soft:#F5F5F7;
+  --paper:#FFFFFF;
+  --accent:#3B5BA5;
+  --accent-soft:#E8EEF8;
+  --accent-dark:#2A4380;
+  --danger:#C0392B;
+  --radius:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.10);
+  font-family:-apple-system,'SF Pro Display','SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.nav{
+  position:sticky;top:0;z-index:10;
+  height:56px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.nav-title{font-size:14px;font-weight:800;letter-spacing:.04em}
+.nav-spacer{flex:1}
+.nav-back{
+  font-size:13px;color:var(--muted);
+  padding:6px 10px;border-radius:var(--radius);
+  text-decoration:none;
+}
+.nav-back:hover{background:var(--soft);color:var(--ink);text-decoration:none}
+
+/* Auth gate */
+.gate{
+  min-height:calc(100vh - 56px);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  background:linear-gradient(135deg,#fff,var(--accent-soft));
+}
+.gate-card{
+  width:100%;max-width:380px;
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:36px 28px;
+}
+.gate-eyebrow{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;
+}
+.gate-card h1{font-size:22px;letter-spacing:-.01em;margin-bottom:6px}
+.gate-card p{font-size:13px;color:var(--muted);margin-bottom:22px}
+.gate-card label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.gate-card input[type=password]{
+  width:100%;height:44px;padding:0 14px;
+  border:1px solid var(--line);border-radius:var(--radius);
+  font-size:15px;background:var(--soft);
+  outline:none;transition:border-color .15s,background .15s;
+}
+.gate-card input[type=password]:focus{border-color:var(--accent);background:#fff}
+.gate-card .submit{
+  width:100%;height:46px;margin-top:18px;
+  background:var(--accent);color:#fff;border:none;border-radius:var(--radius);
+  font-size:15px;font-weight:800;cursor:pointer;
+}
+.gate-card .submit:hover{background:var(--accent-dark)}
+.gate-msg{
+  margin-top:14px;font-size:12px;color:var(--danger);min-height:18px;
+}
+
+/* Main content */
+.content{display:none;padding:48px 24px 80px;}
+.content.active{display:block}
+.content-inner{max-width:800px;margin:0 auto;}
+
+/* Markdown rendered styles */
+.md-body h1{font-size:clamp(22px,3vw,30px);letter-spacing:-.02em;margin:32px 0 16px;border-bottom:2px solid var(--line);padding-bottom:10px;}
+.md-body h1:first-child{margin-top:0}
+.md-body h2{font-size:clamp(18px,2.5vw,22px);letter-spacing:-.01em;margin:28px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px;}
+.md-body h3{font-size:16px;font-weight:700;margin:20px 0 8px;}
+.md-body p{margin:0 0 14px;font-size:15px;}
+.md-body ul,.md-body ol{margin:0 0 14px;padding-left:1.6em;font-size:15px;}
+.md-body li{margin-bottom:4px;}
+.md-body table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;}
+.md-body th{background:var(--soft);border:1px solid var(--line);padding:8px 12px;text-align:left;font-weight:700;}
+.md-body td{border:1px solid var(--line);padding:8px 12px;}
+.md-body code{background:var(--soft);border-radius:4px;padding:2px 6px;font-size:13px;font-family:'SF Mono','Fira Code',monospace;}
+.md-body pre{background:var(--soft);border-radius:var(--radius);padding:16px;overflow-x:auto;margin:0 0 16px;}
+.md-body pre code{background:none;padding:0;font-size:13px;}
+.md-body blockquote{border-left:3px solid var(--accent);padding-left:16px;margin:0 0 14px;color:var(--muted);}
+.md-body hr{border:none;border-top:1px solid var(--line);margin:24px 0;}
+.md-body strong{font-weight:700;}
+.md-body a{color:var(--accent);}
+
+.secret-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#fff0f0;border:1px solid #f5c0c0;border-radius:999px;
+  color:var(--danger);font-size:11px;font-weight:800;letter-spacing:.1em;
+  padding:4px 12px;margin-bottom:24px;
+}
+
+.loading{
+  text-align:center;padding:48px;color:var(--muted);font-size:14px;
+}
+.error{
+  background:#fff0f0;border:1px solid #f5c0c0;border-radius:var(--radius);
+  padding:16px 20px;color:var(--danger);font-size:14px;margin-top:24px;
+}
+
+@media(max-width:520px){
+  .content{padding:32px 16px 60px;}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">N's factory 戦略指示書</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-back" href="./">← トップへ</a>
+</header>
+
+<!-- パスワードゲート -->
+<section class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-eyebrow">「部外秘」</div>
+    <h1>戦略指示書</h1>
+    <p>このページは部外秘です。パスワードを入力してください。</p>
+    <form id="authForm" autocomplete="off">
+      <label for="pw">パスワード</label>
+      <input type="password" id="pw" name="pw" autocomplete="off" required>
+      <button type="submit" class="submit">閲覧する</button>
+      <div class="gate-msg" id="gateMsg"></div>
+    </form>
+  </div>
+</section>
+
+<!-- コンテンツ本体 -->
+<main class="content" id="content">
+  <div class="content-inner">
+    <div class="secret-badge">「部外秘」</div>
+    <div class="md-body" id="mdBody">
+      <p class="loading">読み込み中…</p>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+(function(){
+  var AUTH_KEY = 'senryaku_auth_token';
+  var PASSWORD = 'glJy4399';
+  var TTL_MS = 24 * 60 * 60 * 1000;
+
+  function isAuthed(){
+    try{
+      var raw = localStorage.getItem(AUTH_KEY);
+      if(!raw) return false;
+      var obj = JSON.parse(raw);
+      if(!obj || !obj.exp) return false;
+      if(Date.now() > obj.exp){ localStorage.removeItem(AUTH_KEY); return false; }
+      return obj.ok === true;
+    }catch(e){ return false; }
+  }
+
+  function setAuthed(){
+    localStorage.setItem(AUTH_KEY, JSON.stringify({
+      ok: true,
+      exp: Date.now() + TTL_MS
+    }));
+  }
+
+  function showContent(){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('content').classList.add('active');
+    loadMd();
+  }
+
+  function showGate(){
+    document.getElementById('gate').style.display = 'flex';
+    document.getElementById('content').classList.remove('active');
+    setTimeout(function(){ var el=document.getElementById('pw'); if(el) el.focus(); }, 60);
+  }
+
+  function loadMd(){
+    var mdBody = document.getElementById('mdBody');
+    fetch('senryaku-shijisho.md?_=' + Date.now())
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(text){
+        mdBody.innerHTML = marked.parse(text);
+      })
+      .catch(function(err){
+        mdBody.innerHTML = '<div class="error">ファイルの読み込みに失敗しました。(' + err.message + ')</div>';
+      });
+  }
+
+  document.getElementById('authForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var pw = document.getElementById('pw').value;
+    var msg = document.getElementById('gateMsg');
+    if(pw === PASSWORD){
+      setAuthed();
+      showContent();
+    } else {
+      msg.textContent = 'パスワードが違います。';
+      document.getElementById('pw').value = '';
+    }
+  });
+
+  if(isAuthed()){ showContent(); } else { showGate(); }
+})();
+</script>
+
+</body>
+</html>
