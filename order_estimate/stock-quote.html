@@ -110,6 +110,46 @@
     letter-spacing:.04em;margin-top:6px;
   }
   .order-id{font-family:'Cinzel','Courier New',monospace;font-size:12px;color:#6b5544}
+
+  /* ===== 印刷用（PDF保存はブラウザ印刷→PDF保存） ===== */
+  @media print{
+    @page{size:A4;margin:14mm}
+    body{background:#fff;color:#000;font-size:11pt}
+    .topbar,.actions,.back{display:none !important}
+    main{
+      display:block;max-width:none;margin:0;padding:0;
+    }
+    .card{
+      box-shadow:none !important;border:1px solid #999 !important;
+      page-break-inside:avoid;margin-bottom:10mm;padding:10mm;
+    }
+    .total-card{
+      background:#fff !important;border:1px solid #999 !important;
+    }
+    .card h2{
+      color:#000 !important;border-bottom:1px solid #666 !important;
+      font-size:13pt;
+    }
+    .row,.total-row{font-size:11pt;color:#000}
+    .row .label,.total-row span:first-child{color:#333}
+    .total-row.grand{color:#000;font-size:14pt}
+    .qty-row input{border:1px solid #999;background:#fff;color:#000}
+    .radio-group label{
+      border:1px solid #bbb;background:#fff;page-break-inside:avoid;
+    }
+    .radio-group .opt-name{color:#000}
+    .radio-group .opt-desc{color:#333}
+    .note{
+      background:#f5f5f5 !important;border-left:3px solid #666 !important;
+      color:#222;font-size:9pt;
+    }
+    .badge-stock{background:#444 !important;color:#fff !important}
+    .footer-note{
+      color:#000;border-top:1px solid #999;padding-top:6mm;margin-top:8mm;
+    }
+    /* 印刷時はラジオボタン入力UIを薄く・選択済みは強調 */
+    .radio-group input[type=radio]{transform:scale(.9)}
+  }
 </style>
 </head>
 <body>
@@ -172,7 +212,7 @@
     <div class="btc-rate-line" id="btc-rate-info" style="display:none"></div>
 
     <div class="actions">
-      <button type="button" class="btn btn-primary" id="btn-pdf">PDFで保存</button>
+      <button type="button" class="btn btn-primary" id="btn-pdf">印刷 / PDFで保存</button>
       <button type="button" class="btn btn-secondary" id="btn-mail">メール送信</button>
     </div>
 
@@ -188,7 +228,6 @@
   お問い合わせ: you0810jmsdf@gmail.com ／ LINE: https://lin.ee/XOcD2pd
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function(){
   const BTC_RATE_API = 'https://script.google.com/macros/s/AKfycbzMp1YQYBNnwvwspSbBP5lWnK5GtT3sKXuXhSA9DAwgPO7gFDG2VvB9mzJdme6KYn5Y/exec';
@@ -284,50 +323,9 @@
   qtyInput.addEventListener('input', recalc);
   document.querySelectorAll('input[name=pay]').forEach(r => r.addEventListener('change', recalc));
 
-  // PDF出力
+  // PDF出力（ブラウザ印刷→「PDFに保存」を利用。日本語完全対応）
   document.getElementById('btn-pdf').addEventListener('click', () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit:'mm', format:'a4' });
-    const qty = parseInt(qtyInput.value, 10);
-    const subtotal = item.price * qty;
-    const pay = document.querySelector('input[name=pay]:checked').value;
-    const discount = pay === 'btc' ? calcDiscount(subtotal) : 0;
-    const grand = subtotal - discount;
-    const payLabel = pay === 'btc' ? 'Bitcoin (BTC, 3%OFF max 1,000JPY)' : 'Bank Transfer';
-
-    doc.setFontSize(16); doc.text("N's factory  Stock Item Quotation", 14, 18);
-    doc.setFontSize(10);
-    doc.text('Quote No: ' + quoteId, 14, 28);
-    doc.text('Issue Date: ' + ymd, 14, 34);
-    doc.text('Shop: ' + SHOP.name + ' (' + SHOP.owner + ')', 14, 40);
-    doc.text('Contact: ' + SHOP.mail, 14, 46);
-
-    doc.line(14, 52, 196, 52);
-    doc.setFontSize(11);
-    doc.text('Item: ' + (item.name || '-'), 14, 60);
-    doc.text('Item ID: ' + (item.id || '-'), 14, 66);
-    doc.text('Unit Price: JPY ' + item.price.toLocaleString('en-US'), 14, 72);
-    doc.text('Quantity: ' + qty, 14, 78);
-    doc.text('Subtotal: JPY ' + subtotal.toLocaleString('en-US'), 14, 84);
-    doc.text('Payment: ' + payLabel, 14, 90);
-    if (discount > 0) doc.text('Discount: -JPY ' + discount.toLocaleString('en-US'), 14, 96);
-    doc.setFontSize(14);
-    doc.text('TOTAL: JPY ' + grand.toLocaleString('en-US') + ' (tax incl.)', 14, 108);
-
-    if (pay === 'btc' && btcRate){
-      doc.setFontSize(9);
-      doc.text('BTC Estimate: ' + fmtBtc(grand / btcRate) + ' BTC', 14, 116);
-      doc.text('Rate Ref: JPY ' + btcRate.toLocaleString('en-US') + ' / BTC  (' + (btcRateMeta && btcRateMeta.date) + ' OKJ)', 14, 122);
-    }
-
-    doc.line(14, 135, 196, 135);
-    doc.setFontSize(8);
-    doc.text('* Tax-included. Non-qualified invoice issuer (Invoice system).', 14, 142);
-    doc.text('* Shipping fee charged separately.', 14, 147);
-    doc.text('* BTC rate confirmed on payment date (JST 00:00 OKJ).', 14, 152);
-    doc.text('* This is a preliminary quote. Final amount confirmed upon order.', 14, 157);
-
-    doc.save(quoteId + '.pdf');
+    window.print();
   });
 
   // メール送信
