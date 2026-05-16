@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メモリアルフォトフレーム | N's factory</title>
+<meta name="description" content="その日を、革に刻む。ヌメ革にレーザー彫刻するセミオーダー・メモリアルフォトフレーム。結婚祝い・誕生日・出産祝い・退職記念に。">
+
+<!-- OGP -->
+<meta property="og:title" content="メモリアルフォトフレーム | N's factory">
+<meta property="og:description" content="その日を、革に刻む。ヌメ革にレーザー彫刻するセミオーダー・メモリアルフォトフレーム。結婚祝い・誕生日・出産祝い・退職記念に。">
+<meta property="og:type" content="product">
+<meta property="og:url" content="https://you0810jmsdf.github.io/ns-factory/products/memorial-photo-frame.html">
+<meta property="og:image" content="https://you0810jmsdf.github.io/ns-factory/products/img/memorial-01.png">
+<meta property="og:site_name" content="N's factory">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ── Design Tokens ──────────────────────────────── */
+:root {
+  --color-primary:       #1D1D1F;
+  --color-primary-hover: #3A3A3C;
+  --color-accent:        #A0785A;
+  --color-accent-light:  #F3ECE4;
+  --color-accent-dark:   #7A5540;
+  --color-bg:            #FFFFFF;
+  --color-bg-sub:        #F5F5F7;
+  --color-border:        #E8E8ED;
+  --color-text:          #1D1D1F;
+  --color-text-sub:      #636366;
+  --color-text-mute:     #AEAEB2;
+  --shadow-xs:  0 1px 3px rgba(0,0,0,.06);
+  --shadow-sm:  0 2px 8px rgba(0,0,0,.08);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  20px;
+  --radius-full:9999px;
+  --transition-base: .2s ease;
+  font-family: 'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.8;
+  padding-bottom: 96px; /* CTA固定エリア分 */
+}
+
+a { color: inherit; text-decoration: none; }
+
+img { max-width: 100%; height: auto; display: block; }
+
+/* ── Nav ──────────────────────────────────────── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  background: rgba(255,255,255,.92);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(12px);
+}
+.nav-brand {
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: var(--color-primary);
+}
+.nav-spacer { flex: 1; }
+.nav-link {
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+.nav-link:hover { color: var(--color-primary); }
+
+/* ── Breadcrumb ────────────────────────────────── */
+.breadcrumb {
+  padding: 12px 24px;
+  font-size: 12px;
+  color: var(--color-text-mute);
+  background: var(--color-bg-sub);
+  border-bottom: 1px solid var(--color-border);
+}
+.breadcrumb a { color: var(--color-accent); }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb span { margin: 0 6px; }
+
+/* ── Hero ──────────────────────────────────────── */
+.hero {
+  position: relative;
+  background: var(--color-primary);
+  overflow: hidden;
+}
+.hero-img {
+  width: 100%;
+  max-height: 560px;
+  object-fit: cover;
+  opacity: .85;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.15) 0%, rgba(0,0,0,.55) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 40px 24px;
+  text-align: center;
+  color: #fff;
+}
+.hero-catch {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(24px, 5vw, 44px);
+  font-weight: 600;
+  letter-spacing: .12em;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+.hero-lead {
+  font-size: clamp(13px, 2vw, 16px);
+  line-height: 1.9;
+  max-width: 600px;
+  opacity: .92;
+  text-shadow: 0 1px 6px rgba(0,0,0,.4);
+}
+
+/* ── Section ───────────────────────────────────── */
+.section {
+  padding: 56px 24px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.section + .section {
+  border-top: 1px solid var(--color-border);
+}
+.section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .18em;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.section-title {
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 20px;
+  letter-spacing: -.01em;
+}
+.section-body {
+  font-size: 15px;
+  color: var(--color-text-sub);
+  line-height: 1.9;
+}
+.section-body p + p { margin-top: 12px; }
+
+/* ── Table ─────────────────────────────────────── */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 20px;
+}
+.spec-table th,
+.spec-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+.spec-table th {
+  width: 38%;
+  color: var(--color-text-sub);
+  font-weight: 400;
+  background: var(--color-bg-sub);
+}
+.spec-table td { color: var(--color-text); }
+
+/* ── Tag list ──────────────────────────────────── */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.tag {
+  display: inline-flex;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+  font-size: 13px;
+}
+
+/* ── Engraving layout ──────────────────────────── */
+.engrave-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.engrave-item {
+  padding: 20px;
+  background: var(--color-accent-light);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+.engrave-pos {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: .12em;
+  color: var(--color-accent);
+  margin-bottom: 6px;
+}
+.engrave-desc {
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ── Price ─────────────────────────────────────── */
+.price-box {
+  margin-top: 24px;
+  padding: 28px 32px;
+  background: var(--color-bg-sub);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.price-main {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-accent-dark);
+  letter-spacing: -.02em;
+}
+.price-label {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  margin-top: 4px;
+}
+.price-note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-text-mute);
+  line-height: 1.7;
+}
+
+/* ── Steps ─────────────────────────────────────── */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 24px;
+}
+.step {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  padding-bottom: 28px;
+}
+.step:last-child { padding-bottom: 0; }
+.step-num {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-line {
+  position: absolute;
+  left: 17px;
+  top: 40px;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-border);
+}
+.step:last-child .step-line { display: none; }
+.step-body { padding-top: 6px; }
+.step-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.step-desc {
+  font-size: 14px;
+  color: var(--color-text-sub);
+  line-height: 1.8;
+}
+
+/* ── FAQ ───────────────────────────────────────── */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 20px;
+}
+.faq-item {
+  border-bottom: 1px solid var(--color-border);
+  padding: 20px 0;
+}
+.faq-q {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 10px;
+}
+.faq-q::before {
+  content: 'Q';
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.faq-a {
+  font-size: 14px;
+  color: var(--color-text-sub);
+  line-height: 1.85;
+  padding-left: 34px;
+}
+
+/* ── Notes ─────────────────────────────────────── */
+.notes {
+  margin-top: 20px;
+  padding: 20px 24px;
+  background: var(--color-bg-sub);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+.notes ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notes li {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  line-height: 1.75;
+  padding-left: 14px;
+  position: relative;
+}
+.notes li::before {
+  content: '※';
+  position: absolute;
+  left: 0;
+  color: var(--color-text-mute);
+}
+
+/* ── CTA Fixed ─────────────────────────────────── */
+.cta-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: rgba(255,255,255,.96);
+  border-top: 1px solid var(--color-border);
+  backdrop-filter: blur(12px);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+}
+.cta-price-mini {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  white-space: nowrap;
+}
+.cta-price-mini strong {
+  font-size: 18px;
+  color: var(--color-accent-dark);
+  font-weight: 700;
+}
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: 'Zen Old Mincho', serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  transition: background var(--transition-base), transform var(--transition-base);
+  white-space: nowrap;
+}
+.btn-cta:hover {
+  background: var(--color-accent-dark);
+  transform: translateY(-1px);
+}
+.btn-cta:active { transform: translateY(0); }
+
+/* ── Responsive ────────────────────────────────── */
+@media (max-width: 600px) {
+  .section { padding: 40px 18px; }
+  .hero-overlay { padding: 28px 18px; }
+  .price-box { padding: 20px; }
+  .cta-fixed { padding: 12px 18px; gap: 10px; }
+  .btn-cta { padding: 12px 20px; font-size: 14px; }
+  .cta-price-mini { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">N's factory</a>
+  <span class="nav-spacer"></span>
+  <a href="../index.html" class="nav-link">トップ</a>
+  <a href="../links.html" class="nav-link">リンク集</a>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <a href="../index.html">トップ</a>
+  <span>&rsaquo;</span>
+  <a href="../index.html#products">商品</a>
+  <span>&rsaquo;</span>
+  メモリアルフォトフレーム
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <img
+    src="img/memorial-01.png"
+    alt="ヌメ革レーザー彫刻 メモリアルフォトフレーム サンプル"
+    class="hero-img"
+    loading="eager"
+    width="1200"
+    height="800"
+  >
+  <div class="hero-overlay">
+    <h1 class="hero-catch">その日を、革に刻む。</h1>
+    <p class="hero-lead">ヌメ革にレーザーで写真・言葉・日付を刻む、セミオーダーのメモリアルフォトフレームです。<br>
+    世界にひとつだけの記念品を、大切な「その日」のために職人がおつくりします。</p>
+  </div>
+</section>
+
+<!-- 商品概要 -->
+<div class="section">
+  <p class="section-label">Product</p>
+  <h2 class="section-title">ヌメ革レーザー彫刻<br>メモリアルフォトフレーム</h2>
+  <div class="section-body">
+    <p>木製スタンド付きフレームに、ヌメ革のインサートをセット。レーザー彫刻でお客様ご提供の写真・メッセージ文言・記念日を刻み、世界にひとつだけの一品に仕上げます。</p>
+    <p>結婚祝い・誕生日プレゼント・出産祝い・還暦祝い・退職記念など、大切な節目の贈りものに。</p>
+  </div>
+  <div class="tag-list">
+    <span class="tag">結婚祝い</span>
+    <span class="tag">誕生日</span>
+    <span class="tag">出産祝い</span>
+    <span class="tag">還暦祝い</span>
+    <span class="tag">退職記念</span>
+    <span class="tag">セミオーダー</span>
+  </div>
+</div>
+
+<!-- 仕様 -->
+<div class="section">
+  <p class="section-label">Specification</p>
+  <h2 class="section-title">仕様</h2>
+  <table class="spec-table">
+    <tbody>
+      <tr>
+        <th>フレーム外寸</th>
+        <td>お問い合わせください（実測準備中）</td>
+      </tr>
+      <tr>
+        <th>写真枠内寸</th>
+        <td>お問い合わせください（実測準備中）</td>
+      </tr>
+      <tr>
+        <th>フレーム素材</th>
+        <td>木製</td>
+      </tr>
+      <tr>
+        <th>インサート素材</th>
+        <td>ヌメ革（植物タンニン鞣し）</td>
+      </tr>
+      <tr>
+        <th>仕上げ</th>
+        <td>レーザー彫刻</td>
+      </tr>
+      <tr>
+        <th>カラー</th>
+        <td>ナチュラル（ヌメ革の素地色）</td>
+      </tr>
+      <tr>
+        <th>スタンド</th>
+        <td>付属（そのまま飾れます）</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 彫刻要素 -->
+<div class="section">
+  <p class="section-label">Engraving</p>
+  <h2 class="section-title">彫刻レイアウト</h2>
+  <div class="section-body">
+    <p>革インサートへの彫刻は、以下の4要素で構成されます。</p>
+  </div>
+  <div class="engrave-grid">
+    <div class="engrave-item">
+      <div class="engrave-pos">Top</div>
+      <div class="engrave-desc">メッセージ文言<br><small style="color:var(--color-text-mute)">例: Happy Wedding</small></div>
+    </div>
+    <div class="engrave-item">
+      <div class="engrave-pos">Center</div>
+      <div class="engrave-desc">お客様提供の写真<br><small style="color:var(--color-text-mute)">レーザー彫刻</small></div>
+    </div>
+    <div class="engrave-item">
+      <div class="engrave-pos">Bottom</div>
+      <div class="engrave-desc">記念日・日付<br><small style="color:var(--color-text-mute)">例: 2026.05.24</small></div>
+    </div>
+    <div class="engrave-item">
+      <div class="engrave-pos">Right Bottom</div>
+      <div class="engrave-desc">N's factory ロゴ</div>
+    </div>
+  </div>
+</div>
+
+<!-- 価格 -->
+<div class="section">
+  <p class="section-label">Price</p>
+  <h2 class="section-title">価格</h2>
+  <div class="price-box">
+    <div class="price-main">5,000<span style="font-size:18px;font-weight:400;">円</span></div>
+    <div class="price-label">税込 / 1点制作（一律1プラン）</div>
+    <div class="price-note">送料は別途実費をご負担いただきます（ご注文時にご案内）。<br>
+    インボイス（適格請求書）の発行には対応しておりません。</div>
+  </div>
+</div>
+
+<!-- 納期 -->
+<div class="section">
+  <p class="section-label">Delivery</p>
+  <h2 class="section-title">納期</h2>
+  <div class="section-body">
+    <p>受注確定（ご入金確認）から <strong>7〜10日程度</strong> を目安としています。</p>
+  </div>
+  <table class="spec-table" style="margin-top:20px;">
+    <tbody>
+      <tr>
+        <th>ヒアリング〜仕様確定</th>
+        <td>1〜3日</td>
+      </tr>
+      <tr>
+        <th>制作期間</th>
+        <td>3〜5営業日</td>
+      </tr>
+      <tr>
+        <th>発送〜到着</th>
+        <td>2〜3日（通常配送）</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="margin-top:14px;font-size:13px;color:var(--color-text-mute);">※繁忙期やマルシェ前後は納期が延長になる場合があります。お急ぎの方はお早めにご相談ください。</p>
+</div>
+
+<!-- セミオーダーの流れ -->
+<div class="section">
+  <p class="section-label">How to Order</p>
+  <h2 class="section-title">セミオーダーの流れ</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">Instagram DM でお問い合わせ</div>
+        <div class="step-desc">@nsfactory_leather のプロフィールから「メッセージ」ボタンでDMをお送りください。</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">写真・文言・日付のヒアリング</div>
+        <div class="step-desc">用途・メッセージ文言・写真データ・記念日・お届け先などをお聞きします。</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">原稿確認・お支払い</div>
+        <div class="step-desc">仕様をまとめた原稿をお送りします。内容をご確認いただいたうえでご入金をお願いします。</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">制作</div>
+        <div class="step-desc">ご入金確認後、制作を開始します。職人が一点一点レーザーで仕上げます。</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-line"></div>
+      <div class="step-body">
+        <div class="step-title">発送・お届け</div>
+        <div class="step-desc">完成後にご連絡し、発送します。追跡番号をお知らせします。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="section">
+  <p class="section-label">FAQ</p>
+  <h2 class="section-title">よくあるご質問</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q">写真のデータはどのように送ればよいですか？</div>
+      <div class="faq-a">JPEG または PNG 形式で、解像度300dpi以上（最低150dpi）を推奨しています。DMへの直接添付、またはGoogle Driveの共有リンクでお送りください。顔が明瞭に写っているものが仕上がりに有利です。逆光・ピンボケのものはご相談ください。</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">写真の人数に制限はありますか？</div>
+      <div class="faq-a">2〜4名を推奨しています。5名以上の場合は彫刻の細かさにより制限が生じる可能性がありますので、まずDMでご相談ください。</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">メッセージ文言は英文・和文どちらでも対応できますか？</div>
+      <div class="faq-a">どちらも対応しています。英文（例: Happy Wedding / Happy Birthday）を推奨していますが、日本語でも承ります。文字数の目安はDMにてご案内します。</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">発注後の文言・日付の変更はできますか？</div>
+      <div class="faq-a">原稿確認（Step 3）の段階まではご変更いただけます。制作開始後の変更は原則できませんので、ご確認は念入りにお願いします。</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">ギフトラッピングはありますか？</div>
+      <div class="faq-a">現在、ギフト用の簡易包装に対応しています（詳細はDMにてご確認ください）。熨斗・メッセージカードなどご要望があればご相談ください。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 注意事項 -->
+<div class="section">
+  <p class="section-label">Notes</p>
+  <h2 class="section-title">注意事項</h2>
+  <div class="notes">
+    <ul>
+      <li>本商品はセミオーダー品です。完成後の返品・交換は原則承れません。仕様確定前に十分ご確認ください。</li>
+      <li>ご提供いただく写真・画像の著作権および肖像権は、依頼者ご自身が保有・許諾済みであることを前提として制作します。</li>
+      <li>写真データの品質（解像度・明暗・構図）により、彫刻の再現性が変わる場合があります。事前にご案内します。</li>
+      <li>当工房はインボイス（適格請求書発行事業者）に登録していません。適格請求書の発行はできません。</li>
+      <li>価格はすべて税込表記です。</li>
+      <li>送料は実費をご負担いただきます。詳細はご注文時にご案内します。</li>
+    </ul>
+  </div>
+</div>
+
+<!-- CTA 固定エリア -->
+<div class="cta-fixed">
+  <div class="cta-price-mini">税込 <strong>5,000円</strong></div>
+  <a
+    href="https://www.instagram.com/nsfactory_leather/?ref=memorial"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="btn-cta"
+  >Instagram DMから注文する</a>
+</div>
+
+</body>
+</html>
