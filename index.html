@@ -846,6 +846,64 @@ h1,h2,h3{
   .quick-links{padding:36px 16px}
 }
 
+/* ── New Arrival Card ───────────────────────────────── */
+.new-arrival-card{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 300px;
+  gap:32px;
+  align-items:center;
+  padding:32px;
+  background:linear-gradient(135deg,#fff,var(--color-accent-light));
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+  text-decoration:none;
+  color:var(--color-text);
+  transition:transform var(--transition-base),box-shadow var(--transition-base);
+}
+.new-arrival-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.new-arrival-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.badge-new{
+  display:inline-flex;padding:4px 12px;
+  border-radius:var(--radius-full);
+  background:linear-gradient(180deg,#d4b25c 0%,#a07c2a 100%);
+  color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;
+}
+.badge-semi{
+  display:inline-flex;padding:4px 12px;
+  border-radius:var(--radius-full);
+  background:#fff;border:1px solid var(--color-accent);
+  color:var(--color-accent-dark);font-size:12px;font-weight:600;
+}
+.new-arrival-title{font-size:24px;font-weight:700;line-height:1.35;margin-bottom:10px;letter-spacing:-.01em}
+.new-arrival-catch{
+  font-size:15px;color:var(--color-accent-dark);
+  font-style:italic;margin-bottom:12px;letter-spacing:.04em;
+}
+.new-arrival-price{font-size:18px;font-weight:600;margin-bottom:18px}
+.new-arrival-price span{font-size:13px;color:var(--color-text-sub);font-weight:400;margin-left:4px}
+.new-arrival-cta{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'Cinzel','Zen Old Mincho',serif;
+  font-size:13px;font-weight:600;letter-spacing:.08em;
+  padding:10px 24px;border-radius:6px;
+  background:linear-gradient(180deg,#d4b25c 0%,#a07c2a 100%);
+  color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18);
+  transition:transform var(--transition-base),box-shadow var(--transition-base);
+}
+.new-arrival-card:hover .new-arrival-cta{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.25)}
+.new-arrival-image{
+  border-radius:var(--radius-md);
+  border:1px solid var(--color-border);
+  box-shadow:var(--shadow-md);
+  overflow:hidden;background:#fff;
+}
+@media(max-width:768px){
+  .new-arrival-card{grid-template-columns:1fr;padding:24px}
+  .new-arrival-image{order:-1}
+  .new-arrival-title{font-size:20px}
+}
+
 /* ── BTC/JPY 換算ウィジェット（紙メモ風） ── */
 .btc-widget{
   position:relative;
@@ -966,6 +1024,31 @@ h1,h2,h3{
   </div>
   <div class="hero-photo">
     <img src="assets/artisan.jpg" alt="作家 中司 祐樹">
+  </div>
+</section>
+
+<!-- ── New Arrival ── -->
+<section class="section" style="background:var(--color-bg-sub);padding-top:52px;padding-bottom:52px;">
+  <div class="section-inner">
+    <div class="section-header" style="margin-bottom:24px;">
+      <p class="section-label">New Arrival</p>
+      <h2 class="section-title">新着商品</h2>
+    </div>
+    <a href="products/memorial-photo-frame.html" class="new-arrival-card">
+      <div>
+        <div class="new-arrival-badges">
+          <span class="badge-new">NEW</span>
+          <span class="badge-semi">セミオーダー</span>
+        </div>
+        <p class="new-arrival-title">ヌメ革レーザー彫刻<br>メモリアルフォトフレーム</p>
+        <p class="new-arrival-catch">その日を、革に刻む。</p>
+        <p class="new-arrival-price">5,000円<span>（税込）</span></p>
+        <span class="new-arrival-cta">商品詳細を見る →</span>
+      </div>
+      <div class="new-arrival-image">
+        <img src="products/img/memorial-01.png" alt="ヌメ革レーザー彫刻 メモリアルフォトフレーム">
+      </div>
+    </a>
   </div>
 </section>
 
