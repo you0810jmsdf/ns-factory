@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在庫品お見積り | N's factory</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:0;background:#f5f0eb;color:#2c1a0e;
+    font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+    line-height:1.7;
+  }
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:linear-gradient(135deg,#3d1a08 0%,#6b3a1f 100%);
+    color:#fff5e6;padding:14px 24px;
+    display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 2px 6px rgba(0,0,0,.18);
+  }
+  .topbar h1{margin:0;font-size:18px;letter-spacing:.08em;font-weight:500}
+  .topbar a.back{
+    color:#fff5e6;text-decoration:none;font-size:13px;
+    border:1px solid rgba(255,245,230,.4);padding:6px 12px;border-radius:4px;
+    transition:background .15s;
+  }
+  .topbar a.back:hover{background:rgba(255,255,255,.1)}
+  main{
+    max-width:860px;margin:24px auto;padding:0 16px;
+    display:grid;grid-template-columns:1fr 320px;gap:24px;
+  }
+  @media (max-width:820px){main{grid-template-columns:1fr}}
+  .card{
+    background:#fff;border:1px solid #e6dccf;border-radius:8px;
+    padding:20px 22px;box-shadow:0 1px 3px rgba(60,40,20,.06);
+  }
+  .card h2{
+    margin:0 0 14px;font-size:15px;letter-spacing:.06em;color:#3d1a08;
+    border-bottom:1px solid #e6dccf;padding-bottom:8px;
+  }
+  .row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:14px}
+  .row .label{color:#6b5544}
+  .row .val{font-weight:500;text-align:right}
+  .qty-row{display:flex;align-items:center;gap:10px;margin:10px 0}
+  .qty-row input{
+    width:80px;padding:6px 10px;border:1px solid #c8b9a6;border-radius:4px;
+    font-size:14px;text-align:right;background:#fff;
+  }
+  .radio-group{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+  .radio-group label{
+    display:flex;align-items:flex-start;gap:10px;padding:12px;
+    border:1px solid #d8c8b3;border-radius:6px;cursor:pointer;
+    transition:background .15s,border-color .15s;
+  }
+  .radio-group label:hover{background:#fbf6ef;border-color:#a87a52}
+  .radio-group input[type=radio]{margin-top:3px}
+  .radio-group .opt-name{font-weight:500;color:#3d1a08;font-size:14px}
+  .radio-group .opt-desc{font-size:12px;color:#6b5544;margin-top:3px}
+  .total-card{
+    background:linear-gradient(135deg,#fff8ed 0%,#fcefdb 100%);
+    border:1px solid #d6b88e;
+  }
+  .total-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:6px 0;font-size:14px;color:#5a3a1f;
+  }
+  .total-row.grand{
+    border-top:1px dashed #b89469;margin-top:10px;padding-top:14px;
+    font-size:20px;font-weight:600;color:#3d1a08;
+  }
+  .total-row.btc{
+    font-size:13px;color:#6b3a1f;
+    font-family:'Cinzel','Helvetica Neue',serif;letter-spacing:.04em;
+  }
+  .actions{
+    display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;
+  }
+  .btn{
+    flex:1;min-width:130px;padding:11px 14px;border-radius:6px;
+    font-size:13px;font-weight:500;cursor:pointer;
+    border:1px solid transparent;transition:all .15s;
+    text-align:center;text-decoration:none;display:inline-block;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,#3d1a08 0%,#6b3a1f 100%);
+    color:#fff5e6;border-color:#3d1a08;
+  }
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(60,30,10,.25)}
+  .btn-secondary{
+    background:#fff;color:#3d1a08;border-color:#a87a52;
+  }
+  .btn-secondary:hover{background:#fbf6ef}
+  .note{
+    font-size:11px;color:#7a6651;line-height:1.7;margin:14px 0 0;
+    padding:10px 12px;background:#faf5ed;border-left:3px solid #c8a878;
+    border-radius:0 4px 4px 0;
+  }
+  .footer-note{
+    max-width:860px;margin:30px auto;padding:0 16px;
+    font-size:11px;color:#8a7762;text-align:center;
+  }
+  .badge-stock{
+    display:inline-block;background:#5a8a3a;color:#fff;
+    font-size:11px;padding:3px 8px;border-radius:3px;
+    letter-spacing:.06em;margin-left:8px;vertical-align:middle;
+  }
+  .btc-rate-line{
+    font-size:11px;color:#6b5544;font-family:'Cinzel','Helvetica Neue',serif;
+    letter-spacing:.04em;margin-top:6px;
+  }
+  .order-id{font-family:'Cinzel','Courier New',monospace;font-size:12px;color:#6b5544}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>在庫品お見積り <span class="badge-stock">STOCK</span></h1>
+  <a class="back" href="../works.html">← 作品一覧へ戻る</a>
+</header>
+
+<main>
+  <!-- 左カラム：明細 -->
+  <div class="card" id="quote-section">
+    <h2>お見積り明細</h2>
+    <div class="row"><span class="label">見積番号</span><span class="val order-id" id="quote-id">―</span></div>
+    <div class="row"><span class="label">発行日</span><span class="val" id="issue-date">―</span></div>
+    <div class="row"><span class="label">商品名</span><span class="val" id="item-name">―</span></div>
+    <div class="row"><span class="label">商品ID</span><span class="val order-id" id="item-id">―</span></div>
+    <div class="row"><span class="label">単価（税込）</span><span class="val" id="unit-price">―</span></div>
+    <div class="qty-row">
+      <span class="label">数量</span>
+      <input type="number" id="qty" min="1" max="99" value="1">
+      <span style="font-size:13px;color:#6b5544">点</span>
+    </div>
+    <div class="row"><span class="label">小計（税込）</span><span class="val" id="subtotal">―</span></div>
+
+    <h2 style="margin-top:24px">決済方法</h2>
+    <div class="radio-group">
+      <label>
+        <input type="radio" name="pay" value="bank" checked>
+        <div>
+          <div class="opt-name">銀行振込</div>
+          <div class="opt-desc">ご注文確定後、お振込先をメールでご案内します。振込手数料はお客様負担。</div>
+        </div>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="btc">
+        <div>
+          <div class="opt-name">Bitcoin（BTC）決済 — 3% OFF（上限1,000円）</div>
+          <div class="opt-desc">OKJ JST00:00 レート参照。前払いのみ。送金手数料はお客様負担。</div>
+        </div>
+      </label>
+    </div>
+
+    <p class="note">
+      ※ 表示価格は税込です。インボイス制度未登録事業者のため、適格請求書は発行できません。<br>
+      ※ 送料は別途実費（注文確定後にご案内）。<br>
+      ※ 在庫品のため、原則オーダー後3営業日以内に発送いたします。
+    </p>
+  </div>
+
+  <!-- 右カラム：合計とアクション -->
+  <div class="card total-card">
+    <h2>お支払い額</h2>
+    <div class="total-row"><span>商品代金</span><span id="t-subtotal">― 円</span></div>
+    <div class="total-row" id="discount-line" style="display:none"><span>BTC決済割（▲）</span><span id="t-discount">― 円</span></div>
+    <div class="total-row grand"><span>合計（税込）</span><span id="t-grand">― 円</span></div>
+    <div class="total-row btc" id="btc-line" style="display:none">
+      <span>BTC概算</span><span id="t-btc">― BTC</span>
+    </div>
+    <div class="btc-rate-line" id="btc-rate-info" style="display:none"></div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="btn-pdf">PDFで保存</button>
+      <button type="button" class="btn btn-secondary" id="btn-mail">メール送信</button>
+    </div>
+
+    <p class="note">
+      ※ このお見積りは仮計算です。ご注文確定で正式金額が確定します。<br>
+      ※ BTC換算は参照レート。確定レートは入金確認日のJST00:00 OKJレート。
+    </p>
+  </div>
+</main>
+
+<div class="footer-note">
+  N's factory ／ 中司 祐樹 ／ 千葉県印西市<br>
+  お問い合わせ: you0810jmsdf@gmail.com ／ LINE: https://lin.ee/XOcD2pd
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+  const BTC_RATE_API = 'https://script.google.com/macros/s/AKfycbzMp1YQYBNnwvwspSbBP5lWnK5GtT3sKXuXhSA9DAwgPO7gFDG2VvB9mzJdme6KYn5Y/exec';
+  const SHOP = { name:"N's factory", owner:'中司 祐樹', mail:'you0810jmsdf@gmail.com' };
+
+  const params = new URLSearchParams(location.search);
+  const item = {
+    id:   params.get('id')   || '',
+    name: params.get('name') || '',
+    price: parseInt(params.get('price') || '0', 10) || 0,
+    qty:   parseInt(params.get('qty')   || '1', 10) || 1,
+  };
+
+  const fmtJpy = n => '¥' + Math.round(n).toLocaleString('ja-JP');
+  const fmtBtc = n => Number(n).toFixed(8);
+  const pad2 = n => String(n).padStart(2,'0');
+  const today = new Date();
+  const ymd = today.getFullYear() + '-' + pad2(today.getMonth()+1) + '-' + pad2(today.getDate());
+  const quoteId = 'SQ-' + ymd.replace(/-/g,'') + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
+
+  document.getElementById('quote-id').textContent = quoteId;
+  document.getElementById('issue-date').textContent = ymd;
+  document.getElementById('item-name').textContent = item.name || '（商品名未指定）';
+  document.getElementById('item-id').textContent   = item.id || '―';
+  document.getElementById('unit-price').textContent = fmtJpy(item.price);
+  const qtyInput = document.getElementById('qty');
+  qtyInput.value = item.qty;
+  document.getElementById('subtotal').textContent = fmtJpy(item.price * item.qty);
+
+  let btcRate = null;
+  let btcRateMeta = null;
+
+  function calcDiscount(subtotal){
+    return Math.min(Math.floor(subtotal * 0.03), 1000);
+  }
+
+  function recalc(){
+    const qty = Math.max(1, parseInt(qtyInput.value || '1', 10) || 1);
+    qtyInput.value = qty;
+    const subtotal = item.price * qty;
+    const pay = document.querySelector('input[name=pay]:checked').value;
+    const discount = pay === 'btc' ? calcDiscount(subtotal) : 0;
+    const grand = subtotal - discount;
+
+    document.getElementById('subtotal').textContent = fmtJpy(subtotal);
+    document.getElementById('t-subtotal').textContent = fmtJpy(subtotal);
+    document.getElementById('t-grand').textContent    = fmtJpy(grand);
+
+    const discLine = document.getElementById('discount-line');
+    if (pay === 'btc' && discount > 0){
+      discLine.style.display = 'flex';
+      document.getElementById('t-discount').textContent = '−' + fmtJpy(discount);
+    } else {
+      discLine.style.display = 'none';
+    }
+
+    const btcLine = document.getElementById('btc-line');
+    const btcInfo = document.getElementById('btc-rate-info');
+    if (pay === 'btc'){
+      if (btcRate && btcRate > 0){
+        document.getElementById('t-btc').textContent = fmtBtc(grand / btcRate) + ' BTC';
+        btcLine.style.display = 'flex';
+        const staleTxt = btcRateMeta && btcRateMeta.stale ? '（更新待ち）' : '（JST00:00固定）';
+        btcInfo.textContent = '参照レート: ' + fmtJpy(btcRate) + '/BTC ／ ' + (btcRateMeta && btcRateMeta.date) + ' ' + staleTxt;
+        btcInfo.style.display = 'block';
+      } else {
+        document.getElementById('t-btc').textContent = '取得中…';
+        btcLine.style.display = 'flex';
+        btcInfo.textContent = 'OKJレート取得中…';
+        btcInfo.style.display = 'block';
+      }
+    } else {
+      btcLine.style.display = 'none';
+      btcInfo.style.display = 'none';
+    }
+  }
+
+  function fetchBtcRate(){
+    fetch(BTC_RATE_API, { cache:'no-store' })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(j => {
+        if (!j || typeof j.rate_jpy !== 'number' || !(j.rate_jpy > 0)) throw 0;
+        btcRate = j.rate_jpy;
+        btcRateMeta = { stale: !!j.stale, date: j.date || ymd };
+        recalc();
+      })
+      .catch(() => {
+        const btcInfo = document.getElementById('btc-rate-info');
+        btcInfo.textContent = 'OKJレート取得失敗。確定金額はメールで個別ご案内します。';
+      });
+  }
+
+  qtyInput.addEventListener('input', recalc);
+  document.querySelectorAll('input[name=pay]').forEach(r => r.addEventListener('change', recalc));
+
+  // PDF出力
+  document.getElementById('btn-pdf').addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'mm', format:'a4' });
+    const qty = parseInt(qtyInput.value, 10);
+    const subtotal = item.price * qty;
+    const pay = document.querySelector('input[name=pay]:checked').value;
+    const discount = pay === 'btc' ? calcDiscount(subtotal) : 0;
+    const grand = subtotal - discount;
+    const payLabel = pay === 'btc' ? 'Bitcoin (BTC, 3%OFF max 1,000JPY)' : 'Bank Transfer';
+
+    doc.setFontSize(16); doc.text("N's factory  Stock Item Quotation", 14, 18);
+    doc.setFontSize(10);
+    doc.text('Quote No: ' + quoteId, 14, 28);
+    doc.text('Issue Date: ' + ymd, 14, 34);
+    doc.text('Shop: ' + SHOP.name + ' (' + SHOP.owner + ')', 14, 40);
+    doc.text('Contact: ' + SHOP.mail, 14, 46);
+
+    doc.line(14, 52, 196, 52);
+    doc.setFontSize(11);
+    doc.text('Item: ' + (item.name || '-'), 14, 60);
+    doc.text('Item ID: ' + (item.id || '-'), 14, 66);
+    doc.text('Unit Price: JPY ' + item.price.toLocaleString('en-US'), 14, 72);
+    doc.text('Quantity: ' + qty, 14, 78);
+    doc.text('Subtotal: JPY ' + subtotal.toLocaleString('en-US'), 14, 84);
+    doc.text('Payment: ' + payLabel, 14, 90);
+    if (discount > 0) doc.text('Discount: -JPY ' + discount.toLocaleString('en-US'), 14, 96);
+    doc.setFontSize(14);
+    doc.text('TOTAL: JPY ' + grand.toLocaleString('en-US') + ' (tax incl.)', 14, 108);
+
+    if (pay === 'btc' && btcRate){
+      doc.setFontSize(9);
+      doc.text('BTC Estimate: ' + fmtBtc(grand / btcRate) + ' BTC', 14, 116);
+      doc.text('Rate Ref: JPY ' + btcRate.toLocaleString('en-US') + ' / BTC  (' + (btcRateMeta && btcRateMeta.date) + ' OKJ)', 14, 122);
+    }
+
+    doc.line(14, 135, 196, 135);
+    doc.setFontSize(8);
+    doc.text('* Tax-included. Non-qualified invoice issuer (Invoice system).', 14, 142);
+    doc.text('* Shipping fee charged separately.', 14, 147);
+    doc.text('* BTC rate confirmed on payment date (JST 00:00 OKJ).', 14, 152);
+    doc.text('* This is a preliminary quote. Final amount confirmed upon order.', 14, 157);
+
+    doc.save(quoteId + '.pdf');
+  });
+
+  // メール送信
+  document.getElementById('btn-mail').addEventListener('click', () => {
+    const qty = parseInt(qtyInput.value, 10);
+    const subtotal = item.price * qty;
+    const pay = document.querySelector('input[name=pay]:checked').value;
+    const discount = pay === 'btc' ? calcDiscount(subtotal) : 0;
+    const grand = subtotal - discount;
+    const payLabel = pay === 'btc' ? 'Bitcoin（BTC）3%OFF適用' : '銀行振込';
+
+    const subject = '【在庫品お見積り】' + (item.name || '商品') + '（' + quoteId + '）';
+    const body = [
+      'N\'s factory 御中',
+      '',
+      '以下の商品について購入を希望します。',
+      '',
+      '──────────────────',
+      '見積番号: ' + quoteId,
+      '発行日: ' + ymd,
+      '商品名: ' + (item.name || ''),
+      '商品ID: ' + (item.id || ''),
+      '単価: ' + fmtJpy(item.price) + '（税込）',
+      '数量: ' + qty + '点',
+      '小計: ' + fmtJpy(subtotal),
+      '決済方法: ' + payLabel,
+      (discount > 0 ? 'BTC決済割: −' + fmtJpy(discount) : ''),
+      '合計（税込）: ' + fmtJpy(grand),
+      (pay === 'btc' && btcRate ? 'BTC概算: ' + fmtBtc(grand / btcRate) + ' BTC（参照レート ¥' + btcRate.toLocaleString('ja-JP') + '/BTC, ' + (btcRateMeta && btcRateMeta.date) + ' OKJ）' : ''),
+      '──────────────────',
+      '',
+      '【お届け先】',
+      'お名前:',
+      'ご住所:',
+      'お電話番号:',
+      '',
+      'よろしくお願いいたします。',
+    ].filter(s => s !== '').join('\r\n');
+
+    location.href = 'mailto:' + SHOP.mail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  });
+
+  // 初期化
+  recalc();
+  fetchBtcRate();
+})();
+</script>
+</body>
+</html>

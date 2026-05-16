@@ -442,9 +442,19 @@
     const prevPhoto = document.getElementById('prev-photo');
     const nextPhoto = document.getElementById('next-photo');
     const ESTIMATE_URL = './order_estimate/leather-order-estimate-v2.html';
+    const STOCK_QUOTE_URL = './order_estimate/stock-quote.html';
     const LINE_URL = 'https://lin.ee/XOcD2pd';
     const MAIL_URL = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('作品に関するお問い合わせ');
     const LINKS_URL = 'https://you0810jmsdf.github.io/ns-factory/links.html';
+
+    function buildStockQuoteUrl(work) {
+      const params = new URLSearchParams();
+      if (work.id) params.set('id', work.id);
+      if (work.title) params.set('name', work.title);
+      if (work.price != null && work.price !== '') params.set('price', String(work.price));
+      params.set('qty', '1');
+      return `${STOCK_QUOTE_URL}?${params.toString()}`;
+    }
     let works = [];
     let filtered = [];
     let activeWork = null;
@@ -555,9 +565,9 @@
         applyLink(secondaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
         applyLink(tertiaryOrderLink, null);
       } else {
-        applyLink(primaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
-        applyLink(secondaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
-        applyLink(tertiaryOrderLink, { href: LINKS_URL, label: 'お問い合わせ先一覧を見る' });
+        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'お見積りを作成する' });
+        applyLink(secondaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
+        applyLink(tertiaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
       }
     }
 
