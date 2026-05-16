@@ -554,9 +554,14 @@
       }
 
       if (unavailable) {
-        applyLink(primaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
-        applyLink(secondaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
-        applyLink(tertiaryOrderLink, { href: LINKS_URL, label: 'お問い合わせ先一覧を見る' });
+        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'お見積りを作成する' });
+        if (planner) {
+          applyLink(secondaryOrderLink, { href: ESTIMATE_URL, label: '仕様変更してフルオーダー見積もりへ' });
+          applyLink(tertiaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
+        } else {
+          applyLink(secondaryOrderLink, { href: LINE_URL, label: '公式LINEで相談する' });
+          applyLink(tertiaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
+        }
         return;
       }
 
