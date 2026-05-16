@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>書類編集 — N's factory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<!-- jsPDF + autotable + NotoSansJP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-font@1.0.1/dist/NotoSansJP-normal.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="../index.html" class="brand">N's factory</a>
+  <nav>
+    <a href="index.html"><span>書類台帳</span></a>
+    <a href="customers.html"><span>顧客</span></a>
+    <a href="products.html"><span>商品</span></a>
+  </nav>
+</header>
+
+<div class="main-container">
+  <div class="page-title">
+    <span id="page-title-text">書類作成</span>
+    <span class="badge" id="doc-number-badge">新規</span>
+  </div>
+
+  <!-- ツールバー -->
+  <div class="toolbar" style="margin-bottom:24px;">
+    <button class="btn btn-secondary" onclick="history.back()">戻る</button>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" id="btn-preview">プレビュー</button>
+    <button class="btn btn-ghost" id="btn-download">PDF保存</button>
+    <button class="btn btn-primary" id="btn-drive">Drive保存</button>
+    <button class="btn btn-primary" id="btn-save">保存</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+
+    <!-- 左: メイン入力 -->
+    <div>
+      <!-- ヘッダ情報 -->
+      <div class="card">
+        <div class="card-title">基本情報</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">書類種別</label>
+            <select class="form-control" id="doc-type">
+              <option value="quote">見積書</option>
+              <option value="invoice">請求書</option>
+              <option value="receipt">領収書</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">発行日</label>
+            <input type="date" class="form-control" id="doc-issue-date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">状態</label>
+            <select class="form-control" id="doc-status">
+              <option value="下書き">下書き</option>
+              <option value="発行済">発行済</option>
+              <option value="入金済">入金済</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">件名</label>
+          <input type="text" class="form-control" id="doc-subject" placeholder="例: mini6 システム手帳 製作">
+        </div>
+      </div>
+
+      <!-- 顧客 -->
+      <div class="card">
+        <div class="card-title">宛先</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">顧客名</label>
+            <input type="text" class="form-control" id="customer-name" list="customer-list" placeholder="顧客名を入力">
+            <datalist id="customer-list"></datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label">敬称</label>
+            <select class="form-control" id="customer-honorific">
+              <option value="様">様</option>
+              <option value="御中">御中</option>
+              <option value="">（なし）</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">顧客ID（自動入力）</label>
+          <input type="text" class="form-control" id="customer-id" placeholder="顧客マスタから自動入力" readonly style="background:#f5f5f5;">
+        </div>
+      </div>
+
+      <!-- 明細 -->
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          明細
+          <button class="btn btn-ghost btn-sm" id="btn-add-row">+ 行追加</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="detail-table" id="detail-table">
+            <thead>
+              <tr>
+                <th style="width:35%;">品名</th>
+                <th style="width:12%;">数量</th>
+                <th style="width:10%;">単位</th>
+                <th style="width:16%;">単価</th>
+                <th style="width:16%;">小計</th>
+                <th style="width:7%;">備考</th>
+                <th style="width:4%;"></th>
+              </tr>
+            </thead>
+            <tbody id="detail-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- 小計 -->
+        <div class="subtotal-block">
+          <div class="row"><span class="label">小計</span><span class="amount" id="disp-subtotal">¥0</span></div>
+          <div class="row"><span class="label">消費税 (10%)</span><span class="amount" id="disp-tax">¥0</span></div>
+          <div class="row total-row"><span class="label">合計</span><span class="amount" id="disp-total">¥0</span></div>
+        </div>
+      </div>
+
+      <!-- 備考 -->
+      <div class="card">
+        <div class="card-title">備考</div>
+        <textarea class="form-control" id="doc-note" rows="3" placeholder="振込先・支払い条件など自由記述"></textarea>
+      </div>
+    </div>
+
+    <!-- 右: メタ情報 -->
+    <div>
+      <div class="card">
+        <div class="card-title">書類情報</div>
+        <div class="form-group">
+          <label class="form-label">書類番号</label>
+          <input type="text" class="form-control" id="doc-number" readonly style="background:#f5f5f5;font-weight:700;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">元書類番号（昇格元）</label>
+          <input type="text" class="form-control" id="doc-source-number" readonly style="background:#f5f5f5;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Drive URL</label>
+          <a href="#" id="drive-url-link" target="_blank" style="display:none;font-size:12px;color:var(--color-accent-dark);">Drive で開く</a>
+          <span id="drive-url-none" style="font-size:12px;color:var(--color-text-mute);">未保存</span>
+        </div>
+      </div>
+
+      <!-- 発行者情報プレビュー -->
+      <div class="card" style="background:var(--color-accent-light);border-color:var(--color-accent);">
+        <div class="card-title">発行者（固定）</div>
+        <p style="font-size:13px;line-height:1.8;">
+          <strong>N's factory</strong><br>
+          中司 祐樹<br>
+          千葉県印西市<br>
+          <span style="color:var(--color-text-sub);">インボイス未登録</span>
+        </p>
+        <p style="font-size:11px;color:var(--color-text-mute);margin-top:8px;">
+          ロゴ・住所等の変更は<br>invoice/js/config.js を編集
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+</div><!-- /main-container -->
+
+<div id="toast-container"></div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/editor.js"></script>
+</body>
+</html>
