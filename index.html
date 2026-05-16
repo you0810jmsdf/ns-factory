@@ -846,67 +846,96 @@ h1,h2,h3{
   .quick-links{padding:36px 16px}
 }
 
-/* ── BTC/JPY 換算ウィジェット ── */
+/* ── BTC/JPY 換算ウィジェット（紙メモ風） ── */
 .btc-widget{
-  display:flex;flex-direction:column;gap:14px;
-  padding:22px 20px;background:#fff;
-  border:1px solid var(--color-border);border-radius:var(--radius-md);
+  position:relative;
+  display:flex;flex-direction:column;gap:16px;
+  padding:26px 24px 22px;
+  background:linear-gradient(135deg,#fff,var(--color-accent-light));
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
   box-shadow:var(--shadow-sm);
   font-family:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
 }
-.btc-widget-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.btc-widget::before{
+  content:"";position:absolute;left:24px;right:24px;top:54px;
+  border-top:1px dotted rgba(122,85,64,.35);
+  pointer-events:none;
+}
+.btc-widget-head{
+  display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  padding-bottom:10px;
+}
 .btc-widget-eyebrow{
-  font-family:'Cinzel',serif;font-size:12px;letter-spacing:.18em;
-  color:var(--color-accent-dark);
+  font-family:'Cinzel',serif;font-size:12px;letter-spacing:.24em;
+  color:var(--color-accent-dark);text-transform:uppercase;
 }
 .btc-widget-status{
-  font-size:11px;color:var(--color-text-mute);letter-spacing:.04em;
+  font-size:11px;color:var(--color-text-mute);letter-spacing:.06em;
+  font-family:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
 }
-.btc-widget-status.is-live{color:#3a8f5f}
-.btc-widget-status.is-error{color:#b94a4a}
+.btc-widget-status.is-live{color:var(--color-accent-dark)}
+.btc-widget-status.is-error{color:var(--color-accent-dark);opacity:.6}
 .btc-widget-rate{
-  display:flex;flex-direction:column;gap:4px;
-  padding:14px 16px;background:var(--color-accent-light);
-  border-radius:var(--radius-sm);
+  display:flex;flex-direction:column;gap:6px;
+  padding:6px 0 12px;
+  border-bottom:1px dotted rgba(122,85,64,.35);
 }
-.btc-widget-rate-label{font-size:11px;color:var(--color-text-sub);letter-spacing:.06em}
+.btc-widget-rate-label{
+  font-size:11px;color:var(--color-accent-dark);letter-spacing:.14em;
+  font-family:'Cinzel',serif;text-transform:uppercase;
+}
 .btc-widget-rate-value{
-  font-size:22px;font-weight:600;letter-spacing:.02em;color:var(--color-text);
-  display:flex;align-items:baseline;gap:6px;
+  font-size:26px;font-weight:500;letter-spacing:.02em;color:var(--color-text);
+  display:flex;align-items:baseline;gap:8px;line-height:1.2;
 }
-.btc-widget-unit{font-size:12px;color:var(--color-text-sub);font-weight:400;letter-spacing:.08em}
-.btc-widget-change{font-size:11px;color:var(--color-text-sub)}
-.btc-widget-change.is-up{color:#3a8f5f}
-.btc-widget-change.is-down{color:#b94a4a}
+.btc-widget-unit{
+  font-family:'Cinzel',serif;font-size:12px;color:var(--color-accent-dark);
+  font-weight:400;letter-spacing:.18em;
+}
+.btc-widget-change{
+  font-size:12px;color:var(--color-text-sub);letter-spacing:.04em;
+}
+.btc-widget-change.is-up,
+.btc-widget-change.is-down{color:var(--color-accent-dark)}
 .btc-widget-chart{
   width:100%;height:60px;display:block;
-  background:#FAF7F3;border-radius:var(--radius-sm);
+  background:transparent;
 }
-.btc-widget-calc{display:flex;flex-direction:column;gap:8px;margin-top:2px}
-.btc-widget-calc-label{font-size:11px;color:var(--color-text-sub);letter-spacing:.04em}
+.btc-widget-calc{display:flex;flex-direction:column;gap:10px;margin-top:2px}
+.btc-widget-calc-label{
+  font-size:11px;color:var(--color-accent-dark);letter-spacing:.14em;
+  font-family:'Cinzel',serif;text-transform:uppercase;
+}
 .btc-widget-calc-input{
   display:flex;align-items:center;gap:6px;
-  border:1px solid var(--color-border);border-radius:var(--radius-sm);
-  padding:8px 12px;background:#fff;
+  border:none;border-bottom:1px dashed var(--color-accent);
+  padding:6px 2px;background:transparent;
   transition:border-color .15s;
 }
-.btc-widget-calc-input:focus-within{border-color:var(--color-accent)}
+.btc-widget-calc-input:focus-within{border-bottom-color:var(--color-accent-dark)}
 .btc-widget-calc-input input{
   flex:1;min-width:0;border:0;outline:0;background:transparent;
-  font-family:inherit;font-size:15px;color:var(--color-text);
-  letter-spacing:.02em;
+  font-family:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+  font-size:18px;color:var(--color-text);
+  letter-spacing:.04em;
 }
-.btc-widget-calc-input span{font-size:12px;color:var(--color-text-sub)}
+.btc-widget-calc-input input::placeholder{color:var(--color-text-mute);font-style:italic}
+.btc-widget-calc-input span{font-size:13px;color:var(--color-accent-dark);letter-spacing:.1em}
 .btc-widget-calc-row{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
-  font-size:12px;color:var(--color-text-sub);
-  padding:6px 2px;border-top:1px dotted var(--color-border);
+  display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  font-size:13px;color:var(--color-text-sub);
+  padding:8px 2px;border-top:1px dotted rgba(122,85,64,.25);
+  letter-spacing:.04em;
 }
 .btc-widget-calc-row--accent{color:var(--color-accent-dark);font-weight:600}
-.btc-widget-calc-value{font-size:13px;color:var(--color-text);letter-spacing:.02em}
+.btc-widget-calc-value{
+  font-size:15px;color:var(--color-text);letter-spacing:.04em;
+}
 .btc-widget-calc-row--accent .btc-widget-calc-value{color:var(--color-accent-dark)}
 .btc-widget-note{
-  margin:4px 0 0;font-size:11px;line-height:1.7;color:var(--color-text-mute);
+  margin:6px 0 0;font-size:11px;line-height:1.9;color:var(--color-text-sub);
+  letter-spacing:.02em;
 }
 </style>
 </head>
@@ -1132,8 +1161,8 @@ h1,h2,h3{
           <div class="btc-widget-change" id="btc-rate-change">24h 変動 ―</div>
         </div>
         <svg class="btc-widget-chart" id="btc-chart" viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
-          <path id="btc-chart-area" d="" fill="rgba(160,120,90,.10)" stroke="none"></path>
-          <path id="btc-chart-line" d="" fill="none" stroke="var(--color-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path id="btc-chart-area" d="" fill="rgba(160,120,90,.14)" stroke="none"></path>
+          <path id="btc-chart-line" d="" fill="none" stroke="#7A5540" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
         </svg>
         <div class="btc-widget-calc">
           <label class="btc-widget-calc-label" for="btc-calc-input">ご注文金額（JPY）</label>
