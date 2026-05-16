@@ -431,14 +431,34 @@ img { max-width: 100%; height: auto; display: block; }
   transform: translateY(-1px);
 }
 .btn-cta:active { transform: translateY(0); }
+.btn-cta--ig {
+  background: #C13584;
+}
+.btn-cta--ig:hover {
+  background: #9B1A6A;
+}
+.btn-cta--line {
+  background: #06C755;
+}
+.btn-cta--line:hover {
+  background: #05A847;
+}
+.cta-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
 /* ── Responsive ────────────────────────────────── */
 @media (max-width: 600px) {
   .section { padding: 40px 18px; }
   .hero-overlay { padding: 28px 18px; }
   .price-box { padding: 20px; }
-  .cta-fixed { padding: 12px 18px; gap: 10px; }
-  .btn-cta { padding: 12px 20px; font-size: 14px; }
+  .cta-fixed { padding: 12px 18px; gap: 8px; flex-direction: column; }
+  .cta-btn-group { flex-direction: column; gap: 8px; width: 100%; }
+  .btn-cta { padding: 12px 20px; font-size: 14px; width: 100%; justify-content: center; }
   .cta-price-mini { display: none; }
 }
 </style>
@@ -695,12 +715,21 @@ img { max-width: 100%; height: auto; display: block; }
 <!-- CTA 固定エリア -->
 <div class="cta-fixed">
   <div class="cta-price-mini">税込 <strong>5,000円</strong></div>
-  <a
-    href="https://www.instagram.com/nsfactory_leather/?ref=memorial"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="btn-cta"
-  >Instagram DMから注文する</a>
+  <p style="font-size:12px;color:var(--color-text-sub);white-space:nowrap;line-height:1.4;">Instagram DMもしくは公式LINEから<br>『レザーフォトフレーム　オーダー』と入力ください。</p>
+  <div class="cta-btn-group">
+    <a
+      href="https://www.instagram.com/nsfactory_leather/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="btn-cta btn-cta--ig"
+    >Instagram DMで注文</a>
+    <a
+      href="https://lin.ee/wFWbp73"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="btn-cta btn-cta--line"
+    >公式LINEで注文</a>
+  </div>
 </div>
 
 </body>
