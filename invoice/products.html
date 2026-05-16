@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品マスタ — N's factory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="../index.html" class="brand">N's factory</a>
+  <nav>
+    <a href="index.html"><span>書類台帳</span></a>
+    <a href="customers.html"><span>顧客</span></a>
+    <a href="products.html" class="active"><span>商品</span></a>
+  </nav>
+</header>
+
+<div class="main-container">
+  <div class="page-title">商品マスタ</div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" id="btn-new">+ 新規登録</button>
+    <div class="spacer"></div>
+    <input type="text" class="form-control" id="search-input" placeholder="検索..." style="width:180px;">
+    <button class="btn btn-secondary" id="btn-refresh">更新</button>
+  </div>
+
+  <!-- 新規/編集フォーム -->
+  <div class="card" id="form-panel" style="display:none;">
+    <div class="card-title" id="form-title">商品登録</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">品名 *</label>
+        <input type="text" class="form-control" id="f-name" placeholder="mini6 システム手帳">
+      </div>
+      <div class="form-group">
+        <label class="form-label">標準単価（税抜）</label>
+        <input type="number" class="form-control" id="f-price" min="0" step="1" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">単位</label>
+        <input type="text" class="form-control" id="f-unit" placeholder="点">
+      </div>
+      <div class="form-group">
+        <label class="form-label">カテゴリ</label>
+        <input type="text" class="form-control" id="f-category" placeholder="手帳・革小物など">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">備考</label>
+      <textarea class="form-control" id="f-note" rows="2"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-primary" id="btn-submit">登録</button>
+      <button class="btn btn-secondary" id="btn-cancel">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- 一覧テーブル -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="data-table" id="prod-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>品名</th>
+          <th>標準単価</th>
+          <th>単位</th>
+          <th>カテゴリ</th>
+          <th>備考</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="prod-tbody">
+        <tr><td colspan="7"><div class="empty-state"><span class="icon">&#x1F6CD;</span>読み込み中...</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/products.js"></script>
+</body>
+</html>
