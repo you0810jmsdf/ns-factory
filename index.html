@@ -845,6 +845,69 @@ h1,h2,h3{
   .section{padding:52px 16px}
   .quick-links{padding:36px 16px}
 }
+
+/* ── BTC/JPY 換算ウィジェット ── */
+.btc-widget{
+  display:flex;flex-direction:column;gap:14px;
+  padding:22px 20px;background:#fff;
+  border:1px solid var(--color-border);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm);
+  font-family:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+}
+.btc-widget-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.btc-widget-eyebrow{
+  font-family:'Cinzel',serif;font-size:12px;letter-spacing:.18em;
+  color:var(--color-accent-dark);
+}
+.btc-widget-status{
+  font-size:11px;color:var(--color-text-mute);letter-spacing:.04em;
+}
+.btc-widget-status.is-live{color:#3a8f5f}
+.btc-widget-status.is-error{color:#b94a4a}
+.btc-widget-rate{
+  display:flex;flex-direction:column;gap:4px;
+  padding:14px 16px;background:var(--color-accent-light);
+  border-radius:var(--radius-sm);
+}
+.btc-widget-rate-label{font-size:11px;color:var(--color-text-sub);letter-spacing:.06em}
+.btc-widget-rate-value{
+  font-size:22px;font-weight:600;letter-spacing:.02em;color:var(--color-text);
+  display:flex;align-items:baseline;gap:6px;
+}
+.btc-widget-unit{font-size:12px;color:var(--color-text-sub);font-weight:400;letter-spacing:.08em}
+.btc-widget-change{font-size:11px;color:var(--color-text-sub)}
+.btc-widget-change.is-up{color:#3a8f5f}
+.btc-widget-change.is-down{color:#b94a4a}
+.btc-widget-chart{
+  width:100%;height:60px;display:block;
+  background:#FAF7F3;border-radius:var(--radius-sm);
+}
+.btc-widget-calc{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.btc-widget-calc-label{font-size:11px;color:var(--color-text-sub);letter-spacing:.04em}
+.btc-widget-calc-input{
+  display:flex;align-items:center;gap:6px;
+  border:1px solid var(--color-border);border-radius:var(--radius-sm);
+  padding:8px 12px;background:#fff;
+  transition:border-color .15s;
+}
+.btc-widget-calc-input:focus-within{border-color:var(--color-accent)}
+.btc-widget-calc-input input{
+  flex:1;min-width:0;border:0;outline:0;background:transparent;
+  font-family:inherit;font-size:15px;color:var(--color-text);
+  letter-spacing:.02em;
+}
+.btc-widget-calc-input span{font-size:12px;color:var(--color-text-sub)}
+.btc-widget-calc-row{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-size:12px;color:var(--color-text-sub);
+  padding:6px 2px;border-top:1px dotted var(--color-border);
+}
+.btc-widget-calc-row--accent{color:var(--color-accent-dark);font-weight:600}
+.btc-widget-calc-value{font-size:13px;color:var(--color-text);letter-spacing:.02em}
+.btc-widget-calc-row--accent .btc-widget-calc-value{color:var(--color-accent-dark)}
+.btc-widget-note{
+  margin:4px 0 0;font-size:11px;line-height:1.7;color:var(--color-text-mute);
+}
 </style>
 </head>
 <body>
@@ -1058,14 +1121,40 @@ h1,h2,h3{
           ※ N's factory は暗号資産交換業者ではなく、投資助言・金融商品の販売を行うものではありません。
         </p>
       </div>
-      <div style="display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;padding:28px 20px;background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);">
-        <span style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:.18em;color:var(--color-accent-dark);">PAYMENT OPTIONS</span>
-        <div style="text-align:center;">
-          <div style="font-size:20px;font-weight:600;letter-spacing:.06em;margin-bottom:6px;">JPY&nbsp;／&nbsp;BTC</div>
-          <div style="font-size:13px;color:var(--color-text-sub);line-height:1.7;">日本円・Bitcoin に対応<br>（オーダー品・直接見積のみ）</div>
+      <aside class="btc-widget" aria-label="BTC/JPY 換算ウィジェット">
+        <div class="btc-widget-head">
+          <span class="btc-widget-eyebrow">BTC / JPY 換算</span>
+          <span class="btc-widget-status" id="btc-widget-status">取得中…</span>
         </div>
-        <div style="margin-top:4px;padding:8px 14px;border:1px solid var(--color-accent);border-radius:var(--radius-full);color:var(--color-accent-dark);font-size:12px;font-weight:600;">BTC決済割 3% OFF</div>
-      </div>
+        <div class="btc-widget-rate">
+          <div class="btc-widget-rate-label">参考レート（1 BTC）</div>
+          <div class="btc-widget-rate-value"><span id="btc-rate-jpy">―</span><span class="btc-widget-unit">JPY</span></div>
+          <div class="btc-widget-change" id="btc-rate-change">24h 変動 ―</div>
+        </div>
+        <svg class="btc-widget-chart" id="btc-chart" viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
+          <path id="btc-chart-area" d="" fill="rgba(160,120,90,.10)" stroke="none"></path>
+          <path id="btc-chart-line" d="" fill="none" stroke="var(--color-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <div class="btc-widget-calc">
+          <label class="btc-widget-calc-label" for="btc-calc-input">ご注文金額（JPY）</label>
+          <div class="btc-widget-calc-input">
+            <input type="text" id="btc-calc-input" inputmode="numeric" autocomplete="off" placeholder="例: 50000">
+            <span>円</span>
+          </div>
+          <div class="btc-widget-calc-row">
+            <span>BTC 概算</span>
+            <span class="btc-widget-calc-value"><span id="btc-calc-btc">―</span> BTC</span>
+          </div>
+          <div class="btc-widget-calc-row btc-widget-calc-row--accent">
+            <span>3% OFF 適用後</span>
+            <span class="btc-widget-calc-value"><span id="btc-calc-btc-discount">―</span> BTC</span>
+          </div>
+        </div>
+        <p class="btc-widget-note">
+          ※ 参考レート表示です。実際の確定レートは VCtrade 売気配を基準にメールで個別ご案内します。<br>
+          ※ Powered by CoinGecko（60秒ごとに自動更新）
+        </p>
+      </aside>
     </div>
   </div>
 </section>
@@ -1190,6 +1279,109 @@ function gateConfidential(e, url) {
   }
   return false;
 }
+
+/* ── BTC/JPY 換算ウィジェット ── */
+(function(){
+  var PRICE_API = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=jpy&include_24hr_change=true&include_last_updated_at=true';
+  var CHART_API = 'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=jpy&days=1';
+  var REFRESH_MS = 60000;
+  var currentRate = null;
+
+  var statusEl  = document.getElementById('btc-widget-status');
+  var rateEl    = document.getElementById('btc-rate-jpy');
+  var changeEl  = document.getElementById('btc-rate-change');
+  var chartLine = document.getElementById('btc-chart-line');
+  var chartArea = document.getElementById('btc-chart-area');
+  var inputEl   = document.getElementById('btc-calc-input');
+  var outBtc    = document.getElementById('btc-calc-btc');
+  var outDisc   = document.getElementById('btc-calc-btc-discount');
+  if (!statusEl || !rateEl || !inputEl) return;
+
+  function fmtJpy(n){ return Math.round(n).toLocaleString('ja-JP'); }
+  function fmtBtc(n){
+    if (!isFinite(n) || n <= 0) return '―';
+    if (n >= 1)    return n.toFixed(4);
+    if (n >= 0.01) return n.toFixed(5);
+    return n.toFixed(6);
+  }
+  function fmtTime(d){
+    return ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+  }
+  function parseAmount(s){
+    if (!s) return 0;
+    var n = parseFloat(String(s).replace(/[^\d.]/g,''));
+    return isFinite(n) ? n : 0;
+  }
+  function recalc(){
+    var jpy = parseAmount(inputEl.value);
+    if (!currentRate || jpy <= 0) {
+      outBtc.textContent = '―';
+      outDisc.textContent = '―';
+      return;
+    }
+    var btc = jpy / currentRate;
+    outBtc.textContent  = fmtBtc(btc);
+    outDisc.textContent = fmtBtc(btc * 0.97);
+  }
+  function drawChart(points){
+    if (!points || points.length < 2) return;
+    var W = 300, H = 80, PAD = 4;
+    var ys = points.map(function(p){ return p[1]; });
+    var min = Math.min.apply(null, ys);
+    var max = Math.max.apply(null, ys);
+    var range = (max - min) || 1;
+    var n = points.length;
+    var d = '';
+    for (var i=0; i<n; i++){
+      var x = PAD + (W - PAD*2) * (i / (n-1));
+      var y = PAD + (H - PAD*2) * (1 - (points[i][1] - min) / range);
+      d += (i === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + y.toFixed(2) + ' ';
+    }
+    chartLine.setAttribute('d', d.trim());
+    chartArea.setAttribute('d', d.trim() + ' L' + W + ',' + H + ' L0,' + H + ' Z');
+  }
+  function setError(msg){
+    statusEl.textContent = msg || 'レート取得失敗';
+    statusEl.classList.remove('is-live');
+    statusEl.classList.add('is-error');
+  }
+  function setLive(){
+    statusEl.textContent = '更新: ' + fmtTime(new Date());
+    statusEl.classList.remove('is-error');
+    statusEl.classList.add('is-live');
+  }
+
+  function fetchAll(){
+    var p1 = fetch(PRICE_API).then(function(r){ if(!r.ok) throw 0; return r.json(); });
+    var p2 = fetch(CHART_API).then(function(r){ if(!r.ok) throw 0; return r.json(); });
+    return Promise.all([p1, p2]).then(function(res){
+      var price = res[0] && res[0].bitcoin;
+      if (!price || !price.jpy) throw 0;
+      currentRate = price.jpy;
+      rateEl.textContent = fmtJpy(price.jpy);
+      var ch = price.jpy_24h_change;
+      if (typeof ch === 'number') {
+        var sign = ch >= 0 ? '+' : '';
+        changeEl.textContent = '24h 変動 ' + sign + ch.toFixed(2) + '%';
+        changeEl.classList.toggle('is-up',   ch >= 0);
+        changeEl.classList.toggle('is-down', ch <  0);
+      }
+      if (res[1] && Array.isArray(res[1].prices)) drawChart(res[1].prices);
+      setLive();
+      recalc();
+    }).catch(function(){ setError(); });
+  }
+
+  inputEl.addEventListener('input', function(){
+    var raw = inputEl.value.replace(/[^\d]/g,'');
+    if (raw) inputEl.value = parseInt(raw,10).toLocaleString('ja-JP');
+    else inputEl.value = '';
+    recalc();
+  });
+
+  fetchAll();
+  setInterval(fetchAll, REFRESH_MS);
+})();
 </script>
 <script src="assets/access-counter.js"></script>
 </body>
