@@ -1136,8 +1136,11 @@ async function doUpdate() {
     shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
     hashtags: val('f_hashtags'), mainPhotoUrl,
   };
-  const updUrl = GAS_URL + '?api=updateProduct&payload=' + encodeURIComponent(JSON.stringify(updPayload));
-  const updRes = await fetch(updUrl);
+  // POST化（URL長制限回避: longDesc/hashtags を含む大きい payload を body で送る）
+  const updRes = await fetch(GAS_URL, {
+    method: 'POST',
+    body: new URLSearchParams({ api: 'updateProduct', payload: JSON.stringify(updPayload) })
+  });
   const updData = await updRes.json();
   if (!updData.ok) throw new Error('更新失敗: ' + (updData.error || ''));
 
