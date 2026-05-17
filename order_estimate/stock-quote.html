@@ -543,7 +543,7 @@
       .then(r => r.json())
       .then(j => {
         if (j && j.success) {
-          showMsg('お見積り依頼を受け付けました。書類番号: ' + j.number + ' / 担当者よりメールでご連絡します。', 'ok');
+          showMsg('お見積り依頼を受け付けました。書類番号: ' + j.number + ' / 担当者よりメールでご連絡します。', 'success');
           setTimeout(closeModal, 4000);
         } else {
           throw new Error((j && j.error) || '送信に失敗しました');
