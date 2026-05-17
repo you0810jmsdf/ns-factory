@@ -5,7 +5,7 @@
 
 const CONFIG = {
   // GAS WebApp URL: clasp deploy 後に取得したURLを設定
-  GAS_WEBAPP_URL: 'https://script.google.com/macros/s/REPLACE_WITH_DEPLOYMENT_ID/exec',
+  GAS_WEBAPP_URL: 'https://script.google.com/macros/s/AKfycbx-DgXUO8t1i4NfKo6XCbtMZ7VJ83IhKCeirerj6chLXY6dYQWfLdVF0T8Qw9rsO_tLPA/exec',
 
   // 消費税率
   TAX_RATE: 0.10,
@@ -18,7 +18,7 @@ const CONFIG = {
   },
 
   // 書類状態ラベル
-  STATUS_OPTIONS: ['下書き', '発行済', '入金済'],
+  STATUS_OPTIONS: ['依頼受付', '下書き', '発行済', '入金済'],
 
   // 自社情報（PDF発行者欄 / テキストプレースホルダー）
   COMPANY: {
