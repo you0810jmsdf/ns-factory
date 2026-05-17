@@ -1018,7 +1018,8 @@ body{
   </ul>
 
   <div style="margin-top:14px">
-    <button class="btn btn-primary no-print" onclick="openEmailModal()">📧 お問い合わせ</button>
+    <button class="btn btn-primary no-print" onclick="openRequestModal()">📝 正式見積依頼を送る</button>
+    <button class="btn btn-outline no-print" onclick="openEmailModal()">📧 お問い合わせ</button>
     <button class="btn btn-outline no-print" onclick="openPrint()">🖨️ 印刷 / PDF保存</button>
     <button class="btn btn-ghost no-print" onclick="resetAll()">🔄 すべてリセット</button>
   </div>
@@ -1042,6 +1043,35 @@ body{
       <button class="btn btn-primary" onclick="sendEmail()">📤 メール送信</button>
     </div>
     <p style="font-size:11px;color:#a07850;margin-top:10px;text-align:center">※ メールクライアントが起動します</p>
+  </div>
+</div>
+
+<!-- REQUEST MODAL（正式見積依頼） -->
+<div class="modal-overlay" id="requestModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeRequestModal()">✕</button>
+    <h2>📝 正式見積依頼</h2>
+    <p style="font-size:12px;color:#7a5c3a;margin-bottom:10px">下記フォームを送信すると、N's factory に正式な見積依頼として登録されます。事業主から見積書をお送りいたします。</p>
+    <div class="f"><label>お名前 *</label><input type="text" class="t-input" id="rqName" placeholder="山田 太郎"></div>
+    <div class="f"><label>敬称</label>
+      <select class="t-input" id="rqHonorific">
+        <option value="様" selected>様</option>
+        <option value="御中">御中</option>
+        <option value="先生">先生</option>
+      </select>
+    </div>
+    <div class="f"><label>メールアドレス *</label><input type="email" class="t-input" id="rqEmail" placeholder="example@mail.com"></div>
+    <div class="f"><label>電話番号</label><input type="tel" class="t-input" id="rqTel" placeholder="090-0000-0000"></div>
+    <div class="f"><label>郵便番号</label><input type="text" class="t-input" id="rqZip" placeholder="〒270-1300"></div>
+    <div class="f"><label>ご住所</label><input type="text" class="t-input" id="rqAddr" placeholder="千葉県印西市〇〇..."></div>
+    <div class="f"><label>件名</label><input type="text" class="t-input" id="rqSubject" placeholder="システム手帳フルオーダー見積依頼"></div>
+    <div class="f"><label>見積もり内容（自動）</label><textarea class="t-input" id="rqEst" rows="8" readonly></textarea></div>
+    <div class="f"><label>備考・ご要望</label><textarea class="t-input" id="rqNote" rows="3" placeholder="ご要望・納期希望などご自由にご記入ください"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeRequestModal()">キャンセル</button>
+      <button class="btn btn-primary" id="rqSubmitBtn" onclick="submitQuoteRequest()">📤 依頼を送信</button>
+    </div>
+    <p id="rqMsg" style="font-size:12px;margin-top:10px;text-align:center;min-height:18px"></p>
   </div>
 </div>
 
@@ -3289,6 +3319,93 @@ buildAccessoryTextGrid(document.getElementById('accessoryGrid'), ACCESSORIES, ha
   }
   });
 });
+
+/* ═══════════════════════════════════════════════════
+   正式見積依頼（GAS WebApp 連携）
+   ═══════════════════════════════════════════════════ */
+const INVOICE_GAS_URL = 'https://script.google.com/macros/s/AKfycbx-DgXUO8t1i4NfKo6XCbtMZ7VJ83IhKCeirerj6chLXY6dYQWfLdVF0T8Qw9rsO_tLPA/exec';
+
+function openRequestModal() {
+  document.getElementById('rqEst').value = buildEstText();
+  document.getElementById('rqMsg').textContent = '';
+  document.getElementById('rqMsg').style.color = '#7a5c3a';
+  document.getElementById('rqSubmitBtn').disabled = false;
+  document.getElementById('requestModal').classList.add('open');
+}
+function closeRequestModal() {
+  document.getElementById('requestModal').classList.remove('open');
+}
+
+async function submitQuoteRequest() {
+  const name    = document.getElementById('rqName').value.trim();
+  const email   = document.getElementById('rqEmail').value.trim();
+  const tel     = document.getElementById('rqTel').value.trim();
+  const msgEl   = document.getElementById('rqMsg');
+  const btn     = document.getElementById('rqSubmitBtn');
+
+  if (!name)  { msgEl.style.color = '#c0392b'; msgEl.textContent = 'お名前を入力してください'; return; }
+  if (!email && !tel) { msgEl.style.color = '#c0392b'; msgEl.textContent = 'メールまたは電話のいずれかを入力してください'; return; }
+
+  // 現在の見積から税抜単価を算出（GAS側で税再計算するため税抜のみ送る）
+  let unitPrice = 0;
+  try {
+    const totalEl = document.getElementById('totalDisplay');
+    // afterDisc+initDesignFee 相当を buildEstText 内訳から抽出できない場合は合計をそのまま渡す
+    const m = (totalEl && totalEl.textContent || '').replace(/[^\d]/g, '');
+    unitPrice = m ? parseInt(m, 10) : 0;
+    if (unitPrice > 0) unitPrice = Math.round(unitPrice / 1.10); // 税抜換算
+  } catch(_) {}
+
+  const payload = {
+    action: 'submitQuoteRequest',
+    customer: {
+      name:      name,
+      honorific: document.getElementById('rqHonorific').value,
+      email:     email,
+      phone:     tel,
+      zip:       document.getElementById('rqZip').value.trim(),
+      address:   document.getElementById('rqAddr').value.trim(),
+      note:      ''
+    },
+    doc: {
+      subject: document.getElementById('rqSubject').value.trim() || 'システム手帳フルオーダー見積依頼',
+      source:  'leather-order-estimate-v2'
+    },
+    details: [{
+      itemName:  'システム手帳フルオーダー一式',
+      qty:       1,
+      unit:      '式',
+      unitPrice: unitPrice,
+      note:      document.getElementById('rqEst').value + '\n\n【備考】\n' + document.getElementById('rqNote').value
+    }]
+  };
+
+  btn.disabled = true;
+  msgEl.style.color = '#7a5c3a';
+  msgEl.textContent = '送信中...';
+
+  try {
+    const res = await fetch(INVOICE_GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.success) {
+      msgEl.style.color = '#0c7a3e';
+      msgEl.innerHTML = '✅ 依頼を受け付けました（受付番号: ' + json.number + '）<br>事業主から見積書をお送りします。';
+      setTimeout(closeRequestModal, 3500);
+    } else {
+      msgEl.style.color = '#c0392b';
+      msgEl.textContent = '⚠️ ' + (json.error || '送信に失敗しました');
+      btn.disabled = false;
+    }
+  } catch (err) {
+    msgEl.style.color = '#c0392b';
+    msgEl.textContent = '⚠️ 通信エラー: ' + err.message;
+    btn.disabled = false;
+  }
+}
 </script>
 <!-- LP FOOTER -->
 <footer class="lp-footer no-print">

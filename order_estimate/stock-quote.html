@@ -111,6 +111,57 @@
   }
   .order-id{font-family:'Cinzel','Courier New',monospace;font-size:12px;color:#6b5544}
 
+  .btn-accent{
+    background:linear-gradient(135deg,#a87a52 0%,#c8a878 100%);
+    color:#fff5e6;border-color:#a87a52;font-weight:600;
+  }
+  .btn-accent:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(168,122,82,.35)}
+  .btn-block{flex:1 1 100%}
+
+  /* ===== 依頼モーダル ===== */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;z-index:100;
+    background:rgba(40,20,10,.55);
+    align-items:flex-start;justify-content:center;
+    overflow-y:auto;padding:30px 16px;
+  }
+  .modal-overlay.show{display:flex}
+  .modal{
+    background:#fff;border-radius:8px;
+    width:100%;max-width:520px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+    padding:22px 24px;
+  }
+  .modal h3{
+    margin:0 0 6px;font-size:17px;color:#3d1a08;letter-spacing:.04em;
+  }
+  .modal .lead{font-size:12px;color:#6b5544;margin:0 0 16px}
+  .form-row{margin-bottom:12px}
+  .form-row label{
+    display:block;font-size:12px;color:#3d1a08;margin-bottom:4px;font-weight:500;
+  }
+  .form-row label .req{color:#c0392b;margin-left:4px}
+  .form-row input, .form-row textarea, .form-row select{
+    width:100%;padding:8px 10px;border:1px solid #c8b9a6;border-radius:4px;
+    font-size:14px;background:#fff;color:#2c1a0e;font-family:inherit;
+  }
+  .form-row input:focus, .form-row textarea:focus, .form-row select:focus{
+    outline:none;border-color:#a87a52;box-shadow:0 0 0 2px rgba(168,122,82,.15);
+  }
+  .form-row textarea{min-height:60px;resize:vertical}
+  .form-grid-2{display:grid;grid-template-columns:120px 1fr;gap:10px}
+  .modal-actions{
+    display:flex;gap:10px;margin-top:18px;
+  }
+  .modal-actions .btn{flex:1}
+  .modal-msg{
+    margin-top:12px;padding:10px 12px;border-radius:4px;font-size:13px;
+    display:none;
+  }
+  .modal-msg.success{background:#e7f5e0;color:#2c6a1f;border:1px solid #a8d090;display:block}
+  .modal-msg.error{background:#fbe5e2;color:#8a2a1f;border:1px solid #e0a09a;display:block}
+  .modal-msg.info{background:#eef3f8;color:#234566;border:1px solid #a8c0d8;display:block}
+
   /* ===== 印刷用（PDF保存はブラウザ印刷→PDF保存） ===== */
   @media print{
     @page{size:A4;margin:14mm}
@@ -212,8 +263,9 @@
     <div class="btc-rate-line" id="btc-rate-info" style="display:none"></div>
 
     <div class="actions">
-      <button type="button" class="btn btn-primary" id="btn-pdf">印刷 / PDFで保存</button>
-      <button type="button" class="btn btn-secondary" id="btn-mail">メール送信</button>
+      <button type="button" class="btn btn-accent btn-block" id="btn-request">正式見積依頼を送る</button>
+      <button type="button" class="btn btn-secondary" id="btn-pdf">印刷 / PDFで保存</button>
+      <button type="button" class="btn btn-secondary" id="btn-mail">メール送信（旧）</button>
     </div>
 
     <p class="note">
@@ -222,6 +274,58 @@
     </p>
   </div>
 </main>
+
+<!-- 正式見積依頼モーダル -->
+<div class="modal-overlay" id="request-modal" style="display:none">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 id="modal-title" style="margin:0 0 12px 0; font-size:18px;">正式見積依頼フォーム</h2>
+    <p style="margin:0 0 12px 0; font-size:13px; color:#555;">
+      ご入力いただいた内容で正式見積書を作成し、メールでお送りします。<span style="color:#c00;">＊は必須</span>
+    </p>
+    <form id="request-form" novalidate>
+      <div class="form-row">
+        <label>お名前 <span style="color:#c00;">＊</span></label>
+        <div class="form-grid-2">
+          <input type="text" id="f-name" required placeholder="山田 太郎">
+          <select id="f-honorific">
+            <option value="様" selected>様</option>
+            <option value="御中">御中</option>
+            <option value="先生">先生</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>メールアドレス <span style="color:#c00;">＊</span></label>
+        <input type="email" id="f-email" required placeholder="example@example.com">
+      </div>
+      <div class="form-row">
+        <label>お電話番号</label>
+        <input type="tel" id="f-phone" placeholder="090-0000-0000">
+      </div>
+      <div class="form-row">
+        <label>郵便番号</label>
+        <input type="text" id="f-zip" placeholder="270-1300">
+      </div>
+      <div class="form-row">
+        <label>ご住所</label>
+        <input type="text" id="f-address" placeholder="千葉県印西市…">
+      </div>
+      <div class="form-row">
+        <label>件名</label>
+        <input type="text" id="f-subject" placeholder="（未入力可・自動設定）">
+      </div>
+      <div class="form-row">
+        <label>備考・ご要望</label>
+        <textarea id="f-note" rows="3" placeholder="納期希望・刻印内容など"></textarea>
+      </div>
+      <div class="modal-msg" id="modal-msg"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btn-cancel">キャンセル</button>
+        <button type="submit" class="btn btn-accent" id="btn-submit">この内容で依頼する</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <div class="footer-note">
   N's factory ／ 中司 祐樹 ／ 千葉県印西市<br>
@@ -367,6 +471,94 @@
 
     location.href = 'mailto:' + SHOP.mail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
   });
+
+  // ============================================================
+  // 正式見積依頼（GAS WebApp 連携）
+  // ============================================================
+  const INVOICE_GAS_URL = 'https://script.google.com/macros/s/AKfycbx-DgXUO8t1i4NfKo6XCbtMZ7VJ83IhKCeirerj6chLXY6dYQWfLdVF0T8Qw9rsO_tLPA/exec';
+
+  const modal     = document.getElementById('request-modal');
+  const modalMsg  = document.getElementById('modal-msg');
+  const reqForm   = document.getElementById('request-form');
+  const btnSubmit = document.getElementById('btn-submit');
+
+  function openModal(){
+    modalMsg.textContent = '';
+    modalMsg.className = 'modal-msg';
+    document.getElementById('f-subject').value = '在庫品お見積り依頼：' + (item.name || '商品');
+    modal.style.display = 'flex';
+  }
+  function closeModal(){ modal.style.display = 'none'; }
+
+  document.getElementById('btn-request').addEventListener('click', openModal);
+  document.getElementById('btn-cancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+  reqForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const name    = document.getElementById('f-name').value.trim();
+    const email   = document.getElementById('f-email').value.trim();
+    const phone   = document.getElementById('f-phone').value.trim();
+    if (!name)  { showMsg('お名前を入力してください', 'error'); return; }
+    if (!email) { showMsg('メールアドレスを入力してください', 'error'); return; }
+
+    const qty = Math.max(1, parseInt(qtyInput.value || '1', 10) || 1);
+    const pay = document.querySelector('input[name=pay]:checked').value;
+    const payNote = pay === 'btc' ? 'Bitcoin決済希望（3%OFF）' : '銀行振込希望';
+    const userNote = document.getElementById('f-note').value.trim();
+
+    const payload = {
+      action: 'submitQuoteRequest',
+      customer: {
+        name:      name,
+        honorific: document.getElementById('f-honorific').value,
+        zip:       document.getElementById('f-zip').value.trim(),
+        address:   document.getElementById('f-address').value.trim(),
+        phone:     phone,
+        email:     email,
+        note:      ''
+      },
+      doc: {
+        subject: document.getElementById('f-subject').value.trim() || ('在庫品お見積り：' + (item.name || '商品')),
+        source:  'stock-quote'
+      },
+      details: [{
+        itemName:  (item.name || '商品') + (item.id ? '（ID: ' + item.id + '）' : ''),
+        qty:       qty,
+        unit:      '点',
+        unitPrice: item.price,
+        note:      [payNote, userNote].filter(Boolean).join(' / ')
+      }]
+    };
+
+    btnSubmit.disabled = true;
+    showMsg('送信中…', 'info');
+
+    fetch(INVOICE_GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(r => r.json())
+      .then(j => {
+        if (j && j.success) {
+          showMsg('お見積り依頼を受け付けました。書類番号: ' + j.number + ' / 担当者よりメールでご連絡します。', 'ok');
+          setTimeout(closeModal, 4000);
+        } else {
+          throw new Error((j && j.error) || '送信に失敗しました');
+        }
+      })
+      .catch(err => {
+        showMsg('送信に失敗しました（' + err.message + '）。メールで直接お送りください: ' + SHOP.mail, 'error');
+      })
+      .finally(() => { btnSubmit.disabled = false; });
+  });
+
+  function showMsg(text, kind){
+    modalMsg.textContent = text;
+    modalMsg.className = 'modal-msg ' + (kind || '');
+  }
 
   // 初期化
   recalc();
