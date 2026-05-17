@@ -5,7 +5,7 @@
 
 const CONFIG = {
   // GAS WebApp URL: clasp deploy 後に取得したURLを設定
-  GAS_WEBAPP_URL: 'https://script.google.com/macros/s/AKfycbx-DgXUO8t1i4NfKo6XCbtMZ7VJ83IhKCeirerj6chLXY6dYQWfLdVF0T8Qw9rsO_tLPA/exec',
+  GAS_WEBAPP_URL: 'https://script.google.com/macros/s/AKfycbzERvxy0zmLdytf0roNlzVzj6JHg2keLvMQ3tl38fxQk97S-O83VjG-bQPOLMI_HYZe/exec',
 
   // 消費税率
   TAX_RATE: 0.10,
