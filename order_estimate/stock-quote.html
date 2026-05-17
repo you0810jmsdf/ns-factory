@@ -244,9 +244,75 @@
       </label>
     </div>
 
+    <h2 style="margin-top:24px">他サイト決済希望</h2>
+    <p style="font-size:11px;color:#7a6651;margin:0 0 10px;line-height:1.6">
+      普段ご利用の販売サイトでの購入をご希望の方はこちらから選択ください。<br>
+      <strong>各サイトの販売手数料を上乗せした金額</strong>を表示します（送料は別途）。<br>
+      ご依頼後、当方より該当サイトに専用ページを出品し、URLをメールでお送りします。
+    </p>
+    <div class="radio-group">
+      <label>
+        <input type="radio" name="pay" value="mercari">
+        <div>
+          <div class="opt-name">メルカリ（手数料10%）</div>
+          <div class="opt-desc">専用出品URLをメールでご案内。落札後にメルカリ便で発送します。</div>
+        </div>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="rakuma">
+        <div>
+          <div class="opt-name">ラクマ（手数料6%）</div>
+          <div class="opt-desc">専用出品URLをメールでご案内。かんたんラクマパックで発送します。</div>
+        </div>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="paypay">
+        <div>
+          <div class="opt-name">PayPayフリマ（手数料5%）</div>
+          <div class="opt-desc">専用出品URLをメールでご案内。ヤフネコ！パックで発送します。</div>
+        </div>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="creema">
+        <div>
+          <div class="opt-name">Creema（手数料11%）</div>
+          <div class="opt-desc">Creemaの商品ページURLをメールでご案内。Creema経由でご購入ください。</div>
+        </div>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="minne">
+        <div>
+          <div class="opt-name">minne（手数料10.56%）</div>
+          <div class="opt-desc">minneの商品ページURLをメールでご案内。minne経由でご購入ください。</div>
+        </div>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="base">
+        <div>
+          <div class="opt-name">BASE（手数料6.6% + 40円）</div>
+          <div class="opt-desc">BASE店舗の商品URLをメールでご案内。BASE経由でご購入ください。</div>
+        </div>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="store">
+        <div>
+          <div class="opt-name">STORES（手数料5%）</div>
+          <div class="opt-desc">STORES店舗の商品URLをメールでご案内。STORES経由でご購入ください。</div>
+        </div>
+      </label>
+      <label>
+        <input type="radio" name="pay" value="pinkoi">
+        <div>
+          <div class="opt-name">Pinkoi（手数料8%）</div>
+          <div class="opt-desc">Pinkoiの商品ページURLをメールでご案内。Pinkoi経由でご購入ください。</div>
+        </div>
+      </label>
+    </div>
+
     <p class="note">
       ※ 表示価格は税込です。インボイス制度未登録事業者のため、適格請求書は発行できません。<br>
       ※ 送料は別途実費（注文確定後にご案内）。<br>
+      ※ 他サイト決済の手数料は当方の手取りが元単価と同額になるよう上乗せ表示しています。<br>
       ※ 在庫品のため、原則オーダー後3営業日以内に発送いたします。
     </p>
   </div>
@@ -256,7 +322,8 @@
     <h2>お支払い額</h2>
     <div class="total-row"><span>商品代金</span><span id="t-subtotal">― 円</span></div>
     <div class="total-row" id="discount-line" style="display:none"><span>BTC決済割（▲）</span><span id="t-discount">― 円</span></div>
-    <div class="total-row grand"><span>合計（税込）</span><span id="t-grand">― 円</span></div>
+    <div class="total-row" id="surcharge-line" style="display:none"><span id="t-surcharge-label">手数料上乗せ</span><span id="t-surcharge">― 円</span></div>
+    <div class="total-row grand"><span id="t-grand-label">合計（税込）</span><span id="t-grand">― 円</span></div>
     <div class="total-row btc" id="btc-line" style="display:none">
       <span>BTC概算</span><span id="t-btc">― BTC</span>
     </div>
@@ -368,17 +435,48 @@
     return Math.min(Math.floor(subtotal * 0.03), 1000);
   }
 
+  // 他サイト販売プラットフォーム手数料テーブル
+  // charge = ceil((handover + fixed) / (1 - rate))  → 当方手取りが元単価と同額になる上乗せ計算
+  const PLATFORM_FEES = {
+    mercari: { rate: 0.10,   fixed: 0,  label: 'メルカリ',     feeText: '手数料10%' },
+    rakuma:  { rate: 0.06,   fixed: 0,  label: 'ラクマ',        feeText: '手数料6%' },
+    paypay:  { rate: 0.05,   fixed: 0,  label: 'PayPayフリマ', feeText: '手数料5%' },
+    creema:  { rate: 0.11,   fixed: 0,  label: 'Creema',        feeText: '手数料11%' },
+    minne:   { rate: 0.1056, fixed: 0,  label: 'minne',         feeText: '手数料10.56%' },
+    base:    { rate: 0.066,  fixed: 40, label: 'BASE',          feeText: '手数料6.6%+40円' },
+    store:   { rate: 0.05,   fixed: 0,  label: 'STORES',        feeText: '手数料5%' },
+    pinkoi:  { rate: 0.08,   fixed: 0,  label: 'Pinkoi',        feeText: '手数料8%' }
+  };
+
+  function calcPlatformCharge(handover, key){
+    const fee = PLATFORM_FEES[key];
+    if (!fee) return { charge: handover, surcharge: 0, fee: null };
+    const charge = Math.ceil((handover + fee.fixed) / (1 - fee.rate));
+    return { charge: charge, surcharge: charge - handover, fee: fee };
+  }
+
   function recalc(){
     const qty = Math.max(1, parseInt(qtyInput.value || '1', 10) || 1);
     qtyInput.value = qty;
     const subtotal = item.price * qty;
     const pay = document.querySelector('input[name=pay]:checked').value;
+    const isPlatform = !!PLATFORM_FEES[pay];
     const discount = pay === 'btc' ? calcDiscount(subtotal) : 0;
-    const grand = subtotal - discount;
+    let grand = subtotal - discount;
+    let surcharge = 0;
+    let platformFee = null;
+
+    if (isPlatform){
+      const r = calcPlatformCharge(subtotal, pay);
+      grand = r.charge;
+      surcharge = r.surcharge;
+      platformFee = r.fee;
+    }
 
     document.getElementById('subtotal').textContent = fmtJpy(subtotal);
     document.getElementById('t-subtotal').textContent = fmtJpy(subtotal);
     document.getElementById('t-grand').textContent    = fmtJpy(grand);
+    document.getElementById('t-grand-label').textContent = isPlatform ? 'お客様請求額（税込）' : '合計（税込）';
 
     const discLine = document.getElementById('discount-line');
     if (pay === 'btc' && discount > 0){
@@ -386,6 +484,16 @@
       document.getElementById('t-discount').textContent = '−' + fmtJpy(discount);
     } else {
       discLine.style.display = 'none';
+    }
+
+    const surLine = document.getElementById('surcharge-line');
+    if (isPlatform && surcharge > 0){
+      surLine.style.display = 'flex';
+      document.getElementById('t-surcharge-label').textContent =
+        platformFee.label + '手数料 上乗せ（' + platformFee.feeText + '）';
+      document.getElementById('t-surcharge').textContent = '+' + fmtJpy(surcharge);
+    } else {
+      surLine.style.display = 'none';
     }
 
     const btcLine = document.getElementById('btc-line');
@@ -437,9 +545,20 @@
     const qty = parseInt(qtyInput.value, 10);
     const subtotal = item.price * qty;
     const pay = document.querySelector('input[name=pay]:checked').value;
+    const fee = PLATFORM_FEES[pay];
+    const isPlatform = !!fee;
     const discount = pay === 'btc' ? calcDiscount(subtotal) : 0;
-    const grand = subtotal - discount;
-    const payLabel = pay === 'btc' ? 'Bitcoin（BTC）3%OFF適用' : '銀行振込';
+    let grand = subtotal - discount;
+    let surcharge = 0;
+    if (isPlatform){
+      const r = calcPlatformCharge(subtotal, pay);
+      grand = r.charge;
+      surcharge = r.surcharge;
+    }
+    const payLabel = isPlatform
+      ? (fee.label + '決済希望（' + fee.feeText + '上乗せ）')
+      : (pay === 'btc' ? 'Bitcoin（BTC）3%OFF適用' : '銀行振込');
+    const grandLabel = isPlatform ? 'お客様請求額（税込）' : '合計（税込）';
 
     const subject = '【在庫品お見積り】' + (item.name || '商品') + '（' + quoteId + '）';
     const body = [
@@ -457,7 +576,9 @@
       '小計: ' + fmtJpy(subtotal),
       '決済方法: ' + payLabel,
       (discount > 0 ? 'BTC決済割: −' + fmtJpy(discount) : ''),
-      '合計（税込）: ' + fmtJpy(grand),
+      (isPlatform && surcharge > 0 ? fee.label + '手数料上乗せ: +' + fmtJpy(surcharge) : ''),
+      grandLabel + ': ' + fmtJpy(grand),
+      (isPlatform ? '※ ' + fee.label + 'にて専用ページを出品し、URLをメールでご案内します。' : ''),
       (pay === 'btc' && btcRate ? 'BTC概算: ' + fmtBtc(grand / btcRate) + ' BTC（参照レート ¥' + btcRate.toLocaleString('ja-JP') + '/BTC, ' + (btcRateMeta && btcRateMeta.date) + ' OKJ）' : ''),
       '──────────────────',
       '',
@@ -505,7 +626,19 @@
 
     const qty = Math.max(1, parseInt(qtyInput.value || '1', 10) || 1);
     const pay = document.querySelector('input[name=pay]:checked').value;
-    const payNote = pay === 'btc' ? 'Bitcoin決済希望（3%OFF）' : '銀行振込希望';
+    const fee = PLATFORM_FEES[pay];
+    const isPlatform = !!fee;
+    const subtotalForNote = item.price * qty;
+    let surchargeForNote = 0;
+    let chargeForNote = subtotalForNote;
+    if (isPlatform){
+      const r = calcPlatformCharge(subtotalForNote, pay);
+      chargeForNote = r.charge;
+      surchargeForNote = r.surcharge;
+    }
+    const payNote = isPlatform
+      ? (fee.label + '決済希望（' + fee.feeText + '上乗せ：+' + fmtJpy(surchargeForNote) + ' / お客様請求額 ' + fmtJpy(chargeForNote) + '）')
+      : (pay === 'btc' ? 'Bitcoin決済希望（3%OFF）' : '銀行振込希望');
     const userNote = document.getElementById('f-note').value.trim();
 
     const payload = {
