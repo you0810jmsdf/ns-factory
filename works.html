@@ -79,6 +79,58 @@
       color: var(--muted);
       font-size: 15px;
     }
+    .notice-banner {
+      background: linear-gradient(90deg, #fff8ee 0%, #fdf1de 100%);
+      border-bottom: 1px solid var(--line);
+      border-top: 1px solid rgba(154, 106, 67, .18);
+    }
+    .notice-banner-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #5a3d1e;
+      line-height: 1.55;
+    }
+    .notice-banner-icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--warm);
+      color: var(--white);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .notice-banner strong {
+      color: #7a4a1f;
+      font-weight: 700;
+    }
+    .notice-banner a {
+      color: var(--accent-dark);
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .notice-banner a:hover { color: var(--accent); }
+    @media (max-width: 720px) {
+      .notice-banner-inner {
+        font-size: 13px;
+        padding: 12px 20px;
+        align-items: flex-start;
+      }
+      .notice-banner-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
+      }
+    }
     .filters {
       max-width: 1080px;
       margin: 0 auto;
@@ -382,6 +434,16 @@
       <p class="lead">システム手帳を中心に、これまで制作した革製品をまとめています。気になる作品は、写真を開いて細部までご覧ください。</p>
     </div>
   </header>
+
+  <div class="notice-banner" role="note">
+    <div class="notice-banner-inner">
+      <span class="notice-banner-icon" aria-hidden="true">!</span>
+      <div>
+        <strong>「SOLDOUT」「再販予定なし」と表示された作品も、同じ仕様で<u>オーダー製作のお見積りが可能</u>です。</strong>
+        気になる作品は写真を開いて「お見積りを作成する」からお気軽にどうぞ。
+      </div>
+    </div>
+  </div>
 
   <main>
     <div id="filters" class="filters"></div>
