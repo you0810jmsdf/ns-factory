@@ -331,7 +331,7 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
   vertical-align:top;
   overflow:hidden;
 }
-.row-other { height:auto; max-height:none; }
+.row-other { height:auto; max-height:none; border-bottom:none; }
 .row-other td { color:#000; }
 .row-desc td {
   font-weight:600;
