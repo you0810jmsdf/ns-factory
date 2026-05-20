@@ -653,3 +653,4 @@ const HITSUKI_VOLUMES = [
     },
   }
 ];
+window.HITSUKI_VOLUMES = HITSUKI_VOLUMES;
