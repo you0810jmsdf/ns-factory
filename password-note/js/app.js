@@ -335,7 +335,6 @@ function renderList() {
       </label>
       <div class="entry-main" onclick="openEntry('${entryId}')">
         <div class="entry-header">
-          <span class="entry-icon">${escHtml(TYPE_LABELS[entry.type] || 'その他')}</span>
           <span class="entry-title">${escHtml(entry.title)}</span>
           ${alerts.length > 0 ? `<span class="alert-badge" title="${alerts.length}件のメモ">メモあり</span>` : ''}
         </div>
