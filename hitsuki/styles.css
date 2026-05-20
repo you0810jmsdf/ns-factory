@@ -703,6 +703,76 @@ button {
   text-decoration: underline;
 }
 
+/* ── アコーディオン解説パネル ─────────────────── */
+
+.commentary-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--gold);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.commentary-toggle:hover {
+  background: rgba(216, 183, 102, 0.12);
+}
+
+.commentary-toggle[aria-expanded="true"] {
+  background: rgba(216, 183, 102, 0.18);
+}
+
+.commentary-toggle.no-data {
+  border-color: var(--line);
+  color: var(--ink-soft);
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+.commentary-panel {
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.commentary-panel[hidden] {
+  display: none;
+}
+
+.commentary-panel-inner {
+  padding: 16px 4px 4px;
+  display: grid;
+  gap: 12px;
+}
+
+.commentary-source {
+  font-size: 0.82rem;
+  color: var(--gold);
+}
+
+.commentary-source a {
+  color: var(--gold);
+  text-decoration: underline;
+  margin-left: 6px;
+}
+
+.commentary-transcript {
+  color: var(--ink-soft);
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.commentary-added {
+  font-size: 0.78rem;
+  color: var(--ink-muted, var(--ink-soft));
+  opacity: 0.6;
+}
+
 @media (max-width: 920px) {
   .site-header {
     align-items: flex-start;
