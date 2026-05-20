@@ -112,6 +112,16 @@ button {
   background: rgba(216, 183, 102, 0.09);
 }
 
+.site-nav .nav-back {
+  margin-left: auto;
+  opacity: 0.6;
+  font-size: 0.82rem;
+}
+
+.site-nav .nav-back:hover {
+  opacity: 1;
+}
+
 .hero {
   position: relative;
   min-height: min(760px, calc(100dvh - 32px));
