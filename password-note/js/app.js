@@ -341,7 +341,7 @@ function renderList() {
         </div>
         <div class="entry-sub">
           ${entry.owner ? `<span class="tag">担当: ${escHtml(entry.owner)}</span>` : ''}
-          ${entry.url ? `<span class="url-tag">${escHtml(entry.url)}</span>` : ''}
+          ${entry.url ? `<a class="url-tag url-open-btn" href="${escHtml(entry.url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="ブラウザで開く">${escHtml(entry.url)}</a>` : ''}
         </div>
         ${creds ? `<div class="entry-creds"><span class="cred-id">${escHtml(creds.username || '(IDなし)')}</span><span class="cred-dot">パスワード登録済み</span></div>` : ''}
         <div class="entry-date">更新: ${fmtDate(entry.updatedAt)}</div>

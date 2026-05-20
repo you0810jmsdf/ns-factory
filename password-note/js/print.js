@@ -78,7 +78,7 @@ const PrintManager = (() => {
       if (rows.length >= maxRows) break;
 
       const isOther = h.type === 'other' || h.type === 'alert' || h.type === 'warning';
-      const chunks = packPrintLines(historyPrintLines(h, isOther));
+      const chunks = packPrintLines(historyPrintLines(h, isOther), isOther ? 2 : 1);
       chunks.forEach((chunkLines, idx) => {
         if (rows.length >= maxRows) return;
         rows.push(`<tr class="${isOther ? 'row-other' : ''}${idx > 0 ? ' row-cont' : ''}">
@@ -268,7 +268,7 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
   margin-bottom:0.5mm;
 }
 .svc-name {
-  font-size:20pt; font-weight:bold; color:#000;
+  font-size:13pt; font-weight:bold; color:#000;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   line-height:1.15;
 }
@@ -331,6 +331,7 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
   vertical-align:top;
   overflow:hidden;
 }
+.row-other { height:auto; max-height:none; }
 .row-other td { color:#000; }
 .row-desc td {
   font-weight:600;

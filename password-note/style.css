@@ -292,6 +292,19 @@ header {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+a.url-open-btn {
+  text-decoration: none;
+  cursor: pointer;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--accent);
+  line-height: 1.4;
+  transition: background 0.15s;
+}
+a.url-open-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
 .entry-creds {
   display: flex;
   align-items: center;
