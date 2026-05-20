@@ -347,6 +347,21 @@ textarea{min-height:80px;resize:vertical}
         <button type="button" class="btn" style="padding:8px 18px;font-size:13px;font-weight:bold;background:#7a5a2e;color:#fff;border:none;border-radius:6px;cursor:pointer" onclick="generateHandwrittenPrPrompt()">✏️ 手書き風PR画像プロンプト生成</button>
         <span style="font-size:11px;color:#8a6a2e">実物写真をそのまま使い、万年筆風スケッチ＋吹き出しで紹介文を合成（商品説明文を自動転用）</span>
       </div>
+      <!-- ===== マスコット合成プロンプト生成 ===== -->
+      <div style="padding:10px;background:#f0f8ff;border:1px dashed #4a7ab8;border-radius:6px;margin-bottom:8px">
+        <div style="font-weight:bold;color:#2a5a8e;font-size:12px;margin-bottom:8px">🎭 マスコット合成プロンプト生成</div>
+        <p style="font-size:11px;color:#4a6a9e;margin:0 0 8px;line-height:1.5">実物写真を全面背景としてそのまま使用し、マスコットキャラクターを吹き出し付きでオーバーレイ合成します。<br>
+        <b>画像2枚（マスコット画像＋商品実物写真）</b>をChatGPT/Geminiに添付して実行してください。</p>
+        <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
+          <label style="font-size:12px;color:#4a6a9e;white-space:nowrap;min-width:60px">タイトル</label>
+          <input type="text" id="mascotBubbleTitle" placeholder="例: 旅のお供に！" style="flex:1;padding:5px 8px;font-size:12px;border:1px solid #7aabdc;border-radius:4px">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start">
+          <label style="font-size:12px;color:#4a6a9e;white-space:nowrap;min-width:60px;padding-top:4px">説明文</label>
+          <textarea id="mascotBubbleDesc" rows="3" placeholder="例: コンパクトなのに大容量！カード4枚＋お札もスッキリ収納できます♪" style="flex:1;padding:5px 8px;font-size:12px;border:1px solid #7aabdc;border-radius:4px;resize:vertical"></textarea>
+        </div>
+        <button type="button" class="btn" style="padding:8px 18px;font-size:13px;font-weight:bold;background:#2a5a8e;color:#fff;border:none;border-radius:6px;cursor:pointer" onclick="generateMascotOverlayPrompt()">🎭 マスコット合成プロンプト生成</button>
+      </div>
       <div id="prPromptInfo" style="font-size:11px;color:#8a6a2e;margin-bottom:6px">商品: <span id="prProductInfo">（読込中）</span></div>
       <textarea id="prPromptOutput" rows="14" placeholder="人物・背景プリセットを選んで「プロンプト生成」を押してください。生成後、コピーしてChatGPT/Geminiへ貼付し、画像2枚（人物＋商品実物写真）を必ず添付してください。" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
@@ -1541,6 +1556,79 @@ function generateHandwrittenPrPrompt() {
   document.getElementById('prPromptOutput').value = prompt;
   document.getElementById('prCopyStatus').textContent = '✏️ 手書き風プロンプトを生成しました（実物写真1枚のみ添付すればOK）';
   setTimeout(() => { document.getElementById('prCopyStatus').textContent = ''; }, 6000);
+}
+
+// ====== マスコット合成プロンプト生成（実物写真全面背景＋キャラオーバーレイ＋吹き出し） ======
+function generateMascotOverlayPrompt() {
+  if (!currentProductForPr) {
+    alert('先に商品を読み込んでください。');
+    return;
+  }
+  const p = currentProductForPr;
+  const productId   = p.productId || '';
+  const productName = p.name || '';
+  const productDesc = buildProductDescriptor();
+
+  const bubbleTitle = (document.getElementById('mascotBubbleTitle') || {}).value || '';
+  const bubbleDesc  = (document.getElementById('mascotBubbleDesc')  || {}).value || '';
+
+  if (!bubbleTitle && !bubbleDesc) {
+    alert('タイトルまたは説明文を入力してください。');
+    return;
+  }
+
+  const bubbleContent = [
+    bubbleTitle ? '【' + bubbleTitle + '】' : '',
+    bubbleDesc
+  ].filter(Boolean).join('\n');
+
+  const personaText = (document.getElementById('personaPresetText') || {}).value || '';
+  const artisanDesc = personaText || 'N\'s factory leather artisan mascot chibi character';
+
+  const prompt = [
+    '## Two attached reference images',
+    '  • Attached Image #1 = The Mascot Character: ' + artisanDesc + '.',
+    '  • Attached Image #2 = The Actual Product Photograph' + (productId ? ' (' + productId + (productName ? ' \\ ' + productName : '') + ')' : '') + ' — the real product photo used as the background.',
+    '',
+    '## Task',
+    'Generate ONE composite image that uses Attached Image #2 as the full background and overlays the mascot character from Attached Image #1 on top of it, with a comic speech bubble.',
+    '',
+    '## Background rules (Attached Image #2)',
+    '  • Use Attached Image #2 as the FULL canvas background — pixel-faithful, DO NOT redraw, restyle, recolor, or crop the product photo.',
+    '  • The product photo must remain completely recognizable and intact as a real photograph.',
+    '  • A very subtle soft vignette at the edges is allowed for visual grounding, nothing else.',
+    '',
+    '## Mascot character (Attached Image #1)',
+    '  • Faithfully reproduce the character from Attached Image #1: same face, hairstyle, outfit, color scheme — do NOT redesign.',
+    '  • Position: lower-right or lower-left corner of the canvas.',
+    '  • Size: the mascot occupies roughly 30–40% of the image height.',
+    '  • Style: flat 2D anime/chibi illustration, thick clean bold outlines, no gradients, no drop shadow on character.',
+    '  • The mascot is facing inward (toward the center of the image) with a friendly, cheerful expression.',
+    '',
+    '## Speech bubble',
+    '  • Style: clean comic speech bubble (rounded rectangle or cloud shape) with a pointer tail aimed at the mascot\'s mouth.',
+    '  • Position: upper area near the mascot, placed on the product photo background.',
+    '  • Background: white or cream (#fffdf5) fill, dark navy outline (#1a2138), 2px stroke.',
+    '  • Text inside the bubble (verbatim, do NOT change):',
+    '"""',
+    bubbleContent,
+    '"""',
+    '  • Text rendering: clear readable Japanese characters, hand-lettered feel, navy-black ink (#1a2138).',
+    '  • Do NOT translate. Do NOT paraphrase. Keep ALL kanji, kana, and punctuation exactly as given.',
+    '',
+    '## Product context',
+    'Product: ' + productDesc + (productName ? ' — "' + productName + '"' : '') + '.',
+    '',
+    '## Output requirements',
+    '— Aspect ratio: 4:5 (vertical) or 1:1 — choose whichever frames the product photo best.',
+    '— The product photo (Attached Image #2) must remain perfectly intact as a real photograph — NOT an illustration.',
+    '— No watermark, no logo, no extra text outside the speech bubble described above.',
+    '— The overall image should feel like a social-media product announcement post.'
+  ].join('\n');
+
+  document.getElementById('prPromptOutput').value = prompt;
+  document.getElementById('prCopyStatus').textContent = '🎭 マスコット合成プロンプトを生成しました（マスコット画像＋商品実物写真の2枚を添付してください）';
+  setTimeout(() => { document.getElementById('prCopyStatus').textContent = ''; }, 8000);
 }
 
 // ====== 参照画像のダウンロードヘルパー ======
