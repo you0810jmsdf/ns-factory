@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10130f">
+  <title>日月神示アーカイブ</title>
+  <meta name="description" content="日月神示の巻・帖・解説・YouTube動画を紐付けて整理するための静的サイトプロトタイプ。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="日月神示アーカイブ トップへ">
+      <span class="brand-mark" aria-hidden="true">日月</span>
+      <span>日月神示アーカイブ</span>
+    </a>
+    <nav class="site-nav" aria-label="ページ内ナビゲーション">
+      <a href="#about">日月神示とは</a>
+      <a href="#index">巻物索引</a>
+      <a href="#videos">動画紐付け</a>
+      <a href="#workflow">編集方針</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-bg" role="img" aria-label="月光と朝日のあいだに神社の参道が続く幻想的な森"></div>
+      <div class="hero-shade"></div>
+      <div class="hero-content">
+        <p class="eyebrow">巻物・解説・動画をつなぐ研究ノート</p>
+        <h1 id="hero-title">日月神示</h1>
+        <p class="hero-copy">
+          岡本天明が昭和19年から自動書記で記したとされる神示群を、巻と帖の単位で整理し、
+          解説文と預言天狗みはるさんのYouTube動画へ静かに辿れる入口を作ります。
+        </p>
+        <div class="hero-actions" aria-label="主要リンク">
+          <a class="button button-primary" href="#index">巻物を見る</a>
+          <a class="button button-ghost" href="#about">背景を読む</a>
+        </div>
+      </div>
+      <dl class="hero-stats" aria-label="収録予定数">
+        <div>
+          <dt id="stat-volume-count">39</dt>
+          <dd>巻</dd>
+        </div>
+        <div>
+          <dt id="stat-chapter-count">0</dt>
+          <dd>帖</dd>
+        </div>
+        <div>
+          <dt id="stat-video-count">1</dt>
+          <dd>動画候補</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section id="about" class="section about-section" aria-labelledby="about-title">
+      <div class="section-inner two-column">
+        <div class="section-heading">
+          <p class="eyebrow">Overview</p>
+          <h2 id="about-title">そもそも日月神示とは</h2>
+          <p>
+            日月神示は、戦中から戦後にかけて書記されたとされる神示群です。
+            「ひふみ神示」とも呼ばれ、象徴的な文字、数、神名、災厄と建て替えの語りが混在しています。
+          </p>
+        </div>
+        <div class="about-grid" aria-label="概要">
+          <article class="info-panel">
+            <h3>成立</h3>
+            <p>昭和19年、千葉県の天之日津久神社での書記を起点にしたとされます。</p>
+          </article>
+          <article class="info-panel">
+            <h3>構成</h3>
+            <p>本巻、五十黙示録、補巻に分け、巻ごとに複数の帖が置かれています。</p>
+          </article>
+          <article class="info-panel">
+            <h3>読み方</h3>
+            <p>本文、時代背景、象徴語、後世の解釈を分けて読むと見通しがよくなります。</p>
+          </article>
+          <article class="info-panel">
+            <h3>編集姿勢</h3>
+            <p>不安を煽る断定ではなく、引用と考察を分けて落ち着いた資料庫にします。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="index" class="section archive-section" aria-labelledby="index-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Archive</p>
+          <h2 id="index-title">巻物索引</h2>
+          <p>
+            全巻を一覧し、各帖から解説ページと動画候補へ繋げるための作業台です。
+            本文全文は出典と掲載許諾の確認後に差し込む前提で、いまは索引を先に整えています。
+          </p>
+        </div>
+
+        <div class="archive-toolbar" aria-label="索引の絞り込み">
+          <label class="search-field" for="archive-search">
+            <span>検索</span>
+            <input id="archive-search" type="search" placeholder="巻名、テーマ、時期で検索">
+          </label>
+          <div class="segmented" role="group" aria-label="分類">
+            <button class="segment active" type="button" data-group="all">全て</button>
+            <button class="segment" type="button" data-group="本巻">本巻</button>
+            <button class="segment" type="button" data-group="五十黙示録">五十黙示録</button>
+            <button class="segment" type="button" data-group="補巻">補巻</button>
+          </div>
+        </div>
+
+        <div class="archive-layout">
+          <aside class="volume-list-wrap" aria-label="巻一覧">
+            <div id="volume-list" class="volume-list"></div>
+          </aside>
+
+          <section class="passage-panel" aria-labelledby="selected-volume-title">
+            <div class="selected-volume">
+              <p id="selected-volume-meta" class="eyebrow"></p>
+              <h3 id="selected-volume-title"></h3>
+              <p id="selected-volume-lead"></p>
+              <div id="selected-volume-tags" class="tag-row"></div>
+            </div>
+            <div class="passage-tools">
+              <span id="passage-count" class="count-label"></span>
+              <a id="volume-source-link" class="text-link" href="#" target="_blank" rel="noopener">出典候補を見る</a>
+            </div>
+            <div id="passage-list" class="passage-list"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="videos" class="section video-section" aria-labelledby="videos-title">
+      <div class="section-inner two-column">
+        <div class="section-heading">
+          <p class="eyebrow">YouTube Mapping</p>
+          <h2 id="videos-title">預言天狗みはる動画との紐付け</h2>
+          <p>
+            動画は巻・帖の該当箇所、テーマ、メモをセットで管理します。
+            まずは「北」「大峠」など、動画タイトルと本文テーマが近い箇所から照合します。
+          </p>
+          <a class="button button-muted" href="https://www.youtube.com/@369katakamuna" target="_blank" rel="noopener">
+            チャンネルへ
+          </a>
+        </div>
+        <div id="video-list" class="video-list" aria-label="動画候補一覧"></div>
+      </div>
+    </section>
+
+    <section id="commentaries" class="section commentary-section" aria-labelledby="commentaries-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Commentary</p>
+          <h2 id="commentaries-title">解説ページの下書き</h2>
+        </div>
+        <div id="commentary-list" class="commentary-list"></div>
+      </div>
+    </section>
+
+    <section id="workflow" class="section workflow-section" aria-labelledby="workflow-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Editorial Plan</p>
+          <h2 id="workflow-title">編集方針</h2>
+        </div>
+        <div id="workflow-list" class="workflow-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>日月神示アーカイブ</strong>
+      <p>本文の全文掲載は、出典確認・著作権確認・掲載方針の確定後に行う想定です。</p>
+    </div>
+    <div class="footer-links">
+      <a href="https://hifumi.uresi.org/link.html" target="_blank" rel="noopener">巻目次参考</a>
+      <a href="https://wiki.hifumi.online/" target="_blank" rel="noopener">日月神示Wiki</a>
+      <a href="https://www.youtube.com/@369katakamuna" target="_blank" rel="noopener">預言天狗の開運お告げ</a>
+    </div>
+  </footer>
+
+  <script src="data/hitsukiData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
