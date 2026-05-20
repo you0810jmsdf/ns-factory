@@ -193,8 +193,9 @@
   }
 
   function renderPassageCard(passage) {
-    const commentary = commentaryByPassage.get(`${passage.volumeId}-${passage.key}`);
-    const mappedVideos = videosByPassage.get(`${passage.volumeId}-${passage.key}`) || [];
+    const passageKey = `${passage.volumeId}-${passage.key}`;
+    const transcript = (window.HITSUKI_TRANSCRIPTS || {})[passageKey];
+    const mappedVideos = videosByPassage.get(passageKey) || [];
     const statusLabel = {
       pending: '本文入力待ち',
       sample: '短い引用あり',
@@ -205,9 +206,22 @@
       ? 'この帖は欠帖として扱います。番号は残し、解説側で事情を説明します。'
       : passage.excerpt || '本文全文は出典・掲載許諾の確認後に登録します。';
 
-    const commentaryLink = commentary
-      ? `#commentary-${commentary.id}`
-      : '#commentaries';
+    const transcriptHtml = transcript ? `
+      <div class="commentary-panel" hidden>
+        <div class="commentary-panel-inner">
+          <p class="commentary-source">
+            出典: ${escapeHtml(transcript.source)}${transcript.videoTitle ? `「${escapeHtml(transcript.videoTitle)}」` : ''}
+            ${transcript.videoUrl ? `<a href="${escapeHtml(transcript.videoUrl)}" target="_blank" rel="noopener">YouTube</a>` : ''}
+          </p>
+          <p class="commentary-transcript">${escapeHtml(transcript.transcript).replace(/\n/g, '<br>')}</p>
+          <p class="commentary-added">収録: ${escapeHtml(transcript.addedAt || '')}</p>
+        </div>
+      </div>
+    ` : '';
+
+    const toggleBtn = transcript
+      ? `<button class="commentary-toggle" type="button" data-key="${escapeHtml(passageKey)}" aria-expanded="false">解説を開く ▾</button>`
+      : `<span class="commentary-toggle no-data">解説未収録</span>`;
 
     return `
       <article class="passage-card" id="${escapeHtml(passage.anchor)}">
@@ -220,10 +234,11 @@
         </div>
         <p class="passage-excerpt">${escapeHtml(excerpt)}</p>
         <div class="passage-links">
-          <a href="${escapeHtml(commentaryLink)}">${commentary ? '解説へ' : '解説枠へ'}</a>
+          ${toggleBtn}
           <a href="${escapeHtml(passage.sourceUrl)}" target="_blank" rel="noopener">出典候補</a>
           ${mappedVideos.map(({ video }) => `<a href="${escapeHtml(video.url)}" target="_blank" rel="noopener">動画</a>`).join('')}
         </div>
+        ${transcriptHtml}
         ${mappedVideos.length ? `
           <div class="video-note">
             ${mappedVideos.map(({ video, note }) => `
@@ -318,6 +333,18 @@
     if (!button) return;
     state.selectedVolumeId = button.dataset.volumeId;
     render();
+  });
+
+  els.passageList.addEventListener('click', (event) => {
+    const toggle = event.target.closest('.commentary-toggle');
+    if (!toggle || toggle.classList.contains('no-data')) return;
+    const card = toggle.closest('.passage-card');
+    const panel = card.querySelector('.commentary-panel');
+    if (!panel) return;
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    toggle.textContent = expanded ? '解説を開く ▾' : '解説を閉じる ▴';
+    panel.hidden = expanded;
   });
 
   renderStats();
