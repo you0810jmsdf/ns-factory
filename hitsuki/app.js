@@ -207,12 +207,7 @@
     const transcriptHtml = transcript ? `
       <div class="commentary-panel" hidden>
         <div class="commentary-panel-inner">
-          <p class="commentary-source">
-            出典: ${escapeHtml(transcript.source)}${transcript.videoTitle ? `「${escapeHtml(transcript.videoTitle)}」` : ''}
-            ${transcript.videoUrl ? `<a href="${escapeHtml(transcript.videoUrl)}" target="_blank" rel="noopener">YouTube</a>` : ''}
-          </p>
           <p class="commentary-transcript">${escapeHtml(transcript.transcript).replace(/\n/g, '<br>')}</p>
-          <p class="commentary-added">収録: ${escapeHtml(transcript.addedAt || '')}</p>
         </div>
       </div>
     ` : '';
@@ -233,17 +228,8 @@
         <p class="passage-excerpt">${escapeHtml(excerpt)}</p>
         <div class="passage-links">
           ${toggleBtn}
-          <a href="${escapeHtml(passage.sourceUrl)}" target="_blank" rel="noopener">出典候補</a>
-          ${mappedVideos.map(({ video }) => `<a href="${escapeHtml(video.url)}" target="_blank" rel="noopener">動画</a>`).join('')}
         </div>
         ${transcriptHtml}
-        ${mappedVideos.length ? `
-          <div class="video-note">
-            ${mappedVideos.map(({ video, note }) => `
-              <span>${escapeHtml(video.host)}: ${escapeHtml(note)}</span>
-            `).join('')}
-          </div>
-        ` : ''}
       </article>
     `;
   }
