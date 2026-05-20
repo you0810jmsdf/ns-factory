@@ -21,7 +21,6 @@
     passageCount: document.getElementById('passage-count'),
     sourceLink: document.getElementById('volume-source-link'),
     passageList: document.getElementById('passage-list'),
-    commentaryList: document.getElementById('commentary-list'),
     workflowList: document.getElementById('workflow-list')
   };
 
@@ -249,26 +248,6 @@
     `;
   }
 
-  function renderCommentaries() {
-    els.commentaryList.innerHTML = commentaries.map((commentary) => {
-      const volume = volumes.find((item) => item.id === commentary.volumeId);
-      return `
-        <article class="commentary-card" id="commentary-${escapeHtml(commentary.id)}">
-          <div class="commentary-meta">
-            <span>${escapeHtml(volume?.title || '')}</span>
-            <span>${escapeHtml(commentary.chapterKeys.join(', '))}</span>
-            <span>${escapeHtml(commentary.status)}</span>
-          </div>
-          <h3>${escapeHtml(commentary.title)}</h3>
-          <p>${escapeHtml(commentary.summary)}</p>
-          <div class="tag-row">
-            ${commentary.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}
-          </div>
-        </article>
-      `;
-    }).join('');
-  }
-
   function renderWorkflow() {
     els.workflowList.innerHTML = workflow.map((item, index) => `
       <article class="workflow-item">
@@ -320,7 +299,6 @@
   });
 
   renderStats();
-  renderCommentaries();
   renderWorkflow();
   render();
 }());
