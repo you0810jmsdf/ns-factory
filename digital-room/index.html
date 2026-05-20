@@ -104,6 +104,18 @@ a{color:inherit;text-decoration:none}
   background:var(--soft);border-radius:var(--radius);
   font-size:13px;color:var(--muted);line-height:1.8;
 }
+.tag.secret{color:#fff;background:var(--danger);letter-spacing:.08em}
+.secret-label{color:var(--danger);font-weight:800;font-size:12px}
+.launch-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:4px;padding:8px 16px;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:var(--radius);
+  font-size:13px;font-weight:700;cursor:pointer;
+  transition:background .15s;
+}
+.launch-btn:hover{background:var(--accent-dark)}
+.launch-status{font-size:12px;color:var(--muted);margin-top:6px;min-height:18px}
 
 @media(max-width:520px){
   .hero{padding:32px 18px 20px}
@@ -158,6 +170,20 @@ a{color:inherit;text-decoration:none}
       </a>
     </div>
 
+    <div class="section-label">社内ローカルツール</div>
+    <div class="tool-grid">
+      <div class="tool-card" id="yt-card">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="tag">LOCAL</span>
+          <span class="secret-label">【部外秘】</span>
+        </div>
+        <h3>YouTube 文字起こしツール</h3>
+        <p>YouTube動画の字幕をMarkdown形式で取得・保存。URLリスト管理・バッチ処理対応。ローカル専用。</p>
+        <button class="launch-btn" onclick="launchYtApp()">▶ アプリを起動</button>
+        <div class="launch-status" id="yt-status"></div>
+      </div>
+    </div>
+
     <div class="note">
       デジタル部は、自社サイト（GitHub Pages）の運営・GAS連携・ECツール管理・メタバース販売開拓を担当しています。<br>
       型紙・CADデータ販売の公開準備が整い次第、本ページで順次ご案内いたします。
@@ -165,5 +191,59 @@ a{color:inherit;text-decoration:none}
   </div>
 </main>
 
+<script>
+async function launchYtApp() {
+  const btn = document.querySelector('.launch-btn');
+  const status = document.getElementById('yt-status');
+
+  btn.disabled = true;
+  btn.textContent = '確認中...';
+  status.textContent = '';
+
+  // まず起動済みか確認
+  const running = await checkRunning();
+
+  if (running) {
+    status.textContent = '✅ 起動済み — ブラウザで開きます';
+    window.open('http://localhost:8501', '_blank');
+    btn.disabled = false;
+    btn.textContent = '▶ アプリを起動';
+    return;
+  }
+
+  // 未起動 → カスタムスキームでバッチファイルを呼び出す
+  status.textContent = '⏳ 起動しています（初回は10〜20秒かかります）...';
+  window.location.href = 'ytapp://start';
+
+  // 起動完了をポーリング（最大25秒）
+  btn.textContent = '起動待機中...';
+  let waited = 0;
+  const timer = setInterval(async () => {
+    waited += 2;
+    const ok = await checkRunning();
+    if (ok) {
+      clearInterval(timer);
+      status.textContent = '✅ 起動完了 — ブラウザで開きます';
+      window.open('http://localhost:8501', '_blank');
+      btn.disabled = false;
+      btn.textContent = '▶ アプリを起動';
+    } else if (waited >= 25) {
+      clearInterval(timer);
+      status.innerHTML = '⚠️ 自動起動できませんでした。<br>PowerShellで <code>py -m streamlit run yt_app.py</code> を実行してください。';
+      btn.disabled = false;
+      btn.textContent = '▶ アプリを起動';
+    }
+  }, 2000);
+}
+
+async function checkRunning() {
+  try {
+    await fetch('http://localhost:8501', { mode: 'no-cors', cache: 'no-store' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+</script>
 </body>
 </html>
