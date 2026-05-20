@@ -21,7 +21,6 @@
     passageCount: document.getElementById('passage-count'),
     sourceLink: document.getElementById('volume-source-link'),
     passageList: document.getElementById('passage-list'),
-    videoList: document.getElementById('video-list'),
     commentaryList: document.getElementById('commentary-list'),
     workflowList: document.getElementById('workflow-list')
   };
@@ -250,33 +249,6 @@
     `;
   }
 
-  function renderVideos() {
-    els.videoList.innerHTML = videos.map((video) => {
-      const chips = video.mappedTo.flatMap((mapping) => {
-        const volume = volumes.find((item) => item.id === mapping.volumeId);
-        return mapping.chapterKeys.map((chapterKey) => `${volume?.title || mapping.volumeId} ${chapterKey}`);
-      });
-      return `
-        <article class="video-card">
-          <div class="video-meta">
-            <span>${escapeHtml(video.host)}</span>
-            <span>${escapeHtml(video.publishedAt)}</span>
-            <span>${escapeHtml(video.duration)}</span>
-          </div>
-          <h3>${escapeHtml(video.title)}</h3>
-          <p>${escapeHtml(video.themes.join(' / '))}</p>
-          <div class="tag-row">
-            ${chips.map((chip) => `<span>${escapeHtml(chip)}</span>`).join('')}
-          </div>
-          <div class="passage-links">
-            <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener">YouTube</a>
-            <a href="${escapeHtml(video.sourceUrl)}" target="_blank" rel="noopener">メタ情報</a>
-          </div>
-        </article>
-      `;
-    }).join('');
-  }
-
   function renderCommentaries() {
     els.commentaryList.innerHTML = commentaries.map((commentary) => {
       const volume = volumes.find((item) => item.id === commentary.volumeId);
@@ -348,7 +320,6 @@
   });
 
   renderStats();
-  renderVideos();
   renderCommentaries();
   renderWorkflow();
   render();
