@@ -24,7 +24,7 @@ const HITSUKI_COMMENTARIES = [
     volumeId: 'uetsu',
     chapterKeys: ['002'],
     title: '神の愛と大峠――第二帖の核心',
-    status: 'draft',
+    status: 'published',
     summary: `神は人間の親として苦労を与えているが、人間は期待を裏切り堕落している。ネズミ以下の存在に成り下がった人民への嘆きから始まり、「木の根でも食っておれ」という食糧難の予言と、木の根（木のエネ＝六十干支の第一番・甲子）が示す「原点回帰」の二重の意味を持つ。
 
 【第二帖の主要テーマ】
