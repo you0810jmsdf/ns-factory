@@ -15,7 +15,7 @@ const HITSUKI_COMMENTARIES = [
     volumeId: 'uetsu',
     chapterKeys: ['001'],
     title: '第一帖の入口',
-    status: 'draft',
+    status: 'published',
     summary: '冒頭句から、日月神示の語りが「世の刷新」と「身魂磨き」を同時に立ち上げることを整理する。',
     tags: ['身魂磨き', '入口', '日本晴れ']
   },
