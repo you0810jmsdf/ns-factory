@@ -216,8 +216,10 @@
       ? `<button class="commentary-toggle" type="button" data-key="${escapeHtml(passageKey)}" aria-expanded="false">解説を開く ▾</button>`
       : `<span class="commentary-toggle no-data">解説未収録</span>`;
 
+    const hasCommentary = !!transcript;
+
     return `
-      <article class="passage-card" id="${escapeHtml(passage.anchor)}">
+      <article class="passage-card${hasCommentary ? ' has-commentary' : ''}" id="${escapeHtml(passage.anchor)}">
         <div class="passage-card-head">
           <div>
             <span class="passage-label">${escapeHtml(passage.label)}</span>
