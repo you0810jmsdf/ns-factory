@@ -467,17 +467,16 @@
   <!-- デジタル幕僚開発ツール -->
   <div class="section-label" style="margin-top:24px;">デジタル幕僚 開発ツール</div>
   <div class="size-group">
-    <div style="cursor:default;padding:0;overflow:hidden;background:#fdf8f4;border-radius:14px;">
+    <div style="padding:0;overflow:hidden;background:#fdf8f4;border-radius:14px;">
       <img src="../assets/yt-transcribe-announce.png" alt="YouTube 文字起こしツール 告知画像" style="width:100%;display:block;">
-      <div style="display:flex;align-items:center;gap:16px;padding:14px 18px;">
-        <div class="tool-info">
-          <div class="tool-name">
-            YouTube 文字起こしツール
-            <span class="badge-beta" style="background:#A0785A;">近日公開</span>
-          </div>
-          <div class="tool-desc">URLを入れるだけで字幕をMarkdown自動取得。バッチ処理・IPブロック検知搭載。無料配布予定。</div>
-          <div class="tool-note" style="color:#A0785A;">配布開始時はSNSでお知らせします</div>
+      <div style="padding:14px 18px;">
+        <div class="tool-name" style="margin-bottom:4px;">
+          YouTube 文字起こしツール
+          <span class="badge-beta" style="background:#A0785A;">社内用</span>
         </div>
+        <div class="tool-desc" style="margin-bottom:10px;">URLを入れるだけで字幕をMarkdown自動取得。バッチ処理・IPブロック検知搭載。</div>
+        <button id="yt-launch-btn" onclick="launchYtApp()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#A0785A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">▶ アプリを起動</button>
+        <div id="yt-launch-status" style="font-size:12px;color:#6e6e73;margin-top:6px;min-height:18px;"></div>
       </div>
     </div>
   </div>
@@ -616,6 +615,55 @@
     btn.setAttribute('aria-expanded', open);
   });
 })();
+
+// === MODULE: YT App Launcher ===
+async function launchYtApp() {
+  var btn = document.getElementById('yt-launch-btn');
+  var status = document.getElementById('yt-launch-status');
+  btn.disabled = true;
+  btn.textContent = '確認中...';
+  status.textContent = '';
+
+  var running = await ytCheckRunning();
+  if (running) {
+    status.textContent = '✅ 起動済み — ブラウザで開きます';
+    window.open('http://localhost:8501', '_blank');
+    btn.disabled = false;
+    btn.textContent = '▶ アプリを起動';
+    return;
+  }
+
+  status.textContent = '⏳ 起動しています（初回は10〜20秒かかります）...';
+  window.location.href = 'ytapp://start';
+
+  btn.textContent = '起動待機中...';
+  var waited = 0;
+  var timer = setInterval(async function() {
+    waited += 2;
+    var ok = await ytCheckRunning();
+    if (ok) {
+      clearInterval(timer);
+      status.textContent = '✅ 起動完了 — ブラウザで開きます';
+      window.open('http://localhost:8501', '_blank');
+      btn.disabled = false;
+      btn.textContent = '▶ アプリを起動';
+    } else if (waited >= 25) {
+      clearInterval(timer);
+      status.innerHTML = '⚠️ 自動起動できませんでした。<br>PowerShellで <code>py -m streamlit run yt_app.py</code> を実行してください。';
+      btn.disabled = false;
+      btn.textContent = '▶ アプリを起動';
+    }
+  }, 2000);
+}
+
+async function ytCheckRunning() {
+  try {
+    await fetch('http://localhost:8501', { mode: 'no-cors', cache: 'no-store' });
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
 </script>
 
 </body>
