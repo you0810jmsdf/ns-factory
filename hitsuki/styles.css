@@ -562,6 +562,16 @@ button {
   box-shadow: 0 0 0 3px rgba(216, 183, 102, 0.13);
 }
 
+/* 解説掲載済み帖：左ボーダーで視覚的に識別 */
+.passage-card.has-commentary {
+  border-left: 3px solid var(--gold);
+}
+.passage-card.has-commentary .passage-label::after {
+  content: ' ✦';
+  color: var(--gold);
+  font-size: 0.7em;
+}
+
 .passage-card-head {
   display: flex;
   gap: 14px;
