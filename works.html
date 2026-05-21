@@ -819,7 +819,11 @@
     function applyData(data) {
       works = toWorks(data)
         .filter((work) => work.folderId || (Array.isArray(work.photos) && work.photos.length))
-        .sort((a, b) => a.title.localeCompare(b.title, 'ja'));
+        .sort((a, b) => {
+          const numA = parseInt((a.id || '').replace(/\D/g, ''), 10) || 0;
+          const numB = parseInt((b.id || '').replace(/\D/g, ''), 10) || 0;
+          return numB - numA;
+        });
       buildFilters();
       render();
     }
