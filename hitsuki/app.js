@@ -196,9 +196,8 @@
     const mappedVideos = videosByPassage.get(passageKey) || [];
     const statusLabel = {
       pending: '本文入力待ち',
-      sample: '短い引用あり',
       missing: '欠帖'
-    }[passage.status] || '未整理';
+    }[passage.status] || null;
 
     const excerpt = passage.status === 'missing'
       ? 'この帖は欠帖として扱います。番号は残し、解説側で事情を説明します。'
@@ -225,7 +224,7 @@
             <span class="passage-label">${escapeHtml(passage.label)}</span>
             <h4>${escapeHtml(passage.title)}</h4>
           </div>
-          <span class="status-pill ${escapeHtml(passage.status)}">${escapeHtml(statusLabel)}</span>
+          ${statusLabel ? `<span class="status-pill ${escapeHtml(passage.status)}">${escapeHtml(statusLabel)}</span>` : ''}
         </div>
         <p class="passage-excerpt">${escapeHtml(excerpt)}</p>
         <div class="passage-links">
