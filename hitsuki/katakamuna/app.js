@@ -1,5 +1,5 @@
 (function () {
-  const { songs, groups, persons, glossary } = window.KATAKAMNA_DATA;
+  const { songs, groups, persons, glossary, phonetics } = window.KATAKAMNA_DATA;
 
   const state = {
     query: '',
@@ -9,7 +9,8 @@
 
   const els = {
     search: document.getElementById('archive-search'),
-    segments: Array.from(document.querySelectorAll('.segment')),
+    segments: Array.from(document.querySelectorAll('#archive .segment')),
+    ptypeSegments: Array.from(document.querySelectorAll('.phonetics-toolbar .segment')),
     songList: document.getElementById('song-list'),
     selectedMeta: document.getElementById('selected-song-meta'),
     selectedTitle: document.getElementById('selected-song-title'),
@@ -19,7 +20,10 @@
     songDetailList: document.getElementById('song-detail-list'),
     personList: document.getElementById('person-list'),
     glossaryList: document.getElementById('glossary-list'),
+    phoneticsGrid: document.getElementById('phonetics-grid'),
   };
+
+  const ptypeState = { type: 'all' };
 
   // ── ユーティリティ ────────────────────────────────────────
   function esc(str) {
@@ -216,6 +220,39 @@
     });
   }
 
+  // ── 48音グリッド ──────────────────────────────────────────
+  function renderPhonetics() {
+    els.phoneticsGrid.innerHTML = '';
+    const filtered = phonetics.filter(p =>
+      ptypeState.type === 'all' || p.type === ptypeState.type
+    );
+
+    filtered.forEach(p => {
+      const card = document.createElement('button');
+      card.className = `phonetics-card type-${p.type}`;
+      card.setAttribute('aria-expanded', 'false');
+
+      card.innerHTML = `
+        <svg class="ph-svg" viewBox="0 0 40 40" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          ${p.svgPath}
+        </svg>
+        <span class="ph-sound">${esc(p.sound)}</span>
+        <span class="ph-romaji">${esc(p.romaji)}</span>
+        <span class="ph-meaning">${esc(p.meaning)}</span>
+        <div class="ph-detail-body" hidden>${esc(p.detail)}</div>
+      `;
+
+      card.addEventListener('click', () => {
+        const expanded = card.getAttribute('aria-expanded') === 'true';
+        card.setAttribute('aria-expanded', String(!expanded));
+        const detail = card.querySelector('.ph-detail-body');
+        detail.hidden = expanded;
+      });
+
+      els.phoneticsGrid.appendChild(card);
+    });
+  }
+
   // ── イベント ──────────────────────────────────────────────
   els.search.addEventListener('input', e => {
     state.query = e.target.value.trim();
@@ -236,10 +273,19 @@
     });
   });
 
+  els.ptypeSegments.forEach(btn => {
+    btn.addEventListener('click', () => {
+      ptypeState.type = btn.dataset.ptype;
+      els.ptypeSegments.forEach(b => b.classList.toggle('active', b === btn));
+      renderPhonetics();
+    });
+  });
+
   // ── 初期描画 ──────────────────────────────────────────────
   renderPersons();
   renderGlossary();
   renderSongList();
   renderDetail();
+  renderPhonetics();
 
 })();

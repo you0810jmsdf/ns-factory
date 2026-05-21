@@ -18,6 +18,7 @@
       <a href="#about">カタカムナとは</a>
       <a href="#persons">登場人物</a>
       <a href="#archive">80首索引</a>
+      <a href="#phonetics">48音</a>
       <a href="#glossary">用語集</a>
       <a href="../" class="nav-back">← 教育幕僚室</a>
     </nav>
@@ -148,6 +149,76 @@
             <div id="song-detail-list" class="passage-list"></div>
           </section>
         </div>
+      </div>
+    </section>
+
+    <!-- Phonetics -->
+    <section id="phonetics" class="section phonetics-section" aria-labelledby="phonetics-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Phonetics</p>
+          <h2 id="phonetics-title">カタカムナ文字と48音</h2>
+          <p>
+            カタカムナは独自の48音体系を持つ。各音はそれぞれ宇宙的な意味を帯び、
+            組み合わせによって概念・物質・エネルギーの性質を表す。
+            楢崎皐月はこれらの音を「陽（発散）」「陰（収束）」「産霊（むすび）」の三種に分類した。
+          </p>
+        </div>
+
+        <!-- アワの歌 special panel -->
+        <div class="phonetics-awa-panel" aria-label="アワの歌">
+          <div class="awa-eyebrow">第5首 特記</div>
+          <h3 class="awa-title">アワの歌</h3>
+          <p class="awa-body">
+            カタカムナ第5首は「アワの歌」と呼ばれ、48音すべてを詠み込んだ特別な首とされる。
+            「ア」と「ワ」が宇宙の始まりと終わりを象徴し、その間に万物の音が連なる。
+            楢崎はこの首を「宇宙の自己紹介」と表現した。
+          </p>
+          <div class="awa-sounds">
+            <span>ア</span><span>イ</span><span>ウ</span><span>エ</span><span>オ</span>
+            <span>カ</span><span>キ</span><span>ク</span><span>ケ</span><span>コ</span>
+            <span>サ</span><span>シ</span><span>ス</span><span>セ</span><span>ソ</span>
+            <span>タ</span><span>チ</span><span>ツ</span><span>テ</span><span>ト</span>
+            <span>ナ</span><span>ニ</span><span>ヌ</span><span>ネ</span><span>ノ</span>
+            <span>ハ</span><span>ヒ</span><span>フ</span><span>ヘ</span><span>ホ</span>
+            <span>マ</span><span>ミ</span><span>ム</span><span>メ</span><span>モ</span>
+            <span>ヤ</span><span>ユ</span><span>ヨ</span>
+            <span>ラ</span><span>リ</span><span>ル</span><span>レ</span><span>ロ</span>
+            <span>ワ</span><span>ヲ</span><span>ン</span>
+          </div>
+        </div>
+
+        <!-- 文字の基本構造 -->
+        <div class="phonetics-structure-row" aria-label="文字の基本構造">
+          <article class="structure-card">
+            <div class="structure-icon" aria-hidden="true">陽</div>
+            <h4>陽（発散）</h4>
+            <p>外へ広がる性質。創造・発生・拡張を表す音群。主にア行・カ行・タ行など。</p>
+          </article>
+          <article class="structure-card">
+            <div class="structure-icon yin" aria-hidden="true">陰</div>
+            <h4>陰（収束）</h4>
+            <p>内へ向かう性質。受容・潜在・凝縮を表す音群。主にサ行・ハ行・マ行など。</p>
+          </article>
+          <article class="structure-card">
+            <div class="structure-icon musubi" aria-hidden="true">産</div>
+            <h4>産霊（むすび）</h4>
+            <p>陽と陰を結び生命を生む性質。ナ行・ラ行・ワ行など転換点にある音。</p>
+          </article>
+        </div>
+
+        <!-- type filter -->
+        <div class="phonetics-toolbar" aria-label="音の種類で絞り込み">
+          <div class="segmented" role="group" aria-label="種類フィルタ">
+            <button class="segment active" type="button" data-ptype="all">すべて</button>
+            <button class="segment" type="button" data-ptype="yang">陽（発散）</button>
+            <button class="segment" type="button" data-ptype="yin">陰（収束）</button>
+            <button class="segment" type="button" data-ptype="musubi">産霊（むすび）</button>
+          </div>
+        </div>
+
+        <!-- grid populated by app.js -->
+        <div id="phonetics-grid" class="phonetics-grid" aria-label="48音一覧"></div>
       </div>
     </section>
 
