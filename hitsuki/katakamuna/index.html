@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0c0e18">
+  <title>カタカムナ アーカイブ</title>
+  <meta name="description" content="カタカムナ全80首のウタヒ・解釈・登場人物を整理した研究ノート。楢崎皐月・平十字の解説も収録。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="カタカムナアーカイブ トップへ">
+      <span class="brand-mark" aria-hidden="true">カタ</span>
+      <span>カタカムナ アーカイブ</span>
+    </a>
+    <nav class="site-nav" aria-label="ページ内ナビゲーション">
+      <a href="#about">カタカムナとは</a>
+      <a href="#persons">登場人物</a>
+      <a href="#archive">80首索引</a>
+      <a href="#glossary">用語集</a>
+      <a href="../" class="nav-back">← 教育幕僚室</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-bg" role="img" aria-label="宇宙の渦巻きを象徴する深い紺青の背景"></div>
+      <div class="hero-shade"></div>
+      <div class="hero-content">
+        <p class="eyebrow">上古代の響き・宇宙の根本音</p>
+        <h1 id="hero-title">カタカムナ</h1>
+        <p class="hero-copy">
+          1949年、六甲山中で電気技術者・楢崎皐月が猟師・平十字から書き写したとされる上古代文書。
+          全80首のウタヒは宇宙の根本法則を音として刻んだものとされ、
+          楢崎は「相似象学」として20年以上をかけて解読し続けた。
+        </p>
+        <div class="hero-actions" aria-label="主要リンク">
+          <a class="button button-primary" href="#archive">80首を見る</a>
+          <a class="button button-ghost" href="#persons">登場人物</a>
+        </div>
+      </div>
+      <dl class="hero-stats" aria-label="収録数">
+        <div>
+          <dt>80</dt>
+          <dd>首のウタヒ</dd>
+        </div>
+        <div>
+          <dt>5</dt>
+          <dd>群に分類</dd>
+        </div>
+        <div>
+          <dt>2</dt>
+          <dd>主要人物</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="section about-section" aria-labelledby="about-title">
+      <div class="section-inner two-column">
+        <div class="section-heading">
+          <p class="eyebrow">Overview</p>
+          <h2 id="about-title">カタカムナとは</h2>
+          <p>
+            カタカムナは1949年（昭和24年）に楢崎皐月が六甲山中で書き写したとされる上古代文書で、
+            全80首のウタヒ（歌）が渦巻き状の独特の文字（カタカムナ文字・48音）で記されている。
+            楢崎はその音に宇宙物理・電磁気力・生命原理が凝縮されていると解釈し、
+            「相似象学」という独自の学問体系を築いた。
+          </p>
+        </div>
+        <div class="about-grid" aria-label="概要">
+          <article class="info-panel">
+            <h3>発見</h3>
+            <p>1949年夏、楢崎皐月が兵庫県六甲山中で猟師・平十字と出会い巻物を書き写す。</p>
+          </article>
+          <article class="info-panel">
+            <h3>構成</h3>
+            <p>全80首のウタヒ。序・宇宙創生・天地万物・生命と道・完成と帰還の5群に大別される。</p>
+          </article>
+          <article class="info-panel">
+            <h3>文字</h3>
+            <p>渦巻き状のカタカムナ文字（48音）で書かれ、楢崎が日本語のカタカナに音写した。</p>
+          </article>
+          <article class="info-panel">
+            <h3>相似象学</h3>
+            <p>楢崎の解釈体系。宇宙の根本パターンがミクロ・マクロに相似的に現れると説く物理哲学。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Persons -->
+    <section id="persons" class="section person-section" aria-labelledby="persons-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Characters</p>
+          <h2 id="persons-title">登場人物</h2>
+          <p>カタカムナ文書にまつわる二人の人物。どちらも多くの謎を残している。</p>
+        </div>
+        <div id="person-list" class="person-grid" aria-label="人物一覧"></div>
+      </div>
+    </section>
+
+    <!-- Archive -->
+    <section id="archive" class="section archive-section" aria-labelledby="archive-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Archive</p>
+          <h2 id="archive-title">80首 索引</h2>
+          <p>
+            全80首のウタヒ・現代語訳・楢崎皐月の相似象学的解釈を収録。
+            左の一覧から首を選ぶと右パネルに詳細が表示される。
+          </p>
+        </div>
+
+        <div class="archive-toolbar" aria-label="絞り込み">
+          <label class="search-field" for="archive-search">
+            <span>検索</span>
+            <input id="archive-search" type="search" placeholder="ウタヒの言葉・テーマで検索">
+          </label>
+          <div class="segmented" role="group" aria-label="群で絞り込み">
+            <button class="segment active" type="button" data-group="all">全て</button>
+            <button class="segment" type="button" data-group="序">序</button>
+            <button class="segment" type="button" data-group="宇宙創生">宇宙創生</button>
+            <button class="segment" type="button" data-group="天地万物">天地万物</button>
+            <button class="segment" type="button" data-group="生命と道">生命と道</button>
+            <button class="segment" type="button" data-group="完成と帰還">完成と帰還</button>
+          </div>
+        </div>
+
+        <div class="archive-layout">
+          <aside class="volume-list-wrap" aria-label="首一覧">
+            <div id="song-list" class="volume-list"></div>
+          </aside>
+
+          <section class="passage-panel" aria-labelledby="selected-song-title">
+            <div class="selected-volume">
+              <p id="selected-song-meta" class="eyebrow"></p>
+              <h3 id="selected-song-title"></h3>
+              <p id="selected-song-lead"></p>
+              <div id="selected-song-tags" class="tag-row"></div>
+            </div>
+            <div class="passage-tools">
+              <span id="song-count" class="count-label"></span>
+            </div>
+            <div id="song-detail-list" class="passage-list"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- Glossary -->
+    <section id="glossary" class="section glossary-section" aria-labelledby="glossary-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Glossary</p>
+          <h2 id="glossary-title">用語集</h2>
+          <p>カタカムナ・相似象学に登場する主要な概念語。</p>
+        </div>
+        <div id="glossary-list" class="glossary-grid" aria-label="用語一覧"></div>
+      </div>
+    </section>
+
+    <!-- Workflow / About Archive -->
+    <section id="workflow" class="section workflow-section" aria-labelledby="workflow-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Editorial Notes</p>
+          <h2 id="workflow-title">このアーカイブについて</h2>
+        </div>
+        <div class="workflow-list">
+          <article class="workflow-item">
+            <span aria-hidden="true">1</span>
+            <div>
+              <h3>出典と性格</h3>
+              <p>このアーカイブは楢崎皐月の相似象学的解釈を参考に編纂した研究ノートです。ウタヒの内容・解釈は諸説あり、確定的な定本は存在しません。</p>
+            </div>
+          </article>
+          <article class="workflow-item">
+            <span aria-hidden="true">2</span>
+            <div>
+              <h3>解釈の多様性</h3>
+              <p>カタカムナの音・意味については研究者ごとに異なる解釈があります。本アーカイブは楢崎の解釈を中心としつつ、一解釈として提示します。</p>
+            </div>
+          </article>
+          <article class="workflow-item">
+            <span aria-hidden="true">3</span>
+            <div>
+              <h3>精神的背景</h3>
+              <p>N's factory 教育部の「精神教育」領域の一環として、古代知恵体系の整理・内省の素材として活用します。信仰・宗教とは切り離した研究姿勢で臨みます。</p>
+            </div>
+          </article>
+          <article class="workflow-item">
+            <span aria-hidden="true">4</span>
+            <div>
+              <h3>継続整備</h3>
+              <p>各首の解説は順次深化させます。新たな参考文献・解釈が得られた場合は随時更新します。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>カタカムナ アーカイブ</strong>
+      <p>N's factory 教育部・精神教育資料</p>
+    </div>
+    <div class="footer-links">
+      <a href="../日月神示アーカイブ/" >日月神示アーカイブ</a>
+      <a href="../../">← 教育部トップ</a>
+    </div>
+  </footer>
+
+  <script src="data/katakamnaData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
