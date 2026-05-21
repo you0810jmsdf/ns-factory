@@ -100,6 +100,13 @@ button { cursor: pointer; }
 
 .site-nav .nav-back { margin-left: auto; opacity: 0.6; font-size: 0.82rem; }
 .site-nav .nav-back:hover { opacity: 1; }
+.site-nav .nav-utahi {
+  color: var(--gold);
+  font-weight: 800;
+  border: 1px solid rgba(168,184,248,0.25);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
 
 /* ── Hero ── */
 .hero {

@@ -1,0 +1,578 @@
+/* ── カタカムナウタヒ 原文アーカイブ styles.css ── */
+:root {
+  --ink: #eef0f8;
+  --ink-soft: #bcc3e0;
+  --muted: #8890b0;
+  --night: #0c0e18;
+  --deep: #121630;
+  --navy: #1a2050;
+  --navy-2: #2a3470;
+  --indigo: #4a5aaa;
+  --gold: #c8a86a;
+  --amber: #a88840;
+  --line: rgba(238, 240, 248, 0.12);
+  --line-strong: rgba(200, 168, 106, 0.30);
+  --shadow: 0 18px 60px rgba(0,0,0,.40);
+  --radius: 8px;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  background: linear-gradient(180deg, #0c0e18 0%, #0e0f1c 50%, #0a0c14 100%);
+  color: var(--ink);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+a { color: var(--gold); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+
+/* ── Header ── */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 clamp(14px, 4vw, 48px);
+  height: 56px;
+  background: rgba(12, 14, 24, 0.88);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+.brand:hover { text-decoration: none; color: var(--gold); }
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(200, 168, 106, 0.15);
+  border: 1px solid var(--line-strong);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.site-nav a {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.site-nav a:hover { background: rgba(200, 168, 106, 0.10); color: var(--ink); }
+.site-nav .nav-back { color: var(--gold); }
+
+/* ── Hero ── */
+.hero {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(80px,10vw,140px) clamp(18px,5vw,80px) 60px;
+  background:
+    linear-gradient(135deg, rgba(200,168,106,0.08) 0%, transparent 60%),
+    linear-gradient(180deg, transparent 40%, rgba(12,14,24,0.9) 100%),
+    radial-gradient(ellipse 80% 60% at 20% 40%, rgba(80,60,20,0.18) 0%, transparent 70%),
+    #0c0e18;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(200,168,106,0.04) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(200,168,106,0.04) 40px);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  max-width: 600px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 12px;
+}
+
+.hero h1 {
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+  color: var(--ink);
+}
+
+.hero-copy {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.8;
+  max-width: 480px;
+  margin: 0 0 24px;
+}
+
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.button:hover { opacity: 0.85; transform: translateY(-1px); text-decoration: none; }
+.button-primary {
+  background: var(--gold);
+  color: #0c0e18;
+}
+.button-ghost {
+  background: rgba(200, 168, 106, 0.12);
+  color: var(--gold);
+  border: 1px solid var(--line-strong);
+}
+
+.hero-stats {
+  position: absolute;
+  right: clamp(18px, 5vw, 80px);
+  bottom: 60px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  min-width: 260px;
+}
+.hero-stats div {
+  background: rgba(12, 14, 24, 0.86);
+  padding: 16px 18px;
+  text-align: center;
+}
+.hero-stats dt {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.hero-stats dd {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ── Section ── */
+.section {
+  padding: 64px clamp(18px, 5vw, 80px);
+}
+.section-inner { max-width: 1100px; margin: 0 auto; }
+
+.section-heading {
+  margin-bottom: 40px;
+}
+.section-heading.compact { margin-bottom: 28px; }
+.section-heading h2 {
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -0.02em;
+  margin: 8px 0 12px;
+  color: var(--ink);
+}
+.section-heading p { color: var(--ink-soft); font-size: 14px; margin: 0; }
+
+/* ── About Grid ── */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.info-panel {
+  background: rgba(200, 168, 106, 0.04);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+}
+.info-panel h3 {
+  font-size: 14px;
+  color: var(--gold);
+  margin: 0 0 8px;
+}
+.info-panel p { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
+.info-panel a { color: var(--gold); }
+
+/* ── Badge ── */
+.badge-verified {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(100, 180, 120, 0.18);
+  color: #70c880;
+  border: 1px solid rgba(100, 180, 120, 0.35);
+}
+.badge-inferred {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(200, 168, 106, 0.12);
+  color: var(--gold);
+  border: 1px solid var(--line-strong);
+}
+
+/* ── Archive Section ── */
+.archive-section { background: rgba(14, 15, 28, 0.6); }
+
+.archive-toolbar {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.search-field {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  background: rgba(238, 240, 248, 0.06);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 14px;
+  min-width: 220px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.search-field input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  padding: 10px 0;
+  font-size: 13px;
+}
+.search-field input::placeholder { color: var(--muted); }
+
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.segment {
+  background: rgba(238, 240, 248, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.segment:hover { background: rgba(200, 168, 106, 0.08); color: var(--ink); }
+.segment.active {
+  background: rgba(200, 168, 106, 0.16);
+  border-color: var(--line-strong);
+  color: var(--gold);
+}
+
+.archive-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Volume List (left) ── */
+.volume-list-wrap {
+  position: sticky;
+  top: 72px;
+  max-height: calc(100dvh - 100px);
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.volume-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.volume-card {
+  background: rgba(238, 240, 248, 0.04);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--ink-soft);
+  font-size: 12px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.volume-card:hover {
+  background: rgba(200, 168, 106, 0.08);
+  border-color: var(--line-strong);
+}
+.volume-card.active {
+  background: rgba(200, 168, 106, 0.14);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+.volume-card-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.volume-card strong {
+  display: block;
+  font-size: 13px;
+  color: var(--ink);
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+/* ── Passage Panel (right) ── */
+.passage-panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) * 1.5);
+  overflow: hidden;
+  background: rgba(14, 15, 28, 0.7);
+}
+
+.selected-volume {
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.selected-volume h3 {
+  font-size: 18px;
+  margin: 4px 0 6px;
+  color: var(--ink);
+}
+.selected-volume p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+
+.passage-tools {
+  padding: 10px 28px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.count-label { font-size: 12px; color: var(--muted); }
+
+.passage-list {
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+  max-height: calc(100dvh - 260px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+/* ── Song Card ── */
+.song-card {
+  background: rgba(238, 240, 248, 0.04);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0;
+  overflow: hidden;
+}
+
+.song-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.song-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin: 0 0 4px;
+}
+
+.song-badge-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.song-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: rgba(200, 168, 106, 0.25);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.song-body { padding: 16px 18px; }
+
+.utahi-text {
+  margin: 0 0 10px;
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: var(--ink);
+  letter-spacing: 0.06em;
+  border-left: 3px solid rgba(200, 168, 106, 0.4);
+  padding-left: 14px;
+}
+
+.song-summary {
+  margin: 10px 0 0;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.tag-row span {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(200, 168, 106, 0.10);
+  color: var(--gold);
+  border: 1px solid var(--line-strong);
+}
+
+/* ── Accordion ── */
+.accordion-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--gold);
+  background: rgba(200, 168, 106, 0.06);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.15s;
+}
+.accordion-toggle:hover { background: rgba(200, 168, 106, 0.12); }
+.accordion-toggle[aria-expanded="true"] .toggle-icon { transform: rotate(180deg); }
+.toggle-icon { transition: transform 0.2s; }
+.accordion-body { overflow: hidden; }
+.accordion-body[hidden] { display: none; }
+.interpretation-text {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.8;
+  padding: 12px 14px;
+  background: rgba(200, 168, 106, 0.04);
+  border-radius: var(--radius);
+  border-left: 2px solid rgba(200, 168, 106, 0.3);
+}
+
+/* ── Footer ── */
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 32px clamp(18px, 4vw, 56px);
+  border-top: 1px solid var(--line);
+  background: #090b14;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.site-footer strong { color: var(--ink); }
+.site-footer p { margin: 6px 0 0; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 12px; }
+.footer-links a { color: var(--gold); text-decoration: none; }
+.footer-links a:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .archive-layout { grid-template-columns: 1fr; }
+  .volume-list-wrap { position: relative; top: auto; max-height: none; }
+  .volume-list { grid-template-columns: repeat(3, 1fr); }
+  .hero-stats { position: static; margin-top: 36px; }
+}
+
+@media (max-width: 640px) {
+  .section { padding-inline: 14px; }
+  .site-header { padding-inline: 14px; }
+  .hero { padding: 72px 18px 40px; }
+  .about-grid { grid-template-columns: 1fr; }
+  .volume-list { grid-template-columns: repeat(2, 1fr); }
+  .passage-list { padding: 10px; }
+  .song-card-head { flex-direction: column; }
+  .hero-stats { grid-template-columns: repeat(3, 1fr); }
+}

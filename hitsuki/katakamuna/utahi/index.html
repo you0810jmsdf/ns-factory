@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0c0e18">
+  <title>カタカムナウタヒ 原文80首アーカイブ</title>
+  <meta name="description" content="楢崎皐月が記録したカタカムナウタヒ80首の原文・解釈を収録した研究ノート。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="トップへ">
+      <span class="brand-mark" aria-hidden="true">80首</span>
+      <span>カタカムナウタヒ 原文アーカイブ</span>
+    </a>
+    <nav class="site-nav" aria-label="ナビゲーション">
+      <a href="#about">概要</a>
+      <a href="#archive">80首索引</a>
+      <a href="../" class="nav-back">← カタカムナ</a>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <p class="eyebrow">Katakamuna Utahi — 80 Songs</p>
+        <h1 id="hero-title">カタカムナウタヒ<br>原文80首</h1>
+        <p class="hero-copy">
+          楢崎皐月が六甲山中で書き写したとされる上古代文書・カタカムナ。
+          その全80首のウタヒ（歌）の原文テキストと解釈を収録する。
+          各首の音（おと）に込められた宇宙の法則を、一首ずつ読み解く。
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#archive">80首を読む</a>
+        </div>
+      </div>
+      <dl class="hero-stats" aria-label="収録数">
+        <div><dt>80</dt><dd>首のウタヒ</dd></div>
+        <div><dt>6</dt><dd>群に分類</dd></div>
+        <div><dt>48</dt><dd>根本音</dd></div>
+      </dl>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="section" aria-labelledby="about-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">About</p>
+          <h2 id="about-title">このアーカイブについて</h2>
+        </div>
+        <div class="about-grid">
+          <article class="info-panel">
+            <h3>原文の性格</h3>
+            <p>楢崎皐月が記録した各種文献・研究資料に掲載されているカタカムナウタヒの歌詞テキストを収録。カタカナで音写されたものを原文とする。</p>
+          </article>
+          <article class="info-panel">
+            <h3>解釈の方針</h3>
+            <p>楢崎の相似象学的解釈を中心に、各種研究資料を総合的に参考にした。一解釈として提示するものであり、確定的な定本は存在しない。</p>
+          </article>
+          <article class="info-panel">
+            <h3>資料確認マーク</h3>
+            <p>歌詞テキストに <span class="badge-verified">確認</span> が付いている首は複数資料で確認済み。付いていない首は研究資料をもとに編纂した参考版。</p>
+          </article>
+          <article class="info-panel">
+            <h3>関連アーカイブ</h3>
+            <p>相似象学的解釈を深く掘り下げた「カタカムナアーカイブ（解釈版）」は<a href="../">こちら</a>。本アーカイブは原文テキスト重視の構成。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Archive -->
+    <section id="archive" class="section archive-section" aria-labelledby="archive-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Archive</p>
+          <h2 id="archive-title">80首 原文索引</h2>
+          <p>群で絞り込むか、キーワードで検索してください。首を選ぶと右パネルに詳細が表示されます。</p>
+        </div>
+
+        <div class="archive-toolbar" aria-label="絞り込み">
+          <label class="search-field" for="archive-search">
+            <span>検索</span>
+            <input id="archive-search" type="search" placeholder="ウタヒの言葉・キーワードで検索">
+          </label>
+          <div class="segmented" role="group" aria-label="群で絞り込み">
+            <button class="segment active" type="button" data-group="all">全て</button>
+            <button class="segment" type="button" data-group="序">序</button>
+            <button class="segment" type="button" data-group="天地開闢">天地開闢</button>
+            <button class="segment" type="button" data-group="神生み">神生み</button>
+            <button class="segment" type="button" data-group="国生み">国生み</button>
+            <button class="segment" type="button" data-group="修行">修行</button>
+            <button class="segment" type="button" data-group="完成と帰還">完成と帰還</button>
+          </div>
+        </div>
+
+        <div class="archive-layout">
+          <aside class="volume-list-wrap" aria-label="首一覧">
+            <div id="song-list" class="volume-list"></div>
+          </aside>
+
+          <section class="passage-panel" aria-labelledby="selected-title">
+            <div class="selected-volume">
+              <p id="selected-meta" class="eyebrow"></p>
+              <h3 id="selected-title"></h3>
+              <p id="selected-lead"></p>
+            </div>
+            <div class="passage-tools">
+              <span id="song-count" class="count-label"></span>
+            </div>
+            <div id="song-detail-list" class="passage-list"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>カタカムナウタヒ 原文80首アーカイブ</strong>
+      <p>N's factory 教育部・精神教育資料</p>
+    </div>
+    <div class="footer-links">
+      <a href="../">← カタカムナアーカイブ（解釈版）</a>
+      <a href="../../">← 教育幕僚室</a>
+    </div>
+  </footer>
+
+  <script src="data/utahiData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
