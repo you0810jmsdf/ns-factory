@@ -750,7 +750,7 @@
         compact([activeWork.category, activeWork.material, activeWork.color]),
         compact([activeWork.size, formatPrice(activeWork.price)]),
       ].filter(Boolean).map((line) => `<div>${esc(line)}</div>`).join('');
-      modalDesc.textContent = activeWork.shortDesc || '詳細は公式LINEからお問い合わせください。';
+      modalDesc.textContent = activeWork.longDesc || activeWork.shortDesc || '詳細は公式LINEからお問い合わせください。';
       configureOrderLinks(activeWork);
     }
 
@@ -796,6 +796,7 @@
           size: item.size || '',
           price: item.price || 0,
           shortDesc: item.shortDesc || '',
+          longDesc: item.longDesc || '',
           soldout: !!item.soldout,
           noRestock: !!item.noRestock,
           folderId: item.folderId || '',
@@ -820,6 +821,7 @@
         size: '',
         price: 0,
         shortDesc: '',
+        longDesc: '',
       }));
     }
 
