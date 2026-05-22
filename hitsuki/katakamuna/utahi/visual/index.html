@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0c0e18">
+  <title>カタカムナウタヒ 原文文字 80首</title>
+  <meta name="description" content="カタカムナ文字（幾何学記号）で描く渦巻き状の80首アーカイブ。楢崎皐月記録版。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="カタカムナ文字アーカイブ トップへ">
+      <span class="brand-mark" aria-hidden="true">●</span>
+      <span>カタカムナ 文字アーカイブ</span>
+    </a>
+    <nav class="site-nav" aria-label="ページ内ナビゲーション">
+      <a href="../" class="nav-back">← 原文テキスト</a>
+      <a href="../../" class="nav-back">← カタカムナ</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- Hero / Song Display -->
+    <section class="viewer-section" aria-label="ウタヒ渦巻き表示">
+
+      <!-- Navigation Bar -->
+      <div class="song-nav" aria-label="首ナビゲーション">
+        <button id="btn-prev" class="nav-btn" aria-label="前の首へ">◀</button>
+        <div class="song-nav-center">
+          <span id="nav-number" class="nav-number">第 1 首</span>
+          <span id="nav-group" class="nav-group"></span>
+        </div>
+        <button id="btn-next" class="nav-btn" aria-label="次の首へ">▶</button>
+      </div>
+
+      <!-- SVG Spiral Canvas -->
+      <div class="spiral-wrap" aria-label="渦巻き文字図">
+        <svg id="spiral-svg"
+          viewBox="-200 -200 400 400"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-labelledby="spiral-title">
+          <title id="spiral-title">カタカムナウタヒ 渦巻き文字図</title>
+          <g id="spiral-group"></g>
+        </svg>
+      </div>
+
+      <!-- Info Panel -->
+      <div class="info-panel">
+        <div class="info-top">
+          <p id="info-utahi" class="info-utahi"></p>
+          <div id="info-badges" class="badge-row"></div>
+        </div>
+        <button class="accordion-toggle" id="interp-toggle" aria-expanded="false" aria-controls="interp-body">
+          <span>解釈を読む</span>
+          <span class="toggle-icon" aria-hidden="true">▼</span>
+        </button>
+        <div class="accordion-body" id="interp-body" hidden>
+          <p id="info-summary" class="info-summary"></p>
+          <p id="info-interp" class="info-interp"></p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Index Grid -->
+    <section class="index-section" aria-labelledby="index-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Index</p>
+          <h2 id="index-title">80首 一覧</h2>
+        </div>
+
+        <!-- Group Filter -->
+        <div class="segmented" role="group" aria-label="群で絞り込み">
+          <button class="segment active" data-group="all">全て</button>
+          <button class="segment" data-group="序">序</button>
+          <button class="segment" data-group="天地開闢">天地開闢</button>
+          <button class="segment" data-group="神生み">神生み</button>
+          <button class="segment" data-group="国生み">国生み</button>
+          <button class="segment" data-group="修行">修行</button>
+          <button class="segment" data-group="完成と帰還">完成と帰還</button>
+        </div>
+
+        <div id="index-grid" class="index-grid" aria-label="首一覧グリッド"></div>
+      </div>
+    </section>
+
+    <!-- Character Reference -->
+    <section class="char-section" aria-labelledby="char-title">
+      <div class="section-inner">
+        <div class="section-heading compact">
+          <p class="eyebrow">Character Reference</p>
+          <h2 id="char-title">カタカムナ文字 48音対応表</h2>
+          <p>渦巻き図に使用されている幾何学記号とカタカナの対応。楢崎皐月記録版。</p>
+        </div>
+        <div id="char-grid" class="char-grid" aria-label="48音文字対応表"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>カタカムナ 文字アーカイブ</strong>
+      <p>N's factory 教育部・精神教育資料</p>
+    </div>
+    <div class="footer-links">
+      <a href="../">← 原文テキスト版</a>
+      <a href="../../">← カタカムナ アーカイブ</a>
+    </div>
+  </footer>
+
+  <script src="chars.js"></script>
+  <script src="../data/utahiData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

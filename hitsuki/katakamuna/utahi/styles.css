@@ -94,6 +94,14 @@ button { cursor: pointer; }
 }
 .site-nav a:hover { background: rgba(200, 168, 106, 0.10); color: var(--ink); }
 .site-nav .nav-back { color: var(--gold); }
+.site-nav .nav-visual {
+  color: var(--gold-bright, #e0c080);
+  border: 1px solid rgba(200,168,106,0.5);
+  border-radius: 5px;
+  padding: 0.15rem 0.65rem;
+  font-weight: 600;
+}
+.site-nav .nav-visual:hover { background: rgba(200,168,106,0.15); }
 
 /* ── Hero ── */
 .hero {
