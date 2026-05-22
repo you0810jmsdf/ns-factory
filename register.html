@@ -475,7 +475,15 @@ textarea{min-height:80px;resize:vertical}
       </div>
       <div>
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">サイズ</label>
-        <input type="text" id="f_size" placeholder="例: A5 / 210×150×30mm">
+        <div class="combo-wrap">
+          <select id="f_size"><option value="">選択…</option></select>
+          <button type="button" class="combo-add-btn" onclick="showAddInput('size')">＋</button>
+        </div>
+        <div class="combo-new hidden" id="combo-new-size">
+          <input type="text" id="combo-input-size" placeholder="新しいサイズ（例: A5 / 210×150×30mm）">
+          <button type="button" class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="addNewOption('size')">追加</button>
+          <button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px" onclick="hideAddInput('size')">✕</button>
+        </div>
       </div>
     </div>
 
@@ -672,6 +680,14 @@ function setFallbackOptions() {
   });
 }
 
+function initSizeOptions() {
+  const defaults = ['Micro5','Mini5（M5）','A6（バイブル）','A5','B6','カスタム'];
+  const saved = JSON.parse(localStorage.getItem('nf_sizes') || '[]');
+  const all = [...new Set([...defaults, ...saved])];
+  const sel = document.getElementById('f_size');
+  sel.innerHTML = '<option value="">選択…</option>' + all.map(v => `<option value="${v}">${v}</option>`).join('');
+}
+
 function showAddInput(field) {
   document.getElementById('combo-new-' + field).classList.remove('hidden');
   document.getElementById('combo-input-' + field).focus();
@@ -690,6 +706,10 @@ function addNewOption(field) {
     const opt = document.createElement('option');
     opt.value = v; opt.textContent = v;
     sel.appendChild(opt);
+    if (field === 'size') {
+      const saved = JSON.parse(localStorage.getItem('nf_sizes') || '[]');
+      if (!saved.includes(v)) { saved.push(v); localStorage.setItem('nf_sizes', JSON.stringify(saved)); }
+    }
   }
   sel.value = v;
   hideAddInput(field);
@@ -704,6 +724,7 @@ async function checkAuth() {
     fetchNextId();
     fetchProductNames();
     await fetchMasterData();
+    initSizeOptions();
 
     // ?edit=SKU パラメータがあれば自動で編集モードに移行（master ロード完了後なので race condition なし）
     const editId = new URLSearchParams(window.location.search).get('edit');
@@ -766,7 +787,7 @@ async function loadProduct() {
     setSelectValue('f_category', p.category);
     setSelectValue('f_material', p.material);
     setSelectValue('f_color', p.color);
-    document.getElementById('f_size').value  = p.size;
+    setSelectValue('f_size', p.size);
     document.getElementById('f_hours').value = p.hours;
     document.getElementById('f_cost').value  = p.cost;
     document.getElementById('f_price').value = p.price;
