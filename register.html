@@ -911,26 +911,46 @@ async function generateDesc() {
   btn.disabled = true;
   btn.textContent = '⏳ 生成中…';
 
-  try {
-    const payload = JSON.stringify({
-      api: 'generateDesc', key: REGISTER_KEY,
-      name, category, material, color
-    });
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: new URLSearchParams({ payload })
-    });
-    const d = await res.json();
-    if (!d.ok) throw new Error(d.error || '生成失敗');
-    document.getElementById('f_shortDesc').value = d.shortDesc || '';
-    document.getElementById('f_longDesc').value  = d.longDesc  || '';
-    document.getElementById('f_hashtags').value  = d.hashtags  || '';
-    btn.textContent = '✅ 生成完了';
-    setTimeout(() => { btn.textContent = '✨ AI で生成'; btn.disabled = false; }, 2000);
-  } catch(e) {
-    alert('AI生成エラー: ' + e.message);
-    btn.textContent = '✨ AI で生成';
-    btn.disabled = false;
+  const payload = JSON.stringify({ api: 'generateDesc', key: REGISTER_KEY, name, category, material, color });
+  const MAX_RETRY = 3;
+  const RETRY_DELAY = 2500;
+
+  for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
+    try {
+      const res = await fetch(GAS_URL, { method: 'POST', body: new URLSearchParams({ payload }) });
+      const d = await res.json();
+
+      if (!d.ok) {
+        const isOverloaded = typeof d.error === 'string' && d.error.includes('overloaded');
+        if (isOverloaded && attempt < MAX_RETRY) {
+          btn.textContent = `⏳ 混雑中… リトライ ${attempt}/${MAX_RETRY - 1}`;
+          await new Promise(r => setTimeout(r, RETRY_DELAY));
+          continue;
+        }
+        const msg = isOverloaded
+          ? 'AIサーバーが混雑しています。しばらく待ってから再度お試しください。'
+          : (d.error || '生成失敗');
+        throw new Error(msg);
+      }
+
+      document.getElementById('f_shortDesc').value = d.shortDesc || '';
+      document.getElementById('f_longDesc').value  = d.longDesc  || '';
+      document.getElementById('f_hashtags').value  = d.hashtags  || '';
+      btn.textContent = '✅ 生成完了';
+      setTimeout(() => { btn.textContent = '✨ AI で生成'; btn.disabled = false; }, 2000);
+      return;
+
+    } catch(e) {
+      if (attempt < MAX_RETRY && !e.message.includes('混雑')) {
+        btn.textContent = `⏳ リトライ中 ${attempt}/${MAX_RETRY}…`;
+        await new Promise(r => setTimeout(r, RETRY_DELAY));
+        continue;
+      }
+      alert('AI生成エラー: ' + e.message);
+      btn.textContent = '✨ AI で生成';
+      btn.disabled = false;
+      return;
+    }
   }
 }
 
