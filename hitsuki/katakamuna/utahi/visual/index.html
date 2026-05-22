@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0c0e18">
   <title>カタカムナウタヒ 原文文字 80首</title>
-  <meta name="description" content="カタカムナ文字（幾何学記号）で描く渦巻き状の80首アーカイブ。楢崎皐月記録版。">
+  <meta name="description" content="楢崎皐月記録のカタカムナウタヒ80首を、渦巻き原図（白黒反転）で表示するアーカイブ。">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -36,17 +36,8 @@
         <button id="btn-next" class="nav-btn" aria-label="次の首へ">▶</button>
       </div>
 
-      <!-- SVG Spiral Canvas -->
-      <div class="spiral-wrap" aria-label="渦巻き文字図">
-        <svg id="spiral-svg"
-          viewBox="-200 -200 400 400"
-          xmlns="http://www.w3.org/2000/svg"
-          role="img"
-          aria-labelledby="spiral-title">
-          <title id="spiral-title">カタカムナウタヒ 渦巻き文字図</title>
-          <g id="spiral-group"></g>
-        </svg>
-      </div>
+      <!-- Song Image -->
+      <div id="song-viewer" class="song-viewer" aria-label="渦巻き原図"></div>
 
       <!-- Info Panel -->
       <div class="info-panel">
@@ -89,18 +80,6 @@
       </div>
     </section>
 
-    <!-- Character Reference -->
-    <section class="char-section" aria-labelledby="char-title">
-      <div class="section-inner">
-        <div class="section-heading compact">
-          <p class="eyebrow">Character Reference</p>
-          <h2 id="char-title">カタカムナ文字 48音対応表</h2>
-          <p>渦巻き図に使用されている幾何学記号とカタカナの対応。楢崎皐月記録版。</p>
-        </div>
-        <div id="char-grid" class="char-grid" aria-label="48音文字対応表"></div>
-      </div>
-    </section>
-
   </main>
 
   <footer class="site-footer">
@@ -114,7 +93,6 @@
     </div>
   </footer>
 
-  <script src="chars.js"></script>
   <script src="../data/utahiData.js"></script>
   <script src="app.js"></script>
 </body>
