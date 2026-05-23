@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>カタカムナ 48音表 — N's factory</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', sans-serif; background: #0d0d1a; color: #e0e0e0; min-height: 100vh; }
+
+    /* ── ヘッダー ── */
+    .site-header {
+      background: #0a0a16; border-bottom: 1px solid #2a2a3e;
+      padding: 0.7rem 1.2rem; display: flex; align-items: center; gap: 1rem;
+    }
+    .site-logo { color: #f0c040; font-size: 0.95rem; font-weight: bold; text-decoration: none; }
+    .nav-sep { color: #444; }
+    .nav-link { color: #aaa; font-size: 0.85rem; text-decoration: none; }
+    .nav-link:hover { color: #f0c040; }
+
+    /* ── ページタイトル ── */
+    .page-title {
+      text-align: center; padding: 2rem 1rem 1.2rem;
+      background: linear-gradient(to bottom, #0a0a16, #0d0d1a);
+    }
+    .page-title h1 { font-size: 1.6rem; color: #f0c040; margin-bottom: 0.4rem; }
+    .page-title p { font-size: 0.82rem; color: #888; }
+
+    /* ── セクション共通 ── */
+    section { max-width: 960px; margin: 0 auto 2.5rem; padding: 0 1rem; }
+    section > h2 {
+      font-size: 1.1rem; color: #f0c040;
+      border-left: 4px solid #f0c040; padding-left: 0.7rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ── 48音グリッド ── */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 3px;
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .char-cell {
+      background: #12122a; border: 1px solid #2a2a3e; border-radius: 4px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 4px 2px 5px; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      position: relative;
+    }
+    .char-cell:hover { background: #1e1e3a; border-color: #f0c040; }
+    .char-cell.selected { background: #2a2a00; border-color: #f0c040; }
+    .char-num {
+      font-size: 0.6rem; color: #555; margin-bottom: 1px;
+      position: absolute; top: 3px; left: 4px;
+    }
+    .char-img-wrap {
+      width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+      margin: 8px 0 3px;
+    }
+    .char-img-wrap img {
+      width: 52px; height: 52px; object-fit: contain;
+      filter: invert(1) sepia(0.1) saturate(1.1);
+    }
+    .char-sound {
+      font-size: 0.82rem; color: #f0c040; font-weight: bold; line-height: 1;
+    }
+    .char-meaning {
+      font-size: 0.55rem; color: #777; text-align: center; line-height: 1.3;
+      margin-top: 3px; min-height: 1.8em;
+    }
+    /* 最終行（46〜48）を左寄せ */
+    .chart-grid::after {
+      content: ''; grid-column: span 6;
+    }
+
+    /* ── 選択中表示 ── */
+    #selected-row {
+      min-height: 80px; display: flex; align-items: center; gap: 4px;
+      flex-wrap: wrap; padding: 0.7rem;
+      background: #0e0e22; border: 1px solid #2a2a3e; border-radius: 8px;
+      margin-bottom: 0.8rem;
+    }
+    .sel-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      cursor: pointer; padding: 4px;
+      border-radius: 4px; transition: background 0.1s;
+    }
+    .sel-item:hover { background: #3a1a1a; }
+    .sel-item img {
+      width: 48px; height: 48px; object-fit: contain;
+      filter: invert(1) sepia(0.1) saturate(1.1);
+    }
+    .sel-item .sel-sound { font-size: 0.72rem; color: #f0c040; }
+    #sel-placeholder { color: #444; font-size: 0.85rem; }
+
+    /* ── ジェネレーター操作 ── */
+    .gen-controls {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+      margin-bottom: 0.8rem;
+    }
+    .gen-input {
+      flex: 1; min-width: 200px;
+      background: #0e0e22; color: #e0e0e0;
+      border: 1px solid #444; border-radius: 6px;
+      padding: 0.5rem 0.8rem; font-size: 0.9rem;
+    }
+    .gen-input:focus { outline: none; border-color: #f0c040; }
+    .gen-btn {
+      padding: 0.5rem 1.2rem; border-radius: 6px; border: none;
+      font-size: 0.85rem; font-weight: bold; cursor: pointer;
+    }
+    .gen-btn.primary { background: #f0c040; color: #0d0d1a; }
+    .gen-btn.secondary { background: #2a2a3e; color: #ccc; border: 1px solid #555; }
+    .gen-btn.clear { background: #3a1a1a; color: #ff8080; border: 1px solid #7a3a3a; }
+    .gen-btn:hover { opacity: 0.85; }
+
+    /* ── Canvas出力 ── */
+    #canvas-wrap {
+      background: #fff; border-radius: 6px; padding: 10px;
+      display: inline-block; min-width: 200px; min-height: 100px;
+      margin-bottom: 0.8rem;
+    }
+    #gen-canvas { display: block; }
+    #canvas-placeholder {
+      color: #999; font-size: 0.82rem; padding: 1rem;
+      text-align: center; min-height: 80px; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── オプション ── */
+    .gen-options {
+      display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.8rem;
+      font-size: 0.82rem; color: #aaa;
+    }
+    .gen-options label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+    .gen-options input[type=range] { width: 100px; }
+
+    /* ── 出典 ── */
+    .credit {
+      text-align: center; font-size: 0.72rem; color: #555;
+      margin-top: 2rem; padding-bottom: 2rem;
+    }
+
+    /* ── モバイル対応 ── */
+    @media (max-width: 640px) {
+      .chart-grid { grid-template-columns: repeat(6, 1fr); }
+      .chart-grid::after { grid-column: span 0; display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="site-header">
+  <a class="site-logo" href="/ns-factory/">● N's factory</a>
+  <span class="nav-sep">/</span>
+  <a class="nav-link" href="/ns-factory/hitsuki/katakamuna/">カタカムナ</a>
+  <span class="nav-sep">/</span>
+  <span style="color:#e0e0e0; font-size:0.85rem;">48音表</span>
+</header>
+
+<div class="page-title">
+  <h1>カタカムナ 48音表</h1>
+  <p>文字をクリックして選択 → 下のジェネレーターで横一列の画像を生成できます</p>
+</div>
+
+<!-- 48音グリッド -->
+<section>
+  <h2>48音一覧（クリックで選択）</h2>
+  <div class="chart-grid" id="chart-grid">
+    <!-- JS で生成 -->
+  </div>
+</section>
+
+<!-- ジェネレーター -->
+<section>
+  <h2>文字列ジェネレーター</h2>
+
+  <!-- テキスト入力 -->
+  <div class="gen-controls">
+    <input class="gen-input" type="text" id="kana-input"
+      placeholder="ひらがな・カタカナを入力（例: かたかむな）"
+      oninput="onKanaInput()">
+    <button class="gen-btn clear" onclick="clearAll()">🗑 クリア</button>
+  </div>
+
+  <!-- 選択中の文字列 -->
+  <div id="selected-row">
+    <span id="sel-placeholder">文字を選択するかテキストを入力してください</span>
+  </div>
+
+  <!-- オプション -->
+  <div class="gen-options">
+    <label>
+      背景:
+      <select id="bg-select" onchange="renderCanvas()" style="background:#1a1a2e;color:#ccc;border:1px solid #444;border-radius:4px;padding:2px 6px;">
+        <option value="white">白</option>
+        <option value="#0d0d1a">黒（サイト背景色）</option>
+        <option value="transparent">透明</option>
+      </select>
+    </label>
+    <label>
+      文字サイズ:
+      <input type="range" id="char-size" min="60" max="200" value="100" oninput="renderCanvas()">
+      <span id="char-size-val">100</span>px
+    </label>
+    <label>
+      <input type="checkbox" id="show-sound" checked onchange="renderCanvas()"> 読みを表示
+    </label>
+  </div>
+
+  <!-- Canvas -->
+  <div id="canvas-wrap">
+    <div id="canvas-placeholder">文字を選択すると画像が生成されます</div>
+    <canvas id="gen-canvas" style="display:none;"></canvas>
+  </div>
+  <br>
+  <button class="gen-btn primary" onclick="downloadPNG()">📥 PNG保存</button>
+  <button class="gen-btn secondary" onclick="copyToClipboard()">📋 クリップボードにコピー</button>
+</section>
+
+<div class="credit">
+  カタカムナ48音の思念（言霊）表 ／ 著作者：吉野信子
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// 48音データ
+// ═══════════════════════════════════════════════════
+const CHARS = [
+  {n:1,  k:'ヒ', h:'ひ', meaning:'根源から出・入る'},
+  {n:2,  k:'フ', h:'ふ', meaning:'増える・負'},
+  {n:3,  k:'ミ', h:'み', meaning:'実態'},
+  {n:4,  k:'ヨ', h:'よ', meaning:'新しい・陽'},
+  {n:5,  k:'イ', h:'い', meaning:'伝わるモノ・陰'},
+  {n:6,  k:'マ', h:'ま', meaning:'受容・需要'},
+  {n:7,  k:'ワ', h:'わ', meaning:'調和'},
+  {n:8,  k:'リ', h:'り', meaning:'離れる'},
+  {n:9,  k:'テ', h:'て', meaning:'発信・放射'},
+  {n:10, k:'メ', h:'め', meaning:'指向・思考・芽'},
+  {n:11, k:'ク', h:'く', meaning:'引き寄せる'},
+  {n:12, k:'ル', h:'る', meaning:'留まる・止まる'},
+  {n:13, k:'ム', h:'む', meaning:'広がり'},
+  {n:14, k:'ナ', h:'な', meaning:'核'},
+  {n:15, k:'ヤ', h:'や', meaning:'飽和する'},
+  {n:16, k:'コ', h:'こ', meaning:'転がり入・出'},
+  {n:17, k:'ト', h:'と', meaning:'統一'},
+  {n:18, k:'ア', h:'あ', meaning:'感じる・生命'},
+  {n:19, k:'ウ', h:'う', meaning:'生まれ出る'},
+  {n:20, k:'ノ', h:'の', meaning:'時間をかける'},
+  {n:21, k:'ス', h:'す', meaning:'一方へ進む'},
+  {n:22, k:'ヘ', h:'へ', meaning:'線・外側'},
+  {n:23, k:'シ', h:'し', meaning:'示し・現象・死'},
+  {n:24, k:'レ', h:'れ', meaning:'消失する'},
+  {n:25, k:'カ', h:'か', meaning:'チカラ'},
+  {n:26, k:'タ', h:'た', meaning:'分れる'},
+  {n:27, k:'チ', h:'ち', meaning:'凝縮'},
+  {n:28, k:'サ', h:'さ', meaning:'遮り・差'},
+  {n:29, k:'キ', h:'き', meaning:'エネルギー・気'},
+  {n:30, k:'ソ', h:'そ', meaning:'外れる'},
+  {n:31, k:'ラ', h:'ら', meaning:'場'},
+  {n:32, k:'ニ', h:'に', meaning:'圧力'},
+  {n:33, k:'モ', h:'も', meaning:'漂う'},
+  {n:34, k:'ロ', h:'ろ', meaning:'空間'},
+  {n:35, k:'ケ', h:'け', meaning:'放出する'},
+  {n:36, k:'セ', h:'せ', meaning:'引き受ける'},
+  {n:37, k:'ユ', h:'ゆ', meaning:'湧き出る'},
+  {n:38, k:'エ', h:'え', meaning:'届く'},
+  {n:39, k:'ヌ', h:'ぬ', meaning:'突き抜く・貫く'},
+  {n:40, k:'オ', h:'お', meaning:'奥深く'},
+  {n:41, k:'ヲ', h:'を', meaning:'奥に出現する'},
+  {n:42, k:'ハ', h:'は', meaning:'引き合う'},
+  {n:43, k:'エ', h:'',  meaning:'うつる（第43音）'},
+  {n:44, k:'ツ', h:'つ', meaning:'集まる'},
+  {n:45, k:'ネ', h:'ね', meaning:'存在'},
+  {n:46, k:'ホ', h:'ほ', meaning:'充電する・充たす'},
+  {n:47, k:'ン', h:'ん', meaning:'引き離す'},
+  {n:48, k:'カタカムナ', h:'', meaning:'掛かる音を強める'},
+];
+
+// かな → 番号マップ（最初の出現を優先）
+const KANA_TO_N = {};
+CHARS.forEach(c => {
+  if (c.h && !KANA_TO_N[c.h]) KANA_TO_N[c.h] = c.n;
+  if (c.k && !KANA_TO_N[c.k]) KANA_TO_N[c.k] = c.n;
+});
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+// ═══════════════════════════════════════════════════
+// 画像プリロード
+// ═══════════════════════════════════════════════════
+const charImages = {};
+let loadedCount = 0;
+
+function preload() {
+  CHARS.forEach(c => {
+    const img = new Image();
+    img.onload = () => { charImages[c.n] = img; loadedCount++; };
+    img.onerror = () => { loadedCount++; }; // ロード失敗は無視
+    img.src = 'chars/char_' + pad2(c.n) + '.png';
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// グリッド生成
+// ═══════════════════════════════════════════════════
+function buildGrid() {
+  const grid = document.getElementById('chart-grid');
+  CHARS.forEach(c => {
+    const cell = document.createElement('div');
+    cell.className = 'char-cell';
+    cell.dataset.n = c.n;
+    cell.title = c.k + '：' + c.meaning;
+    cell.innerHTML =
+      '<span class="char-num">' + c.n + '</span>' +
+      '<div class="char-img-wrap">' +
+        '<img src="chars/char_' + pad2(c.n) + '.png" alt="' + c.k + '" loading="lazy">' +
+      '</div>' +
+      '<div class="char-sound">' + c.k + '</div>' +
+      '<div class="char-meaning">' + c.meaning + '</div>';
+    cell.addEventListener('click', () => selectChar(c.n));
+    grid.appendChild(cell);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// 選択状態管理
+// ═══════════════════════════════════════════════════
+let selectedNums = [];  // 順番に並んだ番号リスト
+
+function selectChar(n) {
+  selectedNums.push(n);
+  updateSelectedRow();
+  renderCanvas();
+}
+
+function removeChar(idx) {
+  selectedNums.splice(idx, 1);
+  updateSelectedRow();
+  renderCanvas();
+}
+
+function clearAll() {
+  selectedNums = [];
+  document.getElementById('kana-input').value = '';
+  updateSelectedRow();
+  clearCanvas();
+}
+
+function onKanaInput() {
+  const val = document.getElementById('kana-input').value;
+  selectedNums = [];
+  for (const ch of val) {
+    const n = KANA_TO_N[ch];
+    if (n) selectedNums.push(n);
+  }
+  updateSelectedRow();
+  renderCanvas();
+}
+
+function updateSelectedRow() {
+  const row = document.getElementById('selected-row');
+  const ph  = document.getElementById('sel-placeholder');
+  if (selectedNums.length === 0) {
+    row.innerHTML = '<span id="sel-placeholder">文字を選択するかテキストを入力してください</span>';
+    return;
+  }
+  row.innerHTML = '';
+  selectedNums.forEach((n, i) => {
+    const c = CHARS.find(x => x.n === n);
+    if (!c) return;
+    const item = document.createElement('div');
+    item.className = 'sel-item';
+    item.title = 'クリックで削除';
+    item.innerHTML =
+      '<img src="chars/char_' + pad2(n) + '.png" alt="' + c.k + '">' +
+      '<span class="sel-sound">' + c.k + '</span>';
+    item.addEventListener('click', () => removeChar(i));
+    row.appendChild(item);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// Canvas 描画
+// ═══════════════════════════════════════════════════
+function renderCanvas() {
+  if (selectedNums.length === 0) { clearCanvas(); return; }
+
+  const SIZE      = parseInt(document.getElementById('char-size').value, 10);
+  document.getElementById('char-size-val').textContent = SIZE;
+  const showSound = document.getElementById('show-sound').checked;
+  const bg        = document.getElementById('bg-select').value;
+  const PAD       = 12;
+  const LABEL_H   = showSound ? 20 : 0;
+
+  const canvas = document.getElementById('gen-canvas');
+  canvas.width  = selectedNums.length * SIZE + PAD * 2;
+  canvas.height = SIZE + LABEL_H + PAD * 2;
+
+  const ctx = canvas.getContext('2d');
+
+  // 背景
+  if (bg === 'transparent') {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  } else {
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  selectedNums.forEach((n, i) => {
+    const img = charImages[n];
+    const x   = PAD + i * SIZE;
+    const y   = PAD;
+
+    if (img) {
+      // 白背景の画像を反転（白→透過 相当）して描画
+      const off = document.createElement('canvas');
+      off.width = SIZE; off.height = SIZE;
+      const oc  = off.getContext('2d');
+      oc.drawImage(img, 0, 0, SIZE, SIZE);
+
+      // 黒背景の場合は文字を白に
+      if (bg !== 'white') {
+        oc.globalCompositeOperation = 'difference';
+        oc.fillStyle = '#ffffff';
+        oc.fillRect(0, 0, SIZE, SIZE);
+      }
+
+      ctx.drawImage(off, x, y);
+    } else {
+      // 画像なし → 音で代替
+      ctx.fillStyle = bg === 'white' ? '#333' : '#f0c040';
+      ctx.font = 'bold ' + Math.floor(SIZE * 0.4) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const c = CHARS.find(x => x.n === n);
+      ctx.fillText(c ? c.k : '?', x + SIZE/2, y + SIZE/2);
+    }
+
+    // 読みラベル
+    if (showSound) {
+      const c = CHARS.find(x => x.n === n);
+      ctx.fillStyle = bg === 'white' ? '#333333' : '#f0c040';
+      ctx.font = Math.floor(SIZE * 0.14) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(c ? c.k : '', x + SIZE/2, y + SIZE + 4);
+    }
+  });
+
+  document.getElementById('canvas-placeholder').style.display = 'none';
+  canvas.style.display = 'block';
+}
+
+function clearCanvas() {
+  const canvas = document.getElementById('gen-canvas');
+  canvas.style.display = 'none';
+  document.getElementById('canvas-placeholder').style.display = 'flex';
+}
+
+// ═══════════════════════════════════════════════════
+// PNG保存 / クリップボード
+// ═══════════════════════════════════════════════════
+function downloadPNG() {
+  const canvas = document.getElementById('gen-canvas');
+  if (canvas.style.display === 'none') { alert('先に文字を選択してください'); return; }
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'katakamuna_' + new Date().toISOString().slice(0,10) + '.png';
+  a.click();
+}
+
+async function copyToClipboard() {
+  const canvas = document.getElementById('gen-canvas');
+  if (canvas.style.display === 'none') { alert('先に文字を選択してください'); return; }
+  try {
+    canvas.toBlob(async blob => {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      alert('クリップボードにコピーしました');
+    });
+  } catch(e) {
+    alert('コピーに失敗しました（ブラウザによっては非対応）');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// 初期化
+// ═══════════════════════════════════════════════════
+buildGrid();
+preload();
+</script>
+</body>
+</html>
