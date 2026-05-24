@@ -916,6 +916,7 @@ body{
 <!-- ══ STEP 8: STAMP ══ -->
 <div class="section">
   <div class="section-title"><span class="num">8</span> 刻印・スタンプ</div>
+  <div style="font-size:11px;color:#8a6644;background:#fff8ee;border:1px solid #e8c87a;border-radius:6px;padding:7px 10px;margin-bottom:8px">⚠ 新たにアクリルスタンプで凹凸刻印を実施する場合は、スタンプ作製費用がかかります。</div>
   <div class="opt-grid" id="stampGrid"></div>
   <div class="sub-opt hide" id="stampTextOpt">
     <p style="font-size:12px;color:#8a6644;margin-bottom:6px">刻印内容</p>
@@ -1384,8 +1385,8 @@ const STITCHES = [
 
 // ── 刻印 ──
 const STAMPS = [
-  { id:'s_none',    name:'なし',                    sub:'',                          price:0,    hasInitFee:false, emoji:'📄', image:'' },
-  { id:'s_1char',   name:'1文字刻印',               sub:'イニシャルなど',             price:1000, hasInitFee:false, emoji:'🔤', image:'' },
+  { id:'s_none',    name:'ふくろうロゴ',            sub:'標準',                      price:0,    hasInitFee:false, emoji:'🦉', image:'' },
+  { id:'s_1char',   name:'〇.〇のイニシャル刻印',   sub:'イニシャルなど',             price:1000, hasInitFee:false, emoji:'🔤', image:'' },
   { id:'s_name',    name:'ネーム（〜10文字）',       sub:'名前・フレーズ',             price:2500, hasInitFee:false, emoji:'✍️',  image:'' },
   { id:'s_design',  name:'デザイン刻印',            sub:'ロゴ・絵柄など',             price:4000, hasInitFee:false, emoji:'🎨', image:'' },
   { id:'s_other',   name:'その他（オリジナル）',     sub:'既存モデル外・初度設計費あり', price:5000, hasInitFee:true,  emoji:'✨', image:'' },
