@@ -1929,7 +1929,11 @@ function renderStockList() {
           <input type="number" min="0" step="1" value="${qty}" data-stock-edit="qty" data-row="${rowIndex}">
         </div>
         <div class="stock-edit-field">
-          <label>見積価格</label>
+          <label>市販価格（卸価格）</label>
+          <input type="number" min="0" step="1" value="${row.preferred_source_price_jpy || ''}" data-stock-edit="market" data-row="${rowIndex}" placeholder="例: 1500">
+        </div>
+        <div class="stock-edit-field">
+          <label>見積価格（市販×2 自動）</label>
           <input type="number" min="0" step="1" value="${row.price_jpy || ''}" data-stock-edit="price" data-row="${rowIndex}">
         </div>
       </div>
@@ -1952,6 +1956,12 @@ function renderStockList() {
       if (kind === 'status') row.stock_status = input.value;
       if (kind === 'qty') row.stock_qty = input.value;
       if (kind === 'price') row.price_jpy = input.value;
+      if (kind === 'market') {
+        // 市販価格（卸価格）を更新したら自動で見積価格 = 市販 × 2 を再計算
+        row.preferred_source_price_jpy = input.value;
+        const m = Number(input.value);
+        if (!isNaN(m) && m > 0) row.price_jpy = String(m * 2);
+      }
       if (kind === 'visible') row.ui_visible = input.checked ? 'TRUE' : 'FALSE';
       if (kind === 'checked') row.check_enabled = input.checked ? 'TRUE' : 'FALSE';
       if (kind === 'monitor') row.monitor_enabled = input.checked ? 'TRUE' : 'FALSE';
@@ -2454,7 +2464,8 @@ function applyPriceEntry() {
     row.preferred_source_price_jpy = price;
     row.preferred_source_shipping_jpy = shipping || '0';
     row.preferred_last_checked = row[`source_checked_${slot}`];
-    row.price_jpy = String(numberValue(price) + numberValue(shipping));
+    // 見積価格 = 市販価格（卸価格） × 2（事業主決定 2026-05-25）
+    row.price_jpy = String(numberValue(price) * 2);
   }
 
   const numericPrice = numberValue(price) + numberValue(shipping);
@@ -2484,7 +2495,8 @@ function adoptReviewCandidate(rowIndex, slot) {
   row.preferred_source_price_jpy = price;
   row.preferred_source_shipping_jpy = shipping;
   row.preferred_last_checked = checked;
-  row.price_jpy = String(numberValue(price) + numberValue(shipping));
+  // 見積価格 = 市販価格（卸価格） × 2（事業主決定 2026-05-25）
+  row.price_jpy = String(numberValue(price) * 2);
   setDirty(true);
   applyFilters(false);
 }
