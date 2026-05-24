@@ -2533,7 +2533,8 @@ function buildRingGrids(sizeId) {
         sel.ring   = d.name;
         sel.ringId = d.id;
         sel.ringStockText = ringStockText || null;
-        prices.ring = d.price;
+        // ring.price は全プランナー横断の最小値で固定されるため、選択サイズ別の正しい価格を再計算する
+        prices.ring = getRingBasePrice(d.id, d.price);
         buildMetalGrid();
         updateSummary();
       };
