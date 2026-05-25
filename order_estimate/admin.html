@@ -930,6 +930,7 @@ tr.row-out-stock td{
           <tbody id="sizeBasePriceTbody"></tbody>
         </table>
       </div>
+      <div id="estimateMatrixWrap1" style="margin-top:24px"></div>
     </div>
 
     <div class="panel brand-section admin-section-hidden">
@@ -955,7 +956,6 @@ tr.row-out-stock td{
             <tr style="background:#f4ece1">
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">brand_id</th>
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">name</th>
-              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">priceMult<br><span style="font-weight:normal;font-size:11px">製作費倍率</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">areaMulti<br><span style="font-weight:normal;font-size:11px">革面積倍率</span></th>
               <th style="padding:8px;text-align:center;border:1px solid #d8c8b0">krause_no_multi<br><span style="font-weight:normal;font-size:11px">クラウゼ倍率なし</span></th>
               <th style="padding:8px;text-align:center;border:1px solid #d8c8b0">allows_krause<br><span style="font-weight:normal;font-size:11px">クラウゼ可</span></th>
@@ -967,6 +967,7 @@ tr.row-out-stock td{
           <tbody id="brandPriceTbody"></tbody>
         </table>
       </div>
+      <div id="estimateMatrixWrap2" style="margin-top:24px"></div>
     </div>
 
     <div class="panel thread-section admin-section-hidden">
@@ -1762,8 +1763,12 @@ function renderSettingsTable() {
       row.value = input.value;
       settingsDirty = true;
       updateSettingsDirtyPill();
+      // 時給変更時に試算マトリクスも再計算
+      renderEstimateMatrix();
     });
   });
+  // 試算マトリクス描画（時給CSV読込完了時にも再描画）
+  renderEstimateMatrix();
 }
 
 function settingsToCsv() {
@@ -1801,6 +1806,60 @@ function downloadSettingsCsv() {
   a.download = 'settings.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ── 試算マトリクス（全サイズ × 全構造）──
+function getLaborRateFromSettings() {
+  const row = settingsRows.find(r => r.key === 'labor_rate_per_hour');
+  const v = parseFloat(row?.value);
+  return (!isNaN(v) && v > 0) ? v : 3000;
+}
+
+function renderEstimateMatrix() {
+  const targets = ['estimateMatrixWrap1', 'estimateMatrixWrap2'];
+  const html = buildEstimateMatrixHtml();
+  targets.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+}
+
+function buildEstimateMatrixHtml() {
+  if (!sizeBasePriceRows.length || !brandPriceRows.length) {
+    return '<div style="color:#888;font-size:12px">サイズ・構造のCSVを読み込むと試算表が表示されます</div>';
+  }
+  const rate = getLaborRateFromSettings();
+  let h = `
+    <h3 style="margin:0 0 8px;font-size:15px;color:#6b3a1f">📊 全サイズ × 全構造 製作費試算マトリクス</h3>
+    <div class="hint" style="margin-bottom:8px">
+      <strong>製作費 = (サイズ別工数 + 構造別追加工数) × ¥${rate.toLocaleString()}/h + 固定加算</strong>
+      <br>パラメータを編集すると即座に再計算されます。原材料費・リング代は含まれません。
+    </div>
+    <div style="overflow-x:auto">
+      <table style="border-collapse:collapse;font-size:12px;width:100%">
+        <thead><tr style="background:#f4ece1">
+          <th style="padding:6px;border:1px solid #d8c8b0;text-align:left;position:sticky;left:0;background:#f4ece1;z-index:1">サイズ ＼ 構造</th>`;
+  brandPriceRows.forEach(b => {
+    const bh = parseFloat(b.work_hours) || 0;
+    const eb = parseFloat(b.extra_base_cost) || 0;
+    const extraTxt = eb > 0 ? ` <span style="color:#b06820">+¥${eb.toLocaleString()}</span>` : '';
+    h += `<th style="padding:6px;border:1px solid #d8c8b0;text-align:right;min-width:90px"><div style="font-size:11px">${b.name || b.brand_id}</div><div style="font-size:10px;color:#888;font-weight:normal">+${bh}h${extraTxt}</div></th>`;
+  });
+  h += '</tr></thead><tbody>';
+  sizeBasePriceRows.forEach(s => {
+    const sh = parseFloat(s.work_hours) || 0;
+    h += `<tr><td style="padding:6px;border:1px solid #e0d4bb;font-weight:bold;background:#fcf6ec;position:sticky;left:0;z-index:1"><div>${s.name || s.size_id}</div><div style="font-size:10px;color:#888;font-weight:normal">${sh}h</div></td>`;
+    brandPriceRows.forEach(b => {
+      const bh = parseFloat(b.work_hours) || 0;
+      const eb = parseFloat(b.extra_base_cost) || 0;
+      const cost = Math.round((sh + bh) * rate + eb);
+      const cellColor = cost === 0 ? '#fff' : '#f9fbf6';
+      h += `<td style="padding:6px;border:1px solid #e0d4bb;text-align:right;background:${cellColor}">${cost > 0 ? '¥' + cost.toLocaleString() : '―'}</td>`;
+    });
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  return h;
 }
 
 // ── サイズ別基準価格（size-baseprice.csv） ──
@@ -1897,8 +1956,12 @@ function renderSizeBasePriceTable() {
       if (field === 'refill_w' || field === 'refill_h') {
         renderSizeBasePriceTable();
       }
+      // 試算マトリクス再描画
+      renderEstimateMatrix();
     });
   });
+  // 試算マトリクス描画
+  renderEstimateMatrix();
 }
 
 function sizeBasePriceToCsv() {
@@ -1941,7 +2004,7 @@ function downloadSizeBasePriceCsv() {
 // ── 構造タイプ価格倍率（brand-price.csv） ──
 const BRAND_PRICE_CSV_PATH = 'order_estimate/brand-price.csv';
 const BRAND_PRICE_CSV_URL = new URL('./brand-price.csv', location.href).toString();
-const BRAND_PRICE_HEADERS = ['brand_id','name','price_mult','area_mult','krause_no_multi','allows_krause','extra_base_cost','work_hours','note'];
+const BRAND_PRICE_HEADERS = ['brand_id','name','area_mult','krause_no_multi','allows_krause','extra_base_cost','work_hours','note'];
 let brandPriceRows = [];
 let brandPriceDirty = false;
 
@@ -1979,9 +2042,6 @@ function renderBrandPriceTable() {
       <td style="padding:6px;border:1px solid #e0d4bb"><code>${row.brand_id || ''}</code></td>
       <td style="padding:6px;border:1px solid #e0d4bb">${row.name || ''}</td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">
-        <input type="number" step="0.1" min="0" value="${row.price_mult || ''}" data-brand-edit="price_mult" data-row="${idx}" style="width:70px;text-align:right">
-      </td>
-      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">
         <input type="number" step="0.1" min="0" value="${row.area_mult || ''}" data-brand-edit="area_mult" data-row="${idx}" style="width:70px;text-align:right">
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:center">
@@ -2013,8 +2073,12 @@ function renderBrandPriceTable() {
       }
       brandPriceDirty = true;
       updateBrandDirtyPill();
+      // 試算マトリクス再描画
+      renderEstimateMatrix();
     });
   });
+  // 試算マトリクス描画
+  renderEstimateMatrix();
 }
 
 function brandPriceToCsv() {
@@ -3193,6 +3257,15 @@ function setAdminTab(tab) {
   }
   if (isSettings && settingsRows.length === 0) {
     loadSettingsCsv();
+  }
+  // 試算マトリクス表示のため、サイズ/構造タブ時は他のCSVも自動ロード
+  if (isSize) {
+    if (brandPriceRows.length === 0) loadBrandPriceCsv();
+    if (settingsRows.length === 0) loadSettingsCsv();
+  }
+  if (isBrand) {
+    if (sizeBasePriceRows.length === 0) loadSizeBasePriceCsv();
+    if (settingsRows.length === 0) loadSettingsCsv();
   }
   document.querySelectorAll('[data-admin-tab]').forEach(btn => {
     const active = btn.dataset.adminTab === tab;
