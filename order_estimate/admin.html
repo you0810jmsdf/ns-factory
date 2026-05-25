@@ -944,6 +944,7 @@ tr.row-out-stock td{
       <div class="controls" style="margin-top:12px">
         <button class="btn light" id="reloadBrandBtn">構造タイプCSVを再読込</button>
         <button class="btn light" id="downloadBrandBtn">構造タイプの控えCSVダウンロード</button>
+        <button class="btn light" id="resetAreaMultBtn" style="background:#fff5e0;border-color:#e8c87a">⭐ area_multを推奨値で初期化</button>
         <span class="status-pill" id="brandSourcePill">読込元: 未読込</span>
         <span class="status-pill" id="brandDirtyPill">未保存: なし</span>
       </div>
@@ -1826,6 +1827,44 @@ function downloadSettingsCsv() {
   a.download = 'settings.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ── area_mult 推奨初期値（2026-05-25 リフィル面積×倍率方式の根拠値）──
+const RECOMMENDED_AREA_MULT = {
+  simplist:        { value: 3,   note: '表+裏+スパイン+マージン' },
+  simplist_kl:     { value: 3,   note: '表+裏+スパイン+マージン' },
+  simplist_klpad:  { value: 5,   note: 'pad加工で内側に革追加' },
+  npad:            { value: 5,   note: '内張あり（フラップ）' },
+  npad_nf:         { value: 4.5, note: '内張あり（フラップなし）' },
+  npadw:           { value: 6,   note: 'ジップ部多め' },
+  nthrough:        { value: 5,   note: '裏表革' },
+  other:           { value: 4,   note: '平均的なカスタム' }
+};
+
+function applyRecommendedAreaMult() {
+  if (!brandPriceRows.length) {
+    alert('先に「構造タイプCSVを再読込」してください。');
+    return;
+  }
+  const preview = brandPriceRows.map(r => {
+    const rec = RECOMMENDED_AREA_MULT[r.brand_id];
+    if (!rec) return null;
+    return `${r.name || r.brand_id}: ${r.area_mult || '―'} → ${rec.value}（${rec.note}）`;
+  }).filter(Boolean).join('\n');
+  const ok = confirm(
+    `area_mult を推奨値で一括上書きします。\n\n` +
+    preview + '\n\n' +
+    `現在の値は上書きされます。よろしいですか？\n` +
+    `（上書き後は dirty 状態。「構造タイプ価格をGitHubへ反映」で保存）`
+  );
+  if (!ok) return;
+  brandPriceRows.forEach(r => {
+    const rec = RECOMMENDED_AREA_MULT[r.brand_id];
+    if (rec) r.area_mult = String(rec.value);
+  });
+  brandPriceDirty = true;
+  updateBrandDirtyPill();
+  renderBrandPriceTable();
 }
 
 // ── 試算マトリクス（全サイズ × 全構造）──
@@ -3189,6 +3228,9 @@ document.getElementById('downloadSizeBtn').addEventListener('click', () => {
 });
 document.getElementById('publishBrandGithubBtn').addEventListener('click', () => {
   publishBrandPriceToGitHub();
+});
+document.getElementById('resetAreaMultBtn').addEventListener('click', () => {
+  applyRecommendedAreaMult();
 });
 document.getElementById('reloadBrandBtn').addEventListener('click', () => {
   loadBrandPriceCsv();
