@@ -1115,8 +1115,8 @@ const I = (id, ext='jpg') => `https://img07.shop-pro.jp/PA01426/148/product/${id
 // 管理者モード: URLに ?admin=1 を付けると内部情報を表示
 const isAdmin = new URLSearchParams(location.search).has('admin');
 
-// ── レーザー刻印不可のため手作業対応。基準単価はALASKA相当に統一 ──
-const NUMER_DS_PRICE = 160;
+// ── 革DS単価（¥/ds）settings.csv で上書き可能 ──
+let NUMER_DS_PRICE = 160;
 
 // ── ds計算パラメータ ──
 const MARGIN_MM        = 10;    // 表紙の余白（各辺 mm）：リフィルより各辺+10mm = 縦横+20mm
@@ -2348,6 +2348,10 @@ async function loadSettingsCatalog() {
       if (row.key === 'labor_rate_per_hour') {
         const v = parseFloat(row.value);
         if (!isNaN(v) && v > 0) LABOR_RATE_PER_HOUR = v;
+      }
+      if (row.key === 'leather_unit_price_per_ds') {
+        const v = parseFloat(row.value);
+        if (!isNaN(v) && v > 0) NUMER_DS_PRICE = v;
       }
     });
   } catch (err) {
