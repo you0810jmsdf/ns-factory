@@ -1,3 +1,3 @@
 key,value,label,note
-labor_rate_per_hour,5000,時給単価（¥/h）,製作費 = 工数(h) × この時給で計算
+labor_rate_per_hour,6000,時給単価（¥/h）,製作費 = 工数(h) × この時給で計算
 leather_unit_price_per_ds,160,革DS単価（¥/ds）,原材料費 = 革面積(ds) × この単価。ヌメ革ALASKA仕入実勢に合わせて調整
