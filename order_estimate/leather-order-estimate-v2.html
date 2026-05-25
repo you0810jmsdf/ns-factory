@@ -3108,9 +3108,10 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   if(window._slitSide !== 'none') h += r('スリット加工', sideLabel(window._slitSide));
   if(window._clearWindowSide !== 'none') h += r('クリア窓枠', sideLabel(window._clearWindowSide));
   if(window._patchworkSide   !== 'none') h += r('パッチワーク加工', sideLabel(window._patchworkSide));
-  h += r('ペンホルダー', sel.pen||'未選択');
-  h += r('小銭入れ', sel.coin||'未選択');
-  h += r('刻印', sel.stamp||'未選択');
+  // 「なし」「未選択」「標準」表記のものは見積書に記載しない（依頼人視点で冗長）
+  if(sel.pen   && !/(なし|未選択)/.test(sel.pen))   h += r('ペンホルダー', sel.pen);
+  if(sel.coin  && !/(標準|未選択)/.test(sel.coin))  h += r('小銭入れ', sel.coin);
+  if(sel.stamp && sel.stamp !== '未選択')           h += r('刻印', sel.stamp);
   if(initDesignFee > 0) h += r('✨ 初度設計費（1回のみ）', `¥${initDesignFee.toLocaleString()}`);
   const st = document.getElementById('stampText').value;
   if(st) h += r('刻印内容', st);
@@ -3171,8 +3172,10 @@ function buildEstText() {
   if(window._slitSide !== 'none') t += `スリット加工：${sideLabel(window._slitSide)}\n`;
   if(window._clearWindowSide !== 'none') t += `クリア窓枠：${sideLabel(window._clearWindowSide)}\n`;
   if(window._patchworkSide   !== 'none') t += `パッチワーク加工：${sideLabel(window._patchworkSide)}\n`;
-  t += `ペンホルダー：${sel.pen||'未選択'}\n小銭入れ：${sel.coin||'未選択'}\n`;
-  t += `刻印：${sel.stamp||'未選択'}\n`;
+  // 「なし」「未選択」「標準」表記のものはメール本文に記載しない
+  if(sel.pen   && !/(なし|未選択)/.test(sel.pen))   t += `ペンホルダー：${sel.pen}\n`;
+  if(sel.coin  && !/(標準|未選択)/.test(sel.coin))  t += `小銭入れ：${sel.coin}\n`;
+  if(sel.stamp && sel.stamp !== '未選択')           t += `刻印：${sel.stamp}\n`;
   if(st) t += `刻印内容：${st}\n`;
   t += `数量：${qty}個\n`;
   if(discRate>0) t += `割引率：${discRate}%\n`;
