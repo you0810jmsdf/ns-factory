@@ -1,9 +1,9 @@
-brand_id,name,area_mult,krause_no_multi,allows_krause,extra_base_cost,work_hours,note
-simplist,Simplist,3,TRUE,TRUE,0,2,リングサポータで包み込みタイプ
-simplist_kl,Simplist+クラウゼ,3,FALSE,TRUE,0,2,クラウゼ対応・padなし
-simplist_klpad,Simplist+クラウゼ+Pad,5,TRUE,TRUE,0,5,クラウゼ対応・pad加工あり
-npad,N-Pad flap,5,FALSE,FALSE,0,5,フラップあり（内張あり・クラウゼ非対応）
-npad_nf,N-Pad non flap,4.5,FALSE,FALSE,0,4.5,フラップなし（内張あり・クラウゼ非対応）
-npadw,N-Pad W,6,FALSE,FALSE,0,6,ジップ＋フリーポケット付き
-nthrough,N-Through,5,FALSE,FALSE,0,5,クリア挟み込み構造
-other,その他,4,FALSE,TRUE,0,4,既存モデル外・初度設計費あり
+brand_id,name,price_mult,area_mult,krause_no_multi,allows_krause,extra_base_cost,note
+simplist,Simplist,1.5,2,TRUE,TRUE,0,リングサポータで包み込みタイプ
+simplist_kl,Simplist+クラウゼ,1.5,2,FALSE,TRUE,0,クラウゼ対応・padなし
+simplist_klpad,Simplist+クラウゼ+Pad,2.0,2.5,TRUE,TRUE,0,クラウゼ対応・pad加工あり
+npad,N-Pad flap,2,2.5,FALSE,FALSE,2000,フラップあり（内張あり・クラウゼ非対応）
+npad_nf,N-Pad non flap,2.0,2,FALSE,FALSE,0,フラップなし（内張あり・クラウゼ非対応）
+npadw,N-Pad W,2.4,2,FALSE,FALSE,0,ジップ＋フリーポケット付き
+nthrough,N-Through,2.0,2,FALSE,FALSE,0,クリア挟み込み構造
+other,その他,2.0,1,TRUE,TRUE,0,既存モデル外・初度設計費あり
