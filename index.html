@@ -996,6 +996,37 @@ h1,h2,h3{
   margin:6px 0 0;font-size:11px;line-height:1.9;color:var(--color-text-sub);
   letter-spacing:.02em;
 }
+
+/* ── note 連携カード ──────────────────────────────── */
+.note-connect-card{
+  padding:36px 40px;
+  background:linear-gradient(135deg,#fff,var(--color-accent-light));
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+}
+.note-connect-card h3{
+  font-family:'Cinzel','Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+  font-size:22px;line-height:1.4;margin-bottom:14px;
+}
+.note-connect-card p{
+  color:var(--color-text-sub);font-size:15px;line-height:1.9;margin-bottom:22px;
+}
+.note-connect-actions{display:flex;flex-wrap:wrap;gap:12px;}
+.btn-note-outline{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'Cinzel','Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+  font-size:13px;font-weight:600;letter-spacing:.08em;
+  padding:12px 26px;border-radius:6px;
+  border:1.5px solid #a07c2a;color:#a07c2a;
+  background:transparent;
+  transition:background var(--transition-base),color var(--transition-base),transform var(--transition-base);
+  white-space:nowrap;
+}
+.btn-note-outline:hover{background:#a07c2a;color:#fff;transform:translateY(-1px);}
+@media(max-width:480px){
+  .note-connect-card{padding:24px 20px;}
+}
 </style>
 </head>
 <body>
@@ -1049,6 +1080,28 @@ h1,h2,h3{
         <img src="products/img/memorial-01.png" alt="ヌメ革レーザー彫刻 メモリアルフォトフレーム">
       </div>
     </a>
+  </div>
+</section>
+
+<!-- ── note 連携 ── -->
+<section class="section" style="background:var(--color-bg-sub);padding-top:52px;padding-bottom:52px;">
+  <div class="section-inner">
+    <div class="section-header" style="margin-bottom:24px;">
+      <p class="section-label">Story</p>
+      <h2 class="section-title">note で連載中</h2>
+    </div>
+    <div class="note-connect-card">
+      <h3>革職人が8人のAI参謀を雇った話</h3>
+      <p>
+        小さなレザークラフト工房が、AIを戦略参謀として雇い入れ、<br>
+        経営・広報・販売・経理をひとりで回す。<br>
+        リアルな奮闘記を note にて連載中。
+      </p>
+      <div class="note-connect-actions">
+        <a href="https://note.com/you0810jmsdf" target="_blank" rel="noopener" class="btn-accent">連載を読む →</a>
+        <a href="https://note.com/you0810jmsdf/membership" target="_blank" rel="noopener" class="btn-note-outline">メンバーシップに参加 →</a>
+      </div>
+    </div>
   </div>
 </section>
 
