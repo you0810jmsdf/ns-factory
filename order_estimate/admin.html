@@ -1878,6 +1878,11 @@ function getLeatherUnitPriceFromSettings() {
   const v = parseFloat(row?.value);
   return (!isNaN(v) && v > 0) ? v : 160;
 }
+function getWasteRateFromSettings() {
+  const row = settingsRows.find(r => r.key === 'leather_waste_rate');
+  const v = parseFloat(row?.value);
+  return (!isNaN(v) && v >= 0 && v < 1) ? v : 0.30;
+}
 
 function renderEstimateMatrix() {
   const targets = ['estimateMatrixWrap1', 'estimateMatrixWrap2'];
@@ -1895,12 +1900,14 @@ function buildEstimateMatrixHtml() {
   const rate = getLaborRateFromSettings();
   // 革材料費 試算パラメータ（settings.csv から取得）
   const NUMER_DS = getLeatherUnitPriceFromSettings();       // ¥/ds
+  const WASTE_RATE = getWasteRateFromSettings();             // 0〜1
+  const WASTE_FACTOR = 1 / (1 - WASTE_RATE);                 // 必要購入量倍率
   let h = `
     <h3 style="margin:0 0 8px;font-size:15px;color:#6b3a1f">📊 全サイズ × 全構造 試算マトリクス</h3>
     <div class="hint" style="margin-bottom:8px">
       各セル: <span style="color:#2d5a3d;font-weight:bold">製作費</span> / <span style="color:#7a5a2d;font-weight:bold">原材料費</span> / <span style="color:#6b3a1f;font-weight:bold">合計</span>
       <br>製作費 = (サイズ工数 + 構造工数) × ¥${rate.toLocaleString()}/h + 固定加算
-      <br>原材料費 = リフィル面積 × 構造別 areaMulti × ¥${NUMER_DS}/ds（DS単価は ⚙設定タブ で編集可能・クラウゼ時の革倍増・リング代は含まず）
+      <br>原材料費 = リフィル面積 × 構造別 areaMulti × ¥${NUMER_DS}/ds × ロス込${WASTE_FACTOR.toFixed(2)}倍（ロス率${(WASTE_RATE*100).toFixed(0)}%・DS単価/ロス率は ⚙設定タブ で編集可能）
       <br>⚠ <strong>area_mult はリフィル面積に対する倍率</strong>（例: Simplist=3 なら表裏+スパイン+マージン込みで3倍）。実態に合わせて要調整。
     </div>
     <div style="overflow-x:auto">
@@ -1926,7 +1933,7 @@ function buildEstimateMatrixHtml() {
       const eb = parseFloat(b.extra_base_cost) || 0;
       const am = parseFloat(b.area_mult) || 1;
       const makeCost = Math.round((sh + bh) * rate + eb);
-      const dsArea = Math.round((refillMm2 / 10000) * am * 10) / 10;
+      const dsArea = Math.round((refillMm2 / 10000) * am * WASTE_FACTOR * 10) / 10;
       const matCost = Math.round(dsArea * NUMER_DS);
       const total = makeCost + matCost;
       const cellColor = total === 0 ? '#fff' : '#f9fbf6';
