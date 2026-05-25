@@ -826,8 +826,22 @@ body{
 <!-- ══ STEP 7: INTERIOR ══ -->
 <div class="section">
   <div class="section-title"><span class="num">7</span> オプション構成品</div>
-  <div class="opt-grid" id="accessoryGrid"></div>
-  <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">
+    <div class="num-row" style="align-items:center">
+      <span class="num-label">ペンホルダー</span>
+      <div class="num-field" style="gap:0" id="penBtns">
+        <button data-pen="pen0" onclick="setPen('pen0')" style="min-width:50px;border-radius:8px 0 0 8px">なし</button>
+        <button data-pen="pen1" onclick="setPen('pen1')" style="min-width:90px;border-radius:0">1本 +¥800</button>
+        <button data-pen="pen2" onclick="setPen('pen2')" style="min-width:100px;border-radius:0 8px 8px 0">2本 +¥1,500</button>
+      </div>
+    </div>
+    <div class="num-row" style="align-items:center">
+      <span class="num-label">小銭入れ</span>
+      <div class="num-field" style="gap:0" id="coinBtns">
+        <button data-coin="coin0" onclick="setCoin('coin0')" style="min-width:50px;border-radius:8px 0 0 8px">標準</button>
+        <button data-coin="coin1" onclick="setCoin('coin1')" style="min-width:130px;border-radius:0 8px 8px 0">マチ付き +¥3,000</button>
+      </div>
+    </div>
     <div id="flapRow" class="num-row" style="align-items:center">
       <span class="num-label">フラップ・ベルト</span>
       <div class="num-field" style="gap:0">
@@ -2858,6 +2872,31 @@ function setFlap(on) {
   updateSummary();
 }
 
+// ── ペンホルダー / 小銭入れ（トグル形式）──
+function _applyToggle(containerId, dataAttr, val) {
+  document.querySelectorAll(`#${containerId} button`).forEach(b => {
+    const active = b.dataset[dataAttr] === val;
+    b.style.background = active ? '#6b3a1f' : '';
+    b.style.color      = active ? '#fff'    : '';
+  });
+}
+function setPen(id) {
+  const item = ACCESSORIES.find(a => a.id === id);
+  if (!item) return;
+  sel.pen = item.name;
+  prices.pen = item.price;
+  _applyToggle('penBtns', 'pen', id);
+  updateSummary();
+}
+function setCoin(id) {
+  const item = ACCESSORIES.find(a => a.id === id);
+  if (!item) return;
+  sel.coin = item.name;
+  prices.coin = item.price;
+  _applyToggle('coinBtns', 'coin', id);
+  updateSummary();
+}
+
 function interiorTotal() {
   return sideCount(window._freePocket) + sideCount(window._slitSide);
 }
@@ -3359,6 +3398,8 @@ function doResetAll() {
   setSlitSide('none');
   setClearWindowSide('none');
   setPatchworkSide('none');
+  setPen('pen0');
+  setCoin('coin0');
   window._flapOn = false;
   window._wrapping = 'wrap_none';
   sel = {}; prices = {};
@@ -3411,7 +3452,9 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   // なし をデフォルト選択
   document.querySelector('.opt-card[data-key="wrapping"][data-id="wrap_none"]')?.classList.add('selected');
-buildAccessoryTextGrid(document.getElementById('accessoryGrid'), ACCESSORIES, handleAccessorySelect);
+  // ペンホルダー・小銭入れ：トグル形式のデフォルト選択
+  setPen('pen0');
+  setCoin('coin0');
   buildOptGrid(document.getElementById('stampGrid'), STAMPS, 'stamp', handleStampSelect);
   // 文字ロゴをデフォルト選択（標準）
   const defaultStampCard = document.querySelector('.opt-card[data-key="stamp"][data-id="s_text"]');
