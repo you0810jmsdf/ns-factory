@@ -2329,6 +2329,28 @@ async function loadRingPriceCatalog() {
   }
 }
 
+// ── サイズ別基準価格 CSV ──
+const SIZE_BASEPRICE_CSV_URL = new URL('./size-baseprice.csv', location.href).toString();
+async function loadSizeBasePriceCatalog() {
+  try {
+    const res = await fetch(SIZE_BASEPRICE_CSV_URL, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const rows = parseCsv(text);
+    rows.forEach(row => {
+      const size = SIZES.find(s => s.id === row.size_id);
+      if (!size) return;
+      const bc = parseFloat(row.base_cost);
+      if (!isNaN(bc)) {
+        size.baseCost = bc;
+        size.price = bc;
+      }
+    });
+  } catch (err) {
+    console.warn('Size base price CSV load failed:', err);
+  }
+}
+
 // ── 構造タイプ価格倍率 CSV ──
 const BRAND_PRICE_CSV_URL = new URL('./brand-price.csv', location.href).toString();
 async function loadBrandPriceCatalog() {
@@ -3292,7 +3314,7 @@ function doResetAll() {
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', () => {
-  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog(), loadBrandPriceCatalog()]).finally(() => {
+  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog(), loadSizeBasePriceCatalog(), loadBrandPriceCatalog()]).finally(() => {
   buildBrandGrid();
   syncNpadFlapImageFromSimulator();
   updateFlapOptionUI();
