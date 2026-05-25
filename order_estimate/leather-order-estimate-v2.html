@@ -2329,6 +2329,35 @@ async function loadRingPriceCatalog() {
   }
 }
 
+// ── 構造タイプ価格倍率 CSV ──
+const BRAND_PRICE_CSV_URL = new URL('./brand-price.csv', location.href).toString();
+async function loadBrandPriceCatalog() {
+  try {
+    const res = await fetch(BRAND_PRICE_CSV_URL, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const rows = parseCsv(text);
+    rows.forEach(row => {
+      const brand = BRANDS.find(b => b.id === row.brand_id);
+      if (!brand) return;
+      const pm = parseFloat(row.price_mult);
+      const am = parseFloat(row.area_mult);
+      const eb = parseFloat(row.extra_base_cost);
+      if (!isNaN(pm)) brand.priceMult = pm;
+      if (!isNaN(am)) brand.areaMulti = am;
+      if (!isNaN(eb)) brand.extraBaseCost = eb;
+      if (row.krause_no_multi !== undefined && row.krause_no_multi !== '') {
+        brand.krauseNoMulti = csvBool(row.krause_no_multi);
+      }
+      if (row.allows_krause !== undefined && row.allows_krause !== '') {
+        brand.allowsKrause = csvBool(row.allows_krause);
+      }
+    });
+  } catch (err) {
+    console.warn('Brand price CSV load failed:', err);
+  }
+}
+
 async function loadThreadStockCatalog() {
   try {
     const res = await fetch(THREAD_STOCK_CSV_URL, { cache: 'no-cache' });
@@ -3252,7 +3281,7 @@ function doResetAll() {
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', () => {
-  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog()]).finally(() => {
+  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog(), loadBrandPriceCatalog()]).finally(() => {
   buildBrandGrid();
   syncNpadFlapImageFromSimulator();
   updateFlapOptionUI();
