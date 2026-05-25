@@ -1,6 +1,6 @@
 brand_id,name,area_mult,krause_no_multi,allows_krause,extra_base_cost,work_hours,note
-simplist,Simplist,3,TRUE,TRUE,0,2,リングサポータで包み込みタイプ
-simplist_kl,Simplist+クラウゼ,3,FALSE,TRUE,0,2,クラウゼ対応・padなし
+simplist,Simplist,3,TRUE,TRUE,0,3,リングサポータで包み込みタイプ
+simplist_kl,Simplist+クラウゼ,3,FALSE,TRUE,0,3,クラウゼ対応・padなし
 simplist_klpad,Simplist+クラウゼ+Pad,5,TRUE,TRUE,0,5,クラウゼ対応・pad加工あり
 npad,N-Pad flap,5,FALSE,FALSE,0,5,フラップあり（内張あり・クラウゼ非対応）
 npad_nf,N-Pad non flap,4.5,FALSE,FALSE,0,4.5,フラップなし（内張あり・クラウゼ非対応）
