@@ -6,4 +6,4 @@ npad,N-Pad flap,5,FALSE,FALSE,0,5,フラップあり（内張あり・クラウ�
 npad_nf,N-Pad non flap,4.5,FALSE,FALSE,0,4.5,フラップなし（内張あり・クラウゼ非対応）
 npadw,N-Pad W,6,FALSE,FALSE,0,6,ジップ＋フリーポケット付き
 nthrough,N-Through,5,FALSE,FALSE,0,5,クリア挟み込み構造
-other,その他,4,FALSE,FALSE,0,4,既存モデル外・初度設計費あり
+other,その他,4,FALSE,TRUE,0,4,既存モデル外・初度設計費あり
