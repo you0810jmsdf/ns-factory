@@ -864,11 +864,11 @@ tr.row-out-stock td{
     </div>
 
     <div class="panel size-section admin-section-hidden">
-      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">サイズ別 基準価格（base_cost）</h2>
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">サイズ別 基準価格・標準工数</h2>
       <div class="hint">
-        各サイズ（Micro5 / mini6 / A6 等）の <strong>基準価格 (base_cost)</strong> を編集できます。
-        これは構造タイプ倍率（priceMult）が掛かる前の <strong>サイズごとのベース金額</strong> です。
-        編集後は上の <code>サイズ基準価格をGitHubへ反映</code> ボタンで <code>size-baseprice.csv</code> を直接更新してください。
+        各サイズ（Micro5 / mini6 / A6 等）の <strong>標準工数（work_hours）</strong> を編集できます（⭐推奨運用）。<br>
+        新計算式：<strong>製作費 = (サイズ別工数 + 構造別追加工数) × ¥3,000/h</strong><br>
+        base_cost は旧方式フォールバック用に残しています。編集後は上の <code>サイズ基準価格をGitHubへ反映</code> ボタンで <code>size-baseprice.csv</code> を更新してください。
       </div>
       <div class="controls" style="margin-top:12px">
         <button class="btn light" id="reloadSizeBtn">サイズCSVを再読込</button>
@@ -885,7 +885,8 @@ tr.row-out-stock td{
             <tr style="background:#f4ece1">
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">size_id</th>
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">name</th>
-              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">base_cost<br><span style="font-weight:normal;font-size:11px">基準価格 (¥)</span></th>
+              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">base_cost<br><span style="font-weight:normal;font-size:11px">基準価格 (¥・旧式用)</span></th>
+              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0;background:#fff5e0">work_hours<br><span style="font-weight:normal;font-size:11px">⭐ サイズ別工数 (h)</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">refill_w<br><span style="font-weight:normal;font-size:11px">幅 (mm)</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">refill_h<br><span style="font-weight:normal;font-size:11px">高 (mm)</span></th>
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">note</th>
@@ -897,10 +898,12 @@ tr.row-out-stock td{
     </div>
 
     <div class="panel brand-section admin-section-hidden">
-      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">構造タイプ価格倍率</h2>
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">構造タイプ価格倍率・追加工数</h2>
       <div class="hint">
-        各構造タイプ（Simplist / N-Pad など）の <strong>製作費倍率 (priceMult)</strong>・<strong>革面積倍率 (areaMulti)</strong>・<strong>クラウゼ倍率なし (krause_no_multi)</strong> を編集できます。
-        編集後は上の <code>構造タイプ価格をGitHubへ反映</code> ボタンで <code>brand-price.csv</code> を直接更新してください。
+        各構造タイプ（Simplist / N-Pad など）の <strong>追加工数（work_hours）</strong> を編集できます（⭐推奨運用）。<br>
+        新計算式：<strong>製作費 = (サイズ別工数 + 構造別追加工数) × ¥3,000/h</strong><br>
+        Simplist を基準（0h）として、各構造に必要な追加時間を設定します。priceMult / areaMulti は旧方式フォールバック用に残しています。
+        編集後は上の <code>構造タイプ価格をGitHubへ反映</code> ボタンで <code>brand-price.csv</code> を更新してください。
       </div>
       <div class="controls" style="margin-top:12px">
         <button class="btn light" id="reloadBrandBtn">構造タイプCSVを再読込</button>
@@ -922,6 +925,7 @@ tr.row-out-stock td{
               <th style="padding:8px;text-align:center;border:1px solid #d8c8b0">krause_no_multi<br><span style="font-weight:normal;font-size:11px">クラウゼ倍率なし</span></th>
               <th style="padding:8px;text-align:center;border:1px solid #d8c8b0">allows_krause<br><span style="font-weight:normal;font-size:11px">クラウゼ可</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">extra_base_cost<br><span style="font-weight:normal;font-size:11px">固定加算</span></th>
+              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0;background:#fff5e0">work_hours<br><span style="font-weight:normal;font-size:11px">⭐ 構造別追加工数 (h)</span></th>
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">note</th>
             </tr>
           </thead>
@@ -1671,7 +1675,7 @@ function publishThreadStockToGitHub() {
 // ── サイズ別基準価格（size-baseprice.csv） ──
 const SIZE_BASEPRICE_CSV_PATH = 'order_estimate/size-baseprice.csv';
 const SIZE_BASEPRICE_CSV_URL = new URL('./size-baseprice.csv', location.href).toString();
-const SIZE_BASEPRICE_HEADERS = ['size_id','name','base_cost','refill_w','refill_h','note'];
+const SIZE_BASEPRICE_HEADERS = ['size_id','name','base_cost','work_hours','refill_w','refill_h','note'];
 let sizeBasePriceRows = [];
 let sizeBasePriceDirty = false;
 
@@ -1710,6 +1714,9 @@ function renderSizeBasePriceTable() {
       <td style="padding:6px;border:1px solid #e0d4bb">${row.name || ''}</td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">
         <input type="number" step="100" min="0" value="${row.base_cost || ''}" data-size-edit="base_cost" data-row="${idx}" style="width:100px;text-align:right">
+      </td>
+      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right;background:#fffaf0">
+        <input type="number" step="0.5" min="0" value="${row.work_hours || ''}" data-size-edit="work_hours" data-row="${idx}" style="width:70px;text-align:right;font-weight:bold">
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">
         <input type="number" step="1" min="0" value="${row.refill_w || ''}" data-size-edit="refill_w" data-row="${idx}" style="width:60px;text-align:right">
@@ -1774,7 +1781,7 @@ function downloadSizeBasePriceCsv() {
 // ── 構造タイプ価格倍率（brand-price.csv） ──
 const BRAND_PRICE_CSV_PATH = 'order_estimate/brand-price.csv';
 const BRAND_PRICE_CSV_URL = new URL('./brand-price.csv', location.href).toString();
-const BRAND_PRICE_HEADERS = ['brand_id','name','price_mult','area_mult','krause_no_multi','allows_krause','extra_base_cost','note'];
+const BRAND_PRICE_HEADERS = ['brand_id','name','price_mult','area_mult','krause_no_multi','allows_krause','extra_base_cost','work_hours','note'];
 let brandPriceRows = [];
 let brandPriceDirty = false;
 
@@ -1825,6 +1832,9 @@ function renderBrandPriceTable() {
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">
         <input type="number" step="100" min="0" value="${row.extra_base_cost || ''}" data-brand-edit="extra_base_cost" data-row="${idx}" style="width:80px;text-align:right">
+      </td>
+      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right;background:#fffaf0">
+        <input type="number" step="0.5" min="0" value="${row.work_hours || ''}" data-brand-edit="work_hours" data-row="${idx}" style="width:70px;text-align:right;font-weight:bold">
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;font-size:11px;color:#777">${row.note || ''}</td>
     `;

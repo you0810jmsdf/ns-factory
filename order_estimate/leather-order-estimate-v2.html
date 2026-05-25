@@ -1124,6 +1124,8 @@ const RING_SPINE_RATIO = 3;     // スパイン幅 = リング内径 × この�
 const WASTE_RATE       = 0.30;  // 半裁革の使用不可部分（約30%）
 const WASTE_FACTOR     = 1 / (1 - WASTE_RATE);  // ≈ 1.4286：必要購入量 = 使用量 ÷ (1 - ロス率)
 const CRAFT_MULTIPLIER = 1.5;   // 工賃込み倍率（縫製・コバ磨き等を革材料費に上乗せ）
+// ── 新計算式（2026-05-25）── 製作費 = (サイズ別工数 + 構造別追加工数) × LABOR_RATE_PER_HOUR
+const LABOR_RATE_PER_HOUR = 3000;   // 時給単価（¥/h）admin で将来編集可能化予定
 
 
 // ════════════════════════════════════════════
@@ -2345,6 +2347,8 @@ async function loadSizeBasePriceCatalog() {
         size.baseCost = bc;
         size.price = bc;
       }
+      const wh = parseFloat(row.work_hours);
+      if (!isNaN(wh)) size.workHours = wh;
     });
   } catch (err) {
     console.warn('Size base price CSV load failed:', err);
@@ -2368,6 +2372,8 @@ async function loadBrandPriceCatalog() {
       if (!isNaN(pm)) brand.priceMult = pm;
       if (!isNaN(am)) brand.areaMulti = am;
       if (!isNaN(eb)) brand.extraBaseCost = eb;
+      const wh = parseFloat(row.work_hours);
+      if (!isNaN(wh)) brand.workHours = wh;
       if (row.krause_no_multi !== undefined && row.krause_no_multi !== '') {
         brand.krauseNoMulti = csvBool(row.krause_no_multi);
       }
@@ -2877,13 +2883,24 @@ function updateSummary(options = {}) {
     sizeDs = Math.round((totalMm2 / 10000) * WASTE_FACTOR * areaMultiplier * 10) / 10;  // ds（小数1桁）
   }
 
-  const baseCostBase = prices.size  || 0;                       // サイズ基本製作費（現行価格）
+  const baseCostBase = prices.size  || 0;                       // サイズ基本製作費（旧フォールバック用）
   const leatherDsP   = window._patchworkOn ? (prices.leather > 0 ? NUMER_DS_PRICE : 0) : (prices.leather || 0); // パッチワーク時は基準単価固定
   const leatherRatio = leatherDsP > 0 ? leatherDsP / NUMER_DS_PRICE : 1;  // 革素材比率（¥160/ds基準）
-  const brandPriceMult = brandObj?.priceMult ?? 1;              // 構造タイプ別倍率
+  const brandPriceMult = brandObj?.priceMult ?? 1;              // 構造タイプ別倍率（旧フォールバック用）
   const brandExtraBase = brandObj?.extraBaseCost ?? 0;          // 構造タイプ別固定加算
-  const baseCost     = Math.round(baseCostBase * ringMulti * leatherRatio * brandPriceMult + brandExtraBase);
-  const leatherCost  = 0;                                        // 革材料費は baseCost に含む
+  // ── 新計算式（2026-05-25）──
+  // 製作費 = (サイズ別工数 + 構造別追加工数) × 時給
+  // 革材料費 = 革面積(ds) × 革素材単価 を別行で計算
+  const sizeHours  = sizeObj?.workHours;
+  const brandHours = brandObj?.workHours;
+  const useNewFormula = (sizeHours != null && !isNaN(sizeHours));
+  const totalHours = useNewFormula ? ((sizeHours || 0) + (brandHours || 0)) : 0;
+  const baseCost = useNewFormula
+    ? Math.round(totalHours * LABOR_RATE_PER_HOUR + brandExtraBase)
+    : Math.round(baseCostBase * ringMulti * leatherRatio * brandPriceMult + brandExtraBase);
+  const leatherCost = useNewFormula
+    ? Math.round(sizeDs * (leatherDsP || NUMER_DS_PRICE))
+    : 0;                                                          // 旧方式では baseCost に含まれていた
 
   let opts = 0;
   ['ring','metal','stitchColor','pen','coin','stamp'].forEach(k => opts += (prices[k]||0));
@@ -2924,18 +2941,40 @@ function updateSummary(options = {}) {
     if (ringMulti  > 1) multiParts.push(`クラウゼ×${ringMulti}`);
     const multiSuffix = isAdmin && ringMulti > 1 ? ` [×${ringMulti}: ${multiParts.join('+')}]` : '';
     const ratioSuffix = isAdmin && leatherRatio !== 1 ? ` [${sel.leather||''} ×${leatherRatio.toFixed(2)}]` : '';
-    const baseCostLabel = `製作費（${sel.size||'―'})${multiSuffix}${ratioSuffix}`;
-    add(baseCostLabel, `¥${baseCost.toLocaleString()}`);
-    if (isAdmin) {
-      // 管理者モード：製作費の計算式を分解表示（透明化フェーズ1）
-      add('▶ 計算式（管理者）', '', 'lbl-title');
-      add('└ ① サイズ基準価格', `¥${baseCostBase.toLocaleString()}`);
-      add('└ × ringMulti（クラウゼ係数）', `× ${ringMulti}`);
-      add('└ × leatherRatio（革素材比率）', `× ${leatherRatio.toFixed(3)}（${sel.leather || 'ヌメ革'}=¥${leatherDsP || NUMER_DS_PRICE}/ds ÷ ¥${NUMER_DS_PRICE}/ds）`);
-      add('└ × priceMult（構造タイプ倍率）', `× ${brandPriceMult}（${sel.brand || '―'}）`);
-      if (brandExtraBase > 0) add('└ + extraBaseCost（固定加算）', `+ ¥${brandExtraBase.toLocaleString()}`);
-      add('└ = 製作費', `= ¥${baseCost.toLocaleString()}`);
-      if (sizeDs > 0) add('└ 革使用面積（参考）', `${sizeDs} ds（表紙${coverW}×${coverH}mm + スパイン${spineW}mm幅 × ロス${(WASTE_RATE*100).toFixed(0)}%込み × 面積倍率${areaMultiplier}）`);
+    if (useNewFormula) {
+      // 新方式：製作費（工数×時給）と革材料費を分離表示
+      const hoursLabel = `製作費（${sel.size||'―'} ${sizeHours||0}h + ${sel.brand||'―'} ${brandHours||0}h = ${totalHours}h × ¥${LABOR_RATE_PER_HOUR.toLocaleString()}/h）`;
+      add(hoursLabel, `¥${baseCost.toLocaleString()}`);
+      if (leatherCost > 0) {
+        add(`原材料費（${sizeDs}ds × ¥${(leatherDsP || NUMER_DS_PRICE).toLocaleString()}/ds）`, `¥${leatherCost.toLocaleString()}`);
+      }
+      if (isAdmin) {
+        add('▶ 計算式詳細（管理者）', '', 'lbl-title');
+        add('└ サイズ別工数', `${sizeHours || 0} h（${sel.size || '―'}）`);
+        add('└ 構造別追加工数', `${brandHours || 0} h（${sel.brand || '―'}）`);
+        add('└ 合計工数 × 時給', `${totalHours} h × ¥${LABOR_RATE_PER_HOUR.toLocaleString()} = ¥${(totalHours * LABOR_RATE_PER_HOUR).toLocaleString()}`);
+        if (brandExtraBase > 0) add('└ + 固定加算（extraBaseCost）', `+ ¥${brandExtraBase.toLocaleString()}`);
+        add('└ = 製作費（工賃）', `= ¥${baseCost.toLocaleString()}`);
+        if (sizeDs > 0) {
+          add('└ 革面積', `${sizeDs} ds（表紙${coverW}×${coverH}mm + スパイン${spineW}mm幅 × ロス${(WASTE_RATE*100).toFixed(0)}%込み × 面積倍率${areaMultiplier}）`);
+          add('└ × 革単価', `× ¥${(leatherDsP || NUMER_DS_PRICE)}/ds`);
+          add('└ = 原材料費', `= ¥${leatherCost.toLocaleString()}`);
+        }
+      }
+    } else {
+      // 旧方式（フォールバック）
+      const baseCostLabel = `製作費（${sel.size||'―'})${multiSuffix}${ratioSuffix}`;
+      add(baseCostLabel, `¥${baseCost.toLocaleString()}`);
+      if (isAdmin) {
+        add('▶ 計算式（管理者・旧方式）', '', 'lbl-title');
+        add('└ ① サイズ基準価格', `¥${baseCostBase.toLocaleString()}`);
+        add('└ × ringMulti（クラウゼ係数）', `× ${ringMulti}`);
+        add('└ × leatherRatio（革素材比率）', `× ${leatherRatio.toFixed(3)}（${sel.leather || 'ヌメ革'}=¥${leatherDsP || NUMER_DS_PRICE}/ds ÷ ¥${NUMER_DS_PRICE}/ds）`);
+        add('└ × priceMult（構造タイプ倍率）', `× ${brandPriceMult}（${sel.brand || '―'}）`);
+        if (brandExtraBase > 0) add('└ + extraBaseCost（固定加算）', `+ ¥${brandExtraBase.toLocaleString()}`);
+        add('└ = 製作費', `= ¥${baseCost.toLocaleString()}`);
+        if (sizeDs > 0) add('└ 革使用面積（参考）', `${sizeDs} ds（表紙${coverW}×${coverH}mm + スパイン${spineW}mm幅 × ロス${(WASTE_RATE*100).toFixed(0)}%込み × 面積倍率${areaMultiplier}）`);
+      }
     }
     if (!sel.leather) {
       add('革素材', '革を選択してください');
