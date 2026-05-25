@@ -1738,7 +1738,7 @@ let settingsDirty = false;
 
 async function loadSettingsCsv() {
   try {
-    const res = await fetch(SETTINGS_CSV_URL, { cache: 'no-cache' });
+    const res = await fetch(SETTINGS_CSV_URL + (SETTINGS_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     const parsed = parseCsv(text);
@@ -1946,7 +1946,7 @@ let sizeBasePriceDirty = false;
 
 async function loadSizeBasePriceCsv() {
   try {
-    const res = await fetch(SIZE_BASEPRICE_CSV_URL, { cache: 'no-cache' });
+    const res = await fetch(SIZE_BASEPRICE_CSV_URL + (SIZE_BASEPRICE_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     const parsed = parseCsv(text);
@@ -2085,7 +2085,7 @@ let brandPriceDirty = false;
 
 async function loadBrandPriceCsv() {
   try {
-    const res = await fetch(BRAND_PRICE_CSV_URL, { cache: 'no-cache' });
+    const res = await fetch(BRAND_PRICE_CSV_URL + (BRAND_PRICE_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     const parsed = parseCsv(text);
@@ -2752,7 +2752,7 @@ async function loadDefaultCsv() {
     renderReviewList();
     return;
   }
-  const res = await fetch(CSV_URL, { cache: 'no-cache' });
+  const res = await fetch(CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
   if (!res.ok) throw new Error(`CSV読込失敗: HTTP ${res.status}`);
   const text = await res.text();
   fileHandle = null;
@@ -2817,7 +2817,7 @@ async function loadThreadStockCsv() {
     renderThreadStockList();
     return;
   }
-  const res = await fetch(THREAD_STOCK_CSV_URL, { cache: 'no-cache' });
+  const res = await fetch(THREAD_STOCK_CSV_URL + (THREAD_STOCK_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
   if (!res.ok) throw new Error(`糸在庫CSV読込失敗: HTTP ${res.status}`);
   const text = await res.text();
   threadRows = parseCsv(text).rows;
