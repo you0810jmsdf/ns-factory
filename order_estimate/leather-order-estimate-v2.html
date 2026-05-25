@@ -3090,7 +3090,9 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   h += r('サイズ', sel.size||'未選択');
   // 構造タイプ倍率・革素材ds比率は原価類推可能なため依頼人向け見積書から除外
   h += r('レザー', sel.leather||'未選択');
+  // 本体カラーはレザー名と重複するため見積書では除外（その他コンポーネントのカラーのみ表示）
   getActiveColorComponents().forEach(meta => {
+    if (meta.key === 'main') return;
     h += r(`${meta.label}カラー`, formatComponentColorSummary(meta.key));
   });
   h += r('リング', sel.ring||'未選択');
@@ -3155,7 +3157,9 @@ function buildEstText() {
     ? `${sel.leather}（¥${_lDsP}/ds、ヌメ革基準比 ×${_leatherRatio}${_sDs > 0 ? '、参考' + _sDs + 'ds' : ''}）`
     : '未選択';
   t += `サイズ：${sel.size||'未選択'}\nレザー：${_leatherDetail}\n`;
+  // 本体カラーはレザー名と重複するためメール本文では除外
   getActiveColorComponents().forEach(meta => {
+    if (meta.key === 'main') return;
     t += `${meta.label}カラー：${formatComponentColorSummary(meta.key)}\n`;
   });
   t += `リング：${sel.ring||'未選択'}\n`;
