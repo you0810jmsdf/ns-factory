@@ -2325,7 +2325,7 @@ function syncRingCatalogToUi() {
 
 async function loadRingPriceCatalog() {
   try {
-    const res = await fetch(RING_PRICE_CSV_URL, { cache: 'no-cache' });
+    const res = await fetch(RING_PRICE_CSV_URL + (RING_PRICE_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     RING_PRICE_ROWS = parseCsv(text);
@@ -2340,7 +2340,7 @@ async function loadRingPriceCatalog() {
 const SETTINGS_CSV_URL = new URL('./settings.csv', location.href).toString();
 async function loadSettingsCatalog() {
   try {
-    const res = await fetch(SETTINGS_CSV_URL, { cache: 'no-cache' });
+    const res = await fetch(SETTINGS_CSV_URL + (SETTINGS_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     const rows = parseCsv(text);
@@ -2359,7 +2359,7 @@ async function loadSettingsCatalog() {
 const SIZE_BASEPRICE_CSV_URL = new URL('./size-baseprice.csv', location.href).toString();
 async function loadSizeBasePriceCatalog() {
   try {
-    const res = await fetch(SIZE_BASEPRICE_CSV_URL, { cache: 'no-cache' });
+    const res = await fetch(SIZE_BASEPRICE_CSV_URL + (SIZE_BASEPRICE_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     const rows = parseCsv(text);
@@ -2378,7 +2378,7 @@ async function loadSizeBasePriceCatalog() {
 const BRAND_PRICE_CSV_URL = new URL('./brand-price.csv', location.href).toString();
 async function loadBrandPriceCatalog() {
   try {
-    const res = await fetch(BRAND_PRICE_CSV_URL, { cache: 'no-cache' });
+    const res = await fetch(BRAND_PRICE_CSV_URL + (BRAND_PRICE_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     const rows = parseCsv(text);
@@ -2405,7 +2405,7 @@ async function loadBrandPriceCatalog() {
 
 async function loadThreadStockCatalog() {
   try {
-    const res = await fetch(THREAD_STOCK_CSV_URL, { cache: 'no-cache' });
+    const res = await fetch(THREAD_STOCK_CSV_URL + (THREAD_STOCK_CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     THREAD_STOCK_ROWS = parseCsv(text);
