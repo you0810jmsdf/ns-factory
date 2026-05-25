@@ -900,6 +900,7 @@ tr.row-out-stock td{
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">サイズ別 標準工数</h2>
       <div class="hint">
         各サイズ（Micro5 / mini6 / A6 等）の <strong>標準工数（work_hours）</strong> を編集できます。<br>
+        💡 <strong>Micro5 の work_hours を変更すると、他サイズが面積比で自動再計算</strong>されます（個別調整は後で上書き可）。<br>
         計算式：<strong>製作費 = (サイズ別工数 + 構造別追加工数) × 時給</strong>（時給は ⚙設定タブで管理）<br>
         編集後は上の <code>サイズ基準価格をGitHubへ反映</code> ボタンで <code>size-baseprice.csv</code> を更新してください。
       </div>
@@ -1873,6 +1874,25 @@ function renderSizeBasePriceTable() {
       row[field] = input.value;
       sizeBasePriceDirty = true;
       updateSizeDirtyPill();
+      // Micro5の work_hours が変更されたら、他サイズを面積比で自動再計算
+      if (field === 'work_hours' && row.size_id === 'micro5') {
+        const micro5Hours = parseFloat(input.value);
+        const m5w = parseFloat(row.refill_w) || 0;
+        const m5h = parseFloat(row.refill_h) || 0;
+        const m5Area = m5w * m5h;
+        if (!isNaN(micro5Hours) && micro5Hours > 0 && m5Area > 0) {
+          sizeBasePriceRows.forEach(r => {
+            if (r.size_id === 'micro5') return;
+            const a = (parseFloat(r.refill_w) || 0) * (parseFloat(r.refill_h) || 0);
+            if (a > 0) {
+              const ratio = a / m5Area;
+              r.work_hours = (Math.round(micro5Hours * ratio * 10) / 10).toFixed(1);
+            }
+          });
+        }
+        renderSizeBasePriceTable();
+        return;
+      }
       // refill_w / refill_h が変わったら面積・Micro5比も再計算するため再描画
       if (field === 'refill_w' || field === 'refill_h') {
         renderSizeBasePriceTable();
