@@ -3088,21 +3088,14 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   let h = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
   h += r('ブランド', sel.brand||'未選択');
   h += r('サイズ', sel.size||'未選択');
-  // 本体サイズ表示は新方式（リフィル×倍率）採用に伴い廃止
-  if(isAdmin && areaMultiplier > 1) h += r('構造タイプ倍率', `製作費・革面積 × ${areaMultiplier}（${sel.brand||''}）`);
+  // 構造タイプ倍率・革素材ds比率は原価類推可能なため依頼人向け見積書から除外
   h += r('レザー', sel.leather||'未選択');
-  if(isAdmin && sel.leather) {
-    const _ratio = leatherDsP > 0 ? (leatherDsP / NUMER_DS_PRICE).toFixed(2) : '1.00';
-    const _rNote = leatherDsP !== NUMER_DS_PRICE ? `（ヌメ革¥${NUMER_DS_PRICE}/ds × ${_ratio}）` : '（ヌメ革 基準）';
-    h += r(`革素材 ds比率 ${_rNote}`, sizeDs > 0 ? `参考面積 ${sizeDs}ds` : '―');
-  }
   getActiveColorComponents().forEach(meta => {
     h += r(`${meta.label}カラー`, formatComponentColorSummary(meta.key));
   });
   h += r('リング', sel.ring||'未選択');
-  if(sel.ringStockText) h += r('リング在庫', sel.ringStockText);
+  // リング在庫・金具在庫は依頼人向け情報ではないため除外
   h += r('金具', sel.metal||'未選択');
-  if(sel.metalStockText) h += r('金具在庫', sel.metalStockText);
   if(sel.stitchColor) h += r('ステッチ色', sel.stitchColor);
   const _wrapObj = WRAPPING.find(w => w.id === (window._wrapping||'wrap_none'))||WRAPPING[0];
   if(_wrapObj.price > 0) h += r('ラッピング', _wrapObj.name);
@@ -3124,13 +3117,12 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   const rem = document.getElementById('remarks').value;
   if(rem) h += r('備考', rem);
   h += r('━━━━━━━', '━━━━━━━');
-  if(isAdmin) h += r('製作費（工数×時給）', `¥${baseCost.toLocaleString()}`);
+  // 製作費（工数×時給）・原価概算は原価類推可能なため依頼人向け見積書から除外
   h += r('1個単価（税抜）', `¥${unit.toLocaleString()}`);
   h += r('数量', `${qty}個`);
   h += r('小計', `¥${sub.toLocaleString()}`);
   if(volDisc > 0) h += r(`ボリューム割引(${volRate*100}%)`, `−¥${volDisc.toLocaleString()}`);
   if(manDisc > 0) h += r(`割引(${discRate}%)`, `−¥${manDisc.toLocaleString()}`);
-  h += r('原価概算（税込）', `¥${total.toLocaleString()}`);
   if (platformFeeRate > 0) {
     h += r(`${sel.platform||''}手数料 (${platformFeeRate}%)`, `+¥${(platformFeeAmt||0).toLocaleString()}`);
     h += r('🏷 推奨出品価格', `¥${(sellPrice||total).toLocaleString()}`, true);
@@ -3166,9 +3158,7 @@ function buildEstText() {
     t += `${meta.label}カラー：${formatComponentColorSummary(meta.key)}\n`;
   });
   t += `リング：${sel.ring||'未選択'}\n`;
-  if(sel.ringStockText) t += `リング在庫：${sel.ringStockText}\n`;
   t += `金具：${sel.metal||'未選択'}\n`;
-  if(sel.metalStockText) t += `金具在庫：${sel.metalStockText}\n`;
   if(sel.stitchColor) t += `ステッチ色：${sel.stitchColor}\n`;
   const _wt = WRAPPING.find(w => w.id === (window._wrapping||'wrap_none'))||WRAPPING[0];
   if(_wt.price > 0) t += `ラッピング：${_wt.name}\n`;
@@ -3186,7 +3176,7 @@ function buildEstText() {
   if(st) t += `刻印内容：${st}\n`;
   t += `数量：${qty}個\n`;
   if(discRate>0) t += `割引率：${discRate}%\n`;
-  t += `\n製作原価概算（税込）：${document.getElementById('totalDisplay').textContent.trim()}\n`;
+  t += `\n合計（税込）：${document.getElementById('totalDisplay').textContent.trim()}\n`;
   const _pfRate = prices.platform || 0;
   if (sel.platform && _pfRate > 0) {
     t += `販売プラットフォーム：${sel.platform}（手数料${_pfRate}%）\n`;
