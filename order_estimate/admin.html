@@ -922,6 +922,8 @@ tr.row-out-stock td{
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0;background:#fff5e0">work_hours<br><span style="font-weight:normal;font-size:11px">⭐ サイズ別工数 (h)</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">refill_w<br><span style="font-weight:normal;font-size:11px">幅 (mm)</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">refill_h<br><span style="font-weight:normal;font-size:11px">高 (mm)</span></th>
+              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0;background:#e8f4ec">面積<br><span style="font-weight:normal;font-size:11px">w×h (mm²)</span></th>
+              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0;background:#e8f4ec">Micro5比<br><span style="font-weight:normal;font-size:11px">面積÷Micro5</span></th>
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">note</th>
             </tr>
           </thead>
@@ -1835,8 +1837,15 @@ function updateSizeDirtyPill() {
 function renderSizeBasePriceTable() {
   const tbody = document.getElementById('sizeBasePriceTbody');
   if (!tbody) return;
+  // Micro5の面積を基準として比率計算
+  const micro5Row = sizeBasePriceRows.find(r => r.size_id === 'micro5');
+  const micro5Area = micro5Row ? (Number(micro5Row.refill_w) * Number(micro5Row.refill_h)) : 0;
   tbody.innerHTML = '';
   sizeBasePriceRows.forEach((row, idx) => {
+    const w = Number(row.refill_w) || 0;
+    const h = Number(row.refill_h) || 0;
+    const area = w * h;
+    const ratio = (micro5Area > 0 && area > 0) ? (area / micro5Area) : 0;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td style="padding:6px;border:1px solid #e0d4bb"><code>${row.size_id || ''}</code></td>
@@ -1853,6 +1862,8 @@ function renderSizeBasePriceTable() {
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">
         <input type="number" step="1" min="0" value="${row.refill_h || ''}" data-size-edit="refill_h" data-row="${idx}" style="width:60px;text-align:right">
       </td>
+      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right;background:#f3faf5;color:#2d5a3d">${area > 0 ? area.toLocaleString() : '―'}</td>
+      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right;background:#f3faf5;color:#2d5a3d;font-weight:bold">${ratio > 0 ? ratio.toFixed(2) : '―'}</td>
       <td style="padding:6px;border:1px solid #e0d4bb;font-size:11px;color:#777">${row.note || ''}</td>
     `;
     tbody.appendChild(tr);
@@ -1866,6 +1877,10 @@ function renderSizeBasePriceTable() {
       row[field] = input.value;
       sizeBasePriceDirty = true;
       updateSizeDirtyPill();
+      // refill_w / refill_h が変わったら面積・Micro5比も再計算するため再描画
+      if (field === 'refill_w' || field === 'refill_h') {
+        renderSizeBasePriceTable();
+      }
     });
   });
 }
