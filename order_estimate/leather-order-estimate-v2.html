@@ -2884,21 +2884,19 @@ function updateSummary(options = {}) {
   const sizeObj  = SIZES.find(s => s.id === sel.sizeId);
   const ringObj  = RINGS.find(r => r.id === sel.ringId) || { id_mm: 19 };  // デフォルト19mm
   let sizeDs = 0;
-  let coverW = 0, coverH = 0, spineW = 0;
+  let refillMm2 = 0;
 
-  // ── ブランド×リング 面積倍率 ──
+  // ── ブランド×リング 革面積倍率（リフィル面積に対する倍率）──
   const brandObj    = BRANDS.find(b => b.id === sel.brandId);
-  const brandMulti  = brandObj ? brandObj.areaMulti : 1;
+  const brandMulti  = brandObj ? brandObj.areaMulti : 1;  // リフィル面積に対する構造別倍率
   const ringIsKlause = !!(RINGS.find(r => r.id === sel.ringId)?.isKlause);
   const ringMulti   = (ringIsKlause && !brandObj?.krauseNoMulti) ? 2 : 1;
   const areaMultiplier = brandMulti * ringMulti;  // 例: N-Pad + クラウゼ = 2×2 = 4
 
   if (sizeObj) {
-    coverW = sizeObj.w + 2 * MARGIN_MM;          // 表紙幅（mm）
-    coverH = sizeObj.h + 2 * MARGIN_MM;          // 表紙高さ（mm）
-    spineW = ringObj.id_mm * RING_SPINE_RATIO;   // スパイン幅（mm）
-    const totalMm2 = 2 * coverW * coverH + spineW * coverH;  // 裏表+スパイン
-    sizeDs = Math.round((totalMm2 / 10000) * WASTE_FACTOR * areaMultiplier * 10) / 10;  // ds（小数1桁）
+    // ── 新方式（2026-05-25）：革面積 = リフィル面積 × area_mult ──
+    refillMm2 = sizeObj.w * sizeObj.h;
+    sizeDs = Math.round((refillMm2 / 10000) * areaMultiplier * 10) / 10;  // ds（小数1桁）
   }
 
   const leatherDsP   = window._patchworkOn ? (prices.leather > 0 ? NUMER_DS_PRICE : 0) : (prices.leather || 0); // パッチワーク時は基準単価固定
@@ -2972,7 +2970,7 @@ function updateSummary(options = {}) {
       if (brandExtraBase > 0) add('└ + 固定加算（extraBaseCost）', `+ ¥${brandExtraBase.toLocaleString()}`);
       add('└ = 製作費（工賃）', `= ¥${baseCost.toLocaleString()}`);
       if (sizeDs > 0) {
-        add('└ 革面積', `${sizeDs} ds（表紙${coverW}×${coverH}mm + スパイン${spineW}mm幅 × ロス${(WASTE_RATE*100).toFixed(0)}%込み × 面積倍率${areaMultiplier}）`);
+        add('└ 革面積', `${sizeDs} ds（リフィル ${sizeObj?.w||0}×${sizeObj?.h||0}mm = ${refillMm2}mm² × 面積倍率 ${areaMultiplier}（${brandMulti}×${ringMulti}））`);
         add('└ × 革単価', `× ¥${(leatherDsP || NUMER_DS_PRICE)}/ds`);
         add('└ = 原材料費', `= ¥${leatherCost.toLocaleString()}`);
       }
@@ -3072,18 +3070,16 @@ function updateSummary(options = {}) {
 
   if (!options.preserveComponentEditor) renderComponentColorControls();
   refreshSidebarColorPreview();
-  buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, coverW, coverH, spineW, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier, initDesignFee);
+  buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier, initDesignFee);
 }
 
-function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, coverW, coverH, spineW, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier=1, initDesignFee=0) {
+function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier=1, initDesignFee=0) {
   const d = document.getElementById('printDetail');
   const r = (l, v, b) => `<tr><td style="padding:5px 8px;border-bottom:1px solid #eee;${b?'font-weight:700':''}">${l}</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right;${b?'font-weight:700':''}">${v}</td></tr>`;
   let h = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
   h += r('ブランド', sel.brand||'未選択');
   h += r('サイズ', sel.size||'未選択');
-  if(coverW) h += r('本体サイズ（片面）', `横${coverW}mm × 縦${coverH}mm`);
-  if(coverW) h += r('開いた状態の横幅', `${coverW * 2 + spineW}mm（表裏${coverW}mm×2＋背表紙${spineW}mm）`);
-  if(coverW) h += `<tr><td colspan="2" style="padding:4px 8px 8px;font-size:11px;color:#888">※寸法は目安です。リフィル端からの余裕など希望があれば自由記述欄にご記入ください。</td></tr>`;
+  // 本体サイズ表示は新方式（リフィル×倍率）採用に伴い廃止
   if(isAdmin && areaMultiplier > 1) h += r('構造タイプ倍率', `製作費・革面積 × ${areaMultiplier}（${sel.brand||''}）`);
   h += r('レザー', sel.leather||'未選択');
   if(isAdmin && sel.leather) {

@@ -1849,17 +1849,15 @@ function buildEstimateMatrixHtml() {
     return '<div style="color:#888;font-size:12px">サイズ・構造のCSVを読み込むと試算表が表示されます</div>';
   }
   const rate = getLaborRateFromSettings();
-  // 革材料費 試算パラメータ（通常リング20mm・ヌメ革ALASKA基準）
-  const MARGIN_MM = 10;
-  const SPINE_MM = 60;        // リング径20mm × 3 を想定
-  const WASTE_FACTOR = 1 / (1 - 0.30);
+  // 革材料費 試算パラメータ（ヌメ革ALASKA基準）
   const NUMER_DS = 160;       // ¥/ds（ヌメ革ALASKA相当）
   let h = `
     <h3 style="margin:0 0 8px;font-size:15px;color:#6b3a1f">📊 全サイズ × 全構造 試算マトリクス</h3>
     <div class="hint" style="margin-bottom:8px">
       各セル: <span style="color:#2d5a3d;font-weight:bold">製作費</span> / <span style="color:#7a5a2d;font-weight:bold">原材料費</span> / <span style="color:#6b3a1f;font-weight:bold">合計</span>
       <br>製作費 = (サイズ工数 + 構造工数) × ¥${rate.toLocaleString()}/h + 固定加算
-      <br>原材料費 = 革面積 × 構造別 areaMulti × ロス込 × ¥${NUMER_DS}/ds（通常リング20mm・ヌメ革ALASKA基準で試算／クラウゼ時の革倍増・リング代は含まず）
+      <br>原材料費 = リフィル面積 × 構造別 areaMulti × ¥${NUMER_DS}/ds（ヌメ革ALASKA基準・クラウゼ時の革倍増・リング代は含まず）
+      <br>⚠ <strong>area_mult はリフィル面積に対する倍率</strong>（例: Simplist=3 なら表裏+スパイン+マージン込みで3倍）。実態に合わせて要調整。
     </div>
     <div style="overflow-x:auto">
       <table style="border-collapse:collapse;font-size:11px;width:100%">
@@ -1877,16 +1875,14 @@ function buildEstimateMatrixHtml() {
     const sh = parseFloat(s.work_hours) || 0;
     const w = parseFloat(s.refill_w) || 0;
     const hgt = parseFloat(s.refill_h) || 0;
-    const coverW = w + 2 * MARGIN_MM;
-    const coverH = hgt + 2 * MARGIN_MM;
-    const totalMm2 = 2 * coverW * coverH + SPINE_MM * coverH;
+    const refillMm2 = w * hgt;
     h += `<tr><td style="padding:6px;border:1px solid #e0d4bb;font-weight:bold;background:#fcf6ec;position:sticky;left:0;z-index:1"><div>${s.name || s.size_id}</div><div style="font-size:10px;color:#888;font-weight:normal">${sh}h</div></td>`;
     brandPriceRows.forEach(b => {
       const bh = parseFloat(b.work_hours) || 0;
       const eb = parseFloat(b.extra_base_cost) || 0;
       const am = parseFloat(b.area_mult) || 1;
       const makeCost = Math.round((sh + bh) * rate + eb);
-      const dsArea = Math.round((totalMm2 / 10000) * WASTE_FACTOR * am * 10) / 10;
+      const dsArea = Math.round((refillMm2 / 10000) * am * 10) / 10;
       const matCost = Math.round(dsArea * NUMER_DS);
       const total = makeCost + matCost;
       const cellColor = total === 0 ? '#fff' : '#f9fbf6';
