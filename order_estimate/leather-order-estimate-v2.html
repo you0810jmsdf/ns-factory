@@ -1126,6 +1126,11 @@ const WASTE_FACTOR     = 1 / (1 - WASTE_RATE);  // ≈ 1.4286：必要購入量 
 const CRAFT_MULTIPLIER = 1.5;   // 工賃込み倍率（縫製・コバ磨き等を革材料費に上乗せ）
 // ── 新計算式（2026-05-25）── 製作費 = (サイズ別工数 + 構造別追加工数) × LABOR_RATE_PER_HOUR
 const LABOR_RATE_PER_HOUR = 3000;   // 時給単価（¥/h）admin で将来編集可能化予定
+// 管理者調整モードのリセット（?admin時のみ意味あり）
+function resetAdminOverrides() {
+  window._adminOverrides = {};
+  if (typeof updateSummary === 'function') updateSummary();
+}
 
 
 // ════════════════════════════════════════════
@@ -2891,12 +2896,17 @@ function updateSummary(options = {}) {
   // ── 新計算式（2026-05-25）──
   // 製作費 = (サイズ別工数 + 構造別追加工数) × 時給
   // 革材料費 = 革面積(ds) × 革素材単価 を別行で計算
-  const sizeHours  = sizeObj?.workHours;
-  const brandHours = brandObj?.workHours;
+  // 管理者一時上書き（?admin時のみ有効・localStorage保存なし、ページリロードで消える）
+  const ov = window._adminOverrides || {};
+  const sizeHoursCsv  = sizeObj?.workHours;
+  const brandHoursCsv = brandObj?.workHours;
+  const sizeHours  = (isAdmin && ov.sizeHours  != null) ? ov.sizeHours  : sizeHoursCsv;
+  const brandHours = (isAdmin && ov.brandHours != null) ? ov.brandHours : brandHoursCsv;
+  const laborRate  = (isAdmin && ov.laborRate  != null) ? ov.laborRate  : LABOR_RATE_PER_HOUR;
   const useNewFormula = (sizeHours != null && !isNaN(sizeHours));
   const totalHours = useNewFormula ? ((sizeHours || 0) + (brandHours || 0)) : 0;
   const baseCost = useNewFormula
-    ? Math.round(totalHours * LABOR_RATE_PER_HOUR + brandExtraBase)
+    ? Math.round(totalHours * laborRate + brandExtraBase)
     : Math.round(baseCostBase * ringMulti * leatherRatio * brandPriceMult + brandExtraBase);
   const leatherCost = useNewFormula
     ? Math.round(sizeDs * (leatherDsP || NUMER_DS_PRICE))
@@ -2943,16 +2953,21 @@ function updateSummary(options = {}) {
     const ratioSuffix = isAdmin && leatherRatio !== 1 ? ` [${sel.leather||''} ×${leatherRatio.toFixed(2)}]` : '';
     if (useNewFormula) {
       // 新方式：製作費（工数×時給）と革材料費を分離表示
-      const hoursLabel = `製作費（${sel.size||'―'} ${sizeHours||0}h + ${sel.brand||'―'} ${brandHours||0}h = ${totalHours}h × ¥${LABOR_RATE_PER_HOUR.toLocaleString()}/h）`;
+      const hoursLabel = `製作費（${sel.size||'―'} ${sizeHours||0}h + ${sel.brand||'―'} ${brandHours||0}h = ${totalHours}h × ¥${laborRate.toLocaleString()}/h）`;
       add(hoursLabel, `¥${baseCost.toLocaleString()}`);
       if (leatherCost > 0) {
         add(`原材料費（${sizeDs}ds × ¥${(leatherDsP || NUMER_DS_PRICE).toLocaleString()}/ds）`, `¥${leatherCost.toLocaleString()}`);
       }
       if (isAdmin) {
-        add('▶ 計算式詳細（管理者）', '', 'lbl-title');
-        add('└ サイズ別工数', `${sizeHours || 0} h（${sel.size || '―'}）`);
-        add('└ 構造別追加工数', `${brandHours || 0} h（${sel.brand || '―'}）`);
-        add('└ 合計工数 × 時給', `${totalHours} h × ¥${LABOR_RATE_PER_HOUR.toLocaleString()} = ¥${(totalHours * LABOR_RATE_PER_HOUR).toLocaleString()}`);
+        // 管理者調整パネル（リアルタイム試算）
+        const ovActive = (ov.sizeHours != null || ov.brandHours != null || ov.laborRate != null);
+        add(`⚙ 調整モード（管理者）${ovActive ? ' ⚠上書き中' : ''}`, '', 'lbl-title');
+        add('└ サイズ工数', `<input type="number" step="0.5" min="0" value="${sizeHours||0}" id="adjSizeHours" style="width:70px"> h（CSV値: ${sizeHoursCsv ?? '―'}h）`);
+        add('└ 構造工数', `<input type="number" step="0.5" min="0" value="${brandHours||0}" id="adjBrandHours" style="width:70px"> h（CSV値: ${brandHoursCsv ?? '―'}h）`);
+        add('└ 時給', `<input type="number" step="100" min="0" value="${laborRate}" id="adjLaborRate" style="width:90px"> ¥/h（CSV値: ¥${LABOR_RATE_PER_HOUR.toLocaleString()}/h）`);
+        add('└ 操作', `<button onclick="resetAdminOverrides()" style="padding:2px 8px;font-size:11px">リセット</button> <span style="font-size:11px;color:#888">編集→即時試算</span>`);
+        add('▶ 計算式詳細', '', 'lbl-title');
+        add('└ 合計工数 × 時給', `${totalHours} h × ¥${laborRate.toLocaleString()} = ¥${(totalHours * laborRate).toLocaleString()}`);
         if (brandExtraBase > 0) add('└ + 固定加算（extraBaseCost）', `+ ¥${brandExtraBase.toLocaleString()}`);
         add('└ = 製作費（工賃）', `= ¥${baseCost.toLocaleString()}`);
         if (sizeDs > 0) {
@@ -2960,6 +2975,22 @@ function updateSummary(options = {}) {
           add('└ × 革単価', `× ¥${(leatherDsP || NUMER_DS_PRICE)}/ds`);
           add('└ = 原材料費', `= ¥${leatherCost.toLocaleString()}`);
         }
+        // input にイベントハンドラを bind（次の microtask で）
+        setTimeout(() => {
+          const bind = (id, key) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', () => {
+              const v = parseFloat(el.value);
+              window._adminOverrides = window._adminOverrides || {};
+              window._adminOverrides[key] = isNaN(v) ? null : v;
+              updateSummary();
+            });
+          };
+          bind('adjSizeHours', 'sizeHours');
+          bind('adjBrandHours', 'brandHours');
+          bind('adjLaborRate', 'laborRate');
+        }, 0);
       }
     } else {
       // 旧方式（フォールバック）
