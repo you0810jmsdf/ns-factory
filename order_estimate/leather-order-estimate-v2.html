@@ -1121,8 +1121,9 @@ let NUMER_DS_PRICE = 160;
 // ── ds計算パラメータ ──
 const MARGIN_MM        = 10;    // 表紙の余白（各辺 mm）：リフィルより各辺+10mm = 縦横+20mm
 const RING_SPINE_RATIO = 3;     // スパイン幅 = リング内径 × この値（20mm→60mm）
-const WASTE_RATE       = 0.30;  // 半裁革の使用不可部分（約30%）
-const WASTE_FACTOR     = 1 / (1 - WASTE_RATE);  // ≈ 1.4286：必要購入量 = 使用量 ÷ (1 - ロス率)
+let WASTE_RATE         = 0.30;  // 半裁革の使用不可部分。settings.csv で上書き可能
+// WASTE_FACTOR は WASTE_RATE が動的になったため getter で計算
+function getWasteFactor() { return 1 / (1 - WASTE_RATE); }
 const CRAFT_MULTIPLIER = 1.5;   // 工賃込み倍率（縫製・コバ磨き等を革材料費に上乗せ）
 // ── 新計算式（2026-05-25）── 製作費 = (サイズ別工数 + 構造別追加工数) × LABOR_RATE_PER_HOUR
 let LABOR_RATE_PER_HOUR = 3000;   // 時給単価（¥/h）settings.csv で上書き可能
@@ -2353,6 +2354,10 @@ async function loadSettingsCatalog() {
         const v = parseFloat(row.value);
         if (!isNaN(v) && v > 0) NUMER_DS_PRICE = v;
       }
+      if (row.key === 'leather_waste_rate') {
+        const v = parseFloat(row.value);
+        if (!isNaN(v) && v >= 0 && v < 1) WASTE_RATE = v;
+      }
     });
   } catch (err) {
     console.warn('settings CSV load failed:', err);
@@ -2898,9 +2903,9 @@ function updateSummary(options = {}) {
   const areaMultiplier = brandMulti * ringMulti;  // 例: N-Pad + クラウゼ = 2×2 = 4
 
   if (sizeObj) {
-    // ── 新方式（2026-05-25）：革面積 = リフィル面積 × area_mult ──
+    // ── 新方式（2026-05-25）：革面積 = リフィル面積 × area_mult × ロス係数 ──
     refillMm2 = sizeObj.w * sizeObj.h;
-    sizeDs = Math.round((refillMm2 / 10000) * areaMultiplier * 10) / 10;  // ds（小数1桁）
+    sizeDs = Math.round((refillMm2 / 10000) * areaMultiplier * getWasteFactor() * 10) / 10;  // ds（小数1桁）
   }
 
   const leatherDsP   = window._patchworkOn ? (prices.leather > 0 ? NUMER_DS_PRICE : 0) : (prices.leather || 0); // パッチワーク時は基準単価固定
@@ -2974,7 +2979,7 @@ function updateSummary(options = {}) {
       if (brandExtraBase > 0) add('└ + 固定加算（extraBaseCost）', `+ ¥${brandExtraBase.toLocaleString()}`);
       add('└ = 製作費（工賃）', `= ¥${baseCost.toLocaleString()}`);
       if (sizeDs > 0) {
-        add('└ 革面積', `${sizeDs} ds（リフィル ${sizeObj?.w||0}×${sizeObj?.h||0}mm = ${refillMm2}mm² × 面積倍率 ${areaMultiplier}（${brandMulti}×${ringMulti}））`);
+        add('└ 革面積', `${sizeDs} ds（リフィル ${sizeObj?.w||0}×${sizeObj?.h||0}mm = ${refillMm2}mm² × 面積倍率 ${areaMultiplier}（${brandMulti}×${ringMulti}） × ロス込 ${getWasteFactor().toFixed(2)}倍 [ロス率${(WASTE_RATE*100).toFixed(0)}%]）`);
         add('└ × 革単価', `× ¥${(leatherDsP || NUMER_DS_PRICE)}/ds`);
         add('└ = 原材料費', `= ¥${leatherCost.toLocaleString()}`);
       }
@@ -3149,7 +3154,7 @@ function buildEstText() {
   if (_sObj) {
     const _cw = _sObj.w + 2 * MARGIN_MM, _ch = _sObj.h + 2 * MARGIN_MM;
     const _sw = _rObj.id_mm * RING_SPINE_RATIO;
-    _sDs = Math.round(((2 * _cw * _ch + _sw * _ch) / 10000) * WASTE_FACTOR * 10) / 10;
+    _sDs = Math.round(((2 * _cw * _ch + _sw * _ch) / 10000) * getWasteFactor() * 10) / 10;
   }
   const _lDsP = prices.leather || 0;
   const _leatherRatio = _lDsP > 0 ? (_lDsP / NUMER_DS_PRICE).toFixed(2) : '1.00';
