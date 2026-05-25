@@ -2904,6 +2904,17 @@ function updateSummary(options = {}) {
     const ratioSuffix = isAdmin && leatherRatio !== 1 ? ` [${sel.leather||''} ×${leatherRatio.toFixed(2)}]` : '';
     const baseCostLabel = `製作費（${sel.size||'―'})${multiSuffix}${ratioSuffix}`;
     add(baseCostLabel, `¥${baseCost.toLocaleString()}`);
+    if (isAdmin) {
+      // 管理者モード：製作費の計算式を分解表示（透明化フェーズ1）
+      add('▶ 計算式（管理者）', '', 'lbl-title');
+      add('└ ① サイズ基準価格', `¥${baseCostBase.toLocaleString()}`);
+      add('└ × ringMulti（クラウゼ係数）', `× ${ringMulti}`);
+      add('└ × leatherRatio（革素材比率）', `× ${leatherRatio.toFixed(3)}（${sel.leather || 'ヌメ革'}=¥${leatherDsP || NUMER_DS_PRICE}/ds ÷ ¥${NUMER_DS_PRICE}/ds）`);
+      add('└ × priceMult（構造タイプ倍率）', `× ${brandPriceMult}（${sel.brand || '―'}）`);
+      if (brandExtraBase > 0) add('└ + extraBaseCost（固定加算）', `+ ¥${brandExtraBase.toLocaleString()}`);
+      add('└ = 製作費', `= ¥${baseCost.toLocaleString()}`);
+      if (sizeDs > 0) add('└ 革使用面積（参考）', `${sizeDs} ds（表紙${coverW}×${coverH}mm + スパイン${spineW}mm幅 × ロス${(WASTE_RATE*100).toFixed(0)}%込み × 面積倍率${areaMultiplier}）`);
+    }
     if (!sel.leather) {
       add('革素材', '革を選択してください');
     }
