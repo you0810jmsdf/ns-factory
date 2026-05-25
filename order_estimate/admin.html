@@ -1873,6 +1873,11 @@ function getLaborRateFromSettings() {
   const v = parseFloat(row?.value);
   return (!isNaN(v) && v > 0) ? v : 3000;
 }
+function getLeatherUnitPriceFromSettings() {
+  const row = settingsRows.find(r => r.key === 'leather_unit_price_per_ds');
+  const v = parseFloat(row?.value);
+  return (!isNaN(v) && v > 0) ? v : 160;
+}
 
 function renderEstimateMatrix() {
   const targets = ['estimateMatrixWrap1', 'estimateMatrixWrap2'];
@@ -1888,14 +1893,14 @@ function buildEstimateMatrixHtml() {
     return '<div style="color:#888;font-size:12px">サイズ・構造のCSVを読み込むと試算表が表示されます</div>';
   }
   const rate = getLaborRateFromSettings();
-  // 革材料費 試算パラメータ（ヌメ革ALASKA基準）
-  const NUMER_DS = 160;       // ¥/ds（ヌメ革ALASKA相当）
+  // 革材料費 試算パラメータ（settings.csv から取得）
+  const NUMER_DS = getLeatherUnitPriceFromSettings();       // ¥/ds
   let h = `
     <h3 style="margin:0 0 8px;font-size:15px;color:#6b3a1f">📊 全サイズ × 全構造 試算マトリクス</h3>
     <div class="hint" style="margin-bottom:8px">
       各セル: <span style="color:#2d5a3d;font-weight:bold">製作費</span> / <span style="color:#7a5a2d;font-weight:bold">原材料費</span> / <span style="color:#6b3a1f;font-weight:bold">合計</span>
       <br>製作費 = (サイズ工数 + 構造工数) × ¥${rate.toLocaleString()}/h + 固定加算
-      <br>原材料費 = リフィル面積 × 構造別 areaMulti × ¥${NUMER_DS}/ds（ヌメ革ALASKA基準・クラウゼ時の革倍増・リング代は含まず）
+      <br>原材料費 = リフィル面積 × 構造別 areaMulti × ¥${NUMER_DS}/ds（DS単価は ⚙設定タブ で編集可能・クラウゼ時の革倍増・リング代は含まず）
       <br>⚠ <strong>area_mult はリフィル面積に対する倍率</strong>（例: Simplist=3 なら表裏+スパイン+マージン込みで3倍）。実態に合わせて要調整。
     </div>
     <div style="overflow-x:auto">
