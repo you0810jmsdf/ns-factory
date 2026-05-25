@@ -1125,7 +1125,7 @@ const WASTE_RATE       = 0.30;  // 半裁革の使用不可部分（約30%）
 const WASTE_FACTOR     = 1 / (1 - WASTE_RATE);  // ≈ 1.4286：必要購入量 = 使用量 ÷ (1 - ロス率)
 const CRAFT_MULTIPLIER = 1.5;   // 工賃込み倍率（縫製・コバ磨き等を革材料費に上乗せ）
 // ── 新計算式（2026-05-25）── 製作費 = (サイズ別工数 + 構造別追加工数) × LABOR_RATE_PER_HOUR
-const LABOR_RATE_PER_HOUR = 3000;   // 時給単価（¥/h）admin で将来編集可能化予定
+let LABOR_RATE_PER_HOUR = 3000;   // 時給単価（¥/h）settings.csv で上書き可能
 // 管理者調整モードのリセット（?admin時のみ意味あり）
 function resetAdminOverrides() {
   window._adminOverrides = {};
@@ -2336,6 +2336,25 @@ async function loadRingPriceCatalog() {
   }
 }
 
+// ── 全体設定 CSV（時給等） ──
+const SETTINGS_CSV_URL = new URL('./settings.csv', location.href).toString();
+async function loadSettingsCatalog() {
+  try {
+    const res = await fetch(SETTINGS_CSV_URL, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const rows = parseCsv(text);
+    rows.forEach(row => {
+      if (row.key === 'labor_rate_per_hour') {
+        const v = parseFloat(row.value);
+        if (!isNaN(v) && v > 0) LABOR_RATE_PER_HOUR = v;
+      }
+    });
+  } catch (err) {
+    console.warn('settings CSV load failed:', err);
+  }
+}
+
 // ── サイズ別基準価格 CSV ──
 const SIZE_BASEPRICE_CSV_URL = new URL('./size-baseprice.csv', location.href).toString();
 async function loadSizeBasePriceCatalog() {
@@ -3384,7 +3403,7 @@ function doResetAll() {
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', () => {
-  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog(), loadSizeBasePriceCatalog(), loadBrandPriceCatalog()]).finally(() => {
+  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog(), loadSizeBasePriceCatalog(), loadBrandPriceCatalog(), loadSettingsCatalog()]).finally(() => {
   buildBrandGrid();
   syncNpadFlapImageFromSimulator();
   updateFlapOptionUI();
