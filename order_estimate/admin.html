@@ -1611,7 +1611,7 @@ function utf8ToBase64(text) {
   return btoa(binary);
 }
 
-async function publishCsvToGitHub({ path, fileName, csvText, buttonId, onSuccess }) {
+async function publishCsvToGitHub({ path, fileName, csvText, buttonId, onSuccess, _retry = false }) {
   let token = getGitHubToken();
   if (!token) {
     const accepted = await promptGitHubToken();
@@ -1667,7 +1667,27 @@ async function publishCsvToGitHub({ path, fileName, csvText, buttonId, onSuccess
     }
     if (!putRes.ok) {
       const errData = await putRes.json().catch(() => null);
-      throw new Error(errData?.message || `GitHub反映に失敗しました: HTTP ${putRes.status}`);
+      const msg = errData?.message || '';
+      // sha mismatch（リモートが先に更新されている）→ 1度だけ自動リトライ
+      if (!_retry && (msg.includes('does not match') || putRes.status === 409)) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = originalLabel;
+        }
+        const ok = confirm(
+          `リモートに別の変更があります。\n` +
+          `（他端末や別タブで先に admin から更新された可能性）\n\n` +
+          `あなたの編集で上書きしてもよいですか？\n` +
+          `※ リモートの新しい変更は失われます。`
+        );
+        if (!ok) {
+          alert('反映を中止しました。\n「公開CSVを再読込」で最新を取得してから再編集してください。');
+          return;
+        }
+        // 最新SHAを取り直して再送（_retry=true で無限ループ防止）
+        return publishCsvToGitHub({ path, fileName, csvText, buttonId, onSuccess, _retry: true });
+      }
+      throw new Error(msg || `GitHub反映に失敗しました: HTTP ${putRes.status}`);
     }
 
     onSuccess?.();
