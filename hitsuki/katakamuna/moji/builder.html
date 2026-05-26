@@ -312,6 +312,13 @@ const PART_DEFS = [
   { cat:'内側点', id:'idot_br', label:'内右下', d: `<circle cx="${IP[1].x}" cy="${IP[1].y}" r="12" fill="none"/>` },
   { cat:'内側点', id:'idot_bl', label:'内左下', d: `<circle cx="${IP[2].x}" cy="${IP[2].y}" r="12" fill="none"/>` },
   { cat:'内側点', id:'idot_tl', label:'内左上', d: `<circle cx="${IP[3].x}" cy="${IP[3].y}" r="12" fill="none"/>` },
+
+  // ─── 弦弧 (katakamuna_base2.svg 準拠) ───
+  // 弦のオフセット = r/4 = 25px。ベジェ制御点はbase2.svgを300×300px座標系に変換。
+  { cat:'弦弧', id:'carc_right', label:'弦弧(右)',
+    d: `<path d="M175,246.8 C219.2,235.4 250,195.6 250,150 M250,150 C250,104.4 219.2,64.6 175,53.2 L175,246.8" fill="none"/>` },
+  { cat:'弦弧', id:'carc_left',  label:'弦弧(左)',
+    d: `<path d="M125,246.8 C80.8,235.4 50,195.6 50,150 M50,150 C50,104.4 80.8,64.6 125,53.2 L125,246.8" fill="none"/>` },
 ];
 
 // ベースグリッド（ガイド）: 全パーツを薄い色で表示するSVG文字列
