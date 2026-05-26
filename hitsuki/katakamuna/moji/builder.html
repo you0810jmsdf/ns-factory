@@ -282,6 +282,10 @@ const PART_DEFS = [
     d: `<line x1="${CX-R}" y1="${CY}" x2="${CX}" y2="${CY}"/>` },
   { cat:'主軸', id:'line_h_right',  label:'横(右)',
     d: `<line x1="${CX}" y1="${CY}" x2="${CX+R}" y2="${CY}"/>` },
+  { cat:'主軸', id:'line_d_ne_sw', label:'斜め(╲)',
+    d: `<line x1="${fmtN(P8[1].x)}" y1="${fmtN(P8[1].y)}" x2="${fmtN(P8[5].x)}" y2="${fmtN(P8[5].y)}"/>` },
+  { cat:'主軸', id:'line_d_nw_se', label:'斜め(╱)',
+    d: `<line x1="${fmtN(P8[7].x)}" y1="${fmtN(P8[7].y)}" x2="${fmtN(P8[3].x)}" y2="${fmtN(P8[3].y)}"/>` },
 
   // ─── 内側グリッド線 (katakamuna_base.svg 準拠) ───
   { cat:'内線', id:'inner_h_top',   label:'内横(上)',
