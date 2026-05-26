@@ -63,7 +63,7 @@
     }
     .char-img-wrap img {
       width: 52px; height: 52px; object-fit: contain;
-      filter: invert(1) sepia(0.7) saturate(5) hue-rotate(5deg);
+      background: #fff; border-radius: 3px;
     }
     .char-sound {
       font-size: 0.82rem; color: #f0c040; font-weight: bold; line-height: 1;
@@ -312,10 +312,14 @@ function loadCharColored(n, fillColor) {
       const fb = parseInt(fillColor.slice(5,7), 16);
       for (let i = 0; i < d.length; i += 4) {
         if (d[i+3] > 10) {
-          // 不透明ピクセル（黒線）→ fillColor に置換
-          d[i] = fr; d[i+1] = fg; d[i+2] = fb; d[i+3] = 255;
+          // 白背景判定: R,G,B すべて 220 以上 → 背景として透明化
+          if (d[i] > 220 && d[i+1] > 220 && d[i+2] > 220) {
+            d[i+3] = 0;
+          } else {
+            // 線・シンボルピクセル → fillColor に置換
+            d[i] = fr; d[i+1] = fg; d[i+2] = fb; d[i+3] = 255;
+          }
         }
-        // 透明ピクセル（背景）はそのまま
       }
       octx.putImageData(imageData, 0, 0);
       oc.toBlob(blob => {
