@@ -294,20 +294,20 @@ const PART_DEFS = [
     d: `<line x1="${CX-INNER}" y1="${fmtN(CY-INNER_HALF)}" x2="${CX-INNER}" y2="${fmtN(CY+INNER_HALF)}"/>` },
 
   // ─── 外周点 (大円上の8点) ───
-  { cat:'外周点', id:'dot_0',   label:'上(0°)',    d: `<circle cx="${fmtN(P8[0].x)}" cy="${fmtN(P8[0].y)}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'外周点', id:'dot_45',  label:'右上(45°)', d: `<circle cx="${fmtN(P8[1].x)}" cy="${fmtN(P8[1].y)}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'外周点', id:'dot_90',  label:'右(90°)',   d: `<circle cx="${fmtN(P8[2].x)}" cy="${fmtN(P8[2].y)}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'外周点', id:'dot_135', label:'右下(135°)',d: `<circle cx="${fmtN(P8[3].x)}" cy="${fmtN(P8[3].y)}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'外周点', id:'dot_180', label:'下(180°)',  d: `<circle cx="${fmtN(P8[4].x)}" cy="${fmtN(P8[4].y)}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'外周点', id:'dot_225', label:'左下(225°)',d: `<circle cx="${fmtN(P8[5].x)}" cy="${fmtN(P8[5].y)}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'外周点', id:'dot_270', label:'左(270°)',  d: `<circle cx="${fmtN(P8[6].x)}" cy="${fmtN(P8[6].y)}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'外周点', id:'dot_315', label:'左上(315°)',d: `<circle cx="${fmtN(P8[7].x)}" cy="${fmtN(P8[7].y)}" r="8" fill="currentColor" stroke="none"/>` },
+  { cat:'外周点', id:'dot_0',   label:'上(0°)',    d: `<circle cx="${fmtN(P8[0].x)}" cy="${fmtN(P8[0].y)}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'外周点', id:'dot_45',  label:'右上(45°)', d: `<circle cx="${fmtN(P8[1].x)}" cy="${fmtN(P8[1].y)}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'外周点', id:'dot_90',  label:'右(90°)',   d: `<circle cx="${fmtN(P8[2].x)}" cy="${fmtN(P8[2].y)}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'外周点', id:'dot_135', label:'右下(135°)',d: `<circle cx="${fmtN(P8[3].x)}" cy="${fmtN(P8[3].y)}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'外周点', id:'dot_180', label:'下(180°)',  d: `<circle cx="${fmtN(P8[4].x)}" cy="${fmtN(P8[4].y)}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'外周点', id:'dot_225', label:'左下(225°)',d: `<circle cx="${fmtN(P8[5].x)}" cy="${fmtN(P8[5].y)}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'外周点', id:'dot_270', label:'左(270°)',  d: `<circle cx="${fmtN(P8[6].x)}" cy="${fmtN(P8[6].y)}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'外周点', id:'dot_315', label:'左上(315°)',d: `<circle cx="${fmtN(P8[7].x)}" cy="${fmtN(P8[7].y)}" r="12" fill="currentColor" stroke="none"/>` },
 
   // ─── 内側交点 ───
-  { cat:'内側点', id:'idot_tr', label:'内右上', d: `<circle cx="${IP[0].x}" cy="${IP[0].y}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'内側点', id:'idot_br', label:'内右下', d: `<circle cx="${IP[1].x}" cy="${IP[1].y}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'内側点', id:'idot_bl', label:'内左下', d: `<circle cx="${IP[2].x}" cy="${IP[2].y}" r="8" fill="currentColor" stroke="none"/>` },
-  { cat:'内側点', id:'idot_tl', label:'内左上', d: `<circle cx="${IP[3].x}" cy="${IP[3].y}" r="8" fill="currentColor" stroke="none"/>` },
+  { cat:'内側点', id:'idot_tr', label:'内右上', d: `<circle cx="${IP[0].x}" cy="${IP[0].y}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'内側点', id:'idot_br', label:'内右下', d: `<circle cx="${IP[1].x}" cy="${IP[1].y}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'内側点', id:'idot_bl', label:'内左下', d: `<circle cx="${IP[2].x}" cy="${IP[2].y}" r="12" fill="currentColor" stroke="none"/>` },
+  { cat:'内側点', id:'idot_tl', label:'内左上', d: `<circle cx="${IP[3].x}" cy="${IP[3].y}" r="12" fill="currentColor" stroke="none"/>` },
 ];
 
 // ベースグリッド（ガイド）: 全パーツを薄い色で表示するSVG文字列
