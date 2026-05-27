@@ -40,6 +40,12 @@ const API = {
   updateProduct(product)        { return this.post({ action: 'updateProduct', product }); },
   deleteProduct(id)             { return this.post({ action: 'deleteProduct', id }); },
 
+  // === 振込先口座マスタ ===
+  listBankAccounts()                  { return this.post({ action: 'listBankAccounts' }); },
+  createBankAccount(bankAccount)      { return this.post({ action: 'createBankAccount', bankAccount }); },
+  updateBankAccount(bankAccount)      { return this.post({ action: 'updateBankAccount', bankAccount }); },
+  deleteBankAccount(id)               { return this.post({ action: 'deleteBankAccount', id }); },
+
   // === 採番 ===
   getNextNumber(type)           { return this.post({ action: 'getNextNumber', type }); },
 

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>振込先口座マスタ — N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="../index.html" class="brand">N's factory</a>
+  <nav>
+    <a href="index.html"><span>書類台帳</span></a>
+    <a href="customers.html"><span>顧客</span></a>
+    <a href="products.html"><span>商品</span></a>
+    <a href="bank-accounts.html" class="active"><span>振込先</span></a>
+  </nav>
+</header>
+
+<div class="main-container">
+  <div class="page-title">振込先口座マスタ</div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" id="btn-new">+ 新規登録</button>
+    <div class="spacer"></div>
+    <input type="text" class="form-control" id="search-input" placeholder="検索（銀行名・ラベル）..." style="width:200px;">
+    <button class="btn btn-secondary" id="btn-refresh">更新</button>
+  </div>
+
+  <!-- 新規/編集フォーム -->
+  <div class="card" id="form-panel" style="display:none;">
+    <div class="card-title" id="form-title">口座登録</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">ラベル（請求書選択時に表示）*</label>
+        <input type="text" class="form-control" id="f-label" placeholder="例: ゆうちょメイン">
+      </div>
+      <div class="form-group">
+        <label class="form-label">既定にする</label>
+        <select class="form-control" id="f-isDefault">
+          <option value="false">いいえ</option>
+          <option value="true">はい（新規発行時に自動選択）</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">銀行名 *</label>
+        <input type="text" class="form-control" id="f-bankName" placeholder="例: ゆうちょ銀行">
+      </div>
+      <div class="form-group">
+        <label class="form-label">支店名</label>
+        <input type="text" class="form-control" id="f-branchName" placeholder="例: 〇九八支店">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">口座種別</label>
+        <select class="form-control" id="f-accountType">
+          <option value="普通">普通</option>
+          <option value="当座">当座</option>
+          <option value="貯蓄">貯蓄</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">口座番号 *</label>
+        <input type="text" class="form-control" id="f-accountNumber" placeholder="例: 12345678">
+      </div>
+      <div class="form-group">
+        <label class="form-label">口座名義 *</label>
+        <input type="text" class="form-control" id="f-accountHolder" placeholder="例: ナカツカ ユウキ">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">備考（手数料・記号番号など）</label>
+      <textarea class="form-control" id="f-note" rows="2" placeholder="例: 記号10000 番号12345678 / 振込手数料はお客様ご負担"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-primary" id="btn-submit">登録</button>
+      <button class="btn btn-secondary" id="btn-cancel">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- 一覧テーブル -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="data-table" id="bank-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>ラベル</th>
+          <th>銀行・支店</th>
+          <th>種別</th>
+          <th>口座番号</th>
+          <th>名義</th>
+          <th>既定</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="bank-tbody">
+        <tr><td colspan="8"><div class="empty-state"><span class="icon">&#x1F3E6;</span>読み込み中...</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:16px;font-size:11px;color:var(--color-text-mute);">
+    ※ 既定口座は請求書/領収書の新規作成時に自動選択されます。1件だけ既定に設定できます。<br>
+    ※ シートが未作成の場合は、GASエディタで <code>setupBankAccountsSheet()</code> を1回実行してください。
+  </p>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/bank-accounts.js"></script>
+</body>
+</html>
