@@ -284,14 +284,8 @@
       return false;
     }
     console.log('[CM連携] payload 適用:', payload);
-    // 1回使い切り
-    sessionStorage.removeItem(SS_CM_KEY);
-    // URLからpayloadを除去（リロード時の二重適用防止・採番済み番号も維持される）
-    if (urlPayload) {
-      const cleanParams = new URLSearchParams(location.search);
-      cleanParams.delete('payload');
-      history.replaceState({}, '', location.pathname + '?' + cleanParams.toString());
-    }
+    // F5 / ブックマーク復元時もデータが残るよう、URL/sessionStorage は意図的に除去しない
+    // （リロード時に再適用されるが、書類番号は再採番されるので実害なし）
 
     // 顧客情報
     if (payload.customer && payload.customer.name) {
