@@ -562,52 +562,98 @@
     }
   }
 
-  // ---- PDF プレビュー ----
+  // ---- 印刷エリアにHTMLを流し込む（共通） ----
+  function fillPrintArea() {
+    const doc     = buildDocObject();
+    const details = buildDetails();
+    const typeLabel = CONFIG.TYPE_LABEL[doc.type] || '書類';
+
+    document.getElementById('pa-title').textContent       = typeLabel;
+    document.getElementById('pa-number').textContent      = doc.number || '';
+    document.getElementById('pa-issue-date').textContent  = doc.issueDate || '';
+    document.getElementById('pa-customer-name').textContent      = doc.customerName || '';
+    document.getElementById('pa-customer-honorific').textContent = doc.customerHonorific || '様';
+    document.getElementById('pa-subject').textContent     = doc.subject || '';
+
+    // 上部の合計表示ラベル（請求書/見積書/領収書で言い回し変更）
+    const totalLabel = {
+      invoice: 'ご請求金額',
+      quote:   'お見積金額',
+      receipt: 'ご入金金額'
+    }[doc.type] || 'ご請求金額';
+    document.getElementById('pa-total-label').textContent = totalLabel;
+    document.getElementById('pa-total').textContent  = Number(doc.total).toLocaleString();
+    document.getElementById('pa-total2').textContent = Number(doc.total).toLocaleString();
+    document.getElementById('pa-subtotal').textContent = Number(doc.subtotal).toLocaleString();
+    document.getElementById('pa-tax').textContent      = Number(doc.tax).toLocaleString();
+
+    // 消費税行（OFF時は非表示）
+    const taxIncluded = document.getElementById('doc-tax-included').checked;
+    document.getElementById('pa-tax-row').style.display = taxIncluded ? '' : 'none';
+
+    // 発行者情報
+    document.getElementById('pa-issuer-owner').textContent   = CONFIG.COMPANY.owner   || '';
+    document.getElementById('pa-issuer-address').textContent = CONFIG.COMPANY.address || '';
+    document.getElementById('pa-issuer-phone').textContent   = CONFIG.COMPANY.phone ? 'TEL: ' + CONFIG.COMPANY.phone : '';
+    document.getElementById('pa-issuer-email').textContent   = CONFIG.COMPANY.email   ? 'Mail: ' + CONFIG.COMPANY.email : '';
+    document.getElementById('pa-issuer-invoice').textContent = CONFIG.COMPANY.invoice || '';
+
+    // 明細テーブル
+    const tbody = document.getElementById('pa-tbody');
+    tbody.innerHTML = details.map(function(d) {
+      return `<tr>
+        <td>${escHtml(d.itemName)}</td>
+        <td>${escHtml(d.qty)}${d.unit ? ' ' + escHtml(d.unit) : ''}</td>
+        <td>¥${Number(d.unitPrice).toLocaleString()}</td>
+        <td>¥${Number(d.lineTotal).toLocaleString()}</td>
+        <td>${escHtml(d.note || '')}</td>
+      </tr>`;
+    }).join('');
+
+    // 備考
+    const noteBlock = document.getElementById('pa-note-block');
+    const notePre   = document.getElementById('pa-note');
+    if (doc.note && doc.note.trim()) {
+      notePre.textContent = doc.note;
+      noteBlock.style.display = '';
+    } else {
+      noteBlock.style.display = 'none';
+    }
+
+    // フッタ種別
+    document.getElementById('pa-footer-type').textContent = typeLabel;
+  }
+
+  // ---- プレビュー / PDF保存（どちらも window.print() で起動） ----
   function previewPdf() {
-    const doc     = buildDocObject();
-    const details = buildDetails();
+    if (!document.getElementById('customer-name').value.trim()) {
+      if (!confirm('顧客名が未入力です。このまま印刷プレビューを開きますか？')) return;
+    }
     try {
-      PDF.preview(doc, details);
+      fillPrintArea();
+      // 印刷ダイアログを起動（ユーザーがPDFとして保存することを想定）
+      window.print();
     } catch (e) {
-      showToast('PDF生成エラー: ' + e.message, 'error');
+      showToast('印刷プレビュー生成エラー: ' + e.message, 'error');
     }
   }
 
-  // ---- PDF ダウンロード ----
+  // PDF保存ボタンも実体は同じ（印刷ダイアログから「PDFとして保存」を選ぶ）
   function downloadPdf() {
-    const doc     = buildDocObject();
-    const details = buildDetails();
-    try {
-      PDF.download(doc, details);
-      showToast('PDFをダウンロードしました', 'success');
-    } catch (e) {
-      showToast('PDF生成エラー: ' + e.message, 'error');
-    }
+    previewPdf();
+    showToast('印刷ダイアログで「PDFとして保存」を選択してください', 'success');
   }
 
-  // ---- Drive 保存 ----
+  // ---- Drive 保存（当面は印刷PDF→手動アップロード案内） ----
   async function saveToDrive() {
-    const doc     = buildDocObject();
-    const details = buildDetails();
-    if (!doc.number || doc.number.includes('???')) {
-      showToast('先に保存してから Drive 保存してください。', 'error');
-      return;
-    }
-    setBtnLoading('btn-drive', true);
-    try {
-      const base64   = PDF.generate(doc, details);
-      const typeLabel = CONFIG.TYPE_LABEL[doc.type] || '書類';
-      const filename  = doc.number + '_' + typeLabel + '.pdf';
-      const res = await API.savePdf(doc.number, filename, base64);
-      document.getElementById('drive-url-link').href = res.driveUrl;
-      document.getElementById('drive-url-link').style.display = 'inline';
-      document.getElementById('drive-url-none').style.display = 'none';
-      showToast('Drive に保存しました', 'success');
-    } catch (e) {
-      showToast('Drive 保存エラー: ' + e.message, 'error');
-    } finally {
-      setBtnLoading('btn-drive', false);
-    }
+    alert(
+      'Drive 自動保存は現在準備中です。\n\n' +
+      '【代替手順】\n' +
+      '1. 「PDF保存」ボタンを押す\n' +
+      '2. 印刷ダイアログで「PDFとして保存」を選択\n' +
+      '3. 書類台帳から該当書類を開き、生成されたPDFを Drive に手動アップロード\n\n' +
+      '※ 日本語フォント対応のため、印刷ダイアログ経由に変更しました'
+    );
   }
 
   // ---- ヘルパー ----
