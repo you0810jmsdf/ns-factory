@@ -19,8 +19,6 @@
 
   // ---- 初期化 ----
   document.addEventListener('DOMContentLoaded', async function () {
-    PDF.preloadImages();
-
     // 今日の日付セット
     document.getElementById('doc-issue-date').value = todayStr();
 
