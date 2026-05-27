@@ -399,8 +399,8 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
   position: relative;
   font-size: 9pt;
   line-height: 1.8;
-  padding-right: 24mm;
-  min-height: 24mm;
+  padding-right: 17mm;
+  min-height: 15mm;
 }
 #print-area .pa-issuer-name { font-weight: 700; font-size: 11pt; margin-bottom: 1mm; }
 #print-area .pa-issuer-invoice { color: #666; font-size: 8pt; margin-top: 1mm; }
@@ -408,8 +408,8 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
   position: absolute;
   top: 0;
   right: 0;
-  width: 22mm;
-  height: 22mm;
+  width: 15mm;
+  height: 15mm;
   display: flex;
   align-items: center;
   justify-content: center;
