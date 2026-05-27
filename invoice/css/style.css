@@ -399,16 +399,17 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
   position: relative;
   font-size: 9pt;
   line-height: 1.8;
-  padding-right: 22mm;
+  padding-right: 24mm;
+  min-height: 24mm;
 }
 #print-area .pa-issuer-name { font-weight: 700; font-size: 11pt; margin-bottom: 1mm; }
 #print-area .pa-issuer-invoice { color: #666; font-size: 8pt; margin-top: 1mm; }
 #print-area .pa-inkan {
   position: absolute;
-  top: 2mm;
+  top: 0;
   right: 0;
-  width: 26mm;
-  height: 26mm;
+  width: 22mm;
+  height: 22mm;
   display: flex;
   align-items: center;
   justify-content: center;
