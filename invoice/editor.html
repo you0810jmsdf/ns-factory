@@ -216,6 +216,63 @@
 
 <div id="toast-container"></div>
 
+<!-- ============================================================ -->
+<!-- 印刷専用エリア（通常時はCSS @media print で表示制御）        -->
+<!-- ============================================================ -->
+<div id="print-area">
+  <div class="pa-header">
+    <h1 class="pa-title" id="pa-title">請求書</h1>
+    <div class="pa-meta">
+      <div>書類番号: <span id="pa-number"></span></div>
+      <div>発行日: <span id="pa-issue-date"></span></div>
+    </div>
+  </div>
+
+  <div class="pa-grid">
+    <div class="pa-customer-box">
+      <div class="pa-customer-name">
+        <span id="pa-customer-name"></span>
+        <span id="pa-customer-honorific"></span>
+      </div>
+    </div>
+    <div class="pa-issuer-box">
+      <div class="pa-issuer-name">N's factory</div>
+      <div id="pa-issuer-owner"></div>
+      <div id="pa-issuer-address"></div>
+      <div id="pa-issuer-phone"></div>
+      <div id="pa-issuer-email"></div>
+      <div class="pa-issuer-invoice" id="pa-issuer-invoice"></div>
+      <div class="pa-inkan">印</div>
+    </div>
+  </div>
+
+  <div class="pa-subject">件名: <span id="pa-subject"></span></div>
+  <div class="pa-total-line">
+    <span id="pa-total-label">ご請求金額</span>
+    <span class="pa-total-amount">¥<span id="pa-total"></span></span>
+  </div>
+
+  <table class="pa-table">
+    <thead>
+      <tr><th>品名</th><th>数量</th><th>単価</th><th>小計</th><th>備考</th></tr>
+    </thead>
+    <tbody id="pa-tbody"></tbody>
+  </table>
+
+  <div class="pa-summary">
+    <div><span class="pa-summary-label">小計</span><span class="pa-summary-amount">¥<span id="pa-subtotal"></span></span></div>
+    <div id="pa-tax-row"><span class="pa-summary-label">消費税 (10%)</span><span class="pa-summary-amount">¥<span id="pa-tax"></span></span></div>
+    <div class="pa-summary-total"><span class="pa-summary-label">合計</span><span class="pa-summary-amount">¥<span id="pa-total2"></span></span></div>
+  </div>
+
+  <div class="pa-note" id="pa-note-block">
+    <div class="pa-note-title">備考</div>
+    <pre id="pa-note"></pre>
+  </div>
+
+  <div class="pa-footer">N's factory — <span id="pa-footer-type">請求書</span></div>
+</div>
+
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/pdf.js"></script>
