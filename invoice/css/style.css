@@ -405,18 +405,33 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
 #print-area .pa-issuer-invoice { color: #666; font-size: 8pt; margin-top: 1mm; }
 #print-area .pa-inkan {
   position: absolute;
-  top: 4mm;
+  top: 2mm;
   right: 0;
-  width: 18mm;
-  height: 18mm;
+  width: 26mm;
+  height: 26mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#print-area .pa-inkan img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+/* 画像読込失敗時のフォールバック（テキスト印） */
+#print-area .pa-inkan.pa-inkan-fallback {
   border: 1.5pt solid #b41e1e;
   color: #b41e1e;
   font-size: 11pt;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: 50%;
+  width: 18mm;
+  height: 18mm;
+}
+#print-area .pa-inkan.pa-inkan-fallback::after {
+  content: '印';
 }
 
 #print-area .pa-subject {
