@@ -245,16 +245,37 @@
   function applyCmPayloadIfAny() {
     if (!fromCM) return false;
     let payload;
-    try {
-      const raw = sessionStorage.getItem(SS_CM_KEY);
-      if (!raw) return false;
-      payload = JSON.parse(raw);
-    } catch (e) {
-      console.warn('CMペイロード読込失敗:', e.message);
+    // 優先1: URLパラメータ payload （クロスオリジン対応）
+    const urlPayload = params.get('payload');
+    if (urlPayload) {
+      try {
+        payload = JSON.parse(decodeURIComponent(urlPayload));
+      } catch (e) {
+        console.warn('URLペイロードのデコード失敗:', e.message);
+      }
+    }
+    // 優先2: sessionStorage （同一オリジン時のフォールバック）
+    if (!payload) {
+      try {
+        const raw = sessionStorage.getItem(SS_CM_KEY);
+        if (raw) payload = JSON.parse(raw);
+      } catch (e) {
+        console.warn('sessionStorageペイロード読込失敗:', e.message);
+      }
+    }
+    if (!payload) {
+      console.warn('CM連携: payload が取得できませんでした（URL/sessionStorage 両方とも空）');
       return false;
     }
+    console.log('CM引込ペイロード:', payload);
     // 1回使い切り
     sessionStorage.removeItem(SS_CM_KEY);
+    // URLからpayloadを除去（リロード時の二重適用防止・採番済み番号も維持される）
+    if (urlPayload) {
+      const cleanParams = new URLSearchParams(location.search);
+      cleanParams.delete('payload');
+      history.replaceState({}, '', location.pathname + '?' + cleanParams.toString());
+    }
 
     // 顧客情報
     if (payload.customer && payload.customer.name) {
