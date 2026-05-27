@@ -8,11 +8,14 @@
   const params = new URLSearchParams(location.search);
   const editId = params.get('id');   // 既存書類番号（編集時）
   const initType = params.get('type') || 'quote';
+  const fromCM   = params.get('fromCM') === '1'; // customer_manager からの引込フラグ
 
   let customers = [];
   let products  = [];
+  let bankAccounts = []; // 振込先口座マスタ
   let detailRows = [];   // { itemName, qty, unit, unitPrice, lineTotal, note }
   let currentDoc = null; // 編集中の書類ヘッダ
+  const SS_CM_KEY = 'nsf_cm_invoice_payload'; // customer_manager 連携 sessionStorage キー
 
   // ---- 初期化 ----
   document.addEventListener('DOMContentLoaded', async function () {
@@ -28,8 +31,8 @@
     // 種別変更時にタイトル更新
     document.getElementById('doc-type').addEventListener('change', updateTitle);
 
-    // 顧客・商品マスタ読み込み
-    await Promise.all([loadCustomers(), loadProducts()]);
+    // 顧客・商品・振込先口座マスタ読み込み
+    await Promise.all([loadCustomers(), loadProducts(), loadBankAccounts()]);
 
     // 既存書類の読み込み（編集モード）
     if (editId) {
@@ -37,7 +40,9 @@
     } else {
       // 新規: 採番して番号セット
       await assignNewNumber(document.getElementById('doc-type').value);
-      addDetailRow(); // 最初の明細行
+      // customer_manager からの引込があれば反映
+      const applied = applyCmPayloadIfAny();
+      if (!applied) addDetailRow(); // 最初の明細行
     }
 
     // ---- ボタンイベント ----
@@ -49,6 +54,9 @@
 
     // 顧客名オートコンプリート → ID・敬称自動入力
     document.getElementById('customer-name').addEventListener('change', onCustomerNameChange);
+
+    // 振込先口座セレクト → 備考自動転記
+    document.getElementById('bank-account-select').addEventListener('change', onBankAccountChange);
   });
 
   // ---- タイトル更新 ----
@@ -105,6 +113,186 @@
     if (matched) {
       document.getElementById('customer-id').value = matched.id;
       document.getElementById('customer-honorific').value = matched.honorific || '様';
+    } else {
+      // 既存マスタに無い → ID 空欄（保存時に新規作成される）
+      document.getElementById('customer-id').value = '';
+    }
+  }
+
+  // ---- 振込先口座マスタ読み込み ----
+  async function loadBankAccounts() {
+    try {
+      const res = await API.listBankAccounts();
+      bankAccounts = res.data || [];
+      renderBankAccountSelect();
+    } catch (e) {
+      console.warn('振込先口座マスタ読み込み失敗:', e.message);
+    }
+  }
+
+  function renderBankAccountSelect() {
+    const sel = document.getElementById('bank-account-select');
+    if (!sel) return;
+    const opts = ['<option value="">（振込先を備考に記載しない）</option>'];
+    bankAccounts.forEach(function (a) {
+      const label = (a.label || a.bankName || a.id) + (a.isDefault ? '（既定）' : '');
+      opts.push(`<option value="${escHtml(a.id)}">${escHtml(label)}</option>`);
+    });
+    sel.innerHTML = opts.join('');
+    // 新規かつ既存書類未読込の場合は既定口座を選択
+    if (!editId) {
+      const def = bankAccounts.find(a => a.isDefault);
+      if (def) {
+        sel.value = def.id;
+        applyBankAccountToNote(def, /*overwrite=*/true);
+      }
+    }
+  }
+
+  // ---- 口座セレクト変更 ----
+  function onBankAccountChange() {
+    const sel = document.getElementById('bank-account-select');
+    const acc = bankAccounts.find(a => a.id === sel.value);
+    const autoWrite = document.getElementById('bank-auto-write').checked;
+    if (!autoWrite) return;
+    if (!acc) {
+      removeBankBlockFromNote();
+      return;
+    }
+    applyBankAccountToNote(acc, /*overwrite=*/false);
+  }
+
+  // ---- 備考textareaに振込先ブロックを差し込む ----
+  // 区切りマーカー（=== 振込先 === ... ===========）で囲み、再選択時は上書き
+  const BANK_MARK_START = '=== 振込先 ===';
+  const BANK_MARK_END   = '================';
+
+  function buildBankBlock(acc) {
+    const lines = [BANK_MARK_START];
+    if (acc.bankName)      lines.push(acc.bankName + (acc.branchName ? ('　' + acc.branchName) : ''));
+    if (acc.accountType || acc.accountNumber) {
+      lines.push((acc.accountType || '') + (acc.accountNumber ? ('　' + acc.accountNumber) : ''));
+    }
+    if (acc.accountHolder) lines.push('名義: ' + acc.accountHolder);
+    if (acc.note)          lines.push(acc.note);
+    lines.push(BANK_MARK_END);
+    return lines.join('\n');
+  }
+
+  function applyBankAccountToNote(acc, overwrite) {
+    const ta = document.getElementById('doc-note');
+    const current = ta.value || '';
+    const block = buildBankBlock(acc);
+    const stripped = removeBankBlockText(current);
+    // 既存テキストの末尾に追加（改行を確保）
+    const sep = stripped.trim() ? (stripped.replace(/\s+$/, '') + '\n\n') : '';
+    ta.value = sep + block;
+  }
+
+  function removeBankBlockFromNote() {
+    const ta = document.getElementById('doc-note');
+    ta.value = removeBankBlockText(ta.value || '').replace(/\s+$/, '');
+  }
+
+  function removeBankBlockText(text) {
+    const startIdx = text.indexOf(BANK_MARK_START);
+    if (startIdx < 0) return text;
+    const endMarkIdx = text.indexOf(BANK_MARK_END, startIdx);
+    if (endMarkIdx < 0) return text.slice(0, startIdx).replace(/\s+$/, '');
+    return (text.slice(0, startIdx) + text.slice(endMarkIdx + BANK_MARK_END.length)).replace(/\n{3,}/g, '\n\n');
+  }
+
+  // ---- customer_manager からの引込ペイロード適用 ----
+  // sessionStorage[SS_CM_KEY] = {
+  //   customer: { name, honorific, zip, address, phone, email, note },
+  //   subject: '...',
+  //   details: [ { itemName, qty, unit, unitPrice, note } ],
+  //   docType: 'invoice'
+  // }
+  function applyCmPayloadIfAny() {
+    if (!fromCM) return false;
+    let payload;
+    try {
+      const raw = sessionStorage.getItem(SS_CM_KEY);
+      if (!raw) return false;
+      payload = JSON.parse(raw);
+    } catch (e) {
+      console.warn('CMペイロード読込失敗:', e.message);
+      return false;
+    }
+    // 1回使い切り
+    sessionStorage.removeItem(SS_CM_KEY);
+
+    // 顧客情報
+    if (payload.customer && payload.customer.name) {
+      document.getElementById('customer-name').value = payload.customer.name;
+      document.getElementById('customer-honorific').value = payload.customer.honorific || '様';
+      const matched = customers.find(c => c.name === payload.customer.name);
+      if (matched) {
+        document.getElementById('customer-id').value = matched.id;
+      } else {
+        document.getElementById('customer-id').value = ''; // 保存時に新規作成
+      }
+    }
+
+    // 件名
+    if (payload.subject) {
+      document.getElementById('doc-subject').value = payload.subject;
+    }
+
+    // 種別
+    if (payload.docType) {
+      document.getElementById('doc-type').value = payload.docType;
+      updateTitle();
+    }
+
+    // 明細行
+    if (Array.isArray(payload.details) && payload.details.length > 0) {
+      payload.details.forEach(d => addDetailRow(d));
+    } else {
+      addDetailRow();
+    }
+    recalc();
+
+    // 引込元の顧客情報を保持（保存時に顧客マスタへ同期するため）
+    window._cmCustomerSnapshot = payload.customer || null;
+
+    showToast(`顧客管理から引込: ${payload.customer && payload.customer.name || ''}（明細${(payload.details||[]).length}件）`, 'success');
+    return true;
+  }
+
+  // ---- 顧客マスタ同期: 既存になければ新規作成 ----
+  async function syncCustomerIfMissing() {
+    const name = document.getElementById('customer-name').value.trim();
+    const idField = document.getElementById('customer-id');
+    if (!name) return;
+    if (idField.value) return; // 既にIDがあれば同期不要
+    const matched = customers.find(c => c.name === name);
+    if (matched) {
+      idField.value = matched.id;
+      return;
+    }
+    // CM引込時のスナップショットから情報補完
+    const snap = window._cmCustomerSnapshot || {};
+    const newCustomer = {
+      name:      name,
+      honorific: document.getElementById('customer-honorific').value || '様',
+      zip:       snap.zip || '',
+      address:   snap.address || '',
+      phone:     snap.phone || '',
+      email:     snap.email || '',
+      contact:   '',
+      note:      snap.note || ''
+    };
+    try {
+      const res = await API.createCustomer(newCustomer);
+      idField.value = res.id;
+      // ローカル一覧にも追加
+      customers.push(Object.assign({ id: res.id }, newCustomer));
+      showToast(`顧客マスタに新規登録: ${res.id} ${name}`, 'success');
+    } catch (e) {
+      console.warn('顧客マスタ自動登録失敗:', e.message);
+      showToast('顧客マスタ自動登録に失敗（書類は保存されます）: ' + e.message, 'error');
     }
   }
 
@@ -261,18 +449,21 @@
 
   // ---- 保存 ----
   async function saveDocument() {
-    const doc     = buildDocObject();
-    const details = buildDetails();
-    if (!doc.number || doc.number.includes('???')) {
-      showToast('書類番号が未取得です。GAS WebApp URLを確認してください。', 'error');
-      return;
-    }
-    if (!doc.customerName.trim()) {
+    if (!document.getElementById('customer-name').value.trim()) {
       showToast('顧客名を入力してください。', 'error');
       return;
     }
     setBtnLoading('btn-save', true);
     try {
+      // 顧客マスタに無ければ新規作成（IDを採番）
+      await syncCustomerIfMissing();
+
+      const doc     = buildDocObject();
+      const details = buildDetails();
+      if (!doc.number || doc.number.includes('???')) {
+        showToast('書類番号が未取得です。GAS WebApp URLを確認してください。', 'error');
+        return;
+      }
       if (editId) {
         await API.updateDocument(doc, details);
         showToast('保存しました', 'success');

@@ -28,6 +28,7 @@
     <a href="index.html"><span>書類台帳</span></a>
     <a href="customers.html"><span>顧客</span></a>
     <a href="products.html"><span>商品</span></a>
+    <a href="bank-accounts.html"><span>振込先</span></a>
   </nav>
 </header>
 
@@ -137,10 +138,34 @@
         </div>
       </div>
 
+      <!-- 振込先口座（請求書のみ標準表示・他種別でも選択可） -->
+      <div class="card" id="bank-account-card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          振込先口座
+          <a href="bank-accounts.html" target="_blank" style="font-size:11px;color:var(--color-accent-dark);text-decoration:none;">＋ 口座管理</a>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2;">
+            <label class="form-label">口座選択</label>
+            <select class="form-control" id="bank-account-select">
+              <option value="">（振込先を備考に記載しない）</option>
+            </select>
+            <p style="font-size:11px;color:var(--color-text-mute);margin-top:4px;">
+              選択すると備考欄に自動転記されます（手動編集可）。
+            </p>
+          </div>
+          <div class="form-group" style="flex:1;display:flex;align-items:flex-end;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:var(--color-text-sub);">
+              <input type="checkbox" id="bank-auto-write" checked> 備考に自動転記
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- 備考 -->
       <div class="card">
         <div class="card-title">備考</div>
-        <textarea class="form-control" id="doc-note" rows="3" placeholder="振込先・支払い条件など自由記述"></textarea>
+        <textarea class="form-control" id="doc-note" rows="4" placeholder="振込先・支払い条件など自由記述"></textarea>
       </div>
     </div>
 
