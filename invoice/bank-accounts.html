@@ -44,8 +44,15 @@
     <input type="hidden" id="edit-id">
     <div class="form-row">
       <div class="form-group">
+        <label class="form-label">種別 *</label>
+        <select class="form-control" id="f-kind">
+          <option value="bank">🏦 銀行口座</option>
+          <option value="btc">₿ Bitcoin（BTC）</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label class="form-label">ラベル（請求書選択時に表示）*</label>
-        <input type="text" class="form-control" id="f-label" placeholder="例: ゆうちょメイン">
+        <input type="text" class="form-control" id="f-label" placeholder="例: ゆうちょメイン / BTC Onchain">
       </div>
       <div class="form-group">
         <label class="form-label">既定にする</label>
@@ -57,17 +64,17 @@
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">銀行名 *</label>
+        <label class="form-label" id="lbl-bankName">銀行名 *</label>
         <input type="text" class="form-control" id="f-bankName" placeholder="例: ゆうちょ銀行">
       </div>
-      <div class="form-group">
+      <div class="form-group" id="grp-branchName">
         <label class="form-label">支店名</label>
         <input type="text" class="form-control" id="f-branchName" placeholder="例: 〇九八支店">
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">口座種別</label>
+        <label class="form-label" id="lbl-accountType">口座種別</label>
         <select class="form-control" id="f-accountType">
           <option value="普通">普通</option>
           <option value="当座">当座</option>
@@ -76,16 +83,25 @@
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">口座番号 *</label>
+        <label class="form-label" id="lbl-accountNumber">口座番号 *</label>
         <input type="text" class="form-control" id="f-accountNumber" placeholder="例: 12345678">
       </div>
       <div class="form-group">
-        <label class="form-label">口座名義 *</label>
+        <label class="form-label" id="lbl-accountHolder">口座名義 *</label>
         <input type="text" class="form-control" id="f-accountHolder" placeholder="例: ナカツカ ユウキ">
       </div>
     </div>
+    <div class="form-group" id="grp-btc-help" style="display:none;">
+      <p style="font-size:11px;color:var(--color-text-mute);background:#fff8e1;border-left:3px solid #ffc107;padding:6px 10px;border-radius:4px;line-height:1.6;">
+        💡 <strong>BTC支払いの注意</strong><br>
+        ・Onchain は手数料が発生します（顧客負担を備考に明記推奨）<br>
+        ・Lightning は少額・即時決済向き<br>
+        ・請求書のPDFには QR コードURLが備考に転記されます<br>
+        ・送金後の確認は <a href="https://mempool.space/" target="_blank">mempool.space</a> 等のブロックエクスプローラで実施
+      </p>
+    </div>
     <div class="form-group">
-      <label class="form-label">備考（手数料・記号番号など）</label>
+      <label class="form-label">備考</label>
       <textarea class="form-control" id="f-note" rows="2" placeholder="例: 記号10000 番号12345678 / 振込手数料はお客様ご負担"></textarea>
     </div>
     <div style="display:flex;gap:8px;margin-top:4px;">
@@ -100,17 +116,18 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>ラベル</th>
-          <th>銀行・支店</th>
           <th>種別</th>
-          <th>口座番号</th>
+          <th>ラベル</th>
+          <th>銀行・支店 / 通貨</th>
+          <th>口座種別 / NW</th>
+          <th>口座番号 / アドレス</th>
           <th>名義</th>
           <th>既定</th>
           <th>操作</th>
         </tr>
       </thead>
       <tbody id="bank-tbody">
-        <tr><td colspan="8"><div class="empty-state"><span class="icon">&#x1F3E6;</span>読み込み中...</div></td></tr>
+        <tr><td colspan="9"><div class="empty-state"><span class="icon">&#x1F3E6;</span>読み込み中...</div></td></tr>
       </tbody>
     </table>
   </div>

@@ -135,7 +135,8 @@
     if (!sel) return;
     const opts = ['<option value="">（振込先を備考に記載しない）</option>'];
     bankAccounts.forEach(function (a) {
-      const label = (a.label || a.bankName || a.id) + (a.isDefault ? '（既定）' : '');
+      const icon = (a.kind === 'btc') ? '₿ ' : '🏦 ';
+      const label = icon + (a.label || a.bankName || a.id) + (a.isDefault ? '（既定）' : '');
       opts.push(`<option value="${escHtml(a.id)}">${escHtml(label)}</option>`);
     });
     sel.innerHTML = opts.join('');
@@ -168,13 +169,42 @@
   const BANK_MARK_END   = '================';
 
   function buildBankBlock(acc) {
+    const kind = acc.kind || 'bank';
+    if (kind === 'btc') return buildBtcBlock(acc);
+    return buildBankBlockBankKind(acc);
+  }
+
+  function buildBankBlockBankKind(acc) {
     const lines = [BANK_MARK_START];
+    lines.push('【お振込先】');
     if (acc.bankName)      lines.push(acc.bankName + (acc.branchName ? ('　' + acc.branchName) : ''));
     if (acc.accountType || acc.accountNumber) {
       lines.push((acc.accountType || '') + (acc.accountNumber ? ('　' + acc.accountNumber) : ''));
     }
     if (acc.accountHolder) lines.push('名義: ' + acc.accountHolder);
     if (acc.note)          lines.push(acc.note);
+    lines.push(BANK_MARK_END);
+    return lines.join('\n');
+  }
+
+  function buildBtcBlock(acc) {
+    const lines = [BANK_MARK_START];
+    const network = acc.accountType || 'Onchain';
+    lines.push(`【BTC支払い（${network}）】`);
+    if (acc.bankName && acc.bankName !== 'Bitcoin') lines.push(acc.bankName);
+    if (acc.accountNumber) {
+      lines.push('アドレス: ' + acc.accountNumber);
+      // QRコード生成URL（QR Server API・無料・https）
+      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(acc.accountNumber);
+      lines.push('QR: ' + qrUrl);
+    }
+    if (acc.accountHolder) lines.push('受取人: ' + acc.accountHolder);
+    if (network === 'Onchain') {
+      lines.push('※ ネットワーク手数料はお客様ご負担となります');
+    } else if (network === 'Lightning') {
+      lines.push('※ Lightning Network 経由（即時決済・少額向け）');
+    }
+    if (acc.note) lines.push(acc.note);
     lines.push(BANK_MARK_END);
     return lines.join('\n');
   }
