@@ -243,31 +243,49 @@
   //   docType: 'invoice'
   // }
   function applyCmPayloadIfAny() {
-    if (!fromCM) return false;
+    console.log('[CM連携] applyCmPayloadIfAny 開始 / fromCM =', fromCM);
+    if (!fromCM) {
+      console.log('[CM連携] fromCM フラグなし → スキップ');
+      return false;
+    }
     let payload;
     // 優先1: URLパラメータ payload （クロスオリジン対応）
     const urlPayload = params.get('payload');
+    console.log('[CM連携] URL payload:', urlPayload ? `${urlPayload.length}文字` : 'なし');
     if (urlPayload) {
+      // URLSearchParams は自動 decode するので JSON.parse 直接実行
       try {
-        payload = JSON.parse(decodeURIComponent(urlPayload));
-      } catch (e) {
-        console.warn('URLペイロードのデコード失敗:', e.message);
+        payload = JSON.parse(urlPayload);
+        console.log('[CM連携] URLパラメータから直接パース成功');
+      } catch (e1) {
+        // 念のため decodeURIComponent で再試行
+        try {
+          payload = JSON.parse(decodeURIComponent(urlPayload));
+          console.log('[CM連携] decodeURIComponent経由でパース成功');
+        } catch (e2) {
+          console.error('[CM連携] URLペイロードのパース失敗:', e1.message, '/', e2.message);
+          console.error('[CM連携] 生payload先頭200文字:', String(urlPayload).slice(0, 200));
+        }
       }
     }
     // 優先2: sessionStorage （同一オリジン時のフォールバック）
     if (!payload) {
       try {
         const raw = sessionStorage.getItem(SS_CM_KEY);
-        if (raw) payload = JSON.parse(raw);
+        if (raw) {
+          payload = JSON.parse(raw);
+          console.log('[CM連携] sessionStorageからパース成功');
+        }
       } catch (e) {
-        console.warn('sessionStorageペイロード読込失敗:', e.message);
+        console.warn('[CM連携] sessionStorageペイロード読込失敗:', e.message);
       }
     }
     if (!payload) {
-      console.warn('CM連携: payload が取得できませんでした（URL/sessionStorage 両方とも空）');
+      console.warn('[CM連携] payload 取得失敗（URL/sessionStorage 両方とも空）');
+      showToast('CM連携データの取得に失敗しました（DevToolsコンソールを確認）', 'error');
       return false;
     }
-    console.log('CM引込ペイロード:', payload);
+    console.log('[CM連携] payload 適用:', payload);
     // 1回使い切り
     sessionStorage.removeItem(SS_CM_KEY);
     // URLからpayloadを除去（リロード時の二重適用防止・採番済み番号も維持される）
