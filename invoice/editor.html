@@ -130,10 +130,18 @@
           </table>
         </div>
 
+        <!-- 消費税トグル（インボイス未登録のためデフォルトOFF） -->
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:8px 12px;margin-top:8px;background:#fff8e1;border:1px solid #ffd54f;border-radius:6px;font-size:12px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--color-text-sub);">
+            <input type="checkbox" id="doc-tax-included">
+            <span><strong>消費税を含める</strong>（OFF時は内税扱い・合計＝小計）</span>
+          </label>
+        </div>
+
         <!-- 小計 -->
         <div class="subtotal-block">
           <div class="row"><span class="label">小計</span><span class="amount" id="disp-subtotal">¥0</span></div>
-          <div class="row"><span class="label">消費税 (10%)</span><span class="amount" id="disp-tax">¥0</span></div>
+          <div class="row" id="tax-row" style="display:none;"><span class="label">消費税 (10%)</span><span class="amount" id="disp-tax">¥0</span></div>
           <div class="row total-row"><span class="label">合計</span><span class="amount" id="disp-total">¥0</span></div>
         </div>
       </div>

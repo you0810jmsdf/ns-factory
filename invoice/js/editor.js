@@ -57,6 +57,9 @@
 
     // 振込先口座セレクト → 備考自動転記
     document.getElementById('bank-account-select').addEventListener('change', onBankAccountChange);
+
+    // 消費税トグル変更で再計算
+    document.getElementById('doc-tax-included').addEventListener('change', recalc);
   });
 
   // ---- タイトル更新 ----
@@ -276,6 +279,11 @@
       updateTitle();
     }
 
+    // 消費税フラグ（CM側から明示指定された場合のみ反映・デフォルトはOFF）
+    if (typeof payload.taxIncluded === 'boolean') {
+      document.getElementById('doc-tax-included').checked = payload.taxIncluded;
+    }
+
     // 明細行
     if (Array.isArray(payload.details) && payload.details.length > 0) {
       payload.details.forEach(d => addDetailRow(d));
@@ -349,6 +357,9 @@
         document.getElementById('drive-url-link').style.display = 'inline';
         document.getElementById('drive-url-none').style.display = 'none';
       }
+
+      // 消費税トグル: 保存済みの doc.tax > 0 なら自動ON
+      document.getElementById('doc-tax-included').checked = (parseFloat(doc.tax) || 0) > 0;
 
       updateTitle();
 
@@ -434,11 +445,13 @@
     rows.forEach(function (tr) {
       subtotal += parseFloat(tr.querySelector('[data-field="lineTotal"]').value) || 0;
     });
-    const tax   = Math.round(subtotal * CONFIG.TAX_RATE);
+    const taxIncluded = document.getElementById('doc-tax-included').checked;
+    const tax   = taxIncluded ? Math.round(subtotal * CONFIG.TAX_RATE) : 0;
     const total = subtotal + tax;
     document.getElementById('disp-subtotal').textContent = '¥' + subtotal.toLocaleString();
     document.getElementById('disp-tax').textContent      = '¥' + tax.toLocaleString();
     document.getElementById('disp-total').textContent    = '¥' + total.toLocaleString();
+    document.getElementById('tax-row').style.display     = taxIncluded ? '' : 'none';
     return { subtotal, tax, total };
   }
 
