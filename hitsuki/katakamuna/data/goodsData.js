@@ -16,6 +16,17 @@ window.KATAKAMNA_GOODS = {
       url: 'https://nsfactory.stores.jp/items/6a1833115b90eca2a9a25b3b'
     },
     {
+      id: 'dish-multi',
+      name: 'カタカムナ複数首ディッシュプレート',
+      song: '複数首',
+      material: '木製 / 直径20cm',
+      image: 'goods/dish_multi.jpg',
+      lead: '複数の首の響きを一枚に重ねた、直径20cmのディッシュプレート。',
+      description: '第一首から第八首の図象を一枚に配した直径20cmのディッシュプレート。カタカムナのウタヒは言霊（音の響き）による宇宙原理の表現とされ、複数の首の意がひと皿に重なります。盛り皿として、また飾り皿としても。',
+      price: '¥3,000（税込）',
+      url: 'https://nsfactory.stores.jp/items/6a18432799e93c4e5c55ea9c'
+    },
+    {
       id: 'coaster-utahi05',
       name: 'カタカムナ コースター ― 第五首「アワの歌」',
       song: '第五首',
