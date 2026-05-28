@@ -1,5 +1,6 @@
 (function () {
   const { songs, groups, persons, glossary, phonetics } = window.KATAKAMNA_DATA;
+  const goods = window.KATAKAMNA_GOODS || { shopUrl: '', items: [] };
 
   const state = {
     query: '',
@@ -20,6 +21,7 @@
     songDetailList: document.getElementById('song-detail-list'),
     personList: document.getElementById('person-list'),
     glossaryList: document.getElementById('glossary-list'),
+    goodsList: document.getElementById('goods-list'),
     phoneticsGrid: document.getElementById('phonetics-grid'),
   };
 
@@ -220,6 +222,40 @@
     });
   }
 
+  // ── カタカムナグッズ ──────────────────────────────────────
+  function renderGoods() {
+    if (!els.goodsList) return;
+    els.goodsList.innerHTML = '';
+    goods.items.forEach(item => {
+      const card = document.createElement('article');
+      card.className = 'goods-card';
+
+      const link = item.url || goods.shopUrl;
+      const priceText = item.price ? esc(item.price) : '価格準備中';
+      const buy = link
+        ? `<a class="goods-buy" href="${esc(link)}" target="_blank" rel="noopener">BASEショップで見る →</a>`
+        : `<span class="goods-buy goods-buy-soon" aria-disabled="true">準備中</span>`;
+
+      card.innerHTML = `
+        <div class="goods-thumb">
+          <img src="${esc(item.image)}" alt="${esc(item.name)}" loading="lazy">
+        </div>
+        <div class="goods-body">
+          <span class="goods-song">${esc(item.song)}</span>
+          <h3>${esc(item.name)}</h3>
+          <p class="goods-lead">${esc(item.lead)}</p>
+          <p class="goods-desc">${esc(item.description)}</p>
+          <div class="goods-meta">
+            <span class="goods-material">${esc(item.material)}</span>
+            <span class="goods-price">${priceText}</span>
+          </div>
+          ${buy}
+        </div>
+      `;
+      els.goodsList.appendChild(card);
+    });
+  }
+
   // ── 48音グリッド ──────────────────────────────────────────
   function renderPhonetics() {
     els.phoneticsGrid.innerHTML = '';
@@ -284,6 +320,7 @@
   // ── 初期描画 ──────────────────────────────────────────────
   renderPersons();
   renderGlossary();
+  renderGoods();
   renderSongList();
   renderDetail();
   renderPhonetics();
