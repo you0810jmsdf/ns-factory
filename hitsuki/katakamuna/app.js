@@ -233,8 +233,11 @@
       const link = item.url || goods.shopUrl;
       const priceText = item.price ? esc(item.price) : '価格準備中';
       const buy = link
-        ? `<a class="goods-buy" href="${esc(link)}" target="_blank" rel="noopener">BASEショップで見る →</a>`
+        ? `<a class="goods-buy" href="${esc(link)}" target="_blank" rel="noopener">ショップで見る →</a>`
         : `<span class="goods-buy goods-buy-soon" aria-disabled="true">準備中</span>`;
+      const generator = item.generatorUrl
+        ? `<a class="goods-generator" href="${esc(item.generatorUrl)}">✍ カタカムナ文字をつくる →</a>`
+        : '';
 
       card.innerHTML = `
         <div class="goods-thumb">
@@ -249,6 +252,7 @@
             <span class="goods-material">${esc(item.material)}</span>
             <span class="goods-price">${priceText}</span>
           </div>
+          ${generator}
           ${buy}
         </div>
       `;
