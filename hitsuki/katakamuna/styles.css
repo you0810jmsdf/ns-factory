@@ -891,3 +891,18 @@ button { cursor: pointer; }
   border: 1px dashed var(--line-strong);
   cursor: default;
 }
+.goods-generator {
+  margin-top: 10px;
+  display: inline-block;
+  text-align: center;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  background: rgba(168, 184, 248, 0.10);
+  color: var(--gold);
+  border: 1px solid var(--line-strong);
+  transition: background 0.2s;
+}
+.goods-generator:hover { background: rgba(168, 184, 248, 0.18); }
