@@ -681,7 +681,7 @@ function setFallbackOptions() {
 }
 
 function initSizeOptions() {
-  const defaults = ['Micro5','Mini5（M5）','A6（バイブル）','A5','B6','カスタム'];
+  const defaults = ['Micro5','Mini5（M5）','バイブル','A6','A5','B6','カスタム'];
   const saved = JSON.parse(localStorage.getItem('nf_sizes') || '[]');
   const all = [...new Set([...defaults, ...saved])];
   const sel = document.getElementById('f_size');
