@@ -210,7 +210,7 @@
     </label>
     <label>
       文字間隔:
-      <input type="range" id="char-gap-mm" min="0" max="20" value="0" step="0.5" oninput="renderCanvas()">
+      <input type="range" id="char-gap-mm" min="-5" max="20" value="0" step="0.5" oninput="renderCanvas()">
       <span id="char-gap-val">0</span>mm
     </label>
     <label>
@@ -459,7 +459,7 @@ function renderCanvas() {
   const N         = selectedNums.length;
 
   const canvas = document.getElementById('gen-canvas');
-  canvas.width  = N * SIZE + (N - 1) * GAP + PAD * 2;
+  canvas.width  = Math.max(SIZE + PAD * 2, N * SIZE + (N - 1) * GAP + PAD * 2);
   canvas.height = SIZE + LABEL_H + PAD * 2;
 
   const ctx = canvas.getContext('2d');
