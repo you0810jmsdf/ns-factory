@@ -86,10 +86,18 @@
     }
     .sel-item {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
-      cursor: pointer; padding: 4px;
-      border-radius: 4px; transition: background 0.1s;
+      cursor: grab; padding: 4px;
+      border-radius: 4px; transition: background 0.1s, opacity 0.1s;
+      user-select: none;
     }
-    .sel-item:hover { background: #3a1a1a; }
+    .sel-item:hover { background: #2a2a3e; }
+    .sel-item:active { cursor: grabbing; }
+    .sel-item.dragging { opacity: 0.4; }
+    .sel-item.drag-over-left { border-left: 3px solid #f0c040; padding-left: 1px; }
+    .sel-item.drag-over-right { border-right: 3px solid #f0c040; padding-right: 1px; }
+    .sel-hint {
+      font-size: 0.72rem; color: #666; margin-bottom: 0.4rem;
+    }
     .sel-item img {
       width: 48px; height: 48px; object-fit: contain;
       filter: invert(1) sepia(0.7) saturate(5) hue-rotate(5deg);
@@ -189,6 +197,7 @@
   </div>
 
   <!-- 選択中の文字列 -->
+  <div class="sel-hint">💡 ドラッグで並び替え／クリックで削除</div>
   <div id="selected-row">
     <span id="sel-placeholder">文字を選択するかテキストを入力してください</span>
   </div>
@@ -414,9 +423,12 @@ function onKanaInput() {
   renderCanvas();
 }
 
+// ドラッグ操作管理（クリック削除との競合回避）
+let dragSrcIndex = null;
+let didDrag = false;
+
 function updateSelectedRow() {
   const row = document.getElementById('selected-row');
-  const ph  = document.getElementById('sel-placeholder');
   if (selectedNums.length === 0) {
     row.innerHTML = '<span id="sel-placeholder">文字を選択するかテキストを入力してください</span>';
     return;
@@ -427,11 +439,67 @@ function updateSelectedRow() {
     if (!c) return;
     const item = document.createElement('div');
     item.className = 'sel-item';
-    item.title = 'クリックで削除';
+    item.draggable = true;
+    item.dataset.index = i;
+    item.title = 'ドラッグで並び替え／クリックで削除';
     item.innerHTML =
-      '<img src="chars/char_' + pad2(n) + '.svg" alt="' + c.k + '">' +
+      '<img src="chars/char_' + pad2(n) + '.svg" alt="' + c.k + '" draggable="false">' +
       '<span class="sel-sound">' + c.k + '</span>';
-    item.addEventListener('click', () => removeChar(i));
+
+    // クリック削除（ドラッグ完了時は抑制）
+    item.addEventListener('click', () => {
+      if (didDrag) { didDrag = false; return; }
+      removeChar(i);
+    });
+
+    // ドラッグ開始
+    item.addEventListener('dragstart', (e) => {
+      dragSrcIndex = i;
+      didDrag = false;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(i));
+    });
+
+    // ドラッグ通過（左半分なら左挿入、右半分なら右挿入のフィードバック）
+    item.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (dragSrcIndex === null || dragSrcIndex === i) return;
+      const rect = item.getBoundingClientRect();
+      const isLeft = (e.clientX - rect.left) < rect.width / 2;
+      item.classList.toggle('drag-over-left', isLeft);
+      item.classList.toggle('drag-over-right', !isLeft);
+    });
+    item.addEventListener('dragleave', () => {
+      item.classList.remove('drag-over-left', 'drag-over-right');
+    });
+
+    // ドロップ：配列を並び替え
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      item.classList.remove('drag-over-left', 'drag-over-right');
+      const src = dragSrcIndex;
+      if (src === null || src === i) return;
+      const rect = item.getBoundingClientRect();
+      const isLeft = (e.clientX - rect.left) < rect.width / 2;
+      let dst = isLeft ? i : i + 1;
+      const [moved] = selectedNums.splice(src, 1);
+      if (src < dst) dst -= 1;
+      selectedNums.splice(dst, 0, moved);
+      didDrag = true;
+      updateSelectedRow();
+      renderCanvas();
+    });
+
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      dragSrcIndex = null;
+      document.querySelectorAll('.sel-item').forEach(el => {
+        el.classList.remove('drag-over-left', 'drag-over-right');
+      });
+    });
+
     row.appendChild(item);
   });
 }
