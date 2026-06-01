@@ -27,6 +27,17 @@ window.KATAKAMNA_GOODS = {
       url: 'https://nsfactory.stores.jp/items/6a18432799e93c4e5c55ea9c'
     },
     {
+      id: 'bracelet-katakamuna',
+      name: 'カタカムナ ブレスレット',
+      song: 'カタカムナ刻印',
+      material: 'レザー',
+      image: 'goods/bracelet.jpg',
+      lead: 'カタカムナ文字を肌に。手首に巻く古代の響き。',
+      description: 'カタカムナ48音から選んだ文字をレザーに刻印した、手首に巻くブレスレット。革に焼き込まれた一文字ずつの響きが、所作のたびに肌に触れます。砂漠の遺跡で撮影した佇まいのように、古代の文字をお守りのように身につける、日々の一品です。',
+      price: '',
+      url: 'https://nsfactory.stores.jp/items/6a1d2c4b24fa034e7018d84c'
+    },
+    {
       id: 'coaster-utahi05',
       name: 'カタカムナ コースター ― 第五首「アワの歌」',
       song: '第五首',
