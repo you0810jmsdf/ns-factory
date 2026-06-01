@@ -205,8 +205,13 @@
     </label>
     <label>
       文字サイズ:
-      <input type="range" id="char-size" min="60" max="200" value="100" oninput="renderCanvas()">
-      <span id="char-size-val">100</span>px
+      <input type="range" id="char-size-mm" min="5" max="30" value="10" step="0.5" oninput="renderCanvas()">
+      <span id="char-size-val">10</span>mm
+    </label>
+    <label>
+      文字間隔:
+      <input type="range" id="char-gap-mm" min="0" max="20" value="0" step="0.5" oninput="renderCanvas()">
+      <span id="char-gap-val">0</span>mm
     </label>
     <label>
       <input type="checkbox" id="show-sound" checked onchange="renderCanvas()"> 読みを表示
@@ -217,6 +222,10 @@
   <div id="canvas-wrap">
     <div id="canvas-placeholder">文字を選択すると画像が生成されます</div>
     <canvas id="gen-canvas" style="display:none;"></canvas>
+  </div>
+  <div id="size-info" style="font-size:0.82rem;color:#aaa;margin-bottom:0.8rem;display:none;">
+    全長 <span id="info-total">0</span>mm ／ 文字サイズ <span id="info-char">0</span>mm ／ 文字間隔 <span id="info-gap">0</span>mm
+    <span style="color:#666;font-size:0.72rem;margin-left:0.5rem;">（300dpi換算）</span>
   </div>
   <br>
   <button class="gen-btn primary" onclick="downloadPNG()">📥 PNG保存</button>
@@ -430,18 +439,27 @@ function updateSelectedRow() {
 // ═══════════════════════════════════════════════════
 // Canvas 描画
 // ═══════════════════════════════════════════════════
+// 300dpi 換算（1mm = 25.4/300 inch → 11.811px）
+const MM_TO_PX = 300 / 25.4;
+
 function renderCanvas() {
   if (selectedNums.length === 0) { clearCanvas(); return; }
 
-  const SIZE      = parseInt(document.getElementById('char-size').value, 10);
-  document.getElementById('char-size-val').textContent = SIZE;
+  const sizeMM = parseFloat(document.getElementById('char-size-mm').value);
+  const gapMM  = parseFloat(document.getElementById('char-gap-mm').value);
+  document.getElementById('char-size-val').textContent = sizeMM;
+  document.getElementById('char-gap-val').textContent  = gapMM;
+
+  const SIZE      = Math.round(sizeMM * MM_TO_PX);
+  const GAP       = Math.round(gapMM * MM_TO_PX);
   const showSound = document.getElementById('show-sound').checked;
   const bg        = document.getElementById('bg-select').value;
   const PAD       = 12;
   const LABEL_H   = showSound ? 20 : 0;
+  const N         = selectedNums.length;
 
   const canvas = document.getElementById('gen-canvas');
-  canvas.width  = selectedNums.length * SIZE + PAD * 2;
+  canvas.width  = N * SIZE + (N - 1) * GAP + PAD * 2;
   canvas.height = SIZE + LABEL_H + PAD * 2;
 
   const ctx = canvas.getContext('2d');
@@ -455,7 +473,7 @@ function renderCanvas() {
   }
 
   selectedNums.forEach((n, i) => {
-    const x   = PAD + i * SIZE;
+    const x   = PAD + i * (SIZE + GAP);
     const y   = PAD;
 
     const imgSet = charImages[n];
@@ -483,6 +501,13 @@ function renderCanvas() {
     }
   });
 
+  // 寸法情報（mm表示・PADは外側余白なので除外）
+  const totalMM = (N * sizeMM + (N - 1) * gapMM).toFixed(1);
+  document.getElementById('info-total').textContent = totalMM;
+  document.getElementById('info-char').textContent  = sizeMM;
+  document.getElementById('info-gap').textContent   = gapMM;
+  document.getElementById('size-info').style.display = 'block';
+
   document.getElementById('canvas-placeholder').style.display = 'none';
   canvas.style.display = 'block';
 }
@@ -491,6 +516,7 @@ function clearCanvas() {
   const canvas = document.getElementById('gen-canvas');
   canvas.style.display = 'none';
   document.getElementById('canvas-placeholder').style.display = 'flex';
+  document.getElementById('size-info').style.display = 'none';
 }
 
 // ═══════════════════════════════════════════════════
