@@ -110,11 +110,59 @@ a{color:inherit;text-decoration:none}
   font-size:13px;color:var(--muted);line-height:1.8;
 }
 
+/* LINEスタンプ 幕僚9種カードグリッド */
+.stamp-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px;
+}
+.stamp-card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:transform .15s,box-shadow .15s,border-color .15s;
+  text-decoration:none;color:inherit;
+}
+.stamp-card.live:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:#06C755}
+.stamp-card.pending{opacity:.75;cursor:not-allowed}
+.stamp-card.planning{opacity:.55;cursor:not-allowed}
+.stamp-thumb{
+  width:100%;aspect-ratio:1/1;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid var(--line);overflow:hidden;
+}
+.stamp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.stamp-thumb .placeholder{
+  font-size:11px;color:var(--muted);letter-spacing:.1em;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.stamp-thumb .placeholder::before{
+  content:"";display:block;width:48px;height:48px;border-radius:50%;
+  background:var(--soft);border:2px dashed #d1d1d6;
+}
+.stamp-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.stamp-tag{
+  display:inline-block;font-size:10px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 8px;border-radius:999px;width:fit-content;
+}
+.stamp-tag.live{color:#fff;background:#06C755}
+.stamp-tag.review{color:#7A5540;background:#FFF3E0;border:1px solid #FFE0B2}
+.stamp-tag.making{color:var(--accent-dark);background:var(--accent-soft)}
+.stamp-tag.plan{color:var(--muted);background:var(--soft)}
+.stamp-title{font-size:14px;font-weight:700;letter-spacing:-.01em;line-height:1.45}
+.stamp-meta{font-size:11px;color:var(--muted);margin-top:auto}
+.stamp-cta{
+  margin-top:6px;font-size:11px;font-weight:700;color:#06C755;
+  display:flex;align-items:center;gap:4px;
+}
+.stamp-cta.disabled{color:var(--muted)}
+
 @media(max-width:520px){
   .hero{padding:32px 18px 20px}
   .hero-portrait{width:96px;height:96px}
   .hub{padding:36px 18px 64px}
   .tool-grid{grid-template-columns:1fr}
+  .stamp-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .stamp-body{padding:12px}
+  .stamp-title{font-size:13px}
 }
 </style>
 </head>
@@ -166,16 +214,106 @@ a{color:inherit;text-decoration:none}
         <h3>ロゴ・ブランドカラー</h3>
         <p>ロゴデータ、ブランドカラー、フォント等の使用ガイド。後続フェーズで実装予定。</p>
       </div>
-      <div class="tool-card disabled">
-        <span class="tag soon">準備中</span>
-        <h3>LINEスタンプ販売状況</h3>
-        <p>LINEスタンプの売上・販売状況。後続フェーズで実装予定。</p>
+    </div>
+
+    <div class="section-label">LINEスタンプ 幕僚キャラ第1弾（全9幕僚展開）</div>
+    <div class="stamp-grid">
+
+      <a class="stamp-card live" href="https://store.line.me/stickershop/product/34252884/ja" target="_blank" rel="noopener">
+        <div class="stamp-thumb"><img src="../assets/line-stamps/kyouiku.png" alt="巻物の賢者 教育幕僚スタンプ"></div>
+        <div class="stamp-body">
+          <span class="stamp-tag live">販売中</span>
+          <div class="stamp-title">巻物の賢者 教育幕僚スタンプ</div>
+          <div class="stamp-meta">教育部 / 40種 / 120円</div>
+          <span class="stamp-cta">LINE STOREで購入 →</span>
+        </div>
+      </a>
+
+      <div class="stamp-card pending">
+        <div class="stamp-thumb"><img src="../assets/line-stamps/kouhou.png" alt="広報幕僚スタンプ"></div>
+        <div class="stamp-body">
+          <span class="stamp-tag review">審査中</span>
+          <div class="stamp-title">広報幕僚スタンプ</div>
+          <div class="stamp-meta">広報部 / 40種 / 審査結果待ち</div>
+          <span class="stamp-cta disabled">承認後に公開予定</span>
+        </div>
       </div>
+
+      <div class="stamp-card planning">
+        <div class="stamp-thumb"><div class="placeholder">COMING SOON</div></div>
+        <div class="stamp-body">
+          <span class="stamp-tag making">制作中</span>
+          <div class="stamp-title">保全幕僚スタンプ</div>
+          <div class="stamp-meta">保全部 / プロンプト設計完了</div>
+          <span class="stamp-cta disabled">画像生成段階</span>
+        </div>
+      </div>
+
+      <div class="stamp-card planning">
+        <div class="stamp-thumb"><div class="placeholder">COMING SOON</div></div>
+        <div class="stamp-body">
+          <span class="stamp-tag making">制作中</span>
+          <div class="stamp-title">デジタル幕僚スタンプ</div>
+          <div class="stamp-meta">デジタル部 / プロンプト設計完了</div>
+          <span class="stamp-cta disabled">画像生成段階</span>
+        </div>
+      </div>
+
+      <div class="stamp-card planning">
+        <div class="stamp-thumb"><div class="placeholder">COMING SOON</div></div>
+        <div class="stamp-body">
+          <span class="stamp-tag plan">企画中</span>
+          <div class="stamp-title">作戦幕僚スタンプ</div>
+          <div class="stamp-meta">経営戦略本部 / 参謀キャラ</div>
+          <span class="stamp-cta disabled">第3弾以降に着手</span>
+        </div>
+      </div>
+
+      <div class="stamp-card planning">
+        <div class="stamp-thumb"><div class="placeholder">COMING SOON</div></div>
+        <div class="stamp-body">
+          <span class="stamp-tag plan">企画中</span>
+          <div class="stamp-title">販売幕僚スタンプ</div>
+          <div class="stamp-meta">販売部 / 着手予定</div>
+          <span class="stamp-cta disabled">第3弾以降に着手</span>
+        </div>
+      </div>
+
+      <div class="stamp-card planning">
+        <div class="stamp-thumb"><div class="placeholder">COMING SOON</div></div>
+        <div class="stamp-body">
+          <span class="stamp-tag plan">企画中</span>
+          <div class="stamp-title">監理幕僚スタンプ</div>
+          <div class="stamp-meta">監理部 / 着手予定</div>
+          <span class="stamp-cta disabled">第3弾以降に着手</span>
+        </div>
+      </div>
+
+      <div class="stamp-card planning">
+        <div class="stamp-thumb"><div class="placeholder">COMING SOON</div></div>
+        <div class="stamp-body">
+          <span class="stamp-tag plan">企画中</span>
+          <div class="stamp-title">後方幕僚スタンプ</div>
+          <div class="stamp-meta">後方部 / 着手予定</div>
+          <span class="stamp-cta disabled">第3弾以降に着手</span>
+        </div>
+      </div>
+
+      <div class="stamp-card planning">
+        <div class="stamp-thumb"><div class="placeholder">COMING SOON</div></div>
+        <div class="stamp-body">
+          <span class="stamp-tag plan">企画中</span>
+          <div class="stamp-title">人事幕僚スタンプ</div>
+          <div class="stamp-meta">人事部 / 着手予定</div>
+          <span class="stamp-cta disabled">第3弾以降に着手</span>
+        </div>
+      </div>
+
     </div>
 
     <div class="note">
-      広報部は、SNS発信・ブランディング・ECバナー制作・ロゴ・LINEスタンプ・宣伝素材の制作を担当しています。<br>
-      広報関連ツールの公開準備が整い次第、本ページで順次ご案内いたします。
+      LINEスタンプ「幕僚キャラ第1弾」は全9幕僚（作戦／販売／監理／広報／後方／保全／デジタル／人事／教育）を順次リリース予定です。<br>
+      各スタンプ40種・1セット120円。<a href="https://store.line.me/stickershop/author/4758952/ja" target="_blank" rel="noopener" style="color:var(--accent-dark);text-decoration:underline">N's factory クリエイターページ</a>もあわせてご覧ください。
     </div>
   </div>
 </main>
