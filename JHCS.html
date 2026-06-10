@@ -162,6 +162,9 @@
       text-decoration: none;
     }
     .btn-dl:hover { background: #2d5f8a; }
+    .curriculum-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .curriculum-pair .curriculum-row { margin-bottom: 0; }
+    @media (max-width: 600px) { .curriculum-pair { grid-template-columns: 1fr; } }
 
     /* Form */
     .form-card { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
@@ -719,7 +722,7 @@
     const el = document.getElementById('curriculum-list');
 
     if (isNewFormat) {
-      el.innerHTML = rows.map(item => {
+      function itemCard(item) {
         const numLabel = item.num;
         const dlBtn = item.pdf
           ? `<a href="assets/jhcs-textbooks/${encodeURIComponent(item.pdf)}" download class="btn-dl">テキストDL</a>`
@@ -731,15 +734,29 @@
               <span class="curriculum-title">${esc(item.title)}</span>
             </summary>
             <div class="curriculum-body">
-              <div class="curriculum-head">
-                <div class="notice-meta"></div>
-                <div></div>
-              </div>
+              <div class="curriculum-head"><div class="notice-meta"></div><div></div></div>
               <div style="font-size:14px; line-height:1.7; margin-bottom:10px;">${esc(item.summary)}</div>
               ${dlBtn}
             </div>
           </details>`;
-      }).join('');
+      }
+      // A/Bペアをグループ化して横並び表示
+      const html = [];
+      let i = 0;
+      while (i < rows.length) {
+        const cur = rows[i];
+        const next = rows[i + 1];
+        const curBase = cur.num.replace(/[AB]$/, '');
+        const nextBase = next ? next.num.replace(/[AB]$/, '') : '';
+        if (/[AB]$/.test(cur.num) && next && /[AB]$/.test(next.num) && curBase === nextBase) {
+          html.push(`<div class="curriculum-pair">${itemCard(cur)}${itemCard(next)}</div>`);
+          i += 2;
+        } else {
+          html.push(itemCard(cur));
+          i += 1;
+        }
+      }
+      el.innerHTML = html.join('');
       return;
     }
 
