@@ -27,6 +27,8 @@
 
   <!-- 商品データ -->
   <script src="data/showroomData.js"></script>
+  <!-- スタッフデータ -->
+  <script src="data/staffData.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -283,6 +285,156 @@
       #info-card { padding: 20px 16px 28px; }
       #info-card .card-name { font-size: 15px; }
     }
+
+    /* ===== 接客カード（スタッフ用） ===== */
+    #staff-card {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--card-bg);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      padding: 24px 24px 32px;
+      transform: translateY(110%);
+      transition: transform 0.35s cubic-bezier(0.34, 1.12, 0.64, 1);
+      z-index: 151;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    #staff-card.visible {
+      transform: translateY(0);
+    }
+    #staff-card .sc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    #staff-card .sc-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+    #staff-card .sc-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: top;
+      border: 2px solid var(--accent);
+      background: #e5e5ea;
+      flex-shrink: 0;
+    }
+    #staff-card .sc-names {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    #staff-card .sc-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.3;
+    }
+    #staff-card .sc-role {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+    #staff-card .sc-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text-sub);
+      padding: 0 0 0 12px;
+      line-height: 1;
+    }
+    #staff-card .sc-line {
+      font-size: 15px;
+      color: var(--primary);
+      line-height: 1.7;
+      margin-bottom: 20px;
+      padding: 14px 16px;
+      background: #F5F5F7;
+      border-radius: 12px;
+      border-left: 3px solid var(--accent);
+    }
+    #staff-card .sc-line::before {
+      content: '「';
+    }
+    #staff-card .sc-line::after {
+      content: '」';
+    }
+    #staff-card .btn-staff {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      transition: background 0.2s;
+    }
+    #staff-card .btn-staff:hover {
+      background: #8a6449;
+    }
+
+    /* ===== フォールバック: スタッフカードグリッド ===== */
+    .fallback-section-title {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin: 24px 0 12px;
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+    .fallback-staff-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .fallback-staff-card img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      object-position: top;
+      background: #e5e5ea;
+    }
+    .fallback-staff-card .fc-body {
+      padding: 10px 12px 12px;
+    }
+    .fallback-staff-card .fc-name {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+    .fallback-staff-card .fc-role {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+    }
+    .fallback-staff-card a {
+      display: block;
+      text-align: center;
+      padding: 8px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    @media (max-width: 480px) {
+      #staff-card { padding: 20px 16px 28px; }
+      #staff-card .sc-name { font-size: 15px; }
+    }
   </style>
 </head>
 <body>
@@ -302,6 +454,7 @@
         <li>ドラッグ / スワイプで見回す</li>
         <li>ホイール / ピンチでズーム</li>
         <li>商品パネルをタップで詳細表示</li>
+        <li>スタッフをタップで接客案内</li>
       </ul>
       <p class="tap-hint">画面をタップして入場</p>
     </div>
@@ -324,6 +477,22 @@
     <a class="btn-purchase" id="card-btn" href="#" target="_blank" rel="noopener">購入ページへ</a>
   </div>
 
+  <!-- 接客カード（スタッフ用） -->
+  <div id="staff-card">
+    <div class="sc-header">
+      <div class="sc-title">
+        <img class="sc-avatar" id="sc-avatar" src="" alt="">
+        <div class="sc-names">
+          <p class="sc-name" id="sc-name"></p>
+          <p class="sc-role" id="sc-role"></p>
+        </div>
+      </div>
+      <button class="sc-close" id="sc-close">&#x2715;</button>
+    </div>
+    <p class="sc-line" id="sc-line"></p>
+    <a class="btn-staff" id="sc-btn" href="#" target="_blank" rel="noopener"></a>
+  </div>
+
   <!-- フォールバック -->
   <div id="fallback">
     <h2>3D表示に対応していない環境のため、通常表示しています。</h2>
@@ -344,8 +513,10 @@
       const fb = document.getElementById('fallback');
       fb.style.display = 'block';
       const grid = document.getElementById('fallback-grid');
+
+      // 商品カード
       const items = window.SHOWROOM_ITEMS || [];
-      grid.innerHTML = items.map(item => {
+      let html = items.map(item => {
         const hasUrl = item.url && item.url.trim() !== '';
         return `
           <div class="fallback-card">
@@ -361,6 +532,24 @@
             </div>
           </div>`;
       }).join('');
+
+      // スタッフカード
+      const staffList = window.SHOWROOM_STAFF || [];
+      if (staffList.length > 0) {
+        html += `<div class="fallback-section-title" style="grid-column:1/-1">— スタッフ紹介 —</div>`;
+        html += staffList.map(s => `
+          <div class="fallback-staff-card">
+            <img src="${s.image}" alt="${s.name}" loading="lazy"
+                 onerror="this.style.background='#e5e5ea';this.removeAttribute('src')">
+            <div class="fc-body">
+              <p class="fc-name">${s.name}</p>
+              <p class="fc-role">${s.role}</p>
+              <a href="${s.btnUrl}" target="_blank" rel="noopener">${s.btnLabel}</a>
+            </div>
+          </div>`).join('');
+      }
+
+      grid.innerHTML = html;
     }
 
     // WebGL サポート確認
@@ -380,6 +569,7 @@
     let renderer, scene, camera, controls;
     let raycaster, mouse;
     let panels = [];        // クリック対象メッシュ [{mesh, item}]
+    let staffPanels = [];   // スタッフパネル [{mesh, staff}]
     let hoveredMesh = null;
     let selectedMesh = null;
 
@@ -590,6 +780,119 @@
       });
 
       // ======================================================
+      // スタッフパネルの配置
+      // ======================================================
+      // 部屋サイズ: roomW=14, roomD=14
+      // 商品壁: 奥壁(z=-7)・左壁(x=-7)・右壁(x=7)
+      // スタッフ配置:
+      //   入口側（手前）壁 z=+7: 中央に総司令官+左右に4名
+      //   右壁(x=7)の奥エリア z=-4〜+4: 3名（商品と干渉しない z=+4）
+      //   左壁(x=-7)の奥エリア z=+4: 2名
+
+      const staffList = window.SHOWROOM_STAFF || [];
+
+      // 配置定義: [x, y, z, ry]
+      // 入口側壁(z=+7, 内向き ry=Math.PI): 総司令官中央 + 左右4名
+      const staffPositions = [
+        // 総司令官: 入口正面中央 (index 0 = kojinjigyonusi)
+        { x:  0.0, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        // 作戦幕僚: 入口壁 左1
+        { x: -2.5, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        // 販売幕僚: 入口壁 右1
+        { x:  2.5, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        // 監理幕僚: 入口壁 左2
+        { x: -5.0, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        // 広報幕僚: 入口壁 右2
+        { x:  5.0, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        // 後方幕僚: 右壁 手前エリア
+        { x:  roomW / 2 - 0.06, y: 2.2, z:  3.5, ry: -Math.PI / 2 },
+        // 保全幕僚: 右壁 中エリア
+        { x:  roomW / 2 - 0.06, y: 2.2, z:  0.0, ry: -Math.PI / 2 },
+        // デジタル幕僚: 左壁 手前エリア
+        { x: -roomW / 2 + 0.06, y: 2.2, z:  3.5, ry:  Math.PI / 2 },
+        // 人事幕僚: 左壁 中エリア
+        { x: -roomW / 2 + 0.06, y: 2.2, z:  0.0, ry:  Math.PI / 2 },
+        // 教育幕僚: 入口壁 左3（端）
+        { x: -2.5, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+      ];
+
+      // index 1（作戦）とindex 9（教育）が同じ座標にならないよう教育を右3へ
+      staffPositions[9] = { x: -3.8, y: 2.2, z: roomD / 2 - 0.06, ry: Math.PI };
+      // 作戦を左1、教育を入口壁右3に再定義（重複解消）
+      staffPositions[1] = { x: -2.2, y: 2.2, z: roomD / 2 - 0.06, ry: Math.PI };
+      staffPositions[9] = { x:  3.8, y: 2.2, z: roomD / 2 - 0.06, ry: Math.PI };
+      // 広報(index4)とぶつかるため調整
+      staffPositions[4] = { x:  2.2, y: 2.2, z: roomD / 2 - 0.06, ry: Math.PI };
+
+      // スタッフパネルサイズ（縦長ポートレート比 0.75:1 = 0.9:1.2）
+      const sPW = 0.9;
+      const sPH = 1.2;
+      const sFrameThick = 0.04;
+      const sFrameDepth = 0.04;
+
+      // 額縁マテリアル（ゴールド調）
+      const sFrameMat = new THREE.MeshStandardMaterial({ color: 0x8B6914, roughness: 0.45, metalness: 0.4 });
+
+      staffList.forEach((staff, i) => {
+        if (i >= staffPositions.length) return;
+        const pos = staffPositions[i];
+
+        const sMat = new THREE.MeshStandardMaterial({
+          color: 0x8B7355,
+          roughness: 0.55,
+          metalness: 0.0,
+          emissive: new THREE.Color(0x000000),
+          emissiveIntensity: 0
+        });
+
+        loader.load(
+          staff.image,
+          (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            sMat.map = tex;
+            sMat.color.set(0xFFFFFF);
+            sMat.needsUpdate = true;
+          },
+          undefined,
+          () => {}
+        );
+
+        const sGeo = new THREE.PlaneGeometry(sPW, sPH);
+        const sPanel = new THREE.Mesh(sGeo, sMat);
+        sPanel.position.set(pos.x, pos.y, pos.z);
+        sPanel.rotation.y = pos.ry;
+        sPanel.userData.staff = staff;
+        scene.add(sPanel);
+        staffPanels.push({ mesh: sPanel, staff });
+
+        // 額縁
+        const sfW = sPW + sFrameThick * 2;
+        const sfH = sPH + sFrameThick * 2;
+        const sBorders = [
+          new THREE.BoxGeometry(sfW, sFrameThick, sFrameDepth),
+          new THREE.BoxGeometry(sfW, sFrameThick, sFrameDepth),
+          new THREE.BoxGeometry(sFrameThick, sfH, sFrameDepth),
+          new THREE.BoxGeometry(sFrameThick, sfH, sFrameDepth),
+        ];
+        const sOffsets = [
+          [0,  sfH / 2 - sFrameThick / 2, 0],
+          [0, -sfH / 2 + sFrameThick / 2, 0],
+          [-sfW / 2 + sFrameThick / 2, 0, 0],
+          [ sfW / 2 - sFrameThick / 2, 0, 0],
+        ];
+        sBorders.forEach((geo, bi) => {
+          const b = new THREE.Mesh(geo, sFrameMat);
+          b.position.set(
+            pos.x + sOffsets[bi][0],
+            pos.y + sOffsets[bi][1],
+            pos.z + sOffsets[bi][2] + 0.02
+          );
+          b.rotation.y = pos.ry;
+          scene.add(b);
+        });
+      });
+
+      // ======================================================
       // Raycaster
       // ======================================================
       raycaster = new THREE.Raycaster();
@@ -608,7 +911,10 @@
         mouse.x = ((clientX - rect.left) / rect.width)  * 2 - 1;
         mouse.y = -((clientY - rect.top)  / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
-        const meshes = panels.map(p => p.mesh);
+        const meshes = [
+          ...panels.map(p => p.mesh),
+          ...staffPanels.map(p => p.mesh)
+        ];
         return raycaster.intersectObjects(meshes);
       }
 
@@ -642,7 +948,9 @@
         if (hits.length > 0) {
           const mesh = hits[0].object;
           const entry = panels.find(p => p.mesh === mesh);
-          if (entry) showCard(entry.item, mesh);
+          if (entry) { showCard(entry.item, mesh); return; }
+          const sEntry = staffPanels.find(p => p.mesh === mesh);
+          if (sEntry) showStaffCard(sEntry.staff, mesh);
         }
       });
 
@@ -660,7 +968,9 @@
           if (hits.length > 0) {
             const mesh = hits[0].object;
             const entry = panels.find(p => p.mesh === mesh);
-            if (entry) showCard(entry.item, mesh);
+            if (entry) { showCard(entry.item, mesh); return; }
+            const sEntry = staffPanels.find(p => p.mesh === mesh);
+            if (sEntry) showStaffCard(sEntry.staff, mesh);
           }
         }
       }, { passive: true });
@@ -669,6 +979,9 @@
       // 商品カード表示
       // ======================================================
       function showCard(item, mesh) {
+        // スタッフカードが開いていれば閉じる
+        document.getElementById('staff-card').classList.remove('visible');
+
         document.getElementById('card-name').textContent = item.name;
         document.getElementById('card-lead').textContent = item.lead;
         document.getElementById('card-material').textContent = item.material;
@@ -704,6 +1017,57 @@
       }
 
       document.getElementById('card-close').addEventListener('click', hideCard);
+
+      // ======================================================
+      // 接客カード表示（スタッフ用）
+      // ======================================================
+      function showStaffCard(staff, mesh) {
+        // 商品カードが開いていれば閉じる
+        hideCard();
+
+        // ランダムセリフ
+        const line = staff.lines[Math.floor(Math.random() * staff.lines.length)];
+
+        document.getElementById('sc-name').textContent = staff.name;
+        document.getElementById('sc-role').textContent = staff.role;
+        document.getElementById('sc-line').textContent = line;
+
+        const avatar = document.getElementById('sc-avatar');
+        avatar.src = staff.image;
+        avatar.alt = staff.name;
+
+        const btn = document.getElementById('sc-btn');
+        btn.href = staff.btnUrl;
+        btn.textContent = staff.btnLabel;
+        // 外部URLは新タブ、内部は同タブ
+        if (staff.btnUrl.startsWith('http')) {
+          btn.setAttribute('target', '_blank');
+          btn.setAttribute('rel', 'noopener');
+        } else {
+          btn.removeAttribute('target');
+          btn.removeAttribute('rel');
+        }
+
+        document.getElementById('staff-card').classList.add('visible');
+
+        // 選択中パネルの発光
+        if (selectedMesh && selectedMesh !== mesh) {
+          selectedMesh.material.emissiveIntensity = 0;
+        }
+        selectedMesh = mesh;
+        mesh.material.emissive.set(0xD4A853);
+        mesh.material.emissiveIntensity = 0.3;
+      }
+
+      function hideStaffCard() {
+        document.getElementById('staff-card').classList.remove('visible');
+        if (selectedMesh) {
+          selectedMesh.material.emissiveIntensity = 0;
+          selectedMesh = null;
+        }
+      }
+
+      document.getElementById('sc-close').addEventListener('click', hideStaffCard);
 
       // ======================================================
       // リサイズ対応
