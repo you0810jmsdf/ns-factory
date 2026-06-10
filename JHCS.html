@@ -151,6 +151,17 @@
     .btn-danger { background: var(--red-light); color: var(--red); }
     .btn-export { background: var(--blue-light); color: var(--blue); }
     .btn-reload { background: rgba(160,120,90,.1); color: var(--tan); }
+    .btn-dl {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 4px 12px;
+      background: #1a3a5c;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 0.8em;
+      text-decoration: none;
+    }
+    .btn-dl:hover { background: #2d5f8a; }
 
     /* Form */
     .form-card { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
@@ -472,18 +483,22 @@
   let noticeDraft = { title: '', text: '' };
   let noticeAdminPassword = '';
   const DEFAULT_CURRICULUM = [
-    { '回': '1', 'タイトル': '', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '写真URL': '', '更新日時': '' },
-    { '回': '2', 'タイトル': '', '講習内容': '道具の説明・CAD操作研修', '作品例': 'スクエアインケース', '写真URL': '', '更新日時': '' },
-    { '回': '3', 'タイトル': '', '講習内容': 'ファスナー取り付け', '作品例': 'ラウンドファスナーペンケース', '写真URL': '', '更新日時': '' },
-    { '回': '4', 'タイトル': '', '講習内容': '仕立て・仕上げ', '作品例': 'ラウンドファスナーペンケース', '写真URL': '', '更新日時': '' },
-    { '回': '5', 'タイトル': '', '講習内容': '裁断・縫製', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
-    { '回': '6', 'タイトル': '', '講習内容': '金具取り付け・仕上げ', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
-    { '回': '7', 'タイトル': '', '講習内容': '小物制作', '作品例': 'キーケース / リップケース', '写真URL': '', '更新日時': '' },
-    { '回': '8', 'タイトル': '', '講習内容': '小物制作', '作品例': 'サシェ / パスケース', '写真URL': '', '更新日時': '' },
-    { '回': '9', 'タイトル': '', '講習内容': 'インレイ・インターロッキング技法', '作品例': 'システム手帳', '写真URL': '', '更新日時': '' },
-    { '回': '10', 'タイトル': '', '講習内容': 'インレイ・インターロッキング技法', '作品例': '眼鏡ケース', '写真URL': '', '更新日時': '' },
-    { '回': '11', 'タイトル': '', '講習内容': '応用制作', '作品例': 'システム手帳 / 眼鏡ケース', '写真URL': '', '更新日時': '' },
-    { '回': '12', 'タイトル': '', '講習内容': '応用制作・仕上げ', '作品例': 'システム手帳 / 眼鏡ケース', '写真URL': '', '更新日時': '' }
+    { num:"01", title:"道具・CAD基礎", summary:"基本道具の名称・用途を覚え、Leathercraft CADで型紙を作成・印刷できるようになります。基本操作（直線・四角・円・曲線）から上級の駒合わせ縫いツールまで段階的に習得します。", pdf:"第01回_道具・CAD基礎.pdf" },
+    { num:"02", title:"スクエアコインケース", summary:"直線裁断とコバ処理の基本を学びます。Leathercraft CADで型紙を設計し、ばねホック取り付けまで一人で完成させます。型紙付き。", pdf:"第02回_スクエアインケース.pdf" },
+    { num:"03A", title:"パスケース（選択A）", summary:"薄革の正確な裁断・平縫い・コバ磨きをマスターします。ICカード・交通カードを収納できるパスケースを完成させます。型紙付き。", pdf:"第03回A_パスケース.pdf" },
+    { num:"03B", title:"名刺入れ（選択B）", summary:"名刺サイズ（91×55mm）を基準にCADで型紙を設計します。内ポケット付きの革製名刺入れを仕上げます。", pdf:"第03回B_名刺入れ.pdf" },
+    { num:"04", title:"文庫本カバー（A6）", summary:"実物を計測してCADで型紙を設計します。表紙ポケットを縫い付けた革カバーを寸法通りに完成させます。A6以外のサイズにも対応可能。", pdf:"第04回_文庫本カバー（A6）.pdf" },
+    { num:"05A", title:"キーケース・三つ折り（選択A）", summary:"ナスカン・Dカン等の金具取り付けをマスターします。コンパクトな三つ折りキーケースを完成させます。", pdf:"第05回A_キーケース（三つ折り）.pdf" },
+    { num:"05B", title:"キーケース・トートバッグ型（選択B）", summary:"持ち手付きのトートバッグ型キーケースを制作します。複数のナスカン取り付けと立体縫いを学びます。", pdf:"第05回B_キーケース（トートバッグ型）.pdf" },
+    { num:"06A", title:"眼鏡ケース（選択A）", summary:"立体成形とマチ縫いの基本をマスターします。ばねホック留めの革製眼鏡ケースを1日で完成させます。", pdf:"第06回A_眼鏡ケース.pdf" },
+    { num:"06B", title:"馬蹄型コインケース（選択B）", summary:"馬蹄型の立体縫いをマスターします。ばねホックまたはジャンパーホック留めのコインケースを完成させます。", pdf:"第06回B_馬蹄型コインケース.pdf" },
+    { num:"07", title:"サコッシュ", summary:"CADでバッグ型紙を設計し、Dカン・ショルダー紐取り付けまで含めた小型バッグを完成させます。本格的なバッグ制作への入口です。", pdf:"第07回_サコッシュ.pdf" },
+    { num:"08", title:"ラウンドファスナーポーチ（前編）", summary:"正確な型枠を作成し、CADで曲線型紙を設計して革を裁断します。次回のファスナー取り付けに備える前編です。", pdf:"第08回_ラウンドファスナーポーチ（前編）.pdf" },
+    { num:"09", title:"ラウンドファスナーポーチ（後編）", summary:"ファスナーを正確に取り付け、駒合わせ縫いで曲線パーツを縫い合わせてポーチを完成させます。", pdf:"第09回_ラウンドファスナーポーチ（後編）.pdf" },
+    { num:"10", title:"ハーフウォレット（インレイ選択）", summary:"カード・紙幣収納の構造を理解し、スナップ開閉のハーフウォレットを完成させます。希望者はインレイ技法も習得できます。", pdf:"第10回_ハーフウォレット（インレイ選択）.pdf" },
+    { num:"11", title:"ペンケース（駒合わせ縫い）", summary:"駒合わせ縫いで曲線パーツを正確に縫い合わせ、立体ペンケースを完成させます。ファスナー取り付けも習得します。", pdf:"第11回_ペンケース（駒合わせ縫い）.pdf" },
+    { num:"12A", title:"イントレチャートシステム手帳（選択A）", summary:"イントレチャート技法で革を編み込んだ表紙を仕上げます。mini6またはバイブルサイズ（推奨）から選択。全12回の集大成です。", pdf:"第12回A_イントレチャートシステム手帳.pdf" },
+    { num:"12B", title:"パッチワークシステム手帳（選択B）", summary:"複数色の革を組み合わせたパッチワーク技法で表紙を仕上げます。mini6またはバイブルサイズ（推奨）から選択。全12回の集大成です。", pdf:"第12回B_パッチワークシステム手帳.pdf" },
   ];
 
   // ── GAS URL 管理 ──────────────────────────────────
@@ -712,13 +727,42 @@
   }
 
   function renderCurriculum(rows) {
+    // 新形式（num/title/summary/pdf）か旧形式（'回'/'タイトル'等）かを判定
+    const isNewFormat = rows.length > 0 && rows[0].num !== undefined;
+    const el = document.getElementById('curriculum-list');
+
+    if (isNewFormat) {
+      el.innerHTML = rows.map(item => {
+        const numLabel = item.num;
+        const dlBtn = item.pdf
+          ? `<a href="assets/jhcs-textbooks/${encodeURIComponent(item.pdf)}" download class="btn-dl">テキストDL</a>`
+          : '';
+        return `
+          <details class="curriculum-row" data-lesson="${escAttr(numLabel)}">
+            <summary>
+              <span class="curriculum-num">第${esc(numLabel)}回</span>
+              <span class="curriculum-title">${esc(item.title)}</span>
+            </summary>
+            <div class="curriculum-body">
+              <div class="curriculum-head">
+                <div class="notice-meta"></div>
+                <div></div>
+              </div>
+              <div style="font-size:14px; line-height:1.7; margin-bottom:10px;">${esc(item.summary)}</div>
+              ${dlBtn}
+            </div>
+          </details>`;
+      }).join('');
+      return;
+    }
+
+    // 旧形式（GASから取得したデータ）
     const byLesson = {};
     rows.forEach(r => { byLesson[String(r['回'])] = r; });
     const normalized = Array.from({ length: 12 }, (_, i) => {
       const lesson = String(i + 1);
       return byLesson[lesson] || DEFAULT_CURRICULUM[i];
     });
-    const el = document.getElementById('curriculum-list');
     el.innerHTML = normalized.map(item => {
       const lesson = escAttr(item['回']);
       const title = item['タイトル'] || '';
