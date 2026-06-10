@@ -709,21 +709,8 @@
 
   // ── カリキュラム ─────────────────────────────────
   async function loadCurriculum() {
-    const url = getGasUrl();
-    if (!url) {
-      renderCurriculum(DEFAULT_CURRICULUM);
-      return;
-    }
-    try {
-      const res = await fetch(`${url}?action=curriculum`);
-      const data = await res.json();
-      cachedCurriculum = data.curriculum && data.curriculum.length ? data.curriculum : DEFAULT_CURRICULUM;
-      renderCurriculum(cachedCurriculum);
-    } catch(e) {
-      cachedCurriculum = DEFAULT_CURRICULUM;
-      renderCurriculum(cachedCurriculum);
-      showCurriculumMsg('err', 'カリキュラムを読み込めませんでした: ' + e.message);
-    }
+    cachedCurriculum = DEFAULT_CURRICULUM;
+    renderCurriculum(DEFAULT_CURRICULUM);
   }
 
   function renderCurriculum(rows) {
