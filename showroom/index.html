@@ -793,17 +793,18 @@
 
       // 配置定義: [x, y, z, ry]
       // 入口側壁(z=+7, 内向き ry=Math.PI): 総司令官中央 + 左右4名
+      // 入口壁は中心間隔2.2（パネル幅0.9）で重なりなし・総司令官が中央
       const staffPositions = [
         // 総司令官: 入口正面中央 (index 0 = kojinjigyonusi)
         { x:  0.0, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
         // 作戦幕僚: 入口壁 左1
-        { x: -2.5, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        { x: -2.2, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
         // 販売幕僚: 入口壁 右1
-        { x:  2.5, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        { x:  2.2, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
         // 監理幕僚: 入口壁 左2
-        { x: -5.0, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        { x: -4.4, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
         // 広報幕僚: 入口壁 右2
-        { x:  5.0, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        { x:  4.4, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
         // 後方幕僚: 右壁 手前エリア
         { x:  roomW / 2 - 0.06, y: 2.2, z:  3.5, ry: -Math.PI / 2 },
         // 保全幕僚: 右壁 中エリア
@@ -813,16 +814,8 @@
         // 人事幕僚: 左壁 中エリア
         { x: -roomW / 2 + 0.06, y: 2.2, z:  0.0, ry:  Math.PI / 2 },
         // 教育幕僚: 入口壁 左3（端）
-        { x: -2.5, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
+        { x: -6.4, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
       ];
-
-      // index 1（作戦）とindex 9（教育）が同じ座標にならないよう教育を右3へ
-      staffPositions[9] = { x: -3.8, y: 2.2, z: roomD / 2 - 0.06, ry: Math.PI };
-      // 作戦を左1、教育を入口壁右3に再定義（重複解消）
-      staffPositions[1] = { x: -2.2, y: 2.2, z: roomD / 2 - 0.06, ry: Math.PI };
-      staffPositions[9] = { x:  3.8, y: 2.2, z: roomD / 2 - 0.06, ry: Math.PI };
-      // 広報(index4)とぶつかるため調整
-      staffPositions[4] = { x:  2.2, y: 2.2, z: roomD / 2 - 0.06, ry: Math.PI };
 
       // スタッフパネルサイズ（縦長ポートレート比 0.75:1 = 0.9:1.2）
       const sPW = 0.9;
