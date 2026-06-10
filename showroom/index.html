@@ -945,8 +945,9 @@
         html += `<div class="fallback-section-title" style="grid-column:1/-1">— スタッフ紹介 —</div>`;
         html += staffList.map(s => `
           <div class="fallback-staff-card" data-staff-id="${s.id}">
-            <img src="${s.image}" alt="${s.name}" loading="lazy"
-                 onerror="this.style.background='#e5e5ea';this.removeAttribute('src')">
+            <img src="assets/mascot/${s.id}.png" alt="${s.name}" loading="lazy"
+                 onerror="this.src='${s.image}'"
+                 style="object-fit:contain;background:#F5F5F7;">
             <div class="fc-body">
               <p class="fc-name">${s.name}</p>
               <p class="fc-role">${s.role}</p>
@@ -972,7 +973,8 @@
           document.getElementById('sc-role').textContent = staffData.role;
           document.getElementById('sc-line').textContent = line;
           const av = document.getElementById('sc-avatar');
-          av.src = staffData.image; av.alt = staffData.name;
+          av.onerror = () => { av.onerror = null; av.src = staffData.image; };
+          av.src = `assets/mascot/${staffData.id}.png`; av.alt = staffData.name;
           const scBtn = document.getElementById('sc-btn');
           scBtn.href = staffData.btnUrl; scBtn.textContent = staffData.btnLabel;
           if (staffData.btnUrl.startsWith('http')) {
@@ -1403,6 +1405,81 @@
       // 全部屋のパネルを事前構築（遅延テクスチャロードで軽量維持）
       ['techo','katakamuna','koubou','gallery'].forEach(placeItemPanels);
 
+      // ==============================================================
+      // 幕僚ギャラリー: リアル調ポートレートを額装展示（壁面10枚）
+      // Y=2.8 上段配置でリンクパネル(Y=2.0)と干渉回避
+      // クリックで当該幕僚の接客カードを開く
+      // ==============================================================
+      (function buildGalleryPortraits() {
+        const off = ROOM_OFFSETS['gallery'];
+        const hs  = ROOM_SIZE / 2;
+        const PW = 0.72, PH = 0.9;  // ポートレートパネルサイズ
+
+        // ポートレート配置座標 (奥壁5 / 左壁3 / 右壁上段2)
+        // 右壁上段はリンクパネル(Y=2.0)より高いY=2.9 に設定
+        const portraitPositions = [
+          // 奥壁 5枚
+          { x: off.x - 3.6, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
+          { x: off.x - 1.8, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
+          { x: off.x + 0.0, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
+          { x: off.x + 1.8, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
+          { x: off.x + 3.6, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
+          // 左壁 3枚
+          { x: off.x - hs + 0.08, y: 2.8, z: off.z - 2.5, ry:  Math.PI/2 },
+          { x: off.x - hs + 0.08, y: 2.8, z: off.z + 0.0, ry:  Math.PI/2 },
+          { x: off.x - hs + 0.08, y: 2.8, z: off.z + 2.5, ry:  Math.PI/2 },
+          // 右壁上段 2枚（Y=2.9 でリンクパネルより高く）
+          { x: off.x + hs - 0.08, y: 2.9, z: off.z - 2.0, ry: -Math.PI/2 },
+          { x: off.x + hs - 0.08, y: 2.9, z: off.z + 2.0, ry: -Math.PI/2 }
+        ];
+
+        const staffList = window.SHOWROOM_STAFF || [];
+
+        staffList.forEach((staff, idx) => {
+          if (idx >= portraitPositions.length) return;
+          const pos = portraitPositions[idx];
+
+          // ポートレートマット（暗色・セピア調）
+          const pMat = new THREE.MeshStandardMaterial({
+            color: 0x5A3A1A, roughness: 0.6,
+            emissive: new THREE.Color(0x000000), emissiveIntensity: 0
+          });
+          loader.load(staff.image, tex => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            pMat.map = tex; pMat.color.set(0xFFFFFF); pMat.needsUpdate = true;
+          }, undefined, () => {});
+
+          const pMesh = new THREE.Mesh(new THREE.PlaneGeometry(PW, PH), pMat);
+          pMesh.position.set(pos.x, pos.y, pos.z);
+          pMesh.rotation.y = pos.ry;
+          // クリック時に接客カードを開くため staffActor は遅延解決
+          // userData.portraitStaffId を使ってクリックハンドラで検索
+          pMesh.userData.portraitStaffId = staff.id;
+          scene.add(pMesh);
+          panels.push({ mesh: pMesh, item: { isPortrait: true, staffId: staff.id } });
+
+          // 金縁額縁
+          addFrame(pos, PW, PH, sFrameMat);
+
+          // キャプションプレート（名前）
+          const cc = document.createElement('canvas');
+          cc.width = 256; cc.height = 36;
+          const cctx = cc.getContext('2d');
+          cctx.fillStyle = '#2A1400'; cctx.fillRect(0, 0, 256, 36);
+          cctx.fillStyle = '#FFD080'; cctx.font = 'bold 16px sans-serif';
+          cctx.textAlign = 'center'; cctx.textBaseline = 'middle';
+          cctx.fillText(staff.name + '  ' + staff.role, 128, 18);
+          const ctex = new THREE.CanvasTexture(cc); ctex.colorSpace = THREE.SRGBColorSpace;
+          const capMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(PW + 0.1, 0.12),
+            new THREE.MeshBasicMaterial({ map: ctex, transparent: true, depthWrite: false })
+          );
+          capMesh.position.set(pos.x, pos.y - PH / 2 - 0.1, pos.z);
+          capMesh.rotation.y = pos.ry;
+          scene.add(capMesh);
+        });
+      })();
+
       // ホールのリンクパネル
       (function() {
         const off = ROOM_OFFSETS['hall'];
@@ -1463,69 +1540,83 @@
         _buildVisual(staff) {
           const group = new THREE.Group();
 
-          // 台座（脚）
-          const legMat = new THREE.MeshStandardMaterial({ color: 0x4A3020, roughness: 0.7 });
-          const legL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.55, 0.05), legMat);
-          legL.position.set(-0.22, 0.275, 0);
-          group.add(legL);
-          const legR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.55, 0.05), legMat);
-          legR.position.set( 0.22, 0.275, 0);
-          group.add(legR);
-          // 足バー
-          const foot = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.04, 0.28), legMat);
-          foot.position.set(0, 0.02, 0.1);
-          group.add(foot);
-          // 縦棒
-          const pole = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.15, 0.04), legMat);
-          pole.position.set(0, 0.7, 0);
-          group.add(pole);
+          // --- マスコット透過スプライト (PlaneGeometry + alphaTest) ---
+          // キャラクター高さ 1.4、足元Y=0 基準
+          const spriteH = 1.4;
+          const spriteW = spriteH * 1.0; // 1:1画像なのでそのまま
 
-          // 画像パネル（0.8 × 1.0）
-          const pMat = new THREE.MeshStandardMaterial({
-            color: 0x8B7355, roughness: 0.5,
-            emissive: new THREE.Color(0x000000), emissiveIntensity: 0
+          const spriteMat = new THREE.MeshBasicMaterial({
+            color: 0xFFFFFF,
+            transparent: true,
+            alphaTest: 0.05,
+            side: THREE.DoubleSide,
+            depthWrite: false
           });
-          loader.load(staff.image, tex => {
+          // マスコット画像パスを assets/mascot/{id}.png に向ける
+          const mascotPath = `assets/mascot/${staff.id}.png`;
+          loader.load(mascotPath, tex => {
             tex.colorSpace = THREE.SRGBColorSpace;
-            pMat.map = tex; pMat.color.set(0xFFFFFF); pMat.needsUpdate = true;
-          }, undefined, () => {});
-          const pGeo = new THREE.PlaneGeometry(0.8, 1.0);
-          const pMesh = new THREE.Mesh(pGeo, pMat);
-          pMesh.position.set(0, 1.35, 0.025);
+            spriteMat.map = tex;
+            spriteMat.needsUpdate = true;
+          }, undefined, () => {
+            // フォールバック: staff.image をそのまま使用
+            loader.load(staff.image, tex2 => {
+              tex2.colorSpace = THREE.SRGBColorSpace;
+              spriteMat.map = tex2;
+              spriteMat.needsUpdate = true;
+            }, undefined, () => {});
+          });
+
+          const pGeo = new THREE.PlaneGeometry(spriteW, spriteH);
+          const pMesh = new THREE.Mesh(pGeo, spriteMat);
+          // 足元がY=0になるようcentroid調整: Y=spriteH/2
+          pMesh.position.set(0, spriteH / 2, 0);
           pMesh.userData.staffActor = this; // クリック用
           group.add(pMesh);
           this.panelMesh = pMesh;
 
-          // 額縁
-          const fMat = new THREE.MeshStandardMaterial({ color: 0x8B6914, roughness: 0.45, metalness: 0.4 });
-          const ft = 0.05, pw = 0.8, ph = 1.0;
-          [[new THREE.BoxGeometry(pw+ft*2,ft,ft),[0, ph/2+ft/2,0]],
-           [new THREE.BoxGeometry(pw+ft*2,ft,ft),[0,-ph/2-ft/2,0]],
-           [new THREE.BoxGeometry(ft,ph+ft*2,ft),[-pw/2-ft/2,0,0]],
-           [new THREE.BoxGeometry(ft,ph+ft*2,ft),[ pw/2+ft/2,0,0]]
-          ].forEach(([geo,[ox,oy,oz]]) => {
-            const b = new THREE.Mesh(geo, fMat);
-            b.position.set(ox, 1.35 + oy, 0.025 + (oz||0));
-            group.add(b);
+          // --- 足元の薄い丸影 ---
+          const shadowGeo = new THREE.CircleGeometry(0.28, 24);
+          const shadowMat = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            transparent: true,
+            opacity: 0.18,
+            depthWrite: false
           });
+          const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+          shadowMesh.rotation.x = -Math.PI / 2;
+          shadowMesh.position.set(0, 0.01, 0);
+          group.add(shadowMesh);
 
-          // 名前プレート
+          // --- 名前プレート（キャラ頭上） ---
           const nc = document.createElement('canvas');
-          nc.width = 256; nc.height = 56;
+          nc.width = 256; nc.height = 48;
           const nctx = nc.getContext('2d');
-          nctx.fillStyle = '#2A1800'; nctx.fillRect(0,0,256,56);
-          nctx.fillStyle = '#FFD080'; nctx.font = 'bold 20px sans-serif';
+          nctx.clearRect(0, 0, 256, 48);
+          nctx.fillStyle = 'rgba(29,8,0,0.72)';
+          // 角丸背景
+          const rx = 8;
+          nctx.beginPath();
+          nctx.moveTo(rx, 0); nctx.lineTo(256-rx, 0);
+          nctx.quadraticCurveTo(256, 0, 256, rx);
+          nctx.lineTo(256, 48-rx); nctx.quadraticCurveTo(256, 48, 256-rx, 48);
+          nctx.lineTo(rx, 48); nctx.quadraticCurveTo(0, 48, 0, 48-rx);
+          nctx.lineTo(0, rx); nctx.quadraticCurveTo(0, 0, rx, 0);
+          nctx.closePath(); nctx.fill();
+          nctx.fillStyle = '#FFD080'; nctx.font = 'bold 18px sans-serif';
           nctx.textAlign = 'center'; nctx.textBaseline = 'middle';
-          nctx.fillText(staff.name, 128, 20);
-          nctx.fillStyle = 'rgba(255,255,255,0.6)'; nctx.font = '14px sans-serif';
-          nctx.fillText(staff.role, 128, 40);
+          nctx.fillText(staff.name, 128, 16);
+          nctx.fillStyle = 'rgba(255,255,255,0.65)'; nctx.font = '13px sans-serif';
+          nctx.fillText(staff.role, 128, 33);
           const ntex = new THREE.CanvasTexture(nc); ntex.colorSpace = THREE.SRGBColorSpace;
           const nMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.9, 0.2),
+            new THREE.PlaneGeometry(0.85, 0.16),
             new THREE.MeshBasicMaterial({ map: ntex, transparent: true, depthWrite: false })
           );
-          nMesh.position.set(0, 0.62, 0.1);
+          // キャラ頭上に配置
+          nMesh.position.set(0, spriteH + 0.12, 0);
           group.add(nMesh);
+          this.nameMesh = nMesh;
 
           // 初期位置
           const wp0 = this.waypoints[0];
@@ -1739,10 +1830,19 @@
         const dEntry = doorMeshes.find(d => d.mesh === mesh);
         if (dEntry) { gotoRoom(dEntry.toRoom); return; }
 
-        // 商品・リンクパネル
+        // 商品・リンクパネル（ポートレート含む）
         const pEntry = panels.find(p => p.mesh === mesh);
         if (pEntry) {
-          if (pEntry.item.isLink) { showLinkCard(pEntry.item); }
+          if (pEntry.item.isPortrait) {
+            // ギャラリーのリアルポートレートをクリック→幕僚接客カードを開く
+            const sData = (window.SHOWROOM_STAFF || []).find(s => s.id === pEntry.item.staffId);
+            if (sData) {
+              // 巡回中のアクターを探して停止
+              const actor = staffActors.find(a => a.staff.id === sData.id) || null;
+              if (actor) actor.pauseFor(actor.staff);
+              showStaffCard(sData, mesh, actor);
+            }
+          } else if (pEntry.item.isLink) { showLinkCard(pEntry.item); }
           else { showCard(pEntry.item, mesh); }
           return;
         }
@@ -1810,7 +1910,9 @@
         document.getElementById('sc-role').textContent = staff.role;
         document.getElementById('sc-line').textContent = line;
         const av = document.getElementById('sc-avatar');
-        av.src = staff.image; av.alt = staff.name;
+        // マスコット透過版を優先。読み込み失敗時は元画像にフォールバック
+        av.onerror = () => { av.onerror = null; av.src = staff.image; };
+        av.src = `assets/mascot/${staff.id}.png`; av.alt = staff.name;
         const btn = document.getElementById('sc-btn');
         btn.href = staff.btnUrl; btn.textContent = staff.btnLabel;
         if (staff.btnUrl.startsWith('http')) {
