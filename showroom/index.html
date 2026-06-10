@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>N's factory SHOWROOM | Web 3D ショールーム</title>
-  <meta name="description" content="N's factory の革工房をバーチャルで体験。レザークラフト製品を3D空間でご覧いただけます。">
+  <meta name="description" content="N's factory の革工房をバーチャルで体験。5つの部屋でレザークラフト製品・カタカムナグッズ・工房の世界をご覧いただけます。">
 
   <!-- GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
@@ -25,9 +25,8 @@
   }
   </script>
 
-  <!-- 商品データ -->
+  <!-- データファイル -->
   <script src="data/showroomData.js"></script>
-  <!-- スタッフデータ -->
   <script src="data/staffData.js"></script>
 
   <style>
@@ -61,8 +60,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0 16px;
       z-index: 100;
+      gap: 8px;
     }
     #header a.back {
       color: #F5F5F7;
@@ -70,15 +70,125 @@
       font-size: 13px;
       opacity: 0.75;
       transition: opacity 0.2s;
+      white-space: nowrap;
     }
     #header a.back:hover { opacity: 1; }
     #header .title {
       color: #FFFFFF;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      flex: 1;
+      text-align: center;
     }
-    #header .spacer { width: 80px; }
+
+    /* ===== 部屋メニュー ===== */
+    #room-menu {
+      position: fixed;
+      top: 52px; right: 0;
+      z-index: 110;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 8px;
+      background: rgba(29,29,31,0.78);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom-left-radius: 14px;
+      min-width: 120px;
+    }
+    #room-menu .menu-title {
+      color: rgba(255,255,255,0.45);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0 6px 4px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 2px;
+    }
+    #room-menu button {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.78);
+      font-size: 12px;
+      font-family: var(--font);
+      text-align: left;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    #room-menu button:hover,
+    #room-menu button.active {
+      background: rgba(160,120,90,0.35);
+      color: #FFFFFF;
+    }
+    /* スマホ: ハンバーガー収納 */
+    #menu-toggle {
+      display: none;
+      position: fixed;
+      top: 58px; right: 8px;
+      z-index: 120;
+      background: rgba(29,29,31,0.85);
+      border: none;
+      color: #FFF;
+      font-size: 20px;
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    @media (max-width: 540px) {
+      #menu-toggle { display: flex; }
+      #room-menu {
+        transform: translateX(110%);
+        transition: transform 0.25s ease;
+        top: 52px;
+        border-radius: 0 0 0 14px;
+      }
+      #room-menu.open {
+        transform: translateX(0);
+      }
+    }
+
+    /* ===== 現在部屋インジケーター ===== */
+    #room-indicator {
+      position: fixed;
+      bottom: 72px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(29,29,31,0.72);
+      color: rgba(255,255,255,0.85);
+      font-size: 12px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      pointer-events: none;
+      z-index: 110;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      transition: opacity 0.3s;
+    }
+
+    /* ===== 戻るボタン（ホール以外で表示） ===== */
+    #btn-back-hall {
+      position: fixed;
+      bottom: 72px; left: 16px;
+      background: rgba(29,29,31,0.82);
+      color: rgba(255,255,255,0.85);
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 110;
+      display: none;
+      transition: background 0.2s;
+    }
+    #btn-back-hall:hover { background: rgba(160,120,90,0.7); }
 
     /* ===== 3Dキャンバス ===== */
     #canvas-container {
@@ -95,7 +205,7 @@
     #guide-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -104,31 +214,47 @@
       cursor: pointer;
     }
     #guide-overlay .guide-box {
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 16px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 18px;
       padding: 32px 40px;
       text-align: center;
       color: #fff;
-      backdrop-filter: blur(8px);
-      max-width: 320px;
+      backdrop-filter: blur(10px);
+      max-width: 340px;
     }
     #guide-overlay .guide-box h2 {
       font-size: 18px;
       font-weight: 700;
+      margin-bottom: 14px;
+      letter-spacing: 0.06em;
+    }
+    #guide-overlay .guide-box .room-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
       margin-bottom: 16px;
-      letter-spacing: 0.05em;
+    }
+    #guide-overlay .guide-box .room-chip {
+      background: rgba(160,120,90,0.3);
+      border: 1px solid rgba(160,120,90,0.5);
+      color: rgba(255,255,255,0.9);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
     }
     #guide-overlay .guide-box ul {
       list-style: none;
-      font-size: 14px;
+      font-size: 13px;
       line-height: 2;
-      opacity: 0.9;
+      opacity: 0.85;
+      margin-bottom: 4px;
     }
     #guide-overlay .guide-box .tap-hint {
-      margin-top: 24px;
+      margin-top: 20px;
       font-size: 12px;
-      opacity: 0.6;
+      opacity: 0.55;
     }
 
     /* ===== 商品情報カード ===== */
@@ -146,9 +272,7 @@
       max-height: 60vh;
       overflow-y: auto;
     }
-    #info-card.visible {
-      transform: translateY(0);
-    }
+    #info-card.visible { transform: translateY(0); }
     #info-card .card-header {
       display: flex;
       justify-content: space-between;
@@ -183,13 +307,8 @@
       flex-wrap: wrap;
       margin-bottom: 16px;
     }
-    #info-card .card-meta span {
-      font-size: 13px;
-      color: var(--text-sub);
-    }
-    #info-card .card-meta strong {
-      color: var(--primary);
-    }
+    #info-card .card-meta span { font-size: 13px; color: var(--text-sub); }
+    #info-card .card-meta strong { color: var(--primary); }
     #info-card .card-price {
       font-size: 18px;
       font-weight: 700;
@@ -210,83 +329,14 @@
       letter-spacing: 0.04em;
       transition: background 0.2s;
     }
-    #info-card .btn-purchase:hover {
-      background: #3a3a3c;
-    }
+    #info-card .btn-purchase:hover { background: #3a3a3c; }
     #info-card .btn-purchase.disabled {
       background: #C7C7CC;
       cursor: default;
       pointer-events: none;
     }
 
-    /* ===== フォールバック: カードグリッド ===== */
-    #fallback {
-      display: none;
-      position: fixed;
-      top: 52px; left: 0; right: 0; bottom: 0;
-      overflow-y: auto;
-      padding: 24px 16px 40px;
-      background: var(--bg);
-    }
-    #fallback h2 {
-      font-size: 15px;
-      color: var(--text-sub);
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .fallback-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-    }
-    .fallback-card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    .fallback-card img {
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      background: #e5e5ea;
-    }
-    .fallback-card .fc-body {
-      padding: 12px;
-    }
-    .fallback-card .fc-name {
-      font-size: 13px;
-      font-weight: 600;
-      line-height: 1.4;
-      margin-bottom: 4px;
-    }
-    .fallback-card .fc-price {
-      font-size: 12px;
-      color: var(--accent);
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .fallback-card a {
-      display: block;
-      text-align: center;
-      padding: 8px;
-      background: var(--primary);
-      color: #fff;
-      border-radius: 8px;
-      font-size: 12px;
-      text-decoration: none;
-    }
-    .fallback-card a.disabled {
-      background: #C7C7CC;
-      pointer-events: none;
-    }
-
-    @media (max-width: 480px) {
-      #info-card { padding: 20px 16px 28px; }
-      #info-card .card-name { font-size: 15px; }
-    }
-
-    /* ===== 接客カード（スタッフ用） ===== */
+    /* ===== 接客カード ===== */
     #staff-card {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -301,9 +351,7 @@
       max-height: 60vh;
       overflow-y: auto;
     }
-    #staff-card.visible {
-      transform: translateY(0);
-    }
+    #staff-card.visible { transform: translateY(0); }
     #staff-card .sc-header {
       display: flex;
       justify-content: space-between;
@@ -317,8 +365,7 @@
       flex: 1;
     }
     #staff-card .sc-avatar {
-      width: 52px;
-      height: 52px;
+      width: 52px; height: 52px;
       border-radius: 50%;
       object-fit: cover;
       object-position: top;
@@ -326,29 +373,14 @@
       background: #e5e5ea;
       flex-shrink: 0;
     }
-    #staff-card .sc-names {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    #staff-card .sc-name {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--primary);
-      line-height: 1.3;
-    }
-    #staff-card .sc-role {
-      font-size: 12px;
-      color: var(--text-sub);
-    }
+    #staff-card .sc-names { display: flex; flex-direction: column; gap: 2px; }
+    #staff-card .sc-name { font-size: 17px; font-weight: 700; color: var(--primary); line-height: 1.3; }
+    #staff-card .sc-role { font-size: 12px; color: var(--text-sub); }
     #staff-card .sc-close {
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
+      background: none; border: none;
+      font-size: 22px; cursor: pointer;
       color: var(--text-sub);
-      padding: 0 0 0 12px;
-      line-height: 1;
+      padding: 0 0 0 12px; line-height: 1;
     }
     #staff-card .sc-line {
       font-size: 15px;
@@ -360,12 +392,8 @@
       border-radius: 12px;
       border-left: 3px solid var(--accent);
     }
-    #staff-card .sc-line::before {
-      content: '「';
-    }
-    #staff-card .sc-line::after {
-      content: '」';
-    }
+    #staff-card .sc-line::before { content: '\300C'; }
+    #staff-card .sc-line::after  { content: '\300D'; }
     #staff-card .btn-staff {
       display: block;
       width: 100%;
@@ -380,58 +408,83 @@
       letter-spacing: 0.04em;
       transition: background 0.2s;
     }
-    #staff-card .btn-staff:hover {
-      background: #8a6449;
-    }
+    #staff-card .btn-staff:hover { background: #8a6449; }
 
-    /* ===== フォールバック: スタッフカードグリッド ===== */
-    .fallback-section-title {
-      font-size: 13px;
-      color: var(--text-sub);
-      margin: 24px 0 12px;
-      text-align: center;
-      font-weight: 600;
-      letter-spacing: 0.06em;
+    /* ===== フォールバック ===== */
+    #fallback {
+      display: none;
+      position: fixed;
+      top: 52px; left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      padding: 24px 16px 40px;
+      background: var(--bg);
     }
-    .fallback-staff-card {
+    #fallback h2 {
+      font-size: 15px; color: var(--text-sub);
+      margin-bottom: 20px; text-align: center;
+    }
+    .fallback-section-title {
+      font-size: 13px; color: var(--text-sub);
+      margin: 24px 0 12px; text-align: center;
+      font-weight: 600; letter-spacing: 0.06em;
+      grid-column: 1 / -1;
+    }
+    .fallback-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+    }
+    .fallback-card {
       background: var(--card-bg);
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
+    .fallback-card img {
+      width: 100%; aspect-ratio: 1;
+      object-fit: cover; background: #e5e5ea;
+    }
+    .fallback-card .fc-body { padding: 12px; }
+    .fallback-card .fc-name { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
+    .fallback-card .fc-price { font-size: 12px; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+    .fallback-card a {
+      display: block; text-align: center;
+      padding: 8px; background: var(--primary);
+      color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none;
+    }
+    .fallback-card a.disabled { background: #C7C7CC; pointer-events: none; }
+    .fallback-staff-card {
+      background: var(--card-bg);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
     .fallback-staff-card img {
-      width: 100%;
-      aspect-ratio: 3/4;
-      object-fit: cover;
-      object-position: top;
-      background: #e5e5ea;
+      width: 100%; aspect-ratio: 3/4;
+      object-fit: cover; object-position: top; background: #e5e5ea;
     }
-    .fallback-staff-card .fc-body {
-      padding: 10px 12px 12px;
-    }
-    .fallback-staff-card .fc-name {
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 2px;
-    }
-    .fallback-staff-card .fc-role {
-      font-size: 11px;
-      color: var(--text-sub);
-      margin-bottom: 8px;
-    }
+    .fallback-staff-card .fc-body { padding: 10px 12px 12px; }
+    .fallback-staff-card .fc-name { font-size: 13px; font-weight: 700; line-height: 1.4; margin-bottom: 2px; }
+    .fallback-staff-card .fc-role { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; }
     .fallback-staff-card a {
-      display: block;
-      text-align: center;
-      padding: 8px;
-      background: var(--accent);
-      color: #fff;
-      border-radius: 8px;
-      font-size: 12px;
-      text-decoration: none;
+      display: block; text-align: center; padding: 8px;
+      background: var(--accent); color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none;
+    }
+    .fallback-link-card {
+      background: var(--card-bg);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 14px;
+    }
+    .fallback-link-card .fc-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .fallback-link-card .fc-lead { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; line-height: 1.5; }
+    .fallback-link-card a {
+      display: block; text-align: center; padding: 8px;
+      background: var(--accent); color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none;
     }
 
     @media (max-width: 480px) {
+      #info-card { padding: 20px 16px 28px; }
+      #info-card .card-name { font-size: 15px; }
       #staff-card { padding: 20px 16px 28px; }
       #staff-card .sc-name { font-size: 15px; }
     }
@@ -441,20 +494,46 @@
 
   <!-- ヘッダー -->
   <header id="header">
-    <a class="back" href="../index.html">&#8592; トップへ</a>
+    <a class="back" href="../index.html">&#8592; トップ</a>
     <span class="title">N's factory SHOWROOM</span>
-    <span class="spacer"></span>
+    <span style="width:60px"></span>
   </header>
+
+  <!-- ハンバーガーボタン（スマホ） -->
+  <button id="menu-toggle" aria-label="部屋メニュー">&#9776;</button>
+
+  <!-- 部屋メニュー -->
+  <nav id="room-menu">
+    <div class="menu-title">ROOMS</div>
+    <button data-room="hall"       class="active">ホール</button>
+    <button data-room="techo"             >手帳の間</button>
+    <button data-room="katakamuna"        >カタカムナの間</button>
+    <button data-room="koubou"            >工房の間</button>
+    <button data-room="gallery"           >幕僚ギャラリー</button>
+  </nav>
+
+  <!-- 現在部屋 -->
+  <div id="room-indicator">エントランスホール</div>
+
+  <!-- ホールへ戻るボタン -->
+  <button id="btn-back-hall">&#8592; ホールへ戻る</button>
 
   <!-- 操作ガイド -->
   <div id="guide-overlay">
     <div class="guide-box">
       <h2>Web 3D ショールーム</h2>
+      <div class="room-list">
+        <span class="room-chip">ホール</span>
+        <span class="room-chip">手帳の間</span>
+        <span class="room-chip">カタカムナの間</span>
+        <span class="room-chip">工房の間</span>
+        <span class="room-chip">幕僚ギャラリー</span>
+      </div>
       <ul>
         <li>ドラッグ / スワイプで見回す</li>
         <li>ホイール / ピンチでズーム</li>
-        <li>商品パネルをタップで詳細表示</li>
-        <li>スタッフをタップで接客案内</li>
+        <li>ドアをクリックで入室</li>
+        <li>商品・幕僚をタップで詳細表示</li>
       </ul>
       <p class="tap-hint">画面をタップして入場</p>
     </div>
@@ -477,7 +556,7 @@
     <a class="btn-purchase" id="card-btn" href="#" target="_blank" rel="noopener">購入ページへ</a>
   </div>
 
-  <!-- 接客カード（スタッフ用） -->
+  <!-- 接客カード -->
   <div id="staff-card">
     <div class="sc-header">
       <div class="sc-title">
@@ -499,39 +578,55 @@
     <div class="fallback-grid" id="fallback-grid"></div>
   </div>
 
-  <!-- メインスクリプト -->
+  <!-- ===== メインスクリプト ===== -->
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // ======================================================
-    // フォールバック表示（WebGL非対応時 or エラー時）
-    // ======================================================
+    // ============================================================
+    // フォールバック（WebGL非対応時）
+    // ============================================================
     function showFallback() {
       document.getElementById('canvas-container').style.display = 'none';
-      document.getElementById('guide-overlay').style.display = 'none';
-      const fb = document.getElementById('fallback');
-      fb.style.display = 'block';
+      document.getElementById('guide-overlay').style.display   = 'none';
+      document.getElementById('room-menu').style.display       = 'none';
+      document.getElementById('room-indicator').style.display  = 'none';
+      document.getElementById('btn-back-hall').style.display   = 'none';
+      document.getElementById('menu-toggle').style.display     = 'none';
+      const fb   = document.getElementById('fallback');
       const grid = document.getElementById('fallback-grid');
+      fb.style.display = 'block';
 
-      // 商品カード
-      const items = window.SHOWROOM_ITEMS || [];
-      let html = items.map(item => {
-        const hasUrl = item.url && item.url.trim() !== '';
-        return `
-          <div class="fallback-card">
-            <img src="${item.image}" alt="${item.name}" loading="lazy"
-                 onerror="this.style.background='#e5e5ea';this.removeAttribute('src')">
-            <div class="fc-body">
-              <p class="fc-name">${item.name}</p>
-              <p class="fc-price">${item.price || '準備中'}</p>
-              <a href="${hasUrl ? item.url : '#'}" class="${hasUrl ? '' : 'disabled'}"
-                 ${hasUrl ? 'target="_blank" rel="noopener"' : ''}>
-                ${hasUrl ? '購入ページへ' : '準備中'}
-              </a>
-            </div>
-          </div>`;
-      }).join('');
+      const rooms = window.SHOWROOM_ROOMS || [];
+      let html = '';
+      rooms.forEach(room => {
+        if (room.items.length === 0 && room.links.length === 0) return;
+        html += `<div class="fallback-section-title" style="grid-column:1/-1">— ${room.name} —</div>`;
+        room.items.forEach(item => {
+          const hasUrl = item.url && item.url.trim() !== '';
+          html += `
+            <div class="fallback-card">
+              <img src="${item.image}" alt="${item.name}" loading="lazy"
+                   onerror="this.style.background='#e5e5ea';this.removeAttribute('src')">
+              <div class="fc-body">
+                <p class="fc-name">${item.name}</p>
+                <p class="fc-price">${item.price || '準備中'}</p>
+                <a href="${hasUrl ? item.url : '#'}" class="${hasUrl ? '' : 'disabled'}"
+                   ${hasUrl ? 'target="_blank" rel="noopener"' : ''}>
+                  ${hasUrl ? '購入ページへ' : '準備中'}
+                </a>
+              </div>
+            </div>`;
+        });
+        room.links.forEach(link => {
+          html += `
+            <div class="fallback-link-card">
+              <p class="fc-name">${link.name}</p>
+              <p class="fc-lead">${link.lead}</p>
+              <a href="${link.url}" target="_blank" rel="noopener">${link.btnLabel}</a>
+            </div>`;
+        });
+      });
 
       // スタッフカード
       const staffList = window.SHOWROOM_STAFF || [];
@@ -548,40 +643,72 @@
             </div>
           </div>`).join('');
       }
-
       grid.innerHTML = html;
     }
 
-    // WebGL サポート確認
     function isWebGLAvailable() {
       try {
-        const canvas = document.createElement('canvas');
-        return !!(window.WebGLRenderingContext &&
-          (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+        const c = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
       } catch(e) { return false; }
     }
-
     if (!isWebGLAvailable()) { showFallback(); throw new Error('WebGL not supported'); }
 
-    // ======================================================
+    // ============================================================
+    // 定数
+    // ============================================================
+    const ACCENT      = 0xA0785A;
+    const FLOOR_COLOR = 0xC49A6C;
+    const WALL_COLOR  = 0xEDE0D4;
+    const CEIL_COLOR  = 0xF5F0EB;
+    const DOOR_GLOW   = 0xFFD080;
+    const ROOM_SIZE   = 10;   // 各部屋 10×10
+    const ROOM_H      = 4.0;
+    const CORRIDOR    = 14;   // 部屋間距離（中心間）
+
+    // 部屋の配置（×字型）
+    // hall=中央, techo=北, katakamuna=南, koubou=西, gallery=東
+    const ROOM_OFFSETS = {
+      hall:       { x:  0,         z:  0         },
+      techo:      { x:  0,         z: -CORRIDOR  },
+      katakamuna: { x:  0,         z:  CORRIDOR  },
+      koubou:     { x: -CORRIDOR,  z:  0         },
+      gallery:    { x:  CORRIDOR,  z:  0         }
+    };
+
+    // ドア定義: ホール→各部屋の方向
+    const HALL_DOORS = [
+      { toRoom: 'techo',      label: 'システム手帳の間', dx:  0,   dz: -1, wx:  0,         wz: -(ROOM_SIZE/2 - 0.12) },
+      { toRoom: 'katakamuna', label: 'カタカムナ・教育の間', dx:  0,   dz:  1, wx:  0,         wz:  (ROOM_SIZE/2 - 0.12) },
+      { toRoom: 'koubou',     label: '工房の間',          dx: -1,   dz:  0, wx: -(ROOM_SIZE/2 - 0.12), wz:  0 },
+      { toRoom: 'gallery',    label: '幕僚ギャラリー',     dx:  1,   dz:  0, wx:  (ROOM_SIZE/2 - 0.12), wz:  0 }
+    ];
+
+    // カメラの部屋内デフォルト位置（部屋原点からのオフセット）
+    const CAM_IN_ROOM = { camY: 1.8, camZ: 3.8, targetY: 1.6 };
+
+    // ============================================================
     // Three.js 初期化
-    // ======================================================
+    // ============================================================
     let renderer, scene, camera, controls;
     let raycaster, mouse;
-    let panels = [];        // クリック対象メッシュ [{mesh, item}]
-    let staffPanels = [];   // スタッフパネル [{mesh, staff}]
-    let hoveredMesh = null;
+    let panels     = [];   // [{mesh, item}]
+    let staffPanels= [];   // [{mesh, staffActor}] — staffActorは巡回管理オブジェクト
+    let doorMeshes = [];   // [{mesh, toRoom, label}]
+    let hoveredMesh  = null;
     let selectedMesh = null;
+    let currentRoomId = 'hall';
+    let isTransitioning = false;
 
-    const ACCENT = 0xA0785A;
-    const FLOOR_COLOR = 0xC49A6C;
-    const WALL_COLOR = 0xEDE0D4;
-    const CEIL_COLOR = 0xF5F0EB;
+    // カメラアニメーション状態
+    let camAnim = null; // {fromPos, toPos, fromTarget, toTarget, t, duration, onDone}
+
+    const clock = new THREE.Clock();
+    const loader = new THREE.TextureLoader();
 
     try {
       const container = document.getElementById('canvas-container');
 
-      // レンダラー
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(container.clientWidth, container.clientHeight);
@@ -591,518 +718,902 @@
       renderer.toneMappingExposure = 1.1;
       container.appendChild(renderer.domElement);
 
-      // シーン・カメラ
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x2A1F1A);
-      scene.fog = new THREE.Fog(0x2A1F1A, 12, 28);
+      scene.background = new THREE.Color(0x1A1210);
+      scene.fog = new THREE.FogExp2(0x1A1210, 0.04);
 
-      camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 50);
-      camera.position.set(0, 1.6, 5.5);
+      camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 80);
+      // 初期位置: ホール中央手前
+      camera.position.set(0, CAM_IN_ROOM.camY, CAM_IN_ROOM.camZ);
 
-      // OrbitControls
       controls = new OrbitControls(camera, renderer.domElement);
-      controls.target.set(0, 1.6, 0);
-      controls.enablePan = false;
-      controls.minDistance = 2;
-      controls.maxDistance = 9;
-      controls.maxPolarAngle = Math.PI * 0.72;
-      controls.minPolarAngle = Math.PI * 0.1;
-      controls.autoRotate = false;
+      controls.target.set(0, CAM_IN_ROOM.targetY, 0);
+      controls.enablePan   = false;
+      controls.minDistance = 1.5;
+      controls.maxDistance = 8;
+      controls.maxPolarAngle = Math.PI * 0.74;
+      controls.minPolarAngle = Math.PI * 0.08;
       controls.update();
 
-      // ======================================================
-      // 部屋の構造
-      // ======================================================
-      const roomW = 14, roomH = 4.5, roomD = 14;
-
-      // 床
-      const floorGeo = new THREE.PlaneGeometry(roomW, roomD, 20, 20);
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: FLOOR_COLOR,
-        roughness: 0.85,
-        metalness: 0.0
-      });
-      const floor = new THREE.Mesh(floorGeo, floorMat);
-      floor.rotation.x = -Math.PI / 2;
-      floor.receiveShadow = true;
-      scene.add(floor);
-
-      // 天井
-      const ceilGeo = new THREE.PlaneGeometry(roomW, roomD);
-      const ceilMat = new THREE.MeshStandardMaterial({ color: CEIL_COLOR, roughness: 0.9 });
-      const ceil = new THREE.Mesh(ceilGeo, ceilMat);
-      ceil.rotation.x = Math.PI / 2;
-      ceil.position.y = roomH;
-      scene.add(ceil);
-
-      // 壁（奥・左・右）
-      const wallMat = new THREE.MeshStandardMaterial({ color: WALL_COLOR, roughness: 0.82 });
-
-      // 奥壁
-      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(roomW, roomH), wallMat);
-      backWall.position.set(0, roomH / 2, -roomD / 2);
-      backWall.receiveShadow = true;
-      scene.add(backWall);
-
-      // 左壁
-      const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(roomD, roomH), wallMat);
-      leftWall.position.set(-roomW / 2, roomH / 2, 0);
-      leftWall.rotation.y = Math.PI / 2;
-      leftWall.receiveShadow = true;
-      scene.add(leftWall);
-
-      // 右壁
-      const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(roomD, roomH), wallMat);
-      rightWall.position.set(roomW / 2, roomH / 2, 0);
-      rightWall.rotation.y = -Math.PI / 2;
-      rightWall.receiveShadow = true;
-      scene.add(rightWall);
-
-      // 木製モールディング（床と壁の境目）
-      const moldingGeo = new THREE.BoxGeometry(roomW, 0.12, 0.08);
-      const moldingMat = new THREE.MeshStandardMaterial({ color: 0x7A5C40, roughness: 0.6 });
-      const mBack = new THREE.Mesh(moldingGeo, moldingMat);
-      mBack.position.set(0, 0.06, -roomD / 2 + 0.04);
-      scene.add(mBack);
-
-      // ======================================================
-      // 照明
-      // ======================================================
-      // 環境光
-      const ambientLight = new THREE.AmbientLight(0xFFF5E6, 0.55);
-      scene.add(ambientLight);
-
-      // メインスポット（天井中央）
-      const mainSpot = new THREE.SpotLight(0xFFF8F0, 2.5, 20, Math.PI * 0.35, 0.35, 1.5);
-      mainSpot.position.set(0, roomH - 0.2, 0);
-      mainSpot.target.position.set(0, 0, -2);
-      mainSpot.castShadow = true;
-      mainSpot.shadow.mapSize.set(1024, 1024);
-      scene.add(mainSpot);
-      scene.add(mainSpot.target);
-
-      // 補助ポイントライト（左右）
-      const pointL = new THREE.PointLight(0xFFE0B0, 0.9, 10, 2);
-      pointL.position.set(-4, 3.5, 0);
-      scene.add(pointL);
-
-      const pointR = new THREE.PointLight(0xFFE0B0, 0.9, 10, 2);
-      pointR.position.set(4, 3.5, 0);
-      scene.add(pointR);
-
-      // ======================================================
-      // 商品パネルの配置
-      // ======================================================
-      const items = window.SHOWROOM_ITEMS || [];
-
-      // パネル配置定義: 奥壁3枚 + 左壁2枚 + 右壁1枚
-      const panelPositions = [
-        // 奥壁 (z = -roomD/2 + 0.05, 回転なし)
-        { x: -3.8, y: 2.0, z: -roomD / 2 + 0.06, ry: 0 },
-        { x:  0.0, y: 2.0, z: -roomD / 2 + 0.06, ry: 0 },
-        { x:  3.8, y: 2.0, z: -roomD / 2 + 0.06, ry: 0 },
-        // 左壁
-        { x: -roomW / 2 + 0.06, y: 2.0, z: -2.0, ry:  Math.PI / 2 },
-        { x: -roomW / 2 + 0.06, y: 2.0, z:  2.0, ry:  Math.PI / 2 },
-        // 右壁
-        { x:  roomW / 2 - 0.06, y: 2.0, z: -2.0, ry: -Math.PI / 2 },
-      ];
-
-      // 額縁マテリアル
-      const frameMat = new THREE.MeshStandardMaterial({ color: 0x5C3D1E, roughness: 0.5, metalness: 0.15 });
-
-      const loader = new THREE.TextureLoader();
-
-      items.forEach((item, i) => {
-        if (i >= panelPositions.length) return;
-        const pos = panelPositions[i];
-
-        // 画像テクスチャ読み込み（失敗時はプレースホルダ色）
-        const placeholderColor = [0xC49A6C, 0x8B7355, 0xA0785A, 0xD4B896, 0x7A5C40, 0xBE9B7B][i % 6];
-        const panelMat = new THREE.MeshStandardMaterial({
-          color: placeholderColor,
-          roughness: 0.55,
-          metalness: 0.0,
-          emissive: new THREE.Color(0x000000),
-          emissiveIntensity: 0
-        });
-
-        loader.load(
-          item.image,
-          (tex) => {
-            tex.colorSpace = THREE.SRGBColorSpace;
-            panelMat.map = tex;
-            panelMat.color.set(0xFFFFFF);
-            panelMat.needsUpdate = true;
-          },
-          undefined,
-          () => { /* テクスチャ読み込み失敗 → プレースホルダ色のまま表示 */ }
-        );
-
-        // パネル本体
-        const panelGeo = new THREE.PlaneGeometry(1.5, 1.1);
-        const panel = new THREE.Mesh(panelGeo, panelMat);
-        panel.position.set(pos.x, pos.y, pos.z);
-        panel.rotation.y = pos.ry;
-        panel.castShadow = false;
-        panel.receiveShadow = false;
-        panel.userData.item = item;
-        scene.add(panel);
-        panels.push({ mesh: panel, item });
-
-        // 額縁（4辺）
-        const frameThick = 0.04;
-        const frameDepth = 0.04;
-        const fW = 1.5 + frameThick * 2;
-        const fH = 1.1 + frameThick * 2;
-        const borders = [
-          new THREE.BoxGeometry(fW, frameThick, frameDepth), // 上
-          new THREE.BoxGeometry(fW, frameThick, frameDepth), // 下
-          new THREE.BoxGeometry(frameThick, fH, frameDepth), // 左
-          new THREE.BoxGeometry(frameThick, fH, frameDepth), // 右
-        ];
-        const offsets = [
-          [0,  fH / 2 - frameThick / 2, 0],
-          [0, -fH / 2 + frameThick / 2, 0],
-          [-fW / 2 + frameThick / 2, 0, 0],
-          [ fW / 2 - frameThick / 2, 0, 0],
-        ];
-        borders.forEach((geo, bi) => {
-          const b = new THREE.Mesh(geo, frameMat);
-          b.position.set(
-            pos.x + offsets[bi][0],
-            pos.y + offsets[bi][1],
-            pos.z + offsets[bi][2] + 0.02
-          );
-          b.rotation.y = pos.ry;
-          scene.add(b);
-        });
-      });
-
-      // ======================================================
-      // スタッフパネルの配置
-      // ======================================================
-      // 部屋サイズ: roomW=14, roomD=14
-      // 商品壁: 奥壁(z=-7)・左壁(x=-7)・右壁(x=7)
-      // スタッフ配置:
-      //   入口側（手前）壁 z=+7: 中央に総司令官+左右に4名
-      //   右壁(x=7)の奥エリア z=-4〜+4: 3名（商品と干渉しない z=+4）
-      //   左壁(x=-7)の奥エリア z=+4: 2名
-
-      const staffList = window.SHOWROOM_STAFF || [];
-
-      // 配置定義: [x, y, z, ry]
-      // 入口側壁(z=+7, 内向き ry=Math.PI): 総司令官中央 + 左右4名
-      // 入口壁は中心間隔2.2（パネル幅0.9）で重なりなし・総司令官が中央
-      const staffPositions = [
-        // 総司令官: 入口正面中央 (index 0 = kojinjigyonusi)
-        { x:  0.0, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
-        // 作戦幕僚: 入口壁 左1
-        { x: -2.2, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
-        // 販売幕僚: 入口壁 右1
-        { x:  2.2, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
-        // 監理幕僚: 入口壁 左2
-        { x: -4.4, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
-        // 広報幕僚: 入口壁 右2
-        { x:  4.4, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
-        // 後方幕僚: 右壁 手前エリア
-        { x:  roomW / 2 - 0.06, y: 2.2, z:  3.5, ry: -Math.PI / 2 },
-        // 保全幕僚: 右壁 中エリア
-        { x:  roomW / 2 - 0.06, y: 2.2, z:  0.0, ry: -Math.PI / 2 },
-        // デジタル幕僚: 左壁 手前エリア
-        { x: -roomW / 2 + 0.06, y: 2.2, z:  3.5, ry:  Math.PI / 2 },
-        // 人事幕僚: 左壁 中エリア
-        { x: -roomW / 2 + 0.06, y: 2.2, z:  0.0, ry:  Math.PI / 2 },
-        // 教育幕僚: 入口壁 左3（端）
-        { x: -6.4, y: 2.2, z:  roomD / 2 - 0.06, ry: Math.PI },
-      ];
-
-      // スタッフパネルサイズ（縦長ポートレート比 0.75:1 = 0.9:1.2）
-      const sPW = 0.9;
-      const sPH = 1.2;
-      const sFrameThick = 0.04;
-      const sFrameDepth = 0.04;
-
-      // 額縁マテリアル（ゴールド調）
-      const sFrameMat = new THREE.MeshStandardMaterial({ color: 0x8B6914, roughness: 0.45, metalness: 0.4 });
-
-      staffList.forEach((staff, i) => {
-        if (i >= staffPositions.length) return;
-        const pos = staffPositions[i];
-
-        const sMat = new THREE.MeshStandardMaterial({
-          color: 0x8B7355,
-          roughness: 0.55,
-          metalness: 0.0,
-          emissive: new THREE.Color(0x000000),
-          emissiveIntensity: 0
-        });
-
-        loader.load(
-          staff.image,
-          (tex) => {
-            tex.colorSpace = THREE.SRGBColorSpace;
-            sMat.map = tex;
-            sMat.color.set(0xFFFFFF);
-            sMat.needsUpdate = true;
-          },
-          undefined,
-          () => {}
-        );
-
-        const sGeo = new THREE.PlaneGeometry(sPW, sPH);
-        const sPanel = new THREE.Mesh(sGeo, sMat);
-        sPanel.position.set(pos.x, pos.y, pos.z);
-        sPanel.rotation.y = pos.ry;
-        sPanel.userData.staff = staff;
-        scene.add(sPanel);
-        staffPanels.push({ mesh: sPanel, staff });
-
-        // 額縁
-        const sfW = sPW + sFrameThick * 2;
-        const sfH = sPH + sFrameThick * 2;
-        const sBorders = [
-          new THREE.BoxGeometry(sfW, sFrameThick, sFrameDepth),
-          new THREE.BoxGeometry(sfW, sFrameThick, sFrameDepth),
-          new THREE.BoxGeometry(sFrameThick, sfH, sFrameDepth),
-          new THREE.BoxGeometry(sFrameThick, sfH, sFrameDepth),
-        ];
-        const sOffsets = [
-          [0,  sfH / 2 - sFrameThick / 2, 0],
-          [0, -sfH / 2 + sFrameThick / 2, 0],
-          [-sfW / 2 + sFrameThick / 2, 0, 0],
-          [ sfW / 2 - sFrameThick / 2, 0, 0],
-        ];
-        sBorders.forEach((geo, bi) => {
-          const b = new THREE.Mesh(geo, sFrameMat);
-          b.position.set(
-            pos.x + sOffsets[bi][0],
-            pos.y + sOffsets[bi][1],
-            pos.z + sOffsets[bi][2] + 0.02
-          );
-          b.rotation.y = pos.ry;
-          scene.add(b);
-        });
-      });
-
-      // ======================================================
-      // Raycaster
-      // ======================================================
       raycaster = new THREE.Raycaster();
-      mouse = new THREE.Vector2();
+      mouse     = new THREE.Vector2();
 
+      // ==============================================================
+      // 全部屋のジオメトリ構築
+      // ==============================================================
+      const wallMat  = new THREE.MeshStandardMaterial({ color: WALL_COLOR, roughness: 0.82 });
+      const floorMat = new THREE.MeshStandardMaterial({ color: FLOOR_COLOR, roughness: 0.85 });
+      const ceilMat  = new THREE.MeshStandardMaterial({ color: CEIL_COLOR,  roughness: 0.9  });
+      const moldMat  = new THREE.MeshStandardMaterial({ color: 0x7A5C40,    roughness: 0.6  });
+      const frameMat = new THREE.MeshStandardMaterial({ color: 0x5C3D1E,    roughness: 0.5, metalness: 0.15 });
+      const sFrameMat= new THREE.MeshStandardMaterial({ color: 0x8B6914,    roughness: 0.45, metalness: 0.4  });
+
+      const roomIds = ['hall','techo','katakamuna','koubou','gallery'];
+
+      roomIds.forEach(roomId => {
+        const off = ROOM_OFFSETS[roomId];
+        const rx = off.x, rz = off.z;
+        const hs = ROOM_SIZE / 2;
+
+        // 床
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE, 10, 10), floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.set(rx, 0, rz);
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // 天井
+        const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE), ceilMat);
+        ceil.rotation.x = Math.PI / 2;
+        ceil.position.set(rx, ROOM_H, rz);
+        scene.add(ceil);
+
+        // 壁4面（開口部分は視覚的に省略・廊下との境界は霧で隠れる）
+        const wallGeoms = [
+          { geo: new THREE.PlaneGeometry(ROOM_SIZE, ROOM_H), pos: [rx, ROOM_H/2, rz - hs], ry: 0             }, // 奥
+          { geo: new THREE.PlaneGeometry(ROOM_SIZE, ROOM_H), pos: [rx, ROOM_H/2, rz + hs], ry: Math.PI       }, // 手前
+          { geo: new THREE.PlaneGeometry(ROOM_SIZE, ROOM_H), pos: [rx - hs, ROOM_H/2, rz], ry:  Math.PI/2   }, // 左
+          { geo: new THREE.PlaneGeometry(ROOM_SIZE, ROOM_H), pos: [rx + hs, ROOM_H/2, rz], ry: -Math.PI/2   }  // 右
+        ];
+        wallGeoms.forEach(w => {
+          const m = new THREE.Mesh(w.geo, wallMat);
+          m.position.set(...w.pos);
+          m.rotation.y = w.ry;
+          m.receiveShadow = true;
+          scene.add(m);
+        });
+
+        // 巾木モールディング（奥壁下）
+        const mold = new THREE.Mesh(new THREE.BoxGeometry(ROOM_SIZE, 0.1, 0.07), moldMat);
+        mold.position.set(rx, 0.05, rz - hs + 0.035);
+        scene.add(mold);
+
+        // 照明
+        const spot = new THREE.SpotLight(0xFFF8F0, 2.2, 18, Math.PI * 0.38, 0.4, 1.6);
+        spot.position.set(rx, ROOM_H - 0.2, rz);
+        spot.target.position.set(rx, 0, rz - 1);
+        spot.castShadow = true;
+        spot.shadow.mapSize.set(512, 512);
+        scene.add(spot);
+        scene.add(spot.target);
+
+        const ptL = new THREE.PointLight(0xFFE0B0, 0.7, 8, 2);
+        ptL.position.set(rx - 3, 3, rz);
+        scene.add(ptL);
+        const ptR = new THREE.PointLight(0xFFE0B0, 0.7, 8, 2);
+        ptR.position.set(rx + 3, 3, rz);
+        scene.add(ptR);
+      });
+
+      // 環境光（全体）
+      scene.add(new THREE.AmbientLight(0xFFF5E6, 0.45));
+
+      // ==============================================================
+      // ホールのドアパネル設置
+      // ==============================================================
+      const doorGlowMat = new THREE.MeshStandardMaterial({
+        color: 0x3A2510, roughness: 0.5, metalness: 0.3,
+        emissive: new THREE.Color(DOOR_GLOW), emissiveIntensity: 0.6
+      });
+      const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x5C3D1E, roughness: 0.5, metalness: 0.2 });
+      const labelCanvas = document.createElement('canvas');
+      labelCanvas.width = 256; labelCanvas.height = 64;
+
+      HALL_DOORS.forEach(door => {
+        const off = ROOM_OFFSETS['hall'];
+        const wx = off.x + door.wx;
+        const wz = off.z + door.wz;
+        const ry = Math.atan2(door.dx, door.dz); // カメラ方向に面を向ける
+
+        // 発光パネル（ドア本体）
+        const dMat = new THREE.MeshStandardMaterial({
+          color: 0x1A0E05, roughness: 0.45, metalness: 0.2,
+          emissive: new THREE.Color(DOOR_GLOW), emissiveIntensity: 0.45
+        });
+        const dMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.0), dMat);
+        dMesh.position.set(wx, 1.0, wz);
+        dMesh.rotation.y = ry;
+        dMesh.userData.door    = true;
+        dMesh.userData.toRoom  = door.toRoom;
+        dMesh.userData.label   = door.label;
+        scene.add(dMesh);
+        doorMeshes.push({ mesh: dMesh, toRoom: door.toRoom, label: door.label });
+
+        // ドア枠
+        const dfW = 1.2, dfH = 2.0, ft = 0.06;
+        [[new THREE.BoxGeometry(dfW + ft*2, ft, ft), [0, dfH/2 + ft/2, 0]],
+         [new THREE.BoxGeometry(dfW + ft*2, ft, ft), [0,-dfH/2 - ft/2, 0]],
+         [new THREE.BoxGeometry(ft, dfH + ft*2, ft), [-dfW/2 - ft/2, 0, 0]],
+         [new THREE.BoxGeometry(ft, dfH + ft*2, ft), [ dfW/2 + ft/2, 0, 0]]
+        ].forEach(([geo, [ox,oy,oz]]) => {
+          const b = new THREE.Mesh(geo, doorFrameMat);
+          b.position.set(wx + ox, 1.0 + oy, wz + oz);
+          b.rotation.y = ry;
+          scene.add(b);
+        });
+
+        // ラベルテクスチャ（部屋名）
+        const lc = document.createElement('canvas');
+        lc.width = 512; lc.height = 80;
+        const ctx = lc.getContext('2d');
+        ctx.clearRect(0, 0, 512, 80);
+        ctx.fillStyle = 'rgba(255,208,128,0.92)';
+        ctx.font = 'bold 30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(door.label, 256, 40);
+        const ltex = new THREE.CanvasTexture(lc);
+        ltex.colorSpace = THREE.SRGBColorSpace;
+        const lMesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.4, 0.22),
+          new THREE.MeshBasicMaterial({ map: ltex, transparent: true, depthWrite: false })
+        );
+        lMesh.position.set(wx, 2.22, wz);
+        lMesh.rotation.y = ry;
+        scene.add(lMesh);
+      });
+
+      // ==============================================================
+      // 各部屋の出口ドア（ホール方向）
+      // ==============================================================
+      ['techo','katakamuna','koubou','gallery'].forEach(roomId => {
+        const rOff = ROOM_OFFSETS[roomId];
+        const hOff = ROOM_OFFSETS['hall'];
+        // ホール方向の壁面中央
+        const dx = Math.sign(hOff.x - rOff.x);
+        const dz = Math.sign(hOff.z - rOff.z);
+        const wx = rOff.x + dx * (ROOM_SIZE/2 - 0.12);
+        const wz = rOff.z + dz * (ROOM_SIZE/2 - 0.12);
+        const ry = Math.atan2(dx, dz);
+
+        const exMat = new THREE.MeshStandardMaterial({
+          color: 0x050F1A, roughness: 0.45, metalness: 0.2,
+          emissive: new THREE.Color(0x80C0FF), emissiveIntensity: 0.3
+        });
+        const exMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.0), exMat);
+        exMesh.position.set(wx, 1.0, wz);
+        exMesh.rotation.y = ry;
+        exMesh.userData.door   = true;
+        exMesh.userData.toRoom = 'hall';
+        exMesh.userData.label  = 'エントランスホール';
+        scene.add(exMesh);
+        doorMeshes.push({ mesh: exMesh, toRoom: 'hall', label: 'ホールへ戻る' });
+
+        // 出口ラベル
+        const lc = document.createElement('canvas');
+        lc.width = 400; lc.height = 64;
+        const ctx = lc.getContext('2d');
+        ctx.clearRect(0, 0, 400, 64);
+        ctx.fillStyle = 'rgba(128,192,255,0.9)';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('← ホールへ', 200, 32);
+        const ltex = new THREE.CanvasTexture(lc);
+        ltex.colorSpace = THREE.SRGBColorSpace;
+        const lMesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.1, 0.18),
+          new THREE.MeshBasicMaterial({ map: ltex, transparent: true, depthWrite: false })
+        );
+        lMesh.position.set(wx, 2.2, wz);
+        lMesh.rotation.y = ry;
+        scene.add(lMesh);
+      });
+
+      // ==============================================================
+      // 商品パネル設置（部屋別）
+      // ==============================================================
+      function placeItemPanels(roomId) {
+        const rooms  = window.SHOWROOM_ROOMS || [];
+        const room   = rooms.find(r => r.id === roomId);
+        if (!room || room.items.length === 0) return;
+        const off = ROOM_OFFSETS[roomId];
+        const items = room.items;
+
+        // パネル配置（奥壁・左壁・右壁に分散）
+        const positions = buildPanelPositions(items.length, off);
+        items.forEach((item, i) => {
+          if (i >= positions.length) return;
+          const pos = positions[i];
+          const placeholderColors = [0xC49A6C,0x8B7355,0xA0785A,0xD4B896,0x7A5C40,0xBE9B7B];
+          const pMat = new THREE.MeshStandardMaterial({
+            color: placeholderColors[i % placeholderColors.length],
+            roughness: 0.55,
+            emissive: new THREE.Color(0x000000),
+            emissiveIntensity: 0
+          });
+          loader.load(item.image, tex => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            pMat.map = tex; pMat.color.set(0xFFFFFF); pMat.needsUpdate = true;
+          }, undefined, () => {});
+
+          const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.0), pMat);
+          panel.position.set(pos.x, pos.y, pos.z);
+          panel.rotation.y = pos.ry;
+          panel.userData.item = item;
+          scene.add(panel);
+          panels.push({ mesh: panel, item });
+
+          // 額縁
+          addFrame(pos, 1.4, 1.0, frameMat);
+        });
+
+        // リンクパネル配置
+        const links = room.links || [];
+        links.forEach((link, i) => {
+          const lpos = buildLinkPanelPosition(i, links.length, off);
+          const lMat = new THREE.MeshStandardMaterial({
+            color: 0x2A1A0A, roughness: 0.6,
+            emissive: new THREE.Color(0xA0785A), emissiveIntensity: 0.25
+          });
+          // ラベルテクスチャ
+          const lc = document.createElement('canvas');
+          lc.width = 512; lc.height = 256;
+          const ctx = lc.getContext('2d');
+          ctx.fillStyle = '#1D1108';
+          ctx.fillRect(0, 0, 512, 256);
+          ctx.fillStyle = '#FFD080';
+          ctx.font = 'bold 28px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(link.name, 256, 60);
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          ctx.font = '18px sans-serif';
+          wrapText(ctx, link.lead, 256, 110, 450, 26);
+          ctx.fillStyle = '#A0785A';
+          ctx.fillRect(130, 190, 252, 40);
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.fillText(link.btnLabel, 256, 215);
+          const ltex = new THREE.CanvasTexture(lc);
+          ltex.colorSpace = THREE.SRGBColorSpace;
+          lMat.map = ltex; lMat.needsUpdate = true;
+
+          const lMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.8), lMat);
+          lMesh.position.set(lpos.x, lpos.y, lpos.z);
+          lMesh.rotation.y = lpos.ry;
+          lMesh.userData.link = link;
+          scene.add(lMesh);
+          panels.push({ mesh: lMesh, item: { ...link, isLink: true } });
+          addFrame(lpos, 1.6, 0.8, frameMat);
+        });
+      }
+
+      // パネル配置計算（部屋サイズ10×10、奥壁・左壁・右壁）
+      function buildPanelPositions(count, off) {
+        const hs = ROOM_SIZE / 2;
+        const base = [
+          // 奥壁 3枚
+          { x: off.x - 2.8, y: 2.0, z: off.z - hs + 0.08, ry: 0         },
+          { x: off.x + 0.0, y: 2.0, z: off.z - hs + 0.08, ry: 0         },
+          { x: off.x + 2.8, y: 2.0, z: off.z - hs + 0.08, ry: 0         },
+          // 左壁 2枚
+          { x: off.x - hs + 0.08, y: 2.0, z: off.z - 1.5, ry:  Math.PI/2 },
+          { x: off.x - hs + 0.08, y: 2.0, z: off.z + 1.5, ry:  Math.PI/2 },
+          // 右壁 1枚
+          { x: off.x + hs - 0.08, y: 2.0, z: off.z - 1.5, ry: -Math.PI/2 }
+        ];
+        return base.slice(0, count);
+      }
+
+      function buildLinkPanelPosition(i, total, off) {
+        const hs = ROOM_SIZE / 2;
+        const positions = [
+          { x: off.x + hs - 0.08, y: 2.0, z: off.z + 0.0, ry: -Math.PI/2 },
+          { x: off.x + hs - 0.08, y: 2.0, z: off.z + 2.0, ry: -Math.PI/2 },
+          { x: off.x + hs - 0.08, y: 2.0, z: off.z - 2.0, ry: -Math.PI/2 },
+          { x: off.x - hs + 0.08, y: 2.0, z: off.z - 2.5, ry:  Math.PI/2 }
+        ];
+        return positions[i % positions.length];
+      }
+
+      function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+        const words = text.split('');
+        let line = '';
+        let curY = y;
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n];
+          if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+            ctx.fillText(line, x, curY);
+            line = words[n];
+            curY += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line, x, curY);
+      }
+
+      function addFrame(pos, w, h, mat) {
+        const ft = 0.04, fd = 0.04;
+        const fw = w + ft*2, fh = h + ft*2;
+        [
+          [new THREE.BoxGeometry(fw, ft, fd), [0,  fh/2 - ft/2, 0]],
+          [new THREE.BoxGeometry(fw, ft, fd), [0, -fh/2 + ft/2, 0]],
+          [new THREE.BoxGeometry(ft, fh, fd), [-fw/2 + ft/2, 0, 0]],
+          [new THREE.BoxGeometry(ft, fh, fd), [ fw/2 - ft/2, 0, 0]]
+        ].forEach(([geo, [ox,oy,oz]]) => {
+          const b = new THREE.Mesh(geo, mat);
+          b.position.set(pos.x + ox, pos.y + oy, pos.z + oz + 0.02);
+          b.rotation.y = pos.ry;
+          scene.add(b);
+        });
+      }
+
+      // 全部屋のパネルを事前構築（遅延テクスチャロードで軽量維持）
+      ['techo','katakamuna','koubou','gallery'].forEach(placeItemPanels);
+
+      // ホールのリンクパネル
+      (function() {
+        const off = ROOM_OFFSETS['hall'];
+        const rooms = window.SHOWROOM_ROOMS || [];
+        const hallRoom = rooms.find(r => r.id === 'hall');
+        if (!hallRoom) return;
+        hallRoom.links.forEach((link, i) => {
+          const lpos = buildLinkPanelPosition(i, hallRoom.links.length, off);
+          const lMat = new THREE.MeshStandardMaterial({ color: 0x2A1A0A, roughness: 0.6,
+            emissive: new THREE.Color(0xA0785A), emissiveIntensity: 0.25 });
+          const lc = document.createElement('canvas');
+          lc.width = 512; lc.height = 256;
+          const ctx = lc.getContext('2d');
+          ctx.fillStyle = '#1D1108'; ctx.fillRect(0,0,512,256);
+          ctx.fillStyle = '#FFD080'; ctx.font = 'bold 28px sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText(link.name, 256, 60);
+          ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '18px sans-serif';
+          wrapText(ctx, link.lead, 256, 110, 450, 26);
+          ctx.fillStyle = '#A0785A'; ctx.fillRect(130, 190, 252, 40);
+          ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif';
+          ctx.fillText(link.btnLabel, 256, 215);
+          const ltex = new THREE.CanvasTexture(lc); ltex.colorSpace = THREE.SRGBColorSpace;
+          lMat.map = ltex; lMat.needsUpdate = true;
+          const lMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.8), lMat);
+          lMesh.position.set(lpos.x, lpos.y, lpos.z); lMesh.rotation.y = lpos.ry;
+          lMesh.userData.link = link;
+          scene.add(lMesh);
+          panels.push({ mesh: lMesh, item: { ...link, isLink: true } });
+          addFrame(lpos, 1.6, 0.8, frameMat);
+        });
+      })();
+
+      // ==============================================================
+      // 幕僚 立て看板アクター
+      // ==============================================================
+      // StaffActor: ビジュアル（看板メッシュ）と巡回ロジックを分離したオブジェクト
+      class StaffActor {
+        constructor(staff) {
+          this.staff   = staff;
+          this.roomId  = staff.room;
+          this.rOff    = ROOM_OFFSETS[staff.room];
+
+          // ウェイポイントをワールド座標に変換
+          this.waypoints = (staff.waypoints || [[0,0]]).map(([lx, lz]) => ({
+            x: this.rOff.x + lx,
+            z: this.rOff.z + lz
+          }));
+          this.wpIdx    = 0;
+          this.waitTime = 0;       // 停止残り時間(秒)
+          this.speed    = 0.35 + Math.random() * 0.15; // 0.35〜0.5
+          this.paused   = false;   // クリック停止中
+
+          // ビジュアル — 立て看板（画像パネル＋台座）
+          // 後日GLBに差し替える前提: this.visual だけ差し替えればよい
+          this.visual = this._buildVisual(staff);
+        }
+
+        _buildVisual(staff) {
+          const group = new THREE.Group();
+
+          // 台座（脚）
+          const legMat = new THREE.MeshStandardMaterial({ color: 0x4A3020, roughness: 0.7 });
+          const legL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.55, 0.05), legMat);
+          legL.position.set(-0.22, 0.275, 0);
+          group.add(legL);
+          const legR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.55, 0.05), legMat);
+          legR.position.set( 0.22, 0.275, 0);
+          group.add(legR);
+          // 足バー
+          const foot = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.04, 0.28), legMat);
+          foot.position.set(0, 0.02, 0.1);
+          group.add(foot);
+          // 縦棒
+          const pole = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.15, 0.04), legMat);
+          pole.position.set(0, 0.7, 0);
+          group.add(pole);
+
+          // 画像パネル（0.8 × 1.0）
+          const pMat = new THREE.MeshStandardMaterial({
+            color: 0x8B7355, roughness: 0.5,
+            emissive: new THREE.Color(0x000000), emissiveIntensity: 0
+          });
+          loader.load(staff.image, tex => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            pMat.map = tex; pMat.color.set(0xFFFFFF); pMat.needsUpdate = true;
+          }, undefined, () => {});
+          const pGeo = new THREE.PlaneGeometry(0.8, 1.0);
+          const pMesh = new THREE.Mesh(pGeo, pMat);
+          pMesh.position.set(0, 1.35, 0.025);
+          pMesh.userData.staffActor = this; // クリック用
+          group.add(pMesh);
+          this.panelMesh = pMesh;
+
+          // 額縁
+          const fMat = new THREE.MeshStandardMaterial({ color: 0x8B6914, roughness: 0.45, metalness: 0.4 });
+          const ft = 0.05, pw = 0.8, ph = 1.0;
+          [[new THREE.BoxGeometry(pw+ft*2,ft,ft),[0, ph/2+ft/2,0]],
+           [new THREE.BoxGeometry(pw+ft*2,ft,ft),[0,-ph/2-ft/2,0]],
+           [new THREE.BoxGeometry(ft,ph+ft*2,ft),[-pw/2-ft/2,0,0]],
+           [new THREE.BoxGeometry(ft,ph+ft*2,ft),[ pw/2+ft/2,0,0]]
+          ].forEach(([geo,[ox,oy,oz]]) => {
+            const b = new THREE.Mesh(geo, fMat);
+            b.position.set(ox, 1.35 + oy, 0.025 + (oz||0));
+            group.add(b);
+          });
+
+          // 名前プレート
+          const nc = document.createElement('canvas');
+          nc.width = 256; nc.height = 56;
+          const nctx = nc.getContext('2d');
+          nctx.fillStyle = '#2A1800'; nctx.fillRect(0,0,256,56);
+          nctx.fillStyle = '#FFD080'; nctx.font = 'bold 20px sans-serif';
+          nctx.textAlign = 'center'; nctx.textBaseline = 'middle';
+          nctx.fillText(staff.name, 128, 20);
+          nctx.fillStyle = 'rgba(255,255,255,0.6)'; nctx.font = '14px sans-serif';
+          nctx.fillText(staff.role, 128, 40);
+          const ntex = new THREE.CanvasTexture(nc); ntex.colorSpace = THREE.SRGBColorSpace;
+          const nMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.9, 0.2),
+            new THREE.MeshBasicMaterial({ map: ntex, transparent: true, depthWrite: false })
+          );
+          nMesh.position.set(0, 0.62, 0.1);
+          group.add(nMesh);
+
+          // 初期位置
+          const wp0 = this.waypoints[0];
+          group.position.set(wp0.x, 0, wp0.z);
+          scene.add(group);
+          return group;
+        }
+
+        // 毎フレーム呼ぶ巡回更新（ビジュアルと独立したロジック）
+        update(dt) {
+          if (this.paused) return;
+
+          if (this.waitTime > 0) {
+            this.waitTime -= dt;
+            // 軽い上下ボブ（停止中もゆらゆら）
+            this.visual.position.y = Math.sin(Date.now() * 0.002) * 0.015;
+            return;
+          }
+
+          const target = this.waypoints[this.wpIdx];
+          const curX = this.visual.position.x;
+          const curZ = this.visual.position.z;
+          const dx = target.x - curX;
+          const dz = target.z - curZ;
+          const dist = Math.sqrt(dx*dx + dz*dz);
+
+          if (dist < 0.05) {
+            // ウェイポイント到達 → 停止
+            this.visual.position.x = target.x;
+            this.visual.position.z = target.z;
+            this.wpIdx = (this.wpIdx + 1) % this.waypoints.length;
+            this.waitTime = 2 + Math.random() * 3; // 2〜5秒
+          } else {
+            // 移動
+            const step = Math.min(this.speed * dt, dist);
+            this.visual.position.x += (dx / dist) * step;
+            this.visual.position.z += (dz / dist) * step;
+
+            // 進行方向へ向く（Y軸のみ）
+            const targetAngle = Math.atan2(dx, dz);
+            const curAngle = this.visual.rotation.y;
+            let dAngle = targetAngle - curAngle;
+            while (dAngle >  Math.PI) dAngle -= Math.PI * 2;
+            while (dAngle < -Math.PI) dAngle += Math.PI * 2;
+            this.visual.rotation.y += dAngle * Math.min(dt * 4, 1);
+
+            // ボブ（歩行感）
+            this.visual.position.y = Math.sin(Date.now() * 0.005) * 0.03;
+          }
+
+          // Billboard: Y軸のみカメラ追従（表示面が裏返らない）
+          const camDir = new THREE.Vector3();
+          camDir.subVectors(camera.position, this.visual.position);
+          camDir.y = 0;
+          if (camDir.lengthSq() > 0.001) {
+            this.visual.rotation.y = Math.atan2(camDir.x, camDir.z);
+          }
+        }
+
+        pauseFor(staff) {
+          this.paused = true;
+        }
+        resume() {
+          this.paused = false;
+        }
+      }
+
+      // スタッフアクター生成
+      const staffActors = (window.SHOWROOM_STAFF || []).map(s => new StaffActor(s));
+      // staffPanels に登録（raycaster用）
+      staffActors.forEach(actor => {
+        staffPanels.push({ mesh: actor.panelMesh, staffActor: actor });
+      });
+
+      // ==============================================================
+      // カメラ遷移
+      // ==============================================================
+      function gotoRoom(roomId) {
+        if (isTransitioning) return;
+        const off = ROOM_OFFSETS[roomId];
+        if (!off) { console.warn('SHOWROOM_API: 不明なroomId:', roomId); return; }
+
+        isTransitioning = true;
+        closeAllCards();
+
+        const fromPos    = camera.position.clone();
+        const fromTarget = controls.target.clone();
+        // ホールに向かう方向から入室するよう入場位置を計算
+        let entryDz = 0, entryDx = 0;
+        if (roomId === 'hall') {
+          entryDz = CAM_IN_ROOM.camZ;
+        } else {
+          // ホールからの方向の逆がカメラの位置
+          const hallOff = ROOM_OFFSETS['hall'];
+          const dirX = off.x - hallOff.x;
+          const dirZ = off.z - hallOff.z;
+          const len  = Math.sqrt(dirX*dirX + dirZ*dirZ);
+          entryDx =-(dirX/len) * CAM_IN_ROOM.camZ;
+          entryDz =-(dirZ/len) * CAM_IN_ROOM.camZ;
+        }
+
+        const toPos    = new THREE.Vector3(off.x + entryDx, CAM_IN_ROOM.camY, off.z + entryDz);
+        const toTarget = new THREE.Vector3(off.x,           CAM_IN_ROOM.targetY, off.z);
+
+        camAnim = {
+          fromPos, toPos, fromTarget, toTarget,
+          t: 0, duration: 1.0,
+          onDone: () => {
+            currentRoomId = roomId;
+            isTransitioning = false;
+            updateRoomUI(roomId);
+            controls.target.copy(toTarget);
+            controls.update();
+          }
+        };
+      }
+
+      function updateRoomUI(roomId) {
+        const rooms = window.SHOWROOM_ROOMS || [];
+        const room  = rooms.find(r => r.id === roomId);
+        const name  = room ? room.name : roomId;
+        document.getElementById('room-indicator').textContent = name;
+        document.querySelectorAll('#room-menu button').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.room === roomId);
+        });
+        const backBtn = document.getElementById('btn-back-hall');
+        backBtn.style.display = (roomId === 'hall') ? 'none' : 'block';
+        gtag('event', 'room_enter', { room_id: roomId });
+      }
+
+      // ==============================================================
+      // Raycaster & クリック
+      // ==============================================================
       function getIntersected(event) {
         const rect = renderer.domElement.getBoundingClientRect();
-        let clientX, clientY;
+        let cx, cy;
         if (event.touches && event.touches.length > 0) {
-          clientX = event.touches[0].clientX;
-          clientY = event.touches[0].clientY;
+          cx = event.touches[0].clientX; cy = event.touches[0].clientY;
+        } else if (event.changedTouches && event.changedTouches.length > 0) {
+          cx = event.changedTouches[0].clientX; cy = event.changedTouches[0].clientY;
         } else {
-          clientX = event.clientX;
-          clientY = event.clientY;
+          cx = event.clientX; cy = event.clientY;
         }
-        mouse.x = ((clientX - rect.left) / rect.width)  * 2 - 1;
-        mouse.y = -((clientY - rect.top)  / rect.height) * 2 + 1;
+        mouse.x =  ((cx - rect.left) / rect.width)  * 2 - 1;
+        mouse.y = -((cy - rect.top)  / rect.height)  * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
         const meshes = [
           ...panels.map(p => p.mesh),
-          ...staffPanels.map(p => p.mesh)
+          ...staffPanels.map(p => p.mesh),
+          ...doorMeshes.map(d => d.mesh)
         ];
-        return raycaster.intersectObjects(meshes);
+        return raycaster.intersectObjects(meshes, true);
       }
 
       // ホバー
-      renderer.domElement.addEventListener('mousemove', (e) => {
+      renderer.domElement.addEventListener('mousemove', e => {
         const hits = getIntersected(e);
         if (hits.length > 0) {
           const mesh = hits[0].object;
-          if (hoveredMesh !== mesh) {
-            if (hoveredMesh) hoveredMesh.material.emissiveIntensity = 0;
-            hoveredMesh = mesh;
-            hoveredMesh.material.emissive.set(0xA0785A);
-            hoveredMesh.material.emissiveIntensity = 0.18;
+          // staffActor配下メッシュを探す
+          const sMesh = findStaffPanelMesh(mesh);
+          const target = sMesh || mesh;
+          if (hoveredMesh !== target) {
+            if (hoveredMesh && hoveredMesh.material && hoveredMesh.material.emissiveIntensity !== undefined)
+              hoveredMesh.material.emissiveIntensity = 0;
+            hoveredMesh = target;
+            if (hoveredMesh.material) {
+              hoveredMesh.material.emissive && hoveredMesh.material.emissive.set(0xA0785A);
+              hoveredMesh.material.emissiveIntensity = 0.2;
+            }
             renderer.domElement.style.cursor = 'pointer';
           }
         } else {
-          if (hoveredMesh) {
+          if (hoveredMesh && hoveredMesh.material && hoveredMesh.material.emissiveIntensity !== undefined)
             hoveredMesh.material.emissiveIntensity = 0;
-            hoveredMesh = null;
-          }
+          hoveredMesh = null;
           renderer.domElement.style.cursor = 'grab';
         }
       });
 
-      // クリック
+      function findStaffPanelMesh(mesh) {
+        const found = staffPanels.find(p => p.mesh === mesh);
+        return found ? found.mesh : null;
+      }
+
       let pointerDownTime = 0;
       renderer.domElement.addEventListener('pointerdown', () => { pointerDownTime = Date.now(); });
-      renderer.domElement.addEventListener('pointerup', (e) => {
-        if (Date.now() - pointerDownTime > 200) return; // ドラッグ除外
-        const hits = getIntersected(e);
-        if (hits.length > 0) {
-          const mesh = hits[0].object;
-          const entry = panels.find(p => p.mesh === mesh);
-          if (entry) { showCard(entry.item, mesh); return; }
-          const sEntry = staffPanels.find(p => p.mesh === mesh);
-          if (sEntry) showStaffCard(sEntry.staff, mesh);
-        }
+      renderer.domElement.addEventListener('pointerup', e => {
+        if (Date.now() - pointerDownTime > 200) return;
+        handleClick(e);
       });
 
-      // タッチタップ
       let touchStartX, touchStartY;
-      renderer.domElement.addEventListener('touchstart', (e) => {
+      renderer.domElement.addEventListener('touchstart', e => {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
       }, { passive: true });
-      renderer.domElement.addEventListener('touchend', (e) => {
+      renderer.domElement.addEventListener('touchend', e => {
         const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
         const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-        if (dx < 8 && dy < 8) {
-          const hits = getIntersected(e);
-          if (hits.length > 0) {
-            const mesh = hits[0].object;
-            const entry = panels.find(p => p.mesh === mesh);
-            if (entry) { showCard(entry.item, mesh); return; }
-            const sEntry = staffPanels.find(p => p.mesh === mesh);
-            if (sEntry) showStaffCard(sEntry.staff, mesh);
-          }
-        }
+        if (dx < 8 && dy < 8) handleClick(e);
       }, { passive: true });
 
-      // ======================================================
-      // 商品カード表示
-      // ======================================================
+      function handleClick(e) {
+        if (isTransitioning) return;
+        const hits = getIntersected(e);
+        if (hits.length === 0) return;
+        const mesh = hits[0].object;
+
+        // ドアクリック
+        const dEntry = doorMeshes.find(d => d.mesh === mesh);
+        if (dEntry) { gotoRoom(dEntry.toRoom); return; }
+
+        // 商品・リンクパネル
+        const pEntry = panels.find(p => p.mesh === mesh);
+        if (pEntry) {
+          if (pEntry.item.isLink) { showLinkCard(pEntry.item); }
+          else { showCard(pEntry.item, mesh); }
+          return;
+        }
+
+        // スタッフ看板
+        const sEntry = staffPanels.find(p => p.mesh === mesh);
+        if (sEntry) {
+          sEntry.staffActor.pauseFor(sEntry.staffActor.staff);
+          showStaffCard(sEntry.staffActor.staff, mesh, sEntry.staffActor);
+        }
+      }
+
+      // ==============================================================
+      // カード表示
+      // ==============================================================
+      let activeStaffActor = null;
+
+      function closeAllCards() {
+        hideCard();
+        hideStaffCard();
+      }
+
       function showCard(item, mesh) {
-        // スタッフカードが開いていれば閉じる
         document.getElementById('staff-card').classList.remove('visible');
-
-        document.getElementById('card-name').textContent = item.name;
-        document.getElementById('card-lead').textContent = item.lead;
-        document.getElementById('card-material').textContent = item.material;
-        document.getElementById('card-price').textContent = item.price || '';
-
+        document.getElementById('card-name').textContent    = item.name;
+        document.getElementById('card-lead').textContent    = item.lead || '';
+        document.getElementById('card-material').textContent= item.material || '';
+        document.getElementById('card-price').textContent   = item.price || '';
         const btn = document.getElementById('card-btn');
         if (item.url && item.url.trim() !== '') {
-          btn.href = item.url;
-          btn.textContent = '購入ページへ';
+          btn.href = item.url; btn.textContent = '購入ページへ';
           btn.classList.remove('disabled');
+          btn.setAttribute('target','_blank'); btn.setAttribute('rel','noopener');
         } else {
-          btn.href = '#';
-          btn.textContent = '準備中';
+          btn.href = '#'; btn.textContent = '準備中';
           btn.classList.add('disabled');
         }
         document.getElementById('info-card').classList.add('visible');
+        selectMesh(mesh, 0xA0785A);
+      }
 
-        // 選択中パネルの発光
-        if (selectedMesh && selectedMesh !== mesh) {
-          selectedMesh.material.emissiveIntensity = 0;
-        }
-        selectedMesh = mesh;
-        mesh.material.emissive.set(0xA0785A);
-        mesh.material.emissiveIntensity = 0.3;
+      function showLinkCard(link) {
+        document.getElementById('staff-card').classList.remove('visible');
+        document.getElementById('card-name').textContent     = link.name;
+        document.getElementById('card-lead').textContent     = link.lead || '';
+        document.getElementById('card-material').textContent = '';
+        document.getElementById('card-price').textContent    = '';
+        const btn = document.getElementById('card-btn');
+        btn.href = link.url; btn.textContent = link.btnLabel;
+        btn.classList.remove('disabled');
+        btn.setAttribute('target','_blank'); btn.setAttribute('rel','noopener');
+        document.getElementById('info-card').classList.add('visible');
       }
 
       function hideCard() {
         document.getElementById('info-card').classList.remove('visible');
-        if (selectedMesh) {
-          selectedMesh.material.emissiveIntensity = 0;
-          selectedMesh = null;
-        }
+        deselectMesh();
       }
 
-      document.getElementById('card-close').addEventListener('click', hideCard);
-
-      // ======================================================
-      // 接客カード表示（スタッフ用）
-      // ======================================================
-      function showStaffCard(staff, mesh) {
-        // 商品カードが開いていれば閉じる
+      function showStaffCard(staff, mesh, actor) {
         hideCard();
-
-        // ランダムセリフ
+        activeStaffActor = actor || null;
         const line = staff.lines[Math.floor(Math.random() * staff.lines.length)];
-
         document.getElementById('sc-name').textContent = staff.name;
         document.getElementById('sc-role').textContent = staff.role;
         document.getElementById('sc-line').textContent = line;
-
-        const avatar = document.getElementById('sc-avatar');
-        avatar.src = staff.image;
-        avatar.alt = staff.name;
-
+        const av = document.getElementById('sc-avatar');
+        av.src = staff.image; av.alt = staff.name;
         const btn = document.getElementById('sc-btn');
-        btn.href = staff.btnUrl;
-        btn.textContent = staff.btnLabel;
-        // 外部URLは新タブ、内部は同タブ
+        btn.href = staff.btnUrl; btn.textContent = staff.btnLabel;
         if (staff.btnUrl.startsWith('http')) {
-          btn.setAttribute('target', '_blank');
-          btn.setAttribute('rel', 'noopener');
+          btn.setAttribute('target','_blank'); btn.setAttribute('rel','noopener');
         } else {
-          btn.removeAttribute('target');
-          btn.removeAttribute('rel');
+          btn.removeAttribute('target'); btn.removeAttribute('rel');
         }
-
         document.getElementById('staff-card').classList.add('visible');
-
-        // 選択中パネルの発光
-        if (selectedMesh && selectedMesh !== mesh) {
-          selectedMesh.material.emissiveIntensity = 0;
-        }
-        selectedMesh = mesh;
-        mesh.material.emissive.set(0xD4A853);
-        mesh.material.emissiveIntensity = 0.3;
+        selectMesh(mesh, 0xD4A853);
       }
 
       function hideStaffCard() {
         document.getElementById('staff-card').classList.remove('visible');
-        if (selectedMesh) {
-          selectedMesh.material.emissiveIntensity = 0;
-          selectedMesh = null;
-        }
+        deselectMesh();
+        if (activeStaffActor) { activeStaffActor.resume(); activeStaffActor = null; }
       }
 
-      document.getElementById('sc-close').addEventListener('click', hideStaffCard);
+      function selectMesh(mesh, color) {
+        if (selectedMesh && selectedMesh !== mesh && selectedMesh.material)
+          selectedMesh.material.emissiveIntensity = 0;
+        selectedMesh = mesh;
+        if (mesh && mesh.material) {
+          mesh.material.emissive && mesh.material.emissive.set(color);
+          mesh.material.emissiveIntensity = 0.3;
+        }
+      }
+      function deselectMesh() {
+        if (selectedMesh && selectedMesh.material)
+          selectedMesh.material.emissiveIntensity = 0;
+        selectedMesh = null;
+      }
 
-      // ======================================================
-      // リサイズ対応
-      // ======================================================
+      document.getElementById('card-close').addEventListener('click',   hideCard);
+      document.getElementById('sc-close').addEventListener('click',     hideStaffCard);
+
+      // ==============================================================
+      // リサイズ
+      // ==============================================================
       function onResize() {
-        const w = container.clientWidth;
-        const h = container.clientHeight;
+        const w = container.clientWidth, h = container.clientHeight;
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
       }
       window.addEventListener('resize', onResize);
 
-      // ======================================================
+      // ==============================================================
       // アニメーションループ
-      // ======================================================
+      // ==============================================================
+      function easeInOut(t) {
+        return t < 0.5 ? 2*t*t : -1 + (4-2*t)*t;
+      }
+
       function animate() {
         requestAnimationFrame(animate);
-        controls.update();
+        const dt = clock.getDelta();
+
+        // カメラアニメーション
+        if (camAnim) {
+          camAnim.t += dt / camAnim.duration;
+          if (camAnim.t >= 1) {
+            camAnim.t = 1;
+            camera.position.copy(camAnim.toPos);
+            controls.target.copy(camAnim.toTarget);
+            controls.update();
+            const done = camAnim.onDone;
+            camAnim = null;
+            done && done();
+          } else {
+            const e = easeInOut(camAnim.t);
+            camera.position.lerpVectors(camAnim.fromPos, camAnim.toPos, e);
+            controls.target.lerpVectors(camAnim.fromTarget, camAnim.toTarget, e);
+            controls.update();
+          }
+        } else {
+          controls.update();
+        }
+
+        // 幕僚巡回更新
+        staffActors.forEach(actor => actor.update(dt));
+
         renderer.render(scene, camera);
       }
       animate();
+
+      // ==============================================================
+      // SHOWROOM_API（恒久・削除しない）
+      // ==============================================================
+      window.SHOWROOM_API = {
+        /**
+         * 指定部屋にカメラ遷移
+         * @param {string} id — 'hall' | 'techo' | 'katakamuna' | 'koubou' | 'gallery'
+         */
+        gotoRoom(id) { gotoRoom(id); },
+
+        /** 現在の部屋IDを返す */
+        getRoom()    { return currentRoomId; },
+
+        /** 全幕僚アクター配列（ビジュアル差し替え用）
+         *  actor.visual: Three.Group
+         *  actor.panelMesh: 画像PlaneGeometry
+         *  actor.waypoints: [{x,z}]
+         *  actor.paused: boolean
+         */
+        staffActors
+      };
 
     } catch(err) {
       console.error('Three.js initialization failed:', err);
       showFallback();
     }
 
-    // ======================================================
-    // 操作ガイドオーバーレイ
-    // ======================================================
-    const overlay = document.getElementById('guide-overlay');
-    overlay.addEventListener('click', () => {
-      overlay.style.opacity = '0';
-      overlay.style.transition = 'opacity 0.4s';
-      setTimeout(() => { overlay.style.display = 'none'; }, 400);
+    // ==============================================================
+    // UI イベント
+    // ==============================================================
+    // 部屋メニュー
+    document.querySelectorAll('#room-menu button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const roomId = btn.dataset.room;
+        if (window.SHOWROOM_API) window.SHOWROOM_API.gotoRoom(roomId);
+        // スマホはメニューを閉じる
+        document.getElementById('room-menu').classList.remove('open');
+      });
     });
-    overlay.addEventListener('touchend', () => {
+
+    // ハンバーガートグル
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+      document.getElementById('room-menu').classList.toggle('open');
+    });
+
+    // ホールへ戻るボタン
+    document.getElementById('btn-back-hall').addEventListener('click', () => {
+      if (window.SHOWROOM_API) window.SHOWROOM_API.gotoRoom('hall');
+    });
+
+    // 操作ガイド閉じる
+    const overlay = document.getElementById('guide-overlay');
+    function dismissOverlay() {
       overlay.style.opacity = '0';
       overlay.style.transition = 'opacity 0.4s';
       setTimeout(() => { overlay.style.display = 'none'; }, 400);
-    }, { passive: true });
+    }
+    overlay.addEventListener('click',    dismissOverlay);
+    overlay.addEventListener('touchend', dismissOverlay, { passive: true });
 
   </script>
 </body>
