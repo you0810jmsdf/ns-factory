@@ -15,6 +15,7 @@ window.SHOWROOM_STAFF = [
     role: '総司令官',
     room: 'hall',
     image: 'assets/staff/kojinjigyonusi.jpg',
+    model: 'assets/models/kojinjigyonusi.glb',
     waypoints: [
       [ 0.0,  0.5],
       [ 1.5,  2.0],
