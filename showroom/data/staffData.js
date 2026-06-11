@@ -191,6 +191,7 @@ window.SHOWROOM_STAFF = [
     role: 'サイト・デジタル戦略担当',
     room: 'gallery',
     image: 'assets/staff/digital.jpg',
+    model: 'assets/models/digital.glb',
     waypoints: [
       [ 1.5,  0.5],
       [ 3.0,  2.0],
