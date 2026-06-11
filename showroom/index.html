@@ -20,7 +20,9 @@
   {
     "imports": {
       "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+      "three/addons/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js",
+      "three/addons/libs/meshopt_decoder.module.js": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/meshopt_decoder.module.js"
     }
   }
   </script>
@@ -893,6 +895,8 @@
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
     // ============================================================
     // フォールバック（WebGL非対応時）
@@ -1048,6 +1052,8 @@
 
     const clock = new THREE.Clock();
     const loader = new THREE.TextureLoader();
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 
     try {
       const container = document.getElementById('canvas-container');
@@ -1531,10 +1537,17 @@
           this.waitTime = 0;       // 停止残り時間(秒)
           this.speed    = 0.35 + Math.random() * 0.15; // 0.35〜0.5
           this.paused   = false;   // クリック停止中
+          this.isGlbLoaded = false; // GLBロード完了フラグ
+          this._lastMoveAngle = 0;  // GLBモデル用: 最後の進行方向角度
 
           // ビジュアル — 立て看板（画像パネル＋台座）
           // 後日GLBに差し替える前提: this.visual だけ差し替えればよい
           this.visual = this._buildVisual(staff);
+
+          // GLBモデルが指定されている場合は非同期ロード
+          if (staff.model) {
+            this._loadGlbModel(staff);
+          }
         }
 
         _buildVisual(staff) {
@@ -1587,6 +1600,7 @@
           shadowMesh.rotation.x = -Math.PI / 2;
           shadowMesh.position.set(0, 0.01, 0);
           group.add(shadowMesh);
+          this._shadowMesh = shadowMesh;
 
           // --- 名前プレート（キャラ頭上） ---
           const nc = document.createElement('canvas');
@@ -1625,6 +1639,69 @@
           return group;
         }
 
+        // GLBモデルの非同期ロードと差し替え
+        _loadGlbModel(staff) {
+          const TARGET_HEIGHT = 1.4; // 正規化目標高さ (units)
+          gltfLoader.load(
+            staff.model,
+            (gltf) => {
+              try {
+                const modelScene = gltf.scene;
+
+                // --- スケール正規化: 全高を TARGET_HEIGHT に ---
+                const box = new THREE.Box3().setFromObject(modelScene);
+                const size = new THREE.Vector3();
+                box.getSize(size);
+                const modelHeight = size.y;
+                if (modelHeight > 0) {
+                  const scale = TARGET_HEIGHT / modelHeight;
+                  modelScene.scale.setScalar(scale);
+                }
+
+                // --- 足元をY=0に接地 ---
+                const box2 = new THREE.Box3().setFromObject(modelScene);
+                const minY = box2.min.y;
+                modelScene.position.y = -minY; // 足元オフセット補正
+
+                // --- 影設定 ---
+                modelScene.traverse(child => {
+                  if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = false;
+                    // クリック判定用: userData.staffActor をセット
+                    child.userData.staffActor = this;
+                  }
+                });
+
+                // --- スプライトを非表示にしてGLBに差し替え ---
+                this.panelMesh.visible = false;
+                this.nameMesh.position.set(0, TARGET_HEIGHT + 0.12, 0);
+                this.visual.add(modelScene);
+                this._glbScene = modelScene;
+
+                // --- raycaster対象に子メッシュを登録 ---
+                modelScene.traverse(child => {
+                  if (child.isMesh) {
+                    staffPanels.push({ mesh: child, staffActor: this });
+                  }
+                });
+
+                this.isGlbLoaded = true;
+                // 初期向きを保持
+                this.visual.rotation.y = this._lastMoveAngle;
+                console.log(`[GLB] デジタル幕僚モデルロード完了`);
+              } catch (e) {
+                console.warn('[GLB] モデル組み込みエラー（スプライトで継続）:', e);
+              }
+            },
+            undefined,
+            (err) => {
+              // ロード失敗時: 既存スプライトのまま動作継続（フォールバック）
+              console.warn('[GLB] モデルロード失敗（スプライトで継続）:', err);
+            }
+          );
+        }
+
         // 毎フレーム呼ぶ巡回更新（ビジュアルと独立したロジック）
         update(dt) {
           if (this.paused) return;
@@ -1657,6 +1734,7 @@
 
             // 進行方向へ向く（Y軸のみ）
             const targetAngle = Math.atan2(dx, dz);
+            this._lastMoveAngle = targetAngle; // GLBモデル用に保持
             const curAngle = this.visual.rotation.y;
             let dAngle = targetAngle - curAngle;
             while (dAngle >  Math.PI) dAngle -= Math.PI * 2;
@@ -1667,12 +1745,15 @@
             this.visual.position.y = Math.sin(Date.now() * 0.005) * 0.03;
           }
 
-          // Billboard: Y軸のみカメラ追従（表示面が裏返らない）
-          const camDir = new THREE.Vector3();
-          camDir.subVectors(camera.position, this.visual.position);
-          camDir.y = 0;
-          if (camDir.lengthSq() > 0.001) {
-            this.visual.rotation.y = Math.atan2(camDir.x, camDir.z);
+          // Billboard: GLBロード済みの場合は無効化（3Dモデルは実背面を持つため進行方向を保持）
+          // スプライトの場合のみカメラ追従ビルボードを適用
+          if (!this.isGlbLoaded) {
+            const camDir = new THREE.Vector3();
+            camDir.subVectors(camera.position, this.visual.position);
+            camDir.y = 0;
+            if (camDir.lengthSq() > 0.001) {
+              this.visual.rotation.y = Math.atan2(camDir.x, camDir.z);
+            }
           }
         }
 
@@ -1802,6 +1883,16 @@
         return found ? found.mesh : null;
       }
 
+      // GLBモデルの子メッシュからStaffActorを辿るヘルパー
+      function findStaffActorFromMesh(mesh) {
+        // 直接登録されている場合
+        const direct = staffPanels.find(p => p.mesh === mesh);
+        if (direct) return direct.staffActor;
+        // userData.staffActor が付与されている場合（GLB子メッシュ）
+        if (mesh.userData && mesh.userData.staffActor) return mesh.userData.staffActor;
+        return null;
+      }
+
       let pointerDownTime = 0;
       renderer.domElement.addEventListener('pointerdown', () => { pointerDownTime = Date.now(); });
       renderer.domElement.addEventListener('pointerup', e => {
@@ -1847,11 +1938,11 @@
           return;
         }
 
-        // スタッフ看板
-        const sEntry = staffPanels.find(p => p.mesh === mesh);
-        if (sEntry) {
-          sEntry.staffActor.pauseFor(sEntry.staffActor.staff);
-          showStaffCard(sEntry.staffActor.staff, mesh, sEntry.staffActor);
+        // スタッフ看板（GLBモデルの子メッシュにも対応）
+        const sActor = findStaffActorFromMesh(mesh);
+        if (sActor) {
+          sActor.pauseFor(sActor.staff);
+          showStaffCard(sActor.staff, mesh, sActor);
         }
       }
 
