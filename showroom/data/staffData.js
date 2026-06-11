@@ -1,5 +1,5 @@
 // N's factory Web 3D Showroom — スタッフデータ
-// v2.0.0 — 2026-06-10 デジタル幕僚 部屋ID・ウェイポイント追加（多部屋構成対応）
+// v2.1.0 — 2026-06-12 巡回スタッフ残り8名をGLB化（部屋単位遅延ロード対応）
 // 画像パスは showroom/index.html からの相対パス
 //
 // waypoints: 各部屋の床座標 [x, z] の配列（部屋原点基準）
@@ -36,6 +36,7 @@ window.SHOWROOM_STAFF = [
     role: '経営戦略担当',
     room: 'hall',
     image: 'assets/staff/sakusen.jpg',
+    model: 'assets/models/sakusen.glb',
     waypoints: [
       [-2.0, -1.0],
       [-3.0,  1.0],
@@ -59,6 +60,7 @@ window.SHOWROOM_STAFF = [
     role: '販売・受注担当',
     room: 'techo',
     image: 'assets/staff/hannbai.jpg',
+    model: 'assets/models/hannbai.glb',
     waypoints: [
       [ 2.0, -1.0],
       [ 3.0,  1.5],
@@ -80,6 +82,7 @@ window.SHOWROOM_STAFF = [
     role: '仕入・CAD・自動化担当',
     room: 'techo',
     image: 'assets/staff/kouhou.jpg',
+    model: 'assets/models/kouhou_room.glb',
     waypoints: [
       [-2.0,  1.0],
       [-3.0,  3.0],
@@ -103,6 +106,7 @@ window.SHOWROOM_STAFF = [
     role: '精神教育・カタカムナ担当',
     room: 'katakamuna',
     image: 'assets/staff/kyouiku.jpg',
+    model: 'assets/models/kyouiku.glb',
     waypoints: [
       [ 0.0,  0.0],
       [ 2.0,  2.0],
@@ -124,6 +128,7 @@ window.SHOWROOM_STAFF = [
     role: '情報発信・ブランド担当',
     room: 'katakamuna',
     image: 'assets/staff/pr.jpg',
+    model: 'assets/models/kouhou.glb',
     waypoints: [
       [-2.5,  0.5],
       [-3.0,  2.5],
@@ -147,6 +152,7 @@ window.SHOWROOM_STAFF = [
     role: '収支・お見積もり担当',
     room: 'koubou',
     image: 'assets/staff/kanri.jpg',
+    model: 'assets/models/kanri.glb',
     waypoints: [
       [ 2.0,  0.5],
       [ 3.0,  2.0],
@@ -168,6 +174,7 @@ window.SHOWROOM_STAFF = [
     role: 'レザークラフト教室担当',
     room: 'koubou',
     image: 'assets/staff/jinji.jpg',
+    model: 'assets/models/jinji.glb',
     waypoints: [
       [-2.0,  1.0],
       [-3.0,  2.5],
@@ -213,6 +220,7 @@ window.SHOWROOM_STAFF = [
     role: 'セキュリティ・リンク管理担当',
     room: 'gallery',
     image: 'assets/staff/hozen.jpg',
+    model: 'assets/models/hozen.glb',
     waypoints: [
       [-1.5,  0.5],
       [-3.0,  2.0],

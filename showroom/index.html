@@ -1537,17 +1537,23 @@
           this.waitTime = 0;       // 停止残り時間(秒)
           this.speed    = 0.35 + Math.random() * 0.15; // 0.35〜0.5
           this.paused   = false;   // クリック停止中
-          this.isGlbLoaded = false; // GLBロード完了フラグ
-          this._lastMoveAngle = 0;  // GLBモデル用: 最後の進行方向角度
+          this.isGlbLoaded = false;    // GLBロード完了フラグ
+          this._glbLoadStarted = false; // 二重ロード防止フラグ
+          this._lastMoveAngle = 0;      // GLBモデル用: 最後の進行方向角度
 
           // ビジュアル — 立て看板（画像パネル＋台座）
           // 後日GLBに差し替える前提: this.visual だけ差し替えればよい
           this.visual = this._buildVisual(staff);
 
-          // GLBモデルが指定されている場合は非同期ロード
-          if (staff.model) {
-            this._loadGlbModel(staff);
-          }
+          // GLBロードは呼び出し元（gotoRoom / 初期化時）から triggerGlbLoad() で行う
+          // ここでは即時ロードしない（部屋単位遅延ロード方式）
+        }
+
+        // 遅延ロード用メソッド: 初回呼び出し時のみGLBをロードする
+        triggerGlbLoad() {
+          if (!this.staff.model || this._glbLoadStarted) return;
+          this._glbLoadStarted = true;
+          this._loadGlbModel(this.staff);
         }
 
         _buildVisual(staff) {
@@ -1689,7 +1695,7 @@
                 this.isGlbLoaded = true;
                 // 初期向きを保持
                 this.visual.rotation.y = this._lastMoveAngle;
-                console.log(`[GLB] デジタル幕僚モデルロード完了`);
+                console.log(`[GLB] ${this.staff.name} モデルロード完了`);
               } catch (e) {
                 console.warn('[GLB] モデル組み込みエラー（スプライトで継続）:', e);
               }
@@ -1771,6 +1777,10 @@
       staffActors.forEach(actor => {
         staffPanels.push({ mesh: actor.panelMesh, staffActor: actor });
       });
+      // 初期部屋（hall）のアクターはページロード直後にGLBをロード開始
+      staffActors.forEach(actor => {
+        if (actor.roomId === 'hall') actor.triggerGlbLoad();
+      });
 
       // ==============================================================
       // カメラ遷移
@@ -1811,6 +1821,10 @@
             updateRoomUI(roomId);
             controls.target.copy(toTarget);
             controls.update();
+            // 入室した部屋のアクターのGLBを遅延ロード（初回入室時のみ実行）
+            staffActors.forEach(actor => {
+              if (actor.roomId === roomId) actor.triggerGlbLoad();
+            });
           }
         };
       }
