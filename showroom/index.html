@@ -1812,6 +1812,11 @@
         const toPos    = new THREE.Vector3(off.x + entryDx, CAM_IN_ROOM.camY, off.z + entryDz);
         const toTarget = new THREE.Vector3(off.x,           CAM_IN_ROOM.targetY, off.z);
 
+        // 入室先アクターのGLBは遷移開始と同時にロード開始（遷移1秒の間に並行ダウンロード）
+        staffActors.forEach(actor => {
+          if (actor.roomId === roomId) actor.triggerGlbLoad();
+        });
+
         camAnim = {
           fromPos, toPos, fromTarget, toTarget,
           t: 0, duration: 1.0,
@@ -1821,10 +1826,6 @@
             updateRoomUI(roomId);
             controls.target.copy(toTarget);
             controls.update();
-            // 入室した部屋のアクターのGLBを遅延ロード（初回入室時のみ実行）
-            staffActors.forEach(actor => {
-              if (actor.roomId === roomId) actor.triggerGlbLoad();
-            });
           }
         };
       }
