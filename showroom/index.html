@@ -1581,7 +1581,7 @@
         scene.add(owlGroup);
         owlMonument = owlGroup;
 
-        // ブロンズ材質
+        // ブロンズ材質（SVGフォールバック用・削除しない）
         const bronzeMat = new THREE.MeshStandardMaterial({
           color: 0x8a5a2b,
           metalness: 0.85,
@@ -1589,74 +1589,160 @@
           side: THREE.DoubleSide
         });
 
-        // SVGLoader でフクロウパスを押し出し
-        const svgLoader = new SVGLoader();
-        svgLoader.load(
-          'assets/owl_logo.svg',
-          (svgData) => {
+        // ホログラム演出: 台座上面の発光リング（シアン系）
+        const holoRingMat = new THREE.MeshStandardMaterial({
+          color: 0x44aacc,
+          emissive: new THREE.Color(0x44aacc),
+          emissiveIntensity: 0.55,
+          transparent: true,
+          opacity: 0.45,
+          roughness: 0.10,
+          metalness: 0.20,
+          depthWrite: false
+        });
+        const holoRing = new THREE.Mesh(
+          new THREE.TorusGeometry(0.70, 0.025, 8, 64),
+          holoRingMat
+        );
+        holoRing.rotation.x = Math.PI / 2;
+        holoRing.position.set(0, 0.02, 0); // owlGroup基準（台座天面直上）
+        holoRing.userData.noRaycast = true;
+        owlGroup.add(holoRing);
+
+        // ============================================================
+        // GLBホログラムフクロウ（優先） → 失敗時SVG押し出しにフォールバック
+        // ============================================================
+        let glbOwlLoaded = false;
+
+        gltfLoader.load(
+          'assets/models/owl.glb',
+          (gltf) => {
             try {
-              const paths = svgData.paths;
-              if (!paths || paths.length === 0) throw new Error('no paths');
+              const model = gltf.scene;
+              if (!model) throw new Error('empty scene');
 
-              // 全パスのシェイプを収集
-              const shapes = [];
-              paths.forEach(path => {
-                const s = SVGLoader.createShapes(path);
-                s.forEach(sh => shapes.push(sh));
-              });
-              if (shapes.length === 0) throw new Error('no shapes');
-
-              // SVGの寸法を取得してスケール計算（目標高さ: 1.8）
-              const extrudeSettings = {
-                depth: 0.13,          // ロゴ高さの約8%（スケール後）
-                bevelEnabled: true,
-                bevelThickness: 0.018,
-                bevelSize: 0.012,
-                bevelSegments: 2,     // スマホ性能考慮
-                curveSegments: 8      // スマホ性能考慮
-              };
-
-              const tempGroup = new THREE.Group();
-              shapes.forEach(shape => {
-                const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-                const mesh = new THREE.Mesh(geo, bronzeMat);
-                tempGroup.add(mesh);
-              });
-
-              // バウンディングボックスで正規化
-              const box = new THREE.Box3().setFromObject(tempGroup);
+              // バウンディングボックスで全高1.8に正規化
+              const box = new THREE.Box3().setFromObject(model);
               const size = new THREE.Vector3();
               box.getSize(size);
               const center = new THREE.Vector3();
               box.getCenter(center);
 
               const TARGET_H = 1.8;
-              const scale = TARGET_H / Math.max(size.y, size.x, 0.001);
+              const scale = TARGET_H / Math.max(size.y, size.x, size.z, 0.001);
+              model.scale.setScalar(scale);
 
-              // SVGはY軸反転・鏡像なので補正:
-              //   scaleX = -scale（X軸反転で鏡像を正像に）
-              //   scaleY = -scale（SVG座標系はY下向き → Three.jsはY上向き）
-              tempGroup.scale.set(-scale, -scale, scale);
-
-              // 中心を原点へ
-              tempGroup.position.set(
-                center.x * scale,
-                center.y * scale,
-                0
+              // 台座上面に接地（底面をY=0へ）
+              model.position.set(
+                -center.x * scale,
+                (-box.min.y) * scale,
+                -center.z * scale
               );
 
-              owlGroup.add(tempGroup);
+              // ホログラム演出: 各メッシュにemissive追加（オリジナル材質は活かす）
+              model.traverse((child) => {
+                if (child.isMesh) {
+                  // 既存マテリアルをクローンして改変（共有破壊防止）
+                  if (Array.isArray(child.material)) {
+                    child.material = child.material.map(m => {
+                      const mc = m.clone();
+                      mc.emissive = new THREE.Color(0x88ccee);
+                      mc.emissiveIntensity = 0.25;
+                      return mc;
+                    });
+                  } else {
+                    child.material = child.material.clone();
+                    child.material.emissive = new THREE.Color(0x88ccee);
+                    child.material.emissiveIntensity = 0.25;
+                  }
+                  child.userData.noRaycast = true;
+                }
+              });
+
+              owlGroup.add(model);
+              glbOwlLoaded = true;
+              console.info('[OwlMonument] GLBホログラムフクロウ ロード成功');
             } catch(e) {
-              console.warn('[OwlMonument] SVGパース失敗、フォールバック使用:', e);
-              buildOwlFallback(owlGroup, bronzeMat);
+              console.warn('[OwlMonument] GLBパース失敗、SVGフォールバックへ:', e);
+              loadOwlSvgFallback();
             }
           },
           undefined,
           (err) => {
-            console.warn('[OwlMonument] SVGロード失敗、フォールバック使用:', err);
-            buildOwlFallback(owlGroup, bronzeMat);
+            console.warn('[OwlMonument] GLBロード失敗、SVGフォールバックへ:', err);
+            loadOwlSvgFallback();
           }
         );
+
+        // SVGフォールバック: 既存のブロンズ押し出し像
+        function loadOwlSvgFallback() {
+          // ホログラムリングをブロンズ色に変更
+          holoRingMat.color.set(0xc9a96a);
+          holoRingMat.emissive.set(0xc9a96a);
+          holoRingMat.emissiveIntensity = 0.12;
+          holoRingMat.opacity = 0.70;
+
+          const svgLoader = new SVGLoader();
+          svgLoader.load(
+            'assets/owl_logo.svg',
+            (svgData) => {
+              try {
+                const paths = svgData.paths;
+                if (!paths || paths.length === 0) throw new Error('no paths');
+
+                const shapes = [];
+                paths.forEach(path => {
+                  const s = SVGLoader.createShapes(path);
+                  s.forEach(sh => shapes.push(sh));
+                });
+                if (shapes.length === 0) throw new Error('no shapes');
+
+                const extrudeSettings = {
+                  depth: 0.13,
+                  bevelEnabled: true,
+                  bevelThickness: 0.018,
+                  bevelSize: 0.012,
+                  bevelSegments: 2,
+                  curveSegments: 8
+                };
+
+                const tempGroup = new THREE.Group();
+                shapes.forEach(shape => {
+                  const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                  const mesh = new THREE.Mesh(geo, bronzeMat);
+                  tempGroup.add(mesh);
+                });
+
+                const box2 = new THREE.Box3().setFromObject(tempGroup);
+                const size2 = new THREE.Vector3();
+                box2.getSize(size2);
+                const center2 = new THREE.Vector3();
+                box2.getCenter(center2);
+
+                const TARGET_H = 1.8;
+                const scale2 = TARGET_H / Math.max(size2.y, size2.x, 0.001);
+
+                tempGroup.scale.set(-scale2, -scale2, scale2);
+                tempGroup.position.set(
+                  center2.x * scale2,
+                  center2.y * scale2,
+                  0
+                );
+
+                owlGroup.add(tempGroup);
+                console.info('[OwlMonument] SVGブロンズ像 フォールバック表示');
+              } catch(e) {
+                console.warn('[OwlMonument] SVGパース失敗、簡易フォールバック使用:', e);
+                buildOwlFallback(owlGroup, bronzeMat);
+              }
+            },
+            undefined,
+            (err) => {
+              console.warn('[OwlMonument] SVGロード失敗、簡易フォールバック使用:', err);
+              buildOwlFallback(owlGroup, bronzeMat);
+            }
+          );
+        }
       })();
 
       // フォールバック: 球+円柱の簡易フクロウシルエット
