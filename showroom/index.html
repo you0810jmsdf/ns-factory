@@ -22,7 +22,8 @@
       "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
       "three/addons/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js",
-      "three/addons/libs/meshopt_decoder.module.js": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/meshopt_decoder.module.js"
+      "three/addons/libs/meshopt_decoder.module.js": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/meshopt_decoder.module.js",
+      "three/addons/loaders/SVGLoader.js": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/SVGLoader.js"
     }
   }
   </script>
@@ -91,113 +92,15 @@
       text-align: center;
     }
 
-    /* ===== ゾーンメニュー ===== */
-    #room-menu {
-      position: fixed;
-      top: 52px; right: 0;
-      z-index: 110;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      padding: 10px 8px;
-      background: rgba(255,254,251,0.94);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom-left-radius: 14px;
-      min-width: 140px;
-      border-left: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    #room-menu .menu-title {
-      color: var(--accent);
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding: 0 6px 6px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 4px;
-    }
-    #room-menu button {
-      background: none;
-      border: none;
-      color: var(--text-sub);
-      font-size: 12px;
-      font-family: var(--font);
-      text-align: left;
-      padding: 7px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      white-space: nowrap;
-    }
-    #room-menu button:hover,
-    #room-menu button.active {
-      background: rgba(201,169,106,0.14);
-      color: var(--accent);
-    }
-    /* スマホ: ハンバーガー収納 */
-    #menu-toggle {
-      display: none;
-      position: fixed;
-      top: 58px; right: 8px;
-      z-index: 120;
-      background: rgba(255,254,251,0.92);
-      border: 1px solid var(--border);
-      color: var(--accent);
-      font-size: 20px;
-      width: 38px; height: 38px;
-      border-radius: 8px;
-      cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-    }
-    @media (max-width: 540px) {
-      #menu-toggle { display: flex; }
-      #room-menu {
-        transform: translateX(110%);
-        transition: transform 0.25s ease;
-        top: 52px;
-        border-radius: 0 0 0 14px;
-      }
-      #room-menu.open { transform: translateX(0); }
-    }
+    /* ===== ゾーンメニュー（非表示・SHOWROOM_API互換のためHTML要素は残す） ===== */
+    #room-menu { display: none !important; }
+    #menu-toggle { display: none !important; }
 
-    /* ===== 現在ゾーンインジケーター ===== */
-    #room-indicator {
-      position: fixed;
-      bottom: 72px; left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255,254,251,0.90);
-      color: var(--accent);
-      font-size: 11px;
-      padding: 5px 16px;
-      border-radius: 20px;
-      pointer-events: none;
-      z-index: 110;
-      letter-spacing: 0.1em;
-      white-space: nowrap;
-      border: 1px solid var(--border);
-      transition: opacity 0.3s;
-    }
+    /* ===== 現在ゾーンインジケーター（非表示） ===== */
+    #room-indicator { display: none !important; }
 
-    /* ===== ホールへ戻るボタン ===== */
-    #btn-back-hall {
-      position: fixed;
-      bottom: 72px; left: 16px;
-      background: rgba(255,254,251,0.90);
-      color: var(--accent);
-      border: 1px solid var(--border);
-      font-family: var(--font);
-      font-size: 13px;
-      padding: 8px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      z-index: 110;
-      display: none;
-      transition: background 0.2s;
-    }
-    #btn-back-hall:hover { background: rgba(201,169,106,0.14); }
+    /* ===== ホールへ戻るボタン（非表示） ===== */
+    #btn-back-hall { display: none !important; }
 
     /* ===== 3Dキャンバス ===== */
     #canvas-container {
@@ -658,17 +561,9 @@
     <div class="guide-box">
       <h2>N's factory SHOWROOM</h2>
       <p class="guide-sub">GLASS PAVILION — 全幕僚を一望</p>
-      <div class="room-list">
-        <span class="room-chip">中央ホール</span>
-        <span class="room-chip">手帳の間</span>
-        <span class="room-chip">カタカムナの間</span>
-        <span class="room-chip">工房の間</span>
-        <span class="room-chip">幕僚ギャラリー</span>
-      </div>
       <ul>
         <li>ドラッグ / スワイプで見回す</li>
         <li>ホイール / ピンチでズーム</li>
-        <li>ゾーンメニューでフォーカス移動</li>
         <li>ショーケース・幕僚をタップで詳細表示</li>
       </ul>
       <p class="tap-hint">画面をタップして入場</p>
@@ -893,6 +788,7 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+    import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 
     // ============================================================
     // フォールバック（WebGL非対応時）
@@ -1093,11 +989,11 @@
       // ============================================================
       // 共有マテリアル
       // ============================================================
-      // 床（アイボリー磨き仕上げ）
+      // 床（完全不透明マット仕上げ）
       const floorMat = new THREE.MeshStandardMaterial({
-        color: C_FLOOR_IVORY, roughness: 0.3, metalness: 0.1
+        color: 0xf2efe9, roughness: 0.85, metalness: 0.0, transparent: false
       });
-      // 床インレイライン（ゴールド）
+      // 床インレイライン用マテリアル（ショーケースエッジ等で引き続き使用）
       const inlayMat = new THREE.MeshStandardMaterial({
         color: C_INLAY_GOLD,
         emissive: new THREE.Color(C_INLAY_GOLD),
@@ -1227,85 +1123,9 @@
       });
 
       // ============================================================
-      // 床インレイライン（ゾーン境界をシャンパンゴールド細線で表現）
+      // 床インレイライン・ゾーンサイン: 削除済み（改修1）
+      // SHOWROOM_API互換のため doorMeshes 配列は空のまま維持
       // ============================================================
-      function addInlayLine(x1, z1, x2, z2) {
-        const dx = x2 - x1, dz = z2 - z1;
-        const len = Math.sqrt(dx*dx + dz*dz);
-        const ang = Math.atan2(dz, dx);
-        const m = new THREE.Mesh(new THREE.BoxGeometry(len, 0.018, 0.045), inlayMat);
-        m.position.set((x1+x2)/2, 0.01, (z1+z2)/2);
-        m.rotation.y = -ang;
-        scene.add(m);
-      }
-
-      // ホール外周（楕円の代わりに菱形ライン）
-      const HR = 5.5; // ホールゾーン半径
-      [
-        [0, -HR, HR, 0], [HR, 0, 0, HR], [0, HR, -HR, 0], [-HR, 0, 0, -HR]  // ◇形
-      ].forEach(([x1,z1,x2,z2]) => addInlayLine(x1,z1,x2,z2));
-
-      // ゾーン仕切りライン（大空間を4方向に区切る十字ライン）
-      // 北ゾーン境界 z=-4
-      addInlayLine(-PAV_W/2, -4, PAV_W/2, -4);
-      // 南ゾーン境界 z=+4
-      addInlayLine(-PAV_W/2, +4, PAV_W/2, +4);
-      // 東ゾーン境界 x=+5
-      addInlayLine(+5, -PAV_D/2, +5, PAV_D/2);
-      // 西ゾーン境界 x=-5
-      addInlayLine(-5, -PAV_D/2, -5, PAV_D/2);
-
-      // 外周ゾーンの追加境界ライン
-      addInlayLine(+5, -PAV_D/2, PAV_W/2, -PAV_D/2);
-      addInlayLine(+5,  PAV_D/2, PAV_W/2,  PAV_D/2);
-      addInlayLine(-5, -PAV_D/2,-PAV_W/2, -PAV_D/2);
-      addInlayLine(-5,  PAV_D/2,-PAV_W/2,  PAV_D/2);
-
-      // ============================================================
-      // 吊りサイン（ゾーン名の床サイン・自立ガラスパーティション風）
-      // ============================================================
-      function makeZoneSignTex(label) {
-        const c = document.createElement('canvas');
-        c.width = 512; c.height = 64;
-        const ctx = c.getContext('2d');
-        ctx.clearRect(0, 0, 512, 64);
-        ctx.fillStyle = 'rgba(250,247,242,0.92)';
-        ctx.roundRect ? ctx.roundRect(4, 4, 504, 56, 10) : ctx.fillRect(4, 4, 504, 56);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(201,169,106,0.75)';
-        ctx.lineWidth = 2.5;
-        ctx.roundRect ? ctx.roundRect(4, 4, 504, 56, 10) : ctx.strokeRect(4, 4, 504, 56);
-        ctx.stroke();
-        ctx.fillStyle = '#c9a96a';
-        ctx.font = 'bold 28px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, 256, 32);
-        const t = new THREE.CanvasTexture(c);
-        t.colorSpace = THREE.SRGBColorSpace;
-        return t;
-      }
-
-      const zoneSignDefs = [
-        { id: 'techo',      label: 'システム手帳の間',     x:  0,   z: -8  },
-        { id: 'katakamuna', label: 'カタカムナの間',       x: +10,  z:  0  },
-        { id: 'koubou',     label: '工房の間',             x:  0,   z: +8  },
-        { id: 'gallery',    label: '幕僚ギャラリー',        x: -10,  z:  0  }
-      ];
-
-      zoneSignDefs.forEach(def => {
-        // 床埋め込みゾーンサイン
-        const sm = new THREE.Mesh(
-          new THREE.PlaneGeometry(3.2, 0.40),
-          new THREE.MeshBasicMaterial({ map: makeZoneSignTex(def.label), transparent: true, depthWrite: false })
-        );
-        sm.rotation.x = -Math.PI / 2;
-        sm.position.set(def.x, 0.012, def.z + 4.2);  // ゾーン手前（入口側）
-        scene.add(sm);
-
-        // ゾーンサインをdoorMeshesに登録（SHOWROOM_API互換）
-        doorMeshes.push({ mesh: sm, toRoom: def.id, label: def.label });
-      });
 
       // ============================================================
       // ヘルパー: テキスト折り返し
@@ -1698,6 +1518,172 @@
         sMbase.position.set(0, 2.88, -3.2);
         scene.add(sMbase);
       })();
+
+      // ============================================================
+      // 中央フクロウブロンズ像（改修3）
+      // ============================================================
+      let owlMonument = null; // Y軸回転用グループ
+
+      (function buildOwlMonument() {
+        // --- 台座（ダークストーン調）---
+        const pedestalStoneMat = new THREE.MeshStandardMaterial({
+          color: 0x3a3530, roughness: 0.82, metalness: 0.08
+        });
+        const pedestal = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.2, 1.35, 1.0, 32),
+          pedestalStoneMat
+        );
+        pedestal.position.set(0, 0.5, 0);
+        scene.add(pedestal);
+
+        // 台座上縁ゴールドリング
+        const ringMat = new THREE.MeshStandardMaterial({
+          color: C_GOLD, roughness: 0.30, metalness: 0.75,
+          emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.12
+        });
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(1.22, 0.035, 8, 48),
+          ringMat
+        );
+        ring.rotation.x = Math.PI / 2;
+        ring.position.set(0, 1.02, 0);
+        scene.add(ring);
+
+        // 台座正面プレート（「N's factory — Since 2018」CanvasTexture）
+        const plateCanvas = document.createElement('canvas');
+        plateCanvas.width = 512; plateCanvas.height = 128;
+        const pctx = plateCanvas.getContext('2d');
+        pctx.fillStyle = '#c9a040';
+        pctx.fillRect(0, 0, 512, 128);
+        pctx.fillStyle = '#1a1510';
+        pctx.font = 'bold 36px serif';
+        pctx.textAlign = 'center';
+        pctx.textBaseline = 'middle';
+        pctx.fillText("N's factory", 256, 44);
+        pctx.font = '22px serif';
+        pctx.fillStyle = '#2a1e10';
+        pctx.fillText('— Since 2018 —', 256, 90);
+        const plateTex = new THREE.CanvasTexture(plateCanvas);
+        plateTex.colorSpace = THREE.SRGBColorSpace;
+        const plateMeshMat = new THREE.MeshStandardMaterial({
+          map: plateTex, roughness: 0.45, metalness: 0.55
+        });
+        const plateMesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.4, 0.35),
+          plateMeshMat
+        );
+        plateMesh.position.set(0, 0.50, 1.22);
+        scene.add(plateMesh);
+
+        // --- フクロウロゴ回転グループ ---
+        const owlGroup = new THREE.Group();
+        owlGroup.position.set(0, 1.0, 0); // 台座天面
+        scene.add(owlGroup);
+        owlMonument = owlGroup;
+
+        // ブロンズ材質
+        const bronzeMat = new THREE.MeshStandardMaterial({
+          color: 0x8a5a2b,
+          metalness: 0.85,
+          roughness: 0.40,
+          side: THREE.DoubleSide
+        });
+
+        // SVGLoader でフクロウパスを押し出し
+        const svgLoader = new SVGLoader();
+        svgLoader.load(
+          'assets/owl_logo.svg',
+          (svgData) => {
+            try {
+              const paths = svgData.paths;
+              if (!paths || paths.length === 0) throw new Error('no paths');
+
+              // 全パスのシェイプを収集
+              const shapes = [];
+              paths.forEach(path => {
+                const s = SVGLoader.createShapes(path);
+                s.forEach(sh => shapes.push(sh));
+              });
+              if (shapes.length === 0) throw new Error('no shapes');
+
+              // SVGの寸法を取得してスケール計算（目標高さ: 1.8）
+              const extrudeSettings = {
+                depth: 0.13,          // ロゴ高さの約8%（スケール後）
+                bevelEnabled: true,
+                bevelThickness: 0.018,
+                bevelSize: 0.012,
+                bevelSegments: 2,     // スマホ性能考慮
+                curveSegments: 8      // スマホ性能考慮
+              };
+
+              const tempGroup = new THREE.Group();
+              shapes.forEach(shape => {
+                const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                const mesh = new THREE.Mesh(geo, bronzeMat);
+                tempGroup.add(mesh);
+              });
+
+              // バウンディングボックスで正規化
+              const box = new THREE.Box3().setFromObject(tempGroup);
+              const size = new THREE.Vector3();
+              box.getSize(size);
+              const center = new THREE.Vector3();
+              box.getCenter(center);
+
+              const TARGET_H = 1.8;
+              const scale = TARGET_H / Math.max(size.y, size.x, 0.001);
+
+              // SVGはY軸反転・鏡像なので補正:
+              //   scaleX = -scale（X軸反転で鏡像を正像に）
+              //   scaleY = -scale（SVG座標系はY下向き → Three.jsはY上向き）
+              tempGroup.scale.set(-scale, -scale, scale);
+
+              // 中心を原点へ
+              tempGroup.position.set(
+                center.x * scale,
+                center.y * scale,
+                0
+              );
+
+              owlGroup.add(tempGroup);
+            } catch(e) {
+              console.warn('[OwlMonument] SVGパース失敗、フォールバック使用:', e);
+              buildOwlFallback(owlGroup, bronzeMat);
+            }
+          },
+          undefined,
+          (err) => {
+            console.warn('[OwlMonument] SVGロード失敗、フォールバック使用:', err);
+            buildOwlFallback(owlGroup, bronzeMat);
+          }
+        );
+      })();
+
+      // フォールバック: 球+円柱の簡易フクロウシルエット
+      function buildOwlFallback(group, mat) {
+        // 胴体
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.44, 1.0, 16), mat);
+        body.position.set(0, 0.5, 0);
+        group.add(body);
+        // 頭
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 12), mat);
+        head.position.set(0, 1.22, 0);
+        group.add(head);
+        // 耳羽根（左右）
+        [-1, 1].forEach(side => {
+          const ear = new THREE.Mesh(new THREE.ConeGeometry(0.10, 0.28, 8), mat);
+          ear.position.set(side * 0.22, 1.52, 0);
+          ear.rotation.z = side * 0.25;
+          group.add(ear);
+        });
+        // 目（左右）
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0x1a0e05, roughness: 0.5 });
+        [-1, 1].forEach(side => {
+          const eye = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), eyeMat);
+          eye.position.set(side * 0.14, 1.22, 0.30);
+          group.add(eye);
+        });
+      }
 
       // ============================================================
       // 幕僚 StaffActor（立て看板アクター）
@@ -2186,6 +2172,11 @@
           sp.mesh.rotation.y += PLATE_ROT_SPEED * dt;
         });
 
+        // フクロウブロンズ像 Y軸回転（0.15 rad/s）
+        if (owlMonument) {
+          owlMonument.rotation.y += 0.15 * dt;
+        }
+
         // 幕僚巡回
         staffActors.forEach(actor => actor.update(dt));
 
@@ -2210,19 +2201,8 @@
     // ============================================================
     // UI イベント
     // ============================================================
-    document.querySelectorAll('#room-menu button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const roomId = btn.dataset.room;
-        if (window.SHOWROOM_API) window.SHOWROOM_API.gotoRoom(roomId);
-        document.getElementById('room-menu').classList.remove('open');
-      });
-    });
-    document.getElementById('menu-toggle').addEventListener('click', () => {
-      document.getElementById('room-menu').classList.toggle('open');
-    });
-    document.getElementById('btn-back-hall').addEventListener('click', () => {
-      if (window.SHOWROOM_API) window.SHOWROOM_API.gotoRoom('hall');
-    });
+    // ゾーンメニュー・ハンバーガー・ホールへ戻るボタンは非表示のためイベント登録なし
+    // SHOWROOM_API.gotoRoom は外部呼び出し互換のため維持
     const overlay = document.getElementById('guide-overlay');
     function dismissOverlay() {
       overlay.style.opacity = '0';
