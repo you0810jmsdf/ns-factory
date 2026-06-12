@@ -37,17 +37,21 @@
 
     :root {
       --primary: #1D1D1F;
-      --accent: #A0785A;
-      --bg: #F5F5F7;
-      --card-bg: #FFFFFF;
-      --text-sub: #6E6E73;
+      --accent: #d4af6a;
+      --accent-dark: #A0785A;
+      --bg: #111113;
+      --card-bg: #1a1a1c;
+      --card-bg-light: #232326;
+      --text: #e8e8ec;
+      --text-sub: #8a8a92;
+      --border: rgba(212,175,106,0.28);
       --font: -apple-system, 'Hiragino Sans', 'Yu Gothic', Meiryo, sans-serif;
     }
 
     html, body {
       height: 100%;
       background: var(--bg);
-      color: var(--primary);
+      color: var(--text);
       font-family: var(--font);
       overflow: hidden;
     }
@@ -57,7 +61,7 @@
       position: fixed;
       top: 0; left: 0; right: 0;
       height: 52px;
-      background: rgba(29,29,31,0.88);
+      background: rgba(10,10,12,0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       display: flex;
@@ -66,21 +70,22 @@
       padding: 0 16px;
       z-index: 100;
       gap: 8px;
+      border-bottom: 1px solid var(--border);
     }
     #header a.back {
-      color: #F5F5F7;
+      color: var(--text);
       text-decoration: none;
       font-size: 13px;
-      opacity: 0.75;
+      opacity: 0.65;
       transition: opacity 0.2s;
       white-space: nowrap;
     }
     #header a.back:hover { opacity: 1; }
     #header .title {
-      color: #FFFFFF;
+      color: var(--accent);
       font-size: 14px;
       font-weight: 600;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.1em;
       white-space: nowrap;
       flex: 1;
       text-align: center;
@@ -93,31 +98,33 @@
       z-index: 110;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
       padding: 10px 8px;
-      background: rgba(29,29,31,0.78);
+      background: rgba(10,10,12,0.88);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-bottom-left-radius: 14px;
-      min-width: 120px;
+      min-width: 130px;
+      border-left: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
     #room-menu .menu-title {
-      color: rgba(255,255,255,0.45);
+      color: var(--accent);
       font-size: 10px;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      padding: 0 6px 4px;
-      border-bottom: 1px solid rgba(255,255,255,0.12);
-      margin-bottom: 2px;
+      padding: 0 6px 6px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
     }
     #room-menu button {
       background: none;
       border: none;
-      color: rgba(255,255,255,0.78);
+      color: rgba(232,232,236,0.72);
       font-size: 12px;
       font-family: var(--font);
       text-align: left;
-      padding: 6px 8px;
+      padding: 7px 10px;
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
@@ -125,8 +132,8 @@
     }
     #room-menu button:hover,
     #room-menu button.active {
-      background: rgba(160,120,90,0.35);
-      color: #FFFFFF;
+      background: rgba(212,175,106,0.15);
+      color: var(--accent);
     }
     /* スマホ: ハンバーガー収納 */
     #menu-toggle {
@@ -134,9 +141,9 @@
       position: fixed;
       top: 58px; right: 8px;
       z-index: 120;
-      background: rgba(29,29,31,0.85);
-      border: none;
-      color: #FFF;
+      background: rgba(10,10,12,0.9);
+      border: 1px solid var(--border);
+      color: var(--accent);
       font-size: 20px;
       width: 38px; height: 38px;
       border-radius: 8px;
@@ -163,15 +170,16 @@
       position: fixed;
       bottom: 72px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(29,29,31,0.72);
-      color: rgba(255,255,255,0.85);
-      font-size: 12px;
-      padding: 5px 14px;
+      background: rgba(10,10,12,0.82);
+      color: var(--accent);
+      font-size: 11px;
+      padding: 5px 16px;
       border-radius: 20px;
       pointer-events: none;
       z-index: 110;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.1em;
       white-space: nowrap;
+      border: 1px solid var(--border);
       transition: opacity 0.3s;
     }
 
@@ -179,9 +187,9 @@
     #btn-back-hall {
       position: fixed;
       bottom: 72px; left: 16px;
-      background: rgba(29,29,31,0.82);
-      color: rgba(255,255,255,0.85);
-      border: none;
+      background: rgba(10,10,12,0.88);
+      color: var(--accent);
+      border: 1px solid var(--border);
       font-family: var(--font);
       font-size: 13px;
       padding: 8px 14px;
@@ -191,7 +199,7 @@
       display: none;
       transition: background 0.2s;
     }
-    #btn-back-hall:hover { background: rgba(160,120,90,0.7); }
+    #btn-back-hall:hover { background: rgba(212,175,106,0.2); }
 
     /* ===== 3Dキャンバス ===== */
     #canvas-container {
@@ -208,7 +216,7 @@
     #guide-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.72);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -217,32 +225,39 @@
       cursor: pointer;
     }
     #guide-overlay .guide-box {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(26,26,28,0.92);
+      border: 1px solid var(--border);
       border-radius: 18px;
       padding: 32px 40px;
       text-align: center;
-      color: #fff;
-      backdrop-filter: blur(10px);
+      color: var(--text);
+      backdrop-filter: blur(12px);
       max-width: 340px;
     }
     #guide-overlay .guide-box h2 {
       font-size: 18px;
       font-weight: 700;
-      margin-bottom: 14px;
-      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+    #guide-overlay .guide-box .guide-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
     }
     #guide-overlay .guide-box .room-list {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       justify-content: center;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
     #guide-overlay .guide-box .room-chip {
-      background: rgba(160,120,90,0.3);
-      border: 1px solid rgba(160,120,90,0.5);
-      color: rgba(255,255,255,0.9);
+      background: rgba(212,175,106,0.12);
+      border: 1px solid var(--border);
+      color: var(--accent);
       font-size: 11px;
       padding: 4px 10px;
       border-radius: 12px;
@@ -251,13 +266,13 @@
       list-style: none;
       font-size: 13px;
       line-height: 2;
-      opacity: 0.85;
+      opacity: 0.75;
       margin-bottom: 4px;
     }
     #guide-overlay .guide-box .tap-hint {
       margin-top: 20px;
       font-size: 12px;
-      opacity: 0.55;
+      opacity: 0.45;
     }
 
     /* ===== 商品情報カード ===== */
@@ -267,11 +282,12 @@
       background: var(--card-bg);
       border-top-left-radius: 20px;
       border-top-right-radius: 20px;
+      border-top: 1px solid var(--border);
       padding: 24px 24px 32px;
       transform: translateY(110%);
       transition: transform 0.35s cubic-bezier(0.34, 1.12, 0.64, 1);
       z-index: 150;
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+      box-shadow: 0 -4px 32px rgba(0,0,0,0.5);
       max-height: 60vh;
       overflow-y: auto;
     }
@@ -285,7 +301,7 @@
     #info-card .card-name {
       font-size: 17px;
       font-weight: 700;
-      color: var(--primary);
+      color: var(--text);
       flex: 1;
       line-height: 1.4;
     }
@@ -311,7 +327,7 @@
       margin-bottom: 16px;
     }
     #info-card .card-meta span { font-size: 13px; color: var(--text-sub); }
-    #info-card .card-meta strong { color: var(--primary); }
+    #info-card .card-meta strong { color: var(--text); }
     #info-card .card-price {
       font-size: 18px;
       font-weight: 700;
@@ -322,19 +338,20 @@
       display: block;
       width: 100%;
       padding: 14px;
-      background: var(--primary);
-      color: #fff;
+      background: var(--accent);
+      color: #111;
       text-align: center;
       text-decoration: none;
       border-radius: 12px;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.04em;
       transition: background 0.2s;
     }
-    #info-card .btn-purchase:hover { background: #3a3a3c; }
+    #info-card .btn-purchase:hover { background: #e0c07a; }
     #info-card .btn-purchase.disabled {
-      background: #C7C7CC;
+      background: #3a3a3e;
+      color: var(--text-sub);
       cursor: default;
       pointer-events: none;
     }
@@ -346,11 +363,12 @@
       background: var(--card-bg);
       border-top-left-radius: 20px;
       border-top-right-radius: 20px;
+      border-top: 1px solid var(--border);
       padding: 24px 24px 32px;
       transform: translateY(110%);
       transition: transform 0.35s cubic-bezier(0.34, 1.12, 0.64, 1);
       z-index: 151;
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+      box-shadow: 0 -4px 32px rgba(0,0,0,0.5);
       max-height: 60vh;
       overflow-y: auto;
     }
@@ -373,11 +391,11 @@
       object-fit: cover;
       object-position: top;
       border: 2px solid var(--accent);
-      background: #e5e5ea;
+      background: #2a2a2e;
       flex-shrink: 0;
     }
     #staff-card .sc-names { display: flex; flex-direction: column; gap: 2px; }
-    #staff-card .sc-name { font-size: 17px; font-weight: 700; color: var(--primary); line-height: 1.3; }
+    #staff-card .sc-name { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.3; }
     #staff-card .sc-role { font-size: 12px; color: var(--text-sub); }
     #staff-card .sc-close {
       background: none; border: none;
@@ -387,11 +405,11 @@
     }
     #staff-card .sc-line {
       font-size: 15px;
-      color: var(--primary);
+      color: var(--text);
       line-height: 1.7;
       margin-bottom: 20px;
       padding: 14px 16px;
-      background: #F5F5F7;
+      background: var(--card-bg-light);
       border-radius: 12px;
       border-left: 3px solid var(--accent);
     }
@@ -402,21 +420,21 @@
       width: 100%;
       padding: 14px;
       background: var(--accent);
-      color: #fff;
+      color: #111;
       text-align: center;
       text-decoration: none;
       border-radius: 12px;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.04em;
       transition: background 0.2s;
     }
-    #staff-card .btn-staff:hover { background: #8a6449; }
+    #staff-card .btn-staff:hover { background: #e0c07a; }
 
     /* ===== チャットUI ===== */
     #chat-area {
       margin-top: 14px;
-      border-top: 1px solid #E5E5EA;
+      border-top: 1px solid rgba(212,175,106,0.18);
       padding-top: 12px;
       display: flex;
       flex-direction: column;
@@ -450,25 +468,25 @@
       word-break: break-all;
     }
     .chat-msg.user .chat-bubble {
-      background: var(--primary);
-      color: #fff;
+      background: var(--accent);
+      color: #111;
       border-bottom-right-radius: 4px;
     }
     .chat-msg.staff .chat-bubble {
-      background: #F5F5F7;
-      color: var(--primary);
+      background: var(--card-bg-light);
+      color: var(--text);
       border-bottom-left-radius: 4px;
       border-left: 2px solid var(--accent);
     }
     .chat-bubble.fallback-notice {
       font-size: 11px;
       color: var(--text-sub);
-      background: #FFF3CD;
-      border-left: 2px solid #FFC107;
+      background: #2a2010;
+      border-left: 2px solid var(--accent);
     }
     .chat-typing {
       align-self: flex-start;
-      background: #F5F5F7;
+      background: var(--card-bg-light);
       padding: 8px 14px;
       border-radius: 14px;
       border-bottom-left-radius: 4px;
@@ -485,7 +503,7 @@
     #chat-input {
       flex: 1;
       padding: 9px 12px;
-      border: 1px solid #D1D1D6;
+      border: 1px solid rgba(212,175,106,0.28);
       border-radius: 10px;
       font-size: 14px;
       font-family: var(--font);
@@ -495,14 +513,15 @@
       max-height: 80px;
       overflow-y: auto;
       transition: border-color 0.2s;
-      background: #FAFAFA;
+      background: var(--card-bg-light);
+      color: var(--text);
     }
-    #chat-input:focus { border-color: var(--accent); background: #fff; }
+    #chat-input:focus { border-color: var(--accent); }
     #chat-send {
       flex-shrink: 0;
       width: 40px; height: 40px;
       background: var(--accent);
-      color: #fff;
+      color: #111;
       border: none;
       border-radius: 10px;
       font-size: 18px;
@@ -513,8 +532,8 @@
       transition: background 0.2s;
       line-height: 1;
     }
-    #chat-send:hover { background: #8a6449; }
-    #chat-send:disabled { background: #C7C7CC; cursor: default; }
+    #chat-send:hover { background: #e0c07a; }
+    #chat-send:disabled { background: #3a3a3e; cursor: default; }
     .chat-limit-msg {
       font-size: 12px;
       color: var(--text-sub);
@@ -522,13 +541,12 @@
       padding: 6px 0;
       font-style: italic;
     }
-    /* スマホキーボード表示時のカード崩れ防止 */
     @media (max-height: 500px) {
       #staff-card { max-height: 90vh; }
       #chat-messages { max-height: 100px; }
     }
 
-    /* ===== フォールバック ===== */
+    /* ===== フォールバック（ダーク×ゴールド） ===== */
     #fallback {
       display: none;
       position: fixed;
@@ -538,13 +556,13 @@
       background: var(--bg);
     }
     #fallback h2 {
-      font-size: 15px; color: var(--text-sub);
+      font-size: 14px; color: var(--text-sub);
       margin-bottom: 20px; text-align: center;
     }
     .fallback-section-title {
-      font-size: 13px; color: var(--text-sub);
+      font-size: 12px; color: var(--accent);
       margin: 24px 0 12px; text-align: center;
-      font-weight: 600; letter-spacing: 0.06em;
+      font-weight: 600; letter-spacing: 0.1em;
       grid-column: 1 / -1;
     }
     .fallback-grid {
@@ -554,50 +572,50 @@
     }
     .fallback-card {
       background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .fallback-card img {
       width: 100%; aspect-ratio: 1;
-      object-fit: cover; background: #e5e5ea;
+      object-fit: cover; background: #2a2a2e;
     }
     .fallback-card .fc-body { padding: 12px; }
-    .fallback-card .fc-name { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 4px; }
+    .fallback-card .fc-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
     .fallback-card .fc-price { font-size: 12px; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
     .fallback-card a {
       display: block; text-align: center;
-      padding: 8px; background: var(--primary);
-      color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none;
+      padding: 8px; background: var(--accent);
+      color: #111; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
     }
-    .fallback-card a.disabled { background: #C7C7CC; pointer-events: none; }
+    .fallback-card a.disabled { background: #3a3a3e; color: var(--text-sub); pointer-events: none; }
     .fallback-staff-card {
       background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px; overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .fallback-staff-card img {
       width: 100%; aspect-ratio: 3/4;
-      object-fit: cover; object-position: top; background: #e5e5ea;
+      object-fit: cover; object-position: top; background: #2a2a2e;
     }
     .fallback-staff-card .fc-body { padding: 10px 12px 12px; }
-    .fallback-staff-card .fc-name { font-size: 13px; font-weight: 700; line-height: 1.4; margin-bottom: 2px; }
+    .fallback-staff-card .fc-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; margin-bottom: 2px; }
     .fallback-staff-card .fc-role { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; }
     .fallback-staff-card a {
       display: block; text-align: center; padding: 8px;
-      background: var(--accent); color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none;
+      background: var(--accent); color: #111; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
     }
     .fallback-link-card {
       background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px; overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       padding: 14px;
     }
-    .fallback-link-card .fc-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .fallback-link-card .fc-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
     .fallback-link-card .fc-lead { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; line-height: 1.5; }
     .fallback-link-card a {
       display: block; text-align: center; padding: 8px;
-      background: var(--accent); color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none;
+      background: var(--accent); color: #111; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
     }
 
     @media (max-width: 480px) {
@@ -639,7 +657,8 @@
   <!-- 操作ガイド -->
   <div id="guide-overlay">
     <div class="guide-box">
-      <h2>Web 3D ショールーム</h2>
+      <h2>N's factory SHOWROOM</h2>
+      <p class="guide-sub">LEATHER CRAFT &amp; NEAR FUTURE ATELIER</p>
       <div class="room-list">
         <span class="room-chip">ホール</span>
         <span class="room-chip">手帳の間</span>
@@ -651,7 +670,7 @@
         <li>ドラッグ / スワイプで見回す</li>
         <li>ホイール / ピンチでズーム</li>
         <li>ドアをクリックで入室</li>
-        <li>商品・幕僚をタップで詳細表示</li>
+        <li>ショーケースをタップで詳細表示</li>
       </ul>
       <p class="tap-hint">画面をタップして入場</p>
     </div>
@@ -707,9 +726,7 @@
 
   <!-- ===== チャット機能（非モジュール・WebGLフォールバック時も動作） ===== -->
   <script>
-    // 幕僚ごとの会話履歴 { staffId: [{role,text}] }
     var chatHistories = {};
-    // 幕僚ごとの往復カウント { staffId: number }
     var chatTurnCount = {};
     var CHAT_MAX_TURNS = 10;
     var CHAT_HISTORY_MAX = 8;
@@ -815,77 +832,57 @@
       var historySlice = chatHistories[staffId].slice(-CHAT_HISTORY_MAX - 1, -1);
 
       if (apiUrl) {
-        var payload = JSON.stringify({
-          staffId: staffId,
-          message: text,
-          history: historySlice
-        });
-        fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: payload
-        }).then(function(res) {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json();
-        }).then(function(data) {
-          hideTyping();
-          var reply, isFallback;
-          if (data.fallback || !data.reply) {
+        var payload = JSON.stringify({ staffId: staffId, message: text, history: historySlice });
+        fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: payload })
+          .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+          .then(function(data) {
+            hideTyping();
+            var reply, isFallback;
+            if (data.fallback || !data.reply) {
+              var lines = getFallbackLines(staffId);
+              reply = lines[Math.floor(Math.random() * lines.length)]; isFallback = true;
+            } else { reply = data.reply; isFallback = false; }
+            appendStaffMsg(reply, isFallback);
+            chatHistories[staffId].push({ role: 'model', text: reply });
+            chatTurnCount[staffId] = (chatTurnCount[staffId] || 0) + 1;
+            if (chatTurnCount[staffId] >= CHAT_MAX_TURNS) showChatLimit();
+            isChatSending = false;
+            var area = document.getElementById('chat-area');
+            if (area && !area.classList.contains('chat-closed')) {
+              if (sendBtn) sendBtn.disabled = false;
+              if (input) input.focus();
+            }
+          }).catch(function() {
+            hideTyping();
             var lines = getFallbackLines(staffId);
-            reply = lines[Math.floor(Math.random() * lines.length)];
-            isFallback = true;
-          } else {
-            reply = data.reply;
-            isFallback = false;
-          }
-          appendStaffMsg(reply, isFallback);
-          chatHistories[staffId].push({ role: 'model', text: reply });
-          chatTurnCount[staffId] = (chatTurnCount[staffId] || 0) + 1;
-          if (chatTurnCount[staffId] >= CHAT_MAX_TURNS) {
-            showChatLimit();
-          }
-          isChatSending = false;
-          var area = document.getElementById('chat-area');
-          if (area && !area.classList.contains('chat-closed')) {
+            var reply = lines[Math.floor(Math.random() * lines.length)];
+            appendStaffMsg(reply, true);
+            chatHistories[staffId].push({ role: 'model', text: reply });
+            chatTurnCount[staffId] = (chatTurnCount[staffId] || 0) + 1;
+            if (chatTurnCount[staffId] >= CHAT_MAX_TURNS) showChatLimit();
+            isChatSending = false;
             if (sendBtn) sendBtn.disabled = false;
-            if (input) input.focus();
-          }
-        }).catch(function(err) {
-          hideTyping();
-          var lines = getFallbackLines(staffId);
-          var reply = lines[Math.floor(Math.random() * lines.length)];
-          appendStaffMsg(reply, true);
-          chatHistories[staffId].push({ role: 'model', text: reply });
-          chatTurnCount[staffId] = (chatTurnCount[staffId] || 0) + 1;
-          if (chatTurnCount[staffId] >= CHAT_MAX_TURNS) { showChatLimit(); }
-          isChatSending = false;
-          if (sendBtn) sendBtn.disabled = false;
-        });
+          });
       } else {
-        // APIキー未設定 → フォールバック即時
         hideTyping();
         var lines = getFallbackLines(staffId);
         var reply = lines[Math.floor(Math.random() * lines.length)];
         appendStaffMsg(reply, true);
         chatHistories[staffId].push({ role: 'model', text: reply });
         chatTurnCount[staffId] = (chatTurnCount[staffId] || 0) + 1;
-        if (chatTurnCount[staffId] >= CHAT_MAX_TURNS) { showChatLimit(); }
+        if (chatTurnCount[staffId] >= CHAT_MAX_TURNS) showChatLimit();
         isChatSending = false;
         if (sendBtn) sendBtn.disabled = false;
       }
     }
 
-    // DOMContentLoaded後にイベントリスナーを登録
     document.addEventListener('DOMContentLoaded', function() {
       var sendBtn = document.getElementById('chat-send');
       if (sendBtn) sendBtn.addEventListener('click', sendChat);
       var chatInput = document.getElementById('chat-input');
       if (chatInput) {
         chatInput.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendChat();
-          }
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
         });
       }
     });
@@ -922,7 +919,7 @@
           html += `
             <div class="fallback-card">
               <img src="${item.image}" alt="${item.name}" loading="lazy"
-                   onerror="this.style.background='#e5e5ea';this.removeAttribute('src')">
+                   onerror="this.style.background='#2a2a2e';this.removeAttribute('src')">
               <div class="fc-body">
                 <p class="fc-name">${item.name}</p>
                 <p class="fc-price">${item.price || '準備中'}</p>
@@ -943,7 +940,6 @@
         });
       });
 
-      // スタッフカード
       const staffList = window.SHOWROOM_STAFF || [];
       if (staffList.length > 0) {
         html += `<div class="fallback-section-title" style="grid-column:1/-1">— スタッフ紹介 —</div>`;
@@ -951,13 +947,13 @@
           <div class="fallback-staff-card" data-staff-id="${s.id}">
             <img src="assets/mascot/${s.id}.png" alt="${s.name}" loading="lazy"
                  onerror="this.src='${s.image}'"
-                 style="object-fit:contain;background:#F5F5F7;">
+                 style="object-fit:contain;background:#1a1a1c;">
             <div class="fc-body">
               <p class="fc-name">${s.name}</p>
               <p class="fc-role">${s.role}</p>
               <a href="${s.btnUrl}" target="_blank" rel="noopener">${s.btnLabel}</a>
               <button class="fallback-chat-btn" data-staff-id="${s.id}"
-                style="margin-top:6px;display:block;width:100%;padding:7px;background:#F5F5F7;border:1px solid #D1D1D6;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;">
+                style="margin-top:6px;display:block;width:100%;padding:7px;background:#232326;border:1px solid rgba(212,175,106,0.28);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;color:#d4af6a;">
                 話しかける
               </button>
             </div>
@@ -965,13 +961,11 @@
       }
       grid.innerHTML = html;
 
-      // フォールバック側チャット起動
       grid.querySelectorAll('.fallback-chat-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const sid = btn.dataset.staffId;
           const staffData = (window.SHOWROOM_STAFF || []).find(s => s.id === sid);
           if (!staffData) return;
-          // 3DのstaffCardをポップアップとして流用
           const line = staffData.lines[Math.floor(Math.random() * staffData.lines.length)];
           document.getElementById('sc-name').textContent = staffData.name;
           document.getElementById('sc-role').textContent = staffData.role;
@@ -1002,36 +996,35 @@
     if (!isWebGLAvailable()) { showFallback(); throw new Error('WebGL not supported'); }
 
     // ============================================================
-    // 定数
+    // カラー定数（近未来 ダーク×シャンパンゴールド）
     // ============================================================
-    const ACCENT      = 0xA0785A;
-    const FLOOR_COLOR = 0xC49A6C;
-    const WALL_COLOR  = 0xEDE0D4;
-    const CEIL_COLOR  = 0xF5F0EB;
-    const DOOR_GLOW   = 0xFFD080;
-    const ROOM_SIZE   = 10;   // 各部屋 10×10
-    const ROOM_H      = 4.0;
-    const CORRIDOR    = 14;   // 部屋間距離（中心間）
+    const C_FLOOR      = 0x1a1a1c;   // ダークチャコール
+    const C_WALL_UPPER = 0x1c1c1f;   // 上部壁 ダーク
+    const C_WALL_LOWER = 0xA0785A;   // 腰壁 レザータン
+    const C_CEIL       = 0x141416;   // 天井 ダーク
+    const C_GOLD       = 0xd4af6a;   // シャンパンゴールド（発光ライン・フレーム）
+    const C_DOOR_GLOW  = 0xd4af6a;
+    const C_EXIT_GLOW  = 0x80c0e0;
+    const C_PEDESTAL   = 0x2e1e12;   // ショーケース台座（ダークブラウン）
+    const ROOM_SIZE    = 10;
+    const ROOM_H       = 4.0;
+    const CORRIDOR     = 14;
 
-    // 部屋の配置（×字型）
-    // hall=中央, techo=北, katakamuna=南, koubou=西, gallery=東
     const ROOM_OFFSETS = {
-      hall:       { x:  0,         z:  0         },
-      techo:      { x:  0,         z: -CORRIDOR  },
-      katakamuna: { x:  0,         z:  CORRIDOR  },
-      koubou:     { x: -CORRIDOR,  z:  0         },
-      gallery:    { x:  CORRIDOR,  z:  0         }
+      hall:       { x:  0,        z:  0        },
+      techo:      { x:  0,        z: -CORRIDOR },
+      katakamuna: { x:  0,        z:  CORRIDOR },
+      koubou:     { x: -CORRIDOR, z:  0        },
+      gallery:    { x:  CORRIDOR, z:  0        }
     };
 
-    // ドア定義: ホール→各部屋の方向
     const HALL_DOORS = [
-      { toRoom: 'techo',      label: 'システム手帳の間', dx:  0,   dz: -1, wx:  0,         wz: -(ROOM_SIZE/2 - 0.12) },
-      { toRoom: 'katakamuna', label: 'カタカムナ・教育の間', dx:  0,   dz:  1, wx:  0,         wz:  (ROOM_SIZE/2 - 0.12) },
-      { toRoom: 'koubou',     label: '工房の間',          dx: -1,   dz:  0, wx: -(ROOM_SIZE/2 - 0.12), wz:  0 },
-      { toRoom: 'gallery',    label: '幕僚ギャラリー',     dx:  1,   dz:  0, wx:  (ROOM_SIZE/2 - 0.12), wz:  0 }
+      { toRoom: 'techo',      label: 'システム手帳の間',   dx:  0, dz: -1, wx:  0,                  wz: -(ROOM_SIZE/2 - 0.12) },
+      { toRoom: 'katakamuna', label: 'カタカムナ・教育の間', dx:  0, dz:  1, wx:  0,                  wz:  (ROOM_SIZE/2 - 0.12) },
+      { toRoom: 'koubou',     label: '工房の間',            dx: -1, dz:  0, wx: -(ROOM_SIZE/2 - 0.12), wz:  0                   },
+      { toRoom: 'gallery',    label: '幕僚ギャラリー',       dx:  1, dz:  0, wx:  (ROOM_SIZE/2 - 0.12), wz:  0                   }
     ];
 
-    // カメラの部屋内デフォルト位置（部屋原点からのオフセット）
     const CAM_IN_ROOM = { camY: 1.8, camZ: 3.8, targetY: 1.6 };
 
     // ============================================================
@@ -1039,19 +1032,18 @@
     // ============================================================
     let renderer, scene, camera, controls;
     let raycaster, mouse;
-    let panels     = [];   // [{mesh, item}]
-    let staffPanels= [];   // [{mesh, staffActor}] — staffActorは巡回管理オブジェクト
-    let doorMeshes = [];   // [{mesh, toRoom, label}]
+    let panels      = [];
+    let staffPanels = [];
+    let doorMeshes  = [];
+    let showcasePlates = []; // {mesh, item} ショーケース内回転プレート
     let hoveredMesh  = null;
     let selectedMesh = null;
     let currentRoomId = 'hall';
     let isTransitioning = false;
+    let camAnim = null;
 
-    // カメラアニメーション状態
-    let camAnim = null; // {fromPos, toPos, fromTarget, toTarget, t, duration, onDone}
-
-    const clock = new THREE.Clock();
-    const loader = new THREE.TextureLoader();
+    const clock      = new THREE.Clock();
+    const loader     = new THREE.TextureLoader();
     const gltfLoader = new GLTFLoader();
     gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 
@@ -1061,18 +1053,16 @@
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.enabled = false; // スマホ向けシャドウ無効
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.1;
+      renderer.toneMappingExposure = 0.95;
       container.appendChild(renderer.domElement);
 
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x1A1210);
-      scene.fog = new THREE.FogExp2(0x1A1210, 0.04);
+      scene.background = new THREE.Color(0x0d0d0f);
+      scene.fog = new THREE.FogExp2(0x0d0d0f, 0.038);
 
       camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 80);
-      // 初期位置: ホール中央手前
       camera.position.set(0, CAM_IN_ROOM.camY, CAM_IN_ROOM.camZ);
 
       controls = new OrbitControls(camera, renderer.domElement);
@@ -1087,16 +1077,69 @@
       raycaster = new THREE.Raycaster();
       mouse     = new THREE.Vector2();
 
-      // ==============================================================
-      // 全部屋のジオメトリ構築
-      // ==============================================================
-      const wallMat  = new THREE.MeshStandardMaterial({ color: WALL_COLOR, roughness: 0.82 });
-      const floorMat = new THREE.MeshStandardMaterial({ color: FLOOR_COLOR, roughness: 0.85 });
-      const ceilMat  = new THREE.MeshStandardMaterial({ color: CEIL_COLOR,  roughness: 0.9  });
-      const moldMat  = new THREE.MeshStandardMaterial({ color: 0x7A5C40,    roughness: 0.6  });
-      const frameMat = new THREE.MeshStandardMaterial({ color: 0x5C3D1E,    roughness: 0.5, metalness: 0.15 });
-      const sFrameMat= new THREE.MeshStandardMaterial({ color: 0x8B6914,    roughness: 0.45, metalness: 0.4  });
+      // ============================================================
+      // 共有マテリアル（draw call削減のため部屋間で使い回し）
+      // ============================================================
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: C_FLOOR, roughness: 0.25, metalness: 0.4
+      });
+      const wallUpperMat = new THREE.MeshStandardMaterial({
+        color: C_WALL_UPPER, roughness: 0.78
+      });
+      const wallLowerMat = new THREE.MeshStandardMaterial({
+        color: C_WALL_LOWER, roughness: 0.82
+      });
+      const ceilMat = new THREE.MeshStandardMaterial({
+        color: C_CEIL, roughness: 0.9
+      });
+      // 発光ライン（ゴールド） — emissiveのみ。全部屋共有
+      const glowLineMat = new THREE.MeshStandardMaterial({
+        color: C_GOLD,
+        emissive: new THREE.Color(C_GOLD),
+        emissiveIntensity: 0.85,
+        roughness: 0.3, metalness: 0.6
+      });
+      // ショーケース台座
+      const pedestalMat = new THREE.MeshStandardMaterial({
+        color: C_PEDESTAL, roughness: 0.7, metalness: 0.15
+      });
+      // ガラスパネル（MeshPhysicalMaterial。transmissionは使わない）
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        color: 0xaaddff,
+        transparent: true,
+        opacity: 0.15,
+        roughness: 0.04,
+        metalness: 0.0,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      // 額縁（ゴールド）
+      const goldFrameMat = new THREE.MeshStandardMaterial({
+        color: C_GOLD, roughness: 0.35, metalness: 0.7,
+        emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.18
+      });
+      // 縫い目ライン（ダーク細線）
+      const stitchMat = new THREE.MeshStandardMaterial({
+        color: 0x3a1f0f, roughness: 0.9
+      });
+      // リンクパネル（ダークガラス調＋ゴールド発光）
+      const linkPanelBaseMat = new THREE.MeshStandardMaterial({
+        color: 0x0a0a10, roughness: 0.5,
+        emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.22
+      });
 
+      // ============================================================
+      // ライティング（全体: Hemisphere+Directional各1のみ）
+      // ============================================================
+      const hemi = new THREE.HemisphereLight(0x1a1a30, 0x050508, 0.55);
+      scene.add(hemi);
+      const dirLight = new THREE.DirectionalLight(0xfff5e0, 0.9);
+      dirLight.position.set(6, 12, 8);
+      scene.add(dirLight);
+
+      // ============================================================
+      // 全部屋の空間ジオメトリ構築
+      // ============================================================
       const roomIds = ['hall','techo','katakamuna','koubou','gallery'];
 
       roomIds.forEach(roomId => {
@@ -1104,131 +1147,168 @@
         const rx = off.x, rz = off.z;
         const hs = ROOM_SIZE / 2;
 
-        // 床
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE, 10, 10), floorMat);
+        // --- 床（ダークチャコール磨き） ---
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE), floorMat);
         floor.rotation.x = -Math.PI / 2;
         floor.position.set(rx, 0, rz);
-        floor.receiveShadow = true;
         scene.add(floor);
 
-        // 天井
+        // --- 天井（暗色） ---
         const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE), ceilMat);
         ceil.rotation.x = Math.PI / 2;
         ceil.position.set(rx, ROOM_H, rz);
         scene.add(ceil);
 
-        // 壁4面（開口部分は視覚的に省略・廊下との境界は霧で隠れる）
-        const wallGeoms = [
-          { geo: new THREE.PlaneGeometry(ROOM_SIZE, ROOM_H), pos: [rx, ROOM_H/2, rz - hs], ry: 0             }, // 奥
-          { geo: new THREE.PlaneGeometry(ROOM_SIZE, ROOM_H), pos: [rx, ROOM_H/2, rz + hs], ry: Math.PI       }, // 手前
-          { geo: new THREE.PlaneGeometry(ROOM_SIZE, ROOM_H), pos: [rx - hs, ROOM_H/2, rz], ry:  Math.PI/2   }, // 左
-          { geo: new THREE.PlaneGeometry(ROOM_SIZE, ROOM_H), pos: [rx + hs, ROOM_H/2, rz], ry: -Math.PI/2   }  // 右
+        // --- 壁: 上部ダーク + 腰壁レザータン（分割配置） ---
+        const lowerH = 1.2; // 腰壁高さ
+        const upperH = ROOM_H - lowerH;
+        const wallDirs = [
+          { pos: [rx, 0, rz - hs], ry: 0             },
+          { pos: [rx, 0, rz + hs], ry: Math.PI       },
+          { pos: [rx - hs, 0, rz], ry:  Math.PI/2    },
+          { pos: [rx + hs, 0, rz], ry: -Math.PI/2    }
         ];
-        wallGeoms.forEach(w => {
-          const m = new THREE.Mesh(w.geo, wallMat);
-          m.position.set(...w.pos);
-          m.rotation.y = w.ry;
-          m.receiveShadow = true;
+        wallDirs.forEach(w => {
+          // 上部
+          const mU = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, upperH), wallUpperMat);
+          mU.position.set(w.pos[0], lowerH + upperH/2, w.pos[2]);
+          mU.rotation.y = w.ry;
+          scene.add(mU);
+          // 腰壁（革パネル）
+          const mL = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, lowerH), wallLowerMat);
+          mL.position.set(w.pos[0], lowerH/2, w.pos[2]);
+          mL.rotation.y = w.ry;
+          scene.add(mL);
+          // 腰壁上端の区切りライン（ゴールド細線）
+          const divLine = new THREE.Mesh(new THREE.BoxGeometry(ROOM_SIZE, 0.03, 0.03), glowLineMat);
+          divLine.position.set(w.pos[0], lowerH + 0.015, w.pos[2]);
+          divLine.rotation.y = w.ry;
+          scene.add(divLine);
+        });
+
+        // --- 腰壁の縫い目ライン（水平2本）---
+        // 各壁のzオフセット方向に細いBoxGeomを水平に走らせる
+        const stitchYs = [0.35, 0.75];
+        const stitchDirs = [
+          { axis:'z', sign:-1, posX: rx, posZ: rz - hs + 0.015 },
+          { axis:'z', sign: 1, posX: rx, posZ: rz + hs - 0.015 },
+          { axis:'x', sign:-1, posX: rx - hs + 0.015, posZ: rz },
+          { axis:'x', sign: 1, posX: rx + hs - 0.015, posZ: rz }
+        ];
+        stitchDirs.forEach(sd => {
+          stitchYs.forEach(sy => {
+            const sGeo = sd.axis === 'z'
+              ? new THREE.BoxGeometry(ROOM_SIZE * 0.92, 0.012, 0.01)
+              : new THREE.BoxGeometry(0.01, 0.012, ROOM_SIZE * 0.92);
+            const sm = new THREE.Mesh(sGeo, stitchMat);
+            sm.position.set(sd.posX, sy, sd.posZ);
+            scene.add(sm);
+          });
+        });
+
+        // --- 床外周 ゴールド発光ライン ---
+        const lineW = 0.04, lineOff = 0.25;
+        // 4辺
+        [
+          // 奥
+          { gx: ROOM_SIZE - lineOff*2, gz: lineW, px: rx, py: 0.008, pz: rz - hs + lineOff },
+          // 手前
+          { gx: ROOM_SIZE - lineOff*2, gz: lineW, px: rx, py: 0.008, pz: rz + hs - lineOff },
+          // 左
+          { gx: lineW, gz: ROOM_SIZE - lineOff*2, px: rx - hs + lineOff, py: 0.008, pz: rz },
+          // 右
+          { gx: lineW, gz: ROOM_SIZE - lineOff*2, px: rx + hs - lineOff, py: 0.008, pz: rz }
+        ].forEach(l => {
+          const m = new THREE.Mesh(new THREE.BoxGeometry(l.gx, 0.015, l.gz), glowLineMat);
+          m.position.set(l.px, l.py, l.pz);
           scene.add(m);
         });
 
-        // 巾木モールディング（奥壁下）
-        const mold = new THREE.Mesh(new THREE.BoxGeometry(ROOM_SIZE, 0.1, 0.07), moldMat);
-        mold.position.set(rx, 0.05, rz - hs + 0.035);
-        scene.add(mold);
+        // --- 天井 格子状発光ライン（3×3格子） ---
+        const gridStep = ROOM_SIZE / 4;
+        for (let gi = 1; gi < 4; gi++) {
+          // X方向（横線）
+          const mx = new THREE.Mesh(new THREE.BoxGeometry(ROOM_SIZE, 0.015, 0.03), glowLineMat);
+          mx.position.set(rx, ROOM_H - 0.02, rz - hs + gi * gridStep);
+          scene.add(mx);
+          // Z方向（縦線）
+          const mz = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.015, ROOM_SIZE), glowLineMat);
+          mz.position.set(rx - hs + gi * gridStep, ROOM_H - 0.02, rz);
+          scene.add(mz);
+        }
 
-        // 照明
-        const spot = new THREE.SpotLight(0xFFF8F0, 2.2, 18, Math.PI * 0.38, 0.4, 1.6);
-        spot.position.set(rx, ROOM_H - 0.2, rz);
-        spot.target.position.set(rx, 0, rz - 1);
-        spot.castShadow = true;
-        spot.shadow.mapSize.set(512, 512);
-        scene.add(spot);
-        scene.add(spot.target);
-
-        const ptL = new THREE.PointLight(0xFFE0B0, 0.7, 8, 2);
-        ptL.position.set(rx - 3, 3, rz);
-        scene.add(ptL);
-        const ptR = new THREE.PointLight(0xFFE0B0, 0.7, 8, 2);
-        ptR.position.set(rx + 3, 3, rz);
-        scene.add(ptR);
+        // --- 部屋ごとの補助PointLight（最大1個） ---
+        if (roomId !== 'hall') {
+          const pt = new THREE.PointLight(0xfff0d0, 0.7, 12, 2);
+          pt.position.set(rx, ROOM_H - 0.6, rz);
+          scene.add(pt);
+        }
       });
 
-      // 環境光（全体）
-      scene.add(new THREE.AmbientLight(0xFFF5E6, 0.45));
-
-      // ==============================================================
-      // ホールのドアパネル設置
-      // ==============================================================
-      const doorGlowMat = new THREE.MeshStandardMaterial({
-        color: 0x3A2510, roughness: 0.5, metalness: 0.3,
-        emissive: new THREE.Color(DOOR_GLOW), emissiveIntensity: 0.6
-      });
-      const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x5C3D1E, roughness: 0.5, metalness: 0.2 });
-      const labelCanvas = document.createElement('canvas');
-      labelCanvas.width = 256; labelCanvas.height = 64;
+      // ============================================================
+      // ホールのドアパネル
+      // ============================================================
+      function makeRoomLabelTex(text, color) {
+        const lc = document.createElement('canvas');
+        lc.width = 512; lc.height = 80;
+        const ctx = lc.getContext('2d');
+        ctx.clearRect(0, 0, 512, 80);
+        ctx.fillStyle = color || 'rgba(212,175,106,0.95)';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 256, 40);
+        const t = new THREE.CanvasTexture(lc);
+        t.colorSpace = THREE.SRGBColorSpace;
+        return t;
+      }
 
       HALL_DOORS.forEach(door => {
         const off = ROOM_OFFSETS['hall'];
         const wx = off.x + door.wx;
         const wz = off.z + door.wz;
-        const ry = Math.atan2(door.dx, door.dz); // カメラ方向に面を向ける
+        const ry = Math.atan2(door.dx, door.dz);
 
-        // 発光パネル（ドア本体）
         const dMat = new THREE.MeshStandardMaterial({
-          color: 0x1A0E05, roughness: 0.45, metalness: 0.2,
-          emissive: new THREE.Color(DOOR_GLOW), emissiveIntensity: 0.45
+          color: 0x0a0a12, roughness: 0.4, metalness: 0.3,
+          emissive: new THREE.Color(C_DOOR_GLOW), emissiveIntensity: 0.5
         });
         const dMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.0), dMat);
         dMesh.position.set(wx, 1.0, wz);
         dMesh.rotation.y = ry;
-        dMesh.userData.door    = true;
-        dMesh.userData.toRoom  = door.toRoom;
-        dMesh.userData.label   = door.label;
+        dMesh.userData.door   = true;
+        dMesh.userData.toRoom = door.toRoom;
+        dMesh.userData.label  = door.label;
         scene.add(dMesh);
         doorMeshes.push({ mesh: dMesh, toRoom: door.toRoom, label: door.label });
 
-        // ドア枠
+        // ドア枠（ゴールド）
         const dfW = 1.2, dfH = 2.0, ft = 0.06;
-        [[new THREE.BoxGeometry(dfW + ft*2, ft, ft), [0, dfH/2 + ft/2, 0]],
-         [new THREE.BoxGeometry(dfW + ft*2, ft, ft), [0,-dfH/2 - ft/2, 0]],
+        [[new THREE.BoxGeometry(dfW + ft*2, ft, ft), [0,  dfH/2 + ft/2, 0]],
+         [new THREE.BoxGeometry(dfW + ft*2, ft, ft), [0, -dfH/2 - ft/2, 0]],
          [new THREE.BoxGeometry(ft, dfH + ft*2, ft), [-dfW/2 - ft/2, 0, 0]],
          [new THREE.BoxGeometry(ft, dfH + ft*2, ft), [ dfW/2 + ft/2, 0, 0]]
         ].forEach(([geo, [ox,oy,oz]]) => {
-          const b = new THREE.Mesh(geo, doorFrameMat);
+          const b = new THREE.Mesh(geo, goldFrameMat);
           b.position.set(wx + ox, 1.0 + oy, wz + oz);
           b.rotation.y = ry;
           scene.add(b);
         });
 
-        // ラベルテクスチャ（部屋名）
-        const lc = document.createElement('canvas');
-        lc.width = 512; lc.height = 80;
-        const ctx = lc.getContext('2d');
-        ctx.clearRect(0, 0, 512, 80);
-        ctx.fillStyle = 'rgba(255,208,128,0.92)';
-        ctx.font = 'bold 30px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(door.label, 256, 40);
-        const ltex = new THREE.CanvasTexture(lc);
-        ltex.colorSpace = THREE.SRGBColorSpace;
+        // ラベル
         const lMesh = new THREE.Mesh(
           new THREE.PlaneGeometry(1.4, 0.22),
-          new THREE.MeshBasicMaterial({ map: ltex, transparent: true, depthWrite: false })
+          new THREE.MeshBasicMaterial({ map: makeRoomLabelTex(door.label), transparent: true, depthWrite: false })
         );
         lMesh.position.set(wx, 2.22, wz);
         lMesh.rotation.y = ry;
         scene.add(lMesh);
       });
 
-      // ==============================================================
-      // 各部屋の出口ドア（ホール方向）
-      // ==============================================================
+      // 各部屋の出口ドア
       ['techo','katakamuna','koubou','gallery'].forEach(roomId => {
         const rOff = ROOM_OFFSETS[roomId];
         const hOff = ROOM_OFFSETS['hall'];
-        // ホール方向の壁面中央
         const dx = Math.sign(hOff.x - rOff.x);
         const dz = Math.sign(hOff.z - rOff.z);
         const wx = rOff.x + dx * (ROOM_SIZE/2 - 0.12);
@@ -1236,8 +1316,8 @@
         const ry = Math.atan2(dx, dz);
 
         const exMat = new THREE.MeshStandardMaterial({
-          color: 0x050F1A, roughness: 0.45, metalness: 0.2,
-          emissive: new THREE.Color(0x80C0FF), emissiveIntensity: 0.3
+          color: 0x050f1a, roughness: 0.45, metalness: 0.2,
+          emissive: new THREE.Color(C_EXIT_GLOW), emissiveIntensity: 0.3
         });
         const exMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.0), exMat);
         exMesh.position.set(wx, 1.0, wz);
@@ -1248,121 +1328,256 @@
         scene.add(exMesh);
         doorMeshes.push({ mesh: exMesh, toRoom: 'hall', label: 'ホールへ戻る' });
 
-        // 出口ラベル
-        const lc = document.createElement('canvas');
-        lc.width = 400; lc.height = 64;
-        const ctx = lc.getContext('2d');
-        ctx.clearRect(0, 0, 400, 64);
-        ctx.fillStyle = 'rgba(128,192,255,0.9)';
-        ctx.font = 'bold 26px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('← ホールへ', 200, 32);
-        const ltex = new THREE.CanvasTexture(lc);
-        ltex.colorSpace = THREE.SRGBColorSpace;
+        // 出口枠（ゴールド薄め）
+        const dfW = 1.2, dfH = 2.0, ft = 0.05;
+        [[new THREE.BoxGeometry(dfW+ft*2, ft, ft), [0, dfH/2+ft/2, 0]],
+         [new THREE.BoxGeometry(dfW+ft*2, ft, ft), [0,-dfH/2-ft/2, 0]],
+         [new THREE.BoxGeometry(ft, dfH+ft*2, ft), [-dfW/2-ft/2, 0, 0]],
+         [new THREE.BoxGeometry(ft, dfH+ft*2, ft), [ dfW/2+ft/2, 0, 0]]
+        ].forEach(([geo,[ox,oy,oz]]) => {
+          const b = new THREE.Mesh(geo, goldFrameMat);
+          b.position.set(wx+ox, 1.0+oy, wz+oz);
+          b.rotation.y = ry;
+          scene.add(b);
+        });
+
         const lMesh = new THREE.Mesh(
           new THREE.PlaneGeometry(1.1, 0.18),
-          new THREE.MeshBasicMaterial({ map: ltex, transparent: true, depthWrite: false })
+          new THREE.MeshBasicMaterial({
+            map: makeRoomLabelTex('← ホールへ', 'rgba(128,192,224,0.9)'),
+            transparent: true, depthWrite: false
+          })
         );
         lMesh.position.set(wx, 2.2, wz);
         lMesh.rotation.y = ry;
         scene.add(lMesh);
       });
 
-      // ==============================================================
-      // 商品パネル設置（部屋別）
-      // ==============================================================
-      function placeItemPanels(roomId) {
-        const rooms  = window.SHOWROOM_ROOMS || [];
-        const room   = rooms.find(r => r.id === roomId);
-        if (!room || room.items.length === 0) return;
-        const off = ROOM_OFFSETS[roomId];
-        const items = room.items;
+      // ============================================================
+      // ヘルパー: テキスト折り返し
+      // ============================================================
+      function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+        const words = text.split('');
+        let line = '', curY = y;
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n];
+          if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+            ctx.fillText(line, x, curY);
+            line = words[n]; curY += lineHeight;
+          } else { line = testLine; }
+        }
+        ctx.fillText(line, x, curY);
+      }
 
-        // パネル配置（奥壁・左壁・右壁に分散）
-        const positions = buildPanelPositions(items.length, off);
-        items.forEach((item, i) => {
-          if (i >= positions.length) return;
-          const pos = positions[i];
-          const placeholderColors = [0xC49A6C,0x8B7355,0xA0785A,0xD4B896,0x7A5C40,0xBE9B7B];
-          const pMat = new THREE.MeshStandardMaterial({
-            color: placeholderColors[i % placeholderColors.length],
-            roughness: 0.55,
-            emissive: new THREE.Color(0x000000),
-            emissiveIntensity: 0
-          });
-          loader.load(item.image, tex => {
-            tex.colorSpace = THREE.SRGBColorSpace;
-            pMat.map = tex; pMat.color.set(0xFFFFFF); pMat.needsUpdate = true;
-          }, undefined, () => {});
+      // ============================================================
+      // ヘルパー: ゴールド枠（額縁）
+      // ============================================================
+      function addGoldFrame(pos, w, h) {
+        const ft = 0.04, fd = 0.04;
+        const fw = w + ft*2, fh = h + ft*2;
+        [
+          [new THREE.BoxGeometry(fw, ft, fd), [0,  fh/2 - ft/2, 0]],
+          [new THREE.BoxGeometry(fw, ft, fd), [0, -fh/2 + ft/2, 0]],
+          [new THREE.BoxGeometry(ft, fh, fd), [-fw/2 + ft/2, 0, 0]],
+          [new THREE.BoxGeometry(ft, fh, fd), [ fw/2 - ft/2, 0, 0]]
+        ].forEach(([geo,[ox,oy,oz]]) => {
+          const b = new THREE.Mesh(geo, goldFrameMat);
+          b.position.set(pos.x + ox, pos.y + oy, pos.z + oz + 0.02);
+          b.rotation.y = pos.ry;
+          scene.add(b);
+        });
+      }
 
-          const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.0), pMat);
-          panel.position.set(pos.x, pos.y, pos.z);
-          panel.rotation.y = pos.ry;
-          panel.userData.item = item;
-          scene.add(panel);
-          panels.push({ mesh: panel, item });
+      // ============================================================
+      // ヘルパー: リンクパネルテクスチャ生成
+      // ============================================================
+      function makeLinkTex(link) {
+        const lc = document.createElement('canvas');
+        lc.width = 512; lc.height = 256;
+        const ctx = lc.getContext('2d');
+        ctx.fillStyle = '#0a0a12';
+        ctx.fillRect(0, 0, 512, 256);
+        // ゴールド枠線
+        ctx.strokeStyle = 'rgba(212,175,106,0.7)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(6, 6, 500, 244);
+        ctx.fillStyle = '#d4af6a';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(link.name, 256, 62);
+        ctx.fillStyle = 'rgba(232,232,236,0.72)';
+        ctx.font = '17px sans-serif';
+        wrapText(ctx, link.lead, 256, 108, 460, 26);
+        ctx.fillStyle = 'rgba(212,175,106,0.9)';
+        ctx.roundRect ? ctx.roundRect(120, 188, 272, 42, 8) : ctx.fillRect(120, 188, 272, 42);
+        ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.font = 'bold 19px sans-serif';
+        ctx.fillText(link.btnLabel, 256, 215);
+        const t = new THREE.CanvasTexture(lc);
+        t.colorSpace = THREE.SRGBColorSpace;
+        return t;
+      }
 
-          // 額縁
-          addFrame(pos, 1.4, 1.0, frameMat);
+      // ============================================================
+      // 島型ガラスショーケース設置（各部屋）
+      // ============================================================
+      /*
+        ショーケース1基 = 台座 + ガラス4面 + 天板ガラス + 発光フレーム(底辺) + 商品プレート(回転)
+        サイズ: W=1.0 D=0.85 台座H=0.55 ガラスH=0.9 → 全高1.45
+      */
+      const SC_W = 1.0, SC_D = 0.85, SC_BASE_H = 0.55, SC_GLASS_H = 0.9;
+
+      // ショーケース配置座標（部屋ごと）
+      const SHOWCASE_POSITIONS = {
+        hall:       [],  // ホールは商品なし・ドア前通路確保
+        techo:      [
+          { x: -1.5, z: 0.0 },
+          { x:  1.5, z: 0.0 },
+          { x:  0.0, z:-1.5 }
+        ],
+        katakamuna: [
+          { x: -1.5, z: 0.5 },
+          { x:  1.5, z: 0.5 },
+          { x:  0.0, z:-1.2 }
+        ],
+        koubou: [
+          { x:  1.8, z:-1.2 },
+          { x:  1.8, z: 1.2 }
+        ],
+        gallery: []  // ギャラリーはポートレート展示のみ
+      };
+
+      function buildShowcase(worldX, worldZ, item) {
+        const group = new THREE.Group();
+        group.position.set(worldX, 0, worldZ);
+
+        // 台座
+        const base = new THREE.Mesh(new THREE.BoxGeometry(SC_W, SC_BASE_H, SC_D), pedestalMat);
+        base.position.y = SC_BASE_H / 2;
+        group.add(base);
+
+        // 台座上のゴールド発光ライン（4辺）
+        const edgeY = SC_BASE_H + 0.008;
+        const hw = SC_W/2, hd = SC_D/2;
+        [
+          { gx: SC_W + 0.01, gz: 0.025, px: 0,    pz:  hd   },
+          { gx: SC_W + 0.01, gz: 0.025, px: 0,    pz: -hd   },
+          { gx: 0.025, gz: SC_D + 0.01, px:  hw,  pz:  0    },
+          { gx: 0.025, gz: SC_D + 0.01, px: -hw,  pz:  0    }
+        ].forEach(e => {
+          const em = new THREE.Mesh(new THREE.BoxGeometry(e.gx, 0.015, e.gz), glowLineMat);
+          em.position.set(e.px, edgeY, e.pz);
+          group.add(em);
         });
 
-        // リンクパネル配置
+        // ガラス4側面（薄いplane）
+        const glassY = SC_BASE_H + SC_GLASS_H / 2;
+        const glassGeos = [
+          { geo: new THREE.PlaneGeometry(SC_W, SC_GLASS_H), pos: [0, glassY,  hd + 0.005], ry: Math.PI },
+          { geo: new THREE.PlaneGeometry(SC_W, SC_GLASS_H), pos: [0, glassY, -hd - 0.005], ry: 0       },
+          { geo: new THREE.PlaneGeometry(SC_D, SC_GLASS_H), pos: [ hw + 0.005, glassY, 0], ry: -Math.PI/2 },
+          { geo: new THREE.PlaneGeometry(SC_D, SC_GLASS_H), pos: [-hw - 0.005, glassY, 0], ry:  Math.PI/2 }
+        ];
+        glassGeos.forEach(g => {
+          // 個別マテリアル（shared glassMat はtransparentなのでclone不要・使い回し）
+          const gm = new THREE.Mesh(g.geo, glassMat);
+          gm.position.set(...g.pos);
+          gm.rotation.y = g.ry;
+          group.add(gm);
+        });
+
+        // 天板ガラス
+        const topGlass = new THREE.Mesh(new THREE.PlaneGeometry(SC_W, SC_D), glassMat);
+        topGlass.rotation.x = -Math.PI / 2;
+        topGlass.position.y = SC_BASE_H + SC_GLASS_H + 0.005;
+        group.add(topGlass);
+
+        // ガラス枠（ゴールド4本縦）
+        const pillarH = SC_GLASS_H + 0.02;
+        [
+          [ hw,  hd], [-hw,  hd],
+          [ hw, -hd], [-hw, -hd]
+        ].forEach(([px, pz]) => {
+          const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.025, pillarH, 0.025), goldFrameMat);
+          pillar.position.set(px, SC_BASE_H + pillarH/2, pz);
+          group.add(pillar);
+        });
+
+        // ケース内商品プレート（回転）
+        const plateMat = new THREE.MeshStandardMaterial({
+          color: 0x8a6640, roughness: 0.55
+        });
+        loader.load(item.image, tex => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          plateMat.map = tex; plateMat.color.set(0xffffff); plateMat.needsUpdate = true;
+        }, undefined, () => {});
+
+        const plateW = SC_W * 0.72, plateH = plateW * 0.72;
+        const plateMesh = new THREE.Mesh(new THREE.PlaneGeometry(plateW, plateH), plateMat);
+        plateMesh.position.y = SC_BASE_H + SC_GLASS_H * 0.45;
+        plateMesh.userData.item = item;
+        group.add(plateMesh);
+
+        // グループに item を紐付け（raycast用）
+        group.userData.item = item;
+        scene.add(group);
+
+        // raycast 対象に台座・ガラスパネル・商品プレートを登録
+        panels.push({ mesh: plateMesh, item });
+        // ガラス面もクリック可能（panelとして登録）
+        glassGeos.forEach((_, i) => {
+          const gMesh = group.children.find((c, ci) => {
+            return c.geometry && c.geometry.type === 'PlaneGeometry'
+              && c.material === glassMat
+              && ci > 0 && ci <= 4;
+          });
+        });
+        // ガラス4面+天板をpanelとして登録
+        group.children.forEach(child => {
+          if (child.material === glassMat) {
+            panels.push({ mesh: child, item });
+          }
+        });
+
+        showcasePlates.push({ mesh: plateMesh });
+        return group;
+      }
+
+      // 全部屋にショーケース設置
+      const roomsData = window.SHOWROOM_ROOMS || [];
+      roomIds.forEach(roomId => {
+        const room = roomsData.find(r => r.id === roomId);
+        if (!room) return;
+        const scPositions = SHOWCASE_POSITIONS[roomId] || [];
+        const items = room.items || [];
+
+        scPositions.forEach((pos, i) => {
+          const item = items[i] || null;
+          if (!item) return;
+          const off = ROOM_OFFSETS[roomId];
+          buildShowcase(off.x + pos.x, off.z + pos.z, item);
+        });
+
+        // リンクパネルは壁掛けのまま（ダークガラス調＋ゴールド枠）
         const links = room.links || [];
         links.forEach((link, i) => {
-          const lpos = buildLinkPanelPosition(i, links.length, off);
+          const lpos = buildLinkPanelPosition(i, links.length, ROOM_OFFSETS[roomId]);
           const lMat = new THREE.MeshStandardMaterial({
-            color: 0x2A1A0A, roughness: 0.6,
-            emissive: new THREE.Color(0xA0785A), emissiveIntensity: 0.25
+            color: 0x0a0a12, roughness: 0.5,
+            emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.22
           });
-          // ラベルテクスチャ
-          const lc = document.createElement('canvas');
-          lc.width = 512; lc.height = 256;
-          const ctx = lc.getContext('2d');
-          ctx.fillStyle = '#1D1108';
-          ctx.fillRect(0, 0, 512, 256);
-          ctx.fillStyle = '#FFD080';
-          ctx.font = 'bold 28px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(link.name, 256, 60);
-          ctx.fillStyle = 'rgba(255,255,255,0.7)';
-          ctx.font = '18px sans-serif';
-          wrapText(ctx, link.lead, 256, 110, 450, 26);
-          ctx.fillStyle = '#A0785A';
-          ctx.fillRect(130, 190, 252, 40);
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 20px sans-serif';
-          ctx.fillText(link.btnLabel, 256, 215);
-          const ltex = new THREE.CanvasTexture(lc);
-          ltex.colorSpace = THREE.SRGBColorSpace;
-          lMat.map = ltex; lMat.needsUpdate = true;
-
+          lMat.map = makeLinkTex(link);
+          lMat.needsUpdate = true;
           const lMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.8), lMat);
           lMesh.position.set(lpos.x, lpos.y, lpos.z);
           lMesh.rotation.y = lpos.ry;
           lMesh.userData.link = link;
           scene.add(lMesh);
           panels.push({ mesh: lMesh, item: { ...link, isLink: true } });
-          addFrame(lpos, 1.6, 0.8, frameMat);
+          addGoldFrame(lpos, 1.6, 0.8);
         });
-      }
-
-      // パネル配置計算（部屋サイズ10×10、奥壁・左壁・右壁）
-      function buildPanelPositions(count, off) {
-        const hs = ROOM_SIZE / 2;
-        const base = [
-          // 奥壁 3枚
-          { x: off.x - 2.8, y: 2.0, z: off.z - hs + 0.08, ry: 0         },
-          { x: off.x + 0.0, y: 2.0, z: off.z - hs + 0.08, ry: 0         },
-          { x: off.x + 2.8, y: 2.0, z: off.z - hs + 0.08, ry: 0         },
-          // 左壁 2枚
-          { x: off.x - hs + 0.08, y: 2.0, z: off.z - 1.5, ry:  Math.PI/2 },
-          { x: off.x - hs + 0.08, y: 2.0, z: off.z + 1.5, ry:  Math.PI/2 },
-          // 右壁 1枚
-          { x: off.x + hs - 0.08, y: 2.0, z: off.z - 1.5, ry: -Math.PI/2 }
-        ];
-        return base.slice(0, count);
-      }
+      });
 
       function buildLinkPanelPosition(i, total, off) {
         const hs = ROOM_SIZE / 2;
@@ -1375,104 +1590,77 @@
         return positions[i % positions.length];
       }
 
-      function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-        const words = text.split('');
-        let line = '';
-        let curY = y;
-        for (let n = 0; n < words.length; n++) {
-          const testLine = line + words[n];
-          if (ctx.measureText(testLine).width > maxWidth && line !== '') {
-            ctx.fillText(line, x, curY);
-            line = words[n];
-            curY += lineHeight;
-          } else {
-            line = testLine;
-          }
-        }
-        ctx.fillText(line, x, curY);
-      }
-
-      function addFrame(pos, w, h, mat) {
-        const ft = 0.04, fd = 0.04;
-        const fw = w + ft*2, fh = h + ft*2;
-        [
-          [new THREE.BoxGeometry(fw, ft, fd), [0,  fh/2 - ft/2, 0]],
-          [new THREE.BoxGeometry(fw, ft, fd), [0, -fh/2 + ft/2, 0]],
-          [new THREE.BoxGeometry(ft, fh, fd), [-fw/2 + ft/2, 0, 0]],
-          [new THREE.BoxGeometry(ft, fh, fd), [ fw/2 - ft/2, 0, 0]]
-        ].forEach(([geo, [ox,oy,oz]]) => {
-          const b = new THREE.Mesh(geo, mat);
-          b.position.set(pos.x + ox, pos.y + oy, pos.z + oz + 0.02);
-          b.rotation.y = pos.ry;
-          scene.add(b);
+      // ============================================================
+      // ホールのリンクパネル
+      // ============================================================
+      (function() {
+        const off = ROOM_OFFSETS['hall'];
+        const halls = roomsData.find(r => r.id === 'hall');
+        if (!halls) return;
+        halls.links.forEach((link, i) => {
+          const lpos = buildLinkPanelPosition(i, halls.links.length, off);
+          const lMat = new THREE.MeshStandardMaterial({
+            color: 0x0a0a12, roughness: 0.5,
+            emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.22
+          });
+          lMat.map = makeLinkTex(link);
+          lMat.needsUpdate = true;
+          const lMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.8), lMat);
+          lMesh.position.set(lpos.x, lpos.y, lpos.z);
+          lMesh.rotation.y = lpos.ry;
+          lMesh.userData.link = link;
+          scene.add(lMesh);
+          panels.push({ mesh: lMesh, item: { ...link, isLink: true } });
+          addGoldFrame(lpos, 1.6, 0.8);
         });
-      }
+      })();
 
-      // 全部屋のパネルを事前構築（遅延テクスチャロードで軽量維持）
-      ['techo','katakamuna','koubou','gallery'].forEach(placeItemPanels);
-
-      // ==============================================================
-      // 幕僚ギャラリー: リアル調ポートレートを額装展示（壁面10枚）
-      // Y=2.8 上段配置でリンクパネル(Y=2.0)と干渉回避
-      // クリックで当該幕僚の接客カードを開く
-      // ==============================================================
+      // ============================================================
+      // 幕僚ギャラリー: ポートレート（壁面・ゴールド額縁）
+      // ============================================================
       (function buildGalleryPortraits() {
         const off = ROOM_OFFSETS['gallery'];
         const hs  = ROOM_SIZE / 2;
-        const PW = 0.72, PH = 0.9;  // ポートレートパネルサイズ
-
-        // ポートレート配置座標 (奥壁5 / 左壁3 / 右壁上段2)
-        // 右壁上段はリンクパネル(Y=2.0)より高いY=2.9 に設定
+        const PW = 0.72, PH = 0.9;
         const portraitPositions = [
-          // 奥壁 5枚
           { x: off.x - 3.6, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
           { x: off.x - 1.8, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
           { x: off.x + 0.0, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
           { x: off.x + 1.8, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
           { x: off.x + 3.6, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
-          // 左壁 3枚
           { x: off.x - hs + 0.08, y: 2.8, z: off.z - 2.5, ry:  Math.PI/2 },
           { x: off.x - hs + 0.08, y: 2.8, z: off.z + 0.0, ry:  Math.PI/2 },
           { x: off.x - hs + 0.08, y: 2.8, z: off.z + 2.5, ry:  Math.PI/2 },
-          // 右壁上段 2枚（Y=2.9 でリンクパネルより高く）
           { x: off.x + hs - 0.08, y: 2.9, z: off.z - 2.0, ry: -Math.PI/2 },
           { x: off.x + hs - 0.08, y: 2.9, z: off.z + 2.0, ry: -Math.PI/2 }
         ];
 
         const staffList = window.SHOWROOM_STAFF || [];
-
         staffList.forEach((staff, idx) => {
           if (idx >= portraitPositions.length) return;
           const pos = portraitPositions[idx];
-
-          // ポートレートマット（暗色・セピア調）
           const pMat = new THREE.MeshStandardMaterial({
-            color: 0x5A3A1A, roughness: 0.6,
-            emissive: new THREE.Color(0x000000), emissiveIntensity: 0
+            color: 0x3a2010, roughness: 0.6
           });
           loader.load(staff.image, tex => {
             tex.colorSpace = THREE.SRGBColorSpace;
-            pMat.map = tex; pMat.color.set(0xFFFFFF); pMat.needsUpdate = true;
+            pMat.map = tex; pMat.color.set(0xffffff); pMat.needsUpdate = true;
           }, undefined, () => {});
 
           const pMesh = new THREE.Mesh(new THREE.PlaneGeometry(PW, PH), pMat);
           pMesh.position.set(pos.x, pos.y, pos.z);
           pMesh.rotation.y = pos.ry;
-          // クリック時に接客カードを開くため staffActor は遅延解決
-          // userData.portraitStaffId を使ってクリックハンドラで検索
           pMesh.userData.portraitStaffId = staff.id;
           scene.add(pMesh);
           panels.push({ mesh: pMesh, item: { isPortrait: true, staffId: staff.id } });
+          addGoldFrame(pos, PW, PH);
 
-          // 金縁額縁
-          addFrame(pos, PW, PH, sFrameMat);
-
-          // キャプションプレート（名前）
+          // キャプションプレート
           const cc = document.createElement('canvas');
           cc.width = 256; cc.height = 36;
           const cctx = cc.getContext('2d');
-          cctx.fillStyle = '#2A1400'; cctx.fillRect(0, 0, 256, 36);
-          cctx.fillStyle = '#FFD080'; cctx.font = 'bold 16px sans-serif';
+          cctx.fillStyle = '#0a0a12'; cctx.fillRect(0,0,256,36);
+          cctx.fillStyle = '#d4af6a'; cctx.font = 'bold 15px sans-serif';
           cctx.textAlign = 'center'; cctx.textBaseline = 'middle';
           cctx.fillText(staff.name + '  ' + staff.role, 128, 18);
           const ctex = new THREE.CanvasTexture(cc); ctex.colorSpace = THREE.SRGBColorSpace;
@@ -1480,76 +1668,112 @@
             new THREE.PlaneGeometry(PW + 0.1, 0.12),
             new THREE.MeshBasicMaterial({ map: ctex, transparent: true, depthWrite: false })
           );
-          capMesh.position.set(pos.x, pos.y - PH / 2 - 0.1, pos.z);
+          capMesh.position.set(pos.x, pos.y - PH/2 - 0.1, pos.z);
           capMesh.rotation.y = pos.ry;
           scene.add(capMesh);
         });
       })();
 
-      // ホールのリンクパネル
-      (function() {
-        const off = ROOM_OFFSETS['hall'];
-        const rooms = window.SHOWROOM_ROOMS || [];
-        const hallRoom = rooms.find(r => r.id === 'hall');
-        if (!hallRoom) return;
-        hallRoom.links.forEach((link, i) => {
-          const lpos = buildLinkPanelPosition(i, hallRoom.links.length, off);
-          const lMat = new THREE.MeshStandardMaterial({ color: 0x2A1A0A, roughness: 0.6,
-            emissive: new THREE.Color(0xA0785A), emissiveIntensity: 0.25 });
-          const lc = document.createElement('canvas');
-          lc.width = 512; lc.height = 256;
-          const ctx = lc.getContext('2d');
-          ctx.fillStyle = '#1D1108'; ctx.fillRect(0,0,512,256);
-          ctx.fillStyle = '#FFD080'; ctx.font = 'bold 28px sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText(link.name, 256, 60);
-          ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '18px sans-serif';
-          wrapText(ctx, link.lead, 256, 110, 450, 26);
-          ctx.fillStyle = '#A0785A'; ctx.fillRect(130, 190, 252, 40);
-          ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif';
-          ctx.fillText(link.btnLabel, 256, 215);
-          const ltex = new THREE.CanvasTexture(lc); ltex.colorSpace = THREE.SRGBColorSpace;
-          lMat.map = ltex; lMat.needsUpdate = true;
-          const lMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.8), lMat);
-          lMesh.position.set(lpos.x, lpos.y, lpos.z); lMesh.rotation.y = lpos.ry;
-          lMesh.userData.link = link;
-          scene.add(lMesh);
-          panels.push({ mesh: lMesh, item: { ...link, isLink: true } });
-          addFrame(lpos, 1.6, 0.8, frameMat);
+      // ============================================================
+      // 工房の間 特別演出
+      // ============================================================
+      (function buildKoubouAtelier() {
+        const off = ROOM_OFFSETS['koubou'];
+        const cx = off.x, cz = off.z;
+
+        // 木製作業台
+        const tableTopMat = new THREE.MeshStandardMaterial({ color: 0x5a3415, roughness: 0.65 });
+        const tableLegMat = new THREE.MeshStandardMaterial({ color: 0x3d2208, roughness: 0.75 });
+
+        // 天板
+        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, 0.95), tableTopMat);
+        tableTop.position.set(cx, 0.88, cz + 0.8);
+        scene.add(tableTop);
+        // 天板エッジ（ゴールド細線）
+        const tedge = new THREE.Mesh(new THREE.BoxGeometry(2.22, 0.015, 0.01), glowLineMat);
+        tedge.position.set(cx, 0.925, cz + 0.8 - 0.475);
+        scene.add(tedge);
+
+        // 脚4本
+        [[-0.95, 0.45], [0.95, 0.45], [-0.95, -0.45+0.8+cz - cz], [0.95, -0.45+0.8+cz - cz]].forEach(([lx, lz_off]) => {
+          const leg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.88, 0.07), tableLegMat);
+          leg.position.set(cx + lx, 0.44, cz + 0.8 + (lz_off > 0.5 ? 0.43 : -0.43));
+          scene.add(leg);
         });
+
+        // 革ハンマー（シリンダー頭部+細い柄）
+        const hammerMat = new THREE.MeshStandardMaterial({ color: 0x2a1a08, roughness: 0.6, metalness: 0.2 });
+        const handleMat = new THREE.MeshStandardMaterial({ color: 0x6b3d14, roughness: 0.7 });
+        const hamHead = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.16, 10), hammerMat);
+        hamHead.rotation.z = Math.PI / 2;
+        hamHead.position.set(cx - 0.5, 0.96, cz + 0.62);
+        scene.add(hamHead);
+        const hamHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.38, 8), handleMat);
+        hamHandle.rotation.z = Math.PI / 2;
+        hamHandle.position.set(cx - 0.32, 0.96, cz + 0.62);
+        scene.add(hamHandle);
+
+        // 菱目打ち（4本束: 細い直方体×4）
+        for (let pi = 0; pi < 4; pi++) {
+          const prong = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.18, 0.012), hammerMat);
+          prong.position.set(cx + 0.2 + pi * 0.03, 0.975, cz + 0.72);
+          scene.add(prong);
+        }
+
+        // 糸巻き（トーラス風: 細いシリンダー＋小ディスク2枚）
+        const spoolMat = new THREE.MeshStandardMaterial({ color: 0xc8502a, roughness: 0.5 });
+        const spoolBody = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.10, 14), spoolMat);
+        spoolBody.position.set(cx + 0.6, 0.975, cz + 0.65);
+        scene.add(spoolBody);
+        const spoolDiscMat = new THREE.MeshStandardMaterial({ color: 0x8a3a18, roughness: 0.6 });
+        [-0.05, 0.05].forEach(dy => {
+          const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.012, 14), spoolDiscMat);
+          disc.position.set(cx + 0.6, 0.975 + dy, cz + 0.65);
+          scene.add(disc);
+        });
+
+        // ペンダントライト風発光球
+        const pendantMat = new THREE.MeshStandardMaterial({
+          color: 0xfff5d0,
+          emissive: new THREE.Color(0xffe8a0),
+          emissiveIntensity: 1.2
+        });
+        const pendant = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 8), pendantMat);
+        pendant.position.set(cx, ROOM_H - 0.45, cz + 0.8);
+        scene.add(pendant);
+
+        // ペンダントコード（細いシリンダー）
+        const cordMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 1.0 });
+        const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, ROOM_H - 0.6, 6), cordMat);
+        cord.position.set(cx, (ROOM_H - 0.45 + ROOM_H) / 2 - 0.3, cz + 0.8);
+        scene.add(cord);
+
+        // ペンダントライトのPointLight（工房は部屋PointLightをこれに割り当て済みのため上書き不要。別途追加せず）
+        // ※ roomIdsループで koubou に PointLight を設置済み → 上方に配置済みのためここでは省略
       })();
 
-      // ==============================================================
-      // 幕僚 立て看板アクター
-      // ==============================================================
-      // StaffActor: ビジュアル（看板メッシュ）と巡回ロジックを分離したオブジェクト
+      // ============================================================
+      // 幕僚 立て看板アクター（StaffActor）
+      // ============================================================
       class StaffActor {
         constructor(staff) {
           this.staff   = staff;
           this.roomId  = staff.room;
           this.rOff    = ROOM_OFFSETS[staff.room];
-
-          // ウェイポイントをワールド座標に変換
           this.waypoints = (staff.waypoints || [[0,0]]).map(([lx, lz]) => ({
             x: this.rOff.x + lx,
             z: this.rOff.z + lz
           }));
           this.wpIdx    = 0;
-          this.waitTime = 0;       // 停止残り時間(秒)
-          this.speed    = 0.35 + Math.random() * 0.15; // 0.35〜0.5
-          this.paused   = false;   // クリック停止中
-          this.isGlbLoaded = false;    // GLBロード完了フラグ
-          this._glbLoadStarted = false; // 二重ロード防止フラグ
-          this._lastMoveAngle = 0;      // GLBモデル用: 最後の進行方向角度
-
-          // ビジュアル — 立て看板（画像パネル＋台座）
-          // 後日GLBに差し替える前提: this.visual だけ差し替えればよい
+          this.waitTime = 0;
+          this.speed    = 0.35 + Math.random() * 0.15;
+          this.paused   = false;
+          this.isGlbLoaded = false;
+          this._glbLoadStarted = false;
+          this._lastMoveAngle = 0;
           this.visual = this._buildVisual(staff);
-
-          // GLBロードは呼び出し元（gotoRoom / 初期化時）から triggerGlbLoad() で行う
-          // ここでは即時ロードしない（部屋単位遅延ロード方式）
         }
 
-        // 遅延ロード用メソッド: 初回呼び出し時のみGLBをロードする
         triggerGlbLoad() {
           if (!this.staff.model || this._glbLoadStarted) return;
           this._glbLoadStarted = true;
@@ -1558,294 +1782,196 @@
 
         _buildVisual(staff) {
           const group = new THREE.Group();
-
-          // --- マスコット透過スプライト (PlaneGeometry + alphaTest) ---
-          // キャラクター高さ 1.4、足元Y=0 基準
           const spriteH = 1.4;
-          const spriteW = spriteH * 1.0; // 1:1画像なのでそのまま
-
           const spriteMat = new THREE.MeshBasicMaterial({
-            color: 0xFFFFFF,
-            transparent: true,
-            alphaTest: 0.05,
-            side: THREE.DoubleSide,
-            depthWrite: false
+            color: 0xFFFFFF, transparent: true, alphaTest: 0.05,
+            side: THREE.DoubleSide, depthWrite: false
           });
-          // マスコット画像パスを assets/mascot/{id}.png に向ける
           const mascotPath = `assets/mascot/${staff.id}.png`;
           loader.load(mascotPath, tex => {
             tex.colorSpace = THREE.SRGBColorSpace;
-            spriteMat.map = tex;
-            spriteMat.needsUpdate = true;
+            spriteMat.map = tex; spriteMat.needsUpdate = true;
           }, undefined, () => {
-            // フォールバック: staff.image をそのまま使用
             loader.load(staff.image, tex2 => {
               tex2.colorSpace = THREE.SRGBColorSpace;
-              spriteMat.map = tex2;
-              spriteMat.needsUpdate = true;
+              spriteMat.map = tex2; spriteMat.needsUpdate = true;
             }, undefined, () => {});
           });
 
-          const pGeo = new THREE.PlaneGeometry(spriteW, spriteH);
-          const pMesh = new THREE.Mesh(pGeo, spriteMat);
-          // 足元がY=0になるようcentroid調整: Y=spriteH/2
-          pMesh.position.set(0, spriteH / 2, 0);
-          pMesh.userData.staffActor = this; // クリック用
+          const pMesh = new THREE.Mesh(new THREE.PlaneGeometry(spriteH, spriteH), spriteMat);
+          pMesh.position.set(0, spriteH/2, 0);
+          pMesh.userData.staffActor = this;
           group.add(pMesh);
           this.panelMesh = pMesh;
 
-          // --- 足元の薄い丸影 ---
-          const shadowGeo = new THREE.CircleGeometry(0.28, 24);
-          const shadowMat = new THREE.MeshBasicMaterial({
-            color: 0x000000,
-            transparent: true,
-            opacity: 0.18,
-            depthWrite: false
-          });
-          const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
-          shadowMesh.rotation.x = -Math.PI / 2;
-          shadowMesh.position.set(0, 0.01, 0);
+          // 足元影
+          const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18, depthWrite: false });
+          const shadowMesh = new THREE.Mesh(new THREE.CircleGeometry(0.28, 24), shadowMat);
+          shadowMesh.rotation.x = -Math.PI/2; shadowMesh.position.set(0, 0.01, 0);
           group.add(shadowMesh);
           this._shadowMesh = shadowMesh;
 
-          // --- 名前プレート（キャラ頭上） ---
+          // 名前プレート（ゴールドカラー）
           const nc = document.createElement('canvas');
           nc.width = 256; nc.height = 48;
           const nctx = nc.getContext('2d');
-          nctx.clearRect(0, 0, 256, 48);
-          nctx.fillStyle = 'rgba(29,8,0,0.72)';
-          // 角丸背景
-          const rx = 8;
+          nctx.clearRect(0,0,256,48);
+          nctx.fillStyle = 'rgba(10,10,18,0.82)';
+          const rx2 = 8;
           nctx.beginPath();
-          nctx.moveTo(rx, 0); nctx.lineTo(256-rx, 0);
-          nctx.quadraticCurveTo(256, 0, 256, rx);
-          nctx.lineTo(256, 48-rx); nctx.quadraticCurveTo(256, 48, 256-rx, 48);
-          nctx.lineTo(rx, 48); nctx.quadraticCurveTo(0, 48, 0, 48-rx);
-          nctx.lineTo(0, rx); nctx.quadraticCurveTo(0, 0, rx, 0);
+          nctx.moveTo(rx2,0); nctx.lineTo(256-rx2,0); nctx.quadraticCurveTo(256,0,256,rx2);
+          nctx.lineTo(256,48-rx2); nctx.quadraticCurveTo(256,48,256-rx2,48);
+          nctx.lineTo(rx2,48); nctx.quadraticCurveTo(0,48,0,48-rx2);
+          nctx.lineTo(0,rx2); nctx.quadraticCurveTo(0,0,rx2,0);
           nctx.closePath(); nctx.fill();
-          nctx.fillStyle = '#FFD080'; nctx.font = 'bold 18px sans-serif';
+          nctx.fillStyle = '#d4af6a'; nctx.font = 'bold 18px sans-serif';
           nctx.textAlign = 'center'; nctx.textBaseline = 'middle';
           nctx.fillText(staff.name, 128, 16);
-          nctx.fillStyle = 'rgba(255,255,255,0.65)'; nctx.font = '13px sans-serif';
+          nctx.fillStyle = 'rgba(232,232,236,0.65)'; nctx.font = '13px sans-serif';
           nctx.fillText(staff.role, 128, 33);
           const ntex = new THREE.CanvasTexture(nc); ntex.colorSpace = THREE.SRGBColorSpace;
           const nMesh = new THREE.Mesh(
             new THREE.PlaneGeometry(0.85, 0.16),
             new THREE.MeshBasicMaterial({ map: ntex, transparent: true, depthWrite: false })
           );
-          // キャラ頭上に配置
           nMesh.position.set(0, spriteH + 0.12, 0);
           group.add(nMesh);
           this.nameMesh = nMesh;
 
-          // 初期位置
           const wp0 = this.waypoints[0];
           group.position.set(wp0.x, 0, wp0.z);
           scene.add(group);
           return group;
         }
 
-        // GLBモデルの非同期ロードと差し替え
         _loadGlbModel(staff) {
-          const TARGET_HEIGHT = 1.4; // 正規化目標高さ (units)
-          gltfLoader.load(
-            staff.model,
-            (gltf) => {
-              try {
-                const modelScene = gltf.scene;
-
-                // --- スケール正規化: 全高を TARGET_HEIGHT に ---
-                const box = new THREE.Box3().setFromObject(modelScene);
-                const size = new THREE.Vector3();
-                box.getSize(size);
-                const modelHeight = size.y;
-                if (modelHeight > 0) {
-                  const scale = TARGET_HEIGHT / modelHeight;
-                  modelScene.scale.setScalar(scale);
+          const TARGET_HEIGHT = 1.4;
+          gltfLoader.load(staff.model, (gltf) => {
+            try {
+              const modelScene = gltf.scene;
+              const box = new THREE.Box3().setFromObject(modelScene);
+              const size = new THREE.Vector3(); box.getSize(size);
+              if (size.y > 0) modelScene.scale.setScalar(TARGET_HEIGHT / size.y);
+              const box2 = new THREE.Box3().setFromObject(modelScene);
+              modelScene.position.y = -box2.min.y;
+              modelScene.traverse(child => {
+                if (child.isMesh) {
+                  child.castShadow = false;
+                  child.userData.staffActor = this;
                 }
-
-                // --- 足元をY=0に接地 ---
-                const box2 = new THREE.Box3().setFromObject(modelScene);
-                const minY = box2.min.y;
-                modelScene.position.y = -minY; // 足元オフセット補正
-
-                // --- 影設定 ---
-                modelScene.traverse(child => {
-                  if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = false;
-                    // クリック判定用: userData.staffActor をセット
-                    child.userData.staffActor = this;
-                  }
-                });
-
-                // --- スプライトを非表示にしてGLBに差し替え ---
-                this.panelMesh.visible = false;
-                this.nameMesh.position.set(0, TARGET_HEIGHT + 0.12, 0);
-                this.visual.add(modelScene);
-                this._glbScene = modelScene;
-
-                // --- raycaster対象に子メッシュを登録 ---
-                modelScene.traverse(child => {
-                  if (child.isMesh) {
-                    staffPanels.push({ mesh: child, staffActor: this });
-                  }
-                });
-
-                this.isGlbLoaded = true;
-                // 初期向きを保持
-                this.visual.rotation.y = this._lastMoveAngle;
-                console.log(`[GLB] ${this.staff.name} モデルロード完了`);
-              } catch (e) {
-                console.warn('[GLB] モデル組み込みエラー（スプライトで継続）:', e);
-              }
-            },
-            undefined,
-            (err) => {
-              // ロード失敗時: 既存スプライトのまま動作継続（フォールバック）
-              console.warn('[GLB] モデルロード失敗（スプライトで継続）:', err);
-            }
-          );
+              });
+              this.panelMesh.visible = false;
+              this.nameMesh.position.set(0, TARGET_HEIGHT + 0.12, 0);
+              this.visual.add(modelScene);
+              this._glbScene = modelScene;
+              modelScene.traverse(child => {
+                if (child.isMesh) staffPanels.push({ mesh: child, staffActor: this });
+              });
+              this.isGlbLoaded = true;
+              this.visual.rotation.y = this._lastMoveAngle;
+            } catch(e) { console.warn('[GLB] 組み込みエラー:', e); }
+          }, undefined, (err) => { console.warn('[GLB] ロード失敗:', err); });
         }
 
-        // 毎フレーム呼ぶ巡回更新（ビジュアルと独立したロジック）
         update(dt) {
           if (this.paused) return;
-
           if (this.waitTime > 0) {
             this.waitTime -= dt;
-            // 軽い上下ボブ（停止中もゆらゆら）
             this.visual.position.y = Math.sin(Date.now() * 0.002) * 0.015;
             return;
           }
-
           const target = this.waypoints[this.wpIdx];
-          const curX = this.visual.position.x;
-          const curZ = this.visual.position.z;
-          const dx = target.x - curX;
-          const dz = target.z - curZ;
+          const curX = this.visual.position.x, curZ = this.visual.position.z;
+          const dx = target.x - curX, dz = target.z - curZ;
           const dist = Math.sqrt(dx*dx + dz*dz);
-
           if (dist < 0.05) {
-            // ウェイポイント到達 → 停止
             this.visual.position.x = target.x;
             this.visual.position.z = target.z;
             this.wpIdx = (this.wpIdx + 1) % this.waypoints.length;
-            this.waitTime = 2 + Math.random() * 3; // 2〜5秒
+            this.waitTime = 2 + Math.random() * 3;
           } else {
-            // 移動
             const step = Math.min(this.speed * dt, dist);
-            this.visual.position.x += (dx / dist) * step;
-            this.visual.position.z += (dz / dist) * step;
-
-            // 進行方向へ向く（Y軸のみ）
+            this.visual.position.x += (dx/dist) * step;
+            this.visual.position.z += (dz/dist) * step;
             const targetAngle = Math.atan2(dx, dz);
-            this._lastMoveAngle = targetAngle; // GLBモデル用に保持
+            this._lastMoveAngle = targetAngle;
             const curAngle = this.visual.rotation.y;
             let dAngle = targetAngle - curAngle;
-            while (dAngle >  Math.PI) dAngle -= Math.PI * 2;
-            while (dAngle < -Math.PI) dAngle += Math.PI * 2;
-            this.visual.rotation.y += dAngle * Math.min(dt * 4, 1);
-
-            // ボブ（歩行感）
+            while (dAngle >  Math.PI) dAngle -= Math.PI*2;
+            while (dAngle < -Math.PI) dAngle += Math.PI*2;
+            this.visual.rotation.y += dAngle * Math.min(dt*4, 1);
             this.visual.position.y = Math.sin(Date.now() * 0.005) * 0.03;
           }
-
-          // Billboard: GLBロード済みの場合は無効化（3Dモデルは実背面を持つため進行方向を保持）
-          // スプライトの場合のみカメラ追従ビルボードを適用
           if (!this.isGlbLoaded) {
             const camDir = new THREE.Vector3();
             camDir.subVectors(camera.position, this.visual.position);
             camDir.y = 0;
-            if (camDir.lengthSq() > 0.001) {
-              this.visual.rotation.y = Math.atan2(camDir.x, camDir.z);
-            }
+            if (camDir.lengthSq() > 0.001) this.visual.rotation.y = Math.atan2(camDir.x, camDir.z);
           }
         }
 
-        pauseFor(staff) {
-          this.paused = true;
-        }
-        resume() {
-          this.paused = false;
-        }
+        pauseFor() { this.paused = true; }
+        resume()   { this.paused = false; }
       }
 
-      // スタッフアクター生成
       const staffActors = (window.SHOWROOM_STAFF || []).map(s => new StaffActor(s));
-      // staffPanels に登録（raycaster用）
       staffActors.forEach(actor => {
         staffPanels.push({ mesh: actor.panelMesh, staffActor: actor });
       });
-      // 初期部屋（hall）のアクターはページロード直後にGLBをロード開始
       staffActors.forEach(actor => {
         if (actor.roomId === 'hall') actor.triggerGlbLoad();
       });
 
-      // ==============================================================
+      // ============================================================
       // カメラ遷移
-      // ==============================================================
+      // ============================================================
       function gotoRoom(roomId) {
         if (isTransitioning) return;
         const off = ROOM_OFFSETS[roomId];
         if (!off) { console.warn('SHOWROOM_API: 不明なroomId:', roomId); return; }
-
         isTransitioning = true;
         closeAllCards();
-
         const fromPos    = camera.position.clone();
         const fromTarget = controls.target.clone();
-        // ホールに向かう方向から入室するよう入場位置を計算
         let entryDz = 0, entryDx = 0;
         if (roomId === 'hall') {
           entryDz = CAM_IN_ROOM.camZ;
         } else {
-          // ホールからの方向の逆がカメラの位置
           const hallOff = ROOM_OFFSETS['hall'];
-          const dirX = off.x - hallOff.x;
-          const dirZ = off.z - hallOff.z;
+          const dirX = off.x - hallOff.x, dirZ = off.z - hallOff.z;
           const len  = Math.sqrt(dirX*dirX + dirZ*dirZ);
-          entryDx =-(dirX/len) * CAM_IN_ROOM.camZ;
-          entryDz =-(dirZ/len) * CAM_IN_ROOM.camZ;
+          entryDx = -(dirX/len) * CAM_IN_ROOM.camZ;
+          entryDz = -(dirZ/len) * CAM_IN_ROOM.camZ;
         }
-
         const toPos    = new THREE.Vector3(off.x + entryDx, CAM_IN_ROOM.camY, off.z + entryDz);
         const toTarget = new THREE.Vector3(off.x,           CAM_IN_ROOM.targetY, off.z);
-
-        // 入室先アクターのGLBは遷移開始と同時にロード開始（遷移1秒の間に並行ダウンロード）
         staffActors.forEach(actor => {
           if (actor.roomId === roomId) actor.triggerGlbLoad();
         });
-
         camAnim = {
-          fromPos, toPos, fromTarget, toTarget,
-          t: 0, duration: 1.0,
+          fromPos, toPos, fromTarget, toTarget, t: 0, duration: 1.0,
           onDone: () => {
-            currentRoomId = roomId;
-            isTransitioning = false;
+            currentRoomId = roomId; isTransitioning = false;
             updateRoomUI(roomId);
-            controls.target.copy(toTarget);
-            controls.update();
+            controls.target.copy(toTarget); controls.update();
           }
         };
       }
 
       function updateRoomUI(roomId) {
-        const rooms = window.SHOWROOM_ROOMS || [];
-        const room  = rooms.find(r => r.id === roomId);
-        const name  = room ? room.name : roomId;
+        const room = (window.SHOWROOM_ROOMS || []).find(r => r.id === roomId);
+        const name = room ? room.name : roomId;
         document.getElementById('room-indicator').textContent = name;
         document.querySelectorAll('#room-menu button').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.room === roomId);
         });
-        const backBtn = document.getElementById('btn-back-hall');
-        backBtn.style.display = (roomId === 'hall') ? 'none' : 'block';
+        document.getElementById('btn-back-hall').style.display = (roomId === 'hall') ? 'none' : 'block';
         gtag('event', 'room_enter', { room_id: roomId });
       }
 
-      // ==============================================================
+      // ============================================================
       // Raycaster & クリック
-      // ==============================================================
+      // ============================================================
       function getIntersected(event) {
         const rect = renderer.domElement.getBoundingClientRect();
         let cx, cy;
@@ -1857,7 +1983,7 @@
           cx = event.clientX; cy = event.clientY;
         }
         mouse.x =  ((cx - rect.left) / rect.width)  * 2 - 1;
-        mouse.y = -((cy - rect.top)  / rect.height)  * 2 + 1;
+        mouse.y = -((cy - rect.top)  / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
         const meshes = [
           ...panels.map(p => p.mesh),
@@ -1867,12 +1993,10 @@
         return raycaster.intersectObjects(meshes, true);
       }
 
-      // ホバー
       renderer.domElement.addEventListener('mousemove', e => {
         const hits = getIntersected(e);
         if (hits.length > 0) {
           const mesh = hits[0].object;
-          // staffActor配下メッシュを探す
           const sMesh = findStaffPanelMesh(mesh);
           const target = sMesh || mesh;
           if (hoveredMesh !== target) {
@@ -1880,8 +2004,8 @@
               hoveredMesh.material.emissiveIntensity = 0;
             hoveredMesh = target;
             if (hoveredMesh.material) {
-              hoveredMesh.material.emissive && hoveredMesh.material.emissive.set(0xA0785A);
-              hoveredMesh.material.emissiveIntensity = 0.2;
+              hoveredMesh.material.emissive && hoveredMesh.material.emissive.set(C_GOLD);
+              hoveredMesh.material.emissiveIntensity = 0.22;
             }
             renderer.domElement.style.cursor = 'pointer';
           }
@@ -1898,12 +2022,9 @@
         return found ? found.mesh : null;
       }
 
-      // GLBモデルの子メッシュからStaffActorを辿るヘルパー
       function findStaffActorFromMesh(mesh) {
-        // 直接登録されている場合
         const direct = staffPanels.find(p => p.mesh === mesh);
         if (direct) return direct.staffActor;
-        // userData.staffActor が付与されている場合（GLB子メッシュ）
         if (mesh.userData && mesh.userData.staffActor) return mesh.userData.staffActor;
         return null;
       }
@@ -1914,16 +2035,14 @@
         if (Date.now() - pointerDownTime > 200) return;
         handleClick(e);
       });
-
       let touchStartX, touchStartY;
       renderer.domElement.addEventListener('touchstart', e => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
       }, { passive: true });
       renderer.domElement.addEventListener('touchend', e => {
-        const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
-        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-        if (dx < 8 && dy < 8) handleClick(e);
+        const ddx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+        const ddy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+        if (ddx < 8 && ddy < 8) handleClick(e);
       }, { passive: true });
 
       function handleClick(e) {
@@ -1932,20 +2051,16 @@
         if (hits.length === 0) return;
         const mesh = hits[0].object;
 
-        // ドアクリック
         const dEntry = doorMeshes.find(d => d.mesh === mesh);
         if (dEntry) { gotoRoom(dEntry.toRoom); return; }
 
-        // 商品・リンクパネル（ポートレート含む）
         const pEntry = panels.find(p => p.mesh === mesh);
         if (pEntry) {
           if (pEntry.item.isPortrait) {
-            // ギャラリーのリアルポートレートをクリック→幕僚接客カードを開く
             const sData = (window.SHOWROOM_STAFF || []).find(s => s.id === pEntry.item.staffId);
             if (sData) {
-              // 巡回中のアクターを探して停止
               const actor = staffActors.find(a => a.staff.id === sData.id) || null;
-              if (actor) actor.pauseFor(actor.staff);
+              if (actor) actor.pauseFor();
               showStaffCard(sData, mesh, actor);
             }
           } else if (pEntry.item.isLink) { showLinkCard(pEntry.item); }
@@ -1953,30 +2068,23 @@
           return;
         }
 
-        // スタッフ看板（GLBモデルの子メッシュにも対応）
         const sActor = findStaffActorFromMesh(mesh);
-        if (sActor) {
-          sActor.pauseFor(sActor.staff);
-          showStaffCard(sActor.staff, mesh, sActor);
-        }
+        if (sActor) { sActor.pauseFor(); showStaffCard(sActor.staff, mesh, sActor); }
       }
 
-      // ==============================================================
+      // ============================================================
       // カード表示
-      // ==============================================================
+      // ============================================================
       let activeStaffActor = null;
 
-      function closeAllCards() {
-        hideCard();
-        hideStaffCard();
-      }
+      function closeAllCards() { hideCard(); hideStaffCard(); }
 
       function showCard(item, mesh) {
         document.getElementById('staff-card').classList.remove('visible');
-        document.getElementById('card-name').textContent    = item.name;
-        document.getElementById('card-lead').textContent    = item.lead || '';
-        document.getElementById('card-material').textContent= item.material || '';
-        document.getElementById('card-price').textContent   = item.price || '';
+        document.getElementById('card-name').textContent     = item.name;
+        document.getElementById('card-lead').textContent     = item.lead || '';
+        document.getElementById('card-material').textContent = item.material || '';
+        document.getElementById('card-price').textContent    = item.price || '';
         const btn = document.getElementById('card-btn');
         if (item.url && item.url.trim() !== '') {
           btn.href = item.url; btn.textContent = '購入ページへ';
@@ -1987,7 +2095,7 @@
           btn.classList.add('disabled');
         }
         document.getElementById('info-card').classList.add('visible');
-        selectMesh(mesh, 0xA0785A);
+        selectMesh(mesh, C_GOLD);
       }
 
       function showLinkCard(link) {
@@ -2016,7 +2124,6 @@
         document.getElementById('sc-role').textContent = staff.role;
         document.getElementById('sc-line').textContent = line;
         const av = document.getElementById('sc-avatar');
-        // マスコット透過版を優先。読み込み失敗時は元画像にフォールバック
         av.onerror = () => { av.onerror = null; av.src = staff.image; };
         av.src = `assets/mascot/${staff.id}.png`; av.alt = staff.name;
         const btn = document.getElementById('sc-btn');
@@ -2027,8 +2134,7 @@
           btn.removeAttribute('target'); btn.removeAttribute('rel');
         }
         document.getElementById('staff-card').classList.add('visible');
-        selectMesh(mesh, 0xD4A853);
-        // チャット初期化（APIキー未設定でも壊れない）
+        selectMesh(mesh, C_GOLD);
         if (typeof initChat === 'function') initChat(staff.id);
       }
 
@@ -2044,35 +2150,32 @@
         selectedMesh = mesh;
         if (mesh && mesh.material) {
           mesh.material.emissive && mesh.material.emissive.set(color);
-          mesh.material.emissiveIntensity = 0.3;
+          mesh.material.emissiveIntensity = 0.32;
         }
       }
       function deselectMesh() {
-        if (selectedMesh && selectedMesh.material)
-          selectedMesh.material.emissiveIntensity = 0;
+        if (selectedMesh && selectedMesh.material) selectedMesh.material.emissiveIntensity = 0;
         selectedMesh = null;
       }
 
-      document.getElementById('card-close').addEventListener('click',   hideCard);
-      document.getElementById('sc-close').addEventListener('click',     hideStaffCard);
+      document.getElementById('card-close').addEventListener('click', hideCard);
+      document.getElementById('sc-close').addEventListener('click',   hideStaffCard);
 
-      // ==============================================================
+      // ============================================================
       // リサイズ
-      // ==============================================================
+      // ============================================================
       function onResize() {
         const w = container.clientWidth, h = container.clientHeight;
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
+        camera.aspect = w / h; camera.updateProjectionMatrix();
         renderer.setSize(w, h);
       }
       window.addEventListener('resize', onResize);
 
-      // ==============================================================
+      // ============================================================
       // アニメーションループ
-      // ==============================================================
-      function easeInOut(t) {
-        return t < 0.5 ? 2*t*t : -1 + (4-2*t)*t;
-      }
+      // ============================================================
+      function easeInOut(t) { return t < 0.5 ? 2*t*t : -1 + (4-2*t)*t; }
+      const PLATE_ROT_SPEED = 0.3; // rad/s
 
       function animate() {
         requestAnimationFrame(animate);
@@ -2099,6 +2202,11 @@
           controls.update();
         }
 
+        // ショーケース内プレート回転
+        showcasePlates.forEach(sp => {
+          sp.mesh.rotation.y += PLATE_ROT_SPEED * dt;
+        });
+
         // 幕僚巡回更新
         staffActors.forEach(actor => actor.update(dt));
 
@@ -2106,25 +2214,12 @@
       }
       animate();
 
-      // ==============================================================
+      // ============================================================
       // SHOWROOM_API（恒久・削除しない）
-      // ==============================================================
+      // ============================================================
       window.SHOWROOM_API = {
-        /**
-         * 指定部屋にカメラ遷移
-         * @param {string} id — 'hall' | 'techo' | 'katakamuna' | 'koubou' | 'gallery'
-         */
         gotoRoom(id) { gotoRoom(id); },
-
-        /** 現在の部屋IDを返す */
         getRoom()    { return currentRoomId; },
-
-        /** 全幕僚アクター配列（ビジュアル差し替え用）
-         *  actor.visual: Three.Group
-         *  actor.panelMesh: 画像PlaneGeometry
-         *  actor.waypoints: [{x,z}]
-         *  actor.paused: boolean
-         */
         staffActors
       };
 
@@ -2133,30 +2228,22 @@
       showFallback();
     }
 
-    // ==============================================================
+    // ============================================================
     // UI イベント
-    // ==============================================================
-    // 部屋メニュー
+    // ============================================================
     document.querySelectorAll('#room-menu button').forEach(btn => {
       btn.addEventListener('click', () => {
         const roomId = btn.dataset.room;
         if (window.SHOWROOM_API) window.SHOWROOM_API.gotoRoom(roomId);
-        // スマホはメニューを閉じる
         document.getElementById('room-menu').classList.remove('open');
       });
     });
-
-    // ハンバーガートグル
     document.getElementById('menu-toggle').addEventListener('click', () => {
       document.getElementById('room-menu').classList.toggle('open');
     });
-
-    // ホールへ戻るボタン
     document.getElementById('btn-back-hall').addEventListener('click', () => {
       if (window.SHOWROOM_API) window.SHOWROOM_API.gotoRoom('hall');
     });
-
-    // 操作ガイド閉じる
     const overlay = document.getElementById('guide-overlay');
     function dismissOverlay() {
       overlay.style.opacity = '0';
