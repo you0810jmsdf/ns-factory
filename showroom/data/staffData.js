@@ -1,14 +1,17 @@
 // N's factory Web 3D Showroom — スタッフデータ
-// v2.1.0 — 2026-06-12 巡回スタッフ残り8名をGLB化（部屋単位遅延ロード対応）
-// 画像パスは showroom/index.html からの相対パス
+// v3.0.0 — 2026-06-12 明るいガラスパビリオン対応（単一大空間・絶対座標）
+// waypointsはワールド座標 [x, z] で記述（部屋オフセット加算不要）
 //
-// waypoints: 各部屋の床座標 [x, z] の配列（部屋原点基準）
-//   部屋サイズ 10x10（±4の範囲内で設定）
-//   巡回ロジックはindex.html側でビジュアルと分離して実装
+// ゾーン配置（32×24大空間）:
+//   中央ホール  x:  0    z:  0   （ブランドサイン・総司令官・作戦）
+//   北ゾーン    x:  0    z: -8   （手帳の間: 販売・後方）
+//   東ゾーン    x: +10   z:  0   （カタカムナの間: 教育・広報）
+//   南ゾーン    x:  0    z: +8   （工房の間: 監理・人事）
+//   西ゾーン    x: -10   z:  0   （ギャラリー: デジタル・保全）
 
 window.SHOWROOM_STAFF = [
 
-  // ===== ホール配置 =====
+  // ===== 中央ホール =====
   {
     id: 'kojinjigyonusi',
     name: '個人事業主',
@@ -17,11 +20,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/kojinjigyonusi.jpg',
     model: 'assets/models/kojinjigyonusi.glb',
     waypoints: [
-      [ 0.0,  0.5],
-      [ 1.5,  2.0],
-      [ 0.0,  3.0],
-      [-1.5,  2.0],
-      [ 0.0,  0.5]
+      [  0.0,   0.5 ],
+      [  1.5,   1.5 ],
+      [  0.0,   2.5 ],
+      [ -1.5,   1.5 ],
+      [  0.0,   0.5 ]
     ],
     lines: [
       "いらっしゃいませ。N's factoryへようこそ。ゆっくりご覧ください。",
@@ -39,11 +42,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/sakusen.jpg',
     model: 'assets/models/sakusen.glb',
     waypoints: [
-      [-2.0, -1.0],
-      [-3.0,  1.0],
-      [-2.5,  3.0],
-      [-1.0,  2.0],
-      [-2.0, -1.0]
+      [ -2.5,   0.0 ],
+      [ -3.5,   1.5 ],
+      [ -2.5,   3.0 ],
+      [ -1.0,   1.5 ],
+      [ -2.5,   0.0 ]
     ],
     lines: [
       "いらっしゃいませ。N's factoryの全体戦略を担当しております。",
@@ -54,7 +57,7 @@ window.SHOWROOM_STAFF = [
     btnUrl: '../index.html'
   },
 
-  // ===== システム手帳の間 =====
+  // ===== 北ゾーン（手帳の間）=====
   {
     id: 'hannbai',
     name: '販売幕僚',
@@ -63,11 +66,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/hannbai.jpg',
     model: 'assets/models/hannbai.glb',
     waypoints: [
-      [ 2.0, -1.0],
-      [ 3.0,  1.5],
-      [ 1.5,  3.0],
-      [ 0.5,  1.5],
-      [ 2.0, -1.0]
+      [  2.0,  -7.0 ],
+      [  3.5,  -8.5 ],
+      [  1.5,  -10.0],
+      [  0.0,  -8.5 ],
+      [  2.0,  -7.0 ]
     ],
     lines: [
       'いらっしゃいませ。作品のご購入・受注を担当しております。',
@@ -85,11 +88,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/kouhou.jpg',
     model: 'assets/models/kouhou_room.glb',
     waypoints: [
-      [-2.0,  1.0],
-      [-3.0,  3.0],
-      [-1.5,  3.5],
-      [-0.5,  2.0],
-      [-2.0,  1.0]
+      [ -2.0,  -7.0 ],
+      [ -3.5,  -8.5 ],
+      [ -2.0, -10.0 ],
+      [ -0.5,  -8.5 ],
+      [ -2.0,  -7.0 ]
     ],
     lines: [
       'いらっしゃいませ。制作の裏方を担当しております。',
@@ -100,7 +103,7 @@ window.SHOWROOM_STAFF = [
     btnUrl: '../tools/'
   },
 
-  // ===== カタカムナ・教育の間 =====
+  // ===== 東ゾーン（カタカムナの間）=====
   {
     id: 'kyouiku',
     name: '教育幕僚',
@@ -109,11 +112,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/kyouiku.jpg',
     model: 'assets/models/kyouiku.glb',
     waypoints: [
-      [ 0.0,  0.0],
-      [ 2.0,  2.0],
-      [ 0.0,  3.5],
-      [-2.0,  2.0],
-      [ 0.0,  0.0]
+      [ 10.0,  -1.5 ],
+      [ 11.5,   0.0 ],
+      [ 10.0,   1.5 ],
+      [  8.5,   0.0 ],
+      [ 10.0,  -1.5 ]
     ],
     lines: [
       'いらっしゃいませ。カタカムナと日月神示の世界をご案内しております。',
@@ -131,11 +134,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/pr.jpg',
     model: 'assets/models/kouhou.glb',
     waypoints: [
-      [-2.5,  0.5],
-      [-3.0,  2.5],
-      [-1.5,  3.5],
-      [-0.5,  1.5],
-      [-2.5,  0.5]
+      [ 10.0,   2.0 ],
+      [ 11.5,   3.5 ],
+      [ 10.0,   5.0 ],
+      [  8.5,   3.5 ],
+      [ 10.0,   2.0 ]
     ],
     lines: [
       'いらっしゃいませ。SNSでの情報発信を担当しております。',
@@ -146,7 +149,7 @@ window.SHOWROOM_STAFF = [
     btnUrl: 'https://www.threads.net/@you0810jmsdf'
   },
 
-  // ===== 工房の間 =====
+  // ===== 南ゾーン（工房の間）=====
   {
     id: 'kanri',
     name: '監理幕僚',
@@ -155,11 +158,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/kanri.jpg',
     model: 'assets/models/kanri.glb',
     waypoints: [
-      [ 2.0,  0.5],
-      [ 3.0,  2.0],
-      [ 1.5,  3.5],
-      [ 0.5,  2.0],
-      [ 2.0,  0.5]
+      [  2.0,   7.0 ],
+      [  3.5,   8.5 ],
+      [  1.5,  10.0 ],
+      [  0.0,   8.5 ],
+      [  2.0,   7.0 ]
     ],
     lines: [
       'いらっしゃいませ。お見積もりのご相談はお任せください。',
@@ -177,22 +180,22 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/jinji.jpg',
     model: 'assets/models/jinji.glb',
     waypoints: [
-      [-2.0,  1.0],
-      [-3.0,  2.5],
-      [-2.0,  3.5],
-      [-0.5,  2.5],
-      [-2.0,  1.0]
+      [ -2.0,   7.0 ],
+      [ -3.5,   8.5 ],
+      [ -2.0,  10.0 ],
+      [ -0.5,   8.5 ],
+      [ -2.0,   7.0 ]
     ],
     lines: [
       'いらっしゃいませ。レザークラフト教室のご案内を担当しております。',
       '革の手縫いや型紙づくりを一から丁寧にお教えしております。',
-      'ご興味をお持ちの方はぜひ教室ページをご覧ください。'
+      'ごご興味をお持ちの方はぜひ教室ページをご覧ください。'
     ],
     btnLabel: 'レザークラフト教室',
     btnUrl: '../JHCS.html'
   },
 
-  // ===== 幕僚ギャラリー =====
+  // ===== 西ゾーン（幕僚ギャラリー）=====
   {
     id: 'digital',
     name: 'デジタル幕僚',
@@ -201,11 +204,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/digital.jpg',
     model: 'assets/models/digital.glb',
     waypoints: [
-      [ 1.5,  0.5],
-      [ 3.0,  2.0],
-      [ 1.5,  3.5],
-      [ 0.0,  2.0],
-      [ 1.5,  0.5]
+      [ -10.0,  -1.5 ],
+      [ -11.5,   0.0 ],
+      [ -10.0,   1.5 ],
+      [  -8.5,   0.0 ],
+      [ -10.0,  -1.5 ]
     ],
     lines: [
       'いらっしゃいませ。このWeb 3Dショールームを担当しております。',
@@ -223,11 +226,11 @@ window.SHOWROOM_STAFF = [
     image: 'assets/staff/hozen.jpg',
     model: 'assets/models/hozen.glb',
     waypoints: [
-      [-1.5,  0.5],
-      [-3.0,  2.0],
-      [-1.5,  3.5],
-      [ 0.0,  2.5],
-      [-1.5,  0.5]
+      [ -10.0,   2.0 ],
+      [ -11.5,   3.5 ],
+      [ -10.0,   5.0 ],
+      [  -8.5,   3.5 ],
+      [ -10.0,   2.0 ]
     ],
     lines: [
       'いらっしゃいませ。各種リンク・認証情報の管理を担当しております。',
