@@ -1209,6 +1209,8 @@
       function addGoldFrame(pos, w, h) {
         const ft = 0.04, fd = 0.04;
         const fw = w + ft*2, fh = h + ft*2;
+        const ry = pos.ry || 0;
+        const c = Math.cos(ry), s = Math.sin(ry);
         [
           [new THREE.BoxGeometry(fw, ft, fd), [0,  fh/2 - ft/2, 0]],
           [new THREE.BoxGeometry(fw, ft, fd), [0, -fh/2 + ft/2, 0]],
@@ -1216,8 +1218,11 @@
           [new THREE.BoxGeometry(ft, fh, fd), [ fw/2 - ft/2, 0, 0]]
         ].forEach(([geo,[ox,oy,oz]]) => {
           const b = new THREE.Mesh(geo, goldFrameMat);
-          b.position.set(pos.x + ox, pos.y + oy, pos.z + oz + 0.02);
-          b.rotation.y = pos.ry || 0;
+          // パネルのY回転に合わせてローカルオフセット(ox, oz)を回転してから加算
+          const wx = ox * c + (oz + 0.02) * s;
+          const wz = -ox * s + (oz + 0.02) * c;
+          b.position.set(pos.x + wx, pos.y + oy, pos.z + wz);
+          b.rotation.y = ry;
           scene.add(b);
         });
       }
