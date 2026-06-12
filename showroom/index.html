@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>N's factory SHOWROOM | Web 3D ショールーム</title>
-  <meta name="description" content="N's factory の革工房をバーチャルで体験。5つの部屋でレザークラフト製品・カタカムナグッズ・工房の世界をご覧いただけます。">
+  <meta name="description" content="N's factory の革工房をバーチャルで体験。明るいガラスパビリオンで全幕僚が一望できます。">
 
   <!-- GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
@@ -36,16 +36,16 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --primary: #1D1D1F;
-      --accent: #d4af6a;
-      --accent-dark: #A0785A;
-      --bg: #111113;
-      --card-bg: #1a1a1c;
-      --card-bg-light: #232326;
-      --text: #e8e8ec;
-      --text-sub: #8a8a92;
-      --border: rgba(212,175,106,0.28);
-      --font: -apple-system, 'Hiragino Sans', 'Yu Gothic', Meiryo, sans-serif;
+      --primary:    #2a2420;
+      --accent:     #c9a96a;
+      --accent-lt:  #e0c98a;
+      --bg:         #f5f2ec;
+      --card-bg:    #fffefb;
+      --card-bg2:   #f7f4ee;
+      --text:       #2a2420;
+      --text-sub:   #7a6e60;
+      --border:     rgba(201,169,106,0.35);
+      --font:       -apple-system, 'Hiragino Sans', 'Yu Gothic', Meiryo, sans-serif;
     }
 
     html, body {
@@ -61,9 +61,9 @@
       position: fixed;
       top: 0; left: 0; right: 0;
       height: 52px;
-      background: rgba(10,10,12,0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(255,254,251,0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -73,10 +73,10 @@
       border-bottom: 1px solid var(--border);
     }
     #header a.back {
-      color: var(--text);
+      color: var(--text-sub);
       text-decoration: none;
       font-size: 13px;
-      opacity: 0.65;
+      opacity: 0.8;
       transition: opacity 0.2s;
       white-space: nowrap;
     }
@@ -84,14 +84,14 @@
     #header .title {
       color: var(--accent);
       font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
+      font-weight: 700;
+      letter-spacing: 0.12em;
       white-space: nowrap;
       flex: 1;
       text-align: center;
     }
 
-    /* ===== 部屋メニュー ===== */
+    /* ===== ゾーンメニュー ===== */
     #room-menu {
       position: fixed;
       top: 52px; right: 0;
@@ -100,11 +100,11 @@
       flex-direction: column;
       gap: 2px;
       padding: 10px 8px;
-      background: rgba(10,10,12,0.88);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(255,254,251,0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom-left-radius: 14px;
-      min-width: 130px;
+      min-width: 140px;
       border-left: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
     }
@@ -120,7 +120,7 @@
     #room-menu button {
       background: none;
       border: none;
-      color: rgba(232,232,236,0.72);
+      color: var(--text-sub);
       font-size: 12px;
       font-family: var(--font);
       text-align: left;
@@ -132,7 +132,7 @@
     }
     #room-menu button:hover,
     #room-menu button.active {
-      background: rgba(212,175,106,0.15);
+      background: rgba(201,169,106,0.14);
       color: var(--accent);
     }
     /* スマホ: ハンバーガー収納 */
@@ -141,7 +141,7 @@
       position: fixed;
       top: 58px; right: 8px;
       z-index: 120;
-      background: rgba(10,10,12,0.9);
+      background: rgba(255,254,251,0.92);
       border: 1px solid var(--border);
       color: var(--accent);
       font-size: 20px;
@@ -160,17 +160,15 @@
         top: 52px;
         border-radius: 0 0 0 14px;
       }
-      #room-menu.open {
-        transform: translateX(0);
-      }
+      #room-menu.open { transform: translateX(0); }
     }
 
-    /* ===== 現在部屋インジケーター ===== */
+    /* ===== 現在ゾーンインジケーター ===== */
     #room-indicator {
       position: fixed;
       bottom: 72px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(10,10,12,0.82);
+      background: rgba(255,254,251,0.90);
       color: var(--accent);
       font-size: 11px;
       padding: 5px 16px;
@@ -183,11 +181,11 @@
       transition: opacity 0.3s;
     }
 
-    /* ===== 戻るボタン（ホール以外で表示） ===== */
+    /* ===== ホールへ戻るボタン ===== */
     #btn-back-hall {
       position: fixed;
       bottom: 72px; left: 16px;
-      background: rgba(10,10,12,0.88);
+      background: rgba(255,254,251,0.90);
       color: var(--accent);
       border: 1px solid var(--border);
       font-family: var(--font);
@@ -199,7 +197,7 @@
       display: none;
       transition: background 0.2s;
     }
-    #btn-back-hall:hover { background: rgba(212,175,106,0.2); }
+    #btn-back-hall:hover { background: rgba(201,169,106,0.14); }
 
     /* ===== 3Dキャンバス ===== */
     #canvas-container {
@@ -216,7 +214,7 @@
     #guide-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.72);
+      background: rgba(245,242,236,0.78);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -225,14 +223,15 @@
       cursor: pointer;
     }
     #guide-overlay .guide-box {
-      background: rgba(26,26,28,0.92);
+      background: rgba(255,254,251,0.96);
       border: 1px solid var(--border);
-      border-radius: 18px;
+      border-radius: 20px;
       padding: 32px 40px;
       text-align: center;
       color: var(--text);
       backdrop-filter: blur(12px);
-      max-width: 340px;
+      max-width: 360px;
+      box-shadow: 0 8px 48px rgba(201,169,106,0.12);
     }
     #guide-overlay .guide-box h2 {
       font-size: 18px;
@@ -255,7 +254,7 @@
       margin-bottom: 18px;
     }
     #guide-overlay .guide-box .room-chip {
-      background: rgba(212,175,106,0.12);
+      background: rgba(201,169,106,0.10);
       border: 1px solid var(--border);
       color: var(--accent);
       font-size: 11px;
@@ -266,7 +265,7 @@
       list-style: none;
       font-size: 13px;
       line-height: 2;
-      opacity: 0.75;
+      opacity: 0.7;
       margin-bottom: 4px;
     }
     #guide-overlay .guide-box .tap-hint {
@@ -287,7 +286,7 @@
       transform: translateY(110%);
       transition: transform 0.35s cubic-bezier(0.34, 1.12, 0.64, 1);
       z-index: 150;
-      box-shadow: 0 -4px 32px rgba(0,0,0,0.5);
+      box-shadow: 0 -4px 32px rgba(201,169,106,0.10);
       max-height: 60vh;
       overflow-y: auto;
     }
@@ -339,7 +338,7 @@
       width: 100%;
       padding: 14px;
       background: var(--accent);
-      color: #111;
+      color: #fff;
       text-align: center;
       text-decoration: none;
       border-radius: 12px;
@@ -348,9 +347,9 @@
       letter-spacing: 0.04em;
       transition: background 0.2s;
     }
-    #info-card .btn-purchase:hover { background: #e0c07a; }
+    #info-card .btn-purchase:hover { background: var(--accent-lt); }
     #info-card .btn-purchase.disabled {
-      background: #3a3a3e;
+      background: #e0dbd2;
       color: var(--text-sub);
       cursor: default;
       pointer-events: none;
@@ -368,7 +367,7 @@
       transform: translateY(110%);
       transition: transform 0.35s cubic-bezier(0.34, 1.12, 0.64, 1);
       z-index: 151;
-      box-shadow: 0 -4px 32px rgba(0,0,0,0.5);
+      box-shadow: 0 -4px 32px rgba(201,169,106,0.10);
       max-height: 60vh;
       overflow-y: auto;
     }
@@ -391,7 +390,7 @@
       object-fit: cover;
       object-position: top;
       border: 2px solid var(--accent);
-      background: #2a2a2e;
+      background: #f0ede6;
       flex-shrink: 0;
     }
     #staff-card .sc-names { display: flex; flex-direction: column; gap: 2px; }
@@ -409,7 +408,7 @@
       line-height: 1.7;
       margin-bottom: 20px;
       padding: 14px 16px;
-      background: var(--card-bg-light);
+      background: var(--card-bg2);
       border-radius: 12px;
       border-left: 3px solid var(--accent);
     }
@@ -420,7 +419,7 @@
       width: 100%;
       padding: 14px;
       background: var(--accent);
-      color: #111;
+      color: #fff;
       text-align: center;
       text-decoration: none;
       border-radius: 12px;
@@ -429,12 +428,12 @@
       letter-spacing: 0.04em;
       transition: background 0.2s;
     }
-    #staff-card .btn-staff:hover { background: #e0c07a; }
+    #staff-card .btn-staff:hover { background: var(--accent-lt); }
 
     /* ===== チャットUI ===== */
     #chat-area {
       margin-top: 14px;
-      border-top: 1px solid rgba(212,175,106,0.18);
+      border-top: 1px solid rgba(201,169,106,0.20);
       padding-top: 12px;
       display: flex;
       flex-direction: column;
@@ -469,11 +468,11 @@
     }
     .chat-msg.user .chat-bubble {
       background: var(--accent);
-      color: #111;
+      color: #fff;
       border-bottom-right-radius: 4px;
     }
     .chat-msg.staff .chat-bubble {
-      background: var(--card-bg-light);
+      background: var(--card-bg2);
       color: var(--text);
       border-bottom-left-radius: 4px;
       border-left: 2px solid var(--accent);
@@ -481,12 +480,12 @@
     .chat-bubble.fallback-notice {
       font-size: 11px;
       color: var(--text-sub);
-      background: #2a2010;
+      background: #f5f0e8;
       border-left: 2px solid var(--accent);
     }
     .chat-typing {
       align-self: flex-start;
-      background: var(--card-bg-light);
+      background: var(--card-bg2);
       padding: 8px 14px;
       border-radius: 14px;
       border-bottom-left-radius: 4px;
@@ -503,7 +502,7 @@
     #chat-input {
       flex: 1;
       padding: 9px 12px;
-      border: 1px solid rgba(212,175,106,0.28);
+      border: 1px solid rgba(201,169,106,0.35);
       border-radius: 10px;
       font-size: 14px;
       font-family: var(--font);
@@ -513,7 +512,7 @@
       max-height: 80px;
       overflow-y: auto;
       transition: border-color 0.2s;
-      background: var(--card-bg-light);
+      background: var(--card-bg2);
       color: var(--text);
     }
     #chat-input:focus { border-color: var(--accent); }
@@ -521,7 +520,7 @@
       flex-shrink: 0;
       width: 40px; height: 40px;
       background: var(--accent);
-      color: #111;
+      color: #fff;
       border: none;
       border-radius: 10px;
       font-size: 18px;
@@ -532,8 +531,8 @@
       transition: background 0.2s;
       line-height: 1;
     }
-    #chat-send:hover { background: #e0c07a; }
-    #chat-send:disabled { background: #3a3a3e; cursor: default; }
+    #chat-send:hover { background: var(--accent-lt); }
+    #chat-send:disabled { background: #d8d0c4; cursor: default; }
     .chat-limit-msg {
       font-size: 12px;
       color: var(--text-sub);
@@ -546,7 +545,7 @@
       #chat-messages { max-height: 100px; }
     }
 
-    /* ===== フォールバック（ダーク×ゴールド） ===== */
+    /* ===== フォールバック（白×ゴールド 明るい配色） ===== */
     #fallback {
       display: none;
       position: fixed;
@@ -578,7 +577,7 @@
     }
     .fallback-card img {
       width: 100%; aspect-ratio: 1;
-      object-fit: cover; background: #2a2a2e;
+      object-fit: cover; background: #ede8e0;
     }
     .fallback-card .fc-body { padding: 12px; }
     .fallback-card .fc-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
@@ -586,9 +585,9 @@
     .fallback-card a {
       display: block; text-align: center;
       padding: 8px; background: var(--accent);
-      color: #111; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
+      color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
     }
-    .fallback-card a.disabled { background: #3a3a3e; color: var(--text-sub); pointer-events: none; }
+    .fallback-card a.disabled { background: #e0dbd2; color: var(--text-sub); pointer-events: none; }
     .fallback-staff-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -596,14 +595,14 @@
     }
     .fallback-staff-card img {
       width: 100%; aspect-ratio: 3/4;
-      object-fit: cover; object-position: top; background: #2a2a2e;
+      object-fit: cover; object-position: top; background: #ede8e0;
     }
     .fallback-staff-card .fc-body { padding: 10px 12px 12px; }
     .fallback-staff-card .fc-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; margin-bottom: 2px; }
     .fallback-staff-card .fc-role { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; }
     .fallback-staff-card a {
       display: block; text-align: center; padding: 8px;
-      background: var(--accent); color: #111; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
+      background: var(--accent); color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
     }
     .fallback-link-card {
       background: var(--card-bg);
@@ -615,7 +614,7 @@
     .fallback-link-card .fc-lead { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; line-height: 1.5; }
     .fallback-link-card a {
       display: block; text-align: center; padding: 8px;
-      background: var(--accent); color: #111; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
+      background: var(--accent); color: #fff; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;
     }
 
     @media (max-width: 480px) {
@@ -636,20 +635,20 @@
   </header>
 
   <!-- ハンバーガーボタン（スマホ） -->
-  <button id="menu-toggle" aria-label="部屋メニュー">&#9776;</button>
+  <button id="menu-toggle" aria-label="ゾーンメニュー">&#9776;</button>
 
-  <!-- 部屋メニュー -->
+  <!-- ゾーンメニュー -->
   <nav id="room-menu">
-    <div class="menu-title">ROOMS</div>
-    <button data-room="hall"       class="active">ホール</button>
+    <div class="menu-title">ZONES</div>
+    <button data-room="hall"       class="active">中央ホール</button>
     <button data-room="techo"             >手帳の間</button>
     <button data-room="katakamuna"        >カタカムナの間</button>
     <button data-room="koubou"            >工房の間</button>
     <button data-room="gallery"           >幕僚ギャラリー</button>
   </nav>
 
-  <!-- 現在部屋 -->
-  <div id="room-indicator">エントランスホール</div>
+  <!-- 現在ゾーン -->
+  <div id="room-indicator">中央ホール</div>
 
   <!-- ホールへ戻るボタン -->
   <button id="btn-back-hall">&#8592; ホールへ戻る</button>
@@ -658,9 +657,9 @@
   <div id="guide-overlay">
     <div class="guide-box">
       <h2>N's factory SHOWROOM</h2>
-      <p class="guide-sub">LEATHER CRAFT &amp; NEAR FUTURE ATELIER</p>
+      <p class="guide-sub">GLASS PAVILION — 全幕僚を一望</p>
       <div class="room-list">
-        <span class="room-chip">ホール</span>
+        <span class="room-chip">中央ホール</span>
         <span class="room-chip">手帳の間</span>
         <span class="room-chip">カタカムナの間</span>
         <span class="room-chip">工房の間</span>
@@ -669,8 +668,8 @@
       <ul>
         <li>ドラッグ / スワイプで見回す</li>
         <li>ホイール / ピンチでズーム</li>
-        <li>ドアをクリックで入室</li>
-        <li>ショーケースをタップで詳細表示</li>
+        <li>ゾーンメニューでフォーカス移動</li>
+        <li>ショーケース・幕僚をタップで詳細表示</li>
       </ul>
       <p class="tap-hint">画面をタップして入場</p>
     </div>
@@ -919,7 +918,7 @@
           html += `
             <div class="fallback-card">
               <img src="${item.image}" alt="${item.name}" loading="lazy"
-                   onerror="this.style.background='#2a2a2e';this.removeAttribute('src')">
+                   onerror="this.style.background='#ede8e0';this.removeAttribute('src')">
               <div class="fc-body">
                 <p class="fc-name">${item.name}</p>
                 <p class="fc-price">${item.price || '準備中'}</p>
@@ -947,13 +946,13 @@
           <div class="fallback-staff-card" data-staff-id="${s.id}">
             <img src="assets/mascot/${s.id}.png" alt="${s.name}" loading="lazy"
                  onerror="this.src='${s.image}'"
-                 style="object-fit:contain;background:#1a1a1c;">
+                 style="object-fit:contain;background:#f5f2ec;">
             <div class="fc-body">
               <p class="fc-name">${s.name}</p>
               <p class="fc-role">${s.role}</p>
               <a href="${s.btnUrl}" target="_blank" rel="noopener">${s.btnLabel}</a>
               <button class="fallback-chat-btn" data-staff-id="${s.id}"
-                style="margin-top:6px;display:block;width:100%;padding:7px;background:#232326;border:1px solid rgba(212,175,106,0.28);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;color:#d4af6a;">
+                style="margin-top:6px;display:block;width:100%;padding:7px;background:#f5f0e8;border:1px solid rgba(201,169,106,0.35);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;color:#c9a96a;">
                 話しかける
               </button>
             </div>
@@ -996,36 +995,38 @@
     if (!isWebGLAvailable()) { showFallback(); throw new Error('WebGL not supported'); }
 
     // ============================================================
-    // カラー定数（近未来 ダーク×シャンパンゴールド）
+    // カラー定数（明るいガラスパビリオン）
     // ============================================================
-    const C_FLOOR      = 0x1a1a1c;   // ダークチャコール
-    const C_WALL_UPPER = 0x1c1c1f;   // 上部壁 ダーク
-    const C_WALL_LOWER = 0xA0785A;   // 腰壁 レザータン
-    const C_CEIL       = 0x141416;   // 天井 ダーク
-    const C_GOLD       = 0xd4af6a;   // シャンパンゴールド（発光ライン・フレーム）
-    const C_DOOR_GLOW  = 0xd4af6a;
-    const C_EXIT_GLOW  = 0x80c0e0;
-    const C_PEDESTAL   = 0x2e1e12;   // ショーケース台座（ダークブラウン）
-    const ROOM_SIZE    = 10;
-    const ROOM_H       = 4.0;
-    const CORRIDOR     = 14;
+    const C_FLOOR_IVORY  = 0xf2efe9;   // アイボリーホワイト床
+    const C_INLAY_GOLD   = 0xc9a96a;   // シャンパンゴールド インレイライン
+    const C_GLASS_WALL   = 0xddeeff;   // ガラスカーテンウォール
+    const C_PILLAR       = 0xffffff;   // 白い柱
+    const C_CEIL_PANEL   = 0xfffdf8;   // 天井発光パネル
+    const C_GOLD         = 0xc9a96a;   // ゴールド（フレーム・装飾）
+    const C_PEDESTAL_LT  = 0xede0cb;   // ショーケース台座（明るい木目調アイボリー）
+    const C_WOOD_DARK    = 0x7a4e28;   // 作業台木目
+    const C_WOOD_LEG     = 0x5a3415;
 
-    const ROOM_OFFSETS = {
-      hall:       { x:  0,        z:  0        },
-      techo:      { x:  0,        z: -CORRIDOR },
-      katakamuna: { x:  0,        z:  CORRIDOR },
-      koubou:     { x: -CORRIDOR, z:  0        },
-      gallery:    { x:  CORRIDOR, z:  0        }
+    // パビリオン寸法
+    const PAV_W = 32;   // X幅
+    const PAV_D = 24;   // Z奥行き
+    const PAV_H = 5.5;  // 天井高
+
+    // ゾーン中心座標（ワールド座標）
+    const ZONE_CENTERS = {
+      hall:       { x:  0,   z:  0  },
+      techo:      { x:  0,   z: -8  },
+      katakamuna: { x: +10,  z:  0  },
+      koubou:     { x:  0,   z: +8  },
+      gallery:    { x: -10,  z:  0  }
     };
 
-    const HALL_DOORS = [
-      { toRoom: 'techo',      label: 'システム手帳の間',   dx:  0, dz: -1, wx:  0,                  wz: -(ROOM_SIZE/2 - 0.12) },
-      { toRoom: 'katakamuna', label: 'カタカムナ・教育の間', dx:  0, dz:  1, wx:  0,                  wz:  (ROOM_SIZE/2 - 0.12) },
-      { toRoom: 'koubou',     label: '工房の間',            dx: -1, dz:  0, wx: -(ROOM_SIZE/2 - 0.12), wz:  0                   },
-      { toRoom: 'gallery',    label: '幕僚ギャラリー',       dx:  1, dz:  0, wx:  (ROOM_SIZE/2 - 0.12), wz:  0                   }
-    ];
+    // SHOWROOM_API互換のため ROOM_OFFSETS を ZONE_CENTERS と同値で用意
+    const ROOM_OFFSETS = ZONE_CENTERS;
 
-    const CAM_IN_ROOM = { camY: 1.8, camZ: 3.8, targetY: 1.6 };
+    // カメラ設定
+    const CAM_INIT = { pos: [0, 4.5, 14], target: [0, 1.5, 0] }; // 全体俯瞰
+    const CAM_ZONE = { yOff: 2.2, zOff: 7.0 };                   // ゾーンフォーカス時
 
     // ============================================================
     // Three.js 初期化
@@ -1034,8 +1035,8 @@
     let raycaster, mouse;
     let panels      = [];
     let staffPanels = [];
-    let doorMeshes  = [];
-    let showcasePlates = []; // {mesh, item} ショーケース内回転プレート
+    let doorMeshes  = [];   // ゾーンサイン（SHOWROOM_API互換で残す）
+    let showcasePlates = [];
     let hoveredMesh  = null;
     let selectedMesh = null;
     let currentRoomId = 'hall';
@@ -1053,304 +1054,257 @@
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.shadowMap.enabled = false; // スマホ向けシャドウ無効
+      renderer.shadowMap.enabled = false;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 0.95;
+      renderer.toneMappingExposure = 1.15;   // 明るめ
       container.appendChild(renderer.domElement);
 
+      // ---- 背景: 淡い空グラデーション ----
+      const skyCanvas = document.createElement('canvas');
+      skyCanvas.width = 2; skyCanvas.height = 256;
+      const skyCtx = skyCanvas.getContext('2d');
+      const skyGrad = skyCtx.createLinearGradient(0, 0, 0, 256);
+      skyGrad.addColorStop(0,   '#c8e8f8');  // 上: 淡い空色
+      skyGrad.addColorStop(0.6, '#e8f4fc');
+      skyGrad.addColorStop(1,   '#f5f2ec');  // 下: アイボリー（床と馴染む）
+      skyCtx.fillStyle = skyGrad;
+      skyCtx.fillRect(0, 0, 2, 256);
+      const skyTex = new THREE.CanvasTexture(skyCanvas);
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0d0d0f);
-      scene.fog = new THREE.FogExp2(0x0d0d0f, 0.038);
+      scene.background = skyTex;
+      // fog: ごく薄い白（遠景をぼかすのみ）
+      scene.fog = new THREE.Fog(0xf0ece4, 40, 80);
 
-      camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 80);
-      camera.position.set(0, CAM_IN_ROOM.camY, CAM_IN_ROOM.camZ);
+      camera = new THREE.PerspectiveCamera(55, container.clientWidth / container.clientHeight, 0.1, 120);
+      camera.position.set(...CAM_INIT.pos);
 
       controls = new OrbitControls(camera, renderer.domElement);
-      controls.target.set(0, CAM_IN_ROOM.targetY, 0);
+      controls.target.set(...CAM_INIT.target);
       controls.enablePan   = false;
-      controls.minDistance = 1.5;
-      controls.maxDistance = 8;
-      controls.maxPolarAngle = Math.PI * 0.74;
-      controls.minPolarAngle = Math.PI * 0.08;
+      controls.minDistance = 2.0;
+      controls.maxDistance = 22;   // 全体一望できる距離
+      controls.maxPolarAngle = Math.PI * 0.76;
+      controls.minPolarAngle = Math.PI * 0.06;
       controls.update();
 
       raycaster = new THREE.Raycaster();
       mouse     = new THREE.Vector2();
 
       // ============================================================
-      // 共有マテリアル（draw call削減のため部屋間で使い回し）
+      // 共有マテリアル
       // ============================================================
+      // 床（アイボリー磨き仕上げ）
       const floorMat = new THREE.MeshStandardMaterial({
-        color: C_FLOOR, roughness: 0.25, metalness: 0.4
+        color: C_FLOOR_IVORY, roughness: 0.3, metalness: 0.1
       });
-      const wallUpperMat = new THREE.MeshStandardMaterial({
-        color: C_WALL_UPPER, roughness: 0.78
+      // 床インレイライン（ゴールド）
+      const inlayMat = new THREE.MeshStandardMaterial({
+        color: C_INLAY_GOLD,
+        emissive: new THREE.Color(C_INLAY_GOLD),
+        emissiveIntensity: 0.30,
+        roughness: 0.25, metalness: 0.55
       });
-      const wallLowerMat = new THREE.MeshStandardMaterial({
-        color: C_WALL_LOWER, roughness: 0.82
-      });
-      const ceilMat = new THREE.MeshStandardMaterial({
-        color: C_CEIL, roughness: 0.9
-      });
-      // 発光ライン（ゴールド） — emissiveのみ。全部屋共有
-      const glowLineMat = new THREE.MeshStandardMaterial({
-        color: C_GOLD,
-        emissive: new THREE.Color(C_GOLD),
-        emissiveIntensity: 0.85,
-        roughness: 0.3, metalness: 0.6
-      });
-      // ショーケース台座
-      const pedestalMat = new THREE.MeshStandardMaterial({
-        color: C_PEDESTAL, roughness: 0.7, metalness: 0.15
-      });
-      // ガラスパネル（MeshPhysicalMaterial。transmissionは使わない）
+      // ガラスカーテンウォール
       const glassMat = new THREE.MeshPhysicalMaterial({
-        color: 0xaaddff,
+        color: C_GLASS_WALL,
         transparent: true,
-        opacity: 0.15,
+        opacity: 0.08,
         roughness: 0.04,
         metalness: 0.0,
         side: THREE.DoubleSide,
         depthWrite: false
       });
-      // 額縁（ゴールド）
+      // 白い柱
+      const pillarMat = new THREE.MeshStandardMaterial({
+        color: C_PILLAR, roughness: 0.35, metalness: 0.05
+      });
+      // 天井発光パネル
+      const ceilPanelMat = new THREE.MeshStandardMaterial({
+        color: C_CEIL_PANEL,
+        emissive: new THREE.Color(0xfff8ee),
+        emissiveIntensity: 0.45,
+        roughness: 0.85
+      });
+      // ゴールド枠（額縁・フレーム）
       const goldFrameMat = new THREE.MeshStandardMaterial({
-        color: C_GOLD, roughness: 0.35, metalness: 0.7,
-        emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.18
+        color: C_GOLD, roughness: 0.30, metalness: 0.72,
+        emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.12
       });
-      // 縫い目ライン（ダーク細線）
-      const stitchMat = new THREE.MeshStandardMaterial({
-        color: 0x3a1f0f, roughness: 0.9
+      // ショーケース台座（明るい木目調アイボリー）
+      const pedestalMat = new THREE.MeshStandardMaterial({
+        color: C_PEDESTAL_LT, roughness: 0.60, metalness: 0.05
       });
-      // リンクパネル（ダークガラス調＋ゴールド発光）
+      // ガラスショーケース面（共有）
+      const scGlassMat = new THREE.MeshPhysicalMaterial({
+        color: 0xeef6ff,
+        transparent: true,
+        opacity: 0.14,
+        roughness: 0.04,
+        metalness: 0.0,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      // リンクパネル（白ガラス調＋ゴールド枠）
       const linkPanelBaseMat = new THREE.MeshStandardMaterial({
-        color: 0x0a0a10, roughness: 0.5,
-        emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.22
+        color: 0xfaf7f2, roughness: 0.45,
+        emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.10
       });
 
       // ============================================================
-      // ライティング（全体: Hemisphere+Directional各1のみ）
+      // ライティング（合計3個以内 + emissive）
       // ============================================================
-      const hemi = new THREE.HemisphereLight(0x1a1a30, 0x050508, 0.55);
+      // HemisphereLight: 空色×アイボリー・強め
+      const hemi = new THREE.HemisphereLight(0xc8e8f8, 0xf2efe9, 1.10);
       scene.add(hemi);
-      const dirLight = new THREE.DirectionalLight(0xfff5e0, 0.9);
-      dirLight.position.set(6, 12, 8);
+      // DirectionalLight: ウォームホワイト（自然光）
+      const dirLight = new THREE.DirectionalLight(0xfff9f0, 1.20);
+      dirLight.position.set(10, 18, 8);
       scene.add(dirLight);
+      // 補助AmbientLight: 暗がりゼロのため均一補光
+      const ambLight = new THREE.AmbientLight(0xffffff, 0.55);
+      scene.add(ambLight);
 
       // ============================================================
-      // 全部屋の空間ジオメトリ構築
+      // パビリオン床・天井・外壁
       // ============================================================
-      const roomIds = ['hall','techo','katakamuna','koubou','gallery'];
 
-      roomIds.forEach(roomId => {
-        const off = ROOM_OFFSETS[roomId];
-        const rx = off.x, rz = off.z;
-        const hs = ROOM_SIZE / 2;
+      // 床
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(PAV_W, PAV_D), floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.set(0, 0, 0);
+      scene.add(floor);
 
-        // --- 床（ダークチャコール磨き） ---
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE), floorMat);
-        floor.rotation.x = -Math.PI / 2;
-        floor.position.set(rx, 0, rz);
-        scene.add(floor);
+      // 天井（大きな単一面）
+      const ceil = new THREE.Mesh(new THREE.PlaneGeometry(PAV_W, PAV_D), ceilPanelMat);
+      ceil.rotation.x = Math.PI / 2;
+      ceil.position.set(0, PAV_H, 0);
+      scene.add(ceil);
 
-        // --- 天井（暗色） ---
-        const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE), ceilMat);
-        ceil.rotation.x = Math.PI / 2;
-        ceil.position.set(rx, ROOM_H, rz);
-        scene.add(ceil);
-
-        // --- 壁: 上部ダーク + 腰壁レザータン（分割配置） ---
-        const lowerH = 1.2; // 腰壁高さ
-        const upperH = ROOM_H - lowerH;
-        const wallDirs = [
-          { pos: [rx, 0, rz - hs], ry: 0             },
-          { pos: [rx, 0, rz + hs], ry: Math.PI       },
-          { pos: [rx - hs, 0, rz], ry:  Math.PI/2    },
-          { pos: [rx + hs, 0, rz], ry: -Math.PI/2    }
-        ];
-        wallDirs.forEach(w => {
-          // 上部
-          const mU = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, upperH), wallUpperMat);
-          mU.position.set(w.pos[0], lowerH + upperH/2, w.pos[2]);
-          mU.rotation.y = w.ry;
-          scene.add(mU);
-          // 腰壁（革パネル）
-          const mL = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, lowerH), wallLowerMat);
-          mL.position.set(w.pos[0], lowerH/2, w.pos[2]);
-          mL.rotation.y = w.ry;
-          scene.add(mL);
-          // 腰壁上端の区切りライン（ゴールド細線）
-          const divLine = new THREE.Mesh(new THREE.BoxGeometry(ROOM_SIZE, 0.03, 0.03), glowLineMat);
-          divLine.position.set(w.pos[0], lowerH + 0.015, w.pos[2]);
-          divLine.rotation.y = w.ry;
-          scene.add(divLine);
-        });
-
-        // --- 腰壁の縫い目ライン（水平2本）---
-        // 各壁のzオフセット方向に細いBoxGeomを水平に走らせる
-        const stitchYs = [0.35, 0.75];
-        const stitchDirs = [
-          { axis:'z', sign:-1, posX: rx, posZ: rz - hs + 0.015 },
-          { axis:'z', sign: 1, posX: rx, posZ: rz + hs - 0.015 },
-          { axis:'x', sign:-1, posX: rx - hs + 0.015, posZ: rz },
-          { axis:'x', sign: 1, posX: rx + hs - 0.015, posZ: rz }
-        ];
-        stitchDirs.forEach(sd => {
-          stitchYs.forEach(sy => {
-            const sGeo = sd.axis === 'z'
-              ? new THREE.BoxGeometry(ROOM_SIZE * 0.92, 0.012, 0.01)
-              : new THREE.BoxGeometry(0.01, 0.012, ROOM_SIZE * 0.92);
-            const sm = new THREE.Mesh(sGeo, stitchMat);
-            sm.position.set(sd.posX, sy, sd.posZ);
-            scene.add(sm);
-          });
-        });
-
-        // --- 床外周 ゴールド発光ライン ---
-        const lineW = 0.04, lineOff = 0.25;
-        // 4辺
-        [
-          // 奥
-          { gx: ROOM_SIZE - lineOff*2, gz: lineW, px: rx, py: 0.008, pz: rz - hs + lineOff },
-          // 手前
-          { gx: ROOM_SIZE - lineOff*2, gz: lineW, px: rx, py: 0.008, pz: rz + hs - lineOff },
-          // 左
-          { gx: lineW, gz: ROOM_SIZE - lineOff*2, px: rx - hs + lineOff, py: 0.008, pz: rz },
-          // 右
-          { gx: lineW, gz: ROOM_SIZE - lineOff*2, px: rx + hs - lineOff, py: 0.008, pz: rz }
-        ].forEach(l => {
-          const m = new THREE.Mesh(new THREE.BoxGeometry(l.gx, 0.015, l.gz), glowLineMat);
-          m.position.set(l.px, l.py, l.pz);
-          scene.add(m);
-        });
-
-        // --- 天井 格子状発光ライン（3×3格子） ---
-        const gridStep = ROOM_SIZE / 4;
-        for (let gi = 1; gi < 4; gi++) {
-          // X方向（横線）
-          const mx = new THREE.Mesh(new THREE.BoxGeometry(ROOM_SIZE, 0.015, 0.03), glowLineMat);
-          mx.position.set(rx, ROOM_H - 0.02, rz - hs + gi * gridStep);
-          scene.add(mx);
-          // Z方向（縦線）
-          const mz = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.015, ROOM_SIZE), glowLineMat);
-          mz.position.set(rx - hs + gi * gridStep, ROOM_H - 0.02, rz);
-          scene.add(mz);
+      // 天井に大判発光パネル（4×3の格子）
+      const cpW = 6.0, cpD = 4.0, cpGap = 1.2;
+      const cpCols = 4, cpRows = 3;
+      const cpStartX = -((cpCols - 1) * (cpW + cpGap)) / 2;
+      const cpStartZ = -((cpRows - 1) * (cpD + cpGap)) / 2;
+      for (let ci = 0; ci < cpCols; ci++) {
+        for (let ri = 0; ri < cpRows; ri++) {
+          const pm = new THREE.Mesh(new THREE.PlaneGeometry(cpW, cpD), ceilPanelMat);
+          pm.rotation.x = Math.PI / 2;
+          pm.position.set(cpStartX + ci * (cpW + cpGap), PAV_H - 0.05, cpStartZ + ri * (cpD + cpGap));
+          scene.add(pm);
         }
+      }
 
-        // --- 部屋ごとの補助PointLight（最大1個） ---
-        if (roomId !== 'hall') {
-          const pt = new THREE.PointLight(0xfff0d0, 0.7, 12, 2);
-          pt.position.set(rx, ROOM_H - 0.6, rz);
-          scene.add(pt);
-        }
+      // 外周ガラスカーテンウォール（4面）
+      const wallSpecs = [
+        { geo: [PAV_W, PAV_H], pos: [0,        PAV_H/2,  PAV_D/2  ], ry: Math.PI     },  // 南面
+        { geo: [PAV_W, PAV_H], pos: [0,        PAV_H/2, -PAV_D/2  ], ry: 0           },  // 北面
+        { geo: [PAV_D, PAV_H], pos: [ PAV_W/2, PAV_H/2,  0        ], ry: -Math.PI/2  },  // 東面
+        { geo: [PAV_D, PAV_H], pos: [-PAV_W/2, PAV_H/2,  0        ], ry:  Math.PI/2  }   // 西面
+      ];
+      wallSpecs.forEach(w => {
+        const wm = new THREE.Mesh(new THREE.PlaneGeometry(...w.geo), glassMat);
+        wm.position.set(...w.pos);
+        wm.rotation.y = w.ry;
+        scene.add(wm);
+      });
+
+      // 外周白柱（コーナー4本 + 中間8本）
+      const pillarPositions = [
+        // コーナー4本
+        [-PAV_W/2,  PAV_D/2], [ PAV_W/2,  PAV_D/2],
+        [-PAV_W/2, -PAV_D/2], [ PAV_W/2, -PAV_D/2],
+        // 南北壁中間
+        [-PAV_W/4,  PAV_D/2], [0,  PAV_D/2], [ PAV_W/4,  PAV_D/2],
+        [-PAV_W/4, -PAV_D/2], [0, -PAV_D/2], [ PAV_W/4, -PAV_D/2],
+        // 東西壁中間
+        [ PAV_W/2, -PAV_D/4], [ PAV_W/2, PAV_D/4],
+        [-PAV_W/2, -PAV_D/4], [-PAV_W/2, PAV_D/4]
+      ];
+      pillarPositions.forEach(([px, pz]) => {
+        const pm = new THREE.Mesh(new THREE.BoxGeometry(0.12, PAV_H, 0.12), pillarMat);
+        pm.position.set(px, PAV_H/2, pz);
+        scene.add(pm);
       });
 
       // ============================================================
-      // ホールのドアパネル
+      // 床インレイライン（ゾーン境界をシャンパンゴールド細線で表現）
       // ============================================================
-      function makeRoomLabelTex(text, color) {
-        const lc = document.createElement('canvas');
-        lc.width = 512; lc.height = 80;
-        const ctx = lc.getContext('2d');
-        ctx.clearRect(0, 0, 512, 80);
-        ctx.fillStyle = color || 'rgba(212,175,106,0.95)';
+      function addInlayLine(x1, z1, x2, z2) {
+        const dx = x2 - x1, dz = z2 - z1;
+        const len = Math.sqrt(dx*dx + dz*dz);
+        const ang = Math.atan2(dz, dx);
+        const m = new THREE.Mesh(new THREE.BoxGeometry(len, 0.018, 0.045), inlayMat);
+        m.position.set((x1+x2)/2, 0.01, (z1+z2)/2);
+        m.rotation.y = -ang;
+        scene.add(m);
+      }
+
+      // ホール外周（楕円の代わりに菱形ライン）
+      const HR = 5.5; // ホールゾーン半径
+      [
+        [0, -HR, HR, 0], [HR, 0, 0, HR], [0, HR, -HR, 0], [-HR, 0, 0, -HR]  // ◇形
+      ].forEach(([x1,z1,x2,z2]) => addInlayLine(x1,z1,x2,z2));
+
+      // ゾーン仕切りライン（大空間を4方向に区切る十字ライン）
+      // 北ゾーン境界 z=-4
+      addInlayLine(-PAV_W/2, -4, PAV_W/2, -4);
+      // 南ゾーン境界 z=+4
+      addInlayLine(-PAV_W/2, +4, PAV_W/2, +4);
+      // 東ゾーン境界 x=+5
+      addInlayLine(+5, -PAV_D/2, +5, PAV_D/2);
+      // 西ゾーン境界 x=-5
+      addInlayLine(-5, -PAV_D/2, -5, PAV_D/2);
+
+      // 外周ゾーンの追加境界ライン
+      addInlayLine(+5, -PAV_D/2, PAV_W/2, -PAV_D/2);
+      addInlayLine(+5,  PAV_D/2, PAV_W/2,  PAV_D/2);
+      addInlayLine(-5, -PAV_D/2,-PAV_W/2, -PAV_D/2);
+      addInlayLine(-5,  PAV_D/2,-PAV_W/2,  PAV_D/2);
+
+      // ============================================================
+      // 吊りサイン（ゾーン名の床サイン・自立ガラスパーティション風）
+      // ============================================================
+      function makeZoneSignTex(label) {
+        const c = document.createElement('canvas');
+        c.width = 512; c.height = 64;
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0, 0, 512, 64);
+        ctx.fillStyle = 'rgba(250,247,242,0.92)';
+        ctx.roundRect ? ctx.roundRect(4, 4, 504, 56, 10) : ctx.fillRect(4, 4, 504, 56);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(201,169,106,0.75)';
+        ctx.lineWidth = 2.5;
+        ctx.roundRect ? ctx.roundRect(4, 4, 504, 56, 10) : ctx.strokeRect(4, 4, 504, 56);
+        ctx.stroke();
+        ctx.fillStyle = '#c9a96a';
         ctx.font = 'bold 28px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(text, 256, 40);
-        const t = new THREE.CanvasTexture(lc);
+        ctx.fillText(label, 256, 32);
+        const t = new THREE.CanvasTexture(c);
         t.colorSpace = THREE.SRGBColorSpace;
         return t;
       }
 
-      HALL_DOORS.forEach(door => {
-        const off = ROOM_OFFSETS['hall'];
-        const wx = off.x + door.wx;
-        const wz = off.z + door.wz;
-        const ry = Math.atan2(door.dx, door.dz);
+      const zoneSignDefs = [
+        { id: 'techo',      label: 'システム手帳の間',     x:  0,   z: -8  },
+        { id: 'katakamuna', label: 'カタカムナの間',       x: +10,  z:  0  },
+        { id: 'koubou',     label: '工房の間',             x:  0,   z: +8  },
+        { id: 'gallery',    label: '幕僚ギャラリー',        x: -10,  z:  0  }
+      ];
 
-        const dMat = new THREE.MeshStandardMaterial({
-          color: 0x0a0a12, roughness: 0.4, metalness: 0.3,
-          emissive: new THREE.Color(C_DOOR_GLOW), emissiveIntensity: 0.5
-        });
-        const dMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.0), dMat);
-        dMesh.position.set(wx, 1.0, wz);
-        dMesh.rotation.y = ry;
-        dMesh.userData.door   = true;
-        dMesh.userData.toRoom = door.toRoom;
-        dMesh.userData.label  = door.label;
-        scene.add(dMesh);
-        doorMeshes.push({ mesh: dMesh, toRoom: door.toRoom, label: door.label });
-
-        // ドア枠（ゴールド）
-        const dfW = 1.2, dfH = 2.0, ft = 0.06;
-        [[new THREE.BoxGeometry(dfW + ft*2, ft, ft), [0,  dfH/2 + ft/2, 0]],
-         [new THREE.BoxGeometry(dfW + ft*2, ft, ft), [0, -dfH/2 - ft/2, 0]],
-         [new THREE.BoxGeometry(ft, dfH + ft*2, ft), [-dfW/2 - ft/2, 0, 0]],
-         [new THREE.BoxGeometry(ft, dfH + ft*2, ft), [ dfW/2 + ft/2, 0, 0]]
-        ].forEach(([geo, [ox,oy,oz]]) => {
-          const b = new THREE.Mesh(geo, goldFrameMat);
-          b.position.set(wx + ox, 1.0 + oy, wz + oz);
-          b.rotation.y = ry;
-          scene.add(b);
-        });
-
-        // ラベル
-        const lMesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(1.4, 0.22),
-          new THREE.MeshBasicMaterial({ map: makeRoomLabelTex(door.label), transparent: true, depthWrite: false })
+      zoneSignDefs.forEach(def => {
+        // 床埋め込みゾーンサイン
+        const sm = new THREE.Mesh(
+          new THREE.PlaneGeometry(3.2, 0.40),
+          new THREE.MeshBasicMaterial({ map: makeZoneSignTex(def.label), transparent: true, depthWrite: false })
         );
-        lMesh.position.set(wx, 2.22, wz);
-        lMesh.rotation.y = ry;
-        scene.add(lMesh);
-      });
+        sm.rotation.x = -Math.PI / 2;
+        sm.position.set(def.x, 0.012, def.z + 4.2);  // ゾーン手前（入口側）
+        scene.add(sm);
 
-      // 各部屋の出口ドア
-      ['techo','katakamuna','koubou','gallery'].forEach(roomId => {
-        const rOff = ROOM_OFFSETS[roomId];
-        const hOff = ROOM_OFFSETS['hall'];
-        const dx = Math.sign(hOff.x - rOff.x);
-        const dz = Math.sign(hOff.z - rOff.z);
-        const wx = rOff.x + dx * (ROOM_SIZE/2 - 0.12);
-        const wz = rOff.z + dz * (ROOM_SIZE/2 - 0.12);
-        const ry = Math.atan2(dx, dz);
-
-        const exMat = new THREE.MeshStandardMaterial({
-          color: 0x050f1a, roughness: 0.45, metalness: 0.2,
-          emissive: new THREE.Color(C_EXIT_GLOW), emissiveIntensity: 0.3
-        });
-        const exMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.0), exMat);
-        exMesh.position.set(wx, 1.0, wz);
-        exMesh.rotation.y = ry;
-        exMesh.userData.door   = true;
-        exMesh.userData.toRoom = 'hall';
-        exMesh.userData.label  = 'エントランスホール';
-        scene.add(exMesh);
-        doorMeshes.push({ mesh: exMesh, toRoom: 'hall', label: 'ホールへ戻る' });
-
-        // 出口枠（ゴールド薄め）
-        const dfW = 1.2, dfH = 2.0, ft = 0.05;
-        [[new THREE.BoxGeometry(dfW+ft*2, ft, ft), [0, dfH/2+ft/2, 0]],
-         [new THREE.BoxGeometry(dfW+ft*2, ft, ft), [0,-dfH/2-ft/2, 0]],
-         [new THREE.BoxGeometry(ft, dfH+ft*2, ft), [-dfW/2-ft/2, 0, 0]],
-         [new THREE.BoxGeometry(ft, dfH+ft*2, ft), [ dfW/2+ft/2, 0, 0]]
-        ].forEach(([geo,[ox,oy,oz]]) => {
-          const b = new THREE.Mesh(geo, goldFrameMat);
-          b.position.set(wx+ox, 1.0+oy, wz+oz);
-          b.rotation.y = ry;
-          scene.add(b);
-        });
-
-        const lMesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(1.1, 0.18),
-          new THREE.MeshBasicMaterial({
-            map: makeRoomLabelTex('← ホールへ', 'rgba(128,192,224,0.9)'),
-            transparent: true, depthWrite: false
-          })
-        );
-        lMesh.position.set(wx, 2.2, wz);
-        lMesh.rotation.y = ry;
-        scene.add(lMesh);
+        // ゾーンサインをdoorMeshesに登録（SHOWROOM_API互換）
+        doorMeshes.push({ mesh: sm, toRoom: def.id, label: def.label });
       });
 
       // ============================================================
@@ -1383,35 +1337,34 @@
         ].forEach(([geo,[ox,oy,oz]]) => {
           const b = new THREE.Mesh(geo, goldFrameMat);
           b.position.set(pos.x + ox, pos.y + oy, pos.z + oz + 0.02);
-          b.rotation.y = pos.ry;
+          b.rotation.y = pos.ry || 0;
           scene.add(b);
         });
       }
 
       // ============================================================
-      // ヘルパー: リンクパネルテクスチャ生成
+      // ヘルパー: リンクパネルテクスチャ生成（白ガラス調）
       // ============================================================
       function makeLinkTex(link) {
         const lc = document.createElement('canvas');
         lc.width = 512; lc.height = 256;
         const ctx = lc.getContext('2d');
-        ctx.fillStyle = '#0a0a12';
+        ctx.fillStyle = 'rgba(250,247,242,0.95)';
         ctx.fillRect(0, 0, 512, 256);
-        // ゴールド枠線
-        ctx.strokeStyle = 'rgba(212,175,106,0.7)';
+        ctx.strokeStyle = 'rgba(201,169,106,0.75)';
         ctx.lineWidth = 4;
         ctx.strokeRect(6, 6, 500, 244);
-        ctx.fillStyle = '#d4af6a';
+        ctx.fillStyle = '#c9a96a';
         ctx.font = 'bold 28px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(link.name, 256, 62);
-        ctx.fillStyle = 'rgba(232,232,236,0.72)';
+        ctx.fillStyle = 'rgba(60,45,30,0.75)';
         ctx.font = '17px sans-serif';
         wrapText(ctx, link.lead, 256, 108, 460, 26);
-        ctx.fillStyle = 'rgba(212,175,106,0.9)';
+        ctx.fillStyle = 'rgba(201,169,106,0.92)';
         ctx.roundRect ? ctx.roundRect(120, 188, 272, 42, 8) : ctx.fillRect(120, 188, 272, 42);
         ctx.fill();
-        ctx.fillStyle = '#111';
+        ctx.fillStyle = '#fff';
         ctx.font = 'bold 19px sans-serif';
         ctx.fillText(link.btnLabel, 256, 215);
         const t = new THREE.CanvasTexture(lc);
@@ -1420,58 +1373,54 @@
       }
 
       // ============================================================
-      // 島型ガラスショーケース設置（各部屋）
+      // ショーケース（台座=明るい木目調・ガラス+ゴールドエッジ維持）
       // ============================================================
-      /*
-        ショーケース1基 = 台座 + ガラス4面 + 天板ガラス + 発光フレーム(底辺) + 商品プレート(回転)
-        サイズ: W=1.0 D=0.85 台座H=0.55 ガラスH=0.9 → 全高1.45
-      */
       const SC_W = 1.0, SC_D = 0.85, SC_BASE_H = 0.55, SC_GLASS_H = 0.9;
 
-      // ショーケース配置座標（部屋ごと）
-      const SHOWCASE_POSITIONS = {
-        hall:       [],  // ホールは商品なし・ドア前通路確保
+      // ショーケース配置（ワールド座標）
+      const SHOWCASE_WORLD_POS = {
+        hall:       [],
         techo:      [
-          { x: -1.5, z: 0.0 },
-          { x:  1.5, z: 0.0 },
-          { x:  0.0, z:-1.5 }
+          { x: -1.5, z: -8.0 },
+          { x:  1.5, z: -8.0 },
+          { x:  0.0, z: -9.5 }
         ],
         katakamuna: [
-          { x: -1.5, z: 0.5 },
-          { x:  1.5, z: 0.5 },
-          { x:  0.0, z:-1.2 }
+          { x: 8.5,  z: -1.5 },
+          { x: 8.5,  z:  1.5 },
+          { x: 11.5, z:  0.0 }
         ],
         koubou: [
-          { x:  1.8, z:-1.2 },
-          { x:  1.8, z: 1.2 }
+          { x:  1.8, z:  7.0 },
+          { x: -1.8, z:  7.0 }
         ],
-        gallery: []  // ギャラリーはポートレート展示のみ
+        gallery: []
       };
 
       function buildShowcase(worldX, worldZ, item) {
         const group = new THREE.Group();
         group.position.set(worldX, 0, worldZ);
 
-        // 台座
+        // 台座（明るい木目調アイボリー）
         const base = new THREE.Mesh(new THREE.BoxGeometry(SC_W, SC_BASE_H, SC_D), pedestalMat);
         base.position.y = SC_BASE_H / 2;
         group.add(base);
 
-        // 台座上のゴールド発光ライン（4辺）
+        // 台座上ゴールドエッジライン（4辺）
         const edgeY = SC_BASE_H + 0.008;
         const hw = SC_W/2, hd = SC_D/2;
         [
-          { gx: SC_W + 0.01, gz: 0.025, px: 0,    pz:  hd   },
-          { gx: SC_W + 0.01, gz: 0.025, px: 0,    pz: -hd   },
-          { gx: 0.025, gz: SC_D + 0.01, px:  hw,  pz:  0    },
-          { gx: 0.025, gz: SC_D + 0.01, px: -hw,  pz:  0    }
+          { gx: SC_W + 0.01, gz: 0.025, px: 0,   pz:  hd },
+          { gx: SC_W + 0.01, gz: 0.025, px: 0,   pz: -hd },
+          { gx: 0.025, gz: SC_D + 0.01, px:  hw, pz:  0  },
+          { gx: 0.025, gz: SC_D + 0.01, px: -hw, pz:  0  }
         ].forEach(e => {
-          const em = new THREE.Mesh(new THREE.BoxGeometry(e.gx, 0.015, e.gz), glowLineMat);
+          const em = new THREE.Mesh(new THREE.BoxGeometry(e.gx, 0.015, e.gz), inlayMat);
           em.position.set(e.px, edgeY, e.pz);
           group.add(em);
         });
 
-        // ガラス4側面（薄いplane）
+        // ガラス4側面
         const glassY = SC_BASE_H + SC_GLASS_H / 2;
         const glassGeos = [
           { geo: new THREE.PlaneGeometry(SC_W, SC_GLASS_H), pos: [0, glassY,  hd + 0.005], ry: Math.PI },
@@ -1480,34 +1429,28 @@
           { geo: new THREE.PlaneGeometry(SC_D, SC_GLASS_H), pos: [-hw - 0.005, glassY, 0], ry:  Math.PI/2 }
         ];
         glassGeos.forEach(g => {
-          // 個別マテリアル（shared glassMat はtransparentなのでclone不要・使い回し）
-          const gm = new THREE.Mesh(g.geo, glassMat);
+          const gm = new THREE.Mesh(g.geo, scGlassMat);
           gm.position.set(...g.pos);
           gm.rotation.y = g.ry;
           group.add(gm);
         });
 
         // 天板ガラス
-        const topGlass = new THREE.Mesh(new THREE.PlaneGeometry(SC_W, SC_D), glassMat);
+        const topGlass = new THREE.Mesh(new THREE.PlaneGeometry(SC_W, SC_D), scGlassMat);
         topGlass.rotation.x = -Math.PI / 2;
         topGlass.position.y = SC_BASE_H + SC_GLASS_H + 0.005;
         group.add(topGlass);
 
-        // ガラス枠（ゴールド4本縦）
+        // ガラス枠ゴールド縦柱（4本）
         const pillarH = SC_GLASS_H + 0.02;
-        [
-          [ hw,  hd], [-hw,  hd],
-          [ hw, -hd], [-hw, -hd]
-        ].forEach(([px, pz]) => {
-          const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.025, pillarH, 0.025), goldFrameMat);
-          pillar.position.set(px, SC_BASE_H + pillarH/2, pz);
-          group.add(pillar);
+        [[ hw, hd], [-hw, hd], [ hw,-hd], [-hw,-hd]].forEach(([px,pz]) => {
+          const p = new THREE.Mesh(new THREE.BoxGeometry(0.025, pillarH, 0.025), goldFrameMat);
+          p.position.set(px, SC_BASE_H + pillarH/2, pz);
+          group.add(p);
         });
 
-        // ケース内商品プレート（回転）
-        const plateMat = new THREE.MeshStandardMaterial({
-          color: 0x8a6640, roughness: 0.55
-        });
+        // 商品プレート（回転）
+        const plateMat = new THREE.MeshStandardMaterial({ color: 0x8a6640, roughness: 0.55 });
         loader.load(item.image, tex => {
           tex.colorSpace = THREE.SRGBColorSpace;
           plateMat.map = tex; plateMat.color.set(0xffffff); plateMat.needsUpdate = true;
@@ -1518,90 +1461,65 @@
         plateMesh.position.y = SC_BASE_H + SC_GLASS_H * 0.45;
         plateMesh.userData.item = item;
         group.add(plateMesh);
-
-        // グループに item を紐付け（raycast用）
         group.userData.item = item;
         scene.add(group);
 
-        // raycast 対象に台座・ガラスパネル・商品プレートを登録
         panels.push({ mesh: plateMesh, item });
-        // ガラス面もクリック可能（panelとして登録）
-        glassGeos.forEach((_, i) => {
-          const gMesh = group.children.find((c, ci) => {
-            return c.geometry && c.geometry.type === 'PlaneGeometry'
-              && c.material === glassMat
-              && ci > 0 && ci <= 4;
-          });
-        });
-        // ガラス4面+天板をpanelとして登録
         group.children.forEach(child => {
-          if (child.material === glassMat) {
-            panels.push({ mesh: child, item });
-          }
+          if (child.material === scGlassMat) panels.push({ mesh: child, item });
         });
-
         showcasePlates.push({ mesh: plateMesh });
         return group;
       }
 
-      // 全部屋にショーケース設置
+      // ショーケース設置
       const roomsData = window.SHOWROOM_ROOMS || [];
-      roomIds.forEach(roomId => {
+      Object.entries(SHOWCASE_WORLD_POS).forEach(([roomId, positions]) => {
         const room = roomsData.find(r => r.id === roomId);
         if (!room) return;
-        const scPositions = SHOWCASE_POSITIONS[roomId] || [];
         const items = room.items || [];
-
-        scPositions.forEach((pos, i) => {
+        positions.forEach((pos, i) => {
           const item = items[i] || null;
           if (!item) return;
-          const off = ROOM_OFFSETS[roomId];
-          buildShowcase(off.x + pos.x, off.z + pos.z, item);
-        });
-
-        // リンクパネルは壁掛けのまま（ダークガラス調＋ゴールド枠）
-        const links = room.links || [];
-        links.forEach((link, i) => {
-          const lpos = buildLinkPanelPosition(i, links.length, ROOM_OFFSETS[roomId]);
-          const lMat = new THREE.MeshStandardMaterial({
-            color: 0x0a0a12, roughness: 0.5,
-            emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.22
-          });
-          lMat.map = makeLinkTex(link);
-          lMat.needsUpdate = true;
-          const lMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.8), lMat);
-          lMesh.position.set(lpos.x, lpos.y, lpos.z);
-          lMesh.rotation.y = lpos.ry;
-          lMesh.userData.link = link;
-          scene.add(lMesh);
-          panels.push({ mesh: lMesh, item: { ...link, isLink: true } });
-          addGoldFrame(lpos, 1.6, 0.8);
+          buildShowcase(pos.x, pos.z, item);
         });
       });
 
-      function buildLinkPanelPosition(i, total, off) {
-        const hs = ROOM_SIZE / 2;
-        const positions = [
-          { x: off.x + hs - 0.08, y: 2.0, z: off.z + 0.0, ry: -Math.PI/2 },
-          { x: off.x + hs - 0.08, y: 2.0, z: off.z + 2.0, ry: -Math.PI/2 },
-          { x: off.x + hs - 0.08, y: 2.0, z: off.z - 2.0, ry: -Math.PI/2 },
-          { x: off.x - hs + 0.08, y: 2.0, z: off.z - 2.5, ry:  Math.PI/2 }
-        ];
-        return positions[i % positions.length];
-      }
+      // ============================================================
+      // リンクパネル（各ゾーン・自立ガラスパーティション風）
+      // ============================================================
+      // ゾーンごとのリンクパネル配置（自立サイン: 背中合わせ配置）
+      const LINK_PANEL_ZONES = {
+        hall:       [
+          { x: -5.5, y: 1.8, z:  0.0, ry:  Math.PI/2 },
+          { x: -5.5, y: 1.8, z:  2.5, ry:  Math.PI/2 }
+        ],
+        techo:      [
+          { x: -3.0, y: 1.8, z: -5.5, ry:  0 },
+          { x:  3.0, y: 1.8, z: -5.5, ry:  0 }
+        ],
+        katakamuna: [
+          { x:  7.5, y: 1.8, z: -3.5, ry:  Math.PI/2 },
+          { x:  7.5, y: 1.8, z:  3.5, ry:  Math.PI/2 }
+        ],
+        koubou:     [
+          { x: -3.0, y: 1.8, z:  5.5, ry:  0 },
+          { x:  3.0, y: 1.8, z:  5.5, ry:  0 }
+        ],
+        gallery:    [
+          { x: -7.5, y: 1.8, z: -3.5, ry:  Math.PI/2 },
+          { x: -7.5, y: 1.8, z:  3.5, ry:  Math.PI/2 }
+        ]
+      };
 
-      // ============================================================
-      // ホールのリンクパネル
-      // ============================================================
-      (function() {
-        const off = ROOM_OFFSETS['hall'];
-        const halls = roomsData.find(r => r.id === 'hall');
-        if (!halls) return;
-        halls.links.forEach((link, i) => {
-          const lpos = buildLinkPanelPosition(i, halls.links.length, off);
+      roomsData.forEach(room => {
+        const positions = LINK_PANEL_ZONES[room.id] || [];
+        (room.links || []).forEach((link, i) => {
+          const lpos = positions[i % positions.length];
+          if (!lpos) return;
           const lMat = new THREE.MeshStandardMaterial({
-            color: 0x0a0a12, roughness: 0.5,
-            emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.22
+            color: 0xfaf7f2, roughness: 0.45,
+            emissive: new THREE.Color(C_GOLD), emissiveIntensity: 0.10
           });
           lMat.map = makeLinkTex(link);
           lMat.needsUpdate = true;
@@ -1611,42 +1529,38 @@
           lMesh.userData.link = link;
           scene.add(lMesh);
           panels.push({ mesh: lMesh, item: { ...link, isLink: true } });
-          addGoldFrame(lpos, 1.6, 0.8);
+          addGoldFrame({ x: lpos.x, y: lpos.y, z: lpos.z, ry: lpos.ry }, 1.6, 0.8);
         });
-      })();
+      });
 
       // ============================================================
-      // 幕僚ギャラリー: ポートレート（壁面・ゴールド額縁）
+      // 幕僚ギャラリー: ポートレート（自立ガラスパーティション）
       // ============================================================
       (function buildGalleryPortraits() {
-        const off = ROOM_OFFSETS['gallery'];
-        const hs  = ROOM_SIZE / 2;
         const PW = 0.72, PH = 0.9;
+        // 西ゾーン（x=-10付近）に5枚×2段で展示
         const portraitPositions = [
-          { x: off.x - 3.6, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
-          { x: off.x - 1.8, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
-          { x: off.x + 0.0, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
-          { x: off.x + 1.8, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
-          { x: off.x + 3.6, y: 2.8, z: off.z - hs + 0.08, ry: 0 },
-          { x: off.x - hs + 0.08, y: 2.8, z: off.z - 2.5, ry:  Math.PI/2 },
-          { x: off.x - hs + 0.08, y: 2.8, z: off.z + 0.0, ry:  Math.PI/2 },
-          { x: off.x - hs + 0.08, y: 2.8, z: off.z + 2.5, ry:  Math.PI/2 },
-          { x: off.x + hs - 0.08, y: 2.9, z: off.z - 2.0, ry: -Math.PI/2 },
-          { x: off.x + hs - 0.08, y: 2.9, z: off.z + 2.0, ry: -Math.PI/2 }
+          { x: -10.0, y: 2.8, z: -8.5, ry: 0         },  // 北壁面向き
+          { x:  -8.0, y: 2.8, z: -8.5, ry: 0         },
+          { x:  -6.0, y: 2.8, z: -8.5, ry: 0         },
+          { x: -10.0, y: 2.8, z: -6.0, ry: 0         },
+          { x:  -8.0, y: 2.8, z: -6.0, ry: 0         },
+          { x: -14.5, y: 2.8, z: -2.5, ry:  Math.PI/2 },  // 西壁面向き
+          { x: -14.5, y: 2.8, z:  0.0, ry:  Math.PI/2 },
+          { x: -14.5, y: 2.8, z:  2.5, ry:  Math.PI/2 },
+          { x: -14.5, y: 2.8, z: -5.5, ry:  Math.PI/2 },
+          { x: -14.5, y: 2.8, z:  5.5, ry:  Math.PI/2 }
         ];
 
         const staffList = window.SHOWROOM_STAFF || [];
         staffList.forEach((staff, idx) => {
           if (idx >= portraitPositions.length) return;
           const pos = portraitPositions[idx];
-          const pMat = new THREE.MeshStandardMaterial({
-            color: 0x3a2010, roughness: 0.6
-          });
+          const pMat = new THREE.MeshStandardMaterial({ color: 0xede0cb, roughness: 0.6 });
           loader.load(staff.image, tex => {
             tex.colorSpace = THREE.SRGBColorSpace;
             pMat.map = tex; pMat.color.set(0xffffff); pMat.needsUpdate = true;
           }, undefined, () => {});
-
           const pMesh = new THREE.Mesh(new THREE.PlaneGeometry(PW, PH), pMat);
           pMesh.position.set(pos.x, pos.y, pos.z);
           pMesh.rotation.y = pos.ry;
@@ -1655,12 +1569,12 @@
           panels.push({ mesh: pMesh, item: { isPortrait: true, staffId: staff.id } });
           addGoldFrame(pos, PW, PH);
 
-          // キャプションプレート
+          // キャプションプレート（白地×ゴールド文字）
           const cc = document.createElement('canvas');
           cc.width = 256; cc.height = 36;
           const cctx = cc.getContext('2d');
-          cctx.fillStyle = '#0a0a12'; cctx.fillRect(0,0,256,36);
-          cctx.fillStyle = '#d4af6a'; cctx.font = 'bold 15px sans-serif';
+          cctx.fillStyle = 'rgba(250,247,242,0.95)'; cctx.fillRect(0,0,256,36);
+          cctx.fillStyle = '#c9a96a'; cctx.font = 'bold 15px sans-serif';
           cctx.textAlign = 'center'; cctx.textBaseline = 'middle';
           cctx.fillText(staff.name + '  ' + staff.role, 128, 18);
           const ctex = new THREE.CanvasTexture(cc); ctex.colorSpace = THREE.SRGBColorSpace;
@@ -1675,33 +1589,29 @@
       })();
 
       // ============================================================
-      // 工房の間 特別演出
+      // 工房の間（南ゾーン）特別演出: 作業台・工具・ペンダントライト
       // ============================================================
       (function buildKoubouAtelier() {
-        const off = ROOM_OFFSETS['koubou'];
-        const cx = off.x, cz = off.z;
+        const cx = 0, cz = 8;  // 南ゾーン中心
+        const tableTopMat = new THREE.MeshStandardMaterial({ color: C_WOOD_LEG, roughness: 0.62 });
+        const tableLegMat = new THREE.MeshStandardMaterial({ color: C_WOOD_DARK, roughness: 0.75 });
 
-        // 木製作業台
-        const tableTopMat = new THREE.MeshStandardMaterial({ color: 0x5a3415, roughness: 0.65 });
-        const tableLegMat = new THREE.MeshStandardMaterial({ color: 0x3d2208, roughness: 0.75 });
-
-        // 天板
+        // 作業台天板
         const tableTop = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, 0.95), tableTopMat);
         tableTop.position.set(cx, 0.88, cz + 0.8);
         scene.add(tableTop);
         // 天板エッジ（ゴールド細線）
-        const tedge = new THREE.Mesh(new THREE.BoxGeometry(2.22, 0.015, 0.01), glowLineMat);
+        const tedge = new THREE.Mesh(new THREE.BoxGeometry(2.22, 0.015, 0.01), inlayMat);
         tedge.position.set(cx, 0.925, cz + 0.8 - 0.475);
         scene.add(tedge);
-
         // 脚4本
-        [[-0.95, 0.45], [0.95, 0.45], [-0.95, -0.45+0.8+cz - cz], [0.95, -0.45+0.8+cz - cz]].forEach(([lx, lz_off]) => {
+        [[-0.95, 0.43], [0.95, 0.43], [-0.95, -0.43], [0.95, -0.43]].forEach(([lx, lz_off]) => {
           const leg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.88, 0.07), tableLegMat);
-          leg.position.set(cx + lx, 0.44, cz + 0.8 + (lz_off > 0.5 ? 0.43 : -0.43));
+          leg.position.set(cx + lx, 0.44, cz + 0.8 + lz_off);
           scene.add(leg);
         });
 
-        // 革ハンマー（シリンダー頭部+細い柄）
+        // 革ハンマー
         const hammerMat = new THREE.MeshStandardMaterial({ color: 0x2a1a08, roughness: 0.6, metalness: 0.2 });
         const handleMat = new THREE.MeshStandardMaterial({ color: 0x6b3d14, roughness: 0.7 });
         const hamHead = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.16, 10), hammerMat);
@@ -1713,57 +1623,91 @@
         hamHandle.position.set(cx - 0.32, 0.96, cz + 0.62);
         scene.add(hamHandle);
 
-        // 菱目打ち（4本束: 細い直方体×4）
+        // 菱目打ち（4本）
         for (let pi = 0; pi < 4; pi++) {
           const prong = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.18, 0.012), hammerMat);
           prong.position.set(cx + 0.2 + pi * 0.03, 0.975, cz + 0.72);
           scene.add(prong);
         }
 
-        // 糸巻き（トーラス風: 細いシリンダー＋小ディスク2枚）
+        // 糸巻き
         const spoolMat = new THREE.MeshStandardMaterial({ color: 0xc8502a, roughness: 0.5 });
+        const spoolDiscMat = new THREE.MeshStandardMaterial({ color: 0x8a3a18, roughness: 0.6 });
         const spoolBody = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.10, 14), spoolMat);
         spoolBody.position.set(cx + 0.6, 0.975, cz + 0.65);
         scene.add(spoolBody);
-        const spoolDiscMat = new THREE.MeshStandardMaterial({ color: 0x8a3a18, roughness: 0.6 });
         [-0.05, 0.05].forEach(dy => {
           const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.012, 14), spoolDiscMat);
           disc.position.set(cx + 0.6, 0.975 + dy, cz + 0.65);
           scene.add(disc);
         });
 
-        // ペンダントライト風発光球
+        // ペンダントライト（ウォームホワイト発光球）
         const pendantMat = new THREE.MeshStandardMaterial({
-          color: 0xfff5d0,
+          color: 0xfff8e8,
           emissive: new THREE.Color(0xffe8a0),
-          emissiveIntensity: 1.2
+          emissiveIntensity: 0.9
         });
         const pendant = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 8), pendantMat);
-        pendant.position.set(cx, ROOM_H - 0.45, cz + 0.8);
+        pendant.position.set(cx, PAV_H - 0.55, cz + 0.8);
         scene.add(pendant);
-
-        // ペンダントコード（細いシリンダー）
-        const cordMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 1.0 });
-        const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, ROOM_H - 0.6, 6), cordMat);
-        cord.position.set(cx, (ROOM_H - 0.45 + ROOM_H) / 2 - 0.3, cz + 0.8);
+        // コード
+        const cordMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 1.0 });
+        const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, PAV_H - 0.7, 6), cordMat);
+        cord.position.set(cx, PAV_H - 0.7, cz + 0.8);
         scene.add(cord);
-
-        // ペンダントライトのPointLight（工房は部屋PointLightをこれに割り当て済みのため上書き不要。別途追加せず）
-        // ※ roomIdsループで koubou に PointLight を設置済み → 上方に配置済みのためここでは省略
       })();
 
       // ============================================================
-      // 幕僚 立て看板アクター（StaffActor）
+      // 中央ホール: ブランドサイン（ロゴプレート）
+      // ============================================================
+      (function buildHallSign() {
+        const c = document.createElement('canvas');
+        c.width = 768; c.height = 192;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = 'rgba(250,247,242,0.00)';
+        ctx.clearRect(0, 0, 768, 192);
+        // 背景白板
+        ctx.fillStyle = 'rgba(255,254,251,0.92)';
+        ctx.roundRect ? ctx.roundRect(0, 0, 768, 192, 18) : ctx.fillRect(0, 0, 768, 192);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(201,169,106,0.80)';
+        ctx.lineWidth = 4;
+        ctx.roundRect ? ctx.roundRect(4, 4, 760, 184, 16) : ctx.strokeRect(4, 4, 760, 184);
+        ctx.stroke();
+        // N's factory
+        ctx.fillStyle = '#c9a96a';
+        ctx.font = 'bold 64px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText("N's factory", 384, 74);
+        // サブタイトル
+        ctx.fillStyle = 'rgba(60,45,30,0.65)';
+        ctx.font = '22px sans-serif';
+        ctx.fillText('LEATHER CRAFT STUDIO  |  GLASS PAVILION', 384, 138);
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+        const sm = new THREE.Mesh(
+          new THREE.PlaneGeometry(4.2, 1.05),
+          new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false })
+        );
+        sm.position.set(0, 3.4, -3.2);  // ホール奥・壁寄り
+        scene.add(sm);
+        // サイン下台座
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0xf0ece4, roughness: 0.55 });
+        const sMbase = new THREE.Mesh(new THREE.BoxGeometry(4.3, 0.08, 0.08), baseMat);
+        sMbase.position.set(0, 2.88, -3.2);
+        scene.add(sMbase);
+      })();
+
+      // ============================================================
+      // 幕僚 StaffActor（立て看板アクター）
       // ============================================================
       class StaffActor {
         constructor(staff) {
           this.staff   = staff;
           this.roomId  = staff.room;
-          this.rOff    = ROOM_OFFSETS[staff.room];
-          this.waypoints = (staff.waypoints || [[0,0]]).map(([lx, lz]) => ({
-            x: this.rOff.x + lx,
-            z: this.rOff.z + lz
-          }));
+          // staffData.js は既にワールド座標なのでオフセット加算不要
+          this.waypoints = (staff.waypoints || [[0,0]]).map(([wx, wz]) => ({ x: wx, z: wz }));
           this.wpIdx    = 0;
           this.waitTime = 0;
           this.speed    = 0.35 + Math.random() * 0.15;
@@ -1804,19 +1748,19 @@
           group.add(pMesh);
           this.panelMesh = pMesh;
 
-          // 足元影
-          const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18, depthWrite: false });
+          // 足元影（薄め・明るい床に合わせて）
+          const shadowMat = new THREE.MeshBasicMaterial({ color: 0x4a3a2a, transparent: true, opacity: 0.10, depthWrite: false });
           const shadowMesh = new THREE.Mesh(new THREE.CircleGeometry(0.28, 24), shadowMat);
           shadowMesh.rotation.x = -Math.PI/2; shadowMesh.position.set(0, 0.01, 0);
           group.add(shadowMesh);
           this._shadowMesh = shadowMesh;
 
-          // 名前プレート（ゴールドカラー）
+          // 名前プレート（白地×ゴールド）
           const nc = document.createElement('canvas');
           nc.width = 256; nc.height = 48;
           const nctx = nc.getContext('2d');
           nctx.clearRect(0,0,256,48);
-          nctx.fillStyle = 'rgba(10,10,18,0.82)';
+          nctx.fillStyle = 'rgba(250,247,242,0.92)';
           const rx2 = 8;
           nctx.beginPath();
           nctx.moveTo(rx2,0); nctx.lineTo(256-rx2,0); nctx.quadraticCurveTo(256,0,256,rx2);
@@ -1824,10 +1768,13 @@
           nctx.lineTo(rx2,48); nctx.quadraticCurveTo(0,48,0,48-rx2);
           nctx.lineTo(0,rx2); nctx.quadraticCurveTo(0,0,rx2,0);
           nctx.closePath(); nctx.fill();
-          nctx.fillStyle = '#d4af6a'; nctx.font = 'bold 18px sans-serif';
+          nctx.strokeStyle = 'rgba(201,169,106,0.60)';
+          nctx.lineWidth = 1.5;
+          nctx.stroke();
+          nctx.fillStyle = '#c9a96a'; nctx.font = 'bold 18px sans-serif';
           nctx.textAlign = 'center'; nctx.textBaseline = 'middle';
           nctx.fillText(staff.name, 128, 16);
-          nctx.fillStyle = 'rgba(232,232,236,0.65)'; nctx.font = '13px sans-serif';
+          nctx.fillStyle = 'rgba(60,45,30,0.65)'; nctx.font = '13px sans-serif';
           nctx.fillText(staff.role, 128, 33);
           const ntex = new THREE.CanvasTexture(nc); ntex.colorSpace = THREE.SRGBColorSpace;
           const nMesh = new THREE.Mesh(
@@ -1869,8 +1816,10 @@
               });
               this.isGlbLoaded = true;
               this.visual.rotation.y = this._lastMoveAngle;
-            } catch(e) { console.warn('[GLB] 組み込みエラー:', e); }
-          }, undefined, (err) => { console.warn('[GLB] ロード失敗:', err); });
+              // キューから次の1体をロード開始
+              triggerNextGlbLoad();
+            } catch(e) { console.warn('[GLB] 組み込みエラー:', e); triggerNextGlbLoad(); }
+          }, undefined, (err) => { console.warn('[GLB] ロード失敗:', err); triggerNextGlbLoad(); });
         }
 
         update(dt) {
@@ -1914,40 +1863,65 @@
         resume()   { this.paused = false; }
       }
 
+      // ============================================================
+      // GLB 順次ロード（キュー方式: 1体完了 → 次の1体）
+      // ============================================================
+      let glbQueue = [];      // ロード待ちの staffActor
+      let glbLoading = false; // ロード中フラグ
+
+      function enqueueGlb(actor) {
+        if (!actor.staff.model) return;
+        glbQueue.push(actor);
+      }
+
+      function triggerNextGlbLoad() {
+        glbLoading = false;
+        if (glbQueue.length === 0) return;
+        const next = glbQueue.shift();
+        if (next._glbLoadStarted) { triggerNextGlbLoad(); return; } // スキップ
+        glbLoading = true;
+        next.triggerGlbLoad();
+      }
+
+      // 全10体をキューに追加（ホールの2体を先頭に）
       const staffActors = (window.SHOWROOM_STAFF || []).map(s => new StaffActor(s));
       staffActors.forEach(actor => {
         staffPanels.push({ mesh: actor.panelMesh, staffActor: actor });
       });
-      staffActors.forEach(actor => {
-        if (actor.roomId === 'hall') actor.triggerGlbLoad();
-      });
+      // ホール優先でキューを並べ替え
+      const hallActors  = staffActors.filter(a => a.roomId === 'hall');
+      const otherActors = staffActors.filter(a => a.roomId !== 'hall');
+      [...hallActors, ...otherActors].forEach(a => enqueueGlb(a));
+      // キュー起動
+      triggerNextGlbLoad();
 
       // ============================================================
-      // カメラ遷移
+      // カメラ遷移（gotoRoom: SHOWROOM_API互換維持）
       // ============================================================
       function gotoRoom(roomId) {
         if (isTransitioning) return;
-        const off = ROOM_OFFSETS[roomId];
-        if (!off) { console.warn('SHOWROOM_API: 不明なroomId:', roomId); return; }
+        const zone = ZONE_CENTERS[roomId];
+        if (!zone) { console.warn('SHOWROOM_API: 不明なroomId:', roomId); return; }
         isTransitioning = true;
         closeAllCards();
         const fromPos    = camera.position.clone();
         const fromTarget = controls.target.clone();
-        let entryDz = 0, entryDx = 0;
+
+        // ゾーンフォーカス: ゾーン中心をやや引いてカメラを配置
+        let toPos, toTarget;
         if (roomId === 'hall') {
-          entryDz = CAM_IN_ROOM.camZ;
+          toPos    = new THREE.Vector3(0, 4.5, 14);
+          toTarget = new THREE.Vector3(0, 1.5, 0);
         } else {
-          const hallOff = ROOM_OFFSETS['hall'];
-          const dirX = off.x - hallOff.x, dirZ = off.z - hallOff.z;
-          const len  = Math.sqrt(dirX*dirX + dirZ*dirZ);
-          entryDx = -(dirX/len) * CAM_IN_ROOM.camZ;
-          entryDz = -(dirZ/len) * CAM_IN_ROOM.camZ;
+          // ゾーン中心から手前側（z+方向）にオフセット
+          const dz = zone.z >= 0 ? CAM_ZONE.zOff : -CAM_ZONE.zOff;
+          const dx = zone.x >= 0 && Math.abs(zone.x) > Math.abs(zone.z) ?  CAM_ZONE.zOff : 0;
+          const finalDx = Math.abs(zone.x) > Math.abs(zone.z) ? (zone.x > 0 ? CAM_ZONE.zOff : -CAM_ZONE.zOff) : 0;
+          const finalDz = Math.abs(zone.z) >= Math.abs(zone.x) ? (zone.z >= 0 ? CAM_ZONE.zOff : -CAM_ZONE.zOff) : 0;
+          toPos    = new THREE.Vector3(zone.x + finalDx, CAM_ZONE.yOff, zone.z + finalDz);
+          toTarget = new THREE.Vector3(zone.x, 1.5, zone.z);
         }
-        const toPos    = new THREE.Vector3(off.x + entryDx, CAM_IN_ROOM.camY, off.z + entryDz);
-        const toTarget = new THREE.Vector3(off.x,           CAM_IN_ROOM.targetY, off.z);
-        staffActors.forEach(actor => {
-          if (actor.roomId === roomId) actor.triggerGlbLoad();
-        });
+
         camAnim = {
           fromPos, toPos, fromTarget, toTarget, t: 0, duration: 1.0,
           onDone: () => {
@@ -1959,9 +1933,14 @@
       }
 
       function updateRoomUI(roomId) {
-        const room = (window.SHOWROOM_ROOMS || []).find(r => r.id === roomId);
-        const name = room ? room.name : roomId;
-        document.getElementById('room-indicator').textContent = name;
+        const roomNames = {
+          hall:       '中央ホール',
+          techo:      'システム手帳の間',
+          katakamuna: 'カタカムナの間',
+          koubou:     '工房の間',
+          gallery:    '幕僚ギャラリー'
+        };
+        document.getElementById('room-indicator').textContent = roomNames[roomId] || roomId;
         document.querySelectorAll('#room-menu button').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.room === roomId);
         });
@@ -2005,7 +1984,7 @@
             hoveredMesh = target;
             if (hoveredMesh.material) {
               hoveredMesh.material.emissive && hoveredMesh.material.emissive.set(C_GOLD);
-              hoveredMesh.material.emissiveIntensity = 0.22;
+              hoveredMesh.material.emissiveIntensity = 0.20;
             }
             renderer.domElement.style.cursor = 'pointer';
           }
@@ -2150,7 +2129,7 @@
         selectedMesh = mesh;
         if (mesh && mesh.material) {
           mesh.material.emissive && mesh.material.emissive.set(color);
-          mesh.material.emissiveIntensity = 0.32;
+          mesh.material.emissiveIntensity = 0.30;
         }
       }
       function deselectMesh() {
@@ -2175,7 +2154,7 @@
       // アニメーションループ
       // ============================================================
       function easeInOut(t) { return t < 0.5 ? 2*t*t : -1 + (4-2*t)*t; }
-      const PLATE_ROT_SPEED = 0.3; // rad/s
+      const PLATE_ROT_SPEED = 0.3;
 
       function animate() {
         requestAnimationFrame(animate);
@@ -2202,12 +2181,12 @@
           controls.update();
         }
 
-        // ショーケース内プレート回転
+        // ショーケースプレート回転
         showcasePlates.forEach(sp => {
           sp.mesh.rotation.y += PLATE_ROT_SPEED * dt;
         });
 
-        // 幕僚巡回更新
+        // 幕僚巡回
         staffActors.forEach(actor => actor.update(dt));
 
         renderer.render(scene, camera);
