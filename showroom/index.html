@@ -989,10 +989,70 @@
       // ============================================================
       // 共有マテリアル
       // ============================================================
-      // 床（完全不透明マット仕上げ）
+      // 床（ロゴ絨毯テクスチャ: SVGロード完了後に差し替え）
       const floorMat = new THREE.MeshStandardMaterial({
         color: 0xf2efe9, roughness: 0.85, metalness: 0.0, transparent: false
       });
+
+      // ── 絨毯テクスチャ生成（非同期）──────────────────────────────
+      (function buildRugTexture() {
+        // canvas: パビリオンの縦横比 32:24 = 4:3 に合わせて作成（UV歪みゼロ）
+        const CW = 2048, CH = 1536;   // 4:3 = 32:24
+        const rugCanvas = document.createElement('canvas');
+        rugCanvas.width  = CW;
+        rugCanvas.height = CH;
+        const ctx = rugCanvas.getContext('2d');
+
+        // ── ベースカラー: アイボリー ─────────────────────────────
+        ctx.fillStyle = '#f2efe9';
+        ctx.fillRect(0, 0, CW, CH);
+
+        // ── 二重ボーダーライン（チャコール） ────────────────────
+        const BORDER_OUTER  = 28;
+        const BORDER_INNER  = 44;
+        ctx.strokeStyle = '#3a3530';
+        ctx.lineWidth   = 6;
+        ctx.strokeRect(BORDER_OUTER, BORDER_OUTER, CW - BORDER_OUTER*2, CH - BORDER_OUTER*2);
+        ctx.lineWidth = 3;
+        ctx.strokeRect(BORDER_INNER, BORDER_INNER, CW - BORDER_INNER*2, CH - BORDER_INNER*2);
+
+        // ── CanvasTexture を先に作成し、floorMat に即時適用 ─────
+        const rugTex = new THREE.CanvasTexture(rugCanvas);
+        rugTex.colorSpace = THREE.SRGBColorSpace;
+        floorMat.map = rugTex;
+        floorMat.color.set(0xffffff);
+        floorMat.needsUpdate = true;
+
+        // ── SVGロード: 完了後にフクロウロゴを上書き ─────────────
+        const svgImg = new Image();
+        svgImg.onload = function() {
+          try {
+            // ロゴサイズ: 短辺(CH=1536)の80% = 1229px（正方形）
+            const LOGO_SIZE = Math.round(CH * 0.80);
+            const lx = (CW - LOGO_SIZE) / 2;
+            const ly = (CH - LOGO_SIZE) / 2;
+
+            // 左右反転（刻印鏡像 → 正像）して中央に描画
+            ctx.save();
+            ctx.globalAlpha = 0.82;
+            // 反転: translate で中心移動 → scale(-1,1) → 戻す
+            ctx.translate(CW / 2, CH / 2);
+            ctx.scale(-1, 1);
+            ctx.drawImage(svgImg, -LOGO_SIZE / 2, -LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
+            ctx.restore();
+
+            // CanvasTexture を更新（同じオブジェクトに needsUpdate）
+            rugTex.needsUpdate = true;
+          } catch(e) {
+            console.warn('[Rug] SVG描画失敗:', e);
+          }
+        };
+        svgImg.onerror = function() {
+          console.warn('[Rug] owl_logo.svg ロード失敗 — 単色アイボリー床で続行');
+        };
+        svgImg.src = 'assets/owl_logo.svg';
+      })();
+      // ────────────────────────────────────────────────────────────
       // 床インレイライン用マテリアル（ショーケースエッジ等で引き続き使用）
       const inlayMat = new THREE.MeshStandardMaterial({
         color: C_INLAY_GOLD,
