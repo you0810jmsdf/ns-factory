@@ -1589,13 +1589,13 @@
           side: THREE.DoubleSide
         });
 
-        // ホログラム演出: 台座上面の発光リング（シアン系）
+        // 台座上面の発光リング（白黒フクロウに合わせシャンパンゴールド）
         const holoRingMat = new THREE.MeshStandardMaterial({
-          color: 0x44aacc,
-          emissive: new THREE.Color(0x44aacc),
-          emissiveIntensity: 0.55,
+          color: 0xc9a96a,
+          emissive: new THREE.Color(0xc9a96a),
+          emissiveIntensity: 0.18,
           transparent: true,
-          opacity: 0.45,
+          opacity: 0.60,
           roughness: 0.10,
           metalness: 0.20,
           depthWrite: false
@@ -1639,21 +1639,21 @@
                 -center.z * scale
               );
 
-              // ホログラム演出: 各メッシュにemissive追加（オリジナル材質は活かす）
+              // 白黒フクロウ: オリジナル材質を活かし、暗部だけわずかに持ち上げる
               model.traverse((child) => {
                 if (child.isMesh) {
                   // 既存マテリアルをクローンして改変（共有破壊防止）
                   if (Array.isArray(child.material)) {
                     child.material = child.material.map(m => {
                       const mc = m.clone();
-                      mc.emissive = new THREE.Color(0x88ccee);
-                      mc.emissiveIntensity = 0.25;
+                      mc.emissive = new THREE.Color(0xffffff);
+                      mc.emissiveIntensity = 0.06;
                       return mc;
                     });
                   } else {
                     child.material = child.material.clone();
-                    child.material.emissive = new THREE.Color(0x88ccee);
-                    child.material.emissiveIntensity = 0.25;
+                    child.material.emissive = new THREE.Color(0xffffff);
+                    child.material.emissiveIntensity = 0.06;
                   }
                   child.userData.noRaycast = true;
                 }
