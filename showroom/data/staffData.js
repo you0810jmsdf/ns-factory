@@ -38,7 +38,9 @@ window.SHOWROOM_STAFF = [
       '職人として、お客様の大切な一点をお作りしています。'
     ],
     btnLabel: 'ブランドについて',
-    btnUrl: '../profile.html'
+    btnUrl: '../profile.html',
+    roomUrl: '../profile.html',
+    roomLabel: 'プロフィール'
   },
   {
     id: 'sakusen',
@@ -64,7 +66,9 @@ window.SHOWROOM_STAFF = [
       '最善のご提案ができるよう、常に戦略を練っております。'
     ],
     btnLabel: 'トップページへ',
-    btnUrl: '../index.html'
+    btnUrl: '../index.html',
+    roomUrl: '../sakusen-room/',
+    roomLabel: '作戦幕僚室'
   },
 
   // ===== 北ゾーン（手帳の間）=====
@@ -88,7 +92,9 @@ window.SHOWROOM_STAFF = [
       'カルチャースクール講座のご案内もしております。お気軽にどうぞ。'
     ],
     btnLabel: '作品を見る',
-    btnUrl: '../works.html'
+    btnUrl: '../works.html',
+    roomUrl: '../hanbai-room/',
+    roomLabel: '販売幕僚室'
   },
   {
     id: 'kouhou_room',
@@ -110,7 +116,9 @@ window.SHOWROOM_STAFF = [
       '型紙設計から仕入れまで、ものづくりの基盤を支えております。'
     ],
     btnLabel: 'ツール一覧へ',
-    btnUrl: '../tools/'
+    btnUrl: '../tools/',
+    roomUrl: '../kouhou-room/',
+    roomLabel: '後方幕僚室'
   },
 
   // ===== 東ゾーン（カタカムナの間）=====
@@ -134,7 +142,9 @@ window.SHOWROOM_STAFF = [
       '心の学びに関心のある方、ぜひページをのぞいてみてください。'
     ],
     btnLabel: 'カタカムナ・日月神示',
-    btnUrl: '../hitsuki/'
+    btnUrl: '../hitsuki/',
+    roomUrl: '../hitsuki/',
+    roomLabel: '教育幕僚室'
   },
   {
     id: 'kouhou',
@@ -156,7 +166,9 @@ window.SHOWROOM_STAFF = [
       'フォローいただくと新作をいち早くご覧いただけます。'
     ],
     btnLabel: 'Threadsを見る',
-    btnUrl: 'https://www.threads.net/@you0810jmsdf'
+    btnUrl: 'https://www.threads.net/@you0810jmsdf',
+    roomUrl: '../pr-room/',
+    roomLabel: '広報幕僚室'
   },
 
   // ===== 南ゾーン（工房の間）=====
@@ -180,7 +192,9 @@ window.SHOWROOM_STAFF = [
       'ご不明な点がございましたら、遠慮なくお問い合わせください。'
     ],
     btnLabel: 'お見積もりへ',
-    btnUrl: '../order_estimate/stock-quote.html'
+    btnUrl: '../order_estimate/stock-quote.html',
+    roomUrl: '../kanri-room/',
+    roomLabel: '監理幕僚室'
   },
   {
     id: 'jinji',
@@ -202,7 +216,9 @@ window.SHOWROOM_STAFF = [
       'ご興味をお持ちの方はぜひ教室ページをご覧ください。'
     ],
     btnLabel: 'レザークラフト教室',
-    btnUrl: '../JHCS.html'
+    btnUrl: '../JHCS.html',
+    roomUrl: '../jinji-room/',
+    roomLabel: '人事幕僚室'
   },
 
   // ===== 西ゾーン（幕僚ギャラリー）=====
@@ -226,7 +242,9 @@ window.SHOWROOM_STAFF = [
       'デジタルならではの体験をお届けできるよう努めております。'
     ],
     btnLabel: 'トップページへ',
-    btnUrl: '../index.html'
+    btnUrl: '../index.html',
+    roomUrl: '../digital-room/',
+    roomLabel: 'デジタル幕僚室'
   },
   {
     id: 'hozen',
@@ -248,6 +266,8 @@ window.SHOWROOM_STAFF = [
       'ご利用のサービスへのアクセスはリンク集からどうぞ。'
     ],
     btnLabel: 'リンク集へ',
-    btnUrl: '../links.html'
+    btnUrl: '../links.html',
+    roomUrl: '../hozen-room/',
+    roomLabel: '保全幕僚室'
   }
 ];
