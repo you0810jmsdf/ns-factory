@@ -332,6 +332,23 @@
       transition: background 0.2s;
     }
     #staff-card .btn-staff:hover { background: var(--accent-lt); }
+    #staff-card .btn-room {
+      display: block;
+      width: 100%;
+      padding: 11px;
+      margin-top: 8px;
+      background: transparent;
+      color: var(--accent);
+      text-align: center;
+      text-decoration: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      border: 1.5px solid var(--accent);
+      transition: background 0.2s, color 0.2s;
+    }
+    #staff-card .btn-room:hover { background: rgba(201,169,106,0.10); }
 
     /* ===== チャットUI ===== */
     #chat-area {
@@ -601,6 +618,7 @@
     </div>
     <p class="sc-line" id="sc-line"></p>
     <a class="btn-staff" id="sc-btn" href="#" target="_blank" rel="noopener"></a>
+    <a class="btn-room" id="sc-room-btn" href="#" style="display:none;"></a>
 
     <!-- チャットUI -->
     <div id="chat-area">
@@ -874,6 +892,16 @@
             scBtn.setAttribute('target','_blank'); scBtn.setAttribute('rel','noopener');
           } else {
             scBtn.removeAttribute('target'); scBtn.removeAttribute('rel');
+          }
+          // 幕僚室リンクボタン（フォールバック時も表示）
+          const roomBtnFb = document.getElementById('sc-room-btn');
+          if (staffData.roomUrl && staffData.roomLabel) {
+            roomBtnFb.href = staffData.roomUrl;
+            roomBtnFb.textContent = staffData.roomLabel + ' へ';
+            roomBtnFb.removeAttribute('target'); roomBtnFb.removeAttribute('rel');
+            roomBtnFb.style.display = 'block';
+          } else {
+            roomBtnFb.style.display = 'none';
           }
           document.getElementById('staff-card').classList.add('visible');
           document.getElementById('staff-card').style.zIndex = '300';
@@ -1418,27 +1446,53 @@
       });
 
       // ============================================================
-      // 幕僚ギャラリー: ポートレート（自立ガラスパーティション）
+      // 幕僚肖像画: 4壁面に大判均等配置
       // ============================================================
       (function buildGalleryPortraits() {
-        const PW = 0.72, PH = 0.9;
-        // 西ゾーン（x=-10付近）に5枚×2段で展示
+        const PW = 1.7, PH = 2.1;
+        // 壁面内側オフセット（ガラスカーテンウォールと重ならないよう0.06下げる）
+        const WALL_OFF = 0.06;
+        // 北壁 z=-12, 壁面はz=-PAV_D/2=-12, 肖像画はやや内側
+        // 南壁 z=+12, 東壁 x=+16, 西壁 x=-16
+        // 柱位置（南北: x=-8,0,+8 / 東西: z=-6,+6）を避けて間隔を取る
+        // 北壁3枚（中間柱x=0の間）: x=-8, 0, +8 → 柱と同位置だが横間隔2.5以上確保
+        // 実際には柱はx方向で同じでも肖像画は前面配置なので干渉しない
         const portraitPositions = [
-          { x: -10.0, y: 2.8, z: -8.5, ry: 0         },  // 北壁面向き
-          { x:  -8.0, y: 2.8, z: -8.5, ry: 0         },
-          { x:  -6.0, y: 2.8, z: -8.5, ry: 0         },
-          { x: -10.0, y: 2.8, z: -6.0, ry: 0         },
-          { x:  -8.0, y: 2.8, z: -6.0, ry: 0         },
-          { x: -14.5, y: 2.8, z: -2.5, ry:  Math.PI/2 },  // 西壁面向き
-          { x: -14.5, y: 2.8, z:  0.0, ry:  Math.PI/2 },
-          { x: -14.5, y: 2.8, z:  2.5, ry:  Math.PI/2 },
-          { x: -14.5, y: 2.8, z: -5.5, ry:  Math.PI/2 },
-          { x: -14.5, y: 2.8, z:  5.5, ry:  Math.PI/2 }
+          // ===== 北壁（z=-12付近, ry=0: 南向き） 3枚 =====
+          // x=-8, 0, +8 に等間隔（柱間のスパン8単位の中央）
+          { x: -8.0, y: 3.0, z: -(PAV_D/2 - WALL_OFF), ry: 0 },
+          { x:  0.0, y: 3.0, z: -(PAV_D/2 - WALL_OFF), ry: 0 },
+          { x:  8.0, y: 3.0, z: -(PAV_D/2 - WALL_OFF), ry: 0 },
+          // ===== 南壁（z=+12付近, ry=π: 北向き） 3枚 =====
+          { x: -8.0, y: 3.0, z:  (PAV_D/2 - WALL_OFF), ry: Math.PI },
+          { x:  0.0, y: 3.0, z:  (PAV_D/2 - WALL_OFF), ry: Math.PI },
+          { x:  8.0, y: 3.0, z:  (PAV_D/2 - WALL_OFF), ry: Math.PI },
+          // ===== 東壁（x=+16付近, ry=-π/2: 西向き） 2枚 =====
+          // 東西壁中間柱 z=-6, +6 を避けて z=-4, +4 に配置
+          { x:  (PAV_W/2 - WALL_OFF), y: 3.0, z: -4.0, ry: -Math.PI/2 },
+          { x:  (PAV_W/2 - WALL_OFF), y: 3.0, z:  4.0, ry: -Math.PI/2 },
+          // ===== 西壁（x=-16付近, ry=+π/2: 東向き） 2枚 =====
+          { x: -(PAV_W/2 - WALL_OFF), y: 3.0, z: -4.0, ry: Math.PI/2 },
+          { x: -(PAV_W/2 - WALL_OFF), y: 3.0, z:  4.0, ry: Math.PI/2 }
         ];
 
-        const staffList = window.SHOWROOM_STAFF || [];
-        staffList.forEach((staff, idx) => {
+        // 幕僚を壁面順に並べる
+        // 北壁: kojinjigyonusi, sakusen, hannbai
+        // 南壁: kanri, jinji, kouhou_room
+        // 東壁: kyouiku, kouhou
+        // 西壁: digital, hozen
+        const PORTRAIT_ORDER = [
+          'kojinjigyonusi', 'sakusen', 'hannbai',
+          'kanri', 'jinji', 'kouhou_room',
+          'kyouiku', 'kouhou',
+          'digital', 'hozen'
+        ];
+        const allStaff = window.SHOWROOM_STAFF || [];
+
+        PORTRAIT_ORDER.forEach((staffId, idx) => {
           if (idx >= portraitPositions.length) return;
+          const staff = allStaff.find(s => s.id === staffId);
+          if (!staff) return;
           const pos = portraitPositions[idx];
           const pMat = new THREE.MeshStandardMaterial({ color: 0xede0cb, roughness: 0.6 });
           loader.load(staff.image, tex => {
@@ -1455,18 +1509,24 @@
 
           // キャプションプレート（白地×ゴールド文字）
           const cc = document.createElement('canvas');
-          cc.width = 256; cc.height = 36;
+          cc.width = 512; cc.height = 48;
           const cctx = cc.getContext('2d');
-          cctx.fillStyle = 'rgba(250,247,242,0.95)'; cctx.fillRect(0,0,256,36);
-          cctx.fillStyle = '#c9a96a'; cctx.font = 'bold 15px sans-serif';
+          cctx.fillStyle = 'rgba(250,247,242,0.95)'; cctx.fillRect(0,0,512,48);
+          cctx.fillStyle = '#c9a96a'; cctx.font = 'bold 18px sans-serif';
           cctx.textAlign = 'center'; cctx.textBaseline = 'middle';
-          cctx.fillText(staff.name + '  ' + staff.role, 128, 18);
+          cctx.fillText(staff.name + '  ' + staff.role, 256, 24);
           const ctex = new THREE.CanvasTexture(cc); ctex.colorSpace = THREE.SRGBColorSpace;
           const capMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(PW + 0.1, 0.12),
+            new THREE.PlaneGeometry(PW + 0.1, 0.16),
             new THREE.MeshBasicMaterial({ map: ctex, transparent: true, depthWrite: false })
           );
-          capMesh.position.set(pos.x, pos.y - PH/2 - 0.1, pos.z);
+          const c2 = Math.cos(pos.ry), s2 = Math.sin(pos.ry);
+          const capOffZ = 0.02;
+          capMesh.position.set(
+            pos.x + capOffZ * s2,
+            pos.y - PH/2 - 0.12,
+            pos.z + capOffZ * c2
+          );
           capMesh.rotation.y = pos.ry;
           scene.add(capMesh);
         });
@@ -2247,6 +2307,16 @@
           btn.setAttribute('target','_blank'); btn.setAttribute('rel','noopener');
         } else {
           btn.removeAttribute('target'); btn.removeAttribute('rel');
+        }
+        // 幕僚室リンクボタン
+        const roomBtn = document.getElementById('sc-room-btn');
+        if (staff.roomUrl && staff.roomLabel) {
+          roomBtn.href = staff.roomUrl;
+          roomBtn.textContent = staff.roomLabel + ' へ';
+          roomBtn.removeAttribute('target'); roomBtn.removeAttribute('rel');
+          roomBtn.style.display = 'block';
+        } else {
+          roomBtn.style.display = 'none';
         }
         document.getElementById('staff-card').classList.add('visible');
         selectMesh(mesh, C_GOLD);
