@@ -2232,11 +2232,10 @@
         const pEntry = panels.find(p => p.mesh === mesh);
         if (pEntry) {
           if (pEntry.item.isPortrait) {
+            // 肖像画は幕僚室へ直リンク（会話は巡回キャラのみ）
             const sData = (window.SHOWROOM_STAFF || []).find(s => s.id === pEntry.item.staffId);
-            if (sData) {
-              const actor = staffActors.find(a => a.staff.id === sData.id) || null;
-              if (actor) actor.pauseFor();
-              showStaffCard(sData, mesh, actor);
+            if (sData && sData.roomUrl) {
+              window.location.href = sData.roomUrl;
             }
           } else if (pEntry.item.isLink) { showLinkCard(pEntry.item); }
           else { showCard(pEntry.item, mesh); }
