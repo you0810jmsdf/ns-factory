@@ -1023,34 +1023,33 @@
         floorMat.color.set(0xffffff);
         floorMat.needsUpdate = true;
 
-        // ── SVGロード: 完了後にフクロウロゴを上書き ─────────────
-        const svgImg = new Image();
-        svgImg.onload = function() {
+        // ── ロゴ画像ロード: 完了後にフクロウロゴを上書き ─────────
+        // floor_logo.png は正像・薄グレー調に加工済み（反転・透過調整は不要）
+        const logoImg = new Image();
+        logoImg.onload = function() {
           try {
             // ロゴサイズ: 短辺(CH=1536)の80% = 1229px（正方形）
             const LOGO_SIZE = Math.round(CH * 0.80);
-            const lx = (CW - LOGO_SIZE) / 2;
-            const ly = (CH - LOGO_SIZE) / 2;
-
-            // 左右反転（刻印鏡像 → 正像）して中央に描画
+            // 乗算合成: PNGの白背景がアイボリー床に溶け、グレーのロゴだけが乗る
             ctx.save();
-            ctx.globalAlpha = 0.82;
-            // 反転: translate で中心移動 → scale(-1,1) → 戻す
-            ctx.translate(CW / 2, CH / 2);
-            ctx.scale(-1, 1);
-            ctx.drawImage(svgImg, -LOGO_SIZE / 2, -LOGO_SIZE / 2, LOGO_SIZE, LOGO_SIZE);
+            ctx.globalCompositeOperation = 'multiply';
+            ctx.drawImage(
+              logoImg,
+              (CW - LOGO_SIZE) / 2,
+              (CH - LOGO_SIZE) / 2,
+              LOGO_SIZE, LOGO_SIZE
+            );
             ctx.restore();
-
             // CanvasTexture を更新（同じオブジェクトに needsUpdate）
             rugTex.needsUpdate = true;
           } catch(e) {
-            console.warn('[Rug] SVG描画失敗:', e);
+            console.warn('[Rug] ロゴ描画失敗:', e);
           }
         };
-        svgImg.onerror = function() {
-          console.warn('[Rug] owl_logo.svg ロード失敗 — 単色アイボリー床で続行');
+        logoImg.onerror = function() {
+          console.warn('[Rug] floor_logo.png ロード失敗 — 単色アイボリー床で続行');
         };
-        svgImg.src = 'assets/owl_logo.svg';
+        logoImg.src = 'assets/floor_logo.png';
       })();
       // ────────────────────────────────────────────────────────────
       // 床インレイライン用マテリアル（ショーケースエッジ等で引き続き使用）
