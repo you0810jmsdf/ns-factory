@@ -98,7 +98,7 @@ window.SHOWROOM_ROOMS = [
       {
         id: 'bracelet-katakamuna',
         name: 'カタカムナ ブレスレット',
-        lead: 'カタカムナ文字を肌に。手首に�く古代の響き。',
+        lead: 'カタカムナ文字を肌に。手首に巻く古代の響き。',
         material: 'レザー',
         price: '',
         url: 'https://nsfactory.stores.jp/items/6a1d2c4b24fa034e7018d84c',
