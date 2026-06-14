@@ -1446,6 +1446,76 @@
       });
 
       // ============================================================
+      // VR入場案内板（ギャラリーゾーン入口・x=-7.5, y=2.8, z=0）
+      // ============================================================
+      (function buildVrSignBoard() {
+        const signW = 1.6, signH = 0.9;
+        const sc = document.createElement('canvas');
+        sc.width = 640; sc.height = 360;
+        const sctx = sc.getContext('2d');
+
+        // 背景（ダーク調・デザインシステム準拠）
+        sctx.fillStyle = '#2a2420';
+        sctx.fillRect(0, 0, 640, 360);
+
+        // 外枠ボーダー（ゴールド）
+        sctx.strokeStyle = 'rgba(201,169,106,0.80)';
+        sctx.lineWidth = 5;
+        sctx.strokeRect(8, 8, 624, 344);
+
+        // 内枠（細線）
+        sctx.strokeStyle = 'rgba(201,169,106,0.35)';
+        sctx.lineWidth = 1;
+        sctx.strokeRect(18, 18, 604, 324);
+
+        // 上部ゴールド帯
+        sctx.fillStyle = 'rgba(201,169,106,0.12)';
+        sctx.fillRect(8, 8, 624, 72);
+
+        // 1行目（大・ゴールド）
+        sctx.fillStyle = '#c9a96a';
+        sctx.font = 'bold 44px sans-serif';
+        sctx.textAlign = 'center';
+        sctx.textBaseline = 'middle';
+        sctx.fillText('VRゴーグルでも入店できます', 320, 130);
+
+        // 区切り線
+        sctx.strokeStyle = 'rgba(201,169,106,0.45)';
+        sctx.lineWidth = 1;
+        sctx.beginPath();
+        sctx.moveTo(60, 185); sctx.lineTo(580, 185);
+        sctx.stroke();
+
+        // 2行目（小・明るいゴールド）
+        sctx.fillStyle = 'rgba(224,201,138,0.90)';
+        sctx.font = '22px sans-serif';
+        sctx.textAlign = 'center';
+        sctx.textBaseline = 'middle';
+        sctx.fillText('Quest等で開くと右下に'VRで見る'ボタンが表示されます', 320, 245);
+
+        // 下部小文字（補足）
+        sctx.fillStyle = 'rgba(201,169,106,0.55)';
+        sctx.font = '16px sans-serif';
+        sctx.fillText('VR ENTRY AVAILABLE', 320, 322);
+
+        const vrTex = new THREE.CanvasTexture(sc);
+        vrTex.colorSpace = THREE.SRGBColorSpace;
+        const vrMat = new THREE.MeshStandardMaterial({
+          map: vrTex,
+          roughness: 0.45,
+          emissive: new THREE.Color(0xc9a96a),
+          emissiveIntensity: 0.06,
+          transparent: false
+        });
+        const vrMesh = new THREE.Mesh(new THREE.PlaneGeometry(signW, signH), vrMat);
+        // ギャラリーゾーン入口・東向き（ry=PI/2）・肖像画より高め（y=2.8）
+        vrMesh.position.set(-7.5, 2.8, 0);
+        vrMesh.rotation.y = Math.PI / 2;
+        scene.add(vrMesh);
+        addGoldFrame({ x: -7.5, y: 2.8, z: 0, ry: Math.PI / 2 }, signW, signH);
+      })();
+
+      // ============================================================
       // 幕僚肖像画: 4壁面に大判均等配置
       // ============================================================
       (function buildGalleryPortraits() {
