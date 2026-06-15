@@ -238,6 +238,9 @@ body{
 .advanced-only{
   display:none !important;
 }
+body.advanced-mode .advanced-only{
+  display:inline-flex !important;
+}
 .btn{
   border:none;
   border-radius:10px;
@@ -834,6 +837,7 @@ tr.row-out-stock td{
       <div class="controls">
         <button class="btn light" id="reloadBtn">公開CSVを再読込</button>
         <button class="btn light" id="downloadBtn">控えCSVダウンロード</button>
+        <button class="btn light" id="toggleAdvancedBtn" style="color:#888">開発者モード</button>
         <button class="btn light advanced-only" id="addRowBtn">行を追加</button>
         <button class="btn sub advanced-only" id="runCrawlBtn">巡回実行</button>
         <a class="btn light advanced-only" id="openCrawlResultsBtn" href="./ring-price-crawl-results.csv" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center">巡回結果CSV</a>
@@ -3209,6 +3213,14 @@ async function runCrawl() {
   }
 }
 
+document.getElementById('toggleAdvancedBtn').addEventListener('click', () => {
+  const isOn = document.body.classList.toggle('advanced-mode');
+  document.getElementById('toggleAdvancedBtn').style.color = isOn ? '#c0392b' : '#888';
+  document.getElementById('toggleAdvancedBtn').textContent = isOn ? '開発者モード ON' : '開発者モード';
+  document.querySelectorAll('.advanced-only').forEach(el => {
+    el.style.display = isOn ? '' : '';
+  });
+});
 document.getElementById('reloadBtn').addEventListener('click', () => {
   if (location.protocol === 'file:') {
     openLocalFile().catch(err => alert(`ファイルを開けませんでした: ${err.message}`));
