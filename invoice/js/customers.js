@@ -7,8 +7,13 @@
 
   let allCustomers = [];
   let editMode = false;
+  let targetCustomerId = ''; // URLパラメータ ?id= で特定顧客にフォーカス
 
   document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(location.search);
+    targetCustomerId = (params.get('id') || '').trim();
+    if (targetCustomerId) renderCustomerFocusBanner();
+
     loadCustomers();
 
     document.getElementById('btn-new').addEventListener('click', openFormNew);
@@ -17,6 +22,23 @@
     document.getElementById('btn-refresh').addEventListener('click', loadCustomers);
     document.getElementById('search-input').addEventListener('input', renderTable);
   });
+
+  function renderCustomerFocusBanner() {
+    let banner = document.getElementById('customer-focus-banner');
+    if (!targetCustomerId) {
+      if (banner) banner.remove();
+      return;
+    }
+    if (!banner) {
+      const titleEl = document.querySelector('.page-title');
+      if (!titleEl) return;
+      banner = document.createElement('div');
+      banner.id = 'customer-focus-banner';
+      banner.style.cssText = 'background:#fbf3e6;border:1px solid var(--color-accent,#a07d3e);border-radius:8px;padding:10px 14px;margin:12px 0;display:flex;align-items:center;gap:12px;font-size:13px;';
+      titleEl.insertAdjacentElement('afterend', banner);
+    }
+    banner.innerHTML = '🔗 顧客 <b>' + escHtml(targetCustomerId) + '</b> を表示中　<a href="customers.html" style="color:var(--color-accent-dark,#7a5d2a);text-decoration:underline;">すべて表示</a>';
+  }
 
   function loadCustomers() {
     API.listCustomers()
@@ -32,6 +54,9 @@
   function renderTable() {
     const keyword = document.getElementById('search-input').value.trim().toLowerCase();
     let rows = allCustomers;
+    if (targetCustomerId) {
+      rows = rows.filter(c => c.id === targetCustomerId);
+    }
     if (keyword) {
       rows = rows.filter(c =>
         c.name.toLowerCase().includes(keyword) ||
