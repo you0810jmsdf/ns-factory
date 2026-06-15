@@ -58,6 +58,9 @@
 
     // 消費税トグル変更で再計算
     document.getElementById('doc-tax-included').addEventListener('change', recalc);
+
+    // 関連受付番号 入力時にリンク更新
+    document.getElementById('doc-related-order').addEventListener('input', updateOrderProgressLink);
   });
 
   // ---- タイトル更新 ----
@@ -381,6 +384,8 @@
       document.getElementById('customer-name').value    = doc.customerName || '';
       document.getElementById('customer-id').value      = doc.customerId || '';
       document.getElementById('doc-source-number').value = doc.sourceNumber || '';
+      document.getElementById('doc-related-order').value = doc.relatedOrderNumber || '';
+      updateOrderProgressLink();
       document.getElementById('doc-note').value         = doc.note || '';
 
       if (doc.driveUrl) {
@@ -503,8 +508,23 @@
       status:       document.getElementById('doc-status').value,
       driveUrl:     document.getElementById('drive-url-link').href !== '#' ? document.getElementById('drive-url-link').href : '',
       sourceNumber: document.getElementById('doc-source-number').value,
+      relatedOrderNumber: document.getElementById('doc-related-order').value.trim(),
       note:         document.getElementById('doc-note').value
     };
+  }
+
+  // ---- オーダー進捗ページへのリンク更新 ----
+  function updateOrderProgressLink() {
+    const v = (document.getElementById('doc-related-order').value || '').trim();
+    const link = document.getElementById('link-to-order-progress');
+    if (!link) return;
+    if (v) {
+      link.href = '../orderprogress.html?focus=' + encodeURIComponent(v);
+      link.style.display = '';
+    } else {
+      link.href = '#';
+      link.style.display = 'none';
+    }
   }
 
   function buildDetails() {

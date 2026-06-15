@@ -740,6 +740,31 @@ function applyFilter() {
     card.classList.toggle('active', currentStatFilter === f);
   });
   renderCards(filtered);
+  // ?focus=OP-xxx パラメータがあれば該当カードへスクロール
+  setTimeout(focusOrderByNumber, 100);
+}
+
+// 書類台帳editor からの逆方向ジャンプ（?focus=OP-xxx）
+function focusOrderByNumber() {
+  const params = new URLSearchParams(location.search);
+  const target = (params.get('focus') || '').trim();
+  if (!target) return;
+  const rec = allRecords.find(r => r['受付番号'] === target);
+  if (!rec) return;
+  const cardEl = document.getElementById('card-' + rec['ID']);
+  if (!cardEl) return;
+  // スクロール
+  cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // ハイライト（3秒）
+  cardEl.style.boxShadow = '0 0 0 3px var(--color-accent, #a07d3e)';
+  cardEl.style.transition = 'box-shadow .3s';
+  setTimeout(() => { cardEl.style.boxShadow = ''; }, 3000);
+  // 折りたたみを開く（未展開時）
+  const body = document.getElementById('body-' + rec['ID']);
+  if (body && !body.classList.contains('open')) {
+    const hdr = document.getElementById('hdr-' + rec['ID']);
+    if (hdr) hdr.click();
+  }
 }
 
 function renderCards(records) {
