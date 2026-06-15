@@ -446,6 +446,12 @@ textarea{min-height:80px;resize:vertical}
           <button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px" onclick="hideAddInput('category')">✕</button>
         </div>
       </div>
+      <div class="combo-row">
+        <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">副カテゴリ（任意・2つ目のカテゴリに表示したい場合のみ）</label>
+        <div class="combo-wrap">
+          <select id="f_subcategory"><option value="">（なし）</option></select>
+        </div>
+      </div>
       <div>
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">素材<span class="req">*</span></label>
         <div class="combo-wrap">
@@ -652,6 +658,12 @@ function fetchMasterData() {
         sel.innerHTML = '<option value="">選択…</option>' +
           items.map(v => `<option value="${v}">${v}</option>`).join('');
       });
+      const subSel = document.getElementById('f_subcategory');
+      if (subSel) {
+        const cats = data[FIELD_MAP['category']] || [];
+        subSel.innerHTML = '<option value="">（なし）</option>' +
+          cats.map(v => `<option value="${v}">${v}</option>`).join('');
+      }
       resolve();
     };
     script.onerror = () => { try { document.head.removeChild(script); } catch(_){} setFallbackOptions(); resolve(); };
@@ -678,6 +690,8 @@ function setFallbackOptions() {
     const sel = document.getElementById('f_' + field);
     sel.innerHTML = '<option value="">（手動で入力）</option>';
   });
+  const subSel = document.getElementById('f_subcategory');
+  if (subSel) subSel.innerHTML = '<option value="">（なし）</option>';
 }
 
 function initSizeOptions() {
@@ -784,7 +798,9 @@ async function loadProduct() {
     if (!d.ok) { alert('読込失敗: ' + (d.error || 'unknown')); return; }
     const p = d.product;
     document.getElementById('f_name').value = p.name;
-    setSelectValue('f_category', p.category);
+    const _cats = String(p.category || '').split('／').map(c => c.trim()).filter(Boolean);
+    setSelectValue('f_category', _cats[0] || '');
+    setSelectValue('f_subcategory', _cats[1] || '');
     setSelectValue('f_material', p.material);
     setSelectValue('f_color', p.color);
     setSelectValue('f_size', p.size);
@@ -997,6 +1013,13 @@ function goConfirm() {
 // ====== VALIDATION ======
 function err(msg) { alert('⚠ ' + msg); return false; }
 function val(id) { return document.getElementById(id).value.trim(); }
+// 主カテゴリ＋副カテゴリを「／」連結（副が空または主と同一なら主のみ）
+function catValue() {
+  const main = val('f_category');
+  const subEl = document.getElementById('f_subcategory');
+  const sub = subEl ? subEl.value.trim() : '';
+  return (main && sub && sub !== main) ? main + '／' + sub : main;
+}
 
 function validateStep1() {
   if (!val('f_name')) return err('商品名を入力してください');
@@ -1078,7 +1101,7 @@ function removePhoto(e, i) {
 function buildConfirm() {
   const rows = [
     ['商品名', val('f_name')],
-    ['カテゴリ', val('f_category')],
+    ['カテゴリ', catValue()],
     ['素材', val('f_material')],
     ['色', val('f_color')],
     ['サイズ', val('f_size') || '—'],
@@ -1132,7 +1155,7 @@ async function doNewRegister() {
   setProgress(10, '商品情報を登録中…', '商品マスターに行を追加しています…');
   const payload = {
     key: REGISTER_KEY,
-    name: val('f_name'), category: val('f_category'), material: val('f_material'),
+    name: val('f_name'), category: catValue(), material: val('f_material'),
     color: val('f_color'), size: val('f_size'), hours: val('f_hours'),
     cost: val('f_cost'), price: val('f_price'), stock: val('f_stock'),
     shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
@@ -1194,7 +1217,7 @@ async function doUpdate() {
   setProgress(80, '商品マスター更新中…', 'スプレッドシートを更新しています…');
   const updPayload = {
     key: REGISTER_KEY, productId: editingProductId,
-    name: val('f_name'), category: val('f_category'), material: val('f_material'),
+    name: val('f_name'), category: catValue(), material: val('f_material'),
     color: val('f_color'), size: val('f_size'), hours: val('f_hours'),
     cost: val('f_cost'), price: val('f_price'), stock: val('f_stock'),
     shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
@@ -1444,6 +1467,7 @@ function resetAll() {
     document.getElementById(id).value = '';
   });
   document.getElementById('f_category').value = '';
+  { const _s = document.getElementById('f_subcategory'); if (_s) _s.value = ''; }
   document.getElementById('f_stock').value = '1';
   document.getElementById('photoGrid').innerHTML = '';
   document.getElementById('photoHint').style.display = 'none';
