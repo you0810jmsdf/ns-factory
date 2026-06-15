@@ -372,6 +372,12 @@
   <div class="modal" id="modal">
     <h2 id="modal-title">オーダー追加</h2>
     <input type="hidden" id="edit-id">
+    <div class="field">
+      <label>顧客マスタから選択（任意・選ぶと依頼者名が自動入力されます）</label>
+      <select id="f-customer-id" onchange="onCustomerSelectChange()">
+        <option value="">— 選択しない（依頼者名を直接入力）—</option>
+      </select>
+    </div>
     <div class="field-row">
       <div class="field">
         <label>依頼者名</label>
@@ -449,6 +455,8 @@ const GAS_KEY = 'op_gas_url';
 const ADMIN_PASS = 'glJy4399';
 const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
 const FALLBACK_DATA_URL = 'orderprogress-data.json';
+const INVOICE_GAS_URL = 'https://script.google.com/macros/s/AKfycbzERvxy0zmLdytf0roNlzVzj6JHg2keLvMQ3tl38fxQk97S-O83VjG-bQPOLMI_HYZe/exec';
+let customerMaster = [];
 const RR_GAS_KEY = 'rr_gas_url';
 const RR_SEED = [
   { 'ID':'seed-rr-0', '依頼者':'Yurika様', '品物':'ティッシュケース・リップケース（KURUMU）', 'カテゴリ':'リメイク',
@@ -581,6 +589,7 @@ function init() {
   } else {
     loadRecords();
   }
+  loadCustomerMaster();
 }
 
 // ─── GAS Load ────────────────────────────────
@@ -961,6 +970,9 @@ function openModal(id) {
   document.getElementById('edit-id').value = id||'';
   document.getElementById('tl-rows').innerHTML = '';
 
+  // 顧客マスタが未取得なら取得（モーダル開いた時にも保険として）
+  if (customerMaster.length === 0) loadCustomerMaster();
+
   if (id) {
     const r = allRecords.find(x => x['ID']===id);
     if (!r) return;
@@ -972,6 +984,7 @@ function openModal(id) {
     document.getElementById('f-end').value    = toInputDate(r['予定完了日']||'');
     document.getElementById('f-folder').value = r['DriveフォルダID']||'';
     document.getElementById('f-memo').value   = r['メモ（非公開）']||'';
+    document.getElementById('f-customer-id').value = r['顧客ID']||'';
     const tl = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
     tl.forEach(t => addTlRow(t.date||'', t.text||''));
   } else {
@@ -983,6 +996,7 @@ function openModal(id) {
     document.getElementById('f-end').value    = '';
     document.getElementById('f-folder').value = '';
     document.getElementById('f-memo').value   = '';
+    document.getElementById('f-customer-id').value = '';
     addTlRow(new Date().toISOString().slice(0,10), 'ご注文ありがとうございます。受け付けいたしました。');
   }
   document.getElementById('modal-bg').classList.add('open');
@@ -1009,21 +1023,61 @@ function getTlRows() {
 }
 
 // ─── Save ────────────────────────────────────
+// ─── 顧客マスタ連携（invoice GAS と共通）─────────────
+async function loadCustomerMaster() {
+  try {
+    const res = await fetch(INVOICE_GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'listCustomers' })
+    });
+    const data = await res.json();
+    if (data && data.success && Array.isArray(data.data)) {
+      customerMaster = data.data;
+      renderCustomerSelect();
+    }
+  } catch (e) {
+    console.warn('顧客マスタ取得失敗:', e.message);
+  }
+}
+
+function renderCustomerSelect() {
+  const sel = document.getElementById('f-customer-id');
+  if (!sel) return;
+  const current = sel.value;
+  const opts = ['<option value="">— 選択しない（依頼者名を直接入力）—</option>'];
+  customerMaster.forEach(c => {
+    const label = `${c.id}　${c.name} ${c.honorific || '様'}`;
+    opts.push(`<option value="${c.id}">${label}</option>`);
+  });
+  sel.innerHTML = opts.join('');
+  if (current) sel.value = current;
+}
+
+function onCustomerSelectChange() {
+  const id = document.getElementById('f-customer-id').value;
+  if (!id) return;
+  const c = customerMaster.find(x => x.id === id);
+  if (c) {
+    document.getElementById('f-client').value = c.name + ' ' + (c.honorific || '様');
+  }
+}
+
 async function saveRecord() {
   if (!gasReady || !gasUrl) return showMsg('追加・編集にはGAS URL設定が必要です', true);
   const id = document.getElementById('edit-id').value;
   const payload = {
     action: id ? 'update' : 'add',
     id,
-    client:    document.getElementById('f-client').value.trim(),
-    size:      document.getElementById('f-size').value,
-    item:      document.getElementById('f-item').value.trim(),
-    status:    document.getElementById('f-status').value,
-    startDate: document.getElementById('f-start').value,
-    endDate:   document.getElementById('f-end').value,
-    folderId:  document.getElementById('f-folder').value.trim(),
-    memo:      document.getElementById('f-memo').value.trim(),
-    timeline:  getTlRows(),
+    client:     document.getElementById('f-client').value.trim(),
+    size:       document.getElementById('f-size').value,
+    item:       document.getElementById('f-item').value.trim(),
+    status:     document.getElementById('f-status').value,
+    startDate:  document.getElementById('f-start').value,
+    endDate:    document.getElementById('f-end').value,
+    folderId:   document.getElementById('f-folder').value.trim(),
+    memo:       document.getElementById('f-memo').value.trim(),
+    timeline:   getTlRows(),
+    customerId: document.getElementById('f-customer-id').value,
   };
   try {
     const res  = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload) });
