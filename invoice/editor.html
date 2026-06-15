@@ -80,6 +80,14 @@
           <label class="form-label">件名</label>
           <input type="text" class="form-control" id="doc-subject" placeholder="例: mini6 システム手帳 製作">
         </div>
+        <div class="form-group">
+          <label class="form-label">関連受付番号（任意・オーダー進捗と紐付け）</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" class="form-control" id="doc-related-order" placeholder="例: OP-2606-001" style="flex:1;">
+            <a id="link-to-order-progress" href="#" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="display:none;">📋 進捗を開く</a>
+          </div>
+          <small style="color:var(--color-text-mute); font-size:11px;">入力するとオーダー進捗ページからもこの書類を辿れます</small>
+        </div>
       </div>
 
       <!-- 顧客 -->

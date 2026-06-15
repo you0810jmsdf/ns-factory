@@ -124,6 +124,11 @@
         promoteBtn = `<button class="btn btn-ghost btn-sm" onclick="promoteDoc('${escHtml(doc.number)}','receipt')">→領収書</button>`;
       }
 
+      // 関連受付番号があれば進捗ページへのリンク
+      const orderBtn = doc.relatedOrderNumber
+        ? `<a href="../orderprogress.html?focus=${encodeURIComponent(doc.relatedOrderNumber)}" target="_blank" class="btn btn-ghost btn-sm" title="関連オーダー: ${escHtml(doc.relatedOrderNumber)}">📋 ${escHtml(doc.relatedOrderNumber)}</a>`
+        : '';
+
       return `<tr>
         <td><a href="editor.html?id=${encodeURIComponent(doc.number)}&type=${doc.type}" style="color:var(--color-accent-dark);font-weight:600;">${escHtml(doc.number)}</a></td>
         <td>${escHtml(typeLabel)}</td>
@@ -135,6 +140,7 @@
         <td>${driveBtn}</td>
         <td style="white-space:nowrap;">
           <a href="editor.html?id=${encodeURIComponent(doc.number)}&type=${doc.type}" class="btn btn-ghost btn-sm">編集</a>
+          ${orderBtn}
           ${promoteBtn}
           <button class="btn btn-danger btn-sm" onclick="deleteDoc('${escHtml(doc.number)}')">削除</button>
         </td>
