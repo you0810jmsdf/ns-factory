@@ -372,12 +372,6 @@
   <div class="modal" id="modal">
     <h2 id="modal-title">オーダー追加</h2>
     <input type="hidden" id="edit-id">
-    <div class="field">
-      <label>顧客マスタから選択（任意・選ぶと依頼者名が自動入力されます）</label>
-      <select id="f-customer-id" onchange="onCustomerSelectChange()">
-        <option value="">— 選択しない（依頼者名を直接入力）—</option>
-      </select>
-    </div>
     <div class="field-row">
       <div class="field">
         <label>依頼者名</label>
@@ -434,6 +428,21 @@
       <div class="tl-editor">
         <div id="tl-rows"></div>
         <button class="btn-tl-add" onclick="addTlRow('','')">＋ 進捗を追加</button>
+      </div>
+    </div>
+    <div class="field" style="border:1px dashed var(--color-accent); border-radius:8px; padding:10px 12px; background:#fbf7f2;">
+      <label style="display:flex;align-items:center;gap:6px;">
+        🔒 顧客連携（管理者専用・非公開）
+      </label>
+      <select id="f-customer-id" onchange="onCustomerSelectChange()" style="margin-bottom:8px;">
+        <option value="">— 顧客マスタから選択（任意・選ぶと依頼者名が自動入力）—</option>
+      </select>
+      <div id="customer-info-box" style="display:none; font-size:.78rem; background:#fff; padding:8px 10px; border-radius:6px; border:1px solid #e9e0d0; margin-bottom:8px;">
+        <div id="customer-info-text" style="color:var(--color-text-sub); line-height:1.6;"></div>
+        <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;">
+          <a id="link-to-customer" href="#" target="_blank" rel="noopener" class="btn btn-edit" style="font-size:.72rem; padding:4px 10px;">👤 顧客管理を開く</a>
+          <a id="link-to-invoices" href="#" target="_blank" rel="noopener" class="btn btn-edit" style="font-size:.72rem; padding:4px 10px;">📄 関連書類を開く</a>
+        </div>
       </div>
     </div>
     <div class="field">
@@ -503,7 +512,12 @@ const RR_SEED = [
 function checkAuth() {
   if (sessionStorage.getItem('op_auth') === '1') return true;
   const pw = prompt('管理者パスワードを入力してください:');
-  if (pw === ADMIN_PASS) { sessionStorage.setItem('op_auth', '1'); return true; }
+  if (pw === ADMIN_PASS) {
+    sessionStorage.setItem('op_auth', '1');
+    // 認証後にカード再描画して依頼者名を表示反映
+    try { applyFilter(); } catch(e) {}
+    return true;
+  }
   return false;
 }
 function isAdmin() {
@@ -688,7 +702,7 @@ function applyFilter() {
     const combined = [...opRr, ...rrRecords.map(r => ({...r, _type:'rr'}))];
     let filtered = combined;
     if (q) filtered = filtered.filter(r =>
-      (r['依頼者']||'').toLowerCase().includes(q) ||
+      (isAdmin() && (r['依頼者']||'').toLowerCase().includes(q)) ||
       (r['品物']||r['品名']||'').toLowerCase().includes(q) ||
       (r['カテゴリ']||r['サイズ']||'').toLowerCase().includes(q) ||
       (r['受付番号']||'').toLowerCase().includes(q)
@@ -713,7 +727,7 @@ function applyFilter() {
   if (currentStatFilter === 'done') filtered = filtered.filter(isDone);
   if (q) filtered = filtered.filter(r =>
     (r['受付番号']||'').toLowerCase().includes(q) ||
-    (r['依頼者']||'').toLowerCase().includes(q) ||
+    (isAdmin() && (r['依頼者']||'').toLowerCase().includes(q)) ||
     (r['品名']||'').toLowerCase().includes(q)
   );
   document.getElementById('stat-size').textContent = filtered.length;
@@ -778,6 +792,7 @@ function renderCards(records) {
       : '<div style="font-size:.8rem;color:var(--color-text-mute)">進捗情報はまだありません</div>';
     const folderId = r['DriveフォルダID']||'';
     const client   = r['依頼者']||'';
+    const clientDisplay = isAdmin() ? client : (client ? 'ご依頼者様' : '');
     const hasLocal = !folderId && localPhotos[client] && localPhotos[client].length > 0;
     const carHtml  = folderId
       ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">📷 画像を読み込み中…</div></div>`
@@ -794,7 +809,7 @@ function renderCards(records) {
         </div>
         <div class="card-title">
           <div class="item-name">${esc(r['品名']||'（品名未設定）')}</div>
-          <div class="client-name">${esc(r['依頼者']||'')}</div>
+          <div class="client-name">${esc(clientDisplay)}</div>
         </div>
         <span class="status-badge ${cls}">${esc(r['ステータス']||'')}</span>
         <span class="chevron">▼</span>
@@ -849,6 +864,7 @@ function renderRrCards(records) {
     const folderId = r['DriveフォルダID']||'';
     const gastype  = isOp ? '' : ' data-gastype="rr"';
     const client   = r['依頼者']||'';
+    const clientDisplay = isAdmin() ? client : (client ? 'ご依頼者様' : '');
     const hasLocal = isOp && !folderId && localPhotos[client] && localPhotos[client].length > 0;
     const carHtml  = folderId
       ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}"${gastype}>📷 画像を読み込み中…</div></div>`
@@ -869,7 +885,7 @@ function renderRrCards(records) {
         <div>${headerSub}</div>
         <div class="card-title">
           <div class="item-name">${esc(itemName)}</div>
-          <div class="client-name">${esc(client)}</div>
+          <div class="client-name">${esc(clientDisplay)}</div>
         </div>
         <span class="status-badge ${cls}">${esc(r['ステータス']||'')}</span>
         <span class="chevron">▼</span>
@@ -985,6 +1001,7 @@ function openModal(id) {
     document.getElementById('f-folder').value = r['DriveフォルダID']||'';
     document.getElementById('f-memo').value   = r['メモ（非公開）']||'';
     document.getElementById('f-customer-id').value = r['顧客ID']||'';
+    onCustomerSelectChange();
     const tl = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
     tl.forEach(t => addTlRow(t.date||'', t.text||''));
   } else {
@@ -997,6 +1014,8 @@ function openModal(id) {
     document.getElementById('f-folder').value = '';
     document.getElementById('f-memo').value   = '';
     document.getElementById('f-customer-id').value = '';
+    const cBox = document.getElementById('customer-info-box');
+    if (cBox) cBox.style.display = 'none';
     addTlRow(new Date().toISOString().slice(0,10), 'ご注文ありがとうございます。受け付けいたしました。');
   }
   document.getElementById('modal-bg').classList.add('open');
@@ -1055,10 +1074,33 @@ function renderCustomerSelect() {
 
 function onCustomerSelectChange() {
   const id = document.getElementById('f-customer-id').value;
-  if (!id) return;
+  const box = document.getElementById('customer-info-box');
+  if (!id) {
+    if (box) box.style.display = 'none';
+    return;
+  }
   const c = customerMaster.find(x => x.id === id);
-  if (c) {
-    document.getElementById('f-client').value = c.name + ' ' + (c.honorific || '様');
+  if (!c) {
+    if (box) box.style.display = 'none';
+    return;
+  }
+  // 依頼者名フィールドに自動入力（空のときのみ・既存値は尊重）
+  const clientField = document.getElementById('f-client');
+  if (!clientField.value.trim()) {
+    clientField.value = c.name + ' ' + (c.honorific || '様');
+  }
+  // 顧客情報パネル表示
+  if (box) {
+    const lines = [];
+    lines.push(`<b>${esc(c.id)}　${esc(c.name)} ${esc(c.honorific || '様')}</b>`);
+    if (c.email)   lines.push(`📧 ${esc(c.email)}`);
+    if (c.phone)   lines.push(`📞 ${esc(c.phone)}`);
+    if (c.address) lines.push(`🏠 ${esc((c.zip ? c.zip + ' ' : '') + c.address)}`);
+    document.getElementById('customer-info-text').innerHTML = lines.join('<br>');
+    // リンク先（invoice 配下のページに ?customerId= で渡す）
+    document.getElementById('link-to-customer').href = 'invoice/customers.html?id=' + encodeURIComponent(c.id);
+    document.getElementById('link-to-invoices').href = 'invoice/index.html?customerId=' + encodeURIComponent(c.id);
+    box.style.display = '';
   }
 }
 

@@ -7,9 +7,15 @@
 
   let allDocs = [];
   let currentType = 'all';
+  let filterCustomerId = ''; // URLパラメータ ?customerId= で顧客IDフィルタ
 
   // ---- 初期化 ----
   document.addEventListener('DOMContentLoaded', function () {
+    // URLパラメータから顧客IDフィルタを取得
+    const params = new URLSearchParams(location.search);
+    filterCustomerId = (params.get('customerId') || '').trim();
+    if (filterCustomerId) renderCustomerFilterBanner();
+
     loadDocs();
 
     // タブ切り替え
@@ -55,11 +61,32 @@
       .finally(function () { setLoading(false); });
   }
 
+  // ---- 顧客IDフィルタバナー（オーダー進捗から飛んできた時の表示）----
+  function renderCustomerFilterBanner() {
+    let banner = document.getElementById('customer-filter-banner');
+    if (!filterCustomerId) {
+      if (banner) banner.remove();
+      return;
+    }
+    if (!banner) {
+      const titleEl = document.querySelector('.page-title');
+      if (!titleEl) return;
+      banner = document.createElement('div');
+      banner.id = 'customer-filter-banner';
+      banner.style.cssText = 'background:#fbf3e6;border:1px solid var(--color-accent,#a07d3e);border-radius:8px;padding:10px 14px;margin:12px 0;display:flex;align-items:center;gap:12px;font-size:13px;';
+      titleEl.insertAdjacentElement('afterend', banner);
+    }
+    banner.innerHTML = '🔗 顧客 <b>' + escHtml(filterCustomerId) + '</b> の書類のみ表示中　<a href="index.html" style="color:var(--color-accent-dark,#7a5d2a);text-decoration:underline;">すべて表示</a>';
+  }
+
   // ---- テーブル描画 ----
   function renderTable() {
     const keyword = document.getElementById('search-input').value.trim().toLowerCase();
     let rows = allDocs;
 
+    if (filterCustomerId) {
+      rows = rows.filter(r => r.customerId === filterCustomerId);
+    }
     if (currentType !== 'all') {
       rows = rows.filter(r => r.type === currentType);
     }
