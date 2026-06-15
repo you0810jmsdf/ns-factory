@@ -646,7 +646,9 @@
     }
 
     function buildFilters() {
-      const categories = [...new Set(works.map((w) => w.category).filter(Boolean))];
+      const categories = [...new Set(
+        works.flatMap((w) => (w.category || '').split('／').map((c) => c.trim())).filter(Boolean)
+      )];
       const filtersEl = document.getElementById('filters');
       filtersEl.innerHTML = ['', ...categories].map((cat) =>
         `<button class="filter-btn${activeCategory === cat ? ' active' : ''}" type="button" data-cat="${esc(cat)}">${cat || 'すべて'}</button>`
@@ -664,7 +666,7 @@
     function render() {
       const keyword = normalize(search.value).trim();
       filtered = works.filter((work) => {
-        if (activeCategory && work.category !== activeCategory) return false;
+        if (activeCategory && !work.category.split('／').map((c) => c.trim()).includes(activeCategory)) return false;
         return !keyword || normalize([
           work.title,
           work.category,
