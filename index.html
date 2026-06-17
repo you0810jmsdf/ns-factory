@@ -157,6 +157,54 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 }
 .nav-cta:hover{opacity:.85}
 
+/* 幕僚室ドロップダウン */
+.nav-dropdown{position:relative}
+.nav-dropdown-toggle{
+  font-family:inherit;font-size:13px;color:var(--color-text-sub);
+  padding:6px 10px;border-radius:var(--radius-sm);
+  background:transparent;border:0;cursor:pointer;
+  white-space:nowrap;
+  transition:background var(--transition-base),color var(--transition-base);
+}
+.nav-dropdown-toggle:hover,
+.nav-dropdown.open .nav-dropdown-toggle{
+  background:var(--color-bg-sub);color:var(--color-text);
+}
+.nav-dropdown-caret{display:inline-block;margin-left:4px;font-size:10px;opacity:.7}
+.nav-dropdown-menu{
+  position:absolute;top:calc(100% + 8px);right:0;
+  min-width:200px;background:#fff;
+  border:1px solid var(--color-border);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-md);
+  padding:8px 0;
+  display:none;z-index:120;
+}
+.nav-dropdown.open .nav-dropdown-menu,
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu{display:block}
+.nav-dropdown-item{
+  display:block;padding:9px 18px;
+  color:var(--color-text);font-size:14px;
+  text-decoration:none;white-space:nowrap;
+  transition:background var(--transition-base),color var(--transition-base);
+}
+.nav-dropdown-item:hover{background:var(--color-bg-sub);color:var(--color-accent-dark)}
+
+/* ナビバー QR */
+.nav-qr{
+  display:flex;flex-direction:column;align-items:center;
+  margin-left:12px;padding:4px 0 4px 12px;
+  border-left:1px solid var(--color-border);
+  flex-shrink:0;
+}
+.nav-qr-img{width:80px;height:80px;background:#fff;border-radius:6px;padding:2px}
+.nav-qr-img img,
+.nav-qr-img canvas{display:block;width:76px !important;height:76px !important}
+.nav-qr-label{
+  font-size:10px;color:var(--color-text-sub);
+  margin-top:2px;letter-spacing:.06em;
+}
+
 /* ── Hero ───────────────────────────────────────────── */
 .hero{
   position:relative;
@@ -843,7 +891,9 @@ h1,h2,h3{
   .hero{grid-template-columns:1fr;min-height:auto}
   .hero-content{padding:56px 24px 40px}
   .hero-photo{display:none}
-  .nav-links{display:none}
+  .nav-links{gap:2px}
+  .nav-link,.nav-dropdown-toggle{font-size:12px;padding:6px 8px}
+  .nav-qr{display:none}
   .footer-inner{grid-template-columns:1fr}
   .footer-links{align-items:flex-start}
   .order-cta-box{padding:28px 24px}
@@ -1052,7 +1102,25 @@ h1,h2,h3{
   </a>
   <span class="nav-spacer"></span>
   <div class="nav-links">
+    <div class="nav-dropdown" id="bakuryo-dropdown">
+      <button type="button" class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="bakuryo-menu">幕僚室<span class="nav-dropdown-caret">▾</span></button>
+      <div class="nav-dropdown-menu" id="bakuryo-menu" role="menu">
+        <a href="./sakusen-room/" class="nav-dropdown-item" role="menuitem">作戦幕僚室</a>
+        <a href="./kanri-room/" class="nav-dropdown-item" role="menuitem">監理幕僚室</a>
+        <a href="./kouhou-room/" class="nav-dropdown-item" role="menuitem">後方幕僚室</a>
+        <a href="./hanbai-room/" class="nav-dropdown-item" role="menuitem">販売幕僚室</a>
+        <a href="./pr-room/" class="nav-dropdown-item" role="menuitem">広報幕僚室</a>
+        <a href="./hozen-room/" class="nav-dropdown-item" role="menuitem">保全幕僚室</a>
+        <a href="./digital-room/" class="nav-dropdown-item" role="menuitem">デジタル幕僚室</a>
+        <a href="./jinji-room/" class="nav-dropdown-item" role="menuitem">人事幕僚室</a>
+        <a href="./hitsuki/" class="nav-dropdown-item" role="menuitem">教育幕僚室</a>
+      </div>
+    </div>
     <a href="#staff" class="nav-link">スタッフ</a>
+  </div>
+  <div class="nav-qr" aria-label="このページのQRコード">
+    <div id="page-qr" class="nav-qr-img"></div>
+    <span class="nav-qr-label">このページ</span>
   </div>
 </nav>
 
@@ -1576,5 +1644,52 @@ function gateConfidential(e, url) {
 })();
 </script>
 <script src="assets/access-counter.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  (function(){
+    function renderPageQr(){
+      if(typeof QRCode==='undefined')return;
+      var target=document.getElementById('page-qr');
+      if(!target||target.dataset.rendered)return;
+      var url=location.origin+location.pathname.replace(/index\.html$/,'');
+      new QRCode(target,{
+        text:url,
+        width:76,
+        height:76,
+        colorDark:'#1D1D1F',
+        colorLight:'#FFFFFF',
+        correctLevel:QRCode.CorrectLevel.M
+      });
+      target.dataset.rendered='1';
+      target.title=url;
+    }
+    if(document.readyState==='complete')renderPageQr();
+    else window.addEventListener('load',renderPageQr);
+  })();
+
+  (function(){
+    var dd=document.getElementById('bakuryo-dropdown');
+    if(!dd)return;
+    var toggle=dd.querySelector('.nav-dropdown-toggle');
+    toggle.addEventListener('click',function(e){
+      e.stopPropagation();
+      var open=dd.classList.toggle('open');
+      toggle.setAttribute('aria-expanded',open?'true':'false');
+    });
+    document.addEventListener('click',function(e){
+      if(!dd.contains(e.target)){
+        dd.classList.remove('open');
+        toggle.setAttribute('aria-expanded','false');
+      }
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape'){
+        dd.classList.remove('open');
+        toggle.setAttribute('aria-expanded','false');
+      }
+    });
+  })();
+</script>
 </body>
 </html>
