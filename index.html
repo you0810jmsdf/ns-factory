@@ -190,19 +190,20 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 }
 .nav-dropdown-item:hover{background:var(--color-bg-sub);color:var(--color-accent-dark)}
 
-/* ナビバー QR */
+/* ナビバー QR（高さ44pxでnav 56pxに収める） */
 .nav-qr{
-  display:flex;flex-direction:column;align-items:center;
-  margin-left:12px;padding:4px 0 4px 12px;
+  display:flex;flex-direction:row;align-items:center;gap:8px;
+  margin-left:12px;padding:0 0 0 12px;
   border-left:1px solid var(--color-border);
-  flex-shrink:0;
+  flex-shrink:0;height:44px;
 }
-.nav-qr-img{width:80px;height:80px;background:#fff;border-radius:6px;padding:2px}
+.nav-qr-img{width:44px;height:44px;background:#fff;border-radius:4px;padding:1px;flex-shrink:0}
 .nav-qr-img img,
-.nav-qr-img canvas{display:block;width:76px !important;height:76px !important}
+.nav-qr-img canvas{display:block;width:42px !important;height:42px !important}
 .nav-qr-label{
   font-size:10px;color:var(--color-text-sub);
-  margin-top:2px;letter-spacing:.06em;
+  line-height:1.25;letter-spacing:.04em;
+  max-width:58px;
 }
 
 /* ── Hero ───────────────────────────────────────────── */
@@ -1655,11 +1656,11 @@ function gateConfidential(e, url) {
       var url=location.origin+location.pathname.replace(/index\.html$/,'');
       new QRCode(target,{
         text:url,
-        width:76,
-        height:76,
+        width:42,
+        height:42,
         colorDark:'#1D1D1F',
         colorLight:'#FFFFFF',
-        correctLevel:QRCode.CorrectLevel.M
+        correctLevel:QRCode.CorrectLevel.L
       });
       target.dataset.rendered='1';
       target.title=url;
