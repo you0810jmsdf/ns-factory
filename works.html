@@ -60,6 +60,32 @@
       border-bottom: 1px solid var(--line);
     }
     .hero-inner { max-width: 1080px; margin: 0 auto; }
+    .hero-inner--qr {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .hero-text { flex: 1 1 480px; min-width: 0; }
+    .hero-qr {
+      flex: 0 0 auto;
+      text-align: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 14px 10px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.04);
+    }
+    .hero-qr-img { width: 160px; height: 160px; margin: 0 auto; }
+    .hero-qr-img img,
+    .hero-qr-img canvas { display: block; width: 160px !important; height: 160px !important; }
+    .hero-qr-caption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
     .eyebrow {
       color: var(--warm);
       font-size: 12px;
@@ -412,6 +438,11 @@
     @media (max-width: 720px) {
       .nav { gap: 12px; overflow-x: auto; }
       .hero { padding: 46px 18px 28px; }
+      .hero-inner--qr { gap: 18px; }
+      .hero-qr { margin: 4px auto 0; padding: 12px 12px 8px; }
+      .hero-qr-img,
+      .hero-qr-img img,
+      .hero-qr-img canvas { width: 140px !important; height: 140px !important; }
       .tools { grid-template-columns: 1fr; padding: 18px 18px 0; }
       .gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); padding: 18px 18px 56px; gap: 12px; }
       .modal { padding: 14px; }
@@ -435,10 +466,16 @@
   </nav>
 
   <header class="hero">
-    <div class="hero-inner">
-      <p class="eyebrow">Works</p>
-      <h1>作品集</h1>
-      <p class="lead">システム手帳を中心に、これまで制作した革製品をまとめています。気になる作品は、写真を開いて細部までご覧ください。</p>
+    <div class="hero-inner hero-inner--qr">
+      <div class="hero-text">
+        <p class="eyebrow">Works</p>
+        <h1>作品集</h1>
+        <p class="lead">システム手帳を中心に、これまで制作した革製品をまとめています。気になる作品は、写真を開いて細部までご覧ください。</p>
+      </div>
+      <aside class="hero-qr" aria-label="このページのQRコード">
+        <div id="page-qr" class="hero-qr-img"></div>
+        <p class="hero-qr-caption">スマホで読み取って<br>このページを見る</p>
+      </aside>
     </div>
   </header>
 
@@ -960,6 +997,30 @@
         count.textContent = '読み込み失敗';
         gallery.innerHTML = '<div class="error">作品データを読み込めませんでした。時間をおいて再読み込みしてください。</div>';
       });
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    (function() {
+      function renderPageQr() {
+        if (typeof QRCode === 'undefined') return;
+        var target = document.getElementById('page-qr');
+        if (!target || target.dataset.rendered) return;
+        var url = location.origin + location.pathname;
+        new QRCode(target, {
+          text: url,
+          width: 160,
+          height: 160,
+          colorDark: '#1f2933',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+        target.dataset.rendered = '1';
+        target.title = url;
+      }
+      if (document.readyState === 'complete') renderPageQr();
+      else window.addEventListener('load', renderPageQr);
+    })();
   </script>
 </body>
 </html>
