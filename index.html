@@ -755,6 +755,15 @@ h1,h2,h3{
   color:#bdbdbd;
   font-size:11px;
 }
+.staff-tasks .duty{
+  color:#7a6a4a;
+  font-size:12px;
+}
+.staff-tasks .duty::after{
+  content:" （社内管理）";
+  color:#a8946a;
+  font-size:11px;
+}
 
 /* ── Order CTA ──────────────────────────────────────── */
 .order-section{background:var(--color-bg-sub)}
@@ -1393,10 +1402,10 @@ h1,h2,h3{
       <div class="staff-tasks">
         <span class="staff-tasks-label">主な任務</span>
         <a href="./password-note.html">パスワードノート</a>
-        <span class="soon">APIキー台帳</span>
-        <span class="soon">トークン棚卸し記録</span>
-        <span class="soon">バックアップ状況</span>
-        <span class="soon">監視・通知ステータス</span>
+        <span class="duty">APIキー台帳</span>
+        <span class="duty">トークン棚卸し記録</span>
+        <span class="duty">バックアップ状況</span>
+        <span class="duty">監視・通知ステータス</span>
       </div>
       <a class="staff-card" href="./digital-room/" style="display:block;color:inherit;text-decoration:none;">
         <span class="staff-badge">デジタル幕僚</span>
