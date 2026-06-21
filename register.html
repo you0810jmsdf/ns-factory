@@ -1271,11 +1271,72 @@ function setThreadsProgress(msg) {
   document.getElementById('threadsProgressMsg').textContent = msg;
 }
 
-function showThreadsError(msg) {
+function showThreadsError(msg, detail) {
   document.getElementById('threadsProgress').classList.add('hidden');
   const el = document.getElementById('threadsError');
   el.classList.remove('hidden');
-  el.textContent = '❌ ' + msg;
+  el.innerHTML = '';
+  const head = document.createElement('div');
+  head.style.fontWeight = '700';
+  head.textContent = '❌ ' + msg;
+  el.appendChild(head);
+
+  if (detail && typeof detail === 'object') {
+    // diagnostics（アップロード結果）
+    if (Array.isArray(detail.diagnostics) && detail.diagnostics.length) {
+      const dh = document.createElement('div');
+      dh.style.marginTop = '8px';
+      dh.style.fontWeight = '700';
+      dh.textContent = '【画像URL診断】';
+      el.appendChild(dh);
+      detail.diagnostics.forEach((d, i) => {
+        const row = document.createElement('div');
+        row.style.marginTop = '4px';
+        row.style.padding = '6px 8px';
+        row.style.background = '#fff';
+        row.style.border = '1px solid #e5cfcc';
+        row.style.borderRadius = '4px';
+        row.style.fontFamily = 'monospace';
+        row.style.fontSize = '11px';
+        row.style.wordBreak = 'break-all';
+        row.innerHTML =
+          '<div><b>[' + i + ']</b> source=' + (d.source || '') + ' blob_ct=' + (d.blobContentType || '-') + ' blob_size=' + (d.blobSize || 0) + 'B</div>' +
+          '<div>url: <a href="' + (d.url || '') + '" target="_blank" rel="noopener">' + (d.url || '') + '</a></div>' +
+          '<div>fetch: status=' + (d.status || '-') + ' content-type=' + (d.contentType || '-') + ' size=' + (d.size || 0) + 'B' + (d.error ? ' err=' + d.error : '') + '</div>';
+        el.appendChild(row);
+      });
+    }
+    // Threads API 生レスポンス本文
+    if (detail.threadsBody) {
+      const tb = document.createElement('div');
+      tb.style.marginTop = '8px';
+      tb.style.fontWeight = '700';
+      tb.textContent = '【Threads APIレスポンス】';
+      el.appendChild(tb);
+      const pre = document.createElement('pre');
+      pre.style.whiteSpace = 'pre-wrap';
+      pre.style.wordBreak = 'break-all';
+      pre.style.background = '#fff';
+      pre.style.border = '1px solid #e5cfcc';
+      pre.style.borderRadius = '4px';
+      pre.style.padding = '6px 8px';
+      pre.style.fontSize = '11px';
+      try {
+        pre.textContent = JSON.stringify(JSON.parse(detail.threadsBody), null, 2);
+      } catch (e) {
+        pre.textContent = String(detail.threadsBody);
+      }
+      el.appendChild(pre);
+    }
+    if (detail.failedImageIndex != null) {
+      const fi = document.createElement('div');
+      fi.style.marginTop = '6px';
+      fi.textContent = '失敗画像インデックス: ' + detail.failedImageIndex;
+      el.appendChild(fi);
+    }
+    // 開発者用: コンソール出力
+    try { console.error('[threads error full]', detail); window.__lastThreadsError = detail; } catch (e) {}
+  }
 }
 
 function showThreadsResult(postUrl, postText) {
@@ -1429,13 +1490,17 @@ async function doPublishThreadsPost() {
       payload: JSON.stringify(payload),
     }, 240000);
     clearTimeout(t1); clearTimeout(t2);
-    if (!data.ok) throw new Error(data.error || JSON.stringify(data));
+    if (!data.ok) {
+      const err = new Error(data.error || JSON.stringify(data));
+      err.detail = data;
+      throw err;
+    }
 
     showThreadsResult(data.postUrl, data.postText);
     pubBtn.textContent = '✅ 投稿済み';
   } catch(e) {
     clearTimeout(t1); clearTimeout(t2);
-    showThreadsError(e.message || String(e));
+    showThreadsError(e.message || String(e), e.detail);
     pubBtn.disabled = false;
     pubBtn.textContent = '🔁 再投稿';
   }
