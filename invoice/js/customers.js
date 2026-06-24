@@ -66,16 +66,20 @@
 
     const tbody = document.getElementById('cust-tbody');
     if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="icon">&#x1F465;</span>顧客が登録されていません</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><span class="icon">&#x1F465;</span>顧客が登録されていません</div></td></tr>';
       return;
     }
     tbody.innerHTML = rows.map(function (c) {
+      const zip = (c.zip || '').trim();
+      const addr = (c.address || '').trim();
+      const addrFull = zip && addr ? '〒' + zip + ' ' + addr : (addr || zip);
       return `<tr>
         <td style="color:var(--color-text-mute);font-size:12px;">${escHtml(c.id)}</td>
         <td style="font-weight:600;">${escHtml(c.name)}</td>
         <td>${escHtml(c.honorific)}</td>
         <td>${escHtml(c.phone)}</td>
         <td>${escHtml(c.email)}</td>
+        <td class="col-address" title="${escHtml(addrFull)}">${escHtml(addrFull)}</td>
         <td>${escHtml(c.contact)}</td>
         <td style="white-space:nowrap;">
           <button class="btn btn-ghost btn-sm" onclick="editCustomer('${escHtml(c.id)}')">編集</button>
