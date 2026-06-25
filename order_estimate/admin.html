@@ -742,6 +742,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="analytics" role="tab" aria-selected="false">アクセス解析</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="stats" role="tab" aria-selected="false">作品ページアクセスログ</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="threads-sns" role="tab" aria-selected="false">📣 Threads投稿管理</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="customers" role="tab" aria-selected="false">👥 顧客マスタ</button>
     </div>
     <div class="admin-tab-note" id="adminTabNote">N's Factory 幕僚計画。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。</div>
 
@@ -1321,6 +1322,51 @@ tr.row-out-stock td{
       <div style="padding:12px;background:#f0f7f3;border:1px solid #b8ddc8;border-radius:10px;font-size:12px;color:#29613d;line-height:1.6">
         ⏰ <b>自動実行スケジュール：</b>毎朝8:00 投稿文自動生成 → メール通知 / 毎週月曜7:00 Web情報収集 / 5分ごと 予約投稿チェック<br>
         📮 <b>Threadsアカウント：</b><a href="https://www.threads.com/@leathercraft_nsfactory" target="_blank" style="color:#29613d">@leathercraft_nsfactory</a>
+      </div>
+    </div>
+
+    <!-- 顧客マスタタブ -->
+    <div class="panel customers-section admin-section-hidden">
+      <div style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:800;color:#3d1a08;margin-bottom:6px">👥 顧客マスタ</div>
+        <div style="font-size:12px;color:#7d644d;line-height:1.6">invoice GAS Sheets が単一マスタ（2026-06-25 統合完了）。各ツールは別タブで開きます。</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+        <a href="../invoice/customers.html" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">👥</span>
+          <span style="font-weight:800;font-size:13px">顧客マスタを開く</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">顧客の追加・編集・削除（GAS Sheets 真のマスタ・C-NNN採番）</span>
+        </a>
+        <a href="../invoice/" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">📄</span>
+          <span style="font-weight:800;font-size:13px">請求書・見積書 一覧</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">書類の一覧・新規作成・PDF発行・Drive保存</span>
+        </a>
+        <a href="../invoice/products.html" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">🛍️</span>
+          <span style="font-weight:800;font-size:13px">商品マスタ</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">請求書で使う商品の登録・編集</span>
+        </a>
+        <a href="../invoice/bank-accounts.html" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">💰</span>
+          <span style="font-weight:800;font-size:13px">振込先口座マスタ</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">銀行口座・BTC（Onchain/Lightning）の登録・編集</span>
+        </a>
+        <a href="../orderprogress.html" target="_blank"
+          style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;text-decoration:none;color:#3d1a08">
+          <span style="font-size:22px">📦</span>
+          <span style="font-weight:800;font-size:13px">オーダー進捗管理</span>
+          <span style="font-size:11px;color:#7d644d;line-height:1.5">受注ステータス管理・顧客連携プルダウン</span>
+        </a>
+      </div>
+      <div style="padding:12px;background:#fff5e6;border:1px solid #f0d8a8;border-radius:10px;font-size:12px;color:#7d4a00;line-height:1.7">
+        ⚠️ <b>customer_manager.html（旧・LocalStorage）</b>：伝票画像（IndexedDB）と platforms 編集UIのため当面残置。ローカルファイル（<code>販売部\顧客管理\customer_manager.html</code>）から開いてください。<br>
+        🚫 <b>新規顧客の追加は customer_manager では行わないでください</b>。新規追加は「顧客マスタを開く」(invoice/customers.html)で行うこと。<br>
+        🔧 <b>customer_sync.html（マイグレーションツール）</b>：1回限りのマイグレ用。通常は使用不要。
       </div>
     </div>
 
@@ -3303,10 +3349,11 @@ function setAdminTab(tab) {
   const isAnalytics = tab === 'analytics';
   const isStats = tab === 'stats';
   const isThreadsSns = tab === 'threads-sns';
+  const isCustomers = tab === 'customers';
   const isBrand = tab === 'brand';
   const isSize = tab === 'size';
   const isSettings = tab === 'settings';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isBrand && !isSize && !isSettings;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -3334,8 +3381,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.threads-sns-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThreadsSns);
   });
+  document.querySelectorAll('.customers-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isCustomers);
+  });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
