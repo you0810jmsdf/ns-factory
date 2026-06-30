@@ -8,11 +8,22 @@
   let allCustomers = [];
   let editMode = false;
   let targetCustomerId = ''; // URLパラメータ ?id= で特定顧客にフォーカス
+  let currentSort = localStorage.getItem('cust_sort') || 'newest';
 
   document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(location.search);
     targetCustomerId = (params.get('id') || '').trim();
     if (targetCustomerId) renderCustomerFocusBanner();
+
+    const sortSel = document.getElementById('sort-select');
+    if (sortSel) {
+      sortSel.value = currentSort;
+      sortSel.addEventListener('change', function () {
+        currentSort = this.value;
+        localStorage.setItem('cust_sort', currentSort);
+        renderTable();
+      });
+    }
 
     loadCustomers();
 
@@ -25,6 +36,20 @@
       addPlatformRow();
     });
   });
+
+  function applySortToRows(rows) {
+    const sorted = rows.slice();
+    if (currentSort === 'newest') {
+      sorted.reverse();
+    } else if (currentSort === 'oldest') {
+      // そのまま（GASから返る順=登録順）
+    } else if (currentSort === 'name_asc') {
+      sorted.sort(function (a, b) { return (a.name || '').localeCompare(b.name || '', 'ja'); });
+    } else if (currentSort === 'name_desc') {
+      sorted.sort(function (a, b) { return (b.name || '').localeCompare(a.name || '', 'ja'); });
+    }
+    return sorted;
+  }
 
   function renderCustomerFocusBanner() {
     let banner = document.getElementById('customer-focus-banner');
@@ -67,6 +92,8 @@
         (c.platforms_json || '').toLowerCase().includes(keyword)
       );
     }
+
+    rows = applySortToRows(rows);
 
     const tbody = document.getElementById('cust-tbody');
     if (rows.length === 0) {
