@@ -307,10 +307,42 @@ textarea{min-height:80px;resize:vertical}
   <div id="editModePanel" class="panel hidden" style="background:#fffaf0;border:1px solid #d9b466;padding:14px 16px;margin-bottom:12px">
     <div class="panel-title" style="color:#8a6a2e">📣 編集モード — PR画像プロンプト生成 ＆ Threads投稿</div>
 
-    <!-- PR画像プロンプト生成 -->
-    <div style="margin-top:10px;padding:12px;background:#fff;border:1px dashed #d9b466;border-radius:8px">
-      <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">🎨 幕僚PR画像 — プロンプト生成</div>
+    <!-- ===== 販売幕僚 作品紹介プロンプト（固定・常時表示） ===== -->
+    <div style="margin-top:10px;padding:12px;background:#fff;border:1px solid #d9b466;border-radius:8px">
+      <div style="font-weight:700;color:#5a3a20;margin-bottom:6px">📝 販売幕僚 作品紹介プロンプト（固定）</div>
       <p style="font-size:12px;color:#7a5a3f;margin:4px 0 10px;line-height:1.5">
+        販売幕僚が作品を紹介する際の<b>固定プロンプト</b>です。下のテキストをコピーして<b>ChatGPT / Gemini</b>に貼り付け、<b>作品の実物写真を添付</b>してご利用ください。<br>
+        <span style="color:#a04020">※作品画像は<b>一切加工・変形・再描画せず、添付した実物写真をそのまま使用</b>します。</span>
+      </p>
+      <textarea id="hanbaiFixedPrompt" rows="14" readonly style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fafafa;resize:vertical;box-sizing:border-box">あなたは N's factory の販売幕僚（女性レザー職人）です。
+添付した「作品の実物写真」を用いて、お客様向けに丁寧かつ温かみのある作品紹介文を作成してください。
+
+## 絶対条件（最優先・厳守）
+- 添付された作品画像は **一切加工・変形・再描画・色補正・トリミング・合成・スタイル変更を行わない**こと。
+- 添付された実物写真を **原本のまま（pixel-faithful, verbatim）** 使用すること。
+- 画像の上に文字・スタンプ・吹き出し・フィルター等を重ねないこと（画像はそのまま、紹介文は別途テキストで出力）。
+- 作品の形状・色味・質感・縫製・ステッチ・金具・サイズ感を **写真の通り正確に** 描写すること（推測で誇張・改変しない）。
+
+## 出力フォーマット
+1) キャッチコピー（20〜30文字、感情に響く一文）
+2) 作品紹介本文（200〜300文字、販売幕僚の一人称「わたし」で、素材感・使い心地・込めた想いを語る）
+3) 推しポイント（箇条書き3点、各30文字以内）
+4) おすすめのお客様像（1〜2文）
+
+## トーン
+- 落ち着いた職人らしい語り口。媚びず、誠実で温かい。
+- 過剰な絵文字・煽り表現・誇大広告は避ける。
+- 「ハンドメイド」「一点もの」「丁寧に作りました」等の常套句は使い過ぎない。</textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <button type="button" class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="copyHanbaiFixedPrompt()">📋 コピー</button>
+        <span id="hanbaiFixedCopyStatus" style="font-size:12px;color:#2a7a3a"></span>
+      </div>
+    </div>
+
+    <!-- PR画像プロンプト生成（折りたたみ・既定で非表示） -->
+    <details style="margin-top:10px;padding:12px;background:#fff;border:1px dashed #d9b466;border-radius:8px">
+      <summary style="font-weight:700;color:#5a3a20;cursor:pointer">🎨 幕僚PR画像 — プロンプト生成（旧機能・折りたたみ）</summary>
+      <p style="font-size:12px;color:#7a5a3f;margin:8px 0 10px;line-height:1.5">
         ①人物プリセット・②背景プリセットを選択し、「プロンプト生成」を押してください。<b>ChatGPT-4o / Gemini 2.5 Flash Image</b>にプロンプトと画像2枚（人物＋商品実物写真）を添付して実行します。<br>
         生成画像の<b>下部30〜35%</b>には商品の実物写真が等倍で挿入されます（再描画なし）。<br>
         <span style="color:#a04020">※商品実物写真はURLでなく<b>添付</b>が必須です。</span>
@@ -376,7 +408,7 @@ textarea{min-height:80px;resize:vertical}
         <button type="button" class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="copyPrPrompt()">📋 コピー</button>
         <span id="prCopyStatus" style="font-size:12px;color:#2a7a3a"></span>
       </div>
-    </div>
+    </details>
 
     <!-- Threads投稿（2段階：①投稿文を生成 → 確認・編集 → ②投稿） -->
     <div id="threadsSection" style="margin-top:14px;padding:14px;background:#fff8ec;border:1px solid #d9b466;border-radius:8px">
@@ -1892,6 +1924,25 @@ function copyPrPrompt() {
   } catch(e) {
     document.execCommand('copy');
     document.getElementById('prCopyStatus').textContent = '✅ コピーしました';
+  }
+}
+
+// ====== 販売幕僚 作品紹介プロンプト（固定）コピー ======
+function copyHanbaiFixedPrompt() {
+  const ta = document.getElementById('hanbaiFixedPrompt');
+  if (!ta) return;
+  const status = document.getElementById('hanbaiFixedCopyStatus');
+  ta.select();
+  try {
+    navigator.clipboard.writeText(ta.value).then(() => {
+      if (status) {
+        status.textContent = '✅ コピーしました（ChatGPT / Geminiに貼り付け、作品写真を添付してください）';
+        setTimeout(() => { status.textContent = ''; }, 4000);
+      }
+    });
+  } catch(e) {
+    document.execCommand('copy');
+    if (status) status.textContent = '✅ コピーしました';
   }
 }
 
