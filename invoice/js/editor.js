@@ -117,9 +117,27 @@
     if (matched) {
       document.getElementById('customer-id').value = matched.id;
       document.getElementById('customer-honorific').value = matched.honorific || '様';
+      // 住所・連絡先を自動入力
+      const zip     = matched.zip     || '';
+      const address = matched.address || '';
+      const phone   = matched.phone   || '';
+      const email   = matched.email   || '';
+      document.getElementById('customer-zip').value     = zip;
+      document.getElementById('customer-address').value = address;
+      document.getElementById('customer-phone').value   = phone;
+      document.getElementById('customer-email').value   = email;
+      // 値があるフィールド行のみ表示
+      document.getElementById('customer-detail-fields').style.display  = (zip || address) ? '' : 'none';
+      document.getElementById('customer-contact-fields').style.display = (phone || email) ? '' : 'none';
     } else {
       // 既存マスタに無い → ID 空欄（保存時に新規作成される）
-      document.getElementById('customer-id').value = '';
+      document.getElementById('customer-id').value      = '';
+      document.getElementById('customer-zip').value     = '';
+      document.getElementById('customer-address').value = '';
+      document.getElementById('customer-phone').value   = '';
+      document.getElementById('customer-email').value   = '';
+      document.getElementById('customer-detail-fields').style.display  = 'none';
+      document.getElementById('customer-contact-fields').style.display = 'none';
     }
   }
 
@@ -383,6 +401,7 @@
       document.getElementById('doc-subject').value      = doc.subject || '';
       document.getElementById('customer-name').value    = doc.customerName || '';
       document.getElementById('customer-id').value      = doc.customerId || '';
+      onCustomerNameChange(); // 住所・連絡先を顧客マスタから復元
       document.getElementById('doc-source-number').value = doc.sourceNumber || '';
       document.getElementById('doc-related-order').value = doc.relatedOrderNumber || '';
       updateOrderProgressLink();
