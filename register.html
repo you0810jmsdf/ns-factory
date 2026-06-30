@@ -482,9 +482,10 @@ textarea{min-height:80px;resize:vertical}
       <div>
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">サイズ</label>
         <div class="combo-wrap">
-          <select id="f_size"><option value="">選択…</option></select>
+          <select id="f_size" onchange="onSizeChange()"><option value="">選択…</option></select>
           <button type="button" class="combo-add-btn" onclick="showAddInput('size')">＋</button>
         </div>
+        <input type="text" id="f_size_custom" class="hidden" placeholder="自由記入（例: 150×100×30mm）" oninput="onSizeCustomInput()" style="margin-top:6px;width:100%;padding:8px 10px;border:1px solid #d8b888;border-radius:6px;font-size:13px;box-sizing:border-box">
         <div class="combo-new hidden" id="combo-new-size">
           <input type="text" id="combo-input-size" placeholder="新しいサイズ（例: A5 / 210×150×30mm）">
           <button type="button" class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="addNewOption('size')">追加</button>
@@ -695,11 +696,43 @@ function setFallbackOptions() {
 }
 
 function initSizeOptions() {
-  const defaults = ['Micro5','Mini5（M5）','バイブル','A6','A5','B6','カスタム'];
+  const defaults = ['Micro5','Mini5（M5）','Mini6（M6）','バイブル','A6','A5','B6','カスタム'];
   const saved = JSON.parse(localStorage.getItem('nf_sizes') || '[]');
   const all = [...new Set([...defaults, ...saved])];
   const sel = document.getElementById('f_size');
   sel.innerHTML = '<option value="">選択…</option>' + all.map(v => `<option value="${v}">${v}</option>`).join('');
+}
+
+function findCustomOption() {
+  const sel = document.getElementById('f_size');
+  return Array.from(sel.options).find(o => o.textContent === 'カスタム' || o.textContent.startsWith('カスタム'));
+}
+
+function onSizeChange() {
+  const sel = document.getElementById('f_size');
+  const customInput = document.getElementById('f_size_custom');
+  const customOpt = findCustomOption();
+  const isCustomSelected = customOpt && sel.value === customOpt.value;
+  if (isCustomSelected) {
+    customInput.classList.remove('hidden');
+    customInput.value = customOpt.value === 'カスタム' ? '' : customOpt.value;
+    customInput.focus();
+  } else {
+    customInput.classList.add('hidden');
+    customInput.value = '';
+    if (customOpt) { customOpt.value = 'カスタム'; customOpt.textContent = 'カスタム'; }
+  }
+}
+
+function onSizeCustomInput() {
+  const sel = document.getElementById('f_size');
+  const customInput = document.getElementById('f_size_custom');
+  const customOpt = findCustomOption();
+  if (!customOpt) return;
+  const text = customInput.value.trim();
+  customOpt.value = text || 'カスタム';
+  customOpt.textContent = text ? `カスタム: ${text}` : 'カスタム';
+  sel.value = customOpt.value;
 }
 
 function showAddInput(field) {
