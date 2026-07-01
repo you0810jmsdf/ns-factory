@@ -1,0 +1,840 @@
+{
+ "_comment": "革カタログ（カワムラレザー取扱・見積りページのLEATHERSから抽出したスナップショット）。見積りページで革を追加/変更したら scripts の抽出を再実行するか、ここに直接追記してください。",
+ "leathers": [
+  {
+   "id": "numer_25",
+   "name": "生成りヌメ革 2.5-3.0mm",
+   "sub": "国産 / 植物タンニン鞣し・素上げ",
+   "tags": [
+    "国産",
+    "ヌメ革",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/numer_25.jpg"
+  },
+  {
+   "id": "ska01",
+   "name": "ALASKA ナチュラル",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/ska01.jpg"
+  },
+  {
+   "id": "ska10",
+   "name": "ALASKA チョコ",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/ska10.jpg"
+  },
+  {
+   "id": "ska08",
+   "name": "ALASKA ブラウン",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/ska08.jpg"
+  },
+  {
+   "id": "ska12",
+   "name": "ALASKA ブラック",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/ska12.jpg"
+  },
+  {
+   "id": "ska13",
+   "name": "ALASKA グレー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/ska13.jpg"
+  },
+  {
+   "id": "ska42",
+   "name": "ALASKA アイボリー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/ska42.jpg"
+  },
+  {
+   "id": "ska33",
+   "name": "ALASKA レッド",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "レッド系"
+   ],
+   "image": "assets/leathers/ska33.jpg"
+  },
+  {
+   "id": "ska06",
+   "name": "ALASKA ラズベリー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "レッド系"
+   ],
+   "image": "assets/leathers/ska06.jpg"
+  },
+  {
+   "id": "ska41",
+   "name": "ALASKA ピンク",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "レッド系"
+   ],
+   "image": "assets/leathers/ska41.jpg"
+  },
+  {
+   "id": "ska31",
+   "name": "ALASKA オレンジ",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/ska31.jpg"
+  },
+  {
+   "id": "ska40",
+   "name": "ALASKA イエロー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/ska40.jpg"
+  },
+  {
+   "id": "ska43",
+   "name": "ALASKA グリーン",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/ska43.jpg"
+  },
+  {
+   "id": "ska05",
+   "name": "ALASKA ビリジアン",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/ska05.jpg"
+  },
+  {
+   "id": "ska34",
+   "name": "ALASKA ターコイズ",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/ska34.jpg"
+  },
+  {
+   "id": "ska16",
+   "name": "ALASKA ブルー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/ska16.jpg"
+  },
+  {
+   "id": "ska46",
+   "name": "ALASKA アイスブルー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/ska46.jpg"
+  },
+  {
+   "id": "mfog_nat",
+   "name": "MARGOT FOG ナチュラーレ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/mfog_nat.jpg"
+  },
+  {
+   "id": "mfog_brn",
+   "name": "MARGOT FOG ブラウン",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/mfog_brn.jpg"
+  },
+  {
+   "id": "mfog_cas",
+   "name": "MARGOT FOG カスターニャ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/mfog_cas.jpg"
+  },
+  {
+   "id": "mfog_ner",
+   "name": "MARGOT FOG ネロ（黒）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/mfog_ner.jpg"
+  },
+  {
+   "id": "mfog_top",
+   "name": "MARGOT FOG トッポ（灰）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/mfog_top.jpg"
+  },
+  {
+   "id": "mfog_fux",
+   "name": "MARGOT FOG フクシア",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "assets/leathers/mfog_fux.jpg"
+  },
+  {
+   "id": "mfog_fra",
+   "name": "MARGOT FOG フラゴラ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "assets/leathers/mfog_fra.jpg"
+  },
+  {
+   "id": "mfog_gir",
+   "name": "MARGOT FOG ジラソーレ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/mfog_gir.jpg"
+  },
+  {
+   "id": "mfog_all",
+   "name": "MARGOT FOG アローロ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/mfog_all.jpg"
+  },
+  {
+   "id": "mfog_cob",
+   "name": "MARGOT FOG コバルト",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/mfog_cob.jpg"
+  },
+  {
+   "id": "mfog_nav",
+   "name": "MARGOT FOG ネイビー",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/mfog_nav.jpg"
+  },
+  {
+   "id": "mfog_tur",
+   "name": "MARGOT FOG トルケーゼ（青緑）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/mfog_tur.jpg"
+  },
+  {
+   "id": "mg_nat",
+   "name": "MARGOT ナチュラーレ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/166876687.jpg"
+  },
+  {
+   "id": "mg_fie",
+   "name": "MARGOT フィエーノ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/183827901.jpg"
+  },
+  {
+   "id": "mg_brn",
+   "name": "MARGOT ブラウン",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/142042272.jpg"
+  },
+  {
+   "id": "mg_cas",
+   "name": "MARGOT カスターニャ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/166876910.jpg"
+  },
+  {
+   "id": "mg_dkb",
+   "name": "MARGOT ダークブラウン",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/140633333.jpg"
+  },
+  {
+   "id": "mg_bos",
+   "name": "MARGOT ボスコ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/183828000.jpg"
+  },
+  {
+   "id": "mg_ner",
+   "name": "MARGOT ネロ（黒）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/142026525.jpg"
+  },
+  {
+   "id": "mg_top",
+   "name": "MARGOT トッポ（灰）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805672.jpg"
+  },
+  {
+   "id": "mg_fra",
+   "name": "MARGOT フラゴラ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805363.jpg"
+  },
+  {
+   "id": "mg_fux",
+   "name": "MARGOT フクシア",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/166877020.jpg"
+  },
+  {
+   "id": "mg_bur",
+   "name": "MARGOT バーガンディ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/183827962.jpg"
+  },
+  {
+   "id": "mg_ros",
+   "name": "MARGOT ローサ（桃）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/188691265.jpg"
+  },
+  {
+   "id": "mg_lil",
+   "name": "MARGOT リラ（薄紫）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/166876967.jpg"
+  },
+  {
+   "id": "mg_gir",
+   "name": "MARGOT ジラソーレ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "イエロー系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/142042006.png"
+  },
+  {
+   "id": "mg_man",
+   "name": "MARGOT マンダリーノ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "イエロー系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805358.jpg"
+  },
+  {
+   "id": "mg_men",
+   "name": "MARGOT メンタ（薄緑）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/166877083.jpg"
+  },
+  {
+   "id": "mg_all",
+   "name": "MARGOT アローロ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805427.jpg"
+  },
+  {
+   "id": "mg_olm",
+   "name": "MARGOT オルモ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/183786767.jpg"
+  },
+  {
+   "id": "mg_tur",
+   "name": "MARGOT トルケーゼ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/170334361.jpg"
+  },
+  {
+   "id": "mg_nav",
+   "name": "MARGOT ネイビー",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805629.jpg"
+  },
+  {
+   "id": "lvb_ses",
+   "name": "LINEA VASCA Box セサンタ（60）",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/lvb_ses.jpg"
+  },
+  {
+   "id": "lvb_nat",
+   "name": "LINEA VASCA Box ナチュラーレ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/lvb_nat.jpg"
+  },
+  {
+   "id": "lvb_cas",
+   "name": "LINEA VASCA Box カスターニャ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/lvb_cas.jpg"
+  },
+  {
+   "id": "lvb_dkb",
+   "name": "LINEA VASCA Box ダークブラウン",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/lvb_dkb.jpg"
+  },
+  {
+   "id": "lvb_ner",
+   "name": "LINEA VASCA Box ネロ（黒）",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/lvb_ner.jpg"
+  },
+  {
+   "id": "lvb_top",
+   "name": "LINEA VASCA Box トッポ（灰）",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/lvb_top.jpg"
+  },
+  {
+   "id": "lvb_fra",
+   "name": "LINEA VASCA Box フラゴラ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "assets/leathers/lvb_fra.jpg"
+  },
+  {
+   "id": "lvb_fux",
+   "name": "LINEA VASCA Box フクシア",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "image": "assets/leathers/lvb_fux.jpg"
+  },
+  {
+   "id": "lvb_ver",
+   "name": "LINEA VASCA Box ヴェルデ（緑）",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/lvb_ver.jpg"
+  },
+  {
+   "id": "lvb_ort",
+   "name": "LINEA VASCA Box オルティーカ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/lvb_ort.jpg"
+  },
+  {
+   "id": "lvb_tur",
+   "name": "LINEA VASCA Box トルケーゼ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/lvb_tur.jpg"
+  },
+  {
+   "id": "lvb_cob",
+   "name": "LINEA VASCA Box コバルト",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/lvb_cob.jpg"
+  },
+  {
+   "id": "lvb_nav",
+   "name": "LINEA VASCA Box ネイビー",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/lvb_nav.jpg"
+  },
+  {
+   "id": "mano01",
+   "name": "MARIANO ナチュラル",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ナチュラル系",
+    "NEW"
+   ],
+   "image": "assets/leathers/mano01.jpg"
+  },
+  {
+   "id": "mano06",
+   "name": "MARIANO ブラウン",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ブラウン系",
+    "NEW"
+   ],
+   "image": "assets/leathers/mano06.jpg"
+  },
+  {
+   "id": "mano32",
+   "name": "MARIANO ダークブラウン",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ブラウン系",
+    "NEW"
+   ],
+   "image": "assets/leathers/mano32.jpg"
+  },
+  {
+   "id": "mano07",
+   "name": "MARIANO ブラック",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ダーク系",
+    "NEW"
+   ],
+   "image": "assets/leathers/mano07.jpg"
+  },
+  {
+   "id": "mano13",
+   "name": "MARIANO グレー",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ダーク系",
+    "NEW"
+   ],
+   "image": "assets/leathers/mano13.jpg"
+  },
+  {
+   "id": "mano08",
+   "name": "MARIANO オリーブ",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "グリーン系",
+    "NEW"
+   ],
+   "image": "assets/leathers/mano08.jpg"
+  },
+  {
+   "id": "mano18",
+   "name": "MARIANO ネイビー",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ブルー系",
+    "NEW"
+   ],
+   "image": "assets/leathers/mano18.jpg"
+  }
+ ]
+}

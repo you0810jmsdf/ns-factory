@@ -93,8 +93,49 @@
       .catch(function () { return mergeKB(DEFAULT_KB, null); });
   }
 
-  /* ---------- フロー・商品定義の生成 ---------- */
-  function build(KB) {
+  /* ---------- 革カタログ（leather-catalog.json）の読込（失敗時は null） ---------- */
+  function loadLeathers(url) {
+    return fetch(url, { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { return (j && j.leathers && j.leathers.length) ? j.leathers : null; })
+      .catch(function () { return null; });
+  }
+
+  /* ---------- 色ことば → 色系統 の解決（同系色ピックアップ用） ---------- */
+  var TONE_KEYWORDS = [
+    { fam: 'ブルー系',    words: ['ブルー系', '青', 'あお', 'ブルー', 'ネイビー', '紺', '水色', 'ターコイズ', 'コバルト', 'トルケーゼ', 'blue', 'navy'] },
+    { fam: 'レッド系',    words: ['レッド系', '赤', 'あか', 'レッド', 'ピンク', '桃', 'ワイン', 'バーガンディ', 'フクシア', 'ラズベリー', '紫', 'パープル', 'リラ', 'red', 'pink'] },
+    { fam: 'ブラウン系',  words: ['ブラウン系', '茶', 'ちゃ', 'ブラウン', 'キャメル', 'チョコ', 'カスターニャ', 'ボスコ', 'brown'] },
+    { fam: 'ダーク系',    words: ['ダーク系', '黒', 'くろ', 'ブラック', 'ネロ', 'グレー', '灰', 'トッポ', 'black', 'gray', 'grey'] },
+    { fam: 'イエロー系',  words: ['イエロー系', '黄', 'きいろ', 'イエロー', 'オレンジ', 'マンダリーノ', 'ジラソーレ', 'yellow', 'orange'] },
+    { fam: 'グリーン系',  words: ['グリーン系', '緑', 'みどり', 'グリーン', 'オリーブ', 'メンタ', 'アローロ', 'オルモ', 'ビリジアン', 'green'] },
+    { fam: 'ナチュラル系', words: ['ナチュラル系', '生成り', 'きなり', 'ナチュラル', 'ベージュ', 'アイボリー', '白', 'しろ', 'ヌメ', 'natural'] }
+  ];
+  function resolveTone(text) {
+    var t = (text || '').toLowerCase();
+    if (!t) return null;
+    for (var i = 0; i < TONE_KEYWORDS.length; i++) {
+      var g = TONE_KEYWORDS[i];
+      for (var j = 0; j < g.words.length; j++) {
+        if (t.indexOf(g.words[j].toLowerCase()) !== -1) return g.fam;
+      }
+    }
+    return null;
+  }
+  function leathersByTone(leathers, fam) {
+    return (leathers || []).filter(function (l) { return (l.tags || []).indexOf(fam) !== -1; });
+  }
+  function leatherImgSrc(img, assetBase) {
+    if (!img) return '';
+    if (/^https?:/.test(img) || img.indexOf('data:') === 0) return img;
+    return (assetBase || '../') + img;
+  }
+
+  /* ---------- フロー・商品定義の生成 ----------
+     leathers: leather-catalog.json の配列（省略可。あると革選択が写真スワッチになる）
+     opts.assetBase: 画像相対パスの前置（既定 '../'） */
+  function build(KB, leathers, opts) {
+    var assetBase = (opts && opts.assetBase) || '../';
     function sizeById(id) { var i; for (i = 0; i < KB.sizes.length; i++) if (KB.sizes[i].id === id) return KB.sizes[i]; return null; }
     function modelById(id) { var i; for (i = 0; i < KB.models.length; i++) if (KB.models[i].id === id) return KB.models[i]; return null; }
     function recommendSize(use, carry) {
@@ -233,10 +274,53 @@
         ], key: 'coinCard' }
     ];
 
-    var COMMON_TAIL = [
-      { say: function () { return '次は革の色です。' + KB.leatherNote + '\nどんな雰囲気がお好みですか？'; },
-        tip: function () { return '▼ 参考\n' + KB.leatherColors.map(function (c) { return '・' + c.group + '（' + c.ex + '）：' + c.hint; }).join('\n'); },
-        quick: function () { return KB.leatherColors.map(function (c) { return { label: c.group, sub: c.ex, val: c.group }; }); }, key: 'leather' },
+    /* 革選択：カタログがあれば「色系統 → 実写真スワッチ（同系色ピックアップ）」の2段階 */
+    var leatherSteps;
+    if (leathers && leathers.length) {
+      var famChips = TONE_KEYWORDS
+        .map(function (g) { return g.fam; })
+        .filter(function (fam) { return leathersByTone(leathers, fam).length > 0; })
+        .map(function (fam) { return { label: fam, sub: leathersByTone(leathers, fam).length + '色', val: fam }; });
+      leatherSteps = [
+        { say: function () { return '次は革の色です。' + KB.leatherNote + '\n当工房はカワムラレザー取扱の革のみを使用しています。お好みの色の系統を教えてください（「青っぽい」「ワインレッド」のように言葉で入力してもOKです）。'; },
+          quick: function () { return famChips.concat([{ label: 'おまかせ', sub: '職人と相談', val: 'おまかせ' }]); },
+          freeInput: true, key: 'leatherTone' },
+        { skipIf: function (a) {
+            if (a.leatherTone === 'おまかせ') { a.leather = 'おまかせ（職人と相談）'; return true; }
+            return false;
+          },
+          say: function (a) {
+            var fam = resolveTone(a.leatherTone);
+            a._leatherFam = fam;
+            if (fam) {
+              var n = leathersByTone(leathers, fam).length;
+              return '【' + fam + '】ですね。カワムラレザー取扱の同系色 ' + n + '色をピックアップしました。実際の革の写真からお選びください👇';
+            }
+            return '「' + a.leatherTone + '」に近い系統が見つかりませんでした。参考に各系統の代表色を並べます。近いものを選ぶか、そのままご希望を入力してください。';
+          },
+          quick: function (a) {
+            var fam = a._leatherFam;
+            var list = fam
+              ? leathersByTone(leathers, fam)
+              : TONE_KEYWORDS.map(function (g) { return leathersByTone(leathers, g.fam).slice(0, 2); })
+                  .reduce(function (acc, cur) { return acc.concat(cur); }, []);
+            var chips = list.map(function (l) {
+              return { label: l.name, sub: l.sub || '', val: l.name, image: leatherImgSrc(l.image, assetBase) };
+            });
+            chips.push({ label: 'おまかせ（職人と相談）', sub: '', val: 'おまかせ（職人と相談）' });
+            return chips;
+          },
+          freeInput: true, key: 'leather' }
+      ];
+    } else {
+      leatherSteps = [
+        { say: function () { return '次は革の色です。' + KB.leatherNote + '\nどんな雰囲気がお好みですか？'; },
+          tip: function () { return '▼ 参考\n' + KB.leatherColors.map(function (c) { return '・' + c.group + '（' + c.ex + '）：' + c.hint; }).join('\n'); },
+          quick: function () { return KB.leatherColors.map(function (c) { return { label: c.group, sub: c.ex, val: c.group }; }); }, key: 'leather' }
+      ];
+    }
+
+    var COMMON_TAIL = leatherSteps.concat([
       { say: function (a) { return a.leather + ' で承りました。\n縫い糸（ステッチ）の色はいかがしますか？\n' + KB.stitchAdvice; },
         tip: function () { return '▼ 在庫あり（納期が早い）\n' + KB.stitchInStock.join(' / '); },
         quick: function () { return [
@@ -258,7 +342,7 @@
       { say: '最後に、ご希望の納期・お渡し時期はありますか？（例：3ヶ月以内 / 急がない / 〇月の誕生日に 等）',
         freeInput: true, key: 'due', last: true,
         quick: [{ label: '急がない', sub: '', val: '急がない' }] }
-    ];
+    ]);
 
     var PRODUCTS = {
       planner: { name: 'システム手帳', emoji: '📔', sub: 'フルオーダー', steps: PLANNER_STEPS,
@@ -315,8 +399,17 @@
   }
 
   /* ---------- AI会話モード用 system prompt ---------- */
-  function buildSystemPrompt(KB) {
+  function buildSystemPrompt(KB, leathers) {
     var extra = (KB.extraKnowledge || '').trim();
+    var leatherSection = '';
+    if (leathers && leathers.length) {
+      var byFam = TONE_KEYWORDS.map(function (g) {
+        var names = leathersByTone(leathers, g.fam).map(function (l) { return l.name; });
+        return names.length ? (g.fam + ': ' + names.join(' / ')) : '';
+      }).filter(Boolean).join('\n');
+      leatherSection = '■革カタログ（カワムラレザー取扱のみ。革はこの中からだけ提案する。これ以外の革は「取り扱いがありません」と答える）:\n' + byFam +
+        '\n※お客様が色の希望（例:「青っぽい」「ワインレッド」）を言ったら、上記から同系色を2〜3種ピックアップして名前で提案する。\n';
+    }
     return 'あなたは「' + KB.shop + '」のオーダー相談AI「幕僚（ばくりょう）」です。革職人 中司祐樹の名代として、お客様からレザーアイテムのフルオーダー（システム手帳・財布・キーケース・名刺入れ・ポーチ/ペンケース・コインケース 他）のご要望を丁寧にヒアリングし、プロの視点で提案します。\n\n' +
       '【口調】親しみやすく丁寧な日本語。専門用語には一言そえる。押し売りはしない。1回の返信は簡潔に、質問は基本1つずつ。\n\n' +
       '【進め方】まず何のアイテムを作りたいかを確認し、そのアイテムに応じた仕様（形・容量・機能など）を聞く。どのアイテムでも共通で「革の色 / ステッチ色 / 名入れ / 予算 / 納期」を確認する。ひと通り揃ったら最後に発注票を「【発注票】」から箇条書きでまとめる。\n\n' +
@@ -330,6 +423,7 @@
       '■ポーチ・ペンケース: フラット/マチ付き/ペンケース/ラウンドファスナー。開閉(ファスナー/ホック/かぶせ)と用途サイズ。\n' +
       '■コインケース: 馬蹄型/BOX型/ファスナー型。カード収納有無。\n' +
       '■革: ' + KB.leatherNote + ' 代表色 ' + KB.leatherColors.map(function (c) { return c.group + '(' + c.ex + ')'; }).join(' / ') + '\n' +
+      leatherSection +
       '■ステッチ在庫(納期早): ' + KB.stitchInStock.join(', ') + '。' + KB.stitchAdvice + '\n' +
       '■概算目安(円): 手帳 Micro5 9,000-16,000/Mini6 13,000-22,000/A6 22,000-38,000/バイブル 24,000-40,000/A5 38,000-60,000。財布 長財布30,000-55,000/二つ折り20,000-38,000/ラウンドファスナー35,000-60,000/ミニ15,000-28,000。キーケース8,000-16,000。名刺入れ12,000-22,000。ポーチ12,000-30,000。コインケース8,000-18,000。正確な額は職人確認で確定と伝える。\n' +
       (extra ? '\n【工房からの追加メモ（最新の方針・お知らせ・注意事項。他の記述と矛盾する場合はこちらを優先）】\n' + extra + '\n' : '') +
@@ -340,6 +434,9 @@
     DEFAULT_KB: DEFAULT_KB,
     mergeKB: mergeKB,
     loadKB: loadKB,
+    loadLeathers: loadLeathers,
+    resolveTone: resolveTone,
+    leathersByTone: leathersByTone,
     build: build,
     buildSystemPrompt: buildSystemPrompt
   };
