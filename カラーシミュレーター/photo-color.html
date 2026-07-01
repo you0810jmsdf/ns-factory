@@ -218,7 +218,7 @@ function recolor(srcData, targetHSL, opts){
    image-proxy.gs をGASにデプロイし、その /exec URL を下に設定してください。
    未設定でも同一オリジンの写真は色替えできます（外部写真は案内表示）。
    動作確認は ?proxy=<GAS URL> でも指定できます。 */
-let IMAGE_PROXY_URL = '';
+let IMAGE_PROXY_URL = 'https://script.google.com/macros/s/AKfycbyAN7NZcr5Rm_AKBEeXO1zVrX9YmWAraNih1vELPcp2Ohrr1oN0MaYYN5oJUrs7N5RC/exec';
 (function(){ const pp=new URLSearchParams(location.search).get('proxy'); if(pp) IMAGE_PROXY_URL=pp; })();
 
 function jsonp(url){
