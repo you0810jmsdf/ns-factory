@@ -49,6 +49,16 @@ body{
 .quick button:hover{background:#6b3a1f;color:#fff;border-color:#6b3a1f}
 .quick button .sub{display:block;font-size:10.5px;font-weight:400;opacity:.7;margin-top:1px}
 .quick button:hover .sub{opacity:.9}
+/* 革スワッチ（写真付きチップ） */
+.quick button.img-chip{
+  width:104px;padding:6px 6px 8px;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;
+}
+.quick button.img-chip img{
+  width:100%;height:64px;object-fit:cover;border-radius:8px;display:block;background:#eee;
+}
+.quick button.img-chip .img-label{font-size:11px;line-height:1.25;word-break:break-word}
+.quick button.img-chip:hover img{opacity:.9}
 
 /* input */
 .inputbar{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #ede0d4;background:#fff;position:sticky;bottom:0}
@@ -171,7 +181,16 @@ function renderQuick(items){
   quickEl.innerHTML='';
   (items||[]).forEach(it=>{
     const btn=document.createElement('button');
-    btn.innerHTML=escapeHtml(it.label)+(it.sub?`<span class="sub">${escapeHtml(it.sub)}</span>`:'');
+    if(it.image){
+      btn.className='img-chip';
+      btn.innerHTML=`<img src="${it.image}" loading="lazy" alt="">`+
+        `<span class="img-label">${escapeHtml(it.label)}</span>`+
+        (it.sub?`<span class="sub">${escapeHtml(it.sub)}</span>`:'');
+      // 画像が読めない時はテキストチップに退化（CDN障害時など）
+      btn.querySelector('img').addEventListener('error',e=>{ e.target.remove(); btn.classList.remove('img-chip'); });
+    }else{
+      btn.innerHTML=escapeHtml(it.label)+(it.sub?`<span class="sub">${escapeHtml(it.sub)}</span>`:'');
+    }
     btn.onclick=()=>handleAnswer(it.val, it.label);
     quickEl.appendChild(btn);
   });
@@ -385,13 +404,17 @@ async function liveTurn(userText){
 /* ---------- 起動 ---------- */
 sendBtn.onclick=handleFreeInput;
 txt.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); handleFreeInput(); }});
-// 知識ベース(hearing-kb.json)を読み込んでから開始。読めない場合は内蔵既定値で開始。
-NSF_HEARING.loadKB('./hearing-kb.json').then(kb=>{
+// 知識ベース(hearing-kb.json)と革カタログ(leather-catalog.json)を読み込んでから開始。
+// 読めない場合は内蔵既定値（革はテキスト選択）で開始。
+Promise.all([
+  NSF_HEARING.loadKB('./hearing-kb.json'),
+  NSF_HEARING.loadLeathers('./leather-catalog.json')
+]).then(([kb, leathers])=>{
   KB=kb;
-  CORE=NSF_HEARING.build(KB);
+  CORE=NSF_HEARING.build(KB, leathers);
   PRODUCTS=CORE.PRODUCTS;
   COMMON_TAIL=CORE.COMMON_TAIL;
-  SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB);
+  SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers);
   startPicker();
 });
 </script>
