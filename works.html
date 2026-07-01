@@ -528,7 +528,7 @@
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
-          <a id="recolor-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden>🎨 この写真の色を変えてみる</a>
+          <a id="recolor-link" class="modal-cta secondary" href="カラーシミュレーター/photo-color.html">🎨 色違いをシミュレーション</a>
         </div>
       </aside>
     </div>
@@ -789,16 +789,17 @@
 
     const recolorLink = document.getElementById('recolor-link');
     function updateRecolorLink(photo) {
-      // 色替えは canvas の getImageData を使うため同一オリジン画像のみ対応（Drive等の外部画像は不可）
+      // 色替えは canvas の getImageData を使うため同一オリジン画像のみ対応。
+      // 同一オリジンの写真ならその作品を直接開く。外部(Drive)写真の場合は
+      // ?src を付けず、色替え可能な作品ギャラリーを開く（常に同一タブで遷移）。
+      let href = 'カラーシミュレーター/photo-color.html';
       try {
         const abs = new URL(photo, location.href).href;
         if (new URL(abs).origin === location.origin) {
-          recolorLink.href = 'カラーシミュレーター/photo-color.html?src=' + encodeURIComponent(abs);
-          recolorLink.hidden = false;
-          return;
+          href += '?src=' + encodeURIComponent(abs);
         }
       } catch (e) {}
-      recolorLink.hidden = true;
+      recolorLink.href = href;
     }
 
     function updateModal() {
