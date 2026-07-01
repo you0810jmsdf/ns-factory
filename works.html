@@ -528,6 +528,7 @@
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
+          <a id="recolor-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden>🎨 この写真の色を変えてみる</a>
         </div>
       </aside>
     </div>
@@ -786,6 +787,20 @@
       } catch(e) {}
     }
 
+    const recolorLink = document.getElementById('recolor-link');
+    function updateRecolorLink(photo) {
+      // 色替えは canvas の getImageData を使うため同一オリジン画像のみ対応（Drive等の外部画像は不可）
+      try {
+        const abs = new URL(photo, location.href).href;
+        if (new URL(abs).origin === location.origin) {
+          recolorLink.href = 'カラーシミュレーター/photo-color.html?src=' + encodeURIComponent(abs);
+          recolorLink.hidden = false;
+          return;
+        }
+      } catch (e) {}
+      recolorLink.hidden = true;
+    }
+
     function updateModal() {
       if (!activeWork) return;
       const total = activeWork.photos.length;
@@ -794,6 +809,7 @@
       modalCount.textContent = `${activeIndex + 1} / ${total}`;
       modalImg.src = activeWork.photos[activeIndex];
       modalImg.alt = activeWork.title;
+      updateRecolorLink(activeWork.photos[activeIndex]);
       modalMeta.innerHTML = [
         compact([activeWork.category, activeWork.material, activeWork.color]),
         compact([activeWork.size, formatPrice(activeWork.price)]),
