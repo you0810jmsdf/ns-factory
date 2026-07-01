@@ -483,6 +483,17 @@
     .chat-chip:hover { background: var(--accent); color: #fff; }
     .chat-chip.chip-exit { border-color: #c8b8a4; color: #9a8a76; }
     .chat-chip.chip-exit:hover { background: #c8b8a4; color: #fff; }
+    /* 革スワッチ（写真付きチップ） */
+    .chat-chip.chip-img {
+      width: 92px;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 5px 5px 7px; border-radius: 10px; text-align: center;
+    }
+    .chat-chip.chip-img img {
+      width: 100%; height: 54px; object-fit: cover; border-radius: 7px; display: block; background: #eee;
+    }
+    .chat-chip.chip-img .chip-label { font-size: 10.5px; line-height: 1.2; word-break: break-word; }
+    .chat-chip.chip-img:hover img { opacity: .9; }
     @media (max-height: 500px) {
       #staff-card { max-height: 90vh; }
       #chat-messages { max-height: 100px; }
@@ -771,10 +782,15 @@
     var hearingKB = window.NSF_HEARING ? window.NSF_HEARING.DEFAULT_KB : null;
     var hearingCore = window.NSF_HEARING ? window.NSF_HEARING.build(hearingKB) : null;
     var hearing = null; // {picking, prodKey, flow, step, answers, awaitKey, isLast, done}
+    var hearingLeathers = null;
     if (window.NSF_HEARING) {
-      window.NSF_HEARING.loadKB('../order_estimate/hearing-kb.json').then(function (kb) {
-        hearingKB = kb;
-        hearingCore = window.NSF_HEARING.build(kb);
+      Promise.all([
+        window.NSF_HEARING.loadKB('../order_estimate/hearing-kb.json'),
+        window.NSF_HEARING.loadLeathers('../order_estimate/leather-catalog.json')
+      ]).then(function (res) {
+        hearingKB = res[0];
+        hearingLeathers = res[1];
+        hearingCore = window.NSF_HEARING.build(hearingKB, hearingLeathers);
       });
     }
 
@@ -784,8 +800,17 @@
       q.innerHTML = '';
       (items || []).forEach(function (it) {
         var b = document.createElement('button');
-        b.className = 'chat-chip' + (it.exit ? ' chip-exit' : '');
-        b.appendChild(document.createTextNode(it.label));
+        b.className = 'chat-chip' + (it.exit ? ' chip-exit' : '') + (it.image ? ' chip-img' : '');
+        if (it.image) {
+          var img = document.createElement('img');
+          img.src = it.image; img.loading = 'lazy'; img.alt = '';
+          img.addEventListener('error', function () { img.remove(); b.classList.remove('chip-img'); });
+          b.appendChild(img);
+        }
+        var lb = document.createElement('span');
+        lb.className = 'chip-label';
+        lb.textContent = it.label;
+        b.appendChild(lb);
         if (it.sub) { var s = document.createElement('span'); s.className = 'chip-sub'; s.textContent = it.sub; b.appendChild(s); }
         b.addEventListener('click', function () { it.onClick ? it.onClick() : hearingAnswer(it.val, it.label); });
         q.appendChild(b);
@@ -820,7 +845,7 @@
       hearing.isLast = !!step.last;
       appendStaffMsg(sayText + (tipText ? '\n\n' + tipText : ''));
       var items = (typeof step.quick === 'function') ? step.quick(a) : (step.quick || []);
-      var chips = (items || []).map(function (it) { return { label: it.label, sub: it.sub || '', val: it.val }; });
+      var chips = (items || []).map(function (it) { return { label: it.label, sub: it.sub || '', val: it.val, image: it.image }; });
       chips.push({ label: '相談をやめる', exit: true, onClick: hearingExit });
       renderChips(chips);
       hearing.awaitKey = (typeof step.key === 'function') ? step.key(a) : step.key;
