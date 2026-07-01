@@ -81,7 +81,7 @@ input[type=range]{width:100%;accent-color:#6b3a1f}
         <input type="file" id="file" accept="image/*" hidden>
       </label>
     </div>
-    <div class="note" style="text-align:left;margin-top:8px">背景が無地・明るい写真ほどキレイに色替えできます（背景除去済みの写真が最適）。</div>
+    <div class="note" style="text-align:left;margin-top:8px">ギャラリーには実際の作品写真が並びます。作品集ページの「色を変えてみる」からも開けます。背景が無地・明るい写真ほどキレイに色替えできます。</div>
   </div>
 
   <div class="panel">
@@ -251,19 +251,35 @@ function render(){
 }
 
 /* ===== UI 構築 ===== */
-function buildGallery(){
-  const g=$('gallery'); g.innerHTML='';
-  GALLERY.forEach((it,idx)=>{
-    const d=document.createElement('div'); d.className='gitem'; d.dataset.idx=idx;
-    d.innerHTML=`<img src="${it.src}" alt="${it.label}" loading="lazy"><div class="cap">${it.label}</div>`;
-    d.addEventListener('click',()=>{
-      g.querySelectorAll('.gitem').forEach(x=>x.classList.remove('on'));
-      d.classList.add('on');
-      loadImage(it.src);
-    });
-    d.querySelector('img').addEventListener('error',()=>{ d.style.display='none'; });
-    g.appendChild(d);
+function addGalleryItem(src,label){
+  const g=$('gallery');
+  const d=document.createElement('div'); d.className='gitem';
+  d.innerHTML=`<img src="${src}" alt="${label}" loading="lazy"><div class="cap">${label}</div>`;
+  d.addEventListener('click',()=>{
+    g.querySelectorAll('.gitem').forEach(x=>x.classList.remove('on'));
+    d.classList.add('on');
+    loadImage(src);
   });
+  d.querySelector('img').addEventListener('error',()=>{ d.style.display='none'; });
+  g.appendChild(d);
+  return d;
+}
+function buildGallery(){
+  $('gallery').innerHTML='';
+  GALLERY.forEach(it=>addGalleryItem(it.src,it.label));
+  loadWorksGallery();
+}
+/* 作品集（mini6-photos.json）から各作品の代表写真をギャラリーに追加 */
+function loadWorksGallery(){
+  fetch('../mini6-photos.json').then(r=>r.ok?r.json():null).then(data=>{
+    if(!data) return;
+    Object.keys(data).forEach(name=>{
+      const arr=data[name];
+      if(Array.isArray(arr)&&arr.length){
+        addGalleryItem('../'+arr[0], name);
+      }
+    });
+  }).catch(()=>{});
 }
 function buildSwatches(){
   const w=$('swatches'); w.innerHTML='';
@@ -321,6 +337,12 @@ cw.addEventListener('drop',e=>{
 
 buildGallery();
 buildSwatches();
+
+/* ?src= で特定の作品写真を直接開く（作品集の「色を変えてみる」から遷移） */
+(function applySrcParam(){
+  const src=new URLSearchParams(location.search).get('src');
+  if(src) loadImage(src);
+})();
 </script>
 </body>
 </html>
