@@ -208,17 +208,20 @@ function recommendRing(sizeId, volume){
 function sizeById(id){ return KB.sizes.find(s=>s.id===id); }
 function modelById(id){ return KB.models.find(m=>m.id===id); }
 
-// フロー定義：各ステップは {say, tip, quick:[{label,sub,val}], key, next(val)}
-const FLOW = [
-  { // 0 あいさつ
-    say:"こんにちは！N's factory のオーダー相談AIです🧵\nシステム手帳のフルオーダーを、いくつかの質問でご一緒に形にしていきます。難しい知識は不要です。まず、この手帳は主にどんな用途でお使いになりますか？",
+// 各ステップ: {say, tip, quick:[{label,sub,val}], key, skipIf, freeInput, last}
+// 商品別フロー = PRODUCTS[key].steps ＋ 共通尾部 COMMON_TAIL
+
+/* ---- システム手帳 専用ステップ ---- */
+const PLANNER_STEPS = [
+  { // 用途
+    say:"まず、このシステム手帳は主にどんな用途でお使いになりますか？",
     quick:[
       {label:'仕事中心',sub:'商談・タスク管理',val:'仕事中心'},
       {label:'プライベート中心',sub:'日記・趣味・予定',val:'プライベート中心'},
       {label:'仕事もプライベートも',sub:'1冊にまとめたい',val:'両方'}
     ], key:'use'
   },
-  { // 1 携帯性
+  { // 携帯性
     say:(a)=>`「${a.use}」ですね、ありがとうございます。\n持ち運びについてはどちらが近いですか？`,
     quick:[
       {label:'いつも持ち歩く',sub:'バッグやポケットに',val:'いつも持ち歩く'},
@@ -226,7 +229,7 @@ const FLOW = [
       {label:'半々くらい',sub:'',val:'半々'}
     ], key:'carry'
   },
-  { // 2 サイズ提案
+  { // サイズ提案
     say:(a)=>{
       const rec = recommendSize(a.use, a.carry); const s = sizeById(rec);
       a._recSize = rec;
@@ -239,7 +242,7 @@ const FLOW = [
       return arr;
     }, key:'size'
   },
-  { // 3 リング量
+  { // リング量
     say:(a)=>`${sizeById(a.size).name}ですね。次にリング（挟む量）です。\n${KB.ringAdvice}\n普段どれくらい挟みそうですか？`,
     quick:[
       {label:'少なめ・すっきり',sub:'予定＋薄めのメモ',val:'少なめ・すっきり'},
@@ -247,7 +250,7 @@ const FLOW = [
       {label:'たっぷり挟む',sub:'リフィル多め・育てたい',val:'たっぷり挟む'}
     ], key:'volume'
   },
-  { // 4 モデル/仕様
+  { // モデル/仕様
     say:(a)=>{
       const r = recommendRing(a.size, a.volume); a._ring = r;
       const rt = r ? `リングは【${r.mm}mm（${r.type}リング）】が目安です。\n` : '';
@@ -255,16 +258,102 @@ const FLOW = [
     },
     tip:()=>"▼ モデル一覧\n"+KB.models.map(m=>`・${m.name}：${m.desc}（向いている人：${m.for}）`).join('\n'),
     quick:()=>KB.models.map(m=>({label:m.name,sub:m.for,val:m.id})), key:'model'
-  },
-  { // 5 革色
-    say:(a)=>{
-      const m=modelById(a.model);
-      return `${m?m.name:''} いいですね。${m?m.desc:''}\n次は革の色です。${KB.leatherNote}\nどんな雰囲気がお好みですか？`;
-    },
+  }
+];
+
+/* ---- その他アイテム 専用ステップ ---- */
+const WALLET_STEPS = [
+  { say:"どんなタイプのお財布をお考えですか？",
+    tip:()=>"▼ タイプ目安\n・長財布：お札を折らず、カード・小銭もたっぷり\n・二つ折り：コンパクトでポケットにも\n・ラウンドファスナー：全周ジップで中身が安心\n・ミニ財布：キャッシュレス派の最小構成",
+    quick:[
+      {label:'長財布',sub:'大容量・折らない',val:'長財布'},
+      {label:'二つ折り財布',sub:'コンパクト',val:'二つ折り'},
+      {label:'ラウンドファスナー',sub:'全周ジップで安心',val:'ラウンドファスナー'},
+      {label:'ミニ財布',sub:'キャッシュレス派',val:'ミニ'}
+    ], key:'walletType' },
+  { say:(a)=>`${a.walletType}ですね。カードは普段どれくらい入れますか？`,
+    quick:[
+      {label:'少なめ',sub:'〜5枚',val:'少なめ（〜5枚）'},
+      {label:'標準',sub:'6〜10枚',val:'標準（6〜10枚）'},
+      {label:'たっぷり',sub:'11枚以上',val:'たっぷり（11枚〜）'}
+    ], key:'cards' },
+  { say:"小銭入れはどうしますか？",
+    quick:[
+      {label:'BOX型小銭入れ',sub:'大きく開いて見やすい',val:'BOX型小銭入れ'},
+      {label:'ファスナー小銭入れ',sub:'しっかり収納',val:'ファスナー小銭入れ'},
+      {label:'小銭入れなし',sub:'すっきり薄型',val:'なし'}
+    ], key:'coin' }
+];
+const KEYCASE_STEPS = [
+  { say:"キーケースのタイプはどれがよいですか？",
+    quick:[
+      {label:'フックタイプ',sub:'4連前後の定番',val:'フックタイプ（4連前後）'},
+      {label:'大容量フック',sub:'6連〜',val:'大容量フック（6連〜）'},
+      {label:'スマートキー対応',sub:'車の電子キーも',val:'スマートキー対応'}
+    ], key:'keyType' },
+  { say:"カードポケット（交通系IC等）は付けますか？",
+    quick:[
+      {label:'カードポケット付き',sub:'ICカード等',val:'カードポケット付き'},
+      {label:'キーのみ',sub:'シンプルに',val:'キーのみ'}
+    ], key:'keyExtra' }
+];
+const CARDCASE_STEPS = [
+  { say:"名刺入れの形はどれがお好みですか？",
+    tip:()=>"▼ 形状目安\n・シンプル(マチ無)：薄くスマート\n・マチ付き：たくさん入る\n・見開き：出し入れしやすい",
+    quick:[
+      {label:'シンプル（マチ無）',sub:'薄型',val:'シンプル（マチ無）'},
+      {label:'マチ付き',sub:'大容量',val:'マチ付き'},
+      {label:'見開きタイプ',sub:'出し入れ楽',val:'見開き'}
+    ], key:'cardStyle' },
+  { say:"名刺は何枚くらい入れたいですか？",
+    quick:[
+      {label:'少なめ',sub:'〜20枚',val:'〜20枚'},
+      {label:'標準',sub:'20〜40枚',val:'20〜40枚'},
+      {label:'たっぷり',sub:'40枚〜',val:'40枚〜'}
+    ], key:'cardVol' }
+];
+const POUCH_STEPS = [
+  { say:"ポーチ・ケースの種類はどれですか？",
+    quick:[
+      {label:'フラットポーチ',sub:'薄手・小物入れ',val:'フラットポーチ'},
+      {label:'マチ付きポーチ',sub:'たっぷり収納',val:'マチ付きポーチ'},
+      {label:'ペンケース',sub:'筆記具用',val:'ペンケース'},
+      {label:'ラウンドファスナー',sub:'全周ジップ',val:'ラウンドファスナーポーチ'}
+    ], key:'pouchType' },
+  { say:"開閉方法のお好みは？",
+    quick:[
+      {label:'ファスナー',sub:'',val:'ファスナー'},
+      {label:'ホック（ボタン）',sub:'',val:'ホック'},
+      {label:'かぶせ（フラップ）',sub:'',val:'かぶせ'},
+      {label:'おまかせ',sub:'職人が最適に',val:'おまかせ'}
+    ], key:'pouchClose' },
+  { say:"だいたいの大きさ・入れたい物を教えてください（例：文庫本サイズ / メガネ / 化粧品 など）",
+    freeInput:true, key:'pouchSize',
+    quick:[{label:'おまかせで提案',sub:'',val:'おまかせ'}] }
+];
+const COINCASE_STEPS = [
+  { say:"コインケースの形はどれがお好みですか？",
+    tip:()=>"▼ 形状目安\n・馬蹄型：パカッと開いて味のある名品\n・BOX型：大きく開いて見やすい\n・ファスナー型：こぼれず安心",
+    quick:[
+      {label:'馬蹄型',sub:'定番・革が育つ',val:'馬蹄型'},
+      {label:'BOX型',sub:'見やすい',val:'BOX型'},
+      {label:'ファスナー型',sub:'安心',val:'ファスナー型'}
+    ], key:'coinShape' },
+  { say:"カードも一緒に入れたいですか？",
+    quick:[
+      {label:'カードも入れたい',sub:'IC・数枚',val:'カードポケット付き'},
+      {label:'コインのみ',sub:'すっきり',val:'コインのみ'}
+    ], key:'coinCard' }
+];
+
+/* ---- 全アイテム共通の尾部 ---- */
+const COMMON_TAIL = [
+  { // 革色
+    say:(a)=>`次は革の色です。${KB.leatherNote}\nどんな雰囲気がお好みですか？`,
     tip:()=>"▼ 参考\n"+KB.leatherColors.map(c=>`・${c.group}（${c.ex}）：${c.hint}`).join('\n'),
     quick:()=>KB.leatherColors.map(c=>({label:c.group,sub:c.ex,val:c.group})), key:'leather'
   },
-  { // 6 ステッチ
+  { // ステッチ
     say:(a)=>`${a.leather} で承りました。\n縫い糸（ステッチ）の色はいかがしますか？\n${KB.stitchAdvice}`,
     tip:()=>"▼ 在庫あり（納期が早い）\n"+KB.stitchInStock.join(' / '),
     quick:()=>[
@@ -273,29 +362,55 @@ const FLOW = [
       {label:'おまかせ',sub:'職人が最適に',val:'おまかせ'}
     ], key:'stitch'
   },
-  { // 7 名入れ
+  { // 名入れ
     say:"名入れ（刻印）はご希望ですか？イニシャルやお名前を箔押し/空押しできます。",
     quick:[
       {label:'名入れする',sub:'内容を次で入力',val:'希望する'},
       {label:'名入れなし',sub:'',val:'なし'}
     ], key:'nameStamp'
   },
-  { // 8 名入れ内容（名入れ希望のときだけ）
+  { // 名入れ内容（名入れ希望のときだけ）
     skipIf:(a)=> a.nameStamp!=='希望する',
     say:"刻印する文字（イニシャル・お名前など）を入力してください。",
     freeInput:true, key:'nameText'
   },
-  { // 9 予算
+  { // 予算
     say:"ご予算の目安はありますか？（無理に合わせず、参考にします）",
     freeInput:true, key:'budget',
     quick:[{label:'おまかせ／相談',sub:'',val:'相談'}]
   },
-  { // 10 納期（最後）
+  { // 納期（最後）
     say:"最後に、ご希望の納期・お渡し時期はありますか？（例：3ヶ月以内 / 急がない / 〇月の誕生日に 等）",
     freeInput:true, key:'due', last:true,
     quick:[{label:'急がない',sub:'',val:'急がない'}]
   }
 ];
+
+/* ---- 商品カタログ（ここに1件足すだけで新アイテムを追加できる）---- */
+const PRODUCTS = {
+  planner:  { name:'システム手帳', emoji:'📔', sub:'フルオーダー',   steps:PLANNER_STEPS,
+    summary:(a)=>[['用途',a.use],['持ち運び',a.carry],
+      ['サイズ',`${(sizeById(a.size)||{}).name||'-'}（${(sizeById(a.size)||{}).寸||''}）`],
+      ['リング', a._ring?`${a._ring.mm}mm（${a._ring.type}リング）`:'相談'],
+      ['モデル/仕様',(modelById(a.model)||{}).name||'-']],
+    price:(a)=> KB.price.baseRange[a.size]||[null,null],
+    estimateLink:'./leather-order-estimate-v2.html' },
+  wallet:   { name:'財布', emoji:'👛', sub:'長財布・二つ折り 他', steps:WALLET_STEPS,
+    summary:(a)=>[['種類',a.walletType],['カード収納',a.cards],['小銭入れ', a.coin==='なし'?'なし':a.coin]],
+    price:(a)=> ({'長財布':[30000,55000],'二つ折り':[20000,38000],'ラウンドファスナー':[35000,60000],'ミニ':[15000,28000]}[a.walletType]||[20000,55000]) },
+  keycase:  { name:'キーケース', emoji:'🔑', sub:'', steps:KEYCASE_STEPS,
+    summary:(a)=>[['タイプ',a.keyType],['追加ポケット',a.keyExtra]],
+    price:(a)=>[8000,16000] },
+  cardcase: { name:'名刺入れ', emoji:'💼', sub:'', steps:CARDCASE_STEPS,
+    summary:(a)=>[['形状',a.cardStyle],['収納量',a.cardVol]],
+    price:(a)=>[12000,22000] },
+  pouch:    { name:'ポーチ / ペンケース', emoji:'🧶', sub:'', steps:POUCH_STEPS,
+    summary:(a)=>[['種類',a.pouchType],['開閉',a.pouchClose],['用途・サイズ',a.pouchSize]],
+    price:(a)=>[12000,30000] },
+  coincase: { name:'コインケース', emoji:'🪙', sub:'', steps:COINCASE_STEPS,
+    summary:(a)=>[['形状',a.coinShape],['カード収納',a.coinCard]],
+    price:(a)=>[8000,18000] }
+};
 
 /* ---------- レンダリング ---------- */
 const chat=document.getElementById('chat');
@@ -330,11 +445,26 @@ function renderQuick(items){
 }
 
 /* ---------- ガイド対話ロジック ---------- */
+function startPicker(){
+  showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    addMsg('bot',"こんにちは！N's factory のオーダー相談AIです🧵\nレザーアイテムのフルオーダーを、いくつかの質問でご一緒に形にしていきます。難しい知識は不要です。\nまず、どんなアイテムをお考えですか？");
+    renderQuick(Object.keys(PRODUCTS).map(k=>({label:`${PRODUCTS[k].emoji} ${PRODUCTS[k].name}`, sub:PRODUCTS[k].sub||'', val:k})));
+    state._picking=true;
+  }, 400);
+}
+function beginProduct(key){
+  state.productKey=key; state.prod=PRODUCTS[key];
+  state.flow=state.prod.steps.concat(COMMON_TAIL);
+  state.step=0; state._picking=false;
+  runStep();
+}
 function runStep(){
   const a=state.answers;
-  let step=FLOW[state.step];
+  let step=state.flow[state.step];
   // スキップ条件（例：名入れ無しなら刻印内容を飛ばす）
-  while(step && step.skipIf && step.skipIf(a)){ state.step++; step=FLOW[state.step]; }
+  while(step && step.skipIf && step.skipIf(a)){ state.step++; step=state.flow[state.step]; }
   if(!step){ finish(); return; }
 
   const sayText = typeof step.say==='function' ? step.say(a) : step.say;
@@ -352,6 +482,14 @@ function runStep(){
 }
 function handleAnswer(val, label){
   if(state._done) return;
+  // 商品選択フェーズ
+  if(state._picking){
+    if(!PRODUCTS[val]) return;
+    addMsg('user', label||val);
+    renderQuick([]);
+    beginProduct(val);
+    return;
+  }
   addMsg('user', label||val);
   const key = state._awaitKey;
   if(key) state.answers[key]=val;
@@ -366,6 +504,12 @@ function handleFreeInput(){
   const v=txt.value.trim(); if(!v) return;
   txt.value='';
   if(state.liveMode){ liveTurn(v); return; }
+  // 商品選択フェーズでの自由入力 → ボタンへ誘導
+  if(state._picking){
+    addMsg('user', v);
+    addMsg('bot','上のボタンから作りたいアイテムをお選びくださいね🙂');
+    return;
+  }
   // ガイドモードで自由入力が来たとき
   if(state._awaitKey){ handleAnswer(v, v); }
   else { // 想定外の雑談 → やんわり誘導
@@ -378,9 +522,8 @@ function handleFreeInput(){
 function finish(){
   if(state._done) return; state._done=true; state._awaitKey=null;
   const a=state.answers;
-  const s=sizeById(a.size)||{}; const m=modelById(a.model)||{};
-  const ring=a._ring?`${a._ring.mm}mm（${a._ring.type}リング）`:'相談';
-  const pr=KB.price.baseRange[a.size]||[null,null];
+  const prod=state.prod||PRODUCTS.planner;
+  const pr=(prod.price?prod.price(a):[null,null])||[null,null];
   const rangeTxt = pr[0]? `¥${pr[0].toLocaleString()} 〜 ¥${pr[1].toLocaleString()} 前後`:'お見積り';
 
   showTyping();
@@ -389,32 +532,32 @@ function finish(){
     addMsg('bot','ありがとうございました！ヒアリング内容を発注票にまとめました。内容をご確認ください👇');
 
     const rows=[
-      ['用途', a.use], ['持ち運び', a.carry],
-      ['サイズ', `${s.name||'-'}（${s.寸||''}）`],
-      ['リング', ring],
-      ['モデル/仕様', m.name||'-'],
+      ['アイテム', prod.name],
+      ...(prod.summary?prod.summary(a):[]),
       ['革の色', a.leather||'-'],
       ['ステッチ', a.stitch||'-'],
       ['名入れ', a.nameStamp==='希望する'?`あり：${a.nameText||''}`:'なし'],
       ['ご予算', a.budget||'相談'],
       ['ご希望納期', a.due||'相談']
     ];
+    const estBtn = prod.estimateLink
+      ? `<a class="btn-ghost" href="${prod.estimateLink}">🧮 正確な見積りへ</a>` : '';
     const card=document.createElement('div'); card.className='msg bot';
     card.innerHTML='<div class="ic">📋</div>';
     const box=document.createElement('div'); box.className='sheet'; box.style.maxWidth='calc(100% - 46px)';
     box.innerHTML='<h3>📋 オーダー発注票（ヒアリングシート）</h3><table>'+
       rows.map(r=>`<tr><td class="k">${escapeHtml(r[0])}</td><td class="v">${escapeHtml(String(r[1]))}</td></tr>`).join('')+
       '</table>'+
-      `<div class="range">💰 概算の目安：<b>${rangeTxt}</b><br><span style="font-size:11px;color:#a08a76">※ 仕様の組み合わせで変わります。正確な金額は見積りツール／職人の確認で確定します。</span></div>`+
+      `<div class="range">💰 概算の目安：<b>${rangeTxt}</b><br><span style="font-size:11px;color:#a08a76">※ 仕様の組み合わせで変わります。正確な金額は職人の確認で確定します。</span></div>`+
       '<div class="sheet-actions">'+
         '<button class="btn-primary" id="copySheet">📋 発注票をコピー</button>'+
         '<button class="btn-ghost" id="copyLine">💬 工房へ送る文面をコピー</button>'+
-        '<a class="btn-ghost" href="./leather-order-estimate-v2.html">🧮 正確な見積りへ</a>'+
+        estBtn+
       '</div>';
     card.appendChild(box); chat.appendChild(card); scrollDown();
 
-    const sheetText = "【N's factory システム手帳オーダー 発注票】\n"+rows.map(r=>`${r[0]}：${r[1]}`).join('\n')+`\n概算目安：${rangeTxt}`;
-    const lineText = `N's factory 様\nシステム手帳のオーダーを相談したいです。\n\n`+rows.map(r=>`・${r[0]}：${r[1]}`).join('\n')+`\n\nよろしくお願いします。`;
+    const sheetText = `【N's factory ${prod.name}オーダー 発注票】\n`+rows.map(r=>`${r[0]}：${r[1]}`).join('\n')+`\n概算目安：${rangeTxt}`;
+    const lineText = `N's factory 様\n${prod.name}のオーダーを相談したいです。\n\n`+rows.map(r=>`・${r[0]}：${r[1]}`).join('\n')+`\n\nよろしくお願いします。`;
     document.getElementById('copySheet').onclick=()=>copy(sheetText,'発注票をコピーしました');
     document.getElementById('copyLine').onclick=()=>copy(lineText,'工房へ送る文面をコピーしました');
 
@@ -463,19 +606,24 @@ document.getElementById('clearKey').onclick=()=>{
   modal.classList.remove('on'); toast('キーを消しました（ガイド対話モードに戻ります）');
 };
 
-const SYSTEM_PROMPT = `あなたは「${KB.shop}」のオーダー相談AI「幕僚（ばくりょう）」です。革職人 中司祐樹の名代として、お客様から${KB.product}のご要望を丁寧にヒアリングし、プロの視点で提案します。
+const SYSTEM_PROMPT = `あなたは「${KB.shop}」のオーダー相談AI「幕僚（ばくりょう）」です。革職人 中司祐樹の名代として、お客様からレザーアイテムのフルオーダー（システム手帳・財布・キーケース・名刺入れ・ポーチ/ペンケース・コインケース 他）のご要望を丁寧にヒアリングし、プロの視点で提案します。
 
 【口調】親しみやすく丁寧な日本語。専門用語には一言そえる。押し売りはしない。1回の返信は簡潔に、質問は基本1つずつ。
 
-【必ず聞き取る項目】用途 / 持ち運び頻度 / サイズ / リング径 / モデル(作り) / 革の色 / ステッチ色 / 名入れ / 予算 / 納期。ひと通り揃ったら最後に発注票を「【発注票】」から箇条書きでまとめる。
+【進め方】まず何のアイテムを作りたいかを確認し、そのアイテムに応じた仕様（形・容量・機能など）を聞く。どのアイテムでも共通で「革の色 / ステッチ色 / 名入れ / 予算 / 納期」を確認する。ひと通り揃ったら最後に発注票を「【発注票】」から箇条書きでまとめる。
 
 【工房の知識ベース】
-■サイズ: ${KB.sizes.map(s=>`${s.name}(${s.寸}) ${s.hint}`).join(' / ')}
+■システム手帳サイズ: ${KB.sizes.map(s=>`${s.name}(${s.寸}) ${s.hint}`).join(' / ')}
 ■リング(サイズ別定番): Micro5=8/11mmクラウゼ, Mini6=13クラウゼ/15mm, A6=19mm, バイブル=25mm, A5=30mm。${KB.ringAdvice}
-■モデル: ${KB.models.map(m=>`${m.name}=${m.desc}(${m.for})`).join(' / ')}
+■手帳モデル: ${KB.models.map(m=>`${m.name}=${m.desc}(${m.for})`).join(' / ')}
+■財布: 長財布/二つ折り/ラウンドファスナー/ミニ。カード枚数と小銭入れ(BOX型/ファスナー/無)を確認。
+■キーケース: フック(4連前後)/大容量(6連〜)/スマートキー対応。カードポケット有無。
+■名刺入れ: シンプル(マチ無)/マチ付き/見開き。収納枚数。
+■ポーチ・ペンケース: フラット/マチ付き/ペンケース/ラウンドファスナー。開閉(ファスナー/ホック/かぶせ)と用途サイズ。
+■コインケース: 馬蹄型/BOX型/ファスナー型。カード収納有無。
 ■革: ${KB.leatherNote} 代表色 ${KB.leatherColors.map(c=>c.group+'('+c.ex+')').join(' / ')}
 ■ステッチ在庫(納期早): ${KB.stitchInStock.join(', ')}。${KB.stitchAdvice}
-■概算目安(円): Micro5 9,000-16,000 / Mini6 13,000-22,000 / A6 22,000-38,000 / バイブル 24,000-40,000 / A5 38,000-60,000。正確な額は見積りツールと職人確認で確定と伝える。
+■概算目安(円): 手帳 Micro5 9,000-16,000/Mini6 13,000-22,000/A6 22,000-38,000/バイブル 24,000-40,000/A5 38,000-60,000。財布 長財布30,000-55,000/二つ折り20,000-38,000/ラウンドファスナー35,000-60,000/ミニ15,000-28,000。キーケース8,000-16,000。名刺入れ12,000-22,000。ポーチ12,000-30,000。コインケース8,000-18,000。正確な額は職人確認で確定と伝える。
 
 【注意】価格は「概算・目安」とし断定しない。在庫や最終仕様は職人が確認する前提で案内する。分からないことは正直に「職人に確認します」と答える。`;
 
@@ -484,7 +632,7 @@ function enterLiveMode(){
   state.liveMode=true;
   quickEl.innerHTML=''; chat.innerHTML='';
   history=[];
-  addMsg('bot','AI会話モードに切り替えました🧵 自由にご相談ください。「A6でシンプルな手帳がほしい」のように、思いつくままに話しかけてくださいね。');
+  addMsg('bot','AI会話モードに切り替えました🧵 自由にご相談ください。「A6でシンプルな手帳がほしい」「二つ折り財布を作りたい」のように、思いつくままに話しかけてくださいね。');
   document.getElementById('modeBtn').textContent='⚙ 設定';
 }
 async function liveTurn(userText){
@@ -524,7 +672,7 @@ async function liveTurn(userText){
 sendBtn.onclick=handleFreeInput;
 txt.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); handleFreeInput(); }});
 // 保存済みキーがあってもデフォルトはガイドで開始（安心）。開始:
-runStep();
+startPicker();
 </script>
 </body>
 </html>
