@@ -460,6 +460,29 @@
       padding: 6px 0;
       font-style: italic;
     }
+    /* ヒアリング（オーダー相談）用クイック返信チップ */
+    #chat-quick {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 4px 0 2px;
+    }
+    #chat-quick:empty { display: none; }
+    .chat-chip {
+      background: #fff;
+      border: 1.5px solid var(--accent);
+      color: var(--accent);
+      border-radius: 16px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .12s;
+      max-width: 100%;
+    }
+    .chat-chip .chip-sub { display: block; font-size: 10px; font-weight: 400; opacity: .7; }
+    .chat-chip:hover { background: var(--accent); color: #fff; }
+    .chat-chip.chip-exit { border-color: #c8b8a4; color: #9a8a76; }
+    .chat-chip.chip-exit:hover { background: #c8b8a4; color: #fff; }
     @media (max-height: 500px) {
       #staff-card { max-height: 90vh; }
       #chat-messages { max-height: 100px; }
@@ -638,6 +661,7 @@
     <!-- チャットUI -->
     <div id="chat-area">
       <div id="chat-messages"></div>
+      <div id="chat-quick"></div>
       <div id="chat-input-row">
         <textarea id="chat-input" rows="1" placeholder="メッセージを入力..." maxlength="200"></textarea>
         <button id="chat-send" aria-label="送信">&#x27A4;</button>
@@ -650,6 +674,9 @@
     <h2>3D表示に対応していない環境のため、通常表示しています。</h2>
     <div class="fallback-grid" id="fallback-grid"></div>
   </div>
+
+  <!-- ===== オーダー相談（ヒアリング）共有コア ===== -->
+  <script src="../order_estimate/hearing-core.js"></script>
 
   <!-- ===== チャット機能（非モジュール・WebGLフォールバック時も動作） ===== -->
   <script>
@@ -677,6 +704,11 @@
       if (sendBtn) sendBtn.disabled = false;
       var turns = chatTurnCount[staffId] || 0;
       if (turns >= CHAT_MAX_TURNS) { showChatLimit(); }
+      // 販売幕僚だけ、オーダー相談（ヒアリング）の入口チップを出す
+      hearingReset();
+      if (staffId === 'hannbai' && window.NSF_HEARING) {
+        renderChips([{ label: '🧵 オーダー相談（ヒアリング）を始める', onClick: hearingStart }]);
+      }
     }
 
     function appendStaffMsg(text, isFallback) {
@@ -733,6 +765,108 @@
       if (area) area.classList.add('chat-closed');
     }
 
+    /* ===== オーダー相談（ヒアリング）モード：販売幕僚専用・端末内で完結 =====
+       知識・フローは ../order_estimate/hearing-core.js ＋ hearing-kb.json を共用。
+       通常のAIチャット（GAS）とは独立して動き、送信回数制限も消費しない。 */
+    var hearingKB = window.NSF_HEARING ? window.NSF_HEARING.DEFAULT_KB : null;
+    var hearingCore = window.NSF_HEARING ? window.NSF_HEARING.build(hearingKB) : null;
+    var hearing = null; // {picking, prodKey, flow, step, answers, awaitKey, isLast, done}
+    if (window.NSF_HEARING) {
+      window.NSF_HEARING.loadKB('../order_estimate/hearing-kb.json').then(function (kb) {
+        hearingKB = kb;
+        hearingCore = window.NSF_HEARING.build(kb);
+      });
+    }
+
+    function clearChips() { var q = document.getElementById('chat-quick'); if (q) q.innerHTML = ''; }
+    function renderChips(items) {
+      var q = document.getElementById('chat-quick'); if (!q) return;
+      q.innerHTML = '';
+      (items || []).forEach(function (it) {
+        var b = document.createElement('button');
+        b.className = 'chat-chip' + (it.exit ? ' chip-exit' : '');
+        b.appendChild(document.createTextNode(it.label));
+        if (it.sub) { var s = document.createElement('span'); s.className = 'chip-sub'; s.textContent = it.sub; b.appendChild(s); }
+        b.addEventListener('click', function () { it.onClick ? it.onClick() : hearingAnswer(it.val, it.label); });
+        q.appendChild(b);
+      });
+    }
+    function hearingReset() { hearing = null; clearChips(); }
+    function hearingStart() {
+      if (!hearingCore) return;
+      hearing = { picking: true, answers: {}, step: 0 };
+      appendStaffMsg(hearingKB.greeting || 'どんなアイテムをお考えですか？');
+      var prods = hearingCore.PRODUCTS;
+      var chips = Object.keys(prods).map(function (k) {
+        return { label: prods[k].emoji + ' ' + prods[k].name, sub: prods[k].sub || '', val: k };
+      });
+      chips.push({ label: '相談をやめる', exit: true, onClick: hearingExit });
+      renderChips(chips);
+    }
+    function hearingExit() {
+      hearingReset();
+      appendStaffMsg('オーダー相談を終了しました。またいつでもお声がけください。');
+      if (currentChatStaffId === 'hannbai') {
+        renderChips([{ label: '🧵 オーダー相談（ヒアリング）を始める', onClick: hearingStart }]);
+      }
+    }
+    function hearingRunStep() {
+      var a = hearing.answers;
+      var step = hearing.flow[hearing.step];
+      while (step && step.skipIf && step.skipIf(a)) { hearing.step++; step = hearing.flow[hearing.step]; }
+      if (!step) { hearingFinish(); return; }
+      var sayText = (typeof step.say === 'function') ? step.say(a) : step.say;
+      var tipText = step.tip ? ((typeof step.tip === 'function') ? step.tip(a) : step.tip) : '';
+      hearing.isLast = !!step.last;
+      appendStaffMsg(sayText + (tipText ? '\n\n' + tipText : ''));
+      var items = (typeof step.quick === 'function') ? step.quick(a) : (step.quick || []);
+      var chips = (items || []).map(function (it) { return { label: it.label, sub: it.sub || '', val: it.val }; });
+      chips.push({ label: '相談をやめる', exit: true, onClick: hearingExit });
+      renderChips(chips);
+      hearing.awaitKey = (typeof step.key === 'function') ? step.key(a) : step.key;
+    }
+    function hearingAnswer(val, label) {
+      if (!hearing || hearing.done) return;
+      if (hearing.picking) {
+        if (!hearingCore.PRODUCTS[val]) return;
+        appendUserMsg(label || val);
+        hearing.picking = false;
+        hearing.prodKey = val;
+        hearing.flow = hearingCore.PRODUCTS[val].steps.concat(hearingCore.COMMON_TAIL);
+        hearing.step = 0;
+        clearChips();
+        hearingRunStep();
+        return;
+      }
+      appendUserMsg(label || val);
+      if (hearing.awaitKey) hearing.answers[hearing.awaitKey] = val;
+      hearing.awaitKey = null;
+      clearChips();
+      if (hearing.isLast) { hearingFinish(); return; }
+      hearing.step++;
+      hearingRunStep();
+    }
+    function hearingFinish() {
+      if (!hearing || hearing.done) return;
+      hearing.done = true;
+      var r = hearingCore.buildOrderRows(hearing.prodKey, hearing.answers);
+      var sheet = r.rows.map(function (row) { return '・' + row[0] + '：' + row[1]; }).join('\n');
+      appendStaffMsg('ありがとうございました！ご要望を発注票にまとめました📋\n\n【発注票（ヒアリングまとめ）】\n' + sheet + '\n概算目安：' + r.rangeTxt + '\n\n※ 概算は目安です。正確なお見積りは職人が確認のうえご案内します。');
+      var copyText = "【N's factory " + r.prod.name + 'オーダー 発注票】\n' + r.rows.map(function (row) { return row[0] + '：' + row[1]; }).join('\n') + '\n概算目安：' + r.rangeTxt;
+      renderChips([
+        { label: '📋 発注票をコピー', onClick: function () {
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(copyText).then(function () {
+                appendStaffMsg('発注票をコピーしました。LINEやメールに貼り付けてお送りください。');
+              }).catch(function () {});
+            }
+          } },
+        { label: '🧵 くわしく相談ページへ', onClick: function () { window.open('../order_estimate/hearing-ai.html', '_blank'); } },
+        { label: '最初からやり直す', onClick: hearingStart },
+        { label: '終了する', exit: true, onClick: hearingExit }
+      ]);
+    }
+
     function sendChat() {
       if (isChatSending) return;
       var input = document.getElementById('chat-input');
@@ -740,6 +874,18 @@
       var text = input ? input.value.trim() : '';
       if (!text || !currentChatStaffId) return;
       if (text.length > 200) return;
+
+      // ヒアリング中は自由入力も回答として扱う（GASチャットには送らない）
+      if (hearing && !hearing.done) {
+        if (input) input.value = '';
+        if (hearing.picking) {
+          appendUserMsg(text);
+          appendStaffMsg('上の選択肢から、作りたいアイテムをお選びください🙂');
+          return;
+        }
+        hearingAnswer(text, text);
+        return;
+      }
 
       var staffId = currentChatStaffId;
       var turns = chatTurnCount[staffId] || 0;
