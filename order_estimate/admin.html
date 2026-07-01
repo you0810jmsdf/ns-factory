@@ -743,6 +743,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="stats" role="tab" aria-selected="false">作品ページアクセスログ</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="threads-sns" role="tab" aria-selected="false">📣 Threads投稿管理</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="customers" role="tab" aria-selected="false">👥 顧客マスタ</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="hearing" role="tab" aria-selected="false">🧵 対話ナレッジ</button>
     </div>
     <div class="admin-tab-note" id="adminTabNote">N's Factory 幕僚計画。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。</div>
 
@@ -772,6 +773,7 @@ tr.row-out-stock td{
         <button class="btn sub size-publish-action admin-section-hidden" id="publishSizeGithubBtn">サイズ基準価格をGitHubへ反映</button>
         <button class="btn sub brand-publish-action admin-section-hidden" id="publishBrandGithubBtn">構造タイプ価格をGitHubへ反映</button>
         <button class="btn sub thread-publish-action admin-section-hidden" id="publishThreadGithubBtn">糸在庫をGitHubへ反映</button>
+        <button class="btn sub hearing-publish-action admin-section-hidden" id="publishHearingGithubBtn">対話ナレッジをGitHubへ反映</button>
       </div>
       <div class="hint" style="margin-top:8px">
         PCローカルのCSVは基本使いません。GitHubへ直接反映する場合は、Contents read/write 権限のトークンを設定してください。「このブラウザに保存する」にチェックを入れると次回から自動入力されます。複数PCで使う場合はブラウザのパスワードマネージャーを利用してください。
@@ -1156,6 +1158,57 @@ tr.row-out-stock td{
       管理者画面の今後の想定:
       在庫数、在庫状態、価格、参照URL、表示ON/OFFをこの画面から修正し、
       最終的には巡回結果の確認や価格差分の反映もここで扱える形に広げる。
+    </div>
+
+    <!-- 対話ナレッジ（オーダー相談AI）タブ -->
+    <div class="panel hearing-section admin-section-hidden" id="hearingPanel">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">🧵 対話ナレッジ（オーダー相談AI・ショールーム販売幕僚 共通）</h2>
+      <div class="hint" style="margin-bottom:12px">
+        ここで編集した内容は <code>order_estimate/hearing-kb.json</code> に保存され、
+        <b>オーダー相談AI（hearing-ai.html）</b> と <b>3Dショールームの販売幕僚チャット</b> の両方に反映されます。
+        再学習は不要で、GitHubへ反映すると数分でサイトに反映されます。
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn light" id="hearingReloadBtn" type="button">公開中のナレッジを再読込</button>
+        <span class="status-pill" id="hearingStatusPill">未読込</span>
+      </div>
+
+      <div class="field" style="margin-bottom:12px">
+        <label for="hearingGreeting">あいさつ文（相談開始時の第一声）</label>
+        <textarea id="hearingGreeting" rows="3" style="width:100%;font-family:inherit;font-size:13px;padding:8px;border:1px solid #eadccf;border-radius:8px"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label for="hearingRingAdvice">リング選びのアドバイス</label>
+        <textarea id="hearingRingAdvice" rows="2" style="width:100%;font-family:inherit;font-size:13px;padding:8px;border:1px solid #eadccf;border-radius:8px"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label for="hearingLeatherNote">革についての説明</label>
+        <textarea id="hearingLeatherNote" rows="2" style="width:100%;font-family:inherit;font-size:13px;padding:8px;border:1px solid #eadccf;border-radius:8px"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label for="hearingStitchAdvice">ステッチ（糸色）のアドバイス</label>
+        <textarea id="hearingStitchAdvice" rows="2" style="width:100%;font-family:inherit;font-size:13px;padding:8px;border:1px solid #eadccf;border-radius:8px"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label for="hearingExtra">追加メモ（自由記述の"メモリ"）</label>
+        <div class="hint" style="margin:4px 0 6px">
+          最新の方針・キャンペーン・納期の注意・よくある質問への回答などを自由に書けます。
+          AI会話モード（APIキー利用時）の接客知識に反映され、他の記述と矛盾する場合はこのメモが優先されます。
+        </div>
+        <textarea id="hearingExtra" rows="8" placeholder="例）2026年8月は夏季休業のため納期+2週間。&#10;例）ふるさと納税経由のお客様には、返礼品の枠内で仕様を決める案内をする。&#10;例）左利きのお客様にはファスナー位置の反転を提案する。" style="width:100%;font-family:inherit;font-size:13px;padding:8px;border:1px solid #eadccf;border-radius:8px"></textarea>
+      </div>
+
+      <details style="margin-bottom:8px">
+        <summary style="cursor:pointer;font-size:13px;color:#6b3a1f;font-weight:600">上級者向け：JSON全体を直接編集（価格レンジ・在庫糸リスト等）</summary>
+        <div class="hint" style="margin:6px 0">
+          概算価格レンジ（price）や在庫ステッチ一覧（stitchInStock）などもここで編集できます。
+          JSONの形式が壊れていると反映できません（反映時にチェックします）。
+        </div>
+        <textarea id="hearingRawJson" rows="14" spellcheck="false" style="width:100%;font-family:ui-monospace,Consolas,monospace;font-size:12px;padding:8px;border:1px solid #eadccf;border-radius:8px;background:#fbf8f4"></textarea>
+      </details>
+      <div class="hint">
+        反映は上部の「対話ナレッジをGitHubへ反映」ボタンから（GitHubトークンが必要です）。
+      </div>
     </div>
 
     <!-- アクセス解析タブ -->
@@ -3343,6 +3396,120 @@ document.getElementById('fallbackFileInput').addEventListener('change', async (e
   event.target.value = '';
 });
 
+/* ===== 対話ナレッジ（hearing-kb.json）編集 ===== */
+let hearingKbLoaded = false;
+let hearingKbObj = null;
+const HEARING_SIMPLE_FIELDS = [
+  ['hearingGreeting', 'greeting'],
+  ['hearingRingAdvice', 'ringAdvice'],
+  ['hearingLeatherNote', 'leatherNote'],
+  ['hearingStitchAdvice', 'stitchAdvice'],
+  ['hearingExtra', 'extraKnowledge']
+];
+
+function hearingSetPill(text, ok) {
+  const pill = document.getElementById('hearingStatusPill');
+  if (!pill) return;
+  pill.textContent = text;
+  pill.style.background = ok ? '#e8f5e9' : '';
+  pill.style.color = ok ? '#2e7d32' : '';
+}
+
+function hearingFillFormFromObj() {
+  if (!hearingKbObj) return;
+  HEARING_SIMPLE_FIELDS.forEach(([elId, key]) => {
+    const el = document.getElementById(elId);
+    if (el) el.value = hearingKbObj[key] || '';
+  });
+  const raw = document.getElementById('hearingRawJson');
+  if (raw) raw.value = JSON.stringify(hearingKbObj, null, 2);
+}
+
+async function loadHearingKb() {
+  hearingSetPill('読込中…', false);
+  try {
+    const res = await fetch('./hearing-kb.json', { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    hearingKbObj = await res.json();
+    hearingKbLoaded = true;
+    hearingFillFormFromObj();
+    hearingSetPill('読込済（公開中の内容）', true);
+  } catch (err) {
+    hearingKbObj = hearingKbObj || {};
+    hearingSetPill('読込失敗: ' + err.message, false);
+  }
+}
+
+function hearingCollect() {
+  // JSON全体テキストを正として解析 → かんたん編集欄の値で上書き
+  const raw = document.getElementById('hearingRawJson');
+  let obj;
+  try {
+    obj = raw && raw.value.trim() ? JSON.parse(raw.value) : (hearingKbObj || {});
+  } catch (err) {
+    throw new Error('JSONの形式が不正です: ' + err.message + '\n「JSON全体を直接編集」欄を確認してください。');
+  }
+  HEARING_SIMPLE_FIELDS.forEach(([elId, key]) => {
+    const el = document.getElementById(elId);
+    if (el) obj[key] = el.value;
+  });
+  return obj;
+}
+
+function publishHearingToGitHub() {
+  let obj;
+  try {
+    obj = hearingCollect();
+  } catch (err) {
+    alert(err.message);
+    return;
+  }
+  hearingKbObj = obj;
+  hearingFillFormFromObj();
+  return publishCsvToGitHub({
+    path: 'order_estimate/hearing-kb.json',
+    fileName: 'hearing-kb.json',
+    csvText: JSON.stringify(obj, null, 2) + '\n',
+    buttonId: 'publishHearingGithubBtn',
+    onSuccess: () => hearingSetPill('GitHubへ反映済み', true)
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const reloadBtn = document.getElementById('hearingReloadBtn');
+  if (reloadBtn) reloadBtn.addEventListener('click', loadHearingKb);
+  const pubBtn = document.getElementById('publishHearingGithubBtn');
+  if (pubBtn) pubBtn.addEventListener('click', publishHearingToGitHub);
+  // かんたん編集 → JSON欄へ即時反映（JSON欄の手編集はそのまま保持し、反映時に統合）
+  HEARING_SIMPLE_FIELDS.forEach(([elId, key]) => {
+    const el = document.getElementById(elId);
+    if (el) el.addEventListener('input', () => {
+      if (!hearingKbObj) hearingKbObj = {};
+      hearingKbObj[key] = el.value;
+      const raw = document.getElementById('hearingRawJson');
+      if (raw) {
+        try {
+          const cur = raw.value.trim() ? JSON.parse(raw.value) : {};
+          cur[key] = el.value;
+          raw.value = JSON.stringify(cur, null, 2);
+        } catch (_) { /* JSON欄が編集途中なら触らない（反映時に統合） */ }
+      }
+    });
+  });
+  // JSON欄の編集 → 妥当なJSONになったら かんたん編集欄へ反映
+  const raw = document.getElementById('hearingRawJson');
+  if (raw) raw.addEventListener('change', () => {
+    try {
+      const cur = JSON.parse(raw.value);
+      hearingKbObj = cur;
+      HEARING_SIMPLE_FIELDS.forEach(([elId, key]) => {
+        const el = document.getElementById(elId);
+        if (el) el.value = cur[key] || '';
+      });
+    } catch (_) { /* 不正なJSONは反映時にエラー表示 */ }
+  });
+});
+
 function setAdminTab(tab) {
   const isCalendar = tab === 'calendar';
   const isThread = tab === 'thread';
@@ -3353,7 +3520,8 @@ function setAdminTab(tab) {
   const isBrand = tab === 'brand';
   const isSize = tab === 'size';
   const isSettings = tab === 'settings';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings;
+  const isHearing = tab === 'hearing';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -3383,6 +3551,12 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.customers-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCustomers);
+  });
+  document.querySelectorAll('.hearing-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isHearing);
+  });
+  document.querySelectorAll('.hearing-publish-action').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isHearing);
   });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
     el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers);
@@ -3437,10 +3611,13 @@ function setAdminTab(tab) {
       ? '商品閲覧ランキングとオーダー依頼の履歴をスプレッドシートのアクセスログから表示します。'
       : isThreadsSns
       ? 'Threads自動投稿システム（Nsfactory-SNS-AutoPost）。投稿候補の確認・承認・予約投稿を管理します。'
+      : isHearing
+      ? 'オーダー相談AI・ショールーム販売幕僚の対話知識（hearing-kb.json）を編集し、GitHubへ反映します。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
+  if (isHearing && !hearingKbLoaded) loadHearingKb();
 }
 
 // ── アクセス解析 ──

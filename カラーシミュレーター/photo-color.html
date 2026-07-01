@@ -57,6 +57,8 @@ input[type=range]{width:100%;accent-color:#6b3a1f}
 .btn-primary{background:#6b3a1f;color:#fff}
 .btn-ghost{background:#fdf0e5;color:#6b3a1f;border:1.5px solid #e8c9a8!important}
 .note{font-size:11px;color:#9a8a7a;text-align:center;margin-top:12px;line-height:1.6}
+.notice{background:#fdf3e6;border:1px solid #e8c9a8;color:#8a5a2f;border-radius:10px;padding:11px 14px;
+  font-size:12.5px;line-height:1.6;margin-bottom:12px}
 .footlink{text-align:center;margin-top:14px}
 .footlink a{color:#6b3a1f;font-size:12px;text-decoration:none;margin:0 8px}
 </style>
@@ -72,9 +74,10 @@ input[type=range]{width:100%;accent-color:#6b3a1f}
     <div class="canvas-status" id="status">作品を選ぶ、または写真をアップロードしてください<br><span style="font-size:11px">（ここに画像をドラッグ＆ドロップでもOK）</span></div>
     <canvas id="canvas" hidden></canvas>
   </div>
+  <div id="notice" class="notice" hidden></div>
 
   <div class="panel">
-    <h2>1. 写真を選ぶ <span class="badge">ギャラリー / アップロード</span></h2>
+    <h2>1. 写真を選ぶ <span class="badge">色替えできる作品 / アップロード</span></h2>
     <div class="gallery" id="gallery"></div>
     <div class="upload-row">
       <label class="upload-btn">📷 自分の写真をアップロード
@@ -115,6 +118,7 @@ input[type=range]{width:100%;accent-color:#6b3a1f}
 
   <div class="footlink">
     <a href="../">トップへ</a>
+    <a href="../works.html">作品集</a>
     <a href="./simulator.html">システム手帳カラーシミュレーター</a>
     <a href="../order_estimate/leather-order-estimate-v2.html">見積もり</a>
   </div>
@@ -210,6 +214,28 @@ function recolor(srcData, targetHSL, opts){
   return out;
 }
 
+/* ===== 画像プロキシ（外部保存＝Drive等の写真を色替え可能にする） =====
+   image-proxy.gs をGASにデプロイし、その /exec URL を下に設定してください。
+   未設定でも同一オリジンの写真は色替えできます（外部写真は案内表示）。
+   動作確認は ?proxy=<GAS URL> でも指定できます。 */
+let IMAGE_PROXY_URL = 'https://script.google.com/macros/s/AKfycbyAN7NZcr5Rm_AKBEeXO1zVrX9YmWAraNih1vELPcp2Ohrr1oN0MaYYN5oJUrs7N5RC/exec';
+(function(){ const pp=new URLSearchParams(location.search).get('proxy'); if(pp) IMAGE_PROXY_URL=pp; })();
+
+function jsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='nsf_cb_'+Math.floor(performance.now()*1000)%1e9+'_'+(jsonp._n=(jsonp._n||0)+1);
+    const s=document.createElement('script');
+    let done=false;
+    const cleanup=()=>{ try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); };
+    window[cb]=(data)=>{ done=true; cleanup(); resolve(data); };
+    s.onerror=()=>{ if(!done){cleanup(); reject(new Error('jsonp failed'));} };
+    const sep=url.indexOf('?')>=0?'&':'?';
+    s.src=url+sep+'callback='+cb;
+    document.head.appendChild(s);
+    setTimeout(()=>{ if(!done){cleanup(); reject(new Error('jsonp timeout'));} }, 20000);
+  });
+}
+
 /* ===== 状態 ===== */
 const MAXDIM=1400;
 let origData=null;          // 作業用originalのImageData
@@ -220,23 +246,45 @@ const $=id=>document.getElementById(id);
 
 function setStatus(show,msg){ const s=$('status'); s.hidden=!show; if(msg) s.innerHTML=msg; $('canvas').hidden=show; }
 
-function loadImage(src){
-  setStatus(true,'読み込み中…');
-  const img=new Image();
-  img.crossOrigin='anonymous';
+function showNotice(msg){ const n=$('notice'); if(!msg){n.hidden=true;return;} n.innerHTML=msg; n.hidden=false; }
+function loadImage(src, viaProxy){
+  setStatus(true,'読み込み中…'); showNotice('');
+  const img=new Image();   // crossOrigin は指定しない（外部画像も表示だけはできるように）
   img.onload=()=>{
     let w=img.naturalWidth,h=img.naturalHeight;
     const scale=Math.min(1, MAXDIM/Math.max(w,h));
     workW=Math.round(w*scale); workH=Math.round(h*scale);
-    const off=document.createElement('canvas'); off.width=workW; off.height=workH;
-    const oc=off.getContext('2d'); oc.drawImage(img,0,0,workW,workH);
-    try{ origData=oc.getImageData(0,0,workW,workH); }
-    catch(e){ origData=null; setStatus(true,'この画像は色替えできませんでした（別の写真でお試しください）'); return; }
-    setStatus(false);
-    render();
+    const canvas=$('canvas'); canvas.width=workW; canvas.height=workH;
+    const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,workW,workH);
+    try{
+      origData=ctx.getImageData(0,0,workW,workH);   // 同一オリジン or data: ならOK
+      setStatus(false);
+      render();
+    }catch(e){
+      // 外部保存(Drive等)の写真。プロキシが設定されていれば base64 で取り直して色替え。
+      origData=null;
+      if(IMAGE_PROXY_URL && !viaProxy){
+        loadViaProxy(src);
+      }else{
+        setStatus(false);
+        showNotice('この作品の写真は外部保存のため色替えできません。<br>下の<b>作品一覧</b>から選ぶか、<b>写真をアップロード</b>してお試しください。');
+      }
+    }
   };
-  img.onerror=()=>setStatus(true,'画像を読み込めませんでした');
+  img.onerror=()=>{
+    if(IMAGE_PROXY_URL && !viaProxy){ loadViaProxy(src); return; }
+    origData=null; setStatus(true,'画像を読み込めませんでした');
+  };
   img.src=src;
+}
+function loadViaProxy(src){
+  setStatus(true,'色替え用に写真を取得中…'); showNotice('');
+  jsonp(IMAGE_PROXY_URL + (IMAGE_PROXY_URL.indexOf('?')>=0?'&':'?') + 'url=' + encodeURIComponent(src))
+    .then(data=>{
+      if(data && data.dataUrl){ loadImage(data.dataUrl, true); }
+      else{ setStatus(false); showNotice('この写真は色替えできませんでした（取得に失敗）。<br>下の<b>作品一覧</b>やアップロードでお試しください。'); }
+    })
+    .catch(()=>{ setStatus(false); showNotice('この写真は色替えできませんでした（取得に失敗）。<br>下の<b>作品一覧</b>やアップロードでお試しください。'); });
 }
 
 function render(){
