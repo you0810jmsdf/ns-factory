@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="nsfactory-estimate-url" content="./leather-order-estimate-v2.html">
+<title>オーダー相談AI｜N's factory システム手帳フルオーダー</title>
+<meta name="description" content="システム手帳のフルオーダーメイドを、AIが順番にヒアリング。用途を伝えるだけで、サイズ・リング・仕様・革色・ステッチ・名入れをプロの視点で提案し、発注票を自動作成します。">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#f5f0eb;color:#2c1a0e;font-size:14px;line-height:1.6;
+}
+.app{display:flex;min-height:100vh;flex-direction:column;max-width:760px;margin:0 auto;background:#faf7f4;box-shadow:0 0 30px rgba(0,0,0,.06)}
+.topbar{
+  background:linear-gradient(135deg,#3d1a08 0%,#6b3a1f 100%);
+  color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.25);
+}
+.topbar .avatar{width:38px;height:38px;border-radius:50%;background:#e8c9a8;color:#3d1a08;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.topbar-title{flex:1;min-width:0}
+.topbar h1{font-size:15px;font-weight:700;letter-spacing:.04em}
+.topbar p{font-size:11px;opacity:.8;margin-top:1px}
+.topbar .modebtn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35);
+  border-radius:20px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.topbar .modebtn:hover{background:rgba(255,255,255,.28)}
+
+/* chat area */
+.chat{flex:1;padding:18px 14px 8px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;gap:8px;max-width:100%;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg .ic{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px}
+.msg.bot .ic{background:#6b3a1f;color:#fff}
+.msg.user{flex-direction:row-reverse}
+.msg.user .ic{background:#d9c3ac;color:#3d1a08}
+.bubble{padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.65;max-width:calc(100% - 46px);white-space:pre-wrap;word-break:break-word}
+.msg.bot .bubble{background:#fff;border:1px solid #ede0d4;border-top-left-radius:4px}
+.msg.user .bubble{background:#6b3a1f;color:#fff;border-top-right-radius:4px}
+.bubble .tip{display:block;margin-top:6px;font-size:11.5px;color:#8a6a4f;background:#fdf6ef;border-left:3px solid #d4b896;padding:6px 9px;border-radius:0 6px 6px 0;white-space:pre-wrap}
+.msg.bot .bubble b{color:#6b3a1f}
+
+/* quick replies */
+.quick{display:flex;flex-wrap:wrap;gap:7px;padding:2px 14px 6px 52px}
+.quick button{background:#fff;border:1.5px solid #d4b896;color:#6b3a1f;border-radius:20px;
+  padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .12s;font-family:inherit}
+.quick button:hover{background:#6b3a1f;color:#fff;border-color:#6b3a1f}
+.quick button .sub{display:block;font-size:10.5px;font-weight:400;opacity:.7;margin-top:1px}
+.quick button:hover .sub{opacity:.9}
+
+/* input */
+.inputbar{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #ede0d4;background:#fff;position:sticky;bottom:0}
+.inputbar input{flex:1;border:1.5px solid #ede0d4;border-radius:22px;padding:10px 15px;font-size:14px;
+  background:#faf7f4;outline:none;font-family:inherit}
+.inputbar input:focus{border-color:#b5895a;background:#fff}
+.inputbar button{background:#6b3a1f;color:#fff;border:none;border-radius:50%;width:42px;height:42px;
+  font-size:18px;cursor:pointer;flex-shrink:0}
+.inputbar button:disabled{opacity:.4;cursor:default}
+
+/* order sheet card */
+.sheet{background:#fff;border:1px solid #e8d4c0;border-radius:12px;padding:16px;margin:2px 0;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.sheet h3{font-size:14px;color:#6b3a1f;border-bottom:2px solid #e8d4c0;padding-bottom:7px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sheet table{width:100%;border-collapse:collapse;font-size:12.5px}
+.sheet td{padding:6px 4px;border-bottom:1px dashed #eaddce;vertical-align:top}
+.sheet td.k{color:#8a6a4f;width:40%;font-weight:600}
+.sheet td.v{color:#2c1a0e}
+.sheet .range{margin-top:10px;background:#fdf6ef;border-radius:8px;padding:9px 11px;font-size:12px;color:#6b3a1f}
+.sheet-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sheet-actions a,.sheet-actions button{flex:1;min-width:120px;text-align:center;text-decoration:none;
+  border-radius:8px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+.btn-primary{background:#6b3a1f;color:#fff}
+.btn-ghost{background:#fdf0e5;color:#6b3a1f;border:1.5px solid #e8c9a8 !important}
+
+/* settings modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal.on{display:flex}
+.modal-box{background:#fff;border-radius:14px;padding:20px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-box h2{font-size:15px;color:#6b3a1f;margin-bottom:6px}
+.modal-box p{font-size:12px;color:#6a5545;margin-bottom:12px;line-height:1.6}
+.modal-box label{display:block;font-size:12px;font-weight:600;color:#6b3a1f;margin:10px 0 4px}
+.modal-box input{width:100%;border:1.5px solid #ede0d4;border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
+.modal-box input:focus{border-color:#b5895a}
+.modal-box .note{font-size:11px;color:#a08a76;margin-top:4px}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions button{flex:1;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+.typing{display:inline-flex;gap:3px;padding:4px 2px}
+.typing span{width:6px;height:6px;border-radius:50%;background:#c4a98c;animation:blink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.foot{text-align:center;font-size:10.5px;color:#b0a090;padding:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="avatar">🧵</div>
+    <div class="topbar-title">
+      <h1>オーダー相談AI</h1>
+      <p>N's factory｜システム手帳フルオーダー ヒアリング</p>
+    </div>
+    <button class="modebtn" id="modeBtn">⚙ AI会話モード</button>
+  </div>
+
+  <div class="chat" id="chat"></div>
+  <div class="quick" id="quick"></div>
+
+  <div class="inputbar">
+    <input id="txt" type="text" placeholder="メッセージを入力…（自由に話しかけてOK）" autocomplete="off">
+    <button id="send">➤</button>
+  </div>
+  <div class="foot">試作版プロトタイプ｜最終の仕様確定・お見積りは職人が確認します</div>
+</div>
+
+<!-- settings modal -->
+<div class="modal" id="modal">
+  <div class="mod-inner modal-box">
+    <h2>AI会話モード（任意）</h2>
+    <p>お手持ちの Anthropic APIキーを入れると、決まった質問に沿わず<b>自由に相談できるライブAI</b>に切り替わります。キーはこの端末（ブラウザ）内だけに保存され、外部には送信されません（AnthropicのAPIにのみ直接送られます）。<br>キー無しでも、ガイド対話モードで最後まで発注票を作れます。</p>
+    <label>Anthropic API Key（sk-ant-…）</label>
+    <input id="apiKey" type="password" placeholder="sk-ant-...">
+    <label>モデル名</label>
+    <input id="apiModel" type="text" value="claude-sonnet-5">
+    <div class="note">工房でお使いのモデル（例: claude-fable-5）に変更できます。キーで使えないモデル名だとエラーになります。</div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="clearKey">キーを消す</button>
+      <button class="btn-primary" id="saveKey">保存して使う</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   ヒアリングAI — 知識ベース（工房の実データに基づく／ここを編集すれば覚え直し）
+   価格CSV: size-baseprice.csv / ring-price-stock.csv / brand-price.csv / settings.csv
+   ========================================================================= */
+const KB = {
+  shop: "N's factory（作り手：中司祐樹）",
+  product: "システム手帳（バインダー）フルオーダーメイド",
+
+  // --- サイズ（size-baseprice.csv より）---
+  sizes: [
+    {id:'micro5', name:'Micro5',  穴:'5穴', 寸:'54×84mm',   hint:'手のひらサイズの最小。メモ・アイデア帳向き。持ち歩き最優先の人に。'},
+    {id:'mini6',  name:'Mini6',   穴:'6穴', 寸:'67×105mm',  hint:'コンパクトの定番。ポケット/小さめバッグに。予定＋メモを軽く。'},
+    {id:'a6',     name:'A6',      穴:'6穴', 寸:'105×148mm', hint:'文庫本サイズの人気No.1。仕事にもプライベートにも万能。'},
+    {id:'bible',  name:'バイブル', 穴:'6穴', 寸:'95×171mm',  hint:'縦長で書きやすい世界標準サイズ。リフィルの選択肢が最多。'},
+    {id:'a5',     name:'A5',      穴:'6穴', 寸:'148×210mm', hint:'大判でしっかり書く・資料も挟む。デスク中心・仕事の司令塔に。'}
+  ],
+
+  // --- リング径（ring-price-stock.csv：サイズごとの定番）---
+  rings: {
+    micro5:[{mm:8,type:'クラウゼ'},{mm:11,type:'クラウゼ'}],
+    mini6: [{mm:13,type:'クラウゼ'},{mm:15,type:'通常'}],
+    a6:    [{mm:19,type:'通常'}],
+    bible: [{mm:25,type:'通常'}],
+    a5:    [{mm:30,type:'通常'}]
+  },
+  ringAdvice:"リング径は「毎日どれだけ挟むか」で選びます。予定＋薄いメモ中心なら小さめ、たっぷり挟む・長く育てるなら大きめ。クラウゼリングは薄く軽い高級タイプです。",
+
+  // --- モデル/仕様（brand-price.csv より）---
+  models: [
+    {id:'simplist',  name:'Simplist',    desc:'リングをサポーターで包み込む軽量スタイル。革の風合いをそのまま楽しむ定番。',      for:'軽さ・シンプルさ・革そのものが好きな方'},
+    {id:'npad_nf',   name:'N-Pad（フラップ無）', desc:'内張り付きでしっかりした作り。かっちり手帳らしい佇まい。',              for:'きちんと感・耐久性を重視する方'},
+    {id:'npad',      name:'N-Pad（フラップ有）', desc:'フラップ（かぶせ）付きで中身をしっかり保護。存在感のある一冊に。',        for:'持ち歩きが多く中身を守りたい方（+加工費）'},
+    {id:'npadw',     name:'N-Pad W',     desc:'ジップ＋フリーポケット付きの多機能タイプ。カード・現金も一緒に。',        for:'手帳＋財布のように1冊で完結させたい方'},
+    {id:'nthrough',  name:'N-Through',   desc:'クリア素材の挟み込み構造。写真やカードを見せる遊び心のある構造。',         for:'見せる収納・個性を出したい方'}
+  ],
+
+  // --- 革の色（代表的な提案。実物スワッチは注文時に確認）---
+  leatherColors: [
+    {group:'ブラウン系', ex:'キャメル / ナチュラル / ミディアムブラウン / ダークブラウン', hint:'いちばん人気。使うほど艶が増し、育てる楽しみが大きい定番。'},
+    {group:'ブラック系', ex:'ブラック / ブラックブラウン', hint:'ビジネスで間違いのない上品さ。傷が目立ちにくい。'},
+    {group:'明るい・個性系', ex:'レッド / グリーン / ネイビー / ブルー', hint:'人と被らない一冊に。差し色ステッチと合わせると映える。'}
+  ],
+  leatherNote:"当工房はヌメ革（タンニン鞣し）中心で、経年変化（エイジング）を楽しめます。実際の色見本は最終確認時にご案内します。",
+
+  // --- ステッチ糸（stitch-thread-stock.csv の在庫TRUEを候補として）---
+  stitchInStock: ['#108 キャメル','#109 ライトブラウン','#129 ブラックブラウン','BLK ブラック','WHT ホワイト',
+                  '#2 レッド','#15 ワインレッド','#18 ネイビー','#17 ロイヤルブルー','#28 セージグリーン',
+                  '#121 オリーブ','#38 グレー','#46 ベビーピンク','#53 ターコイズ','#6 イエロー','#7 オレンジ'],
+  stitchAdvice:"糸色は「革と同系でまとめる＝上品」「反対色で挿す＝主役に」。在庫の中からお選びいただくと納期が早いです。",
+
+  // --- 価格ロジック（settings.csv）※概算レンジ用の簡易版 ---
+  price:{ laborRate:6000, leatherDs:160,
+          // サイズ別のざっくり基準レンジ（工数×時給＋革＋リング＋モデルを丸めた目安。正確な額は見積りツールで）
+          baseRange:{ micro5:[9000,16000], mini6:[13000,22000], a6:[22000,38000], bible:[24000,40000], a5:[38000,60000] } }
+};
+
+/* =========================================================================
+   会話フロー（ガイド対話モード）
+   ========================================================================= */
+const state = { answers:{}, step:0, liveMode:false };
+
+// 用途→サイズ推奨ロジック（プロの判断）
+function recommendSize(use, carry){
+  if(carry==='いつも持ち歩く'){ return use==='仕事中心' ? 'a6' : 'mini6'; }
+  if(carry==='デスク中心'){ return use==='仕事中心' ? 'a5' : 'bible'; }
+  return 'a6'; // 両方バランス
+}
+function recommendRing(sizeId, volume){
+  const opts = KB.rings[sizeId] || [];
+  if(!opts.length) return null;
+  if(volume==='たっぷり挟む') return opts[opts.length-1];
+  if(volume==='少なめ・すっきり') return opts[0];
+  return opts[Math.floor((opts.length-1)/2)] || opts[0];
+}
+function sizeById(id){ return KB.sizes.find(s=>s.id===id); }
+function modelById(id){ return KB.models.find(m=>m.id===id); }
+
+// フロー定義：各ステップは {say, tip, quick:[{label,sub,val}], key, next(val)}
+const FLOW = [
+  { // 0 あいさつ
+    say:"こんにちは！N's factory のオーダー相談AIです🧵\nシステム手帳のフルオーダーを、いくつかの質問でご一緒に形にしていきます。難しい知識は不要です。まず、この手帳は主にどんな用途でお使いになりますか？",
+    quick:[
+      {label:'仕事中心',sub:'商談・タスク管理',val:'仕事中心'},
+      {label:'プライベート中心',sub:'日記・趣味・予定',val:'プライベート中心'},
+      {label:'仕事もプライベートも',sub:'1冊にまとめたい',val:'両方'}
+    ], key:'use'
+  },
+  { // 1 携帯性
+    say:(a)=>`「${a.use}」ですね、ありがとうございます。\n持ち運びについてはどちらが近いですか？`,
+    quick:[
+      {label:'いつも持ち歩く',sub:'バッグやポケットに',val:'いつも持ち歩く'},
+      {label:'デスク中心',sub:'家や職場で使う',val:'デスク中心'},
+      {label:'半々くらい',sub:'',val:'半々'}
+    ], key:'carry'
+  },
+  { // 2 サイズ提案
+    say:(a)=>{
+      const rec = recommendSize(a.use, a.carry); const s = sizeById(rec);
+      a._recSize = rec;
+      return `用途と持ち運びから、私のおすすめは【${s.name}】(${s.寸}) です。\n${s.hint}\nこのサイズで進めますか？他のサイズも選べます。`;
+    },
+    tip:()=>"▼ 全サイズ\n"+KB.sizes.map(s=>`・${s.name}（${s.寸}）${s.hint}`).join('\n'),
+    quick:(a)=>{
+      const arr=[{label:`${sizeById(a._recSize).name}にする`,sub:'おすすめ',val:a._recSize}];
+      KB.sizes.filter(s=>s.id!==a._recSize).forEach(s=>arr.push({label:s.name,sub:s.寸,val:s.id}));
+      return arr;
+    }, key:'size'
+  },
+  { // 3 リング量
+    say:(a)=>`${sizeById(a.size).name}ですね。次にリング（挟む量）です。\n${KB.ringAdvice}\n普段どれくらい挟みそうですか？`,
+    quick:[
+      {label:'少なめ・すっきり',sub:'予定＋薄めのメモ',val:'少なめ・すっきり'},
+      {label:'ふつう',sub:'',val:'ふつう'},
+      {label:'たっぷり挟む',sub:'リフィル多め・育てたい',val:'たっぷり挟む'}
+    ], key:'volume'
+  },
+  { // 4 モデル/仕様
+    say:(a)=>{
+      const r = recommendRing(a.size, a.volume); a._ring = r;
+      const rt = r ? `リングは【${r.mm}mm（${r.type}リング）】が目安です。\n` : '';
+      return `${rt}続いて、手帳の"作り（モデル)"を選びます。仕上がりの雰囲気が変わります。`;
+    },
+    tip:()=>"▼ モデル一覧\n"+KB.models.map(m=>`・${m.name}：${m.desc}（向いている人：${m.for}）`).join('\n'),
+    quick:()=>KB.models.map(m=>({label:m.name,sub:m.for,val:m.id})), key:'model'
+  },
+  { // 5 革色
+    say:(a)=>{
+      const m=modelById(a.model);
+      return `${m?m.name:''} いいですね。${m?m.desc:''}\n次は革の色です。${KB.leatherNote}\nどんな雰囲気がお好みですか？`;
+    },
+    tip:()=>"▼ 参考\n"+KB.leatherColors.map(c=>`・${c.group}（${c.ex}）：${c.hint}`).join('\n'),
+    quick:()=>KB.leatherColors.map(c=>({label:c.group,sub:c.ex,val:c.group})), key:'leather'
+  },
+  { // 6 ステッチ
+    say:(a)=>`${a.leather} で承りました。\n縫い糸（ステッチ）の色はいかがしますか？\n${KB.stitchAdvice}`,
+    tip:()=>"▼ 在庫あり（納期が早い）\n"+KB.stitchInStock.join(' / '),
+    quick:()=>[
+      {label:'革と同系でまとめる',sub:'上品・落ち着き',val:'革と同系（上品にまとめる）'},
+      {label:'差し色で主役に',sub:'個性を出す',val:'差し色（主役にする）'},
+      {label:'おまかせ',sub:'職人が最適に',val:'おまかせ'}
+    ], key:'stitch'
+  },
+  { // 7 名入れ
+    say:"名入れ（刻印）はご希望ですか？イニシャルやお名前を箔押し/空押しできます。",
+    quick:[
+      {label:'名入れする',sub:'内容を次で入力',val:'希望する'},
+      {label:'名入れなし',sub:'',val:'なし'}
+    ], key:'nameStamp'
+  },
+  { // 8 名入れ内容（名入れ希望のときだけ）
+    skipIf:(a)=> a.nameStamp!=='希望する',
+    say:"刻印する文字（イニシャル・お名前など）を入力してください。",
+    freeInput:true, key:'nameText'
+  },
+  { // 9 予算
+    say:"ご予算の目安はありますか？（無理に合わせず、参考にします）",
+    freeInput:true, key:'budget',
+    quick:[{label:'おまかせ／相談',sub:'',val:'相談'}]
+  },
+  { // 10 納期（最後）
+    say:"最後に、ご希望の納期・お渡し時期はありますか？（例：3ヶ月以内 / 急がない / 〇月の誕生日に 等）",
+    freeInput:true, key:'due', last:true,
+    quick:[{label:'急がない',sub:'',val:'急がない'}]
+  }
+];
+
+/* ---------- レンダリング ---------- */
+const chat=document.getElementById('chat');
+const quickEl=document.getElementById('quick');
+const txt=document.getElementById('txt');
+const sendBtn=document.getElementById('send');
+
+function scrollDown(){ chat.scrollTop=chat.scrollHeight; }
+function addMsg(who, text, tip){
+  const m=document.createElement('div'); m.className='msg '+who;
+  const ic=document.createElement('div'); ic.className='ic'; ic.textContent= who==='bot'?'🧵':'🙂';
+  const b=document.createElement('div'); b.className='bubble';
+  b.innerHTML=escapeHtml(text).replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b>【$1】</b>');
+  if(tip){ const t=document.createElement('span'); t.className='tip'; t.textContent=tip; b.appendChild(t); }
+  m.appendChild(ic); m.appendChild(b); chat.appendChild(m); scrollDown();
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function showTyping(){
+  const m=document.createElement('div'); m.className='msg bot'; m.id='typing';
+  m.innerHTML='<div class="ic">🧵</div><div class="bubble"><span class="typing"><span></span><span></span><span></span></span></div>';
+  chat.appendChild(m); scrollDown();
+}
+function hideTyping(){ const t=document.getElementById('typing'); if(t) t.remove(); }
+function renderQuick(items){
+  quickEl.innerHTML='';
+  (items||[]).forEach(it=>{
+    const btn=document.createElement('button');
+    btn.innerHTML=escapeHtml(it.label)+(it.sub?`<span class="sub">${escapeHtml(it.sub)}</span>`:'');
+    btn.onclick=()=>handleAnswer(it.val, it.label);
+    quickEl.appendChild(btn);
+  });
+}
+
+/* ---------- ガイド対話ロジック ---------- */
+function runStep(){
+  const a=state.answers;
+  let step=FLOW[state.step];
+  // スキップ条件（例：名入れ無しなら刻印内容を飛ばす）
+  while(step && step.skipIf && step.skipIf(a)){ state.step++; step=FLOW[state.step]; }
+  if(!step){ finish(); return; }
+
+  const sayText = typeof step.say==='function' ? step.say(a) : step.say;
+  const tipText = step.tip ? (typeof step.tip==='function'?step.tip(a):step.tip) : null;
+  state._isLast = !!step.last;
+  showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    addMsg('bot', sayText, tipText);
+    const items = typeof step.quick==='function'?step.quick(a):(step.quick||[]);
+    renderQuick(items);
+    state._awaitKey = typeof step.key==='function'?step.key(a):step.key;
+    if(step.freeInput) txt.focus();
+  }, 420);
+}
+function handleAnswer(val, label){
+  if(state._done) return;
+  addMsg('user', label||val);
+  const key = state._awaitKey;
+  if(key) state.answers[key]=val;
+  state._awaitKey=null;           // 二重回答ガード
+  renderQuick([]);
+  // 進行
+  if(state._isLast){ finish(); return; }
+  state.step++;
+  runStep();
+}
+function handleFreeInput(){
+  const v=txt.value.trim(); if(!v) return;
+  txt.value='';
+  if(state.liveMode){ liveTurn(v); return; }
+  // ガイドモードで自由入力が来たとき
+  if(state._awaitKey){ handleAnswer(v, v); }
+  else { // 想定外の雑談 → やんわり誘導
+    addMsg('user', v);
+    addMsg('bot','ありがとうございます。上のボタンからお選びいただくか、続けて入力してくださいね。（自由に相談したい場合は右上「AI会話モード」もご利用いただけます）');
+  }
+}
+
+/* ---------- 発注票の生成 ---------- */
+function finish(){
+  if(state._done) return; state._done=true; state._awaitKey=null;
+  const a=state.answers;
+  const s=sizeById(a.size)||{}; const m=modelById(a.model)||{};
+  const ring=a._ring?`${a._ring.mm}mm（${a._ring.type}リング）`:'相談';
+  const pr=KB.price.baseRange[a.size]||[null,null];
+  const rangeTxt = pr[0]? `¥${pr[0].toLocaleString()} 〜 ¥${pr[1].toLocaleString()} 前後`:'お見積り';
+
+  showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    addMsg('bot','ありがとうございました！ヒアリング内容を発注票にまとめました。内容をご確認ください👇');
+
+    const rows=[
+      ['用途', a.use], ['持ち運び', a.carry],
+      ['サイズ', `${s.name||'-'}（${s.寸||''}）`],
+      ['リング', ring],
+      ['モデル/仕様', m.name||'-'],
+      ['革の色', a.leather||'-'],
+      ['ステッチ', a.stitch||'-'],
+      ['名入れ', a.nameStamp==='希望する'?`あり：${a.nameText||''}`:'なし'],
+      ['ご予算', a.budget||'相談'],
+      ['ご希望納期', a.due||'相談']
+    ];
+    const card=document.createElement('div'); card.className='msg bot';
+    card.innerHTML='<div class="ic">📋</div>';
+    const box=document.createElement('div'); box.className='sheet'; box.style.maxWidth='calc(100% - 46px)';
+    box.innerHTML='<h3>📋 オーダー発注票（ヒアリングシート）</h3><table>'+
+      rows.map(r=>`<tr><td class="k">${escapeHtml(r[0])}</td><td class="v">${escapeHtml(String(r[1]))}</td></tr>`).join('')+
+      '</table>'+
+      `<div class="range">💰 概算の目安：<b>${rangeTxt}</b><br><span style="font-size:11px;color:#a08a76">※ 仕様の組み合わせで変わります。正確な金額は見積りツール／職人の確認で確定します。</span></div>`+
+      '<div class="sheet-actions">'+
+        '<button class="btn-primary" id="copySheet">📋 発注票をコピー</button>'+
+        '<button class="btn-ghost" id="copyLine">💬 工房へ送る文面をコピー</button>'+
+        '<a class="btn-ghost" href="./leather-order-estimate-v2.html">🧮 正確な見積りへ</a>'+
+      '</div>';
+    card.appendChild(box); chat.appendChild(card); scrollDown();
+
+    const sheetText = "【N's factory システム手帳オーダー 発注票】\n"+rows.map(r=>`${r[0]}：${r[1]}`).join('\n')+`\n概算目安：${rangeTxt}`;
+    const lineText = `N's factory 様\nシステム手帳のオーダーを相談したいです。\n\n`+rows.map(r=>`・${r[0]}：${r[1]}`).join('\n')+`\n\nよろしくお願いします。`;
+    document.getElementById('copySheet').onclick=()=>copy(sheetText,'発注票をコピーしました');
+    document.getElementById('copyLine').onclick=()=>copy(lineText,'工房へ送る文面をコピーしました');
+
+    addMsg('bot','このままお店に送っていただければ、職人が仕様を確認して正式なお見積り・制作のご案内をいたします。ありがとうございました🙇\n（内容を変えたい時は、ページを再読み込みしてやり直せます）');
+    renderQuick([{label:'最初からやり直す',sub:'',val:'__restart'}]);
+    quickEl.querySelector('button').onclick=()=>location.reload();
+  },600);
+}
+function copy(text,okMsg){
+  navigator.clipboard.writeText(text).then(()=>toast(okMsg)).catch(()=>{
+    // フォールバック
+    const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy'); toast(okMsg);}catch(e){alert('コピーできませんでした。手動で選択してください。');}
+    ta.remove();
+  });
+}
+function toast(msg){
+  const t=document.createElement('div'); t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#3d1a08;color:#fff;padding:9px 16px;border-radius:20px;font-size:12.5px;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.3)';
+  document.body.appendChild(t); setTimeout(()=>t.remove(),1800);
+}
+
+/* =========================================================================
+   ライブAIモード（任意・BYO Anthropic key）
+   ========================================================================= */
+const modal=document.getElementById('modal');
+const apiKeyEl=document.getElementById('apiKey');
+const apiModelEl=document.getElementById('apiModel');
+document.getElementById('modeBtn').onclick=()=>{
+  apiKeyEl.value=localStorage.getItem('nsf_key')||'';
+  apiModelEl.value=localStorage.getItem('nsf_model')||'claude-sonnet-5';
+  modal.classList.add('on');
+};
+modal.onclick=(e)=>{ if(e.target===modal) modal.classList.remove('on'); };
+document.getElementById('saveKey').onclick=()=>{
+  const k=apiKeyEl.value.trim();
+  if(!k){ alert('APIキーを入力してください（無い場合はガイド対話モードのままご利用いただけます）'); return; }
+  localStorage.setItem('nsf_key',k);
+  localStorage.setItem('nsf_model',apiModelEl.value.trim()||'claude-sonnet-5');
+  modal.classList.remove('on');
+  enterLiveMode();
+};
+document.getElementById('clearKey').onclick=()=>{
+  localStorage.removeItem('nsf_key'); localStorage.removeItem('nsf_model');
+  apiKeyEl.value=''; state.liveMode=false;
+  modal.classList.remove('on'); toast('キーを消しました（ガイド対話モードに戻ります）');
+};
+
+const SYSTEM_PROMPT = `あなたは「${KB.shop}」のオーダー相談AI「幕僚（ばくりょう）」です。革職人 中司祐樹の名代として、お客様から${KB.product}のご要望を丁寧にヒアリングし、プロの視点で提案します。
+
+【口調】親しみやすく丁寧な日本語。専門用語には一言そえる。押し売りはしない。1回の返信は簡潔に、質問は基本1つずつ。
+
+【必ず聞き取る項目】用途 / 持ち運び頻度 / サイズ / リング径 / モデル(作り) / 革の色 / ステッチ色 / 名入れ / 予算 / 納期。ひと通り揃ったら最後に発注票を「【発注票】」から箇条書きでまとめる。
+
+【工房の知識ベース】
+■サイズ: ${KB.sizes.map(s=>`${s.name}(${s.寸}) ${s.hint}`).join(' / ')}
+■リング(サイズ別定番): Micro5=8/11mmクラウゼ, Mini6=13クラウゼ/15mm, A6=19mm, バイブル=25mm, A5=30mm。${KB.ringAdvice}
+■モデル: ${KB.models.map(m=>`${m.name}=${m.desc}(${m.for})`).join(' / ')}
+■革: ${KB.leatherNote} 代表色 ${KB.leatherColors.map(c=>c.group+'('+c.ex+')').join(' / ')}
+■ステッチ在庫(納期早): ${KB.stitchInStock.join(', ')}。${KB.stitchAdvice}
+■概算目安(円): Micro5 9,000-16,000 / Mini6 13,000-22,000 / A6 22,000-38,000 / バイブル 24,000-40,000 / A5 38,000-60,000。正確な額は見積りツールと職人確認で確定と伝える。
+
+【注意】価格は「概算・目安」とし断定しない。在庫や最終仕様は職人が確認する前提で案内する。分からないことは正直に「職人に確認します」と答える。`;
+
+let history=[];
+function enterLiveMode(){
+  state.liveMode=true;
+  quickEl.innerHTML=''; chat.innerHTML='';
+  history=[];
+  addMsg('bot','AI会話モードに切り替えました🧵 自由にご相談ください。「A6でシンプルな手帳がほしい」のように、思いつくままに話しかけてくださいね。');
+  document.getElementById('modeBtn').textContent='⚙ 設定';
+}
+async function liveTurn(userText){
+  addMsg('user', userText);
+  history.push({role:'user', content:userText});
+  showTyping();
+  const key=localStorage.getItem('nsf_key');
+  const model=localStorage.getItem('nsf_model')||'claude-sonnet-5';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'content-type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({ model, max_tokens:1024, system:SYSTEM_PROMPT, messages:history })
+    });
+    hideTyping();
+    if(!res.ok){
+      const t=await res.text();
+      addMsg('bot','⚠️ AIへの接続でエラーが出ました。APIキー/モデル名をご確認ください（右上「設定」）。\n'+t.slice(0,300));
+      return;
+    }
+    const data=await res.json();
+    const reply=(data.content||[]).map(b=>b.text||'').join('').trim()||'(応答が空でした)';
+    history.push({role:'assistant', content:reply});
+    addMsg('bot', reply);
+  }catch(e){
+    hideTyping();
+    addMsg('bot','⚠️ 通信に失敗しました。ネットワークをご確認のうえ、もう一度お試しください。');
+  }
+}
+
+/* ---------- 起動 ---------- */
+sendBtn.onclick=handleFreeInput;
+txt.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); handleFreeInput(); }});
+// 保存済みキーがあってもデフォルトはガイドで開始（安心）。開始:
+runStep();
+</script>
+</body>
+</html>
