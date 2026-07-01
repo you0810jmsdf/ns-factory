@@ -57,6 +57,8 @@ input[type=range]{width:100%;accent-color:#6b3a1f}
 .btn-primary{background:#6b3a1f;color:#fff}
 .btn-ghost{background:#fdf0e5;color:#6b3a1f;border:1.5px solid #e8c9a8!important}
 .note{font-size:11px;color:#9a8a7a;text-align:center;margin-top:12px;line-height:1.6}
+.notice{background:#fdf3e6;border:1px solid #e8c9a8;color:#8a5a2f;border-radius:10px;padding:11px 14px;
+  font-size:12.5px;line-height:1.6;margin-bottom:12px}
 .footlink{text-align:center;margin-top:14px}
 .footlink a{color:#6b3a1f;font-size:12px;text-decoration:none;margin:0 8px}
 </style>
@@ -72,9 +74,10 @@ input[type=range]{width:100%;accent-color:#6b3a1f}
     <div class="canvas-status" id="status">作品を選ぶ、または写真をアップロードしてください<br><span style="font-size:11px">（ここに画像をドラッグ＆ドロップでもOK）</span></div>
     <canvas id="canvas" hidden></canvas>
   </div>
+  <div id="notice" class="notice" hidden></div>
 
   <div class="panel">
-    <h2>1. 写真を選ぶ <span class="badge">ギャラリー / アップロード</span></h2>
+    <h2>1. 写真を選ぶ <span class="badge">色替えできる作品 / アップロード</span></h2>
     <div class="gallery" id="gallery"></div>
     <div class="upload-row">
       <label class="upload-btn">📷 自分の写真をアップロード
@@ -115,6 +118,7 @@ input[type=range]{width:100%;accent-color:#6b3a1f}
 
   <div class="footlink">
     <a href="../">トップへ</a>
+    <a href="../works.html">作品集</a>
     <a href="./simulator.html">システム手帳カラーシミュレーター</a>
     <a href="../order_estimate/leather-order-estimate-v2.html">見積もり</a>
   </div>
@@ -220,22 +224,28 @@ const $=id=>document.getElementById(id);
 
 function setStatus(show,msg){ const s=$('status'); s.hidden=!show; if(msg) s.innerHTML=msg; $('canvas').hidden=show; }
 
+function showNotice(msg){ const n=$('notice'); if(!msg){n.hidden=true;return;} n.innerHTML=msg; n.hidden=false; }
 function loadImage(src){
-  setStatus(true,'読み込み中…');
-  const img=new Image();
-  img.crossOrigin='anonymous';
+  setStatus(true,'読み込み中…'); showNotice('');
+  const img=new Image();   // crossOrigin は指定しない（外部画像も表示だけはできるように）
   img.onload=()=>{
     let w=img.naturalWidth,h=img.naturalHeight;
     const scale=Math.min(1, MAXDIM/Math.max(w,h));
     workW=Math.round(w*scale); workH=Math.round(h*scale);
-    const off=document.createElement('canvas'); off.width=workW; off.height=workH;
-    const oc=off.getContext('2d'); oc.drawImage(img,0,0,workW,workH);
-    try{ origData=oc.getImageData(0,0,workW,workH); }
-    catch(e){ origData=null; setStatus(true,'この画像は色替えできませんでした（別の写真でお試しください）'); return; }
-    setStatus(false);
-    render();
+    const canvas=$('canvas'); canvas.width=workW; canvas.height=workH;
+    const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,workW,workH);
+    try{
+      origData=ctx.getImageData(0,0,workW,workH);   // 同一オリジンならOK
+      setStatus(false);
+      render();
+    }catch(e){
+      // 外部保存(Drive等)の写真は color 変更不可。元画像だけ表示して案内。
+      origData=null;
+      setStatus(false);
+      showNotice('この作品の写真は外部保存のため色替えできません。<br>下の<b>作品一覧</b>から選ぶか、<b>写真をアップロード</b>してお試しください。');
+    }
   };
-  img.onerror=()=>setStatus(true,'画像を読み込めませんでした');
+  img.onerror=()=>{ origData=null; setStatus(true,'画像を読み込めませんでした'); };
   img.src=src;
 }
 
