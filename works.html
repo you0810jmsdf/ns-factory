@@ -789,15 +789,12 @@
 
     const recolorLink = document.getElementById('recolor-link');
     function updateRecolorLink(photo) {
-      // 色替えは canvas の getImageData を使うため同一オリジン画像のみ対応。
-      // 同一オリジンの写真ならその作品を直接開く。外部(Drive)写真の場合は
-      // ?src を付けず、色替え可能な作品ギャラリーを開く（常に同一タブで遷移）。
+      // その作品の写真を色替え画面へ渡す（常に同一タブ遷移）。同一オリジンの写真は
+      // そのまま、外部(Drive)写真は色替え画面側の画像プロキシ経由で色替えされる。
+      // プロキシ未設定時は色替え画面が案内を表示する（安全なフォールバック）。
       let href = 'カラーシミュレーター/photo-color.html';
       try {
-        const abs = new URL(photo, location.href).href;
-        if (new URL(abs).origin === location.origin) {
-          href += '?src=' + encodeURIComponent(abs);
-        }
+        href += '?src=' + encodeURIComponent(new URL(photo, location.href).href);
       } catch (e) {}
       recolorLink.href = href;
     }

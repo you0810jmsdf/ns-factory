@@ -214,6 +214,28 @@ function recolor(srcData, targetHSL, opts){
   return out;
 }
 
+/* ===== 画像プロキシ（外部保存＝Drive等の写真を色替え可能にする） =====
+   image-proxy.gs をGASにデプロイし、その /exec URL を下に設定してください。
+   未設定でも同一オリジンの写真は色替えできます（外部写真は案内表示）。
+   動作確認は ?proxy=<GAS URL> でも指定できます。 */
+let IMAGE_PROXY_URL = '';
+(function(){ const pp=new URLSearchParams(location.search).get('proxy'); if(pp) IMAGE_PROXY_URL=pp; })();
+
+function jsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='nsf_cb_'+Math.floor(performance.now()*1000)%1e9+'_'+(jsonp._n=(jsonp._n||0)+1);
+    const s=document.createElement('script');
+    let done=false;
+    const cleanup=()=>{ try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); };
+    window[cb]=(data)=>{ done=true; cleanup(); resolve(data); };
+    s.onerror=()=>{ if(!done){cleanup(); reject(new Error('jsonp failed'));} };
+    const sep=url.indexOf('?')>=0?'&':'?';
+    s.src=url+sep+'callback='+cb;
+    document.head.appendChild(s);
+    setTimeout(()=>{ if(!done){cleanup(); reject(new Error('jsonp timeout'));} }, 20000);
+  });
+}
+
 /* ===== 状態 ===== */
 const MAXDIM=1400;
 let origData=null;          // 作業用originalのImageData
@@ -225,7 +247,7 @@ const $=id=>document.getElementById(id);
 function setStatus(show,msg){ const s=$('status'); s.hidden=!show; if(msg) s.innerHTML=msg; $('canvas').hidden=show; }
 
 function showNotice(msg){ const n=$('notice'); if(!msg){n.hidden=true;return;} n.innerHTML=msg; n.hidden=false; }
-function loadImage(src){
+function loadImage(src, viaProxy){
   setStatus(true,'読み込み中…'); showNotice('');
   const img=new Image();   // crossOrigin は指定しない（外部画像も表示だけはできるように）
   img.onload=()=>{
@@ -235,18 +257,34 @@ function loadImage(src){
     const canvas=$('canvas'); canvas.width=workW; canvas.height=workH;
     const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,workW,workH);
     try{
-      origData=ctx.getImageData(0,0,workW,workH);   // 同一オリジンならOK
+      origData=ctx.getImageData(0,0,workW,workH);   // 同一オリジン or data: ならOK
       setStatus(false);
       render();
     }catch(e){
-      // 外部保存(Drive等)の写真は color 変更不可。元画像だけ表示して案内。
+      // 外部保存(Drive等)の写真。プロキシが設定されていれば base64 で取り直して色替え。
       origData=null;
-      setStatus(false);
-      showNotice('この作品の写真は外部保存のため色替えできません。<br>下の<b>作品一覧</b>から選ぶか、<b>写真をアップロード</b>してお試しください。');
+      if(IMAGE_PROXY_URL && !viaProxy){
+        loadViaProxy(src);
+      }else{
+        setStatus(false);
+        showNotice('この作品の写真は外部保存のため色替えできません。<br>下の<b>作品一覧</b>から選ぶか、<b>写真をアップロード</b>してお試しください。');
+      }
     }
   };
-  img.onerror=()=>{ origData=null; setStatus(true,'画像を読み込めませんでした'); };
+  img.onerror=()=>{
+    if(IMAGE_PROXY_URL && !viaProxy){ loadViaProxy(src); return; }
+    origData=null; setStatus(true,'画像を読み込めませんでした');
+  };
   img.src=src;
+}
+function loadViaProxy(src){
+  setStatus(true,'色替え用に写真を取得中…'); showNotice('');
+  jsonp(IMAGE_PROXY_URL + (IMAGE_PROXY_URL.indexOf('?')>=0?'&':'?') + 'url=' + encodeURIComponent(src))
+    .then(data=>{
+      if(data && data.dataUrl){ loadImage(data.dataUrl, true); }
+      else{ setStatus(false); showNotice('この写真は色替えできませんでした（取得に失敗）。<br>下の<b>作品一覧</b>やアップロードでお試しください。'); }
+    })
+    .catch(()=>{ setStatus(false); showNotice('この写真は色替えできませんでした（取得に失敗）。<br>下の<b>作品一覧</b>やアップロードでお試しください。'); });
 }
 
 function render(){
