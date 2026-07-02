@@ -26,6 +26,15 @@ var MSG_KEEP = 50;             // 保持する直近メッセージ数
 var MSG_MAX_LEN = 120;         // 1メッセージの最大文字数
 var SAY_INTERVAL_MS = 2000;    // 連投制限（1人あたり2秒に1回）
 var NAME_MAX_LEN = 12;
+var MAIL_COOLDOWN_MS = 60000;  // 来店通知メールの最短間隔（連続入店スパム防止）
+
+/* 店長（個人事業主）モード:
+   Script Properties に OWNER_KEY（店長キー・正本は 保全部\.env の SHOWROOM_OWNER_KEY）と
+   NOTIFY_EMAIL（通知先。未設定ならGAS実行アカウント）を設定する。
+   ページ側が okey パラメータで店長キーを送ってきたら「店長」として入店:
+   - 3D空間では新アバターを出さず、徘徊中の個人事業主キャラに発言が吹き出し表示される
+   - 店長在室中はちえみ・販売幕僚の自動返答を休止（「ちえみ」名指し時のみ返答）
+   - 店長の入店ではメール通知しない */
 
 // 禁止ワード（必要に応じて追記）。含まれていたら投稿を拒否
 var NG_WORDS = ['死ね', '殺す', 'カス', 'http://', 'https://'];
@@ -66,13 +75,27 @@ function handle_(p) {
   if (action === 'join') {
     var name = sanitize_(p.name, NAME_MAX_LEN) || 'ゲスト';
     var avatar = sanitize_(p.avatar, 4) || '🙂';
-    var id = 'v' + now.toString(36) + Math.floor(Math.random() * 1e6).toString(36);
-    var token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    var isOwner = isOwnerKey_(p.okey);
+    var id, token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    if (isOwner) {
+      id = 'owner';
+      name = '店長';
+      avatar = '🦉';
+    } else {
+      id = 'v' + now.toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+    }
     visitors[id] = { name: name, avatar: avatar, token: token, last: now, lastSay: 0 };
+    if (isOwner) visitors[id].owner = 1;
     writeJson_(cache, 'vc_visitors', visitors);
-    addSystemMsg_(cache, avatar + ' ' + name + ' さんが来店しました');
-    botGreet_(cache, name, now);
-    return { ok: 1, id: id, token: token };
+    if (isOwner) {
+      addSystemMsg_(cache, '🦉 店長が売り場に出てきました');
+    } else {
+      addSystemMsg_(cache, avatar + ' ' + name + ' さんが来店しました');
+      // 店長在室中は挨拶も店長に任せる（ボット休止）
+      if (!ownerOnline_(visitors)) botGreet_(cache, name, now);
+      notifyOwner_(cache, name, avatar, visitors, now);
+    }
+    return { ok: 1, id: id, token: token, owner: isOwner ? 1 : 0 };
   }
 
   var v = visitors[p.id];
@@ -96,6 +119,7 @@ function handle_(p) {
     var list = Object.keys(visitors).map(function (id) {
       var o = { id: id, name: visitors[id].name, avatar: visitors[id].avatar };
       if (visitors[id].x !== undefined) { o.x = visitors[id].x; o.z = visitors[id].z; }
+      if (visitors[id].owner) o.owner = 1;
       return o;
     });
     // スタッフ「ちえみ」は常に在室（店内を徘徊）
@@ -113,14 +137,24 @@ function handle_(p) {
     }
     v.last = now; v.lastSay = now;
     writeJson_(cache, 'vc_visitors', visitors);
-    pushMsg_(cache, { id: p.id, name: v.name, avatar: v.avatar, text: text });
-    // まずスタッフちえみが反応。しなかった時だけ販売幕僚が相槌（同時に喋らない）
-    if (!botReply_(cache, text, now)) maybeStaffReply_(cache, text, now);
+    var msg = { id: p.id, name: v.name, avatar: v.avatar, text: text };
+    if (v.owner) msg.owner = 1;
+    pushMsg_(cache, msg);
+    // ボットの発言ルール:
+    //   店長の発言には反応しない／店長在室中は自動返答を休止（「ちえみ」名指しのみ返答）
+    //   店長不在時は従来通り（ちえみ→ダメなら販売幕僚の相槌）
+    if (v.owner) {
+      // 店長が接客中。ボットは黙る
+    } else if (ownerOnline_(visitors)) {
+      if (/ちえみ/.test(text)) botReply_(cache, text, now);
+    } else {
+      if (!botReply_(cache, text, now)) maybeStaffReply_(cache, text, now);
+    }
     return { ok: 1 };
   }
 
   if (action === 'leave') {
-    addSystemMsg_(cache, v.avatar + ' ' + v.name + ' さんが退店しました');
+    addSystemMsg_(cache, v.owner ? '🦉 店長は工房に戻りました' : v.avatar + ' ' + v.name + ' さんが退店しました');
     delete visitors[p.id];
     writeJson_(cache, 'vc_visitors', visitors);
     return { ok: 1 };
@@ -274,6 +308,53 @@ function maybeStaffReply_(cache, text, now) {
   }
   cache.put('vc_staff_last', String(now), 21600);
   pushMsg_(cache, { id: 'staff', name: '販売幕僚', avatar: '🧵', text: reply, staff: 1 });
+}
+
+/* ---------- 店長モード・来店メール通知 ---------- */
+function isOwnerKey_(okey) {
+  if (!okey) return false;
+  var k = PropertiesService.getScriptProperties().getProperty('OWNER_KEY');
+  return !!k && okey === k;
+}
+
+function ownerOnline_(visitors) {
+  return Object.keys(visitors).some(function (id) { return visitors[id].owner; });
+}
+
+/* 来店をメール通知（店長が直接接客に出るため）。失敗しても入店処理は継続 */
+function notifyOwner_(cache, name, avatar, visitors, now) {
+  try {
+    var last = Number(cache.get('vc_mail_last') || 0);
+    if (now - last < MAIL_COOLDOWN_MS) return; // 連続入店はまとめる
+    cache.put('vc_mail_last', String(now), 21600);
+    var props = PropertiesService.getScriptProperties();
+    var to = props.getProperty('NOTIFY_EMAIL') || Session.getEffectiveUser().getEmail();
+    if (!to) return;
+    var ids = Object.keys(visitors);
+    var names = ids.map(function (id) {
+      return visitors[id].avatar + ' ' + visitors[id].name;
+    }).join(' ／ ');
+    MailApp.sendEmail({
+      to: to,
+      subject: '【ショールーム来店】' + avatar + ' ' + name + ' さんが入店（在室' + ids.length + '人）',
+      body:
+        name + ' さんがショールームの「みんなのチャット」に入店しました。\n\n' +
+        '在室者: ' + names + '\n' +
+        '時刻: ' + Utilities.formatDate(new Date(now), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm') + '\n\n' +
+        '▼ 接客に出る（店長キー設定済みの端末で開く）\n' +
+        'https://you0810jmsdf.github.io/ns-factory/showroom/\n' +
+        '「みんなのチャット」から入室すると店長として売り場に立てます。\n\n' +
+        '※ 通知は1分に1通まで。店長として入店中の来店にも通知は届きます。'
+    });
+  } catch (e) { /* メール失敗は無視（チャット動作を優先） */ }
+}
+
+/* エディタから一度だけ実行: メール送信権限の承認＆通知テスト用 */
+function testNotify() {
+  var cache = CacheService.getScriptCache();
+  cache.remove('vc_mail_last');
+  notifyOwner_(cache, 'テスト来店', '🧪',
+    { t1: { name: 'テスト来店', avatar: '🧪' } }, Date.now());
 }
 
 /* ---------- helpers ---------- */

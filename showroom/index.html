@@ -742,6 +742,24 @@
     .vc-msg.sys { align-self: center; font-size: 10.5px; color: var(--panel-sub); display: block; }
     .vc-msg.staffmsg .body { background: rgba(212,180,120,0.16); border: 1.5px solid var(--accent); color: var(--panel-text); }
     .vc-msg.staffmsg .who { color: var(--gold-bright); }
+    /* 店長（個人事業主本人）の発言 */
+    .vc-badge {
+      font-size: 9px; font-weight: 700; color: #2a1e10;
+      background: linear-gradient(180deg, #dcbd85, #c9a96a);
+      border-radius: 8px; padding: 1px 6px; letter-spacing: 0.06em;
+    }
+    .vc-msg.ownermsg .body {
+      background: rgba(212,180,120,0.22);
+      border: 1.5px solid var(--gold-bright);
+      color: var(--panel-text);
+      box-shadow: 0 0 10px rgba(212,180,120,0.25);
+    }
+    .vc-msg.ownermsg .vc-av { border-color: var(--gold-bright); background: rgba(212,180,120,0.20); }
+    #vc-visitors span.vc-owner-chip {
+      background: linear-gradient(180deg, #dcbd85, #c9a96a);
+      border-color: var(--gold-bright);
+      color: #2a1e10; font-weight: 700;
+    }
     .vc-input-row { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid rgba(212,180,120,0.22); }
     #vc-input {
       flex: 1; border: 1px solid var(--panel-line); border-radius: 18px; padding: 8px 14px;
@@ -1380,10 +1398,16 @@
       window.SHOWROOM_CONFIG.visitorChatApi = 'https://script.google.com/macros/s/AKfycbzDfWYQey_Qn9hTHaU4gUrXkAYsTS4zViZGrZxAr5aSe3bIwh_T7wd_ktHMiE7-xhhc/exec';
     }
     // 動作確認用: URLに ?vchat=<GASのURL> を付けると一時的に有効化できる
+    // 店長モード: ?okey=<店長キー> を一度付けて開くと端末に保存され、以後は「店長」として入店
+    var OWNER_LS = 'nsf_owner_key';
     try {
       var qp = new URLSearchParams(location.search);
       if (qp.get('vchat')) window.SHOWROOM_CONFIG.visitorChatApi = qp.get('vchat');
+      if (qp.get('okey')) localStorage.setItem(OWNER_LS, qp.get('okey'));
     } catch (e) {}
+    function ownerKey() {
+      try { return localStorage.getItem(OWNER_LS) || ''; } catch (e) { return ''; }
+    }
     var API = window.SHOWROOM_CONFIG.visitorChatApi;
     if (!API) return; // 未設定 → 機能を安全に無効化
 
@@ -1426,7 +1450,12 @@
     }
     function openEntry() {
       buildAvatarGrid();
-      if (!$('vc-name').value) $('vc-name').value = 'ゲスト' + (100 + Math.floor(Math.random() * 900));
+      if (ownerKey()) {
+        // 店長キー保存済み: 名前・アバターはサーバー側で「🦉 店長」に固定される
+        $('vc-name').value = '店長';
+      } else if (!$('vc-name').value) {
+        $('vc-name').value = 'ゲスト' + (100 + Math.floor(Math.random() * 900));
+      }
       $('vc-entry').hidden = false;
     }
 
@@ -1437,6 +1466,7 @@
       var w = $('vc-visitors'); w.innerHTML = '';
       list.forEach(function (v) {
         var s = document.createElement('span');
+        if (v.owner) s.className = 'vc-owner-chip';
         s.textContent = v.avatar + ' ' + v.name;
         w.appendChild(s);
       });
@@ -1452,14 +1482,19 @@
         d.className = 'vc-msg sys';
         d.textContent = m.text;
       } else {
-        d.className = 'vc-msg' + (m.id === vc.id ? ' own' : '') + (m.staff ? ' staffmsg' : '');
+        d.className = 'vc-msg' + (m.id === vc.id ? ' own' : '') + (m.staff ? ' staffmsg' : '') + (m.owner ? ' ownermsg' : '');
         var av = document.createElement('span'); av.className = 'vc-av';
         av.textContent = m.avatar || '🙂';
         var col = document.createElement('div'); col.className = 'vc-col';
         var who = document.createElement('div'); who.className = 'who';
         var nm = document.createElement('span'); nm.textContent = m.name;
+        who.appendChild(nm);
+        if (m.owner) {
+          var bg = document.createElement('span'); bg.className = 'vc-badge'; bg.textContent = '店長';
+          who.appendChild(bg);
+        }
         var tm = document.createElement('span'); tm.className = 'vc-time'; tm.textContent = vcTime(m.t);
-        who.appendChild(nm); who.appendChild(tm);
+        who.appendChild(tm);
         var body = document.createElement('div'); body.className = 'body';
         body.textContent = m.text;
         col.appendChild(who); col.appendChild(body);
@@ -1473,10 +1508,14 @@
     // ── 通信 ──
     function join() {
       var name = ($('vc-name').value || '').trim().slice(0, 12) || 'ゲスト';
-      vcJsonp({ action: 'join', name: name, avatar: pickedAvatar }).then(function (r) {
+      var params = { action: 'join', name: name, avatar: pickedAvatar };
+      if (ownerKey()) params.okey = ownerKey(); // 店長キー保存済み端末なら店長として入店
+      vcJsonp(params).then(function (r) {
         if (!r.ok) { alert('入室できませんでした。少し待ってからお試しください。'); return; }
         vc.joined = true; vc.id = r.id; vc.token = r.token; vc.name = name; vc.avatar = pickedAvatar; vc.seq = 0; vc.polledOnce = false;
         vc.pollBusy = false; vc.pollAgain = false; vc.lastMsgSeq = 0;
+        vc.isOwner = !!r.owner;
+        if (vc.isOwner) { vc.name = '店長'; vc.avatar = '🦉'; }
         $('vc-entry').hidden = true;
         $('vc-panel').hidden = false;
         $('vc-fab').hidden = true;
@@ -1514,8 +1553,10 @@
           }
           appendMsg(m);
           // 3D吹き出し（入室直後の履歴分は出さない）
+          // 店長の発言は徘徊中の個人事業主キャラの頭上に表示（アバター重複させない）
           if (!firstPoll && window.SHOWROOM_3D && !m.sys) {
-            if (m.staff) window.SHOWROOM_3D.showStaffBubble('hannbai', m.text);
+            if (m.owner) window.SHOWROOM_3D.showStaffBubble('kojinjigyonusi', m.text);
+            else if (m.staff) window.SHOWROOM_3D.showStaffBubble('hannbai', m.text);
             else if (m.id !== vc.id) window.SHOWROOM_3D.showBubble(m.id, m.text);
           }
         });
@@ -3498,6 +3539,7 @@
           const seen = {};
           (list || []).forEach(v => {
             if (v.id === selfId) return;
+            if (v.owner) return; // 店長は徘徊中の個人事業主キャラで表現（アバターを重複させない）
             seen[v.id] = 1;
             let e = visitorSprites[v.id];
             if (!e) { e = makeVisitorEntry(v.id, v); visitorSprites[v.id] = e; }
