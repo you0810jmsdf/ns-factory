@@ -580,6 +580,23 @@
     }
     #vc-leave:hover { color: #c0392b; }
 
+    /* ===== 歩行 方向パッド ===== */
+    #walk-pad {
+      position: fixed; right: 14px; bottom: 14px; z-index: 800;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      user-select: none; -webkit-user-select: none; touch-action: none;
+    }
+    #walk-pad div { display: flex; gap: 4px; }
+    #walk-pad button {
+      width: 46px; height: 46px; border-radius: 12px;
+      border: 1.5px solid rgba(201,169,106,.7);
+      background: rgba(255,255,255,.82); color: #8a6a3f;
+      font-size: 17px; cursor: pointer; touch-action: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+    #walk-pad button:active { background: var(--accent); color: #fff; }
+    @media (min-width: 900px) { #walk-pad button { width: 40px; height: 40px; } }
+
     /* ===== フォールバック（白×ゴールド 明るい配色） ===== */
     #fallback {
       display: none;
@@ -710,6 +727,7 @@
       <p class="guide-sub">GLASS PAVILION — 全幕僚を一望</p>
       <ul>
         <li>ドラッグ / スワイプで見回す</li>
+        <li>WASD / 矢印キー / 右下の方向ボタンで歩く</li>
         <li>ホイール / ピンチでズーム</li>
         <li>ショーケース・幕僚をタップで詳細表示</li>
       </ul>
@@ -2941,8 +2959,8 @@
         // 幕僚巡回
         staffActors.forEach(actor => actor.update(dt));
 
-        // 来店者アバター（ブリッジ初期化後のみ）
-        if (window.SHOWROOM_3D) updateVisitorSprites(dt);
+        // 歩行・来店者アバター（ブリッジ初期化後のみ）
+        if (window.SHOWROOM_3D) { updateWalk(dt); updateVisitorSprites(dt); }
 
         renderer.render(scene, camera);
       }
@@ -3069,6 +3087,66 @@
           }
         }
       }
+
+      // ============================================================
+      // 歩行操作（WASD / 矢印キー / 画面の方向パッド）
+      // カメラと注視点を一緒に平行移動して「歩き回る」体験にする
+      // ============================================================
+      const WALK_BOUNDS = { x: 15, z: 11 };
+      const WALK_SPEED = 3.4;   // m/s
+      const walkKeys = { f: 0, b: 0, l: 0, r: 0 };
+
+      function updateWalk(dt) {
+        const f = walkKeys.f - walkKeys.b;
+        const s = walkKeys.r - walkKeys.l;
+        if (!f && !s) return;
+        const dir = new THREE.Vector3();
+        camera.getWorldDirection(dir); dir.y = 0;
+        if (dir.lengthSq() < 1e-6) return;
+        dir.normalize();
+        const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
+        const mv = new THREE.Vector3().addScaledVector(dir, f).addScaledVector(right, s);
+        mv.normalize().multiplyScalar(WALK_SPEED * dt);
+        const cx = Math.max(-WALK_BOUNDS.x, Math.min(WALK_BOUNDS.x, camera.position.x + mv.x));
+        const cz = Math.max(-WALK_BOUNDS.z, Math.min(WALK_BOUNDS.z, camera.position.z + mv.z));
+        const dx = cx - camera.position.x, dz = cz - camera.position.z;
+        camera.position.x = cx; camera.position.z = cz;
+        controls.target.x += dx; controls.target.z += dz;
+      }
+
+      function setWalkKey(e, on) {
+        const t = e.target;
+        if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;  // チャット入力中は歩かない
+        const map = { KeyW: 'f', ArrowUp: 'f', KeyS: 'b', ArrowDown: 'b', KeyA: 'l', ArrowLeft: 'l', KeyD: 'r', ArrowRight: 'r' };
+        const k = map[e.code];
+        if (!k) return;
+        walkKeys[k] = on ? 1 : 0;
+        e.preventDefault();   // 矢印キーでページがスクロールしないように
+      }
+      window.addEventListener('keydown', e => setWalkKey(e, true));
+      window.addEventListener('keyup', e => setWalkKey(e, false));
+
+      // モバイル/マウス用 方向パッド（右下）
+      (function buildWalkPad() {
+        const wrap = document.createElement('div');
+        wrap.id = 'walk-pad';
+        wrap.innerHTML =
+          '<button data-k="f" aria-label="前へ">▲</button>' +
+          '<div><button data-k="l" aria-label="左へ">◀</button>' +
+          '<button data-k="b" aria-label="後ろへ">▼</button>' +
+          '<button data-k="r" aria-label="右へ">▶</button></div>';
+        document.body.appendChild(wrap);
+        wrap.querySelectorAll('button').forEach(btn => {
+          const k = btn.dataset.k;
+          const dn = e => { e.preventDefault(); walkKeys[k] = 1; };
+          const up = e => { e.preventDefault(); walkKeys[k] = 0; };
+          btn.addEventListener('pointerdown', dn);
+          btn.addEventListener('pointerup', up);
+          btn.addEventListener('pointerleave', up);
+          btn.addEventListener('pointercancel', up);
+          btn.addEventListener('contextmenu', e => e.preventDefault());
+        });
+      })();
 
       window.SHOWROOM_3D = {
         visitorCount() { return Object.keys(visitorSprites).length; },

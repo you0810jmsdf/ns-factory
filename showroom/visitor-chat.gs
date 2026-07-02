@@ -71,6 +71,7 @@ function handle_(p) {
     visitors[id] = { name: name, avatar: avatar, token: token, last: now, lastSay: 0 };
     writeJson_(cache, 'vc_visitors', visitors);
     addSystemMsg_(cache, avatar + ' ' + name + ' さんが来店しました');
+    botGreet_(cache, name, now);
     return { ok: 1, id: id, token: token };
   }
 
@@ -97,6 +98,9 @@ function handle_(p) {
       if (visitors[id].x !== undefined) { o.x = visitors[id].x; o.z = visitors[id].z; }
       return o;
     });
+    // スタッフ「ちえみ」は常に在室（店内を徘徊）
+    var bp = botPos_(now);
+    list.push({ id: BOT.id, name: BOT.name, avatar: BOT.avatar, x: bp.x, z: bp.z });
     return { ok: 1, visitors: list, messages: fresh, seq: seq };
   }
 
@@ -110,7 +114,8 @@ function handle_(p) {
     v.last = now; v.lastSay = now;
     writeJson_(cache, 'vc_visitors', visitors);
     pushMsg_(cache, { id: p.id, name: v.name, avatar: v.avatar, text: text });
-    maybeStaffReply_(cache, text, now);
+    // まずスタッフちえみが反応。しなかった時だけ販売幕僚が相槌（同時に喋らない）
+    if (!botReply_(cache, text, now)) maybeStaffReply_(cache, text, now);
     return { ok: 1 };
   }
 
@@ -123,6 +128,86 @@ function handle_(p) {
 
   if (changed) writeJson_(cache, 'vc_visitors', visitors);
   return { error: 'unknown_action' };
+}
+
+/* ---------- スタッフ「ちえみ」（常駐ボット） ----------
+   N's factory（個人事業主）のスタッフとして常に在室。
+   入店した方への挨拶・呼びかけ（「ちえみ」を含む発言）への返事・
+   キーワードへのおしゃべりを担当。3D空間では店内をゆっくり歩き回る。 */
+var BOT = { id: 'chiemi', name: 'ちえみ', avatar: '👩' };
+var BOT_COOLDOWN_MS = 12000;   // おしゃべりの最短間隔（呼びかけ時は無視）
+var BOT_RANDOM_RATE = 0.35;    // キーワード不一致時に反応する確率
+
+var BOT_RULES = [
+  { re: /(手帳|ノート|バインダー|リフィル)/, replies: [
+      'わたしは Mini6 の手帳を使ってます📔 小さくてかわいいんですよ〜',
+      '手帳、革の匂いがすごくいいんです。実物もぜひ見てほしいです！',
+      'リフィルをたっぷり挟むならリング大きめがおすすめです◎'] },
+  { re: /(財布|ウォレット|コインケース|小銭)/, replies: [
+      '馬蹄型コインケース、わたしも愛用してます！開けるたびちょっと嬉しくなります',
+      'お財布は色で選ぶのも楽しいですよ〜'] },
+  { re: /(革|レザー|色|カラー)/, replies: [
+      '革の色は「オーダー相談」で写真から選べますよ。わたしはターコイズ推しです💙',
+      'ヌメ革は使ってると色がどんどん深くなるんです。育てがいがあります！'] },
+  { re: /(かわいい|可愛い|素敵|すてき|いいね|おしゃれ|きれい|綺麗)/, replies: [
+      'ですよね！わたしもお店のぜんぶお気に入りなんです😊',
+      'ありがとうございます！店長に伝えたら喜びます〜'] },
+  { re: /(こんにちは|こんばんは|おはよう|はじめまして|よろしく)/, replies: [
+      'いらっしゃいませ〜！スタッフのちえみです。ごゆっくりどうぞ😊',
+      'こんにちは！気になる作品があったら聞いてくださいね'] },
+  { re: /(おすすめ|オススメ|人気)/, replies: [
+      'おすすめは A6 の手帳と馬蹄コインケースです！どちらも革の香りがいいんですよ',
+      '迷ったら販売幕僚さんの「オーダー相談」が便利です。写真で革を選べます📷'] },
+  { re: /(ありがとう|たすかる|助かる)/, replies: [
+      'こちらこそありがとうございます！またいつでも遊びにきてくださいね😊'] }
+];
+var BOT_GENERIC = [
+  'ふふ、いいですね😊',
+  'それ、わかります〜',
+  '店長（個人事業主）にも伝えておきますね！'
+];
+
+/* 店内をゆっくり徘徊（時刻から決定＝全員に同じ位置が見える） */
+function botPos_(now) {
+  var t = now / 1000;
+  return {
+    x: Math.round(Math.sin(t / 37) * 6 * 10) / 10,
+    z: Math.round((Math.cos(t / 51) * 4 + 3) * 10) / 10
+  };
+}
+
+function botGreet_(cache, visitorName, now) {
+  var last = Number(cache.get('vc_bot_last') || 0);
+  if (now - last < 10000) return;
+  cache.put('vc_bot_last', String(now), 21600);
+  pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar,
+    text: 'いらっしゃいませ、' + visitorName + 'さん！スタッフのちえみです😊 気になる作品があったら気軽に聞いてくださいね' });
+}
+
+/* 返答したら true（その回は販売幕僚の相槌をスキップ） */
+function botReply_(cache, text, now) {
+  var addressed = /ちえみ/.test(text);
+  var last = Number(cache.get('vc_bot_last') || 0);
+  if (!addressed && now - last < BOT_COOLDOWN_MS) return false;
+  var reply = null;
+  for (var i = 0; i < BOT_RULES.length; i++) {
+    if (BOT_RULES[i].re.test(text)) {
+      var rs = BOT_RULES[i].replies;
+      reply = rs[Math.floor(Math.random() * rs.length)];
+      break;
+    }
+  }
+  if (!reply) {
+    if (addressed) {
+      reply = 'はい、ちえみです😊 手帳や革のことなら何でも聞いてください！';
+    } else {
+      if (Math.random() > BOT_RANDOM_RATE) return false;
+      reply = BOT_GENERIC[Math.floor(Math.random() * BOT_GENERIC.length)];
+    }
+  }
+  cache.put('vc_bot_last', String(now), 21600);
+  pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar, text: reply });
+  return true;
 }
 
 /* ---------- 販売幕僚の相槌（賑やかし） ----------
