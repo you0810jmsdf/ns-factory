@@ -27,8 +27,9 @@
 (function () {
   'use strict';
 
-  var PASS_HASH = 'cd5ce9218e7ae8c4615aa3717be119536201c0e5829a2b23924537006146765f';
+  var PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
   var AUTH_KEY  = 'nsf_admin_auth';
+  var KEY_STORE = 'nsf_admin_key'; // 通過時に入力平文を保持（GAS APIのkeyとして各ページが使用）
 
   // 既に認証済み（同一タブセッション内）なら何もしない
   try {
@@ -99,7 +100,10 @@
       msg.textContent = '';
       sha256Hex(input.value).then(function (hex) {
         if (hex === PASS_HASH) {
-          try { sessionStorage.setItem(AUTH_KEY, PASS_HASH); } catch (e) {}
+          try {
+            sessionStorage.setItem(AUTH_KEY, PASS_HASH);
+            sessionStorage.setItem(KEY_STORE, input.value);
+          } catch (e) {}
           // 解錠：ゲート除去・本体表示
           var g = document.getElementById('nsf-admin-gate');
           if (g) g.remove();

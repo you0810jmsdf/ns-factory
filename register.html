@@ -677,7 +677,15 @@ textarea{min-height:80px;resize:vertical}
 
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
-const REGISTER_KEY = 'glJy4399';
+// 認証は SHA-256 ハッシュ照合（平文はコードに置かない）。
+// 通過時の入力値を REGISTER_KEY として保持し、GAS API の key に使用する。
+const REGISTER_KEY_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+let REGISTER_KEY = '';
+function regSha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
 const YEAR = '2026';
 
 // ====== MASTER DATA ======
@@ -685,7 +693,7 @@ const FIELD_MAP = { category: 'categories', material: 'materials', color: 'color
 
 function fetchMasterData() {
   return new Promise((resolve) => {
-    const url = GAS_URL + '?api=getMasterData&key=' + REGISTER_KEY + '&cb=' + Date.now();
+    const url = GAS_URL + '?api=getMasterData&key=' + encodeURIComponent(REGISTER_KEY) + '&cb=' + Date.now();
     const script = document.createElement('script');
     window._masterDataCb = function(data) {
       document.head.removeChild(script);
@@ -711,7 +719,7 @@ function fetchMasterData() {
 }
 
 function fetchProductNames() {
-  const url = GAS_URL + '?api=productNames&key=' + REGISTER_KEY + '&cb=' + Date.now();
+  const url = GAS_URL + '?api=productNames&key=' + encodeURIComponent(REGISTER_KEY) + '&cb=' + Date.now();
   const script = document.createElement('script');
   window._productNamesCb = function(data) {
     document.head.removeChild(script);
@@ -802,7 +810,13 @@ function addNewOption(field) {
 // ====== AUTH ======
 async function checkAuth() {
   const v = document.getElementById('authInput').value.trim();
-  if (v === REGISTER_KEY) {
+  const hex = await regSha256(v).catch(() => '');
+  if (hex === REGISTER_KEY_HASH) {
+    REGISTER_KEY = v;
+    try {
+      sessionStorage.setItem('nsf_admin_key', v);
+      sessionStorage.setItem('nsf_admin_auth', hex);
+    } catch (e) {}
     document.getElementById('authOverlay').classList.add('hidden');
     document.body.classList.remove('auth-locked');
     fetchNextId();
@@ -827,7 +841,7 @@ document.getElementById('authInput').addEventListener('keydown', e => {
 // ====== NEXT ID PREVIEW ======
 async function fetchNextId() {
   try {
-    const url = GAS_URL + '?api=nextId&year=' + YEAR + '&key=' + REGISTER_KEY + '&cb=' + Date.now();
+    const url = GAS_URL + '?api=nextId&year=' + YEAR + '&key=' + encodeURIComponent(REGISTER_KEY) + '&cb=' + Date.now();
     const res = await fetch(url);
     const d = await res.json();
     if (d.ok || d.productId) {

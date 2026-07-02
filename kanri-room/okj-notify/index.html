@@ -384,8 +384,34 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 <script>
 (function(){
   const AUTH_KEY = 'kanri_auth_token';
-  const PASSWORD = 'glJy4399';
+  // パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）。
+  // APIキーは管理室ゲート通過時に sessionStorage へ保持した平文を使用する。
+  const PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
   const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzwAqNSsJqtr3ZxMNg2dfZliZ0y-_VZPmVvWdkATF5JuXrMQuFkHfsxcMLS7ziwJgR3/exec';
+
+  function sha256Hex(text){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+  function storedKey(){
+    try{ return sessionStorage.getItem('nsf_admin_key') || ''; }catch(e){ return ''; }
+  }
+  async function requireKey(){
+    let k = storedKey();
+    if(k) return k;
+    const pw = prompt('管理者パスワードを入力してください:');
+    if(pw === null || pw === '') return '';
+    const hex = await sha256Hex(pw);
+    if(hex === PASS_HASH){
+      try{
+        sessionStorage.setItem('nsf_admin_key', pw);
+        sessionStorage.setItem('nsf_admin_auth', hex);
+      }catch(e){}
+      return pw;
+    }
+    return '';
+  }
 
   function isAuthed(){
     try{
@@ -560,9 +586,11 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     setStatus('', '保存中…');
     lockUi(true);
     try{
+      const apiKey = await requireKey();
+      if(!apiKey){ throw new Error('認証が必要です（パスワード未入力または不一致）'); }
       const body = JSON.stringify({
         action: 'updateConfig',
-        key:    PASSWORD,
+        key:    apiKey,
         config: buildPayload(),
       });
       // preflight 回避のため text/plain で送信

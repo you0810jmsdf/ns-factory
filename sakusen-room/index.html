@@ -185,17 +185,17 @@ a{color:inherit;text-decoration:none}
 
     <div class="section-label">戦略管理</div>
     <div class="tool-grid">
-      <a class="tool-card" href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?action=sakusenroom&amp;key=glJy4399&amp;view=shiji" target="_blank" rel="noopener">
+      <a class="tool-card" data-gaslink href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?action=sakusenroom&amp;view=shiji" target="_blank" rel="noopener">
         <span class="tag">LIVE</span>
         <h3>戦略指示書</h3>
         <p>司令官（中司）から各幕僚AIへの指示事項を一覧表示。プロジェクト全体方針＋各部CLAUDE.md計8本。</p>
       </a>
-      <a class="tool-card" href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?action=sakusenroom&amp;key=glJy4399&amp;view=bakuryo" target="_blank" rel="noopener">
+      <a class="tool-card" data-gaslink href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?action=sakusenroom&amp;view=bakuryo" target="_blank" rel="noopener">
         <span class="tag">LIVE</span>
         <h3>幕僚緒元</h3>
         <p>各幕僚の所掌・進行中タスク・引き継ぎ事項。全8本（作戦・販売・監理・広報・後方・保全・デジタル・革巻きペン開発）。</p>
       </a>
-      <a class="tool-card" href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?key=glJy4399" target="_blank" rel="noopener">
+      <a class="tool-card" data-gaslink href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec" target="_blank" rel="noopener">
         <span class="tag">LIVE</span>
         <h3>幕僚計画</h3>
         <p>期限付きタスク・スケジュールを一元管理。毎朝7:00に未完了タスクを自動通知。</p>
@@ -226,8 +226,25 @@ a{color:inherit;text-decoration:none}
 <script>
 (function(){
   const AUTH_KEY = 'sakusen_auth_token';
-  const PASSWORD = 'glJy4399';
+  // パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）。
+  // GASリンクの key= は静的HTMLに埋め込まず、クリック時に sessionStorage の平文から付与する。
+  const PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
   const TTL_MS = 24 * 60 * 60 * 1000;
+
+  function sha256Hex(text){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+  function storedKey(){
+    try{ return sessionStorage.getItem('nsf_admin_key') || ''; }catch(e){ return ''; }
+  }
+  function saveKey(pw, hex){
+    try{
+      sessionStorage.setItem('nsf_admin_key', pw);
+      sessionStorage.setItem('nsf_admin_auth', hex);
+    }catch(e){}
+  }
 
   function isAuthed(){
     try{
@@ -272,13 +289,38 @@ a{color:inherit;text-decoration:none}
     e.preventDefault();
     const pw = document.getElementById('pw').value;
     const msg = document.getElementById('gateMsg');
-    if(pw === PASSWORD){
-      setAuthed();
-      showHub();
-    }else{
-      msg.textContent = 'パスワードが違います。';
-      document.getElementById('pw').value = '';
-    }
+    sha256Hex(pw).then(function(hex){
+      if(hex === PASS_HASH){
+        saveKey(pw, hex);
+        setAuthed();
+        showHub();
+      }else{
+        msg.textContent = 'パスワードが違います。';
+        document.getElementById('pw').value = '';
+      }
+    }).catch(function(){
+      msg.textContent = '照合に失敗しました（https環境で開いてください）。';
+    });
+  });
+
+  // GASリンク: クリック時に key を付与して開く（キー未保持なら再入力を求める）
+  document.querySelectorAll('a[data-gaslink]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      const base = a.getAttribute('href');
+      const open = function(key){
+        const url = base + (base.indexOf('?') === -1 ? '?' : '&') + 'key=' + encodeURIComponent(key);
+        window.open(url, '_blank', 'noopener');
+      };
+      const k = storedKey();
+      if(k){ open(k); return; }
+      const pw = prompt('パスワードを入力してください');
+      if(pw === null || pw === '') return;
+      sha256Hex(pw).then(function(hex){
+        if(hex === PASS_HASH){ saveKey(pw, hex); open(pw); }
+        else { alert('パスワードが一致しません'); }
+      });
+    });
   });
 
   if(isAuthed()){ showHub(); } else { showGate(); }
