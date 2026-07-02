@@ -562,6 +562,8 @@
     }
     .vc-msg.own .body { background: var(--accent); color: #fff; }
     .vc-msg.sys { align-self: center; font-size: 10.5px; color: #a89880; }
+    .vc-msg.staffmsg .body { background: #fdf3e6; border: 1.5px solid var(--accent); color: #5a3a1a; }
+    .vc-msg.staffmsg .who { color: var(--accent); font-weight: 700; }
     .vc-input-row { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid #f0e8dc; }
     #vc-input {
       flex: 1; border: 1.5px solid #e8ddcf; border-radius: 16px; padding: 8px 12px;
@@ -1178,7 +1180,7 @@
         d.className = 'vc-msg sys';
         d.textContent = m.text;
       } else {
-        d.className = 'vc-msg' + (m.id === vc.id ? ' own' : '');
+        d.className = 'vc-msg' + (m.id === vc.id ? ' own' : '') + (m.staff ? ' staffmsg' : '');
         var who = document.createElement('div'); who.className = 'who';
         who.textContent = m.avatar + ' ' + m.name;
         var body = document.createElement('div'); body.className = 'body';
@@ -1195,7 +1197,7 @@
       var name = ($('vc-name').value || '').trim().slice(0, 12) || 'ゲスト';
       vcJsonp({ action: 'join', name: name, avatar: pickedAvatar }).then(function (r) {
         if (!r.ok) { alert('入室できませんでした。少し待ってからお試しください。'); return; }
-        vc.joined = true; vc.id = r.id; vc.token = r.token; vc.name = name; vc.avatar = pickedAvatar; vc.seq = 0;
+        vc.joined = true; vc.id = r.id; vc.token = r.token; vc.name = name; vc.avatar = pickedAvatar; vc.seq = 0; vc.polledOnce = false;
         $('vc-entry').hidden = true;
         $('vc-panel').hidden = false;
         $('vc-fab').hidden = true;
@@ -1206,12 +1208,27 @@
     }
     function poll() {
       if (!vc.joined) return;
-      vcJsonp({ action: 'poll', id: vc.id, token: vc.token, since: vc.seq }).then(function (r) {
+      var params = { action: 'poll', id: vc.id, token: vc.token, since: vc.seq };
+      // 3D空間内の自分の位置を同期（3D初期化済みのときのみ）
+      if (window.SHOWROOM_3D) {
+        try { var pos = window.SHOWROOM_3D.getPlayerPos(); params.x = pos.x; params.z = pos.z; } catch (e) {}
+      }
+      var firstPoll = !vc.polledOnce;
+      vcJsonp(params).then(function (r) {
         if (r.error === 'not_joined') { teardown(); return; }
         if (!r.ok) return;
         renderVisitors(r.visitors || []);
-        (r.messages || []).forEach(appendMsg);
+        if (window.SHOWROOM_3D) window.SHOWROOM_3D.syncVisitors(r.visitors || [], vc.id);
+        (r.messages || []).forEach(function (m) {
+          appendMsg(m);
+          // 3D吹き出し（入室直後の履歴分は出さない）
+          if (!firstPoll && window.SHOWROOM_3D && !m.sys) {
+            if (m.staff) window.SHOWROOM_3D.showStaffBubble('hannbai', m.text);
+            else if (m.id !== vc.id) window.SHOWROOM_3D.showBubble(m.id, m.text);
+          }
+        });
         if (r.seq) vc.seq = r.seq;
+        vc.polledOnce = true;
       }).catch(function () {});
     }
     function say() {
@@ -2924,6 +2941,9 @@
         // 幕僚巡回
         staffActors.forEach(actor => actor.update(dt));
 
+        // 来店者アバター（ブリッジ初期化後のみ）
+        if (window.SHOWROOM_3D) updateVisitorSprites(dt);
+
         renderer.render(scene, camera);
       }
       animate();
@@ -2935,6 +2955,147 @@
         gotoRoom(id) { gotoRoom(id); },
         getRoom()    { return currentRoomId; },
         staffActors
+      };
+
+      // ============================================================
+      // 来店者アバター 3D表示（みんなのチャット連携ブリッジ）
+      // 他の来店者を絵文字アバター＋名前札で空間内に表示し、
+      // 発言時は頭上に吹き出しを出す。販売幕僚の相槌も吹き出し表示。
+      // ============================================================
+      const visitorSprites = {};   // id -> {group, body, tx, tz, bob}
+      const activeBubbles = [];    // {parent, sprite, until}
+
+      function vHash(str) {
+        let h = 0;
+        for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+        return Math.abs(h);
+      }
+
+      function makeVisitorEntry(id, info) {
+        const group = new THREE.Group();
+        // 本体（白丸＋絵文字アバター）
+        const c = document.createElement('canvas'); c.width = c.height = 128;
+        const cx = c.getContext('2d');
+        cx.beginPath(); cx.arc(64, 64, 60, 0, Math.PI * 2);
+        cx.fillStyle = 'rgba(255,255,255,0.95)'; cx.fill();
+        cx.lineWidth = 4; cx.strokeStyle = 'rgba(201,169,106,0.8)'; cx.stroke();
+        cx.font = '64px serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+        cx.fillText(info.avatar || '🙂', 64, 70);
+        const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+        const body = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+        body.scale.set(0.62, 0.62, 1); body.position.y = 0.85;
+        group.add(body);
+        // 名前札（スタッフ名札と同トーン）
+        const nc = document.createElement('canvas'); nc.width = 256; nc.height = 56;
+        const nx = nc.getContext('2d');
+        nx.fillStyle = 'rgba(250,247,242,0.92)';
+        nx.beginPath(); nx.roundRect(4, 4, 248, 48, 10); nx.fill();
+        nx.strokeStyle = 'rgba(201,169,106,0.6)'; nx.lineWidth = 2; nx.stroke();
+        nx.fillStyle = '#8a6a3f'; nx.font = 'bold 24px sans-serif';
+        nx.textAlign = 'center'; nx.textBaseline = 'middle';
+        nx.fillText((info.name || 'ゲスト').slice(0, 12), 128, 29);
+        const ntex = new THREE.CanvasTexture(nc); ntex.colorSpace = THREE.SRGBColorSpace;
+        const nameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: ntex, transparent: true, depthWrite: false }));
+        nameSprite.scale.set(0.8, 0.175, 1); nameSprite.position.y = 1.32;
+        group.add(nameSprite);
+        // 足元影
+        const shadow = new THREE.Mesh(
+          new THREE.CircleGeometry(0.24, 20),
+          new THREE.MeshBasicMaterial({ color: 0x4a3a2a, transparent: true, opacity: 0.10, depthWrite: false })
+        );
+        shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.01;
+        group.add(shadow);
+        // 初期位置：位置未通知の間はロビー（南側）にIDハッシュで分散配置
+        const h = vHash(id);
+        const ang = (h % 360) * Math.PI / 180;
+        const rad = 2 + (h % 100) / 60;
+        const lx = Math.cos(ang) * rad, lz = 6 + Math.sin(ang) * rad * 0.5;
+        group.position.set(lx, 0, lz);
+        scene.add(group);
+        return { group, body, tx: lx, tz: lz, bob: (h % 628) / 100 };
+      }
+
+      function wrapJp(text, perLine, maxLines) {
+        const lines = [];
+        let rest = String(text || '');
+        while (rest.length && lines.length < maxLines) {
+          lines.push(rest.slice(0, perLine));
+          rest = rest.slice(perLine);
+        }
+        if (rest.length) lines[lines.length - 1] = lines[lines.length - 1].slice(0, perLine - 1) + '…';
+        return lines;
+      }
+
+      function attachBubble(parent, text, y) {
+        const lines = wrapJp(text, 12, 3);
+        const W = 512, lineH = 44, padY = 26;
+        const H = lines.length * lineH + padY * 2;
+        const c = document.createElement('canvas'); c.width = W; c.height = H;
+        const cx = c.getContext('2d');
+        cx.fillStyle = 'rgba(255,255,255,0.96)';
+        cx.beginPath(); cx.roundRect(6, 6, W - 12, H - 12, 22); cx.fill();
+        cx.strokeStyle = 'rgba(201,169,106,0.85)'; cx.lineWidth = 4; cx.stroke();
+        cx.fillStyle = '#3a2e20'; cx.font = '30px sans-serif';
+        cx.textAlign = 'center'; cx.textBaseline = 'middle';
+        lines.forEach((ln, i) => cx.fillText(ln, W / 2, padY + lineH * i + lineH / 2 + 2));
+        const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+        const scaleW = 1.7;
+        sp.scale.set(scaleW, scaleW * H / W, 1);
+        sp.position.y = y + (scaleW * H / W) / 2;
+        // 同じ相手の古い吹き出しは消す
+        for (let i = activeBubbles.length - 1; i >= 0; i--) {
+          if (activeBubbles[i].parent === parent) {
+            parent.remove(activeBubbles[i].sprite);
+            activeBubbles.splice(i, 1);
+          }
+        }
+        parent.add(sp);
+        activeBubbles.push({ parent, sprite: sp, until: performance.now() + 6500 });
+      }
+
+      function updateVisitorSprites(dt) {
+        const t = performance.now() / 1000;
+        const k = Math.min(1, dt * 2.2);          // 位置は緩やかに追従
+        Object.values(visitorSprites).forEach(e => {
+          e.group.position.x += (e.tx - e.group.position.x) * k;
+          e.group.position.z += (e.tz - e.group.position.z) * k;
+          e.body.position.y = 0.85 + Math.sin(t * 2 + e.bob) * 0.045;  // ぷかぷか
+        });
+        for (let i = activeBubbles.length - 1; i >= 0; i--) {
+          if (performance.now() > activeBubbles[i].until) {
+            activeBubbles[i].parent.remove(activeBubbles[i].sprite);
+            activeBubbles.splice(i, 1);
+          }
+        }
+      }
+
+      window.SHOWROOM_3D = {
+        visitorCount() { return Object.keys(visitorSprites).length; },
+        getPlayerPos() {
+          return { x: Math.round(camera.position.x * 10) / 10, z: Math.round(camera.position.z * 10) / 10 };
+        },
+        syncVisitors(list, selfId) {
+          const seen = {};
+          (list || []).forEach(v => {
+            if (v.id === selfId) return;
+            seen[v.id] = 1;
+            let e = visitorSprites[v.id];
+            if (!e) { e = makeVisitorEntry(v.id, v); visitorSprites[v.id] = e; }
+            if (v.x !== undefined && v.z !== undefined) { e.tx = v.x; e.tz = v.z; }
+          });
+          Object.keys(visitorSprites).forEach(id => {
+            if (!seen[id]) { scene.remove(visitorSprites[id].group); delete visitorSprites[id]; }
+          });
+        },
+        showBubble(id, text) {
+          const e = visitorSprites[id];
+          if (e) attachBubble(e.group, text, 1.45);
+        },
+        showStaffBubble(staffId, text) {
+          const actor = staffActors.find(a => a.staff && a.staff.id === staffId);
+          if (actor && actor.visual) attachBubble(actor.visual, text, 1.62);
+        }
       };
 
     } catch(err) {
