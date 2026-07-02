@@ -139,6 +139,10 @@ var BOT_COOLDOWN_MS = 12000;   // おしゃべりの最短間隔（呼びかけ�
 var BOT_RANDOM_RATE = 0.35;    // キーワード不一致時に反応する確率
 
 var BOT_RULES = [
+  { re: /(結婚|付き合って|付き合おう|デート|大好き|好きです|愛してる|愛してます)/, replies: [
+      'ふふ、ありがとうございます😊 でもわたし、お店ひと筋なんです🧵',
+      '照れちゃいますね…！お気持ちだけいただきます😊 代わりに素敵な革小物はいかがですか？',
+      'えへへ、嬉しいです〜！その情熱、ぜひ手帳選びにも向けてください📔'] },
   { re: /(手帳|ノート|バインダー|リフィル)/, replies: [
       'わたしは Mini6 の手帳を使ってます📔 小さくてかわいいんですよ〜',
       '手帳、革の匂いがすごくいいんです。実物もぜひ見てほしいです！',
@@ -166,6 +170,12 @@ var BOT_GENERIC = [
   'それ、わかります〜',
   '店長（個人事業主）にも伝えておきますね！'
 ];
+// 「？」で終わる質問にキーワードが合わなかったときの返事（無言にしない）
+var BOT_QUESTION = [
+  'うーん、それはわたしより店長が詳しいかもです！販売幕僚さんに聞いてみてください🧵',
+  'いい質問ですね…！わたしにわかるのは手帳と革のことくらいなんです😊',
+  'ごめんなさい、それはちょっとわからないです〜。革のことなら任せてください！'
+];
 
 /* 店内をゆっくり徘徊（時刻から決定＝全員に同じ位置が見える） */
 function botPos_(now) {
@@ -184,11 +194,13 @@ function botGreet_(cache, visitorName, now) {
     text: 'いらっしゃいませ、' + visitorName + 'さん！スタッフのちえみです😊 気になる作品があったら気軽に聞いてくださいね' });
 }
 
-/* 返答したら true（その回は販売幕僚の相槌をスキップ） */
+/* 返答したら true（その回は販売幕僚の相槌をスキップ）
+   呼びかけ（「ちえみ」を含む）と質問（？で終わる）はクールダウン無視で必ず返事する */
 function botReply_(cache, text, now) {
   var addressed = /ちえみ/.test(text);
+  var isQuestion = /[？?]\s*$/.test(text);
   var last = Number(cache.get('vc_bot_last') || 0);
-  if (!addressed && now - last < BOT_COOLDOWN_MS) return false;
+  if (!addressed && !isQuestion && now - last < BOT_COOLDOWN_MS) return false;
   var reply = null;
   for (var i = 0; i < BOT_RULES.length; i++) {
     if (BOT_RULES[i].re.test(text)) {
@@ -200,6 +212,8 @@ function botReply_(cache, text, now) {
   if (!reply) {
     if (addressed) {
       reply = 'はい、ちえみです😊 手帳や革のことなら何でも聞いてください！';
+    } else if (isQuestion) {
+      reply = BOT_QUESTION[Math.floor(Math.random() * BOT_QUESTION.length)];
     } else {
       if (Math.random() > BOT_RANDOM_RATE) return false;
       reply = BOT_GENERIC[Math.floor(Math.random() * BOT_GENERIC.length)];

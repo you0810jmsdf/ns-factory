@@ -1441,8 +1441,8 @@
         w.appendChild(s);
       });
     }
-    function vcTimeNow() {
-      var d = new Date();
+    function vcTime(ts) {
+      var d = ts ? new Date(ts) : new Date();
       return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
     }
     function appendMsg(m) {
@@ -1458,7 +1458,7 @@
         var col = document.createElement('div'); col.className = 'vc-col';
         var who = document.createElement('div'); who.className = 'who';
         var nm = document.createElement('span'); nm.textContent = m.name;
-        var tm = document.createElement('span'); tm.className = 'vc-time'; tm.textContent = vcTimeNow();
+        var tm = document.createElement('span'); tm.className = 'vc-time'; tm.textContent = vcTime(m.t);
         who.appendChild(nm); who.appendChild(tm);
         var body = document.createElement('div'); body.className = 'body';
         body.textContent = m.text;
@@ -1476,6 +1476,7 @@
       vcJsonp({ action: 'join', name: name, avatar: pickedAvatar }).then(function (r) {
         if (!r.ok) { alert('入室できませんでした。少し待ってからお試しください。'); return; }
         vc.joined = true; vc.id = r.id; vc.token = r.token; vc.name = name; vc.avatar = pickedAvatar; vc.seq = 0; vc.polledOnce = false;
+        vc.pollBusy = false; vc.pollAgain = false; vc.lastMsgSeq = 0;
         $('vc-entry').hidden = true;
         $('vc-panel').hidden = false;
         $('vc-fab').hidden = true;
@@ -1486,18 +1487,31 @@
     }
     function poll() {
       if (!vc.joined) return;
+      // 定期pollと送信直後pollの同時実行を防ぐ（同じsinceで2回取得→二重表示の原因）
+      if (vc.pollBusy) { vc.pollAgain = true; return; }
+      vc.pollBusy = true;
       var params = { action: 'poll', id: vc.id, token: vc.token, since: vc.seq };
       // 3D空間内の自分の位置を同期（3D初期化済みのときのみ）
       if (window.SHOWROOM_3D) {
         try { var pos = window.SHOWROOM_3D.getPlayerPos(); params.x = pos.x; params.z = pos.z; } catch (e) {}
       }
       var firstPoll = !vc.polledOnce;
+      function done() {
+        vc.pollBusy = false;
+        if (vc.pollAgain) { vc.pollAgain = false; setTimeout(poll, 150); }
+      }
       vcJsonp(params).then(function (r) {
+        done();
         if (r.error === 'not_joined') { teardown(); return; }
         if (!r.ok) return;
         renderVisitors(r.visitors || []);
         if (window.SHOWROOM_3D) window.SHOWROOM_3D.syncVisitors(r.visitors || [], vc.id);
         (r.messages || []).forEach(function (m) {
+          // 通し番号(m.i)で重複排除（ガードをすり抜けた場合の保険）
+          if (m.i) {
+            if (m.i <= (vc.lastMsgSeq || 0)) return;
+            vc.lastMsgSeq = m.i;
+          }
           appendMsg(m);
           // 3D吹き出し（入室直後の履歴分は出さない）
           if (!firstPoll && window.SHOWROOM_3D && !m.sys) {
@@ -1507,7 +1521,7 @@
         });
         if (r.seq) vc.seq = r.seq;
         vc.polledOnce = true;
-      }).catch(function () {});
+      }).catch(function () { done(); });
     }
     function say() {
       if (!vc.joined || vc.sending) return;
