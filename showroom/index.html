@@ -728,7 +728,8 @@
       <ul>
         <li>ドラッグ / スワイプで見回す</li>
         <li>WASD / 矢印キー / 右下の方向ボタンで歩く</li>
-        <li>ホイール / ピンチでズーム</li>
+        <li>右ドラッグ / 2本指ドラッグで前後左右に移動</li>
+        <li>ホイール / ピンチでなめらかにズーム</li>
         <li>ショーケース・幕僚をタップで詳細表示</li>
       </ul>
       <p class="tap-hint">画面をタップして入場</p>
@@ -1494,7 +1495,15 @@
 
       controls = new OrbitControls(camera, renderer.domElement);
       controls.target.set(...CAM_INIT.target);
-      controls.enablePan   = false;
+      // 右ドラッグ / 2本指ドラッグで前後左右に移動（床面に沿ってパン）
+      controls.enablePan   = true;
+      controls.screenSpacePanning = false;
+      controls.panSpeed    = 0.9;
+      controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
+      // ホイールズームを細かく・慣性つきでアナログな操作感に
+      controls.zoomSpeed   = 0.45;
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.12;
       controls.minDistance = 2.0;
       controls.maxDistance = 22;   // 全体一望できる距離
       controls.maxPolarAngle = Math.PI * 0.76;
@@ -2960,7 +2969,7 @@
         staffActors.forEach(actor => actor.update(dt));
 
         // 歩行・来店者アバター（ブリッジ初期化後のみ）
-        if (window.SHOWROOM_3D) { updateWalk(dt); updateVisitorSprites(dt); }
+        if (window.SHOWROOM_3D) { updateWalk(dt); clampPanBounds(); updateVisitorSprites(dt); }
 
         renderer.render(scene, camera);
       }
@@ -3095,6 +3104,17 @@
       const WALK_BOUNDS = { x: 15, z: 11 };
       const WALK_SPEED = 3.4;   // m/s
       const walkKeys = { f: 0, b: 0, l: 0, r: 0 };
+
+      // パン（右ドラッグ移動）でも部屋の外に出ないようにクランプ
+      function clampPanBounds() {
+        const tx = Math.max(-WALK_BOUNDS.x, Math.min(WALK_BOUNDS.x, controls.target.x));
+        const tz = Math.max(-WALK_BOUNDS.z, Math.min(WALK_BOUNDS.z, controls.target.z));
+        const dx = tx - controls.target.x, dz = tz - controls.target.z;
+        if (dx || dz) {
+          controls.target.x = tx; controls.target.z = tz;
+          camera.position.x += dx; camera.position.z += dz;
+        }
+      }
 
       function updateWalk(dt) {
         const f = walkKeys.f - walkKeys.b;
