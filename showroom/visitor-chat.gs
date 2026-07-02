@@ -82,13 +82,20 @@ function handle_(p) {
 
   if (action === 'poll') {
     v.last = now;
+    // 3D空間内の現在位置（任意）。ページ側がカメラ位置を送ってくる
+    if (p.x !== undefined && p.z !== undefined) {
+      var px = Number(p.x), pz = Number(p.z);
+      if (isFinite(px) && isFinite(pz)) { v.x = clamp_(px, -15, 15); v.z = clamp_(pz, -11, 11); }
+    }
     writeJson_(cache, 'vc_visitors', visitors);
     var msgs = readJson_(cache, 'vc_msgs', []);
     var since = Number(p.since || 0);
     var fresh = msgs.filter(function (m) { return m.i > since; });
     var seq = msgs.length ? msgs[msgs.length - 1].i : since;
     var list = Object.keys(visitors).map(function (id) {
-      return { id: id, name: visitors[id].name, avatar: visitors[id].avatar };
+      var o = { id: id, name: visitors[id].name, avatar: visitors[id].avatar };
+      if (visitors[id].x !== undefined) { o.x = visitors[id].x; o.z = visitors[id].z; }
+      return o;
     });
     return { ok: 1, visitors: list, messages: fresh, seq: seq };
   }
@@ -103,6 +110,7 @@ function handle_(p) {
     v.last = now; v.lastSay = now;
     writeJson_(cache, 'vc_visitors', visitors);
     pushMsg_(cache, { id: p.id, name: v.name, avatar: v.avatar, text: text });
+    maybeStaffReply_(cache, text, now);
     return { ok: 1 };
   }
 
@@ -117,7 +125,60 @@ function handle_(p) {
   return { error: 'unknown_action' };
 }
 
+/* ---------- 販売幕僚の相槌（賑やかし） ----------
+   お客様の発言にキーワード反応 or 低確率でひとこと。連発しないようクールダウン付き */
+var STAFF_COOLDOWN_MS = 20000;   // 相槌の最短間隔
+var STAFF_RANDOM_RATE = 0.2;     // キーワード不一致時に相槌する確率
+
+var STAFF_RULES = [
+  { re: /(手帳|ノート|バインダー|リフィル)/, replies: [
+      'システム手帳でしたら A6 が一番人気です🧵 バイブルサイズも書きやすいですよ',
+      '手帳は革が育つのが楽しいんです。ぜひ実物の艶をご覧ください',
+      'リング径でも使い心地が変わります。お気軽にご相談ください📔'] },
+  { re: /(財布|ウォレット|コインケース|小銭)/, replies: [
+      'お財布は長財布からミニ財布までお仕立てできます👛',
+      '馬蹄型コインケースは職人の自信作です。パカッと開く感じが気持ちいいですよ'] },
+  { re: /(革|レザー|色|カラー)/, replies: [
+      '当店の革はカワムラレザー取扱のみ。ブルー系だけでも12色ございます🎨',
+      '色でお迷いでしたら、オーダー相談で同系色をまとめてご覧いただけます',
+      'ヌメ革は使うほど色艶が深くなります。育てる楽しみをぜひ'] },
+  { re: /(かわいい|可愛い|素敵|すてき|いいね|おしゃれ|きれい|綺麗)/, replies: [
+      'ありがとうございます！職人が一点ずつ手縫いでお仕立てしています😊',
+      'お目が高いです✨ 名入れ（刻印）もできますよ'] },
+  { re: /(こんにちは|こんばんは|おはよう|はじめまして|よろしく)/, replies: [
+      'いらっしゃいませ！ごゆっくりご覧ください🧵',
+      'ようこそ N\'s factory へ。気になる作品があればお声がけください'] },
+  { re: /(オーダー|注文|見積|値段|価格|いくら)/, replies: [
+      'オーダーのご相談は、私（販売幕僚）をタップ→「オーダー相談」からどうぞ📋',
+      'お見積りは仕様が決まればすぐお出しできます。お気軽に🧵'] }
+];
+var STAFF_GENERIC = [
+  'ごゆっくりどうぞ🧵',
+  '何かあればお声がけくださいね',
+  '本日もご来店ありがとうございます😊'
+];
+
+function maybeStaffReply_(cache, text, now) {
+  var last = Number(cache.get('vc_staff_last') || 0);
+  if (now - last < STAFF_COOLDOWN_MS) return;
+  var reply = null;
+  for (var i = 0; i < STAFF_RULES.length; i++) {
+    if (STAFF_RULES[i].re.test(text)) {
+      var rs = STAFF_RULES[i].replies;
+      reply = rs[Math.floor(Math.random() * rs.length)];
+      break;
+    }
+  }
+  if (!reply) {
+    if (Math.random() > STAFF_RANDOM_RATE) return;
+    reply = STAFF_GENERIC[Math.floor(Math.random() * STAFF_GENERIC.length)];
+  }
+  cache.put('vc_staff_last', String(now), 21600);
+  pushMsg_(cache, { id: 'staff', name: '販売幕僚', avatar: '🧵', text: reply, staff: 1 });
+}
+
 /* ---------- helpers ---------- */
+function clamp_(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
 function sanitize_(s, maxLen) {
   return String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, maxLen);
 }
