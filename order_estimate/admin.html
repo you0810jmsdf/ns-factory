@@ -751,14 +751,17 @@ tr.row-out-stock td{
     <div class="panel calendar-section" id="calendarPanel">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
         <div style="font-size:11px;color:#8a6a4a">経営戦略本部所管・パスワード認証済みで埋め込み表示</div>
-        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?key=glJy4399"
+        <a id="calendarOpenLink" href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec"
            target="_blank" rel="noopener"
            style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
           🔗 別タブで開く
         </a>
       </div>
+      <!-- key はログイン通過後に unlockAdmin() が動的付与する（静的HTMLには埋め込まない） -->
       <iframe
-        src="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?key=glJy4399"
+        id="calendarFrame"
+        data-src="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec"
+        src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
         title="N's Factory 幕僚計画"
         loading="lazy"></iframe>
@@ -1429,8 +1432,21 @@ tr.row-out-stock td{
 <input id="fallbackFileInput" type="file" accept=".csv,text/csv" style="display:none">
 
 <script>
-const ADMIN_PASSWORD = 'glJy4399';
+// 管理者パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）。
+// 通過時の入力平文を nsf_admin_key として保持し、GAS API の key に使用する。
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const ADMIN_KEY_STORE = 'nsf_admin_key';
 const ADMIN_SESSION_KEY = 'nsfactory-ring-admin-auth';
+
+function adminSha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
+
+function getAdminKey() {
+  try { return sessionStorage.getItem(ADMIN_KEY_STORE) || ''; } catch (err) { return ''; }
+}
 const GITHUB_TOKEN_SESSION_KEY = 'nsfactory-ring-admin-github-token';
 const GITHUB_REPO_OWNER = 'you0810jmsdf';
 const GITHUB_REPO_NAME = 'ns-factory';
@@ -1453,6 +1469,14 @@ function unlockAdmin() {
   const overlay = document.getElementById('authOverlay');
   if (overlay) overlay.style.display = 'none';
   document.body.classList.remove('auth-locked');
+  // 幕僚計画の iframe / 別タブリンクへ key を動的付与（静的HTMLには埋め込まない）
+  const key = getAdminKey();
+  if (key) {
+    const frame = document.getElementById('calendarFrame');
+    if (frame && frame.dataset.src) frame.src = frame.dataset.src + '?key=' + encodeURIComponent(key);
+    const link = document.getElementById('calendarOpenLink');
+    if (link) link.href = link.href.split('?')[0] + '?key=' + encodeURIComponent(key);
+  }
   tryAutoFetchToken();
 }
 
@@ -1464,7 +1488,7 @@ function lockAdmin() {
 
 function checkAdminSession() {
   try {
-    return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok';
+    return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'ok' && !!getAdminKey();
   } catch (err) {
     return false;
   }
@@ -1482,14 +1506,22 @@ function submitAdminPassword() {
   const input = document.getElementById('authPassword');
   const error = document.getElementById('authError');
   if (!input) return;
-  if (input.value === ADMIN_PASSWORD) {
-    saveAdminSession();
-    if (error) error.textContent = '';
-    unlockAdmin();
-    return;
-  }
-  if (error) error.textContent = 'パスワードが違います。';
-  input.select();
+  adminSha256(input.value).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      try {
+        sessionStorage.setItem(ADMIN_KEY_STORE, input.value);
+        sessionStorage.setItem('nsf_admin_auth', hex);
+      } catch (err) { /* ignore */ }
+      saveAdminSession();
+      if (error) error.textContent = '';
+      unlockAdmin();
+      return;
+    }
+    if (error) error.textContent = 'パスワードが違います。';
+    input.select();
+  }).catch(() => {
+    if (error) error.textContent = '照合に失敗しました（https環境で開いてください）。';
+  });
 }
 
 if (checkAdminSession()) {
@@ -3725,7 +3757,7 @@ function gaLoad(days, noCache) {
 
   const cbName = 'gaCb' + Date.now();
   const script = document.createElement('script');
-  script.src = GAS_URL + '?api=analytics&key=' + encodeURIComponent(ADMIN_PASSWORD)
+  script.src = GAS_URL + '?api=analytics&key=' + encodeURIComponent(getAdminKey())
              + '&days=' + days + '&callback=' + cbName
              + (noCache ? '&nocache=1' : '');
 
@@ -3996,7 +4028,7 @@ function statsLoad() {
 
   const cbName = 'statsCb' + Date.now();
   const script = document.createElement('script');
-  script.src = GAS_URL + '?api=stats&key=' + encodeURIComponent(ADMIN_PASSWORD) + '&callback=' + cbName;
+  script.src = GAS_URL + '?api=stats&key=' + encodeURIComponent(getAdminKey()) + '&callback=' + cbName;
   window[cbName] = function(data) {
     delete window[cbName];
     if (script.parentNode) document.body.removeChild(script);

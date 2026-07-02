@@ -461,7 +461,13 @@
 <script>
 // ─────────────────────────────────────────────
 const GAS_KEY = 'op_gas_url';
-const ADMIN_PASS = 'glJy4399';
+// 管理者パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+function opSha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
 const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
 const FALLBACK_DATA_URL = 'orderprogress-data.json';
 const INVOICE_GAS_URL = 'https://script.google.com/macros/s/AKfycbzERvxy0zmLdytf0roNlzVzj6JHg2keLvMQ3tl38fxQk97S-O83VjG-bQPOLMI_HYZe/exec';
@@ -510,15 +516,22 @@ const RR_SEED = [
     'DriveフォルダID':'', 'メモ':'' }
 ];
 function checkAuth() {
-  if (sessionStorage.getItem('op_auth') === '1') return true;
+  if (sessionStorage.getItem('op_auth') === '1') return Promise.resolve(true);
   const pw = prompt('管理者パスワードを入力してください:');
-  if (pw === ADMIN_PASS) {
-    sessionStorage.setItem('op_auth', '1');
-    // 認証後にカード再描画して依頼者名を表示反映
-    try { applyFilter(); } catch(e) {}
-    return true;
-  }
-  return false;
+  if (pw === null || pw === '') return Promise.resolve(false);
+  return opSha256(pw).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      sessionStorage.setItem('op_auth', '1');
+      try {
+        sessionStorage.setItem('nsf_admin_key', pw);
+        sessionStorage.setItem('nsf_admin_auth', hex);
+      } catch(e) {}
+      // 認証後にカード再描画して依頼者名を表示反映
+      try { applyFilter(); } catch(e) {}
+      return true;
+    }
+    return false;
+  }).catch(() => false);
 }
 function isAdmin() {
   return sessionStorage.getItem('op_auth') === '1';
@@ -1000,9 +1013,9 @@ function carGo(id, idx) {
 }
 
 // ─── Modal ───────────────────────────────────
-function openModal(id) {
+async function openModal(id) {
   closeSettingsMenu();
-  if (!isAdmin() && !checkAuth()) return;
+  if (!isAdmin() && !(await checkAuth())) return;
   if (!gasReady || !gasUrl) {
     if (confirm('新規登録・編集にはGAS URL設定が必要です。設定しますか？')) openSettings();
     return;
@@ -1159,7 +1172,7 @@ async function saveRecord() {
 
 // ─── Delete ──────────────────────────────────
 async function deleteRecord(id) {
-  if (!isAdmin() && !checkAuth()) return;
+  if (!isAdmin() && !(await checkAuth())) return;
   if (!confirm('このオーダーを削除しますか？')) return;
   try {
     const res  = await fetch(gasUrl, { method:'POST', body:JSON.stringify({ action:'delete', id }) });
@@ -1211,8 +1224,8 @@ async function importFallbackToGas() {
 }
 
 // ─── Settings ────────────────────────────────
-function toggleSettingsMenu() {
-  if (!checkAuth()) return;
+async function toggleSettingsMenu() {
+  if (!(await checkAuth())) return;
   applyFilter();
   const m = document.getElementById('settings-menu');
   m.style.display = m.style.display === 'block' ? 'none' : 'block';

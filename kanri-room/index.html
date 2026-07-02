@@ -211,8 +211,15 @@ a{color:inherit;text-decoration:none}
 <script>
 (function(){
   const AUTH_KEY = 'kanri_auth_token';
-  const PASSWORD = 'glJy4399';
+  // パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）
+  const PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
   const TTL_MS = 24 * 60 * 60 * 1000;
+
+  function sha256Hex(text){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
 
   function isAuthed(){
     try{
@@ -257,13 +264,21 @@ a{color:inherit;text-decoration:none}
     e.preventDefault();
     const pw = document.getElementById('pw').value;
     const msg = document.getElementById('gateMsg');
-    if(pw === PASSWORD){
-      setAuthed();
-      showHub();
-    }else{
-      msg.textContent = 'パスワードが違います。';
-      document.getElementById('pw').value = '';
-    }
+    sha256Hex(pw).then(function(hex){
+      if(hex === PASS_HASH){
+        try{
+          sessionStorage.setItem('nsf_admin_key', pw);
+          sessionStorage.setItem('nsf_admin_auth', hex);
+        }catch(err){}
+        setAuthed();
+        showHub();
+      }else{
+        msg.textContent = 'パスワードが違います。';
+        document.getElementById('pw').value = '';
+      }
+    }).catch(function(){
+      msg.textContent = '照合に失敗しました（https環境で開いてください）。';
+    });
   });
 
   if(isAuthed()){ showHub(); } else { showGate(); }

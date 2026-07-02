@@ -169,8 +169,15 @@ a:hover{text-decoration:underline}
 <script>
 (function(){
   var AUTH_KEY = 'senryaku_auth_token';
-  var PASSWORD = 'glJy4399';
+  // パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）
+  var PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
   var TTL_MS = 24 * 60 * 60 * 1000;
+
+  function sha256Hex(text){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
 
   function isAuthed(){
     try{
@@ -221,13 +228,21 @@ a:hover{text-decoration:underline}
     e.preventDefault();
     var pw = document.getElementById('pw').value;
     var msg = document.getElementById('gateMsg');
-    if(pw === PASSWORD){
-      setAuthed();
-      showContent();
-    } else {
-      msg.textContent = 'パスワードが違います。';
-      document.getElementById('pw').value = '';
-    }
+    sha256Hex(pw).then(function(hex){
+      if(hex === PASS_HASH){
+        try{
+          sessionStorage.setItem('nsf_admin_key', pw);
+          sessionStorage.setItem('nsf_admin_auth', hex);
+        }catch(err){}
+        setAuthed();
+        showContent();
+      } else {
+        msg.textContent = 'パスワードが違います。';
+        document.getElementById('pw').value = '';
+      }
+    }).catch(function(){
+      msg.textContent = '照合に失敗しました（https環境で開いてください）。';
+    });
   });
 
   if(isAuthed()){ showContent(); } else { showGate(); }
