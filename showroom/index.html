@@ -499,6 +499,85 @@
       #chat-messages { max-height: 100px; }
     }
 
+    /* ===== 来店者チャット ===== */
+    #vc-fab {
+      position: fixed; left: 14px; bottom: 14px; z-index: 900;
+      background: var(--accent); color: #fff; border: none; border-radius: 24px;
+      padding: 11px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,.25); font-family: inherit;
+    }
+    #vc-fab:hover { background: var(--accent-lt); }
+    #vc-fab-count { font-weight: 400; font-size: 11px; opacity: .9; margin-left: 4px; }
+    .vc-overlay {
+      position: fixed; inset: 0; z-index: 1000; background: rgba(20,14,8,.55);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .vc-overlay[hidden], #vc-panel[hidden], #vc-fab[hidden] { display: none; }
+    .vc-card {
+      background: #fff; border-radius: 16px; padding: 22px 20px; width: min(92vw, 380px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35); font-family: inherit;
+    }
+    .vc-card h2 { font-size: 16px; color: var(--accent); margin: 0 0 6px; }
+    .vc-card p { font-size: 12px; color: #7a6a58; margin: 0 0 12px; line-height: 1.6; }
+    .vc-card .vc-note { font-size: 10.5px; color: #a09080; margin: 10px 0 0; }
+    #vc-avatars { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 12px; }
+    #vc-avatars button {
+      font-size: 22px; padding: 7px 0; border: 2px solid #e8ddcf; border-radius: 10px;
+      background: #faf7f2; cursor: pointer; transition: all .12s;
+    }
+    #vc-avatars button.on { border-color: var(--accent); background: #fdf3e6; transform: scale(1.08); }
+    #vc-name {
+      width: 100%; box-sizing: border-box; border: 1.5px solid #e8ddcf; border-radius: 9px;
+      padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; margin-bottom: 12px;
+    }
+    #vc-name:focus { border-color: var(--accent); }
+    .vc-actions { display: flex; gap: 8px; }
+    .vc-btn { flex: 1; border: none; border-radius: 9px; padding: 11px; font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .vc-btn.primary { background: var(--accent); color: #fff; }
+    .vc-btn.ghost { background: #f3ece2; color: #8a7862; }
+    #vc-panel {
+      position: fixed; left: 14px; bottom: 14px; z-index: 950;
+      width: min(92vw, 320px); max-height: min(70vh, 480px);
+      background: #fff; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.3);
+      display: flex; flex-direction: column; overflow: hidden; font-family: inherit;
+    }
+    .vc-head {
+      background: var(--accent); color: #fff; padding: 9px 12px;
+      display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;
+    }
+    #vc-count { font-weight: 400; font-size: 11px; opacity: .9; flex: 1; }
+    #vc-min { background: none; border: none; color: #fff; font-size: 15px; cursor: pointer; padding: 0 4px; }
+    #vc-visitors {
+      display: flex; gap: 4px; flex-wrap: wrap; padding: 7px 10px;
+      border-bottom: 1px solid #f0e8dc; font-size: 11px; color: #7a6a58; background: #fbf8f3;
+    }
+    #vc-visitors span { background: #fff; border: 1px solid #e8ddcf; border-radius: 12px; padding: 2px 8px; }
+    #vc-msgs { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 7px; min-height: 120px; }
+    .vc-msg { max-width: 88%; align-self: flex-start; }
+    .vc-msg.own { align-self: flex-end; text-align: right; }
+    .vc-msg .who { font-size: 10px; color: #9a8a76; margin-bottom: 1px; }
+    .vc-msg .body {
+      display: inline-block; background: #f6f0e6; border-radius: 10px; padding: 6px 10px;
+      font-size: 12.5px; line-height: 1.5; color: #3a2e20; word-break: break-word; text-align: left;
+    }
+    .vc-msg.own .body { background: var(--accent); color: #fff; }
+    .vc-msg.sys { align-self: center; font-size: 10.5px; color: #a89880; }
+    .vc-input-row { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid #f0e8dc; }
+    #vc-input {
+      flex: 1; border: 1.5px solid #e8ddcf; border-radius: 16px; padding: 8px 12px;
+      font-size: 13px; font-family: inherit; outline: none;
+    }
+    #vc-input:focus { border-color: var(--accent); }
+    #vc-send {
+      width: 36px; height: 36px; border: none; border-radius: 50%;
+      background: var(--accent); color: #fff; font-size: 14px; cursor: pointer;
+    }
+    #vc-leave {
+      border: none; background: #fbf8f3; color: #a08a70; font-size: 11px;
+      padding: 7px; cursor: pointer; border-top: 1px solid #f0e8dc; font-family: inherit;
+    }
+    #vc-leave:hover { color: #c0392b; }
+
     /* ===== フォールバック（白×ゴールド 明るい配色） ===== */
     #fallback {
       display: none;
@@ -684,6 +763,38 @@
   <div id="fallback">
     <h2>3D表示に対応していない環境のため、通常表示しています。</h2>
     <div class="fallback-grid" id="fallback-grid"></div>
+  </div>
+
+  <!-- ===== 来店者チャット（お客様同士の会話） ===== -->
+  <button id="vc-fab" hidden>👥 みんなのチャット<span id="vc-fab-count"></span></button>
+
+  <div id="vc-entry" class="vc-overlay" hidden>
+    <div class="vc-card">
+      <h2>ショールームに入室</h2>
+      <p>他のお客様との会話用に、アバターとニックネームを選んでください。</p>
+      <div id="vc-avatars"></div>
+      <input id="vc-name" type="text" maxlength="12" placeholder="ニックネーム（12文字まで）">
+      <div class="vc-actions">
+        <button class="vc-btn ghost" id="vc-entry-cancel">やめる</button>
+        <button class="vc-btn primary" id="vc-entry-join">入室する</button>
+      </div>
+      <p class="vc-note">※ 会話は他の来店者に表示されます。個人情報は書き込まないでください。メッセージは自動的に消去されます。</p>
+    </div>
+  </div>
+
+  <div id="vc-panel" hidden>
+    <div class="vc-head">
+      <span id="vc-title">👥 みんなのチャット</span>
+      <span id="vc-count"></span>
+      <button id="vc-min" title="最小化">－</button>
+    </div>
+    <div id="vc-visitors"></div>
+    <div id="vc-msgs"></div>
+    <div class="vc-input-row">
+      <input id="vc-input" type="text" maxlength="120" placeholder="メッセージ（120文字まで）">
+      <button id="vc-send">➤</button>
+    </div>
+    <button id="vc-leave">退室する</button>
   </div>
 
   <!-- ===== オーダー相談（ヒアリング）共有コア ===== -->
@@ -984,6 +1095,164 @@
         });
       }
     });
+  </script>
+
+  <!-- ===== 来店者チャット（お客様同士の会話）スクリプト ===== -->
+  <script>
+  (function () {
+    // ── 設定 ──────────────────────────────────────────────
+    // GAS（showroom/visitor-chat.gs）をデプロイし、/exec URL を下に設定してください。
+    // 未設定の間は「みんなのチャット」ボタン自体が表示されません。
+    // 手順: showroom/VISITOR_CHAT_SETUP.md
+    window.SHOWROOM_CONFIG = window.SHOWROOM_CONFIG || {};
+    if (window.SHOWROOM_CONFIG.chatApi === undefined) window.SHOWROOM_CONFIG.chatApi = '';
+    if (window.SHOWROOM_CONFIG.visitorChatApi === undefined) {
+      window.SHOWROOM_CONFIG.visitorChatApi = '';
+    }
+    // 動作確認用: URLに ?vchat=<GASのURL> を付けると一時的に有効化できる
+    try {
+      var qp = new URLSearchParams(location.search);
+      if (qp.get('vchat')) window.SHOWROOM_CONFIG.visitorChatApi = qp.get('vchat');
+    } catch (e) {}
+    var API = window.SHOWROOM_CONFIG.visitorChatApi;
+    if (!API) return; // 未設定 → 機能を安全に無効化
+
+    var AVATARS = ['🦊', '🐻', '🐰', '🐱', '🐶', '🦉', '🐼', '🐸', '🐢', '🦋', '🐿️', '🐳'];
+    var POLL_MS = 4000;
+    var vc = { joined: false, id: '', token: '', name: '', avatar: '', seq: 0, timer: null, sending: false };
+
+    function $(id) { return document.getElementById(id); }
+    var jsonpN = 0;
+    function vcJsonp(params) {
+      return new Promise(function (resolve, reject) {
+        var cb = 'vc_cb_' + (++jsonpN) + '_' + Math.floor(Math.random() * 1e6);
+        var s = document.createElement('script');
+        var done = false;
+        function cleanup() { try { delete window[cb]; } catch (e) { window[cb] = undefined; } s.remove(); }
+        window[cb] = function (data) { done = true; cleanup(); resolve(data || {}); };
+        s.onerror = function () { if (!done) { cleanup(); reject(new Error('network')); } };
+        var q = Object.keys(params).map(function (k) { return k + '=' + encodeURIComponent(params[k]); }).join('&');
+        s.src = API + (API.indexOf('?') >= 0 ? '&' : '?') + q + '&callback=' + cb;
+        document.head.appendChild(s);
+        setTimeout(function () { if (!done) { cleanup(); reject(new Error('timeout')); } }, 15000);
+      });
+    }
+
+    // ── 入室モーダル ──
+    var pickedAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+    function buildAvatarGrid() {
+      var g = $('vc-avatars'); g.innerHTML = '';
+      AVATARS.forEach(function (a) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.textContent = a;
+        if (a === pickedAvatar) b.classList.add('on');
+        b.addEventListener('click', function () {
+          pickedAvatar = a;
+          g.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+          b.classList.add('on');
+        });
+        g.appendChild(b);
+      });
+    }
+    function openEntry() {
+      buildAvatarGrid();
+      if (!$('vc-name').value) $('vc-name').value = 'ゲスト' + (100 + Math.floor(Math.random() * 900));
+      $('vc-entry').hidden = false;
+    }
+
+    // ── 表示 ──
+    function renderVisitors(list) {
+      $('vc-count').textContent = '在室 ' + list.length + '人';
+      $('vc-fab-count').textContent = '（在室' + list.length + '人）';
+      var w = $('vc-visitors'); w.innerHTML = '';
+      list.forEach(function (v) {
+        var s = document.createElement('span');
+        s.textContent = v.avatar + ' ' + v.name;
+        w.appendChild(s);
+      });
+    }
+    function appendMsg(m) {
+      var box = $('vc-msgs');
+      var d = document.createElement('div');
+      if (m.sys) {
+        d.className = 'vc-msg sys';
+        d.textContent = m.text;
+      } else {
+        d.className = 'vc-msg' + (m.id === vc.id ? ' own' : '');
+        var who = document.createElement('div'); who.className = 'who';
+        who.textContent = m.avatar + ' ' + m.name;
+        var body = document.createElement('div'); body.className = 'body';
+        body.textContent = m.text;
+        d.appendChild(who); d.appendChild(body);
+      }
+      box.appendChild(d);
+      while (box.children.length > 80) box.removeChild(box.firstChild);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // ── 通信 ──
+    function join() {
+      var name = ($('vc-name').value || '').trim().slice(0, 12) || 'ゲスト';
+      vcJsonp({ action: 'join', name: name, avatar: pickedAvatar }).then(function (r) {
+        if (!r.ok) { alert('入室できませんでした。少し待ってからお試しください。'); return; }
+        vc.joined = true; vc.id = r.id; vc.token = r.token; vc.name = name; vc.avatar = pickedAvatar; vc.seq = 0;
+        $('vc-entry').hidden = true;
+        $('vc-panel').hidden = false;
+        $('vc-fab').hidden = true;
+        $('vc-msgs').innerHTML = '';
+        poll();
+        vc.timer = setInterval(poll, POLL_MS);
+      }).catch(function () { alert('チャットサーバーに接続できませんでした。'); });
+    }
+    function poll() {
+      if (!vc.joined) return;
+      vcJsonp({ action: 'poll', id: vc.id, token: vc.token, since: vc.seq }).then(function (r) {
+        if (r.error === 'not_joined') { teardown(); return; }
+        if (!r.ok) return;
+        renderVisitors(r.visitors || []);
+        (r.messages || []).forEach(appendMsg);
+        if (r.seq) vc.seq = r.seq;
+      }).catch(function () {});
+    }
+    function say() {
+      if (!vc.joined || vc.sending) return;
+      var input = $('vc-input');
+      var text = (input.value || '').trim();
+      if (!text) return;
+      vc.sending = true;
+      vcJsonp({ action: 'say', id: vc.id, token: vc.token, text: text }).then(function (r) {
+        vc.sending = false;
+        if (r.error === 'slow_down') return;
+        if (r.error === 'ng_word') { alert('この内容は投稿できません。'); return; }
+        if (r.ok) { input.value = ''; poll(); }
+      }).catch(function () { vc.sending = false; });
+    }
+    function teardown() {
+      vc.joined = false;
+      if (vc.timer) { clearInterval(vc.timer); vc.timer = null; }
+      $('vc-panel').hidden = true;
+      $('vc-fab').hidden = false;
+    }
+    function leave() {
+      if (vc.joined) vcJsonp({ action: 'leave', id: vc.id, token: vc.token }).catch(function () {});
+      teardown();
+    }
+
+    // ── 起動・イベント ──
+    document.addEventListener('DOMContentLoaded', function () {
+      $('vc-fab').hidden = false;
+      $('vc-fab').addEventListener('click', function () { vc.joined ? ($('vc-panel').hidden = false, $('vc-fab').hidden = true) : openEntry(); });
+      $('vc-entry-cancel').addEventListener('click', function () { $('vc-entry').hidden = true; });
+      $('vc-entry-join').addEventListener('click', join);
+      $('vc-send').addEventListener('click', say);
+      $('vc-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); say(); } });
+      $('vc-min').addEventListener('click', function () { $('vc-panel').hidden = true; $('vc-fab').hidden = false; });
+      $('vc-leave').addEventListener('click', leave);
+      window.addEventListener('beforeunload', function () {
+        if (vc.joined) { try { new Image().src = API + '?action=leave&id=' + vc.id + '&token=' + vc.token; } catch (e) {} }
+      });
+    });
+  })();
   </script>
 
   <!-- ===== メインスクリプト ===== -->
