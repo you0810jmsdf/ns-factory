@@ -204,6 +204,26 @@ var BOT_GENERIC = [
   'それ、わかります〜',
   '店長（個人事業主）にも伝えておきますね！'
 ];
+
+/* 革の色 直球質問の検知（ページ側が gallery フラグを見て写真スワッチを表示する）
+   系統名は leather-catalog.json のタグと同期させること（現在7系統） */
+var TONE_MAP = [
+  { fam: 'ブルー系',    re: /青|あお|ブルー|ネイビー|紺|水色|ターコイズ|コバルト/ },
+  { fam: 'レッド系',    re: /赤|あか|レッド|ピンク|ワイン|バーガンディ|紫|パープル/ },
+  { fam: 'ブラウン系',  re: /茶|ブラウン|キャメル|チョコ/ },
+  { fam: 'ダーク系',    re: /黒|くろ|ブラック|グレー|灰/ },
+  { fam: 'グリーン系',  re: /緑|グリーン|カーキ|オリーブ/ },
+  { fam: 'イエロー系',  re: /黄|イエロー|マスタード|オレンジ/ },
+  { fam: 'ナチュラル系', re: /ナチュラル|生成り|ヌメ|ベージュ/ }
+];
+function detectLeatherColor_(text) {
+  if (!/(革|レザー|色|カラー)/.test(text)) return null;
+  for (var i = 0; i < TONE_MAP.length; i++) {
+    if (TONE_MAP[i].re.test(text)) return TONE_MAP[i].fam;
+  }
+  if (/(色|カラー)/.test(text)) return 'ask';
+  return null;
+}
 // 「？」で終わる質問にキーワードが合わなかったときの返事（無言にしない）
 var BOT_QUESTION = [
   'うーん、それはわたしより店長が詳しいかもです！販売幕僚さんに聞いてみてください🧵',
@@ -234,6 +254,20 @@ function botReply_(cache, text, now) {
   var addressed = /ちえみ/.test(text);
   var isQuestion = /[？?]\s*$/.test(text);
   var last = Number(cache.get('vc_bot_last') || 0);
+  // 革の色の直球質問はクールダウン無視で即・写真付き回答
+  var fam = detectLeatherColor_(text);
+  if (fam) {
+    cache.put('vc_bot_last', String(now), 21600);
+    if (fam === 'ask') {
+      pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar,
+        text: '革のお色はレッド系・ブルー系・ブラウン系・グリーン系・イエロー系・ナチュラル系・ダーク系がありますよ🎨 「青系見せて」みたいに聞いてくださいね！' });
+    } else {
+      pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar,
+        text: fam + 'の革はこちらです📷 タップで拡大できます。気になる色があったら教えてくださいね',
+        gallery: fam });
+    }
+    return true;
+  }
   if (!addressed && !isQuestion && now - last < BOT_COOLDOWN_MS) return false;
   var reply = null;
   for (var i = 0; i < BOT_RULES.length; i++) {
