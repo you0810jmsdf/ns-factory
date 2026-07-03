@@ -346,15 +346,25 @@ function notifyOwner_(cache, name, avatar, visitors, now) {
         '「みんなのチャット」から入室すると店長として売り場に立てます。\n\n' +
         '※ 通知は1分に1通まで。店長として入店中の来店にも通知は届きます。'
     });
-  } catch (e) { /* メール失敗は無視（チャット動作を優先） */ }
+  } catch (e) {
+    // メール失敗でもチャット動作は継続。原因調査用に実行ログへは残す
+    console.error('notifyOwner_ failed: ' + (e && e.message ? e.message : e));
+  }
 }
 
-/* エディタから一度だけ実行: メール送信権限の承認＆通知テスト用 */
+/* エディタから一度だけ実行: メール送信権限の承認＆通知テスト用
+   （こちらは try/catch なし＝失敗したら赤いエラーが表示される） */
 function testNotify() {
-  var cache = CacheService.getScriptCache();
-  cache.remove('vc_mail_last');
-  notifyOwner_(cache, 'テスト来店', '🧪',
-    { t1: { name: 'テスト来店', avatar: '🧪' } }, Date.now());
+  var to = PropertiesService.getScriptProperties().getProperty('NOTIFY_EMAIL')
+        || Session.getEffectiveUser().getEmail();
+  MailApp.sendEmail({
+    to: to,
+    subject: '【ショールーム来店通知テスト】この件名が届けば設定OK',
+    body: '来店通知メールのテストです。\n宛先: ' + to +
+          '\n残り送信可能数(今日): ' + MailApp.getRemainingDailyQuota() + '通'
+  });
+  console.log('テストメール送信完了 → ' + to);
+  CacheService.getScriptCache().remove('vc_mail_last'); // 直後の実来店テストが抑止されないように
 }
 
 /* ---------- helpers ---------- */
