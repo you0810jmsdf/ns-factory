@@ -1737,12 +1737,22 @@
       window.SHOWROOM_CONFIG.visitorChatApi = 'https://script.google.com/macros/s/AKfycbzDfWYQey_Qn9hTHaU4gUrXkAYsTS4zViZGrZxAr5aSe3bIwh_T7wd_ktHMiE7-xhhc/exec';
     }
     // 動作確認用: URLに ?vchat=<GASのURL> を付けると一時的に有効化できる
-    // 店長モード: ?okey=<店長キー> を一度付けて開くと端末に保存され、以後は「店長」として入店
+    // 店長モード: ?okey=<店長キー> 付きで開くと端末に保存され「店長」として入店できる。
+    // 来店通知メールのリンクにも okey が付いており、メールアプリ内ブラウザ等
+    // （localStorage が別になる環境）から開いても確実に店長になれる。
     var OWNER_LS = 'nsf_owner_key';
+    var ownerAutoJoin = false;
     try {
       var qp = new URLSearchParams(location.search);
       if (qp.get('vchat')) window.SHOWROOM_CONFIG.visitorChatApi = qp.get('vchat');
-      if (qp.get('okey')) localStorage.setItem(OWNER_LS, qp.get('okey'));
+      if (qp.get('okey')) {
+        localStorage.setItem(OWNER_LS, qp.get('okey'));
+        ownerAutoJoin = true; // 店長リンクから来た＝接客に出る意図なので入室画面を自動で開く
+        // アドレスバー・履歴にキーを残さない
+        qp.delete('okey');
+        var qs = qp.toString();
+        history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+      }
     } catch (e) {}
     function ownerKey() {
       try { return localStorage.getItem(OWNER_LS) || ''; } catch (e) { return ''; }
@@ -2077,6 +2087,8 @@
       $('vc-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); say(); } });
       $('vc-min').addEventListener('click', function () { $('vc-panel').hidden = true; $('vc-fab').hidden = false; });
       $('vc-leave').addEventListener('click', leave);
+      // 店長リンク（メール通知の ?okey= 付きURL）から来た場合は入室画面を自動で開く
+      if (ownerAutoJoin) openEntry();
       window.addEventListener('beforeunload', function () {
         if (vc.joined) { try { new Image().src = API + '?action=leave&id=' + vc.id + '&token=' + vc.token; } catch (e) {} }
       });
