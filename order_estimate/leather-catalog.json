@@ -835,6 +835,2638 @@
     "NEW"
    ],
    "image": "assets/leathers/mano18.jpg"
+  },
+  {
+   "id": "kw142174893",
+   "name": "BULGARO イエロー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw142174893.jpg"
+  },
+  {
+   "id": "kw142174985",
+   "name": "BULGARO オリーブ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw142174985.jpg"
+  },
+  {
+   "id": "kw144863774",
+   "name": "BULGARO キャメル",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw144863774.jpg"
+  },
+  {
+   "id": "kw155783293",
+   "name": "BULGARO グリーン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw155783293.jpg"
+  },
+  {
+   "id": "kw153122754",
+   "name": "BULGARO グレー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw153122754.jpg"
+  },
+  {
+   "id": "kw142053258",
+   "name": "BULGARO コニャック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw142053258.jpg"
+  },
+  {
+   "id": "kw161703674",
+   "name": "BULGARO シエナ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw161703674.jpg"
+  },
+  {
+   "id": "kw142044123",
+   "name": "BULGARO ダークブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw142044123.jpg"
+  },
+  {
+   "id": "kw142102656",
+   "name": "BULGARO ネイビー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw142102656.jpg"
+  },
+  {
+   "id": "kw139897477",
+   "name": "BULGARO ブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw139897477.jpg"
+  },
+  {
+   "id": "kw142086646",
+   "name": "BULGARO ブラック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw142086646.jpg"
+  },
+  {
+   "id": "kw173296707",
+   "name": "BULGARO ブルー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw173296707.jpg"
+  },
+  {
+   "id": "kw144864221",
+   "name": "BULGARO レッド",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw144864221.jpg"
+  },
+  {
+   "id": "kw153128716",
+   "name": "BULGARO ワイン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw153128716.jpg"
+  },
+  {
+   "id": "kw142098205",
+   "name": "NEBRASKA イエロー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw142098205.jpg"
+  },
+  {
+   "id": "kw142101001",
+   "name": "NEBRASKA オリーブ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw142101001.jpg"
+  },
+  {
+   "id": "kw145547570",
+   "name": "NEBRASKA キャメル",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw145547570.jpg"
+  },
+  {
+   "id": "kw159900455",
+   "name": "NEBRASKA グリーン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw159900455.jpg"
+  },
+  {
+   "id": "kw153747469",
+   "name": "NEBRASKA グレー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw153747469.jpg"
+  },
+  {
+   "id": "kw142098655",
+   "name": "NEBRASKA コニャック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw142098655.jpg"
+  },
+  {
+   "id": "kw161703649",
+   "name": "NEBRASKA シエナ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw161703649.jpg"
+  },
+  {
+   "id": "kw140633732",
+   "name": "NEBRASKA ダークブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw140633732.jpg"
+  },
+  {
+   "id": "kw142099497",
+   "name": "NEBRASKA ネイビー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw142099497.jpg"
+  },
+  {
+   "id": "kw142064093",
+   "name": "NEBRASKA ブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw142064093.jpg"
+  },
+  {
+   "id": "kw142100093",
+   "name": "NEBRASKA ブラック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw142100093.jpg"
+  },
+  {
+   "id": "kw173297104",
+   "name": "NEBRASKA ブルー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw173297104.jpg"
+  },
+  {
+   "id": "kw145547651",
+   "name": "NEBRASKA レッド",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw145547651.jpg"
+  },
+  {
+   "id": "kw155783348",
+   "name": "NEBRASKA ワイン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw155783348.jpg"
+  },
+  {
+   "id": "kw142277908",
+   "name": "TENDER イエロー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw142277908.jpg"
+  },
+  {
+   "id": "kw142278005",
+   "name": "TENDER オリーブ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw142278005.jpg"
+  },
+  {
+   "id": "kw162805150",
+   "name": "TENDER キャメル",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw162805150.jpg"
+  },
+  {
+   "id": "kw164301924",
+   "name": "TENDER グレー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw164301924.jpg"
+  },
+  {
+   "id": "kw139898846",
+   "name": "TENDER コニャック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw139898846.jpg"
+  },
+  {
+   "id": "kw142277492",
+   "name": "TENDER ダークブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw142277492.jpg"
+  },
+  {
+   "id": "kw142278106",
+   "name": "TENDER ネイビー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw142278106.jpg"
+  },
+  {
+   "id": "kw142277231",
+   "name": "TENDER ブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw142277231.jpg"
+  },
+  {
+   "id": "kw142278160",
+   "name": "TENDER ブラック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw142278160.jpg"
+  },
+  {
+   "id": "kw172107644",
+   "name": "TENDER ワイン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw172107644.jpg"
+  },
+  {
+   "id": "kw159732492",
+   "name": "REVERSO コニャック",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159732492.jpg"
+  },
+  {
+   "id": "kw159732507",
+   "name": "REVERSO シエナ",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159732507.jpg"
+  },
+  {
+   "id": "kw159732534",
+   "name": "REVERSO ダークブラウン",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159732534.jpg"
+  },
+  {
+   "id": "kw159732636",
+   "name": "REVERSO トープ",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw159732636.jpg"
+  },
+  {
+   "id": "kw159732602",
+   "name": "REVERSO ネイビー",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw159732602.jpg"
+  },
+  {
+   "id": "kw159732522",
+   "name": "REVERSO ブラウン",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159732522.jpg"
+  },
+  {
+   "id": "kw159732478",
+   "name": "REVERSO ブラック",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw159732478.jpg"
+  },
+  {
+   "id": "kw159732548",
+   "name": "REVERSO レッド",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw159732548.jpg"
+  },
+  {
+   "id": "kw159732568",
+   "name": "REVERSO ワイン",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw159732568.jpg"
+  },
+  {
+   "id": "kw161703696",
+   "name": "TWIST アイボリー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw161703696.jpg"
+  },
+  {
+   "id": "kw145958545",
+   "name": "TWIST イエロー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw145958545.jpg"
+  },
+  {
+   "id": "kw145959044",
+   "name": "TWIST オリーブ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw145959044.jpg"
+  },
+  {
+   "id": "kw145958466",
+   "name": "TWIST グレー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw145958466.jpg"
+  },
+  {
+   "id": "kw145958402",
+   "name": "TWIST ダークブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw145958402.jpg"
+  },
+  {
+   "id": "kw145958035",
+   "name": "TWIST ナチュラル",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw145958035.jpg"
+  },
+  {
+   "id": "kw145959279",
+   "name": "TWIST ネイビー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw145959279.jpg"
+  },
+  {
+   "id": "kw145958291",
+   "name": "TWIST ブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw145958291.jpg"
+  },
+  {
+   "id": "kw155042339",
+   "name": "TWIST ブラック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw155042339.jpg"
+  },
+  {
+   "id": "kw145958630",
+   "name": "TWIST ワイン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw145958630.jpg"
+  },
+  {
+   "id": "kw169160973",
+   "name": "AMAZZONIA イエロー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw169160973.jpg"
+  },
+  {
+   "id": "kw156744633",
+   "name": "AMAZZONIA オリーブ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw156744633.jpg"
+  },
+  {
+   "id": "kw156744560",
+   "name": "AMAZZONIA グリーン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw156744560.jpg"
+  },
+  {
+   "id": "kw156744695",
+   "name": "AMAZZONIA グレー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw156744695.jpg"
+  },
+  {
+   "id": "kw169161060",
+   "name": "AMAZZONIA ターコイズ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw169161060.jpg"
+  },
+  {
+   "id": "kw155784895",
+   "name": "AMAZZONIA ダークブラウン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw155784895.jpg"
+  },
+  {
+   "id": "kw140634418",
+   "name": "AMAZZONIA チョコ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw140634418.jpg"
+  },
+  {
+   "id": "kw156744751",
+   "name": "AMAZZONIA ネイビー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw156744751.jpg"
+  },
+  {
+   "id": "kw141886381",
+   "name": "AMAZZONIA ブラウン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw141886381.jpg"
+  },
+  {
+   "id": "kw141882810",
+   "name": "AMAZZONIA ブラック",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw141882810.jpg"
+  },
+  {
+   "id": "kw143375840",
+   "name": "AMAZZONIA ブルー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw143375840.jpg"
+  },
+  {
+   "id": "kw141887558",
+   "name": "AMAZZONIA レッド",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw141887558.jpg"
+  },
+  {
+   "id": "kw156742684",
+   "name": "AMAZZONIA ワイン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw156742684.jpg"
+  },
+  {
+   "id": "kw142151566",
+   "name": "CRUST エバノ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw142151566.jpg"
+  },
+  {
+   "id": "kw142151977",
+   "name": "CRUST コバルト",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw142151977.jpg"
+  },
+  {
+   "id": "kw142151264",
+   "name": "CRUST ジアロ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw142151264.jpg"
+  },
+  {
+   "id": "kw176481776",
+   "name": "CRUST ナチュラーレ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw176481776.jpg"
+  },
+  {
+   "id": "kw142152473",
+   "name": "CRUST ネロ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw142152473.jpg"
+  },
+  {
+   "id": "kw171321838",
+   "name": "CRUST マローネ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw171321838.jpg"
+  },
+  {
+   "id": "kw171321870",
+   "name": "CRUST ミリターレ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw171321870.jpg"
+  },
+  {
+   "id": "kw142151671",
+   "name": "CRUST ロッソ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw142151671.jpg"
+  },
+  {
+   "id": "kw163439114",
+   "name": "COUNTRY グレー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw163439114.jpg"
+  },
+  {
+   "id": "kw163434696",
+   "name": "COUNTRY ダークブラウン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw163434696.jpg"
+  },
+  {
+   "id": "kw163434660",
+   "name": "COUNTRY ナチュラル",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw163434660.jpg"
+  },
+  {
+   "id": "kw163434683",
+   "name": "COUNTRY ブラウン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw163434683.jpg"
+  },
+  {
+   "id": "kw163439240",
+   "name": "COUNTRY ブラック",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw163439240.jpg"
+  },
+  {
+   "id": "kw163439020",
+   "name": "COUNTRY ブルー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw163439020.jpg"
+  },
+  {
+   "id": "kw163439070",
+   "name": "COUNTRY ベージュ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw163439070.jpg"
+  },
+  {
+   "id": "kw163434620",
+   "name": "COUNTRY ホワイト",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw163434620.jpg"
+  },
+  {
+   "id": "kw163438954",
+   "name": "COUNTRY レッド",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw163438954.jpg"
+  },
+  {
+   "id": "kw163438818",
+   "name": "COUNTRY ヴァイオレット",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw163438818.jpg"
+  },
+  {
+   "id": "kw177973946",
+   "name": "LINEA VASCA Liscio オルティーカ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "グリーン系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973946.jpg"
+  },
+  {
+   "id": "kw177973886",
+   "name": "LINEA VASCA Liscio カスターニャ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブラウン系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973886.jpg"
+  },
+  {
+   "id": "kw177973956",
+   "name": "LINEA VASCA Liscio コバルト",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973956.jpg"
+  },
+  {
+   "id": "kw177973864",
+   "name": "LINEA VASCA Liscio セサンタ（60）",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973864.jpg"
+  },
+  {
+   "id": "kw177973871",
+   "name": "LINEA VASCA Liscio ダークブラウン",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブラウン系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973871.jpg"
+  },
+  {
+   "id": "kw177973968",
+   "name": "LINEA VASCA Liscio トッポ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973968.jpg"
+  },
+  {
+   "id": "kw180707713",
+   "name": "LINEA VASCA Liscio トルケーゼ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw180707713.jpg"
+  },
+  {
+   "id": "kw180707712",
+   "name": "LINEA VASCA Liscio ナチュラーレ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw180707712.jpg"
+  },
+  {
+   "id": "kw177973960",
+   "name": "LINEA VASCA Liscio ネイビー",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973960.jpg"
+  },
+  {
+   "id": "kw177973979",
+   "name": "LINEA VASCA Liscio ネロ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973979.jpg"
+  },
+  {
+   "id": "kw177973910",
+   "name": "LINEA VASCA Liscio フクシア",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "レッド系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973910.jpg"
+  },
+  {
+   "id": "kw177973918",
+   "name": "LINEA VASCA Liscio フラゴラ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "レッド系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973918.jpg"
+  },
+  {
+   "id": "kw177973924",
+   "name": "LINEA VASCA Liscio ヴェルデ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "グリーン系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw177973924.jpg"
+  },
+  {
+   "id": "kw188691587",
+   "name": "MARGOT アヴィオ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "Virgilio",
+    "MARGOT",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw188691587.jpg"
+  },
+  {
+   "id": "kw142026124",
+   "name": "MARGOT コバルト",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "Virgilio",
+    "MARGOT",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw142026124.jpg"
+  },
+  {
+   "id": "kw188691341",
+   "name": "MARGOT プラト",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "Virgilio",
+    "MARGOT",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw188691341.jpg"
+  },
+  {
+   "id": "kw176618416",
+   "name": "TEXAS アガベ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw176618416.jpg"
+  },
+  {
+   "id": "kw176617989",
+   "name": "TEXAS アンブラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw176617989.jpg"
+  },
+  {
+   "id": "kw176618366",
+   "name": "TEXAS オクラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw176618366.jpg"
+  },
+  {
+   "id": "kw176146678",
+   "name": "TEXAS キャメロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw176146678.jpg"
+  },
+  {
+   "id": "kw176618223",
+   "name": "TEXAS クオイオ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw176618223.jpg"
+  },
+  {
+   "id": "kw176618274",
+   "name": "TEXAS シエナ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw176618274.jpg"
+  },
+  {
+   "id": "kw176618310",
+   "name": "TEXAS ティー・モロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw176618310.jpg"
+  },
+  {
+   "id": "kw176618431",
+   "name": "TEXAS ネイビー",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw176618431.jpg"
+  },
+  {
+   "id": "kw176618488",
+   "name": "TEXAS ネロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw176618488.jpg"
+  },
+  {
+   "id": "kw176618285",
+   "name": "TEXAS パパヤ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw176618285.jpg"
+  },
+  {
+   "id": "kw176618472",
+   "name": "TEXAS ピオンボ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw176618472.jpg"
+  },
+  {
+   "id": "kw176618348",
+   "name": "TEXAS フィエスタ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw176618348.jpg"
+  },
+  {
+   "id": "kw176618328",
+   "name": "TEXAS プルーニャ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw176618328.jpg"
+  },
+  {
+   "id": "kw176618374",
+   "name": "TEXAS ラトゥーガ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw176618374.jpg"
+  },
+  {
+   "id": "kw176618445",
+   "name": "TEXAS ヴィオラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw176618445.jpg"
+  },
+  {
+   "id": "kw176618381",
+   "name": "TEXAS ヴェルデ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw176618381.jpg"
+  },
+  {
+   "id": "kw172113060",
+   "name": "SIBILLA Liscio アガベ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "グリーン系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw172113060.jpg"
+  },
+  {
+   "id": "kw168532565",
+   "name": "SIBILLA Liscio イリス",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "レッド系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532565.jpg"
+  },
+  {
+   "id": "kw175192406",
+   "name": "SIBILLA Liscio クロロフィラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "グリーン系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw175192406.jpg"
+  },
+  {
+   "id": "kw168532634",
+   "name": "SIBILLA Liscio グラファイト",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532634.jpg"
+  },
+  {
+   "id": "kw168532629",
+   "name": "SIBILLA Liscio チェネレ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532629.jpg"
+  },
+  {
+   "id": "kw168532438",
+   "name": "SIBILLA Liscio ティー・モロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ブラウン系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532438.jpg"
+  },
+  {
+   "id": "kw168532402",
+   "name": "SIBILLA Liscio デセルト",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532402.jpg"
+  },
+  {
+   "id": "kw168532468",
+   "name": "SIBILLA Liscio トルケーゼ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532468.jpg"
+  },
+  {
+   "id": "kw168532417",
+   "name": "SIBILLA Liscio トルトラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532417.jpg"
+  },
+  {
+   "id": "kw168532544",
+   "name": "SIBILLA Liscio ネイビー",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532544.jpg"
+  },
+  {
+   "id": "kw168532644",
+   "name": "SIBILLA Liscio ネロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532644.jpg"
+  },
+  {
+   "id": "kw168532449",
+   "name": "SIBILLA Liscio フクシア",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "レッド系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532449.jpg"
+  },
+  {
+   "id": "kw168532457",
+   "name": "SIBILLA Liscio マスタード",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "イエロー系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532457.jpg"
+  },
+  {
+   "id": "kw168532516",
+   "name": "SIBILLA Liscio マリーネ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "image": "assets/leathers/kw168532516.jpg"
+  },
+  {
+   "id": "kw186289162",
+   "name": "AVANCORPI ナチュラル",
+   "sub": "ROCADO / 馬・ホースフロント",
+   "tags": [
+    "ROCADO",
+    "AVANCORPI",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw186289162.jpg"
+  },
+  {
+   "id": "kw191060393",
+   "name": "AVANCORPI ブラウン",
+   "sub": "ROCADO / 馬・ホースフロント",
+   "tags": [
+    "ROCADO",
+    "AVANCORPI",
+    "タンニン鞣し",
+    "ブラウン系",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw191060393.jpg"
+  },
+  {
+   "id": "kw191473385",
+   "name": "AVANCORPI ブラック",
+   "sub": "ROCADO / 馬・ホースフロント",
+   "tags": [
+    "ROCADO",
+    "AVANCORPI",
+    "タンニン鞣し",
+    "ダーク系",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw191473385.jpg"
+  },
+  {
+   "id": "kw155709863",
+   "name": "ホースバット ナチュラル",
+   "sub": "MARYAM / 馬革・タンニン鞣し",
+   "tags": [
+    "MARYAM",
+    "HORSE BUTT",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "馬革",
+    "ホースバット"
+   ],
+   "image": "assets/leathers/kw155709863.jpg"
+  },
+  {
+   "id": "kw159561041",
+   "name": "ホースバット 茶芯ブラック",
+   "sub": "MARYAM / 馬革・タンニン鞣し",
+   "tags": [
+    "MARYAM",
+    "HORSE BUTT",
+    "タンニン鞣し",
+    "ダーク系",
+    "馬革",
+    "ホースバット"
+   ],
+   "image": "assets/leathers/kw159561041.jpg"
+  },
+  {
+   "id": "kw171930317",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ウィスキー",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930317.jpg"
+  },
+  {
+   "id": "kw171930324",
+   "name": "シェルコードバン(ROCADO/CLASSIC) コニャック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930324.jpg"
+  },
+  {
+   "id": "kw171930332",
+   "name": "シェルコードバン(ROCADO/CLASSIC) シエナ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930332.jpg"
+  },
+  {
+   "id": "kw171930342",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ダークバーガンディ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930342.jpg"
+  },
+  {
+   "id": "kw171930338",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ダークブラウン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930338.jpg"
+  },
+  {
+   "id": "kw171930351",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ピンク",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930351.jpg"
+  },
+  {
+   "id": "kw171930369",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ブラック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ダーク系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930369.jpg"
+  },
+  {
+   "id": "kw171930365",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ブルー",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930365.jpg"
+  },
+  {
+   "id": "kw171930360",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ペトロリオ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930360.jpg"
+  },
+  {
+   "id": "kw171930353",
+   "name": "シェルコードバン(ROCADO/CLASSIC) レッド",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930353.jpg"
+  },
+  {
+   "id": "kw171930418",
+   "name": "シェルコードバン(ROCADO/MARBLED) グリーン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "グリーン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930418.jpg"
+  },
+  {
+   "id": "kw171930394",
+   "name": "シェルコードバン(ROCADO/MARBLED) シエナ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930394.jpg"
+  },
+  {
+   "id": "kw171930424",
+   "name": "シェルコードバン(ROCADO/MARBLED) トルケーゼ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930424.jpg"
+  },
+  {
+   "id": "kw171930400",
+   "name": "シェルコードバン(ROCADO/MARBLED) バーガンディ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930400.jpg"
+  },
+  {
+   "id": "kw171930407",
+   "name": "シェルコードバン(ROCADO/MARBLED) ピンク",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930407.jpg"
+  },
+  {
+   "id": "kw171930388",
+   "name": "シェルコードバン(ROCADO/MARBLED) ブラウン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930388.jpg"
+  },
+  {
+   "id": "kw171930433",
+   "name": "シェルコードバン(ROCADO/MARBLED) ブラック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ダーク系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930433.jpg"
+  },
+  {
+   "id": "kw171930430",
+   "name": "シェルコードバン(ROCADO/MARBLED) ブルー",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930430.jpg"
+  },
+  {
+   "id": "kw171930411",
+   "name": "シェルコードバン(ROCADO/MARBLED) レッド",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw171930411.jpg"
+  },
+  {
+   "id": "kw175312214",
+   "name": "シェルコードバン(ROCADO/MUSEUM) グリーン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "グリーン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw175312214.jpg"
+  },
+  {
+   "id": "kw175312185",
+   "name": "シェルコードバン(ROCADO/MUSEUM) コニャック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw175312185.jpg"
+  },
+  {
+   "id": "kw175312202",
+   "name": "シェルコードバン(ROCADO/MUSEUM) バーガンディ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw175312202.jpg"
+  },
+  {
+   "id": "kw175312193",
+   "name": "シェルコードバン(ROCADO/MUSEUM) ブラウン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw175312193.jpg"
+  },
+  {
+   "id": "kw186275867",
+   "name": "シェルコードバン(ROCADO/MUSEUM) ブラック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ダーク系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw186275867.jpg"
+  },
+  {
+   "id": "kw175312220",
+   "name": "シェルコードバン(ROCADO/MUSEUM) ブルー",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw175312220.jpg"
+  },
+  {
+   "id": "kw175312207",
+   "name": "シェルコードバン(ROCADO/MUSEUM) レッド",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw175312207.jpg"
+  },
+  {
+   "id": "kw179755605",
+   "name": "シェルコードバン(ROCADO/NATURAL) ナチュラル",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw179755605.jpg"
+  },
+  {
+   "id": "kw158501313",
+   "name": "シェルコードバン(HORWEEN) #4 チョコ",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw158501313.jpg"
+  },
+  {
+   "id": "kw158501354",
+   "name": "シェルコードバン(HORWEEN) #8 バーガンディ",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw158501354.jpg"
+  },
+  {
+   "id": "kw158501390",
+   "name": "シェルコードバン(HORWEEN) Dコニャック",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw158501390.jpg"
+  },
+  {
+   "id": "kw180263913",
+   "name": "シェルコードバン(HORWEEN) グリーン",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "グリーン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw180263913.jpg"
+  },
+  {
+   "id": "kw187307532",
+   "name": "シェルコードバン(HORWEEN) バーボン",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw187307532.jpg"
+  },
+  {
+   "id": "kw157331202",
+   "name": "シェルコードバン(HORWEEN) ブラック",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ダーク系",
+    "コードバン",
+    "馬革"
+   ],
+   "image": "assets/leathers/kw157331202.jpg"
+  },
+  {
+   "id": "kw156838223",
+   "name": "CHROMEXCEL ティンバー",
+   "sub": "HORWEEN / コンビ鞣し",
+   "tags": [
+    "HORWEEN",
+    "CHROMEXCEL",
+    "コンビ鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw156838223.jpg"
+  },
+  {
+   "id": "kw144503079",
+   "name": "CHROMEXCEL ナチュラル",
+   "sub": "HORWEEN / コンビ鞣し",
+   "tags": [
+    "HORWEEN",
+    "CHROMEXCEL",
+    "コンビ鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw144503079.jpg"
+  },
+  {
+   "id": "kw156838098",
+   "name": "CHROMEXCEL バーガンディ",
+   "sub": "HORWEEN / コンビ鞣し",
+   "tags": [
+    "HORWEEN",
+    "CHROMEXCEL",
+    "コンビ鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw156838098.jpg"
+  },
+  {
+   "id": "kw156838252",
+   "name": "CHROMEXCEL ブラック",
+   "sub": "HORWEEN / コンビ鞣し",
+   "tags": [
+    "HORWEEN",
+    "CHROMEXCEL",
+    "コンビ鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw156838252.jpg"
+  },
+  {
+   "id": "kw154473133",
+   "name": "DELOREAN ブラック",
+   "sub": "ECCO LEATHER / ダイニーマ・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DELOREAN",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw154473133.jpg"
+  },
+  {
+   "id": "kw155490988",
+   "name": "DELOREAN ホワイト",
+   "sub": "ECCO LEATHER / ダイニーマ・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DELOREAN",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw155490988.jpg"
+  },
+  {
+   "id": "kw155504309",
+   "name": "DELOREAN ライトグレー",
+   "sub": "ECCO LEATHER / ダイニーマ・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DELOREAN",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw155504309.jpg"
+  },
+  {
+   "id": "kw167124351",
+   "name": "LAUNDERED オフホワイト",
+   "sub": "ECCO LEATHER / ウォッシャブル・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "LAUNDERED",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw167124351.jpg"
+  },
+  {
+   "id": "kw167124375",
+   "name": "LAUNDERED ブラック",
+   "sub": "ECCO LEATHER / ウォッシャブル・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "LAUNDERED",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw167124375.jpg"
+  },
+  {
+   "id": "kw168271857",
+   "name": "DRITTON G8 ブラック",
+   "sub": "ECCO LEATHER / GORE-TEX・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DRITTON G8",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw168271857.jpg"
+  },
+  {
+   "id": "kw168270372",
+   "name": "DRITTON G8 ホワイト",
+   "sub": "ECCO LEATHER / GORE-TEX・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DRITTON G8",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw168270372.jpg"
+  },
+  {
+   "id": "kw159056848",
+   "name": "DROID アルパイン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw159056848.jpg"
+  },
+  {
+   "id": "kw159055623",
+   "name": "DROID アンバー",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "イエロー系"
+   ],
+   "image": "assets/leathers/kw159055623.jpg"
+  },
+  {
+   "id": "kw159050897",
+   "name": "DROID アーモンド",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159050897.jpg"
+  },
+  {
+   "id": "kw159056093",
+   "name": "DROID ウィスキー",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159056093.jpg"
+  },
+  {
+   "id": "kw159056995",
+   "name": "DROID エスプレッソ",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159056995.jpg"
+  },
+  {
+   "id": "kw159056917",
+   "name": "DROID オリーブ",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw159056917.jpg"
+  },
+  {
+   "id": "kw159056616",
+   "name": "DROID オーシャン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw159056616.jpg"
+  },
+  {
+   "id": "kw159056893",
+   "name": "DROID グリーン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "グリーン系"
+   ],
+   "image": "assets/leathers/kw159056893.jpg"
+  },
+  {
+   "id": "kw159054208",
+   "name": "DROID コニャック",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159054208.jpg"
+  },
+  {
+   "id": "kw159056956",
+   "name": "DROID コーラ",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159056956.jpg"
+  },
+  {
+   "id": "kw159050298",
+   "name": "DROID サンド",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw159050298.jpg"
+  },
+  {
+   "id": "kw159050790",
+   "name": "DROID ストーン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw159050790.jpg"
+  },
+  {
+   "id": "kw159050842",
+   "name": "DROID ナット",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159050842.jpg"
+  },
+  {
+   "id": "kw159050134",
+   "name": "DROID パウダー",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw159050134.jpg"
+  },
+  {
+   "id": "kw159056300",
+   "name": "DROID ブラウン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159056300.jpg"
+  },
+  {
+   "id": "kw157911205",
+   "name": "DROID ブラック",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw157911205.jpg"
+  },
+  {
+   "id": "kw159056366",
+   "name": "DROID ブリック",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159056366.jpg"
+  },
+  {
+   "id": "kw159056414",
+   "name": "DROID プラム",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw159056414.jpg"
+  },
+  {
+   "id": "kw159050069",
+   "name": "DROID ホワイト",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw159050069.jpg"
+  },
+  {
+   "id": "kw159050762",
+   "name": "DROID マッシュルーム",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159050762.jpg"
+  },
+  {
+   "id": "kw159056681",
+   "name": "DROID マリーン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw159056681.jpg"
+  },
+  {
+   "id": "kw159050491",
+   "name": "DROID ムーンロック",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "image": "assets/leathers/kw159050491.jpg"
+  },
+  {
+   "id": "kw159057050",
+   "name": "DROID モカ",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "image": "assets/leathers/kw159057050.jpg"
+  },
+  {
+   "id": "kw159056332",
+   "name": "DROID レッド",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw159056332.jpg"
+  },
+  {
+   "id": "kw159056532",
+   "name": "DROID ロイヤル",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブルー系"
+   ],
+   "image": "assets/leathers/kw159056532.jpg"
+  },
+  {
+   "id": "kw159056439",
+   "name": "DROID ワイン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "レッド系"
+   ],
+   "image": "assets/leathers/kw159056439.jpg"
+  },
+  {
+   "id": "kw152579135",
+   "name": "生成りヌメ革 3.5-4.0mm",
+   "sub": "国産 / 植物タンニン鞣し・素上げ",
+   "tags": [
+    "国産",
+    "ヌメ革",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw152579135.jpg"
+  },
+  {
+   "id": "kw158695092",
+   "name": "生成りヌメベリー 2.5-3.0mm",
+   "sub": "国産 / 植物タンニン鞣し・素上げ",
+   "tags": [
+    "国産",
+    "ヌメ革",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "image": "assets/leathers/kw158695092.jpg"
   }
  ]
 }

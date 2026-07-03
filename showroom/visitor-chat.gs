@@ -253,19 +253,56 @@ function botGreet_(cache, visitorName, now) {
 /* ── 即答系（色写真・革在庫・リング在庫）──
    データを見せるだけの回答なので、店長在室中でも・店長自身の発言でも常に応える。
    返答したら true */
-/* カワムラレザーで扱いのある革種（ホースバット・コードバン・リスシオ等）
-   → カタログ・写真を整備中のため、暫定で「取り寄せ相談可」を案内 */
-var KAWAMURA_PREP = /(ホースバット|ホースレザー|ホースハイド|馬革|コードバン|シェルコードバン|リスシオ|LISCIO|ミネルバ|プエブロ|ブライドル)/i;
-/* 当店で扱いのない素材（エキゾチック・牛馬以外） */
-var OUTSIDE_LEATHER = /(クロコ|ワニ革|パイソン|蛇革|リザード|オーストリッチ|エレファント|ガルーシャ|エイ革|豚革|ピッグスキン|ラムレザー|シープ|ゴートレザー|ヤギ革|鹿革|ディアスキン|バッファロー)/;
+/* カワムラレザー取扱の革シリーズ検知 → カタログタグ名
+   （ページ側が gallery=タグ名 でそのシリーズの写真スワッチを描画する。
+     ミネルバ・プエブロ・ブライドルは取扱外のため OUTSIDE 側） */
+var SERIES_MAP = [
+  [/ホースバット|ホースレザー|ホースハイド/i, 'ホースバット'],
+  [/コードバン/i, 'コードバン'],
+  [/リスシオ|LISCIO/i, 'リスシオ'],
+  [/マルゴー?\s*フォグ|MARGOT\s*FOG/i, 'MARGOT FOG'],
+  [/マルゴー?|MARGOT/i, 'MARGOT'],
+  [/ヴァスカ|バスカ|VASCA/i, 'LINEA VASCA Box'],
+  [/ブルガロ|BULGARO/i, 'BULGARO'],
+  [/ネブラスカ|NEBRASKA/i, 'NEBRASKA'],
+  [/テンダー|TENDER/i, 'TENDER'],
+  [/リベルソ|レベルソ|REVERSO/i, 'REVERSO'],
+  [/ツイスト|TWIST/i, 'TWIST'],
+  [/アラスカ|ALASKA/i, 'ALASKA'],
+  [/アマゾニア|AMAZZONIA/i, 'AMAZZONIA'],
+  [/クラスト|CRUST/i, 'CRUST'],
+  [/カントリー|COUNTRY/i, 'COUNTRY'],
+  [/マリアーノ|MARIANO/i, 'MARIANO'],
+  [/テキサス|TEXAS/i, 'TEXAS'],
+  [/シビラ|SIBILLA/i, 'SIBILLA Liscio'],
+  [/アヴァンコルピ|AVANCORPI|ホースフロント/i, 'AVANCORPI'],
+  [/クロムエクセル|CHROMEXCEL/i, 'CHROMEXCEL'],
+  [/デロリアン|DELOREAN|ダイニーマ/i, 'DELOREAN'],
+  [/ランダード|ローンダード|LAUNDERED|洗える革/i, 'LAUNDERED'],
+  [/ドリットン|ドリトン|DRITTON|ゴアテックス|GORE-?TEX/i, 'DRITTON G8'],
+  [/ドロイド|DROID/i, 'DROID'],
+  [/馬革/, '馬革'],
+  [/ヌメ/, 'ヌメ革']
+];
+function detectSeries_(text) {
+  // 雑談中の地名等に誤反応しないよう、革の話題らしい語を要求
+  if (!/(革|レザー|ある|あり|見せ|在庫|ほし|欲し|ください|どんな|何|色|カラー|サイズ|[？?])/.test(text)) return null;
+  for (var i = 0; i < SERIES_MAP.length; i++) {
+    if (SERIES_MAP[i][0].test(text)) return SERIES_MAP[i][1];
+  }
+  return null;
+}
+/* 当店で扱いのない素材（エキゾチック等・カワムラレザー外） */
+var OUTSIDE_LEATHER = /(クロコ|ワニ革|パイソン|蛇革|リザード|オーストリッチ|エレファント|ガルーシャ|エイ革|豚革|ピッグスキン|ラムレザー|シープ|ゴートレザー|ヤギ革|鹿革|ディアスキン|バッファロー|ミネルバ|プエブロ|ブライドル)/;
 
 function botQuickReply_(cache, text, now) {
-  // カワムラレザー取扱の革種（カタログ整備中）→ 取り寄せ相談を案内
-  var prep = text.match(KAWAMURA_PREP);
-  if (prep) {
+  // 革シリーズの質問 → そのシリーズの写真スワッチを表示
+  var series = detectSeries_(text);
+  if (series) {
     cache.put('vc_bot_last', String(now), 21600);
     pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar,
-      text: prep[1] + 'ですね！お取り扱いできます（カワムラレザー取扱）。在庫・納期は店長が確認してご案内しますので、お気軽にお声がけください😊 いま写真カタログも準備中です' });
+      text: series + 'はこちらです📷 タップで拡大できます。在庫マークも参考にどうぞ！',
+      gallery: series });
     return true;
   }
   // 扱いのない素材 → 正直に案内
