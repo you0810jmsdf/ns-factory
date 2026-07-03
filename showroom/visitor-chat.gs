@@ -384,6 +384,11 @@ function notifyOwner_(cache, name, avatar, visitors, now) {
     var names = ids.map(function (id) {
       return visitors[id].avatar + ' ' + visitors[id].name;
     }).join(' ／ ');
+    // 店長キー付きリンク: メールアプリ内ブラウザ等（キー未登録の環境）から
+    // 開いても、そのまま店長として入店できる（開いた後キーはURLから自動消去される）
+    var okey = props.getProperty('OWNER_KEY') || '';
+    var link = 'https://you0810jmsdf.github.io/ns-factory/showroom/' +
+      (okey ? '?okey=' + encodeURIComponent(okey) : '');
     MailApp.sendEmail({
       to: to,
       subject: '【ショールーム来店】' + avatar + ' ' + name + ' さんが入店（在室' + ids.length + '人）',
@@ -391,9 +396,9 @@ function notifyOwner_(cache, name, avatar, visitors, now) {
         name + ' さんがショールームの「みんなのチャット」に入店しました。\n\n' +
         '在室者: ' + names + '\n' +
         '時刻: ' + Utilities.formatDate(new Date(now), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm') + '\n\n' +
-        '▼ 接客に出る（店長キー設定済みの端末で開く）\n' +
-        'https://you0810jmsdf.github.io/ns-factory/showroom/\n' +
-        '「みんなのチャット」から入室すると店長として売り場に立てます。\n\n' +
+        '▼ タップして店長として接客に出る\n' +
+        link + '\n' +
+        '（このリンクはどの端末・ブラウザで開いても店長として入店できます。入室画面が自動で開きます）\n\n' +
         '※ 通知は1分に1通まで。店長として入店中の来店にも通知は届きます。'
     });
   } catch (e) {
