@@ -735,6 +735,7 @@ tr.row-out-stock td{
     <div class="admin-tabs" role="tablist" aria-label="管理対象の切り替え">
       <button class="admin-tab-btn active" type="button" data-admin-tab="calendar" role="tab" aria-selected="true">📅 幕僚計画</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="ring" role="tab" aria-selected="false">リング在庫</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="leather" role="tab" aria-selected="false">🎨 革在庫</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="settings" role="tab" aria-selected="false">⚙ 設定（時給等）</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="size" role="tab" aria-selected="false">サイズ基準価格</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="brand" role="tab" aria-selected="false">構造タイプ価格</button>
@@ -776,6 +777,7 @@ tr.row-out-stock td{
         <button class="btn sub size-publish-action admin-section-hidden" id="publishSizeGithubBtn">サイズ基準価格をGitHubへ反映</button>
         <button class="btn sub brand-publish-action admin-section-hidden" id="publishBrandGithubBtn">構造タイプ価格をGitHubへ反映</button>
         <button class="btn sub thread-publish-action admin-section-hidden" id="publishThreadGithubBtn">糸在庫をGitHubへ反映</button>
+        <button class="btn sub leather-publish-action admin-section-hidden" id="publishLeatherGithubBtn">革在庫をGitHubへ反映</button>
         <button class="btn sub hearing-publish-action admin-section-hidden" id="publishHearingGithubBtn">対話ナレッジをGitHubへ反映</button>
       </div>
       <div class="hint" style="margin-top:8px">
@@ -995,6 +997,30 @@ tr.row-out-stock td{
       </div>
       <div class="thread-stock-list" id="threadStockList">
         <div class="stock-empty">糸在庫CSVを読込中です。</div>
+      </div>
+    </div>
+
+    <div class="panel leather-section admin-section-hidden">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">革在庫（半裁の残量%）</h2>
+      <div class="hint">
+        各革の残量を半裁基準の%で入力します。<b>0%</b>=📦お取り寄せ（2〜3週間・経費若干と接客案内）／
+        <b>20%以下</b>=⚠️残りわずか（ショールーム店長アラート対象）／<b>80%以上</b>=✨入荷したて（エイジング未進行のおすすめ革として接客）。
+        <b>空欄は「通常在庫」扱い</b>です。正式な変更は、上の `革在庫をGitHubへ反映` で GitHub 上の `leather-stock.csv` を直接更新します（ショールーム接客に即反映）。
+      </div>
+      <div class="controls" style="margin-top:12px;flex-wrap:wrap">
+        <button class="btn light" id="reloadLeatherBtn">革在庫CSVを再読込</button>
+        <button class="btn light" id="downloadLeatherBtn">革在庫の控えCSVダウンロード</button>
+        <select id="leatherFamFilter" style="padding:6px 8px;border:1px solid #d8c8b0;border-radius:8px;font-size:12px">
+          <option value="">全系統</option>
+        </select>
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
+          <input type="checkbox" id="leatherLowOnly"> ⚠️20%以下のみ
+        </label>
+        <span class="status-pill" id="leatherCountPill">革: 初期化中</span>
+        <span class="status-pill" id="leatherDirtyPill">未保存: なし</span>
+      </div>
+      <div id="leatherStockList" style="margin-top:10px">
+        <div class="stock-empty">革在庫CSVを読込中です。</div>
       </div>
     </div>
 
@@ -3052,6 +3078,212 @@ function downloadThreadStockCsv() {
   updateThreadMeta();
 }
 
+// ── 革在庫（半裁の残量% / leather-stock.csv） ──
+// ショールーム接客（showroom/index.html）とCSVを共用。%区分:
+//   0%=お取り寄せ / 20%以下=残りわずか(店長アラート) / 80%以上=入荷したて / 空欄=通常在庫
+const LEATHER_STOCK_CSV_PATH = 'order_estimate/leather-stock.csv';
+const LEATHER_STOCK_CSV_URL = new URL('./leather-stock.csv', location.href).toString();
+const LEATHER_CATALOG_URL = new URL('./leather-catalog.json', location.href).toString();
+const LEATHER_HEADERS = ['id', 'name', 'stock_pct', 'note'];
+let leatherRows = [];
+let leatherCatalogMap = null;
+let leatherDirty = false;
+
+async function loadLeatherCatalogForAdmin() {
+  if (leatherCatalogMap) return;
+  try {
+    const res = await fetch(LEATHER_CATALOG_URL, { cache: 'no-store' });
+    const j = await res.json();
+    leatherCatalogMap = {};
+    (j.leathers || []).forEach(l => { leatherCatalogMap[l.id] = l; });
+  } catch (err) {
+    leatherCatalogMap = {};
+  }
+}
+
+async function loadLeatherStockCsv() {
+  await loadLeatherCatalogForAdmin();
+  const res = await fetch(LEATHER_STOCK_CSV_URL + (LEATHER_STOCK_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const parsed = parseCsv(await res.text());
+  leatherRows = parsed.rows.map(r => ({
+    id: r.id || '',
+    name: r.name || '',
+    stock_pct: r.stock_pct === undefined ? '' : String(r.stock_pct),
+    note: r.note || ''
+  }));
+  leatherDirty = false;
+  buildLeatherFamFilter();
+  updateLeatherDirtyPill();
+  renderLeatherTable();
+}
+
+function buildLeatherFamFilter() {
+  const sel = document.getElementById('leatherFamFilter');
+  if (!sel || !leatherCatalogMap) return;
+  const current = sel.value;
+  const fams = [];
+  const seen = {};
+  Object.values(leatherCatalogMap).forEach(l => {
+    (l.tags || []).forEach(t => {
+      if (/系$/.test(t) && !seen[t]) { seen[t] = 1; fams.push(t); }
+    });
+  });
+  sel.innerHTML = '<option value="">全系統</option>' + fams.map(f => `<option value="${f}">${f}</option>`).join('');
+  sel.value = current;
+}
+
+function leatherTierInfo(pctStr) {
+  if (pctStr === '' || pctStr === null || pctStr === undefined) return { label: '― 未入力（在庫扱い）', color: '#9a8a76', low: false };
+  const p = Number(pctStr);
+  if (!isFinite(p)) return { label: '― 未入力（在庫扱い）', color: '#9a8a76', low: false };
+  if (p <= 0)  return { label: '📦 お取り寄せ', color: '#b0563a', low: true };
+  if (p <= 20) return { label: '⚠️ 残りわずか', color: '#c07a1a', low: true };
+  if (p >= 80) return { label: '✨ 入荷したて', color: '#2a8a5a', low: false };
+  return { label: '✅ 在庫あり', color: '#5a8a3a', low: false };
+}
+
+function updateLeatherDirtyPill() {
+  const pill = document.getElementById('leatherDirtyPill');
+  if (!pill) return;
+  pill.textContent = leatherDirty ? '未保存: あり ⚠' : '未保存: なし';
+  pill.style.background = leatherDirty ? '#f9d6d5' : '';
+}
+
+function renderLeatherTable() {
+  const list = document.getElementById('leatherStockList');
+  if (!list) return;
+  list.innerHTML = '';
+  const fam = document.getElementById('leatherFamFilter')?.value || '';
+  const lowOnly = document.getElementById('leatherLowOnly')?.checked;
+  let shown = 0, lowCount = 0, filled = 0;
+  leatherRows.forEach(row => {
+    const cat = leatherCatalogMap ? leatherCatalogMap[row.id] : null;
+    const tier = leatherTierInfo(row.stock_pct);
+    if (row.stock_pct !== '' && isFinite(Number(row.stock_pct))) filled++;
+    if (tier.low) lowCount++;
+    if (fam && !((cat && cat.tags) || []).includes(fam)) return;
+    if (lowOnly && !tier.low) return;
+    shown++;
+
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:10px;padding:7px 6px;border-bottom:1px solid #ede0cc;flex-wrap:wrap;'
+      + (tier.low ? 'background:#fdf3ec;border-radius:8px;' : '');
+
+    if (cat && cat.image) {
+      const img = document.createElement('img');
+      img.src = '../' + cat.image;
+      img.loading = 'lazy';
+      img.alt = row.name;
+      img.style.cssText = 'width:42px;height:42px;object-fit:cover;border-radius:8px;border:1px solid #d8c8b0;flex-shrink:0';
+      div.appendChild(img);
+    }
+
+    const nameBox = document.createElement('div');
+    nameBox.style.cssText = 'flex:1;min-width:150px';
+    nameBox.innerHTML = `<div style="font-size:13px;font-weight:700;color:#4a3320">${row.name}</div>`
+      + (cat && cat.sub ? `<div style="font-size:10.5px;color:#9a8a76">${cat.sub}</div>` : '');
+    div.appendChild(nameBox);
+
+    const slider = document.createElement('input');
+    slider.type = 'range'; slider.min = '0'; slider.max = '100'; slider.step = '5';
+    slider.value = (row.stock_pct !== '' && isFinite(Number(row.stock_pct))) ? row.stock_pct : '100';
+    slider.style.cssText = 'width:130px;accent-color:#a86a2a';
+
+    const num = document.createElement('input');
+    num.type = 'number'; num.min = '0'; num.max = '100'; num.step = '5';
+    num.value = row.stock_pct;
+    num.placeholder = '－';
+    num.style.cssText = 'width:64px;padding:5px 6px;border:1px solid #d8c8b0;border-radius:8px;font-size:13px;text-align:right';
+
+    const pct = document.createElement('span');
+    pct.textContent = '%';
+    pct.style.cssText = 'font-size:12px;color:#9a8a76';
+
+    const badge = document.createElement('span');
+    badge.style.cssText = 'font-size:11.5px;font-weight:700;min-width:120px;color:' + tier.color;
+    badge.textContent = tier.label + (tier.low && row.stock_pct !== '' ? `（${Number(row.stock_pct)}%）` : '');
+
+    function applyPct(v) {
+      row.stock_pct = v;
+      leatherDirty = true;
+      updateLeatherDirtyPill();
+      const t = leatherTierInfo(v);
+      badge.style.color = t.color;
+      badge.textContent = t.label + (t.low && v !== '' ? `（${Number(v)}%）` : '');
+      div.style.background = t.low ? '#fdf3ec' : '';
+    }
+    slider.addEventListener('input', () => { num.value = slider.value; applyPct(slider.value); });
+    num.addEventListener('input', () => {
+      let v = num.value.trim();
+      if (v !== '') {
+        let n = Number(v);
+        if (!isFinite(n)) return;
+        n = Math.max(0, Math.min(100, n));
+        v = String(n);
+        slider.value = v;
+      }
+      applyPct(v);
+    });
+
+    const note = document.createElement('input');
+    note.type = 'text';
+    note.value = row.note;
+    note.placeholder = 'メモ（任意）';
+    note.style.cssText = 'width:150px;padding:5px 8px;border:1px solid #d8c8b0;border-radius:8px;font-size:12px';
+    note.addEventListener('input', () => {
+      row.note = note.value.replace(/[",\r\n]/g, '、'); // ショールーム側の簡易CSVパーサ保護
+      leatherDirty = true;
+      updateLeatherDirtyPill();
+    });
+
+    div.appendChild(slider);
+    div.appendChild(num);
+    div.appendChild(pct);
+    div.appendChild(badge);
+    div.appendChild(note);
+    list.appendChild(div);
+  });
+  if (!shown) {
+    list.innerHTML = '<div class="stock-empty">条件に合う革がありません。</div>';
+  }
+  const pill = document.getElementById('leatherCountPill');
+  if (pill) pill.textContent = `革: 全${leatherRows.length}色 / 表示${shown} / %入力済み${filled} / ⚠️20%以下 ${lowCount}`;
+}
+
+function leatherStockToCsv() {
+  const lines = [LEATHER_HEADERS.join(',')];
+  leatherRows.forEach(row => {
+    // 値はすべて数値・カンマ除去済みテキストのためクォート不要（showroom側の簡易パーサと互換）
+    lines.push(LEATHER_HEADERS.map(h => String(row[h] ?? '').replace(/[",\r\n]/g, '、')).join(','));
+  });
+  return lines.join('\r\n') + '\r\n';
+}
+
+function downloadLeatherStockCsv() {
+  const blob = new Blob([leatherStockToCsv()], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'leather-stock.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function publishLeatherStockToGitHub() {
+  return publishCsvToGitHub({
+    path: LEATHER_STOCK_CSV_PATH,
+    fileName: 'leather-stock.csv',
+    csvText: leatherStockToCsv(),
+    buttonId: 'publishLeatherGithubBtn',
+    onSuccess: () => {
+      leatherDirty = false;
+      updateLeatherDirtyPill();
+    }
+  });
+}
+
 function addRow() {
   const row = {};
   headers.forEach(header => {
@@ -3400,6 +3632,15 @@ document.getElementById('publishGithubBtn').addEventListener('click', () => {
 document.getElementById('publishThreadGithubBtn').addEventListener('click', () => {
   publishThreadStockToGitHub().catch(err => alert(`GitHub反映に失敗しました: ${err.message}`));
 });
+document.getElementById('publishLeatherGithubBtn').addEventListener('click', () => {
+  publishLeatherStockToGitHub().catch(err => alert(`GitHub反映に失敗しました: ${err.message}`));
+});
+document.getElementById('reloadLeatherBtn').addEventListener('click', () => {
+  loadLeatherStockCsv().catch(err => alert(`革在庫CSVの読込に失敗しました: ${err.message}`));
+});
+document.getElementById('downloadLeatherBtn').addEventListener('click', downloadLeatherStockCsv);
+document.getElementById('leatherFamFilter').addEventListener('change', renderLeatherTable);
+document.getElementById('leatherLowOnly').addEventListener('change', renderLeatherTable);
 document.getElementById('runCrawlBtn').addEventListener('click', () => {
   runCrawl().catch(err => alert(`巡回実行に失敗しました: ${err.message}`));
 });
@@ -3553,7 +3794,8 @@ function setAdminTab(tab) {
   const isSize = tab === 'size';
   const isSettings = tab === 'settings';
   const isHearing = tab === 'hearing';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing;
+  const isLeather = tab === 'leather';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -3571,6 +3813,12 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.thread-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThread);
+  });
+  document.querySelectorAll('.leather-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isLeather);
+  });
+  document.querySelectorAll('.leather-publish-action').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isLeather);
   });
   document.querySelectorAll('.analytics-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isAnalytics);
@@ -3617,6 +3865,13 @@ function setAdminTab(tab) {
   if (isSettings && settingsRows.length === 0) {
     loadSettingsCsv();
   }
+  if (isLeather && leatherRows.length === 0) {
+    loadLeatherStockCsv().catch(err => {
+      const pill = document.getElementById('leatherCountPill');
+      if (pill) pill.textContent = '革: 読込失敗';
+      alert('leather-stock.csv の読込に失敗しました: ' + err.message);
+    });
+  }
   // 試算マトリクス表示のため、サイズ/構造タブ時は他のCSVも自動ロード
   if (isSize) {
     if (brandPriceRows.length === 0) loadBrandPriceCsv();
@@ -3639,6 +3894,8 @@ function setAdminTab(tab) {
       ? 'Google Analytics 4 のアクセスデータをページ別に表示します。'
       : isThread
       ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
+      : isLeather
+      ? '革の残量を半裁基準の%で入力します。0%=お取り寄せ／20%以下=残りわずか（店長アラート）／80%以上=入荷したて。反映するとショールーム接客に即適用されます。'
       : isStats
       ? '商品閲覧ランキングとオーダー依頼の履歴をスプレッドシートのアクセスログから表示します。'
       : isThreadsSns
