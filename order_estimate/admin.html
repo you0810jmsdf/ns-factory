@@ -741,6 +741,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="brand" role="tab" aria-selected="false">構造タイプ価格</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="thread" role="tab" aria-selected="false">ステッチ糸在庫</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="analytics" role="tab" aria-selected="false">アクセス解析</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="sales" role="tab" aria-selected="false">💹 売上分析</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="stats" role="tab" aria-selected="false">作品ページアクセスログ</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="threads-sns" role="tab" aria-selected="false">📣 Threads投稿管理</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="customers" role="tab" aria-selected="false">👥 顧客マスタ</button>
@@ -765,6 +766,25 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
         title="N's Factory 幕僚計画"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- 売上分析タブ -->
+    <div class="panel sales-section admin-section-hidden" id="salesPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <div style="font-size:11px;color:#8a6a4a">Gmail受注通知の自動集計（チャネル別×月別・売れ筋アイテム）。認証は本画面と共通・自動ログイン</div>
+        <a href="../sales.html" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット（開かない限りGmail集計を走らせない） -->
+      <iframe
+        id="salesFrame"
+        data-src="../sales.html"
+        src="about:blank"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#1D1D1F"
+        title="売上ダッシュボード"
         loading="lazy"></iframe>
     </div>
 
@@ -3795,7 +3815,8 @@ function setAdminTab(tab) {
   const isSettings = tab === 'settings';
   const isHearing = tab === 'hearing';
   const isLeather = tab === 'leather';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather;
+  const isSales = tab === 'sales';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -3823,6 +3844,9 @@ function setAdminTab(tab) {
   document.querySelectorAll('.analytics-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isAnalytics);
   });
+  document.querySelectorAll('.sales-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isSales);
+  });
   document.querySelectorAll('.stats-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isStats);
   });
@@ -3839,7 +3863,7 @@ function setAdminTab(tab) {
     el.classList.toggle('admin-section-hidden', !isHearing);
   });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -3892,6 +3916,8 @@ function setAdminTab(tab) {
       ? "N's Factory 幕僚計画。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。"
       : isAnalytics
       ? 'Google Analytics 4 のアクセスデータをページ別に表示します。'
+      : isSales
+      ? 'Gmailの受注通知メールからチャネル別×月別の売上と売れ筋アイテムを自動集計します（期間切替・手動入力シート合算対応）。'
       : isThread
       ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
       : isLeather
@@ -3907,6 +3933,13 @@ function setAdminTab(tab) {
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
   if (isHearing && !hearingKbLoaded) loadHearingKb();
+  if (isSales) {
+    // 初回表示時のみ src をセット（同一オリジンのため認証は sessionStorage 経由で自動通過）
+    const salesFrame = document.getElementById('salesFrame');
+    if (salesFrame && salesFrame.src.indexOf('sales.html') === -1 && salesFrame.dataset.src) {
+      salesFrame.src = salesFrame.dataset.src;
+    }
+  }
 }
 
 // ── アクセス解析 ──
