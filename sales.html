@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>売上ダッシュボード | N's factory</title>
+<script src="admin-gate.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #1D1D1F;
+  --bg-card:  #2C2C2E;
+  --bg-row:   #3A3A3C;
+  --accent:   #A0785A;
+  --text:     #F5F5F7;
+  --text-sub: #AEAEB2;
+  --border:   #48484A;
+  --green:    #30D158;
+  --red:      #FF453A;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, "Hiragino Sans", sans-serif;
+  min-height: 100vh;
+  padding: 24px 16px 48px;
+}
+#main { max-width: 900px; margin: 0 auto; }
+.head-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+h1 { font-size: 1.3rem; font-weight: 700; color: var(--accent); letter-spacing: .04em; flex: 1; }
+.btn {
+  padding: 9px 18px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-sub); font-size: .88rem; cursor: pointer; transition: .15s;
+}
+.btn:hover { border-color: var(--accent); color: var(--text); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn:disabled { opacity: .45; cursor: wait; }
+.meta { font-size: .75rem; color: var(--text-sub); margin-bottom: 16px; }
+.summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.card { background: var(--bg-card); border-radius: 14px; padding: 18px 20px; }
+.card .label { font-size: .78rem; color: var(--text-sub); margin-bottom: 6px; }
+.card .value { font-size: 1.7rem; font-weight: 700; letter-spacing: -.02em; }
+.card .value.accent { color: var(--accent); }
+.card .value.green { color: var(--green); }
+.mode-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+.mode-btn { padding: 7px 18px; border-radius: 18px; border: 1px solid var(--border); background: transparent; color: var(--text-sub); font-size: .85rem; cursor: pointer; }
+.mode-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.chart-wrap { background: var(--bg-card); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
+.chart-inner { position: relative; height: 320px; }
+.table-wrap { background: var(--bg-card); border-radius: 14px; overflow: hidden; }
+.table-header { padding: 16px 20px 8px; font-size: .85rem; color: var(--text-sub); font-weight: 600; letter-spacing: .05em; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px 16px; text-align: left; font-size: .9rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-sub); font-size: .72rem; font-weight: 600; letter-spacing: .06em; background: var(--bg-row); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.03); }
+.num { text-align: right; font-weight: 600; }
+.sub { color: var(--text-sub); font-size: .78rem; }
+.ch-chip { display: inline-flex; align-items: center; gap: 9px; }
+.ch-mark {
+  width: 30px; height: 30px; border-radius: 8px; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .68rem; font-weight: 800; color: #fff; letter-spacing: .02em;
+}
+#loading { text-align: center; padding: 60px; color: var(--text-sub); display: none; }
+.spinner {
+  width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#error-msg { color: var(--red); text-align: center; padding: 32px; display: none; font-size: .9rem; white-space: pre-line; }
+.note { font-size: .72rem; color: var(--text-sub); margin-top: 10px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<div id="main">
+  <div class="head-row">
+    <h1>売上ダッシュボード</h1>
+    <button class="btn" id="btn-reload" onclick="load(false)">再表示</button>
+    <button class="btn primary" id="btn-refresh" onclick="load(true)">最新データに更新</button>
+  </div>
+  <div class="meta" id="meta">—</div>
+
+  <div class="summary-cards">
+    <div class="card"><div class="label">受注件数（12ヶ月）</div><div class="value accent" id="sum-count">—</div></div>
+    <div class="card"><div class="label">売上金額（12ヶ月・解析分）</div><div class="value green" id="sum-amount">—</div></div>
+    <div class="card"><div class="label">稼働チャネル</div><div class="value" id="sum-active">—</div></div>
+  </div>
+
+  <div class="mode-bar">
+    <button class="mode-btn active" id="mode-amount" onclick="setMode('amount')">金額</button>
+    <button class="mode-btn" id="mode-count" onclick="setMode('count')">件数</button>
+  </div>
+
+  <div id="loading"><div class="spinner"></div>Gmailから受注データを集計中…（初回・強制更新は30秒ほどかかります）</div>
+  <div id="error-msg"></div>
+
+  <div class="chart-wrap" id="chart-wrap" style="display:none">
+    <div class="chart-inner"><canvas id="chart"></canvas></div>
+  </div>
+
+  <div class="table-wrap" id="table-wrap" style="display:none">
+    <div class="table-header">チャネル別（直近12ヶ月）</div>
+    <table>
+      <thead><tr><th>チャネル</th><th class="num">件数</th><th class="num">金額</th><th class="num">金額解析率</th></tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    ※ データ源はGmailの受注通知メール。金額は本文から自動解析できた分のみ（解析率が低いチャネルは件数を参照）。<br>
+    ※ 「最新データに更新」はキャッシュを無視して再集計します。通常表示は15分キャッシュ。
+  </p>
+</div>
+
+<script>
+var GAS_URL = "https://script.google.com/macros/s/AKfycbxgpDhSfNsFQvyLPEwdzKIlFDm3JZ6epOhmlIEROuBLJRQ-67fdm7e4QpZC2C7rrI9xrg/exec";
+
+// チャネル表示定義（色は近似ブランドカラー。ロゴ画像に差し替える場合は mark を <img> に変更）
+var CH_STYLE = {
+  creema:           { color: "#C9A063", mark: "Cre" },
+  minne:            { color: "#A4C520", mark: "min" },
+  mercari:          { color: "#FF4B4B", mark: "メル" },
+  mercari_shops:    { color: "#0095EE", mark: "Shops" },
+  stores:           { color: "#8E8E93", mark: "ST" },
+  base:             { color: "#35C759", mark: "BASE" },
+  rakuma:           { color: "#BF3F3F", mark: "ラク" },
+  yahoo_fleamarket: { color: "#FF8C00", mark: "Y!" },
+  pinkoi:           { color: "#26B7A7", mark: "Pin" }
+};
+
+var lastData = null;
+var mode = "amount";
+var chart = null;
+
+function adminKey() {
+  try { return sessionStorage.getItem("nsf_admin_key") || ""; } catch (e) { return ""; }
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById("mode-amount").classList.toggle("active", m === "amount");
+  document.getElementById("mode-count").classList.toggle("active", m === "count");
+  if (lastData) render(lastData);
+}
+
+function load(force) {
+  var key = adminKey();
+  if (!key) {
+    showError("認証キーが取得できません。ページを再読み込みしてログインし直してください。");
+    return;
+  }
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("error-msg").style.display = "none";
+  document.getElementById("btn-refresh").disabled = true;
+  document.getElementById("btn-reload").disabled = true;
+
+  var cbName = "salescb" + Date.now();
+  var script = document.createElement("script");
+  script.src = GAS_URL + "?key=" + encodeURIComponent(key)
+             + (force ? "&refresh=1" : "") + "&callback=" + cbName;
+
+  var timer = setTimeout(function () { fail("タイムアウトしました。GAS側の承認（authorize実行）が済んでいるか確認してください。"); }, 120000);
+
+  function cleanup() {
+    clearTimeout(timer);
+    delete window[cbName];
+    if (script.parentNode) script.parentNode.removeChild(script);
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("btn-refresh").disabled = false;
+    document.getElementById("btn-reload").disabled = false;
+  }
+  function fail(msg) { cleanup(); showError(msg); }
+
+  window[cbName] = function (data) {
+    cleanup();
+    if (data.error) {
+      showError(data.error === "unauthorized" ? "パスワードが違います" : "エラー: " + data.error);
+      return;
+    }
+    lastData = data;
+    render(data);
+  };
+  script.onerror = function () {
+    fail("GASに接続できません。\n初回はGASエディタで authorize() を実行してGmail権限を承認してください。");
+  };
+  document.body.appendChild(script);
+}
+
+function showError(msg) {
+  var em = document.getElementById("error-msg");
+  em.textContent = msg;
+  em.style.display = "block";
+}
+
+function yen(v) { return "¥" + (v || 0).toLocaleString(); }
+
+function render(data) {
+  var months = data.months;
+  var channels = data.channels.slice().sort(function (a, b) { return b.totalCount - a.totalCount; });
+
+  document.getElementById("meta").textContent =
+    "集計時点: " + data.generatedAt + (data.cached ? "（キャッシュ表示・15分以内）" : "（再集計済み）")
+    + " ／ 期間: " + months[0] + " 〜 " + months[months.length - 1];
+
+  var totalC = 0, totalA = 0, active = 0;
+  channels.forEach(function (ch) {
+    totalC += ch.totalCount;
+    totalA += ch.totalAmount;
+    if (ch.totalCount > 0) active++;
+  });
+  document.getElementById("sum-count").textContent = totalC.toLocaleString() + " 件";
+  document.getElementById("sum-amount").textContent = yen(totalA);
+  document.getElementById("sum-active").textContent = active + " / " + channels.length;
+
+  // グラフ（月別積み上げ）
+  var datasets = channels.filter(function (ch) { return ch.totalCount > 0; }).map(function (ch) {
+    var st = CH_STYLE[ch.id] || { color: "#888" };
+    return {
+      label: ch.name,
+      backgroundColor: st.color,
+      borderRadius: 3,
+      data: months.map(function (m) {
+        var cell = ch.monthly[m] || { c: 0, amt: 0 };
+        return mode === "amount" ? cell.amt : cell.c;
+      })
+    };
+  });
+
+  var ctx = document.getElementById("chart").getContext("2d");
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: { labels: months.map(function (m) { return m.replace("-", "/"); }), datasets: datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, grid: { color: "rgba(255,255,255,.06)" }, ticks: { color: "#AEAEB2" } },
+        y: { stacked: true, grid: { color: "rgba(255,255,255,.06)" },
+             ticks: { color: "#AEAEB2",
+               callback: function (v) { return mode === "amount" ? "¥" + v.toLocaleString() : v; } } }
+      },
+      plugins: {
+        legend: { labels: { color: "#F5F5F7", boxWidth: 14, boxHeight: 14 } },
+        tooltip: { callbacks: { label: function (c) {
+          return c.dataset.label + ": " + (mode === "amount" ? yen(c.parsed.y) : c.parsed.y + "件");
+        } } }
+      }
+    }
+  });
+  document.getElementById("chart-wrap").style.display = "block";
+
+  // テーブル
+  var tbody = document.getElementById("table-body");
+  tbody.innerHTML = "";
+  channels.forEach(function (ch) {
+    var st = CH_STYLE[ch.id] || { color: "#888", mark: "?" };
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td><span class="ch-chip"><span class="ch-mark" style="background:' + st.color + '">' + st.mark + "</span>"
+      + ch.name + "</span></td>"
+      + '<td class="num">' + ch.totalCount.toLocaleString() + "</td>"
+      + '<td class="num">' + yen(ch.totalAmount) + "</td>"
+      + '<td class="num sub">' + ch.amountCoverage + "%</td>";
+    tbody.appendChild(tr);
+  });
+  document.getElementById("table-wrap").style.display = "block";
+}
+
+// 初期表示（ゲート通過後にキーが入るまで少し待つ）
+(function init() {
+  var tries = 0;
+  var t = setInterval(function () {
+    if (adminKey()) { clearInterval(t); load(false); }
+    else if (++tries > 120) { clearInterval(t); }
+  }, 500);
+})();
+</script>
+</body>
+</html>
