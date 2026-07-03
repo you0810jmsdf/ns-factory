@@ -783,7 +783,7 @@
     /* 店長向け 革在庫アラート */
     #nsf-stock-alert {
       position: fixed; right: 14px; top: 74px; z-index: 120;
-      width: min(80vw, 270px);
+      width: min(80vw, 280px);
       background: var(--panel);
       border: 1px solid #d8a860;
       border-radius: 14px;
@@ -792,6 +792,12 @@
       -webkit-backdrop-filter: blur(10px);
       padding: 10px 12px;
       font-size: 11.5px; color: var(--panel-text); line-height: 1.7;
+      display: flex; flex-direction: column;
+      max-height: min(55vh, 440px);
+    }
+    #nsf-stock-alert .sa-body {
+      overflow-y: auto;
+      min-height: 0;
     }
     #nsf-stock-alert .sa-head {
       font-weight: 700; color: #f0c078; font-size: 12px;
@@ -1361,28 +1367,49 @@
       });
     }
     var nsfLeatherStockRows = null; // アラート用（name含む生データ）
-    fetch('../order_estimate/leather-stock.csv')
-      .then(function (r) { return r.ok ? r.text() : null; })
-      .then(function (t) {
-        if (!t) return;
-        var rows = nsfParseCsv(t);
-        var map = {};
-        rows.forEach(function (r) {
-          var p = (r.stock_pct === undefined || r.stock_pct === '') ? null : Number(r.stock_pct);
-          map[r.id] = (p !== null && isFinite(p)) ? Math.max(0, Math.min(100, p)) : null;
-        });
-        nsfLeatherStock = map;
-        nsfLeatherStockRows = rows;
-        window.nsfLeatherStock = map;
-        nsfShowOwnerStockAlert();
-      }).catch(function () {});
-    fetch('../order_estimate/ring-price-stock.csv')
-      .then(function (r) { return r.ok ? r.text() : null; })
-      .then(function (t) {
-        if (!t) return;
-        nsfRingRows = nsfParseCsv(t);
-        window.nsfRingRows = nsfRingRows;
-      }).catch(function () {});
+    var nsfStockFetchedAt = 0;
+    function nsfLoadLeatherStock() {
+      // キャッシュ回避（GitHub Pages CDN・ブラウザキャッシュで古い在庫が残らないように）
+      return fetch('../order_estimate/leather-stock.csv?t=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.text() : null; })
+        .then(function (t) {
+          if (!t) return;
+          var rows = nsfParseCsv(t);
+          var map = {};
+          rows.forEach(function (r) {
+            var p = (r.stock_pct === undefined || r.stock_pct === '') ? null : Number(r.stock_pct);
+            map[r.id] = (p !== null && isFinite(p)) ? Math.max(0, Math.min(100, p)) : null;
+          });
+          nsfLeatherStock = map;
+          nsfLeatherStockRows = rows;
+          window.nsfLeatherStock = map;
+          nsfStockFetchedAt = Date.now();
+          nsfShowOwnerStockAlert();
+        }).catch(function () {});
+    }
+    function nsfLoadRingStock() {
+      return fetch('../order_estimate/ring-price-stock.csv?t=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.text() : null; })
+        .then(function (t) {
+          if (!t) return;
+          nsfRingRows = nsfParseCsv(t);
+          window.nsfRingRows = nsfRingRows;
+        }).catch(function () {});
+    }
+    nsfLoadLeatherStock();
+    nsfLoadRingStock();
+    // 監理画面での更新を「開きっぱなしのタブ」にも反映する:
+    // タブに戻ってきたとき（2分以上経過時）と、10分ごとに在庫を再取得
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && Date.now() - nsfStockFetchedAt > 2 * 60 * 1000) {
+        nsfLoadLeatherStock();
+        nsfLoadRingStock();
+      }
+    });
+    setInterval(function () {
+      nsfLoadLeatherStock();
+      nsfLoadRingStock();
+    }, 10 * 60 * 1000);
 
     /* 在庫判定（半裁の残量%）:
          out   = 0%       … 現在在庫なし。お取り寄せ2〜3週間＋取寄せ経費が若干
@@ -1445,7 +1472,9 @@
        あれば一覧パネルを表示する。来店者には表示されない。 */
     function nsfShowOwnerStockAlert() {
       try { if (!localStorage.getItem('nsf_owner_key')) return; } catch (e) { return; }
-      if (!nsfLeatherStockRows || document.getElementById('nsf-stock-alert')) return;
+      if (!nsfLeatherStockRows || window.__nsfStockAlertClosed) return;
+      var existing = document.getElementById('nsf-stock-alert');
+      if (existing) existing.remove(); // 在庫再取得時は最新内容で描き直す
       var lows = nsfLeatherStockRows.filter(function (r) {
         if (r.stock_pct === undefined || r.stock_pct === '') return false;
         var p = Number(r.stock_pct);
@@ -1456,21 +1485,27 @@
       box.id = 'nsf-stock-alert';
       var head = document.createElement('div');
       head.className = 'sa-head';
-      head.textContent = '⚠️ 革在庫アラート（店長のみ表示）';
+      head.textContent = '⚠️ 革在庫 ' + lows.length + '色が20%以下（店長のみ表示）';
       var close = document.createElement('button');
       close.className = 'sa-close';
       close.textContent = '✕';
-      close.addEventListener('click', function () { box.remove(); });
+      close.addEventListener('click', function () {
+        window.__nsfStockAlertClosed = true; // このタブでは再表示しない
+        box.remove();
+      });
       head.appendChild(close);
       box.appendChild(head);
+      var body = document.createElement('div');
+      body.className = 'sa-body';
       lows.sort(function (a, b) { return Number(a.stock_pct) - Number(b.stock_pct); })
         .forEach(function (r) {
           var d = document.createElement('div');
           d.className = 'sa-row';
           var p = Number(r.stock_pct);
           d.textContent = (p <= 0 ? '📦 ' : '⚠️ ') + r.name + ' — 残り' + p + '%';
-          box.appendChild(d);
+          body.appendChild(d);
         });
+      box.appendChild(body);
       var link = document.createElement('a');
       link.className = 'sa-link';
       link.href = 'https://github.com/you0810jmsdf/ns-factory/edit/main/order_estimate/leather-stock.csv';
