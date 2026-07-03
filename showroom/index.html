@@ -760,6 +760,21 @@
       border-color: var(--gold-bright);
       color: #2a1e10; font-weight: 700;
     }
+    /* 革スワッチギャラリー（ちえみの色回答に添付） */
+    .vc-gallery {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+      margin-top: 5px; max-width: 240px;
+    }
+    .vc-swatch { display: block; text-decoration: none; }
+    .vc-swatch img {
+      width: 100%; height: 46px; object-fit: cover; border-radius: 7px; display: block;
+      border: 1px solid rgba(212,180,120,0.35); background: #3a2d20;
+    }
+    .vc-swatch span {
+      display: block; font-size: 8.5px; color: var(--panel-sub);
+      line-height: 1.25; margin-top: 2px; word-break: break-word;
+    }
+    .vc-gallery-link { color: var(--gold-bright); font-size: 12px; }
     .vc-input-row { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid rgba(212,180,120,0.22); }
     #vc-input {
       flex: 1; border: 1px solid var(--panel-line); border-radius: 18px; padding: 8px 14px;
@@ -1080,9 +1095,7 @@
       if (turns >= CHAT_MAX_TURNS) { showChatLimit(); }
       // 販売幕僚だけ、オーダー相談（ヒアリング）の入口チップを出す
       hearingReset();
-      if (staffId === 'hannbai' && window.NSF_HEARING) {
-        renderChips([{ label: '🧵 オーダー相談（ヒアリング）を始める', onClick: hearingStart }]);
-      }
+      nsfDefaultChips();
     }
 
     function chatTimeNow() {
@@ -1230,9 +1243,7 @@
     function hearingExit() {
       hearingReset();
       appendStaffMsg('オーダー相談を終了しました。またいつでもお声がけください。');
-      if (currentChatStaffId === 'hannbai') {
-        renderChips([{ label: '🧵 オーダー相談（ヒアリング）を始める', onClick: hearingStart }]);
-      }
+      nsfDefaultChips();
     }
     function hearingRunStep() {
       var a = hearing.answers;
@@ -1291,6 +1302,73 @@
       ]);
     }
 
+    /* ===== 革の色 即答ギャラリー =====
+       「赤系の革ある？」等の直球の色質問に、オーダー相談フローを経ずその場で
+       写真スワッチを表示する（GASに送らない＝送信回数も消費しない）。
+       カタログ・色系統解決は hearing-core.js（resolveTone/leathersByTone）を共用。 */
+    function nsfLeatherImg(l) { return '../' + l.image; }
+
+    function nsfColorFamilies() {
+      if (!hearingLeathers) return [];
+      var seen = {}, fams = [];
+      hearingLeathers.forEach(function (l) {
+        (l.tags || []).forEach(function (t) {
+          if (/系$/.test(t) && !seen[t]) { seen[t] = 1; fams.push(t); }
+        });
+      });
+      return fams;
+    }
+
+    /* 色の直球質問か判定: 系統が特定できれば系統名、色全般の質問なら 'ask'、違えば null */
+    function nsfDetectLeatherColor(text) {
+      if (!window.NSF_HEARING || !hearingLeathers) return null;
+      if (!/(革|レザー|色|カラー)/.test(text)) return null;
+      var fam = window.NSF_HEARING.resolveTone(text);
+      if (fam && window.NSF_HEARING.leathersByTone(hearingLeathers, fam).length) return fam;
+      if (/(色|カラー)/.test(text)) return 'ask';
+      return null;
+    }
+
+    /* 待機時の入口チップ（オーダー相談＝販売幕僚のみ／革の色＝販売幕僚・個人事業主） */
+    function nsfDefaultChips() {
+      clearChips();
+      if (!window.NSF_HEARING) return;
+      var chips = [];
+      if (currentChatStaffId === 'hannbai') {
+        chips.push({ label: '🧵 オーダー相談（ヒアリング）を始める', onClick: hearingStart });
+      }
+      if (currentChatStaffId === 'hannbai' || currentChatStaffId === 'kojinjigyonusi') {
+        chips.push({ label: '🎨 革の色を見る', onClick: function () { showLeatherGallery('ask'); } });
+      }
+      if (chips.length) renderChips(chips);
+    }
+
+    function showLeatherGallery(fam) {
+      if (!hearingLeathers) {
+        appendStaffMsg('革カタログを読み込み中です。少しだけお待ちください🙏');
+        return;
+      }
+      if (fam === 'ask') {
+        var fams = nsfColorFamilies();
+        appendStaffMsg('革のお色は ' + fams.join('・') + ' をご用意しています🎨 どの系統がお好みですか？');
+        renderChips(fams.map(function (f) {
+          var n = window.NSF_HEARING.leathersByTone(hearingLeathers, f).length;
+          return { label: f, sub: n + '色', onClick: function () { showLeatherGallery(f); } };
+        }).concat([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]));
+        return;
+      }
+      var list = window.NSF_HEARING.leathersByTone(hearingLeathers, fam);
+      appendStaffMsg(fam + 'は' + list.length + '色ございます📷 スワッチをタップすると拡大写真が開きます。');
+      var chips = list.map(function (l) {
+        return { label: l.name, sub: l.sub || '', image: nsfLeatherImg(l),
+                 onClick: function () { window.open(nsfLeatherImg(l), '_blank'); } };
+      });
+      chips.push({ label: '🎨 カラーシミュレーターで試す', onClick: function () { window.open('../カラーシミュレーター/simulator.html', '_blank'); } });
+      chips.push({ label: '他の系統も見る', onClick: function () { showLeatherGallery('ask'); } });
+      chips.push({ label: '閉じる', exit: true, onClick: nsfDefaultChips });
+      renderChips(chips);
+    }
+
     function sendChat() {
       if (isChatSending) return;
       var input = document.getElementById('chat-input');
@@ -1308,6 +1386,15 @@
           return;
         }
         hearingAnswer(text, text);
+        return;
+      }
+
+      // 革の色の直球質問 → その場で写真スワッチ即答（GAS送信なし・回数消費なし）
+      var colorFam = nsfDetectLeatherColor(text);
+      if (colorFam) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        showLeatherGallery(colorFam);
         return;
       }
 
@@ -1498,11 +1585,44 @@
         var body = document.createElement('div'); body.className = 'body';
         body.textContent = m.text;
         col.appendChild(who); col.appendChild(body);
+        // ちえみの革色回答: gallery=色系統名 が付いていたら写真スワッチを添付
+        if (m.gallery) col.appendChild(buildLeatherGallery(m.gallery));
         d.appendChild(av); d.appendChild(col);
       }
       box.appendChild(d);
       while (box.children.length > 80) box.removeChild(box.firstChild);
       box.scrollTop = box.scrollHeight;
+    }
+
+    /* 革カタログ（AI接客側スクリプトが読み込む hearingLeathers）を共用して
+       色系統の写真スワッチを生成。未読込ならカラーシミュレーターへのリンクで代替 */
+    function buildLeatherGallery(fam) {
+      var wrap = document.createElement('div');
+      wrap.className = 'vc-gallery';
+      var H = window.NSF_HEARING;
+      var cat = window.hearingLeathers;
+      var list = (H && cat) ? H.leathersByTone(cat, fam) : [];
+      if (!list.length) {
+        var a = document.createElement('a');
+        a.href = '../カラーシミュレーター/simulator.html'; a.target = '_blank'; a.rel = 'noopener';
+        a.className = 'vc-gallery-link';
+        a.textContent = '🎨 革の色一覧（カラーシミュレーター）を開く';
+        wrap.appendChild(a);
+        return wrap;
+      }
+      list.slice(0, 12).forEach(function (l) {
+        var fig = document.createElement('a');
+        fig.className = 'vc-swatch';
+        fig.href = '../' + l.image; fig.target = '_blank'; fig.rel = 'noopener';
+        fig.title = l.name;
+        var img = document.createElement('img');
+        img.src = '../' + l.image; img.loading = 'lazy'; img.alt = l.name;
+        img.addEventListener('error', function () { fig.remove(); });
+        var cap = document.createElement('span'); cap.textContent = l.name;
+        fig.appendChild(img); fig.appendChild(cap);
+        wrap.appendChild(fig);
+      });
+      return wrap;
     }
 
     // ── 通信 ──
