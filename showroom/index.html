@@ -521,6 +521,7 @@
       font-size: 13px;
       line-height: 1.6;
       word-break: break-all;
+      white-space: pre-line; /* 在庫一覧・ヒアリング文の改行を表示 */
     }
     .chat-msg.user .chat-bubble {
       background: linear-gradient(180deg, #dcbd85, #c9a96a);
@@ -775,6 +776,15 @@
       line-height: 1.25; margin-top: 2px; word-break: break-word;
     }
     .vc-gallery-link { color: var(--gold-bright); font-size: 12px; }
+    /* 在庫一覧（リング・革在庫サマリー） */
+    .vc-stocklist {
+      margin-top: 5px; padding: 7px 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(212,180,120,0.18);
+      border-radius: 10px;
+      font-size: 11px; line-height: 1.7; color: var(--panel-text);
+      max-width: 240px;
+    }
     .vc-input-row { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid rgba(212,180,120,0.22); }
     #vc-input {
       flex: 1; border: 1px solid var(--panel-line); border-radius: 18px; padding: 8px 14px;
@@ -1302,6 +1312,63 @@
       ]);
     }
 
+    /* ===== 在庫データ（革・リング） =====
+       革在庫: order_estimate/leather-stock.csv（id,name,stock_status,note）
+       リング在庫: order_estimate/ring-price-stock.csv（見積もりページと共用・
+       在庫判定は「stock_status=in_stock かつ stock_qty>0」で見積もりページと同一）
+       ※ どちらも window 直下に置き、みんなのチャット側スクリプトからも共用する */
+    var nsfLeatherStock = null;  // id -> true(在庫あり)/false(お取り寄せ)
+    var nsfRingRows = null;      // ring-price-stock.csv の全行
+
+    function nsfParseCsv(text) {
+      var lines = text.replace(/\r/g, '').split('\n').filter(function (l) { return l.trim(); });
+      var head = lines.shift().split(',');
+      return lines.map(function (line) {
+        var cols = line.split(',');
+        var o = {};
+        head.forEach(function (h, i) { o[h.trim()] = (cols[i] || '').trim(); });
+        return o;
+      });
+    }
+    fetch('../order_estimate/leather-stock.csv')
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (t) {
+        if (!t) return;
+        var map = {};
+        nsfParseCsv(t).forEach(function (r) { map[r.id] = (r.stock_status === 'in_stock'); });
+        nsfLeatherStock = map;
+        window.nsfLeatherStock = map;
+      }).catch(function () {});
+    fetch('../order_estimate/ring-price-stock.csv')
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (t) {
+        if (!t) return;
+        nsfRingRows = nsfParseCsv(t);
+        window.nsfRingRows = nsfRingRows;
+      }).catch(function () {});
+
+    /* 在庫判定: 在庫CSV未読込・未記載のIDは在庫扱い（安全側＝案内を止めない） */
+    function nsfLeatherInStock(l) {
+      if (!nsfLeatherStock) return null; // 不明
+      return nsfLeatherStock[l.id] !== false;
+    }
+
+    /* 在庫のあるリングを「シリーズ サイズ（手帳タイプ）: 色」の行に整形 */
+    function nsfRingStockLines() {
+      if (!nsfRingRows) return null;
+      var inRows = nsfRingRows.filter(function (r) {
+        return r.stock_status === 'in_stock' && Number(r.stock_qty || 0) > 0;
+      });
+      if (!inRows.length) return '';
+      var groups = {}, order = [];
+      inRows.forEach(function (r) {
+        var key = r.series_label + ' ' + r.size_label + (r.planner_type ? '（' + r.planner_type + '）' : '');
+        if (!groups[key]) { groups[key] = []; order.push(key); }
+        groups[key].push(r.color_label + (Number(r.stock_qty) > 1 ? '×' + r.stock_qty : ''));
+      });
+      return order.map(function (k) { return '・' + k + ': ' + groups[k].join('、'); }).join('\n');
+    }
+
     /* ===== 革の色 即答ギャラリー =====
        「赤系の革ある？」等の直球の色質問に、オーダー相談フローを経ずその場で
        写真スワッチを表示する（GASに送らない＝送信回数も消費しない）。
@@ -1317,6 +1384,52 @@
         });
       });
       return fams;
+    }
+
+    /* リング在庫の質問か判定 */
+    function nsfDetectRingQuery(text) {
+      return /リング/.test(text) && /(在庫|ある|あり|何|どんな|種類|色|サイズ|一覧|欲し|ほし)/.test(text);
+    }
+
+    /* 革の在庫の質問か判定（色指定なしの「革の在庫ある？」等） */
+    function nsfDetectLeatherStockQuery(text) {
+      return /(革|レザー)/.test(text) && /(在庫|取り寄せ)/.test(text);
+    }
+
+    /* リング在庫の即答 */
+    function showRingStock() {
+      var lines = nsfRingStockLines();
+      if (lines === null) {
+        appendStaffMsg('リングの在庫情報を読み込み中です。少しだけお待ちください🙏');
+        return;
+      }
+      if (!lines) {
+        appendStaffMsg('申し訳ありません、ただいまリングの在庫を切らしております。お取り寄せでご対応しますので、お気軽にご相談ください🙏');
+      } else {
+        appendStaffMsg('いま在庫のあるリングはこちらです📋\n' + lines + '\n\nここにない仕様（サイズ・色）もお取り寄せできます。');
+      }
+      renderChips([
+        { label: '📋 見積もりページで詳しく見る', onClick: function () { window.open('../order_estimate/leather-order-estimate-v2.html', '_blank'); } },
+        { label: '閉じる', exit: true, onClick: nsfDefaultChips }
+      ]);
+    }
+
+    /* 革在庫の即答（系統別の在庫内訳→系統チップで写真へ） */
+    function showLeatherStockSummary() {
+      if (!hearingLeathers || !nsfLeatherStock) {
+        appendStaffMsg('革の在庫情報を読み込み中です。少しだけお待ちください🙏');
+        return;
+      }
+      var total = 0, lines = [];
+      var famChips = nsfColorFamilies().map(function (f) {
+        var list = window.NSF_HEARING.leathersByTone(hearingLeathers, f);
+        var ins = list.filter(function (l) { return nsfLeatherInStock(l); }).length;
+        total += ins;
+        lines.push('・' + f + ': 在庫' + ins + '色（全' + list.length + '色）');
+        return { label: f, sub: '在庫' + ins + '色', onClick: function () { showLeatherGallery(f); } };
+      });
+      appendStaffMsg('いま工房に在庫のある革は' + total + '色です📷\n' + lines.join('\n') + '\n\n系統を選ぶと写真をご覧いただけます。在庫にない革もお取り寄せできます。');
+      renderChips(famChips.concat([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]));
     }
 
     /* 色の直球質問か判定: 系統が特定できれば系統名、色全般の質問なら 'ask'、違えば null */
@@ -1357,10 +1470,23 @@
         }).concat([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]));
         return;
       }
-      var list = window.NSF_HEARING.leathersByTone(hearingLeathers, fam);
-      appendStaffMsg(fam + 'は' + list.length + '色ございます📷 スワッチをタップすると拡大写真が開きます。');
+      var list = window.NSF_HEARING.leathersByTone(hearingLeathers, fam).slice();
+      // 在庫あり→お取り寄せの順に並べ、バッジと内訳を付ける（在庫CSV未読込なら従来表示）
+      var stockKnown = !!nsfLeatherStock;
+      var inCount = 0;
+      if (stockKnown) {
+        list.sort(function (a, b) {
+          return (nsfLeatherInStock(b) ? 1 : 0) - (nsfLeatherInStock(a) ? 1 : 0);
+        });
+        inCount = list.filter(function (l) { return nsfLeatherInStock(l); }).length;
+      }
+      var lead = stockKnown
+        ? fam + 'は' + list.length + '色（✅在庫あり' + inCount + '色・📦お取り寄せ' + (list.length - inCount) + '色）ございます📷 スワッチをタップすると拡大写真が開きます。'
+        : fam + 'は' + list.length + '色ございます📷 スワッチをタップすると拡大写真が開きます。';
+      appendStaffMsg(lead);
       var chips = list.map(function (l) {
-        return { label: l.name, sub: l.sub || '', image: nsfLeatherImg(l),
+        var stockTxt = stockKnown ? (nsfLeatherInStock(l) ? '✅ 在庫あり' : '📦 お取り寄せ') : (l.sub || '');
+        return { label: l.name, sub: stockTxt, image: nsfLeatherImg(l),
                  onClick: function () { window.open(nsfLeatherImg(l), '_blank'); } };
       });
       chips.push({ label: '🎨 カラーシミュレーターで試す', onClick: function () { window.open('../カラーシミュレーター/simulator.html', '_blank'); } });
@@ -1389,8 +1515,20 @@
         return;
       }
 
-      // 革の色の直球質問 → その場で写真スワッチ即答（GAS送信なし・回数消費なし）
+      // リング・革在庫・革の色の直球質問 → その場で即答（GAS送信なし・回数消費なし）
+      if (nsfDetectRingQuery(text)) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        showRingStock();
+        return;
+      }
       var colorFam = nsfDetectLeatherColor(text);
+      if (!colorFam && nsfDetectLeatherStockQuery(text)) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        showLeatherStockSummary();
+        return;
+      }
       if (colorFam) {
         if (input) input.value = '';
         appendUserMsg(text);
@@ -1587,6 +1725,9 @@
         col.appendChild(who); col.appendChild(body);
         // ちえみの革色回答: gallery=色系統名 が付いていたら写真スワッチを添付
         if (m.gallery) col.appendChild(buildLeatherGallery(m.gallery));
+        // ちえみのリング在庫・革在庫回答: CSVから一覧を描画
+        if (m.ringstock) col.appendChild(buildRingStockList());
+        if (m.stockinfo) col.appendChild(buildLeatherStockSummaryEl());
         d.appendChild(av); d.appendChild(col);
       }
       box.appendChild(d);
@@ -1610,6 +1751,12 @@
         wrap.appendChild(a);
         return wrap;
       }
+      // 在庫あり優先で並べ、バッジを付ける（leather-stock.csv 未読込なら名前のみ）
+      var stock = window.nsfLeatherStock;
+      function inStock(l) { return !stock || stock[l.id] !== false; }
+      if (stock) {
+        list = list.slice().sort(function (a, b) { return (inStock(b) ? 1 : 0) - (inStock(a) ? 1 : 0); });
+      }
       list.slice(0, 12).forEach(function (l) {
         var fig = document.createElement('a');
         fig.className = 'vc-swatch';
@@ -1618,11 +1765,76 @@
         var img = document.createElement('img');
         img.src = '../' + l.image; img.loading = 'lazy'; img.alt = l.name;
         img.addEventListener('error', function () { fig.remove(); });
-        var cap = document.createElement('span'); cap.textContent = l.name;
+        var cap = document.createElement('span');
+        cap.textContent = (stock ? (inStock(l) ? '✅' : '📦') + ' ' : '') + l.name;
         fig.appendChild(img); fig.appendChild(cap);
         wrap.appendChild(fig);
       });
       return wrap;
+    }
+
+    /* リング在庫一覧（ring-price-stock.csv・見積もりページと同じ在庫判定） */
+    function buildRingStockList() {
+      var box = document.createElement('div');
+      box.className = 'vc-stocklist';
+      var rows = window.nsfRingRows;
+      if (!rows) {
+        box.appendChild(stockFallbackLink());
+        return box;
+      }
+      var inRows = rows.filter(function (r) {
+        return r.stock_status === 'in_stock' && Number(r.stock_qty || 0) > 0;
+      });
+      if (!inRows.length) {
+        box.textContent = 'ただいまリング在庫切れです。お取り寄せでご対応します🙏';
+        return box;
+      }
+      var groups = {}, order = [];
+      inRows.forEach(function (r) {
+        var key = r.series_label + ' ' + r.size_label + (r.planner_type ? '（' + r.planner_type + '）' : '');
+        if (!groups[key]) { groups[key] = []; order.push(key); }
+        groups[key].push(r.color_label);
+      });
+      order.forEach(function (k) {
+        var d = document.createElement('div');
+        d.textContent = '・' + k + ': ' + groups[k].join('、');
+        box.appendChild(d);
+      });
+      return box;
+    }
+
+    /* 革在庫サマリー（leather-stock.csv × 革カタログ、系統別内訳） */
+    function buildLeatherStockSummaryEl() {
+      var box = document.createElement('div');
+      box.className = 'vc-stocklist';
+      var H = window.NSF_HEARING, cat = window.hearingLeathers, stock = window.nsfLeatherStock;
+      if (!H || !cat || !stock) {
+        box.appendChild(stockFallbackLink());
+        return box;
+      }
+      var seen = {}, fams = [];
+      cat.forEach(function (l) {
+        (l.tags || []).forEach(function (t) {
+          if (/系$/.test(t) && !seen[t]) { seen[t] = 1; fams.push(t); }
+        });
+      });
+      fams.forEach(function (f) {
+        var list = H.leathersByTone(cat, f);
+        var ins = list.filter(function (l) { return stock[l.id] !== false; }).length;
+        var d = document.createElement('div');
+        d.textContent = '・' + f + ': 在庫' + ins + '色（全' + list.length + '色）';
+        box.appendChild(d);
+      });
+      return box;
+    }
+
+    function stockFallbackLink() {
+      var a = document.createElement('a');
+      a.href = '../order_estimate/leather-order-estimate-v2.html';
+      a.target = '_blank'; a.rel = 'noopener';
+      a.className = 'vc-gallery-link';
+      a.textContent = '📋 見積もりページで在庫を確認する';
+      return a;
     }
 
     // ── 通信 ──
