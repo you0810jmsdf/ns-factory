@@ -254,6 +254,22 @@ function botReply_(cache, text, now) {
   var addressed = /ちえみ/.test(text);
   var isQuestion = /[？?]\s*$/.test(text);
   var last = Number(cache.get('vc_bot_last') || 0);
+  // リング在庫の質問 → ページ側が ring-price-stock.csv から在庫一覧を描画
+  if (/リング/.test(text) && /(在庫|ある|あり|何|どんな|種類|色|サイズ|一覧|欲し|ほし)/.test(text)) {
+    cache.put('vc_bot_last', String(now), 21600);
+    pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar,
+      text: 'いま在庫のあるリングはこちらです📋 ここにない仕様（サイズ・色）もお取り寄せできますよ',
+      ringstock: 1 });
+    return true;
+  }
+  // 革の在庫の質問（色指定なし）→ ページ側が leather-stock.csv から系統別サマリーを描画
+  if (/(革|レザー)/.test(text) && /(在庫|取り寄せ)/.test(text) && !detectLeatherColor_(text.replace(/在庫|取り寄せ/g, ''))) {
+    cache.put('vc_bot_last', String(now), 21600);
+    pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar,
+      text: 'いま工房に在庫のある革はこちらです📷 「青系見せて」って言ってもらえたら写真もお出しします！',
+      stockinfo: 1 });
+    return true;
+  }
   // 革の色の直球質問はクールダウン無視で即・写真付き回答
   var fam = detectLeatherColor_(text);
   if (fam) {
