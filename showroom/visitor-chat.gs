@@ -253,7 +253,18 @@ function botGreet_(cache, visitorName, now) {
 /* ── 即答系（色写真・革在庫・リング在庫）──
    データを見せるだけの回答なので、店長在室中でも・店長自身の発言でも常に応える。
    返答したら true */
+/* 取り扱いのない革種・素材（カタログ＝カワムラレザー取扱の牛革タンニン鞣しのみ） */
+var OUTSIDE_LEATHER = /(ホースバット|ホースレザー|ホースハイド|コードバン|ブライドル|ミネルバ|プエブロ|シェルコードバン|クロコ|ワニ革|パイソン|蛇革|リザード|オーストリッチ|エレファント|ガルーシャ|エイ革|馬革|豚革|ピッグスキン|ラムレザー|シープ|ゴートレザー|ヤギ革|鹿革|ディアスキン|バッファロー|クロム鞣し|クロムなめし)/;
+
 function botQuickReply_(cache, text, now) {
+  // カタログ外の革種 → 「取り扱いなし」を正直に案内（在庫にない革を理解して回答）
+  var outside = text.match(OUTSIDE_LEATHER);
+  if (outside) {
+    cache.put('vc_bot_last', String(now), 21600);
+    pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar,
+      text: 'ごめんなさい、' + outside[1] + 'は当店では取り扱いがないんです🙏 当店の革はカワムラレザー取扱の牛革（タンニン鞣し・全69色）のみです。「革の色見せて」と言ってもらえたら写真をお出しします！特注のご相談は店長までどうぞ' });
+    return true;
+  }
   // リング在庫の質問 → ページ側が ring-price-stock.csv から在庫一覧を描画
   if (/リング/.test(text) && /(在庫|ある|あり|何|どんな|種類|色|サイズ|一覧|欲し|ほし)/.test(text)) {
     cache.put('vc_bot_last', String(now), 21600);
