@@ -64,6 +64,8 @@ tr:hover td { background: rgba(255,255,255,.03); }
   display: inline-flex; align-items: center; justify-content: center;
   font-size: .68rem; font-weight: 800; color: #fff; letter-spacing: .02em;
 }
+a.ch-link { text-decoration: none; cursor: pointer; transition: transform .12s, box-shadow .12s; }
+a.ch-link:hover { transform: scale(1.12); box-shadow: 0 0 0 2px rgba(255,255,255,.35); }
 #loading { text-align: center; padding: 60px; color: var(--text-sub); display: none; }
 .spinner {
   width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent);
@@ -137,16 +139,17 @@ tr:hover td { background: rgba(255,255,255,.03); }
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxgpDhSfNsFQvyLPEwdzKIlFDm3JZ6epOhmlIEROuBLJRQ-67fdm7e4QpZC2C7rrI9xrg/exec";
 
 // チャネル表示定義（色は近似ブランドカラー。ロゴ画像に差し替える場合は mark を <img> に変更）
+// url = 各ショップ公開ページ（正本: links.html）。クリックで新規タブで開く
 var CH_STYLE = {
-  creema:           { color: "#C9A063", mark: "Cre" },
-  minne:            { color: "#A4C520", mark: "min" },
-  mercari:          { color: "#FF4B4B", mark: "メル" },
-  mercari_shops:    { color: "#0095EE", mark: "Shops" },
-  stores:           { color: "#8E8E93", mark: "ST" },
-  base:             { color: "#35C759", mark: "BASE" },
-  rakuma:           { color: "#BF3F3F", mark: "ラク" },
-  yahoo_fleamarket: { color: "#FF8C00", mark: "Y!" },
-  pinkoi:           { color: "#26B7A7", mark: "Pin" },
+  creema:           { color: "#C9A063", mark: "Cre",   url: "https://www.creema.jp/creator/2381876/item/onsale" },
+  minne:            { color: "#A4C520", mark: "min",   url: "https://minne.com/@you0810jmsdg" },
+  mercari:          { color: "#FF4B4B", mark: "メル",  url: "https://www.mercari.com/jp/u/817617289/" },
+  mercari_shops:    { color: "#0095EE", mark: "Shops", url: "https://jp.mercari.com/shops/profile/asBNciBKzFGfpMU23wQB6N" },
+  stores:           { color: "#8E8E93", mark: "ST",    url: "https://nsfactory.stores.jp/" },
+  base:             { color: "#35C759", mark: "BASE",  url: "https://you0810jmsdf.base.shop/" },
+  rakuma:           { color: "#BF3F3F", mark: "ラク",  url: "https://fril.jp/shop/bb5e3f221ea83990bd3bc9d29f40d5e0" },
+  yahoo_fleamarket: { color: "#FF8C00", mark: "Y!",    url: "https://paypayfleamarket.yahoo.co.jp/user/p1346238" },
+  pinkoi:           { color: "#26B7A7", mark: "Pin",   url: "https://pinkoi.com/inv/you0810jmsdf" },
   other:            { color: "#6E6E73", mark: "手動" }
 };
 
@@ -290,10 +293,13 @@ function render(data) {
   tbody.innerHTML = "";
   channels.forEach(function (ch) {
     var st = CH_STYLE[ch.id] || { color: "#888", mark: "?" };
+    var mark = st.url
+      ? '<a href="' + st.url + '" target="_blank" rel="noopener" class="ch-mark ch-link" '
+        + 'title="' + ch.name + ' のショップページを開く" style="background:' + st.color + '">' + st.mark + "</a>"
+      : '<span class="ch-mark" style="background:' + st.color + '">' + st.mark + "</span>";
     var tr = document.createElement("tr");
     tr.innerHTML =
-      '<td><span class="ch-chip"><span class="ch-mark" style="background:' + st.color + '">' + st.mark + "</span>"
-      + ch.name + "</span></td>"
+      '<td><span class="ch-chip">' + mark + ch.name + "</span></td>"
       + '<td class="num">' + ch.totalCount.toLocaleString() + "</td>"
       + '<td class="num">' + yen(ch.totalAmount) + "</td>"
       + '<td class="num sub">' + ch.amountCoverage + "%</td>";
