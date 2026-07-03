@@ -90,6 +90,13 @@ tr:hover td { background: rgba(255,255,255,.03); }
     <div class="card"><div class="label">稼働チャネル</div><div class="value" id="sum-active">—</div></div>
   </div>
 
+  <div class="mode-bar" id="period-bar">
+    <button class="mode-btn" data-m="3" onclick="setPeriod(3)">3ヶ月</button>
+    <button class="mode-btn" data-m="6" onclick="setPeriod(6)">6ヶ月</button>
+    <button class="mode-btn active" data-m="12" onclick="setPeriod(12)">12ヶ月</button>
+    <button class="mode-btn" data-m="24" onclick="setPeriod(24)">24ヶ月</button>
+  </div>
+
   <div class="mode-bar">
     <button class="mode-btn active" id="mode-amount" onclick="setMode('amount')">金額</button>
     <button class="mode-btn" id="mode-count" onclick="setMode('count')">件数</button>
@@ -103,10 +110,18 @@ tr:hover td { background: rgba(255,255,255,.03); }
   </div>
 
   <div class="table-wrap" id="table-wrap" style="display:none">
-    <div class="table-header">チャネル別（直近12ヶ月）</div>
+    <div class="table-header" id="channel-table-header">チャネル別</div>
     <table>
       <thead><tr><th>チャネル</th><th class="num">件数</th><th class="num">金額</th><th class="num">金額解析率</th></tr></thead>
       <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap" id="items-wrap" style="display:none; margin-top:20px;">
+    <div class="table-header">売れ筋アイテム TOP20（<span id="items-mode-label">金額</span>順）</div>
+    <table>
+      <thead><tr><th style="width:36px">#</th><th>アイテム</th><th class="num">件数</th><th class="num">金額</th><th>チャネル</th></tr></thead>
+      <tbody id="items-body"></tbody>
     </table>
   </div>
 
@@ -137,6 +152,7 @@ var CH_STYLE = {
 
 var lastData = null;
 var mode = "amount";
+var currentMonths = 12;
 var chart = null;
 
 function adminKey() {
@@ -148,6 +164,14 @@ function setMode(m) {
   document.getElementById("mode-amount").classList.toggle("active", m === "amount");
   document.getElementById("mode-count").classList.toggle("active", m === "count");
   if (lastData) render(lastData);
+}
+
+function setPeriod(m) {
+  currentMonths = m;
+  document.querySelectorAll("#period-bar .mode-btn").forEach(function (b) {
+    b.classList.toggle("active", parseInt(b.dataset.m) === m);
+  });
+  load(false);
 }
 
 function load(force) {
@@ -164,6 +188,7 @@ function load(force) {
   var cbName = "salescb" + Date.now();
   var script = document.createElement("script");
   script.src = GAS_URL + "?key=" + encodeURIComponent(key)
+             + "&months=" + currentMonths
              + (force ? "&refresh=1" : "") + "&callback=" + cbName;
 
   var timer = setTimeout(function () { fail("タイムアウトしました。GAS側の承認（authorize実行）が済んでいるか確認してください。"); }, 120000);
@@ -207,7 +232,10 @@ function render(data) {
 
   document.getElementById("meta").textContent =
     "集計時点: " + data.generatedAt + (data.cached ? "（キャッシュ表示・15分以内）" : "（再集計済み）")
-    + " ／ 期間: " + months[0] + " 〜 " + months[months.length - 1];
+    + " ／ 期間: " + months[0] + " 〜 " + months[months.length - 1] + "（" + months.length + "ヶ月）";
+  document.getElementById("channel-table-header").textContent = "チャネル別（直近" + months.length + "ヶ月）";
+  document.querySelector(".summary-cards .card .label").textContent = "受注件数（" + months.length + "ヶ月）";
+  document.querySelectorAll(".summary-cards .card .label")[1].textContent = "売上金額（" + months.length + "ヶ月・解析分）";
 
   var totalC = 0, totalA = 0, active = 0;
   channels.forEach(function (ch) {
@@ -272,6 +300,47 @@ function render(data) {
     tbody.appendChild(tr);
   });
   document.getElementById("table-wrap").style.display = "block";
+
+  renderItems(data);
+}
+
+function renderItems(data) {
+  var items = (data.items || []).slice();
+  if (!items.length) { document.getElementById("items-wrap").style.display = "none"; return; }
+
+  items.sort(mode === "amount"
+    ? function (x, y) { return y.a - x.a || y.c - x.c; }
+    : function (x, y) { return y.c - x.c || y.a - x.a; });
+  document.getElementById("items-mode-label").textContent = mode === "amount" ? "金額" : "件数";
+
+  var nameById = {};
+  data.channels.forEach(function (ch) { nameById[ch.id] = ch.name; });
+
+  var tbody = document.getElementById("items-body");
+  tbody.innerHTML = "";
+  items.slice(0, 20).forEach(function (it, i) {
+    var chips = Object.keys(it.ch).map(function (id) {
+      var st = CH_STYLE[id] || { color: "#888" };
+      return '<span title="' + (nameById[id] || id) + '：' + it.ch[id] + '件" '
+        + 'style="display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;'
+        + 'vertical-align:middle;background:' + st.color + '"></span>';
+    }).join("");
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="sub">' + (i + 1) + "</td>"
+      + "<td>" + escapeHtml(it.n) + "</td>"
+      + '<td class="num">' + it.c.toLocaleString() + "</td>"
+      + '<td class="num">' + yen(it.a) + "</td>"
+      + "<td>" + chips + "</td>";
+    tbody.appendChild(tr);
+  });
+  document.getElementById("items-wrap").style.display = "block";
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
 }
 
 // 初期表示（ゲート通過後にキーが入るまで少し待つ）
