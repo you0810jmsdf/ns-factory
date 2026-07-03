@@ -2741,6 +2741,113 @@ function buildLeatherGrid() {
   });
 }
 
+// ── 革カタログ拡張（280色）＋カワムラ公式ds単価＋在庫バッジの実行時マージ ──
+// データ源:
+//   leather-catalog.json      … ショールームと共通の革カタログ（280色）
+//   leather-series-price.csv  … カワムラレザー公式サイト記載のds単価（税込）。key=id（優先）or 系列タグ
+//   leather-stock.csv         … 半裁残量%（監理画面で更新）
+// 既存インラインLEATHERSのdsPriceも単価CSVで上書きし、新旧の価格基準を統一する
+const LEATHER_EXT_CATALOG_URL = new URL('./leather-catalog.json', location.href).toString();
+const LEATHER_EXT_PRICE_URL   = new URL('./leather-series-price.csv', location.href).toString();
+const LEATHER_EXT_STOCK_URL   = new URL('./leather-stock.csv', location.href).toString();
+let leatherStockPctMap = {};   // id -> 0-100 or null(未入力)
+
+function leatherStockBadge(pct) {
+  if (pct === null || pct === undefined || !Number.isFinite(pct)) return null;
+  if (pct <= 0)  return { text: '📦 お取り寄せ（2〜3週間）', color: '#b0563a' };
+  if (pct <= 20) return { text: '⚠️ 残りわずか', color: '#c07a1a' };
+  if (pct >= 80) return { text: '✨ 入荷したて（エイジング未進行）', color: '#2a8a5a' };
+  return null; // 通常在庫はバッジなし
+}
+
+async function loadLeatherExtension() {
+  try {
+    const bust = '?t=' + Date.now();
+    const [catRes, priceRes, stockRes] = await Promise.all([
+      fetch(LEATHER_EXT_CATALOG_URL + bust, { cache: 'no-store' }),
+      fetch(LEATHER_EXT_PRICE_URL + bust, { cache: 'no-store' }),
+      fetch(LEATHER_EXT_STOCK_URL + bust, { cache: 'no-store' })
+    ]);
+    if (!catRes.ok || !priceRes.ok) throw new Error(`HTTP ${catRes.status}/${priceRes.status}`);
+    const cat = await catRes.json();
+    const priceRows = parseCsv(await priceRes.text())
+      .filter(r => r.key && !r.key.startsWith('#'));
+    const idPrice = {}, tagPriceOrder = [];
+    priceRows.forEach(r => {
+      const p = csvNum(r.ds_price, 0);
+      if (!p) return;
+      idPrice[r.key] = p;
+      tagPriceOrder.push([r.key, p]);
+    });
+    const resolvePrice = (entry) => {
+      if (idPrice[entry.id]) return idPrice[entry.id];
+      for (const [key, p] of tagPriceOrder) {
+        if ((entry.tags || []).includes(key)) return p;
+      }
+      return null;
+    };
+
+    // 1) 既存エントリの単価を公式単価へ上書き
+    LEATHERS.forEach(l => {
+      const p = resolvePrice(l);
+      if (p) l.dsPrice = p;
+    });
+
+    // 2) カタログの新規色を選択肢へ合流（単価が解決できない色は安全のため出さない）
+    const existingIds = new Set(LEATHERS.map(l => l.id));
+    let added = 0, skipped = 0;
+    (cat.leathers || []).forEach(l => {
+      if (existingIds.has(l.id)) return;
+      const p = resolvePrice(l);
+      if (!p || !l.image) { skipped++; return; }
+      LEATHERS.push({
+        id: l.id, name: l.name, sub: l.sub || '',
+        dsPrice: p, image: '../' + l.image, tags: l.tags || []
+      });
+      added++;
+    });
+
+    // 3) 在庫%（バッジ表示用・任意）
+    try {
+      if (stockRes.ok) {
+        parseCsv(await stockRes.text()).forEach(r => {
+          const v = (r.stock_pct === '' || r.stock_pct === undefined) ? null : Number(r.stock_pct);
+          leatherStockPctMap[r.id] = Number.isFinite(v) ? v : null;
+        });
+      }
+    } catch (e) { /* 在庫は表示補助のみ。失敗しても続行 */ }
+
+    // 選択状態を保持したままグリッド再構築
+    const selectedId = sel.leatherId;
+    buildLeatherGrid();
+    applyLeatherStockBadges();
+    if (selectedId && selectedId !== 'patchwork') {
+      const card = document.querySelector(`.img-card[data-id="${selectedId}"]`);
+      if (card) card.classList.add('selected');
+      const cur = LEATHERS.find(l => l.id === selectedId);
+      if (cur) { prices.leather = cur.dsPrice; updateSummary(); }
+    }
+    console.log(`革カタログ拡張: +${added}色 / 単価未設定スキップ${skipped}色`);
+  } catch (err) {
+    console.error('革カタログ拡張の読込に失敗（既存69色のみで動作継続）:', err);
+  }
+}
+
+function applyLeatherStockBadges() {
+  document.querySelectorAll('#leatherGrid .img-card').forEach(card => {
+    const pct = leatherStockPctMap[card.dataset.id];
+    const badge = leatherStockBadge(pct === undefined ? null : pct);
+    if (!badge) return;
+    const body = card.querySelector('.card-body');
+    if (!body || body.querySelector('.leather-stock-badge')) return;
+    const d = document.createElement('div');
+    d.className = 'leather-stock-badge';
+    d.style.cssText = 'font-size:10px;font-weight:700;margin-top:2px;color:' + badge.color;
+    d.textContent = badge.text;
+    body.appendChild(d);
+  });
+}
+
 function setLeatherTag(el) {
   document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
@@ -3441,6 +3548,7 @@ window.addEventListener('DOMContentLoaded', () => {
     updateSummary();
   });
   buildLeatherGrid();
+  loadLeatherExtension(); // 280色カタログ＋公式ds単価＋在庫バッジを非同期マージ
   buildMetalGrid();
   buildStitchColors();
   // Accessories: pen/coin - buildOptGrid で統一
