@@ -1573,6 +1573,48 @@
       renderChips(famChips.concat([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]));
     }
 
+    /* 革シリーズ名の検知（カタログの系列タグと対応。GAS側 SERIES_MAP と同期を保つこと） */
+    var NSF_SERIES_MAP = [
+      [/ホースバット|ホースレザー|ホースハイド/i, 'ホースバット'],
+      [/コードバン/i, 'コードバン'],
+      [/リスシオ|LISCIO/i, 'リスシオ'],
+      [/マルゴー?\s*フォグ|MARGOT\s*FOG/i, 'MARGOT FOG'],
+      [/マルゴー?|MARGOT/i, 'MARGOT'],
+      [/ヴァスカ|バスカ|VASCA/i, 'LINEA VASCA Box'],
+      [/ブルガロ|BULGARO/i, 'BULGARO'],
+      [/ネブラスカ|NEBRASKA/i, 'NEBRASKA'],
+      [/テンダー|TENDER/i, 'TENDER'],
+      [/リベルソ|レベルソ|REVERSO/i, 'REVERSO'],
+      [/ツイスト|TWIST/i, 'TWIST'],
+      [/アラスカ|ALASKA/i, 'ALASKA'],
+      [/アマゾニア|AMAZZONIA/i, 'AMAZZONIA'],
+      [/クラスト|CRUST/i, 'CRUST'],
+      [/カントリー|COUNTRY/i, 'COUNTRY'],
+      [/マリアーノ|MARIANO/i, 'MARIANO'],
+      [/テキサス|TEXAS/i, 'TEXAS'],
+      [/シビラ|SIBILLA/i, 'SIBILLA Liscio'],
+      [/アヴァンコルピ|AVANCORPI|ホースフロント/i, 'AVANCORPI'],
+      [/クロムエクセル|CHROMEXCEL/i, 'CHROMEXCEL'],
+      [/デロリアン|DELOREAN|ダイニーマ/i, 'DELOREAN'],
+      [/ランダード|ローンダード|LAUNDERED|洗える革/i, 'LAUNDERED'],
+      [/ドリットン|ドリトン|DRITTON|ゴアテックス|GORE-?TEX/i, 'DRITTON G8'],
+      [/ドロイド|DROID/i, 'DROID'],
+      [/馬革/, '馬革'],
+      [/ヌメ/, 'ヌメ革']
+    ];
+    function nsfDetectSeries(text) {
+      if (!hearingLeathers) return null;
+      if (!/(革|レザー|ある|あり|見せ|在庫|ほし|欲し|ください|どんな|何|色|カラー|サイズ|[？?])/.test(text)) return null;
+      for (var i = 0; i < NSF_SERIES_MAP.length; i++) {
+        if (NSF_SERIES_MAP[i][0].test(text)) {
+          var tag = NSF_SERIES_MAP[i][1];
+          // カタログに該当タグの革が存在するときだけシリーズ扱い
+          if (window.NSF_HEARING.leathersByTone(hearingLeathers, tag).length) return tag;
+        }
+      }
+      return null;
+    }
+
     /* 色の直球質問か判定: 系統が特定できれば系統名、色全般の質問なら 'ask'、違えば null */
     function nsfDetectLeatherColor(text) {
       if (!window.NSF_HEARING || !hearingLeathers) return null;
@@ -1604,7 +1646,7 @@
       }
       if (fam === 'ask') {
         var fams = nsfColorFamilies();
-        appendStaffMsg('革のお色は ' + fams.join('・') + ' をご用意しています🎨 どの系統がお好みですか？');
+        appendStaffMsg('革のお色は ' + fams.join('・') + ' をご用意しています🎨 どの系統がお好みですか？\nシリーズ名（ホースバット・コードバン・ブルガロ など）で聞いていただいてもOKです！');
         renderChips(fams.map(function (f) {
           var n = window.NSF_HEARING.leathersByTone(hearingLeathers, f).length;
           return { label: f, sub: n + '色', onClick: function () { showLeatherGallery(f); } };
@@ -1664,11 +1706,18 @@
         return;
       }
 
-      // リング・革在庫・革の色の直球質問 → その場で即答（GAS送信なし・回数消費なし）
+      // リング・革シリーズ・革在庫・革の色の直球質問 → その場で即答（GAS送信なし・回数消費なし）
       if (nsfDetectRingQuery(text)) {
         if (input) input.value = '';
         appendUserMsg(text);
         showRingStock();
+        return;
+      }
+      var seriesTag = nsfDetectSeries(text);
+      if (seriesTag) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        showLeatherGallery(seriesTag);
         return;
       }
       var colorFam = nsfDetectLeatherColor(text);
@@ -1934,13 +1983,14 @@
         fig.appendChild(img); fig.appendChild(cap);
         wrap.appendChild(fig);
       });
-      // 区分の説明（該当があるときだけ）
-      if (hasFresh || hasOut) {
+      // 区分の説明・12枚超の案内（該当があるときだけ）
+      if (hasFresh || hasOut || list.length > 12) {
         var note = document.createElement('div');
         note.className = 'vc-gallery-note';
         var parts = [];
         if (hasFresh) parts.push('✨=入荷したて（エイジングが進んでいない状態から育てられておすすめ！）');
         if (hasOut) parts.push('📦=お取り寄せ（2〜3週間ほど・取寄せ経費が若干かかります）');
+        if (list.length > 12) parts.push('ほか' + (list.length - 12) + '色あります（スタッフをタップ→AI接客チャットで全色ご覧いただけます）');
         note.textContent = parts.join(' ／ ');
         wrap.appendChild(note);
       }
