@@ -33,7 +33,8 @@ var MAIL_COOLDOWN_MS = 60000;  // 来店通知メールの最短間隔（連続�
    NOTIFY_EMAIL（通知先。未設定ならGAS実行アカウント）を設定する。
    ページ側が okey パラメータで店長キーを送ってきたら「店長」として入店:
    - 3D空間では新アバターを出さず、徘徊中の個人事業主キャラに発言が吹き出し表示される
-   - 店長在室中はちえみ・販売幕僚の自動返答を休止（「ちえみ」名指し時のみ返答）
+   - 店長在室中は雑談系の自動返答を休止（「ちえみ」名指し時のみ返答）。
+     ただし即答系（色写真・革在庫・リング在庫）は店長在室中でも店長の発言でも常に応える
    - 店長の入店ではメール通知しない */
 
 // 禁止ワード（必要に応じて追記）。含まれていたら投稿を拒否
@@ -141,14 +142,15 @@ function handle_(p) {
     if (v.owner) msg.owner = 1;
     pushMsg_(cache, msg);
     // ボットの発言ルール:
-    //   店長の発言には反応しない／店長在室中は自動返答を休止（「ちえみ」名指しのみ返答）
-    //   店長不在時は従来通り（ちえみ→ダメなら販売幕僚の相槌）
-    if (v.owner) {
-      // 店長が接客中。ボットは黙る
-    } else if (ownerOnline_(visitors)) {
-      if (/ちえみ/.test(text)) botReply_(cache, text, now);
-    } else {
-      if (!botReply_(cache, text, now)) maybeStaffReply_(cache, text, now);
+    //   即答系（色写真・革在庫・リング在庫）= 店長在室中でも店長自身の発言でも常に即答
+    //     （店長が「赤系見せて」と打てば、ちえみが写真を出してお客様にも見える＝接客支援）
+    //   雑談系 = 店長在室中は休止（「ちえみ」名指し時のみ返答）。店長不在時は従来通り
+    if (!botQuickReply_(cache, text, now)) {
+      if (ownerOnline_(visitors)) {
+        if (/ちえみ/.test(text)) botReply_(cache, text, now);
+      } else {
+        if (!botReply_(cache, text, now)) maybeStaffReply_(cache, text, now);
+      }
     }
     return { ok: 1 };
   }
@@ -248,12 +250,10 @@ function botGreet_(cache, visitorName, now) {
     text: 'いらっしゃいませ、' + visitorName + 'さん！スタッフのちえみです😊 気になる作品があったら気軽に聞いてくださいね' });
 }
 
-/* 返答したら true（その回は販売幕僚の相槌をスキップ）
-   呼びかけ（「ちえみ」を含む）と質問（？で終わる）はクールダウン無視で必ず返事する */
-function botReply_(cache, text, now) {
-  var addressed = /ちえみ/.test(text);
-  var isQuestion = /[？?]\s*$/.test(text);
-  var last = Number(cache.get('vc_bot_last') || 0);
+/* ── 即答系（色写真・革在庫・リング在庫）──
+   データを見せるだけの回答なので、店長在室中でも・店長自身の発言でも常に応える。
+   返答したら true */
+function botQuickReply_(cache, text, now) {
   // リング在庫の質問 → ページ側が ring-price-stock.csv から在庫一覧を描画
   if (/リング/.test(text) && /(在庫|ある|あり|何|どんな|種類|色|サイズ|一覧|欲し|ほし)/.test(text)) {
     cache.put('vc_bot_last', String(now), 21600);
@@ -270,7 +270,7 @@ function botReply_(cache, text, now) {
       stockinfo: 1 });
     return true;
   }
-  // 革の色の直球質問はクールダウン無視で即・写真付き回答
+  // 革の色の直球質問 → 写真付き回答
   var fam = detectLeatherColor_(text);
   if (fam) {
     cache.put('vc_bot_last', String(now), 21600);
@@ -284,6 +284,16 @@ function botReply_(cache, text, now) {
     }
     return true;
   }
+  return false;
+}
+
+/* ── 雑談系 ──
+   返答したら true（その回は販売幕僚の相槌をスキップ）
+   呼びかけ（「ちえみ」を含む）と質問（？で終わる）はクールダウン無視で必ず返事する */
+function botReply_(cache, text, now) {
+  var addressed = /ちえみ/.test(text);
+  var isQuestion = /[？?]\s*$/.test(text);
+  var last = Number(cache.get('vc_bot_last') || 0);
   if (!addressed && !isQuestion && now - last < BOT_COOLDOWN_MS) return false;
   var reply = null;
   for (var i = 0; i < BOT_RULES.length; i++) {
