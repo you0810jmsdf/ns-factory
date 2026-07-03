@@ -112,6 +112,8 @@ tr:hover td { background: rgba(255,255,255,.03); }
 
   <p class="note">
     ※ データ源はGmailの受注通知メール。金額は本文から自動解析できた分のみ（解析率が低いチャネルは件数を参照）。<br>
+    ※ メール通知が無いチャネル（ラクマ・Yahoo!フリマ等）やマルシェ売上は「売上ダッシュボード_手動入力」シートに記入すると合算されます。
+    メール通知が届くチャネルをシートに書くと二重計上になるため記入しないこと。<br>
     ※ 「最新データに更新」はキャッシュを無視して再集計します。通常表示は15分キャッシュ。
   </p>
 </div>
@@ -129,7 +131,8 @@ var CH_STYLE = {
   base:             { color: "#35C759", mark: "BASE" },
   rakuma:           { color: "#BF3F3F", mark: "ラク" },
   yahoo_fleamarket: { color: "#FF8C00", mark: "Y!" },
-  pinkoi:           { color: "#26B7A7", mark: "Pin" }
+  pinkoi:           { color: "#26B7A7", mark: "Pin" },
+  other:            { color: "#6E6E73", mark: "手動" }
 };
 
 var lastData = null;
