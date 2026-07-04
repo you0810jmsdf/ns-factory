@@ -359,7 +359,7 @@
     "Virgilio",
     "ナチュラル系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/166876687.jpg"
+   "image": "assets/leathers/mg_nat.jpg"
   },
   {
    "id": "mg_fie",
@@ -371,7 +371,7 @@
     "Virgilio",
     "ナチュラル系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/183827901.jpg"
+   "image": "assets/leathers/mg_fie.jpg"
   },
   {
    "id": "mg_brn",
@@ -383,7 +383,7 @@
     "Virgilio",
     "ブラウン系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/142042272.jpg"
+   "image": "assets/leathers/mg_brn.jpg"
   },
   {
    "id": "mg_cas",
@@ -395,7 +395,7 @@
     "Virgilio",
     "ブラウン系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/166876910.jpg"
+   "image": "assets/leathers/mg_cas.jpg"
   },
   {
    "id": "mg_dkb",
@@ -407,7 +407,7 @@
     "Virgilio",
     "ブラウン系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/140633333.jpg"
+   "image": "assets/leathers/mg_dkb.jpg"
   },
   {
    "id": "mg_bos",
@@ -419,7 +419,7 @@
     "Virgilio",
     "ブラウン系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/183828000.jpg"
+   "image": "assets/leathers/mg_bos.jpg"
   },
   {
    "id": "mg_ner",
@@ -431,7 +431,7 @@
     "Virgilio",
     "ダーク系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/142026525.jpg"
+   "image": "assets/leathers/mg_ner.jpg"
   },
   {
    "id": "mg_top",
@@ -443,7 +443,7 @@
     "Virgilio",
     "ダーク系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805672.jpg"
+   "image": "assets/leathers/mg_top.jpg"
   },
   {
    "id": "mg_fra",
@@ -455,7 +455,7 @@
     "Virgilio",
     "レッド系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805363.jpg"
+   "image": "assets/leathers/mg_fra.jpg"
   },
   {
    "id": "mg_fux",
@@ -467,7 +467,7 @@
     "Virgilio",
     "レッド系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/166877020.jpg"
+   "image": "assets/leathers/mg_fux.jpg"
   },
   {
    "id": "mg_bur",
@@ -479,7 +479,7 @@
     "Virgilio",
     "レッド系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/183827962.jpg"
+   "image": "assets/leathers/mg_bur.jpg"
   },
   {
    "id": "mg_ros",
@@ -491,7 +491,7 @@
     "Virgilio",
     "レッド系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/188691265.jpg"
+   "image": "assets/leathers/mg_ros.jpg"
   },
   {
    "id": "mg_lil",
@@ -503,7 +503,7 @@
     "Virgilio",
     "レッド系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/166876967.jpg"
+   "image": "assets/leathers/mg_lil.jpg"
   },
   {
    "id": "mg_gir",
@@ -515,7 +515,7 @@
     "Virgilio",
     "イエロー系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/142042006.png"
+   "image": "assets/leathers/mg_gir.jpg"
   },
   {
    "id": "mg_man",
@@ -527,7 +527,7 @@
     "Virgilio",
     "イエロー系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805358.jpg"
+   "image": "assets/leathers/mg_man.jpg"
   },
   {
    "id": "mg_men",
@@ -539,7 +539,7 @@
     "Virgilio",
     "グリーン系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/166877083.jpg"
+   "image": "assets/leathers/mg_men.jpg"
   },
   {
    "id": "mg_all",
@@ -551,7 +551,7 @@
     "Virgilio",
     "グリーン系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805427.jpg"
+   "image": "assets/leathers/mg_all.jpg"
   },
   {
    "id": "mg_olm",
@@ -563,7 +563,7 @@
     "Virgilio",
     "グリーン系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/183786767.jpg"
+   "image": "assets/leathers/mg_olm.jpg"
   },
   {
    "id": "mg_tur",
@@ -575,7 +575,7 @@
     "Virgilio",
     "ブルー系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/170334361.jpg"
+   "image": "assets/leathers/mg_tur.jpg"
   },
   {
    "id": "mg_nav",
@@ -587,7 +587,7 @@
     "Virgilio",
     "ブルー系"
    ],
-   "image": "https://img07.shop-pro.jp/PA01426/148/product/158805629.jpg"
+   "image": "assets/leathers/mg_nav.jpg"
   },
   {
    "id": "lvb_ses",
