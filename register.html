@@ -1683,6 +1683,18 @@ function generatePrPrompt() {
   const sceneName   = (document.getElementById('scenePresetName')   || {}).value || '';
   const sceneLabel  = [personaName, sceneName].filter(Boolean).join(' × ') || 'Custom Scene';
 
+  const ACTION_VARIANTS = [
+    'holding it with both hands and gazing at it warmly, as if checking the finish',
+    'writing or sketching with it on a workshop desk, mid-motion',
+    'presenting it toward the viewer with an inviting gesture, slightly leaning forward',
+    'gently running a fingertip along the edge or stitching, showing texture',
+    'carrying it naturally while walking through the scene, caught mid-stride',
+    'placing it down on the desk/table with a soft, deliberate motion',
+    'opening or unfolding it to show the interior, absorbed in the action',
+    'holding it up at chest height, turning it slightly to catch the light'
+  ];
+  const action = ACTION_VARIANTS[Math.floor(Math.random() * ACTION_VARIANTS.length)];
+
   const prompt = [
     '## Two attached reference images',
     '  • Attached Image #1 = The Artisan: ' + artisanDesc + '.',
@@ -1695,7 +1707,7 @@ function generatePrPrompt() {
     '',
     '## Scene: ' + sceneLabel,
     'Setting: ' + settingDesc,
-    'Action: The artisan (from Attached Image #1) is naturally using or displaying the product — holding it with care, writing in it, or presenting it toward the viewer.',
+    'Action: The artisan (from Attached Image #1) is ' + action + '.',
     'The artisan may hold or display a generic stand-in for a ' + productDesc + '. The AUTHORITATIVE product representation is the lower photo strip (Attached Image #2 itself).',
     '',
     '## Style',
@@ -1704,7 +1716,11 @@ function generatePrPrompt() {
     '## Output requirements',
     '— Aspect ratio: 2:3 (vertical / portrait).',
     '— Upper 65–70%: generated scene with artisan. Lower 30–35%: Attached Image #2 inserted verbatim as a representative photo strip (no AI re-rendering).',
-    '— No facial drift on the artisan.'
+    '— No facial drift on the artisan.',
+    '',
+    '## Additional text output (separate from the image)',
+    'Alongside the image, output ONE short catch copy (20–30 Japanese characters) for this scene — a caption-style line different in style from an SNS post caption, evocative and visual rather than a sales pitch.',
+    'Do NOT use the artisan\'s real name; refer to them only anonymously (e.g. "職人" / "作り手" / "N\'s factory の職人").'
   ].join('\n');
 
   document.getElementById('prPromptOutput').value = prompt;
