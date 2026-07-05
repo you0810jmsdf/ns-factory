@@ -152,6 +152,7 @@ const IMAGES = {
 const imageSources = { ...IMAGES };
 const imgElCache = {};
 const origDataCache = {};
+const maskDataCache = {};   // view別マスク（0-255グレースケールUint8ClampedArray）。無ければ従来の背景自動判定
 let previewNotifyTimer = null;
 let lastPreviewSignature = '';
 
@@ -321,6 +322,61 @@ async function resolveImageSource(view) {
   return IMAGES[view];
 }
 
+/* 「指定部分だけ色替え」用マスク画像（対象=白/不透明・対象外=黒 or 透明）。
+   命名規則: {brandId}-{outer|closed|close}-mask.png 等、通常の写真と同じ候補パターンに -mask を付与。
+   見つからない場合は null を返し、従来の背景自動判定にフォールバックする。 */
+function getModelMaskPathCandidates(brandId, view, ext) {
+  const viewCandidates = view === 'outer' ? ['outer', 'closed', 'close'] : ['inner', 'open'];
+  const variants = [];
+  for (const candidateView of viewCandidates) {
+    variants.push(
+      `${brandId}-${candidateView}-mask.${ext}`,
+      `${brandId}_${candidateView}_mask.${ext}`,
+      `${brandId.replace(/_/g, '-')}-${candidateView}-mask.${ext}`,
+      `${brandId.replace(/-/g, '_')}_${candidateView}_mask.${ext}`
+    );
+  }
+  return [...new Set(variants)];
+}
+
+async function resolveMaskSource(view) {
+  const exts = ['png', 'jpg', 'jpeg', 'webp'];
+  for (const brandId of getModelAssetBrandCandidates()) {
+    for (const ext of exts) {
+      for (const path of getModelMaskPathCandidates(brandId, view, ext)) {
+        const found = await probeImage(buildModelAssetUrl(path));
+        if (found) return found;
+      }
+    }
+  }
+  return null;
+}
+
+/* マスク画像を写真と同じ実寸にリサイズしてグレースケール配列化する */
+function loadMaskData(maskSrc, width, height) {
+  return new Promise(resolve => {
+    const mimg = new Image();
+    mimg.onload = () => {
+      try {
+        const off = document.createElement('canvas');
+        off.width = width; off.height = height;
+        const octx = off.getContext('2d');
+        octx.drawImage(mimg, 0, 0, width, height);
+        const md = octx.getImageData(0, 0, width, height).data;
+        const gray = new Uint8ClampedArray(width * height);
+        for (let i = 0, j = 0; i < md.length; i += 4, j++) {
+          gray[j] = md[i + 3] < 255 ? md[i + 3] : Math.round((md[i] + md[i + 1] + md[i + 2]) / 3);
+        }
+        resolve(gray);
+      } catch (err) {
+        resolve(null);
+      }
+    };
+    mimg.onerror = () => resolve(null);
+    mimg.src = maskSrc;
+  });
+}
+
 function notifyParent() {
   if (!isEmbedded || window.parent === window) return;
   window.parent.postMessage({
@@ -386,12 +442,12 @@ function scheduleParentPreviewNotify() {
   }, 80);
 }
 
-function processPixels(srcData) {
+function processPixels(srcData, maskData) {
   const data = new Uint8ClampedArray(srcData.data);
   const colorHexValue = colorHex(sel.color);
   const colorHSL = colorHexValue ? rgbToHsl(...hexToRgb(colorHexValue)) : null;
   if (!colorHSL) return data;
-  return processSingleColorPixels(data, srcData.width, srcData.height, colorHSL);
+  return processSingleColorPixels(data, srcData.width, srcData.height, colorHSL, maskData);
 }
 
 function sampleBackgroundColor(data, width, height) {
@@ -417,8 +473,8 @@ function sampleBackgroundColor(data, width, height) {
   return [Math.round(r / count), Math.round(g / count), Math.round(b / count)];
 }
 
-function processSingleColorPixels(data, width, height, targetHSL) {
-  const bg = sampleBackgroundColor(data, width, height);
+function processSingleColorPixels(data, width, height, targetHSL, maskData) {
+  const bg = maskData ? null : sampleBackgroundColor(data, width, height);
   const tinted = new Uint8ClampedArray(data);
   for (let i = 0; i < tinted.length; i += 4) {
     const a = tinted[i + 3];
@@ -426,18 +482,24 @@ function processSingleColorPixels(data, width, height, targetHSL) {
     const r = tinted[i];
     const g = tinted[i + 1];
     const b = tinted[i + 2];
-    const dr = r - bg[0];
-    const dg = g - bg[1];
-    const db = b - bg[2];
-    const bgDistance = Math.sqrt((dr * dr) + (dg * dg) + (db * db));
-    if (bgDistance < 18) continue;
     const [, os, ol] = rgbToHsl(r, g, b);
-    if (ol < 3 || ol > 97) continue;
-    const objectScore = clamp01((bgDistance - 18) / 72);
-    const lightMask = rangeSoftScore(ol, 8, 90, 16);
-    const satMask = os < 4 ? 0.65 : 1;
-    const mask = clamp01(objectScore * lightMask * satMask);
-    if (mask < 0.12) continue;
+    let mask;
+    if (maskData) {
+      mask = maskData[i >> 2] / 255;
+      if (mask < 0.02) continue;
+    } else {
+      if (ol < 3 || ol > 97) continue;
+      const dr = r - bg[0];
+      const dg = g - bg[1];
+      const db = b - bg[2];
+      const bgDistance = Math.sqrt((dr * dr) + (dg * dg) + (db * db));
+      if (bgDistance < 18) continue;
+      const objectScore = clamp01((bgDistance - 18) / 72);
+      const lightMask = rangeSoftScore(ol, 8, 90, 16);
+      const satMask = os < 4 ? 0.65 : 1;
+      mask = clamp01(objectScore * lightMask * satMask);
+      if (mask < 0.12) continue;
+    }
     const isNeutralTarget = targetHSL[1] < 10;
     const isBlackTarget = targetHSL[2] < 16;
     const leatherSat = isNeutralTarget
@@ -491,7 +553,7 @@ function render() {
     scheduleParentPreviewNotify();
     return;
   }
-  const processed = processPixels(orig);
+  const processed = processPixels(orig, maskDataCache[currentView]);
   ctx.putImageData(new ImageData(processed, orig.width, orig.height), 0, 0);
   scheduleParentPreviewNotify();
 }
@@ -503,10 +565,15 @@ async function loadImages() {
   await Promise.all(views.map(async view => {
     imageSources[view] = await resolveImageSource(view);
   }));
+  const maskSources = {};
+  await Promise.all(views.map(async view => {
+    maskSources[view] = await resolveMaskSource(view);
+  }));
   await Promise.all(views.map(view => new Promise(resolve => {
     const img = new Image();
     imgElCache[view] = img;
     origDataCache[view] = null;
+    maskDataCache[view] = null;
     img.onload = () => resolve();
     img.onerror = () => {
       if (imageSources[view] !== IMAGES[view]) {
@@ -518,6 +585,14 @@ async function loadImages() {
     };
     img.src = imageSources[view];
   })));
+  render();
+  // マスクは写真の実寸が確定してから読み込み、見つかれば再描画する（見つからなければ従来の背景自動判定のまま）
+  await Promise.all(views.map(async view => {
+    const imgEl = imgElCache[view];
+    if (maskSources[view] && imgEl && imgEl.naturalWidth) {
+      maskDataCache[view] = await loadMaskData(maskSources[view], imgEl.naturalWidth, imgEl.naturalHeight);
+    }
+  }));
   render();
 }
 
