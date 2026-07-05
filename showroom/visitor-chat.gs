@@ -510,7 +510,80 @@ function pushMsg_(cache, m) {
   msgs.push(m);
   if (msgs.length > MSG_KEEP) msgs = msgs.slice(msgs.length - MSG_KEEP);
   writeJson_(cache, 'vc_msgs', msgs);
+  // 発言ログ（来店者・ちえみ・販売幕僚・店長の全発言を記録。入退店等のsysメッセージは対象外）
+  if (!m.sys) logMsgToSheet_(m);
 }
 function addSystemMsg_(cache, text) {
   pushMsg_(cache, { id: 'sys', name: '', avatar: '', text: text, sys: 1 });
+}
+
+/* ---------- 発言ログ（スプレッドシート） ----------
+   初回実行時にログ用スプレッドシートを自動作成し、
+   そのIDを Script Properties（LOG_SHEET_ID）へ保存して以後再利用する。
+   1発言＝1行。sysメッセージ（入退店通知等）は記録しない。
+   失敗してもチャット動作自体は継続させる（try/catchで握りつぶす）。 */
+var LOG_SHEET_NAME = 'log';
+var LOG_HEADER = ['datetime', 'id', 'name', 'role', 'text'];
+
+function getOrCreateLogSpreadsheet_() {
+  var props = PropertiesService.getScriptProperties();
+  var ssId = props.getProperty('LOG_SHEET_ID');
+  var ss;
+  if (ssId) {
+    try { ss = SpreadsheetApp.openById(ssId); } catch (e) { ss = null; }
+  }
+  if (!ss) {
+    ss = SpreadsheetApp.create('ns-factory ショールーム 発言ログ');
+    props.setProperty('LOG_SHEET_ID', ss.getId());
+  }
+  var sheet = ss.getSheetByName(LOG_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.getSheets()[0];
+    sheet.setName(LOG_SHEET_NAME);
+    sheet.appendRow(LOG_HEADER);
+  }
+  return sheet;
+}
+
+/* role判定: 来店者=visitor / ちえみ=chiemi / 販売幕僚=staff / 店長=owner */
+function roleOf_(m) {
+  if (m.id === BOT.id) return 'chiemi';
+  if (m.id === 'staff' || m.staff) return 'staff';
+  if (m.owner) return 'owner';
+  return 'visitor';
+}
+
+function logMsgToSheet_(m) {
+  try {
+    var sheet = getOrCreateLogSpreadsheet_();
+    sheet.appendRow([
+      Utilities.formatDate(new Date(m.t || Date.now()), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss'),
+      m.id || '',
+      m.name || '',
+      roleOf_(m),
+      m.text || ''
+    ]);
+  } catch (e) {
+    console.error('logMsgToSheet_ failed: ' + (e && e.message ? e.message : e));
+  }
+}
+
+/* エディタから一度だけ実行: ログ機能の動作確認用テスト関数
+   1) ログ用スプレッドシートが自動作成/取得できるか
+   2) 各役割（visitor/chiemi/staff/owner）の発言が1行ずつ記録されるか
+   を確認する。実行後、実行ログとログシートの中身を目視確認すること。 */
+function testLogMsg() {
+  var cache = CacheService.getScriptCache();
+  pushMsg_(cache, { id: 'v_test', name: 'テスト来店者', avatar: '🙂', text: 'これは来店者のテスト発言です' });
+  pushMsg_(cache, { id: BOT.id, name: BOT.name, avatar: BOT.avatar, text: 'これはちえみのテスト発言です' });
+  pushMsg_(cache, { id: 'staff', name: '販売幕僚', avatar: '🧵', text: 'これは販売幕僚のテスト発言です', staff: 1 });
+  pushMsg_(cache, { id: 'owner', name: '店長', avatar: '🦉', text: 'これは店長のテスト発言です', owner: 1 });
+  addSystemMsg_(cache, 'これはsysメッセージ（ログ対象外のはず）');
+  var ssId = PropertiesService.getScriptProperties().getProperty('LOG_SHEET_ID');
+  console.log('LOG_SHEET_ID = ' + ssId);
+  console.log('スプレッドシートURL = https://docs.google.com/spreadsheets/d/' + ssId + '/edit');
+  var sheet = getOrCreateLogSpreadsheet_();
+  console.log('現在の行数 = ' + sheet.getLastRow());
+  var lastRows = sheet.getRange(Math.max(1, sheet.getLastRow() - 4), 1, Math.min(5, sheet.getLastRow()), LOG_HEADER.length).getValues();
+  console.log('直近の記録行:\n' + JSON.stringify(lastRows, null, 2));
 }

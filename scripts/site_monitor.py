@@ -342,9 +342,14 @@ def load_state() -> dict:
         return {}
 
 
-def save_state(state: dict) -> None:
+def save_state(state: dict) -> bool:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+        return True
+    except OSError as exc:
+        print(f"\n状態保存: 失敗しました（{type(exc).__name__}: {exc}）")
+        return False
 
 
 def smtp_configured() -> bool:
