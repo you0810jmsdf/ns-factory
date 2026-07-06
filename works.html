@@ -427,6 +427,167 @@
     }
     .work-card.is-unavailable .thumb,
     .work-card.is-unavailable .thumb-placeholder { opacity: 0.55; filter: grayscale(0.4); }
+
+    /* ===== オーダー相談チャット（showroom/chat-widget.js を流用） ===== */
+    .oc-widget {
+      --oc-accent: #c9a96a;
+      --oc-gold-bright: #e8cf9a;
+      --oc-panel-line: rgba(212,180,120,0.40);
+      --oc-panel-text: #f3e9d8;
+      --oc-panel-sub: #bfae8e;
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+    .oc-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      width: 100%;
+      border: 1px solid var(--oc-accent);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      background: linear-gradient(180deg, #dcbd85, #c9a96a);
+      color: #2a1e10;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .oc-trigger:hover { filter: brightness(1.06); }
+    .oc-widget .sc-header {
+      display: none; /* works.htmlでは商品情報が既にモーダルにあるため非表示 */
+    }
+    .oc-widget #chat-area {
+      display: none;
+      margin-top: 12px;
+      background: rgba(40,30,20,0.92);
+      border: 1px solid var(--oc-panel-line);
+      border-radius: 12px;
+      padding: 12px;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .oc-widget #chat-area.oc-open { display: flex; }
+    .oc-widget #chat-area.chat-closed { opacity: 0.5; pointer-events: none; }
+    .oc-widget #chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 4px 2px;
+    }
+    .oc-widget .chat-msg { display: flex; gap: 8px; max-width: 92%; }
+    .oc-widget .chat-msg.user { align-self: flex-end; }
+    .oc-widget .chat-msg.staff { align-self: flex-start; }
+    .oc-widget .chat-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: top;
+      border: 1.5px solid var(--oc-accent);
+      background: #3a2d20;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .oc-widget .chat-col { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .oc-widget .chat-msg.user .chat-col { align-items: flex-end; }
+    .oc-widget .chat-meta { display: flex; align-items: baseline; gap: 8px; padding: 0 2px; }
+    .oc-widget .chat-name { font-size: 11px; font-weight: 700; color: var(--oc-gold-bright); }
+    .oc-widget .chat-time { font-size: 9.5px; color: var(--oc-panel-sub); }
+    .oc-widget .chat-bubble {
+      padding: 8px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.6;
+      word-break: break-all;
+      white-space: pre-line;
+    }
+    .oc-widget .chat-msg.user .chat-bubble {
+      background: linear-gradient(180deg, #dcbd85, #c9a96a);
+      color: #2a1e10;
+      border-top-right-radius: 4px;
+    }
+    .oc-widget .chat-msg.staff .chat-bubble {
+      background: rgba(255,255,255,0.07);
+      color: var(--oc-panel-text);
+      border: 1px solid rgba(212,180,120,0.18);
+      border-top-left-radius: 4px;
+    }
+    .oc-widget .chat-bubble.fallback-notice { font-size: 11px; color: var(--oc-panel-sub); background: rgba(255,255,255,0.04); }
+    .oc-widget .chat-typing {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.07);
+      padding: 8px 14px;
+      border-radius: 14px;
+      border-top-left-radius: 4px;
+      font-size: 16px;
+      letter-spacing: 4px;
+      color: var(--oc-panel-sub);
+      border: 1px solid rgba(212,180,120,0.18);
+    }
+    .oc-widget #chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .oc-widget #chat-input {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1px solid var(--oc-panel-line);
+      border-radius: 20px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      max-height: 80px;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.07);
+      color: var(--oc-panel-text);
+    }
+    .oc-widget #chat-input::placeholder { color: var(--oc-panel-sub); }
+    .oc-widget #chat-input:focus { border-color: var(--oc-gold-bright); }
+    .oc-widget #chat-send {
+      flex-shrink: 0;
+      width: 40px; height: 40px;
+      background: linear-gradient(180deg, #dcbd85, #c9a96a);
+      color: #2a1e10;
+      border: none;
+      border-radius: 50%;
+      font-size: 17px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .oc-widget #chat-send:hover { filter: brightness(1.08); }
+    .oc-widget #chat-send:disabled { background: rgba(255,255,255,0.12); color: var(--oc-panel-sub); cursor: default; }
+    .oc-widget .chat-limit-msg { font-size: 12px; color: var(--oc-panel-sub); text-align: center; padding: 6px 0; font-style: italic; }
+    .oc-widget #chat-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 2px; }
+    .oc-widget #chat-quick:empty { display: none; }
+    .oc-widget .chat-chip {
+      background: rgba(212,180,120,0.10);
+      border: 1.5px solid var(--oc-panel-line);
+      color: var(--oc-gold-bright);
+      border-radius: 16px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      max-width: 100%;
+    }
+    .oc-widget .chat-chip .chip-sub { display: block; font-size: 10px; font-weight: 400; opacity: .7; }
+    .oc-widget .chat-chip:hover { background: var(--oc-accent); border-color: var(--oc-accent); color: #2a1e10; }
+    .oc-widget .chat-chip.chip-exit { border-color: rgba(255,255,255,0.20); color: var(--oc-panel-sub); background: transparent; }
+    .oc-widget .chat-chip.chip-exit:hover { background: rgba(255,255,255,0.14); color: var(--oc-panel-text); }
+    .oc-widget .chat-chip.chip-img {
+      width: 92px;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 5px 5px 7px; border-radius: 10px; text-align: center;
+    }
+    .oc-widget .chat-chip.chip-img img { width: 100%; height: 54px; object-fit: cover; border-radius: 7px; display: block; background: #3a2d20; }
+    .oc-widget .chat-chip.chip-img .chip-label { font-size: 10.5px; line-height: 1.2; word-break: break-word; }
     .footer {
       border-top: 1px solid var(--line);
       padding: 22px 24px;
@@ -529,6 +690,20 @@
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
           <a id="recolor-link" class="modal-cta secondary" href="カラーシミュレーター/photo-color.html">🎨 色違いをシミュレーション</a>
+        </div>
+
+        <div class="oc-widget">
+          <button id="oc-trigger" class="oc-trigger" type="button">💬 この作品でオーダー相談する</button>
+          <img id="sc-avatar" src="" alt="" style="display:none;">
+          <span id="sc-name" style="display:none;"></span>
+          <div id="chat-area" class="chat-closed">
+            <div id="chat-messages"></div>
+            <div id="chat-quick"></div>
+            <div id="chat-input-row">
+              <textarea id="chat-input" rows="1" placeholder="メッセージを入力..." maxlength="200"></textarea>
+              <button id="chat-send" aria-label="送信">&#x27A4;</button>
+            </div>
+          </div>
         </div>
       </aside>
     </div>
@@ -772,6 +947,7 @@
       activeWork = work;
       activeIndex = index;
       updateModal();
+      resetOrderChat(work);
       modal.classList.add('open');
       closeModal.focus();
       try {
@@ -797,6 +973,46 @@
         href += '?src=' + encodeURIComponent(new URL(photo, location.href).href);
       } catch (e) {}
       recolorLink.href = href;
+    }
+
+    // ===== オーダー相談チャット（showroom/chat-widget.js を流用） =====
+    const ocTrigger = document.getElementById('oc-trigger');
+    const ocChatArea = document.getElementById('chat-area');
+    let ocWidget = null;
+    let ocOpened = false;
+
+    function ocBuildProductContext(work) {
+      return {
+        productId: work.id,
+        name: work.title,
+        price: work.price,
+        tags: [work.category, work.material, work.color, work.size].filter(Boolean),
+        stockStatus: work.soldout ? 'SOLDOUT' : work.noRestock ? '再販予定なし' : '在庫あり',
+        note: work.shortDesc,
+      };
+    }
+
+    function resetOrderChat(work) {
+      ocOpened = false;
+      if (ocChatArea) ocChatArea.classList.remove('oc-open');
+      if (ocTrigger) {
+        ocTrigger.textContent = '💬 この作品でオーダー相談する';
+        ocTrigger.onclick = () => ocOpenChat(work);
+      }
+    }
+
+    function ocOpenChat(work) {
+      if (!window.NsfChatWidget) return;
+      const staff = (window.SHOWROOM_STAFF || []).find((s) => s.id === 'hannbai');
+      const scAvatar = document.getElementById('sc-avatar');
+      const scName = document.getElementById('sc-name');
+      if (staff && scAvatar) scAvatar.src = 'showroom/' + staff.image;
+      if (staff && scName) scName.textContent = staff.name;
+      if (!ocWidget) ocWidget = window.NsfChatWidget.mount(document, {});
+      ocWidget.open('hannbai', ocBuildProductContext(work));
+      ocOpened = true;
+      if (ocChatArea) ocChatArea.classList.add('oc-open');
+      if (ocTrigger) ocTrigger.textContent = '💬 チャット中（この作品について相談できます）';
     }
 
     function updateModal() {
@@ -1046,5 +1262,10 @@
     })();
   </script>
 <script src="assets/access-counter.js"></script>
+
+<!-- ===== オーダー相談チャット（showroom/chat-widget.js を流用） ===== -->
+<script src="showroom/data/staffData.js"></script>
+<script src="showroom/data/config.js"></script>
+<script src="showroom/chat-widget.js"></script>
 </body>
 </html>
