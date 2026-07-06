@@ -889,7 +889,7 @@
           if (data && data.ok) {
             isConsultationSent = true;
             if (sendBtn) { sendBtn.textContent = '送信済み✓'; }
-            appendStaffMsg('この内容を作家に送信しました。追ってご連絡いたします。');
+            appendStaffMsg('この内容を作家に送信しました。内容を確認のうえ、お見積書を作成してお送りするか、追加で確認させていただきたいことがあればご記入いただいた連絡先へご連絡いたします。今しばらくお待ちください。');
           } else {
             if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'この内容で作家に送信'; }
             global.alert('送信に失敗しました。時間をおいて再度お試しください。');
