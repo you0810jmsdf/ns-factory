@@ -275,6 +275,9 @@
     }
     .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--color-accent); }
     .field textarea { min-height:72px; resize:vertical; }
+    /* AIチャット連携で構造化選択・購入手段・会話ログ等が入り長文化したため、
+       他のテキストエリアより広めの初期高さにする（#f-memoのみ） */
+    #f-memo { min-height:220px; font-family:inherit; white-space:pre-wrap; }
     .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
     /* Timeline editor */
