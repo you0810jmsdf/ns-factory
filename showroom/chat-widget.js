@@ -157,25 +157,30 @@
         overlay.id = 'nsf-img-lightbox';
         overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,8,5,0.85);'
           + 'align-items:center;justify-content:center;padding:24px;cursor:zoom-out;';
+        // 画像とボタンを同じ枠（frame）に入れ、×を画像の右上角に密着させる
+        // （overlay基準の絶対配置だと、画像が小さい時にボタンだけ画面の隅へ離れてしまうため）。
+        var frame = document.createElement('div');
+        frame.style.cssText = 'position:relative;display:inline-block;max-width:100%;max-height:100%;cursor:default;';
+        frame.addEventListener('click', function (e) { e.stopPropagation(); });
         var img = document.createElement('img');
         img.id = 'nsf-img-lightbox-img';
-        img.style.cssText = 'max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.5);cursor:default;';
-        img.addEventListener('click', function (e) { e.stopPropagation(); });
+        img.style.cssText = 'display:block;max-width:100%;max-height:calc(100vh - 48px);border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.5);';
         var closeBtn = document.createElement('button');
         closeBtn.type = 'button';
         closeBtn.textContent = '×';
         closeBtn.setAttribute('aria-label', '閉じる');
-        closeBtn.style.cssText = 'position:absolute;top:18px;right:18px;width:40px;height:40px;border-radius:50%;'
-          + 'border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;font-size:22px;'
-          + 'line-height:1;cursor:pointer;';
+        closeBtn.style.cssText = 'position:absolute;top:-14px;right:-14px;width:36px;height:36px;border-radius:50%;'
+          + 'border:1px solid rgba(255,255,255,.5);background:#2a1e10;color:#fff;font-size:20px;'
+          + 'line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);';
         function hide() { overlay.style.display = 'none'; }
         closeBtn.addEventListener('click', hide);
         overlay.addEventListener('click', hide);
         document.addEventListener('keydown', function (e) {
           if (e.key === 'Escape' && overlay.style.display === 'flex') hide();
         });
-        overlay.appendChild(img);
-        overlay.appendChild(closeBtn);
+        frame.appendChild(img);
+        frame.appendChild(closeBtn);
+        overlay.appendChild(frame);
         document.body.appendChild(overlay);
       }
       overlay.querySelector('#nsf-img-lightbox-img').src = src;
