@@ -50,6 +50,9 @@
     var currentChatStaffId = null;
     var currentProductContext = null; // このマウントで開いているチャットの商品コンテキスト（任意）
     var isChatSending = false;
+    // パーツ名→選択色 の構造化状態。同じパーツを選び直すと上書き（会話ログへの追記だけに頼らない）。
+    // 商品を開くたび（openChatInner）にリセットする。
+    var selections = {};
 
     function $(sel) { return container.querySelector(sel); }
 
@@ -72,6 +75,8 @@
       currentChatStaffId = staffId;
       currentProductContext = productContext || opts.productContext || null;
       isChatSending = false;
+      selections = {};
+      nsfRenderSelectionSummary();
       var area = $('#chat-area');
       if (!area) return;
       area.classList.remove('chat-closed');
@@ -192,15 +197,24 @@
     var hearingCore = global.NSF_HEARING ? global.NSF_HEARING.build(hearingKB, null, { assetBase: NSF_ROOT_BASE }) : null;
     var hearing = null; // {picking, prodKey, flow, step, answers, awaitKey, isLast, done}
     var hearingLeathers = null;
+    var hearingStitchColors = null;
+    function loadStitchColors(url) {
+      return fetch(url, { cache: 'no-cache' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { return (j && j.stitchColors && j.stitchColors.length) ? j.stitchColors : null; })
+        .catch(function () { return null; });
+    }
     // 革カタログ読込完了を外部（works.html等）から待てるようにする（自動色ギャラリー表示用）
     var hearingReadyPromise = Promise.resolve();
     if (global.NSF_HEARING) {
       hearingReadyPromise = Promise.all([
         global.NSF_HEARING.loadKB(NSF_ROOT_BASE + 'order_estimate/hearing-kb.json'),
-        global.NSF_HEARING.loadLeathers(NSF_ROOT_BASE + 'order_estimate/leather-catalog.json')
+        global.NSF_HEARING.loadLeathers(NSF_ROOT_BASE + 'order_estimate/leather-catalog.json'),
+        loadStitchColors(NSF_ROOT_BASE + 'order_estimate/stitch-colors.json')
       ]).then(function (res) {
         hearingKB = res[0];
         hearingLeathers = res[1];
+        hearingStitchColors = res[2];
         hearingCore = global.NSF_HEARING.build(hearingKB, hearingLeathers, { assetBase: NSF_ROOT_BASE });
       });
     }
@@ -592,7 +606,7 @@
       return null;
     }
 
-    /* 待機時の入口チップ（オーダー相談＝販売幕僚のみ／革の色＝販売幕僚・個人事業主） */
+    /* 待機時の入口チップ（オーダー相談＝販売幕僚のみ／革の色・ステッチ色＝販売幕僚・個人事業主） */
     function nsfDefaultChips() {
       clearChips();
       if (!global.NSF_HEARING) return;
@@ -602,19 +616,47 @@
       }
       if (currentChatStaffId === 'hannbai' || currentChatStaffId === 'kojinjigyonusi') {
         chips.push({ label: '🎨 革の色を見る', onClick: function () { showLeatherGallery('ask'); } });
+        chips.push({ label: '🧵 ステッチ色を見る', onClick: showStitchGallery });
       }
       if (chips.length) renderChips(chips);
     }
 
-    // スワッチの「この色にする」選択。ユーザー発言として会話ログに残し（sendToArtisan送信に含まれる）、
-    // 次に何をすればよいか（購入手段・連絡先を入力して送信）を案内してからチップを既定表示に戻す。
-    function nsfSelectLeatherColor(name) {
+    // パーツ（革色・ステッチ色など）ごとの選択。同じパーツを選び直すとselections[partLabel]を上書きし、
+    // 常時表示のサマリー欄（#oc-selection-summary。無ければ何もしない）に「現在の選択」を反映する。
+    // 会話ログにも残す（sendToArtisan送信のトランスクリプトに含まれる）が、最終的な選択内容は
+    // このselectionsオブジェクトを正とする（会話ログの出現順に頼らない）。
+    function nsfSetSelection(partLabel, name, image) {
+      if (image) global.open(image, '_blank');
+      selections[partLabel] = name;
+      nsfRenderSelectionSummary();
       appendUserMsg(name);
       var staffId = currentChatStaffId;
       if (!chatHistories[staffId]) chatHistories[staffId] = [];
-      chatHistories[staffId].push({ role: 'user', text: name });
-      appendStaffMsg('✅「' + name + '」で承りました。上部の購入手段・お名前・連絡先をご入力の上、「この内容で作家に送信」からお送りください。');
+      chatHistories[staffId].push({ role: 'user', text: partLabel + ': ' + name });
+      appendStaffMsg('✅「' + partLabel + '」を「' + name + '」に選択しました（変更したい場合は他の候補を選び直せば上書きされます）。決まったら上部の購入手段・お名前・連絡先をご入力の上、「この内容で作家に送信」からお送りください。');
       nsfDefaultChips();
+    }
+
+    function nsfRenderSelectionSummary() {
+      var el = $('#oc-selection-summary');
+      if (!el) return;
+      var keys = Object.keys(selections);
+      if (!keys.length) { el.textContent = ''; el.hidden = true; return; }
+      el.hidden = false;
+      el.textContent = '現在の選択： ' + keys.map(function (k) { return k + '=' + selections[k]; }).join(' ／ ');
+    }
+
+    function showStitchGallery() {
+      if (!hearingStitchColors) {
+        appendStaffMsg('ステッチ色カタログを読み込み中です。少しだけお待ちください🙏');
+        return;
+      }
+      appendStaffMsg('ステッチ色は' + hearingStitchColors.length + '色ございます🧵 気に入った色をタップすると選択できます。');
+      var swatchChips = hearingStitchColors.map(function (c) {
+        return { label: c.name, image: c.image, onClick: function () { nsfSetSelection('ステッチ色', c.name); } };
+      });
+      var chips = [{ label: '閉じる', exit: true, onClick: nsfDefaultChips }].concat(swatchChips);
+      renderChips(chips);
     }
 
     function showLeatherGallery(fam) {
@@ -648,15 +690,16 @@
         if (cnt.fresh) lead += '\n✨入荷したてが' + cnt.fresh + '色。エイジングがまったく進んでいない状態から育てられるのでおすすめです！';
         if (cnt.low) lead += '\n⚠️残りわずかが' + cnt.low + '色。気になっていたらお早めにどうぞ。';
         if (cnt.out) lead += '\n📦お取り寄せが' + cnt.out + '色。現在在庫がなく、お取り寄せに2〜3週間ほど＋取寄せ経費が若干かかります。';
-        lead += '\n気に入った色をタップすると「この色にする」で選択できます。';
+        lead += '\nスワッチをタップすると拡大写真で確認しつつ、その色を選択できます。';
       } else {
-        lead = fam + 'は' + list.length + '色ございます📷 気に入った色をタップすると「この色にする」で選択できます。';
+        lead = fam + 'は' + list.length + '色ございます📷 スワッチをタップすると拡大写真で確認しつつ、その色を選択できます。';
       }
       appendStaffMsg(lead);
       var swatchChips = list.map(function (l) {
         var t = stockKnown ? nsfLeatherTier(l) : null;
-        return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: nsfLeatherImg(l),
-                 onClick: function () { nsfSelectLeatherColor(l.name); } };
+        var img = nsfLeatherImg(l);
+        return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: img,
+                 onClick: function () { nsfSetSelection('革色', l.name, img); } };
       });
       var chips = [
         { label: '閉じる', exit: true, onClick: nsfDefaultChips },
@@ -724,7 +767,11 @@
         global.alert('送信先が未設定です。管理者にご連絡ください。');
         return;
       }
-      var memoWithMethod = (methodLabel ? '【購入手段・希望サイト】' + methodLabel + '\n\n' : '') + historyText;
+      var selectionKeys = Object.keys(selections);
+      var selectionLine = selectionKeys.length
+        ? '【選択内容】' + selectionKeys.map(function (k) { return k + ': ' + selections[k]; }).join(' / ') + '\n\n'
+        : '';
+      var memoWithMethod = selectionLine + (methodLabel ? '【購入手段・希望サイト】' + methodLabel + '\n\n' : '') + historyText;
       var payload = {
         action: 'addConsultation',
         client: client,
