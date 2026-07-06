@@ -649,9 +649,11 @@
         var proceed = global.confirm('お名前・ご連絡先が会話内に見当たりませんでした。このまま送信しますか？\n（送信後、作家が返信のためにご連絡先を別途確認する場合があります）');
         if (!proceed) return;
       }
-      var apiUrl = opts.apiUrl || (global.SHOWROOM_CONFIG && global.SHOWROOM_CONFIG.chatApi) || '';
+      // 注意: ここは通常のAIチャット用GAS（SHOWROOM_CONFIG.chatApi）とは別プロジェクト。
+      // オーダー進捗管理GAS（order_progress_GAS.js／addConsultationアクション）宛に送る。
+      var apiUrl = opts.orderProgressApiUrl || (global.SHOWROOM_CONFIG && global.SHOWROOM_CONFIG.orderProgressApi) || '';
       if (!apiUrl) {
-        global.alert('送信先が設定されていないため送信できません。');
+        global.alert('送信先が未設定です。管理者にご連絡ください。');
         return;
       }
       var payload = {
