@@ -101,7 +101,7 @@
         "records": []
       },
       "chatgpt": {
-        "status": "未対応",
+        "status": "手動確認（Stripe請求書DL）",
         "count": 0,
         "records": []
       }
@@ -168,7 +168,7 @@
         "records": []
       },
       "chatgpt": {
-        "status": "未対応",
+        "status": "手動確認（Stripe請求書DL）",
         "count": 0,
         "records": []
       }
@@ -235,7 +235,7 @@
         "records": []
       },
       "chatgpt": {
-        "status": "未対応",
+        "status": "手動確認（Stripe請求書DL）",
         "count": 0,
         "records": []
       }
@@ -302,7 +302,7 @@
         "records": []
       },
       "chatgpt": {
-        "status": "未対応",
+        "status": "手動確認（Stripe請求書DL）",
         "count": 0,
         "records": []
       }
@@ -369,7 +369,7 @@
         "records": []
       },
       "chatgpt": {
-        "status": "未対応",
+        "status": "手動確認（Stripe請求書DL）",
         "count": 0,
         "records": []
       }
@@ -436,7 +436,7 @@
         "records": []
       },
       "chatgpt": {
-        "status": "未対応",
+        "status": "手動確認（Stripe請求書DL）",
         "count": 0,
         "records": []
       }
@@ -503,11 +503,11 @@
         "records": []
       },
       "chatgpt": {
-        "status": "未対応",
+        "status": "手動確認（Stripe請求書DL）",
         "count": 0,
         "records": []
       }
     }
   },
-  "checked_at": "2026-07-06 15:47:45"
+  "checked_at": "2026-07-06 18:12:01"
 }
