@@ -53,12 +53,18 @@
 
     function $(sel) { return container.querySelector(sel); }
 
+    // 通信エラー・一時的なAPI不調時にのみ表示する中立的なメッセージ。
+    // ショールーム待機用の雑談セリフ（SHOWROOM_STAFF.lines）は流用しない。
+    var CHAT_FALLBACK_LINES = [
+      '只今混み合っております。少し経ってから、もう一度お試しいただけますでしょうか。',
+      '申し訳ございません、只今お返事の準備に時間がかかっております。もう一度お試しください。'
+    ];
+
     function getFallbackLines(staffId) {
       if (typeof opts.getFallbackLines === 'function') {
-        return opts.getFallbackLines(staffId) || ['少々お待ちください。'];
+        return opts.getFallbackLines(staffId) || CHAT_FALLBACK_LINES;
       }
-      var staff = (global.SHOWROOM_STAFF || []).find(function (s) { return s.id === staffId; });
-      return (staff && staff.lines) ? staff.lines : ['少々お待ちください。'];
+      return CHAT_FALLBACK_LINES;
     }
 
     // opts.productContext: mount時点の既定コンテキスト。open()の第2引数が渡されればそちらを優先。
@@ -125,7 +131,7 @@
       col.appendChild(buildChatMeta(scName && scName.textContent ? scName.textContent : 'スタッフ'));
       var bubble = document.createElement('div');
       bubble.className = 'chat-bubble' + (isFallback ? ' fallback-notice' : '');
-      bubble.textContent = text + (isFallback ? '\n（AIスタッフは席を外しています）' : '');
+      bubble.textContent = text + (isFallback ? '\n※現在通信が混み合っております' : '');
       col.appendChild(bubble);
       div.appendChild(col);
       msgs.appendChild(div);
