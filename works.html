@@ -519,6 +519,39 @@
       cursor: pointer;
     }
     .oc-overlay-close:hover { background: rgba(255,255,255,0.16); }
+    .oc-send-fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-bottom: 4px;
+    }
+    .oc-send-fields select,
+    .oc-send-fields input {
+      flex: 1 1 140px;
+      min-width: 0;
+      padding: 7px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--oc-panel-line);
+      background: rgba(255,255,255,0.07);
+      color: var(--oc-panel-text);
+      font-size: 12.5px;
+      font-family: inherit;
+    }
+    .oc-send-fields select option { color: #2a1e10; }
+    .oc-send-fields input::placeholder { color: var(--oc-panel-sub); }
+    .oc-send-fields #oc-send-to-artisan {
+      flex: 1 1 100%;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--oc-gold-bright);
+      background: rgba(201,169,106,0.16);
+      color: var(--oc-gold-bright);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .oc-send-fields #oc-send-to-artisan:hover { background: rgba(201,169,106,0.28); }
+    .oc-send-fields #oc-send-to-artisan:disabled { opacity: 0.7; cursor: default; }
     #oc-send-to-artisan {
       flex-shrink: 0;
       padding: 7px 14px;
@@ -803,8 +836,25 @@
           <div id="oc-ai-badge" class="oc-ai-badge">💬 AI販売幕僚とオーダー相談中</div>
           <span id="oc-overlay-product"></span>
         </div>
-        <button id="oc-send-to-artisan" type="button">この内容で作家に送信</button>
         <button id="oc-overlay-close" class="oc-overlay-close" type="button" aria-label="閉じる">×</button>
+      </div>
+      <div class="oc-send-fields">
+        <select id="oc-purchase-method" aria-label="購入手段・希望サイト">
+          <option value="">購入手段・希望サイト（未定でも可）</option>
+          <option value="bank">銀行振込</option>
+          <option value="btc">Bitcoin（BTC）</option>
+          <option value="mercari">メルカリ</option>
+          <option value="rakuma">ラクマ</option>
+          <option value="paypay">PayPayフリマ</option>
+          <option value="creema">Creema</option>
+          <option value="minne">minne</option>
+          <option value="base">BASE</option>
+          <option value="store">STORES</option>
+          <option value="pinkoi">Pinkoi</option>
+        </select>
+        <input id="oc-contact-name" type="text" placeholder="お名前" autocomplete="name">
+        <input id="oc-contact-info" type="text" placeholder="連絡先（メール・電話）" autocomplete="email">
+        <button id="oc-send-to-artisan" type="button">この内容で作家に送信</button>
       </div>
       <div id="chat-area" class="chat-closed">
         <div id="chat-messages"></div>
@@ -1110,6 +1160,12 @@
         ocTrigger.textContent = '💬 この作品でオーダー相談する';
         ocTrigger.onclick = () => ocOpenChat(work);
       }
+      const purchaseSel = document.getElementById('oc-purchase-method');
+      const nameInput = document.getElementById('oc-contact-name');
+      const contactInput = document.getElementById('oc-contact-info');
+      if (purchaseSel) purchaseSel.value = '';
+      if (nameInput) nameInput.value = '';
+      if (contactInput) contactInput.value = '';
     }
 
     function ocCloseOverlay() {
@@ -1141,6 +1197,15 @@
       if (ocOverlay) ocOverlay.classList.add('oc-overlay-open');
       if (ocAiBadge) ocAiBadge.classList.add('show');
       if (ocTrigger) ocTrigger.textContent = '💬 チャット中（この作品について相談できます）';
+
+      // SOLDOUT・再販予定なしの商品は、色選び直しの相談になりやすいため、
+      // 該当商品の革系統に絞った色ギャラリーを自動表示する（革カタログ読込完了後）。
+      if ((work.soldout || work.noRestock) && work.material && ocWidget.ready) {
+        ocWidget.ready.then(() => {
+          const tag = ocWidget.resolveSeriesTag && ocWidget.resolveSeriesTag(work.material);
+          if (tag && ocWidget.showColors) ocWidget.showColors(tag);
+        });
+      }
     }
 
     function updateModal() {
