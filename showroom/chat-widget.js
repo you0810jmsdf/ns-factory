@@ -625,8 +625,7 @@
     // 常時表示のサマリー欄（#oc-selection-summary。無ければ何もしない）に「現在の選択」を反映する。
     // 会話ログにも残す（sendToArtisan送信のトランスクリプトに含まれる）が、最終的な選択内容は
     // このselectionsオブジェクトを正とする（会話ログの出現順に頼らない）。
-    function nsfSetSelection(partLabel, name, image) {
-      if (image) global.open(image, '_blank');
+    function nsfSetSelection(partLabel, name) {
       selections[partLabel] = name;
       nsfRenderSelectionSummary();
       appendUserMsg(name);
@@ -690,16 +689,15 @@
         if (cnt.fresh) lead += '\n✨入荷したてが' + cnt.fresh + '色。エイジングがまったく進んでいない状態から育てられるのでおすすめです！';
         if (cnt.low) lead += '\n⚠️残りわずかが' + cnt.low + '色。気になっていたらお早めにどうぞ。';
         if (cnt.out) lead += '\n📦お取り寄せが' + cnt.out + '色。現在在庫がなく、お取り寄せに2〜3週間ほど＋取寄せ経費が若干かかります。';
-        lead += '\nスワッチをタップすると拡大写真で確認しつつ、その色を選択できます。';
+        lead += '\n気に入った色のスワッチをタップすると選択できます。';
       } else {
-        lead = fam + 'は' + list.length + '色ございます📷 スワッチをタップすると拡大写真で確認しつつ、その色を選択できます。';
+        lead = fam + 'は' + list.length + '色ございます📷 気に入った色のスワッチをタップすると選択できます。';
       }
       appendStaffMsg(lead);
       var swatchChips = list.map(function (l) {
         var t = stockKnown ? nsfLeatherTier(l) : null;
-        var img = nsfLeatherImg(l);
-        return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: img,
-                 onClick: function () { nsfSetSelection('革色', l.name, img); } };
+        return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: nsfLeatherImg(l),
+                 onClick: function () { nsfSetSelection('革色', l.name); } };
       });
       var chips = [
         { label: '閉じる', exit: true, onClick: nsfDefaultChips },
