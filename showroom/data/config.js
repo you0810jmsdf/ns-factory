@@ -6,5 +6,5 @@ window.SHOWROOM_CONFIG = {
   // オーダー進捗管理用GAS（order_progress_GASプロジェクト。addConsultationアクション）。
   // chat-widget.jsのsendToArtisan()（「この内容で作家に送信」ボタン）が使う。chatApiとは別プロジェクト・別デプロイURL。
   // scriptId確定後、GASエディタでデプロイしたウェブアプリURLをここに設定すること（未設定＝空文字のままだと送信ボタン押下時にエラー表示になる）。
-  orderProgressApi: ''
+  orderProgressApi: 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec'
 };
