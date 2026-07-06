@@ -824,7 +824,6 @@
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
-          <a id="recolor-link" class="modal-cta secondary" href="カラーシミュレーター/photo-color.html">🎨 色違いをシミュレーション</a>
         </div>
 
         <div class="oc-widget">
@@ -1129,18 +1128,6 @@
       } catch(e) {}
     }
 
-    const recolorLink = document.getElementById('recolor-link');
-    function updateRecolorLink(photo) {
-      // その作品の写真を色替え画面へ渡す（常に同一タブ遷移）。同一オリジンの写真は
-      // そのまま、外部(Drive)写真は色替え画面側の画像プロキシ経由で色替えされる。
-      // プロキシ未設定時は色替え画面が案内を表示する（安全なフォールバック）。
-      let href = 'カラーシミュレーター/photo-color.html';
-      try {
-        href += '?src=' + encodeURIComponent(new URL(photo, location.href).href);
-      } catch (e) {}
-      recolorLink.href = href;
-    }
-
     // ===== オーダー相談チャット（showroom/chat-widget.js を流用） =====
     const ocTrigger = document.getElementById('oc-trigger');
     const ocChatArea = document.getElementById('chat-area');
@@ -1228,7 +1215,6 @@
       modalCount.textContent = `${activeIndex + 1} / ${total}`;
       modalImg.src = activeWork.photos[activeIndex];
       modalImg.alt = activeWork.title;
-      updateRecolorLink(activeWork.photos[activeIndex]);
       modalMeta.innerHTML = [
         compact([activeWork.category, activeWork.material, activeWork.color]),
         compact([activeWork.size, formatPrice(activeWork.price)]),

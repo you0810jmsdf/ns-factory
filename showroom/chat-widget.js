@@ -715,7 +715,6 @@
         });
         var chips = [
           { label: '閉じる', exit: true, onClick: function () { pendingChoice = null; nsfDefaultChips(); } },
-          { label: '🎨 カラーシミュレーターで試す', onClick: function () { global.open(NSF_ROOT_BASE + 'カラーシミュレーター/simulator.html', '_blank'); } },
           { label: '他の系統も見る', onClick: function () { pendingChoice = null; showLeatherGallery('ask'); } }
         ];
         if (pendingChoice && pendingChoice.partLabel === '革色') {
