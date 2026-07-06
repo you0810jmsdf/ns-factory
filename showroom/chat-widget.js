@@ -22,6 +22,22 @@
 (function (global) {
   'use strict';
 
+  // このスクリプト自身の設置場所（.../showroom/chat-widget.js）を検出し、
+  // 呼び出し元ページ（works.html＝ns-factory直下／showroom/index.html＝showroom配下）
+  // に依存しない絶対パスを組み立てる基点にする。
+  // document.currentScript は静的<script src="...">タグの実行中にのみ有効なため、
+  // works.html・showroom/index.html どちらも動的挿入ではなく静的タグで読み込んでいる
+  // 現状の実装であれば確実に取得できる。
+  var NSF_SHOWROOM_BASE = (function () {
+    try {
+      var cs = document.currentScript;
+      if (cs && cs.src) return cs.src.replace(/[^\/]*$/, ''); // 例: https://.../ns-factory/showroom/
+    } catch (e) {}
+    return ''; // 取得できない場合は従来の相対パス（'../'）にフォールバック
+  })();
+  // order_estimate/ カラーシミュレーター/ など showroom の1つ上（ns-factory直下）を指す絶対パス基点
+  var NSF_ROOT_BASE = NSF_SHOWROOM_BASE ? NSF_SHOWROOM_BASE.replace(/showroom\/$/, '') : '../';
+
   function mount(container, opts) {
     opts = opts || {};
     container = container || document;
@@ -165,17 +181,19 @@
        知識・フローは ../order_estimate/hearing-core.js ＋ hearing-kb.json を共用。
        通常のAIチャット（GAS）とは独立して動き、送信回数制限も消費しない。 */
     var hearingKB = global.NSF_HEARING ? global.NSF_HEARING.DEFAULT_KB : null;
-    var hearingCore = global.NSF_HEARING ? global.NSF_HEARING.build(hearingKB) : null;
+    // assetBase: hearing-core.js内の革画像パス（quickチップのimage）はここを基点に解決される。
+    // 既定値'../'はshowroom基準の相対パスのため、works.html等の別階層から呼ばれると404になる。
+    var hearingCore = global.NSF_HEARING ? global.NSF_HEARING.build(hearingKB, null, { assetBase: NSF_ROOT_BASE }) : null;
     var hearing = null; // {picking, prodKey, flow, step, answers, awaitKey, isLast, done}
     var hearingLeathers = null;
     if (global.NSF_HEARING) {
       Promise.all([
-        global.NSF_HEARING.loadKB('../order_estimate/hearing-kb.json'),
-        global.NSF_HEARING.loadLeathers('../order_estimate/leather-catalog.json')
+        global.NSF_HEARING.loadKB(NSF_ROOT_BASE + 'order_estimate/hearing-kb.json'),
+        global.NSF_HEARING.loadLeathers(NSF_ROOT_BASE + 'order_estimate/leather-catalog.json')
       ]).then(function (res) {
         hearingKB = res[0];
         hearingLeathers = res[1];
-        hearingCore = global.NSF_HEARING.build(hearingKB, hearingLeathers);
+        hearingCore = global.NSF_HEARING.build(hearingKB, hearingLeathers, { assetBase: NSF_ROOT_BASE });
       });
     }
 
@@ -269,7 +287,7 @@
               }).catch(function () {});
             }
           } },
-        { label: '🧵 くわしく相談ページへ', onClick: function () { global.open('../order_estimate/hearing-ai.html', '_blank'); } },
+        { label: '🧵 くわしく相談ページへ', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/hearing-ai.html', '_blank'); } },
         { label: '最初からやり直す', onClick: hearingStart },
         { label: '終了する', exit: true, onClick: hearingExit }
       ]);
@@ -297,7 +315,7 @@
     var nsfStockFetchedAt = 0;
     function nsfLoadLeatherStock() {
       // キャッシュ回避（GitHub Pages CDN・ブラウザキャッシュで古い在庫が残らないように）
-      return fetch('../order_estimate/leather-stock.csv?t=' + Date.now(), { cache: 'no-store' })
+      return fetch(NSF_ROOT_BASE + 'order_estimate/leather-stock.csv?t=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.text() : null; })
         .then(function (t) {
           if (!t) return;
@@ -315,7 +333,7 @@
         }).catch(function () {});
     }
     function nsfLoadRingStock() {
-      return fetch('../order_estimate/ring-price-stock.csv?t=' + Date.now(), { cache: 'no-store' })
+      return fetch(NSF_ROOT_BASE + 'order_estimate/ring-price-stock.csv?t=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.text() : null; })
         .then(function (t) {
           if (!t) return;
@@ -381,7 +399,7 @@
        「赤系の革ある？」等の直球の色質問に、オーダー相談フローを経ずその場で
        写真スワッチを表示する（GASに送らない＝送信回数も消費しない）。
        カタログ・色系統解決は hearing-core.js（resolveTone/leathersByTone）を共用。 */
-    function nsfLeatherImg(l) { return '../' + l.image; }
+    function nsfLeatherImg(l) { return NSF_ROOT_BASE + l.image; }
 
     function nsfColorFamilies() {
       if (!hearingLeathers) return [];
@@ -465,7 +483,7 @@
         appendStaffMsg('いま在庫のあるリングはこちらです📋\n' + lines + '\n\nここにない仕様（サイズ・色）もお取り寄せできます。');
       }
       renderChips([
-        { label: '📋 見積もりページで詳しく見る', onClick: function () { global.open('../order_estimate/leather-order-estimate-v2.html', '_blank'); } },
+        { label: '📋 見積もりページで詳しく見る', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/leather-order-estimate-v2.html', '_blank'); } },
         { label: '閉じる', exit: true, onClick: nsfDefaultChips }
       ]);
     }
@@ -607,7 +625,7 @@
         return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: nsfLeatherImg(l),
                  onClick: function () { global.open(nsfLeatherImg(l), '_blank'); } };
       });
-      chips.push({ label: '🎨 カラーシミュレーターで試す', onClick: function () { global.open('../カラーシミュレーター/simulator.html', '_blank'); } });
+      chips.push({ label: '🎨 カラーシミュレーターで試す', onClick: function () { global.open(NSF_ROOT_BASE + 'カラーシミュレーター/simulator.html', '_blank'); } });
       chips.push({ label: '他の系統も見る', onClick: function () { showLeatherGallery('ask'); } });
       chips.push({ label: '閉じる', exit: true, onClick: nsfDefaultChips });
       renderChips(chips);
