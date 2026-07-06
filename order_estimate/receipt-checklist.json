@@ -1,9 +1,225 @@
 {
-  "apple": {
-    "month": "2026-07",
-    "count": 2,
-    "sheet_configured": false,
-    "last_error": "2026-07-06 13:38:03,006 [ERROR] Sheets台帳への追記に失敗: <HttpError 403 when requesting https://sheets.googleapis.com/v4/spreadsheets?fields=spreadsheetId&alt=json returned \"Google Sheets API has not been used in project 275163125357 before or it is disabled. Enable it by visiting https://console.developers",
-    "checked_at": "2026-07-06 14:25:32"
-  }
+  "months": [
+    "2026-07",
+    "2026-06",
+    "2026-05",
+    "2026-04",
+    "2026-03",
+    "2026-02",
+    "2026-01"
+  ],
+  "subscriptions": [
+    "apple",
+    "moneyforward",
+    "photoroom",
+    "office365",
+    "claude_code"
+  ],
+  "matrix": {
+    "2026-07": {
+      "apple": {
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2026-07-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133758_Apple領収書_19f3368c7c8aa9d8.txt"
+          },
+          {
+            "date": "2026-06-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133824_Apple領収書_19eb0a308fc1f15d.txt"
+          }
+        ]
+      },
+      "moneyforward": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "photoroom": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "office365": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "claude_code": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      }
+    },
+    "2026-06": {
+      "apple": {
+        "status": "未取得",
+        "count": 0,
+        "records": []
+      },
+      "moneyforward": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "photoroom": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "office365": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "claude_code": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      }
+    },
+    "2026-05": {
+      "apple": {
+        "status": "未取得",
+        "count": 0,
+        "records": []
+      },
+      "moneyforward": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "photoroom": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "office365": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "claude_code": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      }
+    },
+    "2026-04": {
+      "apple": {
+        "status": "未取得",
+        "count": 0,
+        "records": []
+      },
+      "moneyforward": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "photoroom": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "office365": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "claude_code": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      }
+    },
+    "2026-03": {
+      "apple": {
+        "status": "未取得",
+        "count": 0,
+        "records": []
+      },
+      "moneyforward": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "photoroom": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "office365": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "claude_code": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      }
+    },
+    "2026-02": {
+      "apple": {
+        "status": "未取得",
+        "count": 0,
+        "records": []
+      },
+      "moneyforward": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "photoroom": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "office365": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "claude_code": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      }
+    },
+    "2026-01": {
+      "apple": {
+        "status": "未取得",
+        "count": 0,
+        "records": []
+      },
+      "moneyforward": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "photoroom": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "office365": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      },
+      "claude_code": {
+        "status": "未対応",
+        "count": 0,
+        "records": []
+      }
+    }
+  },
+  "checked_at": "2026-07-06 14:55:41"
 }
