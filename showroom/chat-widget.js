@@ -611,7 +611,10 @@
       clearChips();
       if (!global.NSF_HEARING) return;
       var chips = [];
-      if (currentChatStaffId === 'hannbai') {
+      // productContext付き（works.html等で特定の作品を見ながら開いたチャット）では、
+      // 「何を作りたいか」から始まるフルオーダーヒアリングは不自然なので出さない。
+      // フルオーダーは既存の「仕様変更してフルオーダー見積もりへ」ボタンに一本化する。
+      if (currentChatStaffId === 'hannbai' && !currentProductContext) {
         chips.push({ label: '🧵 オーダー相談（ヒアリング）を始める', onClick: hearingStart });
       }
       if (currentChatStaffId === 'hannbai' || currentChatStaffId === 'kojinjigyonusi') {
