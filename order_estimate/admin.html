@@ -1263,30 +1263,35 @@ tr.row-out-stock td{
 
     <!-- 証憑チェックリストタブ -->
     <div class="panel receipt-checklist-section admin-section-hidden" id="receiptChecklistPanel">
-      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">🧾 証憑チェックリスト（Apple領収書 自動取得状況）</h2>
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">🧾 証憑チェックリスト（月別・サブスク別 取得状況）</h2>
       <div class="hint" style="margin-bottom:12px">
         監理部の <code>fetch_email_receipts.py</code> 実行時に自動生成される
         <code>receipt-checklist.json</code> を表示しています（読み取り専用・自動更新）。
+        セルをクリックすると日付・金額・件名・ローカルファイルパスを確認できます（領収書本文は表示されません）。
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
         <button class="btn light" id="receiptChecklistReloadBtn" type="button">再読込</button>
         <span class="status-pill" id="receiptChecklistStatusPill">未読込</span>
       </div>
-      <div id="receiptChecklistBody" style="display:grid;gap:10px;max-width:520px">
-        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px">
-          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">今月のApple領収書 取得件数</div>
-          <div id="rcCount" style="font-size:1.8rem;font-weight:800;color:#6b3a1f">—</div>
-          <div id="rcMonth" style="font-size:11px;color:#8a6a4a;margin-top:2px"></div>
+      <div style="overflow-x:auto">
+        <table id="rcMatrixTable" style="border-collapse:collapse;width:100%;min-width:640px;font-size:13px">
+          <thead>
+            <tr id="rcMatrixHead"></tr>
+          </thead>
+          <tbody id="rcMatrixBody"></tbody>
+        </table>
+      </div>
+      <div style="font-size:11px;color:#8a6a4a;margin-top:10px">最終チェック日時: <span id="rcCheckedAt">—</span></div>
+    </div>
+
+    <!-- 証憑チェックリスト セル詳細モーダル -->
+    <div id="rcModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:14px;padding:20px;max-width:560px;width:92%;max-height:80vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 id="rcModalTitle" style="margin:0;font-size:15px;color:#6b3a1f">詳細</h3>
+          <button class="btn light" id="rcModalCloseBtn" type="button">閉じる</button>
         </div>
-        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px">
-          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">Sheets連携（Apple領収書台帳）</div>
-          <div id="rcSheetStatus" style="font-size:1rem;font-weight:700">—</div>
-        </div>
-        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px">
-          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">直近実行のエラー</div>
-          <div id="rcError" style="font-size:12px;color:#3a2a1a;white-space:pre-wrap;word-break:break-all">—</div>
-        </div>
-        <div style="font-size:11px;color:#8a6a4a">最終チェック日時: <span id="rcCheckedAt">—</span></div>
+        <div id="rcModalBody" style="display:grid;gap:10px"></div>
       </div>
     </div>
 
@@ -3799,6 +3804,16 @@ function publishHearingToGitHub() {
 }
 
 /* ===== 証憑チェックリスト（receipt-checklist.json）表示 ===== */
+const RC_SUB_LABELS = {
+  apple: 'Apple',
+  moneyforward: 'MoneyForward',
+  photoroom: 'Photoroom',
+  office365: 'Office365',
+  claude_code: 'Claude Code',
+};
+
+let rcMatrixData = null;
+
 function receiptChecklistSetPill(text, ok) {
   const pill = document.getElementById('receiptChecklistStatusPill');
   if (!pill) return;
@@ -3807,35 +3822,76 @@ function receiptChecklistSetPill(text, ok) {
   pill.style.color = ok ? '#2e7d32' : '';
 }
 
+function rcRenderMatrix(data) {
+  const head = document.getElementById('rcMatrixHead');
+  const body = document.getElementById('rcMatrixBody');
+  if (!head || !body) return;
+
+  const subs = data.subscriptions || [];
+  const months = data.months || [];
+
+  head.innerHTML = '<th style="text-align:left;padding:8px;border-bottom:2px solid #eadccf">月</th>' +
+    subs.map(s => `<th style="text-align:center;padding:8px;border-bottom:2px solid #eadccf">${RC_SUB_LABELS[s] || s}</th>`).join('');
+
+  body.innerHTML = months.map(month => {
+    const row = (data.matrix && data.matrix[month]) || {};
+    const cells = subs.map(sub => {
+      const cell = row[sub] || { status: '未対応', count: 0 };
+      const ok = cell.status === '取得済み';
+      const clickable = ok && cell.count > 0;
+      const bg = ok ? '#e8f5e9' : '#f5f0ea';
+      const color = ok ? '#2e7d32' : '#8a6a4a';
+      const cursor = clickable ? 'pointer' : 'default';
+      const label = ok ? `${cell.status}（${cell.count}件）` : cell.status;
+      return `<td style="text-align:center;padding:8px;border-bottom:1px solid #f0e6d8;background:${bg};color:${color};cursor:${cursor}"
+        ${clickable ? `onclick="rcOpenModal('${month}','${sub}')"` : ''}>${label}</td>`;
+    }).join('');
+    return `<tr><td style="padding:8px;border-bottom:1px solid #f0e6d8;font-weight:700;color:#6b3a1f">${month}</td>${cells}</tr>`;
+  }).join('');
+}
+
+function rcOpenModal(month, sub) {
+  if (!rcMatrixData) return;
+  const cell = (rcMatrixData.matrix[month] || {})[sub];
+  if (!cell) return;
+
+  const overlay = document.getElementById('rcModalOverlay');
+  const title = document.getElementById('rcModalTitle');
+  const body = document.getElementById('rcModalBody');
+  if (!overlay || !title || !body) return;
+
+  title.textContent = `${month} / ${RC_SUB_LABELS[sub] || sub}`;
+
+  const records = cell.records || [];
+  body.innerHTML = records.map(r => `
+    <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:10px;padding:12px">
+      <div style="font-size:12px;color:#8a6a4a;margin-bottom:4px">日付: ${r.date || '—'}　/　金額: ${r.amount != null ? '¥' + r.amount.toLocaleString() : '—'}</div>
+      <div style="font-size:13px;font-weight:700;color:#3a2a1a;margin-bottom:6px">${r.subject || '—'}（${r.status || '—'}）</div>
+      <div style="font-size:11px;color:#8a6a4a;margin-bottom:2px">本文を確認するには以下のローカルファイルを開いてください:</div>
+      <div style="font-size:11px;color:#3a2a1a;word-break:break-all;background:#fff;border:1px solid #eadccf;border-radius:6px;padding:6px">${r.local_path || '—'}</div>
+    </div>
+  `).join('') || '<div style="color:#8a6a4a;font-size:12px">レコードなし</div>';
+
+  overlay.style.display = 'flex';
+}
+
+function rcCloseModal() {
+  const overlay = document.getElementById('rcModalOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
 async function loadReceiptChecklist() {
   receiptChecklistSetPill('読込中…', false);
   try {
     const res = await fetch('./receipt-checklist.json', { cache: 'no-cache' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    const apple = data.apple || {};
+    rcMatrixData = data;
 
-    const countEl = document.getElementById('rcCount');
-    if (countEl) countEl.textContent = (apple.count ?? '—') + ' 件';
-    const monthEl = document.getElementById('rcMonth');
-    if (monthEl) monthEl.textContent = apple.month ? `対象月: ${apple.month}` : '';
-
-    const sheetEl = document.getElementById('rcSheetStatus');
-    if (sheetEl) {
-      if (apple.sheet_configured) {
-        sheetEl.textContent = '✅ 連携済み';
-        sheetEl.style.color = '#2e7d32';
-      } else {
-        sheetEl.textContent = '⚠️ 要対応: Sheets API有効化待ち（未連携）';
-        sheetEl.style.color = '#b42318';
-      }
-    }
-
-    const errorEl = document.getElementById('rcError');
-    if (errorEl) errorEl.textContent = apple.last_error ? apple.last_error : 'エラーなし';
+    rcRenderMatrix(data);
 
     const checkedAtEl = document.getElementById('rcCheckedAt');
-    if (checkedAtEl) checkedAtEl.textContent = apple.checked_at || '—';
+    if (checkedAtEl) checkedAtEl.textContent = data.checked_at || '—';
 
     receiptChecklistSetPill('読込済', true);
   } catch (err) {
@@ -3850,6 +3906,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pubBtn) pubBtn.addEventListener('click', publishHearingToGitHub);
   const rcReloadBtn = document.getElementById('receiptChecklistReloadBtn');
   if (rcReloadBtn) rcReloadBtn.addEventListener('click', loadReceiptChecklist);
+  const rcModalCloseBtn = document.getElementById('rcModalCloseBtn');
+  if (rcModalCloseBtn) rcModalCloseBtn.addEventListener('click', rcCloseModal);
+  const rcModalOverlay = document.getElementById('rcModalOverlay');
+  if (rcModalOverlay) rcModalOverlay.addEventListener('click', (e) => { if (e.target === rcModalOverlay) rcCloseModal(); });
   // かんたん編集 → JSON欄へ即時反映（JSON欄の手編集はそのまま保持し、反映時に統合）
   HEARING_SIMPLE_FIELDS.forEach(([elId, key]) => {
     const el = document.getElementById(elId);
