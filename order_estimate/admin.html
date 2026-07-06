@@ -3842,7 +3842,10 @@ function rcRenderMatrix(data) {
       const bg = ok ? '#e8f5e9' : '#f5f0ea';
       const color = ok ? '#2e7d32' : '#8a6a4a';
       const cursor = clickable ? 'pointer' : 'default';
-      const label = ok ? `${cell.status}（${cell.count}件）` : cell.status;
+      const records = cell.records || [];
+      const label = ok && records.length > 0
+        ? records.map(r => `<div>${r.subject || '—'} ¥${r.amount != null ? r.amount.toLocaleString() : '—'}</div>`).join('')
+        : cell.status;
       return `<td style="text-align:center;padding:8px;border-bottom:1px solid #f0e6d8;background:${bg};color:${color};cursor:${cursor}"
         ${clickable ? `onclick="rcOpenModal('${month}','${sub}')"` : ''}>${label}</td>`;
     }).join('');
