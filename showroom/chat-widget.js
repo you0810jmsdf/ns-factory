@@ -46,7 +46,7 @@
     }
 
     // opts.productContext: mount時点の既定コンテキスト。open()の第2引数が渡されればそちらを優先。
-    function openChat(staffId, productContext) {
+    function openChatInner(staffId, productContext) {
       currentChatStaffId = staffId;
       currentProductContext = productContext || opts.productContext || null;
       isChatSending = false;
@@ -612,6 +612,85 @@
       chips.push({ label: '閉じる', exit: true, onClick: nsfDefaultChips });
       renderChips(chips);
     }
+
+    /* ===== この内容で作家に送信（オーダー相談の内容をGASへ送る） =====
+       .oc-overlay-head 内の送信ボタンから呼ばれる。GASチャットへの通常送信とは別系統で、
+       送信回数制限（CHAT_MAX_TURNS）は消費しない。二重送信防止のため isConsultationSent を見る。 */
+    var isConsultationSent = false;
+
+    // 会話履歴から名乗りパターン（「〇〇です」「〇〇と申します」）を検出する簡易正規表現
+    function nsfDetectClientName(historyText) {
+      var m = historyText.match(/([一-龠ぁ-んァ-ヶA-Za-zＡ-Ｚａ-ｚ0-9]{1,20})(?:と申します|です[。.\s]|といいます)/);
+      return m ? m[1] : '';
+    }
+
+    // 会話履歴からメールアドレス・電話番号を検出する簡易正規表現
+    function nsfDetectContact(historyText) {
+      var email = historyText.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+      if (email) return email[0];
+      var tel = historyText.match(/0\d{1,4}-?\d{1,4}-?\d{3,4}/);
+      return tel ? tel[0] : '';
+    }
+
+    function sendToArtisan() {
+      if (isConsultationSent) return;
+      var staffId = currentChatStaffId;
+      var history = chatHistories[staffId] || [];
+      if (!history.length) {
+        global.alert('まだ会話内容がありません。チャットで相談内容を入力してから送信してください。');
+        return;
+      }
+      var historyText = history.map(function (h) {
+        return (h.role === 'user' ? 'お客様: ' : 'スタッフ: ') + h.text;
+      }).join('\n');
+      var client = nsfDetectClientName(historyText);
+      var contact = nsfDetectContact(historyText);
+      if (!client && !contact) {
+        var proceed = global.confirm('お名前・ご連絡先が会話内に見当たりませんでした。このまま送信しますか？\n（送信後、作家が返信のためにご連絡先を別途確認する場合があります）');
+        if (!proceed) return;
+      }
+      var apiUrl = opts.apiUrl || (global.SHOWROOM_CONFIG && global.SHOWROOM_CONFIG.chatApi) || '';
+      if (!apiUrl) {
+        global.alert('送信先が設定されていないため送信できません。');
+        return;
+      }
+      var payload = {
+        action: 'addConsultation',
+        client: client,
+        contact: contact,
+        item: (currentProductContext && currentProductContext.name) || '',
+        memo: historyText
+      };
+      var sendBtn = container.querySelector('#oc-send-to-artisan');
+      if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '送信中…'; }
+      fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.ok) {
+            isConsultationSent = true;
+            if (sendBtn) { sendBtn.textContent = '送信済み✓'; }
+            appendStaffMsg('この内容を作家に送信しました。追ってご連絡いたします。');
+          } else {
+            if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'この内容で作家に送信'; }
+            global.alert('送信に失敗しました。時間をおいて再度お試しください。');
+          }
+        })
+        .catch(function () {
+          if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'この内容で作家に送信'; }
+          global.alert('通信エラーのため送信できませんでした。');
+        });
+    }
+
+    // オーダー相談チャットを開き直したら、送信済み状態もリセットする
+    function openChat(staffId, productContext) {
+      isConsultationSent = false;
+      var sendBtn = container.querySelector('#oc-send-to-artisan');
+      if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'この内容で作家に送信'; }
+      openChatInner(staffId, productContext);
+    }
+
+    var ocSendBtn = container.querySelector('#oc-send-to-artisan');
+    if (ocSendBtn) ocSendBtn.addEventListener('click', sendToArtisan);
 
     function sendChat() {
       if (isChatSending) return;
