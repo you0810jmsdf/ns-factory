@@ -147,6 +147,41 @@
       msgs.scrollTop = msgs.scrollHeight;
     }
 
+    // 革スワッチの拡大写真をポップアップ表示（別タブだと戻り方が分からないお客様がいるため、
+    // 同一画面内のライトボックスにする。DOM/スタイルはJSで自己完結させ、
+    // works.html/showroom側にHTML追加を不要にしている）。
+    function nsfShowImageLightbox(src) {
+      var overlay = document.getElementById('nsf-img-lightbox');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'nsf-img-lightbox';
+        overlay.style.cssText = 'display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,8,5,0.85);'
+          + 'align-items:center;justify-content:center;padding:24px;cursor:zoom-out;';
+        var img = document.createElement('img');
+        img.id = 'nsf-img-lightbox-img';
+        img.style.cssText = 'max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.5);cursor:default;';
+        img.addEventListener('click', function (e) { e.stopPropagation(); });
+        var closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.textContent = '×';
+        closeBtn.setAttribute('aria-label', '閉じる');
+        closeBtn.style.cssText = 'position:absolute;top:18px;right:18px;width:40px;height:40px;border-radius:50%;'
+          + 'border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;font-size:22px;'
+          + 'line-height:1;cursor:pointer;';
+        function hide() { overlay.style.display = 'none'; }
+        closeBtn.addEventListener('click', hide);
+        overlay.addEventListener('click', hide);
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && overlay.style.display === 'flex') hide();
+        });
+        overlay.appendChild(img);
+        overlay.appendChild(closeBtn);
+        document.body.appendChild(overlay);
+      }
+      overlay.querySelector('#nsf-img-lightbox-img').src = src;
+      overlay.style.display = 'flex';
+    }
+
     function appendUserMsg(text) {
       var msgs = $('#chat-messages');
       if (!msgs) return;
@@ -708,7 +743,7 @@
           var img = nsfLeatherImg(l);
           return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: img,
                    onClick: function () {
-                     global.open(img, '_blank');
+                     nsfShowImageLightbox(img);
                      pendingChoice = { partLabel: '革色', name: l.name };
                      refreshLeatherChips();
                    } };
