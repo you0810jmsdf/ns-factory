@@ -99,6 +99,12 @@
       // ここでは何もしない（デグレ防止）。
       if (currentProductContext && currentProductContext.name) {
         appendStaffMsg('『' + currentProductContext.name + '』について、仕様のご相談などお聞かせください😊');
+        // 購入手段・連絡先入力欄（works.html等）がある画面でのみ、自由記述の案内を出す。
+        // 革色・ステッチ色以外の要望や、メール・電話以外の連絡先の書き方が分からず
+        // 埋もれてしまわないようにするための一言。
+        if ($('#oc-purchase-method')) {
+          appendStaffMsg('サイズの変更など、他にもご要望があればこのメッセージ欄に自由にご記入ください。ご連絡先がメール・電話以外（LINE・Instagramなど）の場合は、ご利用のSNS名とIDをこちらにご記入いただけると助かります。');
+        }
       }
     }
 
