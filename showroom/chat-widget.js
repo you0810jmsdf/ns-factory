@@ -53,6 +53,9 @@
     // パーツ名→選択色 の構造化状態。同じパーツを選び直すと上書き（会話ログへの追記だけに頼らない）。
     // 商品を開くたび（openChatInner）にリセットする。
     var selections = {};
+    // 革ギャラリーで「拡大写真を見ただけ」の候補（まだ決定していない）。
+    // 「この色に決定する」を押すまでselectionsには反映されない。
+    var pendingChoice = null;
 
     function $(sel) { return container.querySelector(sel); }
 
@@ -76,6 +79,7 @@
       currentProductContext = productContext || opts.productContext || null;
       isChatSending = false;
       selections = {};
+      pendingChoice = null;
       nsfRenderSelectionSummary();
       var area = $('#chat-area');
       if (!area) return;
@@ -692,22 +696,42 @@
         if (cnt.fresh) lead += '\n✨入荷したてが' + cnt.fresh + '色。エイジングがまったく進んでいない状態から育てられるのでおすすめです！';
         if (cnt.low) lead += '\n⚠️残りわずかが' + cnt.low + '色。気になっていたらお早めにどうぞ。';
         if (cnt.out) lead += '\n📦お取り寄せが' + cnt.out + '色。現在在庫がなく、お取り寄せに2〜3週間ほど＋取寄せ経費が若干かかります。';
-        lead += '\n気に入った色のスワッチをタップすると選択できます。';
+        lead += '\nスワッチをタップすると拡大写真で確認できます。気に入ったら「この色に決定する」を押してください。';
       } else {
-        lead = fam + 'は' + list.length + '色ございます📷 気に入った色のスワッチをタップすると選択できます。';
+        lead = fam + 'は' + list.length + '色ございます📷 スワッチをタップすると拡大写真で確認できます。気に入ったら「この色に決定する」を押してください。';
       }
       appendStaffMsg(lead);
-      var swatchChips = list.map(function (l) {
-        var t = stockKnown ? nsfLeatherTier(l) : null;
-        return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: nsfLeatherImg(l),
-                 onClick: function () { nsfSetSelection('革色', l.name); } };
-      });
-      var chips = [
-        { label: '閉じる', exit: true, onClick: nsfDefaultChips },
-        { label: '🎨 カラーシミュレーターで試す', onClick: function () { global.open(NSF_ROOT_BASE + 'カラーシミュレーター/simulator.html', '_blank'); } },
-        { label: '他の系統も見る', onClick: function () { showLeatherGallery('ask'); } }
-      ].concat(swatchChips);
-      renderChips(chips);
+
+      function refreshLeatherChips() {
+        var swatchChips = list.map(function (l) {
+          var t = stockKnown ? nsfLeatherTier(l) : null;
+          var img = nsfLeatherImg(l);
+          return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: img,
+                   onClick: function () {
+                     global.open(img, '_blank');
+                     pendingChoice = { partLabel: '革色', name: l.name };
+                     refreshLeatherChips();
+                   } };
+        });
+        var chips = [
+          { label: '閉じる', exit: true, onClick: function () { pendingChoice = null; nsfDefaultChips(); } },
+          { label: '🎨 カラーシミュレーターで試す', onClick: function () { global.open(NSF_ROOT_BASE + 'カラーシミュレーター/simulator.html', '_blank'); } },
+          { label: '他の系統も見る', onClick: function () { pendingChoice = null; showLeatherGallery('ask'); } }
+        ];
+        if (pendingChoice && pendingChoice.partLabel === '革色') {
+          chips.splice(1, 0, { label: '✅「' + pendingChoice.name + '」に決定する', onClick: nsfConfirmPending });
+        }
+        renderChips(chips.concat(swatchChips));
+      }
+      refreshLeatherChips();
+    }
+
+    // 拡大写真で確認しただけの候補（pendingChoice）を、正式な選択（selections）へ反映する。
+    function nsfConfirmPending() {
+      if (!pendingChoice) return;
+      var pc = pendingChoice;
+      pendingChoice = null;
+      nsfSetSelection(pc.partLabel, pc.name);
     }
 
     /* ===== この内容で作家に送信（オーダー相談の内容をGASへ送る） =====
