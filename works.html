@@ -519,6 +519,20 @@
       cursor: pointer;
     }
     .oc-overlay-close:hover { background: rgba(255,255,255,0.16); }
+    #oc-send-to-artisan {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--oc-gold-bright);
+      background: rgba(201,169,106,0.16);
+      color: var(--oc-gold-bright);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #oc-send-to-artisan:hover { background: rgba(201,169,106,0.28); }
+    #oc-send-to-artisan:disabled { opacity: 0.7; cursor: default; }
     /* AI販売幕僚とオーダー相談中バッジ（sc-headerは復活させず、専用バッジのみ追加）
        表示/非表示はJS側で#chat-areaの開閉と合わせて直接トグルする */
     .oc-ai-badge {
@@ -789,6 +803,7 @@
           <div id="oc-ai-badge" class="oc-ai-badge">💬 AI販売幕僚とオーダー相談中</div>
           <span id="oc-overlay-product"></span>
         </div>
+        <button id="oc-send-to-artisan" type="button">この内容で作家に送信</button>
         <button id="oc-overlay-close" class="oc-overlay-close" type="button" aria-label="閉じる">×</button>
       </div>
       <div id="chat-area" class="chat-closed">

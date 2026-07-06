@@ -142,6 +142,7 @@
       font-size:.72rem; font-weight:600; padding:3px 10px;
       border-radius:99px; white-space:nowrap; flex-shrink:0;
     }
+    .s-相談受付     { background:#F5F3FF; color:#6D28D9; }
     .s-見積書作成   { background:#FDF2F8; color:#BE185D; }
     .s-設計中       { background:#E0F2FE; color:#0369A1; }
     .s-受付中       { background:#EEF2FF; color:#3730A3; }
@@ -798,6 +799,7 @@ function renderCards(records) {
   });
 
   const STAMP_MAP = {
+    '相談受付':   '',
     '見積書作成': 'assets/stamps/status_estimate.png',
     '設計中':     'assets/stamps/status_design.png',
     '受付中':     'assets/stamps/status_waiting.png',
