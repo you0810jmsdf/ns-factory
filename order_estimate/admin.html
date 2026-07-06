@@ -746,6 +746,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="threads-sns" role="tab" aria-selected="false">📣 Threads投稿管理</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="customers" role="tab" aria-selected="false">👥 顧客マスタ</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="hearing" role="tab" aria-selected="false">🧵 対話ナレッジ</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="receipt-checklist" role="tab" aria-selected="false">🧾 証憑チェックリスト</button>
     </div>
     <div class="admin-tab-note" id="adminTabNote">N's Factory 幕僚計画。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。</div>
 
@@ -1257,6 +1258,35 @@ tr.row-out-stock td{
       </details>
       <div class="hint">
         反映は上部の「対話ナレッジをGitHubへ反映」ボタンから（GitHubトークンが必要です）。
+      </div>
+    </div>
+
+    <!-- 証憑チェックリストタブ -->
+    <div class="panel receipt-checklist-section admin-section-hidden" id="receiptChecklistPanel">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">🧾 証憑チェックリスト（Apple領収書 自動取得状況）</h2>
+      <div class="hint" style="margin-bottom:12px">
+        監理部の <code>fetch_email_receipts.py</code> 実行時に自動生成される
+        <code>receipt-checklist.json</code> を表示しています（読み取り専用・自動更新）。
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn light" id="receiptChecklistReloadBtn" type="button">再読込</button>
+        <span class="status-pill" id="receiptChecklistStatusPill">未読込</span>
+      </div>
+      <div id="receiptChecklistBody" style="display:grid;gap:10px;max-width:520px">
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">今月のApple領収書 取得件数</div>
+          <div id="rcCount" style="font-size:1.8rem;font-weight:800;color:#6b3a1f">—</div>
+          <div id="rcMonth" style="font-size:11px;color:#8a6a4a;margin-top:2px"></div>
+        </div>
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">Sheets連携（Apple領収書台帳）</div>
+          <div id="rcSheetStatus" style="font-size:1rem;font-weight:700">—</div>
+        </div>
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">直近実行のエラー</div>
+          <div id="rcError" style="font-size:12px;color:#3a2a1a;white-space:pre-wrap;word-break:break-all">—</div>
+        </div>
+        <div style="font-size:11px;color:#8a6a4a">最終チェック日時: <span id="rcCheckedAt">—</span></div>
       </div>
     </div>
 
@@ -3768,11 +3798,58 @@ function publishHearingToGitHub() {
   });
 }
 
+/* ===== 証憑チェックリスト（receipt-checklist.json）表示 ===== */
+function receiptChecklistSetPill(text, ok) {
+  const pill = document.getElementById('receiptChecklistStatusPill');
+  if (!pill) return;
+  pill.textContent = text;
+  pill.style.background = ok ? '#e8f5e9' : '';
+  pill.style.color = ok ? '#2e7d32' : '';
+}
+
+async function loadReceiptChecklist() {
+  receiptChecklistSetPill('読込中…', false);
+  try {
+    const res = await fetch('./receipt-checklist.json', { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const apple = data.apple || {};
+
+    const countEl = document.getElementById('rcCount');
+    if (countEl) countEl.textContent = (apple.count ?? '—') + ' 件';
+    const monthEl = document.getElementById('rcMonth');
+    if (monthEl) monthEl.textContent = apple.month ? `対象月: ${apple.month}` : '';
+
+    const sheetEl = document.getElementById('rcSheetStatus');
+    if (sheetEl) {
+      if (apple.sheet_configured) {
+        sheetEl.textContent = '✅ 連携済み';
+        sheetEl.style.color = '#2e7d32';
+      } else {
+        sheetEl.textContent = '⚠️ 要対応: Sheets API有効化待ち（未連携）';
+        sheetEl.style.color = '#b42318';
+      }
+    }
+
+    const errorEl = document.getElementById('rcError');
+    if (errorEl) errorEl.textContent = apple.last_error ? apple.last_error : 'エラーなし';
+
+    const checkedAtEl = document.getElementById('rcCheckedAt');
+    if (checkedAtEl) checkedAtEl.textContent = apple.checked_at || '—';
+
+    receiptChecklistSetPill('読込済', true);
+  } catch (err) {
+    receiptChecklistSetPill('読込失敗: ' + err.message, false);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const reloadBtn = document.getElementById('hearingReloadBtn');
   if (reloadBtn) reloadBtn.addEventListener('click', loadHearingKb);
   const pubBtn = document.getElementById('publishHearingGithubBtn');
   if (pubBtn) pubBtn.addEventListener('click', publishHearingToGitHub);
+  const rcReloadBtn = document.getElementById('receiptChecklistReloadBtn');
+  if (rcReloadBtn) rcReloadBtn.addEventListener('click', loadReceiptChecklist);
   // かんたん編集 → JSON欄へ即時反映（JSON欄の手編集はそのまま保持し、反映時に統合）
   HEARING_SIMPLE_FIELDS.forEach(([elId, key]) => {
     const el = document.getElementById(elId);
@@ -3816,7 +3893,8 @@ function setAdminTab(tab) {
   const isHearing = tab === 'hearing';
   const isLeather = tab === 'leather';
   const isSales = tab === 'sales';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales;
+  const isReceiptChecklist = tab === 'receipt-checklist';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -3862,8 +3940,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.hearing-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isHearing);
   });
+  document.querySelectorAll('.receipt-checklist-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isReceiptChecklist);
+  });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -3928,11 +4009,14 @@ function setAdminTab(tab) {
       ? 'Threads自動投稿システム（Nsfactory-SNS-AutoPost）。投稿候補の確認・承認・予約投稿を管理します。'
       : isHearing
       ? 'オーダー相談AI・ショールーム販売幕僚の対話知識（hearing-kb.json）を編集し、GitHubへ反映します。'
+      : isReceiptChecklist
+      ? '監理部のGmail領収書自動取得スクリプト実行時に生成される証憑チェックリストを表示します（読み取り専用）。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
   if (isHearing && !hearingKbLoaded) loadHearingKb();
+  if (isReceiptChecklist) loadReceiptChecklist();
   if (isSales) {
     // 初回表示時のみ src をセット（同一オリジンのため認証は sessionStorage 経由で自動通過）
     const salesFrame = document.getElementById('salesFrame');
