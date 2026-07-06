@@ -186,8 +186,10 @@
     var hearingCore = global.NSF_HEARING ? global.NSF_HEARING.build(hearingKB, null, { assetBase: NSF_ROOT_BASE }) : null;
     var hearing = null; // {picking, prodKey, flow, step, answers, awaitKey, isLast, done}
     var hearingLeathers = null;
+    // 革カタログ読込完了を外部（works.html等）から待てるようにする（自動色ギャラリー表示用）
+    var hearingReadyPromise = Promise.resolve();
     if (global.NSF_HEARING) {
-      Promise.all([
+      hearingReadyPromise = Promise.all([
         global.NSF_HEARING.loadKB(NSF_ROOT_BASE + 'order_estimate/hearing-kb.json'),
         global.NSF_HEARING.loadLeathers(NSF_ROOT_BASE + 'order_estimate/leather-catalog.json')
       ]).then(function (res) {
@@ -560,6 +562,20 @@
       return null;
     }
 
+    /* 商品の材質名（例:「アマゾニア」）からカタログの系列タグ（例:'AMAZZONIA'）を判定する。
+       nsfDetectSeries()と違い会話文の文脈ガードを掛けない（商品データの単語をそのまま渡す用途のため）。
+       商品モーダルの「オーダー相談」チャットを開いた直後の色ギャラリー自動絞り込みに使う。 */
+    function nsfSeriesTagFromMaterial(text) {
+      if (!hearingLeathers || !text) return null;
+      for (var i = 0; i < NSF_SERIES_MAP.length; i++) {
+        if (NSF_SERIES_MAP[i][0].test(text)) {
+          var tag = NSF_SERIES_MAP[i][1];
+          if (global.NSF_HEARING.leathersByTone(hearingLeathers, tag).length) return tag;
+        }
+      }
+      return null;
+    }
+
     /* 色の直球質問か判定: 系統が特定できれば系統名、色全般の質問なら 'ask'、違えば null */
     function nsfDetectLeatherColor(text) {
       if (!global.NSF_HEARING || !hearingLeathers) return null;
@@ -650,6 +666,13 @@
       return tel ? tel[0] : '';
     }
 
+    // 購入手段・希望サイトのラベル（stock-quote.htmlのPLATFORM_FEESと表記を合わせる）
+    var NSF_PURCHASE_METHOD_LABELS = {
+      bank: '銀行振込', btc: 'Bitcoin（BTC）', mercari: 'メルカリ', rakuma: 'ラクマ',
+      paypay: 'PayPayフリマ', creema: 'Creema', minne: 'minne', base: 'BASE',
+      store: 'STORES', pinkoi: 'Pinkoi'
+    };
+
     function sendToArtisan() {
       if (isConsultationSent) return;
       var staffId = currentChatStaffId;
@@ -661,10 +684,18 @@
       var historyText = history.map(function (h) {
         return (h.role === 'user' ? 'お客様: ' : 'スタッフ: ') + h.text;
       }).join('\n');
-      var client = nsfDetectClientName(historyText);
-      var contact = nsfDetectContact(historyText);
+      // 明示入力欄（works.html側で追加）があればそれを優先し、無ければ会話文からの自動抽出を使う
+      var methodSel = container.querySelector('#oc-purchase-method');
+      var nameInput = container.querySelector('#oc-contact-name');
+      var contactInput = container.querySelector('#oc-contact-info');
+      var explicitName = nameInput ? nameInput.value.trim() : '';
+      var explicitContact = contactInput ? contactInput.value.trim() : '';
+      var methodVal = methodSel ? methodSel.value : '';
+      var methodLabel = methodVal ? (NSF_PURCHASE_METHOD_LABELS[methodVal] || methodVal) : '';
+      var client = explicitName || nsfDetectClientName(historyText);
+      var contact = explicitContact || nsfDetectContact(historyText);
       if (!client && !contact) {
-        var proceed = global.confirm('お名前・ご連絡先が会話内に見当たりませんでした。このまま送信しますか？\n（送信後、作家が返信のためにご連絡先を別途確認する場合があります）');
+        var proceed = global.confirm('お名前・ご連絡先が入力・会話内に見当たりませんでした。このまま送信しますか？\n（送信後、作家が返信のためにご連絡先を別途確認する場合があります）');
         if (!proceed) return;
       }
       // 注意: ここは通常のAIチャット用GAS（SHOWROOM_CONFIG.chatApi）とは別プロジェクト。
@@ -674,12 +705,13 @@
         global.alert('送信先が未設定です。管理者にご連絡ください。');
         return;
       }
+      var memoWithMethod = (methodLabel ? '【購入手段・希望サイト】' + methodLabel + '\n\n' : '') + historyText;
       var payload = {
         action: 'addConsultation',
         client: client,
         contact: contact,
         item: (currentProductContext && currentProductContext.name) || '',
-        memo: historyText
+        memo: memoWithMethod
       };
       var sendBtn = container.querySelector('#oc-send-to-artisan');
       if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '送信中…'; }
@@ -837,7 +869,10 @@
     // ── 公開API ───────────────────────────────────────────────
     return {
       open: openChat,
-      send: sendChat
+      send: sendChat,
+      ready: hearingReadyPromise,
+      showColors: showLeatherGallery,
+      resolveSeriesTag: nsfSeriesTagFromMaterial
     };
   }
 
