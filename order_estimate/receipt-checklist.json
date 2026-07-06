@@ -1,0 +1,9 @@
+{
+  "apple": {
+    "month": "2026-07",
+    "count": 2,
+    "sheet_configured": false,
+    "last_error": "2026-07-06 13:38:03,006 [ERROR] Sheets台帳への追記に失敗: <HttpError 403 when requesting https://sheets.googleapis.com/v4/spreadsheets?fields=spreadsheetId&alt=json returned \"Google Sheets API has not been used in project 275163125357 before or it is disabled. Enable it by visiting https://console.developers",
+    "checked_at": "2026-07-06 14:25:32"
+  }
+}
