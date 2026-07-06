@@ -997,6 +997,7 @@
     function configureOrderLinks(work) {
       const planner = isSystemPlannerWork(work);
       const unavailable = !!(work.soldout || work.noRestock);
+      const hasPrice = Number(work.price) > 0;
       const noticeLabel = work.soldout ? 'SOLDOUT（販売終了）' : '再販予定なし';
 
       if (availabilityNotice) {
@@ -1009,27 +1010,21 @@
         }
       }
 
-      if (unavailable) {
-        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'お見積りを作成する（概算シミュレーション）' });
-        if (planner) {
-          applyLink(secondaryOrderLink, { href: ESTIMATE_URL, label: '仕様変更してフルオーダー見積もりへ' });
-          applyLink(tertiaryOrderLink, { href: LINE_URL, label: '💬 作家に直接LINEで相談する' });
-        } else {
-          applyLink(secondaryOrderLink, { href: LINE_URL, label: '💬 作家に直接LINEで相談する' });
-          applyLink(tertiaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
-        }
-        return;
-      }
+      // 価格が入っていない（0円）商品は、金額の出ない見積り帳票を表示しても意味が無いため
+      // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
+      const quoteConf = hasPrice
+        ? { href: buildStockQuoteUrl(work), label: unavailable ? 'お見積りを作成する（概算シミュレーション）' : 'この作品を購入する見積もり（概算シミュレーション）' }
+        : null;
+      const estimateConf = planner
+        ? { href: ESTIMATE_URL, label: '同仕様・仕様変更どちらも見積もり概算シミュレーションへ' }
+        : null;
+      const lineConf = { href: LINE_URL, label: '💬 作家に直接LINEで相談する' };
+      const mailConf = !planner ? { href: MAIL_URL, label: 'メールで相談する' } : null;
 
-      if (planner) {
-        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'この作品を購入する見積もり（概算シミュレーション）' });
-        applyLink(secondaryOrderLink, { href: ESTIMATE_URL, label: '仕様変更してフルオーダー見積もりへ' });
-        applyLink(tertiaryOrderLink, { href: LINE_URL, label: '💬 作家に直接LINEで相談する' });
-      } else {
-        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'お見積りを作成する（概算シミュレーション）' });
-        applyLink(secondaryOrderLink, { href: LINE_URL, label: '💬 作家に直接LINEで相談する' });
-        applyLink(tertiaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
-      }
+      const slots = [quoteConf, estimateConf, lineConf, mailConf].filter(Boolean);
+      applyLink(primaryOrderLink, slots[0] || null);
+      applyLink(secondaryOrderLink, slots[1] || null);
+      applyLink(tertiaryOrderLink, slots[2] || null);
     }
 
     function buildFilters() {
