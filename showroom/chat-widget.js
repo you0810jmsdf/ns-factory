@@ -62,6 +62,13 @@
       // 販売幕僚だけ、オーダー相談（ヒアリング）の入口チップを出す
       hearingReset();
       nsfDefaultChips();
+      // productContext付きで開かれた場合（works.html等の商品モーダル経由）のみ、
+      // 商品名入りの自動挨拶を表示する。sendChat()は通さず、送信回数も消費しない。
+      // showroom本体の通常呼び出し（productContextなし）は既存のsc-line演出のみで、
+      // ここでは何もしない（デグレ防止）。
+      if (currentProductContext && currentProductContext.name) {
+        appendStaffMsg('『' + currentProductContext.name + '』について、仕様のご相談などお聞かせください😊');
+      }
     }
 
     function chatTimeNow() {

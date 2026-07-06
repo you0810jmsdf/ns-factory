@@ -459,6 +459,23 @@
     .oc-widget .sc-header {
       display: none; /* works.htmlでは商品情報が既にモーダルにあるため非表示 */
     }
+    /* AI販売幕僚とオーダー相談中バッジ（sc-headerは復活させず、専用バッジのみ追加）
+       表示/非表示はJS側で#chat-areaの開閉と合わせて直接トグルする */
+    .oc-ai-badge {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(201,169,106,0.18);
+      border: 1px solid var(--oc-panel-line);
+      color: var(--oc-gold-bright);
+      font-size: 12px;
+      font-weight: 700;
+      width: fit-content;
+    }
+    .oc-ai-badge.show { display: inline-flex; }
     .oc-widget #chat-area {
       display: none;
       margin-top: 12px;
@@ -478,6 +495,16 @@
       max-height: 220px;
       overflow-y: auto;
       padding: 4px 2px;
+    }
+    /* オーダー相談チャット展開中は、商品情報・CTA群を圧縮してチャットを広く見せる */
+    .modal-detail.oc-open .modal-meta,
+    .modal-detail.oc-open .modal-desc,
+    .modal-detail.oc-open .modal-availability,
+    .modal-detail.oc-open .modal-actions {
+      display: none;
+    }
+    .modal-detail.oc-open .oc-widget #chat-messages {
+      max-height: 420px;
     }
     .oc-widget .chat-msg { display: flex; gap: 8px; max-width: 92%; }
     .oc-widget .chat-msg.user { align-self: flex-end; }
@@ -612,6 +639,10 @@
       .modal-media { min-height: 42vh; }
       .modal-img { max-height: 42vh; }
       .modal-foot { justify-content: center; }
+      /* オーダー相談チャット展開中のスマホ表示：写真を縮小してチャットを広く確保 */
+      .modal-stage.oc-open .modal-media { min-height: 0; max-height: 18vh; }
+      .modal-stage.oc-open .modal-img { max-height: 18vh; }
+      .modal-detail.oc-open .oc-widget #chat-messages { max-height: 50vh; }
     }
   </style>
 </head>
@@ -697,6 +728,7 @@
           <img id="sc-avatar" src="" alt="" style="display:none;">
           <span id="sc-name" style="display:none;"></span>
           <div id="chat-area" class="chat-closed">
+            <div id="oc-ai-badge" class="oc-ai-badge">💬 AI販売幕僚とオーダー相談中</div>
             <div id="chat-messages"></div>
             <div id="chat-quick"></div>
             <div id="chat-input-row">
@@ -992,9 +1024,16 @@
       };
     }
 
+    const ocModalDetail = document.querySelector('.modal-detail');
+    const ocModalStage = document.querySelector('.modal-stage');
+    const ocAiBadge = document.getElementById('oc-ai-badge');
+
     function resetOrderChat(work) {
       ocOpened = false;
       if (ocChatArea) ocChatArea.classList.remove('oc-open');
+      if (ocModalDetail) ocModalDetail.classList.remove('oc-open');
+      if (ocModalStage) ocModalStage.classList.remove('oc-open');
+      if (ocAiBadge) ocAiBadge.classList.remove('show');
       if (ocTrigger) {
         ocTrigger.textContent = '💬 この作品でオーダー相談する';
         ocTrigger.onclick = () => ocOpenChat(work);
@@ -1012,6 +1051,9 @@
       ocWidget.open('hannbai', ocBuildProductContext(work));
       ocOpened = true;
       if (ocChatArea) ocChatArea.classList.add('oc-open');
+      if (ocModalDetail) ocModalDetail.classList.add('oc-open');
+      if (ocModalStage) ocModalStage.classList.add('oc-open');
+      if (ocAiBadge) ocAiBadge.classList.add('show');
       if (ocTrigger) ocTrigger.textContent = '💬 チャット中（この作品について相談できます）';
     }
 
