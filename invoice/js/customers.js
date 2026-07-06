@@ -1,12 +1,13 @@
 // ============================================================
-// customers.js — customers.html 用（顧客マスタ管理）
+// customers.js — customers.html 用（顧客マスタ閲覧・検索）
+// 新規登録・編集・削除は customer_manager.html（ローカル）で行う運用に統一。
+// 保存時に customer_manager.html から自動でGAS同期される。
 // ============================================================
 
 (function () {
   'use strict';
 
   let allCustomers = [];
-  let editMode = false;
   let targetCustomerId = ''; // URLパラメータ ?id= で特定顧客にフォーカス
   let currentSort = localStorage.getItem('cust_sort') || 'newest';
 
@@ -27,14 +28,8 @@
 
     loadCustomers();
 
-    document.getElementById('btn-new').addEventListener('click', openFormNew);
-    document.getElementById('btn-cancel').addEventListener('click', closeForm);
-    document.getElementById('btn-submit').addEventListener('click', submitForm);
     document.getElementById('btn-refresh').addEventListener('click', loadCustomers);
     document.getElementById('search-input').addEventListener('input', renderTable);
-    document.getElementById('btn-add-platform').addEventListener('click', function () {
-      addPlatformRow();
-    });
   });
 
   function applySortToRows(rows) {
@@ -97,7 +92,7 @@
 
     const tbody = document.getElementById('cust-tbody');
     if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><span class="icon">&#x1F465;</span>顧客が登録されていません</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="icon">&#x1F465;</span>顧客が登録されていません</div></td></tr>';
       return;
     }
     tbody.innerHTML = rows.map(function (c) {
@@ -113,10 +108,6 @@
         <td>${escHtml(c.email)}</td>
         <td class="col-address" title="${escHtml(addrFull)}">${escHtml(addrFull)}</td>
         <td class="col-sns" title="${escHtml(snsCell.title)}">${snsCell.html}</td>
-        <td style="white-space:nowrap;">
-          <button class="btn btn-ghost btn-sm" onclick="editCustomer('${escHtml(c.id)}')">編集</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${escHtml(c.id)}','${escHtml(c.name)}')">削除</button>
-        </td>
       </tr>`;
     }).join('');
   }
@@ -151,132 +142,6 @@
     }
   }
 
-  function openFormNew() {
-    editMode = false;
-    document.getElementById('form-title').textContent = '顧客登録';
-    document.getElementById('btn-submit').textContent = '登録';
-    clearForm();
-    addPlatformRow(); // 新規登録時は空行を1つ用意
-    document.getElementById('form-panel').style.display = 'block';
-    document.getElementById('f-name').focus();
-  }
-
-  window.editCustomer = function (id) {
-    const c = allCustomers.find(x => x.id === id);
-    if (!c) return;
-    editMode = true;
-    document.getElementById('form-title').textContent = '顧客編集';
-    document.getElementById('btn-submit').textContent = '更新';
-    document.getElementById('edit-id').value   = c.id;
-    document.getElementById('f-name').value    = c.name;
-    document.getElementById('f-honorific').value = c.honorific || '様';
-    document.getElementById('f-zip').value     = c.zip;
-    document.getElementById('f-address').value = c.address;
-    document.getElementById('f-phone').value   = c.phone;
-    document.getElementById('f-email').value   = c.email;
-    document.getElementById('f-contact').value = c.contact;
-    document.getElementById('f-note').value    = c.note;
-    renderPlatformsList(parsePlatforms(c.platforms_json));
-    document.getElementById('form-panel').style.display = 'block';
-    document.getElementById('f-name').focus();
-  };
-
-  window.deleteCustomer = function (id, name) {
-    if (!confirm('顧客「' + name + '」を削除しますか？')) return;
-    API.deleteCustomer(id)
-      .then(function () {
-        showToast('削除しました', 'success');
-        loadCustomers();
-      })
-      .catch(function (err) { showToast('削除エラー: ' + err.message, 'error'); });
-  };
-
-  function submitForm() {
-    const name = document.getElementById('f-name').value.trim();
-    if (!name) { showToast('顧客名は必須です', 'error'); return; }
-
-    const platforms = collectPlatformsFromForm();
-    const platformsJson = platforms.length > 0 ? JSON.stringify(platforms) : '';
-
-    const customer = {
-      id:             document.getElementById('edit-id').value,
-      name:           name,
-      honorific:      document.getElementById('f-honorific').value,
-      zip:            document.getElementById('f-zip').value,
-      address:        document.getElementById('f-address').value,
-      phone:          document.getElementById('f-phone').value,
-      email:          document.getElementById('f-email').value,
-      contact:        document.getElementById('f-contact').value,
-      note:           document.getElementById('f-note').value,
-      platforms_json: platformsJson
-    };
-
-    const apiCall = editMode ? API.updateCustomer(customer) : API.createCustomer(customer);
-    apiCall
-      .then(function (res) {
-        showToast(editMode ? '更新しました' : '登録しました: ' + (res.id || customer.id), 'success');
-        closeForm();
-        loadCustomers();
-      })
-      .catch(function (err) { showToast('保存エラー: ' + err.message, 'error'); });
-  }
-
-  function closeForm() {
-    document.getElementById('form-panel').style.display = 'none';
-    clearForm();
-  }
-
-  function clearForm() {
-    ['edit-id','f-name','f-zip','f-address','f-phone','f-email','f-contact','f-note'].forEach(function (id) {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('f-honorific').value = '様';
-    document.getElementById('platforms-list').innerHTML = '';
-  }
-
-  // ---- SNS等ID（platforms_json）UI ----
-
-  function renderPlatformsList(rows) {
-    const list = document.getElementById('platforms-list');
-    list.innerHTML = '';
-    if (!rows || rows.length === 0) {
-      addPlatformRow();
-      return;
-    }
-    rows.forEach(r => addPlatformRow(r));
-  }
-
-  function addPlatformRow(row) {
-    const list = document.getElementById('platforms-list');
-    const r = row || { site: '', account: '', url: '', note: '' };
-    const wrap = document.createElement('div');
-    wrap.className = 'platform-row';
-    wrap.innerHTML = `
-      <input type="text" class="form-control p-site"    placeholder="サイト名" list="dl-platform-sites" value="${attrHtml(r.site)}">
-      <input type="text" class="form-control p-account" placeholder="アカウントID / 表示名" value="${attrHtml(r.account)}">
-      <input type="text" class="form-control p-url"     placeholder="URL（任意）" value="${attrHtml(r.url)}">
-      <input type="text" class="form-control p-note"    placeholder="備考（任意）" value="${attrHtml(r.note)}">
-      <button type="button" class="btn-remove" title="この行を削除">×</button>
-    `;
-    wrap.querySelector('.btn-remove').addEventListener('click', function () {
-      wrap.remove();
-    });
-    list.appendChild(wrap);
-  }
-
-  function collectPlatformsFromForm() {
-    const result = [];
-    document.querySelectorAll('#platforms-list .platform-row').forEach(function (row) {
-      const site    = row.querySelector('.p-site').value.trim();
-      const account = row.querySelector('.p-account').value.trim();
-      const url     = row.querySelector('.p-url').value.trim();
-      const note    = row.querySelector('.p-note').value.trim();
-      if (!site && !account && !url && !note) return; // 空行はスキップ
-      result.push({ site, account, url, note });
-    });
-    return result;
-  }
-
   // ---- ユーティリティ ----
 
   function showToast(msg, type) {
@@ -290,9 +155,5 @@
 
   function escHtml(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function attrHtml(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 })();
