@@ -347,6 +347,43 @@
       background: rgba(255,255,255,.95);
       color: var(--ink);
     }
+    .admin-price-panel {
+      background: #fff4e0;
+      border: 1px solid #e0b060;
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+    .admin-price-panel label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #8a5a10;
+      margin-bottom: 6px;
+    }
+    .admin-price-row { display: flex; gap: 8px; }
+    .admin-price-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 1px solid #d8b888;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .admin-price-row button {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      border: 1px solid #a87a1a;
+      border-radius: 6px;
+      background: #c8931e;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .admin-price-row button:disabled { opacity: .6; cursor: default; }
+    .admin-price-msg { font-size: 12px; margin-top: 6px; min-height: 14px; }
+    .admin-price-msg.success { color: #2c6a1f; }
+    .admin-price-msg.error { color: #8a2a1f; }
     .modal-detail-label {
       color: var(--warm);
       font-size: 12px;
@@ -759,6 +796,7 @@
     <a href="JHCS.html" class="nav-link">JHCS講習案内</a>
     <a href="links.html" class="nav-link">リンク集</a>
     <a href="register.html" class="nav-link">📦 商品登録</a>
+    <button type="button" id="nsf-admin-toggle" class="nav-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;">🔒 管理者モード</button>
   </nav>
 
   <header class="hero">
@@ -816,6 +854,14 @@
         <img id="modal-img" class="modal-img" src="" alt="">
       </div>
       <aside class="modal-detail">
+        <div id="admin-price-panel" class="admin-price-panel" hidden>
+          <label for="admin-price-input">🔒 価格を編集（管理者のみ）</label>
+          <div class="admin-price-row">
+            <input type="number" id="admin-price-input" min="0" step="1" placeholder="例: 12000">
+            <button type="button" id="admin-price-save">保存</button>
+          </div>
+          <div id="admin-price-msg" class="admin-price-msg"></div>
+        </div>
         <div class="modal-detail-label">Product</div>
         <div id="modal-meta" class="modal-meta"></div>
         <div id="modal-desc" class="modal-desc"></div>
@@ -1094,6 +1140,78 @@
 
     const WORKS_LOG_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 
+    // ===== 管理者ゲート（index.htmlと同じSHA-256照合パターン。サイト全体で共通のパスワード） =====
+    const NSF_GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+    function nsfSha256(t) {
+      return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then((b) =>
+        Array.from(new Uint8Array(b)).map((x) => x.toString(16).padStart(2, '0')).join('')
+      );
+    }
+    function nsfStoredKey() {
+      try { return sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) { return ''; }
+    }
+    function updateAdminUI() {
+      const isAdmin = !!nsfStoredKey();
+      const toggle = document.getElementById('nsf-admin-toggle');
+      if (toggle) toggle.textContent = isAdmin ? '🔓 管理者モード（ON）' : '🔒 管理者モード';
+      const panel = document.getElementById('admin-price-panel');
+      if (panel) panel.hidden = !isAdmin;
+      if (isAdmin && activeWork) {
+        document.getElementById('admin-price-input').value = activeWork.price || '';
+      }
+    }
+    document.getElementById('nsf-admin-toggle').addEventListener('click', () => {
+      if (nsfStoredKey()) {
+        try { sessionStorage.removeItem('nsf_admin_key'); } catch (e) {}
+        updateAdminUI();
+        return;
+      }
+      const pw = prompt('管理者パスワードを入力してください');
+      if (pw === null || pw === '') return;
+      nsfSha256(pw).then((hex) => {
+        if (hex === NSF_GATE_HASH) {
+          try { sessionStorage.setItem('nsf_admin_key', pw); } catch (e) {}
+          updateAdminUI();
+        } else {
+          alert('パスワードが一致しません');
+        }
+      }).catch(() => alert('照合に失敗しました（https環境で開いてください）'));
+    });
+
+    document.getElementById('admin-price-save').addEventListener('click', () => {
+      if (!activeWork) return;
+      const input = document.getElementById('admin-price-input');
+      const msg = document.getElementById('admin-price-msg');
+      const btn = document.getElementById('admin-price-save');
+      const price = Number(input.value);
+      if (!input.value || isNaN(price) || price < 0) {
+        msg.textContent = '価格を数値で入力してください';
+        msg.className = 'admin-price-msg error';
+        return;
+      }
+      btn.disabled = true;
+      msg.textContent = '保存中…';
+      msg.className = 'admin-price-msg';
+      const payload = JSON.stringify({ key: nsfStoredKey(), productId: activeWork.id, price: price });
+      fetch(WORKS_LOG_URL + '?api=updatePriceOnly&payload=' + encodeURIComponent(payload))
+        .then((r) => r.json())
+        .then((d) => {
+          if (d && d.ok) {
+            activeWork.price = price;
+            msg.textContent = '保存しました（' + d.newValue + '）';
+            msg.className = 'admin-price-msg success';
+          } else {
+            msg.textContent = '保存に失敗しました: ' + ((d && d.error) || '不明なエラー');
+            msg.className = 'admin-price-msg error';
+          }
+        })
+        .catch(() => {
+          msg.textContent = '通信エラーのため保存できませんでした';
+          msg.className = 'admin-price-msg error';
+        })
+        .finally(() => { btn.disabled = false; });
+    });
+
     function getVisitorId() {
       let vid = localStorage.getItem('nsf_vid');
       if (!vid) {
@@ -1216,6 +1334,7 @@
       ].filter(Boolean).map((line) => `<div>${esc(line)}</div>`).join('');
       modalDesc.textContent = activeWork.longDesc || activeWork.shortDesc || '詳細は公式LINEからお問い合わせください。';
       configureOrderLinks(activeWork);
+      updateAdminUI();
     }
 
     gallery.addEventListener('click', (event) => {
