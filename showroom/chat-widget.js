@@ -407,19 +407,36 @@
           global.nsfRingRows = nsfRingRows;
         }).catch(function () {});
     }
+    // ステッチ糸在庫: order_estimate/stitch-thread-stock.csv（thread_id,name,label,available,note）
+    // 革のような%残量ではなく単純な在庫あり/なし（available=TRUE/FALSE）。
+    var nsfStitchStock = null; // thread_id(=stitch-colors.jsonのid) -> true/false
+    function nsfLoadStitchStock() {
+      return fetch(NSF_ROOT_BASE + 'order_estimate/stitch-thread-stock.csv?t=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.text() : null; })
+        .then(function (t) {
+          if (!t) return;
+          var rows = nsfParseCsv(t);
+          var map = {};
+          rows.forEach(function (r) { map[r.thread_id] = /^true$/i.test(r.available); });
+          nsfStitchStock = map;
+        }).catch(function () {});
+    }
     nsfLoadLeatherStock();
     nsfLoadRingStock();
+    nsfLoadStitchStock();
     // 監理画面での更新を「開きっぱなしのタブ」にも反映する:
     // タブに戻ってきたとき（2分以上経過時）と、10分ごとに在庫を再取得
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden && Date.now() - nsfStockFetchedAt > 2 * 60 * 1000) {
         nsfLoadLeatherStock();
         nsfLoadRingStock();
+        nsfLoadStitchStock();
       }
     });
     setInterval(function () {
       nsfLoadLeatherStock();
       nsfLoadRingStock();
+      nsfLoadStitchStock();
     }, 10 * 60 * 1000);
 
     /* 在庫判定（半裁の残量%）:
@@ -697,9 +714,24 @@
         appendStaffMsg('ステッチ色カタログを読み込み中です。少しだけお待ちください🙏');
         return;
       }
-      appendStaffMsg('ステッチ色は' + hearingStitchColors.length + '色ございます🧵 気に入った色をタップすると選択できます。');
-      var swatchChips = hearingStitchColors.map(function (c) {
-        return { label: c.name, image: c.image, onClick: function () { nsfSetSelection('ステッチ色', c.name); } };
+      var stockKnown = !!nsfStitchStock;
+      var list = hearingStitchColors.slice();
+      if (stockKnown) {
+        list.sort(function (a, b) {
+          var av = nsfStitchStock[a.id] !== false; // 未収録は在庫あり扱い（安全側）
+          var bv = nsfStitchStock[b.id] !== false;
+          return (av === bv) ? 0 : (av ? -1 : 1);
+        });
+      }
+      if (stockKnown) {
+        var inN = list.filter(function (c) { return nsfStitchStock[c.id] !== false; }).length;
+        appendStaffMsg('ステッチ色は全' + list.length + '色、いま在庫があるのは' + inN + '色です🧵\n気に入った色をタップすると選択できます。');
+      } else {
+        appendStaffMsg('ステッチ色は' + list.length + '色ございます🧵 気に入った色をタップすると選択できます。');
+      }
+      var swatchChips = list.map(function (c) {
+        var sub = stockKnown ? (nsfStitchStock[c.id] !== false ? '✅ 在庫あり' : '📦 お取り寄せ') : '';
+        return { label: c.name, sub: sub, image: c.image, onClick: function () { nsfSetSelection('ステッチ色', c.name); } };
       });
       var chips = [{ label: '閉じる', exit: true, onClick: nsfDefaultChips }].concat(swatchChips);
       renderChips(chips);
