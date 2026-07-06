@@ -614,10 +614,10 @@
       if (fam === 'ask') {
         var fams = nsfColorFamilies();
         appendStaffMsg('革のお色は ' + fams.join('・') + ' をご用意しています🎨 どの系統がお好みですか？\nシリーズ名（ホースバット・コードバン・ブルガロ など）で聞いていただいてもOKです！');
-        renderChips(fams.map(function (f) {
+        renderChips([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }].concat(fams.map(function (f) {
           var n = global.NSF_HEARING.leathersByTone(hearingLeathers, f).length;
           return { label: f, sub: n + '色', onClick: function () { showLeatherGallery(f); } };
-        }).concat([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]));
+        })));
         return;
       }
       var list = global.NSF_HEARING.leathersByTone(hearingLeathers, fam).slice();
@@ -642,14 +642,16 @@
         lead = fam + 'は' + list.length + '色ございます📷 スワッチをタップすると拡大写真が開きます。';
       }
       appendStaffMsg(lead);
-      var chips = list.map(function (l) {
+      var swatchChips = list.map(function (l) {
         var t = stockKnown ? nsfLeatherTier(l) : null;
         return { label: l.name, sub: t ? NSF_TIER_BADGE[t.key] : (l.sub || ''), image: nsfLeatherImg(l),
                  onClick: function () { global.open(nsfLeatherImg(l), '_blank'); } };
       });
-      chips.push({ label: '🎨 カラーシミュレーターで試す', onClick: function () { global.open(NSF_ROOT_BASE + 'カラーシミュレーター/simulator.html', '_blank'); } });
-      chips.push({ label: '他の系統も見る', onClick: function () { showLeatherGallery('ask'); } });
-      chips.push({ label: '閉じる', exit: true, onClick: nsfDefaultChips });
+      var chips = [
+        { label: '閉じる', exit: true, onClick: nsfDefaultChips },
+        { label: '🎨 カラーシミュレーターで試す', onClick: function () { global.open(NSF_ROOT_BASE + 'カラーシミュレーター/simulator.html', '_blank'); } },
+        { label: '他の系統も見る', onClick: function () { showLeatherGallery('ask'); } }
+      ].concat(swatchChips);
       renderChips(chips);
     }
 

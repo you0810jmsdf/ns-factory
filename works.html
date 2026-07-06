@@ -684,7 +684,10 @@
     .oc-widget #chat-send:hover { filter: brightness(1.08); }
     .oc-widget #chat-send:disabled { background: rgba(255,255,255,0.12); color: var(--oc-panel-sub); cursor: default; }
     .oc-widget .chat-limit-msg { font-size: 12px; color: var(--oc-panel-sub); text-align: center; padding: 6px 0; font-style: italic; }
-    .oc-widget #chat-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 2px; }
+    .oc-widget #chat-quick {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 2px;
+      max-height: 220px; overflow-y: auto; flex-shrink: 0;
+    }
     .oc-widget #chat-quick:empty { display: none; }
     .oc-widget .chat-chip {
       background: rgba(212,180,120,0.10);
