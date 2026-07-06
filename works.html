@@ -1010,7 +1010,7 @@
       }
 
       if (unavailable) {
-        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'お見積りを作成する' });
+        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'お見積りを作成する（概算シミュレーション）' });
         if (planner) {
           applyLink(secondaryOrderLink, { href: ESTIMATE_URL, label: '仕様変更してフルオーダー見積もりへ' });
           applyLink(tertiaryOrderLink, { href: LINE_URL, label: '💬 作家に直接LINEで相談する' });
@@ -1022,11 +1022,11 @@
       }
 
       if (planner) {
-        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'この作品を購入する見積もり' });
+        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'この作品を購入する見積もり（概算シミュレーション）' });
         applyLink(secondaryOrderLink, { href: ESTIMATE_URL, label: '仕様変更してフルオーダー見積もりへ' });
         applyLink(tertiaryOrderLink, { href: LINE_URL, label: '💬 作家に直接LINEで相談する' });
       } else {
-        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'お見積りを作成する' });
+        applyLink(primaryOrderLink, { href: buildStockQuoteUrl(work), label: 'お見積りを作成する（概算シミュレーション）' });
         applyLink(secondaryOrderLink, { href: LINE_URL, label: '💬 作家に直接LINEで相談する' });
         applyLink(tertiaryOrderLink, { href: MAIL_URL, label: 'メールで相談する' });
       }
