@@ -3846,7 +3846,10 @@ function rcRenderMatrix(data) {
     const cells = subs.map(sub => {
       const cell = row[sub] || { status: '未対応', count: 0 };
       const ok = cell.status === '取得済み';
-      const clickable = ok && cell.count > 0;
+      const guideSteps = (cell.guide && cell.guide.steps) || '';
+      const hasGuideInfo = !!(cell.guide && cell.guide.url) ||
+        (!!guideSteps && guideSteps !== '取得手順未登録。情報が確定次第追記予定。');
+      const clickable = (ok && cell.count > 0) || hasGuideInfo;
       const bg = ok ? '#e8f5e9' : '#f5f0ea';
       const color = ok ? '#2e7d32' : '#8a6a4a';
       const cursor = clickable ? 'pointer' : 'default';
@@ -3873,17 +3876,36 @@ function rcOpenModal(month, sub) {
 
   title.textContent = `${month} / ${RC_SUB_LABELS[sub] || sub}`;
 
+  const guide = cell.guide || {};
+  const guideHtml = `
+    <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:10px;padding:12px">
+      <div style="font-size:12px;font-weight:700;color:#6b3a1f;margin-bottom:6px">手動対応の案内</div>
+      ${guide.url
+        ? `<div style="font-size:12px;margin-bottom:6px"><a href="${rcEscapeHtml(guide.url)}" target="_blank" rel="noopener">${rcEscapeHtml(guide.url)}</a></div>`
+        : `<div style="font-size:12px;color:#8a6a4a;margin-bottom:6px">取得手順未登録</div>`}
+      <div style="font-size:11px;color:#3a2a1a;white-space:pre-wrap">${rcEscapeHtml(guide.steps || '取得手順未登録。情報が確定次第追記予定。')}</div>
+    </div>
+  `;
+
   const records = cell.records || [];
-  body.innerHTML = records.map(r => `
+  const recordsHtml = records.map(r => `
     <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:10px;padding:12px">
       <div style="font-size:12px;color:#8a6a4a;margin-bottom:4px">日付: ${r.date || '—'}　/　金額: ${r.amount != null ? '¥' + r.amount.toLocaleString() : '—'}</div>
       <div style="font-size:13px;font-weight:700;color:#3a2a1a;margin-bottom:6px">${r.subject || '—'}（${r.status || '—'}）</div>
       <div style="font-size:11px;color:#8a6a4a;margin-bottom:2px">本文を確認するには以下のローカルファイルを開いてください:</div>
       <div style="font-size:11px;color:#3a2a1a;word-break:break-all;background:#fff;border:1px solid #eadccf;border-radius:6px;padding:6px">${r.local_path || '—'}</div>
     </div>
-  `).join('') || '<div style="color:#8a6a4a;font-size:12px">レコードなし</div>';
+  `).join('') || (guide.url ? '' : '<div style="color:#8a6a4a;font-size:12px">レコードなし</div>');
+
+  body.innerHTML = guideHtml + recordsHtml;
 
   overlay.style.display = 'flex';
+}
+
+function rcEscapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[ch]));
 }
 
 function rcCloseModal() {

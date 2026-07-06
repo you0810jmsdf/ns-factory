@@ -43,471 +43,835 @@
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133824_Apple領収書_19eb0a308fc1f15d.txt"
           }
-        ]
+        ],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "moneyforward": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "photoroom": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "office365": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "claude_code": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "electricity": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "water": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "internet": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "mobile": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "home_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "car_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "joyfulhonda": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+        }
       },
       "chatgpt": {
         "status": "手動確認（Stripe請求書DL）",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "https://platform.openai.com/settings/organization/billing/overview",
+          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
+        }
       }
     },
     "2026-06": {
       "apple": {
         "status": "未取得",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "moneyforward": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "photoroom": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "office365": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "claude_code": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "electricity": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "water": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "internet": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "mobile": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "home_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "car_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "joyfulhonda": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+        }
       },
       "chatgpt": {
         "status": "手動確認（Stripe請求書DL）",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "https://platform.openai.com/settings/organization/billing/overview",
+          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
+        }
       }
     },
     "2026-05": {
       "apple": {
         "status": "未取得",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "moneyforward": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "photoroom": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "office365": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "claude_code": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "electricity": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "water": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "internet": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "mobile": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "home_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "car_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "joyfulhonda": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+        }
       },
       "chatgpt": {
         "status": "手動確認（Stripe請求書DL）",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "https://platform.openai.com/settings/organization/billing/overview",
+          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
+        }
       }
     },
     "2026-04": {
       "apple": {
         "status": "未取得",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "moneyforward": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "photoroom": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "office365": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "claude_code": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "electricity": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "water": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "internet": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "mobile": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "home_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "car_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "joyfulhonda": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+        }
       },
       "chatgpt": {
         "status": "手動確認（Stripe請求書DL）",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "https://platform.openai.com/settings/organization/billing/overview",
+          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
+        }
       }
     },
     "2026-03": {
       "apple": {
         "status": "未取得",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "moneyforward": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "photoroom": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "office365": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "claude_code": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "electricity": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "water": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "internet": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "mobile": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "home_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "car_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "joyfulhonda": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+        }
       },
       "chatgpt": {
         "status": "手動確認（Stripe請求書DL）",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "https://platform.openai.com/settings/organization/billing/overview",
+          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
+        }
       }
     },
     "2026-02": {
       "apple": {
         "status": "未取得",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "moneyforward": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "photoroom": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "office365": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "claude_code": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "electricity": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "water": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "internet": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "mobile": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "home_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "car_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "joyfulhonda": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+        }
       },
       "chatgpt": {
         "status": "手動確認（Stripe請求書DL）",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "https://platform.openai.com/settings/organization/billing/overview",
+          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
+        }
       }
     },
     "2026-01": {
       "apple": {
         "status": "未取得",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "moneyforward": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "photoroom": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "office365": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "claude_code": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "electricity": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "water": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "internet": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "mobile": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "home_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "car_loan": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       },
       "joyfulhonda": {
         "status": "未対応",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+        }
       },
       "chatgpt": {
         "status": "手動確認（Stripe請求書DL）",
         "count": 0,
-        "records": []
+        "records": [],
+        "guide": {
+          "url": "https://platform.openai.com/settings/organization/billing/overview",
+          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
+        }
       }
     }
   },
-  "checked_at": "2026-07-06 18:12:01"
+  "checked_at": "2026-07-06 18:23:12"
 }
