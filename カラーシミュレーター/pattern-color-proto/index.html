@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>型紙×革テクスチャ 塗り絵プロトタイプ（検証用）</title>
+<style>
+body{font-family:sans-serif;background:#f0ede8;padding:16px}
+h1{font-size:16px}
+.wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+#svgHost{background:#222;border-radius:8px;padding:10px;max-width:600px}
+#svgHost svg{width:100%;height:auto;display:block}
+.outline-path{cursor:pointer}
+.outline-path:hover{filter:brightness(1.15)}
+.palette{display:flex;flex-wrap:wrap;gap:8px;max-width:300px}
+.sw{width:64px;cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;text-align:center;font-size:10px;background:#fff}
+.sw.on{border-color:#c00}
+.sw img{width:100%;height:48px;object-fit:cover;display:block}
+.note{font-size:12px;color:#555;max-width:600px}
+</style>
+</head>
+<body>
+<h1>型紙×革テクスチャ 塗り絵プロトタイプ（検証用・非公開）</h1>
+<p class="note">麻の葉紋様リングサポータ（60個の閉じた図形）の外形線をクリック/ドラッグ&ドロップすると、選択中の革テクスチャがその領域に塗られます。検証用の一時ページです。</p>
+<div class="wrap">
+  <div id="svgHost">読み込み中...</div>
+  <div>
+    <div style="font-size:12px;font-weight:bold;margin-bottom:6px">革テクスチャを選ぶ</div>
+    <div class="palette" id="palette"></div>
+  </div>
+</div>
+
+<script>
+const LEATHERS = [
+  { id:'mfog_nav', name:'MARGOT FOG ネイビー', image:'mfog_nav_crop.jpg' },
+  { id:'mfog_tur', name:'MARGOT FOG トルケーゼ', image:'mfog_tur_crop.jpg' },
+  { id:'mfog_cob', name:'MARGOT FOG コバルト', image:'mfog_cob_crop.jpg' },
+];
+let currentLeather = LEATHERS[0];
+
+/* 日本語フォルダ名を含む相対パスをSVG pattern内のimageに渡すと相対解決で文字化けし404になるため、
+   事前にfetchしてdata URL化しておき、以降はdata URLだけを使う */
+async function preloadLeathers(){
+  await Promise.all(LEATHERS.map(async lt=>{
+    const res = await fetch(lt.image);
+    const blob = await res.blob();
+    lt.dataUrl = await new Promise(resolve=>{
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.readAsDataURL(blob);
+    });
+  }));
+}
+
+function buildPalette(){
+  const p = document.getElementById('palette');
+  LEATHERS.forEach(lt=>{
+    const d = document.createElement('div');
+    d.className = 'sw' + (lt.id===currentLeather.id ? ' on' : '');
+    d.draggable = true;
+    d.innerHTML = `<img src="${lt.image}" alt="${lt.name}" draggable="false"><div>${lt.name}</div>`;
+    d.addEventListener('click', ()=>{
+      currentLeather = lt;
+      document.querySelectorAll('.sw').forEach(el=>el.classList.remove('on'));
+      d.classList.add('on');
+    });
+    d.addEventListener('dragstart', (e)=>{
+      e.dataTransfer.setData('text/plain', lt.id);
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+    p.appendChild(d);
+  });
+}
+
+function leatherById(id){ return LEATHERS.find(l=>l.id===id) || currentLeather; }
+
+const SVGNS = 'http://www.w3.org/2000/svg';
+const XLINKNS = 'http://www.w3.org/1999/xlink';
+
+function getDefs(svg){
+  let defs = svg.querySelector('defs');
+  if(!defs){ defs = document.createElementNS(SVGNS,'defs'); svg.insertBefore(defs, svg.firstChild); }
+  return defs;
+}
+
+/* fill="url(#pattern)"方式はブラウザ環境によってpattern内画像が描画されないことがあるため、
+   「外形線と同じ形のclipPathで革テクスチャ画像を切り抜いて上に重ねる」方式に変更 */
+function applyTexture(svg, pathEl, leather, vb){
+  const clipId = 'clip_' + pathEl.dataset.idx;
+  const defs = getDefs(svg);
+  if(!svg.querySelector('#'+clipId)){
+    const clipPath = document.createElementNS(SVGNS,'clipPath');
+    clipPath.setAttribute('id', clipId);
+    clipPath.setAttribute('clipPathUnits','userSpaceOnUse');
+    const pathCopy = pathEl.cloneNode(false);
+    pathCopy.removeAttribute('class'); pathCopy.removeAttribute('style');
+    clipPath.appendChild(pathCopy);
+    defs.appendChild(clipPath);
+  }
+  let img = svg.querySelector('image[data-for="'+clipId+'"]');
+  if(!img){
+    img = document.createElementNS(SVGNS,'image');
+    img.setAttribute('data-for', clipId);
+    img.setAttribute('x', vb.x); img.setAttribute('y', vb.y);
+    img.setAttribute('width', vb.width); img.setAttribute('height', vb.height);
+    img.setAttribute('preserveAspectRatio','xMidYMid slice');
+    img.setAttribute('clip-path', 'url(#'+clipId+')');
+    img.style.pointerEvents = 'none';
+    pathEl.parentNode.insertBefore(img, pathEl.nextSibling);
+  }
+  img.setAttributeNS(XLINKNS, 'href', leather.dataUrl || leather.image);
+}
+
+async function loadSvg(){
+  const res = await fetch('asanoha.svg');
+  const text = await res.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, 'image/svg+xml');
+  const svg = doc.documentElement;
+
+  // 菱目穴・折り目線などの装飾線はクリックを吸収してしまうため透過にする
+  [...svg.querySelectorAll('path,line')].forEach(el=>{ el.style.pointerEvents = 'none'; });
+
+  // 外形線（水色 #00FFFF/Aqua、全体シルエットの緑 #00FF00 等）を塗り絵対象パスとして扱う
+  const OUTLINE_COLORS = ['#00FFFF', 'AQUA', '#00FF00'];
+  const vb = svg.viewBox.baseVal;
+  const paths = [...svg.querySelectorAll('path')];
+  const outlinePaths = paths.filter(p => OUTLINE_COLORS.includes((p.getAttribute('stroke')||'').toUpperCase()));
+  outlinePaths.forEach((p,idx)=>{
+    p.dataset.idx = idx;
+    p.style.pointerEvents = 'all';
+    p.classList.add('outline-path');
+    p.style.fill = '#3a2a1a'; // 未選択時のデフォルト色（テクスチャ未適用時）
+    p.addEventListener('click', ()=>{
+      applyTexture(svg, p, currentLeather, vb);
+    });
+    p.addEventListener('dragover', (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+    p.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      applyTexture(svg, p, leatherById(id), vb);
+    });
+  });
+
+  document.getElementById('svgHost').innerHTML = '';
+  document.getElementById('svgHost').appendChild(svg);
+  console.log('outline paths found:', outlinePaths.length);
+}
+
+(async function init(){
+  await preloadLeathers();
+  buildPalette();
+  await loadSvg();
+  console.log('preload+init complete');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>N's factory カラー・テクスチャシミュレーター</title>
+<style>
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fillFlash{0%{filter:brightness(2.2) saturate(1.3)}100%{filter:brightness(1) saturate(1)}}
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN',sans-serif;background:#f0ede8;padding:16px;margin:0}
+h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient(135deg,#3d1a08,#a0785a);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+.wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+#canvasWrap{background:#222;border-radius:8px;padding:10px;transition:box-shadow .3s}
+#dispCanvas{display:block;cursor:crosshair;image-rendering:pixelated;transition:filter .15s}
+#dispCanvas.flash{animation:fillFlash .35s ease-out}
+.palette{display:flex;flex-wrap:wrap;gap:8px;max-width:340px;max-height:420px;overflow-y:auto;padding:2px}
+.sw{width:64px;cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;text-align:center;font-size:9px;background:#fff;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),border-color .18s,box-shadow .18s;position:relative;animation:fadeSlideIn .25s ease-out backwards}
+.sw:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.sw.on{border-color:#c00;transform:scale(1.08);box-shadow:0 4px 12px rgba(200,0,0,.3)}
+.sw.oos{opacity:.32;filter:grayscale(1);transition:opacity .18s,filter .18s}
+.sw.oos:hover{opacity:1;filter:none}
+.sw img{width:100%;height:48px;object-fit:cover;display:block}
+.sw .stock-badge{position:absolute;top:2px;right:2px;font-size:8px;padding:1px 4px;border-radius:8px;font-weight:700;color:#fff;line-height:1.4}
+.badge-high{background:#2e8b57}
+.badge-low{background:#c98a1b}
+.badge-none{background:#888}
+.note{font-size:12px;color:#555;max-width:600px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tab-btn{padding:8px 20px;border:2px solid #6b3a1f;background:#fff;color:#6b3a1f;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px;font-weight:700;transition:background .2s,color .2s,transform .15s}
+.tab-btn:hover{transform:translateY(-2px)}
+.tab-btn.active{background:#6b3a1f;color:#fff}
+.color-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.color-filter-btn{padding:4px 10px;border:1.5px solid #b5895a;background:#fff;color:#6b3a1f;border-radius:14px;font-size:11px;cursor:pointer;transition:all .15s}
+.color-filter-btn:hover{background:#fdf0e5}
+.color-filter-btn.active{background:#6b3a1f;color:#fff;border-color:#6b3a1f}
+</style>
+</head>
+<body>
+<h1>N's factory カラー・テクスチャシミュレーター</h1>
+<p class="note">色に関係なく「実線で囲まれた領域」をクリックすると、その内側だけ革テクスチャで塗りつぶします。外装/内装はタブで切り替えられ、それぞれ塗った内容は別々に保持されます。</p>
+<div class="tabs" id="tabs"></div>
+<div class="wrap">
+  <div>
+    <div id="canvasWrap">
+      <canvas id="dispCanvas"></canvas>
+    </div>
+    <div class="note" style="margin-top:10px">
+      線の太さ: <input type="range" id="strokeSlider" min="1" max="10" step="0.5" value="3"> <span id="strokeVal">3</span>倍
+      <br>（線図が粗い/隙間から塗りが漏れる場合は太く、線が実物より太すぎる場合は細くしてください。変更すると塗った内容はリセットされます）
+      <br>線の色: <input type="color" id="lineColorPicker" value="#ffffff">
+    </div>
+    <div class="note" style="margin-top:14px">
+      <button id="confirmBtn" style="display:none;padding:10px 20px;background:#6b3a1f;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer">この内容で確定</button>
+      <span id="confirmStatus" style="margin-left:10px;font-size:12px;color:#5a7a6a"></span>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:12px;font-weight:bold;margin-bottom:6px">革テクスチャを選ぶ</div>
+    <div class="color-filters" id="colorFilters"></div>
+    <div class="palette" id="palette"></div>
+    <div class="note" style="margin-top:10px">
+      テクスチャの大きさ: <input type="range" id="textureScaleSlider" min="1" max="8" step="0.5" value="3"> <span id="textureScaleVal">3</span>倍
+      <br>（次にクリックして塗った箇所から反映されます）
+    </div>
+  </div>
+</div>
+
+<script>
+let LEATHERS = [];
+let currentLeather = null;
+const leatherImgCache = {};
+const CROP_RATIO = 0.2; // 商品ラベル・ロゴを避けるため画像右上20%だけを質感として使う
+
+/* order_estimateの革カタログ(全280種類)と在庫CSVを読み込む。在庫なしも表示対象に含め、パレット側でグレーアウトする */
+async function loadLeatherCatalog(){
+  const [catalogRes, stockRes] = await Promise.all([
+    fetch('/order_estimate/leather-catalog.json'),
+    fetch('/order_estimate/leather-stock.csv'),
+  ]);
+  const catalog = await catalogRes.json();
+  const stockText = await stockRes.text();
+  const stockMap = {};
+  stockText.split('\n').slice(1).forEach(line=>{
+    const cols = line.split(',');
+    const id = (cols[0]||'').trim();
+    const pct = parseFloat(cols[2]);
+    if(id) stockMap[id] = isNaN(pct) ? 0 : pct;
+  });
+  return catalog.leathers.map(l => {
+    const stockPct = stockMap[l.id] || 0;
+    const colorTag = (l.tags||[]).find(t => t.endsWith('系')) || 'その他';
+    return { id: l.id, name: l.name, image: '/' + l.image, stockPct, colorTag };
+  });
+}
+
+const COLOR_FILTERS = ['すべて','ナチュラル系','ブラウン系','ダーク系','レッド系','ブルー系','グリーン系','イエロー系'];
+let currentColorFilter = 'すべて';
+
+function stockBadgeInfo(stockPct){
+  if(stockPct <= 0) return { cls:'badge-none', label:'在庫なし' };
+  if(stockPct < 30) return { cls:'badge-low', label:'在庫少' };
+  return { cls:'badge-high', label:'在庫あり' };
+}
+
+function buildColorFilters(){
+  const wrap = document.getElementById('colorFilters');
+  wrap.innerHTML = '';
+  COLOR_FILTERS.forEach(tag=>{
+    const btn = document.createElement('button');
+    btn.className = 'color-filter-btn' + (tag===currentColorFilter ? ' active' : '');
+    btn.textContent = tag;
+    btn.addEventListener('click', ()=>{
+      currentColorFilter = tag;
+      document.querySelectorAll('.color-filter-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      buildPalette();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+/* 画像の右上CROP_RATIO分だけを切り出したcanvasを返す（商品ラベル回避） */
+function cropTopRight(img){
+  const cw = Math.max(1, Math.round(img.naturalWidth * CROP_RATIO));
+  const ch = Math.max(1, Math.round(img.naturalHeight * CROP_RATIO));
+  const cx = img.naturalWidth - cw;
+  const c = document.createElement('canvas');
+  c.width = cw; c.height = ch;
+  c.getContext('2d').drawImage(img, cx, 0, cw, ch, 0, 0, cw, ch);
+  return c;
+}
+
+let textureScale = 3; // クロップ画像が小さいままタイル状に敷き詰めると継ぎ目が目立つため拡大する（スライダーで変更可能）
+function cropTopRightScaled(img){
+  const base = cropTopRight(img);
+  const c = document.createElement('canvas');
+  c.width = base.width * textureScale; c.height = base.height * textureScale;
+  c.getContext('2d').drawImage(base, 0, 0, c.width, c.height);
+  return c;
+}
+
+function buildPalette(){
+  const p = document.getElementById('palette');
+  p.innerHTML = '';
+  const filtered = LEATHERS.filter(lt => currentColorFilter==='すべて' || lt.colorTag===currentColorFilter);
+  filtered.forEach((lt,i)=>{
+    const inStock = lt.stockPct > 0;
+    const badge = stockBadgeInfo(lt.stockPct);
+    const d = document.createElement('div');
+    d.className = 'sw' + (currentLeather && lt.id===currentLeather.id ? ' on' : '') + (inStock ? '' : ' oos');
+    d.style.animationDelay = (i*15) + 'ms';
+    const cropped = leatherImgCache[lt.id] ? cropTopRight(leatherImgCache[lt.id]) : null;
+    d.innerHTML = `<img src="${cropped ? cropped.toDataURL() : lt.image}" alt="${lt.name}" loading="lazy">
+      <span class="stock-badge ${badge.cls}">${badge.label}</span>
+      <div>${lt.name}</div>`;
+    // 在庫なしでも取り寄せで対応できる場合があるため、選択自体は常に可能にする
+    d.addEventListener('click', ()=>{
+      currentLeather = lt;
+      document.querySelectorAll('.sw').forEach(el=>el.classList.remove('on'));
+      d.classList.add('on');
+    });
+    p.appendChild(d);
+  });
+}
+
+function loadImage(src){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+const MAX_DIM = 1200; // 解像度不足で線がガタつく問題への対処（600→1200）
+let strokeWidthMultiplier = 3; // 線の太さスライダーで変更可能
+let lineColor = '#FFFFFF';     // 線の色（カラーピッカーで変更可能）。暗すぎる色は背景(黒)との判定閾値に埋もれるため注意
+let dispCanvas, dispCtx;       // 実際に表示するキャンバス（DOM上の1つを使い回す）
+
+// オーダー進捗GAS（deploymentId据え置き）。作品ごとのDriveフォルダからsvg1.svg/svg2.svgを取得する
+const ORDER_PROGRESS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
+
+/* タブ定義。folderIdが渡された場合はDrive上のsvg1.svg/svg2.svgを「その1」「その2」として動的に構築する。
+   folderId未指定時（このプロトタイプを単体で開いた場合）は従来の仮SVGにフォールバックする。 */
+let TABS = {};
+let currentTabKey = null;
+const tabStates = {}; // key -> { DISP_W, DISP_H, offCanvas, offCtx, judgeImageData }
+
+// 塗り履歴（次回オーダーで同じ型紙を再利用する際、同じ塗りを自動再現するためのメタ情報）
+// { [tabKey]: [{ x, y, leatherId }, ...] }
+const paintHistory = {};
+let isReplayingPaint = false; // 再生中は履歴への二重記録を防ぐフラグ
+
+function getFolderIdFromUrl(){
+  return new URLSearchParams(location.search).get('folderId');
+}
+
+function isEmbedded(){
+  return new URLSearchParams(location.search).get('embed') === '1' && window.parent !== window;
+}
+
+/* embed=1でhearing-ai.html等のiframeに埋め込まれている場合、確定内容を親ウィンドウへ通知する。
+   folderId方式（Drive保存）とは独立した経路のため、注文がまだ存在しない段階（チャット中）でも使える */
+function sendFloodfillConfirmMessage(){
+  if(!isEmbedded()) return;
+  const tabKeys = Object.keys(TABS);
+  const parts = tabKeys.map(tabKey => {
+    const state = tabStates[tabKey];
+    if(!state) return null; // 一度も表示していないタブ（未ロード）は送らない
+    const history = paintHistory[tabKey] || [];
+    const lastEntry = history[history.length - 1];
+    const lastLeather = lastEntry ? LEATHERS.find(l => l.id === lastEntry.leatherId) : null;
+    return {
+      tabKey,
+      label: TABS[tabKey].label,
+      leatherId: lastLeather ? lastLeather.id : null,
+      leatherName: lastLeather ? lastLeather.name : null,
+      imageDataUrl: state.offCanvas.toDataURL('image/jpeg', 0.85),
+    };
+  }).filter(Boolean);
+  window.parent.postMessage({ type: 'nsfactory-floodfill-confirm', parts }, '*');
+}
+
+async function loadSvgListFromDrive(folderId){
+  const url = `${ORDER_PROGRESS_GAS_URL}?action=svgList&folderId=${encodeURIComponent(folderId)}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  if(!json.ok) throw new Error(json.error || 'svgList取得に失敗しました');
+  return json.svgs; // [{name, id, content}, ...]
+}
+
+async function loadPaintListFromDrive(folderId){
+  const url = `${ORDER_PROGRESS_GAS_URL}?action=paintList&folderId=${encodeURIComponent(folderId)}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  if(!json.ok) throw new Error(json.error || 'paintList取得に失敗しました');
+  return json.paints; // { 'paint1.json': '...', 'paint2.json': '...' }
+}
+
+/* 型紙タブを準備する。戻り値はタブが1つ以上用意できたかどうか */
+async function initTabs(){
+  const folderId = getFolderIdFromUrl();
+  if(!folderId){
+    TABS = {
+      outer: { label:'外装（本体・仮）', svgFile: 'part_honntai.svg' },
+      inner: { label:'内装（リングサポータ・仮）', svgFile: 'asanoha.svg' },
+    };
+    currentTabKey = 'outer';
+    return true;
+  }
+  const svgs = await loadSvgListFromDrive(folderId);
+  if(!svgs.length) return false;
+  TABS = {};
+  svgs.forEach((s, i)=>{
+    const key = `svg${i+1}`;
+    TABS[key] = { label: `その${i+1}`, svgContent: s.content };
+  });
+  currentTabKey = Object.keys(TABS)[0];
+
+  // 前回の塗り履歴があれば読み込んでおく（実際の再生はタブロード時に行う）
+  try{
+    const paints = await loadPaintListFromDrive(folderId);
+    svgs.forEach((s, i)=>{
+      const key = `svg${i+1}`;
+      const paintName = `paint${i+1}.json`;
+      if(paints[paintName]) paintHistory[key] = JSON.parse(paints[paintName]);
+    });
+  }catch(e){
+    console.log('塗り履歴の取得に失敗しました（型紙表示は続行します）:', e.message);
+  }
+  return true;
+}
+
+function showPreparingMessage(){
+  document.getElementById('tabs').innerHTML = '';
+  document.getElementById('canvasWrap').innerHTML =
+    '<div style="color:#fff;padding:60px 30px;text-align:center;font-size:14px">この作品の型紙は準備中です。<br>担当者へお問い合わせください。</div>';
+}
+
+/* 指定したタブ情報をラスタライズし、そのタブ専用の状態（表示用オフスクリーンcanvas＋判定用ImageData）を作る */
+async function buildTabState(tabInfo){
+  const svgText = tabInfo.svgContent != null
+    ? tabInfo.svgContent
+    : await (await fetch(tabInfo.svgFile)).text();
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgText, 'image/svg+xml');
+  const svgEl = doc.documentElement;
+  const vb = svgEl.viewBox.baseVal;
+
+  // 型紙の縦横比を保つ（正方形に引き伸ばさない）
+  const aspect = vb.width / vb.height;
+  let DISP_W, DISP_H;
+  if(aspect >= 1){ DISP_W = MAX_DIM; DISP_H = Math.round(MAX_DIM / aspect); }
+  else { DISP_H = MAX_DIM; DISP_W = Math.round(MAX_DIM * aspect); }
+
+  // 線が細すぎるとcanvasへの縮小描画時にアンチエイリアシングで隙間ができ、
+  // バケツ塗りが外側まで漏れ出すため、全ての線を強制的に太くしてから描画する
+  const minStrokeWidth = (vb.width / DISP_W) * strokeWidthMultiplier;
+  [...svgEl.querySelectorAll('path,line')].forEach(el=>{
+    el.setAttribute('stroke-width', minStrokeWidth);
+  });
+
+  // 判定用（暗い色を選んでも背景と区別できなくなるため、境界判定は常に白線基準で行う）
+  const judgeSvg = svgEl.cloneNode(true);
+  [...judgeSvg.querySelectorAll('path,line')].forEach(el=> el.setAttribute('stroke', '#FFFFFF'));
+  const judgeImg = await loadImage(URL.createObjectURL(new Blob(
+    [new XMLSerializer().serializeToString(judgeSvg)], {type:'image/svg+xml;charset=utf-8'})));
+  const judgeCanvas = document.createElement('canvas');
+  judgeCanvas.width = DISP_W; judgeCanvas.height = DISP_H;
+  const judgeCtx = judgeCanvas.getContext('2d', {willReadFrequently:true});
+  judgeCtx.fillStyle = '#000000';
+  judgeCtx.fillRect(0,0,DISP_W,DISP_H);
+  judgeCtx.drawImage(judgeImg, 0, 0, DISP_W, DISP_H);
+  const judgeImageData = judgeCtx.getImageData(0,0,DISP_W,DISP_H);
+
+  // 表示用（選択した色）。以後このタブで塗った内容も全てこのoffCanvasに蓄積する
+  [...svgEl.querySelectorAll('path,line')].forEach(el=> el.setAttribute('stroke', lineColor));
+  const thickenedSvgText = new XMLSerializer().serializeToString(svgEl);
+  const svgBlob = new Blob([thickenedSvgText], {type:'image/svg+xml;charset=utf-8'});
+  const img = await loadImage(URL.createObjectURL(svgBlob));
+
+  const offCanvas = document.createElement('canvas');
+  offCanvas.width = DISP_W; offCanvas.height = DISP_H;
+  const offCtx = offCanvas.getContext('2d', {willReadFrequently:true});
+  offCtx.fillStyle = '#000000';
+  offCtx.fillRect(0,0,DISP_W,DISP_H);
+  offCtx.drawImage(img, 0, 0, DISP_W, DISP_H);
+
+  return { DISP_W, DISP_H, offCanvas, offCtx, judgeImageData };
+}
+
+async function ensureTabLoaded(tabKey){
+  if(tabStates[tabKey]) return; // 既にロード済みなら何もしない（再読込のたびに履歴が重複再生されるのを防ぐ）
+  tabStates[tabKey] = await buildTabState(TABS[tabKey]);
+  if(paintHistory[tabKey] && paintHistory[tabKey].length){
+    const state = tabStates[tabKey];
+    dispCanvas.width = state.DISP_W;
+    dispCanvas.height = state.DISP_H;
+    await replayPaintHistory(tabKey, paintHistory[tabKey]);
+  }
+}
+
+function renderCurrentTab(){
+  const state = tabStates[currentTabKey];
+  dispCanvas.width = state.DISP_W;
+  dispCanvas.height = state.DISP_H;
+  dispCtx.drawImage(state.offCanvas, 0, 0);
+}
+
+function buildTabButtons(){
+  const wrap = document.getElementById('tabs');
+  wrap.innerHTML = '';
+  Object.keys(TABS).forEach(key=>{
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (key===currentTabKey ? ' active' : '');
+    btn.textContent = TABS[key].label;
+    btn.addEventListener('click', async ()=>{
+      currentTabKey = key;
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      if(!tabStates[key]) await ensureTabLoaded(key);
+      renderCurrentTab();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+/* 現在の線幅/線色設定を全タブへ反映するため、ロード済みタブを作り直す（塗った内容はリセットされる） */
+async function reloadAllLoadedTabs(){
+  const loadedKeys = Object.keys(tabStates);
+  for(const key of loadedKeys){
+    await ensureTabLoaded(key);
+  }
+  renderCurrentTab();
+}
+
+/* クリック位置から同系色（背景=黒に近い）の連結領域をBFSで探索する。
+   線（明るい色のピクセル）に当たったら止める。判定は常にjudgeImageData（白線固定）で行う。 */
+function floodFillMask(state, startX, startY){
+  const data = state.judgeImageData.data;
+  const w = state.DISP_W, h = state.DISP_H;
+  const isLine = (idx) => {
+    const r=data[idx], g=data[idx+1], b=data[idx+2];
+    // 背景(黒)からの明るさが閾値を超えたら「線」とみなす
+    return (r+g+b) > 90;
+  };
+  const startIdx = (startY*w + startX) * 4;
+  if(isLine(startIdx)) return null; // 線の上をクリックした場合は何もしない
+
+  const visited = new Uint8Array(w*h);
+  const stack = [[startX,startY]];
+  visited[startY*w+startX] = 1;
+  let count = 0;
+  const maxCount = w*h; // 安全弁（外形が閉じておらず全面に広がった場合の暴走防止）
+
+  while(stack.length){
+    const [x,y] = stack.pop();
+    count++;
+    if(count > maxCount) return null; // 閉じていない（塗りが漏れた）と判断し中断
+    const neighbors = [[x+1,y],[x-1,y],[x,y+1],[x,y-1]];
+    for(const [nx,ny] of neighbors){
+      if(nx<0||ny<0||nx>=w||ny>=h) continue;
+      const nIdx = ny*w+nx;
+      if(visited[nIdx]) continue;
+      const pIdx = nIdx*4;
+      if(isLine(pIdx)) continue;
+      visited[nIdx] = 1;
+      stack.push([nx,ny]);
+    }
+  }
+  return { visited, count };
+}
+
+function applyTextureAt(clickX, clickY){
+  const state = tabStates[currentTabKey];
+  const result = floodFillMask(state, clickX, clickY);
+  if(!result){
+    console.log('flood fill failed (line clicked, or region not closed / leaked to whole canvas)');
+    return;
+  }
+  console.log('filled pixel count:', result.count);
+
+  const leatherImg = leatherImgCache[currentLeather.id];
+  if(!leatherImg){ console.log('leather image not loaded yet'); return; }
+  const croppedTexture = cropTopRightScaled(leatherImg); // 商品ラベルを避けた右上部分を拡大して使う
+
+  // オフスクリーンに革テクスチャをタイル状に敷き詰めた画像を作る
+  const texCanvas = document.createElement('canvas');
+  texCanvas.width = state.DISP_W; texCanvas.height = state.DISP_H;
+  const texCtx = texCanvas.getContext('2d');
+  const pat = texCtx.createPattern(croppedTexture, 'repeat');
+  texCtx.fillStyle = pat;
+  texCtx.fillRect(0,0,state.DISP_W,state.DISP_H);
+  const texData = texCtx.getImageData(0,0,state.DISP_W,state.DISP_H);
+
+  const offData = state.offCtx.getImageData(0,0,state.DISP_W,state.DISP_H);
+  const { visited } = result;
+  for(let i=0;i<visited.length;i++){
+    if(visited[i]){
+      const o = i*4;
+      offData.data[o]   = texData.data[o];
+      offData.data[o+1] = texData.data[o+1];
+      offData.data[o+2] = texData.data[o+2];
+      offData.data[o+3] = 255;
+    }
+  }
+  state.offCtx.putImageData(offData, 0, 0);
+  dispCtx.putImageData(offData, 0, 0); // 現在表示中のタブなのでそのまま画面にも反映
+
+  // 塗った瞬間に光るエフェクト
+  dispCanvas.classList.remove('flash');
+  void dispCanvas.offsetWidth; // reflowでアニメーションを再トリガー
+  dispCanvas.classList.add('flash');
+
+  // 再生中の自動塗りは履歴に記録しない（次回読み込み時に同じ内容が重複して積み上がるのを防ぐ）
+  if(!isReplayingPaint){
+    if(!paintHistory[currentTabKey]) paintHistory[currentTabKey] = [];
+    paintHistory[currentTabKey].push({ x: clickX, y: clickY, leatherId: currentLeather.id });
+  }
+}
+
+/* 検証・②のGAS送信実装用: 現在の塗り履歴をJSON文字列で取り出す */
+window.exportPaintHistory = function(tabKey){
+  return JSON.stringify(paintHistory[tabKey || currentTabKey] || []);
+};
+
+/* 指定タブの塗り履歴を先頭から順に再生し、前回終了時と同じ塗り状態を再現する */
+async function replayPaintHistory(tabKey, history){
+  if(!history || !history.length) return;
+  const savedTabKey = currentTabKey, savedLeather = currentLeather;
+  isReplayingPaint = true;
+  currentTabKey = tabKey;
+  history.forEach(entry => {
+    const leather = LEATHERS.find(l => l.id === entry.leatherId);
+    if(!leather){ console.log('塗り履歴の再生スキップ（革が見つかりません）:', entry.leatherId); return; }
+    currentLeather = leather;
+    applyTextureAt(entry.x, entry.y);
+  });
+  currentTabKey = savedTabKey;
+  currentLeather = savedLeather;
+  isReplayingPaint = false;
+}
+
+/* 「この内容で確定」ボタン。ロード済みの各タブの塗り結果を画像化してGASへ送信し、
+   Driveの受注フォルダへ保存＋Sheetsの「使用革」列を更新する */
+async function confirmColorOrder(){
+  const folderId = getFolderIdFromUrl();
+  const statusEl = document.getElementById('confirmStatus');
+
+  if(isEmbedded()){
+    sendFloodfillConfirmMessage();
+    statusEl.textContent = '送信しました';
+  }
+
+  if(!folderId){
+    if(!isEmbedded()) statusEl.textContent = 'この検証用画面では確定できません（folderId未指定）';
+    return;
+  }
+
+  statusEl.textContent = '送信中…';
+  const tabKeys = Object.keys(TABS);
+  const images = tabKeys.map((tabKey, i) => {
+    const state = tabStates[tabKey];
+    if(!state) return null; // 一度も表示していないタブ（未ロード）は送らない
+    const base64 = state.offCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+    const history = paintHistory[tabKey] || [];
+    const lastEntry = history[history.length - 1];
+    const lastLeather = lastEntry ? LEATHERS.find(l => l.id === lastEntry.leatherId) : null;
+    const label = lastLeather ? `その${i+1}: ${lastLeather.name}` : '';
+    return { fileName: `color_sim_${i+1}.jpg`, label, base64 };
+  }).filter(Boolean);
+
+  try{
+    const res = await fetch(ORDER_PROGRESS_GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'uploadColorSimImage', folderId, images })
+    });
+    const json = await res.json();
+    statusEl.textContent = json.ok
+      ? `保存しました（${json.savedCount}件）`
+      : ('エラー: ' + json.error);
+  }catch(e){
+    statusEl.textContent = '送信失敗: ' + e.message;
+  }
+}
+
+(async function init(){
+  LEATHERS = await loadLeatherCatalog();
+  console.log('革カタログ総数:', LEATHERS.length, '/ 在庫あり:', LEATHERS.filter(l=>l.stockPct>0).length);
+  currentLeather = LEATHERS.find(l => l.stockPct > 0) || LEATHERS[0];
+  await Promise.all(LEATHERS.map(async lt=>{
+    try{ leatherImgCache[lt.id] = await loadImage(lt.image); }
+    catch(e){ console.log('画像読み込み失敗:', lt.id, lt.image); }
+  }));
+  buildColorFilters();
+  buildPalette();
+
+  dispCanvas = document.getElementById('dispCanvas');
+  dispCtx = dispCanvas.getContext('2d');
+
+  const hasTabs = await initTabs();
+  if(!hasTabs){
+    showPreparingMessage();
+    console.log('型紙SVGが見つからないため準備中表示');
+    return;
+  }
+  buildTabButtons();
+  await ensureTabLoaded(currentTabKey);
+  renderCurrentTab();
+
+  if(getFolderIdFromUrl() || isEmbedded()){
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmBtn.style.display = 'inline-block';
+    confirmBtn.addEventListener('click', confirmColorOrder);
+  }
+
+  dispCanvas.addEventListener('click', (e)=>{
+    const state = tabStates[currentTabKey];
+    const rect = dispCanvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) * (state.DISP_W/rect.width));
+    const y = Math.floor((e.clientY - rect.top) * (state.DISP_H/rect.height));
+    applyTextureAt(x, y);
+  });
+  document.getElementById('textureScaleSlider').addEventListener('input', (e)=>{
+    textureScale = parseFloat(e.target.value);
+    document.getElementById('textureScaleVal').textContent = textureScale;
+  });
+  document.getElementById('strokeSlider').addEventListener('input', async (e)=>{
+    strokeWidthMultiplier = parseFloat(e.target.value);
+    document.getElementById('strokeVal').textContent = strokeWidthMultiplier;
+    await reloadAllLoadedTabs();
+  });
+  document.getElementById('lineColorPicker').addEventListener('input', async (e)=>{
+    lineColor = e.target.value;
+    await reloadAllLoadedTabs();
+  });
+  console.log('floodfill proto init complete');
+})();
+</script>
+</body>
+</html>

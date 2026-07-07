@@ -1059,12 +1059,10 @@
       // 価格が入っていない（0円）商品は、金額の出ない見積り帳票を表示しても意味が無いため
       // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
       const quoteConf = hasPrice
-        ? { href: buildStockQuoteUrl(work), label: unavailable ? 'お見積りを作成する（概算シミュレーション）' : 'この作品を購入する見積もり（概算シミュレーション）' }
+        ? { href: buildStockQuoteUrl(work), label: unavailable ? '再販を依頼する（見積書作成）' : 'この作品を購入する見積もり（概算シミュレーション）' }
         : null;
-      const estimateConf = planner
-        ? { href: ESTIMATE_URL, label: '同仕様・仕様変更どちらも見積もり概算シミュレーションへ' }
-        : null;
-      const lineConf = { href: LINE_URL, label: '💬 作家に直接LINEで相談する' };
+      const estimateConf = null;
+      const lineConf = { href: LINE_URL, label: '💬 類似したフルオーダー品を作家に直接LINEで相談する' };
       const mailConf = !planner ? { href: MAIL_URL, label: 'メールで相談する' } : null;
 
       const slots = [quoteConf, estimateConf, lineConf, mailConf].filter(Boolean);
@@ -1255,6 +1253,7 @@
         tags: [work.category, work.material, work.color, work.size].filter(Boolean),
         stockStatus: work.soldout ? 'SOLDOUT' : work.noRestock ? '再販予定なし' : '在庫あり',
         note: work.shortDesc,
+        folderId: work.folderId,
       };
     }
 
@@ -1308,7 +1307,7 @@
       if (ocChatArea) ocChatArea.classList.add('oc-open');
       if (ocOverlay) ocOverlay.classList.add('oc-overlay-open');
       if (ocAiBadge) ocAiBadge.classList.add('show');
-      if (ocTrigger) ocTrigger.textContent = '💬 チャット中（この作品について相談できます）';
+      if (ocTrigger) ocTrigger.textContent = '💬 販売幕僚（AIエージェント）に相談する';
 
       // SOLDOUT・再販予定なしの商品は、色選び直しの相談になりやすいため、
       // 該当商品の革系統に絞った色ギャラリーを自動表示する（革カタログ読込完了後）。

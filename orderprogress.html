@@ -197,6 +197,12 @@
     .tl-date { font-size:.72rem; color:var(--color-text-mute); margin-bottom:1px; }
     .tl-text { font-size:.88rem; color:var(--color-text); line-height:1.5; }
 
+    /* Color order info */
+    .color-order-info { margin-top:14px; padding:12px 14px; background:var(--color-bg-sub); border-radius:var(--radius-md); }
+    .color-order-row { font-size:.85rem; color:var(--color-text); line-height:1.6; margin-top:4px; }
+    .color-order-row:first-of-type { margin-top:8px; }
+    .color-order-row b { color:var(--color-accent-dark); }
+
     /* Carousel */
     .carousel-wrap { margin-top:14px; }
     .carousel-outer { position:relative; overflow:hidden; border-radius:var(--radius-md); background:var(--color-bg-sub); }
@@ -842,6 +848,15 @@ function renderCards(records) {
       : hasLocal
         ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">📷 画像を読み込み中…</div></div>`
         : '';
+    const leatherInfo = r['使用革']||'';
+    const hearingContent = r['ヒアリング内容']||'';
+    const colorOrderHtml = (leatherInfo || hearingContent)
+      ? `<div class="color-order-info">
+           <div class="tl-title">🎨 カラーオーダー情報</div>
+           ${leatherInfo ? `<div class="color-order-row"><b>使用革:</b> ${esc(leatherInfo).replace(/\n/g,'<br>')}</div>` : ''}
+           ${hearingContent ? `<div class="color-order-row"><b>ヒアリング内容:</b><br>${esc(hearingContent).replace(/\n/g,'<br>')}</div>` : ''}
+         </div>`
+      : '';
 
     return `<div class="order-card" id="card-${id}">
       <div class="card-header" id="hdr-${id}" onclick="toggleCard('${id}')">
@@ -866,6 +881,7 @@ function renderCards(records) {
           <div class="tl-title">📋 進捗タイムライン</div>
           <div class="timeline">${tlHtml}</div>
           ${carHtml}
+          ${colorOrderHtml}
           ${adminHtml}
         </div>
       </div>

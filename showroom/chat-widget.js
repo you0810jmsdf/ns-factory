@@ -715,6 +715,55 @@
       el.textContent = '現在の選択： ' + keys.map(function (k) { return k + '=' + selections[k]; }).join(' ／ ');
     }
 
+    // ── テクスチャシミュレーター（フルスクリーンオーバーレイ、このマウント専用にDOM生成） ──
+    // 型紙SVG（svg1.svg/svg2.svg）がfolderId内に無い商品はfloodfill.html側が自動で「準備中」表示するため、
+    // ここでは商品ごとのfolderIdの有無だけを見ればよい（マッピング表は不要）。
+    var simOverlayEl = null;
+    var simIframeEl = null;
+    function ensureSimOverlay() {
+      if (simOverlayEl) return;
+      simOverlayEl = document.createElement('div');
+      simOverlayEl.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:none;flex-direction:column';
+      var bar = document.createElement('div');
+      bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#3d1a08;color:#fff;flex-shrink:0';
+      var title = document.createElement('h3');
+      title.style.cssText = 'font-size:13px;font-weight:700;margin:0';
+      title.textContent = '🎨 テクスチャシミュレーターで試す';
+      var closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.textContent = '✕ 閉じる';
+      closeBtn.style.cssText = 'background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer';
+      closeBtn.onclick = closeTextureSimulator;
+      bar.appendChild(title);
+      bar.appendChild(closeBtn);
+      simIframeEl = document.createElement('iframe');
+      simIframeEl.style.cssText = 'flex:1;border:none;width:100%;background:#fff';
+      simIframeEl.src = 'about:blank';
+      simOverlayEl.appendChild(bar);
+      simOverlayEl.appendChild(simIframeEl);
+      document.body.appendChild(simOverlayEl);
+    }
+    function openTextureSimulator(folderId) {
+      ensureSimOverlay();
+      simIframeEl.src = NSF_ROOT_BASE + 'カラーシミュレーター/pattern-color-proto/floodfill.html?folderId=' + encodeURIComponent(folderId) + '&embed=1';
+      simOverlayEl.style.display = 'flex';
+    }
+    function closeTextureSimulator() {
+      if (!simOverlayEl) return;
+      simOverlayEl.style.display = 'none';
+      simIframeEl.src = 'about:blank';
+    }
+    global.addEventListener('message', function (e) {
+      var data = e.data;
+      if (!data || data.type !== 'nsfactory-floodfill-confirm') return;
+      if (!simOverlayEl || simOverlayEl.style.display !== 'flex') return; // 自分が開いたモーダルでなければ無視（複数マウント対策）
+      var parts = data.parts || [];
+      var withLeather = parts.filter(function (p) { return p.leatherName; });
+      var leatherName = withLeather.length ? withLeather[0].leatherName : null;
+      closeTextureSimulator();
+      if (leatherName) nsfSetSelection('革色', leatherName);
+    });
+
     function showStitchGallery() {
       if (!hearingStitchColors) {
         appendStaffMsg('ステッチ色カタログを読み込み中です。少しだけお待ちください🙏');
@@ -797,6 +846,9 @@
         ];
         if (pendingChoice && pendingChoice.partLabel === '革色') {
           chips.splice(1, 0, { label: '✅「' + pendingChoice.name + '」に決定する', onClick: nsfConfirmPending });
+        }
+        if (currentProductContext && currentProductContext.folderId) {
+          chips.push({ label: '🎨 テクスチャシミュレーターで試す', onClick: function () { openTextureSimulator(currentProductContext.folderId); } });
         }
         renderChips(chips.concat(swatchChips));
       }
