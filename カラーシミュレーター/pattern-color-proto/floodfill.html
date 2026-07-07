@@ -489,13 +489,18 @@ async function confirmColorOrder(){
   const folderId = getFolderIdFromUrl();
   const statusEl = document.getElementById('confirmStatus');
 
+  // embed時（hearing-ai.html/chat-widget.js等からの埋め込み）はpostMessageのみ送信する。
+  // folderIdは型紙参照のために他商品の写真フォルダを指しているだけのことがあり、
+  // そこへGAS直送で書き込むと無関係な商品フォルダを汚してしまうため、embed時はGAS直送を行わない。
+  // 保存先の決定（新規フォルダ作成等）は呼び出し元（hearing-ai.html等）に任せる。
   if(isEmbedded()){
     sendFloodfillConfirmMessage();
     statusEl.textContent = '送信しました';
+    return;
   }
 
   if(!folderId){
-    if(!isEmbedded()) statusEl.textContent = 'この検証用画面では確定できません（folderId未指定）';
+    statusEl.textContent = 'この検証用画面では確定できません（folderId未指定）';
     return;
   }
 
