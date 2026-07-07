@@ -18,8 +18,8 @@
     --pill-bd:rgba(255,255,255,.16);
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--ink);
-    font-family:'Noto Sans JP',sans-serif;overflow:hidden;}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:'Noto Sans JP',sans-serif;}
   #glcanvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;}
 
   .veil{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0%, rgba(0,0,0,0) 0%, rgba(0,0,0,.35) 100%);}
@@ -50,6 +50,13 @@
     font-size:12px;letter-spacing:.1em;padding:9px 18px;border-radius:999px;cursor:pointer;
     display:flex;align-items:center;gap:8px;backdrop-filter:blur(8px);transition:.2s;}
   .postbtn:hover{border-color:var(--gold);color:var(--gold);}
+
+  a.readmore{border:1px solid var(--pill-bd);background:var(--pill-bg);color:var(--ink-dim);font-family:inherit;
+    font-size:12px;letter-spacing:.06em;padding:9px 16px;border-radius:999px;text-decoration:none;
+    display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px);transition:.2s;}
+  a.readmore:hover{border-color:var(--gold);color:var(--gold);}
+
+  .hero-fade{transition:opacity .2s linear;}
 
   main{position:fixed;left:clamp(20px,5vw,48px);top:36%;z-index:4;pointer-events:none;max-width:640px;}
   .kicker{font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:12px;letter-spacing:.16em;
@@ -90,6 +97,24 @@
   .glhint{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
     background:#03060a;color:var(--ink-dim);font-size:14px;text-align:center;padding:40px;z-index:20;}
 
+  /* ---------- about / how-it's-made section ---------- */
+  .about{position:relative;z-index:3;margin-top:100vh;padding:88px clamp(20px,6vw,80px) 120px;
+    max-width:760px;background:linear-gradient(180deg, rgba(3,6,10,0) 0%, var(--bg) 8%, var(--bg) 100%);}
+  .about-eyebrow{font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:11px;letter-spacing:.16em;
+    color:var(--gold);margin:0 0 14px;}
+  .about h2{font-family:'Zen Old Mincho',serif;font-weight:700;font-size:clamp(22px,3vw,30px);
+    letter-spacing:.02em;line-height:1.5;margin:0 0 26px;color:var(--ink);}
+  .about > p{font-size:14.5px;line-height:2;color:var(--ink-dim);margin:0 0 22px;max-width:640px;}
+  .about .steps{display:grid;gap:16px;margin:32px 0 36px;}
+  .about .step{background:var(--pill-bg);border:1px solid var(--pill-bd);border-radius:12px;padding:20px 22px;}
+  .about .step b{color:var(--gold);display:block;font-size:13.5px;letter-spacing:.04em;margin-bottom:8px;
+    font-weight:700;}
+  .about .step p{margin:0;font-size:13.5px;color:var(--ink-dim);line-height:1.9;}
+  .about .backlink{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:var(--gold);
+    text-decoration:none;font-size:13px;letter-spacing:.04em;border-bottom:1px solid rgba(200,169,120,.4);
+    padding-bottom:2px;}
+  .about .backlink:hover{border-color:var(--gold);}
+
   @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
 
   @media (max-width:720px){
@@ -98,6 +123,7 @@
     .pill{padding:7px 12px;font-size:11.5px;}
     .caption{bottom:120px;font-size:11px;padding:0 16px;}
     .grouplabel{display:none;}
+    .about{padding:64px 22px 90px;}
   }
 
   @media (max-width:640px){
@@ -109,11 +135,13 @@
     .ripplecount{display:none;}
     .lang button{padding:5px 8px;font-size:10px;}
     .postbtn{padding:8px 13px;font-size:11px;}
+    a.readmore{padding:8px 12px;font-size:11px;}
   }
 
   @media (max-width:420px){
     .postbtn span{display:none;}
     .postbtn{padding:8px 11px;}
+    a.readmore span{display:none;}
   }
 </style>
 </head>
@@ -129,6 +157,7 @@
     <div class="logo"><span class="ring"></span>MINAMO</div>
   </div>
   <div class="side">
+    <a class="readmore" href="#about">仕組みを読む <span>▽</span></a>
     <div class="lang" id="langBar">
       <button data-lang="ja" class="active">日</button>
       <button data-lang="en">EN</button>
@@ -140,6 +169,7 @@
   </div>
 </header>
 
+<div class="hero-fade" id="heroFade">
 <main>
   <p class="kicker" id="kicker"><b>INTERACTIVE WATER</b> ― 画像素材0枚</p>
 </main>
@@ -152,6 +182,7 @@
 </div>
 
 <p class="caption" id="caption">この水は画像でも動画でもなく、コードがリアルタイムに描いています。</p>
+</div>
 
 <nav class="modes" id="modeNav">
   <span class="grouplabel" id="groupLabelA">あそぶ</span>
@@ -169,6 +200,36 @@
   <button class="modebtn" data-group="b" data-mode="雨">雨</button>
   <button class="modebtn" data-group="b" data-mode="音">音</button>
 </nav>
+
+<section class="about" id="about">
+  <p class="about-eyebrow">HOW IT'S MADE</p>
+  <h2>この水面は、どうやって描かれているのか。</h2>
+
+  <p>このページに、写真や動画は一枚も使われていません。目の前で揺れているこの水は、ブラウザの中でその場で計算され続けている「数字」です。指で触れた場所から波が生まれ、隣のマスへ、そのまた隣のマスへと少しずつ伝わっていく――そんな単純な計算を、画面の中の何十万マスもの場所で、1秒間に60回くり返しています。</p>
+
+  <div class="steps">
+    <div class="step">
+      <b>触れると波が生まれる</b>
+      <p>指やマウスが触れた場所の「水面の高さ」を少しだけ持ち上げます。持ち上がった水は、隣り合う場所と高さを分け合おうとして少しずつ均されていく――これを毎フレーム繰り返すだけで、波紋が自然に外へ広がっていきます。</p>
+    </div>
+    <div class="step">
+      <b>揺れが光をつくる</b>
+      <p>水面は、細かく傾いた無数の鏡のようなものだと考えてください。傾きの向きによって、空の光を強く跳ね返す場所と、そうでない場所が生まれます。波の高さのわずかな差から傾きを求め、光の当たり方をその場で描き直すことで、あのきらめきが生まれています。</p>
+    </div>
+    <div class="step">
+      <b>時間や天気で表情を変える</b>
+      <p>「月夜」「宵」「暁」「雨」…ボタンひとつで、空の色・光の向き・水の透明感がじわじわ移り変わります。裏側では、いくつかの「色と明るさの設計図」をあらかじめ用意しておき、選ばれた設計図に向かって毎フレーム少しずつ数値を近づけているだけです。</p>
+    </div>
+    <div class="step">
+      <b>文字も水に溶け込ませる</b>
+      <p>見出しの文字は画像ではなく、一度別のキャンバスに描いてから水面に重ねています。水面の傾きぶんだけ文字の位置をわずかにずらすことで、文字そのものが水に浮かんで揺らいでいるように見えます。</p>
+    </div>
+  </div>
+
+  <p>これらはすべて、WebGLというブラウザ標準の描画のしくみと、GPU（画像処理を高速に行う部品）に向けた短いプログラムだけで作られています。写真や動画を用意する代わりに「計算のルール」だけを用意しておき、あとはブラウザに任せて毎秒何十万回もその場で描き直してもらう――そういう作り方です。</p>
+
+  <a class="backlink" href="digital-room/site-design-lab/">← サイトデザイン研究室へ戻る</a>
+</section>
 
 <div class="toast" id="toast"></div>
 
@@ -232,6 +293,16 @@ function bumpCounter(n){
   rippleTotal = Math.min(9999, rippleTotal + n);
   document.getElementById("rippleCount").textContent = String(rippleTotal).padStart(4,"0");
 }
+
+/* ---------- fade hero copy out as the page scrolls into the about section ---------- */
+const heroFade = document.getElementById("heroFade");
+function updateHeroFade(){
+  const t = Math.min(1, window.scrollY / 220);
+  heroFade.style.opacity = String(1 - t);
+  heroFade.style.pointerEvents = t > 0.6 ? "none" : "";
+}
+window.addEventListener("scroll", updateHeroFade, {passive:true});
+updateHeroFade();
 
 /* ================= WebGL water ================= */
 const canvas = document.getElementById("glcanvas");
