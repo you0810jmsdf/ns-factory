@@ -261,6 +261,10 @@ function openTextureSimulator(folderId){
 function closeTextureSimulator(){
   simOverlay.classList.remove('on');
   simIframe.src='about:blank';
+  // シミュレーター内canvasの十字カーソル(crosshair)が閉じた後も残ることがあるため、
+  // カーソルスタイルを一度明示的にリセットしてブラウザに再計算させる
+  document.body.style.cursor='default';
+  setTimeout(()=>{ document.body.style.cursor=''; }, 50);
 }
 
 window.addEventListener('message', (e)=>{

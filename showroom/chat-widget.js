@@ -775,6 +775,10 @@
       if (!simOverlayEl) return;
       simOverlayEl.style.display = 'none';
       simIframeEl.src = 'about:blank';
+      // シミュレーター内canvasの十字カーソル(crosshair)が閉じた後も残ることがあるため、
+      // カーソルスタイルを一度明示的にリセットしてブラウザに再計算させる
+      document.body.style.cursor = 'default';
+      setTimeout(function () { document.body.style.cursor = ''; }, 50);
     }
     global.addEventListener('message', function (e) {
       var data = e.data;
