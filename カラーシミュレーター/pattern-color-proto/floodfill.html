@@ -75,8 +75,8 @@ const CROP_RATIO = 0.2; // 商品ラベル・ロゴを避けるため画像右�
 /* order_estimateの革カタログ(全280種類)と在庫CSVを読み込む。在庫なしも表示対象に含め、パレット側でグレーアウトする */
 async function loadLeatherCatalog(){
   const [catalogRes, stockRes] = await Promise.all([
-    fetch('/order_estimate/leather-catalog.json'),
-    fetch('/order_estimate/leather-stock.csv'),
+    fetch('../../order_estimate/leather-catalog.json'),
+    fetch('../../order_estimate/leather-stock.csv'),
   ]);
   const catalog = await catalogRes.json();
   const stockText = await stockRes.text();
@@ -90,7 +90,7 @@ async function loadLeatherCatalog(){
   return catalog.leathers.map(l => {
     const stockPct = stockMap[l.id] || 0;
     const colorTag = (l.tags||[]).find(t => t.endsWith('系')) || 'その他';
-    return { id: l.id, name: l.name, image: '/' + l.image, stockPct, colorTag };
+    return { id: l.id, name: l.name, image: '../../' + l.image, stockPct, colorTag };
   });
 }
 
