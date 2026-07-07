@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N's factory カラー・テクスチャシミュレーター紹介</title>
+<style>
+  :root{
+    --teal-dark:#0f2b28;
+    --teal-mid:#173c37;
+    --accent:#3fae8f;
+    --cream:#f4f1ea;
+    --ink:#20241f;
+    --sub:#6b6f66;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+    overflow:hidden;
+    color:var(--ink);
+  }
+  .deck{position:relative;width:100vw;height:100vh}
+  .slide{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    padding:56px 64px;
+    opacity:0;pointer-events:none;
+    transform:translateY(16px);
+    transition:opacity .45s ease, transform .45s ease;
+    background:var(--cream);
+  }
+  .slide.active{opacity:1;pointer-events:auto;transform:translateY(0)}
+  .accent-bar{position:absolute;top:0;left:0;width:64px;height:6px;background:linear-gradient(90deg,#e8c14a,var(--accent))}
+
+  /* ── 表紙 ── */
+  #slide-1{background:radial-gradient(120% 120% at 15% 10%, var(--teal-mid), var(--teal-dark));color:#fff}
+  .cover-wrap{flex:1;display:flex;align-items:center;gap:48px;flex-wrap:wrap}
+  .cover-text{flex:1;min-width:280px}
+  .eyebrow{font-size:13px;letter-spacing:.14em;color:var(--accent);font-weight:700;margin-bottom:14px}
+  .cover-text h1{font-size:44px;line-height:1.25;margin:0 0 18px;font-weight:800}
+  .cover-text p{font-size:16px;line-height:1.8;color:#cfe6df;max-width:440px;margin:0 0 28px}
+  .cta{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--accent);color:#062420;font-weight:700;font-size:14px;
+    padding:14px 24px;border-radius:30px;text-decoration:none;
+    box-shadow:0 8px 24px rgba(63,174,143,.35);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .cta:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(63,174,143,.45)}
+  .mascot-corner{position:absolute;left:40px;bottom:32px;display:flex;align-items:flex-end;gap:10px}
+  .mascot-img{width:88px;height:88px;border-radius:50%;background:#0000;object-fit:cover}
+  .mascot-fallback{
+    width:88px;height:88px;border-radius:50%;background:#1d4038;
+    display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;
+  }
+  .mascot-bubble{background:#fff;color:var(--ink);font-size:12.5px;line-height:1.5;padding:10px 14px;border-radius:14px;border-bottom-left-radius:4px;max-width:220px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+
+  .browser-frame{
+    width:520px;max-width:44vw;flex-shrink:0;
+    background:#1b1b1b;border-radius:14px;overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,.45);
+    transform:rotate(2deg);
+  }
+  .browser-bar{display:flex;gap:6px;padding:10px 12px;background:#2a2a2a}
+  .browser-bar span{width:10px;height:10px;border-radius:50%;background:#555}
+  .browser-frame iframe{width:100%;height:420px;border:none;display:block;background:#f0ede8}
+
+  /* ── HOW TO USE ── */
+  #slide-2{justify-content:center}
+  .content-head h2{font-size:32px;margin:6px 0 14px;font-weight:800}
+  .content-head p{font-size:15px;color:var(--sub);max-width:640px;line-height:1.8;margin:0 0 44px}
+  .steps{display:flex;align-items:flex-start;gap:0;max-width:900px}
+  .step{flex:1;text-align:center;position:relative}
+  .step-dot{
+    width:14px;height:14px;border-radius:50%;background:var(--accent);
+    margin:0 auto 14px;position:relative;z-index:1;
+  }
+  .step-line{position:absolute;top:6px;left:50%;width:100%;height:2px;background:linear-gradient(90deg,var(--accent),#cfe6df)}
+  .step:last-child .step-line{display:none}
+  .step-emoji{font-size:26px;margin-bottom:6px}
+  .step h3{font-size:15px;margin:0 0 6px}
+  .step p{font-size:12.5px;color:var(--sub);margin:0;line-height:1.6}
+
+  /* ── FEATURES ── */
+  #slide-3{justify-content:center}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:920px}
+  .card{
+    background:#fff;border:1px solid #e5e1d6;border-radius:12px;padding:20px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.08)}
+  .card .num{font-size:11px;color:var(--sub);letter-spacing:.08em}
+  .card .icon{font-size:24px;margin:6px 0 10px}
+  .card h3{font-size:14.5px;margin:0 0 6px}
+  .card p{font-size:12px;color:var(--sub);margin:0;line-height:1.6}
+
+  /* ── CTA ── */
+  #slide-4{background:radial-gradient(120% 120% at 85% 90%, var(--teal-mid), var(--teal-dark));color:#fff;align-items:center;justify-content:center;text-align:center}
+  #slide-4 .mascot-fallback,#slide-4 .mascot-img{width:120px;height:120px;font-size:56px;margin:0 auto 24px}
+  #slide-4 h2{font-size:34px;margin:0 0 16px;font-weight:800}
+  #slide-4 p{font-size:15px;color:#cfe6df;margin:0 0 32px}
+
+  /* ── ナビゲーション ── */
+  .nav-hint{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);font-size:11.5px;color:var(--sub);opacity:.7}
+  #slide-1 .nav-hint,#slide-4 .nav-hint{color:#9fc4bb}
+  .page-num{position:absolute;left:64px;bottom:28px;font-size:13px;font-weight:700;color:var(--sub)}
+  #slide-1 .page-num,#slide-4 .page-num{color:#cfe6df}
+  .nav-btns{position:absolute;right:56px;bottom:22px;display:flex;gap:10px}
+  .nav-btn{
+    width:44px;height:44px;border-radius:50%;border:1.5px solid #d8d4c8;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--ink);
+  }
+  #slide-1 .nav-btn,#slide-4 .nav-btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff}
+  .nav-btn:hover{background:var(--accent);color:#062420;border-color:var(--accent)}
+  .nav-btn:disabled{opacity:.3;cursor:default}
+
+  @media (max-width:760px){
+    .slide{padding:32px 24px}
+    .cover-wrap{flex-direction:column}
+    .browser-frame{max-width:100%;width:100%;transform:none}
+    .cover-text h1{font-size:32px}
+    .grid{grid-template-columns:1fr 1fr}
+    .steps{flex-direction:column;gap:24px;align-items:flex-start;text-align:left}
+    .step-line{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <section class="slide active" id="slide-1">
+    <div class="accent-bar"></div>
+    <div class="cover-wrap">
+      <div class="cover-text">
+        <div class="eyebrow">N'S FACTORY</div>
+        <h1>カラー・<br>テクスチャシミュレーター</h1>
+        <p>革の色や質感を選んで、型紙にそのまま塗って確かめられる。<br>実物の質感で、届く前にイメージがわかります。</p>
+        <a class="cta" href="pattern-color-proto/floodfill.html" target="_blank" rel="noopener">実際に試してみる →</a>
+      </div>
+      <div class="browser-frame">
+        <div class="browser-bar"><span></span><span></span><span></span></div>
+        <iframe src="pattern-color-proto/floodfill.html?embed=1" loading="lazy" title="テクスチャシミュレーター デモ"></iframe>
+      </div>
+    </div>
+    <div class="mascot-corner">
+      <!-- マスコット画像が届いたら mascot.png をこのフォルダに置き、下のimgのsrcが有効になります -->
+      <img class="mascot-img" src="mascot.png" alt="販売幕僚" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'mascot-fallback',textContent:'🎩'}))">
+      <div class="mascot-bubble">革の色、実際に塗って試せますよ〜！</div>
+    </div>
+    <div class="page-num">1 / 4</div>
+    <div class="nav-hint">←→ キー・クリック・スワイプでめくれます</div>
+    <div class="nav-btns"><button class="nav-btn" id="prevBtn">‹</button><button class="nav-btn" id="nextBtn">›</button></div>
+  </section>
+
+  <section class="slide" id="slide-2">
+    <div class="accent-bar"></div>
+    <div class="content-head">
+      <div class="eyebrow" style="color:var(--accent)">HOW TO USE</div>
+      <h2>使い方はかんたん3ステップ</h2>
+      <p>むずかしい操作は一切なし。ブラウザを開いたその場で、革の質感を確かめられます。</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-line"></div><div class="step-dot"></div><div class="step-emoji">🎨</div><h3>革の色を選ぶ</h3><p>280色以上の実写真から<br>好みの1枚をタップ</p></div>
+      <div class="step"><div class="step-line"></div><div class="step-dot"></div><div class="step-emoji">🖱️</div><h3>型紙をタップして塗る</h3><p>塗りたい場所をクリック<br>するだけで質感が変わる</p></div>
+      <div class="step"><div class="step-line"></div><div class="step-dot"></div><div class="step-emoji">🔁</div><h3>外装・内装で見比べる</h3><p>タブを切り替えて<br>パーツごとに試せる</p></div>
+    </div>
+    <div class="page-num">2 / 4</div>
+    <div class="nav-hint">←→ キー・クリック・スワイプでめくれます</div>
+    <div class="nav-btns"><button class="nav-btn" id="prevBtn2">‹</button><button class="nav-btn" id="nextBtn2">›</button></div>
+  </section>
+
+  <section class="slide" id="slide-3">
+    <div class="accent-bar"></div>
+    <div class="content-head">
+      <div class="eyebrow" style="color:var(--accent)">FEATURES</div>
+      <h2>テクスチャシミュレーターの特徴</h2>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="num">01</div><div class="icon">🎨</div><h3>280色以上の本革</h3><p>カワムラレザー取扱の全カタログから選べます</p></div>
+      <div class="card"><div class="num">02</div><div class="icon">📷</div><h3>実物写真ベース</h3><p>商品の実写真をそのまま質感に反映します</p></div>
+      <div class="card"><div class="num">03</div><div class="icon">🗂️</div><h3>外装・内装を別々に</h3><p>パーツごとに違う革の組み合わせを試せます</p></div>
+      <div class="card"><div class="num">04</div><div class="icon">📦</div><h3>在庫状況が一目でわかる</h3><p>在庫あり・残りわずか・お取り寄せを色分け表示</p></div>
+      <div class="card"><div class="num">05</div><div class="icon">💬</div><h3>相談チャットと連携</h3><p>試した色をそのままオーダー相談へ送れます</p></div>
+      <div class="card"><div class="num">06</div><div class="icon">📱</div><h3>アプリ不要ですぐ使える</h3><p>スマホのブラウザだけで完結します</p></div>
+    </div>
+    <div class="page-num">3 / 4</div>
+    <div class="nav-hint">←→ キー・クリック・スワイプでめくれます</div>
+    <div class="nav-btns"><button class="nav-btn" id="prevBtn3">‹</button><button class="nav-btn" id="nextBtn3">›</button></div>
+  </section>
+
+  <section class="slide" id="slide-4">
+    <div class="accent-bar"></div>
+    <img class="mascot-img" src="mascot.png" alt="販売幕僚" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'mascot-fallback',textContent:'🎩'}))">
+    <h2>まずは触ってみよう</h2>
+    <p>革を選んで、型紙に塗るだけ。届く前に、質感をたしかめられます。</p>
+    <a class="cta" href="pattern-color-proto/floodfill.html" target="_blank" rel="noopener">テクスチャシミュレーターを試す →</a>
+    <div class="page-num">4 / 4</div>
+    <div class="nav-hint">←→ キー・クリック・スワイプでめくれます</div>
+    <div class="nav-btns"><button class="nav-btn" id="prevBtn4">‹</button><button class="nav-btn" id="nextBtn4" disabled>›</button></div>
+  </section>
+
+</div>
+
+<script>
+const TOTAL = 4;
+let current = 1;
+const slides = () => document.querySelectorAll('.slide');
+
+function render(){
+  slides().forEach((s,i)=> s.classList.toggle('active', i+1===current));
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    if(b.id.startsWith('prevBtn')) b.disabled = current===1;
+    if(b.id.startsWith('nextBtn')) b.disabled = current===TOTAL;
+  });
+  history.replaceState(null,'','#'+current);
+}
+function go(delta){
+  const next = current + delta;
+  if(next<1 || next>TOTAL) return;
+  current = next;
+  render();
+}
+document.querySelectorAll('[id^="prevBtn"]').forEach(b=>b.addEventListener('click', ()=>go(-1)));
+document.querySelectorAll('[id^="nextBtn"]').forEach(b=>b.addEventListener('click', ()=>go(1)));
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') go(1);
+  if(e.key==='ArrowLeft') go(-1);
+});
+
+// クリックでも送れる（ボタン・リンク・iframe自体は除く）
+document.getElementById('deck').addEventListener('click', (e)=>{
+  if(e.target.closest('button,a,iframe')) return;
+  go(1);
+});
+
+// スワイプ対応
+let touchStartX = null;
+document.getElementById('deck').addEventListener('touchstart', (e)=>{ touchStartX = e.touches[0].clientX; });
+document.getElementById('deck').addEventListener('touchend', (e)=>{
+  if(touchStartX===null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if(Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  touchStartX = null;
+});
+
+const hash = parseInt(location.hash.replace('#',''), 10);
+if(hash>=1 && hash<=TOTAL) current = hash;
+render();
+</script>
+</body>
+</html>
