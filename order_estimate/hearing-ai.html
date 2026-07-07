@@ -186,6 +186,9 @@ const PRODUCT_PATTERN_FOLDERS = {
   planner: '1vdaUYGPXqF4SRmpwsm7YDkZjyOJxcaJn'
 };
 
+// オーダー進捗GAS（deploymentId据え置き）。発注票確定時にsubmitChatOrderへ送信する。
+const ORDER_PROGRESS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
+
 /* ---------- レンダリング ---------- */
 const chat=document.getElementById('chat');
 const quickEl=document.getElementById('quick');
@@ -397,7 +400,27 @@ function finish(){
     addMsg('bot','このままお店に送っていただければ、職人が仕様を確認して正式なお見積り・制作のご案内をいたします。ありがとうございました🙇\n（内容を変えたい時は、ページを再読み込みしてやり直せます）');
     renderQuick([{label:'最初からやり直す',sub:'',val:'__restart'}]);
     quickEl.querySelector('button').onclick=()=>location.reload();
+
+    submitToOrderProgress(prod, sheetText, a.textureSimulation);
   },600);
+}
+
+/* 発注票確定時、オーダー進捗シートへ自動登録する（テクスチャシミュレーション画像があれば一緒に送る） */
+function submitToOrderProgress(prod, hearingContent, textureSimulation){
+  const images=(textureSimulation||[]).map((p,i)=>({
+    fileName:`color_sim_${i+1}.jpg`,
+    label:(p.label||('パーツ'+(i+1)))+(p.leatherName?(': '+p.leatherName):''),
+    base64:p.imageDataUrl.split(',')[1],
+  }));
+  fetch(ORDER_PROGRESS_GAS_URL,{
+    method:'POST',
+    body:JSON.stringify({ action:'submitChatOrder', client:'', contact:'', item:prod.name, hearingContent, images })
+  }).then(r=>r.json()).then(res=>{
+    if(res.ok) addMsg('bot','📋 オーダー進捗に登録しました（受付番号: '+res.orderNo+'）。');
+    else addMsg('bot','⚠️ オーダー進捗への登録に失敗しました：'+(res.error||'不明なエラー'));
+  }).catch(()=>{
+    addMsg('bot','⚠️ オーダー進捗への登録通信に失敗しました。お手数ですが、発注票をコピーして直接お問い合わせください。');
+  });
 }
 function copy(text,okMsg){
   navigator.clipboard.writeText(text).then(()=>toast(okMsg)).catch(()=>{
