@@ -59,6 +59,8 @@
     // テクスチャシミュレーター対応状況（商品ごとに1回だけ確認・案内する）
     var simChecked = false;
     var simPatternAvailable = undefined; // undefined=未確認, true/false=確認済み
+    // シミュレーターで最後に確定したパーツ画像（sendToArtisan送信時に一緒に送るため保持）
+    var lastTextureSimParts = null;
 
     function $(sel) { return container.querySelector(sel); }
 
@@ -85,6 +87,7 @@
       pendingChoice = null;
       simChecked = false;
       simPatternAvailable = undefined;
+      lastTextureSimParts = null;
       nsfRenderSelectionSummary();
       var area = $('#chat-area');
       if (!area) return;
@@ -785,6 +788,7 @@
       if (!data || data.type !== 'nsfactory-floodfill-confirm') return;
       if (!simOverlayEl || simOverlayEl.style.display !== 'flex') return; // 自分が開いたモーダルでなければ無視（複数マウント対策）
       var parts = data.parts || [];
+      lastTextureSimParts = parts;
       var withLeather = parts.filter(function (p) { return p.leatherName; });
       var leatherName = withLeather.length ? withLeather[0].leatherName : null;
       closeTextureSimulator();
@@ -971,12 +975,22 @@
         ? '【選択内容】' + selectionKeys.map(function (k) { return k + ': ' + selections[k]; }).join(' / ') + '\n\n'
         : '';
       var memoWithMethod = selectionLine + (methodLabel ? '【購入手段・希望サイト】' + methodLabel + '\n\n' : '') + historyText;
+      // テクスチャシミュレーターで確定した画像があれば一緒に送る（submitChatOrderはaddConsultationの
+      // 上位互換で、imagesが空の場合は従来のaddConsultationと全く同じ挙動になる）
+      var images = (lastTextureSimParts || []).map(function (p, i) {
+        return {
+          fileName: 'color_sim_' + (i + 1) + '.jpg',
+          label: (p.label || ('パーツ' + (i + 1))) + (p.leatherName ? (': ' + p.leatherName) : ''),
+          base64: p.imageDataUrl.split(',')[1]
+        };
+      });
       var payload = {
-        action: 'addConsultation',
+        action: 'submitChatOrder',
         client: client,
         contact: contact,
         item: (currentProductContext && currentProductContext.name) || '',
-        memo: memoWithMethod
+        memo: memoWithMethod,
+        images: images
       };
       var sendBtn = container.querySelector('#oc-send-to-artisan');
       if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '送信中…'; }
