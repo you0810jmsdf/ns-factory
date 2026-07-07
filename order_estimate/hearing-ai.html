@@ -95,6 +95,21 @@ body{
 .modal-box .note{font-size:11px;color:#a08a76;margin-top:4px}
 .modal-actions{display:flex;gap:8px;margin-top:16px}
 .modal-actions button{flex:1;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+/* テクスチャシミュレーター導線・フルスクリーンオーバーレイ */
+.sim-entry{padding:2px 14px 10px 52px;min-height:1px}
+.sim-entry button{background:#fdf0e5;border:1.5px solid #e8c9a8;color:#6b3a1f;border-radius:20px;
+  padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.sim-entry button:hover{background:#6b3a1f;color:#fff;border-color:#6b3a1f}
+.sim-entry .sim-pending{font-size:11.5px;color:#a08a76}
+.sim-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:200;flex-direction:column}
+.sim-overlay.on{display:flex}
+.sim-overlay-bar{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:#3d1a08;color:#fff;flex-shrink:0}
+.sim-overlay-bar h3{font-size:13px;font-weight:700}
+.sim-overlay-bar button{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35);
+  border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:inherit}
+.sim-overlay-bar button:hover{background:rgba(255,255,255,.28)}
+.sim-overlay iframe{flex:1;border:none;width:100%;background:#fff}
 .typing{display:inline-flex;gap:3px;padding:4px 2px}
 .typing span{width:6px;height:6px;border-radius:50%;background:#c4a98c;animation:blink 1.2s infinite}
 .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
@@ -115,6 +130,7 @@ body{
 
   <div class="chat" id="chat"></div>
   <div class="quick" id="quick"></div>
+  <div class="sim-entry" id="simEntry"></div>
 
   <div class="inputbar">
     <input id="txt" type="text" placeholder="メッセージを入力…（自由に話しかけてOK）" autocomplete="off">
@@ -140,6 +156,15 @@ body{
   </div>
 </div>
 
+<!-- テクスチャシミュレーター フルスクリーンオーバーレイ -->
+<div class="sim-overlay" id="simOverlay">
+  <div class="sim-overlay-bar">
+    <h3>🎨 テクスチャシミュレーターで試す</h3>
+    <button id="simCloseBtn">✕ 閉じる</button>
+  </div>
+  <iframe id="simIframe" src="about:blank"></iframe>
+</div>
+
 <script src="./hearing-core.js"></script>
 <script>
 /* =========================================================================
@@ -154,6 +179,12 @@ let COMMON_TAIL = CORE.COMMON_TAIL;
 let SYSTEM_PROMPT = NSF_HEARING.buildSystemPrompt(KB);
 
 const state = { answers:{}, step:0, liveMode:false };
+
+/* テクスチャシミュレーター：型紙SVGをDrive上に用意できている商品のみ対応（パイロット段階）。
+   未登録の商品は「準備中」表示になる。 */
+const PRODUCT_PATTERN_FOLDERS = {
+  planner: '1vdaUYGPXqF4SRmpwsm7YDkZjyOJxcaJn'
+};
 
 /* ---------- レンダリング ---------- */
 const chat=document.getElementById('chat');
@@ -196,6 +227,53 @@ function renderQuick(items){
   });
 }
 
+/* 革選択ステップの間だけ、テクスチャシミュレーターへの導線を表示する */
+const simEntry=document.getElementById('simEntry');
+function renderSimEntry(){
+  simEntry.innerHTML='';
+  if(state._awaitKey!=='leather') return;
+  const folderId=PRODUCT_PATTERN_FOLDERS[state.productKey];
+  if(folderId){
+    const btn=document.createElement('button');
+    btn.textContent='🎨 テクスチャシミュレーターで試す';
+    btn.onclick=()=>openTextureSimulator(folderId);
+    simEntry.appendChild(btn);
+  }else{
+    const span=document.createElement('span');
+    span.className='sim-pending';
+    span.textContent='🎨 型紙シミュレーター：準備中';
+    simEntry.appendChild(span);
+  }
+}
+
+/* ---------- テクスチャシミュレーター（フルスクリーンオーバーレイ） ---------- */
+const simOverlay=document.getElementById('simOverlay');
+const simIframe=document.getElementById('simIframe');
+document.getElementById('simCloseBtn').onclick=closeTextureSimulator;
+
+function openTextureSimulator(folderId){
+  simIframe.src='../カラーシミュレーター/pattern-color-proto/floodfill.html?folderId='+encodeURIComponent(folderId)+'&embed=1';
+  simOverlay.classList.add('on');
+}
+function closeTextureSimulator(){
+  simOverlay.classList.remove('on');
+  simIframe.src='about:blank';
+}
+
+window.addEventListener('message', (e)=>{
+  const data=e.data;
+  if(!data || data.type!=='nsfactory-floodfill-confirm') return;
+  const parts=data.parts||[];
+  state.answers.textureSimulation=parts;
+  closeTextureSimulator();
+  // 外装/内装など複数タブがある場合、配列先頭（＝外装側）の革を優先してa.leatherへ反映する
+  const withLeather=parts.filter(p=>p.leatherName);
+  const leatherName=withLeather.length ? withLeather[0].leatherName : null;
+  if(leatherName && state._awaitKey==='leather'){
+    handleAnswer(leatherName, leatherName+'（シミュレーターで確認）');
+  }
+});
+
 /* ---------- ガイド対話ロジック ---------- */
 function startPicker(){
   showTyping();
@@ -229,6 +307,7 @@ function runStep(){
     const items = typeof step.quick==='function'?step.quick(a):(step.quick||[]);
     renderQuick(items);
     state._awaitKey = typeof step.key==='function'?step.key(a):step.key;
+    renderSimEntry();
     if(step.freeInput) txt.focus();
   }, 420);
 }
@@ -239,6 +318,7 @@ function handleAnswer(val, label){
     if(!PRODUCTS[val]) return;
     addMsg('user', label||val);
     renderQuick([]);
+    simEntry.innerHTML='';
     beginProduct(val);
     return;
   }
@@ -247,6 +327,7 @@ function handleAnswer(val, label){
   if(key) state.answers[key]=val;
   state._awaitKey=null;           // 二重回答ガード
   renderQuick([]);
+  simEntry.innerHTML='';
   // 進行
   if(state._isLast){ finish(); return; }
   state.step++;
