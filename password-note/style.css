@@ -362,6 +362,17 @@ a.url-open-btn:hover {
   padding: 1rem;
   overflow-y: auto;
 }
+#gist-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 201;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.6);
+}
 .modal-card {
   background: var(--surface);
   border: 1px solid var(--border);
