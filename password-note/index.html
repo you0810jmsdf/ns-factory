@@ -78,6 +78,7 @@
     <button class="icon-btn" id="select-all-btn" onclick="toggleSelectAll()" style="display:none">すべて選択</button>
     <button class="icon-btn" id="export-btn" title="暗号化済みの予備コピーを保存">予備コピー保存</button>
     <button class="icon-btn" id="import-btn" title="暗号化済みの予備コピーを読み込む">予備コピー読込</button>
+    <button class="icon-btn" id="snapshot-btn" title="保存のたびに自動で残る履歴から復元">自動復元</button>
     <input type="file" id="import-file" accept=".json,application/json" style="display:none">
   </div>
 
@@ -177,14 +178,29 @@
   </div>
 </div>
 
+<div id="snapshot-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="snapshot-modal-title">
+  <div class="modal-card" style="max-width:480px">
+    <div class="modal-header">
+      <h2 id="snapshot-modal-title">自動バックアップから復元</h2>
+      <button class="btn-icon" id="close-snapshot-modal-btn" title="閉じる">×</button>
+    </div>
+    <div class="modal-body" style="gap:12px">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:0">
+        保存操作のたびに直近5回分の状態を端末内に自動で残しています。うっかり上書き・削除してしまった場合はここから戻せます（他の端末やPC初期化には対応できません）。
+      </p>
+      <div id="snapshot-list"></div>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
-<script src="config.js?v=27"></script>
-<script src="js/crypto.js?v=27"></script>
-<script src="js/db.js?v=27"></script>
-<script src="js/gist.js?v=27"></script>
-<script src="js/print.js?v=27"></script>
-<script src="js/app.js?v=27"></script>
+<script src="config.js?v=28"></script>
+<script src="js/crypto.js?v=28"></script>
+<script src="js/db.js?v=28"></script>
+<script src="js/gist.js?v=28"></script>
+<script src="js/print.js?v=28"></script>
+<script src="js/app.js?v=28"></script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
 </html>

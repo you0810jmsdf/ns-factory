@@ -551,6 +551,30 @@ a.url-open-btn:hover {
 }
 .btn-add-history:hover { background: rgba(124,131,232,0.1); }
 
+/* ── Snapshot modal ── */
+#snapshot-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 201;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.6);
+}
+.snapshot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
 /* ── Toast ── */
 #toast-container {
   position: fixed;

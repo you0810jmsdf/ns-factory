@@ -44,5 +44,17 @@ const DB = (() => {
     });
   }
 
-  return { get, set, del };
+  const SNAPSHOT_LIMIT = 5;
+
+  async function pushSnapshot(enc) {
+    const list = (await get('snapshots')) || [];
+    list.unshift({ ts: new Date().toISOString(), enc });
+    await set('snapshots', list.slice(0, SNAPSHOT_LIMIT));
+  }
+
+  async function getSnapshots() {
+    return (await get('snapshots')) || [];
+  }
+
+  return { get, set, del, pushSnapshot, getSnapshots };
 })();

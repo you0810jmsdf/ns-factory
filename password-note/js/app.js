@@ -56,6 +56,7 @@ async function saveVaultLocal() {
   vault.lastModified = now();
   const enc = await CryptoManager.encrypt(vault, masterPassword);
   await DB.set('vault', enc);
+  await DB.pushSnapshot(enc);
 }
 
 async function loadVaultLocal() {
@@ -100,6 +101,55 @@ async function loadFromGist() {
   }
 }
 
+function fmtDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+async function openSnapshotModal() {
+  const snapshots = await DB.getSnapshots();
+  const list = document.getElementById('snapshot-list');
+  if (snapshots.length === 0) {
+    list.innerHTML = '<div class="empty-state">自動バックアップはまだありません。</div>';
+  } else {
+    list.innerHTML = snapshots.map((s, i) => `
+      <div class="snapshot-row">
+        <span>${fmtDateTime(s.ts)}</span>
+        <button type="button" class="btn-icon" onclick="restoreSnapshot(${i})">この時点に復元</button>
+      </div>
+    `).join('');
+  }
+  document.getElementById('snapshot-modal').style.display = 'flex';
+}
+
+function closeSnapshotModal() {
+  document.getElementById('snapshot-modal').style.display = 'none';
+}
+
+async function restoreSnapshot(idx) {
+  try {
+    const snapshots = await DB.getSnapshots();
+    const snap = snapshots[idx];
+    if (!snap) return;
+    const loaded = await CryptoManager.decrypt(snap.enc, masterPassword);
+    if (!loaded || !Array.isArray(loaded.entries)) {
+      throw new Error('自動バックアップの中身を確認できませんでした');
+    }
+    const ok = confirm(`${fmtDateTime(snap.ts)} 時点の内容に置き換えます。現在の内容は失われます。続けますか？`);
+    if (!ok) return;
+    vault = loaded;
+    await DB.set('vault', snap.enc);
+    selectedIds.clear();
+    renderList();
+    closeSnapshotModal();
+    toast('自動バックアップから復元しました', 'success');
+    if (GistManager.isConfigured()) syncToGist();
+  } catch (e) {
+    toast('復元できませんでした: ' + e.message, 'error');
+  }
+}
+
 async function handleLogin(e) {
   e.preventDefault();
   const pw = document.getElementById('master-pw').value;
@@ -110,10 +160,19 @@ async function handleLogin(e) {
     document.getElementById('login-btn').textContent = '確認中...';
 
     if (isNew) {
-      const confirm = document.getElementById('master-pw-confirm').value;
-      if (pw !== confirm) {
+      const confirmPw = document.getElementById('master-pw-confirm').value;
+      if (pw !== confirmPw) {
         toast('合言葉が一致しません', 'error');
         return;
+      }
+      const existing = await DB.get('vault');
+      if (existing) {
+        const ok = window.confirm(
+          'この端末には既に登録済みのデータがあります。\n' +
+          '「新規作成」を続けると、今あるデータは自動バックアップの復元以外では戻せなくなります。\n' +
+          '本当に新しく作り直しますか？（通常は「開く」から既存の合言葉で開いてください）'
+        );
+        if (!ok) return;
       }
       masterPassword = pw;
       vault = { entries: [], lastModified: now() };
@@ -579,6 +638,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('export-btn').addEventListener('click', exportBackup);
   document.getElementById('import-btn').addEventListener('click', chooseImportFile);
   document.getElementById('import-file').addEventListener('change', e => importBackupFile(e.target.files[0]));
+  document.getElementById('snapshot-btn').addEventListener('click', openSnapshotModal);
+  document.getElementById('close-snapshot-modal-btn').addEventListener('click', closeSnapshotModal);
 
   document.getElementById('search-input').addEventListener('input', e => {
     currentQuery = e.target.value;
