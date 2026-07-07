@@ -367,10 +367,14 @@ function buildTabButtons(){
   });
 }
 
-/* 現在の線幅/線色設定を全タブへ反映するため、ロード済みタブを作り直す（塗った内容はリセットされる） */
+/* 現在の線幅/線色設定を全タブへ反映するため、ロード済みタブを作り直す（塗った内容はリセットされる）。
+   ensureTabLoaded()は「読み込み済みなら何もしない」ガードを持つため、作り直す前に
+   キャッシュ（tabStates）と塗り履歴（paintHistory）を明示的に破棄しておく必要がある。 */
 async function reloadAllLoadedTabs(){
   const loadedKeys = Object.keys(tabStates);
   for(const key of loadedKeys){
+    delete tabStates[key];
+    delete paintHistory[key];
     await ensureTabLoaded(key);
   }
   renderCurrentTab();
