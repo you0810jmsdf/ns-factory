@@ -56,6 +56,9 @@
     // 革ギャラリーで「拡大写真を見ただけ」の候補（まだ決定していない）。
     // 「この色に決定する」を押すまでselectionsには反映されない。
     var pendingChoice = null;
+    // テクスチャシミュレーター対応状況（商品ごとに1回だけ確認・案内する）
+    var simChecked = false;
+    var simPatternAvailable = undefined; // undefined=未確認, true/false=確認済み
 
     function $(sel) { return container.querySelector(sel); }
 
@@ -80,6 +83,8 @@
       isChatSending = false;
       selections = {};
       pendingChoice = null;
+      simChecked = false;
+      simPatternAvailable = undefined;
       nsfRenderSelectionSummary();
       var area = $('#chat-area');
       if (!area) return;
@@ -715,6 +720,24 @@
       el.textContent = '現在の選択： ' + keys.map(function (k) { return k + '=' + selections[k]; }).join(' ／ ');
     }
 
+    // オーダー進捗GAS（deploymentId据え置き）。型紙SVGの登録有無を事前確認するために使う。
+    var ORDER_PROGRESS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
+    // folderId内にsvg1.svg/svg2.svgが登録済みかどうかを確認する（同一folderIdは結果をキャッシュして再確認しない）
+    var patternAvailabilityCache = {};
+    function checkPatternAvailability(folderId) {
+      if (Object.prototype.hasOwnProperty.call(patternAvailabilityCache, folderId)) {
+        return Promise.resolve(patternAvailabilityCache[folderId]);
+      }
+      return fetch(ORDER_PROGRESS_GAS_URL + '?action=svgList&folderId=' + encodeURIComponent(folderId))
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          var available = !!(j.ok && j.svgs && j.svgs.length);
+          patternAvailabilityCache[folderId] = available;
+          return available;
+        })
+        .catch(function () { return false; });
+    }
+
     // ── テクスチャシミュレーター（フルスクリーンオーバーレイ、このマウント専用にDOM生成） ──
     // 型紙SVG（svg1.svg/svg2.svg）がfolderId内に無い商品はfloodfill.html側が自動で「準備中」表示するため、
     // ここでは商品ごとのfolderIdの有無だけを見ればよい（マッピング表は不要）。
@@ -829,6 +852,8 @@
       }
       appendStaffMsg(lead);
 
+      var simFolderId = currentProductContext && currentProductContext.folderId;
+
       function refreshLeatherChips() {
         var swatchChips = list.map(function (l) {
           var t = stockKnown ? nsfLeatherTier(l) : null;
@@ -847,12 +872,28 @@
         if (pendingChoice && pendingChoice.partLabel === '革色') {
           chips.splice(1, 0, { label: '✅「' + pendingChoice.name + '」に決定する', onClick: nsfConfirmPending });
         }
-        if (currentProductContext && currentProductContext.folderId) {
-          chips.push({ label: '🎨 テクスチャシミュレーターで試す', onClick: function () { openTextureSimulator(currentProductContext.folderId); } });
+        if (simFolderId && simPatternAvailable === true) {
+          chips.push({ label: '🎨 テクスチャシミュレーターで試す', onClick: function () { openTextureSimulator(simFolderId); } });
+        } else if (simFolderId && simPatternAvailable === false) {
+          chips.push({ label: '🎨 型紙シミュレーター：準備中', onClick: function () {
+            appendStaffMsg('🎨 テクスチャシミュレーターは、この作品はまだ型紙データの登録が完了していないため準備中です。今しばらくお待ちください🙏');
+          } });
         }
         renderChips(chips.concat(swatchChips));
       }
       refreshLeatherChips();
+
+      // このチャットセッション中、商品ごとに1回だけテクスチャシミュレーターの対応状況を確認・案内する
+      if (simFolderId && !simChecked) {
+        simChecked = true;
+        checkPatternAvailability(simFolderId).then(function (avail) {
+          simPatternAvailable = avail;
+          appendStaffMsg(avail
+            ? '🎨 この作品はテクスチャシミュレーターで革の質感を試せます！下の「テクスチャシミュレーターで試す」からどうぞ。'
+            : '🎨 テクスチャシミュレーターは、この作品はまだ型紙データが未登録のため準備中です。');
+          refreshLeatherChips();
+        });
+      }
     }
 
     // 拡大写真で確認しただけの候補（pendingChoice）を、正式な選択（selections）へ反映する。
