@@ -1,8 +1,8 @@
-size_id,name,work_hours,refill_w,refill_h,note
-micro5,Micro 5,1,54,84,5穴 超小型ミニマム手帳（Filofax Micro等）
-micro5sq,Micro 5 スクエア,1.56,84,84,5穴 スクエア変形サイズ
-mini6,mini 6,1.55,67,105,6穴 コンパクト定番（Filofax Mini等）
-mini6sq,mini 6 スクエア,2.43,105,105,6穴 スクエア変形サイズ
-a6,A6,3.43,105,148,6穴 スタンダードA判（じぶん手帳等）
-bible,バイブル,3.58,95,171,6穴 パーソナルサイズ定番（Filofax Personal等）
-a5,A5,6.85,148,210,6穴 最も一般的な大判（A5ノート対応）
+size_id,name,work_hours,refill_w,refill_h,note,option_multiplier
+micro5,Micro 5,1,54,84,5穴 超小型ミニマム手帳（Filofax Micro等）,1.0
+micro5sq,Micro 5 スクエア,1.56,84,84,5穴 スクエア変形サイズ,1.56
+mini6,mini 6,1.55,67,105,6穴 コンパクト定番（Filofax Mini等）,1.55
+mini6sq,mini 6 スクエア,2.43,105,105,6穴 スクエア変形サイズ,2.43
+a6,A6,3.43,105,148,6穴 スタンダードA判（じぶん手帳等）,3.43
+bible,バイブル,3.58,95,171,6穴 パーソナルサイズ定番（Filofax Personal等）,3.58
+a5,A5,6.85,148,210,6穴 最も一般的な大判（A5ノート対応）,6.85

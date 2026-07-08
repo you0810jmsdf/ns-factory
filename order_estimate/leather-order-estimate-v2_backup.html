@@ -2393,6 +2393,8 @@ async function loadSizeBasePriceCatalog() {
       if (!size) return;
       const wh = parseFloat(row.work_hours);
       if (!isNaN(wh)) size.workHours = wh;
+      const om = parseFloat(row.option_multiplier);
+      if (!isNaN(om)) size.optionMultiplier = om;
     });
   } catch (err) {
     console.warn('Size base price CSV load failed:', err);
@@ -2414,8 +2416,8 @@ async function loadBrandPriceCatalog() {
       const eb = parseFloat(row.extra_base_cost);
       if (!isNaN(am)) brand.areaMulti = am;
       if (!isNaN(eb)) brand.extraBaseCost = eb;
-      const wh = parseFloat(row.work_hours);
-      if (!isNaN(wh)) brand.workHours = wh;
+      const whm = parseFloat(row.work_hour_multiplier);
+      if (!isNaN(whm)) brand.workHourMultiplier = whm;
       if (row.krause_no_multi !== undefined && row.krause_no_multi !== '') {
         brand.krauseNoMulti = csvBool(row.krause_no_multi);
       }
@@ -2570,12 +2572,12 @@ function buildBrandGrid() {
 
 function updateSizePrices() {
   const brandObj = BRANDS.find(b => b.id === sel.brandId);
-  const brandHours = brandObj?.workHours ?? 0;
+  const workHourMultiplier = brandObj?.workHourMultiplier ?? 0;
   const extra = brandObj?.extraBaseCost ?? 0;
   document.querySelectorAll('.opt-card[data-key="size"]').forEach(card => {
     const sizeObj = SIZES.find(s => s.id === card.dataset.id);
     const sizeHours = sizeObj?.workHours ?? 0;
-    const totalHours = sizeHours + brandHours;
+    const totalHours = sizeHours * workHourMultiplier;
     const displayed = Math.round(totalHours * LABOR_RATE_PER_HOUR + extra);
     const priceEl = card.querySelector('.opt-price');
     if (priceEl) priceEl.textContent = displayed > 0 ? `¥${displayed.toLocaleString()}（製作費）` : '構造未選択';
@@ -2884,7 +2886,8 @@ function scrollToSummary() {
 }
 
 function sideCount(v) { return v === 'both' ? 2 : (v === 'left' || v === 'right') ? 1 : 0; }
-function sideCost(v)  { return sideCount(v) * 1000; }
+function getOptionMultiplier() { return (SIZES.find(s => s.id === sel.sizeId)?.optionMultiplier) ?? 1; }
+function sideCost(v)  { return Math.round(sideCount(v) * 1000 * getOptionMultiplier()); }
 function sideLabel(v) { return ({none:'なし', left:'左のみ', right:'右のみ', both:'左右両方'})[v] || 'なし'; }
 
 function _applyRadio(prefix, val) {
@@ -3029,19 +3032,22 @@ function updateSummary(options = {}) {
   const dkanCount  = parseInt(document.getElementById('dkanCount').value) || 0;
   const wrappingObj = WRAPPING.find(w => w.id === (window._wrapping || 'wrap_none')) || WRAPPING[0];
   const wrappingCost = wrappingObj.price || 0;
-  // Dカン：全サイズ・全構造で常時表示（1個 +¥1,000、最大2個）
-  const dkanCost = dkanCount * 1000;
-  const flapOn    = isFlapEffectivelyOn();
-  const flapPrice = isFlapPriceOptional() && flapOn ? 3000 : 0;
-  const freePocket    = window._freePocket    || 'none';
-  const innerPocketSide = window._innerPocketSide || 'none';
-  const slitSide      = window._slitSide      || 'none';
 
   // ── 動的ds計算：リフィル寸法 × リングサイズから実面積を算出 ──
   const sizeObj  = SIZES.find(s => s.id === sel.sizeId);
   const ringObj  = RINGS.find(r => r.id === sel.ringId) || { id_mm: 19 };  // デフォルト19mm
   let sizeDs = 0;
   let refillMm2 = 0;
+
+  // オプション価格用サイズ別面積比（option_multiplier）
+  const optionMultiplier = sizeObj?.optionMultiplier ?? 1;
+  // Dカン：全サイズ・全構造で常時表示（1個 +¥1,000、最大2個）※面積比を乗算
+  const dkanCost = Math.round(dkanCount * 1000 * optionMultiplier);
+  const flapOn    = isFlapEffectivelyOn();
+  const flapPrice = isFlapPriceOptional() && flapOn ? 3000 : 0;
+  const freePocket    = window._freePocket    || 'none';
+  const innerPocketSide = window._innerPocketSide || 'none';
+  const slitSide      = window._slitSide      || 'none';
 
   // ── ブランド×リング 革面積倍率（リフィル面積に対する倍率）──
   const brandObj    = BRANDS.find(b => b.id === sel.brandId);
@@ -3059,24 +3065,24 @@ function updateSummary(options = {}) {
   const leatherDsP   = window._patchworkOn ? (prices.leather > 0 ? NUMER_DS_PRICE : 0) : (prices.leather || 0); // パッチワーク時は基準単価固定
   const leatherRatio = leatherDsP > 0 ? leatherDsP / NUMER_DS_PRICE : 1;  // 革素材比率（¥160/ds基準・表示用）
   const brandExtraBase = brandObj?.extraBaseCost ?? 0;          // 構造タイプ別固定加算（N-Pad flap +¥2,000等）
-  // ── 計算式（2026-05-25 新方式一本化）──
-  // 製作費   = (サイズ別工数 + 構造別追加工数) × 時給 + 固定加算
+  // ── 計算式（2026-07-09 乗算方式に変更）──
+  // 製作費   = サイズ別工数 × 構造別工数倍率(work_hour_multiplier) × 時給 + 固定加算
   // 原材料費 = 革面積(ds) × 革素材単価
   // 管理者一時上書き（?admin時のみ有効・localStorage保存なし、ページリロードで消える）
   const ov = window._adminOverrides || {};
   const sizeHoursCsv  = sizeObj?.workHours ?? 0;
-  const brandHoursCsv = brandObj?.workHours ?? 0;
+  const workHourMultiplierCsv = brandObj?.workHourMultiplier ?? 0;
   const sizeHours  = (isAdmin && ov.sizeHours  != null) ? ov.sizeHours  : sizeHoursCsv;
-  const brandHours = (isAdmin && ov.brandHours != null) ? ov.brandHours : brandHoursCsv;
+  const workHourMultiplier = (isAdmin && ov.workHourMultiplier != null) ? ov.workHourMultiplier : workHourMultiplierCsv;
   const laborRate  = (isAdmin && ov.laborRate  != null) ? ov.laborRate  : LABOR_RATE_PER_HOUR;
-  const totalHours = (sizeHours || 0) + (brandHours || 0);
+  const totalHours = (sizeHours || 0) * (workHourMultiplier || 0);
   const baseCost = Math.round(totalHours * laborRate + brandExtraBase);
   const leatherCost = Math.round(sizeDs * (leatherDsP || NUMER_DS_PRICE));
 
   let opts = 0;
   ['ring','metal','stitchColor','pen','coin','stamp'].forEach(k => opts += (prices[k]||0));
   opts += sideCost(freePocket) + sideCost(innerPocketSide) + sideCost(slitSide) + dkanCost + wrappingCost
-        + cardPCC * 1000
+        + Math.round(cardPCC * 1000 * optionMultiplier)
         + flapPrice
         + sideCount(window._clearWindowSide) * 3000
         + sideCount(window._patchworkSide)   * 5000;
@@ -3108,21 +3114,16 @@ function updateSummary(options = {}) {
     add('サイズを選択してください', '―');
   } else {
     add('▶ 本体', '', 'lbl-title');
-    // 製作費（工数×時給）と原材料費を分離表示
-    const hoursLabel = `製作費（${sel.size||'―'} ${sizeHours||0}h + ${sel.brand||'―'} ${brandHours||0}h = ${totalHours}h × ¥${laborRate.toLocaleString()}/h）`;
-    add(hoursLabel, `¥${baseCost.toLocaleString()}`);
-    if (leatherCost > 0) {
-      add(`原材料費（${sizeDs}ds × ¥${(leatherDsP || NUMER_DS_PRICE).toLocaleString()}/ds）`, `¥${leatherCost.toLocaleString()}`);
-    }
     if (isAdmin) {
-      // 管理者調整パネル（リアルタイム試算）
-      const ovActive = (ov.sizeHours != null || ov.brandHours != null || ov.laborRate != null);
+      // 管理者調整パネル（リアルタイム試算）※原価内訳は管理者のみ閲覧のため表示継続
+      const ovActive = (ov.sizeHours != null || ov.workHourMultiplier != null || ov.laborRate != null);
       add(`⚙ 調整モード（管理者）${ovActive ? ' ⚠上書き中' : ''}`, '', 'lbl-title');
       add('└ サイズ工数', `<input type="number" step="0.5" min="0" value="${sizeHours||0}" id="adjSizeHours" style="width:70px"> h（CSV値: ${sizeHoursCsv ?? '―'}h）`);
-      add('└ 構造工数', `<input type="number" step="0.5" min="0" value="${brandHours||0}" id="adjBrandHours" style="width:70px"> h（CSV値: ${brandHoursCsv ?? '―'}h）`);
+      add('└ 構造工数倍率', `<input type="number" step="0.1" min="0" value="${workHourMultiplier||0}" id="adjWorkHourMultiplier" style="width:70px"> ×（CSV値: ${workHourMultiplierCsv ?? '―'}×）`);
       add('└ 時給', `<input type="number" step="100" min="0" value="${laborRate}" id="adjLaborRate" style="width:90px"> ¥/h（CSV値: ¥${LABOR_RATE_PER_HOUR.toLocaleString()}/h）`);
       add('└ 操作', `<button onclick="resetAdminOverrides()" style="padding:2px 8px;font-size:11px">リセット</button> <span style="font-size:11px;color:#888">編集→即時試算</span>`);
       add('▶ 計算式詳細', '', 'lbl-title');
+      add('└ サイズ工数 × 構造工数倍率', `${sizeHours||0} h × ${workHourMultiplier||0} = ${totalHours} h`);
       add('└ 合計工数 × 時給', `${totalHours} h × ¥${laborRate.toLocaleString()} = ¥${(totalHours * laborRate).toLocaleString()}`);
       if (brandExtraBase > 0) add('└ + 固定加算（extraBaseCost）', `+ ¥${brandExtraBase.toLocaleString()}`);
       add('└ = 製作費（工賃）', `= ¥${baseCost.toLocaleString()}`);
@@ -3144,7 +3145,7 @@ function updateSummary(options = {}) {
           });
         };
         bind('adjSizeHours', 'sizeHours');
-        bind('adjBrandHours', 'brandHours');
+        bind('adjWorkHourMultiplier', 'workHourMultiplier');
         bind('adjLaborRate', 'laborRate');
       }, 0);
     }
@@ -3168,7 +3169,7 @@ function updateSummary(options = {}) {
     if(dkanCost > 0)               add(`Dカン取り付け×${dkanCount}`, `+¥${dkanCost.toLocaleString()}`);
     if(freePocket !== 'none')     add(`フリーポケット(${sideLabel(freePocket)})`,   `+¥${sideCost(freePocket).toLocaleString()}`);
     if(innerPocketSide !== 'none') add(`あおりポケット(${sideLabel(innerPocketSide)})`, `+¥${sideCost(innerPocketSide).toLocaleString()}`);
-    if(cardPCC > 0)              add(`カードポケット×${cardPCC}`, `+¥${(cardPCC * 1000).toLocaleString()}`);
+    if(cardPCC > 0)              add(`カードポケット×${cardPCC}`, `+¥${Math.round(cardPCC * 1000 * optionMultiplier).toLocaleString()}`);
     if(slitSide !== 'none')      add(`スリット加工(${sideLabel(slitSide)})`, `+¥${sideCost(slitSide).toLocaleString()}`);
     if(window._clearWindowSide !== 'none') add(`クリア窓枠(${sideLabel(window._clearWindowSide)})`, `+¥${(sideCount(window._clearWindowSide)*3000).toLocaleString()}`);
     if(window._patchworkSide   !== 'none') add(`パッチワーク加工(${sideLabel(window._patchworkSide)})`,   `+¥${(sideCount(window._patchworkSide)*5000).toLocaleString()}`);
@@ -3179,11 +3180,10 @@ function updateSummary(options = {}) {
     if(prices.initDesignFee > 0) add(`✨ 初度設計費・刻印デザイン（1回のみ）`, `+¥${prices.initDesignFee.toLocaleString()}`);
     if(initDesignFee > 1000) add(`　初度設計費 合計`, `+¥${initDesignFee.toLocaleString()}`);
     add('▶ 合計', '', 'lbl-title');
-    add('1個単価（税抜）', `¥${unit.toLocaleString()}`);
     add(`×${qty}個`, `¥${sub.toLocaleString()}`);
     if(volDisc > 0) add(`ボリューム割引(${volRate * 100}%)`, `−¥${volDisc.toLocaleString()}`);
     if(manDisc > 0) add(`割引(${discRate}%)`, `−¥${manDisc.toLocaleString()}`);
-    add('原価概算（税込）', `¥${total.toLocaleString()}`);
+    add('合計金額（税込）', `¥${total.toLocaleString()}`);
   }
 
   // ── プラットフォーム手数料 & 推奨出品価格 ──────────────────────
@@ -3204,7 +3204,7 @@ function updateSummary(options = {}) {
   document.getElementById('totalDisplay').innerHTML = `¥${total.toLocaleString()} <span>円</span>`;
   const mBar = document.getElementById('mobileTotalBar');
   if (mBar) mBar.textContent = `¥${total.toLocaleString()} 円`;
-  document.getElementById('costBoxLabel').textContent = '製作原価概算（税込）';
+  document.getElementById('costBoxLabel').textContent = '合計金額（税込）';
 
   // sellBox: 出品価格表示
   const sellBox = document.getElementById('sellBox');
