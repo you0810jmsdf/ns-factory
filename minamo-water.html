@@ -342,6 +342,7 @@ uniform sampler2D uState;
 uniform vec2 uTexel;
 uniform float uWaveSpeed;
 uniform float uDamping;
+uniform float uTime;
 uniform int uSplatCount;
 uniform vec2 uSplatPos[8];
 uniform float uSplatRadius[8];
@@ -355,6 +356,14 @@ void main(){
   float lap = (hL+hR+hU+hD - 4.0*self.r);
   float vel = self.g + lap*uWaveSpeed;
   vel *= uDamping;
+
+  /* tiny continuous ambient forcing, like a light wind on the water, so the
+     surface never settles into a perfectly flat, lifeless plane even when
+     nobody is interacting with it */
+  float chop = sin(vUv.x*46.0 + uTime*1.4) * sin(vUv.y*38.0 - uTime*1.1)
+             + 0.5*sin(vUv.x*97.0 - uTime*2.3 + 1.7) * sin(vUv.y*81.0 + uTime*1.9);
+  vel += chop * 0.00028;
+
   float h = self.r + vel;
   for(int i=0;i<8;i++){
     if(i>=uSplatCount) break;
@@ -404,15 +413,6 @@ void main(){
   float hU = texture(uState, vUv + vec2(0.0,uTexel.y)).r;
   float hD = texture(uState, vUv - vec2(0.0,uTexel.y)).r;
   vec2 grad = vec2(hR-hL, hU-hD) * uNormalScale;
-
-  /* slow ambient swell, purely visual (does not touch the simulated height
-     field), so the surface keeps rolling gently even with zero interaction
-     instead of settling into a flat, lifeless plane */
-  float swP1 = vUv.x*2.2 + vUv.y*1.3 + uTime*0.55;
-  float swP2 = vUv.x*3.7 - vUv.y*2.1 + uTime*0.8;
-  vec2 swellGrad = vec2(2.2*cos(swP1), 1.3*cos(swP1)) * 0.35
-                  + vec2(3.7*cos(swP2), -2.1*cos(swP2)) * 0.18;
-  grad += swellGrad * 0.3;
 
   /* fine surface ripple grain, three noise octaves so the whole water reads as
      textured everywhere (not just inside the simulated waves), and so a broad
@@ -749,6 +749,7 @@ function frame(now){
   gl.uniform2f(gl.getUniformLocation(updateProg,"uTexel"), texelX, texelY);
   gl.uniform1f(gl.getUniformLocation(updateProg,"uWaveSpeed"), cfg.waveSpeed);
   gl.uniform1f(gl.getUniformLocation(updateProg,"uDamping"), cfg.damping);
+  gl.uniform1f(gl.getUniformLocation(updateProg,"uTime"), now*0.001);
   const n = pendingSplats.length;
   gl.uniform1i(gl.getUniformLocation(updateProg,"uSplatCount"), n);
   const posArr = new Float32Array(16), radArr = new Float32Array(8), strArr = new Float32Array(8);
