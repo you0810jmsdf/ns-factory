@@ -430,7 +430,7 @@ void main(){
      cursor. */
   float horizonRef = hasHorizon ? uHorizon : 1.0;
   float distT = clamp(vUv.y / max(horizonRef, 0.001), 0.0, 1.0);
-  float perspScale = mix(1.3, 0.32, distT*distT);
+  float perspScale = mix(1.3, 0.55, distT*distT);
   grad *= perspScale;
   hC *= perspScale;
 
@@ -449,9 +449,10 @@ void main(){
     float sunHeightFrac = clamp(ldn.y*0.6 + 0.15, 0.05, 0.85);
     vec2 sunPos = vec2(sunX, uHorizon + (1.0-uHorizon)*sunHeightFrac);
     float sunDist = distance(vUv, sunPos);
-    float sunCore = smoothstep(0.03, 0.016, sunDist);
-    float sunGlow = smoothstep(0.24, 0.0, sunDist) * 0.55;
-    spec = sunCore*1.6 + sunGlow;
+    float sunCore = smoothstep(0.032, 0.014, sunDist);
+    float sunGlow = smoothstep(0.34, 0.0, sunDist) * 0.85;
+    float sunHalo = smoothstep(0.6, 0.0, sunDist) * 0.3;
+    spec = sunCore*2.4 + sunGlow + sunHalo;
     color = sky + uLightColor*spec;
   } else {
     /* fine surface ripple grain, three noise octaves so the whole water reads as
@@ -482,14 +483,14 @@ void main(){
     vec3 ld = normalize(uLightDir);
     vec3 h = normalize(ld + viewDir);
     float ndoth = max(dot(normal, h), 0.0);
-    float broad = pow(ndoth, max(uShininess*0.18, 7.0)) * 0.4;
-    float tight = pow(ndoth, uShininess) * 2.2;
+    float broad = pow(ndoth, max(uShininess*0.18, 7.0)) * 0.55;
+    float tight = pow(ndoth, uShininess) * 3.2;
 
     /* glitter path: a broad field of small speckles (like moonlight on real
        rippled water) plus the original sparser layer of brighter pinpoints on top */
     float ndothG = max(dot(glintNormal, h), 0.0);
-    float shimmer = smoothstep(0.55, 0.93, pow(ndothG, 26.0)*2.2) * 0.6;
-    float pinpoint = smoothstep(0.88, 0.999, pow(ndothG, 320.0)*3.0) * 0.7;
+    float shimmer = smoothstep(0.48, 0.92, pow(ndothG, 20.0)*2.4) * 1.0;
+    float pinpoint = smoothstep(0.86, 0.999, pow(ndothG, 300.0)*3.2) * 1.1;
     float glint = shimmer + pinpoint;
 
     spec = broad + tight + glint;
