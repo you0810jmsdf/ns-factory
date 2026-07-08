@@ -430,7 +430,7 @@ void main(){
      cursor. */
   float horizonRef = hasHorizon ? uHorizon : 1.0;
   float distT = clamp(vUv.y / max(horizonRef, 0.001), 0.0, 1.0);
-  float perspScale = mix(1.3, 0.06, distT*distT);
+  float perspScale = mix(1.3, 0.32, distT*distT);
   grad *= perspScale;
   hC *= perspScale;
 
@@ -516,10 +516,12 @@ void main(){
   }
 
   if(hasHorizon && !inSky){
-    /* soften the seam between water and sky just below the horizon line */
-    float horizonBlend = smoothstep(max(uHorizon-0.16,0.0), uHorizon, vUv.y);
+    /* soften just the immediate seam between water and sky — kept narrow and
+       weak so it doesn't wash out the wave contrast across the rest of the
+       visible water */
+    float horizonBlend = smoothstep(max(uHorizon-0.08,0.0), uHorizon, vUv.y);
     vec3 horizonColor = uSkyBottom*1.05 + uLightColor*0.05;
-    color = mix(color, horizonColor, horizonBlend*0.65);
+    color = mix(color, horizonColor, horizonBlend*0.4);
   }
 
   vec2 edgeUv = abs(vUv-0.5)*2.0;
@@ -564,7 +566,7 @@ function seededWaveData(w,h){
       hgt += 0.15*Math.sin(u*39 + v*29 - 0.6);
       hgt += 0.10*Math.sin(u*61 - v*44 + 2.2);
       const idx = (y*w+x)*2;
-      data[idx] = hgt*0.12;
+      data[idx] = hgt*0.24;
       data[idx+1] = 0;
     }
   }
