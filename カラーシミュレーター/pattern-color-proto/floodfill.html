@@ -10,8 +10,9 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN',sans-serif;background:#f0ede8;padding:16px;margin:0}
 h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient(135deg,#3d1a08,#a0785a);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
 .wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.wrap>div{min-width:0}
 #canvasWrap{background:#222;border-radius:8px;padding:10px;transition:box-shadow .3s}
-#dispCanvas{display:block;cursor:crosshair;image-rendering:pixelated;transition:filter .15s}
+#dispCanvas{display:block;width:100%;max-width:480px;height:auto;cursor:crosshair;image-rendering:pixelated;transition:filter .15s}
 #dispCanvas.flash{animation:fillFlash .35s ease-out}
 .palette{display:flex;flex-wrap:wrap;gap:8px;max-width:340px;max-height:420px;overflow-y:auto;padding:2px}
 .sw{width:64px;cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;text-align:center;font-size:9px;background:#fff;
