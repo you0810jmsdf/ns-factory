@@ -405,37 +405,46 @@ void main(){
   float hD = texture(uState, vUv - vec2(0.0,uTexel.y)).r;
   vec2 grad = vec2(hR-hL, hU-hD) * uNormalScale;
 
-  /* fine surface sparkle so calm patches still glimmer, layered at two smooth scales */
-  vec2 sp1 = vUv*vec2(16.0,12.0) + vec2(uTime*0.02, -uTime*0.015);
-  vec2 sp2 = vUv*vec2(42.0,32.0) + vec2(-uTime*0.03, uTime*0.025);
-  float e = 0.03;
-  float n1c = noise(sp1), n1x = noise(sp1+vec2(e,0.0)), n1y = noise(sp1+vec2(0.0,e));
-  float n2c = noise(sp2), n2x = noise(sp2+vec2(e,0.0)), n2y = noise(sp2+vec2(0.0,e));
-  vec2 sparkleGrad = vec2(n1x-n1c, n1y-n1c)/e*1.1 + vec2(n2x-n2c, n2y-n2c)/e*0.6;
+  /* fine surface ripple grain, three noise octaves so the whole water reads as
+     textured everywhere (not just inside the simulated waves), and so a broad
+     specular zone can be broken up into many individual glints instead of a
+     single soft blob */
+  vec2 sp1 = vUv*vec2(26.0,20.0) + vec2(uTime*0.035, -uTime*0.025);
+  vec2 sp2 = vUv*vec2(70.0,55.0) + vec2(-uTime*0.05, uTime*0.04);
+  vec2 sp3 = vUv*vec2(170.0,140.0) + vec2(uTime*0.07, uTime*0.06);
+  float e = 0.025;
+  float n1c=noise(sp1), n1x=noise(sp1+vec2(e,0.0)), n1y=noise(sp1+vec2(0.0,e));
+  float n2c=noise(sp2), n2x=noise(sp2+vec2(e,0.0)), n2y=noise(sp2+vec2(0.0,e));
+  float n3c=noise(sp3), n3x=noise(sp3+vec2(e,0.0)), n3y=noise(sp3+vec2(0.0,e));
+  vec2 microGrad = vec2(n1x-n1c,n1y-n1c)/e*0.9 + vec2(n2x-n2c,n2y-n2c)/e*0.55 + vec2(n3x-n3c,n3y-n3c)/e*0.3;
 
-  vec3 normal = normalize(vec3(-grad.x, -grad.y, 1.0));
-  vec3 glintNormal = normalize(vec3(-(grad.x+sparkleGrad.x*0.02), -(grad.y+sparkleGrad.y*0.02), 1.0));
+  vec3 normal = normalize(vec3(-grad.x - microGrad.x*0.012, -grad.y - microGrad.y*0.012, 1.0));
+  vec3 glintNormal = normalize(vec3(-grad.x - microGrad.x*0.055, -grad.y - microGrad.y*0.055, 1.0));
 
   vec3 viewDir = normalize(vec3(0.0, 0.35, 1.0));
   float skyT = clamp(normal.y*0.5+0.5, 0.0, 1.0);
   vec3 skyColor = mix(uSkyBottom, uSkyTop, skyT);
 
   float fres = pow(1.0 - max(dot(normal, vec3(0.0,0.0,1.0)), 0.0), 2.0);
-  vec3 water = mix(uWaterDeep, uWaterShallow, clamp(fres*0.7 + hC*0.06,0.0,1.0));
+  vec3 water = mix(uWaterDeep, uWaterShallow, clamp(fres*0.55 + hC*0.05,0.0,1.0));
 
   vec3 ld = normalize(uLightDir);
   vec3 h = normalize(ld + viewDir);
   float ndoth = max(dot(normal, h), 0.0);
-  float broad = pow(ndoth, max(uShininess*0.18, 7.0)) * 0.4;
-  float tight = pow(ndoth, uShininess) * 2.2;
+  float broad = pow(ndoth, max(uShininess*0.18, 7.0)) * 0.32;
+  float tight = pow(ndoth, uShininess) * 1.5;
 
-  /* glitter: independent of the mode's shininess so it stays sparse pinpoints, not a broad grain */
+  /* glitter path: a broad field of small speckles (like moonlight on real
+     rippled water) plus a sparser layer of brighter pinpoints on top */
   float ndothG = max(dot(glintNormal, h), 0.0);
-  float glint = smoothstep(0.88, 0.999, pow(ndothG, 320.0)*3.0) * 0.7;
+  float shimmer = smoothstep(0.74, 0.985, pow(ndothG, 55.0)*2.4) * 0.85;
+  float pinpoint = smoothstep(0.9, 0.999, pow(ndothG, 340.0)*3.0) * 1.1;
+  float glint = shimmer + pinpoint;
 
   float spec = broad + tight + glint;
 
-  vec3 color = water + skyColor*0.28 + uLightColor*spec;
+  vec3 color = water + skyColor*0.2 + uLightColor*spec;
+  color = pow(max(color, 0.0), vec3(1.1));
 
   vec2 textUv = vUv + grad*0.4;
   vec4 txt = texture(uTextTex, textUv);
@@ -569,7 +578,7 @@ const MODE_A = {
 };
 const MODE_B = {
   "空":  {skyTop:[.55,.75,.95], skyBottom:[.75,.85,.92], deep:[.05,.12,.22], shallow:[.25,.45,.55], light:[.3,.8,.5], color:[1,.98,.9], shin:60, normalScale:6.0},
-  "月夜":{skyTop:[.02,.04,.09], skyBottom:[.05,.08,.13], deep:[.01,.02,.05], shallow:[.06,.10,.16], light:[-.4,.6,.5], color:[.85,.9,1.0], shin:130, normalScale:7.5},
+  "月夜":{skyTop:[.02,.04,.09], skyBottom:[.05,.08,.13], deep:[.008,.016,.04], shallow:[.05,.09,.15], light:[-.55,.38,.6], color:[.85,.9,1.0], shin:150, normalScale:8.0},
   "宵":  {skyTop:[.25,.12,.28], skyBottom:[.55,.28,.22], deep:[.05,.03,.08], shallow:[.30,.15,.18], light:[.7,.25,.4], color:[1,.6,.4], shin:80, normalScale:7.0},
   "暁":  {skyTop:[.65,.55,.68], skyBottom:[.92,.75,.68], deep:[.08,.07,.12], shallow:[.5,.4,.42], light:[.5,.4,.6], color:[1,.85,.8], shin:70, normalScale:6.5},
   "雨":  {skyTop:[.15,.18,.22], skyBottom:[.22,.25,.28], deep:[.03,.05,.07], shallow:[.12,.16,.2], light:[.2,.9,.3], color:[.7,.75,.8], shin:40, normalScale:6.5, rain:true},
