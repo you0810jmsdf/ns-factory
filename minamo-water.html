@@ -367,7 +367,10 @@ void main(){
   float h = self.r + vel;
   for(int i=0;i<8;i++){
     if(i>=uSplatCount) break;
-    float d = distance(vUv, uSplatPos[i]);
+    /* stretch the falloff horizontally so ripples read as ellipses spreading
+       across the water, not perfect circles floating flat on the screen */
+    vec2 delta = vUv - uSplatPos[i];
+    float d = length(vec2(delta.x, delta.y*1.7));
     float bump = smoothstep(uSplatRadius[i], 0.0, d) * uSplatStrength[i];
     h += bump;
   }
@@ -546,10 +549,31 @@ const renderProg = program(VERT, RENDER_FRAG);
 
 let simW=0, simH=0, texelX=0, texelY=0;
 let fboA, fboB, texA, texB;
-function makeStateTexture(w,h){
+function seededWaveData(w,h){
+  // a handful of overlapping sine trains at different angles/frequencies so
+  // the water starts out looking like real, textured ocean chop instead of a
+  // flat plane that only gains texture after several seconds of ambient drift
+  const data = new Float32Array(w*h*2);
+  for(let y=0;y<h;y++){
+    const v = y/h;
+    for(let x=0;x<w;x++){
+      const u = x/w;
+      let hgt = 0;
+      hgt += 0.35*Math.sin(u*14 + v*7  + 1.1);
+      hgt += 0.22*Math.sin(u*23 - v*11 + 3.0);
+      hgt += 0.15*Math.sin(u*39 + v*29 - 0.6);
+      hgt += 0.10*Math.sin(u*61 - v*44 + 2.2);
+      const idx = (y*w+x)*2;
+      data[idx] = hgt*0.12;
+      data[idx+1] = 0;
+    }
+  }
+  return data;
+}
+function makeStateTexture(w,h,seed){
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, w, h, 0, gl.RG, gl.FLOAT, null);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG32F, w, h, 0, gl.RG, gl.FLOAT, seed ? seededWaveData(w,h) : null);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -564,8 +588,8 @@ function initSim(){
   simW = Math.min(720, Math.max(240, Math.floor(window.innerWidth/2)));
   simH = Math.min(480, Math.max(160, Math.floor(window.innerHeight/2)));
   texelX = 1/simW; texelY = 1/simH;
-  const a = makeStateTexture(simW, simH);
-  const b = makeStateTexture(simW, simH);
+  const a = makeStateTexture(simW, simH, true);
+  const b = makeStateTexture(simW, simH, true);
   fboA=a.fbo; texA=a.tex; fboB=b.fbo; texB=b.tex;
 }
 initSim();
