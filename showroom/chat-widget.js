@@ -695,6 +695,12 @@
       if (currentChatStaffId === 'hannbai' || currentChatStaffId === 'kojinjigyonusi') {
         chips.push({ label: '🎨 革の色を見る', onClick: function () { showLeatherGallery('ask'); } });
         chips.push({ label: '🧵 ステッチ色を見る', onClick: showStitchGallery });
+        // 一度でも対応確認済みでテクスチャシミュレーターが使える商品なら、待機チップに常設し、
+        // 色決定後もこのチップからいつでもシミュレーターをやり直せるようにする。
+        var simFolderId = currentProductContext && currentProductContext.folderId;
+        if (simFolderId && simPatternAvailable === true) {
+          chips.push({ label: '🎨 テクスチャシミュレーターで試す', onClick: function () { openTextureSimulator(simFolderId); } });
+        }
       }
       if (chips.length) renderChips(chips);
     }
@@ -790,9 +796,12 @@
       var parts = data.parts || [];
       lastTextureSimParts = parts;
       var withLeather = parts.filter(function (p) { return p.leatherName; });
-      var leatherName = withLeather.length ? withLeather[0].leatherName : null;
       closeTextureSimulator();
-      if (leatherName) nsfSetSelection('革色', leatherName);
+      // パーツが1つだけなら従来通り「革色」、2色使いなど複数パーツがあればパーツ名（その1／その2）ごとに反映する
+      // （以前は先頭パーツの色しかselectionsに残らず、2色目が会話に出てこない不具合があった）
+      withLeather.forEach(function (p) {
+        nsfSetSelection(withLeather.length > 1 ? p.label : '革色', p.leatherName);
+      });
     });
 
     function showStitchGallery() {
