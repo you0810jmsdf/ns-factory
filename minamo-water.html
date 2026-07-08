@@ -405,6 +405,15 @@ void main(){
   float hD = texture(uState, vUv - vec2(0.0,uTexel.y)).r;
   vec2 grad = vec2(hR-hL, hU-hD) * uNormalScale;
 
+  /* slow ambient swell, purely visual (does not touch the simulated height
+     field), so the surface keeps rolling gently even with zero interaction
+     instead of settling into a flat, lifeless plane */
+  float swP1 = vUv.x*2.2 + vUv.y*1.3 + uTime*0.55;
+  float swP2 = vUv.x*3.7 - vUv.y*2.1 + uTime*0.8;
+  vec2 swellGrad = vec2(2.2*cos(swP1), 1.3*cos(swP1)) * 0.35
+                  + vec2(3.7*cos(swP2), -2.1*cos(swP2)) * 0.18;
+  grad += swellGrad * 0.3;
+
   /* fine surface ripple grain, three noise octaves so the whole water reads as
      textured everywhere (not just inside the simulated waves), and so a broad
      specular zone can be broken up into many individual glints instead of a
@@ -418,7 +427,7 @@ void main(){
   float n3c=noise(sp3), n3x=noise(sp3+vec2(e,0.0)), n3y=noise(sp3+vec2(0.0,e));
   vec2 microGrad = vec2(n1x-n1c,n1y-n1c)/e*0.9 + vec2(n2x-n2c,n2y-n2c)/e*0.55 + vec2(n3x-n3c,n3y-n3c)/e*0.3;
 
-  vec3 normal = normalize(vec3(-grad.x - microGrad.x*0.006, -grad.y - microGrad.y*0.006, 1.0));
+  vec3 normal = normalize(vec3(-grad.x - microGrad.x*0.014, -grad.y - microGrad.y*0.014, 1.0));
   vec3 glintNormal = normalize(vec3(-grad.x - microGrad.x*0.055, -grad.y - microGrad.y*0.055, 1.0));
 
   /* a lower, more grazing viewing angle reads as "looking across the water"
