@@ -922,7 +922,7 @@
         </div>
 
         <div class="oc-widget">
-          <button id="oc-trigger" class="oc-trigger" type="button">💬 この作品でオーダー相談する</button>
+          <button id="oc-trigger" class="oc-trigger" type="button">💬 同じものを革の種類、色について販売幕僚（AI）に相談する</button>
           <img id="sc-avatar" src="" alt="" style="display:none;">
           <span id="sc-name" style="display:none;"></span>
         </div>
@@ -1317,7 +1317,7 @@
       if (ocOverlay) ocOverlay.classList.remove('oc-overlay-open');
       if (ocAiBadge) ocAiBadge.classList.remove('show');
       if (ocTrigger) {
-        ocTrigger.textContent = '💬 この作品でオーダー相談する';
+        ocTrigger.textContent = '💬 同じものを革の種類、色について販売幕僚（AI）に相談する';
         ocTrigger.onclick = () => ocOpenChat(work);
       }
       const purchaseSel = document.getElementById('oc-purchase-method');
