@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>サイトデザイン研究室 | デジタル幕僚室 | N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<meta name="description" content="N's factory デジタル幕僚室のサイトデザイン研究室。インタラクティブ表現やUIサンプルを試作・閲覧できる実験室。">
+<style>
+:root{
+  --ink:#1D1D1F;
+  --muted:#636366;
+  --line:#E8E8ED;
+  --soft:#F5F5F7;
+  --paper:#FFFFFF;
+  --accent:#A0785A;
+  --accent-soft:#F3ECE4;
+  --accent-dark:#7A5540;
+  --radius:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.10);
+  font-family:-apple-system,'SF Pro Display','SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.nav{
+  position:sticky;top:0;z-index:10;
+  height:56px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.nav-title{font-size:14px;font-weight:800;letter-spacing:.04em}
+.nav-spacer{flex:1}
+.nav-link{font-size:13px;color:var(--muted);padding:6px 10px;border-radius:var(--radius)}
+.nav-link:hover{background:var(--soft);color:var(--ink)}
+
+.hero{
+  padding:48px 24px 24px;
+  background:linear-gradient(135deg,#fff,var(--accent-soft));
+  border-bottom:1px solid var(--line);
+}
+.hero-inner{max-width:1040px;margin:0 auto}
+.hero-eyebrow{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;
+}
+.hero h1{font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin-bottom:6px}
+.hero .lead{color:var(--muted);font-size:14px;max-width:640px}
+
+.hub{padding:48px 24px 80px}
+.hub-inner{max-width:1040px;margin:0 auto}
+
+.section-label{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;
+  margin:0 0 14px;
+}
+
+.sample-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;
+}
+.sample-card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:transform .15s,box-shadow .15s,border-color .15s;
+}
+.sample-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--accent)}
+.sample-thumb{
+  height:150px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;letter-spacing:.06em;
+  color:#fff;
+  background:linear-gradient(160deg,#0b3d4f,#1f7a8c 55%,#bfe3ea);
+}
+.sample-body{padding:18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
+.sample-body .tag{
+  display:inline-block;font-size:10px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent-dark);background:var(--accent-soft);
+  padding:3px 8px;border-radius:999px;width:fit-content;
+}
+.sample-body .tag.soon{color:var(--muted);background:var(--soft)}
+.sample-body h3{font-size:16px;letter-spacing:-.01em}
+.sample-body p{font-size:13px;color:var(--muted);line-height:1.7}
+
+.note{
+  margin-top:32px;
+  padding:18px 20px;
+  background:var(--soft);border-radius:var(--radius);
+  font-size:13px;color:var(--muted);line-height:1.8;
+}
+
+@media(max-width:520px){
+  .hero{padding:32px 18px 20px}
+  .hub{padding:36px 18px 64px}
+  .sample-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">サイトデザイン研究室</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="../">デジタル幕僚室へ戻る</a>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">SITE DESIGN LAB / DIGITAL-ROOM</div>
+    <h1>サイトデザイン研究室</h1>
+    <p class="lead">インタラクティブ表現やUI表現の試作サンプルを集めた実験室です。良かったものは本サイトの表現に順次取り入れていきます。</p>
+  </div>
+</section>
+
+<main class="hub">
+  <div class="hub-inner">
+
+    <div class="section-label">サンプル一覧</div>
+    <div class="sample-grid">
+      <a class="sample-card" href="../../minamo-water.html" target="_blank" rel="noopener">
+        <div class="sample-thumb">MINAMO ― 水面で、あそぶ。</div>
+        <div class="sample-body">
+          <span class="tag">LIVE</span>
+          <h3>水面インタラクション</h3>
+          <p>WebGLでリアルタイムに水面をシミュレーションするインタラクティブページ。クリックで波紋、長押しで石投げ、ドラッグで引き波が発生します。</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="note">
+      ここに置くサンプルは公開サイトの正規ページではなく、デジタル幕僚の表現試作置き場です。<br>
+      新しいサンプルが増え次第、このページに追加していきます。
+    </div>
+  </div>
+</main>
+
+<script src="../../assets/access-counter.js"></script>
+</body>
+</html>
