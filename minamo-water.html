@@ -418,6 +418,19 @@ void main(){
   bool hasHorizon = uHorizon > 0.01;
   bool inSky = hasHorizon && vUv.y > uHorizon;
 
+  /* perspective falloff: ripples read as large and bold near the camera
+     (bottom of frame) and shrink smoothly toward the horizon, like a
+     bird's-eye view of real water. This also guarantees the surface goes
+     calm well before the horizon instead of visibly rippling into the sky.
+     Only the visual amplitude is scaled — the underlying simulation UV is
+     untouched, so a click still makes its ripple appear exactly under the
+     cursor. */
+  float horizonRef = hasHorizon ? uHorizon : 1.0;
+  float distT = clamp(vUv.y / max(horizonRef, 0.001), 0.0, 1.0);
+  float perspScale = mix(1.3, 0.06, distT*distT);
+  grad *= perspScale;
+  hC *= perspScale;
+
   vec3 color;
   float spec = 0.0;
 
@@ -449,7 +462,7 @@ void main(){
     float n1c=noise(sp1), n1x=noise(sp1+vec2(e,0.0)), n1y=noise(sp1+vec2(0.0,e));
     float n2c=noise(sp2), n2x=noise(sp2+vec2(e,0.0)), n2y=noise(sp2+vec2(0.0,e));
     float n3c=noise(sp3), n3x=noise(sp3+vec2(e,0.0)), n3y=noise(sp3+vec2(0.0,e));
-    vec2 microGrad = vec2(n1x-n1c,n1y-n1c)/e*0.9 + vec2(n2x-n2c,n2y-n2c)/e*0.55 + vec2(n3x-n3c,n3y-n3c)/e*0.3;
+    vec2 microGrad = (vec2(n1x-n1c,n1y-n1c)/e*0.9 + vec2(n2x-n2c,n2y-n2c)/e*0.55 + vec2(n3x-n3c,n3y-n3c)/e*0.3) * perspScale;
 
     vec3 normal = normalize(vec3(-grad.x - microGrad.x*0.014, -grad.y - microGrad.y*0.014, 1.0));
     vec3 glintNormal = normalize(vec3(-grad.x - microGrad.x*0.055, -grad.y - microGrad.y*0.055, 1.0));
