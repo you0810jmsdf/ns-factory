@@ -783,7 +783,7 @@ body{
     <input type="text" class="filter-input" placeholder="🔍 革を検索..." id="leatherSearch" oninput="filterLeather()">
     <div class="filter-tags" id="leatherTags"></div>
   </div>
-  <div id="patchworkNote" style="display:none;font-size:11px;color:#b06820;background:#fff8ee;border:1px solid #e8c87a;border-radius:6px;padding:6px 10px;margin-bottom:8px">🎨 パッチワーク加工ON：革を複数選択できます（ds単価は¥160固定）</div>
+  <div id="patchworkNote" style="display:none;font-size:11px;color:#b06820;background:#fff8ee;border:1px solid #e8c87a;border-radius:6px;padding:6px 10px;margin-bottom:8px">🎨 パッチワーク加工ON：革を複数選択できます</div>
   <div class="img-grid" id="leatherGrid"></div>
 </div>
 
@@ -2580,7 +2580,15 @@ function updateSizePrices() {
     const totalHours = sizeHours * workHourMultiplier;
     const displayed = Math.round(totalHours * LABOR_RATE_PER_HOUR + extra);
     const priceEl = card.querySelector('.opt-price');
-    if (priceEl) priceEl.textContent = displayed > 0 ? `¥${displayed.toLocaleString()}（製作費）` : '構造未選択';
+    if (priceEl) {
+      if (displayed > 0) {
+        priceEl.textContent = isAdmin
+          ? `¥${displayed.toLocaleString()}（製作費）`
+          : `¥${displayed.toLocaleString()}`;
+      } else {
+        priceEl.textContent = '構造未選択';
+      }
+    }
   });
 }
 
@@ -2967,7 +2975,12 @@ function setPatchwork(on) {
     sel.leather = null; sel.leatherId = null; prices.leather = 0;
   }
   const note = document.getElementById('patchworkNote');
-  if (note) note.style.display = on ? 'block' : 'none';
+  if (note) {
+    note.textContent = (isAdmin && on)
+      ? '🎨 パッチワーク加工ON：革を複数選択できます（ds単価は¥160固定）'
+      : '🎨 パッチワーク加工ON：革を複数選択できます';
+    note.style.display = on ? 'block' : 'none';
+  }
   updateSummary();
 }
 
