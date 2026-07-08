@@ -421,11 +421,13 @@ void main(){
   vec3 normal = normalize(vec3(-grad.x - microGrad.x*0.006, -grad.y - microGrad.y*0.006, 1.0));
   vec3 glintNormal = normalize(vec3(-grad.x - microGrad.x*0.055, -grad.y - microGrad.y*0.055, 1.0));
 
-  vec3 viewDir = normalize(vec3(0.0, 0.35, 1.0));
+  /* a lower, more grazing viewing angle reads as "looking across the water"
+     rather than "looking straight down at it" */
+  vec3 viewDir = normalize(vec3(0.0, 0.85, 1.0));
   float skyT = clamp(normal.y*0.5+0.5, 0.0, 1.0);
   vec3 skyColor = mix(uSkyBottom, uSkyTop, skyT);
 
-  float fres = pow(1.0 - max(dot(normal, vec3(0.0,0.0,1.0)), 0.0), 2.0);
+  float fres = pow(1.0 - max(dot(normal, viewDir), 0.0), 2.0);
   vec3 water = mix(uWaterDeep, uWaterShallow, clamp(fres*0.7 + hC*0.06,0.0,1.0));
 
   vec3 ld = normalize(uLightDir);
