@@ -11,8 +11,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN',sa
 h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient(135deg,#3d1a08,#a0785a);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
 .wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
 .wrap>div{min-width:0}
-#canvasWrap{background:#222;border-radius:8px;padding:10px;transition:box-shadow .3s}
+#canvasWrap{background:#222;border-radius:8px;padding:10px;transition:box-shadow .3s;position:relative}
 #dispCanvas{display:block;width:100%;max-width:480px;height:auto;cursor:crosshair;image-rendering:pixelated;transition:filter .15s}
+.loading-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:rgba(20,16,12,.92);border-radius:8px;color:#fff;font-size:13px;z-index:5}
+.loading-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.25);border-top-color:#c98a1b;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 #dispCanvas.flash{animation:fillFlash .35s ease-out}
 .palette{display:flex;flex-wrap:wrap;gap:8px;max-width:340px;max-height:420px;overflow-y:auto;padding:2px}
 .sw{width:64px;cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;text-align:center;font-size:9px;background:#fff;
@@ -45,6 +49,7 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient
   <div>
     <div id="canvasWrap">
       <canvas id="dispCanvas"></canvas>
+      <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div>型紙を読み込み中…</div></div>
     </div>
     <div class="note" style="margin-top:10px">
       線の太さ: <input type="range" id="strokeSlider" min="1" max="10" step="0.5" value="3"> <span id="strokeVal">3</span>倍
@@ -570,6 +575,8 @@ async function resetCurrentTab(){
   buildTabButtons();
   await ensureTabLoaded(currentTabKey);
   renderCurrentTab();
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  if(loadingOverlay) loadingOverlay.remove();
 
   document.getElementById('resetBtn').addEventListener('click', resetCurrentTab);
 
