@@ -2010,7 +2010,7 @@ function renderSettingsTable() {
       <td style="padding:6px;border:1px solid #e0d4bb"><code>${row.key || ''}</code></td>
       <td style="padding:6px;border:1px solid #e0d4bb">${row.label || ''}</td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:right;background:#fffaf0">
-        <input type="number" step="100" min="0" value="${row.value || ''}" data-settings-edit="value" data-row="${idx}" style="width:110px;text-align:right;font-weight:bold">
+        <input type="number" step="${row.key === 'size_curve_factor' ? '0.05' : '100'}" min="0" value="${row.value || ''}" data-settings-edit="value" data-row="${idx}" style="width:110px;text-align:right;font-weight:bold">
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;font-size:11px;color:#777">${row.note || ''}</td>
     `;
