@@ -2099,6 +2099,17 @@ function refreshSidebarColorPreview() {
 function renderComponentColorControls() {
   const section = document.getElementById('componentColorSection');
   if (!section) return;
+  // 2026-07-09: カラーシミュレーターが緊急メンテナンス中のため、本体UIも案内表示に固定。
+  // 色データ自体（sel.leather等）や価格計算には影響させず、表示のみ差し替え。
+  section.innerHTML = `
+    <div style="padding:24px;background:#fff;border:1px solid #e6d9cb;border-top:4px solid #b8863f;border-radius:10px;text-align:center">
+      <div style="font-size:28px;margin-bottom:10px">🛠️</div>
+      <div style="font-size:14px;font-weight:700;color:#3d1a08;margin-bottom:8px">カラーシミュレーターは現在メンテナンス中です</div>
+      <div style="font-size:12px;color:#5a4636;line-height:1.7">現在、カラーシミュレーターは調整のためメンテナンス中です。<br>恐れ入りますが、色のご確認をご希望の方はお問い合わせください。</div>
+    </div>`;
+  refreshSidebarColorPreview();
+  return;
+  /* ── メンテナンス解除時はこのブロックを復元 ──
   const active = getActiveColorComponents();
   if (!active.find(meta => meta.key === activeColorComponentKey)) {
     activeColorComponentKey = active[0]?.key || 'main';
@@ -2155,6 +2166,7 @@ function renderComponentColorControls() {
       </div>
     </div>`;
   refreshSidebarColorPreview();
+  */
 }
 
 // ── RENDER HELPERS ──
