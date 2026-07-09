@@ -736,6 +736,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn active" type="button" data-admin-tab="calendar" role="tab" aria-selected="true">📅 幕僚計画</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="ring" role="tab" aria-selected="false">リング在庫</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="leather" role="tab" aria-selected="false">🎨 革在庫</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="dashboard" role="tab" aria-selected="false">🎛 価格ダッシュボード</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="settings" role="tab" aria-selected="false">⚙ 設定（時給等）</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="size" role="tab" aria-selected="false">サイズ基準価格</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="brand" role="tab" aria-selected="false">構造タイプ価格</button>
@@ -930,27 +931,22 @@ tr.row-out-stock td{
       </div>
     </div>
 
-    <div class="panel settings-section admin-section-hidden">
-      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">🎚 価格調整パラメータ（シミュレーション専用）</h2>
+    <div class="panel dashboard-section admin-section-hidden">
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">🎛 価格チューニングダッシュボード</h2>
       <div class="hint">
-        「Micro5は安すぎる／A5は高すぎる」という指摘を受け、<strong>基本料金</strong>と<strong>サイズカーブ緩和度</strong>を試しに動かして、
-        製作費の変化をその場で確認できます。
-        <br>この画面は<strong>シミュレーション専用</strong>です。良さそうな値が決まったら、<code>settings.csv</code> の
-        <code>base_fee</code>・<code>size_curve_factor</code> の値を手動で書き換えてください（自動保存はされません）。
+        <strong>本番の見積もりページと同一の計算式</strong>で、全サイズ×全構造の価格をその場で試算します。
+        スライダーや表内の <span style="background:#fff5e0;padding:0 4px;border-radius:3px">オレンジ色の入力欄</span> を動かすと、全セルが即座に再計算されます。
+        <br>計算式：<strong>製作費 = 基本料金 + [Micro5工数 + (サイズ工数 − Micro5工数) × カーブ緩和度] × 構造工数倍率 × 時給 + 構造固定加算</strong>
+        <br>　　　　<strong>原材料費 = リフィル面積 × 革面積倍率 × ロス補正 × DS単価</strong>（表示は本体価格のみ。オプション・数量割引・税は別）
+        <br>⚠ ここでの変更は <strong>「価格設定をまとめてGitHubへ反映」を押すまで公開サイトに反映されません</strong>。
       </div>
-      <div class="controls" style="margin-top:12px;align-items:center;gap:16px">
-        <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#6b3a1f;font-weight:bold">
-          基本料金（円）
-          <input type="number" step="500" min="0" id="paBaseFeeInput" style="width:120px;padding:6px 8px;border:1px solid #d8c8b0;border-radius:6px;text-align:right;font-weight:bold">
-        </label>
-        <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#6b3a1f;font-weight:bold;min-width:260px">
-          サイズカーブ緩和度（<span id="paCurveValueLabel">1.00</span>）
-          <input type="range" min="0" max="1" step="0.05" id="paCurveInput" style="width:100%">
-          <span style="font-weight:normal;color:#888;font-size:11px">0.0 = 全サイズ同一工数 ／ 1.0 = 現状のサイズ工数差そのまま</span>
-        </label>
-        <button class="btn light" id="paResetBtn" style="align-self:flex-end">初期値に戻す（base_fee=0 / curve=1.0）</button>
+      <div id="dashParamsWrap" style="margin-top:14px"></div>
+      <div id="dashMatrixWrap" style="margin-top:16px;overflow-x:auto"></div>
+      <div class="controls" style="margin-top:14px;align-items:center">
+        <button class="btn sub" id="publishDashboardBtn">価格設定をまとめてGitHubへ反映</button>
+        <span class="status-pill" id="dashDirtyPill">未保存: なし</span>
+        <span style="font-size:11px;color:#888">settings.csv / size-baseprice.csv / brand-price.csv のうち変更があるものだけをコミットします</span>
       </div>
-      <div id="priceAdjustMatrixWrap" style="margin-top:16px;overflow-x:auto"></div>
     </div>
 
     <div class="panel size-section admin-section-hidden">
@@ -958,7 +954,7 @@ tr.row-out-stock td{
       <div class="hint">
         各サイズ（Micro5 / mini6 / A6 等）の <strong>標準工数（work_hours）</strong> を編集できます。<br>
         💡 <strong>Micro5 の work_hours を変更すると、他サイズが面積比で自動再計算</strong>されます（個別調整は後で上書き可）。<br>
-        計算式：<strong>製作費 = (サイズ別工数 + 構造別追加工数) × 時給</strong>（時給は ⚙設定タブで管理）<br>
+        計算式（2026-07-09 乗算方式）：<strong>製作費 = サイズ別工数 × 構造工数倍率 × 時給</strong>（時給は ⚙設定タブで管理）<br>
         編集後は上の <code>サイズ基準価格をGitHubへ反映</code> ボタンで <code>size-baseprice.csv</code> を更新してください。
       </div>
       <div class="controls" style="margin-top:12px">
@@ -991,11 +987,11 @@ tr.row-out-stock td{
     </div>
 
     <div class="panel brand-section admin-section-hidden">
-      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">構造タイプ価格倍率・追加工数</h2>
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">構造タイプ価格倍率・工数倍率</h2>
       <div class="hint">
-        各構造タイプ（Simplist / N-Pad など）の <strong>追加工数（work_hours）</strong> を編集できます（⭐推奨運用）。<br>
-        新計算式：<strong>製作費 = (サイズ別工数 + 構造別追加工数) × ¥3,000/h</strong><br>
-        Simplist を基準（0h）として、各構造に必要な追加時間を設定します。priceMult / areaMulti は旧方式フォールバック用に残しています。
+        各構造タイプ（Simplist / N-Pad など）の <strong>工数倍率（work_hour_multiplier）</strong> を編集できます（⭐推奨運用）。<br>
+        計算式（2026-07-09 乗算方式）：<strong>製作費 = サイズ別工数 × 構造工数倍率 × 時給</strong>（時給は ⚙設定タブで管理）<br>
+        Simplist を基準（1.0）として、各構造の手間を倍率で設定します。例：N-Pad flap が Simplist の1.6倍手間なら 1.6。
         編集後は上の <code>構造タイプ価格をGitHubへ反映</code> ボタンで <code>brand-price.csv</code> を更新してください。
       </div>
       <div class="controls" style="margin-top:12px">
@@ -1018,7 +1014,7 @@ tr.row-out-stock td{
               <th style="padding:8px;text-align:center;border:1px solid #d8c8b0">krause_no_multi<br><span style="font-weight:normal;font-size:11px">クラウゼ倍率なし</span></th>
               <th style="padding:8px;text-align:center;border:1px solid #d8c8b0">allows_krause<br><span style="font-weight:normal;font-size:11px">クラウゼ可</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">extra_base_cost<br><span style="font-weight:normal;font-size:11px">固定加算</span></th>
-              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0;background:#fff5e0">work_hours<br><span style="font-weight:normal;font-size:11px">⭐ 構造別追加工数 (h)</span></th>
+              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0;background:#fff5e0">work_hour_multiplier<br><span style="font-weight:normal;font-size:11px">⭐ 構造工数倍率 (×)</span></th>
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">note</th>
             </tr>
           </thead>
@@ -2428,7 +2424,7 @@ function downloadSizeBasePriceCsv() {
 // ── 構造タイプ価格倍率（brand-price.csv） ──
 const BRAND_PRICE_CSV_PATH = 'order_estimate/brand-price.csv';
 const BRAND_PRICE_CSV_URL = new URL('./brand-price.csv', location.href).toString();
-const BRAND_PRICE_HEADERS = ['brand_id','name','area_mult','krause_no_multi','allows_krause','extra_base_cost','work_hours','note'];
+const BRAND_PRICE_HEADERS = ['brand_id','name','area_mult','krause_no_multi','allows_krause','extra_base_cost','work_hour_multiplier','note'];
 let brandPriceRows = [];
 let brandPriceDirty = false;
 
@@ -2478,7 +2474,7 @@ function renderBrandPriceTable() {
         <input type="number" step="100" min="0" value="${row.extra_base_cost || ''}" data-brand-edit="extra_base_cost" data-row="${idx}" style="width:80px;text-align:right">
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:right;background:#fffaf0">
-        <input type="number" step="0.5" min="0" value="${row.work_hours || ''}" data-brand-edit="work_hours" data-row="${idx}" style="width:70px;text-align:right;font-weight:bold">
+        <input type="number" step="0.1" min="0" value="${row.work_hour_multiplier || ''}" data-brand-edit="work_hour_multiplier" data-row="${idx}" style="width:70px;text-align:right;font-weight:bold">
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;font-size:11px;color:#777">${row.note || ''}</td>
     `;

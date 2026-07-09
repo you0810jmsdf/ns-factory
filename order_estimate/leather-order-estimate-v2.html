@@ -2595,7 +2595,7 @@ function buildBrandGrid() {
 
 function updateSizePrices() {
   const brandObj = BRANDS.find(b => b.id === sel.brandId);
-  const workHourMultiplier = brandObj?.workHourMultiplier ?? 0;
+  const workHourMultiplier = brandObj?.workHourMultiplier ?? 1; // CSV未読込・列欠損時も製作費0円にしない
   const extra = brandObj?.extraBaseCost ?? 0;
   const micro5Hours = SIZES.find(s => s.id === 'micro5')?.workHours ?? 0;
   document.querySelectorAll('.opt-card[data-key="size"]').forEach(card => {
@@ -3109,7 +3109,7 @@ function updateSummary(options = {}) {
   // 管理者一時上書き（?admin時のみ有効・localStorage保存なし、ページリロードで消える）
   const ov = window._adminOverrides || {};
   const sizeHoursCsv  = sizeObj?.workHours ?? 0;
-  const workHourMultiplierCsv = brandObj?.workHourMultiplier ?? 0;
+  const workHourMultiplierCsv = brandObj?.workHourMultiplier ?? 1; // CSV未読込・列欠損時も製作費0円にしない
   const sizeHours  = (isAdmin && ov.sizeHours  != null) ? ov.sizeHours  : sizeHoursCsv;
   const workHourMultiplier = (isAdmin && ov.workHourMultiplier != null) ? ov.workHourMultiplier : workHourMultiplierCsv;
   const laborRate  = (isAdmin && ov.laborRate  != null) ? ov.laborRate  : LABOR_RATE_PER_HOUR;
