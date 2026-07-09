@@ -67,6 +67,12 @@
 
   <!-- ツール・ユーティリティ -->
   <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/digital-room/sns-video-maker/</loc>
+    <lastmod>2026-07-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://you0810jmsdf.github.io/ns-factory/order_estimate/leather-order-estimate-v2.html</loc>
     <lastmod>2026-05-30</lastmod>
     <changefreq>monthly</changefreq>
