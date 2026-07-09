@@ -114,6 +114,21 @@
           appendStaffMsg('サイズの変更など、他にもご要望があればこのメッセージ欄に自由にご記入ください。ご連絡先がメール・電話以外（LINE・Instagramなど）の場合は、ご利用のSNS名とIDをこちらにご記入いただけると助かります。');
         }
       }
+
+      // 商品にfolderIdがある場合、「革の色を見る」を選ぶ前の相談開始時点で
+      // テクスチャシミュレーター対応状況を確認し、対応可能なら最初の画面から案内する。
+      // 未対応（準備中）の場合は従来通り「革の色を見る」を押した時点で案内する（毎回の案内はうるさいため）。
+      var simFolderId = currentProductContext && currentProductContext.folderId;
+      if (simFolderId && (staffId === 'hannbai' || staffId === 'kojinjigyonusi')) {
+        simChecked = true;
+        checkPatternAvailability(simFolderId).then(function (avail) {
+          simPatternAvailable = avail;
+          if (avail) {
+            appendStaffMsg('🎉 この作品はテクスチャシミュレーターで革の質感を試せます！下の「テクスチャシミュレーターで試す」からどうぞ。');
+            nsfDefaultChips();
+          }
+        });
+      }
     }
 
     function chatTimeNow() {
