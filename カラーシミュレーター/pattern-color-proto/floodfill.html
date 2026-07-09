@@ -58,6 +58,7 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient
     </div>
     <div class="note" style="margin-top:14px">
       <button id="resetBtn" style="padding:10px 16px;background:#fff;color:#6b3a1f;border:1.5px solid #b5895a;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin-right:8px">🔄 このタブを塗り直す</button>
+      <button id="savePngBtn" style="padding:10px 16px;background:#fff;color:#6b3a1f;border:1.5px solid #b5895a;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;margin-right:8px">🖼️ この画像を保存（PNG）</button>
       <button id="confirmBtn" style="display:none;padding:10px 20px;background:#6b3a1f;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer">この内容で確定</button>
       <span id="confirmStatus" style="margin-left:10px;font-size:12px;color:#5a7a6a"></span>
     </div>
@@ -578,6 +579,39 @@ async function confirmColorOrder(){
   }
 }
 
+/* 「この画像を保存（PNG）」ボタン。作家への送信とは無関係に、お客様が今表示中のタブの塗り結果を
+   自分の端末へPNGでダウンロード保存できるようにする（送信ボタンとは別の導線）。
+   画像だけでは後から「どの色を選んだか」が分からなくなるため、選択した革色・金具色を
+   画像下部に帯状のキャプションとして焼き込んでから保存する。 */
+function saveCurrentTabAsPng(){
+  const tabInfo = TABS[currentTabKey];
+  const label = tabInfo ? tabInfo.label.replace(/[^\w一-龠ぁ-んァ-ヶ]/g, '') : currentTabKey;
+  const usedLeathers = summarizeTabLeathers(currentTabKey);
+  const leatherText = usedLeathers.length ? usedLeathers.map(l=>l.name).join('／') : '（革色未選択）';
+  const metalText = currentMetal ? `　金具: ${currentMetal.name}` : '';
+  const captionText = `革: ${leatherText}${metalText}`;
+
+  const bandH = 44;
+  const out = document.createElement('canvas');
+  out.width = dispCanvas.width;
+  out.height = dispCanvas.height + bandH;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(dispCanvas, 0, 0);
+  ctx.fillStyle = '#222';
+  ctx.fillRect(0, dispCanvas.height, out.width, bandH);
+  ctx.fillStyle = '#fff';
+  ctx.font = Math.max(14, Math.floor(out.width / 32)) + 'px sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(captionText, 10, dispCanvas.height + bandH / 2, out.width - 20);
+
+  const a = document.createElement('a');
+  a.href = out.toDataURL('image/png');
+  a.download = `color_sim_${label}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 /* 「このタブを塗り直す」ボタン。表示中タブの塗り内容だけを消し、型紙をまっさらな状態から塗り直せるようにする */
 async function resetCurrentTab(){
   delete paintHistory[currentTabKey];
@@ -616,6 +650,7 @@ async function resetCurrentTab(){
   if(loadingOverlay) loadingOverlay.remove();
 
   document.getElementById('resetBtn').addEventListener('click', resetCurrentTab);
+  document.getElementById('savePngBtn').addEventListener('click', saveCurrentTabAsPng);
 
   if(getFolderIdFromUrl() || isEmbedded()){
     const confirmBtn = document.getElementById('confirmBtn');

@@ -935,11 +935,34 @@
       }
     }
 
+    // 商品の各部分（本体・ベルト等）ごとに革色を分けたい場合のパーツ名候補。
+    // 「革色」1本しか選ばない注文が大多数のため、1色目は従来通り即座に「革色」として記録し、
+    // 2色目以降を選んだ時だけパーツ名を確認する（5色選んでも「革色」1件しか残らない不具合の対策）。
+    var NSF_LEATHER_PART_LABELS = ['本体', 'ベルト', 'ポケット', 'カード入れ', 'ファスナー引手', 'リング'];
+
+    function nsfHasLeatherSelection() {
+      return Object.prototype.hasOwnProperty.call(selections, '革色') ||
+        NSF_LEATHER_PART_LABELS.some(function (lb) { return Object.prototype.hasOwnProperty.call(selections, lb); });
+    }
+
+    function nsfAskLeatherPartLabel(leatherName) {
+      appendStaffMsg('すでに別の革色をお選びのようです。この「' + leatherName + '」は商品のどの部分のお色ですか？（パーツごとに分けて記録します。同じ部分の色を変更したいだけの場合は「前の選択を変更する」をお選びください）');
+      var chips = [{ label: '前の選択を変更する（上書き）', onClick: function () { nsfSetSelection('革色', leatherName); } }]
+        .concat(NSF_LEATHER_PART_LABELS.map(function (lb) {
+          return { label: lb, onClick: function () { nsfSetSelection(lb, leatherName); } };
+        }));
+      renderChips(chips);
+    }
+
     // 拡大写真で確認しただけの候補（pendingChoice）を、正式な選択（selections）へ反映する。
     function nsfConfirmPending() {
       if (!pendingChoice) return;
       var pc = pendingChoice;
       pendingChoice = null;
+      if (nsfHasLeatherSelection()) {
+        nsfAskLeatherPartLabel(pc.name);
+        return;
+      }
       nsfSetSelection(pc.partLabel, pc.name);
     }
 
