@@ -196,6 +196,23 @@ a{color:inherit;text-decoration:none}
         <p style="font-size:12px;color:var(--accent-dark);font-weight:700;margin-top:4px;">配布開始時はSNSでお知らせします</p>
         </div><!-- /padding -->
       </div>
+      <div class="tool-card" style="border-color:var(--accent);background:#fff;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="tag">LOCAL APP</span>
+          <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">SNS VIDEO</span>
+        </div>
+        <h3>🎞 SNS紹介動画メーカー</h3>
+        <p>作品写真を選ぶだけで、SNS紹介用の縦型MP4を作るローカルアプリです。写真ごとのセリフ、ナレーション音声、写真の動き、写真間の移行を指定できます。音楽は投稿時にInstagramなどで手動追加します。</p>
+        <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+          <strong style="color:var(--ink);">保存場所</strong><br>
+          レザークラフト\デジタル部\デジタル幕僚室\SNS紹介動画メーカー<br>
+          <strong style="color:var(--ink);">起動ファイル</strong><br>
+          start_sns_video_maker.bat
+        </div>
+        <button class="launch-btn" type="button" onclick="drCopySnsVideoPath()">保存場所をコピー</button>
+        <div id="dr-sns-video-status" class="launch-status"></div>
+        <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">Webページから直接起動はできません。PCのエクスプローラーで上記フォルダを開いてください。</p>
+      </div>
     </div>
 
     <div class="section-label">サイトデザイン研究室</div>
@@ -224,6 +241,19 @@ a{color:inherit;text-decoration:none}
 </main>
 
 <script>
+function drCopySnsVideoPath() {
+  var text = 'レザークラフト\\デジタル部\\デジタル幕僚室\\SNS紹介動画メーカー\\start_sns_video_maker.bat';
+  var status = document.getElementById('dr-sns-video-status');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      status.textContent = '保存場所をコピーしました。エクスプローラーで開いてください。';
+    }).catch(function() {
+      status.textContent = text;
+    });
+  } else {
+    status.textContent = text;
+  }
+}
 async function drLaunchYtApp() {
   var btn = document.getElementById('dr-launch-btn');
   var status = document.getElementById('dr-launch-status');
