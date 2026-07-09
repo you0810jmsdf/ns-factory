@@ -587,11 +587,18 @@ function saveCurrentTabAsPng(){
   const tabInfo = TABS[currentTabKey];
   const label = tabInfo ? tabInfo.label.replace(/[^\w一-龠ぁ-んァ-ヶ]/g, '') : currentTabKey;
   const usedLeathers = summarizeTabLeathers(currentTabKey);
-  const leatherText = usedLeathers.length ? usedLeathers.map(l=>l.name).join('／') : '（革色未選択）';
-  const metalText = currentMetal ? `　金具: ${currentMetal.name}` : '';
-  const captionText = `革: ${leatherText}${metalText}`;
 
-  const bandH = 44;
+  // 革の種類・色は1件ずつ改行して見やすくする（複数選択時に横一列だと読みにくいため）
+  const captionLines = usedLeathers.length
+    ? usedLeathers.map((l,i)=> (usedLeathers.length > 1 ? `革${i+1}: ${l.name}` : `革: ${l.name}`))
+    : ['革: （未選択）'];
+  if(currentMetal) captionLines.push(`金具: ${currentMetal.name}`);
+
+  const fontSize = Math.max(14, Math.floor(dispCanvas.width / 32));
+  const lineH = Math.round(fontSize * 1.6);
+  const bandPad = Math.round(fontSize * 0.6);
+  const bandH = lineH * captionLines.length + bandPad;
+
   const out = document.createElement('canvas');
   out.width = dispCanvas.width;
   out.height = dispCanvas.height + bandH;
@@ -600,9 +607,12 @@ function saveCurrentTabAsPng(){
   ctx.fillStyle = '#222';
   ctx.fillRect(0, dispCanvas.height, out.width, bandH);
   ctx.fillStyle = '#fff';
-  ctx.font = Math.max(14, Math.floor(out.width / 32)) + 'px sans-serif';
+  ctx.font = fontSize + 'px sans-serif';
   ctx.textBaseline = 'middle';
-  ctx.fillText(captionText, 10, dispCanvas.height + bandH / 2, out.width - 20);
+  captionLines.forEach((line, i)=>{
+    const y = dispCanvas.height + bandPad/2 + lineH * i + lineH/2;
+    ctx.fillText(line, 10, y, out.width - 20);
+  });
 
   const a = document.createElement('a');
   a.href = out.toDataURL('image/png');
