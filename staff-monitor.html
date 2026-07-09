@@ -48,6 +48,21 @@ body{
 .row{display:flex;justify-content:space-between;font-size:13px;color:#5a4534;padding:3px 0}
 .row b{color:#2c1a0e}
 .empty{text-align:center;color:#999;padding:60px 0;font-size:14px}
+.toggle-btn{
+  width:100%;margin-top:10px;padding:7px;background:#f5f0eb;color:#6b3a1f;border:1px solid #eadccf;
+  border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;
+}
+.toggle-btn:hover{background:#eee0d3}
+.task-list{display:none;margin-top:10px;border-top:1px solid #eadccf;padding-top:8px}
+.task-list.open{display:block}
+.task-item{padding:7px 0;border-bottom:1px dashed #f0e6da;font-size:12px;color:#5a4534}
+.task-item:last-child{border-bottom:none}
+.task-item .t-head{display:flex;justify-content:space-between;gap:8px;font-weight:bold;color:#2c1a0e}
+.task-item.overdue .t-head{color:#c0392b}
+.task-item .t-date{white-space:nowrap;color:#999;font-weight:normal}
+.task-item.overdue .t-date{color:#c0392b}
+.task-item .t-detail{margin-top:3px;color:#7a5a3f;white-space:pre-wrap;line-height:1.5}
+.task-item .t-status{font-size:11px;color:#999}
 
 .auth-overlay{
   position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
@@ -135,17 +150,50 @@ if (checkSession()) {
   document.body.classList.add('auth-locked');
 }
 
-function renderStaff(s) {
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function renderTaskItem(t) {
+  return `
+    <div class="task-item ${t.overdue ? 'overdue' : ''}">
+      <div class="t-head">
+        <span>${escapeHtml(t.title || '（無題）')}</span>
+        <span class="t-date">${escapeHtml(t.date || '日付未設定')}${t.overdue ? ' ・超過' : ''}</span>
+      </div>
+      ${t.detail ? `<div class="t-detail">${escapeHtml(t.detail)}</div>` : ''}
+      <div class="t-status">状態: ${escapeHtml(t.status)}</div>
+    </div>
+  `;
+}
+
+function toggleTasks(id, btn) {
+  const el = document.getElementById(id);
+  const open = el.classList.toggle('open');
+  btn.textContent = (open ? 'タスク明細を閉じる（' : 'タスク明細を見る（') + el.dataset.count + '件）';
+}
+
+function renderStaff(s, idx) {
   const warn = s.warning;
   const lastLog = s.lastLogDate ? `${s.lastLogDate}（${s.daysSinceLog}日前）` : '記載なし';
+  const tasks = s.openTasks || [];
+  const taskListId = 'tasks-' + idx;
   return `
     <div class="card ${warn ? 'warn' : ''}">
-      <h2>${s.name}
+      <h2>${escapeHtml(s.name)}
         <span class="badge ${warn ? 'warn' : ''}">${warn ? '要確認' : '正常'}</span>
       </h2>
       <div class="row"><span>最終日誌記載</span><b>${lastLog}</b></div>
       <div class="row"><span>期限超過タスク</span><b>${s.overdueCount}件</b></div>
       <div class="row"><span>未完了タスク合計</span><b>${s.openTotal}件</b></div>
+      ${tasks.length ? `
+        <button class="toggle-btn" onclick="toggleTasks('${taskListId}', this)">タスク明細を見る（${tasks.length}件）</button>
+        <div class="task-list" id="${taskListId}" data-count="${tasks.length}">
+          ${tasks.map(renderTaskItem).join('')}
+        </div>
+      ` : ''}
     </div>
   `;
 }
@@ -167,7 +215,7 @@ async function loadData() {
     }
     // 警告ありを先頭に表示
     list.sort((a, b) => (b.warning === true) - (a.warning === true));
-    grid.innerHTML = list.map(renderStaff).join('');
+    grid.innerHTML = list.map((s, idx) => renderStaff(s, idx)).join('');
   } catch (err) {
     metaEl.textContent = '読み込みエラー';
     grid.innerHTML = '<div class="empty">データの読み込みに失敗しました: ' + err.message + '</div>';
