@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-09T23:07:43",
+  "generatedAt": "2026-07-09T23:22:55",
   "warnThresholdDays": 3,
   "staff": [
     {
@@ -495,8 +495,8 @@
     },
     {
       "name": "保全幕僚",
-      "lastLogDate": "2026-06-11",
-      "daysSinceLog": 28,
+      "lastLogDate": "2026-07-09",
+      "daysSinceLog": 0,
       "overdueCount": 0,
       "openTotal": 2,
       "warning": false,
