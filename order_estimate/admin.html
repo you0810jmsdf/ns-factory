@@ -2106,8 +2106,7 @@ function applyRecommendedAreaMult() {
   renderBrandPriceTable();
 }
 
-// ── 価格調整パラメータ（base_fee / size_curve_factor）シミュレーション（2026-07-09追加） ──
-// ※ ここでの計算はシミュレーション専用。実際の見積もり反映は settings.csv の手動編集が必要（自動保存なし）
+// ── 価格チューニングダッシュボード（2026-07-10 追加・本番と同一計算式） ──
 function getBaseFeeFromSettings() {
   const row = settingsRows.find(r => r.key === 'base_fee');
   const v = parseFloat(row?.value);
@@ -2118,85 +2117,134 @@ function getSizeCurveFactorFromSettings() {
   const v = parseFloat(row?.value);
   return (!isNaN(v) && v >= 0 && v <= 1) ? v : 1.0;
 }
-let priceAdjustControlsBound = false;
-function initPriceAdjustControls() {
-  const feeInput = document.getElementById('paBaseFeeInput');
-  const curveInput = document.getElementById('paCurveInput');
-  const curveLabel = document.getElementById('paCurveValueLabel');
-  const resetBtn = document.getElementById('paResetBtn');
-  if (!feeInput || !curveInput) return;
-  // settings.csv 再読込のたびに呼ばれるため、入力欄の値は毎回最新化するが、
-  // イベントリスナーの多重登録は初回のみに防ぐ
-  feeInput.value = getBaseFeeFromSettings();
-  curveInput.value = getSizeCurveFactorFromSettings();
-  curveLabel.textContent = Number(curveInput.value).toFixed(2);
-  if (priceAdjustControlsBound) {
-    renderPriceAdjustMatrix();
+function setSettingsValue(key, value) {
+  const row = settingsRows.find(r => r.key === key);
+  if (!row) return;
+  row.value = String(value);
+  settingsDirty = true;
+  updateSettingsDirtyPill();
+}
+// ダッシュボードのパラメータスライダー定義（settings.csv の各キーに対応）
+const DASH_PARAMS = [
+  { key: 'labor_rate_per_hour',      label: '時給単価',        min: 1000, max: 10000, step: 100,  unit: '¥/h', fmt: v => '¥' + Number(v).toLocaleString() },
+  { key: 'leather_unit_price_per_ds', label: '革DS単価',        min: 50,   max: 500,   step: 10,   unit: '¥/ds', fmt: v => '¥' + Number(v).toLocaleString() },
+  { key: 'leather_waste_rate',       label: '革ロス率',        min: 0,    max: 0.6,   step: 0.05, unit: '',    fmt: v => Math.round(v * 100) + '%' },
+  { key: 'base_fee',                 label: '基本料金',        min: 0,    max: 10000, step: 500,  unit: '円',  fmt: v => '¥' + Number(v).toLocaleString() },
+  { key: 'size_curve_factor',        label: 'サイズカーブ緩和度', min: 0,    max: 1,     step: 0.05, unit: '',    fmt: v => Number(v).toFixed(2) }
+];
+function renderDashParams() {
+  const wrap = document.getElementById('dashParamsWrap');
+  if (!wrap) return;
+  if (!settingsRows.length) {
+    wrap.innerHTML = '<div style="color:#888;font-size:12px">settings.csv を読み込み中です…</div>';
     return;
   }
-  priceAdjustControlsBound = true;
-  feeInput.addEventListener('input', renderPriceAdjustMatrix);
-  curveInput.addEventListener('input', () => {
-    curveLabel.textContent = Number(curveInput.value).toFixed(2);
-    renderPriceAdjustMatrix();
+  let h = '<div style="display:flex;flex-wrap:wrap;gap:16px 24px">';
+  DASH_PARAMS.forEach(p => {
+    const row = settingsRows.find(r => r.key === p.key);
+    const val = parseFloat(row?.value);
+    const cur = isNaN(val) ? p.min : val;
+    h += `
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#6b3a1f;font-weight:bold;min-width:200px;flex:1;max-width:280px">
+        <span>${p.label}　<span id="dashVal_${p.key}" style="color:#b06820;font-size:14px">${p.fmt(cur)}</span><span style="font-weight:normal;color:#999;font-size:11px"> ${p.unit}</span></span>
+        <input type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${cur}" data-dash-param="${p.key}" style="width:100%">
+      </label>`;
   });
-  if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-      feeInput.value = 0;
-      curveInput.value = 1.0;
-      curveLabel.textContent = '1.00';
-      renderPriceAdjustMatrix();
+  h += `</div>
+    <div style="margin-top:10px;font-size:12px;color:#6b3a1f">
+      <label style="cursor:pointer"><input type="checkbox" id="dashKlauseToggle"> クラウゼリング選択時の価格で表示（対応構造は革面積×2）</label>
+    </div>`;
+  wrap.innerHTML = h;
+  wrap.querySelectorAll('[data-dash-param]').forEach(input => {
+    const key = input.dataset.dashParam;
+    const def = DASH_PARAMS.find(p => p.key === key);
+    // ドラッグ中: 値ラベルとマトリクスだけ更新（パラメータ欄は再構築しない）
+    input.addEventListener('input', () => {
+      setSettingsValue(key, input.value);
+      const lbl = document.getElementById('dashVal_' + key);
+      if (lbl && def) lbl.textContent = def.fmt(parseFloat(input.value));
+      renderDashMatrix();
+      updateDashDirtyPill();
+    });
+    // 確定時: ⚙設定タブの表も最新化（renderSettingsTable → renderEstimateMatrix → ダッシュボード再描画）
+    input.addEventListener('change', () => renderSettingsTable());
+  });
+  const kl = document.getElementById('dashKlauseToggle');
+  if (kl) {
+    kl.checked = !!window._dashKlause;
+    kl.addEventListener('change', () => {
+      window._dashKlause = kl.checked;
+      renderDashMatrix();
     });
   }
-  renderPriceAdjustMatrix();
 }
-function buildPriceAdjustMatrixHtml() {
-  if (!sizeBasePriceRows.length || !brandPriceRows.length) {
-    return '<div style="color:#888;font-size:12px">サイズ・構造のCSVを読み込むと試算表が表示されます</div>';
-  }
-  const feeInput = document.getElementById('paBaseFeeInput');
-  const curveInput = document.getElementById('paCurveInput');
-  const baseFee = feeInput ? (parseFloat(feeInput.value) || 0) : getBaseFeeFromSettings();
-  const curveFactor = curveInput ? (parseFloat(curveInput.value)) : getSizeCurveFactorFromSettings();
-  const rate = getLaborRateFromSettings();
-  const brandObj = brandPriceRows.find(r => r.brand_id === 'simplist') || brandPriceRows[0];
-  if (!brandObj) return '<div style="color:#888;font-size:12px">構造タイプCSVにSimplistが見つかりません</div>';
-  const workHourMultiplier = parseFloat(brandObj.work_hour_multiplier) || 0;
-  const extraBaseCost = parseFloat(brandObj.extra_base_cost) || 0;
-  const micro5Row = sizeBasePriceRows.find(r => r.size_id === 'micro5');
-  const micro5Hours = micro5Row ? (parseFloat(micro5Row.work_hours) || 0) : 0;
-
-  let h = `
-    <h3 style="margin:0 0 8px;font-size:15px;color:#6b3a1f">📊 試算結果（構造タイプ: ${brandObj.name || brandObj.brand_id}）</h3>
-    <div class="hint" style="margin-bottom:8px">
-      製作費 = 基本料金 + [Micro5工数 + (サイズ工数 − Micro5工数) × サイズカーブ緩和度] × 構造工数倍率 × 時給(¥${rate.toLocaleString()}/h) + 構造固定加算
-    </div>
-    <table style="border-collapse:collapse;font-size:12px;width:100%;max-width:640px">
-      <thead><tr style="background:#f4ece1">
-        <th style="padding:6px;border:1px solid #d8c8b0;text-align:left">サイズ</th>
-        <th style="padding:6px;border:1px solid #d8c8b0;text-align:right">サイズ工数(CSV)</th>
-        <th style="padding:6px;border:1px solid #d8c8b0;text-align:right">補正後工数</th>
-        <th style="padding:6px;border:1px solid #d8c8b0;text-align:right;background:#fff5e0">製作費試算</th>
-      </tr></thead><tbody>`;
-  sizeBasePriceRows.forEach(s => {
-    const sizeHours = parseFloat(s.work_hours) || 0;
-    const sizeHoursAdjusted = micro5Hours + (sizeHours - micro5Hours) * curveFactor;
-    const totalHours = sizeHoursAdjusted * workHourMultiplier;
-    const makeCost = Math.round(baseFee + totalHours * rate + extraBaseCost);
-    h += `<tr>
-      <td style="padding:6px;border:1px solid #e0d4bb;font-weight:bold;background:#fcf6ec">${s.name || s.size_id}</td>
-      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">${sizeHours}h</td>
-      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">${sizeHoursAdjusted.toFixed(2)}h</td>
-      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right;font-weight:bold;color:#6b3a1f">¥${makeCost.toLocaleString()}</td>
-    </tr>`;
+function renderDashMatrix() {
+  const wrap = document.getElementById('dashMatrixWrap');
+  if (!wrap) return;
+  wrap.innerHTML = buildEstimateMatrixHtml({ editable: true, klause: !!window._dashKlause });
+  // 表内の編集欄（サイズ工数・構造倍率）をバインド
+  wrap.querySelectorAll('[data-dash-size-hours]').forEach(input => {
+    input.addEventListener('change', () => {
+      const row = sizeBasePriceRows.find(r => r.size_id === input.dataset.dashSizeHours);
+      if (!row) return;
+      row.work_hours = input.value;
+      sizeBasePriceDirty = true;
+      updateSizeDirtyPill();
+      renderSizeBasePriceTable(); // sizeタブの表と試算を最新化（ダッシュボードも再描画される）
+      updateDashDirtyPill();
+    });
   });
-  h += '</tbody></table>';
-  return h;
+  wrap.querySelectorAll('[data-dash-brand-mult]').forEach(input => {
+    input.addEventListener('change', () => {
+      const row = brandPriceRows.find(r => r.brand_id === input.dataset.dashBrandMult);
+      if (!row) return;
+      row.work_hour_multiplier = input.value;
+      brandPriceDirty = true;
+      updateBrandDirtyPill();
+      renderBrandPriceTable(); // brandタブの表と試算を最新化（ダッシュボードも再描画される）
+      updateDashDirtyPill();
+    });
+  });
+  updateDashDirtyPill();
 }
-function renderPriceAdjustMatrix() {
-  const el = document.getElementById('priceAdjustMatrixWrap');
-  if (el) el.innerHTML = buildPriceAdjustMatrixHtml();
+function updateDashDirtyPill() {
+  const pill = document.getElementById('dashDirtyPill');
+  if (!pill) return;
+  const dirtyList = [];
+  if (settingsDirty) dirtyList.push('設定');
+  if (sizeBasePriceDirty) dirtyList.push('サイズ');
+  if (brandPriceDirty) dirtyList.push('構造');
+  pill.textContent = dirtyList.length ? `未保存: ${dirtyList.join('・')} ⚠` : '未保存: なし';
+  pill.style.background = dirtyList.length ? '#f9d6d5' : '';
 }
+function renderDashboard() {
+  renderDashParams();
+  renderDashMatrix();
+}
+// 旧・価格調整パラメータパネルの呼び出し互換（ダッシュボードへ委譲）
+function initPriceAdjustControls() { renderDashboard(); }
+function renderPriceAdjustMatrix() { renderDashboard(); }
+async function publishDashboardAll() {
+  const jobs = [];
+  if (settingsDirty) jobs.push(publishSettingsToGitHub);
+  if (sizeBasePriceDirty) jobs.push(publishSizeBasePriceToGitHub);
+  if (brandPriceDirty) jobs.push(publishBrandPriceToGitHub);
+  if (!jobs.length) {
+    alert('未保存の変更はありません。');
+    return;
+  }
+  const btn = document.getElementById('publishDashboardBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'GitHubへ反映中...'; }
+  try {
+    for (const fn of jobs) {
+      await fn();
+    }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '価格設定をまとめてGitHubへ反映'; }
+    updateDashDirtyPill();
+  }
+}
+document.getElementById('publishDashboardBtn')?.addEventListener('click', publishDashboardAll);
 
 // ── 試算マトリクス（全サイズ × 全構造）──
 function getLaborRateFromSettings() {
@@ -2224,54 +2272,86 @@ function renderEstimateMatrix() {
   });
 }
 
-function buildEstimateMatrixHtml() {
+// 本番（leather-order-estimate-v2.html）と同一の1セル計算。klause=true でクラウゼ選択時の革面積×2を再現
+function calcMatrixCell(sizeRow, brandRow, opts = {}) {
+  const rate = getLaborRateFromSettings();
+  const dsPrice = getLeatherUnitPriceFromSettings();
+  const wasteFactor = 1 / (1 - getWasteRateFromSettings());
+  const baseFee = getBaseFeeFromSettings();
+  const curve = getSizeCurveFactorFromSettings();
+  const micro5Row = sizeBasePriceRows.find(r => r.size_id === 'micro5');
+  const micro5Hours = micro5Row ? (parseFloat(micro5Row.work_hours) || 0) : 0;
+
+  const sh = parseFloat(sizeRow.work_hours) || 0;
+  const whm = parseFloat(brandRow.work_hour_multiplier) || 1;
+  const eb = parseFloat(brandRow.extra_base_cost) || 0;
+  const am = parseFloat(brandRow.area_mult) || 1;
+  const klauseApplies = opts.klause && boolValue(brandRow.allows_krause) && !boolValue(brandRow.krause_no_multi);
+  const ringMulti = klauseApplies ? 2 : 1;
+
+  const sizeHoursAdjusted = micro5Hours + (sh - micro5Hours) * curve;
+  const totalHours = sizeHoursAdjusted * whm;
+  const makeCost = Math.round(baseFee + totalHours * rate + eb);
+  const refillMm2 = (parseFloat(sizeRow.refill_w) || 0) * (parseFloat(sizeRow.refill_h) || 0);
+  const dsArea = Math.round((refillMm2 / 10000) * am * ringMulti * wasteFactor * 10) / 10;
+  const matCost = Math.round(dsArea * dsPrice);
+  return { makeCost, matCost, total: makeCost + matCost, totalHours };
+}
+
+function buildEstimateMatrixHtml(opts = {}) {
   if (!sizeBasePriceRows.length || !brandPriceRows.length) {
     return '<div style="color:#888;font-size:12px">サイズ・構造のCSVを読み込むと試算表が表示されます</div>';
   }
+  const editable = !!opts.editable;
   const rate = getLaborRateFromSettings();
-  // 革材料費 試算パラメータ（settings.csv から取得）
-  const NUMER_DS = getLeatherUnitPriceFromSettings();       // ¥/ds
-  const WASTE_RATE = getWasteRateFromSettings();             // 0〜1
-  const WASTE_FACTOR = 1 / (1 - WASTE_RATE);                 // 必要購入量倍率
+  const NUMER_DS = getLeatherUnitPriceFromSettings();
+  const WASTE_RATE = getWasteRateFromSettings();
+  const WASTE_FACTOR = 1 / (1 - WASTE_RATE);
+
+  // 1周目: 全セルを計算し、ヒートマップ用に合計の最小・最大を取る
+  const cells = sizeBasePriceRows.map(s => brandPriceRows.map(b => calcMatrixCell(s, b, opts)));
+  const totals = cells.flat().map(c => c.total).filter(t => t > 0);
+  const minT = Math.min(...totals);
+  const maxT = Math.max(...totals);
+  const heat = t => {
+    if (!(maxT > minT) || t <= 0) return '#fff';
+    const ratio = (t - minT) / (maxT - minT);
+    return `hsl(35, 80%, ${Math.round(96 - ratio * 22)}%)`; // 安い=白っぽい → 高い=濃いアンバー
+  };
+
   let h = `
-    <h3 style="margin:0 0 8px;font-size:15px;color:#6b3a1f">📊 全サイズ × 全構造 試算マトリクス</h3>
+    <h3 style="margin:0 0 8px;font-size:15px;color:#6b3a1f">📊 全サイズ × 全構造 価格マトリクス（本番と同一式${opts.klause ? '・クラウゼ選択時' : ''}）</h3>
     <div class="hint" style="margin-bottom:8px">
-      各セル: <span style="color:#2d5a3d;font-weight:bold">製作費</span> / <span style="color:#7a5a2d;font-weight:bold">原材料費</span> / <span style="color:#6b3a1f;font-weight:bold">合計</span>
-      <br>製作費 = (サイズ工数 + 構造工数) × ¥${rate.toLocaleString()}/h + 固定加算
-      <br>原材料費 = リフィル面積 × 構造別 areaMulti × ¥${NUMER_DS}/ds × ロス込${WASTE_FACTOR.toFixed(2)}倍（ロス率${(WASTE_RATE*100).toFixed(0)}%・DS単価/ロス率は ⚙設定タブ で編集可能）
-      <br>⚠ <strong>area_mult はリフィル面積に対する倍率</strong>（例: Simplist=3 なら表裏+スパイン+マージン込みで3倍）。実態に合わせて要調整。
+      各セル: <span style="color:#2d5a3d;font-weight:bold">製作費</span> / <span style="color:#7a5a2d;font-weight:bold">原材料費</span> / <span style="color:#6b3a1f;font-weight:bold">本体合計</span>（背景が濃いほど高価格）
+      <br>時給 ¥${rate.toLocaleString()}/h ・ 革 ¥${NUMER_DS}/ds ・ ロス込 ${WASTE_FACTOR.toFixed(2)}倍 ・ 基本料金 ¥${getBaseFeeFromSettings().toLocaleString()} ・ カーブ緩和度 ${getSizeCurveFactorFromSettings().toFixed(2)}
     </div>
     <div style="overflow-x:auto">
       <table style="border-collapse:collapse;font-size:11px;width:100%">
         <thead><tr style="background:#f4ece1">
           <th style="padding:6px;border:1px solid #d8c8b0;text-align:left;position:sticky;left:0;background:#f4ece1;z-index:1">サイズ ＼ 構造</th>`;
   brandPriceRows.forEach(b => {
-    const bh = parseFloat(b.work_hours) || 0;
+    const whm = parseFloat(b.work_hour_multiplier) || 1;
     const eb = parseFloat(b.extra_base_cost) || 0;
     const am = parseFloat(b.area_mult) || 1;
     const extraTxt = eb > 0 ? ` <span style="color:#b06820">+¥${eb.toLocaleString()}</span>` : '';
-    h += `<th style="padding:6px;border:1px solid #d8c8b0;text-align:right;min-width:110px"><div style="font-size:11px">${b.name || b.brand_id}</div><div style="font-size:10px;color:#888;font-weight:normal">+${bh}h${extraTxt} / 革×${am}</div></th>`;
+    const whmCell = editable
+      ? `工数<input type="number" step="0.1" min="0" value="${whm}" data-dash-brand-mult="${b.brand_id}" style="width:52px;text-align:right;font-weight:bold;background:#fff5e0;border:1px solid #e8c87a;border-radius:4px">×`
+      : `工数×${whm}`;
+    h += `<th style="padding:6px;border:1px solid #d8c8b0;text-align:right;min-width:110px"><div style="font-size:11px">${b.name || b.brand_id}</div><div style="font-size:10px;color:#888;font-weight:normal">${whmCell}${extraTxt} / 革×${am}</div></th>`;
   });
   h += '</tr></thead><tbody>';
-  sizeBasePriceRows.forEach(s => {
+  sizeBasePriceRows.forEach((s, si) => {
     const sh = parseFloat(s.work_hours) || 0;
-    const w = parseFloat(s.refill_w) || 0;
-    const hgt = parseFloat(s.refill_h) || 0;
-    const refillMm2 = w * hgt;
-    h += `<tr><td style="padding:6px;border:1px solid #e0d4bb;font-weight:bold;background:#fcf6ec;position:sticky;left:0;z-index:1"><div>${s.name || s.size_id}</div><div style="font-size:10px;color:#888;font-weight:normal">${sh}h</div></td>`;
-    brandPriceRows.forEach(b => {
-      const bh = parseFloat(b.work_hours) || 0;
-      const eb = parseFloat(b.extra_base_cost) || 0;
-      const am = parseFloat(b.area_mult) || 1;
-      const makeCost = Math.round((sh + bh) * rate + eb);
-      const dsArea = Math.round((refillMm2 / 10000) * am * WASTE_FACTOR * 10) / 10;
-      const matCost = Math.round(dsArea * NUMER_DS);
-      const total = makeCost + matCost;
-      const cellColor = total === 0 ? '#fff' : '#f9fbf6';
-      h += `<td style="padding:4px 6px;border:1px solid #e0d4bb;text-align:right;background:${cellColor};line-height:1.4">
-        <div style="color:#2d5a3d">¥${makeCost.toLocaleString()}</div>
-        <div style="color:#7a5a2d;font-size:10px">¥${matCost.toLocaleString()}</div>
-        <div style="color:#6b3a1f;font-weight:bold;border-top:1px solid #d8c8b0;padding-top:2px;margin-top:2px">¥${total.toLocaleString()}</div>
+    const hoursCell = editable
+      ? `<input type="number" step="0.5" min="0" value="${sh}" data-dash-size-hours="${s.size_id}" style="width:52px;text-align:right;font-weight:bold;background:#fff5e0;border:1px solid #e8c87a;border-radius:4px">h`
+      : `${sh}h`;
+    h += `<tr><td style="padding:6px;border:1px solid #e0d4bb;font-weight:bold;background:#fcf6ec;position:sticky;left:0;z-index:1"><div>${s.name || s.size_id}</div><div style="font-size:10px;color:#888;font-weight:normal">${hoursCell}</div></td>`;
+    brandPriceRows.forEach((b, bi) => {
+      const c = cells[si][bi];
+      h += `<td style="padding:4px 6px;border:1px solid #e0d4bb;text-align:right;background:${heat(c.total)};line-height:1.4">
+        <div style="color:#2d5a3d">¥${c.makeCost.toLocaleString()}</div>
+        <div style="color:#7a5a2d;font-size:10px">¥${c.matCost.toLocaleString()}</div>
+        <div style="color:#6b3a1f;font-weight:bold;border-top:1px solid #d8c8b0;padding-top:2px;margin-top:2px">¥${c.total.toLocaleString()}</div>
       </td>`;
     });
     h += '</tr>';
@@ -2283,7 +2363,7 @@ function buildEstimateMatrixHtml() {
 // ── サイズ別基準価格（size-baseprice.csv） ──
 const SIZE_BASEPRICE_CSV_PATH = 'order_estimate/size-baseprice.csv';
 const SIZE_BASEPRICE_CSV_URL = new URL('./size-baseprice.csv', location.href).toString();
-const SIZE_BASEPRICE_HEADERS = ['size_id','name','work_hours','refill_w','refill_h','note'];
+const SIZE_BASEPRICE_HEADERS = ['size_id','name','work_hours','refill_w','refill_h','note','option_multiplier']; // option_multiplier は本番のオプション価格緩和用（UI非表示だが保存時に保持）
 let sizeBasePriceRows = [];
 let sizeBasePriceDirty = false;
 
@@ -4105,7 +4185,8 @@ function setAdminTab(tab) {
   const isLeather = tab === 'leather';
   const isSales = tab === 'sales';
   const isReceiptChecklist = tab === 'receipt-checklist';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist;
+  const isDashboard = tab === 'dashboard';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -4154,6 +4235,9 @@ function setAdminTab(tab) {
   document.querySelectorAll('.receipt-checklist-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isReceiptChecklist);
   });
+  document.querySelectorAll('.dashboard-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isDashboard);
+  });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
     el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist);
   });
@@ -4197,6 +4281,13 @@ function setAdminTab(tab) {
     if (sizeBasePriceRows.length === 0) loadSizeBasePriceCsv();
     if (settingsRows.length === 0) loadSettingsCsv();
   }
+  // 価格ダッシュボードは3つのCSVすべてを使用
+  if (isDashboard) {
+    if (settingsRows.length === 0) loadSettingsCsv();
+    if (sizeBasePriceRows.length === 0) loadSizeBasePriceCsv();
+    if (brandPriceRows.length === 0) loadBrandPriceCsv();
+    renderDashboard();
+  }
   document.querySelectorAll('[data-admin-tab]').forEach(btn => {
     const active = btn.dataset.adminTab === tab;
     btn.classList.toggle('active', active);
@@ -4222,6 +4313,8 @@ function setAdminTab(tab) {
       ? 'オーダー相談AI・ショールーム販売幕僚の対話知識（hearing-kb.json）を編集し、GitHubへ反映します。'
       : isReceiptChecklist
       ? '監理部のGmail領収書自動取得スクリプト実行時に生成される証憑チェックリストを表示します（読み取り専用）。'
+      : isDashboard
+      ? '本番の見積もりページと同一の計算式で全サイズ×全構造の価格をライブ試算します。スライダーと表内の入力欄で調整し、まとめてGitHubへ反映できます。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
   if (isAnalytics && !gaLoaded) gaLoad(7);
