@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNS紹介動画メーカー Web版β | デジタル幕僚室 | N's factory</title>
+<meta name="description" content="作品写真からSNS紹介用の縦型動画をブラウザ上で作成するWeb版β。写真はサーバーへ送信せず、端末内で処理します。">
+<style>
+:root{
+  --ink:#1d1d1f;
+  --muted:#62656b;
+  --line:#e6e8ee;
+  --paper:#ffffff;
+  --soft:#f6f8fb;
+  --accent:#9b6b45;
+  --accent-soft:#f4eadf;
+  --accent-dark:#6e4a31;
+  --blue:#245f9d;
+  --green:#2f7d51;
+  --danger:#b94a48;
+  --radius:8px;
+  --shadow:0 10px 32px rgba(30,30,35,.10);
+  font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--soft);color:var(--ink);line-height:1.7}
+button,input,textarea,select{font:inherit}
+button{border:0;border-radius:var(--radius);cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.nav{
+  height:56px;display:flex;align-items:center;gap:14px;padding:0 18px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;
+}
+.nav-title{font-weight:800;font-size:14px}
+.nav a{color:var(--muted);text-decoration:none;font-size:13px;margin-left:auto}
+.app{max-width:1240px;margin:0 auto;padding:22px 16px 48px}
+.status-band{
+  display:grid;grid-template-columns:1.2fr .8fr;gap:14px;align-items:stretch;margin-bottom:16px;
+}
+.intro,.privacy{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;
+}
+.intro h1{font-size:24px;margin:0 0 4px}
+.intro p,.privacy p{margin:0;color:var(--muted);font-size:13px}
+.privacy strong{color:var(--green)}
+.workflow{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;
+}
+.step{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  padding:10px 12px;font-size:13px;color:var(--muted);
+}
+.step strong{display:block;color:var(--ink);font-size:14px}
+.layout{display:grid;grid-template-columns:390px 1fr;gap:16px;align-items:start}
+.panel{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px;box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+.panel + .panel{margin-top:14px}
+.panel h2{font-size:16px;margin:0 0 12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:800;color:var(--accent-dark);margin-bottom:4px}
+.field input,.field textarea,.field select{
+  width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:10px 11px;background:#fff;color:var(--ink);
+}
+.field textarea{min-height:88px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.primary{background:var(--accent);color:#fff;padding:10px 14px;font-weight:800}
+.secondary{background:var(--soft);color:var(--ink);padding:10px 14px;font-weight:700;border:1px solid var(--line)}
+.blue{background:var(--blue);color:#fff;padding:10px 14px;font-weight:800}
+.green{background:var(--green);color:#fff;padding:10px 14px;font-weight:800}
+.danger{background:#fff;color:var(--danger);padding:8px 10px;border:1px solid #e7c8c7}
+.slides{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;padding-right:2px}
+.slide-item{
+  display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:center;
+  border:1px solid var(--line);border-radius:var(--radius);padding:8px;background:#fff;
+}
+.slide-item.active{border-color:var(--accent);background:var(--accent-soft)}
+.thumb{width:58px;height:78px;object-fit:cover;border-radius:6px;background:var(--soft)}
+.slide-title{font-size:13px;font-weight:800;line-height:1.3}
+.slide-meta{font-size:12px;color:var(--muted)}
+.preview-wrap{
+  display:grid;grid-template-columns:minmax(300px,430px) 1fr;gap:16px;align-items:start;
+}
+.canvas-shell{
+  background:#111;border-radius:var(--radius);padding:10px;box-shadow:var(--shadow);
+}
+canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:6px}
+.timeline{
+  height:10px;background:#dfe3ea;border-radius:999px;overflow:hidden;margin:12px 0 4px;
+}
+.timeline span{display:block;height:100%;width:0;background:var(--accent)}
+.now-script{
+  min-height:120px;border:1px solid var(--line);background:var(--soft);
+  border-radius:var(--radius);padding:12px;font-size:15px;
+}
+.notice{
+  margin-top:10px;font-size:12px;color:var(--muted);background:#fff7ed;border:1px solid #efd7bd;
+  border-radius:var(--radius);padding:10px 12px;
+}
+.download{display:none;margin-top:12px}
+.download a{display:inline-block;background:var(--green);color:#fff;text-decoration:none;border-radius:var(--radius);padding:10px 14px;font-weight:800}
+.log{margin-top:10px;color:var(--muted);font-size:12px;min-height:20px}
+@media(max-width:900px){
+  .status-band,.layout,.preview-wrap{grid-template-columns:1fr}
+  .workflow{grid-template-columns:1fr 1fr}
+}
+@media(max-width:540px){
+  .workflow,.row{grid-template-columns:1fr}
+  .app{padding:16px 12px 36px}
+  .intro h1{font-size:21px}
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <span class="nav-title">SNS紹介動画メーカー Web版β</span>
+  <a href="../">デジタル幕僚室へ戻る</a>
+</header>
+
+<main class="app">
+  <section class="status-band">
+    <div class="intro">
+      <h1>作品写真から、SNS用の縦型動画を作る</h1>
+      <p>写真を選び、見出しとセリフを整え、プレビューしながらWebM動画として保存します。</p>
+    </div>
+    <div class="privacy">
+      <p><strong>写真はアップロードされません。</strong> このページ内で読み込み、動画生成もブラウザ内で行います。公開版βのため、保存形式はWebMです。</p>
+    </div>
+  </section>
+
+  <section class="workflow" aria-label="操作手順">
+    <div class="step"><strong>1. 写真</strong>複数枚を追加</div>
+    <div class="step"><strong>2. セリフ</strong>写真ごとに編集</div>
+    <div class="step"><strong>3. 確認</strong>プレビュー再生</div>
+    <div class="step"><strong>4. 保存</strong>録画してWebM保存</div>
+  </section>
+
+  <div class="layout">
+    <aside>
+      <section class="panel">
+        <h2>作品情報</h2>
+        <div class="field">
+          <label for="productName">作品名</label>
+          <input id="productName" value="レザー作品" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="materialNote">素材・色</label>
+          <input id="materialNote" value="革の質感と手仕事の仕立て" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="featureNote">見どころメモ</label>
+          <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
+        </div>
+        <div class="actions">
+          <label class="secondary" for="photoInput">写真を追加</label>
+          <input id="photoInput" type="file" accept="image/*" multiple hidden>
+          <button class="secondary" id="fillDefaults">空欄に案を入れる</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>写真一覧</h2>
+        <div id="slides" class="slides"></div>
+      </section>
+    </aside>
+
+    <section>
+      <div class="preview-wrap">
+        <div class="canvas-shell">
+          <canvas id="previewCanvas" width="1080" height="1920"></canvas>
+        </div>
+
+        <div>
+          <section class="panel">
+            <h2>選択中写真の編集</h2>
+            <div class="field">
+              <label for="caption">画面に出す見出し</label>
+              <input id="caption" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="narration">読むセリフ・台本</label>
+              <textarea id="narration"></textarea>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="duration">表示秒数</label>
+                <input id="duration" type="number" min="1.8" max="12" step="0.2" value="3.5">
+              </div>
+              <div class="field">
+                <label for="transitionDuration">切替秒数</label>
+                <input id="transitionDuration" type="number" min="0.1" max="2" step="0.1" value="0.6">
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="motion">写真の動き</label>
+                <select id="motion">
+                  <option value="zoomIn">ズームイン</option>
+                  <option value="zoomOut">ズームアウト</option>
+                  <option value="panLeft">左へパン</option>
+                  <option value="panRight">右へパン</option>
+                  <option value="panUp">上へパン</option>
+                  <option value="panDown">下へパン</option>
+                  <option value="still">静止</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="transition">次写真への移行</label>
+                <select id="transition">
+                  <option value="fade">フェード</option>
+                  <option value="wipeLeft">左ワイプ</option>
+                  <option value="wipeRight">右ワイプ</option>
+                  <option value="slideLeft">左スライド</option>
+                  <option value="slideRight">右スライド</option>
+                  <option value="cut">カット</option>
+                </select>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="secondary" id="moveUp">上へ</button>
+              <button class="secondary" id="moveDown">下へ</button>
+              <button class="danger" id="removeSlide">削除</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>プレビュー・保存</h2>
+            <div class="actions">
+              <button class="primary" id="playPreview">プレビュー再生</button>
+              <button class="secondary" id="speakScript">読み上げプレビュー</button>
+              <button class="green" id="recordSilent">動画を保存</button>
+              <button class="blue" id="recordMic">マイク録音つき保存</button>
+            </div>
+            <div class="timeline"><span id="progressBar"></span></div>
+            <div class="now-script" id="currentScript">写真を追加すると、ここにセリフが表示されます。</div>
+            <div class="notice">自動音声を動画へ直接入れるにはサーバー側の音声合成が必要です。Web版βでは、読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
+            <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.webm">完成動画を保存</a></div>
+            <div class="log" id="log"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+const canvas = document.getElementById('previewCanvas');
+const ctx = canvas.getContext('2d');
+const els = {
+  productName: document.getElementById('productName'),
+  materialNote: document.getElementById('materialNote'),
+  featureNote: document.getElementById('featureNote'),
+  photoInput: document.getElementById('photoInput'),
+  slides: document.getElementById('slides'),
+  caption: document.getElementById('caption'),
+  narration: document.getElementById('narration'),
+  duration: document.getElementById('duration'),
+  transitionDuration: document.getElementById('transitionDuration'),
+  motion: document.getElementById('motion'),
+  transition: document.getElementById('transition'),
+  currentScript: document.getElementById('currentScript'),
+  progressBar: document.getElementById('progressBar'),
+  log: document.getElementById('log'),
+  downloadBox: document.getElementById('downloadBox'),
+  downloadLink: document.getElementById('downloadLink'),
+  recordSilent: document.getElementById('recordSilent'),
+  recordMic: document.getElementById('recordMic'),
+  speakScript: document.getElementById('speakScript')
+};
+let slides = [];
+let selected = -1;
+let playing = false;
+let recorder = null;
+let chunks = [];
+
+function setLog(message){ els.log.textContent = message; }
+
+function defaultTexts(index){
+  const product = els.productName.value.trim() || 'レザー作品';
+  const material = els.materialNote.value.trim();
+  const features = els.featureNote.value.split(/[、。,\n/・]+/).map(v => v.trim()).filter(Boolean);
+  if(index === 0){
+    return {
+      caption: product,
+      narration: `こちらは${product}です。${material ? `素材は${material}。` : ''}まずは全体の雰囲気をご覧ください。`
+    };
+  }
+  const feature = features[(index - 1) % Math.max(1, features.length)] || '細部の仕立て';
+  return {
+    caption: feature,
+    narration: `ここでは、${feature}をご紹介します。写真から伝わる質感をゆっくりご覧ください。`
+  };
+}
+
+function addFiles(files){
+  [...files].filter(file => file.type.startsWith('image/')).forEach(file => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    const index = slides.length;
+    const defaults = defaultTexts(index);
+    img.onload = () => {
+      slides.push({
+        file, url, img,
+        caption: defaults.caption,
+        narration: defaults.narration,
+        duration: 3.5,
+        transitionDuration: .6,
+        motion: ['zoomIn','panLeft','zoomOut','panRight'][index % 4],
+        transition: ['fade','wipeLeft','fade','slideLeft'][index % 4]
+      });
+      selected = slides.length - 1;
+      renderList();
+      loadSelected();
+      drawFrame(0);
+    };
+    img.src = url;
+  });
+}
+
+function renderList(){
+  els.slides.innerHTML = '';
+  if(!slides.length){
+    els.slides.innerHTML = '<div class="slide-meta">まだ写真がありません。「写真を追加」から始めてください。</div>';
+    return;
+  }
+  slides.forEach((slide, index) => {
+    const item = document.createElement('button');
+    item.className = `slide-item ${index === selected ? 'active' : ''}`;
+    item.type = 'button';
+    item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${index + 1}. ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${slide.duration.toFixed(1)}秒 / ${motionLabel(slide.motion)}</div></div>`;
+    item.addEventListener('click', () => { saveSelected(); selected = index; renderList(); loadSelected(); drawFrame(timelineStart(index)); });
+    els.slides.appendChild(item);
+  });
+}
+
+function loadSelected(){
+  if(selected < 0 || !slides[selected]) return;
+  const slide = slides[selected];
+  els.caption.value = slide.caption;
+  els.narration.value = slide.narration;
+  els.duration.value = slide.duration;
+  els.transitionDuration.value = slide.transitionDuration;
+  els.motion.value = slide.motion;
+  els.transition.value = slide.transition;
+  els.currentScript.textContent = slide.narration || 'この写真のセリフは空です。';
+}
+
+function saveSelected(){
+  if(selected < 0 || !slides[selected]) return;
+  const slide = slides[selected];
+  slide.caption = els.caption.value.trim();
+  slide.narration = els.narration.value.trim();
+  slide.duration = clamp(parseFloat(els.duration.value) || 3.5, 1.8, 12);
+  slide.transitionDuration = clamp(parseFloat(els.transitionDuration.value) || .6, .1, 2);
+  slide.motion = els.motion.value;
+  slide.transition = els.transition.value;
+}
+
+function fillDefaults(){
+  saveSelected();
+  slides.forEach((slide, index) => {
+    const defaults = defaultTexts(index);
+    if(!slide.caption) slide.caption = defaults.caption;
+    if(!slide.narration) slide.narration = defaults.narration;
+  });
+  loadSelected();
+  renderList();
+  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  setLog('空欄に案を入れました。');
+}
+
+function moveSelected(delta){
+  saveSelected();
+  const next = selected + delta;
+  if(next < 0 || next >= slides.length) return;
+  [slides[selected], slides[next]] = [slides[next], slides[selected]];
+  selected = next;
+  renderList();
+  loadSelected();
+  drawFrame(timelineStart(selected));
+}
+
+function removeSelected(){
+  if(selected < 0) return;
+  URL.revokeObjectURL(slides[selected].url);
+  slides.splice(selected, 1);
+  selected = Math.min(selected, slides.length - 1);
+  renderList();
+  loadSelected();
+  drawFrame(0);
+}
+
+function totalDuration(){
+  return slides.reduce((sum, slide, index) => {
+    const transition = index < slides.length - 1 ? slide.transitionDuration : 0;
+    return sum + slide.duration + transition;
+  }, 0);
+}
+
+function timelineStart(targetIndex){
+  let t = 0;
+  for(let i = 0; i < targetIndex; i++){
+    t += slides[i].duration + (i < slides.length - 1 ? slides[i].transitionDuration : 0);
+  }
+  return t;
+}
+
+function frameState(time){
+  let t = time;
+  for(let i = 0; i < slides.length; i++){
+    const slide = slides[i];
+    if(t <= slide.duration || i === slides.length - 1) return {type:'hold', index:i, progress:clamp(t / slide.duration, 0, 1)};
+    t -= slide.duration;
+    const td = slide.transition === 'cut' ? .04 : slide.transitionDuration;
+    if(t <= td) return {type:'transition', index:i, next:i + 1, progress:clamp(t / td, 0, 1)};
+    t -= td;
+  }
+  return {type:'hold', index:slides.length - 1, progress:1};
+}
+
+function drawFrame(time){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!slides.length){
+    ctx.fillStyle = '#151515'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#f7f2ea'; ctx.font = '700 56px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('写真を追加してください', canvas.width/2, canvas.height/2);
+    return;
+  }
+  const state = frameState(time);
+  if(state.type === 'transition'){
+    drawSlide(slides[state.index], 1, 1);
+    drawTransition(slides[state.index], slides[state.next], state.progress);
+    els.currentScript.textContent = slides[state.next].narration || '';
+  } else {
+    drawSlide(slides[state.index], state.progress, 1);
+    els.currentScript.textContent = slides[state.index].narration || '';
+  }
+}
+
+function drawTransition(from, to, p){
+  if(from.transition === 'cut'){ drawSlide(to, 0, 1); return; }
+  if(from.transition === 'wipeLeft' || from.transition === 'wipeRight'){
+    ctx.save();
+    const w = canvas.width * p;
+    const x = from.transition === 'wipeLeft' ? 0 : canvas.width - w;
+    ctx.beginPath(); ctx.rect(x, 0, w, canvas.height); ctx.clip();
+    drawSlide(to, p, 1);
+    ctx.restore();
+    return;
+  }
+  if(from.transition === 'slideLeft' || from.transition === 'slideRight'){
+    const dir = from.transition === 'slideLeft' ? -1 : 1;
+    ctx.save(); ctx.globalAlpha = 1; ctx.translate(dir * canvas.width * p, 0); drawSlide(from, 1, 1); ctx.restore();
+    ctx.save(); ctx.translate(dir * canvas.width * (p - 1), 0); drawSlide(to, p, 1); ctx.restore();
+    return;
+  }
+  drawSlide(to, p, p);
+}
+
+function drawSlide(slide, progress, alpha){
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  drawBackground(slide.img);
+  drawPhoto(slide.img, slide.motion, progress);
+  drawTexts(slide);
+  ctx.restore();
+}
+
+function drawBackground(img){
+  ctx.save();
+  ctx.filter = 'blur(30px)';
+  drawCover(img, -60, -60, canvas.width + 120, canvas.height + 120);
+  ctx.filter = 'none';
+  ctx.fillStyle = 'rgba(0,0,0,.42)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.restore();
+}
+
+function drawPhoto(img, motion, progress){
+  const box = {x:60, y:330, w:960, h:1210};
+  const fit = containRect(img, box);
+  let zoom = 1;
+  let dx = 0, dy = 0;
+  if(motion === 'zoomIn') zoom = 1 + progress * .055;
+  if(motion === 'zoomOut') zoom = 1.055 - progress * .055;
+  if(motion === 'panLeft') { zoom = 1.06; dx = -28 + progress * 56; }
+  if(motion === 'panRight') { zoom = 1.06; dx = 28 - progress * 56; }
+  if(motion === 'panUp') { zoom = 1.06; dy = -34 + progress * 68; }
+  if(motion === 'panDown') { zoom = 1.06; dy = 34 - progress * 68; }
+  ctx.save();
+  shadow(box.x - 8, box.y - 8, box.w + 16, box.h + 16);
+  ctx.beginPath(); roundRect(ctx, box.x, box.y, box.w, box.h, 18); ctx.clip();
+  const cx = fit.x + fit.w/2 + dx;
+  const cy = fit.y + fit.h/2 + dy;
+  ctx.drawImage(img, cx - fit.w*zoom/2, cy - fit.h*zoom/2, fit.w*zoom, fit.h*zoom);
+  ctx.restore();
+}
+
+function drawTexts(slide){
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#f7f2ea';
+  ctx.font = '700 40px sans-serif';
+  ctx.fillText("N's factory", 70, 88);
+  ctx.fillStyle = '#c8a878';
+  ctx.fillRect(70, 116, 145, 4);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fff';
+  ctx.font = '700 64px sans-serif';
+  wrapDraw(els.productName.value || '作品紹介', 540, 175, 880, 74);
+  ctx.fillStyle = 'rgba(16,16,16,.86)';
+  roundRect(ctx, 66, 1625, 948, 190, 22); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = '700 48px sans-serif';
+  wrapDraw(slide.caption || '作品紹介', 540, 1688, 840, 56);
+  ctx.fillStyle = '#d7c7b3';
+  ctx.font = '400 27px sans-serif';
+  wrapDraw(els.materialNote.value || 'leather craft', 540, 1770, 820, 34);
+}
+
+function playTimeline(recordStream){
+  return new Promise(resolve => {
+    if(!slides.length){ resolve(); return; }
+    saveSelected(); renderList();
+    playing = true;
+    const start = performance.now();
+    const total = totalDuration();
+    function tick(now){
+      const elapsed = (now - start) / 1000;
+      const t = Math.min(elapsed, total);
+      drawFrame(t);
+      els.progressBar.style.width = `${(t / total) * 100}%`;
+      if(elapsed < total && playing){ requestAnimationFrame(tick); }
+      else { playing = false; els.progressBar.style.width = '100%'; resolve(); }
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+async function recordVideo(withMic){
+  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+  if(!canRecordVideo()){
+    setLog('このブラウザでは動画保存が使えません。EdgeまたはChromeで開いてください。');
+    refreshCapabilities();
+    return;
+  }
+  saveSelected();
+  els.downloadBox.style.display = 'none';
+  chunks = [];
+  const videoStream = canvas.captureStream(30);
+  let stream = videoStream;
+  let micStream = null;
+  if(withMic){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      setLog('このブラウザではマイク録音が使えません。音声なしで保存します。');
+    }else{
+      try{
+        micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+        stream = new MediaStream([...videoStream.getVideoTracks(), ...micStream.getAudioTracks()]);
+      }catch(err){
+        setLog('マイクを使えませんでした。音声なしで保存します。');
+      }
+    }
+  }
+  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' : 'video/webm';
+  recorder = new MediaRecorder(stream, {mimeType:mime});
+  recorder.ondataavailable = event => { if(event.data.size) chunks.push(event.data); };
+  recorder.onstop = () => {
+    if(micStream) micStream.getTracks().forEach(track => track.stop());
+    const blob = new Blob(chunks, {type:'video/webm'});
+    const url = URL.createObjectURL(blob);
+    els.downloadLink.href = url;
+    els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}.webm`;
+    els.downloadBox.style.display = 'block';
+    setLog('完成しました。完成動画を保存ボタンからダウンロードできます。');
+  };
+  setLog(withMic ? '録画中です。セリフを読み上げてください。' : '動画を生成中です。');
+  recorder.start();
+  await playTimeline(true);
+  setTimeout(() => recorder && recorder.state !== 'inactive' && recorder.stop(), 250);
+}
+
+function speakScript(){
+  saveSelected();
+  if(!('speechSynthesis' in window)){ setLog('このブラウザでは読み上げプレビューが使えません。'); return; }
+  speechSynthesis.cancel();
+  const text = slides.map(slide => slide.narration).filter(Boolean).join('。');
+  const utterance = new SpeechSynthesisUtterance(text || 'セリフがありません。');
+  utterance.lang = 'ja-JP';
+  speechSynthesis.speak(utterance);
+}
+
+function canRecordVideo(){
+  return typeof MediaRecorder !== 'undefined' && typeof canvas.captureStream === 'function';
+}
+
+function refreshCapabilities(){
+  const recordable = canRecordVideo();
+  [els.recordSilent, els.recordMic].forEach(button => {
+    button.disabled = !recordable;
+    button.title = recordable ? '' : 'EdgeまたはChromeで開くと動画保存できます';
+  });
+  els.speakScript.disabled = !('speechSynthesis' in window);
+  if(!recordable){
+    setLog('動画保存はEdge/Chrome推奨です。このブラウザでは保存ボタンを無効にしています。');
+  }
+}
+
+function motionLabel(value){
+  return {zoomIn:'ズームイン',zoomOut:'ズームアウト',panLeft:'左へパン',panRight:'右へパン',panUp:'上へパン',panDown:'下へパン',still:'静止'}[value] || value;
+}
+function clamp(value,min,max){ return Math.min(max, Math.max(min, value)); }
+function safeFileName(value){ return value.replace(/[\\/:*?"<>|]/g,'_').trim() || 'sns-video-maker'; }
+function escapeHtml(value){ return value.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+
+function containRect(img, box){
+  const r = Math.min(box.w / img.width, box.h / img.height);
+  const w = img.width * r, h = img.height * r;
+  return {x:box.x + (box.w - w)/2, y:box.y + (box.h - h)/2, w, h};
+}
+function drawCover(img,x,y,w,h){
+  const r = Math.max(w / img.width, h / img.height);
+  const dw = img.width * r, dh = img.height * r;
+  ctx.drawImage(img, x + (w-dw)/2, y + (h-dh)/2, dw, dh);
+}
+function shadow(x,y,w,h){
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 24; ctx.fillStyle = '#111';
+  roundRect(ctx,x,y,w,h,22); ctx.fill(); ctx.restore();
+}
+function roundRect(context,x,y,w,h,r){
+  context.beginPath();
+  context.moveTo(x+r,y); context.arcTo(x+w,y,x+w,y+h,r); context.arcTo(x+w,y+h,x,y+h,r);
+  context.arcTo(x,y+h,x,y,r); context.arcTo(x,y,x+w,y,r); context.closePath();
+}
+function wrapDraw(text,x,y,maxWidth,lineHeight){
+  const chars = [...String(text)];
+  let line = '', yy = y;
+  for(const ch of chars){
+    const next = line + ch;
+    if(ctx.measureText(next).width > maxWidth && line){
+      ctx.fillText(line, x, yy); yy += lineHeight; line = ch;
+    }else line = next;
+  }
+  if(line) ctx.fillText(line, x, yy);
+}
+
+els.photoInput.addEventListener('change', event => addFiles(event.target.files));
+document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
+document.getElementById('playPreview').addEventListener('click', () => playTimeline(false));
+document.getElementById('speakScript').addEventListener('click', speakScript);
+document.getElementById('recordSilent').addEventListener('click', () => recordVideo(false));
+document.getElementById('recordMic').addEventListener('click', () => recordVideo(true));
+document.getElementById('moveUp').addEventListener('click', () => moveSelected(-1));
+document.getElementById('moveDown').addEventListener('click', () => moveSelected(1));
+document.getElementById('removeSlide').addEventListener('click', removeSelected);
+['caption','narration','duration','transitionDuration','motion','transition'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => { saveSelected(); renderList(); drawFrame(selected >= 0 ? timelineStart(selected) : 0); });
+});
+['productName','materialNote'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
+});
+renderList();
+drawFrame(0);
+refreshCapabilities();
+</script>
+<script src="../../assets/access-counter.js"></script>
+</body>
+</html>
