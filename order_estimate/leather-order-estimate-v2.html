@@ -1141,6 +1141,9 @@ function getWasteFactor() { return 1 / (1 - WASTE_RATE); }
 const CRAFT_MULTIPLIER = 1.5;   // 工賃込み倍率（縫製・コバ磨き等を革材料費に上乗せ）
 // ── 新計算式（2026-05-25）── 製作費 = (サイズ別工数 + 構造別追加工数) × LABOR_RATE_PER_HOUR
 let LABOR_RATE_PER_HOUR = 3000;   // 時給単価（¥/h）settings.csv で上書き可能
+// ── 価格調整パラメータ（2026-07-09追加）── settings.csv で上書き可能。初期値は既存計算と完全一致する値
+let BASE_FEE = 0;             // 基本料金（円）：サイズによらない固定費
+let SIZE_CURVE_FACTOR = 1.0;  // サイズカーブ緩和度（0〜1）：1.0で現状のサイズ工数差そのまま、0.0で全サイズ同一工数
 // 管理者調整モードのリセット（?admin時のみ意味あり）
 function resetAdminOverrides() {
   window._adminOverrides = {};
@@ -2386,6 +2389,14 @@ async function loadSettingsCatalog() {
         const v = parseFloat(row.value);
         if (!isNaN(v) && v >= 0 && v < 1) WASTE_RATE = v;
       }
+      if (row.key === 'base_fee') {
+        const v = parseFloat(row.value);
+        if (!isNaN(v) && v >= 0) BASE_FEE = v;
+      }
+      if (row.key === 'size_curve_factor') {
+        const v = parseFloat(row.value);
+        if (!isNaN(v) && v >= 0 && v <= 1) SIZE_CURVE_FACTOR = v;
+      }
     });
   } catch (err) {
     console.warn('settings CSV load failed:', err);
@@ -2586,11 +2597,13 @@ function updateSizePrices() {
   const brandObj = BRANDS.find(b => b.id === sel.brandId);
   const workHourMultiplier = brandObj?.workHourMultiplier ?? 0;
   const extra = brandObj?.extraBaseCost ?? 0;
+  const micro5Hours = SIZES.find(s => s.id === 'micro5')?.workHours ?? 0;
   document.querySelectorAll('.opt-card[data-key="size"]').forEach(card => {
     const sizeObj = SIZES.find(s => s.id === card.dataset.id);
     const sizeHours = sizeObj?.workHours ?? 0;
-    const totalHours = sizeHours * workHourMultiplier;
-    const displayed = Math.round(totalHours * LABOR_RATE_PER_HOUR + extra);
+    const sizeHoursAdjusted = micro5Hours + (sizeHours - micro5Hours) * SIZE_CURVE_FACTOR;
+    const totalHours = sizeHoursAdjusted * workHourMultiplier;
+    const displayed = Math.round(BASE_FEE + totalHours * LABOR_RATE_PER_HOUR + extra);
     const priceEl = card.querySelector('.opt-price');
     if (priceEl) {
       if (displayed > 0) {
@@ -3100,8 +3113,11 @@ function updateSummary(options = {}) {
   const sizeHours  = (isAdmin && ov.sizeHours  != null) ? ov.sizeHours  : sizeHoursCsv;
   const workHourMultiplier = (isAdmin && ov.workHourMultiplier != null) ? ov.workHourMultiplier : workHourMultiplierCsv;
   const laborRate  = (isAdmin && ov.laborRate  != null) ? ov.laborRate  : LABOR_RATE_PER_HOUR;
-  const totalHours = (sizeHours || 0) * (workHourMultiplier || 0);
-  const baseCost = Math.round(totalHours * laborRate + brandExtraBase);
+  // ── 価格調整パラメータ（2026-07-09追加）：Micro5工数を基準にサイズ工数差を緩和 ──
+  const micro5Hours = SIZES.find(s => s.id === 'micro5')?.workHours ?? 0;
+  const sizeHoursAdjusted = micro5Hours + ((sizeHours || 0) - micro5Hours) * SIZE_CURVE_FACTOR;
+  const totalHours = sizeHoursAdjusted * (workHourMultiplier || 0);
+  const baseCost = Math.round(BASE_FEE + totalHours * laborRate + brandExtraBase);
   const leatherCost = Math.round(sizeDs * (leatherDsP || NUMER_DS_PRICE));
 
   let opts = 0;
@@ -3151,8 +3167,12 @@ function updateSummary(options = {}) {
       add('└ 時給', `<input type="number" step="100" min="0" value="${laborRate}" id="adjLaborRate" style="width:90px"> ¥/h（CSV値: ¥${LABOR_RATE_PER_HOUR.toLocaleString()}/h）`);
       add('└ 操作', `<button onclick="resetAdminOverrides()" style="padding:2px 8px;font-size:11px">リセット</button> <span style="font-size:11px;color:#888">編集→即時試算</span>`);
       add('▶ 計算式詳細', '', 'lbl-title');
-      add('└ サイズ工数 × 構造工数倍率', `${sizeHours||0} h × ${workHourMultiplier||0} = ${totalHours} h`);
-      add('└ 合計工数 × 時給', `${totalHours} h × ¥${laborRate.toLocaleString()} = ¥${(totalHours * laborRate).toLocaleString()}`);
+      if (SIZE_CURVE_FACTOR !== 1.0) {
+        add('└ サイズ工数カーブ補正', `Micro5基準 ${micro5Hours}h + (${sizeHours||0}h − ${micro5Hours}h) × ${SIZE_CURVE_FACTOR} = ${sizeHoursAdjusted.toFixed(2)}h`);
+      }
+      add('└ サイズ工数(補正後) × 構造工数倍率', `${sizeHoursAdjusted.toFixed(2)} h × ${workHourMultiplier||0} = ${totalHours.toFixed(2)} h`);
+      add('└ 合計工数 × 時給', `${totalHours.toFixed(2)} h × ¥${laborRate.toLocaleString()} = ¥${(totalHours * laborRate).toLocaleString()}`);
+      if (BASE_FEE > 0) add('└ + 基本料金（base_fee）', `+ ¥${BASE_FEE.toLocaleString()}`);
       if (brandExtraBase > 0) add('└ + 固定加算（extraBaseCost）', `+ ¥${brandExtraBase.toLocaleString()}`);
       add('└ = 製作費（工賃）', `= ¥${baseCost.toLocaleString()}`);
       if (sizeDs > 0) {
