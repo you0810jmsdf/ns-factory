@@ -820,6 +820,10 @@
       withLeather.forEach(function (p) {
         nsfSetSelection(withLeather.length > 1 ? p.label : '革色', p.leatherName);
       });
+      // 金具色は革色とは別枠で記録する（革色パレットで金具色を代用して記録が混同する不具合の対策）
+      if (data.metalColor) {
+        nsfSetSelection('金具色', data.metalColor);
+      }
     });
 
     function showStitchGallery() {
@@ -1027,6 +1031,21 @@
           if (data && data.ok) {
             isConsultationSent = true;
             if (sendBtn) { sendBtn.textContent = '送信済み✓'; }
+            // お客様がブラウザで見返せるよう、送信した注文内容の控えをlocalStorageへ保存する
+            try {
+              var receipt = {
+                orderNo: data.orderNo || '',
+                sentAt: new Date().toISOString(),
+                item: payload.item,
+                client: client,
+                contact: contact,
+                purchaseMethod: methodLabel,
+                selections: selections,
+                memo: memoWithMethod
+              };
+              var key = 'nsf_order_receipt_' + (data.orderNo || Date.now());
+              global.localStorage.setItem(key, JSON.stringify(receipt));
+            } catch (e) { /* localStorage不可の環境では控え保存のみ諦める */ }
             appendStaffMsg('この内容を作家に送信しました。内容を確認のうえ、お見積書を作成してお送りするか、追加で確認させていただきたいことがあればご記入いただいた連絡先へご連絡いたします。今しばらくお待ちください。');
           } else {
             if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'この内容で作家に送信'; }
