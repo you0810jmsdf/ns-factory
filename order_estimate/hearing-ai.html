@@ -412,7 +412,7 @@ function finish(){
 /* 発注票確定時、オーダー進捗シートへ自動登録する（テクスチャシミュレーション画像があれば一緒に送る） */
 function submitToOrderProgress(prod, hearingContent, textureSimulation){
   const images=(textureSimulation||[]).map((p,i)=>({
-    fileName:`color_sim_${i+1}.jpg`,
+    fileName:`color_sim_${i+1}.png`,
     label:(p.label||('パーツ'+(i+1)))+(p.leatherName?(': '+p.leatherName):''),
     base64:p.imageDataUrl.split(',')[1],
   }));

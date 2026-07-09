@@ -1010,7 +1010,7 @@
       // 上位互換で、imagesが空の場合は従来のaddConsultationと全く同じ挙動になる）
       var images = (lastTextureSimParts || []).map(function (p, i) {
         return {
-          fileName: 'color_sim_' + (i + 1) + '.jpg',
+          fileName: 'color_sim_' + (i + 1) + '.png',
           label: (p.label || ('パーツ' + (i + 1))) + (p.leatherName ? (': ' + p.leatherName) : ''),
           base64: p.imageDataUrl.split(',')[1]
         };

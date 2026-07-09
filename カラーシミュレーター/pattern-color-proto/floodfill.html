@@ -260,7 +260,7 @@ function sendFloodfillConfirmMessage(){
       label: TABS[tabKey].label,
       leatherId: usedLeathers.length ? usedLeathers[0].id : null,
       leatherName: usedLeathers.length ? usedLeathers.map(l=>l.name).join('／') : null,
-      imageDataUrl: state.offCanvas.toDataURL('image/jpeg', 0.85),
+      imageDataUrl: state.offCanvas.toDataURL('image/png'),
     };
   }).filter(Boolean);
   window.parent.postMessage({ type: 'nsfactory-floodfill-confirm', parts, metalColor: currentMetal ? currentMetal.name : null }, '*');
@@ -557,10 +557,10 @@ async function confirmColorOrder(){
   const images = tabKeys.map((tabKey, i) => {
     const state = tabStates[tabKey];
     if(!state) return null; // 一度も表示していないタブ（未ロード）は送らない
-    const base64 = state.offCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+    const base64 = state.offCanvas.toDataURL('image/png').split(',')[1];
     const usedLeathers = summarizeTabLeathers(tabKey);
     const label = usedLeathers.length ? `その${i+1}: ${usedLeathers.map(l=>l.name).join('／')}` : '';
-    return { fileName: `color_sim_${i+1}.jpg`, label, base64 };
+    return { fileName: `color_sim_${i+1}.png`, label, base64 };
   }).filter(Boolean);
   const metalColor = currentMetal ? currentMetal.name : null;
 
