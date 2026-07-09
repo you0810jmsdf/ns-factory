@@ -1,0 +1,78 @@
+{
+  "generatedAt": "2026-07-09T22:14:31",
+  "warnThresholdDays": 3,
+  "staff": [
+    {
+      "name": "作戦幕僚",
+      "lastLogDate": "2026-07-08",
+      "daysSinceLog": 1,
+      "overdueCount": 0,
+      "openTotal": 13,
+      "warning": false
+    },
+    {
+      "name": "販売幕僚",
+      "lastLogDate": "2026-07-08",
+      "daysSinceLog": 1,
+      "overdueCount": 0,
+      "openTotal": 25,
+      "warning": false
+    },
+    {
+      "name": "監理幕僚",
+      "lastLogDate": "2026-07-09",
+      "daysSinceLog": 0,
+      "overdueCount": 1,
+      "openTotal": 22,
+      "warning": false
+    },
+    {
+      "name": "広報幕僚",
+      "lastLogDate": "2026-07-09",
+      "daysSinceLog": 0,
+      "overdueCount": 0,
+      "openTotal": 1,
+      "warning": false
+    },
+    {
+      "name": "後方幕僚",
+      "lastLogDate": "2026-07-07",
+      "daysSinceLog": 2,
+      "overdueCount": 0,
+      "openTotal": 2,
+      "warning": false
+    },
+    {
+      "name": "保全幕僚",
+      "lastLogDate": "2026-06-11",
+      "daysSinceLog": 28,
+      "overdueCount": 0,
+      "openTotal": 2,
+      "warning": false
+    },
+    {
+      "name": "デジタル幕僚",
+      "lastLogDate": "2026-07-09",
+      "daysSinceLog": 0,
+      "overdueCount": 0,
+      "openTotal": 2,
+      "warning": false
+    },
+    {
+      "name": "人事幕僚",
+      "lastLogDate": "2026-06-10",
+      "daysSinceLog": 29,
+      "overdueCount": 0,
+      "openTotal": 0,
+      "warning": false
+    },
+    {
+      "name": "教育幕僚",
+      "lastLogDate": "2026-05-25",
+      "daysSinceLog": 45,
+      "overdueCount": 0,
+      "openTotal": 0,
+      "warning": false
+    }
+  ]
+}

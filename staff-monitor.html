@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幕僚稼働監視 | N's factory</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#f5f0eb;
+  color:#2c1a0e;
+}
+.page{min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  padding:16px 20px;
+  color:#fff;
+  background:linear-gradient(135deg,#3d1a08 0%,#6b3a1f 100%);
+  box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.topbar h1{margin:0;font-size:18px}
+.topbar p{margin:4px 0 0;font-size:12px;opacity:.82}
+.main{padding:20px;max-width:1100px;margin:0 auto;width:100%}
+.meta-row{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+  margin-bottom:16px;font-size:13px;color:#7a5a3f;
+}
+.btn{
+  padding:9px 16px;background:#8B4513;color:#fff;border:none;border-radius:8px;
+  font-size:13px;font-weight:bold;cursor:pointer;
+}
+.btn:hover{background:#6B3410}
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;
+}
+.card{
+  background:#fff;border:1px solid #eadccf;border-radius:14px;padding:16px 18px;
+  box-shadow:0 4px 14px rgba(44,26,14,.08);
+}
+.card.warn{border-color:#c0392b;box-shadow:0 4px 14px rgba(192,57,43,.18)}
+.card h2{margin:0 0 10px;font-size:16px;color:#3d1a08;display:flex;align-items:center;gap:8px}
+.badge{
+  font-size:11px;font-weight:bold;padding:3px 9px;border-radius:999px;
+  background:#eee;color:#666;
+}
+.badge.warn{background:#c0392b;color:#fff}
+.row{display:flex;justify-content:space-between;font-size:13px;color:#5a4534;padding:3px 0}
+.row b{color:#2c1a0e}
+.empty{text-align:center;color:#999;padding:60px 0;font-size:14px}
+
+.auth-overlay{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(44,26,14,.62);backdrop-filter:blur(4px);
+}
+.auth-card{
+  width:min(420px,100%);background:#fff;border:1px solid #eadccf;border-radius:18px;
+  padding:22px;box-shadow:0 18px 40px rgba(44,26,14,.22);
+}
+.auth-card h2{margin:0 0 8px;font-size:20px;color:#6b3a1f}
+.auth-card p{margin:0 0 14px;font-size:13px;color:#7a5a3f;line-height:1.6}
+.auth-card input{
+  width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:14px;
+  margin-bottom:10px;outline:none;
+}
+.auth-card input:focus{border-color:#8B4513}
+.auth-error{min-height:18px;margin:6px 0 0;font-size:12px;color:#b42318}
+.auth-locked{overflow:hidden}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <h1>幕僚稼働監視</h1>
+    <p>業務日誌の記載頻度 × 幕僚計画の期限超過タスクを突き合わせ、さぼり兆候を可視化する</p>
+  </div>
+  <div class="main">
+    <div class="meta-row">
+      <span id="generatedAt">読み込み中…</span>
+      <button class="btn" onclick="loadData()">再読み込み</button>
+    </div>
+    <div class="grid" id="grid">
+      <div class="empty">読み込み中…</div>
+    </div>
+  </div>
+</div>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <h2>N's Factory</h2>
+    <p>幕僚稼働監視ダッシュボード<br>サイト管理者パスワードを入力してください。</p>
+    <input type="password" id="authPassword" placeholder="パスワード" onkeydown="if(event.key==='Enter')submitAuth()">
+    <button class="btn" style="width:100%" onclick="submitAuth()">ログイン</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<script>
+// サイト管理者パスワード＝幕僚計画GAS共通APIキーと同一（SHA-256ハッシュ照合、平文はコードに置かない）
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const SESSION_KEY = 'nsfactory-staff-monitor-auth';
+
+function sha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
+
+function unlockAuth() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.classList.remove('auth-locked');
+  loadData();
+}
+
+function submitAuth() {
+  const input = document.getElementById('authPassword');
+  const errEl = document.getElementById('authError');
+  sha256(input.value).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      try { sessionStorage.setItem(SESSION_KEY, 'ok'); } catch (e) {}
+      unlockAuth();
+    } else {
+      errEl.textContent = 'パスワードが違います';
+    }
+  });
+}
+
+function checkSession() {
+  try { return sessionStorage.getItem(SESSION_KEY) === 'ok'; } catch (e) { return false; }
+}
+
+if (checkSession()) {
+  document.getElementById('authOverlay').style.display = 'none';
+} else {
+  document.body.classList.add('auth-locked');
+}
+
+function renderStaff(s) {
+  const warn = s.warning;
+  const lastLog = s.lastLogDate ? `${s.lastLogDate}（${s.daysSinceLog}日前）` : '記載なし';
+  return `
+    <div class="card ${warn ? 'warn' : ''}">
+      <h2>${s.name}
+        <span class="badge ${warn ? 'warn' : ''}">${warn ? '要確認' : '正常'}</span>
+      </h2>
+      <div class="row"><span>最終日誌記載</span><b>${lastLog}</b></div>
+      <div class="row"><span>期限超過タスク</span><b>${s.overdueCount}件</b></div>
+      <div class="row"><span>未完了タスク合計</span><b>${s.openTotal}件</b></div>
+    </div>
+  `;
+}
+
+async function loadData() {
+  const grid = document.getElementById('grid');
+  const metaEl = document.getElementById('generatedAt');
+  grid.innerHTML = '<div class="empty">読み込み中…</div>';
+  try {
+    const res = await fetch('staff-monitor-data.json?_=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    metaEl.textContent = '最終更新: ' + (data.generatedAt || '不明')
+      + '（さぼり警告条件: 日誌' + data.warnThresholdDays + '日以上未記載 かつ 期限超過タスクあり）';
+    const list = data.staff || [];
+    if (!list.length) {
+      grid.innerHTML = '<div class="empty">データがありません</div>';
+      return;
+    }
+    // 警告ありを先頭に表示
+    list.sort((a, b) => (b.warning === true) - (a.warning === true));
+    grid.innerHTML = list.map(renderStaff).join('');
+  } catch (err) {
+    metaEl.textContent = '読み込みエラー';
+    grid.innerHTML = '<div class="empty">データの読み込みに失敗しました: ' + err.message + '</div>';
+  }
+}
+
+if (checkSession()) loadData();
+</script>
+</body>
+</html>
