@@ -116,17 +116,16 @@
       }
 
       // 商品にfolderIdがある場合、「革の色を見る」を選ぶ前の相談開始時点で
-      // テクスチャシミュレーター対応状況を確認し、対応可能なら最初の画面から案内する。
-      // 未対応（準備中）の場合は従来通り「革の色を見る」を押した時点で案内する（毎回の案内はうるさいため）。
+      // テクスチャシミュレーター対応状況を確認し、対応可否にかかわらず最初の画面から案内する。
       var simFolderId = currentProductContext && currentProductContext.folderId;
       if (simFolderId && (staffId === 'hannbai' || staffId === 'kojinjigyonusi')) {
         simChecked = true;
         checkPatternAvailability(simFolderId).then(function (avail) {
           simPatternAvailable = avail;
-          if (avail) {
-            appendStaffMsg('🎉 この作品はテクスチャシミュレーターで革の質感を試せます！下の「テクスチャシミュレーターで試す」からどうぞ。');
-            nsfDefaultChips();
-          }
+          appendStaffMsg(avail
+            ? '🎉 この作品はテクスチャシミュレーターで革の質感を試せます！下の「テクスチャシミュレーターで試す」からどうぞ。'
+            : '🎨 テクスチャシミュレーターは、この作品はまだ型紙データが未登録のため準備中です。');
+          nsfDefaultChips();
         });
       }
     }
@@ -715,6 +714,10 @@
         var simFolderId = currentProductContext && currentProductContext.folderId;
         if (simFolderId && simPatternAvailable === true) {
           chips.push({ label: '🎨 テクスチャシミュレーターで試す', onClick: function () { openTextureSimulator(simFolderId); } });
+        } else if (simFolderId && simPatternAvailable === false) {
+          chips.push({ label: '🎨 型紙シミュレーター：準備中', onClick: function () {
+            appendStaffMsg('🎨 テクスチャシミュレーターは、この作品はまだ型紙データの登録が完了していないため準備中です。今しばらくお待ちください🙏');
+          } });
         }
       }
       if (chips.length) renderChips(chips);
