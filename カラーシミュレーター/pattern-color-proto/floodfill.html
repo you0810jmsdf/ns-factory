@@ -70,6 +70,9 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient
       テクスチャの大きさ: <input type="range" id="textureScaleSlider" min="1" max="8" step="0.5" value="3"> <span id="textureScaleVal">3</span>倍
       <br>（次にクリックして塗った箇所から反映されます）
     </div>
+    <div style="font-size:12px;font-weight:bold;margin:14px 0 6px">金具カラーを選ぶ（任意）</div>
+    <div class="note" style="margin-bottom:6px">革色とは別に記録されます。金具の色を革色パレットで代用しないでください。</div>
+    <div class="palette" id="metalPalette" style="max-height:none"></div>
   </div>
 </div>
 
@@ -77,6 +80,30 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient
 let LEATHERS = [];
 let currentLeather = null;
 const leatherImgCache = {};
+
+/* 金具カラー。革色パレットとは完全に別枠で持ち、選択内容の混同を防ぐ */
+const METALS = [
+  { id:'gold',     name:'ゴールド',       hex:'#c9a96a' },
+  { id:'silver',   name:'シルバー',       hex:'#c9c9c9' },
+  { id:'pinkgold', name:'ピンクゴールド', hex:'#e6b8a2' },
+];
+let currentMetal = null;
+
+function buildMetalPalette(){
+  const p = document.getElementById('metalPalette');
+  p.innerHTML = '';
+  METALS.forEach(m=>{
+    const d = document.createElement('div');
+    d.className = 'sw' + (currentMetal && m.id===currentMetal.id ? ' on' : '');
+    d.innerHTML = `<div style="width:100%;height:48px;background:${m.hex}"></div><div>${m.name}</div>`;
+    d.addEventListener('click', ()=>{
+      currentMetal = (currentMetal && currentMetal.id===m.id) ? null : m; // もう一度押すと選択解除
+      document.querySelectorAll('#metalPalette .sw').forEach(el=>el.classList.remove('on'));
+      if(currentMetal) d.classList.add('on');
+    });
+    p.appendChild(d);
+  });
+}
 const CROP_RATIO = 0.2; // 商品ラベル・ロゴを避けるため画像右上20%だけを質感として使う
 
 /* order_estimateの革カタログ(全280種類)と在庫CSVを読み込む。在庫なしも表示対象に含め、パレット側でグレーアウトする */
@@ -207,6 +234,18 @@ function isEmbedded(){
   return new URLSearchParams(location.search).get('embed') === '1' && window.parent !== window;
 }
 
+/* あるタブの塗り履歴から、実際に使われた革を「最後の1点」ではなく重複除去した全件（初回使用順）で返す。
+   1タブ内で複数の革を塗り分けた場合に後の色しか記録されない不具合を防ぐため */
+function summarizeTabLeathers(tabKey){
+  const history = paintHistory[tabKey] || [];
+  const seen = [];
+  history.forEach(h=>{
+    const lt = LEATHERS.find(l => l.id === h.leatherId);
+    if(lt && !seen.some(s=>s.id===lt.id)) seen.push(lt);
+  });
+  return seen;
+}
+
 /* embed=1でhearing-ai.html等のiframeに埋め込まれている場合、確定内容を親ウィンドウへ通知する。
    folderId方式（Drive保存）とは独立した経路のため、注文がまだ存在しない段階（チャット中）でも使える */
 function sendFloodfillConfirmMessage(){
@@ -215,18 +254,16 @@ function sendFloodfillConfirmMessage(){
   const parts = tabKeys.map(tabKey => {
     const state = tabStates[tabKey];
     if(!state) return null; // 一度も表示していないタブ（未ロード）は送らない
-    const history = paintHistory[tabKey] || [];
-    const lastEntry = history[history.length - 1];
-    const lastLeather = lastEntry ? LEATHERS.find(l => l.id === lastEntry.leatherId) : null;
+    const usedLeathers = summarizeTabLeathers(tabKey);
     return {
       tabKey,
       label: TABS[tabKey].label,
-      leatherId: lastLeather ? lastLeather.id : null,
-      leatherName: lastLeather ? lastLeather.name : null,
+      leatherId: usedLeathers.length ? usedLeathers[0].id : null,
+      leatherName: usedLeathers.length ? usedLeathers.map(l=>l.name).join('／') : null,
       imageDataUrl: state.offCanvas.toDataURL('image/jpeg', 0.85),
     };
   }).filter(Boolean);
-  window.parent.postMessage({ type: 'nsfactory-floodfill-confirm', parts }, '*');
+  window.parent.postMessage({ type: 'nsfactory-floodfill-confirm', parts, metalColor: currentMetal ? currentMetal.name : null }, '*');
 }
 
 async function loadSvgListFromDrive(folderId){
@@ -521,17 +558,16 @@ async function confirmColorOrder(){
     const state = tabStates[tabKey];
     if(!state) return null; // 一度も表示していないタブ（未ロード）は送らない
     const base64 = state.offCanvas.toDataURL('image/jpeg', 0.85).split(',')[1];
-    const history = paintHistory[tabKey] || [];
-    const lastEntry = history[history.length - 1];
-    const lastLeather = lastEntry ? LEATHERS.find(l => l.id === lastEntry.leatherId) : null;
-    const label = lastLeather ? `その${i+1}: ${lastLeather.name}` : '';
+    const usedLeathers = summarizeTabLeathers(tabKey);
+    const label = usedLeathers.length ? `その${i+1}: ${usedLeathers.map(l=>l.name).join('／')}` : '';
     return { fileName: `color_sim_${i+1}.jpg`, label, base64 };
   }).filter(Boolean);
+  const metalColor = currentMetal ? currentMetal.name : null;
 
   try{
     const res = await fetch(ORDER_PROGRESS_GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'uploadColorSimImage', folderId, images })
+      body: JSON.stringify({ action: 'uploadColorSimImage', folderId, images, metalColor })
     });
     const json = await res.json();
     statusEl.textContent = json.ok
@@ -562,6 +598,7 @@ async function resetCurrentTab(){
   }));
   buildColorFilters();
   buildPalette();
+  buildMetalPalette();
 
   dispCanvas = document.getElementById('dispCanvas');
   dispCtx = dispCanvas.getContext('2d');
