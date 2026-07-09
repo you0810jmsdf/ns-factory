@@ -3066,8 +3066,8 @@ function updateSummary(options = {}) {
 
   // オプション価格用サイズ別面積比（option_multiplier）
   const optionMultiplier = sizeObj?.optionMultiplier ?? 1;
-  // Dカン：全サイズ・全構造で常時表示（1個 +¥1,000、最大2個）※面積比を乗算
-  const dkanCost = Math.round(dkanCount * 1000 * optionMultiplier);
+  // Dカン：全サイズ・全構造で常時表示（1個 +¥1,000、最大2個）※固定額・サイズ倍率非適用（2026-07-09変更）
+  const dkanCost = Math.round(dkanCount * 1000);
   const flapOn    = isFlapEffectivelyOn();
   const flapPrice = isFlapPriceOptional() && flapOn ? 3000 : 0;
   const freePocket    = window._freePocket    || 'none';
@@ -3105,10 +3105,12 @@ function updateSummary(options = {}) {
   const leatherCost = Math.round(sizeDs * (leatherDsP || NUMER_DS_PRICE));
 
   let opts = 0;
-  ['ring','metal','pen','coin','stamp'].forEach(k => opts += Math.round((prices[k]||0) * optionMultiplier));
+  const optionMultiplierEased = 1.0 + (optionMultiplier - 1.0) / 2; // 面積比の増分を半分に緩和（2026-07-09変更）
+  ['ring','metal','coin','stamp'].forEach(k => opts += Math.round((prices[k]||0) * optionMultiplierEased));
+  opts += Math.round(prices.pen||0); // ペンホルダーは固定額・サイズ倍率非適用（2026-07-09変更）
   opts += (prices.stitchColor||0); // ステッチ色は無料オプションのため倍率非適用
   opts += sideCost(freePocket) + sideCost(innerPocketSide) + sideCost(slitSide) + dkanCost + wrappingCost
-        + Math.round(cardPCC * 1000 * optionMultiplier)
+        + Math.round(cardPCC * 1000) // カードポケットは固定額・サイズ倍率非適用（2026-07-09変更）
         + flapPrice
         + sideCount(window._clearWindowSide) * 3000
         + sideCount(window._patchworkSide)   * 5000;
@@ -3178,9 +3180,9 @@ function updateSummary(options = {}) {
     if (!sel.leather) {
       add('革素材', '革を選択してください');
     }
-    if(sel.ring)  add(`リング: ${sel.ring}`, prices.ring ? `+¥${Math.round(prices.ring * optionMultiplier).toLocaleString()}` : '標準');
+    if(sel.ring)  add(`リング: ${sel.ring}`, prices.ring ? `+¥${Math.round(prices.ring * optionMultiplierEased).toLocaleString()}` : '標準');
     if(sel.ringStockText) add('リング在庫', sel.ringStockText);
-    if(sel.metal) add(`金具: ${sel.metal}`, prices.metal ? `+¥${Math.round(prices.metal * optionMultiplier).toLocaleString()}` : '標準');
+    if(sel.metal) add(`金具: ${sel.metal}`, prices.metal ? `+¥${Math.round(prices.metal * optionMultiplierEased).toLocaleString()}` : '標準');
     if(sel.metalStockText) add('金具在庫', sel.metalStockText);
     const colorComponents = getActiveColorComponents();
     if (colorComponents.length > 0) {
@@ -3195,13 +3197,13 @@ function updateSummary(options = {}) {
     if(dkanCost > 0)               add(`Dカン取り付け×${dkanCount}`, `+¥${dkanCost.toLocaleString()}`);
     if(freePocket !== 'none')     add(`フリーポケット(${sideLabel(freePocket)})`,   `+¥${sideCost(freePocket).toLocaleString()}`);
     if(innerPocketSide !== 'none') add(`あおりポケット(${sideLabel(innerPocketSide)})`, `+¥${sideCost(innerPocketSide).toLocaleString()}`);
-    if(cardPCC > 0)              add(`カードポケット×${cardPCC}`, `+¥${Math.round(cardPCC * 1000 * optionMultiplier).toLocaleString()}`);
+    if(cardPCC > 0)              add(`カードポケット×${cardPCC}`, `+¥${Math.round(cardPCC * 1000).toLocaleString()}`);
     if(slitSide !== 'none')      add(`スリット加工(${sideLabel(slitSide)})`, `+¥${sideCost(slitSide).toLocaleString()}`);
     if(window._clearWindowSide !== 'none') add(`クリア窓枠(${sideLabel(window._clearWindowSide)})`, `+¥${(sideCount(window._clearWindowSide)*3000).toLocaleString()}`);
     if(window._patchworkSide   !== 'none') add(`パッチワーク加工(${sideLabel(window._patchworkSide)})`,   `+¥${(sideCount(window._patchworkSide)*5000).toLocaleString()}`);
-    if(sel.pen  && sel.pen  !== 'ペンホルダー なし') add(`ペンホルダー: ${sel.pen}`,  `+¥${Math.round(prices.pen * optionMultiplier).toLocaleString()}`);
-    if(sel.coin && prices.coin > 0)      add('小銭入れ', `+¥${Math.round(prices.coin * optionMultiplier).toLocaleString()}`);
-    if(sel.stamp && sel.stamp !== 'なし')              add(`刻印: ${sel.stamp}`, `+¥${Math.round(prices.stamp * optionMultiplier).toLocaleString()}`);
+    if(sel.pen  && sel.pen  !== 'ペンホルダー なし') add(`ペンホルダー: ${sel.pen}`,  `+¥${Math.round(prices.pen||0).toLocaleString()}`);
+    if(sel.coin && prices.coin > 0)      add('小銭入れ', `+¥${Math.round(prices.coin * optionMultiplierEased).toLocaleString()}`);
+    if(sel.stamp && sel.stamp !== 'なし')              add(`刻印: ${sel.stamp}`, `+¥${Math.round(prices.stamp * optionMultiplierEased).toLocaleString()}`);
     if(prices.brandInitFee > 0) add(`✨ 初度設計費・構造設計（1回のみ）`, `+¥${prices.brandInitFee.toLocaleString()}`);
     if(prices.initDesignFee > 0) add(`✨ 初度設計費・刻印デザイン（1回のみ）`, `+¥${prices.initDesignFee.toLocaleString()}`);
     if(initDesignFee > 1000) add(`　初度設計費 合計`, `+¥${initDesignFee.toLocaleString()}`);
