@@ -2446,6 +2446,8 @@ function nsfOpenStaffChat(staffId) {
     var DIAG_Y = 200;     // 斜め移動の縦成分（進捗0→1で -100px→+100px。スマホは縮小）
 
     function layout() {
+      // スマホは画面が低いため斜め成分を抑える（ステージ余白も@mediaで縮小済み）
+      DIAG_Y = window.innerWidth < 768 ? 110 : 200;
       var slideW = slides[0] ? slides[0].getBoundingClientRect().width : 300;
       // 先頭・最後尾のカードも必ずステージ中央（＝最大サイズ）を通過するレンジ
       totalShift = Math.max(0, grid.scrollWidth - slideW);
@@ -2474,8 +2476,9 @@ function nsfOpenStaffChat(staffId) {
       slides.forEach(function (s) {
         var r = s.getBoundingClientRect();
         var t = Math.max(0, 1 - Math.abs(r.left + r.width / 2 - centerX) / denom);
-        s.style.transform = 'scale(' + (0.70 + t * 0.45).toFixed(3) + ')';
-        s.style.opacity = (0.4 + t * 0.6).toFixed(3);
+        s.style.transform = 'scale(' + (0.55 + t * 0.73).toFixed(3) + ')';
+        s.style.opacity = (0.35 + t * 0.65).toFixed(3);
+        s.style.zIndex = String(1 + Math.round(t * 10)); // 拡大で重なった際は中央のカードを手前に
       });
     }
 
