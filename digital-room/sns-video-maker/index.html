@@ -145,6 +145,13 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
         <h2>動画全体のメモ</h2>
         <p class="help">ここは編集用メモです。サイトへ自動公開されません。ただし、作品名と素材・色は完成動画の文字として表示されます。</p>
         <div class="field">
+          <label for="productNamePreset">作品名プリセット</label>
+          <select id="productNamePreset">
+            <option value="">手入力の作品名を使う</option>
+            <option value="N's factory 作品集">N's factory 作品集</option>
+          </select>
+        </div>
+        <div class="field">
           <label for="productName">作品名（動画内に表示）</label>
           <input id="productName" value="レザー作品" autocomplete="off">
         </div>
@@ -156,10 +163,15 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
           <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
           <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
         </div>
+        <div class="field">
+          <label for="workLongDesc">作品集の長文紹介（日本語）</label>
+          <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに貼り付けます。英語へ変換して見どころメモに入力できます。"></textarea>
+        </div>
         <div class="actions">
           <label class="secondary" for="photoInput">写真を追加</label>
           <input id="photoInput" type="file" accept="image/*" multiple hidden>
           <button class="secondary" id="fillDefaults">空欄に案を入れる</button>
+          <button class="secondary" id="translateFeatureNote">英語に変換して見どころメモへ</button>
         </div>
       </section>
 
@@ -253,6 +265,17 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
 
           <section class="panel">
             <h2>プレビュー・保存</h2>
+            <div class="field">
+              <label for="videoFont">動画内フォント</label>
+              <select id="videoFont">
+                <option value="system">標準ゴシック</option>
+                <option value="serif">上品な明朝</option>
+                <option value="rounded">やわらか丸ゴシック</option>
+                <option value="mincho">和文クラシック</option>
+                <option value="mono">クラフト記録風</option>
+                <option value="english">English clean</option>
+              </select>
+            </div>
             <div class="row">
               <div class="field">
                 <label for="narrationLang">読み上げ言語</label>
@@ -291,9 +314,12 @@ const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
 const SNS_VIDEO_DRIVE_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 const els = {
+  productNamePreset: document.getElementById('productNamePreset'),
   productName: document.getElementById('productName'),
   materialNote: document.getElementById('materialNote'),
   featureNote: document.getElementById('featureNote'),
+  workLongDesc: document.getElementById('workLongDesc'),
+  translateFeatureNote: document.getElementById('translateFeatureNote'),
   photoInput: document.getElementById('photoInput'),
   driveFolder: document.getElementById('driveFolder'),
   driveWorkNo: document.getElementById('driveWorkNo'),
@@ -314,6 +340,7 @@ const els = {
   recordSilent: document.getElementById('recordSilent'),
   recordMic: document.getElementById('recordMic'),
   speakScript: document.getElementById('speakScript'),
+  videoFont: document.getElementById('videoFont'),
   narrationLang: document.getElementById('narrationLang'),
   voiceSelect: document.getElementById('voiceSelect')
 };
@@ -443,6 +470,35 @@ function loadJsonp(url){
   });
 }
 
+async function translateLongDescToFeatureNote(){
+  const source = els.workLongDesc.value.trim() || els.featureNote.value.trim();
+  if(!source){ setLog('作品集の長文紹介を入力してください。'); return; }
+  if(source.length > 1800){ setLog('紹介文が長すぎます。1800文字以内に分けて変換してください。'); return; }
+
+  els.translateFeatureNote.disabled = true;
+  setLog('作品集の長文紹介を英語に変換しています。');
+  try{
+    const url = `${SNS_VIDEO_DRIVE_API}?api=translateSnsMemo&text=${encodeURIComponent(source)}`;
+    const data = await loadJsonp(url);
+    if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || '英語変換に失敗しました。'); }
+    els.featureNote.value = data.translated || '';
+    els.narrationLang.value = 'en-US';
+    populateVoices();
+    fillDefaults();
+    setLog('英語に変換して見どころメモへ入力しました。必要に応じてセリフを整えてください。');
+  }catch(err){
+    setLog(`英語変換に失敗しました: ${err.message}`);
+  }finally{
+    els.translateFeatureNote.disabled = false;
+  }
+}
+
+function applyProductNamePreset(){
+  if(!els.productNamePreset.value) return;
+  els.productName.value = els.productNamePreset.value;
+  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+}
+
 function renderList(){
   els.slides.innerHTML = '';
   if(!slides.length){
@@ -548,7 +604,7 @@ function drawFrame(time){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   if(!slides.length){
     ctx.fillStyle = '#151515'; ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#f7f2ea'; ctx.font = '700 56px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#f7f2ea'; ctx.font = canvasFont(700, 56); ctx.textAlign = 'center';
     ctx.fillText('写真を追加してください', canvas.width/2, canvas.height/2);
     return;
   }
@@ -639,21 +695,21 @@ function drawPhoto(img, motion, progress){
 function drawTexts(slide){
   ctx.textAlign = 'left';
   ctx.fillStyle = '#f7f2ea';
-  ctx.font = '700 40px sans-serif';
+  ctx.font = canvasFont(700, 40);
   ctx.fillText("N's factory", 70, 88);
   ctx.fillStyle = '#c8a878';
   ctx.fillRect(70, 116, 145, 4);
   ctx.textAlign = 'center';
   ctx.fillStyle = '#fff';
-  ctx.font = '700 64px sans-serif';
+  ctx.font = canvasFont(700, 64);
   wrapDraw(els.productName.value || '作品紹介', 540, 175, 880, 74);
   ctx.fillStyle = 'rgba(16,16,16,.86)';
   roundRect(ctx, 66, 1625, 948, 190, 22); ctx.fill();
   ctx.fillStyle = '#fff';
-  ctx.font = '700 48px sans-serif';
+  ctx.font = canvasFont(700, 48);
   wrapDraw(slide.caption || '作品紹介', 540, 1688, 840, 56);
   ctx.fillStyle = '#d7c7b3';
-  ctx.font = '400 27px sans-serif';
+  ctx.font = canvasFont(400, 27);
   wrapDraw(els.materialNote.value || 'leather craft', 540, 1770, 820, 34);
 }
 
@@ -752,6 +808,22 @@ function getSelectedVoice(){
   return speechSynthesis.getVoices().find(voice => voice.name === els.voiceSelect.value) || null;
 }
 
+function canvasFont(weight, size){
+  return `${weight} ${size}px ${videoFontFamily()}`;
+}
+
+function videoFontFamily(){
+  const families = {
+    system: '-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif',
+    serif: '"Yu Mincho","Hiragino Mincho ProN","Times New Roman",serif',
+    rounded: '"Yu Gothic","Hiragino Maru Gothic ProN","Arial Rounded MT Bold",sans-serif',
+    mincho: '"Hiragino Mincho ProN","Yu Mincho",serif',
+    mono: '"Cascadia Mono","Consolas","Courier New",monospace',
+    english: '"Segoe UI","Helvetica Neue",Arial,sans-serif'
+  };
+  return families[els.videoFont.value] || families.system;
+}
+
 function canRecordVideo(){
   return typeof MediaRecorder !== 'undefined' && typeof canvas.captureStream === 'function';
 }
@@ -808,6 +880,8 @@ function wrapDraw(text,x,y,maxWidth,lineHeight){
 
 els.photoInput.addEventListener('change', event => addFiles(event.target.files));
 els.loadDrivePhotos.addEventListener('click', addDrivePhotos);
+els.translateFeatureNote.addEventListener('click', translateLongDescToFeatureNote);
+els.productNamePreset.addEventListener('change', applyProductNamePreset);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
 document.getElementById('playPreview').addEventListener('click', () => playTimeline(false));
 document.getElementById('speakScript').addEventListener('click', speakScript);
@@ -822,6 +896,7 @@ document.getElementById('removeSlide').addEventListener('click', removeSelected)
 ['productName','materialNote'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
 });
+els.videoFont.addEventListener('change', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
 els.narrationLang.addEventListener('change', populateVoices);
 if('speechSynthesis' in window){
   speechSynthesis.onvoiceschanged = populateVoices;
