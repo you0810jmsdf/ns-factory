@@ -129,13 +129,12 @@ a{color:inherit}
 
 <div class="toast" id="toast"></div>
 
+<script src="assets/js/github-token.js"></script>
 <script>
 (function () {
   'use strict';
 
-  // admin.html と共通のトークン保存キー（設定を1回で共用するため同名にする）
-  var TOKEN_SESSION_KEY = 'nsfactory-ring-admin-github-token';
-  var TOKEN_LOCAL_KEY = 'nsfactory-ring-admin-github-token-local';
+  // トークンは assets/js/github-token.js（NSFGitHubToken・全管理ページ共通）に一元化
   var REPO_OWNER = 'you0810jmsdf';
   var REPO_NAME = 'ns-factory';
   var REPO_BRANCH = 'main';
@@ -167,32 +166,18 @@ a{color:inherit}
     if (dirty) { e.preventDefault(); e.returnValue = ''; }
   });
 
-  // ── GitHubトークン ──
+  // ── GitHubトークン（共通モジュールへ委譲） ──
   function getToken() {
-    try {
-      return sessionStorage.getItem(TOKEN_SESSION_KEY) || localStorage.getItem(TOKEN_LOCAL_KEY) || '';
-    } catch (e) { return ''; }
+    return NSFGitHubToken.get();
   }
   function updateTokenPill() {
     var has = !!getToken();
     tokenPill.textContent = has ? 'GitHub: トークン設定済み' : 'GitHub: トークン未設定';
     tokenPill.className = 'status-pill' + (has ? ' ok' : ' warn');
   }
+  NSFGitHubToken.onChange(updateTokenPill);
   document.getElementById('token-btn').addEventListener('click', function () {
-    var t = prompt('GitHub Personal Access Token（Contents: write 権限）を入力してください。\n空欄でOKすると削除します。', '');
-    if (t === null) return;
-    try {
-      if (t.trim()) {
-        sessionStorage.setItem(TOKEN_SESSION_KEY, t.trim());
-        if (confirm('この端末に保存しますか？（共用PCでは「キャンセル」推奨）')) {
-          localStorage.setItem(TOKEN_LOCAL_KEY, t.trim());
-        }
-      } else {
-        sessionStorage.removeItem(TOKEN_SESSION_KEY);
-        localStorage.removeItem(TOKEN_LOCAL_KEY);
-      }
-    } catch (e) {}
-    updateTokenPill();
+    NSFGitHubToken.prompt();
   });
 
   // ── 読み込み ──

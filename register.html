@@ -704,6 +704,7 @@ textarea{min-height:80px;resize:vertical}
 
 </div><!-- /page-body -->
 
+<script src="assets/js/github-token.js"></script>
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 // 認証は SHA-256 ハッシュ照合（平文はコードに置かない）。
@@ -1692,9 +1693,7 @@ function resetAll() {
 const MAT_GITHUB_OWNER = 'you0810jmsdf';
 const MAT_GITHUB_REPO = 'ns-factory';
 const MAT_GITHUB_BRANCH = 'main';
-// admin.html（order_estimate/admin.html）とトークン保存キーを共有する
-const MAT_TOKEN_SESSION_KEY = 'nsfactory-ring-admin-github-token';
-const MAT_TOKEN_LOCAL_KEY = 'nsfactory-ring-admin-github-token-local';
+// トークンは assets/js/github-token.js（NSFGitHubToken）経由で admin.html 等と共有する
 const MAT_FILES = {
   leather: 'order_estimate/leather-stock.csv',
   ring: 'order_estimate/ring-price-stock.csv',
@@ -1877,23 +1876,15 @@ function matSummaryText() {
 }
 
 // --- GitHub Contents API ---
+// トークンの保存・取得・設定UIは assets/js/github-token.js（NSFGitHubToken・全管理ページ共通）に一元化
 function matGetToken() {
-  try {
-    return sessionStorage.getItem(MAT_TOKEN_SESSION_KEY) || localStorage.getItem(MAT_TOKEN_LOCAL_KEY) || '';
-  } catch (e) { return ''; }
+  return NSFGitHubToken.get();
 }
 async function matEnsureToken() {
   let t = matGetToken();
   if (t) return t;
-  t = (prompt('在庫CSV更新用の GitHub トークン（Contents: read/write）を入力してください。\nadmin.html の「GitHubトークン設定」で保存済みなら、同じブラウザでは自動で使われます。') || '').trim();
-  if (!t) return '';
-  try {
-    sessionStorage.setItem(MAT_TOKEN_SESSION_KEY, t);
-    if (confirm('このブラウザにトークンを保存しますか？（次回から入力不要・admin.html と共有）')) {
-      localStorage.setItem(MAT_TOKEN_LOCAL_KEY, t);
-    }
-  } catch (e) {}
-  return t;
+  await NSFGitHubToken.prompt();
+  return matGetToken();
 }
 function matB64ToUtf8(b64) {
   const bin = atob(String(b64).replace(/\n/g, ''));
