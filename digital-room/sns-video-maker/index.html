@@ -256,6 +256,17 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
                 </select>
               </div>
             </div>
+            <div class="field">
+              <label for="subtitleMotion">ナレーション字幕の動き</label>
+              <select id="subtitleMotion">
+                <option value="fadeUp">ふわっと下から表示</option>
+                <option value="typewriter">タイプ表示</option>
+                <option value="pop">一文字ずつポップ</option>
+                <option value="highlight">読み進みハイライト</option>
+                <option value="slideIn">横からスライド</option>
+                <option value="none">表示しない</option>
+              </select>
+            </div>
             <div class="actions">
               <button class="secondary" id="moveUp">上へ</button>
               <button class="secondary" id="moveDown">下へ</button>
@@ -332,6 +343,7 @@ const els = {
   transitionDuration: document.getElementById('transitionDuration'),
   motion: document.getElementById('motion'),
   transition: document.getElementById('transition'),
+  subtitleMotion: document.getElementById('subtitleMotion'),
   currentScript: document.getElementById('currentScript'),
   progressBar: document.getElementById('progressBar'),
   log: document.getElementById('log'),
@@ -389,7 +401,8 @@ function addFiles(files){
         duration: 3.5,
         transitionDuration: .6,
         motion: ['zoomIn','panLeft','zoomOut','panRight'][index % 4],
-        transition: ['fade','wipeLeft','fade','slideLeft'][index % 4]
+        transition: ['fade','wipeLeft','fade','slideLeft'][index % 4],
+        subtitleMotion: ['fadeUp','typewriter','highlight','pop'][index % 4]
       });
       selected = slides.length - 1;
       renderList();
@@ -439,7 +452,8 @@ function addDataUrlPhotos(photos){
         duration: 3.5,
         transitionDuration: .7,
         motion: ['zoomIn','panLeft','zoomOut','panRight'][index % 4],
-        transition: ['fade','wipeLeft','fade','slideLeft'][index % 4]
+        transition: ['fade','wipeLeft','fade','slideLeft'][index % 4],
+        subtitleMotion: ['fadeUp','typewriter','highlight','pop'][index % 4]
       });
       selected = slides.length - 1;
       renderList();
@@ -524,6 +538,7 @@ function loadSelected(){
   els.transitionDuration.value = slide.transitionDuration;
   els.motion.value = slide.motion;
   els.transition.value = slide.transition;
+  els.subtitleMotion.value = slide.subtitleMotion || 'fadeUp';
   els.currentScript.textContent = slide.narration || 'この写真のセリフは空です。';
 }
 
@@ -536,6 +551,7 @@ function saveSelected(){
   slide.transitionDuration = clamp(parseFloat(els.transitionDuration.value) || .6, .1, 2);
   slide.motion = els.motion.value;
   slide.transition = els.transition.value;
+  slide.subtitleMotion = els.subtitleMotion.value;
 }
 
 function fillDefaults(){
@@ -653,12 +669,18 @@ function easeInOut(value){
   return p * p * (3 - 2 * p);
 }
 
+function easeOut(value){
+  const p = clamp(value, 0, 1);
+  return 1 - Math.pow(1 - p, 3);
+}
+
 function drawSlide(slide, progress, alpha){
   ctx.save();
   ctx.globalAlpha = alpha;
   drawBackground(slide.img);
   drawPhoto(slide.img, slide.motion, progress);
   drawTexts(slide);
+  drawNarrationSubtitle(slide, progress);
   ctx.restore();
 }
 
@@ -711,6 +733,86 @@ function drawTexts(slide){
   ctx.fillStyle = '#d7c7b3';
   ctx.font = canvasFont(400, 27);
   wrapDraw(els.materialNote.value || 'leather craft', 540, 1770, 820, 34);
+}
+
+function drawNarrationSubtitle(slide, progress){
+  if(!slide.narration || slide.subtitleMotion === 'none') return;
+  const motion = slide.subtitleMotion || 'fadeUp';
+  const text = trimSubtitle(slide.narration);
+  const p = easeOut(clamp(progress, 0, 1));
+  const box = {x:88, y:1390, w:904, h:170};
+  ctx.save();
+
+  if(motion === 'fadeUp'){
+    ctx.globalAlpha *= clamp(progress / .32, 0, 1);
+    drawSubtitleBox(box.x, box.y + (1 - p) * 38, box.w, box.h);
+    drawSubtitleText(text, box.x + box.w / 2, box.y + 54 + (1 - p) * 38, box.w - 96, '#fff');
+  }else if(motion === 'typewriter'){
+    const visible = text.slice(0, Math.max(1, Math.ceil(text.length * p)));
+    drawSubtitleBox(box.x, box.y, box.w, box.h);
+    drawSubtitleText(visible, box.x + box.w / 2, box.y + 54, box.w - 96, '#fff');
+  }else if(motion === 'pop'){
+    drawSubtitleBox(box.x, box.y, box.w, box.h);
+    const scale = .92 + Math.sin(Math.min(progress, .5) / .5 * Math.PI) * .1;
+    ctx.translate(box.x + box.w / 2, box.y + 88);
+    ctx.scale(scale, scale);
+    drawSubtitleText(text, 0, -34, box.w - 96, '#fff');
+  }else if(motion === 'highlight'){
+    drawSubtitleBox(box.x, box.y, box.w, box.h);
+    drawSubtitleHighlight(text, box.x + box.w / 2, box.y + 54, box.w - 96, p);
+  }else if(motion === 'slideIn'){
+    ctx.globalAlpha *= clamp(progress / .28, 0, 1);
+    const dx = (1 - p) * -140;
+    drawSubtitleBox(box.x + dx, box.y, box.w, box.h);
+    drawSubtitleText(text, box.x + box.w / 2 + dx, box.y + 54, box.w - 96, '#fff');
+  }
+
+  ctx.restore();
+}
+
+function drawSubtitleBox(x,y,w,h){
+  ctx.save();
+  ctx.fillStyle = 'rgba(8,8,8,.72)';
+  roundRect(ctx, x, y, w, h, 24);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.14)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSubtitleText(text,x,y,maxWidth,color){
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = color;
+  ctx.font = canvasFont(700, 34);
+  drawCenteredLines(wrapTextLines(text, maxWidth, 2), x, y, 44);
+  ctx.restore();
+}
+
+function drawSubtitleHighlight(text,x,y,maxWidth,progress){
+  const lines = wrapTextLines(text, maxWidth, 2);
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.font = canvasFont(700, 34);
+  ctx.fillStyle = 'rgba(255,255,255,.42)';
+  drawCenteredLines(lines, x, y, 44);
+  const joined = lines.join('\n');
+  const highlightLength = Math.ceil(joined.length * progress);
+  let used = 0;
+  ctx.fillStyle = '#f6d089';
+  lines.forEach((line, index) => {
+    const remain = highlightLength - used;
+    if(remain <= 0) return;
+    const part = line.slice(0, Math.min(line.length, remain));
+    ctx.fillText(part, x - ctx.measureText(line).width / 2 + ctx.measureText(part).width / 2, y + index * 44);
+    used += line.length + 1;
+  });
+  ctx.restore();
+}
+
+function drawCenteredLines(lines,x,y,lineHeight){
+  lines.forEach((line, index) => ctx.fillText(line, x, y + index * lineHeight));
 }
 
 function playTimeline(recordStream){
@@ -824,6 +926,32 @@ function videoFontFamily(){
   return families[els.videoFont.value] || families.system;
 }
 
+function trimSubtitle(text){
+  const normalized = String(text).replace(/\s+/g, ' ').trim();
+  return normalized.length > 96 ? `${normalized.slice(0, 95)}…` : normalized;
+}
+
+function wrapTextLines(text,maxWidth,maxLines){
+  const chars = [...String(text)];
+  const lines = [];
+  let line = '';
+  for(const ch of chars){
+    const next = line + ch;
+    if(ctx.measureText(next).width > maxWidth && line){
+      lines.push(line);
+      line = ch;
+      if(lines.length >= maxLines) break;
+    }else{
+      line = next;
+    }
+  }
+  if(line && lines.length < maxLines) lines.push(line);
+  if(lines.length === maxLines && chars.join('').length > lines.join('').length){
+    lines[maxLines - 1] = `${lines[maxLines - 1].replace(/…?$/, '').slice(0, -1)}…`;
+  }
+  return lines;
+}
+
 function canRecordVideo(){
   return typeof MediaRecorder !== 'undefined' && typeof canvas.captureStream === 'function';
 }
@@ -890,7 +1018,7 @@ document.getElementById('recordMic').addEventListener('click', () => recordVideo
 document.getElementById('moveUp').addEventListener('click', () => moveSelected(-1));
 document.getElementById('moveDown').addEventListener('click', () => moveSelected(1));
 document.getElementById('removeSlide').addEventListener('click', removeSelected);
-['caption','narration','duration','transitionDuration','motion','transition'].forEach(id => {
+['caption','narration','duration','transitionDuration','motion','transition','subtitleMotion'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => { saveSelected(); renderList(); drawFrame(selected >= 0 ? timelineStart(selected) : 0); });
 });
 ['productName','materialNote'].forEach(id => {
