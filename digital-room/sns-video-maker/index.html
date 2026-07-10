@@ -147,23 +147,23 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
     <aside>
       <section class="panel">
         <h2>動画全体のメモ</h2>
-        <p class="help">ここは編集用メモです。サイトへ自動公開されません。ただし、作品名と素材・色は動画上方の情報として表示されます。</p>
+        <p class="help">ここは編集用メモです。サイトへ自動公開されません。ただし、作品名と素材・サイズ等は動画下方の情報として表示されます。</p>
         <div class="field">
-          <label for="productNamePreset">作品名プリセット（動画上方の情報）</label>
+          <label for="productNamePreset">作品名プリセット（作品集から選択）</label>
           <select id="productNamePreset">
-            <option value="">手入力の作品名を使う</option>
+            <option value="">作品集を読み込み中 / 手入力</option>
             <option value="N's factory 作品集">N's factory 作品集</option>
           </select>
         </div>
         <div class="field">
-          <label for="productName">作品名（動画上方の情報）</label>
+          <label for="productName">作品名（動画下方の情報）</label>
           <input id="productName" value="レザー作品" autocomplete="off">
         </div>
         <div class="field">
-          <label for="materialNote">素材・色（動画上方の情報）</label>
+          <label for="materialNote">素材・サイズ等（動画下方の情報）</label>
           <input id="materialNote" list="materialStockList" value="革の質感と手仕事の仕立て" autocomplete="off">
           <datalist id="materialStockList"></datalist>
-          <p class="help">在庫リストから候補を選べます。動画には入力欄の文字だけ表示します。</p>
+          <p class="help">作品集から自動入力します。手入力時は在庫リストの候補も選べます。</p>
         </div>
         <div class="field">
           <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
@@ -171,7 +171,7 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
         </div>
         <div class="field">
           <label for="workLongDesc">作品集の長文紹介（日本語）</label>
-          <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに貼り付けます。英語へ変換して見どころメモに入力できます。"></textarea>
+          <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに取得します。英語へ変換して見どころメモに入力できます。"></textarea>
         </div>
         <div class="actions">
           <label class="secondary" for="photoInput">写真を追加</label>
@@ -334,6 +334,7 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
 const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
 const SNS_VIDEO_DRIVE_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+const LIVE_WORKS_API = `${SNS_VIDEO_DRIVE_API}?api=products`;
 const LEATHER_STOCK_CSV = '../../order_estimate/leather-stock.csv';
 const els = {
   productNamePreset: document.getElementById('productNamePreset'),
@@ -379,6 +380,9 @@ let chunks = [];
 let speechTimers = [];
 let activeUtterance = null;
 let draggedSlideIndex = null;
+let worksCatalog = [];
+let worksCatalogPromise = null;
+let currentWork = null;
 
 function setLog(message){ els.log.textContent = message; }
 
@@ -440,8 +444,19 @@ async function addDrivePhotos(){
     const data = await loadJsonp(url);
     if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || 'Drive写真を取得できませんでした。'); }
     if(!data.photos || !data.photos.length){ setLog(`作品番号 ${workNo} の写真が見つかりませんでした。`); return; }
-    addDataUrlPhotos(data.photos);
-    setLog(`Driveから ${data.photos.length} 枚追加しました。`);
+    await addDataUrlPhotos(data.photos);
+    const matchedWork = await applyWorkInfoFromDriveData(data, workNo);
+    if(matchedWork && matchedWork.longDesc){
+      setLog(`Driveから ${data.photos.length} 枚追加しました。作品集「${matchedWork.title}」の長文紹介を英語へ変換しています。`);
+      const translated = await translateLongDescToFeatureNote({source: matchedWork.longDesc, showLog:false});
+      setLog(translated
+        ? `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報と長文英訳を反映しました。`
+        : `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。長文英訳は手動で再実行してください。`);
+    }else if(matchedWork){
+      setLog(`Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。`);
+    }else{
+      setLog(`Driveから ${data.photos.length} 枚追加しました。作品集の一致情報は見つかりませんでした。`);
+    }
   }catch(err){
     setLog(`Drive写真の取得に失敗しました: ${err.message}`);
   }finally{
@@ -450,7 +465,7 @@ async function addDrivePhotos(){
 }
 
 function addDataUrlPhotos(photos){
-  photos.forEach(photo => {
+  return Promise.all(photos.map(photo => new Promise(resolve => {
     const img = new Image();
     const url = photo.dataUrl;
     const index = slides.length;
@@ -472,9 +487,11 @@ function addDataUrlPhotos(photos){
       renderList();
       loadSelected();
       drawFrame(0);
+      resolve();
     };
+    img.onerror = () => resolve();
     img.src = url;
-  });
+  })));
 }
 
 function loadJsonp(url){
@@ -497,13 +514,15 @@ function loadJsonp(url){
   });
 }
 
-async function translateLongDescToFeatureNote(){
-  const source = els.workLongDesc.value.trim() || els.featureNote.value.trim();
-  if(!source){ setLog('作品集の長文紹介を入力してください。'); return; }
-  if(source.length > 1800){ setLog('紹介文が長すぎます。1800文字以内に分けて変換してください。'); return; }
+async function translateLongDescToFeatureNote(options = {}){
+  if(options && options.type) options = {};
+  const showLog = options.showLog !== false;
+  const source = String(options.source || els.workLongDesc.value || els.featureNote.value || '').trim();
+  if(!source){ if(showLog) setLog('作品集の長文紹介を入力してください。'); return false; }
+  if(source.length > 1800){ if(showLog) setLog('紹介文が長すぎます。1800文字以内に分けて変換してください。'); return false; }
 
   els.translateFeatureNote.disabled = true;
-  setLog('作品集の長文紹介を英語に変換しています。');
+  if(showLog) setLog('作品集の長文紹介を英語に変換しています。');
   try{
     const url = `${SNS_VIDEO_DRIVE_API}?api=translateSnsMemo&text=${encodeURIComponent(source)}`;
     const data = await loadJsonp(url);
@@ -513,11 +532,15 @@ async function translateLongDescToFeatureNote(){
     els.narrationLang.value = 'en-US';
     populateVoices();
     const distributed = slides.length ? distributeFeatureNoteToSlides({overwrite:true, showLog:false}) : 0;
-    setLog(distributed
-      ? `英語に変換し、${distributed}枚の写真へセリフ案を配分しました。`
-      : `英語に変換し、${targetCount}枚分の見どころメモへ広げました。写真追加後に「見どころメモを写真へ配分」を押してください。`);
+    if(showLog){
+      setLog(distributed
+        ? `英語に変換し、${distributed}枚の写真へセリフ案を配分しました。`
+        : `英語に変換し、${targetCount}枚分の見どころメモへ広げました。写真追加後に「見どころメモを写真へ配分」を押してください。`);
+    }
+    return true;
   }catch(err){
-    setLog(`英語変換に失敗しました: ${err.message}`);
+    if(showLog) setLog(`英語変換に失敗しました: ${err.message}`);
+    return false;
   }finally{
     els.translateFeatureNote.disabled = false;
   }
@@ -525,8 +548,125 @@ async function translateLongDescToFeatureNote(){
 
 function applyProductNamePreset(){
   if(!els.productNamePreset.value) return;
+  if(els.productNamePreset.value.startsWith('work:')){
+    const workId = els.productNamePreset.value.replace(/^work:/, '');
+    const work = worksCatalog.find(item => item.id === workId);
+    if(work) applyWorkInfo(work, {translate:false, showLog:true});
+    return;
+  }
   els.productName.value = els.productNamePreset.value;
   drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+}
+
+async function loadWorksCatalog(){
+  if(worksCatalogPromise) return worksCatalogPromise;
+  worksCatalogPromise = loadJsonp(LIVE_WORKS_API)
+    .then(data => {
+      worksCatalog = Array.isArray(data)
+        ? data.map(normalizeWorkItem).filter(work => work.id && work.title)
+        : [];
+      populateProductNamePresets();
+      return worksCatalog;
+    })
+    .catch(err => {
+      console.warn('Works catalog could not be loaded.', err);
+      const manual = els.productNamePreset.querySelector('option[value=""]');
+      if(manual) manual.textContent = '手入力の作品名を使う';
+      return [];
+    });
+  return worksCatalogPromise;
+}
+
+function normalizeWorkItem(item){
+  return {
+    id: String(item.id || item.name || item.title || '').trim(),
+    title: String(item.name || item.title || item.id || '作品').trim(),
+    category: String(item.category || '').trim(),
+    material: String(item.material || '').trim(),
+    color: String(item.color || '').trim(),
+    size: String(item.size || '').trim(),
+    shortDesc: String(item.shortDesc || '').trim(),
+    longDesc: String(item.longDesc || '').trim(),
+    folderId: String(item.folderId || '').trim()
+  };
+}
+
+function populateProductNamePresets(){
+  const current = els.productNamePreset.value;
+  els.productNamePreset.innerHTML = '';
+  const manual = document.createElement('option');
+  manual.value = '';
+  manual.textContent = worksCatalog.length ? '手入力の作品名を使う' : '作品集を読み込み中 / 手入力';
+  els.productNamePreset.appendChild(manual);
+  const collection = document.createElement('option');
+  collection.value = "N's factory 作品集";
+  collection.textContent = "N's factory 作品集";
+  els.productNamePreset.appendChild(collection);
+  worksCatalog.forEach(work => {
+    const option = document.createElement('option');
+    option.value = `work:${work.id}`;
+    option.textContent = `${work.id} / ${work.title}`;
+    els.productNamePreset.appendChild(option);
+  });
+  if(current && [...els.productNamePreset.options].some(option => option.value === current)){
+    els.productNamePreset.value = current;
+  }
+}
+
+async function applyWorkInfoFromDriveData(data, workNo){
+  await loadWorksCatalog();
+  const work = findWorkForDriveData(data, workNo);
+  if(!work) return null;
+  applyWorkInfo(work, {translate:false, showLog:false});
+  return work;
+}
+
+function findWorkForDriveData(data, workNo){
+  if(!worksCatalog.length) return null;
+  const photos = (data && data.photos) || [];
+  const texts = [data && data.folderId, data && data.folderName, workNo]
+    .concat(photos.flatMap(photo => [photo.folderId, photo.folderName, photo.name]))
+    .filter(Boolean)
+    .map(value => String(value));
+  const folderIds = new Set(texts.filter(value => /^[a-zA-Z0-9_-]{20,}$/.test(value)));
+  const byFolder = worksCatalog.find(work => work.folderId && folderIds.has(work.folderId));
+  if(byFolder) return byFolder;
+
+  const ids = new Set();
+  texts.forEach(text => {
+    (text.match(/NF\d{4}[_-]?\d+/gi) || []).forEach(id => ids.add(id.replace('-', '_').toUpperCase()));
+  });
+  const byId = worksCatalog.find(work => ids.has(work.id.toUpperCase()));
+  if(byId) return byId;
+
+  const digits = String(workNo || '').replace(/\D/g, '');
+  if(digits){
+    const normalized = String(parseInt(digits, 10));
+    return worksCatalog.find(work => {
+      const suffix = (work.id.match(/\d+$/) || [''])[0];
+      return suffix && String(parseInt(suffix, 10)) === normalized;
+    }) || null;
+  }
+  return null;
+}
+
+function applyWorkInfo(work, {translate = false, showLog = false} = {}){
+  currentWork = work;
+  els.productName.value = work.title || 'レザー作品';
+  els.materialNote.value = formatWorkMeta(work);
+  if(work.shortDesc) els.featureNote.value = work.shortDesc;
+  if(work.longDesc) els.workLongDesc.value = work.longDesc;
+  const presetValue = `work:${work.id}`;
+  if([...els.productNamePreset.options].some(option => option.value === presetValue)){
+    els.productNamePreset.value = presetValue;
+  }
+  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  if(showLog) setLog(`作品集「${work.title}」の情報を反映しました。`);
+  if(translate && work.longDesc) translateLongDescToFeatureNote({source: work.longDesc});
+}
+
+function formatWorkMeta(work){
+  return compact([work.material, work.color, work.size, work.category]) || '作品集の素材・サイズ情報';
 }
 
 function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
@@ -823,16 +963,16 @@ function drawTexts(slide){
   ctx.fillStyle = '#c8a878';
   ctx.fillRect(70, 116, 145, 4);
 
-  ctx.fillStyle = 'rgba(16,16,16,.70)';
-  roundRect(ctx, 60, 146, 960, 138, 22);
+  ctx.fillStyle = 'rgba(16,16,16,.82)';
+  roundRect(ctx, 66, 1584, 948, 220, 22);
   ctx.fill();
   ctx.textAlign = 'center';
   ctx.fillStyle = '#fff';
-  ctx.font = canvasFont(700, 54);
-  wrapDraw(els.productName.value || '作品紹介', 540, 198, 860, 62);
+  ctx.font = canvasFont(700, 48);
+  wrapDraw(els.productName.value || '作品紹介', 540, 1652, 840, 56);
   ctx.fillStyle = '#d7c7b3';
-  ctx.font = canvasFont(500, 28);
-  wrapDraw(els.materialNote.value || 'leather craft', 540, 260, 820, 34);
+  ctx.font = canvasFont(500, 29);
+  wrapDraw(els.materialNote.value || 'leather craft', 540, 1734, 820, 36);
 }
 
 function drawNarrationSubtitle(slide, progress){
@@ -1301,6 +1441,7 @@ function refreshCapabilities(){
 function motionLabel(value){
   return {zoomIn:'ズームイン',zoomOut:'ズームアウト',panLeft:'左へパン',panRight:'右へパン',panUp:'上へパン',panDown:'下へパン',still:'静止'}[value] || value;
 }
+function compact(values){ return values.map(value => String(value || '').trim()).filter(Boolean).join(' / '); }
 function clamp(value,min,max){ return Math.min(max, Math.max(min, value)); }
 function safeFileName(value){ return value.replace(/[\\/:*?"<>|]/g,'_').trim() || 'sns-video-maker'; }
 function escapeHtml(value){ return value.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
@@ -1373,6 +1514,7 @@ if('speechSynthesis' in window){
   populateVoices();
 }
 renderList();
+loadWorksCatalog();
 loadLeatherStock();
 drawFrame(0);
 refreshCapabilities();
