@@ -12,6 +12,7 @@ Disallow: /digital-room/
 Disallow: /pr-room/
 
 # 内部運用ツール
+Disallow: /staff-knowledge-admin.html
 Disallow: /register.html
 Disallow: /senryaku-shijisho.html
 Disallow: /senryaku-shijisho.md

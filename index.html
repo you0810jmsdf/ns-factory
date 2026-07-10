@@ -1178,6 +1178,202 @@ h1,h2,h3{
   .nav-cta{font-size:12px;padding:6px 10px}
   .nav-link--guide{display:none}
 }
+
+/* ── Scroll Reveal（スクロール連動の上品な出現演出） ── */
+.reveal{
+  opacity:0;transform:translateY(26px);
+  transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1);
+  will-change:opacity,transform;
+}
+.reveal.is-visible{opacity:1;transform:none}
+.hero-photo img{will-change:transform}
+@media (prefers-reduced-motion: reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .hero-photo img{transform:none !important}
+}
+
+/* ── 幕僚セリフ吹き出し ── */
+.staff-quote{
+  position:relative;
+  background:var(--color-accent-light);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  padding:10px 12px;
+  font-size:12.5px;line-height:1.65;color:var(--color-text);
+  margin-bottom:10px;cursor:pointer;
+  transition:background var(--transition-base);
+}
+.staff-quote:hover{background:#EDE2D5}
+.staff-quote::before{
+  content:'';position:absolute;top:-7px;left:22px;
+  border:7px solid transparent;border-top:none;
+  border-bottom:7px solid var(--color-accent-light);
+}
+.staff-quote .sq-hint{display:block;margin-top:4px;font-size:10px;color:var(--color-text-mute)}
+.staff-chat-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:10px;padding:8px 14px;
+  background:var(--color-primary);color:#fff;
+  border:none;border-radius:var(--radius-full);
+  font-size:12px;font-weight:600;cursor:pointer;
+  font-family:inherit;
+  transition:opacity var(--transition-base),transform var(--transition-base);
+}
+.staff-chat-btn:hover{opacity:.85;transform:translateY(-1px)}
+
+/* ── AI Concierge（幕僚AI訴求帯） ── */
+.ai-concierge{
+  background:linear-gradient(135deg,#1c1410 0%,#3d2a1c 60%,#5a3c26 100%);
+  color:#fff;
+}
+.ai-concierge .section-label{color:#e8c9a8}
+.ai-concierge .section-title{color:#fff}
+.ai-concierge p.ai-lead{
+  font-size:14px;line-height:1.9;color:rgba(255,255,255,.72);
+  max-width:640px;margin-bottom:28px;
+}
+.ai-concierge-actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px}
+.ai-tip-box{
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(232,201,168,.3);
+  border-radius:var(--radius-md);
+  padding:14px 18px;max-width:640px;
+  font-size:12.5px;line-height:1.8;color:rgba(255,255,255,.85);
+}
+.ai-tip-box .ai-tip-label{
+  display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.08em;
+  color:#e8c9a8;margin-bottom:4px;
+}
+
+/* ── フローティングチャットボタン ── */
+.chat-fab{
+  position:fixed;right:20px;bottom:20px;z-index:3000;
+  display:flex;align-items:center;gap:8px;
+  padding:12px 18px;
+  background:linear-gradient(180deg,#dcbd85,#c9a96a);
+  color:#2a1e10;border:none;border-radius:var(--radius-full);
+  font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;
+  box-shadow:0 6px 24px rgba(0,0,0,.25);
+  opacity:0;transform:translateY(12px);pointer-events:none;
+  transition:opacity .4s ease,transform .4s ease,filter .15s ease;
+}
+.chat-fab.show{opacity:1;transform:none;pointer-events:auto}
+.chat-fab:hover{filter:brightness(1.06)}
+@media (prefers-reduced-motion: reduce){.chat-fab{transition:none}}
+
+/* ── AIチャットオーバーレイ（works.html の実装を流用） ── */
+.oc-widget{
+  --oc-accent:#c9a96a;
+  --oc-gold-bright:#e8cf9a;
+  --oc-panel-line:rgba(212,180,120,0.40);
+  --oc-panel-text:#f3e9d8;
+  --oc-panel-sub:#bfae8e;
+}
+#oc-overlay{
+  display:none;position:fixed;inset:0;z-index:4000;
+  background:rgba(10,8,5,0.72);
+  align-items:center;justify-content:center;padding:24px;
+}
+#oc-overlay.oc-overlay-open{display:flex}
+.oc-overlay-panel{
+  width:min(920px,96vw);height:min(88vh,880px);
+  background:rgba(40,30,20,0.97);
+  border:1px solid var(--oc-panel-line);border-radius:14px;
+  padding:16px;display:flex;flex-direction:column;gap:8px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+}
+.oc-overlay-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.oc-overlay-staff{display:flex;align-items:center;gap:10px;min-width:0}
+.oc-overlay-staff img{
+  width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:top;
+  border:1.5px solid var(--oc-accent);background:#3a2d20;flex-shrink:0;
+}
+.oc-overlay-staff .oc-staff-name{font-size:14px;font-weight:700;color:var(--oc-gold-bright)}
+.oc-overlay-staff .oc-staff-note{display:block;font-size:10.5px;color:var(--oc-panel-sub)}
+.oc-overlay-close{
+  flex-shrink:0;width:34px;height:34px;border-radius:50%;
+  border:1px solid var(--oc-panel-line);
+  background:rgba(255,255,255,0.08);color:var(--oc-panel-text);
+  font-size:18px;line-height:1;cursor:pointer;
+}
+.oc-overlay-close:hover{background:rgba(255,255,255,0.16)}
+.oc-widget #chat-area{display:flex;flex:1;min-height:0;flex-direction:column;gap:8px}
+.oc-widget #chat-area.chat-closed{opacity:0.5;pointer-events:none}
+.oc-widget #chat-messages{
+  display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;
+  overflow-y:auto;padding:4px 2px;
+}
+.oc-widget .chat-msg{display:flex;gap:8px;max-width:92%}
+.oc-widget .chat-msg.user{align-self:flex-end}
+.oc-widget .chat-msg.staff{align-self:flex-start}
+.oc-widget .chat-avatar{
+  width:30px;height:30px;border-radius:50%;object-fit:cover;object-position:top;
+  border:1.5px solid var(--oc-accent);background:#3a2d20;flex-shrink:0;margin-top:2px;
+}
+.oc-widget .chat-col{display:flex;flex-direction:column;gap:3px;min-width:0}
+.oc-widget .chat-msg.user .chat-col{align-items:flex-end}
+.oc-widget .chat-meta{display:flex;align-items:baseline;gap:8px;padding:0 2px}
+.oc-widget .chat-name{font-size:11px;font-weight:700;color:var(--oc-gold-bright)}
+.oc-widget .chat-time{font-size:9.5px;color:var(--oc-panel-sub)}
+.oc-widget .chat-bubble{
+  padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.6;
+  word-break:break-all;white-space:pre-line;
+}
+.oc-widget .chat-msg.user .chat-bubble{
+  background:linear-gradient(180deg,#dcbd85,#c9a96a);color:#2a1e10;border-top-right-radius:4px;
+}
+.oc-widget .chat-msg.staff .chat-bubble{
+  background:#ffffff;color:#2a1e10;border:1px solid rgba(212,180,120,0.18);border-top-left-radius:4px;
+}
+.oc-widget .chat-bubble.fallback-notice{font-size:11px;color:var(--oc-panel-sub);background:rgba(255,255,255,0.04)}
+.oc-widget .chat-typing{
+  align-self:flex-start;background:rgba(255,255,255,0.07);
+  padding:8px 14px;border-radius:14px;border-top-left-radius:4px;
+  font-size:16px;letter-spacing:4px;color:var(--oc-panel-sub);
+  border:1px solid rgba(212,180,120,0.18);
+}
+.oc-widget #chat-input-row{display:flex;gap:8px;align-items:flex-end}
+.oc-widget #chat-input{
+  flex:1;padding:9px 14px;border:1px solid var(--oc-panel-line);border-radius:20px;
+  font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.5;
+  max-height:80px;overflow-y:auto;background:rgba(255,255,255,0.07);color:var(--oc-panel-text);
+}
+.oc-widget #chat-input::placeholder{color:var(--oc-panel-sub)}
+.oc-widget #chat-input:focus{border-color:var(--oc-gold-bright)}
+.oc-widget #chat-send{
+  flex-shrink:0;width:40px;height:40px;
+  background:linear-gradient(180deg,#dcbd85,#c9a96a);color:#2a1e10;
+  border:none;border-radius:50%;font-size:17px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;line-height:1;
+}
+.oc-widget #chat-send:hover{filter:brightness(1.08)}
+.oc-widget #chat-send:disabled{background:rgba(255,255,255,0.12);color:var(--oc-panel-sub);cursor:default}
+.oc-widget .chat-limit-msg{font-size:12px;color:var(--oc-panel-sub);text-align:center;padding:6px 0;font-style:italic}
+.oc-widget #chat-quick{
+  display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 2px;
+  max-height:220px;overflow-y:auto;flex-shrink:0;
+}
+.oc-widget #chat-quick:empty{display:none}
+.oc-widget .chat-chip{
+  background:rgba(212,180,120,0.10);border:1.5px solid var(--oc-panel-line);
+  color:var(--oc-gold-bright);border-radius:16px;padding:6px 12px;
+  font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;max-width:100%;
+}
+.oc-widget .chat-chip .chip-sub{display:block;font-size:10px;font-weight:400;opacity:.7}
+.oc-widget .chat-chip:hover{background:var(--oc-accent);border-color:var(--oc-accent);color:#2a1e10}
+.oc-widget .chat-chip.chip-exit{border-color:rgba(255,255,255,0.20);color:var(--oc-panel-sub);background:transparent}
+.oc-widget .chat-chip.chip-exit:hover{background:rgba(255,255,255,0.14);color:var(--oc-panel-text)}
+.oc-widget .chat-chip.chip-img{
+  width:92px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 5px 7px;border-radius:10px;text-align:center;
+}
+.oc-widget .chat-chip.chip-img img{width:100%;height:54px;object-fit:cover;border-radius:7px;display:block;background:#3a2d20}
+.oc-widget .chat-chip.chip-img .chip-label{font-size:10.5px;line-height:1.2;word-break:break-word}
+@media (max-width:720px){
+  #oc-overlay{padding:0}
+  .oc-overlay-panel{width:100%;height:100%;border-radius:0}
+  .chat-fab{right:14px;bottom:14px;padding:11px 15px;font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -1296,6 +1492,29 @@ h1,h2,h3{
     <div class="planner-actions">
       <a href="./planner-guide.html" class="btn btn-primary">オーダーガイドを見る →</a>
       <a href="./order_estimate/leather-order-estimate-v2.html" class="btn btn-outline">見積もりシミュレーターを開く</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── AI Concierge（幕僚AIによる接客） ── -->
+<section class="section ai-concierge">
+  <div class="section-inner">
+    <div class="section-header" style="margin-bottom:20px;">
+      <p class="section-label">AI Concierge</p>
+      <h2 class="section-title">幕僚AIが、24時間ご案内します</h2>
+    </div>
+    <p class="ai-lead">
+      N's factory では、個性豊かな10人の幕僚AIが接客を担当。
+      「どのサイズが合う？」「予算内でどこまでできる？」——そんな相談に、いつでもその場でお答えします。
+      下の幕僚紹介から、気になる幕僚に直接話しかけることもできます。
+    </p>
+    <div class="ai-concierge-actions">
+      <button type="button" class="btn btn-primary" onclick="nsfOpenStaffChat('kojinjigyonusi')">💬 いますぐチャットで相談する</button>
+      <a href="./order_estimate/hearing-ai.html" class="btn btn-ghost">🤖 オーダー相談AI（本格ヒアリング）→</a>
+    </div>
+    <div class="ai-tip-box" id="ai-tip-box" hidden>
+      <span class="ai-tip-label" id="ai-tip-label">今日の幕僚メモ</span>
+      <div id="ai-tip-text"></div>
     </div>
   </div>
 </section>
@@ -1957,6 +2176,228 @@ function gateConfidential(e, url) {
       }
     });
   })();
+</script>
+
+<!-- ── フローティングチャットボタン ── -->
+<button type="button" class="chat-fab" id="chat-fab" onclick="nsfOpenStaffChat('kojinjigyonusi')" aria-label="AIスタッフとチャットで相談する">
+  💬 AIスタッフに相談
+</button>
+
+<!-- ── AIチャットオーバーレイ（showroom/chat-widget.js を流用） ── -->
+<div id="oc-overlay" role="dialog" aria-modal="true" aria-label="幕僚AIチャット">
+  <div class="oc-overlay-panel oc-widget">
+    <div class="oc-overlay-head">
+      <div class="oc-overlay-staff">
+        <img id="sc-avatar" src="" alt="担当幕僚">
+        <div>
+          <span class="oc-staff-name" id="sc-name"></span>
+          <span class="oc-staff-note" id="oc-staff-note"></span>
+        </div>
+      </div>
+      <button id="oc-overlay-close" class="oc-overlay-close" type="button" aria-label="閉じる">×</button>
+    </div>
+    <div id="chat-area" class="chat-closed">
+      <div id="chat-messages"></div>
+      <div id="chat-quick"></div>
+      <div id="chat-input-row">
+        <textarea id="chat-input" rows="1" placeholder="メッセージを入力..." maxlength="200"></textarea>
+        <button id="chat-send" aria-label="送信">&#x27A4;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="showroom/data/staffData.js"></script>
+<script src="showroom/data/config.js"></script>
+<script src="showroom/data/staffKnowledge.js"></script>
+<script src="showroom/chat-widget.js"></script>
+<script>
+/* ===== スクロール演出・幕僚セリフ・AIチャット（2026-07-10追加） ===== */
+
+/* --- AIチャット起動（グローバル: onclick から呼ばれる） --- */
+var nsfChatWidgetInstance = null;
+function nsfOpenStaffChat(staffId) {
+  if (!window.NsfChatWidget || !window.SHOWROOM_STAFF) {
+    alert('チャット機能を読み込み中です。少し待ってからもう一度お試しください。');
+    return;
+  }
+  var staff = (window.SHOWROOM_STAFF || []).find(function (s) { return s.id === staffId; });
+  if (!staff) return;
+  var avatar = document.getElementById('sc-avatar');
+  var name = document.getElementById('sc-name');
+  var note = document.getElementById('oc-staff-note');
+  if (avatar) avatar.src = 'showroom/' + staff.image;
+  if (name) name.textContent = staff.name;
+  if (note) note.textContent = (staff.role || '') + '（AIスタッフ）';
+  if (!nsfChatWidgetInstance) nsfChatWidgetInstance = window.NsfChatWidget.mount(document, {});
+  nsfChatWidgetInstance.open(staffId);
+  var area = document.getElementById('chat-area');
+  if (area) area.classList.remove('chat-closed');
+  var overlay = document.getElementById('oc-overlay');
+  if (overlay) overlay.classList.add('oc-overlay-open');
+
+  // トップページ経由（productContextなし）はwidget側が挨拶を出さない仕様のため、
+  // 幕僚ナレッジのセリフで挨拶を表示する（表示のみ・GAS送信回数は消費しない）
+  var msgs = document.getElementById('chat-messages');
+  if (msgs && !msgs.children.length) {
+    var K = window.STAFF_KNOWLEDGE;
+    var st = K && K.staffs && K.staffs[staffId];
+    var quotes = (st && st.quotes && st.quotes.length) ? st.quotes : (staff.lines || []);
+    var hello = quotes.length ? quotes[Math.floor(Math.random() * quotes.length)] : 'いらっしゃいませ。ご質問をどうぞ！';
+    var div = document.createElement('div');
+    div.className = 'chat-msg staff';
+    var av = document.createElement('img');
+    av.className = 'chat-avatar';
+    av.src = 'showroom/' + staff.image;
+    av.alt = '';
+    div.appendChild(av);
+    var col = document.createElement('div');
+    col.className = 'chat-col';
+    var meta = document.createElement('div');
+    meta.className = 'chat-meta';
+    var d = new Date();
+    meta.innerHTML = '<span class="chat-name"></span><span class="chat-time">' +
+      ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + '</span>';
+    meta.querySelector('.chat-name').textContent = staff.name;
+    col.appendChild(meta);
+    var bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+    bubble.textContent = hello + '\nご質問があれば、下の入力欄からお気軽にどうぞ。';
+    col.appendChild(bubble);
+    div.appendChild(col);
+    msgs.appendChild(div);
+  }
+}
+
+(function () {
+  'use strict';
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* --- チャットオーバーレイの閉じる操作 --- */
+  var overlay = document.getElementById('oc-overlay');
+  var closeBtn = document.getElementById('oc-overlay-close');
+  function closeChat() { if (overlay) overlay.classList.remove('oc-overlay-open'); }
+  if (closeBtn) closeBtn.addEventListener('click', closeChat);
+  if (overlay) overlay.addEventListener('click', function (e) { if (e.target === overlay) closeChat(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay && overlay.classList.contains('oc-overlay-open')) closeChat();
+  });
+
+  /* --- フローティングボタン（少しスクロールしたら出現） --- */
+  var fab = document.getElementById('chat-fab');
+  function updateFab() {
+    if (!fab) return;
+    fab.classList.toggle('show', window.scrollY > 360);
+  }
+  window.addEventListener('scroll', updateFab, { passive: true });
+  updateFab();
+
+  /* --- Scroll Reveal（IntersectionObserver・reduced-motion時は無効） --- */
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    var targets = [];
+    document.querySelectorAll(
+      '.section-header,.new-arrival-card,.note-connect-card,.staff-lead,.staff-commander,' +
+      '.ai-lead,.ai-concierge-actions,.ai-tip-box,.planner-note,.planner-actions'
+    ).forEach(function (el) { targets.push(el); });
+    document.querySelectorAll('.planner-grid > .planner-size-card').forEach(function (el, i) {
+      el.style.transitionDelay = (i % 7) * 55 + 'ms'; targets.push(el);
+    });
+    document.querySelectorAll('.staff-grid > *').forEach(function (el, i) {
+      el.style.transitionDelay = (i % 4) * 70 + 'ms'; targets.push(el);
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('is-visible'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    targets.forEach(function (el) {
+      // 既に画面内にある要素（ファーストビュー）は演出せずそのまま表示
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.9) return;
+      el.classList.add('reveal');
+      io.observe(el);
+    });
+  }
+
+  /* --- Hero パララックス（軽量・rAFスロットル） --- */
+  var heroImg = document.querySelector('.hero-photo img');
+  if (heroImg && !reduceMotion) {
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        var y = window.scrollY;
+        heroImg.style.transform = y < 900 ? 'translateY(' + y * 0.12 + 'px) scale(1.06)' : '';
+        ticking = false;
+      });
+    }, { passive: true });
+  }
+
+  /* --- 幕僚セリフ吹き出し＋「話す」ボタン（staffKnowledge.js 由来） --- */
+  var K = window.STAFF_KNOWLEDGE;
+  if (K && K.staffs) {
+    function makeQuoteBubble(st) {
+      var idx = Math.floor(Math.random() * st.quotes.length);
+      var bubble = document.createElement('div');
+      bubble.className = 'staff-quote';
+      function render() {
+        bubble.innerHTML = '「' + st.quotes[idx] + '」<span class="sq-hint">タップで別のひとこと</span>';
+      }
+      bubble.addEventListener('click', function () {
+        idx = (idx + 1) % st.quotes.length; render();
+      });
+      render();
+      return bubble;
+    }
+    function makeChatBtn(st, staffId) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'staff-chat-btn';
+      btn.textContent = '💬 ' + st.name + '（AI）と話す';
+      btn.addEventListener('click', function () { nsfOpenStaffChat(staffId); });
+      return btn;
+    }
+    // 幕僚グリッド: staff-card の href から staffId を解決し、隣の staff-tasks に注入
+    document.querySelectorAll('.staff-grid .staff-card').forEach(function (card) {
+      var href = card.getAttribute('href') || '';
+      var m = href.match(/\.\/([a-z0-9-]+)\//i);
+      var key = m && K.roomMap[m[1]];
+      var st = key && K.staffs[key];
+      if (!st || !st.quotes || !st.quotes.length) return;
+      var tasks = card.nextElementSibling;
+      if (!tasks || !tasks.classList.contains('staff-tasks')) return;
+      tasks.insertBefore(makeQuoteBubble(st), tasks.firstChild);
+      tasks.appendChild(makeChatBtn(st, key));
+    });
+    // 総司令官
+    var cmd = document.querySelector('.staff-commander');
+    var cmdSt = K.staffs.kojinjigyonusi;
+    if (cmd && cmdSt && cmdSt.quotes && cmdSt.quotes.length) {
+      cmd.insertBefore(makeQuoteBubble(cmdSt), cmd.firstChild);
+      cmd.appendChild(makeChatBtn(cmdSt, 'kojinjigyonusi'));
+    }
+    // 今日の幕僚メモ（日替わり・日付シードで幕僚とtipを選択）
+    var tipBox = document.getElementById('ai-tip-box');
+    var tipLabel = document.getElementById('ai-tip-label');
+    var tipText = document.getElementById('ai-tip-text');
+    if (tipBox && tipText) {
+      var ids = Object.keys(K.staffs).filter(function (id) {
+        return K.staffs[id].tips && K.staffs[id].tips.length;
+      });
+      if (ids.length) {
+        var now = new Date();
+        var seed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+        var sid = ids[seed % ids.length];
+        var st2 = K.staffs[sid];
+        var tip = st2.tips[seed % st2.tips.length];
+        if (tipLabel) tipLabel.textContent = '今日の幕僚メモ — ' + st2.name + 'より';
+        tipText.textContent = tip;
+        tipBox.hidden = false;
+      }
+    }
+  }
+})();
 </script>
 </body>
 </html>
