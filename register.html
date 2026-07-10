@@ -557,6 +557,34 @@ textarea{min-height:80px;resize:vertical}
       <span class="id-preview" id="nextIdPreview">商品ID 取得中…</span>
     </div>
 
+    <!-- ====== 使用材料（在庫引当） ====== -->
+    <div id="matSection" style="margin-top:16px;padding:12px;background:#fdf6ec;border:1px solid #d8b888;border-radius:8px">
+      <div style="font-size:13px;font-weight:700;color:#5a3a20;margin-bottom:4px">使用材料（在庫引当）</div>
+      <div style="font-size:11px;color:#a07050;margin-bottom:10px">
+        登録完了と同時に在庫CSV（order_estimate/）から自動で差し引きます。使わない項目は「（引当しない）」のままにしてください。編集モードでは表示されません（二重引当防止）。
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:4px">革（消費%はサイズ選択で自動入力・上書き可）</div>
+      <div id="matLeatherRows"></div>
+      <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;margin-bottom:10px" onclick="matAddLeatherRow()">＋ 革を追加</button>
+
+      <div style="font-size:12px;font-weight:700;color:#5a3a20;margin:6px 0 4px">リング</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <select id="matRing" style="flex:1;min-width:0;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px"><option value="">（引当しない）</option></select>
+        <span style="font-size:12px;color:#5a3a20">×</span>
+        <input type="number" id="matRingQty" value="1" min="1" style="width:64px;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">
+        <span style="font-size:12px;color:#5a3a20">個</span>
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:#5a3a20;margin:6px 0 4px">糸（数量管理なし・記録のみ）</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="matThread" style="flex:1;min-width:180px;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px"><option value="">（引当しない）</option></select>
+        <label style="font-size:12px;color:#5a3a20;white-space:nowrap"><input type="checkbox" id="matThreadOut"> 残りわずか→在庫切れにする</label>
+      </div>
+
+      <div id="matStatus" style="font-size:11px;color:#a07050;margin-top:8px"></div>
+    </div>
+
     <div class="btn-row">
       <button class="btn btn-primary" onclick="goStep2()">次へ → 写真</button>
     </div>
@@ -657,6 +685,7 @@ textarea{min-height:80px;resize:vertical}
       <div>商品登録完了</div>
       <div class="complete-id" id="completeId">NF2026_XXX</div>
       <p style="font-size:13px;color:#7a5a3f">商品マスターの「販売中」行を確認してください。</p>
+      <div id="matAllocResult" style="font-size:12px;text-align:left;margin-top:10px;padding:10px;background:#fdf6ec;border:1px solid #d8b888;border-radius:8px;display:none"></div>
 
       <div style="margin-top:18px;padding:14px;background:#fff8ec;border:1px solid #d9b466;border-radius:8px;text-align:left">
         <div style="font-weight:bold;color:#8a6a2e;margin-bottom:6px">📣 Threads に投稿するには</div>
@@ -767,6 +796,7 @@ function onSizeChange() {
     customInput.value = '';
     if (customOpt) { customOpt.value = 'カスタム'; customOpt.textContent = 'カスタム'; }
   }
+  matApplySizeDefault();
 }
 
 function onSizeCustomInput() {
@@ -823,6 +853,7 @@ async function checkAuth() {
     fetchProductNames();
     await fetchMasterData();
     initSizeOptions();
+    loadMaterialData();
 
     // ?edit=SKU パラメータがあれば自動で編集モードに移行（master ロード完了後なので race condition なし）
     const editId = new URLSearchParams(window.location.search).get('edit');
@@ -914,6 +945,7 @@ async function loadProduct() {
     document.getElementById('deleteBtn').classList.remove('hidden');
     document.getElementById('step1Title').textContent = 'Step 1 — 基本情報（編集中: ' + p.productId + '）';
     document.getElementById('nextIdPreview').textContent = '編集対象: ' + p.productId;
+    document.getElementById('matSection').classList.add('hidden');
     document.getElementById('registerBtn').textContent = '💾 更新する';
     document.getElementById('registerBtn').disabled = false;
     history.replaceState({}, '', window.location.pathname + '?edit=' + encodeURIComponent(p.productId));
@@ -1196,6 +1228,7 @@ function buildConfirm() {
     ['短い説明', val('f_shortDesc')],
     ['長い説明', val('f_longDesc')],
     ['ハッシュタグ', val('f_hashtags') || '—'],
+    ['使用材料（在庫引当）', isEditMode ? '—（編集モードでは引当しません）' : matSummaryText()],
     ['写真', ''],
   ];
   const tbl = document.getElementById('confirmTable');
@@ -1268,6 +1301,23 @@ async function doNewRegister() {
   const finRes = await fetch(finUrl);
   const finData = await finRes.json();
   if (!finData.ok) throw new Error('finalize失敗: ' + (finData.error || ''));
+
+  // 在庫引当（材料CSV減算）— ここで失敗しても商品登録自体は成立させる
+  const matResultEl = document.getElementById('matAllocResult');
+  try {
+    setProgress(97, '在庫を引当中…', '使用材料を在庫CSVから差し引いています…');
+    const matHtml = await matAllocateStock(productId);
+    if (matHtml) {
+      matResultEl.innerHTML = matHtml;
+      matResultEl.style.display = 'block';
+    } else {
+      matResultEl.style.display = 'none';
+    }
+  } catch (e) {
+    matResultEl.innerHTML = '⚠ 在庫引当に失敗しました: ' + e.message +
+      '<br>商品登録は完了しています。在庫は <a href="order_estimate/admin.html" target="_blank">admin.html</a> で手動調整してください。';
+    matResultEl.style.display = 'block';
+  }
 
   setProgress(100, '完了！', '登録完了です！');
   document.getElementById('completeId').textContent = productId;
@@ -1630,8 +1680,356 @@ function resetAll() {
   document.getElementById('step1Title').textContent = 'Step 1 — 基本情報';
   document.getElementById('editProductId').value = '';
   document.getElementById('registerBtn').textContent = '✅ 登録する';
+  document.getElementById('matSection').classList.remove('hidden');
+  matResetSelections();
   fetchNextId();
   goStep1();
+}
+
+// ====== 使用材料（在庫引当）モジュール ======
+// 在庫の正本は GitHub 上の order_estimate/*.csv。admin.html と同じトークン（localStorage共有）で
+// GitHub Contents API から最新CSVを取得→減算→PUT する。減算失敗は商品登録と切り離す（呼び出し側で catch）。
+const MAT_GITHUB_OWNER = 'you0810jmsdf';
+const MAT_GITHUB_REPO = 'ns-factory';
+const MAT_GITHUB_BRANCH = 'main';
+// admin.html（order_estimate/admin.html）とトークン保存キーを共有する
+const MAT_TOKEN_SESSION_KEY = 'nsfactory-ring-admin-github-token';
+const MAT_TOKEN_LOCAL_KEY = 'nsfactory-ring-admin-github-token-local';
+const MAT_FILES = {
+  leather: 'order_estimate/leather-stock.csv',
+  ring: 'order_estimate/ring-price-stock.csv',
+  thread: 'order_estimate/stitch-thread-stock.csv',
+  usage: 'order_estimate/material-usage.csv',
+};
+let matData = { leather: [], ring: [], thread: [], usage: [] };
+let matLoaded = false;
+
+// --- CSV ヘルパー（クォート対応） ---
+function matParseCsvLine(line) {
+  const cells = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQ) {
+      if (c === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++; }
+        else inQ = false;
+      } else cur += c;
+    } else if (c === '"') inQ = true;
+    else if (c === ',') { cells.push(cur); cur = ''; }
+    else cur += c;
+  }
+  cells.push(cur);
+  return cells;
+}
+function matCsvEscape(v) {
+  v = String(v == null ? '' : v);
+  return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+function matParseCsv(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+  if (!lines.length) return [];
+  let matHdr = lines[0]; if (matHdr.charCodeAt(0) === 0xFEFF) matHdr = matHdr.slice(1); // BOM除去(ring/stitch CSVはBOM付き。ヘッダ行は書き換えないためファイルのBOMは保持される)
+  const headers = matParseCsvLine(matHdr);
+  return lines.slice(1).map(l => {
+    const cells = matParseCsvLine(l);
+    const o = {};
+    headers.forEach((h, i) => { o[h] = cells[i] !== undefined ? cells[i] : ''; });
+    return o;
+  });
+}
+
+// --- データ読み込み（選択リスト表示用。減算時は GitHub API から最新を取り直す） ---
+async function loadMaterialData() {
+  const status = document.getElementById('matStatus');
+  try {
+    const [le, ri, th, us] = await Promise.all(
+      ['leather', 'ring', 'thread', 'usage'].map(k =>
+        fetch(MAT_FILES[k] + '?cb=' + Date.now()).then(r => {
+          if (!r.ok) throw new Error(MAT_FILES[k] + ' HTTP ' + r.status);
+          return r.text();
+        })
+      )
+    );
+    matData.leather = matParseCsv(le);
+    matData.ring = matParseCsv(ri);
+    matData.thread = matParseCsv(th);
+    matData.usage = matParseCsv(us);
+    matLoaded = true;
+    matRenderSelects();
+    status.textContent = '';
+  } catch (e) {
+    matLoaded = false;
+    status.innerHTML = '⚠ 在庫データの読み込みに失敗しました（' + e.message + '）。引当なしで登録は可能です。';
+  }
+}
+
+// ring 行はCSV上の行番号でなく複合キーで特定する（減算時にリモートが更新されていても行ズレしない）
+function matRingKey(row) {
+  return [row.planner_type, row.ring_id, row.series, row.size_label, row.color_id]
+    .map(v => v == null ? '' : String(v)).join('\t');
+}
+
+function matRenderSelects() {
+  const ringSel = document.getElementById('matRing');
+  ringSel.innerHTML = '<option value="">（引当しない）</option>' + matData.ring.map(r => {
+    const label = [r.planner_type || '共通', r.series_label, r.size_label, r.color_label]
+      .filter(Boolean).join(' ') + '（残' + (r.stock_qty === '' ? '—' : r.stock_qty) + '）';
+    return '<option value="' + matRingKey(r).replace(/"/g, '&quot;') + '">' + label + '</option>';
+  }).join('');
+  const thSel = document.getElementById('matThread');
+  thSel.innerHTML = '<option value="">（引当しない）</option>' + matData.thread
+    .filter(t => String(t.available).toUpperCase() === 'TRUE')
+    .map(t => '<option value="' + t.thread_id + '">' + (t.name || t.label || t.thread_id) + '</option>').join('');
+  if (!document.querySelector('#matLeatherRows .mat-leather-row')) matAddLeatherRow();
+}
+
+function matLeatherOptions() {
+  return '<option value="">（引当しない）</option>' + matData.leather.map(l =>
+    '<option value="' + l.id + '">' + l.name + '（残' + (l.stock_pct === '' ? '—' : l.stock_pct + '%') + '）</option>'
+  ).join('');
+}
+
+function matAddLeatherRow() {
+  if (!matLoaded) return;
+  const wrap = document.getElementById('matLeatherRows');
+  const row = document.createElement('div');
+  row.className = 'mat-leather-row';
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:6px';
+  row.innerHTML =
+    '<select class="mat-leather-sel" style="flex:1;min-width:0;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' + matLeatherOptions() + '</select>' +
+    '<input type="number" class="mat-pct" min="0" max="100" step="1" placeholder="%" style="width:64px;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' +
+    '<span style="font-size:12px;color:#5a3a20">%</span>' +
+    '<button type="button" class="btn btn-secondary" style="padding:4px 8px;font-size:12px" onclick="this.parentElement.remove()">✕</button>';
+  const pctInput = row.querySelector('.mat-pct');
+  pctInput.addEventListener('input', () => { pctInput.dataset.userEdited = '1'; });
+  pctInput.value = matUsageForSize(val('f_size'));
+  wrap.appendChild(row);
+}
+
+function matUsageForSize(sizeVal) {
+  if (!sizeVal || !matData.usage.length) return '';
+  for (const row of matData.usage) {
+    const names = [row.size_label].concat((row.aliases || '').split('|')).map(s => (s || '').trim()).filter(Boolean);
+    if (names.some(n => sizeVal === n || sizeVal.indexOf(n) !== -1)) return row.usage_pct;
+  }
+  return '';
+}
+
+function matApplySizeDefault() {
+  if (!matLoaded) return;
+  const pct = matUsageForSize(val('f_size'));
+  document.querySelectorAll('#matLeatherRows .mat-pct').forEach(inp => {
+    if (!inp.dataset.userEdited) inp.value = pct;
+  });
+}
+
+function matResetSelections() {
+  const wrap = document.getElementById('matLeatherRows');
+  if (wrap) { wrap.innerHTML = ''; if (matLoaded) matAddLeatherRow(); }
+  const ringSel = document.getElementById('matRing');
+  if (ringSel) ringSel.value = '';
+  const qty = document.getElementById('matRingQty');
+  if (qty) qty.value = '1';
+  const thSel = document.getElementById('matThread');
+  if (thSel) thSel.value = '';
+  const out = document.getElementById('matThreadOut');
+  if (out) out.checked = false;
+  const res = document.getElementById('matAllocResult');
+  if (res) { res.style.display = 'none'; res.innerHTML = ''; }
+}
+
+function matCollectSelections() {
+  const leathers = [];
+  document.querySelectorAll('#matLeatherRows .mat-leather-row').forEach(row => {
+    const id = row.querySelector('.mat-leather-sel').value;
+    const pct = parseFloat(row.querySelector('.mat-pct').value);
+    if (id && !isNaN(pct) && pct > 0) leathers.push({ id, pct });
+  });
+  const ringKey = document.getElementById('matRing').value;
+  const ringQty = parseInt(document.getElementById('matRingQty').value, 10);
+  const threadId = document.getElementById('matThread').value;
+  const threadOut = document.getElementById('matThreadOut').checked;
+  return {
+    leathers,
+    ring: ringKey && ringQty > 0 ? { key: ringKey, qty: ringQty } : null,
+    thread: threadId ? { id: threadId, markOut: threadOut } : null,
+  };
+}
+
+function matSummaryText() {
+  if (!matLoaded) return '—（在庫データ未読込のため引当なし）';
+  const sel = matCollectSelections();
+  const parts = [];
+  sel.leathers.forEach(l => {
+    const m = matData.leather.find(r => r.id === l.id);
+    parts.push('革: ' + (m ? m.name : l.id) + ' −' + l.pct + '%');
+  });
+  if (sel.ring) {
+    const m = matData.ring.find(r => matRingKey(r) === sel.ring.key);
+    parts.push('リング: ' + (m ? [m.planner_type || '共通', m.series_label, m.size_label, m.color_label].filter(Boolean).join(' ') : '') + ' −' + sel.ring.qty + '個');
+  }
+  if (sel.thread) {
+    const m = matData.thread.find(r => r.thread_id === sel.thread.id);
+    parts.push('糸: ' + (m ? (m.name || m.label) : sel.thread.id) + (sel.thread.markOut ? '（在庫切れにする）' : '（記録のみ）'));
+  }
+  return parts.length ? parts.join('\n') : '—（引当なし）';
+}
+
+// --- GitHub Contents API ---
+function matGetToken() {
+  try {
+    return sessionStorage.getItem(MAT_TOKEN_SESSION_KEY) || localStorage.getItem(MAT_TOKEN_LOCAL_KEY) || '';
+  } catch (e) { return ''; }
+}
+async function matEnsureToken() {
+  let t = matGetToken();
+  if (t) return t;
+  t = (prompt('在庫CSV更新用の GitHub トークン（Contents: read/write）を入力してください。\nadmin.html の「GitHubトークン設定」で保存済みなら、同じブラウザでは自動で使われます。') || '').trim();
+  if (!t) return '';
+  try {
+    sessionStorage.setItem(MAT_TOKEN_SESSION_KEY, t);
+    if (confirm('このブラウザにトークンを保存しますか？（次回から入力不要・admin.html と共有）')) {
+      localStorage.setItem(MAT_TOKEN_LOCAL_KEY, t);
+    }
+  } catch (e) {}
+  return t;
+}
+function matB64ToUtf8(b64) {
+  const bin = atob(String(b64).replace(/\n/g, ''));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function matUtf8ToB64(text) {
+  const bytes = new TextEncoder().encode(text);
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
+function matApiUrl(path) {
+  return 'https://api.github.com/repos/' + MAT_GITHUB_OWNER + '/' + MAT_GITHUB_REPO + '/contents/' + path;
+}
+async function matGithubGet(path, token) {
+  const res = await fetch(matApiUrl(path) + '?ref=' + encodeURIComponent(MAT_GITHUB_BRANCH), {
+    headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }
+  });
+  if (res.status === 401 || res.status === 403) throw new Error('GitHubトークンが無効か権限不足です（' + path + '）');
+  if (!res.ok) throw new Error(path + ' の取得に失敗: HTTP ' + res.status);
+  const data = await res.json();
+  return { text: matB64ToUtf8(data.content), sha: data.sha };
+}
+async function matGithubPut(path, token, text, sha, message) {
+  const res = await fetch(matApiUrl(path), {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, content: matUtf8ToB64(text), sha, branch: MAT_GITHUB_BRANCH })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error(path + ' の更新に失敗: ' + ((err && err.message) || 'HTTP ' + res.status));
+  }
+}
+
+// CSVテキストの中から matchFn に合う行だけ updateFn で書き換える（他の行は原文のまま保持）
+function matUpdateCsvText(csvText, matchFn, updateFn) {
+  const eol = csvText.indexOf('\r\n') !== -1 ? '\r\n' : '\n'; // 元の改行コードを保持（leather CSVはCRLF）
+  const lines = csvText.split(/\r?\n/);
+  let matHdr = lines[0]; if (matHdr.charCodeAt(0) === 0xFEFF) matHdr = matHdr.slice(1); // BOM除去(ring/stitch CSVはBOM付き。ヘッダ行は書き換えないためファイルのBOMは保持される)
+  const headers = matParseCsvLine(matHdr);
+  let changed = 0;
+  const notes = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const cells = matParseCsvLine(lines[i]);
+    const row = {};
+    headers.forEach((h, j) => { row[h] = cells[j] !== undefined ? cells[j] : ''; });
+    if (!matchFn(row)) continue;
+    const note = updateFn(row, cells, headers);
+    if (note === false) continue;
+    lines[i] = cells.map(matCsvEscape).join(',');
+    changed++;
+    if (typeof note === 'string') notes.push(note);
+  }
+  return { text: lines.join(eol), changed, notes };
+}
+
+// 在庫引当の実行本体。結果HTMLを返す（引当対象なしなら空文字）
+async function matAllocateStock(productId) {
+  if (isEditMode) return '';
+  const sel = matCollectSelections();
+  const hasWork = sel.leathers.length || sel.ring || (sel.thread && sel.thread.markOut);
+  if (!hasWork) return '';
+  const token = await matEnsureToken();
+  if (!token) return '⚠ GitHubトークン未設定のため在庫引当をスキップしました。<a href="order_estimate/admin.html" target="_blank">admin.html</a> で手動調整してください。';
+
+  const lines = [];
+  const commitMsg = file => 'Stock allocation for ' + productId + ' via register page (' + file + ')';
+
+  // 革（stock_pct 減算）
+  if (sel.leathers.length) {
+    const { text, sha } = await matGithubGet(MAT_FILES.leather, token);
+    let cur = text;
+    let changedTotal = 0;
+    sel.leathers.forEach(l => {
+      const r = matUpdateCsvText(cur, row => row.id === l.id, (row, cells, headers) => {
+        const idx = headers.indexOf('stock_pct');
+        if (idx < 0) { lines.push('⚠ leather-stock.csv に stock_pct 列がありません'); return false; }
+        if (String(cells[idx]).trim() === '') { lines.push('⚠ 革 ' + row.name + ' は在庫%未設定（通常在庫扱い）のため減算スキップ'); return false; }
+        const before = parseFloat(cells[idx]);
+        if (isNaN(before)) { lines.push('⚠ 革 ' + row.name + ' の在庫%が数値でないため減算スキップ'); return false; }
+        const after = Math.max(0, Math.round((before - l.pct) * 10) / 10);
+        cells[idx] = String(after);
+        return '✅ 革 ' + row.name + ': ' + before + '% → ' + after + '%';
+      });
+      cur = r.text;
+      changedTotal += r.changed;
+      lines.push.apply(lines, r.notes);
+      if (r.changed === 0 && !r.notes.length) lines.push('⚠ 革ID ' + l.id + ' がCSVに見つかりません（減算スキップ）');
+    });
+    if (changedTotal > 0) await matGithubPut(MAT_FILES.leather, token, cur, sha, commitMsg('leather-stock.csv'));
+  }
+
+  // リング（stock_qty 減算）
+  if (sel.ring) {
+    const { text, sha } = await matGithubGet(MAT_FILES.ring, token);
+    const r = matUpdateCsvText(text, row => matRingKey(row) === sel.ring.key, (row, cells, headers) => {
+      const idx = headers.indexOf('stock_qty');
+      if (idx < 0) { lines.push('⚠ ring-price-stock.csv に stock_qty 列がありません'); return false; }
+      if (String(cells[idx]).trim() === '') { lines.push('⚠ リング（' + (row.size_label || '') + ' ' + (row.color_label || '') + '）は在庫数未設定のため減算スキップ'); return false; }
+      const before = parseInt(cells[idx], 10);
+      if (isNaN(before)) { lines.push('⚠ リング在庫数が数値でないため減算スキップ'); return false; }
+      const after = Math.max(0, before - sel.ring.qty);
+      cells[idx] = String(after);
+      return '✅ リング ' + [row.planner_type, row.series_label, row.size_label, row.color_label].filter(Boolean).join(' ') + ': ' + before + '個 → ' + after + '個' + (after === 0 ? '（残0。表示状態は admin.html で確認を）' : '');
+    });
+    lines.push.apply(lines, r.notes);
+    if (r.changed === 0 && !r.notes.length) lines.push('⚠ 選択したリング行がCSVに見つかりません（減算スキップ）');
+    if (r.changed > 0) await matGithubPut(MAT_FILES.ring, token, r.text, sha, commitMsg('ring-price-stock.csv'));
+  }
+
+  // 糸（在庫切れマークのみ・数量管理なし）
+  if (sel.thread && sel.thread.markOut) {
+    const { text, sha } = await matGithubGet(MAT_FILES.thread, token);
+    const r = matUpdateCsvText(text, row => row.thread_id === sel.thread.id, (row, cells, headers) => {
+      const idx = headers.indexOf('available');
+      if (idx < 0) { lines.push('⚠ stitch-thread-stock.csv に available 列がありません'); return false; }
+      cells[idx] = 'FALSE';
+      return '✅ 糸 ' + (row.name || row.label) + ': 在庫切れ（available=FALSE）に変更';
+    });
+    lines.push.apply(lines, r.notes);
+    if (r.changed === 0 && !r.notes.length) lines.push('⚠ 選択した糸がCSVに見つかりません（変更スキップ）');
+    if (r.changed > 0) await matGithubPut(MAT_FILES.thread, token, r.text, sha, commitMsg('stitch-thread-stock.csv'));
+  } else if (sel.thread) {
+    lines.push('ℹ 糸は数量管理がないため記録のみ（在庫変更なし）');
+  }
+
+  if (!lines.length) return '';
+  return '<b>📦 在庫引当結果</b><br>' + lines.join('<br>') +
+    '<br><span style="color:#a07050">GitHub Pages への反映には数分かかる場合があります。</span>';
 }
 
 // ====== PR画像プロンプト生成（画像参照型: ChatGPT-4o / Gemini Nano Banana 用） ======
