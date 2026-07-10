@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>幕僚ナレッジ管理 — N's factory（管理者用）</title>
+<script src="./admin-gate.js"></script>
+<style>
+:root{
+  --color-primary:#1D1D1F;
+  --color-accent:#A0785A;
+  --color-accent-light:#F3ECE4;
+  --color-accent-dark:#7A5540;
+  --color-bg:#FFFFFF;
+  --color-bg-sub:#F5F5F7;
+  --color-border:#E8E8ED;
+  --color-text:#1D1D1F;
+  --color-text-sub:#636366;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:16px;
+  --shadow-xs:0 1px 3px rgba(0,0,0,.06);
+  --shadow-md:0 4px 16px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+  color:var(--color-text);background:var(--color-bg-sub);line-height:1.6;
+}
+a{color:inherit}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 20px;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--color-border);
+}
+.topbar h1{font-size:16px;font-weight:700}
+.topbar .spacer{flex:1}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;padding:9px 16px;
+  border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:inherit;
+  transition:opacity .2s ease;
+}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-primary{background:var(--color-accent);color:#fff}
+.btn-dark{background:var(--color-primary);color:#fff}
+.btn-light{background:#fff;color:var(--color-text);border:1px solid var(--color-border)}
+.status-pill{
+  font-size:11.5px;padding:5px 12px;border-radius:999px;
+  background:var(--color-bg-sub);border:1px solid var(--color-border);color:var(--color-text-sub);
+}
+.status-pill.ok{background:#E8F6EC;border-color:#B7E3C3;color:#1E7A38}
+.status-pill.warn{background:#FDF1E7;border-color:#F2CFA9;color:#9A5B1B}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 20px 80px}
+.notice{
+  background:#fff;border:1px solid var(--color-border);border-left:4px solid var(--color-accent);
+  border-radius:var(--radius-md);padding:14px 18px;font-size:12.5px;color:var(--color-text-sub);
+  margin-bottom:20px;line-height:1.8;
+}
+.staff-editor{
+  background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-xs);margin-bottom:16px;overflow:hidden;
+}
+.staff-editor summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;
+  padding:14px 20px;font-weight:700;font-size:14px;
+}
+.staff-editor summary::-webkit-details-marker{display:none}
+.staff-editor summary:hover{background:var(--color-bg-sub)}
+.staff-editor summary::after{content:'▾';margin-left:auto;color:var(--color-text-sub)}
+.staff-editor[open] summary::after{content:'▴'}
+.staff-editor .role-chip{
+  font-size:11px;font-weight:500;color:var(--color-accent-dark);
+  background:var(--color-accent-light);border-radius:999px;padding:3px 10px;
+}
+.staff-editor .count-chip{font-size:11px;color:var(--color-text-sub)}
+.editor-body{padding:4px 20px 20px;border-top:1px solid var(--color-border)}
+.field{margin-top:14px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
+.field .hint{font-weight:400;color:var(--color-text-sub);margin-left:8px}
+.field input[type=text]{
+  width:100%;padding:9px 12px;font-size:13px;font-family:inherit;
+  border:1.5px solid var(--color-border);border-radius:var(--radius-md);outline:none;
+}
+.field textarea{
+  width:100%;min-height:110px;padding:10px 12px;font-size:13px;font-family:inherit;
+  border:1.5px solid var(--color-border);border-radius:var(--radius-md);outline:none;
+  line-height:1.8;resize:vertical;
+}
+.field input:focus,.field textarea:focus{border-color:var(--color-accent)}
+.preview-line{
+  margin-top:10px;font-size:12.5px;color:var(--color-accent-dark);
+  background:var(--color-accent-light);border-radius:var(--radius-sm);padding:8px 12px;
+  display:none;
+}
+.preview-line.show{display:block}
+.loading{padding:60px;text-align:center;color:var(--color-text-sub);font-size:14px}
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translateX(-50%);
+  background:var(--color-primary);color:#fff;font-size:13px;font-weight:600;
+  padding:12px 22px;border-radius:999px;box-shadow:var(--shadow-md);
+  opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:200;
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🧠 幕僚ナレッジ管理</h1>
+  <span class="status-pill" id="dirty-pill">未変更</span>
+  <span class="spacer"></span>
+  <button class="btn btn-light" id="token-btn">GitHubトークン設定</button>
+  <span class="status-pill" id="token-pill">GitHub: 確認中</span>
+  <button class="btn btn-primary" id="publish-btn" disabled>GitHubへ反映</button>
+  <a class="btn btn-light" href="./index.html">トップへ</a>
+</div>
+
+<div class="wrap">
+  <div class="notice">
+    トップページの幕僚吹き出しセリフ（quotes）と「今日の幕僚メモ」（tips）を編集します。<br>
+    ・<b>セリフ／豆知識は1行に1件</b>で入力してください（空行は無視されます）。<br>
+    ・「GitHubへ反映」を押すと <code>showroom/data/staffKnowledge.js</code> が更新され、数分でサイトに反映されます。<br>
+    ・AIチャットの応答内容（GAS側ペルソナ）はこのページの対象外です。
+  </div>
+  <div id="editors" class="loading">読み込み中…</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // admin.html と共通のトークン保存キー（設定を1回で共用するため同名にする）
+  var TOKEN_SESSION_KEY = 'nsfactory-ring-admin-github-token';
+  var TOKEN_LOCAL_KEY = 'nsfactory-ring-admin-github-token-local';
+  var REPO_OWNER = 'you0810jmsdf';
+  var REPO_NAME = 'ns-factory';
+  var REPO_BRANCH = 'main';
+  var FILE_PATH = 'showroom/data/staffKnowledge.js';
+
+  var knowledge = null;   // 現在の編集対象オブジェクト
+  var dirty = false;
+
+  var editorsEl = document.getElementById('editors');
+  var dirtyPill = document.getElementById('dirty-pill');
+  var tokenPill = document.getElementById('token-pill');
+  var publishBtn = document.getElementById('publish-btn');
+  var toastEl = document.getElementById('toast');
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(function () { toastEl.classList.remove('show'); }, 2600);
+  }
+
+  function setDirty(v) {
+    dirty = v;
+    dirtyPill.textContent = v ? '未反映の変更あり' : '未変更';
+    dirtyPill.className = 'status-pill' + (v ? ' warn' : '');
+    publishBtn.disabled = !v;
+  }
+
+  window.addEventListener('beforeunload', function (e) {
+    if (dirty) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  // ── GitHubトークン ──
+  function getToken() {
+    try {
+      return sessionStorage.getItem(TOKEN_SESSION_KEY) || localStorage.getItem(TOKEN_LOCAL_KEY) || '';
+    } catch (e) { return ''; }
+  }
+  function updateTokenPill() {
+    var has = !!getToken();
+    tokenPill.textContent = has ? 'GitHub: トークン設定済み' : 'GitHub: トークン未設定';
+    tokenPill.className = 'status-pill' + (has ? ' ok' : ' warn');
+  }
+  document.getElementById('token-btn').addEventListener('click', function () {
+    var t = prompt('GitHub Personal Access Token（Contents: write 権限）を入力してください。\n空欄でOKすると削除します。', '');
+    if (t === null) return;
+    try {
+      if (t.trim()) {
+        sessionStorage.setItem(TOKEN_SESSION_KEY, t.trim());
+        if (confirm('この端末に保存しますか？（共用PCでは「キャンセル」推奨）')) {
+          localStorage.setItem(TOKEN_LOCAL_KEY, t.trim());
+        }
+      } else {
+        sessionStorage.removeItem(TOKEN_SESSION_KEY);
+        localStorage.removeItem(TOKEN_LOCAL_KEY);
+      }
+    } catch (e) {}
+    updateTokenPill();
+  });
+
+  // ── 読み込み ──
+  function parseKnowledge(src) {
+    // staffKnowledge.js は「window.STAFF_KNOWLEDGE = {...};」形式。
+    // ダミーwindowを渡して評価し、オブジェクトだけ取り出す。
+    var fn = new Function('window', src + '\nreturn window.STAFF_KNOWLEDGE;');
+    return fn({});
+  }
+
+  function linesToArray(text) {
+    return text.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function buildEditors() {
+    editorsEl.classList.remove('loading');
+    editorsEl.innerHTML = '';
+    Object.keys(knowledge.staffs).forEach(function (id) {
+      var st = knowledge.staffs[id];
+      var d = document.createElement('details');
+      d.className = 'staff-editor';
+      d.innerHTML =
+        '<summary>' + esc(st.name || id) +
+        ' <span class="role-chip">' + esc(st.role || '') + '</span>' +
+        ' <span class="count-chip">セリフ' + (st.quotes || []).length + '件・メモ' + (st.tips || []).length + '件</span>' +
+        '</summary>' +
+        '<div class="editor-body">' +
+        '<div class="field"><label>表示名</label><input type="text" data-id="' + id + '" data-key="name" value="' + esc(st.name || '') + '"></div>' +
+        '<div class="field"><label>肩書き</label><input type="text" data-id="' + id + '" data-key="role" value="' + esc(st.role || '') + '"></div>' +
+        '<div class="field"><label>吹き出しセリフ（quotes）<span class="hint">1行1件・トップページでランダム表示</span></label>' +
+        '<textarea data-id="' + id + '" data-key="quotes">' + esc((st.quotes || []).join('\n')) + '</textarea></div>' +
+        '<div class="field"><label>豆知識（tips）<span class="hint">1行1件・「今日の幕僚メモ」で日替わり表示</span></label>' +
+        '<textarea data-id="' + id + '" data-key="tips">' + esc((st.tips || []).join('\n')) + '</textarea></div>' +
+        '<button type="button" class="btn btn-light" data-preview="' + id + '" style="margin-top:12px">🎲 セリフをランダム試し表示</button>' +
+        '<div class="preview-line" id="preview-' + id + '"></div>' +
+        '</div>';
+      editorsEl.appendChild(d);
+    });
+
+    editorsEl.addEventListener('input', function (e) {
+      var el = e.target;
+      var id = el.getAttribute('data-id');
+      var key = el.getAttribute('data-key');
+      if (!id || !key || !knowledge.staffs[id]) return;
+      if (key === 'quotes' || key === 'tips') knowledge.staffs[id][key] = linesToArray(el.value);
+      else knowledge.staffs[id][key] = el.value.trim();
+      setDirty(true);
+    });
+
+    editorsEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-preview]');
+      if (!btn) return;
+      var id = btn.getAttribute('data-preview');
+      var st = knowledge.staffs[id];
+      var box = document.getElementById('preview-' + id);
+      if (!st || !box) return;
+      var qs = st.quotes || [];
+      box.textContent = qs.length ? '「' + qs[Math.floor(Math.random() * qs.length)] + '」' : '（セリフが未登録です）';
+      box.classList.add('show');
+    });
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ── ファイル再生成 ──
+  function buildFileText() {
+    var today = new Date();
+    var ymd = today.getFullYear() + '-' +
+      String(today.getMonth() + 1).padStart(2, '0') + '-' +
+      String(today.getDate()).padStart(2, '0');
+    var out = Object.assign({}, knowledge, { updated: ymd });
+    return [
+      '// =============================================================',
+      "// N's factory 幕僚ナレッジ（セリフ・豆知識）",
+      '// ' + ymd + ' 更新（staff-knowledge-admin.html から反映）',
+      '//',
+      '// 【用途】',
+      '//  - index.html: 幕僚カードの吹き出しセリフ（訪問ごとにランダム表示）',
+      '//  - tips は「今日の幕僚メモ」の日替わり表示に使用',
+      '//',
+      '// 【編集方法】',
+      '//  - 管理ページ staff-knowledge-admin.html（管理者ゲート付き）から編集',
+      '//  - 直接編集して git push でも可',
+      '//',
+      '// 【ID対応】showroom/data/staffData.js・GAS(showroom_ai_chat)と同一ID',
+      '// =============================================================',
+      'window.STAFF_KNOWLEDGE = ' + JSON.stringify(out, null, 2) + ';',
+      ''
+    ].join('\n');
+  }
+
+  function utf8ToBase64(text) {
+    var bytes = new TextEncoder().encode(text);
+    var binary = '';
+    var chunk = 0x8000;
+    for (var i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+  }
+
+  // ── GitHub反映 ──
+  publishBtn.addEventListener('click', function () {
+    var token = getToken();
+    if (!token) { toast('先にGitHubトークンを設定してください'); return; }
+    publishBtn.disabled = true;
+    publishBtn.textContent = '反映中…';
+    var apiUrl = 'https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + FILE_PATH;
+    fetch(apiUrl + '?ref=' + encodeURIComponent(REPO_BRANCH), {
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }
+    }).then(function (res) {
+      if (res.status === 401 || res.status === 403) throw new Error('トークンの権限が不足しています（Contents: write が必要）');
+      if (!res.ok) throw new Error('現在のファイル取得に失敗: HTTP ' + res.status);
+      return res.json();
+    }).then(function (cur) {
+      return fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: 'Update staffKnowledge.js via staff-knowledge-admin (' + new Date().toISOString() + ')',
+          content: utf8ToBase64(buildFileText()),
+          sha: cur.sha,
+          branch: REPO_BRANCH
+        })
+      });
+    }).then(function (res) {
+      if (!res.ok) throw new Error('書き込みに失敗: HTTP ' + res.status);
+      setDirty(false);
+      toast('✅ GitHubへ反映しました（サイト反映まで1〜2分）');
+    }).catch(function (err) {
+      toast('❌ ' + err.message);
+    }).finally(function () {
+      publishBtn.textContent = 'GitHubへ反映';
+      publishBtn.disabled = !dirty;
+    });
+  });
+
+  // ── 初期化 ──
+  updateTokenPill();
+  fetch('./' + FILE_PATH + '?t=' + Date.now())
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    })
+    .then(function (src) {
+      knowledge = parseKnowledge(src);
+      if (!knowledge || !knowledge.staffs) throw new Error('ファイル形式が不正です');
+      buildEditors();
+      setDirty(false);
+    })
+    .catch(function (err) {
+      editorsEl.innerHTML = '<div class="loading">読み込みに失敗しました: ' + esc(err.message) + '</div>';
+    });
+})();
+</script>
+</body>
+</html>
