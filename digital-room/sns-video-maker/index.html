@@ -73,13 +73,17 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .blue{background:var(--blue);color:#fff;padding:10px 14px;font-weight:800}
 .green{background:var(--green);color:#fff;padding:10px 14px;font-weight:800}
 .danger{background:#fff;color:var(--danger);padding:8px 10px;border:1px solid #e7c8c7}
-.slides{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;padding-right:2px}
+.slides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .slide-item{
-  display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:center;
-  border:1px solid var(--line);border-radius:var(--radius);padding:8px;background:#fff;
+  display:grid;grid-template-columns:1fr;gap:8px;align-items:start;text-align:left;
+  border:1px solid var(--line);border-radius:var(--radius);padding:8px;background:#fff;min-width:0;
+  cursor:grab;touch-action:manipulation;
 }
+.slide-item:active{cursor:grabbing}
 .slide-item.active{border-color:var(--accent);background:var(--accent-soft)}
-.thumb{width:58px;height:78px;object-fit:cover;border-radius:6px;background:var(--soft)}
+.slide-item.dragging{opacity:.45}
+.slide-item.drag-over{border-color:var(--blue);box-shadow:0 0 0 2px rgba(36,95,157,.16)}
+.thumb{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:6px;background:var(--soft)}
 .slide-title{font-size:13px;font-weight:800;line-height:1.3}
 .slide-meta{font-size:12px;color:var(--muted)}
 .preview-wrap{
@@ -143,21 +147,23 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
     <aside>
       <section class="panel">
         <h2>動画全体のメモ</h2>
-        <p class="help">ここは編集用メモです。サイトへ自動公開されません。ただし、作品名と素材・色は完成動画の文字として表示されます。</p>
+        <p class="help">ここは編集用メモです。サイトへ自動公開されません。ただし、作品名と素材・色は動画上方の情報として表示されます。</p>
         <div class="field">
-          <label for="productNamePreset">作品名プリセット</label>
+          <label for="productNamePreset">作品名プリセット（動画上方の情報）</label>
           <select id="productNamePreset">
             <option value="">手入力の作品名を使う</option>
             <option value="N's factory 作品集">N's factory 作品集</option>
           </select>
         </div>
         <div class="field">
-          <label for="productName">作品名（動画内に表示）</label>
+          <label for="productName">作品名（動画上方の情報）</label>
           <input id="productName" value="レザー作品" autocomplete="off">
         </div>
         <div class="field">
-          <label for="materialNote">素材・色（動画内に表示）</label>
-          <input id="materialNote" value="革の質感と手仕事の仕立て" autocomplete="off">
+          <label for="materialNote">素材・色（動画上方の情報）</label>
+          <input id="materialNote" list="materialStockList" value="革の質感と手仕事の仕立て" autocomplete="off">
+          <datalist id="materialStockList"></datalist>
+          <p class="help">在庫リストから候補を選べます。動画には入力欄の文字だけ表示します。</p>
         </div>
         <div class="field">
           <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
@@ -171,7 +177,8 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
           <label class="secondary" for="photoInput">写真を追加</label>
           <input id="photoInput" type="file" accept="image/*" multiple hidden>
           <button class="secondary" id="fillDefaults">空欄に案を入れる</button>
-          <button class="secondary" id="translateFeatureNote">英語に変換して見どころメモへ</button>
+          <button class="secondary" id="translateFeatureNote">英語に変換して8枚用メモへ</button>
+          <button class="secondary" id="distributeFeatureNote">見どころメモを写真へ配分</button>
         </div>
       </section>
 
@@ -200,6 +207,7 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
 
       <section class="panel">
         <h2>写真一覧</h2>
+        <p class="help">写真カードをドラッグすると、動画の順番を入れ替えられます。</p>
         <div id="slides" class="slides"></div>
       </section>
     </aside>
@@ -214,7 +222,7 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
           <section class="panel">
             <h2>選択中写真の編集</h2>
             <div class="field">
-              <label for="caption">画面に出す見出し</label>
+              <label for="caption">写真ごとの見出し（一覧整理用）</label>
               <input id="caption" autocomplete="off">
             </div>
             <div class="field">
@@ -268,6 +276,7 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
               </select>
             </div>
             <div class="actions">
+              <button class="secondary" id="previewSubtitleMotion">字幕動きを確認</button>
               <button class="secondary" id="moveUp">上へ</button>
               <button class="secondary" id="moveDown">下へ</button>
               <button class="danger" id="removeSlide">削除</button>
@@ -303,9 +312,10 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
               </div>
             </div>
             <div class="actions">
-              <button class="primary" id="playPreview">プレビュー再生</button>
-              <button class="secondary" id="speakScript">読み上げプレビュー</button>
-              <button class="green" id="recordSilent">動画を保存</button>
+              <button class="primary" id="playPreviewVoice">音声つきプレビュー</button>
+              <button class="secondary" id="playPreview">映像だけ確認</button>
+              <button class="secondary" id="speakScript">音声だけ確認</button>
+              <button class="green" id="recordSilent">動画を保存（音声なし）</button>
               <button class="blue" id="recordMic">マイク録音つき保存</button>
             </div>
             <div class="timeline"><span id="progressBar"></span></div>
@@ -324,13 +334,16 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
 const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
 const SNS_VIDEO_DRIVE_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+const LEATHER_STOCK_CSV = '../../order_estimate/leather-stock.csv';
 const els = {
   productNamePreset: document.getElementById('productNamePreset'),
   productName: document.getElementById('productName'),
   materialNote: document.getElementById('materialNote'),
+  materialStockList: document.getElementById('materialStockList'),
   featureNote: document.getElementById('featureNote'),
   workLongDesc: document.getElementById('workLongDesc'),
   translateFeatureNote: document.getElementById('translateFeatureNote'),
+  distributeFeatureNote: document.getElementById('distributeFeatureNote'),
   photoInput: document.getElementById('photoInput'),
   driveFolder: document.getElementById('driveFolder'),
   driveWorkNo: document.getElementById('driveWorkNo'),
@@ -351,6 +364,8 @@ const els = {
   downloadLink: document.getElementById('downloadLink'),
   recordSilent: document.getElementById('recordSilent'),
   recordMic: document.getElementById('recordMic'),
+  playPreviewVoice: document.getElementById('playPreviewVoice'),
+  previewSubtitleMotion: document.getElementById('previewSubtitleMotion'),
   speakScript: document.getElementById('speakScript'),
   videoFont: document.getElementById('videoFont'),
   narrationLang: document.getElementById('narrationLang'),
@@ -361,13 +376,16 @@ let selected = -1;
 let playing = false;
 let recorder = null;
 let chunks = [];
+let speechTimers = [];
+let activeUtterance = null;
+let draggedSlideIndex = null;
 
 function setLog(message){ els.log.textContent = message; }
 
 function defaultTexts(index){
   const product = els.productName.value.trim() || 'レザー作品';
   const material = els.materialNote.value.trim();
-  const features = els.featureNote.value.split(/[、。,\n/・]+/).map(v => v.trim()).filter(Boolean);
+  const features = splitFeatureNotes(els.featureNote.value);
   const english = els.narrationLang.value === 'en-US';
   if(index === 0){
     return {
@@ -378,12 +396,7 @@ function defaultTexts(index){
     };
   }
   const feature = features[(index - 1) % Math.max(1, features.length)] || '細部の仕立て';
-  return {
-    caption: feature,
-    narration: english
-      ? `Here is a closer look at ${feature}. Please enjoy the texture and details shown in this photo.`
-      : `ここでは、${feature}をご紹介します。写真から伝わる質感をゆっくりご覧ください。`
-  };
+  return textsFromFeatureLine(feature, index, english);
 }
 
 function addFiles(files){
@@ -495,11 +508,14 @@ async function translateLongDescToFeatureNote(){
     const url = `${SNS_VIDEO_DRIVE_API}?api=translateSnsMemo&text=${encodeURIComponent(source)}`;
     const data = await loadJsonp(url);
     if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || '英語変換に失敗しました。'); }
-    els.featureNote.value = data.translated || '';
+    const targetCount = Math.max(8, slides.length, clamp(parseInt(els.driveLimit.value, 10) || 8, 1, 12));
+    els.featureNote.value = expandEnglishFeatureMemo(data.translated || '', targetCount);
     els.narrationLang.value = 'en-US';
     populateVoices();
-    fillDefaults();
-    setLog('英語に変換して見どころメモへ入力しました。必要に応じてセリフを整えてください。');
+    const distributed = slides.length ? distributeFeatureNoteToSlides({overwrite:true, showLog:false}) : 0;
+    setLog(distributed
+      ? `英語に変換し、${distributed}枚の写真へセリフ案を配分しました。`
+      : `英語に変換し、${targetCount}枚分の見どころメモへ広げました。写真追加後に「見どころメモを写真へ配分」を押してください。`);
   }catch(err){
     setLog(`英語変換に失敗しました: ${err.message}`);
   }finally{
@@ -513,6 +529,30 @@ function applyProductNamePreset(){
   drawFrame(selected >= 0 ? timelineStart(selected) : 0);
 }
 
+function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
+  saveSelected();
+  if(!slides.length){
+    if(showLog) setLog('先に写真を追加してください。');
+    return 0;
+  }
+  const features = splitFeatureNotes(els.featureNote.value);
+  if(!features.length){
+    if(showLog) setLog('見どころメモを入力してください。');
+    return 0;
+  }
+  const english = els.narrationLang.value === 'en-US';
+  slides.forEach((slide, index) => {
+    const generated = textsFromFeatureLine(features[index % features.length], index, english);
+    if(overwrite || !slide.caption) slide.caption = generated.caption;
+    if(overwrite || !slide.narration) slide.narration = generated.narration;
+  });
+  loadSelected();
+  renderList();
+  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  if(showLog) setLog(`${slides.length}枚の写真へ見どころメモを配分しました。`);
+  return slides.length;
+}
+
 function renderList(){
   els.slides.innerHTML = '';
   if(!slides.length){
@@ -523,10 +563,64 @@ function renderList(){
     const item = document.createElement('button');
     item.className = `slide-item ${index === selected ? 'active' : ''}`;
     item.type = 'button';
+    item.draggable = true;
+    item.dataset.index = String(index);
+    item.title = 'ドラッグで順番を入れ替え';
     item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${index + 1}. ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${slide.duration.toFixed(1)}秒 / ${motionLabel(slide.motion)}</div></div>`;
     item.addEventListener('click', () => { saveSelected(); selected = index; renderList(); loadSelected(); drawFrame(timelineStart(index)); });
+    item.addEventListener('dragstart', event => startSlideDrag(event, index, item));
+    item.addEventListener('dragover', event => overSlideDrag(event, item));
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', event => dropSlide(event, index, item));
+    item.addEventListener('dragend', clearSlideDragState);
     els.slides.appendChild(item);
   });
+}
+
+function startSlideDrag(event, index, item){
+  saveSelected();
+  draggedSlideIndex = index;
+  item.classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', String(index));
+}
+
+function overSlideDrag(event, item){
+  if(draggedSlideIndex === null) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  item.classList.add('drag-over');
+}
+
+function dropSlide(event, targetIndex, item){
+  event.preventDefault();
+  item.classList.remove('drag-over');
+  const fromIndex = draggedSlideIndex ?? parseInt(event.dataTransfer.getData('text/plain'), 10);
+  if(Number.isNaN(fromIndex) || fromIndex === targetIndex) return clearSlideDragState();
+  reorderSlides(fromIndex, targetIndex);
+  clearSlideDragState();
+}
+
+function clearSlideDragState(){
+  draggedSlideIndex = null;
+  els.slides.querySelectorAll('.dragging,.drag-over').forEach(item => item.classList.remove('dragging','drag-over'));
+}
+
+function reorderSlides(fromIndex, targetIndex){
+  if(fromIndex < 0 || targetIndex < 0 || fromIndex >= slides.length || targetIndex >= slides.length) return;
+  const [moved] = slides.splice(fromIndex, 1);
+  slides.splice(targetIndex, 0, moved);
+  if(selected === fromIndex){
+    selected = targetIndex;
+  }else if(fromIndex < selected && targetIndex >= selected){
+    selected -= 1;
+  }else if(fromIndex > selected && targetIndex <= selected){
+    selected += 1;
+  }
+  renderList();
+  loadSelected();
+  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  setLog(`写真の順番を入れ替えました。${fromIndex + 1}番目 → ${targetIndex + 1}番目`);
 }
 
 function loadSelected(){
@@ -669,6 +763,13 @@ function easeInOut(value){
   return p * p * (3 - 2 * p);
 }
 
+function drawSelectedPreviewFrame(progress = .55){
+  const time = selected >= 0 && slides[selected]
+    ? timelineStart(selected) + slides[selected].duration * clamp(progress, 0, 1)
+    : 0;
+  drawFrame(time);
+}
+
 function easeOut(value){
   const p = clamp(value, 0, 1);
   return 1 - Math.pow(1 - p, 3);
@@ -721,18 +822,17 @@ function drawTexts(slide){
   ctx.fillText("N's factory", 70, 88);
   ctx.fillStyle = '#c8a878';
   ctx.fillRect(70, 116, 145, 4);
+
+  ctx.fillStyle = 'rgba(16,16,16,.70)';
+  roundRect(ctx, 60, 146, 960, 138, 22);
+  ctx.fill();
   ctx.textAlign = 'center';
   ctx.fillStyle = '#fff';
-  ctx.font = canvasFont(700, 64);
-  wrapDraw(els.productName.value || '作品紹介', 540, 175, 880, 74);
-  ctx.fillStyle = 'rgba(16,16,16,.86)';
-  roundRect(ctx, 66, 1625, 948, 190, 22); ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.font = canvasFont(700, 48);
-  wrapDraw(slide.caption || '作品紹介', 540, 1688, 840, 56);
+  ctx.font = canvasFont(700, 54);
+  wrapDraw(els.productName.value || '作品紹介', 540, 198, 860, 62);
   ctx.fillStyle = '#d7c7b3';
-  ctx.font = canvasFont(400, 27);
-  wrapDraw(els.materialNote.value || 'leather craft', 540, 1770, 820, 34);
+  ctx.font = canvasFont(500, 28);
+  wrapDraw(els.materialNote.value || 'leather craft', 540, 260, 820, 34);
 }
 
 function drawNarrationSubtitle(slide, progress){
@@ -740,7 +840,7 @@ function drawNarrationSubtitle(slide, progress){
   const motion = slide.subtitleMotion || 'fadeUp';
   const text = trimSubtitle(slide.narration);
   const p = easeOut(clamp(progress, 0, 1));
-  const box = {x:88, y:1390, w:904, h:170};
+  const box = {x:108, y:1318, w:864, h:178};
   ctx.save();
 
   if(motion === 'fadeUp'){
@@ -834,6 +934,34 @@ function playTimeline(recordStream){
   });
 }
 
+async function playPreviewWithVoice(){
+  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+  saveSelected();
+  renderList();
+  stopSpeech(false);
+  schedulePreviewSpeech();
+  setLog('音声つきプレビューを再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。');
+  await playTimeline(false);
+  stopSpeech(false);
+  setLog('音声つきプレビューが終わりました。');
+}
+
+function previewCurrentSubtitleMotion(){
+  if(selected < 0 || !slides[selected]){ setLog('先に写真を追加してください。'); return; }
+  saveSelected();
+  renderList();
+  const start = performance.now();
+  const duration = Math.min(1.6, slides[selected].duration);
+  function tick(now){
+    const progress = clamp((now - start) / (duration * 1000), 0, 1);
+    drawFrame(timelineStart(selected) + slides[selected].duration * progress);
+    if(progress < 1) requestAnimationFrame(tick);
+    else setLog('字幕の動きを確認しました。');
+  }
+  setLog('字幕の動きを確認中です。');
+  requestAnimationFrame(tick);
+}
+
 async function recordVideo(withMic){
   if(!slides.length){ setLog('先に写真を追加してください。'); return; }
   if(!canRecordVideo()){
@@ -842,6 +970,7 @@ async function recordVideo(withMic){
     return;
   }
   saveSelected();
+  stopSpeech(false);
   els.downloadBox.style.display = 'none';
   chunks = [];
   const videoStream = canvas.captureStream(30);
@@ -879,16 +1008,76 @@ async function recordVideo(withMic){
 
 function speakScript(){
   saveSelected();
-  if(!('speechSynthesis' in window)){ setLog('このブラウザでは読み上げプレビューが使えません。'); return; }
-  speechSynthesis.cancel();
   const separator = els.narrationLang.value === 'en-US' ? '. ' : '。';
   const fallback = els.narrationLang.value === 'en-US' ? 'There is no narration text.' : 'セリフがありません。';
   const text = slides.map(slide => slide.narration).filter(Boolean).join(separator);
+  speakText(text || fallback, {
+    startLog: '音声だけ確認を再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。',
+    endLog: '音声だけ確認が終わりました。'
+  });
+}
+
+function schedulePreviewSpeech(){
+  if(!('speechSynthesis' in window)){
+    setLog('このブラウザでは読み上げプレビューが使えません。');
+    return;
+  }
+  slides.forEach((slide, index) => {
+    if(!slide.narration) return;
+    const timeout = window.setTimeout(() => {
+      speakText(slide.narration, {
+        cancelCurrent: true,
+        startLog: `${index + 1}枚目のセリフを読み上げ中です。`
+      });
+    }, timelineStart(index) * 1000);
+    speechTimers.push(timeout);
+  });
+}
+
+function speakText(text, options = {}){
+  if(!('speechSynthesis' in window)){
+    setLog('このブラウザでは読み上げプレビューが使えません。');
+    return false;
+  }
+  if(options.cancelCurrent !== false) cancelSpeechOutput();
+  const fallback = els.narrationLang.value === 'en-US' ? 'There is no narration text.' : 'セリフがありません。';
   const utterance = new SpeechSynthesisUtterance(text || fallback);
   utterance.lang = els.narrationLang.value || 'ja-JP';
+  utterance.volume = 1;
+  utterance.rate = els.narrationLang.value === 'en-US' ? .92 : 1;
+  utterance.pitch = 1;
   const selectedVoice = getSelectedVoice();
   if(selectedVoice) utterance.voice = selectedVoice;
-  speechSynthesis.speak(utterance);
+  utterance.onstart = () => { if(options.startLog) setLog(options.startLog); };
+  utterance.onend = () => {
+    activeUtterance = null;
+    if(options.endLog) setLog(options.endLog);
+  };
+  utterance.onerror = () => {
+    activeUtterance = null;
+    setLog('読み上げを開始できませんでした。別の音声を選ぶか、Chrome/Edgeで開いてください。');
+  };
+  activeUtterance = utterance;
+  window.setTimeout(() => {
+    speechSynthesis.speak(utterance);
+    if(speechSynthesis.paused) speechSynthesis.resume();
+  }, 60);
+  return true;
+}
+
+function stopSpeech(clearLog = false){
+  speechTimers.forEach(timeout => window.clearTimeout(timeout));
+  speechTimers = [];
+  cancelSpeechOutput();
+  if(clearLog) setLog('');
+}
+
+function cancelSpeechOutput(){
+  if('speechSynthesis' in window){
+    speechSynthesis.cancel();
+    if(speechSynthesis.paused) speechSynthesis.resume();
+  }
+  activeUtterance = null;
 }
 
 function populateVoices(){
@@ -910,6 +1099,61 @@ function getSelectedVoice(){
   return speechSynthesis.getVoices().find(voice => voice.name === els.voiceSelect.value) || null;
 }
 
+async function loadLeatherStock(){
+  if(!els.materialStockList) return;
+  try{
+    const response = await fetch(LEATHER_STOCK_CSV, {cache:'no-store'});
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+    const rows = parseCsv(await response.text());
+    const header = rows.shift() || [];
+    const nameIndex = header.indexOf('name');
+    const stockIndex = header.indexOf('stock_pct');
+    const items = rows.map(row => ({
+      name: (row[nameIndex] || '').trim(),
+      stock: (row[stockIndex] || '').trim()
+    })).filter(item => item.name);
+    els.materialStockList.innerHTML = '';
+    items.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.name;
+      option.label = item.stock ? `${item.name} / 在庫 ${item.stock}%` : item.name;
+      els.materialStockList.appendChild(option);
+    });
+    els.materialNote.placeholder = `在庫候補 ${items.length}件から選択、または手入力`;
+  }catch(err){
+    console.warn('Leather stock list could not be loaded.', err);
+    els.materialNote.placeholder = '素材・色を手入力';
+  }
+}
+
+function parseCsv(text){
+  const rows = [];
+  let row = [];
+  let field = '';
+  let quoted = false;
+  for(let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if(ch === '"'){
+      if(quoted && text[i + 1] === '"'){ field += '"'; i++; }
+      else quoted = !quoted;
+    }else if(ch === ',' && !quoted){
+      row.push(field);
+      field = '';
+    }else if((ch === '\n' || ch === '\r') && !quoted){
+      if(ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(field);
+      if(row.some(value => value !== '')) rows.push(row);
+      row = [];
+      field = '';
+    }else{
+      field += ch;
+    }
+  }
+  row.push(field);
+  if(row.some(value => value !== '')) rows.push(row);
+  return rows;
+}
+
 function canvasFont(weight, size){
   return `${weight} ${size}px ${videoFontFamily()}`;
 }
@@ -929,6 +1173,92 @@ function videoFontFamily(){
 function trimSubtitle(text){
   const normalized = String(text).replace(/\s+/g, ' ').trim();
   return normalized.length > 96 ? `${normalized.slice(0, 95)}…` : normalized;
+}
+
+function splitFeatureNotes(text){
+  const normalized = String(text || '').replace(/\r/g, '\n');
+  const lines = normalized.split(/\n+/).map(cleanFeatureLine).filter(Boolean);
+  if(lines.length > 1) return lines;
+  return normalized.split(/[。.!?！？]+|[、,・]+/)
+    .map(cleanFeatureLine)
+    .filter(Boolean);
+}
+
+function cleanFeatureLine(text){
+  return String(text || '').replace(/^\s*(?:[-*・]|\d+[\.)]|Photo\s*\d+\s*[:：-])\s*/i, '').trim();
+}
+
+function textsFromFeatureLine(featureText, index, english){
+  const clean = cleanFeatureLine(featureText);
+  const caption = featureCaption(clean, index);
+  return {
+    caption,
+    narration: english ? englishNarration(clean) : japaneseNarration(clean)
+  };
+}
+
+function featureCaption(text, index){
+  const clean = cleanFeatureLine(text);
+  if(!clean) return `写真 ${index + 1}`;
+  const firstSentence = clean.split(/[。.!?！？]/)[0].trim();
+  const short = firstSentence || clean;
+  return short.length > 24 ? `${short.slice(0, 23)}…` : short;
+}
+
+function englishNarration(text){
+  const clean = cleanFeatureLine(text).replace(/\s+/g, ' ');
+  if(!clean) return 'Please take a closer look at the handmade details in this photo.';
+  if(/[.!?]$/.test(clean) || clean.split(/\s+/).length >= 8) return ensureEnglishSentence(clean);
+  return `Here is a closer look at ${clean}. Please enjoy the texture and details shown in this photo.`;
+}
+
+function japaneseNarration(text){
+  const clean = cleanFeatureLine(text);
+  if(!clean) return '写真から伝わる質感をゆっくりご覧ください。';
+  if(/[。！？]$/.test(clean) || clean.length >= 18) return ensureJapaneseSentence(clean);
+  return `ここでは、${clean}をご紹介します。写真から伝わる質感をゆっくりご覧ください。`;
+}
+
+function ensureEnglishSentence(text){
+  return /[.!?]$/.test(text) ? text : `${text}.`;
+}
+
+function ensureJapaneseSentence(text){
+  return /[。！？]$/.test(text) ? text : `${text}。`;
+}
+
+function expandEnglishFeatureMemo(translated, targetCount){
+  const count = clamp(targetCount || 8, 1, 12);
+  const product = englishProductName(els.productName.value.trim());
+  const material = els.materialNote.value.trim() || 'the selected leather';
+  const sourceSentences = splitEnglishSentences(translated).filter(sentence => sentence.length >= 18);
+  const templates = [
+    `This video introduces ${product}. Please take in the overall balance, shape, and handmade presence.`,
+    `The material is ${material}. Notice the color, grain, and quiet depth of the leather.`,
+    `From this angle, the silhouette and proportions become easier to see.`,
+    `The surface texture changes with the light, giving the piece a natural expression.`,
+    `Please look closely at the stitching, edges, and small finishing details.`,
+    `The design is simple enough for daily use while still carrying a crafted character.`,
+    `As it is used, the leather will slowly develop a deeper and more personal look.`,
+    `Thank you for viewing this ${product} from N's factory.`
+  ];
+  const lines = [];
+  for(let i = 0; i < count; i++){
+    const source = sourceSentences[i];
+    lines.push(ensureEnglishSentence(source || templates[i % templates.length]));
+  }
+  return lines.join('\n');
+}
+
+function splitEnglishSentences(text){
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map(sentence => sentence.trim()) || [];
+}
+
+function englishProductName(value){
+  if(!value) return 'this leather craft piece';
+  return value.replace(/作品集/g, 'work collection').replace(/レザー作品/g, 'leather craft piece');
 }
 
 function wrapTextLines(text,maxWidth,maxLines){
@@ -1009,9 +1339,12 @@ function wrapDraw(text,x,y,maxWidth,lineHeight){
 els.photoInput.addEventListener('change', event => addFiles(event.target.files));
 els.loadDrivePhotos.addEventListener('click', addDrivePhotos);
 els.translateFeatureNote.addEventListener('click', translateLongDescToFeatureNote);
+els.distributeFeatureNote.addEventListener('click', () => distributeFeatureNoteToSlides());
 els.productNamePreset.addEventListener('change', applyProductNamePreset);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
-document.getElementById('playPreview').addEventListener('click', () => playTimeline(false));
+document.getElementById('playPreview').addEventListener('click', () => { stopSpeech(false); playTimeline(false); });
+els.playPreviewVoice.addEventListener('click', playPreviewWithVoice);
+els.previewSubtitleMotion.addEventListener('click', previewCurrentSubtitleMotion);
 document.getElementById('speakScript').addEventListener('click', speakScript);
 document.getElementById('recordSilent').addEventListener('click', () => recordVideo(false));
 document.getElementById('recordMic').addEventListener('click', () => recordVideo(true));
@@ -1019,10 +1352,19 @@ document.getElementById('moveUp').addEventListener('click', () => moveSelected(-
 document.getElementById('moveDown').addEventListener('click', () => moveSelected(1));
 document.getElementById('removeSlide').addEventListener('click', removeSelected);
 ['caption','narration','duration','transitionDuration','motion','transition','subtitleMotion'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => { saveSelected(); renderList(); drawFrame(selected >= 0 ? timelineStart(selected) : 0); });
+  const control = document.getElementById(id);
+  const redraw = () => {
+    saveSelected();
+    renderList();
+    if(id === 'subtitleMotion') previewCurrentSubtitleMotion();
+    else drawSelectedPreviewFrame(.35);
+  };
+  control.addEventListener('input', redraw);
+  control.addEventListener('change', redraw);
 });
 ['productName','materialNote'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
+  document.getElementById(id).addEventListener('change', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
 });
 els.videoFont.addEventListener('change', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
 els.narrationLang.addEventListener('change', populateVoices);
@@ -1031,6 +1373,7 @@ if('speechSynthesis' in window){
   populateVoices();
 }
 renderList();
+loadLeatherStock();
 drawFrame(0);
 refreshCapabilities();
 </script>
