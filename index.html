@@ -2262,10 +2262,35 @@ function nsfOpenStaffChat(staffId) {
     col.appendChild(meta);
     var bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
-    bubble.textContent = hello + '\nご質問があれば、下の入力欄からお気軽にどうぞ。';
+    bubble.textContent = hello + '\n作品をお探しの場合は下のカテゴリをどうぞ。ご質問は入力欄からお気軽に。';
     col.appendChild(bubble);
     div.appendChild(col);
     msgs.appendChild(div);
+
+    // 作品カテゴリ導線チップ（選ぶと絞り込み済みの作品集を新しいタブで開く）
+    // カテゴリ名は works.html の実データ（GAS）に準拠。?cat=完全一致／?q=部分一致検索
+    var CATEGORY_CHIPS = [
+      { label: '📔 システム手帳', url: 'works.html?cat=' + encodeURIComponent('システム手帳') },
+      { label: '📄 リフィル・手帳パーツ', url: 'works.html?q=' + encodeURIComponent('システム手帳用') },
+      { label: '👛 財布・ウォレット', url: 'works.html?q=' + encodeURIComponent('ウォレット') },
+      { label: '💳 カードケース', url: 'works.html?cat=' + encodeURIComponent('カードケース') },
+      { label: '🔑 キーケース・キーホルダー', url: 'works.html?q=' + encodeURIComponent('キー') },
+      { label: '🖼 すべての作品を見る', url: 'works.html' }
+    ];
+    var chipRow = document.createElement('div');
+    chipRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 4px 38px;';
+    CATEGORY_CHIPS.forEach(function (c) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chat-chip';
+      chip.textContent = c.label;
+      chip.addEventListener('click', function () {
+        window.open(c.url, '_blank', 'noopener');
+      });
+      chipRow.appendChild(chip);
+    });
+    msgs.appendChild(chipRow);
+    msgs.scrollTop = 0;
   }
 }
 

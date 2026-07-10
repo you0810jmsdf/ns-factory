@@ -1464,8 +1464,26 @@
           const numB = parseInt((b.id || '').replace(/\D/g, ''), 10) || 0;
           return numB - numA;
         });
+      applyUrlFilter();
       buildFilters();
       render();
+    }
+
+    // URLパラメータによる初期絞り込み（トップページのAIチャット等からの導線用）
+    //   ?cat=システム手帳 … カテゴリ完全一致（実在しないカテゴリは無視して全件表示）
+    //   ?q=ウォレット     … キーワード部分一致（検索ボックスに投入）
+    function applyUrlFilter() {
+      try {
+        const params = new URLSearchParams(location.search);
+        const cat = (params.get('cat') || '').trim();
+        const q = (params.get('q') || '').trim();
+        if (cat) {
+          const exists = works.some((w) =>
+            (w.category || '').split('／').map((c) => c.trim()).includes(cat));
+          if (exists) activeCategory = cat;
+        }
+        if (q && search) search.value = q;
+      } catch (e) { /* URLSearchParams非対応環境では何もしない */ }
     }
 
     function fetchJson(url) {
