@@ -71,6 +71,13 @@
       '申し訳ございません、只今お返事の準備に時間がかかっております。もう一度お試しください。'
     ];
 
+    // 2026-07-10 Phase2: 自由入力層の振り分け先（Nsfactory-HearingAI-Proxy）。
+    // 見積もり／作品提案／サイト案内の実務相談はこちらへ、幕僚キャラへの雑談・世間話は
+    // 従来通り Nsfactory-Showroom-AIChat（opts.apiUrl / SHOWROOM_CONFIG.chatApi）へ送る。
+    // Showroom-AIChat のGASコード自体は無編集（触れない方針を厳守）。
+    var HEARING_AI_PROXY_URL = opts.hearingApiUrl ||
+      'https://script.google.com/macros/s/AKfycbwABbFeZucU9N4k8YyhIKbUUo3JUTGX0vXPBuuX0mSEqIpblyZFtf66w7lCB9R_xkCE-w/exec';
+
     function getFallbackLines(staffId) {
       if (typeof opts.getFallbackLines === 'function') {
         return opts.getFallbackLines(staffId) || CHAT_FALLBACK_LINES;
@@ -574,6 +581,25 @@
     /* リング在庫の質問か判定 */
     function nsfDetectRingQuery(text) {
       return /リング/.test(text) && /(在庫|ある|あり|何|どんな|種類|色|サイズ|一覧|欲し|ほし)/.test(text);
+    }
+
+    /* 2026-07-10 Phase2: 自由入力の振り分け判定（実務相談 → HearingAI-Proxy／それ以外 → 従来のShowroom-AIChat）。
+       対象は「見積もり」「作品提案」「サイト案内（進捗確認等）」「オーダーの意思表示」の4系統。
+       方針: どのパターンにも明確に一致しない発言（雑談・世間話・グレーゾーン）は、
+       誤判定で幕僚キャラ雑談の体験を壊さないこと、HearingAI-Proxyの日次上限（20件/日）を
+       雑談で浪費しないことを優先し、あえて振り分けず従来のShowroom-AIChatに残す。 */
+    var BUSINESS_INTENT_PATTERNS = [
+      /見積|いくら|価格|値段|料金|予算|幾ら/,                          // 見積もり質問
+      /サンプル|おすすめ|提案して|似たよう|参考に|過去.{0,4}作品|ギャラリー|作れます?か|対応(できます|可能)|カスタム|仕様変更/, // 作品提案
+      /進捗|進み具合|どこで(見|確認)|ページ|リンク|url/i,               // サイト案内
+      /オーダー|注文|発注|作りたい/                                    // オーダーの意思表示
+    ];
+    function nsfDetectBusinessIntent(text) {
+      if (!text) return false;
+      for (var i = 0; i < BUSINESS_INTENT_PATTERNS.length; i++) {
+        if (BUSINESS_INTENT_PATTERNS[i].test(text)) return true;
+      }
+      return false;
     }
 
     /* 革の在庫の質問か判定（色指定なしの「革の在庫ある？」等） */
@@ -1154,14 +1180,33 @@
 
       showTyping();
 
-      var apiUrl = opts.apiUrl || (global.SHOWROOM_CONFIG && global.SHOWROOM_CONFIG.chatApi) || '';
-      var historySlice = chatHistories[staffId].slice(-CHAT_HISTORY_MAX - 1, -1);
+      // 2026-07-10 Phase2: 見積もり／作品提案／サイト案内の実務相談はHearingAI-Proxy（Claude・意図分岐）へ、
+      // それ以外（雑談・世間話・グレーゾーン）は従来通りShowroom-AIChat（Gemini・幕僚キャラ）へ振り分ける。
+      var useHearingAI = !!global.NSF_HEARING && nsfDetectBusinessIntent(text);
+
+      var apiUrl, payload, contentType;
+      if (useHearingAI) {
+        apiUrl = HEARING_AI_PROXY_URL;
+        contentType = 'application/json';
+        var systemPrompt = global.NSF_HEARING.buildSystemPrompt(hearingKB, hearingLeathers) || '';
+        var claudeHistory = chatHistories[staffId].slice(-CHAT_HISTORY_MAX).map(function (h) {
+          return { role: h.role === 'model' ? 'assistant' : 'user', content: h.text };
+        });
+        payload = JSON.stringify({ system: systemPrompt, history: claudeHistory });
+      } else {
+        apiUrl = opts.apiUrl || (global.SHOWROOM_CONFIG && global.SHOWROOM_CONFIG.chatApi) || '';
+        contentType = 'text/plain';
+        var historySlice = chatHistories[staffId].slice(-CHAT_HISTORY_MAX - 1, -1);
+        var payloadObj = { staffId: staffId, message: text, history: historySlice };
+        // venue: 'showroom'（3Dショールーム内）を明示した場合のみそのまま送る。
+        // 未指定（トップページ・商品ページ等）はGAS側で安全側の'site'として扱われる。
+        if (opts.venue) payloadObj.venue = opts.venue;
+        if (currentProductContext) payloadObj.productContext = currentProductContext;
+        payload = JSON.stringify(payloadObj);
+      }
 
       if (apiUrl) {
-        var payloadObj = { staffId: staffId, message: text, history: historySlice };
-        if (currentProductContext) payloadObj.productContext = currentProductContext;
-        var payload = JSON.stringify(payloadObj);
-        fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: payload })
+        fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': contentType }, body: payload })
           .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
           .then(function(data) {
             hideTyping();

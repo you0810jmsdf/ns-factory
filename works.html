@@ -961,7 +961,7 @@
         </div>
 
         <div class="oc-widget">
-          <button id="oc-trigger" class="oc-trigger" type="button">💬 同じものを革の種類、色について販売幕僚（AI）に相談する</button>
+          <button id="oc-trigger" class="oc-trigger" type="button">💬 オーダー相談AI（革の種類・色について相談する）</button>
           <img id="sc-avatar" src="" alt="" style="display:none;">
           <span id="sc-name" style="display:none;"></span>
         </div>
@@ -977,7 +977,7 @@
     <div class="oc-overlay-panel oc-widget">
       <div class="oc-overlay-head">
         <div class="oc-overlay-head-text">
-          <div id="oc-ai-badge" class="oc-ai-badge">💬 AI販売幕僚とオーダー相談中</div>
+          <div id="oc-ai-badge" class="oc-ai-badge">💬 オーダー相談AIと相談中</div>
           <span id="oc-overlay-product"></span>
         </div>
         <button id="oc-overlay-close" class="oc-overlay-close" type="button" aria-label="閉じる">×</button>
@@ -1356,7 +1356,7 @@
       if (ocOverlay) ocOverlay.classList.remove('oc-overlay-open');
       if (ocAiBadge) ocAiBadge.classList.remove('show');
       if (ocTrigger) {
-        ocTrigger.textContent = '💬 同じものを革の種類、色について販売幕僚（AI）に相談する';
+        ocTrigger.textContent = '💬 オーダー相談AI（革の種類・色について相談する）';
         ocTrigger.onclick = () => ocOpenChat(work);
       }
       const purchaseSel = document.getElementById('oc-purchase-method');
@@ -1395,7 +1395,7 @@
       if (ocChatArea) ocChatArea.classList.add('oc-open');
       if (ocOverlay) ocOverlay.classList.add('oc-overlay-open');
       if (ocAiBadge) ocAiBadge.classList.add('show');
-      if (ocTrigger) ocTrigger.textContent = '💬 販売幕僚（AIエージェント）に相談する';
+      if (ocTrigger) ocTrigger.textContent = '💬 オーダー相談AI 相談中';
 
       // SOLDOUT・再販予定なしの商品は、色選び直しの相談になりやすいため、
       // 該当商品の革系統に絞った色ギャラリーを自動表示する（革カタログ読込完了後）。
