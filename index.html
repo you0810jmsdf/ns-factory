@@ -33,21 +33,22 @@
 <style>
 /* ── Design Tokens ────────────────────────────────── */
 :root {
-  --color-primary:       #1D1D1F;
-  --color-primary-hover: #3A3A3C;
-  --color-accent:        #A0785A;
-  --color-accent-light:  #F3ECE4;
-  --color-accent-dark:   #7A5540;
-  --color-bg:            #FFFFFF;
-  --color-bg-sub:        #F5F5F7;
-  --color-border:        #E8E8ED;
-  --color-text:          #1D1D1F;
-  --color-text-sub:      #636366;
-  --color-text-mute:     #AEAEB2;
-  --shadow-xs:  0 1px 3px rgba(0,0,0,.06);
-  --shadow-sm:  0 2px 8px rgba(0,0,0,.08);
-  --shadow-md:  0 4px 16px rgba(0,0,0,.10);
-  --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+  /* アンティーク調パレット（2026-07-10 事業主指示: 羊皮紙×セピア×真鍮） */
+  --color-primary:       #3A2C1E;
+  --color-primary-hover: #55422E;
+  --color-accent:        #A6823F;
+  --color-accent-light:  #F0E6CE;
+  --color-accent-dark:   #7A5E2A;
+  --color-bg:            #F7F1E3;
+  --color-bg-sub:        #EFE5D0;
+  --color-border:        #DCCDAF;
+  --color-text:          #33291C;
+  --color-text-sub:      #6E5C44;
+  --color-text-mute:     #A08D6F;
+  --shadow-xs:  0 1px 3px rgba(74,52,18,.08);
+  --shadow-sm:  0 2px 8px rgba(74,52,18,.10);
+  --shadow-md:  0 4px 16px rgba(74,52,18,.13);
+  --shadow-lg:  0 8px 32px rgba(74,52,18,.16);
   --radius-sm:  8px;
   --radius-md:  12px;
   --radius-lg:  16px;
@@ -64,7 +65,7 @@
   gap:36px;
   align-items:center;
   padding:32px;
-  background:linear-gradient(135deg,#fff,var(--color-accent-light));
+  background:linear-gradient(135deg,#FCF7EB,var(--color-accent-light));
   border:1px solid var(--color-border);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow-sm);
@@ -91,7 +92,7 @@
   display:inline-flex;
   padding:6px 10px;
   border-radius:var(--radius-full);
-  background:#fff;
+  background:#FCF7EB;
   border:1px solid var(--color-border);
   color:var(--color-accent-dark);
   font-size:12px;
@@ -107,13 +108,19 @@
   border:1px solid var(--color-border);
   box-shadow:var(--shadow-md);
   overflow:hidden;
-  background:#fff;
+  background:#FCF7EB;
 }
 
 /* ── Reset ──────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--color-bg);color:var(--color-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+body{
+  background:var(--color-bg);
+  /* 羊皮紙の微妙なムラ（ごく薄い金の光沢を対角に2枚重ね） */
+  background-image:
+    linear-gradient(135deg, rgba(166,130,63,.045) 0%, rgba(166,130,63,0) 38%, rgba(166,130,63,.03) 100%),
+    radial-gradient(120% 90% at 20% 0%, rgba(255,250,235,.55) 0%, rgba(255,250,235,0) 60%);
+  color:var(--color-text);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
@@ -122,7 +129,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .nav{
   position:sticky;top:0;z-index:100;
   height:56px;
-  background:rgba(255,255,255,.82);
+  background:rgba(247,241,227,.88);
   backdrop-filter:blur(20px);
   -webkit-backdrop-filter:blur(20px);
   border-bottom:1px solid var(--color-border);
@@ -173,7 +180,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .nav-dropdown-caret{display:inline-block;margin-left:4px;font-size:10px;opacity:.7}
 .nav-dropdown-menu{
   position:absolute;top:calc(100% + 8px);right:0;
-  min-width:200px;background:#fff;
+  min-width:200px;background:#FCF7EB;
   border:1px solid var(--color-border);border-radius:var(--radius-md);
   box-shadow:var(--shadow-md);
   padding:8px 0;
@@ -197,7 +204,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   border-left:1px solid var(--color-border);
   flex-shrink:0;height:44px;
 }
-.nav-qr-img{width:44px;height:44px;background:#fff;border-radius:4px;padding:1px;flex-shrink:0}
+.nav-qr-img{width:44px;height:44px;background:#fff;border-radius:4px;padding:1px;flex-shrink:0}/* QR読み取り用に純白維持 */
 .nav-qr-img img,
 .nav-qr-img canvas{display:block;width:42px !important;height:42px !important}
 .nav-qr-label{
@@ -229,7 +236,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .qr-modal.open{display:flex}
 .qr-modal-inner{
   position:relative;
-  background:#fff;border-radius:16px;
+  background:#fff;border-radius:16px;/* QR読み取り用に純白維持 */
   padding:24px;
   width:min(80vmin,480px);
   display:flex;flex-direction:column;align-items:center;gap:16px;
@@ -252,7 +259,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .qr-modal-close{
   position:absolute;top:-12px;right:-12px;
   width:36px;height:36px;border-radius:50%;
-  background:#fff;color:var(--color-text);
+  background:#FCF7EB;color:var(--color-text);
   border:1px solid var(--color-border);
   font-size:18px;line-height:1;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
@@ -263,7 +270,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .hero{
   position:relative;
   min-height:520px;
-  background:#111;
+  background:#211709;
   overflow:hidden;
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -435,7 +442,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   padding:30px;
   border:1px solid var(--color-border);
   border-radius:var(--radius-lg);
-  background:linear-gradient(135deg,#fff 0%,#fbf8f4 100%);
+  background:linear-gradient(135deg,#FCF7EB 0%,#F3EAD6 100%);
   box-shadow:var(--shadow-sm);
 }
 .staff-lead p{
@@ -449,7 +456,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   overflow:hidden;
   border:1px solid var(--color-border);
   box-shadow:var(--shadow-md);
-  background:#111;
+  background:#211709;
 }
 .staff-lead-image img{
   width:100%;
@@ -475,7 +482,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   width:100%;
   height:auto;
   object-fit:contain;
-  background:#111;
+  background:#211709;
   display:block;
 }
 .staff-card-body{padding:18px}
@@ -566,7 +573,7 @@ h1,h2,h3{
   width:100%;
   height:auto;
   object-fit:contain;
-  background:#111;
+  background:#211709;
   border-radius:calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
   display:block;
 }
@@ -611,7 +618,7 @@ h1,h2,h3{
   width:100%;
   height:auto;
   object-fit:contain;
-  background:#111;
+  background:#211709;
   display:block;
   border-bottom:1px solid #c5a44e;
 }
@@ -981,7 +988,7 @@ h1,h2,h3{
   gap:32px;
   align-items:center;
   padding:32px;
-  background:linear-gradient(135deg,#fff,var(--color-accent-light));
+  background:linear-gradient(135deg,#FCF7EB,var(--color-accent-light));
   border:1px solid var(--color-border);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow-sm);
@@ -1000,7 +1007,7 @@ h1,h2,h3{
 .badge-semi{
   display:inline-flex;padding:4px 12px;
   border-radius:var(--radius-full);
-  background:#fff;border:1px solid var(--color-accent);
+  background:#FCF7EB;border:1px solid var(--color-accent);
   color:var(--color-accent-dark);font-size:12px;font-weight:600;
 }
 .new-arrival-title{font-size:24px;font-weight:700;line-height:1.35;margin-bottom:10px;letter-spacing:-.01em}
@@ -1024,7 +1031,7 @@ h1,h2,h3{
   border-radius:var(--radius-md);
   border:1px solid var(--color-border);
   box-shadow:var(--shadow-md);
-  overflow:hidden;background:#fff;
+  overflow:hidden;background:#FCF7EB;
 }
 @media(max-width:768px){
   .new-arrival-card{grid-template-columns:1fr;padding:24px}
@@ -1037,7 +1044,7 @@ h1,h2,h3{
   position:relative;
   display:flex;flex-direction:column;gap:16px;
   padding:26px 24px 22px;
-  background:linear-gradient(135deg,#fff,var(--color-accent-light));
+  background:linear-gradient(135deg,#FCF7EB,var(--color-accent-light));
   border:1px solid var(--color-border);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow-sm);
@@ -1128,7 +1135,7 @@ h1,h2,h3{
 /* ── note 連携カード ──────────────────────────────── */
 .note-connect-card{
   padding:36px 40px;
-  background:linear-gradient(135deg,#fff,var(--color-accent-light));
+  background:linear-gradient(135deg,#FCF7EB,var(--color-accent-light));
   border:1px solid var(--color-border);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow-sm);
@@ -1158,7 +1165,7 @@ h1,h2,h3{
 /* ── Planner Lineup（システム手帳フルオーダー要約） ── */
 .planner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
 .planner-size-card{
-  background:#fff;border:1px solid var(--color-border);border-radius:var(--radius-md);
+  background:#FCF7EB;border:1px solid var(--color-border);border-radius:var(--radius-md);
   padding:16px 12px;text-align:center;box-shadow:var(--shadow-xs);
   transition:transform var(--transition-base),box-shadow var(--transition-base);
 }
@@ -1236,7 +1243,7 @@ h1,h2,h3{
 }
 .staff-carousel-btn{
   width:42px;height:42px;border-radius:50%;
-  border:1px solid var(--color-border);background:#fff;
+  border:1px solid var(--color-border);background:#FCF7EB;
   font-size:16px;line-height:1;color:var(--color-text);cursor:pointer;
   box-shadow:var(--shadow-xs);font-family:inherit;
   transition:background var(--transition-base),transform var(--transition-base);
