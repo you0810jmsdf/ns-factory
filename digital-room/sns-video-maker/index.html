@@ -281,6 +281,7 @@ canvas{
         <div class="actions">
           <button class="primary" id="recordSilent">動画を保存（音声なし）</button>
           <button class="secondary" id="recordMic">マイク録音つきで保存</button>
+          <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveの作品フォルダへ保存</button>
         </div>
         <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.webm">完成動画をダウンロード</a></div>
         <div class="notice">自動音声を動画へ直接入れるにはサーバー側の音声合成が必要です。Web版βでは、読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
@@ -468,7 +469,8 @@ const els = {
   speakScript: document.getElementById('speakScript'),
   videoFont: document.getElementById('videoFont'),
   narrationLang: document.getElementById('narrationLang'),
-  voiceSelect: document.getElementById('voiceSelect')
+  voiceSelect: document.getElementById('voiceSelect'),
+  uploadVideoToDrive: document.getElementById('uploadVideoToDrive')
 };
 let slides = [];
 let selected = -1;
@@ -481,6 +483,8 @@ let draggedSlideIndex = null;
 let worksCatalog = [];
 let worksCatalogPromise = null;
 let currentWork = null;
+let lastRecordingBlob = null;
+let registerKey = '';
 
 function setLog(message){ els.log.textContent = message; }
 
@@ -758,9 +762,31 @@ function applyWorkInfo(work, {translate = false, showLog = false} = {}){
   if([...els.productNamePreset.options].some(option => option.value === presetValue)){
     els.productNamePreset.value = presetValue;
   }
+  // フォルダ番号は作品と共通のため、左ペインの作品番号も常に同期させる
+  const workNo = workNumberOf(work);
+  if(workNo) els.driveWorkNo.value = workNo;
+  refreshUploadButton();
   drawFrame(selected >= 0 ? timelineStart(selected) : 0);
   if(showLog) setLog(`作品集「${work.title}」の情報を反映しました。`);
   if(translate && work.longDesc) translateLongDescToFeatureNote({source: work.longDesc});
+}
+
+function workNumberOf(work){
+  const suffix = ((work && work.id ? work.id : '').match(/\d+$/) || [''])[0];
+  return suffix ? String(parseInt(suffix, 10)) : '';
+}
+
+async function syncWorkFromNumber(){
+  const digits = els.driveWorkNo.value.replace(/\D/g, '');
+  if(!digits) return;
+  await loadWorksCatalog();
+  const normalized = String(parseInt(digits, 10));
+  const work = worksCatalog.find(item => workNumberOf(item) === normalized);
+  if(work){
+    if(!currentWork || currentWork.id !== work.id) applyWorkInfo(work, {translate:false, showLog:true});
+  }else{
+    setLog(`作品番号 ${digits} は作品集に見つかりません。番号を確認してください（Drive読み込み自体は可能です）。`);
+  }
 }
 
 function formatWorkMeta(work){
@@ -1236,7 +1262,11 @@ async function recordVideo(withMic){
     els.downloadLink.href = url;
     els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}.webm`;
     els.downloadBox.style.display = 'block';
-    setLog('完成しました。完成動画を保存ボタンからダウンロードできます。');
+    lastRecordingBlob = blob;
+    refreshUploadButton();
+    setLog(currentWork && currentWork.folderId
+      ? '完成しました。ダウンロードのほか「Driveの作品フォルダへ保存」も使えます。'
+      : '完成しました。完成動画を保存ボタンからダウンロードできます。');
   };
   setLog(withMic ? '録画中です。セリフを読み上げてください。' : '動画を生成中です。');
   recorder.start();
@@ -1520,6 +1550,91 @@ function wrapTextLines(text,maxWidth,maxLines){
   return lines;
 }
 
+// ── Driveへの動画保存（register.htmlと同じ管理キーゲート） ──
+const REGISTER_KEY_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const UPLOAD_VIDEO_MAX_BYTES = 32 * 1024 * 1024;
+
+function refreshUploadButton(){
+  if(!els.uploadVideoToDrive) return;
+  const ready = !!(lastRecordingBlob && currentWork && currentWork.folderId);
+  els.uploadVideoToDrive.disabled = !ready;
+  els.uploadVideoToDrive.title = ready
+    ? `保存先: 作品「${currentWork.title}」のDriveフォルダ`
+    : (!lastRecordingBlob ? '先に「動画を保存」で録画してください' : '作品情報タブで作品を選択してください');
+}
+
+async function sha256Hex(text){
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function ensureRegisterKey(){
+  if(registerKey) return registerKey;
+  const saved = sessionStorage.getItem('nsf_admin_key') || '';
+  if(saved && await sha256Hex(saved) === REGISTER_KEY_HASH){
+    registerKey = saved;
+    return registerKey;
+  }
+  const input = window.prompt('管理キーを入力してください（Driveへの保存に必要です）');
+  if(!input) return '';
+  if(await sha256Hex(input) !== REGISTER_KEY_HASH){
+    setLog('管理キーが違います。');
+    return '';
+  }
+  registerKey = input;
+  try{ sessionStorage.setItem('nsf_admin_key', input); }catch(_){}
+  return registerKey;
+}
+
+function blobToBase64(blob){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = () => reject(new Error('動画データの読み込みに失敗しました。'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function dateStamp(){
+  const now = new Date();
+  return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+}
+
+async function uploadVideoToDrive(){
+  if(!lastRecordingBlob){ setLog('先に「動画を保存」で録画してください。'); return; }
+  if(!currentWork || !currentWork.folderId){ setLog('作品情報タブで作品を選択してください（保存先フォルダの特定に必要です）。'); return; }
+  if(lastRecordingBlob.size > UPLOAD_VIDEO_MAX_BYTES){
+    setLog(`動画が大きすぎます（${Math.round(lastRecordingBlob.size / 1024 / 1024)}MB）。表示秒数を短くして再録画してください。`);
+    return;
+  }
+  const key = await ensureRegisterKey();
+  if(!key) return;
+  els.uploadVideoToDrive.disabled = true;
+  setLog(`動画（${Math.round(lastRecordingBlob.size / 1024 / 1024 * 10) / 10}MB）をDriveへアップロード中です。1〜2分かかることがあります。`);
+  try{
+    const dataBase64 = await blobToBase64(lastRecordingBlob);
+    const payload = {
+      api: 'uploadVideo',
+      key,
+      folderId: currentWork.folderId,
+      filename: `${currentWork.id}_video_${dateStamp()}.webm`,
+      mimeType: 'video/webm',
+      dataBase64
+    };
+    const response = await fetch(SNS_VIDEO_DRIVE_API, {
+      method: 'POST',
+      body: new URLSearchParams({payload: JSON.stringify(payload)})
+    });
+    const data = await response.json();
+    if(!data.ok) throw new Error(data.message || data.error || 'アップロードに失敗しました。');
+    setLog(`Driveへ保存しました（${data.filename}）。作品集ページの「動画を見る」から再生できます。`);
+  }catch(err){
+    setLog(`Drive保存に失敗しました: ${err.message}`);
+  }finally{
+    refreshUploadButton();
+  }
+}
+
 function canRecordVideo(){
   return typeof MediaRecorder !== 'undefined' && typeof canvas.captureStream === 'function';
 }
@@ -1619,6 +1734,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => activateTab(btn.dataset.tab));
 });
 els.slides.addEventListener('click', () => { if(slides.length) activateTab('tab-slide'); });
+els.uploadVideoToDrive.addEventListener('click', uploadVideoToDrive);
+els.driveWorkNo.addEventListener('change', syncWorkFromNumber);
 renderList();
 loadWorksCatalog();
 loadLeatherStock();
