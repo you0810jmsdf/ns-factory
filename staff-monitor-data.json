@@ -1,11 +1,37 @@
 {
-  "generatedAt": "2026-07-09T23:22:55",
+  "generatedAt": "2026-07-10T11:12:22",
   "warnThresholdDays": 3,
+  "activeSessions": [
+    {
+      "started": "2026-07-10 06:29:35",
+      "updated": "2026-07-10 11:12:15"
+    },
+    {
+      "started": "2026-07-10 06:32:04",
+      "updated": "2026-07-10 11:09:59"
+    },
+    {
+      "started": "2026-07-10 06:37:41",
+      "updated": "2026-07-10 11:09:42"
+    },
+    {
+      "started": "2026-07-10 06:39:39",
+      "updated": "2026-07-10 11:08:39"
+    },
+    {
+      "started": "2026-07-10 06:35:09",
+      "updated": "2026-07-10 06:35:09"
+    },
+    {
+      "started": "2026-07-10 06:27:31",
+      "updated": "2026-07-10 06:27:34"
+    }
+  ],
   "staff": [
     {
       "name": "作戦幕僚",
       "lastLogDate": "2026-07-09",
-      "daysSinceLog": 0,
+      "daysSinceLog": 1,
       "overdueCount": 0,
       "openTotal": 13,
       "warning": false,
@@ -106,8 +132,8 @@
     {
       "name": "販売幕僚",
       "lastLogDate": "2026-07-08",
-      "daysSinceLog": 1,
-      "overdueCount": 0,
+      "daysSinceLog": 2,
+      "overdueCount": 1,
       "openTotal": 25,
       "warning": false,
       "openTasks": [
@@ -116,7 +142,7 @@
           "detail": "ジョイフルホンダカルチャースクール（レザークラフト講座）。準備・履歴は販売幕僚が管理。",
           "date": "2026-07-09",
           "status": "（未設定）",
-          "overdue": false
+          "overdue": true
         },
         {
           "title": "【JHCS】ジョイフルホンダカルチャースクール",
@@ -291,7 +317,7 @@
     {
       "name": "監理幕僚",
       "lastLogDate": "2026-07-09",
-      "daysSinceLog": 0,
+      "daysSinceLog": 1,
       "overdueCount": 1,
       "openTotal": 22,
       "warning": false,
@@ -455,7 +481,7 @@
     {
       "name": "広報幕僚",
       "lastLogDate": "2026-07-09",
-      "daysSinceLog": 0,
+      "daysSinceLog": 1,
       "overdueCount": 0,
       "openTotal": 1,
       "warning": false,
@@ -472,7 +498,7 @@
     {
       "name": "後方幕僚",
       "lastLogDate": "2026-07-07",
-      "daysSinceLog": 2,
+      "daysSinceLog": 3,
       "overdueCount": 0,
       "openTotal": 2,
       "warning": false,
@@ -496,11 +522,18 @@
     {
       "name": "保全幕僚",
       "lastLogDate": "2026-07-09",
-      "daysSinceLog": 0,
-      "overdueCount": 0,
-      "openTotal": 2,
+      "daysSinceLog": 1,
+      "overdueCount": 1,
+      "openTotal": 3,
       "warning": false,
       "openTasks": [
+        {
+          "title": "API・認証情報管理体制の抜本整備（全キー対象）",
+          "detail": "目的: 2026-07-09に発生したGitHubトークン誤指定事故（.env内に用途不明・死蔵トークンが混在し、有効なトークンを特定できず管理画面でエラーが発生した）を教訓に、全APIキー・トークン・パスワード管理の恒久的な体制を整備する。\n手段: 命名規則統一・コメントテンプレート必須化・構造化台帳自動生成・月次/四半期棚卸しルール新設・幕僚計画への有効期限登録運用化の4フェーズで、保全幕僚（ドキュメント整備）と後方幕僚（自動化スクリプト開発）が分担して実施する。対象は.env内の全キー（GitHub・Anthropic・Gemini・fal.ai・Pixian・SNS認証・公共料金パスワード等）。\n達成目標: (1)全キーに統一フォーマットのコメント(用途/対象システム/スコープ/発行日・有効期限/状態)が付与されている (2)有効期限のあるキーが幕僚計画に登録されている (3)月次確認チェックリストに棚卸し項目が追加されている (4).envから構造化台帳を自動生成するスクリプトが稼働している",
+          "date": "2026-07-09",
+          "status": "（未設定）",
+          "overdue": true
+        },
         {
           "title": "[月次] Threadsトークン期限確認・再取得",
           "detail": "Threadsアクセストークンの期限切れ見込み。再取得対応が必要。",
@@ -520,7 +553,7 @@
     {
       "name": "デジタル幕僚",
       "lastLogDate": "2026-07-09",
-      "daysSinceLog": 0,
+      "daysSinceLog": 1,
       "overdueCount": 0,
       "openTotal": 2,
       "warning": false,
@@ -544,7 +577,7 @@
     {
       "name": "人事幕僚",
       "lastLogDate": "2026-06-10",
-      "daysSinceLog": 29,
+      "daysSinceLog": 30,
       "overdueCount": 0,
       "openTotal": 0,
       "warning": false,
@@ -553,7 +586,7 @@
     {
       "name": "教育幕僚",
       "lastLogDate": "2026-05-25",
-      "daysSinceLog": 45,
+      "daysSinceLog": 46,
       "overdueCount": 0,
       "openTotal": 0,
       "warning": false,
