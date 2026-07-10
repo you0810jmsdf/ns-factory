@@ -5,328 +5,426 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SNS紹介動画メーカー Web版β | デジタル幕僚室 | N's factory</title>
 <meta name="description" content="作品写真からSNS紹介用の縦型動画をブラウザ上で作成するWeb版β。写真はサーバーへ送信せず、端末内で処理します。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#1d1d1f;
-  --muted:#62656b;
-  --line:#e6e8ee;
-  --paper:#ffffff;
-  --soft:#f6f8fb;
-  --accent:#9b6b45;
-  --accent-soft:#f4eadf;
-  --accent-dark:#6e4a31;
-  --blue:#245f9d;
-  --green:#2f7d51;
-  --danger:#b94a48;
-  --radius:8px;
-  --shadow:0 10px 32px rgba(30,30,35,.10);
-  font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+  /* アンティーク調パレット（2026-07-10 サイト統一デザイン: 羊皮紙×セピア×真鍮） */
+  --ink:#33291C;
+  --ink-sub:#6E5C44;
+  --mute:#A08D6F;
+  --line:#DCCDAF;
+  --paper:#FDF9EF;
+  --paper-deep:#F3EAD5;
+  --bg:#F7F1E3;
+  --brass:#A6823F;
+  --brass-dark:#7A5E2A;
+  --brass-light:#F0E6CE;
+  --sepia:#3A2C1E;
+  --danger:#9C4A38;
+  --radius:10px;
+  --shadow-sm:0 2px 8px rgba(74,52,18,.10);
+  --shadow-md:0 4px 16px rgba(74,52,18,.14);
+  font-family:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--soft);color:var(--ink);line-height:1.7}
-button,input,textarea,select{font:inherit}
+body{
+  margin:0;background:var(--bg);color:var(--ink);line-height:1.7;
+  background-image:
+    radial-gradient(ellipse at 15% -10%,rgba(166,130,63,.08),transparent 55%),
+    radial-gradient(ellipse at 95% 115%,rgba(58,44,30,.07),transparent 50%);
+  background-attachment:fixed;
+}
+button,input,textarea,select{font:inherit;color:var(--ink)}
 button{border:0;border-radius:var(--radius);cursor:pointer}
 button:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── ヘッダー ── */
 .nav{
-  height:56px;display:flex;align-items:center;gap:14px;padding:0 18px;
-  background:rgba(255,255,255,.92);backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;
+  height:60px;display:flex;align-items:center;gap:16px;padding:0 20px;
+  background:linear-gradient(180deg,#4A3826,var(--sepia));color:#EFE3C8;
+  border-bottom:2px solid var(--brass);position:sticky;top:0;z-index:10;box-shadow:var(--shadow-md);
 }
-.nav-title{font-weight:800;font-size:14px}
-.nav a{color:var(--muted);text-decoration:none;font-size:13px;margin-left:auto}
-.app{max-width:1240px;margin:0 auto;padding:22px 16px 48px}
-.status-band{
-  display:grid;grid-template-columns:1.2fr .8fr;gap:14px;align-items:stretch;margin-bottom:16px;
+.nav-title{font-family:'Cinzel','Zen Old Mincho',serif;font-weight:700;font-size:15px;letter-spacing:.14em;white-space:nowrap}
+.nav-title span{color:#D9BC7A}
+.nav-sub{font-size:11.5px;color:#C9B48C;letter-spacing:.06em}
+.nav a{
+  color:#D8C49A;text-decoration:none;font-size:12.5px;margin-left:auto;white-space:nowrap;
+  border:1px solid rgba(216,196,154,.45);padding:6px 14px;border-radius:9999px;transition:background .2s ease;
 }
-.intro,.privacy{
-  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;
+.nav a:hover{background:rgba(216,196,154,.14)}
+
+.app{max-width:1480px;margin:0 auto;padding:22px 18px 56px}
+
+/* ── リード文 ── */
+.hero{margin-bottom:14px}
+.hero h1{
+  font-size:22px;margin:0 0 2px;letter-spacing:.04em;
+  font-family:'Zen Old Mincho',serif;font-weight:700;
 }
-.intro h1{font-size:24px;margin:0 0 4px}
-.intro p,.privacy p{margin:0;color:var(--muted);font-size:13px}
-.privacy strong{color:var(--green)}
-.workflow{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;
-}
+.hero p{margin:0;color:var(--ink-sub);font-size:12.5px}
+.hero strong{color:var(--brass-dark)}
+
+/* ── 手順ストリップ ── */
+.workflow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .step{
+  display:flex;gap:10px;align-items:center;
   background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
-  padding:10px 12px;font-size:13px;color:var(--muted);
+  padding:9px 12px;font-size:11.5px;color:var(--ink-sub);box-shadow:var(--shadow-sm);
 }
-.step strong{display:block;color:var(--ink);font-size:14px}
-.layout{display:grid;grid-template-columns:390px 1fr;gap:16px;align-items:start}
+.step .num{
+  flex:none;width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(180deg,#B8934C,var(--brass-dark));color:#FFF9EA;
+  display:grid;place-items:center;font-family:'Cinzel',serif;font-weight:700;font-size:13px;
+}
+.step strong{display:block;color:var(--ink);font-size:13px;line-height:1.4}
+
+/* ── スタジオ3ペイン ── */
+.studio{display:grid;grid-template-columns:290px minmax(0,1fr) 380px;gap:16px;align-items:start}
+.stage{position:sticky;top:76px}
+
+/* ── パネル共通 ── */
 .panel{
   background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
-  padding:16px;box-shadow:0 1px 0 rgba(0,0,0,.02);
+  padding:16px;box-shadow:var(--shadow-sm);
 }
 .panel + .panel{margin-top:14px}
-.panel h2{font-size:16px;margin:0 0 12px}
-.field{margin-bottom:12px}
-.field label{display:block;font-size:12px;font-weight:800;color:var(--accent-dark);margin-bottom:4px}
-.field input,.field textarea,.field select{
-  width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:10px 11px;background:#fff;color:var(--ink);
+.panel h2,.export-box h2{
+  font-size:12.5px;margin:0 0 12px;letter-spacing:.22em;color:var(--brass-dark);
+  display:flex;align-items:center;gap:10px;font-weight:700;
 }
-.field textarea{min-height:88px;resize:vertical}
-.help{margin:-4px 0 12px;color:var(--muted);font-size:12px;line-height:1.7}
+.panel h2::after,.export-box h2::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+/* ── フォーム ── */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11.5px;font-weight:700;color:var(--brass-dark);margin-bottom:4px;letter-spacing:.04em}
+.field input,.field textarea,.field select{
+  width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;
+  background:#FFFDF6;color:var(--ink);transition:border-color .2s ease,box-shadow .2s ease;
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(166,130,63,.16);
+}
+.field textarea{min-height:84px;resize:vertical}
+.help{margin:-2px 0 12px;color:var(--mute);font-size:11.5px;line-height:1.7}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
-.primary{background:var(--accent);color:#fff;padding:10px 14px;font-weight:800}
-.secondary{background:var(--soft);color:var(--ink);padding:10px 14px;font-weight:700;border:1px solid var(--line)}
-.blue{background:var(--blue);color:#fff;padding:10px 14px;font-weight:800}
-.green{background:var(--green);color:#fff;padding:10px 14px;font-weight:800}
-.danger{background:#fff;color:var(--danger);padding:8px 10px;border:1px solid #e7c8c7}
-.slides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+
+/* ── ボタン ── */
+.primary{
+  background:linear-gradient(180deg,#B8934C,var(--brass-dark));color:#FFF9EA;
+  padding:10px 16px;font-weight:700;letter-spacing:.05em;box-shadow:var(--shadow-sm);
+}
+.primary:hover:not(:disabled){filter:brightness(1.08)}
+.secondary{
+  background:var(--paper);color:var(--brass-dark);padding:9px 14px;font-weight:700;
+  border:1px solid var(--brass);transition:background .2s ease;
+}
+.secondary:hover:not(:disabled){background:var(--brass-light)}
+.danger{background:#FFFDF6;color:var(--danger);padding:9px 12px;border:1px solid #D9B3A8}
+.danger:hover:not(:disabled){background:#F6E8E2}
+.file-btn{display:inline-flex;align-items:center;border-radius:var(--radius);cursor:pointer}
+
+/* ── 写真ライブラリ（左ペイン） ── */
+details.drive{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-deep);
+  padding:0 12px;margin:10px 0 12px;
+}
+details.drive summary{
+  cursor:pointer;padding:9px 0;font-weight:700;font-size:12px;color:var(--brass-dark);letter-spacing:.04em;
+}
+details.drive[open] summary{border-bottom:1px dashed var(--line);margin-bottom:10px}
+.slides{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;padding-right:2px}
 .slide-item{
-  display:grid;grid-template-columns:1fr;gap:8px;align-items:start;text-align:left;
-  border:1px solid var(--line);border-radius:var(--radius);padding:8px;background:#fff;min-width:0;
-  cursor:grab;touch-action:manipulation;
+  display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center;text-align:left;
+  border:1px solid var(--line);border-radius:var(--radius);padding:8px;background:#FFFDF6;min-width:0;
+  cursor:grab;touch-action:manipulation;transition:border-color .15s ease,background .15s ease;
 }
 .slide-item:active{cursor:grabbing}
-.slide-item.active{border-color:var(--accent);background:var(--accent-soft)}
+.slide-item.active{border-color:var(--brass);background:var(--brass-light);box-shadow:0 0 0 1px var(--brass)}
 .slide-item.dragging{opacity:.45}
-.slide-item.drag-over{border-color:var(--blue);box-shadow:0 0 0 2px rgba(36,95,157,.16)}
-.thumb{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:6px;background:var(--soft)}
-.slide-title{font-size:13px;font-weight:800;line-height:1.3}
-.slide-meta{font-size:12px;color:var(--muted)}
-.preview-wrap{
-  display:grid;grid-template-columns:minmax(300px,430px) 1fr;gap:16px;align-items:start;
-}
+.slide-item.drag-over{border-color:var(--sepia);box-shadow:0 0 0 2px rgba(58,44,30,.22)}
+.thumb{width:56px;aspect-ratio:4/5;object-fit:cover;border-radius:6px;background:var(--paper-deep)}
+.slide-title{font-size:12.5px;font-weight:700;line-height:1.45}
+.slide-meta{font-size:11px;color:var(--ink-sub)}
+
+/* ── ステージ（中央ペイン） ── */
 .canvas-shell{
-  background:#111;border-radius:var(--radius);padding:10px;box-shadow:var(--shadow);
+  background:linear-gradient(160deg,#3A2C1E,#211910);
+  border:1px solid var(--brass);border-radius:14px;padding:12px;
+  box-shadow:var(--shadow-md),inset 0 0 0 1px rgba(216,188,122,.18);
+  display:flex;justify-content:center;
 }
-canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:6px}
-.timeline{
-  height:10px;background:#dfe3ea;border-radius:999px;overflow:hidden;margin:12px 0 4px;
+canvas{
+  display:block;height:min(62vh,760px);width:auto;max-width:100%;
+  aspect-ratio:9/16;background:#111;border-radius:6px;
 }
-.timeline span{display:block;height:100%;width:0;background:var(--accent)}
+.timeline{height:8px;background:#E6D9B9;border-radius:9999px;overflow:hidden;margin:12px 0 8px;border:1px solid var(--line)}
+.timeline span{display:block;height:100%;width:0;background:linear-gradient(90deg,#B8934C,var(--brass-dark))}
 .now-script{
-  min-height:120px;border:1px solid var(--line);background:var(--soft);
-  border-radius:var(--radius);padding:12px;font-size:15px;
+  min-height:76px;border:1px dashed var(--brass);background:var(--paper-deep);
+  border-radius:var(--radius);padding:10px 14px;font-size:14px;color:var(--ink);
+}
+.transport{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.export-box{
+  margin-top:14px;background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);
 }
 .notice{
-  margin-top:10px;font-size:12px;color:var(--muted);background:#fff7ed;border:1px solid #efd7bd;
-  border-radius:var(--radius);padding:10px 12px;
+  margin-top:10px;font-size:11.5px;color:var(--ink-sub);background:var(--brass-light);
+  border:1px solid var(--line);border-radius:var(--radius);padding:9px 12px;
 }
 .download{display:none;margin-top:12px}
-.download a{display:inline-block;background:var(--green);color:#fff;text-decoration:none;border-radius:var(--radius);padding:10px 14px;font-weight:800}
-.log{margin-top:10px;color:var(--muted);font-size:12px;min-height:20px}
-@media(max-width:900px){
-  .status-band,.layout,.preview-wrap{grid-template-columns:1fr}
-  .workflow{grid-template-columns:1fr 1fr}
+.download a{
+  display:inline-block;background:linear-gradient(180deg,#B8934C,var(--brass-dark));color:#FFF9EA;
+  text-decoration:none;border-radius:var(--radius);padding:10px 16px;font-weight:700;letter-spacing:.05em;
+}
+.log{margin-top:10px;color:var(--ink-sub);font-size:12px;min-height:20px}
+
+/* ── 編集タブ（右ペイン） ── */
+.tabs{display:flex;border-bottom:2px solid var(--line);margin-bottom:14px}
+.tab-btn{
+  flex:1;background:none;padding:9px 2px;font-size:12.5px;font-weight:700;color:var(--mute);
+  border-bottom:2px solid transparent;margin-bottom:-2px;border-radius:0;letter-spacing:.02em;
+  transition:color .15s ease;
+}
+.tab-btn:hover{color:var(--brass-dark)}
+.tab-btn.active{color:var(--brass-dark);border-bottom-color:var(--brass)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── レスポンシブ ── */
+@media(max-width:1180px){
+  .studio{grid-template-columns:1fr}
+  .stage{position:static}
+  canvas{width:min(100%,420px);height:auto;margin:0 auto}
+  .slides{max-height:none;flex-direction:row;flex-wrap:wrap}
+  .slide-item{flex:0 0 calc(50% - 4px)}
 }
 @media(max-width:540px){
-  .workflow,.row{grid-template-columns:1fr}
-  .app{padding:16px 12px 36px}
-  .intro h1{font-size:21px}
+  .workflow,.row{grid-template-columns:1fr 1fr}
+  .app{padding:16px 12px 40px}
+  .hero h1{font-size:19px}
+  .nav-sub{display:none}
+  .slide-item{flex:1 1 100%}
 }
 </style>
 </head>
 <body>
 <header class="nav">
-  <span class="nav-title">SNS紹介動画メーカー Web版β</span>
+  <span class="nav-title">N'S FACTORY <span>MOVIE STUDIO</span></span>
+  <span class="nav-sub">SNS紹介動画メーカー Web版β</span>
   <a href="../">デジタル幕僚室へ戻る</a>
 </header>
 
 <main class="app">
-  <section class="status-band">
-    <div class="intro">
-      <h1>作品写真から、SNS用の縦型動画を作る</h1>
-      <p>写真を選び、見出しとセリフを整え、プレビューしながらWebM動画として保存します。</p>
-    </div>
-    <div class="privacy">
-      <p><strong>写真はアップロードされません。</strong> このページ内で読み込み、動画生成もブラウザ内で行います。公開版βのため、保存形式はWebMです。</p>
-    </div>
+  <section class="hero">
+    <h1>作品写真から、SNS用の縦型動画をつくる</h1>
+    <p><strong>写真はアップロードされません。</strong>読み込みから動画生成まで、すべてこのページ（ブラウザ内）で完結します。保存形式はWebMです。</p>
   </section>
 
   <section class="workflow" aria-label="操作手順">
-    <div class="step"><strong>1. 写真</strong>複数枚を追加</div>
-    <div class="step"><strong>2. セリフ</strong>写真ごとに編集</div>
-    <div class="step"><strong>3. 確認</strong>プレビュー再生</div>
-    <div class="step"><strong>4. 保存</strong>録画してWebM保存</div>
+    <div class="step"><span class="num">1</span><span><strong>写真</strong>左の一覧に追加</span></div>
+    <div class="step"><span class="num">2</span><span><strong>セリフ</strong>右のタブで編集</span></div>
+    <div class="step"><span class="num">3</span><span><strong>確認</strong>中央でプレビュー</span></div>
+    <div class="step"><span class="num">4</span><span><strong>保存</strong>WebMで書き出し</span></div>
   </section>
 
-  <div class="layout">
-    <aside>
+  <div class="studio">
+    <aside class="library">
       <section class="panel">
-        <h2>動画全体のメモ</h2>
-        <p class="help">ここは編集用メモです。サイトへ自動公開されません。ただし、作品名と素材・サイズ等は動画下方の情報として表示されます。</p>
-        <div class="field">
-          <label for="productNamePreset">作品名プリセット（作品集から選択）</label>
-          <select id="productNamePreset">
-            <option value="">作品集を読み込み中 / 手入力</option>
-            <option value="N's factory 作品集">N's factory 作品集</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="productName">作品名（動画下方の情報）</label>
-          <input id="productName" value="レザー作品" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="materialNote">素材・サイズ等（動画下方の情報）</label>
-          <input id="materialNote" list="materialStockList" value="革の質感と手仕事の仕立て" autocomplete="off">
-          <datalist id="materialStockList"></datalist>
-          <p class="help">作品集から自動入力します。手入力時は在庫リストの候補も選べます。</p>
-        </div>
-        <div class="field">
-          <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
-          <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
-        </div>
-        <div class="field">
-          <label for="workLongDesc">作品集の長文紹介（日本語）</label>
-          <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに取得します。英語へ変換して見どころメモに入力できます。"></textarea>
-        </div>
+        <h2>写真ライブラリ</h2>
         <div class="actions">
-          <label class="secondary" for="photoInput">写真を追加</label>
+          <label class="primary file-btn" for="photoInput">＋ 写真を追加</label>
           <input id="photoInput" type="file" accept="image/*" multiple hidden>
-          <button class="secondary" id="fillDefaults">空欄に案を入れる</button>
-          <button class="secondary" id="translateFeatureNote">英語に変換して8枚用メモへ</button>
-          <button class="secondary" id="distributeFeatureNote">見どころメモを写真へ配分</button>
         </div>
-      </section>
-
-      <section class="panel">
-        <h2>Driveから写真を追加</h2>
-        <p class="help">手動追加とは別に、N's factory公開用Driveフォルダ配下から作品番号で写真を読み込みます。</p>
-        <div class="field">
-          <label for="driveFolder">Google DriveフォルダURL / ID</label>
-          <input id="driveFolder" value="https://drive.google.com/drive/u/0/folders/1yhc1nSkAzwq_QOIQjbsrKQTeSvtdeH_3" autocomplete="off">
-        </div>
-        <div class="row">
+        <details class="drive">
+          <summary>Driveから読み込む</summary>
           <div class="field">
-            <label for="driveWorkNo">作品番号</label>
-            <input id="driveWorkNo" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
+            <label for="driveFolder">Google DriveフォルダURL / ID</label>
+            <input id="driveFolder" value="https://drive.google.com/drive/u/0/folders/1yhc1nSkAzwq_QOIQjbsrKQTeSvtdeH_3" autocomplete="off">
           </div>
-          <div class="field">
-            <label for="driveLimit">最大枚数</label>
-            <input id="driveLimit" type="number" min="1" max="12" value="8">
+          <div class="row">
+            <div class="field">
+              <label for="driveWorkNo">作品番号</label>
+              <input id="driveWorkNo" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="driveLimit">最大枚数</label>
+              <input id="driveLimit" type="number" min="1" max="12" value="8">
+            </div>
           </div>
-        </div>
-        <div class="actions">
-          <button class="secondary" id="loadDrivePhotos">Driveから写真を追加</button>
-        </div>
-        <p class="help">番号はフォルダ名または画像ファイル名に含まれる数字で照合します。</p>
-      </section>
-
-      <section class="panel">
-        <h2>写真一覧</h2>
-        <p class="help">写真カードをドラッグすると、動画の順番を入れ替えられます。</p>
+          <div class="actions">
+            <button class="secondary" id="loadDrivePhotos">Driveから写真を追加</button>
+          </div>
+          <p class="help">作品番号（フォルダ名・ファイル名の数字）で照合し、作品集の情報も自動反映します。</p>
+        </details>
+        <p class="help">カードをクリックで選択、ドラッグで動画の順番を入れ替えられます。</p>
         <div id="slides" class="slides"></div>
       </section>
     </aside>
 
-    <section>
-      <div class="preview-wrap">
-        <div class="canvas-shell">
-          <canvas id="previewCanvas" width="1080" height="1920"></canvas>
+    <section class="stage">
+      <div class="canvas-shell">
+        <canvas id="previewCanvas" width="1080" height="1920"></canvas>
+      </div>
+      <div class="timeline"><span id="progressBar"></span></div>
+      <div class="now-script" id="currentScript">写真を追加すると、ここにセリフが表示されます。</div>
+      <div class="transport">
+        <button class="primary" id="playPreviewVoice">▶ 音声つきプレビュー</button>
+        <button class="secondary" id="playPreview">映像だけ確認</button>
+        <button class="secondary" id="speakScript">音声だけ確認</button>
+      </div>
+      <div class="export-box">
+        <h2>書き出し</h2>
+        <div class="actions">
+          <button class="primary" id="recordSilent">動画を保存（音声なし）</button>
+          <button class="secondary" id="recordMic">マイク録音つきで保存</button>
         </div>
-
-        <div>
-          <section class="panel">
-            <h2>選択中写真の編集</h2>
-            <div class="field">
-              <label for="caption">写真ごとの見出し（一覧整理用）</label>
-              <input id="caption" autocomplete="off">
-            </div>
-            <div class="field">
-              <label for="narration">読むセリフ・台本</label>
-              <textarea id="narration"></textarea>
-            </div>
-            <div class="row">
-              <div class="field">
-                <label for="duration">表示秒数</label>
-                <input id="duration" type="number" min="1.8" max="12" step="0.2" value="3.5">
-              </div>
-              <div class="field">
-                <label for="transitionDuration">切替秒数</label>
-                <input id="transitionDuration" type="number" min="0.1" max="2" step="0.1" value="0.6">
-              </div>
-            </div>
-            <div class="row">
-              <div class="field">
-                <label for="motion">写真の動き</label>
-                <select id="motion">
-                  <option value="zoomIn">ズームイン</option>
-                  <option value="zoomOut">ズームアウト</option>
-                  <option value="panLeft">左へパン</option>
-                  <option value="panRight">右へパン</option>
-                  <option value="panUp">上へパン</option>
-                  <option value="panDown">下へパン</option>
-                  <option value="still">静止</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="transition">次写真への移行</label>
-                <select id="transition">
-                  <option value="fade">フェード</option>
-                  <option value="wipeLeft">左ワイプ</option>
-                  <option value="wipeRight">右ワイプ</option>
-                  <option value="slideLeft">左スライド</option>
-                  <option value="slideRight">右スライド</option>
-                  <option value="cut">カット</option>
-                </select>
-              </div>
-            </div>
-            <div class="field">
-              <label for="subtitleMotion">ナレーション字幕の動き</label>
-              <select id="subtitleMotion">
-                <option value="fadeUp">ふわっと下から表示</option>
-                <option value="typewriter">タイプ表示</option>
-                <option value="pop">一文字ずつポップ</option>
-                <option value="highlight">読み進みハイライト</option>
-                <option value="slideIn">横からスライド</option>
-                <option value="none">表示しない</option>
-              </select>
-            </div>
-            <div class="actions">
-              <button class="secondary" id="previewSubtitleMotion">字幕動きを確認</button>
-              <button class="secondary" id="moveUp">上へ</button>
-              <button class="secondary" id="moveDown">下へ</button>
-              <button class="danger" id="removeSlide">削除</button>
-            </div>
-          </section>
-
-          <section class="panel">
-            <h2>プレビュー・保存</h2>
-            <div class="field">
-              <label for="videoFont">動画内フォント</label>
-              <select id="videoFont">
-                <option value="system">標準ゴシック</option>
-                <option value="serif">上品な明朝</option>
-                <option value="rounded">やわらか丸ゴシック</option>
-                <option value="mincho">和文クラシック</option>
-                <option value="mono">クラフト記録風</option>
-                <option value="english">English clean</option>
-              </select>
-            </div>
-            <div class="row">
-              <div class="field">
-                <label for="narrationLang">読み上げ言語</label>
-                <select id="narrationLang">
-                  <option value="ja-JP">日本語</option>
-                  <option value="en-US">English</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="voiceSelect">読み上げ音声</label>
-                <select id="voiceSelect">
-                  <option value="">ブラウザ標準</option>
-                </select>
-              </div>
-            </div>
-            <div class="actions">
-              <button class="primary" id="playPreviewVoice">音声つきプレビュー</button>
-              <button class="secondary" id="playPreview">映像だけ確認</button>
-              <button class="secondary" id="speakScript">音声だけ確認</button>
-              <button class="green" id="recordSilent">動画を保存（音声なし）</button>
-              <button class="blue" id="recordMic">マイク録音つき保存</button>
-            </div>
-            <div class="timeline"><span id="progressBar"></span></div>
-            <div class="now-script" id="currentScript">写真を追加すると、ここにセリフが表示されます。</div>
-            <div class="notice">自動音声を動画へ直接入れるにはサーバー側の音声合成が必要です。Web版βでは、読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
-            <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.webm">完成動画を保存</a></div>
-            <div class="log" id="log"></div>
-          </section>
-        </div>
+        <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.webm">完成動画をダウンロード</a></div>
+        <div class="notice">自動音声を動画へ直接入れるにはサーバー側の音声合成が必要です。Web版βでは、読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
+        <div class="log" id="log"></div>
       </div>
     </section>
+
+    <aside class="editor">
+      <section class="panel">
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-tab="tab-info" type="button">作品情報</button>
+          <button class="tab-btn" data-tab="tab-slide" type="button">選択中の写真</button>
+          <button class="tab-btn" data-tab="tab-output" type="button">出力設定</button>
+        </div>
+
+        <div class="tab-panel active" id="tab-info">
+          <p class="help">ここは編集用メモです。サイトへ自動公開されません。作品名と素材・サイズ等は動画下方の情報として表示されます。</p>
+          <div class="field">
+            <label for="productNamePreset">作品名プリセット（作品集から選択）</label>
+            <select id="productNamePreset">
+              <option value="">作品集を読み込み中 / 手入力</option>
+              <option value="N's factory 作品集">N's factory 作品集</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="productName">作品名（動画下方の情報）</label>
+            <input id="productName" value="レザー作品" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="materialNote">素材・サイズ等（動画下方の情報）</label>
+            <input id="materialNote" list="materialStockList" value="革の質感と手仕事の仕立て" autocomplete="off">
+            <datalist id="materialStockList"></datalist>
+            <p class="help">作品集から自動入力します。手入力時は在庫リストの候補も選べます。</p>
+          </div>
+          <div class="field">
+            <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
+            <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
+          </div>
+          <div class="field">
+            <label for="workLongDesc">作品集の長文紹介（日本語）</label>
+            <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに取得します。英語へ変換して見どころメモに入力できます。"></textarea>
+          </div>
+          <div class="actions">
+            <button class="secondary" id="fillDefaults">空欄に案を入れる</button>
+            <button class="secondary" id="translateFeatureNote">長文紹介を英語メモへ変換</button>
+            <button class="secondary" id="distributeFeatureNote">見どころメモを写真へ配分</button>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-slide">
+          <p class="help">左の一覧で写真を選ぶと、ここで1枚ずつ編集できます。</p>
+          <div class="field">
+            <label for="caption">写真ごとの見出し（一覧整理用）</label>
+            <input id="caption" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="narration">読むセリフ・台本</label>
+            <textarea id="narration"></textarea>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="duration">表示秒数</label>
+              <input id="duration" type="number" min="1.8" max="12" step="0.2" value="3.5">
+            </div>
+            <div class="field">
+              <label for="transitionDuration">切替秒数</label>
+              <input id="transitionDuration" type="number" min="0.1" max="2" step="0.1" value="0.6">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="motion">写真の動き</label>
+              <select id="motion">
+                <option value="zoomIn">ズームイン</option>
+                <option value="zoomOut">ズームアウト</option>
+                <option value="panLeft">左へパン</option>
+                <option value="panRight">右へパン</option>
+                <option value="panUp">上へパン</option>
+                <option value="panDown">下へパン</option>
+                <option value="still">静止</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="transition">次写真への移行</label>
+              <select id="transition">
+                <option value="fade">フェード</option>
+                <option value="wipeLeft">左ワイプ</option>
+                <option value="wipeRight">右ワイプ</option>
+                <option value="slideLeft">左スライド</option>
+                <option value="slideRight">右スライド</option>
+                <option value="cut">カット</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="subtitleMotion">ナレーション字幕の動き</label>
+            <select id="subtitleMotion">
+              <option value="fadeUp">ふわっと下から表示</option>
+              <option value="typewriter">タイプ表示</option>
+              <option value="pop">一文字ずつポップ</option>
+              <option value="highlight">読み進みハイライト</option>
+              <option value="slideIn">横からスライド</option>
+              <option value="none">表示しない</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button class="secondary" id="previewSubtitleMotion">字幕動きを確認</button>
+            <button class="secondary" id="moveUp">上へ</button>
+            <button class="secondary" id="moveDown">下へ</button>
+            <button class="danger" id="removeSlide">削除</button>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-output">
+          <p class="help">動画内の文字フォントと、確認用読み上げの音声を設定します。</p>
+          <div class="field">
+            <label for="videoFont">動画内フォント</label>
+            <select id="videoFont">
+              <option value="system">標準ゴシック</option>
+              <option value="serif">上品な明朝</option>
+              <option value="rounded">やわらか丸ゴシック</option>
+              <option value="mincho">和文クラシック</option>
+              <option value="mono">クラフト記録風</option>
+              <option value="english">English clean</option>
+            </select>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="narrationLang">読み上げ言語</label>
+              <select id="narrationLang">
+                <option value="ja-JP">日本語</option>
+                <option value="en-US">English</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="voiceSelect">読み上げ音声</label>
+              <select id="voiceSelect">
+                <option value="">ブラウザ標準</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+    </aside>
   </div>
 </main>
 
@@ -1513,6 +1611,14 @@ if('speechSynthesis' in window){
   speechSynthesis.onvoiceschanged = populateVoices;
   populateVoices();
 }
+function activateTab(name){
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === name));
+}
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+});
+els.slides.addEventListener('click', () => { if(slides.length) activateTab('tab-slide'); });
 renderList();
 loadWorksCatalog();
 loadLeatherStock();
