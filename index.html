@@ -517,12 +517,9 @@ h1,h2,h3{
   font-family:'Cinzel','Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
 }
 
-/* ── 個人事業主カード（総司令官・単独中央）────────────── */
-.staff-commander-wrap{
-  display:flex;
-  justify-content:center;
-  margin-bottom:46px;
-}
+/* ── 個人事業主カード（総司令官・幕僚グリッドの先頭スライド）────── */
+/* 幕僚グリッド／カルーセルのスライド幅に合わせて固定幅を解除 */
+.staff-slide .staff-commander{width:100%}
 .staff-commander{
   position:relative;
   width:min(320px,90vw);
@@ -1693,22 +1690,21 @@ h1,h2,h3{
         <img src="./assets/staff/all agent.png" alt="N's factory スタッフ集合">
       </div>
     </div>
-    <!-- 個人事業主：単独中央 -->
-    <div class="staff-commander-wrap">
-      <div class="staff-commander">
-        <span class="commander-badge">総司令官</span>
-        <a href="./profile.html" class="staff-commander-link" aria-label="個人事業主のプロフィールを見る">
-          <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主（総司令官）。経営方針と行動指針を掲げる N's factory の指揮官。">
-          <div class="staff-card-body">
-            <p class="staff-tagline">事業全体を率いる総司令官</p>
-            <span class="staff-cta-primary">プロフィールを見る</span>
-          </div>
-        </a>
-        <a href="https://note.com/you0810jmsdf/membership" class="staff-cta-secondary" target="_blank" rel="noopener">AI経営奮闘記（note）を読む →</a>
-      </div>
-    </div>
-    <!-- 幕僚グリッド -->
+    <!-- 幕僚グリッド（総司令官も同じ列に並べる） -->
     <div class="staff-grid">
+      <div class="staff-slide commander-slide">
+        <div class="staff-commander">
+          <span class="commander-badge">総司令官</span>
+          <a href="./profile.html" class="staff-commander-link" aria-label="個人事業主のプロフィールを見る">
+            <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主（総司令官）。経営方針と行動指針を掲げる N's factory の指揮官。">
+            <div class="staff-card-body">
+              <p class="staff-tagline">事業全体を率いる総司令官</p>
+              <span class="staff-cta-primary">プロフィールを見る</span>
+            </div>
+          </a>
+          <a href="https://note.com/you0810jmsdf/membership" class="staff-cta-secondary" target="_blank" rel="noopener">AI経営奮闘記（note）を読む →</a>
+        </div>
+      </div>
       <a class="staff-card" href="./sakusen-room/" style="display:block;color:inherit;text-decoration:none;">
         <span class="staff-badge">作戦幕僚</span>
         <img src="./assets/staff/sakusen.png" alt="作戦幕僚">
@@ -2483,7 +2479,7 @@ function nsfOpenStaffChat(staffId) {
   if (!reduceMotion && 'IntersectionObserver' in window) {
     var targets = [];
     document.querySelectorAll(
-      '.section-header,.new-arrival-card,.note-connect-card,.staff-lead,.staff-commander,' +
+      '.section-header,.new-arrival-card,.note-connect-card,.staff-lead,' +
       '.ai-lead,.ai-concierge-actions,.ai-tip-box,.planner-note,.planner-actions'
     ).forEach(function (el) { targets.push(el); });
     document.querySelectorAll('.planner-grid > .planner-size-card').forEach(function (el, i) {
