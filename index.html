@@ -1223,8 +1223,11 @@ h1,h2,h3{
 .staff-stage{
   position:sticky;top:64px;
   overflow:hidden;
-  /* 上下余白は金バッジ・拡大カード・斜め移動（±45px）のクリップ防止 */
-  padding:60px 0 64px;
+  /* 上下余白は金バッジ・拡大カード(1.28倍)・斜め移動（±100px）のクリップ防止 */
+  padding:170px 0 160px;
+}
+@media (max-width:768px){
+  .staff-stage{padding:100px 0 92px}
 }
 .staff-stage-hint{
   font-size:12px;color:var(--color-text-sub);
@@ -2440,7 +2443,7 @@ function nsfOpenStaffChat(staffId) {
     var totalShift = 0;   // 先頭カード中央→最後尾カード中央までの移動距離
     var startX = 0;       // 開始時: 先頭カードをステージ中央に置くオフセット
     var stickyTop = 64;
-    var DIAG_Y = 90;      // 斜め移動の縦成分（進捗0→1で -45px→+45px）
+    var DIAG_Y = 200;     // 斜め移動の縦成分（進捗0→1で -100px→+100px。スマホは縮小）
 
     function layout() {
       var slideW = slides[0] ? slides[0].getBoundingClientRect().width : 300;
