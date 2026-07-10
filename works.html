@@ -331,6 +331,7 @@
       min-height: 0;
       display: grid;
       place-items: center;
+      position: relative;
     }
     .modal-img {
       max-width: 100%;
@@ -338,6 +339,42 @@
       border-radius: var(--radius);
       object-fit: contain;
       background: #111820;
+    }
+    .modal-video {
+      width: 100%;
+      height: 100%;
+      min-height: 320px;
+      border: 0;
+      border-radius: var(--radius);
+      background: #000;
+    }
+    .modal-video[hidden] { display: none; }
+    .modal-video-btn {
+      position: absolute;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      background: rgba(12, 12, 14, .78);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .5);
+      border-radius: 999px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .modal-video-btn:hover { background: rgba(12, 12, 14, .92); }
+    .modal-video-btn[hidden] { display: none; }
+    .badge-video {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #1d2733;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      vertical-align: middle;
     }
     .modal-detail {
       overflow-y: auto;
@@ -901,6 +938,8 @@
     <div class="modal-stage">
       <div class="modal-media">
         <img id="modal-img" class="modal-img" src="" alt="">
+        <iframe id="modal-video" class="modal-video" src="" title="作品紹介動画" allow="autoplay; fullscreen" allowfullscreen hidden></iframe>
+        <button id="modal-video-btn" class="modal-video-btn" type="button" hidden>▶ 動画を見る</button>
       </div>
       <aside class="modal-detail">
         <div id="admin-price-panel" class="admin-price-panel" hidden>
@@ -1172,7 +1211,7 @@
             : '<span class="thumb-placeholder">写真を読み込み中</span>'}
           <span class="card-body">
             ${work.id ? `<span class="work-id" data-id="${esc(work.id)}" onclick="copyWorkId(event, this)" title="クリックでIDをコピー">ID: ${esc(work.id)}</span>` : ''}
-            <span class="work-title">${esc(work.title)}${badge}</span>
+            <span class="work-title">${esc(work.title)}${badge}${work.videos && work.videos.length ? '<span class="badge-video">🎬 動画</span>' : ''}</span>
             <span class="work-details">
               ${compact([work.category, work.material, work.color]) ? `<span>${esc(compact([work.category, work.material, work.color]))}</span>` : ''}
               ${compact([work.size, formatPrice(work.price)]) ? `<span>${esc(compact([work.size, formatPrice(work.price)]))}</span>` : ''}
@@ -1368,14 +1407,43 @@
       }
     }
 
+    // ===== 作品紹介動画（Driveプレビュープレーヤーで再生） =====
+    const modalVideo = document.getElementById('modal-video');
+    const modalVideoBtn = document.getElementById('modal-video-btn');
+    let videoMode = false;
+
+    function exitVideoMode() {
+      videoMode = false;
+      modalVideo.hidden = true;
+      modalVideo.src = ''; // 再生停止（閉じた後に音が鳴り続けるのを防ぐ）
+      modalImg.style.display = '';
+      modalVideoBtn.textContent = '▶ 動画を見る';
+    }
+
+    function enterVideoMode() {
+      if (!activeWork || !activeWork.videos || !activeWork.videos.length) return;
+      videoMode = true;
+      modalVideo.src = 'https://drive.google.com/file/d/' + encodeURIComponent(activeWork.videos[0].id) + '/preview';
+      modalVideo.hidden = false;
+      modalImg.style.display = 'none';
+      modalVideoBtn.textContent = '📷 写真に戻る';
+    }
+
+    modalVideoBtn.addEventListener('click', () => {
+      if (videoMode) exitVideoMode();
+      else enterVideoMode();
+    });
+
     function updateModal() {
       if (!activeWork) return;
+      if (videoMode) exitVideoMode(); // 写真送り・作品切替時は写真表示へ戻す
       const total = activeWork.photos.length;
       activeIndex = (activeIndex + total) % total;
       modalTitle.textContent = activeWork.title;
       modalCount.textContent = `${activeIndex + 1} / ${total}`;
       modalImg.src = activeWork.photos[activeIndex];
       modalImg.alt = activeWork.title;
+      modalVideoBtn.hidden = !(activeWork.videos && activeWork.videos.length);
       modalMeta.innerHTML = [
         compact([activeWork.category, activeWork.material, activeWork.color]),
         compact([activeWork.size, formatPrice(activeWork.price)]),
@@ -1400,15 +1468,15 @@
     });
 
     search.addEventListener('input', render);
-    closeModal.addEventListener('click', () => modal.classList.remove('open'));
+    closeModal.addEventListener('click', () => { exitVideoMode(); modal.classList.remove('open'); });
     prevPhoto.addEventListener('click', () => { activeIndex -= 1; updateModal(); });
     nextPhoto.addEventListener('click', () => { activeIndex += 1; updateModal(); });
     modal.addEventListener('click', (event) => {
-      if (event.target === modal) modal.classList.remove('open');
+      if (event.target === modal) { exitVideoMode(); modal.classList.remove('open'); }
     });
     window.addEventListener('keydown', (event) => {
       if (!modal.classList.contains('open')) return;
-      if (event.key === 'Escape') modal.classList.remove('open');
+      if (event.key === 'Escape') { exitVideoMode(); modal.classList.remove('open'); }
       if (event.key === 'ArrowLeft') { activeIndex -= 1; updateModal(); }
       if (event.key === 'ArrowRight') { activeIndex += 1; updateModal(); }
     });
@@ -1432,6 +1500,7 @@
           noRestock: !!item.noRestock,
           folderId: item.folderId || '',
           mainPhoto: item.mainPhoto || '',
+          videos: [],
           photosLoaded: !item.folderId,
           photosLoading: false,
           photos: item.folderId
@@ -1445,6 +1514,7 @@
         title,
         photos,
         folderId: '',
+        videos: [],
         photosLoaded: true,
         category: '',
         material: '',
@@ -1534,7 +1604,15 @@
       const url = `${LIVE_WORKS_API.replace('api=products', 'api=photos')}&folderId=${encodeURIComponent(work.folderId)}`;
       work.photosLoading = fetchJsonp(url)
         .then((photos) => {
-          const urls = (photos || []).map((photo) => photo.url || photo).filter(Boolean);
+          const items = Array.isArray(photos) ? photos.filter(Boolean) : [];
+          // 動画（SNS動画メーカーでDrive保存したWebM等）は kind:'video' で届く
+          work.videos = items
+            .filter((item) => item && item.kind === 'video' && item.videoId)
+            .map((item) => ({ name: item.name || '', id: item.videoId }));
+          const urls = items
+            .filter((item) => !(item && item.kind === 'video'))
+            .map((photo) => photo.url || photo)
+            .filter(Boolean);
           if (urls.length) {
             // 代表写真（mainPhoto）の Drive ID と一致するものを先頭に並び替える
             if (work.mainPhoto) {
