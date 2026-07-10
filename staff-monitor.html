@@ -64,6 +64,21 @@ body{
 .task-item .t-detail{margin-top:3px;color:#7a5a3f;white-space:pre-wrap;line-height:1.5}
 .task-item .t-status{font-size:11px;color:#999}
 
+.sessions-bar{
+  background:#fff;border:1px solid #eadccf;border-radius:14px;padding:12px 18px;
+  box-shadow:0 4px 14px rgba(44,26,14,.08);margin-bottom:16px;
+}
+.sessions-bar h2{margin:0 0 8px;font-size:14px;color:#3d1a08;display:flex;align-items:center;gap:8px}
+.sessions-bar .count{font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;background:#1e7a45;color:#fff}
+.sessions-bar .count.zero{background:#eee;color:#666}
+.sess-chips{display:flex;flex-wrap:wrap;gap:8px}
+.sess-chip{
+  font-size:12px;color:#5a4534;background:#f5f0eb;border:1px solid #eadccf;
+  border-radius:8px;padding:5px 10px;
+}
+.sess-chip b{color:#1e7a45}
+.sessions-note{margin:8px 0 0;font-size:11px;color:#999}
+
 .auth-overlay{
   position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
   padding:20px;background:rgba(44,26,14,.62);backdrop-filter:blur(4px);
@@ -93,6 +108,11 @@ body{
     <div class="meta-row">
       <span id="generatedAt">読み込み中…</span>
       <button class="btn" onclick="loadData()">再読み込み</button>
+    </div>
+    <div class="sessions-bar" id="sessionsBar" style="display:none">
+      <h2>🖥 稼働中セッション <span class="count" id="sessCount">–</span></h2>
+      <div class="sess-chips" id="sessChips"></div>
+      <p class="sessions-note">※ 各セッションの作業内容はローカルモニタ（経営戦略本部\モニタ）でのみ閲覧可能。公開データは時刻のみ。</p>
     </div>
     <div class="grid" id="grid">
       <div class="empty">読み込み中…</div>
@@ -198,6 +218,20 @@ function renderStaff(s, idx) {
   `;
 }
 
+function renderSessions(sessions) {
+  const bar = document.getElementById('sessionsBar');
+  const countEl = document.getElementById('sessCount');
+  const chipsEl = document.getElementById('sessChips');
+  bar.style.display = 'block';
+  countEl.textContent = sessions.length + '件';
+  countEl.className = 'count' + (sessions.length === 0 ? ' zero' : '');
+  chipsEl.innerHTML = sessions.length === 0
+    ? '<span class="sess-chip">現在稼働中のセッションはありません</span>'
+    : sessions.map((s) => `
+      <span class="sess-chip">開始 ${escapeHtml(s.started)}<br>更新 <b>${escapeHtml(s.updated)}</b></span>
+    `).join('');
+}
+
 async function loadData() {
   const grid = document.getElementById('grid');
   const metaEl = document.getElementById('generatedAt');
@@ -208,6 +242,7 @@ async function loadData() {
     const data = await res.json();
     metaEl.textContent = '最終更新: ' + (data.generatedAt || '不明')
       + '（さぼり警告条件: 日誌' + data.warnThresholdDays + '日以上未記載 かつ 期限超過タスクあり）';
+    renderSessions(data.activeSessions || []);
     const list = data.staff || [];
     if (!list.length) {
       grid.innerHTML = '<div class="empty">データがありません</div>';
