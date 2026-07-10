@@ -731,6 +731,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="sales" data-admin-cat="keiei" role="tab" aria-selected="false">💹 売上分析</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="customers" data-admin-cat="keiei" role="tab" aria-selected="false">👥 顧客マスタ</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="receipt-checklist" data-admin-cat="keiei" role="tab" aria-selected="false">🧾 証憑チェックリスト</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
       <!-- 📦 在庫管理 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ring" data-admin-cat="stock" role="tab" aria-selected="false">リング在庫</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="leather" data-admin-cat="stock" role="tab" aria-selected="false">🎨 革在庫</button>
@@ -785,6 +786,30 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#1D1D1F"
         title="売上ダッシュボード"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- 幕僚稼働タブ -->
+    <div class="panel staff-monitor-section admin-section-hidden" id="staffMonitorPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:#8a6a4a">セッション稼働数・さぼり警告・期限超過タスクの監視。認証は本画面と共通・自動ログイン</div>
+        <a href="../staff-monitor.html" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+        <a href="http://localhost:8770/" target="_blank" rel="noopener"
+           title="自宅PCで monitor_server.py を起動している場合のみ開けます（リアルタイム・作業内容表示・完了操作つき）"
+           style="background:#0d1117;border:1px solid #30363d;border-radius:999px;padding:6px 12px;font-size:12px;color:#4ade80;text-decoration:none">
+          🖥 ローカル詳細モニタ（自宅PC専用）
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット -->
+      <iframe
+        id="staffMonitorFrame"
+        data-src="../staff-monitor.html"
+        src="about:blank"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
+        title="幕僚稼働監視"
         loading="lazy"></iframe>
     </div>
 
@@ -1576,6 +1601,8 @@ function unlockAdmin() {
     const link = document.getElementById('calendarOpenLink');
     if (link) link.href = link.href.split('?')[0] + '?key=' + encodeURIComponent(key);
   }
+  // 幕僚稼働監視（staff-monitor.html）は同一パスワードのため、認証通過を引き継ぐ
+  try { sessionStorage.setItem('nsfactory-staff-monitor-auth', 'ok'); } catch (err) { /* ignore */ }
   tryAutoFetchToken();
 }
 
@@ -4101,7 +4128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // タブ→カテゴリの対応（カテゴリボタンとタブボタンの data-admin-cat と一致させること）
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'receipt-checklist': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics',
@@ -4125,7 +4152,8 @@ function setAdminTab(tab) {
   const isSales = tab === 'sales';
   const isReceiptChecklist = tab === 'receipt-checklist';
   const isDashboard = tab === 'dashboard';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard;
+  const isStaffMonitor = tab === 'staff-monitor';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -4177,8 +4205,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.dashboard-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isDashboard);
   });
+  document.querySelectorAll('.staff-monitor-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isStaffMonitor);
+  });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -4266,6 +4297,8 @@ function setAdminTab(tab) {
       ? '監理部のGmail領収書自動取得スクリプト実行時に生成される証憑チェックリストを表示します（読み取り専用）。'
       : isDashboard
       ? '本番の見積もりページと同一の計算式で全サイズ×全構造の価格をライブ試算します。スライダーと表内の入力欄で調整し、まとめてGitHubへ反映できます。'
+      : isStaffMonitor
+      ? '幕僚エージェントの稼働セッション数・さぼり警告・期限超過タスクを監視します。リアルタイム詳細（作業内容・完了操作）は自宅PCのローカルモニタから。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
   if (isAnalytics && !gaLoaded) gaLoad(7);
@@ -4277,6 +4310,13 @@ function setAdminTab(tab) {
     const salesFrame = document.getElementById('salesFrame');
     if (salesFrame && salesFrame.src.indexOf('sales.html') === -1 && salesFrame.dataset.src) {
       salesFrame.src = salesFrame.dataset.src;
+    }
+  }
+  if (isStaffMonitor) {
+    // 初回表示時のみ src をセット（認証は unlockAdmin() が staff-monitor 側のセッションキーを付与済み）
+    const smFrame = document.getElementById('staffMonitorFrame');
+    if (smFrame && smFrame.src.indexOf('staff-monitor.html') === -1 && smFrame.dataset.src) {
+      smFrame.src = smFrame.dataset.src;
     }
   }
 }
