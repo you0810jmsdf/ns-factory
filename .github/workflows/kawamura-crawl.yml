@@ -1,0 +1,42 @@
+name: カワムラレザー価格・在庫巡回
+
+on:
+  schedule:
+    # 毎週火曜 06:20 JST
+    - cron: "20 21 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kawamura-crawl
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Crawl Kawamura Leather
+        run: python scripts/kawamura_crawler.py
+
+      - name: Commit updated CSV
+        run: |
+          if git diff --quiet -- order_estimate/leather-series-price.csv order_estimate/leather-site-stock.csv order_estimate/kawamura-products.csv; then
+            echo "No changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add order_estimate/leather-series-price.csv order_estimate/leather-site-stock.csv order_estimate/kawamura-products.csv
+          git commit -m "Update Kawamura leather price and stock data"
+          git push
