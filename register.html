@@ -696,6 +696,7 @@ textarea{min-height:80px;resize:vertical}
       </div>
 
       <div class="btn-row" style="justify-content:center;margin-top:16px">
+        <a id="makeVideoLink" href="digital-room/sns-video-maker/" class="btn btn-primary">🎬 この作品の紹介動画を作る</a>
         <a href="works.html" class="btn btn-secondary">works.html を確認</a>
         <button class="btn btn-primary" onclick="resetAll()">続けて登録する</button>
       </div>
@@ -1327,6 +1328,12 @@ async function doNewRegister() {
   // 編集画面リンクのhrefを設定
   const openLink = document.getElementById('openEditLink');
   if (openLink) openLink.href = 'register.html?edit=' + encodeURIComponent(productId);
+  // 動画メーカーへの導線（作品番号を引き継ぎ、番号入力を省略させる）
+  const videoLink = document.getElementById('makeVideoLink');
+  if (videoLink) {
+    const workNo = (productId.match(/\d+$/) || [''])[0];
+    videoLink.href = 'digital-room/sns-video-maker/' + (workNo ? '?workNo=' + parseInt(workNo, 10) : '');
+  }
   setTimeout(() => showOnly('stepComplete'), 800);
 }
 
