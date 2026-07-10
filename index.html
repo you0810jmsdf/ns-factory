@@ -1223,8 +1223,8 @@ h1,h2,h3{
 .staff-stage{
   position:sticky;top:64px;
   overflow:hidden;
-  /* 上余白は金バッジ（カード上端-12px）と拡大カードのクリップ防止 */
-  padding:36px 0 20px;
+  /* 上下余白は金バッジ・拡大カード・斜め移動（±45px）のクリップ防止 */
+  padding:60px 0 64px;
 }
 .staff-stage-hint{
   font-size:12px;color:var(--color-text-sub);
@@ -1244,8 +1244,6 @@ h1,h2,h3{
   /* スクロールに対して半歩遅れて追従させる（上質な粘り） */
   transition:transform .18s ease-out,opacity .18s ease-out;
 }
-/* 交互に上下へずらして斜めの流れをつくる */
-.staff-scroll-track .staff-slide:nth-child(even){margin-top:38px}
 /* ステージ内は出現演出（縦transform・時差）を使わない（JSのscale制御と競合するため） */
 .staff-scroll-track .reveal{transform:none;transition:none;opacity:1}
 
@@ -2439,17 +2437,22 @@ function nsfOpenStaffChat(staffId) {
     stage.appendChild(grid);
 
     var slides = Array.prototype.slice.call(grid.querySelectorAll('.staff-slide'));
-    var maxShift = 0;
+    var totalShift = 0;   // 先頭カード中央→最後尾カード中央までの移動距離
+    var startX = 0;       // 開始時: 先頭カードをステージ中央に置くオフセット
     var stickyTop = 64;
+    var DIAG_Y = 90;      // 斜め移動の縦成分（進捗0→1で -45px→+45px）
 
     function layout() {
-      maxShift = Math.max(0, grid.scrollWidth - stage.clientWidth);
+      var slideW = slides[0] ? slides[0].getBoundingClientRect().width : 300;
+      // 先頭・最後尾のカードも必ずステージ中央（＝最大サイズ）を通過するレンジ
+      totalShift = Math.max(0, grid.scrollWidth - slideW);
+      startX = stage.clientWidth / 2 - slideW / 2;
       // ステージが画面より背高な場合は固定位置を少し引き上げる（-80pxまで。
       // カード上部＝画像・吹き出しの視認を優先し、下部タスクの見切れは許容）
       stickyTop = Math.max(-80, Math.min(64, window.innerHeight - stage.offsetHeight - 12));
       stage.style.top = stickyTop + 'px';
       // 横移動量と縦スクロール量を1:1で対応させる
-      wrap.style.height = (stage.offsetHeight + maxShift) + 'px';
+      wrap.style.height = (stage.offsetHeight + totalShift) + 'px';
       update();
     }
 
@@ -2457,15 +2460,19 @@ function nsfOpenStaffChat(staffId) {
       var rect = wrap.getBoundingClientRect();
       var range = wrap.offsetHeight - stage.offsetHeight;
       var progress = range > 0 ? Math.min(1, Math.max(0, (stickyTop - rect.top) / range)) : 0;
-      grid.style.transform = 'translateX(' + (-progress * maxShift) + 'px) rotate(-2deg)';
-      // ステージ中央に近いスライドほど大きく・はっきり
+      // 移動方向を斜めに: 横に流れながら緩やかに下りていく（カード自体は傾けない）
+      var shiftX = startX - progress * totalShift;
+      var shiftY = (progress - 0.5) * DIAG_Y;
+      grid.style.transform = 'translate(' + shiftX + 'px,' + shiftY + 'px)';
+      // 端から最小サイズで入場し、ステージ中央で最大（scale 0.70→1.15）
       var stageRect = stage.getBoundingClientRect();
       var centerX = stageRect.left + stageRect.width / 2;
+      var denom = stageRect.width * 0.55 || 1; // 幅0時のNaN防止
       slides.forEach(function (s) {
         var r = s.getBoundingClientRect();
-        var t = Math.max(0, 1 - Math.abs(r.left + r.width / 2 - centerX) / (stageRect.width * 0.55));
-        s.style.transform = 'scale(' + (0.84 + t * 0.28).toFixed(3) + ')';
-        s.style.opacity = (0.5 + t * 0.5).toFixed(3);
+        var t = Math.max(0, 1 - Math.abs(r.left + r.width / 2 - centerX) / denom);
+        s.style.transform = 'scale(' + (0.70 + t * 0.45).toFixed(3) + ')';
+        s.style.opacity = (0.4 + t * 0.6).toFixed(3);
       });
     }
 
