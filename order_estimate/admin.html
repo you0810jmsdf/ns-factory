@@ -2082,7 +2082,7 @@ function setSettingsValue(key, value) {
 // ダッシュボードのパラメータスライダー定義（settings.csv の各キーに対応）
 const DASH_PARAMS = [
   { key: 'labor_rate_per_hour',      label: '時給単価',        min: 1000, max: 10000, step: 100,  unit: '¥/h', fmt: v => '¥' + Number(v).toLocaleString() },
-  { key: 'leather_unit_price_per_ds', label: '革DS単価',        min: 50,   max: 500,   step: 10,   unit: '¥/ds', fmt: v => '¥' + Number(v).toLocaleString() },
+  { key: 'leather_unit_price_per_ds', label: '基準革DS単価（フォールバック用）', min: 50,   max: 500,   step: 10,   unit: '¥/ds', fmt: v => '¥' + Number(v).toLocaleString() },
   { key: 'leather_waste_rate',       label: '革ロス率',        min: 0,    max: 0.6,   step: 0.05, unit: '',    fmt: v => Math.round(v * 100) + '%' },
   { key: 'base_fee',                 label: '基本料金',        min: 0,    max: 10000, step: 500,  unit: '円',  fmt: v => '¥' + Number(v).toLocaleString() },
   { key: 'size_curve_factor',        label: 'サイズカーブ緩和度', min: 0,    max: 1,     step: 0.05, unit: '',    fmt: v => Number(v).toFixed(2) }
