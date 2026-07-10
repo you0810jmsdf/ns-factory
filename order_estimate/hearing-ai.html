@@ -83,18 +83,6 @@ body{
 .btn-primary{background:#6b3a1f;color:#fff}
 .btn-ghost{background:#fdf0e5;color:#6b3a1f;border:1.5px solid #e8c9a8 !important}
 
-/* settings modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
-.modal.on{display:flex}
-.modal-box{background:#fff;border-radius:14px;padding:20px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-box h2{font-size:15px;color:#6b3a1f;margin-bottom:6px}
-.modal-box p{font-size:12px;color:#6a5545;margin-bottom:12px;line-height:1.6}
-.modal-box label{display:block;font-size:12px;font-weight:600;color:#6b3a1f;margin:10px 0 4px}
-.modal-box input{width:100%;border:1.5px solid #ede0d4;border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
-.modal-box input:focus{border-color:#b5895a}
-.modal-box .note{font-size:11px;color:#a08a76;margin-top:4px}
-.modal-actions{display:flex;gap:8px;margin-top:16px}
-.modal-actions button{flex:1;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
 /* テクスチャシミュレーター導線・フルスクリーンオーバーレイ */
 .sim-entry{padding:2px 14px 10px 52px;min-height:1px}
 .sim-entry button{background:#fdf0e5;border:1.5px solid #e8c9a8;color:#6b3a1f;border-radius:20px;
@@ -137,23 +125,6 @@ body{
     <button id="send">➤</button>
   </div>
   <div class="foot">試作版プロトタイプ｜最終の仕様確定・お見積りは職人が確認します</div>
-</div>
-
-<!-- settings modal -->
-<div class="modal" id="modal">
-  <div class="mod-inner modal-box">
-    <h2>AI会話モード（任意）</h2>
-    <p>お手持ちの Anthropic APIキーを入れると、決まった質問に沿わず<b>自由に相談できるライブAI</b>に切り替わります。キーはこの端末（ブラウザ）内だけに保存され、外部には送信されません（AnthropicのAPIにのみ直接送られます）。<br>キー無しでも、ガイド対話モードで最後まで発注票を作れます。</p>
-    <label>Anthropic API Key（sk-ant-…）</label>
-    <input id="apiKey" type="password" placeholder="sk-ant-...">
-    <label>モデル名</label>
-    <input id="apiModel" type="text" value="claude-sonnet-5">
-    <div class="note">工房でお使いのモデル（例: claude-fable-5）に変更できます。キーで使えないモデル名だとエラーになります。</div>
-    <div class="modal-actions">
-      <button class="btn-ghost" id="clearKey">キーを消す</button>
-      <button class="btn-primary" id="saveKey">保存して使う</button>
-    </div>
-  </div>
 </div>
 
 <!-- テクスチャシミュレーター フルスクリーンオーバーレイ -->
@@ -441,29 +412,12 @@ function toast(msg){
 }
 
 /* =========================================================================
-   ライブAIモード（任意・BYO Anthropic key）
+   ライブAIモード（GAS経由・APIキーはサーバー側のみで保持）
    ========================================================================= */
-const modal=document.getElementById('modal');
-const apiKeyEl=document.getElementById('apiKey');
-const apiModelEl=document.getElementById('apiModel');
+const HEARING_AI_PROXY_URL='https://script.google.com/macros/s/AKfycbwABbFeZucU9N4k8YyhIKbUUo3JUTGX0vXPBuuX0mSEqIpblyZFtf66w7lCB9R_xkCE-w/exec';
+
 document.getElementById('modeBtn').onclick=()=>{
-  apiKeyEl.value=localStorage.getItem('nsf_key')||'';
-  apiModelEl.value=localStorage.getItem('nsf_model')||'claude-sonnet-5';
-  modal.classList.add('on');
-};
-modal.onclick=(e)=>{ if(e.target===modal) modal.classList.remove('on'); };
-document.getElementById('saveKey').onclick=()=>{
-  const k=apiKeyEl.value.trim();
-  if(!k){ alert('APIキーを入力してください（無い場合はガイド対話モードのままご利用いただけます）'); return; }
-  localStorage.setItem('nsf_key',k);
-  localStorage.setItem('nsf_model',apiModelEl.value.trim()||'claude-sonnet-5');
-  modal.classList.remove('on');
-  enterLiveMode();
-};
-document.getElementById('clearKey').onclick=()=>{
-  localStorage.removeItem('nsf_key'); localStorage.removeItem('nsf_model');
-  apiKeyEl.value=''; state.liveMode=false;
-  modal.classList.remove('on'); toast('キーを消しました（ガイド対話モードに戻ります）');
+  if(state.liveMode){ exitLiveMode(); } else { enterLiveMode(); }
 };
 
 /* SYSTEM_PROMPT は hearing-core.js の buildSystemPrompt(KB) で生成（KB読込後に更新） */
@@ -474,33 +428,33 @@ function enterLiveMode(){
   quickEl.innerHTML=''; chat.innerHTML='';
   history=[];
   addMsg('bot','AI会話モードに切り替えました🧵 自由にご相談ください。「A6でシンプルな手帳がほしい」「二つ折り財布を作りたい」のように、思いつくままに話しかけてくださいね。');
-  document.getElementById('modeBtn').textContent='⚙ 設定';
+  document.getElementById('modeBtn').textContent='↩ ガイドに戻る';
+}
+function exitLiveMode(){
+  state.liveMode=false;
+  chat.innerHTML=''; quickEl.innerHTML='';
+  document.getElementById('modeBtn').textContent='⚙ AI会話モード';
+  startPicker();
 }
 async function liveTurn(userText){
   addMsg('user', userText);
   history.push({role:'user', content:userText});
   showTyping();
-  const key=localStorage.getItem('nsf_key');
-  const model=localStorage.getItem('nsf_model')||'claude-sonnet-5';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch(HEARING_AI_PROXY_URL,{
       method:'POST',
-      headers:{
-        'content-type':'application/json',
-        'x-api-key':key,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({ model, max_tokens:1024, system:SYSTEM_PROMPT, messages:history })
+      body:JSON.stringify({ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5' })
     });
     hideTyping();
-    if(!res.ok){
-      const t=await res.text();
-      addMsg('bot','⚠️ AIへの接続でエラーが出ました。APIキー/モデル名をご確認ください（右上「設定」）。\n'+t.slice(0,300));
+    const data=await res.json();
+    if(data.error){
+      const msg = data.error==='quota exceeded'
+        ? '本日のAI相談回数の上限に達しました。恐れ入りますが、ガイド対話モードをご利用いただくか、後ほどお試しください。'
+        : '⚠️ AIへの接続でエラーが出ました。少し時間をおいて再度お試しください。';
+      addMsg('bot', msg);
       return;
     }
-    const data=await res.json();
-    const reply=(data.content||[]).map(b=>b.text||'').join('').trim()||'(応答が空でした)';
+    const reply=data.reply||'(応答が空でした)';
     history.push({role:'assistant', content:reply});
     addMsg('bot', reply);
   }catch(e){
