@@ -1218,47 +1218,36 @@ h1,h2,h3{
 /* Hero写真: 常時わずかにズーム（パララックス移動の余白確保を兼ねる） */
 .hero-photo img{will-change:transform;transform:scale(1.12);transition:transform .1s linear}
 
-/* ── 幕僚カルーセル（横スワイプ＋自動送り。JSが .staff-carousel を付与） ── */
-.staff-grid.staff-carousel{
-  display:flex;gap:18px;
-  overflow-x:auto;
-  scroll-snap-type:x mandatory;
-  /* 上余白はバッジ（カード上端から-12pxはみ出し）のクリップ防止 */
-  padding:16px 2px 18px;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
+/* ── 幕僚ギャラリー（縦スクロール連動で横に流れるステージ。JSが構築） ── */
+.staff-scroll-wrap{position:relative}
+.staff-stage{
+  position:sticky;top:64px;
+  overflow:hidden;
+  /* 上余白は金バッジ（カード上端-12px）と拡大カードのクリップ防止 */
+  padding:36px 0 20px;
 }
-.staff-grid.staff-carousel::-webkit-scrollbar{display:none}
-.staff-slide{
+.staff-stage-hint{
+  font-size:12px;color:var(--color-text-sub);
+  text-align:center;margin-bottom:14px;letter-spacing:.06em;
+}
+.staff-grid.staff-scroll-track{
+  display:flex;gap:24px;
+  align-items:flex-start;
+  will-change:transform;
+}
+.staff-scroll-track .staff-slide{
   flex:0 0 300px;
-  max-width:82vw;
-  scroll-snap-align:center;
+  max-width:78vw;
   display:flex;flex-direction:column;gap:12px;
+  will-change:transform,opacity;
+  transform-origin:center center;
+  /* スクロールに対して半歩遅れて追従させる（上質な粘り） */
+  transition:transform .18s ease-out,opacity .18s ease-out;
 }
-/* カルーセル内は縦transformの出現演出を使わない（overflow-x:auto は縦もクリップするため） */
-.staff-carousel .reveal{transform:none}
-.staff-carousel-nav{
-  display:flex;align-items:center;justify-content:center;gap:18px;
-  margin-top:10px;
-}
-.staff-carousel-btn{
-  width:42px;height:42px;border-radius:50%;
-  border:1px solid var(--color-border);background:#FCF7EB;
-  font-size:16px;line-height:1;color:var(--color-text);cursor:pointer;
-  box-shadow:var(--shadow-xs);font-family:inherit;
-  transition:background var(--transition-base),transform var(--transition-base);
-}
-.staff-carousel-btn:hover{background:var(--color-accent-light);transform:translateY(-1px)}
-.staff-carousel-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.staff-carousel-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:#D1D1D6;border:none;padding:0;cursor:pointer;
-  transition:background var(--transition-base),transform var(--transition-base);
-}
-.staff-carousel-dot.active{background:var(--color-accent);transform:scale(1.3)}
-@media (prefers-reduced-motion: reduce){
-  .staff-grid.staff-carousel{scroll-behavior:auto}
-}
+/* 交互に上下へずらして斜めの流れをつくる */
+.staff-scroll-track .staff-slide:nth-child(even){margin-top:38px}
+/* ステージ内は出現演出（縦transform・時差）を使わない（JSのscale制御と競合するため） */
+.staff-scroll-track .reveal{transform:none;transition:none;opacity:1}
 
 @media (prefers-reduced-motion: reduce){
   .reveal{opacity:1;transform:none;transition:none}
@@ -2411,9 +2400,11 @@ function nsfOpenStaffChat(staffId) {
   }, { passive: true });
   updateScrollUi();
 
-  /* --- 幕僚カルーセル（横スワイプ＋自動送り） ---
-     既存グリッドの「カード＋任務」ペアをJSで1スライドに包む方式。
-     JS無効時は従来のグリッド表示のまま（プログレッシブエンハンスメント）。 */
+  /* --- 幕僚ギャラリー: 縦スクロール連動の横流れステージ ---
+     ページを下へスクロールしている間だけステージが画面に留まり、
+     カード列が横（やや斜め）へ自動で流れる。ステージ中央に近い
+     カードほど大きく・はっきり表示（scale 0.84〜1.12）。
+     reduced-motion・JS無効時は従来のグリッド表示にフォールバック。 */
   (function () {
     var grid = document.querySelector('.staff-grid');
     if (!grid) return;
@@ -2422,6 +2413,7 @@ function nsfOpenStaffChat(staffId) {
     });
     if (!cards.length) return;
 
+    // 「カード＋主な任務」ペアを1スライドに包む（吹き出し注入のDOM関係は維持）
     cards.forEach(function (card) {
       var slide = document.createElement('div');
       slide.className = 'staff-slide';
@@ -2430,78 +2422,62 @@ function nsfOpenStaffChat(staffId) {
       slide.appendChild(card);
       if (tasks && tasks.classList.contains('staff-tasks')) slide.appendChild(tasks);
     });
-    grid.classList.add('staff-carousel');
+
+    if (reduceMotion) return; // 動きを減らす設定ではグリッド表示のまま
+
+    grid.classList.add('staff-scroll-track');
+    var wrap = document.createElement('div');
+    wrap.className = 'staff-scroll-wrap';
+    var stage = document.createElement('div');
+    stage.className = 'staff-stage';
+    var hint = document.createElement('p');
+    hint.className = 'staff-stage-hint';
+    hint.textContent = '― そのまま下へスクロールすると、幕僚が順に登場します ―';
+    grid.parentNode.insertBefore(wrap, grid);
+    wrap.appendChild(stage);
+    stage.appendChild(hint);
+    stage.appendChild(grid);
+
     var slides = Array.prototype.slice.call(grid.querySelectorAll('.staff-slide'));
+    var maxShift = 0;
+    var stickyTop = 64;
 
-    // ナビ（矢印＋ドット）
-    var nav = document.createElement('div');
-    nav.className = 'staff-carousel-nav';
-    var prevBtn = document.createElement('button');
-    prevBtn.type = 'button'; prevBtn.className = 'staff-carousel-btn';
-    prevBtn.textContent = '←'; prevBtn.setAttribute('aria-label', '前の幕僚へ');
-    var dotsWrap = document.createElement('div');
-    dotsWrap.className = 'staff-carousel-dots';
-    var dots = slides.map(function (s, i) {
-      var d = document.createElement('button');
-      d.type = 'button'; d.className = 'staff-carousel-dot';
-      d.setAttribute('aria-label', (i + 1) + '番目の幕僚へ');
-      d.addEventListener('click', function () { goTo(i); pauseAuto(); });
-      dotsWrap.appendChild(d);
-      return d;
-    });
-    var nextBtn = document.createElement('button');
-    nextBtn.type = 'button'; nextBtn.className = 'staff-carousel-btn';
-    nextBtn.textContent = '→'; nextBtn.setAttribute('aria-label', '次の幕僚へ');
-    nav.appendChild(prevBtn); nav.appendChild(dotsWrap); nav.appendChild(nextBtn);
-    grid.parentNode.insertBefore(nav, grid.nextSibling);
+    function layout() {
+      maxShift = Math.max(0, grid.scrollWidth - stage.clientWidth);
+      // ステージが画面より背高な場合は固定位置を少し引き上げる（-80pxまで。
+      // カード上部＝画像・吹き出しの視認を優先し、下部タスクの見切れは許容）
+      stickyTop = Math.max(-80, Math.min(64, window.innerHeight - stage.offsetHeight - 12));
+      stage.style.top = stickyTop + 'px';
+      // 横移動量と縦スクロール量を1:1で対応させる
+      wrap.style.height = (stage.offsetHeight + maxShift) + 'px';
+      update();
+    }
 
-    function slideStep() {
-      var w = slides[0].getBoundingClientRect().width;
-      return w + 18; // gap分
+    function update() {
+      var rect = wrap.getBoundingClientRect();
+      var range = wrap.offsetHeight - stage.offsetHeight;
+      var progress = range > 0 ? Math.min(1, Math.max(0, (stickyTop - rect.top) / range)) : 0;
+      grid.style.transform = 'translateX(' + (-progress * maxShift) + 'px) rotate(-2deg)';
+      // ステージ中央に近いスライドほど大きく・はっきり
+      var stageRect = stage.getBoundingClientRect();
+      var centerX = stageRect.left + stageRect.width / 2;
+      slides.forEach(function (s) {
+        var r = s.getBoundingClientRect();
+        var t = Math.max(0, 1 - Math.abs(r.left + r.width / 2 - centerX) / (stageRect.width * 0.55));
+        s.style.transform = 'scale(' + (0.84 + t * 0.28).toFixed(3) + ')';
+        s.style.opacity = (0.5 + t * 0.5).toFixed(3);
+      });
     }
-    function currentIndex() {
-      return Math.round(grid.scrollLeft / slideStep());
-    }
-    function goTo(i) {
-      var idx = Math.max(0, Math.min(slides.length - 1, i));
-      grid.scrollTo({ left: idx * slideStep(), behavior: reduceMotion ? 'auto' : 'smooth' });
-    }
-    function updateDots() {
-      var cur = currentIndex();
-      dots.forEach(function (d, i) { d.classList.toggle('active', i === cur); });
-    }
-    updateDots();
-    var dotTick = false;
-    grid.addEventListener('scroll', function () {
-      if (dotTick) return;
-      dotTick = true;
-      requestAnimationFrame(function () { updateDots(); dotTick = false; });
+
+    var stageTick = false;
+    window.addEventListener('scroll', function () {
+      if (stageTick) return;
+      stageTick = true;
+      requestAnimationFrame(function () { update(); stageTick = false; });
     }, { passive: true });
-
-    // 自動送り: セクションが見えている間だけ4.5秒ごとに次へ（操作で12秒休止）
-    var pauseUntil = 0;
-    var sectionVisible = false;
-    function pauseAuto() { pauseUntil = Date.now() + 12000; }
-    prevBtn.addEventListener('click', function () { goTo(currentIndex() - 1); pauseAuto(); });
-    nextBtn.addEventListener('click', function () { goTo(currentIndex() + 1); pauseAuto(); });
-    ['pointerdown', 'touchstart', 'wheel'].forEach(function (ev) {
-      grid.addEventListener(ev, pauseAuto, { passive: true });
-    });
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        sectionVisible = entries[0].isIntersecting;
-      }, { threshold: 0.2 }).observe(grid);
-    } else {
-      sectionVisible = true;
-    }
-    if (!reduceMotion) {
-      setInterval(function () {
-        if (!sectionVisible || document.hidden || Date.now() < pauseUntil) return;
-        var cur = currentIndex();
-        if (cur >= slides.length - 1) goTo(0);
-        else goTo(cur + 1);
-      }, 4500);
-    }
+    window.addEventListener('resize', layout);
+    window.addEventListener('load', layout); // 画像ロード後に高さ再計算
+    layout();
   })();
 
   /* --- Scroll Reveal（IntersectionObserver・reduced-motion時は無効）
@@ -2517,7 +2493,8 @@ function nsfOpenStaffChat(staffId) {
     document.querySelectorAll('.planner-grid > .planner-size-card').forEach(function (el, i) {
       el.style.transitionDelay = (i % 7) * 55 + 'ms'; targets.push(el);
     });
-    document.querySelectorAll('.staff-grid > *').forEach(function (el, i) {
+    // ステージ化（staff-scroll-track）された場合はJSがscale/opacityを直接制御するため対象外
+    document.querySelectorAll('.staff-grid:not(.staff-scroll-track) > *').forEach(function (el, i) {
       el.style.transitionDelay = (i % 4) * 70 + 'ms'; targets.push(el);
     });
     var io = new IntersectionObserver(function (entries) {
