@@ -39,4 +39,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add order_estimate/leather-series-price.csv order_estimate/leather-site-stock.csv order_estimate/kawamura-products.csv
           git commit -m "Update Kawamura leather price and stock data"
-          git push
+          # 巡回中(数分)に他のpushでmainが進むことがあるため、rebaseしてからpush（最大3回再試行）
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 10
+          done
+          echo "::error::pushに3回失敗しました"
+          exit 1
