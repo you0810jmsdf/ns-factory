@@ -1118,7 +1118,7 @@
        既存呼び出し元（initChat(staffId)）向けに薄いラッパーを用意するのみ。 -->
   <script src="chat-widget.js"></script>
   <script>
-    var __nsfChatWidget = window.NsfChatWidget.mount(document, {});
+    var __nsfChatWidget = window.NsfChatWidget.mount(document, { venue: 'showroom' });
     function initChat(staffId) { __nsfChatWidget.open(staffId); }
   </script>
 
