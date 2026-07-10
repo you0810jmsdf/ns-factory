@@ -65,6 +65,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
   width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:10px 11px;background:#fff;color:var(--ink);
 }
 .field textarea{min-height:88px;resize:vertical}
+.help{margin:-4px 0 12px;color:var(--muted);font-size:12px;line-height:1.7}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
 .primary{background:var(--accent);color:#fff;padding:10px 14px;font-weight:800}
@@ -141,17 +142,18 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
   <div class="layout">
     <aside>
       <section class="panel">
-        <h2>作品情報</h2>
+        <h2>動画全体のメモ</h2>
+        <p class="help">ここは編集用メモです。サイトへ自動公開されません。ただし、作品名と素材・色は完成動画の文字として表示されます。</p>
         <div class="field">
-          <label for="productName">作品名</label>
+          <label for="productName">作品名（動画内に表示）</label>
           <input id="productName" value="レザー作品" autocomplete="off">
         </div>
         <div class="field">
-          <label for="materialNote">素材・色</label>
+          <label for="materialNote">素材・色（動画内に表示）</label>
           <input id="materialNote" value="革の質感と手仕事の仕立て" autocomplete="off">
         </div>
         <div class="field">
-          <label for="featureNote">見どころメモ</label>
+          <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
           <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
         </div>
         <div class="actions">
@@ -159,6 +161,29 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
           <input id="photoInput" type="file" accept="image/*" multiple hidden>
           <button class="secondary" id="fillDefaults">空欄に案を入れる</button>
         </div>
+      </section>
+
+      <section class="panel">
+        <h2>Driveから写真を追加</h2>
+        <p class="help">手動追加とは別に、N's factory公開用Driveフォルダ配下から作品番号で写真を読み込みます。</p>
+        <div class="field">
+          <label for="driveFolder">Google DriveフォルダURL / ID</label>
+          <input id="driveFolder" value="https://drive.google.com/drive/u/0/folders/1yhc1nSkAzwq_QOIQjbsrKQTeSvtdeH_3" autocomplete="off">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="driveWorkNo">作品番号</label>
+            <input id="driveWorkNo" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="driveLimit">最大枚数</label>
+            <input id="driveLimit" type="number" min="1" max="12" value="8">
+          </div>
+        </div>
+        <div class="actions">
+          <button class="secondary" id="loadDrivePhotos">Driveから写真を追加</button>
+        </div>
+        <p class="help">番号はフォルダ名または画像ファイル名に含まれる数字で照合します。</p>
       </section>
 
       <section class="panel">
@@ -228,6 +253,21 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
 
           <section class="panel">
             <h2>プレビュー・保存</h2>
+            <div class="row">
+              <div class="field">
+                <label for="narrationLang">読み上げ言語</label>
+                <select id="narrationLang">
+                  <option value="ja-JP">日本語</option>
+                  <option value="en-US">English</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="voiceSelect">読み上げ音声</label>
+                <select id="voiceSelect">
+                  <option value="">ブラウザ標準</option>
+                </select>
+              </div>
+            </div>
             <div class="actions">
               <button class="primary" id="playPreview">プレビュー再生</button>
               <button class="secondary" id="speakScript">読み上げプレビュー</button>
@@ -249,11 +289,16 @@ canvas{display:block;width:100%;aspect-ratio:9/16;background:#111;border-radius:
 <script>
 const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
+const SNS_VIDEO_DRIVE_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 const els = {
   productName: document.getElementById('productName'),
   materialNote: document.getElementById('materialNote'),
   featureNote: document.getElementById('featureNote'),
   photoInput: document.getElementById('photoInput'),
+  driveFolder: document.getElementById('driveFolder'),
+  driveWorkNo: document.getElementById('driveWorkNo'),
+  driveLimit: document.getElementById('driveLimit'),
+  loadDrivePhotos: document.getElementById('loadDrivePhotos'),
   slides: document.getElementById('slides'),
   caption: document.getElementById('caption'),
   narration: document.getElementById('narration'),
@@ -268,7 +313,9 @@ const els = {
   downloadLink: document.getElementById('downloadLink'),
   recordSilent: document.getElementById('recordSilent'),
   recordMic: document.getElementById('recordMic'),
-  speakScript: document.getElementById('speakScript')
+  speakScript: document.getElementById('speakScript'),
+  narrationLang: document.getElementById('narrationLang'),
+  voiceSelect: document.getElementById('voiceSelect')
 };
 let slides = [];
 let selected = -1;
@@ -282,16 +329,21 @@ function defaultTexts(index){
   const product = els.productName.value.trim() || 'レザー作品';
   const material = els.materialNote.value.trim();
   const features = els.featureNote.value.split(/[、。,\n/・]+/).map(v => v.trim()).filter(Boolean);
+  const english = els.narrationLang.value === 'en-US';
   if(index === 0){
     return {
       caption: product,
-      narration: `こちらは${product}です。${material ? `素材は${material}。` : ''}まずは全体の雰囲気をご覧ください。`
+      narration: english
+        ? `This is ${product}. ${material ? `It features ${material}. ` : ''}Please take a look at the overall feel.`
+        : `こちらは${product}です。${material ? `素材は${material}。` : ''}まずは全体の雰囲気をご覧ください。`
     };
   }
   const feature = features[(index - 1) % Math.max(1, features.length)] || '細部の仕立て';
   return {
     caption: feature,
-    narration: `ここでは、${feature}をご紹介します。写真から伝わる質感をゆっくりご覧ください。`
+    narration: english
+      ? `Here is a closer look at ${feature}. Please enjoy the texture and details shown in this photo.`
+      : `ここでは、${feature}をご紹介します。写真から伝わる質感をゆっくりご覧ください。`
   };
 }
 
@@ -304,6 +356,7 @@ function addFiles(files){
     img.onload = () => {
       slides.push({
         file, url, img,
+        objectUrl: true,
         caption: defaults.caption,
         narration: defaults.narration,
         duration: 3.5,
@@ -317,6 +370,76 @@ function addFiles(files){
       drawFrame(0);
     };
     img.src = url;
+  });
+}
+
+async function addDrivePhotos(){
+  const folder = els.driveFolder.value.trim();
+  const workNo = els.driveWorkNo.value.trim();
+  const limit = clamp(parseInt(els.driveLimit.value, 10) || 8, 1, 12);
+  if(!folder){ setLog('DriveフォルダURLまたはIDを入力してください。'); return; }
+  if(!workNo){ setLog('作品番号を入力してください。'); return; }
+
+  els.loadDrivePhotos.disabled = true;
+  setLog('Driveから写真を読み込み中です。枚数や写真サイズにより少し時間がかかります。');
+  try{
+    const url = `${SNS_VIDEO_DRIVE_API}?api=snsVideoPhotos&folderId=${encodeURIComponent(folder)}&workNo=${encodeURIComponent(workNo)}&limit=${encodeURIComponent(limit)}`;
+    const data = await loadJsonp(url);
+    if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || 'Drive写真を取得できませんでした。'); }
+    if(!data.photos || !data.photos.length){ setLog(`作品番号 ${workNo} の写真が見つかりませんでした。`); return; }
+    addDataUrlPhotos(data.photos);
+    setLog(`Driveから ${data.photos.length} 枚追加しました。`);
+  }catch(err){
+    setLog(`Drive写真の取得に失敗しました: ${err.message}`);
+  }finally{
+    els.loadDrivePhotos.disabled = false;
+  }
+}
+
+function addDataUrlPhotos(photos){
+  photos.forEach(photo => {
+    const img = new Image();
+    const url = photo.dataUrl;
+    const index = slides.length;
+    const defaults = defaultTexts(index);
+    img.onload = () => {
+      slides.push({
+        file: {name: photo.name || `drive-photo-${index + 1}`, type: photo.mimeType || 'image/jpeg'},
+        url, img,
+        objectUrl: false,
+        caption: defaults.caption,
+        narration: defaults.narration,
+        duration: 3.5,
+        transitionDuration: .7,
+        motion: ['zoomIn','panLeft','zoomOut','panRight'][index % 4],
+        transition: ['fade','wipeLeft','fade','slideLeft'][index % 4]
+      });
+      selected = slides.length - 1;
+      renderList();
+      loadSelected();
+      drawFrame(0);
+    };
+    img.src = url;
+  });
+}
+
+function loadJsonp(url){
+  return new Promise((resolve, reject) => {
+    const callback = `snsVideoDrive_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Drive APIの応答がタイムアウトしました。'));
+    }, 45000);
+    function cleanup(){
+      clearTimeout(timer);
+      delete window[callback];
+      script.remove();
+    }
+    window[callback] = data => { cleanup(); resolve(data); };
+    script.onerror = () => { cleanup(); reject(new Error('Drive APIへ接続できませんでした。')); };
+    script.src = `${url}&callback=${encodeURIComponent(callback)}&cb=${Date.now()}`;
+    document.head.appendChild(script);
   });
 }
 
@@ -385,7 +508,7 @@ function moveSelected(delta){
 
 function removeSelected(){
   if(selected < 0) return;
-  URL.revokeObjectURL(slides[selected].url);
+  if(slides[selected].objectUrl) URL.revokeObjectURL(slides[selected].url);
   slides.splice(selected, 1);
   selected = Math.min(selected, slides.length - 1);
   renderList();
@@ -431,7 +554,6 @@ function drawFrame(time){
   }
   const state = frameState(time);
   if(state.type === 'transition'){
-    drawSlide(slides[state.index], 1, 1);
     drawTransition(slides[state.index], slides[state.next], state.progress);
     els.currentScript.textContent = slides[state.next].narration || '';
   } else {
@@ -441,8 +563,10 @@ function drawFrame(time){
 }
 
 function drawTransition(from, to, p){
+  p = easeInOut(p);
   if(from.transition === 'cut'){ drawSlide(to, 0, 1); return; }
   if(from.transition === 'wipeLeft' || from.transition === 'wipeRight'){
+    drawSlide(from, 1, 1);
     ctx.save();
     const w = canvas.width * p;
     const x = from.transition === 'wipeLeft' ? 0 : canvas.width - w;
@@ -453,11 +577,24 @@ function drawTransition(from, to, p){
   }
   if(from.transition === 'slideLeft' || from.transition === 'slideRight'){
     const dir = from.transition === 'slideLeft' ? -1 : 1;
-    ctx.save(); ctx.globalAlpha = 1; ctx.translate(dir * canvas.width * p, 0); drawSlide(from, 1, 1); ctx.restore();
-    ctx.save(); ctx.translate(dir * canvas.width * (p - 1), 0); drawSlide(to, p, 1); ctx.restore();
+    drawSlideAt(from, 1, 1, dir * canvas.width * p, 0);
+    drawSlideAt(to, p, 1, dir * canvas.width * (p - 1), 0);
     return;
   }
+  drawSlide(from, 1, 1 - p);
   drawSlide(to, p, p);
+}
+
+function drawSlideAt(slide, progress, alpha, x, y){
+  ctx.save();
+  ctx.translate(x, y);
+  drawSlide(slide, progress, alpha);
+  ctx.restore();
+}
+
+function easeInOut(value){
+  const p = clamp(value, 0, 1);
+  return p * p * (3 - 2 * p);
 }
 
 function drawSlide(slide, progress, alpha){
@@ -586,10 +723,33 @@ function speakScript(){
   saveSelected();
   if(!('speechSynthesis' in window)){ setLog('このブラウザでは読み上げプレビューが使えません。'); return; }
   speechSynthesis.cancel();
-  const text = slides.map(slide => slide.narration).filter(Boolean).join('。');
-  const utterance = new SpeechSynthesisUtterance(text || 'セリフがありません。');
-  utterance.lang = 'ja-JP';
+  const separator = els.narrationLang.value === 'en-US' ? '. ' : '。';
+  const fallback = els.narrationLang.value === 'en-US' ? 'There is no narration text.' : 'セリフがありません。';
+  const text = slides.map(slide => slide.narration).filter(Boolean).join(separator);
+  const utterance = new SpeechSynthesisUtterance(text || fallback);
+  utterance.lang = els.narrationLang.value || 'ja-JP';
+  const selectedVoice = getSelectedVoice();
+  if(selectedVoice) utterance.voice = selectedVoice;
   speechSynthesis.speak(utterance);
+}
+
+function populateVoices(){
+  if(!('speechSynthesis' in window)) return;
+  const lang = els.narrationLang.value;
+  const voices = speechSynthesis.getVoices();
+  const filtered = voices.filter(voice => voice.lang && voice.lang.toLowerCase().startsWith(lang.slice(0,2).toLowerCase()));
+  els.voiceSelect.innerHTML = '<option value="">ブラウザ標準</option>';
+  filtered.forEach(voice => {
+    const option = document.createElement('option');
+    option.value = voice.name;
+    option.textContent = `${voice.name} / ${voice.lang}`;
+    els.voiceSelect.appendChild(option);
+  });
+}
+
+function getSelectedVoice(){
+  if(!('speechSynthesis' in window) || !els.voiceSelect.value) return null;
+  return speechSynthesis.getVoices().find(voice => voice.name === els.voiceSelect.value) || null;
 }
 
 function canRecordVideo(){
@@ -647,6 +807,7 @@ function wrapDraw(text,x,y,maxWidth,lineHeight){
 }
 
 els.photoInput.addEventListener('change', event => addFiles(event.target.files));
+els.loadDrivePhotos.addEventListener('click', addDrivePhotos);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
 document.getElementById('playPreview').addEventListener('click', () => playTimeline(false));
 document.getElementById('speakScript').addEventListener('click', speakScript);
@@ -661,6 +822,11 @@ document.getElementById('removeSlide').addEventListener('click', removeSelected)
 ['productName','materialNote'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
 });
+els.narrationLang.addEventListener('change', populateVoices);
+if('speechSynthesis' in window){
+  speechSynthesis.onvoiceschanged = populateVoices;
+  populateVoices();
+}
 renderList();
 drawFrame(0);
 refreshCapabilities();
