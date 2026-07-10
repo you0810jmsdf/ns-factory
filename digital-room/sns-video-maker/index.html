@@ -1741,6 +1741,21 @@ loadWorksCatalog();
 loadLeatherStock();
 drawFrame(0);
 refreshCapabilities();
+
+// URLパラメータ起動（register.html登録完了画面や作品集からの導線用）
+// ?workNo=520 または ?id=NF2026_520 → 作品情報を自動反映し、Drive写真も自動で読み込む
+(async function bootFromUrlParams(){
+  let digits = '';
+  try{
+    const params = new URLSearchParams(location.search);
+    digits = (params.get('workNo') || params.get('id') || '').replace(/\D/g, '');
+  }catch(_){ return; }
+  if(!digits) return;
+  els.driveWorkNo.value = String(parseInt(digits, 10));
+  setLog(`作品番号 ${els.driveWorkNo.value} を受け取りました。作品情報とDrive写真を自動で読み込みます。`);
+  await syncWorkFromNumber();
+  await addDrivePhotos();
+})();
 </script>
 <script src="../../assets/access-counter.js"></script>
 </body>
