@@ -619,6 +619,20 @@ h1,h2,h3{
   display:block;
   border-bottom:1px solid #c5a44e;
 }
+@media(max-width:768px){
+  /* 2026-07-13: 元画像が縦長(1023×1537)のため width:100%;height:auto のままだと
+     画像だけで画面高さの8割以上を占め、カード1枚に画面1枚分以上のスクロールが
+     必要だった。高さに上限を設けてスマホ画面に収める（顔まわりを優先しやや
+     上寄りでクロップ）。 */
+  .staff-card img,
+  .staff-commander img{
+    height:46vh;
+    max-height:360px;
+    min-height:210px;
+    object-fit:cover;
+    object-position:center top;
+  }
+}
 .staff-commander .staff-card-body{
   padding:18px 20px 8px;
   text-align:center;
