@@ -1181,6 +1181,19 @@ h1,h2,h3{
 @media(max-width:768px){
   .nav-cta{font-size:12px;padding:6px 10px}
   .nav-link--guide{display:none}
+  /* 2026-07-13: 390px幅で幕僚室/スタッフ/見積もりCTA/QRボタンが収まりきらず約54px
+     オーバーフローし、ページ全体が縮小表示（見にくさの主因）になっていた。
+     文言・項目は削らず、外側の余白のみ詰めて解消する。 */
+  .nav{padding:0 12px;gap:8px}
+  .nav-links{gap:2px}
+  .nav-qr-btn{padding:6px 8px}
+}
+@media(max-width:360px){
+  /* iPhone SE(第1世代)等320px級の狭い機種では上記の詰めだけでは
+     QRボタンが数十px収まりきらず、ページ全体の縮小表示が連鎖していた。
+     アイコンのみ表示にして確実に収める（機能は維持）。 */
+  .nav-qr-btn{padding:6px 7px;gap:0}
+  .nav-qr-btn-label{display:none}
 }
 
 /* ── Scroll Reveal（スクロール連動の上品な出現演出） ── */
@@ -1215,16 +1228,15 @@ h1,h2,h3{
 /* Hero写真: 常時わずかにズーム（パララックス移動の余白確保を兼ねる） */
 .hero-photo img{will-change:transform;transform:scale(1.12);transition:transform .1s linear}
 
-/* ── 幕僚ギャラリー（縦スクロール連動で横に流れるステージ。JSが構築） ── */
+/* ── 幕僚ギャラリー（縦スクロール連動で横に流れるステージ。JSが構築） ──
+   768px未満ではJS側でステージ自体を生成せず、通常のグリッド表示にフォールバックする
+  （拡大時にタスクリスト・チャットボタンまで含めた高さがoverflow:hiddenで見切れるため）。 */
 .staff-scroll-wrap{position:relative}
 .staff-stage{
   position:sticky;top:64px;
   overflow:hidden;
   /* 上下余白は金バッジ・拡大カード(1.28倍)・斜め移動（±100px）のクリップ防止 */
   padding:170px 0 160px;
-}
-@media (max-width:768px){
-  .staff-stage{padding:100px 0 92px}
 }
 .staff-stage-hint{
   font-size:12px;color:var(--color-text-sub);
@@ -1470,7 +1482,7 @@ h1,h2,h3{
     <span class="nav-qr-label">このページ</span>
   </div>
   <button type="button" class="nav-qr-btn" id="qr-modal-open" aria-label="このページのQRコードを大きく表示">
-    <span class="nav-qr-btn-icon" aria-hidden="true">📱</span>QR
+    <span class="nav-qr-btn-icon" aria-hidden="true">📱</span><span class="nav-qr-btn-label">QR</span>
   </button>
 </nav>
 
@@ -2404,7 +2416,11 @@ function nsfOpenStaffChat(staffId) {
       if (tasks && tasks.classList.contains('staff-tasks')) slide.appendChild(tasks);
     });
 
-    if (reduceMotion) return; // 動きを減らす設定ではグリッド表示のまま
+    // スマホ幅は拡大時(最大1.28倍)にタスクリスト・チャットボタンまで含めた
+    // カード高さがステージのoverflow:hiddenで大きく見切れるため、
+    // 動きを減らす設定時と同様にグリッド表示へフォールバックする（2026-07-13修正）。
+    var isNarrowViewport = window.innerWidth > 0 && window.innerWidth < 768;
+    if (reduceMotion || isNarrowViewport) return;
 
     grid.classList.add('staff-scroll-track');
     var wrap = document.createElement('div');
