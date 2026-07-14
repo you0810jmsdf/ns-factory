@@ -121,7 +121,7 @@ body{
   <div class="sim-entry" id="simEntry"></div>
 
   <div class="inputbar">
-    <button id="attachBtn" type="button" title="製作イメージの画像を添付（ご相談内容と一緒に工房へ届きます）" aria-label="製作イメージの画像を添付" style="background:#faf7f4;color:#6b3a1f;border:1.5px solid #ede0d4">📷</button>
+    <button id="attachBtn" type="button" title="製作イメージの画像を添付（AIが画像を見てご提案・ご相談内容と一緒に工房へも届きます）" aria-label="製作イメージの画像を添付" style="background:#faf7f4;color:#6b3a1f;border:1.5px solid #ede0d4">📷</button>
     <input id="txt" type="text" placeholder="メッセージを入力…（自由に話しかけてOK）" autocomplete="off">
     <button id="send">➤</button>
     <input id="attachFile" type="file" accept="image/*" multiple style="display:none">
@@ -407,6 +407,9 @@ function submitToOrderProgress(prod, hearingContent, textureSimulation){
    「工房へ送信」ボタンで、submitChatOrderのimages経路で工房へ送る。
    AIには画像を渡さない（添付→作家送信のみ方式）。 */
 let customerImages=[];
+// 2026-07-15 Phase4: AIにまだ渡していない添付画像のdataURL。添付直後の1ターンのみ
+// HearingAI-Proxyへ同梱してVision解釈させ、リクエスト発行時にクリアする（毎ターン再送によるトークン浪費防止）。
+let pendingAIImages=[];
 let liveConsultSent=false;
 const MAX_CUSTOMER_IMAGES=3, IMG_MAX_EDGE=1280;
 
@@ -491,15 +494,16 @@ attachFileEl.onchange=()=>{
     compressImage(file).then(dataUrl=>{
       const idx=customerImages.length+1;
       customerImages.push({fileName:'customer_image_'+idx+'.jpg',label:'お客様の製作イメージ'+idx,dataUrl});
+      pendingAIImages.push(dataUrl); // Phase4: 次のAI応答1ターンだけVision解釈に使う
       liveConsultSent=false; // 送信済み後の追加添付は再送信を許可する（新しい画像が漏れないように）
       addImgMsg(dataUrl,'製作イメージ'+idx);
-      // AI会話モードでは、画像を添付した事実をAIにもテキストで共有する（画像そのものは送らない）
+      // AI会話モードでは、画像を添付した事実をAIにもテキストで共有する（画像本体は次のliveTurnで1回だけ送る）
       if(state.liveMode) history.push({role:'user',content:'（📷 製作イメージ画像を添付しました: 製作イメージ'+idx+'）'});
     }).catch(()=>addMsg('bot','申し訳ありません、画像の読み込みに失敗しました。別の画像でお試しください🙏'))
   ),Promise.resolve()).then(()=>{
     if(!customerImages.length) return;
     addMsg('bot', state.liveMode
-      ? '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）下の「📨 相談内容と画像を工房へ送信」ボタンで、いつでもお送りいただけます。'
+      ? '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）このままご希望をお送りいただくと、AIが画像を拝見してご提案します。下の「📨 相談内容と画像を工房へ送信」ボタンで、いつでも工房へもお送りいただけます。'
       : '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）発注票が完成すると、ご相談内容と一緒に工房へ届きます。');
     showLiveSendChip();
   });
@@ -549,9 +553,14 @@ async function liveTurn(userText){
   history.push({role:'user', content:userText});
   showTyping();
   try{
+    const livePayload={ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5' };
+    if(pendingAIImages.length){
+      livePayload.images=pendingAIImages.slice();
+      pendingAIImages=[]; // 1回送ったらクリア（失敗時も再送しない＝有料枠・トークンの浪費防止を優先）
+    }
     const res=await fetch(HEARING_AI_PROXY_URL,{
       method:'POST',
-      body:JSON.stringify({ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5' })
+      body:JSON.stringify(livePayload)
     });
     hideTyping();
     const data=await res.json();
