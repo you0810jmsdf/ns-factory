@@ -406,17 +406,30 @@
     };
   }
 
-  /* ---------- AI会話モード用 system prompt ---------- */
-  function buildSystemPrompt(KB, leathers) {
+  /* ---------- AI会話モード用 system prompt ----------
+     stockMap: 革id→残量%（0-100 または null）。省略可。渡すと革名に在庫タグを付け、
+     在庫のある革を優先提案できる状態にする（leather-stock.csv 由来・chat-widget/hearing-ai から渡す）。 */
+  function buildSystemPrompt(KB, leathers, stockMap) {
     var extra = (KB.extraKnowledge || '').trim();
+    // 残量%→在庫タグ。null/未登録は在庫あり扱い（無印・安全側）。通常在庫も無印にしてトークンを抑える。
+    function stockTag(l) {
+      if (!stockMap) return '';
+      var p = stockMap[l.id];
+      if (p === null || p === undefined) return '';
+      if (p <= 0)  return '[取寄]';
+      if (p <= 20) return '[残少]';
+      if (p >= 80) return '[入荷]';
+      return '';
+    }
     var leatherSection = '';
     if (leathers && leathers.length) {
       var byFam = TONE_KEYWORDS.map(function (g) {
-        var names = leathersByTone(leathers, g.fam).map(function (l) { return l.name; });
+        var names = leathersByTone(leathers, g.fam).map(function (l) { return l.name + stockTag(l); });
         return names.length ? (g.fam + ': ' + names.join(' / ')) : '';
       }).filter(Boolean).join('\n');
       leatherSection = '■革カタログ（カワムラレザー取扱のみ。革はこの中からだけ提案する。これ以外の革は「取り扱いがありません」と答える）:\n' + byFam +
-        '\n※お客様が色の希望（例:「青っぽい」「ワインレッド」）を言ったら、上記から同系色を2〜3種ピックアップして名前で提案する。\n';
+        '\n※お客様が色の希望（例:「青っぽい」「ワインレッド」）を言ったら、上記から同系色を2〜3種ピックアップして名前で提案する。\n' +
+        (stockMap ? '※革名の後ろのタグは在庫状況（無印=在庫あり／[入荷]=入荷したてでエイジング未進行のおすすめ／[残少]=残りわずか／[取寄]=現在在庫なし・お取り寄せに2〜3週間＋取寄せ経費が若干）。提案は在庫のある革（無印・[入荷]・[残少]）を優先し、[入荷]は「入荷したてで育てがいがある」と一言添える。[取寄]の革を希望されたら、お取り寄せになる旨を正直に伝えたうえで在庫のある同系色も併せて提案する。在庫は変動するため最終確認は職人が行う前提で案内する。\n' : '');
     }
     return 'あなたは「' + KB.shop + '」のオーダー相談AI「幕僚（ばくりょう）」です。革職人 中司祐樹の名代として、お客様からレザーアイテムのフルオーダー（システム手帳・財布・キーケース・名刺入れ・ポーチ/ペンケース・コインケース 他）のご要望を丁寧にヒアリングし、プロの視点で提案します。\n\n' +
       '【口調】親しみやすく丁寧な日本語。専門用語には一言そえる。押し売りはしない。1回の返信は簡潔に、質問は基本1つずつ。\n\n' +
