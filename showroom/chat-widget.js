@@ -61,6 +61,8 @@
     var simPatternAvailable = undefined; // undefined=未確認, true/false=確認済み
     // シミュレーターで最後に確定したパーツ画像（sendToArtisan送信時に一緒に送るため保持）
     var lastTextureSimParts = null;
+    // お客様が📷ボタンで添付した製作イメージ画像（sendToArtisan送信時に一緒に送る。AIには渡さない）
+    var customerImages = [];
 
     function $(sel) { return container.querySelector(sel); }
 
@@ -95,6 +97,7 @@
       simChecked = false;
       simPatternAvailable = undefined;
       lastTextureSimParts = null;
+      customerImages = [];
       nsfRenderSelectionSummary();
       var area = $('#chat-area');
       if (!area) return;
@@ -992,6 +995,129 @@
       nsfSetSelection(pc.partLabel, pc.name);
     }
 
+    /* ===== 製作イメージ画像の添付（お客様→作家）2026-07-14 Phase3 =====
+       📷ボタンで選んだ画像を端末内で縮小（長辺1280px・JPEG化）して保持し、
+       「この内容で作家に送信」時に既存のimages経路（submitChatOrder）で一緒に送る。
+       AIには画像を渡さない（添付→作家送信のみ方式・追加課金なし）。 */
+    var NSF_MAX_CUSTOMER_IMAGES = 3;
+    var NSF_IMG_MAX_EDGE = 1280;
+
+    function nsfCompressImage(file) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onerror = function () { reject(new Error('read error')); };
+        reader.onload = function () {
+          var img = new Image();
+          img.onerror = function () { reject(new Error('decode error')); };
+          img.onload = function () {
+            var scale = Math.min(1, NSF_IMG_MAX_EDGE / Math.max(img.width, img.height));
+            var cw = Math.max(1, Math.round(img.width * scale));
+            var ch = Math.max(1, Math.round(img.height * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = cw; canvas.height = ch;
+            canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function appendUserImageMsg(dataUrl, label) {
+      var msgs = $('#chat-messages');
+      if (!msgs) return;
+      var div = document.createElement('div');
+      div.className = 'chat-msg user';
+      var col = document.createElement('div');
+      col.className = 'chat-col';
+      col.appendChild(buildChatMeta('あなた'));
+      var bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      var img = document.createElement('img');
+      img.src = dataUrl;
+      img.alt = label || '添付画像';
+      img.style.cssText = 'max-width:160px;max-height:160px;border-radius:8px;display:block;cursor:zoom-in;';
+      img.addEventListener('click', function () { nsfShowImageLightbox(dataUrl); });
+      bubble.appendChild(img);
+      var cap = document.createElement('div');
+      cap.style.cssText = 'font-size:11px;opacity:.75;margin-top:4px;';
+      cap.textContent = '📷 ' + (label || '添付画像');
+      bubble.appendChild(cap);
+      col.appendChild(bubble);
+      div.appendChild(col);
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function nsfHandleCustomerImages(files) {
+      var list = Array.prototype.slice.call(files || []).filter(function (f) {
+        return /^image\//.test(f.type);
+      });
+      if (!list.length) {
+        appendStaffMsg('画像ファイル（JPEG・PNGなど）のみ添付できます🙏');
+        return;
+      }
+      var room = NSF_MAX_CUSTOMER_IMAGES - customerImages.length;
+      if (room <= 0) {
+        appendStaffMsg('添付できる画像は' + NSF_MAX_CUSTOMER_IMAGES + '枚までです🙏');
+        return;
+      }
+      if (list.length > room) {
+        list = list.slice(0, room);
+        appendStaffMsg('添付は' + NSF_MAX_CUSTOMER_IMAGES + '枚までのため、先頭の' + room + '枚のみお預かりします。');
+      }
+      // 添付順と表示順がずれないよう1枚ずつ直列に処理する
+      list.reduce(function (chain, file) {
+        return chain.then(function () {
+          return nsfCompressImage(file).then(function (dataUrl) {
+            var idx = customerImages.length + 1;
+            var label = '製作イメージ' + idx;
+            customerImages.push({
+              fileName: 'customer_image_' + idx + '.jpg',
+              label: 'お客様の' + label,
+              dataUrl: dataUrl
+            });
+            appendUserImageMsg(dataUrl, label);
+            if (currentChatStaffId) {
+              if (!chatHistories[currentChatStaffId]) chatHistories[currentChatStaffId] = [];
+              chatHistories[currentChatStaffId].push({ role: 'user', text: '（📷 製作イメージ画像を添付: ' + label + '）' });
+            }
+          }).catch(function () {
+            appendStaffMsg('申し訳ありません、画像の読み込みに失敗しました。別の画像でお試しください🙏');
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        if (customerImages.length) {
+          appendStaffMsg('画像をお預かりしました📷（' + customerImages.length + '/' + NSF_MAX_CUSTOMER_IMAGES + '枚）「この内容で作家に送信」を押すと、ご相談内容と一緒に工房へ届きます。');
+        }
+      });
+    }
+
+    // 📷添付ボタンと非表示file inputを送信ボタンの隣にJSで生成する（works.html等のHTML変更は不要）
+    (function setupImageAttach() {
+      var sendBtnEl = $('#chat-send');
+      if (!sendBtnEl || !sendBtnEl.parentNode) return;
+      var fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.multiple = true;
+      fileInput.style.display = 'none';
+      var attachBtn = document.createElement('button');
+      attachBtn.type = 'button';
+      attachBtn.textContent = '📷';
+      attachBtn.title = '製作イメージの画像を添付（作家に送信時に一緒に届きます）';
+      attachBtn.setAttribute('aria-label', '製作イメージの画像を添付');
+      attachBtn.style.cssText = 'border:none;background:none;font-size:18px;line-height:1;cursor:pointer;padding:4px 6px;flex-shrink:0;';
+      attachBtn.addEventListener('click', function () { fileInput.click(); });
+      fileInput.addEventListener('change', function () {
+        nsfHandleCustomerImages(fileInput.files);
+        fileInput.value = '';
+      });
+      sendBtnEl.parentNode.insertBefore(attachBtn, sendBtnEl);
+      sendBtnEl.parentNode.appendChild(fileInput);
+    })();
+
     /* ===== この内容で作家に送信（オーダー相談の内容をGASへ送る） =====
        .oc-overlay-head 内の送信ボタンから呼ばれる。GASチャットへの通常送信とは別系統で、
        送信回数制限（CHAT_MAX_TURNS）は消費しない。二重送信防止のため isConsultationSent を見る。 */
@@ -1063,6 +1189,10 @@
           label: (p.label || ('パーツ' + (i + 1))) + (p.leatherName ? (': ' + p.leatherName) : ''),
           base64: p.imageDataUrl.split(',')[1]
         };
+      });
+      // お客様が📷ボタンで添付した製作イメージ画像も同じimages経路で送る
+      customerImages.forEach(function (ci) {
+        images.push({ fileName: ci.fileName, label: ci.label, base64: ci.dataUrl.split(',')[1] });
       });
       var payload = {
         action: 'submitChatOrder',
