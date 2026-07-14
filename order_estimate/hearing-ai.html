@@ -574,17 +574,41 @@ async function liveTurn(userText){
 /* ---------- 起動 ---------- */
 sendBtn.onclick=handleFreeInput;
 txt.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); handleFreeInput(); }});
-// 知識ベース(hearing-kb.json)と革カタログ(leather-catalog.json)を読み込んでから開始。
+// 革在庫(leather-stock.csv)を id→残量% マップにして読み込む（AI会話モードの在庫優先提案用）。
+// キャッシュ回避（GitHub Pages CDN・ブラウザキャッシュで古い在庫が残らないように）。読めない場合はnull（在庫タグ無しで動作）。
+function loadLeatherStockMap(){
+  return fetch('./leather-stock.csv?t='+Date.now(),{cache:'no-store'})
+    .then(r=>r.ok?r.text():null)
+    .then(t=>{
+      if(!t) return null;
+      const lines=t.replace(/\r/g,'').split('\n').filter(l=>l.trim());
+      const head=lines.shift().split(',');
+      const idIdx=head.indexOf('id'), pctIdx=head.indexOf('stock_pct');
+      if(idIdx<0||pctIdx<0) return null;
+      const map={};
+      lines.forEach(line=>{
+        const cols=line.split(',');
+        const id=(cols[idIdx]||'').trim();
+        const raw=(cols[pctIdx]||'').trim();
+        if(!id) return;
+        map[id]=(raw==='')?null:Math.max(0,Math.min(100,Number(raw)));
+      });
+      return map;
+    }).catch(()=>null);
+}
+
+// 知識ベース(hearing-kb.json)と革カタログ(leather-catalog.json)・在庫を読み込んでから開始。
 // 読めない場合は内蔵既定値（革はテキスト選択）で開始。
 Promise.all([
   NSF_HEARING.loadKB('./hearing-kb.json'),
-  NSF_HEARING.loadLeathers('./leather-catalog.json')
-]).then(([kb, leathers])=>{
+  NSF_HEARING.loadLeathers('./leather-catalog.json'),
+  loadLeatherStockMap()
+]).then(([kb, leathers, stockMap])=>{
   KB=kb;
   CORE=NSF_HEARING.build(KB, leathers);
   PRODUCTS=CORE.PRODUCTS;
   COMMON_TAIL=CORE.COMMON_TAIL;
-  SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers);
+  SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers, stockMap);
   startPicker();
 });
 </script>

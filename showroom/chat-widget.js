@@ -594,8 +594,11 @@
     var BUSINESS_INTENT_PATTERNS = [
       /見積|いくら|価格|値段|料金|予算|幾ら/,                          // 見積もり質問
       /サンプル|おすすめ|提案して|似たよう|参考に|過去.{0,4}作品|ギャラリー|作れます?か|対応(できます|可能)|カスタム|仕様変更/, // 作品提案
+      /種類|ラインナップ|バリエーション/,                             // 作品提案（2026-07-14ログ「どんな種類がありますか」取りこぼし対策）
+      /(写真|画像).{0,6}(見せ|みせ|ある|ほし|欲し)/,                   // 作品提案（同「写真をみせてほしい」対策。色写真はローカル即答が先に拾う）
       /進捗|進み具合|どこで(見|確認)|ページ|リンク|url/i,               // サイト案内
-      /オーダー|注文|発注|作りたい/                                    // オーダーの意思表示
+      /オーダー|注文|発注|作りたい|作って/,                            // オーダーの意思表示（同「作ってほしい」対策）
+      /(手帳|財布|キーケース|名刺入れ|ポーチ|ペンケース|コインケース|革|レザー).{0,12}(欲し|ほし)い/ // オーダーの意思表示（同「mini6手帳が欲しい」対策。商品語とセットの時だけ発火し依頼表現全般の誤爆を避ける）
     ];
     function nsfDetectBusinessIntent(text) {
       if (!text) return false;
@@ -1318,7 +1321,8 @@
       if (useHearingAI) {
         apiUrl = HEARING_AI_PROXY_URL;
         contentType = 'application/json';
-        var systemPrompt = global.NSF_HEARING.buildSystemPrompt(hearingKB, hearingLeathers) || '';
+        // nsfLeatherStock（id→残量%。在庫CSV読込済み）を渡し、AIが在庫のある革を優先提案できるようにする
+        var systemPrompt = global.NSF_HEARING.buildSystemPrompt(hearingKB, hearingLeathers, nsfLeatherStock) || '';
         var claudeHistory = chatHistories[staffId].slice(-CHAT_HISTORY_MAX).map(function (h) {
           return { role: h.role === 'model' ? 'assistant' : 'user', content: h.text };
         });
