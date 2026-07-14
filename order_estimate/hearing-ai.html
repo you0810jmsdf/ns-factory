@@ -121,8 +121,10 @@ body{
   <div class="sim-entry" id="simEntry"></div>
 
   <div class="inputbar">
+    <button id="attachBtn" type="button" title="製作イメージの画像を添付（ご相談内容と一緒に工房へ届きます）" aria-label="製作イメージの画像を添付" style="background:#faf7f4;color:#6b3a1f;border:1.5px solid #ede0d4">📷</button>
     <input id="txt" type="text" placeholder="メッセージを入力…（自由に話しかけてOK）" autocomplete="off">
     <button id="send">➤</button>
+    <input id="attachFile" type="file" accept="image/*" multiple style="display:none">
   </div>
   <div class="foot">試作版プロトタイプ｜最終の仕様確定・お見積りは職人が確認します</div>
 </div>
@@ -380,13 +382,15 @@ function finish(){
   },600);
 }
 
-/* 発注票確定時、オーダー進捗シートへ自動登録する（テクスチャシミュレーション画像があれば一緒に送る） */
+/* 発注票確定時、オーダー進捗シートへ自動登録する（テクスチャシミュレーション画像・お客様添付画像があれば一緒に送る） */
 function submitToOrderProgress(prod, hearingContent, textureSimulation){
   const images=(textureSimulation||[]).map((p,i)=>({
     fileName:`color_sim_${i+1}.png`,
     label:(p.label||('パーツ'+(i+1)))+(p.leatherName?(': '+p.leatherName):''),
     base64:p.imageDataUrl.split(',')[1],
   }));
+  // お客様が📷ボタンで添付した製作イメージ画像も同じimages経路で送る
+  customerImages.forEach(ci=>images.push({fileName:ci.fileName,label:ci.label,base64:ci.dataUrl.split(',')[1]}));
   fetch(ORDER_PROGRESS_GAS_URL,{
     method:'POST',
     body:JSON.stringify({ action:'submitChatOrder', client:'', contact:'', item:prod.name, hearingContent, images })
@@ -397,6 +401,110 @@ function submitToOrderProgress(prod, hearingContent, textureSimulation){
     addMsg('bot','⚠️ オーダー進捗への登録通信に失敗しました。お手数ですが、発注票をコピーして直接お問い合わせください。');
   });
 }
+/* ---------- 製作イメージ画像の添付（お客様→工房）2026-07-14 Phase3 ----------
+   📷ボタンで選んだ画像を端末内で縮小（長辺1280px・JPEG化）して保持し、
+   ガイドモードは発注票確定時（submitToOrderProgress）に、AI会話モードは
+   「工房へ送信」ボタンで、submitChatOrderのimages経路で工房へ送る。
+   AIには画像を渡さない（添付→作家送信のみ方式）。 */
+let customerImages=[];
+let liveConsultSent=false;
+const MAX_CUSTOMER_IMAGES=3, IMG_MAX_EDGE=1280;
+
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('read error'));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error('decode error'));
+      img.onload=()=>{
+        const scale=Math.min(1, IMG_MAX_EDGE/Math.max(img.width,img.height));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(img.width*scale));
+        canvas.height=Math.max(1,Math.round(img.height*scale));
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',0.85));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function addImgMsg(dataUrl,label){
+  const m=document.createElement('div'); m.className='msg user';
+  const ic=document.createElement('div'); ic.className='ic'; ic.textContent='🙂';
+  const b=document.createElement('div'); b.className='bubble';
+  const img=document.createElement('img');
+  img.src=dataUrl; img.alt=label;
+  img.style.cssText='max-width:150px;max-height:150px;border-radius:8px;display:block';
+  b.appendChild(img);
+  const cap=document.createElement('div');
+  cap.style.cssText='font-size:11px;opacity:.75;margin-top:4px';
+  cap.textContent='📷 '+label;
+  b.appendChild(cap);
+  m.appendChild(ic); m.appendChild(b); chat.appendChild(m); scrollDown();
+}
+
+/* AI会話モード専用: 添付画像がある間、会話ごと工房へ送れるボタンを常設する */
+function showLiveSendChip(){
+  if(!state.liveMode || !customerImages.length) return;
+  quickEl.innerHTML='';
+  const btn=document.createElement('button');
+  btn.textContent = liveConsultSent ? '📨 送信済み✓' : '📨 相談内容と画像を工房へ送信';
+  btn.disabled = liveConsultSent;
+  btn.onclick=sendLiveConsultation;
+  quickEl.appendChild(btn);
+}
+
+function sendLiveConsultation(){
+  if(liveConsultSent) return;
+  const transcript=history.map(h=>(h.role==='user'?'お客様: ':'AI: ')+h.content).join('\n')||'（会話なし・画像のみ）';
+  const images=customerImages.map(ci=>({fileName:ci.fileName,label:ci.label,base64:ci.dataUrl.split(',')[1]}));
+  fetch(ORDER_PROGRESS_GAS_URL,{
+    method:'POST',
+    body:JSON.stringify({action:'submitChatOrder',client:'',contact:'',item:'オーダー相談AI（AI会話モード）',hearingContent:transcript,images})
+  }).then(r=>r.json()).then(res=>{
+    if(res.ok){
+      liveConsultSent=true;
+      addMsg('bot','📨 ご相談内容と画像を工房へお送りしました（受付番号: '+res.orderNo+'）。職人が確認してご案内いたします。');
+      showLiveSendChip();
+    }else{
+      addMsg('bot','⚠️ 送信に失敗しました：'+(res.error||'不明なエラー')+'。時間をおいて再度お試しください。');
+    }
+  }).catch(()=>{
+    addMsg('bot','⚠️ 通信エラーのため送信できませんでした。時間をおいて再度お試しください。');
+  });
+}
+
+const attachBtnEl=document.getElementById('attachBtn');
+const attachFileEl=document.getElementById('attachFile');
+attachBtnEl.onclick=()=>attachFileEl.click();
+attachFileEl.onchange=()=>{
+  const files=Array.from(attachFileEl.files||[]).filter(f=>/^image\//.test(f.type));
+  attachFileEl.value='';
+  if(!files.length){ addMsg('bot','画像ファイル（JPEG・PNGなど）のみ添付できます🙏'); return; }
+  const room=MAX_CUSTOMER_IMAGES-customerImages.length;
+  if(room<=0){ addMsg('bot','添付できる画像は'+MAX_CUSTOMER_IMAGES+'枚までです🙏'); return; }
+  // 添付順と表示順がずれないよう1枚ずつ直列に処理する
+  files.slice(0,room).reduce((chain,file)=>chain.then(()=>
+    compressImage(file).then(dataUrl=>{
+      const idx=customerImages.length+1;
+      customerImages.push({fileName:'customer_image_'+idx+'.jpg',label:'お客様の製作イメージ'+idx,dataUrl});
+      liveConsultSent=false; // 送信済み後の追加添付は再送信を許可する（新しい画像が漏れないように）
+      addImgMsg(dataUrl,'製作イメージ'+idx);
+      // AI会話モードでは、画像を添付した事実をAIにもテキストで共有する（画像そのものは送らない）
+      if(state.liveMode) history.push({role:'user',content:'（📷 製作イメージ画像を添付しました: 製作イメージ'+idx+'）'});
+    }).catch(()=>addMsg('bot','申し訳ありません、画像の読み込みに失敗しました。別の画像でお試しください🙏'))
+  ),Promise.resolve()).then(()=>{
+    if(!customerImages.length) return;
+    addMsg('bot', state.liveMode
+      ? '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）下の「📨 相談内容と画像を工房へ送信」ボタンで、いつでもお送りいただけます。'
+      : '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）発注票が完成すると、ご相談内容と一緒に工房へ届きます。');
+    showLiveSendChip();
+  });
+};
+
 function copy(text,okMsg){
   navigator.clipboard.writeText(text).then(()=>toast(okMsg)).catch(()=>{
     // フォールバック
