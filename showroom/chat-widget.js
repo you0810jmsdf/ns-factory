@@ -61,8 +61,12 @@
     var simPatternAvailable = undefined; // undefined=未確認, true/false=確認済み
     // シミュレーターで最後に確定したパーツ画像（sendToArtisan送信時に一緒に送るため保持）
     var lastTextureSimParts = null;
-    // お客様が📷ボタンで添付した製作イメージ画像（sendToArtisan送信時に一緒に送る。AIには渡さない）
+    // お客様が📷ボタンで添付した製作イメージ画像（sendToArtisan送信時に一緒に送る）
     var customerImages = [];
+    // 2026-07-15 Phase4: AIにまだ渡していない添付画像のdataURL。
+    // 添付直後の1ターンのみHearingAI-Proxyへ同梱してVision解釈させ、リクエスト発行時にクリアする
+    // （毎ターン再送するとinputトークンを浪費するため。AIの解釈コメントは会話履歴テキストに残る）。
+    var pendingAIImages = [];
 
     function $(sel) { return container.querySelector(sel); }
 
@@ -98,6 +102,7 @@
       simPatternAvailable = undefined;
       lastTextureSimParts = null;
       customerImages = [];
+      pendingAIImages = [];
       nsfRenderSelectionSummary();
       var area = $('#chat-area');
       if (!area) return;
@@ -1081,6 +1086,7 @@
               label: 'お客様の' + label,
               dataUrl: dataUrl
             });
+            pendingAIImages.push(dataUrl); // Phase4: 次のAI応答1ターンだけVision解釈に使う
             appendUserImageMsg(dataUrl, label);
             if (currentChatStaffId) {
               if (!chatHistories[currentChatStaffId]) chatHistories[currentChatStaffId] = [];
@@ -1092,7 +1098,7 @@
         });
       }, Promise.resolve()).then(function () {
         if (customerImages.length) {
-          appendStaffMsg('画像をお預かりしました📷（' + customerImages.length + '/' + NSF_MAX_CUSTOMER_IMAGES + '枚）「この内容で作家に送信」を押すと、ご相談内容と一緒に工房へ届きます。');
+          appendStaffMsg('画像をお預かりしました📷（' + customerImages.length + '/' + NSF_MAX_CUSTOMER_IMAGES + '枚）このままご希望をお送りいただくと、AIが画像を拝見してご提案します。「この内容で作家に送信」を押すと、ご相談内容と一緒に工房へも届きます。');
         }
       });
     }
@@ -1109,7 +1115,7 @@
       var attachBtn = document.createElement('button');
       attachBtn.type = 'button';
       attachBtn.textContent = '📷';
-      attachBtn.title = '製作イメージの画像を添付（作家に送信時に一緒に届きます）';
+      attachBtn.title = '製作イメージの画像を添付（AIが画像を見てご提案・作家に送信時にも一緒に届きます）';
       attachBtn.setAttribute('aria-label', '製作イメージの画像を添付');
       attachBtn.style.cssText = 'border:none;background:none;font-size:18px;line-height:1;cursor:pointer;padding:4px 6px;flex-shrink:0;';
       attachBtn.addEventListener('click', function () { fileInput.click(); });
@@ -1315,7 +1321,9 @@
 
       // 2026-07-10 Phase2: 見積もり／作品提案／サイト案内の実務相談はHearingAI-Proxy（Claude・意図分岐）へ、
       // それ以外（雑談・世間話・グレーゾーン）は従来通りShowroom-AIChat（Gemini・幕僚キャラ）へ振り分ける。
-      var useHearingAI = !!global.NSF_HEARING && nsfDetectBusinessIntent(text);
+      // 2026-07-15 Phase4: 未送信の添付画像がある間は、画像添付＝製作イメージ相談の強いシグナルとみなし、
+      // 雑談判定でも次の1発言をHearingAI-Proxyへ送って画像を解釈させる（振り分けの取りこぼし防止）。
+      var useHearingAI = !!global.NSF_HEARING && (pendingAIImages.length > 0 || nsfDetectBusinessIntent(text));
 
       var apiUrl, payload, contentType;
       if (useHearingAI) {
@@ -1326,7 +1334,12 @@
         var claudeHistory = chatHistories[staffId].slice(-CHAT_HISTORY_MAX).map(function (h) {
           return { role: h.role === 'model' ? 'assistant' : 'user', content: h.text };
         });
-        payload = JSON.stringify({ system: systemPrompt, history: claudeHistory });
+        var payloadHearing = { system: systemPrompt, history: claudeHistory };
+        if (pendingAIImages.length) {
+          payloadHearing.images = pendingAIImages.slice();
+          pendingAIImages = []; // 1回送ったらクリア（失敗時も再送しない＝有料枠・トークンの浪費防止を優先）
+        }
+        payload = JSON.stringify(payloadHearing);
       } else {
         apiUrl = opts.apiUrl || (global.SHOWROOM_CONFIG && global.SHOWROOM_CONFIG.chatApi) || '';
         contentType = 'text/plain';
