@@ -1,574 +1,2238 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "updated": "2026-07-15",
-  "note": "後方幕僚 道具知識ベース。編集方法: 本ファイルを直接編集して git push（Phase 4で管理画面を追加予定）。rakutenKeyword は楽天商品検索APIに渡す検索語。priceRange はあくまで目安。roomUrl は楽天ROOMで厳選済みの品がある場合のみ記入。",
+  "note": "後方幕僚 道具知識ベース v2。編集方法: 本ファイルを直接編集して git push（Phase 4で管理画面を追加予定）。rakutenKeyword は楽天商品検索APIに渡す検索語。priceRange はあくまで目安（実売価格・口コミは楽天APIの itemPrice / reviewCount / reviewAverage を動的取得して表示する）。roomUrl は楽天ROOMで厳選済みの品がある場合のみ記入。references のURLは2026-07-15に実在・内容確認済み（掲載前の実在確認必須。旧 seiwa-net.jp / phoenix.shop-pro.jp はドメイン失効で無関係サイト化した実例あり）。",
   "processes": [
-    { "id": "pattern", "name": "型紙設計", "order": 1,
-      "summary": "作りたいものを図面に起こし、型紙を作る工程。ここでの精度が完成品の精度を決める。" },
-    { "id": "preparation", "name": "下準備（床面処理）", "order": 2,
-      "summary": "革の裏側（床面）を処理剤で磨いて毛羽立ちを抑える工程。使い心地と高級感が変わる。" },
-    { "id": "cutting", "name": "裁断", "order": 3,
-      "summary": "革を型紙どおりに切り出す工程。革の裁断は一発勝負。刃物の切れ味が仕上がりを左右する。" },
-    { "id": "skiving", "name": "漉き（すき）", "order": 4,
-      "summary": "革の厚みを部分的に薄くする工程。折り曲げ部や重なり部を漉くと、仕立てが美しくなる。" },
-    { "id": "gluing", "name": "接着", "order": 5,
-      "summary": "縫う前にパーツ同士を接着剤で仮止めする工程。ズレのない接着が縫いの精度を支える。" },
-    { "id": "punching", "name": "穴あけ（菱目打ち）", "order": 6,
-      "summary": "手縫い用の縫い穴を等間隔にあける工程。穴の間隔が均一だと縫い目は美しい直線に見える。" },
-    { "id": "sewing", "name": "手縫い", "order": 7,
-      "summary": "2本の針で交互に縫う「平縫い」が基本。ミシンと違い一箇所切れてもほどけにくい構造になる。" },
-    { "id": "edge", "name": "コバ処理", "order": 8,
-      "summary": "革の切り口（コバ）を削り・磨いて仕上げる工程。コバの美しさは職人の腕の見せどころ。" },
-    { "id": "finishing", "name": "仕上げ・保護", "order": 9,
-      "summary": "オイルやクリームで革に栄養を与え、防水剤で保護する工程。経年変化を美しく育てる土台になる。" },
-    { "id": "stamping", "name": "刻印・金具付け", "order": 10,
-      "summary": "名入れ刻印や、ホック・カシメなどの金具を取り付ける工程。作品の個性が生まれる。" }
+    {
+      "id": "pattern",
+      "name": "型紙設計",
+      "order": 1,
+      "summary": "作りたいものを図面に起こし、型紙を作る工程。ここでの精度が完成品の精度を決める。"
+    },
+    {
+      "id": "preparation",
+      "name": "下準備（床面処理）",
+      "order": 2,
+      "summary": "革の裏側（床面）を処理剤で磨いて毛羽立ちを抑える工程。使い心地と高級感が変わる。"
+    },
+    {
+      "id": "cutting",
+      "name": "裁断",
+      "order": 3,
+      "summary": "革を型紙どおりに切り出す工程。革の裁断は一発勝負。刃物の切れ味が仕上がりを左右する。"
+    },
+    {
+      "id": "skiving",
+      "name": "漉き（すき）",
+      "order": 4,
+      "summary": "革の厚みを部分的に薄くする工程。折り曲げ部や重なり部を漉くと、仕立てが美しくなる。"
+    },
+    {
+      "id": "dyeing",
+      "name": "染色・塗装",
+      "order": 5,
+      "summary": "ヌメ革を好みの色に染める工程。薄く重ねて染めるのが美しく仕上げる基本。染めたら色止めまでがワンセット。"
+    },
+    {
+      "id": "gluing",
+      "name": "接着",
+      "order": 6,
+      "summary": "縫う前にパーツ同士を接着剤で仮止めする工程。ズレのない接着が縫いの精度を支える。"
+    },
+    {
+      "id": "punching",
+      "name": "穴あけ（菱目打ち）",
+      "order": 7,
+      "summary": "手縫い用の縫い穴を等間隔にあける工程。穴の間隔が均一だと縫い目は美しい直線に見える。"
+    },
+    {
+      "id": "sewing",
+      "name": "手縫い",
+      "order": 8,
+      "summary": "2本の針で交互に縫う「平縫い」が基本。ミシンと違い一箇所切れてもほどけにくい構造になる。"
+    },
+    {
+      "id": "lacing",
+      "name": "レース編み（かがり）",
+      "order": 9,
+      "summary": "革ひもで縁をかがって編む装飾技法。ウォレットのふちかがりなどワイルドな存在感が出せる。"
+    },
+    {
+      "id": "edge",
+      "name": "コバ処理",
+      "order": 10,
+      "summary": "革の切り口（コバ）を削り・磨いて仕上げる工程。コバの美しさは職人の腕の見せどころ。"
+    },
+    {
+      "id": "carving",
+      "name": "カービング・刻印",
+      "order": 11,
+      "summary": "湿らせた革に模様を彫り込み、打刻で立体感を出す装飾技法。名入れ刻印もこの工程の道具を使う。"
+    },
+    {
+      "id": "hardware",
+      "name": "金具付け",
+      "order": 12,
+      "summary": "ホック・カシメ・ハトメなどの金具を取り付ける工程。金具・打ち具・ポンチのサイズを揃えるのが鉄則。"
+    },
+    {
+      "id": "finishing",
+      "name": "仕上げ・保護",
+      "order": 13,
+      "summary": "オイルやクリームで革に栄養を与え、防水剤で保護する工程。経年変化を美しく育てる土台になる。"
+    },
+    {
+      "id": "machine",
+      "name": "機械・大型治具",
+      "order": 14,
+      "summary": "革漉き機・プレス機・ミシンなど、量産や時短を支える設備。手作業で限界を感じてからの導入で十分。"
+    }
+  ],
+  "references": [
+    {
+      "name": "レザークラフト・ドット・ジェーピー",
+      "url": "https://www.leathercraft.jp/",
+      "description": "レザークラフト材料・革の通販サイト。道具や革の入門情報も充実。",
+      "topics": [
+        "通販",
+        "入門"
+      ]
+    },
+    {
+      "name": "協進エル",
+      "url": "https://www.kyoshin-elle.co.jp/",
+      "description": "老舗の皮革・レザークラフト材料メーカー。道具・金具の定番ブランド。",
+      "topics": [
+        "通販",
+        "メーカー"
+      ]
+    },
+    {
+      "name": "フェニックス（通販）",
+      "url": "https://phoenix-shop.jp/",
+      "description": "大阪の革材料店。ヌメ革・真鍮金具・道具の通販。",
+      "topics": [
+        "通販"
+      ]
+    },
+    {
+      "name": "フェニックス blog",
+      "url": "https://blog.phoenix-shop.jp/",
+      "description": "1926年創業の革素材問屋スタッフによるブログ。道具の使い方・革の知識記事が豊富。",
+      "topics": [
+        "使い方",
+        "読み物"
+      ]
+    },
+    {
+      "name": "クラフト社",
+      "url": "http://www.craftsha.co.jp/",
+      "description": "1964年創業。レザークラフト工具・教本の老舗メーカー。技法情報も公開。",
+      "topics": [
+        "メーカー",
+        "入門"
+      ]
+    },
+    {
+      "name": "クラフト社「はじめに揃えるもの」",
+      "url": "http://www.craftsha.co.jp/3lethercraft/hajime_tenui.html",
+      "description": "手縫いを始めるのに必要な道具をメーカーが公式解説する入門ページ。",
+      "topics": [
+        "入門",
+        "道具選び"
+      ]
+    },
+    {
+      "name": "SEIWA（トコノール公式）",
+      "url": "https://seiwa-net.com/",
+      "description": "床面仕上げ剤トコノール等を製造販売する皮革用ケミカルブランドの公式サイト。",
+      "topics": [
+        "メーカー",
+        "ケミカル"
+      ]
+    },
+    {
+      "name": "レザーマニア本店",
+      "url": "https://leathermania.jp/",
+      "description": "天然皮革・レザークラフト材料の専門通販。ブランド別に道具を探せる。",
+      "topics": [
+        "通販"
+      ]
+    }
   ],
   "tools": [
     {
       "id": "grid-ruler",
       "name": "方眼定規",
-      "processes": ["pattern", "cutting"],
+      "processes": [
+        "pattern",
+        "cutting"
+      ],
       "priority": "必須",
       "description": "型紙の作図と裁断のガイドに使う定規。方眼入りだと平行線・直角が素早く正確に引ける。",
+      "usage": "型紙の作図時は方眼を基準線に合わせて線を引く。革のケガキでは銀ペンと組み合わせて使う。",
       "advice": "30cm前後が万能。裁断ガイドを兼ねるならステンレスエッジ付きか金属定規を併用する。",
       "rakutenKeyword": "方眼定規 30cm",
       "priceRange": "300〜1,500円",
       "beginner": true,
-      "related": ["cutting-mat", "silver-pen"],
+      "related": [
+        "cutting-mat",
+        "silver-pen",
+        "stainless-ruler"
+      ],
       "roomUrl": ""
     },
     {
       "id": "cutting-mat",
       "name": "カッターマット",
-      "processes": ["pattern", "cutting", "gluing"],
+      "processes": [
+        "pattern",
+        "cutting",
+        "gluing"
+      ],
       "priority": "必須",
       "description": "机を守り、刃先を安定させる下敷き。型紙切りから革の裁断まで全工程の作業台になる。",
+      "usage": "作業机に敷き、その上で裁断・接着作業を行う。目盛りを裁断の位置合わせにも使える。",
       "advice": "A3以上が作業しやすい。反りにくい厚手タイプがおすすめ。",
       "rakutenKeyword": "カッターマット A3",
       "priceRange": "500〜2,000円",
       "beginner": true,
-      "related": ["grid-ruler", "art-knife"],
+      "related": [
+        "grid-ruler",
+        "art-knife"
+      ],
       "roomUrl": ""
     },
     {
       "id": "silver-pen",
       "name": "銀ペン",
-      "processes": ["pattern", "cutting"],
+      "processes": [
+        "pattern",
+        "cutting"
+      ],
       "priority": "必須",
       "description": "革の表面に型紙の輪郭を写すための銀色のペン。線が目立ちやすく、あとで消せる。",
+      "usage": "型紙を革に当てて外周をなぞる。書いた線は裁断後、消しゴムや水拭きで軽く消せる。",
       "advice": "細書きタイプが精度を出しやすい。濃い色の革ほど銀線が映える。ヌメ革には跡が残りにくい丸ギリでのケガキも併用。",
       "rakutenKeyword": "銀ペン レザークラフト",
       "priceRange": "300〜800円",
       "beginner": true,
-      "related": ["grid-ruler", "round-awl"],
+      "related": [
+        "grid-ruler",
+        "round-awl"
+      ],
       "roomUrl": ""
     },
     {
       "id": "divider",
       "name": "ディバイダー",
-      "processes": ["pattern", "punching"],
+      "processes": [
+        "pattern",
+        "punching"
+      ],
       "priority": "推奨",
       "description": "コンパス状の道具。革の端から一定距離に縫い線（ガイドライン）を引くのに使う。",
+      "usage": "片脚を革の端（コバ）に当て、もう片脚で端から一定距離の線を引く。等分の印付けにも使う。",
       "advice": "縫い線引きのほか、等間隔の印付けにも使える。ネジ固定式が安定する。",
       "rakutenKeyword": "ディバイダー レザークラフト",
       "priceRange": "800〜2,500円",
       "beginner": true,
-      "related": ["silver-pen", "stitching-groover"],
+      "related": [
+        "silver-pen",
+        "stitching-groover",
+        "screw-crease"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "curve-ruler",
+      "name": "雲形定規・曲線定規",
+      "processes": [
+        "pattern"
+      ],
+      "priority": "あると便利",
+      "description": "フラップやコーナーなど、型紙のなめらかな曲線を引くための定規。自在に曲がる自在曲線定規もある。",
+      "usage": "描きたい曲線に近いカーブ部分を選んで線を引く。左右対称の型紙は半分だけ描いて折り返すと歪まない。",
+      "advice": "財布のフラップ曲線などは円定規（テンプレート）との併用が便利。自在曲線定規は長い曲線向き。",
+      "rakutenKeyword": "雲形定規 セット",
+      "priceRange": "500〜2,000円",
+      "beginner": false,
+      "related": [
+        "circle-template",
+        "grid-ruler"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "circle-template",
+      "name": "円定規（テンプレート）",
+      "processes": [
+        "pattern"
+      ],
+      "priority": "あると便利",
+      "description": "大小の円・楕円の穴があいた製図用テンプレート。角丸（コーナーR）の作図に重宝する。",
+      "usage": "型紙の角に当てて角丸の曲線を描く。同じRを全ての角に使うと製品の統一感が出る。",
+      "advice": "コーナーRは5〜15mmをよく使う。金属製ならRの裁断ガイドとしても使える。",
+      "rakutenKeyword": "円定規 テンプレート 製図",
+      "priceRange": "300〜1,500円",
+      "beginner": false,
+      "related": [
+        "curve-ruler",
+        "corner-cutter"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "pattern-paper",
+      "name": "型紙用厚紙（工作用紙）",
+      "processes": [
+        "pattern"
+      ],
+      "priority": "必須",
+      "description": "型紙を作るための厚手の紙。方眼入りの工作用紙が定番で、繰り返し使っても縁がへたりにくい。",
+      "usage": "設計図を厚紙に写して切り出し、型紙にする。よく使う型紙はPP板や樹脂板に写すと半永久的に使える。",
+      "advice": "方眼入り工作用紙（1mm方眼）が作図しやすい。曲線の多い型紙は樹脂板化がおすすめ。",
+      "rakutenKeyword": "工作用紙 方眼 厚紙",
+      "priceRange": "200〜800円",
+      "beginner": true,
+      "related": [
+        "grid-ruler",
+        "art-knife"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "tracing-paper",
+      "name": "トレーシングペーパー",
+      "processes": [
+        "pattern",
+        "carving"
+      ],
+      "priority": "あると便利",
+      "description": "半透明の薄紙。既存の図案や実物から形を写し取るときに使う。カービング図案の転写にも使う。",
+      "usage": "図案の上に重ねて鉛筆でなぞり、型紙用厚紙に転写する。カービングでは革の上に重ねて鉄筆でなぞる。",
+      "advice": "カービング用には破れにくい専用のトレースフィルムもある。",
+      "rakutenKeyword": "トレーシングペーパー A4",
+      "priceRange": "300〜800円",
+      "beginner": false,
+      "related": [
+        "pattern-paper",
+        "tracing-film",
+        "stylus"
+      ],
       "roomUrl": ""
     },
     {
       "id": "tokonole",
       "name": "トコノール（床面仕上げ剤）",
-      "processes": ["preparation", "edge"],
+      "processes": [
+        "preparation",
+        "edge"
+      ],
       "priority": "必須",
-      "description": "床面（革の裏側）とコバを磨くための定番仕上げ剤。毛羽立ちを抑えツヤを出す。",
-      "advice": "無色が万能。床面は薄く塗ってガラス板で、コバはスリッカーで磨く。1個で長持ちする。",
+      "description": "床面（革の裏側）とコバを磨くための定番仕上げ剤。毛羽立ちを抑えツヤを出す。SEIWAブランドのロングセラー。",
+      "usage": "床面に薄く伸ばし、ガラス板や帆布で毛並みを寝かせるように磨く。コバにはごく少量を塗ってスリッカーで磨く。",
+      "advice": "無色が万能。塗りすぎは硬化やシミの原因になるので薄く。1個で長持ちする。",
       "rakutenKeyword": "トコノール 120g",
       "priceRange": "600〜1,200円",
       "beginner": true,
-      "related": ["glass-plate", "wood-slicker"],
+      "related": [
+        "glass-plate",
+        "wood-slicker",
+        "cmc"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "cmc",
+      "name": "CMC（床磨き剤・粉末）",
+      "processes": [
+        "preparation",
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "水に溶かして使う粉末タイプの床面・コバ磨き剤。安価で大量に作れるためコスパが高い。",
+      "usage": "水に溶かしてジェル状にし、床面やコバに塗ってから磨く。濃度は好みに合わせて調整できる。",
+      "advice": "トコノールより乾きが遅いぶん、広い面の処理に向く。溶かす手間を省くならトコノールで十分。",
+      "rakutenKeyword": "CMC レザークラフト 床磨き",
+      "priceRange": "500〜1,200円",
+      "beginner": false,
+      "related": [
+        "tokonole",
+        "glass-plate"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "funori",
+      "name": "ふのり（布海苔）",
+      "processes": [
+        "preparation",
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "海藻から作る天然の磨き剤。昔ながらの床磨き・コバ磨き材料で、自然な仕上がりが特徴。",
+      "usage": "水で煮溶かしてノリ状にし、床面・コバに塗って磨く。天然素材なので作り置きは冷蔵保存する。",
+      "advice": "手間はかかるが仕上がりの風合いは格別。天然志向・伝統技法にこだわる人向け。",
+      "rakutenKeyword": "ふのり レザークラフト",
+      "priceRange": "500〜1,500円",
+      "beginner": false,
+      "related": [
+        "tokonole",
+        "cmc"
+      ],
       "roomUrl": ""
     },
     {
       "id": "glass-plate",
       "name": "ガラス板",
-      "processes": ["preparation"],
+      "processes": [
+        "preparation"
+      ],
       "priority": "推奨",
       "description": "トコノールを塗った床面を磨き上げる板。広い面を均一に素早く磨ける。",
+      "usage": "縁の丸い部分を床面に当て、体重をかけて毛並みを寝かせるように滑らせる。革漉きの下敷きにも使える。",
       "advice": "レザークラフト用の縁を丸めたものが安全。代用するなら瓶の底でも可だが、専用品が効率的。",
       "rakutenKeyword": "ガラス板 レザークラフト",
       "priceRange": "1,000〜2,500円",
       "beginner": false,
-      "related": ["tokonole"],
+      "related": [
+        "tokonole",
+        "cmc"
+      ],
       "roomUrl": ""
     },
     {
       "id": "canvas-cloth",
       "name": "帆布（磨き布）",
-      "processes": ["preparation", "edge"],
+      "processes": [
+        "preparation",
+        "edge"
+      ],
       "priority": "あると便利",
       "description": "床面やコバを磨くための厚手の布。摩擦熱でツヤを出す昔ながらの磨き道具。",
+      "usage": "指に巻き付けてコバや床面を素早くこする。摩擦熱が出るくらいの速さで磨くとツヤが上がる。",
       "advice": "ハギレで十分。スリッカーと使い分けると仕上がりの幅が広がる。",
       "rakutenKeyword": "帆布 ハギレ",
       "priceRange": "300〜1,000円",
       "beginner": false,
-      "related": ["tokonole", "wood-slicker"],
+      "related": [
+        "tokonole",
+        "wood-slicker"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "wool-piece",
+      "name": "ウールピース（羊毛）",
+      "processes": [
+        "preparation",
+        "dyeing",
+        "finishing"
+      ],
+      "priority": "あると便利",
+      "description": "羊毛のかたまり。染料やオイルをムラなく塗り広げるのに使う塗布用具。",
+      "usage": "染料・仕上げ剤を含ませ、円を描くように素早くムラなく塗り広げる。",
+      "advice": "染色をやるなら1つ持っておくと仕上がりが安定する。使い捨てのスポンジでも代用可。",
+      "rakutenKeyword": "ウールピース 染色",
+      "priceRange": "300〜800円",
+      "beginner": false,
+      "related": [
+        "dye-sponge",
+        "craft-dye"
+      ],
       "roomUrl": ""
     },
     {
       "id": "leather-knife",
       "name": "革包丁",
-      "processes": ["cutting", "skiving"],
+      "processes": [
+        "cutting",
+        "skiving"
+      ],
       "priority": "推奨",
       "description": "革の裁断・漉きに使う日本伝統の刃物。直線の裁断で最も精度が出る職人の主力道具。",
+      "usage": "刃を革に対して斜めに寝かせ、引くように切る。漉きでは刃を寝かせて床面を薄く削ぐ。",
       "advice": "初心者は36mm幅前後が扱いやすい。切れなくなる前に研ぐのが職人の流儀。研ぎとセットで考える。",
       "rakutenKeyword": "革包丁 レザークラフト",
       "priceRange": "2,000〜8,000円",
       "beginner": false,
-      "related": ["sharpening-stone", "art-knife"],
+      "related": [
+        "sharpening-stone",
+        "art-knife"
+      ],
       "roomUrl": ""
     },
     {
       "id": "art-knife",
       "name": "別たち・カッターナイフ",
-      "processes": ["cutting"],
+      "processes": [
+        "cutting"
+      ],
       "priority": "必須",
       "description": "刃を折って常に新しい切れ味を使える裁断刀。研ぎが不要で、初心者の最初の一本に最適。",
+      "usage": "定規に沿わせて数回に分けて切る。1回で切ろうと力を入れず、浅い切り込みを重ねるのがコツ。",
       "advice": "オルファの「別たち」が定番。曲線は刃を短く出し、少しずつ切ると失敗しない。",
       "rakutenKeyword": "オルファ 別たち",
       "priceRange": "700〜1,500円",
       "beginner": true,
-      "related": ["cutting-mat", "leather-knife"],
+      "related": [
+        "cutting-mat",
+        "leather-knife",
+        "stainless-ruler"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "leather-scissors",
+      "name": "革切りはさみ",
+      "processes": [
+        "cutting"
+      ],
+      "priority": "あると便利",
+      "description": "革専用の強力なはさみ。薄手〜中厚の革の曲線や細部を手軽に切れる。",
+      "usage": "銀ペンの線に沿って刃の根元でしっかり挟んで切る。刃先だけで切ると切り口が波打つ。",
+      "advice": "刃物での裁断が基本だが、薄革・裏地・曲線はハサミが速い。紙用と兼用すると切れ味が落ちるので分ける。",
+      "rakutenKeyword": "革切りはさみ レザークラフト",
+      "priceRange": "1,500〜4,000円",
+      "beginner": true,
+      "related": [
+        "art-knife",
+        "rotary-cutter"
+      ],
       "roomUrl": ""
     },
     {
       "id": "rotary-cutter",
       "name": "ロータリーカッター",
-      "processes": ["cutting"],
+      "processes": [
+        "cutting"
+      ],
       "priority": "あると便利",
       "description": "円形の刃を転がして切るカッター。薄い革や大きな直線を素早く切れる。",
+      "usage": "定規に沿わせて一定の速度で転がす。革を押さえながら切るとズレない。",
       "advice": "薄手の革・裏地の裁断で威力を発揮。厚革には向かないので使い分ける。",
       "rakutenKeyword": "ロータリーカッター 45mm",
       "priceRange": "1,000〜2,500円",
       "beginner": false,
-      "related": ["art-knife", "cutting-mat"],
+      "related": [
+        "art-knife",
+        "cutting-mat"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "strap-cutter",
+      "name": "ストラップカッター（革紐裁断機）",
+      "processes": [
+        "cutting"
+      ],
+      "priority": "あると便利",
+      "description": "革から一定幅のベルト・ストラップを切り出す専用道具。幅を設定して引くだけで均一な帯が取れる。",
+      "usage": "革の端をまっすぐ整えてから、ガイドに沿わせて手前に引く。ベルトや持ち手作りの必需品。",
+      "advice": "ベルトを作るなら早めに導入したい一品。刃はカッター替刃式が経済的。",
+      "rakutenKeyword": "ストラップカッター レザークラフト",
+      "priceRange": "2,000〜5,000円",
+      "beginner": false,
+      "related": [
+        "art-knife",
+        "oval-punch"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "corner-cutter",
+      "name": "コーナーカッター（角丸抜き）",
+      "processes": [
+        "cutting",
+        "punching"
+      ],
+      "priority": "あると便利",
+      "description": "革の角を一定のRで丸く抜くポンチ状の道具。財布やカードケースの角処理が一発で決まる。",
+      "usage": "革の角に当てて木槌で叩いて抜く。同じRで統一すると製品の完成度が上がる。",
+      "advice": "よく使うRのサイズを1〜2本。円定規＋別たちでも代用できるが、量産するなら断然速い。",
+      "rakutenKeyword": "コーナーカッター レザークラフト",
+      "priceRange": "1,000〜3,000円",
+      "beginner": false,
+      "related": [
+        "circle-template",
+        "wooden-mallet",
+        "rubber-board"
+      ],
       "roomUrl": ""
     },
     {
       "id": "sharpening-stone",
       "name": "砥石",
-      "processes": ["cutting", "skiving"],
+      "processes": [
+        "cutting",
+        "skiving"
+      ],
       "priority": "推奨",
       "description": "革包丁や豆カンナの切れ味を保つための砥石。刃物は切れなくなる前に研ぐのが基本。",
+      "usage": "水に浸してから刃の角度を一定に保って研ぐ。中砥→仕上げ砥の順で研ぎ、最後に革砥で仕上げる。",
       "advice": "中砥（#1000前後）と仕上げ砥（#3000以上）の2種があると理想。青棒＋革砥での日常メンテも有効。",
       "rakutenKeyword": "砥石 1000 3000",
       "priceRange": "1,500〜5,000円",
       "beginner": false,
-      "related": ["leather-knife", "mame-kanna"],
+      "related": [
+        "leather-knife",
+        "strop"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "strop",
+      "name": "革砥（ストロップ）・青棒",
+      "processes": [
+        "cutting",
+        "skiving",
+        "carving"
+      ],
+      "priority": "推奨",
+      "description": "研磨剤（青棒）を塗った革で刃先を仕上げる道具。日常の切れ味維持はこれで十分なことが多い。",
+      "usage": "青棒を塗った革砥に刃を寝かせ、刃先と逆方向に数回引く。作業の合間にこまめにかける。",
+      "advice": "板に革を貼って自作もできる。スーベルカッターの刃先維持にも必須。",
+      "rakutenKeyword": "革砥 青棒 セット",
+      "priceRange": "800〜2,500円",
+      "beginner": true,
+      "related": [
+        "sharpening-stone",
+        "leather-knife",
+        "swivel-knife"
+      ],
       "roomUrl": ""
     },
     {
       "id": "stainless-ruler",
       "name": "ステンレス定規（カッティング用）",
-      "processes": ["cutting"],
+      "processes": [
+        "cutting"
+      ],
       "priority": "必須",
       "description": "刃物を当てて直線を切るための金属定規。プラスチック定規は刃で削れるため裁断には金属が必須。",
+      "usage": "切りたい線に合わせて置き、しっかり押さえてカッターを沿わせる。長物は定規を継がず一気に。",
       "advice": "滑り止め付きが安全。長物を作るなら60cmもあると便利。",
       "rakutenKeyword": "ステンレス定規 30cm",
       "priceRange": "500〜1,500円",
       "beginner": true,
-      "related": ["art-knife", "grid-ruler"],
+      "related": [
+        "art-knife",
+        "grid-ruler"
+      ],
       "roomUrl": ""
     },
     {
       "id": "safety-beveler",
       "name": "セーフティベベラー",
-      "processes": ["skiving"],
+      "processes": [
+        "skiving"
+      ],
       "priority": "推奨",
       "description": "替刃式の革漉き道具。刃が露出しにくく、初心者でも安全に革を薄く漉ける。",
+      "usage": "革の床面に当てて手前に引き、少しずつ薄くする。ガラス板を下敷きにすると安定する。",
       "advice": "床面を少しずつ削るのがコツ。替刃はカミソリ刃で交換も簡単。本格的になったら革包丁漉きへ。",
       "rakutenKeyword": "セーフティベベラー",
       "priceRange": "1,000〜2,000円",
       "beginner": true,
-      "related": ["leather-knife", "mame-kanna"],
+      "related": [
+        "leather-knife",
+        "mame-kanna",
+        "glass-plate"
+      ],
       "roomUrl": ""
     },
     {
       "id": "mame-kanna",
       "name": "豆カンナ",
-      "processes": ["skiving"],
+      "processes": [
+        "skiving"
+      ],
       "priority": "あると便利",
       "description": "手のひらサイズの小さなカンナ。コバの段差取りや部分漉きに使える。",
+      "usage": "刃をごく僅かに出し、コバや床面を滑らせて削る。貼り合わせたコバの段差取りに特に有効。",
       "advice": "革漉きの微調整に便利。刃の出し量はごく僅かにするのがコツ。",
       "rakutenKeyword": "豆カンナ レザークラフト",
       "priceRange": "1,000〜3,000円",
       "beginner": false,
-      "related": ["safety-beveler", "sharpening-stone"],
+      "related": [
+        "safety-beveler",
+        "sharpening-stone"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "french-edger",
+      "name": "フレンチエッジャー",
+      "processes": [
+        "skiving"
+      ],
+      "priority": "あると便利",
+      "description": "溝状の刃で革の縁を一定幅で薄く漉く道具。ヘリ返し（縁を折り返す仕立て）の下準備に使う。",
+      "usage": "革の縁に当てて押し出すように削り、折り返し部分を薄くする。幅の違いで数種類ある。",
+      "advice": "ヘリ返し仕立てに挑戦するなら導入したい。まずは8mm幅前後が使いやすい。",
+      "rakutenKeyword": "フレンチエッジャー レザークラフト",
+      "priceRange": "1,500〜4,000円",
+      "beginner": false,
+      "related": [
+        "safety-beveler",
+        "leather-knife"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "craft-dye",
+      "name": "クラフト染料（水性染料）",
+      "processes": [
+        "dyeing"
+      ],
+      "priority": "推奨",
+      "description": "ヌメ革を染める水性染料の定番。水で薄めて濃度を調整でき、色を重ねて深みを出せる。",
+      "usage": "水で2〜3倍に薄め、ウールピースや筆で薄く重ね塗りする。乾燥後にレザーコートで色止めする。",
+      "advice": "原液のまま塗るとムラになりやすい。薄めて回数を重ねるのが美しく染めるコツ。",
+      "rakutenKeyword": "クラフト染料 レザークラフト",
+      "priceRange": "500〜1,500円",
+      "beginner": true,
+      "related": [
+        "leather-coat",
+        "dye-brush",
+        "wool-piece"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "alcohol-dye",
+      "name": "アルコール染料（ローパスバチック等）",
+      "processes": [
+        "dyeing"
+      ],
+      "priority": "あると便利",
+      "description": "アルコール系の浸透力が高い染料。発色が鮮やかで乾きが速く、深い色に染まる。",
+      "usage": "薄めて素早く塗り広げる。乾きが速いためムラになりやすく、手早い作業が求められる。",
+      "advice": "水性染料より扱いは難しいが発色は魅力。まず水性で練習してから挑戦するのがおすすめ。",
+      "rakutenKeyword": "ローパスバチック 染料",
+      "priceRange": "600〜1,800円",
+      "beginner": false,
+      "related": [
+        "craft-dye",
+        "leather-coat"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "antique-dye",
+      "name": "アンティックダイ（陰影仕上げ剤）",
+      "processes": [
+        "dyeing",
+        "carving"
+      ],
+      "priority": "あると便利",
+      "description": "カービングの彫り模様や革のシボに入り込んで陰影を付ける仕上げ剤。ヴィンテージ調の表情が出る。",
+      "usage": "全体に塗ってから布で拭き取ると、凹部に色が残って立体感が強調される。",
+      "advice": "カービング作品の仕上げの定番。拭き取り加減で表情が大きく変わるので端革で試してから。",
+      "rakutenKeyword": "アンティックダイ レザークラフト",
+      "priceRange": "800〜2,000円",
+      "beginner": false,
+      "related": [
+        "carving-stamp-set",
+        "leather-coat"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "leather-coat",
+      "name": "レザーコート（仕上げ剤・色止め）",
+      "processes": [
+        "dyeing",
+        "finishing"
+      ],
+      "priority": "推奨",
+      "description": "染色後の色落ちを防ぐ水性トップコート。ツヤありとツヤ消しがあり、保護膜を作る。",
+      "usage": "染料が完全に乾いてから、筆かスポンジで薄く塗り重ねる。2〜3回の薄塗りが基本。",
+      "advice": "染色したら色止めまでがワンセット。ツヤ消しは自然な質感で人気。",
+      "rakutenKeyword": "レザーコート 仕上げ剤",
+      "priceRange": "600〜1,500円",
+      "beginner": true,
+      "related": [
+        "craft-dye",
+        "alcohol-dye"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "acrylic-leather-paint",
+      "name": "革用アクリル絵具",
+      "processes": [
+        "dyeing"
+      ],
+      "priority": "あると便利",
+      "description": "革の表面に色を乗せる顔料タイプの絵具。染料と違い下地の色に影響されにくく、イラストも描ける。",
+      "usage": "筆で直接描く。広い面はスポンジでポンポンと乗せるとムラになりにくい。",
+      "advice": "染料=革に浸透、絵具=表面に乗る、と覚える。ワンポイントの装飾や補色に便利。",
+      "rakutenKeyword": "アクリル絵具 革用",
+      "priceRange": "500〜2,000円",
+      "beginner": false,
+      "related": [
+        "dye-brush",
+        "craft-dye"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "dye-brush",
+      "name": "染色用筆・刷毛",
+      "processes": [
+        "dyeing"
+      ],
+      "priority": "推奨",
+      "description": "染料や仕上げ剤を塗るための筆。面積や用途に応じて平筆・丸筆を使い分ける。",
+      "usage": "染料を含ませすぎず、革の繊維に沿って一定方向に塗る。使用後はすぐ洗って乾かす。",
+      "advice": "染料用と仕上げ剤用は分ける。100円の筆でも始められるが、毛抜けの少ないものが快適。",
+      "rakutenKeyword": "染色 筆 平筆 セット",
+      "priceRange": "300〜1,500円",
+      "beginner": true,
+      "related": [
+        "craft-dye",
+        "leather-coat",
+        "palette"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "dye-sponge",
+      "name": "染色用スポンジ",
+      "processes": [
+        "dyeing"
+      ],
+      "priority": "あると便利",
+      "description": "広い面に染料を素早くムラなく塗るためのスポンジ。グラデーション染めにも使う。",
+      "usage": "染料を含ませて軽く絞り、円を描くように塗り広げる。縁から中心へ塗るとムラが出にくい。",
+      "advice": "台所用スポンジでも代用可。使い捨てにできるのが利点。",
+      "rakutenKeyword": "スポンジ 染色 レザークラフト",
+      "priceRange": "200〜600円",
+      "beginner": true,
+      "related": [
+        "wool-piece",
+        "craft-dye"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "palette",
+      "name": "染料用パレット・容器",
+      "processes": [
+        "dyeing"
+      ],
+      "priority": "あると便利",
+      "description": "染料を薄めたり混色したりするための容器。陶器の小皿やプラカップで十分。",
+      "usage": "染料と水を混ぜて濃度を調整する。作った染料は色見本を残しておくと再現できる。",
+      "advice": "混色レシピ（染料何滴＋水何ml）をメモしておくと同じ色を作り直せる。",
+      "rakutenKeyword": "ペイントカップ パレット 使い捨て",
+      "priceRange": "200〜800円",
+      "beginner": true,
+      "related": [
+        "dye-brush",
+        "craft-dye"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "rubber-gloves",
+      "name": "ゴム手袋・ニトリル手袋",
+      "processes": [
+        "dyeing",
+        "finishing"
+      ],
+      "priority": "推奨",
+      "description": "染色作業の必需品。染料は手に付くと数日落ちないため、使い捨て手袋で防護する。",
+      "usage": "染色・オイル仕上げの前に着用する。薄手のニトリル手袋が細かい作業でも邪魔にならない。",
+      "advice": "100枚入りの使い捨てタイプが結局お得。作業のたびに新しいものを。",
+      "rakutenKeyword": "ニトリル手袋 100枚",
+      "priceRange": "500〜1,500円",
+      "beginner": true,
+      "related": [
+        "craft-dye",
+        "neatsfoot-oil"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "masking-tape",
+      "name": "マスキングテープ",
+      "processes": [
+        "dyeing",
+        "gluing"
+      ],
+      "priority": "あると便利",
+      "description": "染め分けの境界を守ったり、接着範囲の目印にしたりする弱粘着テープ。",
+      "usage": "染めたくない部分に貼ってから染色する。革の銀面は粘着で荒れることがあるため弱粘着を選ぶ。",
+      "advice": "貼りっぱなしは跡が残る。作業が終わったらすぐ剥がす。",
+      "rakutenKeyword": "マスキングテープ 塗装用",
+      "priceRange": "100〜500円",
+      "beginner": true,
+      "related": [
+        "craft-dye",
+        "saibinol"
+      ],
       "roomUrl": ""
     },
     {
       "id": "saibinol",
       "name": "サイビノール（白ボンド系接着剤）",
-      "processes": ["gluing"],
+      "processes": [
+        "gluing"
+      ],
       "priority": "必須",
       "description": "レザークラフト定番の水性接着剤。乾くと透明になり、位置調整もしやすい。",
+      "usage": "ヘラで両面に薄く塗り、少し乾かせてから貼り合わせて圧着する。",
       "advice": "100番（やや柔らかめ）が汎用的。薄く均一に塗るのが強度のコツ。",
       "rakutenKeyword": "サイビノール 100",
       "priceRange": "400〜1,000円",
       "beginner": true,
-      "related": ["glue-spatula", "roller"],
+      "related": [
+        "glue-spatula",
+        "roller",
+        "g-clear"
+      ],
       "roomUrl": ""
     },
     {
       "id": "rubber-glue",
       "name": "ゴムのり",
-      "processes": ["gluing"],
+      "processes": [
+        "gluing"
+      ],
       "priority": "推奨",
       "description": "貼り直しができる仮止め用の接着剤。両面に塗って乾かしてから貼り合わせる。",
+      "usage": "両面に薄く塗り、指で触れてもつかない程度に乾いてから貼り合わせる。",
       "advice": "仮止め＝ゴムのり、本接着＝サイビノールと使い分けると作業が安定する。",
       "rakutenKeyword": "ゴムのり レザークラフト",
       "priceRange": "500〜1,200円",
       "beginner": false,
-      "related": ["saibinol"],
+      "related": [
+        "saibinol",
+        "g-clear"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "g-clear",
+      "name": "Gクリヤー（合成ゴム系接着剤）",
+      "processes": [
+        "gluing"
+      ],
+      "priority": "あると便利",
+      "description": "強力な合成ゴム系接着剤。金属やファスナーと革の接着など、異素材の貼り合わせに強い。",
+      "usage": "両面に薄く塗り、5〜10分乾かせてから強く圧着する。はみ出しはゴムのり消しゴムで取れる。",
+      "advice": "ファスナー付けの定番。水性ボンドで付きにくい素材はこれ。",
+      "rakutenKeyword": "Gクリヤー ボンド",
+      "priceRange": "300〜800円",
+      "beginner": false,
+      "related": [
+        "saibinol",
+        "rubber-glue"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "double-tape",
+      "name": "革用両面テープ",
+      "processes": [
+        "gluing"
+      ],
+      "priority": "あると便利",
+      "description": "縫う前の仮止め用の強粘着両面テープ。のりの乾燥待ちなしで即座に固定できる。",
+      "usage": "縫い代の内側に貼って仮固定し、そのまま縫う。ファスナーの仮止めにも便利。",
+      "advice": "3mm・5mm幅が使いやすい。針がテープの糊を拾ってベタつくことがあるので縫い線には重ねない。",
+      "rakutenKeyword": "両面テープ 3mm 強力",
+      "priceRange": "200〜800円",
+      "beginner": true,
+      "related": [
+        "saibinol",
+        "g-clear"
+      ],
       "roomUrl": ""
     },
     {
       "id": "glue-spatula",
       "name": "接着剤用ヘラ",
-      "processes": ["gluing"],
+      "processes": [
+        "gluing"
+      ],
       "priority": "推奨",
       "description": "接着剤を薄く均一に伸ばすためのヘラ。塗りムラが減ると接着強度と見た目が上がる。",
+      "usage": "接着剤を少量取り、革の端まで薄く均一に伸ばす。細部は先の細いヘラを使う。",
       "advice": "先端が薄いものが塗りやすい。使い終わったらすぐ拭き取ると長持ちする。",
       "rakutenKeyword": "接着 ヘラ レザークラフト",
       "priceRange": "200〜800円",
       "beginner": true,
-      "related": ["saibinol", "rubber-glue"],
+      "related": [
+        "saibinol",
+        "rubber-glue"
+      ],
       "roomUrl": ""
     },
     {
       "id": "roller",
       "name": "圧着ローラー",
-      "processes": ["gluing"],
+      "processes": [
+        "gluing"
+      ],
       "priority": "あると便利",
       "description": "貼り合わせた革を転がして圧着するローラー。接着面全体に均一な圧をかけられる。",
+      "usage": "貼り合わせ直後に中心から外へ向かって転がし、空気を抜きながら圧着する。",
       "advice": "無ければ指やハンマーの側面でも代用可。広い面を貼るなら効果大。",
       "rakutenKeyword": "圧着ローラー レザークラフト",
       "priceRange": "800〜2,000円",
       "beginner": false,
-      "related": ["saibinol"],
+      "related": [
+        "saibinol"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "clips",
+      "name": "クリップ・クランプ（仮固定用）",
+      "processes": [
+        "gluing",
+        "sewing"
+      ],
+      "priority": "あると便利",
+      "description": "接着後の乾燥待ちや縫製中のズレ防止に革を挟んで固定するクリップ。",
+      "usage": "接着した部分を挟んで乾くまで固定する。革に跡が付かないよう当て革をするか樹脂製を使う。",
+      "advice": "文具の目玉クリップでも代用できるが、跡防止の当て革を忘れずに。",
+      "rakutenKeyword": "仮止めクリップ ソーイング",
+      "priceRange": "300〜1,000円",
+      "beginner": true,
+      "related": [
+        "saibinol",
+        "double-tape"
+      ],
       "roomUrl": ""
     },
     {
       "id": "diamond-chisel",
       "name": "菱目打ち（2本目・4本目セット）",
-      "processes": ["punching"],
+      "processes": [
+        "punching"
+      ],
       "priority": "必須",
       "description": "手縫い用の菱形の縫い穴を等間隔にあける道具。直線は4本目、曲線は2本目・1本目を使い分ける。",
+      "usage": "縫い線の上に垂直に立て、木槌で叩いて貫通させる。次の打ち込みは端の1目を前の穴に重ねてピッチを保つ。",
       "advice": "ピッチ（穴間隔）は4mm前後が汎用的。まず2本目と4本目の2本セットから始めるのが定石。穴の精度が縫い目の美しさを決める。",
       "rakutenKeyword": "菱目打ち セット 4mm",
       "priceRange": "1,500〜5,000円",
       "beginner": true,
-      "related": ["wooden-mallet", "rubber-board", "diamond-awl"],
+      "related": [
+        "wooden-mallet",
+        "rubber-board",
+        "diamond-awl",
+        "euro-chisel"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "euro-chisel",
+      "name": "ヨーロッパ目打ち",
+      "processes": [
+        "punching"
+      ],
+      "priority": "あると便利",
+      "description": "刃先がフォーク状に薄い目打ち。菱目打ちより小さな穴があき、糸が締まった繊細な縫い目になる。",
+      "usage": "菱目打ちと同様に木槌で打つ。穴が小さいぶん、縫うときは菱ギリで穴を整えながら進める。",
+      "advice": "ハイブランド風の細かく締まったステッチを目指すなら。まずは菱目打ちで基本を習得してから。",
+      "rakutenKeyword": "ヨーロッパ目打ち レザークラフト",
+      "priceRange": "3,000〜10,000円",
+      "beginner": false,
+      "related": [
+        "diamond-chisel",
+        "diamond-awl"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "diamond-plier",
+      "name": "菱目パンチ（プライヤー式）",
+      "processes": [
+        "punching"
+      ],
+      "priority": "あると便利",
+      "description": "ハンドルを握って縫い穴をあけるプライヤー型の菱目打ち。打撃音が出ず、夜間や集合住宅でも作業できる。",
+      "usage": "縫い線に合わせて挟み、握って穴をあける。届く範囲は革の端から数cmまでなのでレイアウトに注意。",
+      "advice": "騒音問題の解決策として人気。奥まった位置の穴は菱目打ち機かハンマー式で。",
+      "rakutenKeyword": "菱目パンチ プライヤー",
+      "priceRange": "2,000〜6,000円",
+      "beginner": true,
+      "related": [
+        "diamond-chisel",
+        "punching-machine"
+      ],
       "roomUrl": ""
     },
     {
       "id": "wooden-mallet",
       "name": "木槌・樹脂ハンマー",
-      "processes": ["punching", "stamping", "gluing"],
+      "processes": [
+        "punching",
+        "hardware",
+        "carving",
+        "gluing"
+      ],
       "priority": "必須",
       "description": "菱目打ちや刻印、ホック打ちを叩くためのハンマー。金槌だと工具の頭を傷めるため木槌か樹脂製を使う。",
+      "usage": "工具の真上から垂直に打つ。数回に分けて打つより、適切な重さの槌で確実に打ち抜く方が穴がきれい。",
       "advice": "重さのあるものほど少ない力で打てる。打面が広いと打ち損じが減る。",
       "rakutenKeyword": "木槌 レザークラフト",
       "priceRange": "800〜2,500円",
       "beginner": true,
-      "related": ["diamond-chisel", "rubber-board"],
+      "related": [
+        "diamond-chisel",
+        "rubber-board",
+        "round-maul"
+      ],
       "roomUrl": ""
     },
     {
       "id": "rubber-board",
       "name": "ゴム板",
-      "processes": ["punching", "stamping"],
+      "processes": [
+        "punching",
+        "hardware"
+      ],
       "priority": "必須",
       "description": "穴あけ時に下に敷く板。刃先を守り、打撃音も抑える。",
+      "usage": "革の下に敷いて菱目打ちやポンチを打つ。刃が食い込んだら軽くひねらず垂直に抜く。",
       "advice": "厚さ2cm前後のしっかりしたものが安定する。騒音対策には下にフェルトやマットを重ねる。",
       "rakutenKeyword": "ゴム板 レザークラフト",
       "priceRange": "800〜2,000円",
       "beginner": true,
-      "related": ["diamond-chisel", "wooden-mallet"],
+      "related": [
+        "diamond-chisel",
+        "wooden-mallet",
+        "felt-mat"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "felt-mat",
+      "name": "フェルトマット（防音マット）",
+      "processes": [
+        "punching",
+        "hardware"
+      ],
+      "priority": "あると便利",
+      "description": "ゴム板の下に敷いて打撃音と振動を吸収するマット。集合住宅での夜間作業の味方。",
+      "usage": "机→フェルトマット→ゴム板→革の順に重ねて打つ。振動がかなり軽減される。",
+      "advice": "厚み2cm以上が効果的。ホームセンターのフェルトや防振マットでも代用可。",
+      "rakutenKeyword": "防音マット フェルト 厚手",
+      "priceRange": "500〜2,000円",
+      "beginner": false,
+      "related": [
+        "rubber-board",
+        "diamond-plier"
+      ],
       "roomUrl": ""
     },
     {
       "id": "diamond-awl",
       "name": "菱ギリ",
-      "processes": ["punching", "sewing"],
+      "processes": [
+        "punching",
+        "sewing"
+      ],
       "priority": "推奨",
       "description": "菱形の穴を1つずつあける錐。厚物の縫い穴の貫通や、菱目打ちが入らない箇所で活躍する。",
+      "usage": "縫いながら貫通が甘い穴を整える。厚物は菱目打ちで印を付けて菱ギリで貫通させる。",
       "advice": "縫いながら穴を整えるのにも使う。先端の研ぎで切れ味が大きく変わる。",
       "rakutenKeyword": "菱ギリ レザークラフト",
       "priceRange": "800〜3,000円",
       "beginner": false,
-      "related": ["diamond-chisel", "round-awl"],
+      "related": [
+        "diamond-chisel",
+        "round-awl"
+      ],
       "roomUrl": ""
     },
     {
       "id": "round-awl",
       "name": "丸ギリ",
-      "processes": ["pattern", "punching"],
+      "processes": [
+        "pattern",
+        "punching"
+      ],
       "priority": "推奨",
       "description": "印付けやケガキ線引きに使う先の尖った錐。型紙の写し取りにも使う。",
+      "usage": "型紙の角や縫い始めの位置に軽く刺して印を付ける。ヌメ革のケガキ線引きにも使う。",
       "advice": "銀ペンの跡を残したくないヌメ革のケガキに便利。力を入れすぎず浅く引くのがコツ。",
       "rakutenKeyword": "丸ギリ レザークラフト",
       "priceRange": "500〜1,500円",
       "beginner": true,
-      "related": ["silver-pen", "diamond-awl"],
+      "related": [
+        "silver-pen",
+        "diamond-awl"
+      ],
       "roomUrl": ""
     },
     {
       "id": "punch-set",
       "name": "ハトメ抜き（丸ポンチ）",
-      "processes": ["punching", "stamping"],
+      "processes": [
+        "punching",
+        "hardware"
+      ],
       "priority": "推奨",
       "description": "ホックやカシメ用の丸穴をあけるポンチ。金具のサイズに合わせて号数を使い分ける。",
+      "usage": "ゴム板の上で革に垂直に当て、木槌で叩いて抜く。金具の足径と同じか僅かに小さい号数を選ぶ。",
       "advice": "よく使うのは8号（2.4mm）〜15号（4.5mm）あたり。金具を買うとき対応ポンチ径も一緒に確認する。",
       "rakutenKeyword": "ハトメ抜き セット",
       "priceRange": "1,000〜3,000円",
       "beginner": true,
-      "related": ["hook-setter", "rivet-setter", "rubber-board"],
+      "related": [
+        "hook-setter",
+        "rivet-setter",
+        "rubber-board"
+      ],
       "roomUrl": ""
     },
     {
-      "id": "sewing-needle",
-      "name": "手縫い針（レザークラフト用）",
-      "processes": ["sewing"],
-      "priority": "必須",
-      "description": "革の手縫い専用の針。先が丸く、あけた穴を通すことに特化している。平縫いは2本1組で使う。",
-      "advice": "太さは糸に合わせる。折れ・曲がりに備えて予備を含め5本以上持っておくと安心。",
-      "rakutenKeyword": "レザークラフト 手縫い針",
-      "priceRange": "300〜1,000円",
-      "beginner": true,
-      "related": ["linen-thread", "stitching-pony"],
-      "roomUrl": ""
-    },
-    {
-      "id": "linen-thread",
-      "name": "手縫い糸（麻糸・ビニモ）",
-      "processes": ["sewing"],
-      "priority": "必須",
-      "description": "革の手縫い用の糸。天然の麻糸は蝋引きして使い、ポリエステルのビニモMBTは最初から蝋引き済みで扱いやすい。",
-      "advice": "初心者にはほつれにくいビニモMBT（5番・1番）がおすすめ。糸色で作品の印象が大きく変わる。",
-      "rakutenKeyword": "ビニモ MBT 5番",
-      "priceRange": "500〜1,500円",
-      "beginner": true,
-      "related": ["sewing-needle", "beeswax"],
-      "roomUrl": ""
-    },
-    {
-      "id": "beeswax",
-      "name": "蜜蝋（糸蝋）",
-      "processes": ["sewing"],
-      "priority": "推奨",
-      "description": "麻糸に引いて毛羽立ちを抑え、糸の強度と滑りを高めるワックス。",
-      "advice": "蝋引き済みの糸（ビニモ等）を使うなら不要。麻糸派の必需品。",
-      "rakutenKeyword": "蜜蝋 レザークラフト",
-      "priceRange": "300〜800円",
-      "beginner": false,
-      "related": ["linen-thread"],
-      "roomUrl": ""
-    },
-    {
-      "id": "stitching-pony",
-      "name": "レーシングポニー（ステッチングツリー）",
-      "processes": ["sewing"],
+      "id": "oval-punch",
+      "name": "小判ポンチ（ベルト穴用）",
+      "processes": [
+        "punching"
+      ],
       "priority": "あると便利",
-      "description": "革を挟んで固定する木製の治具。両手が自由になり、縫うスピードと均一さが大きく向上する。",
-      "advice": "無くても縫えるが、あると疲労が段違い。卓上で使えるクランプ式が省スペース。",
-      "rakutenKeyword": "レーシングポニー",
-      "priceRange": "2,000〜6,000円",
+      "description": "ベルトの尾錠穴など、小判型（楕円）の穴をあける専用ポンチ。丸穴より革ベルトの動きが滑らかになる。",
+      "usage": "ベルトの中心線に合わせて垂直に打ち抜く。ピン（ツク棒）が通る向きに長軸を合わせる。",
+      "advice": "ベルト作りをするなら必携。バックル幅に合うサイズを選ぶ。",
+      "rakutenKeyword": "小判ポンチ ベルト穴",
+      "priceRange": "1,000〜3,000円",
       "beginner": false,
-      "related": ["sewing-needle", "linen-thread"],
+      "related": [
+        "strap-cutter",
+        "punch-set"
+      ],
       "roomUrl": ""
     },
     {
-      "id": "thread-scissors",
-      "name": "糸切りはさみ",
-      "processes": ["sewing"],
-      "priority": "推奨",
-      "description": "縫い終わりの糸を根元で切るための小さなはさみ。切れ味が仕上がりの綺麗さに直結する。",
-      "advice": "ライターで糸端を焼き止めする場合も、まず際で切れる鋭いはさみが必要。",
-      "rakutenKeyword": "糸切りばさみ",
-      "priceRange": "300〜1,500円",
-      "beginner": true,
-      "related": ["linen-thread"],
+      "id": "screw-crease",
+      "name": "ネジ捻（ねじねん）",
+      "processes": [
+        "punching",
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "革の端から一定距離に線を引く道具。縫い線のガイドと、コバ際の飾り線（捻引き）の両方に使う。",
+      "usage": "幅をネジで固定し、コバに沿わせて手前に引く。温めて引くと消えない飾り線（火捻）になる。",
+      "advice": "ディバイダーより深くはっきりした線が引ける。仕立ての品格が上がる職人道具。",
+      "rakutenKeyword": "ネジ捻 レザークラフト",
+      "priceRange": "1,500〜5,000円",
+      "beginner": false,
+      "related": [
+        "divider",
+        "fuchinen"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "stitch-wheel",
+      "name": "ステッチルレット（ポンポネ）",
+      "processes": [
+        "punching"
+      ],
+      "priority": "あると便利",
+      "description": "歯車を転がして縫い穴の位置に等間隔の印を付ける道具。菱ギリで1穴ずつあける伝統仕立てとセットで使う。",
+      "usage": "縫い線の上を転がして点の印を付け、その印に菱ギリを刺して穴をあける。",
+      "advice": "菱目打ち全盛の今は出番が減ったが、ヨーロッパ伝統式の手縫いをするなら。",
+      "rakutenKeyword": "ステッチルレット レザークラフト",
+      "priceRange": "1,500〜4,000円",
+      "beginner": false,
+      "related": [
+        "diamond-awl",
+        "screw-crease"
+      ],
       "roomUrl": ""
     },
     {
       "id": "stitching-groover",
       "name": "ステッチンググルーバー",
-      "processes": ["punching", "sewing"],
+      "processes": [
+        "punching",
+        "sewing"
+      ],
       "priority": "あると便利",
       "description": "縫い線の溝を掘る道具。糸が革面より沈み、擦れに強く縫い目が長持ちする。",
+      "usage": "ガイドをコバに沿わせて引き、縫い線の溝を掘る。その溝の中に菱目打ちで穴をあける。",
       "advice": "ネジ捻で線を引くだけでも代用可。溝を掘るかはデザインの好みで選ぶ。",
       "rakutenKeyword": "ステッチンググルーバー",
       "priceRange": "1,000〜3,000円",
       "beginner": false,
-      "related": ["divider", "diamond-chisel"],
+      "related": [
+        "divider",
+        "diamond-chisel",
+        "screw-crease"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "sewing-needle",
+      "name": "手縫い針（レザークラフト用）",
+      "processes": [
+        "sewing"
+      ],
+      "priority": "必須",
+      "description": "革の手縫い専用の針。先が丸く、あけた穴を通すことに特化している。平縫いは2本1組で使う。",
+      "usage": "糸の両端に1本ずつ針を付け、1つの穴に左右から交互に通す「平縫い」が基本。",
+      "advice": "太さは糸に合わせる。折れ・曲がりに備えて予備を含め5本以上持っておくと安心。",
+      "rakutenKeyword": "レザークラフト 手縫い針",
+      "priceRange": "300〜1,000円",
+      "beginner": true,
+      "related": [
+        "linen-thread",
+        "stitching-pony"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "linen-thread",
+      "name": "手縫い糸（ビニモMBT・ポリエステル）",
+      "processes": [
+        "sewing"
+      ],
+      "priority": "必須",
+      "description": "革の手縫い用の糸。ポリエステルのビニモMBTは最初から蝋引き済みで強度も高く、初心者からプロまで定番。",
+      "usage": "縫う距離の約4倍の長さに切り、両端に針を付けて平縫いする。縫い終わりは2目返して切る。",
+      "advice": "初心者にはほつれにくいビニモMBT（5番・1番）がおすすめ。糸色で作品の印象が大きく変わる。",
+      "rakutenKeyword": "ビニモ MBT 5番",
+      "priceRange": "500〜1,500円",
+      "beginner": true,
+      "related": [
+        "sewing-needle",
+        "beeswax",
+        "escord-thread"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "escord-thread",
+      "name": "エスコード（麻手縫い糸）",
+      "processes": [
+        "sewing"
+      ],
+      "priority": "推奨",
+      "description": "天然麻の手縫い糸の定番。蝋引きして使うと毛羽が収まり、経年で味の出る自然な縫い目になる。",
+      "usage": "使う長さに切って蜜蝋を数回引き、毛羽を寝かせてから縫う。",
+      "advice": "化繊糸より切れやすいが風合いは抜群。ヌメ革のナチュラル系作品と相性が良い。",
+      "rakutenKeyword": "エスコード 麻糸 手縫い",
+      "priceRange": "500〜1,500円",
+      "beginner": false,
+      "related": [
+        "beeswax",
+        "linen-thread"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "beeswax",
+      "name": "蜜蝋（糸蝋）",
+      "processes": [
+        "sewing"
+      ],
+      "priority": "推奨",
+      "description": "麻糸に引いて毛羽立ちを抑え、糸の強度と滑りを高めるワックス。",
+      "usage": "糸を蝋に軽く押し当てながら数回引き通し、全体に薄く蝋を行き渡らせる。",
+      "advice": "蝋引き済みの糸（ビニモ等）を使うなら不要。麻糸派の必需品。",
+      "rakutenKeyword": "蜜蝋 レザークラフト",
+      "priceRange": "300〜800円",
+      "beginner": false,
+      "related": [
+        "escord-thread",
+        "linen-thread"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "stitching-pony",
+      "name": "レーシングポニー（ステッチングツリー）",
+      "processes": [
+        "sewing",
+        "lacing"
+      ],
+      "priority": "あると便利",
+      "description": "革を挟んで固定する木製の治具。両手が自由になり、縫うスピードと均一さが大きく向上する。",
+      "usage": "縫う部分を上に出して革を挟み、椅子に座って腿で挟むか卓上に固定して縫う。",
+      "advice": "無くても縫えるが、あると疲労が段違い。卓上で使えるクランプ式が省スペース。",
+      "rakutenKeyword": "レーシングポニー",
+      "priceRange": "2,000〜6,000円",
+      "beginner": false,
+      "related": [
+        "sewing-needle",
+        "linen-thread"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "thread-scissors",
+      "name": "糸切りはさみ",
+      "processes": [
+        "sewing"
+      ],
+      "priority": "推奨",
+      "description": "縫い終わりの糸を根元で切るための小さなはさみ。切れ味が仕上がりの綺麗さに直結する。",
+      "usage": "縫い終わりの糸を革の際でカットする。化繊糸は切り口をライターで軽く炙って焼き止めする。",
+      "advice": "ライターで糸端を焼き止めする場合も、まず際で切れる鋭いはさみが必要。",
+      "rakutenKeyword": "糸切りばさみ",
+      "priceRange": "300〜1,500円",
+      "beginner": true,
+      "related": [
+        "linen-thread",
+        "lighter"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "lighter",
+      "name": "ライター（糸の焼き止め用）",
+      "processes": [
+        "sewing"
+      ],
+      "priority": "推奨",
+      "description": "ポリエステル糸（ビニモ等）の縫い終わりを熱で溶かして留めるのに使う。ほつれ止めの定番手法。",
+      "usage": "糸を際で切り、切り口に一瞬だけ炎を近づけて溶かし、指やライターの底で押さえて固める。",
+      "advice": "麻糸は焼き止めできない（燃えるだけ）ので白ボンドで留める。革を焦がさないよう一瞬で。",
+      "rakutenKeyword": "ターボライター",
+      "priceRange": "100〜1,000円",
+      "beginner": true,
+      "related": [
+        "linen-thread",
+        "thread-scissors"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "thimble",
+      "name": "指ぬき・レザーパーム",
+      "processes": [
+        "sewing"
+      ],
+      "priority": "あると便利",
+      "description": "厚物を縫うときに針の頭を押すための手の保護具。長時間の手縫いで指を守る。",
+      "usage": "針が通りにくいとき、指ぬきで針頭を押して貫通させる。",
+      "advice": "厚革を頻繁に縫うなら。通常の小物制作では無くても困らない。",
+      "rakutenKeyword": "指ぬき レザークラフト",
+      "priceRange": "300〜1,500円",
+      "beginner": false,
+      "related": [
+        "sewing-needle",
+        "diamond-awl"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "speedy-stitcher",
+      "name": "スピーディーステッチャー（手縫い機）",
+      "processes": [
+        "sewing"
+      ],
+      "priority": "あると便利",
+      "description": "ミシンのような本縫いが手動でできる手縫い機。厚物や修理で威力を発揮する。",
+      "usage": "針に糸を通して革を貫通させ、裏側にできたループにもう1本の糸を通して引き締める。",
+      "advice": "テントや帆布の補修にも使える万能工具。平縫いの美しさとは別物なので用途で使い分け。",
+      "rakutenKeyword": "スピーディーステッチャー",
+      "priceRange": "1,500〜4,000円",
+      "beginner": false,
+      "related": [
+        "sewing-needle",
+        "diamond-awl"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "lacing-needle",
+      "name": "レーシングニードル（レース針）",
+      "processes": [
+        "lacing"
+      ],
+      "priority": "推奨",
+      "description": "革レース（革ひも）を通すための専用針。レースの先端を挟んで固定し、編み穴に通す。",
+      "usage": "レースの先端を斜めに切って針に固定し、平目打ちであけた穴に通して編む。",
+      "advice": "レース編みを始めるなら針とレースはセットで購入。2本編み・3本編みから練習する。",
+      "rakutenKeyword": "レーシングニードル レザークラフト",
+      "priceRange": "300〜1,000円",
+      "beginner": true,
+      "related": [
+        "leather-lace",
+        "lacing-chisel"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "leather-lace",
+      "name": "革レース（革ひも）",
+      "processes": [
+        "lacing"
+      ],
+      "priority": "推奨",
+      "description": "編み込み用の細い革ひも。財布のふちかがりやウォレットロープなど、装飾と補強を兼ねる。",
+      "usage": "平目打ちであけた穴にレーシングニードルで通し、かがり編みしていく。",
+      "advice": "幅3mm前後が定番。必要な長さは編み方によって穴数の5〜7倍と長めに見積もる。",
+      "rakutenKeyword": "革レース 3mm レザークラフト",
+      "priceRange": "500〜2,000円",
+      "beginner": true,
+      "related": [
+        "lacing-needle",
+        "lacing-chisel"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "lacing-chisel",
+      "name": "平目打ち（レース穴用）",
+      "processes": [
+        "lacing",
+        "punching"
+      ],
+      "priority": "推奨",
+      "description": "レース編み用の細長い穴をあける目打ち。菱目打ちと違い、まっすぐなスリット穴があく。",
+      "usage": "コバから一定距離に線を引き、菱目打ちと同じ要領で木槌で打って穴をあける。",
+      "advice": "レースの幅に合った刃幅を選ぶ（3mmレースには3mm刃）。4本目があると直線が速い。",
+      "rakutenKeyword": "平目打ち レザークラフト",
+      "priceRange": "1,000〜3,000円",
+      "beginner": true,
+      "related": [
+        "leather-lace",
+        "wooden-mallet",
+        "rubber-board"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "lacing-fid",
+      "name": "レーシングフィッド（穴広げ）",
+      "processes": [
+        "lacing"
+      ],
+      "priority": "あると便利",
+      "description": "レース穴を広げたり、編み目を整えたりする先の丸い錐。レースを通しやすくする補助具。",
+      "usage": "レースが通りにくい穴に差し込んで広げる。編み終わりの始末で編み目の下にレースを通すときにも使う。",
+      "advice": "千枚通しでも代用可能だが、先端が丸い専用品は革を傷つけにくい。",
+      "rakutenKeyword": "レーシングフィッド",
+      "priceRange": "500〜1,500円",
+      "beginner": false,
+      "related": [
+        "lacing-needle",
+        "leather-lace"
+      ],
       "roomUrl": ""
     },
     {
       "id": "edge-beveler",
       "name": "ヘリ落とし",
-      "processes": ["edge"],
+      "processes": [
+        "edge"
+      ],
       "priority": "推奨",
       "description": "コバの角を細く削って面取りする道具。角を落とすとコバが丸く磨きやすくなり、仕上がりが上品になる。",
+      "usage": "コバの角に刃を当て、一定の角度を保って滑らせる。表裏両方の角を落とすと断面が丸くなる。",
       "advice": "No.1（幅0.8mm前後）が小物向けの定番。切れ味が落ちたら革砥で研ぐ。",
       "rakutenKeyword": "ヘリ落とし No.1",
       "priceRange": "1,000〜4,000円",
       "beginner": false,
-      "related": ["wood-slicker", "sandpaper"],
+      "related": [
+        "wood-slicker",
+        "sandpaper",
+        "strop"
+      ],
       "roomUrl": ""
     },
     {
       "id": "wood-slicker",
       "name": "ウッドスリッカー（コバ磨き棒）",
-      "processes": ["edge"],
+      "processes": [
+        "edge"
+      ],
       "priority": "必須",
       "description": "コバを摩擦で磨き上げる木製の棒。溝のサイズを革の厚みに合わせて使う。",
-      "advice": "トコノールを薄く塗ってから磨くとツヤが出る。「塗る→磨く→ヤスリ→また磨く」の繰り返しが美しいコバへの近道。",
+      "usage": "トコノールを薄く塗り、革の厚みに合う溝でコバを素早くこすって磨く。ヤスリと磨きを繰り返して仕上げる。",
+      "advice": "「塗る→磨く→ヤスリ→また磨く」の繰り返しが美しいコバへの近道。",
       "rakutenKeyword": "コバ磨き ウッドスリッカー",
       "priceRange": "500〜2,000円",
       "beginner": true,
-      "related": ["tokonole", "edge-beveler", "sandpaper"],
+      "related": [
+        "tokonole",
+        "edge-beveler",
+        "sandpaper",
+        "cone-slicker"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "cone-slicker",
+      "name": "コーンスリッカー（円錐型磨き）",
+      "processes": [
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "円錐形のコバ磨き。曲線部分や穴の内側など、棒型では磨きにくい箇所に対応できる。",
+      "usage": "円錐の曲面をコバの曲線に合わせてこする。ハンドルの穴の内周磨きにも便利。",
+      "advice": "木製・アクリル製など素材いろいろ。ウッドスリッカーの次の1本に。",
+      "rakutenKeyword": "コーンスリッカー コバ磨き",
+      "priceRange": "500〜2,000円",
+      "beginner": false,
+      "related": [
+        "wood-slicker",
+        "tokonole"
+      ],
       "roomUrl": ""
     },
     {
       "id": "sandpaper",
       "name": "サンドペーパー（紙やすり）",
-      "processes": ["edge", "preparation"],
+      "processes": [
+        "edge",
+        "preparation"
+      ],
       "priority": "必須",
       "description": "コバの凹凸を整えるやすり。番手を上げながら磨くと滑らかなコバになる。",
+      "usage": "貼り合わせの段差を#240で整え、#400→#600と番手を上げて表面を滑らかにしてから磨きに入る。",
       "advice": "#240→#400→#600と段階的に。木片に巻くと平面が出しやすい。",
       "rakutenKeyword": "紙やすり セット 240 400",
       "priceRange": "200〜800円",
       "beginner": true,
-      "related": ["wood-slicker", "edge-beveler"],
+      "related": [
+        "wood-slicker",
+        "edge-beveler",
+        "dresser"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "dresser",
+      "name": "ドレッサー（ヤスリホルダー）",
+      "processes": [
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "持ち手付きの板状ヤスリ。コバの面を平らに整えるのが紙やすり単体より格段に楽になる。",
+      "usage": "コバに対して平行に当て、一定方向に削って面を整える。",
+      "advice": "紙やすり＋木片の自作でも十分だが、専用品は握りやすく疲れにくい。",
+      "rakutenKeyword": "ドレッサー ヤスリ コバ",
+      "priceRange": "500〜1,500円",
+      "beginner": false,
+      "related": [
+        "sandpaper",
+        "wood-slicker"
+      ],
       "roomUrl": ""
     },
     {
       "id": "edge-paint",
       "name": "コバ仕上げ剤（コバコート・バスコ等）",
-      "processes": ["edge"],
+      "processes": [
+        "edge"
+      ],
       "priority": "あると便利",
       "description": "コバに塗る顔料系の仕上げ剤。磨きでは出せない色付きのコバや、クロム革のコバ処理に使う。",
+      "usage": "コバを整えてから薄く塗り、乾いたらヤスリで整えてまた塗る。2〜3回重ねると美しく仕上がる。",
       "advice": "ヌメ革は磨き仕上げ、クロム革・色を付けたい時は塗り仕上げと使い分ける。薄く重ね塗りが基本。",
       "rakutenKeyword": "コバコート レザークラフト",
       "priceRange": "500〜1,500円",
       "beginner": false,
-      "related": ["wood-slicker", "tokonole"],
+      "related": [
+        "wood-slicker",
+        "tokonole",
+        "edge-roller-pen"
+      ],
       "roomUrl": ""
     },
     {
-      "id": "neatsfoot-oil",
-      "name": "ニートフットオイル",
-      "processes": ["finishing"],
-      "priority": "推奨",
-      "description": "ヌメ革に栄養を与える牛脚油。日焼け前に薄く塗ると、経年変化が深く美しく進む。",
-      "advice": "塗りすぎるとシミや型崩れの原因に。布に取って薄く均一が鉄則。",
-      "rakutenKeyword": "ニートフットオイル",
-      "priceRange": "600〜1,500円",
-      "beginner": true,
-      "related": ["leather-cream", "waterproof-spray"],
-      "roomUrl": ""
-    },
-    {
-      "id": "leather-cream",
-      "name": "レザークリーム",
-      "processes": ["finishing"],
-      "priority": "推奨",
-      "description": "完成品のメンテナンス用クリーム。保湿とツヤ出しで革を長持ちさせる。",
-      "advice": "月1回程度の薄塗りで十分。お客様への「お手入れ案内」にもそのまま使える知識。",
-      "rakutenKeyword": "レザークリーム 無色",
-      "priceRange": "800〜2,000円",
-      "beginner": true,
-      "related": ["neatsfoot-oil", "waterproof-spray"],
-      "roomUrl": ""
-    },
-    {
-      "id": "waterproof-spray",
-      "name": "防水スプレー（革用）",
-      "processes": ["finishing"],
+      "id": "edge-roller-pen",
+      "name": "コバ塗りペン・ローラー",
+      "processes": [
+        "edge"
+      ],
       "priority": "あると便利",
-      "description": "雨や汚れから革を守るスプレー。フッ素系は通気性を保ちながら撥水する。",
-      "advice": "必ず革対応の表示を確認。30cm離して薄く2回が基本。ヌメ革は色が変わることがあるので目立たない所で試す。",
-      "rakutenKeyword": "防水スプレー 革 フッ素",
-      "priceRange": "800〜2,000円",
-      "beginner": true,
-      "related": ["leather-cream"],
-      "roomUrl": ""
-    },
-    {
-      "id": "letter-stamp",
-      "name": "刻印セット（アルファベット・数字）",
-      "processes": ["stamping"],
-      "priority": "あると便利",
-      "description": "名入れやイニシャルを打刻する金属スタンプ。ヌメ革に水分を与えてから打つとくっきり入る。",
-      "advice": "文字の大きさは3〜6mmが小物向き。真っ直ぐ均等に打つには練習革で試し打ちを。",
-      "rakutenKeyword": "刻印 セット アルファベット レザークラフト",
-      "priceRange": "1,500〜5,000円",
+      "description": "コバ仕上げ剤をはみ出さずに塗るための専用アプリケーター。ローラー式やペン式がある。",
+      "usage": "仕上げ剤を溝に含ませ、コバの上を一定速度でなぞる。銀面へのはみ出しが激減する。",
+      "advice": "筆や綿棒でも塗れるが、量産や細いコバには専用品が確実。",
+      "rakutenKeyword": "コバ塗り ローラーペン",
+      "priceRange": "800〜2,500円",
       "beginner": false,
-      "related": ["wooden-mallet", "rubber-board"],
+      "related": [
+        "edge-paint"
+      ],
       "roomUrl": ""
     },
     {
-      "id": "hook-setter",
-      "name": "バネホック打ち具",
-      "processes": ["stamping"],
-      "priority": "推奨",
-      "description": "財布やケースの留め具「バネホック」を取り付ける打ち具。ホックのサイズごとに専用の打ち具を使う。",
-      "advice": "小物には小（No.2）・中（No.5）が定番。金具と打ち具のサイズを必ず揃えて買う。",
-      "rakutenKeyword": "バネホック 打ち具 セット",
-      "priceRange": "800〜2,000円",
-      "beginner": true,
-      "related": ["punch-set", "wooden-mallet", "rivet-setter"],
+      "id": "edge-wax",
+      "name": "コバワックス（蜜蝋仕上げ）",
+      "processes": [
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "磨いたコバに擦り込むワックス。ツヤと防水性が増し、しっとりした高級感のあるコバになる。",
+      "usage": "磨き上げたコバにワックスを擦り込み、帆布やスリッカーで熱を加えるように磨き上げる。",
+      "advice": "仕上げの最後のひと手間。電気ゴテ（フチ捻）で溶かし込むとプロの艶になる。",
+      "rakutenKeyword": "コバワックス 蜜蝋",
+      "priceRange": "500〜1,500円",
+      "beginner": false,
+      "related": [
+        "wood-slicker",
+        "fuchinen",
+        "canvas-cloth"
+      ],
       "roomUrl": ""
     },
     {
-      "id": "rivet-setter",
-      "name": "カシメ打ち具",
-      "processes": ["stamping"],
-      "priority": "推奨",
-      "description": "革を挟んで固定する金具「カシメ」を取り付ける打ち具。ベルトや持ち手の補強に使う。",
-      "advice": "カシメは足の長さ選びが重要。革の合計厚＋1〜2mmが目安。",
-      "rakutenKeyword": "カシメ 打ち具 セット",
-      "priceRange": "800〜2,000円",
-      "beginner": true,
-      "related": ["punch-set", "hook-setter"],
+      "id": "fuchinen",
+      "name": "フチ捻・玉捻",
+      "processes": [
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "コバの際に飾り線（捻線）を入れる道具。熱して使うとワックスが溶け込み、消えない上品な線になる。",
+      "usage": "アルコールランプ等で温め、コバの際に沿わせて一定の速さで引く。端革で温度を確認してから。",
+      "advice": "「捻を引く」だけで作品がぐっと既製品らしくなる。電気式（電熱ペン併用）もある。",
+      "rakutenKeyword": "フチ捻 レザークラフト",
+      "priceRange": "2,000〜6,000円",
+      "beginner": false,
+      "related": [
+        "screw-crease",
+        "edge-wax"
+      ],
       "roomUrl": ""
     },
     {
       "id": "swivel-knife",
       "name": "スーベルカッター",
-      "processes": ["stamping"],
-      "priority": "あると便利",
+      "processes": [
+        "carving"
+      ],
+      "priority": "推奨",
       "description": "革に模様の切り込みを入れるカービング用の回転刃。フィギュアカービングの必需品。",
+      "usage": "人差し指をヨークに乗せ、刃を手前に引きながら指で回して曲線を切る。革は水で湿らせてから。",
       "advice": "カービングに進みたくなったら最初に揃える一本。指で回しながら曲線を切る練習から。",
       "rakutenKeyword": "スーベルカッター",
       "priceRange": "1,500〜5,000円",
       "beginner": false,
-      "related": ["letter-stamp"],
+      "related": [
+        "carving-stamp-set",
+        "strop",
+        "water-sponge"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "carving-stamp-set",
+      "name": "カービング刻印セット",
+      "processes": [
+        "carving"
+      ],
+      "priority": "推奨",
+      "description": "スーベルカッターの切り込みに立体感を付ける打刻印。ベベラー・シェーダー・カモフラージュなど役割別に多数ある。",
+      "usage": "湿らせた革にスーベルカッターで図案を切り、ベベラーで切り込みの片側を打ち沈めて立体感を出す。",
+      "advice": "まずベベラー・シェーダー・カモフラージュ・シーダー・バックグラウンダーの基本5〜7本セットから。",
+      "rakutenKeyword": "カービング 刻印 セット レザークラフト",
+      "priceRange": "2,000〜8,000円",
+      "beginner": false,
+      "related": [
+        "swivel-knife",
+        "round-maul",
+        "marble-slab"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "letter-stamp",
+      "name": "刻印セット（アルファベット・数字）",
+      "processes": [
+        "carving"
+      ],
+      "priority": "あると便利",
+      "description": "名入れやイニシャルを打刻する金属スタンプ。ヌメ革に水分を与えてから打つとくっきり入る。",
+      "usage": "革を水で軽く湿らせ、刻印を垂直に当てて木槌で1回で打ち込む。ガイドラインを引くと真っ直ぐ並ぶ。",
+      "advice": "文字の大きさは3〜6mmが小物向き。真っ直ぐ均等に打つには練習革で試し打ちを。",
+      "rakutenKeyword": "刻印 セット アルファベット レザークラフト",
+      "priceRange": "1,500〜5,000円",
+      "beginner": false,
+      "related": [
+        "wooden-mallet",
+        "rubber-board",
+        "marble-slab"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "marble-slab",
+      "name": "大理石板・御影石板（打刻台）",
+      "processes": [
+        "carving"
+      ],
+      "priority": "あると便利",
+      "description": "カービングや刻印の下に敷く硬い石の台。打撃が逃げず、刻印がくっきり入る。",
+      "usage": "革の下に敷いて刻印やカービングの打刻をする。ゴム板と違い沈まないため細かい模様が鮮明になる。",
+      "advice": "カービングをやるなら効果を実感できる。厚み2〜3cmで卓上サイズが扱いやすい。",
+      "rakutenKeyword": "大理石板 レザークラフト",
+      "priceRange": "1,500〜5,000円",
+      "beginner": false,
+      "related": [
+        "carving-stamp-set",
+        "letter-stamp"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "round-maul",
+      "name": "ラウンドモール（カービング槌）",
+      "processes": [
+        "carving"
+      ],
+      "priority": "あると便利",
+      "description": "円筒形の頭を持つカービング用の槌。どの角度で当たっても打撃が均一で、連続打刻が安定する。",
+      "usage": "刻印の頭を軽く連打するように打つ。重さで打ち込むイメージで、力まない。",
+      "advice": "木槌でも代用できるが、本格的にカービングするなら打感の違いは大きい。",
+      "rakutenKeyword": "ラウンドモール レザークラフト",
+      "priceRange": "3,000〜8,000円",
+      "beginner": false,
+      "related": [
+        "carving-stamp-set",
+        "wooden-mallet"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "water-sponge",
+      "name": "水入れ・スポンジ（カービング用）",
+      "processes": [
+        "carving"
+      ],
+      "priority": "推奨",
+      "description": "カービング前に革へ水分を与えるためのスポンジ。適切な湿り気が彫りやすさと発色を決める。",
+      "usage": "革の表面が色濃くなる程度に水を含ませ、表面の水気が引いてしっとりした状態で彫り始める。",
+      "advice": "湿らせすぎは型崩れ・カビの原因。「濡らして少し待つ」のがコツ。",
+      "rakutenKeyword": "スポンジ 水含み カービング",
+      "priceRange": "100〜500円",
+      "beginner": true,
+      "related": [
+        "swivel-knife",
+        "carving-stamp-set"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "tracing-film",
+      "name": "トレースフィルム（図案転写）",
+      "processes": [
+        "carving"
+      ],
+      "priority": "あると便利",
+      "description": "カービング図案を革に転写するための丈夫な半透明フィルム。濡れた革の上でも破れない。",
+      "usage": "図案をフィルムに写し、湿らせた革の上に置いて鉄筆でなぞって跡を付ける。",
+      "advice": "トレーシングペーパーは濡れると破れるので、カービングには専用フィルムが確実。",
+      "rakutenKeyword": "トレースフィルム カービング",
+      "priceRange": "300〜1,000円",
+      "beginner": false,
+      "related": [
+        "stylus",
+        "tracing-paper",
+        "water-sponge"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "stylus",
+      "name": "鉄筆（スタイラス）",
+      "processes": [
+        "carving"
+      ],
+      "priority": "あると便利",
+      "description": "図案を革に転写するときになぞる先の丸いペン。インクを使わず跡だけを付ける。",
+      "usage": "トレースフィルム越しに図案の線をなぞり、革に浅い跡を付ける。",
+      "advice": "ボールペンのインク切れでも代用可だが、インク残りの事故を考えると専用品が安心。",
+      "rakutenKeyword": "鉄筆 スタイラス トレース",
+      "priceRange": "300〜1,000円",
+      "beginner": false,
+      "related": [
+        "tracing-film",
+        "swivel-knife"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "hook-setter",
+      "name": "バネホック打ち具",
+      "processes": [
+        "hardware"
+      ],
+      "priority": "推奨",
+      "description": "財布やケースの留め具「バネホック」を取り付ける打ち具。ホックのサイズごとに専用の打ち具を使う。",
+      "usage": "ポンチで穴をあけ、打ち台の上で金具をセットして打ち棒を木槌で打つ。オスメスで打ち台の面を使い分ける。",
+      "advice": "小物には小（No.2）・中（No.5）が定番。金具と打ち具のサイズを必ず揃えて買う。",
+      "rakutenKeyword": "バネホック 打ち具 セット",
+      "priceRange": "800〜2,000円",
+      "beginner": true,
+      "related": [
+        "punch-set",
+        "wooden-mallet",
+        "jumper-hook-setter"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "jumper-hook-setter",
+      "name": "ジャンパーホック打ち具",
+      "processes": [
+        "hardware"
+      ],
+      "priority": "あると便利",
+      "description": "バネホックより保持力の強い「ジャンパーホック」用の打ち具。バッグや厚物の留め具に使う。",
+      "usage": "バネホックと同じ要領で、専用の打ち棒と打ち台で固定する。",
+      "advice": "厚手の革やテンションのかかる場所はジャンパーホックが安心。7050（大）が定番サイズ。",
+      "rakutenKeyword": "ジャンパーホック 打ち具",
+      "priceRange": "1,000〜2,500円",
+      "beginner": false,
+      "related": [
+        "hook-setter",
+        "punch-set"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "rivet-setter",
+      "name": "カシメ打ち具",
+      "processes": [
+        "hardware"
+      ],
+      "priority": "推奨",
+      "description": "革を挟んで固定する金具「カシメ」を取り付ける打ち具。ベルトや持ち手の補強に使う。",
+      "usage": "ポンチで穴をあけて足を通し、頭を乗せて打ち台の上で打ち棒を打つ。",
+      "advice": "カシメは足の長さ選びが重要。革の合計厚＋1〜2mmが目安。",
+      "rakutenKeyword": "カシメ 打ち具 セット",
+      "priceRange": "800〜2,000円",
+      "beginner": true,
+      "related": [
+        "punch-set",
+        "hook-setter",
+        "eyelet-setter"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "eyelet-setter",
+      "name": "ハトメ打ち具（アイレット）",
+      "processes": [
+        "hardware"
+      ],
+      "priority": "あると便利",
+      "description": "紐穴を金属リングで補強する「ハトメ」の取り付け打ち具。タグや紐通し穴に使う。",
+      "usage": "ポンチで穴をあけてハトメを通し、打ち台の上で打ち棒で足を開いて固定する。",
+      "advice": "両面ハトメの方が裏側も美しい。サイズは内径で選ぶ。",
+      "rakutenKeyword": "ハトメ 打ち具 セット",
+      "priceRange": "500〜1,500円",
+      "beginner": true,
+      "related": [
+        "punch-set",
+        "rivet-setter"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "setting-base",
+      "name": "打ち台（万能打ち台）",
+      "processes": [
+        "hardware"
+      ],
+      "priority": "推奨",
+      "description": "ホック・カシメを打つときに金具の頭を受ける金属の台。頭の丸みに合う凹みで金具を傷めず固定できる。",
+      "usage": "金具の頭に合う凹みを上にして、金具をセットして打つ。平らな面は平カシメ用。",
+      "advice": "各サイズの凹みが揃った万能打ち台が1つあれば大半の金具に対応できる。",
+      "rakutenKeyword": "万能打ち台 レザークラフト",
+      "priceRange": "800〜2,000円",
+      "beginner": true,
+      "related": [
+        "hook-setter",
+        "rivet-setter",
+        "eyelet-setter"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "neatsfoot-oil",
+      "name": "ニートフットオイル",
+      "processes": [
+        "finishing"
+      ],
+      "priority": "推奨",
+      "description": "ヌメ革に栄養を与える牛脚油。日焼け前に薄く塗ると、経年変化が深く美しく進む。",
+      "usage": "布かウールピースに少量取り、薄く均一に塗って陰干しする。日光浴と組み合わせると飴色が育つ。",
+      "advice": "塗りすぎるとシミや型崩れの原因に。布に取って薄く均一が鉄則。",
+      "rakutenKeyword": "ニートフットオイル",
+      "priceRange": "600〜1,500円",
+      "beginner": true,
+      "related": [
+        "leather-cream",
+        "horsehair-brush"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "leather-cream",
+      "name": "レザークリーム（デリケートクリーム）",
+      "processes": [
+        "finishing"
+      ],
+      "priority": "推奨",
+      "description": "完成品のメンテナンス用クリーム。保湿とツヤ出しで革を長持ちさせる。",
+      "usage": "ブラシでホコリを落としてから、布で薄く塗り広げ、乾いたら乾拭きする。",
+      "advice": "月1回程度の薄塗りで十分。お客様への「お手入れ案内」にもそのまま使える知識。",
+      "rakutenKeyword": "レザークリーム 無色",
+      "priceRange": "800〜2,000円",
+      "beginner": true,
+      "related": [
+        "neatsfoot-oil",
+        "horsehair-brush",
+        "polishing-cloth"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "ranapa",
+      "name": "ラナパー（レザートリートメント）",
+      "processes": [
+        "finishing"
+      ],
+      "priority": "あると便利",
+      "description": "蜜蝋ベースの万能トリートメント。保湿・ツヤ出し・防水を1つでこなす人気メンテ用品。",
+      "usage": "付属スポンジで薄く塗り伸ばすだけ。多用途で家具や車の革にも使える。",
+      "advice": "手軽さは抜群。ヌメ革の初期は色が濃くなるので目立たない所で試してから。",
+      "rakutenKeyword": "ラナパー",
+      "priceRange": "1,500〜3,000円",
+      "beginner": true,
+      "related": [
+        "leather-cream",
+        "mink-oil"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "mink-oil",
+      "name": "ミンクオイル",
+      "processes": [
+        "finishing"
+      ],
+      "priority": "あると便利",
+      "description": "動物性オイルの定番。油分が多く、オイルレザーやブーツなどタフに使う革の保革に向く。",
+      "usage": "少量を布に取り、円を描くように擦り込んで乾拭きする。",
+      "advice": "繊細なヌメ革には油分過多になりがち。用途で「ニートフット=ヌメ、ミンク=オイルレザー」と使い分け。",
+      "rakutenKeyword": "ミンクオイル 革",
+      "priceRange": "500〜1,500円",
+      "beginner": false,
+      "related": [
+        "neatsfoot-oil",
+        "ranapa"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "waterproof-spray",
+      "name": "防水スプレー（革用）",
+      "processes": [
+        "finishing"
+      ],
+      "priority": "あると便利",
+      "description": "雨や汚れから革を守るスプレー。フッ素系は通気性を保ちながら撥水する。",
+      "usage": "屋外で30cm離して薄く全体に吹き、乾いてからもう1回。完全に乾くまで使わない。",
+      "advice": "必ず革対応の表示を確認。ヌメ革は色が変わることがあるので目立たない所で試す。",
+      "rakutenKeyword": "防水スプレー 革 フッ素",
+      "priceRange": "800〜2,000円",
+      "beginner": true,
+      "related": [
+        "leather-cream",
+        "ranapa"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "horsehair-brush",
+      "name": "馬毛ブラシ",
+      "processes": [
+        "finishing"
+      ],
+      "priority": "推奨",
+      "description": "革表面のホコリ落としと磨きに使う柔らかいブラシ。日常メンテの基本道具。",
+      "usage": "クリームを塗る前のホコリ落としと、塗った後のブラッシングに使う。毛先で優しく。",
+      "advice": "ステッチの目地のホコリも掻き出せる。1本あると完成品の撮影前の手入れにも重宝。",
+      "rakutenKeyword": "馬毛ブラシ 革",
+      "priceRange": "800〜2,500円",
+      "beginner": true,
+      "related": [
+        "leather-cream",
+        "polishing-cloth"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "polishing-cloth",
+      "name": "磨きクロス・グローブ",
+      "processes": [
+        "finishing"
+      ],
+      "priority": "あると便利",
+      "description": "仕上げの乾拭きやツヤ出しに使う柔らかい布。手袋型は細部まで磨きやすい。",
+      "usage": "クリームが乾いたら全体を乾拭きしてツヤを出す。",
+      "advice": "着なくなった綿Tシャツでも十分代用できる。",
+      "rakutenKeyword": "磨きクロス 革",
+      "priceRange": "300〜1,000円",
+      "beginner": true,
+      "related": [
+        "leather-cream",
+        "horsehair-brush"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "skiving-machine",
+      "name": "革漉き機（卓上）",
+      "processes": [
+        "machine",
+        "skiving"
+      ],
+      "priority": "あると便利",
+      "description": "革の厚みを均一に薄くする機械。手漉きでは難しい広範囲・均一な漉きができる。",
+      "usage": "送りローラーに革を通し、設定した厚みに漉く。端革で厚みを確認してから本番へ。",
+      "advice": "高額（数万円〜）なので、まずは購入した革の「漉き加工サービス」を利用するのも手。量産段階で検討。",
+      "rakutenKeyword": "革漉き機",
+      "priceRange": "30,000〜100,000円",
+      "beginner": false,
+      "related": [
+        "safety-beveler",
+        "leather-knife"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "punching-machine",
+      "name": "菱目打ち機（ハンドプレス式）",
+      "processes": [
+        "machine",
+        "punching"
+      ],
+      "priority": "あると便利",
+      "description": "レバー操作で菱目穴をあける卓上プレス機。無音・高精度で、集合住宅の騒音問題を根本解決する。",
+      "usage": "菱目駒をセットし、革を合わせてレバーを引いて穴をあける。",
+      "advice": "打撃式より高価だが、夜間作業派・量産派には投資価値が大きい。",
+      "rakutenKeyword": "菱目打ち機 レザークラフト",
+      "priceRange": "8,000〜30,000円",
+      "beginner": false,
+      "related": [
+        "diamond-chisel",
+        "diamond-plier",
+        "hand-press"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "hand-press",
+      "name": "ハンドプレス機（ホック・カシメ用）",
+      "processes": [
+        "machine",
+        "hardware"
+      ],
+      "priority": "あると便利",
+      "description": "レバーで金具を圧着する卓上プレス。打ち具＋木槌より速く、均一な力で金具が決まる。",
+      "usage": "金具に合う駒（コマ）をセットし、革と金具を挟んでレバーを下ろす。",
+      "advice": "金具ごとに専用駒が必要。ホック・カシメを大量に打つようになったら導入を検討。",
+      "rakutenKeyword": "ハンドプレス レザークラフト",
+      "priceRange": "5,000〜20,000円",
+      "beginner": false,
+      "related": [
+        "hook-setter",
+        "rivet-setter",
+        "punching-machine"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "leather-sewing-machine",
+      "name": "レザークラフト用ミシン（総合送り）",
+      "processes": [
+        "machine",
+        "sewing"
+      ],
+      "priority": "あると便利",
+      "description": "厚革を縫える工業用・職業用ミシン。総合送り（上下送り）機構が厚物の縫いズレを防ぐ。",
+      "usage": "革用の針と糸をセットし、端革で糸調子を合わせてから本番を縫う。",
+      "advice": "家庭用ミシンでは厚革は縫えない。高額な投資なので手縫いで限界を感じてから検討で十分。",
+      "rakutenKeyword": "レザークラフト ミシン 総合送り",
+      "priceRange": "50,000〜200,000円",
+      "beginner": false,
+      "related": [
+        "sewing-needle",
+        "skiving-machine"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "hot-pen",
+      "name": "電熱ペン・ホットマーカー",
+      "processes": [
+        "machine",
+        "carving",
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "熱で革に線や文字を描き込む電気ペン。焦がし模様（ウッドバーニングの革版）やフチ捻の熱源にも使える。",
+      "usage": "温度を調整し、端革で試してから本番に描く。ペン先の種類で線の太さが変わる。",
+      "advice": "名入れの手描き文字やイラスト表現に。捻先アタッチメント付きならコバの火捻にも使える。",
+      "rakutenKeyword": "電熱ペン レザークラフト",
+      "priceRange": "3,000〜10,000円",
+      "beginner": false,
+      "related": [
+        "fuchinen",
+        "letter-stamp"
+      ],
+      "roomUrl": ""
+    },
+    {
+      "id": "rotary-tool",
+      "name": "ミニルーター（コバ磨きバフ）",
+      "processes": [
+        "machine",
+        "edge"
+      ],
+      "priority": "あると便利",
+      "description": "回転工具にバフや磨きビットを付けてコバ磨きを電動化する。大量・長尺のコバ処理が速い。",
+      "usage": "コバ磨き用ビットを付け、低速でコバに当てて磨く。摩擦熱のかけすぎに注意。",
+      "advice": "手磨きの丁寧さには一長一短。量産時の時短ツールとして便利。",
+      "rakutenKeyword": "ミニルーター コバ磨き",
+      "priceRange": "3,000〜10,000円",
+      "beginner": false,
+      "related": [
+        "wood-slicker",
+        "cone-slicker"
+      ],
       "roomUrl": ""
     },
     {
       "id": "starter-kit",
       "name": "レザークラフト スターターキット",
-      "processes": ["cutting", "punching", "sewing", "edge"],
+      "processes": [
+        "cutting",
+        "punching",
+        "sewing",
+        "edge"
+      ],
       "priority": "あると便利",
       "description": "基本道具が一式そろった入門セット。個別に揃えるより手軽に始められる。",
+      "usage": "キット付属の説明書に沿って、小物制作で各道具の使い方を一通り体験する。",
       "advice": "まず一式で始めて、よく使う道具から良いものに買い替えていくのが失敗しない揃え方。講習受講前の準備にも。",
       "rakutenKeyword": "レザークラフト 工具 セット 初心者",
       "priceRange": "3,000〜10,000円",
       "beginner": true,
-      "related": ["diamond-chisel", "sewing-needle", "wood-slicker"],
+      "related": [
+        "diamond-chisel",
+        "sewing-needle",
+        "wood-slicker"
+      ],
       "roomUrl": ""
     }
   ]
