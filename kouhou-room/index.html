@@ -104,6 +104,45 @@ a { color: inherit; text-decoration: none; }
 .tool-card-actions .btn { padding: 4px 10px; font-size: 12px; border-radius: 8px; }
 .tool-form-note { color: var(--gray); font-size: 12px; margin-top: 6px; }
 
+/* 工程別 道具ガイド */
+.guide-intro { color: var(--gray); font-size: 13px; margin-bottom: 14px; }
+.guide-process-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.guide-process-tab {
+  padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(160,120,90,.24);
+  background: var(--white); color: var(--charcoal); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.guide-process-tab.active { background: var(--tan); color: #fff; border-color: var(--tan); }
+.guide-process-summary { color: var(--gray); font-size: 13px; margin-bottom: 16px; }
+.guide-tool-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.guide-tool-card { background: var(--white); border-radius: 10px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.08); display: flex; flex-direction: column; gap: 8px; }
+.guide-tool-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.guide-tool-name { font-size: 15px; font-weight: 700; }
+.guide-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.guide-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
+.guide-badge.priority-必須 { background: var(--amber-light); color: var(--amber); }
+.guide-badge.priority-推奨 { background: var(--blue-light); color: var(--blue); }
+.guide-badge.priority-あると便利 { background: var(--soft); color: var(--gray); }
+.guide-badge.beginner { background: var(--green-light); color: var(--green); }
+.guide-tool-desc { color: var(--charcoal); font-size: 13px; }
+.guide-tool-meta { font-size: 12px; color: var(--gray); line-height: 1.5; }
+.guide-tool-meta b { color: var(--charcoal); font-weight: 700; }
+.guide-tool-footer { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+.guide-price-range { font-size: 12px; color: var(--gray); }
+.guide-rakuten-btn { align-self: flex-start; }
+.guide-rakuten-results { display: grid; gap: 8px; margin-top: 4px; }
+.guide-rakuten-item { display: flex; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; align-items: center; }
+.guide-rakuten-item img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; background: var(--soft); flex-shrink: 0; }
+.guide-rakuten-item-body { flex: 1; min-width: 0; }
+.guide-rakuten-item-name { font-size: 12.5px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.guide-rakuten-item-meta { font-size: 11.5px; color: var(--gray); margin-top: 2px; }
+.guide-rakuten-item-price { font-size: 13px; font-weight: 800; color: var(--tan); white-space: nowrap; }
+.guide-rakuten-empty, .guide-rakuten-error { font-size: 12px; color: var(--gray); padding: 6px 0; }
+.guide-rakuten-note { font-size: 10.5px; color: var(--gray); }
+.guide-refs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+.guide-ref-card { display: block; background: var(--white); border-radius: 8px; padding: 12px 14px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.guide-ref-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.guide-ref-desc { font-size: 12px; color: var(--gray); }
+
 /* Buttons */
 .btn { padding: 8px 20px; border-radius: 22px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity .2s; }
 .btn:hover { opacity: .82; }
@@ -154,6 +193,24 @@ textarea { resize: vertical; min-height: 72px; }
         <div class="hub-eyebrow">KOUHOU-SHITSU / LOGISTICS</div>
         <h1>後方幕僚室</h1>
         <p class="lead">物流・仕入・道具・型紙・自動化を司る兵站エリア。</p>
+      </div>
+    </div>
+
+    <!-- 工程別 道具ガイド -->
+    <div class="section" id="tool-guide-section">
+      <h2>工程別 道具ガイド</h2>
+      <p class="guide-intro">
+        型紙づくりから仕上げまで、レザークラフトの各工程で使う道具をまとめました。
+        工程を選ぶと、必要な道具・使い方・選び方と、楽天市場での商品例（アフィリエイトリンク）が表示されます。
+      </p>
+      <div class="guide-process-tabs" id="guide-process-tabs"></div>
+      <p class="guide-process-summary" id="guide-process-summary"></p>
+      <div class="guide-tool-list" id="guide-tool-list">
+        <div class="tool-empty">道具ガイドを読み込み中です。</div>
+      </div>
+      <div id="guide-refs-wrap" style="margin-top:28px;">
+        <h2 style="font-size:16px;">参考サイト</h2>
+        <div class="guide-refs" id="guide-refs"></div>
       </div>
     </div>
 
@@ -269,6 +326,139 @@ textarea { resize: vertical; min-height: 72px; }
   }
   function escAttr(s) {
     return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // ── 工程別 道具ガイド ─────────────────────
+  const TOOLS_JSON_URL = './data/tools-knowledge.json';
+  const RAKUTEN_API_URL = 'https://script.google.com/macros/s/AKfycbxUoFN0_XMKGiI1voIKGdGioczn1WsYYTfUBI-tC-RIgnq05DfsooTcyOQlgIjTQCa95A/exec';
+  const PRIORITY_ORDER = { '必須': 0, '推奨': 1, 'あると便利': 2 };
+
+  let toolGuideData = null;
+  let activeProcessId = null;
+  const rakutenCache = new Map();
+
+  async function loadToolGuide() {
+    const listEl = document.getElementById('guide-tool-list');
+    try {
+      const res = await fetch(TOOLS_JSON_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      toolGuideData = await res.json();
+    } catch(e) {
+      listEl.innerHTML = `<div class="tool-empty">道具ガイドを読み込めませんでした。<br><small>${esc(e.message)}</small></div>`;
+      return;
+    }
+    renderProcessTabs();
+    const first = toolGuideData.processes.slice().sort((a, b) => a.order - b.order)[0];
+    if (first) setActiveProcess(first.id);
+    renderReferences();
+  }
+
+  function renderProcessTabs() {
+    const tabsEl = document.getElementById('guide-process-tabs');
+    const processes = toolGuideData.processes.slice().sort((a, b) => a.order - b.order);
+    tabsEl.innerHTML = processes.map(p => `
+      <button class="guide-process-tab ${p.id === activeProcessId ? 'active' : ''}" onclick="setActiveProcess('${escAttr(p.id)}')">${esc(p.name)}</button>
+    `).join('');
+  }
+
+  function setActiveProcess(id) {
+    activeProcessId = id;
+    renderProcessTabs();
+    const proc = toolGuideData.processes.find(p => p.id === id);
+    document.getElementById('guide-process-summary').textContent = proc ? proc.summary : '';
+    renderToolList();
+  }
+
+  function renderToolList() {
+    const listEl = document.getElementById('guide-tool-list');
+    const tools = toolGuideData.tools
+      .filter(t => t.processes.includes(activeProcessId))
+      .slice()
+      .sort((a, b) => {
+        const pr = (PRIORITY_ORDER[a.priority] ?? 9) - (PRIORITY_ORDER[b.priority] ?? 9);
+        if (pr !== 0) return pr;
+        return (b.beginner ? 1 : 0) - (a.beginner ? 1 : 0);
+      });
+    if (!tools.length) {
+      listEl.innerHTML = '<div class="tool-empty">この工程の道具データがまだありません。</div>';
+      return;
+    }
+    listEl.innerHTML = tools.map(t => `
+      <article class="guide-tool-card">
+        <div class="guide-tool-head">
+          <div class="guide-tool-name">${esc(t.name)}</div>
+          <div class="guide-badges">
+            <span class="guide-badge priority-${esc(t.priority)}">${esc(t.priority)}</span>
+            ${t.beginner ? '<span class="guide-badge beginner">初心者向け</span>' : ''}
+          </div>
+        </div>
+        <div class="guide-tool-desc">${esc(t.description)}</div>
+        <div class="guide-tool-meta"><b>使い方:</b> ${esc(t.usage)}</div>
+        <div class="guide-tool-meta"><b>選び方:</b> ${esc(t.advice)}</div>
+        <div class="guide-tool-footer">
+          <div class="guide-price-range">価格目安: ${esc(t.priceRange)}</div>
+          ${t.roomUrl ? `<a class="tool-link" href="${escAttr(t.roomUrl)}" target="_blank" rel="noopener sponsored"><span>楽天ROOMで見る</span><span class="tool-link-note">厳選品</span></a>` : ''}
+          <button class="btn btn-secondary guide-rakuten-btn" onclick="toggleRakutenResults('${escAttr(t.id)}', '${escAttr(t.rakutenKeyword)}', this)">楽天市場で探す</button>
+          <div class="guide-rakuten-results" id="rakuten-${escAttr(t.id)}" style="display:none;"></div>
+        </div>
+      </article>
+    `).join('');
+  }
+
+  async function toggleRakutenResults(toolId, keyword, btn) {
+    const box = document.getElementById(`rakuten-${toolId}`);
+    if (!box) return;
+    const isOpen = box.style.display !== 'none' && box.dataset.loaded === '1';
+    if (isOpen) {
+      box.style.display = 'none';
+      btn.textContent = '楽天市場で探す';
+      return;
+    }
+    box.style.display = 'grid';
+    btn.textContent = '結果を隠す';
+    if (box.dataset.loaded === '1') return;
+
+    box.innerHTML = '<div class="guide-rakuten-empty">検索中です…</div>';
+    try {
+      let data = rakutenCache.get(keyword);
+      if (!data) {
+        const res = await fetch(`${RAKUTEN_API_URL}?action=search&keyword=${encodeURIComponent(keyword)}&hits=4`);
+        data = await res.json();
+        rakutenCache.set(keyword, data);
+      }
+      if (data.error) {
+        box.innerHTML = `<div class="guide-rakuten-error">検索できませんでした: ${esc(data.message || '')}</div>`;
+        return;
+      }
+      if (!data.items || !data.items.length) {
+        box.innerHTML = '<div class="guide-rakuten-empty">該当する商品が見つかりませんでした。</div>';
+        return;
+      }
+      box.innerHTML = data.items.map(it => `
+        <a class="guide-rakuten-item" href="${escAttr(it.url)}" target="_blank" rel="noopener sponsored">
+          ${it.image ? `<img src="${escAttr(it.image)}" alt="">` : ''}
+          <div class="guide-rakuten-item-body">
+            <div class="guide-rakuten-item-name">${esc(it.name)}</div>
+            <div class="guide-rakuten-item-meta">${it.reviewCount ? `レビュー${it.reviewCount}件 / 平均${it.reviewAverage}` : 'レビューなし'} ・ ${esc(it.shopName)}</div>
+          </div>
+          <div class="guide-rakuten-item-price">¥${Number(it.price).toLocaleString()}</div>
+        </a>
+      `).join('') + '<div class="guide-rakuten-note">楽天市場のアフィリエイトリンクです。価格・在庫は変動する場合があります。</div>';
+      box.dataset.loaded = '1';
+    } catch(e) {
+      box.innerHTML = `<div class="guide-rakuten-error">通信エラー: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderReferences() {
+    const el = document.getElementById('guide-refs');
+    const refs = toolGuideData.references || [];
+    el.innerHTML = refs.map(r => `
+      <a class="guide-ref-card" href="${escAttr(r.url)}" target="_blank" rel="noopener">
+        <div class="guide-ref-name">${esc(r.name)}</div>
+        <div class="guide-ref-desc">${esc(r.description)}</div>
+      </a>
+    `).join('');
   }
 
   // ── 道具アフィリエイトリンク ─────────────────────
@@ -552,6 +742,7 @@ textarea { resize: vertical; min-height: 72px; }
     }
   }
 
+  loadToolGuide();
   loadAffiliateLinks();
 </script>
 
