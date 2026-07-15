@@ -146,6 +146,14 @@ details.drive summary{
   cursor:pointer;padding:9px 0;font-weight:700;font-size:12px;color:var(--brass-dark);letter-spacing:.04em;
 }
 details.drive[open] summary{border-bottom:1px dashed var(--line);margin-bottom:10px}
+.drive-status{
+  display:none;margin-top:8px;padding:8px 10px;border-radius:8px;
+  font-size:11.5px;line-height:1.6;border:1px solid var(--line);background:#FFFDF6;color:var(--ink-sub);
+}
+.drive-status.show{display:block}
+.drive-status.info{background:var(--brass-light);color:var(--ink)}
+.drive-status.success{background:#EFF8EF;color:#276738;border-color:#C8DFC8}
+.drive-status.error{background:#FFF0EA;color:#8F3E23;border-color:#E6B8A6}
 .slides{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;padding-right:2px}
 .slide-item{
   display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center;text-align:left;
@@ -269,6 +277,7 @@ canvas{
           <div class="actions">
             <button class="secondary" id="loadDrivePhotos">Driveから写真を表示</button>
           </div>
+          <div class="drive-status" id="driveStatus" role="status"></div>
           <p class="help">作品番号を入力してEnter、または欄外をクリックすると、作品情報とDrive写真を自動で読み込みます。表示されない時はこのボタンを押してください。</p>
         </details>
         <p class="help">カードをクリックで選択、ドラッグで動画の順番を入れ替えられます。</p>
@@ -476,6 +485,7 @@ const els = {
   driveFolder: document.getElementById('driveFolder'),
   driveWorkNo: document.getElementById('driveWorkNo'),
   driveLimit: document.getElementById('driveLimit'),
+  driveStatus: document.getElementById('driveStatus'),
   loadDrivePhotos: document.getElementById('loadDrivePhotos'),
   slides: document.getElementById('slides'),
   caption: document.getElementById('caption'),
@@ -517,6 +527,11 @@ let lastRecordingMeta = null;
 let registerKey = '';
 
 function setLog(message){ els.log.textContent = message; }
+function setDriveStatus(message, type = 'info'){
+  if(!els.driveStatus) return;
+  els.driveStatus.textContent = message;
+  els.driveStatus.className = `drive-status show ${type}`;
+}
 
 function defaultTexts(index){
   const product = els.productName.value.trim() || 'レザー作品';
@@ -565,51 +580,117 @@ function addFiles(files){
 async function addDrivePhotos(){
   const workNo = els.driveWorkNo.value.trim();
   const limit = clamp(parseInt(els.driveLimit.value, 10) || 8, 1, 12);
-  if(!workNo){ setLog('作品番号を入力してください。'); return; }
+  if(!workNo){
+    setDriveStatus('作品番号を入力してください。', 'error');
+    setLog('作品番号を入力してください。');
+    return 0;
+  }
   if(drivePhotoLoading){
+    setDriveStatus('Driveから写真を読み込み中です。完了までお待ちください。', 'info');
     setLog('Driveから写真を読み込み中です。完了までお待ちください。');
     return 0;
   }
   drivePhotoLoading = true;
   els.loadDrivePhotos.disabled = true;
   await syncWorkFromNumber({showLog:false});
-  const folder = (currentWork && currentWork.folderId) || els.driveFolder.value.trim();
-  if(!folder){
+  const candidates = drivePhotoCandidates();
+  if(!candidates.length){
     drivePhotoLoading = false;
     els.loadDrivePhotos.disabled = false;
+    setDriveStatus('DriveフォルダURLまたは作品集のフォルダIDが見つかりません。', 'error');
     setLog('DriveフォルダURLまたはIDを入力してください。');
     return 0;
   }
-
-  setLog(currentWork && currentWork.folderId
-    ? `作品集に登録されたDriveフォルダから写真を読み込み中です（作品番号 ${workNo}）。`
-    : 'Driveから写真を読み込み中です。枚数や写真サイズにより少し時間がかかります。');
+  const errors = [];
   try{
-    const url = `${SNS_VIDEO_DRIVE_API}?api=snsVideoPhotos&folderId=${encodeURIComponent(folder)}&workNo=${encodeURIComponent(workNo)}&limit=${encodeURIComponent(limit)}`;
-    const data = await loadJsonp(url);
-    if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || 'Drive写真を取得できませんでした。'); }
-    if(!data.photos || !data.photos.length){ setLog(`作品番号 ${workNo} の写真が見つかりませんでした。`); return; }
-    await addDataUrlPhotos(data.photos);
-    const matchedWork = await applyWorkInfoFromDriveData(data, workNo);
-    if(matchedWork && matchedWork.longDesc){
-      setLog(`Driveから ${data.photos.length} 枚追加しました。作品集「${matchedWork.title}」の長文紹介を英語へ変換しています。`);
-      const translated = await translateLongDescToFeatureNote({source: matchedWork.longDesc, target:'en', showLog:false});
-      setLog(translated
-        ? `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報と長文英訳を反映しました。`
-        : `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。長文英訳は手動で再実行してください。`);
-    }else if(matchedWork){
-      setLog(`Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。`);
-    }else{
-      setLog(`Driveから ${data.photos.length} 枚追加しました。作品集の一致情報は見つかりませんでした。`);
+    for(const candidate of candidates){
+      const loadingMessage = candidate.kind === 'catalog'
+        ? `作品集に登録されたDriveフォルダを確認中です（作品番号 ${workNo}）。`
+        : `左のDriveルートフォルダから作品番号 ${workNo} を検索中です。`;
+      setDriveStatus(loadingMessage, 'info');
+      setLog(loadingMessage);
+      const result = await fetchDrivePhotosCandidate(candidate, workNo, limit);
+      if(!result.ok){
+        errors.push(result.message);
+        continue;
+      }
+      const data = result.data;
+      const mismatch = folderNumberMismatch(data.folderName, workNo);
+      if(candidate.kind === 'catalog' && mismatch){
+        errors.push(`作品集のfolderIdが作品番号${workNo}ではなく、Driveフォルダ「${data.folderName}」を指しています。`);
+        continue;
+      }
+      if(!data.photos || !data.photos.length){
+        errors.push(candidate.kind === 'catalog'
+          ? `作品集登録フォルダ「${data.folderName || candidate.folder}」に写真が見つかりません。`
+          : `左のDriveルートフォルダ内に作品番号 ${workNo} の写真フォルダが見つかりません。`);
+        continue;
+      }
+      return await applyDrivePhotoData(data, workNo, candidate);
     }
-    return data.photos.length;
+    const detail = errors.filter(Boolean).join(' / ');
+    const message = `作品番号 ${workNo} の写真を読み込めませんでした。番号が勝手にずれたのではなく、作品集folderIdとDriveフォルダ番号の不整合が疑われます。${detail}`;
+    setDriveStatus(message, 'error');
+    setLog(message);
+    return 0;
   }catch(err){
+    setDriveStatus(err.message, 'error');
     setLog(`Drive写真の取得に失敗しました: ${err.message}`);
     return 0;
   }finally{
     drivePhotoLoading = false;
     els.loadDrivePhotos.disabled = false;
   }
+}
+
+function drivePhotoCandidates(){
+  const candidates = [];
+  const catalogFolder = currentWork && currentWork.folderId ? currentWork.folderId.trim() : '';
+  const rootFolder = els.driveFolder.value.trim();
+  if(catalogFolder) candidates.push({kind:'catalog', folder:catalogFolder, label:'作品集登録フォルダ'});
+  if(rootFolder && rootFolder !== catalogFolder) candidates.push({kind:'root', folder:rootFolder, label:'Driveルートフォルダ'});
+  return candidates;
+}
+
+async function fetchDrivePhotosCandidate(candidate, workNo, limit){
+  try{
+    const url = `${SNS_VIDEO_DRIVE_API}?api=snsVideoPhotos&folderId=${encodeURIComponent(candidate.folder)}&workNo=${encodeURIComponent(workNo)}&limit=${encodeURIComponent(limit)}`;
+    const data = await loadJsonp(url);
+    if(data && data.ok) return {ok:true, data};
+    const apiMessage = (data && (data.message || data.error)) || 'Drive写真を取得できませんでした。';
+    return {ok:false, message:`${candidate.label}: ${apiMessage}`};
+  }catch(err){
+    return {ok:false, message:`${candidate.label}: ${err.message}`};
+  }
+}
+
+function folderNumberMismatch(folderName, workNo){
+  const expected = String(parseInt(String(workNo || '').replace(/\D/g, ''), 10));
+  if(!expected || expected === 'NaN') return false;
+  const match = String(folderName || '').match(/NF\d{4}[_-]?(\d+)/i);
+  if(!match) return false;
+  return String(parseInt(match[1], 10)) !== expected;
+}
+
+async function applyDrivePhotoData(data, workNo, candidate){
+  await addDataUrlPhotos(data.photos);
+  const matchedWork = await applyWorkInfoFromDriveData(data, workNo);
+  const successMessage = candidate.kind === 'root'
+    ? `作品集の登録フォルダではなく、Driveルート検索で ${data.photos.length} 枚の写真を表示しました。`
+    : `Driveから ${data.photos.length} 枚の写真を表示しました。`;
+  setDriveStatus(successMessage, 'success');
+  if(matchedWork && matchedWork.longDesc){
+    setLog(`Driveから ${data.photos.length} 枚追加しました。作品集「${matchedWork.title}」の長文紹介を英語へ変換しています。`);
+    const translated = await translateLongDescToFeatureNote({source: matchedWork.longDesc, target:'en', showLog:false});
+    setLog(translated
+      ? `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報と長文英訳を反映しました。`
+      : `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。長文英訳は手動で再実行してください。`);
+  }else if(matchedWork){
+    setLog(`Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。`);
+  }else{
+    setLog(`Driveから ${data.photos.length} 枚追加しました。作品集の一致情報は見つかりませんでした。`);
+  }
+  return data.photos.length;
 }
 
 function addDataUrlPhotos(photos){
