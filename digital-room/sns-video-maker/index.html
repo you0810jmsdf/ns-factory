@@ -531,8 +531,8 @@ let selected = -1;
 let playing = false;
 let recorder = null;
 let chunks = [];
-let speechTimers = [];
 let activeUtterance = null;
+let activeSpeechResolve = null;
 let draggedSlideIndex = null;
 let drivePhotoLoading = false;
 let worksCatalog = [];
@@ -1111,9 +1111,9 @@ function estimateNarrationDuration(text){
   const words = clean.split(/\s+/).filter(Boolean).length;
   const looksEnglish = els.narrationLang.value === 'en-US' || /^[\x00-\x7F\s.,!?'"()[\]{}\-:;/&]+$/.test(clean);
   const baseSeconds = looksEnglish
-    ? words / 2.15
-    : chars / 7.2;
-  return clamp(roundDuration(baseSeconds + 1.1), 1.8, MAX_SLIDE_DURATION);
+    ? words / 1.45
+    : chars / 5.2;
+  return clamp(roundDuration(baseSeconds + 1.9), 1.8, MAX_SLIDE_DURATION);
 }
 
 function fitDurationsToNarration(options = {}){
@@ -1438,16 +1438,86 @@ function playTimeline(recordStream){
   });
 }
 
+function nextAnimationFrame(){
+  return new Promise(resolve => requestAnimationFrame(resolve));
+}
+
+function narrationMotionProgress(elapsed, targetDuration){
+  const raw = elapsed / Math.max(.1, targetDuration);
+  if(raw <= .75) return clamp(raw, 0, .75);
+  return clamp(.75 + (1 - Math.exp(-(raw - .75) * 8)) * .235, 0, .985);
+}
+
+async function animateTransitionAfterSlide(index, total){
+  if(index >= slides.length - 1) return;
+  const slide = slides[index];
+  const transitionSeconds = slide.transition === 'cut' ? .04 : slide.transitionDuration;
+  const transitionStart = timelineStart(index) + slide.duration;
+  const startedAt = performance.now();
+  while(playing){
+    const elapsed = (performance.now() - startedAt) / 1000;
+    const t = Math.min(elapsed, transitionSeconds);
+    drawFrame(transitionStart + t);
+    els.progressBar.style.width = `${Math.min(100, ((transitionStart + t) / total) * 100)}%`;
+    if(elapsed >= transitionSeconds) break;
+    await nextAnimationFrame();
+  }
+}
+
+async function playTimelineWithVoice(){
+  if(!slides.length) return;
+  saveSelected();
+  renderList();
+  playing = true;
+  const total = totalDuration();
+  for(let index = 0; index < slides.length && playing; index++){
+    const slide = slides[index];
+    const slideStart = timelineStart(index);
+    const startedAt = performance.now();
+    let speechDone = !slide.narration;
+    let speechProgress = speechDone ? 1 : 0;
+    let visualProgress = 0;
+    const targetDuration = Math.max(slide.duration, estimateNarrationDuration(slide.narration));
+    const speechPromise = slide.narration
+      ? speakTextAndWait(slide.narration, {
+        cancelCurrent: true,
+        startLog: `${index + 1}枚目のセリフを読み上げ中です。`,
+        onProgress: progress => { speechProgress = Math.max(speechProgress, progress); }
+      }).finally(() => { speechDone = true; speechProgress = 1; })
+      : Promise.resolve();
+    while(playing){
+      const elapsed = (performance.now() - startedAt) / 1000;
+      const fallbackProgress = slide.narration
+        ? narrationMotionProgress(elapsed, targetDuration)
+        : clamp(elapsed / slide.duration, 0, 1);
+      const targetProgress = speechDone
+        ? 1
+        : Math.max(speechProgress, fallbackProgress);
+      visualProgress = Math.max(visualProgress, clamp(targetProgress, 0, 1));
+      const t = slide.duration * visualProgress;
+      drawFrame(slideStart + t);
+      els.progressBar.style.width = `${Math.min(100, ((slideStart + t) / total) * 100)}%`;
+      if(slide.narration ? speechDone : elapsed >= slide.duration) break;
+      await nextAnimationFrame();
+    }
+    await speechPromise;
+    if(!playing) break;
+    await animateTransitionAfterSlide(index, total);
+  }
+  playing = false;
+  stopSpeech(false);
+  drawFrame(total);
+  els.progressBar.style.width = '100%';
+}
+
 async function playPreviewWithVoice(){
   if(!slides.length){ setLog('先に写真を追加してください。'); return; }
   const adjusted = prepareTimelineForPlayback();
   stopSpeech(false);
-  schedulePreviewSpeech();
   setLog(adjusted
-    ? 'セリフが切れないように表示秒数を延長して、音声つきプレビューを再生中です。'
+    ? 'セリフが終わるまで写真を待たせながら、音声つきプレビューを再生中です。'
     : '音声つきプレビューを再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。');
-  await playTimeline(false);
-  stopSpeech(false);
+  await playTimelineWithVoice();
   setLog('音声つきプレビューが終わりました。');
 }
 
@@ -1775,20 +1845,58 @@ function speakScript(){
   });
 }
 
-function schedulePreviewSpeech(){
-  if(!('speechSynthesis' in window)){
-    setLog('このブラウザでは読み上げプレビューが使えません。');
-    return;
-  }
-  slides.forEach((slide, index) => {
-    if(!slide.narration) return;
-    const timeout = window.setTimeout(() => {
-      speakText(slide.narration, {
-        cancelCurrent: true,
-        startLog: `${index + 1}枚目のセリフを読み上げ中です。`
-      });
-    }, timelineStart(index) * 1000);
-    speechTimers.push(timeout);
+function speakTextAndWait(text, options = {}){
+  return new Promise(resolve => {
+    if(!('speechSynthesis' in window)){
+      setLog('このブラウザでは読み上げプレビューが使えません。');
+      resolve({ok:false});
+      return;
+    }
+    if(options.cancelCurrent !== false) cancelSpeechOutput();
+    const fallback = els.narrationLang.value === 'en-US' ? 'There is no narration text.' : 'セリフがありません。';
+    const utterance = new SpeechSynthesisUtterance(text || fallback);
+    let settled = false;
+    const watchdog = window.setTimeout(() => finish({ok:false, timeout:true}), Math.max(10, estimateNarrationDuration(text) * 1.8 + 4) * 1000);
+    function finish(result){
+      if(settled) return;
+      settled = true;
+      window.clearTimeout(watchdog);
+      activeUtterance = null;
+      activeSpeechResolve = null;
+      resolve(result);
+    }
+    activeSpeechResolve = () => finish({ok:false, cancelled:true});
+    utterance.lang = els.narrationLang.value || 'ja-JP';
+    utterance.volume = 1;
+    utterance.rate = els.narrationLang.value === 'en-US' ? .88 : .94;
+    utterance.pitch = 1;
+    const selectedVoice = getSelectedVoice();
+    if(selectedVoice) utterance.voice = selectedVoice;
+    const spokenText = String(text || fallback);
+    const textLength = Math.max(1, spokenText.length);
+    utterance.onstart = () => {
+      if(options.startLog) setLog(options.startLog);
+      if(options.onProgress) options.onProgress(.02);
+    };
+    utterance.onboundary = event => {
+      if(!options.onProgress || typeof event.charIndex !== 'number') return;
+      const spoken = event.charIndex + (event.charLength || 1);
+      options.onProgress(clamp(spoken / textLength, 0, .98));
+    };
+    utterance.onend = () => {
+      if(options.onProgress) options.onProgress(1);
+      if(options.endLog) setLog(options.endLog);
+      finish({ok:true});
+    };
+    utterance.onerror = () => {
+      setLog('読み上げを開始できませんでした。別の音声を選ぶか、Chrome/Edgeで開いてください。');
+      finish({ok:false});
+    };
+    activeUtterance = utterance;
+    window.setTimeout(() => {
+      speechSynthesis.speak(utterance);
+      if(speechSynthesis.paused) speechSynthesis.resume();
+    }, 60);
   });
 }
 
@@ -1824,18 +1932,19 @@ function speakText(text, options = {}){
 }
 
 function stopSpeech(clearLog = false){
-  speechTimers.forEach(timeout => window.clearTimeout(timeout));
-  speechTimers = [];
   cancelSpeechOutput();
   if(clearLog) setLog('');
 }
 
 function cancelSpeechOutput(){
+  const resolveSpeech = activeSpeechResolve;
+  activeSpeechResolve = null;
   if('speechSynthesis' in window){
     speechSynthesis.cancel();
     if(speechSynthesis.paused) speechSynthesis.resume();
   }
   activeUtterance = null;
+  if(resolveSpeech) resolveSpeech();
 }
 
 function populateVoices(){
