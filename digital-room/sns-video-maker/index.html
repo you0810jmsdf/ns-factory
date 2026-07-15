@@ -109,6 +109,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .field textarea{min-height:84px;resize:vertical}
 .help{margin:-2px 0 12px;color:var(--mute);font-size:11.5px;line-height:1.7}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check-row{
+  display:flex;gap:8px;align-items:flex-start;margin:8px 0 12px;
+  color:var(--ink-sub);font-size:12px;line-height:1.6;
+}
+.check-row input{width:auto;margin-top:3px;accent-color:var(--brass-dark)}
+.check-row strong{display:block;color:var(--ink);font-size:12.5px}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
 .assist-flow{
   display:grid;gap:7px;margin:4px 0 12px;padding-left:2px;
@@ -378,7 +384,7 @@ canvas{
           <div class="row">
             <div class="field">
               <label for="duration">表示秒数</label>
-              <input id="duration" type="number" min="1.8" max="12" step="0.2" value="3.5">
+              <input id="duration" type="number" min="1.8" max="60" step="0.2" value="3.5">
             </div>
             <div class="field">
               <label for="transitionDuration">切替秒数</label>
@@ -457,6 +463,13 @@ canvas{
               </select>
             </div>
           </div>
+          <label class="check-row" for="syncNarrationDuration">
+            <input id="syncNarrationDuration" type="checkbox" checked>
+            <span><strong>セリフが終わるまで写真を待たせる</strong>プレビュー・MP4保存の前に、ナレーションの長さから各写真の表示秒数を自動で延長します。</span>
+          </label>
+          <div class="actions">
+            <button class="secondary" id="fitDurationsToNarration" type="button">セリフ長で秒数を整える</button>
+          </div>
         </div>
       </section>
     </aside>
@@ -470,6 +483,7 @@ const ctx = canvas.getContext('2d');
 const SNS_VIDEO_DRIVE_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 const LIVE_WORKS_API = `${SNS_VIDEO_DRIVE_API}?api=products`;
 const LEATHER_STOCK_CSV = '../../order_estimate/leather-stock.csv';
+const MAX_SLIDE_DURATION = 60;
 const els = {
   productNamePreset: document.getElementById('productNamePreset'),
   productName: document.getElementById('productName'),
@@ -508,6 +522,8 @@ const els = {
   videoFont: document.getElementById('videoFont'),
   narrationLang: document.getElementById('narrationLang'),
   voiceSelect: document.getElementById('voiceSelect'),
+  syncNarrationDuration: document.getElementById('syncNarrationDuration'),
+  fitDurationsToNarration: document.getElementById('fitDurationsToNarration'),
   uploadVideoToDrive: document.getElementById('uploadVideoToDrive')
 };
 let slides = [];
@@ -1077,11 +1093,63 @@ function saveSelected(){
   const slide = slides[selected];
   slide.caption = els.caption.value.trim();
   slide.narration = els.narration.value.trim();
-  slide.duration = clamp(parseFloat(els.duration.value) || 3.5, 1.8, 12);
+  slide.duration = clamp(parseFloat(els.duration.value) || 3.5, 1.8, MAX_SLIDE_DURATION);
   slide.transitionDuration = clamp(parseFloat(els.transitionDuration.value) || .6, .1, 2);
   slide.motion = els.motion.value;
   slide.transition = els.transition.value;
   slide.subtitleMotion = els.subtitleMotion.value;
+}
+
+function roundDuration(seconds){
+  return Math.ceil(seconds / .2) * .2;
+}
+
+function estimateNarrationDuration(text){
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  if(!clean) return 0;
+  const chars = [...clean].length;
+  const words = clean.split(/\s+/).filter(Boolean).length;
+  const looksEnglish = els.narrationLang.value === 'en-US' || /^[\x00-\x7F\s.,!?'"()[\]{}\-:;/&]+$/.test(clean);
+  const baseSeconds = looksEnglish
+    ? words / 2.15
+    : chars / 7.2;
+  return clamp(roundDuration(baseSeconds + 1.1), 1.8, MAX_SLIDE_DURATION);
+}
+
+function fitDurationsToNarration(options = {}){
+  const {showLog = true} = options;
+  saveSelected();
+  let changed = 0;
+  let longest = 0;
+  slides.forEach(slide => {
+    const needed = estimateNarrationDuration(slide.narration);
+    if(!needed) return;
+    longest = Math.max(longest, needed);
+    if(slide.duration < needed){
+      slide.duration = needed;
+      changed += 1;
+    }
+  });
+  if(selected >= 0) loadSelected();
+  renderList();
+  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  if(showLog){
+    if(changed){
+      setLog(`セリフが切れないように、${changed}枚の表示秒数を延長しました。最長は${longest.toFixed(1)}秒です。`);
+    }else{
+      setLog('すべての写真が、セリフの長さに足りる表示秒数になっています。');
+    }
+  }
+  return changed;
+}
+
+function prepareTimelineForPlayback(){
+  saveSelected();
+  const changed = els.syncNarrationDuration && els.syncNarrationDuration.checked
+    ? fitDurationsToNarration({showLog:false})
+    : 0;
+  renderList();
+  return changed;
 }
 
 function fillDefaults(){
@@ -1372,14 +1440,26 @@ function playTimeline(recordStream){
 
 async function playPreviewWithVoice(){
   if(!slides.length){ setLog('先に写真を追加してください。'); return; }
-  saveSelected();
-  renderList();
+  const adjusted = prepareTimelineForPlayback();
   stopSpeech(false);
   schedulePreviewSpeech();
-  setLog('音声つきプレビューを再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。');
+  setLog(adjusted
+    ? 'セリフが切れないように表示秒数を延長して、音声つきプレビューを再生中です。'
+    : '音声つきプレビューを再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。');
   await playTimeline(false);
   stopSpeech(false);
   setLog('音声つきプレビューが終わりました。');
+}
+
+async function playPreviewWithoutVoice(){
+  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+  stopSpeech(false);
+  const adjusted = prepareTimelineForPlayback();
+  setLog(adjusted
+    ? 'セリフが切れないように表示秒数を延長して、映像だけプレビューを再生中です。'
+    : '映像だけプレビューを再生中です。');
+  await playTimeline(false);
+  setLog('映像だけプレビューが終わりました。');
 }
 
 function previewCurrentSubtitleMotion(){
@@ -1667,9 +1747,10 @@ async function recordMediaRecorderVideo(withMic){
 
 async function recordVideo(withMic){
   if(!slides.length){ setLog('先に写真を追加してください。'); return; }
-  saveSelected();
+  const adjusted = prepareTimelineForPlayback();
   stopSpeech(false);
   resetRecordingOutput();
+  if(adjusted) setLog('セリフが途中で切れないように表示秒数を延長してから保存します。');
   if(canEncodeMp4Video()){
     try{
       await recordMp4WithWebCodecs(withMic);
@@ -2156,10 +2237,11 @@ els.translateFeatureNote.addEventListener('click', translateLongDescToFeatureNot
 els.distributeFeatureNote.addEventListener('click', () => distributeFeatureNoteToSlides());
 els.productNamePreset.addEventListener('change', applyProductNamePreset);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
-document.getElementById('playPreview').addEventListener('click', () => { stopSpeech(false); playTimeline(false); });
+document.getElementById('playPreview').addEventListener('click', playPreviewWithoutVoice);
 els.playPreviewVoice.addEventListener('click', playPreviewWithVoice);
 els.previewSubtitleMotion.addEventListener('click', previewCurrentSubtitleMotion);
 document.getElementById('speakScript').addEventListener('click', speakScript);
+els.fitDurationsToNarration.addEventListener('click', () => fitDurationsToNarration());
 document.getElementById('recordSilent').addEventListener('click', () => recordVideo(false));
 document.getElementById('recordMic').addEventListener('click', () => recordVideo(true));
 document.getElementById('moveUp').addEventListener('click', () => moveSelected(-1));
