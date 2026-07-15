@@ -1201,6 +1201,14 @@ h1,h2,h3{
   .nav{padding:0 12px;gap:8px}
   .nav-links{gap:2px}
   .nav-qr-btn{padding:6px 8px}
+  /* 2026-07-15: 幕僚室ドロップダウンは right:0 でトグル右端基準に左展開していたため、
+     ナビが狭いスマホではトグルが画面左寄りになり、幅200pxのメニューが画面左端を
+     はみ出して項目名の頭（「○○幕僚室」）が切れていた。トグル左端基準に切り替え、
+     画面幅も超えないようにして読めるようにする。 */
+  .nav-dropdown-menu{
+    left:0;right:auto;
+    max-width:calc(100vw - 24px);
+  }
 }
 @media(max-width:360px){
   /* iPhone SE(第1世代)等320px級の狭い機種では上記の詰めだけでは
