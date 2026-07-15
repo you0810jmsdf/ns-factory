@@ -110,6 +110,17 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .help{margin:-2px 0 12px;color:var(--mute);font-size:11.5px;line-height:1.7}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
+.assist-flow{
+  display:grid;gap:7px;margin:4px 0 12px;padding-left:2px;
+  color:var(--ink-sub);font-size:11.5px;line-height:1.55;
+}
+.assist-flow div{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start}
+.assist-flow b{
+  width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  background:var(--brass-light);color:var(--brass-dark);font-family:'Cinzel',serif;font-size:12px;
+}
+.assist-flow strong{display:block;color:var(--ink);font-size:12px}
+.assist-flow span{display:block}
 
 /* ── ボタン ── */
 .primary{
@@ -319,15 +330,29 @@ canvas{
           <div class="field">
             <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
             <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
+            <p class="help">ここに入れた文章を、あとで写真ごとの「読むセリフ・台本」に分けて入れます。</p>
           </div>
           <div class="field">
-            <label for="workLongDesc">作品集の長文紹介（日本語）</label>
-            <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに取得します。英語へ変換して見どころメモに入力できます。"></textarea>
+            <label for="workLongDesc">作品集の長文紹介</label>
+            <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに取得します。見どころメモへ変換できます。"></textarea>
+          </div>
+          <div class="field">
+            <label for="translationDirection">長文紹介・見どころメモの変換方向</label>
+            <select id="translationDirection">
+              <option value="ja-en">日本語の長文紹介 → 英語の見どころメモ</option>
+              <option value="en-ja">英語の見どころメモ → 日本語の見どころメモ</option>
+            </select>
+            <p class="help" id="translationHelp">作品集の長文紹介を英語へ変換し、写真枚数分の見どころメモに広げます。</p>
+          </div>
+          <div class="assist-flow" aria-label="補助ボタンの流れ">
+            <div><b>1</b><span><strong>空欄だけ補完</strong>写真の見出し・セリフが空のときだけ案を入れます。</span></div>
+            <div><b>2</b><span><strong>メモを変換</strong>上の変換方向で、結果を見どころメモへ入れます。</span></div>
+            <div><b>3</b><span><strong>写真へ配分</strong>見どころメモを各写真の「読むセリフ・台本」へ入れます。</span></div>
           </div>
           <div class="actions">
-            <button class="secondary" id="fillDefaults">空欄に案を入れる</button>
-            <button class="secondary" id="translateFeatureNote">長文紹介を英語メモへ変換</button>
-            <button class="secondary" id="distributeFeatureNote">見どころメモを写真へ配分</button>
+            <button class="secondary" id="fillDefaults" title="入力済みのセリフは残し、空欄だけ補完します">1. 空欄のセリフに案を入れる</button>
+            <button class="secondary" id="translateFeatureNote" title="選んだ方向で翻訳し、見どころメモへ入れます">2. メモを変換する</button>
+            <button class="secondary" id="distributeFeatureNote" title="見どころメモを写真ごとの台本欄へ入れます">3. メモを写真の台本へ配分</button>
           </div>
         </div>
 
@@ -443,6 +468,8 @@ const els = {
   materialStockList: document.getElementById('materialStockList'),
   featureNote: document.getElementById('featureNote'),
   workLongDesc: document.getElementById('workLongDesc'),
+  translationDirection: document.getElementById('translationDirection'),
+  translationHelp: document.getElementById('translationHelp'),
   translateFeatureNote: document.getElementById('translateFeatureNote'),
   distributeFeatureNote: document.getElementById('distributeFeatureNote'),
   photoInput: document.getElementById('photoInput'),
@@ -552,7 +579,7 @@ async function addDrivePhotos(){
     const matchedWork = await applyWorkInfoFromDriveData(data, workNo);
     if(matchedWork && matchedWork.longDesc){
       setLog(`Driveから ${data.photos.length} 枚追加しました。作品集「${matchedWork.title}」の長文紹介を英語へ変換しています。`);
-      const translated = await translateLongDescToFeatureNote({source: matchedWork.longDesc, showLog:false});
+      const translated = await translateLongDescToFeatureNote({source: matchedWork.longDesc, target:'en', showLog:false});
       setLog(translated
         ? `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報と長文英訳を反映しました。`
         : `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。長文英訳は手動で再実行してください。`);
@@ -618,32 +645,64 @@ function loadJsonp(url){
   });
 }
 
+function selectedTranslationTarget(options = {}){
+  if(options.target) return options.target === 'ja' ? 'ja' : 'en';
+  return els.translationDirection.value === 'en-ja' ? 'ja' : 'en';
+}
+
+function translationSourceText(target, options = {}){
+  if(options.source) return String(options.source).trim();
+  return String(target === 'en'
+    ? (els.workLongDesc.value || els.featureNote.value || '')
+    : (els.featureNote.value || els.workLongDesc.value || '')
+  ).trim();
+}
+
+function updateTranslationUi(){
+  const target = selectedTranslationTarget();
+  if(target === 'ja'){
+    els.translateFeatureNote.textContent = '2. 英語メモを日本語へ戻す';
+    els.translationHelp.textContent = '見どころメモにある英語文を日本語へ変換し、写真枚数分の見どころメモに整えます。';
+    return;
+  }
+  els.translateFeatureNote.textContent = '2. 長文紹介を英語メモへ変換';
+  els.translationHelp.textContent = '作品集の長文紹介を英語へ変換し、写真枚数分の見どころメモに広げます。';
+}
+
 async function translateLongDescToFeatureNote(options = {}){
   if(options && options.type) options = {};
   const showLog = options.showLog !== false;
-  const source = String(options.source || els.workLongDesc.value || els.featureNote.value || '').trim();
-  if(!source){ if(showLog) setLog('作品集の長文紹介を入力してください。'); return false; }
+  const target = selectedTranslationTarget(options);
+  const sourceLang = target === 'en' ? 'ja' : 'en';
+  const targetLabel = target === 'en' ? '英語' : '日本語';
+  const source = translationSourceText(target, options);
+  if(!source){
+    if(showLog) setLog(target === 'en' ? '作品集の長文紹介を入力してください。' : '見どころメモに英語文を入力してください。');
+    return false;
+  }
   if(source.length > 1800){ if(showLog) setLog('紹介文が長すぎます。1800文字以内に分けて変換してください。'); return false; }
 
   els.translateFeatureNote.disabled = true;
-  if(showLog) setLog('作品集の長文紹介を英語に変換しています。');
+  if(showLog) setLog(`${targetLabel}へ変換しています。`);
   try{
-    const url = `${SNS_VIDEO_DRIVE_API}?api=translateSnsMemo&text=${encodeURIComponent(source)}`;
+    const url = `${SNS_VIDEO_DRIVE_API}?api=translateSnsMemo&source=${encodeURIComponent(sourceLang)}&target=${encodeURIComponent(target)}&text=${encodeURIComponent(source)}`;
     const data = await loadJsonp(url);
-    if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || '英語変換に失敗しました。'); }
+    if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || `${targetLabel}変換に失敗しました。`); }
     const targetCount = Math.max(8, slides.length, clamp(parseInt(els.driveLimit.value, 10) || 8, 1, 12));
-    els.featureNote.value = expandEnglishFeatureMemo(data.translated || '', targetCount);
-    els.narrationLang.value = 'en-US';
+    els.featureNote.value = target === 'en'
+      ? expandEnglishFeatureMemo(data.translated || '', targetCount)
+      : expandJapaneseFeatureMemo(data.translated || '', targetCount);
+    els.narrationLang.value = target === 'en' ? 'en-US' : 'ja-JP';
     populateVoices();
     const distributed = slides.length ? distributeFeatureNoteToSlides({overwrite:true, showLog:false}) : 0;
     if(showLog){
       setLog(distributed
-        ? `英語に変換し、${distributed}枚の写真へセリフ案を配分しました。`
-        : `英語に変換し、${targetCount}枚分の見どころメモへ広げました。写真追加後に「見どころメモを写真へ配分」を押してください。`);
+        ? `${targetLabel}へ変換し、${distributed}枚の写真の台本へ配分しました。`
+        : `${targetLabel}へ変換し、${targetCount}枚分の見どころメモへ広げました。写真追加後に「3. メモを写真の台本へ配分」を押してください。`);
     }
     return true;
   }catch(err){
-    if(showLog) setLog(`英語変換に失敗しました: ${err.message}`);
+    if(showLog) setLog(`${targetLabel}変換に失敗しました: ${err.message}`);
     return false;
   }finally{
     els.translateFeatureNote.disabled = false;
@@ -815,7 +874,7 @@ function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
   loadSelected();
   renderList();
   drawFrame(selected >= 0 ? timelineStart(selected) : 0);
-  if(showLog) setLog(`${slides.length}枚の写真へ見どころメモを配分しました。`);
+  if(showLog) setLog(`${slides.length}枚の写真それぞれの「読むセリフ・台本」へ見どころメモを配分しました。`);
   return slides.length;
 }
 
@@ -924,7 +983,7 @@ function fillDefaults(){
   loadSelected();
   renderList();
   drawFrame(selected >= 0 ? timelineStart(selected) : 0);
-  setLog('空欄に案を入れました。');
+  setLog('空欄の写真だけ、見出しとセリフ案を入れました。入力済みの内容は上書きしていません。');
 }
 
 function moveSelected(delta){
@@ -1757,10 +1816,41 @@ function expandEnglishFeatureMemo(translated, targetCount){
   return lines.join('\n');
 }
 
+function expandJapaneseFeatureMemo(translated, targetCount){
+  const count = clamp(targetCount || 8, 1, 12);
+  const product = els.productName.value.trim() || 'このレザー作品';
+  const material = els.materialNote.value.trim() || '選んだ革';
+  const sourceSentences = splitJapaneseSentences(translated).filter(sentence => sentence.length >= 8);
+  const templates = [
+    `${product}の全体の雰囲気と、手仕事ならではの存在感をご覧ください。`,
+    `素材は${material}です。革の色、表情、質感に注目してください。`,
+    `この角度から見ると、形やバランスがより分かりやすくなります。`,
+    `光の当たり方で革の表情が変わり、自然な奥行きが出ています。`,
+    `縫い目、コバ、細かな仕立ての部分もゆっくりご覧ください。`,
+    `日常で使いやすいシンプルさと、手作りの温かさを両立しています。`,
+    `使い込むほど革が育ち、自分だけの表情へ変わっていきます。`,
+    `N's factoryの作品をご覧いただき、ありがとうございます。`
+  ];
+  const lines = [];
+  for(let i = 0; i < count; i++){
+    const source = sourceSentences[i];
+    lines.push(ensureJapaneseSentence(source || templates[i % templates.length]));
+  }
+  return lines.join('\n');
+}
+
 function splitEnglishSentences(text){
   return String(text || '')
     .replace(/\s+/g, ' ')
     .match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map(sentence => sentence.trim()) || [];
+}
+
+function splitJapaneseSentences(text){
+  return String(text || '')
+    .replace(/\r/g, '\n')
+    .split(/\n+|(?<=[。！？])/)
+    .map(sentence => sentence.trim())
+    .filter(Boolean);
 }
 
 function englishProductName(value){
@@ -1981,6 +2071,7 @@ document.getElementById('removeSlide').addEventListener('click', removeSelected)
 });
 els.videoFont.addEventListener('change', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
 els.narrationLang.addEventListener('change', populateVoices);
+els.translationDirection.addEventListener('change', updateTranslationUi);
 if('speechSynthesis' in window){
   speechSynthesis.onvoiceschanged = populateVoices;
   populateVoices();
@@ -1998,6 +2089,7 @@ els.driveWorkNo.addEventListener('change', syncWorkFromNumber);
 renderList();
 loadWorksCatalog();
 loadLeatherStock();
+updateTranslationUi();
 drawFrame(0);
 refreshCapabilities();
 
