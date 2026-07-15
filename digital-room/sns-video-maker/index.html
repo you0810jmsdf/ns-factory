@@ -221,14 +221,14 @@ canvas{
 <main class="app">
   <section class="hero">
     <h1>作品写真から、SNS用の縦型動画をつくる</h1>
-    <p><strong>写真はアップロードされません。</strong>読み込みから動画生成まで、すべてこのページ（ブラウザ内）で完結します。保存形式はWebMです。</p>
+    <p><strong>写真はアップロードされません。</strong>読み込みから動画生成まで、すべてこのページ（ブラウザ内）で完結します。Instagram用にMP4優先で保存します。</p>
   </section>
 
   <section class="workflow" aria-label="操作手順">
     <div class="step"><span class="num">1</span><span><strong>写真</strong>左の一覧に追加</span></div>
     <div class="step"><span class="num">2</span><span><strong>セリフ</strong>右のタブで編集</span></div>
     <div class="step"><span class="num">3</span><span><strong>確認</strong>中央でプレビュー</span></div>
-    <div class="step"><span class="num">4</span><span><strong>保存</strong>WebMで書き出し</span></div>
+    <div class="step"><span class="num">4</span><span><strong>保存</strong>MP4優先で書き出し</span></div>
   </section>
 
   <div class="studio">
@@ -279,12 +279,12 @@ canvas{
       <div class="export-box">
         <h2>書き出し</h2>
         <div class="actions">
-          <button class="primary" id="recordSilent">動画を保存（音声なし）</button>
-          <button class="secondary" id="recordMic">マイク録音つきで保存</button>
+          <button class="primary" id="recordSilent">Instagram用動画を保存（音声なし）</button>
+          <button class="secondary" id="recordMic">マイク録音つきMP4保存</button>
           <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveの作品フォルダへ保存</button>
         </div>
-        <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.webm">完成動画をダウンロード</a></div>
-        <div class="notice">自動音声を動画へ直接入れるにはサーバー側の音声合成が必要です。Web版βでは、読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
+        <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
+        <div class="notice">Instagramへ投稿する場合はMP4で保存された動画を使ってください。自動音声の読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
         <div class="log" id="log"></div>
       </div>
     </section>
@@ -429,6 +429,7 @@ canvas{
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.2/build/mp4-muxer.min.js"></script>
 <script>
 const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
@@ -484,6 +485,7 @@ let worksCatalog = [];
 let worksCatalogPromise = null;
 let currentWork = null;
 let lastRecordingBlob = null;
+let lastRecordingMeta = null;
 let registerKey = '';
 
 function setLog(message){ els.log.textContent = message; }
@@ -1226,17 +1228,227 @@ function previewCurrentSubtitleMotion(){
   requestAnimationFrame(tick);
 }
 
-async function recordVideo(withMic){
-  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+function resetRecordingOutput(){
+  els.downloadBox.style.display = 'none';
+  chunks = [];
+  lastRecordingBlob = null;
+  lastRecordingMeta = null;
+  refreshUploadButton();
+}
+
+function finishRecordingBlob(blob, format, message){
+  const url = URL.createObjectURL(blob);
+  els.downloadLink.href = url;
+  els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}.${format.ext}`;
+  els.downloadBox.style.display = 'block';
+  lastRecordingBlob = blob;
+  lastRecordingMeta = format;
+  refreshUploadButton();
+  setLog(message);
+}
+
+function canEncodeMp4Video(){
+  return typeof VideoEncoder !== 'undefined'
+    && typeof VideoFrame !== 'undefined'
+    && window.Mp4Muxer
+    && typeof Mp4Muxer.Muxer === 'function'
+    && typeof Mp4Muxer.ArrayBufferTarget === 'function';
+}
+
+async function selectMp4VideoConfig(frameRate){
+  const base = {
+    width: canvas.width,
+    height: canvas.height,
+    bitrate: 4500000,
+    framerate: frameRate,
+    hardwareAcceleration: 'prefer-hardware',
+    avc: {format:'avc'}
+  };
+  const codecs = ['avc1.42002A', 'avc1.42E02A', 'avc1.4D402A', 'avc1.64002A'];
+  for(const codec of codecs){
+    const config = {...base, codec};
+    try{
+      const result = await VideoEncoder.isConfigSupported(config);
+      if(result.supported) return result.config;
+    }catch(_){}
+  }
+  throw new Error('このブラウザではInstagram用MP4のH.264エンコードに対応していません。');
+}
+
+async function prepareMicAudioSource(micStream){
+  if(typeof AudioEncoder === 'undefined' || typeof MediaStreamTrackProcessor === 'undefined') return null;
+  const track = micStream.getAudioTracks()[0];
+  if(!track) return null;
+  let reader = null;
+  try{
+    const processor = new MediaStreamTrackProcessor({track});
+    reader = processor.readable.getReader();
+    const first = await Promise.race([
+      reader.read(),
+      new Promise(resolve => setTimeout(() => resolve({timeout:true}), 1200))
+    ]);
+    if(first.timeout || first.done || !first.value){
+      if(reader) reader.cancel().catch(() => {});
+      return null;
+    }
+    const firstData = first.value;
+    const config = {
+      codec:'mp4a.40.2',
+      sampleRate:firstData.sampleRate || 48000,
+      numberOfChannels:firstData.numberOfChannels || 1,
+      bitrate:128000
+    };
+    const support = await AudioEncoder.isConfigSupported(config);
+    if(!support.supported){
+      firstData.close();
+      reader.cancel().catch(() => {});
+      return null;
+    }
+    return {track, reader, firstData, config:support.config};
+  }catch(_){
+    if(reader) reader.cancel().catch(() => {});
+    return null;
+  }
+}
+
+function startAudioEncoding(source, muxer, errors){
+  const encoder = new AudioEncoder({
+    output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+    error: error => errors.push(error.message || String(error))
+  });
+  encoder.configure(source.config);
+  let stopping = false;
+  async function pump(){
+    let item = {done:false, value:source.firstData};
+    while(item && !item.done){
+      const audioData = item.value;
+      if(audioData){
+        if(!stopping) encoder.encode(audioData);
+        audioData.close();
+      }
+      item = await source.reader.read();
+    }
+  }
+  const pumpPromise = pump().catch(error => {
+    if(!stopping) errors.push(error.message || String(error));
+  });
+  return {
+    stop: async () => {
+      stopping = true;
+      try{ source.track.stop(); }catch(_){}
+      try{ await source.reader.cancel(); }catch(_){}
+      await pumpPromise;
+      await encoder.flush();
+      encoder.close();
+    }
+  };
+}
+
+async function recordMp4WithWebCodecs(withMic){
+  if(!canEncodeMp4Video()) throw new Error('MP4書き出しライブラリを読み込めませんでした。');
+  const frameRate = 30;
+  const frameDurationUs = Math.round(1000000 / frameRate);
+  const total = totalDuration();
+  const frameCount = Math.max(1, Math.ceil(total * frameRate));
+  const videoConfig = await selectMp4VideoConfig(frameRate);
+  let micStream = null;
+  let audioSource = null;
+  const audioErrors = [];
+
+  if(withMic){
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      try{
+        micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+        audioSource = await prepareMicAudioSource(micStream);
+        if(!audioSource) setLog('マイク音声をMP4へ入れられないため、音声なしMP4で保存します。');
+      }catch(_){
+        setLog('マイクを使えなかったため、音声なしMP4で保存します。');
+      }
+    }else{
+      setLog('このブラウザではマイク録音が使えないため、音声なしMP4で保存します。');
+    }
+  }
+
+  const target = new Mp4Muxer.ArrayBufferTarget();
+  const muxerOptions = {
+    target,
+    video: {codec:'avc', width:canvas.width, height:canvas.height, frameRate},
+    fastStart:'in-memory',
+    firstTimestampBehavior:'offset'
+  };
+  if(audioSource){
+    muxerOptions.audio = {
+      codec:'aac',
+      sampleRate:audioSource.config.sampleRate,
+      numberOfChannels:audioSource.config.numberOfChannels
+    };
+  }
+  const muxer = new Mp4Muxer.Muxer(muxerOptions);
+  const videoErrors = [];
+  const videoEncoder = new VideoEncoder({
+    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+    error: error => videoErrors.push(error.message || String(error))
+  });
+  videoEncoder.configure(videoConfig);
+  const audioController = audioSource ? startAudioEncoding(audioSource, muxer, audioErrors) : null;
+
+  setLog(audioSource
+    ? 'MP4で録画中です。セリフを読み上げてください。'
+    : 'Instagram投稿用MP4を生成中です。');
+  playing = true;
+  const realTime = !!audioSource;
+  const startedAt = performance.now();
+  for(let frameIndex = 0; frameIndex < frameCount; frameIndex++){
+    if(realTime){
+      const targetMs = (frameIndex / frameRate) * 1000;
+      while(performance.now() - startedAt < targetMs){
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      }
+    }
+    const time = Math.min(frameIndex / frameRate, total);
+    drawFrame(time);
+    els.progressBar.style.width = `${Math.min(100, (frameIndex + 1) / frameCount * 100)}%`;
+    const frame = new VideoFrame(canvas, {
+      timestamp: frameIndex * frameDurationUs,
+      duration: frameDurationUs
+    });
+    videoEncoder.encode(frame, {keyFrame: frameIndex % (frameRate * 2) === 0});
+    frame.close();
+    if(videoEncoder.encodeQueueSize > 18) await videoEncoder.flush();
+    if(!realTime && frameIndex % 12 === 0) await new Promise(resolve => requestAnimationFrame(resolve));
+  }
+  playing = false;
+  drawFrame(total);
+  els.progressBar.style.width = '100%';
+  await videoEncoder.flush();
+  videoEncoder.close();
+  if(audioController) await audioController.stop();
+  if(micStream) micStream.getTracks().forEach(track => track.stop());
+  if(videoErrors.length) throw new Error(videoErrors[0]);
+  if(audioErrors.length) throw new Error(audioErrors[0]);
+  muxer.finalize();
+  const blob = new Blob([target.buffer], {type:'video/mp4'});
+  if(!blob.size) throw new Error('MP4ファイルの生成に失敗しました。');
+  const doneMessage = audioSource
+    ? (currentWork && currentWork.folderId
+      ? 'マイク音声つきMP4で保存しました。ダウンロードのほか「Driveの作品フォルダへ保存」も使えます。'
+      : 'マイク音声つきMP4で保存しました。完成動画をダウンロードできます。')
+    : (currentWork && currentWork.folderId
+      ? 'Instagram投稿用MP4で保存しました。ダウンロードのほか「Driveの作品フォルダへ保存」も使えます。'
+      : 'Instagram投稿用MP4で保存しました。完成動画をダウンロードできます。');
+  finishRecordingBlob(
+    blob,
+    {mime:'video/mp4;codecs="avc1.42002A"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:!!audioSource},
+    doneMessage
+  );
+}
+
+async function recordMediaRecorderVideo(withMic){
   if(!canRecordVideo()){
     setLog('このブラウザでは動画保存が使えません。EdgeまたはChromeで開いてください。');
     refreshCapabilities();
     return;
   }
-  saveSelected();
-  stopSpeech(false);
-  els.downloadBox.style.display = 'none';
-  chunks = [];
   const videoStream = canvas.captureStream(30);
   let stream = videoStream;
   let micStream = null;
@@ -1252,26 +1464,53 @@ async function recordVideo(withMic){
       }
     }
   }
-  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' : 'video/webm';
-  recorder = new MediaRecorder(stream, {mimeType:mime});
+  const hasAudio = stream.getAudioTracks().length > 0;
+  const format = pickRecordingFormat(hasAudio);
+  if(!format){
+    if(micStream) micStream.getTracks().forEach(track => track.stop());
+    setLog('このブラウザでは動画保存に使える録画形式が見つかりませんでした。EdgeまたはChrome最新版で開いてください。');
+    refreshCapabilities();
+    return;
+  }
+  try{
+    recorder = new MediaRecorder(stream, {mimeType:format.mime});
+  }catch(err){
+    if(micStream) micStream.getTracks().forEach(track => track.stop());
+    setLog(`録画開始に失敗しました: ${err.message}`);
+    return;
+  }
   recorder.ondataavailable = event => { if(event.data.size) chunks.push(event.data); };
   recorder.onstop = () => {
     if(micStream) micStream.getTracks().forEach(track => track.stop());
-    const blob = new Blob(chunks, {type:'video/webm'});
-    const url = URL.createObjectURL(blob);
-    els.downloadLink.href = url;
-    els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}.webm`;
-    els.downloadBox.style.display = 'block';
-    lastRecordingBlob = blob;
-    refreshUploadButton();
-    setLog(currentWork && currentWork.folderId
-      ? '完成しました。ダウンロードのほか「Driveの作品フォルダへ保存」も使えます。'
-      : '完成しました。完成動画を保存ボタンからダウンロードできます。');
+    const blob = new Blob(chunks, {type:format.type});
+    finishRecordingBlob(
+      blob,
+      format,
+      'WebMで保存されました。この形式はInstagramで使えない場合があります。MP4保存にはChrome/Edge最新版で開いてください。'
+    );
   };
-  setLog(withMic ? '録画中です。セリフを読み上げてください。' : '動画を生成中です。');
+  setLog(withMic ? 'WebMで録画中です。セリフを読み上げてください。' : 'WebM動画を生成中です。');
   recorder.start();
   await playTimeline(true);
   setTimeout(() => recorder && recorder.state !== 'inactive' && recorder.stop(), 250);
+}
+
+async function recordVideo(withMic){
+  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+  saveSelected();
+  stopSpeech(false);
+  resetRecordingOutput();
+  if(canEncodeMp4Video()){
+    try{
+      await recordMp4WithWebCodecs(withMic);
+      return;
+    }catch(err){
+      console.warn(err);
+      setLog(`MP4保存に失敗しました: ${err.message} WebMで再試行します。`);
+      resetRecordingOutput();
+    }
+  }
+  await recordMediaRecorderVideo(withMic);
 }
 
 function speakScript(){
@@ -1613,12 +1852,13 @@ async function uploadVideoToDrive(){
   setLog(`動画（${Math.round(lastRecordingBlob.size / 1024 / 1024 * 10) / 10}MB）をDriveへアップロード中です。1〜2分かかることがあります。`);
   try{
     const dataBase64 = await blobToBase64(lastRecordingBlob);
+    const recordingMeta = lastRecordingMeta || {ext:'webm', type:lastRecordingBlob.type || 'video/webm'};
     const payload = {
       api: 'uploadVideo',
       key,
       folderId: currentWork.folderId,
-      filename: `${currentWork.id}_video_${dateStamp()}.webm`,
-      mimeType: 'video/webm',
+      filename: `${currentWork.id}_video_${dateStamp()}.${recordingMeta.ext}`,
+      mimeType: recordingMeta.type,
       dataBase64
     };
     const response = await fetch(SNS_VIDEO_DRIVE_API, {
@@ -1639,15 +1879,34 @@ function canRecordVideo(){
   return typeof MediaRecorder !== 'undefined' && typeof canvas.captureStream === 'function';
 }
 
+function pickRecordingFormat(withAudio){
+  if(typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') return null;
+  const candidates = withAudio ? [
+    {mime:'video/webm;codecs=vp9,opus', type:'video/webm', ext:'webm', instagram:false},
+    {mime:'video/webm;codecs=vp8,opus', type:'video/webm', ext:'webm', instagram:false},
+    {mime:'video/webm', type:'video/webm', ext:'webm', instagram:false}
+  ] : [
+    {mime:'video/webm;codecs=vp9', type:'video/webm', ext:'webm', instagram:false},
+    {mime:'video/webm;codecs=vp8', type:'video/webm', ext:'webm', instagram:false},
+    {mime:'video/webm', type:'video/webm', ext:'webm', instagram:false}
+  ];
+  return candidates.find(format => MediaRecorder.isTypeSupported(format.mime)) || null;
+}
+
 function refreshCapabilities(){
-  const recordable = canRecordVideo();
+  const mp4Ready = canEncodeMp4Video();
+  const recordable = mp4Ready || canRecordVideo();
   [els.recordSilent, els.recordMic].forEach(button => {
     button.disabled = !recordable;
-    button.title = recordable ? '' : 'EdgeまたはChromeで開くと動画保存できます';
+    button.title = recordable
+      ? (mp4Ready ? 'Instagram用MP4で保存できます' : 'このブラウザではWebM保存になります。Instagram投稿にはMP4変換が必要です')
+      : 'EdgeまたはChromeで開くと動画保存できます';
   });
   els.speakScript.disabled = !('speechSynthesis' in window);
   if(!recordable){
     setLog('動画保存はEdge/Chrome推奨です。このブラウザでは保存ボタンを無効にしています。');
+  }else if(!mp4Ready){
+    setLog('このブラウザではMP4録画に対応していません。Instagram投稿にはChrome/Edge最新版で開くか、保存後にMP4変換してください。');
   }
 }
 
