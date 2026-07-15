@@ -267,9 +267,9 @@ canvas{
             </div>
           </div>
           <div class="actions">
-            <button class="secondary" id="loadDrivePhotos">Driveから写真を追加</button>
+            <button class="secondary" id="loadDrivePhotos">Driveから写真を表示</button>
           </div>
-          <p class="help">作品番号（フォルダ名・ファイル名の数字）で照合し、作品集の情報も自動反映します。</p>
+          <p class="help">作品番号を入力してEnter、または欄外をクリックすると、作品情報とDrive写真を自動で読み込みます。表示されない時はこのボタンを押してください。</p>
         </details>
         <p class="help">カードをクリックで選択、ドラッグで動画の順番を入れ替えられます。</p>
         <div id="slides" class="slides"></div>
@@ -508,6 +508,7 @@ let chunks = [];
 let speechTimers = [];
 let activeUtterance = null;
 let draggedSlideIndex = null;
+let drivePhotoLoading = false;
 let worksCatalog = [];
 let worksCatalogPromise = null;
 let currentWork = null;
@@ -562,14 +563,27 @@ function addFiles(files){
 }
 
 async function addDrivePhotos(){
-  const folder = els.driveFolder.value.trim();
   const workNo = els.driveWorkNo.value.trim();
   const limit = clamp(parseInt(els.driveLimit.value, 10) || 8, 1, 12);
-  if(!folder){ setLog('DriveフォルダURLまたはIDを入力してください。'); return; }
   if(!workNo){ setLog('作品番号を入力してください。'); return; }
-
+  if(drivePhotoLoading){
+    setLog('Driveから写真を読み込み中です。完了までお待ちください。');
+    return 0;
+  }
+  drivePhotoLoading = true;
   els.loadDrivePhotos.disabled = true;
-  setLog('Driveから写真を読み込み中です。枚数や写真サイズにより少し時間がかかります。');
+  await syncWorkFromNumber({showLog:false});
+  const folder = (currentWork && currentWork.folderId) || els.driveFolder.value.trim();
+  if(!folder){
+    drivePhotoLoading = false;
+    els.loadDrivePhotos.disabled = false;
+    setLog('DriveフォルダURLまたはIDを入力してください。');
+    return 0;
+  }
+
+  setLog(currentWork && currentWork.folderId
+    ? `作品集に登録されたDriveフォルダから写真を読み込み中です（作品番号 ${workNo}）。`
+    : 'Driveから写真を読み込み中です。枚数や写真サイズにより少し時間がかかります。');
   try{
     const url = `${SNS_VIDEO_DRIVE_API}?api=snsVideoPhotos&folderId=${encodeURIComponent(folder)}&workNo=${encodeURIComponent(workNo)}&limit=${encodeURIComponent(limit)}`;
     const data = await loadJsonp(url);
@@ -588,9 +602,12 @@ async function addDrivePhotos(){
     }else{
       setLog(`Driveから ${data.photos.length} 枚追加しました。作品集の一致情報は見つかりませんでした。`);
     }
+    return data.photos.length;
   }catch(err){
     setLog(`Drive写真の取得に失敗しました: ${err.message}`);
+    return 0;
   }finally{
+    drivePhotoLoading = false;
     els.loadDrivePhotos.disabled = false;
   }
 }
@@ -837,17 +854,30 @@ function workNumberOf(work){
   return suffix ? String(parseInt(suffix, 10)) : '';
 }
 
-async function syncWorkFromNumber(){
+async function syncWorkFromNumber({showLog = true} = {}){
   const digits = els.driveWorkNo.value.replace(/\D/g, '');
-  if(!digits) return;
+  if(!digits) return null;
   await loadWorksCatalog();
   const normalized = String(parseInt(digits, 10));
   const work = worksCatalog.find(item => workNumberOf(item) === normalized);
   if(work){
-    if(!currentWork || currentWork.id !== work.id) applyWorkInfo(work, {translate:false, showLog:true});
+    if(!currentWork || currentWork.id !== work.id) applyWorkInfo(work, {translate:false, showLog});
+    return work;
   }else{
-    setLog(`作品番号 ${digits} は作品集に見つかりません。番号を確認してください（Drive読み込み自体は可能です）。`);
+    if(showLog) setLog(`作品番号 ${digits} は作品集に見つかりません。番号を確認してください（Drive読み込み自体は可能です）。`);
+    return null;
   }
+}
+
+async function handleDriveWorkNoChange(){
+  const digits = els.driveWorkNo.value.replace(/\D/g, '');
+  if(!digits) return;
+  await syncWorkFromNumber({showLog:true});
+  if(slides.length){
+    setLog('作品情報を反映しました。写真は既に追加済みです。別作品に入れ替える場合は、不要な写真を削除してからDrive読み込みを実行してください。');
+    return;
+  }
+  await addDrivePhotos();
 }
 
 function formatWorkMeta(work){
@@ -2085,7 +2115,12 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 els.slides.addEventListener('click', () => { if(slides.length) activateTab('tab-slide'); });
 els.uploadVideoToDrive.addEventListener('click', uploadVideoToDrive);
-els.driveWorkNo.addEventListener('change', syncWorkFromNumber);
+els.driveWorkNo.addEventListener('change', handleDriveWorkNoChange);
+els.driveWorkNo.addEventListener('keydown', event => {
+  if(event.key !== 'Enter') return;
+  event.preventDefault();
+  handleDriveWorkNoChange();
+});
 renderList();
 loadWorksCatalog();
 loadLeatherStock();
