@@ -1092,18 +1092,18 @@ function drawTransition(from, to, p){
     const w = canvas.width * p;
     const x = from.transition === 'wipeLeft' ? 0 : canvas.width - w;
     ctx.beginPath(); ctx.rect(x, 0, w, canvas.height); ctx.clip();
-    drawSlide(to, p, 1);
+    drawSlide(to, 0, 1);
     ctx.restore();
     return;
   }
   if(from.transition === 'slideLeft' || from.transition === 'slideRight'){
     const dir = from.transition === 'slideLeft' ? -1 : 1;
     drawSlideAt(from, 1, 1, dir * canvas.width * p, 0);
-    drawSlideAt(to, p, 1, dir * canvas.width * (p - 1), 0);
+    drawSlideAt(to, 0, 1, dir * canvas.width * (p - 1), 0);
     return;
   }
   drawSlide(from, 1, 1 - p);
-  drawSlide(to, p, p);
+  drawSlide(to, 0, p);
 }
 
 function drawSlideAt(slide, progress, alpha, x, y){
