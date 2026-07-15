@@ -890,6 +890,16 @@ let isEditMode = false;
 let editingProductId = '';
 let editingFolderId = '';
 
+let registerInFlight = false;
+
+function prepareRegisterButton() {
+  registerInFlight = false;
+  const btn = document.getElementById('registerBtn');
+  if (!btn) return;
+  btn.disabled = false;
+  btn.textContent = isEditMode ? '💾 更新する' : '✅ 登録する';
+}
+
 // ====== THREADS POST STATE ======
 let lastRegisteredProductId = '';
 
@@ -1125,6 +1135,7 @@ function goStep3() {
 function goConfirm() {
   if (!validateStep3()) return;
   buildConfirm();
+  prepareRegisterButton();
   showOnly('stepConfirm'); updateDots(4); setAgentMsg('confirm');
 }
 
@@ -1253,19 +1264,25 @@ function setProgress(pct, msg, agentMsg) {
 }
 
 async function doRegister() {
-  document.getElementById('registerBtn').disabled = true;
-  showOnly('stepProgress');
+  if (registerInFlight) return;
+  registerInFlight = true;
+  const btn = document.getElementById('registerBtn');
+  if (btn) btn.disabled = true;
 
   try {
+    showOnly('stepProgress');
     if (isEditMode) {
       await doUpdate();
     } else {
       await doNewRegister();
     }
   } catch(e) {
+    registerInFlight = false;
     alert('❌ エラーが発生しました:\n' + e.message);
     showOnly('stepConfirm');
-    document.getElementById('registerBtn').disabled = false;
+    if (btn) btn.disabled = false;
+  } finally {
+    registerInFlight = false;
   }
 }
 
@@ -1280,8 +1297,10 @@ async function doNewRegister() {
     shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
     hashtags: val('f_hashtags'), year: YEAR,
   };
-  const regUrl = GAS_URL + '?api=register&payload=' + encodeURIComponent(JSON.stringify(payload));
-  const regRes = await fetch(regUrl);
+  const regRes = await fetch(GAS_URL, {
+    method: 'POST',
+    body: new URLSearchParams({ api: 'register', payload: JSON.stringify(payload) })
+  });
   const regData = await regRes.json();
   if (!regData.ok) throw new Error('register失敗: ' + (regData.error || JSON.stringify(regData)));
 
