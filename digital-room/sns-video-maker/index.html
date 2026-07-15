@@ -162,17 +162,24 @@ details.drive[open] summary{border-bottom:1px dashed var(--line);margin-bottom:1
 .drive-status.error{background:#FFF0EA;color:#8F3E23;border-color:#E6B8A6}
 .slides{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;padding-right:2px}
 .slide-item{
-  display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center;text-align:left;
+  display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;text-align:left;
   border:1px solid var(--line);border-radius:var(--radius);padding:8px;background:#FFFDF6;min-width:0;
   cursor:grab;touch-action:manipulation;transition:border-color .15s ease,background .15s ease;
 }
 .slide-item:active{cursor:grabbing}
 .slide-item.active{border-color:var(--brass);background:var(--brass-light);box-shadow:0 0 0 1px var(--brass)}
+.slide-item.excluded{opacity:.58;background:#F5F0E6;border-style:dashed}
+.slide-item.excluded .thumb{filter:grayscale(.9)}
 .slide-item.dragging{opacity:.45}
 .slide-item.drag-over{border-color:var(--sepia);box-shadow:0 0 0 2px rgba(58,44,30,.22)}
 .thumb{width:56px;aspect-ratio:4/5;object-fit:cover;border-radius:6px;background:var(--paper-deep)}
 .slide-title{font-size:12.5px;font-weight:700;line-height:1.45}
 .slide-meta{font-size:11px;color:var(--ink-sub)}
+.slide-use-toggle{
+  align-self:stretch;min-width:46px;padding:5px 8px;border:1px solid var(--brass);
+  border-radius:8px;background:var(--paper);color:var(--brass-dark);font-size:11px;font-weight:700;
+}
+.slide-use-toggle.off{border-color:#C9B8A2;color:var(--mute);background:#EFE7D8}
 
 /* ── ステージ（中央ペイン） ── */
 .canvas-shell{
@@ -420,7 +427,8 @@ canvas{
             <label for="subtitleMotion">ナレーション字幕の動き</label>
             <select id="subtitleMotion">
               <option value="fadeUp">ふわっと下から表示</option>
-              <option value="typewriter">タイプ表示</option>
+              <option value="typewriter">中央タイプ表示</option>
+              <option value="typewriterLeft">左からタイプ表示</option>
               <option value="pop">一文字ずつポップ</option>
               <option value="highlight">読み進みハイライト</option>
               <option value="slideIn">横からスライド</option>
@@ -428,6 +436,7 @@ canvas{
             </select>
           </div>
           <div class="actions">
+            <button class="secondary" id="toggleSlideUse">動画から除外</button>
             <button class="secondary" id="previewSubtitleMotion">字幕動きを確認</button>
             <button class="secondary" id="moveUp">上へ</button>
             <button class="secondary" id="moveDown">下へ</button>
@@ -518,6 +527,7 @@ const els = {
   recordMic: document.getElementById('recordMic'),
   playPreviewVoice: document.getElementById('playPreviewVoice'),
   previewSubtitleMotion: document.getElementById('previewSubtitleMotion'),
+  toggleSlideUse: document.getElementById('toggleSlideUse'),
   speakScript: document.getElementById('speakScript'),
   videoFont: document.getElementById('videoFont'),
   narrationLang: document.getElementById('narrationLang'),
@@ -576,6 +586,7 @@ function addFiles(files){
       slides.push({
         file, url, img,
         objectUrl: true,
+        enabled: true,
         caption: defaults.caption,
         narration: defaults.narration,
         duration: 3.5,
@@ -587,7 +598,7 @@ function addFiles(files){
       selected = slides.length - 1;
       renderList();
       loadSelected();
-      drawFrame(0);
+      drawSelectedPreviewFrame(.35);
     };
     img.src = url;
   });
@@ -720,6 +731,7 @@ function addDataUrlPhotos(photos){
         file: {name: photo.name || `drive-photo-${index + 1}`, type: photo.mimeType || 'image/jpeg'},
         url, img,
         objectUrl: false,
+        enabled: true,
         caption: defaults.caption,
         narration: defaults.narration,
         duration: 3.5,
@@ -731,7 +743,7 @@ function addDataUrlPhotos(photos){
       selected = slides.length - 1;
       renderList();
       loadSelected();
-      drawFrame(0);
+      drawSelectedPreviewFrame(.35);
       resolve();
     };
     img.onerror = () => resolve();
@@ -832,7 +844,7 @@ function applyProductNamePreset(){
     return;
   }
   els.productName.value = els.productNamePreset.value;
-  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  drawSelectedOrFirstFrame();
 }
 
 async function loadWorksCatalog(){
@@ -941,7 +953,7 @@ function applyWorkInfo(work, {translate = false, showLog = false} = {}){
   const workNo = workNumberOf(work);
   if(workNo) els.driveWorkNo.value = workNo;
   refreshUploadButton();
-  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  drawSelectedOrFirstFrame();
   if(showLog) setLog(`作品集「${work.title}」の情報を反映しました。`);
   if(translate && work.longDesc) translateLongDescToFeatureNote({source: work.longDesc});
 }
@@ -1000,7 +1012,7 @@ function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
   });
   loadSelected();
   renderList();
-  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  drawSelectedOrFirstFrame();
   if(showLog) setLog(`${slides.length}枚の写真それぞれの「読むセリフ・台本」へ見どころメモを配分しました。`);
   return slides.length;
 }
@@ -1011,15 +1023,31 @@ function renderList(){
     els.slides.innerHTML = '<div class="slide-meta">まだ写真がありません。「写真を追加」から始めてください。</div>';
     return;
   }
+  let videoNumber = 0;
   slides.forEach((slide, index) => {
-    const item = document.createElement('button');
-    item.className = `slide-item ${index === selected ? 'active' : ''}`;
-    item.type = 'button';
+    const enabled = isSlideEnabled(slide);
+    if(enabled) videoNumber += 1;
+    const item = document.createElement('div');
+    item.className = `slide-item ${index === selected ? 'active' : ''} ${enabled ? '' : 'excluded'}`;
+    item.tabIndex = 0;
+    item.setAttribute('role', 'button');
     item.draggable = true;
     item.dataset.index = String(index);
     item.title = 'ドラッグで順番を入れ替え';
-    item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${index + 1}. ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${slide.duration.toFixed(1)}秒 / ${motionLabel(slide.motion)}</div></div>`;
-    item.addEventListener('click', () => { saveSelected(); selected = index; renderList(); loadSelected(); drawFrame(timelineStart(index)); });
+    const label = enabled ? `${videoNumber}.` : '除外中';
+    const meta = enabled ? `${slide.duration.toFixed(1)}秒 / ${motionLabel(slide.motion)}` : '動画には使わない';
+    item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${label} ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${meta}</div></div><button class="slide-use-toggle ${enabled ? '' : 'off'}" type="button">${enabled ? '使う' : '戻す'}</button>`;
+    const useButton = item.querySelector('.slide-use-toggle');
+    useButton.addEventListener('click', event => {
+      event.stopPropagation();
+      toggleSlideUse(index);
+    });
+    item.addEventListener('click', () => { saveSelected(); selected = index; renderList(); loadSelected(); drawSelectedPreviewFrame(.35); });
+    item.addEventListener('keydown', event => {
+      if(event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      saveSelected(); selected = index; renderList(); loadSelected(); drawSelectedPreviewFrame(.35);
+    });
     item.addEventListener('dragstart', event => startSlideDrag(event, index, item));
     item.addEventListener('dragover', event => overSlideDrag(event, item));
     item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
@@ -1071,7 +1099,7 @@ function reorderSlides(fromIndex, targetIndex){
   }
   renderList();
   loadSelected();
-  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  drawSelectedOrFirstFrame();
   setLog(`写真の順番を入れ替えました。${fromIndex + 1}番目 → ${targetIndex + 1}番目`);
 }
 
@@ -1086,6 +1114,11 @@ function loadSelected(){
   els.transition.value = slide.transition;
   els.subtitleMotion.value = slide.subtitleMotion || 'fadeUp';
   els.currentScript.textContent = slide.narration || 'この写真のセリフは空です。';
+  if(els.toggleSlideUse){
+    const enabled = isSlideEnabled(slide);
+    els.toggleSlideUse.textContent = enabled ? '動画から除外' : '動画で使う';
+    els.toggleSlideUse.classList.toggle('danger', enabled);
+  }
 }
 
 function saveSelected(){
@@ -1121,7 +1154,7 @@ function fitDurationsToNarration(options = {}){
   saveSelected();
   let changed = 0;
   let longest = 0;
-  slides.forEach(slide => {
+  playableSlides().forEach(slide => {
     const needed = estimateNarrationDuration(slide.narration);
     if(!needed) return;
     longest = Math.max(longest, needed);
@@ -1132,7 +1165,7 @@ function fitDurationsToNarration(options = {}){
   });
   if(selected >= 0) loadSelected();
   renderList();
-  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  drawSelectedOrFirstFrame();
   if(showLog){
     if(changed){
       setLog(`セリフが切れないように、${changed}枚の表示秒数を延長しました。最長は${longest.toFixed(1)}秒です。`);
@@ -1152,6 +1185,32 @@ function prepareTimelineForPlayback(){
   return changed;
 }
 
+function isSlideEnabled(slide){
+  return !slide || slide.enabled !== false;
+}
+
+function playableSlides(){
+  return slides.filter(isSlideEnabled);
+}
+
+function timelineStartForSlide(slide){
+  const list = playableSlides();
+  let t = 0;
+  for(let i = 0; i < list.length; i++){
+    if(list[i] === slide) return t;
+    t += list[i].duration + (i < list.length - 1 ? list[i].transitionDuration : 0);
+  }
+  return 0;
+}
+
+function drawSelectedOrFirstFrame(progress = .35){
+  if(selected >= 0 && slides[selected]){
+    drawSelectedPreviewFrame(progress);
+  }else{
+    drawFrame(0);
+  }
+}
+
 function fillDefaults(){
   saveSelected();
   slides.forEach((slide, index) => {
@@ -1161,7 +1220,7 @@ function fillDefaults(){
   });
   loadSelected();
   renderList();
-  drawFrame(selected >= 0 ? timelineStart(selected) : 0);
+  drawSelectedOrFirstFrame();
   setLog('空欄の写真だけ、見出しとセリフ案を入れました。入力済みの内容は上書きしていません。');
 }
 
@@ -1173,7 +1232,7 @@ function moveSelected(delta){
   selected = next;
   renderList();
   loadSelected();
-  drawFrame(timelineStart(selected));
+  drawSelectedPreviewFrame(.35);
 }
 
 function removeSelected(){
@@ -1183,52 +1242,53 @@ function removeSelected(){
   selected = Math.min(selected, slides.length - 1);
   renderList();
   loadSelected();
-  drawFrame(0);
+  drawSelectedOrFirstFrame();
 }
 
 function totalDuration(){
-  return slides.reduce((sum, slide, index) => {
-    const transition = index < slides.length - 1 ? slide.transitionDuration : 0;
+  const list = playableSlides();
+  return list.reduce((sum, slide, index) => {
+    const transition = index < list.length - 1 ? slide.transitionDuration : 0;
     return sum + slide.duration + transition;
   }, 0);
 }
 
 function timelineStart(targetIndex){
-  let t = 0;
-  for(let i = 0; i < targetIndex; i++){
-    t += slides[i].duration + (i < slides.length - 1 ? slides[i].transitionDuration : 0);
-  }
-  return t;
+  return timelineStartForSlide(slides[targetIndex]);
 }
 
 function frameState(time){
+  const list = playableSlides();
+  if(!list.length) return null;
   let t = time;
-  for(let i = 0; i < slides.length; i++){
-    const slide = slides[i];
-    if(t <= slide.duration || i === slides.length - 1) return {type:'hold', index:i, progress:clamp(t / slide.duration, 0, 1)};
+  for(let i = 0; i < list.length; i++){
+    const slide = list[i];
+    if(t <= slide.duration || i === list.length - 1) return {type:'hold', slide, index:i, progress:clamp(t / slide.duration, 0, 1)};
     t -= slide.duration;
     const td = slide.transition === 'cut' ? .04 : slide.transitionDuration;
-    if(t <= td) return {type:'transition', index:i, next:i + 1, progress:clamp(t / td, 0, 1)};
+    if(t <= td) return {type:'transition', slide, nextSlide:list[i + 1], index:i, next:i + 1, progress:clamp(t / td, 0, 1)};
     t -= td;
   }
-  return {type:'hold', index:slides.length - 1, progress:1};
+  return {type:'hold', slide:list[list.length - 1], index:list.length - 1, progress:1};
 }
 
 function drawFrame(time){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  if(!slides.length){
+  const activeCount = playableSlides().length;
+  if(!slides.length || !activeCount){
     ctx.fillStyle = '#151515'; ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = '#f7f2ea'; ctx.font = canvasFont(700, 56); ctx.textAlign = 'center';
-    ctx.fillText('写真を追加してください', canvas.width/2, canvas.height/2);
+    ctx.fillText(slides.length ? '使用する写真を選択してください' : '写真を追加してください', canvas.width/2, canvas.height/2);
     return;
   }
   const state = frameState(time);
+  if(!state) return;
   if(state.type === 'transition'){
-    drawTransition(slides[state.index], slides[state.next], state.progress);
-    els.currentScript.textContent = slides[state.next].narration || '';
+    drawTransition(state.slide, state.nextSlide, state.progress);
+    els.currentScript.textContent = state.nextSlide.narration || '';
   } else {
-    drawSlide(slides[state.index], state.progress, 1);
-    els.currentScript.textContent = slides[state.index].narration || '';
+    drawSlide(state.slide, state.progress, 1);
+    els.currentScript.textContent = state.slide.narration || '';
   }
 }
 
@@ -1268,10 +1328,18 @@ function easeInOut(value){
 }
 
 function drawSelectedPreviewFrame(progress = .55){
-  const time = selected >= 0 && slides[selected]
-    ? timelineStart(selected) + slides[selected].duration * clamp(progress, 0, 1)
-    : 0;
-  drawFrame(time);
+  if(selected >= 0 && slides[selected]){
+    const slide = slides[selected];
+    if(isSlideEnabled(slide)){
+      drawFrame(timelineStart(selected) + slide.duration * clamp(progress, 0, 1));
+    }else{
+      drawSlide(slide, clamp(progress, 0, 1), 1);
+      drawExcludedOverlay();
+      els.currentScript.textContent = slide.narration || '';
+    }
+    return;
+  }
+  drawFrame(0);
 }
 
 function easeOut(value){
@@ -1286,6 +1354,19 @@ function drawSlide(slide, progress, alpha){
   drawPhoto(slide.img, slide.motion, progress);
   drawTexts(slide);
   drawNarrationSubtitle(slide, progress);
+  ctx.restore();
+}
+
+function drawExcludedOverlay(){
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,.48)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#fff';
+  ctx.font = canvasFont(700, 54);
+  ctx.textAlign = 'center';
+  ctx.fillText('動画から除外中', canvas.width / 2, canvas.height / 2 - 18);
+  ctx.font = canvasFont(500, 28);
+  ctx.fillText('右の「動画で使う」または左一覧の「戻す」で復帰できます', canvas.width / 2, canvas.height / 2 + 38);
   ctx.restore();
 }
 
@@ -1327,16 +1408,15 @@ function drawTexts(slide){
   ctx.fillStyle = '#c8a878';
   ctx.fillRect(70, 116, 145, 4);
 
+  const panel = {x:76, y:1568, w:928, h:242};
   ctx.fillStyle = 'rgba(16,16,16,.82)';
-  roundRect(ctx, 66, 1584, 948, 220, 22);
+  roundRect(ctx, panel.x, panel.y, panel.w, panel.h, 22);
   ctx.fill();
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#fff';
-  ctx.font = canvasFont(700, 48);
-  wrapDraw(els.productName.value || '作品紹介', 540, 1652, 840, 56);
-  ctx.fillStyle = '#d7c7b3';
-  ctx.font = canvasFont(500, 29);
-  wrapDraw(els.materialNote.value || 'leather craft', 540, 1734, 820, 36);
+  const centerX = panel.x + panel.w / 2;
+  const title = displayInfoText(els.productName.value || '作品紹介');
+  const material = displayInfoText(els.materialNote.value || 'leather craft');
+  const titleBlock = drawFittedCenteredText(title, centerX, panel.y + 58, panel.w - 116, 2, 42, 32, 700, '#fff');
+  drawFittedCenteredText(material, centerX, panel.y + 88 + titleBlock.height, panel.w - 130, 2, 27, 21, 500, '#d7c7b3');
 }
 
 function drawNarrationSubtitle(slide, progress){
@@ -1355,6 +1435,10 @@ function drawNarrationSubtitle(slide, progress){
     const visible = text.slice(0, Math.max(1, Math.ceil(text.length * p)));
     drawSubtitleBox(box.x, box.y, box.w, box.h);
     drawSubtitleText(visible, box.x + box.w / 2, box.y + 54, box.w - 96, '#fff');
+  }else if(motion === 'typewriterLeft'){
+    const visible = text.slice(0, Math.max(1, Math.ceil(text.length * p)));
+    drawSubtitleBox(box.x, box.y, box.w, box.h);
+    drawSubtitleTextLeft(visible, box.x + 54, box.y + 54, box.w - 108, '#fff');
   }else if(motion === 'pop'){
     drawSubtitleBox(box.x, box.y, box.w, box.h);
     const scale = .92 + Math.sin(Math.min(progress, .5) / .5 * Math.PI) * .1;
@@ -1394,6 +1478,15 @@ function drawSubtitleText(text,x,y,maxWidth,color){
   ctx.restore();
 }
 
+function drawSubtitleTextLeft(text,x,y,maxWidth,color){
+  ctx.save();
+  ctx.textAlign = 'left';
+  ctx.fillStyle = color;
+  ctx.font = canvasFont(700, 34);
+  wrapTextLines(text, maxWidth, 2).forEach((line, index) => ctx.fillText(line, x, y + index * 44));
+  ctx.restore();
+}
+
 function drawSubtitleHighlight(text,x,y,maxWidth,progress){
   const lines = wrapTextLines(text, maxWidth, 2);
   ctx.save();
@@ -1421,7 +1514,7 @@ function drawCenteredLines(lines,x,y,lineHeight){
 
 function playTimeline(recordStream){
   return new Promise(resolve => {
-    if(!slides.length){ resolve(); return; }
+    if(!playableSlides().length){ resolve(); return; }
     saveSelected(); renderList();
     playing = true;
     const start = performance.now();
@@ -1438,6 +1531,19 @@ function playTimeline(recordStream){
   });
 }
 
+function toggleSlideUse(index = selected){
+  if(index < 0 || !slides[index]) return;
+  saveSelected();
+  slides[index].enabled = !isSlideEnabled(slides[index]);
+  selected = index;
+  renderList();
+  loadSelected();
+  drawSelectedPreviewFrame(.35);
+  const activeCount = playableSlides().length;
+  const state = isSlideEnabled(slides[index]) ? '動画で使う' : '動画から除外';
+  setLog(`${index + 1}枚目を「${state}」にしました。使用中の写真は${activeCount}枚です。`);
+}
+
 function nextAnimationFrame(){
   return new Promise(resolve => requestAnimationFrame(resolve));
 }
@@ -1448,11 +1554,11 @@ function narrationMotionProgress(elapsed, targetDuration){
   return clamp(.75 + (1 - Math.exp(-(raw - .75) * 8)) * .235, 0, .985);
 }
 
-async function animateTransitionAfterSlide(index, total){
-  if(index >= slides.length - 1) return;
-  const slide = slides[index];
+async function animateTransitionAfterSlide(activeIndex, list, total){
+  if(activeIndex >= list.length - 1) return;
+  const slide = list[activeIndex];
   const transitionSeconds = slide.transition === 'cut' ? .04 : slide.transitionDuration;
-  const transitionStart = timelineStart(index) + slide.duration;
+  const transitionStart = timelineStartForSlide(slide) + slide.duration;
   const startedAt = performance.now();
   while(playing){
     const elapsed = (performance.now() - startedAt) / 1000;
@@ -1465,14 +1571,15 @@ async function animateTransitionAfterSlide(index, total){
 }
 
 async function playTimelineWithVoice(){
-  if(!slides.length) return;
+  const list = playableSlides();
+  if(!list.length) return;
   saveSelected();
   renderList();
   playing = true;
   const total = totalDuration();
-  for(let index = 0; index < slides.length && playing; index++){
-    const slide = slides[index];
-    const slideStart = timelineStart(index);
+  for(let index = 0; index < list.length && playing; index++){
+    const slide = list[index];
+    const slideStart = timelineStartForSlide(slide);
     const startedAt = performance.now();
     let speechDone = !slide.narration;
     let speechProgress = speechDone ? 1 : 0;
@@ -1502,7 +1609,7 @@ async function playTimelineWithVoice(){
     }
     await speechPromise;
     if(!playing) break;
-    await animateTransitionAfterSlide(index, total);
+    await animateTransitionAfterSlide(index, list, total);
   }
   playing = false;
   stopSpeech(false);
@@ -1511,7 +1618,7 @@ async function playTimelineWithVoice(){
 }
 
 async function playPreviewWithVoice(){
-  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+  if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
   const adjusted = prepareTimelineForPlayback();
   stopSpeech(false);
   setLog(adjusted
@@ -1522,7 +1629,7 @@ async function playPreviewWithVoice(){
 }
 
 async function playPreviewWithoutVoice(){
-  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+  if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
   stopSpeech(false);
   const adjusted = prepareTimelineForPlayback();
   setLog(adjusted
@@ -1540,7 +1647,12 @@ function previewCurrentSubtitleMotion(){
   const duration = Math.min(1.6, slides[selected].duration);
   function tick(now){
     const progress = clamp((now - start) / (duration * 1000), 0, 1);
-    drawFrame(timelineStart(selected) + slides[selected].duration * progress);
+    if(isSlideEnabled(slides[selected])){
+      drawFrame(timelineStart(selected) + slides[selected].duration * progress);
+    }else{
+      drawSlide(slides[selected], progress, 1);
+      drawExcludedOverlay();
+    }
     if(progress < 1) requestAnimationFrame(tick);
     else setLog('字幕の動きを確認しました。');
   }
@@ -1816,7 +1928,7 @@ async function recordMediaRecorderVideo(withMic){
 }
 
 async function recordVideo(withMic){
-  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+  if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
   const adjusted = prepareTimelineForPlayback();
   stopSpeech(false);
   resetRecordingOutput();
@@ -1838,7 +1950,7 @@ function speakScript(){
   saveSelected();
   const separator = els.narrationLang.value === 'en-US' ? '. ' : '。';
   const fallback = els.narrationLang.value === 'en-US' ? 'There is no narration text.' : 'セリフがありません。';
-  const text = slides.map(slide => slide.narration).filter(Boolean).join(separator);
+  const text = playableSlides().map(slide => slide.narration).filter(Boolean).join(separator);
   speakText(text || fallback, {
     startLog: '音声だけ確認を再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。',
     endLog: '音声だけ確認が終わりました。'
@@ -2159,6 +2271,83 @@ function englishProductName(value){
   return value.replace(/作品集/g, 'work collection').replace(/レザー作品/g, 'leather craft piece');
 }
 
+function displayInfoText(value){
+  return String(value || '')
+    .replace(/_/g, ' ')
+    .replace(/\s*\/\s*/g, ' / ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function wrapSmartTextLines(text,maxWidth,maxLines){
+  const source = String(text || '').trim();
+  if(!source) return [];
+  const tokens = /\s/.test(source)
+    ? source.split(/(\s+)/).filter(Boolean)
+    : [...source];
+  const lines = [];
+  let line = '';
+  for(const token of tokens){
+    const compactToken = token.replace(/\s+/g, ' ');
+    const next = line ? line + compactToken : compactToken.trimStart();
+    if(ctx.measureText(next).width <= maxWidth || !line){
+      if(!line && ctx.measureText(next).width > maxWidth && compactToken.length > 1){
+        for(const ch of [...compactToken.trimStart()]){
+          const trial = line + ch;
+          if(ctx.measureText(trial).width > maxWidth && line){
+            lines.push(line);
+            line = ch;
+            if(lines.length >= maxLines) break;
+          }else{
+            line = trial;
+          }
+        }
+        if(lines.length >= maxLines) break;
+        continue;
+      }
+      line = next;
+      continue;
+    }
+    lines.push(line.trimEnd());
+    line = compactToken.trimStart();
+    if(lines.length >= maxLines) break;
+  }
+  if(line && lines.length < maxLines) lines.push(line.trimEnd());
+  if(lines.length === maxLines){
+    const used = lines.join(' ').replace(/…$/, '').length;
+    if(source.length > used){
+      let last = lines[maxLines - 1].replace(/…?$/, '').trimEnd();
+      while(last && ctx.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1).trimEnd();
+      lines[maxLines - 1] = `${last || source.slice(0, 1)}…`;
+    }
+  }
+  return lines;
+}
+
+function drawFittedCenteredText(text,x,y,maxWidth,maxLines,maxSize,minSize,weight,color){
+  let size = maxSize;
+  let lines = [];
+  for(; size >= minSize; size -= 2){
+    ctx.font = canvasFont(weight, size);
+    lines = wrapSmartTextLines(text, maxWidth, maxLines);
+    const widest = Math.max(0, ...lines.map(line => ctx.measureText(line).width));
+    if(widest <= maxWidth) break;
+  }
+  if(size < minSize){
+    size = minSize;
+    ctx.font = canvasFont(weight, size);
+    lines = wrapSmartTextLines(text, maxWidth, maxLines);
+  }
+  const lineHeight = Math.round(size * 1.2);
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = color;
+  ctx.font = canvasFont(weight, size);
+  lines.forEach((line, index) => ctx.fillText(line, x, y + index * lineHeight));
+  ctx.restore();
+  return {height:Math.max(lineHeight, lines.length * lineHeight), lineHeight, lines};
+}
+
 function wrapTextLines(text,maxWidth,maxLines){
   const chars = [...String(text)];
   const lines = [];
@@ -2328,18 +2517,6 @@ function roundRect(context,x,y,w,h,r){
   context.moveTo(x+r,y); context.arcTo(x+w,y,x+w,y+h,r); context.arcTo(x+w,y+h,x,y+h,r);
   context.arcTo(x,y+h,x,y,r); context.arcTo(x,y,x+w,y,r); context.closePath();
 }
-function wrapDraw(text,x,y,maxWidth,lineHeight){
-  const chars = [...String(text)];
-  let line = '', yy = y;
-  for(const ch of chars){
-    const next = line + ch;
-    if(ctx.measureText(next).width > maxWidth && line){
-      ctx.fillText(line, x, yy); yy += lineHeight; line = ch;
-    }else line = next;
-  }
-  if(line) ctx.fillText(line, x, yy);
-}
-
 els.photoInput.addEventListener('change', event => addFiles(event.target.files));
 els.loadDrivePhotos.addEventListener('click', addDrivePhotos);
 els.translateFeatureNote.addEventListener('click', translateLongDescToFeatureNote);
@@ -2351,6 +2528,7 @@ els.playPreviewVoice.addEventListener('click', playPreviewWithVoice);
 els.previewSubtitleMotion.addEventListener('click', previewCurrentSubtitleMotion);
 document.getElementById('speakScript').addEventListener('click', speakScript);
 els.fitDurationsToNarration.addEventListener('click', () => fitDurationsToNarration());
+els.toggleSlideUse.addEventListener('click', () => toggleSlideUse());
 document.getElementById('recordSilent').addEventListener('click', () => recordVideo(false));
 document.getElementById('recordMic').addEventListener('click', () => recordVideo(true));
 document.getElementById('moveUp').addEventListener('click', () => moveSelected(-1));
@@ -2368,10 +2546,10 @@ document.getElementById('removeSlide').addEventListener('click', removeSelected)
   control.addEventListener('change', redraw);
 });
 ['productName','materialNote'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
-  document.getElementById(id).addEventListener('change', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
+  document.getElementById(id).addEventListener('input', () => drawSelectedOrFirstFrame());
+  document.getElementById(id).addEventListener('change', () => drawSelectedOrFirstFrame());
 });
-els.videoFont.addEventListener('change', () => drawFrame(selected >= 0 ? timelineStart(selected) : 0));
+els.videoFont.addEventListener('change', () => drawSelectedOrFirstFrame());
 els.narrationLang.addEventListener('change', populateVoices);
 els.translationDirection.addEventListener('change', updateTranslationUi);
 if('speechSynthesis' in window){
