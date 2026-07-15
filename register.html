@@ -855,13 +855,15 @@ async function checkAuth() {
     fetchProductNames();
     await fetchMasterData();
     initSizeOptions();
-    loadMaterialData();
+    await loadMaterialData();
 
     // ?edit=SKU パラメータがあれば自動で編集モードに移行（master ロード完了後なので race condition なし）
     const editId = new URLSearchParams(window.location.search).get('edit');
     if (editId) {
       document.getElementById('editProductId').value = editId;
       loadProduct();
+    } else {
+      maybeRestoreRegisterDraft();
     }
   } else {
     document.getElementById('authError').textContent = 'パスワードが違います';
@@ -1080,6 +1082,7 @@ async function generateDesc() {
       document.getElementById('f_shortDesc').value = d.shortDesc || '';
       document.getElementById('f_longDesc').value  = d.longDesc  || '';
       document.getElementById('f_hashtags').value  = d.hashtags  || '';
+      scheduleRegisterDraftSave();
       btn.textContent = '✅ 生成完了';
       setTimeout(() => { btn.textContent = '✨ AI で生成'; btn.disabled = false; }, 2000);
       return;
@@ -1192,6 +1195,7 @@ function addFiles(files) {
       photos.push({ file: f, dataUrl: ev.target.result });
       if (photos.length === 1) mainPhotoIndex = 0;
       renderPhotoGrid();
+      scheduleRegisterDraftSave();
     };
     reader.readAsDataURL(f);
   });
@@ -1217,14 +1221,228 @@ function renderPhotoGrid() {
   hint.style.display = photos.length > 0 ? 'block' : 'none';
 }
 
-function selectMain(i) { mainPhotoIndex = i; renderPhotoGrid(); }
+function selectMain(i) { mainPhotoIndex = i; renderPhotoGrid(); scheduleRegisterDraftSave(); }
 function removePhoto(e, i) {
   e.stopPropagation();
   photos.splice(i, 1);
   if (mainPhotoIndex >= photos.length) mainPhotoIndex = photos.length - 1;
   if (photos.length === 0) mainPhotoIndex = -1;
   renderPhotoGrid();
+  scheduleRegisterDraftSave();
 }
+
+// ====== DRAFT AUTOSAVE ======
+const REGISTER_DRAFT_DB = 'nsf-register-drafts';
+const REGISTER_DRAFT_STORE = 'drafts';
+const REGISTER_DRAFT_KEY = 'current';
+const REGISTER_DRAFT_META_KEY = 'nsf_register_draft_meta_v1';
+const REGISTER_DRAFT_FIELD_IDS = [
+  'f_name','f_category','f_subcategory','f_material','f_color','f_size','f_size_custom',
+  'f_hours','f_cost','f_price','f_stock','f_shortDesc','f_longDesc','f_hashtags'
+];
+let registerDraftTimer = null;
+let registerDraftRestoring = false;
+
+function openRegisterDraftDb() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) return reject(new Error('IndexedDB unavailable'));
+    const req = indexedDB.open(REGISTER_DRAFT_DB, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(REGISTER_DRAFT_STORE)) db.createObjectStore(REGISTER_DRAFT_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
+  });
+}
+
+function withRegisterDraftStore(mode, fn) {
+  return openRegisterDraftDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(REGISTER_DRAFT_STORE, mode);
+    const store = tx.objectStore(REGISTER_DRAFT_STORE);
+    let result;
+    tx.oncomplete = () => { db.close(); resolve(result); };
+    tx.onerror = () => { db.close(); reject(tx.error || new Error('IndexedDB transaction failed')); };
+    result = fn(store);
+  }));
+}
+
+function getRegisterDraft() {
+  return withRegisterDraftStore('readonly', store => new Promise((resolve, reject) => {
+    const req = store.get(REGISTER_DRAFT_KEY);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error || new Error('IndexedDB get failed'));
+  }));
+}
+
+function putRegisterDraft(draft) {
+  return withRegisterDraftStore('readwrite', store => {
+    store.put(draft, REGISTER_DRAFT_KEY);
+  });
+}
+
+function deleteRegisterDraft() {
+  try { localStorage.removeItem(REGISTER_DRAFT_META_KEY); } catch (_) {}
+  return withRegisterDraftStore('readwrite', store => {
+    store.delete(REGISTER_DRAFT_KEY);
+  }).catch(() => {});
+}
+
+function collectRegisterDraftFields() {
+  const fields = {};
+  REGISTER_DRAFT_FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) fields[id] = el.value;
+  });
+  return fields;
+}
+
+function collectRegisterDraftMaterials() {
+  try {
+    return matCollectSelections();
+  } catch (_) {
+    return null;
+  }
+}
+
+function serializeRegisterDraftPhoto(p) {
+  const file = p.file || null;
+  return {
+    existing: !!p.existing,
+    fileId: p.fileId || '',
+    url: p.url || '',
+    filename: p.filename || (file && file.name) || 'photo.jpg',
+    mimeType: (file && file.type) || 'image/jpeg',
+    dataUrl: p.dataUrl || ''
+  };
+}
+
+function fileFromDataUrl(dataUrl, filename, mimeType) {
+  const parts = String(dataUrl || '').split(',');
+  const meta = parts[0] || '';
+  const b64 = parts[1] || '';
+  const inferred = (meta.match(/data:([^;]+)/) || [])[1] || mimeType || 'image/jpeg';
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new File([bytes], filename || 'photo.jpg', { type: inferred });
+}
+
+function restoreRegisterDraftPhoto(p) {
+  if (p.existing) {
+    return { existing: true, fileId: p.fileId || '', url: p.url || '', filename: p.filename || '' };
+  }
+  return {
+    file: fileFromDataUrl(p.dataUrl, p.filename, p.mimeType),
+    dataUrl: p.dataUrl
+  };
+}
+
+function buildRegisterDraft() {
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    page: location.pathname,
+    fields: collectRegisterDraftFields(),
+    photos: photos.map(serializeRegisterDraftPhoto),
+    mainPhotoIndex,
+    materials: collectRegisterDraftMaterials()
+  };
+}
+
+function scheduleRegisterDraftSave() {
+  if (registerDraftRestoring || isEditMode) return;
+  clearTimeout(registerDraftTimer);
+  registerDraftTimer = setTimeout(saveRegisterDraftNow, 900);
+}
+
+async function saveRegisterDraftNow() {
+  if (registerDraftRestoring || isEditMode) return;
+  const draft = buildRegisterDraft();
+  const hasContent = Object.values(draft.fields).some(v => String(v || '').trim()) || draft.photos.length;
+  if (!hasContent) return;
+  try {
+    await putRegisterDraft(draft);
+    localStorage.setItem(REGISTER_DRAFT_META_KEY, JSON.stringify({
+      savedAt: draft.savedAt,
+      name: draft.fields.f_name || '',
+      photoCount: draft.photos.length
+    }));
+  } catch (e) {
+    console.warn('draft save failed:', e);
+  }
+}
+
+function applyRegisterDraftMaterials(sel) {
+  if (!sel || !matLoaded) return;
+  const wrap = document.getElementById('matLeatherRows');
+  if (wrap) {
+    wrap.innerHTML = '';
+    const rows = sel.leathers && sel.leathers.length ? sel.leathers : [];
+    rows.forEach(l => {
+      matAddLeatherRow();
+      const row = wrap.lastElementChild;
+      if (!row) return;
+      const idEl = row.querySelector('.mat-leather-sel');
+      const pctEl = row.querySelector('.mat-pct');
+      if (idEl) idEl.value = l.id || '';
+      if (pctEl) { pctEl.value = l.pct || ''; pctEl.dataset.userEdited = '1'; }
+    });
+    if (!rows.length) matAddLeatherRow();
+  }
+  const ringSel = document.getElementById('matRing');
+  if (ringSel && sel.ring) ringSel.value = sel.ring.key || '';
+  const ringQty = document.getElementById('matRingQty');
+  if (ringQty && sel.ring) ringQty.value = sel.ring.qty || 1;
+  const thSel = document.getElementById('matThread');
+  if (thSel && sel.thread) thSel.value = sel.thread.id || '';
+  const out = document.getElementById('matThreadOut');
+  if (out && sel.thread) out.checked = !!sel.thread.markOut;
+}
+
+function applyRegisterDraft(draft) {
+  registerDraftRestoring = true;
+  try {
+    Object.entries(draft.fields || {}).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = value || '';
+      if (id === 'f_size') onSizeChange();
+    });
+    photos = (draft.photos || []).filter(p => p.existing || p.dataUrl).map(restoreRegisterDraftPhoto);
+    mainPhotoIndex = typeof draft.mainPhotoIndex === 'number' ? draft.mainPhotoIndex : (photos.length ? 0 : -1);
+    if (mainPhotoIndex >= photos.length) mainPhotoIndex = photos.length - 1;
+    renderPhotoGrid();
+    applyRegisterDraftMaterials(draft.materials);
+  } finally {
+    registerDraftRestoring = false;
+  }
+}
+
+async function maybeRestoreRegisterDraft() {
+  try {
+    const draft = await getRegisterDraft();
+    if (!draft) return;
+    const savedAt = draft.savedAt ? new Date(draft.savedAt).toLocaleString('ja-JP') : '日時不明';
+    const name = draft.fields && draft.fields.f_name ? '「' + draft.fields.f_name + '」' : '前回の入力内容';
+    if (!confirm(name + ' の下書きがあります。\n保存日時: ' + savedAt + '\n\n復元しますか？')) return;
+    applyRegisterDraft(draft);
+    alert('下書きを復元しました。内容を確認して登録を続けてください。');
+  } catch (e) {
+    console.warn('draft restore failed:', e);
+  }
+}
+
+document.addEventListener('input', (ev) => {
+  const t = ev.target;
+  if (!t || !t.id) return;
+  if (REGISTER_DRAFT_FIELD_IDS.includes(t.id) || t.closest('#matSection')) scheduleRegisterDraftSave();
+});
+document.addEventListener('change', (ev) => {
+  const t = ev.target;
+  if (!t) return;
+  if ((t.id && REGISTER_DRAFT_FIELD_IDS.includes(t.id)) || t.closest('#matSection')) scheduleRegisterDraftSave();
+});
 
 // ====== CONFIRM TABLE ======
 function buildConfirm() {
@@ -1341,6 +1559,7 @@ async function doNewRegister() {
   }
 
   setProgress(100, '完了！', '登録完了です！');
+  deleteRegisterDraft();
   document.getElementById('completeId').textContent = productId;
   lastRegisteredProductId = productId;
   resetThreadsSection();
@@ -1687,6 +1906,7 @@ async function uploadOnePhoto(p, i, folderId) {
 
 // ====== RESET ======
 function resetAll() {
+  deleteRegisterDraft();
   photos = [];
   mainPhotoIndex = -1;
   ['f_name','f_material','f_color','f_size','f_hours','f_cost','f_price','f_shortDesc','f_longDesc','f_hashtags'].forEach(id => {
@@ -1825,7 +2045,7 @@ function matAddLeatherRow() {
     '<select class="mat-leather-sel" style="flex:1;min-width:0;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' + matLeatherOptions() + '</select>' +
     '<input type="number" class="mat-pct" min="0" max="100" step="1" placeholder="%" style="width:64px;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' +
     '<span style="font-size:12px;color:#5a3a20">%</span>' +
-    '<button type="button" class="btn btn-secondary" style="padding:4px 8px;font-size:12px" onclick="this.parentElement.remove()">✕</button>';
+    '<button type="button" class="btn btn-secondary" style="padding:4px 8px;font-size:12px" onclick="this.parentElement.remove(); scheduleRegisterDraftSave()">✕</button>';
   const pctInput = row.querySelector('.mat-pct');
   pctInput.addEventListener('input', () => { pctInput.dataset.userEdited = '1'; });
   pctInput.value = matUsageForSize(val('f_size'));
