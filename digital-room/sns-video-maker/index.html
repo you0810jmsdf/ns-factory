@@ -1426,38 +1426,65 @@ function drawNarrationSubtitle(slide, progress){
   const motion = slide.subtitleMotion || 'fadeUp';
   const text = trimSubtitle(slide.narration);
   const p = easeOut(clamp(progress, 0, 1));
-  const box = {x:108, y:1318, w:864, h:178};
+  const subtitle = buildSubtitleLayout(text);
+  const box = subtitle.box;
   ctx.save();
 
   if(motion === 'fadeUp'){
     ctx.globalAlpha *= clamp(progress / .32, 0, 1);
-    drawSubtitleBox(box.x, box.y + (1 - p) * 38, box.w, box.h);
-    drawSubtitleText(text, box.x + box.w / 2, box.y + 54 + (1 - p) * 38, box.w - 96, '#fff');
+    const dy = (1 - p) * 38;
+    drawSubtitleBox(box.x, box.y + dy, box.w, box.h);
+    drawSubtitleText(text, box.x + box.w / 2, subtitle.textY + dy, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
   }else if(motion === 'typewriter'){
     const visible = text.slice(0, Math.max(1, Math.ceil(text.length * p)));
     drawSubtitleBox(box.x, box.y, box.w, box.h);
-    drawSubtitleText(visible, box.x + box.w / 2, box.y + 54, box.w - 96, '#fff');
+    drawSubtitleText(visible, box.x + box.w / 2, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
   }else if(motion === 'typewriterLeft'){
     const visible = text.slice(0, Math.max(1, Math.ceil(text.length * p)));
     drawSubtitleBox(box.x, box.y, box.w, box.h);
-    drawSubtitleTextLeft(visible, box.x + 54, box.y + 54, box.w - 108, '#fff');
+    drawSubtitleTextLeft(visible, box.x + subtitle.padX, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
   }else if(motion === 'pop'){
     drawSubtitleBox(box.x, box.y, box.w, box.h);
     const scale = .92 + Math.sin(Math.min(progress, .5) / .5 * Math.PI) * .1;
-    ctx.translate(box.x + box.w / 2, box.y + 88);
+    ctx.translate(box.x + box.w / 2, box.y + box.h / 2);
     ctx.scale(scale, scale);
-    drawSubtitleText(text, 0, -34, box.w - 96, '#fff');
+    drawSubtitleText(text, 0, -subtitle.textHeight / 2 + subtitle.layout.fontSize, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
   }else if(motion === 'highlight'){
     drawSubtitleBox(box.x, box.y, box.w, box.h);
-    drawSubtitleHighlight(text, box.x + box.w / 2, box.y + 54, box.w - 96, p);
+    drawSubtitleHighlight(text, box.x + box.w / 2, subtitle.textY, subtitle.maxWidth, p, subtitle.layout);
   }else if(motion === 'slideIn'){
     ctx.globalAlpha *= clamp(progress / .28, 0, 1);
     const dx = (1 - p) * -140;
     drawSubtitleBox(box.x + dx, box.y, box.w, box.h);
-    drawSubtitleText(text, box.x + box.w / 2 + dx, box.y + 54, box.w - 96, '#fff');
+    drawSubtitleText(text, box.x + box.w / 2 + dx, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
   }
 
   ctx.restore();
+}
+
+function buildSubtitleLayout(text){
+  const box = {x:96, w:888, bottom:1506, padX:54, padY:30, minH:150, maxH:316};
+  const maxWidth = box.w - box.padX * 2;
+  const layout = fitSubtitleLayout(text, maxWidth, box.maxH - box.padY * 2);
+  const textHeight = Math.max(layout.lineHeight, layout.lines.length * layout.lineHeight);
+  const h = clamp(textHeight + box.padY * 2, box.minH, box.maxH);
+  const y = box.bottom - h;
+  const textY = y + Math.max(box.padY, (h - textHeight) / 2) + layout.fontSize;
+  return {box:{x:box.x, y, w:box.w, h}, padX:box.padX, maxWidth, layout, textHeight, textY};
+}
+
+function fitSubtitleLayout(text,maxWidth,maxTextHeight){
+  const normalized = trimSubtitle(text);
+  for(let size = 34; size >= 18; size -= 2){
+    ctx.font = canvasFont(700, size);
+    const lineHeight = Math.round(size * 1.24);
+    const lines = wrapSubtitleLines(normalized, maxWidth);
+    if(lines.length * lineHeight <= maxTextHeight){
+      return {fontSize:size, lineHeight, lines};
+    }
+  }
+  ctx.font = canvasFont(700, 18);
+  return {fontSize:18, lineHeight:23, lines:wrapSubtitleLines(normalized, maxWidth)};
 }
 
 function drawSubtitleBox(x,y,w,h){
@@ -1471,31 +1498,34 @@ function drawSubtitleBox(x,y,w,h){
   ctx.restore();
 }
 
-function drawSubtitleText(text,x,y,maxWidth,color){
+function drawSubtitleText(text,x,y,maxWidth,color,options = {}){
+  const layout = options.layout || fitSubtitleLayout(text, maxWidth, 260);
   ctx.save();
   ctx.textAlign = 'center';
   ctx.fillStyle = color;
-  ctx.font = canvasFont(700, 34);
-  drawCenteredLines(wrapTextLines(text, maxWidth, 2), x, y, 44);
+  ctx.font = canvasFont(700, layout.fontSize);
+  drawCenteredLines(wrapSubtitleLines(text, maxWidth), x, y, layout.lineHeight);
   ctx.restore();
 }
 
-function drawSubtitleTextLeft(text,x,y,maxWidth,color){
+function drawSubtitleTextLeft(text,x,y,maxWidth,color,options = {}){
+  const layout = options.layout || fitSubtitleLayout(text, maxWidth, 260);
   ctx.save();
   ctx.textAlign = 'left';
   ctx.fillStyle = color;
-  ctx.font = canvasFont(700, 34);
-  wrapTextLines(text, maxWidth, 2).forEach((line, index) => ctx.fillText(line, x, y + index * 44));
+  ctx.font = canvasFont(700, layout.fontSize);
+  wrapSubtitleLines(text, maxWidth).forEach((line, index) => ctx.fillText(line, x, y + index * layout.lineHeight));
   ctx.restore();
 }
 
-function drawSubtitleHighlight(text,x,y,maxWidth,progress){
-  const lines = wrapTextLines(text, maxWidth, 2);
+function drawSubtitleHighlight(text,x,y,maxWidth,progress,layout = null){
+  const fitted = layout || fitSubtitleLayout(text, maxWidth, 260);
+  const lines = wrapSubtitleLines(text, maxWidth);
   ctx.save();
   ctx.textAlign = 'center';
-  ctx.font = canvasFont(700, 34);
+  ctx.font = canvasFont(700, fitted.fontSize);
   ctx.fillStyle = 'rgba(255,255,255,.42)';
-  drawCenteredLines(lines, x, y, 44);
+  drawCenteredLines(lines, x, y, fitted.lineHeight);
   const joined = lines.join('\n');
   const highlightLength = Math.ceil(joined.length * progress);
   let used = 0;
@@ -1504,7 +1534,7 @@ function drawSubtitleHighlight(text,x,y,maxWidth,progress){
     const remain = highlightLength - used;
     if(remain <= 0) return;
     const part = line.slice(0, Math.min(line.length, remain));
-    ctx.fillText(part, x - ctx.measureText(line).width / 2 + ctx.measureText(part).width / 2, y + index * 44);
+    ctx.fillText(part, x - ctx.measureText(line).width / 2 + ctx.measureText(part).width / 2, y + index * fitted.lineHeight);
     used += line.length + 1;
   });
   ctx.restore();
@@ -2185,8 +2215,41 @@ function videoFontFamily(){
 }
 
 function trimSubtitle(text){
-  const normalized = String(text).replace(/\s+/g, ' ').trim();
-  return normalized.length > 96 ? `${normalized.slice(0, 95)}…` : normalized;
+  return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function wrapSubtitleLines(text,maxWidth){
+  const source = trimSubtitle(text);
+  if(!source) return [];
+  const tokens = /\s/.test(source)
+    ? source.split(/(\s+)/).filter(Boolean)
+    : [...source];
+  const lines = [];
+  let line = '';
+  for(const token of tokens){
+    const compactToken = token.replace(/\s+/g, ' ');
+    const next = line ? line + compactToken : compactToken.trimStart();
+    if(ctx.measureText(next).width <= maxWidth || !line){
+      if(!line && ctx.measureText(next).width > maxWidth && compactToken.length > 1){
+        for(const ch of [...compactToken.trimStart()]){
+          const trial = line + ch;
+          if(ctx.measureText(trial).width > maxWidth && line){
+            lines.push(line);
+            line = ch;
+          }else{
+            line = trial;
+          }
+        }
+        continue;
+      }
+      line = next;
+      continue;
+    }
+    lines.push(line.trimEnd());
+    line = compactToken.trimStart();
+  }
+  if(line) lines.push(line.trimEnd());
+  return lines;
 }
 
 function splitFeatureNotes(text){
