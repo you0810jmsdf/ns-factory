@@ -438,6 +438,7 @@ canvas{
           <div class="actions">
             <button class="secondary" id="toggleSlideUse">動画から除外</button>
             <button class="secondary" id="previewSubtitleMotion">字幕動きを確認</button>
+            <button class="secondary" id="applySubtitleMotionAll">字幕動きを全コマへ適用</button>
             <button class="secondary" id="moveUp">上へ</button>
             <button class="secondary" id="moveDown">下へ</button>
             <button class="danger" id="removeSlide">削除</button>
@@ -527,6 +528,7 @@ const els = {
   recordMic: document.getElementById('recordMic'),
   playPreviewVoice: document.getElementById('playPreviewVoice'),
   previewSubtitleMotion: document.getElementById('previewSubtitleMotion'),
+  applySubtitleMotionAll: document.getElementById('applySubtitleMotionAll'),
   toggleSlideUse: document.getElementById('toggleSlideUse'),
   speakScript: document.getElementById('speakScript'),
   videoFont: document.getElementById('videoFont'),
@@ -1660,6 +1662,18 @@ function previewCurrentSubtitleMotion(){
   requestAnimationFrame(tick);
 }
 
+function applySubtitleMotionToAll(){
+  if(!slides.length){ setLog('先に写真を追加してください。'); return; }
+  saveSelected();
+  const motion = els.subtitleMotion.value || 'fadeUp';
+  slides.forEach(slide => { slide.subtitleMotion = motion; });
+  loadSelected();
+  renderList();
+  drawSelectedPreviewFrame(.35);
+  const label = els.subtitleMotion.options[els.subtitleMotion.selectedIndex]?.textContent || motion;
+  setLog(`ナレーション字幕の動きを全${slides.length}コマへ「${label}」で適用しました。`);
+}
+
 function resetRecordingOutput(){
   els.downloadBox.style.display = 'none';
   chunks = [];
@@ -2062,20 +2076,41 @@ function cancelSpeechOutput(){
 function populateVoices(){
   if(!('speechSynthesis' in window)) return;
   const lang = els.narrationLang.value;
+  const previousValue = els.voiceSelect.value;
+  const previousName = previousValue.split('||')[0] || previousValue;
   const voices = speechSynthesis.getVoices();
   const filtered = voices.filter(voice => voice.lang && voice.lang.toLowerCase().startsWith(lang.slice(0,2).toLowerCase()));
   els.voiceSelect.innerHTML = '<option value="">ブラウザ標準</option>';
   filtered.forEach(voice => {
     const option = document.createElement('option');
-    option.value = voice.name;
+    option.value = voiceKey(voice);
     option.textContent = `${voice.name} / ${voice.lang}`;
     els.voiceSelect.appendChild(option);
   });
+  const options = [...els.voiceSelect.options];
+  const matched = options.find(option => option.value === previousValue)
+    || options.find(option => option.value.split('||')[0] === previousName);
+  if(matched) els.voiceSelect.value = matched.value;
 }
 
 function getSelectedVoice(){
   if(!('speechSynthesis' in window) || !els.voiceSelect.value) return null;
-  return speechSynthesis.getVoices().find(voice => voice.name === els.voiceSelect.value) || null;
+  const selected = els.voiceSelect.value;
+  return speechSynthesis.getVoices().find(voice => voiceKey(voice) === selected)
+    || speechSynthesis.getVoices().find(voice => voice.name === selected || selected.startsWith(`${voice.name}||`))
+    || null;
+}
+
+function voiceKey(voice){
+  return [voice.name, voice.lang || '', voice.voiceURI || ''].join('||');
+}
+
+function handleVoiceChange(){
+  const selectedVoice = getSelectedVoice();
+  stopSpeech(false);
+  setLog(selectedVoice
+    ? `読み上げ音声を「${selectedVoice.name} / ${selectedVoice.lang}」に変更しました。次のプレビューから反映します。`
+    : '読み上げ音声をブラウザ標準に戻しました。次のプレビューから反映します。');
 }
 
 async function loadLeatherStock(){
@@ -2526,6 +2561,7 @@ document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
 document.getElementById('playPreview').addEventListener('click', playPreviewWithoutVoice);
 els.playPreviewVoice.addEventListener('click', playPreviewWithVoice);
 els.previewSubtitleMotion.addEventListener('click', previewCurrentSubtitleMotion);
+els.applySubtitleMotionAll.addEventListener('click', applySubtitleMotionToAll);
 document.getElementById('speakScript').addEventListener('click', speakScript);
 els.fitDurationsToNarration.addEventListener('click', () => fitDurationsToNarration());
 els.toggleSlideUse.addEventListener('click', () => toggleSlideUse());
@@ -2551,6 +2587,7 @@ document.getElementById('removeSlide').addEventListener('click', removeSelected)
 });
 els.videoFont.addEventListener('change', () => drawSelectedOrFirstFrame());
 els.narrationLang.addEventListener('change', populateVoices);
+els.voiceSelect.addEventListener('change', handleVoiceChange);
 els.translationDirection.addEventListener('change', updateTranslationUi);
 if('speechSynthesis' in window){
   speechSynthesis.onvoiceschanged = populateVoices;
