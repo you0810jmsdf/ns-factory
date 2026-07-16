@@ -2289,6 +2289,10 @@ function gateConfidential(e, url) {
 <script src="showroom/data/staffData.js"></script>
 <script src="showroom/data/config.js"></script>
 <script src="showroom/data/staffKnowledge.js"></script>
+<!-- 2026-07-17 Phase5: hearing-core.js を読み込み、トップページのチャットでも
+     業務相談（HearingAI-Proxy振り分け）・革在庫即答・機能メニューチップを有効化する。
+     従来は未読込のため window.NSF_HEARING が無く、トップだけ雑談＋作品検索チップのみだった。 -->
+<script src="order_estimate/hearing-core.js"></script>
 <script src="showroom/chat-widget.js"></script>
 <script>
 /* ===== スクロール演出・幕僚セリフ・AIチャット（2026-07-10追加） ===== */
@@ -2341,34 +2345,13 @@ function nsfOpenStaffChat(staffId) {
     col.appendChild(meta);
     var bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
-    bubble.textContent = hello + '\n作品をお探しの場合は下のカテゴリをどうぞ。ご質問は入力欄からお気軽に。';
+    // 2026-07-17 Phase5: 旧・作品カテゴリチップの直貼りを廃止。
+    // 入口メニュー（オーダー相談・革の色・作品検索・見積もり・道具・進捗など）は
+    // chat-widget.js の nsfDefaultChips() が #chat-quick に幕僚別の並びで表示する。
+    bubble.textContent = hello + '\nオーダー相談・革の色・作品探し・お見積もりなど、下のメニューボタンからどうぞ。ご質問は入力欄に直接どうぞ（お見積もりや道具のご相談もこのまま話せます）。';
     col.appendChild(bubble);
     div.appendChild(col);
     msgs.appendChild(div);
-
-    // 作品カテゴリ導線チップ（選ぶと絞り込み済みの作品集を新しいタブで開く）
-    // カテゴリ名は works.html の実データ（GAS）に準拠。?cat=完全一致／?q=部分一致検索
-    var CATEGORY_CHIPS = [
-      { label: '📔 システム手帳', url: 'works.html?cat=' + encodeURIComponent('システム手帳') },
-      { label: '📄 リフィル・手帳パーツ', url: 'works.html?q=' + encodeURIComponent('システム手帳用') },
-      { label: '👛 財布・ウォレット', url: 'works.html?q=' + encodeURIComponent('ウォレット') },
-      { label: '💳 カードケース', url: 'works.html?cat=' + encodeURIComponent('カードケース') },
-      { label: '🔑 キーケース・キーホルダー', url: 'works.html?q=' + encodeURIComponent('キー') },
-      { label: '🖼 すべての作品を見る', url: 'works.html' }
-    ];
-    var chipRow = document.createElement('div');
-    chipRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 4px 38px;';
-    CATEGORY_CHIPS.forEach(function (c) {
-      var chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'chat-chip';
-      chip.textContent = c.label;
-      chip.addEventListener('click', function () {
-        window.open(c.url, '_blank', 'noopener');
-      });
-      chipRow.appendChild(chip);
-    });
-    msgs.appendChild(chipRow);
     msgs.scrollTop = 0;
   }
 }
