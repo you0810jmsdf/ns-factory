@@ -320,6 +320,7 @@ canvas{
         <div class="actions">
           <button class="primary" id="recordSilent">Instagram用動画を保存（音声なし）</button>
           <button class="secondary" id="recordMic">マイク録音つきMP4保存</button>
+          <button class="secondary" id="fitDriveSize" title="録画済みサイズから逆算して、使用中写真の表示秒数をまとめて短くします">Drive用に秒数を自動短縮</button>
           <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveの作品フォルダへ保存</button>
         </div>
         <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
@@ -375,12 +376,12 @@ canvas{
           <div class="assist-flow" aria-label="補助ボタンの流れ">
             <div><b>1</b><span><strong>空欄だけ補完</strong>写真の見出し・セリフが空のときだけ案を入れます。</span></div>
             <div><b>2</b><span><strong>メモを変換</strong>上の変換方向で、結果を見どころメモへ入れます。</span></div>
-            <div><b>3</b><span><strong>使用中写真へ配分</strong>見どころメモを動画で使う写真の「読むセリフ・台本」へ入れます。</span></div>
+            <div><b>3</b><span><strong>使用中写真へ再構成</strong>除外後の写真枚数に合わせて「読むセリフ・台本」を組み直します。</span></div>
           </div>
           <div class="actions">
             <button class="secondary" id="fillDefaults" title="入力済みのセリフは残し、空欄だけ補完します">1. 空欄のセリフに案を入れる</button>
             <button class="secondary" id="translateFeatureNote" title="選んだ方向で翻訳し、見どころメモへ入れます">2. メモを変換する</button>
-            <button class="secondary" id="distributeFeatureNote" title="見どころメモを使用中写真の台本欄へ入れます。余った文は後ろの写真へまとめます">3. メモを使用中写真へ配分</button>
+            <button class="secondary" id="distributeFeatureNote" title="除外中写真は変更せず、使用中写真だけでナレーションを組み直します">3. 使用中写真の台本を再構成</button>
           </div>
         </div>
 
@@ -532,6 +533,7 @@ const els = {
   downloadLink: document.getElementById('downloadLink'),
   recordSilent: document.getElementById('recordSilent'),
   recordMic: document.getElementById('recordMic'),
+  fitDriveSize: document.getElementById('fitDriveSize'),
   playPreviewVoice: document.getElementById('playPreviewVoice'),
   previewSubtitleMotion: document.getElementById('previewSubtitleMotion'),
   applySubtitleMotionAll: document.getElementById('applySubtitleMotionAll'),
@@ -1019,7 +1021,7 @@ function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
     return 0;
   }
   const english = els.narrationLang.value === 'en-US';
-  const assignedFeatures = featureLinesForTargets(features, targets.length);
+  const assignedFeatures = rebuildNarrationPlan(features, targets.length, english);
   targets.forEach((slide, index) => {
     const generated = textsFromFeatureLine(assignedFeatures[index], index, english);
     if(overwrite || !slide.caption) slide.caption = generated.caption;
@@ -1028,7 +1030,7 @@ function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
   loadSelected();
   renderList();
   drawSelectedOrFirstFrame();
-  if(showLog) setLog(`${targets.length}枚の使用中写真へ見どころメモを配分しました。除外中の写真は変更せず、余った文は後ろの写真へまとめています。`);
+  if(showLog) setLog(`${targets.length}枚の使用中写真に合わせて、ナレーションを再構成しました。除外中の写真は変更せず、締め文は最後の使用写真へ入れています。`);
   return targets.length;
 }
 
@@ -1042,15 +1044,100 @@ function distributionSourceLines(){
     lines.push(clean);
     seen.add(key);
   };
-  splitFeatureNotes(els.featureNote.value).forEach(addLine);
+  const addSourceText = value => splitDistributionText(value).forEach(addLine);
+  addSourceText(els.featureNote.value);
   slides
     .filter(slide => !isSlideEnabled(slide))
-    .forEach(slide => addLine(slide.narration));
+    .forEach(slide => addSourceText(slide.narration));
   return lines;
+}
+
+function splitDistributionText(text){
+  return String(text || '')
+    .replace(/\r/g, '\n')
+    .split(/\n+/)
+    .flatMap(part => (part.match(/[^.!?。！？]+[.!?。！？]+|[^.!?。！？]+$/g) || [part]))
+    .map(cleanFeatureLine)
+    .filter(Boolean);
 }
 
 function normalizedDistributionLine(text){
   return String(text || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function rebuildNarrationPlan(features, targetCount, english){
+  const count = Math.max(0, targetCount);
+  if(!count) return [];
+  const cleanFeatures = features.map(line => english ? englishReadyFeatureText(line) : cleanFeatureLine(line)).filter(Boolean);
+  return english
+    ? rebuildEnglishNarrationPlan(cleanFeatures, count)
+    : rebuildJapaneseNarrationPlan(cleanFeatures, count);
+}
+
+function rebuildEnglishNarrationPlan(features, count){
+  const product = englishProductName(els.productName.value.trim());
+  const material = englishMaterialNote(els.materialNote.value.trim());
+  const closing = takeFeature(features, /thank|viewing|n'?s factory/i) || `Thank you for viewing this ${product} from N's factory.`;
+  const bodyFeatures = features.filter(line => normalizedDistributionLine(line) !== normalizedDistributionLine(closing));
+  const used = new Set();
+  const take = pattern => takeUnusedFeature(bodyFeatures, pattern, used);
+  const candidates = [
+    take(/introduc|this video|this is|pen holder|refill|organizer/i) || `This video introduces ${product}. Please take in the overall balance, shape, and handmade presence.`,
+    take(/material|leather|margot|alaska|color|grain|fuchsia|cobalt|blue|orange|pink/i) || `The material is ${material}. Notice the color, grain, and quiet depth of the leather.`,
+    take(/smooth|feel|texture|surface|comfortable|light|natural expression|depth/i) || `The surface texture changes with the light, giving the piece a natural expression.`,
+    take(/hold|pen|access|use|functional/i) || `It smartly supports daily use while keeping the essentials easy to reach.`,
+    take(/design|daily|planner|sophisticated|simple|look/i) || `The design is simple enough for daily use while still carrying a crafted character.`,
+    take(/stitch|edge|finish|detail|careful|crafted|hand/i) || `Please look closely at the stitching, edges, and small finishing details.`,
+    take(/develop|used|aging|patina|personal|slowly/i) || `As it is used, the leather will slowly develop a deeper and more personal look.`
+  ].concat(bodyFeatures.filter(line => !used.has(normalizedDistributionLine(line)))).map(ensureEnglishSentence);
+  return pickNarrationLines(candidates, closing, count).map(ensureEnglishSentence);
+}
+
+function rebuildJapaneseNarrationPlan(features, count){
+  const product = els.productName.value.trim() || 'このレザー作品';
+  const material = els.materialNote.value.trim() || '選んだ革';
+  const closing = takeFeature(features, /ありがとう|ご覧|N's factory|Ｎ/) || `N's factoryの作品をご覧いただき、ありがとうございます。`;
+  const bodyFeatures = features.filter(line => normalizedDistributionLine(line) !== normalizedDistributionLine(closing));
+  const used = new Set();
+  const take = pattern => takeUnusedFeature(bodyFeatures, pattern, used);
+  const candidates = [
+    take(/紹介|全体|雰囲気|存在感/) || `${product}の全体の雰囲気と、手仕事ならではの存在感をご覧ください。`,
+    take(/素材|革|色|表情|質感/) || `素材は${material}です。革の色、表情、質感に注目してください。`,
+    take(/手触り|滑らか|質感|表面|光|自然|奥行き/) || `光の当たり方で革の表情が変わり、自然な奥行きが出ています。`,
+    take(/持ち|ペン|使い|機能|取り出し/) || `必要なものをすぐ手に取れる、日常使いしやすい仕立てです。`,
+    take(/デザイン|日常|雰囲気|シンプル/) || `日常で使いやすいシンプルさと、手作りの温かさを両立しています。`,
+    take(/縫い|コバ|仕立て|細部|丁寧/) || `縫い目、コバ、細かな仕立ての部分もゆっくりご覧ください。`,
+    take(/育ち|経年|使い込|変化/) || `使い込むほど革が育ち、自分だけの表情へ変わっていきます。`
+  ].concat(bodyFeatures.filter(line => !used.has(normalizedDistributionLine(line)))).map(ensureJapaneseSentence);
+  return pickNarrationLines(candidates, closing, count).map(ensureJapaneseSentence);
+}
+
+function takeFeature(features, pattern){
+  return features.find(line => pattern.test(line)) || '';
+}
+
+function takeUnusedFeature(features, pattern, used){
+  const found = features.find(line => {
+    const key = normalizedDistributionLine(line);
+    return key && !used.has(key) && pattern.test(line);
+  });
+  if(found) used.add(normalizedDistributionLine(found));
+  return found || '';
+}
+
+function pickNarrationLines(candidates, closing, count){
+  const unique = [];
+  const seen = new Set();
+  candidates.forEach(line => {
+    const key = normalizedDistributionLine(line);
+    if(!key || seen.has(key) || key === normalizedDistributionLine(closing)) return;
+    unique.push(line);
+    seen.add(key);
+  });
+  if(count === 1) return [closing || unique[0] || ''];
+  const bodyCount = count - 1;
+  const body = Array.from({length: bodyCount}, (_, index) => unique[index] || unique[index % Math.max(1, unique.length)] || closing);
+  return body.concat(closing || unique[unique.length - 1] || '');
 }
 
 function featureLinesForTargets(features, targetCount){
@@ -1227,6 +1314,72 @@ function fitDurationsToNarration(options = {}){
     }
   }
   return changed;
+}
+
+function fitDurationsForDriveSize(options = {}){
+  saveSelected();
+  const list = playableSlides();
+  if(!list.length){
+    if(options.showLog !== false) setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。');
+    return {changed:false};
+  }
+
+  const sourceBytes = options.sourceBytes || (lastRecordingBlob && lastRecordingBlob.size) || 0;
+  const targetBytes = options.targetBytes || DRIVE_VIDEO_TARGET_BYTES;
+  const currentTotal = totalDuration();
+  const holdTotal = list.reduce((sum, slide) => sum + slide.duration, 0);
+  const transitionTotal = Math.max(0, currentTotal - holdTotal);
+  const sizeRatio = sourceBytes > targetBytes ? targetBytes / sourceBytes : null;
+  const defaultTargetTotal = Math.min(currentTotal, list.length * 4.2 + transitionTotal);
+  const targetTotal = sizeRatio
+    ? Math.max(list.length * DRIVE_LIGHT_MIN_DURATION + transitionTotal, currentTotal * sizeRatio)
+    : defaultTargetTotal;
+  const targetHoldTotal = Math.max(list.length * DRIVE_LIGHT_MIN_DURATION, targetTotal - transitionTotal);
+  const minTotal = list.length * DRIVE_LIGHT_MIN_DURATION;
+  const scale = holdTotal > minTotal
+    ? clamp((targetHoldTotal - minTotal) / (holdTotal - minTotal), 0, 1)
+    : 1;
+  const oldTotal = currentTotal;
+  let changed = 0;
+  let shortest = Infinity;
+  list.forEach(slide => {
+    const next = roundDuration(DRIVE_LIGHT_MIN_DURATION + (slide.duration - DRIVE_LIGHT_MIN_DURATION) * scale);
+    const clamped = clamp(next, DRIVE_LIGHT_MIN_DURATION, slide.duration);
+    if(Math.abs(clamped - slide.duration) >= .1){
+      slide.duration = clamped;
+      changed += 1;
+    }
+    shortest = Math.min(shortest, slide.duration);
+    if(slide.transitionDuration > DRIVE_LIGHT_TRANSITION_DURATION){
+      slide.transitionDuration = DRIVE_LIGHT_TRANSITION_DURATION;
+      changed += 1;
+    }
+  });
+
+  const narrationMinTotal = list.reduce((sum, slide) => sum + estimateNarrationDuration(slide.narration), 0);
+  const needsNarrationOverride = els.syncNarrationDuration.checked && targetHoldTotal < narrationMinTotal;
+  if(needsNarrationOverride) els.syncNarrationDuration.checked = false;
+
+  if(selected >= 0) loadSelected();
+  renderList();
+  drawSelectedOrFirstFrame();
+  const newTotal = totalDuration();
+  const sourceLabel = sourceBytes ? `録画サイズ${formatMb(sourceBytes)}MBから逆算して、` : '';
+  const retryMessage = sourceBytes ? 'もう一度「Instagram用動画を保存」を押して再録画してください。' : '次回の録画から軽くなります。';
+  const caution = needsNarrationOverride
+    ? ' Drive軽量化を優先するため「セリフが終わるまで写真を待たせる」はOFFにしました。'
+    : '';
+  if(options.clearRecording !== false && lastRecordingBlob && sourceBytes >= lastRecordingBlob.size){
+    resetRecordingOutput();
+  }
+  if(options.showLog !== false){
+    if(changed){
+      setLog(`${sourceLabel}表示時間を合計${oldTotal.toFixed(1)}秒 → ${newTotal.toFixed(1)}秒へ自動短縮しました。最短は${shortest.toFixed(1)}秒です。タイプ字幕は各コマの表示時間内に出切ります。${retryMessage}${caution}`);
+    }else{
+      setLog(`${sourceLabel}これ以上ほとんど短縮できません。セリフを短くするか、使う写真を減らしてください。${caution}`);
+    }
+  }
+  return {changed:!!changed, oldTotal, newTotal, sourceBytes, targetBytes, needsNarrationOverride};
 }
 
 function prepareTimelineForPlayback(){
@@ -1496,6 +1649,7 @@ function drawNarrationSubtitle(slide, progress){
   const motion = slide.subtitleMotion || 'fadeUp';
   const text = trimSubtitle(slide.narration);
   const p = easeOut(clamp(progress, 0, 1));
+  const typeP = subtitleTypeProgress(progress);
   const subtitle = buildSubtitleLayout(text);
   const box = subtitle.box;
   ctx.save();
@@ -1506,11 +1660,11 @@ function drawNarrationSubtitle(slide, progress){
     drawSubtitleBox(box.x, box.y + dy, box.w, box.h);
     drawSubtitleText(text, box.x + box.w / 2, subtitle.textY + dy, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
   }else if(motion === 'typewriter'){
-    const visible = text.slice(0, Math.max(1, Math.ceil(text.length * p)));
+    const visible = text.slice(0, Math.max(1, Math.ceil(text.length * typeP)));
     drawSubtitleBox(box.x, box.y, box.w, box.h);
     drawSubtitleText(visible, box.x + box.w / 2, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
   }else if(motion === 'typewriterLeft'){
-    const visible = text.slice(0, Math.max(1, Math.ceil(text.length * p)));
+    const visible = text.slice(0, Math.max(1, Math.ceil(text.length * typeP)));
     drawSubtitleBox(box.x, box.y, box.w, box.h);
     drawSubtitleTextLeft(visible, box.x + subtitle.padX, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
   }else if(motion === 'pop'){
@@ -1530,6 +1684,10 @@ function drawNarrationSubtitle(slide, progress){
   }
 
   ctx.restore();
+}
+
+function subtitleTypeProgress(progress){
+  return clamp(progress / .9, 0, 1);
 }
 
 function buildSubtitleLayout(text){
@@ -1816,7 +1974,10 @@ function finishRecordingBlob(blob, format, message){
   lastRecordingBlob = blob;
   lastRecordingMeta = format;
   refreshUploadButton();
-  setLog(message);
+  const driveWarning = currentWork && currentWork.folderId && blob.size > UPLOAD_VIDEO_MAX_BYTES
+    ? ` ただしDrive保存には大きすぎます（${formatMb(blob.size)}MB / 上限${formatMb(UPLOAD_VIDEO_MAX_BYTES)}MB）。「Drive用に秒数を自動短縮」を押してから再録画してください。`
+    : '';
+  setLog(`${message}${driveWarning}`);
 }
 
 function canEncodeMp4Video(){
@@ -2424,10 +2585,11 @@ function cleanFeatureLine(text){
 
 function textsFromFeatureLine(featureText, index, english){
   const clean = cleanFeatureLine(featureText);
-  const caption = featureCaption(clean, index);
+  const source = english ? englishReadyFeatureText(clean) : clean;
+  const caption = featureCaption(source, index);
   return {
     caption,
-    narration: english ? englishNarration(clean) : japaneseNarration(clean)
+    narration: english ? englishNarration(source) : japaneseNarration(source)
   };
 }
 
@@ -2440,7 +2602,7 @@ function featureCaption(text, index){
 }
 
 function englishNarration(text){
-  const clean = cleanFeatureLine(text).replace(/\s+/g, ' ');
+  const clean = englishReadyFeatureText(text);
   if(!clean) return 'Please take a closer look at the handmade details in this photo.';
   if(/[.!?]$/.test(clean) || clean.split(/\s+/).length >= 8) return ensureEnglishSentence(clean);
   return `Here is a closer look at ${clean}. Please enjoy the texture and details shown in this photo.`;
@@ -2464,8 +2626,10 @@ function ensureJapaneseSentence(text){
 function expandEnglishFeatureMemo(translated, targetCount){
   const count = clamp(targetCount || 8, 1, 12);
   const product = englishProductName(els.productName.value.trim());
-  const material = els.materialNote.value.trim() || 'the selected leather';
-  const sourceSentences = splitEnglishSentences(translated).filter(sentence => sentence.length >= 18);
+  const material = englishMaterialNote(els.materialNote.value.trim());
+  const sourceSentences = splitEnglishSentences(translated)
+    .map(englishReadyFeatureText)
+    .filter(sentence => sentence.length >= 18);
   const templates = [
     `This video introduces ${product}. Please take in the overall balance, shape, and handmade presence.`,
     `The material is ${material}. Notice the color, grain, and quiet depth of the leather.`,
@@ -2523,7 +2687,103 @@ function splitJapaneseSentences(text){
 
 function englishProductName(value){
   if(!value) return 'this leather craft piece';
-  return value.replace(/作品集/g, 'work collection').replace(/レザー作品/g, 'leather craft piece');
+  return englishReadyFeatureText(value)
+    || value.replace(/作品集/g, 'work collection').replace(/レザー作品/g, 'leather craft piece')
+    || 'this leather craft piece';
+}
+
+function englishMaterialNote(value){
+  return englishReadyFeatureText(value) || 'the selected leather and details';
+}
+
+function englishReadyFeatureText(value){
+  const converted = translateJapaneseTermsForEnglish(value)
+    .replace(/\s+/g, ' ')
+    .trim();
+  if(!converted) return '';
+  if(!hasJapaneseText(converted)) return polishEnglishFeatureText(converted);
+  const fallback = converted.replace(/[\u3040-\u30ff\u3400-\u9fff々〆ヵヶー]+/g, 'selected leather');
+  return polishEnglishFeatureText(fallback);
+}
+
+function translateJapaneseTermsForEnglish(value){
+  let text = String(value || '')
+    .replace(/_/g, ' ')
+    .replace(/[／]/g, '/')
+    .replace(/×/g, ' x ');
+  const terms = [
+    ['システム手帳用リフィル', 'system planner refill'],
+    ['システム手帳', 'system planner'],
+    ['N’s factory 作品集', "N's factory work collection"],
+    ["N's factory 作品集", "N's factory work collection"],
+    ['レザー作品', 'leather craft piece'],
+    ['作品集', 'work collection'],
+    ['マイクロ5', 'Micro5'],
+    ['ミニ6', 'Mini 6'],
+    ['マルゴフォグ', 'Margot Fog'],
+    ['マルゴトフォグ', 'Margot Fog'],
+    ['リネアヴァスカ', 'Linea Vasca'],
+    ['リネアバスカ', 'Linea Vasca'],
+    ['国産ヌメ', 'Japanese vegetable-tanned leather'],
+    ['ヌメ革', 'vegetable-tanned leather'],
+    ['フクシア', 'fuchsia'],
+    ['フューシャ', 'fuchsia'],
+    ['コバルト', 'cobalt'],
+    ['アラスカ', 'Alaska'],
+    ['オレンジ', 'orange'],
+    ['ブルー', 'blue'],
+    ['ピンク', 'pink'],
+    ['ネロ', 'nero black'],
+    ['生成り', 'natural'],
+    ['マルゴ', 'Margot'],
+    ['フォグ', 'Fog'],
+    ['ペンホルダー', 'pen holder'],
+    ['コインボックス', 'coin box'],
+    ['小銭入れ', 'coin pocket'],
+    ['カードケース', 'card case'],
+    ['キーケース', 'key case'],
+    ['ハーフウォレット', 'half wallet'],
+    ['リフィル', 'refill'],
+    ['バインダー', 'binder'],
+    ['手帳', 'planner'],
+    ['財布', 'wallet'],
+    ['ケース', 'case'],
+    ['レザー', 'leather'],
+    ['作品', 'piece'],
+    ['革', 'leather'],
+    ['黒', 'black'],
+    ['白', 'white'],
+    ['赤', 'red'],
+    ['青', 'blue'],
+    ['緑', 'green'],
+    ['黄', 'yellow'],
+    ['茶', 'brown'],
+    ['紫', 'purple']
+  ];
+  terms.forEach(([jp, en]) => {
+    text = text.replace(new RegExp(escapeRegExp(jp), 'g'), en);
+  });
+  return text;
+}
+
+function hasJapaneseText(value){
+  return /[\u3040-\u30ff\u3400-\u9fff々〆ヵヶー]/.test(String(value || ''));
+}
+
+function polishEnglishFeatureText(value){
+  return String(value || '')
+    .replace(/\s*\/\s*/g, ' / ')
+    .replace(/\s+x\s+/gi, ' x ')
+    .replace(/\bH(\d+)\s*x\s*W(\d+)\s*mm\b/gi, 'H$1 x W$2 mm')
+    .replace(/\bselected leather(?:\s*\/\s*selected leather)+\b/gi, 'selected leather')
+    .replace(/\bThe material is\s*selected leather\s*\/\s*/i, 'The material is ')
+    .replace(/\s+([.,!?])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function escapeRegExp(value){
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function displayInfoText(value){
@@ -2627,6 +2887,9 @@ function wrapTextLines(text,maxWidth,maxLines){
 // ── Driveへの動画保存（register.htmlと同じ管理キーゲート） ──
 const REGISTER_KEY_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
 const UPLOAD_VIDEO_MAX_BYTES = 32 * 1024 * 1024;
+const DRIVE_VIDEO_TARGET_BYTES = Math.floor(UPLOAD_VIDEO_MAX_BYTES * .82);
+const DRIVE_LIGHT_MIN_DURATION = 2.2;
+const DRIVE_LIGHT_TRANSITION_DURATION = .35;
 
 function refreshUploadButton(){
   if(!els.uploadVideoToDrive) return;
@@ -2678,7 +2941,12 @@ async function uploadVideoToDrive(){
   if(!lastRecordingBlob){ setLog('先に「動画を保存」で録画してください。'); return; }
   if(!currentWork || !currentWork.folderId){ setLog('作品情報タブで作品を選択してください（保存先フォルダの特定に必要です）。'); return; }
   if(lastRecordingBlob.size > UPLOAD_VIDEO_MAX_BYTES){
-    setLog(`動画が大きすぎます（${Math.round(lastRecordingBlob.size / 1024 / 1024)}MB）。表示秒数を短くして再録画してください。`);
+    const sourceBytes = lastRecordingBlob.size;
+    const result = fitDurationsForDriveSize({sourceBytes, targetBytes:DRIVE_VIDEO_TARGET_BYTES, showLog:false});
+    const suffix = result.changed
+      ? `Drive用に表示秒数を自動短縮しました（${result.oldTotal.toFixed(1)}秒 → ${result.newTotal.toFixed(1)}秒）。もう一度「Instagram用動画を保存」を押してからDrive保存してください。`
+      : '自動短縮できる余地が少ないため、セリフを短くするか、使う写真を減らしてください。';
+    setLog(`動画が大きすぎます（${formatMb(sourceBytes)}MB / 上限${formatMb(UPLOAD_VIDEO_MAX_BYTES)}MB）。${suffix}`);
     return;
   }
   const key = await ensureRegisterKey();
@@ -2750,6 +3018,7 @@ function motionLabel(value){
 }
 function compact(values){ return values.map(value => String(value || '').trim()).filter(Boolean).join(' / '); }
 function clamp(value,min,max){ return Math.min(max, Math.max(min, value)); }
+function formatMb(bytes){ return (bytes / 1024 / 1024).toFixed(bytes >= 10 * 1024 * 1024 ? 0 : 1); }
 function safeFileName(value){ return value.replace(/[\\/:*?"<>|]/g,'_').trim() || 'sns-video-maker'; }
 function escapeHtml(value){ return value.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
 
@@ -2784,6 +3053,7 @@ els.previewSubtitleMotion.addEventListener('click', previewCurrentSubtitleMotion
 els.applySubtitleMotionAll.addEventListener('click', applySubtitleMotionToAll);
 document.getElementById('speakScript').addEventListener('click', speakScript);
 els.fitDurationsToNarration.addEventListener('click', () => fitDurationsToNarration());
+els.fitDriveSize.addEventListener('click', () => fitDurationsForDriveSize());
 els.toggleSlideUse.addEventListener('click', () => toggleSlideUse());
 document.getElementById('recordSilent').addEventListener('click', () => recordVideo(false));
 document.getElementById('recordMic').addEventListener('click', () => recordVideo(true));
