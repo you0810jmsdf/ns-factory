@@ -109,6 +109,7 @@
       lastTextureSimParts = null;
       customerImages = [];
       pendingAIImages = [];
+      lastShownTool = null;
       nsfRenderSelectionSummary();
       var area = $('#chat-area');
       if (!area) return;
@@ -605,6 +606,14 @@
       return TOOL_INTENT_PATTERN.test(text);
     }
 
+    /* 2026-07-16 品質改善: 直前に楽天商品を見せた道具を覚えておき、「安いのない？」等の
+       追随質問に同じ道具の価格の安い順で再提案できるようにする（後方幕僚チャット限定）。 */
+    var lastShownTool = null;
+    var CHEAPER_FOLLOWUP_PATTERN = /(安い|お手頃|もっと(安|お手頃)|予算.{0,4}(内|以内)|格安)/;
+    function nsfDetectCheaperFollowup(text) {
+      return CHEAPER_FOLLOWUP_PATTERN.test(text);
+    }
+
     /* 後方幕僚チャット限定: 道具の質問にキーワード辞書方式で回答し、楽天市場の商品例を案内する */
     function showToolRecommend(query) {
       showTyping();
@@ -642,10 +651,14 @@
         });
     }
 
-    /* 選ばれた道具の楽天検索結果を画像チップで表示（kouhou-room/index.htmlのGAS呼び出しと同一API） */
-    function showToolRakutenItems(tool) {
+    /* 選ばれた道具の楽天検索結果を画像チップで表示（kouhou-room/index.htmlのGAS呼び出しと同一API）。
+       sort省略時はGAS側デフォルト（口コミ数が多い順）。「安いのない？」follow-up時はsort=+itemPrice。 */
+    function showToolRakutenItems(tool, sort) {
+      lastShownTool = tool;
       showTyping();
-      fetch(RAKUTEN_TOOL_API_URL + '?action=search&keyword=' + encodeURIComponent(tool.rakutenKeyword) + '&hits=3')
+      var url = RAKUTEN_TOOL_API_URL + '?action=search&keyword=' + encodeURIComponent(tool.rakutenKeyword) + '&hits=3';
+      if (sort) url += '&sort=' + encodeURIComponent(sort);
+      fetch(url)
         .then(function (res) { return res.json(); })
         .then(function (data) {
           hideTyping();
@@ -654,15 +667,21 @@
             renderChips([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]);
             return;
           }
-          appendStaffMsg(tool.name + 'はこちらだ📦（楽天市場・アフィリエイトリンク）');
+          var intro = sort === '+itemPrice'
+            ? tool.name + 'の安い順ならこれだ📦（楽天市場・アフィリエイトリンク）'
+            : tool.name + 'はこちらだ📦（楽天市場・アフィリエイトリンク／口コミが多い順）';
+          appendStaffMsg(intro);
           var chips = data.items.map(function (it) {
             return {
               label: it.name.length > 26 ? it.name.slice(0, 26) + '…' : it.name,
-              sub: '¥' + Number(it.price).toLocaleString(),
+              sub: '¥' + Number(it.price).toLocaleString() + (it.reviewCount ? '（口コミ' + it.reviewCount + '）' : ''),
               image: it.image,
               onClick: function () { global.open(it.url, '_blank'); }
             };
           });
+          if (sort !== '+itemPrice') {
+            chips.push({ label: '💰 もっと安いのを見る', onClick: function () { showToolRakutenItems(tool, '+itemPrice'); } });
+          }
           chips.push({ label: '閉じる', exit: true, onClick: nsfDefaultChips });
           renderChips(chips);
         })
@@ -1384,6 +1403,15 @@
         if (input) input.value = '';
         appendUserMsg(text);
         showLeatherGallery(colorFam);
+        return;
+      }
+
+      // 2026-07-16 品質改善: 直前に道具を提示済み＆後方幕僚チャット中に「安いのない？」等の
+      // 追随質問が来たら、同じ道具を価格の安い順で再提案する（GAS送信なし・回数消費なし）。
+      if (currentChatStaffId === 'kouhou_room' && lastShownTool && nsfDetectCheaperFollowup(text)) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        showToolRakutenItems(lastShownTool, '+itemPrice');
         return;
       }
 
