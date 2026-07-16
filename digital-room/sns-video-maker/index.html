@@ -222,6 +222,18 @@ canvas{
 }
 .log{margin-top:10px;color:var(--ink-sub);font-size:12.5px;min-height:20px;line-height:1.7;overflow-wrap:anywhere}
 
+/* ── 背景色選択 ── */
+.bg-color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bg-color-row input[type="color"]{
+  width:52px;height:40px;padding:2px;border:1.5px solid var(--line);border-radius:var(--radius-sm);
+  background:#FFF;cursor:pointer;
+}
+.bg-swatch{
+  width:36px;height:36px;border-radius:50%;border:2px solid var(--line);
+  box-shadow:inset 0 0 0 2px #FFF;transition:transform .12s ease,border-color .12s ease;
+}
+.bg-swatch:hover{transform:scale(1.1);border-color:var(--brass)}
+
 /* ── 編集タブ ── */
 .tabs{
   display:flex;gap:4px;background:var(--card-soft);border:1px solid var(--line);
@@ -513,6 +525,24 @@ canvas{
         <div class="tab-panel" id="tab-output">
           <p class="help">動画内の文字フォントと、確認用読み上げの音声を設定します。</p>
           <div class="field">
+            <label for="bgMode">背景</label>
+            <select id="bgMode">
+              <option value="photo">元の写真のまま（ぼかし背景）</option>
+              <option value="solid">単色背景（被写体を自動で切り抜き）</option>
+            </select>
+          </div>
+          <div class="field" id="bgColorField" hidden>
+            <label for="bgColor">背景色</label>
+            <div class="bg-color-row">
+              <input id="bgColor" type="color" value="#F6F1E3" title="好きな色を選ぶ">
+              <button type="button" class="bg-swatch" data-color="#FFFFFF" style="background:#FFFFFF" title="白"></button>
+              <button type="button" class="bg-swatch" data-color="#F6F1E3" style="background:#F6F1E3" title="生成り"></button>
+              <button type="button" class="bg-swatch" data-color="#111111" style="background:#111111" title="黒"></button>
+              <button type="button" class="bg-swatch" data-color="#7A5E2A" style="background:#7A5E2A" title="ブラス"></button>
+            </div>
+            <p class="help" id="bgCutoutStatus">AIが写真の被写体を切り抜いて単色背景に置き換えます（初回のみ約5MBのモデル読み込み。写真は端末外へ送信されません）。通常版と単色版はそれぞれ保存できます（単色版はファイル名に _solid が付きます）。</p>
+          </div>
+          <div class="field">
             <label for="videoFont">動画内フォント</label>
             <select id="videoFont">
               <option value="system">標準ゴシック</option>
@@ -606,6 +636,10 @@ const els = {
   applySubtitleMotionAll: document.getElementById('applySubtitleMotionAll'),
   toggleSlideUse: document.getElementById('toggleSlideUse'),
   speakScript: document.getElementById('speakScript'),
+  bgMode: document.getElementById('bgMode'),
+  bgColor: document.getElementById('bgColor'),
+  bgColorField: document.getElementById('bgColorField'),
+  bgCutoutStatus: document.getElementById('bgCutoutStatus'),
   videoFont: document.getElementById('videoFont'),
   narrationLang: document.getElementById('narrationLang'),
   voiceSelect: document.getElementById('voiceSelect'),
@@ -1636,8 +1670,14 @@ function easeOut(value){
 function drawSlide(slide, progress, alpha){
   ctx.save();
   ctx.globalAlpha = alpha;
-  drawBackground(slide.img);
-  drawPhoto(slide.img, slide.motion, progress);
+  if(solidBgActive()){
+    ctx.fillStyle = bgColorValue();
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawPhoto(slide.cutout || slide.img, slide.motion, progress, {cutout: !!slide.cutout});
+  }else{
+    drawBackground(slide.img);
+    drawPhoto(slide.img, slide.motion, progress);
+  }
   drawTexts(slide);
   drawNarrationSubtitle(slide, progress);
   ctx.restore();
@@ -1685,7 +1725,129 @@ function drawBackground(img){
   ctx.restore();
 }
 
-function drawPhoto(img, motion, progress){
+/* ── 背景切り抜き（U2Net u2netp・onnxruntime-webによるブラウザ内処理） ── */
+const U2NET_MODEL_URL = 'models/u2netp.onnx';
+const ORT_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/';
+let ortSessionPromise = null;
+let cutoutBatchPromise = null;
+
+function solidBgActive(){ return !!(els.bgMode && els.bgMode.value === 'solid'); }
+function bgColorValue(){ return (els.bgColor && els.bgColor.value) || '#F6F1E3'; }
+function bgColorIsLight(){
+  const hex = bgColorValue().replace('#', '');
+  const r = parseInt(hex.slice(0, 2), 16) || 0;
+  const g = parseInt(hex.slice(2, 4), 16) || 0;
+  const b = parseInt(hex.slice(4, 6), 16) || 0;
+  return (r * .299 + g * .587 + b * .114) > 150;
+}
+function setCutoutStatus(message){ if(els.bgCutoutStatus) els.bgCutoutStatus.textContent = message; }
+function updateBgUi(){
+  if(els.bgColorField) els.bgColorField.hidden = !solidBgActive();
+  drawSelectedOrFirstFrame();
+}
+
+function loadOrtScript(){
+  return new Promise((resolve, reject) => {
+    if(window.ort) return resolve(window.ort);
+    const script = document.createElement('script');
+    script.src = `${ORT_CDN}ort.min.js`;
+    script.onload = () => window.ort ? resolve(window.ort) : reject(new Error('AIランタイムの初期化に失敗しました。'));
+    script.onerror = () => reject(new Error('AIランタイムを読み込めませんでした。通信環境を確認してください。'));
+    document.head.appendChild(script);
+  });
+}
+
+function getOrtSession(){
+  if(!ortSessionPromise){
+    ortSessionPromise = (async () => {
+      const ort = await loadOrtScript();
+      ort.env.wasm.wasmPaths = ORT_CDN;
+      ort.env.wasm.numThreads = 1; // GitHub PagesはCOOP/COEP未設定のため単スレッドで動かす
+      return ort.InferenceSession.create(U2NET_MODEL_URL, {executionProviders: ['wasm']});
+    })();
+    ortSessionPromise.catch(() => { ortSessionPromise = null; });
+  }
+  return ortSessionPromise;
+}
+
+async function cutoutSlide(slide){
+  const session = await getOrtSession();
+  const img = slide.img;
+  const SIZE = 320;
+  const pre = document.createElement('canvas');
+  pre.width = SIZE; pre.height = SIZE;
+  const pctx = pre.getContext('2d', {willReadFrequently: true});
+  pctx.drawImage(img, 0, 0, SIZE, SIZE);
+  const {data} = pctx.getImageData(0, 0, SIZE, SIZE);
+  // U2Netの前処理: 最大輝度で正規化 → ImageNet平均・分散で標準化（rembg互換）
+  let maxVal = 0;
+  for(let i = 0; i < data.length; i += 4) maxVal = Math.max(maxVal, data[i], data[i + 1], data[i + 2]);
+  maxVal = maxVal || 255;
+  const mean = [.485, .456, .406], std = [.229, .224, .225];
+  const input = new Float32Array(3 * SIZE * SIZE);
+  for(let i = 0, p = 0; i < data.length; i += 4, p++){
+    input[p] = ((data[i] / maxVal) - mean[0]) / std[0];
+    input[SIZE * SIZE + p] = ((data[i + 1] / maxVal) - mean[1]) / std[1];
+    input[2 * SIZE * SIZE + p] = ((data[i + 2] / maxVal) - mean[2]) / std[2];
+  }
+  const ort = window.ort;
+  const feeds = {};
+  feeds[session.inputNames[0]] = new ort.Tensor('float32', input, [1, 3, SIZE, SIZE]);
+  const results = await session.run(feeds);
+  const out = results[session.outputNames[0]].data;
+  let min = Infinity, max = -Infinity;
+  for(let i = 0; i < out.length; i++){ if(out[i] < min) min = out[i]; if(out[i] > max) max = out[i]; }
+  const range = (max - min) || 1;
+  const maskCanvas = document.createElement('canvas');
+  maskCanvas.width = SIZE; maskCanvas.height = SIZE;
+  const mctx = maskCanvas.getContext('2d');
+  const maskData = mctx.createImageData(SIZE, SIZE);
+  for(let i = 0; i < SIZE * SIZE; i++){
+    maskData.data[i * 4] = 255; maskData.data[i * 4 + 1] = 255; maskData.data[i * 4 + 2] = 255;
+    maskData.data[i * 4 + 3] = Math.round(((out[i] - min) / range) * 255);
+  }
+  mctx.putImageData(maskData, 0, 0);
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = w; outCanvas.height = h;
+  const octx = outCanvas.getContext('2d');
+  octx.imageSmoothingEnabled = true;
+  octx.imageSmoothingQuality = 'high';
+  octx.drawImage(img, 0, 0, w, h);
+  octx.globalCompositeOperation = 'destination-in';
+  octx.drawImage(maskCanvas, 0, 0, SIZE, SIZE, 0, 0, w, h);
+  slide.cutout = outCanvas;
+}
+
+function ensureCutoutsForSolidBg(){
+  if(!solidBgActive()) return Promise.resolve(true);
+  if(cutoutBatchPromise) return cutoutBatchPromise;
+  cutoutBatchPromise = (async () => {
+    const targets = playableSlides().filter(slide => !slide.cutout);
+    if(!targets.length) return true;
+    try{
+      setLog('AIが被写体を切り抜いています…（初回はモデル読み込みで時間がかかります）');
+      for(let i = 0; i < targets.length; i++){
+        setCutoutStatus(`切り抜き処理中… ${i + 1} / ${targets.length}枚`);
+        await cutoutSlide(targets[i]);
+        drawSelectedOrFirstFrame();
+      }
+      setCutoutStatus(`切り抜き完了（${playableSlides().filter(slide => slide.cutout).length}枚）。単色背景で書き出せます。`);
+      setLog('被写体の切り抜きが完了しました。');
+      return true;
+    }catch(err){
+      setCutoutStatus('切り抜きに失敗したため「元の写真のまま」へ戻しました。');
+      setLog(`切り抜きに失敗しました: ${err.message}`);
+      if(els.bgMode) els.bgMode.value = 'photo';
+      updateBgUi();
+      return false;
+    }
+  })().finally(() => { cutoutBatchPromise = null; });
+  return cutoutBatchPromise;
+}
+
+function drawPhoto(img, motion, progress, options = {}){
   const box = {x:60, y:330, w:960, h:1210};
   const fit = containRect(img, box);
   let zoom = 1;
@@ -1697,7 +1859,8 @@ function drawPhoto(img, motion, progress){
   if(motion === 'panUp') { zoom = 1.06; dy = -34 + progress * 68; }
   if(motion === 'panDown') { zoom = 1.06; dy = 34 - progress * 68; }
   ctx.save();
-  shadow(box.x - 8, box.y - 8, box.w + 16, box.h + 16);
+  // 切り抜き画像は透過部分に矩形の影が出てしまうため影を省く
+  if(!options.cutout) shadow(box.x - 8, box.y - 8, box.w + 16, box.h + 16);
   ctx.beginPath(); roundRect(ctx, box.x, box.y, box.w, box.h, 18); ctx.clip();
   const cx = fit.x + fit.w/2 + dx;
   const cy = fit.y + fit.h/2 + dy;
@@ -1706,11 +1869,13 @@ function drawPhoto(img, motion, progress){
 }
 
 function drawTexts(slide){
+  // 単色背景が明るい色の時はロゴ文字を濃色に切り替える（字幕・情報パネルは黒箱付きのため不変）
+  const lightBg = solidBgActive() && bgColorIsLight();
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#f7f2ea';
+  ctx.fillStyle = lightBg ? '#33291C' : '#f7f2ea';
   ctx.font = canvasFont(700, 40);
   ctx.fillText("N's factory", 70, 88);
-  ctx.fillStyle = '#c8a878';
+  ctx.fillStyle = lightBg ? '#8a6a2f' : '#c8a878';
   ctx.fillRect(70, 116, 145, 4);
 
   const panel = {x:76, y:1568, w:928, h:242};
@@ -1959,6 +2124,7 @@ async function playTimelineWithVoice(){
 
 async function playPreviewWithVoice(){
   if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
+  await ensureCutoutsForSolidBg();
   const adjusted = prepareTimelineForPlayback();
   stopSpeech(false);
   setLog(adjusted
@@ -1970,6 +2136,7 @@ async function playPreviewWithVoice(){
 
 async function playPreviewWithoutVoice(){
   if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
+  await ensureCutoutsForSolidBg();
   stopSpeech(false);
   const adjusted = prepareTimelineForPlayback();
   setLog(adjusted
@@ -2049,7 +2216,7 @@ function resetRecordingOutput(){
 function finishRecordingBlob(blob, format, message){
   const url = URL.createObjectURL(blob);
   els.downloadLink.href = url;
-  els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}.${format.ext}`;
+  els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}${solidBgActive() ? '_solid' : ''}.${format.ext}`;
   els.downloadBox.style.display = 'block';
   lastRecordingBlob = blob;
   lastRecordingMeta = format;
@@ -2310,6 +2477,7 @@ async function recordMediaRecorderVideo(withMic){
 
 async function recordVideo(withMic){
   if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
+  await ensureCutoutsForSolidBg();
   const adjusted = prepareTimelineForPlayback();
   stopSpeech(false);
   resetRecordingOutput();
@@ -3040,7 +3208,7 @@ async function uploadVideoToDrive(){
       api: 'uploadVideo',
       key,
       folderId: currentWork.folderId,
-      filename: `${currentWork.id}_video_${dateStamp()}.${recordingMeta.ext}`,
+      filename: `${currentWork.id}_video_${dateStamp()}${solidBgActive() ? '_solid' : ''}.${recordingMeta.ext}`,
       mimeType: recordingMeta.type,
       dataBase64
     };
@@ -3156,6 +3324,14 @@ document.getElementById('removeSlide').addEventListener('click', removeSelected)
   document.getElementById(id).addEventListener('change', () => drawSelectedOrFirstFrame());
 });
 els.videoFont.addEventListener('change', () => drawSelectedOrFirstFrame());
+els.bgMode.addEventListener('change', () => { updateBgUi(); ensureCutoutsForSolidBg(); });
+els.bgColor.addEventListener('input', () => drawSelectedOrFirstFrame());
+document.querySelectorAll('.bg-swatch').forEach(btn => {
+  btn.addEventListener('click', () => {
+    els.bgColor.value = btn.dataset.color;
+    drawSelectedOrFirstFrame();
+  });
+});
 els.narrationLang.addEventListener('change', populateVoices);
 els.voiceSelect.addEventListener('change', handleVoiceChange);
 els.translationDirection.addEventListener('change', updateTranslationUi);
