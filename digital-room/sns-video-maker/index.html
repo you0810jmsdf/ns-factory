@@ -369,12 +369,12 @@ canvas{
           <div class="assist-flow" aria-label="補助ボタンの流れ">
             <div><b>1</b><span><strong>空欄だけ補完</strong>写真の見出し・セリフが空のときだけ案を入れます。</span></div>
             <div><b>2</b><span><strong>メモを変換</strong>上の変換方向で、結果を見どころメモへ入れます。</span></div>
-            <div><b>3</b><span><strong>写真へ配分</strong>見どころメモを各写真の「読むセリフ・台本」へ入れます。</span></div>
+            <div><b>3</b><span><strong>使用中写真へ配分</strong>見どころメモを動画で使う写真の「読むセリフ・台本」へ入れます。</span></div>
           </div>
           <div class="actions">
             <button class="secondary" id="fillDefaults" title="入力済みのセリフは残し、空欄だけ補完します">1. 空欄のセリフに案を入れる</button>
             <button class="secondary" id="translateFeatureNote" title="選んだ方向で翻訳し、見どころメモへ入れます">2. メモを変換する</button>
-            <button class="secondary" id="distributeFeatureNote" title="見どころメモを写真ごとの台本欄へ入れます">3. メモを写真の台本へ配分</button>
+            <button class="secondary" id="distributeFeatureNote" title="見どころメモを使用中写真の台本欄へ入れます。余った文は後ろの写真へまとめます">3. メモを使用中写真へ配分</button>
           </div>
         </div>
 
@@ -1001,22 +1001,62 @@ function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
     if(showLog) setLog('先に写真を追加してください。');
     return 0;
   }
-  const features = splitFeatureNotes(els.featureNote.value);
+  const targets = playableSlides();
+  if(!targets.length){
+    if(showLog) setLog('動画で使う写真を1枚以上選んでください。');
+    return 0;
+  }
+  const features = distributionSourceLines();
   if(!features.length){
     if(showLog) setLog('見どころメモを入力してください。');
     return 0;
   }
   const english = els.narrationLang.value === 'en-US';
-  slides.forEach((slide, index) => {
-    const generated = textsFromFeatureLine(features[index % features.length], index, english);
+  const assignedFeatures = featureLinesForTargets(features, targets.length);
+  targets.forEach((slide, index) => {
+    const generated = textsFromFeatureLine(assignedFeatures[index], index, english);
     if(overwrite || !slide.caption) slide.caption = generated.caption;
     if(overwrite || !slide.narration) slide.narration = generated.narration;
   });
   loadSelected();
   renderList();
   drawSelectedOrFirstFrame();
-  if(showLog) setLog(`${slides.length}枚の写真それぞれの「読むセリフ・台本」へ見どころメモを配分しました。`);
-  return slides.length;
+  if(showLog) setLog(`${targets.length}枚の使用中写真へ見どころメモを配分しました。除外中の写真は変更せず、余った文は後ろの写真へまとめています。`);
+  return targets.length;
+}
+
+function distributionSourceLines(){
+  const lines = [];
+  const seen = new Set();
+  const addLine = value => {
+    const clean = cleanFeatureLine(value);
+    const key = normalizedDistributionLine(clean);
+    if(!key || seen.has(key)) return;
+    lines.push(clean);
+    seen.add(key);
+  };
+  splitFeatureNotes(els.featureNote.value).forEach(addLine);
+  slides
+    .filter(slide => !isSlideEnabled(slide))
+    .forEach(slide => addLine(slide.narration));
+  return lines;
+}
+
+function normalizedDistributionLine(text){
+  return String(text || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function featureLinesForTargets(features, targetCount){
+  const count = Math.max(0, targetCount);
+  if(!count) return [];
+  if(features.length <= count){
+    return Array.from({length: count}, (_, index) => features[index % features.length]);
+  }
+  return Array.from({length: count}, (_, index) => {
+    const start = Math.floor(index * features.length / count);
+    const end = Math.floor((index + 1) * features.length / count);
+    return features.slice(start, Math.max(start + 1, end)).join(' ');
+  });
 }
 
 function renderList(){
