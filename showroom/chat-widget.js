@@ -745,9 +745,22 @@
       var line = NSF_STAFF_PERSONA_LINES[staffId];
       if (!line) return '';
       return '\n\n【いま応対している幕僚キャラクター】' + line +
-        '\nこのキャラクターとして一貫して応対する。ただしキャラ付けは口調・言い回しの味付けに留め、' +
-        'ヒアリングの進め方・価格・在庫・仕様の正確さを常に最優先する。発注票のまとめ方や確認項目は上記の指示どおり変えないこと。';
+        '\nこのキャラクターとして一貫して応対し、毎回の返答で一人称・口癖・キャラらしい言い回しのいずれかを必ず1箇所以上使う' +
+        '（冒頭の呼びかけ・相槌・締めの一言に入れると自然）。' +
+        'ただしキャラ付けは口調・言い回しに留め、ヒアリングの進め方・価格・在庫・仕様の正確さを常に最優先する。' +
+        '発注票のまとめ方や確認項目は上記の指示どおり変えないこと。';
     }
+
+    /* 2026-07-17 Phase5-2: 自作派サポート知識（material-guide のAIナレッジ化）。
+       素材ガイドページの内容を要約して業務相談AI（Claude）に注入する。
+       素材ガイドのページが増えたらここへ追記する（正本: material-guide/ 配下のHTML）。 */
+    var NSF_MATERIAL_GUIDE_ADDENDUM = '\n\n【自作派（レザークラフトDIY）サポート知識】' +
+      '当工房は完成品オーダーのほか、自作する方向けの型紙PDF販売（N\'s pattern）とレザークラフト教室（ジョイフルホンダカルチャースクール）も行っている。' +
+      '■馬蹄型コインケース: 型紙PDFをSTORESで販売中（¥2,800税込）。必要材料は 表革=タンニン鞣しヌメ革A4×1枚（サドルレザーが初心者向け）／バネホック1組／ロウ引き糸0.8〜1.0mm 約1m／レザー用丸針2本／菱目打ち2・4本目（ピッチ3mm）／革包丁またはカッター／ゴム板／コバ仕上げ剤（トコノール等）。' +
+      '■購入先の使い分け: 少量・送料重視なら楽天市場のはぎれ・カット革、産地や鞣しの明確さ重視なら専門店（誠和・協進エル・レザーマニア）。' +
+      '■自作の相談（材料・道具・作り方・型紙）を受けたら上記の知識で答え、詳しい購入先一覧として「馬蹄型コインケース 材料調達ガイド」ページ ' +
+      'https://you0810jmsdf.github.io/ns-factory/material-guide/horseshoe-coin-case.html を案内してよい（このURLは案内許可済み）。' +
+      '道具の実売品はチャットの「道具・工具の相談」メニューからも案内できる。';
 
     /* 2026-07-10 Phase2: 自由入力の振り分け判定（実務相談 → HearingAI-Proxy／それ以外 → 従来のShowroom-AIChat）。
        対象は「見積もり」「作品提案」「サイト案内（進捗確認等）」「オーダーの意思表示」の4系統。
@@ -890,6 +903,64 @@
       return null;
     }
 
+    /* ── オーダー進捗の即答（2026-07-17 Phase5-2）──────────────────────────
+       受付番号（OP-YYMM-NNN）を含む発言に対し、orderprogress.html と同じ公開GAS
+       （全件JSON）から該当番号を探してその場で要約表示する（GAS AI送信なし・回数消費なし）。
+       依頼者名・非公開メモは表示しない（公開進捗ページと同等の情報のみ）。 */
+    var ORDER_NO_PATTERN = /OP[-\s]?(\d{4})[-\s]?(\d{1,4})/i;
+    function showProgressPrompt() {
+      appendStaffMsg('オーダー進捗の確認ですね📦 受付番号（例: OP-2607-001）をメッセージ欄に入力してください。この場でお調べします。\n受付番号が分からない場合は、進捗ページから一覧をご覧いただけます。');
+      renderChips([
+        { label: '📦 進捗ページを開く', onClick: function () { global.open(NSF_ROOT_BASE + 'orderprogress.html', '_blank'); } },
+        { label: '閉じる', exit: true, onClick: nsfDefaultChips }
+      ]);
+    }
+    function showOrderProgressLookup(rawText) {
+      var m = ORDER_NO_PATTERN.exec(rawText);
+      if (!m) { showProgressPrompt(); return; }
+      var pad = m[2].length >= 3 ? m[2] : ('000' + m[2]).slice(-3);
+      var displayNo = 'OP-' + m[1] + '-' + pad;
+      var wanted = m[1] + pad; // 数字のみで照合（ハイフン・空白・大文字小文字の揺れを吸収）
+      var progressChips = [
+        { label: '📦 進捗ページで詳しく見る', onClick: function () { global.open(NSF_ROOT_BASE + 'orderprogress.html', '_blank'); } },
+        { label: '閉じる', exit: true, onClick: nsfDefaultChips }
+      ];
+      showTyping();
+      fetch(ORDER_PROGRESS_GAS_URL)
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          hideTyping();
+          var recs = (j && j.records) || [];
+          var hit = null;
+          for (var i = 0; i < recs.length; i++) {
+            if (String(recs[i]['受付番号'] || '').replace(/[^0-9]/g, '') === wanted) { hit = recs[i]; break; }
+          }
+          if (!hit) {
+            appendStaffMsg('受付番号「' + displayNo + '」のオーダーが見つかりませんでした🙏 番号をお確かめのうえ、もう一度ご入力ください。進捗ページの一覧からもご確認いただけます。');
+            renderChips(progressChips);
+            return;
+          }
+          var lines = ['📦 受付番号 ' + (hit['受付番号'] || displayNo) + ' の進捗です。'];
+          if (hit['品名']) lines.push('・品名: ' + hit['品名'] + (hit['サイズ'] ? '（' + hit['サイズ'] + '）' : ''));
+          if (hit['ステータス']) lines.push('・現在の状況: ' + hit['ステータス']);
+          if (hit['受付日']) lines.push('・受付日: ' + hit['受付日']);
+          if (hit['予定完了日']) lines.push('・完成予定: ' + hit['予定完了日']);
+          var tl = hit['タイムライン'];
+          if (tl && tl.length) {
+            lines.push('・最近の進捗:\n' + tl.slice(-2).map(function (t) {
+              return '　' + (t.date || '') + ' ' + (t.text || '');
+            }).join('\n'));
+          }
+          appendStaffMsg(lines.join('\n') + '\n\n写真つきの詳しい進捗は進捗ページでご覧いただけます。');
+          renderChips(progressChips);
+        })
+        .catch(function () {
+          hideTyping();
+          appendStaffMsg('申し訳ありません、いま進捗情報につながりにくいようです。少し経ってから、もう一度お試しいただくか進捗ページから直接ご確認ください🙏');
+          renderChips(progressChips);
+        });
+    }
+
     /* ── 待機時の入口チップ（2026-07-17 Phase5: 全幕僚共通の機能メニュー化）──────────
        「全ての幕僚AIが同等の対応をできるようにする」方針（事業主指示2026-07-17）により、
        旧・幕僚限定チップ（オーダー相談=販売のみ／革色・ステッチ=販売・総司令官のみ）を撤廃。
@@ -951,7 +1022,8 @@
         case 'tools':
           return { label: '🛠️ 道具・工具の相談', onClick: showToolPrompt };
         case 'progress':
-          return { label: '📦 オーダー進捗を確認', onClick: function () { global.open(NSF_ROOT_BASE + 'orderprogress.html', '_blank'); } };
+          // 2026-07-17 Phase5-2: ページ直行ではなく、受付番号を聞いてチャット内で即答する
+          return { label: '📦 オーダー進捗を確認', onClick: showProgressPrompt };
         case 'showroom':
           return { label: '🏬 3Dショールームへ', onClick: function () { global.open(NSF_SHOWROOM_BASE || (NSF_ROOT_BASE + 'showroom/'), '_blank'); } };
         default:
@@ -1507,6 +1579,22 @@
         return;
       }
 
+      // 2026-07-17 Phase5-2: 受付番号（OP-xxxx-xxx）を含む発言 → 進捗をその場で即答
+      // （GAS AI送信なし・回数消費なし。進捗GASの公開JSONを参照するのみ）
+      if (ORDER_NO_PATTERN.test(text)) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        showOrderProgressLookup(text);
+        return;
+      }
+      // 受付番号なしの進捗質問 → 番号の入力を案内（Claude枠を消費しない）
+      if (/(進捗|進み具合|進行状況)/.test(text)) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        showProgressPrompt();
+        return;
+      }
+
       // リング・革シリーズ・革在庫・革の色の直球質問 → その場で即答（GAS送信なし・回数消費なし）
       if (nsfDetectRingQuery(text)) {
         if (input) input.value = '';
@@ -1588,6 +1676,8 @@
         var systemPrompt = global.NSF_HEARING.buildSystemPrompt(hearingKB, hearingLeathers, nsfLeatherStock) || '';
         // 2026-07-17 Phase5: 業務相談でも「どの幕僚と話しているか」を維持する（口調のみ・内容は不変）
         systemPrompt += nsfPersonaAddendum(staffId);
+        // 2026-07-17 Phase5-2: 自作派サポート知識（素材ガイド）を注入
+        systemPrompt += NSF_MATERIAL_GUIDE_ADDENDUM;
         var claudeHistory = chatHistories[staffId].slice(-CHAT_HISTORY_MAX).map(function (h) {
           return { role: h.role === 'model' ? 'assistant' : 'user', content: h.text };
         });
