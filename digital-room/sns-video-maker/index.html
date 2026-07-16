@@ -7,272 +7,326 @@
 <meta name="description" content="作品写真からSNS紹介用の縦型動画をブラウザ上で作成するWeb版β。写真はサーバーへ送信せず、端末内で処理します。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* アンティーク調パレット（2026-07-10 サイト統一デザイン: 羊皮紙×セピア×真鍮） */
-  --ink:#33291C;
-  --ink-sub:#6E5C44;
-  --mute:#A08D6F;
-  --line:#DCCDAF;
-  --paper:#FDF9EF;
-  --paper-deep:#F3EAD5;
-  --bg:#F7F1E3;
+  /* クラフト調モダン（2026-07-17 UI一新: 白基調×真鍮アクセント） */
+  --bg:#F6F4EE;
+  --card:#FFFFFF;
+  --card-soft:#FBF9F3;
+  --ink:#2A241B;
+  --ink-sub:#6D6252;
+  --mute:#9A8F7D;
+  --line:#E6DFD0;
   --brass:#A6823F;
-  --brass-dark:#7A5E2A;
-  --brass-light:#F0E6CE;
-  --sepia:#3A2C1E;
-  --danger:#9C4A38;
-  --radius:10px;
-  --shadow-sm:0 2px 8px rgba(74,52,18,.10);
-  --shadow-md:0 4px 16px rgba(74,52,18,.14);
-  font-family:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+  --brass-dark:#7E6128;
+  --brass-light:#F3ECDA;
+  --focus:rgba(166,130,63,.22);
+  --danger:#B0452F;
+  --radius:14px;
+  --radius-sm:10px;
+  --shadow-sm:0 1px 3px rgba(42,36,27,.06),0 4px 14px rgba(42,36,27,.05);
+  --shadow-md:0 8px 28px rgba(42,36,27,.12);
 }
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{
-  margin:0;background:var(--bg);color:var(--ink);line-height:1.7;
-  background-image:
-    radial-gradient(ellipse at 15% -10%,rgba(166,130,63,.08),transparent 55%),
-    radial-gradient(ellipse at 95% 115%,rgba(58,44,30,.07),transparent 50%);
-  background-attachment:fixed;
+  margin:0;background:var(--bg);color:var(--ink);line-height:1.7;font-size:14px;
+  font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
 }
 button,input,textarea,select{font:inherit;color:var(--ink)}
-button{border:0;border-radius:var(--radius);cursor:pointer}
+button{border:0;border-radius:var(--radius-sm);cursor:pointer;font-weight:700;letter-spacing:.02em;line-height:1.45;white-space:normal;text-align:center}
 button:disabled{opacity:.45;cursor:not-allowed}
 
 /* ── ヘッダー ── */
 .nav{
-  height:60px;display:flex;align-items:center;gap:16px;padding:0 20px;
-  background:linear-gradient(180deg,#4A3826,var(--sepia));color:#EFE3C8;
-  border-bottom:2px solid var(--brass);position:sticky;top:0;z-index:10;box-shadow:var(--shadow-md);
+  display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:12px 18px;
+  background:linear-gradient(180deg,#332818,#241B0F);color:#F0E7D4;
+  border-bottom:2px solid var(--brass);
 }
-.nav-title{font-family:'Cinzel','Zen Old Mincho',serif;font-weight:700;font-size:15px;letter-spacing:.14em;white-space:nowrap}
+.nav-brand{display:flex;flex-direction:column;min-width:0}
+.nav-title{font-family:'Cinzel','Zen Kaku Gothic New',serif;font-weight:700;font-size:14px;letter-spacing:.12em;line-height:1.4}
 .nav-title span{color:#D9BC7A}
-.nav-sub{font-size:11.5px;color:#C9B48C;letter-spacing:.06em}
-.nav a{
-  color:#D8C49A;text-decoration:none;font-size:12.5px;margin-left:auto;white-space:nowrap;
-  border:1px solid rgba(216,196,154,.45);padding:6px 14px;border-radius:9999px;transition:background .2s ease;
+.nav-sub{font-size:11px;color:#C4B18B;letter-spacing:.05em}
+.nav-back{
+  margin-left:auto;color:#E3D2A6;text-decoration:none;font-size:12.5px;white-space:nowrap;
+  border:1px solid rgba(216,196,154,.5);padding:7px 14px;border-radius:9999px;transition:background .2s ease;
 }
-.nav a:hover{background:rgba(216,196,154,.14)}
+.nav-back:hover{background:rgba(216,196,154,.14)}
 
-.app{max-width:1480px;margin:0 auto;padding:22px 18px 56px}
+.app{max-width:1480px;margin:0 auto;padding:20px 16px 56px}
 
 /* ── リード文 ── */
-.hero{margin-bottom:14px}
-.hero h1{
-  font-size:22px;margin:0 0 2px;letter-spacing:.04em;
-  font-family:'Zen Old Mincho',serif;font-weight:700;
-}
-.hero p{margin:0;color:var(--ink-sub);font-size:12.5px}
+.hero{margin-bottom:16px}
+.hero h1{font-size:clamp(18px,4.6vw,23px);margin:0 0 4px;letter-spacing:.03em;font-weight:700;line-height:1.5}
+.hero p{margin:0;color:var(--ink-sub);font-size:13px}
 .hero strong{color:var(--brass-dark)}
 
-/* ── 手順ストリップ ── */
+/* ── 手順ストリップ（PCのみ） ── */
 .workflow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .step{
   display:flex;gap:10px;align-items:center;
-  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
-  padding:9px 12px;font-size:11.5px;color:var(--ink-sub);box-shadow:var(--shadow-sm);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:10px 12px;font-size:12px;color:var(--ink-sub);box-shadow:var(--shadow-sm);
 }
 .step .num{
-  flex:none;width:26px;height:26px;border-radius:50%;
-  background:linear-gradient(180deg,#B8934C,var(--brass-dark));color:#FFF9EA;
+  flex:none;width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(180deg,#B9944D,var(--brass-dark));color:#FFF9EA;
   display:grid;place-items:center;font-family:'Cinzel',serif;font-weight:700;font-size:13px;
 }
-.step strong{display:block;color:var(--ink);font-size:13px;line-height:1.4}
+.step strong{display:block;color:var(--ink);font-size:13.5px;line-height:1.4}
 
-/* ── スタジオ3ペイン ── */
-.studio{display:grid;grid-template-columns:290px minmax(0,1fr) 380px;gap:16px;align-items:start}
-.stage{position:sticky;top:76px}
+/* ── スタジオ（PC=3ペイン / スマホ=ステップ切替） ── */
+.studio{display:block}
+.pane{min-width:0}
+.stage-col{min-width:0}
 
 /* ── パネル共通 ── */
 .panel{
-  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
-  padding:16px;box-shadow:var(--shadow-sm);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 16px;box-shadow:var(--shadow-sm);
 }
 .panel + .panel{margin-top:14px}
 .panel h2,.export-box h2{
-  font-size:12.5px;margin:0 0 12px;letter-spacing:.22em;color:var(--brass-dark);
+  font-size:13px;margin:0 0 14px;letter-spacing:.18em;color:var(--brass-dark);
   display:flex;align-items:center;gap:10px;font-weight:700;
 }
 .panel h2::after,.export-box h2::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
 
 /* ── フォーム ── */
-.field{margin-bottom:12px}
-.field label{display:block;font-size:11.5px;font-weight:700;color:var(--brass-dark);margin-bottom:4px;letter-spacing:.04em}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--brass-dark);margin-bottom:5px;letter-spacing:.02em}
 .field input,.field textarea,.field select{
-  width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;
-  background:#FFFDF6;color:var(--ink);transition:border-color .2s ease,box-shadow .2s ease;
+  width:100%;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:11px 12px;
+  background:#FFF;color:var(--ink);font-size:16px;transition:border-color .2s ease,box-shadow .2s ease;
 }
 .field input:focus,.field textarea:focus,.field select:focus{
-  outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(166,130,63,.16);
+  outline:none;border-color:var(--brass);box-shadow:0 0 0 3px var(--focus);
 }
-.field textarea{min-height:84px;resize:vertical}
-.help{margin:-2px 0 12px;color:var(--mute);font-size:11.5px;line-height:1.7}
+.field textarea{min-height:88px;resize:vertical}
+.help{margin:-2px 0 12px;color:var(--mute);font-size:12px;line-height:1.7}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .check-row{
-  display:flex;gap:8px;align-items:flex-start;margin:8px 0 12px;
-  color:var(--ink-sub);font-size:12px;line-height:1.6;
+  display:flex;gap:10px;align-items:flex-start;margin:10px 0 14px;
+  color:var(--ink-sub);font-size:12.5px;line-height:1.6;cursor:pointer;
 }
-.check-row input{width:auto;margin-top:3px;accent-color:var(--brass-dark)}
-.check-row strong{display:block;color:var(--ink);font-size:12.5px}
+.check-row input{width:20px;height:20px;margin-top:2px;accent-color:var(--brass-dark);flex:none}
+.check-row strong{display:block;color:var(--ink);font-size:13px}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
 .assist-flow{
-  display:grid;gap:7px;margin:4px 0 12px;padding-left:2px;
-  color:var(--ink-sub);font-size:11.5px;line-height:1.55;
+  display:grid;gap:8px;margin:4px 0 14px;padding-left:2px;
+  color:var(--ink-sub);font-size:12px;line-height:1.6;
 }
-.assist-flow div{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start}
+.assist-flow div{display:grid;grid-template-columns:26px 1fr;gap:8px;align-items:start}
 .assist-flow b{
-  width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
   background:var(--brass-light);color:var(--brass-dark);font-family:'Cinzel',serif;font-size:12px;
 }
-.assist-flow strong{display:block;color:var(--ink);font-size:12px}
+.assist-flow strong{display:block;color:var(--ink);font-size:12.5px}
 .assist-flow span{display:block}
 
 /* ── ボタン ── */
 .primary{
-  background:linear-gradient(180deg,#B8934C,var(--brass-dark));color:#FFF9EA;
-  padding:10px 16px;font-weight:700;letter-spacing:.05em;box-shadow:var(--shadow-sm);
+  background:linear-gradient(180deg,#B9944D,#83652B);color:#FFF9EA;
+  padding:12px 18px;min-height:46px;font-size:14.5px;
+  box-shadow:0 2px 8px rgba(131,101,43,.28);
 }
-.primary:hover:not(:disabled){filter:brightness(1.08)}
+.primary:hover:not(:disabled){filter:brightness(1.07)}
 .secondary{
-  background:var(--paper);color:var(--brass-dark);padding:9px 14px;font-weight:700;
-  border:1px solid var(--brass);transition:background .2s ease;
+  background:#FFF;color:var(--brass-dark);padding:10px 14px;min-height:44px;font-size:13.5px;
+  border:1.5px solid #CDB884;transition:background .15s ease;
 }
 .secondary:hover:not(:disabled){background:var(--brass-light)}
-.danger{background:#FFFDF6;color:var(--danger);padding:9px 12px;border:1px solid #D9B3A8}
-.danger:hover:not(:disabled){background:#F6E8E2}
-.file-btn{display:inline-flex;align-items:center;border-radius:var(--radius);cursor:pointer}
+.danger{
+  background:#FFF;color:var(--danger);padding:10px 14px;min-height:44px;font-size:13.5px;
+  border:1.5px solid #E0AC9E;
+}
+.danger:hover:not(:disabled){background:#FBEEE9}
+.file-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);cursor:pointer}
+.next-step{display:none;width:100%;margin-top:16px}
 
-/* ── 写真ライブラリ（左ペイン） ── */
+/* ── 写真ライブラリ ── */
 details.drive{
-  border:1px solid var(--line);border-radius:var(--radius);background:var(--paper-deep);
-  padding:0 12px;margin:10px 0 12px;
+  border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card-soft);
+  padding:0 12px;margin:12px 0;
 }
 details.drive summary{
-  cursor:pointer;padding:9px 0;font-weight:700;font-size:12px;color:var(--brass-dark);letter-spacing:.04em;
+  cursor:pointer;padding:11px 0;font-weight:700;font-size:13px;color:var(--brass-dark);letter-spacing:.02em;
 }
-details.drive[open] summary{border-bottom:1px dashed var(--line);margin-bottom:10px}
+details.drive[open] summary{border-bottom:1px dashed var(--line);margin-bottom:12px}
 .drive-status{
-  display:none;margin-top:8px;padding:8px 10px;border-radius:8px;
-  font-size:11.5px;line-height:1.6;border:1px solid var(--line);background:#FFFDF6;color:var(--ink-sub);
+  display:none;margin-top:8px;padding:9px 11px;border-radius:var(--radius-sm);
+  font-size:12px;line-height:1.6;border:1px solid var(--line);background:#FFF;color:var(--ink-sub);
 }
 .drive-status.show{display:block}
 .drive-status.info{background:var(--brass-light);color:var(--ink)}
 .drive-status.success{background:#EFF8EF;color:#276738;border-color:#C8DFC8}
 .drive-status.error{background:#FFF0EA;color:#8F3E23;border-color:#E6B8A6}
-.slides{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow:auto;padding-right:2px}
+.slides{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;padding:2px}
 .slide-item{
-  display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;text-align:left;
-  border:1px solid var(--line);border-radius:var(--radius);padding:8px;background:#FFFDF6;min-width:0;
+  display:grid;grid-template-columns:60px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;
+  border:1.5px solid var(--line);border-radius:12px;padding:8px;background:#FFF;min-width:0;
   cursor:grab;touch-action:manipulation;transition:border-color .15s ease,background .15s ease;
 }
 .slide-item:active{cursor:grabbing}
 .slide-item.active{border-color:var(--brass);background:var(--brass-light);box-shadow:0 0 0 1px var(--brass)}
-.slide-item.excluded{opacity:.58;background:#F5F0E6;border-style:dashed}
+.slide-item.excluded{opacity:.58;background:var(--card-soft);border-style:dashed}
 .slide-item.excluded .thumb{filter:grayscale(.9)}
-.slide-item.speaking{
-  border-color:#2A7E73;background:#EDF8F5;box-shadow:0 0 0 2px rgba(42,126,115,.22);
-}
+.slide-item.speaking{border-color:#2A7E73;background:#EDF8F5;box-shadow:0 0 0 2px rgba(42,126,115,.22)}
 .slide-item.speaking .slide-meta{color:#1E665D;font-weight:700}
 .slide-item.dragging{opacity:.45}
-.slide-item.drag-over{border-color:var(--sepia);box-shadow:0 0 0 2px rgba(58,44,30,.22)}
-.thumb{width:56px;aspect-ratio:4/5;object-fit:cover;border-radius:6px;background:var(--paper-deep)}
-.slide-title{font-size:12.5px;font-weight:700;line-height:1.45}
-.slide-meta{font-size:11px;color:var(--ink-sub)}
+.slide-item.drag-over{border-color:var(--ink);box-shadow:0 0 0 2px rgba(42,36,27,.2)}
+.thumb{width:60px;aspect-ratio:4/5;object-fit:cover;border-radius:8px;background:var(--card-soft)}
+.slide-title{font-size:13px;font-weight:700;line-height:1.45;overflow-wrap:anywhere}
+.slide-meta{font-size:11.5px;color:var(--ink-sub)}
 .slide-use-toggle{
-  align-self:stretch;min-width:46px;padding:5px 8px;border:1px solid var(--brass);
-  border-radius:8px;background:var(--paper);color:var(--brass-dark);font-size:11px;font-weight:700;
+  align-self:stretch;min-width:52px;padding:5px 9px;border:1.5px solid #CDB884;
+  border-radius:var(--radius-sm);background:#FFF;color:var(--brass-dark);font-size:12px;font-weight:700;
 }
-.slide-use-toggle.off{border-color:#C9B8A2;color:var(--mute);background:#EFE7D8}
+.slide-use-toggle.off{border-color:#D5C9B4;color:var(--mute);background:var(--card-soft)}
 
-/* ── ステージ（中央ペイン） ── */
+/* ── ステージ（プレビュー） ── */
 .canvas-shell{
-  background:linear-gradient(160deg,#3A2C1E,#211910);
-  border:1px solid var(--brass);border-radius:14px;padding:12px;
-  box-shadow:var(--shadow-md),inset 0 0 0 1px rgba(216,188,122,.18);
-  display:flex;justify-content:center;
+  background:linear-gradient(165deg,#2B2115,#15100A);
+  border:1px solid #3E311E;border-radius:18px;padding:14px;
+  box-shadow:var(--shadow-md);display:flex;justify-content:center;
 }
 canvas{
-  display:block;height:min(62vh,760px);width:auto;max-width:100%;
-  aspect-ratio:9/16;background:#111;border-radius:6px;
+  display:block;height:min(58vh,700px);width:auto;max-width:100%;
+  aspect-ratio:9/16;background:#000;border-radius:10px;
 }
-.timeline{height:8px;background:#E6D9B9;border-radius:9999px;overflow:hidden;margin:12px 0 8px;border:1px solid var(--line)}
-.timeline span{display:block;height:100%;width:0;background:linear-gradient(90deg,#B8934C,var(--brass-dark))}
+.timeline{height:8px;background:#E9E2D1;border-radius:9999px;overflow:hidden;margin:12px 0 8px;border:1px solid var(--line)}
+.timeline span{display:block;height:100%;width:0;background:linear-gradient(90deg,#B9944D,var(--brass-dark))}
 .now-script{
-  min-height:76px;border:1px dashed var(--brass);background:var(--paper-deep);
-  border-radius:var(--radius);padding:10px 14px;font-size:14px;color:var(--ink);
-  line-height:1.65;white-space:pre-wrap;
+  min-height:72px;border:1.5px dashed var(--brass);background:var(--card-soft);
+  border-radius:var(--radius);padding:12px 14px;font-size:14.5px;color:var(--ink);
+  line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;
 }
 .now-script.speaking{border-style:solid;border-color:#2A7E73;background:#F1FAF6;box-shadow:0 0 0 2px rgba(42,126,115,.12)}
 .transport{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+/* ── 書き出し ── */
 .export-box{
-  margin-top:14px;background:var(--paper);border:1px solid var(--line);
-  border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);
+  margin-top:16px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow-sm);
 }
 .notice{
-  margin-top:10px;font-size:11.5px;color:var(--ink-sub);background:var(--brass-light);
-  border:1px solid var(--line);border-radius:var(--radius);padding:9px 12px;
+  margin-top:12px;font-size:12px;color:var(--ink-sub);background:var(--brass-light);
+  border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;line-height:1.7;
 }
 .download{display:none;margin-top:12px}
 .download a{
-  display:inline-block;background:linear-gradient(180deg,#B8934C,var(--brass-dark));color:#FFF9EA;
-  text-decoration:none;border-radius:var(--radius);padding:10px 16px;font-weight:700;letter-spacing:.05em;
+  display:inline-flex;align-items:center;justify-content:center;width:100%;
+  background:linear-gradient(180deg,#B9944D,#83652B);color:#FFF9EA;
+  text-decoration:none;border-radius:var(--radius-sm);padding:13px 16px;font-weight:700;letter-spacing:.04em;
 }
-.log{margin-top:10px;color:var(--ink-sub);font-size:12px;min-height:20px}
+.log{margin-top:10px;color:var(--ink-sub);font-size:12.5px;min-height:20px;line-height:1.7;overflow-wrap:anywhere}
 
-/* ── 編集タブ（右ペイン） ── */
-.tabs{display:flex;border-bottom:2px solid var(--line);margin-bottom:14px}
+/* ── 編集タブ ── */
+.tabs{
+  display:flex;gap:4px;background:var(--card-soft);border:1px solid var(--line);
+  border-radius:12px;padding:4px;margin-bottom:16px;
+}
 .tab-btn{
-  flex:1;background:none;padding:9px 2px;font-size:12.5px;font-weight:700;color:var(--mute);
-  border-bottom:2px solid transparent;margin-bottom:-2px;border-radius:0;letter-spacing:.02em;
-  transition:color .15s ease;
+  flex:1;background:none;padding:10px 4px;font-size:13px;font-weight:700;color:var(--ink-sub);
+  border-radius:9px;transition:color .15s ease,background .15s ease;
 }
 .tab-btn:hover{color:var(--brass-dark)}
-.tab-btn.active{color:var(--brass-dark);border-bottom-color:var(--brass)}
+.tab-btn.active{color:var(--brass-dark);background:#FFF;box-shadow:var(--shadow-sm)}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
-/* ── レスポンシブ ── */
-@media(max-width:1180px){
-  .studio{grid-template-columns:1fr}
-  .stage{position:static}
-  canvas{width:min(100%,420px);height:auto;margin:0 auto}
-  .slides{max-height:none;flex-direction:row;flex-wrap:wrap}
-  .slide-item{flex:0 0 calc(50% - 4px)}
+/* ── スマホ用ステップナビ・通知 ── */
+.step-nav{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(255,255,255,.96);backdrop-filter:blur(8px);
+  border-top:1px solid var(--line);box-shadow:0 -4px 18px rgba(42,36,27,.08);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));gap:4px;
 }
-@media(max-width:540px){
-  .workflow,.row{grid-template-columns:1fr 1fr}
-  .app{padding:16px 12px 40px}
-  .hero h1{font-size:19px}
-  .nav-sub{display:none}
-  .slide-item{flex:1 1 100%}
+.step-nav button{
+  flex:1;display:grid;justify-items:center;gap:3px;background:none;
+  padding:7px 2px;border-radius:10px;font-size:11px;color:var(--mute);font-weight:700;
+}
+.step-nav button .n{
+  width:27px;height:27px;border-radius:50%;display:grid;place-items:center;
+  background:var(--brass-light);color:var(--brass-dark);font-family:'Cinzel',serif;font-size:13px;font-weight:700;
+}
+.step-nav button.active{color:var(--brass-dark)}
+.step-nav button.active .n{background:linear-gradient(180deg,#B9944D,var(--brass-dark));color:#FFF9EA}
+#logToast{
+  position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:960;
+  background:rgba(42,36,27,.94);color:#F5EFE3;padding:11px 14px;border-radius:12px;
+  font-size:12.5px;line-height:1.6;opacity:0;pointer-events:none;
+  transform:translateY(6px);transition:opacity .25s ease,transform .25s ease;
+}
+#logToast.show{opacity:1;transform:none}
+
+/* ── PCレイアウト（960px以上で3ペイン並列） ── */
+@media(min-width:960px){
+  .nav{position:sticky;top:0;z-index:20}
+  .studio{display:grid;grid-template-columns:280px minmax(0,1fr) 360px;gap:18px;align-items:start}
+  .stage-col{position:sticky;top:80px}
+  #logToast{display:none}
+}
+@media(min-width:1280px){
+  .studio{grid-template-columns:300px minmax(0,1fr) 400px}
+}
+
+/* ── スマホ・タブレット（959px以下はステップ切替） ── */
+@media(max-width:959px){
+  .workflow{display:none}
+  #sec-photos,#sec-script,#sec-preview,#sec-export{display:none}
+  body[data-step="photos"] #sec-photos{display:block}
+  body[data-step="script"] #sec-script{display:block}
+  body[data-step="preview"] #sec-preview{display:block}
+  body[data-step="export"] #sec-export{display:block}
+  .step-nav{display:flex}
+  .app{padding:16px 12px calc(104px + env(safe-area-inset-bottom))}
+  .next-step{display:inline-flex;align-items:center;justify-content:center}
+  .export-box{margin-top:0}
+  .slides{max-height:none;overflow:visible}
+  canvas{width:min(78vw,330px);height:auto}
+  .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
+  .transport{display:grid;grid-template-columns:1fr}
+  /* アクセスカウンター（assets/access-counter.jsがinlineスタイルで固定配置）は
+     モバイルでは「戻る」ボタンと重なるため、ステップナビの上・左下へ退避させる */
+  #access-counter{
+    top:auto !important;bottom:calc(86px + env(safe-area-inset-bottom)) !important;
+    right:auto !important;left:10px !important;opacity:.85;
+  }
+}
+@media(max-width:379px){
+  .row{grid-template-columns:1fr}
+  .actions{grid-template-columns:1fr}
 }
 </style>
 </head>
-<body>
+<body data-step="photos">
 <header class="nav">
-  <span class="nav-title">N'S FACTORY <span>MOVIE STUDIO</span></span>
-  <span class="nav-sub">SNS紹介動画メーカー Web版β</span>
-  <a href="../">デジタル幕僚室へ戻る</a>
+  <div class="nav-brand">
+    <span class="nav-title">N'S FACTORY <span>MOVIE STUDIO</span></span>
+    <span class="nav-sub">SNS紹介動画メーカー</span>
+  </div>
+  <a class="nav-back" href="../">デジタル幕僚室へ戻る</a>
 </header>
 
 <main class="app">
   <section class="hero">
     <h1>作品写真から、SNS用の縦型動画をつくる</h1>
-    <p><strong>写真はアップロードされません。</strong>読み込みから動画生成まで、すべてこのページ（ブラウザ内）で完結します。Instagram用にMP4優先で保存します。</p>
+    <p><strong>写真はアップロードされません。</strong>読み込みから動画生成まで、すべてこのブラウザ内で完結します。</p>
   </section>
 
   <section class="workflow" aria-label="操作手順">
-    <div class="step"><span class="num">1</span><span><strong>写真</strong>左の一覧に追加</span></div>
-    <div class="step"><span class="num">2</span><span><strong>セリフ</strong>右のタブで編集</span></div>
-    <div class="step"><span class="num">3</span><span><strong>確認</strong>中央でプレビュー</span></div>
-    <div class="step"><span class="num">4</span><span><strong>保存</strong>MP4優先で書き出し</span></div>
+    <div class="step"><span class="num">1</span><span><strong>写真</strong>一覧に追加</span></div>
+    <div class="step"><span class="num">2</span><span><strong>台本</strong>セリフを編集</span></div>
+    <div class="step"><span class="num">3</span><span><strong>確認</strong>プレビュー再生</span></div>
+    <div class="step"><span class="num">4</span><span><strong>保存</strong>MP4で書き出し</span></div>
   </section>
 
   <div class="studio">
-    <aside class="library">
+    <section class="pane" id="sec-photos">
       <section class="panel">
-        <h2>写真ライブラリ</h2>
+        <h2>写真</h2>
         <div class="actions">
           <label class="primary file-btn" for="photoInput">＋ 写真を追加</label>
           <input id="photoInput" type="file" accept="image/*" multiple hidden>
@@ -297,43 +351,47 @@ canvas{
             <button class="secondary" id="loadDrivePhotos">Driveから写真を表示</button>
           </div>
           <div class="drive-status" id="driveStatus" role="status"></div>
-          <p class="help">作品番号を入力してEnter、または欄外をクリックすると、作品情報とDrive写真を自動で読み込みます。表示されない時はこのボタンを押してください。</p>
+          <p class="help">作品番号を入力してEnter、または欄外をタップすると、作品情報とDrive写真を自動で読み込みます。表示されない時はこのボタンを押してください。</p>
         </details>
-        <p class="help">カードをクリックで選択、ドラッグで動画の順番を入れ替えられます。</p>
+        <p class="help">写真をタップで選択、ドラッグで動画の順番を入れ替えられます。</p>
         <div id="slides" class="slides"></div>
+        <button class="primary next-step" type="button" data-goto-step="script">次へ：台本を整える</button>
       </section>
-    </aside>
-
-    <section class="stage">
-      <div class="canvas-shell">
-        <canvas id="previewCanvas" width="1080" height="1920"></canvas>
-      </div>
-      <div class="timeline"><span id="progressBar"></span></div>
-      <div class="now-script" id="currentScript">写真を追加すると、ここにセリフが表示されます。</div>
-      <div class="transport">
-        <button class="primary" id="playPreviewVoice">▶ 音声つきプレビュー</button>
-        <button class="secondary" id="playPreview">映像だけ確認</button>
-        <button class="secondary" id="speakScript">音声だけ確認</button>
-      </div>
-      <div class="export-box">
-        <h2>書き出し</h2>
-        <div class="actions">
-          <button class="primary" id="recordSilent">Instagram用動画を保存（音声なし）</button>
-          <button class="secondary" id="recordMic">マイク録音つきMP4保存</button>
-          <button class="secondary" id="fitDriveSize" title="録画済みサイズから逆算して、使用中写真の表示秒数をまとめて短くします">Drive用に秒数を自動短縮</button>
-          <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveの作品フォルダへ保存</button>
-        </div>
-        <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
-        <div class="notice">Instagramへ投稿する場合はMP4で保存された動画を使ってください。自動音声の読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
-        <div class="log" id="log"></div>
-      </div>
     </section>
 
-    <aside class="editor">
+    <div class="stage-col">
+      <section id="sec-preview">
+        <div class="canvas-shell">
+          <canvas id="previewCanvas" width="1080" height="1920"></canvas>
+        </div>
+        <div class="timeline"><span id="progressBar"></span></div>
+        <div class="now-script" id="currentScript">写真を追加すると、ここにセリフが表示されます。</div>
+        <div class="transport">
+          <button class="primary" id="playPreviewVoice">▶ 音声つきプレビュー</button>
+          <button class="secondary" id="playPreview">映像だけ確認</button>
+          <button class="secondary" id="speakScript">音声だけ確認</button>
+        </div>
+        <button class="primary next-step" type="button" data-goto-step="export">次へ：動画を保存する</button>
+      </section>
+      <section class="export-box" id="sec-export">
+        <h2>保存（書き出し）</h2>
+        <div class="actions">
+          <button class="primary" id="recordSilent">動画を保存（MP4）</button>
+          <button class="secondary" id="recordMic">マイク録音つきで保存</button>
+          <button class="secondary" id="fitDriveSize" title="録画済みサイズから逆算して、使用中写真の表示秒数をまとめて短くします">Drive用に秒数を短縮</button>
+          <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveへアップロード</button>
+        </div>
+        <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
+        <div class="notice">Instagramへ投稿する場合は「動画を保存（MP4）」で保存した動画を使ってください。自動音声の読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
+        <div class="log" id="log"></div>
+      </section>
+    </div>
+
+    <section class="pane" id="sec-script">
       <section class="panel">
         <div class="tabs" role="tablist">
           <button class="tab-btn active" data-tab="tab-info" type="button">作品情報</button>
-          <button class="tab-btn" data-tab="tab-slide" type="button">選択中の写真</button>
+          <button class="tab-btn" data-tab="tab-slide" type="button">写真ごと</button>
           <button class="tab-btn" data-tab="tab-output" type="button">出力設定</button>
         </div>
 
@@ -386,7 +444,7 @@ canvas{
         </div>
 
         <div class="tab-panel" id="tab-slide">
-          <p class="help">左の一覧で写真を選ぶと、ここで1枚ずつ編集できます。</p>
+          <p class="help">写真一覧で写真を選ぶと、ここで1枚ずつ編集できます。</p>
           <div class="field">
             <label for="caption">写真ごとの見出し（一覧整理用）</label>
             <input id="caption" autocomplete="off">
@@ -488,10 +546,19 @@ canvas{
             <button class="secondary" id="fitDurationsToNarration" type="button">セリフ長で秒数を整える</button>
           </div>
         </div>
+        <button class="primary next-step" type="button" data-goto-step="preview">次へ：プレビューで確認</button>
       </section>
-    </aside>
+    </section>
   </div>
 </main>
+
+<div id="logToast" role="status" aria-live="polite"></div>
+<nav class="step-nav" id="stepNav" aria-label="編集ステップ">
+  <button type="button" data-step="photos" class="active"><span class="n">1</span>写真</button>
+  <button type="button" data-step="script"><span class="n">2</span>台本</button>
+  <button type="button" data-step="preview"><span class="n">3</span>確認</button>
+  <button type="button" data-step="export"><span class="n">4</span>保存</button>
+</nav>
 
 <script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.2/build/mp4-muxer.min.js"></script>
 <script>
@@ -563,7 +630,20 @@ let lastRecordingBlob = null;
 let lastRecordingMeta = null;
 let registerKey = '';
 
-function setLog(message){ els.log.textContent = message; }
+function setLog(message){
+  els.log.textContent = message;
+  // スマホのステップ表示中でも状況が分かるよう、トーストへも表示する（PCではCSSで非表示）
+  const toast = document.getElementById('logToast');
+  if(!toast) return;
+  clearTimeout(toast._timer);
+  if(String(message || '').trim()){
+    toast.textContent = message;
+    toast.classList.add('show');
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 6000);
+  }else{
+    toast.classList.remove('show');
+  }
+}
 function setDriveStatus(message, type = 'info'){
   if(!els.driveStatus) return;
   els.driveStatus.textContent = message;
@@ -1365,7 +1445,7 @@ function fitDurationsForDriveSize(options = {}){
   drawSelectedOrFirstFrame();
   const newTotal = totalDuration();
   const sourceLabel = sourceBytes ? `録画サイズ${formatMb(sourceBytes)}MBから逆算して、` : '';
-  const retryMessage = sourceBytes ? 'もう一度「Instagram用動画を保存」を押して再録画してください。' : '次回の録画から軽くなります。';
+  const retryMessage = sourceBytes ? 'もう一度「動画を保存（MP4）」を押して再録画してください。' : '次回の録画から軽くなります。';
   const caution = needsNarrationOverride
     ? ' Drive軽量化を優先するため「セリフが終わるまで写真を待たせる」はOFFにしました。'
     : '';
@@ -2944,7 +3024,7 @@ async function uploadVideoToDrive(){
     const sourceBytes = lastRecordingBlob.size;
     const result = fitDurationsForDriveSize({sourceBytes, targetBytes:DRIVE_VIDEO_TARGET_BYTES, showLog:false});
     const suffix = result.changed
-      ? `Drive用に表示秒数を自動短縮しました（${result.oldTotal.toFixed(1)}秒 → ${result.newTotal.toFixed(1)}秒）。もう一度「Instagram用動画を保存」を押してからDrive保存してください。`
+      ? `Drive用に表示秒数を自動短縮しました（${result.oldTotal.toFixed(1)}秒 → ${result.newTotal.toFixed(1)}秒）。もう一度「動画を保存（MP4）」を押してからDrive保存してください。`
       : '自動短縮できる余地が少ないため、セリフを短くするか、使う写真を減らしてください。';
     setLog(`動画が大きすぎます（${formatMb(sourceBytes)}MB / 上限${formatMb(UPLOAD_VIDEO_MAX_BYTES)}MB）。${suffix}`);
     return;
@@ -3118,6 +3198,23 @@ refreshCapabilities();
   setLog(`作品番号 ${els.driveWorkNo.value} を受け取りました。作品情報とDrive写真を自動で読み込みます。`);
   await syncWorkFromNumber();
   await addDrivePhotos();
+})();
+</script>
+<script>
+// スマホ用ステップナビ（959px以下）。PCでは全ペイン並列表示のため非表示。
+(function(){
+  const nav = document.getElementById('stepNav');
+  if(!nav) return;
+  const isMobile = () => window.matchMedia('(max-width:959px)').matches;
+  function setStep(name, scroll = true){
+    document.body.dataset.step = name;
+    nav.querySelectorAll('button[data-step]').forEach(btn => btn.classList.toggle('active', btn.dataset.step === name));
+    if(scroll && isMobile()) window.scrollTo({top:0, behavior:'smooth'});
+    if(name === 'preview' && slides.length) drawSelectedOrFirstFrame();
+  }
+  nav.querySelectorAll('button[data-step]').forEach(btn => btn.addEventListener('click', () => setStep(btn.dataset.step)));
+  document.querySelectorAll('[data-goto-step]').forEach(btn => btn.addEventListener('click', () => setStep(btn.dataset.gotoStep)));
+  setStep('photos', false);
 })();
 </script>
 <script src="../../assets/access-counter.js"></script>
