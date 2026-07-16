@@ -170,6 +170,10 @@ details.drive[open] summary{border-bottom:1px dashed var(--line);margin-bottom:1
 .slide-item.active{border-color:var(--brass);background:var(--brass-light);box-shadow:0 0 0 1px var(--brass)}
 .slide-item.excluded{opacity:.58;background:#F5F0E6;border-style:dashed}
 .slide-item.excluded .thumb{filter:grayscale(.9)}
+.slide-item.speaking{
+  border-color:#2A7E73;background:#EDF8F5;box-shadow:0 0 0 2px rgba(42,126,115,.22);
+}
+.slide-item.speaking .slide-meta{color:#1E665D;font-weight:700}
 .slide-item.dragging{opacity:.45}
 .slide-item.drag-over{border-color:var(--sepia);box-shadow:0 0 0 2px rgba(58,44,30,.22)}
 .thumb{width:56px;aspect-ratio:4/5;object-fit:cover;border-radius:6px;background:var(--paper-deep)}
@@ -197,7 +201,9 @@ canvas{
 .now-script{
   min-height:76px;border:1px dashed var(--brass);background:var(--paper-deep);
   border-radius:var(--radius);padding:10px 14px;font-size:14px;color:var(--ink);
+  line-height:1.65;white-space:pre-wrap;
 }
+.now-script.speaking{border-style:solid;border-color:#2A7E73;background:#F1FAF6;box-shadow:0 0 0 2px rgba(42,126,115,.12)}
 .transport{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .export-box{
   margin-top:14px;background:var(--paper);border:1px solid var(--line);
@@ -545,6 +551,7 @@ let recorder = null;
 let chunks = [];
 let activeUtterance = null;
 let activeSpeechResolve = null;
+let activeAudioPreviewSlide = null;
 let draggedSlideIndex = null;
 let drivePhotoLoading = false;
 let worksCatalog = [];
@@ -1066,18 +1073,22 @@ function renderList(){
     return;
   }
   let videoNumber = 0;
+  const activeTotal = playableSlides().length;
   slides.forEach((slide, index) => {
     const enabled = isSlideEnabled(slide);
     if(enabled) videoNumber += 1;
     const item = document.createElement('div');
-    item.className = `slide-item ${index === selected ? 'active' : ''} ${enabled ? '' : 'excluded'}`;
+    const speaking = slide === activeAudioPreviewSlide;
+    item.className = `slide-item ${index === selected ? 'active' : ''} ${enabled ? '' : 'excluded'} ${speaking ? 'speaking' : ''}`;
     item.tabIndex = 0;
     item.setAttribute('role', 'button');
     item.draggable = true;
     item.dataset.index = String(index);
     item.title = 'ドラッグで順番を入れ替え';
     const label = enabled ? `${videoNumber}.` : '除外中';
-    const meta = enabled ? `${slide.duration.toFixed(1)}秒 / ${motionLabel(slide.motion)}` : '動画には使わない';
+    const meta = speaking
+      ? `読み上げ中 ${videoNumber} / ${activeTotal}`
+      : (enabled ? `${slide.duration.toFixed(1)}秒 / ${motionLabel(slide.motion)}` : '動画には使わない');
     item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${label} ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${meta}</div></div><button class="slide-use-toggle ${enabled ? '' : 'off'}" type="button">${enabled ? '使う' : '戻す'}</button>`;
     const useButton = item.querySelector('.slide-use-toggle');
     useButton.addEventListener('click', event => {
@@ -1412,6 +1423,25 @@ function drawExcludedOverlay(){
   ctx.restore();
 }
 
+function drawAudioPreviewBadge(position, total){
+  const label = `音声確認中 ${position} / ${total}`;
+  ctx.save();
+  ctx.font = canvasFont(700, 34);
+  const w = Math.max(360, ctx.measureText(label).width + 72);
+  const x = (canvas.width - w) / 2;
+  const y = 90;
+  ctx.fillStyle = 'rgba(11,46,42,.78)';
+  roundRect(ctx, x, y, w, 78, 28);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.2)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#F6FFF9';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, canvas.width / 2, y + 51);
+  ctx.restore();
+}
+
 function drawBackground(img){
   ctx.save();
   ctx.filter = 'blur(30px)';
@@ -1709,6 +1739,32 @@ async function playPreviewWithoutVoice(){
     : '映像だけプレビューを再生中です。');
   await playTimeline(false);
   setLog('映像だけプレビューが終わりました。');
+}
+
+function setAudioPreviewFocus(slide, position, total){
+  activeAudioPreviewSlide = slide;
+  const originalIndex = slides.indexOf(slide);
+  if(originalIndex >= 0){
+    selected = originalIndex;
+    loadSelected();
+  }
+  renderList();
+  const start = timelineStartForSlide(slide);
+  drawFrame(start + slide.duration * .48);
+  drawAudioPreviewBadge(position, total);
+  els.currentScript.classList.add('speaking');
+  els.currentScript.textContent = `音声確認中 ${position}/${total}\n${slide.caption || slide.file.name}\n${slide.narration || 'この写真のセリフは空です。'}`;
+  els.progressBar.style.width = `${(position - 1) / Math.max(1, total) * 100}%`;
+}
+
+function clearAudioPreviewFocus(){
+  activeAudioPreviewSlide = null;
+  els.currentScript.classList.remove('speaking');
+  renderList();
+  if(selected >= 0 && slides[selected]){
+    loadSelected();
+    drawSelectedPreviewFrame(.55);
+  }
 }
 
 function previewCurrentSubtitleMotion(){
@@ -2030,15 +2086,51 @@ async function recordVideo(withMic){
   await recordMediaRecorderVideo(withMic);
 }
 
-function speakScript(){
+async function speakScript(){
   saveSelected();
-  const separator = els.narrationLang.value === 'en-US' ? '. ' : '。';
-  const fallback = els.narrationLang.value === 'en-US' ? 'There is no narration text.' : 'セリフがありません。';
-  const text = playableSlides().map(slide => slide.narration).filter(Boolean).join(separator);
-  speakText(text || fallback, {
-    startLog: '音声だけ確認を再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。',
-    endLog: '音声だけ確認が終わりました。'
-  });
+  const list = playableSlides().filter(slide => String(slide.narration || '').trim());
+  if(!list.length){
+    setLog(slides.length ? '使用中写真に読むセリフがありません。右の「読むセリフ・台本」に入力してください。' : '先に写真を追加してください。');
+    return;
+  }
+  if(!('speechSynthesis' in window)){
+    setLog('このブラウザでは読み上げプレビューが使えません。');
+    return;
+  }
+  cancelSpeechOutput();
+  els.speakScript.disabled = true;
+  setLog('音声だけ確認を再生中です。左の一覧と中央画面で、読んでいる写真を確認できます。');
+  let completed = true;
+  try{
+    for(let index = 0; index < list.length; index++){
+      const slide = list[index];
+      setAudioPreviewFocus(slide, index + 1, list.length);
+      const title = slide.caption || slide.file.name || '写真';
+      const result = await speakTextAndWait(slide.narration, {
+        cancelCurrent: false,
+        startLog: `${index + 1}/${list.length}枚目を読み上げ中: ${title}`,
+        onProgress: progress => {
+          const current = index + progress;
+          els.progressBar.style.width = `${Math.min(100, current / list.length * 100)}%`;
+        }
+      });
+      if(result.cancelled){
+        completed = false;
+        setLog('音声だけ確認を停止しました。');
+        break;
+      }
+      if(!result.ok){
+        completed = false;
+        setLog('読み上げを途中で停止しました。別の音声を選ぶか、ブラウザの音量を確認してください。');
+        break;
+      }
+    }
+    if(completed) setLog('音声だけ確認が終わりました。');
+  }finally{
+    clearAudioPreviewFocus();
+    els.progressBar.style.width = '100%';
+    els.speakScript.disabled = !('speechSynthesis' in window);
+  }
 }
 
 function speakTextAndWait(text, options = {}){
@@ -2066,7 +2158,7 @@ function speakTextAndWait(text, options = {}){
     utterance.volume = 1;
     utterance.rate = els.narrationLang.value === 'en-US' ? .88 : .94;
     utterance.pitch = 1;
-    const selectedVoice = getSelectedVoice();
+    const selectedVoice = options.forceDefaultVoice ? null : getSelectedVoice();
     if(selectedVoice) utterance.voice = selectedVoice;
     const spokenText = String(text || fallback);
     const textLength = Math.max(1, spokenText.length);
@@ -2084,15 +2176,32 @@ function speakTextAndWait(text, options = {}){
       if(options.endLog) setLog(options.endLog);
       finish({ok:true});
     };
-    utterance.onerror = () => {
-      setLog('読み上げを開始できませんでした。別の音声を選ぶか、Chrome/Edgeで開いてください。');
+    utterance.onerror = event => {
+      const errorName = event && event.error ? event.error : 'unknown';
+      if(selectedVoice && options.allowVoiceFallback !== false){
+        settled = true;
+        window.clearTimeout(watchdog);
+        activeUtterance = null;
+        activeSpeechResolve = null;
+        setLog(`選択した音声で再生できなかったため、ブラウザ標準音声で再試行します（${errorName}）。`);
+        speakTextAndWait(text, {
+          ...options,
+          cancelCurrent:false,
+          forceDefaultVoice:true,
+          allowVoiceFallback:false,
+          startLog:null
+        }).then(resolve);
+        return;
+      }
+      setLog(`読み上げを開始できませんでした（${errorName}）。別の音声を選ぶか、ブラウザの音量を確認してください。`);
       finish({ok:false});
     };
     activeUtterance = utterance;
+    speechSynthesis.resume();
+    speechSynthesis.speak(utterance);
     window.setTimeout(() => {
-      speechSynthesis.speak(utterance);
       if(speechSynthesis.paused) speechSynthesis.resume();
-    }, 60);
+    }, 120);
   });
 }
 
@@ -2108,22 +2217,30 @@ function speakText(text, options = {}){
   utterance.volume = 1;
   utterance.rate = els.narrationLang.value === 'en-US' ? .92 : 1;
   utterance.pitch = 1;
-  const selectedVoice = getSelectedVoice();
+  const selectedVoice = options.forceDefaultVoice ? null : getSelectedVoice();
   if(selectedVoice) utterance.voice = selectedVoice;
   utterance.onstart = () => { if(options.startLog) setLog(options.startLog); };
   utterance.onend = () => {
     activeUtterance = null;
     if(options.endLog) setLog(options.endLog);
   };
-  utterance.onerror = () => {
+  utterance.onerror = event => {
+    const errorName = event && event.error ? event.error : 'unknown';
+    if(selectedVoice && options.allowVoiceFallback !== false){
+      activeUtterance = null;
+      setLog(`選択した音声で再生できなかったため、ブラウザ標準音声で再試行します（${errorName}）。`);
+      speakText(text, {...options, cancelCurrent:false, forceDefaultVoice:true, allowVoiceFallback:false, startLog:null});
+      return;
+    }
     activeUtterance = null;
-    setLog('読み上げを開始できませんでした。別の音声を選ぶか、Chrome/Edgeで開いてください。');
+    setLog(`読み上げを開始できませんでした（${errorName}）。別の音声を選ぶか、ブラウザの音量を確認してください。`);
   };
   activeUtterance = utterance;
+  speechSynthesis.resume();
+  speechSynthesis.speak(utterance);
   window.setTimeout(() => {
-    speechSynthesis.speak(utterance);
     if(speechSynthesis.paused) speechSynthesis.resume();
-  }, 60);
+  }, 120);
   return true;
 }
 
