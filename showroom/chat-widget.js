@@ -85,8 +85,10 @@
       'https://script.google.com/macros/s/AKfycbwABbFeZucU9N4k8YyhIKbUUo3JUTGX0vXPBuuX0mSEqIpblyZFtf66w7lCB9R_xkCE-w/exec';
 
     // 2026-07-16 Phase3: 道具の質問はキーワード辞書方式で判定し、Nsfactory-RakutenToolSearch
-    // （後方幕僚室と共用のGAS。楽天API課金は無し）へ送る。後方幕僚チャット限定で回答し、
-    // 他幕僚のチャットで道具の質問が来た場合は後方幕僚室へ誘導するだけに留める（決定事項2026-07-16）。
+    // （後方幕僚室と共用のGAS。楽天API課金は無し）へ送る。
+    // 2026-07-17 Phase5: 「全幕僚AIが同等の対応をできるようにする」方針（事業主指示）により
+    // 旧・後方幕僚限定回答（決定事項2026-07-16）を撤廃し、全幕僚のチャットで回答する。
+    // 口調のみ幕僚に合わせて切り替える（toolVoice参照）。
     var RAKUTEN_TOOL_API_URL = opts.rakutenToolApiUrl ||
       'https://script.google.com/macros/s/AKfycbxUoFN0_XMKGiI1voIKGdGioczn1WsYYTfUBI-tC-RIgnq05DfsooTcyOQlgIjTQCa95A/exec';
 
@@ -614,22 +616,55 @@
       return CHEAPER_FOLLOWUP_PATTERN.test(text);
     }
 
-    /* 後方幕僚チャット限定: 道具の質問にキーワード辞書方式で回答し、楽天市場の商品例を案内する */
+    /* 道具回答の口調切り替え（2026-07-17 Phase5）。
+       後方幕僚＝無骨な職人口調（従来文をそのまま維持）。
+       他幕僚＝丁寧口調＋「後方幕僚の道具ガイドと連携した」ことを明示して個性と役割分担を残す。 */
+    function toolVoice() {
+      if (currentChatStaffId === 'kouhou_room') {
+        return {
+          miss: '……すまん、うまく聞き取れなかった。工程名（型紙・裁断・コバ磨き等）か道具名で聞いてもらえるか。',
+          intro: function (p) { return p ? (p + 'の道具なら、こいつらだ。') : 'それなら、こいつが要る。'; },
+          rakuten: function (name, cheap) {
+            return cheap ? name + 'の安い順ならこれだ📦（楽天市場・アフィリエイトリンク）'
+                         : name + 'はこちらだ📦（楽天市場・アフィリエイトリンク／口コミが多い順）';
+          },
+          notFound: function (name) { return name + '……すまん、いま商品が見つからなかった。'; },
+          offline: 'すまん、いま道具の検索がうまく繋がらない。後方幕僚室のページから直接探してもらえるか。',
+          netErr: 'すまん、通信がうまく繋がらない。少ししてからもう一度試してくれ。'
+        };
+      }
+      return {
+        miss: '申し訳ありません、うまく特定できませんでした。工程名（型紙・裁断・コバ磨き等）か道具名でお尋ねください。',
+        intro: function (p) {
+          return '後方幕僚の道具ガイドで調べました🛠 ' + (p ? p + 'の道具でしたら、こちらです。' : 'それでしたら、こちらの道具がおすすめです。');
+        },
+        rakuten: function (name, cheap) {
+          return cheap ? name + 'をお安い順でご紹介します📦（楽天市場・アフィリエイトリンク）'
+                       : name + 'はこちらです📦（楽天市場・アフィリエイトリンク／口コミが多い順）';
+        },
+        notFound: function (name) { return '申し訳ありません、' + name + 'はただいま商品が見つかりませんでした。'; },
+        offline: '申し訳ありません、いま道具の検索がつながりにくいようです。後方幕僚室の道具ガイドから直接お探しいただけます。',
+        netErr: '申し訳ありません、通信がうまくつながりませんでした。少し経ってからもう一度お試しください。'
+      };
+    }
+
+    /* 道具の質問にキーワード辞書方式で回答し、楽天市場の商品例を案内する（全幕僚共通・口調のみ切替） */
     function showToolRecommend(query) {
+      var v = toolVoice();
       showTyping();
       fetch(RAKUTEN_TOOL_API_URL + '?action=recommend&q=' + encodeURIComponent(query))
         .then(function (res) { return res.json(); })
         .then(function (data) {
           hideTyping();
           if (!data || !data.matched || !data.tools || !data.tools.length) {
-            appendStaffMsg('……すまん、うまく聞き取れなかった。工程名（型紙・裁断・コバ磨き等）か道具名で聞いてもらえるか。');
+            appendStaffMsg(v.miss);
             renderChips([
               { label: '🛠️ 道具ガイドで探す', onClick: function () { global.open(NSF_ROOT_BASE + 'kouhou-room/', '_blank'); } },
               { label: '閉じる', exit: true, onClick: nsfDefaultChips }
             ]);
             return;
           }
-          var intro = data.processName ? (data.processName + 'の道具なら、こいつらだ。') : 'それなら、こいつが要る。';
+          var intro = v.intro(data.processName);
           var lines = data.tools.map(function (t) {
             return '・' + t.name + '（' + t.priority + '／目安' + t.priceRange + '）\n  ' + t.advice;
           }).join('\n\n');
@@ -643,7 +678,7 @@
         })
         .catch(function () {
           hideTyping();
-          appendStaffMsg('すまん、いま道具の検索がうまく繋がらない。後方幕僚室のページから直接探してもらえるか。');
+          appendStaffMsg(v.offline);
           renderChips([
             { label: '🛠️ 後方幕僚室を開く', onClick: function () { global.open(NSF_ROOT_BASE + 'kouhou-room/', '_blank'); } },
             { label: '閉じる', exit: true, onClick: nsfDefaultChips }
@@ -654,6 +689,7 @@
     /* 選ばれた道具の楽天検索結果を画像チップで表示（kouhou-room/index.htmlのGAS呼び出しと同一API）。
        sort省略時はGAS側デフォルト（口コミ数が多い順）。「安いのない？」follow-up時はsort=+itemPrice。 */
     function showToolRakutenItems(tool, sort) {
+      var v = toolVoice();
       lastShownTool = tool;
       showTyping();
       var url = RAKUTEN_TOOL_API_URL + '?action=search&keyword=' + encodeURIComponent(tool.rakutenKeyword) + '&hits=3';
@@ -663,14 +699,11 @@
         .then(function (data) {
           hideTyping();
           if (!data || data.error || !data.items || !data.items.length) {
-            appendStaffMsg(tool.name + '……すまん、いま商品が見つからなかった。');
+            appendStaffMsg(v.notFound(tool.name));
             renderChips([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]);
             return;
           }
-          var intro = sort === '+itemPrice'
-            ? tool.name + 'の安い順ならこれだ📦（楽天市場・アフィリエイトリンク）'
-            : tool.name + 'はこちらだ📦（楽天市場・アフィリエイトリンク／口コミが多い順）';
-          appendStaffMsg(intro);
+          appendStaffMsg(v.rakuten(tool.name, sort === '+itemPrice'));
           var chips = data.items.map(function (it) {
             return {
               label: it.name.length > 26 ? it.name.slice(0, 26) + '…' : it.name,
@@ -687,9 +720,33 @@
         })
         .catch(function () {
           hideTyping();
-          appendStaffMsg('すまん、通信がうまく繋がらない。少ししてからもう一度試してくれ。');
+          appendStaffMsg(toolVoice().netErr);
           renderChips([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]);
         });
+    }
+
+    /* 2026-07-17 Phase5: 業務相談（HearingAI-Proxy/Claude）でも幕僚の個性を保つための口調アドオン。
+       ヒアリング手順・価格・在庫の正確さは hearing-core.js のプロンプトを最優先し、
+       ここでは「誰が話しているか」の演技指示だけを足す（GAS側は無編集のまま全幕僚に対応できる）。
+       キャラ設定は showroom_ai_chat GAS の PERSONAS・staffKnowledge.js と整合させること。 */
+    var NSF_STAFF_PERSONA_LINES = {
+      kojinjigyonusi: '総司令官（個人事業主・革職人の親方）。一人称は「わし」。職人気質で温かい口調。たまに親父ギャグを挟んで少し照れる。「うちの幕僚たちはAIだが、わしの腕は生身だ」が持ちネタ。',
+      sakusen: '作戦幕僚（経営戦略担当）。軍師風の丁寧な口調で、たまに物事を「作戦」「布陣」に例える。孫子をゆるく引用しがち。',
+      hannbai: '販売幕僚（EC販売担当）。明るく調子のよい商売人口調。「これ、売れてます！」が口癖で、お客様を褒めるのが得意。',
+      kouhou_room: '後方幕僚（仕入・CAD・段取り担当）。無骨で口数少なめの職人口調（「〜だ」「〜してくれ」）。道具と段取りの話だけ饒舌。',
+      kanri: '監理幕僚（収支・見積もり担当）。数字に厳格な経理の番人。「そろばんを弾くと…」等の言い回しで、予算には誠実に寄り添う。',
+      kouhou: '広報幕僚（SNS・情報発信担当）。ノリが軽いトレンドハンター。「それ、バズりますよ」等、たまにハッシュタグ口調（#最高）を使う。',
+      hozen: '保全幕僚（セキュリティ担当）。用心深い門番口調。「……確認しました。問題ありません」と確かめてから話す堅物だが、実は世話焼き。',
+      digital: 'デジタル幕僚（サイト・3Dショールーム設計者）。新しい技術の話で早口になる。「それ、実装できますね」が口癖。',
+      jinji: '人事幕僚（レザークラフト教室担当）。褒め上手な世話焼き先生口調。温かい励ましが得意。',
+      kyouiku: '教育幕僚（カタカムナ・古代叡智担当）。神秘的で達観した語り部口調。「ふむ、それもまた巡りですな」等。'
+    };
+    function nsfPersonaAddendum(staffId) {
+      var line = NSF_STAFF_PERSONA_LINES[staffId];
+      if (!line) return '';
+      return '\n\n【いま応対している幕僚キャラクター】' + line +
+        '\nこのキャラクターとして一貫して応対する。ただしキャラ付けは口調・言い回しの味付けに留め、' +
+        'ヒアリングの進め方・価格・在庫・仕様の正確さを常に最優先する。発注票のまとめ方や確認項目は上記の指示どおり変えないこと。';
     }
 
     /* 2026-07-10 Phase2: 自由入力の振り分け判定（実務相談 → HearingAI-Proxy／それ以外 → 従来のShowroom-AIChat）。
@@ -833,32 +890,104 @@
       return null;
     }
 
-    /* 待機時の入口チップ（オーダー相談＝販売幕僚のみ／革の色・ステッチ色＝販売幕僚・個人事業主） */
+    /* ── 待機時の入口チップ（2026-07-17 Phase5: 全幕僚共通の機能メニュー化）──────────
+       「全ての幕僚AIが同等の対応をできるようにする」方針（事業主指示2026-07-17）により、
+       旧・幕僚限定チップ（オーダー相談=販売のみ／革色・ステッチ=販売・総司令官のみ）を撤廃。
+       どの幕僚からでもオーダー相談・在庫確認・作品検索・見積もり・道具相談・進捗確認へ
+       到達できるようにし、幕僚ごとの個性は「得意分野チップを先頭に出す並び順」で表現する。 */
+    var NSF_WORKS_CATEGORY_CHIPS = [
+      { label: '📔 システム手帳', q: 'cat=' + encodeURIComponent('システム手帳') },
+      { label: '📄 リフィル・手帳パーツ', q: 'q=' + encodeURIComponent('システム手帳用') },
+      { label: '👛 財布・ウォレット', q: 'q=' + encodeURIComponent('ウォレット') },
+      { label: '💳 カードケース', q: 'cat=' + encodeURIComponent('カードケース') },
+      { label: '🔑 キーケース・キーホルダー', q: 'q=' + encodeURIComponent('キー') },
+      { label: '🖼 すべての作品を見る', q: '' }
+    ];
+    function showWorksMenu() {
+      appendStaffMsg('作品集からお探しいただけます🖼 カテゴリを選ぶと、絞り込んだ作品一覧を新しいタブで開きます。気になる作品が見つかったら、そのままこのチャットでご相談ください。');
+      renderChips(NSF_WORKS_CATEGORY_CHIPS.map(function (c) {
+        return { label: c.label, onClick: function () {
+          global.open(NSF_ROOT_BASE + 'works.html' + (c.q ? '?' + c.q : ''), '_blank');
+        } };
+      }).concat([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]));
+    }
+    function showToolPrompt() {
+      appendStaffMsg('道具のご相談ですね🛠 気になる工程（裁断・菱目打ち・コバ磨き など）や道具名を、そのままメッセージ欄に入力してください。後方幕僚の道具ガイドと連携して、目安価格と楽天市場の商品例をご案内します。');
+      renderChips([
+        { label: '🛠️ 道具ガイドを開く', onClick: function () { global.open(NSF_ROOT_BASE + 'kouhou-room/', '_blank'); } },
+        { label: '閉じる', exit: true, onClick: nsfDefaultChips }
+      ]);
+    }
+    /* 幕僚ごとの得意分野（待機時に先頭へ出すチップ3枚）。個性はここで表現する。 */
+    var NSF_STAFF_CHIP_ORDER = {
+      kojinjigyonusi: ['hearing', 'colors', 'works'],
+      sakusen: ['hearing', 'estimate', 'works'],
+      hannbai: ['hearing', 'works', 'colors'],
+      kouhou_room: ['tools', 'colors', 'hearing'],
+      kanri: ['estimate', 'hearing', 'colors'],
+      kouhou: ['works', 'hearing', 'colors'],
+      hozen: ['progress', 'hearing', 'works'],
+      digital: ['showroom', 'works', 'hearing'],
+      jinji: ['tools', 'hearing', 'works'],
+      kyouiku: ['works', 'hearing', 'colors']
+    };
+    var NSF_CHIP_ORDER_ALL = ['hearing', 'colors', 'stitch', 'works', 'estimate', 'tools', 'progress', 'showroom'];
+    function nsfCapabilityChip(id) {
+      switch (id) {
+        case 'hearing':
+          // productContext付き（works.html等で特定の作品を見ながら開いたチャット）では、
+          // 「何を作りたいか」から始まるフルオーダーヒアリングは不自然なので出さない。
+          // フルオーダーは既存の「仕様変更してフルオーダー見積もりへ」ボタンに一本化する。
+          if (currentProductContext) return null;
+          return { label: '🧵 オーダー相談を始める', onClick: hearingStart };
+        case 'colors':
+          return { label: '🎨 革の色・在庫を見る', onClick: function () { showLeatherGallery('ask'); } };
+        case 'stitch':
+          return { label: '🧵 ステッチ色を見る', onClick: showStitchGallery };
+        case 'works':
+          return { label: '🖼 作品を探す', onClick: showWorksMenu };
+        case 'estimate':
+          return { label: '📋 見積もりシミュレーター', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/leather-order-estimate-v2.html', '_blank'); } };
+        case 'tools':
+          return { label: '🛠️ 道具・工具の相談', onClick: showToolPrompt };
+        case 'progress':
+          return { label: '📦 オーダー進捗を確認', onClick: function () { global.open(NSF_ROOT_BASE + 'orderprogress.html', '_blank'); } };
+        case 'showroom':
+          return { label: '🏬 3Dショールームへ', onClick: function () { global.open(NSF_SHOWROOM_BASE || (NSF_ROOT_BASE + 'showroom/'), '_blank'); } };
+        default:
+          return null;
+      }
+    }
+    function nsfBuildMenuChips(expanded) {
+      var pref = NSF_STAFF_CHIP_ORDER[currentChatStaffId] || NSF_CHIP_ORDER_ALL.slice(0, 3);
+      var order = expanded
+        ? pref.concat(NSF_CHIP_ORDER_ALL.filter(function (id) { return pref.indexOf(id) < 0; }))
+        : pref.slice(0, 3);
+      var chips = [];
+      order.forEach(function (id) {
+        if (id === 'showroom' && opts.venue === 'showroom') return; // ショールーム内では自分自身への誘導は出さない
+        var c = nsfCapabilityChip(id);
+        if (c) chips.push(c);
+      });
+      // 一度でも対応確認済みでテクスチャシミュレーターが使える商品なら、待機チップに常設し、
+      // 色決定後もこのチップからいつでもシミュレーターをやり直せるようにする（全幕僚共通）。
+      var simFolderId = currentProductContext && currentProductContext.folderId;
+      if (simFolderId && simPatternAvailable === true) {
+        chips.push({ label: '🎨 テクスチャシミュレーターで試す', onClick: function () { openTextureSimulator(simFolderId); } });
+      } else if (simFolderId && simPatternAvailable === false) {
+        chips.push({ label: '🎨 型紙シミュレーター：準備中', onClick: function () {
+          appendStaffMsg('🎨 テクスチャシミュレーターは、この作品はまだ型紙データの登録が完了していないため準備中です。今しばらくお待ちください🙏');
+        } });
+      }
+      if (!expanded) {
+        chips.push({ label: '🧭 メニューをすべて見る', onClick: function () { renderChips(nsfBuildMenuChips(true)); } });
+      }
+      return chips;
+    }
     function nsfDefaultChips() {
       clearChips();
       if (!global.NSF_HEARING) return;
-      var chips = [];
-      // productContext付き（works.html等で特定の作品を見ながら開いたチャット）では、
-      // 「何を作りたいか」から始まるフルオーダーヒアリングは不自然なので出さない。
-      // フルオーダーは既存の「仕様変更してフルオーダー見積もりへ」ボタンに一本化する。
-      if (currentChatStaffId === 'hannbai' && !currentProductContext) {
-        chips.push({ label: '🧵 オーダー相談（ヒアリング）を始める', onClick: hearingStart });
-      }
-      if (currentChatStaffId === 'hannbai' || currentChatStaffId === 'kojinjigyonusi') {
-        chips.push({ label: '🎨 革の色を見る', onClick: function () { showLeatherGallery('ask'); } });
-        chips.push({ label: '🧵 ステッチ色を見る', onClick: showStitchGallery });
-        // 一度でも対応確認済みでテクスチャシミュレーターが使える商品なら、待機チップに常設し、
-        // 色決定後もこのチップからいつでもシミュレーターをやり直せるようにする。
-        var simFolderId = currentProductContext && currentProductContext.folderId;
-        if (simFolderId && simPatternAvailable === true) {
-          chips.push({ label: '🎨 テクスチャシミュレーターで試す', onClick: function () { openTextureSimulator(simFolderId); } });
-        } else if (simFolderId && simPatternAvailable === false) {
-          chips.push({ label: '🎨 型紙シミュレーター：準備中', onClick: function () {
-            appendStaffMsg('🎨 テクスチャシミュレーターは、この作品はまだ型紙データの登録が完了していないため準備中です。今しばらくお待ちください🙏');
-          } });
-        }
-      }
-      if (chips.length) renderChips(chips);
+      renderChips(nsfBuildMenuChips(false));
     }
 
     // パーツ（革色・ステッチ色など）ごとの選択。同じパーツを選び直すとselections[partLabel]を上書きし、
@@ -1406,29 +1535,23 @@
         return;
       }
 
-      // 2026-07-16 品質改善: 直前に道具を提示済み＆後方幕僚チャット中に「安いのない？」等の
-      // 追随質問が来たら、同じ道具を価格の安い順で再提案する（GAS送信なし・回数消費なし）。
-      if (currentChatStaffId === 'kouhou_room' && lastShownTool && nsfDetectCheaperFollowup(text)) {
+      // 2026-07-16 品質改善: 直前に道具を提示済みの状態で「安いのない？」等の追随質問が来たら、
+      // 同じ道具を価格の安い順で再提案する（GAS送信なし・回数消費なし）。
+      // 2026-07-17 Phase5: 後方幕僚限定を撤廃し全幕僚で有効化。
+      if (lastShownTool && nsfDetectCheaperFollowup(text)) {
         if (input) input.value = '';
         appendUserMsg(text);
         showToolRakutenItems(lastShownTool, '+itemPrice');
         return;
       }
 
-      // 2026-07-16 Phase3: 道具の質問 → 後方幕僚チャットならその場で回答（GAS送信なし・回数消費なし）、
-      // 他幕僚のチャットでは後方幕僚室へ案内するのみに留める（決定事項2026-07-16）。
+      // 2026-07-17 Phase5: 道具の質問はどの幕僚のチャットでもその場で回答する（GAS送信なし・回数消費なし）。
+      // 旧・後方幕僚限定＋他幕僚は誘導のみ（決定事項2026-07-16）は「全幕僚が同等対応」方針
+      // （事業主指示2026-07-17）により更新。口調は toolVoice() で幕僚に合わせて切り替える。
       if (nsfDetectToolIntent(text)) {
         if (input) input.value = '';
         appendUserMsg(text);
-        if (currentChatStaffId === 'kouhou_room') {
-          showToolRecommend(text);
-        } else {
-          appendStaffMsg('道具のご相談は後方幕僚が詳しいので、そちらで聞いてもらえると助かる。');
-          renderChips([
-            { label: '🛠️ 後方幕僚室を見る', onClick: function () { global.open(NSF_ROOT_BASE + 'kouhou-room/', '_blank'); } },
-            { label: '閉じる', exit: true, onClick: nsfDefaultChips }
-          ]);
-        }
+        showToolRecommend(text);
         return;
       }
 
@@ -1455,9 +1578,16 @@
       var apiUrl, payload, contentType;
       if (useHearingAI) {
         apiUrl = HEARING_AI_PROXY_URL;
-        contentType = 'application/json';
+        // 2026-07-17 Phase5バグ修正: 'application/json' を指定するとブラウザがCORSプリフライト
+        // (OPTIONS)を送るが、GAS WebAppはOPTIONSに応答できず全件「Failed to fetch」→
+        // フォールバック文言になっていた（Phase2以来の潜在バグ・実測で確認）。
+        // hearing-ai.html と同じく text/plain（プリフライト不要のsimple request）で送る。
+        // GAS側は e.postData.contents をJSON.parseするだけなのでMIMEは影響しない。
+        contentType = 'text/plain';
         // nsfLeatherStock（id→残量%。在庫CSV読込済み）を渡し、AIが在庫のある革を優先提案できるようにする
         var systemPrompt = global.NSF_HEARING.buildSystemPrompt(hearingKB, hearingLeathers, nsfLeatherStock) || '';
+        // 2026-07-17 Phase5: 業務相談でも「どの幕僚と話しているか」を維持する（口調のみ・内容は不変）
+        systemPrompt += nsfPersonaAddendum(staffId);
         var claudeHistory = chatHistories[staffId].slice(-CHAT_HISTORY_MAX).map(function (h) {
           return { role: h.role === 'model' ? 'assistant' : 'user', content: h.text };
         });
