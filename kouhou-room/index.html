@@ -120,6 +120,7 @@ a { color: inherit; text-decoration: none; }
 .guide-badges { display: flex; gap: 6px; flex-wrap: wrap; }
 .guide-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
 .guide-badge.priority-必須 { background: var(--amber-light); color: var(--amber); }
+.guide-priority-select { font-size: 12px; padding: 4px 6px; width: auto; border-radius: 8px; }
 .guide-badge.priority-推奨 { background: var(--blue-light); color: var(--blue); }
 .guide-badge.priority-あると便利 { background: var(--soft); color: var(--gray); }
 .guide-badge.beginner { background: var(--green-light); color: var(--green); }
@@ -198,7 +199,12 @@ textarea { resize: vertical; min-height: 72px; }
 
     <!-- 工程別 道具ガイド -->
     <div class="section" id="tool-guide-section">
-      <h2>工程別 道具ガイド</h2>
+      <div class="tool-admin-bar">
+        <h2 style="margin:0;">工程別 道具ガイド</h2>
+        <div class="tool-admin-actions">
+          <button class="btn btn-secondary" id="btn-guide-admin" onclick="toggleGuideAdmin()">優先度を編集</button>
+        </div>
+      </div>
       <p class="guide-intro">
         型紙づくりから仕上げまで、レザークラフトの各工程で使う道具をまとめました。
         工程を選ぶと、必要な道具・使い方・選び方と、楽天市場での商品例（アフィリエイトリンク）が表示されます。
@@ -336,6 +342,11 @@ textarea { resize: vertical; min-height: 72px; }
   let toolGuideData = null;
   let activeProcessId = null;
   const rakutenCache = new Map();
+  let priorityOverrides = {};
+  let guideAdminMode = false;
+  let guideAdminPassword = '';
+
+  function effectivePriority(t) { return priorityOverrides[t.id] || t.priority; }
 
   async function loadToolGuide() {
     const listEl = document.getElementById('guide-tool-list');
@@ -347,10 +358,58 @@ textarea { resize: vertical; min-height: 72px; }
       listEl.innerHTML = `<div class="tool-empty">道具ガイドを読み込めませんでした。<br><small>${esc(e.message)}</small></div>`;
       return;
     }
+    try {
+      const ovRes = await fetch(`${RAKUTEN_API_URL}?action=priorityOverrides`, { cache: 'no-store' });
+      const ovData = await ovRes.json();
+      priorityOverrides = ovData.overrides || {};
+    } catch(e) {
+      priorityOverrides = {}; // 取得失敗時はJSON本来の優先度のみで表示（機能停止させない）
+    }
     renderProcessTabs();
     const first = toolGuideData.processes.slice().sort((a, b) => a.order - b.order)[0];
     if (first) setActiveProcess(first.id);
     renderReferences();
+  }
+
+  function getGuideAdminPassword() {
+    if (guideAdminPassword) return guideAdminPassword;
+    const pass = prompt('道具ガイドの管理者パスワードを入力してください:');
+    if (pass === null) return '';
+    guideAdminPassword = pass;
+    return pass;
+  }
+
+  function toggleGuideAdmin() {
+    if (!guideAdminMode && !getGuideAdminPassword()) return;
+    guideAdminMode = !guideAdminMode;
+    document.getElementById('btn-guide-admin').textContent = guideAdminMode ? '編集を隠す' : '優先度を編集';
+    renderToolList();
+  }
+
+  async function saveToolPriority(toolId, priority, selectEl) {
+    const password = getGuideAdminPassword();
+    if (!password) { renderToolList(); return; }
+    selectEl.disabled = true;
+    try {
+      const res = await fetch(RAKUTEN_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'savePriorityOverride', toolId, priority, password }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        priorityOverrides = data.overrides || {};
+        renderToolList();
+      } else {
+        if (data.error === 'Invalid admin password') guideAdminPassword = '';
+        alert('保存できませんでした: ' + (data.error || '不明なエラー'));
+        renderToolList();
+      }
+    } catch(e) {
+      alert('通信エラー: ' + e.message);
+      renderToolList();
+    } finally {
+      selectEl.disabled = false;
+    }
   }
 
   function renderProcessTabs() {
@@ -375,7 +434,7 @@ textarea { resize: vertical; min-height: 72px; }
       .filter(t => t.processes.includes(activeProcessId))
       .slice()
       .sort((a, b) => {
-        const pr = (PRIORITY_ORDER[a.priority] ?? 9) - (PRIORITY_ORDER[b.priority] ?? 9);
+        const pr = (PRIORITY_ORDER[effectivePriority(a)] ?? 9) - (PRIORITY_ORDER[effectivePriority(b)] ?? 9);
         if (pr !== 0) return pr;
         return (b.beginner ? 1 : 0) - (a.beginner ? 1 : 0);
       });
@@ -388,7 +447,12 @@ textarea { resize: vertical; min-height: 72px; }
         <div class="guide-tool-head">
           <div class="guide-tool-name">${esc(t.name)}</div>
           <div class="guide-badges">
-            <span class="guide-badge priority-${esc(t.priority)}">${esc(t.priority)}</span>
+            ${guideAdminMode ? `
+              <select class="guide-priority-select" onchange="saveToolPriority('${escAttr(t.id)}', this.value, this)">
+                ${['必須','推奨','あると便利'].map(p => `<option value="${p}" ${effectivePriority(t) === p ? 'selected' : ''}>${p}</option>`).join('')}
+              </select>
+              ${priorityOverrides[t.id] ? `<button class="btn btn-secondary" style="padding:2px 8px;font-size:11px;" onclick="saveToolPriority('${escAttr(t.id)}', '', this)">元に戻す</button>` : ''}
+            ` : `<span class="guide-badge priority-${esc(effectivePriority(t))}">${esc(effectivePriority(t))}</span>`}
             ${t.beginner ? '<span class="guide-badge beginner">初心者向け</span>' : ''}
           </div>
         </div>
