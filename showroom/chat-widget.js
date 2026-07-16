@@ -84,6 +84,12 @@
     var HEARING_AI_PROXY_URL = opts.hearingApiUrl ||
       'https://script.google.com/macros/s/AKfycbwABbFeZucU9N4k8YyhIKbUUo3JUTGX0vXPBuuX0mSEqIpblyZFtf66w7lCB9R_xkCE-w/exec';
 
+    // 2026-07-16 Phase3: 道具の質問はキーワード辞書方式で判定し、Nsfactory-RakutenToolSearch
+    // （後方幕僚室と共用のGAS。楽天API課金は無し）へ送る。後方幕僚チャット限定で回答し、
+    // 他幕僚のチャットで道具の質問が来た場合は後方幕僚室へ誘導するだけに留める（決定事項2026-07-16）。
+    var RAKUTEN_TOOL_API_URL = opts.rakutenToolApiUrl ||
+      'https://script.google.com/macros/s/AKfycbxUoFN0_XMKGiI1voIKGdGioczn1WsYYTfUBI-tC-RIgnq05DfsooTcyOQlgIjTQCa95A/exec';
+
     function getFallbackLines(staffId) {
       if (typeof opts.getFallbackLines === 'function') {
         return opts.getFallbackLines(staffId) || CHAT_FALLBACK_LINES;
@@ -589,6 +595,82 @@
     /* リング在庫の質問か判定 */
     function nsfDetectRingQuery(text) {
       return /リング/.test(text) && /(在庫|ある|あり|何|どんな|種類|色|サイズ|一覧|欲し|ほし)/.test(text);
+    }
+
+    /* 2026-07-16 Phase3: 道具の質問か判定（広めの網。厳密な工程・道具特定はGAS側の辞書で行う）。
+       「道具/工具」の一般語に加え、頻出の工程名・道具名を列挙。他幕僚の会話に紛れ込む
+       誤爆（例:「道具箱みたいな手帳」）は許容し、後方幕僚への案内で済ませる設計。 */
+    var TOOL_INTENT_PATTERN = /(道具|工具|型紙|裁断|革包丁|漉き|すき|菱目打ち|菱目|穴あけ|菱ギリ|丸ギリ|コバ|へり落とし|ウッドスリッカー|トコノール|カービング|刻印|スーベル|ホック|カシメ|ハトメ|金具|木槌|ゴム板|手縫い針|蜜蝋|ビニモ|ステッチンググルーバー|ネジ捻|染色|染料|防水スプレー|レザークリーム|レーシング|革レース|フチ捻)/;
+    function nsfDetectToolIntent(text) {
+      return TOOL_INTENT_PATTERN.test(text);
+    }
+
+    /* 後方幕僚チャット限定: 道具の質問にキーワード辞書方式で回答し、楽天市場の商品例を案内する */
+    function showToolRecommend(query) {
+      showTyping();
+      fetch(RAKUTEN_TOOL_API_URL + '?action=recommend&q=' + encodeURIComponent(query))
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          hideTyping();
+          if (!data || !data.matched || !data.tools || !data.tools.length) {
+            appendStaffMsg('……すまん、うまく聞き取れなかった。工程名（型紙・裁断・コバ磨き等）か道具名で聞いてもらえるか。');
+            renderChips([
+              { label: '🛠️ 道具ガイドで探す', onClick: function () { global.open(NSF_ROOT_BASE + 'kouhou-room/', '_blank'); } },
+              { label: '閉じる', exit: true, onClick: nsfDefaultChips }
+            ]);
+            return;
+          }
+          var intro = data.processName ? (data.processName + 'の道具なら、こいつらだ。') : 'それなら、こいつが要る。';
+          var lines = data.tools.map(function (t) {
+            return '・' + t.name + '（' + t.priority + '／目安' + t.priceRange + '）\n  ' + t.advice;
+          }).join('\n\n');
+          appendStaffMsg(intro + '\n\n' + lines);
+          var chips = data.tools.map(function (t) {
+            return { label: '🛒 ' + t.name + 'を楽天で見る', onClick: function () { showToolRakutenItems(t); } };
+          });
+          chips.push({ label: '🛠️ 道具ガイドで全部見る', onClick: function () { global.open(NSF_ROOT_BASE + 'kouhou-room/', '_blank'); } });
+          chips.push({ label: '閉じる', exit: true, onClick: nsfDefaultChips });
+          renderChips(chips);
+        })
+        .catch(function () {
+          hideTyping();
+          appendStaffMsg('すまん、いま道具の検索がうまく繋がらない。後方幕僚室のページから直接探してもらえるか。');
+          renderChips([
+            { label: '🛠️ 後方幕僚室を開く', onClick: function () { global.open(NSF_ROOT_BASE + 'kouhou-room/', '_blank'); } },
+            { label: '閉じる', exit: true, onClick: nsfDefaultChips }
+          ]);
+        });
+    }
+
+    /* 選ばれた道具の楽天検索結果を画像チップで表示（kouhou-room/index.htmlのGAS呼び出しと同一API） */
+    function showToolRakutenItems(tool) {
+      showTyping();
+      fetch(RAKUTEN_TOOL_API_URL + '?action=search&keyword=' + encodeURIComponent(tool.rakutenKeyword) + '&hits=3')
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          hideTyping();
+          if (!data || data.error || !data.items || !data.items.length) {
+            appendStaffMsg(tool.name + '……すまん、いま商品が見つからなかった。');
+            renderChips([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]);
+            return;
+          }
+          appendStaffMsg(tool.name + 'はこちらだ📦（楽天市場・アフィリエイトリンク）');
+          var chips = data.items.map(function (it) {
+            return {
+              label: it.name.length > 26 ? it.name.slice(0, 26) + '…' : it.name,
+              sub: '¥' + Number(it.price).toLocaleString(),
+              image: it.image,
+              onClick: function () { global.open(it.url, '_blank'); }
+            };
+          });
+          chips.push({ label: '閉じる', exit: true, onClick: nsfDefaultChips });
+          renderChips(chips);
+        })
+        .catch(function () {
+          hideTyping();
+          appendStaffMsg('すまん、通信がうまく繋がらない。少ししてからもう一度試してくれ。');
+          renderChips([{ label: '閉じる', exit: true, onClick: nsfDefaultChips }]);
+        });
     }
 
     /* 2026-07-10 Phase2: 自由入力の振り分け判定（実務相談 → HearingAI-Proxy／それ以外 → 従来のShowroom-AIChat）。
@@ -1302,6 +1384,23 @@
         if (input) input.value = '';
         appendUserMsg(text);
         showLeatherGallery(colorFam);
+        return;
+      }
+
+      // 2026-07-16 Phase3: 道具の質問 → 後方幕僚チャットならその場で回答（GAS送信なし・回数消費なし）、
+      // 他幕僚のチャットでは後方幕僚室へ案内するのみに留める（決定事項2026-07-16）。
+      if (nsfDetectToolIntent(text)) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        if (currentChatStaffId === 'kouhou_room') {
+          showToolRecommend(text);
+        } else {
+          appendStaffMsg('道具のご相談は後方幕僚が詳しいので、そちらで聞いてもらえると助かる。');
+          renderChips([
+            { label: '🛠️ 後方幕僚室を見る', onClick: function () { global.open(NSF_ROOT_BASE + 'kouhou-room/', '_blank'); } },
+            { label: '閉じる', exit: true, onClick: nsfDefaultChips }
+          ]);
+        }
         return;
       }
 
