@@ -1141,10 +1141,15 @@ function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
     if(overwrite || !slide.caption) slide.caption = generated.caption;
     if(overwrite || !slide.narration) slide.narration = generated.narration;
   });
+  // 除外中の写真が選択されたままだと「動画から除外中」表示になり、再構成結果が見えないため、
+  // 締め文が入った最後の使用写真へ選択を移す
+  if(selected < 0 || !slides[selected] || !isSlideEnabled(slides[selected])){
+    selected = slides.indexOf(targets[targets.length - 1]);
+  }
   loadSelected();
   renderList();
-  drawSelectedOrFirstFrame();
-  if(showLog) setLog(`${targets.length}枚の使用中写真に合わせて、ナレーションを再構成しました。除外中の写真は変更せず、締め文は最後の使用写真へ入れています。`);
+  drawSelectedPreviewFrame(.35);
+  if(showLog) setLog(`${targets.length}枚の使用中写真に合わせて、ナレーションを再構成しました（締め文は${targets.length}枚目）。除外中の写真のセリフはそのまま残りますが、動画には入りません。`);
   return targets.length;
 }
 
@@ -1191,7 +1196,10 @@ function rebuildNarrationPlan(features, targetCount, english){
 function rebuildEnglishNarrationPlan(features, count){
   const product = englishProductName(els.productName.value.trim());
   const material = englishMaterialNote(els.materialNote.value.trim());
-  const closing = takeFeature(features, /thank|viewing|n'?s factory/i) || `Thank you for viewing this ${product} from N's factory.`;
+  // /n'?s factory/ を先に含めると「... from N's factory.」で終わる紹介文を締め文と誤認するため、thankを最優先で探す
+  const closing = takeFeature(features, /thank/i)
+    || takeFeature(features, /viewing|n'?s factory/i)
+    || `Thank you for viewing this ${product} from N's factory.`;
   const bodyFeatures = features.filter(line => normalizedDistributionLine(line) !== normalizedDistributionLine(closing));
   const used = new Set();
   const take = pattern => takeUnusedFeature(bodyFeatures, pattern, used);
@@ -1210,7 +1218,10 @@ function rebuildEnglishNarrationPlan(features, count){
 function rebuildJapaneseNarrationPlan(features, count){
   const product = els.productName.value.trim() || 'このレザー作品';
   const material = els.materialNote.value.trim() || '選んだ革';
-  const closing = takeFeature(features, /ありがとう|ご覧|N's factory|Ｎ/) || `N's factoryの作品をご覧いただき、ありがとうございます。`;
+  // 「〜をご覧ください」等の紹介文を締め文と誤認しないよう、ありがとうを最優先で探す
+  const closing = takeFeature(features, /ありがとう/)
+    || takeFeature(features, /ご覧いただき|N's factory|Ｎ/)
+    || `N's factoryの作品をご覧いただき、ありがとうございます。`;
   const bodyFeatures = features.filter(line => normalizedDistributionLine(line) !== normalizedDistributionLine(closing));
   const used = new Set();
   const take = pattern => takeUnusedFeature(bodyFeatures, pattern, used);
