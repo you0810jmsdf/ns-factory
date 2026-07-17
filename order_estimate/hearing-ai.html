@@ -410,6 +410,14 @@ function leatherTier(id){
 const TIER_BADGE={fresh:'✨ 入荷したて',ok:'✅ 在庫あり',low:'⚠️ 残りわずか',out:'📦 お取り寄せ'};
 const TIER_RANK={fresh:0,ok:1,low:2,out:3};
 
+/* 革画像パスの解決。NSF_HEARINGのleatherImgSrcは公開APIに含まれないためローカルで持つ。
+   カタログのimageはns-factoryルート基準（assets/leathers/…）、本ページはorder_estimate/配下のため'../'を前置 */
+function leatherImg(img){
+  if(!img) return '';
+  if(/^https?:/.test(img) || img.indexOf('data:')===0) return img;
+  return '../'+img;
+}
+
 /* ギャラリーから元のヒアリングへ戻る */
 function backToFlow(){
   if(state._done){
@@ -465,7 +473,7 @@ function showLeatherGallery(fam){
   addMsg('bot', lead);
   const swatchChips=list.map(l=>{
     const t=stockKnown?leatherTier(l.id):null;
-    return { label:l.name, sub:t?TIER_BADGE[t.key]:(l.sub||''), val:'', image:NSF_HEARING.leatherImgSrc(l.image),
+    return { label:l.name, sub:t?TIER_BADGE[t.key]:(l.sub||''), val:'', image:leatherImg(l.image),
       onClick:()=>{
         if(state._awaitKey==='leather'){ handleAnswer(l.name, l.name); return; }
         addMsg('bot','『'+l.name+'』ですね！'+(t?('こちらは「'+TIER_BADGE[t.key]+'」です。'):'')+'ヒアリングで革の色を伺う際に、この名前をお選びください🧵');
