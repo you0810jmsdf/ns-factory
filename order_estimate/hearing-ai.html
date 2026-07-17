@@ -198,7 +198,7 @@ function renderQuick(items){
     }else{
       btn.innerHTML=escapeHtml(it.label)+(it.sub?`<span class="sub">${escapeHtml(it.sub)}</span>`:'');
     }
-    btn.onclick=()=>handleAnswer(it.val, it.label);
+    btn.onclick=()=>{ it.onClick ? it.onClick() : handleAnswer(it.val, it.label); };
     quickEl.appendChild(btn);
   });
 }
@@ -255,12 +255,15 @@ window.addEventListener('message', (e)=>{
 });
 
 /* ---------- ガイド対話ロジック ---------- */
+function productQuickItems(){
+  return Object.keys(PRODUCTS).map(k=>({label:`${PRODUCTS[k].emoji} ${PRODUCTS[k].name}`, sub:PRODUCTS[k].sub||'', val:k}));
+}
 function startPicker(){
   showTyping();
   setTimeout(()=>{
     hideTyping();
     addMsg('bot', KB.greeting || "こんにちは！オーダー相談AIです🧵 どんなアイテムをお考えですか？");
-    renderQuick(Object.keys(PRODUCTS).map(k=>({label:`${PRODUCTS[k].emoji} ${PRODUCTS[k].name}`, sub:PRODUCTS[k].sub||'', val:k})));
+    renderQuick(productQuickItems());
     state._picking=true;
   }, 400);
 }
@@ -317,10 +320,19 @@ function handleFreeInput(){
   const v=txt.value.trim(); if(!v) return;
   txt.value='';
   if(state.liveMode){ liveTurn(v); return; }
+  // 革の色・シリーズ・種類の質問は、どのフェーズでも定型誘導より先に即答する
+  // （2026-07-17: 「マルゴーフォグの革の色は何がある？」を無視して
+  // 「上のボタンから〜」を返していた問題の対策。フローは中断せず後で戻れる）
+  const leatherQ=detectLeatherQuery(v);
+  if(leatherQ){
+    addMsg('user', v);
+    showLeatherGallery(leatherQ);
+    return;
+  }
   // 商品選択フェーズでの自由入力 → ボタンへ誘導
   if(state._picking){
     addMsg('user', v);
-    addMsg('bot','上のボタンから作りたいアイテムをお選びくださいね🙂');
+    addMsg('bot','上のボタンから作りたいアイテムをお選びくださいね🙂（革の色・在庫のご質問には、このままお答えできます）');
     return;
   }
   // ガイドモードで自由入力が来たとき
@@ -329,6 +341,140 @@ function handleFreeInput(){
     addMsg('user', v);
     addMsg('bot','ありがとうございます。上のボタンからお選びいただくか、続けて入力してくださいね。（自由に相談したい場合は右上「AI会話モード」もご利用いただけます）');
   }
+}
+
+/* =========================================================================
+   革の色・シリーズ質問への即答ギャラリー（2026-07-17）
+   ヒアリングのどの段階でも「マルゴーフォグの色は？」「赤系の革ある？」等に
+   その場で写真スワッチ＋在庫バッジで回答する。GASは呼ばない（端末内で完結）。
+   革カタログ・色系統解決は hearing-core.js（resolveTone/leathersByTone）を共用。
+   ========================================================================= */
+let LEATHERS=null;   // leather-catalog.json の配列（起動時に読込）
+let STOCK_MAP=null;  // leather-stock.csv の id→残量%（null=未入力）
+
+/* シリーズ名 → カタログの系列タグ。showroom/chat-widget.js の NSF_SERIES_MAP と同期を保つこと */
+const SERIES_MAP=[
+  [/ホースバット|ホースレザー|ホースハイド/i,'ホースバット'],
+  [/コードバン/i,'コードバン'],
+  [/リスシオ|LISCIO/i,'リスシオ'],
+  [/マルゴー?\s*フォグ|MARGOT\s*FOG/i,'MARGOT FOG'],
+  [/マルゴー?|MARGOT/i,'MARGOT'],
+  [/ヴァスカ|バスカ|VASCA/i,'LINEA VASCA Box'],
+  [/ブルガロ|BULGARO/i,'BULGARO'],
+  [/ネブラスカ|NEBRASKA/i,'NEBRASKA'],
+  [/テンダー|TENDER/i,'TENDER'],
+  [/リベルソ|レベルソ|REVERSO/i,'REVERSO'],
+  [/ツイスト|TWIST/i,'TWIST'],
+  [/アラスカ|ALASKA/i,'ALASKA'],
+  [/アマゾニア|AMAZZONIA/i,'AMAZZONIA'],
+  [/クラスト|CRUST/i,'CRUST'],
+  [/カントリー|COUNTRY/i,'COUNTRY'],
+  [/マリアーノ|MARIANO/i,'MARIANO'],
+  [/テキサス|TEXAS/i,'TEXAS'],
+  [/シビラ|SIBILLA/i,'SIBILLA Liscio'],
+  [/アヴァンコルピ|AVANCORPI|ホースフロント/i,'AVANCORPI'],
+  [/クロムエクセル|CHROMEXCEL/i,'CHROMEXCEL'],
+  [/デロリアン|DELOREAN|ダイニーマ/i,'DELOREAN'],
+  [/ランダード|ローンダード|LAUNDERED|洗える革/i,'LAUNDERED'],
+  [/ドリットン|ドリトン|DRITTON|ゴアテックス|GORE-?TEX/i,'DRITTON G8'],
+  [/ドロイド|DROID/i,'DROID'],
+  [/馬革/,'馬革'],
+  [/ヌメ/,'ヌメ革']
+];
+
+/* 革の質問か判定: シリーズ名→系列タグ、色ことば→色系統、色・種類全般→'ask'、違えば null */
+function detectLeatherQuery(text){
+  if(!LEATHERS || !text) return null;
+  if(/(革|レザー|ある|あり|見せ|在庫|ほし|欲し|ください|どんな|何|色|カラー|サイズ|種類|[？?])/.test(text)){
+    for(const [re,tag] of SERIES_MAP){
+      if(re.test(text) && NSF_HEARING.leathersByTone(LEATHERS,tag).length) return tag;
+    }
+  }
+  if(!/(革|レザー|色|カラー)/.test(text)) return null;
+  const fam=NSF_HEARING.resolveTone(text);
+  if(fam && NSF_HEARING.leathersByTone(LEATHERS,fam).length) return fam;
+  if(/(色|カラー|種類|ラインナップ|カタログ)/.test(text)) return 'ask';
+  return null;
+}
+
+/* 在庫判定（半裁の残量%）: out=0% / low=20%以下 / fresh=80%以上 / ok=その他・未入力 */
+function leatherTier(id){
+  if(!STOCK_MAP) return null;
+  const p=STOCK_MAP[id];
+  if(p===null||p===undefined) return {key:'ok',pct:null};
+  if(p<=0)  return {key:'out',pct:p};
+  if(p<=20) return {key:'low',pct:p};
+  if(p>=80) return {key:'fresh',pct:p};
+  return {key:'ok',pct:p};
+}
+const TIER_BADGE={fresh:'✨ 入荷したて',ok:'✅ 在庫あり',low:'⚠️ 残りわずか',out:'📦 お取り寄せ'};
+const TIER_RANK={fresh:0,ok:1,low:2,out:3};
+
+/* ギャラリーから元のヒアリングへ戻る */
+function backToFlow(){
+  if(state._done){
+    renderQuick([{label:'最初からやり直す',sub:'',val:'__restart',onClick:()=>location.reload()}]);
+    return;
+  }
+  if(state._picking){
+    addMsg('bot','では、作りたいアイテムをお選びくださいね🙂');
+    renderQuick(productQuickItems());
+    return;
+  }
+  runStep(); // 現在のステップの質問とボタンを再表示（state.stepは進めていないので安全）
+}
+
+function colorFamilies(){
+  const seen={}, fams=[];
+  (LEATHERS||[]).forEach(l=>{
+    (l.tags||[]).forEach(t=>{ if(/系$/.test(t) && !seen[t]){ seen[t]=1; fams.push(t); } });
+  });
+  return fams;
+}
+
+function showLeatherGallery(fam){
+  const backLabel = state._picking ? '◀ アイテム選択に戻る' : '◀ 相談の続きに戻る';
+  if(fam==='ask'){
+    const fams=colorFamilies();
+    addMsg('bot','革のお色は '+fams.join('・')+' をご用意しています🎨 どの系統がお好みですか？\nシリーズ名（ホースバット・コードバン・マルゴーフォグ など）で聞いていただいてもOKです！');
+    renderQuick([{label:backLabel,sub:'',val:'',onClick:backToFlow}].concat(
+      fams.map(f=>({label:f, sub:NSF_HEARING.leathersByTone(LEATHERS,f).length+'色', val:'', onClick:()=>showLeatherGallery(f)}))
+    ));
+    return;
+  }
+  const list=NSF_HEARING.leathersByTone(LEATHERS,fam).slice();
+  const stockKnown=!!STOCK_MAP;
+  const cnt={fresh:0,ok:0,low:0,out:0};
+  if(stockKnown){
+    list.forEach(l=>{ cnt[leatherTier(l.id).key]++; });
+    list.sort((a,b)=>TIER_RANK[leatherTier(a.id).key]-TIER_RANK[leatherTier(b.id).key]);
+  }
+  let lead;
+  if(stockKnown){
+    const inN=cnt.fresh+cnt.ok+cnt.low;
+    lead=fam+'は全'+list.length+'色、いま在庫があるのは'+inN+'色です📷';
+    if(cnt.fresh) lead+='\n✨入荷したてが'+cnt.fresh+'色。エイジングがまったく進んでいない状態から育てられるのでおすすめです！';
+    if(cnt.low) lead+='\n⚠️残りわずかが'+cnt.low+'色。気になっていたらお早めにどうぞ。';
+    if(cnt.out) lead+='\n📦お取り寄せが'+cnt.out+'色。お取り寄せに2〜3週間ほど＋取寄せ経費が若干かかります。';
+  }else{
+    lead=fam+'は'+list.length+'色ございます📷';
+  }
+  lead += state._awaitKey==='leather'
+    ? '\n気に入った色をタップすると、そのまま革の色として選択できます。'
+    : '\n気になる色は、あとで革の色を伺う際にお選びいただけます。';
+  addMsg('bot', lead);
+  const swatchChips=list.map(l=>{
+    const t=stockKnown?leatherTier(l.id):null;
+    return { label:l.name, sub:t?TIER_BADGE[t.key]:(l.sub||''), val:'', image:NSF_HEARING.leatherImgSrc(l.image),
+      onClick:()=>{
+        if(state._awaitKey==='leather'){ handleAnswer(l.name, l.name); return; }
+        addMsg('bot','『'+l.name+'』ですね！'+(t?('こちらは「'+TIER_BADGE[t.key]+'」です。'):'')+'ヒアリングで革の色を伺う際に、この名前をお選びください🧵');
+      } };
+  });
+  renderQuick([
+    {label:backLabel,sub:'',val:'',onClick:backToFlow},
+    {label:'他の系統も見る',sub:'',val:'',onClick:()=>showLeatherGallery('ask')}
+  ].concat(swatchChips));
 }
 
 /* ---------- 発注票の生成 ---------- */
@@ -618,6 +764,8 @@ Promise.all([
   PRODUCTS=CORE.PRODUCTS;
   COMMON_TAIL=CORE.COMMON_TAIL;
   SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers, stockMap);
+  LEATHERS=leathers;   // 革の色・シリーズ質問への即答ギャラリー用
+  STOCK_MAP=stockMap;
   startPicker();
 });
 </script>
