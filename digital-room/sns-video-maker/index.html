@@ -474,7 +474,7 @@ canvas{
           <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveへアップロード</button>
         </div>
         <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
-        <div class="notice">自動ナレーション付き保存では、表示される共有画面で「このタブ」と「タブの音声を共有」を選びます。読み上げと写真の動きを同期し、Instagramで使えるMP4へ保存します。</div>
+        <div class="notice">自動ナレーション付き保存は、セリフからAI音声を先に生成してMP4へ直接合成します。画面共有は不要です。初回だけ約100MBの音声モデルを読み込み、2回目以降はブラウザのキャッシュを利用します。</div>
         <div class="log" id="log"></div>
       </section>
     </div>
@@ -695,6 +695,11 @@ canvas{
               </select>
             </div>
           </div>
+          <div class="field">
+            <label for="aiVoiceSelect">MP4保存用AI音声</label>
+            <select id="aiVoiceSelect"></select>
+            <p class="field-help">英語台本の自動ナレーション付きMP4に、ここで選んだ音声を直接入れます。日本語台本は「自分の声で録音」をご利用ください。</p>
+          </div>
           <label class="check-row" for="syncNarrationDuration">
             <input id="syncNarrationDuration" type="checkbox" checked>
             <span><strong>セリフが終わるまで写真を待たせる</strong>プレビュー・MP4保存の前に、ナレーションの長さから各写真の表示秒数を自動で延長します。</span>
@@ -790,6 +795,7 @@ const els = {
   videoFont: document.getElementById('videoFont'),
   narrationLang: document.getElementById('narrationLang'),
   voiceSelect: document.getElementById('voiceSelect'),
+  aiVoiceSelect: document.getElementById('aiVoiceSelect'),
   syncNarrationDuration: document.getElementById('syncNarrationDuration'),
   fitDurationsToNarration: document.getElementById('fitDurationsToNarration'),
   uploadVideoToDrive: document.getElementById('uploadVideoToDrive')
@@ -811,6 +817,16 @@ let currentWork = null;
 let lastRecordingBlob = null;
 let lastRecordingMeta = null;
 let registerKey = '';
+let localTtsPromise = null;
+
+const AI_VOICES = {
+  'en-US': [
+    {value:'af_heart', label:'Heart（英語・女性）'},
+    {value:'af_bella', label:'Bella（英語・女性）'},
+    {value:'am_michael', label:'Michael（英語・男性）'},
+    {value:'bf_emma', label:'Emma（英国英語・女性）'}
+  ]
+};
 
 function setLog(message){
   els.log.textContent = message;
@@ -1125,6 +1141,8 @@ async function translateLongDescToFeatureNote(options = {}){
       : expandJapaneseFeatureMemo(data.translated || '', targetCount);
     els.narrationLang.value = target === 'en' ? 'en-US' : 'ja-JP';
     populateVoices();
+    refreshAiVoiceOptions();
+    refreshCapabilities();
     const distributed = slides.length ? distributeFeatureNoteToSlides({overwrite:true, showLog:false}) : 0;
     if(showLog){
       setLog(distributed
@@ -2496,11 +2514,178 @@ function canEncodeMp4Video(){
     && typeof Mp4Muxer.ArrayBufferTarget === 'function';
 }
 
+function refreshAiVoiceOptions(){
+  if(!els.aiVoiceSelect) return;
+  const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
+  if(language !== 'en-US'){
+    els.aiVoiceSelect.innerHTML = '<option value="">AI音声付き保存は英語台本のみ対応</option>';
+    els.aiVoiceSelect.disabled = true;
+    return;
+  }
+  els.aiVoiceSelect.disabled = false;
+  const current = els.aiVoiceSelect.value;
+  els.aiVoiceSelect.innerHTML = AI_VOICES[language]
+    .map(voice => `<option value="${voice.value}">${voice.label}</option>`)
+    .join('');
+  if(AI_VOICES[language].some(voice => voice.value === current)) els.aiVoiceSelect.value = current;
+}
+
+function ttsProgressLabel(progress){
+  const percent = Number(progress && progress.progress);
+  if(Number.isFinite(percent)) return `AI音声モデルを準備中です（${Math.round(percent)}%）`;
+  return 'AI音声モデルを準備中です。初回は約100MBを読み込みます。';
+}
+
+async function loadLocalTts(){
+  if(!localTtsPromise){
+    localTtsPromise = (async () => {
+      const module = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.js');
+      return module.KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+        dtype:'q8',
+        device:'wasm',
+        progress_callback: progress => setLog(ttsProgressLabel(progress))
+      });
+    })().catch(error => {
+      localTtsPromise = null;
+      throw error;
+    });
+  }
+  return localTtsPromise;
+}
+
+function splitTtsText(text, limit = 260){
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  if(!clean) return [];
+  const sentences = clean.match(/[^。！？.!?]+[。！？.!?]?/g) || [clean];
+  const chunks = [];
+  let current = '';
+  sentences.forEach(sentence => {
+    const next = `${current}${current ? ' ' : ''}${sentence.trim()}`.trim();
+    if(next.length <= limit){
+      current = next;
+      return;
+    }
+    if(current) chunks.push(current);
+    if(sentence.length <= limit){
+      current = sentence.trim();
+      return;
+    }
+    for(let start = 0; start < sentence.length; start += limit){
+      chunks.push(sentence.slice(start, start + limit));
+    }
+    current = '';
+  });
+  if(current) chunks.push(current);
+  return chunks;
+}
+
+function joinAudioParts(parts, sampleRate, pauseSeconds = .12){
+  if(!parts.length) return new Float32Array(0);
+  const pauseFrames = Math.round(sampleRate * pauseSeconds);
+  const totalFrames = parts.reduce((sum, part) => sum + part.length, 0) + pauseFrames * Math.max(0, parts.length - 1);
+  const joined = new Float32Array(totalFrames);
+  let offset = 0;
+  parts.forEach((part, index) => {
+    joined.set(part, offset);
+    offset += part.length;
+    if(index < parts.length - 1) offset += pauseFrames;
+  });
+  return joined;
+}
+
+async function generateNarrationAudio(text, voice, language){
+  if(language !== 'en-US') throw new Error('AI音声付きMP4は英語台本に対応しています。読み上げ言語をEnglishへ変更してください。');
+  const tts = await loadLocalTts();
+  const parts = [];
+  for(const chunk of splitTtsText(text)){
+    const audio = await tts.generate(chunk, {voice, speed:1});
+    parts.push(new Float32Array(audio.audio));
+  }
+  return {sampleRate:24000, data:joinAudioParts(parts, 24000)};
+}
+
+function resampleMono(input, fromRate, toRate){
+  if(fromRate === toRate) return new Float32Array(input);
+  const outputLength = Math.max(1, Math.round(input.length * toRate / fromRate));
+  const output = new Float32Array(outputLength);
+  const ratio = fromRate / toRate;
+  for(let index = 0; index < outputLength; index++){
+    const source = index * ratio;
+    const left = Math.floor(source);
+    const right = Math.min(input.length - 1, left + 1);
+    const mix = source - left;
+    output[index] = input[left] * (1 - mix) + input[right] * mix;
+  }
+  return output;
+}
+
+async function generateNarrationTimeline(){
+  const list = playableSlides();
+  const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
+  if(language !== 'en-US') throw new Error('AI音声付きMP4は英語台本に対応しています。読み上げ言語をEnglishへ変更してください。');
+  const voice = els.aiVoiceSelect.value || AI_VOICES[language][0].value;
+  const generated = [];
+  for(let index = 0; index < list.length; index++){
+    const slide = list[index];
+    setLog(`${index + 1}/${list.length}枚目のAIナレーションを生成中です。`);
+    const audio = String(slide.narration || '').trim()
+      ? await generateNarrationAudio(slide.narration, voice, language)
+      : {sampleRate:24000, data:new Float32Array(0)};
+    const spokenSeconds = audio.data.length / audio.sampleRate;
+    const needed = clamp(roundDuration(spokenSeconds + .35), 1.8, MAX_SLIDE_DURATION);
+    if(slide.duration < needed) slide.duration = needed;
+    generated.push({slide, audio});
+  }
+
+  if(selected >= 0) loadSelected();
+  renderList();
+  const outputRate = 48000;
+  const timeline = new Float32Array(Math.ceil(totalDuration() * outputRate));
+  generated.forEach(({slide, audio}) => {
+    if(!audio.data.length) return;
+    const converted = resampleMono(audio.data, audio.sampleRate, outputRate);
+    const start = Math.round(timelineStartForSlide(slide) * outputRate);
+    timeline.set(converted.subarray(0, Math.max(0, timeline.length - start)), start);
+  });
+  return {sampleRate:outputRate, numberOfChannels:1, data:timeline, voice};
+}
+
+async function encodeGeneratedAudio(track, muxer){
+  const config = {codec:'mp4a.40.2', sampleRate:track.sampleRate, numberOfChannels:1, bitrate:128000};
+  const support = await AudioEncoder.isConfigSupported(config);
+  if(!support.supported) throw new Error('このブラウザではAI音声をAACへ変換できません。');
+  const errors = [];
+  const encoder = new AudioEncoder({
+    output:(chunk, meta) => muxer.addAudioChunk(chunk, meta),
+    error:error => errors.push(error.message || String(error))
+  });
+  encoder.configure(support.config);
+  const frameSize = 2048;
+  for(let offset = 0; offset < track.data.length; offset += frameSize){
+    const frames = Math.min(frameSize, track.data.length - offset);
+    const samples = track.data.slice(offset, offset + frames);
+    const audioData = new AudioData({
+      format:'f32-planar',
+      sampleRate:track.sampleRate,
+      numberOfFrames:frames,
+      numberOfChannels:1,
+      timestamp:Math.round(offset / track.sampleRate * 1000000),
+      data:samples
+    });
+    encoder.encode(audioData);
+    audioData.close();
+    if(encoder.encodeQueueSize > 24) await encoder.flush();
+  }
+  await encoder.flush();
+  encoder.close();
+  if(errors.length) throw new Error(errors[0]);
+}
+
 async function selectMp4VideoConfig(frameRate){
   const base = {
     width: canvas.width,
     height: canvas.height,
-    bitrate: 4500000,
+    bitrate: 3200000,
     framerate: frameRate,
     hardwareAcceleration: 'prefer-hardware',
     avc: {format:'avc'}
@@ -2638,40 +2823,16 @@ function startVideoStreamEncoding(track, encoder, errors){
   };
 }
 
-function requestNarrationAudioCapture(){
-  if(!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function'){
-    return Promise.reject(new Error('自動ナレーション録音は最新のEdgeまたはChromeで利用できます。'));
-  }
-  setLog('共有画面で「このタブ」を選び、「タブの音声を共有」をオンにしてください。');
-  return navigator.mediaDevices.getDisplayMedia({
-    video:{displaySurface:'browser'},
-    audio:{suppressLocalAudioPlayback:false, restrictOwnAudio:false},
-    preferCurrentTab:true,
-    selfBrowserSurface:'include',
-    surfaceSwitching:'exclude',
-    monitorTypeSurfaces:'exclude',
-    systemAudio:'include'
-  }).then(stream => {
-    if(!stream.getAudioTracks().length){
-      stream.getTracks().forEach(track => track.stop());
-      throw new Error('タブ音声が選ばれていません。「このタブ」と「タブの音声を共有」を選んでください。');
-    }
-    return stream;
-  });
-}
-
-async function recordNarratedMp4(captureStream){
-  if(!canEncodeMp4Video() || typeof MediaStreamTrackProcessor === 'undefined' || typeof canvas.captureStream !== 'function'){
+async function recordNarratedMp4(){
+  if(!canEncodeMp4Video() || typeof AudioEncoder === 'undefined' || typeof AudioData === 'undefined'){
     throw new Error('自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます。');
   }
   const frameRate = 30;
+  const frameDurationUs = Math.round(1000000 / frameRate);
+  const narrationTrack = await generateNarrationTimeline();
+  const total = totalDuration();
+  const frameCount = Math.max(1, Math.ceil(total * frameRate));
   const videoConfig = await selectMp4VideoConfig(frameRate);
-  const audioSource = await prepareAudioSource(captureStream);
-  if(!audioSource) throw new Error('共有したタブの音声をMP4へ取り込めませんでした。');
-
-  const canvasStream = canvas.captureStream(frameRate);
-  const videoTrack = canvasStream.getVideoTracks()[0];
-  if(!videoTrack) throw new Error('動画キャンバスの録画を開始できませんでした。');
 
   const target = new Mp4Muxer.ArrayBufferTarget();
   const muxer = new Mp4Muxer.Muxer({
@@ -2679,50 +2840,50 @@ async function recordNarratedMp4(captureStream){
     video:{codec:'avc', width:canvas.width, height:canvas.height, frameRate},
     audio:{
       codec:'aac',
-      sampleRate:audioSource.config.sampleRate,
-      numberOfChannels:audioSource.config.numberOfChannels
+      sampleRate:narrationTrack.sampleRate,
+      numberOfChannels:narrationTrack.numberOfChannels
     },
     fastStart:'in-memory',
     firstTimestampBehavior:'offset'
   });
   const videoErrors = [];
-  const audioErrors = [];
   const videoEncoder = new VideoEncoder({
     output:(chunk, meta) => muxer.addVideoChunk(chunk, meta),
     error:error => videoErrors.push(error.message || String(error))
   });
   videoEncoder.configure(videoConfig);
-  const videoController = startVideoStreamEncoding(videoTrack, videoEncoder, videoErrors);
-  const audioController = startAudioEncoding(audioSource, muxer, audioErrors);
 
+  setLog('AIナレーションをMP4へ合成中です。');
+  playing = true;
   try{
-    setLog('自動ナレーションと映像を録音中です。読み上げが終わるまでこのタブを開いたままお待ちください。');
-    await new Promise(resolve => setTimeout(resolve, 250));
-    await playTimelineWithVoice();
-    await new Promise(resolve => setTimeout(resolve, 350));
+    for(let frameIndex = 0; frameIndex < frameCount; frameIndex++){
+      const time = Math.min(frameIndex / frameRate, total);
+      drawFrame(time);
+      els.progressBar.style.width = `${Math.min(100, (frameIndex + 1) / frameCount * 100)}%`;
+      const frame = new VideoFrame(canvas, {
+        timestamp:frameIndex * frameDurationUs,
+        duration:frameDurationUs
+      });
+      videoEncoder.encode(frame, {keyFrame:frameIndex % (frameRate * 2) === 0});
+      frame.close();
+      if(videoEncoder.encodeQueueSize > 90) await videoEncoder.flush();
+    }
+    await videoEncoder.flush();
   }finally{
-    await videoController.stop();
-    await audioController.stop();
-    canvasStream.getTracks().forEach(track => track.stop());
-    captureStream.getTracks().forEach(track => track.stop());
+    playing = false;
+    videoEncoder.close();
   }
-
-  await videoEncoder.flush();
-  videoEncoder.close();
   if(videoErrors.length) throw new Error(videoErrors[0]);
-  if(audioErrors.length) throw new Error(audioErrors[0]);
+  await encodeGeneratedAudio(narrationTrack, muxer);
   muxer.finalize();
   const blob = new Blob([target.buffer], {type:'video/mp4'});
   if(!blob.size) throw new Error('ナレーション付きMP4の生成に失敗しました。');
-  const audioWarning = audioController.metrics.signalFrames < 1
-    ? ' ただし読み上げ音声の信号を確認できませんでした。完成動画を再生して音声が入っているか確認してください。入っていない場合は共有画面で「このタブ」と「タブの音声を共有」を選び直してください。'
-    : '';
   finishRecordingBlob(
     blob,
     {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true},
     currentWork && currentWork.folderId
-      ? `自動ナレーション付きMP4を保存しました。ダウンロードまたはDrive保存ができます。${audioWarning}`
-      : `自動ナレーション付きMP4を保存しました。完成動画をダウンロードできます。${audioWarning}`
+      ? 'AIナレーションを直接合成したMP4を保存しました。ダウンロードまたはDrive保存ができます。'
+      : 'AIナレーションを直接合成したMP4を保存しました。完成動画をダウンロードできます。'
   );
 }
 
@@ -2796,8 +2957,7 @@ async function recordMp4WithWebCodecs(withMic){
     });
     videoEncoder.encode(frame, {keyFrame: frameIndex % (frameRate * 2) === 0});
     frame.close();
-    if(videoEncoder.encodeQueueSize > 18) await videoEncoder.flush();
-    if(!realTime && frameIndex % 12 === 0) await new Promise(resolve => requestAnimationFrame(resolve));
+    if(videoEncoder.encodeQueueSize > 90) await videoEncoder.flush();
   }
   playing = false;
   drawFrame(total);
@@ -2887,27 +3047,20 @@ async function recordVideo(mode = 'silent'){
   }
   stopSpeech(false);
   resetRecordingOutput();
-  let narrationCapture = null;
   try{
-    // 画面共有はクリック直後の呼び出しが必須なので、他の非同期処理より先に開始する。
-    if(narrationMode) narrationCapture = await requestNarrationAudioCapture();
     await ensureCutoutsForSolidBg();
-    const adjusted = prepareTimelineForPlayback();
-    if(adjusted) setLog('セリフが途中で切れないように表示秒数を延長してから保存します。');
     if(narrationMode){
-      await recordNarratedMp4(narrationCapture);
+      await recordNarratedMp4();
       return;
     }
+    const adjusted = prepareTimelineForPlayback();
+    if(adjusted) setLog('セリフが途中で切れないように表示秒数を延長してから保存します。');
   }catch(err){
     console.warn(err);
     setLog(narrationMode
-      ? `自動ナレーション付き保存を開始できませんでした: ${err.message}`
+      ? `AIナレーション付き保存を開始できませんでした: ${err.message}`
       : `動画保存の準備に失敗しました: ${err.message}`);
     return;
-  }finally{
-    if(narrationMode && narrationCapture){
-      narrationCapture.getTracks().forEach(track => track.stop());
-    }
   }
   if(canEncodeMp4Video()){
     try{
@@ -3685,10 +3838,9 @@ function refreshCapabilities(){
   const mp4Ready = canEncodeMp4Video();
   const recordable = mp4Ready || canRecordVideo();
   const narrationReady = mp4Ready
-    && typeof canvas.captureStream === 'function'
-    && typeof MediaStreamTrackProcessor !== 'undefined'
-    && !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)
-    && 'speechSynthesis' in window;
+    && typeof AudioEncoder !== 'undefined'
+    && typeof AudioData !== 'undefined'
+    && els.narrationLang.value === 'en-US';
   [els.recordSilent, els.recordMic].forEach(button => {
     button.disabled = !recordable;
     button.title = recordable
@@ -3697,8 +3849,10 @@ function refreshCapabilities(){
   });
   els.recordNarration.disabled = !narrationReady;
   els.recordNarration.title = narrationReady
-    ? '読み上げ音声と映像を同期し、Instagram用MP4へ保存します'
-    : '自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます';
+    ? 'AI音声を生成して映像へ直接合成し、Instagram用MP4へ保存します'
+    : (els.narrationLang.value === 'en-US'
+      ? '自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます'
+      : 'AI音声付きMP4は英語台本に対応しています。読み上げ言語をEnglishへ変更してください');
   els.speakScript.disabled = !('speechSynthesis' in window);
   if(!recordable){
     setLog('動画保存はEdge/Chrome推奨です。このブラウザでは保存ボタンを無効にしています。');
@@ -3750,7 +3904,20 @@ document.getElementById('speakScript').addEventListener('click', speakScript);
 els.fitDurationsToNarration.addEventListener('click', () => fitDurationsToNarration());
 els.fitDriveSize.addEventListener('click', () => fitDurationsForDriveSize());
 els.toggleSlideUse.addEventListener('click', () => toggleSlideUse());
-els.recordNarration.addEventListener('click', () => recordVideo('narration'));
+els.recordNarration.addEventListener('click', async () => {
+  if(els.recordNarration.dataset.busy === 'true') return;
+  const originalLabel = els.recordNarration.textContent;
+  els.recordNarration.dataset.busy = 'true';
+  els.recordNarration.disabled = true;
+  els.recordNarration.textContent = 'AI音声を生成中…';
+  try{
+    await recordVideo('narration');
+  }finally{
+    delete els.recordNarration.dataset.busy;
+    els.recordNarration.textContent = originalLabel;
+    refreshCapabilities();
+  }
+});
 document.getElementById('recordSilent').addEventListener('click', () => recordVideo('silent'));
 document.getElementById('recordMic').addEventListener('click', () => recordVideo('mic'));
 document.getElementById('moveUp').addEventListener('click', () => moveSelected(-1));
@@ -3780,13 +3947,18 @@ document.querySelectorAll('.bg-swatch').forEach(btn => {
     drawSelectedOrFirstFrame();
   });
 });
-els.narrationLang.addEventListener('change', populateVoices);
+els.narrationLang.addEventListener('change', () => {
+  populateVoices();
+  refreshAiVoiceOptions();
+  refreshCapabilities();
+});
 els.voiceSelect.addEventListener('change', handleVoiceChange);
 els.translationDirection.addEventListener('change', updateTranslationUi);
 if('speechSynthesis' in window){
   speechSynthesis.onvoiceschanged = populateVoices;
   populateVoices();
 }
+refreshAiVoiceOptions();
 function activateTab(name){
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === name));
