@@ -405,9 +405,9 @@ canvas{
 <body data-step="photos">
 <header class="nav">
   <div class="nav-brand">
-    <img class="nav-logo-owl" src="./assets/nsfactory-owl-gold.png" alt="" width="314" height="353">
+    <img class="nav-logo-owl" src="./assets/nsfactory-owl-white.png" alt="" width="314" height="353">
     <span class="nav-brand-copy">
-      <img class="nav-logo-wordmark" src="./assets/nsfactory-wordmark-gold.png" alt="N's factory" width="424" height="88">
+      <img class="nav-logo-wordmark" src="./assets/nsfactory-wordmark-white.png" alt="N's factory" width="424" height="88">
       <span class="nav-sub"><span class="nav-studio">Movie Studio</span> · SNS紹介動画メーカー <span id="appVersionLabel"></span></span>
     </span>
   </div>
@@ -728,10 +728,10 @@ function loadBrandAsset(src){
   return img;
 }
 const brandAssets = {
-  wordmarkGold: loadBrandAsset('./assets/nsfactory-wordmark-gold.png'),
-  wordmarkDark: loadBrandAsset('./assets/nsfactory-wordmark-dark.png'),
-  owlGold: loadBrandAsset('./assets/nsfactory-owl-gold.png'),
-  owlDark: loadBrandAsset('./assets/nsfactory-owl-dark.png')
+  wordmarkWhite: loadBrandAsset('./assets/nsfactory-wordmark-white.png'),
+  wordmarkBlack: loadBrandAsset('./assets/nsfactory-wordmark-black.png'),
+  owlWhite: loadBrandAsset('./assets/nsfactory-owl-white.png'),
+  owlBlack: loadBrandAsset('./assets/nsfactory-owl-black.png')
 };
 const SNS_VIDEO_DRIVE_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 const LIVE_WORKS_API = `${SNS_VIDEO_DRIVE_API}?api=products`;
@@ -2056,20 +2056,27 @@ function drawPhoto(img, motion, progress, options = {}){
 }
 
 function drawTexts(slide){
-  // 単色背景が明るい色の時はブランド画像を濃色へ切り替える。
+  // 通常は白、白系の単色背景では黒のブランド画像を使う。
   const lightBg = solidBgActive() && bgColorIsLight();
-  const wordmark = lightBg ? brandAssets.wordmarkDark : brandAssets.wordmarkGold;
-  const owl = lightBg ? brandAssets.owlDark : brandAssets.owlGold;
+  const wordmark = lightBg ? brandAssets.wordmarkBlack : brandAssets.wordmarkWhite;
+  const owl = lightBg ? brandAssets.owlBlack : brandAssets.owlWhite;
   if(wordmark.complete && wordmark.naturalWidth && owl.complete && owl.naturalWidth){
     const owlHeight = 100;
     const owlWidth = owlHeight * owl.naturalWidth / owl.naturalHeight;
     const wordmarkWidth = 270;
     const wordmarkHeight = wordmarkWidth * wordmark.naturalHeight / wordmark.naturalWidth;
+    ctx.save();
+    if(!lightBg){
+      ctx.shadowColor = 'rgba(0,0,0,.72)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 2;
+    }
     ctx.drawImage(owl, 68, 28, owlWidth, owlHeight);
     ctx.drawImage(wordmark, 68 + owlWidth + 18, 48, wordmarkWidth, wordmarkHeight);
+    ctx.restore();
   }else{
     ctx.textAlign = 'left';
-    ctx.fillStyle = lightBg ? '#33291C' : '#D9BC7A';
+    ctx.fillStyle = lightBg ? '#000' : '#fff';
     ctx.font = canvasFont(700, 40);
     ctx.fillText("N's factory", 70, 88);
   }
