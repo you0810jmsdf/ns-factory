@@ -460,6 +460,7 @@ canvas{
           <button class="primary" id="playPreviewVoice">▶ 音声つきプレビュー</button>
           <button class="secondary" id="playPreview">映像だけ確認</button>
           <button class="secondary" id="speakScript">音声だけ確認</button>
+          <button class="secondary" id="stopPreview" disabled>停止</button>
         </div>
         <button class="primary next-step" type="button" data-goto-step="export">次へ：動画を保存する</button>
       </section>
@@ -777,6 +778,7 @@ const els = {
   recordMic: document.getElementById('recordMic'),
   fitDriveSize: document.getElementById('fitDriveSize'),
   playPreviewVoice: document.getElementById('playPreviewVoice'),
+  stopPreview: document.getElementById('stopPreview'),
   previewSubtitleMotion: document.getElementById('previewSubtitleMotion'),
   applySubtitleMotionAll: document.getElementById('applySubtitleMotionAll'),
   toggleSlideUse: document.getElementById('toggleSlideUse'),
@@ -799,6 +801,7 @@ let recorder = null;
 let chunks = [];
 let activeUtterance = null;
 let activeSpeechResolve = null;
+let previewStopRequested = false;
 let activeAudioPreviewSlide = null;
 let draggedSlideIndex = null;
 let drivePhotoLoading = false;
@@ -2246,6 +2249,8 @@ function playTimeline(recordStream){
     if(!playableSlides().length){ resolve(); return; }
     saveSelected(); renderList();
     playing = true;
+    previewStopRequested = false;
+    updatePreviewStopButton();
     const start = performance.now();
     const total = totalDuration();
     function tick(now){
@@ -2254,7 +2259,14 @@ function playTimeline(recordStream){
       drawFrame(t);
       els.progressBar.style.width = `${(t / total) * 100}%`;
       if(elapsed < total && playing){ requestAnimationFrame(tick); }
-      else { playing = false; els.progressBar.style.width = '100%'; resolve(); }
+      else {
+        const stopped = previewStopRequested;
+        playing = false;
+        previewStopRequested = false;
+        updatePreviewStopButton();
+        if(!stopped) els.progressBar.style.width = '100%';
+        resolve({stopped});
+      }
     }
     requestAnimationFrame(tick);
   });
@@ -2305,6 +2317,8 @@ async function playTimelineWithVoice(){
   saveSelected();
   renderList();
   playing = true;
+  previewStopRequested = false;
+  updatePreviewStopButton();
   const total = totalDuration();
   for(let index = 0; index < list.length && playing; index++){
     const slide = list[index];
@@ -2340,10 +2354,16 @@ async function playTimelineWithVoice(){
     if(!playing) break;
     await animateTransitionAfterSlide(index, list, total);
   }
+  const stopped = previewStopRequested;
   playing = false;
+  previewStopRequested = false;
+  updatePreviewStopButton();
   stopSpeech(false);
-  drawFrame(total);
-  els.progressBar.style.width = '100%';
+  if(!stopped){
+    drawFrame(total);
+    els.progressBar.style.width = '100%';
+  }
+  return {stopped};
 }
 
 async function playPreviewWithVoice(){
@@ -2354,8 +2374,8 @@ async function playPreviewWithVoice(){
   setLog(adjusted
     ? 'セリフが終わるまで写真を待たせながら、音声つきプレビューを再生中です。'
     : '音声つきプレビューを再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。');
-  await playTimelineWithVoice();
-  setLog('音声つきプレビューが終わりました。');
+  const result = await playTimelineWithVoice();
+  setLog(result && result.stopped ? '音声つきプレビューを停止しました。' : '音声つきプレビューが終わりました。');
 }
 
 async function playPreviewWithoutVoice(){
@@ -2366,8 +2386,8 @@ async function playPreviewWithoutVoice(){
   setLog(adjusted
     ? 'セリフが切れないように表示秒数を延長して、映像だけプレビューを再生中です。'
     : '映像だけプレビューを再生中です。');
-  await playTimeline(false);
-  setLog('映像だけプレビューが終わりました。');
+  const result = await playTimeline(false);
+  setLog(result && result.stopped ? '映像だけプレビューを停止しました。' : '映像だけプレビューが終わりました。');
 }
 
 function setAudioPreviewFocus(slide, position, total){
@@ -2415,6 +2435,23 @@ function previewCurrentSubtitleMotion(){
   }
   setLog('字幕の動きを確認中です。');
   requestAnimationFrame(tick);
+}
+
+function updatePreviewStopButton(){
+  if(!els.stopPreview) return;
+  const canStop = playing || !!activeUtterance || !!activeSpeechResolve || (recorder && recorder.state === 'recording');
+  els.stopPreview.disabled = !canStop;
+}
+
+function stopPreviewPlayback(){
+  previewStopRequested = true;
+  playing = false;
+  cancelSpeechOutput();
+  if(recorder && recorder.state === 'recording'){
+    try{ recorder.stop(); }catch(_){}
+  }
+  updatePreviewStopButton();
+  setLog('確認再生を停止しました。');
 }
 
 function applySubtitleMotionToAll(){
@@ -2545,11 +2582,9 @@ function startAudioEncoding(source, muxer, errors){
       if(audioData){
         if(!stopping){
           metrics.frames += 1;
-          if(metrics.frames % 4 === 0){
-            const peak = measureAudioPeak(audioData);
-            metrics.peak = Math.max(metrics.peak, peak);
-            if(peak >= .002) metrics.signalFrames += 1;
-          }
+          const peak = measureAudioPeak(audioData);
+          metrics.peak = Math.max(metrics.peak, peak);
+          if(peak >= .0005) metrics.signalFrames += 1;
           encoder.encode(audioData);
         }
         audioData.close();
@@ -2676,19 +2711,18 @@ async function recordNarratedMp4(captureStream){
   videoEncoder.close();
   if(videoErrors.length) throw new Error(videoErrors[0]);
   if(audioErrors.length) throw new Error(audioErrors[0]);
-  if(audioController.metrics.signalFrames < 1){
-    throw new Error('読み上げ音声を検出できませんでした。「このタブ」と「タブの音声を共有」を選んで再実行してください。');
-  }
-
   muxer.finalize();
   const blob = new Blob([target.buffer], {type:'video/mp4'});
   if(!blob.size) throw new Error('ナレーション付きMP4の生成に失敗しました。');
+  const audioWarning = audioController.metrics.signalFrames < 1
+    ? ' ただし読み上げ音声の信号を確認できませんでした。完成動画を再生して音声が入っているか確認してください。入っていない場合は共有画面で「このタブ」と「タブの音声を共有」を選び直してください。'
+    : '';
   finishRecordingBlob(
     blob,
     {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true},
     currentWork && currentWork.folderId
-      ? '自動ナレーション付きMP4を保存しました。ダウンロードまたはDrive保存ができます。'
-      : '自動ナレーション付きMP4を保存しました。完成動画をダウンロードできます。'
+      ? `自動ナレーション付きMP4を保存しました。ダウンロードまたはDrive保存ができます。${audioWarning}`
+      : `自動ナレーション付きMP4を保存しました。完成動画をダウンロードできます。${audioWarning}`
   );
 }
 
@@ -2900,6 +2934,8 @@ async function speakScript(){
     return;
   }
   cancelSpeechOutput();
+  previewStopRequested = false;
+  updatePreviewStopButton();
   els.speakScript.disabled = true;
   setLog('音声だけ確認を再生中です。左の一覧と中央画面で、読んでいる写真を確認できます。');
   let completed = true;
@@ -2932,6 +2968,8 @@ async function speakScript(){
     clearAudioPreviewFocus();
     els.progressBar.style.width = '100%';
     els.speakScript.disabled = !('speechSynthesis' in window);
+    previewStopRequested = false;
+    updatePreviewStopButton();
   }
 }
 
@@ -2953,6 +2991,7 @@ function speakTextAndWait(text, options = {}){
       window.clearTimeout(watchdog);
       activeUtterance = null;
       activeSpeechResolve = null;
+      updatePreviewStopButton();
       resolve(result);
     }
     activeSpeechResolve = () => finish({ok:false, cancelled:true});
@@ -2999,6 +3038,7 @@ function speakTextAndWait(text, options = {}){
       finish({ok:false});
     };
     activeUtterance = utterance;
+    updatePreviewStopButton();
     speechSynthesis.resume();
     speechSynthesis.speak(utterance);
     window.setTimeout(() => {
@@ -3024,6 +3064,7 @@ function speakText(text, options = {}){
   utterance.onstart = () => { if(options.startLog) setLog(options.startLog); };
   utterance.onend = () => {
     activeUtterance = null;
+    updatePreviewStopButton();
     if(options.endLog) setLog(options.endLog);
   };
   utterance.onerror = event => {
@@ -3035,9 +3076,11 @@ function speakText(text, options = {}){
       return;
     }
     activeUtterance = null;
+    updatePreviewStopButton();
     setLog(`読み上げを開始できませんでした（${errorName}）。別の音声を選ぶか、ブラウザの音量を確認してください。`);
   };
   activeUtterance = utterance;
+  updatePreviewStopButton();
   speechSynthesis.resume();
   speechSynthesis.speak(utterance);
   window.setTimeout(() => {
@@ -3060,6 +3103,7 @@ function cancelSpeechOutput(){
   }
   activeUtterance = null;
   if(resolveSpeech) resolveSpeech();
+  updatePreviewStopButton();
 }
 
 function populateVoices(){
@@ -3699,6 +3743,7 @@ els.productNamePreset.addEventListener('change', applyProductNamePreset);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
 document.getElementById('playPreview').addEventListener('click', playPreviewWithoutVoice);
 els.playPreviewVoice.addEventListener('click', playPreviewWithVoice);
+els.stopPreview.addEventListener('click', stopPreviewPlayback);
 els.previewSubtitleMotion.addEventListener('click', previewCurrentSubtitleMotion);
 els.applySubtitleMotionAll.addEventListener('click', applySubtitleMotionToAll);
 document.getElementById('speakScript').addEventListener('click', speakScript);
