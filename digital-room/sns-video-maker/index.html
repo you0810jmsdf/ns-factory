@@ -466,13 +466,14 @@ canvas{
       <section class="export-box" id="sec-export">
         <h2>保存（書き出し）</h2>
         <div class="actions">
-          <button class="primary" id="recordSilent">動画を保存（MP4）</button>
-          <button class="secondary" id="recordMic">マイク録音つきで保存</button>
+          <button class="primary" id="recordNarration">自動ナレーション付きMP4</button>
+          <button class="secondary" id="recordSilent">動画のみMP4</button>
+          <button class="secondary" id="recordMic">自分の声で録音</button>
           <button class="secondary" id="fitDriveSize" title="録画済みサイズから逆算して、使用中写真の表示秒数をまとめて短くします">Drive用に秒数を短縮</button>
           <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveへアップロード</button>
         </div>
         <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
-        <div class="notice">Instagramへ投稿する場合は「動画を保存（MP4）」で保存した動画を使ってください。自動音声の読み上げは確認用、動画へのナレーション付与はマイク録音で行います。</div>
+        <div class="notice">自動ナレーション付き保存では、表示される共有画面で「このタブ」と「タブの音声を共有」を選びます。読み上げと写真の動きを同期し、Instagramで使えるMP4へ保存します。</div>
         <div class="log" id="log"></div>
       </section>
     </div>
@@ -771,6 +772,7 @@ const els = {
   log: document.getElementById('log'),
   downloadBox: document.getElementById('downloadBox'),
   downloadLink: document.getElementById('downloadLink'),
+  recordNarration: document.getElementById('recordNarration'),
   recordSilent: document.getElementById('recordSilent'),
   recordMic: document.getElementById('recordMic'),
   fitDriveSize: document.getElementById('fitDriveSize'),
@@ -2467,9 +2469,9 @@ async function selectMp4VideoConfig(frameRate){
   throw new Error('このブラウザではInstagram用MP4のH.264エンコードに対応していません。');
 }
 
-async function prepareMicAudioSource(micStream){
+async function prepareAudioSource(audioStream){
   if(typeof AudioEncoder === 'undefined' || typeof MediaStreamTrackProcessor === 'undefined') return null;
-  const track = micStream.getAudioTracks()[0];
+  const track = audioStream.getAudioTracks()[0];
   if(!track) return null;
   let reader = null;
   try{
@@ -2503,6 +2505,21 @@ async function prepareMicAudioSource(micStream){
   }
 }
 
+function measureAudioPeak(audioData){
+  try{
+    const samples = new Float32Array(audioData.numberOfFrames);
+    audioData.copyTo(samples, {planeIndex:0, format:'f32-planar'});
+    let peak = 0;
+    const step = Math.max(1, Math.floor(samples.length / 256));
+    for(let index = 0; index < samples.length; index += step){
+      peak = Math.max(peak, Math.abs(samples[index]));
+    }
+    return peak;
+  }catch(_){
+    return 0;
+  }
+}
+
 function startAudioEncoding(source, muxer, errors){
   const encoder = new AudioEncoder({
     output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
@@ -2510,12 +2527,21 @@ function startAudioEncoding(source, muxer, errors){
   });
   encoder.configure(source.config);
   let stopping = false;
+  const metrics = {frames:0, signalFrames:0, peak:0};
   async function pump(){
     let item = {done:false, value:source.firstData};
     while(item && !item.done){
       const audioData = item.value;
       if(audioData){
-        if(!stopping) encoder.encode(audioData);
+        if(!stopping){
+          metrics.frames += 1;
+          if(metrics.frames % 4 === 0){
+            const peak = measureAudioPeak(audioData);
+            metrics.peak = Math.max(metrics.peak, peak);
+            if(peak >= .002) metrics.signalFrames += 1;
+          }
+          encoder.encode(audioData);
+        }
         audioData.close();
       }
       item = await source.reader.read();
@@ -2525,6 +2551,7 @@ function startAudioEncoding(source, muxer, errors){
     if(!stopping) errors.push(error.message || String(error));
   });
   return {
+    metrics,
     stop: async () => {
       stopping = true;
       try{ source.track.stop(); }catch(_){}
@@ -2534,6 +2561,125 @@ function startAudioEncoding(source, muxer, errors){
       encoder.close();
     }
   };
+}
+
+function startVideoStreamEncoding(track, encoder, errors){
+  const processor = new MediaStreamTrackProcessor({track});
+  const reader = processor.readable.getReader();
+  let stopping = false;
+  let frameIndex = 0;
+  const pumpPromise = (async () => {
+    while(!stopping){
+      const item = await reader.read();
+      if(item.done) break;
+      const frame = item.value;
+      if(frame){
+        encoder.encode(frame, {keyFrame:frameIndex % 60 === 0});
+        frameIndex += 1;
+        frame.close();
+        if(encoder.encodeQueueSize > 18) await encoder.flush();
+      }
+    }
+  })().catch(error => {
+    if(!stopping) errors.push(error.message || String(error));
+  });
+  return {
+    stop: async () => {
+      stopping = true;
+      try{ track.stop(); }catch(_){ }
+      try{ await reader.cancel(); }catch(_){ }
+      await pumpPromise;
+    }
+  };
+}
+
+function requestNarrationAudioCapture(){
+  if(!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function'){
+    return Promise.reject(new Error('自動ナレーション録音は最新のEdgeまたはChromeで利用できます。'));
+  }
+  setLog('共有画面で「このタブ」を選び、「タブの音声を共有」をオンにしてください。');
+  return navigator.mediaDevices.getDisplayMedia({
+    video:{displaySurface:'browser'},
+    audio:{suppressLocalAudioPlayback:false, restrictOwnAudio:false},
+    preferCurrentTab:true,
+    selfBrowserSurface:'include',
+    surfaceSwitching:'exclude',
+    monitorTypeSurfaces:'exclude',
+    systemAudio:'include'
+  }).then(stream => {
+    if(!stream.getAudioTracks().length){
+      stream.getTracks().forEach(track => track.stop());
+      throw new Error('タブ音声が選ばれていません。「このタブ」と「タブの音声を共有」を選んでください。');
+    }
+    return stream;
+  });
+}
+
+async function recordNarratedMp4(captureStream){
+  if(!canEncodeMp4Video() || typeof MediaStreamTrackProcessor === 'undefined' || typeof canvas.captureStream !== 'function'){
+    throw new Error('自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます。');
+  }
+  const frameRate = 30;
+  const videoConfig = await selectMp4VideoConfig(frameRate);
+  const audioSource = await prepareAudioSource(captureStream);
+  if(!audioSource) throw new Error('共有したタブの音声をMP4へ取り込めませんでした。');
+
+  const canvasStream = canvas.captureStream(frameRate);
+  const videoTrack = canvasStream.getVideoTracks()[0];
+  if(!videoTrack) throw new Error('動画キャンバスの録画を開始できませんでした。');
+
+  const target = new Mp4Muxer.ArrayBufferTarget();
+  const muxer = new Mp4Muxer.Muxer({
+    target,
+    video:{codec:'avc', width:canvas.width, height:canvas.height, frameRate},
+    audio:{
+      codec:'aac',
+      sampleRate:audioSource.config.sampleRate,
+      numberOfChannels:audioSource.config.numberOfChannels
+    },
+    fastStart:'in-memory',
+    firstTimestampBehavior:'offset'
+  });
+  const videoErrors = [];
+  const audioErrors = [];
+  const videoEncoder = new VideoEncoder({
+    output:(chunk, meta) => muxer.addVideoChunk(chunk, meta),
+    error:error => videoErrors.push(error.message || String(error))
+  });
+  videoEncoder.configure(videoConfig);
+  const videoController = startVideoStreamEncoding(videoTrack, videoEncoder, videoErrors);
+  const audioController = startAudioEncoding(audioSource, muxer, audioErrors);
+
+  try{
+    setLog('自動ナレーションと映像を録音中です。読み上げが終わるまでこのタブを開いたままお待ちください。');
+    await new Promise(resolve => setTimeout(resolve, 250));
+    await playTimelineWithVoice();
+    await new Promise(resolve => setTimeout(resolve, 350));
+  }finally{
+    await videoController.stop();
+    await audioController.stop();
+    canvasStream.getTracks().forEach(track => track.stop());
+    captureStream.getTracks().forEach(track => track.stop());
+  }
+
+  await videoEncoder.flush();
+  videoEncoder.close();
+  if(videoErrors.length) throw new Error(videoErrors[0]);
+  if(audioErrors.length) throw new Error(audioErrors[0]);
+  if(audioController.metrics.signalFrames < 1){
+    throw new Error('読み上げ音声を検出できませんでした。「このタブ」と「タブの音声を共有」を選んで再実行してください。');
+  }
+
+  muxer.finalize();
+  const blob = new Blob([target.buffer], {type:'video/mp4'});
+  if(!blob.size) throw new Error('ナレーション付きMP4の生成に失敗しました。');
+  finishRecordingBlob(
+    blob,
+    {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true},
+    currentWork && currentWork.folderId
+      ? '自動ナレーション付きMP4を保存しました。ダウンロードまたはDrive保存ができます。'
+      : '自動ナレーション付きMP4を保存しました。完成動画をダウンロードできます。'
+  );
 }
 
 async function recordMp4WithWebCodecs(withMic){
@@ -2551,7 +2697,7 @@ async function recordMp4WithWebCodecs(withMic){
     if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
       try{
         micStream = await navigator.mediaDevices.getUserMedia({audio:true});
-        audioSource = await prepareMicAudioSource(micStream);
+        audioSource = await prepareAudioSource(micStream);
         if(!audioSource) setLog('マイク音声をMP4へ入れられないため、音声なしMP4で保存します。');
       }catch(_){
         setLog('マイクを使えなかったため、音声なしMP4で保存します。');
@@ -2687,13 +2833,38 @@ async function recordMediaRecorderVideo(withMic){
   setTimeout(() => recorder && recorder.state !== 'inactive' && recorder.stop(), 250);
 }
 
-async function recordVideo(withMic){
+async function recordVideo(mode = 'silent'){
   if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
-  await ensureCutoutsForSolidBg();
-  const adjusted = prepareTimelineForPlayback();
+  const narrationMode = mode === 'narration';
+  const withMic = mode === 'mic';
+  if(narrationMode && !playableSlides().some(slide => String(slide.narration || '').trim())){
+    setLog('自動ナレーションに使うセリフがありません。写真ごとの「読むセリフ・台本」を入力してください。');
+    return;
+  }
   stopSpeech(false);
   resetRecordingOutput();
-  if(adjusted) setLog('セリフが途中で切れないように表示秒数を延長してから保存します。');
+  let narrationCapture = null;
+  try{
+    // 画面共有はクリック直後の呼び出しが必須なので、他の非同期処理より先に開始する。
+    if(narrationMode) narrationCapture = await requestNarrationAudioCapture();
+    await ensureCutoutsForSolidBg();
+    const adjusted = prepareTimelineForPlayback();
+    if(adjusted) setLog('セリフが途中で切れないように表示秒数を延長してから保存します。');
+    if(narrationMode){
+      await recordNarratedMp4(narrationCapture);
+      return;
+    }
+  }catch(err){
+    console.warn(err);
+    setLog(narrationMode
+      ? `自動ナレーション付き保存を開始できませんでした: ${err.message}`
+      : `動画保存の準備に失敗しました: ${err.message}`);
+    return;
+  }finally{
+    if(narrationMode && narrationCapture){
+      narrationCapture.getTracks().forEach(track => track.stop());
+    }
+  }
   if(canEncodeMp4Video()){
     try{
       await recordMp4WithWebCodecs(withMic);
@@ -3459,12 +3630,21 @@ function pickRecordingFormat(withAudio){
 function refreshCapabilities(){
   const mp4Ready = canEncodeMp4Video();
   const recordable = mp4Ready || canRecordVideo();
+  const narrationReady = mp4Ready
+    && typeof canvas.captureStream === 'function'
+    && typeof MediaStreamTrackProcessor !== 'undefined'
+    && !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)
+    && 'speechSynthesis' in window;
   [els.recordSilent, els.recordMic].forEach(button => {
     button.disabled = !recordable;
     button.title = recordable
       ? (mp4Ready ? 'Instagram用MP4で保存できます' : 'このブラウザではWebM保存になります。Instagram投稿にはMP4変換が必要です')
       : 'EdgeまたはChromeで開くと動画保存できます';
   });
+  els.recordNarration.disabled = !narrationReady;
+  els.recordNarration.title = narrationReady
+    ? '読み上げ音声と映像を同期し、Instagram用MP4へ保存します'
+    : '自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます';
   els.speakScript.disabled = !('speechSynthesis' in window);
   if(!recordable){
     setLog('動画保存はEdge/Chrome推奨です。このブラウザでは保存ボタンを無効にしています。');
@@ -3515,8 +3695,9 @@ document.getElementById('speakScript').addEventListener('click', speakScript);
 els.fitDurationsToNarration.addEventListener('click', () => fitDurationsToNarration());
 els.fitDriveSize.addEventListener('click', () => fitDurationsForDriveSize());
 els.toggleSlideUse.addEventListener('click', () => toggleSlideUse());
-document.getElementById('recordSilent').addEventListener('click', () => recordVideo(false));
-document.getElementById('recordMic').addEventListener('click', () => recordVideo(true));
+els.recordNarration.addEventListener('click', () => recordVideo('narration'));
+document.getElementById('recordSilent').addEventListener('click', () => recordVideo('silent'));
+document.getElementById('recordMic').addEventListener('click', () => recordVideo('mic'));
 document.getElementById('moveUp').addEventListener('click', () => moveSelected(-1));
 document.getElementById('moveDown').addEventListener('click', () => moveSelected(1));
 document.getElementById('removeSlide').addEventListener('click', removeSelected);
