@@ -76,10 +76,11 @@ button:disabled{opacity:.45;cursor:not-allowed}
 }
 .step strong{display:block;color:var(--ink);font-size:13.5px;line-height:1.4}
 
-/* ── スタジオ（PC=3ペイン / スマホ=ステップ切替） ── */
+/* ── スタジオ（PC=プレビュー＋統合操作列 / スマホ=ステップ切替） ── */
 .studio{display:block}
 .pane{min-width:0}
 .stage-col{min-width:0}
+.control-col{min-width:0;display:grid;gap:14px}
 
 /* ── パネル共通 ── */
 .panel{
@@ -144,8 +145,31 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .danger:hover:not(:disabled){background:#FBEEE9}
 .file-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);cursor:pointer}
 .next-step{display:none;width:100%;margin-top:16px}
+.next-step[hidden]{display:none!important}
 
 /* ── 写真ライブラリ ── */
+.photo-loader{
+  border:0;background:transparent;margin:0;padding:0;
+}
+.photo-loader > summary{
+  cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;
+  color:var(--brass-dark);font-size:13px;font-weight:700;list-style:none;
+}
+.photo-loader > summary::-webkit-details-marker{display:none}
+.photo-loader > summary::before{
+  content:'＋';width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  background:var(--brass-light);color:var(--brass-dark);grid-column:1;grid-row:1;
+}
+.photo-loader > summary .photo-loader-title{padding-left:38px;grid-column:1;grid-row:1}
+.photo-loader > summary .photo-loader-count{
+  color:var(--mute);font-size:11.5px;font-weight:500;white-space:nowrap;
+}
+.photo-loader[open] > summary{padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.photo-loader[open] > summary::before{content:'−'}
+.photo-loader-body{padding-top:14px}
+.photo-loader-note{margin:10px 0 0}
+.frame-panel h2{margin-bottom:8px}
+.frame-count{font-size:11.5px;color:var(--mute);font-weight:500;letter-spacing:0;white-space:nowrap}
 details.drive{
   border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card-soft);
   padding:0 12px;margin:12px 0;
@@ -248,6 +272,52 @@ canvas{
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
+/* ── 使い方ガイド・更新バナー ── */
+.nav-help{
+  margin-left:auto;color:#E3D2A6;background:none;font-size:12.5px;white-space:nowrap;
+  border:1px solid rgba(216,196,154,.5);padding:7px 14px;border-radius:9999px;transition:background .2s ease;
+}
+.nav-help:hover{background:rgba(216,196,154,.14)}
+.nav-help + .nav-back{margin-left:0}
+#appVersionLabel{font-size:10px;opacity:.75}
+#updateBanner{
+  position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:center;
+  background:var(--brass-light);border-bottom:1.5px solid var(--brass);padding:9px 14px;
+  font-size:13px;color:var(--ink);text-align:center;
+}
+#updateBanner[hidden]{display:none}
+#applyUpdate{
+  background:linear-gradient(180deg,#B9944D,#83652B);color:#FFF9EA;
+  padding:7px 16px;font-size:13px;border-radius:9999px;
+}
+#updateBanner .update-note{font-size:11.5px;color:var(--ink-sub)}
+#guideOverlay{
+  position:fixed;inset:0;z-index:1000;background:rgba(42,36,27,.55);backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;
+}
+#guideOverlay[hidden]{display:none}
+.guide-card{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-md);
+  max-width:480px;width:100%;padding:26px 22px;max-height:88vh;overflow:auto;
+}
+.guide-card h2{margin:0 0 16px;font-size:18px;color:var(--brass-dark);letter-spacing:.06em;text-align:center}
+.guide-steps{margin:0;padding:0;list-style:none;counter-reset:guide;display:grid;gap:12px}
+.guide-steps li{
+  counter-increment:guide;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;
+  font-size:13.5px;line-height:1.7;color:var(--ink-sub);
+}
+.guide-steps li::before{
+  content:counter(guide);width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(180deg,#B9944D,var(--brass-dark));color:#FFF9EA;
+  display:grid;place-items:center;font-family:'Cinzel',serif;font-weight:700;font-size:14px;
+}
+.guide-steps strong{color:var(--ink);margin-right:4px}
+.guide-note{
+  margin:16px 0;font-size:12px;color:var(--ink-sub);line-height:1.8;
+  background:var(--brass-light);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;
+}
+.guide-card .primary{width:100%}
+
 /* ── スマホ用ステップナビ・通知 ── */
 .step-nav{
   display:none;position:fixed;left:0;right:0;bottom:0;z-index:30;
@@ -273,15 +343,18 @@ canvas{
 }
 #logToast.show{opacity:1;transform:none}
 
-/* ── PCレイアウト（960px以上で3ペイン並列） ── */
+/* ── PCレイアウト（960px以上でプレビュー＋統合操作列） ── */
 @media(min-width:960px){
   .nav{position:sticky;top:0;z-index:20}
-  .studio{display:grid;grid-template-columns:280px minmax(0,1fr) 360px;gap:18px;align-items:start}
-  .stage-col{position:sticky;top:80px}
+  .studio{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:18px;align-items:start}
+  .stage-col{grid-column:1;position:sticky;top:80px}
+  .control-col{grid-column:2}
+  .frame-panel .slides{max-height:34vh}
   #logToast{display:none}
 }
 @media(min-width:1280px){
-  .studio{grid-template-columns:300px minmax(0,1fr) 400px}
+  .studio{grid-template-columns:minmax(0,1fr) 470px}
+  .frame-panel .slides{max-height:38vh}
 }
 
 /* ── スマホ・タブレット（959px以下はステップ切替） ── */
@@ -317,10 +390,31 @@ canvas{
 <header class="nav">
   <div class="nav-brand">
     <span class="nav-title">N'S FACTORY <span>MOVIE STUDIO</span></span>
-    <span class="nav-sub">SNS紹介動画メーカー</span>
+    <span class="nav-sub">SNS紹介動画メーカー <span id="appVersionLabel"></span></span>
   </div>
+  <button class="nav-help" id="showGuide" type="button">使い方</button>
   <a class="nav-back" href="../">デジタル幕僚室へ戻る</a>
 </header>
+
+<div id="updateBanner" hidden>
+  <span>新しいバージョンがあります。</span>
+  <button type="button" id="applyUpdate">今すぐ更新</button>
+  <span class="update-note">※更新すると編集中の写真・セリフは消えます</span>
+</div>
+
+<div id="guideOverlay" hidden role="dialog" aria-modal="true" aria-label="使い方ガイド">
+  <div class="guide-card">
+    <h2>かんたん4ステップ</h2>
+    <ol class="guide-steps">
+      <li><strong>写真</strong>「写真を読み込む・追加」から作品写真を選びます。追加後は「写真コマ」で順番や使用写真を整えます。</li>
+      <li><strong>台本</strong>「1. 空欄のセリフに案を入れる」を押すと、セリフが自動で入ります。自由に書き換えできます。</li>
+      <li><strong>確認</strong>「▶ 音声つきプレビュー」で仕上がりを確認します。</li>
+      <li><strong>保存</strong>「動画を保存（MP4）」で完成。Instagramへそのまま投稿できます。</li>
+    </ol>
+    <p class="guide-note">写真はアップロードされず、すべてこの端末の中だけで処理されます。<br>ページを閉じたり再読み込みすると編集中の内容は消えるため、保存まで続けて進めるのがおすすめです。</p>
+    <button class="primary" id="closeGuide" type="button">はじめる</button>
+  </div>
+</div>
 
 <main class="app">
   <section class="hero">
@@ -336,41 +430,6 @@ canvas{
   </section>
 
   <div class="studio">
-    <section class="pane" id="sec-photos">
-      <section class="panel">
-        <h2>写真</h2>
-        <div class="actions">
-          <label class="primary file-btn" for="photoInput">＋ 写真を追加</label>
-          <input id="photoInput" type="file" accept="image/*" multiple hidden>
-        </div>
-        <details class="drive">
-          <summary>Driveから読み込む</summary>
-          <div class="field">
-            <label for="driveFolder">Google DriveフォルダURL / ID</label>
-            <input id="driveFolder" value="https://drive.google.com/drive/u/0/folders/1yhc1nSkAzwq_QOIQjbsrKQTeSvtdeH_3" autocomplete="off">
-          </div>
-          <div class="row">
-            <div class="field">
-              <label for="driveWorkNo">作品番号</label>
-              <input id="driveWorkNo" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
-            </div>
-            <div class="field">
-              <label for="driveLimit">最大枚数</label>
-              <input id="driveLimit" type="number" min="1" max="12" value="8">
-            </div>
-          </div>
-          <div class="actions">
-            <button class="secondary" id="loadDrivePhotos">Driveから写真を表示</button>
-          </div>
-          <div class="drive-status" id="driveStatus" role="status"></div>
-          <p class="help">作品番号を入力してEnter、または欄外をタップすると、作品情報とDrive写真を自動で読み込みます。表示されない時はこのボタンを押してください。</p>
-        </details>
-        <p class="help">写真をタップで選択、ドラッグで動画の順番を入れ替えられます。</p>
-        <div id="slides" class="slides"></div>
-        <button class="primary next-step" type="button" data-goto-step="script">次へ：台本を整える</button>
-      </section>
-    </section>
-
     <div class="stage-col">
       <section id="sec-preview">
         <div class="canvas-shell">
@@ -399,8 +458,58 @@ canvas{
       </section>
     </div>
 
-    <section class="pane" id="sec-script">
-      <section class="panel">
+    <aside class="control-col" aria-label="動画編集の操作パネル">
+      <section class="pane" id="sec-photos">
+        <section class="panel">
+          <details class="photo-loader" id="photoLoader" open>
+            <summary>
+              <span class="photo-loader-title">写真を読み込む・追加</span>
+              <span class="photo-loader-count" id="photoLoadSummary">まだ写真がありません</span>
+            </summary>
+            <div class="photo-loader-body">
+              <div class="actions">
+                <label class="primary file-btn" for="photoInput">＋ 端末から写真を追加</label>
+                <input id="photoInput" type="file" accept="image/*" multiple hidden>
+              </div>
+              <details class="drive">
+                <summary>Google Driveから読み込む</summary>
+                <div class="field">
+                  <label for="driveFolder">Google DriveフォルダURL / ID</label>
+                  <input id="driveFolder" value="https://drive.google.com/drive/u/0/folders/1yhc1nSkAzwq_QOIQjbsrKQTeSvtdeH_3" autocomplete="off">
+                </div>
+                <div class="row">
+                  <div class="field">
+                    <label for="driveWorkNo">作品番号</label>
+                    <input id="driveWorkNo" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
+                  </div>
+                  <div class="field">
+                    <label for="driveLimit">最大枚数</label>
+                    <input id="driveLimit" type="number" min="1" max="12" value="8">
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="secondary" id="loadDrivePhotos">Driveから写真を表示</button>
+                </div>
+                <div class="drive-status" id="driveStatus" role="status"></div>
+                <p class="help">作品番号を入力してEnter、または欄外をタップすると、作品情報とDrive写真を自動で読み込みます。表示されない時はこのボタンを押してください。</p>
+              </details>
+              <p class="help photo-loader-note">写真追加後はこの欄が自動で閉じます。あとから写真を追加・変更する時は、見出しを押して開けます。</p>
+            </div>
+          </details>
+          <div class="actions">
+            <button class="primary next-step" id="photoNextStep" type="button" data-goto-step="script" hidden>次へ：写真コマと台本を整える</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="pane" id="sec-script">
+        <section class="panel frame-panel">
+          <h2>写真コマ <span class="frame-count" id="frameCount">0枚</span></h2>
+          <p class="help">写真を選ぶと1枚ずつ編集できます。ドラッグで動画の順番を入れ替え、「使う／戻す」で動画への使用を切り替えます。</p>
+          <div id="slides" class="slides"></div>
+        </section>
+
+        <section class="panel">
         <div class="tabs" role="tablist">
           <button class="tab-btn active" data-tab="tab-info" type="button">作品情報</button>
           <button class="tab-btn" data-tab="tab-slide" type="button">写真ごと</button>
@@ -577,8 +686,9 @@ canvas{
           </div>
         </div>
         <button class="primary next-step" type="button" data-goto-step="preview">次へ：プレビューで確認</button>
+        </section>
       </section>
-    </section>
+    </aside>
   </div>
 </main>
 
@@ -609,6 +719,10 @@ const els = {
   translationHelp: document.getElementById('translationHelp'),
   translateFeatureNote: document.getElementById('translateFeatureNote'),
   distributeFeatureNote: document.getElementById('distributeFeatureNote'),
+  photoLoader: document.getElementById('photoLoader'),
+  photoLoadSummary: document.getElementById('photoLoadSummary'),
+  photoNextStep: document.getElementById('photoNextStep'),
+  frameCount: document.getElementById('frameCount'),
   photoInput: document.getElementById('photoInput'),
   driveFolder: document.getElementById('driveFolder'),
   driveWorkNo: document.getElementById('driveWorkNo'),
@@ -684,6 +798,21 @@ function setDriveStatus(message, type = 'info'){
   els.driveStatus.className = `drive-status show ${type}`;
 }
 
+function updatePhotoPanelUi(options = {}){
+  const total = slides.length;
+  const active = slides.filter(isSlideEnabled).length;
+  if(els.photoLoadSummary){
+    els.photoLoadSummary.textContent = total ? `${active} / ${total}枚を使用` : 'まだ写真がありません';
+  }
+  if(els.frameCount){
+    els.frameCount.textContent = total ? `${active} / ${total}枚を使用` : '0枚';
+  }
+  if(els.photoNextStep) els.photoNextStep.hidden = total === 0;
+  if(!els.photoLoader) return;
+  if(total === 0) els.photoLoader.open = true;
+  else if(options.collapse) els.photoLoader.open = false;
+}
+
 function defaultTexts(index){
   const product = els.productName.value.trim() || 'レザー作品';
   const material = els.materialNote.value.trim();
@@ -702,7 +831,17 @@ function defaultTexts(index){
 }
 
 function addFiles(files){
-  [...files].filter(file => file.type.startsWith('image/')).forEach(file => {
+  const imageFiles = [...files].filter(file => file.type.startsWith('image/'));
+  if(!imageFiles.length) return;
+  let settled = 0;
+  let added = 0;
+  const finish = () => {
+    settled += 1;
+    if(settled !== imageFiles.length) return;
+    updatePhotoPanelUi({collapse:added > 0});
+    if(added) setLog(`${added}枚の写真を追加しました。右の写真コマで順番や使用写真を整えられます。`);
+  };
+  imageFiles.forEach(file => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     const index = slides.length;
@@ -720,10 +859,16 @@ function addFiles(files){
         transition: ['fade','wipeLeft','fade','slideLeft'][index % 4],
         subtitleMotion: ['fadeUp','typewriter','highlight','pop'][index % 4]
       });
+      added += 1;
       selected = slides.length - 1;
       renderList();
       loadSelected();
       drawSelectedPreviewFrame(.35);
+      finish();
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      finish();
     };
     img.src = url;
   });
@@ -826,6 +971,7 @@ function folderNumberMismatch(folderName, workNo){
 
 async function applyDrivePhotoData(data, workNo, candidate){
   await addDataUrlPhotos(data.photos);
+  updatePhotoPanelUi({collapse:true});
   const matchedWork = await applyWorkInfoFromDriveData(data, workNo);
   const successMessage = candidate.kind === 'root'
     ? `作品集の登録フォルダではなく、Driveルート検索で ${data.photos.length} 枚の写真を表示しました。`
@@ -1279,6 +1425,7 @@ function featureLinesForTargets(features, targetCount){
 }
 
 function renderList(){
+  updatePhotoPanelUi();
   els.slides.innerHTML = '';
   if(!slides.length){
     els.slides.innerHTML = '<div class="slide-meta">まだ写真がありません。「写真を追加」から始めてください。</div>';
@@ -3402,6 +3549,24 @@ refreshCapabilities();
   nav.querySelectorAll('button[data-step]').forEach(btn => btn.addEventListener('click', () => setStep(btn.dataset.step)));
   document.querySelectorAll('[data-goto-step]').forEach(btn => btn.addEventListener('click', () => setStep(btn.dataset.gotoStep)));
   setStep('photos', false);
+})();
+
+// 使い方ガイド。編集中の内容を変えずに、いつでも開閉できます。
+(function(){
+  const overlay = document.getElementById('guideOverlay');
+  const showButton = document.getElementById('showGuide');
+  const closeButton = document.getElementById('closeGuide');
+  if(!overlay || !showButton || !closeButton) return;
+  const close = () => { overlay.hidden = true; };
+  showButton.addEventListener('click', () => {
+    overlay.hidden = false;
+    closeButton.focus();
+  });
+  closeButton.addEventListener('click', close);
+  overlay.addEventListener('click', event => { if(event.target === overlay) close(); });
+  document.addEventListener('keydown', event => {
+    if(event.key === 'Escape' && !overlay.hidden) close();
+  });
 })();
 </script>
 <script src="../../assets/access-counter.js"></script>
