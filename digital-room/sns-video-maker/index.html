@@ -44,10 +44,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
   background:linear-gradient(180deg,#332818,#241B0F);color:#F0E7D4;
   border-bottom:2px solid var(--brass);
 }
-.nav-brand{display:flex;flex-direction:column;min-width:0}
-.nav-title{font-family:'Cinzel','Zen Kaku Gothic New',serif;font-weight:700;font-size:14px;letter-spacing:.12em;line-height:1.4}
-.nav-title span{color:#D9BC7A}
+.nav-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.nav-brand-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.nav-logo-owl{display:block;width:38px;height:43px;object-fit:contain;flex:none}
+.nav-logo-wordmark{display:block;width:148px;height:auto;max-width:100%}
 .nav-sub{font-size:11px;color:#C4B18B;letter-spacing:.05em}
+.nav-studio{color:#E3D2A6;font-weight:700;text-transform:uppercase}
 .nav-back{
   margin-left:auto;color:#E3D2A6;text-decoration:none;font-size:12.5px;white-space:nowrap;
   border:1px solid rgba(216,196,154,.5);padding:7px 14px;border-radius:9999px;transition:background .2s ease;
@@ -391,6 +393,10 @@ canvas{
   }
 }
 @media(max-width:379px){
+  .nav{padding-inline:12px}
+  .nav-brand{gap:8px}
+  .nav-logo-owl{width:33px;height:38px}
+  .nav-logo-wordmark{width:126px}
   .row{grid-template-columns:1fr}
   .actions{grid-template-columns:1fr}
 }
@@ -399,8 +405,11 @@ canvas{
 <body data-step="photos">
 <header class="nav">
   <div class="nav-brand">
-    <span class="nav-title">N'S FACTORY <span>MOVIE STUDIO</span></span>
-    <span class="nav-sub">SNS紹介動画メーカー <span id="appVersionLabel"></span></span>
+    <img class="nav-logo-owl" src="./assets/nsfactory-owl-gold.png" alt="" width="314" height="353">
+    <span class="nav-brand-copy">
+      <img class="nav-logo-wordmark" src="./assets/nsfactory-wordmark-gold.png" alt="N's factory" width="424" height="88">
+      <span class="nav-sub"><span class="nav-studio">Movie Studio</span> · SNS紹介動画メーカー <span id="appVersionLabel"></span></span>
+    </span>
   </div>
   <button class="nav-help" id="showGuide" type="button">使い方</button>
   <a class="nav-back" href="../">デジタル幕僚室へ戻る</a>
@@ -711,6 +720,19 @@ canvas{
 <script>
 const canvas = document.getElementById('previewCanvas');
 const ctx = canvas.getContext('2d');
+function loadBrandAsset(src){
+  const img = new Image();
+  img.decoding = 'async';
+  img.onload = () => drawSelectedOrFirstFrame();
+  img.src = src;
+  return img;
+}
+const brandAssets = {
+  wordmarkGold: loadBrandAsset('./assets/nsfactory-wordmark-gold.png'),
+  wordmarkDark: loadBrandAsset('./assets/nsfactory-wordmark-dark.png'),
+  owlGold: loadBrandAsset('./assets/nsfactory-owl-gold.png'),
+  owlDark: loadBrandAsset('./assets/nsfactory-owl-dark.png')
+};
 const SNS_VIDEO_DRIVE_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 const LIVE_WORKS_API = `${SNS_VIDEO_DRIVE_API}?api=products`;
 const LEATHER_STOCK_CSV = '../../order_estimate/leather-stock.csv';
@@ -2034,14 +2056,23 @@ function drawPhoto(img, motion, progress, options = {}){
 }
 
 function drawTexts(slide){
-  // 単色背景が明るい色の時はロゴ文字を濃色に切り替える（字幕・情報パネルは黒箱付きのため不変）
+  // 単色背景が明るい色の時はブランド画像を濃色へ切り替える。
   const lightBg = solidBgActive() && bgColorIsLight();
-  ctx.textAlign = 'left';
-  ctx.fillStyle = lightBg ? '#33291C' : '#f7f2ea';
-  ctx.font = canvasFont(700, 40);
-  ctx.fillText("N's factory", 70, 88);
-  ctx.fillStyle = lightBg ? '#8a6a2f' : '#c8a878';
-  ctx.fillRect(70, 116, 145, 4);
+  const wordmark = lightBg ? brandAssets.wordmarkDark : brandAssets.wordmarkGold;
+  const owl = lightBg ? brandAssets.owlDark : brandAssets.owlGold;
+  if(wordmark.complete && wordmark.naturalWidth && owl.complete && owl.naturalWidth){
+    const owlHeight = 100;
+    const owlWidth = owlHeight * owl.naturalWidth / owl.naturalHeight;
+    const wordmarkWidth = 270;
+    const wordmarkHeight = wordmarkWidth * wordmark.naturalHeight / wordmark.naturalWidth;
+    ctx.drawImage(owl, 68, 28, owlWidth, owlHeight);
+    ctx.drawImage(wordmark, 68 + owlWidth + 18, 48, wordmarkWidth, wordmarkHeight);
+  }else{
+    ctx.textAlign = 'left';
+    ctx.fillStyle = lightBg ? '#33291C' : '#D9BC7A';
+    ctx.font = canvasFont(700, 40);
+    ctx.fillText("N's factory", 70, 88);
+  }
 
   const panel = {x:76, y:1568, w:928, h:242};
   ctx.fillStyle = 'rgba(16,16,16,.82)';
