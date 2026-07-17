@@ -2058,6 +2058,7 @@ function drawPhoto(img, motion, progress, options = {}){
 function drawTexts(slide){
   // 通常は白、白系の単色背景では黒のブランド画像を使う。
   const lightBg = solidBgActive() && bgColorIsLight();
+  const titleColor = lightBg ? '#111' : '#fff';
   const wordmark = lightBg ? brandAssets.wordmarkBlack : brandAssets.wordmarkWhite;
   const owl = lightBg ? brandAssets.owlBlack : brandAssets.owlWhite;
   if(wordmark.complete && wordmark.naturalWidth && owl.complete && owl.naturalWidth){
@@ -2081,15 +2082,23 @@ function drawTexts(slide){
     ctx.fillText("N's factory", 70, 88);
   }
 
-  const panel = {x:76, y:1568, w:928, h:242};
+  const title = displayInfoText(els.productName.value || '作品紹介');
+  ctx.save();
+  if(!lightBg){
+    ctx.shadowColor = 'rgba(0,0,0,.82)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 2;
+  }
+  drawFittedCenteredText(title, canvas.width / 2, 198, 900, 2, 48, 32, 700, titleColor);
+  ctx.restore();
+
+  const panel = {x:76, y:1572, w:928, h:164};
   ctx.fillStyle = 'rgba(16,16,16,.82)';
   roundRect(ctx, panel.x, panel.y, panel.w, panel.h, 22);
   ctx.fill();
   const centerX = panel.x + panel.w / 2;
-  const title = displayInfoText(els.productName.value || '作品紹介');
   const material = displayInfoText(els.materialNote.value || 'leather craft');
-  const titleBlock = drawFittedCenteredText(title, centerX, panel.y + 58, panel.w - 116, 2, 42, 32, 700, '#fff');
-  drawFittedCenteredText(material, centerX, panel.y + 88 + titleBlock.height, panel.w - 130, 2, 27, 21, 500, '#d7c7b3');
+  drawFittedCenteredText(material, centerX, panel.y + 66, panel.w - 130, 2, 29, 22, 500, '#e3d6c5');
 }
 
 function drawNarrationSubtitle(slide, progress){
