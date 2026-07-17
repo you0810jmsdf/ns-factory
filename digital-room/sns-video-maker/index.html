@@ -170,6 +170,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .photo-loader-note{margin:10px 0 0}
 .frame-panel h2{margin-bottom:8px}
 .frame-count{font-size:11.5px;color:var(--mute);font-weight:500;letter-spacing:0;white-space:nowrap}
+.panel-hint{margin:0;color:var(--mute);font-size:11.5px;line-height:1.5}
+.assist-help{margin:4px 0 14px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line)}
+.assist-help summary{cursor:pointer;padding:9px 0;color:var(--brass-dark);font-size:12px;font-weight:700}
+.assist-help .assist-flow{margin:0;padding:0 0 10px}
 details.drive{
   border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card-soft);
   padding:0 12px;margin:12px 0;
@@ -348,7 +352,13 @@ canvas{
   .nav{position:sticky;top:0;z-index:20}
   .studio{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:18px;align-items:start}
   .stage-col{grid-column:1;position:sticky;top:80px}
-  .control-col{grid-column:2}
+  .control-col{
+    grid-column:2;gap:0;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;
+  }
+  .control-col .panel{background:transparent;border:0;border-radius:0;box-shadow:none;margin:0;padding:15px 16px}
+  .control-col #sec-script{display:grid;gap:0}
+  .control-col #sec-script > .panel{border-top:1px solid var(--line)}
   .frame-panel .slides{max-height:34vh}
   #logToast{display:none}
 }
@@ -407,7 +417,7 @@ canvas{
     <h2>かんたん4ステップ</h2>
     <ol class="guide-steps">
       <li><strong>写真</strong>「写真を読み込む・追加」から作品写真を選びます。追加後は「写真コマ」で順番や使用写真を整えます。</li>
-      <li><strong>台本</strong>「1. 空欄のセリフに案を入れる」を押すと、セリフが自動で入ります。自由に書き換えできます。</li>
+      <li><strong>台本</strong>「空欄を補完」でセリフ案を入れます。写真を除外した後は「台本を再構成」で使用写真に組み直せます。</li>
       <li><strong>確認</strong>「▶ 音声つきプレビュー」で仕上がりを確認します。</li>
       <li><strong>保存</strong>「動画を保存（MP4）」で完成。Instagramへそのまま投稿できます。</li>
     </ol>
@@ -491,9 +501,8 @@ canvas{
                   <button class="secondary" id="loadDrivePhotos">Driveから写真を表示</button>
                 </div>
                 <div class="drive-status" id="driveStatus" role="status"></div>
-                <p class="help">作品番号を入力してEnter、または欄外をタップすると、作品情報とDrive写真を自動で読み込みます。表示されない時はこのボタンを押してください。</p>
+                <p class="help">作品番号を入力してEnter。反応しない時だけボタンを押してください。</p>
               </details>
-              <p class="help photo-loader-note">写真追加後はこの欄が自動で閉じます。あとから写真を追加・変更する時は、見出しを押して開けます。</p>
             </div>
           </details>
           <div class="actions">
@@ -505,7 +514,7 @@ canvas{
       <section class="pane" id="sec-script">
         <section class="panel frame-panel">
           <h2>写真コマ <span class="frame-count" id="frameCount">0枚</span></h2>
-          <p class="help">写真を選ぶと1枚ずつ編集できます。ドラッグで動画の順番を入れ替え、「使う／戻す」で動画への使用を切り替えます。</p>
+          <p class="panel-hint">ドラッグで並べ替え・「使う／戻す」で動画への使用を切替</p>
           <div id="slides" class="slides"></div>
         </section>
 
@@ -517,7 +526,6 @@ canvas{
         </div>
 
         <div class="tab-panel active" id="tab-info">
-          <p class="help">ここは編集用メモです。サイトへ自動公開されません。作品名と素材・サイズ等は動画下方の情報として表示されます。</p>
           <div class="field">
             <label for="productNamePreset">作品名プリセット（作品集から選択）</label>
             <select id="productNamePreset">
@@ -533,12 +541,10 @@ canvas{
             <label for="materialNote">素材・サイズ等（動画下方の情報）</label>
             <input id="materialNote" list="materialStockList" value="革の質感と手仕事の仕立て" autocomplete="off">
             <datalist id="materialStockList"></datalist>
-            <p class="help">作品集から自動入力します。手入力時は在庫リストの候補も選べます。</p>
           </div>
           <div class="field">
             <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
             <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
-            <p class="help">ここに入れた文章を、あとで写真ごとの「読むセリフ・台本」に分けて入れます。</p>
           </div>
           <div class="field">
             <label for="workLongDesc">作品集の長文紹介</label>
@@ -550,22 +556,24 @@ canvas{
               <option value="ja-en">日本語の長文紹介 → 英語の見どころメモ</option>
               <option value="en-ja">英語の見どころメモ → 日本語の見どころメモ</option>
             </select>
-            <p class="help" id="translationHelp">作品集の長文紹介を英語へ変換し、写真枚数分の見どころメモに広げます。</p>
+            <p class="help" id="translationHelp">作品集の長文を英訳し、写真枚数分へ広げます。</p>
           </div>
-          <div class="assist-flow" aria-label="補助ボタンの流れ">
-            <div><b>1</b><span><strong>空欄だけ補完</strong>写真の見出し・セリフが空のときだけ案を入れます。</span></div>
-            <div><b>2</b><span><strong>メモを変換</strong>上の変換方向で、結果を見どころメモへ入れます。</span></div>
-            <div><b>3</b><span><strong>使用中写真へ再構成</strong>除外後の写真枚数に合わせて「読むセリフ・台本」を組み直します。</span></div>
-          </div>
+          <details class="assist-help">
+            <summary>台本作成ボタンの使い方</summary>
+            <div class="assist-flow" aria-label="台本作成ボタンの流れ">
+              <div><b>1</b><span><strong>空欄を補完</strong>空の見出し・セリフだけに案を入れます。</span></div>
+              <div><b>2</b><span><strong>メモを変換</strong>長文紹介と見どころメモを日英変換します。</span></div>
+              <div><b>3</b><span><strong>台本を再構成</strong>除外後の使用写真だけでセリフを組み直します。</span></div>
+            </div>
+          </details>
           <div class="actions">
-            <button class="secondary" id="fillDefaults" title="入力済みのセリフは残し、空欄だけ補完します">1. 空欄のセリフに案を入れる</button>
-            <button class="secondary" id="translateFeatureNote" title="選んだ方向で翻訳し、見どころメモへ入れます">2. メモを変換する</button>
-            <button class="secondary" id="distributeFeatureNote" title="除外中写真は変更せず、使用中写真だけでナレーションを組み直します">3. 使用中写真の台本を再構成</button>
+            <button class="secondary" id="fillDefaults" title="入力済みのセリフは残し、空欄だけ補完します">空欄を補完</button>
+            <button class="secondary" id="translateFeatureNote" title="選んだ方向で翻訳し、見どころメモへ入れます">長文を英語メモへ</button>
+            <button class="secondary" id="distributeFeatureNote" title="除外中写真は変更せず、使用中写真だけでナレーションを組み直します">台本を再構成</button>
           </div>
         </div>
 
         <div class="tab-panel" id="tab-slide">
-          <p class="help">写真一覧で写真を選ぶと、ここで1枚ずつ編集できます。</p>
           <div class="field">
             <label for="caption">写真ごとの見出し（一覧整理用）</label>
             <input id="caption" autocomplete="off">
@@ -632,7 +640,6 @@ canvas{
         </div>
 
         <div class="tab-panel" id="tab-output">
-          <p class="help">動画内の文字フォントと、確認用読み上げの音声を設定します。</p>
           <div class="field">
             <label for="bgMode">背景</label>
             <select id="bgMode">
@@ -1058,12 +1065,12 @@ function translationSourceText(target, options = {}){
 function updateTranslationUi(){
   const target = selectedTranslationTarget();
   if(target === 'ja'){
-    els.translateFeatureNote.textContent = '2. 英語メモを日本語へ戻す';
-    els.translationHelp.textContent = '見どころメモにある英語文を日本語へ変換し、写真枚数分の見どころメモに整えます。';
+    els.translateFeatureNote.textContent = '英語メモを日本語へ';
+    els.translationHelp.textContent = '英語メモを日本語に戻し、写真枚数分へ整えます。';
     return;
   }
-  els.translateFeatureNote.textContent = '2. 長文紹介を英語メモへ変換';
-  els.translationHelp.textContent = '作品集の長文紹介を英語へ変換し、写真枚数分の見どころメモに広げます。';
+  els.translateFeatureNote.textContent = '長文を英語メモへ';
+  els.translationHelp.textContent = '作品集の長文を英訳し、写真枚数分へ広げます。';
 }
 
 async function translateLongDescToFeatureNote(options = {}){
@@ -1095,7 +1102,7 @@ async function translateLongDescToFeatureNote(options = {}){
     if(showLog){
       setLog(distributed
         ? `${targetLabel}へ変換し、${distributed}枚の写真の台本へ配分しました。`
-        : `${targetLabel}へ変換し、${targetCount}枚分の見どころメモへ広げました。写真追加後に「3. メモを写真の台本へ配分」を押してください。`);
+        : `${targetLabel}へ変換し、${targetCount}枚分の見どころメモへ広げました。写真追加後に「台本を再構成」を押してください。`);
     }
     return true;
   }catch(err){
