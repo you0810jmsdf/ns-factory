@@ -304,9 +304,13 @@ canvas{
 #guideOverlay[hidden]{display:none}
 .guide-card{
   background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-md);
-  max-width:480px;width:100%;padding:26px 22px;max-height:88vh;overflow:auto;
+  max-width:560px;width:100%;padding:26px 24px;max-height:88vh;overflow:hidden;
+  display:flex;flex-direction:column;
 }
+.guide-body{min-height:0;overflow:auto;padding-right:4px}
 .guide-card h2{margin:0 0 16px;font-size:18px;color:var(--brass-dark);letter-spacing:.06em;text-align:center}
+.guide-card h2:focus{outline:none}
+.guide-intro{margin:-6px 0 18px;text-align:center;font-size:13px;line-height:1.7;color:var(--ink-sub)}
 .guide-steps{margin:0;padding:0;list-style:none;counter-reset:guide;display:grid;gap:12px}
 .guide-steps li{
   counter-increment:guide;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;
@@ -317,12 +321,13 @@ canvas{
   background:linear-gradient(180deg,#B9944D,var(--brass-dark));color:#FFF9EA;
   display:grid;place-items:center;font-family:'Cinzel',serif;font-weight:700;font-size:14px;
 }
-.guide-steps strong{color:var(--ink);margin-right:4px}
+.guide-step-copy{min-width:0;overflow-wrap:anywhere}
+.guide-steps strong{display:block;color:var(--ink);font-size:14px;line-height:1.5;margin-bottom:2px}
 .guide-note{
   margin:16px 0;font-size:12px;color:var(--ink-sub);line-height:1.8;
   background:var(--brass-light);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;
 }
-.guide-card .primary{width:100%}
+.guide-card .primary{width:100%;flex:none;margin-top:14px}
 
 /* ── スマホ用ステップナビ・通知 ── */
 .step-nav{
@@ -399,6 +404,8 @@ canvas{
   .nav-logo-wordmark{width:126px}
   .row{grid-template-columns:1fr}
   .actions{grid-template-columns:1fr}
+  #guideOverlay{padding:10px}
+  .guide-card{padding:22px 18px;border-radius:14px;height:92vh;max-height:92vh}
 }
 </style>
 </head>
@@ -421,17 +428,20 @@ canvas{
   <span class="update-note">※更新すると編集中の写真・セリフは消えます</span>
 </div>
 
-<div id="guideOverlay" hidden role="dialog" aria-modal="true" aria-label="使い方ガイド">
+<div id="guideOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="guideTitle">
   <div class="guide-card">
-    <h2>かんたん4ステップ</h2>
-    <ol class="guide-steps">
-      <li><strong>写真</strong>「写真を読み込む・追加」から作品写真を選びます。追加後は「写真コマ」で順番や使用写真を整えます。</li>
-      <li><strong>台本</strong>「空欄を補完」でセリフ案を入れます。写真を除外した後は「台本を再構成」で使用写真に組み直せます。</li>
-      <li><strong>確認</strong>「▶ 音声つきプレビュー」で仕上がりを確認します。</li>
-      <li><strong>保存</strong>「動画を保存（MP4）」で完成。Instagramへそのまま投稿できます。</li>
-    </ol>
-    <p class="guide-note">写真はアップロードされず、すべてこの端末の中だけで処理されます。<br>ページを閉じたり再読み込みすると編集中の内容は消えるため、保存まで続けて進めるのがおすすめです。</p>
-    <button class="primary" id="closeGuide" type="button">はじめる</button>
+    <div class="guide-body">
+      <h2 id="guideTitle" tabindex="-1">かんたん4ステップ</h2>
+      <p class="guide-intro">上から順番に進めれば、写真からナレーション付き動画を作れます。</p>
+      <ol class="guide-steps">
+        <li><span class="guide-step-copy"><strong>写真を読み込む</strong>右上の「写真を読み込む・追加」を開きます。作品番号でDriveから表示するか、端末から写真を追加します。</span></li>
+        <li><span class="guide-step-copy"><strong>使う写真と台本を整える</strong>写真コマの「使う／戻す」で使用写真を選びます。除外後は「台本を再構成」を押すと、残した写真へセリフを組み直します。</span></li>
+        <li><span class="guide-step-copy"><strong>動画を確認する</strong>「音声つきプレビュー」で写真・字幕・音声を確認します。途中で止めるときは「停止」を押します。</span></li>
+        <li><span class="guide-step-copy"><strong>MP4で保存する</strong>英語台本は出力設定でAI音声を選び、「自動ナレーション付きMP4」を押します。初回は音声モデルの準備があるため、そのまま完了まで待ちます。</span></li>
+      </ol>
+      <p class="guide-note">写真と動画の生成処理はこの端末内で行います。ページを閉じたり再読み込みすると編集中の内容は消えるため、MP4保存まで続けて操作してください。日本語台本は「自分の声で録音」を使用します。</p>
+    </div>
+    <button class="primary" id="closeGuide" type="button">ガイドを閉じて編集する</button>
   </div>
 </div>
 
@@ -4018,11 +4028,12 @@ refreshCapabilities();
   const overlay = document.getElementById('guideOverlay');
   const showButton = document.getElementById('showGuide');
   const closeButton = document.getElementById('closeGuide');
-  if(!overlay || !showButton || !closeButton) return;
+  const title = document.getElementById('guideTitle');
+  if(!overlay || !showButton || !closeButton || !title) return;
   const close = () => { overlay.hidden = true; };
   showButton.addEventListener('click', () => {
     overlay.hidden = false;
-    closeButton.focus();
+    title.focus({preventScroll:true});
   });
   closeButton.addEventListener('click', close);
   overlay.addEventListener('click', event => { if(event.target === overlay) close(); });
