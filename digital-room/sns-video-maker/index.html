@@ -311,6 +311,11 @@ canvas{
 .guide-card h2{margin:0 0 16px;font-size:18px;color:var(--brass-dark);letter-spacing:.06em;text-align:center}
 .guide-card h2:focus{outline:none}
 .guide-intro{margin:-6px 0 18px;text-align:center;font-size:13px;line-height:1.7;color:var(--ink-sub)}
+.guide-switch{display:flex;gap:4px;margin:0 0 18px;padding:4px;background:var(--card-soft);border:1px solid var(--line);border-radius:10px}
+.guide-switch button{flex:1;padding:9px 8px;background:transparent;color:var(--ink-sub);font-size:13px;font-weight:700;border-radius:7px}
+.guide-switch button.active{background:#FFF;color:var(--brass-dark);box-shadow:var(--shadow-sm)}
+.guide-panel[hidden]{display:none}
+.guide-panel-label{margin:0 0 12px;font-size:12px;font-weight:700;color:var(--brass-dark)}
 .guide-steps{margin:0;padding:0;list-style:none;counter-reset:guide;display:grid;gap:12px}
 .guide-steps li{
   counter-increment:guide;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;
@@ -327,6 +332,16 @@ canvas{
   margin:16px 0;font-size:12px;color:var(--ink-sub);line-height:1.8;
   background:var(--brass-light);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;
 }
+.guide-feedback{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.guide-feedback h3{margin:0 0 4px;font-size:15px;color:var(--ink)}
+.guide-feedback > p{margin:0 0 10px;font-size:12px;line-height:1.7;color:var(--ink-sub)}
+.guide-feedback-grid{display:grid;grid-template-columns:150px 1fr;gap:8px}
+.guide-feedback select,.guide-feedback textarea{font-size:13px;background:#FFF}
+.guide-feedback textarea{grid-column:1/-1;min-height:78px;resize:vertical}
+.guide-feedback-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.guide-feedback-actions button,.guide-feedback-actions a{flex:1;min-width:135px;text-align:center;padding:9px 10px;border:1px solid var(--brass);border-radius:8px;font-size:12px;font-weight:700;color:var(--brass-dark);background:#FFF;text-decoration:none}
+.guide-feedback-status{min-height:1.5em;margin:7px 0 0;font-size:11.5px;color:var(--brass-dark)}
+.free-label{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border:1px solid var(--line);border-radius:999px;background:var(--brass-light);color:var(--brass-dark);font-size:11px;font-weight:700;white-space:nowrap}
 .guide-card .primary{width:100%;flex:none;margin-top:14px}
 
 /* ── スマホ用ステップナビ・通知 ── */
@@ -406,6 +421,7 @@ canvas{
   .actions{grid-template-columns:1fr}
   #guideOverlay{padding:10px}
   .guide-card{padding:22px 18px;border-radius:14px;height:92vh;max-height:92vh}
+  .guide-feedback-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -432,14 +448,49 @@ canvas{
   <div class="guide-card">
     <div class="guide-body">
       <h2 id="guideTitle" tabindex="-1">かんたん4ステップ</h2>
-      <p class="guide-intro">上から順番に進めれば、写真からナレーション付き動画を作れます。</p>
-      <ol class="guide-steps">
-        <li><span class="guide-step-copy"><strong>写真を読み込む</strong>右上の「写真を読み込む・追加」を開きます。作品番号でDriveから表示するか、端末から写真を追加します。</span></li>
-        <li><span class="guide-step-copy"><strong>使う写真と台本を整える</strong>写真コマの「使う／戻す」で使用写真を選びます。除外後は「台本を再構成」を押すと、残した写真へセリフを組み直します。</span></li>
-        <li><span class="guide-step-copy"><strong>動画を確認する</strong>「音声つきプレビュー」で写真・字幕・音声を確認します。途中で止めるときは「停止」を押します。</span></li>
-        <li><span class="guide-step-copy"><strong>MP4で保存する</strong>英語台本は出力設定でAI音声を選び、「自動ナレーション付きMP4」を押します。初回は音声モデルの準備があるため、そのまま完了まで待ちます。</span></li>
-      </ol>
-      <p class="guide-note">写真と動画の生成処理はこの端末内で行います。ページを閉じたり再読み込みすると編集中の内容は消えるため、MP4保存まで続けて操作してください。日本語台本は「自分の声で録音」を使用します。</p>
+      <p class="guide-intro">無料・登録不要。使う方に合った説明を選んでください。</p>
+      <div class="guide-switch" role="tablist" aria-label="利用者別の使い方">
+        <button class="active" id="guidePublicTab" type="button" role="tab" aria-selected="true" aria-controls="guidePublicPanel">一般の方向け</button>
+        <button id="guideNsfTab" type="button" role="tab" aria-selected="false" aria-controls="guideNsfPanel">N's factory運用</button>
+      </div>
+      <section class="guide-panel" id="guidePublicPanel" role="tabpanel" aria-labelledby="guidePublicTab">
+        <p class="guide-panel-label">自分の端末にある写真から作る場合</p>
+        <ol class="guide-steps">
+          <li><span class="guide-step-copy"><strong>写真を追加する</strong>「写真を読み込む・追加」を開き、「端末から写真を追加」で作品写真を選びます。写真は外部へアップロードされません。</span></li>
+          <li><span class="guide-step-copy"><strong>順番・字幕・セリフを整える</strong>写真コマをドラッグして並べ替え、「使う／戻す」で使用写真を選びます。「写真ごと」タブで字幕とセリフを編集します。</span></li>
+          <li><span class="guide-step-copy"><strong>仕上がりを確認する</strong>「音声つきプレビュー」で写真・字幕・音声を確認します。途中で止めるときは「停止」を押します。</span></li>
+          <li><span class="guide-step-copy"><strong>MP4で保存する</strong>英語台本は「自動ナレーション付きMP4」、日本語台本は「自分の声で録音」を使用します。初回のAI音声生成は準備に時間がかかります。</span></li>
+        </ol>
+        <p class="guide-note">すべて無料で利用できます。ページを閉じたり再読み込みすると編集中の内容は消えるため、MP4保存まで続けて操作してください。</p>
+      </section>
+      <section class="guide-panel" id="guideNsfPanel" role="tabpanel" aria-labelledby="guideNsfTab" hidden>
+        <p class="guide-panel-label">作品集・在庫リスト・Google Driveを使う社内運用</p>
+        <ol class="guide-steps">
+          <li><span class="guide-step-copy"><strong>作品番号で読み込む</strong>「写真を読み込む・追加」を開き、作品番号を入力して「Driveから写真を表示」を押します。作品集の名称・素材・長文紹介も自動で入ります。</span></li>
+          <li><span class="guide-step-copy"><strong>作品情報を確認する</strong>「作品情報」タブで作品名、素材・サイズ、長文紹介を確認します。素材欄は在庫リストの候補から修正できます。</span></li>
+          <li><span class="guide-step-copy"><strong>英語台本を組み直す</strong>「長文を英語メモへ」で英訳し、不要写真を除外してから「台本を再構成」を押します。残した写真だけへセリフが再配分されます。</span></li>
+          <li><span class="guide-step-copy"><strong>保存・Driveへ戻す</strong>出力設定でAI音声を選んでMP4を生成します。完成後はダウンロード、または対象作品フォルダへのDrive保存を選びます。</span></li>
+        </ol>
+        <p class="guide-note">作品番号、作品集プリセット、在庫候補、Drive保存はN's factory独自機能です。一般利用では設定不要です。</p>
+      </section>
+      <section class="guide-feedback" aria-labelledby="feedbackTitle">
+        <h3 id="feedbackTitle">使った感想をお聞かせください</h3>
+        <p>使いやすかった点、迷った点、追加してほしい機能を短いコメントで送れます。</p>
+        <div class="guide-feedback-grid">
+          <select id="feedbackRating" aria-label="使用感">
+            <option value="便利だった">便利だった</option>
+            <option value="もう少し改善してほしい">もう少し改善してほしい</option>
+            <option value="操作に困った">操作に困った</option>
+          </select>
+          <textarea id="feedbackComment" maxlength="1000" placeholder="例：写真の並べ替えは分かりやすかった。保存ボタンの場所で少し迷った。"></textarea>
+        </div>
+        <div class="guide-feedback-actions">
+          <button id="sendFeedbackMail" type="button">メールで感想を送る</button>
+          <button id="copyFeedback" type="button">コメントをコピー</button>
+          <a href="https://lin.ee/55mjR4Q" target="_blank" rel="noopener">公式LINEを開く</a>
+        </div>
+        <p class="guide-feedback-status" id="feedbackStatus" aria-live="polite">送信ボタンを押すまで内容は外部へ送られません。</p>
+      </section>
     </div>
     <button class="primary" id="closeGuide" type="button">ガイドを閉じて編集する</button>
   </div>
@@ -448,7 +499,7 @@ canvas{
 <main class="app">
   <section class="hero">
     <h1>作品写真から、SNS用の縦型動画をつくる</h1>
-    <p><strong>写真はアップロードされません。</strong>読み込みから動画生成まで、すべてこのブラウザ内で完結します。</p>
+    <p><strong>写真はアップロードされません。</strong>読み込みから動画生成まで、すべてこのブラウザ内で完結します。<span class="free-label">無料・登録不要</span></p>
   </section>
 
   <section class="workflow" aria-label="操作手順">
@@ -4030,7 +4081,66 @@ refreshCapabilities();
   const closeButton = document.getElementById('closeGuide');
   const title = document.getElementById('guideTitle');
   if(!overlay || !showButton || !closeButton || !title) return;
-  const close = () => { overlay.hidden = true; };
+  const audienceTabs = [
+    {button:document.getElementById('guidePublicTab'), panel:document.getElementById('guidePublicPanel')},
+    {button:document.getElementById('guideNsfTab'), panel:document.getElementById('guideNsfPanel')}
+  ];
+  const feedbackRating = document.getElementById('feedbackRating');
+  const feedbackComment = document.getElementById('feedbackComment');
+  const feedbackStatus = document.getElementById('feedbackStatus');
+  const sendFeedbackMail = document.getElementById('sendFeedbackMail');
+  const copyFeedback = document.getElementById('copyFeedback');
+  const close = () => {
+    overlay.hidden = true;
+    showButton.focus({preventScroll:true});
+  };
+  audienceTabs.forEach((item, activeIndex) => {
+    if(!item.button || !item.panel) return;
+    item.button.addEventListener('click', () => {
+      audienceTabs.forEach((target, index) => {
+        if(!target.button || !target.panel) return;
+        const active = index === activeIndex;
+        target.button.classList.toggle('active', active);
+        target.button.setAttribute('aria-selected', String(active));
+        target.panel.hidden = !active;
+      });
+    });
+  });
+  const buildFeedbackText = () => {
+    const rating = feedbackRating ? feedbackRating.value : '';
+    const comment = feedbackComment ? feedbackComment.value.trim() : '';
+    return `【使用感】${rating}\n【コメント】\n${comment}\n\n利用ページ: SNS紹介動画メーカー`;
+  };
+  if(sendFeedbackMail && feedbackComment && feedbackStatus){
+    sendFeedbackMail.addEventListener('click', () => {
+      if(!feedbackComment.value.trim()){
+        feedbackStatus.textContent = '感想や改善してほしい点を入力してください。';
+        feedbackComment.focus();
+        return;
+      }
+      const subject = encodeURIComponent('SNS紹介動画メーカーの感想');
+      const body = encodeURIComponent(buildFeedbackText());
+      feedbackStatus.textContent = 'メールアプリを開きます。内容を確認して送信してください。';
+      window.location.href = `mailto:you0810jmsdf@gmail.com?subject=${subject}&body=${body}`;
+    });
+  }
+  if(copyFeedback && feedbackComment && feedbackStatus){
+    copyFeedback.addEventListener('click', async () => {
+      if(!feedbackComment.value.trim()){
+        feedbackStatus.textContent = 'コピーするコメントを入力してください。';
+        feedbackComment.focus();
+        return;
+      }
+      try{
+        await navigator.clipboard.writeText(buildFeedbackText());
+        feedbackStatus.textContent = 'コメントをコピーしました。公式LINEを開いて貼り付けてください。';
+      }catch(_){
+        feedbackComment.select();
+        document.execCommand('copy');
+        feedbackStatus.textContent = 'コメントをコピーしました。公式LINEを開いて貼り付けてください。';
+      }
+    });
+  }
   showButton.addEventListener('click', () => {
     overlay.hidden = false;
     title.focus({preventScroll:true});
