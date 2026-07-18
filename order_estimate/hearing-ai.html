@@ -393,9 +393,15 @@ function detectLeatherQuery(text){
   if(!/(革|レザー|色|カラー)/.test(text)) return null;
   const fam=NSF_HEARING.resolveTone(text);
   if(fam && NSF_HEARING.leathersByTone(LEATHERS,fam).length) return fam;
+  // 「色ではない」＝色以外（革の種類）を聞かれている（2026-07-18: 色回答ループでお客様を怒らせた対策）
+  if(/色(では|じゃ)?な(い|く)/.test(text)) return 'series';
+  // 「革の種類が知りたい」「シリーズは？」→ 色系統ではなくシリーズ一覧で答える
+  if(/(種類|シリーズ|ラインナップ)/.test(text) && !/(色|カラー)/.test(text)) return 'series';
+  // 「革の在庫状況を知りたい」→ 系統別の在庫内訳で答える
+  if(/(在庫|取り寄せ|取寄)/.test(text)) return 'stock';
   // 「どんな革をお持ち？」「革だけ知りたい」「革を見せて」等、色の単語を含まない革の質問も拾う
   // （2026-07-18: 色・種類の単語を必須にしていたため素通りしてお客様を怒らせた問題の対策）
-  if(/(色|カラー|種類|ラインナップ|カタログ|見せ|みせ|ある|あり|何|どんな|一覧|知りたい|教えて|持ち|取扱|取り扱|在庫|おすすめ|オススメ|選べ|えらべ)/.test(text)) return 'ask';
+  if(/(色|カラー|種類|ラインナップ|カタログ|見せ|みせ|ある|あり|何|どんな|一覧|知りたい|教えて|持ち|取扱|取り扱|おすすめ|オススメ|選べ|えらべ)/.test(text)) return 'ask';
   return null;
 }
 
@@ -442,12 +448,67 @@ function colorFamilies(){
   return fams;
 }
 
+/* SERIES_MAPのうちカタログに実在するシリーズ（革の種類）一覧。色数の多い順 */
+function seriesList(){
+  const seen={}, out=[];
+  SERIES_MAP.forEach(([re,tag])=>{
+    if(seen[tag]) return; seen[tag]=1;
+    const n=NSF_HEARING.leathersByTone(LEATHERS,tag).length;
+    if(n) out.push({tag,n});
+  });
+  return out.sort((a,b)=>b.n-a.n);
+}
+
 function showLeatherGallery(fam){
   const backLabel = state._picking ? '◀ アイテム選択に戻る' : '◀ 相談の続きに戻る';
+  // 革の種類（シリーズ）一覧: 「革の種類が知りたい」「色ではない」への回答
+  if(fam==='series'){
+    const list=seriesList();
+    addMsg('bot','当工房で取り扱っている革の種類（シリーズ）はこちらです📚\n気になるシリーズをタップすると、色と在庫をご覧いただけます。');
+    renderQuick([
+      {label:backLabel,sub:'',val:'',onClick:backToFlow},
+      {label:'🎨 色の系統から探す',sub:'',val:'',onClick:()=>showLeatherGallery('ask')}
+    ].concat(list.map(s=>({label:s.tag, sub:s.n+'色', val:'', onClick:()=>showLeatherGallery(s.tag)}))));
+    return;
+  }
+  // 系統別の在庫内訳: 「革の在庫状況を知りたい」への回答
+  if(fam==='stock'){
+    if(!STOCK_MAP){ showLeatherGallery('ask'); return; }
+    const fams=colorFamilies();
+    const totals={in:0,fresh:0,low:0,out:0};
+    const lines=[];
+    const famChips=fams.map(f=>{
+      const list=NSF_HEARING.leathersByTone(LEATHERS,f);
+      const c={fresh:0,ok:0,low:0,out:0};
+      list.forEach(l=>{ c[leatherTier(l.id).key]++; });
+      const inN=c.fresh+c.ok+c.low;
+      totals.in+=inN; totals.fresh+=c.fresh; totals.low+=c.low; totals.out+=c.out;
+      const extra=[];
+      if(c.fresh) extra.push('✨'+c.fresh);
+      if(c.low) extra.push('⚠️'+c.low);
+      if(c.out) extra.push('📦'+c.out);
+      lines.push('・'+f+': 在庫'+inN+'色/全'+list.length+'色'+(extra.length?'（'+extra.join('・')+'）':''));
+      return {label:f, sub:'在庫'+inN+'色', val:'', onClick:()=>showLeatherGallery(f)};
+    });
+    let msg='いま工房に在庫のある革は'+totals.in+'色です📷\n'+lines.join('\n');
+    if(totals.fresh) msg+='\n\n✨入荷したて（'+totals.fresh+'色）はエイジングがまったく進んでいない状態から育てられるのでおすすめです！';
+    if(totals.low) msg+='\n⚠️残りわずか（'+totals.low+'色）は気になっていたらお早めに。';
+    if(totals.out) msg+='\n📦お取り寄せ（'+totals.out+'色）は2〜3週間ほど＋取寄せ経費が若干かかります。';
+    msg+='\n\n系統を選ぶと写真をご覧いただけます。';
+    addMsg('bot', msg);
+    renderQuick([
+      {label:backLabel,sub:'',val:'',onClick:backToFlow},
+      {label:'📚 革の種類から探す',sub:'',val:'',onClick:()=>showLeatherGallery('series')}
+    ].concat(famChips));
+    return;
+  }
   if(fam==='ask'){
     const fams=colorFamilies();
     addMsg('bot','革のお色は '+fams.join('・')+' をご用意しています🎨 どの系統がお好みですか？\nシリーズ名（ホースバット・コードバン・マルゴーフォグ など）で聞いていただいてもOKです！');
-    renderQuick([{label:backLabel,sub:'',val:'',onClick:backToFlow}].concat(
+    renderQuick([
+      {label:backLabel,sub:'',val:'',onClick:backToFlow},
+      {label:'📚 革の種類から探す',sub:'',val:'',onClick:()=>showLeatherGallery('series')}
+    ].concat(
       fams.map(f=>({label:f, sub:NSF_HEARING.leathersByTone(LEATHERS,f).length+'色', val:'', onClick:()=>showLeatherGallery(f)}))
     ));
     return;
