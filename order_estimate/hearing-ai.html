@@ -332,14 +332,14 @@ function handleFreeInput(){
   // 商品選択フェーズでの自由入力 → ボタンへ誘導
   if(state._picking){
     addMsg('user', v);
-    addMsg('bot','上のボタンから作りたいアイテムをお選びくださいね🙂（革の色・在庫のご質問には、このままお答えできます）');
+    addMsg('bot','下のボタンから作りたいアイテムをお選びくださいね🙂（革の色・在庫のご質問には、このままお答えできます）');
     return;
   }
   // ガイドモードで自由入力が来たとき
   if(state._awaitKey){ handleAnswer(v, v); }
   else { // 想定外の雑談 → やんわり誘導
     addMsg('user', v);
-    addMsg('bot','ありがとうございます。上のボタンからお選びいただくか、続けて入力してくださいね。（自由に相談したい場合は右上「AI会話モード」もご利用いただけます）');
+    addMsg('bot','ありがとうございます。下のボタンからお選びいただくか、続けて入力してくださいね。（自由に相談したい場合は右上「AI会話モード」もご利用いただけます）');
   }
 }
 
@@ -393,7 +393,9 @@ function detectLeatherQuery(text){
   if(!/(革|レザー|色|カラー)/.test(text)) return null;
   const fam=NSF_HEARING.resolveTone(text);
   if(fam && NSF_HEARING.leathersByTone(LEATHERS,fam).length) return fam;
-  if(/(色|カラー|種類|ラインナップ|カタログ)/.test(text)) return 'ask';
+  // 「どんな革をお持ち？」「革だけ知りたい」「革を見せて」等、色の単語を含まない革の質問も拾う
+  // （2026-07-18: 色・種類の単語を必須にしていたため素通りしてお客様を怒らせた問題の対策）
+  if(/(色|カラー|種類|ラインナップ|カタログ|見せ|みせ|ある|あり|何|どんな|一覧|知りたい|教えて|持ち|取扱|取り扱|在庫|おすすめ|オススメ|選べ|えらべ)/.test(text)) return 'ask';
   return null;
 }
 
