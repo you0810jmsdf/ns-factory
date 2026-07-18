@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>レザークラフト 工程と道具の教科書 | N's factory レザークラフト教室</title>
+<meta name="description" content="レザークラフトの全14工程を、イラストと道具解説で順番に学べる教室生徒様向け資料。型紙設計から仕上げまで、各工程で使う道具の選び方・使い方を N's factory が解説します。">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --tan: #A0785A; --tan-light: #C4956A; --charcoal: #1D1D1F;
+  --gray: #6E6E73; --bg: #F5F5F7; --white: #FFFFFF;
+  --green: #2E7D32; --green-light: #E8F5E9;
+  --amber: #E65100; --amber-light: #FFF3E0;
+  --blue: #1565C0; --blue-light: #E3F2FD;
+  --line: #E8E8ED; --soft: #F5F5F7;
+  --accent: #A0785A; --accent-soft: #F2E8DD; --accent-dark: #6E4F3A;
+  --radius: 14px;
+  --shadow: 0 8px 32px rgba(0,0,0,.10);
+  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
+}
+body { background: var(--bg); color: var(--charcoal); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+
+.nav {
+  position: sticky; top: 0; z-index: 10;
+  height: 56px;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 24px;
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-title { font-size: 14px; font-weight: 800; letter-spacing: .04em; }
+.nav-spacer { flex: 1; }
+.nav-link { font-size: 13px; color: var(--gray); padding: 6px 10px; border-radius: 8px; }
+.nav-link:hover { background: var(--soft); color: var(--charcoal); }
+
+.wrap { max-width: 900px; margin: 0 auto; padding: 48px 22px 90px; }
+
+/* 表紙 */
+.cover {
+  text-align: center; padding: 30px 10px 34px;
+}
+.cover-portrait {
+  width: 150px; height: 150px; border-radius: 50%;
+  object-fit: cover; background: #fff;
+  border: 4px solid #fff; box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.cover-eyebrow {
+  color: var(--accent-dark); font-size: 12px; font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase; margin-bottom: 10px;
+}
+.cover h1 { font-size: clamp(26px, 5vw, 40px); letter-spacing: -.02em; margin-bottom: 12px; }
+.cover .lead { color: var(--gray); font-size: 14.5px; max-width: 560px; margin: 0 auto; }
+
+/* 目次 */
+.toc {
+  background: var(--white); border-radius: var(--radius);
+  padding: 22px 24px; margin: 26px 0 40px;
+  box-shadow: 0 2px 12px rgba(110,79,58,.08);
+}
+.toc h2 { font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--accent-dark); }
+.toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 18px; }
+.toc-item {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 13.5px; padding: 5px 6px; border-radius: 8px;
+}
+.toc-item:hover { background: var(--accent-soft); }
+.toc-num { color: var(--tan); font-weight: 800; font-size: 12px; min-width: 2.4em; }
+
+/* 工程セクション */
+.step { margin-bottom: 46px; }
+.step-card {
+  background: var(--white); border-radius: 18px;
+  box-shadow: 0 2px 14px rgba(110,79,58,.09);
+  overflow: hidden;
+}
+.step-head {
+  display: flex; align-items: center; gap: 22px;
+  padding: 24px 26px;
+  background: linear-gradient(135deg, #fff 0%, var(--accent-soft) 100%);
+}
+.step-img {
+  width: 168px; height: 168px; flex-shrink: 0;
+  border-radius: 14px; object-fit: cover; background: #fff;
+  box-shadow: 0 4px 16px rgba(110,79,58,.16);
+}
+.step.no-img .step-img { display: none; }
+.step-head-body { flex: 1; min-width: 220px; }
+.step-no {
+  color: var(--accent-dark); font-size: 11px; font-weight: 800;
+  letter-spacing: .13em; text-transform: uppercase; margin-bottom: 5px;
+}
+.step-title { font-size: 22px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 8px; }
+.step-summary { color: var(--gray); font-size: 13.5px; }
+.step-tools { padding: 20px 26px 24px; }
+.step-tools-label { font-size: 12px; font-weight: 800; color: var(--accent-dark); letter-spacing: .08em; margin-bottom: 12px; }
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.tool-card {
+  border: 1px solid var(--line); border-radius: 12px; padding: 15px 16px;
+  display: flex; flex-direction: column; gap: 7px;
+  background: #fff;
+}
+.tool-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.tool-name { font-size: 14.5px; font-weight: 700; }
+.badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.badge { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
+.badge.p-必須 { background: var(--amber-light); color: var(--amber); }
+.badge.p-推奨 { background: var(--blue-light); color: var(--blue); }
+.badge.p-あると便利 { background: var(--soft); color: var(--gray); }
+.badge.beginner { background: var(--green-light); color: var(--green); }
+.tool-desc { font-size: 12.5px; color: var(--charcoal); }
+.tool-meta { font-size: 12px; color: var(--gray); }
+.tool-meta b { color: var(--charcoal); font-weight: 700; }
+.tool-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tool-price { font-size: 11.5px; color: var(--gray); }
+.tool-rakuten {
+  font-size: 11.5px; font-weight: 700; color: var(--tan);
+  padding: 5px 10px; border: 1px solid rgba(160,120,90,.35); border-radius: 8px;
+  white-space: nowrap; background: #fff; cursor: pointer; font-family: inherit;
+}
+.tool-rakuten:hover { background: rgba(160,120,90,.12); }
+.rakuten-results { display: none; grid-column: 1 / -1; }
+.rakuten-results.open { display: grid; gap: 8px; margin-top: 2px; }
+.rakuten-item { display: flex; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; align-items: center; background: #fff; }
+.rakuten-item img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; background: var(--soft); flex-shrink: 0; }
+.rakuten-item-body { flex: 1; min-width: 0; }
+.rakuten-item-name { font-size: 12px; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rakuten-item-meta { font-size: 11px; color: var(--gray); margin-top: 2px; }
+.rakuten-item-price { font-size: 12.5px; font-weight: 800; color: var(--tan); white-space: nowrap; }
+.rakuten-note { font-size: 10px; color: var(--gray); }
+
+/* スクロール連動フェードイン */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.shown { opacity: 1; transform: translateY(0); }
+
+/* フッター */
+.book-footer {
+  text-align: center; margin-top: 50px; color: var(--gray); font-size: 12.5px;
+}
+.book-footer a { color: var(--tan); font-weight: 700; }
+
+@media (max-width: 600px) {
+  .step-head { flex-direction: column; text-align: center; }
+  .step-img { width: 200px; height: 200px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* 印刷（A4配布用）: ナビ・楽天ボタンを消し、工程ごとに改ページしやすく */
+@media print {
+  .nav, .tool-rakuten, .rakuten-results { display: none !important; }
+  body { background: #fff; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .step { break-inside: avoid; margin-bottom: 22px; }
+  .step-card, .toc { box-shadow: none; border: 1px solid #ddd; }
+  .wrap { padding: 10px 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">工程と道具の教科書</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="./">後方幕僚室へ</a>
+  <a class="nav-link" href="../">TOPへ戻る</a>
+</header>
+
+<main class="wrap">
+  <section class="cover">
+    <img class="cover-portrait" src="../showroom/assets/mascot/kouhou_room.png" alt="後方幕僚">
+    <div class="cover-eyebrow">N's factory Leathercraft Classroom</div>
+    <h1>レザークラフト<br>工程と道具の教科書</h1>
+    <p class="lead">
+      型紙づくりから仕上げまで、レザークラフトの全工程を順番にたどる教室生徒様向けの資料です。
+      各工程で使う道具の「選び方」「使い方」も一緒にまとめました。
+      講習の予習・復習や、道具を揃えるときのガイドとしてお使いください。
+    </p>
+  </section>
+
+  <nav class="toc" data-reveal id="toc">
+    <h2>もくじ — 制作の流れ</h2>
+    <div class="toc-grid" id="toc-grid"></div>
+  </nav>
+
+  <div id="steps">
+    <div style="text-align:center;color:var(--gray);padding:30px;">読み込み中です…</div>
+  </div>
+
+  <footer class="book-footer">
+    <p>
+      本資料は <a href="../JHCS.html">N's factory レザークラフト教室</a> の生徒様向け教材です。<br>
+      道具の商品リンクは楽天市場のアフィリエイトリンクです。収益はワークショップ用道具の整備費として活用します。<br>
+      もっと詳しい道具検索は <a href="./">後方幕僚室の工程別道具ガイド</a> をどうぞ。
+    </p>
+  </footer>
+</main>
+
+<script>
+  const TOOLS_JSON_URL = './data/tools-knowledge.json';
+  const RAKUTEN_API_URL = 'https://script.google.com/macros/s/AKfycbxUoFN0_XMKGiI1voIKGdGioczn1WsYYTfUBI-tC-RIgnq05DfsooTcyOQlgIjTQCa95A/exec';
+  const PRIORITY_ORDER = { '必須': 0, '推奨': 1, 'あると便利': 2 };
+
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function escAttr(s) { return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+  async function build() {
+    const stepsEl = document.getElementById('steps');
+    let data;
+    try {
+      const res = await fetch(TOOLS_JSON_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      data = await res.json();
+    } catch(e) {
+      stepsEl.innerHTML = `<div style="text-align:center;color:var(--gray);padding:30px;">資料を読み込めませんでした。<br><small>${esc(e.message)}</small></div>`;
+      return;
+    }
+
+    // 優先度の管理者上書き（後方幕僚室と同じGAS）。失敗してもJSON本来の値で表示を続ける。
+    let overrides = {};
+    try {
+      const ovRes = await fetch(`${RAKUTEN_API_URL}?action=priorityOverrides`, { cache: 'no-store' });
+      overrides = (await ovRes.json()).overrides || {};
+    } catch(e) { overrides = {}; }
+    const prio = t => overrides[t.id] || t.priority;
+
+    const processes = data.processes.slice().sort((a, b) => a.order - b.order);
+
+    document.getElementById('toc-grid').innerHTML = processes.map(p => `
+      <a class="toc-item" href="#step-${escAttr(p.id)}">
+        <span class="toc-num">${String(p.order).padStart(2, '0')}</span>
+        <span>${esc(p.name)}</span>
+      </a>
+    `).join('');
+
+    stepsEl.innerHTML = processes.map(p => {
+      const tools = data.tools
+        .filter(t => t.processes.includes(p.id))
+        .slice()
+        .sort((a, b) => {
+          const pr = (PRIORITY_ORDER[prio(a)] ?? 9) - (PRIORITY_ORDER[prio(b)] ?? 9);
+          if (pr !== 0) return pr;
+          return (b.beginner ? 1 : 0) - (a.beginner ? 1 : 0);
+        });
+      return `
+      <section class="step" data-reveal id="step-${escAttr(p.id)}">
+        <div class="step-card">
+          <div class="step-head">
+            <img class="step-img" src="./assets/process/${escAttr(p.id)}.png" alt="${escAttr(p.name)}の作業イラスト" loading="lazy"
+                 onerror="this.closest('.step').classList.add('no-img')">
+            <div class="step-head-body">
+              <div class="step-no">STEP ${p.order} / ${processes.length}</div>
+              <div class="step-title">${esc(p.name)}</div>
+              <div class="step-summary">${esc(p.summary)}</div>
+            </div>
+          </div>
+          <div class="step-tools">
+            <div class="step-tools-label">この工程で使う道具（${tools.length}点）</div>
+            <div class="tool-grid">
+              ${tools.map(t => `
+                <article class="tool-card">
+                  <div class="tool-head">
+                    <div class="tool-name">${esc(t.name)}</div>
+                    <div class="badges">
+                      <span class="badge p-${esc(prio(t))}">${esc(prio(t))}</span>
+                      ${t.beginner ? '<span class="badge beginner">初心者向け</span>' : ''}
+                    </div>
+                  </div>
+                  <div class="tool-desc">${esc(t.description)}</div>
+                  <div class="tool-meta"><b>使い方:</b> ${esc(t.usage)}</div>
+                  <div class="tool-meta"><b>選び方:</b> ${esc(t.advice)}</div>
+                  <div class="tool-foot">
+                    <span class="tool-price">目安 ${esc(t.priceRange)}</span>
+                    <button class="tool-rakuten" onclick="toggleRakuten('${escAttr(t.id)}', '${escAttr(t.rakutenKeyword)}', this)">楽天市場で探す</button>
+                  </div>
+                </article>
+                <div class="rakuten-results" id="rk-${escAttr(t.id)}"></div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </section>`;
+    }).join('');
+
+    // スクロール連動フェードイン。IntersectionObserverが使えない・発火しない環境でも
+    // 内容が見えなくならないよう、revealクラス（初期透明）はIO利用可能時のみJSで後付けする。
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(en => {
+          if (en.isIntersecting) { en.target.classList.add('shown'); observer.unobserve(en.target); }
+        });
+      }, { threshold: 0.08 });
+      document.querySelectorAll('[data-reveal]').forEach(el => {
+        el.classList.add('reveal');
+        observer.observe(el);
+      });
+      // 保険: 万一Observerのコールバックが一度も発火しない環境では、
+      // 1秒後に全要素を表示状態にする（演出は無いが内容が見えなくなる事故を防ぐ）
+      setTimeout(() => {
+        if (!document.querySelector('.reveal.shown')) {
+          document.querySelectorAll('.reveal').forEach(el => el.classList.add('shown'));
+        }
+      }, 1000);
+    }
+  }
+
+  // 楽天商品カードの展開（後方幕僚室と同じGAS経由・アフィリエイトリンク付き）
+  const rakutenCache = new Map();
+  async function toggleRakuten(toolId, keyword, btn) {
+    const box = document.getElementById(`rk-${toolId}`);
+    if (!box) return;
+    if (box.classList.contains('open')) {
+      box.classList.remove('open');
+      btn.textContent = '楽天市場で探す';
+      return;
+    }
+    box.classList.add('open');
+    btn.textContent = '閉じる';
+    if (box.dataset.loaded === '1') return;
+    box.innerHTML = '<div class="rakuten-note">検索中です…</div>';
+    try {
+      let data = rakutenCache.get(keyword);
+      if (!data) {
+        const res = await fetch(`${RAKUTEN_API_URL}?action=search&keyword=${encodeURIComponent(keyword)}&hits=3`);
+        data = await res.json();
+        rakutenCache.set(keyword, data);
+      }
+      if (data.error || !data.items || !data.items.length) {
+        box.innerHTML = '<div class="rakuten-note">商品が見つかりませんでした。</div>';
+        return;
+      }
+      box.innerHTML = data.items.map(it => `
+        <a class="rakuten-item" href="${escAttr(it.url)}" target="_blank" rel="noopener sponsored">
+          ${it.image ? `<img src="${escAttr(it.image)}" alt="" loading="lazy">` : ''}
+          <div class="rakuten-item-body">
+            <div class="rakuten-item-name">${esc(it.name)}</div>
+            <div class="rakuten-item-meta">${it.reviewCount ? `レビュー${it.reviewCount}件 / 平均${it.reviewAverage}` : 'レビューなし'}</div>
+          </div>
+          <div class="rakuten-item-price">¥${Number(it.price).toLocaleString()}</div>
+        </a>
+      `).join('') + '<div class="rakuten-note">楽天市場のアフィリエイトリンクです。価格・在庫は変動する場合があります。</div>';
+      box.dataset.loaded = '1';
+    } catch(e) {
+      box.innerHTML = `<div class="rakuten-note">通信エラー: ${esc(e.message)}</div>`;
+    }
+  }
+
+  build();
+</script>
+
+<script src="../assets/access-counter.js"></script>
+</body>
+</html>
