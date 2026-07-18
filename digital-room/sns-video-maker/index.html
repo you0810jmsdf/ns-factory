@@ -342,6 +342,19 @@ canvas{
 .guide-feedback-actions button,.guide-feedback-actions a{flex:1;min-width:135px;text-align:center;padding:9px 10px;border:1px solid var(--brass);border-radius:8px;font-size:12px;font-weight:700;color:var(--brass-dark);background:#FFF;text-decoration:none}
 .guide-feedback-status{min-height:1.5em;margin:7px 0 0;font-size:11.5px;color:var(--brass-dark)}
 .free-label{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border:1px solid var(--line);border-radius:999px;background:var(--brass-light);color:var(--brass-dark);font-size:11px;font-weight:700;white-space:nowrap}
+.story-planner{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card-soft)}
+.story-planner h3{margin:0 0 10px;font-size:14px;color:var(--brass-dark)}
+.story-summary{margin:9px 0 0;font-size:12px;line-height:1.7;color:var(--ink-sub)}
+.story-role{display:inline-flex;margin-right:5px;padding:1px 6px;border-radius:999px;background:var(--brass-light);color:var(--brass-dark);font-size:10px;font-weight:700}
+.export-gate{width:min(520px,calc(100vw - 28px));padding:0;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);box-shadow:var(--shadow-lg)}
+.export-gate::backdrop{background:rgba(20,15,10,.56);backdrop-filter:blur(3px)}
+.export-gate-body{padding:22px}
+.export-gate h2{margin:0 0 5px;font-size:19px;color:var(--brass-dark)}
+.export-gate-lead{margin:0 0 14px;font-size:12px;color:var(--ink-sub)}
+.export-gate-list{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.export-gate-list li{padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card-soft);font-size:13px;line-height:1.5}
+.export-gate-list li.warn{border-color:#d8a24a;background:#fff8e8;color:#704c13}
+.export-gate-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .guide-card .primary{width:100%;flex:none;margin-top:14px}
 
 /* ── スマホ用ステップナビ・通知 ── */
@@ -457,7 +470,7 @@ canvas{
         <p class="guide-panel-label">自分の端末にある写真から作る場合</p>
         <ol class="guide-steps">
           <li><span class="guide-step-copy"><strong>写真を追加する</strong>「写真を読み込む・追加」を開き、「端末から写真を追加」で作品写真を選びます。写真は外部へアップロードされません。</span></li>
-          <li><span class="guide-step-copy"><strong>順番・字幕・セリフを整える</strong>写真コマをドラッグして並べ替え、「使う／戻す」で使用写真を選びます。「写真ごと」タブで字幕とセリフを編集します。</span></li>
+          <li><span class="guide-step-copy"><strong>構成・字幕・セリフを整える</strong>写真コマを並べ替え、「使う／戻す」で使用写真を選びます。「作品情報」で物語の型と長さを選び「写真へ構成を適用」、必要に応じて「写真ごと」で字幕とセリフを直します。</span></li>
           <li><span class="guide-step-copy"><strong>仕上がりを確認する</strong>「音声つきプレビュー」で写真・字幕・音声を確認します。途中で止めるときは「停止」を押します。</span></li>
           <li><span class="guide-step-copy"><strong>MP4で保存する</strong>英語台本は「自動ナレーション付きMP4」、日本語台本は「自分の声で録音」を使用します。初回のAI音声生成は準備に時間がかかります。</span></li>
         </ol>
@@ -468,7 +481,7 @@ canvas{
         <ol class="guide-steps">
           <li><span class="guide-step-copy"><strong>作品番号で読み込む</strong>「写真を読み込む・追加」を開き、作品番号を入力して「Driveから写真を表示」を押します。作品集の名称・素材・長文紹介も自動で入ります。</span></li>
           <li><span class="guide-step-copy"><strong>作品情報を確認する</strong>「作品情報」タブで作品名、素材・サイズ、長文紹介を確認します。素材欄は在庫リストの候補から修正できます。</span></li>
-          <li><span class="guide-step-copy"><strong>英語台本を組み直す</strong>「長文を英語メモへ」で英訳し、不要写真を除外してから「台本を再構成」を押します。残した写真だけへセリフが再配分されます。</span></li>
+          <li><span class="guide-step-copy"><strong>構成と英語台本を組み直す</strong>不要写真を除外し、物語の型を選んで「写真へ構成を適用」します。「長文を英語メモへ」のあと「台本を再構成」を押すと、残した写真だけへセリフが再配分されます。</span></li>
           <li><span class="guide-step-copy"><strong>保存・Driveへ戻す</strong>出力設定でAI音声を選んでMP4を生成します。完成後はダウンロード、または対象作品フォルダへのDrive保存を選びます。</span></li>
         </ol>
         <p class="guide-note">作品番号、作品集プリセット、在庫候補、Drive保存はN's factory独自機能です。一般利用では設定不要です。</p>
@@ -495,6 +508,18 @@ canvas{
     <button class="primary" id="closeGuide" type="button">ガイドを閉じて編集する</button>
   </div>
 </div>
+
+<dialog class="export-gate" id="exportGate" aria-labelledby="exportGateTitle">
+  <div class="export-gate-body">
+    <h2 id="exportGateTitle">生成前の最終確認</h2>
+    <p class="export-gate-lead">戻りにくい動画生成の前に、構成と出力条件を確認します。</p>
+    <ul class="export-gate-list" id="exportGateList"></ul>
+    <div class="export-gate-actions">
+      <button class="secondary" id="exportGateBack" type="button">編集へ戻る</button>
+      <button class="primary" id="exportGateConfirm" type="button">この内容で生成</button>
+    </div>
+  </div>
+</dialog>
 
 <main class="app">
   <section class="hero">
@@ -630,6 +655,26 @@ canvas{
             </select>
             <p class="help" id="translationHelp">作品集の長文を英訳し、写真枚数分へ広げます。</p>
           </div>
+          <section class="story-planner" aria-labelledby="storyPlannerTitle">
+            <h3 id="storyPlannerTitle">動画の構成を決める</h3>
+            <div class="row">
+              <div class="field">
+                <label for="storyTemplate">物語の型</label>
+                <select id="storyTemplate"></select>
+              </div>
+              <div class="field">
+                <label for="targetDuration">目標の長さ</label>
+                <select id="targetDuration">
+                  <option value="15">15秒</option>
+                  <option value="30" selected>30秒</option>
+                  <option value="45">45秒</option>
+                  <option value="60">60秒</option>
+                </select>
+              </div>
+            </div>
+            <button class="secondary" id="applyStoryStructure" type="button">写真へ構成を適用</button>
+            <p class="story-summary" id="storySummary">写真を追加すると、各コマの役割・秒数・動きをまとめて整えられます。</p>
+          </section>
           <details class="assist-help">
             <summary>台本作成ボタンの使い方</summary>
             <div class="assist-flow" aria-label="台本作成ボタンの流れ">
@@ -814,6 +859,10 @@ const els = {
   workLongDesc: document.getElementById('workLongDesc'),
   translationDirection: document.getElementById('translationDirection'),
   translationHelp: document.getElementById('translationHelp'),
+  storyTemplate: document.getElementById('storyTemplate'),
+  targetDuration: document.getElementById('targetDuration'),
+  applyStoryStructure: document.getElementById('applyStoryStructure'),
+  storySummary: document.getElementById('storySummary'),
   translateFeatureNote: document.getElementById('translateFeatureNote'),
   distributeFeatureNote: document.getElementById('distributeFeatureNote'),
   photoLoader: document.getElementById('photoLoader'),
@@ -859,7 +908,11 @@ const els = {
   aiVoiceSelect: document.getElementById('aiVoiceSelect'),
   syncNarrationDuration: document.getElementById('syncNarrationDuration'),
   fitDurationsToNarration: document.getElementById('fitDurationsToNarration'),
-  uploadVideoToDrive: document.getElementById('uploadVideoToDrive')
+  uploadVideoToDrive: document.getElementById('uploadVideoToDrive'),
+  exportGate: document.getElementById('exportGate'),
+  exportGateList: document.getElementById('exportGateList'),
+  exportGateBack: document.getElementById('exportGateBack'),
+  exportGateConfirm: document.getElementById('exportGateConfirm')
 };
 let slides = [];
 let selected = -1;
@@ -883,6 +936,8 @@ let localTtsWorker = null;
 let localTtsRequestId = 0;
 let ttsBusy = false;
 let narratedSaveCancelled = false;
+let exportGateResolve = null;
+let previewReviewed = false;
 const localTtsPending = new Map();
 
 const AI_VOICES = {
@@ -893,6 +948,15 @@ const AI_VOICES = {
     {value:'bf_emma', label:'Emma（英国英語・女性）'}
   ]
 };
+
+const STORY_TEMPLATES = Object.freeze({
+  craft: {label:'手仕事の魅力', roles:['全体像','素材','仕立て','使い方','経年変化','余韻']},
+  hookValueProofCta: {label:'Hook・価値・証拠・行動', roles:['Hook','価値','証拠','細部','CTA']},
+  aida: {label:'AIDA（注目から行動へ）', roles:['注目','興味','欲求','証拠','行動']},
+  beforeAfter: {label:'Before・After・Bridge', roles:['課題','変化','完成像','理由','次の一歩']},
+  openLoop: {label:'オープンループ', roles:['問い','手がかり','期待','答え','余韻']},
+  catalog: {label:'作品カタログ', roles:['全景','正面','側面','細部','使用場面','締め']}
+});
 
 function setLog(message){
   els.log.textContent = message;
@@ -923,6 +987,7 @@ function updatePhotoPanelUi(options = {}){
   if(els.frameCount){
     els.frameCount.textContent = total ? `${active} / ${total}枚を使用` : '0枚';
   }
+  updateStorySummary();
   if(els.photoNextStep) els.photoNextStep.hidden = total === 0;
   if(!els.photoLoader) return;
   if(total === 0) els.photoLoader.open = true;
@@ -1566,7 +1631,8 @@ function renderList(){
     const meta = speaking
       ? `読み上げ中 ${videoNumber} / ${activeTotal}`
       : (enabled ? `${slide.duration.toFixed(1)}秒 / ${motionLabel(slide.motion)}` : '動画には使わない');
-    item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${label} ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${meta}</div></div><button class="slide-use-toggle ${enabled ? '' : 'off'}" type="button">${enabled ? '使う' : '戻す'}</button>`;
+    const role = enabled && slide.storyRole ? `<span class="story-role">${escapeHtml(slide.storyRole)}</span>` : '';
+    item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${label} ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${role}${meta}</div></div><button class="slide-use-toggle ${enabled ? '' : 'off'}" type="button">${enabled ? '使う' : '戻す'}</button>`;
     const useButton = item.querySelector('.slide-use-toggle');
     useButton.addEventListener('click', event => {
       event.stopPropagation();
@@ -2459,6 +2525,7 @@ async function playPreviewWithVoice(){
     ? 'セリフが終わるまで写真を待たせながら、音声つきプレビューを再生中です。'
     : '音声つきプレビューを再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。');
   const result = await playTimelineWithVoice();
+  if(!result || !result.stopped) previewReviewed = true;
   setLog(result && result.stopped ? '音声つきプレビューを停止しました。' : '音声つきプレビューが終わりました。');
 }
 
@@ -2471,6 +2538,7 @@ async function playPreviewWithoutVoice(){
     ? 'セリフが切れないように表示秒数を延長して、映像だけプレビューを再生中です。'
     : '映像だけプレビューを再生中です。');
   const result = await playTimeline(false);
+  if(!result || !result.stopped) previewReviewed = true;
   setLog(result && result.stopped ? '映像だけプレビューを停止しました。' : '映像だけプレビューが終わりました。');
 }
 
@@ -2525,6 +2593,66 @@ function updatePreviewStopButton(){
   if(!els.stopPreview) return;
   const canStop = ttsBusy || playing || !!activeUtterance || !!activeSpeechResolve || (recorder && recorder.state === 'recording');
   els.stopPreview.disabled = !canStop;
+}
+
+function selectedStoryTemplate(){
+  return STORY_TEMPLATES[els.storyTemplate.value] || STORY_TEMPLATES.craft;
+}
+
+function storyCutRange(seconds){
+  if(seconds <= 15) return [3,5];
+  if(seconds <= 30) return [5,7];
+  if(seconds <= 45) return [7,9];
+  return [8,12];
+}
+
+function updateStorySummary(){
+  if(!els.storySummary) return;
+  const template = selectedStoryTemplate();
+  const seconds = parseInt(els.targetDuration.value, 10) || 30;
+  const count = playableSlides().length;
+  const [minCuts,maxCuts] = storyCutRange(seconds);
+  const countNote = !count
+    ? '写真を追加してください。'
+    : (count < minCuts || count > maxCuts
+      ? `現在${count}枚。${seconds}秒では${minCuts}〜${maxCuts}枚が見やすい目安です。`
+      : `現在${count}枚で、${seconds}秒の推奨範囲内です。`);
+  els.storySummary.textContent = `${template.label}: ${template.roles.join(' → ')}。${countNote}`;
+}
+
+function applyStoryStructure(){
+  saveSelected();
+  const targets = playableSlides();
+  if(!targets.length){ setLog('動画で使う写真を1枚以上選んでください。'); return; }
+  const template = selectedStoryTemplate();
+  const targetSeconds = parseInt(els.targetDuration.value, 10) || 30;
+  const baseDuration = clamp(roundDuration(targetSeconds / targets.length), 1.8, MAX_SLIDE_DURATION);
+  const motions = ['zoomIn','panLeft','zoomOut','panRight'];
+  targets.forEach((slide,index) => {
+    const roleIndex = targets.length === 1
+      ? template.roles.length - 1
+      : Math.round(index * (template.roles.length - 1) / (targets.length - 1));
+    slide.storyRole = template.roles[roleIndex];
+    const narrationSeconds = els.syncNarrationDuration.checked ? estimateNarrationDuration(slide.narration) + .5 : 0;
+    slide.duration = clamp(roundDuration(Math.max(baseDuration, narrationSeconds)), 1.8, MAX_SLIDE_DURATION);
+    slide.transition = 'fade';
+    slide.transitionDuration = .5;
+    slide.motion = motions[index % motions.length];
+    if(!slide.caption) slide.caption = slide.storyRole;
+  });
+  renderList();
+  loadSelected();
+  drawSelectedOrFirstFrame();
+  updateStorySummary();
+  setLog(`「${template.label}」を${targets.length}枚へ適用しました。各コマを1役割に絞り、目標${targetSeconds}秒を基準に動きと切替を統一しました。`);
+}
+
+function initStoryPlanner(){
+  els.storyTemplate.innerHTML = Object.entries(STORY_TEMPLATES)
+    .map(([value,template]) => `<option value="${value}">${template.label}</option>`)
+    .join('');
+  els.storyTemplate.value = 'craft';
+  updateStorySummary();
 }
 
 function stopPreviewPlayback(){
@@ -3208,6 +3336,43 @@ async function recordMediaRecorderVideo(withMic){
   recorder.start();
   await playTimeline(true);
   setTimeout(() => recorder && recorder.state !== 'inactive' && recorder.stop(), 250);
+}
+
+function requestExportGate(mode){
+  saveSelected();
+  const list = playableSlides();
+  const template = selectedStoryTemplate();
+  const duration = totalDuration();
+  const assignedRoles = list.filter(slide => slide.storyRole).length;
+  const emptyNarration = list.filter(slide => !String(slide.narration || '').trim()).length;
+  const narrationMode = mode === 'narration';
+  const fatal = !list.length || (narrationMode && els.narrationLang.value !== 'en-US');
+  const checks = [
+    {warn:!list.length, text:`写真: ${list.length}枚を使用`},
+    {warn:assignedRoles !== list.length, text:`構成: ${template.label}（役割設定 ${assignedRoles}/${list.length}枚）`},
+    {warn:false, text:`予定尺: 約${duration.toFixed(1)}秒`},
+    {warn:emptyNarration > 0, text:`セリフ: ${emptyNarration ? `${emptyNarration}枚が空欄` : '全コマ入力済み'}`},
+    {warn:!previewReviewed, text:`プレビュー: ${previewReviewed ? '確認済み' : '未確認（先に確認推奨）'}`},
+    {warn:narrationMode && els.narrationLang.value !== 'en-US', text:`出力: ${narrationMode ? '英語AIナレーション付きMP4' : (mode === 'mic' ? '自分の声付きMP4' : '動画のみMP4')}`}
+  ];
+  els.exportGateList.innerHTML = checks
+    .map(check => `<li class="${check.warn ? 'warn' : ''}"><strong>${check.warn ? '要確認' : 'OK'}</strong>　${escapeHtml(check.text)}</li>`)
+    .join('');
+  els.exportGateConfirm.disabled = fatal;
+  els.exportGateConfirm.textContent = fatal ? '設定を直してください' : 'この内容で生成';
+  if(typeof els.exportGate.showModal !== 'function') return Promise.resolve(window.confirm('この内容で動画を生成しますか？'));
+  if(els.exportGate.open) els.exportGate.close();
+  els.exportGate.showModal();
+  return new Promise(resolve => { exportGateResolve = resolve; });
+}
+
+function closeExportGate(confirmed){
+  if(els.exportGate.open) els.exportGate.close();
+  if(exportGateResolve){
+    const resolve = exportGateResolve;
+    exportGateResolve = null;
+    resolve(confirmed);
+  }
 }
 
 async function recordVideo(mode = 'silent'){
@@ -4112,6 +4277,12 @@ els.photoInput.addEventListener('change', event => addFiles(event.target.files))
 els.loadDrivePhotos.addEventListener('click', addDrivePhotos);
 els.translateFeatureNote.addEventListener('click', translateLongDescToFeatureNote);
 els.distributeFeatureNote.addEventListener('click', () => distributeFeatureNoteToSlides());
+els.applyStoryStructure.addEventListener('click', applyStoryStructure);
+els.storyTemplate.addEventListener('change', updateStorySummary);
+els.targetDuration.addEventListener('change', updateStorySummary);
+els.exportGateBack.addEventListener('click', () => closeExportGate(false));
+els.exportGateConfirm.addEventListener('click', () => closeExportGate(true));
+els.exportGate.addEventListener('cancel', event => { event.preventDefault(); closeExportGate(false); });
 els.productNamePreset.addEventListener('change', applyProductNamePreset);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
 document.getElementById('playPreview').addEventListener('click', playPreviewWithoutVoice);
@@ -4125,6 +4296,7 @@ els.fitDriveSize.addEventListener('click', () => fitDurationsForDriveSize());
 els.toggleSlideUse.addEventListener('click', () => toggleSlideUse());
 els.recordNarration.addEventListener('click', async () => {
   if(els.recordNarration.dataset.busy === 'true') return;
+  if(!(await requestExportGate('narration'))) return;
   const originalLabel = els.recordNarration.textContent;
   els.recordNarration.dataset.busy = 'true';
   els.recordNarration.disabled = true;
@@ -4142,8 +4314,12 @@ els.recordNarration.addEventListener('click', async () => {
     refreshCapabilities();
   }
 });
-document.getElementById('recordSilent').addEventListener('click', () => recordVideo('silent'));
-document.getElementById('recordMic').addEventListener('click', () => recordVideo('mic'));
+document.getElementById('recordSilent').addEventListener('click', async () => {
+  if(await requestExportGate('silent')) await recordVideo('silent');
+});
+document.getElementById('recordMic').addEventListener('click', async () => {
+  if(await requestExportGate('mic')) await recordVideo('mic');
+});
 document.getElementById('moveUp').addEventListener('click', () => moveSelected(-1));
 document.getElementById('moveDown').addEventListener('click', () => moveSelected(1));
 document.getElementById('removeSlide').addEventListener('click', removeSelected);
@@ -4198,6 +4374,7 @@ els.driveWorkNo.addEventListener('keydown', event => {
   event.preventDefault();
   handleDriveWorkNoChange();
 });
+initStoryPlanner();
 renderList();
 loadWorksCatalog();
 loadLeatherStock();
