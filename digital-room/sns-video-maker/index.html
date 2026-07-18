@@ -861,7 +861,7 @@ canvas{
           </div>
           <label class="check-row" for="syncNarrationDuration">
             <input id="syncNarrationDuration" type="checkbox" checked>
-            <span><strong>セリフが終わるまで写真を待たせる</strong>プレビュー・MP4保存の前に、ナレーションの長さから各写真の表示秒数を自動で延長します。</span>
+            <span><strong>セリフが終わるまで写真を待たせる</strong>プレビュー・MP4保存の前に、ナレーションの長さから各写真の表示秒数を自動で延長します。AIナレーション付きMP4では、音声が終わると同時に次の写真へ移るよう、実際の音声の長さに合わせて短縮もします。</span>
           </label>
           <div class="actions">
             <button class="secondary" id="fitDurationsToNarration" type="button">セリフ長で秒数を整える</button>
@@ -3647,6 +3647,10 @@ async function generateNarrationTimeline(){
   if(language !== 'en-US') throw new Error('AI音声付きMP4は英語台本に対応しています。読み上げ言語をEnglishへ変更してください。');
   const voice = els.aiVoiceSelect.value || AI_VOICES[language][0].value;
   const generated = [];
+  // 「セリフが終わるまで写真を待たせる」ON時は、実音声の長さで表示秒数を確定する（延長も短縮も行う）。
+  // 推定式(+1.9秒の余裕)で延ばされた秒数のままだと、音声終了後に無音の間が残るため。
+  const syncToVoice = !!(els.syncNarrationDuration && els.syncNarrationDuration.checked);
+  let shortened = 0;
   for(let index = 0; index < list.length; index++){
     const slide = list[index];
     setLog(`${index + 1}/${list.length}枚目のAIナレーションを生成中です。`);
@@ -3655,9 +3659,17 @@ async function generateNarrationTimeline(){
       : {sampleRate:24000, data:new Float32Array(0)};
     const spokenSeconds = audio.data.length / audio.sampleRate;
     const needed = clamp(roundDuration(spokenSeconds + .35), 1.8, MAX_SLIDE_DURATION);
-    if(slide.duration < needed) slide.duration = needed;
+    if(slide.duration < needed){
+      slide.duration = needed;
+    }else if(syncToVoice && audio.data.length && slide.duration > needed){
+      // 音声終了とほぼ同時（+0.35秒）に次写真への切替が始まるよう短縮。
+      // OFF時と、セリフなしコマは手動設定の表示秒数を尊重して短縮しない。
+      slide.duration = needed;
+      shortened += 1;
+    }
     generated.push({slide, audio});
   }
+  if(shortened) setLog(`音声終了と同時に切り替わるよう、${shortened}枚の表示秒数を実音声の長さへ合わせました。`);
 
   if(selected >= 0) loadSelected();
   renderList();
