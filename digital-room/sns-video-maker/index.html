@@ -346,6 +346,23 @@ canvas{
 .story-planner h3{margin:0 0 10px;font-size:14px;color:var(--brass-dark)}
 .story-summary{margin:9px 0 0;font-size:12px;line-height:1.7;color:var(--ink-sub)}
 .story-role{display:inline-flex;margin-right:5px;padding:1px 6px;border-radius:999px;background:var(--brass-light);color:var(--brass-dark);font-size:10px;font-weight:700}
+.story-steps{display:grid;gap:8px;margin:10px 0 0}
+.story-steps button{width:100%;text-align:left}
+.reorder-proposal{margin:10px 0 0;padding:10px 12px;border:1.5px dashed var(--brass);border-radius:var(--radius-sm);background:#FFF;font-size:12px;line-height:1.7;color:var(--ink-sub)}
+.reorder-proposal[hidden]{display:none}
+.reorder-proposal strong{color:var(--brass-dark)}
+.reorder-proposal ol{margin:6px 0 10px;padding-left:20px}
+.reorder-proposal li.changed{color:var(--brass-dark);font-weight:700}
+.reorder-actions{display:flex;gap:8px;flex-wrap:wrap}
+.reorder-actions button{flex:1;min-width:130px}
+.slide-role-row{display:flex;gap:5px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.slide-role-select{max-width:170px;font-size:11.5px;padding:3px 4px;border:1px solid var(--line);border-radius:6px;background:#FFF;color:var(--ink)}
+.conf-badge{font-size:10px;padding:1px 6px;border-radius:999px;border:1px solid var(--line);color:var(--ink-sub);white-space:nowrap}
+.conf-badge.high{background:#EFF8EF;color:#276738;border-color:#C8DFC8}
+.conf-badge.mid{background:var(--brass-light);color:var(--brass-dark)}
+.conf-badge.low{background:var(--card-soft)}
+.manual-flag{font-size:10px;color:#8A5A18;background:#FFF3DC;border:1px solid #E8CD9A;padding:1px 6px;border-radius:999px;white-space:nowrap}
+.role-info{margin:-6px 0 12px;font-size:11.5px;color:var(--ink-sub);line-height:1.6;background:var(--card-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 10px}
 .export-gate{width:min(520px,calc(100vw - 28px));padding:0;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);box-shadow:var(--shadow-lg)}
 .export-gate::backdrop{background:rgba(20,15,10,.56);backdrop-filter:blur(3px)}
 .export-gate-body{padding:22px}
@@ -470,7 +487,7 @@ canvas{
         <p class="guide-panel-label">自分の端末にある写真から作る場合</p>
         <ol class="guide-steps">
           <li><span class="guide-step-copy"><strong>写真を追加する</strong>「写真を読み込む・追加」を開き、「端末から写真を追加」で作品写真を選びます。写真は外部へアップロードされません。</span></li>
-          <li><span class="guide-step-copy"><strong>構成・字幕・セリフを整える</strong>写真コマを並べ替え、「使う／戻す」で使用写真を選びます。「作品情報」で物語の型と長さを選び「写真へ構成を適用」、必要に応じて「写真ごと」で字幕とセリフを直します。</span></li>
+          <li><span class="guide-step-copy"><strong>構成・字幕・セリフを整える</strong>「使う／戻す」で使用写真を選び、「作品情報」で物語の型と長さを選びます。「① 写真の役割を提案 → ② 構成と順番を確認 → ③ カメラワークと台本を適用」の順に押すと、役割ごとに動きとセリフが変わります。必要に応じて「写真ごと」で直します。</span></li>
           <li><span class="guide-step-copy"><strong>仕上がりを確認する</strong>「音声つきプレビュー」で写真・字幕・音声を確認します。途中で止めるときは「停止」を押します。</span></li>
           <li><span class="guide-step-copy"><strong>MP4で保存する</strong>英語台本は「自動ナレーション付きMP4」、日本語台本は「自分の声で録音」を使用します。初回のAI音声生成は準備に時間がかかります。</span></li>
         </ol>
@@ -481,7 +498,7 @@ canvas{
         <ol class="guide-steps">
           <li><span class="guide-step-copy"><strong>作品番号で読み込む</strong>「写真を読み込む・追加」を開き、作品番号を入力して「Driveから写真を表示」を押します。作品集の名称・素材・長文紹介も自動で入ります。</span></li>
           <li><span class="guide-step-copy"><strong>作品情報を確認する</strong>「作品情報」タブで作品名、素材・サイズ、長文紹介を確認します。素材欄は在庫リストの候補から修正できます。</span></li>
-          <li><span class="guide-step-copy"><strong>構成と英語台本を組み直す</strong>不要写真を除外し、物語の型を選んで「写真へ構成を適用」します。「長文を英語メモへ」のあと「台本を再構成」を押すと、残した写真だけへセリフが再配分されます。</span></li>
+          <li><span class="guide-step-copy"><strong>構成と英語台本を組み直す</strong>不要写真を除外し、物語の型を選んで「① 役割を提案 → ② 順番を確認 → ③ カメラワークと台本を適用」の順に進めます。「長文を英語メモへ」を先に押しておくと、見どころメモの英文が台本の素材になります。</span></li>
           <li><span class="guide-step-copy"><strong>保存・Driveへ戻す</strong>出力設定でAI音声を選んでMP4を生成します。完成後はダウンロード、または対象作品フォルダへのDrive保存を選びます。</span></li>
         </ol>
         <p class="guide-note">作品番号、作品集プリセット、在庫候補、Drive保存はN's factory独自機能です。一般利用では設定不要です。</p>
@@ -672,8 +689,21 @@ canvas{
                 </select>
               </div>
             </div>
-            <button class="secondary" id="applyStoryStructure" type="button">写真へ構成を適用</button>
-            <p class="story-summary" id="storySummary">写真を追加すると、各コマの役割・秒数・動きをまとめて整えられます。</p>
+            <div class="field">
+              <label for="scriptApplyMode">セリフの扱い（③で適用するとき）</label>
+              <select id="scriptApplyMode">
+                <option value="keep" selected>手編集は残す（空欄と自動生成分だけ作り直す）</option>
+                <option value="all">全コマを作り直す（確認あり）</option>
+                <option value="none">セリフは変えない（動きだけ整える）</option>
+              </select>
+            </div>
+            <div class="story-steps">
+              <button class="secondary" id="suggestRoles" type="button">① 写真の役割を提案（この端末内で解析）</button>
+              <button class="secondary" id="reviewStructure" type="button">② 構成と順番を確認</button>
+              <button class="secondary" id="applyStoryStructure" type="button">③ カメラワークと台本を適用</button>
+            </div>
+            <div class="reorder-proposal" id="reorderProposal" hidden></div>
+            <p class="story-summary" id="storySummary">写真を追加すると、①提案 → ②確認 → ③適用の順で、役割・順番・動き・セリフをまとめて整えられます。</p>
           </section>
           <details class="assist-help">
             <summary>台本作成ボタンの使い方</summary>
@@ -696,6 +726,11 @@ canvas{
             <input id="caption" autocomplete="off">
           </div>
           <div class="field">
+            <label for="slideRole">この写真の役割</label>
+            <select id="slideRole"></select>
+          </div>
+          <p class="role-info" id="slideRoleInfo">「① 写真の役割を提案」を押すと、提案の理由と信頼度がここに表示されます。手で選んだ役割は自動処理で上書きされません。</p>
+          <div class="field">
             <label for="narration">読むセリフ・台本</label>
             <textarea id="narration"></textarea>
           </div>
@@ -711,15 +746,31 @@ canvas{
           </div>
           <div class="row">
             <div class="field">
-              <label for="motion">写真の動き</label>
+              <label for="motion">写真の動き（カメラワーク）</label>
               <select id="motion">
-                <option value="zoomIn">ズームイン</option>
-                <option value="zoomOut">ズームアウト</option>
-                <option value="panLeft">左へパン</option>
-                <option value="panRight">右へパン</option>
-                <option value="panUp">上へパン</option>
-                <option value="panDown">下へパン</option>
-                <option value="still">静止</option>
+                <optgroup label="役割向けの演出">
+                  <option value="hookPush">すっと近づく（注目させる）</option>
+                  <option value="overviewIn">ゆっくり近づく（全体を見せる）</option>
+                  <option value="detailPushIn">質感へゆっくり寄る</option>
+                  <option value="detailPanLeft">右から左へ細部を見せる</option>
+                  <option value="detailPanRight">左から右へ細部を見せる</option>
+                  <option value="sidePanLeft">右から左へ流して見せる</option>
+                  <option value="sidePanRight">左から右へ流して見せる</option>
+                  <option value="pullBack">少し引いて使う場面を見せる</option>
+                  <option value="beforeCalm">控えめにゆっくり引く</option>
+                  <option value="afterPush">仕上がりへ寄って強調</option>
+                  <option value="ctaCalm">ほぼ静止（字幕を読みやすく）</option>
+                  <option value="closingOut">ゆっくり引いて余韻を残す</option>
+                </optgroup>
+                <optgroup label="基本の動き">
+                  <option value="zoomIn">ズームイン</option>
+                  <option value="zoomOut">ズームアウト</option>
+                  <option value="panLeft">左へパン</option>
+                  <option value="panRight">右へパン</option>
+                  <option value="panUp">上へパン</option>
+                  <option value="panDown">下へパン</option>
+                  <option value="still">静止</option>
+                </optgroup>
               </select>
             </div>
             <div class="field">
@@ -748,6 +799,8 @@ canvas{
           </div>
           <div class="actions">
             <button class="secondary" id="toggleSlideUse">動画から除外</button>
+            <button class="secondary" id="resetRoleAuto" title="このコマの役割を、①で解析した自動提案へ戻します">役割を自動提案へ戻す</button>
+            <button class="secondary" id="regenSlideScript" title="このコマのセリフだけを役割に合わせて作り直します">このコマのセリフだけ再生成</button>
             <button class="secondary" id="previewSubtitleMotion">字幕動きを確認</button>
             <button class="secondary" id="applySubtitleMotionAll">字幕動きを全コマへ適用</button>
             <button class="secondary" id="moveUp">上へ</button>
@@ -862,6 +915,14 @@ const els = {
   storyTemplate: document.getElementById('storyTemplate'),
   targetDuration: document.getElementById('targetDuration'),
   applyStoryStructure: document.getElementById('applyStoryStructure'),
+  suggestRoles: document.getElementById('suggestRoles'),
+  reviewStructure: document.getElementById('reviewStructure'),
+  scriptApplyMode: document.getElementById('scriptApplyMode'),
+  reorderProposal: document.getElementById('reorderProposal'),
+  slideRole: document.getElementById('slideRole'),
+  slideRoleInfo: document.getElementById('slideRoleInfo'),
+  resetRoleAuto: document.getElementById('resetRoleAuto'),
+  regenSlideScript: document.getElementById('regenSlideScript'),
   storySummary: document.getElementById('storySummary'),
   translateFeatureNote: document.getElementById('translateFeatureNote'),
   distributeFeatureNote: document.getElementById('distributeFeatureNote'),
@@ -958,6 +1019,606 @@ const STORY_TEMPLATES = Object.freeze({
   catalog: {label:'作品カタログ', roles:['全景','正面','側面','細部','使用場面','締め']}
 });
 
+/* ══ 役割別カメラワーク・写真内容の自動分類・役割別台本（2026-07-18） ══ */
+
+// 写真内容の分類候補（②の提案・手動選択に使用）
+const ROLE_CLASSIFICATION_CANDIDATES = Object.freeze([
+  '作品全体','正面','側面','内部・開いた状態','素材・革の質感','縫い目・コバ','金具・リング','使用場面','比較・Before','完成・After','その他'
+]);
+
+// 役割ラベル → 演出プロファイルの対応（先に一致した行が優先。完成像→overview、完成・After→after の順序が重要）
+const ROLE_PROFILES = Object.freeze([
+  {key:'hook',     pattern:/hook|注目|問い/i},
+  {key:'overview', pattern:/全体|全景|完成像/},
+  {key:'before',   pattern:/before|課題|比較/i},
+  {key:'after',    pattern:/after|変化|答え|完成/i},
+  {key:'detail',   pattern:/素材|細部|仕立て|証拠|質感|縫い目|コバ|金具|リング|内部|手がかり/},
+  {key:'side',     pattern:/側面|正面/},
+  {key:'usage',    pattern:/使い方|使用場面|価値|欲求|興味|期待|理由/},
+  {key:'cta',      pattern:/cta|行動|次の一歩/i},
+  {key:'closing',  pattern:/余韻|締め/}
+]);
+
+function roleProfileKey(label){
+  const value = String(label || '');
+  const hit = ROLE_PROFILES.find(profile => profile.pattern.test(value));
+  return hit ? hit.key : 'overview';
+}
+
+// カメラワーク定義: z=拡大率 / x,y=中心オフセット(px)。0→1へ表示時間全体で連続補間する。
+// endHold<1 のプリセットだけは動きを早めに完了させ、残りを静止で余韻にする（余韻・締め専用）。
+const MOTION_DEFS = Object.freeze({
+  zoomIn:  {z0:1,    z1:1.055, ease:'linear'},
+  zoomOut: {z0:1.055,z1:1,     ease:'linear'},
+  panLeft: {z0:1.06, z1:1.06,  x0:-28, x1:28,  ease:'linear'},
+  panRight:{z0:1.06, z1:1.06,  x0:28,  x1:-28, ease:'linear'},
+  panUp:   {z0:1.06, z1:1.06,  y0:-34, y1:34,  ease:'linear'},
+  panDown: {z0:1.06, z1:1.06,  y0:34,  y1:-34, ease:'linear'},
+  still:   {z0:1,    z1:1,     ease:'linear'},
+  hookPush:      {z0:1.03, z1:1.16, ease:'outQuick'},
+  overviewIn:    {z0:1,    z1:1.05, ease:'inOut'},
+  detailPushIn:  {z0:1.06, z1:1.14, ease:'inOut'},
+  detailPanLeft: {z0:1.12, z1:1.12, x0:30,  x1:-30, ease:'inOut'},
+  detailPanRight:{z0:1.12, z1:1.12, x0:-30, x1:30,  ease:'inOut'},
+  sidePanLeft:   {z0:1.08, z1:1.08, x0:34,  x1:-34, ease:'inOut'},
+  sidePanRight:  {z0:1.08, z1:1.08, x0:-34, x1:34,  ease:'inOut'},
+  pullBack:      {z0:1.10, z1:1.02, ease:'inOut'},
+  beforeCalm:    {z0:1.045,z1:1,    ease:'inOut'},
+  afterPush:     {z0:1.02, z1:1.13, ease:'inOut'},
+  ctaCalm:       {z0:1,    z1:1.035,ease:'inOut'},
+  closingOut:    {z0:1.09, z1:1,    ease:'inOut', endHold:.82}
+});
+
+function motionEase(name, value){
+  const p = clamp(value, 0, 1);
+  if(name === 'linear') return p;
+  if(name === 'outQuick') return 1 - Math.pow(1 - p, 2.6);
+  return p * p * (3 - 2 * p);
+}
+
+// スライドとも文字列(モーション名)とも呼べる。既存データ(motionStart等なし)でも動く。
+function cameraStateFor(slideOrMotion, progress){
+  const isSlide = slideOrMotion && typeof slideOrMotion === 'object';
+  const name = isSlide ? (slideOrMotion.motion || 'zoomIn') : String(slideOrMotion || 'zoomIn');
+  const def = MOTION_DEFS[name] || MOTION_DEFS.zoomIn;
+  const hold = def.endHold || 1;
+  const eased = motionEase(def.ease || 'inOut', clamp(progress, 0, 1) / hold);
+  return {
+    zoom: def.z0 + (def.z1 - def.z0) * eased,
+    dx: (def.x0 || 0) + ((def.x1 || 0) - (def.x0 || 0)) * eased,
+    dy: (def.y0 || 0) + ((def.y1 || 0) - (def.y0 || 0)) * eased
+  };
+}
+
+// データ設計要件: motionPreset / motionStart / motionEnd をslideへ保持する
+function syncMotionSnapshot(slide){
+  const def = MOTION_DEFS[slide.motion] || MOTION_DEFS.zoomIn;
+  slide.motionPreset = slide.motion;
+  slide.motionStart = {zoom:def.z0, x:def.x0 || 0, y:def.y0 || 0};
+  slide.motionEnd = {zoom:def.z1, x:def.x1 || 0, y:def.y1 || 0};
+}
+
+function motionPanDirection(name){
+  const def = MOTION_DEFS[name];
+  if(!def) return 0;
+  const dx = (def.x1 || 0) - (def.x0 || 0);
+  return dx > 0 ? 1 : dx < 0 ? -1 : 0;
+}
+
+const ROLE_CAMERA_DEFAULTS = Object.freeze({
+  hook:'hookPush', overview:'overviewIn', detail:'detailPushIn', side:'sidePanRight',
+  usage:'pullBack', before:'beforeCalm', after:'afterPush', cta:'ctaCalm', closing:'closingOut'
+});
+const ROLE_TIME_WEIGHTS = Object.freeze({
+  hook:.8, overview:1.1, detail:1, side:1, usage:1.05, before:.9, after:1.15, cta:.9, closing:.9
+});
+const ROLE_TRANSITIONS = Object.freeze({
+  hook:{transition:'fade', duration:.3},
+  overview:{transition:'fade', duration:.55},
+  detail:{transition:'fade', duration:.5},
+  side:{transition:'fade', duration:.5},
+  usage:{transition:'fade', duration:.6},
+  before:{transition:'fade', duration:.5},
+  after:{transition:'fade', duration:.6},
+  cta:{transition:'fade', duration:.5},
+  closing:{transition:'fade', duration:.7}
+});
+
+// 役割に応じてカメラワークを決める。細部・側面は前のコマと同方向の連続パンを避ける。
+function applyRoleCamera(slide, key, index, targets, keys){
+  let motion = ROLE_CAMERA_DEFAULTS[key] || 'overviewIn';
+  const prevMotion = index > 0 ? targets[index - 1].motion : '';
+  const prevDir = motionPanDirection(prevMotion);
+  if(key === 'detail'){
+    if(index > 0 && keys[index - 1] === 'detail' && keys[index - 2] === 'detail'){
+      motion = 'detailPushIn';
+    }else{
+      motion = prevDir > 0 ? 'detailPanLeft' : 'detailPanRight';
+    }
+  }
+  if(key === 'side'){
+    const img = slide.img;
+    const landscape = (img.naturalWidth || img.width || 1) >= (img.naturalHeight || img.height || 1);
+    motion = landscape ? 'sidePanRight' : 'sidePanLeft';
+    if(prevDir !== 0 && prevDir === motionPanDirection(motion)){
+      motion = motion === 'sidePanRight' ? 'sidePanLeft' : 'sidePanRight';
+    }
+  }
+  slide.motion = motion;
+  syncMotionSnapshot(slide);
+}
+
+/* ── ① 写真内容による役割の自動提案（写真は端末外へ送信しない） ── */
+let photoAnalysisBusy = false;
+
+function measureSlidePhoto(slide){
+  const img = slide.img;
+  const w = img.naturalWidth || img.width || 1;
+  const h = img.naturalHeight || img.height || 1;
+  const SIZE = 64;
+  const cv = document.createElement('canvas');
+  cv.width = SIZE; cv.height = SIZE;
+  const c = cv.getContext('2d', {willReadFrequently:true});
+  try{
+    c.drawImage(img, 0, 0, SIZE, SIZE);
+    const data = c.getImageData(0, 0, SIZE, SIZE).data;
+    const gray = new Float32Array(SIZE * SIZE);
+    let bright = 0;
+    for(let i = 0; i < SIZE * SIZE; i++){
+      const g = (data[i * 4] * .299 + data[i * 4 + 1] * .587 + data[i * 4 + 2] * .114) / 255;
+      gray[i] = g;
+      bright += g;
+    }
+    let edge = 0, count = 0;
+    for(let y = 1; y < SIZE - 1; y++){
+      for(let x = 1; x < SIZE - 1; x++){
+        const i = y * SIZE + x;
+        edge += Math.abs(gray[i + 1] - gray[i - 1]) + Math.abs(gray[i + SIZE] - gray[i - SIZE]);
+        count++;
+      }
+    }
+    return {aspect:w / h, brightness:bright / (SIZE * SIZE), edge:edge / count};
+  }catch(_){
+    return {aspect:w / h, brightness:.5, edge:0, unreadable:true};
+  }
+}
+
+function rankMetrics(metrics){
+  const edges = metrics.map(m => m.edge).sort((a, b) => a - b);
+  const q = p => edges[Math.min(edges.length - 1, Math.floor(edges.length * p))] || 0;
+  const median = q(.5);
+  return {
+    edgeTop: new Set(metrics.filter(m => m.edge >= q(.75) && m.edge > median * 1.25)),
+    edgeHigh: new Set(metrics.filter(m => m.edge >= q(.6) && m.edge > median * 1.05))
+  };
+}
+
+function classifySlidePhoto(slide, index, total, metric, ranked){
+  const fileName = String((slide.file && slide.file.name) || '');
+  const lower = fileName.toLowerCase();
+  const keywordRules = [
+    [/front|正面/, '正面'],
+    [/side|側面|profile/, '側面'],
+    [/open|inside|内部|見開/, '内部・開いた状態'],
+    [/stitch|縫|コバ|edge/, '縫い目・コバ'],
+    [/ring|リング|金具|hardware|button/, '金具・リング'],
+    [/material|texture|質感|革肌/, '素材・革の質感'],
+    [/scene|use|使用|hand|desk/, '使用場面'],
+    [/before/, '比較・Before'],
+    [/after/, '完成・After'],
+    [/all|全体|main|top/, '作品全体']
+  ];
+  for(const [pattern, role] of keywordRules){
+    if(pattern.test(lower) || pattern.test(fileName)){
+      return {role, confidence:'高', reason:`ファイル名「${fileName}」に手がかりがあるため`};
+    }
+  }
+  if(index === 0 && total > 1) return {role:'作品全体', confidence:'中', reason:'1枚目の写真は全体紹介に使われることが多いため'};
+  if(index === total - 1 && total > 1) return {role:'完成・After', confidence:'中', reason:'最後の写真は完成・締めに使われることが多いため'};
+  if(!metric.unreadable && ranked.edgeTop.has(metric)) return {role:'縫い目・コバ', confidence:'中', reason:'細かい模様や輪郭が多く、接写と推定されるため'};
+  if(!metric.unreadable && ranked.edgeHigh.has(metric)) return {role:'素材・革の質感', confidence:'低', reason:'質感の情報が多い写真のため'};
+  if(metric.aspect >= 1.15) return {role:'側面', confidence:'低', reason:'横長の写真で、横方向の形が写っていると推定されるため'};
+  if(metric.aspect <= .8) return {role:'正面', confidence:'低', reason:'縦長の写真で、正面からのカットと推定されるため'};
+  return {role:'その他', confidence:'低', reason:'内容を判定する手がかりが少ないため'};
+}
+
+async function suggestPhotoRoles(){
+  saveSelected();
+  const targets = playableSlides();
+  if(!targets.length){
+    setLog(slides.length ? '動画で使う写真を1枚以上選んでください（除外中の写真は解析しません）。' : '先に写真を追加してください。');
+    return;
+  }
+  if(photoAnalysisBusy) return;
+  photoAnalysisBusy = true;
+  if(els.suggestRoles) els.suggestRoles.disabled = true;
+  try{
+    const metrics = [];
+    for(let i = 0; i < targets.length; i++){
+      setLog(`写真をこの端末内で解析中… ${i + 1} / ${targets.length}枚`);
+      metrics.push(measureSlidePhoto(targets[i]));
+      await nextAnimationFrame();
+    }
+    const ranked = rankMetrics(metrics);
+    let manualKept = 0;
+    targets.forEach((slide, i) => {
+      const suggestion = classifySlidePhoto(slide, i, targets.length, metrics[i], ranked);
+      slide.storyRoleSuggestion = suggestion;
+      if(slide.storyRoleSource === 'manual'){
+        manualKept += 1;
+        return;
+      }
+      slide.storyRole = suggestion.role;
+      slide.storyRoleSource = 'auto';
+      slide.storyRoleConfidence = suggestion.confidence;
+      slide.storyRoleReason = suggestion.reason;
+    });
+    renderList();
+    loadSelected();
+    setLog(`${targets.length}枚の役割を提案しました（確定ではなく提案です）。${manualKept ? `手動設定済みの${manualKept}枚はそのまま残しました。` : ''}一覧の役割欄からいつでも変更できます。次は「② 構成と順番を確認」です。`);
+  }finally{
+    photoAnalysisBusy = false;
+    if(els.suggestRoles) els.suggestRoles.disabled = false;
+  }
+}
+
+/* ── ② 構成と順番の確認（並べ替えは「採用」を押すまで実行しない） ── */
+let pendingOrderProposal = null;
+
+function templateRolesForCount(template, count){
+  return Array.from({length: count}, (_, i) => {
+    const idx = count === 1 ? template.roles.length - 1 : Math.round(i * (template.roles.length - 1) / (count - 1));
+    return template.roles[idx];
+  });
+}
+
+const RELATED_ROLE_KEYS = Object.freeze({
+  hook:['overview','after'], overview:['side','hook'], detail:['side'], side:['detail','overview'],
+  usage:['overview','side'], before:['overview'], after:['closing','detail'], cta:['after','closing'], closing:['after','overview']
+});
+
+function proposeOrder(targets, roles){
+  const remaining = targets.map((slide, originalPos) => ({slide, originalPos}));
+  const order = [];
+  roles.forEach((role, position) => {
+    const roleKey = roleProfileKey(role);
+    let best = null;
+    let bestScore = -Infinity;
+    remaining.forEach(entry => {
+      const contentLabel = (entry.slide.storyRoleSuggestion && entry.slide.storyRoleSuggestion.role) || entry.slide.storyRole || '';
+      const contentKey = contentLabel ? roleProfileKey(contentLabel) : null;
+      let score = 0;
+      if(contentKey === roleKey) score += 4;
+      else if(contentKey && (RELATED_ROLE_KEYS[roleKey] || []).includes(contentKey)) score += 2;
+      score += Math.max(0, 2 - Math.abs(entry.originalPos - position) * .5);
+      if(score > bestScore){ bestScore = score; best = entry; }
+    });
+    remaining.splice(remaining.indexOf(best), 1);
+    order.push(best);
+  });
+  return order;
+}
+
+function reviewStructure(){
+  saveSelected();
+  const targets = playableSlides();
+  if(!targets.length){
+    setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。');
+    return;
+  }
+  const template = selectedStoryTemplate();
+  const roles = templateRolesForCount(template, targets.length);
+  const hasSuggestion = targets.some(slide => slide.storyRoleSuggestion || slide.storyRole);
+  pendingOrderProposal = proposeOrder(targets, roles);
+  renderOrderProposal(pendingOrderProposal, roles, template, hasSuggestion);
+  setLog('構成に合わせた順番の案を表示しました。「この順番を採用」を押すまで写真は並べ替えません。');
+}
+
+function renderOrderProposal(proposal, roles, template, hasSuggestion){
+  if(!els.reorderProposal) return;
+  const changed = proposal.some((entry, i) => entry.originalPos !== i);
+  const rows = proposal.map((entry, i) => {
+    const slide = entry.slide;
+    const label = escapeHtml(slide.caption || (slide.file && slide.file.name) || `写真${entry.originalPos + 1}`);
+    const content = slide.storyRoleSuggestion ? `／内容: ${escapeHtml(slide.storyRoleSuggestion.role)}` : '';
+    const move = entry.originalPos === i ? '' : `（今の${entry.originalPos + 1}番目から移動）`;
+    return `<li class="${entry.originalPos === i ? '' : 'changed'}">${escapeHtml(roles[i])}: ${label}${content}${move}</li>`;
+  }).join('');
+  const lead = changed
+    ? '写真の内容と役割が合うように、次の順番を提案します。<strong>「この順番を採用」を押すまで、写真は並べ替えません。</strong>'
+    : '今の順番のままで構成に合っています。並べ替えは不要です。';
+  const hint = hasSuggestion ? '' : '<p>※先に「① 写真の役割を提案」を押すと、写真の内容に合わせた提案になります。</p>';
+  els.reorderProposal.innerHTML = `
+    <strong>「${escapeHtml(template.label)}」に合わせた順番の案</strong>
+    <p>${lead}</p>${hint}
+    <ol>${rows}</ol>
+    <div class="reorder-actions">
+      ${changed ? '<button class="secondary" type="button" data-action="adopt">この順番を採用</button>' : ''}
+      <button class="secondary" type="button" data-action="keep">今の順番のまま進む</button>
+    </div>`;
+  els.reorderProposal.hidden = false;
+}
+
+function clearOrderProposal(){
+  pendingOrderProposal = null;
+  if(els.reorderProposal){
+    els.reorderProposal.hidden = true;
+    els.reorderProposal.innerHTML = '';
+  }
+}
+
+function adoptProposal(apply){
+  const proposal = pendingOrderProposal;
+  clearOrderProposal();
+  if(!proposal) return;
+  if(!apply){
+    setLog('順番は今のまま進めます。「③ カメラワークと台本を適用」で演出とセリフを整えられます。');
+    return;
+  }
+  const selectedSlide = selected >= 0 ? slides[selected] : null;
+  const usedIndices = slides.map((slide, index) => isSlideEnabled(slide) ? index : -1).filter(index => index >= 0);
+  if(usedIndices.length !== proposal.length){
+    setLog('提案の作成後に使用写真が変わったため、並べ替えを中止しました。もう一度「② 構成と順番を確認」を押してください。');
+    return;
+  }
+  usedIndices.forEach((slotIndex, i) => { slides[slotIndex] = proposal[i].slide; });
+  if(selectedSlide) selected = slides.indexOf(selectedSlide);
+  renderList();
+  loadSelected();
+  drawSelectedOrFirstFrame();
+  setLog('提案した順番を採用しました。続けて「③ カメラワークと台本を適用」を押してください。');
+}
+
+/* ── ③ 役割に沿った台本の再生成 ── */
+const ROLE_FEATURE_PATTERNS = Object.freeze({
+  hook:/？|\?|問|wonder|imagine/i,
+  overview:/全体|全景|紹介|雰囲気|overall|introduc|this video|balance/i,
+  detail:/素材|革|質感|縫|コバ|金具|リング|仕立て|stitch|edge|material|leather|texture|grain|hardware|craft/i,
+  side:/角度|形|シルエット|側面|横|angle|shape|silhouette|side|profile/i,
+  usage:/使い|日常|収納|機能|取り出|use|daily|carry|hold|functional|pocket/i,
+  before:/悩|課題|困|before|problem|struggle/i,
+  after:/育|経年|変化|完成|aging|patina|develop|deeper/i,
+  cta:/作品集|プロフィール|詳しく|collection|profile|link|order/i,
+  closing:/ありがとう|ご覧いただき|thank/i
+});
+
+// 役割別の定型セリフ。各役割 = [標準, 短縮版] のペアを複数持ち、
+// 同じ役割が複数コマに出た場合は occurrence でローテーションして重複を防ぐ。
+// 返り値は [標準1, 短縮1, 標準2, 短縮2, ...]（短縮版は表示秒数に収まらない時に使用）
+function roleNarrationCandidates(key, context){
+  const {english, product, material} = context;
+  const occurrence = context.occurrence || 0;
+  let table;
+  if(english){
+    table = {
+      hook:[[`Have you ever looked closely at ${product}?`, `Take a look at ${product}.`],
+            [`From the very first shot, you can feel the character of ${product}.`, `Here begins ${product}.`]],
+      overview:[[`This is ${product}. Please enjoy the overall balance and presence.`, `Here is the full view of ${product}.`],
+                [`Seen from a distance, the clean shape stands out.`, `The overall view.`]],
+      detail:[[`The material is ${material}. Notice the color, grain, and texture of the leather.`, `A closer look at the leather texture.`],
+              [`Every stitch and edge is finished by hand, one step at a time.`, `Handmade details, up close.`],
+              [`Even the hardware and small parts are placed for easy use.`, `A close look at the small parts.`]],
+      side:[[`From this angle, the shape and balance are easier to see.`, `A view from the side.`],
+            [`Seen from the front, the impression changes again.`, `A view from the front.`]],
+      usage:[[`It is designed for daily use, keeping the essentials easy to reach.`, `Made for everyday use.`],
+             [`Imagine the moments when you reach for it in daily life.`, `Ready for daily moments.`]],
+      before:[[`Have you ever struggled in moments like this?`, `It started from a common problem.`],
+              [`Everyday frustrations shaped this design.`, `Born from a daily problem.`]],
+      after:[[`As you use it, the leather develops a deeper, more personal look.`, `The leather grows with you.`],
+             [`Aging is part of the charm of this piece.`, `It ages beautifully.`]],
+      cta:[[`See more pieces in the collection on our profile.`, `Visit our profile for more.`],
+           [`If this caught your eye, please reach out from our profile.`, `Reach out from our profile.`]],
+      closing:[[`Thank you for viewing this piece from N's factory.`, `Thank you for watching.`],
+               [`Thank you for watching to the end.`, `Thank you.`]]
+    };
+  }else{
+    table = {
+      hook:[[`${product}、細部までじっくり見たことはありますか？`, `まずは${product}にご注目ください。`],
+            [`最初の1枚から、${product}の空気感が伝わります。`, `${product}のはじまりです。`]],
+      overview:[[`こちらは${product}です。全体のバランスと佇まいをご覧ください。`, `${product}の全体像をご覧ください。`],
+                [`少し引いて見ると、形の美しさが際立ちます。`, `全体の佇まいです。`]],
+      detail:[[`素材は${material}です。革の色と質感に注目してください。`, `革の表情をお楽しみください。`],
+              [`縫い目やコバの処理まで、ひとつずつ手作業で仕上げています。`, `手仕事の細部をご覧ください。`],
+              [`金具や細部の収まりにも、使いやすさへの工夫があります。`, `細部の収まりにご注目ください。`]],
+      side:[[`角度を変えると、形とバランスがよく分かります。`, `横からの表情もご覧ください。`],
+            [`正面から見ると、佇まいの印象がまた変わります。`, `正面からの一枚です。`]],
+      usage:[[`日常で使いやすい仕立てで、必要なものにすぐ手が届きます。`, `毎日の使いやすさを考えた形です。`],
+             [`手に取る場面を思い浮かべながらご覧ください。`, `使う場面が浮かぶ仕立てです。`]],
+      before:[[`こんな場面で困ったことはありませんか。`, `よくあるお悩みから生まれた作品です。`],
+              [`これまでの使いにくさを、仕立てで解決しました。`, `お悩みの解決から生まれました。`]],
+      after:[[`使い込むほど革が育ち、自分だけの表情に変わっていきます。`, `使うほどに育っていく革です。`],
+             [`経年変化も、この作品の楽しみのひとつです。`, `育てる楽しみがあります。`]],
+      cta:[[`詳しくはプロフィールの作品集からご覧ください。`, `作品集はプロフィールからどうぞ。`],
+           [`気になった方は、プロフィールからお声がけください。`, `ご相談はプロフィールから。`]],
+      closing:[[`N's factoryの作品をご覧いただき、ありがとうございます。`, `ご覧いただき、ありがとうございました。`],
+               [`最後までご覧いただき、ありがとうございます。`, `ありがとうございました。`]]
+    };
+  }
+  const variants = table[key] || table.overview;
+  const rot = occurrence % variants.length;
+  return variants.slice(rot).concat(variants.slice(0, rot)).flat();
+}
+
+// 台本の素材にするのは見どころメモのみ。除外中写真に残る古いセリフは使わない（仕様）。
+function roleFeaturePool(english){
+  return splitFeatureNotes(els.featureNote.value)
+    .map(line => english ? englishReadyFeatureText(line) : cleanFeatureLine(line))
+    .filter(Boolean)
+    .filter(line => english ? !hasJapaneseText(line) : true);
+}
+
+function buildRoleNarration(context){
+  const {key, english, featurePool, usedTexts, isLast} = context;
+  const candidates = [];
+  const pattern = ROLE_FEATURE_PATTERNS[key];
+  if(pattern){
+    featurePool.forEach(line => {
+      if(pattern.test(line)) candidates.push(english ? ensureEnglishSentence(line) : ensureJapaneseSentence(line));
+    });
+  }
+  candidates.push(...roleNarrationCandidates(key, context));
+  let text = candidates.find(candidate => !usedTexts.has(normalizedDistributionLine(candidate))) || candidates[candidates.length - 1];
+  if(isLast && key !== 'closing' && !/thank|ありがとう/i.test(text)){
+    text = `${text}${english ? ' Thank you for watching.' : ' ご覧いただき、ありがとうございます。'}`;
+  }
+  return text;
+}
+
+// 表示秒数に収まる長さへ調整。文を削る → 短縮版 → それでも無理なら最小限だけ秒数を延長。
+function fitNarrationToDuration(text, slide, english, key, context){
+  let candidate = String(text || '').trim();
+  if(estimateNarrationDuration(candidate) <= slide.duration) return candidate;
+  const sentences = english ? splitEnglishSentences(candidate) : splitJapaneseSentences(candidate);
+  while(sentences.length > 1){
+    sentences.pop();
+    const shorter = sentences.join(english ? ' ' : '');
+    if(estimateNarrationDuration(shorter) <= slide.duration) return shorter;
+    candidate = shorter;
+  }
+  const shortLine = roleNarrationCandidates(key, context)[1];
+  if(shortLine && estimateNarrationDuration(shortLine) <= slide.duration) return shortLine;
+  const finalText = shortLine && estimateNarrationDuration(shortLine) < estimateNarrationDuration(candidate) ? shortLine : candidate;
+  slide.duration = clamp(roundDuration(estimateNarrationDuration(finalText)), 1.8, MAX_SLIDE_DURATION);
+  return finalText;
+}
+
+function narrationContextBase(){
+  const english = els.narrationLang.value === 'en-US';
+  return {
+    english,
+    product: english ? englishProductName(els.productName.value.trim()) : (els.productName.value.trim() || 'このレザー作品'),
+    material: english ? englishMaterialNote(els.materialNote.value.trim()) : (els.materialNote.value.trim() || '選んだ革'),
+    featurePool: roleFeaturePool(english)
+  };
+}
+
+// 最後の使用写真には締め文を必ず入れる（長さ調整で落ちた場合も復元し、必要最小限だけ秒数延長）
+function ensureClosingTail(text, slide, english){
+  const current = String(text || '').trim();
+  if(/thank|ありがとう/i.test(current)) return current;
+  const result = `${current}${english ? ' Thank you for watching.' : ' ご覧いただき、ありがとうございます。'}`.trim();
+  const needed = estimateNarrationDuration(result);
+  if(slide.duration < needed) slide.duration = clamp(roundDuration(needed), 1.8, MAX_SLIDE_DURATION);
+  return result;
+}
+
+// 候補生成→秒数フィット→重複チェックまで行い、他コマと重複しないセリフを返す
+function generateFittedNarration(slide, context){
+  const {usedTexts, english, key} = context;
+  let fitted = '';
+  for(let attempt = 0; attempt < 4; attempt++){
+    const text = buildRoleNarration(context);
+    const rawKey = normalizedDistributionLine(text);
+    fitted = fitNarrationToDuration(text, slide, english, key, context);
+    const duplicate = usedTexts.has(normalizedDistributionLine(fitted));
+    usedTexts.add(rawKey);
+    if(!duplicate) break;
+    context = {...context, occurrence: (context.occurrence || 0) + 1};
+  }
+  if(context.isLast) fitted = ensureClosingTail(fitted, slide, english);
+  return fitted;
+}
+
+function generateRoleNarrations(targets, keys, mode){
+  const base = narrationContextBase();
+  const usedTexts = new Set();
+  const occurrenceByKey = {};
+  let generated = 0;
+  let keptManual = 0;
+  targets.forEach((slide, i) => {
+    const isLast = i === targets.length - 1;
+    const key = keys[i];
+    const occurrence = occurrenceByKey[key] || 0;
+    occurrenceByKey[key] = occurrence + 1;
+    if(mode !== 'all' && slide.narrationSource === 'manual' && String(slide.narration || '').trim()){
+      keptManual += 1;
+      usedTexts.add(normalizedDistributionLine(slide.narration));
+      return;
+    }
+    const context = {...base, key, occurrence, usedTexts, isLast};
+    const fitted = generateFittedNarration(slide, context);
+    slide.narration = fitted;
+    slide.narrationGenerated = fitted;
+    slide.narrationSource = 'generated';
+    usedTexts.add(normalizedDistributionLine(fitted));
+    generated += 1;
+  });
+  return {generated, keptManual};
+}
+
+/* ── 役割の手動選択UI ── */
+function roleSelectOptionsHtml(current){
+  const template = selectedStoryTemplate();
+  const narrative = template.roles.filter((value, index, list) => list.indexOf(value) === index);
+  const value = String(current || '');
+  const known = narrative.includes(value) || ROLE_CLASSIFICATION_CANDIDATES.includes(value);
+  const option = (label) => `<option value="${escapeHtml(label)}" ${label === value ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+  return [
+    `<option value="" ${value ? '' : 'selected'}>未設定</option>`,
+    value && !known ? option(value) : '',
+    `<optgroup label="物語の役割">${narrative.map(option).join('')}</optgroup>`,
+    `<optgroup label="写真の内容">${ROLE_CLASSIFICATION_CANDIDATES.map(option).join('')}</optgroup>`
+  ].join('');
+}
+
+function setSlideRoleManually(slide, roleValue){
+  if(!slide) return;
+  if(roleValue){
+    slide.storyRole = roleValue;
+    slide.storyRoleSource = 'manual';
+    slide.storyRoleReason = '手動で設定した役割';
+    slide.storyRoleConfidence = '';
+  }else{
+    slide.storyRole = undefined;
+    slide.storyRoleSource = undefined;
+    slide.storyRoleReason = '';
+    slide.storyRoleConfidence = '';
+  }
+}
+
+function resetSelectedRoleToAuto(){
+  if(selected < 0 || !slides[selected]){ setLog('先に写真を選択してください。'); return; }
+  const slide = slides[selected];
+  if(!slide.storyRoleSuggestion){
+    setLog('自動提案がまだありません。先に「① 写真の役割を提案」を押してください。');
+    return;
+  }
+  slide.storyRole = slide.storyRoleSuggestion.role;
+  slide.storyRoleSource = 'auto';
+  slide.storyRoleConfidence = slide.storyRoleSuggestion.confidence;
+  slide.storyRoleReason = slide.storyRoleSuggestion.reason;
+  loadSelected();
+  renderList();
+  setLog(`この写真の役割を自動提案「${slide.storyRole}」へ戻しました。`);
+}
+
+function regenerateSelectedSlideScript(){
+  if(selected < 0 || !slides[selected]){ setLog('先に写真を選択してください。'); return; }
+  saveSelected();
+  const slide = slides[selected];
+  if(!isSlideEnabled(slide)){ setLog('除外中の写真は台本再生成の対象外です。「動画で使う」に戻してから再生成してください。'); return; }
+  const targets = playableSlides();
+  const position = targets.indexOf(slide);
+  const template = selectedStoryTemplate();
+  const roles = templateRolesForCount(template, targets.length);
+  const roleLabel = slide.storyRole || roles[position];
+  const key = roleProfileKey(roleLabel);
+  const base = narrationContextBase();
+  const usedTexts = new Set(targets.filter(other => other !== slide)
+    .map(other => normalizedDistributionLine(other.narration))
+    .filter(Boolean));
+  const occurrence = targets.slice(0, position).filter(other => roleProfileKey(other.storyRole || '') === key).length;
+  const context = {...base, key, occurrence, usedTexts, isLast: position === targets.length - 1};
+  const fitted = generateFittedNarration(slide, context);
+  slide.narration = fitted;
+  slide.narrationGenerated = fitted;
+  slide.narrationSource = 'generated';
+  loadSelected();
+  renderList();
+  drawSelectedPreviewFrame(.35);
+  setLog(`このコマのセリフを役割「${roleLabel || '未設定'}」に合わせて作り直しました。`);
+}
+
 function setLog(message){
   els.log.textContent = message;
   // スマホのステップ表示中でも状況が分かるよう、トーストへも表示する（PCではCSSで非表示）
@@ -1034,6 +1695,8 @@ function addFiles(files){
         enabled: true,
         caption: defaults.caption,
         narration: defaults.narration,
+        narrationGenerated: defaults.narration,
+        narrationSource: 'generated',
         duration: 3.5,
         transitionDuration: .6,
         motion: ['zoomIn','panLeft','zoomOut','panRight'][index % 4],
@@ -1186,6 +1849,8 @@ function addDataUrlPhotos(photos){
         enabled: true,
         caption: defaults.caption,
         narration: defaults.narration,
+        narrationGenerated: defaults.narration,
+        narrationSource: 'generated',
         duration: 3.5,
         transitionDuration: .7,
         motion: ['zoomIn','panLeft','zoomOut','panRight'][index % 4],
@@ -1465,10 +2130,20 @@ function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
   }
   const english = els.narrationLang.value === 'en-US';
   const assignedFeatures = rebuildNarrationPlan(features, targets.length, english);
+  let keptManual = 0;
   targets.forEach((slide, index) => {
     const generated = textsFromFeatureLine(assignedFeatures[index], index, english);
     if(overwrite || !slide.caption) slide.caption = generated.caption;
-    if(overwrite || !slide.narration) slide.narration = generated.narration;
+    // 手編集済みのセリフは自動で上書きしない（「全コマを作り直す」は③のセリフの扱いで選択）
+    if(slide.narrationSource === 'manual' && String(slide.narration || '').trim()){
+      keptManual += 1;
+      return;
+    }
+    if(overwrite || !slide.narration){
+      slide.narration = generated.narration;
+      slide.narrationGenerated = generated.narration;
+      slide.narrationSource = 'generated';
+    }
   });
   // 除外中の写真が選択されたままだと「動画から除外中」表示になり、再構成結果が見えないため、
   // 締め文が入った最後の使用写真へ選択を移す
@@ -1478,7 +2153,7 @@ function distributeFeatureNoteToSlides({overwrite = true, showLog = true} = {}){
   loadSelected();
   renderList();
   drawSelectedPreviewFrame(.35);
-  if(showLog) setLog(`${targets.length}枚の使用中写真に合わせて、ナレーションを再構成しました（締め文は${targets.length}枚目）。除外中の写真のセリフはそのまま残りますが、動画には入りません。`);
+  if(showLog) setLog(`${targets.length}枚の使用中写真に合わせて、ナレーションを再構成しました（締め文は${targets.length}枚目）。${keptManual ? `手編集済みの${keptManual}コマは保持しました。` : ''}除外中の写真のセリフはそのまま残りますが、動画には入りません。`);
   return targets.length;
 }
 
@@ -1494,9 +2169,7 @@ function distributionSourceLines(){
   };
   const addSourceText = value => splitDistributionText(value).forEach(addLine);
   addSourceText(els.featureNote.value);
-  slides
-    .filter(slide => !isSlideEnabled(slide))
-    .forEach(slide => addSourceText(slide.narration));
+  // 除外中写真に残る古いセリフは再構成の源泉に使わない（2026-07-18仕様）
   return lines;
 }
 
@@ -1628,16 +2301,42 @@ function renderList(){
     item.dataset.index = String(index);
     item.title = 'ドラッグで順番を入れ替え';
     const label = enabled ? `${videoNumber}.` : '除外中';
+    const narrationHead = String(slide.narration || '').replace(/\s+/g, ' ').trim();
+    const headText = narrationHead ? `「${narrationHead.slice(0, 14)}${narrationHead.length > 14 ? '…' : ''}」` : 'セリフ未入力';
     const meta = speaking
       ? `読み上げ中 ${videoNumber} / ${activeTotal}`
-      : (enabled ? `${slide.duration.toFixed(1)}秒 / ${motionLabel(slide.motion)}` : '動画には使わない');
-    const role = enabled && slide.storyRole ? `<span class="story-role">${escapeHtml(slide.storyRole)}</span>` : '';
-    item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${label} ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${role}${meta}</div></div><button class="slide-use-toggle ${enabled ? '' : 'off'}" type="button">${enabled ? '使う' : '戻す'}</button>`;
+      : (enabled ? `${slide.duration.toFixed(1)}秒 · ${motionLabel(slide.motion)} · ${escapeHtml(headText)}` : '動画には使わない');
+    const confClass = {高:'high', 中:'mid', 低:'low'}[slide.storyRoleConfidence] || '';
+    const roleFlags = [
+      slide.storyRoleSource === 'manual' ? '<span class="manual-flag">役割:手動</span>' : '',
+      slide.storyRoleSource === 'auto' && slide.storyRoleConfidence ? `<span class="conf-badge ${confClass}">信頼度:${escapeHtml(slide.storyRoleConfidence)}</span>` : '',
+      slide.narrationSource === 'manual' ? '<span class="manual-flag">セリフ:手編集</span>' : ''
+    ].join('');
+    const roleRow = enabled
+      ? `<div class="slide-role-row"><select class="slide-role-select" data-index="${index}" title="${escapeHtml(slide.storyRoleReason || 'この写真の役割を選べます')}">${roleSelectOptionsHtml(slide.storyRole)}</select>${roleFlags}</div>`
+      : '';
+    item.innerHTML = `<img class="thumb" src="${slide.url}" alt=""><div><div class="slide-title">${label} ${escapeHtml(slide.caption || slide.file.name)}</div><div class="slide-meta">${meta}</div>${roleRow}</div><button class="slide-use-toggle ${enabled ? '' : 'off'}" type="button">${enabled ? '使う' : '戻す'}</button>`;
     const useButton = item.querySelector('.slide-use-toggle');
     useButton.addEventListener('click', event => {
       event.stopPropagation();
       toggleSlideUse(index);
     });
+    const roleSelect = item.querySelector('.slide-role-select');
+    if(roleSelect){
+      roleSelect.draggable = false;
+      ['click','mousedown','pointerdown','touchstart','keydown'].forEach(type => {
+        roleSelect.addEventListener(type, event => event.stopPropagation());
+      });
+      roleSelect.addEventListener('change', event => {
+        event.stopPropagation();
+        setSlideRoleManually(slide, roleSelect.value);
+        renderList();
+        if(index === selected) loadSelected();
+        setLog(roleSelect.value
+          ? `${index + 1}枚目の役割を「${roleSelect.value}」に手動設定しました。自動処理では上書きされません。`
+          : `${index + 1}枚目の役割を未設定に戻しました。`);
+      });
+    }
     item.addEventListener('click', () => { saveSelected(); selected = index; renderList(); loadSelected(); drawSelectedPreviewFrame(.35); });
     item.addEventListener('keydown', event => {
       if(event.key !== 'Enter' && event.key !== ' ') return;
@@ -1684,6 +2383,7 @@ function clearSlideDragState(){
 
 function reorderSlides(fromIndex, targetIndex){
   if(fromIndex < 0 || targetIndex < 0 || fromIndex >= slides.length || targetIndex >= slides.length) return;
+  clearOrderProposal();
   const [moved] = slides.splice(fromIndex, 1);
   slides.splice(targetIndex, 0, moved);
   if(selected === fromIndex){
@@ -1709,6 +2409,21 @@ function loadSelected(){
   els.motion.value = slide.motion;
   els.transition.value = slide.transition;
   els.subtitleMotion.value = slide.subtitleMotion || 'fadeUp';
+  if(els.slideRole){
+    els.slideRole.innerHTML = roleSelectOptionsHtml(slide.storyRole);
+    els.slideRole.value = slide.storyRole || '';
+  }
+  if(els.slideRoleInfo){
+    const parts = [];
+    if(slide.storyRoleSource === 'manual') parts.push('この役割は手動設定です。自動処理では上書きされません。');
+    if(slide.storyRoleSuggestion){
+      parts.push(`自動提案: ${slide.storyRoleSuggestion.role}（信頼度: ${slide.storyRoleSuggestion.confidence}）／理由: ${slide.storyRoleSuggestion.reason}`);
+    }else if(slide.storyRoleSource === 'auto' && slide.storyRoleReason){
+      parts.push(`自動設定の理由: ${slide.storyRoleReason}${slide.storyRoleConfidence ? `（信頼度: ${slide.storyRoleConfidence}）` : ''}`);
+    }
+    if(slide.narrationSource === 'manual') parts.push('セリフは手編集済みです。「全コマを作り直す」を選ばない限り保持されます。');
+    els.slideRoleInfo.textContent = parts.join(' ') || '「① 写真の役割を提案」を押すと、提案の理由と信頼度がここに表示されます。';
+  }
   els.currentScript.textContent = slide.narration || 'この写真のセリフは空です。';
   if(els.toggleSlideUse){
     const enabled = isSlideEnabled(slide);
@@ -1721,11 +2436,25 @@ function saveSelected(){
   if(selected < 0 || !slides[selected]) return;
   const slide = slides[selected];
   slide.caption = els.caption.value.trim();
-  slide.narration = els.narration.value.trim();
+  const nextNarration = els.narration.value.trim();
+  if(nextNarration !== slide.narration){
+    slide.narration = nextNarration;
+  }
+  // 手編集の判定: 自動生成の原文と一致しなければ manual（空欄は再生成対象に戻す）
+  if(!nextNarration){
+    slide.narrationSource = 'generated';
+  }else{
+    slide.narrationSource = nextNarration === (slide.narrationGenerated || '') ? 'generated' : 'manual';
+  }
+  if(els.slideRole && els.slideRole.value !== (slide.storyRole || '')){
+    setSlideRoleManually(slide, els.slideRole.value);
+  }
   slide.duration = clamp(parseFloat(els.duration.value) || 3.5, 1.8, MAX_SLIDE_DURATION);
   slide.transitionDuration = clamp(parseFloat(els.transitionDuration.value) || .6, .1, 2);
   slide.motion = els.motion.value;
+  syncMotionSnapshot(slide);
   slide.transition = els.transition.value;
+  slide.transitionPreset = slide.transitionPreset || slide.transition;
   slide.subtitleMotion = els.subtitleMotion.value;
 }
 
@@ -1878,7 +2607,11 @@ function fillDefaults(){
   slides.forEach((slide, index) => {
     const defaults = defaultTexts(index);
     if(!slide.caption) slide.caption = defaults.caption;
-    if(!slide.narration) slide.narration = defaults.narration;
+    if(!slide.narration){
+      slide.narration = defaults.narration;
+      slide.narrationGenerated = defaults.narration;
+      slide.narrationSource = 'generated';
+    }
   });
   loadSelected();
   renderList();
@@ -1899,6 +2632,7 @@ function moveSelected(delta){
 
 function removeSelected(){
   if(selected < 0) return;
+  clearOrderProposal();
   if(slides[selected].objectUrl) URL.revokeObjectURL(slides[selected].url);
   slides.splice(selected, 1);
   selected = Math.min(selected, slides.length - 1);
@@ -2015,10 +2749,10 @@ function drawSlide(slide, progress, alpha){
   if(solidBgActive()){
     ctx.fillStyle = bgColorValue();
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawPhoto(slide.cutout || slide.img, slide.motion, progress, {cutout: !!slide.cutout});
+    drawPhoto(slide.cutout || slide.img, slide, progress, {cutout: !!slide.cutout});
   }else{
     drawBackground(slide.img);
-    drawPhoto(slide.img, slide.motion, progress);
+    drawPhoto(slide.img, slide, progress);
   }
   drawTexts(slide);
   drawNarrationSubtitle(slide, progress);
@@ -2198,24 +2932,18 @@ const REEL_LAYOUT = Object.freeze({
   info: Object.freeze({x:76, y:1360, w:850, h:150})
 });
 
-function drawPhoto(img, motion, progress, options = {}){
+function drawPhoto(img, slideOrMotion, progress, options = {}){
   const box = REEL_LAYOUT.photo;
   const fit = containRect(img, box);
-  let zoom = 1;
-  let dx = 0, dy = 0;
-  if(motion === 'zoomIn') zoom = 1 + progress * .055;
-  if(motion === 'zoomOut') zoom = 1.055 - progress * .055;
-  if(motion === 'panLeft') { zoom = 1.06; dx = -28 + progress * 56; }
-  if(motion === 'panRight') { zoom = 1.06; dx = 28 - progress * 56; }
-  if(motion === 'panUp') { zoom = 1.06; dy = -34 + progress * 68; }
-  if(motion === 'panDown') { zoom = 1.06; dy = 34 - progress * 68; }
+  // 役割別カメラワーク: 開始状態→終了状態を表示時間全体で連続補間（プレビューとMP4で同一経路）
+  const cam = cameraStateFor(slideOrMotion, progress);
   ctx.save();
   // 切り抜き画像は透過部分に矩形の影が出てしまうため影を省く
   if(!options.cutout) shadow(box.x - 8, box.y - 8, box.w + 16, box.h + 16);
   ctx.beginPath(); roundRect(ctx, box.x, box.y, box.w, box.h, 18); ctx.clip();
-  const cx = fit.x + fit.w/2 + dx;
-  const cy = fit.y + fit.h/2 + dy;
-  ctx.drawImage(img, cx - fit.w*zoom/2, cy - fit.h*zoom/2, fit.w*zoom, fit.h*zoom);
+  const cx = fit.x + fit.w/2 + cam.dx;
+  const cy = fit.y + fit.h/2 + cam.dy;
+  ctx.drawImage(img, cx - fit.w*cam.zoom/2, cy - fit.h*cam.zoom/2, fit.w*cam.zoom, fit.h*cam.zoom);
   ctx.restore();
 }
 
@@ -2425,6 +3153,7 @@ function playTimeline(recordStream){
 function toggleSlideUse(index = selected){
   if(index < 0 || !slides[index]) return;
   saveSelected();
+  clearOrderProposal();
   slides[index].enabled = !isSlideEnabled(slides[index]);
   selected = index;
   renderList();
@@ -2622,29 +3351,71 @@ function updateStorySummary(){
 
 function applyStoryStructure(){
   saveSelected();
+  clearOrderProposal();
   const targets = playableSlides();
   if(!targets.length){ setLog('動画で使う写真を1枚以上選んでください。'); return; }
   const template = selectedStoryTemplate();
   const targetSeconds = parseInt(els.targetDuration.value, 10) || 30;
-  const baseDuration = clamp(roundDuration(targetSeconds / targets.length), 1.8, MAX_SLIDE_DURATION);
-  const motions = ['zoomIn','panLeft','zoomOut','panRight'];
-  targets.forEach((slide,index) => {
-    const roleIndex = targets.length === 1
-      ? template.roles.length - 1
-      : Math.round(index * (template.roles.length - 1) / (targets.length - 1));
-    slide.storyRole = template.roles[roleIndex];
-    const narrationSeconds = els.syncNarrationDuration.checked ? estimateNarrationDuration(slide.narration) + .5 : 0;
-    slide.duration = clamp(roundDuration(Math.max(baseDuration, narrationSeconds)), 1.8, MAX_SLIDE_DURATION);
-    slide.transition = 'fade';
-    slide.transitionDuration = .5;
-    slide.motion = motions[index % motions.length];
+  const mode = els.scriptApplyMode ? els.scriptApplyMode.value : 'keep';
+  if(mode === 'all'){
+    const manualCount = targets.filter(slide => slide.narrationSource === 'manual' && String(slide.narration || '').trim()).length;
+    const confirmed = window.confirm(`全${targets.length}コマのセリフを作り直します。${manualCount ? `手で直した${manualCount}コマも上書きされます。` : ''}よろしいですか？`);
+    if(!confirmed){ setLog('全コマ再生成を中止しました。セリフは変更していません。'); return; }
+  }
+
+  // 1) 役割の割り当て（手動設定は上書きしない）
+  const positionalRoles = templateRolesForCount(template, targets.length);
+  targets.forEach((slide, index) => {
+    if(slide.storyRoleSource === 'manual' && slide.storyRole) return;
+    slide.storyRole = positionalRoles[index];
+    slide.storyRoleSource = 'auto';
+    slide.storyRoleReason = `構成「${template.label}」の${index + 1}番目のコマのため`;
+    if(!slide.storyRoleConfidence) slide.storyRoleConfidence = '中';
+  });
+
+  // 2) 役割別の秒数配分（Hookは短く、Afterはやや長く）とカメラワーク・切替
+  const keys = targets.map(slide => roleProfileKey(slide.storyRole));
+  const weights = keys.map(key => ROLE_TIME_WEIGHTS[key] || 1);
+  const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+  targets.forEach((slide, index) => {
+    const key = keys[index];
+    applyRoleCamera(slide, key, index, targets, keys);
+    slide.duration = clamp(roundDuration(targetSeconds * weights[index] / weightSum), 1.8, MAX_SLIDE_DURATION);
+    const tr = ROLE_TRANSITIONS[key] || {transition:'fade', duration:.5};
+    slide.transition = tr.transition;
+    slide.transitionDuration = tr.duration;
+    slide.transitionPreset = `role:${key}`;
     if(!slide.caption) slide.caption = slide.storyRole;
   });
+
+  // 3) 役割に沿った台本（締め文は最後の使用写真へ。表示秒数に収まる長さへ調整）
+  let generated = 0;
+  let keptManual = 0;
+  if(mode !== 'none'){
+    const result = generateRoleNarrations(targets, keys, mode);
+    generated = result.generated;
+    keptManual = result.keptManual;
+  }
+
+  // 4) 手編集セリフが長い場合は最小限だけ秒数を延長（読み上げが切れないように）
+  if(els.syncNarrationDuration.checked){
+    targets.forEach(slide => {
+      const needed = estimateNarrationDuration(slide.narration);
+      if(needed && slide.duration < needed) slide.duration = needed;
+    });
+  }
+
   renderList();
   loadSelected();
   drawSelectedOrFirstFrame();
   updateStorySummary();
-  setLog(`「${template.label}」を${targets.length}枚へ適用しました。各コマを1役割に絞り、目標${targetSeconds}秒を基準に動きと切替を統一しました。`);
+  const scriptNote = mode === 'none'
+    ? 'セリフは変更していません。'
+    : `セリフを${generated}コマ生成しました${keptManual ? `（手編集${keptManual}コマは保持）` : ''}。`;
+  const manualNote = mode !== 'all' && keptManual && targets[targets.length - 1] && targets[targets.length - 1].narrationSource === 'manual'
+    ? ' 最後のコマは手編集のため、締め文が必要なら「全コマを作り直す」を選ぶか手動で調整してください。'
+    : '';
+  setLog(`「${template.label}」を${targets.length}枚へ適用しました。役割ごとにカメラワーク・切替・秒数配分を変え、${scriptNote}${manualNote}`);
 }
 
 function initStoryPlanner(){
@@ -4246,7 +5017,15 @@ function refreshCapabilities(){
 }
 
 function motionLabel(value){
-  return {zoomIn:'ズームイン',zoomOut:'ズームアウト',panLeft:'左へパン',panRight:'右へパン',panUp:'上へパン',panDown:'下へパン',still:'静止'}[value] || value;
+  return {
+    zoomIn:'ズームイン', zoomOut:'ズームアウト', panLeft:'左へパン', panRight:'右へパン',
+    panUp:'上へパン', panDown:'下へパン', still:'静止',
+    hookPush:'すっと近づく', overviewIn:'ゆっくり近づく', detailPushIn:'質感へ寄る',
+    detailPanLeft:'右から左へ見せる', detailPanRight:'左から右へ見せる',
+    sidePanLeft:'右から左へ流す', sidePanRight:'左から右へ流す',
+    pullBack:'少し引いて見せる', beforeCalm:'控えめに引く', afterPush:'仕上がりへ寄る',
+    ctaCalm:'ほぼ静止（字幕重視）', closingOut:'引いて余韻を残す'
+  }[value] || value;
 }
 function compact(values){ return values.map(value => String(value || '').trim()).filter(Boolean).join(' / '); }
 function clamp(value,min,max){ return Math.min(max, Math.max(min, value)); }
@@ -4278,7 +5057,26 @@ els.loadDrivePhotos.addEventListener('click', addDrivePhotos);
 els.translateFeatureNote.addEventListener('click', translateLongDescToFeatureNote);
 els.distributeFeatureNote.addEventListener('click', () => distributeFeatureNoteToSlides());
 els.applyStoryStructure.addEventListener('click', applyStoryStructure);
-els.storyTemplate.addEventListener('change', updateStorySummary);
+els.suggestRoles.addEventListener('click', suggestPhotoRoles);
+els.reviewStructure.addEventListener('click', reviewStructure);
+els.reorderProposal.addEventListener('click', event => {
+  const action = event.target && event.target.dataset ? event.target.dataset.action : '';
+  if(action === 'adopt') adoptProposal(true);
+  else if(action === 'keep') adoptProposal(false);
+});
+els.slideRole.addEventListener('change', () => {
+  saveSelected();
+  renderList();
+  loadSelected();
+});
+els.resetRoleAuto.addEventListener('click', resetSelectedRoleToAuto);
+els.regenSlideScript.addEventListener('click', regenerateSelectedSlideScript);
+els.storyTemplate.addEventListener('change', () => {
+  updateStorySummary();
+  clearOrderProposal();
+  renderList();
+  if(selected >= 0) loadSelected();
+});
 els.targetDuration.addEventListener('change', updateStorySummary);
 els.exportGateBack.addEventListener('click', () => closeExportGate(false));
 els.exportGateConfirm.addEventListener('click', () => closeExportGate(true));
