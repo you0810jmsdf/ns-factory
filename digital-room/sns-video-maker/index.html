@@ -848,25 +848,24 @@ canvas{
               <option value="english">English clean</option>
             </select>
           </div>
-          <div class="row">
-            <div class="field">
-              <label for="narrationLang">読み上げ言語</label>
-              <select id="narrationLang">
-                <option value="ja-JP">日本語</option>
-                <option value="en-US">English</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="voiceSelect">読み上げ音声</label>
-              <select id="voiceSelect">
-                <option value="">ブラウザ標準</option>
-              </select>
-            </div>
+          <div class="field">
+            <label for="narrationLang">台本・読み上げの言語</label>
+            <select id="narrationLang">
+              <option value="ja-JP">日本語</option>
+              <option value="en-US">English</option>
+            </select>
           </div>
           <div class="field">
-            <label for="aiVoiceSelect">MP4保存用AI音声</label>
+            <label for="aiVoiceSelect">完成動画に入るAI音声（英語のみ）</label>
             <select id="aiVoiceSelect"></select>
-            <p class="field-help">英語台本の自動ナレーション付きMP4に、ここで選んだ音声を直接入れます。日本語台本は「自分の声で録音」をご利用ください。</p>
+            <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語台本の動画は「自分の声で録音」で音声を入れてください。</p>
+          </div>
+          <div class="field">
+            <label for="voiceSelect">確認用の読み上げ声（完成動画には入りません）</label>
+            <select id="voiceSelect">
+              <option value="">ブラウザ標準</option>
+            </select>
+            <p class="help">「音声つきプレビュー」「音声だけ確認」で聞こえる声です。セリフの長さや言い回しを耳で確認するためのもので、保存されるMP4には入りません。</p>
           </div>
           <label class="check-row" for="syncNarrationDuration">
             <input id="syncNarrationDuration" type="checkbox" checked>
