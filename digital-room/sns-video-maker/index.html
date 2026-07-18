@@ -2711,44 +2711,74 @@ async function generateNarrationTimeline(){
   return {sampleRate:outputRate, numberOfChannels:1, data:timeline, voice};
 }
 
-async function encodeGeneratedAudio(track, muxer){
+async function waitForEncoderQueue(encoder, maxQueue, errors, label){
+  const startedAt = performance.now();
+  while(encoder.state === 'configured' && encoder.encodeQueueSize > maxQueue){
+    await new Promise(resolve => setTimeout(resolve, 4));
+    if(performance.now() - startedAt > 15000) throw new Error(`${label}: 処理待ちが長すぎるため方式を切り替えます`);
+  }
+  if(errors.length) throw new Error(`${label}: ${errors[0]}`);
+}
+
+async function flushEncoder(encoder, errors, label){
+  if(errors.length) throw new Error(`${label}: ${errors[0]}`);
+  try{
+    await encoder.flush();
+  }catch(err){
+    throw new Error(`${label}: ${errors[0] || err.message || String(err)}`);
+  }
+  if(errors.length) throw new Error(`${label}: ${errors[0]}`);
+}
+
+function closeEncoder(encoder){
+  try{ if(encoder.state !== 'closed') encoder.close(); }catch(_){}
+}
+
+async function encodeGeneratedAudio(track){
   const config = {codec:'mp4a.40.2', sampleRate:track.sampleRate, numberOfChannels:1, bitrate:128000};
   const support = await AudioEncoder.isConfigSupported(config);
   if(!support.supported) throw new Error('このブラウザではAI音声をAACへ変換できません。');
   const errors = [];
+  const chunks = [];
   const encoder = new AudioEncoder({
-    output:(chunk, meta) => muxer.addAudioChunk(chunk, meta),
+    output:(chunk, meta) => chunks.push({chunk, meta}),
     error:error => errors.push(error.message || String(error))
   });
   encoder.configure(support.config);
-  const frameSize = 2048;
-  for(let offset = 0; offset < track.data.length; offset += frameSize){
-    const frames = Math.min(frameSize, track.data.length - offset);
-    const samples = track.data.slice(offset, offset + frames);
-    const audioData = new AudioData({
-      format:'f32-planar',
-      sampleRate:track.sampleRate,
-      numberOfFrames:frames,
-      numberOfChannels:1,
-      timestamp:Math.round(offset / track.sampleRate * 1000000),
-      data:samples
-    });
-    encoder.encode(audioData);
-    audioData.close();
-    if(encoder.encodeQueueSize > 24) await encoder.flush();
+  const frameSize = 1024;
+  try{
+    for(let offset = 0; offset < track.data.length; offset += frameSize){
+      const frames = Math.min(frameSize, track.data.length - offset);
+      const samples = track.data.slice(offset, offset + frames);
+      for(let index = 0; index < samples.length; index += 1){
+        samples[index] = Number.isFinite(samples[index]) ? clamp(samples[index], -1, 1) : 0;
+      }
+      const audioData = new AudioData({
+        format:'f32-planar',
+        sampleRate:track.sampleRate,
+        numberOfFrames:frames,
+        numberOfChannels:1,
+        timestamp:Math.round(offset / track.sampleRate * 1000000),
+        data:samples
+      });
+      encoder.encode(audioData);
+      audioData.close();
+      await waitForEncoderQueue(encoder, 24, errors, 'AI音声の変換に失敗しました');
+    }
+    await flushEncoder(encoder, errors, 'AI音声の最終処理に失敗しました');
+  }finally{
+    closeEncoder(encoder);
   }
-  await encoder.flush();
-  encoder.close();
-  if(errors.length) throw new Error(errors[0]);
+  return chunks;
 }
 
-async function selectMp4VideoConfig(frameRate){
+async function selectMp4VideoConfig(frameRate, hardwareAcceleration = 'prefer-hardware'){
   const base = {
     width: canvas.width,
     height: canvas.height,
     bitrate: 3200000,
     framerate: frameRate,
-    hardwareAcceleration: 'prefer-hardware',
+    hardwareAcceleration,
     avc: {format:'avc'}
   };
   const codecs = ['avc1.42002A', 'avc1.42E02A', 'avc1.4D402A', 'avc1.64002A'];
@@ -2884,17 +2914,10 @@ function startVideoStreamEncoding(track, encoder, errors){
   };
 }
 
-async function recordNarratedMp4(){
-  if(!canEncodeMp4Video() || typeof AudioEncoder === 'undefined' || typeof AudioData === 'undefined'){
-    throw new Error('自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます。');
-  }
-  const frameRate = 30;
+async function encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, frameRate, hardwareAcceleration){
   const frameDurationUs = Math.round(1000000 / frameRate);
-  const narrationTrack = await generateNarrationTimeline();
-  const total = totalDuration();
   const frameCount = Math.max(1, Math.ceil(total * frameRate));
-  const videoConfig = await selectMp4VideoConfig(frameRate);
-
+  const videoConfig = await selectMp4VideoConfig(frameRate, hardwareAcceleration);
   const target = new Mp4Muxer.ArrayBufferTarget();
   const muxer = new Mp4Muxer.Muxer({
     target,
@@ -2913,8 +2936,6 @@ async function recordNarratedMp4(){
     error:error => videoErrors.push(error.message || String(error))
   });
   videoEncoder.configure(videoConfig);
-
-  setLog('AIナレーションをMP4へ合成中です。');
   playing = true;
   try{
     for(let frameIndex = 0; frameIndex < frameCount; frameIndex++){
@@ -2927,18 +2948,44 @@ async function recordNarratedMp4(){
       });
       videoEncoder.encode(frame, {keyFrame:frameIndex % (frameRate * 2) === 0});
       frame.close();
-      if(videoEncoder.encodeQueueSize > 90) await videoEncoder.flush();
+      await waitForEncoderQueue(videoEncoder, 24, videoErrors, '映像の変換に失敗しました');
     }
-    await videoEncoder.flush();
+    await flushEncoder(videoEncoder, videoErrors, '映像の最終処理に失敗しました');
   }finally{
     playing = false;
-    videoEncoder.close();
+    closeEncoder(videoEncoder);
   }
-  if(videoErrors.length) throw new Error(videoErrors[0]);
-  await encodeGeneratedAudio(narrationTrack, muxer);
+  audioChunks.forEach(({chunk, meta}) => muxer.addAudioChunk(chunk, meta));
   muxer.finalize();
   const blob = new Blob([target.buffer], {type:'video/mp4'});
   if(!blob.size) throw new Error('ナレーション付きMP4の生成に失敗しました。');
+  return blob;
+}
+
+async function recordNarratedMp4(){
+  if(!canEncodeMp4Video() || typeof AudioEncoder === 'undefined' || typeof AudioData === 'undefined'){
+    throw new Error('自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます。');
+  }
+  const frameRate = 30;
+  const narrationTrack = await generateNarrationTimeline();
+  const total = totalDuration();
+  setLog('AI音声をMP4用に変換しています。');
+  const audioChunks = await encodeGeneratedAudio(narrationTrack);
+  let blob = null;
+  let lastError = null;
+  for(const hardwareAcceleration of ['prefer-hardware', 'prefer-software']){
+    try{
+      setLog(hardwareAcceleration === 'prefer-hardware'
+        ? 'AIナレーションをMP4へ合成中です。'
+        : '端末の映像処理を切り替えて自動再試行しています。');
+      blob = await encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, frameRate, hardwareAcceleration);
+      break;
+    }catch(err){
+      lastError = err;
+      if(hardwareAcceleration === 'prefer-hardware') continue;
+    }
+  }
+  if(!blob) throw new Error(`MP4の映像処理に失敗しました: ${lastError ? lastError.message : '不明なエラー'}`);
   finishRecordingBlob(
     blob,
     {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true},
