@@ -113,6 +113,57 @@ a { color: inherit; text-decoration: none; }
 }
 .guide-process-tab.active { background: var(--tan); color: #fff; border-color: var(--tan); }
 .guide-process-summary { color: var(--gray); font-size: 13px; margin-bottom: 16px; }
+
+/* 工程ヒーロー（イラスト＋サマリー） */
+.guide-hero {
+  display: flex; align-items: center; gap: 20px;
+  background: linear-gradient(135deg, #fff 0%, var(--accent-soft) 100%);
+  border-radius: 16px; padding: 18px 22px; margin-bottom: 18px;
+  box-shadow: 0 2px 12px rgba(110,79,58,.10);
+  overflow: hidden;
+}
+.guide-hero-img {
+  width: 150px; height: 150px; flex-shrink: 0;
+  border-radius: 14px; object-fit: cover;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(110,79,58,.18);
+  animation: heroFloat 5s ease-in-out infinite;
+}
+.guide-hero-body { flex: 1; min-width: 200px; }
+.guide-hero-step {
+  color: var(--accent-dark); font-size: 11px; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px;
+}
+.guide-hero-title { font-size: 20px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 6px; }
+.guide-hero-summary { color: var(--gray); font-size: 13px; line-height: 1.7; }
+.guide-hero.no-img .guide-hero-img { display: none; }
+.guide-hero.anim { animation: heroIn .45s ease both; }
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@media (max-width: 560px) {
+  .guide-hero { flex-direction: column; text-align: center; padding: 16px; }
+  .guide-hero-img { width: 180px; height: 180px; }
+}
+
+/* 道具カードの時間差フェードイン＋ホバー演出 */
+.guide-tool-card.anim { opacity: 0; animation: cardIn .5s ease both; }
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.guide-tool-card { transition: transform .25s ease, box-shadow .25s ease; }
+.guide-tool-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(110,79,58,.16); }
+@media (prefers-reduced-motion: reduce) {
+  .guide-hero.anim, .guide-tool-card.anim { animation: none; opacity: 1; }
+  .guide-hero-img { animation: none; }
+  .guide-tool-card:hover { transform: none; }
+}
 .guide-tool-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
 .guide-tool-card { background: var(--white); border-radius: 10px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.08); display: flex; flex-direction: column; gap: 8px; }
 .guide-tool-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
@@ -210,7 +261,14 @@ textarea { resize: vertical; min-height: 72px; }
         工程を選ぶと、必要な道具・使い方・選び方と、楽天市場での商品例（アフィリエイトリンク）が表示されます。
       </p>
       <div class="guide-process-tabs" id="guide-process-tabs"></div>
-      <p class="guide-process-summary" id="guide-process-summary"></p>
+      <div class="guide-hero" id="guide-hero" style="display:none;">
+        <img class="guide-hero-img" id="guide-hero-img" src="" alt="">
+        <div class="guide-hero-body">
+          <div class="guide-hero-step" id="guide-hero-step"></div>
+          <div class="guide-hero-title" id="guide-hero-title"></div>
+          <div class="guide-hero-summary" id="guide-hero-summary"></div>
+        </div>
+      </div>
       <div class="guide-tool-list" id="guide-tool-list">
         <div class="tool-empty">道具ガイドを読み込み中です。</div>
       </div>
@@ -424,8 +482,28 @@ textarea { resize: vertical; min-height: 72px; }
     activeProcessId = id;
     renderProcessTabs();
     const proc = toolGuideData.processes.find(p => p.id === id);
-    document.getElementById('guide-process-summary').textContent = proc ? proc.summary : '';
+    renderProcessHero(proc);
     renderToolList();
+  }
+
+  // 工程イラスト＋サマリーのヒーロー表示。画像が無い工程でも崩れないようフォールバックする。
+  function renderProcessHero(proc) {
+    const hero = document.getElementById('guide-hero');
+    if (!proc) { hero.style.display = 'none'; return; }
+    const img = document.getElementById('guide-hero-img');
+    hero.style.display = '';
+    hero.classList.remove('no-img');
+    img.onerror = () => hero.classList.add('no-img');
+    img.src = `./assets/process/${proc.id}.png`;
+    img.alt = `${proc.name}の作業イラスト`;
+    document.getElementById('guide-hero-step').textContent =
+      `STEP ${proc.order} / ${toolGuideData.processes.length}`;
+    document.getElementById('guide-hero-title').textContent = proc.name;
+    document.getElementById('guide-hero-summary').textContent = proc.summary;
+    // タブ切替のたびにフェードインを再生する（クラス付け直しでアニメーションをリスタート）
+    hero.classList.remove('anim');
+    void hero.offsetWidth;
+    hero.classList.add('anim');
   }
 
   function renderToolList() {
@@ -442,8 +520,8 @@ textarea { resize: vertical; min-height: 72px; }
       listEl.innerHTML = '<div class="tool-empty">この工程の道具データがまだありません。</div>';
       return;
     }
-    listEl.innerHTML = tools.map(t => `
-      <article class="guide-tool-card">
+    listEl.innerHTML = tools.map((t, i) => `
+      <article class="guide-tool-card anim" style="animation-delay:${Math.min(i * 70, 560)}ms;">
         <div class="guide-tool-head">
           <div class="guide-tool-name">${esc(t.name)}</div>
           <div class="guide-badges">
