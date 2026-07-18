@@ -535,7 +535,7 @@ canvas{
           <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveへアップロード</button>
         </div>
         <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
-        <div class="notice">自動ナレーション付き保存は、セリフからAI音声を先に生成してMP4へ直接合成します。画面共有は不要です。初回だけ約100MBの音声モデルを読み込み、2回目以降はブラウザのキャッシュを利用します。</div>
+        <div class="notice">自動ナレーション付き保存は、AI音声をバックグラウンドで生成してMP4へ直接合成します。画面共有は不要です。初回だけ約100MBを読み込みますが、画面操作は続けられます。中止するときは上の「停止」を押してください。</div>
         <div class="log" id="log"></div>
       </section>
     </div>
@@ -879,6 +879,11 @@ let lastRecordingBlob = null;
 let lastRecordingMeta = null;
 let registerKey = '';
 let localTtsPromise = null;
+let localTtsWorker = null;
+let localTtsRequestId = 0;
+let ttsBusy = false;
+let narratedSaveCancelled = false;
+const localTtsPending = new Map();
 
 const AI_VOICES = {
   'en-US': [
@@ -2518,19 +2523,22 @@ function previewCurrentSubtitleMotion(){
 
 function updatePreviewStopButton(){
   if(!els.stopPreview) return;
-  const canStop = playing || !!activeUtterance || !!activeSpeechResolve || (recorder && recorder.state === 'recording');
+  const canStop = ttsBusy || playing || !!activeUtterance || !!activeSpeechResolve || (recorder && recorder.state === 'recording');
   els.stopPreview.disabled = !canStop;
 }
 
 function stopPreviewPlayback(){
+  const stoppingTts = ttsBusy;
   previewStopRequested = true;
+  if(stoppingTts) narratedSaveCancelled = true;
   playing = false;
   cancelSpeechOutput();
+  if(stoppingTts) stopLocalTtsWorker();
   if(recorder && recorder.state === 'recording'){
     try{ recorder.stop(); }catch(_){}
   }
   updatePreviewStopButton();
-  setLog('確認再生を停止しました。');
+  setLog(stoppingTts ? 'AI音声生成を停止しました。' : '確認再生を停止しました。');
 }
 
 function applySubtitleMotionToAll(){
@@ -2597,17 +2605,71 @@ function ttsProgressLabel(progress){
   return 'AI音声モデルを準備中です。初回は約100MBを読み込みます。';
 }
 
+function rejectLocalTtsRequests(error){
+  localTtsPending.forEach(({reject}) => reject(error));
+  localTtsPending.clear();
+}
+
+function stopLocalTtsWorker(message = 'AI音声生成を停止しました。'){
+  if(localTtsWorker){
+    localTtsWorker.terminate();
+    localTtsWorker = null;
+  }
+  localTtsPromise = null;
+  rejectLocalTtsRequests(new Error(message));
+}
+
+function ensureLocalTtsWorker(){
+  if(localTtsWorker) return localTtsWorker;
+  if(typeof Worker === 'undefined') throw new Error('このブラウザではバックグラウンドAI音声生成を利用できません。');
+  const workerUrl = new URL('./tts-worker.js', document.baseURI);
+  const worker = new Worker(workerUrl, {type:'module', name:'nsfactory-ai-voice'});
+  worker.addEventListener('message', event => {
+    const data = event.data || {};
+    if(data.type === 'progress'){
+      setLog(ttsProgressLabel(data));
+      return;
+    }
+    const pending = localTtsPending.get(data.id);
+    if(!pending) return;
+    localTtsPending.delete(data.id);
+    if(data.type === 'error'){
+      pending.reject(new Error(data.message || 'AI音声生成に失敗しました。'));
+      return;
+    }
+    pending.resolve(data);
+  });
+  worker.addEventListener('error', event => {
+    const error = new Error(event.message || 'AI音声のバックグラウンド処理が停止しました。');
+    rejectLocalTtsRequests(error);
+    localTtsPromise = null;
+    if(localTtsWorker){
+      localTtsWorker.terminate();
+      localTtsWorker = null;
+    }
+  });
+  localTtsWorker = worker;
+  return worker;
+}
+
+function requestLocalTts(type, payload = {}){
+  const worker = ensureLocalTtsWorker();
+  const id = ++localTtsRequestId;
+  return new Promise((resolve, reject) => {
+    localTtsPending.set(id, {resolve, reject});
+    worker.postMessage({id, type, ...payload});
+  });
+}
+
 async function loadLocalTts(){
   if(!localTtsPromise){
-    localTtsPromise = (async () => {
-      const module = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.js');
-      return module.KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
-        dtype:'q8',
-        device:'wasm',
-        progress_callback: progress => setLog(ttsProgressLabel(progress))
-      });
-    })().catch(error => {
-      localTtsPromise = null;
+    localTtsPromise = requestLocalTts('load').then(() => ({
+      generate: async (text, options) => {
+        const result = await requestLocalTts('generate', {text, options});
+        return {audio:new Float32Array(result.audio), sampling_rate:result.sampleRate || 24000};
+      }
+    })).catch(error => {
+      stopLocalTtsWorker(error.message || 'AI音声モデルの準備に失敗しました。');
       throw error;
     });
   }
@@ -2714,6 +2776,7 @@ async function generateNarrationTimeline(){
 async function waitForEncoderQueue(encoder, maxQueue, errors, label){
   const startedAt = performance.now();
   while(encoder.state === 'configured' && encoder.encodeQueueSize > maxQueue){
+    if(narratedSaveCancelled) throw new Error('AI音声生成を停止しました。');
     await new Promise(resolve => setTimeout(resolve, 4));
     if(performance.now() - startedAt > 15000) throw new Error(`${label}: 処理待ちが長すぎるため方式を切り替えます`);
   }
@@ -2748,6 +2811,7 @@ async function encodeGeneratedAudio(track){
   const frameSize = 1024;
   try{
     for(let offset = 0; offset < track.data.length; offset += frameSize){
+      if(narratedSaveCancelled) throw new Error('AI音声生成を停止しました。');
       const frames = Math.min(frameSize, track.data.length - offset);
       const samples = track.data.slice(offset, offset + frames);
       for(let index = 0; index < samples.length; index += 1){
@@ -2939,6 +3003,7 @@ async function encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, fram
   playing = true;
   try{
     for(let frameIndex = 0; frameIndex < frameCount; frameIndex++){
+      if(narratedSaveCancelled) throw new Error('AI音声生成を停止しました。');
       const time = Math.min(frameIndex / frameRate, total);
       drawFrame(time);
       els.progressBar.style.width = `${Math.min(100, (frameIndex + 1) / frameCount * 100)}%`;
@@ -3165,9 +3230,11 @@ async function recordVideo(mode = 'silent'){
     if(adjusted) setLog('セリフが途中で切れないように表示秒数を延長してから保存します。');
   }catch(err){
     console.warn(err);
-    setLog(narrationMode
-      ? `AIナレーション付き保存を開始できませんでした: ${err.message}`
-      : `動画保存の準備に失敗しました: ${err.message}`);
+    setLog(narrationMode && narratedSaveCancelled
+      ? 'AI音声生成を停止しました。'
+      : (narrationMode
+        ? `AIナレーション付き保存を開始できませんでした: ${err.message}`
+        : `動画保存の準備に失敗しました: ${err.message}`));
     return;
   }
   if(canEncodeMp4Video()){
@@ -4062,11 +4129,16 @@ els.recordNarration.addEventListener('click', async () => {
   els.recordNarration.dataset.busy = 'true';
   els.recordNarration.disabled = true;
   els.recordNarration.textContent = 'AI音声を生成中…';
+  ttsBusy = true;
+  updatePreviewStopButton();
   try{
+    narratedSaveCancelled = false;
     await recordVideo('narration');
   }finally{
+    ttsBusy = false;
     delete els.recordNarration.dataset.busy;
     els.recordNarration.textContent = originalLabel;
+    updatePreviewStopButton();
     refreshCapabilities();
   }
 });
