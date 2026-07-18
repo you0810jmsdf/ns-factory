@@ -146,8 +146,9 @@ a { color: inherit; text-decoration: none; }
   -webkit-text-stroke: 2px rgba(160,120,90,.5);
   user-select: none; pointer-events: none;
 }
-.step:nth-child(odd) .step-bignum { left: -12px; }
-.step:nth-child(even) .step-bignum { right: -12px; }
+/* 数字はイラストの反対側（テキスト側）の背景に置き、キャラと重ならないようにする */
+.step:nth-child(odd) .step-bignum { right: 0; }
+.step:nth-child(even) .step-bignum { left: 0; }
 .step-main {
   position: relative; z-index: 1;
   display: flex; gap: 40px; align-items: center;
