@@ -2120,9 +2120,9 @@ function ensureCutoutsForSolidBg(){
 
 // Instagramリールのヘッダー、右側操作列、下部投稿情報を避ける配置。
 const REEL_LAYOUT = Object.freeze({
-  photo: Object.freeze({x:60, y:485, w:960, h:850}),
+  photo: Object.freeze({x:60, y:500, w:960, h:835}),
   brand: Object.freeze({x:84, y:280, owlHeight:84, wordmarkWidth:236, gap:16}),
-  title: Object.freeze({x:492, y:398, maxWidth:820}),
+  title: Object.freeze({x:540, y:420, maxWidth:720, maxSize:40, minSize:28}),
   subtitle: Object.freeze({x:82, w:820, bottom:1288, padX:46, padY:26, minH:138, maxH:286}),
   info: Object.freeze({x:76, y:1360, w:850, h:150})
 });
@@ -2183,7 +2183,7 @@ function drawTexts(slide){
     ctx.shadowBlur = 12;
     ctx.shadowOffsetY = 2;
   }
-  drawFittedCenteredText(title, REEL_LAYOUT.title.x, REEL_LAYOUT.title.y, REEL_LAYOUT.title.maxWidth, 2, 46, 30, 700, titleColor);
+  drawBalancedCenteredText(title, REEL_LAYOUT.title.x, REEL_LAYOUT.title.y, REEL_LAYOUT.title.maxWidth, 2, REEL_LAYOUT.title.maxSize, REEL_LAYOUT.title.minSize, 700, titleColor);
   ctx.restore();
 
   const panel = REEL_LAYOUT.info;
@@ -3736,6 +3736,50 @@ function wrapSmartTextLines(text,maxWidth,maxLines){
     }
   }
   return lines;
+}
+
+function wrapBalancedTextLines(text,maxWidth,maxLines){
+  const source = String(text || '').replace(/\s+/g, ' ').trim();
+  if(!source) return [];
+  if(ctx.measureText(source).width <= maxWidth) return [source];
+  if(maxLines !== 2) return wrapSmartTextLines(source, maxWidth, maxLines);
+  const words = source.split(' ');
+  if(words.length < 2) return wrapSmartTextLines(source, maxWidth, maxLines);
+  let best = null;
+  for(let index = 1; index < words.length; index += 1){
+    const first = words.slice(0, index).join(' ');
+    const second = words.slice(index).join(' ');
+    const firstWidth = ctx.measureText(first).width;
+    const secondWidth = ctx.measureText(second).width;
+    if(firstWidth > maxWidth || secondWidth > maxWidth) continue;
+    const orphanPenalty = words.length > 3 && (index === 1 || index === words.length - 1) ? maxWidth * .22 : 0;
+    const score = Math.max(firstWidth, secondWidth) + Math.abs(firstWidth - secondWidth) * .45 + orphanPenalty;
+    if(!best || score < best.score) best = {score, lines:[first, second]};
+  }
+  return best ? best.lines : wrapSmartTextLines(source, maxWidth, maxLines);
+}
+
+function drawBalancedCenteredText(text,x,y,maxWidth,maxLines,maxSize,minSize,weight,color){
+  let size = maxSize;
+  let lines = [];
+  for(; size >= minSize; size -= 2){
+    ctx.font = canvasFont(weight, size);
+    lines = wrapBalancedTextLines(text, maxWidth, maxLines);
+    if(lines.length <= maxLines && lines.every(line => ctx.measureText(line).width <= maxWidth)) break;
+  }
+  if(size < minSize){
+    size = minSize;
+    ctx.font = canvasFont(weight, size);
+    lines = wrapBalancedTextLines(text, maxWidth, maxLines);
+  }
+  const lineHeight = Math.round(size * 1.2);
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = color;
+  ctx.font = canvasFont(weight, size);
+  lines.forEach((line, index) => ctx.fillText(line, x, y + index * lineHeight));
+  ctx.restore();
+  return {height:Math.max(lineHeight, lines.length * lineHeight), lineHeight, lines};
 }
 
 function drawFittedCenteredText(text,x,y,maxWidth,maxLines,maxSize,minSize,weight,color){
