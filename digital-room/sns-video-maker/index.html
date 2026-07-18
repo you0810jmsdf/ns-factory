@@ -811,6 +811,15 @@ canvas{
 
         <div class="tab-panel" id="tab-output">
           <div class="field">
+            <label for="videoFormat">動画サイズ（投稿先に合わせて選択）</label>
+            <select id="videoFormat">
+              <option value="reel" selected>リール・ストーリーズ用 9:16（縦長フル）</option>
+              <option value="feed">フィード投稿用 4:5（上下が切れない）</option>
+              <option value="square">正方形 1:1（グリッド・カルーセル向け）</option>
+            </select>
+            <p class="help">Instagramのフィード（ホーム・プロフィール一覧）は縦長9:16動画の上下をトリミング表示します。フィードへ投稿する動画は「4:5」を選ぶとタイトルや字幕が切れません。</p>
+          </div>
+          <div class="field">
             <label for="bgMode">背景</label>
             <select id="bgMode">
               <option value="photo">元の写真のまま（ぼかし背景）</option>
@@ -959,6 +968,7 @@ const els = {
   applySubtitleMotionAll: document.getElementById('applySubtitleMotionAll'),
   toggleSlideUse: document.getElementById('toggleSlideUse'),
   speakScript: document.getElementById('speakScript'),
+  videoFormat: document.getElementById('videoFormat'),
   bgMode: document.getElementById('bgMode'),
   bgColor: document.getElementById('bgColor'),
   bgColorField: document.getElementById('bgColorField'),
@@ -2923,14 +2933,61 @@ function ensureCutoutsForSolidBg(){
   return cutoutBatchPromise;
 }
 
-// Instagramリールのヘッダー、右側操作列、下部投稿情報を避ける配置。
-const REEL_LAYOUT = Object.freeze({
-  photo: Object.freeze({x:60, y:500, w:960, h:835}),
-  brand: Object.freeze({x:84, y:280, owlHeight:84, wordmarkWidth:236, gap:16}),
-  title: Object.freeze({x:540, y:420, maxWidth:720, maxSize:40, minSize:28}),
-  subtitle: Object.freeze({x:82, w:820, bottom:1288, padX:46, padY:26, minH:138, maxH:286}),
-  info: Object.freeze({x:76, y:1360, w:850, h:150})
+// 投稿先別の動画サイズ。フィード（ホーム・プロフィール一覧）は縦長9:16を上下トリミング表示するため、
+// フィード投稿用に4:5、グリッド・カルーセル用に1:1を用意する。
+// layoutは各サイズ専用に手調整した配置（reelは従来のInstagramリールUI回避配置そのまま）。
+const VIDEO_FORMATS = Object.freeze({
+  reel: {
+    label:'リール・ストーリーズ用 9:16', w:1080, h:1920, suffix:'',
+    layout:{
+      photo:{x:60, y:500, w:960, h:835},
+      brand:{x:84, y:280, owlHeight:84, wordmarkWidth:236, gap:16},
+      title:{x:540, y:420, maxWidth:720, maxSize:40, minSize:28},
+      subtitle:{x:82, w:820, bottom:1288, padX:46, padY:26, minH:138, maxH:286},
+      info:{x:76, y:1360, w:850, h:150}
+    }
+  },
+  feed: {
+    label:'フィード投稿用 4:5', w:1080, h:1350, suffix:'_feed',
+    layout:{
+      photo:{x:60, y:300, w:960, h:740},
+      brand:{x:84, y:90, owlHeight:84, wordmarkWidth:236, gap:16},
+      title:{x:540, y:230, maxWidth:720, maxSize:40, minSize:28},
+      subtitle:{x:82, w:820, bottom:1070, padX:46, padY:24, minH:120, maxH:240},
+      info:{x:76, y:1090, w:850, h:130}
+    }
+  },
+  square: {
+    label:'正方形 1:1', w:1080, h:1080, suffix:'_square',
+    layout:{
+      photo:{x:60, y:265, w:960, h:560},
+      brand:{x:84, y:70, owlHeight:84, wordmarkWidth:236, gap:16},
+      title:{x:540, y:200, maxWidth:720, maxSize:38, minSize:26},
+      subtitle:{x:82, w:820, bottom:855, padX:46, padY:22, minH:110, maxH:200},
+      info:{x:76, y:880, w:850, h:120}
+    }
+  }
 });
+
+function currentVideoFormat(){
+  return VIDEO_FORMATS[(els.videoFormat && els.videoFormat.value) || 'reel'] || VIDEO_FORMATS.reel;
+}
+
+// 描画各所が参照するレイアウト。サイズ変更時にapplyVideoFormatで差し替える（既存参照名を維持）。
+let REEL_LAYOUT = VIDEO_FORMATS.reel.layout;
+
+function applyVideoFormat({showLog = true} = {}){
+  const format = currentVideoFormat();
+  REEL_LAYOUT = format.layout;
+  if(canvas.width !== format.w || canvas.height !== format.h){
+    canvas.width = format.w;
+    canvas.height = format.h;
+  }
+  canvas.style.aspectRatio = `${format.w} / ${format.h}`;
+  resetRecordingOutput();
+  drawSelectedOrFirstFrame();
+  if(showLog) setLog(`動画サイズを「${format.label}（${format.w}×${format.h}）」に変更しました。プレビューと保存MP4の両方に反映されます。`);
+}
 
 function drawPhoto(img, slideOrMotion, progress, options = {}){
   const box = REEL_LAYOUT.photo;
@@ -3463,7 +3520,7 @@ function resetRecordingOutput(){
 function finishRecordingBlob(blob, format, message){
   const url = URL.createObjectURL(blob);
   els.downloadLink.href = url;
-  els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}${solidBgActive() ? '_solid' : ''}.${format.ext}`;
+  els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}${currentVideoFormat().suffix}${solidBgActive() ? '_solid' : ''}.${format.ext}`;
   els.downloadBox.style.display = 'block';
   lastRecordingBlob = blob;
   lastRecordingMeta = format;
@@ -4134,6 +4191,7 @@ function requestExportGate(mode){
     {warn:!list.length, text:`写真: ${list.length}枚を使用`},
     {warn:assignedRoles !== list.length, text:`構成: ${template.label}（役割設定 ${assignedRoles}/${list.length}枚）`},
     {warn:false, text:`予定尺: 約${duration.toFixed(1)}秒`},
+    {warn:false, text:`出力サイズ: ${currentVideoFormat().label}（${currentVideoFormat().w}×${currentVideoFormat().h}）`},
     {warn:emptyNarration > 0, text:`セリフ: ${emptyNarration ? `${emptyNarration}枚が空欄` : '全コマ入力済み'}`},
     {warn:!previewReviewed, text:`プレビュー: ${previewReviewed ? '確認済み' : '未確認（先に確認推奨）'}`},
     {warn:narrationMode && els.narrationLang.value !== 'en-US', text:`出力: ${narrationMode ? '英語AIナレーション付きMP4' : (mode === 'mic' ? '自分の声付きMP4' : '動画のみMP4')}`}
@@ -4965,7 +5023,7 @@ async function uploadVideoToDrive(){
       api: 'uploadVideo',
       key,
       folderId: currentWork.folderId,
-      filename: `${currentWork.id}_video_${dateStamp()}${solidBgActive() ? '_solid' : ''}.${recordingMeta.ext}`,
+      filename: `${currentWork.id}_video_${dateStamp()}${currentVideoFormat().suffix}${solidBgActive() ? '_solid' : ''}.${recordingMeta.ext}`,
       mimeType: recordingMeta.type,
       dataBase64
     };
@@ -5149,6 +5207,7 @@ document.getElementById('removeSlide').addEventListener('click', removeSelected)
   document.getElementById(id).addEventListener('change', () => drawSelectedOrFirstFrame());
 });
 els.videoFont.addEventListener('change', () => drawSelectedOrFirstFrame());
+els.videoFormat.addEventListener('change', () => applyVideoFormat());
 els.bgMode.addEventListener('change', () => { updateBgUi(); ensureCutoutsForSolidBg(); });
 els.bgColor.addEventListener('input', () => drawSelectedOrFirstFrame());
 document.querySelectorAll('.bg-swatch').forEach(btn => {
