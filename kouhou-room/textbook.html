@@ -463,31 +463,29 @@ a { color: inherit; text-decoration: none; }
       </section>`;
     }).join('');
 
-    // スクロール連動スライドイン。IntersectionObserverが使えない・発火しない環境でも
-    // 内容が見えなくならないよう、revealクラス（初期透明）はIO利用可能時のみJS後付けする。
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(en => {
-          if (en.isIntersecting) { en.target.classList.add('shown'); observer.unobserve(en.target); }
-        });
-      }, { threshold: 0.08 });
-      document.querySelectorAll('[data-reveal]').forEach(el => {
-        el.classList.add('reveal', `from-${el.dataset.reveal}`);
-        observer.observe(el);
+    // スクロール連動スライドイン（双方向）。画面外に出たらリセットし、
+    // 上下どちらのスクロールでも再入場のたびにアニメーションする。
+    // revealクラス（初期透明）はJS実行時のみ後付けし、JS無効環境で
+    // 内容が見えなくなる事故を防ぐ。表示は92%ライン・非表示は完全画面外
+    // ＋40pxマージンとずらし（ヒステリシス）、境界でのちらつきを防ぐ。
+    document.querySelectorAll('[data-reveal]').forEach(el => {
+      el.classList.add('reveal', `from-${el.dataset.reveal}`);
+    });
+    const updateReveal = () => {
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      document.querySelectorAll('.reveal').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (r.top < vh * 0.92 && r.bottom > 0) {
+          el.classList.add('shown');
+        } else if (r.bottom < -40 || r.top > vh + 40) {
+          el.classList.remove('shown');
+        }
       });
-      // 保険: Observerが発火しない・取りこぼす環境向けに、要素位置を直接判定する
-      // フォールバックを常設（classList.addは冪等なのでIOと二重でも害なし）
-      const manualReveal = () => {
-        const vh = window.innerHeight || document.documentElement.clientHeight;
-        document.querySelectorAll('.reveal:not(.shown)').forEach(el => {
-          const r = el.getBoundingClientRect();
-          if (r.top < vh * 0.92 && r.bottom > 0) el.classList.add('shown');
-        });
-      };
-      window.addEventListener('scroll', manualReveal, { passive: true });
-      window.addEventListener('resize', manualReveal, { passive: true });
-      setTimeout(manualReveal, 900);
-    }
+    };
+    window.addEventListener('scroll', updateReveal, { passive: true });
+    window.addEventListener('resize', updateReveal, { passive: true });
+    updateReveal();
+    setTimeout(updateReveal, 900);
   }
 
   // 道具パネルの開閉
