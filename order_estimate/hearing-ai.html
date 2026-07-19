@@ -320,6 +320,13 @@ function handleFreeInput(){
   const v=txt.value.trim(); if(!v) return;
   txt.value='';
   if(state.liveMode){ liveTurn(v); return; }
+  // ステッチ（縫い糸）の質問は革より先に判定する（「ステッチの色」は色・在庫の単語だけ見ると
+  // 革の回答に誤ルーティングされるため。2026-07-20: ステッチ質問が革在庫で返った問題の対策）
+  if(detectStitchQuery(v)){
+    addMsg('user', v);
+    showStitchGallery();
+    return;
+  }
   // 革の色・シリーズ・種類の質問は、どのフェーズでも定型誘導より先に即答する
   // （2026-07-17: 「マルゴーフォグの革の色は何がある？」を無視して
   // 「上のボタンから〜」を返していた問題の対策。フローは中断せず後で戻れる）
@@ -448,6 +455,80 @@ function colorFamilies(){
   return fams;
 }
 
+/* ===== ステッチ（縫い糸）色の即答ギャラリー（2026-07-20） =====
+   データ: stitch-colors.json（92色・画像はdata URI埋め込み）＋
+   stitch-thread-stock.csv（thread_id, available=TRUE/FALSE）。 */
+let STITCH_COLORS=null; // [{id,name,image}]
+let STITCH_STOCK=null;  // thread_id -> true/false（未収録は在庫あり扱い＝安全側）
+
+function loadStitchColors(){
+  return fetch('./stitch-colors.json',{cache:'no-cache'})
+    .then(r=>r.ok?r.json():null)
+    .then(j=>(j&&j.stitchColors&&j.stitchColors.length)?j.stitchColors:null)
+    .catch(()=>null);
+}
+function loadStitchStock(){
+  return fetch('./stitch-thread-stock.csv?t='+Date.now(),{cache:'no-store'})
+    .then(r=>r.ok?r.text():null)
+    .then(t=>{
+      if(!t) return null;
+      const lines=t.replace(/\r/g,'').split('\n').filter(l=>l.trim());
+      const head=lines.shift().split(',');
+      const idIdx=head.indexOf('thread_id'), avIdx=head.indexOf('available');
+      if(idIdx<0||avIdx<0) return null;
+      const map={};
+      lines.forEach(line=>{
+        const cols=line.split(',');
+        const id=(cols[idIdx]||'').trim();
+        if(id) map[id]=/^true$/i.test((cols[avIdx]||'').trim());
+      });
+      return map;
+    }).catch(()=>null);
+}
+
+/* ステッチの質問か判定。「ステッチです」のような短い言い直しも拾う */
+function detectStitchQuery(text){
+  if(!STITCH_COLORS || !text) return false;
+  if(!/(ステッチ|縫い糸|糸の色)/.test(text)) return false;
+  if(/(色|カラー|在庫|見せ|みせ|サンプル|何|どんな|一覧|知りたい|教えて|ある|あり|おすすめ|オススメ|種類|選べ|えらべ|確認)/.test(text)) return true;
+  return text.length<=12; // 「ステッチです」「ステッチは？」等
+}
+
+function showStitchGallery(){
+  const backLabel = state._picking ? '◀ アイテム選択に戻る' : '◀ 相談の続きに戻る';
+  const stockKnown=!!STITCH_STOCK;
+  const list=STITCH_COLORS.slice();
+  if(stockKnown){
+    list.sort((a,b)=>{
+      const av=STITCH_STOCK[a.id]!==false, bv=STITCH_STOCK[b.id]!==false;
+      return (av===bv)?0:(av?-1:1);
+    });
+  }
+  let lead;
+  if(stockKnown){
+    const inN=list.filter(c=>STITCH_STOCK[c.id]!==false).length;
+    lead='ステッチ（縫い糸）は全'+list.length+'色、いま在庫があるのは'+inN+'色です🧵（在庫あり→お取り寄せの順に並んでいます）';
+  }else{
+    lead='ステッチ（縫い糸）は'+list.length+'色ございます🧵';
+  }
+  lead += state._awaitKey==='stitch'
+    ? '\n気に入った色をタップすると、そのままステッチ色として選択できます。'
+    : '\n気になる色は、あとでステッチ色を伺う際にお選びいただけます。';
+  addMsg('bot', lead);
+  const swatchChips=list.map(c=>{
+    const sub=stockKnown?(STITCH_STOCK[c.id]!==false?'✅ 在庫あり':'📦 お取り寄せ'):'';
+    return { label:c.name, sub:sub, val:'', image:c.image,
+      onClick:()=>{
+        if(state._awaitKey==='stitch'){ handleAnswer(c.name, c.name); return; }
+        addMsg('bot','『'+c.name+'』ですね！'+(sub?('こちらは「'+sub+'」です。'):'')+'ヒアリングでステッチ色を伺う際に、この名前をお選びください🧵');
+      } };
+  });
+  renderQuick([
+    {label:backLabel,sub:'',val:'',onClick:backToFlow},
+    {label:'🎨 革の色を見る',sub:'',val:'',onClick:()=>showLeatherGallery('ask')}
+  ].concat(swatchChips));
+}
+
 /* SERIES_MAPのうちカタログに実在するシリーズ（革の種類）一覧。色数の多い順 */
 function seriesList(){
   const seen={}, out=[];
@@ -505,10 +586,12 @@ function showLeatherGallery(fam){
   if(fam==='ask'){
     const fams=colorFamilies();
     addMsg('bot','革のお色は '+fams.join('・')+' をご用意しています🎨 どの系統がお好みですか？\nシリーズ名（ホースバット・コードバン・マルゴーフォグ など）で聞いていただいてもOKです！');
-    renderQuick([
+    const askHead=[
       {label:backLabel,sub:'',val:'',onClick:backToFlow},
       {label:'📚 革の種類から探す',sub:'',val:'',onClick:()=>showLeatherGallery('series')}
-    ].concat(
+    ];
+    if(STITCH_COLORS) askHead.push({label:'🧵 ステッチの色を見る',sub:'',val:'',onClick:showStitchGallery});
+    renderQuick(askHead.concat(
       fams.map(f=>({label:f, sub:NSF_HEARING.leathersByTone(LEATHERS,f).length+'色', val:'', onClick:()=>showLeatherGallery(f)}))
     ));
     return;
@@ -828,8 +911,10 @@ function loadLeatherStockMap(){
 Promise.all([
   NSF_HEARING.loadKB('./hearing-kb.json'),
   NSF_HEARING.loadLeathers('./leather-catalog.json'),
-  loadLeatherStockMap()
-]).then(([kb, leathers, stockMap])=>{
+  loadLeatherStockMap(),
+  loadStitchColors(),
+  loadStitchStock()
+]).then(([kb, leathers, stockMap, stitchColors, stitchStock])=>{
   KB=kb;
   CORE=NSF_HEARING.build(KB, leathers);
   PRODUCTS=CORE.PRODUCTS;
@@ -837,6 +922,8 @@ Promise.all([
   SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers, stockMap);
   LEATHERS=leathers;   // 革の色・シリーズ質問への即答ギャラリー用
   STOCK_MAP=stockMap;
+  STITCH_COLORS=stitchColors; // ステッチ色の即答ギャラリー用
+  STITCH_STOCK=stitchStock;
   startPicker();
 });
 </script>
