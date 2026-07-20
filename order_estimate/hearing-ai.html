@@ -346,6 +346,15 @@ function handleFreeInput(){
     showLeatherGallery(leatherQ);
     return;
   }
+  // 革・ステッチ・色の単語すら無い汎用の続き質問（「在庫は？」「サンプル見せて」等）も、
+  // 直前の話題があればそちらで答える。誤爆防止のため強い意図語のみに限定
+  // （「どんな」「おすすめ」等はヒアリング回答と紛らわしいので対象外）。
+  if(lastTopic && /(在庫|サンプル|一覧|カタログ|見せて|みせて|何がある|他には|ほかには)/.test(v)){
+    addMsg('user', v);
+    if(lastTopic==='stitch') showStitchGallery();
+    else showLeatherGallery(/(在庫|取り寄せ|取寄)/.test(v)?'stock':'ask');
+    return;
+  }
   // 商品選択フェーズでの自由入力 → ボタンへ誘導
   if(state._picking){
     addMsg('user', v);
