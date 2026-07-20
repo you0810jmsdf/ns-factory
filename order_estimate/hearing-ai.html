@@ -355,6 +355,14 @@ function handleFreeInput(){
     else showLeatherGallery(/(在庫|取り寄せ|取寄)/.test(v)?'stock':'ask');
     return;
   }
+  // お礼・会話終了の意図には売り込みを返さず、締めの挨拶だけ返す
+  // （2026-07-20: 「ありがとう」「もう要は済みました」に毎回アイテム選択を迫り
+  // 「しつこい」と指摘された問題の対策。名入れ刻印の文言入力中は誤発動しないよう除外）
+  if(state._awaitKey!=='nameText' && detectClosingIntent(v)){
+    addMsg('user', v);
+    addMsg('bot','こちらこそ、ご覧いただきありがとうございました🧵 ご入用の際は、いつでもお気軽にお声がけください。');
+    return;
+  }
   // 商品選択フェーズでの自由入力 → ボタンへ誘導
   if(state._picking){
     addMsg('user', v);
@@ -506,6 +514,11 @@ function loadStitchStock(){
       });
       return map;
     }).catch(()=>null);
+}
+
+/* お礼・会話終了の意図か判定（「ありがとう」「もう要は済みました」「以上です」等） */
+function detectClosingIntent(text){
+  return /(ありがとう|もう(いい|良い|大丈夫|結構|十分)|(要|用)(は|も)?(済|す)み|済みました|終わりに|おしまい|さようなら|さよなら|失礼します|また(来|き)ます|以上です)/.test(text);
 }
 
 /* ステッチの質問か判定。「ステッチです」のような短い言い直しも拾う */
