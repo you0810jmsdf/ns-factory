@@ -333,6 +333,16 @@ function handleFreeInput(){
   const leatherQ=detectLeatherQuery(v);
   if(leatherQ){
     addMsg('user', v);
+    // 直前トピックの記憶（2026-07-20）: 直前にステッチの話をしていた（またはステッチ選択
+    // ステップ中）のに「色のサンプルも確認したい」等、革と明言しない汎用質問が来たら
+    // ステッチ側に振り向ける。色系統の指定（赤系等）は革カタログにしか無いため対象外。
+    if((lastTopic==='stitch' || state._awaitKey==='stitch') &&
+       state._awaitKey!=='leather' && // 革選択ステップ中の汎用質問は革を優先
+       (leatherQ==='ask'||leatherQ==='stock'||leatherQ==='series') &&
+       !/(革|レザー)/.test(v)){
+      showStitchGallery();
+      return;
+    }
     showLeatherGallery(leatherQ);
     return;
   }
@@ -460,6 +470,9 @@ function colorFamilies(){
    stitch-thread-stock.csv（thread_id, available=TRUE/FALSE）。 */
 let STITCH_COLORS=null; // [{id,name,image}]
 let STITCH_STOCK=null;  // thread_id -> true/false（未収録は在庫あり扱い＝安全側）
+// 直前に開いたギャラリーの話題（'stitch'|'leather'）。「色のサンプルも確認したい」のような
+// 主語のない続き質問を、直前の話題に振り向けるために使う（2026-07-20）
+let lastTopic=null;
 
 function loadStitchColors(){
   return fetch('./stitch-colors.json',{cache:'no-cache'})
@@ -495,6 +508,7 @@ function detectStitchQuery(text){
 }
 
 function showStitchGallery(){
+  lastTopic='stitch';
   const backLabel = state._picking ? '◀ アイテム選択に戻る' : '◀ 相談の続きに戻る';
   const stockKnown=!!STITCH_STOCK;
   const list=STITCH_COLORS.slice();
@@ -541,6 +555,7 @@ function seriesList(){
 }
 
 function showLeatherGallery(fam){
+  lastTopic='leather';
   const backLabel = state._picking ? '◀ アイテム選択に戻る' : '◀ 相談の続きに戻る';
   // 革の種類（シリーズ）一覧: 「革の種類が知りたい」「色ではない」への回答
   if(fam==='series'){
