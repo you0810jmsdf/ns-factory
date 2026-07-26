@@ -1,12 +1,12 @@
-planner_type,ring_id,series,series_label,size_label,size_mm,color_id,color_label,finish_label,check_enabled,ui_visible,ui_order,price_jpy,stock_status,stock_qty,lead_time_days,monitor_enabled,price_min_jpy,price_max_jpy,preferred_source_shop,preferred_source_url,preferred_source_price_jpy,preferred_source_shipping_jpy,preferred_last_checked,source_shop_1,source_url_1,source_price_1_jpy,source_shipping_1_jpy,source_checked_1,source_shop_2,source_url_2,source_price_2_jpy,source_shipping_2_jpy,source_checked_2,source_shop_3,source_url_3,source_price_3_jpy,source_shipping_3_jpy,source_checked_3,crawl_updated_flag,crawl_updated_at_jst,crawl_updated_run_id,crawl_updated_from_shop,note
+﻿planner_type,ring_id,series,series_label,size_label,size_mm,color_id,color_label,finish_label,check_enabled,ui_visible,ui_order,price_jpy,stock_status,stock_qty,lead_time_days,monitor_enabled,price_min_jpy,price_max_jpy,preferred_source_shop,preferred_source_url,preferred_source_price_jpy,preferred_source_shipping_jpy,preferred_last_checked,source_shop_1,source_url_1,source_price_1_jpy,source_shipping_1_jpy,source_checked_1,source_shop_2,source_url_2,source_price_2_jpy,source_shipping_2_jpy,source_checked_2,source_shop_3,source_url_3,source_price_3_jpy,source_shipping_3_jpy,source_checked_3,crawl_updated_flag,crawl_updated_at_jst,crawl_updated_run_id,crawl_updated_from_shop,note
 Mini6,r15,normal,通常リング,15mm,15,silver,シルバー,ニッケル,TRUE,TRUE,10,1000,in_stock,1,,TRUE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
 Mini6,r15,normal,通常リング,15mm,15,gold,ゴールド,ゴールド,TRUE,TRUE,11,1500,in_stock,1,,TRUE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
 Mini6,r15,normal,通常リング,15mm,15,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,12,1500,in_stock,1,,TRUE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
 Mini6,r15,normal,通常リング,15mm,15,black,ブラック,ブラック,TRUE,TRUE,13,1500,in_stock,,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
-A6,r20,normal,通常リング,19mm,19,silver,シルバー,ニッケル,TRUE,TRUE,20,1000,in_stock,5,,TRUE,,,,,,,,,,,,,,,,,,,,,,画面表示は19mm,,,,,
-A6,r20,normal,通常リング,19mm,19,gold,ゴールド,ゴールド,TRUE,TRUE,21,1500,in_stock,1,,FALSE,,,,,,,,,,,,,,,,,,,,,,画面表示は19mm,,,,,
-A6,r20,normal,通常リング,19mm,19,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,22,1500,in_stock,1,,FALSE,,,,,,,,,,,,,,,,,,,,,,画面表示は19mm,,,,,
-A6,r20,normal,通常リング,19mm,19,black,ブラック,ブラック,TRUE,TRUE,23,1500,in_stock,1,,FALSE,,,,,,,,,,,,,,,,,,,,,,画面表示は19mm,,,,,
+A6,r20,normal,通常リング,19mm,19,silver,シルバー,ニッケル,TRUE,TRUE,20,5506,in_stock,5,,TRUE,,,,,2753,,,,,,,,,,,,,,,,,画面表示は19mm,,,,,
+A6,r20,normal,通常リング,19mm,19,gold,ゴールド,ゴールド,TRUE,TRUE,21,5506,in_stock,1,,FALSE,,,,,2753,,,,,,,,,,,,,,,,,画面表示は19mm,,,,,
+A6,r20,normal,通常リング,19mm,19,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,22,5506,in_stock,0,,FALSE,,,,,2753,,,,,,,,,,,,,,,,,画面表示は19mm,,,,,
+A6,r20,normal,通常リング,19mm,19,black,ブラック,ブラック,TRUE,TRUE,23,1500,in_stock,0,,FALSE,,,,,,,,,,,,,,,,,,,,,,画面表示は19mm,,,,,
 Bible,r25,normal,通常リング,25mm,25,silver,シルバー,ニッケル,TRUE,TRUE,30,1000,in_stock,1,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
 Bible,r25,normal,通常リング,25mm,25,gold,ゴールド,ゴールド,TRUE,TRUE,31,1500,in_stock,1,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
 Bible,r25,normal,通常リング,25mm,25,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,32,1500,in_stock,1,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
