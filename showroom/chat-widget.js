@@ -1448,6 +1448,38 @@
       return tel ? tel[0] : '';
     }
 
+    // 2026-07-30: 連絡先未記入のまま送信されたオーダー相談（OP-2607-011等）について、
+    // お客様が後日「送ったのに返信がない」と問い合わせてこられた場合に、その場で状況を
+    // 案内するための検知。取りこぼしを避けるため、過去形の「送った」系と
+    // 「返信がない」系のどちらか一方でも当たれば拾う。
+    // 「連絡先」は入力欄の話題で誤検知しやすいため、否定先読みで除外する。
+    function nsfDetectOrderFollowup(text) {
+      var t = String(text || '');
+      var orderWord = /(オーダー|注文|発注|相談|見積|申し込み|申込)/.test(t);
+      var sentWord = /(送りました|送信しました|送った|送信した|おくりました|おくった|出しました|依頼しました|申し込みました|申込みました|頼みました|送付しました|送信済)/.test(t);
+      var replyWord = /(返信|返事|お返事|回答|音沙汰|レス|ご連絡|連絡(?!先))/.test(t);
+      var missingWord = /(な[いくかっ]|無[いく]|来(ない|ません|てない|ていない)|こない|届か|ありませ|まだ|遅い)/.test(t);
+      return (orderWord && sentWord) || (replyWord && missingWord);
+    }
+
+    // 上記の問い合わせに対する定型案内（GAS送信なし・チャット回数を消費しない）
+    function showOrderFollowupNotice() {
+      // 連絡先入力欄があるのは works.html のオーダー相談チャットのみ。
+      // 欄が無いページ（トップ・ショールーム）では作品ページへ誘導する。
+      var hasContactField = !!container.querySelector('#oc-contact-info');
+      var howTo = hasContactField
+        ? 'お手数ですが、この画面上部の「お名前」「連絡先（メール・電話）」欄をご記入のうえ、もう一度「この内容で作家に送信」ボタンを押していただけますでしょうか。'
+        : 'お手数ですが、作品ページのオーダー相談チャットから、お名前・ご連絡先をご記入のうえ、もう一度お送りいただけますでしょうか。';
+      appendStaffMsg(
+        'ご連絡ありがとうございます🙏\n'
+        + '「この内容で作家に送信」からお送りいただいたオーダー内容は、作家に届いております。\n\n'
+        + 'ただし、お名前・ご連絡先が未記入のまま送信されたご相談については、こちらからご返信を差し上げる手段がなく、お待たせしてしまっている場合がございます。\n\n'
+        + howTo + '\n'
+        + 'ご連絡先は、メールアドレス・お電話番号のほか、LINEやInstagramのIDでも構いません。\n\n'
+        + '受付番号（OP-〇〇〇〇-〇〇〇）をお控えでしたら、その番号をこのチャットに入力いただくと、その場で進捗をご確認いただけます。'
+      );
+    }
+
     // 購入手段・希望サイトのラベル（stock-quote.htmlのPLATFORM_FEESと表記を合わせる）
     var NSF_PURCHASE_METHOD_LABELS = {
       bank: '銀行振込', btc: 'Bitcoin（BTC）', mercari: 'メルカリ', rakuma: 'ラクマ',
@@ -1476,9 +1508,18 @@
       var methodLabel = methodVal ? (NSF_PURCHASE_METHOD_LABELS[methodVal] || methodVal) : '';
       var client = explicitName || nsfDetectClientName(historyText);
       var contact = explicitContact || nsfDetectContact(historyText);
-      if (!client && !contact) {
-        var proceed = global.confirm('お名前・ご連絡先が入力・会話内に見当たりませんでした。このまま送信しますか？\n（送信後、作家が返信のためにご連絡先を別途確認する場合があります）');
-        if (!proceed) return;
+      // 2026-07-30: お名前・ご連絡先が未記入のまま送信され、作家から返信できないオーダー相談が
+      // 発生した（OP-2607-011）。以前は confirm で「OK」を押せば空のまま送信できたため、
+      // 未記入なら送信をブロックして該当欄へフォーカスする方式に変更した。
+      if (!contact) {
+        global.alert('ご返信のため、ご連絡先のご記入をお願いします。\nメールアドレス・電話番号のほか、LINEやInstagramなどのSNS IDでも構いません。\n\n※ ご連絡先がないと、オーダー内容は作家に届いても、こちらからご返信を差し上げることができません。');
+        if (contactInput) contactInput.focus();
+        return;
+      }
+      if (!client) {
+        global.alert('お名前のご記入をお願いします（ニックネームでも構いません）。');
+        if (nameInput) nameInput.focus();
+        return;
       }
       // 注意: ここは通常のAIチャット用GAS（SHOWROOM_CONFIG.chatApi）とは別プロジェクト。
       // オーダー進捗管理GAS（order_progress_GAS.js／addConsultationアクション）宛に送る。
@@ -1536,7 +1577,14 @@
               var key = 'nsf_order_receipt_' + (data.orderNo || Date.now());
               global.localStorage.setItem(key, JSON.stringify(receipt));
             } catch (e) { /* localStorage不可の環境では控え保存のみ諦める */ }
-            appendStaffMsg('この内容を作家に送信しました。内容を確認のうえ、お見積書を作成してお送りするか、追加で確認させていただきたいことがあればご記入いただいた連絡先へご連絡いたします。今しばらくお待ちください。');
+            // 2026-07-30: 受付番号と進捗ページを必ず案内する。万一ご連絡先に不備があっても、
+            // お客様ご自身が受付番号から進捗を確認できる導線を残すため。
+            var orderNoMsg = data.orderNo
+              ? '\n\n📋 受付番号：' + data.orderNo
+                + '\nこの番号をお控えください。番号をこのチャットに入力いただくと、その場で進捗をご確認いただけます。'
+                + '\n進捗ページ：' + NSF_ROOT_BASE + 'orderprogress.html'
+              : '';
+            appendStaffMsg('この内容を作家に送信しました。内容を確認のうえ、お見積書を作成してお送りするか、追加で確認させていただきたいことがあればご記入いただいた連絡先へご連絡いたします。今しばらくお待ちください。' + orderNoMsg);
           } else {
             if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'この内容で作家に送信'; }
             global.alert('送信に失敗しました。時間をおいて再度お試しください。');
@@ -1592,6 +1640,14 @@
         if (input) input.value = '';
         appendUserMsg(text);
         showProgressPrompt();
+        return;
+      }
+      // 2026-07-30: 「オーダーを送ったのに返信がない」旨の問い合わせ → その場で状況を案内
+      // （GAS送信なし・回数消費なし）。連絡先未記入のまま送信されたお客様への救済導線。
+      if (nsfDetectOrderFollowup(text)) {
+        if (input) input.value = '';
+        appendUserMsg(text);
+        showOrderFollowupNotice();
         return;
       }
 
