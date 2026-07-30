@@ -143,6 +143,8 @@
       border-radius:99px; white-space:nowrap; flex-shrink:0;
     }
     .s-相談受付     { background:#F5F3FF; color:#6D28D9; }
+    .s-ご連絡先待ち { background:#FEE2E2; color:#B91C1C; }
+    .s-ご連絡待ち   { background:#EDE9FE; color:#5B21B6; }
     .s-見積書作成   { background:#FDF2F8; color:#BE185D; }
     .s-設計中       { background:#E0F2FE; color:#0369A1; }
     .s-受付中       { background:#EEF2FF; color:#3730A3; }
@@ -408,6 +410,8 @@
     <div class="field">
       <label>ステータス</label>
       <select id="f-status">
+        <option>ご連絡先待ち</option>
+        <option>ご連絡待ち</option>
         <option>見積書作成</option>
         <option>設計中</option>
         <option>受付中</option>
@@ -797,7 +801,8 @@ function renderCards(records) {
     return;
   }
   // Sort: unfinished first, then newest reception date first.
-  const ORDER = ['見積書作成','設計中','受付中','素材準備中','制作中','仕上げ中','完成','発送済み','お渡し済み'];
+  // お客様への確認待ち（ご連絡先待ち／ご連絡待ち）は対応が必要なため未完了グループの先頭に置く
+  const ORDER = ['ご連絡先待ち','ご連絡待ち','見積書作成','設計中','受付中','素材準備中','制作中','仕上げ中','完成','発送済み','お渡し済み'];
   records = [...records].sort((a,b) => {
     const groupDiff = Number(isDone(a)) - Number(isDone(b));
     if (groupDiff) return groupDiff;
@@ -809,6 +814,8 @@ function renderCards(records) {
 
   const STAMP_MAP = {
     '相談受付':   '',
+    'ご連絡先待ち': 'assets/stamps/status_contact.png',
+    'ご連絡待ち':   'assets/stamps/status_reply.png',
     '見積書作成': 'assets/stamps/status_estimate.png',
     '設計中':     'assets/stamps/status_design.png',
     '受付中':     'assets/stamps/status_waiting.png',
