@@ -820,6 +820,16 @@ canvas{
             <p class="help">Instagramのフィード（ホーム・プロフィール一覧）は縦長9:16動画の上下をトリミング表示します。フィードへ投稿する動画は「4:5」を選ぶとタイトルや字幕が切れません。</p>
           </div>
           <div class="field">
+            <label for="motionIntensity">動きの強さ</label>
+            <select id="motionIntensity">
+              <option value="standard" selected>標準（落ち着いた寄り引き）</option>
+              <option value="bold">大胆（寄り引きを大きく）</option>
+              <option value="extra">超大胆（寄り引き＋カメラの傾き）</option>
+              <option value="max">最大（傾き＋切替も派手・テンポ速め）</option>
+            </select>
+            <p class="help" id="motionIntensityHelp">写真ごとに選んだ動き（ズームイン等）はそのままに、動く量だけを全コマまとめて強めます。プレビューにすぐ反映されます。</p>
+          </div>
+          <div class="field">
             <label for="bgMode">背景</label>
             <select id="bgMode">
               <option value="photo">元の写真のまま（ぼかし背景）</option>
@@ -968,6 +978,7 @@ const els = {
   toggleSlideUse: document.getElementById('toggleSlideUse'),
   speakScript: document.getElementById('speakScript'),
   videoFormat: document.getElementById('videoFormat'),
+  motionIntensity: document.getElementById('motionIntensity'),
   bgMode: document.getElementById('bgMode'),
   bgColor: document.getElementById('bgColor'),
   bgColorField: document.getElementById('bgColorField'),
@@ -1078,6 +1089,36 @@ const MOTION_DEFS = Object.freeze({
   closingOut:    {z0:1.09, z1:1,    ease:'inOut', endHold:.82}
 });
 
+// 動きの強さ（全コマ共通）。MOTION_DEFS の値は変えず、再生時に倍率を掛けて強める。
+// scale: 寄り引き（ズーム量・パン量）の倍率 / tilt: カメラの傾き角度(度) / flashy: 切替を派手にしテンポを上げる
+const MOTION_INTENSITY = Object.freeze({
+  standard:{scale:1, tilt:0,   flashy:false},
+  bold:    {scale:4, tilt:0,   flashy:false},
+  extra:   {scale:6, tilt:3,   flashy:false},
+  max:     {scale:7, tilt:4,   flashy:true}
+});
+const FLASHY_TRANSITIONS = Object.freeze(['slideLeft', 'wipeLeft', 'slideRight', 'wipeRight']);
+const FLASHY_TRANSITION_MAX_SEC = .32;
+
+function motionIntensity(){
+  return MOTION_INTENSITY[els.motionIntensity && els.motionIntensity.value] || MOTION_INTENSITY.standard;
+}
+
+// 「最大」では切替の種類とテンポを差し替える。スライドのデータ自体は書き換えない（モードを戻せば元通り）
+function effectiveTransitionName(slide){
+  const name = (slide && slide.transition) || 'fade';
+  if(!motionIntensity().flashy || name === 'cut') return name;
+  const index = Math.max(0, playableSlides().indexOf(slide));
+  return FLASHY_TRANSITIONS[index % FLASHY_TRANSITIONS.length];
+}
+
+// 尺計算・再生位置・録画で必ず同じ値を使う（ここがズレるとナレーションと映像が合わなくなる）
+function effectiveTransitionDuration(slide){
+  const base = (slide && slide.transitionDuration) || 0;
+  if(slide && slide.transition === 'cut') return base;
+  return motionIntensity().flashy ? Math.min(base, FLASHY_TRANSITION_MAX_SEC) : base;
+}
+
 function motionEase(name, value){
   const p = clamp(value, 0, 1);
   if(name === 'linear') return p;
@@ -1092,11 +1133,25 @@ function cameraStateFor(slideOrMotion, progress){
   const def = MOTION_DEFS[name] || MOTION_DEFS.zoomIn;
   const hold = def.endHold || 1;
   const eased = motionEase(def.ease || 'inOut', clamp(progress, 0, 1) / hold);
+  const intensity = motionIntensity();
+  const k = intensity.scale;
+  // ズームは1倍からの差分を、パンは移動量そのものを倍率で強める
+  const z0 = 1 + (def.z0 - 1) * k;
+  const z1 = 1 + (def.z1 - 1) * k;
   return {
-    zoom: def.z0 + (def.z1 - def.z0) * eased,
-    dx: (def.x0 || 0) + ((def.x1 || 0) - (def.x0 || 0)) * eased,
-    dy: (def.y0 || 0) + ((def.y1 || 0) - (def.y0 || 0)) * eased
+    zoom: z0 + (z1 - z0) * eased,
+    dx: ((def.x0 || 0) + ((def.x1 || 0) - (def.x0 || 0)) * eased) * k,
+    dy: ((def.y0 || 0) + ((def.y1 || 0) - (def.y0 || 0)) * eased) * k,
+    // 傾きは -tilt から +tilt へゆっくり振る（ラジアン）
+    tilt: intensity.tilt ? (-intensity.tilt + intensity.tilt * 2 * eased) * Math.PI / 180 : 0
   };
+}
+
+// 傾けた分だけ写真の角が内側へ入るため、傾き量に比例して少しだけ拡大して補う。
+// ズーム・パンは MOTION_DEFS が元々「ズーム量とパン量の釣り合い」を持っているので、
+// 両方を同じ倍率で強めれば比率は保たれる（枠一杯まで拡大する補正を入れると寄り引きが消えるため入れない）。
+function tiltZoomCompensation(tilt){
+  return tilt ? 1 + Math.abs(Math.sin(tilt)) * .8 : 1;
 }
 
 // データ設計要件: motionPreset / motionStart / motionEnd をslideへ保持する
@@ -2598,7 +2653,7 @@ function timelineStartForSlide(slide){
   let t = 0;
   for(let i = 0; i < list.length; i++){
     if(list[i] === slide) return t;
-    t += list[i].duration + (i < list.length - 1 ? list[i].transitionDuration : 0);
+    t += list[i].duration + (i < list.length - 1 ? effectiveTransitionDuration(list[i]) : 0);
   }
   return 0;
 }
@@ -2653,7 +2708,7 @@ function removeSelected(){
 function totalDuration(){
   const list = playableSlides();
   return list.reduce((sum, slide, index) => {
-    const transition = index < list.length - 1 ? slide.transitionDuration : 0;
+    const transition = index < list.length - 1 ? effectiveTransitionDuration(slide) : 0;
     return sum + slide.duration + transition;
   }, 0);
 }
@@ -2670,7 +2725,7 @@ function frameState(time){
     const slide = list[i];
     if(t <= slide.duration || i === list.length - 1) return {type:'hold', slide, index:i, progress:clamp(t / slide.duration, 0, 1)};
     t -= slide.duration;
-    const td = slide.transition === 'cut' ? .04 : slide.transitionDuration;
+    const td = slide.transition === 'cut' ? .04 : effectiveTransitionDuration(slide);
     if(t <= td) return {type:'transition', slide, nextSlide:list[i + 1], index:i, next:i + 1, progress:clamp(t / td, 0, 1)};
     t -= td;
   }
@@ -2699,19 +2754,20 @@ function drawFrame(time){
 
 function drawTransition(from, to, p){
   p = easeInOut(p);
-  if(from.transition === 'cut'){ drawSlide(to, 0, 1); return; }
-  if(from.transition === 'wipeLeft' || from.transition === 'wipeRight'){
+  const kind = effectiveTransitionName(from);
+  if(kind === 'cut'){ drawSlide(to, 0, 1); return; }
+  if(kind === 'wipeLeft' || kind === 'wipeRight'){
     drawSlide(from, 1, 1);
     ctx.save();
     const w = canvas.width * p;
-    const x = from.transition === 'wipeLeft' ? 0 : canvas.width - w;
+    const x = kind === 'wipeLeft' ? 0 : canvas.width - w;
     ctx.beginPath(); ctx.rect(x, 0, w, canvas.height); ctx.clip();
     drawSlide(to, 0, 1);
     ctx.restore();
     return;
   }
-  if(from.transition === 'slideLeft' || from.transition === 'slideRight'){
-    const dir = from.transition === 'slideLeft' ? -1 : 1;
+  if(kind === 'slideLeft' || kind === 'slideRight'){
+    const dir = kind === 'slideLeft' ? -1 : 1;
     drawSlideAt(from, 1, 1, dir * canvas.width * p, 0);
     drawSlideAt(to, 0, 1, dir * canvas.width * (p - 1), 0);
     return;
@@ -2993,13 +3049,21 @@ function drawPhoto(img, slideOrMotion, progress, options = {}){
   const fit = containRect(img, box);
   // 役割別カメラワーク: 開始状態→終了状態を表示時間全体で連続補間（プレビューとMP4で同一経路）
   const cam = cameraStateFor(slideOrMotion, progress);
+  const zoom = cam.zoom * tiltZoomCompensation(cam.tilt);
   ctx.save();
   // 切り抜き画像は透過部分に矩形の影が出てしまうため影を省く
   if(!options.cutout) shadow(box.x - 8, box.y - 8, box.w + 16, box.h + 16);
   ctx.beginPath(); roundRect(ctx, box.x, box.y, box.w, box.h, 18); ctx.clip();
+  if(cam.tilt){
+    const pivotX = box.x + box.w / 2;
+    const pivotY = box.y + box.h / 2;
+    ctx.translate(pivotX, pivotY);
+    ctx.rotate(cam.tilt);
+    ctx.translate(-pivotX, -pivotY);
+  }
   const cx = fit.x + fit.w/2 + cam.dx;
   const cy = fit.y + fit.h/2 + cam.dy;
-  ctx.drawImage(img, cx - fit.w*cam.zoom/2, cy - fit.h*cam.zoom/2, fit.w*cam.zoom, fit.h*cam.zoom);
+  ctx.drawImage(img, cx - fit.w*zoom/2, cy - fit.h*zoom/2, fit.w*zoom, fit.h*zoom);
   ctx.restore();
 }
 
@@ -3233,7 +3297,7 @@ function narrationMotionProgress(elapsed, targetDuration){
 async function animateTransitionAfterSlide(activeIndex, list, total){
   if(activeIndex >= list.length - 1) return;
   const slide = list[activeIndex];
-  const transitionSeconds = slide.transition === 'cut' ? .04 : slide.transitionDuration;
+  const transitionSeconds = slide.transition === 'cut' ? .04 : effectiveTransitionDuration(slide);
   const transitionStart = timelineStartForSlide(slide) + slide.duration;
   const startedAt = performance.now();
   while(playing){
@@ -5207,6 +5271,12 @@ document.getElementById('removeSlide').addEventListener('click', removeSelected)
 });
 els.videoFont.addEventListener('change', () => drawSelectedOrFirstFrame());
 els.videoFormat.addEventListener('change', () => applyVideoFormat());
+els.motionIntensity.addEventListener('change', () => {
+  resetRecordingOutput();
+  drawSelectedOrFirstFrame();
+  const label = els.motionIntensity.options[els.motionIntensity.selectedIndex].textContent;
+  setLog(`動きの強さを「${label}」にしました。プレビューと保存MP4の両方に反映されます。`);
+});
 els.bgMode.addEventListener('change', () => { updateBgUi(); ensureCutoutsForSolidBg(); });
 els.bgColor.addEventListener('input', () => drawSelectedOrFirstFrame());
 document.querySelectorAll('.bg-swatch').forEach(btn => {
