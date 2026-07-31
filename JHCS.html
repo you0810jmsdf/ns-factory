@@ -49,6 +49,14 @@
     h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--tan); }
     .section { margin-bottom: 40px; }
 
+    /* セクション折りたたみ */
+    details.section > summary { cursor: pointer; list-style: none; }
+    details.section > summary::-webkit-details-marker { display: none; }
+    details.section > summary h2::after { content: '＋'; float: right; color: var(--tan); font-weight: 700; }
+    details.section[open] > summary h2::after { content: '－'; }
+    details.section:not([open]) { margin-bottom: 18px; }
+    details.section:not([open]) > summary h2 { margin-bottom: 0; }
+
     /* Hero photos */
     .jhcs-hero-photos {
       display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -206,9 +214,18 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
       grid-auto-flow: dense;
     }
+    .works-cell { position: relative; aspect-ratio: 1 / 1; }
+    .works-cell.feature { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; }
+    .works-del {
+      position: absolute; top: 6px; right: 6px; z-index: 2;
+      background: rgba(198,40,40,.92); color: #fff; border: none; border-radius: 50%;
+      width: 26px; height: 26px; font-size: 13px; line-height: 1; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
+    .works-del:hover { background: var(--red); }
     .works-item {
       position: relative; overflow: hidden; border-radius: 12px;
-      background: #eceff1; cursor: zoom-in; aspect-ratio: 1 / 1;
+      background: #eceff1; cursor: zoom-in; height: 100%;
       box-shadow: 0 1px 4px rgba(0,0,0,.08);
       border: none; padding: 0; display: block; width: 100%;
     }
@@ -361,8 +378,8 @@
   </div>
 
   <!-- 教室概要 -->
-  <div class="section">
-    <h2>教室概要</h2>
+  <details class="section">
+    <summary><h2>教室概要</h2></summary>
     <div class="cards">
       <div class="card">
         <div class="card-title">クラスA ― 木曜</div>
@@ -390,11 +407,11 @@
       </div>
     </div>
     <p style="font-size:13px; color:var(--gray);">※ 2025年9月は第2・第4日曜日に変更。2025年10月以降、木曜クラスが主要開講日。</p>
-  </div>
+  </details>
 
   <!-- お知らせ -->
-  <div class="section" id="notice-section">
-    <h2>お知らせ</h2>
+  <details class="section" id="notice-section" open>
+    <summary><h2>お知らせ</h2></summary>
     <div class="notice-board" id="notice-current">
       <div class="form-grid">
         <div>
@@ -421,11 +438,11 @@
         <div class="notice-empty">過去のお知らせはまだありません。</div>
       </div>
     </details>
-  </div>
+  </details>
 
   <!-- カリキュラム -->
-  <div class="section">
-    <h2>カリキュラム（全24回）</h2>
+  <details class="section">
+    <summary><h2>カリキュラム（全24回）</h2></summary>
     <div class="curriculum" id="curriculum-list">
       <div class="loading">GASに接続するとカリキュラムを編集できます。</div>
     </div>
@@ -433,27 +450,45 @@
       <strong>第13回以降</strong>自由課題
     </div>
     <div id="curriculum-msg" class="form-msg" style="margin-top:10px;"></div>
-  </div>
+  </details>
 
   <!-- 習得技術 -->
-  <div class="section">
-    <h2>習得技術</h2>
+  <details class="section">
+    <summary><h2>習得技術</h2></summary>
     <div class="skill-tags">
       <span class="skill-tag">革の染色</span><span class="skill-tag">裁断</span>
       <span class="skill-tag">CADパターン設計</span><span class="skill-tag">ファスナー取り付け</span>
       <span class="skill-tag">インターロッキング（イントレチャート）</span>
       <span class="skill-tag">パッチワーク</span><span class="skill-tag">インレイ技法</span>
     </div>
-  </div>
+  </details>
 
   <!-- 生徒作品集 -->
-  <div class="section">
-    <h2>生徒作品集</h2>
+  <details class="section" open>
+    <summary><h2>生徒作品集</h2></summary>
     <div class="works-lead">
       <span class="works-count" id="works-count"></span>
       <p>受講生のみなさんが講座で仕上げた作品です。クリックすると拡大表示できます。</p>
+      <button class="btn btn-secondary" id="btn-works-admin" style="margin-left:auto;font-size:12px;padding:4px 12px;" onclick="worksAdminLogin()">🛠 作品を登録</button>
     </div>
     <div class="works-grid" id="works-grid" aria-label="生徒作品ギャラリー"></div>
+
+    <!-- 管理者用: 作品アップロードパネル -->
+    <div class="form-card" id="works-admin-panel" style="display:none; margin-top:14px;">
+      <div class="card-title">🛠 作品の登録（管理者）</div>
+      <p style="font-size:12px; color:var(--gray); margin-bottom:10px;">
+        画像は自動で長辺1400pxに縮小・JPEG変換され、GitHub（assets/jhcs/works/uploads/）に保存されます。複数選択できます。
+      </p>
+      <input type="file" id="works-file-input" accept="image/*" multiple style="margin-bottom:12px;">
+      <div class="form-actions">
+        <button class="btn btn-primary" id="btn-works-upload" onclick="uploadWorks()">アップロード</button>
+        <button class="btn btn-secondary" onclick="NSFGitHubToken.prompt()">⚙️ GitHubトークン</button>
+        <span id="works-admin-msg" class="form-msg"></span>
+      </div>
+      <p style="font-size:11px; color:var(--gray); margin-top:8px;">
+        登録済み作品の削除はギャラリー上の ✕ ボタンから（このパネルで登録した作品のみ）。初期の29枚はサイト同梱のため、ここからは削除できません。
+      </p>
+    </div>
 
     <details class="works-archive">
       <summary>過去のアルバム（Google Drive）を見る</summary>
@@ -474,7 +509,7 @@
         </div>
       </div>
     </details>
-  </div>
+  </details>
 
   <!-- 作品ライトボックス -->
   <div class="wlb" id="works-lightbox" role="dialog" aria-modal="true" aria-label="作品の拡大表示" onclick="if(event.target===this)wlbClose()">
@@ -486,8 +521,8 @@
   </div>
 
   <!-- 実績一覧 -->
-  <div class="section">
-    <h2>講習実績</h2>
+  <details class="section">
+    <summary><h2>講習実績</h2></summary>
     <div class="stats">
       <div class="stat"><div class="stat-val" id="stat-total">―</div><div class="stat-label">総回数</div></div>
       <div class="stat"><div class="stat-val" id="stat-a">―</div><div class="stat-label">クラスA（木曜）</div></div>
@@ -514,11 +549,11 @@
         </tbody>
       </table>
     </div>
-  </div>
+  </details>
 
   <!-- 追記フォーム -->
-  <div class="section">
-    <h2>実績を追記</h2>
+  <details class="section">
+    <summary><h2>実績を追記</h2></summary>
     <div class="form-card">
       <div class="form-grid">
         <div>
@@ -558,7 +593,7 @@
         <span id="form-msg" class="form-msg"></span>
       </div>
     </div>
-  </div>
+  </details>
 
   <!-- GAS URL 変更 -->
   <div style="text-align:right; margin-top:-20px;">
@@ -568,6 +603,7 @@
 
 <footer class="lp-footer">© N's factory — JHCS 講習実績管理 | データ保存先: Google スプレッドシート</footer>
 
+<script src="assets/js/github-token.js"></script>
 <script>
   const GAS_URL_KEY = 'jhcs_gas_url';
   const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbx07fbbOGbVxPjGNIARWTy_AbQK7KexzhW2Tv4xrheOoCz297min0aW8R2BvuaySkDf/exec';
@@ -1118,32 +1154,61 @@
     a.click();
   }
 
-  // ── 生徒作品ギャラリー（静的） ────────────────────
-  const WORKS_COUNT = 29;
+  // ── 生徒作品ギャラリー ────────────────────────────
+  const WORKS_STATIC_COUNT = 29;               // サイト同梱の初期作品（work_01〜29.jpg）
   const WORKS_DIR = 'assets/jhcs/works/';
+  const WK_OWNER = 'you0810jmsdf';
+  const WK_REPO = 'ns-factory';
+  const WK_BRANCH = 'main';
+  const WK_MANIFEST = 'assets/jhcs/works/works.json';
+  let uploadedWorks = [];   // works.json由来 {file, added}（新しい順）
+  let worksList = [];       // 表示順の画像URL（登録作品→初期29枚）
+  let worksAdminMode = false;
   let wlbIdx = 0;
+
+  function buildWorksList() {
+    worksList = uploadedWorks.map(w => w._localSrc || (WORKS_DIR + w.file));
+    for (let i = 1; i <= WORKS_STATIC_COUNT; i++) {
+      worksList.push(`${WORKS_DIR}work_${String(i).padStart(2, '0')}.jpg`);
+    }
+  }
 
   function renderWorksGallery() {
     const grid = document.getElementById('works-grid');
     if (!grid) return;
+    buildWorksList();
     let html = '';
-    for (let i = 1; i <= WORKS_COUNT; i++) {
-      const nn = String(i).padStart(2, '0');
+    worksList.forEach((src, idx) => {
+      const pos = idx + 1;
       // 7枚ごとに1枚を2x2の大きめ表示にしてリズムをつける
-      const feature = (i % 7 === 1) ? ' feature' : '';
-      html += `<button class="works-item${feature}" onclick="wlbOpen(${i - 1})" aria-label="作品 ${i} を拡大表示">
-        <img src="${WORKS_DIR}work_${nn}.jpg" alt="生徒作品 ${i}" loading="lazy" decoding="async">
-      </button>`;
-    }
+      const feature = (pos % 7 === 1) ? ' feature' : '';
+      const del = (worksAdminMode && idx < uploadedWorks.length)
+        ? `<button class="works-del" onclick="deleteWork(${idx})" aria-label="この作品を削除">✕</button>`
+        : '';
+      html += `<div class="works-cell${feature}">
+        <button class="works-item" onclick="wlbOpen(${idx})" aria-label="作品 ${pos} を拡大表示">
+          <img src="${escAttr(src)}" alt="生徒作品 ${pos}" loading="lazy" decoding="async">
+        </button>${del}</div>`;
+    });
     grid.innerHTML = html;
-    document.getElementById('works-count').textContent = `WORKS ${WORKS_COUNT}`;
+    document.getElementById('works-count').textContent = `WORKS ${worksList.length}`;
   }
 
-  function wlbSrc(i) { return `${WORKS_DIR}work_${String(i + 1).padStart(2, '0')}.jpg`; }
+  async function loadWorksManifest() {
+    try {
+      const res = await fetch(`${WK_MANIFEST}?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data.works)) {
+        uploadedWorks = data.works;
+        renderWorksGallery();
+      }
+    } catch (_) { /* 取得失敗時は初期29枚のみ表示 */ }
+  }
 
   function wlbUpdate() {
-    document.getElementById('wlb-img').src = wlbSrc(wlbIdx);
-    document.getElementById('wlb-counter').textContent = `${wlbIdx + 1} / ${WORKS_COUNT}`;
+    document.getElementById('wlb-img').src = worksList[wlbIdx];
+    document.getElementById('wlb-counter').textContent = `${wlbIdx + 1} / ${worksList.length}`;
   }
 
   function wlbOpen(i) {
@@ -1159,7 +1224,7 @@
   }
 
   function wlbMove(d) {
-    wlbIdx = (wlbIdx + d + WORKS_COUNT) % WORKS_COUNT;
+    wlbIdx = (wlbIdx + d + worksList.length) % worksList.length;
     wlbUpdate();
   }
 
@@ -1181,6 +1246,170 @@
       touchX = null;
     }, { passive: true });
   })();
+
+  // ── 生徒作品 管理者機能（GAS PW検証 + GitHub保存） ──
+  async function worksAdminLogin() {
+    const password = getNoticePassword();
+    if (!password) return;
+    const btn = document.getElementById('btn-works-admin');
+    btn.disabled = true;
+    try {
+      const res = await fetch(getGasUrl(), {
+        method: 'POST',
+        body: JSON.stringify({ action: 'validateAdmin', password }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        noticeAdminPassword = '';
+        alert('管理者パスワードが違います。');
+        return;
+      }
+      worksAdminMode = true;
+      document.getElementById('works-admin-panel').style.display = '';
+      btn.style.display = 'none';
+      renderWorksGallery();
+    } catch (e) {
+      alert('通信エラー: ' + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function wkApiUrl(path) {
+    return `https://api.github.com/repos/${WK_OWNER}/${WK_REPO}/contents/${path}`;
+  }
+
+  async function wkEnsureToken() {
+    let t = NSFGitHubToken.get();
+    if (!t) {
+      await NSFGitHubToken.prompt();
+      t = NSFGitHubToken.get();
+    }
+    return t;
+  }
+
+  async function wkGet(path, token) {
+    const res = await fetch(`${wkApiUrl(path)}?ref=${WK_BRANCH}&t=${Date.now()}`, {
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' },
+      cache: 'no-store',
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`${path} の取得に失敗 (HTTP ${res.status})`);
+    return res.json();
+  }
+
+  async function wkPut(path, token, base64, message, sha) {
+    const body = { message, content: base64, branch: WK_BRANCH };
+    if (sha) body.sha = sha;
+    const res = await fetch(wkApiUrl(path), {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(`${path} の保存に失敗: ${(err && err.message) || 'HTTP ' + res.status}`);
+    }
+    return res.json();
+  }
+
+  async function wkSaveManifest(token) {
+    const meta = await wkGet(WK_MANIFEST, token);
+    const json = JSON.stringify({ works: uploadedWorks.map(w => ({ file: w.file, added: w.added })) }, null, 2);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    await wkPut(WK_MANIFEST, token, b64, 'JHCS: 生徒作品の台帳を更新', meta ? meta.sha : undefined);
+  }
+
+  // 画像をブラウザ内で長辺1400px・JPEG(0.82)に変換してdataURLを返す
+  function wkResizeImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const max = 1400;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(`${file.name} を読み込めませんでした`)); };
+      img.src = url;
+    });
+  }
+
+  async function uploadWorks() {
+    const input = document.getElementById('works-file-input');
+    const files = Array.from(input.files || []);
+    const msg = document.getElementById('works-admin-msg');
+    if (!files.length) { msg.className = 'form-msg err'; msg.textContent = '画像ファイルを選択してください。'; return; }
+    const token = await wkEnsureToken();
+    if (!token) { msg.className = 'form-msg err'; msg.textContent = 'GitHubトークンが未設定です。'; return; }
+    const btn = document.getElementById('btn-works-upload');
+    btn.disabled = true;
+    msg.className = 'form-msg';
+    try {
+      const stamp = new Date();
+      const p2 = n => String(n).padStart(2, '0');
+      const ts = `${stamp.getFullYear()}${p2(stamp.getMonth() + 1)}${p2(stamp.getDate())}_${p2(stamp.getHours())}${p2(stamp.getMinutes())}${p2(stamp.getSeconds())}`;
+      const added = [];
+      for (let i = 0; i < files.length; i++) {
+        msg.textContent = `アップロード中... (${i + 1}/${files.length})`;
+        const dataUrl = await wkResizeImage(files[i]);
+        const file = `uploads/works_${ts}_${i + 1}.jpg`;
+        await wkPut(WORKS_DIR + file, token, dataUrl.split(',')[1], `JHCS: 生徒作品を追加 (${file})`);
+        added.push({ file, added: `${stamp.getFullYear()}-${p2(stamp.getMonth() + 1)}-${p2(stamp.getDate())} ${p2(stamp.getHours())}:${p2(stamp.getMinutes())}`, _localSrc: dataUrl });
+      }
+      uploadedWorks = [...added, ...uploadedWorks];
+      msg.textContent = '台帳を更新中...';
+      await wkSaveManifest(token);
+      renderWorksGallery();
+      input.value = '';
+      msg.className = 'form-msg ok';
+      msg.textContent = `✅ ${added.length}枚を登録しました。全体への反映（GitHub Pages再構築）には1〜2分かかります。`;
+    } catch (e) {
+      msg.className = 'form-msg err';
+      msg.textContent = '❌ エラー: ' + e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function deleteWork(idx) {
+    const w = uploadedWorks[idx];
+    if (!w) return;
+    if (!confirm('この作品を削除しますか？')) return;
+    const token = await wkEnsureToken();
+    if (!token) return;
+    const msg = document.getElementById('works-admin-msg');
+    msg.className = 'form-msg';
+    try {
+      msg.textContent = '削除中...';
+      const meta = await wkGet(WORKS_DIR + w.file, token);
+      if (meta) {
+        const res = await fetch(wkApiUrl(WORKS_DIR + w.file), {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: `JHCS: 生徒作品を削除 (${w.file})`, sha: meta.sha, branch: WK_BRANCH }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          throw new Error(`${w.file} の削除に失敗: ${(err && err.message) || 'HTTP ' + res.status}`);
+        }
+      }
+      uploadedWorks.splice(idx, 1);
+      await wkSaveManifest(token);
+      renderWorksGallery();
+      msg.className = 'form-msg ok';
+      msg.textContent = '✅ 削除しました。全体への反映には1〜2分かかります。';
+    } catch (e) {
+      msg.className = 'form-msg err';
+      msg.textContent = '❌ エラー: ' + e.message;
+    }
+  }
 
   // ── 生徒作品カルーセル ────────────────────────────
   let carPhotos = [], carIdx = 0;
@@ -1363,6 +1592,7 @@
 
   // ── 初期化 ────────────────────────────────────────
   renderWorksGallery();
+  loadWorksManifest();
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
   if (getGasUrl()) {
     loadRecords();
