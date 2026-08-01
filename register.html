@@ -56,9 +56,19 @@ input:focus,textarea:focus,select:focus{
   position:sticky;top:0;z-index:10;padding:14px 20px;
   background:linear-gradient(135deg,#3d1a08 0%,#6b3a1f 100%);
   color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.2);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
 }
+.topbar-title{flex:1;min-width:180px}
 .topbar h1{margin:0;font-size:17px}
 .topbar p{margin:3px 0 0;font-size:11px;opacity:.8}
+.topbar-nav{display:flex;gap:8px;flex-wrap:wrap}
+.topbar-nav a{
+  color:#fff;text-decoration:none;font-size:12px;white-space:nowrap;
+  padding:6px 10px;border-radius:6px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.22);
+}
+.topbar-nav a:hover{background:rgba(255,255,255,.26)}
 /* ====== MAIN ====== */
 .page-body{padding:20px;max-width:680px;margin:0 auto}
 /* ====== AVATAR CHAT ====== */
@@ -250,8 +260,15 @@ textarea{min-height:80px;resize:vertical}
 
 <!-- ====== TOPBAR ====== -->
 <div class="topbar">
-  <h1>🛍️ 商品登録</h1>
-  <p>N's factory — 販売幕僚管理ツール</p>
+  <div class="topbar-title">
+    <h1>🛍️ 商品登録</h1>
+    <p>N's factory — 販売幕僚管理ツール</p>
+  </div>
+  <nav class="topbar-nav">
+    <a href="./hanbai-room/">← 販売幕僚室</a>
+    <a href="./works.html">作品集</a>
+    <a href="./">TOP</a>
+  </nav>
 </div>
 
 <!-- ====== MAIN ====== -->
