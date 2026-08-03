@@ -24,7 +24,8 @@
 販売チャネル: Creema / minne / BASE / STORE / メルカリ / ラクマ / PayPayフリマ / Pinkoi
 兼業: カルチャースクール講師
 地域活動：第２７期印西市民アカデミー学生
-　　　　　COCoLa（千葉ニュータウンオープンコミュニティラボ（ChibaNT Open Community OPpen Lab.））代表
+　　　　　Community Bank INZAI（CBI）メンバー（印西市市民活動団体 登録番号08-001）
+　　　　　※COCoLaは2026-07-31に市民活動登録抹消・退団済
 
 ---
 
