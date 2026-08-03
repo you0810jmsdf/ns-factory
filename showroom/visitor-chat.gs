@@ -43,6 +43,15 @@ var NG_WORDS = ['死ね', '殺す', 'カス', 'http://', 'https://'];
 function doGet(e) {
   var p = (e && e.parameter) || {};
   var callback = p.callback || '';
+
+  // ?action=chatlog&key=<管理者パスワード> : 発言ログ一覧を返す（管理者限定・チャット動作とは無関係のためロック不要）
+  if (p.action === 'chatlog') {
+    var body = isAdminKey_(p.key)
+      ? readVisitorLog_(p)
+      : { status: 'error', error: 'unauthorized' };
+    return ContentService.createTextOutput(JSON.stringify(body)).setMimeType(ContentService.MimeType.JSON);
+  }
+
   var out;
   var lock = LockService.getScriptLock();
   try {
@@ -566,6 +575,63 @@ function logMsgToSheet_(m) {
   } catch (e) {
     console.error('logMsgToSheet_ failed: ' + (e && e.message ? e.message : e));
   }
+}
+
+/* ---------- 発言ログ閲覧API（管理者限定） ----------
+   chatlog.html / admin.html の接客ログタブが参照する。
+   admin.html と同一パスワード。平文は持たずSHA-256ハッシュで照合する。
+   ScriptProperties に NSF_ADMIN_KEY_HASH があればそちらを優先（ローテーション時はプロパティ側を更新）。 */
+var ADMIN_KEY_HASH_FALLBACK = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+
+function sha256Hex_(text) {
+  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(text), Utilities.Charset.UTF_8);
+  var hex = '';
+  for (var i = 0; i < bytes.length; i++) {
+    var b = (bytes[i] + 256) % 256;
+    hex += (b < 16 ? '0' : '') + b.toString(16);
+  }
+  return hex;
+}
+
+function isAdminKey_(key) {
+  if (!key) return false;
+  var expected = PropertiesService.getScriptProperties().getProperty('NSF_ADMIN_KEY_HASH') || ADMIN_KEY_HASH_FALLBACK;
+  return sha256Hex_(key) === String(expected).toLowerCase();
+}
+
+/* 発言ログを読み出して返す。セルがDate型でも文字列でも 'yyyy-MM-dd HH:mm:ss' に正規化する。
+   任意パラメータ: from / to（yyyy-MM-dd）・limit（既定1000・最大5000） */
+function readVisitorLog_(p) {
+  var sheet = getOrCreateLogSpreadsheet_();
+  var last = sheet.getLastRow();
+  if (last < 2) return { status: 'ok', rows: [], total: 0 };
+
+  var values = sheet.getRange(2, 1, last - 1, LOG_HEADER.length).getValues();
+  var from  = p && p.from ? String(p.from) : '';
+  var to    = p && p.to   ? String(p.to)   : '';
+  var limit = Math.min(parseInt((p && p.limit) || '1000', 10) || 1000, 5000);
+
+  var rows = [];
+  for (var i = 0; i < values.length; i++) {
+    var r = values[i];
+    if (!r[0]) continue;
+    var dt = r[0] instanceof Date
+      ? Utilities.formatDate(r[0], 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss')
+      : String(r[0]).replace(/\//g, '-');
+    var day = dt.substring(0, 10);
+    if (from && day < from) continue;
+    if (to   && day > to)   continue;
+    rows.push({
+      datetime: dt,
+      id:   String(r[1] || ''),
+      name: String(r[2] || ''),
+      role: String(r[3] || ''),
+      text: String(r[4] || '')
+    });
+  }
+  rows.sort(function (a, b) { return a.datetime < b.datetime ? 1 : (a.datetime > b.datetime ? -1 : 0); });
+  var total = rows.length;
+  return { status: 'ok', rows: rows.slice(0, limit), total: total, truncated: total > limit };
 }
 
 /* エディタから一度だけ実行: ログ機能の動作確認用テスト関数

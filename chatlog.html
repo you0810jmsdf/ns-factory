@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>接客ログ一覧 | N's factory</title>
+<style>
+/* ダーク管制室テーマ（staff-monitor.html と統一）。文字コントラスト4.5:1以上 */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#0d1117;color:#e6edf3;
+  min-height:100vh;
+}
+.topbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 20px;border-bottom:1px solid #30363d;background:#161b22;
+}
+.topbar h1{margin:0;font-size:17px;letter-spacing:.04em}
+.srcs{display:flex;gap:6px}
+.src-btn{
+  font-size:12px;font-weight:bold;padding:6px 14px;border-radius:999px;cursor:pointer;
+  background:#21262d;color:#9aa4af;border:1px solid #30363d;
+}
+.src-btn:hover{border-color:#58a6ff;color:#e6edf3}
+.src-btn.active{background:#1f6feb;color:#fff;border-color:#388bfd}
+.updated{margin-left:auto;font-size:12px;color:#9aa4af;text-align:right;line-height:1.5}
+
+.main{padding:16px 20px;max-width:1600px;margin:0 auto}
+
+.filters{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;
+  background:#161b22;border:1px solid #30363d;border-radius:12px;padding:12px 16px;margin-bottom:14px;
+}
+.f{display:flex;flex-direction:column;gap:4px}
+.f label{font-size:11px;color:#9aa4af}
+.f input,.f select{
+  border:1px solid #30363d;border-radius:8px;padding:7px 10px;font-size:13px;
+  background:#0d1117;color:#e6edf3;outline:none;font-family:inherit;
+}
+.f input:focus,.f select:focus{border-color:#58a6ff}
+.f input[type=search]{min-width:220px}
+.btn{
+  font-size:13px;font-weight:bold;padding:8px 16px;border-radius:8px;cursor:pointer;
+  background:#1f6feb;color:#fff;border:1px solid #388bfd;
+}
+.btn:hover{background:#388bfd}
+.btn.sub{background:#21262d;color:#c9d1d9;border-color:#30363d}
+.btn.sub:hover{border-color:#58a6ff;color:#e6edf3}
+.btn:disabled{opacity:.5;cursor:default}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick .btn{padding:6px 12px;font-size:12px}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:12px 16px}
+.kpi .label{font-size:12px;color:#9aa4af}
+.kpi .value{font-size:32px;font-weight:bold;line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi .unit{font-size:13px;font-weight:normal;color:#9aa4af;margin-left:2px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+
+.panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.panel h2{margin:0 0 10px;font-size:14px;color:#c9d1d9;letter-spacing:.03em}
+.panel h2 .sub{font-size:11px;color:#9aa4af;font-weight:normal;margin-left:8px}
+
+.breakdown{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;
+  background:#0d1117;color:#c9d1d9;border:1px solid #30363d;
+}
+.chip:hover{border-color:#58a6ff}
+.chip.active{background:#0d2438;color:#79c0ff;border-color:#1f6feb}
+.chip b{font-variant-numeric:tabular-nums;color:#e6edf3}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  color:#9aa4af;font-size:11px;text-align:left;padding:6px 10px;font-weight:normal;
+  border-bottom:1px solid #30363d;white-space:nowrap;position:sticky;top:0;background:#161b22;
+}
+td{padding:8px 10px;border-bottom:1px solid #21262d;vertical-align:top;line-height:1.6}
+td.dt{white-space:nowrap;color:#9aa4af;font-variant-numeric:tabular-nums;font-family:Consolas,monospace;font-size:12px}
+td.who{white-space:nowrap}
+td.q{color:#e6edf3;min-width:180px;word-break:break-word}
+td.a{color:#9aa4af;word-break:break-word}
+td.num{text-align:right;font-variant-numeric:tabular-nums;color:#9aa4af;white-space:nowrap}
+tr:hover td{background:#1c2128}
+.badge{
+  font-size:11px;font-weight:bold;padding:2px 9px;border-radius:999px;white-space:nowrap;
+  background:#0d2438;color:#79c0ff;border:1px solid #1f6feb;
+}
+.badge.visitor{background:#12331f;color:#4ade80;border-color:#2ea043}
+.badge.bot{background:#3a2d10;color:#e3b341;border-color:#9e6a03}
+.badge.owner{background:#2d1b3d;color:#d2a8ff;border-color:#8957e5}
+.mojibake{
+  font-size:11px;padding:1px 7px;border-radius:6px;margin-left:6px;
+  background:#3d1214;color:#ff9d9d;border:1px solid #f85149;
+}
+.more{
+  background:none;border:none;color:#58a6ff;cursor:pointer;font-size:12px;padding:0;margin-left:4px;
+  font-family:inherit;
+}
+.more:hover{text-decoration:underline}
+.empty{color:#6e7681;font-size:13px;padding:24px 0;text-align:center}
+.err{
+  margin:0 0 12px;padding:10px 14px;font-size:13px;border-radius:8px;line-height:1.7;
+  background:#3d1214;color:#ff9d9d;border:1px solid #f85149;display:none;
+}
+.note{font-size:12px;color:#6e7681;line-height:1.7;margin:10px 0 0}
+
+.auth-overlay{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(1,4,9,.8);backdrop-filter:blur(4px);
+}
+.auth-card{
+  width:min(420px,100%);background:#161b22;border:1px solid #30363d;border-radius:18px;
+  padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.5);
+}
+.auth-card h2{margin:0 0 8px;font-size:20px;color:#e6edf3}
+.auth-card p{margin:0 0 14px;font-size:13px;color:#9aa4af;line-height:1.6}
+.auth-card input{
+  width:100%;border:1px solid #30363d;border-radius:8px;padding:10px 12px;font-size:14px;
+  margin-bottom:10px;outline:none;background:#0d1117;color:#e6edf3;
+}
+.auth-card input:focus{border-color:#58a6ff}
+.auth-btn{
+  width:100%;padding:10px;background:#1f6feb;color:#fff;border:none;border-radius:8px;
+  font-size:14px;font-weight:bold;cursor:pointer;
+}
+.auth-btn:hover{background:#388bfd}
+.auth-error{min-height:18px;margin:6px 0 0;font-size:12px;color:#ff9d9d}
+.auth-locked{overflow:hidden}
+</style>
+</head>
+<body class="auth-locked">
+<div class="topbar">
+  <h1>💬 接客ログ一覧</h1>
+  <div class="srcs" role="tablist">
+    <button class="src-btn active" type="button" data-src="ai" role="tab">🤖 幕僚キャラ接客</button>
+    <button class="src-btn" type="button" data-src="visitor" role="tab">👥 みんなのチャット</button>
+  </div>
+  <span class="updated" id="updatedAt">読み込み前</span>
+</div>
+
+<div class="main">
+  <p class="err" id="loadErr"></p>
+
+  <div class="filters">
+    <div class="f"><label for="fFrom">開始日</label><input type="date" id="fFrom"></div>
+    <div class="f"><label for="fTo">終了日</label><input type="date" id="fTo"></div>
+    <div class="f">
+      <label>期間プリセット</label>
+      <div class="quick">
+        <button class="btn sub" type="button" data-range="thisMonth">今月</button>
+        <button class="btn sub" type="button" data-range="lastMonth">先月</button>
+        <button class="btn sub" type="button" data-range="all">全期間</button>
+      </div>
+    </div>
+    <div class="f"><label for="fWord">本文検索</label><input type="search" id="fWord" placeholder="質問・応答を絞り込み"></div>
+    <div class="f"><label>&nbsp;</label><button class="btn" type="button" id="reloadBtn">🔄 読み込み</button></div>
+    <div class="f"><label>&nbsp;</label><button class="btn sub" type="button" id="csvBtn">⬇ CSV</button></div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="label">発言件数</div><div class="value" id="kpiCount">–<span class="unit">件</span></div></div>
+    <div class="kpi"><div class="label">稼働日数</div><div class="value" id="kpiDays">–<span class="unit">日</span></div></div>
+    <div class="kpi"><div class="label" id="kpiAvgLabel">平均応答文字数</div><div class="value" id="kpiAvg">–<span class="unit">字</span></div></div>
+    <div class="kpi"><div class="label" id="kpiTopLabel">最多の担当</div><div class="value" id="kpiTop" style="font-size:20px">–</div></div>
+  </div>
+
+  <div class="panel">
+    <h2 id="bdTitle">👥 担当別内訳 <span class="sub">クリックで絞り込み／もう一度で解除</span></h2>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <div class="panel">
+    <h2>📋 発言一覧 <span class="sub" id="listSub">新しい順</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"><tr><td class="empty" colspan="5">「読み込み」を押してください</td></tr></tbody>
+      </table>
+    </div>
+    <p class="note" id="footNote"></p>
+  </div>
+</div>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <h2>N's Factory</h2>
+    <p>接客ログ一覧<br>サイト管理者パスワードを入力してください。</p>
+    <input type="password" id="authPassword" placeholder="パスワード" onkeydown="if(event.key==='Enter')submitAuth()">
+    <button class="auth-btn" onclick="submitAuth()">ログイン</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// 認証（SHA-256照合）。admin.html / staff-monitor.html と同一パスワード。
+// 通過時の平文を nsf_admin_key に保存し、GAS の chatlog API の key に使う。
+// admin.html の iframe から開かれた場合は同一オリジンのため再入力不要。
+// ================================================================
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const SESSION_KEY = 'nsfactory-chatlog-auth';
+const KEY_STORE = 'nsf_admin_key';  // admin.html と共通
+
+// 系統ごとのGAS。ai=Nsfactory-Showroom-AIChat / visitor=nsfactory-visitor-chat
+const SOURCES = {
+  ai: {
+    label: '幕僚キャラ接客',
+    url: 'https://script.google.com/macros/s/AKfycbwx8-cKXxhaKkczdvVvlu7v39xeM2ztOTBEn9fnzUoESuvMmxoc2lPPMHN9iEtw3mg_/exec',
+    note: '3Dショールーム・公式サイト各ページの幕僚キャラとの1対1接客。応答はGemini（無料枠・日次300件上限）。'
+  },
+  visitor: {
+    label: 'みんなのチャット',
+    url: 'https://script.google.com/macros/s/AKfycbzDfWYQey_Qn9hTHaU4gUrXkAYsTS4zViZGrZxAr5aSe3bIwh_T7wd_ktHMiE7-xhhc/exec',
+    note: 'ショールームに入店した来店者・ちえみ・販売幕僚・店長の全発言。入退店通知（sys）は記録対象外。'
+  }
+};
+
+// staffId → 表示名（showroom/data/staffData.js と対応）
+const STAFF_NAMES = {
+  kojinjigyonusi: '個人事業主', sakusen: '作戦幕僚', hannbai: '販売幕僚',
+  kouhou_room: '後方幕僚', kyouiku: '教育幕僚', kouhou: '広報幕僚',
+  kanri: '監理幕僚', jinji: '人事幕僚', digital: 'デジタル幕僚', hozen: '保全幕僚'
+};
+// visitor-chat の role → 表示名
+const ROLE_NAMES = { visitor: '来店者', chiemi: 'ちえみ', staff: '販売幕僚', owner: '店長' };
+
+function sha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
+function getKey() {
+  try { return sessionStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; }
+}
+function checkSession() {
+  try { return sessionStorage.getItem(SESSION_KEY) === 'ok' && !!getKey(); } catch (e) { return false; }
+}
+function unlockAuth() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.classList.remove('auth-locked');
+  setRange('thisMonth');
+  load();
+}
+function submitAuth() {
+  const input = document.getElementById('authPassword');
+  const errEl = document.getElementById('authError');
+  sha256(input.value).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, 'ok');
+        sessionStorage.setItem(KEY_STORE, input.value);
+      } catch (e) {}
+      unlockAuth();
+    } else {
+      errEl.textContent = 'パスワードが違います';
+    }
+  }).catch(() => { errEl.textContent = '照合に失敗しました（https環境で開いてください）'; });
+}
+
+// ================================================================
+// 状態
+// ================================================================
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let currentSrc = 'ai';
+let rows = [];        // 取得したままの全行
+let whoFilter = '';   // 担当（staffId / role）での絞り込み
+
+// 文字化け（CP932崩れ）の疑いを検出する。U+FFFD や CJK互換外の記号が連続する行を印付けする
+function looksMojibake(text) {
+  if (!text) return false;
+  const bad = (text.match(/[� -¿†-›]/g) || []).length;
+  return bad >= 3 && bad / text.length > 0.25;
+}
+function whoOf(r) { return currentSrc === 'ai' ? r.staffId : r.role; }
+function whoName(v) {
+  return currentSrc === 'ai' ? (STAFF_NAMES[v] || v || '(不明)') : (ROLE_NAMES[v] || v || '(不明)');
+}
+function badgeClass(v) {
+  if (currentSrc === 'ai') return '';
+  return v === 'visitor' ? 'visitor' : v === 'chiemi' ? 'bot' : v === 'owner' ? 'owner' : '';
+}
+
+// ================================================================
+// 取得・描画
+// ================================================================
+function setRange(kind) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  let from = '', to = '';
+  if (kind === 'thisMonth') {
+    from = fmt(new Date(now.getFullYear(), now.getMonth(), 1));
+    to   = fmt(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  } else if (kind === 'lastMonth') {
+    from = fmt(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+    to   = fmt(new Date(now.getFullYear(), now.getMonth(), 0));
+  }
+  document.getElementById('fFrom').value = from;
+  document.getElementById('fTo').value = to;
+}
+
+async function load() {
+  const errEl = document.getElementById('loadErr');
+  const btn = document.getElementById('reloadBtn');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">読み込み中…</td></tr>';
+
+  const src = SOURCES[currentSrc];
+  const qs = new URLSearchParams({ action: 'chatlog', key: getKey() });
+  const from = document.getElementById('fFrom').value;
+  const to   = document.getElementById('fTo').value;
+  if (from) qs.set('from', from);
+  if (to)   qs.set('to', to);
+
+  try {
+    // GETのみ・Content-Typeを付けないことで CORS プリフライトを回避（GAS定石）
+    const res = await fetch(src.url + '?' + qs.toString());
+    const data = await res.json();
+    if (data.status !== 'ok') throw new Error(data.error === 'unauthorized' ? 'unauthorized' : (data.error || '不明なエラー'));
+    rows = data.rows || [];
+    whoFilter = '';
+    document.getElementById('updatedAt').textContent =
+      new Date().toLocaleString('ja-JP') + ' 時点<br>' + src.label + '：全' + (data.total || 0) + '件';
+    document.getElementById('footNote').textContent =
+      src.note + (data.truncated ? '（表示上限に達したため一部のみ表示しています）' : '');
+    render();
+  } catch (e) {
+    const msg = String(e.message || e);
+    errEl.style.display = 'block';
+    errEl.innerHTML = msg === 'unauthorized'
+      ? 'このGASは管理者キーを受け付けませんでした。パスワードが変更された可能性があります。'
+      : (currentSrc === 'visitor'
+          ? '発言ログの取得に失敗しました（' + esc(msg) + '）。<br>'
+            + 'nsfactory-visitor-chat は手動貼り付け運用のため、<b>ログ閲覧APIを追加した visitor-chat.gs をGASエディタへ貼り付け・デプロイ更新するまでこのタブは動作しません。</b>'
+          : 'ログの取得に失敗しました（' + esc(msg) + '）');
+    document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">取得できませんでした</td></tr>';
+    rows = [];
+    renderKpis([]);
+    document.getElementById('breakdown').innerHTML = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function filtered() {
+  const word = document.getElementById('fWord').value.trim().toLowerCase();
+  return rows.filter(r => {
+    if (whoFilter && whoOf(r) !== whoFilter) return false;
+    if (!word) return true;
+    const hay = currentSrc === 'ai' ? (r.question + ' ' + r.reply) : r.text;
+    return String(hay).toLowerCase().indexOf(word) !== -1;
+  });
+}
+
+function renderKpis(list) {
+  const days = new Set(list.map(r => r.datetime.substring(0, 10)));
+  document.getElementById('kpiCount').innerHTML = list.length + '<span class="unit">件</span>';
+  document.getElementById('kpiDays').innerHTML = days.size + '<span class="unit">日</span>';
+
+  if (currentSrc === 'ai') {
+    const avg = list.length ? Math.round(list.reduce((s, r) => s + (r.replyLen || 0), 0) / list.length * 10) / 10 : 0;
+    document.getElementById('kpiAvgLabel').textContent = '平均応答文字数';
+    document.getElementById('kpiAvg').innerHTML = (list.length ? avg : '–') + '<span class="unit">字</span>';
+  } else {
+    const avg = list.length ? Math.round(list.reduce((s, r) => s + String(r.text || '').length, 0) / list.length * 10) / 10 : 0;
+    document.getElementById('kpiAvgLabel').textContent = '平均発言文字数';
+    document.getElementById('kpiAvg').innerHTML = (list.length ? avg : '–') + '<span class="unit">字</span>';
+  }
+
+  const cnt = {};
+  list.forEach(r => { const w = whoOf(r); cnt[w] = (cnt[w] || 0) + 1; });
+  const top = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+  document.getElementById('kpiTopLabel').textContent = currentSrc === 'ai' ? '最多の担当幕僚' : '最多の発言者';
+  document.getElementById('kpiTop').textContent = top ? whoName(top[0]) + '（' + top[1] + '件）' : '–';
+}
+
+function renderBreakdown(list) {
+  const cnt = {};
+  list.forEach(r => { const w = whoOf(r); cnt[w] = (cnt[w] || 0) + 1; });
+  const entries = Object.entries(cnt).sort((a, b) => b[1] - a[1]);
+  document.getElementById('bdTitle').innerHTML =
+    (currentSrc === 'ai' ? '👥 担当幕僚別内訳' : '👥 発言者別内訳')
+    + ' <span class="sub">クリックで絞り込み／もう一度で解除</span>';
+  document.getElementById('breakdown').innerHTML = entries.length
+    ? entries.map(([k, v]) =>
+        '<button class="chip' + (whoFilter === k ? ' active' : '') + '" type="button" data-who="' + esc(k) + '">'
+        + esc(whoName(k)) + ' <b>' + v + '</b></button>').join('')
+    : '<span class="empty">該当なし</span>';
+}
+
+function cellText(text, id) {
+  const t = String(text || '');
+  const mb = looksMojibake(t) ? '<span class="mojibake">文字化け</span>' : '';
+  if (t.length <= 90) return esc(t) + mb;
+  return '<span data-full="' + esc(t) + '" id="' + id + '">' + esc(t.slice(0, 90)) + '…</span>'
+       + '<button class="more" type="button" data-more="' + id + '">全文</button>' + mb;
+}
+
+function render() {
+  const list = filtered();
+  renderKpis(list);
+  renderBreakdown(whoFilter ? rows : list);   // 内訳は絞り込み前の母集団で出す
+
+  const thead = document.getElementById('thead');
+  const tbody = document.getElementById('tbody');
+
+  if (currentSrc === 'ai') {
+    thead.innerHTML = '<tr><th>日時</th><th>担当幕僚</th><th>お客様の質問</th><th>AIの応答</th><th>応答字数</th></tr>';
+    tbody.innerHTML = list.length ? list.map((r, i) =>
+      '<tr><td class="dt">' + esc(r.datetime) + '</td>'
+      + '<td class="who"><span class="badge">' + esc(whoName(r.staffId)) + '</span></td>'
+      + '<td class="q">' + cellText(r.question, 'q' + i) + '</td>'
+      + '<td class="a">' + cellText(r.reply, 'a' + i) + '</td>'
+      + '<td class="num">' + (r.replyLen || 0) + '</td></tr>').join('')
+      : '<tr><td class="empty" colspan="5">該当する発言はありません</td></tr>';
+  } else {
+    thead.innerHTML = '<tr><th>日時</th><th>発言者</th><th>表示名</th><th>発言</th><th>字数</th></tr>';
+    tbody.innerHTML = list.length ? list.map((r, i) =>
+      '<tr><td class="dt">' + esc(r.datetime) + '</td>'
+      + '<td class="who"><span class="badge ' + badgeClass(r.role) + '">' + esc(whoName(r.role)) + '</span></td>'
+      + '<td class="who">' + esc(r.name) + '</td>'
+      + '<td class="q">' + cellText(r.text, 't' + i) + '</td>'
+      + '<td class="num">' + String(r.text || '').length + '</td></tr>').join('')
+      : '<tr><td class="empty" colspan="5">該当する発言はありません</td></tr>';
+  }
+  document.getElementById('listSub').textContent =
+    '新しい順・' + list.length + '件' + (whoFilter ? '（' + whoName(whoFilter) + 'で絞り込み中）' : '');
+}
+
+function downloadCsv() {
+  const list = filtered();
+  if (!list.length) { alert('出力対象がありません'); return; }
+  const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
+  const head = currentSrc === 'ai'
+    ? ['日時', 'staffId', '担当幕僚', '質問', '応答', '応答字数']
+    : ['日時', 'id', 'role', '発言者', '表示名', '発言'];
+  const body = list.map(r => currentSrc === 'ai'
+    ? [r.datetime, r.staffId, whoName(r.staffId), r.question, r.reply, r.replyLen].map(q).join(',')
+    : [r.datetime, r.id, r.role, whoName(r.role), r.name, r.text].map(q).join(','));
+  // Excelでの文字化けを防ぐためBOM付きUTF-8で出力する
+  const blob = new Blob(['﻿' + [head.map(q).join(',')].concat(body).join('\r\n')],
+    { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'chatlog_' + currentSrc + '_'
+    + (document.getElementById('fFrom').value || 'all') + '_'
+    + (document.getElementById('fTo').value || 'all') + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ================================================================
+// イベント
+// ================================================================
+document.querySelectorAll('.src-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.src-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  currentSrc = b.dataset.src;
+  whoFilter = '';
+  load();
+}));
+document.querySelectorAll('[data-range]').forEach(b => b.addEventListener('click', () => {
+  setRange(b.dataset.range);
+  load();
+}));
+document.getElementById('reloadBtn').addEventListener('click', load);
+document.getElementById('csvBtn').addEventListener('click', downloadCsv);
+document.getElementById('fWord').addEventListener('input', () => { if (rows.length) render(); });
+document.getElementById('breakdown').addEventListener('click', (ev) => {
+  const chip = ev.target.closest('[data-who]');
+  if (!chip) return;
+  whoFilter = (whoFilter === chip.dataset.who) ? '' : chip.dataset.who;
+  render();
+});
+document.getElementById('tbody').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('[data-more]');
+  if (!btn) return;
+  const span = document.getElementById(btn.dataset.more);
+  if (span) { span.textContent = span.dataset.full; btn.remove(); }
+});
+
+if (checkSession()) unlockAuth();
+else document.getElementById('authPassword').focus();
+</script>
+</body>
+</html>
