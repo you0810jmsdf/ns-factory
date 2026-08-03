@@ -113,12 +113,12 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My docomo）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.docomo.ne.jp/mydocomo/",
-          "steps": "携帯（docomo）は料金確定メールが届かないため手動DL。My docomo →「ご利用料金」→ 料金明細をDL。※将来: My docomoの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "url": "https://my.softbank.jp/",
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -232,12 +232,12 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My docomo）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.docomo.ne.jp/mydocomo/",
-          "steps": "携帯（docomo）は料金確定メールが届かないため手動DL。My docomo →「ご利用料金」→ 料金明細をDL。※将来: My docomoの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "url": "https://my.softbank.jp/",
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -351,12 +351,12 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My docomo）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.docomo.ne.jp/mydocomo/",
-          "steps": "携帯（docomo）は料金確定メールが届かないため手動DL。My docomo →「ご利用料金」→ 料金明細をDL。※将来: My docomoの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "url": "https://my.softbank.jp/",
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -470,12 +470,12 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My docomo）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.docomo.ne.jp/mydocomo/",
-          "steps": "携帯（docomo）は料金確定メールが届かないため手動DL。My docomo →「ご利用料金」→ 料金明細をDL。※将来: My docomoの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "url": "https://my.softbank.jp/",
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -589,12 +589,12 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My docomo）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.docomo.ne.jp/mydocomo/",
-          "steps": "携帯（docomo）は料金確定メールが届かないため手動DL。My docomo →「ご利用料金」→ 料金明細をDL。※将来: My docomoの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "url": "https://my.softbank.jp/",
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -708,12 +708,12 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My docomo）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.docomo.ne.jp/mydocomo/",
-          "steps": "携帯（docomo）は料金確定メールが届かないため手動DL。My docomo →「ご利用料金」→ 料金明細をDL。※将来: My docomoの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "url": "https://my.softbank.jp/",
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -827,12 +827,12 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My docomo）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.docomo.ne.jp/mydocomo/",
-          "steps": "携帯（docomo）は料金確定メールが届かないため手動DL。My docomo →「ご利用料金」→ 料金明細をDL。※将来: My docomoの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "url": "https://my.softbank.jp/",
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
