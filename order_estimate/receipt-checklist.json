@@ -104,12 +104,12 @@
         }
       },
       "internet": {
-        "status": "手動DL（My SoftBank）",
+        "status": "SoftBank合算（mobile列参照）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://my.softbank.jp/",
-          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
+          "url": "",
+          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
@@ -118,7 +118,7 @@
         "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
-          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -223,12 +223,12 @@
         }
       },
       "internet": {
-        "status": "手動DL（My SoftBank）",
+        "status": "SoftBank合算（mobile列参照）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://my.softbank.jp/",
-          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
+          "url": "",
+          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
@@ -237,7 +237,7 @@
         "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
-          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -342,12 +342,12 @@
         }
       },
       "internet": {
-        "status": "手動DL（My SoftBank）",
+        "status": "SoftBank合算（mobile列参照）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://my.softbank.jp/",
-          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
+          "url": "",
+          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
@@ -356,7 +356,7 @@
         "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
-          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -461,12 +461,12 @@
         }
       },
       "internet": {
-        "status": "手動DL（My SoftBank）",
+        "status": "SoftBank合算（mobile列参照）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://my.softbank.jp/",
-          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
+          "url": "",
+          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
@@ -475,7 +475,7 @@
         "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
-          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -580,12 +580,12 @@
         }
       },
       "internet": {
-        "status": "手動DL（My SoftBank）",
+        "status": "SoftBank合算（mobile列参照）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://my.softbank.jp/",
-          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
+          "url": "",
+          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
@@ -594,7 +594,7 @@
         "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
-          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -699,12 +699,12 @@
         }
       },
       "internet": {
-        "status": "手動DL（My SoftBank）",
+        "status": "SoftBank合算（mobile列参照）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://my.softbank.jp/",
-          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
+          "url": "",
+          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
@@ -713,7 +713,7 @@
         "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
-          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
@@ -818,12 +818,12 @@
         }
       },
       "internet": {
-        "status": "手動DL（My SoftBank）",
+        "status": "SoftBank合算（mobile列参照）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://my.softbank.jp/",
-          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
+          "url": "",
+          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
@@ -832,7 +832,7 @@
         "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
-          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "home_loan": {
