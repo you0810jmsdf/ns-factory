@@ -157,7 +157,8 @@ tr:hover td{background:#1c2128}
         <button class="btn sub" type="button" data-range="all">全期間</button>
       </div>
     </div>
-    <div class="f"><label for="fWord">本文検索</label><input type="search" id="fWord" placeholder="質問・応答を絞り込み"></div>
+    <!-- autocomplete/name無指定だとブラウザがメールアドレス等を自動入力し、意図せず0件表示になる -->
+    <div class="f"><label for="fWord">本文検索</label><input type="search" id="fWord" placeholder="質問・応答を絞り込み" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
     <div class="f"><label>&nbsp;</label><button class="btn" type="button" id="reloadBtn">🔄 読み込み</button></div>
     <div class="f"><label>&nbsp;</label><button class="btn sub" type="button" id="csvBtn">⬇ CSV</button></div>
   </div>
@@ -429,8 +430,20 @@ function render() {
       + '<td class="num">' + String(r.text || '').length + '</td></tr>').join('')
       : '<tr><td class="empty" colspan="5">該当する発言はありません</td></tr>';
   }
+  // 絞り込みの結果0件になったとき、その理由が画面から分かるようにする
+  const word = document.getElementById('fWord').value.trim();
+  const conds = [];
+  if (whoFilter) conds.push(whoName(whoFilter));
+  if (word) conds.push('本文「' + word + '」');
   document.getElementById('listSub').textContent =
-    '新しい順・' + list.length + '件' + (whoFilter ? '（' + whoName(whoFilter) + 'で絞り込み中）' : '');
+    '新しい順・' + list.length + '件'
+    + (conds.length ? '（' + conds.join(' / ') + 'で絞り込み中・全' + rows.length + '件）' : '');
+  if (!list.length && conds.length) {
+    document.getElementById('tbody').innerHTML =
+      '<tr><td class="empty" colspan="5">絞り込み条件に一致する発言はありません'
+      + '（取得済みは' + rows.length + '件）<br>'
+      + '<button class="more" type="button" id="clearFilters">絞り込みを解除する</button></td></tr>';
+  }
 }
 
 function downloadCsv() {
@@ -479,6 +492,12 @@ document.getElementById('breakdown').addEventListener('click', (ev) => {
   render();
 });
 document.getElementById('tbody').addEventListener('click', (ev) => {
+  if (ev.target.id === 'clearFilters') {
+    whoFilter = '';
+    document.getElementById('fWord').value = '';
+    render();
+    return;
+  }
   const btn = ev.target.closest('[data-more]');
   if (!btn) return;
   const span = document.getElementById(btn.dataset.more);
