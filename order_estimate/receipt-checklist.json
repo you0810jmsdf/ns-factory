@@ -104,12 +104,12 @@
         }
       },
       "internet": {
-        "status": "要確認（提供先未特定）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "",
-          "steps": "提供会社が未特定。まず契約中のプロバイダを確認する（ドコモ光ならMy docomoに合算＝mobile列と統合可）。特定後、請求書DL手順をここに追記する。"
+          "url": "https://my.softbank.jp/",
+          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
         }
       },
       "mobile": {
@@ -223,12 +223,12 @@
         }
       },
       "internet": {
-        "status": "要確認（提供先未特定）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "",
-          "steps": "提供会社が未特定。まず契約中のプロバイダを確認する（ドコモ光ならMy docomoに合算＝mobile列と統合可）。特定後、請求書DL手順をここに追記する。"
+          "url": "https://my.softbank.jp/",
+          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
         }
       },
       "mobile": {
@@ -342,12 +342,12 @@
         }
       },
       "internet": {
-        "status": "要確認（提供先未特定）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "",
-          "steps": "提供会社が未特定。まず契約中のプロバイダを確認する（ドコモ光ならMy docomoに合算＝mobile列と統合可）。特定後、請求書DL手順をここに追記する。"
+          "url": "https://my.softbank.jp/",
+          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
         }
       },
       "mobile": {
@@ -461,12 +461,12 @@
         }
       },
       "internet": {
-        "status": "要確認（提供先未特定）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "",
-          "steps": "提供会社が未特定。まず契約中のプロバイダを確認する（ドコモ光ならMy docomoに合算＝mobile列と統合可）。特定後、請求書DL手順をここに追記する。"
+          "url": "https://my.softbank.jp/",
+          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
         }
       },
       "mobile": {
@@ -580,12 +580,12 @@
         }
       },
       "internet": {
-        "status": "要確認（提供先未特定）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "",
-          "steps": "提供会社が未特定。まず契約中のプロバイダを確認する（ドコモ光ならMy docomoに合算＝mobile列と統合可）。特定後、請求書DL手順をここに追記する。"
+          "url": "https://my.softbank.jp/",
+          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
         }
       },
       "mobile": {
@@ -699,12 +699,12 @@
         }
       },
       "internet": {
-        "status": "要確認（提供先未特定）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "",
-          "steps": "提供会社が未特定。まず契約中のプロバイダを確認する（ドコモ光ならMy docomoに合算＝mobile列と統合可）。特定後、請求書DL手順をここに追記する。"
+          "url": "https://my.softbank.jp/",
+          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
         }
       },
       "mobile": {
@@ -818,12 +818,12 @@
         }
       },
       "internet": {
-        "status": "要確認（提供先未特定）",
+        "status": "手動DL（My SoftBank）",
         "count": 0,
         "records": [],
         "guide": {
-          "url": "",
-          "steps": "提供会社が未特定。まず契約中のプロバイダを確認する（ドコモ光ならMy docomoに合算＝mobile列と統合可）。特定後、請求書DL手順をここに追記する。"
+          "url": "https://my.softbank.jp/",
+          "steps": "ネット回線はSoftBank光。料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。※携帯（SoftBank）と合算請求になっている場合は mobile列 と同一の明細に含まれるため、二重保存にならないよう明細の内訳を確認すること。"
         }
       },
       "mobile": {
