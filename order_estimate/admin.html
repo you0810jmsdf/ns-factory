@@ -747,6 +747,7 @@ tr.row-out-stock td{
       <!-- 📣 発信・接客 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="threads-sns" data-admin-cat="promo" role="tab" aria-selected="false">📣 Threads投稿管理</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="hearing" data-admin-cat="promo" role="tab" aria-selected="false">🧵 対話ナレッジ</button>
+      <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="chatlog" data-admin-cat="promo" role="tab" aria-selected="false">💬 接客ログ</button>
     </div>
     <div class="admin-tab-note" id="adminTabNote">N's Factory 幕僚計画。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。</div>
 
@@ -810,6 +811,25 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
         title="幕僚稼働監視"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- 接客ログタブ -->
+    <div class="panel chatlog-section admin-section-hidden" id="chatlogPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:#8a6a4a">幕僚キャラ接客・みんなのチャットの全発言ログ。認証は本画面と共通・自動ログイン</div>
+        <a href="../chatlog.html" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット（開かない限りGASを呼ばない） -->
+      <iframe
+        id="chatlogFrame"
+        data-src="../chatlog.html"
+        src="about:blank"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
+        title="接客ログ一覧"
         loading="lazy"></iframe>
     </div>
 
@@ -1601,8 +1621,11 @@ function unlockAdmin() {
     const link = document.getElementById('calendarOpenLink');
     if (link) link.href = link.href.split('?')[0] + '?key=' + encodeURIComponent(key);
   }
-  // 幕僚稼働監視（staff-monitor.html）は同一パスワードのため、認証通過を引き継ぐ
-  try { sessionStorage.setItem('nsfactory-staff-monitor-auth', 'ok'); } catch (err) { /* ignore */ }
+  // 幕僚稼働監視（staff-monitor.html）・接客ログ（chatlog.html）は同一パスワードのため、認証通過を引き継ぐ
+  try {
+    sessionStorage.setItem('nsfactory-staff-monitor-auth', 'ok');
+    sessionStorage.setItem('nsfactory-chatlog-auth', 'ok');
+  } catch (err) { /* ignore */ }
   tryAutoFetchToken();
 }
 
@@ -4167,7 +4190,7 @@ const ADMIN_TAB_TO_CAT = {
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics',
-  'threads-sns': 'promo', 'hearing': 'promo',
+  'threads-sns': 'promo', 'hearing': 'promo', 'chatlog': 'promo',
 };
 // カテゴリごとに最後に開いたタブを覚えておき、カテゴリ再選択時に復元する
 const adminLastTabByCat = {};
@@ -4188,7 +4211,8 @@ function setAdminTab(tab) {
   const isReceiptChecklist = tab === 'receipt-checklist';
   const isDashboard = tab === 'dashboard';
   const isStaffMonitor = tab === 'staff-monitor';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor;
+  const isChatlog = tab === 'chatlog';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -4242,6 +4266,9 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.staff-monitor-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isStaffMonitor);
+  });
+  document.querySelectorAll('.chatlog-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isChatlog);
   });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
     el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor);
@@ -4334,6 +4361,8 @@ function setAdminTab(tab) {
       ? '本番の見積もりページと同一の計算式で全サイズ×全構造の価格をライブ試算します。スライダーと表内の入力欄で調整し、まとめてGitHubへ反映できます。'
       : isStaffMonitor
       ? '幕僚エージェントの稼働セッション数・さぼり警告・期限超過タスクを監視します。リアルタイム詳細（作業内容・完了操作）は自宅PCのローカルモニタから。'
+      : isChatlog
+      ? 'ショールームのAI接客ログを一覧表示します。幕僚キャラ接客／みんなのチャットの2系統を切り替え、期間・担当・本文で絞り込み、CSV出力できます（月次使用量レポートの集計元）。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
   if (isAnalytics && !gaLoaded) gaLoad(7);
@@ -4352,6 +4381,13 @@ function setAdminTab(tab) {
     const smFrame = document.getElementById('staffMonitorFrame');
     if (smFrame && smFrame.src.indexOf('staff-monitor.html') === -1 && smFrame.dataset.src) {
       smFrame.src = smFrame.dataset.src;
+    }
+  }
+  if (isChatlog) {
+    // 初回表示時のみ src をセット（認証は unlockAdmin() が chatlog 側のセッションキーを付与済み）
+    const clFrame = document.getElementById('chatlogFrame');
+    if (clFrame && clFrame.src.indexOf('chatlog.html') === -1 && clFrame.dataset.src) {
+      clFrame.src = clFrame.dataset.src;
     }
   }
 }
