@@ -363,18 +363,15 @@ function handleFreeInput(){
     addMsg('bot','こちらこそ、ご覧いただきありがとうございました🧵 ご入用の際は、いつでもお気軽にお声がけください。');
     return;
   }
-  // 商品選択フェーズでの自由入力 → ボタンへ誘導
+  // 商品選択フェーズでの自由入力 → 弾かずにAIがそのまま応対する
   if(state._picking){
-    addMsg('user', v);
-    addMsg('bot','下のボタンから作りたいアイテムをお選びくださいね🙂（革の色・在庫のご質問には、このままお答えできます）');
+    autoEnterLiveMode(v);
     return;
   }
-  // ガイドモードで自由入力が来たとき
-  if(state._awaitKey){ handleAnswer(v, v); }
-  else { // 想定外の雑談 → やんわり誘導
-    addMsg('user', v);
-    addMsg('bot','ありがとうございます。下のボタンからお選びいただくか、続けて入力してくださいね。（自由に相談したい場合は右上「AI会話モード」もご利用いただけます）');
-  }
+  // ガイドの設問に答えている最中はその回答として扱う
+  if(state._awaitKey){ handleAnswer(v, v); return; }
+  // 設問外の自由入力 → 弾かずにAIがそのまま応対する
+  autoEnterLiveMode(v);
 }
 
 /* =========================================================================
@@ -874,6 +871,7 @@ document.getElementById('modeBtn').onclick=()=>{
 let history=[];
 function enterLiveMode(){
   state.liveMode=true;
+  state._autoLive=false;
   quickEl.innerHTML=''; chat.innerHTML='';
   history=[];
   addMsg('bot','AI会話モードに切り替えました🧵 自由にご相談ください。「A6でシンプルな手帳がほしい」「二つ折り財布を作りたい」のように、思いつくままに話しかけてくださいね。');
@@ -881,12 +879,31 @@ function enterLiveMode(){
 }
 function exitLiveMode(){
   state.liveMode=false;
+  state._autoLive=false;
   chat.innerHTML=''; quickEl.innerHTML='';
   document.getElementById('modeBtn').textContent='⚙ AI会話モード';
   startPicker();
 }
-async function liveTurn(userText){
+
+/* ガイド中にボタン以外の文章が来たときの自動切替（2026-08-03）。
+   従来は「下のボタンからお選びください」と弾いており、入力欄の
+   「自由に話しかけてOK」という案内と矛盾していた（お客様がモードの存在に
+   気づけないという指摘を受けての是正）。
+   手動切替（enterLiveMode）と違い、それまでの会話は消さずに引き継ぐ。 */
+function autoEnterLiveMode(userText){
+  state.liveMode=true;
+  state._autoLive=true;           // 上限到達時にガイドへ戻すための目印
+  quickEl.innerHTML='';
+  simEntry.innerHTML='';
+  history=[];
+  document.getElementById('modeBtn').textContent='↩ ガイドに戻る';
+  // お客様の発言→相槌→AI応答の順に並ぶよう、発言表示はここで行い liveTurn 側では省く
   addMsg('user', userText);
+  addMsg('bot','承知しました、そのままお伺いしますね🧵');
+  liveTurn(userText, true);
+}
+async function liveTurn(userText, skipEcho){
+  if(!skipEcho) addMsg('user', userText);
   history.push({role:'user', content:userText});
   showTyping();
   try{
@@ -903,9 +920,17 @@ async function liveTurn(userText){
     const data=await res.json();
     if(data.error){
       const msg = data.error==='quota exceeded'
-        ? '本日のAI相談回数の上限に達しました。恐れ入りますが、ガイド対話モードをご利用いただくか、後ほどお試しください。'
+        ? '本日のAI相談回数の上限に達しました。恐れ入りますが、下のボタンから選んでいただく形でお伺いします。'
         : '⚠️ AIへの接続でエラーが出ました。少し時間をおいて再度お試しください。';
       addMsg('bot', msg);
+      // 自動で切り替わった直後に上限へ当たると、お客様は行き場を失う。
+      // その場合だけ、会話を消さずにガイドの選択ボタンを出し直す
+      if(data.error==='quota exceeded' && state._autoLive){
+        state.liveMode=false; state._autoLive=false;
+        document.getElementById('modeBtn').textContent='⚙ AI会話モード';
+        renderQuick(productQuickItems());
+        state._picking=true;
+      }
       return;
     }
     const reply=data.reply||'(応答が空でした)';
