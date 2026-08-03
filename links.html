@@ -14,6 +14,7 @@
   </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
@@ -156,6 +157,9 @@
     .icon-mail       { background: #5C3D2E; }
     .icon-line       { background: #06C755; }
     .icon-cocola     { background: #4A90D9; }
+    .icon-cbi        { background: #fff; border: 1px solid #E0D0BC; padding: 2px; }
+    .icon-cbi img    { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .icon-cidao      { background: #6B4FA0; }
     .icon-inframe    { background: #2F6F73; }
     .icon-linestamp  { background: #06C755; }
     .icon-note       { background: #41C9B4; }
@@ -183,6 +187,159 @@
       box-shadow: 0 4px 10px rgba(92,61,46,0.12);
     }
 
+
+    /* ===== プロフィール（名刺QRの着地面）===== */
+    .profile {
+      background: #FFFDF9;
+      border: 1px solid #E0D0BC;
+      border-radius: 14px;
+      padding: 0 0 24px;
+      margin-top: 20px;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(92,61,46,0.08);
+    }
+    .hero-photo {
+      width: 100%;
+      background: #241810;
+      line-height: 0;
+      text-align: center;
+    }
+    .hero-photo img {
+      width: auto;
+      max-width: 100%;
+      max-height: 88vh;
+      display: inline-block;
+      vertical-align: top;
+    }
+    .profile-inner { padding: 24px 22px 0; }
+    .profile-eyebrow {
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      color: #A08060;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .jump-links {
+      display: block;
+      text-align: center;
+      background: #EFE7DA;
+      color: #5C3D2E;
+      font-size: 11.5px;
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      padding: 13px 12px;
+      text-decoration: none;
+      border-bottom: 1px solid #DCCBB4;
+      transition: background 0.2s;
+    }
+    .jump-links:hover { background: #E5D9C6; }
+    .profile-name {
+      font-size: 19px;
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      color: #3A2410;
+      margin-bottom: 3px;
+    }
+    .profile-romaji {
+      font-size: 11px;
+      font-style: italic;
+      letter-spacing: 0.14em;
+      color: #A08060;
+      margin-bottom: 4px;
+    }
+    .profile-role {
+      font-size: 11px;
+      line-height: 1.8;
+      color: #8B6048;
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #EDE2D2;
+    }
+    .profile-body {
+      font-size: 13px;
+      line-height: 1.95;
+      color: #4A3620;
+      margin-bottom: 14px;
+    }
+    .profile-meta {
+      font-size: 10.5px;
+      line-height: 1.9;
+      color: #A08060;
+      letter-spacing: 0.04em;
+    }
+
+    /* ===== お悩みカード ===== */
+    .worry {
+      background: #5C3D2E;
+      color: #F5EFE6;
+      border-radius: 14px;
+      padding: 22px;
+      margin-top: 16px;
+    }
+    .worry-title {
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      color: #D4B896;
+      margin-bottom: 14px;
+    }
+    .worry ul { list-style: none; }
+    .worry li {
+      font-size: 12.5px;
+      line-height: 1.7;
+      padding: 7px 0 7px 24px;
+      position: relative;
+      border-bottom: 1px solid rgba(212,184,150,0.18);
+    }
+    .worry li:last-child { border-bottom: none; }
+    .worry li::before {
+      content: "\2713";
+      position: absolute;
+      left: 2px;
+      top: 7px;
+      color: #D4B896;
+      font-size: 12px;
+    }
+    .worry-close {
+      margin-top: 16px;
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 0.06em;
+      text-align: center;
+      color: #fff;
+    }
+
+    /* ===== できること（サービス4枠）===== */
+    .svc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .svc-card {
+      background: #fff;
+      border: 1px solid #E0D0BC;
+      border-radius: 10px;
+      padding: 14px 12px;
+      box-shadow: 0 2px 4px rgba(92,61,46,0.06);
+    }
+    .svc-no {
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      color: #C4A882;
+      margin-bottom: 5px;
+    }
+    .svc-name {
+      font-size: 13px;
+      font-weight: bold;
+      color: #3A2410;
+      margin-bottom: 6px;
+    }
+    .svc-desc {
+      font-size: 11px;
+      line-height: 1.7;
+      color: #8B6048;
+    }
+
     /* フッター */
     .footer {
       text-align: center;
@@ -194,6 +351,11 @@
 </head>
 <body>
 
+<!-- ヒーロー写真（名刺QRを開いた最初の一画面）-->
+<div class="hero-photo">
+  <img src="https://you0810jmsdf.github.io/ns-factory/assets/artisan2.jpg" alt="N's factory 中司 祐樹">
+</div>
+
 <!-- ヘッダー -->
 <div class="header">
   <div class="logo">N's Factory</div>
@@ -201,10 +363,75 @@
   <a class="site-btn" href="https://you0810jmsdf.github.io/ns-factory/" target="_blank">🏠 公式サイトを見る</a>
 </div>
 
+<a class="jump-links" href="#shop">販売サイト・SNS一覧へ　↓</a>
+
 <div class="container">
 
-  <!-- ========== 販売サイト ========== -->
+  <!-- ========== プロフィール（名刺QRの着地面）========== -->
+  <div class="profile">
+    <div class="profile-inner">
+      <div class="profile-eyebrow">Leather Craft Artisan</div>
+      <div class="profile-name">中司 祐樹</div>
+      <div class="profile-romaji">Yuki Nakazuka</div>
+      <div class="profile-role">レザークラフト作家 / N's factory 主宰<br>システム手帳 × オーダーメイド × 型紙設計</div>
+
+      <p class="profile-body">
+        千葉県印西市の小さな工房で、システム手帳を中心に革小物をつくっています。<br>
+        革に触れて<span class="js-yr-craft">8</span>年。個人事業として工房を構えて<span class="js-yr-biz">2</span>年目になります。<br>
+        つくるだけでなく、カルチャースクールで教える仕事、型紙を設計して届ける仕事も並行しています。
+      </p>
+
+      <div class="profile-meta">
+        レザークラフト歴<span class="js-yr-craft">8</span>年 / 開業<span class="js-yr-biz">2</span>年目<br>
+        カルチャースクール講師<br>
+        千葉ニュータウンオープンコミュニティラボ（COCoLa）代表<br>
+        第27期 印西市民アカデミー 在籍
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== こんなお悩み ========== -->
+  <div class="worry">
+    <div class="worry-title">こんなお悩み、ありませんか？</div>
+    <ul>
+      <li>既製の手帳では、サイズも革の質感も好みに合わない</li>
+      <li>長く使えるものが欲しいが、量産品はすぐに傷んでしまう</li>
+      <li>自分だけの一冊を持ちたいが、どこに頼めばいいかわからない</li>
+      <li>革のお手入れが不安で、いいものに手が出せない</li>
+      <li>贈りものに、既製品ではない特別な一品を探している</li>
+    </ul>
+    <div class="worry-close">その一冊、一緒につくります。</div>
+  </div>
+
+  <!-- ========== できること ========== -->
   <div class="section">
+    <div class="section-title">できること</div>
+    <div class="svc-grid">
+      <div class="svc-card">
+        <div class="svc-no">01</div>
+        <div class="svc-name">システム手帳</div>
+        <div class="svc-desc">主力製品。バイブル・A5・M6など各サイズを制作します。</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-no">02</div>
+        <div class="svc-name">オーダーメイド</div>
+        <div class="svc-desc">革・色・ステッチ・金具を選んで、あなただけの一品に。</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-no">03</div>
+        <div class="svc-name">型紙PDF販売</div>
+        <div class="svc-desc">ご自身でつくりたい方へ。N's pattern シリーズ。</div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-no">04</div>
+        <div class="svc-name">教室・講座</div>
+        <div class="svc-desc">カルチャースクール講師として、基礎からお教えします。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 販売サイト ========== -->
+  <div class="section" id="shop">
     <div class="section-title">販売サイト</div>
     <div class="subsection-title">マーケットプレイス</div>
 
@@ -431,6 +658,24 @@
       </div>
       <span class="btn-arrow">›</span>
     </a>
+
+    <a class="link-btn" href="https://communitybankinzai.github.io/cbi-site/" target="_blank" rel="noopener">
+      <div class="btn-icon icon-cbi"><img src="https://you0810jmsdf.github.io/ns-factory/assets/cbi-logo.png" alt="Community Bank INZAI ロゴ"></div>
+      <div class="btn-text">
+        <div class="btn-name">Community Bank INZAI（CBI）</div>
+        <div class="btn-desc">印西「このゆびとまれ」プロジェクト</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
+    <a class="link-btn" href="https://cidao.vercel.app/login" target="_blank" rel="noopener">
+      <div class="btn-icon icon-cidao" style="color:#fff;">🗳️</div>
+      <div class="btn-text">
+        <div class="btn-name">CiDAO（市民DAO）</div>
+        <div class="btn-desc">CBI運営 — 印西市民の提案・投票プラットフォーム</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
   </div>
 
 </div>
@@ -440,5 +685,21 @@
 </div>
 
 <script src="assets/access-counter.js"></script>
+<script>
+// 年数の自動更新。年が変わっても文言が古くならないよう、起点年から毎回計算する。
+// ▼ 起点年を変える時はこの2つだけ直す
+(function () {
+  var CRAFT_START = 2018; // レザークラフトを始めた年（2026年時点で8年）
+  var BIZ_START   = 2025; // 個人事業として開業した年（2026年時点で2年目）
+  var y = new Date().getFullYear();
+  var set = function (cls, val) {
+    var els = document.getElementsByClassName(cls);
+    for (var i = 0; i < els.length; i++) { els[i].textContent = String(val); }
+  };
+  set('js-yr-craft', Math.max(1, y - CRAFT_START));
+  set('js-yr-biz', Math.max(1, y - BIZ_START + 1));
+})();
+</script>
+
 </body>
 </html>
