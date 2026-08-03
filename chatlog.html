@@ -140,6 +140,7 @@ tr:hover td{background:#1c2128}
     <button class="src-btn active" type="button" data-src="ai" role="tab">🤖 幕僚キャラ接客</button>
     <button class="src-btn" type="button" data-src="visitor" role="tab">👥 みんなのチャット</button>
     <button class="src-btn" type="button" data-src="hearing" role="tab">🧵 オーダー相談AI</button>
+    <button class="src-btn" type="button" data-src="archive" role="tab">📦 月次アーカイブ</button>
   </div>
   <span class="updated" id="updatedAt">読み込み前</span>
 </div>
@@ -148,15 +149,24 @@ tr:hover td{background:#1c2128}
   <p class="err" id="loadErr"></p>
 
   <div class="filters">
-    <div class="f"><label for="fFrom">開始日</label><input type="date" id="fFrom"></div>
-    <div class="f"><label for="fTo">終了日</label><input type="date" id="fTo"></div>
-    <div class="f">
+    <div class="f live-only"><label for="fFrom">開始日</label><input type="date" id="fFrom"></div>
+    <div class="f live-only"><label for="fTo">終了日</label><input type="date" id="fTo"></div>
+    <div class="f live-only">
       <label>期間プリセット</label>
       <div class="quick">
         <button class="btn sub" type="button" data-range="thisMonth">今月</button>
         <button class="btn sub" type="button" data-range="lastMonth">先月</button>
         <button class="btn sub" type="button" data-range="all">全期間</button>
       </div>
+    </div>
+    <div class="f archive-only" style="display:none"><label for="fMonth">保存済みの月</label><select id="fMonth"></select></div>
+    <div class="f archive-only" style="display:none">
+      <label for="fArcSrc">系統</label>
+      <select id="fArcSrc">
+        <option value="ai">🤖 幕僚キャラ接客</option>
+        <option value="visitor">👥 みんなのチャット</option>
+        <option value="hearing">🧵 オーダー相談AI</option>
+      </select>
     </div>
     <!-- autocomplete/name無指定だとブラウザがメールアドレス等を自動入力し、意図せず0件表示になる -->
     <div class="f"><label for="fWord">本文検索</label><input type="search" id="fWord" placeholder="質問・応答を絞り込み" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
@@ -220,6 +230,12 @@ const SOURCES = {
     url: 'https://script.google.com/macros/s/AKfycbzDfWYQey_Qn9hTHaU4gUrXkAYsTS4zViZGrZxAr5aSe3bIwh_T7wd_ktHMiE7-xhhc/exec',
     note: 'ショールームに入店した来店者・ちえみ・販売幕僚・店長の全発言。入退店通知（sys）は記録対象外。'
   },
+  archive: {
+    label: '月次アーカイブ',
+    url: 'https://script.google.com/macros/s/AKfycbwx8-cKXxhaKkczdvVvlu7v39xeM2ztOTBEn9fnzUoESuvMmxoc2lPPMHN9iEtw3mg_/exec',
+    note: '毎月1日03:00に前月分を自動保存しています（保存先: スプレッドシート「N\'s factory AI接客ログ アーカイブ」）。'
+       + '直近60件しか残らないオーダー相談AIも、この月次保存で永続化されます。'
+  },
   hearing: {
     label: 'オーダー相談AI',
     url: 'https://script.google.com/macros/s/AKfycbwABbFeZucU9N4k8YyhIKbUUo3JUTGX0vXPBuuX0mSEqIpblyZFtf66w7lCB9R_xkCE-w/exec',
@@ -279,6 +295,7 @@ let currentSrc = 'ai';
 let rows = [];        // 取得したままの全行
 let whoFilter = '';   // 担当（staffId / role）での絞り込み
 let droppedLegacy = 0; // 年が入っていない旧形式ログのうち、期間指定で除外した件数
+let archiveTable = { head: [], rows: [] };  // 月次アーカイブは列定義ごと受け取るため別枠で持つ
 
 // オーダー相談AI（recentlog）の応答を他系統と同じ形へ揃える。
 // t は 'yyyy-MM-dd HH:mm'（新）または 'MM-dd HH:mm'（旧・年なし）。
@@ -347,12 +364,78 @@ function setRange(kind) {
   document.getElementById('fTo').value = to;
 }
 
+// タブに応じてフィルタ欄の出し分けをする
+function applySrcUI() {
+  const isArchive = currentSrc === 'archive';
+  document.querySelectorAll('.live-only').forEach(el => { el.style.display = isArchive ? 'none' : ''; });
+  document.querySelectorAll('.archive-only').forEach(el => { el.style.display = isArchive ? '' : 'none'; });
+}
+
+// 月次アーカイブ: 保存済みの月一覧を取り、選択中の月・系統の中身を表示する
+async function loadArchive() {
+  const src = SOURCES.archive;
+  const sel = document.getElementById('fMonth');
+  const arcSrc = document.getElementById('fArcSrc').value;
+
+  const listRes = await fetch(src.url + '?action=archives&key=' + encodeURIComponent(getKey()));
+  const listText = await listRes.text();
+  if (!listText.trim().startsWith('{')) throw new Error('gas_unavailable');
+  const list = JSON.parse(listText);
+  if (list.status !== 'ok') throw new Error(list.error || '不明なエラー');
+
+  const months = (list.months || []).map(m => m.month);
+  const keep = sel.value;
+  sel.innerHTML = months.length
+    ? months.map(m => '<option value="' + m + '">' + m + '</option>').join('')
+    : '<option value="">（まだありません）</option>';
+  if (months.indexOf(keep) !== -1) sel.value = keep;
+
+  archiveTable = { head: [], rows: [] };
+  if (!sel.value) {
+    document.getElementById('updatedAt').innerHTML = '保存済みのアーカイブはまだありません';
+    document.getElementById('footNote').textContent = src.note;
+    return;
+  }
+
+  const res = await fetch(src.url + '?action=archive&key=' + encodeURIComponent(getKey())
+    + '&month=' + encodeURIComponent(sel.value) + '&src=' + encodeURIComponent(arcSrc));
+  const text = await res.text();
+  if (!text.trim().startsWith('{')) throw new Error('gas_unavailable');
+  const data = JSON.parse(text);
+  if (data.status !== 'ok') {
+    // その月にその系統が保存されていないだけのこともある
+    archiveTable = { head: [], rows: [], missing: data.error === 'not archived' };
+  } else {
+    archiveTable = { head: data.head || [], rows: data.rows || [] };
+  }
+  const found = (list.months || []).find(m => m.month === sel.value) || { files: {} };
+  document.getElementById('updatedAt').innerHTML =
+    sel.value + ' のアーカイブ<br>'
+    + ['ai', 'visitor', 'hearing'].map(k => k + ':' + (found.files[k] ? found.files[k].rows : '−')).join(' / ');
+  document.getElementById('footNote').textContent = src.note;
+}
+
 async function load() {
   const errEl = document.getElementById('loadErr');
   const btn = document.getElementById('reloadBtn');
   errEl.style.display = 'none';
   btn.disabled = true;
+  applySrcUI();
   document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">読み込み中…</td></tr>';
+
+  if (currentSrc === 'archive') {
+    try {
+      await loadArchive();
+      rows = [];
+      whoFilter = '';
+      render();
+    } catch (e) {
+      showLoadError(String(e.message || e));
+    } finally {
+      btn.disabled = false;
+    }
+    return;
+  }
 
   const src = SOURCES[currentSrc];
   const qs = new URLSearchParams({ action: src.action || 'chatlog', key: getKey() });
@@ -374,7 +457,7 @@ async function load() {
     if (data.status !== 'ok') throw new Error(data.error === 'unauthorized' ? 'unauthorized' : (data.error || '不明なエラー'));
     rows = src.action === 'recentlog' ? normalizeHearingLog(data.log || [], from, to) : (data.rows || []);
     whoFilter = '';
-    document.getElementById('updatedAt').textContent =
+    document.getElementById('updatedAt').innerHTML =
       new Date().toLocaleString('ja-JP') + ' 時点<br>' + src.label + '：全'
       + (src.action === 'recentlog' ? (data.count || 0) : (data.total || 0)) + '件';
     document.getElementById('footNote').textContent =
@@ -383,7 +466,15 @@ async function load() {
       + (droppedLegacy ? '　※旧形式の' + droppedLegacy + '件は日付に年が入っていないため、期間を指定すると除外されます（全期間なら表示されます）。' : '');
     render();
   } catch (e) {
-    const msg = String(e.message || e);
+    showLoadError(String(e.message || e));
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showLoadError(msg) {
+  const errEl = document.getElementById('loadErr');
+  {
     errEl.style.display = 'block';
     errEl.innerHTML = msg === 'unauthorized'
       ? 'このGASは管理者キーを受け付けませんでした。パスワードが変更された可能性があります。'
@@ -397,10 +488,9 @@ async function load() {
           : 'ログの取得に失敗しました（' + esc(msg) + '）');
     document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">取得できませんでした</td></tr>';
     rows = [];
+    archiveTable = { head: [], rows: [] };
     renderKpis([]);
     document.getElementById('breakdown').innerHTML = '';
-  } finally {
-    btn.disabled = false;
   }
 }
 
@@ -465,7 +555,42 @@ function cellText(text, id) {
        + '<button class="more" type="button" data-more="' + id + '">全文</button>' + mb;
 }
 
+// 月次アーカイブは列定義がサーバー由来なので、汎用の表として描画する
+function renderArchive() {
+  const word = document.getElementById('fWord').value.trim().toLowerCase();
+  const head = archiveTable.head || [];
+  const all = archiveTable.rows || [];
+  const list = word ? all.filter(r => r.join(' ').toLowerCase().indexOf(word) !== -1) : all;
+
+  document.getElementById('bdTitle').closest('.panel').style.display = 'none';
+  const days = new Set(list.map(r => String(r[0] || '').substring(0, 10)).filter(Boolean));
+  document.getElementById('kpiCount').innerHTML = list.length + '<span class="unit">件</span>';
+  document.getElementById('kpiDays').innerHTML = days.size + '<span class="unit">日</span>';
+  // 「応答字数」列があれば平均を出す（系統によって列構成が違うため名前で探す）
+  const lenIdx = head.indexOf('応答字数');
+  document.getElementById('kpiAvgLabel').textContent = '平均応答文字数';
+  document.getElementById('kpiAvg').innerHTML = (lenIdx >= 0 && list.length
+    ? Math.round(list.reduce((s, r) => s + (Number(r[lenIdx]) || 0), 0) / list.length * 10) / 10
+    : '–') + '<span class="unit">字</span>';
+  document.getElementById('kpiTopLabel').textContent = '保存された月';
+  document.getElementById('kpiTop').textContent = document.getElementById('fMonth').value || '–';
+
+  document.getElementById('thead').innerHTML = head.length
+    ? '<tr>' + head.map(h => '<th>' + esc(h) + '</th>').join('') + '</tr>' : '';
+  const cols = head.length || 1;
+  document.getElementById('tbody').innerHTML = list.length
+    ? list.map((r, i) => '<tr>' + r.map((c, ci) => {
+        const cls = ci === 0 ? 'dt' : (head[ci] === '応答字数' ? 'num' : (ci === 1 ? 'who' : 'a'));
+        return '<td class="' + cls + '">' + (String(c).length > 90 ? cellText(c, 'z' + i + '_' + ci) : esc(c)) + '</td>';
+      }).join('') + '</tr>').join('')
+    : '<tr><td class="empty" colspan="' + cols + '">'
+      + (archiveTable.missing ? 'この月にこの系統のアーカイブはありません' : '該当する記録はありません') + '</td></tr>';
+  document.getElementById('listSub').textContent =
+    '保存時の並び・' + list.length + '件' + (word ? '（本文「' + word + '」で絞り込み中・全' + all.length + '件）' : '');
+}
+
 function render() {
+  if (currentSrc === 'archive') { renderArchive(); return; }
   const list = filtered();
   renderKpis(list);
   // オーダー相談AIには担当という区分がないため内訳パネルごと隠す
@@ -522,9 +647,17 @@ function render() {
 }
 
 function downloadCsv() {
+  const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
+  if (currentSrc === 'archive') {
+    if (!(archiveTable.rows || []).length) { alert('出力対象がありません'); return; }
+    const csv = [ (archiveTable.head || []).map(q).join(',') ]
+      .concat(archiveTable.rows.map(r => r.map(q).join(','))).join('\r\n');
+    saveCsvFile(csv, 'chatlog_' + document.getElementById('fMonth').value
+      + '_' + document.getElementById('fArcSrc').value + '.csv');
+    return;
+  }
   const list = filtered();
   if (!list.length) { alert('出力対象がありません'); return; }
-  const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
   const head = currentSrc === 'ai'
     ? ['日時', 'staffId', '担当幕僚', 'venue', '会話の場所', '質問', '応答', '応答字数']
     : currentSrc === 'hearing'
@@ -535,14 +668,18 @@ function downloadCsv() {
     : currentSrc === 'hearing'
     ? [r.datetime, r.question, r.reply, r.replyLen, r.img || 0].map(q).join(',')
     : [r.datetime, r.id, r.role, whoName(r.role), r.name, r.text].map(q).join(','));
-  // Excelでの文字化けを防ぐためBOM付きUTF-8で出力する
-  const blob = new Blob(['﻿' + [head.map(q).join(',')].concat(body).join('\r\n')],
-    { type: 'text/csv;charset=utf-8' });
+  saveCsvFile([head.map(q).join(',')].concat(body).join('\r\n'),
+    'chatlog_' + currentSrc + '_'
+    + (document.getElementById('fFrom').value || 'all') + '_'
+    + (document.getElementById('fTo').value || 'all') + '.csv');
+}
+
+// Excelでの文字化けを防ぐためBOM付きUTF-8で出力する
+function saveCsvFile(csv, filename) {
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'chatlog_' + currentSrc + '_'
-    + (document.getElementById('fFrom').value || 'all') + '_'
-    + (document.getElementById('fTo').value || 'all') + '.csv';
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -562,6 +699,8 @@ document.querySelectorAll('[data-range]').forEach(b => b.addEventListener('click
   load();
 }));
 document.getElementById('reloadBtn').addEventListener('click', load);
+document.getElementById('fMonth').addEventListener('change', load);
+document.getElementById('fArcSrc').addEventListener('change', load);
 document.getElementById('csvBtn').addEventListener('click', downloadCsv);
 document.getElementById('fWord').addEventListener('input', () => { if (rows.length) render(); });
 document.getElementById('breakdown').addEventListener('click', (ev) => {
