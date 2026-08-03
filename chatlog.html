@@ -139,6 +139,7 @@ tr:hover td{background:#1c2128}
   <div class="srcs" role="tablist">
     <button class="src-btn active" type="button" data-src="ai" role="tab">🤖 幕僚キャラ接客</button>
     <button class="src-btn" type="button" data-src="visitor" role="tab">👥 みんなのチャット</button>
+    <button class="src-btn" type="button" data-src="hearing" role="tab">🧵 オーダー相談AI</button>
   </div>
   <span class="updated" id="updatedAt">読み込み前</span>
 </div>
@@ -218,6 +219,13 @@ const SOURCES = {
     label: 'みんなのチャット',
     url: 'https://script.google.com/macros/s/AKfycbzDfWYQey_Qn9hTHaU4gUrXkAYsTS4zViZGrZxAr5aSe3bIwh_T7wd_ktHMiE7-xhhc/exec',
     note: 'ショールームに入店した来店者・ちえみ・販売幕僚・店長の全発言。入退店通知（sys）は記録対象外。'
+  },
+  hearing: {
+    label: 'オーダー相談AI',
+    url: 'https://script.google.com/macros/s/AKfycbwABbFeZucU9N4k8YyhIKbUUo3JUTGX0vXPBuuX0mSEqIpblyZFtf66w7lCB9R_xkCE-w/exec',
+    action: 'recentlog',   // このGASだけAPI名と応答形式が異なる
+    note: 'オーダー相談ページ（hearing-ai.html）の自由入力による相談。応答はClaude（1日20回上限）。'
+       + 'スプレッドシートではなくGASのプロパティに直近60件を保持する方式のため、それより古い相談は残りません。'
   }
 };
 
@@ -270,6 +278,36 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 let currentSrc = 'ai';
 let rows = [];        // 取得したままの全行
 let whoFilter = '';   // 担当（staffId / role）での絞り込み
+let droppedLegacy = 0; // 年が入っていない旧形式ログのうち、期間指定で除外した件数
+
+// オーダー相談AI（recentlog）の応答を他系統と同じ形へ揃える。
+// t は 'yyyy-MM-dd HH:mm'（新）または 'MM-dd HH:mm'（旧・年なし）。
+// 旧形式は年が不明なので、期間を指定している場合だけ除外する。
+function normalizeHearingLog(log, from, to) {
+  droppedLegacy = 0;
+  const out = [];
+  log.forEach((o) => {
+    const t = String(o.t || '');
+    const hasYear = /^\d{4}-/.test(t);
+    if (!hasYear && (from || to)) { droppedLegacy++; return; }
+    if (hasYear) {
+      const day = t.substring(0, 10);
+      if (from && day < from) return;
+      if (to   && day > to)   return;
+    }
+    out.push({
+      datetime: t,
+      staffId: '',
+      question: String(o.q || ''),
+      reply: o.legacy ? '（旧形式のため応答本文は未保存）' : String(o.r || ''),
+      replyLen: Number(o.rlen || 0),
+      img: Number(o.img || 0),
+      legacy: !!o.legacy
+    });
+  });
+  // recentlog は古い順に積まれるため、他系統と同じ「新しい順」に揃える
+  return out.reverse();
+}
 
 // 文字化け（CP932崩れ）の疑いを検出する。U+FFFD や CJK互換外の記号が連続する行を印付けする
 function looksMojibake(text) {
@@ -277,9 +315,13 @@ function looksMojibake(text) {
   const bad = (text.match(/[� -¿†-›]/g) || []).length;
   return bad >= 3 && bad / text.length > 0.25;
 }
-function whoOf(r) { return currentSrc === 'ai' ? r.staffId : r.role; }
+function whoOf(r) { return currentSrc === 'ai' ? r.staffId : currentSrc === 'visitor' ? r.role : ''; }
 function whoName(v) {
   return currentSrc === 'ai' ? (STAFF_NAMES[v] || v || '(不明)') : (ROLE_NAMES[v] || v || '(不明)');
+}
+// venue（会話の場所）。2026-08-03より前の行は記録がないため空
+function venueName(v) {
+  return v === 'showroom' ? '🏛 ショールーム' : v === 'site' ? '🌐 サイト' : '－';
 }
 function badgeClass(v) {
   if (currentSrc === 'ai') return '';
@@ -313,29 +355,42 @@ async function load() {
   document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">読み込み中…</td></tr>';
 
   const src = SOURCES[currentSrc];
-  const qs = new URLSearchParams({ action: 'chatlog', key: getKey() });
+  const qs = new URLSearchParams({ action: src.action || 'chatlog', key: getKey() });
   const from = document.getElementById('fFrom').value;
   const to   = document.getElementById('fTo').value;
-  if (from) qs.set('from', from);
-  if (to)   qs.set('to', to);
+  // オーダー相談AI（recentlog）は期間パラメータを受け付けないため、絞り込みは取得後に行う
+  if (!src.action) {
+    if (from) qs.set('from', from);
+    if (to)   qs.set('to', to);
+  }
 
   try {
     // GETのみ・Content-Typeを付けないことで CORS プリフライトを回避（GAS定石）
     const res = await fetch(src.url + '?' + qs.toString());
-    const data = await res.json();
+    const text = await res.text();
+    // GASが一時的に応答できないときはHTML（エラーページ）が返る。JSONとして読めない場合はその旨を出す
+    if (!text.trim().startsWith('{')) throw new Error('gas_unavailable');
+    const data = JSON.parse(text);
     if (data.status !== 'ok') throw new Error(data.error === 'unauthorized' ? 'unauthorized' : (data.error || '不明なエラー'));
-    rows = data.rows || [];
+    rows = src.action === 'recentlog' ? normalizeHearingLog(data.log || [], from, to) : (data.rows || []);
     whoFilter = '';
     document.getElementById('updatedAt').textContent =
-      new Date().toLocaleString('ja-JP') + ' 時点<br>' + src.label + '：全' + (data.total || 0) + '件';
+      new Date().toLocaleString('ja-JP') + ' 時点<br>' + src.label + '：全'
+      + (src.action === 'recentlog' ? (data.count || 0) : (data.total || 0)) + '件';
     document.getElementById('footNote').textContent =
-      src.note + (data.truncated ? '（表示上限に達したため一部のみ表示しています）' : '');
+      src.note
+      + (data.truncated ? '（表示上限に達したため一部のみ表示しています）' : '')
+      + (droppedLegacy ? '　※旧形式の' + droppedLegacy + '件は日付に年が入っていないため、期間を指定すると除外されます（全期間なら表示されます）。' : '');
     render();
   } catch (e) {
     const msg = String(e.message || e);
     errEl.style.display = 'block';
     errEl.innerHTML = msg === 'unauthorized'
       ? 'このGASは管理者キーを受け付けませんでした。パスワードが変更された可能性があります。'
+      : msg === 'gas_unavailable'
+      // GAS側の一時的な不調（デプロイ直後などに数十秒だけ発生する）。時間をおけば戻る
+      ? 'Google Apps Script が一時的に応答できませんでした（データではなくエラーページが返りました）。<br>'
+        + '数十秒ほど待ってから「🔄 読み込み」をもう一度押してください。ログ自体は失われていません。'
       : (currentSrc === 'visitor'
           ? '発言ログの取得に失敗しました（' + esc(msg) + '）。<br>'
             + 'nsfactory-visitor-chat は手動貼り付け運用のため、<b>ログ閲覧APIを追加した visitor-chat.gs をGASエディタへ貼り付け・デプロイ更新するまでこのタブは動作しません。</b>'
@@ -354,7 +409,7 @@ function filtered() {
   return rows.filter(r => {
     if (whoFilter && whoOf(r) !== whoFilter) return false;
     if (!word) return true;
-    const hay = currentSrc === 'ai' ? (r.question + ' ' + r.reply) : r.text;
+    const hay = currentSrc === 'visitor' ? r.text : (r.question + ' ' + r.reply);
     return String(hay).toLowerCase().indexOf(word) !== -1;
   });
 }
@@ -364,7 +419,7 @@ function renderKpis(list) {
   document.getElementById('kpiCount').innerHTML = list.length + '<span class="unit">件</span>';
   document.getElementById('kpiDays').innerHTML = days.size + '<span class="unit">日</span>';
 
-  if (currentSrc === 'ai') {
+  if (currentSrc !== 'visitor') {
     const avg = list.length ? Math.round(list.reduce((s, r) => s + (r.replyLen || 0), 0) / list.length * 10) / 10 : 0;
     document.getElementById('kpiAvgLabel').textContent = '平均応答文字数';
     document.getElementById('kpiAvg').innerHTML = (list.length ? avg : '–') + '<span class="unit">字</span>';
@@ -374,6 +429,13 @@ function renderKpis(list) {
     document.getElementById('kpiAvg').innerHTML = (list.length ? avg : '–') + '<span class="unit">字</span>';
   }
 
+  if (currentSrc === 'hearing') {
+    // 担当という概念がないため、Vision利用（画像つき相談）の件数を出す
+    const withImg = list.filter(r => r.img > 0).length;
+    document.getElementById('kpiTopLabel').textContent = '画像つき相談';
+    document.getElementById('kpiTop').textContent = list.length ? withImg + '件' : '–';
+    return;
+  }
   const cnt = {};
   list.forEach(r => { const w = whoOf(r); cnt[w] = (cnt[w] || 0) + 1; });
   const top = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
@@ -406,20 +468,32 @@ function cellText(text, id) {
 function render() {
   const list = filtered();
   renderKpis(list);
-  renderBreakdown(whoFilter ? rows : list);   // 内訳は絞り込み前の母集団で出す
+  // オーダー相談AIには担当という区分がないため内訳パネルごと隠す
+  const bdPanel = document.getElementById('bdTitle').closest('.panel');
+  bdPanel.style.display = currentSrc === 'hearing' ? 'none' : '';
+  if (currentSrc !== 'hearing') renderBreakdown(whoFilter ? rows : list);   // 内訳は絞り込み前の母集団で出す
 
   const thead = document.getElementById('thead');
   const tbody = document.getElementById('tbody');
 
-  if (currentSrc === 'ai') {
-    thead.innerHTML = '<tr><th>日時</th><th>担当幕僚</th><th>お客様の質問</th><th>AIの応答</th><th>応答字数</th></tr>';
+  if (currentSrc === 'hearing') {
+    thead.innerHTML = '<tr><th>日時</th><th>お客様の相談</th><th>AIの応答</th><th>応答字数</th></tr>';
+    tbody.innerHTML = list.length ? list.map((r, i) =>
+      '<tr><td class="dt">' + esc(r.datetime) + (r.img ? ' 📷' : '') + '</td>'
+      + '<td class="q">' + cellText(r.question, 'hq' + i) + '</td>'
+      + '<td class="a">' + (r.legacy ? '<span style="color:#6e7681">' + esc(r.reply) + '</span>' : cellText(r.reply, 'ha' + i)) + '</td>'
+      + '<td class="num">' + (r.replyLen || 0) + '</td></tr>').join('')
+      : '<tr><td class="empty" colspan="4">該当する相談はありません</td></tr>';
+  } else if (currentSrc === 'ai') {
+    thead.innerHTML = '<tr><th>日時</th><th>担当幕僚</th><th>会話の場所</th><th>お客様の質問</th><th>AIの応答</th><th>応答字数</th></tr>';
     tbody.innerHTML = list.length ? list.map((r, i) =>
       '<tr><td class="dt">' + esc(r.datetime) + '</td>'
       + '<td class="who"><span class="badge">' + esc(whoName(r.staffId)) + '</span></td>'
+      + '<td class="who" style="color:#9aa4af;font-size:12px">' + esc(venueName(r.venue)) + '</td>'
       + '<td class="q">' + cellText(r.question, 'q' + i) + '</td>'
       + '<td class="a">' + cellText(r.reply, 'a' + i) + '</td>'
       + '<td class="num">' + (r.replyLen || 0) + '</td></tr>').join('')
-      : '<tr><td class="empty" colspan="5">該当する発言はありません</td></tr>';
+      : '<tr><td class="empty" colspan="6">該当する発言はありません</td></tr>';
   } else {
     thead.innerHTML = '<tr><th>日時</th><th>発言者</th><th>表示名</th><th>発言</th><th>字数</th></tr>';
     tbody.innerHTML = list.length ? list.map((r, i) =>
@@ -439,8 +513,9 @@ function render() {
     '新しい順・' + list.length + '件'
     + (conds.length ? '（' + conds.join(' / ') + 'で絞り込み中・全' + rows.length + '件）' : '');
   if (!list.length && conds.length) {
+    const cols = document.querySelectorAll('#thead th').length || 5;
     document.getElementById('tbody').innerHTML =
-      '<tr><td class="empty" colspan="5">絞り込み条件に一致する発言はありません'
+      '<tr><td class="empty" colspan="' + cols + '">絞り込み条件に一致する発言はありません'
       + '（取得済みは' + rows.length + '件）<br>'
       + '<button class="more" type="button" id="clearFilters">絞り込みを解除する</button></td></tr>';
   }
@@ -451,10 +526,14 @@ function downloadCsv() {
   if (!list.length) { alert('出力対象がありません'); return; }
   const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
   const head = currentSrc === 'ai'
-    ? ['日時', 'staffId', '担当幕僚', '質問', '応答', '応答字数']
+    ? ['日時', 'staffId', '担当幕僚', 'venue', '会話の場所', '質問', '応答', '応答字数']
+    : currentSrc === 'hearing'
+    ? ['日時', '相談', '応答', '応答字数', '画像枚数']
     : ['日時', 'id', 'role', '発言者', '表示名', '発言'];
   const body = list.map(r => currentSrc === 'ai'
-    ? [r.datetime, r.staffId, whoName(r.staffId), r.question, r.reply, r.replyLen].map(q).join(',')
+    ? [r.datetime, r.staffId, whoName(r.staffId), r.venue, venueName(r.venue), r.question, r.reply, r.replyLen].map(q).join(',')
+    : currentSrc === 'hearing'
+    ? [r.datetime, r.question, r.reply, r.replyLen, r.img || 0].map(q).join(',')
     : [r.datetime, r.id, r.role, whoName(r.role), r.name, r.text].map(q).join(','));
   // Excelでの文字化けを防ぐためBOM付きUTF-8で出力する
   const blob = new Blob(['﻿' + [head.map(q).join(',')].concat(body).join('\r\n')],
