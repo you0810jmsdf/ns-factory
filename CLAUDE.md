@@ -29,3 +29,21 @@
   - AI説明文生成・写真追加/削除・代表写真変更・材料選択変更も保存トリガーに含めた。
 - 検証:
   - `register.html` 内のインライン JavaScript 構文チェック通過。
+
+## 2026-08-04 — 商品登録の二重登録バグ修正（Google間欠障害への冪等リトライ）
+
+- 対象: `register.html`（あわせて `Apps Script/product_register.js`）
+- 症状: 「登録する」で `Unexpected token '<', "<!DOCTYPE "... is not valid JSON`。スマホでも4件連続失敗し、準備中の重複行が残った。
+- 原因: GAS WebAppの2段目（`script.googleusercontent.com/macros/echo`）が時間帯によってHTMLのエラーページを返す。**処理はGAS側で完了してから応答だけが失われる**ため、再試行のたびに同じ商品が二重登録されていた。失敗率はバースト性（実測: 悪い時間帯 4/10、直後 0/8）。
+- 対策:
+  - GAS `registerProductCore_`: ロック取得後に `requestId` を CacheService（6h）で照合し、再送なら前回結果を `replayed:true` で返す。
+  - GAS `uploadPhotoCore_`: 同名ファイルが既にあれば再作成せず既存を返す。
+  - `gasPostJson()` を追加し、HTML応答を検知したら最大5回・指数バックオフで再送。register / finalize / uploadPhoto を集約。
+  - `requestId` は登録単位で固定し、手動の押し直しでも使い回す（成功時と `resetAll()` 時のみ破棄）。
+  - `setProgress(pct, msg, agentMsg)` は pct/msg に null を渡すとその項目を据え置く。
+- 検証:
+  - 本番実測で register 3回連続 → 商品IDは1件のみ・全て replayed。uploadPhoto 2回 → fileId 同一。
+  - インラインJS構文チェック通過、GitHub Pages反映を実測確認。
+- 注意:
+  - **HTTP 200 でもHTMLが返る**ため、ステータスコードではなく本文先頭が `<` かで判定すること。
+  - 書き込み系APIを追加するときは、必ず冪等化してからリトライを付けること（単純リトライは重複を生む）。
