@@ -1010,7 +1010,9 @@
           // 「何を作りたいか」から始まるフルオーダーヒアリングは不自然なので出さない。
           // フルオーダーは既存の「仕様変更してフルオーダー見積もりへ」ボタンに一本化する。
           if (currentProductContext) return null;
-          return { label: '🧵 オーダー相談を始める', onClick: hearingStart };
+          // 2026-08-04 導線一本化: widget内の独自ヒアリング（hearingStart）をやめ、
+          // 唯一の窓口（hearing-ai.html）へ合流させる（事業主指示）
+          return { label: '🧵 オーダー相談窓口へ', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/hearing-ai.html', '_blank'); } };
         case 'colors':
           return { label: '🎨 革の色・在庫を見る', onClick: function () { showLeatherGallery('ask'); } };
         case 'stitch':
@@ -1018,7 +1020,9 @@
         case 'works':
           return { label: '🖼 作品を探す', onClick: showWorksMenu };
         case 'estimate':
-          return { label: '📋 見積もりシミュレーター', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/leather-order-estimate-v2.html', '_blank'); } };
+          // 2026-08-04 導線一本化: シミュレーター直リンクをメニューから外す。
+          // 金額の相談は窓口（hearing）経由で、AI会話の中からシミュレーターへ誘導される
+          return null;
         case 'tools':
           return { label: '🛠️ 道具・工具の相談', onClick: showToolPrompt };
         case 'progress':
@@ -1060,6 +1064,20 @@
       clearChips();
       if (!global.NSF_HEARING) return;
       renderChips(nsfBuildMenuChips(false));
+    }
+
+    /* ── オーダー意図の検知 → 窓口への合流チップ（2026-08-04 導線一本化）──────────
+       幕僚キャラとの雑談・接客の途中でオーダーの意向が見えたら、会話は途切れさせずに
+       「オーダー相談窓口」への合流ボタンを応答の下に出す（ショールーム内でも同じ）。
+       商品モーダル相談（productContextあり）は既存の「作家に送信」経路が正のため出さない。 */
+    function nsfDetectOrderIntent(text) {
+      return /(オーダー|フルオーダー|注文|作って(ほしい|ください|もらいたい|欲しい)|カスタム|名入れ|見積|買いたい|購入したい)/.test(String(text || ''));
+    }
+    function nsfShowOrderGatewayChip() {
+      renderChips([
+        { label: '🧵 オーダー相談窓口でくわしく相談', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/hearing-ai.html', '_blank'); } },
+        { label: '閉じる', exit: true, onClick: nsfDefaultChips }
+      ]);
     }
 
     // パーツ（革色・ステッチ色など）ごとの選択。同じパーツを選び直すとselections[partLabel]を上書きし、
@@ -1766,6 +1784,8 @@
               reply = lines[Math.floor(Math.random() * lines.length)]; isFallback = true;
             } else { reply = data.reply; isFallback = false; }
             appendStaffMsg(reply, isFallback);
+            // オーダー意図が見えたら窓口への合流チップを出す（商品モーダル相談は除く）
+            if (!currentProductContext && nsfDetectOrderIntent(text)) nsfShowOrderGatewayChip();
             chatHistories[staffId].push({ role: 'model', text: reply });
             chatTurnCount[staffId] = (chatTurnCount[staffId] || 0) + 1;
             if (chatTurnCount[staffId] >= CHAT_MAX_TURNS) showChatLimit();
