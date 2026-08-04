@@ -4,3 +4,9 @@
 node_modules/
 __pycache__/
 okcoin-state.json
+
+# ===== 公開厳禁（2026-08-04 漏洩対応）=====
+# 内部ファイルパス・幕僚計画の詳細・ふるさと納税ポータルのログインIDなどを含む。
+# GitHub Pages は静的配信のため、置いた時点で全世界から取得可能になる。
+staff-monitor-data.json
+knowledge-graph.html
