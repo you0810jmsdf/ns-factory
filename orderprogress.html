@@ -593,13 +593,21 @@ let currentSize = 'all';
 let currentStatFilter = 'all';
 const carState = {};
 const imgCache  = {};
-let localPhotos = {};  // mini6-photos.json から読み込み
+const localPhotoCache = {};  // client別の取得結果をキャッシュ
 
-// ローカル写真インデックス読み込み
-fetch('mini6-photos.json')
-  .then(r => r.json())
-  .then(d => { localPhotos = d; })
-  .catch(() => {});
+// 過去オーダー写真は GAS から client 指定で1件ずつ取得する。
+//   旧実装: fetch('mini6-photos.json') で一覧を丸ごと読み込んでいた。
+//   廃止理由（2026-08-04）: GitHub Pages に置いた JSON は直URLで誰でも取得でき、
+//     キーであるお客様のお名前・ハンドルネームが一覧で漏れるため。
+// ⛔ 一覧を取得する実装に戻さないこと。
+function fetchLocalPhotos(client) {
+  if (localPhotoCache[client]) return localPhotoCache[client];
+  localPhotoCache[client] = fetch(`${gasUrl}?action=localPhotos&client=${encodeURIComponent(client)}`)
+    .then(r => r.json())
+    .then(d => (d && d.ok && Array.isArray(d.photos)) ? d.photos : [])
+    .catch(() => []);
+  return localPhotoCache[client];
+}
 
 // ─── Init ────────────────────────────────────
 function init() {
@@ -849,7 +857,9 @@ function renderCards(records) {
     const folderId = r['DriveフォルダID']||'';
     const client   = r['依頼者']||'';
     const clientDisplay = isAdmin() ? client : (client ? 'ご依頼者様' : '');
-    const hasLocal = !folderId && localPhotos[client] && localPhotos[client].length > 0;
+    // 写真の有無は事前判定できない（GASから非同期取得のため）。
+    // 枠だけ出し、0件なら lazyLoadImages 側で空にする。
+    const hasLocal = !folderId && !!client;
     const carHtml  = folderId
       ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">📷 画像を読み込み中…</div></div>`
       : hasLocal
@@ -931,7 +941,8 @@ function renderRrCards(records) {
     const gastype  = isOp ? '' : ' data-gastype="rr"';
     const client   = r['依頼者']||'';
     const clientDisplay = isAdmin() ? client : (client ? 'ご依頼者様' : '');
-    const hasLocal = isOp && !folderId && localPhotos[client] && localPhotos[client].length > 0;
+    // 写真の有無は事前判定できない（GASから非同期取得のため）。上と同じ扱い。
+    const hasLocal = isOp && !folderId && !!client;
     const carHtml  = folderId
       ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}"${gastype}>📷 画像を読み込み中…</div></div>`
       : hasLocal
@@ -987,14 +998,15 @@ function lazyLoadImages(id) {
   if (!el || el.dataset.loaded) return;
   el.dataset.loaded = '1';
 
-  // ローカル写真（mini6-photos.json）
+  // 過去オーダー写真（GAS: action=localPhotos で client 指定の1件のみ取得）
   const localClient = el.dataset.localclient;
   if (localClient) {
-    const urls = localPhotos[localClient] || [];
-    if (urls.length) {
-      const images = urls.map((u, i) => ({ url: u, name: localClient + '_' + (i+1) }));
-      renderCarousel(el, images, id);
-    } else { el.innerHTML = ''; }
+    fetchLocalPhotos(localClient).then(urls => {
+      if (urls.length) {
+        const images = urls.map((u, i) => ({ url: u, name: localClient + '_' + (i+1) }));
+        renderCarousel(el, images, id);
+      } else { el.innerHTML = ''; }
+    });
     return;
   }
 
