@@ -395,10 +395,26 @@ function handleFreeInput(){
     autoEnterLiveMode(v);
     return;
   }
-  // ガイドの設問に答えている最中はその回答として扱う
-  if(state._awaitKey){ handleAnswer(v, v); return; }
+  // ガイドの設問に答えている最中はその回答として扱う。
+  // ただし話題の切り替え（別アイテムへの変更等）は回答ではないのでAIへ渡す
+  // （2026-08-04: 革の色の設問中に「やっぱり手帳がいい」が色名として解釈され
+  //   会話が壊れた事案への対処）
+  if(state._awaitKey){
+    if(detectTopicShift(v)){ autoEnterLiveMode(v); return; }
+    handleAnswer(v, v); return;
+  }
   // 設問外の自由入力 → 弾かずにAIがそのまま応対する
   autoEnterLiveMode(v);
+}
+
+/* ガイド設問中の「話題の切り替え」検知。商品名＋変更・希望の言い回しが揃ったときだけ
+   発火させ、設問への普通の回答（「青っぽい」「仕事で使います」等）は巻き込まない。
+   刻印文言の入力中（nameText）は商品名を彫りたい場合があるため対象外 */
+function detectTopicShift(v){
+  if(state._awaitKey==='nameText') return false;
+  const product=/(手帳|バインダー|財布|ウォレット|キーケース|キーホルダー|カードケース|コインケース|名刺入れ|ペンケース|ブレスレット|コースター|革小物)/;
+  const intent=/(やっぱり|やはり|に変え|へ変え|に切り替え|が(いい|良い|ほしい|欲しい)|にしたい|作りたい|お願いしたい|注文したい|オーダーしたい|やめて|やめたい|最初から)/;
+  return product.test(v)&&intent.test(v);
 }
 
 /* =========================================================================
