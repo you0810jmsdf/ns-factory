@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="nsfactory-estimate-url" content="./leather-order-estimate-v2.html">
-<title>オーダー相談AI｜N's factory システム手帳フルオーダー</title>
+<title>オーダー相談窓口｜N's factory オーダーメイド革製品</title>
 <meta name="description" content="システム手帳のフルオーダーメイドを、AIが順番にヒアリング。用途を伝えるだけで、サイズ・リング・仕様・革色・ステッチ・名入れをプロの視点で提案し、発注票を自動作成します。">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -109,9 +109,11 @@ body{
 <div class="app">
   <div class="topbar">
     <div class="avatar">🧵</div>
+    <!-- 2026-08-04 導線一本化: 本ページがオーダーの唯一の入口（事業主指示）。
+         システム手帳特化の表記をやめ、全アイテム共通の窓口として案内する -->
     <div class="topbar-title">
-      <h1>オーダー相談AI</h1>
-      <p>N's factory｜システム手帳フルオーダー ヒアリング</p>
+      <h1>オーダー相談窓口</h1>
+      <p>N's factory｜オーダーメイドのご相談はこちらから</p>
     </div>
     <button class="modebtn" id="modeBtn">⚙ AI会話モード</button>
   </div>
@@ -220,6 +222,31 @@ function renderSimEntry(){
     span.textContent='🎨 型紙シミュレーター：準備中';
     simEntry.appendChild(span);
   }
+}
+
+/* ---------- AI会話中の見積もり文脈ジャンプ（2026-08-04 導線一本化） ----------
+   LPから見積もりシミュレーターへの直リンクを外し、入口を本ページに一本化したため、
+   AI会話の中で金額の話題になったタイミングでシミュレーターへの導線を出す。
+   端末内の文字列検知のみ（LLM改修なし・検知条件は広めに保つ）。 */
+function maybeShowEstimateChip(userText, replyText){
+  if(!state.liveMode) return;
+  const t = String(userText||'') + ' ' + String(replyText||'');
+  const wantsPrice = /(見積|概算|金額|価格|いくら|値段|予算|料金|コスト)/.test(t);
+  if(!wantsPrice) return;
+  const plannerCtx = /(手帳|バインダー|システム|リフィル|micro\s*5|mini\s*6|ミニ6|マイクロ5|A6|A5|バイブル|M5|SQ)/i.test(t);
+  const stockCtx   = /(在庫品|既製品|販売中|作品集|そのまま(買|購入)|即納)/.test(t);
+  simEntry.innerHTML='';
+  const btn=document.createElement('button');
+  if(plannerCtx){
+    btn.textContent='📋 見積もりシミュレーターで概算を見る';
+    btn.onclick=()=>window.open('./leather-order-estimate-v2.html','_blank');
+  }else if(stockCtx){
+    btn.textContent='📋 在庫品の見積もりを見る';
+    btn.onclick=()=>window.open('./stock-quote.html','_blank');
+  }else{
+    return; // 手帳でも在庫品でもない金額話（革小物フルオーダー等）はAIの対話に任せる
+  }
+  simEntry.appendChild(btn);
 }
 
 /* ---------- テクスチャシミュレーター（フルスクリーンオーバーレイ） ---------- */
@@ -936,6 +963,7 @@ async function liveTurn(userText, skipEcho){
     const reply=data.reply||'(応答が空でした)';
     history.push({role:'assistant', content:reply});
     addMsg('bot', reply);
+    maybeShowEstimateChip(userText, reply);  // 金額の話題なら見積もりページへの導線を出す
   }catch(e){
     hideTyping();
     addMsg('bot','⚠️ 通信に失敗しました。ネットワークをご確認のうえ、もう一度お試しください。');

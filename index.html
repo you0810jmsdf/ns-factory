@@ -1496,8 +1496,9 @@ h1,h2,h3{
       </div>
     </div>
     <a href="#staff" class="nav-link">スタッフ</a>
-    <a href="./planner-guide.html" class="nav-link nav-link--guide">オーダーガイド</a>
-    <a href="./order_estimate/leather-order-estimate-v2.html" class="nav-cta">見積もりを試す</a>
+    <!-- 2026-08-04 導線一本化: オーダー系の入口は「オーダー相談窓口」（hearing-ai.html）のみに統一。
+         ガイド・見積もりシミュレーターへは相談の中から誘導する（事業主指示） -->
+    <a href="./order_estimate/hearing-ai.html" class="nav-cta">オーダー相談</a>
   </div>
   <div class="nav-qr" aria-label="このページのQRコード">
     <div id="page-qr" class="nav-qr-img"></div>
@@ -1528,8 +1529,7 @@ h1,h2,h3{
       素材も意匠も、すべては貴方の手に委ねられる。
     </p>
     <div class="hero-actions">
-      <a href="./planner-guide.html" class="btn btn-primary">システム手帳をオーダーする →</a>
-      <a href="./order_estimate/hearing-ai.html" class="btn btn-ghost">オーダー相談AI</a>
+      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary">オーダーの相談をする →</a>
     </div>
   </div>
   <div class="hero-photo">
@@ -1586,8 +1586,7 @@ h1,h2,h3{
     </div>
     <p class="planner-note">※ 参考価格（ヌメ革・標準リングの基準構成）。革・リング等の仕様により変動します。</p>
     <div class="planner-actions">
-      <a href="./planner-guide.html" class="btn btn-primary">オーダーガイドを見る →</a>
-      <a href="./order_estimate/leather-order-estimate-v2.html" class="btn btn-outline">見積もりシミュレーターを開く</a>
+      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary">オーダーの相談をする →</a>
     </div>
   </div>
 </section>
@@ -1606,7 +1605,7 @@ h1,h2,h3{
     </p>
     <div class="ai-concierge-actions">
       <button type="button" class="btn btn-primary" onclick="nsfOpenStaffChat('kojinjigyonusi')">💬 いますぐチャットで相談する</button>
-      <a href="./order_estimate/hearing-ai.html" class="btn btn-ghost">🤖 オーダー相談AI</a>
+      <a href="./order_estimate/hearing-ai.html" class="btn btn-ghost">🧵 オーダー相談窓口</a>
     </div>
     <div class="ai-tip-box" id="ai-tip-box" hidden>
       <span class="ai-tip-label" id="ai-tip-label">今日の幕僚メモ</span>
@@ -1788,8 +1787,7 @@ h1,h2,h3{
       </a>
       <div class="staff-tasks">
         <span class="staff-tasks-label">主な任務</span>
-        <a href="./order_estimate/hearing-ai.html">オーダー相談AI</a>
-        <a href="./order_estimate/leather-order-estimate-v2.html">見積もりシミュレーター</a>
+        <a href="./order_estimate/hearing-ai.html">オーダー相談窓口</a>
         <a href="./orderprogress.html">オーダー進捗確認</a>
         <a href="./works.html">作品集</a>
         <a href="./register.html" onclick="return gateConfidential(event, this.href)">商品登録 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
@@ -1837,7 +1835,6 @@ h1,h2,h3{
       <div class="staff-tasks">
         <span class="staff-tasks-label">主な任務</span>
         <a href="./invoice/" onclick="return gateConfidential(event, this.href)">書類台帳（見積・請求・領収） <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
-        <a href="./order_estimate/leather-order-estimate-v2.html">見積もりシミュレーター</a>
         <a href="./orderprogress.html">オーダー進捗確認</a>
         <a href="./showroom/">3Dショールーム（メタバース店舗）</a>
         <span class="soon">型紙データ販売</span>
@@ -2027,9 +2024,7 @@ h1,h2,h3{
     <div class="footer-links">
       <a href="https://linktr.ee/you0810jmsdf" class="footer-link">各種販売サイト</a>
       <a href="https://lin.ee/qsmtY2N" class="footer-link" target="_blank" rel="noopener">A6印刷ツール</a>
-      <a href="./planner-guide.html" class="footer-link">システム手帳オーダーガイド</a>
-      <a href="./order_estimate/hearing-ai.html" class="footer-link">オーダー相談AI</a>
-      <a href="./order_estimate/leather-order-estimate-v2.html" class="footer-link">見積もりシミュレータ</a>
+      <a href="./order_estimate/hearing-ai.html" class="footer-link">オーダー相談窓口</a>
       <a href="./order_estimate/admin.html" class="footer-link">管理画面</a>
       <a href="https://lin.ee/qsmtY2N" class="footer-link" target="_blank" rel="noopener">LINE 公式アカウント</a>
       <a href="mailto:you0810jmsfd@gmail.com" class="footer-link">メール</a>
