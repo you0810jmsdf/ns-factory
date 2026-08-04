@@ -1,0 +1,47 @@
+name: 作品集フォールバックデータ更新
+
+# works-data.json は作品集（works.html）の静的フォールバック。
+# GAS WebApp が断続的に落ちる（2026-08-04実測: 失敗率6/8・最悪164秒）ため、
+# 同じ商品データをリポジトリにも置いて即表示できるようにしている。
+# ここが古いままだと、GAS障害中に新商品が作品集へ出ない。
+
+on:
+  schedule:
+    # 3時間おき（UTC）。商品登録の反映が半日遅れないように
+    - cron: "10 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: works-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build works-data.json
+        run: node tools/build_works_data.js
+
+      - name: Commit updated data
+        run: |
+          if git diff --quiet -- works-data.json; then
+            echo "変更なし。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add works-data.json
+          git commit -m "auto: 作品集フォールバックデータを更新"
+          git push
