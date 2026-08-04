@@ -224,6 +224,14 @@ textarea{min-height:80px;resize:vertical}
   transition:all .2s;line-height:1;
 }
 .combo-add-btn:hover{background:#fff8f1;border-color:#6b3a1f}
+/* マスタから項目を削除するボタン（2026-08-04追加）。誤爆しにくいよう赤系で区別する */
+.combo-del-btn{
+  flex-shrink:0;padding:0 10px;height:38px;
+  background:#fff;border:1.5px solid #dcb4b4;border-radius:8px;
+  font-size:16px;cursor:pointer;color:#a04a4a;font-weight:700;
+  transition:all .2s;line-height:1;
+}
+.combo-del-btn:hover{background:#fff5f5;border-color:#a04a4a}
 .combo-new{display:flex;gap:6px;margin-top:6px;align-items:center}
 .combo-new input{flex:1}
 /* ====== UTILS ====== */
@@ -492,7 +500,8 @@ textarea{min-height:80px;resize:vertical}
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">カテゴリ<span class="req">*</span></label>
         <div class="combo-wrap">
           <select id="f_category"><option value="">読み込み中…</option></select>
-          <button type="button" class="combo-add-btn" onclick="showAddInput('category')">＋</button>
+          <button type="button" class="combo-add-btn" onclick="showAddInput('category')" title="カテゴリを追加">＋</button>
+          <button type="button" class="combo-del-btn" onclick="deleteOption('category')" title="選択中のカテゴリをマスタから削除">−</button>
         </div>
         <div class="combo-new hidden" id="combo-new-category">
           <input type="text" id="combo-input-category" placeholder="新しいカテゴリ名">
@@ -510,7 +519,8 @@ textarea{min-height:80px;resize:vertical}
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">素材<span class="req">*</span></label>
         <div class="combo-wrap">
           <select id="f_material"><option value="">読み込み中…</option></select>
-          <button type="button" class="combo-add-btn" onclick="showAddInput('material')">＋</button>
+          <button type="button" class="combo-add-btn" onclick="showAddInput('material')" title="素材を追加">＋</button>
+          <button type="button" class="combo-del-btn" onclick="deleteOption('material')" title="選択中の素材をマスタから削除">−</button>
         </div>
         <div class="combo-new hidden" id="combo-new-material">
           <input type="text" id="combo-input-material" placeholder="新しい素材名">
@@ -525,7 +535,8 @@ textarea{min-height:80px;resize:vertical}
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">色<span class="req">*</span></label>
         <div class="combo-wrap">
           <select id="f_color"><option value="">読み込み中…</option></select>
-          <button type="button" class="combo-add-btn" onclick="showAddInput('color')">＋</button>
+          <button type="button" class="combo-add-btn" onclick="showAddInput('color')" title="色を追加">＋</button>
+          <button type="button" class="combo-del-btn" onclick="deleteOption('color')" title="選択中の色をマスタから削除">−</button>
         </div>
         <div class="combo-new hidden" id="combo-new-color">
           <input type="text" id="combo-input-color" placeholder="新しいカラー名">
@@ -537,7 +548,8 @@ textarea{min-height:80px;resize:vertical}
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">サイズ</label>
         <div class="combo-wrap">
           <select id="f_size" onchange="onSizeChange()"><option value="">選択…</option></select>
-          <button type="button" class="combo-add-btn" onclick="showAddInput('size')">＋</button>
+          <button type="button" class="combo-add-btn" onclick="showAddInput('size')" title="サイズを追加">＋</button>
+          <button type="button" class="combo-del-btn" onclick="deleteOption('size')" title="選択中のサイズをマスタから削除">−</button>
         </div>
         <input type="text" id="f_size_custom" class="hidden" placeholder="自由記入（例: 150×100×30mm）" oninput="onSizeCustomInput()" style="margin-top:6px;width:100%;padding:8px 10px;border:1px solid #d8b888;border-radius:6px;font-size:13px;box-sizing:border-box">
         <div class="combo-new hidden" id="combo-new-size">
@@ -802,6 +814,9 @@ function fetchMasterData() {
         subSel.innerHTML = '<option value="">（なし）</option>' +
           cats.map(v => `<option value="${v}">${v}</option>`).join('');
       }
+      // サイズはマスターデータシートD列（2026-08-04新設）。既定値とマージして出す
+      MASTER_SIZES = data.sizes || [];
+      initSizeOptions();
       resolve();
     };
     script.onerror = () => { try { document.head.removeChild(script); } catch(_){} setFallbackOptions(); resolve(); };
@@ -832,12 +847,29 @@ function setFallbackOptions() {
   if (subSel) subSel.innerHTML = '<option value="">（なし）</option>';
 }
 
+// サイズの既定値。これに加えて
+//   ・マスターデータシートD列（2026-08-04新設・全端末で共有）
+//   ・旧版で端末の localStorage に保存された分（互換のため残す）
+// をマージして表示する。
+const SIZE_DEFAULTS = ['Micro5','Mini5（M5）','Mini6（M6）','バイブル','A6','A5','B6','カスタム'];
+let MASTER_SIZES = [];
+
+/** プルダウンに出す一覧を組み立てる（サイズだけ既定値と端末保存分を足す） */
+function buildOptionList(field, gasList) {
+  const list = Array.isArray(gasList) ? gasList : [];
+  if (field !== 'size') return list;
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem('nf_sizes') || '[]'); } catch (e) { saved = []; }
+  return [...new Set([...SIZE_DEFAULTS, ...list, ...saved])];
+}
+
 function initSizeOptions() {
-  const defaults = ['Micro5','Mini5（M5）','Mini6（M6）','バイブル','A6','A5','B6','カスタム'];
-  const saved = JSON.parse(localStorage.getItem('nf_sizes') || '[]');
-  const all = [...new Set([...defaults, ...saved])];
   const sel = document.getElementById('f_size');
+  if (!sel) return;
+  const keep = sel.value;
+  const all = buildOptionList('size', MASTER_SIZES);
   sel.innerHTML = '<option value="">選択…</option>' + all.map(v => `<option value="${v}">${v}</option>`).join('');
+  if (all.includes(keep)) sel.value = keep;
 }
 
 function findCustomOption() {
@@ -881,23 +913,100 @@ function hideAddInput(field) {
   document.getElementById('combo-new-' + field).classList.add('hidden');
   document.getElementById('combo-input-' + field).value = '';
 }
-function addNewOption(field) {
+// ====== マスタ項目の追加・削除（2026-08-04）======
+// 旧実装はプルダウンにその場で足すだけで、ページを開き直すと消えていた
+// （size のみ localStorage に保存＝その端末限り）。
+// マスターデータシートに保存するようにして、どの端末からでも同じ選択肢が出るようにした。
+
+const FIELD_LABELS = { category: 'カテゴリ', material: '素材', color: '色', size: 'サイズ' };
+
+/**
+ * マスタ操作APIの呼び出し。
+ * GAS WebApp は応答だけ失われることがあるため再送する（2026-08-04実測: 失敗率6/10の時間帯あり）。
+ * 追加・削除はGAS側で冪等化してあるので、再送で二重登録・二重削除にはならない。
+ */
+async function gasMasterCall(api, field, value) {
+  const url = GAS_URL + '?api=' + api
+            + '&field=' + encodeURIComponent(field)
+            + '&value=' + encodeURIComponent(value)
+            + '&key=' + encodeURIComponent(REGISTER_KEY)
+            + '&cb=' + Date.now();
+  for (let i = 0; i < 5; i++) {
+    try {
+      const text = await (await fetch(url)).text();
+      const head = text.trim().charAt(0);
+      // ⚠ HTTP 200 でもHTMLのエラーページが返るため、本文先頭で判定する
+      if (head === '{' || head === '[') return JSON.parse(text);
+    } catch (e) { /* 通信断も再送対象 */ }
+    await new Promise(r => setTimeout(r, Math.min(600 * Math.pow(2, i), 5000)));
+  }
+  return { ok: false, error: '通信に失敗しました。時間をおいて試してください。' };
+}
+
+/** プルダウンの選択肢を差し替える（現在の選択値は可能なら維持） */
+function refreshSelect(field, list, keep) {
+  const sel = document.getElementById('f_' + field);
+  if (!sel) return;
+  const placeholder = field === 'size' ? '選択…' : '選択…';
+  sel.innerHTML = '<option value="">' + placeholder + '</option>'
+    + list.map(v => `<option value="${v}">${v}</option>`).join('');
+  if (keep && list.includes(keep)) sel.value = keep;
+  // カテゴリは副カテゴリのプルダウンにも同じ一覧を使う
+  if (field === 'category') {
+    const sub = document.getElementById('f_subcategory');
+    if (sub) {
+      const subKeep = sub.value;
+      sub.innerHTML = '<option value="">（なし）</option>'
+        + list.map(v => `<option value="${v}">${v}</option>`).join('');
+      if (list.includes(subKeep)) sub.value = subKeep;
+    }
+  }
+}
+
+async function addNewOption(field) {
   const input = document.getElementById('combo-input-' + field);
   const v = input.value.trim();
   if (!v) { input.focus(); return; }
-  const sel = document.getElementById('f_' + field);
-  const exists = Array.from(sel.options).some(o => o.value === v);
-  if (!exists) {
-    const opt = document.createElement('option');
-    opt.value = v; opt.textContent = v;
-    sel.appendChild(opt);
-    if (field === 'size') {
-      const saved = JSON.parse(localStorage.getItem('nf_sizes') || '[]');
-      if (!saved.includes(v)) { saved.push(v); localStorage.setItem('nf_sizes', JSON.stringify(saved)); }
-    }
+
+  const btns = document.querySelectorAll('#combo-new-' + field + ' button');
+  btns.forEach(b => b.disabled = true);
+  try {
+    const res = await gasMasterCall('addMasterOption', field, v);
+    if (!res.ok) { alert('追加できませんでした。\n\n' + (res.error || '')); return; }
+    if (field === 'size') MASTER_SIZES = res.list || [];
+    refreshSelect(field, buildOptionList(field, res.list || []), v);
+    hideAddInput(field);
+    if (res.added === false && res.message) alert(res.message);
+  } finally {
+    btns.forEach(b => b.disabled = false);
   }
-  sel.value = v;
-  hideAddInput(field);
+}
+
+/** 選択中の項目をマスタから削除する。使用中の商品件数を出してから確認する。 */
+async function deleteOption(field) {
+  const sel = document.getElementById('f_' + field);
+  const v = (sel.value || '').trim();
+  const label = FIELD_LABELS[field] || field;
+  if (!v) { alert(label + 'の削除したい項目を、先にプルダウンで選んでください。'); return; }
+
+  const usage = await gasMasterCall('masterUsage', field, v);
+  let msg = '【' + label + '】「' + v + '」をマスタから削除します。\n\n';
+  if (usage.ok && usage.count > 0) {
+    msg += '⚠ この項目を使っている商品が ' + usage.count + ' 件あります。\n';
+    if (usage.samples && usage.samples.length) msg += '　例: ' + usage.samples.join(' / ') + '\n';
+    msg += '\n削除しても登録済み商品のデータは変わりませんが、\n'
+         + '今後この項目はプルダウンに出なくなります。\n\n';
+  } else if (usage.ok) {
+    msg += 'この項目を使っている商品はありません。\n\n';
+  }
+  msg += '削除しますか？';
+  if (!confirm(msg)) return;
+
+  const res = await gasMasterCall('deleteMasterOption', field, v);
+  if (!res.ok) { alert('削除できませんでした。\n\n' + (res.error || '')); return; }
+  if (field === 'size') MASTER_SIZES = res.list || [];
+  refreshSelect(field, buildOptionList(field, res.list || []), '');
+  alert(res.message || ('「' + v + '」を削除しました。'));
 }
 
 // ====== AUTH ======
