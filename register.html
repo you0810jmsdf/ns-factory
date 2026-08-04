@@ -736,6 +736,50 @@ function regSha256(text) {
 }
 const YEAR = '2026';
 
+// ====== GAS 呼び出し（間欠障害リトライ付き） ======
+// GASのWebAppは処理結果を script.googleusercontent.com から配信するが、
+// この2段目が時間帯によってまとめてHTMLのエラーページを返す（2026-08-04実測で
+// 悪い時間帯は10回中4回・良い時間帯は8回中0回というバースト性）。
+// 処理自体はGAS側で完了しているため、単純な再送は二重登録になる。
+// そこでGAS側を requestId / ファイル名で冪等化したうえで、ここから再送する。
+const GAS_MAX_ATTEMPTS = 5;
+
+// 「登録する」1回分に固定のID。手動で押し直した場合も同じIDを使い回すことで、
+// GAS側の冪等化に拾わせて二重登録を防ぐ。成功時とリセット時にだけ破棄する。
+let pendingRegisterRequestId = '';
+function getRegisterRequestId() {
+  if (!pendingRegisterRequestId) {
+    pendingRegisterRequestId = 'rq_' + Date.now().toString(36) + '_' +
+      Math.random().toString(36).slice(2, 10);
+  }
+  return pendingRegisterRequestId;
+}
+
+async function gasPostJson(api, payload, onRetry) {
+  let lastErr = null;
+  for (let attempt = 1; attempt <= GAS_MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: new URLSearchParams({ api, payload: JSON.stringify(payload) })
+      });
+      const text = await res.text();
+      if (text.trim().startsWith('<')) {
+        lastErr = new Error('Google側の一時障害（HTTP ' + res.status + '・HTML応答）');
+      } else {
+        return JSON.parse(text);
+      }
+    } catch (e) {
+      lastErr = e;
+    }
+    if (attempt < GAS_MAX_ATTEMPTS) {
+      if (onRetry) onRetry(attempt, GAS_MAX_ATTEMPTS);
+      await new Promise((r) => setTimeout(r, 1500 * attempt));
+    }
+  }
+  throw new Error('通信に' + GAS_MAX_ATTEMPTS + '回失敗しました: ' + (lastErr && lastErr.message || lastErr));
+}
+
 // ====== MASTER DATA ======
 const FIELD_MAP = { category: 'categories', material: 'materials', color: 'colors' };
 
@@ -1493,8 +1537,9 @@ function buildConfirm() {
 
 // ====== REGISTER FLOW ======
 function setProgress(pct, msg, agentMsg) {
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressLabel').textContent = msg;
+  // pct / msg に null を渡すと「その項目は据え置き」（リトライ表示で本文だけ差し替える用）
+  if (pct != null) document.getElementById('progressFill').style.width = pct + '%';
+  if (msg != null) document.getElementById('progressLabel').textContent = msg;
   if (agentMsg) document.getElementById('progressMsg').innerHTML = agentMsg;
 }
 
@@ -1526,17 +1571,17 @@ async function doNewRegister() {
   setProgress(10, '商品情報を登録中…', '商品マスターに行を追加しています…');
   const payload = {
     key: REGISTER_KEY,
+    requestId: getRegisterRequestId(),
     name: val('f_name'), category: catValue(), material: val('f_material'),
     color: val('f_color'), size: val('f_size'), hours: val('f_hours'),
     cost: val('f_cost'), price: val('f_price'), stock: val('f_stock'),
     shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
     hashtags: val('f_hashtags'), year: YEAR,
   };
-  const regRes = await fetch(GAS_URL, {
-    method: 'POST',
-    body: new URLSearchParams({ api: 'register', payload: JSON.stringify(payload) })
+  const regData = await gasPostJson('register', payload, (n, max) => {
+    setProgress(10, '商品情報を登録中…',
+      `Google側の応答が不安定なため再試行しています（${n}/${max - 1}回目）…`);
   });
-  const regData = await regRes.json();
   if (!regData.ok) throw new Error('register失敗: ' + (regData.error || JSON.stringify(regData)));
 
   const { productId, folderId } = regData;
@@ -1553,9 +1598,10 @@ async function doNewRegister() {
 
   setProgress(95, '仕上げ中…', '代表写真を設定して、ステータスを「販売中」に更新します…');
   const finPayload = { key: REGISTER_KEY, productId, mainPhotoUrl };
-  const finUrl = GAS_URL + '?api=finalize&payload=' + encodeURIComponent(JSON.stringify(finPayload));
-  const finRes = await fetch(finUrl);
-  const finData = await finRes.json();
+  const finData = await gasPostJson('finalize', finPayload, (n, max) => {
+    setProgress(95, '仕上げ中…',
+      `Google側の応答が不安定なため再試行しています（${n}/${max - 1}回目）…`);
+  });
   if (!finData.ok) throw new Error('finalize失敗: ' + (finData.error || ''));
 
   // 在庫引当（材料CSV減算）— ここで失敗しても商品登録自体は成立させる
@@ -1576,6 +1622,7 @@ async function doNewRegister() {
   }
 
   setProgress(100, '完了！', '登録完了です！');
+  pendingRegisterRequestId = ''; // 次回の登録は別の商品なので新しいIDを採番させる
   deleteRegisterDraft();
   document.getElementById('completeId').textContent = productId;
   lastRegisteredProductId = productId;
@@ -1911,12 +1958,12 @@ async function uploadOnePhoto(p, i, folderId) {
   const dataBase64 = p.dataUrl.split(',')[1];
   const mimeType = p.file.type;
   const filename = `photo_${String(i+1).padStart(2,'0')}_${p.file.name.replace(/[^\w.\-]/g,'_')}`;
-  const upPayload = { api: 'uploadPhoto', key: REGISTER_KEY, folderId, filename, mimeType, dataBase64 };
-  const upRes = await fetch(GAS_URL, {
-    method: 'POST',
-    body: new URLSearchParams({ payload: JSON.stringify(upPayload) })
+  // filename は決定的なので、GAS側が同名ファイルの再作成を抑止する（冪等）。
+  const upPayload = { key: REGISTER_KEY, folderId, filename, mimeType, dataBase64 };
+  const upData = await gasPostJson('uploadPhoto', upPayload, (n, max) => {
+    setProgress(null, null,
+      `写真${i+1}を再送しています（${n}/${max - 1}回目）…`);
   });
-  const upData = await upRes.json();
   if (!upData.ok) throw new Error(`写真${i+1}のアップロード失敗: ` + (upData.error || ''));
   return upData.url;
 }
@@ -1924,6 +1971,7 @@ async function uploadOnePhoto(p, i, folderId) {
 // ====== RESET ======
 function resetAll() {
   deleteRegisterDraft();
+  pendingRegisterRequestId = ''; // フォームを空にするので登録単位も切り替える
   photos = [];
   mainPhotoIndex = -1;
   ['f_name','f_material','f_color','f_size','f_hours','f_cost','f_price','f_shortDesc','f_longDesc','f_hashtags'].forEach(id => {
