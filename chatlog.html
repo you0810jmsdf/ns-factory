@@ -131,6 +131,39 @@ tr:hover td{background:#1c2128}
 .auth-btn:hover{background:#388bfd}
 .auth-error{min-height:18px;margin:6px 0 0;font-size:12px;color:#ff9d9d}
 .auth-locked{overflow:hidden}
+
+/* 指摘（ナレッジ学習ループ 2026-08-05） */
+.fb-btn{
+  background:#21262d;border:1px solid #30363d;color:#e3b341;border-radius:6px;
+  font-size:11px;padding:3px 8px;cursor:pointer;white-space:nowrap;
+}
+.fb-btn:hover{border-color:#e3b341}
+.fb-overlay{
+  position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(1,4,9,.8);backdrop-filter:blur(4px);
+}
+.fb-overlay.on{display:flex}
+.fb-card{
+  width:min(640px,100%);background:#161b22;border:1px solid #30363d;border-radius:18px;
+  padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto;
+}
+.fb-card h2{margin:0 0 6px;font-size:17px;color:#e6edf3}
+.fb-card .fb-sub{font-size:12px;color:#9aa4af;line-height:1.7;margin-bottom:12px}
+.fb-quote{
+  background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:10px 12px;
+  font-size:12.5px;line-height:1.7;margin-bottom:12px;max-height:180px;overflow-y:auto;
+}
+.fb-quote .q{color:#e6edf3}
+.fb-quote .a{color:#9aa4af;margin-top:6px}
+.fb-card textarea{
+  width:100%;min-height:110px;border:1px solid #30363d;border-radius:8px;padding:10px 12px;
+  font-size:13.5px;background:#0d1117;color:#e6edf3;outline:none;font-family:inherit;line-height:1.7;resize:vertical;
+}
+.fb-card textarea:focus{border-color:#58a6ff}
+.fb-actions{display:flex;gap:8px;margin-top:12px;align-items:center}
+.fb-status{font-size:12px;color:#9aa4af;line-height:1.6}
+.fb-status.ok{color:#4ade80}
+.fb-status.err{color:#ff9d9d}
 </style>
 </head>
 <body class="auth-locked">
@@ -199,6 +232,21 @@ tr:hover td{background:#1c2128}
   </div>
 </div>
 
+<!-- 指摘モーダル（ナレッジ学習ループ）: 会話チェック→指摘→ナレッジへ蓄積 -->
+<div class="fb-overlay" id="fbOverlay">
+  <div class="fb-card">
+    <h2>✏️ この回答への指摘</h2>
+    <p class="fb-sub" id="fbSub"></p>
+    <div class="fb-quote" id="fbQuote"></div>
+    <textarea id="fbText" placeholder="何が違うか・正しくはどう答えるべきかを書いてください。&#10;例: リングサポーターの現行色はダークブラウンのみ。他の色はフルオーダーで対応可能と案内する。"></textarea>
+    <div class="fb-actions">
+      <button class="btn" type="button" id="fbSave">保存してナレッジへ反映</button>
+      <button class="btn sub" type="button" id="fbCancel">キャンセル</button>
+      <span class="fb-status" id="fbStatus"></span>
+    </div>
+  </div>
+</div>
+
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-card">
     <h2>N's Factory</h2>
@@ -209,6 +257,7 @@ tr:hover td{background:#1c2128}
   </div>
 </div>
 
+<script src="./assets/js/github-token.js"></script>
 <script>
 // ================================================================
 // 認証（SHA-256照合）。admin.html / staff-monitor.html と同一パスワード。
@@ -602,24 +651,27 @@ function render() {
   const thead = document.getElementById('thead');
   const tbody = document.getElementById('tbody');
 
+  fbList = list;   // ✏️ 指摘ボタンの行参照用（ナレッジ学習ループ）
   if (currentSrc === 'hearing') {
-    thead.innerHTML = '<tr><th>日時</th><th>お客様の相談</th><th>AIの応答</th><th>応答字数</th></tr>';
+    thead.innerHTML = '<tr><th>日時</th><th>お客様の相談</th><th>AIの応答</th><th>応答字数</th><th></th></tr>';
     tbody.innerHTML = list.length ? list.map((r, i) =>
       '<tr><td class="dt">' + esc(r.datetime) + (r.img ? ' 📷' : '') + '</td>'
       + '<td class="q">' + cellText(r.question, 'hq' + i) + '</td>'
       + '<td class="a">' + (r.legacy ? '<span style="color:#6e7681">' + esc(r.reply) + '</span>' : cellText(r.reply, 'ha' + i)) + '</td>'
-      + '<td class="num">' + (r.replyLen || 0) + '</td></tr>').join('')
-      : '<tr><td class="empty" colspan="4">該当する相談はありません</td></tr>';
+      + '<td class="num">' + (r.replyLen || 0) + '</td>'
+      + '<td><button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button></td></tr>').join('')
+      : '<tr><td class="empty" colspan="5">該当する相談はありません</td></tr>';
   } else if (currentSrc === 'ai') {
-    thead.innerHTML = '<tr><th>日時</th><th>担当幕僚</th><th>会話の場所</th><th>お客様の質問</th><th>AIの応答</th><th>応答字数</th></tr>';
+    thead.innerHTML = '<tr><th>日時</th><th>担当幕僚</th><th>会話の場所</th><th>お客様の質問</th><th>AIの応答</th><th>応答字数</th><th></th></tr>';
     tbody.innerHTML = list.length ? list.map((r, i) =>
       '<tr><td class="dt">' + esc(r.datetime) + '</td>'
       + '<td class="who"><span class="badge">' + esc(whoName(r.staffId)) + '</span></td>'
       + '<td class="who" style="color:#9aa4af;font-size:12px">' + esc(venueName(r.venue)) + '</td>'
       + '<td class="q">' + cellText(r.question, 'q' + i) + '</td>'
       + '<td class="a">' + cellText(r.reply, 'a' + i) + '</td>'
-      + '<td class="num">' + (r.replyLen || 0) + '</td></tr>').join('')
-      : '<tr><td class="empty" colspan="6">該当する発言はありません</td></tr>';
+      + '<td class="num">' + (r.replyLen || 0) + '</td>'
+      + '<td><button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button></td></tr>').join('')
+      : '<tr><td class="empty" colspan="7">該当する発言はありません</td></tr>';
   } else {
     thead.innerHTML = '<tr><th>日時</th><th>発言者</th><th>表示名</th><th>発言</th><th>字数</th></tr>';
     tbody.innerHTML = list.length ? list.map((r, i) =>
@@ -713,7 +765,108 @@ document.getElementById('breakdown').addEventListener('click', (ev) => {
   whoFilter = (whoFilter === chip.dataset.who) ? '' : chip.dataset.who;
   render();
 });
+// ================================================================
+// ✏️ 指摘 → ナレッジ学習ループ（2026-08-05）
+// 履歴管理で間違った回答を見つけたら指摘し、その内容を知識として蓄積する。
+//   幕僚キャラ接客(ai) → GASのEXTRA_KNOWLEDGEへ即反映（次の会話から効く）
+//   オーダー相談(hearing) → hearing-kb.json の extraKnowledge へGitHub保存
+//   両方とも「指摘台帳」（アーカイブ用スプレッドシート）に記録が残る
+// ================================================================
+let fbList = [];
+let fbTarget = null;
+let fbRequestId = '';
+const FB_GAS_URL = SOURCES.ai.url;   // 指摘API・台帳はShowroom-AIChatが受け持つ
+const KB_REPO_PATH = 'order_estimate/hearing-kb.json';
+const KB_API = 'https://api.github.com/repos/you0810jmsdf/ns-factory/contents/' + KB_REPO_PATH;
+
+function openFeedback(i) {
+  const r = fbList[i];
+  if (!r) return;
+  fbTarget = { src: currentSrc, row: r };
+  fbRequestId = 'fb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  document.getElementById('fbSub').textContent = currentSrc === 'ai'
+    ? '反映先: 幕僚キャラ接客の追加知識（保存すると次の会話から全幕僚に効きます）＋指摘台帳'
+    : '反映先: オーダー相談のナレッジ（hearing-kb.json）＋指摘台帳';
+  document.getElementById('fbQuote').innerHTML =
+    '<div class="q">🙂 ' + esc(r.question || '') + '</div>'
+    + '<div class="a">🤖 ' + esc(r.reply || '') + '</div>';
+  document.getElementById('fbText').value = '';
+  document.getElementById('fbStatus').textContent = '';
+  document.getElementById('fbStatus').className = 'fb-status';
+  document.getElementById('fbSave').disabled = false;
+  document.getElementById('fbOverlay').classList.add('on');
+  document.getElementById('fbText').focus();
+}
+
+// GAS応答が一時的にHTMLになることがあるため、requestId冪等化を前提にリトライする
+async function fbPostGas(body) {
+  let last = '';
+  for (let i = 1; i <= 4; i++) {
+    try {
+      const res = await fetch(FB_GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+      const t = await res.text();
+      if (t.trim().startsWith('{')) return JSON.parse(t);
+      last = 'GASが一時的に応答できませんでした';
+    } catch (e) { last = String(e.message || e); }
+    await new Promise(r => setTimeout(r, 2000 * i));
+  }
+  throw new Error(last);
+}
+
+// hearing-kb.json の extraKnowledge へ追記して GitHub へ保存（管理画面と同じContents API）
+async function fbAppendToHearingKb(feedback) {
+  const token = (window.NSFGitHubToken && NSFGitHubToken.get()) || '';
+  if (!token) throw new Error('GitHubトークン未設定（管理画面の「GitHubトークン設定」で保存してください）');
+  const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' };
+  const getRes = await fetch(KB_API, { headers });
+  if (!getRes.ok) throw new Error('kb取得に失敗 HTTP ' + getRes.status);
+  const meta = await getRes.json();
+  const kb = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(meta.content.replace(/\n/g, '')), c => c.charCodeAt(0))));
+  // toISOString()はUTCのため日本の午前中は前日になる。JSTへ+9hして日付を取る
+  const stamp = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  kb.extraKnowledge = ((kb.extraKnowledge || '').trim() + '\n■' + stamp + '指摘: ' + feedback).trim();
+  const json = JSON.stringify(kb, null, 2) + '\n';
+  const b64 = btoa(Array.from(new TextEncoder().encode(json), b => String.fromCharCode(b)).join(''));
+  const putRes = await fetch(KB_API, {
+    method: 'PUT', headers,
+    body: JSON.stringify({ message: '指摘をナレッジへ反映（chatlog 履歴管理より）', content: b64, sha: meta.sha })
+  });
+  if (!putRes.ok) throw new Error('kb保存に失敗 HTTP ' + putRes.status);
+}
+
+async function saveFeedback() {
+  const text = document.getElementById('fbText').value.trim();
+  const st = document.getElementById('fbStatus');
+  if (!text) { st.textContent = '指摘内容を入力してください'; st.className = 'fb-status err'; return; }
+  const btn = document.getElementById('fbSave');
+  btn.disabled = true;
+  st.textContent = '保存中…'; st.className = 'fb-status';
+  const r = fbTarget.row;
+  try {
+    // ①台帳記録＋（ai系は）知識への即反映
+    const gas = await fbPostGas({
+      action: 'feedback', key: getKey(), requestId: fbRequestId,
+      src: fbTarget.src, targetDatetime: r.datetime, staffId: r.staffId || '',
+      question: r.question || '', reply: r.reply || '', feedback: text
+    });
+    if (gas.status !== 'ok') throw new Error(gas.message || gas.error || '保存に失敗しました');
+    // ②hearing系はナレッジ本体（hearing-kb.json）へも反映
+    if (fbTarget.src === 'hearing') await fbAppendToHearingKb(text);
+    st.textContent = '✅ 反映しました（' + gas.applied + '）。GitHub Pagesの反映には1〜2分かかります。';
+    st.className = 'fb-status ok';
+    setTimeout(() => document.getElementById('fbOverlay').classList.remove('on'), 1800);
+  } catch (e) {
+    st.textContent = '⚠️ ' + String(e.message || e) + '（同じ保存ボタンで再試行できます。二重反映はされません）';
+    st.className = 'fb-status err';
+    btn.disabled = false;
+  }
+}
+document.getElementById('fbSave').addEventListener('click', saveFeedback);
+document.getElementById('fbCancel').addEventListener('click', () => document.getElementById('fbOverlay').classList.remove('on'));
+
 document.getElementById('tbody').addEventListener('click', (ev) => {
+  const fb = ev.target.closest('[data-fb]');
+  if (fb) { openFeedback(Number(fb.dataset.fb)); return; }
   if (ev.target.id === 'clearFilters') {
     whoFilter = '';
     document.getElementById('fWord').value = '';
