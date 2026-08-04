@@ -1490,14 +1490,15 @@
     });
 
     const LIVE_WORKS_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec?api=products';
-    // 静的フォールバックは廃止（2026-08-04）。
-    //   旧: ['works-data.json', 'mini6-photos.json']
-    //   理由: mini6-photos.json のキーはお客様のお名前・ハンドルネームであり、
-    //         GAS(api=products)が落ちた瞬間にフォールバックが働き、作品集に
-    //         お客様のお名前29件がそのまま公開される事故が起きたため。
-    //   GAS障害時は静かに代替表示せず、末尾の catch でエラー表示に落とす。
-    // ⛔ ここに顧客フォルダ名由来のJSONを再追加しないこと。
-    const STATIC_SOURCES = [];
+    // GASが落ちている間に使う静的フォールバック。
+    //   works-data.json は tools/build_works_data.js が api=products の結果から生成する
+    //   （＝GAS経由で表示するものと同じ商品データ。GitHub Actionsで定期更新）。
+    //
+    // ⛔ mini6-photos.json をここに戻さないこと。
+    //    あれはキーがお客様のお名前・ハンドルネームで、GASが落ちた瞬間に
+    //    作品集へお名前29件がそのまま出る事故を起こした（2026-08-04・廃止済み）。
+    //    フォールバックに置いてよいのは商品マスター由来のデータだけ。
+    const STATIC_SOURCES = ['works-data.json'];
 
     function toWorks(data) {
       if (Array.isArray(data)) {
@@ -1588,9 +1589,24 @@
     //   ⚠ GASは失敗時に {"error":"..."} のようなオブジェクトを返すことがある。
     //     これを通すと applyData がそれを作品リストとして扱い、
     //     エラー表示ではなく「0件 / 該当する作品がありません」になって障害が隠れる（2026-08-04実害）。
-    function fetchWorksOnce(url) {
-      return fetch(url, { cache: 'no-store' })
+    function fetchWorksOnce(url, timeoutMs = 10000) {
+      // 応答が返らないまま数分待つことがあるため上限を切る（実測で164秒の例あり）
+      let timer = null;
+      let signal;
+      if (typeof AbortController !== 'undefined') {
+        const controller = new AbortController();
+        signal = controller.signal;
+        timer = setTimeout(() => controller.abort(), timeoutMs);
+      }
+      return fetch(url, { cache: 'no-store', signal })
         .then((response) => response.text())
+        .then((text) => {
+          if (timer) clearTimeout(timer);
+          return text;
+        }, (err) => {
+          if (timer) clearTimeout(timer);
+          throw err;
+        })
         .then((text) => {
           const head = text.trim().charAt(0);
           if (head !== '[' && head !== '{') throw new Error('HTMLエラーページが返りました');
@@ -1617,7 +1633,7 @@
     //   2026-08-04 実測: 同一URLを連打して 6/10 が失敗する時間帯があった。
     //   同じURLでも成否がばらつくので、2回目以降は2本同時に投げて先に成功した方を使う。
     //   指数バックオフだと待ち時間が20秒を超えて「読み込み中」が続くため、間隔は短く固定する。
-    function fetchJsonRetry(url, maxRounds = 4) {
+    function fetchJsonRetry(url, maxRounds = 2) {
       function round(n) {
         const hedge = n === 1 ? 1 : 2;
         const tries = [];
@@ -1745,16 +1761,38 @@
       });
     }
 
-    fetchJsonRetry(LIVE_WORKS_API)
-      .catch(() => fetchJsonp(LIVE_WORKS_API))
-      .catch(() => loadStatic())
+    // 表示の流れ（2026-08-04 変更）
+    //   ① まず works-data.json（同じGitHub Pages上）で即表示する。
+    //      GASは断続的に落ちるうえ、通っても10秒近くかかるため、
+    //      先にGASを待つと「読み込み中」が延々続いてしまう。
+    //   ② そのうえで裏でGASに最新を取りに行き、取れたら差し替える。
+    //      取れなければ①の内容のまま（お客様には作品集が見えている）。
+    //
+    //   ⚠ 受け取ったデータは必ず「中身のある配列」か確かめてから applyData に渡すこと。
+    //     GASは失敗時に {"error":"..."} を返すことがあり、そのまま渡すと
+    //     エラー表示ではなく「0件 / 該当する作品がありません」になって障害が隠れる。
+    function isValidWorks(data) {
+      return Array.isArray(data) && data.length > 0;
+    }
+
+    let staticShown = false;
+
+    loadStatic()
       .then((data) => {
-        // JSONPフォールバック経由でも {"error":"..."} が来ることがある。
-        // そのまま applyData に渡すと「0件」表示になり障害が見えなくなるため、ここで止める。
-        if (!Array.isArray(data) || !data.length) throw new Error('作品データが不正です');
-        return applyData(data);
+        if (!isValidWorks(data)) return;
+        applyData(data);
+        staticShown = true;
       })
+      .catch(() => { /* 静的ファイルが無くてもGASで表示できる可能性があるので続行 */ })
+      .then(() => fetchJsonRetry(LIVE_WORKS_API)
+        .catch(() => fetchJsonp(LIVE_WORKS_API))
+        .then((data) => {
+          if (!isValidWorks(data)) throw new Error('作品データが不正です');
+          applyData(data);   // 最新に差し替え
+        })
+      )
       .catch(() => {
+        if (staticShown) return;   // 静的で表示済みなら何もしない
         count.textContent = '読み込み失敗';
         gallery.innerHTML = '<div class="error">作品データを読み込めませんでした。時間をおいて再読み込みしてください。</div>';
       });
