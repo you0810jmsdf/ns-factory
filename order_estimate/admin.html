@@ -189,6 +189,22 @@ body{
 .admin-section-hidden{
   display:none !important;
 }
+.ring-matrix-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.ring-matrix-summary{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.ring-matrix-series{margin:16px 0 0;font-size:14px;color:#6b3a1f}
+.ring-matrix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px}
+.ring-matrix-card{border:1px solid #eadccf;border-radius:12px;background:#fffaf6;padding:10px 12px}
+.ring-matrix-card.has-out{border-color:#e8a79f;background:#fffafa}
+.ring-matrix-card h3{margin:0;font-size:13px;color:#3f2a18}
+.ring-matrix-card .dims{font-size:11px;color:#7d644d;margin:2px 0 8px}
+.ring-matrix-card .warn-note{font-size:10px;color:#8a6100;margin-left:6px}
+.ring-chips{display:flex;flex-wrap:wrap;gap:5px}
+.ring-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid transparent;line-height:1.4}
+.ring-chip .sw{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.ring-chip.ok{background:#e9f4e4;border-color:#bcd9ae;color:#2f5d1d}
+.ring-chip.out{background:#fdecec;border-color:#f0b9b4;color:#a33a2a}
+.ring-chip.noqty{background:#fdf3dd;border-color:#e8d3a0;color:#8a6100}
+.ring-chip.missing{background:transparent;border:1px dashed #cbb69e;color:#a08a72}
 .github-publish-panel{
   background:#fffdfb;
 }
@@ -848,6 +864,22 @@ tr.row-out-stock td{
       <div class="hint" style="margin-top:8px">
         PCローカルのCSVは基本使いません。GitHubへ直接反映する場合は、Contents read/write 権限のトークンを設定してください。「このブラウザに保存する」にチェックを入れると次回から自動入力されます。複数PCで使う場合はブラウザのパスワードマネージャーを利用してください。
       </div>
+    </div>
+
+    <div class="panel ring-section">
+      <h2 style="margin:0 0 6px;font-size:16px;color:#6b3a1f">リング在庫マトリクス（欠品発見用）</h2>
+      <div class="hint">
+        シリーズ×手帳規格×内径×色で全リングを俯瞰します。外径 = 内径 + 3mm。
+        編集は下の一覧表で行うと、このマトリクスも自動で追従します。
+      </div>
+      <div class="ring-matrix-legend">
+        <span class="ring-chip ok">在庫あり（数字 = 個数）</span>
+        <span class="ring-chip out">欠品（在庫0）</span>
+        <span class="ring-chip noqty">数量未入力</span>
+        <span class="ring-chip missing">CSV未登録</span>
+      </div>
+      <div class="ring-matrix-summary" id="ringMatrixSummary"></div>
+      <div id="ringMatrixBody"></div>
     </div>
 
     <div class="panel ring-section">
@@ -2975,6 +3007,158 @@ function renderStockList() {
   });
 }
 
+const MATRIX_COLOR_ORDER = ['silver', 'gold', 'pinkgold', 'black'];
+const MATRIX_COLOR_META = {
+  silver: { label: 'シルバー', sw: '#b5b5b5' },
+  gold: { label: 'ゴールド', sw: '#d4af37' },
+  pinkgold: { label: 'ピンクゴールド', sw: '#e0a890' },
+  black: { label: 'ブラック', sw: '#3a3a3a' }
+};
+const MATRIX_PLANNER_ORDER = ['Micro5', 'Mini6', 'Bible', 'A6', 'A5'];
+const MATRIX_SERIES_ORDER = ['normal', 'klause'];
+const MATRIX_SERIES_LABEL = { normal: '通常リング', klause: 'クラウゼリング（KRAUSE社）' };
+
+function matrixChipState(row) {
+  const qtyRaw = String(row.stock_qty ?? '').trim();
+  if (qtyRaw === '') return { cls: 'noqty', text: '数量未入力' };
+  const qty = Number(qtyRaw);
+  if (!Number.isFinite(qty) || qty <= 0) return { cls: 'out', text: '欠品' };
+  return { cls: 'ok', text: String(qty) };
+}
+
+function makeRingChip(cls, swColor, label) {
+  const chip = document.createElement('span');
+  chip.className = `ring-chip ${cls}`;
+  if (swColor) {
+    const sw = document.createElement('span');
+    sw.className = 'sw';
+    sw.style.background = swColor;
+    chip.appendChild(sw);
+  }
+  chip.appendChild(document.createTextNode(label));
+  return chip;
+}
+
+function renderRingMatrix() {
+  const summaryEl = document.getElementById('ringMatrixSummary');
+  const bodyEl = document.getElementById('ringMatrixBody');
+  if (!summaryEl || !bodyEl) return;
+  summaryEl.innerHTML = '';
+  bodyEl.innerHTML = '';
+  if (!rows.length) {
+    const empty = document.createElement('div');
+    empty.className = 'hint';
+    empty.textContent = 'CSVが未読込のため表示できません。「公開CSVを再読込」を押してください。';
+    bodyEl.appendChild(empty);
+    return;
+  }
+
+  const groups = new Map();
+  rows.forEach(row => {
+    const series = String(row.series || '').trim() || 'unknown';
+    const planner = String(row.planner_type || '').trim();
+    const size = String(row.size_mm || '').trim();
+    const key = `${series}|${planner}|${size}`;
+    if (!groups.has(key)) groups.set(key, { series, planner, size, colors: new Map() });
+    const colorId = String(row.color_id || '').trim() || 'unknown';
+    groups.get(key).colors.set(colorId, row);
+  });
+
+  let cntOk = 0, cntOut = 0, cntNoQty = 0;
+  rows.forEach(row => {
+    const state = matrixChipState(row);
+    if (state.cls === 'ok') cntOk += 1;
+    else if (state.cls === 'out') cntOut += 1;
+    else cntNoQty += 1;
+  });
+  let cntMissing = 0;
+  groups.forEach(group => {
+    MATRIX_COLOR_ORDER.forEach(colorId => {
+      if (!group.colors.has(colorId)) cntMissing += 1;
+    });
+  });
+
+  [
+    { label: `在庫ありSKU: ${cntOk}`, cls: 'good' },
+    { label: `欠品（在庫0）: ${cntOut}`, cls: cntOut ? 'warn' : 'good' },
+    { label: `数量未入力: ${cntNoQty}`, cls: cntNoQty ? 'warn' : 'good' },
+    { label: `未登録の組合せ: ${cntMissing}`, cls: '' }
+  ].forEach(item => {
+    const pill = document.createElement('span');
+    pill.className = `status-pill ${item.cls}`.trim();
+    pill.textContent = item.label;
+    summaryEl.appendChild(pill);
+  });
+
+  const seriesKeys = [...new Set([...MATRIX_SERIES_ORDER, ...[...groups.values()].map(g => g.series)])]
+    .filter(series => [...groups.values()].some(g => g.series === series));
+  seriesKeys.forEach(series => {
+    const heading = document.createElement('h3');
+    heading.className = 'ring-matrix-series';
+    heading.textContent = MATRIX_SERIES_LABEL[series] || `シリーズ: ${series}`;
+    bodyEl.appendChild(heading);
+
+    const grid = document.createElement('div');
+    grid.className = 'ring-matrix-grid';
+    const cards = [...groups.values()].filter(g => g.series === series).sort((a, b) => {
+      const pa = MATRIX_PLANNER_ORDER.indexOf(a.planner);
+      const pb = MATRIX_PLANNER_ORDER.indexOf(b.planner);
+      if (pa !== pb) return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);
+      return (Number(a.size) || 0) - (Number(b.size) || 0);
+    });
+
+    cards.forEach(group => {
+      const card = document.createElement('div');
+      card.className = 'ring-matrix-card';
+
+      const title = document.createElement('h3');
+      title.textContent = group.planner || '規格未設定';
+      if (!group.planner) {
+        const warn = document.createElement('span');
+        warn.className = 'warn-note';
+        warn.textContent = 'planner_type空欄';
+        title.appendChild(warn);
+      }
+      card.appendChild(title);
+
+      const dims = document.createElement('div');
+      dims.className = 'dims';
+      const sizeNum = Number(group.size);
+      dims.textContent = Number.isFinite(sizeNum) && group.size !== ''
+        ? `内径${sizeNum}mm ／ 外径${sizeNum + 3}mm`
+        : 'リング径未設定';
+      card.appendChild(dims);
+
+      const chips = document.createElement('div');
+      chips.className = 'ring-chips';
+      let hasOut = false;
+      MATRIX_COLOR_ORDER.forEach(colorId => {
+        const meta = MATRIX_COLOR_META[colorId];
+        const row = group.colors.get(colorId);
+        if (!row) {
+          chips.appendChild(makeRingChip('missing', null, `${meta.label} 未登録`));
+          return;
+        }
+        const state = matrixChipState(row);
+        if (state.cls === 'out') hasOut = true;
+        const label = String(row.color_label || '').trim() || meta.label;
+        chips.appendChild(makeRingChip(state.cls, meta.sw, `${label} ${state.text}`));
+      });
+      group.colors.forEach((row, colorId) => {
+        if (MATRIX_COLOR_ORDER.includes(colorId)) return;
+        const state = matrixChipState(row);
+        if (state.cls === 'out') hasOut = true;
+        const label = String(row.color_label || '').trim() || colorId;
+        chips.appendChild(makeRingChip(state.cls, null, `${label} ${state.text}`));
+      });
+      if (hasOut) card.classList.add('has-out');
+      card.appendChild(chips);
+      grid.appendChild(card);
+    });
+    bodyEl.appendChild(grid);
+  });
+}
+
 function renderTable() {
   const head = document.getElementById('tableHead');
   const body = document.getElementById('tableBody');
@@ -3105,6 +3289,7 @@ function renderTable() {
 
     body.appendChild(tr);
   });
+  renderRingMatrix();
 }
 
 function applyFilters(rebuildSeries = true) {
