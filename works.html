@@ -1584,23 +1584,51 @@
     //   同じURLが成功したり失敗したりするため、再送すれば通る。
     // ⚠ HTTP 200 でもHTMLのエラーページが返ることがある。
     //    response.ok では判定できないので、必ず本文の先頭文字で判定すること。
-    function fetchJsonRetry(url, maxAttempts = 5) {
-      function attempt(n) {
-        return fetch(url, { cache: 'no-store' })
-          .then((response) => response.text())
-          .then((text) => {
-            const head = text.trim().charAt(0);
-            if (head !== '[' && head !== '{') throw new Error('non-JSON response');
-            return JSON.parse(text);
-          })
-          .catch((err) => {
-            if (n >= maxAttempts) throw err;
-            const wait = Math.min(600 * Math.pow(2, n - 1), 5000);
-            return new Promise((resolve) => setTimeout(resolve, wait))
-              .then(() => attempt(n + 1));
-          });
+    // 1回分の取得。作品一覧は「中身のある配列」でなければ失敗として扱う。
+    //   ⚠ GASは失敗時に {"error":"..."} のようなオブジェクトを返すことがある。
+    //     これを通すと applyData がそれを作品リストとして扱い、
+    //     エラー表示ではなく「0件 / 該当する作品がありません」になって障害が隠れる（2026-08-04実害）。
+    function fetchWorksOnce(url) {
+      return fetch(url, { cache: 'no-store' })
+        .then((response) => response.text())
+        .then((text) => {
+          const head = text.trim().charAt(0);
+          if (head !== '[' && head !== '{') throw new Error('HTMLエラーページが返りました');
+          const data = JSON.parse(text);
+          if (!Array.isArray(data)) throw new Error('配列ではありません: ' + text.slice(0, 80));
+          if (!data.length) throw new Error('0件が返りました');
+          return data;
+        });
+    }
+
+    /** 先に成功した1本を採用する（Promise.any 相当。古い端末でも動くよう自前実装） */
+    function firstSuccessOf(promises) {
+      return new Promise((resolve, reject) => {
+        let left = promises.length;
+        let lastErr = null;
+        promises.forEach((p) => p.then(resolve, (e) => {
+          lastErr = e;
+          if (--left === 0) reject(lastErr || new Error('all failed'));
+        }));
+      });
+    }
+
+    // GAS WebApp の間欠障害への対策。
+    //   2026-08-04 実測: 同一URLを連打して 6/10 が失敗する時間帯があった。
+    //   同じURLでも成否がばらつくので、2回目以降は2本同時に投げて先に成功した方を使う。
+    //   指数バックオフだと待ち時間が20秒を超えて「読み込み中」が続くため、間隔は短く固定する。
+    function fetchJsonRetry(url, maxRounds = 4) {
+      function round(n) {
+        const hedge = n === 1 ? 1 : 2;
+        const tries = [];
+        for (let i = 0; i < hedge; i++) tries.push(fetchWorksOnce(url));
+        return firstSuccessOf(tries).catch((err) => {
+          if (n >= maxRounds) throw err;
+          return new Promise((resolve) => setTimeout(resolve, 400))
+            .then(() => round(n + 1));
+        });
       }
-      return attempt(1);
+      return round(1);
     }
 
     function fetchJsonp(url, timeout = 15000) {
@@ -1720,7 +1748,12 @@
     fetchJsonRetry(LIVE_WORKS_API)
       .catch(() => fetchJsonp(LIVE_WORKS_API))
       .catch(() => loadStatic())
-      .then(applyData)
+      .then((data) => {
+        // JSONPフォールバック経由でも {"error":"..."} が来ることがある。
+        // そのまま applyData に渡すと「0件」表示になり障害が見えなくなるため、ここで止める。
+        if (!Array.isArray(data) || !data.length) throw new Error('作品データが不正です');
+        return applyData(data);
+      })
       .catch(() => {
         count.textContent = '読み込み失敗';
         gallery.innerHTML = '<div class="error">作品データを読み込めませんでした。時間をおいて再読み込みしてください。</div>';
