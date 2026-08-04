@@ -1490,7 +1490,14 @@
     });
 
     const LIVE_WORKS_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec?api=products';
-    const STATIC_SOURCES = ['works-data.json', 'mini6-photos.json'];
+    // 静的フォールバックは廃止（2026-08-04）。
+    //   旧: ['works-data.json', 'mini6-photos.json']
+    //   理由: mini6-photos.json のキーはお客様のお名前・ハンドルネームであり、
+    //         GAS(api=products)が落ちた瞬間にフォールバックが働き、作品集に
+    //         お客様のお名前29件がそのまま公開される事故が起きたため。
+    //   GAS障害時は静かに代替表示せず、末尾の catch でエラー表示に落とす。
+    // ⛔ ここに顧客フォルダ名由来のJSONを再追加しないこと。
+    const STATIC_SOURCES = [];
 
     function toWorks(data) {
       if (Array.isArray(data)) {
