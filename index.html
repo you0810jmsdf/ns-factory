@@ -1529,7 +1529,7 @@ h1,h2,h3{
       素材も意匠も、すべては貴方の手に委ねられる。
     </p>
     <div class="hero-actions">
-      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary">オーダーの相談をする →</a>
+      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary">オーダー相談 →</a>
     </div>
   </div>
   <div class="hero-photo">
@@ -1551,7 +1551,7 @@ h1,h2,h3{
       サイズ・革・リング・金具・刻印まで、すべて自分仕様。Micro5 から A5 まで全7サイズからお作りします。
     </p>
     <div class="planner-actions">
-      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary">オーダーの相談をする →</a>
+      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary">オーダー相談 →</a>
     </div>
   </div>
 </section>
@@ -1563,15 +1563,16 @@ h1,h2,h3{
       <p class="section-label">AI Concierge</p>
       <h2 class="section-title">幕僚AIが、24時間ご案内します</h2>
     </div>
+    <!-- 2026-08-04 導線一本化: このセクションのボタン2つ（チャット起動／窓口リンク）を撤去。
+         「相談」を名乗る入口はオーダー相談1系統のみとし、チャットの入口は右下の
+         「AIスタッフと話す」1つに集約。オーダーの話になったら会話の中で窓口へ案内する
+         （chat-widget.js のオーダー意図検知チップ）。⛔ ここにボタンを復活させないこと -->
     <p class="ai-lead">
       N's factory では、個性豊かな10人の幕僚AIが接客を担当。
-      「どのサイズが合う？」「予算内でどこまでできる？」——そんな相談に、いつでもその場でお答えします。
-      下の幕僚紹介から、気になる幕僚に直接話しかけることもできます。
+      「どのサイズが合う？」「予算内でどこまでできる？」——そんな質問に、いつでもその場でお答えします。
+      画面右下の「AIスタッフと話す」から、気軽に話しかけてください。
+      オーダーのご相談になったら、そのまま相談窓口へご案内します。
     </p>
-    <div class="ai-concierge-actions">
-      <button type="button" class="btn btn-primary" onclick="nsfOpenStaffChat('kojinjigyonusi')">💬 いますぐチャットで相談する</button>
-      <a href="./order_estimate/hearing-ai.html" class="btn btn-ghost">🧵 オーダー相談窓口</a>
-    </div>
     <div class="ai-tip-box" id="ai-tip-box" hidden>
       <span class="ai-tip-label" id="ai-tip-label">今日の幕僚メモ</span>
       <div id="ai-tip-text"></div>
@@ -1752,7 +1753,7 @@ h1,h2,h3{
       </a>
       <div class="staff-tasks">
         <span class="staff-tasks-label">主な任務</span>
-        <a href="./order_estimate/hearing-ai.html">オーダー相談窓口</a>
+        <a href="./order_estimate/hearing-ai.html">オーダー相談</a>
         <a href="./orderprogress.html">オーダー進捗確認</a>
         <a href="./works.html">作品集</a>
         <a href="./register.html" onclick="return gateConfidential(event, this.href)">商品登録 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
@@ -1989,7 +1990,7 @@ h1,h2,h3{
     <div class="footer-links">
       <a href="https://linktr.ee/you0810jmsdf" class="footer-link">各種販売サイト</a>
       <a href="https://lin.ee/qsmtY2N" class="footer-link" target="_blank" rel="noopener">A6印刷ツール</a>
-      <a href="./order_estimate/hearing-ai.html" class="footer-link">オーダー相談窓口</a>
+      <a href="./order_estimate/hearing-ai.html" class="footer-link">オーダー相談</a>
       <a href="./order_estimate/admin.html" class="footer-link">管理画面</a>
       <a href="https://lin.ee/qsmtY2N" class="footer-link" target="_blank" rel="noopener">LINE 公式アカウント</a>
       <a href="mailto:you0810jmsfd@gmail.com" class="footer-link">メール</a>
@@ -2218,8 +2219,8 @@ function gateConfidential(e, url) {
 </script>
 
 <!-- ── フローティングチャットボタン ── -->
-<button type="button" class="chat-fab" id="chat-fab" onclick="nsfOpenStaffChat('kojinjigyonusi')" aria-label="AIスタッフとチャットで相談する">
-  💬 AIスタッフに相談
+<button type="button" class="chat-fab" id="chat-fab" onclick="nsfOpenStaffChat('kojinjigyonusi')" aria-label="AIスタッフと話す">
+  💬 AIスタッフと話す
 </button>
 
 <!-- ── AIチャットオーバーレイ（showroom/chat-widget.js を流用） ── -->
