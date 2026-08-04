@@ -1578,6 +1578,31 @@
       });
     }
 
+    // GAS WebApp の間欠障害への再送つき取得。
+    //   2026-08-04 実測: 同一URLを1.5秒間隔で叩いて 4/7 が失敗する時間帯があった。
+    //   落ちるのは script.googleusercontent.com/macros/echo の段で、
+    //   同じURLが成功したり失敗したりするため、再送すれば通る。
+    // ⚠ HTTP 200 でもHTMLのエラーページが返ることがある。
+    //    response.ok では判定できないので、必ず本文の先頭文字で判定すること。
+    function fetchJsonRetry(url, maxAttempts = 5) {
+      function attempt(n) {
+        return fetch(url, { cache: 'no-store' })
+          .then((response) => response.text())
+          .then((text) => {
+            const head = text.trim().charAt(0);
+            if (head !== '[' && head !== '{') throw new Error('non-JSON response');
+            return JSON.parse(text);
+          })
+          .catch((err) => {
+            if (n >= maxAttempts) throw err;
+            const wait = Math.min(600 * Math.pow(2, n - 1), 5000);
+            return new Promise((resolve) => setTimeout(resolve, wait))
+              .then(() => attempt(n + 1));
+          });
+      }
+      return attempt(1);
+    }
+
     function fetchJsonp(url, timeout = 15000) {
       return new Promise((resolve, reject) => {
         const callback = `worksCallback_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
@@ -1692,7 +1717,7 @@
       });
     }
 
-    fetchJson(LIVE_WORKS_API)
+    fetchJsonRetry(LIVE_WORKS_API)
       .catch(() => fetchJsonp(LIVE_WORKS_API))
       .catch(() => loadStatic())
       .then(applyData)
