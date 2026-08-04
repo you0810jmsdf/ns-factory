@@ -500,8 +500,11 @@
       font-weight: 700;
       vertical-align: middle;
     }
-    .work-card.is-unavailable .thumb,
-    .work-card.is-unavailable .thumb-placeholder { opacity: 0.55; filter: grayscale(0.4); }
+    /* SOLDOUT・再販予定なしでも写真は原色のまま見せる（2026-08-04 事業主指示）。
+       作品集は「過去に製作した実績」を革の色味込みで見てもらう場なので、
+       写真を薄く／グレーに落とすと同じ革でのオーダー相談につながらない。
+       販売状態の識別は .badge-unavailable と詳細側の注記が担う。
+       ⛔ ここに opacity / filter: grayscale を復活させないこと。 */
 
     /* ===== オーダー相談チャット（showroom/chat-widget.js を流用） ===== */
     .oc-widget {
