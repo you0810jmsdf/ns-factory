@@ -137,9 +137,10 @@ tr:hover td{background:#1c2128}
 <div class="topbar">
   <h1>💬 接客ログ一覧</h1>
   <div class="srcs" role="tablist">
-    <button class="src-btn active" type="button" data-src="ai" role="tab">🤖 幕僚キャラ接客</button>
+    <!-- 2026-08-04 導線一本化に合わせ、主役のオーダー相談を先頭・初期表示に -->
+    <button class="src-btn active" type="button" data-src="hearing" role="tab">🧵 オーダー相談</button>
+    <button class="src-btn" type="button" data-src="ai" role="tab">🤖 幕僚キャラ接客</button>
     <button class="src-btn" type="button" data-src="visitor" role="tab">👥 みんなのチャット</button>
-    <button class="src-btn" type="button" data-src="hearing" role="tab">🧵 オーダー相談AI</button>
     <button class="src-btn" type="button" data-src="archive" role="tab">📦 月次アーカイブ</button>
   </div>
   <span class="updated" id="updatedAt">読み込み前</span>
@@ -191,7 +192,7 @@ tr:hover td{background:#1c2128}
     <div class="table-wrap">
       <table>
         <thead id="thead"></thead>
-        <tbody id="tbody"><tr><td class="empty" colspan="5">「読み込み」を押してください</td></tr></tbody>
+        <tbody id="tbody"><tr><td class="empty" colspan="5">読み込み中…（ログインすると今月分が自動で表示されます）</td></tr></tbody>
       </table>
     </div>
     <p class="note" id="footNote"></p>
@@ -237,7 +238,7 @@ const SOURCES = {
        + '直近60件しか残らないオーダー相談AIも、この月次保存で永続化されます。'
   },
   hearing: {
-    label: 'オーダー相談AI',
+    label: 'オーダー相談',
     url: 'https://script.google.com/macros/s/AKfycbwABbFeZucU9N4k8YyhIKbUUo3JUTGX0vXPBuuX0mSEqIpblyZFtf66w7lCB9R_xkCE-w/exec',
     action: 'recentlog',   // このGASだけAPI名と応答形式が異なる
     note: 'オーダー相談ページ（hearing-ai.html）の自由入力による相談。応答はClaude（1日20回上限）。'
@@ -291,7 +292,7 @@ function submitAuth() {
 // 状態
 // ================================================================
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let currentSrc = 'ai';
+let currentSrc = 'hearing';   // 初期表示は主役のオーダー相談（2026-08-04導線一本化）
 let rows = [];        // 取得したままの全行
 let whoFilter = '';   // 担当（staffId / role）での絞り込み
 let droppedLegacy = 0; // 年が入っていない旧形式ログのうち、期間指定で除外した件数
@@ -701,6 +702,9 @@ document.querySelectorAll('[data-range]').forEach(b => b.addEventListener('click
 document.getElementById('reloadBtn').addEventListener('click', load);
 document.getElementById('fMonth').addEventListener('change', load);
 document.getElementById('fArcSrc').addEventListener('change', load);
+// 日付を変えたら自動で読み込む（「読み込み」ボタンを押し忘れて0件と誤解する事故の防止）
+document.getElementById('fFrom').addEventListener('change', load);
+document.getElementById('fTo').addEventListener('change', load);
 document.getElementById('csvBtn').addEventListener('click', downloadCsv);
 document.getElementById('fWord').addEventListener('input', () => { if (rows.length) render(); });
 document.getElementById('breakdown').addEventListener('click', (ev) => {
