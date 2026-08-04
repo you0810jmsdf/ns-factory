@@ -1547,12 +1547,11 @@ h1,h2,h3{
     <!-- 2026-08-04: 7サイズ参考価格表を削除（事業主指示。シミュレーターの実額と幅が
          大きく異なり誤解を招くため。金額は相談窓口→見積もりで案内する）。
          ⛔ LPに価格表・参考価格を復活させないこと -->
-    <p style="font-size:14px;color:var(--color-text-sub);max-width:640px;line-height:1.9;margin-bottom:28px;">
+    <!-- 2026-08-04: このセクションのCTAボタンも削除（事業主指示「ボタンは減らしシンプルに」。
+         オーダー相談へはナビ・Heroの同名ボタンから。⛔ ボタンを復活させないこと） -->
+    <p style="font-size:14px;color:var(--color-text-sub);max-width:640px;line-height:1.9;">
       サイズ・革・リング・金具・刻印まで、すべて自分仕様。Micro5 から A5 まで全7サイズからお作りします。
     </p>
-    <div class="planner-actions">
-      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary">オーダー相談 →</a>
-    </div>
   </div>
 </section>
 
@@ -2499,14 +2498,9 @@ function nsfOpenStaffChat(staffId) {
       render();
       return bubble;
     }
-    function makeChatBtn(st, staffId) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'staff-chat-btn';
-      btn.textContent = '💬 ' + st.name + '（AI）と話す';
-      btn.addEventListener('click', function () { nsfOpenStaffChat(staffId); });
-      return btn;
-    }
+    // 2026-08-04: 幕僚カードごとの「○○（AI）と話す」ボタン（計11個）の注入を停止
+    // （事業主指示「ボタンは減らしシンプルに」。チャット入口は右下「AIスタッフと話す」1つに集約。
+    //   セリフ吹き出しは幕僚の個性表現として残す。⛔ カード個別のチャットボタンを復活させないこと）
     // 幕僚グリッド: staff-card の href から staffId を解決し、隣の staff-tasks に注入
     document.querySelectorAll('.staff-grid .staff-card').forEach(function (card) {
       var href = card.getAttribute('href') || '';
@@ -2517,14 +2511,12 @@ function nsfOpenStaffChat(staffId) {
       var tasks = card.nextElementSibling;
       if (!tasks || !tasks.classList.contains('staff-tasks')) return;
       tasks.insertBefore(makeQuoteBubble(st), tasks.firstChild);
-      tasks.appendChild(makeChatBtn(st, key));
     });
     // 総司令官
     var cmd = document.querySelector('.staff-commander');
     var cmdSt = K.staffs.kojinjigyonusi;
     if (cmd && cmdSt && cmdSt.quotes && cmdSt.quotes.length) {
       cmd.insertBefore(makeQuoteBubble(cmdSt), cmd.firstChild);
-      cmd.appendChild(makeChatBtn(cmdSt, 'kojinjigyonusi'));
     }
     // 今日の幕僚メモ（日替わり・日付シードで幕僚とtipを選択）
     var tipBox = document.getElementById('ai-tip-box');
