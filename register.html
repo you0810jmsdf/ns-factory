@@ -325,6 +325,7 @@ textarea{min-height:80px;resize:vertical}
       <button type="button" id="newModeBtn" class="btn btn-secondary hidden" style="padding:6px 14px;font-size:12px" onclick="exitEditMode()">＋ 新規登録に戻る</button>
       <button type="button" id="deleteBtn" class="hidden" style="padding:6px 14px;font-size:12px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700" onclick="deleteProduct()">🗑️ この商品を削除</button>
       <span id="editModeBadge" class="hidden" style="background:#e85a4f;color:#fff;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700">編集モード</span>
+      <span id="loadStatus" style="font-size:12px;color:#8a6a3a"></span>
     </div>
   </div>
 
@@ -1105,12 +1106,46 @@ function jsonpCall(params, timeoutMs) {
   });
 }
 
+// GAS WebApp は時間帯によって 404 + HTMLエラーページを返す間欠障害がある。
+// 2026-08-06 実測: 同一URL・同一商品IDを10回叩いて 成功9 / 失敗1、失敗時の応答は約29.5秒。
+// JSONP では HTML を読むと callback が呼ばれずタイムアウト、404 では onerror で 'network' になる。
+// どちらも「読込エラー: timeout」として表面化していたため、読み取り専用APIに限り再送する。
+// ⛔ 書き込み系（publishThreadsPost / softDeleteProduct 等）には使わないこと。二重実行になる。
+async function jsonpCallRetry(params, opts) {
+  const o = opts || {};
+  const tries     = o.tries || 4;
+  const timeoutMs = o.timeoutMs || 15000;   // 正常応答は実測で最大9.9秒。30秒だと失敗判定が遅すぎる
+  const onRetry   = o.onRetry || function(){};
+  let lastErr = null;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await jsonpCall(params, timeoutMs);
+    } catch (e) {
+      lastErr = e;
+      if (i === tries - 1) break;
+      onRetry(i + 2, tries, e);
+      await new Promise(r => setTimeout(r, 800 * Math.pow(2, i)));  // 0.8s → 1.6s → 3.2s
+    }
+  }
+  throw lastErr || new Error('unknown');
+}
+
+function setLoadStatus(text) {
+  const el = document.getElementById('loadStatus');
+  if (el) el.textContent = text || '';
+}
+
 async function loadProduct() {
   const id = document.getElementById('editProductId').value.trim();
   if (!id) { alert('商品IDを入力してください'); return; }
+  setLoadStatus('読み込み中…');
   try {
-    const d = await jsonpCall({ api: 'getProductById', id, key: REGISTER_KEY });
-    if (!d.ok) { alert('読込失敗: ' + (d.error || 'unknown')); return; }
+    const d = await jsonpCallRetry(
+      { api: 'getProductById', id, key: REGISTER_KEY },
+      { tries: 4, timeoutMs: 15000,
+        onRetry: (n, total) => setLoadStatus('応答がないため再試行中… ' + n + '/' + total) }
+    );
+    if (!d.ok) { setLoadStatus(''); alert('読込失敗: ' + (d.error || 'unknown')); return; }
     const p = d.product;
     document.getElementById('f_name').value = p.name;
     const _cats = String(p.category || '').split('／').map(c => c.trim()).filter(Boolean);
@@ -1168,9 +1203,14 @@ async function loadProduct() {
     if (_dlBtn) _dlBtn.disabled = !p.productId;
     resetThreadsSection();
 
+    setLoadStatus('');
     setAgentMsg('step1');
   } catch(e) {
-    alert('読込エラー: ' + e.message);
+    setLoadStatus('');
+    const isNet = (e.message === 'timeout' || e.message === 'network');
+    alert(isNet
+      ? '読込エラー: Googleサーバーが応答しませんでした（4回再試行しても失敗）。\n少し時間をおいて、もう一度「読み込み」を押してください。'
+      : '読込エラー: ' + e.message);
   }
 }
 
