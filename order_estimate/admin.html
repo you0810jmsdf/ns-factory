@@ -3190,6 +3190,30 @@ function renderRingMatrix() {
               src.appendChild(document.createTextNode(label));
             }
           });
+          const priceVals = [...group.colors.values()]
+            .map(r => Number(String(r.preferred_source_price_jpy ?? '').trim()))
+            .filter(n => Number.isFinite(n) && n > 0);
+          const shipVals = [...group.colors.values()]
+            .map(r => String(r.preferred_source_shipping_jpy ?? '').trim())
+            .filter(v => v !== '')
+            .map(Number)
+            .filter(n => Number.isFinite(n));
+          const parts = [];
+          if (priceVals.length) {
+            const pMin = Math.min(...priceVals);
+            const pMax = Math.max(...priceVals);
+            parts.push(pMin === pMax
+              ? `購入 ¥${pMin.toLocaleString()}`
+              : `購入 ¥${pMin.toLocaleString()}〜¥${pMax.toLocaleString()}`);
+          }
+          if (shipVals.length) {
+            const sMin = Math.min(...shipVals);
+            const sMax = Math.max(...shipVals);
+            parts.push(sMin === sMax
+              ? `送料 ¥${sMin.toLocaleString()}`
+              : `送料 ¥${sMin.toLocaleString()}〜¥${sMax.toLocaleString()}`);
+          }
+          if (parts.length) src.appendChild(document.createTextNode(`（${parts.join(' ／ ')}）`));
         } else {
           src.appendChild(document.createTextNode('未登録'));
         }
@@ -3219,6 +3243,32 @@ function renderRingMatrix() {
           urlInput.value = cur.url;
           form.appendChild(urlInput);
 
+          const uniqueVals = field => [...new Set([...group.colors.values()]
+            .map(r => String(r[field] ?? '').trim()).filter(v => v !== ''))];
+          const curPrices = uniqueVals('preferred_source_price_jpy');
+          const curShips = uniqueVals('preferred_source_shipping_jpy');
+
+          const priceInput = document.createElement('input');
+          priceInput.type = 'number';
+          priceInput.min = '0';
+          priceInput.step = '1';
+          priceInput.placeholder = '購入価格（円）';
+          if (curPrices.length === 1) priceInput.value = curPrices[0];
+          form.appendChild(priceInput);
+
+          const shipInput = document.createElement('input');
+          shipInput.type = 'number';
+          shipInput.min = '0';
+          shipInput.step = '1';
+          shipInput.placeholder = '送料（円・無料なら0）';
+          if (curShips.length === 1) shipInput.value = curShips[0];
+          form.appendChild(shipInput);
+
+          let noteText = '価格・送料は空欄のまま保存すると変更しません。';
+          if (curPrices.length > 1) noteText += `現在の購入価格は色ごとに異なります（${curPrices.join(' / ')}円）— 入力すると全色に上書きされます。`;
+          if (curShips.length > 1) noteText += `現在の送料は色ごとに異なります（${curShips.join(' / ')}円）。`;
+          formNote.textContent += noteText;
+
           const btnRow = document.createElement('div');
           btnRow.className = 'src-form-actions';
           const saveBtn = document.createElement('button');
@@ -3231,9 +3281,24 @@ function renderRingMatrix() {
               alert('URLは https:// から始まる形式で入力してください。');
               return;
             }
+            const priceRaw = priceInput.value.trim();
+            const shipRaw = shipInput.value.trim();
+            if (priceRaw !== '' && (!Number.isFinite(Number(priceRaw)) || Number(priceRaw) < 0)) {
+              alert('購入価格は0以上の数値で入力してください。');
+              return;
+            }
+            if (shipRaw !== '' && (!Number.isFinite(Number(shipRaw)) || Number(shipRaw) < 0)) {
+              alert('送料は0以上の数値で入力してください。');
+              return;
+            }
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             group.colors.forEach(row => {
               row.preferred_source_shop = shop;
               row.preferred_source_url = url;
+              if (priceRaw !== '') row.preferred_source_price_jpy = String(Number(priceRaw));
+              if (shipRaw !== '') row.preferred_source_shipping_jpy = String(Number(shipRaw));
+              if (shop || url || priceRaw !== '' || shipRaw !== '') row.preferred_last_checked = todayStr;
             });
             setDirty(true);
             applyFilters();
