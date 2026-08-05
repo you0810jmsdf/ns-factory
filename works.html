@@ -1498,6 +1498,9 @@
       return chain;
     }
 
+    // 戻り値は true=型紙あり / false=型紙なし / null=判定できなかった。
+    // null と false を区別しないと、GAS障害のときに「型紙なし」と誤って
+    // 確定してしまい、用意してある作品のボタンが消える。
     function checkTexturePattern(folderId) {
       if (!folderId) return Promise.resolve(false);
       if (Object.prototype.hasOwnProperty.call(texturePatternCache, folderId)) {
@@ -1505,27 +1508,25 @@
       }
       return textureFetchJson(TEXTURE_SIM_GAS_URL + '?action=svgExists&folderId=' + encodeURIComponent(folderId))
         .then((j) => {
-          const available = !!(j && j.ok && j.exists);
+          if (!j || !j.ok) return null;
+          const available = !!j.exists;
           texturePatternCache[folderId] = available;
           return available;
         })
-        .catch(() => false); // 判定できないときは出さない（準備中画面を見せないため）
+        .catch(() => null);
     }
 
+    // 型紙の有無は svgExists（Driveの実物）を正とする。SVGを足した作品はすぐ出るし、
+    // 消した作品はすぐ消える。works-data.json の hasPattern は「前回時点で型紙があった」
+    // という既知情報なので、判定を待つ数秒のあいだ先に出しておく暫定表示として使う。
     function refreshTextureSimCta(work) {
       if (!textureSimCta) return;
-      // works-data.json 由来の hasPattern があれば、GASに聞かずその場で出す。
-      // GASは断続的に落ちるため（2026-08-04実測: 失敗率75%の時間帯あり）、
-      // 判定を待つと型紙が用意してある作品でもボタンが出ないことがあった。
-      if (work && work.hasPattern) {
-        textureCheckToken++;          // 進行中の非同期判定を無効化する
-        textureSimCta.hidden = false;
-        return;
-      }
-      textureSimCta.hidden = true;
+      const provisional = !!(work && work.hasPattern);
+      textureSimCta.hidden = !provisional;
       const token = ++textureCheckToken;
       checkTexturePattern(work && work.folderId).then((available) => {
         if (token !== textureCheckToken) return; // 別の作品に切り替わっていたら反映しない
+        if (available === null) return;          // 判定不能なら暫定表示のまま据え置く
         textureSimCta.hidden = !available;
       });
     }
