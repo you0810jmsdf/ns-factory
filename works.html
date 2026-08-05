@@ -489,6 +489,47 @@
       background: #f3f4f6;
       color: #9ca3af;
     }
+    /* .modal-actions 内は既存が <a> のため、<button> でも同じ見た目になるよう補う */
+    button.modal-cta { font-family: inherit; cursor: pointer; }
+    /* ===== テクスチャシミュレーター（型紙SVG登録済みの作品だけに出る導線） =====
+       表示条件は chat-widget.js と同一（folderId 内に svg1.svg / svg2.svg があるか）。
+       オーダー相談チャットのオーバーレイ(z-index:4000)より上に重ねる。 */
+    .texture-sim-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .72);
+      z-index: 5000;
+      display: none;
+      flex-direction: column;
+    }
+    .texture-sim-overlay.open { display: flex; }
+    .texture-sim-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      background: #3d1a08;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+    .texture-sim-bar h3 { margin: 0; font-size: 13px; font-weight: 700; }
+    .texture-sim-close {
+      background: rgba(255, 255, 255, .15);
+      color: var(--white);
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .texture-sim-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: var(--white);
+    }
     .badge-unavailable {
       display: inline-block;
       margin-left: 6px;
@@ -963,6 +1004,8 @@
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
+          <!-- 型紙SVG（svg1/svg2）が登録済みの作品でだけ表示される。判定は openWork 時に非同期で行う。 -->
+          <button id="texture-sim-cta" class="modal-cta secondary" type="button" hidden>🎨 革の色を変えて試す</button>
         </div>
 
         <div class="oc-widget">
@@ -976,6 +1019,14 @@
       <button id="prev-photo" class="modal-btn" type="button">前へ</button>
       <button id="next-photo" class="modal-btn" type="button">次へ</button>
     </div>
+  </div>
+
+  <div id="texture-sim-overlay" class="texture-sim-overlay" role="dialog" aria-modal="true" aria-label="テクスチャシミュレーター">
+    <div class="texture-sim-bar">
+      <h3>🎨 革の色を変えて試す</h3>
+      <button id="texture-sim-close" class="texture-sim-close" type="button">✕ 閉じる</button>
+    </div>
+    <iframe id="texture-sim-frame" class="texture-sim-frame" src="about:blank" title="テクスチャシミュレーター"></iframe>
   </div>
 
   <div id="oc-overlay" role="dialog" aria-modal="true" aria-label="オーダー相談チャット">
@@ -1323,6 +1374,7 @@
       activeIndex = index;
       updateModal();
       resetOrderChat(work);
+      refreshTextureSimCta(work); // 型紙SVGがある作品だけCTAを出す（非同期・判定後に現れる）
       modal.classList.add('open');
       closeModal.focus();
       try {
@@ -1417,6 +1469,108 @@
         });
       }
     }
+
+    // ===== テクスチャシミュレーター導線（型紙SVG登録済みの作品だけ） =====
+    // 表示条件は chat-widget.js と同一。folderId 内に svg1.svg / svg2.svg があるかを
+    // オーダー進捗GAS（action=svgList）で確認し、あるときだけCTAを出す。
+    const TEXTURE_SIM_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
+    const textureSimCta = document.getElementById('texture-sim-cta');
+    const textureSimOverlay = document.getElementById('texture-sim-overlay');
+    const textureSimFrame = document.getElementById('texture-sim-frame');
+    const textureSimClose = document.getElementById('texture-sim-close');
+    const texturePatternCache = {}; // folderId → true/false（同じ作品を開き直しても再確認しない）
+    let textureSimWork = null;      // シミュレーターを開いた作品（確定後の相談に引き継ぐ）
+    let textureCheckToken = 0;      // 連続で別の作品を開いたとき、古い判定結果でCTAを出さないための番号
+
+    // GASは処理完了後にHTMLのエラーページを返すことがある（2026-08-04調査）。
+    // 判定が落ちるとCTAが出ないだけで気付けないため、数回だけ再試行する。
+    function textureFetchJson(url, attempts = 3) {
+      let chain = Promise.reject();
+      for (let i = 0; i < attempts; i++) {
+        chain = chain.catch(() => fetch(url)
+          .then((r) => r.text())
+          .then((t) => {
+            if (t.trim().startsWith('<')) throw new Error('GAS returned HTML');
+            return JSON.parse(t);
+          }));
+      }
+      return chain;
+    }
+
+    function checkTexturePattern(folderId) {
+      if (!folderId) return Promise.resolve(false);
+      if (Object.prototype.hasOwnProperty.call(texturePatternCache, folderId)) {
+        return Promise.resolve(texturePatternCache[folderId]);
+      }
+      return textureFetchJson(TEXTURE_SIM_GAS_URL + '?action=svgList&folderId=' + encodeURIComponent(folderId))
+        .then((j) => {
+          const available = !!(j && j.ok && j.svgs && j.svgs.length);
+          texturePatternCache[folderId] = available;
+          return available;
+        })
+        .catch(() => false); // 判定できないときは出さない（準備中画面を見せないため）
+    }
+
+    function refreshTextureSimCta(work) {
+      if (!textureSimCta) return;
+      textureSimCta.hidden = true;
+      const token = ++textureCheckToken;
+      checkTexturePattern(work && work.folderId).then((available) => {
+        if (token !== textureCheckToken) return; // 別の作品に切り替わっていたら反映しない
+        textureSimCta.hidden = !available;
+      });
+    }
+
+    function openTextureSim(work) {
+      if (!work || !work.folderId) return;
+      textureSimWork = work;
+      textureSimFrame.src = 'カラーシミュレーター/pattern-color-proto/floodfill.html?folderId='
+        + encodeURIComponent(work.folderId) + '&embed=1';
+      textureSimOverlay.classList.add('open');
+    }
+
+    function closeTextureSim() {
+      textureSimOverlay.classList.remove('open');
+      textureSimFrame.src = 'about:blank';
+      // シミュレーター内canvasの十字カーソルが閉じた後も残ることがあるため明示的に戻す
+      document.body.style.cursor = 'default';
+      setTimeout(() => { document.body.style.cursor = ''; }, 50);
+    }
+
+    if (textureSimCta) textureSimCta.addEventListener('click', () => openTextureSim(activeWork));
+    if (textureSimClose) textureSimClose.addEventListener('click', closeTextureSim);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && textureSimOverlay.classList.contains('open')) closeTextureSim();
+    });
+
+    // 「確定」を押したら、選んだ革色をそのままオーダー相談AIへ引き継ぐ（2026-08-05 事業主指示）。
+    // chat-widget.js 側にも同名メッセージのリスナーがあるが、あちらは自前のオーバーレイが
+    // 開いているときだけ処理するため、ここで受けても二重には動かない。
+    window.addEventListener('message', (e) => {
+      const data = e.data;
+      if (!data || data.type !== 'nsfactory-floodfill-confirm') return;
+      if (!textureSimOverlay.classList.contains('open')) return; // 自分が開いた分だけ扱う
+      const work = textureSimWork;
+      const withLeather = (data.parts || []).filter((p) => p.leatherName);
+      closeTextureSim();
+      if (!work) return;
+
+      const picked = withLeather.map((p) => (
+        withLeather.length > 1 ? `${p.label}：${p.leatherName}` : `革色：${p.leatherName}`
+      ));
+      if (data.metalColor) picked.push(`金具色：${data.metalColor}`);
+      if (!picked.length) return; // 何も選ばずに確定した場合は相談を開かない
+
+      ocOpenChat(work); // ここで #chat-input は空にされ、ヒアリング状態も解除される
+      // chat-widget の send は引数を取らず #chat-input の値を送る実装なので、
+      // 入力欄へ流し込んでから呼ぶ。200字を超えると送信されないため切り詰める。
+      const chatInput = document.getElementById('chat-input');
+      if (chatInput && ocWidget && ocWidget.send) {
+        const msg = `シミュレーターで色を選びました。${picked.join('／')}。この内容で作れますか？`;
+        chatInput.value = msg.length > 200 ? msg.slice(0, 200) : msg;
+        ocWidget.send();
+      }
+    });
 
     // ===== 作品紹介動画（Driveプレビュープレーヤーで再生） =====
     const modalVideo = document.getElementById('modal-video');
