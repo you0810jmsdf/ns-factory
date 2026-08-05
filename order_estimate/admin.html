@@ -1843,6 +1843,7 @@ let fileHandle = null;
 let dirty = false;
 let threadRows = [];
 let threadDirty = false;
+let ringHistoryBaseline = new Map();
 
 // トークン処理は共通モジュール（NSFGitHubToken）へ委譲。既存の呼び出し箇所を変えないための薄いラッパー
 function getGitHubToken() { return NSFGitHubToken.get(); }
@@ -1962,7 +1963,90 @@ async function publishCsvToGitHub({ path, fileName, csvText, buttonId, onSuccess
   }
 }
 
+const RING_HISTORY_CSV_PATH = 'order_estimate/ring-price-history.csv';
+const RING_HISTORY_HEADER = 'recorded_at,ring_id,planner_type,series,size_mm,color_id,purchase_price_jpy,shipping_jpy,shop,url,estimate_price_jpy,change_type';
+const RING_HISTORY_TRACK_FIELDS = ['preferred_source_price_jpy', 'preferred_source_shipping_jpy', 'preferred_source_shop', 'preferred_source_url', 'price_jpy'];
+
+function ringHistoryKey(row) {
+  return [row.ring_id, row.color_id, row.planner_type, row.size_mm].map(v => String(v ?? '').trim()).join('|');
+}
+
+function ringHistorySignature(row) {
+  return RING_HISTORY_TRACK_FIELDS.map(f => String(row[f] ?? '').trim()).join('\u0001');
+}
+
+function buildRingHistoryBaseline() {
+  const map = new Map();
+  rows.forEach(row => map.set(ringHistoryKey(row), ringHistorySignature(row)));
+  return map;
+}
+
+function collectRingHistoryChanges() {
+  const changes = [];
+  rows.forEach(row => {
+    const base = ringHistoryBaseline.get(ringHistoryKey(row));
+    if (base === undefined) changes.push({ row, type: 'new' });
+    else if (base !== ringHistorySignature(row)) changes.push({ row, type: 'update' });
+  });
+  return changes;
+}
+
+function base64ToUtf8(b64) {
+  const bin = atob(String(b64 || '').replace(/\n/g, ''));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+async function appendRingHistoryToGitHub(changes) {
+  if (!changes.length) return;
+  const token = getGitHubToken();
+  if (!token) return;
+  const now = new Date();
+  const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const lines = changes.map(({ row, type }) => [
+    stamp, row.ring_id, row.planner_type, row.series, row.size_mm, row.color_id,
+    row.preferred_source_price_jpy, row.preferred_source_shipping_jpy,
+    row.preferred_source_shop, row.preferred_source_url, row.price_jpy, type
+  ].map(escapeCsv).join(','));
+
+  const apiUrl = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/${RING_HISTORY_CSV_PATH}`;
+  const authHeaders = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
+  const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(GITHUB_REPO_BRANCH)}`, { headers: authHeaders });
+  let current = '';
+  let sha;
+  if (getRes.ok) {
+    const data = await getRes.json();
+    sha = data.sha;
+    current = base64ToUtf8(data.content || '');
+  } else if (getRes.status !== 404) {
+    throw new Error(`履歴CSVの取得に失敗しました: HTTP ${getRes.status}`);
+  }
+
+  let text = current.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\s+$/, '');
+  if (!text) text = RING_HISTORY_HEADER;
+  text += '\n' + lines.join('\n');
+  const csvText = '\uFEFF' + text.split('\n').join('\r\n') + '\r\n';
+
+  const body = {
+    message: `Append ring price history via admin page (${new Date().toISOString()})`,
+    content: utf8ToBase64(csvText),
+    branch: GITHUB_REPO_BRANCH
+  };
+  if (sha) body.sha = sha;
+  const putRes = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: { ...authHeaders, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!putRes.ok) {
+    const errData = await putRes.json().catch(() => null);
+    throw new Error(errData?.message || `履歴CSVの反映に失敗しました: HTTP ${putRes.status}`);
+  }
+}
+
 function publishRingToGitHub() {
+  const historyChanges = collectRingHistoryChanges();
   return publishCsvToGitHub({
     path: GITHUB_CSV_PATH,
     fileName: 'ring-price-stock.csv',
@@ -1971,6 +2055,9 @@ function publishRingToGitHub() {
     onSuccess: () => {
       setDirty(false);
       document.getElementById('sourcePill').textContent = '読込元: GitHub反映済み';
+      ringHistoryBaseline = buildRingHistoryBaseline();
+      appendRingHistoryToGitHub(historyChanges).catch(err =>
+        alert(`価格履歴CSV（ring-price-history.csv）への追記に失敗しました。\n在庫CSV本体は反映済みです。\n${err.message}`));
     }
   });
 }
@@ -3520,6 +3607,7 @@ async function loadFromText(text, sourceLabel) {
   headers = parsed.headers;
   rows = parsed.rows;
   ensureHeadersAndRows();
+  ringHistoryBaseline = buildRingHistoryBaseline();
   filteredRows = rows.slice();
   setDirty(false);
   updateMeta(sourceLabel);
