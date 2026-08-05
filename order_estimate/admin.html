@@ -1814,7 +1814,7 @@ const STOCK_STATUS_OPTIONS = ['in_stock','low_stock','out_of_stock','unknown','p
 const EXTRA_HEADERS = ['planner_type','preferred_source_shipping_jpy','source_shipping_1_jpy','source_shipping_2_jpy','source_shipping_3_jpy','crawl_updated_flag','crawl_updated_at_jst','crawl_updated_run_id','crawl_updated_from_shop'];
 const CRAWL_SERVER_URL = 'http://127.0.0.1:8766';
 const HEADER_ORDER = [
-  'planner_type','ring_id','series','series_label','size_label','size_mm','color_id','color_label','finish_label',
+  'planner_type','ring_id','series','series_label','maker','size_label','size_mm','color_id','color_label','finish_label',
   'check_enabled','ui_visible','ui_order','price_jpy','stock_status','stock_qty','lead_time_days','monitor_enabled',
   'price_min_jpy','price_max_jpy','preferred_source_shop','preferred_source_url','preferred_source_price_jpy','preferred_source_shipping_jpy','preferred_last_checked',
   'source_shop_1','source_url_1','source_price_1_jpy','source_shipping_1_jpy','source_checked_1',
@@ -3127,6 +3127,9 @@ function renderRingMatrix() {
       dims.textContent = Number.isFinite(sizeNum) && group.size !== ''
         ? `内径${sizeNum}mm ／ 外径${sizeNum + 3}mm`
         : 'リング径未設定';
+      const makers = [...new Set([...group.colors.values()]
+        .map(r => String(r.maker || '').trim()).filter(Boolean))];
+      if (makers.length) dims.textContent += ` ｜ 製造: ${makers.join('/')}`;
       card.appendChild(dims);
 
       const chips = document.createElement('div');
