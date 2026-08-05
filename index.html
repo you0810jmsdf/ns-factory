@@ -1932,7 +1932,6 @@ h1,h2,h3{
           <div class="accordion-content">
             <ul>
               <li>2026年8月 — 作品集のSOLDOUT表示を改善しました。</li>
-              <li>2026年8月 — 作品集のSOLDOUT表示を改善しました。</li>
               <li>2026年7月 — SNS動画メーカーのUIを全面改修しました。</li>
               <li>2026年5月 — Bitcoin（BTC）決済対応を開始しました。対象はオーダー品・直接お見積もりです。詳細は<a href="#payment-btc">こちら</a>。</li>
               <li>2026年5月 — N's notebook シリーズに「週間ブロックリフィル印刷ツール」「月間ブロックリフィル印刷ツール」を追加。公式LINE会員限定で公開中</li>
@@ -2014,13 +2013,35 @@ function toggleAccordion(btn) {
   body.classList.toggle('open', !expanded);
 }
 
-/* ── お知らせ欄を news-data.json から描画 ─────────────────
-   JSON が読めたときだけ差し替える。落ちたら HTML 側のフォールバックが残る。
-   本文は textContent で入れる（JSON は GAS 経由で機械的に書かれるため、
-   HTML をそのまま流し込まない）。リンクは href を検査してから付ける。 */
+/* ── お知らせ欄：HTML のリストに news-data.json を「足し込む」 ────────
+   置き換えではなく **マージ** にしてある。理由は書き込み経路が2つあるため：
+     ① GAS の「掲載する」→ index.html の <li> を直接コミット（既存の経路）
+     ② Actions の news-publish → news-data.json を更新（新しい経路）
+   置き換えにすると ① で書かれた分が表示から消える。足し込みなら両方出る。
+   同じ本文は1件にまとめるので、二重に載ることもない。
+   本文は textContent で入れる（機械的に書かれるため HTML は流し込まない）。
+   リンクは href を検査してから付ける。 */
 (function () {
   var root = document.getElementById('news-accordion');
-  if (!root || !window.fetch) return;
+  if (!root) return;
+
+  function norm(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
+
+  function dedupe(ul) {
+    var seen = {};
+    [].slice.call(ul.querySelectorAll('li')).forEach(function (li) {
+      var k = norm(li.textContent);
+      if (!k) return;
+      if (seen[k]) { li.parentNode.removeChild(li); } else { seen[k] = true; }
+    });
+    return seen;
+  }
+
+  // 既に HTML 側で重複している分をここで畳む（GAS が同じ内容を2回書いた場合など）
+  var uls = [].slice.call(root.querySelectorAll('.accordion-item ul'));
+  uls.forEach(dedupe);
+
+  if (!window.fetch) return;
 
   function safeHref(h) {
     // 同一ページ内アンカー・サイト内相対・http(s) のみ許可（javascript: 等を弾く）
@@ -2029,8 +2050,7 @@ function toggleAccordion(btn) {
 
   function buildItem(item) {
     var li = document.createElement('li');
-    var head = item.date ? item.date + ' — ' : '';
-    li.appendChild(document.createTextNode(head + (item.text || '')));
+    li.appendChild(document.createTextNode((item.date ? item.date + ' — ' : '') + (item.text || '')));
     var href = item.link ? safeHref(item.link.href) : '';
     if (href && item.link.label) {
       var a = document.createElement('a');
@@ -2042,16 +2062,21 @@ function toggleAccordion(btn) {
     return li;
   }
 
-  function buildGroup(group, isFirst) {
-    var items = Array.isArray(group.items) ? group.items : [];
-    if (!items.length) return null;
-    var open = isFirst ? true : !!group.open;
+  function findGroup(title) {
+    var items = [].slice.call(root.querySelectorAll('.accordion-item'));
+    for (var i = 0; i < items.length; i++) {
+      var label = items[i].querySelector('.accordion-btn span');
+      if (label && norm(label.textContent) === norm(title)) return items[i];
+    }
+    return null;
+  }
 
+  function createGroup(title, open) {
     var btn = document.createElement('button');
     btn.className = 'accordion-btn';
-    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-expanded', String(!!open));
     var label = document.createElement('span');
-    label.textContent = group.title || (group.year ? group.year + '年のお知らせ' : 'お知らせ');
+    label.textContent = title;
     var chevron = document.createElement('span');
     chevron.className = 'accordion-chevron';
     chevron.textContent = '▾';
@@ -2060,8 +2085,6 @@ function toggleAccordion(btn) {
     btn.addEventListener('click', function () { toggleAccordion(btn); });
 
     var ul = document.createElement('ul');
-    items.forEach(function (item) { ul.appendChild(buildItem(item)); });
-
     var content = document.createElement('div');
     content.className = 'accordion-content';
     content.appendChild(ul);
@@ -2073,6 +2096,7 @@ function toggleAccordion(btn) {
     wrap.className = 'accordion-item';
     wrap.appendChild(btn);
     wrap.appendChild(body);
+    root.insertBefore(wrap, root.firstChild);
     return wrap;
   }
 
@@ -2080,19 +2104,26 @@ function toggleAccordion(btn) {
     .then(function (r) { if (!r.ok) throw 0; return r.json(); })
     .then(function (data) {
       var groups = (data && Array.isArray(data.groups)) ? data.groups : [];
-      var frag = document.createDocumentFragment();
-      groups.forEach(function (g, i) {
-        var el = buildGroup(g, i === 0);
-        if (el) frag.appendChild(el);
+      groups.forEach(function (group, gi) {
+        var items = Array.isArray(group.items) ? group.items : [];
+        if (!items.length) return;
+        var title = group.title || (group.year ? group.year + '年のお知らせ' : 'お知らせ');
+        var el = findGroup(title) || createGroup(title, gi === 0);
+        var ul = el.querySelector('ul');
+        if (!ul) return;
+        var seen = dedupe(ul);
+        // 無い分だけ先頭に足す（逆順に入れると JSON の並び順が保たれる）
+        items.slice().reverse().forEach(function (item) {
+          var li = buildItem(item);
+          var key = norm(li.textContent);
+          if (!key || seen[key]) return;
+          seen[key] = true;
+          ul.insertBefore(li, ul.firstChild);
+        });
       });
-      if (!frag.childNodes.length) return; // 空なら差し替えない（フォールバック維持）
-      root.textContent = '';
-      root.appendChild(frag);
     })
-    .catch(function () { /* フォールバックのまま表示する */ });
-})();
-
-/* 部外秘ゲート：SHA-256ハッシュ照合。平文はコードに置かない。
+    .catch(function () { /* HTML 側のリストがそのまま残る */ });
+})();/* 部外秘ゲート：SHA-256ハッシュ照合。平文はコードに置かない。
    通過時に入力値を sessionStorage に保持し、GASリンクの key= は開く直前に付与する */
 var NSF_GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
 function nsfSha256(t) {
