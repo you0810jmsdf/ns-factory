@@ -20,6 +20,12 @@ const fs = require('fs');
 const path = require('path');
 
 const API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec?api=products';
+
+// 型紙SVGを持つフォルダの一覧（テクスチャシミュレーター導線の判定用）。
+// ⚠ 商品ごとに svgExists を叩くとGASの実行時間クォータ（1日90分）を超えるため、
+//   必ずこの一括APIを使うこと。実測: 1リクエスト7.5秒／583件個別なら758秒。
+const SVG_FOLDERS_API = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec?action=svgFolders';
+
 const OUT = path.join(__dirname, '..', 'works-data.json');
 
 /** 商品1件で保持するフィールド。ここに無いものは書き出さない（想定外データの混入防止） */
@@ -61,6 +67,32 @@ async function fetchProducts(maxRounds = 12) {
   throw new Error(`GASから取得できませんでした: ${lastErr}`);
 }
 
+/**
+ * 型紙SVGを持つフォルダIDの集合を取得する。
+ * 取れなければ null を返し、呼び出し側で前回の値を引き継ぐ
+ * （GASは断続的に落ちるため、一時的な失敗でフラグを消さない）。
+ */
+async function fetchPatternFolders(maxRounds = 6) {
+  for (let i = 1; i <= maxRounds; i++) {
+    const started = Date.now();
+    try {
+      const text = await (await fetch(SVG_FOLDERS_API)).text();
+      if (text.trim().charAt(0) === '{') {
+        const j = JSON.parse(text);
+        if (j.ok && Array.isArray(j.folders)) {
+          console.log(`  試行${i}: 成功 (${Date.now() - started}ms) ${j.folders.length}フォルダ`);
+          return new Set(j.folders.map((f) => f.folderId));
+        }
+      }
+      console.log(`  試行${i}: 失敗 (${Date.now() - started}ms)`);
+    } catch (e) {
+      console.log(`  試行${i}: 例外 (${Date.now() - started}ms) ${e.message}`);
+    }
+    await sleep(3000);
+  }
+  return null;
+}
+
 /** 想定フィールドだけに絞る */
 function sanitize(products) {
   return products.map((p) => {
@@ -84,6 +116,28 @@ function sanitize(products) {
   }
 
   const data = sanitize(raw);
+
+  // 型紙SVGの有無を付ける。作品集はこれを見て
+  // 「🎨 革の色を変えて試す」を開いた瞬間に出す（GASの判定を待たない）。
+  console.log('型紙SVGを持つフォルダを取得します…');
+  const patternFolders = await fetchPatternFolders();
+  let marked = 0;
+  if (patternFolders) {
+    data.forEach((p) => {
+      if (p.folderId && patternFolders.has(p.folderId)) { p.hasPattern = true; marked++; }
+    });
+    console.log(`  hasPattern: ${marked}件`);
+  } else {
+    // 取得できなかった。GASは断続的に落ちるので、ここで消さず前回値を引き継ぐ
+    console.log('  ※ 取得できませんでした。前回の hasPattern を引き継ぎます。');
+    try {
+      const prev = JSON.parse(fs.readFileSync(OUT, 'utf8'));
+      const prevIds = new Set(prev.filter((p) => p.hasPattern).map((p) => p.id));
+      data.forEach((p) => { if (prevIds.has(p.id)) { p.hasPattern = true; marked++; } });
+    } catch (e) { /* 前回ファイルが無ければ引き継がない */ }
+    console.log(`  引き継ぎ: ${marked}件`);
+  }
+
   const json = JSON.stringify(data);
 
   // 中身が減っていたら事故の可能性があるので止める

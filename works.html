@@ -1514,6 +1514,14 @@
 
     function refreshTextureSimCta(work) {
       if (!textureSimCta) return;
+      // works-data.json 由来の hasPattern があれば、GASに聞かずその場で出す。
+      // GASは断続的に落ちるため（2026-08-04実測: 失敗率75%の時間帯あり）、
+      // 判定を待つと型紙が用意してある作品でもボタンが出ないことがあった。
+      if (work && work.hasPattern) {
+        textureCheckToken++;          // 進行中の非同期判定を無効化する
+        textureSimCta.hidden = false;
+        return;
+      }
       textureSimCta.hidden = true;
       const token = ++textureCheckToken;
       checkTexturePattern(work && work.folderId).then((available) => {
@@ -1658,9 +1666,18 @@
     //    フォールバックに置いてよいのは商品マスター由来のデータだけ。
     const STATIC_SOURCES = ['works-data.json'];
 
+    // 型紙SVGがある商品のID。works-data.json の hasPattern から拾う。
+    // GAS(api=products)はこのフラグを返さないため、あとでGASデータに差し替わった時に
+    // ここから復元しないとテクスチャシミュレーターの導線が消えてしまう。
+    const patternIds = new Set();
+
     function toWorks(data) {
       if (Array.isArray(data)) {
+        data.forEach((item) => {
+          if (item && item.hasPattern) patternIds.add(item.id || item.name || item.title);
+        });
         return data.map((item) => ({
+          hasPattern: !!item.hasPattern || patternIds.has(item.id || item.name || item.title),
           id: item.id || item.name || item.title,
           title: item.name || item.title || item.id || '作品',
           category: item.category || '',
