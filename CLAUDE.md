@@ -102,3 +102,23 @@
 - 注意:
   - `getSvgExists` と `getSvgList` の**判定条件（末尾 svg1.svg / svg2.svg）は必ず揃えること**。片方だけ変えると導線とシミュレーター本体で食い違う。
   - 同ファイルに別セッション由来の `action=svgFolders`（`works-data.json` の `hasPattern` 生成用）も入っている。works.html の導線が二重実装にならないよう、どちらの方式を使うか整理が必要。
+
+## 2026-08-05 — お知らせ欄をデータ駆動化し「掲載する」の受け口を作成
+
+- 対象: `news-data.json`（新規）/ `index.html` / `tools/add_news.js`（新規）/ `.github/workflows/news-publish.yml`（新規）/ `docs/news-publish-setup.md`（新規）
+- 背景: 同日の調査のとおり、お知らせ欄が `<ul><li>` のベタ書きで **GAS の書き込み先が存在しなかった**。ボタンの認証を直しても反映されないため、受け口を先に作った。
+- 経路: 候補メール →（GAS）→ GitHub `repository_dispatch`（`news-publish`）→ Actions → `tools/add_news.js` が `news-data.json` を更新 → `index.html` が fetch して描画。
+  - GAS 側を薄く（POST 1回）保ち、重複判定・年グループ分け・並べ替えはリポジトリ側に置いた。GAS は改修コストも障害率も高いため。
+- 冪等性: **必須**。GAS は応答だけ失われて再送されうる（2026-08-04 の項参照）。`add_news.js` は同じ `id`、または同じ 日付+本文 があれば何もせず `exit 0`。GAS からは候補メールの `token` を `id` として渡すこと。
+- 表示: `index.html` の `#news-accordion` は JSON が読めたときだけ差し替える。**HTML 側のベタ書きはフォールバックとして残してある**（Actions や Pages が落ちてもお知らせ欄が空にならない）。本文は `textContent` で入れ、リンクは `href` を検査してから付ける（`javascript:` 等を弾く）。
+- 検証:
+  - `add_news.js`: 正常追加／同 id 再送／id 無し同内容／新しい年のグループ自動生成／不正入力4種（日付形式・HTMLタグ・不正href・空）をすべて実測。
+  - Chromium 実測: JSON 描画とフォールバック描画が **完全一致**（BTCのリンク含む）、アコーディオン開閉 OK、JSエラー無し。掲載1件追加 → 先頭に反映も確認。
+  - `.github/workflows/news-publish.yml` は YAML パース通過。
+- 残っている宿題（GAS 側。リポジトリからは触れない）:
+  1. デプロイ設定を「実行: 自分」「アクセス: 全員」にして再デプロイ → メールのボタンURLも差し替え。
+  2. スクリプトプロパティ `GITHUB_TOKEN` に fine-grained PAT（ns-factory / Contents: Read and write）を登録。
+  3. `action=approve` から `publishNews_()` を呼ぶ。コードは `docs/news-publish-setup.md` に掲載。
+- 注意:
+  - 受け取った値は workflow の `env:` 経由でのみ渡すこと（`run:` に直接 `${{ }}` を展開しない）。
+  - フォールバックの `<li>` は更新されないので徐々に古くなる。表示に使われるのは fetch 失敗時だけ。
