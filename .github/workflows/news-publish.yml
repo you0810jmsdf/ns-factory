@@ -13,12 +13,15 @@ on:
     types: [news-publish]
   workflow_dispatch:
     inputs:
+      line:
+        description: "1行まるごと（例: 2026年8月 — 作品集のSOLDOUT表示を改善しました。）※これを使う場合は date/text は空でよい"
+        required: false
       date:
         description: "表示用の日付ラベル（例: 2026年8月）"
-        required: true
+        required: false
       text:
         description: "本文（HTMLタグ不可・200字まで）"
-        required: true
+        required: false
       link_href:
         description: "リンク先（任意。# / 相対パス / http(s)）"
         required: false
@@ -49,6 +52,7 @@ jobs:
       # 受け取った値は env 経由でのみ渡す（run: に直接展開しない）
       - name: Add news item
         env:
+          NEWS_LINE: ${{ github.event.client_payload.line || inputs.line }}
           NEWS_DATE: ${{ github.event.client_payload.date || inputs.date }}
           NEWS_TEXT: ${{ github.event.client_payload.text || inputs.text }}
           NEWS_ID: ${{ github.event.client_payload.id }}
