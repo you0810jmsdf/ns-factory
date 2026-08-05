@@ -204,3 +204,22 @@
   - 二重投稿の抑止キーは **本文の MD5**（`_newsCacheKey_`）。token を引き回さなくて済むので、
     `postNewsToSite` の中からでも呼べる。dispatch の `id` にも同じ値を使う。
   - `postToThreadsGuarded` を告知に使わない理由は前項参照。
+
+## 2026-08-06 — 過去分の「読み込み」がtimeoutになる件（読み取り系にリトライを追加）
+
+- 対象: `register.html`（GASは無改修）
+- 症状: 既存商品を「📂 読み込み」すると「読込エラー: timeout」。30秒待たされる。事業主の体感では特定の商品ID（NF2026_630）だけ。
+- **原因は商品IDではなく GAS WebApp の間欠障害**（2026-08-04 の項と同じ現象の読み取り版）。
+  - 実測: 同一URL・同一ID で10回連続 → **成功9／失敗1**。失敗時は HTTP 404 + HTMLエラーページで応答 **29,486ms**。成功時は 1,148〜10,298ms。
+  - JSONP は HTML を読むと callback が呼ばれず timeout、404 では `onerror` で `'network'` になる。どちらも同じアラートに落ちていた。
+  - 書き込み系は `gasPostJson()` でリトライ済だったが、**`jsonpCall` はタイムアウト30秒・リトライなしのまま残っていた**。
+  - 「写真フォルダが巨大で走査が終わらない」説は否定（Drive実測で該当フォルダは11ファイル）。
+- 対策:
+  - `jsonpCallRetry(params, opts)` を新設。timeout 15秒 × 最大4回・指数バックオフ 0.8/1.6/3.2秒。
+    **15秒にしたのは正常応答が実測で最大9.9秒だから**。30秒のままだと失敗判定が遅すぎる。
+  - `loadProduct()` の `getProductById` のみ差し替え。編集バーの `#loadStatus` に「応答がないため再試行中… n/4」を表示。
+  - 全滅時のアラートを「時間をおいて再実行」の案内に変更。
+- 検証: インラインJS構文チェック通過／モックで単体検証（1回失敗→再送で成功・4回全滅で停止・呼び出し4回で打ち止め）／本番ブラウザ実測（JSONP 1,505ms応答・再試行UIの表示・JSエラー0）。
+- 注意:
+  - ⛔ **`jsonpCallRetry` を書き込み系に使わないこと。** `publishThreadsPost` はThreadsへの実投稿で二重投稿になる。`softDeleteProduct` は冪等性未検証、`generateThreadsPostText` はGeminiの二重課金。
+  - 読み取り専用APIを追加するときは `jsonpCall` ではなく `jsonpCallRetry` を使う。
