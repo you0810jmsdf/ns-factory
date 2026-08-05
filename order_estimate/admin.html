@@ -192,7 +192,10 @@ body{
 .ring-matrix-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 .ring-matrix-summary{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .ring-matrix-series{margin:16px 0 0;font-size:14px;color:#6b3a1f}
-.ring-matrix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px}
+.ring-matrix-planner{margin:12px 0 0;font-size:12px;color:#7d644d;letter-spacing:.02em}
+.ring-matrix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:6px}
+.ring-chip .chip-del{border:none;background:transparent;color:inherit;cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 3px;opacity:.55}
+.ring-chip .chip-del:hover{opacity:1;color:#a33a2a}
 .ring-matrix-card{border:1px solid #eadccf;border-radius:12px;background:#fffaf6;padding:10px 12px}
 .ring-matrix-card.has-out{border-color:#e8a79f;background:#fffafa}
 .ring-matrix-card h3{margin:0;font-size:13px;color:#3f2a18}
@@ -870,7 +873,8 @@ tr.row-out-stock td{
       <h2 style="margin:0 0 6px;font-size:16px;color:#6b3a1f">リング在庫マトリクス（欠品発見用）</h2>
       <div class="hint">
         シリーズ×手帳規格×内径×色で全リングを俯瞰します。外径 = 内径 + 3mm。
-        編集は下の一覧表で行うと、このマトリクスも自動で追従します。
+        色チップの「×」でその行を削除できます（「リング在庫をGitHubへ反映」を押すまで公開データは変わりません）。
+        数値の編集は下の一覧表で行うと、このマトリクスも自動で追従します。
       </div>
       <div class="ring-matrix-legend">
         <span class="ring-chip ok">在庫あり（数字 = 個数）</span>
@@ -3026,7 +3030,7 @@ function matrixChipState(row) {
   return { cls: 'ok', text: String(qty) };
 }
 
-function makeRingChip(cls, swColor, label) {
+function makeRingChip(cls, swColor, label, onDelete) {
   const chip = document.createElement('span');
   chip.className = `ring-chip ${cls}`;
   if (swColor) {
@@ -3036,6 +3040,15 @@ function makeRingChip(cls, swColor, label) {
     chip.appendChild(sw);
   }
   chip.appendChild(document.createTextNode(label));
+  if (onDelete) {
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'chip-del';
+    del.textContent = '×';
+    del.title = 'この行を削除（GitHubへ反映するまで公開データは変わりません）';
+    del.onclick = onDelete;
+    chip.appendChild(del);
+  }
   return chip;
 }
 
@@ -3098,67 +3111,82 @@ function renderRingMatrix() {
     heading.textContent = MATRIX_SERIES_LABEL[series] || `シリーズ: ${series}`;
     bodyEl.appendChild(heading);
 
-    const grid = document.createElement('div');
-    grid.className = 'ring-matrix-grid';
-    const cards = [...groups.values()].filter(g => g.series === series).sort((a, b) => {
-      const pa = MATRIX_PLANNER_ORDER.indexOf(a.planner);
-      const pb = MATRIX_PLANNER_ORDER.indexOf(b.planner);
-      if (pa !== pb) return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);
-      return (Number(a.size) || 0) - (Number(b.size) || 0);
+    const seriesGroups = [...groups.values()].filter(g => g.series === series);
+    const planners = [...new Set(seriesGroups.map(g => g.planner))].sort((a, b) => {
+      const pa = MATRIX_PLANNER_ORDER.indexOf(a);
+      const pb = MATRIX_PLANNER_ORDER.indexOf(b);
+      return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);
     });
 
-    cards.forEach(group => {
-      const card = document.createElement('div');
-      card.className = 'ring-matrix-card';
+    planners.forEach(planner => {
+      const plannerLabel = document.createElement('h4');
+      plannerLabel.className = 'ring-matrix-planner';
+      plannerLabel.textContent = planner || '規格未設定';
+      bodyEl.appendChild(plannerLabel);
 
-      const title = document.createElement('h3');
-      title.textContent = group.planner || '規格未設定';
-      if (!group.planner) {
-        const warn = document.createElement('span');
-        warn.className = 'warn-note';
-        warn.textContent = 'planner_type空欄';
-        title.appendChild(warn);
-      }
-      card.appendChild(title);
+      const grid = document.createElement('div');
+      grid.className = 'ring-matrix-grid';
+      const cards = seriesGroups.filter(g => g.planner === planner)
+        .sort((a, b) => (Number(a.size) || 0) - (Number(b.size) || 0));
 
-      const dims = document.createElement('div');
-      dims.className = 'dims';
-      const sizeNum = Number(group.size);
-      dims.textContent = Number.isFinite(sizeNum) && group.size !== ''
-        ? `内径${sizeNum}mm ／ 外径${sizeNum + 3}mm`
-        : 'リング径未設定';
-      const makers = [...new Set([...group.colors.values()]
-        .map(r => String(r.maker || '').trim()).filter(Boolean))];
-      if (makers.length) dims.textContent += ` ｜ 製造: ${makers.join('/')}`;
-      card.appendChild(dims);
+      cards.forEach(group => {
+        const card = document.createElement('div');
+        card.className = 'ring-matrix-card';
 
-      const chips = document.createElement('div');
-      chips.className = 'ring-chips';
-      let hasOut = false;
-      MATRIX_COLOR_ORDER.forEach(colorId => {
-        const meta = MATRIX_COLOR_META[colorId];
-        const row = group.colors.get(colorId);
-        if (!row) {
-          chips.appendChild(makeRingChip('missing', null, `${meta.label} 未登録`));
-          return;
+        const title = document.createElement('h3');
+        const sizeNum = Number(group.size);
+        title.textContent = Number.isFinite(sizeNum) && group.size !== ''
+          ? `内径${sizeNum}mm ／ 外径${sizeNum + 3}mm`
+          : 'リング径未設定';
+        card.appendChild(title);
+
+        const makers = [...new Set([...group.colors.values()]
+          .map(r => String(r.maker || '').trim()).filter(Boolean))];
+        if (makers.length) {
+          const dims = document.createElement('div');
+          dims.className = 'dims';
+          dims.textContent = `製造: ${makers.join('/')}`;
+          card.appendChild(dims);
         }
-        const state = matrixChipState(row);
-        if (state.cls === 'out') hasOut = true;
-        const label = String(row.color_label || '').trim() || meta.label;
-        chips.appendChild(makeRingChip(state.cls, meta.sw, `${label} ${state.text}`));
+
+        const chips = document.createElement('div');
+        chips.className = 'ring-chips';
+        let hasOut = false;
+        const chipDeleter = (row, label) => () => {
+          const desc = `${planner || '規格未設定'} / ${MATRIX_SERIES_LABEL[series] || series} / 内径${group.size}mm / ${label}`;
+          if (!confirm(`${desc} の行を削除しますか？\n「リング在庫をGitHubへ反映」を押すまで公開データは変わりません。`)) return;
+          const idx = rows.indexOf(row);
+          if (idx >= 0) {
+            rows.splice(idx, 1);
+            setDirty(true);
+            applyFilters();
+          }
+        };
+        MATRIX_COLOR_ORDER.forEach(colorId => {
+          const meta = MATRIX_COLOR_META[colorId];
+          const row = group.colors.get(colorId);
+          if (!row) {
+            chips.appendChild(makeRingChip('missing', null, `${meta.label} 未登録`));
+            return;
+          }
+          const state = matrixChipState(row);
+          if (state.cls === 'out') hasOut = true;
+          const label = String(row.color_label || '').trim() || meta.label;
+          chips.appendChild(makeRingChip(state.cls, meta.sw, `${label} ${state.text}`, chipDeleter(row, label)));
+        });
+        group.colors.forEach((row, colorId) => {
+          if (MATRIX_COLOR_ORDER.includes(colorId)) return;
+          const state = matrixChipState(row);
+          if (state.cls === 'out') hasOut = true;
+          const label = String(row.color_label || '').trim() || colorId;
+          chips.appendChild(makeRingChip(state.cls, null, `${label} ${state.text}`, chipDeleter(row, label)));
+        });
+        if (hasOut) card.classList.add('has-out');
+        card.appendChild(chips);
+        grid.appendChild(card);
       });
-      group.colors.forEach((row, colorId) => {
-        if (MATRIX_COLOR_ORDER.includes(colorId)) return;
-        const state = matrixChipState(row);
-        if (state.cls === 'out') hasOut = true;
-        const label = String(row.color_label || '').trim() || colorId;
-        chips.appendChild(makeRingChip(state.cls, null, `${label} ${state.text}`));
-      });
-      if (hasOut) card.classList.add('has-out');
-      card.appendChild(chips);
-      grid.appendChild(card);
+      bodyEl.appendChild(grid);
     });
-    bodyEl.appendChild(grid);
   });
 }
 
