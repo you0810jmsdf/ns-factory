@@ -196,6 +196,8 @@ body{
 .ring-matrix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:6px}
 .ring-chip .chip-del{border:none;background:transparent;color:inherit;cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 3px;opacity:.55}
 .ring-chip .chip-del:hover{opacity:1;color:#a33a2a}
+.ring-matrix-card .src-edit{border:none;background:transparent;color:#6b3a1f;text-decoration:underline;cursor:pointer;font-size:11px;padding:0;margin-left:6px}
+.ring-matrix-card .src-edit:hover{color:#a33a2a}
 .ring-matrix-card{border:1px solid #eadccf;border-radius:12px;background:#fffaf6;padding:10px 12px}
 .ring-matrix-card.has-out{border-color:#e8a79f;background:#fffafa}
 .ring-matrix-card h3{margin:0;font-size:13px;color:#3f2a18}
@@ -3150,32 +3152,70 @@ function renderRingMatrix() {
         }
 
         const sources = [];
-        const seenUrls = new Set();
+        const seenSources = new Set();
         group.colors.forEach(row => {
           const url = String(row.preferred_source_url || '').trim();
-          if (!url || seenUrls.has(url)) return;
-          seenUrls.add(url);
-          sources.push({ shop: String(row.preferred_source_shop || '').trim(), url });
+          const shop = String(row.preferred_source_shop || '').trim();
+          if (!url && !shop) return;
+          const key = `${shop}|${url}`;
+          if (seenSources.has(key)) return;
+          seenSources.add(key);
+          sources.push({ shop, url });
         });
+        const src = document.createElement('div');
+        src.className = 'dims';
+        src.appendChild(document.createTextNode('購入先: '));
         if (sources.length) {
-          const src = document.createElement('div');
-          src.className = 'dims';
-          src.appendChild(document.createTextNode('購入先: '));
           sources.forEach((s, i) => {
             if (i) src.appendChild(document.createTextNode(' ／ '));
-            const a = document.createElement('a');
-            a.href = s.url;
-            a.target = '_blank';
-            a.rel = 'noopener';
             let label = s.shop;
             if (!label) {
               try { label = new URL(s.url).hostname; } catch (e) { label = s.url; }
             }
-            a.textContent = label;
-            src.appendChild(a);
+            if (s.url) {
+              const a = document.createElement('a');
+              a.href = s.url;
+              a.target = '_blank';
+              a.rel = 'noopener';
+              a.textContent = label;
+              src.appendChild(a);
+            } else {
+              src.appendChild(document.createTextNode(label));
+            }
           });
-          card.appendChild(src);
+        } else {
+          src.appendChild(document.createTextNode('未登録'));
         }
+        const srcEditBtn = document.createElement('button');
+        srcEditBtn.type = 'button';
+        srcEditBtn.className = 'src-edit';
+        srcEditBtn.textContent = sources.length ? '編集' : '設定';
+        srcEditBtn.onclick = () => {
+          const cur = sources[0] || { shop: '', url: '' };
+          const shop = prompt(
+            'この規格・内径（全色共通）の購入先ショップ名を入力してください。\n例: Rakuten lc-palette\n空欄でOKすると購入先の記録を消します。',
+            cur.shop
+          );
+          if (shop === null) return;
+          let url = '';
+          if (shop.trim() !== '') {
+            const urlInput = prompt('購入ページのURL（https://〜）。リンク不要なら空欄のまま OK。', cur.url);
+            if (urlInput === null) return;
+            url = urlInput.trim();
+            if (url && !/^https?:\/\//i.test(url)) {
+              alert('URLは https:// から始まる形式で入力してください。保存を中止しました。');
+              return;
+            }
+          }
+          group.colors.forEach(row => {
+            row.preferred_source_shop = shop.trim();
+            row.preferred_source_url = url;
+          });
+          setDirty(true);
+          applyFilters();
+        };
+        src.appendChild(srcEditBtn);
+        card.appendChild(src);
 
         const chips = document.createElement('div');
         chips.className = 'ring-chips';
