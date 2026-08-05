@@ -91,3 +91,14 @@
   - chat-widget.js 側にも同名 postMessage のリスナーがあるが、自前オーバーレイが開いているときだけ処理するため二重発火しない。
 - 検証: 本番ブラウザで CTA表示（10.1秒）・iframe src・開閉・確定→相談への自動送信まで実測。
 - 既知の制約: `svgList` がSVG本体まで返すため判定に約10秒かかる。即時化するには軽量な存在確認APIが必要。
+
+## 2026-08-05 — 更新時の動画導線追加＋テクスチャ判定の軽量API化
+
+- 対象: `register.html` / `works.html` / `Apps Script/order_progress/order_progress_GAS.js`
+- ① 動画導線: 動画メーカーへのリンクが新規登録の完了画面にしか無く、既存作品を更新したときにたどり着けなかった。`editModePanel` に `#editMakeVideoLink` を常設し、作品番号の引き継ぎを `setVideoMakerLink(elementId, productId)` に共通化（完了画面 `#makeVideoLink` と共用）。
+- ② 軽量API: 判定用の `action=svgExists`（`getSvgExists`）をGASに追加。SVG本体を返さず、フォルダを1回走査して名前だけ見る（両方見つかったら打ち切り）。`works.html` の判定をこれに切替。
+  - 実測: 応答 約3.7秒→約1.6秒、サイズ 158,180字→57字。判定結果は `svgList` と全件一致。
+  - clasp deploy は deploymentId 据え置き（@30）。
+- 注意:
+  - `getSvgExists` と `getSvgList` の**判定条件（末尾 svg1.svg / svg2.svg）は必ず揃えること**。片方だけ変えると導線とシミュレーター本体で食い違う。
+  - 同ファイルに別セッション由来の `action=svgFolders`（`works-data.json` の `hasPattern` 生成用）も入っている。works.html の導線が二重実装にならないよう、どちらの方式を使うか整理が必要。
