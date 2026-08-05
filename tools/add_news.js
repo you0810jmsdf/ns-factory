@@ -14,6 +14,11 @@
  *   NEWS_LINK_HREF  任意。リンク先（# / 相対パス / http(s) のみ）
  *   NEWS_LINK_LABEL 任意。リンクの表示文字
  *   NEWS_TEXT_AFTER 任意。リンクの後ろに置く文字（「。」など）
+ *
+ *   NEWS_LINE       NEWS_DATE / NEWS_TEXT の代わりに、表示される1行をそのまま渡す形。
+ *                   「2026年8月 — 作品集のSOLDOUT表示を改善しました。」のように
+ *                   日付ラベルと本文が「—」で繋がっている想定で、こちらで分解する。
+ *                   GAS 側は掲載文をそのまま投げればよくなる。
  */
 
 const fs = require('fs');
@@ -32,8 +37,21 @@ function env(name) {
   return (process.env[name] || '').trim();
 }
 
-const date = env('NEWS_DATE');
-const text = env('NEWS_TEXT');
+let date = env('NEWS_DATE');
+let text = env('NEWS_TEXT');
+
+// NEWS_LINE 形式（「2026年8月 — 本文」）で来たら日付ラベルと本文に分解する。
+// 区切りは em dash / en dash / ハイフンのいずれも受ける（GAS 側の表記ゆれ対策）。
+const line = env('NEWS_LINE');
+if (line && !date && !text) {
+  const m = line.match(/^\s*(\d{4}年[^—–-]*?)\s*[—–-]\s*([\s\S]+)$/);
+  if (m) {
+    date = m[1].trim();
+    text = m[2].trim();
+  } else {
+    fail('NEWS_LINE を「2026年8月 — 本文」の形に分解できません: ' + line);
+  }
+}
 
 if (!date) fail('NEWS_DATE が空です。');
 if (!text) fail('NEWS_TEXT が空です。');
