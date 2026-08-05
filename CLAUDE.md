@@ -76,3 +76,18 @@
   2. お知らせ欄を `news-data.json` 等のデータ駆動に変更し、GAS から GitHub API または `repository_dispatch` で書き込めるようにする。これをやらない限りボタンは通っても反映されない。
 - 注意:
   - この環境からは `script.google.com` へ出られない（ネットワークポリシーで CONNECT 403）。GAS の挙動はリポジトリ側からは実測できない。
+
+## 2026-08-05 — 作品集にテクスチャシミュレーター導線を追加
+
+- 対象: `works.html`（`chat-widget.js` と GAS は無改修）
+- 指示: カラーテクスチャが使える作品は、AI相談経由だけでなく詳細ページから直接入れる導線も設ける。対象は svg1 / svg2 がある作品のみ。
+- 実装:
+  - `refreshTextureSimCta()` … 詳細を開くたび `action=svgList` で判定し、SVGがあるときだけ `#texture-sim-cta` を表示。folderId 単位でキャッシュ、HTML応答時は3回再試行、`textureCheckToken` で古い判定結果を破棄。
+  - `openTextureSim()` … `カラーシミュレーター/pattern-color-proto/floodfill.html?folderId=...&embed=1` をフルスクリーンiframe（z-index 5000）で表示。
+  - `nsfactory-floodfill-confirm` を受けたら閉じて `ocOpenChat()` → 選んだ革色・金具色を自動送信。
+- 注意:
+  - **`ocWidget.send` は引数を取らない**（`#chat-input` の値を送る実装）。呼ぶ前に入力欄へ流し込むこと。200字を超えると送信されない。
+  - 判定条件は chat-widget.js と同一に保つこと。GAS の `findFileBySuffix_` は**接尾辞一致**なので `xxx_svg1.svg` も対象（2026-08-05時点で該当14作品）。
+  - chat-widget.js 側にも同名 postMessage のリスナーがあるが、自前オーバーレイが開いているときだけ処理するため二重発火しない。
+- 検証: 本番ブラウザで CTA表示（10.1秒）・iframe src・開閉・確定→相談への自動送信まで実測。
+- 既知の制約: `svgList` がSVG本体まで返すため判定に約10秒かかる。即時化するには軽量な存在確認APIが必要。
