@@ -1471,8 +1471,9 @@
     }
 
     // ===== テクスチャシミュレーター導線（型紙SVG登録済みの作品だけ） =====
-    // 表示条件は chat-widget.js と同一。folderId 内に svg1.svg / svg2.svg があるかを
-    // オーダー進捗GAS（action=svgList）で確認し、あるときだけCTAを出す。
+    // 表示条件は chat-widget.js と同一（folderId 内に svg1.svg / svg2.svg があるか）。
+    // ただし判定には軽量版の action=svgExists を使う。svgList はSVG本体まで返すため
+    // 表示可否を見るだけで約10秒かかっていた（svgExists は約1.3秒。2026-08-05実測）。
     const TEXTURE_SIM_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
     const textureSimCta = document.getElementById('texture-sim-cta');
     const textureSimOverlay = document.getElementById('texture-sim-overlay');
@@ -1502,9 +1503,9 @@
       if (Object.prototype.hasOwnProperty.call(texturePatternCache, folderId)) {
         return Promise.resolve(texturePatternCache[folderId]);
       }
-      return textureFetchJson(TEXTURE_SIM_GAS_URL + '?action=svgList&folderId=' + encodeURIComponent(folderId))
+      return textureFetchJson(TEXTURE_SIM_GAS_URL + '?action=svgExists&folderId=' + encodeURIComponent(folderId))
         .then((j) => {
-          const available = !!(j && j.ok && j.svgs && j.svgs.length);
+          const available = !!(j && j.ok && j.exists);
           texturePatternCache[folderId] = available;
           return available;
         })
