@@ -53,88 +53,114 @@ GAS エディタ → 右上「デプロイ」→「デプロイを管理」→ �
 
 ## §2 Threads で告知できるようにする
 
-`Nsfactory-SNS-AutoPost` に以下を追加する。**既存の掲載処理はそのまま残してよい**
-（サイト反映は今のままで動く。ここで足すのは告知だけ）。
+`PostThreads.gs` の実装を確認済み。認証情報は `THREADS_ACCESS_TOKEN` /
+`THREADS_USER_ID` の2つのスクリプト プロパティに入っている。
 
-### 2-1. 告知用の関数
+### 2-1. なぜ `postToThreadsGuarded` を使わないか
+
+`postToThreadsGuarded()` は次の3つのガードを持つ。
+
+| ガード | 告知で使えるか |
+| --- | --- |
+| KillSwitch がONなら throw | **尊重すべき**（止めている時に出したくない） |
+| 投稿間隔ガード（`profile.min_interval_min`） | ⛔ 邪魔になる |
+| 時間帯別 `max_posts` チェック | ⛔ 邪魔になる |
+
+後ろ2つは**定期投稿の流量を抑えるためのもの**。手動で「掲載＋告知」を押した時に
+これらに引っかかると `throw` して**告知できずに終わる**（定期投稿の直後だと確実に当たる）。
+
+そこで、KillSwitch だけ尊重し、頻度ガードを通さない専用の呼び口を用意する。
+**成否の記録（`_recordPostSuccess` / `_recordPostFailure`）は通常投稿と同じに残す**ので、
+連続3失敗の自動 Kill と、月次の思想／告知比率レポートには従来どおり反映される。
+
+### 2-2. 新しいファイルを1つ追加する
+
+`Nsfactory-SNS-AutoPost` に **`NewsAnnounce.gs`** を新規作成して、以下を丸ごと貼る。
+既存ファイルには手を入れないので、取り消したいときはこのファイルを消すだけで戻せる。
 
 ```js
+// ============================================================
+// お知らせ欄の掲載を Threads で告知する
+// ============================================================
+
+const NEWS_SITE_URL = 'https://you0810jmsdf.github.io/ns-factory/';
+
 /** お知らせ本文から Threads 投稿文を組み立てる */
 function buildNewsThreadsText_(text) {
   return '【お知らせ】' + text + '\n\n' +
          'サイトのお知らせ欄を更新しました。\n' +
-         'https://you0810jmsdf.github.io/ns-factory/\n\n' +
+         NEWS_SITE_URL + '\n\n' +
          '#レザークラフト #手縫い革 #Nsfactory';
 }
 
 /**
- * Threads へ告知する。
- * 同じ token で2回押されても二重投稿しないよう、CacheService で抑止する。
+ * お知らせを Threads へ投稿する。
+ *   - KillSwitch は尊重する
+ *   - 間隔ガード／本数ガードは通さない（手動の告知は押した時に必ず出したいため）
+ *   - 成否は通常投稿と同じく記録する
+ * @param {string} text 投稿文
+ * @returns {string} post_id
  */
-function announceNewsOnThreads_(text, token) {
-  var cache = CacheService.getScriptCache();
-  var key = 'news_sns_' + token;
-  if (cache.get(key)) return { skipped: true };   // 再送・押し直し
+function postNewsAnnouncement_(text) {
+  if (isKillSwitchOn()) {
+    const reason = PropertiesService.getScriptProperties()
+      .getProperty(KS_KEYS.KILL_REASON) || 'unknown';
+    throw new Error('KillSwitch ON のため告知を中止: ' + reason);
+  }
 
-  var body = buildNewsThreadsText_(text);
-
-  // ★ このプロジェクトには既に Threads 投稿の関数があるはず。
-  //   関数名がわかったらここを差し替えると、トークン管理を二重に持たずに済む。
-  //   例: postToThreads_(body);
-  var result = postThreadsText_(body);
-
-  cache.put(key, '1', 21600);  // 6時間
-  return result;
+  const profile = getCurrentProfile();
+  try {
+    const postId = postToThreads(text);
+    _recordPostSuccess(profile, postId);
+    return postId;
+  } catch (err) {
+    _recordPostFailure(profile, err);
+    throw err;
+  }
 }
 
-/** Threads API へ直接投稿する（既存の投稿関数を使えない場合の実装） */
-function postThreadsText_(body) {
-  var props = PropertiesService.getScriptProperties();
-  var token = props.getProperty('THREADS_ACCESS_TOKEN');
-  var userId = props.getProperty('THREADS_USER_ID');
-  if (!token || !userId) {
-    throw new Error('スクリプトプロパティ THREADS_ACCESS_TOKEN / THREADS_USER_ID が未設定です');
+/**
+ * 掲載済みのお知らせを Threads で告知する。
+ * 同じ token で2回押されても二重投稿しないよう抑止する。
+ * @param {string} text  お知らせ本文（日付ラベルは含めない）
+ * @param {string} token 候補メールの token
+ * @returns {{posted: boolean, postId: string, skipped: string}}
+ */
+function announceNewsOnThreads_(text, token) {
+  const cache = CacheService.getScriptCache();
+  const key = 'news_sns_' + token;
+  if (cache.get(key)) return { posted: false, postId: '', skipped: '既に告知済み' };
+
+  cache.put(key, '1', 21600);  // 6時間。押し直し・再送での二重投稿を防ぐ
+  try {
+    const postId = postNewsAnnouncement_(buildNewsThreadsText_(text));
+    return { posted: true, postId: postId, skipped: '' };
+  } catch (err) {
+    cache.remove(key);          // 失敗したら押し直せるように戻す
+    throw err;
   }
-
-  var base = 'https://graph.threads.net/v1.0/' + userId;
-
-  var created = UrlFetchApp.fetch(base + '/threads', {
-    method: 'post',
-    payload: { media_type: 'TEXT', text: body, access_token: token },
-    muteHttpExceptions: true
-  });
-  if (created.getResponseCode() !== 200) {
-    throw new Error('Threadsコンテナ作成失敗: ' + created.getContentText());
-  }
-  var creationId = JSON.parse(created.getContentText()).id;
-
-  Utilities.sleep(3000);  // コンテナ生成待ち
-
-  var published = UrlFetchApp.fetch(base + '/threads_publish', {
-    method: 'post',
-    payload: { creation_id: creationId, access_token: token },
-    muteHttpExceptions: true
-  });
-  if (published.getResponseCode() !== 200) {
-    throw new Error('Threads公開失敗: ' + published.getContentText());
-  }
-  return JSON.parse(published.getContentText());
 }
 ```
 
-> **確認してほしいこと**
-> プロジェクトの設定 → スクリプト プロパティ を開き、Threads のトークンが
-> どんな名前で入っているか見てください。`THREADS_ACCESS_TOKEN` /
-> `THREADS_USER_ID` 以外の名前なら、上のコードのその2箇所を実際の名前に直します。
-> 既存の投稿関数（`runScheduledPosts` から呼ばれているもの）の名前がわかれば、
-> `postThreadsText_(body)` をその関数に置き換えるほうが確実です。
+> 頻度ガードも効かせたい場合は、`postNewsAnnouncement_` の中身を
+> `return postToThreadsGuarded(text);` の1行に差し替える。ただし定期投稿の直後は
+> 告知が弾かれる。
 
-### 2-2. ボタンを1つ増やす（おすすめ）
+### 2-3. 呼び出しを差し込む
 
-すべてのお知らせを Threads に流す必要はない（サイトの内部改修などは告知に向かない）。
-**「掲載のみ」と「掲載＋告知」を分ける**のがおすすめ。
+`NewsPublish.gs` の掲載処理から1行呼ぶだけ。差し込み位置は
+**掲載が成功したあと**（サイト反映に失敗したのに告知だけ出る事故を防ぐ）。
 
-候補メールを組み立てている箇所に、ボタンをもう1つ足す:
+```js
+announceNewsOnThreads_(text, token);
+```
+
+### 2-4. ボタンを分ける（おすすめ）
+
+すべてのお知らせを Threads に流す必要はない。実測した候補3件はいずれも
+サイトの内部改修で、告知には向かない内容だった。
+
+候補メールにボタンをもう1つ足す:
 
 ```js
 '<a href="' + webAppUrl + '?action=approve_sns&token=' + token + '" ' +
@@ -142,21 +168,19 @@ function postThreadsText_(body) {
 'border-radius:6px;margin-right:8px">📣 掲載＋Threads告知</a>'
 ```
 
-`doGet` の振り分けに `approve_sns` を足す:
+`Code.gs` の `doGet` に振り分けを足す（`action === 'approve'` の直後あたり）:
 
 ```js
-if (action === 'approve_sns') {
-  var item = getNewsCandidate_(token);        // ← 既存の候補取得処理に合わせる
-  approveNews_(token);                        // ← 既存の「掲載する」処理をそのまま呼ぶ
-  announceNewsOnThreads_(item.text, token);   // 告知を追加
-  return htmlMessage_('掲載し、Threadsにも告知しました。');
+if (action === 'approve_sns' && token) {
+  return _handleApprove(token, { announce: true });
 }
 ```
 
-全部まとめて告知したい場合は、既存の `action === 'approve'` の中に
-`announceNewsOnThreads_(item.text, token);` を1行足すだけでもよい。
+`_handleApprove` 側で、掲載が終わったあとに `opts.announce` なら
+`announceNewsOnThreads_(text, token)` を呼ぶ。
 
 ---
+
 
 ## §3（任意）news-data.json 経由に切り替える
 
