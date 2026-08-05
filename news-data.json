@@ -1,0 +1,76 @@
+{
+  "updated": "2026-08-05",
+  "groups": [
+    {
+      "year": "2026",
+      "title": "2026年のお知らせ",
+      "open": true,
+      "items": [
+        {
+          "id": "2026-08-works-soldout",
+          "date": "2026年8月",
+          "text": "作品集のSOLDOUT表示を改善しました。"
+        },
+        {
+          "id": "2026-07-sns-video-maker",
+          "date": "2026年7月",
+          "text": "SNS動画メーカーのUIを全面改修しました。"
+        },
+        {
+          "id": "2026-05-btc-payment",
+          "date": "2026年5月",
+          "text": "Bitcoin（BTC）決済対応を開始しました。対象はオーダー品・直接お見積もりです。詳細は",
+          "link": { "href": "#payment-btc", "label": "こちら" },
+          "text_after": "。"
+        },
+        {
+          "id": "2026-05-notebook-block-refill",
+          "date": "2026年5月",
+          "text": "N's notebook シリーズに「週間ブロックリフィル印刷ツール」「月間ブロックリフィル印刷ツール」を追加。公式LINE会員限定で公開中"
+        },
+        {
+          "id": "2026-05-password-note",
+          "date": "2026年5月",
+          "text": "N's notebook「パスワード管理」をWeb版アプリとして公開。終活・家族への引き継ぎ用にA6リフィル印刷にも対応"
+        },
+        {
+          "id": "2026-04-a6-print-tool",
+          "date": "2026年4月",
+          "text": "N's notebook シリーズ第2弾「A6リフィル印刷ツール」を公開（ブラウザ完結・インストール不要）"
+        },
+        {
+          "id": "2026-note-articles",
+          "date": "2026年",
+          "text": "note にて手帳・革小物の制作レポートや活用記事を不定期に公開中"
+        }
+      ]
+    },
+    {
+      "year": "2024",
+      "title": "過去のお知らせ（2024年）",
+      "open": false,
+      "items": [
+        {
+          "id": "2024-ec-sites",
+          "date": "2024年",
+          "text": "各種ECサイト（Creema / minne / BASE / メルカリ / ラクマ / PayPayフリマ / Pinkoi）にて販売中"
+        },
+        {
+          "id": "2024-pinkoi",
+          "date": "2024年",
+          "text": "Pinkoi（アジア向けECサイト）への出店開始"
+        },
+        {
+          "id": "2024-joyful-honda",
+          "date": "2024年",
+          "text": "JOYFUL HONDA カルチャースクール レザークラフト講座 開講"
+        },
+        {
+          "id": "2024-order-estimate",
+          "date": "2024年",
+          "text": "システム手帳フルオーダー見積もりシミュレータ 公開"
+        }
+      ]
+    }
+  ]
+}
