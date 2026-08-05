@@ -198,6 +198,13 @@ body{
 .ring-chip .chip-del:hover{opacity:1;color:#a33a2a}
 .ring-matrix-card .src-edit{border:none;background:transparent;color:#6b3a1f;text-decoration:underline;cursor:pointer;font-size:11px;padding:0;margin-left:6px}
 .ring-matrix-card .src-edit:hover{color:#a33a2a}
+.src-form{display:flex;flex-direction:column;gap:6px;margin-top:6px;padding:8px;border:1px solid #e8d3a0;border-radius:8px;background:#fffdf7}
+.src-form>div:first-child{font-size:10px;color:#8a6100;line-height:1.5}
+.src-form input{font-size:12px;padding:6px 8px;border:1px solid #d9c7b2;border-radius:8px;width:100%;box-sizing:border-box;background:#fff}
+.src-form-actions{display:flex;gap:8px}
+.src-form-actions button{font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #d9c7b2;background:#fff;cursor:pointer;color:#6b3a1f}
+.src-form-actions button:first-child{background:#6b3a1f;border-color:#6b3a1f;color:#fff}
+.src-form-actions button:hover{opacity:.85}
 .ring-matrix-card{border:1px solid #eadccf;border-radius:12px;background:#fffaf6;padding:10px 12px}
 .ring-matrix-card.has-out{border-color:#e8a79f;background:#fffafa}
 .ring-matrix-card h3{margin:0;font-size:13px;color:#3f2a18}
@@ -3192,27 +3199,55 @@ function renderRingMatrix() {
         srcEditBtn.textContent = sources.length ? '編集' : '設定';
         srcEditBtn.onclick = () => {
           const cur = sources[0] || { shop: '', url: '' };
-          const shop = prompt(
-            'この規格・内径（全色共通）の購入先ショップ名を入力してください。\n例: Rakuten lc-palette\n空欄でOKすると購入先の記録を消します。',
-            cur.shop
-          );
-          if (shop === null) return;
-          let url = '';
-          if (shop.trim() !== '') {
-            const urlInput = prompt('購入ページのURL（https://〜）。リンク不要なら空欄のまま OK。', cur.url);
-            if (urlInput === null) return;
-            url = urlInput.trim();
+          src.innerHTML = '';
+          const form = document.createElement('div');
+          form.className = 'src-form';
+
+          const formNote = document.createElement('div');
+          formNote.textContent = '購入先（この規格・内径の全色共通）。別タブでURLを調べてもこのフォームは消えません。';
+          form.appendChild(formNote);
+
+          const shopInput = document.createElement('input');
+          shopInput.type = 'text';
+          shopInput.placeholder = 'ショップ名（例: Rakuten lc-palette）';
+          shopInput.value = cur.shop;
+          form.appendChild(shopInput);
+
+          const urlInput = document.createElement('input');
+          urlInput.type = 'text';
+          urlInput.placeholder = '購入ページURL（https://〜）';
+          urlInput.value = cur.url;
+          form.appendChild(urlInput);
+
+          const btnRow = document.createElement('div');
+          btnRow.className = 'src-form-actions';
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.textContent = '保存';
+          saveBtn.onclick = () => {
+            const shop = shopInput.value.trim();
+            const url = urlInput.value.trim();
             if (url && !/^https?:\/\//i.test(url)) {
-              alert('URLは https:// から始まる形式で入力してください。保存を中止しました。');
+              alert('URLは https:// から始まる形式で入力してください。');
               return;
             }
-          }
-          group.colors.forEach(row => {
-            row.preferred_source_shop = shop.trim();
-            row.preferred_source_url = url;
-          });
-          setDirty(true);
-          applyFilters();
+            group.colors.forEach(row => {
+              row.preferred_source_shop = shop;
+              row.preferred_source_url = url;
+            });
+            setDirty(true);
+            applyFilters();
+          };
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.textContent = 'キャンセル';
+          cancelBtn.onclick = () => renderRingMatrix();
+          btnRow.appendChild(saveBtn);
+          btnRow.appendChild(cancelBtn);
+          form.appendChild(btnRow);
+
+          src.appendChild(form);
+          shopInput.focus();
         };
         src.appendChild(srcEditBtn);
         card.appendChild(src);
