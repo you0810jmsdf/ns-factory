@@ -330,7 +330,14 @@ textarea{min-height:80px;resize:vertical}
 
   <!-- ====== EDIT MODE PANEL (PR画像プロンプト + Threads投稿) ====== -->
   <div id="editModePanel" class="panel hidden" style="background:#fffaf0;border:1px solid #d9b466;padding:14px 16px;margin-bottom:12px">
-    <div class="panel-title" style="color:#8a6a2e">📣 編集モード — PR画像プロンプト生成 ＆ Threads投稿</div>
+    <div class="panel-title" style="color:#8a6a2e">📣 編集モード — PR画像プロンプト生成 ＆ Threads投稿 ＆ 紹介動画</div>
+
+    <!-- 動画メーカーへの導線。従来は新規登録の完了画面にしか無く、既存作品を更新したときに
+         たどり着けなかったため、編集モードにも常設した（2026-08-05 事業主指示）。
+         href は編集対象が確定した時点で setEditVideoLink() が作品番号付きに差し替える。 -->
+    <div style="margin-top:10px">
+      <a id="editMakeVideoLink" href="digital-room/sns-video-maker/" class="btn btn-primary" style="font-size:13px">🎬 この作品の紹介動画を作る</a>
+    </div>
 
     <!-- ===== 販売幕僚 作品紹介プロンプト（固定・常時表示） ===== -->
     <div style="margin-top:10px;padding:12px;background:#fff;border:1px solid #d9b466;border-radius:8px">
@@ -792,6 +799,15 @@ async function gasPostJson(api, payload, onRetry) {
   throw new Error('通信に' + GAS_MAX_ATTEMPTS + '回失敗しました: ' + (lastErr && lastErr.message || lastErr));
 }
 
+// 紹介動画メーカーへのリンクを作品番号付きにする。
+// 新規登録の完了画面（makeVideoLink）と編集モード（editMakeVideoLink）の両方で使う。
+function setVideoMakerLink(elementId, productId) {
+  const link = document.getElementById(elementId);
+  if (!link) return;
+  const workNo = (String(productId || '').match(/\d+$/) || [''])[0];
+  link.href = 'digital-room/sns-video-maker/' + (workNo ? '?workNo=' + parseInt(workNo, 10) : '');
+}
+
 // ====== MASTER DATA ======
 const FIELD_MAP = { category: 'categories', material: 'materials', color: 'colors' };
 
@@ -1136,6 +1152,7 @@ async function loadProduct() {
 
     // 編集モードパネル表示 + PR画像プロンプト用の商品情報をセット
     document.getElementById('editModePanel').classList.remove('hidden');
+    setVideoMakerLink('editMakeVideoLink', p.productId);
     const _mainPh = (mainPhotoIndex >= 0 && photos[mainPhotoIndex]) ? photos[mainPhotoIndex].url : (p.mainPhotoUrl || '');
     currentProductForPr = {
       productId: p.productId, name: p.name, category: p.category,
@@ -1740,11 +1757,7 @@ async function doNewRegister() {
   const openLink = document.getElementById('openEditLink');
   if (openLink) openLink.href = 'register.html?edit=' + encodeURIComponent(productId);
   // 動画メーカーへの導線（作品番号を引き継ぎ、番号入力を省略させる）
-  const videoLink = document.getElementById('makeVideoLink');
-  if (videoLink) {
-    const workNo = (productId.match(/\d+$/) || [''])[0];
-    videoLink.href = 'digital-room/sns-video-maker/' + (workNo ? '?workNo=' + parseInt(workNo, 10) : '');
-  }
+  setVideoMakerLink('makeVideoLink', productId);
   setTimeout(() => showOnly('stepComplete'), 800);
 }
 
