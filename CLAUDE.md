@@ -173,5 +173,34 @@
   **失敗時は cache を消して押し直せるようにしてある**（put してから post、失敗時 remove）。
 - 検証: 抽出したコードに GAS API のスタブを与えて実行。1回目投稿／2回目スキップ／
   記録1件のみ／API失敗時に押し直し可／KillSwitch ON で中止、を実測。投稿文は116字。
-- 未確定: `NewsPublish.gs` の掲載関数名。差し込みは「掲載成功後」に1行呼ぶだけ
+- 差し込みは「掲載成功後」に1行呼ぶだけ
   （サイト反映に失敗したのに告知だけ出る事故を防ぐため、順序は必ず掲載→告知）。
+
+## 2026-08-06 — NewsPublish.gs 全容判明／NEWS_LINE 形式を追加
+
+- 対象: `tools/add_news.js` / `.github/workflows/news-publish.yml` / `docs/news-publish-setup.md`
+- GAS 側の全経路が判明:
+  `監理部\news_watcher.py` → `doPost action=news_draft` → `ingestNewsDraft`
+  → `saveDraft(text,'news')` + 承認メール → `doGet ?action=approve`
+  → `_handleApprove`(kind==='news') → `postNewsToSite` → GitHub Contents API で
+  `index.html` に `<li>` 追記。
+- ⚠️ **見つけた時限爆弾**: `NEWS_SECTION_MARKER = '<span>2026年のお知らせ</span>'` と
+  **年がベタ書き**。2027年のお知らせが2026グループに入る。見出しを変えると
+  「目印が見つかりません」で掲載不能になる。→ `postNewsToSite` を dispatch に
+  差し替える手順を `docs/news-publish-setup.md` §3 に用意した。
+- **PAT は既にある**（`GITHUB_PAT_NS_FACTORY` / Contents: Read and write）。
+  `dispatches` もこの権限で通るので、新しいトークンは不要。§3 の手順もこれを使う。
+- リポジトリ側の追加:
+  - `add_news.js` に **`NEWS_LINE` 形式**を追加。「2026年8月 — 本文」の1行をそのまま
+    渡せば日付ラベルと本文に分解する。GAS 側は掲載文を投げるだけで済む。
+    区切りは em dash / en dash / ハイフンを受ける。
+  - workflow に `line` 入力を追加。`date` / `text` は任意に変更。
+- 検証:
+  - `add_news.js`: NEWS_LINE 正常／同 id 再送／年またぎ／ハイフン区切り／
+    **本文にハイフンを含むケース**（`A-B-C対応` が本文側に残る）／分解不能を実測。
+  - GAS スニペット: スタブを与えて実行。日付除去4パターン、告知1回目／2回目スキップ／
+    別内容は投稿／API失敗時に押し直し可／KillSwitch ON で中止を実測。
+- 注意:
+  - 二重投稿の抑止キーは **本文の MD5**（`_newsCacheKey_`）。token を引き回さなくて済むので、
+    `postNewsToSite` の中からでも呼べる。dispatch の `id` にも同じ値を使う。
+  - `postToThreadsGuarded` を告知に使わない理由は前項参照。
