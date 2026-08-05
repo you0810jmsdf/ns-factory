@@ -3149,6 +3149,34 @@ function renderRingMatrix() {
           card.appendChild(dims);
         }
 
+        const sources = [];
+        const seenUrls = new Set();
+        group.colors.forEach(row => {
+          const url = String(row.preferred_source_url || '').trim();
+          if (!url || seenUrls.has(url)) return;
+          seenUrls.add(url);
+          sources.push({ shop: String(row.preferred_source_shop || '').trim(), url });
+        });
+        if (sources.length) {
+          const src = document.createElement('div');
+          src.className = 'dims';
+          src.appendChild(document.createTextNode('購入先: '));
+          sources.forEach((s, i) => {
+            if (i) src.appendChild(document.createTextNode(' ／ '));
+            const a = document.createElement('a');
+            a.href = s.url;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            let label = s.shop;
+            if (!label) {
+              try { label = new URL(s.url).hostname; } catch (e) { label = s.url; }
+            }
+            a.textContent = label;
+            src.appendChild(a);
+          });
+          card.appendChild(src);
+        }
+
         const chips = document.createElement('div');
         chips.className = 'ring-chips';
         let hasOut = false;
