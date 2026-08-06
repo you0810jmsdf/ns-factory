@@ -32,6 +32,7 @@ GAS プロジェクトは **`Nsfactory-SNS-AutoPost`**（Threads 自動投稿と
 | 2 | Threads で告知されない | §2 `NewsAnnounce.gs` を追加 |
 | 3 | **年がベタ書きで2027年に破綻する** | §3 掲載先を `news-data.json` に変更 |
 | 4 | 告知するものを選びたい | §4 ボタンを分ける（任意） |
+| 5 | **スマホで完結させたい**（事業主はPCをほとんど使わない） | §5 返信で承認する |
 
 ## サイト側の描画（リポジトリ側・対応済み）
 
@@ -312,3 +313,175 @@ Threads承認側の動作は変わらない。
 - 候補の中身が「サイトの内部改修」に偏っている（実測3件がすべて開発作業）。
   お知らせ欄に並んでいるのは新サービス・新ツール・決済手段といった顧客向けの発表なので、
   `news_watcher.py` の判定条件を「顧客に影響するものだけ」に絞ると精度が上がる。
+
+---
+
+## §5 返信で承認する（スマホで完結させる）
+
+### 5-1. なぜ必要か
+
+メールのボタン方式は、**スマホのブラウザで Google の認証を通せること**が前提になっている。
+実際、事業主のスマホでは「現在、ファイルを開くことができません」（Drive のエラー）で
+止まり続けた。デプロイは「実行: 自分／アクセス: 全員」でアクティブ、URL もメールの
+ボタンと完全一致していたにもかかわらず、である。
+
+事業主は**PCをほとんど使わない**ため、ボタン方式のままでは運用に乗らない。
+**ブラウザを開かない経路**に変える。
+
+### 5-2. 仕組み
+
+候補メールに**返信するだけ**。10分おきに GAS が返信を拾って処理する。
+
+| 返信の1行目 | 動作 |
+| --- | --- |
+| `掲載` | サイトに掲載 |
+| `告知` | サイトに掲載 ＋ Threads告知 |
+| `不要` | 破棄 |
+| `掲載 2026年8月 — 本文` | 本文を差し替えて掲載（`告知` も同様） |
+
+- 処理結果は**返信で返る**ので、スマホだけで完結する
+- 引用部分は読まない（引用の中の「掲載」で誤爆しない）
+- コマンド以外の返信は何もしない
+- 処理済みスレッドには `お知らせ処理済み` ラベルが付き、二重掲載しない
+- **掲載に失敗したときはラベルを外す**ので、もう一度返信すれば再試行できる
+
+### 5-3. `NewsReply.gs` を新規作成する
+
+```js
+// ============================================================
+// お知らせ候補メールへの「返信」で掲載を承認する
+//   返信の1行目:
+//     掲載            → サイトに掲載
+//     告知            → サイトに掲載＋Threads告知
+//     不要            → 破棄
+//     掲載 <本文>     → 本文を差し替えて掲載（告知も同様）
+//   10分おきのトリガーで checkNewsReplies を回す。
+// ============================================================
+
+var NEWS_REPLY_SUBJECT = '【ns-factory お知らせ欄】掲載候補';
+var NEWS_REPLY_LABEL   = 'お知らせ処理済み';
+
+/** 返信本文の先頭行からコマンドを取り出す。引用に入ったら打ち切る。 */
+function _parseNewsReply_(body) {
+  var lines = String(body || '').split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].replace(/^[\s　]+|[\s　]+$/g, '');
+    if (!line) continue;
+    if (line.charAt(0) === '>') return null;                       // 引用
+    if (/^\d{4}年\d{1,2}月\d{1,2}日.*[:：]$/.test(line)) return null; // 引用ヘッダ
+    if (/wrote:$/.test(line)) return null;
+    var m = line.match(/^(掲載|告知|不要)(?:[\s　]+([\s\S]+))?$/);
+    if (!m) return null;
+    return { cmd: m[1], text: m[2] ? m[2].replace(/^[\s　]+|[\s　]+$/g, '') : '' };
+  }
+  return null;
+}
+
+/** 候補メール本文から掲載文を取り出す（グレーの枠の中身） */
+function _extractNewsText_(htmlBody) {
+  var m = String(htmlBody || '').match(/white-space:pre-wrap[^>]*>([\s\S]*?)<\/div>/);
+  if (!m) return '';
+  return m[1]
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+    .replace(/^[\s　]+|[\s　]+$/g, '');
+}
+
+/**
+ * 候補メールへの返信を拾って掲載する。10分おきのトリガーから呼ぶ。
+ */
+function checkNewsReplies() {
+  var label = GmailApp.getUserLabelByName(NEWS_REPLY_LABEL) || GmailApp.createLabel(NEWS_REPLY_LABEL);
+  var query = 'subject:"' + NEWS_REPLY_SUBJECT + '" newer_than:14d -label:"' + NEWS_REPLY_LABEL + '"';
+  var threads = GmailApp.search(query, 0, 20);
+
+  for (var i = 0; i < threads.length; i++) {
+    var th = threads[i];
+    var msgs = th.getMessages();
+    if (msgs.length < 2) continue;                       // まだ返信が無い
+
+    var cmd = _parseNewsReply_(msgs[msgs.length - 1].getPlainBody());
+    if (!cmd) continue;                                  // コマンドではない返信は無視
+
+    if (cmd.cmd === '不要') {
+      th.addLabel(label);
+      th.reply('破棄しました。このお知らせは掲載しません。');
+      continue;
+    }
+
+    var text = cmd.text || _extractNewsText_(msgs[0].getBody());
+    if (!text) {
+      th.reply('掲載文を読み取れませんでした。「掲載 2026年8月 — 本文」の形で本文も一緒に返信してください。');
+      th.addLabel(label);
+      continue;
+    }
+
+    // 先にラベルを付けて多重処理を防ぐ。失敗したら外して返信し直せるようにする。
+    th.addLabel(label);
+    try {
+      postNewsToSite(text);
+    } catch (err) {
+      th.removeLabel(label);
+      th.reply('掲載に失敗しました。もう一度返信すると再試行します。\n\n' + err);
+      continue;
+    }
+
+    var note = '';
+    if (cmd.cmd === '告知') {
+      try {
+        announceNewsOnThreads_(text);
+        note = '\nThreadsにも告知しました。';
+      } catch (err2) {
+        note = '\n※Threads告知は失敗しました: ' + err2;
+        Logger.log('Threads告知失敗: ' + err2);
+      }
+    }
+    th.reply('掲載しました。\n\n' + text + note);
+  }
+}
+```
+
+### 5-4. トリガーを作る
+
+1. Apps Script エディタ左メニューの ⏰（トリガー）→ 右下「トリガーを追加」
+2. 実行する関数: **`checkNewsReplies`**
+3. イベントのソース: **時間主導型**
+4. 時間ベースのトリガーのタイプ: **分ベースのタイマー**
+5. 時間の間隔: **10分おき**
+6. 保存
+
+> **画面でトリガーを作れないとき**
+> 「ページを再読み込みして、もう一度お試しください。」というエラーが出ることがある
+> （2026-08-06 に発生）。再読み込みして作り直せば通ることが多いが、通らない場合は
+> `NewsReply.gs` の末尾に次を足して**1回だけ実行**すればよい。画面を使わずに済む。
+>
+> ```js
+> /** 【1回だけ実行】返信チェックの10分おきトリガーを作る */
+> function setupNewsReplyTrigger() {
+>   ScriptApp.getProjectTriggers().forEach(function (t) {
+>     if (t.getHandlerFunction() === 'checkNewsReplies') ScriptApp.deleteTrigger(t);
+>   });
+>   ScriptApp.newTrigger('checkNewsReplies').timeBased().everyMinutes(10).create();
+>   Logger.log('トリガーを作成しました');
+> }
+> ```
+>
+> 既存の同じトリガーを消してから作るので、何回実行しても増えない。
+
+### 5-5. 初回だけ手動で1回実行する（認証のため）
+
+Gmail を読む権限がまだ許可されていないので、**エディタで `checkNewsReplies` を一度手動実行**して
+承認ダイアログを通しておくこと。これをやらないとトリガーが毎回失敗する。
+
+エディタ上部の関数ドロップダウンで `checkNewsReplies` を選び、**▶ 実行**。
+
+### 5-6. 注意
+
+- ⛔ **ラベル名 `お知らせ処理済み` を変えるときは、コード内の `NEWS_REPLY_LABEL` も必ず揃える。**
+  ずれると同じお知らせを毎回掲載し続ける。
+- 掲載文の取り出しは、候補メール本文の `white-space:pre-wrap` の div に依存している。
+  `sendNewsApprovalEmail` の文面を変えるときは `_extractNewsText_` も見直すこと。
+  読み取れなかった場合は「本文も一緒に返信してください」と返信して止まる。
+- ボタン方式（§1〜§4）と併用できる。PC を触るときはボタンでも掲載できる。
