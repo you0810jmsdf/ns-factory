@@ -53,6 +53,7 @@
   <div id="list"></div>
   <p class="note">
     ※ 判定済みの作品（名前・サイズ欄・説明文にサイズ表記があるもの）はここには出ません。<br>
+    ※ 定型に無い特殊な規格は「✏️ 自由入力」で保存できます（例: お薬手帳、A5スリム）。作品集では「その他サイズ」に分類されます。<br>
     ※ 保存すると作品集のサイズ絞り込みに即反映されます（静的データは日次更新のため最大1日遅れることがあります）。<br>
     ※ 間違えてタップした場合は、同じ行の別ボタンを押し直せば上書きされます。
   </p>
@@ -122,6 +123,14 @@ function isPlanner(p) {
     .some((c) => c === 'システム手帳' || c === '手帳カバー');
 }
 
+// サイズ欄が実質空（未入力 or 既定の案内文）かどうか。
+// 自由入力で「お薬手帳」「A5スリム」等の特殊規格を保存した作品は、
+// 定型判定に一致しなくても仕分け済みとして扱う（このページに再登場させない）。
+function hasNoSizeValue(p) {
+  const s = String(p.size || '').trim();
+  return !s || s === '事前にお問い合わせください';
+}
+
 function esc(v) {
   return String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -178,7 +187,8 @@ async function main() {
     document.getElementById('status').textContent = '取得に失敗しました。時間をおいて再読み込みしてください: ' + e.message;
     return;
   }
-  const unknown = (Array.isArray(products) ? products : []).filter((p) => isPlanner(p) && !detectSize(p));
+  const unknown = (Array.isArray(products) ? products : [])
+    .filter((p) => isPlanner(p) && !detectSize(p) && hasNoSizeValue(p));
   remainCount = unknown.length;
   updateSummary();
   document.getElementById('status').textContent = unknown.length ? '' : '🎉 サイズ不明の作品はありません。すべて仕分け済みです。';
@@ -194,14 +204,25 @@ async function main() {
         <div class="pname">${esc(p.name)}</div>
         <div class="pstate"></div>
       </div>
-      <div class="btns">${sizes.map((s) => `<button type="button" data-size="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+      <div class="btns">${sizes.map((s) => `<button type="button" data-size="${esc(s)}">${esc(s)}</button>`).join('')}<button type="button" data-free="1">✏️ 自由入力</button></div>
     </div>`;
   }).join('');
 
   document.getElementById('list').addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-size]');
-    if (!btn) return;
-    saveSize(btn, btn.closest('.row').dataset.id, btn.dataset.size);
+    const row = e.target.closest('.row');
+    const btn = e.target.closest('button');
+    if (!row || !btn) return;
+    if (btn.dataset.free) {
+      // 定型に無い特殊規格用（例: お薬手帳、A5スリム、見開き231mm 等）。
+      // 保存すればサイズ欄に実値が入るため、以後このページには並ばない。
+      const v = prompt('サイズ・規格を入力してください（例: お薬手帳、A5スリム、トラベラーズ幅広 など）');
+      if (v === null) return;
+      const trimmed = v.trim();
+      if (!trimmed) return;
+      saveSize(btn, row.dataset.id, trimmed);
+      return;
+    }
+    if (btn.dataset.size) saveSize(btn, row.dataset.id, btn.dataset.size);
   });
 }
 main();
