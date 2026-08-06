@@ -451,6 +451,24 @@ function checkNewsReplies() {
 5. 時間の間隔: **10分おき**
 6. 保存
 
+> **画面でトリガーを作れないとき**
+> 「ページを再読み込みして、もう一度お試しください。」というエラーが出ることがある
+> （2026-08-06 に発生）。再読み込みして作り直せば通ることが多いが、通らない場合は
+> `NewsReply.gs` の末尾に次を足して**1回だけ実行**すればよい。画面を使わずに済む。
+>
+> ```js
+> /** 【1回だけ実行】返信チェックの10分おきトリガーを作る */
+> function setupNewsReplyTrigger() {
+>   ScriptApp.getProjectTriggers().forEach(function (t) {
+>     if (t.getHandlerFunction() === 'checkNewsReplies') ScriptApp.deleteTrigger(t);
+>   });
+>   ScriptApp.newTrigger('checkNewsReplies').timeBased().everyMinutes(10).create();
+>   Logger.log('トリガーを作成しました');
+> }
+> ```
+>
+> 既存の同じトリガーを消してから作るので、何回実行しても増えない。
+
 ### 5-5. 初回だけ手動で1回実行する（認証のため）
 
 Gmail を読む権限がまだ許可されていないので、**エディタで `checkNewsReplies` を一度手動実行**して
