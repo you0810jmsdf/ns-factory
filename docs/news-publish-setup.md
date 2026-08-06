@@ -407,6 +407,7 @@ function checkNewsReplies() {
 
     if (cmd.cmd === '不要') {
       th.addLabel(label);
+      th.reply('破棄しました。このお知らせは掲載しません。');
       continue;
     }
 
