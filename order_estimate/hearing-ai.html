@@ -60,6 +60,13 @@ body{
 .quick button.img-chip .img-label{font-size:11px;line-height:1.25;word-break:break-word}
 .quick button.img-chip:hover img{opacity:.9}
 
+/* お名前・連絡先（常設・送信前必須） */
+.hr-contact{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid #ede0d4;background:#faf7f4;position:sticky;top:0;z-index:5}
+.hr-contact input{flex:1;min-width:0;border:1.5px solid #ede0d4;border-radius:8px;padding:8px 10px;font-size:13px;
+  background:#fff;outline:none;font-family:inherit}
+.hr-contact input:focus{border-color:#b5895a}
+.hr-contact input.hr-missing{border-color:#c0392b;background:#fdf1f0}
+
 /* input */
 .inputbar{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #ede0d4;background:#fff;position:sticky;bottom:0}
 .inputbar input{flex:1;border:1.5px solid #ede0d4;border-radius:22px;padding:10px 15px;font-size:14px;
@@ -116,6 +123,15 @@ body{
       <p>N's factory｜オーダーメイドのご相談はこちらから</p>
     </div>
     <button class="modebtn" id="modeBtn">⚙ AI会話モード</button>
+  </div>
+
+  <!-- 2026-08-05: 発注票確定時、お名前・連絡先が空のまま自動送信され、作家から
+       ご返信できないオーダーが発生した（works.htmlの過去事案 OP-2607-011 と同型）。
+       本ページには元々この入力欄自体が無かった。works.htmlと同じ方式で常設する。
+       ⛔ この欄を消して未入力のまま送信可能な状態に戻さないこと -->
+  <div class="hr-contact">
+    <input id="hr-contact-name" type="text" placeholder="お名前（必須）" autocomplete="name">
+    <input id="hr-contact-info" type="text" placeholder="連絡先（必須・メール／SNS）" autocomplete="email">
   </div>
 
   <div class="chat" id="chat"></div>
@@ -743,7 +759,8 @@ function finish(){
         '<button class="btn-primary" id="copySheet">📋 発注票をコピー</button>'+
         '<button class="btn-ghost" id="copyLine">💬 工房へ送る文面をコピー</button>'+
         estBtn+
-      '</div>';
+      '</div>'+
+      '<div id="sheetSend"></div>';
     card.appendChild(box); chat.appendChild(card); scrollDown();
 
     const sheetText = `【N's factory ${prod.name}オーダー 発注票】\n`+rows.map(r=>`${r[0]}：${r[1]}`).join('\n')+`\n概算目安：${rangeTxt}`;
@@ -755,12 +772,44 @@ function finish(){
     renderQuick([{label:'最初からやり直す',sub:'',val:'__restart'}]);
     quickEl.querySelector('button').onclick=()=>location.reload();
 
-    submitToOrderProgress(prod, sheetText, a.textureSimulation);
+    trySubmitOrder(prod, sheetText, a.textureSimulation);
   },600);
 }
 
+/* ---------- お名前・連絡先の必須化（2026-08-05） ----------
+   works.htmlのオーダー相談チャットで、連絡先未記入のまま送信され作家が
+   返信できなかった事案（OP-2607-011）を受け、本ページ側にも同じ入力欄と
+   チェックを追加。従来はclient/contactを常に空文字で送っていた。 */
+function contactFields(){
+  return { nameEl: document.getElementById('hr-contact-name'), contactEl: document.getElementById('hr-contact-info') };
+}
+function markContactMissing(nameEl, contactEl, name, contact){
+  nameEl.classList.toggle('hr-missing', !name);
+  contactEl.classList.toggle('hr-missing', !contact);
+}
+
+/* 発注票確定時、お名前・連絡先が埋まっていればそのまま送信。未記入なら送信を保留し、
+   発注票の下に案内文と送信ボタンを出す（入力後にボタンを押すと送信される） */
+function trySubmitOrder(prod, hearingContent, textureSimulation){
+  const {nameEl, contactEl} = contactFields();
+  const name = nameEl.value.trim(), contact = contactEl.value.trim();
+  markContactMissing(nameEl, contactEl, name, contact);
+  const sendBox = document.getElementById('sheetSend');
+  if(!name || !contact){
+    if(sendBox) sendBox.innerHTML =
+      '<p style="color:#c0392b;font-size:12.5px;margin:10px 0 6px;line-height:1.6">⚠️ 上部の「お名前」「連絡先」をご記入のうえ、下のボタンを押すと工房へ送信されます。ご記入がないと、こちらからご返信できません。</p>'+
+      '<button class="btn-primary" id="sheetSendBtn">📨 工房へ送信する</button>';
+    const btn = document.getElementById('sheetSendBtn');
+    if(btn) btn.onclick=()=>trySubmitOrder(prod, hearingContent, textureSimulation);
+    (!name?nameEl:contactEl).focus();
+    return;
+  }
+  if(sendBox) sendBox.innerHTML='';
+  submitToOrderProgress(prod, hearingContent, textureSimulation, name, contact);
+}
+
 /* 発注票確定時、オーダー進捗シートへ自動登録する（テクスチャシミュレーション画像・お客様添付画像があれば一緒に送る） */
-function submitToOrderProgress(prod, hearingContent, textureSimulation){
+function submitToOrderProgress(prod, hearingContent, textureSimulation, client, contact){
   const images=(textureSimulation||[]).map((p,i)=>({
     fileName:`color_sim_${i+1}.png`,
     label:(p.label||('パーツ'+(i+1)))+(p.leatherName?(': '+p.leatherName):''),
@@ -770,7 +819,7 @@ function submitToOrderProgress(prod, hearingContent, textureSimulation){
   customerImages.forEach(ci=>images.push({fileName:ci.fileName,label:ci.label,base64:ci.dataUrl.split(',')[1]}));
   fetch(ORDER_PROGRESS_GAS_URL,{
     method:'POST',
-    body:JSON.stringify({ action:'submitChatOrder', client:'', contact:'', item:prod.name, hearingContent, images })
+    body:JSON.stringify({ action:'submitChatOrder', client:client||'', contact:contact||'', item:prod.name, hearingContent, images })
   }).then(r=>r.json()).then(res=>{
     if(res.ok) addMsg('bot','📋 オーダー進捗に登録しました（受付番号: '+res.orderNo+'）。');
     else addMsg('bot','⚠️ オーダー進捗への登録に失敗しました：'+(res.error||'不明なエラー'));
@@ -839,11 +888,20 @@ function showLiveSendChip(){
 
 function sendLiveConsultation(){
   if(liveConsultSent) return;
+  // 2026-08-05: ガイド対話と同様、お名前・連絡先の記入を送信前に必須化
+  const {nameEl, contactEl} = contactFields();
+  const name = nameEl.value.trim(), contact = contactEl.value.trim();
+  markContactMissing(nameEl, contactEl, name, contact);
+  if(!name || !contact){
+    alert('ご返信のため、上部の「お名前」「連絡先」のご記入をお願いします。\nご連絡先はメールアドレスのほか、LINEやInstagramなどのSNS IDでも構いません。\n\n※ ご連絡先がないと、ご相談内容は工房に届いても、こちらからご返信を差し上げることができません。');
+    (!name?nameEl:contactEl).focus();
+    return;
+  }
   const transcript=history.map(h=>(h.role==='user'?'お客様: ':'AI: ')+h.content).join('\n')||'（会話なし・画像のみ）';
   const images=customerImages.map(ci=>({fileName:ci.fileName,label:ci.label,base64:ci.dataUrl.split(',')[1]}));
   fetch(ORDER_PROGRESS_GAS_URL,{
     method:'POST',
-    body:JSON.stringify({action:'submitChatOrder',client:'',contact:'',item:'オーダー相談AI（AI会話モード）',hearingContent:transcript,images})
+    body:JSON.stringify({action:'submitChatOrder',client:name,contact:contact,item:'オーダー相談AI（AI会話モード）',hearingContent:transcript,images})
   }).then(r=>r.json()).then(res=>{
     if(res.ok){
       liveConsultSent=true;
