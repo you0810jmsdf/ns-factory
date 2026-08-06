@@ -477,7 +477,56 @@ Gmail を読む権限がまだ許可されていないので、**エディタで
 
 エディタ上部の関数ドロップダウンで `checkNewsReplies` を選び、**▶ 実行**。
 
-### 5-6. 注意
+### 5-6. 候補メールの文面を返信方式に合わせる
+
+⚠️ **これをやらないと運用に乗らない。** 返信のコマンド（`掲載` / `告知` / `不要`）は
+**メール本文に書いておかないと覚えられない**（事業主指摘）。
+
+`NewsPublish.gs` の `sendNewsApprovalEmail` にある `var body = ...;` の代入を、
+まるごと次に差し替える。
+
+- **返信の書き方を本文の主役**にし、ボタンは補助として下に置く
+- 見出しの絵文字を削除（メールで `������` に化けていたため）
+- 変数（`approveUrl` / `editUrl` / `cancelUrl` / `text`）はそのまま使うので、
+  関数の他の部分は変更不要
+
+```js
+var body =
+  '<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">' +
+  '<meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+  '<body style="font-family:sans-serif;max-width:640px;margin:0 auto;padding:20px;line-height:1.8">' +
+  '<h2 style="font-size:18px;margin:0 0 4px">サイトのお知らせ欄 掲載候補</h2>' +
+  '<p style="margin:0 0 16px;color:#555;font-size:14px">業務日誌から自動検知した実績の下書きです。</p>' +
+
+  '<div style="background:#f5f5f5;padding:16px;border-radius:8px;white-space:pre-wrap;margin-bottom:20px">' +
+  escapeHtml_(text) + '</div>' +
+
+  '<div style="border:2px solid #1a1a1a;border-radius:8px;padding:16px;margin-bottom:24px">' +
+  '<p style="margin:0 0 12px;font-weight:bold">このメールに<u>返信</u>して、1行目に次のどれかを書いてください</p>' +
+  '<table style="border-collapse:collapse;width:100%;font-size:15px">' +
+  '<tr><td style="padding:8px 10px;border-bottom:1px solid #ddd;font-weight:bold;white-space:nowrap;background:#fafafa">掲載</td>' +
+  '<td style="padding:8px 10px;border-bottom:1px solid #ddd">サイトのお知らせ欄に載せる</td></tr>' +
+  '<tr><td style="padding:8px 10px;border-bottom:1px solid #ddd;font-weight:bold;white-space:nowrap;background:#fafafa">告知</td>' +
+  '<td style="padding:8px 10px;border-bottom:1px solid #ddd">サイトに載せる ＋ Threads にも投稿する</td></tr>' +
+  '<tr><td style="padding:8px 10px;border-bottom:1px solid #ddd;font-weight:bold;white-space:nowrap;background:#fafafa">不要</td>' +
+  '<td style="padding:8px 10px;border-bottom:1px solid #ddd">載せない</td></tr>' +
+  '<tr><td style="padding:8px 10px;font-weight:bold;white-space:nowrap;background:#fafafa">返信しない</td>' +
+  '<td style="padding:8px 10px">何も起きません</td></tr>' +
+  '</table>' +
+  '<p style="margin:14px 0 0;font-size:14px;color:#555">' +
+  '文面を直したいときは<br><b>掲載 2026年8月 — 直した本文</b><br>' +
+  'のように、コマンドの後ろに続けて書いてください。<br><br>' +
+  '10分以内に処理して、結果をこのスレッドに返信します。</p>' +
+  '</div>' +
+
+  '<p style="font-size:13px;color:#888;margin:0 0 10px">PCのブラウザからはボタンでも操作できます（スマホでは返信をお使いください）。</p>' +
+  '<a href="' + approveUrl + '" style="background:#1a1a1a;color:#fff;padding:8px 16px;text-decoration:none;border-radius:6px;margin-right:8px;font-size:14px">掲載する</a>' +
+  '<a href="' + editUrl + '" style="background:#0066cc;color:#fff;padding:8px 16px;text-decoration:none;border-radius:6px;margin-right:8px;font-size:14px">編集</a>' +
+  '<a href="' + cancelUrl + '" style="background:#cc0000;color:#fff;padding:8px 16px;text-decoration:none;border-radius:6px;font-size:14px">不要</a>' +
+  '</body></html>';
+```
+
+### 5-7. 注意
 
 - ⛔ **ラベル名 `お知らせ処理済み` を変えるときは、コード内の `NEWS_REPLY_LABEL` も必ず揃える。**
   ずれると同じお知らせを毎回掲載し続ける。
