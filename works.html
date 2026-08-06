@@ -920,6 +920,7 @@
     <a href="JHCS.html" class="nav-link">JHCS講習案内</a>
     <a href="links.html" class="nav-link">リンク集</a>
     <a href="register.html" class="nav-link" id="nav-register" hidden>📦 商品登録</a>
+    <a href="size-sort.html" class="nav-link" id="nav-size-sort" hidden>📏 サイズ仕分け</a>
     <button type="button" id="nsf-admin-toggle" class="nav-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;">🔒 管理者モード</button>
   </nav>
 
@@ -1411,6 +1412,8 @@
       // 商品登録は管理者専用ツールのため、管理者モードONのときだけナビに表示する
       const registerLink = document.getElementById('nav-register');
       if (registerLink) registerLink.hidden = !isAdmin;
+      const sizeSortLink = document.getElementById('nav-size-sort');
+      if (sizeSortLink) sizeSortLink.hidden = !isAdmin;
       const panel = document.getElementById('admin-price-panel');
       if (panel) panel.hidden = !isAdmin;
       if (isAdmin && activeWork) {
