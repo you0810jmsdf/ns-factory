@@ -172,6 +172,7 @@ tr:hover td{background:#1c2128}
   <div class="srcs" role="tablist">
     <!-- 2026-08-04 導線一本化に合わせ、主役のオーダー相談を先頭・初期表示に -->
     <button class="src-btn active" type="button" data-src="hearing" role="tab">🧵 オーダー相談</button>
+    <button class="src-btn" type="button" data-src="orders" role="tab">📋 発注・相談受付</button>
     <button class="src-btn" type="button" data-src="ai" role="tab">🤖 幕僚キャラ接客</button>
     <button class="src-btn" type="button" data-src="visitor" role="tab">👥 みんなのチャット</button>
     <button class="src-btn" type="button" data-src="archive" role="tab">📦 月次アーカイブ</button>
@@ -285,6 +286,13 @@ const SOURCES = {
     url: 'https://script.google.com/macros/s/AKfycbwx8-cKXxhaKkczdvVvlu7v39xeM2ztOTBEn9fnzUoESuvMmxoc2lPPMHN9iEtw3mg_/exec',
     note: '毎月1日03:00に前月分を自動保存しています（保存先: スプレッドシート「N\'s factory AI接客ログ アーカイブ」）。'
        + '直近60件しか残らないオーダー相談AIも、この月次保存で永続化されます。'
+  },
+  orders: {
+    label: '発注・相談受付',
+    url: 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec',
+    action: 'consultLog',
+    note: 'オーダー進捗管理シートに実際に登録された相談受付の一覧。ガイド対話（ボタン選択のみで完結しAIを呼ばない相談）もここに出ます。'
+       + '⚠️バッジは「連絡先候補:」がメモ欄に記録されているかどうかを示します（2026-08-07以前の相談は仕様上すべて未記入）。'
   },
   hearing: {
     label: 'オーダー相談',
@@ -465,6 +473,27 @@ async function loadArchive() {
   document.getElementById('footNote').textContent = src.note;
 }
 
+// 発注・相談受付一覧（進捗シート由来）。archiveと同じく専用の状態・描画を持つ
+let ordersRows = [];
+
+async function loadOrders() {
+  const src = SOURCES.orders;
+  const from = document.getElementById('fFrom').value;
+  const to = document.getElementById('fTo').value;
+  const qs = new URLSearchParams({ action: src.action, key: getKey() });
+  if (from) qs.set('from', from);
+  if (to)   qs.set('to', to);
+  const res = await fetch(src.url + '?' + qs.toString());
+  const text = await res.text();
+  if (!text.trim().startsWith('{')) throw new Error('gas_unavailable');
+  const data = JSON.parse(text);
+  if (data.status !== 'ok') throw new Error(data.error === 'unauthorized' ? 'unauthorized' : (data.error || '不明なエラー'));
+  ordersRows = data.rows || [];
+  document.getElementById('updatedAt').innerHTML =
+    new Date().toLocaleString('ja-JP') + ' 時点<br>' + src.label + '：全' + (data.total || 0) + '件';
+  document.getElementById('footNote').textContent = src.note;
+}
+
 async function load() {
   const errEl = document.getElementById('loadErr');
   const btn = document.getElementById('reloadBtn');
@@ -472,6 +501,18 @@ async function load() {
   btn.disabled = true;
   applySrcUI();
   document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">読み込み中…</td></tr>';
+
+  if (currentSrc === 'orders') {
+    try {
+      await loadOrders();
+      render();
+    } catch (e) {
+      showLoadError(String(e.message || e));
+    } finally {
+      btn.disabled = false;
+    }
+    return;
+  }
 
   if (currentSrc === 'archive') {
     try {
@@ -639,8 +680,44 @@ function renderArchive() {
     '保存時の並び・' + list.length + '件' + (word ? '（本文「' + word + '」で絞り込み中・全' + all.length + '件）' : '');
 }
 
+// 発注・相談受付一覧の描画。連絡先の有無をバッジで明示する
+// （2026-08-07: hearing-ai.htmlに連絡先未記入で受け付けられていた事案の再発防止・見落とし検知用）
+function renderOrders() {
+  const word = document.getElementById('fWord').value.trim().toLowerCase();
+  const all = ordersRows;
+  const list = word
+    ? all.filter(r => (String(r.item) + String(r.client) + String(r.hearingContent) + String(r.orderNo)).toLowerCase().indexOf(word) !== -1)
+    : all;
+
+  document.getElementById('bdTitle').closest('.panel').style.display = 'none';
+  const days = new Set(list.map(r => r.receivedDate).filter(Boolean));
+  const missing = list.filter(r => !r.hasContact).length;
+  document.getElementById('kpiCount').innerHTML = list.length + '<span class="unit">件</span>';
+  document.getElementById('kpiDays').innerHTML = days.size + '<span class="unit">日</span>';
+  document.getElementById('kpiAvgLabel').textContent = '連絡先未記入';
+  document.getElementById('kpiAvg').innerHTML = missing + '<span class="unit">件</span>';
+  document.getElementById('kpiTopLabel').textContent = '直近のステータス';
+  document.getElementById('kpiTop').textContent = list[0] ? list[0].status : '–';
+
+  document.getElementById('thead').innerHTML =
+    '<tr><th>受付日</th><th>受付番号</th><th>連絡先</th><th>品名</th><th>ステータス</th><th>内容</th></tr>';
+  document.getElementById('tbody').innerHTML = list.length ? list.map((r, i) =>
+    '<tr><td class="dt">' + esc(r.receivedDate) + '</td>'
+    + '<td class="who">' + esc(r.orderNo) + '</td>'
+    + '<td class="who">' + (r.hasContact
+        ? '<span class="badge" style="background:#12331f;color:#4ade80;border-color:#2ea043">✅ あり</span>'
+        : '<span class="badge" style="background:#3d1214;color:#ff9d9d;border-color:#f85149">⚠️ 未記入</span>') + '</td>'
+    + '<td class="q">' + esc(r.item) + '</td>'
+    + '<td class="who">' + esc(r.status) + '</td>'
+    + '<td class="a">' + cellText(r.hearingContent, 'ord' + i) + '</td></tr>').join('')
+    : '<tr><td class="empty" colspan="6">該当する相談受付はありません</td></tr>';
+  document.getElementById('listSub').textContent =
+    '新しい順・' + list.length + '件' + (word ? '（本文「' + word + '」で絞り込み中・全' + all.length + '件）' : '');
+}
+
 function render() {
   if (currentSrc === 'archive') { renderArchive(); return; }
+  if (currentSrc === 'orders') { renderOrders(); return; }
   const list = filtered();
   renderKpis(list);
   // オーダー相談AIには担当という区分がないため内訳パネルごと隠す
@@ -709,6 +786,18 @@ function downloadCsv() {
       + '_' + document.getElementById('fArcSrc').value + '.csv');
     return;
   }
+  if (currentSrc === 'orders') {
+    const word = document.getElementById('fWord').value.trim().toLowerCase();
+    const list = word
+      ? ordersRows.filter(r => (String(r.item) + String(r.client) + String(r.hearingContent) + String(r.orderNo)).toLowerCase().indexOf(word) !== -1)
+      : ordersRows;
+    if (!list.length) { alert('出力対象がありません'); return; }
+    const head = ['受付日', '受付番号', '連絡先あり', '品名', 'ステータス', '内容', '登録日時'];
+    const body = list.map(r => [r.receivedDate, r.orderNo, r.hasContact ? 'あり' : '未記入', r.item, r.status, r.hearingContent, r.registeredAt].map(q).join(','));
+    saveCsvFile([head.map(q).join(',')].concat(body).join('\r\n'),
+      'chatlog_orders_' + (document.getElementById('fFrom').value || 'all') + '_' + (document.getElementById('fTo').value || 'all') + '.csv');
+    return;
+  }
   const list = filtered();
   if (!list.length) { alert('出力対象がありません'); return; }
   const head = currentSrc === 'ai'
@@ -758,7 +847,7 @@ document.getElementById('fArcSrc').addEventListener('change', load);
 document.getElementById('fFrom').addEventListener('change', load);
 document.getElementById('fTo').addEventListener('change', load);
 document.getElementById('csvBtn').addEventListener('click', downloadCsv);
-document.getElementById('fWord').addEventListener('input', () => { if (rows.length) render(); });
+document.getElementById('fWord').addEventListener('input', () => { if (rows.length || ordersRows.length) render(); });
 document.getElementById('breakdown').addEventListener('click', (ev) => {
   const chip = ev.target.closest('[data-who]');
   if (!chip) return;
