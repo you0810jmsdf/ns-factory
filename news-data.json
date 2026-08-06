@@ -1,11 +1,16 @@
 {
-  "updated": "2026-08-05",
+  "updated": "2026-08-06",
   "groups": [
     {
       "year": "2026",
       "title": "2026年のお知らせ",
       "open": true,
       "items": [
+        {
+          "id": "2026-4c218cedd1",
+          "date": "2026年8月",
+          "text": "作品集にテクスチャシミュレーター導線を追加しました。"
+        },
         {
           "id": "2026-08-works-soldout",
           "date": "2026年8月",
@@ -20,7 +25,10 @@
           "id": "2026-05-btc-payment",
           "date": "2026年5月",
           "text": "Bitcoin（BTC）決済対応を開始しました。対象はオーダー品・直接お見積もりです。詳細は",
-          "link": { "href": "#payment-btc", "label": "こちら" },
+          "link": {
+            "href": "#payment-btc",
+            "label": "こちら"
+          },
           "text_after": "。"
         },
         {
