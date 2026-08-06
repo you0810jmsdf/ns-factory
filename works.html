@@ -162,7 +162,7 @@
       margin: 0 auto;
       padding: 20px 24px 0;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column; /* 3段階カテゴリ: 大・中・小を行として縦に積む */
       gap: 8px;
     }
     .filter-btn {
@@ -179,6 +179,14 @@
     }
     .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
     .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    /* 中・小カテゴリの行は一段控えめに（左に細い線を付けて階層を見せる） */
+    .filter-row-sub {
+      padding-left: 14px;
+      border-left: 3px solid var(--accent);
+      margin-left: 4px;
+    }
+    .filter-row-sub .filter-btn { font-size: 12px; padding: 5px 12px; }
     .tools {
       max-width: 1080px;
       margin: 0 auto;
@@ -1108,6 +1116,40 @@
     let thumbObserver = null;
     let activeCategory = '';
 
+    // ===== 3段階カテゴリ（大→中→小） 2026-08-06 事業主承認 =====
+    // 商品マスターは変えず、既存カテゴリ（中）を大カテゴリへ束ねる対応表を持つ。
+    // 中カテゴリはマスターデータ由来で増えるため、どのグループにも入らないものは
+    // 自動的に「その他」に落ちる（＝新カテゴリ追加のたびにここを直す必要はないが、
+    // 適切な大分類に入れたいときは該当グループの配列へ追記する）。
+    const MAJOR_CATEGORIES = [
+      { key: 'planner', label: '📔 システム手帳', cats: ['システム手帳', '手帳カバー'] },
+      { key: 'parts',   label: '🔧 手帳パーツ・リフィル', cats: ['システム手帳用リフィル', 'システム手帳用リングサポーター', 'システム手帳用パーツ'] },
+      { key: 'wallet',  label: '👛 財布', cats: ['ハーフウォレット', 'ロングウォレット', 'ミニウォレット', 'アコーディオンウォレット', 'トラッカーズウォレット', 'オリジナルウォレット', 'コインケース', 'マネークリップ'] },
+      { key: 'case',    label: '💼 ケース・入れ物', cats: ['名刺入れ', 'カードケース', '名刺', '名刺入れ／カードケース', '名刺／カードケース', 'キーケース', 'ＩＤ', 'ＩＤ／パスケース', 'パスケース', 'ペンケース', 'スマホケース', 'メガネケース', 'リップケース', 'ポーチ', 'サコッシュ', 'トートバッグ'] },
+      { key: 'goods',   label: '🔑 小物・アクセサリ', cats: ['キーホルダー', 'アクセサリ', 'ストラップ', 'ベルト', '時計ベルト'] },
+      { key: 'other',   label: '✨ その他', cats: ['その他', 'リメイク'] },
+    ];
+    // 中カテゴリ名 → 大カテゴリkey の逆引き（「／」分割後の値で引く）
+    const CAT_TO_MAJOR = {};
+    MAJOR_CATEGORIES.forEach((m) => m.cats.forEach((c) => { CAT_TO_MAJOR[c] = m.key; }));
+    function majorOf(cat) { return CAT_TO_MAJOR[cat] || 'other'; }
+
+    // 小カテゴリ＝サイズ別。システム手帳グループだけで使う。
+    // 名前とサイズ欄から判定する（マスターに専用の欄が無いため）。
+    const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5', 'その他サイズ'];
+    function plannerSizeOf(work) {
+      const t = ((work.title || '') + ' ' + (work.size || '')).toLowerCase();
+      if (/micro\s*5|マイクロ5|ﾏｲｸﾛ5/.test(t)) return 'Micro5';
+      if (/mini\s*6|ミニ6|ﾐﾆ6/.test(t)) return 'mini6';
+      if (/a6/.test(t)) return 'A6';
+      if (/b6/.test(t)) return 'B6';
+      if (/バイブル|bible|ﾊﾞｲﾌﾞﾙ/.test(t)) return 'バイブル';
+      if (/a5/.test(t)) return 'A5';
+      return 'その他サイズ';
+    }
+    let activeMajor = '';  // 大カテゴリ（'' = すべて）
+    let activeSize = '';   // 小カテゴリ（システム手帳のサイズ。'' = 指定なし）
+
     function normalize(value) {
       return String(value || '').toLowerCase();
     }
@@ -1215,20 +1257,68 @@
       applyLink(tertiaryOrderLink, slots[2] || null);
     }
 
+    // 作品の中カテゴリ一覧（「／」区切りの複合カテゴリは分割して扱う）
+    function workCats(work) {
+      return (work.category || '').split('／').map((c) => c.trim()).filter(Boolean);
+    }
+
+    // 3段階チップ: 1行目=大カテゴリ、大を選ぶと2行目=その大に属する中カテゴリ、
+    // 「📔 システム手帳」を選んだときだけ3行目=サイズ（小カテゴリ）が出る。
     function buildFilters() {
-      const categories = [...new Set(
-        works.flatMap((w) => (w.category || '').split('／').map((c) => c.trim())).filter(Boolean)
-      )];
       const filtersEl = document.getElementById('filters');
-      filtersEl.innerHTML = ['', ...categories].map((cat) =>
-        `<button class="filter-btn${activeCategory === cat ? ' active' : ''}" type="button" data-cat="${esc(cat)}">${cat || 'すべて'}</button>`
-      ).join('');
+      const rows = [];
+
+      // ── 1行目: 大カテゴリ ──
+      rows.push('<div class="filter-row">'
+        + `<button class="filter-btn${!activeMajor ? ' active' : ''}" type="button" data-major="">すべて</button>`
+        + MAJOR_CATEGORIES.map((m) =>
+            `<button class="filter-btn${activeMajor === m.key ? ' active' : ''}" type="button" data-major="${m.key}">${m.label}</button>`
+          ).join('')
+        + '</div>');
+
+      // ── 2行目: 選択中の大に属する中カテゴリ（作品が実在するものだけ） ──
+      if (activeMajor) {
+        const present = [...new Set(
+          works.flatMap(workCats).filter((c) => majorOf(c) === activeMajor)
+        )];
+        if (present.length > 1) {
+          rows.push('<div class="filter-row filter-row-sub">'
+            + `<button class="filter-btn${!activeCategory ? ' active' : ''}" type="button" data-cat="">全部見る</button>`
+            + present.map((cat) =>
+                `<button class="filter-btn${activeCategory === cat ? ' active' : ''}" type="button" data-cat="${esc(cat)}">${esc(cat)}</button>`
+              ).join('')
+            + '</div>');
+        }
+      }
+
+      // ── 3行目: システム手帳のみサイズ（小カテゴリ） ──
+      if (activeMajor === 'planner') {
+        const sizesPresent = new Set(
+          works.filter((w) => workCats(w).some((c) => majorOf(c) === 'planner')).map(plannerSizeOf)
+        );
+        rows.push('<div class="filter-row filter-row-sub">'
+          + `<button class="filter-btn${!activeSize ? ' active' : ''}" type="button" data-size="">サイズ指定なし</button>`
+          + PLANNER_SIZES.filter((s) => sizesPresent.has(s)).map((s) =>
+              `<button class="filter-btn${activeSize === s ? ' active' : ''}" type="button" data-size="${esc(s)}">${esc(s)}</button>`
+            ).join('')
+          + '</div>');
+      }
+
+      filtersEl.innerHTML = rows.join('');
     }
 
     document.getElementById('filters').addEventListener('click', (e) => {
       const btn = e.target.closest('.filter-btn');
       if (!btn) return;
-      activeCategory = btn.dataset.cat;
+      if (btn.dataset.major !== undefined) {
+        activeMajor = btn.dataset.major;
+        activeCategory = '';   // 大を切り替えたら下位の選択はリセット
+        activeSize = '';
+      } else if (btn.dataset.cat !== undefined) {
+        activeCategory = btn.dataset.cat;
+      } else if (btn.dataset.size !== undefined) {
+        activeSize = btn.dataset.size;
+      }
       buildFilters();
       render();
     });
@@ -1236,7 +1326,9 @@
     function render() {
       const keyword = normalize(search.value).trim();
       filtered = works.filter((work) => {
-        if (activeCategory && !work.category.split('／').map((c) => c.trim()).includes(activeCategory)) return false;
+        if (activeMajor && !workCats(work).some((c) => majorOf(c) === activeMajor)) return false;
+        if (activeCategory && !workCats(work).includes(activeCategory)) return false;
+        if (activeSize && plannerSizeOf(work) !== activeSize) return false;
         return !keyword || normalize([
           work.title,
           work.category,
@@ -1740,9 +1832,13 @@
         const cat = (params.get('cat') || '').trim();
         const q = (params.get('q') || '').trim();
         if (cat) {
-          const exists = works.some((w) =>
-            (w.category || '').split('／').map((c) => c.trim()).includes(cat));
-          if (exists) activeCategory = cat;
+          const exists = works.some((w) => workCats(w).includes(cat));
+          if (exists) {
+            // 中カテゴリ指定で開かれたら、属する大カテゴリも選択状態にして
+            // チップの2行目が開いた状態で表示する
+            activeCategory = cat;
+            activeMajor = majorOf(cat);
+          }
         }
         if (q && search) search.value = q;
       } catch (e) { /* URLSearchParams非対応環境では何もしない */ }
