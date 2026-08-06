@@ -175,10 +175,16 @@ function announceNewsOnThreads_(newsText) {
 告知だけ Threads に出る事故を防ぐため）。
 
 ```js
-  var commitSha = JSON.parse(putRes.getContentText()).commit.sha;
-  announceNewsOnThreads_(newsText);   // ← 追加
-  return commitSha;
+  // 告知の失敗で掲載処理まで落とさない。掲載は既に完了しているため、
+  // ここで throw すると「エラーに見えて押し直す」→ サイトに <li> が2行入る。
+  try { announceNewsOnThreads_(newsText); } catch (e) { Logger.log('Threads告知失敗: ' + e); }
+  return JSON.parse(putRes.getContentText()).commit.sha;
 ```
+
+⛔ **`try` を外さないこと。** `postNewsToSite` には重複チェックが無いので、
+告知の失敗で画面がエラーになると押し直しが起き、お知らせが二重に載る
+（2026-08-06 に同じ状態が実際に発生している）。
+告知が失敗したときは実行ログに `Threads告知失敗:` が残るので、そこで気づける。
 
 これで全件が告知される。選びたい場合は §4 へ。
 
