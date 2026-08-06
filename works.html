@@ -1270,6 +1270,7 @@
       el.href = conf.href;
       el.target = '_blank';
       el.textContent = conf.label;
+      el.onclick = conf.action ? () => logProductAction(activeWork, conf.action) : null;
     }
 
     function configureOrderLinks(work) {
@@ -1291,11 +1292,11 @@
       // 価格が入っていない（0円）商品は、金額の出ない見積り帳票を表示しても意味が無いため
       // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
       const quoteConf = hasPrice
-        ? { href: buildStockQuoteUrl(work), label: unavailable ? '再販を依頼する（見積書作成）' : 'この作品を購入する見積もり（概算シミュレーション）' }
+        ? { href: buildStockQuoteUrl(work), label: unavailable ? '再販を依頼する（見積書作成）' : 'この作品を購入する見積もり（概算シミュレーション）', action: unavailable ? '再販依頼（見積書作成）' : '購入見積もり' }
         : null;
       const estimateConf = null;
-      const lineConf = { href: LINE_URL, label: '💬 類似したフルオーダー品を作家に直接LINEで相談する' };
-      const mailConf = !planner ? { href: MAIL_URL, label: 'メールで相談する' } : null;
+      const lineConf = { href: LINE_URL, label: '💬 類似したフルオーダー品を作家に直接LINEで相談する', action: 'LINE相談' };
+      const mailConf = !planner ? { href: MAIL_URL, label: 'メールで相談する', action: 'メール相談' } : null;
 
       const slots = [quoteConf, estimateConf, lineConf, mailConf].filter(Boolean);
       applyLink(primaryOrderLink, slots[0] || null);
@@ -1533,9 +1534,26 @@
         const s = document.createElement('script');
         s.src = WORKS_LOG_URL
           + '?api=log&type=' + encodeURIComponent('商品閲覧')
+          + '&id=' + encodeURIComponent(work.id || '')
           + '&name=' + encodeURIComponent(work.title || '')
           + '&vid=' + encodeURIComponent(getVisitorId())
           + '&status=' + encodeURIComponent(status);
+        s.onload = s.onerror = () => { if (s.parentNode) s.remove(); };
+        document.body.appendChild(s);
+      } catch(e) {}
+    }
+
+    // 商品別アクション記録（オーダー相談・見積もり等のボタン押下を管理画面の統計へ送る）
+    function logProductAction(work, action) {
+      if (!work) return;
+      try {
+        const s = document.createElement('script');
+        s.src = WORKS_LOG_URL
+          + '?api=log&type=' + encodeURIComponent('アクション')
+          + '&id=' + encodeURIComponent(work.id || '')
+          + '&name=' + encodeURIComponent(work.title || '')
+          + '&detail=' + encodeURIComponent(action)
+          + '&vid=' + encodeURIComponent(getVisitorId());
         s.onload = s.onerror = () => { if (s.parentNode) s.remove(); };
         document.body.appendChild(s);
       } catch(e) {}
@@ -1571,7 +1589,7 @@
       if (ocAiBadge) ocAiBadge.classList.remove('show');
       if (ocTrigger) {
         ocTrigger.textContent = '💬 オーダー相談AI（革の種類・色について相談する）';
-        ocTrigger.onclick = () => ocOpenChat(work);
+        ocTrigger.onclick = () => { logProductAction(work, 'AI相談を開始'); ocOpenChat(work); };
       }
       const purchaseSel = document.getElementById('oc-purchase-method');
       const nameInput = document.getElementById('oc-contact-name');
@@ -1698,7 +1716,7 @@
       setTimeout(() => { document.body.style.cursor = ''; }, 50);
     }
 
-    if (textureSimCta) textureSimCta.addEventListener('click', () => openTextureSim(activeWork));
+    if (textureSimCta) textureSimCta.addEventListener('click', () => { logProductAction(activeWork, 'テクスチャシミュレーター起動'); openTextureSim(activeWork); });
     if (textureSimClose) textureSimClose.addEventListener('click', closeTextureSim);
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && textureSimOverlay.classList.contains('open')) closeTextureSim();

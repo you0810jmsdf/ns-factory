@@ -1522,15 +1522,18 @@ tr.row-out-stock td{
         </table>
       </div>
 
-      <!-- 最近のオーダー依頼 -->
+      <!-- 商品別アクション履歴（オーダー依頼＋相談・見積もり等のボタン押下） -->
       <div id="stats-orders-wrap" style="display:none;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px">
-        <div style="font-size:13px;font-weight:700;color:#6b3a1f;border-left:3px solid #d4a96a;padding-left:8px;margin-bottom:10px">最近のオーダー依頼</div>
+        <div style="font-size:13px;font-weight:700;color:#6b3a1f;border-left:3px solid #d4a96a;padding-left:8px;margin-bottom:4px">商品別アクション履歴（直近30件）</div>
+        <div style="font-size:11px;color:#8a6a4a;margin-bottom:10px">オーダー依頼・AI相談・見積もり・LINE/メール相談・テクスチャシミュレーターなど、商品に対するアクションの履歴です。</div>
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead>
             <tr style="background:#fff0e5">
-              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:140px">日時</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:130px">日時</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:110px">商品ID</th>
               <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf">商品名</th>
-              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf">支払先 / 名前</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:170px">アクション</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:150px">詳細</th>
             </tr>
           </thead>
           <tbody id="stats-orders-rows"></tbody>
@@ -5324,9 +5327,19 @@ function statsRender(s) {
   statsRenderRanking();
   document.getElementById('stats-ranking-wrap').style.display = 'block';
 
-  const orderRows = s.recentOrders && s.recentOrders.length
-    ? s.recentOrders.map(o => `<tr><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${statsH(o.date)}</td><td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${statsH(o.product)}</td><td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${statsH(o.detail)}</td></tr>`).join('')
-    : '<tr><td colspan="3" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
+  // recentActions（新形式）優先。GAS未反映の間は旧形式 recentOrders にフォールバック
+  const actions = s.recentActions && s.recentActions.length
+    ? s.recentActions
+    : (s.recentOrders || []).map(o => ({ date: o.date, id: '', product: o.product, action: 'オーダー依頼', detail: o.detail }));
+  const orderRows = actions.length
+    ? actions.map(a => `<tr>
+        <td style="padding:6px 8px;font-size:12px;border-bottom:1px solid #efe3d7">${statsH(a.date)}</td>
+        <td style="padding:6px 8px;font-size:12px;font-family:monospace;color:#6b3a1f;border-bottom:1px solid #efe3d7">${statsH(a.id||'—')}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${statsH(a.product)}</td>
+        <td style="padding:6px 8px;font-size:12px;font-weight:700;color:${a.action === 'オーダー依頼' ? '#c8553d' : '#3a6b35'};border-bottom:1px solid #efe3d7">${statsH(a.action||'')}</td>
+        <td style="padding:6px 8px;font-size:12px;color:#888;border-bottom:1px solid #efe3d7">${statsH(a.detail||'')}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
   document.getElementById('stats-orders-rows').innerHTML = orderRows;
   document.getElementById('stats-orders-wrap').style.display = 'block';
 }
