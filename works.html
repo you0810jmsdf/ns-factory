@@ -429,6 +429,21 @@
     .admin-price-msg { font-size: 12px; margin-top: 6px; min-height: 14px; }
     .admin-price-msg.success { color: #2c6a1f; }
     .admin-price-msg.error { color: #8a2a1f; }
+    .btn-admin-edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      padding: 7px 12px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .btn-admin-edit:hover { background: var(--accent); color: var(--white); }
     .modal-detail-label {
       color: var(--warm);
       font-size: 12px;
@@ -1003,6 +1018,9 @@
             <button type="button" id="admin-price-save">保存</button>
           </div>
           <div id="admin-price-msg" class="admin-price-msg"></div>
+          <!-- IDコピー→貼り付けの手間を無くす直行ボタン（2026-08-06 事業主要望）。
+               register.html は ?edit=商品ID で開くと自動で編集モードになる。 -->
+          <a id="admin-edit-link" href="#" class="btn-admin-edit">📝 登録画面でこの作品を編集</a>
         </div>
         <div class="modal-detail-label">Product</div>
         <div id="modal-meta" class="modal-meta"></div>
@@ -1137,13 +1155,15 @@
     // 小カテゴリ＝サイズ別。システム手帳グループだけで使う。
     // 名前とサイズ欄から判定する（マスターに専用の欄が無いため）。
     const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5', 'その他サイズ'];
+    // 表記ゆれ（micor5/mni6/bivle等の打ち間違い）も拾う。
+    // size-sort.html の detectSize と同じ条件。片方だけ変えないこと。
     function plannerSizeOf(work) {
       const t = ((work.title || '') + ' ' + (work.size || '')).toLowerCase();
-      if (/micro\s*5|マイクロ5|ﾏｲｸﾛ5/.test(t)) return 'Micro5';
-      if (/mini\s*6|ミニ6|ﾐﾆ6/.test(t)) return 'mini6';
+      if (/micro\s*5|micor\s*5|マイクロ5|ﾏｲｸﾛ5/.test(t)) return 'Micro5';
+      if (/mini\s*6|mni\s*6|ミニ6|ﾐﾆ6/.test(t)) return 'mini6';
       if (/a6/.test(t)) return 'A6';
       if (/b6/.test(t)) return 'B6';
-      if (/バイブル|bible|ﾊﾞｲﾌﾞﾙ/.test(t)) return 'バイブル';
+      if (/バイブル|bible|bivle|ﾊﾞｲﾌﾞﾙ/.test(t)) return 'バイブル';
       if (/a5/.test(t)) return 'A5';
       return 'その他サイズ';
     }
@@ -1395,6 +1415,12 @@
       if (panel) panel.hidden = !isAdmin;
       if (isAdmin && activeWork) {
         document.getElementById('admin-price-input').value = activeWork.price || '';
+        // 開いている作品の編集画面へ直行（IDコピー不要）
+        const editLink = document.getElementById('admin-edit-link');
+        if (editLink) {
+          editLink.href = 'register.html?edit=' + encodeURIComponent(activeWork.id || '');
+          editLink.hidden = !activeWork.id;
+        }
       }
     }
     document.getElementById('nsf-admin-toggle').addEventListener('click', () => {

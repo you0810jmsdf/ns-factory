@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>サイズ仕分け | N's factory 管理</title>
+<style>
+  :root {
+    --accent: #a0785a;
+    --accent-dark: #6f4e37;
+    --bg: #f7f2ea;
+    --white: #fff;
+    --text: #3a2d20;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; background: var(--bg); color: var(--text); }
+  header { background: #3d1a08; color: #fff; padding: 14px 18px; }
+  header h1 { margin: 0; font-size: 16px; }
+  header p { margin: 4px 0 0; font-size: 12px; opacity: .8; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .summary { background: var(--white); border: 1px solid #d9c7b2; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .summary b { color: var(--accent-dark); font-size: 18px; }
+  .row { background: var(--white); border: 1px solid #d9c7b2; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .row.done { border-color: #7fae72; background: #f2f8ef; }
+  .row img { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; background: #e8ddcf; flex-shrink: 0; }
+  .meta { flex: 1; min-width: 180px; }
+  .meta .pid { font-size: 11px; color: #8a7360; }
+  .meta .pname { font-size: 13px; font-weight: 700; word-break: break-all; }
+  .meta .pstate { font-size: 12px; margin-top: 4px; color: #2c6a1f; font-weight: 700; }
+  .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .btns button {
+    padding: 8px 12px; font-size: 13px; border: 1px solid var(--accent);
+    background: var(--white); color: var(--accent-dark); border-radius: 8px; cursor: pointer; font-weight: 700;
+  }
+  .btns button:hover { background: var(--accent); color: #fff; }
+  .btns button.selected { background: var(--accent); color: #fff; }
+  .btns button:disabled { opacity: .5; cursor: default; }
+  .note { font-size: 12px; color: #8a7360; margin: 10px 0 20px; line-height: 1.6; }
+  #status { font-size: 13px; padding: 10px 0; }
+  .toast { position: fixed; right: 14px; bottom: 14px; background: #3d1a08; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; opacity: .95; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📏 システム手帳 サイズ仕分け（管理者用）</h1>
+  <p>写真を見てサイズボタンを1タップ → 商品マスターのサイズ欄に即保存されます。途中でやめても進んだ分は保存済みです。</p>
+</header>
+<div class="wrap">
+  <div class="summary"><span>サイズ不明の作品: <b id="remain">–</b> 件</span><span id="doneCount"></span></div>
+  <div id="status">読み込み中…</div>
+  <div id="list"></div>
+  <p class="note">
+    ※ 判定済みの作品（名前・サイズ欄・説明文にサイズ表記があるもの）はここには出ません。<br>
+    ※ 保存すると作品集のサイズ絞り込みに即反映されます（静的データは日次更新のため最大1日遅れることがあります）。<br>
+    ※ 間違えてタップした場合は、同じ行の別ボタンを押し直せば上書きされます。
+  </p>
+</div>
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+// 認証は works.html / register.html と同じSHA-256照合（平文はコードに置かない）
+const GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5'];
+let ADMIN_KEY = '';
+
+function sha256(t) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then((b) =>
+    Array.from(new Uint8Array(b)).map((x) => x.toString(16).padStart(2, '0')).join(''));
+}
+
+// GASは処理完了後にHTMLのエラーページだけ返すことがある（2026-08-04実測）。
+// setSize は自然に冪等（同じ値の上書き）なので、HTML応答時はそのまま再送してよい。
+async function gasFetch(url, opts, attempts = 5) {
+  let lastErr;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      const r = await fetch(url, opts);
+      const t = await r.text();
+      if (!t.trim().startsWith('<')) return JSON.parse(t);
+      lastErr = new Error('Google側の一時障害（HTML応答）');
+    } catch (e) { lastErr = e; }
+    if (i < attempts) await new Promise((r) => setTimeout(r, 1200 * i));
+  }
+  throw lastErr;
+}
+
+// works.html の plannerSizeOf と同じ判定（表記ゆれ含む）。片方だけ変えないこと。
+function detectSize(p) {
+  const t = ((p.name || '') + ' ' + (p.size || '') + ' ' + (p.shortDesc || '') + ' ' + (p.longDesc || '')).toLowerCase();
+  if (/micro\s*5|micor\s*5|マイクロ5|ﾏｲｸﾛ5/.test(t)) return 'Micro5';
+  if (/mini\s*6|mni\s*6|ミニ6|ﾐﾆ6/.test(t)) return 'mini6';
+  if (/a6/.test(t)) return 'A6';
+  if (/b6/.test(t)) return 'B6';
+  if (/バイブル|bible|bivle|ﾊﾞｲﾌﾞﾙ/.test(t)) return 'バイブル';
+  if (/a5/.test(t)) return 'A5';
+  return null;
+}
+
+function isPlanner(p) {
+  return (p.category || '').split('／').map((c) => c.trim())
+    .some((c) => c === 'システム手帳' || c === '手帳カバー');
+}
+
+function esc(v) {
+  return String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+let remainCount = 0, savedCount = 0;
+function updateSummary() {
+  document.getElementById('remain').textContent = remainCount;
+  document.getElementById('doneCount').textContent = savedCount ? `このセッションで保存: ${savedCount}件` : '';
+}
+
+async function saveSize(btn, productId, size) {
+  const row = btn.closest('.row');
+  const buttons = row.querySelectorAll('button');
+  buttons.forEach((b) => { b.disabled = true; });
+  try {
+    const res = await gasFetch(GAS_URL, {
+      method: 'POST',
+      body: new URLSearchParams({ api: 'setSize', payload: JSON.stringify({ key: ADMIN_KEY, productId, size }) })
+    });
+    if (!res.ok) throw new Error(res.error || '保存失敗');
+    if (!row.classList.contains('done')) { remainCount--; savedCount++; }
+    row.classList.add('done');
+    row.querySelector('.pstate').textContent = '✅ 保存済み: ' + size;
+    buttons.forEach((b) => { b.disabled = false; b.classList.toggle('selected', b.textContent === size); });
+    updateSummary();
+  } catch (e) {
+    buttons.forEach((b) => { b.disabled = false; });
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = '❌ ' + productId + ' の保存に失敗: ' + e.message;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }
+}
+
+async function main() {
+  // 管理者ゲート（works.htmlで認証済みなら再入力不要）
+  try { ADMIN_KEY = sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) {}
+  while (!ADMIN_KEY) {
+    const pw = prompt('管理者パスワードを入力してください');
+    if (pw === null) { document.getElementById('status').textContent = '認証されていません。'; return; }
+    if (await sha256(pw) === GATE_HASH) {
+      ADMIN_KEY = pw;
+      try { sessionStorage.setItem('nsf_admin_key', pw); } catch (e) {}
+    } else { alert('パスワードが一致しません'); }
+  }
+
+  document.getElementById('status').textContent = '商品データを取得中…';
+  let products;
+  try {
+    const res = await gasFetch(GAS_URL + '?api=products&cb=' + Date.now());
+    products = res.products || res.data || res;
+  } catch (e) {
+    document.getElementById('status').textContent = '取得に失敗しました。時間をおいて再読み込みしてください: ' + e.message;
+    return;
+  }
+  const unknown = (Array.isArray(products) ? products : []).filter((p) => isPlanner(p) && !detectSize(p));
+  remainCount = unknown.length;
+  updateSummary();
+  document.getElementById('status').textContent = unknown.length ? '' : '🎉 サイズ不明の作品はありません。すべて仕分け済みです。';
+
+  document.getElementById('list').innerHTML = unknown.map((p) => `
+    <div class="row" data-id="${esc(p.id)}">
+      <img src="${esc(p.mainPhoto || '')}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+      <div class="meta">
+        <div class="pid">${esc(p.id)}</div>
+        <div class="pname">${esc(p.name)}</div>
+        <div class="pstate"></div>
+      </div>
+      <div class="btns">${SIZES.map((s) => `<button type="button" data-size="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('list').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-size]');
+    if (!btn) return;
+    saveSize(btn, btn.closest('.row').dataset.id, btn.dataset.size);
+  });
+}
+main();
+</script>
+</body>
+</html>
