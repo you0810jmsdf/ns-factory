@@ -61,7 +61,11 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 // 認証は works.html / register.html と同じSHA-256照合（平文はコードに置かない）
 const GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
-const SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5'];
+// サイズの物差しは2系統（2026-08-06 事業主指示）。
+//   システム手帳 … リング規格 ／ 手帳カバー … ノートの判型
+// 「その他サイズ」は特殊判型（NOLTY・お薬手帳等）の確定用。押すとこのページに二度と並ばない。
+const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5', 'その他サイズ'];
+const COVER_SIZES = ['A6', 'B6', 'A5', 'B5', 'A4', '新書判', 'トラベラーズ レギュラー', 'トラベラーズ パスポート', 'その他サイズ'];
 let ADMIN_KEY = '';
 
 function sha256(t) {
@@ -85,9 +89,25 @@ async function gasFetch(url, opts, attempts = 5) {
   throw lastErr;
 }
 
-// works.html の plannerSizeOf と同じ判定（表記ゆれ含む）。片方だけ変えないこと。
+// works.html の plannerSizeOf / coverSizeOf と同じ判定（表記ゆれ含む）。片方だけ変えないこと。
+function isCover(p) {
+  return (p.category || '').split('／').map((c) => c.trim()).includes('手帳カバー');
+}
+
 function detectSize(p) {
   const t = ((p.name || '') + ' ' + (p.size || '') + ' ' + (p.shortDesc || '') + ' ' + (p.longDesc || '')).toLowerCase();
+  if (/その他サイズ/.test(t)) return 'その他サイズ';
+  if (isCover(p)) {
+    if (/tnp|パスポート|passport/.test(t)) return 'トラベラーズ パスポート';
+    if (/トラベラーズ|traveler/.test(t)) return 'トラベラーズ レギュラー';
+    if (/新書/.test(t)) return '新書判';
+    if (/a4/.test(t)) return 'A4';
+    if (/b5/.test(t)) return 'B5';
+    if (/a5/.test(t)) return 'A5';
+    if (/b6|t[o]?rinco/.test(t)) return 'B6';   // torinco1手帳はB6変型
+    if (/a6|文庫/.test(t)) return 'A6';
+    return null;
+  }
   if (/micro\s*5|micor\s*5|マイクロ5|ﾏｲｸﾛ5/.test(t)) return 'Micro5';
   if (/mini\s*6|mni\s*6|ミニ6|ﾐﾆ6/.test(t)) return 'mini6';
   if (/a6/.test(t)) return 'A6';
@@ -163,16 +183,20 @@ async function main() {
   updateSummary();
   document.getElementById('status').textContent = unknown.length ? '' : '🎉 サイズ不明の作品はありません。すべて仕分け済みです。';
 
-  document.getElementById('list').innerHTML = unknown.map((p) => `
+  document.getElementById('list').innerHTML = unknown.map((p) => {
+    const sizes = isCover(p) ? COVER_SIZES : PLANNER_SIZES; // カバーは判型・手帳はリング規格
+    const kind = isCover(p) ? '📓 手帳カバー（判型で選択）' : '📔 システム手帳（リング規格で選択）';
+    return `
     <div class="row" data-id="${esc(p.id)}">
       <img src="${esc(p.mainPhoto || '')}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
       <div class="meta">
-        <div class="pid">${esc(p.id)}</div>
+        <div class="pid">${esc(p.id)}　${esc(kind)}</div>
         <div class="pname">${esc(p.name)}</div>
         <div class="pstate"></div>
       </div>
-      <div class="btns">${SIZES.map((s) => `<button type="button" data-size="${esc(s)}">${esc(s)}</button>`).join('')}</div>
-    </div>`).join('');
+      <div class="btns">${sizes.map((s) => `<button type="button" data-size="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+    </div>`;
+  }).join('');
 
   document.getElementById('list').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-size]');

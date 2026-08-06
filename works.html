@@ -1154,12 +1154,20 @@
     function majorOf(cat) { return CAT_TO_MAJOR[cat] || 'other'; }
 
     // 小カテゴリ＝サイズ別。システム手帳グループだけで使う。
+    // サイズの概念が2系統ある（2026-08-06 事業主指示）:
+    //   システム手帳 … リング径ベースの規格（Micro5/mini6/バイブル…）
+    //   手帳カバー   … ノートの判型ベース（A6文庫/B6/新書判/トラベラーズ…）
     // 名前とサイズ欄から判定する（マスターに専用の欄が無いため）。
-    const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5', 'その他サイズ'];
-    // 表記ゆれ（micor5/mni6/bivle等の打ち間違い）も拾う。
+    // 表記ゆれ（micor5/mni6/bivle/torinco等）も拾う。
     // size-sort.html の detectSize と同じ条件。片方だけ変えないこと。
+    const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5', 'その他サイズ'];
+    const COVER_SIZES = ['A6', 'B6', 'A5', 'B5', 'A4', '新書判', 'トラベラーズ レギュラー', 'トラベラーズ パスポート', 'その他サイズ'];
+    // チップの表示順（両系統の和集合。重複ラベルA6/B6/A5は1つに畳まれる）
+    const ALL_SIZES = [...new Set([...PLANNER_SIZES, ...COVER_SIZES])];
+
     function plannerSizeOf(work) {
       const t = ((work.title || '') + ' ' + (work.size || '')).toLowerCase();
+      if (/その他サイズ/.test(t)) return 'その他サイズ'; // 仕分けページで「その他」確定済み
       if (/micro\s*5|micor\s*5|マイクロ5|ﾏｲｸﾛ5/.test(t)) return 'Micro5';
       if (/mini\s*6|mni\s*6|ミニ6|ﾐﾆ6/.test(t)) return 'mini6';
       if (/a6/.test(t)) return 'A6';
@@ -1167,6 +1175,23 @@
       if (/バイブル|bible|bivle|ﾊﾞｲﾌﾞﾙ/.test(t)) return 'バイブル';
       if (/a5/.test(t)) return 'A5';
       return 'その他サイズ';
+    }
+    function coverSizeOf(work) {
+      const t = ((work.title || '') + ' ' + (work.size || '')).toLowerCase();
+      if (/その他サイズ/.test(t)) return 'その他サイズ';
+      if (/tnp|パスポート|passport/.test(t)) return 'トラベラーズ パスポート';
+      if (/トラベラーズ|traveler/.test(t)) return 'トラベラーズ レギュラー';
+      if (/新書/.test(t)) return '新書判';
+      if (/a4/.test(t)) return 'A4';
+      if (/b5/.test(t)) return 'B5';
+      if (/a5/.test(t)) return 'A5';
+      if (/b6|t[o]?rinco/.test(t)) return 'B6';   // torinco1手帳はB6変型
+      if (/a6|文庫/.test(t)) return 'A6';
+      return 'その他サイズ';
+    }
+    // どちらの物差しで測るかはカテゴリで決める（手帳カバーだけ判型系）
+    function sizeOf(work) {
+      return workCats(work).includes('手帳カバー') ? coverSizeOf(work) : plannerSizeOf(work);
     }
     let activeMajor = '';  // 大カテゴリ（'' = すべて）
     let activeSize = '';   // 小カテゴリ（システム手帳のサイズ。'' = 指定なし）
@@ -1312,14 +1337,18 @@
         }
       }
 
-      // ── 3行目: システム手帳のみサイズ（小カテゴリ） ──
+      // ── 3行目: システム手帳グループのみサイズ（小カテゴリ） ──
+      // 中カテゴリの選択に追従する: 「手帳カバー」を選べば判型（文庫/新書/トラベラーズ…）、
+      // 「システム手帳」を選べばリング規格、未選択なら実在する全サイズの和集合が並ぶ。
       if (activeMajor === 'planner') {
-        const sizesPresent = new Set(
-          works.filter((w) => workCats(w).some((c) => majorOf(c) === 'planner')).map(plannerSizeOf)
-        );
+        const base = works.filter((w) => {
+          if (!workCats(w).some((c) => majorOf(c) === 'planner')) return false;
+          return !activeCategory || workCats(w).includes(activeCategory);
+        });
+        const sizesPresent = new Set(base.map(sizeOf));
         rows.push('<div class="filter-row filter-row-sub">'
           + `<button class="filter-btn${!activeSize ? ' active' : ''}" type="button" data-size="">サイズ指定なし</button>`
-          + PLANNER_SIZES.filter((s) => sizesPresent.has(s)).map((s) =>
+          + ALL_SIZES.filter((s) => sizesPresent.has(s)).map((s) =>
               `<button class="filter-btn${activeSize === s ? ' active' : ''}" type="button" data-size="${esc(s)}">${esc(s)}</button>`
             ).join('')
           + '</div>');
@@ -1337,6 +1366,7 @@
         activeSize = '';
       } else if (btn.dataset.cat !== undefined) {
         activeCategory = btn.dataset.cat;
+        activeSize = ''; // 中を切り替えるとサイズの物差しも変わりうるためリセット
       } else if (btn.dataset.size !== undefined) {
         activeSize = btn.dataset.size;
       }
@@ -1349,7 +1379,7 @@
       filtered = works.filter((work) => {
         if (activeMajor && !workCats(work).some((c) => majorOf(c) === activeMajor)) return false;
         if (activeCategory && !workCats(work).includes(activeCategory)) return false;
-        if (activeSize && plannerSizeOf(work) !== activeSize) return false;
+        if (activeSize && sizeOf(work) !== activeSize) return false;
         return !keyword || normalize([
           work.title,
           work.category,
