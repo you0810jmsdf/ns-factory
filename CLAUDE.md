@@ -282,3 +282,12 @@
   - `?cat=中カテゴリ名` で開くリンクは互換維持（大カテゴリも連動展開）。既存の外部リンクを壊さないこと。
   - サイズ判定は正規表現（micro5/mini6/a6/b6/バイブル/a5）。新サイズ規格を扱い始めたら `PLANNER_SIZES` と `plannerSizeOf()` の両方に追加する。
 - 検証: 全591件の振り分け机上検証（その他落ちゼロ）／本番で段階展開・件数・リセット・モバイル375px横スクロールなしを実測。
+
+## 2026-08-06 — サイズ仕分けページ新設＋作品詳細→登録画面の直行ボタン
+
+- 対象: `size-sort.html`（新設）/ `works.html` / `Apps Script/product_register.js` / `Apps Script/WebApp.js`
+- `api=setSize`: F列（サイズ）だけを書き換える軽量API。**updateProduct をサイズ修正に使わないこと**（B〜J列を全上書きするため他欄を古い値で巻き戻す）。同値上書きで自然冪等。
+- `size-sort.html`: サイズ不明のシステム手帳（カテゴリ=システム手帳/手帳カバーで detectSize が null）だけを一覧化。管理ゲートは works.html と同じ SHA-256 + sessionStorage('nsf_admin_key') 共有。
+- **サイズ判定の正は3箇所で同一に保つ**: works.html `plannerSizeOf` / size-sort.html `detectSize`（表記ゆれ micor5・mni6・bivle 含む）。片方だけ変えると「作品集では不明扱いなのに仕分けページに出ない」等の不整合になる。
+- works.html: `#admin-edit-link`（管理者パネル内）→ `register.html?edit=商品ID`。updateAdminUI 内で href を更新（updateModal 経由で作品切替に追従）。
+- このページは常設の「取りこぼし回収箱」。サイズ表記なしで登録された作品が今後も自動で並ぶ。
