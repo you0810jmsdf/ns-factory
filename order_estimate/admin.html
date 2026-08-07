@@ -760,6 +760,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="customers" data-admin-cat="keiei" role="tab" aria-selected="false">👥 顧客マスタ</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="receipt-checklist" data-admin-cat="keiei" role="tab" aria-selected="false">🧾 証憑チェックリスト</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="jhcs-dl" data-admin-cat="keiei" role="tab" aria-selected="false">🎓 JHCS講習DL管理</button>
       <!-- 📦 在庫管理 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ring" data-admin-cat="stock" role="tab" aria-selected="false">リング在庫</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="leather" data-admin-cat="stock" role="tab" aria-selected="false">🎨 革在庫</button>
@@ -840,6 +841,33 @@ tr.row-out-stock td{
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
         title="幕僚稼働監視"
         loading="lazy"></iframe>
+    </div>
+
+    <!-- JHCS講習DL管理タブ -->
+    <div class="panel jhcs-dl-section admin-section-hidden" id="jhcsDlPanel">
+      <h2 style="margin:0 0 6px;font-size:16px;color:#6b3a1f">🎓 JHCS講習資料 ダウンロード管理</h2>
+      <div style="font-size:12px;color:#8a6a4a;margin-bottom:14px;line-height:1.7">
+        受講生認証つき資料DL（テキスト/型紙/CAD）の管理リンク集です。
+        生徒の追加は管理シートの「生徒名簿」にメール・氏名・状態「有効」を1行追記するだけ。
+        アクセス履歴は「認証ログ」（コード要求・認証の許可/拒否）と「DLログ」（誰が何をDLしたか）の2タブに全件記録されます。
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:640px">
+        <a href="https://docs.google.com/spreadsheets/d/1bJBaQ_MaDGfX4y5fxUwf4kP8iJIMhdAMsVP9pHWXbAI/edit" target="_blank" rel="noopener"
+           style="display:block;background:#fff3e0;border:1px solid #eadccf;border-radius:10px;padding:12px 16px;color:#8B5E3C;text-decoration:none">
+          <strong>📋 管理シート（生徒名簿・認証ログ・DLログ）</strong><br>
+          <span style="font-size:11px;color:#8a6a4a">生徒の追加・停止、アクセス履歴・DL履歴の閲覧はこちら（Googleアカウント権限で保護）</span>
+        </a>
+        <a href="https://drive.google.com/drive/folders/16Qp1vlSxcveM0w7Xc0wBo1Y2L72vRI8c" target="_blank" rel="noopener"
+           style="display:block;background:#fff3e0;border:1px solid #eadccf;border-radius:10px;padding:12px 16px;color:#8B5E3C;text-decoration:none">
+          <strong>📁 講習資料フォルダ（Google Drive）</strong><br>
+          <span style="font-size:11px;color:#8a6a4a">講義別フォルダの 01_テキスト / 02_型紙 / 03_CADデータ にファイルを置くだけでサイトにDLボタンが自動表示（反映最大5分）</span>
+        </a>
+        <a href="../JHCS.html" target="_blank" rel="noopener"
+           style="display:block;background:#fff3e0;border:1px solid #eadccf;border-radius:10px;padding:12px 16px;color:#8B5E3C;text-decoration:none">
+          <strong>🔗 JHCS講習案内ページ（生徒が見る画面）</strong><br>
+          <span style="font-size:11px;color:#8a6a4a">カリキュラム欄のDLボタン→メール＋氏名→6桁コード認証でダウンロードされます</span>
+        </a>
+      </div>
     </div>
 
     <!-- 接客ログタブ -->
@@ -4668,7 +4696,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // タブ→カテゴリの対応（カテゴリボタンとタブボタンの data-admin-cat と一致させること）
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'jhcs-dl': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics',
@@ -4694,7 +4722,8 @@ function setAdminTab(tab) {
   const isDashboard = tab === 'dashboard';
   const isStaffMonitor = tab === 'staff-monitor';
   const isChatlog = tab === 'chatlog';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog;
+  const isJhcsDl = tab === 'jhcs-dl';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -4752,8 +4781,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.chatlog-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isChatlog);
   });
+  document.querySelectorAll('.jhcs-dl-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isJhcsDl);
+  });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -4845,6 +4877,8 @@ function setAdminTab(tab) {
       ? '幕僚エージェントの稼働セッション数・さぼり警告・期限超過タスクを監視します。リアルタイム詳細（作業内容・完了操作）は自宅PCのローカルモニタから。'
       : isChatlog
       ? 'ショールームのAI接客ログを一覧表示します。幕僚キャラ接客／みんなのチャットの2系統を切り替え、期間・担当・本文で絞り込み、CSV出力できます（月次使用量レポートの集計元）。'
+      : isJhcsDl
+      ? 'JHCS講習資料（テキスト/型紙/CAD）の受講生認証ダウンロードを管理します。生徒名簿・認証ログ・DLログの管理シートと資料フォルダへの入口です。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
   if (isAnalytics && !gaLoaded) gaLoad(7);
