@@ -257,8 +257,11 @@ function maybeShowEstimateChip(userText, replyText){
     btn.textContent='📋 見積もりシミュレーターで概算を見る';
     btn.onclick=()=>window.open('./leather-order-estimate-v2.html','_blank');
   }else if(stockCtx){
-    btn.textContent='📋 在庫品の見積もりを見る';
-    btn.onclick=()=>window.open('./stock-quote.html','_blank');
+    // stock-quote.html は商品パラメータ（id/name/price）必須で、無指定で開くと
+    // 「商品名未指定・¥0」の見積になる（2026-08-07修正）。
+    // 作品集で商品を選ぶ経路に誘導する（works.html側が正しいパラメータ付きで開く）。
+    btn.textContent='🛍 販売中の作品から選んで見積もる';
+    btn.onclick=()=>window.open('../works.html','_blank');
   }else{
     return; // 手帳でも在庫品でもない金額話（革小物フルオーダー等）はAIの対話に任せる
   }
@@ -875,12 +878,16 @@ function addImgMsg(dataUrl,label){
   m.appendChild(ic); m.appendChild(b); chat.appendChild(m); scrollDown();
 }
 
-/* AI会話モード専用: 添付画像がある間、会話ごと工房へ送れるボタンを常設する */
+/* AI会話モード専用: 会話・添付画像を工房へ送れるボタンを常設する。
+   2026-08-07: 画像添付がないと送信手段が存在せず「送ったつもり」で終わる事故を修正。
+   会話が1往復でもあれば画像なしでも送信ボタンを出す。 */
 function showLiveSendChip(){
-  if(!state.liveMode || !customerImages.length) return;
+  if(!state.liveMode) return;
+  if(!customerImages.length && !history.some(h=>h.role==='user')) return; // まだ送る内容がない
   quickEl.innerHTML='';
   const btn=document.createElement('button');
-  btn.textContent = liveConsultSent ? '📨 送信済み✓' : '📨 相談内容と画像を工房へ送信';
+  const baseLabel = customerImages.length ? '📨 相談内容と画像を工房へ送信' : '📨 この相談内容を工房へ送信';
+  btn.textContent = liveConsultSent ? '📨 送信済み✓' : baseLabel;
   btn.disabled = liveConsultSent;
   btn.onclick=sendLiveConsultation;
   quickEl.appendChild(btn);
@@ -1037,6 +1044,8 @@ async function liveTurn(userText, skipEcho){
     const reply=data.reply||'(応答が空でした)';
     history.push({role:'assistant', content:reply});
     addMsg('bot', reply);
+    liveConsultSent=false;   // やり取りが増えたら再送信を許可（最新の相談内容を送り直せるように）
+    showLiveSendChip();      // 画像なしの相談でも工房へ送れるボタンを常設（2026-08-07）
     maybeShowEstimateChip(userText, reply);  // 金額の話題なら見積もりページへの導線を出す
   }catch(e){
     hideTyping();
