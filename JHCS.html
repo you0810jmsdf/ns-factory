@@ -170,7 +170,32 @@
       text-decoration: none;
     }
     .btn-dl:hover { background: #2d5f8a; }
-    .curriculum-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .btn-dl:disabled { opacity: .5; cursor: wait; }
+    .dl-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .dl-btns .btn-dl { margin-top: 0; border: none; cursor: pointer; font-family: inherit; }
+    .dl-note { font-size: 11px; color: var(--gray); margin-top: 6px; }
+
+    /* 受講生限定の注意書き */
+    .dl-notice {
+      background: #fdf3f2; border: 1px solid #e5b8b3; border-radius: 8px;
+      padding: 10px 14px; margin: 0 0 12px; font-size: 13px; line-height: 1.7; color: #8a3a30;
+    }
+    .dl-notice strong { color: #7a2e24; }
+
+    /* ダウンロード認証モーダル */
+    .dl-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      z-index: 4000; align-items: center; justify-content: center; padding: 16px;
+    }
+    .dl-modal-overlay.show { display: flex; }
+    .dl-modal {
+      background: var(--white); border-radius: 12px; max-width: 440px; width: 100%;
+      padding: 22px 24px; box-shadow: 0 8px 30px rgba(0,0,0,.25); max-height: 90vh; overflow-y: auto;
+    }
+    .dl-modal h3 { font-size: 16px; margin-bottom: 10px; }
+    .dl-modal .form-msg { min-height: 18px; }
+    .dl-modal-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--gray); }
+    .dl-code-input { letter-spacing: 6px; font-size: 20px; text-align: center; }
     .curriculum-pair .curriculum-row { margin-bottom: 0; }
     @media (max-width: 600px) { .curriculum-pair { grid-template-columns: 1fr; } }
 
@@ -443,6 +468,12 @@
   <!-- カリキュラム -->
   <details class="section">
     <summary><h2>カリキュラム（全24回）</h2></summary>
+    <div class="dl-notice">
+      <strong>【講習資料のダウンロードについて】</strong><br>
+      テキスト・型紙・CADデータは、本来は講座料金に含まれる<strong>受講生専用の資料</strong>です。
+      講座に出席していない生徒の皆さまのご利用は<strong>固くお断りさせていただきます</strong>。<br>
+      ダウンロードには受講生名簿に登録されたメールアドレスと氏名（フルネーム）による認証が必要です。
+    </div>
     <div class="curriculum" id="curriculum-list">
       <div class="loading">GASに接続するとカリキュラムを編集できます。</div>
     </div>
@@ -598,6 +629,44 @@
   <!-- GAS URL 変更 -->
   <div style="text-align:right; margin-top:-20px;">
     <button class="btn btn-secondary" style="font-size:12px;" onclick="changeGasUrl()">⚙️ GAS URL を変更</button>
+  </div>
+</div>
+
+<!-- 資料ダウンロード認証モーダル -->
+<div class="dl-modal-overlay" id="dl-modal-overlay">
+  <div class="dl-modal">
+    <button class="dl-modal-close" onclick="closeDlModal()" aria-label="閉じる">×</button>
+    <h3>📥 講習資料ダウンロード（受講生認証）</h3>
+    <div class="dl-notice">
+      本資料は講座料金に含まれる<strong>受講生専用の資料</strong>です。
+      講座に出席していない生徒の皆さまのご利用は<strong>固くお断りさせていただきます</strong>。
+    </div>
+    <div id="dl-step-1">
+      <div style="margin-bottom:10px;">
+        <label>メールアドレス（受講申込時のもの）</label>
+        <input type="email" id="dl-email" placeholder="example@gmail.com" autocomplete="email">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label>氏名（フルネーム）</label>
+        <input type="text" id="dl-name" placeholder="例）中司 祐樹" autocomplete="name">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="dl-btn-request" onclick="dlRequestCode()">認証コードをメールで受け取る</button>
+      </div>
+    </div>
+    <div id="dl-step-2" style="display:none;">
+      <p style="font-size:13px; color:var(--gray); margin-bottom:10px;">
+        メールに届いた6桁の認証コードを入力してください（有効期限10分）。
+      </p>
+      <div style="margin-bottom:12px;">
+        <input type="text" id="dl-code" class="dl-code-input" inputmode="numeric" maxlength="6" placeholder="000000">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="dl-btn-verify" onclick="dlVerifyCode()">認証してダウンロード</button>
+        <button class="btn btn-secondary" onclick="dlBackToStep1()">戻る</button>
+      </div>
+    </div>
+    <div id="dl-modal-msg" class="form-msg" style="margin-top:10px;"></div>
   </div>
 </div>
 
@@ -851,9 +920,7 @@
     if (isNewFormat) {
       function itemCard(item) {
         const numLabel = item.num;
-        const dlBtn = item.pdf
-          ? `<a href="assets/jhcs-textbooks/${encodeURIComponent(item.pdf)}" download class="btn-dl">テキストDL</a>`
-          : '';
+        const dlBtn = dlButtonsHtml(numLabel);
         return `
           <details class="curriculum-row" data-lesson="${escAttr(numLabel)}">
             <summary>
@@ -1590,8 +1657,188 @@
     document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
   }
 
+  // ── 講習資料ダウンロード（受講生認証） ──────────────
+  const DL_GAS_URL = 'https://script.google.com/macros/s/AKfycbwphOKe5rGHIQVVCnPUpCrTllRVze7gO27IErbGB0VCrgJ43JxP3bmermCy_Gkhul-w_w/exec';
+  const DL_TOKEN_KEY = 'jhcs_dl_token';
+  const DL_TYPE_LABELS = { text: '📄 テキスト', pattern: '📐 型紙', cad: '🔧 CADデータ' };
+  let dlMaterials = null;      // { lessonId: { text:[{name,size}], pattern:[...], cad:[...] } }
+  let dlMaterialsError = false;
+  let dlPending = null;        // { lessonId, type, fileName }
+
+  // GAS間欠障害対策: HTTP 200でもHTML本文が返ることがあるため本文先頭で判定して再送
+  async function dlGasPost(payload, retries) {
+    let lastErr = null;
+    for (let i = 0; i < retries; i++) {
+      try {
+        const res = await fetch(DL_GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const text = await res.text();
+        if (text.trim().startsWith('<')) throw new Error('サーバー応答エラー');
+        return JSON.parse(text);
+      } catch (e) {
+        lastErr = e;
+        if (i < retries - 1) await new Promise(r => setTimeout(r, 800 * Math.pow(2, i)));
+      }
+    }
+    throw lastErr;
+  }
+
+  async function loadMaterials() {
+    try {
+      const data = await dlGasPost({ action: 'materials' }, 3);
+      if (data.ok) {
+        dlMaterials = data.lessons;
+        dlMaterialsError = false;
+      } else {
+        dlMaterialsError = true;
+      }
+    } catch (e) {
+      dlMaterialsError = true;
+    }
+    renderCurriculum(cachedCurriculum && cachedCurriculum.length ? cachedCurriculum : DEFAULT_CURRICULUM);
+  }
+
+  function dlButtonsHtml(lessonId) {
+    if (dlMaterialsError) return '<div class="dl-note">資料リストの読み込みに失敗しました。ページを再読み込みしてください。</div>';
+    if (!dlMaterials) return '<div class="dl-note">資料リストを読み込み中…</div>';
+    const entry = dlMaterials[lessonId];
+    if (!entry) return '<div class="dl-note">配布資料は準備中です。</div>';
+    const btns = [];
+    ['text', 'pattern', 'cad'].forEach(type => {
+      (entry[type] || []).forEach(f => {
+        const multi = entry[type].length > 1;
+        const label = DL_TYPE_LABELS[type] + (multi ? `（${esc(f.name)}）` : '');
+        btns.push(`<button class="btn-dl" data-lesson="${escAttr(lessonId)}" data-type="${type}" data-file="${escAttr(f.name)}" onclick="dlBtnClick(this)">${label}</button>`);
+      });
+    });
+    if (!btns.length) return '<div class="dl-note">配布資料は準備中です。</div>';
+    return `<div class="dl-btns">${btns.join('')}</div><div class="dl-note">※ダウンロードには受講生認証（メール＋氏名）が必要です</div>`;
+  }
+
+  function dlBtnClick(btn) {
+    startDownload(btn.dataset.lesson, btn.dataset.type, btn.dataset.file, btn);
+  }
+
+  async function startDownload(lessonId, type, fileName, btn) {
+    const token = sessionStorage.getItem(DL_TOKEN_KEY);
+    dlPending = { lessonId, type, fileName, btn };
+    if (!token) { openDlModal(); return; }
+    await doDownload(token);
+  }
+
+  async function doDownload(token) {
+    if (!dlPending) return;
+    const { lessonId, type, fileName, btn } = dlPending;
+    const orig = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'ダウンロード中…'; }
+    try {
+      const data = await dlGasPost({ action: 'download', token, lessonId, type, fileName }, 2);
+      if (!data.ok) {
+        if (data.error === 'token_expired') {
+          sessionStorage.removeItem(DL_TOKEN_KEY);
+          openDlModal();
+          return;
+        }
+        alert('ダウンロードできませんでした: ' + (data.error || '不明なエラー'));
+        return;
+      }
+      const bin = atob(data.base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const blob = new Blob([bytes], { type: data.mimeType || 'application/octet-stream' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = data.fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      dlPending = null;
+    } catch (e) {
+      alert('通信エラーでダウンロードできませんでした。時間をおいて再度お試しください。');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = orig; }
+    }
+  }
+
+  // ── 認証モーダル ──
+  function openDlModal() {
+    document.getElementById('dl-email').value = localStorage.getItem('jhcs_dl_email') || '';
+    document.getElementById('dl-name').value = localStorage.getItem('jhcs_dl_name') || '';
+    document.getElementById('dl-code').value = '';
+    showDlMsg('', '');
+    document.getElementById('dl-step-1').style.display = '';
+    document.getElementById('dl-step-2').style.display = 'none';
+    document.getElementById('dl-modal-overlay').classList.add('show');
+  }
+
+  function closeDlModal() {
+    document.getElementById('dl-modal-overlay').classList.remove('show');
+  }
+
+  function dlBackToStep1() {
+    document.getElementById('dl-step-1').style.display = '';
+    document.getElementById('dl-step-2').style.display = 'none';
+    showDlMsg('', '');
+  }
+
+  function showDlMsg(type, text) {
+    const el = document.getElementById('dl-modal-msg');
+    el.className = 'form-msg ' + type;
+    el.textContent = text;
+  }
+
+  async function dlRequestCode() {
+    const email = document.getElementById('dl-email').value.trim();
+    const name = document.getElementById('dl-name').value.trim();
+    if (!email || !name) { showDlMsg('err', 'メールアドレスと氏名を入力してください。'); return; }
+    const btn = document.getElementById('dl-btn-request');
+    btn.disabled = true; btn.textContent = '送信中…';
+    try {
+      // メール二重送信を防ぐため再送はしない（リトライ1回のみ）
+      const data = await dlGasPost({ action: 'requestCode', email, name }, 1);
+      if (data.ok) {
+        localStorage.setItem('jhcs_dl_email', email);
+        localStorage.setItem('jhcs_dl_name', name);
+        document.getElementById('dl-step-1').style.display = 'none';
+        document.getElementById('dl-step-2').style.display = '';
+        showDlMsg('ok', '認証コードを送信しました。メールをご確認ください。');
+        document.getElementById('dl-code').focus();
+      } else {
+        showDlMsg('err', data.error || 'エラーが発生しました。');
+      }
+    } catch (e) {
+      showDlMsg('err', '通信エラーです。時間をおいて再度お試しください。');
+    } finally {
+      btn.disabled = false; btn.textContent = '認証コードをメールで受け取る';
+    }
+  }
+
+  async function dlVerifyCode() {
+    const email = document.getElementById('dl-email').value.trim();
+    const name = document.getElementById('dl-name').value.trim();
+    const code = document.getElementById('dl-code').value.trim();
+    if (!/^\d{6}$/.test(code)) { showDlMsg('err', '6桁の数字を入力してください。'); return; }
+    const btn = document.getElementById('dl-btn-verify');
+    btn.disabled = true; btn.textContent = '確認中…';
+    try {
+      const data = await dlGasPost({ action: 'verifyCode', email, name, code }, 1);
+      if (data.ok) {
+        sessionStorage.setItem(DL_TOKEN_KEY, data.token);
+        closeDlModal();
+        await doDownload(data.token);
+      } else {
+        showDlMsg('err', data.error || '認証に失敗しました。');
+      }
+    } catch (e) {
+      showDlMsg('err', '通信エラーです。時間をおいて再度お試しください。');
+    } finally {
+      btn.disabled = false; btn.textContent = '認証してダウンロード';
+    }
+  }
+
   // ── 初期化 ────────────────────────────────────────
   renderWorksGallery();
+  loadMaterials();
   loadWorksManifest();
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
   if (getGasUrl()) {
