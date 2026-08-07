@@ -164,6 +164,11 @@ tr:hover td{background:#1c2128}
 .fb-status{font-size:12px;color:#9aa4af;line-height:1.6}
 .fb-status.ok{color:#4ade80}
 .fb-status.err{color:#ff9d9d}
+/* ✅指摘済バッジ・折りたたみ行・🗑削除ボタン（2026-08-07） */
+.badge-done{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:#12331f;color:#4ade80;border:1px solid #2ea043;white-space:nowrap}
+tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
+.del-btn{background:none;border:1px solid #30363d;color:#ff9d9d;border-radius:8px;padding:4px 8px;font-size:11.5px;cursor:pointer;white-space:nowrap}
+.del-btn:hover{border-color:#f85149}
 </style>
 </head>
 <body class="auth-locked">
@@ -207,6 +212,8 @@ tr:hover td{background:#1c2128}
     <div class="f"><label for="fWord">本文検索</label><input type="search" id="fWord" placeholder="質問・応答を絞り込み" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
     <div class="f"><label>&nbsp;</label><button class="btn" type="button" id="reloadBtn">🔄 読み込み</button></div>
     <div class="f"><label>&nbsp;</label><button class="btn sub" type="button" id="csvBtn">⬇ CSV</button></div>
+    <!-- 指摘済みの行を1行に畳んで一覧をすっきりさせる（オーダー相談・幕僚キャラ接客タブのみ） -->
+    <div class="f live-only"><label>&nbsp;</label><button class="btn sub" type="button" id="fbFoldBtn">✅ 指摘済みを畳む: ON</button></div>
   </div>
 
   <div class="kpis">
@@ -324,9 +331,14 @@ function checkSession() {
   try { return sessionStorage.getItem(SESSION_KEY) === 'ok' && !!getKey(); } catch (e) { return false; }
 }
 function unlockAuth() {
-  document.getElementById('authOverlay').style.display = 'none';
+  // パスワード欄はDOMごと取り除く。隠すだけだとChromeが「ログインフォームがある」と判定し、
+  // 保存済みログイン情報のユーザー名（メールアドレス）を本文検索欄へ自動入力して
+  // 一覧が0件になる（2026-08-07事案。autocomplete="off"だけでは防げなかった）
+  const ov = document.getElementById('authOverlay');
+  if (ov) ov.remove();
   document.body.classList.remove('auth-locked');
   setRange('thisMonth');
+  loadFeedbackSet();   // ✅指摘済バッジの照合データ（失敗してもバッジが出ないだけ）
   load();
 }
 function submitAuth() {
@@ -731,23 +743,47 @@ function render() {
   fbList = list;   // ✏️ 指摘ボタンの行参照用（ナレッジ学習ループ）
   if (currentSrc === 'hearing') {
     thead.innerHTML = '<tr><th>日時</th><th>お客様の相談</th><th>AIの応答</th><th>応答字数</th><th></th></tr>';
-    tbody.innerHTML = list.length ? list.map((r, i) =>
-      '<tr><td class="dt">' + esc(r.datetime) + (r.img ? ' 📷' : '') + '</td>'
-      + '<td class="q">' + cellText(r.question, 'hq' + i) + '</td>'
-      + '<td class="a">' + (r.legacy ? '<span style="color:#6e7681">' + esc(r.reply) + '</span>' : cellText(r.reply, 'ha' + i)) + '</td>'
-      + '<td class="num">' + (r.replyLen || 0) + '</td>'
-      + '<td><button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button></td></tr>').join('')
+    tbody.innerHTML = list.length ? list.map((r, i) => {
+      const k = fbKeyOf('hearing', r.datetime, '');
+      const done = fbDone.has(k);
+      if (done && foldDone && !unfolded.has(k)) {
+        // 指摘済みは1行に畳む（「開く」でこのセッション中だけ展開できる）
+        return '<tr class="folded"><td class="dt">' + esc(r.datetime) + '</td>'
+          + '<td colspan="3"><span class="badge-done">✅ 指摘済</span> '
+          + esc(String(r.question || '').slice(0, 40)) + (String(r.question || '').length > 40 ? '…' : '') + '</td>'
+          + '<td><button class="more" type="button" data-unfold="' + esc(k) + '">開く</button></td></tr>';
+      }
+      return '<tr><td class="dt">' + esc(r.datetime) + (r.img ? ' 📷' : '') + '</td>'
+        + '<td class="q">' + cellText(r.question, 'hq' + i) + '</td>'
+        + '<td class="a">' + (r.legacy ? '<span style="color:#6e7681">' + esc(r.reply) + '</span>' : cellText(r.reply, 'ha' + i)) + '</td>'
+        + '<td class="num">' + (r.replyLen || 0) + '</td>'
+        + '<td style="white-space:nowrap">' + (done ? '<span class="badge-done">✅ 指摘済</span> ' : '')
+        + '<button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button> '
+        + '<button class="del-btn" type="button" data-del="' + i + '" title="テスト会話をログから削除">🗑</button></td></tr>';
+    }).join('')
       : '<tr><td class="empty" colspan="5">該当する相談はありません</td></tr>';
   } else if (currentSrc === 'ai') {
     thead.innerHTML = '<tr><th>日時</th><th>担当幕僚</th><th>会話の場所</th><th>お客様の質問</th><th>AIの応答</th><th>応答字数</th><th></th></tr>';
-    tbody.innerHTML = list.length ? list.map((r, i) =>
-      '<tr><td class="dt">' + esc(r.datetime) + '</td>'
-      + '<td class="who"><span class="badge">' + esc(whoName(r.staffId)) + '</span></td>'
-      + '<td class="who" style="color:#9aa4af;font-size:12px">' + esc(venueName(r.venue)) + '</td>'
-      + '<td class="q">' + cellText(r.question, 'q' + i) + '</td>'
-      + '<td class="a">' + cellText(r.reply, 'a' + i) + '</td>'
-      + '<td class="num">' + (r.replyLen || 0) + '</td>'
-      + '<td><button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button></td></tr>').join('')
+    tbody.innerHTML = list.length ? list.map((r, i) => {
+      const k = fbKeyOf('ai', r.datetime, r.staffId);
+      const done = fbDone.has(k);
+      if (done && foldDone && !unfolded.has(k)) {
+        return '<tr class="folded"><td class="dt">' + esc(r.datetime) + '</td>'
+          + '<td class="who"><span class="badge">' + esc(whoName(r.staffId)) + '</span></td>'
+          + '<td colspan="4"><span class="badge-done">✅ 指摘済</span> '
+          + esc(String(r.question || '').slice(0, 40)) + (String(r.question || '').length > 40 ? '…' : '') + '</td>'
+          + '<td><button class="more" type="button" data-unfold="' + esc(k) + '">開く</button></td></tr>';
+      }
+      return '<tr><td class="dt">' + esc(r.datetime) + '</td>'
+        + '<td class="who"><span class="badge">' + esc(whoName(r.staffId)) + '</span></td>'
+        + '<td class="who" style="color:#9aa4af;font-size:12px">' + esc(venueName(r.venue)) + '</td>'
+        + '<td class="q">' + cellText(r.question, 'q' + i) + '</td>'
+        + '<td class="a">' + cellText(r.reply, 'a' + i) + '</td>'
+        + '<td class="num">' + (r.replyLen || 0) + '</td>'
+        + '<td style="white-space:nowrap">' + (done ? '<span class="badge-done">✅ 指摘済</span> ' : '')
+        + '<button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button> '
+        + '<button class="del-btn" type="button" data-del="' + i + '" title="テスト会話をログから削除">🗑</button></td></tr>';
+    }).join('')
       : '<tr><td class="empty" colspan="7">該当する発言はありません</td></tr>';
   } else {
     thead.innerHTML = '<tr><th>日時</th><th>発言者</th><th>表示名</th><th>発言</th><th>字数</th></tr>';
@@ -847,7 +883,14 @@ document.getElementById('fArcSrc').addEventListener('change', load);
 document.getElementById('fFrom').addEventListener('change', load);
 document.getElementById('fTo').addEventListener('change', load);
 document.getElementById('csvBtn').addEventListener('click', downloadCsv);
-document.getElementById('fWord').addEventListener('input', () => { if (rows.length || ordersRows.length) render(); });
+// 第2防衛線: フォーカスが無いのに本文検索の値が変わる入力はブラウザの自動入力とみなして巻き戻す
+let fWordUser = '';
+document.getElementById('fWord').addEventListener('input', () => {
+  const el = document.getElementById('fWord');
+  if (document.activeElement === el) { fWordUser = el.value; }
+  else if (el.value !== fWordUser) { el.value = fWordUser; return; }
+  if (rows.length || ordersRows.length) render();
+});
 document.getElementById('breakdown').addEventListener('click', (ev) => {
   const chip = ev.target.closest('[data-who]');
   if (!chip) return;
@@ -865,6 +908,82 @@ let fbList = [];
 let fbTarget = null;
 let fbRequestId = '';
 const FB_GAS_URL = SOURCES.ai.url;   // 指摘API・台帳はShowroom-AIChatが受け持つ
+
+// ---- ✅指摘済バッジ・折りたたみ・🗑削除（2026-08-07） --------------------
+let fbDone = new Set();          // 指摘済みの行キー（指摘台帳から取得）
+const unfolded = new Set();      // 折りたたみを一時的に開いた行（セッション中のみ）
+let foldDone = (localStorage.getItem('nsf_chatlog_fold') || 'on') !== 'off';
+
+// 行の同定キー。日時は分まで（シート側でDate型化され秒が付くことがあるため）
+const fbKeyOf = (src, t, staff) =>
+  src + '|' + String(t || '').substring(0, 16) + '|' + (src === 'ai' ? String(staff || '') : '');
+
+function updateFoldBtn() {
+  document.getElementById('fbFoldBtn').textContent = '✅ 指摘済みを畳む: ' + (foldDone ? 'ON' : 'OFF');
+}
+document.getElementById('fbFoldBtn').addEventListener('click', () => {
+  foldDone = !foldDone;
+  try { localStorage.setItem('nsf_chatlog_fold', foldDone ? 'on' : 'off'); } catch (e) {}
+  updateFoldBtn();
+  render();
+});
+updateFoldBtn();
+
+// 指摘台帳から「どの発言が指摘済みか」を取得（失敗してもバッジが出ないだけにする）
+async function loadFeedbackSet() {
+  try {
+    const data = await fetchJsonRetry(FB_GAS_URL + '?action=fblist&key=' + encodeURIComponent(getKey()));
+    if (data.status !== 'ok') return;
+    fbDone = new Set((data.rows || []).map(r => fbKeyOf(r.src, r.t, r.staff)));
+    if (rows.length) render();
+  } catch (e) { /* バッジなしで続行 */ }
+}
+
+// GET系のGAS呼び出し（HTMLエラーページが返ることがあるため再試行つき）
+async function fetchJsonRetry(url) {
+  let last = '';
+  for (let i = 1; i <= 3; i++) {
+    try {
+      const res = await fetch(url);
+      const t = await res.text();
+      if (t.trim().startsWith('{')) return JSON.parse(t);
+      last = 'GASが一時的に応答できませんでした';
+    } catch (e) { last = String(e.message || e); }
+    await new Promise(r => setTimeout(r, 1500 * i));
+  }
+  throw new Error(last);
+}
+
+// テスト会話の削除。ai=logシートの行削除／hearing=直近ログ（プロパティ）＋日次退避先の両方から削除
+async function deleteRow(i) {
+  const r = fbList[i];
+  if (!r) return;
+  if (!confirm('この会話をログから削除します（元に戻せません）。\n\n🙂 ' + String(r.question || '').slice(0, 80))) return;
+  const enc = encodeURIComponent;
+  try {
+    if (currentSrc === 'ai') {
+      const res = await fetchJsonRetry(SOURCES.ai.url + '?action=deletelog&src=ai&key=' + enc(getKey())
+        + '&t=' + enc(r.datetime) + '&q=' + enc(String(r.question || '').slice(0, 40)));
+      if (res.status !== 'ok') throw new Error(res.error || '削除に失敗しました');
+      if (!res.deleted) throw new Error('対象の行が見つかりませんでした（すでに削除済みの可能性）');
+    } else {
+      // ①直近ログ（hearing proxyのプロパティ）から削除
+      const res = await fetchJsonRetry(SOURCES.hearing.url + '?action=dellog&key=' + enc(getKey())
+        + '&t=' + enc(r.datetime) + '&q=' + enc(String(r.question || '').slice(0, 40)));
+      if (res.error) throw new Error(res.error);
+      // ②日次退避先（月別シート）からも削除。失敗しても①は成立しているため続行
+      try {
+        await fetchJsonRetry(SOURCES.ai.url + '?action=deletelog&src=hearing&key=' + enc(getKey())
+          + '&t=' + enc(r.datetime) + '&q=' + enc(String(r.question || '').slice(0, 120)));
+      } catch (e2) { /* 月次アーカイブ側は次回の手動削除で対応可能 */ }
+      if (!res.deleted) throw new Error('直近ログに対象が見つかりませんでした（すでに削除済みの可能性）');
+    }
+    rows = rows.filter(x => x !== r);
+    render();
+  } catch (e) {
+    alert('削除できませんでした: ' + String(e.message || e));
+  }
+}
 const KB_REPO_PATH = 'order_estimate/hearing-kb.json';
 const KB_API = 'https://api.github.com/repos/you0810jmsdf/ns-factory/contents/' + KB_REPO_PATH;
 
@@ -943,7 +1062,9 @@ async function saveFeedback() {
     if (fbTarget.src === 'hearing') await fbAppendToHearingKb(text);
     st.textContent = '✅ 反映しました（' + gas.applied + '）。GitHub Pagesの反映には1〜2分かかります。';
     st.className = 'fb-status ok';
-    setTimeout(() => document.getElementById('fbOverlay').classList.remove('on'), 1800);
+    // ✅指摘済バッジを即時反映（畳む設定ONなら折りたたまれる）
+    fbDone.add(fbKeyOf(fbTarget.src, r.datetime, r.staffId || ''));
+    setTimeout(() => { document.getElementById('fbOverlay').classList.remove('on'); render(); }, 1800);
   } catch (e) {
     st.textContent = '⚠️ ' + String(e.message || e) + '（同じ保存ボタンで再試行できます。二重反映はされません）';
     st.className = 'fb-status err';
@@ -956,9 +1077,14 @@ document.getElementById('fbCancel').addEventListener('click', () => document.get
 document.getElementById('tbody').addEventListener('click', (ev) => {
   const fb = ev.target.closest('[data-fb]');
   if (fb) { openFeedback(Number(fb.dataset.fb)); return; }
+  const del = ev.target.closest('[data-del]');
+  if (del) { deleteRow(Number(del.dataset.del)); return; }
+  const uf = ev.target.closest('[data-unfold]');
+  if (uf) { unfolded.add(uf.dataset.unfold); render(); return; }
   if (ev.target.id === 'clearFilters') {
     whoFilter = '';
     document.getElementById('fWord').value = '';
+    fWordUser = '';
     render();
     return;
   }
