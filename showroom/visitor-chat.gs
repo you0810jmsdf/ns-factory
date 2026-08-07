@@ -52,6 +52,14 @@ function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify(body)).setMimeType(ContentService.MimeType.JSON);
   }
 
+  // ?action=deletelog&key=&t=&id=&q= : テスト発言の削除（chatlog.htmlの🗑・2026-08-07。管理者限定）
+  if (p.action === 'deletelog') {
+    var delBody = isAdminKey_(p.key)
+      ? { status: 'ok', deleted: deleteVisitorLogRow_(p.t, p.id, p.q) }
+      : { status: 'error', error: 'unauthorized' };
+    return ContentService.createTextOutput(JSON.stringify(delBody)).setMimeType(ContentService.MimeType.JSON);
+  }
+
   var out;
   var lock = LockService.getScriptLock();
   try {
@@ -632,6 +640,30 @@ function readVisitorLog_(p) {
   rows.sort(function (a, b) { return a.datetime < b.datetime ? 1 : (a.datetime > b.datetime ? -1 : 0); });
   var total = rows.length;
   return { status: 'ok', rows: rows.slice(0, limit), total: total, truncated: total > limit };
+}
+
+/* テスト発言をログシートから1行削除（chatlog.htmlの🗑・2026-08-07）。
+   日時（秒まで）＋発言者id＋本文先頭40字の一致で特定し、1回の操作で1行だけ消す */
+function deleteVisitorLogRow_(t, id, q) {
+  var sheet = getOrCreateLogSpreadsheet_();
+  var last = sheet.getLastRow();
+  if (last < 2) return 0;
+  var values = sheet.getRange(2, 1, last - 1, LOG_HEADER.length).getValues();
+  var tKey = String(t || '').substring(0, 19);
+  var idKey = String(id || '');
+  var qKey = String(q || '').substring(0, 40);
+  for (var i = values.length - 1; i >= 0; i--) {
+    var dt = values[i][0] instanceof Date
+      ? Utilities.formatDate(values[i][0], 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss')
+      : String(values[i][0]).replace(/\//g, '-');
+    if (dt.substring(0, 19) === tKey
+        && String(values[i][1] || '') === idKey
+        && String(values[i][4] || '').substring(0, 40) === qKey) {
+      sheet.deleteRow(i + 2);
+      return 1;
+    }
+  }
+  return 0;
 }
 
 /* エディタから一度だけ実行: ログ機能の動作確認用テスト関数
