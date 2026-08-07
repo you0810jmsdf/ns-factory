@@ -541,6 +541,9 @@ async function load() {
   }
 
   const src = SOURCES[currentSrc];
+  // droppedLegacy はオーダー相談（normalizeHearingLog）専用のカウンタ。リセットせずに
+  // タブを切り替えると、みんなのチャット等の脚注に前タブの件数が混入する（2026-08-07修正）
+  droppedLegacy = 0;
   const qs = new URLSearchParams({ action: src.action || 'chatlog', key: getKey() });
   const from = document.getElementById('fFrom').value;
   const to   = document.getElementById('fTo').value;
@@ -786,14 +789,15 @@ function render() {
     }).join('')
       : '<tr><td class="empty" colspan="7">該当する発言はありません</td></tr>';
   } else {
-    thead.innerHTML = '<tr><th>日時</th><th>発言者</th><th>表示名</th><th>発言</th><th>字数</th></tr>';
+    thead.innerHTML = '<tr><th>日時</th><th>発言者</th><th>表示名</th><th>発言</th><th>字数</th><th></th></tr>';
     tbody.innerHTML = list.length ? list.map((r, i) =>
       '<tr><td class="dt">' + esc(r.datetime) + '</td>'
       + '<td class="who"><span class="badge ' + badgeClass(r.role) + '">' + esc(whoName(r.role)) + '</span></td>'
       + '<td class="who">' + esc(r.name) + '</td>'
       + '<td class="q">' + cellText(r.text, 't' + i) + '</td>'
-      + '<td class="num">' + String(r.text || '').length + '</td></tr>').join('')
-      : '<tr><td class="empty" colspan="5">該当する発言はありません</td></tr>';
+      + '<td class="num">' + String(r.text || '').length + '</td>'
+      + '<td><button class="del-btn" type="button" data-del="' + i + '" title="テスト発言をログから削除">🗑</button></td></tr>').join('')
+      : '<tr><td class="empty" colspan="6">該当する発言はありません</td></tr>';
   }
   // 絞り込みの結果0件になったとき、その理由が画面から分かるようにする
   const word = document.getElementById('fWord').value.trim();
@@ -958,10 +962,16 @@ async function fetchJsonRetry(url) {
 async function deleteRow(i) {
   const r = fbList[i];
   if (!r) return;
-  if (!confirm('この会話をログから削除します（元に戻せません）。\n\n🙂 ' + String(r.question || '').slice(0, 80))) return;
+  if (!confirm('この会話をログから削除します（元に戻せません）。\n\n🙂 ' + String(r.question || r.text || '').slice(0, 80))) return;
   const enc = encodeURIComponent;
   try {
-    if (currentSrc === 'ai') {
+    if (currentSrc === 'visitor') {
+      // みんなのチャット: visitor-chat GASのlogシートから1行削除（日時秒まで＋発言者id＋本文先頭40字で特定）
+      const res = await fetchJsonRetry(SOURCES.visitor.url + '?action=deletelog&key=' + enc(getKey())
+        + '&t=' + enc(r.datetime) + '&id=' + enc(r.id || '') + '&q=' + enc(String(r.text || '').slice(0, 40)));
+      if (res.status !== 'ok') throw new Error(res.error || '削除に失敗しました');
+      if (!res.deleted) throw new Error('対象の行が見つかりませんでした（すでに削除済みの可能性）');
+    } else if (currentSrc === 'ai') {
       const res = await fetchJsonRetry(SOURCES.ai.url + '?action=deletelog&src=ai&key=' + enc(getKey())
         + '&t=' + enc(r.datetime) + '&q=' + enc(String(r.question || '').slice(0, 40)));
       if (res.status !== 'ok') throw new Error(res.error || '削除に失敗しました');
