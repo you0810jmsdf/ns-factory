@@ -1,3 +1,61 @@
 ﻿recorded_at,ring_id,planner_type,series,size_mm,color_id,purchase_price_jpy,shipping_jpy,shop,url,estimate_price_jpy,change_type
 2026-08-05 12:56,kl11,Micro5,klause,11,silver,2079,0,レザークラフト材料専門店ぱれっと,https://item.rakuten.co.jp/lc-palette/eg1013/?variantId=eg1013-09&s-id=ph_pc_itemname,2000,update
 2026-08-05 12:56,m6k10,Mini6,klause,10,gold,1210,290,Gadget Store 楽天市場店,https://item.rakuten.co.jp/gadgetstore/c127-6-10/?variantId=r-sku00000002&s-id=ph_pc_itemname,1210,new
+2026-08-08 11:30,kl11,Micro5,klause,11,gold,2079,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1013/,2079,new
+2026-08-08 11:30,kl11,Micro5,klause,11,black,1925,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1013/,1925,new
+2026-08-08 11:30,kl11,Micro5,klause,11,pinkgold,2079,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1013/,2079,new
+2026-08-08 11:30,kl13,Micro5,klause,13,gold,2321,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1076/,2321,new
+2026-08-08 11:30,kl13,Micro5,klause,13,black,2167,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1076/,2167,new
+2026-08-08 11:30,kl13,Micro5,klause,13,pinkgold,2321,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1076/,2321,new
+2026-08-08 11:30,m6k11,Mini6,klause,11,silver,1265,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1014/,1265,new
+2026-08-08 11:30,m6k11,Mini6,klause,11,gold,2354,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1014/,2354,new
+2026-08-08 11:30,m6k11,Mini6,klause,11,black,2178,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1014/,2178,new
+2026-08-08 11:30,m6k11,Mini6,klause,11,pinkgold,2354,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1014/,2354,new
+2026-08-08 11:30,m6k13,Mini6,klause,13,silver,1430,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/e73058p/,1430,new
+2026-08-08 11:30,m6k13,Mini6,klause,13,gold,2695,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/e73058p/,2695,new
+2026-08-08 11:30,m6k13,Mini6,klause,13,black,2541,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/e73058p/,2541,new
+2026-08-08 11:30,m6k13,Mini6,klause,13,pinkgold,2695,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/e73058p/,2695,new
+2026-08-08 11:30,m6k20,Mini6,klause,20,silver,1628,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1075/,1628,new
+2026-08-08 11:30,m6k20,Mini6,klause,20,pinkgold,3113,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1075/,3113,new
+2026-08-08 11:30,bk11,Bible,klause,11,silver,1419,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1015/,1419,new
+2026-08-08 11:30,bk11,Bible,klause,11,gold,2871,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1015/,2871,new
+2026-08-08 11:30,bk11,Bible,klause,11,black,2695,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1015/,2695,new
+2026-08-08 11:30,bk11,Bible,klause,11,pinkgold,2871,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1015/,2871,new
+2026-08-08 11:30,bk16,Bible,klause,16,silver,1628,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1016/,1628,new
+2026-08-08 11:30,bk16,Bible,klause,16,gold,3267,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1016/,3267,new
+2026-08-08 11:30,bk16,Bible,klause,16,black,3113,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1016/,3113,new
+2026-08-08 11:30,bk16,Bible,klause,16,pinkgold,3267,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1016/,3267,new
+2026-08-08 11:30,bk20,Bible,klause,20,silver,1650,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/e73060p/,1650,new
+2026-08-08 11:30,bk20,Bible,klause,20,gold,3553,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/e73060p/,3553,new
+2026-08-08 11:30,bk20,Bible,klause,20,black,3377,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/e73060p/,3377,new
+2026-08-08 11:30,bk20,Bible,klause,20,pinkgold,3553,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/e73060p/,3553,new
+2026-08-08 11:30,kl25,Bible,klause,25,gold,3619,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1017/,3619,new
+2026-08-08 11:30,kl25,Bible,klause,25,black,3443,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1017/,3443,new
+2026-08-08 11:30,kl25,Bible,klause,25,pinkgold,3619,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1017/,3619,new
+2026-08-08 11:30,bk30,Bible,klause,30,silver,2068,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1018/,2068,new
+2026-08-08 11:30,bk30,Bible,klause,30,gold,4125,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1018/,4125,new
+2026-08-08 11:30,bk30,Bible,klause,30,black,3971,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1018/,3971,new
+2026-08-08 11:30,bk30,Bible,klause,30,pinkgold,4125,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1018/,4125,new
+2026-08-08 11:30,a5k16,A5,klause,16,silver,2200,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1019/,2200,new
+2026-08-08 11:30,a5k16,A5,klause,16,black,4290,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1019/,4290,new
+2026-08-08 11:30,a5k16,A5,klause,16,pinkgold,4466,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1019/,4466,new
+2026-08-08 11:30,a5k25,A5,klause,25,silver,2618,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1020/,2618,new
+2026-08-08 11:30,a5k25,A5,klause,25,gold,5291,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1020/,5291,new
+2026-08-08 11:30,a5k25,A5,klause,25,black,5115,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1020/,5115,new
+2026-08-08 11:30,a5k25,A5,klause,25,pinkgold,5291,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1020/,5291,new
+2026-08-08 11:30,kl30,A5,klause,30,gold,6226,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1077/,6226,new
+2026-08-08 11:30,kl30,A5,klause,30,black,6182,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1077/,6182,new
+2026-08-08 11:30,kl30,A5,klause,30,pinkgold,6226,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1077/,6226,new
+2026-08-08 11:30,m6k10,Mini6,klause,10,silver,1133,,"千禾shop 楽天市場店",https://item.rakuten.co.jp/senwashop/127-6/,1133,new
+2026-08-08 11:30,m6k16,Mini6,klause,16,silver,1683,,"千禾shop 楽天市場店",https://item.rakuten.co.jp/senwashop/127-6/,1683,new
+2026-08-08 11:30,m6n11,Mini6,normal,11,silver,198,,"Gadget Store",https://gadget.ocnk.net/product/534,198,new
+2026-08-08 11:30,m6n13,Mini6,normal,13,silver,198,,"Gadget Store",https://gadget.ocnk.net/product/532,198,new
+2026-08-08 11:30,bn15,Bible,normal,15,silver,660,,"Gadget Store",https://gadget.ocnk.net/product/268,660,new
+2026-08-08 11:30,bn19,Bible,normal,19,silver,242,,"Gadget Store",https://gadget.ocnk.net/product/492,242,new
+2026-08-08 11:30,r25,Bible,normal,25,silver,880,,"Gadget Store",https://gadget.ocnk.net/product/267,1000,update
+2026-08-08 11:30,kl11,Micro5,klause,11,silver,1177,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1013/,2000,update
+2026-08-08 11:30,kl13,Micro5,klause,13,silver,1386,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1076/,2600,update
+2026-08-08 11:30,kl25,Bible,klause,25,silver,1771,220,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1017/,5000,update
+2026-08-08 11:30,kl30,A5,klause,30,silver,3355,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1077/,6000,update
+2026-08-08 11:30,m6k20,Mini6,klause,20,black,2937,0,"レザークラフト材料専門店ぱれっと",https://item.rakuten.co.jp/lc-palette/eg1075/,3000,update
+2026-08-08 11:30,m6n10,Mini6,normal,10,silver,550,,"Gadget Store",https://gadget.ocnk.net/product/272,2000,update
