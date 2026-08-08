@@ -1236,7 +1236,7 @@ BRANDS.splice(Math.max(BRANDS.findIndex(b => b.id === 'npad') + 1, 1), 0, {
   image:NPAD_NON_FLAP_IMAGE
 });
 
-const KLAUSE_RETAIL = { r08:800, r11:1000, r13:1300, r15:1650, r20:2000, r25:2500, r30:3000 };
+const KLAUSE_RETAIL = { r08:800, r10:1200, r11:1000, r13:1300, r15:1650, r16:1650, r20:2000, r25:2500, r30:3000 };
 
 // ── 革一覧（カワムラレザー取り扱い品・実画像） ──
 // ※ dsPrice = ds（デシ平方）あたりの素材単価。国産ヌメ革基準 ¥95/ds。
@@ -1376,6 +1376,8 @@ const SIZES = [
 const RINGS = [
   // ─ 通常リング ─
   { id:'r10mm',name:'10mm',         sub:'極薄・スリム',     id_mm:10, price:1500, isKlause:false, emoji:'⭕', image:'' },
+  { id:'r11mm',name:'11mm',         sub:'極薄・スリム',     id_mm:11, price:1500, isKlause:false, emoji:'⭕', image:'' },
+  { id:'r13mm',name:'13mm',         sub:'薄型・スマート',   id_mm:13, price:1500, isKlause:false, emoji:'⭕', image:'' },
   { id:'r15',  name:'15mm',         sub:'薄型・スマート',   id_mm:15, price:1000, isKlause:false, emoji:'⭕', image:'' },
   { id:'r20',  name:'19mm',         sub:'標準サイズ',       id_mm:19, price:1000, isKlause:false, emoji:'⭕', image:'' },
   { id:'r20mm',name:'20mm',         sub:'標準サイズ',       id_mm:20, price:1500, isKlause:false, emoji:'⭕', image:'' },
@@ -1383,10 +1385,12 @@ const RINGS = [
   { id:'r30',  name:'30mm',         sub:'大容量タイプ',     id_mm:30, price:1000, isKlause:false, notMicro5:true, emoji:'🔵', image:'' },
   // ─ クラウゼリング（Micro5専用: 8/11/13mm）─
   { id:'kl08', name:'クラウゼ 8mm',  sub:'Micro5専用・極薄型', id_mm:8,  price:KLAUSE_RETAIL.r08*2, isKlause:true, micro5Only:true, emoji:'🔒', image:'' },
-  { id:'kl11', name:'クラウゼ 11mm', sub:'Micro5専用',         id_mm:11, price:KLAUSE_RETAIL.r11*2, isKlause:true, micro5Only:true, emoji:'🔒', image:'' },
-  { id:'kl13', name:'クラウゼ 13mm', sub:'Micro5専用',         id_mm:13, price:KLAUSE_RETAIL.r13*2, isKlause:true, micro5Only:true, emoji:'🔒', image:'' },
-  // ─ クラウゼリング（全サイズ共通）─
+  // ─ クラウゼリング（表示はCSV在庫連動: 行がある規格にだけ出る）─
+  { id:'kl10', name:'クラウゼ 10mm', sub:'スライドロック式', id_mm:10, price:KLAUSE_RETAIL.r10*2, isKlause:true, emoji:'🔒', image:'' },
+  { id:'kl11', name:'クラウゼ 11mm', sub:'スライドロック式', id_mm:11, price:KLAUSE_RETAIL.r11*2, isKlause:true, emoji:'🔒', image:'' },
+  { id:'kl13', name:'クラウゼ 13mm', sub:'スライドロック式', id_mm:13, price:KLAUSE_RETAIL.r13*2, isKlause:true, emoji:'🔒', image:'' },
   { id:'kl15', name:'クラウゼ 15mm', sub:'スライドロック式', id_mm:15, price:KLAUSE_RETAIL.r15*2, isKlause:true, emoji:'🔒', image:'' },
+  { id:'kl16', name:'クラウゼ 16mm', sub:'スライドロック式', id_mm:16, price:KLAUSE_RETAIL.r16*2, isKlause:true, emoji:'🔒', image:'' },
   { id:'kl20', name:'クラウゼ 20mm', sub:'スライドロック式', id_mm:20, price:KLAUSE_RETAIL.r20*2, isKlause:true, emoji:'🔒', image:'' },
   { id:'kl25', name:'クラウゼ 25mm', sub:'スライドロック式', id_mm:25, price:KLAUSE_RETAIL.r25*2, isKlause:true, emoji:'🔒', image:'' },
   { id:'kl30', name:'クラウゼ 30mm', sub:'スライドロック式', id_mm:30, price:KLAUSE_RETAIL.r30*2, isKlause:true, emoji:'🔒', image:'' },
