@@ -3283,6 +3283,24 @@ function renderRingMatrix() {
           card.appendChild(dims);
         }
 
+        let bestRow = null;
+        let bestTotal = Infinity;
+        group.colors.forEach(row => {
+          const p = Number(String(row.preferred_source_price_jpy ?? '').trim());
+          if (!Number.isFinite(p) || p <= 0) return;
+          const s = Number(String(row.preferred_source_shipping_jpy ?? '').trim()) || 0;
+          const t = p + s;
+          if (t < bestTotal) { bestTotal = t; bestRow = row; }
+        });
+        if (bestRow) {
+          const bl = document.createElement('div');
+          bl.className = 'dims';
+          const shop = String(bestRow.preferred_source_shop || '').trim() || '購入先未設定';
+          const colorLabel = String(bestRow.color_label || '').trim();
+          bl.textContent = `最安: ${shop} ${colorLabel} ¥${bestTotal.toLocaleString()}（送料込）`;
+          card.appendChild(bl);
+        }
+
         const sources = [];
         const seenSources = new Set();
         group.colors.forEach(row => {
