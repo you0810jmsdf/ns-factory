@@ -683,11 +683,24 @@ canvas{
                 <label for="targetDuration">目標の長さ</label>
                 <select id="targetDuration">
                   <option value="15">15秒</option>
+                  <option value="20">20秒</option>
+                  <option value="25">25秒</option>
                   <option value="30" selected>30秒</option>
                   <option value="45">45秒</option>
                   <option value="60">60秒</option>
                 </select>
               </div>
+            </div>
+            <div class="field">
+              <label for="lifeStoryPreset">命の物語プリセット</label>
+              <select id="lifeStoryPreset">
+                <option value="">使わない</option>
+                <option value="lifeLeather">L1 革の命「この革は、生きていた」</option>
+                <option value="lifeMaker">L2 作り手の命「一冊に、何時間かかるか」</option>
+                <option value="lifeUser">L3 使い手の命「持ち主の時間」</option>
+                <option value="lifeTool">L4 道具の命「十年目の手帳」</option>
+              </select>
+              <p class="help">作品情報・見どころメモ・物語の型・演出プリセットをまとめて切り替えます。</p>
             </div>
             <div class="field">
               <label for="scriptApplyMode">セリフの扱い（③で適用するとき）</label>
@@ -698,6 +711,7 @@ canvas{
               </select>
             </div>
             <div class="story-steps">
+              <button class="secondary" id="applyLifeStoryPreset" type="button">命の物語設定を適用</button>
               <button class="secondary" id="suggestRoles" type="button">① 写真の役割を提案（この端末内で解析）</button>
               <button class="secondary" id="reviewStructure" type="button">② 構成と順番を確認</button>
               <button class="secondary" id="applyStoryStructure" type="button">③ カメラワークと台本を適用</button>
@@ -830,6 +844,21 @@ canvas{
             <p class="help" id="motionIntensityHelp">写真ごとに選んだ動き（ズームイン等）はそのままに、動く量だけを全コマまとめて強めます。プレビューにすぐ反映されます。</p>
           </div>
           <div class="field">
+            <label for="creativePreset">演出プリセット</label>
+            <select id="creativePreset">
+              <option value="standard">標準</option>
+              <option value="quietStory">静かな物語</option>
+              <option value="texture">革の質感重視</option>
+              <option value="workshop">工房記録</option>
+              <option value="aging">経年変化</option>
+              <option value="productPr">商品PR</option>
+            </select>
+            <p class="help">動きの強さ・字幕演出・フォントをまとめて変えます。写真ごとの台本は変えません。</p>
+          </div>
+          <div class="actions">
+            <button class="secondary" id="applyCreativePreset" type="button">演出を適用</button>
+          </div>
+          <div class="field">
             <label for="bgMode">背景</label>
             <select id="bgMode">
               <option value="photo">元の写真のまま（ぼかし背景）</option>
@@ -931,6 +960,8 @@ const els = {
   translationDirection: document.getElementById('translationDirection'),
   translationHelp: document.getElementById('translationHelp'),
   storyTemplate: document.getElementById('storyTemplate'),
+  lifeStoryPreset: document.getElementById('lifeStoryPreset'),
+  applyLifeStoryPreset: document.getElementById('applyLifeStoryPreset'),
   targetDuration: document.getElementById('targetDuration'),
   applyStoryStructure: document.getElementById('applyStoryStructure'),
   suggestRoles: document.getElementById('suggestRoles'),
@@ -979,6 +1010,8 @@ const els = {
   speakScript: document.getElementById('speakScript'),
   videoFormat: document.getElementById('videoFormat'),
   motionIntensity: document.getElementById('motionIntensity'),
+  creativePreset: document.getElementById('creativePreset'),
+  applyCreativePreset: document.getElementById('applyCreativePreset'),
   bgMode: document.getElementById('bgMode'),
   bgColor: document.getElementById('bgColor'),
   bgColorField: document.getElementById('bgColorField'),
@@ -1036,7 +1069,87 @@ const STORY_TEMPLATES = Object.freeze({
   aida: {label:'AIDA（注目から行動へ）', roles:['注目','興味','欲求','証拠','行動']},
   beforeAfter: {label:'Before・After・Bridge', roles:['課題','変化','完成像','理由','次の一歩']},
   openLoop: {label:'オープンループ', roles:['問い','手がかり','期待','答え','余韻']},
-  catalog: {label:'作品カタログ', roles:['全景','正面','側面','細部','使用場面','締め']}
+  catalog: {label:'作品カタログ', roles:['全景','正面','側面','細部','使用場面','締め']},
+  lifeLeather: {label:'命の物語 L1 革の命', roles:['問い','素材・革の質感','傷やしわ','仕立て','余韻']},
+  lifeMaker: {label:'命の物語 L2 作り手の命', roles:['問い','素材準備','裁断・手元作業','縫い目・コバ','仕上げ','余韻']},
+  lifeUser: {label:'命の物語 L3 使い手の命', roles:['問い','使う場面','日々の記録','経年変化','余韻']},
+  lifeTool: {label:'命の物語 L4 道具の命', roles:['問い','比較・Before','道具と手帳','経年変化','余韻']}
+});
+
+const CREATIVE_PRESETS = Object.freeze({
+  standard: {label:'標準', motionIntensity:'standard', videoFont:'system', subtitleMotion:'fadeUp'},
+  quietStory: {label:'静かな物語', motionIntensity:'standard', videoFont:'mincho', subtitleMotion:'fadeUp'},
+  texture: {label:'革の質感重視', motionIntensity:'bold', videoFont:'mincho', subtitleMotion:'typewriterLeft'},
+  workshop: {label:'工房記録', motionIntensity:'bold', videoFont:'mono', subtitleMotion:'highlight'},
+  aging: {label:'経年変化', motionIntensity:'bold', videoFont:'serif', subtitleMotion:'fadeUp'},
+  productPr: {label:'商品PR', motionIntensity:'extra', videoFont:'system', subtitleMotion:'pop'}
+});
+
+const LIFE_STORY_PRESETS = Object.freeze({
+  lifeLeather: {
+    label:'L1 革の命',
+    productName:'革の命',
+    materialNote:'この革は、生きていた',
+    featureNote:'革の表情\n傷やしわ\n一枚ごとの個体差\n手帳になる前の物語\n手仕事で残す質感',
+    targetDuration:'20',
+    creativePreset:'texture'
+  },
+  lifeMaker: {
+    label:'L2 作り手の命',
+    productName:'作り手の命',
+    materialNote:'一冊に、何時間かかるか',
+    featureNote:'裁断前の準備\n手元の作業\n縫い目とコバ\n道具の音\n手が納得する仕上げ',
+    targetDuration:'25',
+    creativePreset:'workshop'
+  },
+  lifeUser: {
+    label:'L3 使い手の命',
+    productName:'使い手の命',
+    materialNote:'持ち主の時間が、革に残る',
+    featureNote:'白紙の手帳\n毎日の記録\n手に取る場面\n育っていく革\n持ち主だけの表情',
+    targetDuration:'20',
+    creativePreset:'quietStory'
+  },
+  lifeTool: {
+    label:'L4 道具の命',
+    productName:'道具の命',
+    materialNote:'使い込むほど、表情が深くなる',
+    featureNote:'使い込んだ手帳\n新品では出ない艶\n傷と色の変化\n長く使う道具\n時間が残る革',
+    targetDuration:'20',
+    creativePreset:'aging'
+  }
+});
+
+const LIFE_STORY_NARRATIONS = Object.freeze({
+  lifeLeather: {
+    hook:[['この革は、生きていた','この革の表情から始めます。']],
+    detail:[['傷も、しわも、同じものはない','傷も、しわも、表情です。'],
+            ['手帳になる前から、物語がある','手帳になる前の物語です。'],
+            ['その表情を、残して仕立てる','表情を残して仕立てます。']],
+    overview:[['その表情を、残して仕立てる','表情を残して仕立てます。']],
+    closing:[["N's factory", "N's factory"]]
+  },
+  lifeMaker: {
+    hook:[['一冊に、何時間かかるか','一冊にかかる時間の話です。']],
+    detail:[['切る。貼る。縫う。磨く。','手仕事を重ねます。'],
+            ['速さより、手が納得するところまで','手が納得するところまで。']],
+    usage:[['使う人の毎日に、静かに残るように','毎日に残るように仕立てます。']],
+    closing:[["N's factory", "N's factory"]]
+  },
+  lifeUser: {
+    hook:[['革は、持ち主の時間を覚えていく','持ち主の時間が革に残ります。']],
+    usage:[['開くたびに、今日の自分が少し残る','毎日の記録が残ります。'],
+           ['使う人の手で、表情が変わっていく','手で育つ表情です。']],
+    after:[['傷も艶も、その人だけの記録になる','その人だけの記録です。']],
+    closing:[["N's factory", "N's factory"]]
+  },
+  lifeTool: {
+    hook:[['十年目の手帳','長く使う道具の話です。']],
+    before:[['新品では出せない表情がある','新品にはない表情です。']],
+    detail:[['傷も艶も、持ち主の記録になる','傷も艶も記録になります。']],
+    after:[['使った時間だけ、革は変わる','時間だけ革は変わります。']],
+    closing:[["N's factory", "N's factory"]]
+  }
 });
 
 /* ══ 役割別カメラワーク・写真内容の自動分類・役割別台本（2026-07-18） ══ */
@@ -1052,9 +1165,9 @@ const ROLE_PROFILES = Object.freeze([
   {key:'overview', pattern:/全体|全景|完成像/},
   {key:'before',   pattern:/before|課題|比較/i},
   {key:'after',    pattern:/after|変化|答え|完成/i},
-  {key:'detail',   pattern:/素材|細部|仕立て|証拠|質感|縫い目|コバ|金具|リング|内部|手がかり/},
+  {key:'detail',   pattern:/素材|細部|仕立て|証拠|質感|縫い目|コバ|金具|リング|内部|手がかり|傷|しわ|裁断|手元|作業|道具/},
   {key:'side',     pattern:/側面|正面/},
-  {key:'usage',    pattern:/使い方|使用場面|価値|欲求|興味|期待|理由/},
+  {key:'usage',    pattern:/使い方|使用場面|価値|欲求|興味|期待|理由|使う場面|日々|記録|使い手/},
   {key:'cta',      pattern:/cta|行動|次の一歩/i},
   {key:'closing',  pattern:/余韻|締め/}
 ]);
@@ -1341,6 +1454,18 @@ const RELATED_ROLE_KEYS = Object.freeze({
   usage:['overview','side'], before:['overview'], after:['closing','detail'], cta:['after','closing'], closing:['after','overview']
 });
 
+function lifeStoryNarrationCandidates(key, context){
+  if(!context || context.english) return null;
+  const templateKey = els.storyTemplate ? els.storyTemplate.value : '';
+  const table = LIFE_STORY_NARRATIONS[templateKey];
+  if(!table) return null;
+  const occurrence = context.occurrence || 0;
+  const variants = table[key] || table.overview || table.detail || table.hook;
+  if(!variants) return null;
+  const rot = occurrence % variants.length;
+  return variants.slice(rot).concat(variants.slice(0, rot)).flat();
+}
+
 function proposeOrder(targets, roles){
   const remaining = targets.map((slide, originalPos) => ({slide, originalPos}));
   const order = [];
@@ -1451,6 +1576,8 @@ const ROLE_FEATURE_PATTERNS = Object.freeze({
 // 返り値は [標準1, 短縮1, 標準2, 短縮2, ...]（短縮版は表示秒数に収まらない時に使用）
 function roleNarrationCandidates(key, context){
   const {english, product, material} = context;
+  const lifeCandidates = lifeStoryNarrationCandidates(key, context);
+  if(lifeCandidates) return lifeCandidates;
   const occurrence = context.occurrence || 0;
   let table;
   if(english){
@@ -1514,13 +1641,18 @@ function roleFeaturePool(english){
 function buildRoleNarration(context){
   const {key, english, featurePool, usedTexts, isLast} = context;
   const candidates = [];
-  const pattern = ROLE_FEATURE_PATTERNS[key];
-  if(pattern){
-    featurePool.forEach(line => {
-      if(pattern.test(line)) candidates.push(english ? ensureEnglishSentence(line) : ensureJapaneseSentence(line));
-    });
+  const lifeCandidates = lifeStoryNarrationCandidates(key, context);
+  if(lifeCandidates){
+    candidates.push(...lifeCandidates);
+  }else{
+    const pattern = ROLE_FEATURE_PATTERNS[key];
+    if(pattern){
+      featurePool.forEach(line => {
+        if(pattern.test(line)) candidates.push(english ? ensureEnglishSentence(line) : ensureJapaneseSentence(line));
+      });
+    }
+    candidates.push(...roleNarrationCandidates(key, context));
   }
-  candidates.push(...roleNarrationCandidates(key, context));
   let text = candidates.find(candidate => !usedTexts.has(normalizedDistributionLine(candidate))) || candidates[candidates.length - 1];
   if(isLast && key !== 'closing' && !/thank|ありがとう/i.test(text)){
     text = `${text}${english ? ' Thank you for watching.' : ' ご覧いただき、ありがとうございます。'}`;
@@ -3448,6 +3580,62 @@ function selectedStoryTemplate(){
   return STORY_TEMPLATES[els.storyTemplate.value] || STORY_TEMPLATES.craft;
 }
 
+function syncLifePresetSelect(){
+  if(!els.lifeStoryPreset) return;
+  const key = els.storyTemplate ? els.storyTemplate.value : '';
+  els.lifeStoryPreset.value = LIFE_STORY_PRESETS[key] ? key : '';
+}
+
+function applyCreativePreset(value = '', options = {}){
+  const key = value || (els.creativePreset ? els.creativePreset.value : 'standard');
+  const preset = CREATIVE_PRESETS[key] || CREATIVE_PRESETS.standard;
+  if(els.creativePreset) els.creativePreset.value = CREATIVE_PRESETS[key] ? key : 'standard';
+  if(els.motionIntensity) els.motionIntensity.value = preset.motionIntensity;
+  if(els.videoFont) els.videoFont.value = preset.videoFont;
+  if(els.bgMode) els.bgMode.value = 'photo';
+  if(preset.subtitleMotion){
+    slides.forEach(slide => { slide.subtitleMotion = preset.subtitleMotion; });
+    if(els.subtitleMotion) els.subtitleMotion.value = preset.subtitleMotion;
+  }
+  resetRecordingOutput();
+  updateBgUi();
+  renderList();
+  if(selected >= 0) loadSelected();
+  drawSelectedOrFirstFrame();
+  if(options.showLog !== false) setLog(`演出プリセット「${preset.label}」を適用しました。動き・字幕・フォントをまとめて更新しました。`);
+}
+
+function applyLifeStoryPreset(){
+  const key = els.lifeStoryPreset ? els.lifeStoryPreset.value : '';
+  const preset = LIFE_STORY_PRESETS[key];
+  if(!preset){
+    setLog('命の物語プリセットを選んでください。');
+    return;
+  }
+  if(els.storyTemplate) els.storyTemplate.value = key;
+  if(els.productName) els.productName.value = preset.productName;
+  if(els.materialNote) els.materialNote.value = preset.materialNote;
+  if(els.featureNote) els.featureNote.value = preset.featureNote;
+  if(els.targetDuration) els.targetDuration.value = preset.targetDuration;
+  if(els.narrationLang) els.narrationLang.value = 'ja-JP';
+  if(els.scriptApplyMode) els.scriptApplyMode.value = 'keep';
+  applyCreativePreset(preset.creativePreset, {showLog:false});
+  updateTranslationUi();
+  populateVoices();
+  refreshAiVoiceOptions();
+  refreshCapabilities();
+  clearOrderProposal();
+  updateStorySummary();
+  renderList();
+  if(selected >= 0) loadSelected();
+  if(playableSlides().length){
+    applyStoryStructure();
+  }else{
+    drawSelectedOrFirstFrame();
+    setLog(`命の物語プリセット「${preset.label}」を適用しました。写真を追加したら「③ カメラワークと台本を適用」で仕上げられます。`);
+  }
+}
+
 function storyCutRange(seconds){
   if(seconds <= 15) return [3,5];
   if(seconds <= 30) return [5,7];
@@ -3543,6 +3731,7 @@ function initStoryPlanner(){
     .map(([value,template]) => `<option value="${value}">${template.label}</option>`)
     .join('');
   els.storyTemplate.value = 'craft';
+  syncLifePresetSelect();
   updateStorySummary();
 }
 
@@ -5189,6 +5378,7 @@ els.photoInput.addEventListener('change', event => addFiles(event.target.files))
 els.loadDrivePhotos.addEventListener('click', addDrivePhotos);
 els.translateFeatureNote.addEventListener('click', translateLongDescToFeatureNote);
 els.distributeFeatureNote.addEventListener('click', () => distributeFeatureNoteToSlides());
+els.applyLifeStoryPreset.addEventListener('click', applyLifeStoryPreset);
 els.applyStoryStructure.addEventListener('click', applyStoryStructure);
 els.suggestRoles.addEventListener('click', suggestPhotoRoles);
 els.reviewStructure.addEventListener('click', reviewStructure);
@@ -5205,10 +5395,16 @@ els.slideRole.addEventListener('change', () => {
 els.resetRoleAuto.addEventListener('click', resetSelectedRoleToAuto);
 els.regenSlideScript.addEventListener('click', regenerateSelectedSlideScript);
 els.storyTemplate.addEventListener('change', () => {
+  syncLifePresetSelect();
   updateStorySummary();
   clearOrderProposal();
   renderList();
   if(selected >= 0) loadSelected();
+});
+els.lifeStoryPreset.addEventListener('change', () => {
+  if(els.lifeStoryPreset.value && els.storyTemplate) els.storyTemplate.value = els.lifeStoryPreset.value;
+  updateStorySummary();
+  clearOrderProposal();
 });
 els.targetDuration.addEventListener('change', updateStorySummary);
 els.exportGateBack.addEventListener('click', () => closeExportGate(false));
@@ -5277,6 +5473,7 @@ els.motionIntensity.addEventListener('change', () => {
   const label = els.motionIntensity.options[els.motionIntensity.selectedIndex].textContent;
   setLog(`動きの強さを「${label}」にしました。プレビューと保存MP4の両方に反映されます。`);
 });
+els.applyCreativePreset.addEventListener('click', () => applyCreativePreset());
 els.bgMode.addEventListener('change', () => { updateBgUi(); ensureCutoutsForSolidBg(); });
 els.bgColor.addEventListener('input', () => drawSelectedOrFirstFrame());
 document.querySelectorAll('.bg-swatch').forEach(btn => {
