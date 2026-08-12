@@ -53,14 +53,22 @@ function isSafeId(id) {
 }
 
 /**
- * OGP用に画像を大きめのサイズへ揃える。
- * 商品マスター由来のURLは sz=w800 と w1200 が混在しており、
- * 小さいままだとSNSのカードが粗くなる（Xの大判カードは1200px推奨）。
- * Driveのサムネイルは sz を変えても同じ画像を返す（クローラからの取得も実測済み）。
+ * OGP用の画像URLを作る。
+ *
+ * ⚠ drive.google.com/thumbnail?id=... は **302で lh3.googleusercontent.com へ転送する**。
+ *   Metaのクローラは画像のリダイレクトを嫌い、Threadsでカードが出ない原因になった
+ *   （2026-08-12 実測）。そこで転送先の形式を直接組み立てて渡す。
+ *   `https://lh3.googleusercontent.com/d/<fileId>=w1200` はファイルIDから決め打ちで作れ、
+ *   facebookexternalhit から転送なし・200 image/jpeg で取れることを実測済み。
+ *
+ * サイズを1200pxに揃えるのは、商品マスターのURLが w800/w1200 混在で、
+ * 小さいとSNSの大判カードが粗くなるため。
  */
 function ogImage(mainPhoto) {
   const url = String(mainPhoto || '');
-  if (!url) return `${SITE}/assets/ogp-default.png`;
+  if (!url) return `${SITE}/assets/logo.png`; // index.html と同じ既定画像
+  const m = url.match(/[?&]id=([A-Za-z0-9_-]+)/);
+  if (m) return `https://lh3.googleusercontent.com/d/${m[1]}=w1200`;
   return url.replace(/([?&]sz=)w\d+/, '$1w1200');
 }
 
@@ -72,8 +80,12 @@ function buildHtml(w) {
   const canonical = `${SITE}/works/${id}.html`;
   const target = `${SITE}/works.html?id=${encodeURIComponent(id)}`;
 
-  // 転送は meta refresh（0秒）と location.replace の二段構え。
-  // replace を使うのは、戻るボタンでこの中継ページに戻ってループしないようにするため。
+  // ⛔ meta refresh は使わない。
+  //    Metaのクローラは refresh を追ってしまい、OGPを持たない works.html を読んで
+  //    「プレビューなし」になる（2026-08-12 Threadsで実際に発生）。
+  //    クローラはJavaScriptを実行しないので、転送を location.replace だけにすれば
+  //    クローラはこのページのOGPを読んで止まり、人間だけが詳細へ進む。
+  //    replace を使うのは、戻るボタンでこの中継ページに戻ってループしないようにするため。
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -82,17 +94,19 @@ function buildHtml(w) {
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${esc(canonical)}">
-<meta property="og:type" content="article">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
 <meta property="og:site_name" content="N's factory">
 <meta property="og:title" content="${esc(w.name || id)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${esc(image)}">
+<meta property="og:image:secure_url" content="${esc(image)}">
+<meta property="og:image:alt" content="${esc(w.name || id)}">
 <meta property="og:url" content="${esc(canonical)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(w.name || id)}">
 <meta name="twitter:description" content="${esc(desc)}">
 <meta name="twitter:image" content="${esc(image)}">
-<meta http-equiv="refresh" content="0; url=${esc(target)}">
 <style>
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
 background:#F5EFE6;color:#3A2410;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;text-align:center}
