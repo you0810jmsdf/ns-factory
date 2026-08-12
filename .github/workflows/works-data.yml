@@ -40,14 +40,19 @@ jobs:
       - name: Build works-data.json
         run: node tools/build_works_data.js
 
+      # SNSに1作品を名指しで貼るためのOGP付き案内ページ（works/<商品ID>.html）。
+      # works-data.json を入力にするので必ずこの順で実行する。
+      - name: Build per-work share pages
+        run: node tools/build_work_pages.js
+
       - name: Commit updated data
         run: |
-          if git diff --quiet -- works-data.json; then
+          if git diff --quiet -- works-data.json works/; then
             echo "変更なし。"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add works-data.json
-          git commit -m "auto: 作品集フォールバックデータを更新"
+          git add works-data.json works/
+          git commit -m "auto: 作品集フォールバックデータと作品ページを更新"
           git push
