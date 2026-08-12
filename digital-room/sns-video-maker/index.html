@@ -604,7 +604,9 @@ canvas{
               <div class="actions">
                 <label class="primary file-btn" for="photoInput">＋ 端末から写真を追加</label>
                 <input id="photoInput" type="file" accept="image/*" multiple hidden>
+                <button class="secondary" id="clearAllPhotos" type="button" hidden>🗑 写真を全部クリア</button>
               </div>
+              <p class="help" id="clearAllPhotosHelp" hidden>別の作品に入れ替えるときに使います。写真だけを消し、作品名・台本の設定はそのまま残します。</p>
               <details class="drive">
                 <summary>Google Driveから読み込む</summary>
                 <div class="field">
@@ -996,6 +998,8 @@ const els = {
   photoLoader: document.getElementById('photoLoader'),
   photoLoadSummary: document.getElementById('photoLoadSummary'),
   photoNextStep: document.getElementById('photoNextStep'),
+  clearAllPhotos: document.getElementById('clearAllPhotos'),
+  clearAllPhotosHelp: document.getElementById('clearAllPhotosHelp'),
   frameCount: document.getElementById('frameCount'),
   photoInput: document.getElementById('photoInput'),
   driveFolder: document.getElementById('driveFolder'),
@@ -1867,6 +1871,7 @@ function updatePhotoPanelUi(options = {}){
   }
   updateStorySummary();
   if(els.photoNextStep) els.photoNextStep.hidden = total === 0;
+  updateClearAllPhotosUi();
   if(!els.photoLoader) return;
   if(total === 0) els.photoLoader.open = true;
   else if(options.collapse) els.photoLoader.open = false;
@@ -3053,6 +3058,36 @@ function removeSelected(){
   renderList();
   loadSelected();
   drawSelectedOrFirstFrame();
+}
+
+// 別作品へ入れ替えるための一括削除。写真だけ消し、作品名・台本・演出の設定は残す
+// （Drive読み込みは追記動作なので、消さずに読むと前の作品と混ざる）
+function clearAllPhotos(){
+  if(!slides.length) return;
+  if(!confirm(`写真 ${slides.length} 枚をすべて削除します。\n作品名・台本・演出の設定は残ります。よろしいですか？`)) return;
+  if(playing || ttsBusy) stopPreviewPlayback();
+  clearOrderProposal();
+  slides.forEach(slide => { if(slide.objectUrl) URL.revokeObjectURL(slide.url); });
+  slides = [];
+  selected = -1;
+  previewReviewed = false;
+  resetRecordingOutput();
+  renderList();
+  loadSelected();
+  updatePhotoPanelUi();
+  drawSelectedOrFirstFrame();
+  // 前の作品の読み込み結果メッセージが残ると誤解を招くため、枠ごと消す
+  if(els.driveStatus){
+    els.driveStatus.textContent = '';
+    els.driveStatus.className = 'drive-status';
+  }
+  setLog('写真をすべて削除しました。作品番号を入れて「Driveから写真を表示」で別の作品を読み込めます。');
+}
+
+function updateClearAllPhotosUi(){
+  const has = slides.length > 0;
+  if(els.clearAllPhotos) els.clearAllPhotos.hidden = !has;
+  if(els.clearAllPhotosHelp) els.clearAllPhotosHelp.hidden = !has;
 }
 
 function totalDuration(){
@@ -5678,6 +5713,7 @@ document.getElementById('recordMic').addEventListener('click', async () => {
 document.getElementById('moveUp').addEventListener('click', () => moveSelected(-1));
 document.getElementById('moveDown').addEventListener('click', () => moveSelected(1));
 document.getElementById('removeSlide').addEventListener('click', removeSelected);
+els.clearAllPhotos.addEventListener('click', clearAllPhotos);
 ['caption','narration','duration','transitionDuration','motion','transition','subtitleMotion'].forEach(id => {
   const control = document.getElementById(id);
   const redraw = () => {
