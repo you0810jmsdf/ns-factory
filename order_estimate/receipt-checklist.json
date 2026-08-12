@@ -39,8 +39,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://moneyforward.com/payments",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -66,8 +66,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://console.anthropic.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
+          "url": "https://platform.claude.com/settings/billing",
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "electricity": {
@@ -75,7 +75,7 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.kurashi-fp.tepco.co.jp/",
+          "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
@@ -173,8 +173,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://moneyforward.com/payments",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -208,8 +208,8 @@
           }
         ],
         "guide": {
-          "url": "https://console.anthropic.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
+          "url": "https://platform.claude.com/settings/billing",
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "electricity": {
@@ -217,7 +217,7 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.kurashi-fp.tepco.co.jp/",
+          "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
@@ -300,8 +300,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://moneyforward.com/payments",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -335,8 +335,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://console.anthropic.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
+          "url": "https://platform.claude.com/settings/billing",
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "electricity": {
@@ -344,7 +344,7 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.kurashi-fp.tepco.co.jp/",
+          "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
@@ -427,8 +427,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://moneyforward.com/payments",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -454,8 +454,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://console.anthropic.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
+          "url": "https://platform.claude.com/settings/billing",
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "electricity": {
@@ -463,7 +463,7 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.kurashi-fp.tepco.co.jp/",
+          "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
@@ -546,8 +546,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://moneyforward.com/payments",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -573,8 +573,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://console.anthropic.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
+          "url": "https://platform.claude.com/settings/billing",
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "electricity": {
@@ -582,7 +582,7 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.kurashi-fp.tepco.co.jp/",
+          "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
@@ -665,8 +665,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://moneyforward.com/payments",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -692,8 +692,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://console.anthropic.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
+          "url": "https://platform.claude.com/settings/billing",
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "electricity": {
@@ -701,7 +701,7 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.kurashi-fp.tepco.co.jp/",
+          "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
@@ -784,8 +784,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://moneyforward.com/payments",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -811,8 +811,8 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://console.anthropic.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
+          "url": "https://platform.claude.com/settings/billing",
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "electricity": {
@@ -820,7 +820,7 @@
         "count": 0,
         "records": [],
         "guide": {
-          "url": "https://www.kurashi-fp.tepco.co.jp/",
+          "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
@@ -889,5 +889,5 @@
       }
     }
   },
-  "checked_at": "2026-08-12 18:33:05"
+  "checked_at": "2026-08-12 19:10:42"
 }
