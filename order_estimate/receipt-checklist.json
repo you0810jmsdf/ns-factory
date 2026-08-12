@@ -35,9 +35,45 @@
   "matrix": {
     "2026-08": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 5,
+        "records": [
+          {
+            "date": "2026-08-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085335_Apple領収書_19feab0641a7c1e4.txt"
+          },
+          {
+            "date": "2026-08-07",
+            "amount": 220,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085423_Apple領収書_19fdc11dc4ce5e62.txt"
+          },
+          {
+            "date": "2026-08-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085447_Apple領収書_19fd2c456c30cfe8.txt"
+          },
+          {
+            "date": "2026-08-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085511_Apple領収書_19feab0641a7c1e4.txt"
+          },
+          {
+            "date": "2026-08-07",
+            "amount": 220,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085600_Apple領収書_19fdc11dc4ce5e62.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
@@ -89,9 +125,38 @@
         }
       },
       "water": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 4,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085316_水道_19ff8527c477e368.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085317_水道_19ff83d209f77ddf.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085451_水道_19ff8527c477e368.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085452_水道_19ff83d209f77ddf.txt"
+          }
+        ],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
@@ -2200,5 +2265,5 @@
       }
     }
   },
-  "checked_at": "2026-08-13 08:41:04"
+  "checked_at": "2026-08-13 08:56:17"
 }
