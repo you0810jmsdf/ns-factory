@@ -192,6 +192,16 @@ details.drive[open] summary{border-bottom:1px dashed var(--line);margin-bottom:1
 .drive-status.info{background:var(--brass-light);color:var(--ink)}
 .drive-status.success{background:#EFF8EF;color:#276738;border-color:#C8DFC8}
 .drive-status.error{background:#FFF0EA;color:#8F3E23;border-color:#E6B8A6}
+.drive-work-info{
+  margin:-4px 0 12px;padding:9px 11px;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:#FFF;color:var(--ink-sub);font-size:12px;line-height:1.6;
+}
+.drive-work-info strong,.drive-work-info span{display:block}
+.drive-work-info strong{color:var(--ink);font-size:12.5px}
+.drive-work-info.is-empty{background:var(--card-soft)}
+.drive-work-info.success{background:#EFF8EF;color:#276738;border-color:#C8DFC8}
+.drive-work-info.warning{background:#FFF8E8;color:#795D20;border-color:#E3D09A}
+.drive-work-info.error{background:#FFF0EA;color:#8F3E23;border-color:#E6B8A6}
 .slides{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;padding:2px}
 .slide-item{
   display:grid;grid-template-columns:60px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;
@@ -601,21 +611,29 @@ canvas{
                   <label for="driveFolder">Google DriveフォルダURL / ID</label>
                   <input id="driveFolder" value="https://drive.google.com/drive/u/0/folders/1yhc1nSkAzwq_QOIQjbsrKQTeSvtdeH_3" autocomplete="off">
                 </div>
+                <div class="field">
+                  <label for="driveWorkSelect">作品をリストから選択</label>
+                  <select id="driveWorkSelect">
+                    <option value="">作品集を読み込み中 / 番号を直接入力</option>
+                  </select>
+                </div>
                 <div class="row">
                   <div class="field">
                     <label for="driveWorkNo">作品番号</label>
-                    <input id="driveWorkNo" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
+                    <input id="driveWorkNo" list="driveWorkNoList" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
+                    <datalist id="driveWorkNoList"></datalist>
                   </div>
                   <div class="field">
                     <label for="driveLimit">最大枚数</label>
                     <input id="driveLimit" type="number" min="1" max="12" value="8">
                   </div>
                 </div>
+                <div class="drive-work-info is-empty" id="driveWorkInfo" role="status">作品を選ぶか番号を入力すると、作品名とDriveフォルダ登録状況を表示します。</div>
                 <div class="actions">
                   <button class="secondary" id="loadDrivePhotos">Driveから写真を表示</button>
                 </div>
                 <div class="drive-status" id="driveStatus" role="status"></div>
-                <p class="help">作品番号を入力してEnter。反応しない時だけボタンを押してください。</p>
+                <p class="help">リスト選択または番号入力後、EnterかボタンでDrive写真を読み込みます。</p>
               </details>
             </div>
           </details>
@@ -981,7 +999,10 @@ const els = {
   frameCount: document.getElementById('frameCount'),
   photoInput: document.getElementById('photoInput'),
   driveFolder: document.getElementById('driveFolder'),
+  driveWorkSelect: document.getElementById('driveWorkSelect'),
   driveWorkNo: document.getElementById('driveWorkNo'),
+  driveWorkNoList: document.getElementById('driveWorkNoList'),
+  driveWorkInfo: document.getElementById('driveWorkInfo'),
   driveLimit: document.getElementById('driveLimit'),
   driveStatus: document.getElementById('driveStatus'),
   loadDrivePhotos: document.getElementById('loadDrivePhotos'),
@@ -2170,12 +2191,14 @@ async function loadWorksCatalog(){
         ? data.map(normalizeWorkItem).filter(work => work.id && work.title)
         : [];
       populateProductNamePresets();
+      populateDriveWorkPicker();
       return worksCatalog;
     })
     .catch(err => {
       console.warn('Works catalog could not be loaded.', err);
       const manual = els.productNamePreset.querySelector('option[value=""]');
       if(manual) manual.textContent = '手入力の作品名を使う';
+      populateDriveWorkPicker();
       return [];
     });
   return worksCatalogPromise;
@@ -2209,12 +2232,41 @@ function populateProductNamePresets(){
   worksCatalog.forEach(work => {
     const option = document.createElement('option');
     option.value = `work:${work.id}`;
-    option.textContent = `${work.id} / ${work.title}`;
+    option.textContent = `${work.id} / ${work.title}${work.folderId ? ' / Driveあり' : ' / Drive未登録'}`;
     els.productNamePreset.appendChild(option);
   });
   if(current && [...els.productNamePreset.options].some(option => option.value === current)){
     els.productNamePreset.value = current;
   }
+}
+
+function populateDriveWorkPicker(){
+  if(!els.driveWorkSelect || !els.driveWorkNoList) return;
+  const current = els.driveWorkSelect.value;
+  els.driveWorkSelect.innerHTML = '';
+  const manual = document.createElement('option');
+  manual.value = '';
+  manual.textContent = worksCatalog.length ? '作品番号・作品名から選ぶ' : '作品集を読み込み中 / 番号を直接入力';
+  els.driveWorkSelect.appendChild(manual);
+  els.driveWorkNoList.innerHTML = '';
+  worksCatalog.forEach(work => {
+    const workNo = workNumberOf(work);
+    if(!workNo) return;
+    const option = document.createElement('option');
+    option.value = workNo;
+    option.textContent = `${work.id} / ${work.title} / ${work.folderId ? 'Driveあり' : 'Drive未登録'}`;
+    els.driveWorkSelect.appendChild(option);
+
+    const numberOption = document.createElement('option');
+    numberOption.value = workNo;
+    numberOption.label = `${work.id} / ${work.title} / ${work.folderId ? 'Driveあり' : 'Drive未登録'}`;
+    els.driveWorkNoList.appendChild(numberOption);
+  });
+  if(current && [...els.driveWorkSelect.options].some(option => option.value === current)){
+    els.driveWorkSelect.value = current;
+  }
+  syncDriveWorkSelectToNumber();
+  updateDriveWorkInfo(findWorkByNumber(els.driveWorkNo.value), els.driveWorkNo.value);
 }
 
 async function applyWorkInfoFromDriveData(data, workNo){
@@ -2267,10 +2319,17 @@ function applyWorkInfo(work, {translate = false, showLog = false} = {}){
   // フォルダ番号は作品と共通のため、左ペインの作品番号も常に同期させる
   const workNo = workNumberOf(work);
   if(workNo) els.driveWorkNo.value = workNo;
+  syncDriveWorkSelectToNumber();
+  updateDriveWorkInfo(work, workNo);
   refreshUploadButton();
   drawSelectedOrFirstFrame();
   if(showLog) setLog(`作品集「${work.title}」の情報を反映しました。`);
   if(translate && work.longDesc) translateLongDescToFeatureNote({source: work.longDesc});
+}
+
+function normalizedWorkNumber(value){
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits ? String(parseInt(digits, 10)) : '';
 }
 
 function workNumberOf(work){
@@ -2278,24 +2337,115 @@ function workNumberOf(work){
   return suffix ? String(parseInt(suffix, 10)) : '';
 }
 
+function findWorkByNumber(value){
+  const normalized = normalizedWorkNumber(value);
+  if(!normalized || !worksCatalog.length) return null;
+  return worksCatalog.find(item => workNumberOf(item) === normalized) || null;
+}
+
+function syncDriveWorkSelectToNumber(){
+  if(!els.driveWorkSelect) return;
+  const normalized = normalizedWorkNumber(els.driveWorkNo.value);
+  const hasOption = normalized && [...els.driveWorkSelect.options].some(option => option.value === normalized);
+  els.driveWorkSelect.value = hasOption ? normalized : '';
+}
+
+function setDriveWorkInfoState(type, lines){
+  if(!els.driveWorkInfo) return;
+  els.driveWorkInfo.className = `drive-work-info ${type}`;
+  els.driveWorkInfo.textContent = '';
+  lines.filter(Boolean).forEach((line, index) => {
+    const node = document.createElement(index === 0 ? 'strong' : 'span');
+    node.textContent = line;
+    els.driveWorkInfo.appendChild(node);
+  });
+}
+
+function updateDriveWorkInfo(work, inputValue = ''){
+  if(!els.driveWorkInfo) return;
+  const normalized = normalizedWorkNumber(inputValue || els.driveWorkNo.value);
+  if(!normalized){
+    setDriveWorkInfoState('is-empty', [
+      worksCatalog.length
+        ? '作品を選ぶか番号を入力すると、作品名とDriveフォルダ登録状況を表示します。'
+        : '作品集を読み込み中です。読み込み後に作品名とDriveフォルダ登録状況を表示します。'
+    ]);
+    return;
+  }
+  if(!worksCatalog.length){
+    setDriveWorkInfoState('is-empty', [
+      `作品番号 ${normalized}`,
+      '作品集を読み込み中です。読み込み後に作品名を表示します。'
+    ]);
+    return;
+  }
+  if(!work){
+    setDriveWorkInfoState('error', [
+      `作品番号 ${normalized} は作品集に見つかりません。`,
+      '番号はそのままDrive検索できますが、作品名は自動表示できません。'
+    ]);
+    return;
+  }
+  const meta = formatWorkMeta(work);
+  setDriveWorkInfoState(work.folderId ? 'success' : 'warning', [
+    `${work.id} / ${work.title}`,
+    work.folderId
+      ? 'Driveフォルダ登録あり。この作品フォルダを優先して読み込みます。'
+      : 'Driveフォルダ未登録。上のDriveルートフォルダから番号検索します。',
+    meta ? `素材・サイズ: ${meta}` : ''
+  ]);
+}
+
 async function syncWorkFromNumber({showLog = true} = {}){
-  const digits = els.driveWorkNo.value.replace(/\D/g, '');
-  if(!digits) return null;
+  const normalized = normalizedWorkNumber(els.driveWorkNo.value);
+  if(!normalized){
+    syncDriveWorkSelectToNumber();
+    updateDriveWorkInfo(null, '');
+    return null;
+  }
   await loadWorksCatalog();
-  const normalized = String(parseInt(digits, 10));
-  const work = worksCatalog.find(item => workNumberOf(item) === normalized);
+  const work = findWorkByNumber(normalized);
+  syncDriveWorkSelectToNumber();
+  updateDriveWorkInfo(work, normalized);
   if(work){
     if(!currentWork || currentWork.id !== work.id) applyWorkInfo(work, {translate:false, showLog});
     return work;
   }else{
-    if(showLog) setLog(`作品番号 ${digits} は作品集に見つかりません。番号を確認してください（Drive読み込み自体は可能です）。`);
+    if(showLog) setLog(`作品番号 ${normalized} は作品集に見つかりません。番号を確認してください（Drive読み込み自体は可能です）。`);
     return null;
   }
 }
 
+function handleDriveWorkNoInput(){
+  const normalized = normalizedWorkNumber(els.driveWorkNo.value);
+  syncDriveWorkSelectToNumber();
+  updateDriveWorkInfo(findWorkByNumber(normalized), normalized);
+  if(normalized && !worksCatalog.length){
+    loadWorksCatalog().then(() => {
+      if(normalizedWorkNumber(els.driveWorkNo.value) !== normalized) return;
+      syncDriveWorkSelectToNumber();
+      updateDriveWorkInfo(findWorkByNumber(normalized), normalized);
+    });
+  }
+}
+
+async function handleDriveWorkSelectChange(){
+  if(!els.driveWorkSelect.value){
+    updateDriveWorkInfo(findWorkByNumber(els.driveWorkNo.value), els.driveWorkNo.value);
+    return;
+  }
+  els.driveWorkNo.value = els.driveWorkSelect.value;
+  const work = await syncWorkFromNumber({showLog:true});
+  updateDriveWorkInfo(work, els.driveWorkNo.value);
+}
+
 async function handleDriveWorkNoChange(){
-  const digits = els.driveWorkNo.value.replace(/\D/g, '');
-  if(!digits) return;
+  const digits = normalizedWorkNumber(els.driveWorkNo.value);
+  if(!digits){
+    syncDriveWorkSelectToNumber();
+    updateDriveWorkInfo(null, '');
+    return;
+  }
   await syncWorkFromNumber({showLog:true});
   if(slides.length){
     setLog('作品情報を反映しました。写真は既に追加済みです。別作品に入れ替える場合は、不要な写真を削除してからDrive読み込みを実行してください。');
@@ -5503,6 +5653,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 els.slides.addEventListener('click', () => { if(slides.length) activateTab('tab-slide'); });
 els.uploadVideoToDrive.addEventListener('click', uploadVideoToDrive);
+els.driveWorkSelect.addEventListener('change', handleDriveWorkSelectChange);
+els.driveWorkNo.addEventListener('input', handleDriveWorkNoInput);
 els.driveWorkNo.addEventListener('change', handleDriveWorkNoChange);
 els.driveWorkNo.addEventListener('keydown', event => {
   if(event.key !== 'Enter') return;
