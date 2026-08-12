@@ -694,6 +694,10 @@ td.amount{
               <textarea id="receiptMemo" placeholder="品目・読取元ファイル・確認事項"></textarea>
             </div>
             <div class="field wide">
+              <label for="receiptItems">購入品（在庫反映用）</label>
+              <textarea id="receiptItems" placeholder="読み取れた商品名・材料名を残します"></textarea>
+            </div>
+            <div class="field wide">
               <label for="receiptRawText">OCRテキスト</label>
               <textarea id="receiptRawText" placeholder="読取結果の原文がここに入ります"></textarea>
             </div>
@@ -1285,6 +1289,7 @@ td.amount{
     $('receiptAccount').value = '消耗品費';
     $('receiptTax').value = '課税仕入10%';
     $('receiptMemo').value = '';
+    $('receiptItems').value = '';
     $('receiptRawText').value = '';
   }
 
@@ -1431,6 +1436,7 @@ td.amount{
     const amountInfo = extractReceiptAmount(lines);
     const tax = detectReceiptTax(normalized);
     const account = guessDebitAccount(normalized, store, date);
+    const items = extractReceiptItems(lines, store, amountInfo.source);
     const businessAmountInfo = applyBusinessRules(amountInfo.amount, account, store, normalized);
     const memo = buildReceiptMemo(lines, fileName, amountInfo, businessAmountInfo, confidence);
     return {
@@ -1440,6 +1446,7 @@ td.amount{
       originalAmount:amountInfo.amount,
       amountSource:amountInfo.source,
       amountNeedsReview:amountInfo.needsReview,
+      items,
       account,
       tax,
       memo,
@@ -1454,7 +1461,7 @@ td.amount{
       .replace(/[，]/g, ',')
       .replace(/[．]/g, '.')
       .replace(/[／]/g, '/')
-      .replace(/[－ー―]/g, '-')
+      .replace(/[－―]/g, '-')
       .replace(/[￥]/g, '¥');
   }
 
@@ -1504,7 +1511,7 @@ td.amount{
   }
 
   function extractReceiptAmount(lines){
-    const strongKeyword = /(領収金額|総合計|税込合計|お支払(?:い)?金額|支払(?:い)?合計|お買上(?:げ)?合計|ご利用金額|ご請求金額|クレジット売上|現計|合\s*計)/;
+    const strongKeyword = /(領収金額|総合計|税込合計|お支払(?:い)?金額|お支払(?:い)?計|支払(?:い)?合計|お買上(?:げ)?(?:金額|額|計|合計)|買上(?:げ)?計|ご利用金額|ご請求金額|クレジット売上|現計|合\s*計)/;
     const weakKeyword = /(税込|お買上|お買い上げ|ご利用額|支払|金額)/;
     const rejectLine = /(TEL|電話|郵便番号|〒|登録番号|適格請求書|事業者番号|伝票番号|受付番号|注文番号|No\.|NO\.|番号|バーコード|JAN|ポイント|残高|会員|担当|客数|税率|対象額)/i;
     const taxOnlyLine = /(消費税|税額|内税|外税|税抜|課税対象|税率)/;
@@ -1544,14 +1551,6 @@ td.amount{
     }
     candidates.sort((a, b) => b.score - a.score || b.amount - a.amount);
     const picked = candidates[0];
-    if(picked.needsReview){
-      return {
-        amount:0,
-        source:picked.source,
-        needsReview:true,
-        reason:'合計行ではないため金額は未確定'
-      };
-    }
     return picked;
   }
 
@@ -1571,6 +1570,31 @@ td.amount{
     if(/(免税|非課税|対象外)/.test(text)) return '対象外';
     if(/(軽減|8\s*%|8%)/.test(text)) return '課税仕入8%（軽）';
     return '課税仕入10%';
+  }
+
+  function extractReceiptItems(lines, store, amountSource){
+    const skip = /(領収書|領収証|レシート|納品書|請求書|明細|TEL|電話|登録番号|No\.|NO\.|番号|合計|総合計|小計|消費税|税額|内税|外税|税込合計|税率|対象額|釣銭|お釣|預り|お預り|クレジット|現計|領収金額|お支払|支払|ポイント|クーポン|値引|割引|発行|様)/i;
+    const dateLike = /(20\d{2}|\d{1,2})[\/.\-年]\s*\d{1,2}[\/.\-月]\s*\d{1,2}/;
+    const storeText = String(store || '').replace(/\s/g, '').toLowerCase();
+    const amountLine = String(amountSource || '').replace(/\s/g, '');
+    const items = [];
+    lines.forEach(line => {
+      const compact = line.replace(/\s/g, '');
+      if(!compact || compact.length < 2) return;
+      if(compact.toLowerCase() === storeText) return;
+      if(compact === amountLine) return;
+      if(skip.test(line) || dateLike.test(line)) return;
+      if(/^\d+$/.test(compact)) return;
+      if(!/[ぁ-んァ-ン一-龠A-Za-z]/.test(line)) return;
+      const cleaned = line
+        .replace(/(?:[¥￥]\s*)?(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]{2,8}\s*円)/g, '')
+        .replace(/\b[0-9]+\s*(点|個|枚|本|式|m|cm|ds)\b/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      if(cleaned.length < 2) return;
+      if(!items.includes(cleaned)) items.push(cleaned);
+    });
+    return items.slice(0, 8);
   }
 
   function guessDebitAccount(text, store, date){
@@ -1620,11 +1644,6 @@ td.amount{
     const parts = [];
     if(amountInfo.reason) parts.push(`金額要確認: ${amountInfo.reason}`);
     if(businessAmountInfo.note) parts.push(businessAmountInfo.note);
-    const itemLine = lines.find(line => {
-      return line.length >= 3 && line.length <= 42 &&
-        !/(領収書|レシート|合計|小計|消費税|税込|TEL|電話|登録番号|No\.|¥|円)/i.test(line);
-    });
-    if(itemLine) parts.push(itemLine);
     if(amountInfo.source) parts.push(`金額行: ${amountInfo.source.slice(0, 48)}`);
     if(confidence) parts.push(`OCR信頼度 ${confidence}%`);
     parts.push(`[読取:${fileName}]`);
@@ -1644,9 +1663,17 @@ td.amount{
       '貸方金額': parsed.amount,
       '摘要': parsed.store,
       'タグ': '',
-      'メモ': parsed.memo,
+      'メモ': combineReceiptMemo(parsed.items.join('\n'), parsed.memo),
       '決済': ''
     });
+  }
+
+  function combineReceiptMemo(itemsText, memoText){
+    const itemLines = String(itemsText || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    const parts = [];
+    if(itemLines.length) parts.push(`購入品: ${itemLines.join(' / ')}`);
+    if(memoText) parts.push(String(memoText).trim());
+    return parts.join(' / ');
   }
 
   function buildReceiptRowFromFields(){
@@ -1667,7 +1694,7 @@ td.amount{
       '貸方金額': amount,
       '摘要': $('receiptStore').value,
       'タグ': '',
-      'メモ': $('receiptMemo').value,
+      'メモ': combineReceiptMemo($('receiptItems').value, $('receiptMemo').value),
       '決済': ''
     });
   }
@@ -1680,6 +1707,7 @@ td.amount{
     $('receiptAccount').value = parsed.account || '消耗品費';
     $('receiptTax').value = parsed.tax || '課税仕入10%';
     $('receiptMemo').value = parsed.memo || '';
+    $('receiptItems').value = (parsed.items || []).join('\n');
     $('receiptRawText').value = candidate.rawText || '';
   }
 
@@ -1698,7 +1726,7 @@ td.amount{
     $('debitTax').value = $('receiptTax').value || '課税仕入10%';
     $('creditAccount').value = '事業主借';
     $('creditTax').value = '対象外';
-    $('memo').value = $('receiptMemo').value;
+    $('memo').value = combineReceiptMemo($('receiptItems').value, $('receiptMemo').value);
     $('tag').value = '';
     showToast('手入力欄へ反映しました。');
   }
