@@ -2,6 +2,20 @@
 
 このファイルは、Claude Code がリポジトリを開いたときに今回の変更意図を把握できるように残す作業メモです。
 
+## 2026-08-12 — SNS動画メーカー: 「写真を全部クリア」ボタンを追加
+
+- 対象: `digital-room/sns-video-maker/index.html`
+- 背景: **Drive読み込みは追記動作**（`addDataUrlPhotos` が `slides` に push）なので、写真を残したまま別作品を読むと混ざる。従来の回避策はページ再読み込み（台本・演出設定も消える）か1枚ずつ削除しかなかった。月4本運用で作品を連続処理するため一括クリアを追加。
+- 実装:
+  - `clearAllPhotos()` … confirm確認 → objectURL解放 → `slides=[]` / `selected=-1` / `previewReviewed=false` → `resetRecordingOutput()` → 再描画。**作品名・台本・演出プリセットは保持**（写真だけ消す）。
+  - `updateClearAllPhotosUi()` を `updatePhotoPanelUi()` から呼び、**写真0枚のときはボタンと説明文を隠す**。
+  - `stopPreviewPlayback()` は `playing || ttsBusy` のときだけ呼ぶ（無条件だと「確認再生を停止しました」の余計なログが毎回出る）。
+  - driveStatus は `setDriveStatus('','')` ではなく className を `drive-status` に戻して枠ごと消す（`show` クラスが付くと空の枠が残るため）。
+- 検証（ローカル実測・ダミー写真で通し）: 写真0枚→ボタン非表示／3枚→表示・「3 / 3枚を使用」／confirmキャンセル→3枚のまま／OK→0枚・selected=-1・ボタン再非表示・driveStatus空・作品名と見どころメモは保持／クリア後に2枚読み込み→前の3枚と混ざらず2枚のみ／JSエラー0。本番配信HTMLで実装7項目の反映を確認。
+- 注意:
+  - 写真追加が追記である前提は変えていない。**全クリアを経ずに別作品を読むと混ざる仕様のまま**（ツール内メッセージもその案内を維持）。
+  - `slides` を直接空にする処理を他へ増やすときは、objectURL解放と `selected` リセットを必ずセットで行うこと（解放漏れはメモリリーク、`selected` 放置は描画時に範囲外参照になる）。
+
 ## 2026-08-12 — SNS動画メーカー: Drive通信の自動リトライ＋誤解を招くエラー文言の修正
 
 - 対象: `digital-room/sns-video-maker/index.html`（GASは無改修）
