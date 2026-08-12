@@ -282,9 +282,17 @@
         }
       },
       "internet": {
-        "status": "SoftBank合算（mobile列参照）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-07-01",
+            "amount": 3001,
+            "subject": "インターネット（SoftBank光）",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-07\\Ymobile_202607.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.ymobile.jp/",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
@@ -295,9 +303,9 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-08-11",
-            "amount": 14854,
-            "subject": "携帯電話料金",
+            "date": "2026-07-01",
+            "amount": 11853,
+            "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-07\\Ymobile_202607.pdf"
           }
@@ -468,9 +476,17 @@
         }
       },
       "internet": {
-        "status": "SoftBank合算（mobile列参照）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-06-01",
+            "amount": 5586,
+            "subject": "インターネット（SoftBank光）",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-06\\Ymobile_202606.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.ymobile.jp/",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
@@ -481,9 +497,9 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-07-11",
-            "amount": 15738,
-            "subject": "携帯電話料金",
+            "date": "2026-06-01",
+            "amount": 10152,
+            "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-06\\Ymobile_202606.pdf"
           }
@@ -638,9 +654,17 @@
         }
       },
       "internet": {
-        "status": "SoftBank合算（mobile列参照）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-05-01",
+            "amount": 6024,
+            "subject": "インターネット（SoftBank光）",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-05\\Ymobile_202605.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.ymobile.jp/",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
@@ -651,9 +675,9 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-06-11",
-            "amount": 20758,
-            "subject": "携帯電話料金",
+            "date": "2026-05-01",
+            "amount": 14734,
+            "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-05\\Ymobile_202605.pdf"
           }
@@ -822,9 +846,17 @@
         }
       },
       "internet": {
-        "status": "SoftBank合算（mobile列参照）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-04-01",
+            "amount": 2863,
+            "subject": "インターネット（SoftBank光）",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-04\\Ymobile_202604.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.ymobile.jp/",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
@@ -835,9 +867,9 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-05-11",
-            "amount": 9916,
-            "subject": "携帯電話料金",
+            "date": "2026-04-01",
+            "amount": 7053,
+            "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-04\\Ymobile_202604.pdf"
           }
@@ -992,9 +1024,17 @@
         }
       },
       "internet": {
-        "status": "SoftBank合算（mobile列参照）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-03-01",
+            "amount": 9138,
+            "subject": "インターネット（SoftBank光）",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-03\\Ymobile_202603.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.ymobile.jp/",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
@@ -1005,9 +1045,9 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-04-11",
-            "amount": 20491,
-            "subject": "携帯電話料金",
+            "date": "2026-03-01",
+            "amount": 11353,
+            "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-03\\Ymobile_202603.pdf"
           }
@@ -1154,9 +1194,17 @@
         }
       },
       "internet": {
-        "status": "SoftBank合算（mobile列参照）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-02-01",
+            "amount": 9136,
+            "subject": "インターネット（SoftBank光）",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-02\\Ymobile_202602.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.ymobile.jp/",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
@@ -1167,9 +1215,9 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-03-11",
-            "amount": 20951,
-            "subject": "携帯電話料金",
+            "date": "2026-02-01",
+            "amount": 11815,
+            "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-02\\Ymobile_202602.pdf"
           }
@@ -1316,9 +1364,17 @@
         }
       },
       "internet": {
-        "status": "SoftBank合算（mobile列参照）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-01-01",
+            "amount": 9144,
+            "subject": "インターネット（SoftBank光）",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-01\\Ymobile_202601.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.ymobile.jp/",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
@@ -1329,9 +1385,9 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-02-11",
-            "amount": 22511,
-            "subject": "携帯電話料金",
+            "date": "2026-01-01",
+            "amount": 13367,
+            "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-01\\Ymobile_202601.pdf"
           }
@@ -2144,5 +2200,5 @@
       }
     }
   },
-  "checked_at": "2026-08-13 08:35:34"
+  "checked_at": "2026-08-13 08:41:04"
 }
