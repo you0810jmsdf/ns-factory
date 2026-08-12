@@ -494,7 +494,7 @@ td.amount{
     <div>
       <div class="eyebrow">MoneyForward Import Data</div>
       <h1>仕訳CSV作成</h1>
-      <p class="lead">税込入力の仕訳を整えて、MoneyForwardに取り込むCSVを作成します。</p>
+      <p class="lead">領収書画像・PDFの読取、手入力、貼り付けデータからMoneyForward取込CSVを作成します。</p>
     </div>
     <div class="actions">
       <button class="btn good" id="downloadBtn" type="button">CSVダウンロード</button>
@@ -516,12 +516,12 @@ td.amount{
       </div>
       <div class="panel-body">
         <div class="tabs" role="tablist" aria-label="入力方式">
-          <button class="tab active" id="manualTab" type="button" role="tab" aria-selected="true">手入力</button>
+          <button class="tab" id="manualTab" type="button" role="tab" aria-selected="false">手入力</button>
           <button class="tab" id="pasteTab" type="button" role="tab" aria-selected="false">貼り付け</button>
-          <button class="tab" id="receiptTab" type="button" role="tab" aria-selected="false">領収書読取</button>
+          <button class="tab active" id="receiptTab" type="button" role="tab" aria-selected="true">領収書読取</button>
         </div>
 
-        <div class="mode-panel active" id="manualPanel" role="tabpanel" aria-labelledby="manualTab">
+        <div class="mode-panel" id="manualPanel" role="tabpanel" aria-labelledby="manualTab">
           <form id="entryForm">
             <div class="form-grid">
               <div class="field wide">
@@ -644,7 +644,7 @@ td.amount{
           </div>
         </div>
 
-        <div class="mode-panel" id="receiptPanel" role="tabpanel" aria-labelledby="receiptTab">
+        <div class="mode-panel active" id="receiptPanel" role="tabpanel" aria-labelledby="receiptTab">
           <div class="dropzone">
             <div class="field">
               <label for="receiptFiles">領収書画像・PDF</label>
@@ -1797,6 +1797,12 @@ td.amount{
   resetForm(false);
   resetReceiptFields();
   $('addAllReceiptRowsBtn').disabled = true;
+  const initialMode = (() => {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode') || window.location.hash.replace('#', '');
+    return ['manual','paste','receipt'].includes(mode) ? mode : 'receipt';
+  })();
+  switchMode(initialMode);
   saveRows();
   render();
 })();
