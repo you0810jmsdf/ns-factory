@@ -1948,16 +1948,38 @@
       if (!wantId) return;
       const work = works.find((w) => w.id === wantId);
       if (!work) return; // まだ届いていないだけの可能性があるので次のapplyDataに委ねる
-      deepLinkOpened = true;
-      // カードのクリックと同じ手順。写真はDriveから遅延読込なので先に取得する
-      if (!work.photosLoaded) {
-        loadDrivePhotos(work).then(() => {
-          if (work.photos.length) openWork(work);
-          render();
-        });
+
+      // ⚠ Driveの写真取得を待ってから開いてはいけない。
+      //   GASが不調だと fetchJsonp が返らず、モーダルが永久に開かない
+      //   （2026-08-12 実害。?id= で開いても一覧のままだった）。
+      //   代表写真は静的データに入っているので、まず開いてから残りを裏で足す。
+      if (work.photos && work.photos.length) {
+        deepLinkOpened = true;
+        openWork(work);
+        if (!work.photosLoaded) {
+          loadDrivePhotos(work)
+            .then(() => {
+              // 取得中に別の作品へ移っていたら触らない
+              if (activeWork === work && modal.classList.contains('open')) updateModal();
+              render();
+            })
+            .catch(() => { /* 代表写真だけで表示は成立しているので握りつぶす */ });
+        }
         return;
       }
-      if (work.photos.length) openWork(work);
+
+      // 代表写真すら無い場合だけ取得を待つ。失敗しても deepLinkOpened は立てないので、
+      // 後から届くGASデータでもう一度やり直せる。
+      if (!work.photosLoaded) {
+        loadDrivePhotos(work)
+          .then(() => {
+            if (deepLinkOpened || !work.photos.length) return;
+            deepLinkOpened = true;
+            openWork(work);
+            render();
+          })
+          .catch(() => {});
+      }
     }
 
     // この作品を名指しで案内するためのURL。OGP付きの案内ページを指す
