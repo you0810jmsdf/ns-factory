@@ -320,3 +320,14 @@
   - 判定条件は works.html（plannerSizeOf/coverSizeOf）と size-sort.html（detectSize）で**同一に保つ**。
   - サイズチップは中カテゴリ選択に追従し、中切替で `activeSize` をリセットする。この挙動を外すと「文庫で絞ったままシステム手帳に切替」のような矛盾状態になる。
 - 検証: 本番でカバー選択時チップ切替・パスポート2件絞り込み・仕分けページの行別ボタン出し分けを実測。
+
+## 2026-08-12 — 登録・更新完了時に作品集静的データを即時再生成
+
+- 対象: `register.html` / `.github/workflows/works-data.yml`
+- 背景: works-data.json の更新が3時間おきのため、登録直後にGAS障害が重なると「登録したのに作品集に出ない」→二重登録が発生（NF2026_633/634事案）。
+- 実装: 登録・更新完了時に `triggerWorksDataRebuild()` が `repository_dispatch`（event_type: product-registered）を発火 → works-data ワークフローが即時実行。
+- 注意:
+  - **workflow_dispatch ではなく repository_dispatch を使うこと。** 保有PAT（fine-grained / Contents: RW）で叩けるのは後者のみ（前者は actions: write が必要）。
+  - 発火失敗は登録の成否に影響させない設計。完了画面の `#worksRebuildStatus` に結果を出し、失敗時は3時間おきの定期更新が保険で拾う。
+  - スケジュール実行を削らないこと（ブラウザにトークン未設定の端末から登録した場合の唯一の反映経路）。
+- 検証: 実PATで dispatch 204 → run が event=repository_dispatch で起動・success。GAS 5連続404の時間帯でもビルド側リトライ（6回目成功）で完走することを実証。
