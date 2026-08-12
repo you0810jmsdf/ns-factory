@@ -1,12 +1,12 @@
 {
   "months": [
+    "2026-08",
     "2026-07",
     "2026-06",
     "2026-05",
     "2026-04",
     "2026-03",
-    "2026-02",
-    "2026-01"
+    "2026-02"
   ],
   "subscriptions": [
     "apple",
@@ -24,26 +24,11 @@
     "chatgpt"
   ],
   "matrix": {
-    "2026-07": {
+    "2026-08": {
       "apple": {
-        "status": "取得済み",
-        "count": 2,
-        "records": [
-          {
-            "date": "2026-07-05",
-            "amount": 2000,
-            "subject": "Meta Verified Standard",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133758_Apple領収書_19f3368c7c8aa9d8.txt"
-          },
-          {
-            "date": "2026-06-09",
-            "amount": 1500,
-            "subject": "iCloud+",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133824_Apple領収書_19eb0a308fc1f15d.txt"
-          }
-        ],
+        "status": "未取得",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "",
           "steps": "取得手順未登録。情報が確定次第追記予定。"
@@ -158,6 +143,148 @@
         }
       }
     },
+    "2026-07": {
+      "apple": {
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2026-07-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133758_Apple領収書_19f3368c7c8aa9d8.txt"
+          },
+          {
+            "date": "2026-06-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133824_Apple領収書_19eb0a308fc1f15d.txt"
+          }
+        ],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://moneyforward.com/payments",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
+        }
+      },
+      "photoroom": {
+        "status": "Apple経由（apple列参照）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "Photoroomは Apple（App Store）経由の年額課金。証憑は Apple列 に「Apple からの領収書」として自動保存済み（年額¥9,900・毎年4月更新）。この列単独での取得は不要。"
+        }
+      },
+      "office365": {
+        "status": "未取得",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://account.microsoft.com/billing/orders",
+          "steps": "自動取得（microsoft-noreply@microsoft.com の更新通知メールを保存）。年1回・約¥14,900。領収書原本は Microsoftアカウント → 注文履歴 → 領収書 からDL。"
+        }
+      },
+      "claude_code": {
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-07-26",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\ClaudeCode_20260726.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://console.anthropic.com/settings/billing",
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
+        }
+      },
+      "electricity": {
+        "status": "手動DL（くらしTEPCO）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://www.kurashi-fp.tepco.co.jp/",
+          "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
+        }
+      },
+      "water": {
+        "status": "未取得",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://myportal.kensui.pref.chiba.lg.jp/",
+          "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
+        }
+      },
+      "internet": {
+        "status": "SoftBank合算（mobile列参照）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
+        }
+      },
+      "mobile": {
+        "status": "手動DL（My SoftBank）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://my.softbank.jp/",
+          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
+        }
+      },
+      "home_loan": {
+        "status": "手動（返済予定表）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+        }
+      },
+      "car_loan": {
+        "status": "手動（返済予定表）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
+        }
+      },
+      "joyfulhonda": {
+        "status": "手動DL（DirectCloud）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://platform.openai.com/settings/organization/billing/overview",
+          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
+        }
+      }
+    },
     "2026-06": {
       "apple": {
         "status": "未取得",
@@ -187,9 +314,17 @@
         }
       },
       "office365": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-06-15",
+            "amount": 14900,
+            "subject": "Microsoft 365",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\Office365_20260615.txt"
+          }
+        ],
         "guide": {
           "url": "https://account.microsoft.com/billing/orders",
           "steps": "自動取得（microsoft-noreply@microsoft.com の更新通知メールを保存）。年1回・約¥14,900。領収書原本は Microsoftアカウント → 注文履歴 → 領収書 からDL。"
@@ -752,126 +887,7 @@
           "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
         }
       }
-    },
-    "2026-01": {
-      "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "",
-          "steps": "取得手順未登録。情報が確定次第追記予定。"
-        }
-      },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://moneyforward.com/payments",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。管理画面の支払い履歴/領収書ページから領収書を取得し 監理部\\receipts\\processed\\YYYY-MM\\ へ保存。"
-        }
-      },
-      "photoroom": {
-        "status": "Apple経由（apple列参照）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "",
-          "steps": "Photoroomは Apple（App Store）経由の年額課金。証憑は Apple列 に「Apple からの領収書」として自動保存済み（年額¥9,900・毎年4月更新）。この列単独での取得は不要。"
-        }
-      },
-      "office365": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://account.microsoft.com/billing/orders",
-          "steps": "自動取得（microsoft-noreply@microsoft.com の更新通知メールを保存）。年1回・約¥14,900。領収書原本は Microsoftアカウント → 注文履歴 → 領収書 からDL。"
-        }
-      },
-      "claude_code": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://console.anthropic.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Anthropic Console → Billing からDL可。"
-        }
-      },
-      "electricity": {
-        "status": "手動DL（くらしTEPCO）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://www.kurashi-fp.tepco.co.jp/",
-          "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
-        }
-      },
-      "water": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://myportal.kensui.pref.chiba.lg.jp/",
-          "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
-        }
-      },
-      "internet": {
-        "status": "SoftBank合算（mobile列参照）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "",
-          "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
-        }
-      },
-      "mobile": {
-        "status": "手動DL（My SoftBank）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://my.softbank.jp/",
-          "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
-        }
-      },
-      "home_loan": {
-        "status": "手動（返済予定表）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
-        }
-      },
-      "car_loan": {
-        "status": "手動（返済予定表）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "",
-          "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
-        }
-      },
-      "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "",
-          "steps": "保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
-        }
-      },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://platform.openai.com/settings/organization/billing/overview",
-          "steps": "OpenAI Billing画面 → 該当請求書の「請求書の詳細を表示」→「領収書をダウンロード」でPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。"
-        }
-      }
     }
   },
-  "checked_at": "2026-07-16 13:28:59"
+  "checked_at": "2026-08-12 18:33:05"
 }
