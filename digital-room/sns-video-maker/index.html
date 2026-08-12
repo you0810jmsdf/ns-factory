@@ -4283,7 +4283,9 @@ async function waitForEncoderQueue(encoder, maxQueue, errors, label){
   while(encoder.state === 'configured' && encoder.encodeQueueSize > maxQueue){
     if(narratedSaveCancelled) throw new Error('AI音声生成を停止しました。');
     await new Promise(resolve => setTimeout(resolve, 4));
-    if(performance.now() - startedAt > 15000) throw new Error(`${label}: 処理待ちが長すぎるため方式を切り替えます`);
+    // ⚠ ここで throw すると recordVideo の catch で保存自体が終わる（切り替え先は無い）。
+    //    「方式を切り替えます」と案内すると、利用者が再開を待ち続けてしまう（2026-08-12 実害）
+    if(performance.now() - startedAt > 15000) throw new Error(`${label}: 音声の変換が15秒間進みませんでした`);
   }
   if(errors.length) throw new Error(`${label}: ${errors[0]}`);
 }
@@ -4773,11 +4775,13 @@ async function recordVideo(mode = 'silent'){
     if(adjusted) setLog('セリフが途中で切れないように表示秒数を延長してから保存します。');
   }catch(err){
     console.warn(err);
+    // ここに来た時点で保存は終了している。再開も自動切替もしないので、
+    // 「停止した」ことと次の一手を必ず伝える（待たせ続けないため・2026-08-12）
     setLog(narrationMode && narratedSaveCancelled
-      ? 'AI音声生成を停止しました。'
+      ? '⛔ 停止しました（AI音声生成を中止）。'
       : (narrationMode
-        ? `AIナレーション付き保存を開始できませんでした: ${err.message}`
-        : `動画保存の準備に失敗しました: ${err.message}`));
+        ? `⛔ 停止しました。AIナレーション付きMP4は作成できませんでした（${err.message}）。この保存は終了しています。「動画のみMP4」で保存し、音声は「自分の声で録音」を使うか、少し時間をおいて再度お試しください。`
+        : `⛔ 停止しました。動画保存の準備に失敗しました（${err.message}）。この保存は終了しています。`));
     return;
   }
   if(canEncodeMp4Video()){
