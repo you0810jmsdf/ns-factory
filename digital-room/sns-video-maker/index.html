@@ -2250,17 +2250,49 @@ function applyProductNamePreset(){
   drawSelectedOrFirstFrame();
 }
 
+// 取得の流れ（2026-08-12 変更・works.html と同じ作法）
+//   ① まず works-data.json（同じGitHub Pages上）で即座に埋める。
+//      GASは同じ1.3MBを毎回生成するため遅く（実測 2.5〜37.6秒）、時間帯によっては全滅する。
+//      作品集が取れないと folderId が分からず、写真読み込みが「Driveルート全体を番号検索」の
+//      遅い経路へ落ちるため、ここが詰まると全体が連鎖的に遅くなる。
+//   ② そのうえで裏でGASに最新を取りに行き、取れたら差し替える（当日登録分の反映用）。
+//      取れなくても①の内容で作業できる。
+// ⛔ 静的側が空配列・エラーオブジェクトのときに採用しないこと（0件表示で障害が隠れる）。
+const STATIC_WORKS_URL = '../../works-data.json';
+
+function isValidWorksData(data){
+  return Array.isArray(data) && data.length > 0;
+}
+
+function adoptWorksCatalog(data){
+  worksCatalog = data.map(normalizeWorkItem).filter(work => work.id && work.title);
+  populateProductNamePresets();
+  populateDriveWorkPicker();
+  return worksCatalog;
+}
+
+async function loadStaticWorksCatalog(){
+  const res = await fetch(`${STATIC_WORKS_URL}?cb=${Date.now()}`, {cache:'no-store'});
+  if(!res.ok) throw new Error(`static works ${res.status}`);
+  return res.json();
+}
+
 async function loadWorksCatalog(){
   if(worksCatalogPromise) return worksCatalogPromise;
-  worksCatalogPromise = loadJsonp(LIVE_WORKS_API)
+  worksCatalogPromise = loadStaticWorksCatalog()
     .then(data => {
-      worksCatalog = Array.isArray(data)
-        ? data.map(normalizeWorkItem).filter(work => work.id && work.title)
-        : [];
-      populateProductNamePresets();
-      populateDriveWorkPicker();
-      return worksCatalog;
+      if(!isValidWorksData(data)) throw new Error('静的作品データが空です');
+      const list = adoptWorksCatalog(data);
+      // 裏で最新を取りに行き、取れたら静かに差し替える（失敗しても静的のまま使える）
+      loadJsonp(LIVE_WORKS_API)
+        .then(live => { if(isValidWorksData(live)) adoptWorksCatalog(live); })
+        .catch(() => {});
+      return list;
     })
+    .catch(() => loadJsonp(LIVE_WORKS_API).then(data => {
+      if(!isValidWorksData(data)) throw new Error('作品データが不正です');
+      return adoptWorksCatalog(data);
+    }))
     .catch(err => {
       console.warn('Works catalog could not be loaded.', err);
       // 失敗を握り込むとリロードまで永遠に「読み込み中」のまま残る。
