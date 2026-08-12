@@ -235,7 +235,7 @@ input:focus,select:focus,textarea:focus{
 }
 .tabs{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(auto-fit,minmax(92px,1fr));
   gap:6px;
   margin-bottom:14px;
   padding:4px;
@@ -494,7 +494,7 @@ td.amount{
     <div>
       <div class="eyebrow">MoneyForward Import Data</div>
       <h1>仕訳CSV作成</h1>
-      <p class="lead">領収書画像・PDFの読取、手入力、貼り付けデータからMoneyForward取込CSVを作成します。</p>
+      <p class="lead">領収書画像・PDFの読取、楽天購入履歴、EC入金通知、手入力からMoneyForward取込CSVを作成します。</p>
     </div>
     <div class="actions">
       <button class="btn good" id="downloadBtn" type="button">CSVダウンロード</button>
@@ -518,6 +518,8 @@ td.amount{
         <div class="tabs" role="tablist" aria-label="入力方式">
           <button class="tab" id="manualTab" type="button" role="tab" aria-selected="false">手入力</button>
           <button class="tab" id="pasteTab" type="button" role="tab" aria-selected="false">貼り付け</button>
+          <button class="tab" id="rakutenTab" type="button" role="tab" aria-selected="false">楽天取込</button>
+          <button class="tab" id="marketplaceTab" type="button" role="tab" aria-selected="false">EC入金メール</button>
           <button class="tab active" id="receiptTab" type="button" role="tab" aria-selected="true">領収書読取</button>
         </div>
 
@@ -642,6 +644,73 @@ td.amount{
             <button class="btn primary" id="importBtn" type="button">貼り付けを取り込み</button>
             <button class="btn" id="samplePasteBtn" type="button">入力例を入れる</button>
           </div>
+        </div>
+
+        <div class="mode-panel" id="rakutenPanel" role="tabpanel" aria-labelledby="rakutenTab">
+          <div class="field">
+            <label for="rakutenInput">楽天購入履歴・注文確認メール</label>
+            <textarea id="rakutenInput" placeholder="楽天市場の購入履歴詳細、または「注文内容ご確認」メール本文を貼り付け"></textarea>
+          </div>
+          <p class="hint">楽天のログイン情報は入力しません。貼り付けた本文から日付、ショップ名、注文番号、支払金額、商品名を抽出します。</p>
+          <div class="form-grid" style="margin-top:16px">
+            <div class="field">
+              <label for="rakutenFallbackDate">日付補完</label>
+              <input id="rakutenFallbackDate" type="date">
+            </div>
+            <div class="field">
+              <label for="rakutenCreditAccount">貸方勘定科目</label>
+              <input id="rakutenCreditAccount" list="accountList" value="事業主借">
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="parseRakutenBtn" type="button">楽天明細を解析</button>
+            <button class="btn good" id="addRakutenRowsBtn" type="button">仕訳案を追加</button>
+            <button class="btn" id="sampleRakutenBtn" type="button">入力例を入れる</button>
+          </div>
+          <div class="candidate-list" id="rakutenCandidates"></div>
+        </div>
+
+        <div class="mode-panel" id="marketplacePanel" role="tabpanel" aria-labelledby="marketplaceTab">
+          <div class="field">
+            <label for="marketplaceInput">minne / Creema / STORES 入金通知メール</label>
+            <textarea id="marketplaceInput" placeholder="月次の売上金振込通知、入金予定通知、売上明細メール本文を貼り付け"></textarea>
+          </div>
+          <p class="hint">入金額・売上額・手数料を読み取り、月次入金仕訳を作ります。本文そのものは保存せず、仕訳メモに要点だけ残します。</p>
+          <div class="form-grid" style="margin-top:16px">
+            <div class="field">
+              <label for="marketplacePlatform">サイト</label>
+              <select id="marketplacePlatform">
+                <option value="auto">自動判定</option>
+                <option value="minne">minne</option>
+                <option value="creema">Creema</option>
+                <option value="stores">STORES</option>
+                <option value="base">BASE</option>
+                <option value="other">その他</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="marketplaceFallbackDate">入金日補完</label>
+              <input id="marketplaceFallbackDate" type="date">
+            </div>
+            <div class="field">
+              <label for="marketplaceDepositAccount">入金先</label>
+              <input id="marketplaceDepositAccount" list="accountList" value="普通預金">
+            </div>
+            <div class="field">
+              <label for="marketplaceSalesAccount">売上科目</label>
+              <input id="marketplaceSalesAccount" list="accountList" value="売上高">
+            </div>
+            <div class="field">
+              <label for="marketplaceFeeAccount">手数料科目</label>
+              <input id="marketplaceFeeAccount" list="accountList" value="支払手数料">
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="parseMarketplaceBtn" type="button">入金通知を解析</button>
+            <button class="btn good" id="addMarketplaceRowsBtn" type="button">仕訳案を追加</button>
+            <button class="btn" id="sampleMarketplaceBtn" type="button">入力例を入れる</button>
+          </div>
+          <div class="candidate-list" id="marketplaceCandidates"></div>
         </div>
 
         <div class="mode-panel active" id="receiptPanel" role="tabpanel" aria-labelledby="receiptTab">
@@ -907,6 +976,13 @@ td.amount{
   const DEFAULT_MF_API_BASE = 'https://api-accounting.moneyforward.com/api/v3';
   const HISTORY_STORAGE_KEY = 'nsf_moneyforward_accounting_history_v1';
   const ACCOUNTING_QUEUE_KEY = 'nsf_moneyforward_import_queue_v1';
+  const MARKETPLACE_LABELS = {
+    minne:'minne',
+    creema:'Creema',
+    stores:'STORES',
+    base:'BASE',
+    other:'ECモール'
+  };
   const GASOLINE_KEYWORDS = ['コスモ石油','ENEOS','エネオス','出光','ガスステーション','コストコガス','石油'];
   const GASOLINE_RATIO = 0.714;
   const ACCOUNT_RULES = [
@@ -926,6 +1002,8 @@ td.amount{
   const $ = id => document.getElementById(id);
   let rows = loadRows();
   let receiptCandidates = [];
+  let rakutenCandidateRows = [];
+  let marketplaceCandidateRows = [];
   let accountingHistory = loadAccountingHistory();
   let suggestedReceiptAccount = '';
   let toastTimer = 0;
@@ -1093,6 +1171,37 @@ td.amount{
     toast.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function rowIdentity(row){
+    return [
+      row['取引日'],
+      row['摘要'],
+      row['借方勘定科目'],
+      row['貸方勘定科目'],
+      row['借方金額'],
+      row['貸方金額']
+    ].join('|');
+  }
+
+  function appendCandidateRows(candidateRows, label, afterAdd){
+    const prepared = (candidateRows || []).map(makeRow)
+      .filter(row => row['取引日'] && row['摘要'] && parseAmount(row['借方金額']) > 0);
+    if(!prepared.length){
+      showToast(`${label}の仕訳候補がありません。`);
+      return;
+    }
+    const existing = new Set(rows.map(rowIdentity));
+    const fresh = prepared.filter(row => !existing.has(rowIdentity(row)));
+    if(!fresh.length){
+      showToast(`${label}の候補はすでに取り込み済みです。`);
+      return;
+    }
+    rows = rows.concat(fresh);
+    saveRows();
+    render();
+    if(typeof afterAdd === 'function') afterAdd();
+    showToast(`${label}から${fresh.length}行を追加しました。`);
   }
 
   function applyPreset(name){
@@ -1392,6 +1501,435 @@ td.amount{
     values['借方税区分'] = values['借方税区分'] || '課税仕入10%';
     values['貸方勘定科目'] = values['貸方勘定科目'] || '事業主借';
     values['貸方税区分'] = values['貸方税区分'] || '対象外';
+  }
+
+  function normalizedMailText(value){
+    return normalizeReceiptText(value)
+      .replace(/\u00a0/g, ' ')
+      .replace(/\r/g, '\n')
+      .replace(/[ \t]+/g, ' ')
+      .trim();
+  }
+
+  function mailLines(text){
+    return normalizedMailText(text).split(/\n+/)
+      .map(line => line.replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+  }
+
+  function matchesAny(line, patterns){
+    return patterns.some(pattern => pattern.test(line));
+  }
+
+  function stripKnownLabel(line, patterns){
+    let cleaned = line;
+    patterns.forEach(pattern => {
+      cleaned = cleaned.replace(pattern, '');
+    });
+    return cleaned
+      .replace(/[：:]/g, ' ')
+      .replace(/^[\s\-‐ー=]+/, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  function extractTextByLabels(text, patterns){
+    const lines = mailLines(text);
+    for(let i = 0; i < lines.length; i += 1){
+      const line = lines[i];
+      if(!matchesAny(line, patterns)) continue;
+      const cleaned = stripKnownLabel(line, patterns);
+      if(cleaned && !/^(なし|無し|-)$/.test(cleaned)) return cleaned;
+      if(lines[i + 1]) return lines[i + 1].trim();
+    }
+    return '';
+  }
+
+  function amountLineWithoutDates(line){
+    return normalizeReceiptText(line)
+      .replace(/20\d{2}[\/.\-年]\s*\d{1,2}[\/.\-月]\s*\d{1,2}日?/g, ' ')
+      .replace(/\d{1,2}[\/.\-]\d{1,2}[\/.\-](?:20\d{2}|\d{2})/g, ' ')
+      .replace(/20\d{2}\s*年\s*\d{1,2}\s*月(?:分)?/g, ' ')
+      .replace(/\d{1,2}\s*月(?:分)?/g, ' ');
+  }
+
+  function extractYenAmountEntries(line){
+    const cleaned = amountLineWithoutDates(line);
+    const entries = [];
+    const re = /([\-−－△▲]?)\s*(?:¥|￥)?\s*([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{2,9})(?:\s*円)?/g;
+    for(const match of cleaned.matchAll(re)){
+      const after = cleaned.slice((match.index || 0) + match[0].length, (match.index || 0) + match[0].length + 2);
+      const hasCurrencyMarker = /[¥￥円]/.test(match[0]) || /,/.test(match[2]) || parseAmount(match[2]) >= 100;
+      if(/^\s*%/.test(after) || !hasCurrencyMarker) continue;
+      const sign = /[\-−－△▲]/.test(match[1] || '') ? -1 : 1;
+      const amount = parseAmount(match[2]) * sign;
+      if(Number.isFinite(amount) && amount !== 0){
+        entries.push({
+          amount,
+          source:line,
+          label:cleaned.replace(match[0], '').replace(/\s{2,}/g, ' ').trim()
+        });
+      }
+    }
+    return entries;
+  }
+
+  function extractAmountByLabels(text, patterns, options = {}){
+    const lines = mailLines(text);
+    const hits = [];
+    lines.forEach(line => {
+      if(options.reject && options.reject.test(line)) return;
+      if(!matchesAny(line, patterns)) return;
+      extractYenAmountEntries(line).forEach(entry => {
+        const amount = options.absolute ? Math.abs(entry.amount) : entry.amount;
+        if(amount > 0) hits.push({ ...entry, amount });
+      });
+    });
+    if(!hits.length) return null;
+    if(options.prefer === 'max'){
+      return hits.sort((a, b) => b.amount - a.amount)[0];
+    }
+    if(options.prefer === 'last'){
+      return hits[hits.length - 1];
+    }
+    return hits[0];
+  }
+
+  function extractDateByLabels(text, patterns){
+    const lines = mailLines(text);
+    for(const line of lines){
+      if(!matchesAny(line, patterns)) continue;
+      const date = extractReceiptDate(line);
+      if(date) return date;
+    }
+    return '';
+  }
+
+  function splitBlocksByLine(text, patterns, contextLines){
+    const lines = mailLines(text);
+    const starts = [];
+    lines.forEach((line, index) => {
+      if(matchesAny(line, patterns)) starts.push(index);
+    });
+    if(starts.length <= 1) return [normalizedMailText(text)].filter(Boolean);
+    return starts.map((start, index) => {
+      const from = Math.max(0, start - contextLines);
+      const to = index + 1 < starts.length ? Math.max(starts[index + 1] - contextLines, start + 1) : lines.length;
+      return lines.slice(from, to).join('\n');
+    }).filter(Boolean);
+  }
+
+  function parseRakutenOrders(){
+    const text = normalizedMailText($('rakutenInput').value);
+    if(!text){
+      showToast('楽天の購入履歴または注文確認メールを貼り付けてください。');
+      return;
+    }
+    const fallbackDate = $('rakutenFallbackDate').value;
+    const blocks = splitBlocksByLine(text, [/注文番号|受注番号|注文No\.?|オーダー番号/i], 8);
+    rakutenCandidateRows = blocks
+      .map(block => rowFromRakutenBlock(block, fallbackDate))
+      .filter(Boolean);
+    renderRakutenCandidates();
+    if(!rakutenCandidateRows.length){
+      showToast('楽天明細から仕訳候補を作れませんでした。金額と注文日を確認してください。');
+      return;
+    }
+    showToast(`楽天明細から${rakutenCandidateRows.length}件の候補を作成しました。`);
+  }
+
+  function rowFromRakutenBlock(block, fallbackDate){
+    const date = dateToInputValue(
+      extractDateByLabels(block, [/注文日時|注文日|購入日時|購入日|受付日時|ご注文日/i]) || extractReceiptDate(block)
+    ) || fallbackDate;
+    const amountEntry = extractAmountByLabels(block, [
+      /お支払い金額|支払金額|ご請求金額|請求金額|総合計|合計金額|注文合計|お買い上げ金額/i,
+      /^合計\b|合計\s*[：:]/i
+    ], { prefer:'max', reject:/ポイント|クーポン|送料|手数料|消費税|税額|割引|値引/i });
+    const amount = amountEntry ? amountEntry.amount : 0;
+    const store = cleanRakutenStore(extractTextByLabels(block, [
+      /ショップ名|店舗名|販売店|販売元|購入先|店名|ショップ/i
+    ])) || '楽天市場';
+    const orderNo = extractRakutenOrderNo(block);
+    const items = extractRakutenItems(block);
+    let account = guessDebitAccount(block, store, date);
+    const suggestion = suggestAccountFromHistory({
+      store,
+      items:items.join(' '),
+      memo:`楽天 ${orderNo}`,
+      rawText:block,
+      amount
+    });
+    const memoParts = [];
+    if(items.length) memoParts.push(`購入品: ${items.join(' / ')}`);
+    if(orderNo) memoParts.push(`楽天注文番号: ${orderNo}`);
+    if(amountEntry && amountEntry.source) memoParts.push(`金額行: ${amountEntry.source.slice(0, 48)}`);
+    if(suggestion && suggestion.account){
+      account = suggestion.account;
+      memoParts.push(`前年実績推奨: ${suggestion.account}`);
+    }
+    if(!date) memoParts.push('要確認: 注文日未取得');
+    if(!amount) memoParts.push('要確認: 支払金額未取得');
+    memoParts.push('[楽天購入履歴/注文確認メール]');
+    const businessAmountInfo = applyBusinessRules(amount, account, store, block);
+    if(businessAmountInfo.note) memoParts.push(businessAmountInfo.note);
+    return makeRow({
+      '取引日': date,
+      '借方勘定科目': account,
+      '借方補助科目': '',
+      '借方税区分': detectReceiptTax(block),
+      '借方金額': businessAmountInfo.amount || amount,
+      '貸方勘定科目': $('rakutenCreditAccount').value || '事業主借',
+      '貸方補助科目': '',
+      '貸方税区分': '対象外',
+      '貸方金額': businessAmountInfo.amount || amount,
+      '摘要': store,
+      'タグ': '楽天',
+      'メモ': memoParts.join(' / '),
+      '決済': ''
+    });
+  }
+
+  function cleanRakutenStore(value){
+    return String(value || '')
+      .replace(/楽天市場|購入履歴|注文詳細|ショップへの問い合わせ/g, '')
+      .replace(/[「」『』]/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim()
+      .slice(0, 48);
+  }
+
+  function extractRakutenOrderNo(text){
+    const match = normalizedMailText(text).match(/(?:注文番号|受注番号|注文No\.?|オーダー番号)\s*[：:#]?\s*([A-Za-z0-9\-_.]+)/i);
+    return match ? match[1] : '';
+  }
+
+  function extractRakutenItems(text){
+    const lines = mailLines(text);
+    const items = [];
+    const itemLabel = /商品名|品名|商品|アイテム名/i;
+    const skip = /(注文|受付|ショップ|店舗|価格|単価|数量|個数|送料|手数料|消費税|税額|税込|合計|小計|ポイント|クーポン|配送|支払|請求|メール|URL|https?:)/i;
+    lines.forEach(line => {
+      let value = '';
+      if(itemLabel.test(line)){
+        value = stripKnownLabel(line, [itemLabel]);
+      }else if(!skip.test(line) && /[ぁ-んァ-ン一-龠A-Za-z]/.test(line) && /(?:レザー|革|金具|糸|ファスナー|ホック|ボタン|工具|材料|パーツ|クラフト|leather)/i.test(line)){
+        value = line;
+      }
+      value = value
+        .replace(/(?:¥|￥)?\s*[0-9]{1,3}(?:,[0-9]{3})+(?:\s*円)?/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      if(value.length >= 2 && !skip.test(value) && !items.includes(value)) items.push(value);
+    });
+    return items.slice(0, 10);
+  }
+
+  function renderRakutenCandidates(){
+    renderCandidateRows(
+      'rakutenCandidates',
+      rakutenCandidateRows,
+      '楽天明細を解析すると候補が表示されます。',
+      row => !row['取引日'] || !parseAmount(row['借方金額'])
+    );
+  }
+
+  function parseMarketplacePayout(){
+    const text = normalizedMailText($('marketplaceInput').value);
+    if(!text){
+      showToast('入金通知メールを貼り付けてください。');
+      return;
+    }
+    const siteKey = $('marketplacePlatform').value === 'auto'
+      ? detectMarketplaceSite(text)
+      : $('marketplacePlatform').value;
+    const parsed = marketplacePayoutFromText(text, siteKey);
+    marketplaceCandidateRows = rowsFromMarketplacePayout(parsed);
+    renderMarketplaceCandidates();
+    if(!marketplaceCandidateRows.length){
+      showToast('入金通知から仕訳候補を作れませんでした。入金日と振込金額を確認してください。');
+      return;
+    }
+    showToast(`${parsed.label}の入金通知から${marketplaceCandidateRows.length}行の候補を作成しました。`);
+  }
+
+  function detectMarketplaceSite(text){
+    if(/minne/i.test(text)) return 'minne';
+    if(/creema/i.test(text)) return 'creema';
+    if(/\bSTORES\b|ストアーズ/i.test(text)) return 'stores';
+    if(/\bBASE\b|ベイス/i.test(text)) return 'base';
+    return 'other';
+  }
+
+  function marketplacePayoutFromText(text, siteKey){
+    const label = MARKETPLACE_LABELS[siteKey] || MARKETPLACE_LABELS.other;
+    const fallbackDate = $('marketplaceFallbackDate').value;
+    const date = dateToInputValue(
+      extractDateByLabels(text, [/振込日|入金日|支払日|送金日|振込予定日|入金予定日|支払予定日|精算日/i]) || ''
+    ) || fallbackDate;
+    const period = extractMarketplacePeriod(text);
+    const netEntry = extractAmountByLabels(text, [
+      /お振込金額|振込金額|振込予定額|入金金額|入金額|支払金額|支払予定額|送金額|受取金額|振込額/i
+    ], { prefer:'last', reject:/手数料|利用料|売上合計|売上金額|商品売上|税額/i });
+    const grossEntry = extractAmountByLabels(text, [
+      /売上金額|売上合計|総売上|販売金額|販売売上|商品売上|受注金額|売上高|売上額|売上/i
+    ], { prefer:'max', reject:/手数料|利用料|振込金額|入金額|支払金額|送金額|受取金額|税額/i });
+    const feeDetails = extractMarketplaceFeeDetails(text);
+    let net = netEntry ? netEntry.amount : 0;
+    let gross = grossEntry ? grossEntry.amount : 0;
+    let feeTotal = feeDetails.reduce((sum, fee) => sum + fee.amount, 0);
+    const notes = [];
+    if(!gross && net && feeTotal) gross = net + feeTotal;
+    if(!net && gross) net = Math.max(0, gross - feeTotal);
+    if(gross && net){
+      const impliedFees = gross - net;
+      if(impliedFees > feeTotal + 1){
+        const diff = impliedFees - feeTotal;
+        feeDetails.push({ label:'未分類控除', amount:diff, source:'売上総額と入金額の差額' });
+        feeTotal += diff;
+      }
+    }
+    if(!gross && net) notes.push('売上総額/手数料不明: 入金額のみで作成');
+    if(!date) notes.push('要確認: 入金日未取得');
+    if(!net) notes.push('要確認: 振込金額未取得');
+    return {
+      siteKey,
+      label,
+      date,
+      period,
+      net,
+      gross,
+      feeTotal,
+      feeDetails,
+      netSource:netEntry && netEntry.source,
+      grossSource:grossEntry && grossEntry.source,
+      notes
+    };
+  }
+
+  function extractMarketplacePeriod(text){
+    const direct = extractTextByLabels(text, [/対象期間|売上期間|販売期間|精算期間|集計期間|入金対象期間|対象月|売上月/i]);
+    if(direct) return direct.slice(0, 60);
+    const match = normalizedMailText(text).match(/20\d{2}\s*年\s*\d{1,2}\s*月(?:分|度)?|20\d{2}[\/.\-]\d{1,2}(?:\s*分)?/);
+    return match ? match[0] : '';
+  }
+
+  function extractMarketplaceFeeDetails(text){
+    const lines = mailLines(text);
+    const details = [];
+    const totalDetails = [];
+    const feeLabel = /手数料|利用料|サービス料|決済料|振込料|事務手数料|成約料|販売手数料|控除/i;
+    const netOrSales = /振込金額|入金額|支払金額|送金額|受取金額|売上金額|売上合計|総売上|販売金額|商品売上/i;
+    lines.forEach(line => {
+      if(!feeLabel.test(line)) return;
+      if(netOrSales.test(line) && !/(手数料|利用料|控除)/.test(line)) return;
+      const entries = extractYenAmountEntries(line).map(entry => ({ ...entry, amount:Math.abs(entry.amount) }));
+      if(!entries.length) return;
+      const amount = Math.max(...entries.map(entry => entry.amount));
+      const label = line
+        .replace(/(?:¥|￥)?\s*(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]{2,9})(?:\s*円)?/g, '')
+        .replace(/[：:()\[\]（）]/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim()
+        .slice(0, 28) || '手数料';
+      const detail = { label, amount, source:line };
+      if(/合計|総額|計/.test(line)) totalDetails.push(detail);
+      else details.push(detail);
+    });
+    if(totalDetails.length){
+      return [totalDetails.sort((a, b) => b.amount - a.amount)[0]];
+    }
+    const seen = new Set();
+    return details.filter(detail => {
+      const key = `${detail.label}|${detail.amount}`;
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function rowsFromMarketplacePayout(parsed){
+    if(!parsed || !parsed.net) return [];
+    const summaryBase = `${parsed.label} 月次`;
+    const memoBase = [
+      parsed.period ? `対象: ${parsed.period}` : '',
+      parsed.gross ? `売上総額 ${formatYen(parsed.gross)}` : '',
+      `入金額 ${formatYen(parsed.net)}`,
+      parsed.feeTotal ? `手数料 ${formatYen(parsed.feeTotal)}` : '',
+      parsed.feeDetails.length ? `手数料内訳: ${parsed.feeDetails.map(fee => `${fee.label} ${formatYen(fee.amount)}`).join(' / ')}` : '',
+      parsed.notes.join(' / '),
+      '[EC入金通知メール]'
+    ].filter(Boolean).join(' / ');
+    const rowsOut = [
+      makeRow({
+        '取引日': parsed.date,
+        '借方勘定科目': $('marketplaceDepositAccount').value || '普通預金',
+        '借方補助科目': '',
+        '借方税区分': '対象外',
+        '借方金額': parsed.net,
+        '貸方勘定科目': $('marketplaceSalesAccount').value || '売上高',
+        '貸方補助科目': '',
+        '貸方税区分': '課税売上10%',
+        '貸方金額': parsed.net,
+        '摘要': `${summaryBase}入金`,
+        'タグ': parsed.label,
+        'メモ': memoBase,
+        '決済': ''
+      })
+    ];
+    if(parsed.feeTotal > 0){
+      rowsOut.push(makeRow({
+        '取引日': parsed.date,
+        '借方勘定科目': $('marketplaceFeeAccount').value || '支払手数料',
+        '借方補助科目': parsed.label,
+        '借方税区分': '課税仕入10%',
+        '借方金額': parsed.feeTotal,
+        '貸方勘定科目': $('marketplaceSalesAccount').value || '売上高',
+        '貸方補助科目': '',
+        '貸方税区分': '課税売上10%',
+        '貸方金額': parsed.feeTotal,
+        '摘要': `${summaryBase}手数料`,
+        'タグ': parsed.label,
+        'メモ': memoBase,
+        '決済': ''
+      }));
+    }
+    return rowsOut;
+  }
+
+  function renderMarketplaceCandidates(){
+    renderCandidateRows(
+      'marketplaceCandidates',
+      marketplaceCandidateRows,
+      '入金通知を解析すると候補が表示されます。',
+      row => !row['取引日'] || !parseAmount(row['借方金額']) || /手数料不明|要確認/.test(row['メモ'])
+    );
+  }
+
+  function renderCandidateRows(boxId, candidateRows, emptyText, isLow){
+    const box = $(boxId);
+    if(!box) return;
+    box.innerHTML = '';
+    if(!candidateRows.length){
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = emptyText;
+      box.appendChild(empty);
+      return;
+    }
+    candidateRows.forEach(row => {
+      const low = typeof isLow === 'function' ? isLow(row) : false;
+      const el = document.createElement('div');
+      el.className = `candidate${low ? ' low' : ''}`;
+      el.innerHTML = [
+        '<div>',
+        `<strong>${escapeHtml(row['摘要'] || '仕訳候補')}</strong>`,
+        `<small>${escapeHtml(row['取引日'] || '日付未確定')} / ${escapeHtml(row['借方勘定科目'])} → ${escapeHtml(row['貸方勘定科目'])} / ${formatYen(row['借方金額'])}</small>`,
+        `<small>${escapeHtml(row['メモ'] || '')}</small>`,
+        '</div>'
+      ].join('');
+      box.appendChild(el);
+    });
   }
 
   async function importAccountingHistoryFile(){
@@ -2487,6 +3025,16 @@ td.amount{
   $('downloadBtn').addEventListener('click', downloadCsv);
   $('copyBtn').addEventListener('click', copyCsv);
   $('importBtn').addEventListener('click', importPasted);
+  $('parseRakutenBtn').addEventListener('click', parseRakutenOrders);
+  $('addRakutenRowsBtn').addEventListener('click', () => appendCandidateRows(rakutenCandidateRows, '楽天明細', () => {
+    rakutenCandidateRows = [];
+    renderRakutenCandidates();
+  }));
+  $('parseMarketplaceBtn').addEventListener('click', parseMarketplacePayout);
+  $('addMarketplaceRowsBtn').addEventListener('click', () => appendCandidateRows(marketplaceCandidateRows, 'EC入金通知', () => {
+    marketplaceCandidateRows = [];
+    renderMarketplaceCandidates();
+  }));
   $('ocrBtn').addEventListener('click', processReceiptFiles);
   $('clearReceiptBtn').addEventListener('click', clearReceiptState);
   $('loadMfApiBtn').addEventListener('click', loadMoneyForwardHistory);
@@ -2527,6 +3075,28 @@ td.amount{
       '2026/08/12,Creema売上入金,6800,普通預金,対象外,売上高,課税売上10%,受注分,販売'
     ].join('\n');
   });
+  $('sampleRakutenBtn').addEventListener('click', () => {
+    $('rakutenInput').value = [
+      '【楽天市場】注文内容ご確認（自動配信メール）',
+      '注文日時：2026年8月12日 10時21分',
+      '注文番号：123456-20260812-000000000',
+      'ショップ名：KAWAMURA LEATHER',
+      '商品名：ヌメ革 A4 キャメル',
+      '商品名：レザーコード 黒',
+      'お支払い金額：1,881円'
+    ].join('\n');
+  });
+  $('sampleMarketplaceBtn').addEventListener('click', () => {
+    $('marketplaceInput').value = [
+      '【Creema】売上金のお振込みについて',
+      '対象期間：2026年7月1日〜2026年7月31日',
+      '振込日：2026年8月20日',
+      '売上合計：30,000円',
+      '販売手数料：3,300円',
+      '振込手数料：220円',
+      'お振込金額：26,480円'
+    ].join('\n');
+  });
   $('sortBtn').addEventListener('click', () => {
     rows.sort((a, b) => dateForSort(a['取引日']).localeCompare(dateForSort(b['取引日'])));
     saveRows();
@@ -2562,10 +3132,12 @@ td.amount{
   });
   $('manualTab').addEventListener('click', () => switchMode('manual'));
   $('pasteTab').addEventListener('click', () => switchMode('paste'));
+  $('rakutenTab').addEventListener('click', () => switchMode('rakuten'));
+  $('marketplaceTab').addEventListener('click', () => switchMode('marketplace'));
   $('receiptTab').addEventListener('click', () => switchMode('receipt'));
 
   function switchMode(mode){
-    ['manual','paste','receipt'].forEach(name => {
+    ['manual','paste','rakuten','marketplace','receipt'].forEach(name => {
       const active = mode === name;
       $(`${name}Tab`).classList.toggle('active', active);
       $(`${name}Tab`).setAttribute('aria-selected', active ? 'true' : 'false');
@@ -2581,10 +3153,12 @@ td.amount{
   refreshAccountDatalist();
   renderAccountingHistoryStatus();
   updateFixedCostQueueStatus();
+  renderRakutenCandidates();
+  renderMarketplaceCandidates();
   const initialMode = (() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode') || window.location.hash.replace('#', '');
-    return ['manual','paste','receipt'].includes(mode) ? mode : 'receipt';
+    return ['manual','paste','rakuten','marketplace','receipt'].includes(mode) ? mode : 'receipt';
   })();
   switchMode(initialMode);
   saveRows();
