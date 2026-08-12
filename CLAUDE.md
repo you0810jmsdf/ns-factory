@@ -331,3 +331,16 @@
   - 発火失敗は登録の成否に影響させない設計。完了画面の `#worksRebuildStatus` に結果を出し、失敗時は3時間おきの定期更新が保険で拾う。
   - スケジュール実行を削らないこと（ブラウザにトークン未設定の端末から登録した場合の唯一の反映経路）。
 - 検証: 実PATで dispatch 204 → run が event=repository_dispatch で起動・success。GAS 5連続404の時間帯でもビルド側リトライ（6回目成功）で完走することを実証。
+
+## 2026-08-12 — 作品を名指しで案内するリンクとSNSプレビュー
+
+- 対象: `works.html` / `tools/build_work_pages.js`（新設）/ `.github/workflows/works-data.yml`
+- 目的: SNSから約650件の作品集に送っても目当ての1点にたどり着けない。作品単位のURLとOGPを用意した。
+- 構成: SNSに貼るのは `works/<商品ID>.html`（OGP付き・自動生成）。開くと `works.html?id=...` へ転送し詳細モーダルが直接開く。
+- 注意:
+  - **自動オープンは `deepLinkOpened` で1回だけ。** `applyData` は静的→GASの2回走るため、外すと閉じたモーダルが勝手に開き直す。
+  - `works/` 配下は**全て自動生成**。手で編集しても次回のワークフローで上書きされる。文面を変えるときは `build_work_pages.js` を直すこと。
+  - 生成は `build_works_data.js` の**後**に走らせる（works-data.json を入力にするため）。
+  - OGP画像はDriveサムネイルを `sz=w1200` に正規化している。Twitterbot / facebookexternalhit から 200 image/jpeg で取得できることを実測済み（Driveだから駄目、ではない）。
+  - 掲載を取り下げた作品のページは削除される。SNSに貼った旧URLは404になるが、削除済み商品が開けるより安全と判断。
+- 検証: 両クローラUAでOGP取得・画像取得、ブラウザで転送→自動オープン→共有ボタンのコピー、再オープン抑止、生成の冪等性を本番実測。
