@@ -358,3 +358,17 @@
   - OGP画像はDriveサムネイルを `sz=w1200` に正規化している。Twitterbot / facebookexternalhit から 200 image/jpeg で取得できることを実測済み（Driveだから駄目、ではない）。
   - 掲載を取り下げた作品のページは削除される。SNSに貼った旧URLは404になるが、削除済み商品が開けるより安全と判断。
 - 検証: 両クローラUAでOGP取得・画像取得、ブラウザで転送→自動オープン→共有ボタンのコピー、再オープン抑止、生成の冪等性を本番実測。
+
+## 2026-08-12 — Threadsでプレビューが出ない件の修正（OGPの落とし穴2つ）
+
+- 対象: `tools/build_work_pages.js` / `works.html`
+- ⛔ **作品ページに `meta http-equiv="refresh"` を復活させないこと。** Metaのクローラは refresh を追い、
+  追った先（works.html）を読む。転送は `location.replace` だけにして、クローラはOGPを読んで止まらせる。
+- ⛔ **og:image に `drive.google.com/thumbnail?id=...` を使わないこと。** 302で lh3 へ転送し、
+  Metaのクローラが画像を拾えない。`https://lh3.googleusercontent.com/d/<fileId>=w1200` を
+  ファイルIDから組み立てる（転送ゼロ・facebookexternalhit から200 image/jpeg を実測）。
+- `works.html` にも共通OGPを入れてある（作品集トップが直接貼られたときの保険）。
+  1作品を貼るときは `works/<商品ID>.html` を使うこと。
+- SNSはOGPをURL単位でキャッシュする。直した後は新しい投稿で確認する（古い投稿は古い結果のまま）。
+- 検証: facebookexternalhit / Twitterbot / Discordbot の3UAでOGPと画像取得（転送なし）を本番実測。
+  人間側のJS転送→モーダル自動オープンも実測。
