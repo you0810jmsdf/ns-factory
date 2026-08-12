@@ -2143,12 +2143,13 @@ async function translateLongDescToFeatureNote(options = {}){
   if(source.length > 1800){ if(showLog) setLog('紹介文が長すぎます。1800文字以内に分けて変換してください。'); return false; }
 
   els.translateFeatureNote.disabled = true;
-  if(showLog) setLog(`${targetLabel}へ変換しています。`);
+  if(showLog) setLog(target === 'en' ? '英語へ変換しています。作品名と素材情報も英語化します。' : `${targetLabel}へ変換しています。`);
   try{
     const url = `${SNS_VIDEO_DRIVE_API}?api=translateSnsMemo&source=${encodeURIComponent(sourceLang)}&target=${encodeURIComponent(target)}&text=${encodeURIComponent(source)}`;
     const data = await loadJsonp(url);
     if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || `${targetLabel}変換に失敗しました。`); }
     const targetCount = Math.max(8, slides.length, clamp(parseInt(els.driveLimit.value, 10) || 8, 1, 12));
+    if(target === 'en') await translateDisplayFieldsToEnglish();
     els.featureNote.value = target === 'en'
       ? expandEnglishFeatureMemo(data.translated || '', targetCount)
       : expandJapaneseFeatureMemo(data.translated || '', targetCount);
@@ -2169,6 +2170,41 @@ async function translateLongDescToFeatureNote(options = {}){
   }finally{
     els.translateFeatureNote.disabled = false;
   }
+}
+
+async function translateDisplayFieldsToEnglish(){
+  const [product, material] = await Promise.all([
+    translateShortUiText(els.productName.value, {target:'en', fallback:englishProductName, stripFinalPunctuation:true}),
+    translateShortUiText(els.materialNote.value, {target:'en', fallback:englishMaterialNote})
+  ]);
+  if(product) els.productName.value = product;
+  if(material) els.materialNote.value = material;
+  drawSelectedOrFirstFrame();
+}
+
+async function translateShortUiText(value, options = {}){
+  const source = String(value || '').trim();
+  if(!source) return '';
+  const target = options.target === 'ja' ? 'ja' : 'en';
+  const fallback = typeof options.fallback === 'function' ? options.fallback : text => text;
+  if(target === 'en' && !hasJapaneseText(source)) return displayInfoText(source);
+  if(source.length > 300) return fallback(source);
+  try{
+    const sourceLang = target === 'en' ? 'ja' : 'en';
+    const url = `${SNS_VIDEO_DRIVE_API}?api=translateSnsMemo&source=${encodeURIComponent(sourceLang)}&target=${encodeURIComponent(target)}&text=${encodeURIComponent(source)}`;
+    const data = await loadJsonp(url);
+    const translated = String((data && data.translated) || '').trim();
+    if(data && data.ok && translated) return cleanTranslatedUiText(translated, options);
+  }catch(err){
+    console.warn('Display field translation failed.', err);
+  }
+  return fallback(source);
+}
+
+function cleanTranslatedUiText(value, options = {}){
+  let text = displayInfoText(value).replace(/^["'“”‘’]+|["'“”‘’]+$/g, '');
+  if(options.stripFinalPunctuation) text = text.replace(/[.。]+$/g, '');
+  return text;
 }
 
 function applyProductNamePreset(){
@@ -5133,6 +5169,16 @@ function translateJapaneseTermsForEnglish(value){
     .replace(/[／]/g, '/')
     .replace(/×/g, ' x ');
   const terms = [
+    ['この革は、生きていた', 'This leather was alive'],
+    ['一冊に、何時間かかるか', 'How many hours go into one piece'],
+    ['持ち主の時間が、革に残る', "The owner's time remains in the leather"],
+    ['使い込むほど、表情が深くなる', 'The more it is used, the deeper its character becomes'],
+    ['革の命', 'Life of the leather'],
+    ['作り手の命', 'Life of the maker'],
+    ['使い手の命', 'Life of the user'],
+    ['道具の命', 'Life of the tool'],
+    ['革の表情', 'the character of the leather'],
+    ['手仕事', 'hand craftsmanship'],
     ['システム手帳用リフィル', 'system planner refill'],
     ['システム手帳', 'system planner'],
     ['N’s factory 作品集', "N's factory work collection"],
