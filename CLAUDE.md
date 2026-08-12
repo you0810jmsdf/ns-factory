@@ -397,3 +397,16 @@
 - SNSはOGPをURL単位でキャッシュする。直した後は新しい投稿で確認する（古い投稿は古い結果のまま）。
 - 検証: facebookexternalhit / Twitterbot / Discordbot の3UAでOGPと画像取得（転送なし）を本番実測。
   人間側のJS転送→モーダル自動オープンも実測。
+
+## 2026-08-12 — ?id= で詳細が開かない不具合の修正
+
+- 対象: `works.html`
+- ⛔ **`openDeepLinkedWork` で Drive の写真取得を待ってからモーダルを開かないこと。**
+  GAS が不調だと `fetchJsonp` が返らず永久に開かない（2026-08-12 実害）。
+  代表写真は静的データにあるので**まず開き、残りは裏で足して `updateModal()` で反映**する。
+- `deepLinkOpened` は**実際に開けたときだけ立てる**。待つ前に立てると、後から届く
+  GASデータでやり直せなくなる。
+- 検証時の注意: GitHub Pages は `Cache-Control: max-age=600`。デプロイ直後の10分間は
+  **サーバは新・ブラウザは旧**という状態が起きる。`?cb=` を付けるか、
+  `document.documentElement.outerHTML` に目印の文字列が含まれるかで
+  「今見ているのが新コードか」を必ず確認してから判定すること（今回2回誤判定した）。
