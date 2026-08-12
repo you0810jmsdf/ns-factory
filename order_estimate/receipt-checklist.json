@@ -197,8 +197,15 @@
       },
       "claude_code": {
         "status": "取得済み",
-        "count": 1,
+        "count": 2,
         "records": [
+          {
+            "date": "2026-07-21",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\ClaudeCode_20260721.txt"
+          },
           {
             "date": "2026-07-26",
             "amount": null,
@@ -244,8 +251,8 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-08-01",
-            "amount": 15738,
+            "date": "2026-08-11",
+            "amount": 14854,
             "subject": "携帯電話料金",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-07\\Ymobile_202607.pdf"
@@ -339,9 +346,17 @@
         }
       },
       "claude_code": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-06-21",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\ClaudeCode_20260621.txt"
+          }
+        ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
@@ -387,8 +402,8 @@
         "count": 1,
         "records": [
           {
-            "date": "2026-07-04",
-            "amount": 20758,
+            "date": "2026-07-11",
+            "amount": 15738,
             "subject": "携帯電話料金",
             "status": "取得済み",
             "local_path": "監理部\\utility_bills\\2026-06\\Ymobile_202606.pdf"
@@ -474,9 +489,17 @@
         }
       },
       "claude_code": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-05-21",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-05\\ClaudeCode_20260521.txt"
+          }
+        ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
@@ -510,9 +533,17 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My SoftBank）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-06-11",
+            "amount": 20758,
+            "subject": "携帯電話料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-05\\Ymobile_202605.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.softbank.jp/",
           "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
@@ -593,9 +624,31 @@
         }
       },
       "claude_code": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 3,
+        "records": [
+          {
+            "date": "2026-04-05",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260405.txt"
+          },
+          {
+            "date": "2026-04-20",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260420.txt"
+          },
+          {
+            "date": "2026-04-21",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260421.txt"
+          }
+        ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
@@ -629,9 +682,17 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My SoftBank）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-05-11",
+            "amount": 9916,
+            "subject": "携帯電話料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-04\\Ymobile_202604.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.softbank.jp/",
           "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
@@ -712,9 +773,17 @@
         }
       },
       "claude_code": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-03-05",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\ClaudeCode_20260305.txt"
+          }
+        ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
@@ -748,9 +817,17 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My SoftBank）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-04-11",
+            "amount": 20491,
+            "subject": "携帯電話料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-03\\Ymobile_202603.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.softbank.jp/",
           "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
@@ -867,9 +944,17 @@
         }
       },
       "mobile": {
-        "status": "手動DL（My SoftBank）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-03-11",
+            "amount": 20951,
+            "subject": "携帯電話料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-02\\Ymobile_202602.pdf"
+          }
+        ],
         "guide": {
           "url": "https://my.softbank.jp/",
           "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
@@ -913,5 +998,5 @@
       }
     }
   },
-  "checked_at": "2026-08-12 19:24:23"
+  "checked_at": "2026-08-13 08:18:26"
 }
