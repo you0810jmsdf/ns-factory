@@ -235,7 +235,7 @@ input:focus,select:focus,textarea:focus{
 }
 .tabs{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:repeat(3,1fr);
   gap:6px;
   margin-bottom:14px;
   padding:4px;
@@ -263,6 +263,94 @@ input:focus,select:focus,textarea:focus{
   margin:8px 0 0;
   color:var(--muted);
   font-size:12px;
+}
+.dropzone{
+  border:1px dashed var(--line);
+  border-radius:var(--radius);
+  background:var(--soft);
+  padding:14px;
+}
+.dropzone input{
+  height:auto;
+  padding:11px;
+  background:#fff;
+}
+.file-list{
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.file-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:#fff;
+  padding:8px 10px;
+  font-size:12px;
+}
+.file-row span:first-child{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.ocr-status{
+  display:none;
+  margin-top:12px;
+  border:1px solid rgba(47,95,143,.18);
+  border-radius:var(--radius);
+  background:#f2f7fb;
+  color:#264c72;
+  padding:10px 12px;
+  font-size:12px;
+}
+.ocr-status.active{display:block}
+.progress{
+  display:none;
+  height:8px;
+  margin-top:8px;
+  overflow:hidden;
+  border-radius:999px;
+  background:var(--soft-2);
+}
+.progress.active{display:block}
+.progress-bar{
+  width:0;
+  height:100%;
+  border-radius:999px;
+  background:var(--blue);
+  transition:width .18s;
+}
+.candidate-list{
+  display:grid;
+  gap:8px;
+  margin-top:14px;
+}
+.candidate{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:#fff;
+  padding:10px;
+}
+.candidate strong{
+  display:block;
+  font-size:13px;
+}
+.candidate small{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+}
+.candidate.low{
+  border-color:rgba(177,59,50,.24);
+  background:#fff8f6;
 }
 .preview-toolbar{
   display:flex;
@@ -430,6 +518,7 @@ td.amount{
         <div class="tabs" role="tablist" aria-label="入力方式">
           <button class="tab active" id="manualTab" type="button" role="tab" aria-selected="true">手入力</button>
           <button class="tab" id="pasteTab" type="button" role="tab" aria-selected="false">貼り付け</button>
+          <button class="tab" id="receiptTab" type="button" role="tab" aria-selected="false">領収書読取</button>
         </div>
 
         <div class="mode-panel active" id="manualPanel" role="tabpanel" aria-labelledby="manualTab">
@@ -554,6 +643,67 @@ td.amount{
             <button class="btn" id="samplePasteBtn" type="button">入力例を入れる</button>
           </div>
         </div>
+
+        <div class="mode-panel" id="receiptPanel" role="tabpanel" aria-labelledby="receiptTab">
+          <div class="dropzone">
+            <div class="field">
+              <label for="receiptFiles">領収書画像・PDF</label>
+              <input id="receiptFiles" type="file" accept="image/*,application/pdf" multiple>
+            </div>
+            <p class="hint">画像・PDFはこの端末のブラウザ内で読み取ります。外部会計APIへは送信しません。</p>
+            <div class="actions">
+              <button class="btn primary" id="ocrBtn" type="button">読取開始</button>
+              <button class="btn" id="clearReceiptBtn" type="button">読取欄クリア</button>
+            </div>
+          </div>
+          <div class="ocr-status" id="ocrStatus"></div>
+          <div class="progress" id="ocrProgressWrap"><div class="progress-bar" id="ocrProgress"></div></div>
+          <div class="file-list" id="receiptFileList"></div>
+          <div class="candidate-list" id="receiptCandidates"></div>
+
+          <div class="form-grid" style="margin-top:16px">
+            <div class="section-title">Read Result</div>
+            <div class="field">
+              <label for="receiptDate">取引日</label>
+              <input id="receiptDate" type="date">
+            </div>
+            <div class="field">
+              <label for="receiptAmount">税込金額</label>
+              <input id="receiptAmount" type="text" inputmode="numeric">
+            </div>
+            <div class="field wide">
+              <label for="receiptStore">摘要</label>
+              <input id="receiptStore" type="text" placeholder="店舗名・取引先">
+            </div>
+            <div class="field">
+              <label for="receiptAccount">借方勘定科目</label>
+              <input id="receiptAccount" list="accountList" value="消耗品費">
+            </div>
+            <div class="field">
+              <label for="receiptTax">借方税区分</label>
+              <select id="receiptTax">
+                <option>課税仕入10%</option>
+                <option>課税仕入8%（軽）</option>
+                <option>対象外</option>
+                <option>非課税仕入</option>
+                <option>不課税</option>
+              </select>
+            </div>
+            <div class="field wide">
+              <label for="receiptMemo">メモ</label>
+              <textarea id="receiptMemo" placeholder="品目・読取元ファイル・確認事項"></textarea>
+            </div>
+            <div class="field wide">
+              <label for="receiptRawText">OCRテキスト</label>
+              <textarea id="receiptRawText" placeholder="読取結果の原文がここに入ります"></textarea>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn good" id="addReceiptRowBtn" type="button">仕訳案を追加</button>
+            <button class="btn" id="addAllReceiptRowsBtn" type="button">候補を全件追加</button>
+            <button class="btn" id="sendReceiptManualBtn" type="button">手入力欄へ送る</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -676,9 +826,28 @@ td.amount{
     '取引日','摘要','借方金額','借方勘定科目','借方税区分',
     '貸方勘定科目','貸方税区分','メモ','タグ'
   ];
+  const OCR_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+  const PDF_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+  const PDF_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  const GASOLINE_KEYWORDS = ['コスモ石油','ENEOS','エネオス','出光','ガスステーション','コストコガス','石油'];
+  const GASOLINE_RATIO = 0.714;
+  const ACCOUNT_RULES = [
+    { account:'荷造運賃', keys:['ヤマト','佐川','日本郵便','郵便局','ゆうパック','レターパック','宅急便','送料','配送'] },
+    { account:'旅費交通費', keys:['コスモ石油','ENEOS','エネオス','出光','ガスステーション','コストコガス','駐車場','高速道路','電車','バス','タクシー'] },
+    { account:'車両費', keys:['車検','オイル交換','タイヤ','ETC','マツダオートザム','えびはら','洗車'] },
+    { account:'通信費', keys:['iCloud','Apple','Google','Adobe','Canva','ChatGPT','Claude','Anthropic','Gemini','OpenAI','サーバー','ドメイン','通信'] },
+    { account:'支払手数料', keys:['Creema','minne','BASE','STORES','メルカリ','ラクマ','PayPay','手数料','commission','fee'] },
+    { account:'広告宣伝費', keys:['広告','チラシ','名刺','印刷','DM','宣伝','販促'] },
+    { account:'諸会費', keys:['会費','年会費','参加費','出展料','イベント出展'] },
+    { account:'新聞図書費', keys:['書籍','本','雑誌','新聞','Kindle'] },
+    { account:'接待交際費', keys:['ゴーゴーカレー','R Baker','ICHIGEN','会食','懇親','打合せ飲食'] },
+    { account:'仕入高', keys:['KAWAMURA','カワムラ','LEATHER','レザー','革','皮革','ヌメ','タンニン','金具','ファスナー','糸','ホック','ボタン','床革'] },
+    { account:'消耗品費', keys:['ダイソー','工具','道具','カッター','替刃','針','目打ち','菱目','刻印','ハンマー','接着剤','ボンド','定規','マット','文具','消耗品'] }
+  ];
 
   const $ = id => document.getElementById(id);
   let rows = loadRows();
+  let receiptCandidates = [];
   let toastTimer = 0;
 
   function todayInputValue(){
@@ -1051,6 +1220,472 @@ td.amount{
     values['貸方税区分'] = values['貸方税区分'] || '対象外';
   }
 
+  function loadScriptOnce(id, src){
+    return new Promise((resolve, reject) => {
+      if(document.getElementById(id)){
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = id;
+      script.src = src;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`${src} を読み込めませんでした。`));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ensureOcrLibrary(){
+    if(!window.Tesseract){
+      updateOcrStatus('OCRエンジンを読み込んでいます。初回は少し時間がかかります。');
+      await loadScriptOnce('tesseract-js', OCR_SCRIPT_URL);
+    }
+    if(!window.Tesseract) throw new Error('OCRエンジンの読み込みに失敗しました。');
+  }
+
+  async function ensurePdfLibrary(){
+    if(!window.pdfjsLib){
+      updateOcrStatus('PDF読取エンジンを読み込んでいます。');
+      await loadScriptOnce('pdfjs-lib', PDF_SCRIPT_URL);
+    }
+    if(!window.pdfjsLib) throw new Error('PDF読取エンジンの読み込みに失敗しました。');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_WORKER_URL;
+  }
+
+  function updateOcrStatus(message){
+    const box = $('ocrStatus');
+    box.textContent = message || '';
+    box.classList.toggle('active', Boolean(message));
+  }
+
+  function updateOcrProgress(value){
+    const wrap = $('ocrProgressWrap');
+    const bar = $('ocrProgress');
+    const pct = Math.max(0, Math.min(100, Math.round(Number(value || 0) * 100)));
+    wrap.classList.toggle('active', pct > 0 && pct < 100);
+    bar.style.width = `${pct}%`;
+  }
+
+  function renderReceiptFileList(files){
+    const list = $('receiptFileList');
+    list.innerHTML = '';
+    files.forEach(file => {
+      const row = document.createElement('div');
+      row.className = 'file-row';
+      row.innerHTML = `<span>${escapeHtml(file.name)}</span><span>${Math.ceil(file.size / 1024).toLocaleString('ja-JP')}KB</span>`;
+      list.appendChild(row);
+    });
+  }
+
+  function resetReceiptFields(){
+    $('receiptDate').value = '';
+    $('receiptAmount').value = '';
+    $('receiptStore').value = '';
+    $('receiptAccount').value = '消耗品費';
+    $('receiptTax').value = '課税仕入10%';
+    $('receiptMemo').value = '';
+    $('receiptRawText').value = '';
+  }
+
+  function clearReceiptState(){
+    receiptCandidates = [];
+    $('receiptFiles').value = '';
+    $('receiptFileList').innerHTML = '';
+    $('receiptCandidates').innerHTML = '';
+    resetReceiptFields();
+    updateOcrStatus('');
+    updateOcrProgress(0);
+  }
+
+  async function processReceiptFiles(){
+    const files = Array.from($('receiptFiles').files || []);
+    if(!files.length){
+      showToast('領収書画像またはPDFを選択してください。');
+      return;
+    }
+    receiptCandidates = [];
+    renderReceiptFileList(files);
+    renderReceiptCandidates();
+    $('ocrBtn').disabled = true;
+    $('addReceiptRowBtn').disabled = true;
+    $('addAllReceiptRowsBtn').disabled = true;
+    try{
+      for(let i = 0; i < files.length; i += 1){
+        const file = files[i];
+        updateOcrStatus(`${i + 1}/${files.length}件目を読み取り中: ${file.name}`);
+        updateOcrProgress(0.05);
+        const read = await readReceiptFile(file);
+        const parsed = parseReceiptText(read.text, file.name, read.confidence);
+        const row = rowFromParsedReceipt(parsed);
+        const candidate = {
+          fileName:file.name,
+          rawText:read.text,
+          confidence:read.confidence,
+          note:read.note,
+          parsed,
+          row
+        };
+        receiptCandidates.push(candidate);
+        renderReceiptCandidates();
+        fillReceiptFields(candidate);
+      }
+      updateOcrStatus(`${files.length}件の読み取りが終わりました。金額・日付・税区分を確認してください。`);
+      updateOcrProgress(1);
+      showToast('領収書の読み取りが完了しました。');
+    }catch(error){
+      updateOcrStatus(error.message || '読み取りに失敗しました。');
+      showToast('読み取りに失敗しました。');
+    }finally{
+      $('ocrBtn').disabled = false;
+      $('addReceiptRowBtn').disabled = false;
+      $('addAllReceiptRowsBtn').disabled = receiptCandidates.length === 0;
+      setTimeout(() => updateOcrProgress(0), 700);
+    }
+  }
+
+  async function readReceiptFile(file){
+    if(file.type === 'application/pdf' || /\.pdf$/i.test(file.name)){
+      return readPdfReceipt(file);
+    }
+    return readImageReceipt(file);
+  }
+
+  async function readImageReceipt(file){
+    await ensureOcrLibrary();
+    const url = URL.createObjectURL(file);
+    try{
+      const result = await recognizeImage(url, file.name);
+      return {
+        text:result.text,
+        confidence:result.confidence,
+        note:'画像OCR'
+      };
+    }finally{
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  async function readPdfReceipt(file){
+    await ensurePdfLibrary();
+    const data = new Uint8Array(await file.arrayBuffer());
+    const pdf = await window.pdfjsLib.getDocument({ data }).promise;
+    const maxPages = Math.min(pdf.numPages, 3);
+    const textParts = [];
+    for(let pageNo = 1; pageNo <= maxPages; pageNo += 1){
+      const page = await pdf.getPage(pageNo);
+      const textContent = await page.getTextContent();
+      textParts.push(textContent.items.map(item => item.str).join('\n'));
+    }
+    const embeddedText = textParts.join('\n').trim();
+    if(embeddedText.replace(/\s/g, '').length >= 20){
+      return {
+        text:embeddedText,
+        confidence:100,
+        note:'PDFテキスト抽出'
+      };
+    }
+
+    await ensureOcrLibrary();
+    const ocrParts = [];
+    let totalConfidence = 0;
+    for(let pageNo = 1; pageNo <= maxPages; pageNo += 1){
+      const page = await pdf.getPage(pageNo);
+      const viewport = page.getViewport({ scale:2 });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      await page.render({ canvasContext:canvas.getContext('2d'), viewport }).promise;
+      const result = await recognizeImage(canvas, `${file.name} p.${pageNo}`);
+      ocrParts.push(result.text);
+      totalConfidence += result.confidence;
+    }
+    return {
+      text:ocrParts.join('\n'),
+      confidence:Math.round(totalConfidence / maxPages),
+      note:'PDF画像OCR'
+    };
+  }
+
+  async function recognizeImage(source, label){
+    const result = await window.Tesseract.recognize(source, 'jpn+eng', {
+      logger(message){
+        if(message.status){
+          const pct = typeof message.progress === 'number' ? message.progress : 0;
+          updateOcrStatus(`${label}: ${message.status}`);
+          updateOcrProgress(pct);
+        }
+      }
+    });
+    return {
+      text:(result && result.data && result.data.text) || '',
+      confidence:Math.round((result && result.data && result.data.confidence) || 0)
+    };
+  }
+
+  function parseReceiptText(text, fileName, confidence){
+    const normalized = normalizeReceiptText(text);
+    const lines = normalized.split(/\r?\n/)
+      .map(line => line.replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+    const date = extractReceiptDate(normalized);
+    const store = extractReceiptStore(lines, fileName);
+    const amountInfo = extractReceiptAmount(lines);
+    const tax = detectReceiptTax(normalized);
+    const account = guessDebitAccount(normalized, store, date);
+    const businessAmountInfo = applyBusinessRules(amountInfo.amount, account, store, normalized);
+    const memo = buildReceiptMemo(lines, fileName, amountInfo, businessAmountInfo, confidence);
+    return {
+      date,
+      store,
+      amount:businessAmountInfo.amount,
+      originalAmount:amountInfo.amount,
+      account,
+      tax,
+      memo,
+      confidence:confidence || 0
+    };
+  }
+
+  function normalizeReceiptText(text){
+    return String(text || '')
+      .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+      .replace(/[Ａ-Ｚａ-ｚ]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+      .replace(/[，]/g, ',')
+      .replace(/[．]/g, '.')
+      .replace(/[／]/g, '/')
+      .replace(/[－ー―]/g, '-')
+      .replace(/[￥]/g, '¥');
+  }
+
+  function extractReceiptDate(text){
+    const reiwa = text.match(/(?:令和|R)\s*(\d{1,2})[\/.\-年]\s*(\d{1,2})[\/.\-月]\s*(\d{1,2})/i);
+    if(reiwa){
+      return formatDateParts(2018 + Number(reiwa[1]), reiwa[2], reiwa[3]);
+    }
+    const western = text.match(/(20\d{2}|\d{1,2})[\/.\-年]\s*(\d{1,2})[\/.\-月]\s*(\d{1,2})/);
+    if(western){
+      let year = Number(western[1]);
+      if(year < 10) year = 2020 + year;
+      else if(year < 100) year = 2000 + year;
+      if(isPossibleDate(year, western[2], western[3])) return formatDateParts(year, western[2], western[3]);
+    }
+    const monthDay = text.match(/(?:日付|発行日|取引日)?\s*(\d{1,2})[\/月]\s*(\d{1,2})日?/);
+    if(monthDay){
+      const year = new Date().getFullYear();
+      if(isPossibleDate(year, monthDay[1], monthDay[2])) return formatDateParts(year, monthDay[1], monthDay[2]);
+    }
+    return '';
+  }
+
+  function formatDateParts(year, month, day){
+    return `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+  }
+
+  function isPossibleDate(year, month, day){
+    const m = Number(month);
+    const d = Number(day);
+    return year >= 2020 && year <= 2035 && m >= 1 && m <= 12 && d >= 1 && d <= 31;
+  }
+
+  function dateToInputValue(value){
+    const date = normalizeDate(value);
+    return /^\d{4}\/\d{2}\/\d{2}$/.test(date) ? date.replace(/\//g, '-') : '';
+  }
+
+  function extractReceiptStore(lines, fileName){
+    const reject = /(領収書|領収証|レシート|納品書|請求書|明細|TEL|電話|登録番号|No\.|合計|小計|消費税|税込|税率|釣銭|お釣|発行|様|¥|円|\d{4}[\/.\-年]\d{1,2})/i;
+    const candidates = lines.slice(0, 12).filter(line => {
+      const compact = line.replace(/\s/g, '');
+      return compact.length >= 2 && compact.length <= 36 && !reject.test(line) && !/^\d+$/.test(compact);
+    });
+    if(candidates.length) return candidates[0];
+    return fileName.replace(/\.[^.]+$/, '').replace(/[_-]?\d{6,}/g, '').slice(0, 36) || '領収書';
+  }
+
+  function extractReceiptAmount(lines){
+    const keyword = /(合計|総合計|税込|領収金額|ご利用額|お買上|お買い上げ|現計|クレジット|支払|金額|計)/;
+    const amounts = [];
+    lines.forEach((line, lineIndex) => {
+      const hasKeyword = keyword.test(line);
+      if(!hasKeyword && /(TEL|電話|登録番号|郵便番号|No\.|番号)/i.test(line)) return;
+      const matches = line.matchAll(/[¥]?\s*([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{2,8})\s*円?/g);
+      for(const match of matches){
+        const amount = parseAmount(match[1]);
+        if(amount < 50 || amount > 3000000) continue;
+        const score = (hasKeyword ? 20 : 0) + Math.min(amount / 10000, 10) - lineIndex / 10;
+        amounts.push({ amount, line, score });
+      }
+    });
+    if(!amounts.length) return { amount:0, source:'' };
+    amounts.sort((a, b) => b.score - a.score || b.amount - a.amount);
+    return amounts[0];
+  }
+
+  function detectReceiptTax(text){
+    if(/(免税|非課税|対象外)/.test(text)) return '対象外';
+    if(/(軽減|8\s*%|8%)/.test(text)) return '課税仕入8%（軽）';
+    return '課税仕入10%';
+  }
+
+  function guessDebitAccount(text, store, date){
+    const haystack = `${store}\n${text}`;
+    for(const rule of ACCOUNT_RULES){
+      if(rule.keys.some(key => haystack.toLowerCase().includes(String(key).toLowerCase()))){
+        if(rule.account === '接待交際費') return rule.account;
+        if(rule.account === '消耗品費' && isFoodText(haystack) && isCultureSchoolDay(date)) return '接待交際費';
+        return rule.account;
+      }
+    }
+    if(isFoodText(haystack)) return isCultureSchoolDay(date) ? '接待交際費' : '消耗品費';
+    return '消耗品費';
+  }
+
+  function isFoodText(text){
+    return /(食品|食料|弁当|パン|カフェ|コーヒー|レストラン|飲食|テイクアウト|ゴーゴーカレー|R Baker|ICHIGEN|マクド|スタバ)/i.test(text);
+  }
+
+  function isCultureSchoolDay(dateValue){
+    const date = dateToInputValue(dateValue);
+    if(!date) return false;
+    const dt = new Date(`${date}T00:00:00`);
+    if(dt.getDay() !== 4) return false;
+    const weekOfMonth = Math.floor((dt.getDate() - 1) / 7) + 1;
+    return weekOfMonth === 2 || weekOfMonth === 4;
+  }
+
+  function applyBusinessRules(amount, account, store, text){
+    if(account === '旅費交通費' && GASOLINE_KEYWORDS.some(key => `${store}\n${text}`.includes(key))){
+      return {
+        amount:Math.round(amount * GASOLINE_RATIO),
+        note:`ガソリン按分71.4%（元金額 ${formatYen(amount)}）`
+      };
+    }
+    if(account === '工具器具備品' && amount >= 100000 && amount < 300000){
+      return {
+        amount,
+        note:'少額減価償却資産の特例適用候補'
+      };
+    }
+    return { amount, note:'' };
+  }
+
+  function buildReceiptMemo(lines, fileName, amountInfo, businessAmountInfo, confidence){
+    const parts = [];
+    if(businessAmountInfo.note) parts.push(businessAmountInfo.note);
+    const itemLine = lines.find(line => {
+      return line.length >= 3 && line.length <= 42 &&
+        !/(領収書|レシート|合計|小計|消費税|税込|TEL|電話|登録番号|No\.|¥|円)/i.test(line);
+    });
+    if(itemLine) parts.push(itemLine);
+    if(amountInfo.source) parts.push(`金額行: ${amountInfo.source.slice(0, 48)}`);
+    if(confidence) parts.push(`OCR信頼度 ${confidence}%`);
+    parts.push(`[読取:${fileName}]`);
+    return parts.join(' / ');
+  }
+
+  function rowFromParsedReceipt(parsed){
+    return makeRow({
+      '取引日': parsed.date,
+      '借方勘定科目': parsed.account,
+      '借方補助科目': '',
+      '借方税区分': parsed.tax,
+      '借方金額': parsed.amount,
+      '貸方勘定科目': '事業主借',
+      '貸方補助科目': '',
+      '貸方税区分': '対象外',
+      '貸方金額': parsed.amount,
+      '摘要': parsed.store,
+      'タグ': '',
+      'メモ': parsed.memo,
+      '決済': ''
+    });
+  }
+
+  function buildReceiptRowFromFields(){
+    const amount = parseAmount($('receiptAmount').value);
+    if(!$('receiptDate').value || !$('receiptStore').value.trim() || amount <= 0){
+      showToast('読取結果の日付、摘要、金額を確認してください。');
+      return null;
+    }
+    return makeRow({
+      '取引日': $('receiptDate').value,
+      '借方勘定科目': $('receiptAccount').value || '消耗品費',
+      '借方補助科目': '',
+      '借方税区分': $('receiptTax').value || '課税仕入10%',
+      '借方金額': amount,
+      '貸方勘定科目': '事業主借',
+      '貸方補助科目': '',
+      '貸方税区分': '対象外',
+      '貸方金額': amount,
+      '摘要': $('receiptStore').value,
+      'タグ': '',
+      'メモ': $('receiptMemo').value,
+      '決済': ''
+    });
+  }
+
+  function fillReceiptFields(candidate){
+    const parsed = candidate.parsed;
+    $('receiptDate').value = dateToInputValue(parsed.date);
+    $('receiptAmount').value = parsed.amount ? String(parsed.amount) : '';
+    $('receiptStore').value = parsed.store || '';
+    $('receiptAccount').value = parsed.account || '消耗品費';
+    $('receiptTax').value = parsed.tax || '課税仕入10%';
+    $('receiptMemo').value = parsed.memo || '';
+    $('receiptRawText').value = candidate.rawText || '';
+  }
+
+  function fillManualFromReceipt(){
+    const amount = parseAmount($('receiptAmount').value);
+    if(!$('receiptStore').value.trim() || amount <= 0){
+      showToast('読取結果が空です。');
+      return;
+    }
+    switchMode('manual');
+    $('preset').value = 'expense';
+    $('tradeDate').value = $('receiptDate').value || todayInputValue();
+    $('amount').value = String(amount);
+    $('summary').value = $('receiptStore').value;
+    $('debitAccount').value = $('receiptAccount').value || '消耗品費';
+    $('debitTax').value = $('receiptTax').value || '課税仕入10%';
+    $('creditAccount').value = '事業主借';
+    $('creditTax').value = '対象外';
+    $('memo').value = $('receiptMemo').value;
+    $('tag').value = '';
+    showToast('手入力欄へ反映しました。');
+  }
+
+  function renderReceiptCandidates(){
+    const box = $('receiptCandidates');
+    box.innerHTML = '';
+    if(!receiptCandidates.length) return;
+    receiptCandidates.forEach((candidate, index) => {
+      const parsed = candidate.parsed;
+      const low = !parsed.date || !parsed.amount || candidate.confidence < 55;
+      const el = document.createElement('div');
+      el.className = `candidate${low ? ' low' : ''}`;
+      el.innerHTML = [
+        '<div>',
+        `<strong>${escapeHtml(parsed.store || candidate.fileName)}</strong>`,
+        `<small>${escapeHtml(parsed.date || '日付未確定')} / ${formatYen(parsed.amount)} / ${escapeHtml(parsed.account)} / ${escapeHtml(parsed.tax)} / ${escapeHtml(candidate.note)}</small>`,
+        '</div>',
+        '<div class="toolbar-actions">',
+        `<button class="btn" type="button" data-receipt-action="fill" data-index="${index}">確認</button>`,
+        `<button class="btn good" type="button" data-receipt-action="add" data-index="${index}">追加</button>`,
+        '</div>'
+      ].join('');
+      box.appendChild(el);
+    });
+  }
+
+  function addReceiptRow(row){
+    rows.push(row);
+    saveRows();
+    render();
+    showToast('仕訳案を追加しました。');
+  }
+
   function copyCsv(){
     if(!rows.length){
       showToast('コピーするCSVがありません。');
@@ -1086,6 +1721,24 @@ td.amount{
   $('downloadBtn').addEventListener('click', downloadCsv);
   $('copyBtn').addEventListener('click', copyCsv);
   $('importBtn').addEventListener('click', importPasted);
+  $('ocrBtn').addEventListener('click', processReceiptFiles);
+  $('clearReceiptBtn').addEventListener('click', clearReceiptState);
+  $('receiptFiles').addEventListener('change', event => renderReceiptFileList(Array.from(event.target.files || [])));
+  $('addReceiptRowBtn').addEventListener('click', () => {
+    const row = buildReceiptRowFromFields();
+    if(row) addReceiptRow(row);
+  });
+  $('addAllReceiptRowsBtn').addEventListener('click', () => {
+    if(!receiptCandidates.length){
+      showToast('追加できる候補がありません。');
+      return;
+    }
+    rows = rows.concat(receiptCandidates.map(candidate => candidate.row));
+    saveRows();
+    render();
+    showToast(`${receiptCandidates.length}件の仕訳案を追加しました。`);
+  });
+  $('sendReceiptManualBtn').addEventListener('click', fillManualFromReceipt);
   $('samplePasteBtn').addEventListener('click', () => {
     $('pasteInput').value = [
       '取引日,摘要,金額,借方勘定科目,借方税区分,貸方勘定科目,貸方税区分,メモ,タグ',
@@ -1116,20 +1769,34 @@ td.amount{
     render();
     showToast('1行削除しました。');
   });
+  $('receiptCandidates').addEventListener('click', event => {
+    const button = event.target.closest('[data-receipt-action]');
+    if(!button) return;
+    const candidate = receiptCandidates[Number(button.dataset.index)];
+    if(!candidate) return;
+    if(button.dataset.receiptAction === 'fill'){
+      fillReceiptFields(candidate);
+      showToast('読取候補を確認欄へ反映しました。');
+    }else if(button.dataset.receiptAction === 'add'){
+      addReceiptRow(candidate.row);
+    }
+  });
   $('manualTab').addEventListener('click', () => switchMode('manual'));
   $('pasteTab').addEventListener('click', () => switchMode('paste'));
+  $('receiptTab').addEventListener('click', () => switchMode('receipt'));
 
   function switchMode(mode){
-    const manual = mode === 'manual';
-    $('manualTab').classList.toggle('active', manual);
-    $('manualTab').setAttribute('aria-selected', manual ? 'true' : 'false');
-    $('pasteTab').classList.toggle('active', !manual);
-    $('pasteTab').setAttribute('aria-selected', manual ? 'false' : 'true');
-    $('manualPanel').classList.toggle('active', manual);
-    $('pastePanel').classList.toggle('active', !manual);
+    ['manual','paste','receipt'].forEach(name => {
+      const active = mode === name;
+      $(`${name}Tab`).classList.toggle('active', active);
+      $(`${name}Tab`).setAttribute('aria-selected', active ? 'true' : 'false');
+      $(`${name}Panel`).classList.toggle('active', active);
+    });
   }
 
   resetForm(false);
+  resetReceiptFields();
+  $('addAllReceiptRowsBtn').disabled = true;
   saveRows();
   render();
 })();
