@@ -1987,7 +1987,14 @@ async function addDrivePhotos(){
       return await applyDrivePhotoData(data, workNo, candidate);
     }
     const detail = errors.filter(Boolean).join(' / ');
-    const message = `作品番号 ${workNo} の写真を読み込めませんでした。番号が勝手にずれたのではなく、作品集folderIdとDriveフォルダ番号の不整合が疑われます。${detail}`;
+    // 失敗の種類で案内を出し分ける。通信断（GAS断続404等）をフォルダ不整合と誤案内しない
+    const isNetworkError = msg => /接続できません|タイムアウト|届きませんでした/.test(msg);
+    let message;
+    if(errors.length && errors.every(isNetworkError)){
+      message = `作品番号 ${workNo} の写真を読み込めませんでした。Drive APIとの通信が一時的に不安定です（Google側の不調で、番号やフォルダ設定の問題ではありません）。少し待ってからもう一度お試しください。${detail}`;
+    }else{
+      message = `作品番号 ${workNo} の写真を読み込めませんでした。${detail}`;
+    }
     setDriveStatus(message, 'error');
     setLog(message);
     return 0;
@@ -2085,7 +2092,26 @@ function addDataUrlPhotos(photos){
   })));
 }
 
-function loadJsonp(url){
+// GAS WebAppは同一URLでも断続的に404/タイムアウトを返す（2026-08-12実測: 8回中6回失敗の時間帯あり）。
+// 読み取り系GETのみが通る関数のため、自動リトライしても二重登録等の副作用はない。
+const JSONP_RETRY_DELAYS = [1000, 2000, 4000];
+
+async function loadJsonp(url){
+  let lastErr;
+  for(let attempt = 0; attempt <= JSONP_RETRY_DELAYS.length; attempt++){
+    try{
+      return await loadJsonpOnce(url);
+    }catch(err){
+      lastErr = err;
+      if(attempt < JSONP_RETRY_DELAYS.length){
+        await new Promise(resolve => setTimeout(resolve, JSONP_RETRY_DELAYS[attempt]));
+      }
+    }
+  }
+  throw new Error(`${lastErr.message} ${JSONP_RETRY_DELAYS.length + 1}回試しても届きませんでした。Google側の一時的な不調の可能性が高いので、少し時間を置いてもう一度お試しください。`);
+}
+
+function loadJsonpOnce(url){
   return new Promise((resolve, reject) => {
     const callback = `snsVideoDrive_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
     const script = document.createElement('script');
