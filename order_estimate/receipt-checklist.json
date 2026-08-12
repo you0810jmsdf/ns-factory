@@ -128,9 +128,17 @@
         }
       },
       "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-08-20",
+            "amount": 10923,
+            "subject": "カルチャースクール講師謝礼",
+            "status": "取得済み",
+            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260820_6338_中司　祐樹_振込明細書.PDF"
+          }
+        ],
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
@@ -231,7 +239,7 @@
         "records": [
           {
             "date": "2026-07-21",
-            "amount": null,
+            "amount": 17895,
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\ClaudeCode_20260721.txt"
@@ -312,9 +320,17 @@
         }
       },
       "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-07-17",
+            "amount": 29104,
+            "subject": "カルチャースクール講師謝礼",
+            "status": "取得済み",
+            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260717_6338_中司　祐樹_振込明細書.PDF"
+          }
+        ],
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
@@ -408,7 +424,7 @@
         "records": [
           {
             "date": "2026-06-21",
-            "amount": null,
+            "amount": 17739,
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\ClaudeCode_20260621.txt"
@@ -490,9 +506,17 @@
         }
       },
       "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-06-19",
+            "amount": 23004,
+            "subject": "カルチャースクール講師謝礼",
+            "status": "取得済み",
+            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260619_6338_中司　祐樹_振込明細書.PDF"
+          }
+        ],
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
@@ -578,7 +602,7 @@
         "records": [
           {
             "date": "2026-05-21",
-            "amount": null,
+            "amount": 17500,
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\ClaudeCode_20260521.txt"
@@ -652,9 +676,17 @@
         }
       },
       "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-05-20",
+            "amount": 23003,
+            "subject": "カルチャースクール講師謝礼",
+            "status": "取得済み",
+            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260520_6338_中司　祐樹_振込明細書.PDF"
+          }
+        ],
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
@@ -740,7 +772,7 @@
         "records": [
           {
             "date": "2026-04-05",
-            "amount": null,
+            "amount": 3507,
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260405.txt"
@@ -754,7 +786,7 @@
           },
           {
             "date": "2026-04-21",
-            "amount": null,
+            "amount": 15858,
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260421.txt"
@@ -828,9 +860,17 @@
         }
       },
       "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-04-20",
+            "amount": 21354,
+            "subject": "カルチャースクール講師謝礼",
+            "status": "取得済み",
+            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260420_6338_中司　祐樹_振込明細書.PDF"
+          }
+        ],
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
@@ -916,7 +956,7 @@
         "records": [
           {
             "date": "2026-03-05",
-            "amount": null,
+            "amount": 3147,
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\ClaudeCode_20260305.txt"
@@ -990,9 +1030,17 @@
         }
       },
       "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-03-19",
+            "amount": 18302,
+            "subject": "カルチャースクール講師謝礼",
+            "status": "取得済み",
+            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260319_6338_中司　祐樹_振込明細書.PDF"
+          }
+        ],
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
@@ -1144,9 +1192,17 @@
         }
       },
       "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-02-20",
+            "amount": 15253,
+            "subject": "カルチャースクール講師謝礼",
+            "status": "取得済み",
+            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260220_6338_中司　祐樹_振込明細書.PDF"
+          }
+        ],
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
@@ -1190,5 +1246,5 @@
       }
     }
   },
-  "checked_at": "2026-08-13 08:27:53"
+  "checked_at": "2026-08-13 08:31:13"
 }
