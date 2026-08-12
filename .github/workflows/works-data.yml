@@ -10,6 +10,12 @@ on:
     # 3時間おき（UTC）。商品登録の反映が半日遅れないように
     - cron: "10 */3 * * *"
   workflow_dispatch:
+  # register.html が登録・更新完了時に発火する（2026-08-12追加）。
+  # これが動けば作品集への反映は数分。スケジュールはGAS障害時の保険として残す。
+  # ※ fine-grained PAT（Contents: RW）で叩けるのは repository_dispatch。
+  #    workflow_dispatch は actions: write が必要なので使わない。
+  repository_dispatch:
+    types: [product-registered]
 
 permissions:
   contents: write
