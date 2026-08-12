@@ -348,17 +348,9 @@
         }
       },
       "electricity": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-06-01",
-            "amount": null,
-            "subject": "電気料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-06\\TEPCO_202606.pdf"
-          }
-        ],
+        "status": "手動DL（くらしTEPCO）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
@@ -382,17 +374,9 @@
         }
       },
       "internet": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-06-01",
-            "amount": null,
-            "subject": "インターネット料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-06\\SoftBankHikari_202606.pdf"
-          }
-        ],
+        "status": "SoftBank合算（mobile列参照）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
@@ -499,68 +483,36 @@
         }
       },
       "electricity": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-05-01",
-            "amount": null,
-            "subject": "電気料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-05\\TEPCO_202605.pdf"
-          }
-        ],
+        "status": "手動DL（くらしTEPCO）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "water": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-05-01",
-            "amount": null,
-            "subject": "水道料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-05\\ChibaWater_202605.pdf"
-          }
-        ],
+        "status": "未取得",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
         }
       },
       "internet": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-05-01",
-            "amount": null,
-            "subject": "インターネット料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-05\\SoftBankHikari_202605.pdf"
-          }
-        ],
+        "status": "SoftBank合算（mobile列参照）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-05-01",
-            "amount": null,
-            "subject": "携帯電話料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-05\\Ymobile_202605.pdf"
-          }
-        ],
+        "status": "手動DL（My SoftBank）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
           "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
@@ -769,68 +721,36 @@
         }
       },
       "electricity": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-03-01",
-            "amount": null,
-            "subject": "電気料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-03\\TEPCO_202603.pdf"
-          }
-        ],
+        "status": "手動DL（くらしTEPCO）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "water": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-03-01",
-            "amount": null,
-            "subject": "水道料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-03\\ChibaWater_202603.pdf"
-          }
-        ],
+        "status": "未取得",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
         }
       },
       "internet": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-03-01",
-            "amount": null,
-            "subject": "インターネット料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-03\\SoftBankHikari_202603.pdf"
-          }
-        ],
+        "status": "SoftBank合算（mobile列参照）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-03-01",
-            "amount": null,
-            "subject": "携帯電話料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-03\\Ymobile_202603.pdf"
-          }
-        ],
+        "status": "手動DL（My SoftBank）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
           "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
@@ -920,68 +840,36 @@
         }
       },
       "electricity": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-02-01",
-            "amount": null,
-            "subject": "電気料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-02\\TEPCO_202602.pdf"
-          }
-        ],
+        "status": "手動DL（くらしTEPCO）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
         }
       },
       "water": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-02-01",
-            "amount": null,
-            "subject": "水道料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-02\\ChibaWater_202602.pdf"
-          }
-        ],
+        "status": "未取得",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
         }
       },
       "internet": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-02-01",
-            "amount": null,
-            "subject": "インターネット料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-02\\SoftBankHikari_202602.pdf"
-          }
-        ],
+        "status": "SoftBank合算（mobile列参照）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "",
           "steps": "ネット回線はSoftBank光。携帯（SoftBank）との合算請求のため、証憑は mobile列 に保存したMy SoftBank明細1枚に含まれる（この列単独でのDLは不要）。ただし家事按分率が携帯と異なるため、仕訳は明細の内訳から光回線分を抽出し、携帯とは別に計上すること。"
         }
       },
       "mobile": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-02-01",
-            "amount": null,
-            "subject": "携帯電話料金",
-            "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-02\\Ymobile_202602.pdf"
-          }
-        ],
+        "status": "手動DL（My SoftBank）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://my.softbank.jp/",
           "steps": "携帯（SoftBank）は料金確定メールが届かないため手動DL。My SoftBank →「料金・支払い管理」→ 請求書／利用料金明細をDL。この明細はSoftBank光との合算請求のため、原本PDFはこの列に1枚だけ保存する（internet列は本明細を参照）。仕訳は按分率が異なるため携帯分と光回線分を分けて計上。※将来: My SoftBankの「請求確定のお知らせ」メール通知を有効化できれば自動取得候補に昇格可。"
@@ -1025,5 +913,5 @@
       }
     }
   },
-  "checked_at": "2026-08-12 19:18:56"
+  "checked_at": "2026-08-12 19:22:59"
 }
