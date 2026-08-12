@@ -107,17 +107,9 @@
         }
       },
       "mobile": {
-        "status": "要再取得",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-08-01",
-            "amount": null,
-            "subject": "携帯電話料金／内容がほとんど無い（要確認）",
-            "status": "要再取得",
-            "local_path": "監理部\\utility_bills\\2026-08\\Ymobile_202608.pdf"
-          }
-        ],
+        "status": "手動DL（My SoftBank）",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
           "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
@@ -2152,5 +2144,5 @@
       }
     }
   },
-  "checked_at": "2026-08-13 08:34:51"
+  "checked_at": "2026-08-13 08:35:34"
 }
