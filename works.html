@@ -429,6 +429,22 @@
     .admin-price-msg { font-size: 12px; margin-top: 6px; min-height: 14px; }
     .admin-price-msg.success { color: #2c6a1f; }
     .admin-price-msg.error { color: #8a2a1f; }
+    .btn-share-work {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 9px 12px;
+      border: 1px dashed var(--accent);
+      border-radius: var(--radius);
+      background: var(--white);
+      color: var(--accent-dark);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-share-work:hover { background: #faf5ee; }
+    .btn-share-work.copied { border-style: solid; background: var(--accent); color: var(--white); }
     .btn-admin-edit {
       display: inline-flex;
       align-items: center;
@@ -1027,6 +1043,9 @@
         <div id="modal-meta" class="modal-meta"></div>
         <div id="modal-desc" class="modal-desc"></div>
         <div id="modal-availability" class="modal-availability" hidden></div>
+        <!-- SNS等でこの作品を名指しで案内するためのリンク（2026-08-12 事業主要望）。
+             コピー先は works/商品ID.html（OGP付きの案内ページ）で、開くと詳細が直接開く。 -->
+        <button id="share-work-link" class="btn-share-work" type="button">🔗 この作品のリンクをコピー</button>
         <div class="modal-actions">
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
@@ -1898,6 +1917,62 @@
       applyUrlFilter();
       buildFilters();
       render();
+      openDeepLinkedWork();
+    }
+
+    // ?id=NF2026_633 で指定された作品の詳細を直接開く（SNSからの名指し導線用）。
+    // applyData は静的データ→GASデータの2回呼ばれるため、自動オープンは1回だけにする
+    // （閉じたモーダルがGASデータ到着時に勝手に開き直すのを防ぐ）。
+    // 静的データに無い新作でも、後から届くGASデータで開ける。
+    let deepLinkOpened = false;
+    function openDeepLinkedWork() {
+      if (deepLinkOpened) return;
+      let wantId = '';
+      try {
+        wantId = (new URLSearchParams(location.search).get('id') || '').trim();
+      } catch (e) { return; }
+      if (!wantId) return;
+      const work = works.find((w) => w.id === wantId);
+      if (!work) return; // まだ届いていないだけの可能性があるので次のapplyDataに委ねる
+      deepLinkOpened = true;
+      // カードのクリックと同じ手順。写真はDriveから遅延読込なので先に取得する
+      if (!work.photosLoaded) {
+        loadDrivePhotos(work).then(() => {
+          if (work.photos.length) openWork(work);
+          render();
+        });
+        return;
+      }
+      if (work.photos.length) openWork(work);
+    }
+
+    // この作品を名指しで案内するためのURL。OGP付きの案内ページを指す
+    // （SNSに貼ったとき写真・作品名・価格がカード表示されるのはこちらのURLのみ）。
+    function workShareUrl(work) {
+      if (!work || !work.id) return '';
+      return location.origin + location.pathname.replace(/works\.html$/, '')
+        + 'works/' + encodeURIComponent(work.id) + '.html';
+    }
+
+    const shareWorkBtn = document.getElementById('share-work-link');
+    if (shareWorkBtn) {
+      shareWorkBtn.addEventListener('click', () => {
+        const url = workShareUrl(activeWork);
+        if (!url) return;
+        const done = () => {
+          shareWorkBtn.classList.add('copied');
+          shareWorkBtn.textContent = '✓ コピーしました（SNSに貼れます）';
+          setTimeout(() => {
+            shareWorkBtn.classList.remove('copied');
+            shareWorkBtn.textContent = '🔗 この作品のリンクをコピー';
+          }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(() => { fallbackCopy(url); done(); });
+        } else {
+          fallbackCopy(url); done();
+        }
+      });
     }
 
     // URLパラメータによる初期絞り込み（トップページのAIチャット等からの導線用）
