@@ -261,6 +261,20 @@ canvas{
   text-decoration:none;border-radius:var(--radius-sm);padding:13px 16px;font-weight:700;letter-spacing:.04em;
 }
 .log{margin-top:10px;color:var(--ink-sub);font-size:12.5px;min-height:20px;line-height:1.7;overflow-wrap:anywhere}
+.save-stats{margin-top:12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#FFF}
+.save-stats summary{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:9px 12px;cursor:pointer;font-size:12.5px;color:var(--ink);
+}
+.save-stats-summary{color:var(--ink-sub);font-size:12px}
+.save-stats-body{padding:0 12px 12px}
+.save-stats table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px}
+.save-stats caption{text-align:left;font-size:12px;color:var(--ink);padding:6px 0 4px;font-weight:600}
+.save-stats th,.save-stats td{border:1px solid var(--line);padding:5px 7px;text-align:left}
+.save-stats th{background:var(--card-soft);font-weight:600}
+.save-stats td.ok{color:#276738}
+.save-stats td.ng{color:#8F3E23}
+.save-stats .stats-note{font-size:11.5px;color:var(--ink-sub);line-height:1.6;margin:0 0 10px}
 
 /* ── 背景色選択 ── */
 .bg-color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -589,6 +603,20 @@ canvas{
         <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
         <div class="notice">自動ナレーション付き保存は、AI音声をバックグラウンドで生成してMP4へ直接合成します。画面共有は不要です。初回だけ約100MBを読み込みますが、画面操作は続けられます。中止するときは上の「停止」を押してください。</div>
         <div class="log" id="log"></div>
+        <details class="save-stats" id="saveStats">
+          <summary>
+            <span>保存の記録（成功率）</span>
+            <span class="save-stats-summary" id="saveStatsSummary">まだ記録がありません</span>
+          </summary>
+          <div class="save-stats-body">
+            <p class="help">この端末に保存した記録だけを表示します（外部には送信されません）。写真の枚数によって成否が変わるかを確かめられます。</p>
+            <div id="saveStatsTables"></div>
+            <div class="actions">
+              <button class="secondary" id="copySaveStats" type="button">記録をコピー</button>
+              <button class="danger" id="clearSaveStats" type="button">記録を消す</button>
+            </div>
+          </div>
+        </details>
       </section>
     </div>
 
@@ -1035,6 +1063,11 @@ const els = {
   speakScript: document.getElementById('speakScript'),
   videoFormat: document.getElementById('videoFormat'),
   motionIntensity: document.getElementById('motionIntensity'),
+  saveStats: document.getElementById('saveStats'),
+  saveStatsSummary: document.getElementById('saveStatsSummary'),
+  saveStatsTables: document.getElementById('saveStatsTables'),
+  copySaveStats: document.getElementById('copySaveStats'),
+  clearSaveStats: document.getElementById('clearSaveStats'),
   creativePreset: document.getElementById('creativePreset'),
   applyCreativePreset: document.getElementById('applyCreativePreset'),
   bgMode: document.getElementById('bgMode'),
@@ -4281,6 +4314,110 @@ async function generateNarrationTimeline(){
 // 停止時の原因追跡用。どのフレームで詰まったか等をスクショ一枚で分かるようにする（2026-08-12）
 const encoderDiag = {frame:0, totalFrames:0, lastQueue:0, longestWaitMs:0};
 
+/* ══ 保存の成否統計（2026-08-12 追加）══
+   「写真の枚数で成功率が変わる気がする」を確かめるための記録。
+   端末内（localStorage）だけに置き、外部へは送らない。 */
+const SAVE_STATS_KEY = 'nsfVideoSaveStats';
+const SAVE_STATS_MAX = 50;
+const PHOTO_BUCKETS = [
+  {label:'1〜4枚',   min:1,  max:4},
+  {label:'5〜8枚',   min:5,  max:8},
+  {label:'9〜12枚',  min:9,  max:12},
+  {label:'13枚以上', min:13, max:Infinity}
+];
+const SAVE_MODE_LABELS = {narration:'AIナレーション付き', silent:'動画のみ', mic:'自分の声'};
+
+function loadSaveStats(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(SAVE_STATS_KEY) || '[]');
+    return Array.isArray(raw) ? raw : [];
+  }catch(_){ return []; }
+}
+
+function recordSaveAttempt(entry){
+  try{
+    const list = loadSaveStats();
+    list.unshift(entry);
+    localStorage.setItem(SAVE_STATS_KEY, JSON.stringify(list.slice(0, SAVE_STATS_MAX)));
+  }catch(_){ /* 保存できなくても本来の動画保存は妨げない */ }
+  renderSaveStats();
+}
+
+function bucketOf(count){
+  return (PHOTO_BUCKETS.find(b => count >= b.min && count <= b.max) || PHOTO_BUCKETS[PHOTO_BUCKETS.length - 1]).label;
+}
+
+function summarizeBy(list, keyOf, order){
+  const map = new Map();
+  list.forEach(item => {
+    const key = keyOf(item);
+    const row = map.get(key) || {key, total:0, ok:0, secSum:0, secCount:0};
+    row.total += 1;
+    if(item.ok){
+      row.ok += 1;
+      if(typeof item.sec === 'number'){ row.secSum += item.sec; row.secCount += 1; }
+    }
+    map.set(key, row);
+  });
+  const rows = [...map.values()];
+  if(order) rows.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+  return rows;
+}
+
+function statsTable(caption, rows, firstHeader){
+  if(!rows.length) return '';
+  const body = rows.map(r => {
+    const rate = Math.round(r.ok / r.total * 100);
+    const avg = r.secCount ? `${(r.secSum / r.secCount).toFixed(1)}秒` : '—';
+    return `<tr><td>${escapeHtml(r.key)}</td><td>${r.total}回</td>`
+      + `<td class="${rate >= 80 ? 'ok' : 'ng'}">${r.ok}回（${rate}%）</td><td>${avg}</td></tr>`;
+  }).join('');
+  return `<table><caption>${escapeHtml(caption)}</caption>`
+    + `<tr><th>${escapeHtml(firstHeader)}</th><th>試行</th><th>成功</th><th>平均時間</th></tr>${body}</table>`;
+}
+
+function renderSaveStats(){
+  if(!els.saveStatsSummary || !els.saveStatsTables) return;
+  const list = loadSaveStats();
+  if(!list.length){
+    els.saveStatsSummary.textContent = 'まだ記録がありません';
+    els.saveStatsTables.innerHTML = '<p class="stats-note">保存を実行すると、ここに結果がたまっていきます。</p>';
+    return;
+  }
+  const ok = list.filter(item => item.ok).length;
+  els.saveStatsSummary.textContent = `直近${list.length}回中 ${ok}回成功（${Math.round(ok / list.length * 100)}%）`;
+
+  const byPhotos = summarizeBy(list, item => bucketOf(item.photos || 0), PHOTO_BUCKETS.map(b => b.label));
+  const byMode = summarizeBy(list, item => SAVE_MODE_LABELS[item.mode] || item.mode || '不明');
+  const fails = list.filter(item => !item.ok).slice(0, 5);
+  const failList = fails.length
+    ? `<p class="stats-note"><strong>直近の失敗</strong><br>${fails.map(f =>
+        `・${escapeHtml(f.at || '')} ${f.photos}枚 / ${SAVE_MODE_LABELS[f.mode] || f.mode}：${escapeHtml(String(f.error || '').slice(0, 120))}`
+      ).join('<br>')}</p>`
+    : '';
+  els.saveStatsTables.innerHTML = statsTable('写真の枚数別', byPhotos, '枚数')
+    + statsTable('保存の種類別', byMode, '種類') + failList;
+}
+
+function copySaveStats(){
+  const list = loadSaveStats();
+  if(!list.length){ setLog('コピーする記録がありません。'); return; }
+  const text = list.map(item =>
+    `${item.at} / ${SAVE_MODE_LABELS[item.mode] || item.mode} / ${item.photos}枚 / ${item.duration}秒 / ${item.format || ''} / `
+    + `${item.ok ? `成功 ${item.sec}秒` : `失敗 ${item.error}`}`
+  ).join('\n');
+  navigator.clipboard.writeText(text)
+    .then(() => setLog(`保存の記録${list.length}件をコピーしました。そのまま貼り付けて共有できます。`))
+    .catch(() => setLog('コピーできませんでした。'));
+}
+
+function clearSaveStats(){
+  if(!confirm('保存の記録をすべて消します。よろしいですか？')) return;
+  try{ localStorage.removeItem(SAVE_STATS_KEY); }catch(_){}
+  renderSaveStats();
+  setLog('保存の記録を消しました。');
+}
+
 async function waitForEncoderQueue(encoder, maxQueue, errors, label){
   const startedAt = performance.now();
   let notified = false;
@@ -4787,7 +4924,34 @@ function closeExportGate(confirmed){
   }
 }
 
+// 保存の成否を記録してから本体を呼ぶ。3モード共通の入口なのでここで一括して拾う（2026-08-12）
 async function recordVideo(mode = 'silent'){
+  const startedAt = performance.now();
+  const photos = playableSlides().length;
+  let failure = null;
+  try{
+    return await recordVideoCore(mode);
+  }catch(err){
+    failure = err;
+    throw err;
+  }finally{
+    // 写真が無い等の「開始前に弾かれた」ケースは記録しない（統計が濁るため）
+    if(photos){
+      const stopped = narratedSaveCancelled;
+      recordSaveAttempt({
+        at: new Date().toLocaleString('ja-JP', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'}),
+        mode, photos,
+        duration: Math.round(totalDuration()),
+        format: els.videoFormat ? els.videoFormat.value : '',
+        ok: !failure && !stopped && !!lastRecordingBlob,
+        sec: Number(((performance.now() - startedAt) / 1000).toFixed(1)),
+        error: failure ? String(failure.message || failure).slice(0, 200) : (stopped ? '利用者が中止' : '')
+      });
+    }
+  }
+}
+
+async function recordVideoCore(mode = 'silent'){
   if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
   const narrationMode = mode === 'narration';
   const withMic = mode === 'mic';
@@ -5772,6 +5936,9 @@ els.recordNarration.addEventListener('click', async () => {
     refreshCapabilities();
   }
 });
+els.copySaveStats.addEventListener('click', copySaveStats);
+els.clearSaveStats.addEventListener('click', clearSaveStats);
+renderSaveStats();
 document.getElementById('recordSilent').addEventListener('click', async () => {
   if(await requestExportGate('silent')) await recordVideo('silent');
 });
