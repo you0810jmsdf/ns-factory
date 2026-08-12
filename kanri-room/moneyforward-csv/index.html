@@ -700,9 +700,9 @@ td.amount{
           </div>
           <div class="actions">
             <button class="btn good" id="addReceiptRowBtn" type="button">仕訳案を追加</button>
-            <button class="btn" id="addAllReceiptRowsBtn" type="button">候補を全件追加</button>
             <button class="btn" id="sendReceiptManualBtn" type="button">手入力欄へ送る</button>
           </div>
+          <p class="hint">金額は領収書原本と必ず照合してください。合計行が明確に読めない場合、金額欄は空欄になります。</p>
         </div>
       </div>
     </section>
@@ -1309,7 +1309,6 @@ td.amount{
     renderReceiptCandidates();
     $('ocrBtn').disabled = true;
     $('addReceiptRowBtn').disabled = true;
-    $('addAllReceiptRowsBtn').disabled = true;
     try{
       for(let i = 0; i < files.length; i += 1){
         const file = files[i];
@@ -1339,7 +1338,6 @@ td.amount{
     }finally{
       $('ocrBtn').disabled = false;
       $('addReceiptRowBtn').disabled = false;
-      $('addAllReceiptRowsBtn').disabled = receiptCandidates.length === 0;
       setTimeout(() => updateOcrProgress(0), 700);
     }
   }
@@ -1440,6 +1438,8 @@ td.amount{
       store,
       amount:businessAmountInfo.amount,
       originalAmount:amountInfo.amount,
+      amountSource:amountInfo.source,
+      amountNeedsReview:amountInfo.needsReview,
       account,
       tax,
       memo,
@@ -1504,22 +1504,67 @@ td.amount{
   }
 
   function extractReceiptAmount(lines){
-    const keyword = /(合計|総合計|税込|領収金額|ご利用額|お買上|お買い上げ|現計|クレジット|支払|金額|計)/;
-    const amounts = [];
+    const strongKeyword = /(領収金額|総合計|税込合計|お支払(?:い)?金額|支払(?:い)?合計|お買上(?:げ)?合計|ご利用金額|ご請求金額|クレジット売上|現計|合\s*計)/;
+    const weakKeyword = /(税込|お買上|お買い上げ|ご利用額|支払|金額)/;
+    const rejectLine = /(TEL|電話|郵便番号|〒|登録番号|適格請求書|事業者番号|伝票番号|受付番号|注文番号|No\.|NO\.|番号|バーコード|JAN|ポイント|残高|会員|担当|客数|税率|対象額)/i;
+    const taxOnlyLine = /(消費税|税額|内税|外税|税抜|課税対象|税率)/;
+    const candidates = [];
     lines.forEach((line, lineIndex) => {
-      const hasKeyword = keyword.test(line);
-      if(!hasKeyword && /(TEL|電話|登録番号|郵便番号|No\.|番号)/i.test(line)) return;
-      const matches = line.matchAll(/[¥]?\s*([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{2,8})\s*円?/g);
+      const compact = line.replace(/\s/g, '');
+      const hasStrong = strongKeyword.test(line);
+      const hasWeak = weakKeyword.test(line);
+      if(rejectLine.test(line)) return;
+      if(taxOnlyLine.test(line) && !hasStrong) return;
+      if(!hasStrong && !hasWeak) return;
+      const matches = line.matchAll(/(?:[¥￥]\s*)?([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{2,8})(?:\s*円)?/g);
+      const lineAmounts = [];
       for(const match of matches){
         const amount = parseAmount(match[1]);
-        if(amount < 50 || amount > 3000000) continue;
-        const score = (hasKeyword ? 20 : 0) + Math.min(amount / 10000, 10) - lineIndex / 10;
-        amounts.push({ amount, line, score });
+        if(!isPlausibleReceiptAmount(amount)) continue;
+        if(looksLikeDateOrRate(match[1], compact)) continue;
+        lineAmounts.push(amount);
       }
+      if(!lineAmounts.length) return;
+      const amount = Math.max(...lineAmounts);
+      const score = (hasStrong ? 100 : 30) + Math.min(amount / 10000, 10) - lineIndex / 20;
+      candidates.push({
+        amount,
+        source:line,
+        score,
+        needsReview:!hasStrong
+      });
     });
-    if(!amounts.length) return { amount:0, source:'' };
-    amounts.sort((a, b) => b.score - a.score || b.amount - a.amount);
-    return amounts[0];
+    if(!candidates.length){
+      return {
+        amount:0,
+        source:'',
+        needsReview:true,
+        reason:'合計行を明確に読めませんでした'
+      };
+    }
+    candidates.sort((a, b) => b.score - a.score || b.amount - a.amount);
+    const picked = candidates[0];
+    if(picked.needsReview){
+      return {
+        amount:0,
+        source:picked.source,
+        needsReview:true,
+        reason:'合計行ではないため金額は未確定'
+      };
+    }
+    return picked;
+  }
+
+  function isPlausibleReceiptAmount(amount){
+    return Number.isFinite(amount) && amount >= 50 && amount <= 3000000;
+  }
+
+  function looksLikeDateOrRate(token, line){
+    const raw = String(token || '').replace(/,/g, '');
+    if(/(?:20\d{2}|令和|R\d)[\/.\-年]/i.test(line)) return true;
+    if(/(?:税率|率|%)\s*[:：]?\s*\d{1,2}/.test(line) && Number(raw) <= 20) return true;
+    if(raw.length === 8 && /^20\d{6}$/.test(raw)) return true;
+    return false;
   }
 
   function detectReceiptTax(text){
@@ -1555,6 +1600,7 @@ td.amount{
   }
 
   function applyBusinessRules(amount, account, store, text){
+    if(!amount) return { amount:0, note:'' };
     if(account === '旅費交通費' && GASOLINE_KEYWORDS.some(key => `${store}\n${text}`.includes(key))){
       return {
         amount:Math.round(amount * GASOLINE_RATIO),
@@ -1572,6 +1618,7 @@ td.amount{
 
   function buildReceiptMemo(lines, fileName, amountInfo, businessAmountInfo, confidence){
     const parts = [];
+    if(amountInfo.reason) parts.push(`金額要確認: ${amountInfo.reason}`);
     if(businessAmountInfo.note) parts.push(businessAmountInfo.note);
     const itemLine = lines.find(line => {
       return line.length >= 3 && line.length <= 42 &&
@@ -1639,7 +1686,7 @@ td.amount{
   function fillManualFromReceipt(){
     const amount = parseAmount($('receiptAmount').value);
     if(!$('receiptStore').value.trim() || amount <= 0){
-      showToast('読取結果が空です。');
+      showToast('読取結果の金額を確認してください。');
       return;
     }
     switchMode('manual');
@@ -1662,17 +1709,17 @@ td.amount{
     if(!receiptCandidates.length) return;
     receiptCandidates.forEach((candidate, index) => {
       const parsed = candidate.parsed;
-      const low = !parsed.date || !parsed.amount || candidate.confidence < 55;
+      const low = !parsed.date || !parsed.amount || parsed.amountNeedsReview || candidate.confidence < 55;
+      const amountText = parsed.amount ? formatYen(parsed.amount) : '金額要確認';
       const el = document.createElement('div');
       el.className = `candidate${low ? ' low' : ''}`;
       el.innerHTML = [
         '<div>',
         `<strong>${escapeHtml(parsed.store || candidate.fileName)}</strong>`,
-        `<small>${escapeHtml(parsed.date || '日付未確定')} / ${formatYen(parsed.amount)} / ${escapeHtml(parsed.account)} / ${escapeHtml(parsed.tax)} / ${escapeHtml(candidate.note)}</small>`,
+        `<small>${escapeHtml(parsed.date || '日付未確定')} / ${escapeHtml(amountText)} / ${escapeHtml(parsed.account)} / ${escapeHtml(parsed.tax)} / ${escapeHtml(candidate.note)}</small>`,
         '</div>',
         '<div class="toolbar-actions">',
-        `<button class="btn" type="button" data-receipt-action="fill" data-index="${index}">確認</button>`,
-        `<button class="btn good" type="button" data-receipt-action="add" data-index="${index}">追加</button>`,
+        `<button class="btn" type="button" data-receipt-action="fill" data-index="${index}">確認して修正</button>`,
         '</div>'
       ].join('');
       box.appendChild(el);
@@ -1728,16 +1775,6 @@ td.amount{
     const row = buildReceiptRowFromFields();
     if(row) addReceiptRow(row);
   });
-  $('addAllReceiptRowsBtn').addEventListener('click', () => {
-    if(!receiptCandidates.length){
-      showToast('追加できる候補がありません。');
-      return;
-    }
-    rows = rows.concat(receiptCandidates.map(candidate => candidate.row));
-    saveRows();
-    render();
-    showToast(`${receiptCandidates.length}件の仕訳案を追加しました。`);
-  });
   $('sendReceiptManualBtn').addEventListener('click', fillManualFromReceipt);
   $('samplePasteBtn').addEventListener('click', () => {
     $('pasteInput').value = [
@@ -1777,8 +1814,6 @@ td.amount{
     if(button.dataset.receiptAction === 'fill'){
       fillReceiptFields(candidate);
       showToast('読取候補を確認欄へ反映しました。');
-    }else if(button.dataset.receiptAction === 'add'){
-      addReceiptRow(candidate.row);
     }
   });
   $('manualTab').addEventListener('click', () => switchMode('manual'));
@@ -1796,7 +1831,6 @@ td.amount{
 
   resetForm(false);
   resetReceiptFields();
-  $('addAllReceiptRowsBtn').disabled = true;
   const initialMode = (() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode') || window.location.hash.replace('#', '');
