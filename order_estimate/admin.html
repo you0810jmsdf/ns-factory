@@ -1406,7 +1406,13 @@ tr.row-out-stock td{
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
         <button class="btn light" id="receiptChecklistReloadBtn" type="button">再読込</button>
+        <select id="receiptChecklistAccountingMonth" style="border:1px solid #dcc7b1;border-radius:10px;padding:9px 10px;font:inherit;background:#fffdfb"></select>
+        <button class="btn sub" id="sendReceiptChecklistAccountingBtn" type="button">選択月を会計ツールへ送る</button>
+        <a class="btn light" href="../kanri-room/moneyforward-csv/?mode=receipt" style="text-decoration:none;display:inline-flex;align-items:center">会計ツールを開く</a>
         <span class="status-pill" id="receiptChecklistStatusPill">未読込</span>
+      </div>
+      <div class="hint" id="receiptChecklistAccountingStatus" style="margin:-6px 0 10px">
+        金額が確定している取得済みレコードだけを会計ツールへ送ります。金額未確定・手動DL待ちは送りません。
       </div>
       <div style="overflow-x:auto">
         <table id="rcMatrixTable" style="border-collapse:collapse;width:100%;min-width:640px;font-size:13px">
@@ -4523,6 +4529,20 @@ const RC_SUB_LABELS = {
   joyfulhonda: 'ジョイフルホンダ講師謝礼（収入）',
   chatgpt: 'ChatGPT',
 };
+const ACCOUNTING_QUEUE_KEY = 'nsf_moneyforward_import_queue_v1';
+const RC_ACCOUNT_DEFAULTS = {
+  apple: { debit:'通信費', tax:'課税仕入10%' },
+  moneyforward: { debit:'通信費', tax:'課税仕入10%' },
+  photoroom: { debit:'広告宣伝費', tax:'課税仕入10%' },
+  office365: { debit:'通信費', tax:'課税仕入10%' },
+  claude_code: { debit:'通信費', tax:'課税仕入10%' },
+  electricity: { debit:'水道光熱費', tax:'課税仕入10%' },
+  water: { debit:'水道光熱費', tax:'課税仕入10%' },
+  internet: { debit:'通信費', tax:'課税仕入10%' },
+  mobile: { debit:'通信費', tax:'課税仕入10%' },
+  chatgpt: { debit:'通信費', tax:'課税仕入10%' },
+  joyfulhonda: { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
+};
 
 let rcMatrixData = null;
 
@@ -4541,6 +4561,12 @@ function rcRenderMatrix(data) {
 
   const subs = data.subscriptions || [];
   const months = data.months || [];
+  const monthSelect = document.getElementById('receiptChecklistAccountingMonth');
+  if (monthSelect) {
+    const current = monthSelect.value;
+    monthSelect.innerHTML = months.map(m => `<option value="${rcEscapeHtml(m)}">${rcEscapeHtml(m)}</option>`).join('');
+    monthSelect.value = months.includes(current) ? current : (months[0] || '');
+  }
 
   // 列見出しを請求書発行サイトへの直接リンクにする（guide.url がある列のみ）。
   // URLは月によらず同じなので先頭月の行から引く。
@@ -4652,6 +4678,82 @@ function rcCloseModal() {
   if (overlay) overlay.style.display = 'none';
 }
 
+function rcAccountingRowFromRecord(month, sub, record) {
+  const amount = Number(record && record.amount);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  const subject = record.subject || RC_SUB_LABELS[sub] || sub;
+  const date = String(record.date || `${month}-01`).replace(/\//g, '-');
+  const defaults = RC_ACCOUNT_DEFAULTS[sub] || { debit: '通信費', tax: '課税仕入10%' };
+  const metaSubject = String(subject).toLowerCase();
+  let debit = defaults.debit || '通信費';
+  let debitTax = defaults.debitTax || defaults.tax || '課税仕入10%';
+  let credit = defaults.credit || '事業主借';
+  let creditTax = defaults.creditTax || '対象外';
+
+  if (sub === 'apple' && /meta|verified|instagram|facebook/.test(metaSubject)) {
+    debit = '広告宣伝費';
+  }
+  if (sub === 'joyfulhonda') {
+    debit = '普通預金';
+    debitTax = '対象外';
+    credit = '売上高';
+    creditTax = '課税売上10%';
+  }
+
+  return {
+    '取引日': date,
+    '借方勘定科目': debit,
+    '借方補助科目': '',
+    '借方税区分': debitTax,
+    '借方金額': Math.round(amount),
+    '貸方勘定科目': credit,
+    '貸方補助科目': '',
+    '貸方税区分': creditTax,
+    '貸方金額': Math.round(amount),
+    '摘要': `${RC_SUB_LABELS[sub] || sub} ${subject}`,
+    'タグ': '固定費',
+    'メモ': [
+      `固定費チェック ${month}`,
+      record.local_path ? `証憑: ${record.local_path}` : '',
+      record.status ? `状態: ${record.status}` : ''
+    ].filter(Boolean).join(' / '),
+    '決済': ''
+  };
+}
+
+function rcSendAccountingRows() {
+  const status = document.getElementById('receiptChecklistAccountingStatus');
+  if (!rcMatrixData) {
+    if (status) status.textContent = '先に証憑チェックリストを読み込んでください。';
+    return;
+  }
+  const month = (document.getElementById('receiptChecklistAccountingMonth') || {}).value || (rcMatrixData.months || [])[0];
+  const row = (rcMatrixData.matrix && rcMatrixData.matrix[month]) || {};
+  const rows = [];
+  (rcMatrixData.subscriptions || []).forEach(sub => {
+    const cell = row[sub] || {};
+    (cell.records || []).forEach(record => {
+      const next = rcAccountingRowFromRecord(month, sub, record);
+      if (next) rows.push(next);
+    });
+  });
+  if (!rows.length) {
+    if (status) status.textContent = `${month} は会計ツールへ送れる金額確定済みレコードがありません。`;
+    return;
+  }
+  let queued = [];
+  try {
+    queued = JSON.parse(localStorage.getItem(ACCOUNTING_QUEUE_KEY) || '[]');
+    if (!Array.isArray(queued)) queued = [];
+  } catch (_) {
+    queued = [];
+  }
+  const keys = new Set(queued.map(r => [r['取引日'], r['摘要'], r['借方金額']].join('|')));
+  const fresh = rows.filter(r => !keys.has([r['取引日'], r['摘要'], r['借方金額']].join('|')));
+  localStorage.setItem(ACCOUNTING_QUEUE_KEY, JSON.stringify(queued.concat(fresh)));
+  if (status) status.textContent = `${month} の固定費 ${fresh.length}行を会計ツールへ送りました。会計ツール側で取り込んでください。`;
+}
+
 async function loadReceiptChecklist() {
   receiptChecklistSetPill('読込中…', false);
   try {
@@ -4678,6 +4780,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pubBtn) pubBtn.addEventListener('click', publishHearingToGitHub);
   const rcReloadBtn = document.getElementById('receiptChecklistReloadBtn');
   if (rcReloadBtn) rcReloadBtn.addEventListener('click', loadReceiptChecklist);
+  const rcAccountingBtn = document.getElementById('sendReceiptChecklistAccountingBtn');
+  if (rcAccountingBtn) rcAccountingBtn.addEventListener('click', rcSendAccountingRows);
   const rcModalCloseBtn = document.getElementById('rcModalCloseBtn');
   if (rcModalCloseBtn) rcModalCloseBtn.addEventListener('click', rcCloseModal);
   const rcModalOverlay = document.getElementById('rcModalOverlay');

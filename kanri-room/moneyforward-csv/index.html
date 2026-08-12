@@ -662,6 +662,39 @@ td.amount{
           <div class="candidate-list" id="receiptCandidates"></div>
 
           <div class="form-grid" style="margin-top:16px">
+            <div class="section-title">Accounting Check</div>
+            <div class="field wide">
+              <label for="mfAccessToken">MoneyForward短時間アクセストークン</label>
+              <input id="mfAccessToken" type="password" autocomplete="off" placeholder="Bearer Tokenのみ。APIキーやClient Secretは入力しない">
+            </div>
+            <div class="field wide">
+              <label for="mfApiBase">MoneyForward API URL</label>
+              <input id="mfApiBase" type="text" value="https://api-accounting.moneyforward.com/api/v3">
+            </div>
+            <div class="field">
+              <label for="mfFromDate">参照開始日</label>
+              <input id="mfFromDate" type="date">
+            </div>
+            <div class="field">
+              <label for="mfToDate">参照終了日</label>
+              <input id="mfToDate" type="date">
+            </div>
+            <div class="field wide">
+              <label for="mfHistoryFile">前年仕訳CSV/API JSON</label>
+              <input id="mfHistoryFile" type="file" accept=".csv,.tsv,.txt,.json,application/json,text/csv,text/tab-separated-values">
+            </div>
+            <div class="field wide">
+              <div class="toolbar-actions">
+                <button class="btn" id="loadMfApiBtn" type="button">APIから前年参照</button>
+                <button class="btn" id="importHistoryBtn" type="button">ファイルで前年参照</button>
+                <button class="btn" id="importFixedCostQueueBtn" type="button">固定費チェック結果を取り込む</button>
+              </div>
+              <p class="hint" id="accountingHistoryStatus">前年データ未読込。読み込むと勘定科目を過去実績で検証します。</p>
+              <p class="hint" id="fixedCostQueueStatus">固定費チェックから送られた仕訳候補はありません。</p>
+            </div>
+          </div>
+
+          <div class="form-grid" style="margin-top:16px">
             <div class="section-title">Read Result</div>
             <div class="field">
               <label for="receiptDate">取引日</label>
@@ -670,6 +703,37 @@ td.amount{
             <div class="field">
               <label for="receiptAmount">税込金額</label>
               <input id="receiptAmount" type="text" inputmode="numeric">
+            </div>
+            <div class="field">
+              <label for="receiptCurrency">通貨</label>
+              <select id="receiptCurrency">
+                <option value="JPY">JPY（日本円）</option>
+                <option value="USD">USD（米ドル）</option>
+                <option value="EUR">EUR（ユーロ）</option>
+                <option value="GBP">GBP（英ポンド）</option>
+                <option value="AUD">AUD（豪ドル）</option>
+                <option value="CAD">CAD（カナダドル）</option>
+                <option value="CNY">CNY（人民元）</option>
+                <option value="KRW">KRW（韓国ウォン）</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="receiptForeignAmount">外貨金額</label>
+              <input id="receiptForeignAmount" type="text" inputmode="decimal" placeholder="例: 22.00">
+            </div>
+            <div class="field">
+              <label for="receiptFxRate">換算レート</label>
+              <input id="receiptFxRate" type="text" inputmode="decimal" placeholder="自動取得">
+            </div>
+            <div class="field">
+              <label for="receiptFxDate">レート日</label>
+              <input id="receiptFxDate" type="text" readonly>
+            </div>
+            <div class="field wide">
+              <div class="toolbar-actions">
+                <button class="btn" id="applyFxBtn" type="button">為替適用</button>
+              </div>
+              <p class="hint" id="receiptFxStatus">外貨の領収書は取引日の為替で円換算します。</p>
             </div>
             <div class="field wide">
               <label for="receiptStore">摘要</label>
@@ -688,6 +752,12 @@ td.amount{
                 <option>非課税仕入</option>
                 <option>不課税</option>
               </select>
+            </div>
+            <div class="field wide">
+              <div class="toolbar-actions">
+                <button class="btn" id="applySuggestedAccountBtn" type="button">推奨科目を適用</button>
+              </div>
+              <p class="hint" id="receiptValidationStatus">前年データ読込後、科目の妥当性を表示します。</p>
             </div>
             <div class="field wide">
               <label for="receiptMemo">メモ</label>
@@ -833,6 +903,10 @@ td.amount{
   const OCR_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
   const PDF_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
   const PDF_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  const FX_API_BASE = 'https://api.frankfurter.dev';
+  const DEFAULT_MF_API_BASE = 'https://api-accounting.moneyforward.com/api/v3';
+  const HISTORY_STORAGE_KEY = 'nsf_moneyforward_accounting_history_v1';
+  const ACCOUNTING_QUEUE_KEY = 'nsf_moneyforward_import_queue_v1';
   const GASOLINE_KEYWORDS = ['コスモ石油','ENEOS','エネオス','出光','ガスステーション','コストコガス','石油'];
   const GASOLINE_RATIO = 0.714;
   const ACCOUNT_RULES = [
@@ -852,6 +926,8 @@ td.amount{
   const $ = id => document.getElementById(id);
   let rows = loadRows();
   let receiptCandidates = [];
+  let accountingHistory = loadAccountingHistory();
+  let suggestedReceiptAccount = '';
   let toastTimer = 0;
 
   function todayInputValue(){
@@ -860,6 +936,12 @@ td.amount{
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+  }
+
+  function previousYearRange(){
+    const now = new Date();
+    const y = now.getFullYear() - 1;
+    return { from:`${y}-01-01`, to:`${y}-12-31` };
   }
 
   function formatYen(value){
@@ -896,6 +978,29 @@ td.amount{
     return Number.isFinite(num) ? Math.round(num) : 0;
   }
 
+  function parseDecimalAmount(value){
+    const raw = String(value || '')
+      .replace(/[,\s円¥￥$€£]/g, '')
+      .replace(/[Ａ-Ｚａ-ｚ]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
+    if(!raw) return 0;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : 0;
+  }
+
+  function formatForeignAmount(currency, amount){
+    const value = Number(amount || 0);
+    const shown = value.toLocaleString('ja-JP', {
+      minimumFractionDigits:value % 1 ? 2 : 0,
+      maximumFractionDigits:2
+    });
+    return `${currency} ${shown}`;
+  }
+
+  function ymdToInput(value){
+    const date = dateToInputValue(value);
+    return date || '';
+  }
+
   function makeRow(values){
     const debitAmount = parseAmount(values['借方金額']);
     const creditAmount = parseAmount(values['貸方金額'] || values['借方金額']);
@@ -924,6 +1029,57 @@ td.amount{
     }catch(e){
       return [];
     }
+  }
+
+  function loadAccountingHistory(){
+    try{
+      const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if(!parsed || typeof parsed !== 'object') return { rows:[], accounts:[], source:'', loadedAt:'' };
+      return {
+        rows:Array.isArray(parsed.rows) ? parsed.rows.map(makeRow) : [],
+        accounts:Array.isArray(parsed.accounts) ? parsed.accounts : [],
+        source:String(parsed.source || ''),
+        loadedAt:String(parsed.loadedAt || ''),
+        from:String(parsed.from || ''),
+        to:String(parsed.to || '')
+      };
+    }catch(e){
+      return { rows:[], accounts:[], source:'', loadedAt:'' };
+    }
+  }
+
+  function saveAccountingHistory(){
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(accountingHistory));
+    renderAccountingHistoryStatus();
+    render();
+  }
+
+  function knownAccountNames(){
+    const names = new Set();
+    ACCOUNT_RULES.forEach(rule => names.add(rule.account));
+    rows.forEach(row => {
+      if(row['借方勘定科目']) names.add(row['借方勘定科目']);
+      if(row['貸方勘定科目']) names.add(row['貸方勘定科目']);
+    });
+    (accountingHistory.accounts || []).forEach(account => {
+      const name = typeof account === 'string' ? account : account && account.name;
+      if(name) names.add(name);
+    });
+    return names;
+  }
+
+  function renderAccountingHistoryStatus(){
+    const el = $('accountingHistoryStatus');
+    if(!el) return;
+    const count = (accountingHistory.rows || []).length;
+    const accountCount = (accountingHistory.accounts || []).length;
+    if(!count && !accountCount){
+      el.textContent = '前年データ未読込。読み込むと勘定科目を過去実績で検証します。';
+      return;
+    }
+    const range = accountingHistory.from && accountingHistory.to ? ` ${accountingHistory.from}〜${accountingHistory.to}` : '';
+    el.textContent = `${accountingHistory.source || '前年データ'}${range}: 仕訳${count.toLocaleString('ja-JP')}行 / 勘定科目${accountCount.toLocaleString('ja-JP')}件を参照中`;
   }
 
   function saveRows(){
@@ -1003,16 +1159,30 @@ td.amount{
   function validateRows(){
     const warnings = [];
     const seen = new Map();
+    const accountNames = knownAccountNames();
+    const hasMaster = (accountingHistory.accounts || []).length > 0;
     rows.forEach((row, index) => {
       const n = index + 1;
       if(!row['取引日']) warnings.push(`${n}行目: 取引日が空です。`);
       if(!row['摘要']) warnings.push(`${n}行目: 摘要が空です。`);
       if(!row['借方勘定科目'] || !row['貸方勘定科目']) warnings.push(`${n}行目: 勘定科目が不足しています。`);
+      if(hasMaster && row['借方勘定科目'] && !accountNames.has(row['借方勘定科目'])) warnings.push(`${n}行目: 借方勘定科目「${row['借方勘定科目']}」がMoneyForward科目マスタに見つかりません。`);
+      if(hasMaster && row['貸方勘定科目'] && !accountNames.has(row['貸方勘定科目'])) warnings.push(`${n}行目: 貸方勘定科目「${row['貸方勘定科目']}」がMoneyForward科目マスタに見つかりません。`);
       if(parseAmount(row['借方金額']) <= 0 || parseAmount(row['貸方金額']) <= 0) warnings.push(`${n}行目: 金額が0以下です。`);
       if(parseAmount(row['借方金額']) !== parseAmount(row['貸方金額'])) warnings.push(`${n}行目: 借方金額と貸方金額が一致していません。`);
       const key = [row['取引日'], row['摘要'], row['借方金額'], row['貸方金額']].join('|');
       if(seen.has(key)) warnings.push(`${n}行目: ${seen.get(key)}行目と重複の可能性があります。`);
       seen.set(key, n);
+      const suggestion = suggestAccountFromHistory({
+        store:row['摘要'],
+        items:'',
+        memo:row['メモ'],
+        rawText:'',
+        amount:row['借方金額']
+      });
+      if(suggestion && suggestion.account && suggestion.account !== row['借方勘定科目']){
+        warnings.push(`${n}行目: 前年実績では借方「${suggestion.account}」の可能性があります（現在: ${row['借方勘定科目']}）。`);
+      }
     });
     return warnings;
   }
@@ -1224,6 +1394,217 @@ td.amount{
     values['貸方税区分'] = values['貸方税区分'] || '対象外';
   }
 
+  async function importAccountingHistoryFile(){
+    const file = $('mfHistoryFile').files && $('mfHistoryFile').files[0];
+    if(!file){
+      showToast('前年CSVまたはAPI JSONを選択してください。');
+      return;
+    }
+    try{
+      const text = await file.text();
+      const loaded = parseAccountingHistoryText(text, file.name);
+      accountingHistory = {
+        rows:loaded.rows,
+        accounts:loaded.accounts,
+        source:file.name,
+        loadedAt:new Date().toISOString(),
+        from:loaded.from || '',
+        to:loaded.to || ''
+      };
+      saveAccountingHistory();
+      refreshAccountDatalist();
+      applyBestHistoryAccountToReceipt(false);
+      showToast(`前年参照データを読み込みました（${loaded.rows.length}行）。`);
+    }catch(error){
+      showToast('前年参照データを読み込めませんでした。');
+      renderAccountingHistoryStatus();
+    }
+  }
+
+  function parseAccountingHistoryText(text, fileName){
+    const trimmed = String(text || '').trim();
+    if(!trimmed) return { rows:[], accounts:[] };
+    if(/\.json$/i.test(fileName) || /^[\[{]/.test(trimmed)){
+      return parseAccountingHistoryJson(JSON.parse(trimmed));
+    }
+    return { rows:parseHistoryCsv(trimmed), accounts:[] };
+  }
+
+  function parseAccountingHistoryJson(data){
+    const accounts = Array.isArray(data.accounts) ? data.accounts : [];
+    if(Array.isArray(data.rows)){
+      return { rows:data.rows.map(makeRow), accounts };
+    }
+    if(Array.isArray(data.journals)){
+      return { rows:rowsFromMfJournals(data.journals), accounts, from:data.start_date || '', to:data.end_date || '' };
+    }
+    if(Array.isArray(data)){
+      return { rows:data.map(makeRow), accounts:[] };
+    }
+    return { rows:[], accounts };
+  }
+
+  function parseHistoryCsv(text){
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    if(!lines.length) return [];
+    const delimiter = detectDelimiter(lines[0]);
+    const parsed = lines.map(line => parseDelimitedLine(line, delimiter));
+    const first = parsed[0].map(cell => cell.trim());
+    const isMfHeader = HEADERS.every((header, index) => first[index] === header);
+    const isKnownHeader = first.some(cell => HEADER_ALIASES[cell]);
+    const body = isMfHeader || isKnownHeader ? parsed.slice(1) : parsed;
+    const headers = isMfHeader ? HEADERS : (isKnownHeader ? first.map(cell => HEADER_ALIASES[cell] || cell) : SIMPLE_HEADERS);
+    return body.map(cells => {
+      const values = {};
+      headers.forEach((header, index) => values[header] = cells[index] || '');
+      normalizeImportedValues(values);
+      return makeRow(values);
+    }).filter(row => row['取引日'] || row['摘要'] || row['借方金額']);
+  }
+
+  function rowsFromMfJournals(journals){
+    const output = [];
+    journals.forEach(journal => {
+      (journal.branches || []).forEach(branch => {
+        const debitor = branch.debitor || {};
+        const creditor = branch.creditor || {};
+        output.push(makeRow({
+          '取引日': journal.transaction_date || '',
+          '借方勘定科目': debitor.account_name || '',
+          '借方補助科目': debitor.sub_account_name || '',
+          '借方税区分': debitor.tax_name || debitor.tax_long_name || '',
+          '借方金額': debitor.value || 0,
+          '貸方勘定科目': creditor.account_name || '',
+          '貸方補助科目': creditor.sub_account_name || '',
+          '貸方税区分': creditor.tax_name || creditor.tax_long_name || '',
+          '貸方金額': creditor.value || debitor.value || 0,
+          '摘要': branch.remark || journal.memo || '',
+          'タグ': Array.isArray(journal.tags) ? journal.tags.join('|') : '',
+          'メモ': journal.memo || '',
+          '決済': ''
+        }));
+      });
+    });
+    return output;
+  }
+
+  async function loadMoneyForwardHistory(){
+    const token = $('mfAccessToken').value.trim();
+    const base = ($('mfApiBase').value.trim() || DEFAULT_MF_API_BASE).replace(/\/+$/, '');
+    const startDate = $('mfFromDate').value;
+    const endDate = $('mfToDate').value;
+    if(!token){
+      showToast('MoneyForwardの短時間アクセストークンを入力してください。');
+      return;
+    }
+    if(!startDate && !endDate){
+      showToast('参照開始日または終了日を指定してください。');
+      return;
+    }
+    try{
+      $('loadMfApiBtn').disabled = true;
+      $('accountingHistoryStatus').textContent = 'MoneyForward APIから取得しています。';
+      const accounts = await mfGetJson(`${base}/accounts?available=true`, token).then(data => data.accounts || []);
+      const journals = await fetchMfJournals(base, token, startDate, endDate);
+      accountingHistory = {
+        rows:rowsFromMfJournals(journals),
+        accounts,
+        source:'MoneyForward API',
+        loadedAt:new Date().toISOString(),
+        from:startDate,
+        to:endDate
+      };
+      saveAccountingHistory();
+      refreshAccountDatalist();
+      applyBestHistoryAccountToReceipt(false);
+      showToast(`MoneyForward APIから前年データを取得しました（${accountingHistory.rows.length}行）。`);
+    }catch(error){
+      $('accountingHistoryStatus').textContent = `API取得失敗: ${error.message}。CSV/JSON読込も利用できます。`;
+      showToast('MoneyForward APIから取得できませんでした。');
+    }finally{
+      $('loadMfApiBtn').disabled = false;
+    }
+  }
+
+  async function mfGetJson(url, token){
+    const res = await fetch(url, {
+      headers:{ Authorization:`Bearer ${token}`, Accept:'application/json' }
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  async function fetchMfJournals(base, token, startDate, endDate){
+    const journals = [];
+    let page = 1;
+    let totalPages = 1;
+    do{
+      const params = new URLSearchParams();
+      if(startDate) params.set('start_date', startDate);
+      if(endDate) params.set('end_date', endDate);
+      params.set('per_page', '10000');
+      params.set('page', String(page));
+      const data = await mfGetJson(`${base}/journals?${params.toString()}`, token);
+      journals.push(...(data.journals || []));
+      totalPages = Number(data.metadata && data.metadata.total_pages) || 1;
+      page += 1;
+    }while(page <= totalPages && page <= 20);
+    return journals;
+  }
+
+  function refreshAccountDatalist(){
+    const list = $('accountList');
+    if(!list) return;
+    knownAccountNames().forEach(name => {
+      if(!name || Array.from(list.options).some(opt => opt.value === name)) return;
+      const option = document.createElement('option');
+      option.value = name;
+      list.appendChild(option);
+    });
+  }
+
+  function updateFixedCostQueueStatus(){
+    const el = $('fixedCostQueueStatus');
+    if(!el) return;
+    const queued = readAccountingQueue();
+    el.textContent = queued.length
+      ? `固定費チェックから ${queued.length}行の仕訳候補が届いています。`
+      : '固定費チェックから送られた仕訳候補はありません。';
+  }
+
+  function readAccountingQueue(){
+    try{
+      const parsed = JSON.parse(localStorage.getItem(ACCOUNTING_QUEUE_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function importFixedCostQueue(){
+    const queued = readAccountingQueue().map(makeRow)
+      .filter(row => row['取引日'] && row['摘要'] && parseAmount(row['借方金額']) > 0);
+    if(!queued.length){
+      showToast('取り込む固定費候補はありません。');
+      updateFixedCostQueueStatus();
+      return;
+    }
+    const existing = new Set(rows.map(row => [row['取引日'], row['摘要'], row['借方金額'], row['貸方金額']].join('|')));
+    const fresh = queued.filter(row => !existing.has([row['取引日'], row['摘要'], row['借方金額'], row['貸方金額']].join('|')));
+    if(!fresh.length){
+      showToast('固定費候補はすでに取り込み済みです。');
+      localStorage.removeItem(ACCOUNTING_QUEUE_KEY);
+      updateFixedCostQueueStatus();
+      return;
+    }
+    rows = rows.concat(fresh);
+    saveRows();
+    render();
+    localStorage.removeItem(ACCOUNTING_QUEUE_KEY);
+    updateFixedCostQueueStatus();
+    showToast(`固定費チェック結果を${fresh.length}行取り込みました。`);
+  }
+
   function loadScriptOnce(id, src){
     return new Promise((resolve, reject) => {
       if(document.getElementById(id)){
@@ -1285,12 +1666,19 @@ td.amount{
   function resetReceiptFields(){
     $('receiptDate').value = '';
     $('receiptAmount').value = '';
+    $('receiptCurrency').value = 'JPY';
+    $('receiptForeignAmount').value = '';
+    $('receiptFxRate').value = '';
+    $('receiptFxDate').value = '';
+    updateReceiptFxStatus('外貨の領収書は取引日の為替で円換算します。');
+    suggestedReceiptAccount = '';
     $('receiptStore').value = '';
     $('receiptAccount').value = '消耗品費';
     $('receiptTax').value = '課税仕入10%';
     $('receiptMemo').value = '';
     $('receiptItems').value = '';
     $('receiptRawText').value = '';
+    renderReceiptAccountValidation();
   }
 
   function clearReceiptState(){
@@ -1332,7 +1720,7 @@ td.amount{
         };
         receiptCandidates.push(candidate);
         renderReceiptCandidates();
-        fillReceiptFields(candidate);
+        await fillReceiptFields(candidate);
       }
       updateOcrStatus(`${files.length}件の読み取りが終わりました。金額・日付・税区分を確認してください。`);
       updateOcrProgress(1);
@@ -1444,6 +1832,10 @@ td.amount{
       store,
       amount:businessAmountInfo.amount,
       originalAmount:amountInfo.amount,
+      currency:amountInfo.currency || 'JPY',
+      foreignAmount:amountInfo.foreignAmount || 0,
+      fxRate:0,
+      fxDate:'',
       amountSource:amountInfo.source,
       amountNeedsReview:amountInfo.needsReview,
       items,
@@ -1470,17 +1862,53 @@ td.amount{
     if(reiwa){
       return formatDateParts(2018 + Number(reiwa[1]), reiwa[2], reiwa[3]);
     }
-    const western = text.match(/(20\d{2}|\d{1,2})[\/.\-年]\s*(\d{1,2})[\/.\-月]\s*(\d{1,2})/);
+    const western = text.match(/\b(20\d{2}|\d{1,2})[\/.\-年]\s*(\d{1,2})[\/.\-月]\s*(\d{1,2})(?!\d)/);
     if(western){
       let year = Number(western[1]);
       if(year < 10) year = 2020 + year;
       else if(year < 100) year = 2000 + year;
       if(isPossibleDate(year, western[2], western[3])) return formatDateParts(year, western[2], western[3]);
     }
+    const usStyle = text.match(/\b(?:date|order\s*date|transaction\s*date|invoice\s*date|purchase\s*date)?\s*[:#]?\s*(\d{1,2})[\/.\-](\d{1,2})[\/.\-](20\d{2}|\d{2})\b/i);
+    if(usStyle){
+      let year = Number(usStyle[3]);
+      if(year < 100) year = 2000 + year;
+      const first = Number(usStyle[1]);
+      const second = Number(usStyle[2]);
+      const month = first <= 12 ? first : second;
+      const day = first <= 12 ? second : first;
+      if(isPossibleDate(year, month, day)) return formatDateParts(year, month, day);
+    }
+    const named = extractNamedMonthDate(text);
+    if(named) return named;
     const monthDay = text.match(/(?:日付|発行日|取引日)?\s*(\d{1,2})[\/月]\s*(\d{1,2})日?/);
     if(monthDay){
       const year = new Date().getFullYear();
       if(isPossibleDate(year, monthDay[1], monthDay[2])) return formatDateParts(year, monthDay[1], monthDay[2]);
+    }
+    return '';
+  }
+
+  function extractNamedMonthDate(text){
+    const months = {
+      jan:1, january:1, feb:2, february:2, mar:3, march:3, apr:4, april:4,
+      may:5, jun:6, june:6, jul:7, july:7, aug:8, august:8,
+      sep:9, sept:9, september:9, oct:10, october:10, nov:11, november:11, dec:12, december:12
+    };
+    const names = Object.keys(months).join('|');
+    const monthFirst = new RegExp(`\\b(${names})\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?[,]?\\s+(20\\d{2}|\\d{2})\\b`, 'i');
+    const first = text.match(monthFirst);
+    if(first){
+      const year = Number(first[3].length === 2 ? `20${first[3]}` : first[3]);
+      const month = months[first[1].toLowerCase().replace(/\.$/, '')];
+      if(isPossibleDate(year, month, first[2])) return formatDateParts(year, month, first[2]);
+    }
+    const dayFirst = new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(${names})\\.?[,]?\\s+(20\\d{2}|\\d{2})\\b`, 'i');
+    const second = text.match(dayFirst);
+    if(second){
+      const year = Number(second[3].length === 2 ? `20${second[3]}` : second[3]);
+      const month = months[second[2].toLowerCase().replace(/\.$/, '')];
+      if(isPossibleDate(year, month, second[1])) return formatDateParts(year, month, second[1]);
     }
     return '';
   }
@@ -1511,8 +1939,8 @@ td.amount{
   }
 
   function extractReceiptAmount(lines){
-    const strongKeyword = /(領収金額|総合計|税込合計|お支払(?:い)?金額|お支払(?:い)?計|支払(?:い)?合計|お買上(?:げ)?(?:金額|額|計|合計)|買上(?:げ)?計|ご利用金額|ご請求金額|クレジット売上|現計|合\s*計)/;
-    const weakKeyword = /(税込|お買上|お買い上げ|ご利用額|支払|金額)/;
+    const strongKeyword = /(領収金額|総合計|税込合計|お支払(?:い)?金額|お支払(?:い)?計|支払(?:い)?合計|お買上(?:げ)?(?:金額|額|計|合計)|買上(?:げ)?計|ご利用金額|ご請求金額|クレジット売上|現計|合\s*計|total|amount\s*paid|grand\s*total|balance\s*due|payment\s*total)/i;
+    const weakKeyword = /(税込|お買上|お買い上げ|ご利用額|支払|金額|amount|paid|payment)/i;
     const rejectLine = /(TEL|電話|郵便番号|〒|登録番号|適格請求書|事業者番号|伝票番号|受付番号|注文番号|No\.|NO\.|番号|バーコード|JAN|ポイント|残高|会員|担当|客数|税率|対象額)/i;
     const taxOnlyLine = /(消費税|税額|内税|外税|税抜|課税対象|税率)/;
     const candidates = [];
@@ -1523,6 +1951,23 @@ td.amount{
       if(rejectLine.test(line)) return;
       if(taxOnlyLine.test(line) && !hasStrong) return;
       if(!hasStrong && !hasWeak) return;
+      const currency = detectReceiptCurrency(line);
+      if(currency !== 'JPY'){
+        const foreignAmounts = extractForeignAmounts(line, currency);
+        if(!foreignAmounts.length) return;
+        const foreignAmount = Math.max(...foreignAmounts);
+        const score = (hasStrong ? 110 : 40) + Math.min(foreignAmount / 100, 10) - lineIndex / 20;
+        candidates.push({
+          amount:0,
+          foreignAmount,
+          currency,
+          source:line,
+          score,
+          needsReview:false,
+          reason:'外貨のため取引日の為替換算が必要です'
+        });
+        return;
+      }
       const matches = line.matchAll(/(?:[¥￥]\s*)?([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{2,8})(?:\s*円)?/g);
       const lineAmounts = [];
       for(const match of matches){
@@ -1552,6 +1997,38 @@ td.amount{
     candidates.sort((a, b) => b.score - a.score || b.amount - a.amount);
     const picked = candidates[0];
     return picked;
+  }
+
+  function detectReceiptCurrency(text){
+    const value = normalizeReceiptText(text);
+    if(/(?:US\s*\$|USD|\$)/i.test(value)) return 'USD';
+    if(/(?:EUR|€)/i.test(value)) return 'EUR';
+    if(/(?:GBP|£)/i.test(value)) return 'GBP';
+    if(/(?:AUD|A\s*\$)/i.test(value)) return 'AUD';
+    if(/(?:CAD|C\s*\$)/i.test(value)) return 'CAD';
+    if(/(?:CNY|RMB|CN\s*¥)/i.test(value)) return 'CNY';
+    if(/(?:KRW|₩)/i.test(value)) return 'KRW';
+    return 'JPY';
+  }
+
+  function extractForeignAmounts(line, currency){
+    const patterns = {
+      USD: [/(?:US\s*\$|\$)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/ig, /\bUSD\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/ig],
+      EUR: [/(?:€|EUR)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/ig],
+      GBP: [/(?:£|GBP)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/ig],
+      AUD: [/(?:A\s*\$|AUD)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/ig],
+      CAD: [/(?:C\s*\$|CAD)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/ig],
+      CNY: [/(?:CNY|RMB|CN\s*¥)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/ig],
+      KRW: [/(?:KRW|₩)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/ig]
+    };
+    const amounts = [];
+    (patterns[currency] || []).forEach(pattern => {
+      for(const match of line.matchAll(pattern)){
+        const amount = parseDecimalAmount(match[1]);
+        if(Number.isFinite(amount) && amount > 0) amounts.push(amount);
+      }
+    });
+    return amounts;
   }
 
   function isPlausibleReceiptAmount(amount){
@@ -1643,6 +2120,9 @@ td.amount{
   function buildReceiptMemo(lines, fileName, amountInfo, businessAmountInfo, confidence){
     const parts = [];
     if(amountInfo.reason) parts.push(`金額要確認: ${amountInfo.reason}`);
+    if(amountInfo.currency && amountInfo.currency !== 'JPY' && amountInfo.foreignAmount){
+      parts.push(`外貨金額: ${formatForeignAmount(amountInfo.currency, amountInfo.foreignAmount)}`);
+    }
     if(businessAmountInfo.note) parts.push(businessAmountInfo.note);
     if(amountInfo.source) parts.push(`金額行: ${amountInfo.source.slice(0, 48)}`);
     if(confidence) parts.push(`OCR信頼度 ${confidence}%`);
@@ -1676,6 +2156,204 @@ td.amount{
     return parts.join(' / ');
   }
 
+  function updateReceiptFxStatus(message, ok){
+    const el = $('receiptFxStatus');
+    if(!el) return;
+    el.textContent = message || '';
+    el.style.color = ok ? 'var(--green)' : '';
+  }
+
+  async function applyReceiptFxRate(options = {}){
+    const currency = $('receiptCurrency').value || 'JPY';
+    const foreignAmount = parseDecimalAmount($('receiptForeignAmount').value);
+    const date = $('receiptDate').value;
+    if(currency === 'JPY'){
+      updateReceiptFxStatus('日本円の領収書です。為替換算は不要です。', true);
+      return true;
+    }
+    if(!foreignAmount){
+      updateReceiptFxStatus('外貨金額を確認してください。', false);
+      return false;
+    }
+    if(!date){
+      $('receiptAmount').value = '';
+      updateReceiptFxStatus('外貨の円換算には取引日が必要です。日付を入力してから為替適用してください。', false);
+      return false;
+    }
+    try{
+      updateReceiptFxStatus(`${date} の ${currency}/JPY レートを取得しています。`, false);
+      const rateInfo = await fetchFxRate(currency, 'JPY', date);
+      const jpy = Math.round(foreignAmount * rateInfo.rate);
+      $('receiptAmount').value = String(jpy);
+      $('receiptFxRate').value = String(rateInfo.rate);
+      $('receiptFxDate').value = rateInfo.date || date;
+      mergeReceiptMemoFx(currency, foreignAmount, rateInfo, jpy);
+      updateReceiptFxStatus(`${formatForeignAmount(currency, foreignAmount)} → ${formatYen(jpy)}（${rateInfo.date || date} ${currency}/JPY ${rateInfo.rate}）`, true);
+      renderReceiptAccountValidation();
+      return true;
+    }catch(error){
+      $('receiptAmount').value = '';
+      updateReceiptFxStatus(`為替レートを取得できませんでした: ${error.message}`, false);
+      if(!options.silent) showToast('為替レートを取得できませんでした。');
+      return false;
+    }
+  }
+
+  async function fetchFxRate(base, quote, date){
+    const url = `${FX_API_BASE}/v2/rate/${encodeURIComponent(base)}/${encodeURIComponent(quote)}?date=${encodeURIComponent(date)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const rate = Number(data.rate);
+    if(!Number.isFinite(rate) || rate <= 0) throw new Error('レートが空です');
+    return { rate, date:data.date || date, base:data.base || base, quote:data.quote || quote };
+  }
+
+  function mergeReceiptMemoFx(currency, foreignAmount, rateInfo, jpy){
+    const memo = $('receiptMemo').value || '';
+    const cleaned = memo
+      .split(' / ')
+      .filter(part => !/^外貨金額:/.test(part) && !/^為替:/.test(part))
+      .join(' / ');
+    const fxParts = [
+      `外貨金額: ${formatForeignAmount(currency, foreignAmount)}`,
+      `為替: ${rateInfo.date || $('receiptDate').value} ${currency}/JPY ${rateInfo.rate} = ${formatYen(jpy)}`
+    ];
+    $('receiptMemo').value = [cleaned].concat(fxParts).filter(Boolean).join(' / ');
+  }
+
+  function normalizeSearchText(value){
+    return normalizeReceiptText(value)
+      .toLowerCase()
+      .replace(/[()\[\]{}（）【】「」『』]/g, ' ')
+      .replace(/[^\p{Letter}\p{Number}]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function searchTokens(value){
+    const stop = new Set(['receipt','invoice','total','amount','the','and','for','with','領収書','合計','税込','金額','購入品']);
+    return normalizeSearchText(value).split(' ')
+      .map(token => token.trim())
+      .filter(token => token.length >= 2 && !stop.has(token))
+      .slice(0, 24);
+  }
+
+  function suggestAccountFromHistory(context){
+    const historyRows = accountingHistory.rows || [];
+    if(!historyRows.length) return null;
+    const store = normalizeSearchText(context.store || '');
+    const queryText = [
+      context.store,
+      context.items,
+      context.memo,
+      context.rawText
+    ].filter(Boolean).join(' ');
+    const tokens = searchTokens(queryText);
+    const scores = new Map();
+    historyRows.forEach(row => {
+      const account = row['借方勘定科目'];
+      if(!account || ['普通預金','現金','売掛金','事業主借','事業主貸','未払金'].includes(account)) return;
+      const rowTextRaw = `${row['摘要'] || ''} ${row['メモ'] || ''}`;
+      const rowText = normalizeSearchText(rowTextRaw);
+      if(!rowText) return;
+      let score = 0;
+      if(store && (rowText.includes(store) || store.includes(rowText))) score += 70;
+      tokens.forEach(token => {
+        if(rowText.includes(token)) score += Math.min(18, 4 + token.length);
+      });
+      const amount = parseAmount(context.amount || 0);
+      const rowAmount = parseAmount(row['借方金額']);
+      if(amount && rowAmount){
+        const diff = Math.abs(amount - rowAmount) / Math.max(amount, rowAmount);
+        if(diff <= 0.15) score += 12;
+        else if(diff <= 0.35) score += 5;
+      }
+      if(score <= 0) return;
+      const prev = scores.get(account) || { account, score:0, count:0, example:null };
+      prev.score += score;
+      prev.count += 1;
+      if(!prev.example || score > prev.example.score){
+        prev.example = { score, row };
+      }
+      scores.set(account, prev);
+    });
+    const ranked = Array.from(scores.values()).sort((a, b) => b.score - a.score || b.count - a.count);
+    const best = ranked[0];
+    if(!best || best.score < 24) return null;
+    return best;
+  }
+
+  function currentReceiptContext(){
+    return {
+      date:$('receiptDate').value,
+      amount:parseAmount($('receiptAmount').value),
+      store:$('receiptStore').value,
+      items:$('receiptItems').value,
+      memo:$('receiptMemo').value,
+      rawText:$('receiptRawText').value
+    };
+  }
+
+  function applyBestHistoryAccountToReceipt(showNotice){
+    const suggestion = suggestAccountFromHistory(currentReceiptContext());
+    suggestedReceiptAccount = suggestion && suggestion.account ? suggestion.account : '';
+    if(suggestion && suggestion.account && suggestion.account !== $('receiptAccount').value){
+      const current = $('receiptAccount').value;
+      const shouldAutoApply = !current || current === '消耗品費';
+      if(shouldAutoApply){
+        $('receiptAccount').value = suggestion.account;
+        mergeReceiptAccountMemo(suggestion);
+        if(showNotice) showToast(`前年実績から ${suggestion.account} を適用しました。`);
+      }
+    }
+    renderReceiptAccountValidation();
+    return suggestion;
+  }
+
+  function mergeReceiptAccountMemo(suggestion){
+    if(!suggestion || !suggestion.example) return;
+    const row = suggestion.example.row;
+    const note = `前年実績推奨: ${suggestion.account}（${row['取引日'] || ''} ${row['摘要'] || ''}）`;
+    const memo = $('receiptMemo').value || '';
+    if(memo.includes('前年実績推奨:')) return;
+    $('receiptMemo').value = [memo, note].filter(Boolean).join(' / ');
+  }
+
+  function renderReceiptAccountValidation(){
+    const el = $('receiptValidationStatus');
+    const btn = $('applySuggestedAccountBtn');
+    if(!el || !btn) return;
+    const suggestion = suggestAccountFromHistory(currentReceiptContext());
+    suggestedReceiptAccount = suggestion && suggestion.account ? suggestion.account : '';
+    btn.disabled = !suggestedReceiptAccount || suggestedReceiptAccount === $('receiptAccount').value;
+    if(!accountingHistory.rows.length && !accountingHistory.accounts.length){
+      el.textContent = '前年データ読込後、科目の妥当性を表示します。';
+      el.style.color = '';
+      return;
+    }
+    const accountNames = knownAccountNames();
+    const current = $('receiptAccount').value;
+    if(current && accountingHistory.accounts.length && !accountNames.has(current)){
+      el.textContent = `注意: 「${current}」はMoneyForwardの有効な勘定科目一覧に見つかりません。`;
+      el.style.color = 'var(--red)';
+      return;
+    }
+    if(suggestion && suggestion.account && suggestion.account !== current){
+      const ex = suggestion.example && suggestion.example.row;
+      el.textContent = `前年実績では「${suggestion.account}」が有力です（例: ${ex ? `${ex['取引日']} ${ex['摘要']}` : '前年仕訳'}）。`;
+      el.style.color = 'var(--red)';
+      return;
+    }
+    if(suggestion && suggestion.account){
+      el.textContent = `前年実績と一致: ${suggestion.account}`;
+      el.style.color = 'var(--green)';
+      return;
+    }
+    el.textContent = '前年実績に近い仕訳が見つかりません。科目を手確認してください。';
+    el.style.color = '';
+  }
+
   function buildReceiptRowFromFields(){
     const amount = parseAmount($('receiptAmount').value);
     if(!$('receiptDate').value || !$('receiptStore').value.trim() || amount <= 0){
@@ -1699,16 +2377,27 @@ td.amount{
     });
   }
 
-  function fillReceiptFields(candidate){
+  async function fillReceiptFields(candidate){
     const parsed = candidate.parsed;
     $('receiptDate').value = dateToInputValue(parsed.date);
     $('receiptAmount').value = parsed.amount ? String(parsed.amount) : '';
+    $('receiptCurrency').value = parsed.currency || 'JPY';
+    $('receiptForeignAmount').value = parsed.foreignAmount ? String(parsed.foreignAmount) : '';
+    $('receiptFxRate').value = parsed.fxRate ? String(parsed.fxRate) : '';
+    $('receiptFxDate').value = parsed.fxDate || '';
     $('receiptStore').value = parsed.store || '';
     $('receiptAccount').value = parsed.account || '消耗品費';
     $('receiptTax').value = parsed.tax || '課税仕入10%';
     $('receiptMemo').value = parsed.memo || '';
     $('receiptItems').value = (parsed.items || []).join('\n');
     $('receiptRawText').value = candidate.rawText || '';
+    if((parsed.currency || 'JPY') !== 'JPY'){
+      await applyReceiptFxRate({ silent:true });
+    }else{
+      updateReceiptFxStatus('日本円の領収書です。為替換算は不要です。', true);
+    }
+    applyBestHistoryAccountToReceipt(false);
+    renderReceiptAccountValidation();
   }
 
   function fillManualFromReceipt(){
@@ -1738,7 +2427,9 @@ td.amount{
     receiptCandidates.forEach((candidate, index) => {
       const parsed = candidate.parsed;
       const low = !parsed.date || !parsed.amount || parsed.amountNeedsReview || candidate.confidence < 55;
-      const amountText = parsed.amount ? formatYen(parsed.amount) : '金額要確認';
+      const amountText = parsed.amount
+        ? formatYen(parsed.amount)
+        : (parsed.foreignAmount ? `${formatForeignAmount(parsed.currency || 'USD', parsed.foreignAmount)} / 要円換算` : '金額要確認');
       const el = document.createElement('div');
       el.className = `candidate${low ? ' low' : ''}`;
       el.innerHTML = [
@@ -1798,6 +2489,31 @@ td.amount{
   $('importBtn').addEventListener('click', importPasted);
   $('ocrBtn').addEventListener('click', processReceiptFiles);
   $('clearReceiptBtn').addEventListener('click', clearReceiptState);
+  $('loadMfApiBtn').addEventListener('click', loadMoneyForwardHistory);
+  $('importHistoryBtn').addEventListener('click', importAccountingHistoryFile);
+  $('importFixedCostQueueBtn').addEventListener('click', importFixedCostQueue);
+  $('applyFxBtn').addEventListener('click', () => applyReceiptFxRate());
+  $('applySuggestedAccountBtn').addEventListener('click', () => {
+    if(!suggestedReceiptAccount) return;
+    $('receiptAccount').value = suggestedReceiptAccount;
+    const suggestion = suggestAccountFromHistory(currentReceiptContext());
+    mergeReceiptAccountMemo(suggestion);
+    renderReceiptAccountValidation();
+    showToast(`推奨科目「${suggestedReceiptAccount}」を適用しました。`);
+  });
+  ['receiptDate','receiptCurrency','receiptForeignAmount'].forEach(id => {
+    $(id).addEventListener('change', () => {
+      if(($('receiptCurrency').value || 'JPY') !== 'JPY' && $('receiptDate').value && parseDecimalAmount($('receiptForeignAmount').value)){
+        applyReceiptFxRate({ silent:true });
+      }else{
+        renderReceiptAccountValidation();
+      }
+    });
+  });
+  ['receiptStore','receiptItems','receiptMemo','receiptAmount','receiptAccount'].forEach(id => {
+    $(id).addEventListener('input', renderReceiptAccountValidation);
+    $(id).addEventListener('change', renderReceiptAccountValidation);
+  });
   $('receiptFiles').addEventListener('change', event => renderReceiptFileList(Array.from(event.target.files || [])));
   $('addReceiptRowBtn').addEventListener('click', () => {
     const row = buildReceiptRowFromFields();
@@ -1834,13 +2550,13 @@ td.amount{
     render();
     showToast('1行削除しました。');
   });
-  $('receiptCandidates').addEventListener('click', event => {
+  $('receiptCandidates').addEventListener('click', async event => {
     const button = event.target.closest('[data-receipt-action]');
     if(!button) return;
     const candidate = receiptCandidates[Number(button.dataset.index)];
     if(!candidate) return;
     if(button.dataset.receiptAction === 'fill'){
-      fillReceiptFields(candidate);
+      await fillReceiptFields(candidate);
       showToast('読取候補を確認欄へ反映しました。');
     }
   });
@@ -1858,7 +2574,13 @@ td.amount{
   }
 
   resetForm(false);
+  const prevRange = previousYearRange();
+  $('mfFromDate').value = prevRange.from;
+  $('mfToDate').value = prevRange.to;
   resetReceiptFields();
+  refreshAccountDatalist();
+  renderAccountingHistoryStatus();
+  updateFixedCostQueueStatus();
   const initialMode = (() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode') || window.location.hash.replace('#', '');
