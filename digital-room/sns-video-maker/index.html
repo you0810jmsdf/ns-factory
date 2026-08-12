@@ -4278,14 +4278,30 @@ async function generateNarrationTimeline(){
   return {sampleRate:outputRate, numberOfChannels:1, data:timeline, voice};
 }
 
+// 停止時の原因追跡用。どのフレームで詰まったか等をスクショ一枚で分かるようにする（2026-08-12）
+const encoderDiag = {frame:0, totalFrames:0, lastQueue:0, longestWaitMs:0};
+
 async function waitForEncoderQueue(encoder, maxQueue, errors, label){
   const startedAt = performance.now();
+  let notified = false;
   while(encoder.state === 'configured' && encoder.encodeQueueSize > maxQueue){
     if(narratedSaveCancelled) throw new Error('AI音声生成を停止しました。');
     await new Promise(resolve => setTimeout(resolve, 4));
+    const waited = performance.now() - startedAt;
+    encoderDiag.lastQueue = encoder.encodeQueueSize;
+    encoderDiag.longestWaitMs = Math.max(encoderDiag.longestWaitMs, waited);
+    // 無言で待たせない。5秒を超えたら「まだ動いている」ことを画面に出す
+    if(waited > 5000 && !notified){
+      notified = true;
+      setLog(`AI音声を変換中です（${encoderDiag.frame}/${encoderDiag.totalFrames}コマ目で待機中・あと最大10秒で中止します）。`);
+    }
     // ⚠ ここで throw すると recordVideo の catch で保存自体が終わる（切り替え先は無い）。
     //    「方式を切り替えます」と案内すると、利用者が再開を待ち続けてしまう（2026-08-12 実害）
-    if(performance.now() - startedAt > 15000) throw new Error(`${label}: 音声の変換が15秒間進みませんでした`);
+    if(waited > 15000){
+      throw new Error(`${label}: 音声の変換が15秒間進みませんでした`
+        + `［診断: ${encoderDiag.frame}/${encoderDiag.totalFrames}コマ目 / キュー残${encoder.encodeQueueSize} / 状態${encoder.state}`
+        + `${errors.length ? ' / エンコーダ報告: ' + errors[0] : ''}］`);
+    }
   }
   if(errors.length) throw new Error(`${label}: ${errors[0]}`);
 }
@@ -4316,9 +4332,15 @@ async function encodeGeneratedAudio(track){
   });
   encoder.configure(support.config);
   const frameSize = 1024;
+  // 30秒の音声なら約1400コマ。どのコマで詰まったかを停止メッセージに出す
+  encoderDiag.frame = 0;
+  encoderDiag.totalFrames = Math.ceil(track.data.length / frameSize);
+  encoderDiag.lastQueue = 0;
+  encoderDiag.longestWaitMs = 0;
   try{
     for(let offset = 0; offset < track.data.length; offset += frameSize){
       if(narratedSaveCancelled) throw new Error('AI音声生成を停止しました。');
+      encoderDiag.frame += 1;
       const frames = Math.min(frameSize, track.data.length - offset);
       const samples = track.data.slice(offset, offset + frames);
       for(let index = 0; index < samples.length; index += 1){
@@ -4508,9 +4530,15 @@ async function encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, fram
   });
   videoEncoder.configure(videoConfig);
   playing = true;
+  // 映像側で詰まったときも同じ診断が出るようカウンタを引き継ぐ
+  encoderDiag.frame = 0;
+  encoderDiag.totalFrames = frameCount;
+  encoderDiag.lastQueue = 0;
+  encoderDiag.longestWaitMs = 0;
   try{
     for(let frameIndex = 0; frameIndex < frameCount; frameIndex++){
       if(narratedSaveCancelled) throw new Error('AI音声生成を停止しました。');
+      encoderDiag.frame = frameIndex + 1;
       const time = Math.min(frameIndex / frameRate, total);
       drawFrame(time);
       els.progressBar.style.width = `${Math.min(100, (frameIndex + 1) / frameCount * 100)}%`;
@@ -4542,7 +4570,11 @@ async function recordNarratedMp4(){
   const narrationTrack = await generateNarrationTimeline();
   const total = totalDuration();
   setLog('AI音声をMP4用に変換しています。');
+  const audioStartedAt = performance.now();
   const audioChunks = await encodeGeneratedAudio(narrationTrack);
+  // 成功しても遅い場合があるため、所要時間と最長待ちを残す（次に遅いと感じたときの比較材料）
+  const audioSec = ((performance.now() - audioStartedAt) / 1000).toFixed(1);
+  console.info(`[診断] AI音声のAAC変換 ${audioSec}秒 / ${encoderDiag.totalFrames}コマ / 最長待ち${Math.round(encoderDiag.longestWaitMs)}ms`);
   let blob = null;
   let lastError = null;
   for(const hardwareAcceleration of ['prefer-hardware', 'prefer-software']){
