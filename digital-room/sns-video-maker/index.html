@@ -2258,9 +2258,15 @@ async function loadWorksCatalog(){
     })
     .catch(err => {
       console.warn('Works catalog could not be loaded.', err);
+      // 失敗を握り込むとリロードまで永遠に「読み込み中」のまま残る。
+      // 次の呼び出しで再チャレンジできるよう、失敗時はキャッシュを破棄する
+      worksCatalogPromise = null;
       const manual = els.productNamePreset.querySelector('option[value=""]');
-      if(manual) manual.textContent = '手入力の作品名を使う';
+      if(manual) manual.textContent = '作品集を読み込めませんでした（次の操作で自動再試行）/ 番号を直接入力';
       populateDriveWorkPicker();
+      if(els.driveWorkSelect && els.driveWorkSelect.options[0]){
+        els.driveWorkSelect.options[0].textContent = '作品集を読み込めませんでした（次の操作で自動再試行）/ 番号を直接入力';
+      }
       return [];
     });
   return worksCatalogPromise;
