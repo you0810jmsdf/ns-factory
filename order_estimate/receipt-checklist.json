@@ -16,10 +16,11 @@
   ],
   "subscriptions": [
     "apple",
-    "moneyforward",
     "photoroom",
     "office365",
     "claude_code",
+    "chatgpt",
+    "moneyforward",
     "electricity",
     "water",
     "internet",
@@ -27,7 +28,6 @@
     "home_loan",
     "car_loan",
     "joyfulhonda",
-    "chatgpt",
     "creema",
     "minne",
     "stores"
@@ -36,7 +36,7 @@
     "2026-08": {
       "apple": {
         "status": "取得済み",
-        "count": 6,
+        "count": 3,
         "records": [
           {
             "date": "2026-08-09",
@@ -58,41 +58,11 @@
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085447_Apple領収書_19fd2c456c30cfe8.txt"
-          },
-          {
-            "date": "2026-08-09",
-            "amount": 1500,
-            "subject": "iCloud+",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085511_Apple領収書_19feab0641a7c1e4.txt"
-          },
-          {
-            "date": "2026-08-07",
-            "amount": 220,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085600_Apple領収書_19fdc11dc4ce5e62.txt"
-          },
-          {
-            "date": "2026-08-05",
-            "amount": 2000,
-            "subject": "Meta Verified Standard",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085624_Apple領収書_19fd2c456c30cfe8.txt"
           }
         ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
-        }
-      },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -122,6 +92,24 @@
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+        }
+      },
       "electricity": {
         "status": "手動DL（くらしTEPCO）",
         "count": 0,
@@ -133,7 +121,7 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 4,
+        "count": 2,
         "records": [
           {
             "date": "",
@@ -148,20 +136,6 @@
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085317_水道_19ff83d209f77ddf.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085451_水道_19ff8527c477e368.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085452_水道_19ff83d209f77ddf.txt"
           }
         ],
         "guide": {
@@ -222,15 +196,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -272,25 +237,16 @@
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133758_Apple領収書_19f3368c7c8aa9d8.txt"
           },
           {
-            "date": "2026-06-09",
+            "date": "2026-07-09",
             "amount": 1500,
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133824_Apple領収書_19eb0a308fc1f15d.txt"
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260710_090714_Apple領収書_19f4b034da18c5aa.txt"
           }
         ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
-        }
-      },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -333,6 +289,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -422,15 +396,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -461,21 +426,27 @@
     },
     "2026-06": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2026-06-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260606_090717_Apple領収書_19e99e3e20d89fed.txt"
+          },
+          {
+            "date": "2026-06-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260706_133824_Apple領収書_19eb0a308fc1f15d.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
-        }
-      },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -519,6 +490,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -616,15 +605,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -655,21 +635,27 @@
     },
     "2026-05": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2026-05-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_090722_Apple領収書_19df9d2a095858d2.txt"
+          },
+          {
+            "date": "2026-05-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-05\\20260510_090720_Apple領収書_19e10d75eaba99cb.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
-        }
-      },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -705,6 +691,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -794,15 +798,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -833,27 +828,41 @@
     },
     "2026-04": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2026-04-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\20260406_090729_Apple領収書_19d627f8705fe358.txt"
+          },
+          {
+            "date": "2026-04-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\20260410_090727_Apple領収書_19d7692d69dfbf25.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
         }
       },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
-        }
-      },
       "photoroom": {
-        "status": "Apple経由（apple列参照）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-04-13",
+            "amount": 9900,
+            "subject": "Photoroom",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\20260414_090725_Apple領収書_19d899c2cd67e09c.txt"
+          }
+        ],
         "guide": {
           "url": "",
           "steps": "Photoroomは Apple（App Store）経由の年額課金。証憑は Apple列 に「Apple からの領収書」として自動保存済み（年額¥9,900・毎年4月更新）。この列単独での取得は不要。"
@@ -897,6 +906,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -986,15 +1013,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -1025,21 +1043,34 @@
     },
     "2026-03": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 3,
+        "records": [
+          {
+            "date": "2026-03-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260306_090737_Apple領収書_19cbf414fa96689c.txt"
+          },
+          {
+            "date": "2026-03-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260310_090734_Apple領収書_19cd6c7b7915af2f.txt"
+          },
+          {
+            "date": "2026-03-13",
+            "amount": 150,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260313_090732_Apple領収書_19ce6aaa89192281.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
-        }
-      },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -1075,6 +1106,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1164,15 +1213,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -1203,21 +1243,48 @@
     },
     "2026-02": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 5,
+        "records": [
+          {
+            "date": "2026-02-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260206_090748_Apple領収書_19c2f2c368f01ea6.txt"
+          },
+          {
+            "date": "2026-02-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260210_090746_Apple領収書_19c4738c723a6300.txt"
+          },
+          {
+            "date": "2026-02-11",
+            "amount": 150,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260211_090744_Apple領収書_19c4b9aebd7938eb.txt"
+          },
+          {
+            "date": "2026-02-13",
+            "amount": 150,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260214_090742_Apple領収書_19c57f4331725ca9.txt"
+          },
+          {
+            "date": "2026-02-19",
+            "amount": 150,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260220_090739_Apple領収書_19c78830decd2727.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
-        }
-      },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -1245,6 +1312,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1334,15 +1419,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -1373,21 +1449,27 @@
     },
     "2026-01": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2026-01-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_090754_Apple領収書_19b91990f6a9887a.txt"
+          },
+          {
+            "date": "2026-01-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260111_090751_Apple領収書_19ba96b2bdf94607.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
-        }
-      },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "photoroom": {
@@ -1415,6 +1497,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1504,15 +1604,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -1551,15 +1642,6 @@
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
         }
       },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
-        }
-      },
       "photoroom": {
         "status": "Apple経由（apple列参照）",
         "count": 0,
@@ -1585,6 +1667,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1648,15 +1748,6 @@
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
-        }
-      },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "creema": {
@@ -1697,15 +1788,6 @@
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
         }
       },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
-        }
-      },
       "photoroom": {
         "status": "Apple経由（apple列参照）",
         "count": 0,
@@ -1731,6 +1813,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1794,15 +1894,6 @@
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
-        }
-      },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "creema": {
@@ -1843,15 +1934,6 @@
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
         }
       },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
-        }
-      },
       "photoroom": {
         "status": "Apple経由（apple列参照）",
         "count": 0,
@@ -1877,6 +1959,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1940,15 +2040,6 @@
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
-        }
-      },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "creema": {
@@ -1989,15 +2080,6 @@
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
         }
       },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
-        }
-      },
       "photoroom": {
         "status": "Apple経由（apple列参照）",
         "count": 0,
@@ -2023,6 +2105,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -2086,15 +2186,6 @@
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
-        }
-      },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "creema": {
@@ -2135,15 +2226,6 @@
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
         }
       },
-      "moneyforward": {
-        "status": "手動DL（Web管理画面）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
-        }
-      },
       "photoroom": {
         "status": "Apple経由（apple列参照）",
         "count": 0,
@@ -2169,6 +2251,24 @@
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+        }
+      },
+      "chatgpt": {
+        "status": "手動DL（Stripe請求書）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+        }
+      },
+      "moneyforward": {
+        "status": "手動DL（Web管理画面）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://biz.moneyforward.com/support/guide/u02.html",
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -2234,15 +2334,6 @@
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
-      "chatgpt": {
-        "status": "手動DL（Stripe請求書）",
-        "count": 0,
-        "records": [],
-        "guide": {
-          "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
-        }
-      },
       "creema": {
         "status": "未取得",
         "count": 0,
@@ -2272,5 +2363,5 @@
       }
     }
   },
-  "checked_at": "2026-08-13 09:02:05"
+  "checked_at": "2026-08-13 09:09:48"
 }
