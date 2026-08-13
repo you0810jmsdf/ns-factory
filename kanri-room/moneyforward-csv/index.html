@@ -521,6 +521,7 @@ td.amount{
           <button class="tab" id="rakutenTab" type="button" role="tab" aria-selected="false">楽天取込</button>
           <button class="tab" id="marketplaceTab" type="button" role="tab" aria-selected="false">EC入金メール</button>
           <button class="tab active" id="receiptTab" type="button" role="tab" aria-selected="true">領収書読取</button>
+          <button class="tab" id="checklistTab" type="button" role="tab" aria-selected="false">証憑チェック</button>
         </div>
 
         <div class="mode-panel" id="manualPanel" role="tabpanel" aria-labelledby="manualTab">
@@ -711,6 +712,31 @@ td.amount{
             <button class="btn" id="sampleMarketplaceBtn" type="button">入力例を入れる</button>
           </div>
           <div class="candidate-list" id="marketplaceCandidates"></div>
+        </div>
+
+        <!-- 証憑チェック: 監理部の証憑マトリクス（receipt-checklist.json）を直接読み、
+             admin.html を開かずにこの画面だけで仕訳へ投入できるようにする（2026-08-13追加） -->
+        <div class="mode-panel" id="checklistPanel" role="tabpanel" aria-labelledby="checklistTab">
+          <div class="grid two">
+            <div class="field">
+              <label for="clMonth">対象月</label>
+              <select id="clMonth"></select>
+            </div>
+            <div class="field">
+              <label for="clApportion">家事按分</label>
+              <select id="clApportion">
+                <option value="none">按分しない（請求額のまま）</option>
+                <option value="apply">按分を適用（事業分のみ計上）</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn" id="clReloadBtn" type="button">証憑を読み込む</button>
+            <button class="btn" id="clSelectAllBtn" type="button">すべて選択</button>
+            <button class="btn primary" id="clAddBtn" type="button">選択した証憑を仕訳に追加</button>
+          </div>
+          <p class="hint" id="clStatus">監理部の証憑チェックリストを直接読み込みます。金額が確定している証憑だけが対象です。</p>
+          <div id="clTableWrap" style="overflow-x:auto"></div>
         </div>
 
         <div class="mode-panel active" id="receiptPanel" role="tabpanel" aria-labelledby="receiptTab">
@@ -3136,8 +3162,168 @@ td.amount{
   $('marketplaceTab').addEventListener('click', () => switchMode('marketplace'));
   $('receiptTab').addEventListener('click', () => switchMode('receipt'));
 
+  // ── 証憑チェック（監理部の receipt-checklist.json を直接読む）─────────────
+  // admin.html を開かずにこの画面だけで仕訳投入まで完結させるための実装。
+  // 勘定科目の対応は admin.html の RC_ACCOUNT_DEFAULTS と必ず同じ内容に保つこと
+  // （片方だけ変えると、送る画面によって科目が変わるという事故になる）。
+  const CL_URL = '../../order_estimate/receipt-checklist.json';
+  const CL_LABELS = {
+    apple:'Apple', photoroom:'Photoroom', office365:'Office365', claude_code:'Claude Code',
+    chatgpt:'ChatGPT', moneyforward:'MoneyForward', electricity:'電気', water:'水道',
+    internet:'インターネット', mobile:'携帯電話', home_loan:'住宅ローン', car_loan:'車のローン',
+    joyfulhonda:'ジョイフルホンダ講師謝礼（収入）', creema:'Creema（収入）',
+    minne:'minne（収入）', stores:'STORES（収入）',
+  };
+  const CL_ACCOUNTS = {
+    apple:{debit:'通信費',tax:'課税仕入10%'}, photoroom:{debit:'広告宣伝費',tax:'課税仕入10%'},
+    office365:{debit:'通信費',tax:'課税仕入10%'}, claude_code:{debit:'通信費',tax:'課税仕入10%'},
+    chatgpt:{debit:'通信費',tax:'課税仕入10%'}, moneyforward:{debit:'通信費',tax:'課税仕入10%'},
+    electricity:{debit:'水道光熱費',tax:'課税仕入10%'}, water:{debit:'水道光熱費',tax:'課税仕入10%'},
+    internet:{debit:'通信費',tax:'課税仕入10%'}, mobile:{debit:'通信費',tax:'課税仕入10%'},
+    joyfulhonda:{debit:'普通預金',credit:'売上高',debitTax:'対象外',creditTax:'課税売上10%'},
+    creema:{debit:'普通預金',credit:'売上高',debitTax:'対象外',creditTax:'課税売上10%'},
+    minne:{debit:'普通預金',credit:'売上高',debitTax:'対象外',creditTax:'課税売上10%'},
+    stores:{debit:'普通預金',credit:'売上高',debitTax:'対象外',creditTax:'課税売上10%'},
+  };
+  // 家事按分率。tax_records\2026年度_経費チェックリスト.md の「I. 家事按分率」と一致させること
+  const CL_APPORTION = {
+    electricity: 0.5696,           // 自宅床面積の作業スペース占有割合
+    water:       0.5696,
+    internet:    1 / 6,            // 世帯3人で等分 × 事業使用比率50%
+    mobile:      0.50,             // 事業利用と私用が半々
+  };
+
+  let clData = null;
+
+  async function loadChecklistData(){
+    const status = $('clStatus');
+    status.textContent = '証憑チェックリストを読み込んでいます…';
+    try{
+      const res = await fetch(CL_URL, { cache:'no-cache' });
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      clData = await res.json();
+    }catch(e){
+      clData = null;
+      status.textContent = `証憑チェックリストを読み込めませんでした（${e.message}）。`;
+      $('clTableWrap').innerHTML = '';
+      return;
+    }
+    const sel = $('clMonth');
+    sel.innerHTML = '';
+    (clData.months || []).forEach(m => {
+      const o = document.createElement('option');
+      o.value = m; o.textContent = m;
+      sel.appendChild(o);
+    });
+    status.textContent = `最終チェック: ${clData.checked_at || '—'}`;
+    renderChecklistTable();
+  }
+
+  function clRowsOfMonth(month){
+    if(!clData || !clData.matrix || !clData.matrix[month]) return [];
+    const row = clData.matrix[month];
+    const out = [];
+    (clData.subscriptions || []).forEach(sub => {
+      const cell = row[sub] || {};
+      (cell.records || []).forEach((rec, i) => {
+        const amount = Number(rec.amount);
+        if(!Number.isFinite(amount) || amount <= 0) return;   // 金額未確定は送らない
+        out.push({ sub, idx:i, rec, amount });
+      });
+    });
+    return out;
+  }
+
+  function renderChecklistTable(){
+    const wrap = $('clTableWrap');
+    if(!clData){ wrap.innerHTML = ''; return; }
+    const month = $('clMonth').value;
+    const items = clRowsOfMonth(month);
+    if(!items.length){
+      wrap.innerHTML = '<p class="hint">この月に金額が確定している証憑はありません。</p>';
+      return;
+    }
+    const apply = $('clApportion').value === 'apply';
+    const head = '<tr><th></th><th>区分</th><th>件名</th><th>日付</th><th>請求額</th><th>計上額</th><th>証憑</th></tr>';
+    const body = items.map((it, n) => {
+      const rate = apply ? (CL_APPORTION[it.sub] || 1) : 1;
+      const calc = Math.floor(it.amount * rate);
+      const rateNote = (apply && CL_APPORTION[it.sub]) ? `（×${(rate*100).toFixed(2)}%）` : '';
+      return `<tr>
+        <td><input type="checkbox" class="cl-check" data-n="${n}" checked></td>
+        <td>${escapeHtml(CL_LABELS[it.sub] || it.sub)}</td>
+        <td>${escapeHtml(it.rec.subject || '')}</td>
+        <td>${escapeHtml(it.rec.date || month + '-01')}</td>
+        <td style="text-align:right">${it.amount.toLocaleString()}</td>
+        <td style="text-align:right">${calc.toLocaleString()}<span class="hint">${rateNote}</span></td>
+        <td style="font-size:11px;word-break:break-all">${escapeHtml(it.rec.local_path || '')}</td>
+      </tr>`;
+    }).join('');
+    // 既存CSSは要素セレクタ table{} で当たるためクラスは付けない
+    wrap.innerHTML = `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  }
+
+  function addChecklistToJournal(){
+    if(!clData){ showToast('先に証憑を読み込んでください。'); return; }
+    const month = $('clMonth').value;
+    const items = clRowsOfMonth(month);
+    const apply = $('clApportion').value === 'apply';
+    const checked = Array.from(document.querySelectorAll('.cl-check'))
+      .filter(el => el.checked).map(el => Number(el.dataset.n));
+    if(!checked.length){ showToast('追加する証憑を選んでください。'); return; }
+
+    const added = checked.map(n => {
+      const it = items[n];
+      const acc = CL_ACCOUNTS[it.sub] || { debit:'通信費', tax:'課税仕入10%' };
+      const rate = apply ? (CL_APPORTION[it.sub] || 1) : 1;
+      const amount = Math.floor(it.amount * rate);
+      const memo = [
+        `証憑チェック ${month}`,
+        it.rec.local_path ? `証憑: ${it.rec.local_path}` : '',
+        (apply && CL_APPORTION[it.sub])
+          ? `家事按分 ${(rate*100).toFixed(2)}%（請求額 ${it.amount.toLocaleString()}円）` : '',
+      ].filter(Boolean).join(' / ');
+
+      return makeRow({
+        '取引日': String(it.rec.date || `${month}-01`).replace(/\//g,'-'),
+        '借方勘定科目': acc.debit || '通信費',
+        '借方税区分': acc.debitTax || acc.tax || '課税仕入10%',
+        '借方金額': amount,
+        '貸方勘定科目': acc.credit || '事業主借',
+        '貸方税区分': acc.creditTax || '対象外',
+        '貸方金額': amount,
+        '摘要': `${CL_LABELS[it.sub] || it.sub} ${it.rec.subject || ''}`.trim(),
+        'タグ': '証憑チェック',
+        'メモ': memo,
+      });
+    });
+
+    const existing = new Set(rows.map(r => [r['取引日'], r['摘要'], r['借方金額']].join('|')));
+    const fresh = added.filter(r => !existing.has([r['取引日'], r['摘要'], r['借方金額']].join('|')));
+    if(!fresh.length){ showToast('選んだ証憑はすでに取り込み済みです。'); return; }
+
+    rows = rows.concat(fresh);
+    saveRows();
+    render();
+    showToast(`証憑 ${fresh.length}件を仕訳に追加しました。`);
+  }
+
+  $('checklistTab').addEventListener('click', () => {
+    switchMode('checklist');
+    if(!clData) loadChecklistData();
+  });
+  $('clReloadBtn').addEventListener('click', loadChecklistData);
+  $('clMonth').addEventListener('change', renderChecklistTable);
+  $('clApportion').addEventListener('change', renderChecklistTable);
+  $('clAddBtn').addEventListener('click', addChecklistToJournal);
+  $('clSelectAllBtn').addEventListener('click', () => {
+    const boxes = Array.from(document.querySelectorAll('.cl-check'));
+    const allOn = boxes.every(b => b.checked);
+    boxes.forEach(b => { b.checked = !allOn; });
+  });
+
   function switchMode(mode){
-    ['manual','paste','rakuten','marketplace','receipt'].forEach(name => {
+    ['manual','paste','rakuten','marketplace','receipt','checklist'].forEach(name => {
       const active = mode === name;
       $(`${name}Tab`).classList.toggle('active', active);
       $(`${name}Tab`).setAttribute('aria-selected', active ? 'true' : 'false');
@@ -3158,7 +3344,7 @@ td.amount{
   const initialMode = (() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode') || window.location.hash.replace('#', '');
-    return ['manual','paste','rakuten','marketplace','receipt'].includes(mode) ? mode : 'receipt';
+    return ['manual','paste','rakuten','marketplace','receipt','checklist'].includes(mode) ? mode : 'receipt';
   })();
   switchMode(initialMode);
   saveRows();
