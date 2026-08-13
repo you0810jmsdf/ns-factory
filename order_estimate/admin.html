@@ -868,6 +868,50 @@ tr.row-out-stock td{
           <span style="font-size:11px;color:#8a6a4a">カリキュラム欄のDLボタン→メール＋氏名→6桁コード認証でダウンロードされます</span>
         </a>
       </div>
+
+      <h2 style="margin:24px 0 6px;font-size:16px;color:#6b3a1f">📧 メール登録状況の確認・修正</h2>
+      <div style="font-size:12px;color:#8a6a4a;margin-bottom:10px;line-height:1.7">
+        登録済みの生徒と、その方がダウンロードできているかを一覧で確認します。
+        <strong>氏名が空欄・誤字だと「名簿に一致なし」で認証が通りません。</strong>
+        下の「うまくいかなかった記録」に生徒が入力した氏名が残るので、それに合わせて修正してください。
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <button class="btn" type="button" id="jhcsReloadBtn" onclick="loadJhcsStudents()">🔄 最新の状況を読み込む</button>
+        <span id="jhcsStudentsMsg" style="font-size:12px;color:#8a6a4a"></span>
+      </div>
+      <div id="jhcsStudentsWrap" style="overflow-x:auto"></div>
+
+      <div style="background:#fffaf3;border:1px solid #eadccf;border-radius:10px;padding:14px 16px;margin-top:14px;max-width:640px">
+        <div style="font-weight:700;color:#6b3a1f;font-size:13px;margin-bottom:4px" id="jhcsFormTitle">➕ 生徒を追加する</div>
+        <div style="font-size:11px;color:#8a6a4a;margin-bottom:10px">
+          既に登録済みのメールアドレスを入力すると、氏名・状態の<strong>修正</strong>になります（二重登録にはなりません）。
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <label style="font-size:11px;color:#8a6a4a">メールアドレス</label>
+            <input type="email" id="jhcsFormEmail" placeholder="example@gmail.com" style="width:100%;padding:7px 10px;border:1px solid #eadccf;border-radius:6px;font-size:13px">
+          </div>
+          <div>
+            <label style="font-size:11px;color:#8a6a4a">氏名（フルネーム）</label>
+            <input type="text" id="jhcsFormName" placeholder="例）中司 祐樹" style="width:100%;padding:7px 10px;border:1px solid #eadccf;border-radius:6px;font-size:13px">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:11px;color:#8a6a4a">状態</label>
+          <select id="jhcsFormState" style="padding:7px 10px;border:1px solid #eadccf;border-radius:6px;font-size:13px">
+            <option value="有効">有効（ダウンロードできる）</option>
+            <option value="停止">停止（ダウンロードさせない）</option>
+          </select>
+          <button class="btn" type="button" id="jhcsSaveBtn" onclick="saveJhcsStudent()" style="margin-left:auto">保存する</button>
+          <button class="btn btn-ghost" type="button" onclick="resetJhcsForm()" style="background:#f0e6da;color:#6b3a1f">クリア</button>
+        </div>
+        <div id="jhcsFormMsg" style="font-size:12px;margin-top:8px"></div>
+      </div>
+
+      <details style="margin-top:14px;max-width:800px">
+        <summary style="cursor:pointer;font-size:13px;color:#6b3a1f;font-weight:700">⚠️ 認証がうまくいかなかった記録（直近10件）</summary>
+        <div id="jhcsFailuresWrap" style="margin-top:8px;overflow-x:auto;font-size:12px;color:#8a6a4a">「最新の状況を読み込む」を押すと表示されます。</div>
+      </details>
     </div>
 
     <!-- 接客ログタブ -->
@@ -4827,6 +4871,146 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // タブ→カテゴリの対応（カテゴリボタンとタブボタンの data-admin-cat と一致させること）
+// ── JHCS講習資料 生徒名簿の確認・修正 ────────────────────────
+// 名簿の正本は JHCS講習資料_ダウンロード管理 スプレッドシート。ここはその読み書き窓口。
+const JHCS_GAS_URL = 'https://script.google.com/macros/s/AKfycbwphOKe5rGHIQVVCnPUpCrTllRVze7gO27IErbGB0VCrgJ43JxP3bmermCy_Gkhul-w_w/exec';
+let jhcsStudentsLoaded = false;
+
+function jhcsEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// GAS WebApp は HTTP 200 でも HTML を返すことがあるため本文先頭で判定して再送する
+async function jhcsGasPost(payload, retries) {
+  let lastErr = null;
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(JHCS_GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const text = await res.text();
+      if (text.trim().startsWith('<')) throw new Error('サーバー応答エラー');
+      return JSON.parse(text);
+    } catch (e) {
+      lastErr = e;
+      if (i < retries - 1) await new Promise(r => setTimeout(r, 800 * Math.pow(2, i)));
+    }
+  }
+  throw lastErr;
+}
+
+async function loadJhcsStudents() {
+  const key = getAdminKey();
+  const msg = document.getElementById('jhcsStudentsMsg');
+  const btn = document.getElementById('jhcsReloadBtn');
+  if (!key) { msg.textContent = '管理パスワードが取得できません。ページを再読み込みしてログインし直してください。'; return; }
+  btn.disabled = true; msg.textContent = '読み込み中…';
+  try {
+    const data = await jhcsGasPost({ action: 'listStudents', adminKey: key }, 3);
+    if (!data.ok) { msg.textContent = 'エラー: ' + (data.error || '不明'); return; }
+    renderJhcsStudents(data.students);
+    renderJhcsFailures(data.failures);
+    jhcsStudentsLoaded = true;
+    msg.textContent = '登録 ' + data.students.length + '名（' + new Date().toLocaleTimeString('ja-JP') + ' 時点）';
+  } catch (e) {
+    msg.textContent = '通信エラーです。少し時間をおいて再度お試しください。';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderJhcsStudents(students) {
+  const wrap = document.getElementById('jhcsStudentsWrap');
+  if (!students.length) { wrap.innerHTML = '<div style="font-size:12px;color:#8a6a4a">まだ誰も登録されていません。</div>'; return; }
+  const rows = students.map(s => {
+    const nameCell = s.name
+      ? jhcsEsc(s.name)
+      : '<span style="color:#c0392b;font-weight:700">未入力（要修正）</span>';
+    const stateCell = s.state === '有効'
+      ? '<span style="color:#2e7d32">有効</span>'
+      : '<span style="color:#c0392b">' + (jhcsEsc(s.state) || '未設定') + '</span>';
+    const dlCell = s.dlCount
+      ? s.dlCount + '回<br><span style="font-size:10px;color:#8a6a4a">最終 ' + jhcsEsc(s.dlLast) + '</span>'
+      : '<span style="color:#8a6a4a">まだなし</span>';
+    return '<tr>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid #eadccf">' + jhcsEsc(s.email) + '</td>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid #eadccf">' + nameCell + '</td>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid #eadccf;text-align:center">' + stateCell + '</td>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid #eadccf;text-align:center">' + dlCell + '</td>'
+      + '<td style="padding:7px 10px;border-bottom:1px solid #eadccf;text-align:center">'
+      + '<button class="btn" type="button" style="padding:3px 12px;font-size:12px" '
+      + 'data-email="' + jhcsEsc(s.email) + '" data-name="' + jhcsEsc(s.name) + '" data-state="' + jhcsEsc(s.state) + '" '
+      + 'onclick="editJhcsStudent(this)">修正</button></td></tr>';
+  }).join('');
+  wrap.innerHTML =
+    '<table style="width:100%;border-collapse:collapse;font-size:13px;background:#fff;border:1px solid #eadccf;border-radius:8px;overflow:hidden">'
+    + '<thead><tr style="background:#f7efe6;color:#6b3a1f">'
+    + '<th style="padding:8px 10px;text-align:left">メールアドレス</th>'
+    + '<th style="padding:8px 10px;text-align:left">氏名</th>'
+    + '<th style="padding:8px 10px">状態</th>'
+    + '<th style="padding:8px 10px">ダウンロード</th>'
+    + '<th style="padding:8px 10px">操作</th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function renderJhcsFailures(failures) {
+  const wrap = document.getElementById('jhcsFailuresWrap');
+  if (!failures || !failures.length) { wrap.textContent = '失敗した記録はありません。'; return; }
+  wrap.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;background:#fff;border:1px solid #eadccf">'
+    + '<thead><tr style="background:#f7efe6;color:#6b3a1f">'
+    + '<th style="padding:6px 8px;text-align:left">日時</th><th style="padding:6px 8px;text-align:left">メール</th>'
+    + '<th style="padding:6px 8px;text-align:left">入力された氏名</th><th style="padding:6px 8px;text-align:left">理由</th></tr></thead><tbody>'
+    + failures.map(f => '<tr>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da">' + jhcsEsc(f.at) + '</td>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da">' + jhcsEsc(f.email) + '</td>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da">' + jhcsEsc(f.name) + '</td>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da">' + jhcsEsc(f.detail) + '</td></tr>').join('')
+    + '</tbody></table>';
+}
+
+function editJhcsStudent(btn) {
+  document.getElementById('jhcsFormEmail').value = btn.dataset.email || '';
+  document.getElementById('jhcsFormName').value = btn.dataset.name || '';
+  document.getElementById('jhcsFormState').value = btn.dataset.state === '有効' ? '有効' : '停止';
+  document.getElementById('jhcsFormTitle').textContent = '✏️ ' + (btn.dataset.email || '') + ' を修正する';
+  document.getElementById('jhcsFormMsg').textContent = '';
+  document.getElementById('jhcsFormEmail').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function resetJhcsForm() {
+  document.getElementById('jhcsFormEmail').value = '';
+  document.getElementById('jhcsFormName').value = '';
+  document.getElementById('jhcsFormState').value = '有効';
+  document.getElementById('jhcsFormTitle').textContent = '➕ 生徒を追加する';
+  document.getElementById('jhcsFormMsg').textContent = '';
+}
+
+async function saveJhcsStudent() {
+  const email = document.getElementById('jhcsFormEmail').value.trim();
+  const name = document.getElementById('jhcsFormName').value.trim();
+  const state = document.getElementById('jhcsFormState').value;
+  const msg = document.getElementById('jhcsFormMsg');
+  const btn = document.getElementById('jhcsSaveBtn');
+  if (!email || !name) { msg.style.color = '#c0392b'; msg.textContent = 'メールアドレスと氏名の両方を入力してください。'; return; }
+  const key = getAdminKey();
+  if (!key) { msg.style.color = '#c0392b'; msg.textContent = '管理パスワードが取得できません。再ログインしてください。'; return; }
+  btn.disabled = true; msg.style.color = '#8a6a4a'; msg.textContent = '保存中…';
+  try {
+    // 同じメールなら上書き更新（addStudent は冪等）
+    const data = await jhcsGasPost({ action: 'addStudent', adminKey: key, email, name, state }, 3);
+    if (!data.ok) { msg.style.color = '#c0392b'; msg.textContent = 'エラー: ' + (data.error || '不明'); return; }
+    // resetJhcsForm() はメッセージ欄も消すので、消してから結果を書く
+    resetJhcsForm();
+    msg.style.color = '#2e7d32';
+    msg.textContent = (data.updated ? '修正しました: ' : '追加しました: ') + email + '（' + name + '／' + state + '）';
+    await loadJhcsStudents();
+  } catch (e) {
+    msg.style.color = '#c0392b';
+    msg.textContent = '通信エラーです。少し時間をおいて再度お試しください。';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 const ADMIN_TAB_TO_CAT = {
   'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'jhcs-dl': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
@@ -5013,6 +5197,7 @@ function setAdminTab(tab) {
       ? 'JHCS講習資料（テキスト/型紙/CAD）の受講生認証ダウンロードを管理します。生徒名簿・認証ログ・DLログの管理シートと資料フォルダへの入口です。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
+  if (isJhcsDl && !jhcsStudentsLoaded) loadJhcsStudents();
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
   if (isHearing && !hearingKbLoaded) loadHearingKb();
