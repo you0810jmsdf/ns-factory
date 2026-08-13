@@ -1820,6 +1820,23 @@ function unlockAdmin() {
     sessionStorage.setItem('nsfactory-chatlog-auth', 'ok');
   } catch (err) { /* ignore */ }
   tryAutoFetchToken();
+  retryJhcsLoadsAfterAuth();
+}
+
+// #tab=jhcs-dl 付きで開くと、ログイン前に setAdminTab が走って
+// 「管理パスワードが取得できません」で読み込みに失敗する。認証が通った時点で読み直す。
+// ⚠ この関数はスクリプト末尾の変数より前で呼ばれうるため、必ず setTimeout で遅らせること
+//   （即時に参照すると let 宣言前アクセスで ReferenceError になる）。
+function retryJhcsLoadsAfterAuth() {
+  setTimeout(() => {
+    try {
+      const btn = document.querySelector('[data-admin-tab="jhcs-dl"]');
+      if (!btn || !btn.classList.contains('active')) return;
+      if (!jhcsMaterialsLoaded) loadJhcsMaterials();
+      if (!jhcsStudentsLoaded) loadJhcsStudents();
+      if (!jhcsDownloadsLoaded) loadJhcsDownloads();
+    } catch (e) { /* 未初期化なら何もしない */ }
+  }, 0);
 }
 
 function lockAdmin() {
