@@ -869,7 +869,22 @@ tr.row-out-stock td{
         </a>
       </div>
 
-      <h2 style="margin:24px 0 6px;font-size:16px;color:#6b3a1f">📧 メール登録状況の確認・修正</h2>
+      <h2 style="margin:24px 0 6px;font-size:16px;color:#6b3a1f">📁 講習資料フォルダ（Driveへ直接アクセス）</h2>
+      <div style="font-size:12px;color:#8a6a4a;margin-bottom:10px;line-height:1.7">
+        講義ごとに、いま生徒がダウンロードできる資料の一覧です。
+        <strong>「⬆ 入れる」でこの画面から直接アップロードできます</strong>（Driveを開かなくても済みます）。
+        同じファイル名を入れると差し替えになります。「📁」はDriveの該当フォルダを開きます。
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <button class="btn" type="button" id="jhcsMatReloadBtn" onclick="loadJhcsMaterials()">🔄 資料一覧を読み込む</button>
+        <a href="https://drive.google.com/drive/folders/16Qp1vlSxcveM0w7Xc0wBo1Y2L72vRI8c" target="_blank" rel="noopener"
+           style="font-size:12px;color:#8B5E3C">Driveの親フォルダを開く ↗</a>
+        <span id="jhcsMatMsg" style="font-size:12px;color:#8a6a4a"></span>
+      </div>
+      <div id="jhcsMaterialsWrap" style="overflow-x:auto"></div>
+      <input type="file" id="jhcsUploadInput" style="display:none">
+
+      <h2 style="margin:28px 0 6px;font-size:16px;color:#6b3a1f">📧 メール登録状況の確認・修正</h2>
       <div style="font-size:12px;color:#8a6a4a;margin-bottom:10px;line-height:1.7">
         登録済みの生徒と、その方がダウンロードできているかを一覧で確認します。
         <strong>氏名が空欄・誤字だと「名簿に一致なし」で認証が通りません。</strong>
@@ -4898,6 +4913,130 @@ async function jhcsGasPost(payload, retries) {
   throw lastErr;
 }
 
+// ── 講習資料フォルダ（Drive）の一覧・アップロード ──
+const JHCS_TYPE_LABELS = { text: '📄 テキスト', pattern: '📐 型紙', cad: '🔧 CAD' };
+const JHCS_UPLOAD_MAX_BYTES = 20 * 1024 * 1024;
+let jhcsMaterialsLoaded = false;
+
+async function loadJhcsMaterials() {
+  const key = getAdminKey();
+  const msg = document.getElementById('jhcsMatMsg');
+  const btn = document.getElementById('jhcsMatReloadBtn');
+  if (!key) { msg.textContent = '管理パスワードが取得できません。再ログインしてください。'; return; }
+  btn.disabled = true; msg.textContent = '読み込み中…';
+  try {
+    const data = await jhcsGasPost({ action: 'listMaterials', adminKey: key }, 3);
+    if (!data.ok) { msg.textContent = 'エラー: ' + (data.error || '不明'); return; }
+    renderJhcsMaterials(data.lessons);
+    jhcsMaterialsLoaded = true;
+    const total = data.lessons.reduce((n, l) =>
+      n + ['text', 'pattern', 'cad'].reduce((m, t) => m + l.types[t].files.length, 0), 0);
+    msg.textContent = '全' + data.lessons.length + '講義・資料' + total + '件';
+  } catch (e) {
+    msg.textContent = '通信エラーです。少し時間をおいて再度お試しください。';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderJhcsMaterials(lessons) {
+  const cell = (lesson, type) => {
+    const t = lesson.types[type];
+    const files = t.files.map(f =>
+      '<div style="display:flex;gap:4px;align-items:center;margin-bottom:2px">'
+      + '<a href="' + jhcsEsc(f.url) + '" target="_blank" rel="noopener" style="color:#8B5E3C;font-size:11px;word-break:break-all">'
+      + jhcsEsc(f.name) + '</a>'
+      + '<button type="button" title="削除（Driveのゴミ箱へ）" '
+      + 'data-lesson="' + jhcsEsc(lesson.id) + '" data-type="' + type + '" data-file="' + jhcsEsc(f.name) + '" '
+      + 'onclick="deleteJhcsMaterial(this)" '
+      + 'style="border:none;background:none;color:#c0392b;cursor:pointer;font-size:12px;padding:0 2px">🗑</button></div>'
+    ).join('');
+    return '<td style="padding:6px 8px;border-bottom:1px solid #eadccf;vertical-align:top;min-width:190px">'
+      + (files || '<span style="font-size:11px;color:#b0a094">なし</span>')
+      + '<div style="margin-top:4px;display:flex;gap:6px">'
+      + '<button type="button" class="btn" style="padding:2px 10px;font-size:11px" '
+      + 'data-lesson="' + jhcsEsc(lesson.id) + '" data-type="' + type + '" onclick="pickJhcsUpload(this)">⬆ 入れる</button>'
+      + '<a href="' + jhcsEsc(t.folderUrl) + '" target="_blank" rel="noopener" title="Driveのフォルダを開く" '
+      + 'style="font-size:14px;text-decoration:none">📁</a>'
+      + '</div></td>';
+  };
+  document.getElementById('jhcsMaterialsWrap').innerHTML =
+    '<table style="width:100%;border-collapse:collapse;font-size:12px;background:#fff;border:1px solid #eadccf">'
+    + '<thead><tr style="background:#f7efe6;color:#6b3a1f">'
+    + '<th style="padding:8px;text-align:left;min-width:150px">講義</th>'
+    + '<th style="padding:8px;text-align:left">' + JHCS_TYPE_LABELS.text + '</th>'
+    + '<th style="padding:8px;text-align:left">' + JHCS_TYPE_LABELS.pattern + '</th>'
+    + '<th style="padding:8px;text-align:left">' + JHCS_TYPE_LABELS.cad + '</th>'
+    + '</tr></thead><tbody>'
+    + lessons.map(l =>
+      '<tr><td style="padding:6px 8px;border-bottom:1px solid #eadccf;vertical-align:top">'
+      + '<a href="' + jhcsEsc(l.folderUrl) + '" target="_blank" rel="noopener" style="color:#6b3a1f;font-weight:700;text-decoration:none">'
+      + jhcsEsc(l.label) + '</a></td>'
+      + cell(l, 'text') + cell(l, 'pattern') + cell(l, 'cad') + '</tr>').join('')
+    + '</tbody></table>';
+}
+
+function pickJhcsUpload(btn) {
+  const input = document.getElementById('jhcsUploadInput');
+  input.value = '';
+  input.dataset.lesson = btn.dataset.lesson;
+  input.dataset.type = btn.dataset.type;
+  input.click();
+}
+
+async function handleJhcsUpload(file, lessonId, type) {
+  const msg = document.getElementById('jhcsMatMsg');
+  if (file.size > JHCS_UPLOAD_MAX_BYTES) {
+    msg.textContent = 'ファイルが大きすぎます（20MBまで）。Driveのフォルダへ直接入れてください。';
+    return;
+  }
+  const key = getAdminKey();
+  if (!key) { msg.textContent = '管理パスワードが取得できません。再ログインしてください。'; return; }
+
+  const label = JHCS_TYPE_LABELS[type] || type;
+  msg.textContent = label + '「' + file.name + '」をアップロード中…（' + Math.round(file.size / 1024) + 'KB）';
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(',')[1]);
+      r.onerror = () => reject(new Error('ファイルを読めませんでした'));
+      r.readAsDataURL(file);
+    });
+    // 同名は差し替えなので、応答が失われて再送しても結果は1件のまま
+    const data = await jhcsGasPost({
+      action: 'uploadMaterial', adminKey: key,
+      lessonId, type, fileName: file.name,
+      mimeType: file.type || 'application/octet-stream', base64,
+    }, 3);
+    if (!data.ok) { msg.textContent = 'エラー: ' + (data.error || '不明'); return; }
+    msg.textContent = (data.replaced ? '差し替えました: ' : '追加しました: ') + data.fileName
+      + '（生徒の画面に出るまで最大5分かかります）';
+    await loadJhcsMaterials();
+  } catch (e) {
+    msg.textContent = 'アップロードに失敗しました。少し時間をおいて再度お試しください。';
+  }
+}
+
+async function deleteJhcsMaterial(btn) {
+  const fileName = btn.dataset.file;
+  if (!confirm('「' + fileName + '」を生徒に配布しないようにします。\n（Driveのゴミ箱へ移動するので、30日以内なら元に戻せます）\n\nよろしいですか？')) return;
+  const key = getAdminKey();
+  const msg = document.getElementById('jhcsMatMsg');
+  if (!key) { msg.textContent = '管理パスワードが取得できません。再ログインしてください。'; return; }
+  msg.textContent = '削除中…';
+  try {
+    const data = await jhcsGasPost({
+      action: 'deleteMaterial', adminKey: key,
+      lessonId: btn.dataset.lesson, type: btn.dataset.type, fileName,
+    }, 3);
+    if (!data.ok) { msg.textContent = 'エラー: ' + (data.error || '不明'); return; }
+    msg.textContent = '削除しました: ' + fileName;
+    await loadJhcsMaterials();
+  } catch (e) {
+    msg.textContent = '削除に失敗しました。少し時間をおいて再度お試しください。';
+  }
+}
+
 async function loadJhcsStudents() {
   const key = getAdminKey();
   const msg = document.getElementById('jhcsStudentsMsg');
@@ -5197,6 +5336,7 @@ function setAdminTab(tab) {
       ? 'JHCS講習資料（テキスト/型紙/CAD）の受講生認証ダウンロードを管理します。生徒名簿・認証ログ・DLログの管理シートと資料フォルダへの入口です。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
   }
+  if (isJhcsDl && !jhcsMaterialsLoaded) loadJhcsMaterials();
   if (isJhcsDl && !jhcsStudentsLoaded) loadJhcsStudents();
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
@@ -5732,6 +5872,11 @@ window.addEventListener('beforeunload', (event) => {
   if (!dirty && !threadDirty) return;
   event.preventDefault();
   event.returnValue = '';
+});
+
+document.getElementById('jhcsUploadInput')?.addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (file) handleJhcsUpload(file, e.target.dataset.lesson, e.target.dataset.type);
 });
 
 document.getElementById('authSubmitBtn')?.addEventListener('click', submitAdminPassword);
