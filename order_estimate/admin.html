@@ -956,6 +956,18 @@ tr.row-out-stock td{
         <div id="jhcsFormMsg" style="font-size:12px;margin-top:8px"></div>
       </div>
 
+      <h2 style="margin:28px 0 6px;font-size:16px;color:#6b3a1f">📥 ダウンロード履歴（誰が・いつ・どのファイル）</h2>
+      <div style="font-size:12px;color:#8a6a4a;margin-bottom:10px;line-height:1.7">
+        受講生が実際にダウンロードしたファイルの記録です。氏名で絞り込めます。
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <button class="btn" type="button" id="jhcsDlLogBtn" onclick="loadJhcsDownloads()">🔄 履歴を読み込む</button>
+        <input type="text" id="jhcsDlFilter" placeholder="氏名・ファイル名で絞り込み" oninput="renderJhcsDownloads()"
+               style="padding:6px 10px;border:1px solid #eadccf;border-radius:6px;font-size:13px;min-width:220px">
+        <span id="jhcsDlLogMsg" style="font-size:12px;color:#8a6a4a"></span>
+      </div>
+      <div id="jhcsDownloadsWrap" style="overflow-x:auto"></div>
+
       <details style="margin-top:14px;max-width:800px">
         <summary style="cursor:pointer;font-size:13px;color:#6b3a1f;font-weight:700">⚠️ 認証がうまくいかなかった記録（直近10件）</summary>
         <div id="jhcsFailuresWrap" style="margin-top:8px;overflow-x:auto;font-size:12px;color:#8a6a4a">「最新の状況を読み込む」を押すと表示されます。</div>
@@ -5164,6 +5176,61 @@ async function deleteJhcsMaterial(btn) {
   }
 }
 
+// ── ダウンロード履歴 ──────────────────────────────
+let jhcsDownloads = [];
+let jhcsDownloadsLoaded = false;
+
+async function loadJhcsDownloads() {
+  const key = getAdminKey();
+  const msg = document.getElementById('jhcsDlLogMsg');
+  const btn = document.getElementById('jhcsDlLogBtn');
+  if (!key) { msg.textContent = '管理パスワードが取得できません。再ログインしてください。'; return; }
+  btn.disabled = true; msg.textContent = '読み込み中…';
+  try {
+    const data = await jhcsGasPost({ action: 'listDownloads', adminKey: key, limit: 200 }, 3);
+    if (!data.ok) { msg.textContent = 'エラー: ' + (data.error || '不明'); return; }
+    jhcsDownloads = data.rows || [];
+    jhcsDownloadsLoaded = true;
+    renderJhcsDownloads();
+    msg.textContent = '全' + data.total + '件のうち直近' + jhcsDownloads.length + '件';
+  } catch (e) {
+    msg.textContent = '通信エラーです。少し時間をおいて再度お試しください。';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderJhcsDownloads() {
+  const wrap = document.getElementById('jhcsDownloadsWrap');
+  const q = (document.getElementById('jhcsDlFilter').value || '').trim().toLowerCase();
+  const rows = q
+    ? jhcsDownloads.filter(r =>
+        (r.name + ' ' + r.email + ' ' + r.fileName + ' ' + r.lesson).toLowerCase().includes(q))
+    : jhcsDownloads;
+  if (!rows.length) {
+    wrap.innerHTML = '<div style="font-size:12px;color:#8a6a4a">'
+      + (jhcsDownloadsLoaded ? '該当する記録がありません。' : '「履歴を読み込む」を押してください。') + '</div>';
+    return;
+  }
+  wrap.innerHTML =
+    '<table style="width:100%;border-collapse:collapse;font-size:12px;background:#fff;border:1px solid #eadccf">'
+    + '<thead><tr style="background:#f7efe6;color:#6b3a1f">'
+    + '<th style="padding:7px 8px;text-align:left">日時</th>'
+    + '<th style="padding:7px 8px;text-align:left">氏名</th>'
+    + '<th style="padding:7px 8px;text-align:left">講義</th>'
+    + '<th style="padding:7px 8px;text-align:left">種別</th>'
+    + '<th style="padding:7px 8px;text-align:left">ファイル名</th>'
+    + '</tr></thead><tbody>'
+    + rows.map(r => '<tr>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da;white-space:nowrap">' + jhcsEsc(r.at) + '</td>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da;white-space:nowrap">' + jhcsEsc(r.name) + '</td>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da;white-space:nowrap">' + jhcsEsc(r.lesson) + '</td>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da;white-space:nowrap">' + jhcsEsc(r.type) + '</td>'
+      + '<td style="padding:6px 8px;border-bottom:1px solid #f0e6da;word-break:break-all">' + jhcsEsc(r.fileName) + '</td>'
+      + '</tr>').join('')
+    + '</tbody></table>';
+}
+
 async function loadJhcsStudents() {
   const key = getAdminKey();
   const msg = document.getElementById('jhcsStudentsMsg');
@@ -5465,6 +5532,7 @@ function setAdminTab(tab) {
   }
   if (isJhcsDl && !jhcsMaterialsLoaded) loadJhcsMaterials();
   if (isJhcsDl && !jhcsStudentsLoaded) loadJhcsStudents();
+  if (isJhcsDl && !jhcsDownloadsLoaded) loadJhcsDownloads();
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
   if (isHearing && !hearingKbLoaded) loadHearingKb();
