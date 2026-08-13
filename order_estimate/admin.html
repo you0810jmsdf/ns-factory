@@ -732,6 +732,39 @@ tr.row-out-stock td{
     <div class="auth-actions">
       <button class="btn" id="authSubmitBtn">ログイン</button>
     </div>
+    <div id="authNotice" style="margin-top:14px;padding:10px 12px;border:1px solid #e5c9b3;border-radius:8px;background:#fdf6f0;font-size:11px;line-height:1.7;color:#8a5a3f">
+      このページは管理者専用です。<br>
+      アクセス元の情報（IPアドレス・端末情報・日時）を記録しています。
+      <span id="authNoticeIp" style="display:block;margin-top:4px;color:#a08268"></span>
+    </div>
+  </div>
+</div>
+
+<!-- パスワードを間違えたときの警告。表示する内容は実際に記録・通報したものと一致させること -->
+<div id="intruderOverlay" style="display:none;position:fixed;inset:0;z-index:2000;background:#1a0505;color:#ffdede;padding:24px;overflow-y:auto">
+  <div style="max-width:560px;margin:6vh auto;border:2px solid #c0392b;border-radius:14px;padding:24px;background:#2a0a0a;box-shadow:0 0 60px rgba(192,57,43,.5)">
+    <div style="font-size:44px;text-align:center;line-height:1">⚠️</div>
+    <h2 style="margin:10px 0 6px;text-align:center;font-size:20px;color:#ff8a80;letter-spacing:.04em">アクセスが記録されました</h2>
+    <p style="margin:0 0 16px;text-align:center;font-size:13px;color:#ffb3ab">
+      ここは <strong>N's factory の管理者専用ページ</strong>です。<br>
+      パスワードの誤りを検知したため、アクセス元の情報を記録しました。
+    </p>
+    <div style="background:#140303;border:1px solid #7b2018;border-radius:8px;padding:14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.9;color:#ffd9d4">
+      <div>IP アドレス　　: <span id="intruderIp">取得中…</span></div>
+      <div>アクセス日時　: <span id="intruderAt">—</span></div>
+      <div>端末・ブラウザ: <span id="intruderUa" style="word-break:break-all">—</span></div>
+      <div>画面サイズ　　: <span id="intruderScreen">—</span></div>
+      <div>参照元　　　　: <span id="intruderRef" style="word-break:break-all">—</span></div>
+    </div>
+    <p style="margin:16px 0 0;font-size:12px;line-height:1.8;color:#ffb3ab">
+      上記の内容を記録し、<strong id="intruderNotified">管理者へ通報しました。</strong><br>
+      心当たりのない方は、このページを閉じてください。<br>
+      <span style="color:#e08a80">誤って開いてしまった場合、この記録によって不利益が生じることはありません。</span>
+    </p>
+    <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a href="../" style="padding:9px 18px;border-radius:999px;background:#c0392b;color:#fff;text-decoration:none;font-size:13px;font-weight:700">トップページへ戻る</a>
+      <button type="button" onclick="closeIntruderWarning()" style="padding:9px 18px;border-radius:999px;background:transparent;color:#ffb3ab;border:1px solid #7b2018;font-size:13px;cursor:pointer">パスワードを入力し直す</button>
+    </div>
   </div>
 </div>
 <div class="page">
@@ -1799,6 +1832,87 @@ function saveAdminSession() {
   }
 }
 
+// ── 管理画面アクセスの記録 ────────────────────────
+// 画面に表示する内容と、実際に記録・通報する内容を必ず一致させること。
+// 事実でない警告（ウイルス感染・外部機関への通報など）は書かない。
+const GUARD_GAS_URL = 'https://script.google.com/macros/s/AKfycbwzqQnnPluysWrt6rr53eq3LoOE3adXvmkiTVp-vvnr0bbrO1FMh25C9jJYtpX4qIr5/exec';
+let guardIpPromise = null;
+let guardArrivalLogged = false;
+
+// GAS は訪問者のIPを取得できないため、ブラウザ側で外部APIに問い合わせる
+function fetchVisitorIp() {
+  if (guardIpPromise) return guardIpPromise;
+  guardIpPromise = (async () => {
+    try {
+      const res = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(4000) });
+      if (!res.ok) return '';
+      const data = await res.json();
+      return String(data.ip || '');
+    } catch (e) {
+      return '';
+    }
+  })();
+  return guardIpPromise;
+}
+
+function guardContext() {
+  return {
+    page: location.pathname.replace(/^\/ns-factory\/?/, '') || 'order_estimate/admin.html',
+    ua: navigator.userAgent || '',
+    screen: (screen.width || 0) + 'x' + (screen.height || 0),
+    referrer: document.referrer || '',
+  };
+}
+
+async function logAdminAccess(kind, note) {
+  const ip = await fetchVisitorIp();
+  const ctx = guardContext();
+  try {
+    const res = await fetch(GUARD_GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(Object.assign({ action: 'log', kind, ip, note: note || '' }, ctx)),
+    });
+    const text = await res.text();
+    if (text.trim().startsWith('<')) return { ok: false, ip, ctx };
+    const data = JSON.parse(text);
+    return { ok: !!data.ok, ip: data.ip || ip, recordedAt: data.recordedAt, notified: !!data.notified, ctx };
+  } catch (e) {
+    return { ok: false, ip, ctx };
+  }
+}
+
+async function showIntruderWarning() {
+  const ctx = guardContext();
+  document.getElementById('intruderUa').textContent = ctx.ua || '不明';
+  document.getElementById('intruderScreen').textContent = ctx.screen;
+  document.getElementById('intruderRef').textContent = ctx.referrer || '（直接アクセス）';
+  document.getElementById('intruderAt').textContent = new Date().toLocaleString('ja-JP');
+  document.getElementById('intruderOverlay').style.display = 'block';
+
+  const result = await logAdminAccess('failure');
+  document.getElementById('intruderIp').textContent = result.ip || '取得できませんでした';
+  if (result.recordedAt) document.getElementById('intruderAt').textContent = result.recordedAt;
+  // 実際に通報できたときだけ「通報しました」と書く
+  document.getElementById('intruderNotified').textContent = result.notified
+    ? '管理者へ通報しました。'
+    : (result.ok ? '管理者の記録簿に保存しました。' : '記録を試みました（通信は確認できていません）。');
+}
+
+function closeIntruderWarning() {
+  document.getElementById('intruderOverlay').style.display = 'none';
+  const input = document.getElementById('authPassword');
+  if (input) { input.value = ''; input.focus(); }
+}
+
+// ゲート画面に到達した時点で1回だけ記録する（通報はしない）
+async function logGateArrival() {
+  if (guardArrivalLogged) return;
+  guardArrivalLogged = true;
+  const result = await logAdminAccess('arrival');
+  const el = document.getElementById('authNoticeIp');
+  if (el && result.ip) el.textContent = '記録したIPアドレス: ' + result.ip;
+}
+
 function submitAdminPassword() {
   const input = document.getElementById('authPassword');
   const error = document.getElementById('authError');
@@ -1811,11 +1925,13 @@ function submitAdminPassword() {
       } catch (err) { /* ignore */ }
       saveAdminSession();
       if (error) error.textContent = '';
+      logAdminAccess('success');
       unlockAdmin();
       return;
     }
     if (error) error.textContent = 'パスワードが違います。';
     input.select();
+    showIntruderWarning();
   }).catch(() => {
     if (error) error.textContent = '照合に失敗しました（https環境で開いてください）。';
   });
@@ -1825,6 +1941,7 @@ if (checkAdminSession()) {
   unlockAdmin();
 } else {
   lockAdmin();
+  logGateArrival();
 }
 
 const CSV_URL = new URL('./ring-price-stock.csv', location.href).toString();
