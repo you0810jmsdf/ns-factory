@@ -3228,7 +3228,9 @@ td.amount{
   }
 
   const BANK_EXCLUDE = ['ラクテンシヨウケン','ラクテンショウケン','SBIシヨウケン','ＳＢＩシヨウケン',
-    '自動スイ','国内株式','投資信託','楽天カ','ラクテンカ','預金利息','ボーナス金利','金利利息',
+    // ⚠「ラクテンカ」まで縮めると「ラクテンカブシキガイシヤ」にも当たり、
+    //   ラクマ（楽天グループ）の売上入金を対象外にしてしまう。カード名義は略さないこと。
+    '自動スイ','国内株式','投資信託','楽天カード','ラクテンカード','預金利息','ボーナス金利','金利利息',
     'キャンペ','キヤンペ','口座振替'];
   const BANK_CRYPTO = ['オーケーコイン','ジーエムオーコイン','ラインジエネシス','コイン ジヤパン'];
   const BANK_FAMILY = ['ナカヅカ','ナカツカ'];
@@ -3245,7 +3247,17 @@ td.amount{
   const BANK_BOOKABLE = ['direct', 'biz'];
 
   // 屋号のない法人・サービスからの入金。個人客と混ざると売上を誤って計上するので分ける
-  const BANK_CORP = ['ラクテン','アマゾン','ヤフー','ペイパル','ストライプ'];
+  const BANK_CORP = ['アマゾン','ヤフー','ペイパル','ストライプ'];
+
+  // 事業収入ではないと事業主が確認済みの取引先（2026-08-13確認）。
+  // 「カ）〜」を一律で対象外にはしない。法人顧客との取引が発生したときに取りこぼすため、
+  // 個別に判定できたものだけをここへ移して「要確認」から外す。
+  const BANK_NOT_INCOME = ['ジエイテイービー','ジモテイー'];
+
+  // 摘要が完全に一致するときだけ対象外にするもの。
+  // ⚠「ラクテン」を部分一致で除外すると、ラクマ（楽天グループ）からの売上入金が
+  //   「ラクテン〜」名義で届いたときに計上漏れになる。必ず完全一致で判定すること。
+  const BANK_NOT_INCOME_EXACT = ['ラクテン'];
 
   // 個人客との直接取引ではないが、事業収入として計上する取引先。
   // 「ウンエイジムキヨク」を含むため放っておくと法人（要確認）に落ちるので、先に判定する。
@@ -3259,7 +3271,8 @@ td.amount{
     const k = normBankKey(descRaw);
     const has = list => list.some(w => d.includes(w) || k.includes(w));
 
-    if(has(BANK_EXCLUDE)) return 'exclude';
+    if(BANK_NOT_INCOME_EXACT.includes(d) || BANK_NOT_INCOME_EXACT.includes(k)) return 'exclude';
+    if(has(BANK_EXCLUDE) || has(BANK_NOT_INCOME)) return 'exclude';
     if(has(BANK_CRYPTO))  return 'crypto';
     if(has(BANK_FAMILY))  return 'family';
     if(has(BANK_GOV))     return 'gov';
