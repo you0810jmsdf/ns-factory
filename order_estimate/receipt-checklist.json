@@ -310,9 +310,17 @@
         }
       },
       "electricity": {
-        "status": "手動DL（くらしTEPCO）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-07-01",
+            "amount": 16510,
+            "subject": "電気料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-07\\TEPCO_202607.pdf"
+          }
+        ],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
@@ -511,9 +519,17 @@
         }
       },
       "electricity": {
-        "status": "手動DL（くらしTEPCO）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-06-01",
+            "amount": 14460,
+            "subject": "電気料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-06\\TEPCO_202606.pdf"
+          }
+        ],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
@@ -712,9 +728,17 @@
         }
       },
       "electricity": {
-        "status": "手動DL（くらしTEPCO）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-05-01",
+            "amount": 15182,
+            "subject": "電気料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-05\\TEPCO_202605.pdf"
+          }
+        ],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
@@ -927,9 +951,17 @@
         }
       },
       "electricity": {
-        "status": "手動DL（くらしTEPCO）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-04-01",
+            "amount": 18390,
+            "subject": "電気料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-04\\TEPCO_202604.pdf"
+          }
+        ],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
@@ -1127,9 +1159,17 @@
         }
       },
       "electricity": {
-        "status": "手動DL（くらしTEPCO）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-03-01",
+            "amount": 21541,
+            "subject": "電気料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-03\\TEPCO_202603.pdf"
+          }
+        ],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
@@ -1333,9 +1373,17 @@
         }
       },
       "electricity": {
-        "status": "手動DL（くらしTEPCO）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-02-01",
+            "amount": 31887,
+            "subject": "電気料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-02\\TEPCO_202602.pdf"
+          }
+        ],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
@@ -1518,9 +1566,17 @@
         }
       },
       "electricity": {
-        "status": "手動DL（くらしTEPCO）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-01-01",
+            "amount": 31091,
+            "subject": "電気料金",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-01\\TEPCO_202601.pdf"
+          }
+        ],
         "guide": {
           "url": "https://www.app.kurashi.tepco.co.jp/",
           "steps": "電気は請求メールが届かないため手動DL。くらしTEPCO webにログイン →「電気ご使用量のお知らせ／請求内訳」をDL。※将来: くらしTEPCOのメール通知を有効化できれば自動取得候補に昇格可。"
@@ -2363,5 +2419,5 @@
       }
     }
   },
-  "checked_at": "2026-08-13 09:09:48"
+  "checked_at": "2026-08-13 09:17:27"
 }
