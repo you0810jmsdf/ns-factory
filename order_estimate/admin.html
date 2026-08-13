@@ -4528,6 +4528,9 @@ const RC_SUB_LABELS = {
   car_loan: '車のローン',
   joyfulhonda: 'ジョイフルホンダ講師謝礼（収入）',
   chatgpt: 'ChatGPT',
+  creema: 'Creema（収入）',
+  minne: 'minne（収入）',
+  stores: 'STORES（収入）',
 };
 const ACCOUNTING_QUEUE_KEY = 'nsf_moneyforward_import_queue_v1';
 const RC_ACCOUNT_DEFAULTS = {
@@ -4542,6 +4545,13 @@ const RC_ACCOUNT_DEFAULTS = {
   mobile: { debit:'通信費', tax:'課税仕入10%' },
   chatgpt: { debit:'通信費', tax:'課税仕入10%' },
   joyfulhonda: { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
+  // 2026-08-13追加: EC販売チャネル（収入）。未登録だと既定の「通信費」で送られ、売上が経費として
+  // 計上されてしまうため必ずここに定義すること。
+  // 注意: 入金額は各社の販売手数料を差し引いた後の金額。総額主義で仕訳するには
+  // 「売上高（総額）／支払手数料」への分解が別途必要（CSVは1レコード1行のため手動調整）。
+  creema: { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
+  minne:  { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
+  stores: { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
 };
 
 let rcMatrixData = null;
