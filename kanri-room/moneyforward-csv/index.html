@@ -729,7 +729,7 @@ td.amount{
             <div class="field">
               <label for="bankFilter">表示する明細</label>
               <select id="bankFilter">
-                <option value="direct">直接取引の候補のみ</option>
+                <option value="direct">事業収入の候補のみ（直接取引＋その他）</option>
                 <option value="income">入金すべて</option>
                 <option value="all">全明細（出金含む）</option>
               </select>
@@ -3238,12 +3238,18 @@ td.amount{
     'ジヨイフル':'ジョイフル本田','ジョイフル':'ジョイフル本田' };
 
   const BANK_KIND = {
-    direct:'直接取引の候補', ec:'EC・取引先', corp:'法人（要確認）',
+    direct:'直接取引の候補', biz:'その他の事業収入', ec:'EC・取引先', corp:'法人（要確認）',
     family:'家族間', gov:'行政・給付', crypto:'暗号資産', exclude:'対象外', outgo:'出金',
   };
+  // 仕訳へ入れる対象（既定でチェックONにする分類）
+  const BANK_BOOKABLE = ['direct', 'biz'];
 
   // 屋号のない法人・サービスからの入金。個人客と混ざると売上を誤って計上するので分ける
   const BANK_CORP = ['ラクテン','アマゾン','ヤフー','ペイパル','ストライプ'];
+
+  // 個人客との直接取引ではないが、事業収入として計上する取引先。
+  // 「ウンエイジムキヨク」を含むため放っておくと法人（要確認）に落ちるので、先に判定する。
+  const BANK_BIZ = ['インフレーム'];
 
   function classifyBankRow(amount, descRaw){
     if(amount < 0) return 'outgo';
@@ -3257,6 +3263,7 @@ td.amount{
     if(has(BANK_CRYPTO))  return 'crypto';
     if(has(BANK_FAMILY))  return 'family';
     if(has(BANK_GOV))     return 'gov';
+    if(has(BANK_BIZ))     return 'biz';
     for(const key in BANK_EC){ if(d.includes(key) || k.includes(key)) return 'ec'; }
     // 「カ）〜」「〜（カ」「〜ウンエイジムキヨク」は法人。個人客と混ぜない
     if(/^カ）|（カ|カブシキガイシヤ|ウンエイジムキヨク|ジムキヨク/.test(d)) return 'corp';
@@ -3303,14 +3310,14 @@ td.amount{
 
     const mode = $('bankFilter').value;
     const shown = bankRows.filter(r =>
-      mode === 'all' ? true : mode === 'income' ? r.amount > 0 : r.kind === 'direct');
+      mode === 'all' ? true : mode === 'income' ? r.amount > 0 : BANK_BOOKABLE.includes(r.kind));
 
     if(!shown.length){ wrap.innerHTML = '<p class="hint">該当する明細がありません。</p>'; return; }
 
     const head = '<tr><th></th><th>取引日</th><th>入出金</th><th>判定</th><th>摘要</th></tr>';
     const body = shown.map(r => {
       const n = bankRows.indexOf(r);
-      const on = r.kind === 'direct' ? 'checked' : '';
+      const on = BANK_BOOKABLE.includes(r.kind) ? 'checked' : '';
       return `<tr>
         <td><input type="checkbox" class="bank-check" data-n="${n}" ${on}></td>
         <td>${escapeHtml(r.date)}</td>
@@ -3366,8 +3373,10 @@ td.amount{
     try{
       bankRows = parseBankCsv(await file.arrayBuffer());
       const direct = bankRows.filter(r => r.kind === 'direct').length;
+      const biz    = bankRows.filter(r => r.kind === 'biz').length;
       $('bankStatus').textContent =
-        `${bankRows.length}件を読み込みました。直接取引の候補は ${direct}件です。内容を確認してから追加してください。`;
+        `${bankRows.length}件を読み込みました。直接取引 ${direct}件 / その他の事業収入 ${biz}件を選択済みにしています。`
+        + '内容を確認してから追加してください。';
       renderBankTable();
     }catch(err){
       bankRows = [];
