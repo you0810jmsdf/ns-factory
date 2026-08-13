@@ -757,7 +757,7 @@ tr.row-out-stock td{
       <div>参照元　　　　: <span id="intruderRef" style="word-break:break-all">—</span></div>
     </div>
     <p style="margin:16px 0 0;font-size:12px;line-height:1.8;color:#ffb3ab">
-      上記の内容を記録し、<strong id="intruderNotified">管理者へ通報しました。</strong><br>
+      上記を含むアクセス元の情報を記録し、<strong id="intruderNotified">管理者へ通報しました。</strong><br>
       心当たりのない方は、このページを閉じてください。<br>
       <span style="color:#e08a80">誤って開いてしまった場合、この記録によって不利益が生じることはありません。</span>
     </p>
@@ -1856,11 +1856,21 @@ function fetchVisitorIp() {
 }
 
 function guardContext() {
+  // 同じ端末でJHCS資料をDLしていれば、そのときの氏名・メールが localStorage に残っている
+  // （JHCS.html と同一オリジンのため読める）。誰の端末かの手がかりとして記録に添える。
+  // ⛔ この値は警告画面に表示しないこと。端末を借りた第三者に生徒の個人情報が漏れる。
+  let whoName = '', whoEmail = '';
+  try {
+    whoName = localStorage.getItem('jhcs_dl_name') || '';
+    whoEmail = localStorage.getItem('jhcs_dl_email') || '';
+  } catch (e) { /* localStorage が使えない環境では空のまま */ }
   return {
     page: location.pathname.replace(/^\/ns-factory\/?/, '') || 'order_estimate/admin.html',
     ua: navigator.userAgent || '',
     screen: (screen.width || 0) + 'x' + (screen.height || 0),
     referrer: document.referrer || '',
+    whoName,
+    whoEmail,
   };
 }
 
