@@ -522,6 +522,7 @@ td.amount{
           <button class="tab" id="marketplaceTab" type="button" role="tab" aria-selected="false">EC入金メール</button>
           <button class="tab active" id="receiptTab" type="button" role="tab" aria-selected="true">領収書読取</button>
           <button class="tab" id="checklistTab" type="button" role="tab" aria-selected="false">証憑チェック</button>
+          <button class="tab" id="bankTab" type="button" role="tab" aria-selected="false">銀行明細</button>
         </div>
 
         <div class="mode-panel" id="manualPanel" role="tabpanel" aria-labelledby="manualTab">
@@ -712,6 +713,39 @@ td.amount{
             <button class="btn" id="sampleMarketplaceBtn" type="button">入力例を入れる</button>
           </div>
           <div class="candidate-list" id="marketplaceCandidates"></div>
+        </div>
+
+        <!-- 銀行明細: 楽天銀行の入出金明細CSVから直接取引（個人客からの振込）を拾う。
+             CSVはcp932・4列（取引日/入出金(円)/取引後残高(円)/入出金内容）。2026-08-13追加 -->
+        <div class="mode-panel" id="bankPanel" role="tabpanel" aria-labelledby="bankTab">
+          <div class="dropzone">
+            <div class="field">
+              <label for="bankFile">楽天銀行 入出金明細CSV</label>
+              <input id="bankFile" type="file" accept=".csv,text/csv">
+            </div>
+            <p class="hint">楽天銀行 → 入出金明細 → CSVダウンロード で取得したファイルをそのまま選んでください。この端末のブラウザ内だけで処理します。</p>
+          </div>
+          <div class="grid two">
+            <div class="field">
+              <label for="bankFilter">表示する明細</label>
+              <select id="bankFilter">
+                <option value="direct">直接取引の候補のみ</option>
+                <option value="income">入金すべて</option>
+                <option value="all">全明細（出金含む）</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="bankAccount">貸方勘定科目</label>
+              <input id="bankAccount" type="text" value="売上高" list="accountList">
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn" id="bankSelectAllBtn" type="button">すべて選択</button>
+            <button class="btn primary" id="bankAddBtn" type="button">選択した入金を仕訳に追加</button>
+          </div>
+          <p class="hint" id="bankStatus">CSVを選ぶと自動で分類します。判定は目安なので、必ず内容を確認してから追加してください。</p>
+          <div id="bankSummary" style="margin:-4px 0 10px"></div>
+          <div id="bankTableWrap" style="overflow-x:auto"></div>
         </div>
 
         <!-- 証憑チェック: 監理部の証憑マトリクス（receipt-checklist.json）を直接読み、
@@ -3168,6 +3202,181 @@ td.amount{
   $('marketplaceTab').addEventListener('click', () => switchMode('marketplace'));
   $('receiptTab').addEventListener('click', () => switchMode('receipt'));
 
+  // ── 銀行明細（楽天銀行の入出金明細CSVから直接取引を拾う）─────────────────
+  // ⚠ 楽天銀行のCSVは長音を全角ハイフン「－」で出力する。正規化しないと
+  //   「クリ－マウンエイジムキヨク」が Creema と判定できない（2026-08-13実測）。
+  //   濁点も「ナカツ゛カ」のように分離して出力されるため、あわせて畳む。
+  // 濁点は「ナカツ゛カ」のように分離して出力される。表示では正しい字に戻す
+  const BANK_DAKUTEN = { 'カ':'ガ','キ':'ギ','ク':'グ','ケ':'ゲ','コ':'ゴ','サ':'ザ','シ':'ジ',
+    'ス':'ズ','セ':'ゼ','ソ':'ゾ','タ':'ダ','チ':'ヂ','ツ':'ヅ','テ':'デ','ト':'ド',
+    'ハ':'バ','ヒ':'ビ','フ':'ブ','ヘ':'ベ','ホ':'ボ' };
+
+  // 表示用。摘要はそのまま仕訳の摘要になるので、濁点を落とさない
+  function normBankDesc(s){
+    return String(s || '')
+      .replace(/－/g, 'ー')
+      .replace(/([カ-ト ハ-ホ])゛/g, (m, c) => BANK_DAKUTEN[c] || m)
+      .replace(/　/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // 判定用。濁点の有無で取りこぼさないよう、濁点を落としたキーで照合する
+  function normBankKey(s){
+    return normBankDesc(s).replace(/[ガギグゲゴザジズゼゾダヂヅデドバビブベボ]/g,
+      c => 'カキクケコサシスセソタチツテトハヒフヘホ'['ガギグゲゴザジズゼゾダヂヅデドバビブベボ'.indexOf(c)]);
+  }
+
+  const BANK_EXCLUDE = ['ラクテンシヨウケン','ラクテンショウケン','SBIシヨウケン','ＳＢＩシヨウケン',
+    '自動スイ','国内株式','投資信託','楽天カ','ラクテンカ','預金利息','ボーナス金利','金利利息',
+    'キャンペ','キヤンペ','口座振替'];
+  const BANK_CRYPTO = ['オーケーコイン','ジーエムオーコイン','ラインジエネシス','コイン ジヤパン'];
+  const BANK_FAMILY = ['ナカヅカ','ナカツカ'];
+  const BANK_GOV    = ['インザイシ','ケンミンキヨウサイ'];
+  const BANK_EC     = { 'クリーマ':'Creema','ミンネ':'minne','ペパボ':'minne','ストアーズ':'STORES',
+    'ＳＴＯＲＥＳ':'STORES','ベイス':'BASE','メルカリ':'メルカリ','ラクマ':'ラクマ',
+    'ジヨイフル':'ジョイフル本田','ジョイフル':'ジョイフル本田' };
+
+  const BANK_KIND = {
+    direct:'直接取引の候補', ec:'EC・取引先', corp:'法人（要確認）',
+    family:'家族間', gov:'行政・給付', crypto:'暗号資産', exclude:'対象外', outgo:'出金',
+  };
+
+  // 屋号のない法人・サービスからの入金。個人客と混ざると売上を誤って計上するので分ける
+  const BANK_CORP = ['ラクテン','アマゾン','ヤフー','ペイパル','ストライプ'];
+
+  function classifyBankRow(amount, descRaw){
+    if(amount < 0) return 'outgo';
+    // 濁点を戻した表記(d)と、濁点を落とした表記(k)の両方で照合する。
+    // 片方だけだと「インザイシ」がキー側で「インサイシ」になり一致しない（2026-08-13の実害）。
+    const d = normBankDesc(descRaw);
+    const k = normBankKey(descRaw);
+    const has = list => list.some(w => d.includes(w) || k.includes(w));
+
+    if(has(BANK_EXCLUDE)) return 'exclude';
+    if(has(BANK_CRYPTO))  return 'crypto';
+    if(has(BANK_FAMILY))  return 'family';
+    if(has(BANK_GOV))     return 'gov';
+    for(const key in BANK_EC){ if(d.includes(key) || k.includes(key)) return 'ec'; }
+    // 「カ）〜」「〜（カ」「〜ウンエイジムキヨク」は法人。個人客と混ぜない
+    if(/^カ）|（カ|カブシキガイシヤ|ウンエイジムキヨク|ジムキヨク/.test(d)) return 'corp';
+    if(has(BANK_CORP)) return 'corp';
+    return 'direct';
+  }
+
+  let bankRows = [];
+
+  function parseBankCsv(buf){
+    // 楽天銀行CSVはcp932。UTF-8で読むと摘要が全部化けるので shift_jis 固定で読む
+    const text = new TextDecoder('shift_jis').decode(buf);
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if(!lines.length) return [];
+    const head = lines[0];
+    if(!/取引日/.test(head)){
+      throw new Error('楽天銀行の明細CSVではないようです（1行目に「取引日」がありません）');
+    }
+    return lines.slice(1).map(line => {
+      // 摘要にカンマが入りうるので、先頭3列だけ切り出して残りを摘要にする
+      const p = line.split(',');
+      const date = (p[0] || '').trim();
+      const amount = Number((p[1] || '').replace(/[^\d-]/g, ''));
+      const desc = p.slice(3).join(',').trim();
+      return {
+        date: `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}`,
+        amount, desc,
+        kind: classifyBankRow(amount, desc),
+      };
+    }).filter(r => r.date.length === 10 && Number.isFinite(r.amount));
+  }
+
+  function renderBankTable(){
+    const wrap = $('bankTableWrap');
+    const sum  = $('bankSummary');
+    if(!bankRows.length){ wrap.innerHTML = ''; sum.innerHTML = ''; return; }
+
+    const counts = {};
+    bankRows.forEach(r => { counts[r.kind] = (counts[r.kind] || 0) + 1; });
+    sum.innerHTML = Object.keys(counts).map(k =>
+      `<span style="display:inline-block;border:1px solid #e0c9a6;background:#fff8ef;border-radius:999px;
+        padding:3px 9px;margin:2px 4px 2px 0;font-size:11px">${escapeHtml(BANK_KIND[k] || k)} ${counts[k]}件</span>`
+    ).join('');
+
+    const mode = $('bankFilter').value;
+    const shown = bankRows.filter(r =>
+      mode === 'all' ? true : mode === 'income' ? r.amount > 0 : r.kind === 'direct');
+
+    if(!shown.length){ wrap.innerHTML = '<p class="hint">該当する明細がありません。</p>'; return; }
+
+    const head = '<tr><th></th><th>取引日</th><th>入出金</th><th>判定</th><th>摘要</th></tr>';
+    const body = shown.map(r => {
+      const n = bankRows.indexOf(r);
+      const on = r.kind === 'direct' ? 'checked' : '';
+      return `<tr>
+        <td><input type="checkbox" class="bank-check" data-n="${n}" ${on}></td>
+        <td>${escapeHtml(r.date)}</td>
+        <td style="text-align:right">${r.amount.toLocaleString()}</td>
+        <td>${escapeHtml(BANK_KIND[r.kind] || r.kind)}</td>
+        <td style="font-size:12px">${escapeHtml(normBankDesc(r.desc))}</td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  }
+
+  function addBankToJournal(){
+    const checked = Array.from(document.querySelectorAll('.bank-check'))
+      .filter(el => el.checked).map(el => bankRows[Number(el.dataset.n)])
+      .filter(r => r && r.amount > 0);
+    if(!checked.length){ showToast('追加する入金を選んでください。'); return; }
+
+    const credit = ($('bankAccount').value || '売上高').trim();
+    const added = checked.map(r => makeRow({
+      '取引日': r.date,
+      '借方勘定科目': '普通預金',
+      '借方税区分': '対象外',
+      '借方金額': r.amount,
+      '貸方勘定科目': credit,
+      '貸方税区分': '課税売上10%',
+      '貸方金額': r.amount,
+      '摘要': normBankDesc(r.desc).slice(0, 60),
+      'タグ': '銀行明細',
+      'メモ': `楽天銀行 入出金明細 / 判定: ${BANK_KIND[r.kind] || r.kind}`,
+    }));
+
+    const existing = new Set(rows.map(x => [x['取引日'], x['摘要'], x['借方金額']].join('|')));
+    const fresh = added.filter(x => !existing.has([x['取引日'], x['摘要'], x['借方金額']].join('|')));
+    if(!fresh.length){ showToast('選んだ入金はすでに取り込み済みです。'); return; }
+
+    rows = rows.concat(fresh);
+    saveRows();
+    render();
+    showToast(`銀行明細から ${fresh.length}件を仕訳に追加しました。`);
+  }
+
+  $('bankTab').addEventListener('click', () => switchMode('bank'));
+  $('bankFilter').addEventListener('change', renderBankTable);
+  $('bankSelectAllBtn').addEventListener('click', () => {
+    const boxes = Array.from(document.querySelectorAll('.bank-check'));
+    const allOn = boxes.every(b => b.checked);
+    boxes.forEach(b => { b.checked = !allOn; });
+  });
+  $('bankAddBtn').addEventListener('click', addBankToJournal);
+  $('bankFile').addEventListener('change', async e => {
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    try{
+      bankRows = parseBankCsv(await file.arrayBuffer());
+      const direct = bankRows.filter(r => r.kind === 'direct').length;
+      $('bankStatus').textContent =
+        `${bankRows.length}件を読み込みました。直接取引の候補は ${direct}件です。内容を確認してから追加してください。`;
+      renderBankTable();
+    }catch(err){
+      bankRows = [];
+      $('bankStatus').textContent = `読み込みに失敗しました: ${err.message}`;
+      $('bankTableWrap').innerHTML = '';
+      $('bankSummary').innerHTML = '';
+    }
+  });
+
   // ── 証憑チェック（監理部の receipt-checklist.json を直接読む）─────────────
   // admin.html を開かずにこの画面だけで仕訳投入まで完結させるための実装。
   // 勘定科目の対応は admin.html の RC_ACCOUNT_DEFAULTS と必ず同じ内容に保つこと
@@ -3358,7 +3567,7 @@ td.amount{
   });
 
   function switchMode(mode){
-    ['manual','paste','rakuten','marketplace','receipt','checklist'].forEach(name => {
+    ['manual','paste','rakuten','marketplace','receipt','checklist','bank'].forEach(name => {
       const active = mode === name;
       $(`${name}Tab`).classList.toggle('active', active);
       $(`${name}Tab`).setAttribute('aria-selected', active ? 'true' : 'false');
@@ -3379,7 +3588,7 @@ td.amount{
   const initialMode = (() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode') || window.location.hash.replace('#', '');
-    return ['manual','paste','rakuten','marketplace','receipt','checklist'].includes(mode) ? mode : 'receipt';
+    return ['manual','paste','rakuten','marketplace','receipt','checklist','bank'].includes(mode) ? mode : 'receipt';
   })();
   switchMode(initialMode);
   saveRows();
