@@ -734,8 +734,14 @@ td.amount{
             <button class="btn" id="clReloadBtn" type="button">証憑を読み込む</button>
             <button class="btn" id="clSelectAllBtn" type="button">すべて選択</button>
             <button class="btn primary" id="clAddBtn" type="button">選択した証憑を仕訳に追加</button>
+            <a class="btn light" id="clMatrixLink" href="../../order_estimate/admin.html#tab=receipt-checklist"
+               target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">
+              マトリクス表示を開く ↗</a>
           </div>
           <p class="hint" id="clStatus">監理部の証憑チェックリストを直接読み込みます。金額が確定している証憑だけが対象です。</p>
+          <!-- 未処置の可視化。ここは「まだ取れていない証憑」を把握するための表示なので、
+               仕訳投入の対象（金額確定済み）とは逆の条件で集計している -->
+          <div id="clPending" style="margin:-4px 0 10px"></div>
           <div id="clTableWrap" style="overflow-x:auto"></div>
         </div>
 
@@ -3234,10 +3240,39 @@ td.amount{
     return out;
   }
 
+  // まだ証憑が取れていない列を並べる。仕訳投入の対象は「金額確定済み」だけなので、
+  // ここを見ないと「そもそも取っていない証憑」に気付けない。
+  function renderChecklistPending(month){
+    const box = $('clPending');
+    if(!box) return;
+    if(!clData || !clData.matrix || !clData.matrix[month]){ box.innerHTML = ''; return; }
+
+    const row = clData.matrix[month];
+    const pending = (clData.subscriptions || [])
+      .map(sub => ({ sub, status: (row[sub] || {}).status || '未対応' }))
+      .filter(x => x.status !== '取得済み');
+
+    if(!pending.length){
+      box.innerHTML = '<p class="hint" style="color:#2e7d32">この月は全ての列で証憑を取得済みです。</p>';
+      return;
+    }
+
+    const chips = pending.map(x => {
+      const label = CL_LABELS[x.sub] || x.sub;
+      return `<span style="display:inline-block;border:1px solid #e0c9a6;background:#fff8ef;border-radius:999px;
+        padding:3px 9px;margin:2px 4px 2px 0;font-size:11px">${escapeHtml(label)}
+        <span style="color:#8a6a4a">／${escapeHtml(x.status)}</span></span>`;
+    }).join('');
+
+    box.innerHTML = `<div class="hint" style="margin-bottom:4px">
+        未処置 ${pending.length}件（証憑がまだ手元にない列）</div>${chips}`;
+  }
+
   function renderChecklistTable(){
     const wrap = $('clTableWrap');
     if(!clData){ wrap.innerHTML = ''; return; }
     const month = $('clMonth').value;
+    renderChecklistPending(month);
     const items = clRowsOfMonth(month);
     if(!items.length){
       wrap.innerHTML = '<p class="hint">この月に金額が確定している証憑はありません。</p>';
