@@ -36,7 +36,7 @@
     "2026-08": {
       "apple": {
         "status": "取得済み",
-        "count": 5,
+        "count": 6,
         "records": [
           {
             "date": "2026-08-09",
@@ -72,6 +72,13 @@
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085600_Apple領収書_19fdc11dc4ce5e62.txt"
+          },
+          {
+            "date": "2026-08-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085624_Apple領収書_19fd2c456c30cfe8.txt"
           }
         ],
         "guide": {
@@ -225,7 +232,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -234,7 +241,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -243,7 +250,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -425,7 +432,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -434,7 +441,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -443,7 +450,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -619,7 +626,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -628,7 +635,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -637,7 +644,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -797,7 +804,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -806,7 +813,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -815,7 +822,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -989,7 +996,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -998,7 +1005,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1007,7 +1014,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1167,7 +1174,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1176,7 +1183,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1185,7 +1192,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1337,7 +1344,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1346,7 +1353,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1355,7 +1362,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1507,7 +1514,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1516,7 +1523,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1525,7 +1532,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1653,7 +1660,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1662,7 +1669,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1671,7 +1678,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1799,7 +1806,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1808,7 +1815,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1817,7 +1824,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1945,7 +1952,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1954,7 +1961,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -1963,7 +1970,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -2091,7 +2098,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -2100,7 +2107,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -2109,7 +2116,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -2237,7 +2244,7 @@
         }
       },
       "creema": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -2246,7 +2253,7 @@
         }
       },
       "minne": {
-        "status": "手動DL（売上管理）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -2255,7 +2262,7 @@
         }
       },
       "stores": {
-        "status": "手動DL（ダッシュボード）",
+        "status": "未取得",
         "count": 0,
         "records": [],
         "guide": {
@@ -2265,5 +2272,5 @@
       }
     }
   },
-  "checked_at": "2026-08-13 08:56:17"
+  "checked_at": "2026-08-13 09:02:05"
 }
