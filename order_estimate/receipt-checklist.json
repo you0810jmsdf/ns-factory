@@ -121,8 +121,15 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 2,
+        "count": 7,
         "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260801_145209_水道_19fba68b46ee6f06.txt"
+          },
           {
             "date": "",
             "amount": null,
@@ -136,6 +143,34 @@
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085317_水道_19ff83d209f77ddf.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_145206_水道_19ff86f0e8ea64ed.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_145207_水道_19ff8699c3959be0.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_145207_水道_19ff86be81b2e9ae.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_145208_水道_19ff8689026f8f08.txt"
           }
         ],
         "guide": {
@@ -197,18 +232,34 @@
         }
       },
       "creema": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "",
+            "amount": 244078,
+            "subject": "自動振込予約",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260801_145232_Creema_19fbaae710ed8d19.txt"
+          }
+        ],
         "guide": {
           "url": "https://www.creema.jp/",
           "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-07-31",
+            "amount": 133374,
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260801_145322_minne_19fbb4350f918101.txt"
+          }
+        ],
         "guide": {
           "url": "https://minne.com/",
           "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
@@ -269,8 +320,22 @@
       },
       "claude_code": {
         "status": "取得済み",
-        "count": 2,
+        "count": 4,
         "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Anthropic",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260722_145156_ClaudeCode_19f884afaf8bad2e.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Anthropic",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260727_145155_ClaudeCode_19fa158ba0233b0c.txt"
+          },
           {
             "date": "2026-07-21",
             "amount": 17895,
@@ -327,9 +392,66 @@
         }
       },
       "water": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 8,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145211_水道_19f2c9adfe74450e.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145211_水道_19f2c9d1318d7ceb.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145212_水道_19f2c91558a808fd.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145212_水道_19f2c9871ea9df94.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145213_水道_19f2c8cf6ae2b62a.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260705_145210_水道_19f2fb1166d49018.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "水道料金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260705_145211_水道_19f2f94301cbdc1d.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260726_145210_水道_19f9bc0122c848d6.txt"
+          }
+        ],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
@@ -414,9 +536,17 @@
         }
       },
       "minne": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-06-30",
+            "amount": 18145,
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260701_145343_minne_19f1bc766786acd8.txt"
+          }
+        ],
         "guide": {
           "url": "https://minne.com/",
           "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
@@ -468,8 +598,15 @@
       },
       "office365": {
         "status": "取得済み",
-        "count": 1,
+        "count": 2,
         "records": [
+          {
+            "date": "2027-06-13",
+            "amount": null,
+            "subject": "Microsoft 365",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260615_145204_Office365_19eca18676f9411a.txt"
+          },
           {
             "date": "2026-06-15",
             "amount": 14900,
@@ -485,8 +622,22 @@
       },
       "claude_code": {
         "status": "取得済み",
-        "count": 1,
+        "count": 3,
         "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Anthropic",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260622_145158_ClaudeCode_19eedcbc2e65d094.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Anthropic",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260625_145157_ClaudeCode_19efdc3aae7a9170.txt"
+          },
           {
             "date": "2026-06-21",
             "amount": 17739,
@@ -537,8 +688,29 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 1,
+        "count": 4,
         "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260624_145213_水道_19ef74c76a023429.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260624_145213_水道_19ef74cb45b253c3.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260624_145214_水道_19ef7453b8ab2e03.txt"
+          },
           {
             "date": "2026-06-01",
             "amount": 18790,
@@ -640,9 +812,17 @@
         }
       },
       "stores": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-06-28",
+            "amount": 3135,
+            "subject": "STORES",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260628_145357_STORES_19f0c92047a7cf7b.txt"
+          }
+        ],
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
@@ -694,8 +874,15 @@
       },
       "claude_code": {
         "status": "取得済み",
-        "count": 1,
+        "count": 2,
         "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Anthropic",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-05\\20260522_145159_ClaudeCode_19e4e27b03784d03.txt"
+          },
           {
             "date": "2026-05-21",
             "amount": 17500,
@@ -745,9 +932,38 @@
         }
       },
       "water": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 4,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_145215_水道_19dfb572ac906763.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "水道料金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_145216_水道_19dfb3b42d5e38ac.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-05\\20260521_145215_水道_19e483124d4c3779.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-05\\20260524_145214_水道_19e574ae7bc44a2f.txt"
+          }
+        ],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
@@ -903,8 +1119,22 @@
       },
       "claude_code": {
         "status": "取得済み",
-        "count": 3,
+        "count": 5,
         "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\20260406_145201_ClaudeCode_19d618db119e63c3.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Anthropic",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\20260421_145200_ClaudeCode_19daea697cbd78ba.txt"
+          },
           {
             "date": "2026-04-05",
             "amount": 3507,
@@ -968,9 +1198,17 @@
         }
       },
       "water": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-04\\20260421_145216_水道_19daecb26dea6440.txt"
+          }
+        ],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
@@ -1125,8 +1363,22 @@
       },
       "claude_code": {
         "status": "取得済み",
-        "count": 1,
+        "count": 3,
         "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Claude",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260306_145203_ClaudeCode_19cc1afbf9694a1e.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Anthropic",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260328_145202_ClaudeCode_19d31cfc681b0f2d.txt"
+          },
           {
             "date": "2026-03-05",
             "amount": 3147,
@@ -1176,9 +1428,38 @@
         }
       },
       "water": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 4,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260305_145218_水道_19cbc0c95566dab6.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260305_145218_水道_19cbcb566203bbed.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260329_145217_水道_19d378b1d25e3a0f.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260329_145217_水道_19d3953326410d4b.txt"
+          }
+        ],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
@@ -1390,9 +1671,31 @@
         }
       },
       "water": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 3,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "水道料金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c92be24392413f.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c937b08f26fa56.txt"
+          },
+          {
+            "date": "2026-02-25",
+            "amount": null,
+            "subject": "水道料金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c937dc8800efc6.txt"
+          }
+        ],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
@@ -1583,9 +1886,73 @@
         }
       },
       "water": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 9,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_145223_水道_19b90cc570868e5b.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_145223_水道_19b90cd7665de3da.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_145223_水道_19b9232056e1650f.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145221_水道_19b98013d8114a8b.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145222_水道_19b978d4037af21c.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145222_水道_19b9793fadff1a9f.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260115_145221_水道_19bbeb22f6ad1160.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260125_145220_水道_19bf31a099bee441.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260125_145220_水道_19bf36493e0e306d.txt"
+          }
+        ],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
@@ -1690,9 +2057,24 @@
     },
     "2025-12": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2025-12-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-12\\20251206_145047_Apple領収書_19aefe47cd7465de.txt"
+          },
+          {
+            "date": "2025-12-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-12\\20251210_145044_Apple領収書_19b077fc40d6a671.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
@@ -1825,9 +2207,17 @@
         }
       },
       "stores": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2025-12-11",
+            "amount": 3135,
+            "subject": "STORES",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-12\\20251211_145416_STORES_19b0dbaf4cdab9be.txt"
+          }
+        ],
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
@@ -1836,9 +2226,24 @@
     },
     "2025-11": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2025-11-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-11\\20251107_145058_Apple領収書_19a5cb16cab16b97.txt"
+          },
+          {
+            "date": "2025-11-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-11\\20251111_145055_Apple領収書_19a72029f1840929.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
@@ -1971,9 +2376,17 @@
         }
       },
       "stores": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2025-11-16",
+            "amount": 3135,
+            "subject": "STORES",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-11\\20251116_145420_STORES_19a885ee9caf982e.txt"
+          }
+        ],
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
@@ -1982,9 +2395,31 @@
     },
     "2025-10": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 3,
+        "records": [
+          {
+            "date": "2025-10-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-10\\20251006_145108_Apple領収書_199b5a65384d9545.txt"
+          },
+          {
+            "date": "2025-10-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-10\\20251010_145104_Apple領収書_199cd137022e6029.txt"
+          },
+          {
+            "date": "2025-10-15",
+            "amount": 10700,
+            "subject": "マネーフォワード",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-10\\20251016_145101_Apple領収書_199ec8019d38f774.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
@@ -2128,9 +2563,24 @@
     },
     "2025-09": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2025-09-05",
+            "amount": 2000,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-09\\20250906_145114_Apple領収書_1991adac8739427f.txt"
+          },
+          {
+            "date": "2025-09-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-09\\20250910_145111_Apple領収書_19932b82d5ea024b.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
@@ -2274,9 +2724,24 @@
     },
     "2025-08": {
       "apple": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2025-08-06",
+            "amount": 130,
+            "subject": "Meta Verified Standard",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-08\\20250806_145121_Apple領収書_1987d89f21321b9a.txt"
+          },
+          {
+            "date": "2025-08-09",
+            "amount": 1500,
+            "subject": "iCloud+",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-08\\20250811_145118_Apple領収書_19895c7bb506a9c2.txt"
+          }
+        ],
         "guide": {
           "url": "https://reportaproblem.apple.com/",
           "steps": "自動取得（no_reply@email.apple.com の「Apple からの領収書」メールを保存）。iCloud+・Meta Verified・Photoroom等のApp Store課金がここに入る。原本が要る場合は Apple の購入履歴（reportaproblem）から確認できる。"
@@ -2419,5 +2884,5 @@
       }
     }
   },
-  "checked_at": "2026-08-13 09:17:27"
+  "checked_at": "2026-08-14 14:54:38"
 }
