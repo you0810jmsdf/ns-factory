@@ -173,6 +173,32 @@
       return meta;
     }
 
+    // AI返信内のURLをクリック可能なリンクにして流し込む（2026-08-16 事業主指示）。
+    // innerHTMLは使わず、URLで分割してtextNodeと<a>を組み立てる（AI出力・GAS応答は信用しない）。
+    // http(s)のみリンク化。AIがmarkdown風に「**URL**」と書くことがあるため末尾の記号は除外する。
+    function nsfAppendLinkified(el, text) {
+      // URLはASCII限定でマッチさせる（直後に日本語の文が続いてもリンクに食い込ませない）。
+      // 丸括弧・引用符も除外（「（URL）」の閉じ括弧巻き込み防止）。
+      var re = /https?:\/\/[A-Za-z0-9\-._~:/?#@!$&*+,;=%]+/g;
+      var s = String(text == null ? '' : text);
+      var last = 0, m;
+      while ((m = re.exec(s)) !== null) {
+        var url = m[0].replace(/[*.,!?;:]+$/, ''); // 末尾の ** や句読点はリンクに含めない
+        if (m.index > last) el.appendChild(document.createTextNode(s.slice(last, m.index)));
+        var a = document.createElement('a');
+        a.href = url;
+        a.textContent = url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.style.color = 'inherit';
+        a.style.textDecoration = 'underline';
+        a.style.wordBreak = 'break-all';
+        el.appendChild(a);
+        last = m.index + url.length;
+      }
+      if (last < s.length) el.appendChild(document.createTextNode(s.slice(last)));
+    }
+
     function appendStaffMsg(text, isFallback) {
       var msgs = $('#chat-messages');
       if (!msgs) return;
@@ -192,7 +218,7 @@
       col.appendChild(buildChatMeta(scName && scName.textContent ? scName.textContent : 'スタッフ'));
       var bubble = document.createElement('div');
       bubble.className = 'chat-bubble' + (isFallback ? ' fallback-notice' : '');
-      bubble.textContent = text + (isFallback ? '\n※現在通信が混み合っております' : '');
+      nsfAppendLinkified(bubble, text + (isFallback ? '\n※現在通信が混み合っております' : ''));
       col.appendChild(bubble);
       div.appendChild(col);
       msgs.appendChild(div);
