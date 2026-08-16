@@ -191,7 +191,17 @@ function addMsg(who, text, tip){
   const m=document.createElement('div'); m.className='msg '+who;
   const ic=document.createElement('div'); ic.className='ic'; ic.textContent= who==='bot'?'🧵':'🙂';
   const b=document.createElement('div'); b.className='bubble';
-  b.innerHTML=escapeHtml(text).replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b>【$1】</b>');
+  // URLはクリック可能なリンクにする（2026-08-16 事業主指示）。
+  // escapeHtml後の文字列に対する置換なので属性注入の心配はない。
+  // AIがmarkdown風に「**URL**」と書くことがあるため末尾の記号はリンクに含めない。
+  b.innerHTML=escapeHtml(text)
+    .replace(/https?:\/\/[A-Za-z0-9\-._~:/?#@!$&*+,;=%]+/g, mUrl=>{
+      // ASCII限定マッチ＝直後に日本語の文が続いてもリンクに食い込まない。末尾の ** や句読点も除外。
+      const url=mUrl.replace(/[*.,!?;:]+$/,'');
+      const tail=mUrl.slice(url.length);
+      return '<a href="'+url+'" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;word-break:break-all">'+url+'</a>'+tail;
+    })
+    .replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b>【$1】</b>');
   if(tip){ const t=document.createElement('span'); t.className='tip'; t.textContent=tip; b.appendChild(t); }
   m.appendChild(ic); m.appendChild(b); chat.appendChild(m); scrollDown();
 }
