@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>作品集 | N's factory</title>
+  <title data-i18n="meta.title">作品集 | N's factory</title>
   <meta name="description" content="N's factory のシステム手帳・革小物の作品集。オーダーメイド制作例を写真でご覧いただけます。">
   <!-- 作品集全体のOGP。1作品を名指しで貼るときは works/<商品ID>.html を使うこと
        （そちらはその作品の写真・名前・価格がカード表示される）。
@@ -945,10 +945,10 @@
   <nav class="nav">
     <a href="./" class="nav-brand">N's factory</a>
     <span class="nav-spacer"></span>
-    <a href="works.html" class="nav-link">作品集</a>
-    <a href="orderprogress.html" class="nav-link">オーダー進捗</a>
-    <a href="JHCS.html" class="nav-link">JHCS講習案内</a>
-    <a href="links.html" class="nav-link">リンク集</a>
+    <a href="works.html" class="nav-link" data-i18n="nav.works">作品集</a>
+    <a href="orderprogress.html" class="nav-link" data-i18n="nav.progress">オーダー進捗</a>
+    <a href="JHCS.html" class="nav-link" data-i18n="nav.jhcs">JHCS講習案内</a>
+    <a href="links.html" class="nav-link" data-i18n="nav.links">リンク集</a>
     <a href="register.html" class="nav-link" id="nav-register" hidden>📦 商品登録</a>
     <a href="size-sort.html" class="nav-link" id="nav-size-sort" hidden>📏 サイズ仕分け</a>
     <button type="button" id="nsf-admin-toggle" class="nav-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;">🔒 管理者モード</button>
@@ -958,12 +958,12 @@
     <div class="hero-inner hero-inner--qr">
       <div class="hero-text">
         <p class="eyebrow">Works</p>
-        <h1>作品集</h1>
-        <p class="lead">システム手帳を中心に、これまで制作した革製品をまとめています。気になる作品は、写真を開いて細部までご覧ください。</p>
+        <h1 data-i18n="hero.title">作品集</h1>
+        <p class="lead" data-i18n="hero.lead">システム手帳を中心に、これまで制作した革製品をまとめています。気になる作品は、写真を開いて細部までご覧ください。</p>
       </div>
       <aside class="hero-qr" aria-label="このページのQRコード">
         <div id="page-qr" class="hero-qr-img"></div>
-        <p class="hero-qr-caption">スマホで読み取って<br>このページを見る</p>
+        <p class="hero-qr-caption" data-i18n="hero.qr" data-i18n-as-html>スマホで読み取って<br>このページを見る</p>
       </aside>
     </div>
   </header>
@@ -971,7 +971,7 @@
   <div class="notice-banner" role="note">
     <div class="notice-banner-inner">
       <span class="notice-banner-icon" aria-hidden="true">!</span>
-      <div>
+      <div data-i18n="notice.body" data-i18n-as-html>
         <strong>「SOLDOUT」「再販予定なし」と表示された作品も、同じ仕様で<u>オーダー製作のお見積りが可能</u>です。</strong>
         気になる作品は写真を開いて「お見積りを作成する」からお気軽にどうぞ。
       </div>
@@ -983,36 +983,36 @@
     <div class="guide-wrap">
       <details class="guide-details">
         <summary class="guide-summary">
-          <span aria-hidden="true">📣</span> ご利用方法を見る（お問い合わせ・オーダーの流れ）
+          <span aria-hidden="true">📣</span> <span data-i18n="guide.summary">ご利用方法を見る（お問い合わせ・オーダーの流れ）</span>
         </summary>
         <div class="guide-body">
-          <p>N's factoryの作品集サイトでは、これまで制作してきたオーダー作品や一点物作品を多数掲載しています。「SOLDOUT」と表示されている作品が多くありますが、その多くはお客様からのご依頼で制作したオーダー製作品です。</p>
-          <ul style="margin:10px 0 18px;padding-left:20px;">
+          <p data-i18n="guide.p1">N's factoryの作品集サイトでは、これまで制作してきたオーダー作品や一点物作品を多数掲載しています。「SOLDOUT」と表示されている作品が多くありますが、その多くはお客様からのご依頼で制作したオーダー製作品です。</p>
+          <ul style="margin:10px 0 18px;padding-left:20px;" data-i18n="guide.list" data-i18n-as-html>
             <li>SOLDOUT表示でも、同じ仕様でのお見積りが可能です</li>
             <li>サイズ変更や仕様変更のご相談も可能です</li>
             <li>使用する革や金具の変更もご相談いただけます</li>
           </ul>
-          <p style="font-weight:700;color:var(--accent-dark);margin-bottom:2px;">お見積りのご依頼はとても簡単！</p>
+          <p style="font-weight:700;color:var(--accent-dark);margin-bottom:2px;" data-i18n="guide.easy">お見積りのご依頼はとても簡単！</p>
           <ol class="guide-steps">
             <li class="guide-step">
               <img src="assets/guide-step1-gallery.png" alt="①作品一覧から気になる作品を選ぶ画面">
-              <p><span class="guide-step-num">1</span>気になる作品を選んでクリック</p>
+              <p><span class="guide-step-num">1</span><span data-i18n="guide.s1">気になる作品を選んでクリック</span></p>
             </li>
             <li class="guide-step">
               <img src="assets/guide-step2-product.png" alt="②作品ページで相談ボタンをクリックする画面">
-              <p><span class="guide-step-num">2</span>作品ページの「オーダー相談する」などのボタンをクリック</p>
+              <p><span class="guide-step-num">2</span><span data-i18n="guide.s2">作品ページの「オーダー相談する」などのボタンをクリック</span></p>
             </li>
             <li class="guide-step">
               <img src="assets/guide-step3-form.png" alt="③購入手段・お名前・連絡先を入力して送信する画面">
-              <p><span class="guide-step-num">3</span>購入手段・お名前・連絡先を入力して送信するだけ！（会話内容やカラー選択もそのまま作家に届きます）</p>
+              <p><span class="guide-step-num">3</span><span data-i18n="guide.s3">購入手段・お名前・連絡先を入力して送信するだけ！（会話内容やカラー選択もそのまま作家に届きます）</span></p>
             </li>
             <li class="guide-step">
               <img src="assets/guide-step4-progress.png" alt="④オーダー進捗画面でカラーオーダー情報が確認できる画面">
-              <p><span class="guide-step-num">4</span>送信後は<a class="guide-link" href="orderprogress.html">オーダー進捗画面</a>で選択内容や進み具合をいつでも確認できます</p>
+              <p><span class="guide-step-num">4</span><span data-i18n="guide.s4" data-i18n-as-html>送信後は<a class="guide-link" href="orderprogress.html">オーダー進捗画面</a>で選択内容や進み具合をいつでも確認できます</span></p>
             </li>
           </ol>
-          <p>「この作品いいな」「こんな仕様で作れるかな」と思う作品がありましたら、ぜひお気軽にご相談ください。過去作品集は、これから製作する作品のサンプル集でもあります。</p>
-          <p style="margin-top:12px;"><strong>大切なご案内：</strong>SOLDOUTは「製作終了」ではなく「過去に製作した実績作品」とお考えください。気になる作品があれば、お気軽に<a class="guide-link" href="orderprogress.html">見積もり</a>をご依頼ください。お客様の希望に寄り添い、心を込めて製作いたします。</p>
+          <p data-i18n="guide.p2">「この作品いいな」「こんな仕様で作れるかな」と思う作品がありましたら、ぜひお気軽にご相談ください。過去作品集は、これから製作する作品のサンプル集でもあります。</p>
+          <p style="margin-top:12px;" data-i18n="guide.p3" data-i18n-as-html><strong>大切なご案内：</strong>SOLDOUTは「製作終了」ではなく「過去に製作した実績作品」とお考えください。気になる作品があれば、お気軽に<a class="guide-link" href="orderprogress.html">見積もり</a>をご依頼ください。お客様の希望に寄り添い、心を込めて製作いたします。</p>
         </div>
       </details>
     </div>
@@ -1021,8 +1021,8 @@
   <main>
     <div id="filters" class="filters"></div>
     <div class="tools">
-      <input id="search" class="search" type="search" placeholder="作品名で探す" aria-label="作品名で探す">
-      <div id="count" class="count">読み込み中</div>
+      <input id="search" class="search" type="search" placeholder="作品名で探す" aria-label="作品名で探す" data-i18n-placeholder="tools.search">
+      <div id="count" class="count" data-i18n="tools.loading">読み込み中</div>
     </div>
     <div id="gallery" class="gallery" aria-live="polite"></div>
   </main>
@@ -1039,7 +1039,7 @@
       <div class="modal-media">
         <img id="modal-img" class="modal-img" src="" alt="">
         <iframe id="modal-video" class="modal-video" src="" title="作品紹介動画" allow="autoplay; fullscreen" allowfullscreen hidden></iframe>
-        <button id="modal-video-btn" class="modal-video-btn" type="button" hidden>▶ 動画を見る</button>
+        <button id="modal-video-btn" class="modal-video-btn" type="button" hidden data-i18n="modal.video">▶ 動画を見る</button>
       </div>
       <aside class="modal-detail">
         <div id="admin-price-panel" class="admin-price-panel" hidden>
@@ -1059,32 +1059,32 @@
         <div id="modal-availability" class="modal-availability" hidden></div>
         <!-- SNS等でこの作品を名指しで案内するためのリンク（2026-08-12 事業主要望）。
              コピー先は works/商品ID.html（OGP付きの案内ページ）で、開くと詳細が直接開く。 -->
-        <button id="share-work-link" class="btn-share-work" type="button">🔗 この作品のリンクをコピー</button>
+        <button id="share-work-link" class="btn-share-work" type="button" data-i18n="modal.share">🔗 この作品のリンクをコピー</button>
         <div class="modal-actions">
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
           <!-- 型紙SVG（svg1/svg2）が登録済みの作品でだけ表示される。判定は openWork 時に非同期で行う。 -->
-          <button id="texture-sim-cta" class="modal-cta secondary" type="button" hidden>🎨 革の色を変えて試す</button>
+          <button id="texture-sim-cta" class="modal-cta secondary" type="button" hidden data-i18n="modal.textureSim">🎨 革の色を変えて試す</button>
         </div>
 
         <div class="oc-widget">
-          <button id="oc-trigger" class="oc-trigger" type="button">💬 オーダー相談AI（革の種類・色について相談する）</button>
+          <button id="oc-trigger" class="oc-trigger" type="button" data-i18n="modal.ocTrigger">💬 オーダー相談AI（革の種類・色について相談する）</button>
           <img id="sc-avatar" src="" alt="" style="display:none;">
           <span id="sc-name" style="display:none;"></span>
         </div>
       </aside>
     </div>
     <div class="modal-foot">
-      <button id="prev-photo" class="modal-btn" type="button">前へ</button>
-      <button id="next-photo" class="modal-btn" type="button">次へ</button>
+      <button id="prev-photo" class="modal-btn" type="button" data-i18n="modal.prev">前へ</button>
+      <button id="next-photo" class="modal-btn" type="button" data-i18n="modal.next">次へ</button>
     </div>
   </div>
 
   <div id="texture-sim-overlay" class="texture-sim-overlay" role="dialog" aria-modal="true" aria-label="テクスチャシミュレーター">
     <div class="texture-sim-bar">
-      <h3>🎨 革の色を変えて試す</h3>
-      <button id="texture-sim-close" class="texture-sim-close" type="button">✕ 閉じる</button>
+      <h3 data-i18n="modal.textureSim">🎨 革の色を変えて試す</h3>
+      <button id="texture-sim-close" class="texture-sim-close" type="button" data-i18n="sim.close">✕ 閉じる</button>
     </div>
     <iframe id="texture-sim-frame" class="texture-sim-frame" src="about:blank" title="テクスチャシミュレーター"></iframe>
   </div>
@@ -1093,7 +1093,7 @@
     <div class="oc-overlay-panel oc-widget">
       <div class="oc-overlay-head">
         <div class="oc-overlay-head-text">
-          <div id="oc-ai-badge" class="oc-ai-badge">💬 オーダー相談AIと相談中</div>
+          <div id="oc-ai-badge" class="oc-ai-badge" data-i18n="oc.badge">💬 オーダー相談AIと相談中</div>
           <span id="oc-overlay-product"></span>
         </div>
         <button id="oc-overlay-close" class="oc-overlay-close" type="button" aria-label="閉じる">×</button>
@@ -1101,8 +1101,8 @@
       <div id="oc-selection-summary" class="oc-selection-summary" hidden></div>
       <div class="oc-send-fields">
         <select id="oc-purchase-method" aria-label="購入手段・希望サイト">
-          <option value="">購入手段・希望サイト（未定でも可）</option>
-          <option value="bank">銀行振込</option>
+          <option value="" data-i18n="oc.method">購入手段・希望サイト（未定でも可）</option>
+          <option value="bank" data-i18n="oc.bank">銀行振込</option>
           <option value="btc">Bitcoin（BTC）</option>
           <option value="mercari">メルカリ</option>
           <option value="rakuma">ラクマ</option>
@@ -1113,15 +1113,15 @@
           <option value="store">STORES</option>
           <option value="pinkoi">Pinkoi</option>
         </select>
-        <input id="oc-contact-name" type="text" placeholder="お名前（必須）" autocomplete="name">
-        <input id="oc-contact-info" type="text" placeholder="連絡先（必須・メール／SNS）" autocomplete="email">
-        <button id="oc-send-to-artisan" type="button">この内容で作家に送信</button>
+        <input id="oc-contact-name" type="text" placeholder="お名前（必須）" autocomplete="name" data-i18n-placeholder="oc.name">
+        <input id="oc-contact-info" type="text" placeholder="連絡先（必須・メール／SNS）" autocomplete="email" data-i18n-placeholder="oc.contact">
+        <button id="oc-send-to-artisan" type="button" data-i18n="oc.send">この内容で作家に送信</button>
       </div>
       <div id="chat-area" class="chat-closed">
         <div id="chat-messages"></div>
         <div id="chat-quick"></div>
         <div id="chat-input-row">
-          <textarea id="chat-input" rows="1" placeholder="メッセージを入力..." maxlength="200"></textarea>
+          <textarea id="chat-input" rows="1" placeholder="メッセージを入力..." maxlength="200" data-i18n-placeholder="chat.placeholder"></textarea>
           <button id="chat-send" aria-label="送信">&#x27A4;</button>
         </div>
       </div>
@@ -1129,6 +1129,69 @@
   </div>
 
   <footer class="footer">© N's factory</footer>
+
+  <!-- ── 英語辞書＋切替エンジン（2026-08-17）。メインスクリプトのT()より先に読む ── -->
+  <script>
+  window.NSF_I18N_DICT = {
+    'meta.title': "Gallery — N's factory",
+    'nav.works': 'Gallery',
+    'nav.progress': 'Order progress',
+    'nav.jhcs': 'JHCS workshops',
+    'nav.links': 'Links',
+    'hero.title': 'Gallery',
+    'hero.lead': 'A collection of the leather goods we have made so far, centered on ring planners. Open any piece to see it in detail.',
+    'hero.qr': 'Scan with your phone<br>to open this page',
+    'notice.body': '<strong>Even items marked “SOLDOUT” or “no restock planned” can be <u>quoted for a custom order in the same specifications</u>.</strong> Open the photos of any piece you like and start from the order buttons.',
+    'guide.summary': 'How to use this page (inquiries & ordering flow)',
+    'guide.p1': "This gallery shows the custom and one-of-a-kind pieces N's factory has made. Many are marked SOLDOUT — most of them were custom orders made for individual customers.",
+    'guide.list': '<li>Even SOLDOUT items can be quoted in the same specifications</li>\n<li>Size and specification changes are welcome</li>\n<li>Leather and hardware changes can also be discussed</li>',
+    'guide.easy': 'Requesting a quote is easy!',
+    'guide.s1': 'Pick a piece you like and click it',
+    'guide.s2': 'Click a button such as “Order consultation” on the item page',
+    'guide.s3': 'Enter your preferred purchase method, name and contact, then send! (Your conversation and color choices reach the maker as-is)',
+    'guide.s4': 'After sending, you can check your selections and progress anytime on the <a class="guide-link" href="orderprogress.html">order progress page</a>',
+    'guide.p2': 'If a piece makes you think “I like this” or “could this be made this way?”, feel free to ask. This gallery is also a sample book for future orders.',
+    'guide.p3': '<strong>Important:</strong> SOLDOUT means “a past commissioned work”, not “no longer made”. If something catches your eye, feel free to <a class="guide-link" href="orderprogress.html">request a quote</a>. We will work closely with your wishes and craft it with care.',
+    'tools.search': 'Search by item name',
+    'tools.loading': 'Loading',
+    'tools.loadFail': 'Failed to load',
+    'filter.all': 'All',
+    'cat.planner': '📔 Ring planners',
+    'cat.parts': '🔧 Planner parts & refills',
+    'cat.wallet': '👛 Wallets',
+    'cat.case': '💼 Cases & holders',
+    'cat.goods': '🔑 Small goods & accessories',
+    'cat.other': '✨ Others',
+    'gallery.empty': 'No items match your filters.',
+    'gallery.loadingPhoto': 'Loading photo',
+    'gallery.loadError': 'Could not load the gallery data. Please reload after a while.',
+    'badge.noRestock': 'No restock',
+    'avail.soldout': 'SOLDOUT (no longer for sale)',
+    'avail.noRestock': 'No restock planned',
+    'cta.reorder': 'Request a re-make (create a quote)',
+    'cta.buyQuote': 'Get a quote to buy this piece (rough simulation)',
+    'cta.line': '💬 Ask the maker directly on LINE about a similar full-custom piece (Japanese)',
+    'cta.mail': 'Ask by e-mail',
+    'modal.video': '▶ Watch video',
+    'modal.backToPhoto': '📷 Back to photos',
+    'modal.share': '🔗 Copy the link to this piece',
+    'modal.shareCopied': '✓ Copied (ready to paste on SNS)',
+    'modal.textureSim': '🎨 Try different leather colors',
+    'modal.ocTrigger': '💬 Order consultation AI (ask about leather types & colors)',
+    'modal.ocTriggerActive': '💬 Consulting with the order AI',
+    'modal.prev': 'Prev',
+    'modal.next': 'Next',
+    'sim.close': '✕ Close',
+    'oc.badge': '💬 Consulting with the order AI',
+    'oc.method': 'Purchase method / preferred site (optional)',
+    'oc.bank': 'Bank transfer',
+    'oc.name': 'Your name (required)',
+    'oc.contact': 'Contact (required: e-mail / SNS)',
+    'oc.send': 'Send this to the maker',
+    'chat.placeholder': 'Type a message...'
+  };
+  </script>
+  <script src="assets/i18n.js"></script>
 
   <script>
     const gallery = document.getElementById('gallery');
@@ -1167,6 +1230,13 @@
     let activeIndex = 0;
     let thumbObserver = null;
     let activeCategory = '';
+
+    /* ── 英語モード（2026-08-17）──
+       静的部分は data-i18n＋assets/i18n.js が置換。JS生成部分（フィルタ・件数・
+       モーダルCTA等）はこの T() で出し分ける。切替時はJS生成部を作り直すため再読込。 */
+    function isEN() { return !!(window.NSF_I18N && NSF_I18N.lang === 'en'); }
+    function T(key, ja) { return (isEN() && window.NSF_I18N_DICT && NSF_I18N_DICT[key] !== undefined) ? NSF_I18N_DICT[key] : ja; }
+    document.addEventListener('nsf:langchange', () => location.reload());
 
     // ===== 3段階カテゴリ（大→中→小） 2026-08-06 事業主承認 =====
     // 商品マスターは変えず、既存カテゴリ（中）を大カテゴリへ束ねる対応表を持つ。
@@ -1310,7 +1380,7 @@
       const planner = isSystemPlannerWork(work);
       const unavailable = !!(work.soldout || work.noRestock);
       const hasPrice = Number(work.price) > 0;
-      const noticeLabel = work.soldout ? 'SOLDOUT（販売終了）' : '再販予定なし';
+      const noticeLabel = work.soldout ? T('avail.soldout', 'SOLDOUT（販売終了）') : T('avail.noRestock', '再販予定なし');
 
       if (availabilityNotice) {
         if (unavailable) {
@@ -1325,11 +1395,11 @@
       // 価格が入っていない（0円）商品は、金額の出ない見積り帳票を表示しても意味が無いため
       // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
       const quoteConf = hasPrice
-        ? { href: buildStockQuoteUrl(work), label: unavailable ? '再販を依頼する（見積書作成）' : 'この作品を購入する見積もり（概算シミュレーション）', action: unavailable ? '再販依頼（見積書作成）' : '購入見積もり' }
+        ? { href: buildStockQuoteUrl(work), label: unavailable ? T('cta.reorder', '再販を依頼する（見積書作成）') : T('cta.buyQuote', 'この作品を購入する見積もり（概算シミュレーション）'), action: unavailable ? '再販依頼（見積書作成）' : '購入見積もり' }
         : null;
       const estimateConf = null;
-      const lineConf = { href: LINE_URL, label: '💬 類似したフルオーダー品を作家に直接LINEで相談する', action: 'LINE相談' };
-      const mailConf = !planner ? { href: MAIL_URL, label: 'メールで相談する', action: 'メール相談' } : null;
+      const lineConf = { href: LINE_URL, label: T('cta.line', '💬 類似したフルオーダー品を作家に直接LINEで相談する'), action: 'LINE相談' };
+      const mailConf = !planner ? { href: MAIL_URL, label: T('cta.mail', 'メールで相談する'), action: 'メール相談' } : null;
 
       const slots = [quoteConf, estimateConf, lineConf, mailConf].filter(Boolean);
       applyLink(primaryOrderLink, slots[0] || null);
@@ -1350,9 +1420,9 @@
 
       // ── 1行目: 大カテゴリ ──
       rows.push('<div class="filter-row">'
-        + `<button class="filter-btn${!activeMajor ? ' active' : ''}" type="button" data-major="">すべて</button>`
+        + `<button class="filter-btn${!activeMajor ? ' active' : ''}" type="button" data-major="">${T('filter.all', 'すべて')}</button>`
         + MAJOR_CATEGORIES.map((m) =>
-            `<button class="filter-btn${activeMajor === m.key ? ' active' : ''}" type="button" data-major="${m.key}">${m.label}</button>`
+            `<button class="filter-btn${activeMajor === m.key ? ' active' : ''}" type="button" data-major="${m.key}">${T('cat.' + m.key, m.label)}</button>`
           ).join('')
         + '</div>');
 
@@ -1423,10 +1493,12 @@
           work.shortDesc,
         ].join(' ')).includes(keyword);
       });
-      count.textContent = `${filtered.length}件 / 写真 ${filtered.reduce((sum, work) => sum + work.photos.length, 0)}枚`;
+      count.textContent = isEN()
+        ? `${filtered.length} items / ${filtered.reduce((sum, work) => sum + work.photos.length, 0)} photos`
+        : `${filtered.length}件 / 写真 ${filtered.reduce((sum, work) => sum + work.photos.length, 0)}枚`;
 
       if (!filtered.length) {
-        gallery.innerHTML = '<div class="empty">該当する作品がありません。</div>';
+        gallery.innerHTML = '<div class="empty">' + T('gallery.empty', '該当する作品がありません。') + '</div>';
         return;
       }
 
@@ -1435,13 +1507,13 @@
         const badge = work.soldout
           ? '<span class="badge-unavailable">SOLDOUT</span>'
           : work.noRestock
-            ? '<span class="badge-unavailable">再販予定なし</span>'
+            ? '<span class="badge-unavailable">' + T('badge.noRestock', '再販予定なし') + '</span>'
             : '';
         return `
         <button class="work-card${unavailable ? ' is-unavailable' : ''}" type="button" data-index="${index}">
           ${work.photos[0]
             ? `<span class="thumb-wrap"><img class="thumb" src="${esc(work.photos[0])}" alt="${esc(work.title)}" loading="lazy"></span>`
-            : '<span class="thumb-placeholder">写真を読み込み中</span>'}
+            : '<span class="thumb-placeholder">' + T('gallery.loadingPhoto', '写真を読み込み中') + '</span>'}
           <span class="card-body">
             ${work.id ? `<span class="work-id" data-id="${esc(work.id)}" onclick="copyWorkId(event, this)" title="クリックでIDをコピー">ID: ${esc(work.id)}</span>` : ''}
             <span class="work-title">${esc(work.title)}${badge}${work.videos && work.videos.length ? '<span class="badge-video">🎬 動画</span>' : ''}</span>
@@ -1450,7 +1522,7 @@
               ${compact([work.size, formatPrice(work.price)]) ? `<span>${esc(compact([work.size, formatPrice(work.price)]))}</span>` : ''}
             </span>
             ${work.shortDesc ? `<span class="work-desc">${esc(work.shortDesc)}</span>` : ''}
-            <span class="work-meta">${work.photos.length || 'Drive'}枚</span>
+            <span class="work-meta">${isEN() ? `${work.photos.length || 'Drive'} photos` : `${work.photos.length || 'Drive'}枚`}</span>
           </span>
         </button>
       `;}).join('');
@@ -1621,7 +1693,7 @@
       if (ocOverlay) ocOverlay.classList.remove('oc-overlay-open');
       if (ocAiBadge) ocAiBadge.classList.remove('show');
       if (ocTrigger) {
-        ocTrigger.textContent = '💬 オーダー相談AI（革の種類・色について相談する）';
+        ocTrigger.textContent = T('modal.ocTrigger', '💬 オーダー相談AI（革の種類・色について相談する）');
         ocTrigger.onclick = () => { logProductAction(work, 'AI相談を開始'); ocOpenChat(work); };
       }
       const purchaseSel = document.getElementById('oc-purchase-method');
@@ -1660,7 +1732,7 @@
       if (ocChatArea) ocChatArea.classList.add('oc-open');
       if (ocOverlay) ocOverlay.classList.add('oc-overlay-open');
       if (ocAiBadge) ocAiBadge.classList.add('show');
-      if (ocTrigger) ocTrigger.textContent = '💬 オーダー相談AI 相談中';
+      if (ocTrigger) ocTrigger.textContent = T('modal.ocTriggerActive', '💬 オーダー相談AI 相談中');
 
       // SOLDOUT・再販予定なしの商品は、色選び直しの相談になりやすいため、
       // 該当商品の革系統に絞った色ギャラリーを自動表示する（革カタログ読込完了後）。
@@ -1794,7 +1866,7 @@
       modalVideo.hidden = true;
       modalVideo.src = ''; // 再生停止（閉じた後に音が鳴り続けるのを防ぐ）
       modalImg.style.display = '';
-      modalVideoBtn.textContent = '▶ 動画を見る';
+      modalVideoBtn.textContent = T('modal.video', '▶ 動画を見る');
     }
 
     function enterVideoMode() {
@@ -1803,7 +1875,7 @@
       modalVideo.src = 'https://drive.google.com/file/d/' + encodeURIComponent(activeWork.videos[0].id) + '/preview';
       modalVideo.hidden = false;
       modalImg.style.display = 'none';
-      modalVideoBtn.textContent = '📷 写真に戻る';
+      modalVideoBtn.textContent = T('modal.backToPhoto', '📷 写真に戻る');
     }
 
     modalVideoBtn.addEventListener('click', () => {
@@ -1997,10 +2069,10 @@
         if (!url) return;
         const done = () => {
           shareWorkBtn.classList.add('copied');
-          shareWorkBtn.textContent = '✓ コピーしました（SNSに貼れます）';
+          shareWorkBtn.textContent = T('modal.shareCopied', '✓ コピーしました（SNSに貼れます）');
           setTimeout(() => {
             shareWorkBtn.classList.remove('copied');
-            shareWorkBtn.textContent = '🔗 この作品のリンクをコピー';
+            shareWorkBtn.textContent = T('modal.share', '🔗 この作品のリンクをコピー');
           }, 1600);
         };
         if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -2253,8 +2325,8 @@
       )
       .catch(() => {
         if (staticShown) return;   // 静的で表示済みなら何もしない
-        count.textContent = '読み込み失敗';
-        gallery.innerHTML = '<div class="error">作品データを読み込めませんでした。時間をおいて再読み込みしてください。</div>';
+        count.textContent = T('tools.loadFail', '読み込み失敗');
+        gallery.innerHTML = '<div class="error">' + T('gallery.loadError', '作品データを読み込めませんでした。時間をおいて再読み込みしてください。') + '</div>';
       });
   </script>
 
