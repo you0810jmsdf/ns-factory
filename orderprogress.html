@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>オーダー進捗 — N's factory</title>
+  <title data-i18n="meta.title">オーダー進捗 — N's factory</title>
   <meta name="description" content="N's factory オーダー進捗ページです。受注状況をご確認いただけます。">
   <meta property="og:title" content="オーダー進捗 — N's factory">
   <meta property="og:description" content="N's factory オーダー進捗ページです。受注状況をご確認いただけます。">
@@ -318,8 +318,9 @@
 <nav class="navbar">
   <a class="navbar-brand" href="./">N's factory</a>
   <div class="navbar-links">
-    <a href="./">トップ</a>
-<a href="order_estimate/leather-order-estimate-v2.html">見積もり</a>
+    <a href="./" data-i18n="nav.top">トップ</a>
+<a href="order_estimate/leather-order-estimate-v2.html" data-i18n="nav.estimate">見積もり</a>
+    <button type="button" id="nsfLangToggle" style="background:none;border:1px solid currentColor;border-radius:9999px;padding:3px 10px;cursor:pointer;font:inherit;color:inherit;">EN</button>
   </div>
 </nav>
 
@@ -330,36 +331,36 @@
 
 <!-- Hero -->
 <div class="hero">
-  <h1>オーダーメイド 進捗確認</h1>
-  <p>受付番号・お名前でご自身のオーダーをご確認ください</p>
+  <h1 data-i18n="hero.title">オーダーメイド 進捗確認</h1>
+  <p data-i18n="hero.lead">受付番号・お名前でご自身のオーダーをご確認ください</p>
 </div>
 
-<!-- Size tab bar -->
+<!-- Size tab bar（data-sizeはデータ照合キーなので変えない。表示文言のみ翻訳） -->
 <div class="tab-bar" id="tab-bar">
-  <button class="tab-btn active" data-size="all">すべて</button>
+  <button class="tab-btn active" data-size="all" data-i18n="tab.all">すべて</button>
   <button class="tab-btn" data-size="mini6">mini6</button>
-  <button class="tab-btn" data-size="バイブル">バイブル</button>
+  <button class="tab-btn" data-size="バイブル" data-i18n="tab.bible">バイブル</button>
   <button class="tab-btn" data-size="A6">A6</button>
   <button class="tab-btn" data-size="A5">A5</button>
   <button class="tab-btn" data-size="Micro5">Micro5</button>
-  <button class="tab-btn" data-size="リメイク・修理">リメイク・修理</button>
-  <button class="tab-btn" data-size="手帳カバー">手帳カバー</button>
-  <button class="tab-btn" data-size="革小物">革小物</button>
+  <button class="tab-btn" data-size="リメイク・修理" data-i18n="tab.remake">リメイク・修理</button>
+  <button class="tab-btn" data-size="手帳カバー" data-i18n="tab.cover">手帳カバー</button>
+  <button class="tab-btn" data-size="革小物" data-i18n="tab.goods">革小物</button>
 </div>
 
 <!-- Main content -->
 <div class="content">
   <!-- Stats -->
   <div class="stats-row">
-    <div class="stat-card" data-stat-filter="all"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">受付総数</div></div>
-    <div class="stat-card" data-stat-filter="wip"><div class="stat-num" id="stat-wip">—</div><div class="stat-lbl">制作中</div></div>
-    <div class="stat-card" data-stat-filter="done"><div class="stat-num" id="stat-done">—</div><div class="stat-lbl">完成・発送済み</div></div>
-    <div class="stat-card"><div class="stat-num" id="stat-size">—</div><div class="stat-lbl">表示中</div></div>
+    <div class="stat-card" data-stat-filter="all"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl" data-i18n="stat.total">受付総数</div></div>
+    <div class="stat-card" data-stat-filter="wip"><div class="stat-num" id="stat-wip">—</div><div class="stat-lbl" data-i18n="stat.wip">制作中</div></div>
+    <div class="stat-card" data-stat-filter="done"><div class="stat-num" id="stat-done">—</div><div class="stat-lbl" data-i18n="stat.done">完成・発送済み</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-size">—</div><div class="stat-lbl" data-i18n="stat.shown">表示中</div></div>
   </div>
 
   <!-- Search -->
   <div class="field" style="margin-bottom:12px;">
-    <input type="text" id="search-box" placeholder="🔍 受付番号・お名前で絞り込み…" oninput="applyFilter()">
+    <input type="text" id="search-box" placeholder="🔍 受付番号・お名前で絞り込み…" oninput="applyFilter()" data-i18n-placeholder="search.ph">
   </div>
 
   <!-- Order cards -->
@@ -472,8 +473,60 @@
 
 <div id="toast"></div>
 
+<!-- ── 英語辞書＋切替エンジン（2026-08-17）。メインスクリプトのT()より先に読む ── -->
+<script>
+window.NSF_I18N_DICT = {
+  'meta.title': "Order Progress — N's factory",
+  'nav.top': 'Home',
+  'nav.estimate': 'Quote simulator',
+  'hero.title': 'Custom Order Progress',
+  'hero.lead': 'Check your order by reference number or name',
+  'tab.all': 'All',
+  'tab.bible': 'Bible',
+  'tab.remake': 'Remake & repair',
+  'tab.cover': 'Planner covers',
+  'tab.goods': 'Leather goods',
+  'stat.total': 'Total orders',
+  'stat.wip': 'In production',
+  'stat.done': 'Completed / shipped',
+  'stat.shown': 'Shown',
+  'search.ph': '🔍 Filter by reference no. or name…',
+  'empty.orders': 'No matching orders.',
+  'tl.none': 'No progress updates yet',
+  'card.client': 'Customer',
+  'card.noName': '(item name not set)',
+  'card.start': 'Received:',
+  'card.due': 'Est. completion:',
+  'card.dueShort': 'Est. completion',
+  'card.doneDate': 'Completed',
+  'card.timeline': '📋 Progress timeline',
+  'card.colorOrder': '🎨 Color order details',
+  'card.leather': 'Leather:',
+  'card.hearing': 'Consultation notes:',
+  'car.loading': '📷 Loading photos…',
+  'rr.label': 'Remake & repair'
+};
+</script>
+<script src="assets/i18n.js"></script>
+
 <script>
 // ─────────────────────────────────────────────
+/* ── 英語モード（2026-08-17）──
+   静的部分は data-i18n＋assets/i18n.js。JS生成のカード・件数はこの T()/stLabel() で出し分け。
+   タイムライン本文・品名などGAS由来の自由記述データは日本語のまま。 */
+function isEN() { return !!(window.NSF_I18N && NSF_I18N.lang === 'en'); }
+function T(key, ja) { return (isEN() && window.NSF_I18N_DICT && NSF_I18N_DICT[key] !== undefined) ? NSF_I18N_DICT[key] : ja; }
+// ステータスは固定語彙なので表示時にだけ英語へ写像する（データ・照合キーは日本語のまま）
+const STATUS_EN = {
+  'ご連絡先待ち':'Awaiting contact info', 'ご連絡待ち':'Awaiting your reply', '見積書作成':'Preparing quote',
+  '設計中':'Designing', '受付中':'Accepted', '素材準備中':'Preparing materials', '制作中':'In production',
+  '仕上げ中':'Finishing', '完成':'Completed', '発送済み':'Shipped', 'お渡し済み':'Delivered',
+  '相談受付':'Consultation received', '受付済':'Accepted', '作業中':'In progress',
+  '作業完了':'Work completed', '受領評価済':'Received & reviewed', '中断':'On hold'
+};
+function stLabel(s) { return isEN() ? (STATUS_EN[s] || s) : s; }
+document.addEventListener('nsf:langchange', () => location.reload());
+
 const GAS_KEY = 'op_gas_url';
 // 管理者パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）
 const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
@@ -805,7 +858,7 @@ function focusOrderByNumber() {
 function renderCards(records) {
   const grid = document.getElementById('order-grid');
   if (!records.length) {
-    grid.innerHTML = '<div class="empty">該当するオーダーはありません</div>';
+    grid.innerHTML = '<div class="empty">' + T('empty.orders', '該当するオーダーはありません') + '</div>';
     return;
   }
   // Sort: unfinished first, then newest reception date first.
@@ -853,25 +906,25 @@ function renderCards(records) {
           <div class="tl-date">${esc(t.date||'')}</div>
           <div class="tl-text">${esc(t.text||'').replace(/\n/g,'<br>')}</div>
          </div>`).join('')
-      : '<div style="font-size:.8rem;color:var(--color-text-mute)">進捗情報はまだありません</div>';
+      : '<div style="font-size:.8rem;color:var(--color-text-mute)">' + T('tl.none', '進捗情報はまだありません') + '</div>';
     const folderId = r['DriveフォルダID']||'';
     const client   = r['依頼者']||'';
-    const clientDisplay = isAdmin() ? client : (client ? 'ご依頼者様' : '');
+    const clientDisplay = isAdmin() ? client : (client ? T('card.client', 'ご依頼者様') : '');
     // 写真の有無は事前判定できない（GASから非同期取得のため）。
     // 枠だけ出し、0件なら lazyLoadImages 側で空にする。
     const hasLocal = !folderId && !!client;
     const carHtml  = folderId
-      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">📷 画像を読み込み中…</div></div>`
+      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
       : hasLocal
-        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">📷 画像を読み込み中…</div></div>`
+        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
         : '';
     const leatherInfo = r['使用革']||'';
     const hearingContent = r['ヒアリング内容']||'';
     const colorOrderHtml = (leatherInfo || hearingContent)
       ? `<div class="color-order-info">
-           <div class="tl-title">🎨 カラーオーダー情報</div>
-           ${leatherInfo ? `<div class="color-order-row"><b>使用革:</b> ${esc(leatherInfo).replace(/\n/g,'<br>')}</div>` : ''}
-           ${hearingContent ? `<div class="color-order-row"><b>ヒアリング内容:</b><br>${esc(hearingContent).replace(/\n/g,'<br>')}</div>` : ''}
+           <div class="tl-title">${T('card.colorOrder','🎨 カラーオーダー情報')}</div>
+           ${leatherInfo ? `<div class="color-order-row"><b>${T('card.leather','使用革:')}</b> ${esc(leatherInfo).replace(/\n/g,'<br>')}</div>` : ''}
+           ${hearingContent ? `<div class="color-order-row"><b>${T('card.hearing','ヒアリング内容:')}</b><br>${esc(hearingContent).replace(/\n/g,'<br>')}</div>` : ''}
          </div>`
       : '';
 
@@ -883,19 +936,19 @@ function renderCards(records) {
           <div style="font-size:.7rem;color:var(--color-text-mute)">${esc(r['サイズ']||'')}</div>
         </div>
         <div class="card-title">
-          <div class="item-name">${esc(r['品名']||'（品名未設定）')}</div>
+          <div class="item-name">${esc(r['品名']||T('card.noName','（品名未設定）'))}</div>
           <div class="client-name">${esc(clientDisplay)}</div>
         </div>
-        <span class="status-badge ${cls}">${esc(r['ステータス']||'')}</span>
+        <span class="status-badge ${cls}">${esc(stLabel(r['ステータス']||''))}</span>
         <span class="chevron">▼</span>
       </div>
       <div class="card-body" id="body-${id}">
         <div class="card-inner">
           <div class="dates-row">
-            <div class="date-item">受付日: <span>${fmtDate(r['受付日']||'—')}</span></div>
-            <div class="date-item">予定完了: <span>${fmtDate(r['予定完了日']||'—')}</span></div>
+            <div class="date-item">${T('card.start','受付日:')} <span>${fmtDate(r['受付日']||'—')}</span></div>
+            <div class="date-item">${T('card.due','予定完了:')} <span>${fmtDate(r['予定完了日']||'—')}</span></div>
           </div>
-          <div class="tl-title">📋 進捗タイムライン</div>
+          <div class="tl-title">${T('card.timeline','📋 進捗タイムライン')}</div>
           <div class="timeline">${tlHtml}</div>
           ${carHtml}
           ${colorOrderHtml}
@@ -909,7 +962,7 @@ function renderCards(records) {
 function renderRrCards(records) {
   const grid = document.getElementById('order-grid');
   if (!records.length) {
-    grid.innerHTML = '<div class="empty">該当する案件はありません</div>';
+    grid.innerHTML = '<div class="empty">' + T('empty.orders', '該当する案件はありません') + '</div>';
     return;
   }
   const ORDER_RR = ['受付済','作業中','作業完了','受領評価済','中断'];
@@ -926,29 +979,29 @@ function renderRrCards(records) {
     const isOp    = r._type === 'op';
     const tl      = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
     const cls     = 's-' + (r['ステータス']||'受付済').replace(/\s/g,'');
-    const itemName = r['品物'] || r['品名'] || '（品名未設定）';
+    const itemName = r['品物'] || r['品名'] || T('card.noName','（品名未設定）');
     const catHtml = r['カテゴリ'] ? `<span class="cat-badge">${esc(r['カテゴリ'])}</span>` : '';
     const headerSub = isOp
-      ? `<div class="order-no">${esc(r['受付番号']||'')}</div><div style="font-size:.7rem;color:var(--color-text-mute)">リメイク・修理</div>`
+      ? `<div class="order-no">${esc(r['受付番号']||'')}</div><div style="font-size:.7rem;color:var(--color-text-mute)">${T('rr.label','リメイク・修理')}</div>`
       : `<div class="order-no">${esc(r['受付日']||'')}</div>${catHtml}`;
     const tlHtml = tl.length
       ? tl.map(t => `<div class="tl-item"><div class="tl-dot"></div>
           <div class="tl-date">${esc(t.date||'')}</div>
           <div class="tl-text">${esc(t.text||'').replace(/\n/g,'<br>')}</div>
          </div>`).join('')
-      : '<div style="font-size:.8rem;color:var(--color-text-mute)">進捗情報はまだありません</div>';
+      : '<div style="font-size:.8rem;color:var(--color-text-mute)">' + T('tl.none','進捗情報はまだありません') + '</div>';
     const folderId = r['DriveフォルダID']||'';
     const gastype  = isOp ? '' : ' data-gastype="rr"';
     const client   = r['依頼者']||'';
-    const clientDisplay = isAdmin() ? client : (client ? 'ご依頼者様' : '');
+    const clientDisplay = isAdmin() ? client : (client ? T('card.client','ご依頼者様') : '');
     // 写真の有無は事前判定できない（GASから非同期取得のため）。上と同じ扱い。
     const hasLocal = isOp && !folderId && !!client;
     const carHtml  = folderId
-      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}"${gastype}>📷 画像を読み込み中…</div></div>`
+      ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}"${gastype}>${T('car.loading','📷 画像を読み込み中…')}</div></div>`
       : hasLocal
-        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">📷 画像を読み込み中…</div></div>`
+        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
         : '';
-    const endLabel = isOp ? '予定完了' : '完了日';
+    const endLabel = isOp ? T('card.dueShort','予定完了') : T('card.doneDate','完了日');
     const endVal   = isOp ? fmtDate(r['予定完了日']||'—') : esc(r['完了日']||'—');
     const desc     = r['説明']||'';
     const adminHtml = isOp && gasReady
@@ -964,17 +1017,17 @@ function renderRrCards(records) {
           <div class="item-name">${esc(itemName)}</div>
           <div class="client-name">${esc(clientDisplay)}</div>
         </div>
-        <span class="status-badge ${cls}">${esc(r['ステータス']||'')}</span>
+        <span class="status-badge ${cls}">${esc(stLabel(r['ステータス']||''))}</span>
         <span class="chevron">▼</span>
       </div>
       <div class="card-body" id="body-${id}">
         <div class="card-inner">
           <div class="dates-row">
-            <div class="date-item">受付日: <span>${fmtDate(r['受付日']||'—')}</span></div>
+            <div class="date-item">${T('card.start','受付日:')} <span>${fmtDate(r['受付日']||'—')}</span></div>
             <div class="date-item">${endLabel}: <span>${endVal}</span></div>
           </div>
           ${desc ? `<div style="font-size:.82rem;color:var(--color-text-sub);margin-bottom:8px">${esc(desc).replace(/\n/g,'<br>')}</div>` : ''}
-          <div class="tl-title">📋 進捗タイムライン</div>
+          <div class="tl-title">${T('card.timeline','📋 進捗タイムライン')}</div>
           <div class="timeline">${tlHtml}</div>
           ${carHtml}
           ${adminHtml}
