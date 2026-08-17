@@ -94,11 +94,14 @@
   function ensureToggle() {
     var btn = document.getElementById('nsfLangToggle');
     if (!btn) {
+      // ページ側が #nsfLangToggle をナビ等に設置していればそれを使う（推奨）。
+      // 無い場合のみフォールバックとして左下に浮かせる
+      // （右上はQRコード・PVカウンターと重なるため使わない。2026-08-17 事業主指摘）。
       btn = document.createElement('button');
       btn.id = 'nsfLangToggle';
       btn.type = 'button';
       btn.style.cssText = [
-        'position:fixed', 'top:14px', 'right:14px', 'z-index:9999',
+        'position:fixed', 'bottom:14px', 'left:14px', 'z-index:9999',
         'padding:6px 14px', 'border-radius:999px',
         'background:rgba(10,10,10,.82)', 'color:#c9a96e',
         'border:1px solid rgba(201,169,110,.55)',
