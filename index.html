@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>N's factory — 世界にひとつだけのオリジナルを</title>
+<title data-i18n="meta.title">N's factory — 世界にひとつだけのオリジナルを</title>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
 <script>
@@ -773,6 +773,9 @@ h1,h2,h3{
   color:#bdbdbd;
   font-size:11px;
 }
+/* 英語表示時は ::after の注記も英語にする（i18n.js が <html lang> を切り替える） */
+html[lang="en"] .staff-tasks .soon::after{content:" (coming soon)"}
+html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
 .staff-tasks .duty{
   color:#7a6a4a;
   font-size:12px;
@@ -1482,27 +1485,27 @@ h1,h2,h3{
   <span class="nav-spacer"></span>
   <div class="nav-links">
     <div class="nav-dropdown" id="bakuryo-dropdown">
-      <button type="button" class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="bakuryo-menu">幕僚室<span class="nav-dropdown-caret">▾</span></button>
+      <button type="button" class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="bakuryo-menu"><span data-i18n="nav.rooms">幕僚室</span><span class="nav-dropdown-caret">▾</span></button>
       <div class="nav-dropdown-menu" id="bakuryo-menu" role="menu">
-        <a href="./sakusen-room/" class="nav-dropdown-item" role="menuitem">作戦幕僚室</a>
-        <a href="./kanri-room/" class="nav-dropdown-item" role="menuitem">監理幕僚室</a>
-        <a href="./kouhou-room/" class="nav-dropdown-item" role="menuitem">後方幕僚室</a>
-        <a href="./hanbai-room/" class="nav-dropdown-item" role="menuitem">販売幕僚室</a>
-        <a href="./pr-room/" class="nav-dropdown-item" role="menuitem">広報幕僚室</a>
-        <a href="./hozen-room/" class="nav-dropdown-item" role="menuitem">保全幕僚室</a>
-        <a href="./digital-room/" class="nav-dropdown-item" role="menuitem">デジタル幕僚室</a>
-        <a href="./jinji-room/" class="nav-dropdown-item" role="menuitem">人事幕僚室</a>
-        <a href="./hitsuki/" class="nav-dropdown-item" role="menuitem">教育幕僚室</a>
+        <a href="./sakusen-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.sakusen">作戦幕僚室</a>
+        <a href="./kanri-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.kanri">監理幕僚室</a>
+        <a href="./kouhou-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.kouhou">後方幕僚室</a>
+        <a href="./hanbai-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.hanbai">販売幕僚室</a>
+        <a href="./pr-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.pr">広報幕僚室</a>
+        <a href="./hozen-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.hozen">保全幕僚室</a>
+        <a href="./digital-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.digital">デジタル幕僚室</a>
+        <a href="./jinji-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.jinji">人事幕僚室</a>
+        <a href="./hitsuki/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.kyouiku">教育幕僚室</a>
       </div>
     </div>
-    <a href="#staff" class="nav-link">スタッフ</a>
+    <a href="#staff" class="nav-link" data-i18n="nav.staff">スタッフ</a>
     <!-- 2026-08-04 導線一本化: オーダー系の入口は「オーダー相談窓口」（hearing-ai.html）のみに統一。
          ガイド・見積もりシミュレーターへは相談の中から誘導する（事業主指示） -->
-    <a href="./order_estimate/hearing-ai.html" class="nav-cta">オーダー相談</a>
+    <a href="./order_estimate/hearing-ai.html" class="nav-cta" data-i18n="nav.order">オーダー相談</a>
   </div>
   <div class="nav-qr" aria-label="このページのQRコード">
     <div id="page-qr" class="nav-qr-img"></div>
-    <span class="nav-qr-label">このページ</span>
+    <span class="nav-qr-label" data-i18n="nav.qrLabel">このページ</span>
   </div>
   <button type="button" class="nav-qr-btn" id="qr-modal-open" aria-label="このページのQRコードを大きく表示">
     <span class="nav-qr-btn-icon" aria-hidden="true">📱</span><span class="nav-qr-btn-label">QR</span>
@@ -1514,7 +1517,7 @@ h1,h2,h3{
   <div class="qr-modal-inner">
     <button type="button" class="qr-modal-close" id="qr-modal-close" aria-label="閉じる">×</button>
     <div id="qr-modal-canvas" class="qr-modal-canvas"></div>
-    <div class="qr-modal-caption">スマホをかざして読み取ってください<br><span id="qr-modal-url"></span></div>
+    <div class="qr-modal-caption"><span data-i18n="qr.caption">スマホをかざして読み取ってください</span><br><span id="qr-modal-url"></span></div>
   </div>
 </div>
 
@@ -1522,14 +1525,14 @@ h1,h2,h3{
 <section class="hero">
   <div class="hero-content">
     <p class="hero-eyebrow">N's factory — Leather Craft</p>
-    <h1 class="hero-title">世界にひとつだけの<br>オリジナルを</h1>
-    <p class="hero-desc">
+    <h1 class="hero-title" data-i18n="hero.title" data-i18n-as-html>世界にひとつだけの<br>オリジナルを</h1>
+    <p class="hero-desc" data-i18n="hero.desc" data-i18n-as-html>
       革は語り、手は応える。<br>
       作家と使い手が直接交わる場所で、世界にひとつだけの手帳・革小物・印章・アクリル・木工が生まれる。<br><br>
       素材も意匠も、すべては貴方の手に委ねられる。
     </p>
     <div class="hero-actions">
-      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary">オーダー相談 →</a>
+      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary" data-i18n="hero.cta">オーダー相談 →</a>
     </div>
   </div>
   <div class="hero-photo">
@@ -1542,14 +1545,14 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="section-header" style="margin-bottom:20px;">
       <p class="section-label">Order Made</p>
-      <h2 class="section-title">システム手帳 フルオーダー</h2>
+      <h2 class="section-title" data-i18n="planner.title">システム手帳 フルオーダー</h2>
     </div>
     <!-- 2026-08-04: 7サイズ参考価格表を削除（事業主指示。シミュレーターの実額と幅が
          大きく異なり誤解を招くため。金額は相談窓口→見積もりで案内する）。
          ⛔ LPに価格表・参考価格を復活させないこと -->
     <!-- 2026-08-04: このセクションのCTAボタンも削除（事業主指示「ボタンは減らしシンプルに」。
          オーダー相談へはナビ・Heroの同名ボタンから。⛔ ボタンを復活させないこと） -->
-    <p style="font-size:14px;color:var(--color-text-sub);max-width:640px;line-height:1.9;">
+    <p style="font-size:14px;color:var(--color-text-sub);max-width:640px;line-height:1.9;" data-i18n="planner.desc">
       サイズ・革・リング・金具・刻印まで、すべて自分仕様。Micro5 から A5 まで全7サイズからお作りします。
     </p>
   </div>
@@ -1560,13 +1563,13 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="section-header" style="margin-bottom:20px;">
       <p class="section-label">AI Concierge</p>
-      <h2 class="section-title">幕僚AIが、24時間ご案内します</h2>
+      <h2 class="section-title" data-i18n="ai.title">幕僚AIが、24時間ご案内します</h2>
     </div>
     <!-- 2026-08-04 導線一本化: このセクションのボタン2つ（チャット起動／窓口リンク）を撤去。
          「相談」を名乗る入口はオーダー相談1系統のみとし、チャットの入口は右下の
          「AIスタッフと話す」1つに集約。オーダーの話になったら会話の中で窓口へ案内する
          （chat-widget.js のオーダー意図検知チップ）。⛔ ここにボタンを復活させないこと -->
-    <p class="ai-lead">
+    <p class="ai-lead" data-i18n="ai.lead">
       N's factory では、個性豊かな10人の幕僚AIが接客を担当。
       「どのサイズが合う？」「予算内でどこまでできる？」——そんな質問に、いつでもその場でお答えします。
       画面右下の「AIスタッフと話す」から、気軽に話しかけてください。
@@ -1604,18 +1607,18 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="section-header" style="margin-bottom:24px;">
       <p class="section-label">New Arrival</p>
-      <h2 class="section-title">新着商品</h2>
+      <h2 class="section-title" data-i18n="newarrival.title">新着商品</h2>
     </div>
     <a href="products/memorial-photo-frame.html" class="new-arrival-card">
       <div>
         <div class="new-arrival-badges">
           <span class="badge-new">NEW</span>
-          <span class="badge-semi">セミオーダー</span>
+          <span class="badge-semi" data-i18n="newarrival.semi">セミオーダー</span>
         </div>
-        <p class="new-arrival-title">ヌメ革レーザー彫刻<br>メモリアルフォトフレーム</p>
-        <p class="new-arrival-catch">その日を、革に刻む。</p>
-        <p class="new-arrival-price">5,000円<span>（税込）</span></p>
-        <span class="new-arrival-cta">商品詳細を見る →</span>
+        <p class="new-arrival-title" data-i18n="newarrival.item" data-i18n-as-html>ヌメ革レーザー彫刻<br>メモリアルフォトフレーム</p>
+        <p class="new-arrival-catch" data-i18n="newarrival.catch">その日を、革に刻む。</p>
+        <p class="new-arrival-price" data-i18n="newarrival.price" data-i18n-as-html>5,000円<span>（税込）</span></p>
+        <span class="new-arrival-cta" data-i18n="newarrival.cta">商品詳細を見る →</span>
       </div>
       <div class="new-arrival-image">
         <img src="products/img/memorial-01.png" alt="ヌメ革レーザー彫刻 メモリアルフォトフレーム">
@@ -1629,18 +1632,18 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="section-header" style="margin-bottom:24px;">
       <p class="section-label">Story</p>
-      <h2 class="section-title">note で連載中</h2>
+      <h2 class="section-title" data-i18n="note.title">note で連載中</h2>
     </div>
     <div class="note-connect-card">
-      <h3>革職人が8人のAI参謀を雇った話</h3>
-      <p>
+      <h3 data-i18n="note.h3">革職人が8人のAI参謀を雇った話</h3>
+      <p data-i18n="note.desc" data-i18n-as-html>
         小さなレザークラフト工房が、AIを戦略参謀として雇い入れ、<br>
         経営・広報・販売・経理をひとりで回す。<br>
         リアルな奮闘記を note にて連載中。
       </p>
       <div class="note-connect-actions">
-        <a href="https://note.com/you0810jmsdf/m/ma773c539dc70" target="_blank" rel="noopener" class="btn-accent">連載を読む →</a>
-        <a href="https://note.com/you0810jmsdf/membership" target="_blank" rel="noopener" class="btn-note-outline">メンバーシップに参加 →</a>
+        <a href="https://note.com/you0810jmsdf/m/ma773c539dc70" target="_blank" rel="noopener" class="btn-accent" data-i18n="note.read">連載を読む →</a>
+        <a href="https://note.com/you0810jmsdf/membership" target="_blank" rel="noopener" class="btn-note-outline" data-i18n="note.member">メンバーシップに参加 →</a>
       </div>
     </div>
   </div>
@@ -1651,17 +1654,17 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="section-header" style="margin-bottom:24px;">
       <p class="section-label">Showroom</p>
-      <h2 class="section-title">3D ショールーム</h2>
+      <h2 class="section-title" data-i18n="showroom.title">3D ショールーム</h2>
     </div>
     <div class="note-connect-card" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:center;flex-wrap:wrap;">
       <div>
-        <h3 style="font-size:20px;margin-bottom:12px;">メタバース店舗オープン</h3>
-        <p>
+        <h3 style="font-size:20px;margin-bottom:12px;" data-i18n="showroom.h3">メタバース店舗オープン</h3>
+        <p data-i18n="showroom.desc" data-i18n-as-html>
           N's factory の革小物・システム手帳が、バーチャル空間に並んでいます。<br>
           幕僚たちが店内をご案内します。スマートフォン・PCいずれからもご入場いただけます。
         </p>
         <div class="note-connect-actions" style="margin-top:18px;">
-          <a href="showroom/" class="btn-accent">入場する →</a>
+          <a href="showroom/" class="btn-accent" data-i18n="showroom.enter">入場する →</a>
         </div>
       </div>
     </div>
@@ -1673,12 +1676,12 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="section-header">
       <p class="section-label">Staff</p>
-      <h2 class="section-title">N's factory を動かすスタッフ</h2>
+      <h2 class="section-title" data-i18n="staff.title">N's factory を動かすスタッフ</h2>
     </div>
     <div class="staff-lead">
       <div>
-        <h3 class="section-title">ひとつの工房に、複数の視点を。</h3>
-        <p>
+        <h3 class="section-title" data-i18n="staff.leadTitle">ひとつの工房に、複数の視点を。</h3>
+        <p data-i18n="staff.leadDesc">
           N's factory では、制作・販売・広報・管理・保全・デジタル運用までを役割ごとに整理し、
           小さな工房でも迷わず動ける体制をつくっています。お客様に届くひとつの作品の裏側で、
           それぞれの幕僚が品質、段取り、発信、継続運用を支えます。
@@ -1692,147 +1695,147 @@ h1,h2,h3{
     <div class="staff-grid">
       <div class="staff-slide commander-slide">
         <div class="staff-commander">
-          <span class="commander-badge">総司令官</span>
+          <span class="commander-badge" data-i18n="staff.commander">総司令官</span>
           <a href="./profile.html" class="staff-commander-link" aria-label="個人事業主のプロフィールを見る">
             <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主（総司令官）。経営方針と行動指針を掲げる N's factory の指揮官。">
             <div class="staff-card-body">
-              <p class="staff-tagline">事業全体を率いる総司令官</p>
-              <span class="staff-cta-primary">プロフィールを見る</span>
+              <p class="staff-tagline" data-i18n="staff.tagline">事業全体を率いる総司令官</p>
+              <span class="staff-cta-primary" data-i18n="staff.profileCta">プロフィールを見る</span>
             </div>
           </a>
-          <a href="https://note.com/you0810jmsdf/membership" class="staff-cta-secondary" target="_blank" rel="noopener">AI経営奮闘記（note）を読む →</a>
+          <a href="https://note.com/you0810jmsdf/membership" class="staff-cta-secondary" target="_blank" rel="noopener" data-i18n="staff.noteCta">AI経営奮闘記（note）を読む →</a>
         </div>
       </div>
       <a class="staff-card" href="./sakusen-room/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">作戦幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.sakusen">作戦幕僚</span>
         <img src="./assets/staff/sakusen.png" alt="作戦幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">作戦室<span style="color:#C0392B;font-size:11px;font-weight:700;margin-left:6px;">部外秘</span></span>
+          <span class="staff-card-cta" data-i18n="staff.cta.sakusen" data-i18n-as-html>作戦室<span style="color:#C0392B;font-size:11px;font-weight:700;margin-left:6px;">部外秘</span></span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="senryaku-shijisho.html" onclick="return gateConfidential(event, this.href)">戦略指示書 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
-        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?action=sakusenroom&amp;view=bakuryo" target="_blank" rel="noopener" onclick="return gateConfidential(event, this.href)">幕僚諸元 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
-        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec" target="_blank" rel="noopener" onclick="return gateConfidential(event, this.href)">幕僚計画 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
-        <span class="soon">戦略ダッシュボード</span>
-        <span class="soon">業務日誌ビューア</span>
-        <span class="soon">優先タスクボード</span>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="senryaku-shijisho.html" onclick="return gateConfidential(event, this.href)" data-i18n="staff.task.shijisho" data-i18n-as-html>戦略指示書 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
+        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec?action=sakusenroom&amp;view=bakuryo" target="_blank" rel="noopener" onclick="return gateConfidential(event, this.href)" data-i18n="staff.task.shogen" data-i18n-as-html>幕僚諸元 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
+        <a href="https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec" target="_blank" rel="noopener" onclick="return gateConfidential(event, this.href)" data-i18n="staff.task.keikaku" data-i18n-as-html>幕僚計画 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
+        <span class="soon" data-i18n="staff.task.dashboard">戦略ダッシュボード</span>
+        <span class="soon" data-i18n="staff.task.nisshiViewer">業務日誌ビューア</span>
+        <span class="soon" data-i18n="staff.task.taskboard">優先タスクボード</span>
       </div>
       <a class="staff-card" href="./kanri-room/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">監理幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.kanri">監理幕僚</span>
         <img src="./assets/staff/kanri.png" alt="監理幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">監理幕僚室</span>
+          <span class="staff-card-cta" data-i18n="staff.cta.kanri">監理幕僚室</span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="./kanri-room/okj-notify/">OKJ BTC/JPY 通知設定</a>
-        <span class="soon">SMA シグナル設定</span>
-        <span class="soon">月次収支ダッシュボード</span>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="./kanri-room/okj-notify/" data-i18n="staff.task.okjNotify">OKJ BTC/JPY 通知設定</a>
+        <span class="soon" data-i18n="staff.task.sma">SMA シグナル設定</span>
+        <span class="soon" data-i18n="staff.task.monthlyDash">月次収支ダッシュボード</span>
       </div>
       <a class="staff-card" href="./kouhou-room/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">後方幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.kouhou">後方幕僚</span>
         <img src="./assets/staff/kouhou.png" alt="後方幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">後方幕僚室</span>
+          <span class="staff-card-cta" data-i18n="staff.cta.kouhou">後方幕僚室</span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="./kouhou-room/">レザークラフト道具リンク</a>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="./kouhou-room/" data-i18n="staff.task.tools">レザークラフト道具リンク</a>
       </div>
       <a class="staff-card" href="./hanbai-room/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">販売幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.hanbai">販売幕僚</span>
         <img src="./assets/staff/hannbai.png" alt="販売幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">販売幕僚室</span>
+          <span class="staff-card-cta" data-i18n="staff.cta.hanbai">販売幕僚室</span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="./order_estimate/hearing-ai.html">オーダー相談</a>
-        <a href="./orderprogress.html">オーダー進捗確認</a>
-        <a href="./works.html">作品集</a>
-        <a href="./register.html" onclick="return gateConfidential(event, this.href)">商品登録 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
-        <span class="soon">EC出品状況一覧</span>
-        <span class="soon">マルシェ・イベント予定</span>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="./order_estimate/hearing-ai.html" data-i18n="staff.task.order">オーダー相談</a>
+        <a href="./orderprogress.html" data-i18n="staff.task.progress">オーダー進捗確認</a>
+        <a href="./works.html" data-i18n="staff.task.works">作品集</a>
+        <a href="./register.html" onclick="return gateConfidential(event, this.href)" data-i18n="staff.task.register" data-i18n-as-html>商品登録 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
+        <span class="soon" data-i18n="staff.task.ecList">EC出品状況一覧</span>
+        <span class="soon" data-i18n="staff.task.marche">マルシェ・イベント予定</span>
       </div>
       <a class="staff-card" href="./pr-room/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">広報幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.pr">広報幕僚</span>
         <img src="./assets/staff/pr.png" alt="広報幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">広報幕僚室</span>
+          <span class="staff-card-cta" data-i18n="staff.cta.pr">広報幕僚室</span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="./links.html">リンク集</a>
-        <a href="./order_estimate/furusato-card.html">ふるさと納税 案内カード作成 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
-        <span class="soon">SNS投稿カレンダー</span>
-        <span class="soon">バナー素材ライブラリ</span>
-        <span class="soon">ロゴ・ブランドカラー</span>
-        <a href="https://store.line.me/stickershop/author/4758952/ja" target="_blank" rel="noopener">LINEスタンプ販売中</a>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="./links.html" data-i18n="staff.task.links">リンク集</a>
+        <a href="./order_estimate/furusato-card.html" data-i18n="staff.task.furusato" data-i18n-as-html>ふるさと納税 案内カード作成 <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
+        <span class="soon" data-i18n="staff.task.snsCalendar">SNS投稿カレンダー</span>
+        <span class="soon" data-i18n="staff.task.bannerLib">バナー素材ライブラリ</span>
+        <span class="soon" data-i18n="staff.task.logoBrand">ロゴ・ブランドカラー</span>
+        <a href="https://store.line.me/stickershop/author/4758952/ja" target="_blank" rel="noopener" data-i18n="staff.task.lineStamp">LINEスタンプ販売中</a>
       </div>
       <a class="staff-card" href="./hozen-room/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">保全幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.hozen">保全幕僚</span>
         <img src="./assets/staff/hozen.png" alt="保全幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">保全幕僚室</span>
+          <span class="staff-card-cta" data-i18n="staff.cta.hozen">保全幕僚室</span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="./password-note.html">パスワードノート</a>
-        <span class="duty">APIキー台帳</span>
-        <span class="duty">トークン棚卸し記録</span>
-        <span class="duty">バックアップ状況</span>
-        <span class="duty">監視・通知ステータス</span>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="./password-note.html" data-i18n="staff.task.passwordNote">パスワードノート</a>
+        <span class="duty" data-i18n="staff.task.apiLedger">APIキー台帳</span>
+        <span class="duty" data-i18n="staff.task.tokenAudit">トークン棚卸し記録</span>
+        <span class="duty" data-i18n="staff.task.backup">バックアップ状況</span>
+        <span class="duty" data-i18n="staff.task.monitor">監視・通知ステータス</span>
       </div>
       <a class="staff-card" href="./digital-room/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">デジタル幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.digital">デジタル幕僚</span>
         <img src="./assets/staff/digital.png" alt="デジタル幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">デジタル幕僚室</span>
+          <span class="staff-card-cta" data-i18n="staff.cta.digital">デジタル幕僚室</span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="./invoice/" onclick="return gateConfidential(event, this.href)">書類台帳（見積・請求・領収） <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
-        <a href="./orderprogress.html">オーダー進捗確認</a>
-        <a href="./showroom/">3Dショールーム（メタバース店舗）</a>
-        <span class="soon">型紙データ販売</span>
-        <span class="soon">CADデータ販売</span>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="./invoice/" onclick="return gateConfidential(event, this.href)" data-i18n="staff.task.invoice" data-i18n-as-html>書類台帳（見積・請求・領収） <span style="color:#c00;font-weight:700;">「部外秘」</span></a>
+        <a href="./orderprogress.html" data-i18n="staff.task.progress">オーダー進捗確認</a>
+        <a href="./showroom/" data-i18n="staff.task.showroom">3Dショールーム（メタバース店舗）</a>
+        <span class="soon" data-i18n="staff.task.patternSale">型紙データ販売</span>
+        <span class="soon" data-i18n="staff.task.cadSale">CADデータ販売</span>
       </div>
       <a class="staff-card" href="./jinji-room/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">人事幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.jinji">人事幕僚</span>
         <img src="./assets/staff/jinji.png" alt="人事幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">人事幕僚室</span>
+          <span class="staff-card-cta" data-i18n="staff.cta.jinji">人事幕僚室</span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="./JHCS.html">JHCS講習</a>
-        <span class="soon">講師業スケジュール</span>
-        <span class="soon">受講者管理</span>
-        <span class="soon">カリキュラム集</span>
-        <span class="soon">講師謝礼・経費記録</span>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="./JHCS.html" data-i18n="staff.task.jhcs">JHCS講習</a>
+        <span class="soon" data-i18n="staff.task.lectureSchedule">講師業スケジュール</span>
+        <span class="soon" data-i18n="staff.task.students">受講者管理</span>
+        <span class="soon" data-i18n="staff.task.curriculum">カリキュラム集</span>
+        <span class="soon" data-i18n="staff.task.lectureFee">講師謝礼・経費記録</span>
       </div>
       <a class="staff-card" href="./hitsuki/" style="display:block;color:inherit;text-decoration:none;">
-        <span class="staff-badge">教育幕僚</span>
+        <span class="staff-badge" data-i18n="staff.badge.kyouiku">教育幕僚</span>
         <img src="./assets/staff/kyouiku.png" alt="教育幕僚">
         <div class="staff-card-body">
-          <span class="staff-card-cta">教育幕僚室</span>
+          <span class="staff-card-cta" data-i18n="staff.cta.kyouiku">教育幕僚室</span>
         </div>
       </a>
       <div class="staff-tasks">
-        <span class="staff-tasks-label">主な任務</span>
-        <a href="./hitsuki/">日月神示アーカイブ</a>
-        <a href="./hitsuki/katakamuna/">カタカムナアーカイブ</a>
-        <span class="soon">道徳・心理学資料</span>
-        <span class="soon">メンタルヘルス管理</span>
+        <span class="staff-tasks-label" data-i18n="staff.tasksLabel">主な任務</span>
+        <a href="./hitsuki/" data-i18n="staff.task.hitsuki">日月神示アーカイブ</a>
+        <a href="./hitsuki/katakamuna/" data-i18n="staff.task.katakamuna">カタカムナアーカイブ</a>
+        <span class="soon" data-i18n="staff.task.ethics">道徳・心理学資料</span>
+        <span class="soon" data-i18n="staff.task.mental">メンタルヘルス管理</span>
       </div>
     </div>
   </div>
@@ -1844,9 +1847,9 @@ h1,h2,h3{
     <div class="notebook-highlight">
       <div>
         <p class="section-label">Payment</p>
-        <h3>お支払いについて — Bitcoin（BTC）決済対応のお知らせ</h3>
-        <p>N's factory では、オーダー品および直接お見積もりのご依頼について、Bitcoin（BTC）でのお支払いに対応いたしました。</p>
-        <ul style="color:var(--color-text-sub);font-size:15px;line-height:1.9;margin:0 0 18px;padding-left:1.2em;">
+        <h3 data-i18n="btc.title">お支払いについて — Bitcoin（BTC）決済対応のお知らせ</h3>
+        <p data-i18n="btc.lead">N's factory では、オーダー品および直接お見積もりのご依頼について、Bitcoin（BTC）でのお支払いに対応いたしました。</p>
+        <ul style="color:var(--color-text-sub);font-size:15px;line-height:1.9;margin:0 0 18px;padding-left:1.2em;" data-i18n="btc.list" data-i18n-as-html>
           <li><strong>価格基準</strong>：すべての商品価格は <strong>日本円（税込）</strong> を基準といたします。</li>
           <li><strong>BTC数量の換算</strong>：<strong>OKJ（OKCoinJapan）の BTC/JPY レート</strong>を参照し、<strong>ご注文日 JST 00:00 時点のレートを当日中固定</strong>で適用して円建て金額をBTC数量に換算してご案内します。お客様側の取引所は問いません。</li>
           <li><strong>BTC決済割</strong>：BTC決済を選択された場合、<strong>3%&nbsp;OFF（上限&nbsp;1,000円）</strong>を適用いたします。</li>
@@ -1854,11 +1857,11 @@ h1,h2,h3{
           <li><strong>送金手数料</strong>：ネットワーク送金手数料はお客様のご負担となります。</li>
           <li><strong>返金時の取り扱い</strong>：返金が発生した場合、<strong>ご入金時の円建て金額を基準に、原則 日本円でご返金</strong>いたします。</li>
         </ul>
-        <p style="color:var(--color-text-sub);font-size:15px;line-height:1.9;margin:0 0 14px;">
+        <p style="color:var(--color-text-sub);font-size:15px;line-height:1.9;margin:0 0 14px;" data-i18n="btc.accumulate" data-i18n-as-html>
           <strong>BTC積立・口座開設の個別ご案内</strong><br>
           ご希望のお客様には、BTC積立サービスや暗号資産口座の開設について個別にご案内が可能です。お問い合わせフォームよりご相談ください。
         </p>
-        <p style="color:var(--color-text-sub);font-size:12px;line-height:1.7;margin:0;">
+        <p style="color:var(--color-text-sub);font-size:12px;line-height:1.7;margin:0;" data-i18n="btc.disclaimer" data-i18n-as-html>
           ※ 口座開設・取引によるご紹介が成立した場合、N's factory に紹介特典が付与される場合があります（利益相反の開示）。<br>
           ※ 暗号資産は価格変動リスクがあり、価値が大きく変動する可能性があります。お取引・口座開設はお客様ご自身の判断と責任において行ってください。<br>
           ※ N's factory は暗号資産交換業者ではなく、投資助言・金融商品の販売を行うものではありません。
@@ -1867,28 +1870,28 @@ h1,h2,h3{
       <aside class="btc-widget" aria-label="BTC/JPY 換算ウィジェット">
         <div class="btc-widget-head">
           <span class="btc-widget-eyebrow">BTC / JPY 換算</span>
-          <span class="btc-widget-status" id="btc-widget-status">取得中…</span>
+          <span class="btc-widget-status" id="btc-widget-status" data-i18n="btcw.loading">取得中…</span>
         </div>
         <div class="btc-widget-rate">
-          <div class="btc-widget-rate-label">参考レート（1 BTC）</div>
+          <div class="btc-widget-rate-label" data-i18n="btcw.rateLabel">参考レート（1 BTC）</div>
           <div class="btc-widget-rate-value"><span id="btc-rate-jpy">―</span><span class="btc-widget-unit">JPY</span></div>
         </div>
         <div class="btc-widget-calc">
-          <label class="btc-widget-calc-label" for="btc-calc-input">ご注文金額（JPY）</label>
+          <label class="btc-widget-calc-label" for="btc-calc-input" data-i18n="btcw.amountLabel">ご注文金額（JPY）</label>
           <div class="btc-widget-calc-input">
-            <input type="text" id="btc-calc-input" inputmode="numeric" autocomplete="off" placeholder="例: 50000">
-            <span>円</span>
+            <input type="text" id="btc-calc-input" inputmode="numeric" autocomplete="off" placeholder="例: 50000" data-i18n-placeholder="btcw.placeholder">
+            <span data-i18n="btcw.yen">円</span>
           </div>
           <div class="btc-widget-calc-row">
-            <span>BTC 概算</span>
+            <span data-i18n="btcw.approx">BTC 概算</span>
             <span class="btc-widget-calc-value"><span id="btc-calc-btc">―</span> BTC</span>
           </div>
           <div class="btc-widget-calc-row btc-widget-calc-row--accent">
-            <span>3% OFF 適用後</span>
+            <span data-i18n="btcw.afterDiscount">3% OFF 適用後</span>
             <span class="btc-widget-calc-value"><span id="btc-calc-btc-discount">―</span> BTC</span>
           </div>
         </div>
-        <p class="btc-widget-note">
+        <p class="btc-widget-note" data-i18n="btcw.note" data-i18n-as-html>
           ※ 表示中の参考レートは OKJ（OKCoinJapan）BTC/JPY の現在価格（約1分ごとに自動更新）。<br>
           ※ <strong>実際の確定レートはご注文日 JST 00:00 時点の OKJ レートを当日中固定</strong>で適用し、メールで個別ご案内します。
         </p>
@@ -1904,10 +1907,10 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="contact-box">
       <div>
-        <h3>作家に直接メールを送る</h3>
-        <p>「こんなもの作れますか？」等、気軽にお問合せください。<br>SNS の DM でも大丈夫です！</p>
+        <h3 data-i18n="contact.title">作家に直接メールを送る</h3>
+        <p data-i18n="contact.desc" data-i18n-as-html>「こんなもの作れますか？」等、気軽にお問合せください。<br>SNS の DM でも大丈夫です！</p>
       </div>
-      <a href="mailto:you0810jmsfd@gmail.com" class="btn-accent">メールで問い合わせる</a>
+      <a href="mailto:you0810jmsfd@gmail.com" class="btn-accent" data-i18n="contact.cta">メールで問い合わせる</a>
     </div>
   </div>
 </section>
@@ -1917,7 +1920,7 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="section-header">
       <p class="section-label">News</p>
-      <h2 class="section-title">お知らせ</h2>
+      <h2 class="section-title" data-i18n="news.title">お知らせ</h2>
     </div>
     <!-- 中身は news-data.json から描画する。以下の <li> は JSON が読めなかった
          ときのフォールバック（更新は Actions が JSON 側に行うため、こちらは
@@ -1968,18 +1971,18 @@ h1,h2,h3{
   <div class="section-inner">
     <div class="section-header">
       <p class="section-label">Legal</p>
-      <h2 class="section-title">特定商取引法に基づく表記</h2>
+      <h2 class="section-title" data-i18n="legal.title">特定商取引法に基づく表記</h2>
     </div>
     <table class="tokusho-table">
-      <tr><th>販売業者</th><td>中司 祐樹（屋号：N's factory）</td></tr>
-      <tr><th>所在地</th><td>千葉県印西市（詳細は請求により開示）</td></tr>
-      <tr><th>電話番号</th><td>請求があった場合に遅滞なく開示いたします</td></tr>
-      <tr><th>メールアドレス</th><td>you0810jmsfd@gmail.com</td></tr>
-      <tr><th>販売価格</th><td>各商品ページに記載（税込）</td></tr>
-      <tr><th>送料</th><td>実費（注文確定後にご案内）</td></tr>
-      <tr><th>お支払い方法</th><td>各ECサイトの規定に準ずる。<br>オーダー品および直接お見積もり分は、銀行振込のほか <strong>Bitcoin（BTC）決済</strong>を選択可能（価格は円建て税込基準。当方は OKJ（OKCoinJapan）の BTC/JPY レートを参照し、ご注文日 JST 00:00 時点のレートを当日中固定で適用してBTC数量を提示。送金手数料はお客様負担。詳細は<a href="#payment-btc">こちら</a>）。</td></tr>
-      <tr><th>引渡し時期</th><td>オーダーメイド品：制作完了後の発送。通常2〜4週間程度</td></tr>
-      <tr><th>返品・交換</th><td>オーダーメイド品の性質上、原則返品不可。不良品の場合を除く</td></tr>
+      <tr><th data-i18n="legal.seller">販売業者</th><td data-i18n="legal.sellerVal">中司 祐樹（屋号：N's factory）</td></tr>
+      <tr><th data-i18n="legal.address">所在地</th><td data-i18n="legal.addressVal">千葉県印西市（詳細は請求により開示）</td></tr>
+      <tr><th data-i18n="legal.tel">電話番号</th><td data-i18n="legal.telVal">請求があった場合に遅滞なく開示いたします</td></tr>
+      <tr><th data-i18n="legal.email">メールアドレス</th><td>you0810jmsfd@gmail.com</td></tr>
+      <tr><th data-i18n="legal.price">販売価格</th><td data-i18n="legal.priceVal">各商品ページに記載（税込）</td></tr>
+      <tr><th data-i18n="legal.shipping">送料</th><td data-i18n="legal.shippingVal">実費（注文確定後にご案内）</td></tr>
+      <tr><th data-i18n="legal.payment">お支払い方法</th><td data-i18n="legal.paymentVal" data-i18n-as-html>各ECサイトの規定に準ずる。<br>オーダー品および直接お見積もり分は、銀行振込のほか <strong>Bitcoin（BTC）決済</strong>を選択可能（価格は円建て税込基準。当方は OKJ（OKCoinJapan）の BTC/JPY レートを参照し、ご注文日 JST 00:00 時点のレートを当日中固定で適用してBTC数量を提示。送金手数料はお客様負担。詳細は<a href="#payment-btc">こちら</a>）。</td></tr>
+      <tr><th data-i18n="legal.delivery">引渡し時期</th><td data-i18n="legal.deliveryVal">オーダーメイド品：制作完了後の発送。通常2〜4週間程度</td></tr>
+      <tr><th data-i18n="legal.returns">返品・交換</th><td data-i18n="legal.returnsVal">オーダーメイド品の性質上、原則返品不可。不良品の場合を除く</td></tr>
     </table>
   </div>
 </section>
@@ -1989,16 +1992,16 @@ h1,h2,h3{
   <div class="footer-inner">
     <div>
       <div class="footer-brand">N's factory</div>
-      <p class="footer-tagline">世界にひとつだけのオリジナルを<br>千葉県印西市 中司 祐樹</p>
+      <p class="footer-tagline" data-i18n="footer.tagline" data-i18n-as-html>世界にひとつだけのオリジナルを<br>千葉県印西市 中司 祐樹</p>
     </div>
     <div class="footer-links">
-      <a href="https://linktr.ee/you0810jmsdf" class="footer-link">各種販売サイト</a>
-      <a href="https://lin.ee/qsmtY2N" class="footer-link" target="_blank" rel="noopener">A6印刷ツール</a>
-      <a href="./order_estimate/hearing-ai.html" class="footer-link">オーダー相談</a>
+      <a href="https://linktr.ee/you0810jmsdf" class="footer-link" data-i18n="footer.shops">各種販売サイト</a>
+      <a href="https://lin.ee/qsmtY2N" class="footer-link" target="_blank" rel="noopener" data-i18n="footer.a6tool">A6印刷ツール</a>
+      <a href="./order_estimate/hearing-ai.html" class="footer-link" data-i18n="footer.order">オーダー相談</a>
       <!-- 管理画面リンクは撤去（2026-08-14）。お客様の誤クリックを防ぐため公開ページには置かない。
            事業主はブックマークから order_estimate/admin.html を開くこと。 -->
-      <a href="https://lin.ee/qsmtY2N" class="footer-link" target="_blank" rel="noopener">LINE 公式アカウント</a>
-      <a href="mailto:you0810jmsfd@gmail.com" class="footer-link">メール</a>
+      <a href="https://lin.ee/qsmtY2N" class="footer-link" target="_blank" rel="noopener" data-i18n="footer.line">LINE 公式アカウント</a>
+      <a href="mailto:you0810jmsfd@gmail.com" class="footer-link" data-i18n="footer.mail">メール</a>
     </div>
   </div>
   <div class="footer-bottom">
@@ -2006,6 +2009,160 @@ h1,h2,h3{
     <span>Leather Craft · System Planner · Order Made</span>
   </div>
 </footer>
+
+<!-- ── 英語辞書（EN/JA切替。日本語はHTML原文が正、ENはこの辞書が正） ── -->
+<script>
+window.NSF_I18N_DICT = {
+  'meta.title': "N's factory — One-of-a-kind leather goods, made in Japan",
+  'nav.rooms': 'Staff Rooms',
+  'nav.room.sakusen': 'Strategy Office',
+  'nav.room.kanri': 'Finance Office',
+  'nav.room.kouhou': 'Logistics Office',
+  'nav.room.hanbai': 'Sales Office',
+  'nav.room.pr': 'PR Office',
+  'nav.room.hozen': 'Security Office',
+  'nav.room.digital': 'Digital Office',
+  'nav.room.jinji': 'HR Office',
+  'nav.room.kyouiku': 'Education Office',
+  'nav.staff': 'Staff',
+  'nav.order': 'Order Consultation',
+  'nav.qrLabel': 'This page',
+  'qr.caption': 'Scan with your phone camera',
+  'hero.title': 'One of a kind,<br>made just for you',
+  'hero.desc': 'Leather speaks, and hands answer.<br>Where maker and owner meet directly, one-of-a-kind planners, leather goods, seals, acrylic and woodwork come to life.<br><br>Materials and design — everything is in your hands.',
+  'hero.cta': 'Order Consultation →',
+  'planner.title': 'Ring Planner Full Order',
+  'planner.desc': 'Size, leather, rings, hardware, embossing — everything made to your specification. Available in all 7 sizes from Micro5 to A5.',
+  'ai.title': 'Our AI staff welcomes you 24/7',
+  'ai.lead': "At N's factory, ten AI staff members with distinct personalities are here to help. “Which size fits me?” “How far can my budget go?” — ask anytime and get an instant answer. Tap “Chat with AI staff” at the bottom right of the screen. When you are ready to order, they will guide you to the consultation desk.",
+  'newarrival.title': 'New Arrival',
+  'newarrival.semi': 'Semi-custom',
+  'newarrival.item': 'Laser-engraved Vegetable-tanned Leather<br>Memorial Photo Frame',
+  'newarrival.catch': 'Engrave the day in leather.',
+  'newarrival.price': '¥5,000<span> (tax incl.)</span>',
+  'newarrival.cta': 'View details →',
+  'note.title': 'Now serialized on note',
+  'note.h3': 'The Leathercrafter Who Hired 8 AI Advisors',
+  'note.desc': 'A small leathercraft studio hires AI as strategic advisors,<br>running management, PR, sales and accounting single-handedly.<br>A real-life chronicle, serialized on note (in Japanese).',
+  'note.read': 'Read the series →',
+  'note.member': 'Join the membership →',
+  'showroom.title': '3D Showroom',
+  'showroom.h3': 'Metaverse store now open',
+  'showroom.desc': "N's factory leather goods and ring planners are on display in a virtual space.<br>Our AI staff will show you around. Enter from your smartphone or PC.",
+  'showroom.enter': 'Enter →',
+  'staff.title': "The staff behind N's factory",
+  'staff.leadTitle': 'One studio, many perspectives.',
+  'staff.leadDesc': "At N's factory, making, sales, PR, administration, security and digital operations are each assigned a clear role, so even a small studio can move without hesitation. Behind every piece that reaches you, each staff officer supports quality, planning, communication and continuity.",
+  'staff.commander': 'Commander',
+  'staff.tagline': 'The commander leading the entire business',
+  'staff.profileCta': 'View profile',
+  'staff.noteCta': 'Read the AI management chronicle (note) →',
+  'staff.tasksLabel': 'Main duties',
+  'staff.badge.sakusen': 'Strategy Officer',
+  'staff.cta.sakusen': 'Strategy Room<span style="color:#C0392B;font-size:11px;font-weight:700;margin-left:6px;">Restricted</span>',
+  'staff.task.shijisho': 'Strategy directives <span style="color:#c00;font-weight:700;">[Restricted]</span>',
+  'staff.task.shogen': 'Staff roster <span style="color:#c00;font-weight:700;">[Restricted]</span>',
+  'staff.task.keikaku': 'Staff planning <span style="color:#c00;font-weight:700;">[Restricted]</span>',
+  'staff.task.dashboard': 'Strategy dashboard',
+  'staff.task.nisshiViewer': 'Work journal viewer',
+  'staff.task.taskboard': 'Priority task board',
+  'staff.badge.kanri': 'Finance Officer',
+  'staff.cta.kanri': 'Finance Office',
+  'staff.task.okjNotify': 'OKJ BTC/JPY alert settings',
+  'staff.task.sma': 'SMA signal settings',
+  'staff.task.monthlyDash': 'Monthly P&L dashboard',
+  'staff.badge.kouhou': 'Logistics Officer',
+  'staff.cta.kouhou': 'Logistics Office',
+  'staff.task.tools': 'Leathercraft tool links',
+  'staff.badge.hanbai': 'Sales Officer',
+  'staff.cta.hanbai': 'Sales Office',
+  'staff.task.order': 'Order consultation',
+  'staff.task.progress': 'Order progress tracker',
+  'staff.task.works': 'Gallery',
+  'staff.task.register': 'Product registration <span style="color:#c00;font-weight:700;">[Restricted]</span>',
+  'staff.task.ecList': 'EC listing status',
+  'staff.task.marche': 'Market & event schedule',
+  'staff.badge.pr': 'PR Officer',
+  'staff.cta.pr': 'PR Office',
+  'staff.task.links': 'Link collection',
+  'staff.task.furusato': 'Hometown-tax gift card design <span style="color:#c00;font-weight:700;">[Restricted]</span>',
+  'staff.task.snsCalendar': 'SNS posting calendar',
+  'staff.task.bannerLib': 'Banner asset library',
+  'staff.task.logoBrand': 'Logo & brand colors',
+  'staff.task.lineStamp': 'LINE stickers on sale',
+  'staff.badge.hozen': 'Security Officer',
+  'staff.cta.hozen': 'Security Office',
+  'staff.task.passwordNote': 'Password Note',
+  'staff.task.apiLedger': 'API key ledger',
+  'staff.task.tokenAudit': 'Token audit records',
+  'staff.task.backup': 'Backup status',
+  'staff.task.monitor': 'Monitoring & alerts',
+  'staff.badge.digital': 'Digital Officer',
+  'staff.cta.digital': 'Digital Office',
+  'staff.task.invoice': 'Document ledger (quotes/invoices/receipts) <span style="color:#c00;font-weight:700;">[Restricted]</span>',
+  'staff.task.showroom': '3D Showroom (metaverse store)',
+  'staff.task.patternSale': 'Pattern data sales',
+  'staff.task.cadSale': 'CAD data sales',
+  'staff.badge.jinji': 'HR Officer',
+  'staff.cta.jinji': 'HR Office',
+  'staff.task.jhcs': 'JHCS workshops',
+  'staff.task.lectureSchedule': 'Teaching schedule',
+  'staff.task.students': 'Student management',
+  'staff.task.curriculum': 'Curriculum library',
+  'staff.task.lectureFee': 'Teaching fees & expenses',
+  'staff.badge.kyouiku': 'Education Officer',
+  'staff.cta.kyouiku': 'Education Office',
+  'staff.task.hitsuki': 'Hitsuki Shinji archive',
+  'staff.task.katakamuna': 'Katakamuna archive',
+  'staff.task.ethics': 'Ethics & psychology resources',
+  'staff.task.mental': 'Mental health management',
+  'stage.hint': '― Keep scrolling and the staff officers will appear one by one ―',
+  'btc.title': 'Payment — Bitcoin (BTC) now accepted',
+  'btc.lead': "N's factory now accepts Bitcoin (BTC) for custom orders and direct quote requests.",
+  'btc.list': '<li><strong>Base currency</strong>: All prices are based on <strong>Japanese yen (tax incl.)</strong>.</li>\n<li><strong>BTC conversion</strong>: We reference the <strong>OKJ (OKCoinJapan) BTC/JPY rate</strong>, fixed at <strong>00:00 JST on your order date for that entire day</strong>, to convert the yen amount into BTC. You may use any exchange on your side.</li>\n<li><strong>BTC discount</strong>: Paying with BTC earns <strong>3% OFF (up to ¥1,000)</strong>.</li>\n<li><strong>Eligibility</strong>: Custom orders and direct quote transactions only (not applicable to purchases on EC marketplaces).</li>\n<li><strong>Network fee</strong>: The network transfer fee is borne by the customer.</li>\n<li><strong>Refunds</strong>: If a refund occurs, it will in principle be made <strong>in Japanese yen, based on the yen amount at the time of payment</strong>.</li>',
+  'btc.accumulate': '<strong>Personal guidance on BTC savings & account opening</strong><br>For interested customers, we can individually guide you through BTC accumulation services and opening a crypto-asset account. Please reach out via the contact form.',
+  'btc.disclaimer': '※ If a referral results in an account opening or trade, N’s factory may receive a referral benefit (conflict-of-interest disclosure).<br>※ Crypto-assets carry price volatility risk and their value can fluctuate significantly. Please trade and open accounts at your own judgment and responsibility.<br>※ N’s factory is not a crypto-asset exchange operator and does not provide investment advice or sell financial products.',
+  'btcw.loading': 'Loading…',
+  'btcw.rateLabel': 'Reference rate (1 BTC)',
+  'btcw.amountLabel': 'Order amount (JPY)',
+  'btcw.placeholder': 'e.g. 50000',
+  'btcw.yen': 'JPY',
+  'btcw.approx': 'Approx. BTC',
+  'btcw.afterDiscount': 'After 3% OFF',
+  'btcw.note': '※ The reference rate shown is the current OKJ (OKCoinJapan) BTC/JPY price (auto-refreshed about every minute).<br>※ <strong>The final rate is the OKJ rate at 00:00 JST on your order date, fixed for that day</strong>, and will be confirmed individually by e-mail.',
+  'contact.title': 'E-mail the maker directly',
+  'contact.desc': '“Can you make something like this?” — feel free to ask anything.<br>DMs on social media are welcome too!',
+  'contact.cta': 'Contact by e-mail',
+  'news.title': 'News',
+  'legal.title': 'Legal Notice (Specified Commercial Transactions Act)',
+  'legal.seller': 'Seller',
+  'legal.sellerVal': "Yuki Nakatsuka (trading as N's factory)",
+  'legal.address': 'Location',
+  'legal.addressVal': 'Inzai City, Chiba, Japan (full address disclosed upon request)',
+  'legal.tel': 'Phone',
+  'legal.telVal': 'Disclosed without delay upon request',
+  'legal.email': 'E-mail',
+  'legal.price': 'Prices',
+  'legal.priceVal': 'Listed on each product page (tax incl.)',
+  'legal.shipping': 'Shipping',
+  'legal.shippingVal': 'Actual cost (advised after order confirmation)',
+  'legal.payment': 'Payment methods',
+  'legal.paymentVal': 'Per each EC marketplace’s rules.<br>For custom orders and direct quotes, bank transfer or <strong>Bitcoin (BTC)</strong> is available (prices in yen, tax incl.; the OKJ (OKCoinJapan) BTC/JPY rate at 00:00 JST on the order date is fixed for that day to quote the BTC amount; network fee borne by the customer; details <a href="#payment-btc">here</a>).',
+  'legal.delivery': 'Delivery',
+  'legal.deliveryVal': 'Custom-made items: shipped after completion, typically 2–4 weeks',
+  'legal.returns': 'Returns & exchanges',
+  'legal.returnsVal': 'Due to the nature of custom-made items, returns are not accepted in principle, except for defective items',
+  'footer.tagline': 'One-of-a-kind originals, made for you<br>Yuki Nakatsuka — Inzai City, Chiba, Japan',
+  'footer.shops': 'Online shops',
+  'footer.a6tool': 'A6 print tool',
+  'footer.order': 'Order consultation',
+  'footer.line': 'LINE official account',
+  'footer.mail': 'E-mail',
+  'chat.fab': '💬 Chat with AI staff',
+  'chat.placeholder': 'Type a message...'
+};
+</script>
+<script src="assets/i18n.js"></script>
 
 <script>
 function toggleAccordion(btn) {
@@ -2335,7 +2492,7 @@ function gateConfidential(e, url) {
 </script>
 
 <!-- ── フローティングチャットボタン ── -->
-<button type="button" class="chat-fab" id="chat-fab" onclick="nsfOpenStaffChat('kojinjigyonusi')" aria-label="AIスタッフと話す">
+<button type="button" class="chat-fab" id="chat-fab" onclick="nsfOpenStaffChat('kojinjigyonusi')" aria-label="AIスタッフと話す" data-i18n="chat.fab">
   💬 AIスタッフと話す
 </button>
 
@@ -2356,7 +2513,7 @@ function gateConfidential(e, url) {
       <div id="chat-messages"></div>
       <div id="chat-quick"></div>
       <div id="chat-input-row">
-        <textarea id="chat-input" rows="1" placeholder="メッセージを入力..." maxlength="200"></textarea>
+        <textarea id="chat-input" rows="1" placeholder="メッセージを入力..." maxlength="200" data-i18n-placeholder="chat.placeholder"></textarea>
         <button id="chat-send" aria-label="送信">&#x27A4;</button>
       </div>
     </div>
@@ -2511,7 +2668,9 @@ function nsfOpenStaffChat(staffId) {
     stage.className = 'staff-stage';
     var hint = document.createElement('p');
     hint.className = 'staff-stage-hint';
-    hint.textContent = '― そのまま下へスクロールすると、幕僚が順に登場します ―';
+    hint.setAttribute('data-i18n', 'stage.hint'); // 言語切替エンジンが追従できるよう属性で持つ
+    hint.textContent = (window.NSF_I18N_DICT && window.NSF_I18N && NSF_I18N.lang === 'en' && NSF_I18N_DICT['stage.hint']) ||
+'― そのまま下へスクロールすると、幕僚が順に登場します ―';
     grid.parentNode.insertBefore(wrap, grid);
     wrap.appendChild(stage);
     stage.appendChild(hint);

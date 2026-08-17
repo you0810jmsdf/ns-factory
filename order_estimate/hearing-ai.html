@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="nsfactory-estimate-url" content="./leather-order-estimate-v2.html">
-<title>オーダー相談窓口｜N's factory オーダーメイド革製品</title>
+<title data-i18n="meta.title">オーダー相談窓口｜N's factory オーダーメイド革製品</title>
 <meta name="description" content="システム手帳のフルオーダーメイドを、AIが順番にヒアリング。用途を伝えるだけで、サイズ・リング・仕様・革色・ステッチ・名入れをプロの視点で提案し、発注票を自動作成します。">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -119,8 +119,8 @@ body{
     <!-- 2026-08-04 導線一本化: 本ページがオーダーの唯一の入口（事業主指示）。
          システム手帳特化の表記をやめ、全アイテム共通の窓口として案内する -->
     <div class="topbar-title">
-      <h1>オーダー相談窓口</h1>
-      <p>N's factory｜オーダーメイドのご相談はこちらから</p>
+      <h1 data-i18n="top.title">オーダー相談窓口</h1>
+      <p data-i18n="top.sub">N's factory｜オーダーメイドのご相談はこちらから</p>
     </div>
     <button class="modebtn" id="modeBtn">⚙ AI会話モード</button>
   </div>
@@ -130,8 +130,8 @@ body{
        本ページには元々この入力欄自体が無かった。works.htmlと同じ方式で常設する。
        ⛔ この欄を消して未入力のまま送信可能な状態に戻さないこと -->
   <div class="hr-contact">
-    <input id="hr-contact-name" type="text" placeholder="お名前（必須）" autocomplete="name">
-    <input id="hr-contact-info" type="text" placeholder="連絡先（必須・メール／SNS）" autocomplete="email">
+    <input id="hr-contact-name" type="text" placeholder="お名前（必須）" autocomplete="name" data-i18n-placeholder="contact.name">
+    <input id="hr-contact-info" type="text" placeholder="連絡先（必須・メール／SNS）" autocomplete="email" data-i18n-placeholder="contact.info">
   </div>
 
   <div class="chat" id="chat"></div>
@@ -139,24 +139,61 @@ body{
   <div class="sim-entry" id="simEntry"></div>
 
   <div class="inputbar">
-    <button id="attachBtn" type="button" title="製作イメージの画像を添付（AIが画像を見てご提案・ご相談内容と一緒に工房へも届きます）" aria-label="製作イメージの画像を添付" style="background:#faf7f4;color:#6b3a1f;border:1.5px solid #ede0d4">📷</button>
-    <input id="txt" type="text" placeholder="メッセージを入力…（自由に話しかけてOK）" autocomplete="off">
+    <button id="attachBtn" type="button" title="製作イメージの画像を添付（AIが画像を見てご提案・ご相談内容と一緒に工房へも届きます）" aria-label="製作イメージの画像を添付" style="background:#faf7f4;color:#6b3a1f;border:1.5px solid #ede0d4" data-i18n-title="attach.title" data-i18n-aria-label="attach.aria">📷</button>
+    <input id="txt" type="text" placeholder="メッセージを入力…（自由に話しかけてOK）" autocomplete="off" data-i18n-placeholder="input.placeholder">
     <button id="send">➤</button>
     <input id="attachFile" type="file" accept="image/*" multiple style="display:none">
   </div>
-  <div class="foot">試作版プロトタイプ｜最終の仕様確定・お見積りは職人が確認します</div>
+  <div class="foot" data-i18n="foot.note">試作版プロトタイプ｜最終の仕様確定・お見積りは職人が確認します</div>
 </div>
 
 <!-- テクスチャシミュレーター フルスクリーンオーバーレイ -->
 <div class="sim-overlay" id="simOverlay">
   <div class="sim-overlay-bar">
-    <h3>🎨 テクスチャシミュレーターで試す</h3>
-    <button id="simCloseBtn">✕ 閉じる</button>
+    <h3 data-i18n="sim.title">🎨 テクスチャシミュレーターで試す</h3>
+    <button id="simCloseBtn" data-i18n="sim.close">✕ 閉じる</button>
   </div>
   <iframe id="simIframe" src="about:blank"></iframe>
 </div>
 
 <script src="./hearing-core.js"></script>
+<!-- ── 英語辞書＋切替エンジン（2026-08-17） ──
+     英語表示時はガイド対話（日本語KB駆動）をスキップしてAI会話モードへ直行し、
+     GASへ lang:'en' を渡してAIが英語で応答する。ガイドの定型フロー自体は日本語のみ。 -->
+<script>
+window.NSF_I18N_DICT = {
+  'meta.title': "Order Consultation | N's factory — Custom Leather Goods",
+  'top.title': 'Order Consultation',
+  'top.sub': "N's factory | Custom order inquiries start here",
+  'contact.name': 'Your name (required)',
+  'contact.info': 'Contact (required: e-mail / SNS)',
+  'attach.title': 'Attach reference images (the AI will look at them, and they are sent to the studio with your inquiry)',
+  'attach.aria': 'Attach reference images',
+  'input.placeholder': 'Type a message… (feel free to chat)',
+  'foot.note': 'Prototype | Final specifications and quotes are confirmed by the artisan',
+  'sim.title': '🎨 Try the texture simulator',
+  'sim.close': '✕ Close',
+  'live.greeting': "Welcome to N's factory! 🧵 I'm the order consultation AI. Tell me what you would like to have made — for example “an A6 ring planner in dark green leather” or “a bifold wallet with contrast stitching”. I can help with sizes, leathers, budgets and delivery times. (Replies are handled by AI in English; the artisan will follow up personally on your order.)",
+  'live.quota': 'Today’s AI consultation limit has been reached. Please try again tomorrow, or e-mail us directly — the address is in the footer of the top page.',
+  'live.error': '⚠️ There was an error connecting to the AI. Please try again in a moment.',
+  'live.netError': '⚠️ Network error. Please check your connection and try again.',
+  'live.sendWithImages': '📨 Send this conversation & images to the studio',
+  'live.sendNoImages': '📨 Send this conversation to the studio',
+  'live.sent': '📨 Sent ✓',
+  'live.sentMsg': '📨 Your inquiry has been sent to the studio (reference no.: {no}). The artisan will review it and get back to you.',
+  'live.sendFail': '⚠️ Sending failed: {err}. Please try again later.',
+  'live.sendNetFail': '⚠️ Could not send due to a network error. Please try again later.',
+  'live.contactAlert': 'So that we can reply, please fill in your name and contact above.\nYour contact can be an e-mail address or an SNS ID (LINE / Instagram etc.).\n\n※ Without contact information we cannot reply, even though your inquiry reaches the studio.',
+  'img.onlyImages': 'Only image files (JPEG, PNG, etc.) can be attached 🙏',
+  'img.maxReached': 'Up to {n} images can be attached 🙏',
+  'img.readFail': 'Sorry, the image could not be read. Please try another one 🙏',
+  'img.received': 'Images received 📷 ({n}/{max}) Send your request and the AI will look at them and make suggestions. You can also send everything to the studio anytime with the “Send to the studio” button below.',
+  'img.label': 'Reference image {n}',
+  'est.planner': '📋 Open the quote simulator (Japanese)',
+  'est.stock': '🛍 Pick from items in stock (Japanese)'
+};
+</script>
+<script src="../assets/i18n.js"></script>
 <script>
 /* =========================================================================
    知識ベース・フロー定義は hearing-core.js（共有コア）に集約。
@@ -170,6 +207,13 @@ let COMMON_TAIL = CORE.COMMON_TAIL;
 let SYSTEM_PROMPT = NSF_HEARING.buildSystemPrompt(KB);
 
 const state = { answers:{}, step:0, liveMode:false };
+
+/* ── 英語モード（2026-08-17）──
+   英語表示時はガイド対話（日本語KB駆動）を使わず、AI会話モードへ直行する。
+   会話状態は言語に紐づくため、切替時はページを再読み込みして作り直す。 */
+function isEN(){ return !!(window.NSF_I18N && NSF_I18N.lang==='en'); }
+function T(key, ja){ return (isEN() && window.NSF_I18N_DICT && NSF_I18N_DICT[key]!==undefined) ? NSF_I18N_DICT[key] : ja; }
+document.addEventListener('nsf:langchange', ()=>location.reload());
 
 /* テクスチャシミュレーター：型紙SVGをDrive上に用意できている商品のみ対応（パイロット段階）。
    未登録の商品は「準備中」表示になる。 */
@@ -257,20 +301,20 @@ function renderSimEntry(){
 function maybeShowEstimateChip(userText, replyText){
   if(!state.liveMode) return;
   const t = String(userText||'') + ' ' + String(replyText||'');
-  const wantsPrice = /(見積|概算|金額|価格|いくら|値段|予算|料金|コスト)/.test(t);
+  const wantsPrice = /(見積|概算|金額|価格|いくら|値段|予算|料金|コスト|price|quote|estimate|cost|budget|how much)/i.test(t);
   if(!wantsPrice) return;
-  const plannerCtx = /(手帳|バインダー|システム|リフィル|micro\s*5|mini\s*6|ミニ6|マイクロ5|A6|A5|バイブル|M5|SQ)/i.test(t);
-  const stockCtx   = /(在庫品|既製品|販売中|作品集|そのまま(買|購入)|即納)/.test(t);
+  const plannerCtx = /(手帳|バインダー|システム|リフィル|planner|binder|notebook|micro\s*5|mini\s*6|ミニ6|マイクロ5|A6|A5|バイブル|bible|M5|SQ)/i.test(t);
+  const stockCtx   = /(在庫品|既製品|販売中|作品集|そのまま(買|購入)|即納|in stock|ready.?made)/i.test(t);
   simEntry.innerHTML='';
   const btn=document.createElement('button');
   if(plannerCtx){
-    btn.textContent='📋 見積もりシミュレーターで概算を見る';
+    btn.textContent=T('est.planner','📋 見積もりシミュレーターで概算を見る');
     btn.onclick=()=>window.open('./leather-order-estimate-v2.html','_blank');
   }else if(stockCtx){
     // stock-quote.html は商品パラメータ（id/name/price）必須で、無指定で開くと
     // 「商品名未指定・¥0」の見積になる（2026-08-07修正）。
     // 作品集で商品を選ぶ経路に誘導する（works.html側が正しいパラメータ付きで開く）。
-    btn.textContent='🛍 販売中の作品から選んで見積もる';
+    btn.textContent=T('est.stock','🛍 販売中の作品から選んで見積もる');
     btn.onclick=()=>window.open('../works.html','_blank');
   }else{
     return; // 手帳でも在庫品でもない金額話（革小物フルオーダー等）はAIの対話に任せる
@@ -315,12 +359,25 @@ function productQuickItems(){
   return Object.keys(PRODUCTS).map(k=>({label:`${PRODUCTS[k].emoji} ${PRODUCTS[k].name}`, sub:PRODUCTS[k].sub||'', val:k}));
 }
 function startPicker(){
+  if(isEN()){ startEnglishLive(); return; }
   showTyping();
   setTimeout(()=>{
     hideTyping();
     addMsg('bot', KB.greeting || "こんにちは！オーダー相談AIです🧵 どんなアイテムをお考えですか？");
     renderQuick(productQuickItems());
     state._picking=true;
+  }, 400);
+}
+/* 英語モード: ガイド（日本語のみ）を出さず、最初からAI会話モードで応対する */
+function startEnglishLive(){
+  state.liveMode=true; state._autoLive=false; state._picking=false;
+  history=[];
+  const mb=document.getElementById('modeBtn');
+  if(mb) mb.style.display='none'; // ガイド対話は日本語のみのため切替ボタンを隠す
+  showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    addMsg('bot', T('live.greeting','AI会話モードでご案内します🧵'));
   }, 400);
 }
 function beginProduct(key){
@@ -896,8 +953,8 @@ function showLiveSendChip(){
   if(!customerImages.length && !history.some(h=>h.role==='user')) return; // まだ送る内容がない
   quickEl.innerHTML='';
   const btn=document.createElement('button');
-  const baseLabel = customerImages.length ? '📨 相談内容と画像を工房へ送信' : '📨 この相談内容を工房へ送信';
-  btn.textContent = liveConsultSent ? '📨 送信済み✓' : baseLabel;
+  const baseLabel = customerImages.length ? T('live.sendWithImages','📨 相談内容と画像を工房へ送信') : T('live.sendNoImages','📨 この相談内容を工房へ送信');
+  btn.textContent = liveConsultSent ? T('live.sent','📨 送信済み✓') : baseLabel;
   btn.disabled = liveConsultSent;
   btn.onclick=sendLiveConsultation;
   quickEl.appendChild(btn);
@@ -910,7 +967,7 @@ function sendLiveConsultation(){
   const name = nameEl.value.trim(), contact = contactEl.value.trim();
   markContactMissing(nameEl, contactEl, name, contact);
   if(!name || !contact){
-    alert('ご返信のため、上部の「お名前」「連絡先」のご記入をお願いします。\nご連絡先はメールアドレスのほか、LINEやInstagramなどのSNS IDでも構いません。\n\n※ ご連絡先がないと、ご相談内容は工房に届いても、こちらからご返信を差し上げることができません。');
+    alert(T('live.contactAlert','ご返信のため、上部の「お名前」「連絡先」のご記入をお願いします。\nご連絡先はメールアドレスのほか、LINEやInstagramなどのSNS IDでも構いません。\n\n※ ご連絡先がないと、ご相談内容は工房に届いても、こちらからご返信を差し上げることができません。'));
     (!name?nameEl:contactEl).focus();
     return;
   }
@@ -922,13 +979,17 @@ function sendLiveConsultation(){
   }).then(r=>r.json()).then(res=>{
     if(res.ok){
       liveConsultSent=true;
-      addMsg('bot','📨 ご相談内容と画像を工房へお送りしました（受付番号: '+res.orderNo+'）。職人が確認してご案内いたします。');
+      addMsg('bot', isEN()
+        ? T('live.sentMsg','').replace('{no}', res.orderNo)
+        : '📨 ご相談内容と画像を工房へお送りしました（受付番号: '+res.orderNo+'）。職人が確認してご案内いたします。');
       showLiveSendChip();
     }else{
-      addMsg('bot','⚠️ 送信に失敗しました：'+(res.error||'不明なエラー')+'。時間をおいて再度お試しください。');
+      addMsg('bot', isEN()
+        ? T('live.sendFail','').replace('{err}', res.error||'unknown error')
+        : '⚠️ 送信に失敗しました：'+(res.error||'不明なエラー')+'。時間をおいて再度お試しください。');
     }
   }).catch(()=>{
-    addMsg('bot','⚠️ 通信エラーのため送信できませんでした。時間をおいて再度お試しください。');
+    addMsg('bot', T('live.sendNetFail','⚠️ 通信エラーのため送信できませんでした。時間をおいて再度お試しください。'));
   });
 }
 
@@ -938,9 +999,9 @@ attachBtnEl.onclick=()=>attachFileEl.click();
 attachFileEl.onchange=()=>{
   const files=Array.from(attachFileEl.files||[]).filter(f=>/^image\//.test(f.type));
   attachFileEl.value='';
-  if(!files.length){ addMsg('bot','画像ファイル（JPEG・PNGなど）のみ添付できます🙏'); return; }
+  if(!files.length){ addMsg('bot', T('img.onlyImages','画像ファイル（JPEG・PNGなど）のみ添付できます🙏')); return; }
   const room=MAX_CUSTOMER_IMAGES-customerImages.length;
-  if(room<=0){ addMsg('bot','添付できる画像は'+MAX_CUSTOMER_IMAGES+'枚までです🙏'); return; }
+  if(room<=0){ addMsg('bot', isEN() ? T('img.maxReached','').replace('{n}', MAX_CUSTOMER_IMAGES) : '添付できる画像は'+MAX_CUSTOMER_IMAGES+'枚までです🙏'); return; }
   // 添付順と表示順がずれないよう1枚ずつ直列に処理する
   files.slice(0,room).reduce((chain,file)=>chain.then(()=>
     compressImage(file).then(dataUrl=>{
@@ -948,15 +1009,17 @@ attachFileEl.onchange=()=>{
       customerImages.push({fileName:'customer_image_'+idx+'.jpg',label:'お客様の製作イメージ'+idx,dataUrl});
       pendingAIImages.push(dataUrl); // Phase4: 次のAI応答1ターンだけVision解釈に使う
       liveConsultSent=false; // 送信済み後の追加添付は再送信を許可する（新しい画像が漏れないように）
-      addImgMsg(dataUrl,'製作イメージ'+idx);
+      addImgMsg(dataUrl, isEN() ? T('img.label','').replace('{n}', idx) : '製作イメージ'+idx);
       // AI会話モードでは、画像を添付した事実をAIにもテキストで共有する（画像本体は次のliveTurnで1回だけ送る）
       if(state.liveMode) history.push({role:'user',content:'（📷 製作イメージ画像を添付しました: 製作イメージ'+idx+'）'});
-    }).catch(()=>addMsg('bot','申し訳ありません、画像の読み込みに失敗しました。別の画像でお試しください🙏'))
+    }).catch(()=>addMsg('bot', T('img.readFail','申し訳ありません、画像の読み込みに失敗しました。別の画像でお試しください🙏')))
   ),Promise.resolve()).then(()=>{
     if(!customerImages.length) return;
-    addMsg('bot', state.liveMode
+    addMsg('bot', isEN()
+      ? T('img.received','').replace('{n}', customerImages.length).replace('{max}', MAX_CUSTOMER_IMAGES)
+      : (state.liveMode
       ? '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）このままご希望をお送りいただくと、AIが画像を拝見してご提案します。下の「📨 相談内容と画像を工房へ送信」ボタンで、いつでも工房へもお送りいただけます。'
-      : '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）発注票が完成すると、ご相談内容と一緒に工房へ届きます。');
+      : '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）発注票が完成すると、ご相談内容と一緒に工房へ届きます。'));
     showLiveSendChip();
   });
 };
@@ -1025,7 +1088,7 @@ async function liveTurn(userText, skipEcho){
   history.push({role:'user', content:userText});
   showTyping();
   try{
-    const livePayload={ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5' };
+    const livePayload={ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5', lang:(isEN()?'en':'ja') };
     if(pendingAIImages.length){
       livePayload.images=pendingAIImages.slice();
       pendingAIImages=[]; // 1回送ったらクリア（失敗時も再送しない＝有料枠・トークンの浪費防止を優先）
@@ -1038,12 +1101,12 @@ async function liveTurn(userText, skipEcho){
     const data=await res.json();
     if(data.error){
       const msg = data.error==='quota exceeded'
-        ? '本日のAI相談回数の上限に達しました。恐れ入りますが、下のボタンから選んでいただく形でお伺いします。'
-        : '⚠️ AIへの接続でエラーが出ました。少し時間をおいて再度お試しください。';
+        ? T('live.quota','本日のAI相談回数の上限に達しました。恐れ入りますが、下のボタンから選んでいただく形でお伺いします。')
+        : T('live.error','⚠️ AIへの接続でエラーが出ました。少し時間をおいて再度お試しください。');
       addMsg('bot', msg);
       // 自動で切り替わった直後に上限へ当たると、お客様は行き場を失う。
       // その場合だけ、会話を消さずにガイドの選択ボタンを出し直す
-      if(data.error==='quota exceeded' && state._autoLive){
+      if(data.error==='quota exceeded' && state._autoLive && !isEN()){
         state.liveMode=false; state._autoLive=false;
         document.getElementById('modeBtn').textContent='⚙ AI会話モード';
         renderQuick(productQuickItems());
@@ -1059,7 +1122,7 @@ async function liveTurn(userText, skipEcho){
     maybeShowEstimateChip(userText, reply);  // 金額の話題なら見積もりページへの導線を出す
   }catch(e){
     hideTyping();
-    addMsg('bot','⚠️ 通信に失敗しました。ネットワークをご確認のうえ、もう一度お試しください。');
+    addMsg('bot', T('live.netError','⚠️ 通信に失敗しました。ネットワークをご確認のうえ、もう一度お試しください。'));
   }
 }
 
