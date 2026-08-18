@@ -27,6 +27,19 @@ body{
 .topbar .modebtn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.35);
   border-radius:20px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
 .topbar .modebtn:hover{background:rgba(255,255,255,.28)}
+/* ⚙AI会話モードの説明ポップアップ（初回訪問時のみ・2026-08-19 事業主指摘対応） */
+.mode-tip{
+  position:absolute;top:calc(100% + 10px);right:12px;max-width:300px;z-index:60;
+  background:#fff;color:#4a2c15;border:1.5px solid #e8c9a8;border-radius:12px;
+  padding:12px 30px 12px 14px;font-size:12.5px;line-height:1.7;
+  box-shadow:0 6px 20px rgba(61,26,8,.18);animation:tipIn .3s ease;
+}
+.mode-tip::before{content:'';position:absolute;top:-7px;right:34px;width:12px;height:12px;
+  background:#fff;border-left:1.5px solid #e8c9a8;border-top:1.5px solid #e8c9a8;transform:rotate(45deg)}
+.mode-tip b{color:#6b3a1f}
+.mode-tip .tip-close{position:absolute;top:6px;right:8px;background:none;border:none;color:#b0a090;
+  font-size:14px;cursor:pointer;padding:2px 4px;line-height:1}
+@keyframes tipIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
 /* chat area */
 .chat{flex:1;padding:18px 14px 8px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
@@ -124,6 +137,14 @@ body{
     </div>
     <button class="modebtn" id="nsfLangToggle" type="button">EN</button>
     <button class="modebtn" id="modeBtn">⚙ AI会話モード</button>
+    <!-- ⚙AI会話モードの説明（初回訪問時のみ表示。「AI会話モード」という語が
+         初見のお客様に伝わらないという事業主指摘への対応・2026-08-19）。
+         英語表示はボタン自体を隠す（startEnglishLive）ため日本語のみ -->
+    <div class="mode-tip" id="modeTip" hidden>
+      <button class="tip-close" id="modeTipClose" type="button" aria-label="閉じる">✕</button>
+      💡 ボタンを押さなくても、下の入力欄に<b>文章で話しかけると自動でAIとの会話に切り替わります</b>。<br>
+      「⚙ AI会話モード」ボタンは、最初から自由にAIと会話したいとき用です。
+    </div>
   </div>
 
   <!-- 2026-08-05: 発注票確定時、お名前・連絡先が空のまま自動送信され、作家から
@@ -1048,10 +1069,35 @@ document.getElementById('modeBtn').onclick=()=>{
   if(state.liveMode){ exitLiveMode(); } else { enterLiveMode(); }
 };
 
+/* ── ⚙AI会話モードの説明ポップアップ（2026-08-19）──
+   「AI会話モード」という語が初見のお客様に伝わらないため、初回訪問時だけ
+   ボタンの下に説明を出す。文章入力での自動切替（autoEnterLiveMode）が主経路で、
+   ボタンは手動切替用という位置づけを案内する。
+   表示は1回だけ（localStorage）。×・12秒経過・AI会話への切替で消える。 */
+const MODE_TIP_KEY='nsf_hearing_modetip_seen';
+function dismissModeTip(){
+  const tip=document.getElementById('modeTip');
+  if(tip) tip.hidden=true;
+  try{ localStorage.setItem(MODE_TIP_KEY,'1'); }catch(e){}
+}
+function maybeShowModeTip(){
+  if(isEN()) return;   // 英語表示はボタン自体が無い
+  try{ if(localStorage.getItem(MODE_TIP_KEY)) return; }catch(e){}
+  const tip=document.getElementById('modeTip');
+  if(!tip) return;
+  setTimeout(()=>{
+    if(state.liveMode) return;   // 表示前にAI会話へ入っていたら出さない
+    tip.hidden=false;
+    setTimeout(dismissModeTip, 12000);
+  }, 800);
+}
+document.getElementById('modeTipClose').onclick=dismissModeTip;
+
 /* SYSTEM_PROMPT は hearing-core.js の buildSystemPrompt(KB) で生成（KB読込後に更新） */
 
 let history=[];
 function enterLiveMode(){
+  dismissModeTip();   // 切替できた＝説明は役目を終えたので消す（2026-08-19）
   state.liveMode=true;
   state._autoLive=false;
   quickEl.innerHTML=''; chat.innerHTML='';
@@ -1073,6 +1119,7 @@ function exitLiveMode(){
    気づけないという指摘を受けての是正）。
    手動切替（enterLiveMode）と違い、それまでの会話は消さずに引き継ぐ。 */
 function autoEnterLiveMode(userText){
+  dismissModeTip();   // 自動切替に気づけた＝説明不要（2026-08-19）
   state.liveMode=true;
   state._autoLive=true;           // 上限到達時にガイドへ戻すための目印
   quickEl.innerHTML='';
@@ -1172,6 +1219,7 @@ Promise.all([
   STITCH_COLORS=stitchColors; // ステッチ色の即答ギャラリー用
   STITCH_STOCK=stitchStock;
   startPicker();
+  maybeShowModeTip();   // ⚙AI会話モードの説明（初回訪問時のみ・2026-08-19）
 });
 </script>
 </body>
