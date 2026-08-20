@@ -797,9 +797,31 @@ function isWip(r) {
 const CANCEL_WATCH_STATUSES = ['ご連絡待ち','ご連絡先待ち'];
 const STALE_DAYS = 30;
 
-// 起算日: GASの「ステータス変更日」が正。無い行（2026-08-20の列追加以前）は
-// 「更新日時」→「受付日」の順で代用する。
+// 起算日は「進捗タイムラインの最終日付」＝カードに表示されている最後の日（事業主指示 2026-08-20）。
+// ⛔ 更新日時を主軸にしないこと。列追加などの一括保存でも動くため実際の連絡状況とずれる
+//    （実測: 2026-07-31 に複数件が同じ更新日時になっている）。
+// タイムラインが空・日付が読めない行だけ ステータス変更日 → 更新日時 → 受付日 で代用する。
+function parseLooseDate(v) {
+  // '2026-08-01' / '2026/8/1' / '2026.8' / '2026-08-01 10:00:00' を受ける
+  const s = String(v || '').trim().replace(/[./]/g, '-');
+  const m = s.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?/);
+  if (!m) return null;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3] || 1));
+  return isNaN(d.getTime()) ? null : d;
+}
+// 入力順が前後していても取りこぼさないよう、最後の要素ではなく最も新しい日付を採る
+function timelineLastDate(r) {
+  const tl = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+  let latest = null;
+  tl.forEach(t => {
+    const d = parseLooseDate(t && t.date);
+    if (d && (!latest || d > latest)) latest = d;
+  });
+  return latest;
+}
 function statusSinceOf(r) {
+  const fromTimeline = timelineLastDate(r);
+  if (fromTimeline) return fromTimeline;
   const raw = r['ステータス変更日'] || r['更新日時'] || r['受付日'] || '';
   if (!raw) return null;
   // 'yyyy-MM-dd HH:mm:ss' は Safari が解釈できないためハイフン区切りに揃える
