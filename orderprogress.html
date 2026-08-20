@@ -142,6 +142,13 @@
       font-size:.72rem; font-weight:600; padding:3px 10px;
       border-radius:99px; white-space:nowrap; flex-shrink:0;
     }
+    /* 長期未返信の経過日数バッジ・キャンセルタブ（管理者モードのみ描画） */
+    .stale-badge {
+      font-size:.68rem; font-weight:700; padding:3px 8px; border-radius:99px;
+      white-space:nowrap; flex-shrink:0; background:#4B5563; color:#fff;
+    }
+    .tab-btn.tab-cancel { color:#6B7280; }
+    .tab-btn.tab-cancel.active { color:#374151; border-bottom-color:#6B7280; }
     .s-相談受付     { background:#F5F3FF; color:#6D28D9; }
     .s-ご連絡先待ち { background:#FEE2E2; color:#B91C1C; }
     .s-ご連絡待ち   { background:#EDE9FE; color:#5B21B6; }
@@ -346,6 +353,9 @@
   <button class="tab-btn" data-size="リメイク・修理" data-i18n="tab.remake">リメイク・修理</button>
   <button class="tab-btn" data-size="手帳カバー" data-i18n="tab.cover">手帳カバー</button>
   <button class="tab-btn" data-size="革小物" data-i18n="tab.goods">革小物</button>
+  <!-- キャンセル（長期未返信）タブは管理者モードのみ表示。
+       お客様の画面に「キャンセル」と出さないため、非管理者では隔離もしない（従来表示のまま）。 -->
+  <button class="tab-btn tab-cancel" id="tab-cancel" data-size="__cancel__" style="display:none;">🗂 キャンセル</button>
 </div>
 
 <!-- Main content -->
@@ -780,12 +790,83 @@ function isWip(r) {
   return !isDone(r);
 }
 
+// ─── 長期未返信（キャンセル扱い）判定 ────────────────
+// お客様からの返信を待っている状態が STALE_DAYS 日続いたものを別タブへ隔離する。
+// ⚠ データ（ステータス）は書き換えない。表示上の振り分けだけ。
+//    返信が来たら進捗を1件更新すれば「ステータス変更日」が今日になり自動で戻る。
+const CANCEL_WATCH_STATUSES = ['ご連絡待ち','ご連絡先待ち'];
+const STALE_DAYS = 30;
+
+// 起算日: GASの「ステータス変更日」が正。無い行（2026-08-20の列追加以前）は
+// 「更新日時」→「受付日」の順で代用する。
+function statusSinceOf(r) {
+  const raw = r['ステータス変更日'] || r['更新日時'] || r['受付日'] || '';
+  if (!raw) return null;
+  // 'yyyy-MM-dd HH:mm:ss' は Safari が解釈できないためハイフン区切りに揃える
+  const d = new Date(String(raw).replace(' ', 'T'));
+  return isNaN(d.getTime()) ? null : d;
+}
+function daysSinceStatus(r) {
+  const d = statusSinceOf(r);
+  if (!d) return null;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+// 何日返信が無いのかはカード上で分かるようにする（31日と200日を見分けるため）。
+// 管理者モードでのみ出す＝お客様のカードには一切付かない。
+function staleBadgeHtml(r) {
+  if (!isAdmin() || !isStaleContact(r)) return '';
+  const days = daysSinceStatus(r);
+  return `<span class="stale-badge">${days}日連絡なし</span>`;
+}
+function isStaleContact(r) {
+  if (!CANCEL_WATCH_STATUSES.includes(r['ステータス'])) return false;
+  const days = daysSinceStatus(r);
+  return days !== null && days >= STALE_DAYS;
+}
+// 管理者モードのときだけタブを出す。非管理者には存在ごと見せない。
+function updateCancelTabVisibility() {
+  const btn = document.getElementById('tab-cancel');
+  if (!btn) return;
+  const show = isAdmin();
+  if (!show && currentSize === '__cancel__') {
+    // 認証が切れた状態でキャンセルタブに留まらないよう「すべて」へ戻す
+    currentSize = 'all';
+    document.querySelectorAll('.tab-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.size === 'all'));
+  }
+  btn.style.display = show ? '' : 'none';
+  if (show) {
+    const n = allRecords.filter(isStaleContact).length;
+    btn.textContent = n ? `🗂 キャンセル (${n})` : '🗂 キャンセル';
+  }
+}
+
 function applyFilter() {
   const q = (document.getElementById('search-box').value || '').trim().toLowerCase();
+  updateCancelTabVisibility();
+
+  // キャンセル（長期未返信）タブ: 管理者モード専用
+  if (currentSize === '__cancel__') {
+    if (!isAdmin()) { currentSize = 'all'; }
+    else {
+      let stale = allRecords.filter(isStaleContact);
+      if (q) stale = stale.filter(r =>
+        (r['受付番号']||'').toLowerCase().includes(q) ||
+        (r['依頼者']||'').toLowerCase().includes(q) ||
+        (r['品名']||'').toLowerCase().includes(q)
+      );
+      updateStats(allRecords);
+      document.getElementById('stat-size').textContent = stale.length;
+      document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+      renderCards(stale);
+      return;
+    }
+  }
 
   if (currentSize === 'リメイク・修理') {
     // オーダー進捗GASのリメイク・修理レコード＋RR GAS/SEEDを統合
     const opRr = allRecords.filter(r => r['サイズ'] === 'リメイク・修理')
+                           .filter(r => !(isAdmin() && isStaleContact(r)))  // 管理者はキャンセルタブへ隔離
                            .map(r => ({...r, _type:'op'}));
     const combined = [...opRr, ...rrRecords.map(r => ({...r, _type:'rr'}))];
     let filtered = combined;
@@ -810,6 +891,8 @@ function applyFilter() {
   updateStats(allRecords);
 
   let filtered = allRecords;
+  // 長期未返信はキャンセルタブへ隔離（管理者モードのみ。お客様の画面では従来どおり表示する）
+  if (isAdmin()) filtered = filtered.filter(r => !isStaleContact(r));
   if (currentSize !== 'all') filtered = filtered.filter(r => r['サイズ'] === currentSize);
   if (currentStatFilter === 'wip') filtered = filtered.filter(isWip);
   if (currentStatFilter === 'done') filtered = filtered.filter(isDone);
@@ -940,6 +1023,7 @@ function renderCards(records) {
           <div class="client-name">${esc(clientDisplay)}</div>
         </div>
         <span class="status-badge ${cls}">${esc(stLabel(r['ステータス']||''))}</span>
+        ${staleBadgeHtml(r)}
         <span class="chevron">▼</span>
       </div>
       <div class="card-body" id="body-${id}">
