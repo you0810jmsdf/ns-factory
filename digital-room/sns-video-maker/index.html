@@ -1887,6 +1887,43 @@ function setLog(message){
     toast.classList.remove('show');
   }
 }
+/* ══ 進行中カウンター（2026-08-20 追加）══
+   「動いているのか固まっているのか分からない」への対策。
+   1秒ごとに経過秒を書き換えるので、数字が増え続けていれば処理は生きている。
+   数字が止まったら本当に固まっている、と利用者が自分で判別できる。
+   ⚠ setLog を毎秒呼ぶとスマホのトーストが出っぱなしになるため、
+     2回目以降はログ欄の textContent だけを直接書き換えること。 */
+let progressTicker = null;
+let progressTickerLabel = '';
+let progressTickerStartedAt = 0;
+
+function progressTickerText(){
+  const sec = Math.round((performance.now() - progressTickerStartedAt) / 1000);
+  return `${progressTickerLabel}（${sec}秒経過）`;
+}
+
+function startProgressTicker(label){
+  stopProgressTicker();
+  progressTickerLabel = label;
+  progressTickerStartedAt = performance.now();
+  setLog(progressTickerText());
+  progressTicker = setInterval(() => {
+    els.log.textContent = progressTickerText();
+  }, 1000);
+}
+
+// 経過秒のカウントは続けたまま、見出しだけ差し替える（段階が進んだとき用）
+function updateProgressTicker(label, options = {}){
+  if(!progressTicker){ startProgressTicker(label); return; }
+  progressTickerLabel = label;
+  if(options.resetElapsed) progressTickerStartedAt = performance.now();
+  els.log.textContent = progressTickerText();
+}
+
+function stopProgressTicker(){
+  if(progressTicker){ clearInterval(progressTicker); progressTicker = null; }
+}
+
 function setDriveStatus(message, type = 'info'){
   if(!els.driveStatus) return;
   els.driveStatus.textContent = message;
@@ -4274,13 +4311,16 @@ async function generateNarrationTimeline(){
   if(language !== 'en-US') throw new Error('AI音声付きMP4は英語台本に対応しています。読み上げ言語をEnglishへ変更してください。');
   const voice = els.aiVoiceSelect.value || AI_VOICES[language][0].value;
   const generated = [];
+  startProgressTicker('AIナレーションの生成を準備中');
   // 「セリフが終わるまで写真を待たせる」ON時は、実音声の長さで表示秒数を確定する（延長も短縮も行う）。
   // 推定式(+1.9秒の余裕)で延ばされた秒数のままだと、音声終了後に無音の間が残るため。
   const syncToVoice = !!(els.syncNarrationDuration && els.syncNarrationDuration.checked);
   let shortened = 0;
   for(let index = 0; index < list.length; index++){
     const slide = list[index];
-    setLog(`${index + 1}/${list.length}枚目のAIナレーションを生成中です。`);
+    // 枚数が進むたびに見出しを差し替えるが、経過秒は通しで数える（全体でどれだけ待ったかが分かる）
+    updateProgressTicker(`${index + 1}/${list.length}枚目のAIナレーションを生成中`);
+    els.progressBar.style.width = `${Math.round(index / list.length * 100)}%`;
     const audio = String(slide.narration || '').trim()
       ? await generateNarrationAudio(slide.narration, voice, language)
       : {sampleRate:24000, data:new Float32Array(0)};
@@ -4430,7 +4470,8 @@ async function waitForEncoderQueue(encoder, maxQueue, errors, label){
     // 無言で待たせない。5秒を超えたら「まだ動いている」ことを画面に出す
     if(waited > 5000 && !notified){
       notified = true;
-      setLog(`AI音声を変換中です（${encoderDiag.frame}/${encoderDiag.totalFrames}コマ目で待機中・あと最大10秒で中止します）。`);
+      // setLog だと ticker の毎秒更新に即上書きされるため、見出し側を差し替える
+      updateProgressTicker(`${encoderDiag.frame}/${encoderDiag.totalFrames}コマ目で待機中・あと最大10秒で中止します`);
     }
     // ⚠ ここで throw すると recordVideo の catch で保存自体が終わる（切り替え先は無い）。
     //    「方式を切り替えます」と案内すると、利用者が再開を待ち続けてしまう（2026-08-12 実害）
@@ -4706,7 +4747,7 @@ async function recordNarratedMp4(){
   const frameRate = 30;
   const narrationTrack = await generateNarrationTimeline();
   const total = totalDuration();
-  setLog('AI音声をMP4用に変換しています。');
+  updateProgressTicker('AI音声をMP4用に変換中');
   const audioStartedAt = performance.now();
   const audioChunks = await encodeGeneratedAudio(narrationTrack);
   // 成功しても遅い場合があるため、所要時間と最長待ちを残す（次に遅いと感じたときの比較材料）
@@ -4716,9 +4757,9 @@ async function recordNarratedMp4(){
   let lastError = null;
   for(const hardwareAcceleration of ['prefer-hardware', 'prefer-software']){
     try{
-      setLog(hardwareAcceleration === 'prefer-hardware'
-        ? 'AIナレーションをMP4へ合成中です。'
-        : '端末の映像処理を切り替えて自動再試行しています。');
+      updateProgressTicker(hardwareAcceleration === 'prefer-hardware'
+        ? 'AIナレーションをMP4へ合成中'
+        : '端末の映像処理を切り替えて自動再試行中', {resetElapsed:true});
       blob = await encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, frameRate, hardwareAcceleration);
       break;
     }catch(err){
@@ -4935,6 +4976,8 @@ async function recordVideo(mode = 'silent'){
     failure = err;
     throw err;
   }finally{
+    // 成功・失敗・中止のいずれでもカウンターを必ず止める
+    stopProgressTicker();
     // 写真が無い等の「開始前に弾かれた」ケースは記録しない（統計が濁るため）
     if(photos){
       const stopped = narratedSaveCancelled;
