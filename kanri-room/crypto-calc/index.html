@@ -83,7 +83,23 @@ tbody tr:nth-child(even){background:#fbfaf8}
 .selftest.ng{background:#fbe9e7;color:var(--red);border:1px solid #f0c3bd}
 .dl-row{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
 code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:12px}
-@media(max-width:640px){.wrap{padding:20px 14px 60px}h1{font-size:21px}}
+.sim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin:14px 0}
+.sim-box{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;background:#fff}
+.sim-box h4{margin:0 0 10px;font-size:14px;color:var(--accent-dark);
+  border-bottom:1px solid var(--line);padding-bottom:6px}
+.sim-field{margin-bottom:10px}
+.sim-field label{display:block;font-size:12.5px;font-weight:700;margin-bottom:3px}
+.sim-field label span{display:block;font-weight:400;font-size:11px;color:var(--muted);margin-top:1px}
+.sim-field input{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:6px;
+  text-align:right;font-variant-numeric:tabular-nums}
+.cap{background:var(--soft);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 18px;margin:14px 0}
+.cap .big{font-size:26px;font-weight:800;color:var(--accent-dark);font-variant-numeric:tabular-nums}
+.cap .lbl{font-size:12.5px;color:var(--muted)}
+.zero{background:#e9f4ee!important}
+.over{background:#fbe9e7!important}
+@media(max-width:640px){.wrap{padding:20px 14px 60px}h1{font-size:21px}
+  table{font-size:11.5px}th,td{padding:5px 6px}}
 </style>
 </head>
 <body>
@@ -134,6 +150,45 @@ code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:12px}
   <p class="note">吸収枠＝所得控除＋事業所得の赤字＋不動産所得の赤字。入れると「あと何円利確できるか」を表示します。</p>
 
   <div id="result" class="hidden"></div>
+
+  <h2>3. 税ゼロ吸収枠と利確シミュレーター（国保税込み）</h2>
+  <p class="note" style="margin-top:0">
+    前年の確定申告書 第一表から数字を写すと、<strong>何円まで利確しても所得税がゼロか</strong>と、
+    利確額ごとの<strong>所得税・住民税・国民健康保険税</strong>を同時に試算します。<br>
+    入力内容はこのブラウザにのみ保存され、送信されません。
+  </p>
+
+  <div class="sim-grid">
+    <div class="sim-box">
+      <h4>所得の状況（赤字は −（マイナス）で入力）</h4>
+      <div class="sim-field"><label for="i_biz">事業所得<span>第一表 ⑦</span></label><input type="number" id="i_biz" step="1" placeholder="赤字なら -1200000 のように"></div>
+      <div class="sim-field"><label for="i_re">不動産所得<span>第一表 ⑥</span></label><input type="number" id="i_re" step="1" placeholder="赤字なら -400000 のように"></div>
+      <div class="sim-field"><label for="i_other">その他の総合課税の所得<span>給与・年金など</span></label><input type="number" id="i_other" step="1" placeholder="なければ 0"></div>
+      <div class="sim-field"><label for="i_sep">分離長期譲渡所得<span>不動産の売却益（5年超）</span></label><input type="number" id="i_sep" step="1" placeholder="なければ 0"></div>
+    </div>
+
+    <div class="sim-box">
+      <h4>所得控除</h4>
+      <div class="sim-field"><label for="i_ded">所得税の所得控除 合計<span>第一表 ㉗</span></label><input type="number" id="i_ded" step="1" placeholder="例 2000000"></div>
+      <div class="sim-field"><label for="i_dedr">住民税の所得控除 合計<span>空欄なら所得税より15万円少ないものとして計算</span></label><input type="number" id="i_dedr" step="1" placeholder="自動"></div>
+      <div class="sim-field"><label for="i_spouse">うち配偶者（特別）控除<span>第一表 ⑳〜㉑。1,000万円の壁の判定に使う</span></label><input type="number" id="i_spouse" step="1" placeholder="なければ 0"></div>
+    </div>
+
+    <div class="sim-box">
+      <h4>国民健康保険（印西市・令和8年度）</h4>
+      <div class="sim-field"><label for="i_mem">世帯の国保加入者数<span>人</span></label><input type="number" id="i_mem" min="0" step="1" value="1"></div>
+      <div class="sim-field"><label for="i_kaigo">うち40〜64歳<span>介護納付金分の対象人数</span></label><input type="number" id="i_kaigo" min="0" step="1" value="1"></div>
+      <div class="sim-field"><label for="i_child">うち18歳未満<span>子ども・子育て支援分の均等割が免除される人数</span></label><input type="number" id="i_child" min="0" step="1" value="0"></div>
+      <div class="sim-field"><label for="i_step">試算の刻み<span>円</span></label><input type="number" id="i_step" min="100000" step="100000" value="1000000"></div>
+    </div>
+  </div>
+
+  <div class="dl-row">
+    <button class="btn" id="simRun">試算する</button>
+    <button class="btn ghost" id="simClear">入力内容を消す</button>
+  </div>
+
+  <div id="simResult" class="hidden"></div>
 
   <h2>参考：計算方法</h2>
   <table>
@@ -650,6 +705,249 @@ function download(name, text, mime){
   document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
 }
+
+/* ==========================================================================
+   税ゼロ吸収枠 ＆ 利確シミュレーター（所得税・住民税・国民健康保険税）
+
+   金額はすべて「円単位の整数」で扱う（Number で十分な桁）。
+   暗号資産の数量計算とは別系統なので、ここでは BigInt を使っていない。
+   ========================================================================== */
+
+/* 所得税の速算表（課税所得 → 税額）。復興特別所得税は別途 2.1% を加算する */
+const IT_BRACKETS = [
+  [ 1_950_000, 0.05,         0],
+  [ 3_300_000, 0.10,    97_500],
+  [ 6_950_000, 0.20,   427_500],
+  [ 9_000_000, 0.23,   636_000],
+  [18_000_000, 0.33, 1_536_000],
+  [40_000_000, 0.40, 2_796_000],
+  [Infinity,   0.45, 4_796_000],
+];
+function incomeTaxOf(taxable){
+  const t = Math.floor(Math.max(0, taxable) / 1000) * 1000;   // 千円未満切捨て
+  for (const [cap, rate, ded] of IT_BRACKETS){
+    if (t <= cap) return Math.max(0, Math.floor(t * rate - ded));
+  }
+  return 0;
+}
+
+/* 印西市 令和8年度 国民健康保険税
+   出典: 印西市「国民健康保険税の賦課」（2026-08-21 取得）
+   ⚠ 料率は毎年度改定される。年度が変わったら必ず市の公表値を確認して更新すること。 */
+const KOKUHO = {
+  基礎控除: 430_000,                                          // 旧ただし書き所得の算定に使う
+  医療:     { rate:0.0720, per:24_000, house:29_000, cap:670_000 },
+  支援:     { rate:0.0230, per:11_500, house:0,      cap:260_000 },
+  介護:     { rate:0.0200, per:14_000, house:0,      cap:170_000 },  // 40〜64歳のみ
+  子育て:   { rate:0.0025, per: 1_730, house:0,      cap: 30_000 },  // 18歳未満は均等割が免除
+};
+
+/* 配偶者控除は本人の合計所得金額で逓減し、1,000万円超で消える */
+function spouseCapOf(totalIncome, base, isResident){
+  const full = isResident ? 330_000 : 380_000;
+  const cap  = Math.min(base, full);
+  if (totalIncome > 10_000_000) return 0;
+  if (totalIncome >  9_500_000) return Math.min(cap, isResident ?  110_000 : 130_000);
+  if (totalIncome >  9_000_000) return Math.min(cap, isResident ?  220_000 : 260_000);
+  return cap;
+}
+
+/**
+ * 暗号資産を gain 円だけ利確した場合の税・保険料を試算する。
+ * 損益通算と所得控除の充当順序は措置法通達31・32共-4に従い
+ * 「総所得金額 → 分離長期譲渡所得」の順とする。
+ */
+function simulateTax(p, gain){
+  // --- 総合課税の所得（損益通算後） ---
+  const sougouRaw = p.biz + p.re + p.other + gain;
+  const sougou    = Math.max(0, sougouRaw);
+  const carryLoss = sougouRaw < 0 ? -sougouRaw : 0;          // 通算しきれない赤字
+  // 経常所得の赤字は分離長期譲渡所得からも控除できる
+  const separate  = Math.max(0, p.sep - carryLoss);
+  const totalIncome = sougou + separate;                      // 合計所得金額
+
+  const calc = (dedTotal, isResident) => {
+    // 配偶者控除の逓減ぶんを所得控除合計から差し引く
+    const spouseNow = spouseCapOf(totalIncome, p.spouse, isResident);
+    const spouseBase = isResident ? Math.min(p.spouse, 330_000) : p.spouse;
+    const ded = Math.max(0, dedTotal - (spouseBase - spouseNow));
+    const toSougou   = Math.min(ded, sougou);
+    const taxSougou  = sougou - toSougou;
+    const taxSep     = Math.max(0, separate - (ded - toSougou));
+    return { taxSougou, taxSep };
+  };
+
+  // --- 所得税・復興特別所得税 ---
+  const a = calc(p.ded, false);
+  const incomeTax = incomeTaxOf(a.taxSougou)
+                  + Math.floor(Math.floor(a.taxSep / 1000) * 1000 * 0.15);
+  const reconstruction = Math.floor(incomeTax * 0.021);
+
+  // --- 住民税（所得割＋均等割。均等割は森林環境税を含め5,000円） ---
+  const b = calc(p.dedR, true);
+  const residentTax = (totalIncome > 0)
+    ? Math.floor(Math.floor(b.taxSougou / 1000) * 1000 * 0.10)
+      + Math.floor(Math.floor(b.taxSep / 1000) * 1000 * 0.05) + 5_000
+    : 0;
+
+  // --- 国民健康保険税（所得控除はほぼ効かない。基礎控除43万のみ） ---
+  const base = Math.max(0, totalIncome - KOKUHO.基礎控除);
+  const part = (k, people) =>
+    Math.min(k.cap, Math.floor(base * k.rate) + k.per * people + k.house);
+  const kokuho = part(KOKUHO.医療,   p.members)
+               + part(KOKUHO.支援,   p.members)
+               + part(KOKUHO.介護,   p.kaigo)
+               + part(KOKUHO.子育て, Math.max(0, p.members - p.children));
+
+  const total = incomeTax + reconstruction + residentTax + kokuho;
+  return { gain, sougou, separate, totalIncome, incomeTax, reconstruction,
+           residentTax, kokuho, total, base,
+           net: gain - (incomeTax + reconstruction + residentTax) };
+}
+
+/** 所得税がゼロで収まる利確額の上限（税ゼロ吸収枠）を二分探索で求める */
+function findCapacity(p){
+  // 所得控除 −（事業・不動産・その他の所得）が理論値。分離譲渡がある場合は
+  // 控除を食い合うため、実際に所得税0となる上限を探索して求める。
+  let lo = 0, hi = 100_000_000;
+  if (simulateTax(p, 0).incomeTax > 0) return 0;
+  if (simulateTax(p, hi).incomeTax === 0) return hi;
+  while (hi - lo > 1000){
+    const mid = Math.floor((lo + hi) / 2 / 1000) * 1000;
+    if (simulateTax(p, mid).incomeTax === 0) lo = mid; else hi = mid;
+  }
+  return lo;
+}
+
+/* ---- 画面 ---- */
+const SIM_KEY = "nsf_crypto_sim_v1";
+const SIM_IDS = ["i_biz","i_re","i_other","i_sep","i_ded","i_dedr","i_spouse",
+                 "i_mem","i_kaigo","i_child","i_step"];
+
+function simLoad(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(SIM_KEY) || "{}");
+    SIM_IDS.forEach(id => { if (saved[id] != null && $("#"+id)) $("#"+id).value = saved[id]; });
+  }catch(e){ /* 壊れていたら無視 */ }
+}
+function simSave(){
+  const o = {};
+  SIM_IDS.forEach(id => { const el = $("#"+id); if (el) o[id] = el.value; });
+  try{ localStorage.setItem(SIM_KEY, JSON.stringify(o)); }catch(e){}
+}
+const numOf = id => { const v = ($("#"+id)?.value ?? "").trim(); return v === "" ? null : Number(v); };
+
+function readSimParams(){
+  const ded = numOf("i_ded") ?? 0;
+  return {
+    biz:      numOf("i_biz")   ?? 0,
+    re:       numOf("i_re")    ?? 0,
+    other:    numOf("i_other") ?? 0,
+    sep:      numOf("i_sep")   ?? 0,
+    ded,
+    // 住民税の所得控除は所得税より小さい（基礎控除・配偶者控除・扶養控除の差）。
+    // 未入力なら 15万円少ないものとして概算する。
+    dedR:     numOf("i_dedr") ?? Math.max(0, ded - 150_000),
+    spouse:   numOf("i_spouse") ?? 0,
+    members:  Math.max(0, numOf("i_mem")   ?? 1),
+    kaigo:    Math.max(0, numOf("i_kaigo") ?? 0),
+    children: Math.max(0, numOf("i_child") ?? 0),
+    step:     Math.max(100_000, numOf("i_step") ?? 1_000_000),
+  };
+}
+
+const jpy = n => Math.round(n).toLocaleString("ja-JP");
+
+$("#simRun").addEventListener("click", () => {
+  simSave();
+  const p = readSimParams();
+  const cap = findCapacity(p);
+  const rows = [];
+  const marks = [0, cap];
+  for (let g = p.step; g <= p.step * 12; g += p.step) marks.push(g);
+  [...new Set(marks.filter(v => v >= 0))].sort((a,b) => a-b).forEach(g => rows.push(simulateTax(p, g)));
+
+  const zeroRow = simulateTax(p, 0);
+  const P = [];
+
+  P.push(`<div class="cap">
+    <div class="lbl">税ゼロ吸収枠（この額まで利確しても<strong>所得税</strong>はゼロ）</div>
+    <div class="big">${jpy(cap)} 円</div>
+    <div class="lbl" style="margin-top:8px">
+      ＝ 所得控除 ${jpy(p.ded)} 円 −（事業 ${jpy(p.biz)} ＋ 不動産 ${jpy(p.re)} ＋ その他 ${jpy(p.other)}）
+      ${p.sep ? `<br>※分離長期譲渡所得 ${jpy(p.sep)} 円があるため、控除の食い合いを織り込んで再計算しています` : ""}
+    </div>
+    <button class="btn ghost" id="applyCap" style="margin-top:12px">この値を「2. 税ゼロ吸収枠」の欄に入れる</button>
+  </div>`);
+
+  if (zeroRow.kokuho > 0 || p.sep > 0){
+    P.push(`<p class="note"><strong>ただし所得税ゼロ＝負担ゼロではありません。</strong>
+      利確を0円にしても、国民健康保険税が <strong>${jpy(zeroRow.kokuho)} 円</strong>、
+      住民税が <strong>${jpy(zeroRow.residentTax)} 円</strong> 発生する見込みです
+      （国保税は所得控除がほぼ効かないため）。</p>`);
+  }
+
+  P.push(`<h2>利確額別の負担</h2>
+    <table><thead><tr>
+      <th class="l">利確額</th><th>所得税＋復興</th><th>住民税</th><th>国保税</th>
+      <th>負担 合計</th><th>実効率</th><th>手取り増</th>
+    </tr></thead><tbody>`);
+  const baseTotal = zeroRow.total;
+  for (const r of rows){
+    const delta = r.total - baseTotal;                    // 利確によって増えた負担
+    const rate  = r.gain > 0 ? (delta / r.gain * 100) : 0;
+    const net   = r.gain - delta;
+    const cls = r.gain === 0 ? "" : (r.incomeTax === 0 ? "zero" : (rate >= 20.315 ? "over" : ""));
+    P.push(`<tr class="${cls}">
+      <td class="l num">${jpy(r.gain)}${r.gain === cap && cap > 0 ? " ←枠" : ""}</td>
+      <td class="num">${jpy(r.incomeTax + r.reconstruction)}</td>
+      <td class="num">${jpy(r.residentTax)}</td>
+      <td class="num">${jpy(r.kokuho)}</td>
+      <td class="num">${jpy(r.total)}</td>
+      <td class="num">${r.gain > 0 ? rate.toFixed(1) + "%" : "—"}</td>
+      <td class="num">${r.gain > 0 ? jpy(net) : "—"}</td>
+    </tr>`);
+  }
+  P.push(`</tbody></table>`);
+  P.push(`<p class="note">
+    <strong>実効率</strong>は「利確0円のときと比べて増えた負担 ÷ 利確額」。国保税の増加を含みます。<br>
+    緑＝所得税ゼロの範囲／赤＝実効率が20.315%（将来の分離課税の税率）を超える範囲。
+    <strong>赤の帯まで一度に利確するより、緑の範囲で複数年に分けたほうが手取りは増えます。</strong>
+  </p>`);
+
+  const warn = [];
+  if (rows.some(r => r.totalIncome > 10_000_000) && p.spouse > 0){
+    warn.push("合計所得が1,000万円を超える利確額では<strong>配偶者控除が消滅</strong>します（表に織り込み済み）。");
+  }
+  if (rows.some(r => r.kokuho >= 1_130_000)){
+    warn.push("国保税が賦課限度額113万円に達する利確額があります。<strong>限度額に達した後は、追加で利確しても国保税は増えません</strong>（まとめて利確する年を作る判断材料になります）。");
+  }
+  warn.push("国保税は<strong>印西市 令和8年度</strong>の料率（医療7.20%・支援2.30%・介護2.00%・子育て0.25%、限度額113万円）で計算しています。年度が変わったら市の公表値を確認してください。");
+  warn.push("住民税の所得控除は所得税より小さいため、未入力の場合は15万円少ないものとして概算しています。正確に出すには住民税決定通知書の額を入力してください。");
+  warn.push("住民税の均等割は所得が出たら5,000円（森林環境税込み）として計算しています。<strong>非課税限度額</strong>による免除は織り込んでいないため、所得が非常に少ない年は実際より多く出ます。");
+  warn.push("国保税の所得割は<strong>世帯の被保険者全員</strong>の所得を合算して計算します。この試算は<strong>事業主1人だけに所得がある前提</strong>です。他に所得のある加入者がいる場合は実際より少なく出ます。");
+  warn.push("この試算は概算です。実際の申告・納付額は税務署・市役所の計算が優先します。");
+  P.push(`<div class="warn"><h2>試算の前提と注意</h2><ul style="margin:0;padding-left:1.2em;font-size:13px">
+    ${warn.map(w => "<li>" + w + "</li>").join("")}</ul></div>`);
+
+  const el = $("#simResult");
+  el.className = "";
+  el.innerHTML = P.join("\n");
+  $("#applyCap").onclick = () => {
+    $("#absorption").value = cap;
+    $("#absorption").scrollIntoView({ behavior:"smooth", block:"center" });
+  };
+});
+
+$("#simClear").addEventListener("click", () => {
+  if (!confirm("入力内容を消します。よろしいですか？")) return;
+  SIM_IDS.forEach(id => { const el = $("#"+id); if (el) el.value = ""; });
+  $("#i_mem").value = 1; $("#i_kaigo").value = 1; $("#i_child").value = 0;
+  $("#i_step").value = 1000000;
+  try{ localStorage.removeItem(SIM_KEY); }catch(e){}
+  $("#simResult").className = "hidden";
+});
+simLoad();
 
 /* ==========================================================================
    セルフテスト
