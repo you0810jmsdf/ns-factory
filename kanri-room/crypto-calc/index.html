@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暗号資産 計算書ツール | 監理幕僚室</title>
+<meta name="robots" content="noindex,nofollow">
+<script src="../../admin-gate.js"></script>
+<style>
+:root{
+  --ink:#1d1d1f; --muted:#66656a; --paper:#ffffff; --soft:#f6f4f1; --soft-2:#ebe4dc;
+  --line:#dfd8cf; --accent:#9b7659; --accent-dark:#6f4f3b;
+  --green:#256f4a; --red:#b13b32; --blue:#2f5f8f; --amber:#8a6d00; --amber-bg:#fdf6e3;
+  --shadow:0 10px 30px rgba(33,24,17,.09); --radius:8px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--paper);line-height:1.65;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
+  min-height:58px;padding:0 22px;background:#fff;border-bottom:1px solid var(--line)}
+.brand{font-size:13px;font-weight:800;letter-spacing:.08em}
+.topbar .spacer{flex:1}
+.nav-link{display:inline-flex;align-items:center;min-height:34px;padding:0 10px;
+  font-size:13px;color:var(--muted);border-radius:6px}
+.nav-link:hover{background:var(--soft);color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 22px 80px}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--accent)}
+h1{font-size:26px;margin:6px 0 8px;letter-spacing:.01em}
+.lead{color:var(--muted);margin:0 0 22px;font-size:14px}
+h2{font-size:16px;margin:34px 0 12px;padding-left:11px;border-left:4px solid var(--accent)}
+.privacy{display:flex;gap:12px;align-items:flex-start;background:var(--soft);
+  border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:0 0 24px;font-size:13px}
+.privacy strong{color:var(--accent-dark)}
+.drop{border:2px dashed var(--line);border-radius:var(--radius);background:var(--soft);
+  padding:34px 20px;text-align:center;transition:.15s;cursor:pointer}
+.drop.over{border-color:var(--accent);background:#f3ece5}
+.drop .big{font-size:15px;font-weight:700;margin-bottom:6px}
+.drop .small{font-size:12.5px;color:var(--muted)}
+.files{margin:16px 0 0;padding:0;list-style:none;font-size:13px}
+.files li{display:flex;gap:10px;align-items:center;padding:7px 12px;border:1px solid var(--line);
+  border-radius:6px;margin-bottom:6px;background:#fff}
+.files .kind{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;
+  background:var(--soft-2);color:var(--accent-dark);white-space:nowrap}
+.files .kind.ng{background:#fbe9e7;color:var(--red)}
+.files .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files .rm{border:none;background:none;color:var(--muted);font-size:16px;line-height:1;padding:2px 6px}
+.files .rm:hover{color:var(--red)}
+.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin:20px 0}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:700;color:var(--muted)}
+.field input,.field select{padding:8px 11px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.field input[type=number]{width:150px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border:1px solid var(--accent-dark);
+  border-radius:6px;background:var(--accent);color:#fff;font-weight:700;font-size:14px}
+.btn:hover{background:var(--accent-dark)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--accent-dark)}
+.btn.ghost:hover{background:var(--soft)}
+table{border-collapse:collapse;width:100%;margin:10px 0 18px;font-size:13px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:right;vertical-align:top}
+th{background:var(--soft);text-align:center;font-weight:700;white-space:nowrap}
+td.l,th.l{text-align:left}
+tbody tr:nth-child(even){background:#fbfaf8}
+.num{font-variant-numeric:tabular-nums}
+.total{font-weight:800;background:var(--soft-2)!important}
+.pos{color:var(--green)} .neg{color:var(--red)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;background:#fff}
+.card h3{margin:0 0 8px;font-size:15px;color:var(--accent-dark);border-bottom:1px solid var(--line);padding-bottom:6px}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0;font-size:12.5px}
+.card dt{color:var(--muted);white-space:nowrap}
+.card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.card .hl{font-weight:800;font-size:14px}
+.warn{background:var(--amber-bg);border-left:4px solid var(--amber);padding:12px 16px;margin:14px 0;border-radius:0 6px 6px 0}
+.warn h2{margin-top:0;border:none;padding-left:0;color:var(--amber)}
+.note{color:var(--muted);font-size:12px;margin-top:6px}
+.hidden{display:none}
+.selftest{font-size:12px;padding:8px 12px;border-radius:6px;display:inline-block;margin-top:8px}
+.selftest.ok{background:#e9f4ee;color:var(--green);border:1px solid #bfdfcd}
+.selftest.ng{background:#fbe9e7;color:var(--red);border:1px solid #f0c3bd}
+.dl-row{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+code{background:var(--soft);padding:1px 5px;border-radius:3px;font-size:12px}
+@media(max-width:640px){.wrap{padding:20px 14px 60px}h1{font-size:21px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">N's FACTORY</div>
+  <div class="spacer"></div>
+  <a class="nav-link" href="../">← 監理幕僚室</a>
+</div>
+
+<div class="wrap">
+  <div class="eyebrow">KANRI-ROOM / CRYPTO TAX</div>
+  <h1>暗号資産 計算書ツール</h1>
+  <p class="lead">国税庁「暗号資産の計算書（総平均法用）」と同じ計算を、取引所のCSVから自動で行います。</p>
+
+  <div class="privacy">
+    <div>🔒</div>
+    <div>
+      <strong>データはこのブラウザの中だけで処理されます。</strong>
+      読み込んだCSVや保有量がサーバーへ送信されることはありません。通信は一切発生しません。
+      席を離れるときはタブを閉じてください（再読込で内容は消えます）。
+    </div>
+  </div>
+
+  <h2>1. データを読み込む</h2>
+  <div class="drop" id="drop">
+    <div class="big">ここにファイルをドラッグ＆ドロップ</div>
+    <div class="small">
+      メルコインの月次CSV／GMOコインの年間取引報告書CSV／OKJの手入力JSON／年始残高JSON<br>
+      （クリックでファイル選択also可・複数まとめて可）
+    </div>
+    <input type="file" id="picker" multiple accept=".csv,.json" class="hidden">
+  </div>
+  <ul class="files" id="fileList"></ul>
+
+  <h2>2. 条件を指定して計算</h2>
+  <div class="controls">
+    <div class="field">
+      <label for="year">対象年（西暦）</label>
+      <input type="number" id="year" min="2017" max="2099" step="1">
+    </div>
+    <div class="field">
+      <label for="absorption">税ゼロ吸収枠（任意・円）</label>
+      <input type="number" id="absorption" step="1" placeholder="例 3962000">
+    </div>
+    <button class="btn" id="run" disabled>計算する</button>
+  </div>
+  <p class="note">吸収枠＝所得控除＋事業所得の赤字＋不動産所得の赤字。入れると「あと何円利確できるか」を表示します。</p>
+
+  <div id="result" class="hidden"></div>
+
+  <h2>参考：計算方法</h2>
+  <table>
+    <tbody>
+      <tr><th class="l">(E) 総平均単価</th><td class="l">（B 年始残高金額 ＋ D 購入等金額）÷（A 年始残高数量 ＋ C 購入等数量）</td></tr>
+      <tr><th class="l">(G) 売却原価</th><td class="l">E × F（売却数量）</td></tr>
+      <tr><th class="l">(H) 年末残高数量</th><td class="l">A ＋ C − F</td></tr>
+      <tr><th class="l">(I) 年末残高金額</th><td class="l">（B ＋ D）− G　…… (H)(I) が翌年の (A)(B) になります</td></tr>
+      <tr><th class="l">所得金額</th><td class="l">収入金額 −必要経費（1円未満切捨て）</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    <strong>総平均法は「通貨ごと」に全取引所を合算します。</strong>
+    同じBTCならOKJ・メルコイン・GMOの取引をすべて合算して1つの総平均単価を出すのが正しい方法です。
+    取引所ごとに別々の計算書を作ると単価が分かれ、所得金額が変わってしまいます。<br>
+    <strong>暗号資産の証拠金取引（GMOコインの暗号資産FX）は総合課税の雑所得です。</strong>
+    通常のFXの申告分離課税20.315%は適用されないため、現物と同じ雑所得として合算しています。
+  </p>
+  <div id="selftest"></div>
+
+  <p class="note" style="margin-top:26px">
+    提出用の xlsx（国税庁様式そのもの）が必要な場合は、
+    <a href="./crypto_calc.zip" style="color:var(--blue);text-decoration:underline">Python版一式（ZIP）</a>
+    をダウンロードして <code>run.bat</code> を実行してください。
+  </p>
+</div>
+
+<script>
+"use strict";
+
+/* ==========================================================================
+   固定小数点演算（BigInt）
+   JavaScript の Number は float64 のため、暗号資産の数量（小数8桁以上）と
+   円建て金額（8桁以上）の積で桁落ちする。総平均法は割り算を含むので
+   誤差が年末残高に蓄積する。そのため BigInt による固定小数点で計算する。
+   ========================================================================== */
+const SCALE = 20n;                 // 小数20桁で保持
+const POW   = 10n ** SCALE;
+
+function D(v){                     // string | number | bigint -> scaled BigInt
+  if (typeof v === "bigint") return v;
+  let s = String(v == null ? 0 : v).trim().replace(/[,¥円\s]/g, "");
+  if (s === "" || s === "-" || s === "--") return 0n;
+  if (!/^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(s)) return 0n;
+  if (/[eE]/.test(s)) s = Number(s).toFixed(Number(SCALE));   // 指数表記は一度展開
+  let neg = s[0] === "-";
+  if (s[0] === "+" || s[0] === "-") s = s.slice(1);
+  const [i, f = ""] = s.split(".");
+  const frac = (f + "0".repeat(Number(SCALE))).slice(0, Number(SCALE));
+  const val = BigInt(i || "0") * POW + BigInt(frac || "0");
+  return neg ? -val : val;
+}
+const add = (a, b) => a + b;
+const sub = (a, b) => a - b;
+const mul = (a, b) => (a * b) / POW;
+const div = (a, b) => (b === 0n ? 0n : (a * POW) / b);
+const isZero = a => a === 0n;
+const lt = (a, b) => a < b;
+
+/** 1円未満切捨て（負数は絶対値を切り捨て＝0方向） */
+function floorYen(a){
+  const q = a / POW;               // BigInt 除算は 0 方向に切り捨てられる
+  return q * POW;
+}
+/** 表示用：小数 dp 桁に四捨五入して末尾ゼロを落とす
+ *  （切り捨てにすると 3.475553315 が 3.475553314999… と表示され、
+ *    繰越残高として翌年に渡したときに誤差が残るため四捨五入する） */
+function fmt(a, dp){
+  const neg = a < 0n;
+  let x = neg ? -a : a;
+  const cut = POW / (10n ** BigInt(dp));
+  x = ((x + cut / 2n) / cut) * cut;
+  let i = (x / POW).toString();
+  let f = (x % POW).toString().padStart(Number(SCALE), "0").slice(0, dp).replace(/0+$/, "");
+  i = i.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return (neg ? "-" : "") + i + (f ? "." + f : "");
+}
+const yen = a => fmt(a, 2);
+const qty = a => fmt(a, 12);
+const plainNum = (a, dp) => fmt(a, dp).replace(/,/g, "");
+
+/* ==========================================================================
+   総平均法エンジン（Python版 calc.py と同一仕様）
+   ========================================================================== */
+function calculate(trades, openings, margins){
+  const openMap = new Map();
+  for (const o of openings){
+    if (openMap.has(o.currency)) throw new Error(o.currency + ": 年始残高が重複しています");
+    openMap.set(o.currency, o);
+  }
+  const marginMap = new Map();
+  for (const m of (margins || [])){
+    const cur = marginMap.get(m.currency) || { profit: 0n, loss: 0n };
+    cur.profit += m.profit; cur.loss += m.loss;
+    marginMap.set(m.currency, cur);
+  }
+  const currencies = new Set([
+    ...trades.map(t => t.currency), ...openMap.keys(), ...marginMap.keys()
+  ]);
+
+  const out = {};
+  for (const cur of currencies){
+    const ts = trades.filter(t => t.currency === cur);
+    const op = openMap.get(cur);
+    const mg = marginMap.get(cur) || { profit: 0n, loss: 0n };
+
+    const A = op ? op.quantity : 0n;
+    const B = op ? op.amount   : 0n;
+    let C = 0n, Dd = 0n, F = 0n, sellAmt = 0n, fee = 0n;
+    for (const t of ts){
+      if (t.kind === "buy"){ C = add(C, t.quantity); Dd = add(Dd, t.amount); }
+      else { F = add(F, t.quantity); sellAmt = add(sellAmt, t.amount); fee = add(fee, t.fee); }
+    }
+    const den = add(A, C);
+    const E = isZero(den) ? 0n : div(add(B, Dd), den);
+    const G = mul(E, F);
+    const H = sub(den, F);
+    if (lt(H, 0n)) throw new Error(cur + ": 年末残高数量が負になります（売却が保有を超えています）");
+    const I = sub(add(B, Dd), G);
+
+    const revenue  = add(sellAmt, mg.profit);
+    const expenses = add(add(G, fee), mg.loss);
+    const income   = floorYen(sub(revenue, expenses));
+
+    out[cur] = { currency: cur, A, B, C, D: Dd, E, F, G, H, I,
+                 revenue, expenses, income, fee,
+                 marginProfit: mg.profit, marginLoss: mg.loss };
+  }
+  return out;
+}
+
+/* ==========================================================================
+   パーサ（Python版 parsers.py と同一仕様）
+   ========================================================================== */
+function splitCSV(text){
+  // ダブルクォート対応の簡易CSVパーサ
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){
+      if (c === '"'){ if (text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else {
+      if (c === '"') q = true;
+      else if (c === ","){ row.push(cell); cell = ""; }
+      else if (c === "\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
+      else if (c !== "\r") cell += c;
+    }
+  }
+  if (cell !== "" || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+function toObjects(rows){
+  if (!rows.length) return [];
+  const head = rows[0].map(h => h.replace(/^﻿/, "").trim());
+  return rows.slice(1).map(r => {
+    const o = {}; head.forEach((h, i) => o[h] = (r[i] ?? "").trim()); return o;
+  });
+}
+function normDate(v){
+  const m = String(v || "").trim().match(/(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  return m ? `${m[1]}-${String(+m[2]).padStart(2,"0")}-${String(+m[3]).padStart(2,"0")}` : "";
+}
+const yearOf = d => (d && /^\d{4}/.test(d)) ? +d.slice(0,4) : null;
+const baseCur = s => String(s || "").trim().toUpperCase().split("/")[0];
+
+const MERCOIN_KIND = { "購入":"buy", "売却":"sell" };
+const MERCOIN_SKIP = new Set(["入金","出金"]);
+
+function parseMercoin(name, text, year, trades, warnings){
+  const rows = toObjects(splitCSV(text));
+  rows.forEach((r, idx) => {
+    const line = idx + 2;
+    if (!String(r["取引日時"] || "").trim()) return;           // 月末残高等のメタ行
+    const date = normDate(r["取引日時"]);
+    if (yearOf(date) !== year) return;
+    const k = String(r["取引種別"] || "").trim();
+    if (MERCOIN_SKIP.has(k)) return;
+    if (!MERCOIN_KIND[k]){
+      warnings.push({ file:name, line, reason:`未対応の取引種別『${k}』のため読み飛ばした。手動確認が必要` });
+      return;
+    }
+    const kind = MERCOIN_KIND[k];
+    const amount = D(r["約定金額"]);
+    const currency = kind === "buy" ? baseCur(r["増加通貨名"] || r["通貨ペア"]) : baseCur(r["減少通貨名"] || r["通貨ペア"]);
+    const quantity = kind === "buy" ? D(r["増加数量"]) : D(r["減少数量"]);
+    if (!currency || currency === "JPY" || quantity <= 0n){
+      warnings.push({ file:name, line, reason:"通貨名または数量を特定できず読み飛ばした" });
+      return;
+    }
+    const fee = String(r["手数料通貨"] || "").trim() === "JPY" ? D(r["手数料数量"]) : 0n;
+    trades.push({ date, currency, kind, quantity, amount, fee, source:"メルコイン" });
+  });
+}
+
+const GMO_SPOT = new Set(["販売所取引","取引所現物取引"]);
+const GMO_FX = "暗号資産FX取引";
+const GMO_FX_FEE = "暗号資産FXレバレッジ手数料";
+const GMO_SKIP = new Set(["日本円入出金"]);
+
+function parseGmo(name, text, year, trades, marginAcc, warnings){
+  const rows = toObjects(splitCSV(text));
+  rows.forEach((r, idx) => {
+    const line = idx + 2;
+    const date = normDate(r["日時"]);
+    if (yearOf(date) !== year) return;                          // 翌年1/1の行などを除外
+    const kbn = String(r["精算区分"] || "").trim();
+    if (GMO_SKIP.has(kbn)) return;
+
+    if (kbn === GMO_FX){
+      if (String(r["取引区分"] || "").trim() === "決済"){
+        const c = baseCur(r["銘柄名"]);
+        marginAcc.set(c, (marginAcc.get(c) || 0n) + D(r["日本円受渡金額"]));
+      }
+      return;
+    }
+    if (kbn === GMO_FX_FEE){
+      const c = baseCur(r["銘柄名"]);
+      const f = D(r["日本円受渡金額"]) || D(r["レバレッジ手数料"]);
+      marginAcc.set(c, (marginAcc.get(c) || 0n) + f);
+      return;
+    }
+    if (GMO_SPOT.has(kbn)){
+      const currency = baseCur(r["銘柄名"]);
+      const side = String(r["売買区分"] || "").trim();
+      const quantity = D(r["約定数量"]);
+      if (!currency || currency === "JPY" || quantity <= 0n || (side !== "買" && side !== "売")){
+        warnings.push({ file:name, line, reason:"現物取引だが通貨・数量・売買区分を特定できず読み飛ばした" });
+        return;
+      }
+      if (side === "買"){
+        trades.push({ date, currency, kind:"buy", quantity, amount:D(r["約定金額"]), fee:0n, source:"GMOコイン" });
+      } else {
+        // 売却価額は手数料差引後の実受取額（日本円受渡金額）を採る
+        const receipt = D(r["日本円受渡金額"]);
+        trades.push({ date, currency, kind:"sell", quantity,
+                      amount: receipt > 0n ? receipt : D(r["約定金額"]), fee:0n, source:"GMOコイン" });
+      }
+      return;
+    }
+    if (kbn === "取引所現物 取引手数料返金"){
+      warnings.push({ file:name, line, reason:`『${kbn}』は自動計上していない。金額 ${r["日本円受渡金額"]} 円を手動確認すること` });
+      return;
+    }
+    warnings.push({ file:name, line, reason:`未対応の精算区分『${kbn}』のため読み飛ばした。手動確認が必要` });
+  });
+}
+
+function parseOkjJson(name, data, year, trades, warnings){
+  if (data.year != null && +data.year !== year){
+    warnings.push({ file:name, reason:`JSONの year=${data.year} が対象年 ${year} と一致しない` });
+  }
+  (data.trades || []).forEach((it, i) => {
+    const kind = String(it.kind || "").toLowerCase();
+    if (kind !== "buy" && kind !== "sell"){
+      warnings.push({ file:name, line:i+1, reason:`kind は buy か sell のみ。『${it.kind}』は読み飛ばした` });
+      return;
+    }
+    trades.push({ date:`${year}-12-31`, currency:baseCur(it.currency), kind,
+                  quantity:D(it.quantity), amount:D(it.amount_jpy), fee:D(it.fee_jpy), source:"OKJ" });
+  });
+}
+
+/* ==========================================================================
+   画面制御
+   ========================================================================== */
+const store = [];   // {name, kind, text|json}
+const $ = s => document.querySelector(s);
+
+function detect(name, text){
+  const n = name.toLowerCase();
+  if (n.endsWith(".json")){
+    try {
+      const j = JSON.parse(text);
+      if (Array.isArray(j.balances)) return { kind:"opening", label:"年始残高", json:j };
+      if (Array.isArray(j.trades))   return { kind:"okj", label:"OKJ", json:j };
+      return { kind:"ng", label:"不明なJSON" };
+    } catch(e){ return { kind:"ng", label:"JSON解析失敗" }; }
+  }
+  const head = text.slice(0, 400).replace(/^﻿/, "");
+  if (head.includes("取引日時") && head.includes("取引種別")) return { kind:"mercoin", label:"メルコイン" };
+  if (head.includes("精算区分") && head.includes("銘柄名"))   return { kind:"gmo", label:"GMOコイン" };
+  return { kind:"ng", label:"未対応の形式" };
+}
+
+function renderFiles(){
+  const ul = $("#fileList");
+  ul.innerHTML = "";
+  store.forEach((f, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="kind${f.kind==="ng"?" ng":""}">${f.label}</span>
+                    <span class="nm"></span>
+                    <button class="rm" title="削除">×</button>`;
+    li.querySelector(".nm").textContent = f.name;
+    li.querySelector(".rm").onclick = () => { store.splice(i,1); renderFiles(); };
+    ul.appendChild(li);
+  });
+  $("#run").disabled = !store.some(f => f.kind !== "ng");
+}
+
+function addFiles(fileList){
+  const jobs = [...fileList].map(file => file.text().then(text => {
+    const d = detect(file.name, text);
+    store.push({ name:file.name, kind:d.kind, label:d.label, text, json:d.json });
+  }));
+  Promise.all(jobs).then(() => {
+    // 年始残高JSONの year から対象年を推定
+    const op = store.find(f => f.kind === "opening");
+    if (op && op.json && op.json.year && !$("#year").dataset.touched) $("#year").value = op.json.year;
+    renderFiles();
+  });
+}
+
+const drop = $("#drop");
+drop.addEventListener("click", () => $("#picker").click());
+$("#picker").addEventListener("change", e => { addFiles(e.target.files); e.target.value = ""; });
+["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+$("#year").addEventListener("input", e => e.target.dataset.touched = "1");
+$("#year").value = new Date().getFullYear() - 1;
+
+$("#run").addEventListener("click", () => {
+  const year = +$("#year").value;
+  const trades = [], warnings = [], openings = [];
+  const marginAcc = new Map();
+
+  for (const f of store){
+    if (f.kind === "mercoin") parseMercoin(f.name, f.text, year, trades, warnings);
+    else if (f.kind === "gmo") parseGmo(f.name, f.text, year, trades, marginAcc, warnings);
+    else if (f.kind === "okj") parseOkjJson(f.name, f.json, year, trades, warnings);
+    else if (f.kind === "opening"){
+      (f.json.balances || []).forEach(b =>
+        openings.push({ currency:baseCur(b.currency), quantity:D(b.quantity), amount:D(b.amount_jpy) }));
+    }
+  }
+  if (!openings.length){
+    warnings.push({ file:"-", reason:"年始残高のファイルがありません。全通貨の年始残高をゼロとして計算しました。前年から保有がある場合は必ず用意してください（総平均法は繰越が命です）" });
+  }
+  for (const t of trades){
+    if (t.amount === 0n){
+      warnings.push({ file:t.source, line:t.date,
+        reason:`${t.currency} を金額0で${t.kind==="buy"?"取得":"譲渡"}（数量 ${qty(t.quantity)}）。エアドロップ・ステーキング報酬・出庫が疑われる。無償取得は本来「取得時の時価」が雑所得になるため要確認` });
+    }
+  }
+  const margins = [...marginAcc.entries()].sort().map(([currency, pl]) =>
+    ({ currency, profit: pl > 0n ? pl : 0n, loss: pl < 0n ? -pl : 0n }));
+
+  let results;
+  try { results = calculate(trades, openings, margins); }
+  catch(err){
+    $("#result").className = "";
+    $("#result").innerHTML = `<div class="warn"><h2>計算エラー</h2><p>${esc(err.message)}</p>
+      <p class="note">年始残高（前年繰越）の設定漏れ、または取引データの欠落が疑われます。</p></div>`;
+    return;
+  }
+  render(results, trades, margins, warnings, year);
+});
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function render(results, trades, margins, warnings, year){
+  const list = Object.values(results).sort((a,b) => (b.income > a.income ? 1 : b.income < a.income ? -1 : 0));
+  const total = list.reduce((s,r) => s + r.income, 0n);
+  const marginNet = margins.reduce((s,m) => s + m.profit - m.loss, 0n);
+  const P = [];
+
+  P.push(`<h2>計算結果（${year}年分・令和${year-2018}年分）</h2>`);
+  P.push(`<table><tbody>
+    <tr><th class="l">現物取引の所得金額 合計</th><td class="num">${yen(total)} 円</td></tr>`);
+  if (margins.length){
+    P.push(`<tr><th class="l">うち証拠金取引（暗号資産FX）</th>
+      <td class="num ${marginNet>=0n?"pos":"neg"}">${yen(marginNet)} 円</td></tr>`);
+  }
+  P.push(`<tr class="total"><th class="l">雑所得（暗号資産）合計</th><td class="num">${yen(total)} 円</td></tr>
+    </tbody></table>`);
+  if (margins.length){
+    P.push(`<p class="note">※証拠金取引の損益は合計に含まれています（現物と同じ総合課税の雑所得のため）。</p>`);
+  }
+
+  const absRaw = $("#absorption").value;
+  if (absRaw !== ""){
+    const cap = D(absRaw), remain = sub(cap, total);
+    P.push(`<h2>税ゼロ吸収枠との比較</h2><table><tbody>
+      <tr><th class="l">吸収枠（所得控除＋事業等の赤字）</th><td class="num">${yen(cap)} 円</td></tr>
+      <tr><th class="l">暗号資産の所得金額</th><td class="num">${yen(total)} 円</td></tr>
+      <tr class="total"><th class="l">残り</th>
+        <td class="num ${remain>=0n?"pos":"neg"}">${yen(remain)} 円</td></tr></tbody></table>
+      <p class="note">${remain>=0n
+        ? `あと ${yen(remain)} 円の利確まで所得税ゼロの見込みです。`
+        : `吸収枠を ${yen(-remain)} 円 超過しています。課税が発生する見込みです。`}
+        暗号資産のみの概算です。国民健康保険料・住民税・不動産の譲渡所得は含みません。</p>`);
+  }
+
+  P.push(`<h2>通貨別の計算過程（総平均法）</h2><div class="cards">`);
+  for (const r of list){
+    P.push(`<div class="card"><h3>${esc(r.currency)}</h3><dl>
+      <dt>(A) 年始残高 数量</dt><dd>${qty(r.A)}</dd>
+      <dt>(B) 年始残高 金額</dt><dd>${yen(r.B)} 円</dd>
+      <dt>(C) 購入等 数量</dt><dd>${qty(r.C)}</dd>
+      <dt>(D) 購入等 金額</dt><dd>${yen(r.D)} 円</dd>
+      <dt>(E) 総平均単価</dt><dd>${yen(r.E)} 円</dd>
+      <dt>(F) 売却 数量</dt><dd>${qty(r.F)}</dd>
+      <dt>(G) 売却原価</dt><dd>${yen(r.G)} 円</dd>
+      <dt>(H) 年末残高 数量</dt><dd>${qty(r.H)}</dd>
+      <dt>(I) 年末残高 金額</dt><dd>${yen(r.I)} 円</dd>
+      <dt>収入金額</dt><dd>${yen(r.revenue)} 円</dd>
+      <dt>必要経費</dt><dd>${yen(r.expenses)} 円</dd>
+      <dt class="hl">所得金額</dt><dd class="hl ${r.income>=0n?"pos":"neg"}">${yen(r.income)} 円</dd>
+      </dl></div>`);
+  }
+  P.push(`</div>`);
+
+  // 取引所別内訳
+  const agg = new Map();
+  for (const t of trades){
+    const k = t.source + " " + t.currency;
+    const a = agg.get(k) || { bq:0n, ba:0n, sq:0n, sa:0n };
+    if (t.kind === "buy"){ a.bq += t.quantity; a.ba += t.amount; } else { a.sq += t.quantity; a.sa += t.amount; }
+    agg.set(k, a);
+  }
+  P.push(`<h2>取引所別の内訳</h2><table><thead><tr>
+    <th class="l">取引所</th><th class="l">通貨</th><th>購入 数量</th><th>購入 金額</th>
+    <th>売却 数量</th><th>売却 金額</th></tr></thead><tbody>`);
+  [...agg.entries()].sort().forEach(([k,a]) => {
+    const [src,cur] = k.split(" ");
+    P.push(`<tr><td class="l">${esc(src)}</td><td class="l">${esc(cur)}</td>
+      <td class="num">${qty(a.bq)}</td><td class="num">${yen(a.ba)}</td>
+      <td class="num">${qty(a.sq)}</td><td class="num">${yen(a.sa)}</td></tr>`);
+  });
+  P.push(`</tbody></table>`);
+
+  if (margins.length){
+    P.push(`<h2>証拠金取引（暗号資産FX）</h2><table><thead><tr>
+      <th class="l">銘柄</th><th>差益</th><th>差損</th><th>純損益</th></tr></thead><tbody>`);
+    for (const m of margins){
+      const net = m.profit - m.loss;
+      P.push(`<tr><td class="l">${esc(m.currency)}</td><td class="num">${yen(m.profit)}</td>
+        <td class="num">${yen(m.loss)}</td>
+        <td class="num ${net>=0n?"pos":"neg"}">${yen(net)}</td></tr>`);
+    }
+    P.push(`</tbody></table>`);
+  }
+
+  P.push(`<h2>ダウンロード</h2><div class="dl-row">
+    <button class="btn ghost" id="dlCsv">国税庁様式への転記表（CSV）</button>
+    <button class="btn ghost" id="dlJson">繰越残高JSON（翌年の年始残高）</button></div>
+    <p class="note">転記表CSVは、国税庁の確定申告書等作成コーナーや計算書へ入力する値をまとめたものです。
+    繰越残高JSONは翌年このツールに読み込ませてください。</p>`);
+
+  if (warnings.length){
+    P.push(`<div class="warn"><h2>⚠ 確認が必要な項目（${warnings.length}件）</h2>
+      <table><thead><tr><th class="l">出所</th><th>行</th><th class="l">内容</th></tr></thead><tbody>`);
+    for (const w of warnings){
+      P.push(`<tr><td class="l">${esc(w.file ?? "-")}</td><td class="num">${esc(w.line ?? "-")}</td>
+        <td class="l">${esc(w.reason ?? "")}</td></tr>`);
+    }
+    P.push(`</tbody></table><p class="note">読み飛ばした行がある場合、所得金額が過少になっている可能性があります。必ず原本と突き合わせてください。</p></div>`);
+  } else {
+    P.push(`<h2>確認が必要な項目</h2><p>ありません。全ての行を計算対象として取り込みました。</p>`);
+  }
+
+  const el = $("#result");
+  el.className = "";
+  el.innerHTML = P.join("\n");
+
+  $("#dlCsv").onclick = () => {
+    const rows = [["通貨","項目","値"]];
+    for (const r of list){
+      const push = (k,v) => rows.push([r.currency,k,v]);
+      push("(A) 年始残高 数量", plainNum(r.A,12));
+      push("(B) 年始残高 金額", plainNum(r.B,2));
+      push("(C) 購入等 数量",   plainNum(r.C,12));
+      push("(D) 購入等 金額",   plainNum(r.D,2));
+      push("(E) 総平均単価",     plainNum(r.E,6));
+      push("(F) 売却 数量",     plainNum(r.F,12));
+      push("(G) 売却原価",       plainNum(r.G,2));
+      push("(H) 年末残高 数量", plainNum(r.H,12));
+      push("(I) 年末残高 金額", plainNum(r.I,2));
+      push("手数料等",           plainNum(r.fee,2));
+      push("信用・証拠金（差益）", plainNum(r.marginProfit,2));
+      push("信用・証拠金（差損）", plainNum(r.marginLoss,2));
+      push("収入金額",           plainNum(r.revenue,2));
+      push("必要経費",           plainNum(r.expenses,2));
+      push("所得金額",           plainNum(r.income,0));
+    }
+    rows.push([]); rows.push(["取引所別内訳"]);
+    rows.push(["取引所","通貨","購入数量","購入金額","売却数量","売却金額"]);
+    [...agg.entries()].sort().forEach(([k,a]) => {
+      const [src,cur] = k.split(" ");
+      rows.push([src,cur,plainNum(a.bq,12),plainNum(a.ba,2),plainNum(a.sq,12),plainNum(a.sa,2)]);
+    });
+    rows.push([]); rows.push(["雑所得（暗号資産）合計", plainNum(total,0)]);
+    const csv = rows.map(r => r.map(c => `"${String(c ?? "").replace(/"/g,'""')}"`).join(",")).join("\r\n");
+    download(`暗号資産_転記表_${year}.csv`, "﻿" + csv, "text/csv");
+  };
+
+  $("#dlJson").onclick = () => {
+    const data = {
+      year: year + 1,
+      note: `${year}年末残高。翌年の年始残高(A)(B)として使う`,
+      balances: list.filter(r => r.H !== 0n || r.I !== 0n)
+                    .sort((a,b) => a.currency < b.currency ? -1 : 1)
+                    .map(r => ({ currency:r.currency, quantity:plainNum(r.H,12), amount_jpy:plainNum(r.I,2) }))
+    };
+    download(`繰越残高_${year}.json`, JSON.stringify(data, null, 2), "application/json");
+  };
+}
+
+function download(name, text, mime){
+  const blob = new Blob([text], { type: mime + ";charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+}
+
+/* ==========================================================================
+   セルフテスト
+   ページを開くたびに計算エンジンの正しさを自己検証する。
+   小数の桁数が多い検証用の値を使い、JavaScript の浮動小数点誤差が
+   混入していないか（BigInt 固定小数点が効いているか）をその場で確かめる。
+   ※ここで使う数値は検証専用の架空値であり、実際の取引データとは無関係。
+   ========================================================================== */
+(function selfTest(){
+  const el = $("#selftest");
+  try{
+    const r = calculate(
+      [{ date:"2020-01-01", currency:"TEST", kind:"buy",  quantity:D("0.87654321"), amount:D("7654321.09"), fee:0n, source:"t" },
+       { date:"2020-06-30", currency:"TEST", kind:"sell", quantity:D("0.55555555"), amount:D("6000000"),
+         fee:D("1234.56"), source:"t" }],
+      [{ currency:"TEST", quantity:D("1.23456789"), amount:D("9876543.21") }], []
+    ).TEST;
+    const checks = [
+      ["E", plainNum(r.E, 4),      "8304093.6595"],
+      ["H", plainNum(r.H, 9),      "1.55555555"],
+      ["I", plainNum(r.I, 2),      "12917478.98"],
+      ["所得", plainNum(r.income, 0), "1385380"],
+    ];
+    const bad = checks.filter(c => c[1] !== c[2]);
+    if (!bad.length){
+      el.innerHTML = `<span class="selftest ok">✓ セルフテスト合格：計算エンジンは正常です（Python版と同一の結果を返します）</span>`;
+    } else {
+      el.innerHTML = `<span class="selftest ng">✗ セルフテスト不合格：`
+        + bad.map(c => `${c[0]} は ${c[2]} のはずが ${c[1]}`).join(" / ")
+        + `　計算結果を信用しないでください</span>`;
+    }
+  } catch(e){
+    el.innerHTML = `<span class="selftest ng">✗ セルフテスト実行エラー：${esc(e.message)}</span>`;
+  }
+})();
+</script>
+</body>
+</html>
