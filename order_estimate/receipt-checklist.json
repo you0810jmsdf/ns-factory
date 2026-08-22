@@ -30,7 +30,8 @@
     "joyfulhonda",
     "creema",
     "minne",
-    "stores"
+    "stores",
+    "manual_pick"
   ],
   "matrix": {
     "2026-08": {
@@ -41,6 +42,7 @@
           {
             "date": "2026-08-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085335_Apple領収書_19feab0641a7c1e4.txt"
@@ -48,6 +50,7 @@
           {
             "date": "2026-08-07",
             "amount": 220,
+            "amount_text": "¥220",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085423_Apple領収書_19fdc11dc4ce5e62.txt"
@@ -55,6 +58,7 @@
           {
             "date": "2026-08-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085447_Apple領収書_19fd2c456c30cfe8.txt"
@@ -88,8 +92,9 @@
         "count": 1,
         "records": [
           {
-            "date": "",
+            "date": "2026-08-21",
             "amount": null,
+            "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260822_170958_ClaudeCode_1a027efb4b41ba8a.txt"
@@ -179,6 +184,7 @@
           {
             "date": "2026-08-20",
             "amount": 10923,
+            "amount_text": "¥10,923",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260820_6338_中司　祐樹_振込明細書.PDF"
@@ -196,6 +202,7 @@
           {
             "date": "",
             "amount": 244078,
+            "amount_text": "¥244,078",
             "subject": "自動振込予約",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260801_145232_Creema_19fbaae710ed8d19.txt"
@@ -213,6 +220,7 @@
           {
             "date": "2026-07-31",
             "amount": 133374,
+            "amount_text": "¥133,374",
             "subject": "売上金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-08\\20260801_145322_minne_19fbb4350f918101.txt"
@@ -231,6 +239,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2026-07": {
@@ -241,6 +258,7 @@
           {
             "date": "2026-07-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133758_Apple領収書_19f3368c7c8aa9d8.txt"
@@ -248,6 +266,7 @@
           {
             "date": "2026-07-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260710_090714_Apple領収書_19f4b034da18c5aa.txt"
@@ -281,15 +300,17 @@
         "count": 4,
         "records": [
           {
-            "date": "",
+            "date": "2026-07-21",
             "amount": null,
+            "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260722_145156_ClaudeCode_19f884afaf8bad2e.txt"
           },
           {
-            "date": "",
+            "date": "2026-07-26",
             "amount": null,
+            "amount_text": "$22.00",
             "subject": "Anthropic",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260727_145155_ClaudeCode_19fa158ba0233b0c.txt"
@@ -297,6 +318,7 @@
           {
             "date": "2026-07-21",
             "amount": 17895,
+            "amount_text": "¥17,895",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\ClaudeCode_20260721.txt"
@@ -304,6 +326,7 @@
           {
             "date": "2026-07-26",
             "amount": 3605,
+            "amount_text": "¥3,605",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\ClaudeCode_20260726.txt"
@@ -339,6 +362,7 @@
           {
             "date": "2026-07-01",
             "amount": 16510,
+            "amount_text": "¥16,510",
             "subject": "電気料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\TEPCO_202607.pdf"
@@ -356,6 +380,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260705_145210_水道_19f2fb1166d49018.txt"
@@ -363,6 +388,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260705_145211_水道_19f2f94301cbdc1d.txt"
@@ -380,6 +406,7 @@
           {
             "date": "2026-07-01",
             "amount": 3001,
+            "amount_text": "¥3,001",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\Ymobile_202607.pdf"
@@ -397,6 +424,7 @@
           {
             "date": "2026-07-01",
             "amount": 11853,
+            "amount_text": "¥11,853",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\Ymobile_202607.pdf"
@@ -432,6 +460,7 @@
           {
             "date": "2026-07-17",
             "amount": 29104,
+            "amount_text": "¥29,104",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260717_6338_中司　祐樹_振込明細書.PDF"
@@ -458,6 +487,7 @@
           {
             "date": "2026-06-30",
             "amount": 18145,
+            "amount_text": "¥18,145",
             "subject": "売上金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260701_145343_minne_19f1bc766786acd8.txt"
@@ -476,6 +506,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2026-06": {
@@ -486,6 +525,7 @@
           {
             "date": "2026-06-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260606_090717_Apple領収書_19e99e3e20d89fed.txt"
@@ -493,6 +533,7 @@
           {
             "date": "2026-06-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260706_133824_Apple領収書_19eb0a308fc1f15d.txt"
@@ -519,6 +560,7 @@
           {
             "date": "2027-06-13",
             "amount": null,
+            "amount_text": "",
             "subject": "Microsoft 365",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260615_145204_Office365_19eca18676f9411a.txt"
@@ -526,6 +568,7 @@
           {
             "date": "2026-06-15",
             "amount": 14900,
+            "amount_text": "¥14,900",
             "subject": "Microsoft 365",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\Office365_20260615.txt"
@@ -541,15 +584,17 @@
         "count": 3,
         "records": [
           {
-            "date": "",
+            "date": "2026-06-21",
             "amount": null,
+            "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260622_145158_ClaudeCode_19eedcbc2e65d094.txt"
           },
           {
-            "date": "",
+            "date": "2026-06-25",
             "amount": null,
+            "amount_text": "$5.50",
             "subject": "Anthropic",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260625_145157_ClaudeCode_19efdc3aae7a9170.txt"
@@ -557,6 +602,7 @@
           {
             "date": "2026-06-21",
             "amount": 17739,
+            "amount_text": "¥17,739",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\ClaudeCode_20260621.txt"
@@ -592,6 +638,7 @@
           {
             "date": "2026-06-01",
             "amount": 14460,
+            "amount_text": "¥14,460",
             "subject": "電気料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\TEPCO_202606.pdf"
@@ -609,6 +656,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260624_145214_水道_19ef7453b8ab2e03.txt"
@@ -616,6 +664,7 @@
           {
             "date": "2026-06-01",
             "amount": 18790,
+            "amount_text": "¥18,790",
             "subject": "水道料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\ChibaWater_202606.pdf"
@@ -633,6 +682,7 @@
           {
             "date": "2026-06-01",
             "amount": 5586,
+            "amount_text": "¥5,586",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\Ymobile_202606.pdf"
@@ -650,6 +700,7 @@
           {
             "date": "2026-06-01",
             "amount": 10152,
+            "amount_text": "¥10,152",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\Ymobile_202606.pdf"
@@ -685,6 +736,7 @@
           {
             "date": "2026-06-19",
             "amount": 23004,
+            "amount_text": "¥23,004",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260619_6338_中司　祐樹_振込明細書.PDF"
@@ -720,6 +772,7 @@
           {
             "date": "2026-06-28",
             "amount": 3135,
+            "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260628_145357_STORES_19f0c92047a7cf7b.txt"
@@ -728,6 +781,15 @@
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+        }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
         }
       }
     },
@@ -739,6 +801,7 @@
           {
             "date": "2026-05-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_090722_Apple領収書_19df9d2a095858d2.txt"
@@ -746,6 +809,7 @@
           {
             "date": "2026-05-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260510_090720_Apple領収書_19e10d75eaba99cb.txt"
@@ -779,8 +843,9 @@
         "count": 2,
         "records": [
           {
-            "date": "",
+            "date": "2026-05-21",
             "amount": null,
+            "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260522_145159_ClaudeCode_19e4e27b03784d03.txt"
@@ -788,6 +853,7 @@
           {
             "date": "2026-05-21",
             "amount": 17500,
+            "amount_text": "¥17,500",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\ClaudeCode_20260521.txt"
@@ -823,6 +889,7 @@
           {
             "date": "2026-05-01",
             "amount": 15182,
+            "amount_text": "¥15,182",
             "subject": "電気料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\TEPCO_202605.pdf"
@@ -840,6 +907,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_145215_水道_19dfb572ac906763.txt"
@@ -847,6 +915,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_145216_水道_19dfb3b42d5e38ac.txt"
@@ -854,6 +923,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260521_145215_水道_19e483124d4c3779.txt"
@@ -861,6 +931,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260524_145214_水道_19e574ae7bc44a2f.txt"
@@ -878,6 +949,7 @@
           {
             "date": "2026-05-01",
             "amount": 6024,
+            "amount_text": "¥6,024",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\Ymobile_202605.pdf"
@@ -895,6 +967,7 @@
           {
             "date": "2026-05-01",
             "amount": 14734,
+            "amount_text": "¥14,734",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\Ymobile_202605.pdf"
@@ -930,6 +1003,7 @@
           {
             "date": "2026-05-20",
             "amount": 23003,
+            "amount_text": "¥23,003",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260520_6338_中司　祐樹_振込明細書.PDF"
@@ -966,6 +1040,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2026-04": {
@@ -976,6 +1059,7 @@
           {
             "date": "2026-04-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\20260406_090729_Apple領収書_19d627f8705fe358.txt"
@@ -983,6 +1067,7 @@
           {
             "date": "2026-04-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\20260410_090727_Apple領収書_19d7692d69dfbf25.txt"
@@ -1000,6 +1085,7 @@
           {
             "date": "2026-04-13",
             "amount": 9900,
+            "amount_text": "¥9,900",
             "subject": "Photoroom",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\20260414_090725_Apple領収書_19d899c2cd67e09c.txt"
@@ -1024,15 +1110,17 @@
         "count": 5,
         "records": [
           {
-            "date": "",
+            "date": "2026-04-05",
             "amount": null,
+            "amount_text": "$22.00",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\20260406_145201_ClaudeCode_19d618db119e63c3.txt"
           },
           {
-            "date": "",
+            "date": "2026-04-20",
             "amount": null,
+            "amount_text": "$49.50",
             "subject": "Anthropic",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\20260421_145200_ClaudeCode_19daea697cbd78ba.txt"
@@ -1040,6 +1128,7 @@
           {
             "date": "2026-04-05",
             "amount": 3507,
+            "amount_text": "¥3,507",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260405.txt"
@@ -1047,6 +1136,7 @@
           {
             "date": "2026-04-20",
             "amount": 7856,
+            "amount_text": "¥7,856",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260420.txt"
@@ -1054,6 +1144,7 @@
           {
             "date": "2026-04-21",
             "amount": 15858,
+            "amount_text": "¥15,858",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260421.txt"
@@ -1089,6 +1180,7 @@
           {
             "date": "2026-04-01",
             "amount": 18390,
+            "amount_text": "¥18,390",
             "subject": "電気料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\TEPCO_202604.pdf"
@@ -1106,6 +1198,7 @@
           {
             "date": "2026-04-01",
             "amount": 17268,
+            "amount_text": "¥17,268",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\ChibaWater_202604.pdf"
@@ -1123,6 +1216,7 @@
           {
             "date": "2026-04-01",
             "amount": 2863,
+            "amount_text": "¥2,863",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\Ymobile_202604.pdf"
@@ -1140,6 +1234,7 @@
           {
             "date": "2026-04-01",
             "amount": 7053,
+            "amount_text": "¥7,053",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\Ymobile_202604.pdf"
@@ -1175,6 +1270,7 @@
           {
             "date": "2026-04-20",
             "amount": 21354,
+            "amount_text": "¥21,354",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\20260420_6338_中司　祐樹_振込明細書.PDF"
@@ -1211,6 +1307,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2026-03": {
@@ -1221,6 +1326,7 @@
           {
             "date": "2026-03-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260306_090737_Apple領収書_19cbf414fa96689c.txt"
@@ -1228,6 +1334,7 @@
           {
             "date": "2026-03-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260310_090734_Apple領収書_19cd6c7b7915af2f.txt"
@@ -1235,6 +1342,7 @@
           {
             "date": "2026-03-13",
             "amount": 150,
+            "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260313_090732_Apple領収書_19ce6aaa89192281.txt"
@@ -1268,15 +1376,17 @@
         "count": 3,
         "records": [
           {
-            "date": "",
+            "date": "2026-03-05",
             "amount": null,
+            "amount_text": "$20.00",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260306_145203_ClaudeCode_19cc1afbf9694a1e.txt"
           },
           {
-            "date": "",
+            "date": "2026-03-27",
             "amount": null,
+            "amount_text": "$5.00",
             "subject": "Anthropic",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260328_145202_ClaudeCode_19d31cfc681b0f2d.txt"
@@ -1284,6 +1394,7 @@
           {
             "date": "2026-03-05",
             "amount": 3147,
+            "amount_text": "¥3,147",
             "subject": "Claude",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\ClaudeCode_20260305.txt"
@@ -1319,6 +1430,7 @@
           {
             "date": "2026-03-01",
             "amount": 21541,
+            "amount_text": "¥21,541",
             "subject": "電気料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\TEPCO_202603.pdf"
@@ -1336,6 +1448,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260305_145218_水道_19cbc0c95566dab6.txt"
@@ -1343,6 +1456,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260329_145217_水道_19d378b1d25e3a0f.txt"
@@ -1360,6 +1474,7 @@
           {
             "date": "2026-03-01",
             "amount": 9138,
+            "amount_text": "¥9,138",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\Ymobile_202603.pdf"
@@ -1377,6 +1492,7 @@
           {
             "date": "2026-03-01",
             "amount": 11353,
+            "amount_text": "¥11,353",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\Ymobile_202603.pdf"
@@ -1412,6 +1528,7 @@
           {
             "date": "2026-03-19",
             "amount": 18302,
+            "amount_text": "¥18,302",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260319_6338_中司　祐樹_振込明細書.PDF"
@@ -1448,6 +1565,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2026-02": {
@@ -1458,6 +1584,7 @@
           {
             "date": "2026-02-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260206_090748_Apple領収書_19c2f2c368f01ea6.txt"
@@ -1465,6 +1592,7 @@
           {
             "date": "2026-02-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260210_090746_Apple領収書_19c4738c723a6300.txt"
@@ -1472,6 +1600,7 @@
           {
             "date": "2026-02-11",
             "amount": 150,
+            "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260211_090744_Apple領収書_19c4b9aebd7938eb.txt"
@@ -1479,6 +1608,7 @@
           {
             "date": "2026-02-13",
             "amount": 150,
+            "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260214_090742_Apple領収書_19c57f4331725ca9.txt"
@@ -1486,6 +1616,7 @@
           {
             "date": "2026-02-19",
             "amount": 150,
+            "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260220_090739_Apple領収書_19c78830decd2727.txt"
@@ -1548,6 +1679,7 @@
           {
             "date": "2026-02-01",
             "amount": 31887,
+            "amount_text": "¥31,887",
             "subject": "電気料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\TEPCO_202602.pdf"
@@ -1565,6 +1697,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c92be24392413f.txt"
@@ -1572,6 +1705,7 @@
           {
             "date": "2026-02-25",
             "amount": null,
+            "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c937dc8800efc6.txt"
@@ -1579,6 +1713,7 @@
           {
             "date": "2026-02-01",
             "amount": 18072,
+            "amount_text": "¥18,072",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\ChibaWater_202602.pdf"
@@ -1596,6 +1731,7 @@
           {
             "date": "2026-02-01",
             "amount": 9136,
+            "amount_text": "¥9,136",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\Ymobile_202602.pdf"
@@ -1613,6 +1749,7 @@
           {
             "date": "2026-02-01",
             "amount": 11815,
+            "amount_text": "¥11,815",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\Ymobile_202602.pdf"
@@ -1648,6 +1785,7 @@
           {
             "date": "2026-02-20",
             "amount": 15253,
+            "amount_text": "¥15,253",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260220_6338_中司　祐樹_振込明細書.PDF"
@@ -1684,6 +1822,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2026-01": {
@@ -1694,6 +1841,7 @@
           {
             "date": "2026-01-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_090754_Apple領収書_19b91990f6a9887a.txt"
@@ -1701,6 +1849,7 @@
           {
             "date": "2026-01-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260111_090751_Apple領収書_19ba96b2bdf94607.txt"
@@ -1763,6 +1912,7 @@
           {
             "date": "2026-01-01",
             "amount": 31091,
+            "amount_text": "¥31,091",
             "subject": "電気料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\TEPCO_202601.pdf"
@@ -1780,6 +1930,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_145223_水道_19b90cc570868e5b.txt"
@@ -1787,6 +1938,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145222_水道_19b9793fadff1a9f.txt"
@@ -1794,6 +1946,7 @@
           {
             "date": "",
             "amount": null,
+            "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260125_145220_水道_19bf31a099bee441.txt"
@@ -1811,6 +1964,7 @@
           {
             "date": "2026-01-01",
             "amount": 9144,
+            "amount_text": "¥9,144",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\Ymobile_202601.pdf"
@@ -1828,6 +1982,7 @@
           {
             "date": "2026-01-01",
             "amount": 13367,
+            "amount_text": "¥13,367",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\Ymobile_202601.pdf"
@@ -1863,6 +2018,7 @@
           {
             "date": "2026-01-20",
             "amount": 27453,
+            "amount_text": "¥27,453",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260120_6338_中司　祐樹_振込明細書_27453.PDF"
@@ -1899,6 +2055,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2025-12": {
@@ -1909,6 +2074,7 @@
           {
             "date": "2025-12-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-12\\20251206_145047_Apple領収書_19aefe47cd7465de.txt"
@@ -1916,6 +2082,7 @@
           {
             "date": "2025-12-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-12\\20251210_145044_Apple領収書_19b077fc40d6a671.txt"
@@ -2059,6 +2226,7 @@
           {
             "date": "2025-12-11",
             "amount": 3135,
+            "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-12\\20251211_145416_STORES_19b0dbaf4cdab9be.txt"
@@ -2067,6 +2235,15 @@
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+        }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
         }
       }
     },
@@ -2078,6 +2255,7 @@
           {
             "date": "2025-11-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-11\\20251107_145058_Apple領収書_19a5cb16cab16b97.txt"
@@ -2085,6 +2263,7 @@
           {
             "date": "2025-11-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-11\\20251111_145055_Apple領収書_19a72029f1840929.txt"
@@ -2228,6 +2407,7 @@
           {
             "date": "2025-11-16",
             "amount": 3135,
+            "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-11\\20251116_145420_STORES_19a885ee9caf982e.txt"
@@ -2236,6 +2416,15 @@
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+        }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
         }
       }
     },
@@ -2247,6 +2436,7 @@
           {
             "date": "2025-10-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-10\\20251006_145108_Apple領収書_199b5a65384d9545.txt"
@@ -2254,6 +2444,7 @@
           {
             "date": "2025-10-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-10\\20251010_145104_Apple領収書_199cd137022e6029.txt"
@@ -2261,6 +2452,7 @@
           {
             "date": "2025-10-15",
             "amount": 10700,
+            "amount_text": "¥10,700",
             "subject": "マネーフォワード",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-10\\20251016_145101_Apple領収書_199ec8019d38f774.txt"
@@ -2405,6 +2597,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2025-09": {
@@ -2415,6 +2616,7 @@
           {
             "date": "2025-09-05",
             "amount": 2000,
+            "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-09\\20250906_145114_Apple領収書_1991adac8739427f.txt"
@@ -2422,6 +2624,7 @@
           {
             "date": "2025-09-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-09\\20250910_145111_Apple領収書_19932b82d5ea024b.txt"
@@ -2566,6 +2769,15 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     },
     "2025-08": {
@@ -2576,6 +2788,7 @@
           {
             "date": "2025-08-06",
             "amount": 130,
+            "amount_text": "¥130",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-08\\20250806_145121_Apple領収書_1987d89f21321b9a.txt"
@@ -2583,6 +2796,7 @@
           {
             "date": "2025-08-09",
             "amount": 1500,
+            "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2025-08\\20250811_145118_Apple領収書_19895c7bb506a9c2.txt"
@@ -2727,10 +2941,19 @@
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
+      },
+      "manual_pick": {
+        "status": "なし",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "",
+          "steps": "取得手順未登録。情報が確定次第追記予定。"
+        }
       }
     }
   },
-  "checked_at": "2026-08-22 17:10:59",
+  "checked_at": "2026-08-22 20:20:59",
   "health": {
     "token_updated": "2026-08-22",
     "token_age_days": 0,
