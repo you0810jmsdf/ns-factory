@@ -4752,6 +4752,7 @@ const RC_SUB_LABELS = {
   creema: 'Creema（収入）',
   minne: 'minne（収入）',
   stores: 'STORES（収入）',
+  rakuma: 'ラクマ（収入）',
   // 証憑ビューアの候補画面でチェックして採り込んだ証憑がここに集まる（2026-08-22追加）。
   // 送信元ごとに列を増やすと表が横に伸びるため1列にまとめている。
   manual_pick: '個別採用',
@@ -4776,6 +4777,11 @@ const RC_ACCOUNT_DEFAULTS = {
   creema: { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
   minne:  { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
   stores: { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
+  // 2026-08-23追加: 楽天ラクマ（収入）。金額は販売手数料・配送料を差し引いた受取金額。
+  // 総額主義で仕訳するには「売上高（総額）／支払手数料」への分解が別途必要（他のECと同じ）。
+  rakuma: { debit:'普通預金', credit:'売上高', debitTax:'対象外', creditTax:'課税売上10%' },
+  // 個別採用は中身が売上とは限らないため既定を置かない（既定の通信費で送られると事故になる）。
+  // 会計ツールへ送る前に、必ず勘定科目を人が確認すること。
 };
 
 let rcMatrixData = null;
@@ -5053,6 +5059,12 @@ function rcCloseModal() {
 function rcAccountingRowFromRecord(month, sub, record) {
   const amount = Number(record && record.amount);
   if (!Number.isFinite(amount) || amount <= 0) return null;
+  // ⛔ 個別採用は会計ツールへ自動で送らない。
+  //    中身が売上・仕入・経費のどれかは採り込んだメールによって違うのに、
+  //    RC_ACCOUNT_DEFAULTS に無い列は既定の「通信費」で送られてしまう。
+  //    実際に採り込んだYahoo!の売上¥2,165が通信費として計上される事故になる。
+  //    この列の仕訳は、証憑を見て人が起こすこと。
+  if (sub === 'manual_pick') return null;
   const subject = record.subject || RC_SUB_LABELS[sub] || sub;
   const date = String(record.date || `${month}-01`).replace(/\//g, '-');
   const defaults = RC_ACCOUNT_DEFAULTS[sub] || { debit: '通信費', tax: '課税仕入10%' };
@@ -5113,6 +5125,19 @@ function rcSendAccountingRows() {
     if (status) status.textContent = `${month} は会計ツールへ送れる金額確定済みレコードがありません。`;
     return;
   }
+
+  // 同じ請求について証憑が2枚あることがある（メール領収書＋手動DLの請求書PDFなど）。
+  // 実例: 2026-06 の Microsoft 365 は「メール自動取得分」と「手動DL分」の両方に
+  //       同じ 2026-06-15 / ¥14,900 が入っており、そのまま送ると二重計上になる。
+  // 同じ列・同じ日付・同じ金額なら同一取引とみなして1件に畳む。
+  // ⚠ 日付が違うものは畳まないこと（例: Apple ¥150 が 2/11・2/14・2/20 に3回 → 別々の課金）。
+  const dedup = new Map();
+  rows.forEach(r => {
+    const key = [r['取引日'], r['借方金額'], r['借方勘定科目'], r['貸方勘定科目']].join('|');
+    if (!dedup.has(key)) dedup.set(key, r);
+  });
+  const merged = [...dedup.values()];
+  const dropped = rows.length - merged.length;
   let queued = [];
   try {
     queued = JSON.parse(localStorage.getItem(ACCOUNTING_QUEUE_KEY) || '[]');
@@ -5121,9 +5146,10 @@ function rcSendAccountingRows() {
     queued = [];
   }
   const keys = new Set(queued.map(r => [r['取引日'], r['摘要'], r['借方金額']].join('|')));
-  const fresh = rows.filter(r => !keys.has([r['取引日'], r['摘要'], r['借方金額']].join('|')));
+  const fresh = merged.filter(r => !keys.has([r['取引日'], r['摘要'], r['借方金額']].join('|')));
   localStorage.setItem(ACCOUNTING_QUEUE_KEY, JSON.stringify(queued.concat(fresh)));
-  if (status) status.textContent = `${month} の固定費 ${fresh.length}行を会計ツールへ送りました。会計ツール側で取り込んでください。`;
+  const note = dropped > 0 ? `（同じ取引の証憑が重複していた${dropped}行は除きました）` : '';
+  if (status) status.textContent = `${month} の固定費 ${fresh.length}行を会計ツールへ送りました${note}。会計ツール側で取り込んでください。`;
 }
 
 async function loadReceiptChecklist() {
