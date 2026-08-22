@@ -2722,5 +2722,14 @@
       }
     }
   },
-  "checked_at": "2026-08-22 16:31:52"
+  "checked_at": "2026-08-22 16:55:41",
+  "health": {
+    "token_updated": "2026-08-14",
+    "token_age_days": 8,
+    "latest_receipt": "2026-08-21",
+    "receipt_age_days": 0,
+    "warnings": [
+      "Gmailの認証が8日間更新されていません。証憑の自動取得が止まっている可能性があります（監理部\\Gmail連携_失効対策手順.md）。"
+    ]
+  }
 }
