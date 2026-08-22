@@ -1199,7 +1199,7 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 1,
+        "count": 2,
         "records": [
           {
             "date": "",
@@ -1207,6 +1207,13 @@
             "subject": "領収書",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-04\\20260421_145216_水道_19daecb26dea6440.txt"
+          },
+          {
+            "date": "2026-04-01",
+            "amount": 17268,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-04\\ChibaWater_202604.pdf"
           }
         ],
         "guide": {
@@ -1672,7 +1679,7 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 3,
+        "count": 4,
         "records": [
           {
             "date": "",
@@ -1694,6 +1701,13 @@
             "subject": "水道料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c937dc8800efc6.txt"
+          },
+          {
+            "date": "2026-02-01",
+            "amount": 18072,
+            "subject": "領収書",
+            "status": "取得済み",
+            "local_path": "監理部\\utility_bills\\2026-02\\ChibaWater_202602.pdf"
           }
         ],
         "guide": {
@@ -2884,5 +2898,5 @@
       }
     }
   },
-  "checked_at": "2026-08-14 14:54:38"
+  "checked_at": "2026-08-22 10:13:10"
 }
