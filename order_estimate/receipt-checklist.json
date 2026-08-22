@@ -200,7 +200,7 @@
         "count": 1,
         "records": [
           {
-            "date": "",
+            "date": "2026-08-01",
             "amount": 244078,
             "amount_text": "¥244,078",
             "subject": "自動振込予約",
@@ -378,7 +378,7 @@
         "count": 2,
         "records": [
           {
-            "date": "",
+            "date": "2026-07-05",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -386,7 +386,7 @@
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260705_145210_水道_19f2fb1166d49018.txt"
           },
           {
-            "date": "",
+            "date": "2026-07-05",
             "amount": null,
             "amount_text": "",
             "subject": "水道料金",
@@ -654,7 +654,7 @@
         "count": 2,
         "records": [
           {
-            "date": "",
+            "date": "2026-06-24",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -788,17 +788,17 @@
         "count": 2,
         "records": [
           {
-            "date": "",
-            "amount": null,
-            "amount_text": "",
+            "date": "2026-06-23",
+            "amount": 3353,
+            "amount_text": "¥3,353",
             "subject": "売上金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260623_211703_個別採用_19ef3d4862e6c760.txt"
           },
           {
-            "date": "",
-            "amount": null,
-            "amount_text": "",
+            "date": "2026-06-27",
+            "amount": 2165,
+            "amount_text": "¥2,165",
             "subject": "売上金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260627_211703_個別採用_19f06d049967a788.txt"
@@ -922,7 +922,7 @@
         "count": 4,
         "records": [
           {
-            "date": "",
+            "date": "2026-05-06",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -930,7 +930,7 @@
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_145215_水道_19dfb572ac906763.txt"
           },
           {
-            "date": "",
+            "date": "2026-05-06",
             "amount": null,
             "amount_text": "",
             "subject": "水道料金",
@@ -938,7 +938,7 @@
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_145216_水道_19dfb3b42d5e38ac.txt"
           },
           {
-            "date": "",
+            "date": "2026-05-21",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -946,7 +946,7 @@
             "local_path": "監理部\\receipts\\processed\\2026-05\\20260521_145215_水道_19e483124d4c3779.txt"
           },
           {
-            "date": "",
+            "date": "2026-05-24",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -1463,7 +1463,7 @@
         "count": 2,
         "records": [
           {
-            "date": "",
+            "date": "2026-03-05",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -1471,7 +1471,7 @@
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260305_145218_水道_19cbc0c95566dab6.txt"
           },
           {
-            "date": "",
+            "date": "2026-03-29",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -1712,7 +1712,7 @@
         "count": 3,
         "records": [
           {
-            "date": "",
+            "date": "2026-02-25",
             "amount": null,
             "amount_text": "",
             "subject": "水道料金",
@@ -1945,7 +1945,7 @@
         "count": 3,
         "records": [
           {
-            "date": "",
+            "date": "2026-01-06",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -1953,7 +1953,7 @@
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_145223_水道_19b90cc570868e5b.txt"
           },
           {
-            "date": "",
+            "date": "2026-01-07",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -1961,7 +1961,7 @@
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145222_水道_19b9793fadff1a9f.txt"
           },
           {
-            "date": "",
+            "date": "2026-01-25",
             "amount": null,
             "amount_text": "",
             "subject": "領収書",
@@ -2970,7 +2970,7 @@
       }
     }
   },
-  "checked_at": "2026-08-22 21:17:03",
+  "checked_at": "2026-08-22 21:22:08",
   "health": {
     "token_updated": "2026-08-22",
     "token_age_days": 0,
