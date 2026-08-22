@@ -120,59 +120,9 @@
         }
       },
       "water": {
-        "status": "取得済み",
-        "count": 7,
-        "records": [
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260801_145209_水道_19fba68b46ee6f06.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085316_水道_19ff8527c477e368.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085317_水道_19ff83d209f77ddf.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_145206_水道_19ff86f0e8ea64ed.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_145207_水道_19ff8699c3959be0.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_145207_水道_19ff86be81b2e9ae.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_145208_水道_19ff8689026f8f08.txt"
-          }
-        ],
+        "status": "未取得",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://myportal.kensui.pref.chiba.lg.jp/",
           "steps": "自動取得（chibakensui@kensui.pref.chiba.lg.jp の口座振替・納入通知メールを保存）。金額が本文に無い月は千葉県営水道マイポータルで確認。"
@@ -393,43 +343,8 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 8,
+        "count": 2,
         "records": [
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145211_水道_19f2c9adfe74450e.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145211_水道_19f2c9d1318d7ceb.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145212_水道_19f2c91558a808fd.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145212_水道_19f2c9871ea9df94.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260704_145213_水道_19f2c8cf6ae2b62a.txt"
-          },
           {
             "date": "",
             "amount": null,
@@ -443,13 +358,6 @@
             "subject": "水道料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-07\\20260705_145211_水道_19f2f94301cbdc1d.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260726_145210_水道_19f9bc0122c848d6.txt"
           }
         ],
         "guide": {
@@ -688,22 +596,8 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 4,
+        "count": 2,
         "records": [
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260624_145213_水道_19ef74c76a023429.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260624_145213_水道_19ef74cb45b253c3.txt"
-          },
           {
             "date": "",
             "amount": null,
@@ -1199,15 +1093,8 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 2,
+        "count": 1,
         "records": [
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\20260421_145216_水道_19daecb26dea6440.txt"
-          },
           {
             "date": "2026-04-01",
             "amount": 17268,
@@ -1436,7 +1323,7 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 4,
+        "count": 2,
         "records": [
           {
             "date": "",
@@ -1450,21 +1337,7 @@
             "amount": null,
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260305_145218_水道_19cbcb566203bbed.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-03\\20260329_145217_水道_19d378b1d25e3a0f.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260329_145217_水道_19d3953326410d4b.txt"
           }
         ],
         "guide": {
@@ -1679,7 +1552,7 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 4,
+        "count": 3,
         "records": [
           {
             "date": "",
@@ -1687,13 +1560,6 @@
             "subject": "水道料金",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c92be24392413f.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c937b08f26fa56.txt"
           },
           {
             "date": "2026-02-25",
@@ -1901,7 +1767,7 @@
       },
       "water": {
         "status": "取得済み",
-        "count": 9,
+        "count": 3,
         "records": [
           {
             "date": "",
@@ -1915,34 +1781,6 @@
             "amount": null,
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_145223_水道_19b90cd7665de3da.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_145223_水道_19b9232056e1650f.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145221_水道_19b98013d8114a8b.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145222_水道_19b978d4037af21c.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145222_水道_19b9793fadff1a9f.txt"
           },
           {
@@ -1950,21 +1788,7 @@
             "amount": null,
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260115_145221_水道_19bbeb22f6ad1160.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-01\\20260125_145220_水道_19bf31a099bee441.txt"
-          },
-          {
-            "date": "",
-            "amount": null,
-            "subject": "領収書",
-            "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260125_145220_水道_19bf36493e0e306d.txt"
           }
         ],
         "guide": {
@@ -2898,5 +2722,5 @@
       }
     }
   },
-  "checked_at": "2026-08-22 10:13:10"
+  "checked_at": "2026-08-22 10:24:43"
 }
