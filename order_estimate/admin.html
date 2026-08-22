@@ -1518,6 +1518,9 @@ tr.row-out-stock td{
       <div class="hint" id="receiptChecklistAccountingStatus" style="margin:-6px 0 10px">
         金額が確定している取得済みレコードだけを会計ツールへ送ります。金額未確定・手動DL待ちは送りません。
       </div>
+      <!-- 取得が止まっていないかの自己点検（fetch_email_receipts.py の health）。
+           2026-08-22: Gmail認証が失効して8日間止まっていたのに、この画面は正常に見えていた。 -->
+      <div id="rcHealthBar"></div>
       <div style="overflow-x:auto">
         <table id="rcMatrixTable" style="border-collapse:collapse;width:100%;min-width:640px;font-size:13px">
           <thead>
@@ -4779,10 +4782,41 @@ function receiptChecklistSetPill(text, ok) {
   pill.style.color = ok ? '#2e7d32' : '';
 }
 
+// 証憑取得が止まっていないかの自己点検を表示する。
+// ⛔ この表がびっしり埋まっていても「取得できている」証拠にはならない。
+//   チェックリストの更新はGmailを使わない経路（--checklist-only）でも走るため、
+//   取得が死んでいても表は正常に見える（2026-08-22に8日間見逃した）。
+function rcRenderHealth(health) {
+  const bar = document.getElementById('rcHealthBar');
+  if (!bar) return;
+  if (!health) { bar.innerHTML = ''; return; }
+
+  const warns = health.warnings || [];
+  const line = [
+    health.token_updated ? `最後にGmailへ接続できた日: ${rcEscapeHtml(health.token_updated)}（${health.token_age_days}日前）` : 'Gmailの認証状態が不明',
+    health.latest_receipt ? `証憑が最後に増えた日: ${rcEscapeHtml(health.latest_receipt)}` : '',
+  ].filter(Boolean).join('　/　');
+
+  if (warns.length === 0) {
+    bar.innerHTML = `<div style="font-size:11px;color:#8a6a4a;margin:-4px 0 10px">${line}</div>`;
+    return;
+  }
+  bar.innerHTML = `
+    <div style="background:#fff1f1;border:1px solid #e6c3c3;border-radius:10px;padding:12px;margin:0 0 12px">
+      <div style="font-size:13px;font-weight:700;color:#8a3a3a;margin-bottom:6px">⚠ 証憑の自動取得が止まっている可能性があります</div>
+      ${warns.map(w => `<div style="font-size:12px;color:#5a3a3a;margin-bottom:4px">・${rcEscapeHtml(w)}</div>`).join('')}
+      <div style="font-size:11px;color:#8a6a4a;margin-top:6px">${line}</div>
+      <div style="font-size:11px;color:#8a6a4a;margin-top:4px">この表の中身は保存済みファイルを数え直したものです。表が埋まっていても取得できている証拠にはなりません。</div>
+    </div>
+  `;
+}
+
 function rcRenderMatrix(data) {
   const head = document.getElementById('rcMatrixHead');
   const body = document.getElementById('rcMatrixBody');
   if (!head || !body) return;
+
+  rcRenderHealth(data.health);
 
   const subs = data.subscriptions || [];
   const months = data.months || [];
