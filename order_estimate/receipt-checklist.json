@@ -84,9 +84,17 @@
         }
       },
       "claude_code": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "subject": "Anthropic",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260822_170958_ClaudeCode_1a027efb4b41ba8a.txt"
+          }
+        ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
           "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
@@ -2722,14 +2730,12 @@
       }
     }
   },
-  "checked_at": "2026-08-22 16:55:41",
+  "checked_at": "2026-08-22 17:10:59",
   "health": {
-    "token_updated": "2026-08-14",
-    "token_age_days": 8,
-    "latest_receipt": "2026-08-21",
+    "token_updated": "2026-08-22",
+    "token_age_days": 0,
+    "latest_receipt": "2026-08-22",
     "receipt_age_days": 0,
-    "warnings": [
-      "Gmailの認証が8日間更新されていません。証憑の自動取得が止まっている可能性があります（監理部\\Gmail連携_失効対策手順.md）。"
-    ]
+    "warnings": []
   }
 }
