@@ -495,11 +495,11 @@
 
 ## 2026-08-22 — 証憑チェックリスト: 証憑の中身をクリックで確認できるように
 
-- 対象: `order_estimate/admin.html`（バックエンドはリポジトリ外の `監理部eceipt_viewer.py`）
+- 対象: `order_estimate/admin.html`（バックエンドはリポジトリ外の `監理部\receipt_viewer.py`）
 - 従来: モーダルは `local_path` を文字列表示するだけで、中身を見る手段がなかった。
 - 証憑本文には**氏名・自宅住所・メールアドレス・注文番号**が含まれる（Apple請求書で実測）。
   ⛔ **`receipt-checklist.json` に本文を入れないこと。** GitHub Pages は置いた時点で全世界公開。
-- 方式: 事業主PCの中だけで動く閲覧サーバ（`監理部eceipt_viewer.py` / 127.0.0.1:8791）の
+- 方式: 事業主PCの中だけで動く閲覧サーバ（`監理部\receipt_viewer.py` / 127.0.0.1:8791）の
   `/view?path=...` を**新しいタブ**で開く。txtは本文、pdf・画像は埋め込みでサーバ側が整形する。
 - ⛔ **ローカルサーバを fetch で呼ばないこと（2026-08-22 実測）。**
   本番（https://you0810jmsdf.github.io）から `http://127.0.0.1` への fetch は
