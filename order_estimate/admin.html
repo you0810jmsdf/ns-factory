@@ -1513,6 +1513,9 @@ tr.row-out-stock td{
         <select id="receiptChecklistAccountingMonth" style="border:1px solid #dcc7b1;border-radius:10px;padding:9px 10px;font:inherit;background:#fffdfb"></select>
         <button class="btn sub" id="sendReceiptChecklistAccountingBtn" type="button">選択月を会計ツールへ送る</button>
         <a class="btn light" href="../kanri-room/moneyforward-csv/?mode=receipt" style="text-decoration:none;display:inline-flex;align-items:center">会計ツールを開く</a>
+        <!-- 証憑候補のチェック画面。件名・金額が並ぶためローカルビューア側にある。
+             ⛔ fetchで開かないこと（本番httpsからlocalhostへのfetchは遮断される）。 -->
+        <button class="btn light" type="button" onclick="rcOpenCandidates()">証憑候補をチェック</button>
         <span class="status-pill" id="receiptChecklistStatusPill">未読込</span>
       </div>
       <div class="hint" id="receiptChecklistAccountingStatus" style="margin:-6px 0 10px">
@@ -4749,6 +4752,9 @@ const RC_SUB_LABELS = {
   creema: 'Creema（収入）',
   minne: 'minne（収入）',
   stores: 'STORES（収入）',
+  // 証憑ビューアの候補画面でチェックして採り込んだ証憑がここに集まる（2026-08-22追加）。
+  // 送信元ごとに列を増やすと表が横に伸びるため1列にまとめている。
+  manual_pick: '個別採用',
 };
 const ACCOUNTING_QUEUE_KEY = 'nsf_moneyforward_import_queue_v1';
 const RC_ACCOUNT_DEFAULTS = {
@@ -4811,6 +4817,14 @@ function rcRenderHealth(health) {
   `;
 }
 
+// 証憑1件の金額表示。円建て（amount）があればそれを、無ければ amount_text（"$110.00" 等）を出す。
+// どちらも無いときだけ「—」。⛔ amount_text を会計連携に使わないこと（円ではない）。
+function rcAmountLabel(r) {
+  if (r.amount != null) return '¥' + r.amount.toLocaleString();
+  if (r.amount_text) return rcEscapeHtml(r.amount_text);
+  return '—';
+}
+
 function rcRenderMatrix(data) {
   const head = document.getElementById('rcMatrixHead');
   const body = document.getElementById('rcMatrixBody');
@@ -4853,8 +4867,12 @@ function rcRenderMatrix(data) {
       const color = ok ? '#2e7d32' : '#8a6a4a';
       const cursor = clickable ? 'pointer' : 'default';
       const records = cell.records || [];
+      // 金額表示は amount_text を優先する。
+      // amount は「円建てのときだけ入る数値」（会計ツールへ送る値）。ドル建ての証憑は
+      // amount=null のまま amount_text に "$110.00" が入る。ここで「¥—」と出すと
+      // 本文には金額が書いてあるのに空欄に見える（2026-08-22 事業主指摘）。
       const label = ok && records.length > 0
-        ? records.map(r => `<div>${r.subject || '—'} ¥${r.amount != null ? r.amount.toLocaleString() : '—'}</div>`).join('')
+        ? records.map(r => `<div>${r.subject || '—'} ${rcAmountLabel(r)}</div>`).join('')
         : cell.status;
       return `<td style="text-align:center;padding:8px;border-bottom:1px solid #f0e6d8;background:${bg};color:${color};cursor:${cursor}"
         ${clickable ? `onclick="rcOpenModal('${month}','${sub}')"` : ''}>${label}</td>`;
@@ -4930,7 +4948,7 @@ function rcOpenModal(month, sub) {
     }
     return `
     <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:10px;padding:12px">
-      <div style="font-size:12px;color:#8a6a4a;margin-bottom:4px">日付: ${r.date || '—'}　/　金額: ${r.amount != null ? '¥' + r.amount.toLocaleString() : '—'}</div>
+      <div style="font-size:12px;color:#8a6a4a;margin-bottom:4px">日付: ${r.date || '—'}　/　金額: ${rcAmountLabel(r)}</div>
       <div style="font-size:13px;font-weight:700;color:#3a2a1a;margin-bottom:6px">${r.subject || '—'}（${r.status || '—'}）</div>
       ${openHtml}
       <div style="font-size:10px;color:#a08a72;word-break:break-all;margin-top:6px">${rcEscapeHtml(path || '—')}</div>
@@ -5013,6 +5031,12 @@ async function rcRefreshViewerBanner() {
 // ⛔ ここを fetch に変えないこと（本番httpsからは遮断される。冒頭のコメント参照）。
 function rcOpenReceipt(encPath) {
   window.open(`${RC_VIEWER_BASE}/view?path=${encPath}`, '_blank', 'noopener');
+}
+
+// 証憑候補（金額入りメール）をチェックして採り込む画面を開く。
+// 画面の中身はローカルビューアが持つ。件名・金額・取引先が並ぶため公開側には置かない。
+function rcOpenCandidates() {
+  window.open(`${RC_VIEWER_BASE}/candidates`, '_blank', 'noopener');
 }
 
 function rcEscapeHtml(str) {
