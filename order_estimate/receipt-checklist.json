@@ -31,6 +31,7 @@
     "creema",
     "minne",
     "stores",
+    "rakuma",
     "manual_pick"
   ],
   "matrix": {
@@ -238,6 +239,24 @@
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+        }
+      },
+      "rakuma": {
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-08-04",
+            "amount": 2070,
+            "amount_text": "¥2,070",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260804_065943_ラクマ_19fcaf3f4f52d20b.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
         }
       },
       "manual_pick": {
@@ -505,6 +524,40 @@
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+        }
+      },
+      "rakuma": {
+        "status": "取得済み",
+        "count": 3,
+        "records": [
+          {
+            "date": "2026-07-11",
+            "amount": 5200,
+            "amount_text": "¥5,200",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260711_065948_ラクマ_19f500e39ed4a3f2.txt"
+          },
+          {
+            "date": "2026-07-15",
+            "amount": 4500,
+            "amount_text": "¥4,500",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260715_065947_ラクマ_19f64bd436ed8a66.txt"
+          },
+          {
+            "date": "2026-07-26",
+            "amount": 3150,
+            "amount_text": "¥3,150",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260726_065945_ラクマ_19f9cd0492d52ca2.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
         }
       },
       "manual_pick": {
@@ -783,6 +836,15 @@
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
+      "rakuma": {
+        "status": "未取得",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
+        }
+      },
       "manual_pick": {
         "status": "取得済み",
         "count": 2,
@@ -1058,6 +1120,15 @@
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
+      "rakuma": {
+        "status": "未取得",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
+        }
+      },
       "manual_pick": {
         "status": "なし",
         "count": 0,
@@ -1325,6 +1396,15 @@
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
+      "rakuma": {
+        "status": "未取得",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
+        }
+      },
       "manual_pick": {
         "status": "なし",
         "count": 0,
@@ -1581,6 +1661,24 @@
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+        }
+      },
+      "rakuma": {
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-03-05",
+            "amount": 7200,
+            "amount_text": "¥7,200",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260305_065951_ラクマ_19cbca462a6bca95.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
         }
       },
       "manual_pick": {
@@ -1840,6 +1938,24 @@
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
+      "rakuma": {
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-02-11",
+            "amount": 5400,
+            "amount_text": "¥5,400",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260211_065953_ラクマ_19c4b9c2fe96c100.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
+        }
+      },
       "manual_pick": {
         "status": "なし",
         "count": 0,
@@ -2073,6 +2189,24 @@
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
+      "rakuma": {
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-01-03",
+            "amount": 2700,
+            "amount_text": "¥2,700",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260103_065957_ラクマ_19b8360ff19c10da.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
+        }
+      },
       "manual_pick": {
         "status": "なし",
         "count": 0,
@@ -2252,6 +2386,24 @@
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+        }
+      },
+      "rakuma": {
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2025-12-28",
+            "amount": 2700,
+            "amount_text": "¥2,700",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-12\\20251228_065959_ラクマ_19b633eb743a591b.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
         }
       },
       "manual_pick": {
@@ -2435,6 +2587,32 @@
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
+      "rakuma": {
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2025-11-12",
+            "amount": 810,
+            "amount_text": "¥810",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-11\\20251112_070002_ラクマ_19a77197f5fce159.txt"
+          },
+          {
+            "date": "2025-11-16",
+            "amount": 3850,
+            "amount_text": "¥3,850",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-11\\20251116_070002_ラクマ_19a8b63746526090.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
+        }
+      },
       "manual_pick": {
         "status": "なし",
         "count": 0,
@@ -2615,6 +2793,15 @@
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
+      "rakuma": {
+        "status": "未取得",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
+        }
+      },
       "manual_pick": {
         "status": "なし",
         "count": 0,
@@ -2785,6 +2972,24 @@
         "guide": {
           "url": "https://dashboard.stores.jp/",
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+        }
+      },
+      "rakuma": {
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2025-09-03",
+            "amount": 22500,
+            "amount_text": "¥22,500",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2025-09\\20250903_070004_ラクマ_1990ca81361109c5.txt"
+          }
+        ],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
         }
       },
       "manual_pick": {
@@ -2959,6 +3164,15 @@
           "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
+      "rakuma": {
+        "status": "未取得",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://fril.jp/mypage/sales",
+          "steps": "楽天ラクマの売上（収入）。メール自動取得済み（「[楽天ラクマ] 取引完了のお知らせ」）。本文の「受取金額」は販売手数料・配送料を差し引いた入金額。総額（商品価格）は「決済完了のお知らせ」側にあるが、二重計上を避けるため証憑には取り込んでいない。総額主義で仕訳するときはマイページの売上管理で手数料を確認すること。"
+        }
+      },
       "manual_pick": {
         "status": "なし",
         "count": 0,
@@ -2970,11 +3184,11 @@
       }
     }
   },
-  "checked_at": "2026-08-22 21:22:08",
+  "checked_at": "2026-08-23 07:00:04",
   "health": {
-    "token_updated": "2026-08-22",
+    "token_updated": "2026-08-23",
     "token_age_days": 0,
-    "latest_receipt": "2026-08-22",
+    "latest_receipt": "2026-08-23",
     "receipt_age_days": 0,
     "warnings": []
   }
