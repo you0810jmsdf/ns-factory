@@ -477,3 +477,18 @@
   **サーバは新・ブラウザは旧**という状態が起きる。`?cb=` を付けるか、
   `document.documentElement.outerHTML` に目印の文字列が含まれるかで
   「今見ているのが新コードか」を必ず確認してから判定すること（今回2回誤判定した）。
+
+## 2026-08-22 — 動画メーカー: Drive読み込み中の進行バナーを追加
+
+- 対象: `digital-room/sns-video-maker/index.html`（GASは無改修）
+- 症状: register.html の「動画をつくる」から遷移すると、写真が並ぶまで何も起きていないように見え、読み込み中か固まったのか分からない。
+- 原因: 写真が出るまでに **5段階**（①作品情報の取得 ②Drive写真の取得 ③画像処理 ④作品情報の反映 ⑤長文英訳）を通るが、**①③④は完全に無表示**、②⑤も静的な1行だけ。さらに `setDriveStatus()` の出力先 `.drive-status` は `<details class="drive">` の中にあり、**閉じていると見えない**。
+- 対策:
+  - 折りたたみの外・写真パネル最上部に `#driveProgress` を新設。スピナー＋段階名＋**経過秒**＋「ステップ n / 5」。
+  - `setDriveProgress(step, label)` / `stopDriveProgress()` を追加。1秒ごとに経過秒を書き換えるので、**数字が増え続けていれば生きている**と利用者が判別できる（2026-08-20 の progressTicker と同じ思想）。
+  - URL起動時は最初の `syncWorkFromNumber()` から表示し `try/finally` で必ず消す。候補なしの早期return経路にも `stopDriveProgress()` を置いた。
+- 実測（本番）: 読み込み全体で **28秒**（うちステップ2のDrive写真取得が約14秒以上）。別の回では **68秒**でもカウンターは正常。モバイル375pxで幅317・横スクロールなし・JSエラー0。
+- 注意:
+  - ⛔ `setDriveProgress` から `setLog` / `els.log` を触らないこと。毎秒呼ぶとスマホのトーストが出っぱなしになる（progressTicker と同じ罠）。
+  - このバナーは**速度改善ではない**。Drive写真取得API自体の軽量化は未着手。
+  - 段階を増やすときは `DRIVE_PROGRESS_STEPS` の配列も更新すること（「ステップ n / 5」の分母が配列長）。
