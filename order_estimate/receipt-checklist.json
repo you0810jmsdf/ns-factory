@@ -611,9 +611,9 @@
         "count": 2,
         "records": [
           {
-            "date": "2027-06-13",
-            "amount": null,
-            "amount_text": "",
+            "date": "2026-06-15",
+            "amount": 14900,
+            "amount_text": "¥14,900",
             "subject": "Microsoft 365",
             "status": "取得済み",
             "local_path": "監理部\\receipts\\processed\\2026-06\\20260615_145204_Office365_19eca18676f9411a.txt"
@@ -3184,7 +3184,7 @@
       }
     }
   },
-  "checked_at": "2026-08-23 07:01:08",
+  "checked_at": "2026-08-23 07:03:27",
   "health": {
     "token_updated": "2026-08-23",
     "token_age_days": 0,
