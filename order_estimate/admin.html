@@ -4886,17 +4886,12 @@ function rcOpenModal(month, sub) {
     const enc = rcEncodePath(path);
     const ext = path.split('.').pop().toLowerCase();
     const isText = ext === 'txt';
-    const rid = `rcBody_${month}_${sub}_${idx}`.replace(/[^A-Za-z0-9_]/g, '_');
-    const btn = 'padding:7px 12px;border-radius:8px;border:1px solid #d9c3a8;background:#fff;color:#6b3a1f;font:inherit;font-size:12px;font-weight:700;cursor:pointer';
+    const btn ='padding:7px 12px;border-radius:8px;border:1px solid #d9c3a8;background:#fff;color:#6b3a1f;font:inherit;font-size:12px;font-weight:700;cursor:pointer';
+    const label = isText ? '📄 証憑の中身を見る' : `🧾 証憑を開く（${rcEscapeHtml(ext || 'ファイル')}）`;
     let openHtml = '<div style="font-size:11px;color:#b26b6b">証憑ファイルのパスが記録されていません。</div>';
     if (path) {
-      openHtml = isText
-        ? `<div style="display:flex;gap:8px;flex-wrap:wrap">
-             <button type="button" style="${btn}" onclick="rcToggleReceiptText('${rid}','${enc}',this)">📄 本文を表示</button>
-             <button type="button" style="${btn}" onclick="rcOpenReceiptFile('${enc}')">↗ 別タブで開く</button>
-           </div>`
-        : `<div style="display:flex;gap:8px;flex-wrap:wrap">
-             <button type="button" style="${btn}" onclick="rcOpenReceiptFile('${enc}')">🧾 証憑を開く（${rcEscapeHtml(ext || 'ファイル')}）</button>
+      openHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap">
+             <button type="button" style="${btn}" onclick="rcOpenReceipt('${enc}')">${label}</button>
            </div>`;
     }
     return `
@@ -4904,7 +4899,6 @@ function rcOpenModal(month, sub) {
       <div style="font-size:12px;color:#8a6a4a;margin-bottom:4px">日付: ${r.date || '—'}　/　金額: ${r.amount != null ? '¥' + r.amount.toLocaleString() : '—'}</div>
       <div style="font-size:13px;font-weight:700;color:#3a2a1a;margin-bottom:6px">${r.subject || '—'}（${r.status || '—'}）</div>
       ${openHtml}
-      <div id="${rid}" data-open="0" style="display:none;margin-top:8px"></div>
       <div style="font-size:10px;color:#a08a72;word-break:break-all;margin-top:6px">${rcEscapeHtml(path || '—')}</div>
     </div>
   `;
@@ -4916,7 +4910,15 @@ function rcOpenModal(month, sub) {
   if (records.length > 0) rcRefreshViewerBanner();
 }
 
-/* ---- 証憑ローカル閲覧サーバ（監理部\receipt_viewer.py） ---- */
+/* ---- 証憑ローカル閲覧サーバ（監理部\receipt_viewer.py） ----
+ * ⛔ 証憑の取得を fetch で書かないこと（2026-08-22 実測）。
+ *   GitHub Pages（https）から http://127.0.0.1 への fetch は、ブラウザが送出前に
+ *   遮断する（ERR_BLOCKED_BY_CLIENT・ローカルサーバのログにも残らない）。
+ *   一方、window.open による新しいタブでの表示は通る（サーバ側ログで到達を実測）。
+ *   よって証憑の表示は必ず window.open('/view?path=...') で行う。
+ *   下の rcViewerAlive() も本番では常に false になるが、それを理由に
+ *   「起動していません」と断定表示しないこと（起動していても false になるため）。
+ */
 const RC_VIEWER_BASE = 'http://127.0.0.1:8791';
 const RC_VIEWER_LAUNCH_URL = 'nsf-receipt://start';
 
@@ -4938,17 +4940,18 @@ async function rcViewerAlive(timeoutMs) {
   }
 }
 
-// ビューア未起動のときに出す案内。起動ボタンは登録済みURL（nsf-receipt://）を叩く。
-function rcViewerDownHtml(message) {
-  const btn = 'padding:7px 12px;border-radius:8px;border:0;background:#b26b6b;color:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer';
-  const btn2 = 'padding:7px 12px;border-radius:8px;border:1px solid #d9c3a8;background:#fff;color:#6b3a1f;font:inherit;font-size:12px;font-weight:700;cursor:pointer';
+// 常設の案内。ブラウザ側の制約で起動有無を確実には判定できないため、
+// 「起動していません」と断定せず「開かなかったらここから起動」と案内する。
+function rcViewerHintHtml() {
+  const btn = 'padding:7px 12px;border-radius:8px;border:0;background:#6b3a1f;color:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer';
   return `
-    <div style="background:#fff1f1;border:1px solid #e6c3c3;border-radius:10px;padding:12px;margin-bottom:10px">
-      <div style="font-size:12px;font-weight:700;color:#8a3a3a;margin-bottom:4px">証憑ビューアが起動していません</div>
-      <div style="font-size:11px;color:#5a3a3a;margin-bottom:8px">${rcEscapeHtml(message || '証憑の中身はこのPCの中だけで表示します。下のボタンで閲覧サーバを起動してください。')}</div>
+    <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="font-size:12px;color:#6b3a1f;margin-bottom:8px">
+        証憑は「証憑ビューア」（このPCの中だけで動く閲覧サーバ）で表示します。
+        ボタンを押しても新しいタブが「接続できません」になるときは、ビューアが止まっています。
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button type="button" style="${btn}" onclick="rcLaunchViewer()">▶ ビューアを起動</button>
-        <button type="button" style="${btn2}" onclick="rcRefreshViewerBanner(true)">🔄 起動できたか確認</button>
       </div>
       <div style="font-size:10px;color:#8a6a4a;margin-top:6px">ボタンが効かないときは 監理部\\start_receipt_viewer.bat をダブルクリックしてください。</div>
     </div>
@@ -4958,70 +4961,24 @@ function rcViewerDownHtml(message) {
 function rcLaunchViewer() {
   const banner = document.getElementById('rcViewerBanner');
   if (banner) {
-    banner.innerHTML = '<div style="background:#fff8f1;border:1px solid #eadccf;border-radius:10px;padding:12px;margin-bottom:10px;font-size:12px;color:#6b3a1f">ビューアを起動しています…（ブラウザの確認ダイアログが出たら「開く」を選んでください）</div>';
+    banner.innerHTML = '<div style="background:#fff8f1;border:1px solid #eadccf;border-radius:10px;padding:12px;margin-bottom:10px;font-size:12px;color:#6b3a1f">ビューアを起動しています…（ブラウザの確認ダイアログが出たら「開く」を選んでください）。数秒後に証憑のボタンを押してください。</div>';
+    setTimeout(() => rcRefreshViewerBanner(), 6000);
   }
-  // 登録済みURLプロトコル経由でローカルの start_receipt_viewer.bat を起動する。
+  // このPCに登録済みのURL（nsf-receipt://）経由で start_receipt_viewer.bat を起動する。
   window.location.href = RC_VIEWER_LAUNCH_URL;
-  // 起動を待って自動で状態を更新する（最大約12秒）。
-  let tries = 0;
-  const timer = setInterval(async () => {
-    tries += 1;
-    if (await rcViewerAlive(1200) || tries >= 8) {
-      clearInterval(timer);
-      rcRefreshViewerBanner(true);
-    }
-  }, 1500);
 }
 
-async function rcRefreshViewerBanner(verbose) {
+async function rcRefreshViewerBanner() {
   const banner = document.getElementById('rcViewerBanner');
   if (!banner) return;
-  const alive = await rcViewerAlive(1500);
-  if (alive) {
-    banner.innerHTML = verbose
-      ? '<div style="background:#e8f5e9;border:1px solid #c3e6c8;border-radius:10px;padding:10px;margin-bottom:10px;font-size:12px;color:#2e7d32">証憑ビューアが起動しました。「本文を表示」が使えます。</div>'
-      : '';
-  } else {
-    banner.innerHTML = rcViewerDownHtml();
-  }
+  // 起動確認が取れたときだけ案内を消す。取れない場合は判定不能なので案内を残す。
+  banner.innerHTML = (await rcViewerAlive(1200)) ? '' : rcViewerHintHtml();
 }
 
-// txt証憑をモーダル内にその場で展開する（もう一度押すと閉じる）。
-async function rcToggleReceiptText(rid, encPath, btnEl) {
-  const box = document.getElementById(rid);
-  if (!box) return;
-  if (box.dataset.open === '1') {
-    box.style.display = 'none';
-    box.dataset.open = '0';
-    if (btnEl) btnEl.textContent = '📄 本文を表示';
-    return;
-  }
-  box.style.display = 'block';
-  box.dataset.open = '1';
-  if (btnEl) btnEl.textContent = '✕ 本文を閉じる';
-  box.innerHTML = '<div style="font-size:11px;color:#8a6a4a">読込中…</div>';
-  try {
-    const res = await fetch(`${RC_VIEWER_BASE}/text?path=${encPath}`, { cache: 'no-store' });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || '取得できませんでした');
-    box.innerHTML = `
-      <div style="font-size:10px;color:#8a6a4a;margin-bottom:4px">${rcEscapeHtml(data.name)}（${data.size.toLocaleString()} バイト）</div>
-      <pre style="margin:0;max-height:340px;overflow:auto;background:#fff;border:1px solid #eadccf;border-radius:8px;padding:10px;font-size:12px;line-height:1.7;color:#3a2a1a;white-space:pre-wrap;word-break:break-word">${rcEscapeHtml(data.text)}</pre>`;
-  } catch (err) {
-    // 通信自体に失敗＝サーバ未起動。ファイル欠落（404）とは案内を分ける。
-    box.innerHTML = rcViewerDownHtml('本文を読み込めませんでした: ' + err.message);
-    rcRefreshViewerBanner();
-  }
-}
-
-// PDF・画像はブラウザ内蔵ビューアで開かせる。
-async function rcOpenReceiptFile(encPath) {
-  if (!(await rcViewerAlive(1500))) {
-    rcRefreshViewerBanner();
-    alert('証憑ビューアが起動していません。モーダル上部の「▶ ビューアを起動」を押してください。');
-    return;
-  }
-  window.open(`${RC_VIEWER_BASE}/file?path=${encPath}`, '_blank', 'noopener');
+// 証憑を新しいタブで開く。txt は本文、pdf・画像は埋め込みでサーバが整形して返す。
+// ⛔ ここを fetch に変えないこと（本番httpsからは遮断される。冒頭のコメント参照）。
+function rcOpenReceipt(encPath) {
+  window.open(`${RC_VIEWER_BASE}/view?path=${encPath}`, '_blank', 'noopener');
 }
 
 function rcEscapeHtml(str) {
