@@ -192,6 +192,32 @@ details.drive[open] summary{border-bottom:1px dashed var(--line);margin-bottom:1
 .drive-status.info{background:var(--brass-light);color:var(--ink)}
 .drive-status.success{background:#EFF8EF;color:#276738;border-color:#C8DFC8}
 .drive-status.error{background:#FFF0EA;color:#8F3E23;border-color:#E6B8A6}
+/* ══ Drive読み込みの進行バナー（2026-08-22 追加）══
+   register.html から ?workNo= で来ると、写真が出るまでに5段階を通る。
+   従来の表示は静的な1行だけで、しかも .drive-status は折りたたみの中にあるため、
+   閉じていると「読み込み中なのか固まったのか」が判別できなかった。
+   このバナーは折りたたみの外に置き、経過秒を1秒ごとに書き換える。 */
+.drive-progress{
+  display:none;align-items:flex-start;gap:11px;
+  margin:0 0 14px;padding:12px 14px;
+  border:1px solid var(--brass);border-radius:var(--radius-sm);
+  background:var(--brass-light);color:var(--ink);
+}
+.drive-progress.show{display:flex}
+.drive-progress-spinner{
+  flex:none;width:18px;height:18px;margin-top:2px;border-radius:50%;
+  border:2px solid rgba(166,130,63,.28);border-top-color:var(--brass);
+  animation:driveProgressSpin .9s linear infinite;
+}
+@keyframes driveProgressSpin{to{transform:rotate(360deg)}}
+.drive-progress-body{min-width:0}
+.drive-progress-label{font-size:13px;font-weight:700;line-height:1.5}
+.drive-progress-elapsed{font-weight:400;color:var(--brass-dark);white-space:nowrap}
+.drive-progress-steps{margin-top:3px;font-size:11.5px;color:var(--ink-sub);line-height:1.6}
+.drive-progress-note{margin-top:1px;font-size:11.5px;color:var(--mute);line-height:1.6}
+@media (prefers-reduced-motion:reduce){
+  .drive-progress-spinner{animation-duration:2.4s}
+}
 .drive-work-info{
   margin:-4px 0 12px;padding:9px 11px;border:1px solid var(--line);border-radius:var(--radius-sm);
   background:#FFF;color:var(--ink-sub);font-size:12px;line-height:1.6;
@@ -623,6 +649,14 @@ canvas{
     <aside class="control-col" aria-label="動画編集の操作パネル">
       <section class="pane" id="sec-photos">
         <section class="panel">
+          <div class="drive-progress" id="driveProgress" role="status" aria-live="polite">
+            <span class="drive-progress-spinner" aria-hidden="true"></span>
+            <div class="drive-progress-body">
+              <div class="drive-progress-label"><span id="driveProgressLabel">読み込みを準備しています</span><span class="drive-progress-elapsed" id="driveProgressElapsed"></span></div>
+              <div class="drive-progress-steps" id="driveProgressSteps"></div>
+              <div class="drive-progress-note">秒数が増えている間は読み込み中です。止まったままのときだけ再読み込みしてください。</div>
+            </div>
+          </div>
           <details class="photo-loader" id="photoLoader" open>
             <summary>
               <span class="photo-loader-title">写真を読み込む・追加</span>
@@ -1037,6 +1071,10 @@ const els = {
   driveWorkInfo: document.getElementById('driveWorkInfo'),
   driveLimit: document.getElementById('driveLimit'),
   driveStatus: document.getElementById('driveStatus'),
+  driveProgress: document.getElementById('driveProgress'),
+  driveProgressLabel: document.getElementById('driveProgressLabel'),
+  driveProgressElapsed: document.getElementById('driveProgressElapsed'),
+  driveProgressSteps: document.getElementById('driveProgressSteps'),
   loadDrivePhotos: document.getElementById('loadDrivePhotos'),
   slides: document.getElementById('slides'),
   caption: document.getElementById('caption'),
@@ -1924,6 +1962,48 @@ function stopProgressTicker(){
   if(progressTicker){ clearInterval(progressTicker); progressTicker = null; }
 }
 
+/* ══ Drive読み込みの進行バナー（2026-08-22 追加）══
+   register.html の「動画をつくる」から ?workNo= で来ると、写真が並ぶまでに
+   ① 作品情報の取得 ② Drive写真の取得 ③ 画像処理 ④ 作品情報の反映 ⑤ 長文英訳
+   の5段階を通る。①③④は従来まったく無表示、②⑤も静的な1行だけだった。
+   さらに setDriveStatus() の出力先は「Google Driveから読み込む」の折りたたみの中で、
+   閉じていると見えない。そのため待ち時間中は何も起きていないように見えていた。
+   経過秒を1秒ごとに書き換えるので、増え続けていれば生きていると利用者が判別できる。
+   ⚠ els.log / setLog には触らない。既存のログ表示とトーストの挙動を変えないため。 */
+const DRIVE_PROGRESS_STEPS = [
+  '作品情報を確認しています',
+  'Driveから写真を取得しています',
+  '写真を並べています',
+  '作品情報を反映しています',
+  '長文紹介を英語へ変換しています'
+];
+let driveProgressTimer = null;
+let driveProgressStartedAt = 0;
+
+function driveProgressElapsedText(){
+  const sec = Math.max(0, Math.round((performance.now() - driveProgressStartedAt) / 1000));
+  return `（${sec}秒経過）`;
+}
+
+function setDriveProgress(step, label){
+  if(!els.driveProgress) return;
+  if(!driveProgressTimer){
+    driveProgressStartedAt = performance.now();
+    driveProgressTimer = setInterval(() => {
+      if(els.driveProgressElapsed) els.driveProgressElapsed.textContent = driveProgressElapsedText();
+    }, 1000);
+  }
+  els.driveProgress.classList.add('show');
+  if(els.driveProgressLabel) els.driveProgressLabel.textContent = label || DRIVE_PROGRESS_STEPS[step - 1] || '読み込んでいます';
+  if(els.driveProgressElapsed) els.driveProgressElapsed.textContent = driveProgressElapsedText();
+  if(els.driveProgressSteps) els.driveProgressSteps.textContent = `ステップ ${step} / ${DRIVE_PROGRESS_STEPS.length}`;
+}
+
+function stopDriveProgress(){
+  if(driveProgressTimer){ clearInterval(driveProgressTimer); driveProgressTimer = null; }
+  if(els.driveProgress) els.driveProgress.classList.remove('show');
+}
+
 function setDriveStatus(message, type = 'info'){
   if(!els.driveStatus) return;
   els.driveStatus.textContent = message;
@@ -2025,11 +2105,13 @@ async function addDrivePhotos(){
   }
   drivePhotoLoading = true;
   els.loadDrivePhotos.disabled = true;
+  setDriveProgress(1);
   await syncWorkFromNumber({showLog:false});
   const candidates = drivePhotoCandidates();
   if(!candidates.length){
     drivePhotoLoading = false;
     els.loadDrivePhotos.disabled = false;
+    stopDriveProgress();
     setDriveStatus('DriveフォルダURLまたは作品集のフォルダIDが見つかりません。', 'error');
     setLog('DriveフォルダURLまたはIDを入力してください。');
     return 0;
@@ -2042,6 +2124,7 @@ async function addDrivePhotos(){
         : `左のDriveルートフォルダから作品番号 ${workNo} を検索中です。`;
       setDriveStatus(loadingMessage, 'info');
       setLog(loadingMessage);
+      setDriveProgress(2, loadingMessage);
       const result = await fetchDrivePhotosCandidate(candidate, workNo, limit);
       if(!result.ok){
         errors.push(result.message);
@@ -2080,6 +2163,7 @@ async function addDrivePhotos(){
   }finally{
     drivePhotoLoading = false;
     els.loadDrivePhotos.disabled = false;
+    stopDriveProgress();
   }
 }
 
@@ -2113,8 +2197,10 @@ function folderNumberMismatch(folderName, workNo){
 }
 
 async function applyDrivePhotoData(data, workNo, candidate){
+  setDriveProgress(3, `写真を並べています（${data.photos.length}枚）`);
   await addDataUrlPhotos(data.photos);
   updatePhotoPanelUi({collapse:true});
+  setDriveProgress(4);
   const matchedWork = await applyWorkInfoFromDriveData(data, workNo);
   const successMessage = candidate.kind === 'root'
     ? `作品集の登録フォルダではなく、Driveルート検索で ${data.photos.length} 枚の写真を表示しました。`
@@ -2122,6 +2208,7 @@ async function applyDrivePhotoData(data, workNo, candidate){
   setDriveStatus(successMessage, 'success');
   if(matchedWork && matchedWork.longDesc){
     setLog(`Driveから ${data.photos.length} 枚追加しました。作品集「${matchedWork.title}」の長文紹介を英語へ変換しています。`);
+    setDriveProgress(5);
     const translated = await translateLongDescToFeatureNote({source: matchedWork.longDesc, target:'en', showLog:false});
     setLog(translated
       ? `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報と長文英訳を反映しました。`
@@ -6072,8 +6159,14 @@ refreshCapabilities();
   if(!digits) return;
   els.driveWorkNo.value = String(parseInt(digits, 10));
   setLog(`作品番号 ${els.driveWorkNo.value} を受け取りました。作品情報とDrive写真を自動で読み込みます。`);
-  await syncWorkFromNumber();
-  await addDrivePhotos();
+  // ここから addDrivePhotos() 完了までが利用者の待ち時間。先頭からバナーを出す
+  setDriveProgress(1);
+  try{
+    await syncWorkFromNumber();
+    await addDrivePhotos();
+  }finally{
+    stopDriveProgress();
+  }
 })();
 </script>
 <script>
