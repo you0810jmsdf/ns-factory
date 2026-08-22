@@ -784,9 +784,26 @@
         }
       },
       "manual_pick": {
-        "status": "なし",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "",
+            "amount": null,
+            "amount_text": "",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260623_211703_個別採用_19ef3d4862e6c760.txt"
+          },
+          {
+            "date": "",
+            "amount": null,
+            "amount_text": "",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260627_211703_個別採用_19f06d049967a788.txt"
+          }
+        ],
         "guide": {
           "url": "",
           "steps": "取得手順未登録。情報が確定次第追記予定。"
@@ -2953,7 +2970,7 @@
       }
     }
   },
-  "checked_at": "2026-08-22 20:20:59",
+  "checked_at": "2026-08-22 21:17:03",
   "health": {
     "token_updated": "2026-08-22",
     "token_age_days": 0,
