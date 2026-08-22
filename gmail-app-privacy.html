@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ns-factory-gmail プライバシーポリシー | N's factory</title>
+<meta name="description" content="N's factory の経理用アプリケーション「ns-factory-gmail」における個人情報の取り扱いについて。">
+<!-- 用途: Google Cloud の OAuth 同意画面に登録するプライバシーポリシーのURL。
+     制限付きスコープを使うアプリを公開するときに Google から求められる。
+     ⛔ 記載内容は実際の動作と一致させること。虚偽があると審査で問題になる。
+     ⛔ このページは公開される。内部フォルダ構成・スクリプト名・プロジェクトIDを書かないこと。
+     背景は監理幕僚の引き継ぎ書（リポジトリ外）を参照。 -->
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f1e8; color:#3a2a1a; line-height:1.9;
+         font-family:'Hiragino Kaku Gothic ProN','Meiryo',system-ui,sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
+  header { background:#6b3a1f; color:#fff; padding:22px 20px; }
+  header .inner { max-width:760px; margin:0 auto; }
+  header h1 { margin:0; font-size:19px; }
+  header p { margin:6px 0 0; font-size:12px; opacity:.85; }
+  .card { background:#fff; border:1px solid #eadccf; border-radius:14px;
+          padding:24px; margin-top:20px; }
+  h2 { font-size:16px; color:#6b3a1f; margin:28px 0 10px;
+       border-bottom:2px solid #eadccf; padding-bottom:6px; }
+  h2:first-child { margin-top:0; }
+  p, li { font-size:14px; }
+  ul { padding-left:1.3em; }
+  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:13px; }
+  th, td { border:1px solid #eadccf; padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:#fff8f1; color:#6b3a1f; white-space:nowrap; }
+  .note { background:#fff8f1; border:1px solid #eadccf; border-radius:10px;
+          padding:14px; font-size:13px; margin:14px 0; }
+  .meta { font-size:12px; color:#8a6a4a; margin-top:24px; }
+  a { color:#6b3a1f; }
+  @media (max-width:600px){ th, td { display:block; width:100%; border-top:0; } th { border-top:1px solid #eadccf; } }
+</style>
+</head>
+<body>
+<header><div class="inner">
+  <h1>ns-factory-gmail プライバシーポリシー</h1>
+  <p>N's factory（中司 祐樹）／ 最終更新: 2026年8月23日</p>
+</div></header>
+
+<div class="wrap">
+<div class="card">
+
+<h2>1. このアプリケーションについて</h2>
+<p>
+「ns-factory-gmail」は、個人事業主 <strong>N's factory（中司 祐樹）</strong> が、自身の事業の
+経理業務のために作成し、<strong>自身のみが利用する</strong>アプリケーションです。
+一般に配布・提供しているソフトウェアではありません。
+</p>
+<p>
+経費や売上の領収書メールを手作業で仕分ける負担をなくし、確定申告に必要な証憑（領収書・請求書）を
+取りこぼしなく保管することを目的としています。
+</p>
+
+<h2>2. 取得する情報</h2>
+<p>本アプリケーションは、利用者本人（事業主）のGoogleアカウントに対して、以下の権限を要求します。</p>
+<table>
+  <tr><th>権限</th><th>用途</th></tr>
+  <tr>
+    <td>Gmail の閲覧・作成・送信<br>（gmail.modify）</td>
+    <td>領収書・請求書のメールを検索して本文を読み取り、証憑として保存します。
+        あわせて、証憑メールに整理用のラベルを付けます。</td>
+  </tr>
+  <tr>
+    <td>Gmail の設定とフィルタ<br>（gmail.settings.basic）</td>
+    <td>証憑メールを自動でラベル分けするためのフィルタを作成します。</td>
+  </tr>
+  <tr>
+    <td>Google スプレッドシート<br>（spreadsheets）</td>
+    <td>取得した領収書の日付・金額・件名を、本人所有の管理用スプレッドシートに記録します。</td>
+  </tr>
+</table>
+<p>
+取得するのは<strong>領収書・請求書に関係するメールに限られます</strong>。
+送信元と件名の条件で対象を限定しており、それ以外のメールは読み取りません。
+</p>
+
+<div class="note">
+  <strong>本アプリケーションはメールを送信しません。</strong>
+  Google の権限区分の都合上「作成・送信」を含むスコープを要求していますが、
+  実際に行うのは<strong>読み取りとラベル付けのみ</strong>です。
+  メールの削除も行いません。
+</div>
+
+<h2>3. 情報の保存先</h2>
+<p>
+取得した内容は、<strong>事業主本人のパソコンの中にのみ保存されます</strong>。
+証憑ファイルはローカルのフォルダに置かれ、閲覧も本人のパソコン内で完結します。
+</p>
+<ul>
+  <li>外部のサーバーへ送信することはありません。</li>
+  <li>インターネット上に公開することはありません。</li>
+  <li>本人以外が閲覧できる場所には保存しません。</li>
+</ul>
+
+<h2>4. 第三者への提供</h2>
+<p>
+取得した情報を第三者へ提供・販売・共有することは一切ありません。
+広告その他の目的に利用することもありません。
+</p>
+<p>
+確定申告その他の法令に基づき税務当局へ証憑を提示する場合を除き、外部に開示しません。
+</p>
+
+<h2>5. 保管期間</h2>
+<p>
+証憑は、法令（電子帳簿保存法・所得税法）で定められた保存期間である<strong>7年間</strong>保管し、
+期間経過後は削除します。
+</p>
+
+<h2>6. 利用者</h2>
+<p>
+本アプリケーションの利用者は<strong>事業主本人 1名のみ</strong>です。
+他者にアカウントを共有したり、他者のデータを取得したりすることはありません。
+</p>
+
+<h2>7. 権限の取り消し</h2>
+<p>
+付与した権限は、Googleアカウントの
+<a href="https://myaccount.google.com/connections" target="_blank" rel="noopener">
+セキュリティ設定（サードパーティ製アプリとの連携）</a>
+からいつでも取り消すことができます。
+</p>
+
+<h2>8. お問い合わせ</h2>
+<p>
+N's factory（中司 祐樹）<br>
+メール: <a href="mailto:you0810jmsdf@gmail.com">you0810jmsdf@gmail.com</a><br>
+サイト: <a href="./">https://you0810jmsdf.github.io/ns-factory/</a>
+</p>
+
+<p class="meta">
+本ポリシーは、Google API Services User Data Policy（Limited Use 要件を含む）に従います。
+内容を変更する場合は、本ページの最終更新日を改めます。
+</p>
+
+</div>
+</div>
+</body>
+</html>
