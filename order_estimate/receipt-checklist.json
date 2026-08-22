@@ -143,7 +143,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -173,12 +173,12 @@
             "amount": 10923,
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260820_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260820_6338_中司　祐樹_振込明細書.PDF"
           }
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -333,7 +333,7 @@
             "amount": 16510,
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-07\\TEPCO_202607.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-07\\TEPCO_202607.pdf"
           }
         ],
         "guide": {
@@ -374,7 +374,7 @@
             "amount": 3001,
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-07\\Ymobile_202607.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-07\\Ymobile_202607.pdf"
           }
         ],
         "guide": {
@@ -391,12 +391,12 @@
             "amount": 11853,
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-07\\Ymobile_202607.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-07\\Ymobile_202607.pdf"
           }
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -426,12 +426,12 @@
             "amount": 29104,
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260717_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260717_6338_中司　祐樹_振込明細書.PDF"
           }
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -586,7 +586,7 @@
             "amount": 14460,
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-06\\TEPCO_202606.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-06\\TEPCO_202606.pdf"
           }
         ],
         "guide": {
@@ -610,7 +610,7 @@
             "amount": 18790,
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-06\\ChibaWater_202606.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-06\\ChibaWater_202606.pdf"
           }
         ],
         "guide": {
@@ -627,7 +627,7 @@
             "amount": 5586,
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-06\\Ymobile_202606.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-06\\Ymobile_202606.pdf"
           }
         ],
         "guide": {
@@ -644,12 +644,12 @@
             "amount": 10152,
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-06\\Ymobile_202606.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-06\\Ymobile_202606.pdf"
           }
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -679,12 +679,12 @@
             "amount": 23004,
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260619_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": "監理部\\receipts\\processed\\2026-06\\20260619_6338_中司　祐樹_振込明細書.PDF"
           }
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -817,7 +817,7 @@
             "amount": 15182,
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-05\\TEPCO_202605.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-05\\TEPCO_202605.pdf"
           }
         ],
         "guide": {
@@ -872,7 +872,7 @@
             "amount": 6024,
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-05\\Ymobile_202605.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-05\\Ymobile_202605.pdf"
           }
         ],
         "guide": {
@@ -889,12 +889,12 @@
             "amount": 14734,
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-05\\Ymobile_202605.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-05\\Ymobile_202605.pdf"
           }
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -924,12 +924,12 @@
             "amount": 23003,
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260520_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": "監理部\\receipts\\processed\\2026-05\\20260520_6338_中司　祐樹_振込明細書.PDF"
           }
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -1083,7 +1083,7 @@
             "amount": 18390,
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-04\\TEPCO_202604.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-04\\TEPCO_202604.pdf"
           }
         ],
         "guide": {
@@ -1100,7 +1100,7 @@
             "amount": 17268,
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-04\\ChibaWater_202604.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-04\\ChibaWater_202604.pdf"
           }
         ],
         "guide": {
@@ -1117,7 +1117,7 @@
             "amount": 2863,
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-04\\Ymobile_202604.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-04\\Ymobile_202604.pdf"
           }
         ],
         "guide": {
@@ -1134,12 +1134,12 @@
             "amount": 7053,
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-04\\Ymobile_202604.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-04\\Ymobile_202604.pdf"
           }
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -1169,12 +1169,12 @@
             "amount": 21354,
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260420_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": "監理部\\receipts\\processed\\2026-04\\20260420_6338_中司　祐樹_振込明細書.PDF"
           }
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -1313,7 +1313,7 @@
             "amount": 21541,
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-03\\TEPCO_202603.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-03\\TEPCO_202603.pdf"
           }
         ],
         "guide": {
@@ -1354,7 +1354,7 @@
             "amount": 9138,
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-03\\Ymobile_202603.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-03\\Ymobile_202603.pdf"
           }
         ],
         "guide": {
@@ -1371,12 +1371,12 @@
             "amount": 11353,
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-03\\Ymobile_202603.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-03\\Ymobile_202603.pdf"
           }
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -1406,12 +1406,12 @@
             "amount": 18302,
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260319_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": "監理部\\receipts\\processed\\2026-03\\20260319_6338_中司　祐樹_振込明細書.PDF"
           }
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -1542,7 +1542,7 @@
             "amount": 31887,
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-02\\TEPCO_202602.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-02\\TEPCO_202602.pdf"
           }
         ],
         "guide": {
@@ -1573,7 +1573,7 @@
             "amount": 18072,
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-02\\ChibaWater_202602.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-02\\ChibaWater_202602.pdf"
           }
         ],
         "guide": {
@@ -1590,7 +1590,7 @@
             "amount": 9136,
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-02\\Ymobile_202602.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-02\\Ymobile_202602.pdf"
           }
         ],
         "guide": {
@@ -1607,12 +1607,12 @@
             "amount": 11815,
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-02\\Ymobile_202602.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-02\\Ymobile_202602.pdf"
           }
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -1642,12 +1642,12 @@
             "amount": 15253,
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260220_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": "監理部\\receipts\\processed\\2026-02\\20260220_6338_中司　祐樹_振込明細書.PDF"
           }
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -1757,7 +1757,7 @@
             "amount": 31091,
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-01\\TEPCO_202601.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-01\\TEPCO_202601.pdf"
           }
         ],
         "guide": {
@@ -1805,7 +1805,7 @@
             "amount": 9144,
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-01\\Ymobile_202601.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-01\\Ymobile_202601.pdf"
           }
         ],
         "guide": {
@@ -1822,12 +1822,12 @@
             "amount": 13367,
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\utility_bills\\2026-01\\Ymobile_202601.pdf"
+            "local_path": "監理部\\receipts\\processed\\2026-01\\Ymobile_202601.pdf"
           }
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -1857,12 +1857,12 @@
             "amount": 27453,
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\カルチャースクール\\講師謝礼\\20260120_6338_中司　祐樹_振込明細書_27453.PDF"
+            "local_path": "監理部\\receipts\\processed\\2026-01\\20260120_6338_中司　祐樹_振込明細書_27453.PDF"
           }
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -1996,7 +1996,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -2023,7 +2023,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2165,7 +2165,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -2192,7 +2192,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2341,7 +2341,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -2368,7 +2368,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2502,7 +2502,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -2529,7 +2529,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2663,7 +2663,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\utility_bills\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -2690,7 +2690,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\カルチャースクール\\講師謝礼\\。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2722,5 +2722,5 @@
       }
     }
   },
-  "checked_at": "2026-08-22 10:24:43"
+  "checked_at": "2026-08-22 16:31:52"
 }
