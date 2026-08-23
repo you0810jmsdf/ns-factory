@@ -319,9 +319,11 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   }
   function onApportionChange(){
     const opt = $('fApportion').selectedOptions[0];
-    const ratio = opt && opt.dataset.ratio!=='' ? Number(opt.dataset.ratio) : NaN;
-    if(!isNaN(ratio)) $('fRatio').value = ratio;
-    else if(!$('fRatio').value) $('fRatio').value = '';
+    const raw = opt ? opt.dataset.ratio : '';
+    // 確定率のある区分は自動入力し、「要決定」の区分は必ず空にして手入力を強制する。
+    // ⛔ 前の科目の率を残さないこと。旅費交通費(71.4%)→水道光熱費(要決定)と切り替えたときに
+    //    0.714 が残ると、未決定の按分率のまま確定申告の経費に載る（2026-08-23 実測で発生）。
+    $('fRatio').value = (raw !== '' && !isNaN(Number(raw))) ? Number(raw) : '';
     recalcBiz();
   }
   function recalcBiz(){
