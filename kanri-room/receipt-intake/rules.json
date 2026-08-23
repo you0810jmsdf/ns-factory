@@ -1,0 +1,54 @@
+{
+  "version": "2026-08-23",
+  "source_of_truth": "監理部\\経理ルール.md",
+  "note": "このJSONは経理ルール.md（正本）を機械可読化したもの。編集は正本→JSONの順で両方を更新すること。",
+  "accounts": [
+    { "name": "仕入高",       "tax_class": "課税仕入10%", "keywords": ["KAWAMURA","カワムラ","LEATHER","レザー","革","皮革","ヌメ","タンニン","金具","ファスナー","糸","ホック","ボタン","床革","ダイソー"] },
+    { "name": "消耗品費",     "tax_class": "課税仕入10%", "keywords": ["工具","道具","カッター","替刃","針","目打ち","菱目","刻印","ハンマー","接着剤","ボンド","定規","マット","文具","消耗品"] },
+    { "name": "工具器具備品", "tax_class": "課税仕入10%", "keywords": ["ミシン","漉き機","プレス機","PC","パソコン","iPad","カメラ"], "note": "10万円以上は固定資産（減価償却）。10万円未満は消耗品費でも可" },
+    { "name": "荷造運賃",     "tax_class": "課税仕入10%", "keywords": ["ヤマト","佐川","日本郵便","郵便局","ゆうパック","レターパック","クリックポスト","宅急便","送料","配送","梱包"] },
+    { "name": "旅費交通費",   "tax_class": "課税仕入10%", "keywords": ["駐車場","高速道路","ETC","電車","バス","タクシー","コスモ石油","ENEOS","エネオス","出光","ガスステーション","コストコガス"], "apportion": "gasoline" },
+    { "name": "車両費",       "tax_class": "課税仕入10%", "keywords": ["車検","オイル交換","タイヤ","マツダオートザム","えびはら","洗車"], "apportion": "vehicle" },
+    { "name": "通信費",       "tax_class": "課税仕入10%", "keywords": ["iCloud","Apple","Google","Adobe","Canva","ChatGPT","Claude","Anthropic","Gemini","OpenAI","サーバー","ドメイン","通信","Office"], "apportion": "internet_optional" },
+    { "name": "支払手数料",   "tax_class": "課税仕入10%", "keywords": ["Creema","minne","BASE","STORES","メルカリ","ラクマ","PayPay","Pinkoi","手数料","commission","fee","振込手数料"] },
+    { "name": "広告宣伝費",   "tax_class": "課税仕入10%", "keywords": ["広告","チラシ","名刺","印刷","DM","宣伝","販促","Meta","Instagram","Facebook"] },
+    { "name": "接待交際費",   "tax_class": "課税仕入10%", "keywords": ["ゴーゴーカレー","R Baker","ICHIGEN","会食","懇親","打合せ飲食"], "note": "飲食は第2・第4木曜（カルチャースクール開講日）なら生徒との会食として接待交際費。軽減税率8%に注意" },
+    { "name": "外注費",       "tax_class": "課税仕入10%", "keywords": ["外注","委託","デザイン料","撮影料"] },
+    { "name": "諸会費",       "tax_class": "対象外",     "keywords": ["会費","年会費","参加費","出展料","イベント出展","市民アカデミー"] },
+    { "name": "新聞図書費",   "tax_class": "課税仕入10%", "keywords": ["書籍","本","雑誌","新聞","Kindle"] },
+    { "name": "水道光熱費",   "tax_class": "課税仕入10%", "keywords": ["電気","東京電力","TEPCO","水道","ガス"], "apportion": "utility" },
+    { "name": "地代家賃",     "tax_class": "対象外",     "keywords": ["家賃","住宅ローン"], "apportion": "home", "note": "持ち家の場合は減価償却・固定資産税・ローン利息を按分。元本は経費不可" },
+    { "name": "不明",         "tax_class": "課税仕入10%", "keywords": [], "note": "AIが判定できなかった場合。必ず手動で確定する" }
+  ],
+  "store_overrides": [
+    { "match": "ヤマト運輸",       "account": "荷造運賃",   "tax_class": "課税仕入10%" },
+    { "match": "佐川急便",         "account": "荷造運賃",   "tax_class": "課税仕入10%" },
+    { "match": "日本郵便",         "account": "荷造運賃",   "tax_class": "課税仕入10%" },
+    { "match": "Apple",            "account": "通信費",     "tax_class": "課税仕入10%" },
+    { "match": "マツダオートザム", "account": "車両費",     "tax_class": "課税仕入10%" },
+    { "match": "えびはら",         "account": "車両費",     "tax_class": "課税仕入10%" },
+    { "match": "R Baker",          "account": "接待交際費", "tax_class": "課税仕入10%", "note": "地域コミュニティ活動懇親会" },
+    { "match": "ダイソー",         "account": "仕入高",     "tax_class": "課税仕入10%" },
+    { "match": "ICHIGEN",          "account": "接待交際費", "tax_class": "課税仕入8%（軽）", "note": "カルチャースクール生徒との会食（テイクアウト含む）" },
+    { "match": "ゴーゴーカレー",   "account": "接待交際費", "tax_class": "課税仕入10%" }
+  ],
+  "tax_classes": ["課税仕入10%", "課税仕入8%（軽）", "非課税仕入", "対象外", "不課税"],
+  "credit_account": "事業主借",
+  "credit_note": "個人カード・ポイント払い・現金立替は全件「事業主借」（CLAUDE.md共通ルール）",
+  "apportionment": [
+    { "key": "none",     "label": "按分なし（事業100%）", "ratio": 1.0,   "status": "確定", "basis": "事業専用の支出" },
+    { "key": "gasoline", "label": "ガソリン・車両（71.4%）", "ratio": 0.714, "status": "確定", "basis": "2025年度税務調査対策資料。走行距離ベース" },
+    { "key": "vehicle",  "label": "車検・整備（71.4%）",   "ratio": 0.714, "status": "確定", "basis": "ガソリンと同率（同一車両）" },
+    { "key": "utility",  "label": "電気・水道（要決定）",   "ratio": null,  "status": "要決定", "basis": "作業場面積÷延床面積、または作業時間比で決める。未決定のため登録時に手入力" },
+    { "key": "internet_optional", "label": "通信（要決定）", "ratio": null, "status": "要決定", "basis": "事業利用時間比。Apple/Adobe等の事業専用サブスクは100%" },
+    { "key": "home",     "label": "自宅作業場（要決定）",   "ratio": null,  "status": "要決定", "basis": "作業場面積÷延床面積" }
+  ],
+  "culture_school": { "label": "ジョイフル本田カルチャースクール開講日", "rule": "第2・第4木曜日", "effect": "当日の飲食は接待交際費（生徒との会食）" },
+  "dedup": {
+    "amount": "完全一致",
+    "date_tolerance_days": 3,
+    "store_similarity": "店名の先頭2文字一致または片方が他方を含む",
+    "note": "MF仕訳帳・メール証憑・スマホ台帳の3系統を突合。mf_dedup.py（PC側）と同じ基準"
+  },
+  "retention": { "years": 7, "note": "青色申告の帳簿・証憑は7年保存。画像はDrive→PCの receipts\\processed\\YYYY-MM\\ に同期して二重保管" }
+}
