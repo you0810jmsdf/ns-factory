@@ -99,6 +99,22 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
 .toast.show{opacity:1}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.howto{border:1px solid var(--line);border-radius:var(--radius);background:#fff;margin-bottom:12px;overflow:hidden}
+.howto>summary{cursor:pointer;padding:12px 14px;font-weight:800;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px;background:var(--soft)}
+.howto>summary::-webkit-details-marker{display:none}
+.howto>summary::after{content:'▾';margin-left:auto;color:var(--muted)}
+.howto[open]>summary::after{content:'▴'}
+.howto .body{padding:12px 14px 14px;font-size:13px}
+.howto ol{margin:0;padding-left:20px}
+.howto ol li{margin-bottom:9px}
+.howto ol li b{display:block}
+.howto .step{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:var(--accent);border-radius:999px;padding:1px 7px;margin-right:5px;vertical-align:1px}
+.howto .warn{margin-top:10px;padding:9px 11px;border:1px solid #e6c3bf;border-radius:8px;background:#fdf3f1;color:#8c2f26}
+.howto .warn b{display:block;margin-bottom:3px}
+.howto .warn ul{margin:0;padding-left:18px}
+.howto table{margin-top:10px;font-size:12px}
+.howto .ref{margin:10px 0 0;font-size:12px;color:var(--muted)}
+.step-badge{display:inline-block;font-size:10px;font-weight:800;color:var(--accent-dark);background:var(--soft-2);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px}
 .dup-group{border-left:4px solid var(--amber);padding-left:10px;margin-bottom:12px}
 .dup-group.ok{border-left-color:var(--green)}
 .dup-group.none{border-left-color:var(--red)}
@@ -206,14 +222,50 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
 
   <!-- ========== 統合整理 ========== -->
   <section class="panel" id="panel-merge">
+    <details class="howto" id="mergeHowto">
+      <summary>📖 手順を見る（月次8ステップ）</summary>
+      <div class="body">
+        <p style="margin:0 0 10px">同じ支出を<b>2回経費に計上しない</b>ための工程です。カード払いのレシートは MoneyForward のカード連携で既に仕訳が入っているため、証憑からも取り込むと二重計上になります。</p>
+        <ol>
+          <li><b><span class="step">1</span>MFから仕訳帳CSVを出す</b>MoneyForward → 会計帳簿 → 仕訳帳 → エクスポート（CSV）。期間は当年1月1日〜今日。</li>
+          <li><b><span class="step">2</span>下の「1.」でCSVを読み込む</b>「読み込み完了: ○件」と出れば成功。この端末の中だけで処理し、外部へ送信しません。</li>
+          <li><b><span class="step">3</span>「2.」の突合を実行する</b>金額の完全一致 ＋ 日付±3日 ＋ 店名の類似、の3つがそろった取引を同一とみなします。</li>
+          <li><b><span class="step">4</span>結果を読む</b>緑＝MFと一致（安全）／赤＝MF未登録（取り込みが必要）／「台帳内重複」＝台帳に同じ取引が2件ある疑い。</li>
+          <li><b><span class="step">5</span>一致分を「MF登録済」にする</b>以後この行はCSVに出なくなります。二重計上の芽を摘む工程なので必ず実行します。</li>
+          <li><b><span class="step">6</span>未登録分のCSVを出力する</b>貸方は全件「事業主借」。按分がある行は按分後の金額で出ます。</li>
+          <li><b><span class="step">7</span>中身を見てからMFへ取り込む</b>日付・金額・科目・按分を確認。<b>取込は取り消しが難しい</b>ので必ず目視してください。</li>
+          <li><b><span class="step">8</span>もう一度突合して状態をそろえる</b>取込直後は台帳がまだ「未登録」です。ここで再突合しないと翌月も同じ行が出力され、二重計上の危険が残ります。</li>
+        </ol>
+
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>支払方法</th><th>MFに自動で入るか</th><th>対応</th></tr>
+            <tr><td>個人カード・電子マネー</td><td>入る</td><td>「MF登録済」にする（CSVは取り込まない）</td></tr>
+            <tr><td>口座振替・引き落とし</td><td>入る</td><td>同上</td></tr>
+            <tr><td><b>現金</b></td><td>入らない</td><td>CSVを出して取り込む</td></tr>
+          </table>
+        </div>
+        <p class="hint" style="margin-top:6px">迷ったら、まず突合してください。一致すれば連携済み、しなければ未計上です。推測で決めないこと。</p>
+
+        <div class="warn">
+          <b>⛔ やってはいけないこと</b>
+          <ul>
+            <li>突合せずにCSVを取り込む（二重計上の直行便）</li>
+            <li>一致分を「MF登録済」にしないまま翌月へ持ち越す</li>
+            <li>MF取込後にステップ8（再突合）を省く</li>
+          </ul>
+        </div>
+        <p class="ref">つまずいたときの対処・PC側での実行方法は 監理部フォルダの「証憑突合_手順.md」に詳しく書いてあります。判定基準の正本は「経理ルール.md」§4です。</p>
+      </div>
+    </details>
     <div class="card">
-      <h2>1. MoneyForward 仕訳帳CSVを読み込む</h2>
+      <h2>1. MoneyForward 仕訳帳CSVを読み込む<span class="step-badge">ステップ 1-2</span></h2>
       <p class="hint">MF会計 → 会計帳簿 → 仕訳帳 → エクスポート（CSV）。列は「取引日／借方金額／摘要」を自動判別します。ブラウザ内だけで処理し、外部へ送信しません。</p>
       <div class="field" style="margin-top:8px"><input id="mfFile" type="file" accept=".csv,text/csv"></div>
       <div class="status" id="mfStatus"></div>
     </div>
     <div class="card">
-      <h2>2. 3系統を突合する</h2>
+      <h2>2. 3系統を突合する<span class="step-badge">ステップ 3</span></h2>
       <p class="hint">スマホ台帳（GAS）・メール証憑（receipt-checklist.json）・MF仕訳帳を、<b>金額一致＋日付±3日＋店名類似</b>で突合します。</p>
       <div class="actions">
         <button class="btn primary block" id="mergeRun" type="button">🔀 突合を実行</button>
@@ -221,12 +273,13 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
       <div class="status" id="mergeStatus"></div>
     </div>
     <div class="card" id="mergeResultCard" style="display:none">
-      <h2>3. 結果</h2>
+      <h2>3. 結果<span class="step-badge">ステップ 4-6</span></h2>
       <div class="sum"><div><b id="mMatched">0</b><span>MFと一致</span></div><div><b id="mUnmatched">0</b><span>MF未登録</span></div><div><b id="mDupSelf">0</b><span>台帳内重複</span></div></div>
       <div class="actions">
         <button class="btn block" id="markMatchedBtn" type="button">一致分を「MF登録済」にする</button>
         <button class="btn block" id="exportUnmatchedBtn" type="button">MF未登録分の取込CSVを出力</button>
       </div>
+      <p class="hint">CSVを取り込んだあとは、MFから仕訳帳CSVを出し直して<b>もう一度突合</b>してください（ステップ8）。これを省くと翌月も同じ行が出力されます。</p>
       <div id="mergeList" style="margin-top:12px"></div>
     </div>
   </section>
