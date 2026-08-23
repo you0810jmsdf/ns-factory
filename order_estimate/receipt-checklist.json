@@ -271,18 +271,9 @@
         }
       },
       "camera": {
-        "status": "取得済み",
-        "count": 1,
-        "records": [
-          {
-            "date": "2026-08-23",
-            "amount": 3300,
-            "amount_text": "¥3,300",
-            "subject": "スマホ取込（明細はレシート取込ツール）",
-            "status": "取得済み",
-            "local_path": ""
-          }
-        ],
+        "status": "なし",
+        "count": 0,
+        "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
           "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
@@ -3481,7 +3472,7 @@
       }
     }
   },
-  "checked_at": "2026-08-23 12:58:12",
+  "checked_at": "2026-08-23 12:59:29",
   "health": {
     "token_updated": "2026-08-23",
     "token_age_days": 0,
