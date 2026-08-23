@@ -217,6 +217,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     <div class="card">
       <h2>経費ルール（正本: 監理部\経理ルール.md）</h2>
       <p class="hint" id="rulesVersion"></p>
+      <p class="hint">このルールは公開ファイルではなく、管理者キーで保護されたGAS内蔵データから読み込んでいます。</p>
       <div id="rulesView"></div>
     </div>
   </section>
@@ -230,7 +231,8 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   // ── 設定 ───────────────────────────────────────────────
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbybL6NbJVtb7HUZ8oFPq38zBWe5AWoLjZ3LfbAxbvkM11t1iMeZZT47ga77OxuKaVpR/exec';
   const CHECKLIST_URL = '../../order_estimate/receipt-checklist.json';
-  const RULES_URL = './rules.json';
+  // ⛔ 経理ルール（店名・按分率）は公開リポジトリに置かない。GAS内蔵の RULES を action=rules で取得する。
+  //    正本は 監理部\経理ルール.md、機械可読版は GAS の Rules.js。
   const MAX_EDGE = 1280;
   const JPEG_Q = 0.85;
   const MF_HEADERS = ['取引日','借方勘定科目','借方補助科目','借方税区分','借方金額','貸方勘定科目','貸方補助科目','貸方税区分','貸方金額','摘要','タグ','メモ','決済'];
@@ -283,11 +285,14 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   // ── ルール読み込み ───────────────────────────────────────
   async function loadRules(){
     try{
-      const res = await fetch(RULES_URL+'?v='+Date.now(),{cache:'no-cache'});
-      rules = await res.json();
+      const r = await gas('rules', {}, 3);
+      rules = r.rules;
+      if(!rules || !Array.isArray(rules.accounts) || !rules.accounts.length) throw new Error('ルールが空です');
     }catch(e){
-      rules = { accounts:[{name:'消耗品費',tax_class:'課税仕入10%'},{name:'不明',tax_class:'課税仕入10%'}], tax_classes:['課税仕入10%','課税仕入8%（軽）','対象外'], apportionment:[{key:'none',label:'按分なし',ratio:1,status:'確定'}] };
-      toast('rules.json を読めませんでした（既定値で動作）');
+      // フォールバックは「登録させない」ための最小構成。誤った科目で登録されるより手を止める方が安全。
+      rules = { accounts:[{name:'不明',tax_class:'課税仕入10%'}], tax_classes:['課税仕入10%','課税仕入8%（軽）','対象外'], apportionment:[{key:'none',label:'按分なし（事業100%）',ratio:1,status:'確定'}] };
+      toast('経理ルールを取得できませんでした: '+e.message);
+      setStatus('captureStatus','経理ルールを取得できないため登録できません。管理者キーの再入力（ページを開き直す）か、時間をおいて再読込してください。','err');
     }
     const fa=$('fAccount'); fa.innerHTML='';
     rules.accounts.forEach(a=>{ const o=document.createElement('option'); o.value=a.name; o.textContent=a.name; fa.appendChild(o); });
@@ -631,7 +636,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   // ── ルール表示 ─────────────────────────────────────────
   function renderRules(){
     if(!rules) return;
-    $('rulesVersion').textContent = 'rules.json version '+(rules.version||'-')+'　／　'+(rules.note||'');
+    $('rulesVersion').textContent = 'ルール version '+(rules.version||'-')+'　／　'+(rules.note||'');
     const acc = `<h3 style="font-size:14px;margin:8px 0 6px">勘定科目・税区分</h3><div class="tbl-wrap"><table><tr><th>科目</th><th>税区分</th><th>キーワード</th><th>按分</th></tr>${(rules.accounts||[]).map(a=>`<tr><td><b>${esc(a.name)}</b>${a.note?`<div class="muted">${esc(a.note)}</div>`:''}</td><td>${esc(a.tax_class)}</td><td>${esc((a.keywords||[]).join('、'))}</td><td>${esc(a.apportion||'')}</td></tr>`).join('')}</table></div>`;
     const ov = `<h3 style="font-size:14px;margin:14px 0 6px">店舗固定マッピング</h3><div class="tbl-wrap"><table><tr><th>店名</th><th>科目</th><th>税区分</th><th>備考</th></tr>${(rules.store_overrides||[]).map(o=>`<tr><td>${esc(o.match)}</td><td>${esc(o.account)}</td><td>${esc(o.tax_class)}</td><td class="muted">${esc(o.note||'')}</td></tr>`).join('')}</table></div>`;
     const ap = `<h3 style="font-size:14px;margin:14px 0 6px">家事按分</h3><div class="tbl-wrap"><table><tr><th>区分</th><th>事業割合</th><th>状態</th><th>根拠</th></tr>${(rules.apportionment||[]).map(p=>`<tr><td>${esc(p.label)}</td><td>${p.ratio==null?'—':Math.round(p.ratio*1000)/10+'%'}</td><td><span class="chip ${p.status==='確定'?'ok':'warn'}">${esc(p.status)}</span></td><td class="muted">${esc(p.basis||'')}</td></tr>`).join('')}</table></div>`;
