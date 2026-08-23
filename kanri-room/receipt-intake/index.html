@@ -105,9 +105,11 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
 .howto>summary::after{content:'▾';margin-left:auto;color:var(--muted)}
 .howto[open]>summary::after{content:'▴'}
 .howto .body{padding:12px 14px 14px;font-size:13px}
-.howto ol{margin:0;padding-left:20px}
+/* 番号はバッジ（.step）で出すので、olの自動採番は消す（二重番号になるため） */
+.howto ol{margin:0;padding:0;list-style:none}
 .howto ol li{margin-bottom:9px}
-.howto ol li b{display:block}
+/* 見出しだけを改行する。本文中の <b> はインラインのままにすること */
+.howto ol li>b:first-child{display:block}
 .howto .step{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:var(--accent);border-radius:999px;padding:1px 7px;margin-right:5px;vertical-align:1px}
 .howto .warn{margin-top:10px;padding:9px 11px;border:1px solid #e6c3bf;border-radius:8px;background:#fdf3f1;color:#8c2f26}
 .howto .warn b{display:block;margin-bottom:3px}
