@@ -60,6 +60,16 @@ h1{font-size:20px;margin:6px 0 2px}
 .field input,.field select,.field textarea{width:100%;min-height:42px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:15px}
 .field textarea{min-height:60px;resize:vertical}
 .field input[readonly]{background:var(--soft);color:var(--muted)}
+.acc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.acc-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:56px;padding:8px 10px;border:1.5px solid var(--line);border-radius:9px;background:#fff;text-align:left}
+.acc-btn b{font-size:14px;font-weight:800}
+.acc-btn span{font-size:11px;color:var(--muted);line-height:1.3}
+.acc-btn.on{border-color:var(--accent);background:#fbf7f2;box-shadow:0 0 0 2px rgba(155,118,89,.16)}
+.acc-btn.on b{color:var(--accent-dark)}
+.rules-alert{display:none;margin:0 0 12px;padding:12px 14px;border:1px solid #e6c3bf;border-radius:9px;background:#fdf3f1;color:#8c2f26;font-size:13px}
+.rules-alert.show{display:block}
+.rules-alert b{display:block;margin-bottom:4px}
+.rules-alert .actions{margin-top:10px}
 .chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--soft-2);color:var(--accent-dark);margin-right:4px}
 .chip.warn{background:#fff3df;color:var(--amber)}
 .chip.ok{background:#e4f3ea;color:var(--green)}
@@ -124,6 +134,11 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
 
   <!-- ========== 取込 ========== -->
   <section class="panel active" id="panel-capture">
+    <div class="rules-alert" id="rulesAlert">
+      <b>⚠ 経理ルールを読み込めていません</b>
+      <div id="rulesAlertMsg">勘定科目が「不明」しか選べない状態です。</div>
+      <div class="actions"><button class="btn primary" id="reloadRulesBtn" type="button">🔑 パスワードを入れて再読込</button></div>
+    </div>
     <div class="card">
       <div class="big-actions">
         <label class="big-btn primary"><span class="ic">📷</span>カメラで撮影<input type="file" id="camInput" accept="image/*" capture="environment"></label>
@@ -146,7 +161,11 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
         <div class="field"><label for="fDate">日付</label><input id="fDate" type="date"></div>
         <div class="field"><label for="fAmount">税込金額（円）</label><input id="fAmount" type="number" inputmode="numeric" min="1"></div>
         <div class="field full"><label for="fStore">店舗・支払先</label><input id="fStore" type="text"></div>
-        <div class="field"><label for="fAccount">勘定科目</label><select id="fAccount"></select></div>
+        <div class="field full"><label>勘定科目（よく使うもの）</label>
+          <div class="acc-grid" id="accQuick"></div>
+          <select id="fAccount" aria-label="勘定科目"><option>不明</option></select>
+          <p class="hint" id="accHint" style="margin-top:4px">上のボタンに無い科目は、すぐ上の一覧から選べます。</p>
+        </div>
         <div class="field"><label for="fTaxClass">税区分</label><select id="fTaxClass"></select></div>
         <div class="field"><label for="fTaxRate">消費税率</label><select id="fTaxRate"><option value="10">10%</option><option value="8">8%（軽減）</option></select></div>
         <div class="field"><label for="fTaxAmount">消費税額（任意）</label><input id="fTaxAmount" type="number" inputmode="numeric" min="0"></div>
@@ -233,12 +252,26 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   const CHECKLIST_URL = '../../order_estimate/receipt-checklist.json';
   // ⛔ 経理ルール（店名・按分率）は公開リポジトリに置かない。GAS内蔵の RULES を action=rules で取得する。
   //    正本は 監理部\経理ルール.md、機械可読版は GAS の Rules.js。
+  // admin-gate.js と同じ公開ハッシュ（平文は保存しない）。ルール取得に失敗したとき、
+  // このページ単体でパスワードを受け直して復旧できるようにするために持つ。
+  const PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+  // 過去14ファイル504件の仕訳実績で、紙レシート対象の99.3%を占めた6科目（2026-08-23実測）。
+  // 並びは使用頻度順。ここに無い科目は下のドロップダウンから選ぶ。
+  const QUICK_ACCOUNTS = [
+    { name:'消耗品費',   hint:'道具・替刃・接着剤' },
+    { name:'仕入高',     hint:'革・金具・糸' },
+    { name:'荷造運賃',   hint:'送料・梱包材' },
+    { name:'接待交際費', hint:'生徒との会食' },
+    { name:'旅費交通費', hint:'ガソリン・駐車場' },
+    { name:'車両費',     hint:'車検・整備・洗車' }
+  ];
   const MAX_EDGE = 1280;
   const JPEG_Q = 0.85;
   const MF_HEADERS = ['取引日','借方勘定科目','借方補助科目','借方税区分','借方金額','貸方勘定科目','貸方補助科目','貸方税区分','貸方金額','摘要','タグ','メモ','決済'];
 
   const $ = id => document.getElementById(id);
   let rules = null;
+  let rulesOk = false;
   let currentImage = null;   // {dataUrl, name, bytes}
   let currentRequestId = null;
   let ledgerCache = [];
@@ -251,6 +284,23 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   function yen(n){ return '¥'+Number(n||0).toLocaleString('ja-JP'); }
   function uuid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-'+Date.now()+'-'+Math.random().toString(16).slice(2)); }
   function adminKey(){ try{ return sessionStorage.getItem('nsf_admin_key')||''; }catch(e){ return ''; } }
+  function sha256Hex(text){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+  // ゲートを素通りしたセッションでは平文キーが残らず、GASが unauthorized を返して
+  // 科目が「不明」しか出せなくなる（2026-08-23 実発生）。その場で受け直して復旧する。
+  async function ensureAdminKey(force){
+    const cur = adminKey();
+    if(cur && !force) return cur;
+    const pw = prompt('管理者パスワードを入力してください（経理ルールの取得に必要です）');
+    if(pw === null || pw === '') return '';
+    const hex = await sha256Hex(pw);
+    if(hex !== PASS_HASH){ toast('パスワードが違います'); return ''; }
+    try{ sessionStorage.setItem('nsf_admin_key', pw); sessionStorage.setItem('nsf_admin_auth', hex); }catch(e){}
+    return pw;
+  }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
   // タブ
@@ -285,14 +335,21 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   // ── ルール読み込み ───────────────────────────────────────
   async function loadRules(){
     try{
+      if(!adminKey()) await ensureAdminKey();
       const r = await gas('rules', {}, 3);
       rules = r.rules;
       if(!rules || !Array.isArray(rules.accounts) || !rules.accounts.length) throw new Error('ルールが空です');
+      rulesOk = true;
+      showRulesAlert('');
     }catch(e){
       // フォールバックは「登録させない」ための最小構成。誤った科目で登録されるより手を止める方が安全。
+      // ただし必ず復旧導線（再読込ボタン）を出すこと。出さないと画面上どうにもできなくなる。
       rules = { accounts:[{name:'不明',tax_class:'課税仕入10%'}], tax_classes:['課税仕入10%','課税仕入8%（軽）','対象外'], apportionment:[{key:'none',label:'按分なし（事業100%）',ratio:1,status:'確定'}] };
-      toast('経理ルールを取得できませんでした: '+e.message);
-      setStatus('captureStatus','経理ルールを取得できないため登録できません。管理者キーの再入力（ページを開き直す）か、時間をおいて再読込してください。','err');
+      rulesOk = false;
+      const unauth = /unauthorized/i.test(String(e.message));
+      showRulesAlert(unauth
+        ? '管理者キーがこのタブに残っていないため、経理ルールを取得できませんでした。下のボタンからパスワードを入れ直すと復旧します。'
+        : ('取得に失敗しました（' + e.message + '）。通信状況を確認して、下のボタンから再読込してください。'));
     }
     const fa=$('fAccount'); fa.innerHTML='';
     rules.accounts.forEach(a=>{ const o=document.createElement('option'); o.value=a.name; o.textContent=a.name; fa.appendChild(o); });
@@ -300,7 +357,47 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     rules.tax_classes.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; ft.appendChild(o); });
     const fp=$('fApportion'); fp.innerHTML='';
     rules.apportionment.forEach(p=>{ const o=document.createElement('option'); o.value=p.key; o.textContent=p.label+(p.status==='要決定'?' ⚠':''); o.dataset.ratio=(p.ratio==null?'':p.ratio); fp.appendChild(o); });
+    renderQuickAccounts();
     renderRules();
+  }
+
+  function showRulesAlert(msg){
+    const box = $('rulesAlert');
+    if(!box) return;
+    if(msg){ $('rulesAlertMsg').textContent = msg; box.classList.add('show'); }
+    else box.classList.remove('show');
+  }
+
+  // よく使う科目をボタンで出す。ドロップダウン（#fAccount）が正で、ボタンはその操作子。
+  // ⛔ ボタンと select の値がずれないよう、更新は必ず setAccount() を通すこと。
+  function renderQuickAccounts(){
+    const box = $('accQuick');
+    if(!box) return;
+    box.innerHTML = '';
+    const available = (rules.accounts||[]).map(a=>a.name);
+    const list = QUICK_ACCOUNTS.filter(q=>available.indexOf(q.name) >= 0);
+    if(!list.length){
+      box.innerHTML = '<p class="hint" style="grid-column:1/-1;margin:0">経理ルールが読み込めていないため、よく使う科目を表示できません。</p>';
+      return;
+    }
+    list.forEach(q=>{
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'acc-btn'; b.dataset.account = q.name;
+      b.innerHTML = '<b>'+esc(q.name)+'</b><span>'+esc(q.hint)+'</span>';
+      b.addEventListener('click', ()=> setAccount(q.name));
+      box.appendChild(b);
+    });
+    syncQuickAccounts();
+  }
+  function syncQuickAccounts(){
+    const cur = $('fAccount').value;
+    document.querySelectorAll('#accQuick .acc-btn').forEach(b=>b.classList.toggle('on', b.dataset.account === cur));
+  }
+  function setAccount(name){
+    if(![...$('fAccount').options].some(o=>o.value===name)) return;
+    $('fAccount').value = name;
+    onAccountChange();
+    syncQuickAccounts();
   }
 
   function accountRule(name){ return (rules.accounts||[]).find(a=>a.name===name)||null; }
@@ -330,7 +427,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     const amt = Number($('fAmount').value||0); const r = Number($('fRatio').value);
     $('fBizAmount').value = (amt>0 && !isNaN(r) && $('fRatio').value!=='') ? yen(Math.round(amt*r)) : '（事業割合を入力）';
   }
-  $('fAccount').addEventListener('change', onAccountChange);
+  $('fAccount').addEventListener('change', ()=>{ onAccountChange(); syncQuickAccounts(); });
   $('fApportion').addEventListener('change', onApportionChange);
   $('fRatio').addEventListener('input', recalcBiz);
   $('fAmount').addEventListener('input', recalcBiz);
@@ -400,7 +497,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     const ov = applyStoreOverride(d.store||'', (d.items||[]).join(' '));
     let acc = ov ? ov.account : (d.account||'不明');
     if(![...$('fAccount').options].some(o=>o.value===acc)) acc='不明';
-    $('fAccount').value = acc; onAccountChange();
+    $('fAccount').value = acc; onAccountChange(); syncQuickAccounts();
     if(ov && ov.tax_class) $('fTaxClass').value = ov.tax_class;
     else if(d.tax_rate===8 && [...$('fTaxClass').options].some(o=>o.value==='課税仕入8%（軽）')) $('fTaxClass').value='課税仕入8%（軽）';
     recalcBiz();
@@ -645,6 +742,14 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     const misc = `<h3 style="font-size:14px;margin:14px 0 6px">その他</h3><ul style="font-size:13px;padding-left:18px;margin:0"><li>貸方科目: <b>${esc(rules.credit_account||'事業主借')}</b> — ${esc(rules.credit_note||'')}</li><li>${esc(rules.culture_school?rules.culture_school.label+'：'+rules.culture_school.rule+'。'+rules.culture_school.effect:'')}</li><li>重複判定: 金額${esc(rules.dedup&&rules.dedup.amount)}・日付±${esc(rules.dedup&&rules.dedup.date_tolerance_days)}日・${esc(rules.dedup&&rules.dedup.store_similarity)}</li><li>保存: ${esc(rules.retention&&rules.retention.note)}</li></ul>`;
     $('rulesView').innerHTML = acc+ov+ap+misc;
   }
+
+  $('reloadRulesBtn').addEventListener('click', async ()=>{
+    const btn = $('reloadRulesBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 読込中…';
+    const k = await ensureAdminKey(true);
+    if(k){ await loadRules(); if(rulesOk){ toast('経理ルールを読み込みました'); } }
+    btn.disabled = false; btn.textContent = '🔑 パスワードを入れて再読込';
+  });
 
   // ── 起動 ─────────────────────────────────────────────
   initMonths();
