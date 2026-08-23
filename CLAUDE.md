@@ -556,3 +556,17 @@
   （本文が通知URLだけで金額を持たないため原理的に不可）。
 - 検証: 既存証憑の金額が書き換わっていないことをコミット間の差分で確認（変化は新規分のみ）／
   本番でラクマ列の表示と重複除去を実測／漏洩検査 危険度「高」ゼロ。
+
+## 2026-08-23 — 監理幕僚室に「レシート取込（スマホ）」を新設
+
+- 対象: `kanri-room/receipt-intake/index.html`（新設）/ `kanri-room/receipt-intake/rules.json`（新設）/ `kanri-room/index.html`
+- 目的: スマホのカメラ・スクショからレシートをAIで読み取り、科目・税区分・家事按分を確認して台帳（GAS Sheets）＋Drive へ保存。MF仕訳帳CSVとの重複統合もここで行う。
+- バックエンド: GAS `Nsfactory-ReceiptIntake`（`デジタル部\監理幕僚ROOM\GAS\receipt-intake\`・リポジトリ外）。台帳は `デジタル部\サイト管理\GASリンク台帳.md`。
+- 認証: `admin-gate.js` 通過時の `sessionStorage('nsf_admin_key')` を GAS の key に使う（okj-notify と同方式）。
+- ⛔ **解析モデルはサーバー側固定（claude-haiku-4-5）。** ページから model を送っても無視される設計。変更は ScriptProperties `RECEIPT_MODEL`。
+- ⛔ **GAS 呼び出しは `gas()` ラッパーを通すこと。** HTML応答・間欠404を3回まで再送する。`register` は `requestId`＋画像ハッシュで冪等なので再送しても二重登録にならない。他の書き込みAPIを足すときも先に冪等化すること。
+- ⛔ **rules.json だけを直さないこと。** 正本は `監理部\経理ルール.md`。両方を同時更新する。按分率「要決定」（ratio:null）の科目は登録時に手入力を強制する設計。
+- 画像は端末側で長辺1280px・JPEG 0.85 に縮小してから送る（GAS側上限 base64 2MB）。
+- 統合整理タブは MF仕訳帳CSV をブラウザ内で読み、外部送信しない。`receipt-checklist.json` は金額・日付・サブスク名だけ参照する。
+- 検証: インラインJS構文チェック通過／`check_public_leak.py` 危険度「高」ゼロ／Pages deploy success／公開URL HTTP 200／ブラウザでルール描画・横はみ出しなし・JSエラー0を実測。
+  **GAS本体は所有者のOAuth初回承認待ちのため未検証**（`/exec` が403）。承認後に通し検証を行うこと。
