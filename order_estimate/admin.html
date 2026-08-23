@@ -4756,6 +4756,7 @@ const RC_SUB_LABELS = {
   yahoo: 'ヤフオク・Yahoo!フリマ（収入）',
   // 証憑ビューアの候補画面でチェックして採り込んだ証憑がここに集まる（2026-08-22追加）。
   // 送信元ごとに列を増やすと表が横に伸びるため1列にまとめている。
+  camera: 'スマホ取込',
   manual_pick: '個別採用',
 };
 const ACCOUNTING_QUEUE_KEY = 'nsf_moneyforward_import_queue_v1';
@@ -5068,6 +5069,10 @@ function rcAccountingRowFromRecord(month, sub, record) {
   //    実際に採り込んだYahoo!の売上¥2,165が通信費として計上される事故になる。
   //    この列の仕訳は、証憑を見て人が起こすこと。
   if (sub === 'manual_pick') return null;
+  // 2026-08-23: camera（スマホ取込）も会計送信の対象外。
+  // レシート取込ツール側が「MF取込CSV（未登録分）」を出すため、ここからも送ると二重計上になる。
+  // この列の仕訳は監理幕僚室のレシート取込ツールで出すこと。
+  if (sub === 'camera') return null;
   const subject = record.subject || RC_SUB_LABELS[sub] || sub;
   const date = String(record.date || `${month}-01`).replace(/\//g, '-');
   const defaults = RC_ACCOUNT_DEFAULTS[sub] || { debit: '通信費', tax: '課税仕入10%' };
