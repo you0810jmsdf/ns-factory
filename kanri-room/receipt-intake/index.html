@@ -87,6 +87,9 @@ h1{font-size:20px;margin:6px 0 2px}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .toolbar select,.toolbar input{min-height:38px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
 .sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.sum.sum4{grid-template-columns:repeat(4,1fr)}
+.sum.sum4 b{font-size:15px}
+.sum.sum4 span{font-size:10px}
 .sum div{background:var(--soft);border-radius:8px;padding:8px;text-align:center}
 .sum b{display:block;font-size:17px}
 .sum span{font-size:11px;color:var(--muted)}
@@ -119,6 +122,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
 .step-badge{display:inline-block;font-size:10px;font-weight:800;color:var(--accent-dark);background:var(--soft-2);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px}
 .dup-group{border-left:4px solid var(--amber);padding-left:10px;margin-bottom:12px}
 .dup-group.ok{border-left-color:var(--green)}
+.dup-group.check{border-left-color:var(--blue);background:#f6f9fc}
 .dup-group.none{border-left-color:var(--red)}
 .dup-group .line{font-size:13px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .dup-group .src{font-size:11px;color:var(--muted)}
@@ -232,7 +236,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
           <li><b><span class="step">1</span>MFから仕訳帳CSVを出す</b>MoneyForward → 会計帳簿 → 仕訳帳 → エクスポート（CSV）。期間は当年1月1日〜今日。</li>
           <li><b><span class="step">2</span>下の「1.」でCSVを読み込む</b>「読み込み完了: ○件」と出れば成功。この端末の中だけで処理し、外部へ送信しません。</li>
           <li><b><span class="step">3</span>「2.」の突合を実行する</b>金額の完全一致 ＋ 日付±3日 ＋ 店名の類似、の3つがそろった取引を同一とみなします。</li>
-          <li><b><span class="step">4</span>結果を読む</b>緑＝MFと一致（安全）／赤＝MF未登録（取り込みが必要）／「台帳内重複」＝台帳に同じ取引が2件ある疑い。</li>
+          <li><b><span class="step">4</span>結果を読む</b>緑＝MFと一致（安全）／赤＝MF未登録（取り込みが必要）／<b>青＝要確認</b>（MFの摘要が空で店名を確認できない。目視で判断）／「台帳内重複」＝台帳に同じ取引が2件ある疑い。</li>
           <li><b><span class="step">5</span>一致分を「MF登録済」にする</b>以後この行はCSVに出なくなります。二重計上の芽を摘む工程なので必ず実行します。</li>
           <li><b><span class="step">6</span>未登録分のCSVを出力する</b>貸方は全件「事業主借」。按分がある行は按分後の金額で出ます。</li>
           <li><b><span class="step">7</span>中身を見てからMFへ取り込む</b>日付・金額・科目・按分を確認。<b>取込は取り消しが難しい</b>ので必ず目視してください。</li>
@@ -276,9 +280,10 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     </div>
     <div class="card" id="mergeResultCard" style="display:none">
       <h2>3. 結果<span class="step-badge">ステップ 4-6</span></h2>
-      <div class="sum"><div><b id="mMatched">0</b><span>MFと一致</span></div><div><b id="mUnmatched">0</b><span>MF未登録</span></div><div><b id="mDupSelf">0</b><span>台帳内重複</span></div></div>
+      <div class="sum sum4"><div><b id="mMatched">0</b><span>MFと一致</span></div><div><b id="mUnmatched">0</b><span>MF未登録</span></div><div><b id="mNeedCheck">0</b><span>要確認</span></div><div><b id="mDupSelf">0</b><span>台帳内重複</span></div></div>
       <div class="actions">
         <button class="btn block" id="markMatchedBtn" type="button">一致分を「MF登録済」にする</button>
+        <p class="hint" style="width:100%;margin:0">「要確認」は<b>この一括更新に含めません</b>。MFの仕訳を見て同じ取引だと確認できたものだけ、台帳タブで個別に「MF登録済」にしてください。</p>
         <button class="btn block" id="exportUnmatchedBtn" type="button">MF未登録分の取込CSVを出力</button>
       </div>
       <p class="hint">CSVを取り込んだあとは、MFから仕訳帳CSVを出し直して<b>もう一度突合</b>してください（ステップ8）。これを省くと翌月も同じ行が出力されます。</p>
@@ -722,7 +727,16 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   // ── 突合 ─────────────────────────────────────────────
   function daysBetween(a,b){ return Math.abs((new Date(a)-new Date(b))/86400000); }
   function norm(s){ return String(s||'').toLowerCase().replace(/[\s　株式会社有限会社\(\)（）]/g,''); }
-  function storeLike(a,b){ const x=norm(a), y=norm(b); if(!x||!y) return true; return x.includes(y)||y.includes(x)||x.slice(0,2)===y.slice(0,2); }
+  // 店名の照合結果を3値で返す。'yes'=一致 / 'no'=不一致 / 'unknown'=片方が空で判定できない
+  // ⛔ 'unknown' を 'yes' に丸めないこと。MFの摘要が空のとき、金額と日付だけで
+  //    別取引と一致してしまい、実際はMFに無いのに「登録済」になって計上漏れになる（2026-08-23 実測）。
+  function storeMatch(a,b){
+    const x=norm(a), y=norm(b);
+    if(!x||!y) return 'unknown';
+    return (x.includes(y)||y.includes(x)||x.slice(0,2)===y.slice(0,2)) ? 'yes' : 'no';
+  }
+  // 台帳内重複の検出用。こちらは両方が台帳の店名なので空になることは実質ない。
+  function storeLike(a,b){ return storeMatch(a,b) !== 'no'; }
   async function loadEmailReceipts(){
     try{
       const res=await fetch(CHECKLIST_URL+'?v='+Date.now(),{cache:'no-cache'}); const cl=await res.json();
@@ -738,7 +752,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
       const emails = await loadEmailReceipts();
       const tol = (rules.dedup&&rules.dedup.date_tolerance_days)||3;
       mfRows.forEach(m=>m.used=false);
-      const groups=[]; let matched=0, unmatched=0, dupSelf=0;
+      const groups=[]; let matched=0, unmatched=0, dupSelf=0, needCheck=0;
       const ledger = ledgerCache.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
       // 台帳内重複（同額・±tol日・店名類似）
       const selfDup=new Set();
@@ -748,27 +762,43 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
       }
       dupSelf = selfDup.size;
       ledger.forEach(r=>{
-        const mf = mfRows.find(m=>!m.used && m.amount===Number(r.total_amount) && daysBetween(m.date,r.date)<=tol && storeLike(m.desc,r.store))
-                || mfRows.find(m=>!m.used && m.amount===Number(r.business_amount) && daysBetween(m.date,r.date)<=tol);
+        // 金額（税込 or 按分後）と日付が合う候補を集め、店名で確定させる。
+        // ⛔ 店名を見ないフォールバックを復活させないこと。按分後7,140円のガソリンが
+        //    無関係な7,140円のコンビニと一致した（2026-08-23 実測）。
+        const cands = mfRows.filter(m=>!m.used
+          && (m.amount===Number(r.total_amount) || m.amount===Number(r.business_amount))
+          && daysBetween(m.date,r.date)<=tol);
+        let mf=null, uncertain=null;
+        for(const c of cands){
+          const v = storeMatch(c.desc, r.store);
+          if(v==='yes'){ mf=c; break; }
+          if(v==='unknown' && !uncertain) uncertain=c;   // 摘要が空＝店名で確認できない
+        }
         const em = emails.find(e=>e.amount===Number(r.total_amount) && daysBetween(e.date,r.date)<=tol);
-        if(mf){ mf.used=true; matched++; } else if((r.mf_status||'未登録')==='未登録'){ unmatched++; }
-        groups.push({ rec:r, mf, em, selfDup:selfDup.has(r.id) });
+        if(mf){ mf.used=true; matched++; }
+        else if(uncertain){ uncertain.used=true; needCheck++; }
+        else if((r.mf_status||'未登録')==='未登録'){ unmatched++; }
+        groups.push({ rec:r, mf, uncertain: mf?null:uncertain, em, selfDup:selfDup.has(r.id) });
       });
-      mergeResult={groups, matched, unmatched, emails};
-      $('mMatched').textContent=matched; $('mUnmatched').textContent=unmatched; $('mDupSelf').textContent=dupSelf;
+      mergeResult={groups, matched, unmatched, needCheck, emails};
+      $('mMatched').textContent=matched; $('mUnmatched').textContent=unmatched;
+      $('mDupSelf').textContent=dupSelf; $('mNeedCheck').textContent=needCheck;
       $('mergeResultCard').style.display='block';
       const box=$('mergeList'); box.innerHTML='';
       if(!mfRows.length) box.innerHTML='<p class="hint">MF仕訳帳CSVが未読込のため、MFとの一致判定は行っていません（台帳内重複・メール証憑との重なりのみ表示）。</p>';
       groups.forEach(g=>{
-        const cls = g.mf?'ok':((g.rec.mf_status||'未登録')==='未登録'?'none':'');
+        const cls = g.mf?'ok':(g.uncertain?'check':((g.rec.mf_status||'未登録')==='未登録'?'none':''));
         const d=document.createElement('div'); d.className='dup-group '+cls;
         d.innerHTML=`<div class="line"><span><b>${esc(g.rec.store)}</b> ${esc(g.rec.date)}</span><span>${yen(g.rec.total_amount)}</span></div>
           <div class="src">台帳: ${esc(g.rec.account)}・${esc(g.rec.mf_status||'未登録')}${g.selfDup?' <span class="chip red">台帳内重複の疑い</span>':''}</div>
-          ${g.mf?`<div class="src">MF: ${esc(g.mf.date)} ${esc(g.mf.account)} ${esc(g.mf.desc)} → <span class="chip ok">一致</span></div>`:(mfRows.length?'<div class="src">MF: <span class="chip red">該当なし（MF未登録）</span></div>':'')}
+          ${g.mf?`<div class="src">MF: ${esc(g.mf.date)} ${esc(g.mf.account)} ${esc(g.mf.desc)} → <span class="chip ok">一致</span></div>`
+            :(g.uncertain?`<div class="src">MF: ${esc(g.uncertain.date)} ${esc(g.uncertain.account)} <b>摘要が空</b>（同額・日付近接）→ <span class="chip warn">要確認</span><br>店名で確認できないため自動では一致にしません。MFの仕訳を見て同じ取引なら、台帳タブでこの行を「MF登録済」にしてください。</div>`
+            :(mfRows.length?'<div class="src">MF: <span class="chip red">該当なし（MF未登録）</span></div>':''))}
           ${g.em?`<div class="src">メール証憑にも同額あり: ${esc(g.em.store)} ${esc(g.em.subject)} <span class="chip warn">二重証憑の可能性</span></div>`:''}`;
         box.appendChild(d);
       });
-      setStatus('mergeStatus',`完了: 台帳${ledger.length}件 / MF${mfRows.length}件 / メール証憑${emails.length}件`,'ok');
+      setStatus('mergeStatus',`完了: 台帳${ledger.length}件 / MF${mfRows.length}件 / メール証憑${emails.length}件`
+        + (needCheck ? ` ／ 要確認${needCheck}件は目視で判断してください` : ''),'ok');
     }catch(e){ setStatus('mergeStatus','突合失敗: '+e.message,'err'); }
   });
   $('markMatchedBtn').addEventListener('click', async ()=>{
