@@ -16,6 +16,7 @@
   let detailRows = [];   // { itemName, qty, unit, unitPrice, lineTotal, note }
   let currentDoc = null; // 編集中の書類ヘッダ
   const SS_CM_KEY = 'nsf_cm_invoice_payload'; // customer_manager 連携 sessionStorage キー
+  const LS_SHOW_ADDR_KEY = 'nsf_invoice_show_customer_address'; // 宛先住所を印刷するかの既定値
 
   // ---- 初期化 ----
   document.addEventListener('DOMContentLoaded', async function () {
@@ -58,6 +59,13 @@
 
     // 消費税トグル変更で再計算
     document.getElementById('doc-tax-included').addEventListener('change', recalc);
+
+    // 宛先住所を印刷するか（ブラウザに既定値を記憶。法令上は宛名のみで足りるので既定OFF）
+    const showAddrEl = document.getElementById('show-customer-address');
+    showAddrEl.checked = (localStorage.getItem(LS_SHOW_ADDR_KEY) === '1');
+    showAddrEl.addEventListener('change', function () {
+      localStorage.setItem(LS_SHOW_ADDR_KEY, this.checked ? '1' : '0');
+    });
 
     // 関連受付番号 入力時にリンク更新
     document.getElementById('doc-related-order').addEventListener('input', updateOrderProgressLink);
@@ -318,6 +326,17 @@
       } else {
         document.getElementById('customer-id').value = ''; // 保存時に新規作成
       }
+      // 住所・連絡先（顧客管理側の値を優先し、無ければ顧客マスタから補完）
+      const cmZip     = payload.customer.zip     || (matched && matched.zip)     || '';
+      const cmAddress = payload.customer.address || (matched && matched.address) || '';
+      const cmPhone   = payload.customer.phone   || (matched && matched.phone)   || '';
+      const cmEmail   = payload.customer.email   || (matched && matched.email)   || '';
+      document.getElementById('customer-zip').value     = cmZip;
+      document.getElementById('customer-address').value = cmAddress;
+      document.getElementById('customer-phone').value   = cmPhone;
+      document.getElementById('customer-email').value   = cmEmail;
+      document.getElementById('customer-detail-fields').style.display  = (cmZip || cmAddress) ? '' : 'none';
+      document.getElementById('customer-contact-fields').style.display = (cmPhone || cmEmail) ? '' : 'none';
     }
 
     // 件名
@@ -604,6 +623,19 @@
     document.getElementById('pa-issue-date').textContent  = doc.issueDate || '';
     document.getElementById('pa-customer-name').textContent      = doc.customerName || '';
     document.getElementById('pa-customer-honorific').textContent = doc.customerHonorific || '様';
+
+    // 宛先住所（チェックONかつ値があるときだけ印刷。法令上の必須項目は宛名のみ）
+    const showAddr    = document.getElementById('show-customer-address').checked;
+    const custZip     = (document.getElementById('customer-zip').value     || '').trim();
+    const custAddress = (document.getElementById('customer-address').value || '').trim();
+    const addrBlock   = document.getElementById('pa-customer-address-block');
+    if (showAddr && (custZip || custAddress)) {
+      document.getElementById('pa-customer-zip').textContent     = custZip ? '〒' + custZip : '';
+      document.getElementById('pa-customer-address').textContent = custAddress;
+      addrBlock.style.display = '';
+    } else {
+      addrBlock.style.display = 'none';
+    }
     document.getElementById('pa-subject').textContent     = doc.subject || '';
 
     // 上部の合計表示ラベル（請求書/見積書/領収書で言い回し変更）

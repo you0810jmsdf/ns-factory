@@ -391,6 +391,12 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
   padding-bottom: 4mm;
   align-self: end;
 }
+#print-area .pa-customer-address {
+  font-size: 9pt;
+  line-height: 1.7;
+  color: #333;
+  margin-bottom: 2mm;
+}
 #print-area .pa-customer-name {
   font-size: 14pt;
   font-weight: 700;
