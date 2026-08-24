@@ -17,8 +17,10 @@
   <link rel="icon" href="./icons/icon-192.png">
 </head>
 <body>
+  <!-- ⛔ .app-header は3カラムgrid。h1には必ず .app-title を付けること。
+       付け忘れると44pxの左カラムに押し込まれ、1文字ずつ改行される（2026-08-24 実害）。 -->
   <header class="app-header">
-    <h1 id="page-title">写真から食事を記録</h1>
+    <h1 id="page-title" class="app-title">写真から食事を記録</h1>
   </header>
   <main id="view" class="stack" style="padding:12px;">
     <section class="banner banner-warning stack">
@@ -34,9 +36,19 @@
     </section>
 
     <section class="card stack" id="photo-card" hidden>
-      <h2 class="card-title">写真を選ぶ</h2>
-      <input class="input" id="photo-input" type="file" accept="image/*" capture="environment">
-      <img id="preview" alt="" style="max-width:100%; border-radius:8px;" hidden>
+      <h2 class="card-title">写真を用意する</h2>
+      <div class="chip-row">
+        <button class="button" id="pick-library" type="button">🖼 アルバムから選ぶ</button>
+        <button class="button" id="pick-camera" type="button">📷 その場で撮る</button>
+      </div>
+      <!--
+        ⛔ capture 属性を id="file-library" 側に付けないこと。
+           付けるとiOSでカメラが直接起動し、カメラロールから選べなくなる（2026-08-24 苦情）。
+           撮影用は file-camera（capture付き）と分けてある。
+      -->
+      <input id="file-library" type="file" accept="image/*" hidden>
+      <input id="file-camera" type="file" accept="image/*" capture="environment" hidden>
+      <img id="preview" alt="選んだ写真" style="max-width:100%; border-radius:8px;" hidden>
       <button class="button button-primary" id="analyze-btn" type="button" hidden>この写真を解析する</button>
       <span class="muted" id="status-line"></span>
     </section>
