@@ -212,8 +212,45 @@ function setAuthMode(isNew) {
 function showApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'flex';
+  applyLaunchQuery();
   renderList();
   initGist();
+}
+
+// 外部（管理画面など）から「このサービスを開きたい」と指定して起動されたときに、
+// 検索窓へ流し込む。受け取りは URL のハッシュ（#q=...）だけに限定している。
+//
+// なぜハッシュか:
+//   ハッシュはHTTPリクエストに含まれないため、サーバー・アクセスログ・リファラのどれにも残らない。
+//   ?q= のクエリだとGitHub Pagesのログや外部サイトへのリファラに載る可能性がある。
+// ⛔ ここでパスワードや合言葉を受け取らないこと。受け取ってよいのは検索語だけ。
+// ⛔ ハッシュはブラウザ履歴に残るため、読み取ったら即座に消す（下の replaceState）。
+function applyLaunchQuery() {
+  let raw = '';
+  try {
+    raw = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+  } catch (e) {
+    raw = '';
+  }
+  if (!raw) return;
+  const m = /(?:^|&)q=([^&]*)/.exec(raw);
+  if (!m) return;
+
+  // 受け取るのは検索語のみ。長すぎる値・制御文字は捨てる（想定外の入力を持ち込ませない）
+  let q = m[1].replace(/[ -]/g, '').trim().slice(0, 40);
+
+  // 履歴に検索語（＝どのサービスを見に来たか）を残さないよう、読み取った時点でハッシュを消す
+  try {
+    history.replaceState(null, '', location.pathname + location.search);
+  } catch (e) { /* 失敗しても本処理は続ける */ }
+
+  if (!q) return;
+  const input = document.getElementById('search-input');
+  if (!input) return;
+  input.value = q;
+  currentQuery = q;
+  // 何が起きたか利用者に見せる（勝手に絞り込まれた、と思わせないため）
+  if (typeof toast === 'function') toast(`「${q}」で検索しました`, 'info');
 }
 
 function handleLogout() {
