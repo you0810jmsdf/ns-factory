@@ -13,6 +13,7 @@ Disallow: /pr-room/
 
 # 個人利用アプリ（お試し版・検索非掲載）
 Disallow: /diet/
+Disallow: /costco/
 
 # 内部運用ツール
 Disallow: /staff-knowledge-admin.html

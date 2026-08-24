@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>コストコ共同購入</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="コストコ共同購入">
+  <meta name="theme-color" content="#e31837">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #f5f6f8; }
+    #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+    #boot {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      font-family: "Hiragino Sans", Meiryo, sans-serif; background: #f5f6f8; color: #555;
+      padding: 24px; text-align: center;
+    }
+    #boot .logo { font-size: 42px; }
+    #boot .t { font-size: 15px; font-weight: 700; color: #e31837; }
+    #boot .s { font-size: 12px; line-height: 1.7; }
+    #boot .spin {
+      width: 26px; height: 26px; border: 3px solid #e0e0e0; border-top-color: #e31837;
+      border-radius: 50%; animation: sp 0.9s linear infinite;
+    }
+    @keyframes sp { to { transform: rotate(360deg); } }
+    #boot .fallback { display: none; margin-top: 8px; }
+    #boot .fallback a {
+      display: inline-block; background: #e31837; color: #fff; text-decoration: none;
+      padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 700;
+    }
+    #boot .fallback p { font-size: 11px; color: #888; margin: 10px 0 0; }
+  </style>
+</head>
+<body>
+  <div id="boot">
+    <div class="logo">🛒</div>
+    <div class="t">コストコ共同購入</div>
+    <div class="spin"></div>
+    <div class="s">読み込んでいます…</div>
+    <div class="fallback" id="fallback">
+      <a id="directLink" href="#" target="_blank" rel="noopener">アプリを開く</a>
+      <p>表示されない場合はこのボタンから開いてください</p>
+    </div>
+  </div>
+
+  <script>
+    // GAS WebApp 本体。key はこのページには持たせず、URLパラメータで受け取って引き継ぐだけ
+    var GAS_URL = 'https://script.google.com/macros/s/AKfycbwDvb6MlWT6P0rjLh9W7G59cpOxvb172sstt6OakI-To99ne1XvyV5ZGrYtglFpGVsi/exec';
+
+    var params = new URLSearchParams(location.search);
+    var key = params.get('key') || '';
+    var target = GAS_URL + (key ? '?key=' + encodeURIComponent(key) : '');
+
+    document.getElementById('directLink').href = target;
+
+    var frame = document.createElement('iframe');
+    frame.id = 'app';
+    frame.src = target;
+    frame.setAttribute('allow', 'clipboard-write; web-share');
+    frame.setAttribute('referrerpolicy', 'no-referrer');
+    frame.onload = function () {
+      var boot = document.getElementById('boot');
+      if (boot) boot.style.display = 'none';
+    };
+    document.body.appendChild(frame);
+
+    // 8秒待っても読み込まれない場合は、直接開くボタンを出す
+    setTimeout(function () {
+      var boot = document.getElementById('boot');
+      if (boot && boot.style.display !== 'none') {
+        document.querySelector('#boot .spin').style.display = 'none';
+        document.querySelector('#boot .s').textContent = '読み込みに時間がかかっています。';
+        document.getElementById('fallback').style.display = 'block';
+      }
+    }, 8000);
+  </script>
+</body>
+</html>
