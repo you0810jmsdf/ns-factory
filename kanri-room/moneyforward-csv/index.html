@@ -264,6 +264,13 @@ input:focus,select:focus,textarea:focus{
   color:var(--muted);
   font-size:12px;
 }
+.bank-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bank-link-row{display:flex;gap:6px;align-items:stretch}
+.bank-link-row .go{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;font-weight:700;color:var(--ink);text-decoration:none}
+.bank-link-row .go:hover{background:var(--soft)}
+.bank-link-row .pw{width:46px;min-height:42px;border:1px solid var(--line);border-radius:8px;background:var(--soft);font-size:16px}
+.bank-link-row .pw:hover{background:var(--soft-2)}
+@media (max-width:640px){.bank-links{grid-template-columns:1fr}}
 .dropzone{
   border:1px dashed var(--line);
   border-radius:var(--radius);
@@ -720,10 +727,16 @@ td.amount{
         <div class="mode-panel" id="bankPanel" role="tabpanel" aria-labelledby="bankTab">
           <div class="dropzone">
             <div class="field">
-              <label for="bankFile">楽天銀行 入出金明細CSV</label>
+              <label>1. 銀行サイトを開いてCSVをダウンロード</label>
+              <div class="bank-links" id="bankLinks"></div>
+              <p class="hint">「🔑」はパスワード管理ノートをその銀行で検索した状態で開きます。合言葉の入力は必要です。</p>
+            </div>
+            <div class="field" style="margin-top:12px">
+              <label for="bankFile">2. ダウンロードしたCSVを選ぶ（4行対応・自動判別）</label>
               <input id="bankFile" type="file" accept=".csv,text/csv">
             </div>
-            <p class="hint">楽天銀行 → 入出金明細 → CSVダウンロード で取得したファイルをそのまま選んでください。この端末のブラウザ内だけで処理します。</p>
+            <p class="hint">楽天銀行・イオン銀行・ドコモSMTBネット銀行・ゆうちょ銀行に対応。列名から自動で判別します。<b>ゆうちょはZIPで届くので、中のCSVを取り出してから</b>選んでください。この端末のブラウザ内だけで処理し、外部へ送信しません。</p>
+            <p class="hint">同じ期間を取り直しても、取引ごとの一意キー（ゆうちょは明細ID・他行は日付＋金額＋摘要＋残高）で<b>重複は自動的に除外</b>されます。</p>
           </div>
           <div class="grid two">
             <div class="field">
@@ -3286,27 +3299,163 @@ td.amount{
 
   let bankRows = [];
 
+  // ── 銀行4行の仕様（すべて実ファイルで実測・2026-08-24）────────────────────
+  // 仕様の正本: 監理部\銀行明細_取込仕様.md ／ PC側の同等実装: 監理部\bank_parser.py
+  // ⛔ 列名を推測で足さないこと。実物のCSVで確認してから追記する。
+  const BANK_SPECS = {
+    rakuten: { label:'楽天銀行', marker:'取引日', date:['取引日'], desc:['入出金内容'],
+      signedAmount:['入出金(円)','入出金（円）'], balance:['残高(円)','残高（円）'], uid:[], signed:true },
+    aeon: { label:'イオン銀行', marker:'日付', date:['日付'], desc:['お取引内容'],
+      in:['お預入れ'], out:['お引出し'], balance:['残高（お借入れはマイナス表示）','残高'], uid:[], signed:false },
+    docomo_smtb: { label:'ドコモSMTBネット銀行', marker:'日付', date:['日付'], desc:['内容'],
+      in:['入金金額(円)','入金金額（円）'], out:['出金金額(円)','出金金額（円）'],
+      balance:['残高(円)','残高（円）'], uid:[], signed:false },
+    yucho: { label:'ゆうちょ銀行', marker:'取引日', date:['取引日'], desc:['詳細１','詳細1'], desc2:['詳細２','詳細2'],
+      in:['受入金額（円）','受入金額(円)'], out:['払出金額（円）','払出金額(円)'],
+      balance:['現在（貸付）高','現在(貸付)高'], uid:['入出金明細ＩＤ','入出金明細ID'], signed:false }
+  };
+
+  // 列名だけで銀行を判別する（ファイル名には依存しない＝リネームされても効く）
+  function detectBank(text){
+    const head = text.split(/\r?\n/).slice(0, 20).join('\n');
+    if(/入出金明細(ＩＤ|ID)/.test(head)) return 'yucho';
+    if(head.includes('お預入れ') && head.includes('お引出し')) return 'aeon';
+    if(head.includes('入金金額') && head.includes('出金金額')) return 'docomo_smtb';
+    if(head.includes('入出金内容')) return 'rakuten';
+    return null;
+  }
+
+  function pickCol(row, names){
+    for(const n of (names||[])){ if(row[n] !== undefined && row[n] !== null) return String(row[n]); }
+    return '';
+  }
+  function bankInt(v){ const t=String(v==null?'':v).replace(/[^\d\-]/g,''); return (t && t !== '-') ? Number(t) : 0; }
+  function bankDate(v){
+    const m = /^(\d{4})[\/\-年]?(\d{1,2})[\/\-月]?(\d{1,2})/.exec(String(v||'').trim().replace(/^"|"$/g,''));
+    return m ? `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}` : '';
+  }
+  // 再取得で期間が重なっても同じ取引を二度取り込まないための鍵。
+  // ⛔ 残高を必ず含めること。含めないと同日同額の取引を区別できない。
+  function bankKey(r){
+    if(r.uid) return `${r.bank}:${r.uid}`;
+    const raw = `${r.bank}|${r.date}|${r.in}|${r.out}|${r.desc}|${r.balance}`;
+    let h = 0;
+    for(let i=0;i<raw.length;i++){ h = (Math.imul(h, 31) + raw.charCodeAt(i)) >>> 0; }
+    return `${r.bank}:${h.toString(16)}`;
+  }
+
+  // ── 取込済みキーの記録（この端末のブラウザ内のみ）────────────────────────
+  // PC側の 監理部ank_csv\_取込済み.json と同じ役割。仕訳に追加した明細を覚えておき、
+  // 期間が重なる再取得で二度出さないようにする。
+  // ⛔ 消すと次回に全件が新規扱いになり、二重計上する。
+  const BANK_IMPORTED_KEY = 'nsf_bank_imported_keys_v1';
+  function readBankImported(){
+    try{
+      const v = JSON.parse(localStorage.getItem(BANK_IMPORTED_KEY) || '[]');
+      return Array.isArray(v) ? v : [];
+    }catch(e){ return []; }
+  }
+  function addBankImported(keys){
+    try{
+      const set = new Set(readBankImported());
+      keys.forEach(k => set.add(k));
+      // 上限を設けて肥大化を防ぐ（新しい順に5000件保持）
+      const arr = Array.from(set).slice(-5000);
+      localStorage.setItem(BANK_IMPORTED_KEY, JSON.stringify(arr));
+    }catch(e){ /* 保存できなくても取込自体は続行する */ }
+  }
+
+  // ── 銀行サイトへの導線 ────────────────────────────────────────────────
+  // URLは2026-08-24にcurlで実測（HTTP 200を確認）。⛔ 記憶で書き換えないこと。
+  // ゆうちょダイレクトの入口は公式サイト内のリンクから取得した。
+  const BANK_LINKS = [
+    { key:'rakuten',     label:'楽天銀行',       url:'https://www.rakuten-bank.co.jp/',            q:'楽天銀行' },
+    { key:'aeon',        label:'イオン銀行',     url:'https://www.aeonbank.co.jp/',                q:'イオン銀行' },
+    { key:'docomo_smtb', label:'ドコモSMTB',     url:'https://www.netbk.co.jp/',                   q:'住信SBI' },
+    { key:'yucho',       label:'ゆうちょ',       url:'https://direct.jp-bank.japanpost.jp/direct', q:'ゆうちょ' }
+  ];
+  // パスワード管理ノート。検索語は「URLハッシュ」で渡す。
+  // ⛔ ?q= のクエリにしないこと。クエリはサーバーのアクセスログとリファラに載る。
+  //    ハッシュはHTTPリクエストに含まれないため、どこにも記録されない。
+  // ⛔ 合言葉・パスワードそのものは絶対に渡さないこと。渡すのは検索語だけ。
+  const PW_NOTE_URL = '../../password-note/';
+
+  function renderBankLinks(){
+    const box = $('bankLinks');
+    if(!box) return;
+    box.innerHTML = '';
+    BANK_LINKS.forEach(b => {
+      const row = document.createElement('div');
+      row.className = 'bank-link-row';
+      const a = document.createElement('a');
+      a.className = 'go'; a.href = b.url; a.target = '_blank';
+      // 外部サイトに開き元の情報を渡さない（noreferrer）
+      a.rel = 'noopener noreferrer';
+      a.textContent = b.label + ' ↗';
+      const pw = document.createElement('button');
+      pw.type = 'button'; pw.className = 'pw'; pw.textContent = '🔑';
+      pw.title = b.label + ' をパスワードノートで検索して開く';
+      pw.addEventListener('click', () => {
+        // 検索語だけをハッシュに載せる。開いた先で読み取り後すぐ履歴から消える実装。
+        window.open(PW_NOTE_URL + '#q=' + encodeURIComponent(b.q), '_blank', 'noopener,noreferrer');
+      });
+      row.appendChild(a); row.appendChild(pw);
+      box.appendChild(row);
+    });
+  }
+
   function parseBankCsv(buf){
-    // 楽天銀行CSVはcp932。UTF-8で読むと摘要が全部化けるので shift_jis 固定で読む
-    const text = new TextDecoder('shift_jis').decode(buf);
-    const lines = text.split(/\r?\n/).filter(l => l.trim());
-    if(!lines.length) return [];
-    const head = lines[0];
-    if(!/取引日/.test(head)){
-      throw new Error('楽天銀行の明細CSVではないようです（1行目に「取引日」がありません）');
+    // 4行とも cp932。将来の仕様変更に備えて UTF-8 も試す
+    let text;
+    try{
+      text = new TextDecoder('utf-8', { fatal:true }).decode(buf);
+    }catch(e){
+      text = new TextDecoder('shift_jis').decode(buf);
     }
-    return lines.slice(1).map(line => {
-      // 摘要にカンマが入りうるので、先頭3列だけ切り出して残りを摘要にする
-      const p = line.split(',');
-      const date = (p[0] || '').trim();
-      const amount = Number((p[1] || '').replace(/[^\d-]/g, ''));
-      const desc = p.slice(3).join(',').trim();
-      return {
-        date: `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}`,
-        amount, desc,
-        kind: classifyBankRow(amount, desc),
+    if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+    const bank = detectBank(text);
+    if(!bank){
+      throw new Error('銀行を判別できません（楽天・イオン・ドコモSMTB・ゆうちょの明細CSVを選んでください）');
+    }
+    const spec = BANK_SPECS[bank];
+    const lines = text.split(/\r?\n/);
+    // ゆうちょは先頭に口座情報が7行あるため、明細ヘッダの位置を探す
+    let hi = 0;
+    for(let i=0;i<Math.min(lines.length,30);i++){
+      if(lines[i].replace(/^"/,'').startsWith(spec.marker)){ hi = i; break; }
+    }
+    const table = parseCsv(lines.slice(hi).join('\n'));
+    if(table.length < 2) throw new Error('明細が1件もありません');
+    const header = table[0].map(h => h.trim());
+    const rows = [];
+    for(const cols of table.slice(1)){
+      const row = {};
+      header.forEach((h,i) => { row[h] = cols[i]; });
+      const date = bankDate(pickCol(row, spec.date));
+      if(!date) continue;
+      let inAmt, outAmt;
+      if(spec.signed){
+        const a = bankInt(pickCol(row, spec.signedAmount));
+        inAmt = a >= 0 ? a : 0; outAmt = a < 0 ? -a : 0;
+      }else{
+        inAmt = bankInt(pickCol(row, spec.in));
+        outAmt = bankInt(pickCol(row, spec.out));
+      }
+      let desc = pickCol(row, spec.desc).trim();
+      if(spec.desc2){ const d2 = pickCol(row, spec.desc2).trim(); if(d2) desc = `${desc} ${d2}`.trim(); }
+      const rec = {
+        bank, bankLabel: spec.label, date,
+        in: inAmt, out: outAmt, amount: inAmt - outAmt, desc,
+        balance: bankInt(pickCol(row, spec.balance)),
+        uid: spec.uid.length ? pickCol(row, spec.uid).trim() : ''
       };
-    }).filter(r => r.date.length === 10 && Number.isFinite(r.amount));
+      rec.key = bankKey(rec);
+      rec.kind = classifyBankRow(rec.amount, rec.desc);
+      rows.push(rec);
+    }
+    if(!rows.length) throw new Error('日付を読み取れる明細がありませんでした');
+    return rows;
   }
 
   function renderBankTable(){
@@ -3359,7 +3508,7 @@ td.amount{
       '貸方金額': r.amount,
       '摘要': normBankDesc(r.desc).slice(0, 60),
       'タグ': '銀行明細',
-      'メモ': `楽天銀行 入出金明細 / 判定: ${BANK_KIND[r.kind] || r.kind}`,
+      'メモ': `${r.bankLabel || '銀行'} 入出金明細 / 判定: ${BANK_KIND[r.kind] || r.kind}`,
     }));
 
     const existing = new Set(rows.map(x => [x['取引日'], x['摘要'], x['借方金額']].join('|')));
@@ -3368,8 +3517,10 @@ td.amount{
 
     rows = rows.concat(fresh);
     saveRows();
+    // 仕訳にした明細を覚えておく。次に同じ期間を取り直しても二度出さない。
+    addBankImported(checked.map(r => r.key).filter(Boolean));
     render();
-    showToast(`銀行明細から ${fresh.length}件を仕訳に追加しました。`);
+    showToast(`銀行明細から ${fresh.length}件を仕訳に追加しました。次回の取り込みでは除外されます。`);
   }
 
   $('bankTab').addEventListener('click', () => switchMode('bank'));
@@ -3380,15 +3531,30 @@ td.amount{
     boxes.forEach(b => { b.checked = !allOn; });
   });
   $('bankAddBtn').addEventListener('click', addBankToJournal);
+  renderBankLinks();
+
   $('bankFile').addEventListener('change', async e => {
     const file = e.target.files && e.target.files[0];
     if(!file) return;
     try{
-      bankRows = parseBankCsv(await file.arrayBuffer());
+      const parsed = parseBankCsv(await file.arrayBuffer());
+      // 期間を取り直しても同じ取引を二度出さない。
+      // ⛔ この除外を外さないこと。年末の再取得で全件が重複して並ぶ。
+      const seen = new Set(readBankImported());
+      const already = parsed.filter(r => seen.has(r.key)).length;
+      const inFile = new Set();
+      bankRows = parsed.filter(r => {
+        if(seen.has(r.key) || inFile.has(r.key)) return false;   // 取込済み・ファイル内重複
+        inFile.add(r.key);
+        return true;
+      });
+      const label  = parsed.length ? parsed[0].bankLabel : '';
       const direct = bankRows.filter(r => r.kind === 'direct').length;
       const biz    = bankRows.filter(r => r.kind === 'biz').length;
       $('bankStatus').textContent =
-        `${bankRows.length}件を読み込みました。直接取引 ${direct}件 / その他の事業収入 ${biz}件を選択済みにしています。`
+        `${label}の明細 ${parsed.length}件を読み込みました。`
+        + (already ? `うち ${already}件は取込済みのため除外しています。` : '')
+        + `未取込 ${bankRows.length}件（直接取引 ${direct}件 / その他の事業収入 ${biz}件を選択済み）。`
         + '内容を確認してから追加してください。';
       renderBankTable();
     }catch(err){
