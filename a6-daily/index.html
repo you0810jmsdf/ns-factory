@@ -543,6 +543,15 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 </style>
 </head>
 <body>
+<!-- 無料開放のお知らせ（2026-08-24 追加）。⛔ 不具合の連絡先を消さないこと。 -->
+<div id="nsf-free-notice" style="max-width:760px;margin:12px auto;padding:12px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:1.8;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;">
+  <strong>無料でお使いください。</strong>
+  会員登録もパスワードも不要です。作ったデータはこの端末の中だけで処理され、どこにも送信されません。<br>
+  うまく動かない・印刷がずれる・こうしてほしい等ありましたら
+  <a href="https://you0810jmsdf.github.io/ns-factory/links.html" style="color:#7A5540;font-weight:700;">こちら</a>
+  からお知らせください。個人で作っているので、教えていただけると助かります。
+</div>
+
 <style>
 /* === MODULE: Password Overlay === */
 #pw-overlay{position:fixed;inset:0;z-index:9999;background:rgba(15,15,15,.92);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;}
@@ -559,20 +568,7 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 .pw-line-link{font-size:12px;color:#06C755;text-decoration:none;display:block;margin-top:16px;}
 .pw-line-link:hover{text-decoration:underline;}
 </style>
-<div id="pw-overlay">
-  <div class="pw-card">
-    <div class="pw-logo">N's factory</div>
-    <p class="pw-title">A6デイリーリフィル印刷ツール</p>
-    <p class="pw-hint">公式LINEでご案内のパスワードを入力してください</p>
-    <div class="pw-form">
-      <input type="password" id="pw-input" placeholder="パスワード" autocomplete="off">
-      <button type="button" id="pw-btn">入力</button>
-    </div>
-    <p class="pw-error" id="pw-error" style="display:none">パスワードが違います</p>
-    <a href="https://lin.ee/qsmtY2N" class="pw-line-link" target="_blank" rel="noopener">パスワードがわからない方は公式LINEへ →</a>
-  </div>
-</div>
-
+<!-- パスワードゲートは2026-08-24に解除（無料開放）。復活させる場合はgit履歴を参照 -->
 <!-- ===== サイドバー開閉ボタン ===== -->
 <button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
 <button id="history-toggle-btn" onclick="openHistory()" title="更新履歴を表示">📋 更新履歴</button>
@@ -1758,7 +1754,7 @@ function buildDailyPage(date, pageNum, holeSide, showHoles, showHoleLine, showHo
 /* === MODULE: Password Auth === */
 (function(){
   var KEY='nsf_auth';
-  if(sessionStorage.getItem(KEY)==='1'){document.getElementById('pw-overlay').style.display='none';return;}
+  return; // ゲート解除済み（2026-08-24 無料開放）
   function check(){
     if(document.getElementById('pw-input').value==='nsfactory'){
       sessionStorage.setItem(KEY,'1');
