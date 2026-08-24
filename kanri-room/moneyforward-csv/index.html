@@ -3425,7 +3425,9 @@ td.amount{
     for(let i=0;i<Math.min(lines.length,30);i++){
       if(lines[i].replace(/^"/,'').startsWith(spec.marker)){ hi = i; break; }
     }
-    const table = parseCsv(lines.slice(hi).join('\n'));
+    // このファイル内の既存パーサを使う（引用符・エスケープ対応済み）。
+    // ⛔ parseCsv という名前の関数はこのツールに無い。他ページのコードを流用しないこと。
+    const table = lines.slice(hi).filter(l => l.trim()).map(l => parseDelimitedLine(l, ','));
     if(table.length < 2) throw new Error('明細が1件もありません');
     const header = table[0].map(h => h.trim());
     const rows = [];
