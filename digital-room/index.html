@@ -196,7 +196,7 @@ a{color:inherit;text-decoration:none}
         <p style="font-size:12px;color:var(--accent-dark);font-weight:700;margin-top:4px;">配布開始時はSNSでお知らせします</p>
         </div><!-- /padding -->
       </div>
-      <a class="tool-card" href="sns-video-maker/" style="border-color:var(--accent);background:#fff;">
+      <a class="tool-card" href="sns-video-maker/" data-app="sns-video-maker" style="border-color:var(--accent);background:#fff;">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span class="tag">WEB APP β</span>
           <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">SNS VIDEO</span>
@@ -215,7 +215,7 @@ a{color:inherit;text-decoration:none}
 
     <div class="section-label">サイトデザイン研究室</div>
     <div class="tool-grid">
-      <a class="tool-card" href="site-design-lab/">
+      <a class="tool-card" href="site-design-lab/" data-app="site-design-lab">
         <span class="tag">LIVE</span>
         <h3>サイトデザイン研究室</h3>
         <p>インタラクティブ表現・UI表現の試作サンプルを集めた実験室。第一弾は水面インタラクションページ。</p>
@@ -224,7 +224,7 @@ a{color:inherit;text-decoration:none}
 
     <div class="section-label">個人利用アプリ</div>
     <div class="tool-grid">
-      <a class="tool-card" href="../costco/">
+      <a class="tool-card" href="../costco/" data-app="costco">
         <span class="tag">WEB APP</span>
         <img src="../costco/ogp.png" alt="コストコ共同購入アプリの画面" style="width:100%;border-radius:8px;margin:8px 0 4px;display:block;" loading="lazy">
         <h3>🛒 コストコ共同購入</h3>
@@ -237,7 +237,7 @@ a{color:inherit;text-decoration:none}
         <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">グループ単位で分かれるため、他のグループの注文や金額は見えません。参加には合言葉が必要な場合があります。</p>
       </a>
 
-      <a class="tool-card" href="../diet/" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <a class="tool-card" href="../diet/" data-app="diet" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/diet-announce.png" alt="ダイエット管理アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -259,7 +259,7 @@ a{color:inherit;text-decoration:none}
 
     <div class="section-label">メタバース販売</div>
     <div class="tool-grid">
-      <a class="tool-card" href="../showroom/">
+      <a class="tool-card" href="../showroom/" data-app="showroom">
         <span class="tag">LIVE</span>
         <h3>3D ショールーム（メタバース店舗）</h3>
         <p>バーチャル空間に展開した N's factory の店舗。革小物・システム手帳が並ぶ 3D ショールームです。</p>
@@ -306,6 +306,25 @@ async function drCheckRunning() {
   try { await fetch('http://localhost:8501', {mode:'no-cors',cache:'no-store'}); return true; }
   catch(e) { return false; }
 }
+</script>
+<script>
+// 各アプリカードのクリックをGA4イベントとして記録する。
+// ⛔ 同一サイト内のリンクはGA4が自動計測しない（自動の対象は外部サイトへのリンクだけ）。
+//    そのため明示的に送る必要がある。このコードを消すとカード別の比較ができなくなる。
+// 注: ホーム画面アイコンから直接起動された分はここを通らないため数えられない。
+//     したがってこの数字は「継続利用」ではなく「新規の関心」の指標として読むこと。
+(function () {
+  document.querySelectorAll('[data-app]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      if (typeof gtag !== 'function') { return; }
+      // gtag は sendBeacon で送るため、ページ遷移しても送信は完了する
+      gtag('event', 'app_card_click', {
+        app_name: el.getAttribute('data-app'),
+        location_page: 'digital-room'
+      });
+    });
+  });
+})();
 </script>
 <script src="../assets/access-counter.js"></script>
 </body>
