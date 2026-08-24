@@ -347,6 +347,13 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
   });
 
   card.append(input, chipArea, slotNote, submit);
+
+  // 写真解析ページへの導線（外部通信はあちらのページに隔離してある）
+  const photoLink = document.createElement('a');
+  photoLink.href = './photo.html';
+  photoLink.className = 'muted';
+  photoLink.textContent = '📷 写真から入力する（合言葉が必要・写真1枚を解析サーバーへ送ります）';
+  card.append(photoLink);
   return card;
 }
 

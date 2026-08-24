@@ -1,7 +1,7 @@
 // 重要: ASSETSに含まれるファイルを1つでも変更したら、必ずCACHEのバージョン番号を上げること。
 // 上げないとユーザーのブラウザに反映されない。
 
-const CACHE = 'diet-v4';
+const CACHE = 'diet-v5';
 const ASSETS = Object.freeze([
   './',
   './index.html',
@@ -12,6 +12,8 @@ const ASSETS = Object.freeze([
   './assets/calc.js',
   './assets/chart.js',
   './assets/quick-entry.js',
+  './assets/photo.js',
+  './photo.html',
   './assets/foods.js',
   './assets/exercises-db.js',
   './assets/app.js',

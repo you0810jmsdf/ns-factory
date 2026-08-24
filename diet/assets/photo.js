@@ -1,0 +1,219 @@
+// 写真から食事を記録するページ（photo.html）専用スクリプト。
+//
+// ⛔ このファイル以外から GAS_URL へ通信するコードを書かないこと。
+//    本体アプリは CSP connect-src 'none' の外部送信ゼロを維持しており、
+//    外部通信はこのページだけに隔離している（2026-08-24 事業主承認済みのオプション機能）。
+//
+// 流れ: 合言葉 → 写真選択 → 端末内で長辺1280pxに縮小 → GASへ送信（写真1枚のみ）
+//       → Claude Visionの推定結果を編集可能なリストで表示 → 確認して IndexedDB へ記録。
+// 写真はGAS側でも保存しない（解析して返すだけ）。
+
+import { addMeal, deleteMeal } from './db.js';
+import { MEAL_SLOT_LABELS, detectMealSlot, todayString, currentTimeString } from './quick-entry.js';
+
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzzSz4bbOU_FTeWF7mC_0v8331vWfU36MlMyEwE3GdWOlZH9WSy-i8t6Gg1sXhqdqqA/exec';
+const TOKEN_KEY = 'diet_photo_token';
+const MAX_EDGE = 1280;
+const JPEG_QUALITY = 0.85;
+
+const $ = (id) => document.getElementById(id);
+
+let selectedFile = null;
+let resultItems = [];
+
+function getToken() {
+  try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+}
+
+function refreshCards() {
+  const hasToken = Boolean(getToken());
+  $('token-card').hidden = hasToken;
+  $('photo-card').hidden = !hasToken;
+}
+
+// ── 画像の縮小（端末内・送信量を抑える） ─────────────────
+async function shrinkImage(file) {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+  const w = Math.round(bitmap.width * scale);
+  const h = Math.round(bitmap.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+  const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+  return { media_type: 'image/jpeg', data: dataUrl.split(',')[1] };
+}
+
+// ── GAS呼び出し ───────────────────────────────────────
+// Content-Type は text/plain にする（application/json だと preflight が発生して
+// GAS WebApp では CORS エラーになる。2026-08 既知の教訓）。
+async function callAnalyze(image) {
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'analyze', token: getToken(), image })
+  });
+  const text = await res.text();
+  if (text.trim().startsWith('<')) {
+    throw new Error('サーバーの準備ができていません（管理者のGAS承認待ちの可能性）');
+  }
+  return JSON.parse(text);
+}
+
+// ── 結果リスト描画 ─────────────────────────────────────
+function renderResults(data) {
+  const list = $('result-list');
+  list.replaceChildren();
+  resultItems = (data.items || []).map((it) => ({ ...it, checked: true }));
+
+  if (!resultItems.length) {
+    const empty = document.createElement('p');
+    empty.className = 'muted';
+    empty.textContent = '食品を見つけられませんでした。' + ((data.warnings || []).join(' ') || '');
+    list.append(empty);
+    $('record-btn').hidden = true;
+    $('result-card').hidden = false;
+    return;
+  }
+
+  resultItems.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'banner stack';
+
+    const head = document.createElement('label');
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.checked = true;
+    check.addEventListener('change', () => { item.checked = check.checked; });
+    const nameInput = document.createElement('input');
+    nameInput.className = 'input';
+    nameInput.value = item.name;
+    nameInput.addEventListener('change', () => { item.name = nameInput.value.trim() || item.name; });
+    head.append(check, nameInput);
+
+    const meta = document.createElement('span');
+    meta.className = 'muted';
+    const kcalInput = document.createElement('input');
+    kcalInput.type = 'number';
+    kcalInput.className = 'input input-small';
+    kcalInput.setAttribute('inputmode', 'numeric');
+    kcalInput.value = Number.isFinite(item.kcal) ? String(item.kcal) : '';
+    kcalInput.addEventListener('change', () => {
+      const v = Number(kcalInput.value);
+      item.kcal = Number.isFinite(v) && v >= 0 ? Math.round(v) : null;
+    });
+    meta.append(kcalInput, document.createTextNode(
+      `kcal / ${item.amount_desc || '量は目安'}` +
+      (Number.isFinite(item.confidence) ? ` / 自信度${Math.round(item.confidence * 100)}%` : '')
+    ));
+
+    row.append(head, meta);
+    list.append(row);
+  });
+
+  (data.warnings || []).forEach((w) => {
+    const warn = document.createElement('p');
+    warn.className = 'muted';
+    warn.textContent = '⚠ ' + w;
+    list.append(warn);
+  });
+
+  const slot = detectMealSlot();
+  $('slot-note').textContent = `${MEAL_SLOT_LABELS[slot]}の食事として記録します`;
+  $('record-btn').hidden = false;
+  $('record-status').textContent = '';
+  $('result-card').hidden = false;
+}
+
+// ── イベント ───────────────────────────────────────────
+$('token-save').addEventListener('click', () => {
+  const v = $('token-input').value.trim();
+  if (!v) return;
+  try { localStorage.setItem(TOKEN_KEY, v); } catch (e) { /* プライベートブラウズ等 */ }
+  refreshCards();
+});
+
+$('photo-input').addEventListener('change', () => {
+  selectedFile = $('photo-input').files && $('photo-input').files[0];
+  if (!selectedFile) return;
+  const url = URL.createObjectURL(selectedFile);
+  const preview = $('preview');
+  preview.src = url;
+  preview.hidden = false;
+  $('analyze-btn').hidden = false;
+  $('result-card').hidden = true;
+  $('status-line').textContent = '';
+});
+
+$('analyze-btn').addEventListener('click', async () => {
+  if (!selectedFile) return;
+  const btn = $('analyze-btn');
+  btn.disabled = true;
+  $('status-line').textContent = '解析しています…（10秒ほどかかります）';
+  try {
+    const image = await shrinkImage(selectedFile);
+    const res = await callAnalyze(image);
+    if (res.error) {
+      if (res.error === 'unauthorized') {
+        try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* noop */ }
+        refreshCards();
+        $('status-line').textContent = '合言葉が違います。もう一度入力してください。';
+        return;
+      }
+      $('status-line').textContent = '解析できませんでした: ' + res.error;
+      return;
+    }
+    $('status-line').textContent = '';
+    renderResults(res.data || {});
+  } catch (err) {
+    $('status-line').textContent = 'エラー: ' + (err && err.message ? err.message : '通信に失敗しました');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$('record-btn').addEventListener('click', async () => {
+  const picked = resultItems.filter((it) => it.checked && it.name);
+  if (!picked.length) {
+    $('record-status').textContent = '記録する品目にチェックを入れてください';
+    return;
+  }
+  const today = todayString();
+  const slot = detectMealSlot();
+  const ids = [];
+  for (const it of picked) {
+    const id = await addMeal({
+      date: today,
+      slot,
+      name: it.name,
+      amount: null,
+      unit: it.amount_desc || '',
+      kcal: Number.isFinite(it.kcal) ? it.kcal : null,
+      p: Number.isFinite(it.p) ? it.p : null,
+      f: Number.isFinite(it.f) ? it.f : null,
+      c: Number.isFinite(it.c) ? it.c : null,
+      foodId: null
+    });
+    ids.push(id);
+  }
+  $('record-btn').hidden = true;
+  const status = $('record-status');
+  status.textContent = `${picked.length}件を${MEAL_SLOT_LABELS[slot]}に記録しました。`;
+  // 直後の取り消し（このページ内で完結させる）
+  const undo = document.createElement('button');
+  undo.type = 'button';
+  undo.className = 'button';
+  undo.textContent = '取消';
+  undo.addEventListener('click', async () => {
+    for (const id of ids) {
+      await deleteMeal(id);
+    }
+    undo.remove();
+    status.textContent = '取り消しました。';
+    $('record-btn').hidden = false;
+  });
+  status.append(document.createTextNode(' '), undo);
+});
+
+refreshCards();
