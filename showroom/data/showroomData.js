@@ -164,14 +164,7 @@ window.SHOWROOM_ROOMS = [
       }
     ],
     links: [
-      {
-        id: 'koubou-pattern',
-        name: '型紙ダウンロード',
-        lead: '馬蹄形コインケースの型紙を無料配布しています。',
-        icon: '📐',
-        url: '../patterns/horseshoe-coin-case.html',
-        btnLabel: '型紙を見る'
-      },
+      // koubou-pattern（型紙ダウンロード導線）は 2026-08-24 に一時撤去。型紙商品が未発売でSTORES商品IDが未確定のうえ、lead が「無料配布」と実態と食い違っていたため。発売時に正しい文言で復活させること。
       {
         id: 'koubou-estimate',
         name: 'オーダー見積もり受付',

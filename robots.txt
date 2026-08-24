@@ -23,6 +23,10 @@ Disallow: /order_estimate/admin.html
 Disallow: /order_estimate/stock-quote.html
 Disallow: /invoice/
 
+# 未完成・準備中（2026-08-24 一時凍結。N's pattern 第1弾の発売準備が整うまで）
+Disallow: /patterns/
+Disallow: /material-guide/
+
 # バックアップ・開発ファイル
 Disallow: /a6-weekly/index_backup_20260426.html
 
