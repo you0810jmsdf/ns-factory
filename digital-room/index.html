@@ -196,22 +196,7 @@ a{color:inherit;text-decoration:none}
         <p style="font-size:12px;color:var(--accent-dark);font-weight:700;margin-top:4px;">配布開始時はSNSでお知らせします</p>
         </div><!-- /padding -->
       </div>
-      <a class="tool-card" href="sns-video-maker/" data-app="sns-video-maker" style="border-color:var(--accent);background:#fff;">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="tag">WEB APP β</span>
-          <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">SNS VIDEO</span>
-        </div>
-        <h3>🎞 SNS紹介動画メーカー</h3>
-        <p>作品写真を選ぶだけで、SNS紹介用の縦型動画をブラウザ上で作成できます。写真ごとのセリフ、写真の動き、写真間の移行を指定できます。写真はサーバーへ送信されません。</p>
-        <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-          <strong style="color:var(--ink);">Web版</strong><br>
-          このカードをクリックして起動<br>
-          <strong style="color:var(--ink);">PC内ローカル版</strong><br>
-          レザークラフト\デジタル部\デジタル幕僚室\SNS紹介動画メーカー<br>
-        </div>
-        <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">Web版βの保存形式はWebMです。音楽は投稿時にInstagramなどで手動追加してください。</p>
-      </a>
-    </div>
+      </div>
 
     <div class="section-label">サイトデザイン研究室</div>
     <div class="tool-grid">
@@ -222,40 +207,108 @@ a{color:inherit;text-decoration:none}
       </a>
     </div>
 
-    <div class="section-label">個人利用アプリ</div>
+        <div class="section-label">無料アプリ・ツール</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.8;margin:-6px 0 16px;">
+      デジタル幕僚が自分たちの仕事のために作ったものを、そのまま公開しています。
+      <strong style="color:var(--ink);">どれも無料・登録不要</strong>です。
+      うまく動かない、こうしてほしい等ありましたら
+      <a href="../links.html" style="color:var(--accent-dark);font-weight:700;">こちら</a>からお知らせください。
+    </p>
     <div class="tool-grid">
-      <a class="tool-card" href="../costco/" data-app="costco">
-        <span class="tag">WEB APP</span>
-        <img src="../costco/ogp.png" alt="コストコ共同購入アプリの画面" style="width:100%;border-radius:8px;margin:8px 0 4px;display:block;" loading="lazy">
-        <h3>🛒 コストコ共同購入</h3>
-        <p>コストコのセール案内メールから商品と写真・価格・セール期間を自動で取り込み、みんなでチェックするだけで「誰が何を何個」を集計します。商品ごとの合計購入数と、人ごとの請求額・受領記録まで一画面で管理できます。</p>
-        <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-          <strong style="color:var(--ink);">無料でお使いいただけます。</strong><br>
-          チェックする側はアカウント登録も不要です。<br>
-          ホーム画面に追加するとアプリのように使えます。
-        </div>
-        <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">グループ単位で分かれるため、他のグループの注文や金額は見えません。参加には合言葉が必要な場合があります。</p>
-      </a>
+
+      <!-- ⛔ 各カードは画像付き・data-app 付きで統一すること。
+           data-app を消すとGA4でどのアプリが押されたか分からなくなる。
+           告知画像は 広報部\告知画像\promo_template.py で生成する（手作りしない）。 -->
 
       <a class="tool-card" href="../diet/" data-app="diet" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/diet-announce.png" alt="ダイエット管理アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;">
+        <img src="../assets/diet-announce.png" alt="ダイエット管理アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="tag">WEB APP</span>
-          <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3>⚖ ダイエット管理</h3>
+          <p style="color:var(--ink);">朝夜の体重、食べたもの、運動、水分を記録すると、目標まであと何kgか・今日はあとどれくらい食べられるかが一目でわかります。BMI・基礎代謝・PFCバランス・7日移動平均・停滞期の目安まで自動で計算します。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">記録は端末の中だけに保存されます。</strong>サーバーへ送られることは一切ありません（そもそも送信できない作りです）。<br>
+            入力は最短2タップ。食事は「ごはん 納豆」と打つだけ、量は「茶碗1杯」で選べます。<br>
+            ホーム画面に追加すると、電波がなくても使えます。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">機種変更の前に、設定画面からバックアップを保存してください。</p>
         </div>
-        <h3>⚖ ダイエット管理</h3>
-        <p style="color:var(--ink);">朝夜の体重、食べたもの、運動、水分を記録すると、目標まであと何kgか・今日はあとどれくらい食べられるかが一目でわかります。BMI・基礎代謝・PFCバランス・7日移動平均・停滞期の目安まで自動で計算します。</p>
-        <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-          <strong style="color:var(--ink);">無料でお使いいただけます。アカウント登録も不要です。</strong><br>
-          記録はお使いの端末の中だけに保存され、インターネット上のサーバーへ送られることは一切ありません（そもそも送信できない作りにしてあります）。<br>
-          入力は最短2タップ。体重は前回の数字が入った状態で開き、食事は「ごはん 納豆」と打つだけ。量は「茶碗1杯」「1パック」で選べます。<br>
-          ホーム画面に追加すると、電波がなくても使えます。
-        </div>
-        <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">記録は端末内にあるため、機種変更の前に設定画面からバックアップを保存してください。</p>
-        </div><!-- /padding -->
       </a>
+
+      <a class="tool-card" href="../costco/" data-app="costco" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/costco-announce.png" alt="コストコ共同購入アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3>🛒 コストコ共同購入</h3>
+          <p style="color:var(--ink);">コストコのセール案内から商品・写真・価格を自動で取り込み、みんなでチェックするだけで「誰が何を何個」を集計します。人ごとの請求額・受領記録まで一画面で管理できます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">チェックする側はアカウント登録不要です。</strong><br>
+            ホーム画面に追加するとアプリのように使えます。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">グループ単位で分かれるため、他のグループの注文や金額は見えません。参加には合言葉が必要な場合があります。</p>
+        </div>
+      </a>
+
+      <a class="tool-card" href="../a6-weekly/" data-app="refill" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/refill-announce.png" alt="手帳リフィル印刷ツール 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB TOOL</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3>📅 手帳リフィル印刷ツール</h3>
+          <p style="color:var(--ink);">システム手帳のリフィルを自分で印刷できます。日付を入れて印刷するだけ。市販のリフィルが見つからないサイズ・レイアウトも自分で用意できます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">6種類そろっています。</strong><br>
+            A6サイズ: <a href="../a6-weekly/" style="color:var(--accent-dark);">週間</a> ／ <a href="../a6-monthly/" style="color:var(--accent-dark);">月間</a> ／ <a href="../a6-daily/" style="color:var(--accent-dark);">日次</a><br>
+            聖書サイズ: <a href="../bible-weekly/" style="color:var(--accent-dark);">週間</a> ／ <a href="../bible-monthly/" style="color:var(--accent-dark);">月間</a> ／ <a href="../bible-daily/" style="color:var(--accent-dark);">日次</a>
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">2026-08-24より、パスワードなしでどなたでもお使いいただけます。</p>
+        </div>
+      </a>
+
+      <a class="tool-card" href="../password-note.html" data-app="password-note" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/password-note-announce.png" alt="N's notebook パスワード管理 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">STORES</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">500円 / 買い切り</span>
+          </div>
+          <h3>🔐 N's notebook パスワード管理</h3>
+          <p style="color:var(--ink);">パスワードやアカウント情報を整理し、A6リフィルに印刷して紙で残せます。終活や家族への引き継ぎを想定した作りです。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">保存は端末の中だけ。</strong>販売者のサーバーへパスワード一覧が送られることはありません。<br>
+            開くときは合言葉が必要です。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">合言葉を忘れると復旧できません。紙にも残す使い方を前提としています。</p>
+        </div>
+      </a>
+
+      <a class="tool-card" href="sns-video-maker/" data-app="sns-video-maker" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/sns-video-maker-announce.png" alt="SNS紹介動画メーカー 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP β</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / ブラウザで完結</span>
+          </div>
+          <h3>🎞 SNS紹介動画メーカー</h3>
+          <p style="color:var(--ink);">作品写真を選ぶだけで、SNS用の縦型動画をブラウザ上で作成できます。写真ごとのセリフ、写真の動き、切り替え方を指定できます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">写真はサーバーへ送信されません。</strong><br>
+            動画編集アプリを用意する必要はありません。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">β版の保存形式はWebMです。音楽は投稿時にInstagram等で追加してください。</p>
+        </div>
+      </a>
+
     </div>
+
 
     <div class="section-label">メタバース販売</div>
     <div class="tool-grid">
