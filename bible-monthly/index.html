@@ -253,16 +253,18 @@
 </style>
 </head>
 <body>
+<!-- 無料開放のお知らせ（2026-08-24 追加）。⛔ 不具合の連絡先を消さないこと。 -->
+<div id="nsf-free-notice" style="max-width:760px;margin:12px auto;padding:12px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:1.8;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;">
+  <strong>無料でお使いください。</strong>
+  会員登録もパスワードも不要です。作ったデータはこの端末の中だけで処理され、どこにも送信されません。<br>
+  うまく動かない・印刷がずれる・こうしてほしい等ありましたら
+  <a href="https://you0810jmsdf.github.io/ns-factory/links.html" style="color:#7A5540;font-weight:700;">こちら</a>
+  からお知らせください。個人で作っているので、教えていただけると助かります。
+</div>
+
 
 <!-- Auth -->
-<div id="auth-overlay">
-  <div class="auth-box">
-    <h2>N's factory</h2>
-    <p>バイブル マンスリー ブロック</p>
-    <input type="password" id="pw-input" placeholder="パスワードを入力" autocomplete="current-password">
-    <button onclick="tryAuth()">ログイン</button>
-    <div id="auth-error"></div>
-  </div>
+<!-- パスワードゲートは2026-08-24に解除（無料開放）。復活はgit履歴を参照 -->
 </div>
 
 <!-- App -->
@@ -323,14 +325,14 @@
 
 <script>
 /* === MODULE: Auth === */
+// ゲート解除済み（2026-08-24 無料開放）: 認証を経ずに起動する
+// ⛔ ここで init() を直接呼ばないこと。CFG等の定数がまだ初期化されておらず
+//    「Cannot access 'CFG' before initialization」で落ちる。読み込み完了後に呼ぶ。
 (function(){
-  if(sessionStorage.getItem('nsf_auth')==='ok'){
-    document.getElementById('auth-overlay').style.display='none';
-    document.getElementById('app').style.display='block';
-    init();
-  }
-  document.getElementById('pw-input').addEventListener('keydown',e=>{
-    if(e.key==='Enter') tryAuth();
+  var app=document.getElementById('app');
+  if(app) app.style.display='block';
+  window.addEventListener('load', function(){
+    if(typeof init==='function') init();
   });
 })();
 function tryAuth(){
