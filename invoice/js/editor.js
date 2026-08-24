@@ -6,7 +6,7 @@
   'use strict';
 
   const params = new URLSearchParams(location.search);
-  const editId = params.get('id');   // 既存書類番号（編集時）
+  let editId = params.get('id');     // 既存書類番号（編集時。新規保存が通ったらその番号を入れる）
   const initType = params.get('type') || 'quote';
   const fromCM   = params.get('fromCM') === '1'; // customer_manager からの引込フラグ
 
@@ -37,8 +37,8 @@
     if (editId) {
       await loadDocument(editId);
     } else {
-      // 新規: 採番して番号セット
-      await assignNewNumber(document.getElementById('doc-type').value);
+      // 新規: ここでは採番しない（保存時にGAS側が採番する）
+      showPendingNumber();
       // customer_manager からの引込があれば反映
       const applied = applyCmPayloadIfAny();
       if (!applied) addDetailRow(); // 最初の明細行
@@ -78,20 +78,16 @@
     document.getElementById('page-title-text').textContent = label + (editId ? ' 編集' : ' 作成');
   }
 
-  // ---- 採番 ----
-  async function assignNewNumber(type) {
-    try {
-      const res = await API.getNextNumber(type);
-      document.getElementById('doc-number').value = res.number;
-      document.getElementById('doc-number-badge').textContent = res.number;
-    } catch (e) {
-      // オフライン時はプレースホルダー
-      const prefix = { quote:'Q', invoice:'I', receipt:'R' }[type] || 'X';
-      const yr = new Date().getFullYear();
-      document.getElementById('doc-number').value = prefix + '-' + yr + '-???';
-      document.getElementById('doc-number-badge').textContent = '（採番エラー）';
-      showToast('採番に失敗しました: ' + e.message, 'error');
-    }
+  // ---- 書類番号の表示 ----
+  // 採番は保存時にGAS側（createDocument）で行う。画面を開いただけでは番号を消費しない。
+  function showPendingNumber() {
+    document.getElementById('doc-number').value = '';
+    document.getElementById('doc-number-badge').textContent = '保存時に採番';
+  }
+
+  function applyAssignedNumber(number) {
+    document.getElementById('doc-number').value = number;
+    document.getElementById('doc-number-badge').textContent = number;
   }
 
   // ---- 顧客マスタ読み込み ----
@@ -592,18 +588,22 @@
 
       const doc     = buildDocObject();
       const details = buildDetails();
-      if (!doc.number || doc.number.includes('???')) {
-        showToast('書類番号が未取得です。GAS WebApp URLを確認してください。', 'error');
-        return;
-      }
       if (editId) {
+        if (!doc.number) {
+          showToast('書類番号が取得できていません。画面を再読み込みしてください。', 'error');
+          return;
+        }
         await API.updateDocument(doc, details);
         showToast('保存しました', 'success');
       } else {
-        await API.createDocument(doc, details);
-        showToast('作成しました: ' + doc.number, 'success');
-        // 編集モードに切り替え
-        history.replaceState({}, '', 'editor.html?id=' + encodeURIComponent(doc.number) + '&type=' + doc.type);
+        // number は空のまま送る。GAS が台帳へ書く直前に採番して返す。
+        const res = await API.createDocument(doc, details);
+        const assigned = res.number || doc.number;
+        applyAssignedNumber(assigned);
+        showToast('作成しました: ' + assigned, 'success');
+        // 以後は更新モード。editId を立てないと2回目の保存で別番号の書類が増える。
+        editId = assigned;
+        history.replaceState({}, '', 'editor.html?id=' + encodeURIComponent(assigned) + '&type=' + doc.type);
       }
     } catch (e) {
       showToast('保存エラー: ' + e.message, 'error');
@@ -619,7 +619,7 @@
     const typeLabel = CONFIG.TYPE_LABEL[doc.type] || '書類';
 
     document.getElementById('pa-title').textContent       = typeLabel;
-    document.getElementById('pa-number').textContent      = doc.number || '';
+    document.getElementById('pa-number').textContent      = doc.number || '（保存後に採番）';
     document.getElementById('pa-issue-date').textContent  = doc.issueDate || '';
     document.getElementById('pa-customer-name').textContent      = doc.customerName || '';
     document.getElementById('pa-customer-honorific').textContent = doc.customerHonorific || '様';
@@ -691,6 +691,9 @@
   function previewPdf() {
     if (!document.getElementById('customer-name').value.trim()) {
       if (!confirm('顧客名が未入力です。このまま印刷プレビューを開きますか？')) return;
+    }
+    if (!document.getElementById('doc-number').value.trim()) {
+      if (!confirm('まだ保存していないため、書類番号が「（保存後に採番）」と印刷されます。\n\n先に「保存」を押すことをおすすめします。このまま開きますか？')) return;
     }
     try {
       fillPrintArea();
