@@ -1777,7 +1777,9 @@
         // 2026-07-17 Phase5: 業務相談でも「どの幕僚と話しているか」を維持する（口調のみ・内容は不変）
         systemPrompt += nsfPersonaAddendum(staffId);
         // 2026-07-17 Phase5-2: 自作派サポート知識（素材ガイド）を注入
-        systemPrompt += NSF_MATERIAL_GUIDE_ADDENDUM;
+        // 2026-08-24 凍結: 型紙商品が未発売でSTORES/Creema商品IDが未確定のため、
+        // 素材ガイドのAI案内を一時停止する（発売後にこの行のコメントを外して復旧）。
+        // systemPrompt += NSF_MATERIAL_GUIDE_ADDENDUM;
         var claudeHistory = chatHistories[staffId].slice(-CHAT_HISTORY_MAX).map(function (h) {
           return { role: h.role === 'model' ? 'assistant' : 'user', content: h.text };
         });
