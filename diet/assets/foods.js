@@ -161,6 +161,10 @@ export const BUILTIN_FOODS = Object.freeze([
   { id: 'f128', name: 'コーラ', kana: 'こーら', cat: '飲料', unit: 'ml', per: 100, kcal: 46, p: 0.0, f: 0.0, c: 11.4 },
   { id: 'f129', name: 'スポーツドリンク', kana: 'すぽーつどりんく', cat: '飲料', unit: 'ml', per: 100, kcal: 21, p: 0.0, f: 0.0, c: 5.1 },
   { id: 'f130', name: 'ビール', kana: 'びーる', cat: '飲料', unit: 'ml', per: 100, kcal: 40, p: 0.3, f: 0.0, c: 3.1 },
+  // カフェオレ: 成分表のコーヒー浸出液(4kcal)と普通牛乳(61kcal)の1:1混合として算出（2026-08-24 利用者要望で追加）
+  { id: 'f141', name: 'カフェオレ（無糖・牛乳1:1）', kana: 'かふぇおれ', cat: '飲料', unit: 'ml', per: 100, kcal: 33, p: 1.8, f: 1.9, c: 2.8 },
+  // ミルクティー: 紅茶浸出液(1kcal)と普通牛乳の3:1混合として算出
+  { id: 'f142', name: 'ミルクティー（無糖）', kana: 'みるくてぃー', cat: '飲料', unit: 'ml', per: 100, kcal: 16, p: 0.9, f: 1.0, c: 1.3 },
 
   { id: 'f131', name: 'こいくちしょうゆ', kana: 'こいくちしょうゆ', cat: '調味料', unit: 'g', per: 100, kcal: 76, p: 7.7, f: 0.0, c: 7.9 },
   { id: 'f132', name: 'みそ', kana: 'みそ', cat: '調味料', unit: 'g', per: 100, kcal: 182, p: 12.5, f: 6.0, c: 21.9 },
