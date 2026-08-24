@@ -8,7 +8,7 @@
 //       → Claude Visionの推定結果を編集可能なリストで表示 → 確認して IndexedDB へ記録。
 // 写真はGAS側でも保存しない（解析して返すだけ）。
 
-import { addMeal, deleteMeal } from './db.js';
+import { addMeal, deleteMeal, getAll, STORES } from './db.js';
 import { MEAL_SLOT_LABELS, detectMealSlot, todayString, currentTimeString } from './quick-entry.js';
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzzSz4bbOU_FTeWF7mC_0v8331vWfU36MlMyEwE3GdWOlZH9WSy-i8t6Gg1sXhqdqqA/exec';
@@ -48,11 +48,36 @@ async function shrinkImage(file) {
 // ── GAS呼び出し ───────────────────────────────────────
 // Content-Type は text/plain にする（application/json だと preflight が発生して
 // GAS WebApp では CORS エラーになる。2026-08 既知の教訓）。
-async function callAnalyze(image) {
+/**
+ * 過去の記録から「よく食べているもの」の料理名を取り出す。
+ * 候補の当たりを上げるためにAIへ渡す。
+ * ⛔ 料理名以外（体重・日付・量）は渡さないこと。判定に不要な情報を外へ出さない。
+ * @returns {Promise<string[]>} 頻度順の料理名（最大20件）。
+ */
+async function frequentMealNames() {
+  try {
+    const meals = await getAll(STORES.meals);
+    const count = new Map();
+    (meals || []).forEach((m) => {
+      const name = (m && m.name || '').trim();
+      if (name) {
+        count.set(name, (count.get(name) || 0) + 1);
+      }
+    });
+    return [...count.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([name]) => name);
+  } catch (e) {
+    return [];
+  }
+}
+
+async function callAnalyze(image, frequent) {
   const res = await fetch(GAS_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'analyze', token: getToken(), image })
+    body: JSON.stringify({ action: 'analyze', token: getToken(), image, frequent })
   });
   const text = await res.text();
   if (text.trim().startsWith('<')) {
@@ -61,27 +86,109 @@ async function callAnalyze(image) {
   return JSON.parse(text);
 }
 
-// ── 結果リスト描画 ─────────────────────────────────────
+// ── 候補選択の描画 ─────────────────────────────────────
+// ⛔ AIの推定を1つに断定して見せないこと。写真からの料理特定は誤りやすく、
+//    断定すると利用者が直す手間の方が大きい（2026-08-24「全然だめ」との評価を受けた設計変更）。
+//    候補を並べて「選ぶ」形にする。
+
+/**
+ * 候補一覧を描画する。候補をタップすると中身（品目）の編集画面へ進む。
+ * @param {object} data GASからの応答（candidates / detected / warnings）。
+ * @returns {void}
+ */
 function renderResults(data) {
   const list = $('result-list');
   list.replaceChildren();
-  resultItems = (data.items || []).map((it) => ({ ...it, checked: true }));
+  const candidates = data.candidates || [];
 
-  if (!resultItems.length) {
+  if (!candidates.length) {
     const empty = document.createElement('p');
     empty.className = 'muted';
-    empty.textContent = '食品を見つけられませんでした。' + ((data.warnings || []).join(' ') || '');
+    empty.textContent = '料理を見つけられませんでした。'
+      + ((data.warnings || []).join(' ') || '別の角度で撮り直すか、テキストで入力してください。');
     list.append(empty);
     $('record-btn').hidden = true;
+    $('slot-note').textContent = '';
     $('result-card').hidden = false;
     return;
   }
+
+  const lead = document.createElement('p');
+  lead.className = 'muted';
+  lead.textContent = '近いものを選んでください（選んだあと中身を直せます）';
+  list.append(lead);
+
+  if ((data.detected || []).length) {
+    const det = document.createElement('p');
+    det.className = 'muted';
+    det.textContent = '写真から見えたもの: ' + data.detected.join(' / ');
+    list.append(det);
+  }
+
+  candidates.forEach((cand) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'button';
+    btn.style.textAlign = 'left';
+    btn.style.width = '100%';
+    const body = document.createElement('span');
+    body.className = 'stack';
+    const title = document.createElement('strong');
+    title.textContent = cand.label;
+    const meta = document.createElement('span');
+    meta.className = 'muted';
+    meta.textContent = `約${cand.total_kcal}kcal`
+      + (Number.isFinite(cand.confidence) ? ` / 確からしさ${Math.round(cand.confidence * 100)}%` : '');
+    const detail = document.createElement('span');
+    detail.className = 'muted';
+    detail.textContent = cand.items.map((i) => i.name).join('、');
+    body.append(title, meta, detail);
+    btn.append(body);
+    btn.addEventListener('click', () => renderPickedCandidate(cand, data));
+    list.append(btn);
+  });
+
+  (data.warnings || []).forEach((w) => {
+    const warn = document.createElement('p');
+    warn.className = 'muted';
+    warn.textContent = '⚠ ' + w;
+    list.append(warn);
+  });
+
+  $('record-btn').hidden = true;
+  $('slot-note').textContent = '';
+  $('record-status').textContent = '';
+  $('result-card').hidden = false;
+}
+
+/**
+ * 選んだ候補の中身を編集できる形で描画する。
+ * @param {object} cand 選ばれた候補。
+ * @param {object} data 元の応答（候補選び直し用）。
+ * @returns {void}
+ */
+function renderPickedCandidate(cand, data) {
+  const list = $('result-list');
+  list.replaceChildren();
+  resultItems = cand.items.map((it) => ({ ...it, checked: true }));
+
+  const head = document.createElement('p');
+  head.className = 'muted';
+  head.textContent = `「${cand.label}」で記録します。違うものは外し、数字は直せます。`;
+  list.append(head);
+
+  const back = document.createElement('button');
+  back.type = 'button';
+  back.className = 'button';
+  back.textContent = '← 別の候補を選ぶ';
+  back.addEventListener('click', () => renderResults(data));
+  list.append(back);
 
   resultItems.forEach((item) => {
     const row = document.createElement('div');
     row.className = 'banner stack';
 
-    const head = document.createElement('label');
+    const label = document.createElement('label');
     const check = document.createElement('input');
     check.type = 'checkbox';
     check.checked = true;
@@ -90,7 +197,7 @@ function renderResults(data) {
     nameInput.className = 'input';
     nameInput.value = item.name;
     nameInput.addEventListener('change', () => { item.name = nameInput.value.trim() || item.name; });
-    head.append(check, nameInput);
+    label.append(check, nameInput);
 
     const meta = document.createElement('span');
     meta.className = 'muted';
@@ -103,27 +210,16 @@ function renderResults(data) {
       const v = Number(kcalInput.value);
       item.kcal = Number.isFinite(v) && v >= 0 ? Math.round(v) : null;
     });
-    meta.append(kcalInput, document.createTextNode(
-      `kcal / ${item.amount_desc || '量は目安'}` +
-      (Number.isFinite(item.confidence) ? ` / 自信度${Math.round(item.confidence * 100)}%` : '')
-    ));
+    meta.append(kcalInput, document.createTextNode(`kcal / ${item.amount_desc || '量は目安'}`));
 
-    row.append(head, meta);
+    row.append(label, meta);
     list.append(row);
-  });
-
-  (data.warnings || []).forEach((w) => {
-    const warn = document.createElement('p');
-    warn.className = 'muted';
-    warn.textContent = '⚠ ' + w;
-    list.append(warn);
   });
 
   const slot = detectMealSlot();
   $('slot-note').textContent = `${MEAL_SLOT_LABELS[slot]}の食事として記録します`;
   $('record-btn').hidden = false;
   $('record-status').textContent = '';
-  $('result-card').hidden = false;
 }
 
 // ── イベント ───────────────────────────────────────────
@@ -166,7 +262,8 @@ $('analyze-btn').addEventListener('click', async () => {
   $('status-line').textContent = '解析しています…（10秒ほどかかります）';
   try {
     const image = await shrinkImage(selectedFile);
-    const res = await callAnalyze(image);
+    const frequent = await frequentMealNames();
+    const res = await callAnalyze(image, frequent);
     if (res.error) {
       if (res.error === 'unauthorized') {
         try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* noop */ }
