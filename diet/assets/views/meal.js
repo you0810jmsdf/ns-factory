@@ -463,13 +463,37 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
   redrawSlotTabs();
   card.append(el('span', 'muted', 'どの食事に入れますか？'), slotTabsHolder, input, chipArea, slotNote, submit);
 
-  // 写真解析ページへの導線（外部通信はあちらのページに隔離してある）
-  const photoLink = document.createElement('a');
-  photoLink.href = './photo.html';
-  photoLink.className = 'muted';
-  photoLink.textContent = '📷 写真から入力する（合言葉が必要・写真1枚を解析サーバーへ送ります）';
-  card.append(photoLink);
+  // 写真解析ページへの導線。
+  // ⛔ 一般公開版では出さないこと。写真解析はAPI従量課金で、利用者数に比例して費用が増える。
+  //    表示条件: ?photo=on を一度開いた端末、または既に合言葉を持っている端末（＝家族）だけ。
+  if (isPhotoFeatureEnabled()) {
+    const photoLink = document.createElement('a');
+    photoLink.href = './photo.html';
+    photoLink.className = 'muted';
+    photoLink.textContent = '📷 写真から入力する（写真1枚を解析サーバーへ送ります）';
+    card.append(photoLink);
+  }
   return card;
+}
+
+/**
+ * 写真解析機能を使える端末かどうか。
+ * `?photo=on` で有効化し、以後この端末では表示し続ける。
+ * 合言葉を既に持っている端末（家族が使用済み）も有効とみなす。
+ * @returns {boolean} 有効なら true。
+ */
+function isPhotoFeatureEnabled() {
+  try {
+    if (new URLSearchParams(location.search).get('photo') === 'on') {
+      localStorage.setItem('diet_photo_enabled', '1');
+      return true;
+    }
+    return localStorage.getItem('diet_photo_enabled') === '1'
+      || Boolean(localStorage.getItem('diet_photo_token'));
+  } catch (e) {
+    // プライベートブラウズ等で localStorage が使えない場合は非表示（安全側）
+    return false;
+  }
 }
 
 function createSlotTabs(selectedSlot, onChange) {
