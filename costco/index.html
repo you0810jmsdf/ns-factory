@@ -60,11 +60,12 @@
     var GAS_URL = 'https://script.google.com/macros/s/AKfycbwDvb6MlWT6P0rjLh9W7G59cpOxvb172sstt6OakI-To99ne1XvyV5ZGrYtglFpGVsi/exec';
 
     var params = new URLSearchParams(location.search);
-    var key = params.get('key') || '';
-    var group = params.get('g') || '';
+    // g=グループ / h=とりまとめ役の鍵 / key=全体管理キー をそのまま引き継ぐ
     var qs = [];
-    if (key) qs.push('key=' + encodeURIComponent(key));
-    if (group) qs.push('g=' + encodeURIComponent(group));
+    ['key', 'g', 'h'].forEach(function (name) {
+      var v = params.get(name);
+      if (v) qs.push(name + '=' + encodeURIComponent(v));
+    });
     var target = GAS_URL + (qs.length ? '?' + qs.join('&') : '');
 
     document.getElementById('directLink').href = target;
