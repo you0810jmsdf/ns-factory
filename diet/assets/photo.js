@@ -134,17 +134,30 @@ $('token-save').addEventListener('click', () => {
   refreshCards();
 });
 
-$('photo-input').addEventListener('change', () => {
-  selectedFile = $('photo-input').files && $('photo-input').files[0];
-  if (!selectedFile) return;
-  const url = URL.createObjectURL(selectedFile);
+// アルバム選択と撮影を別のinputに分ける。
+// ⛔ 1つのinputに capture を付けるとiOSでカメラ直行になり、アルバムから選べない。
+let previewUrl = null;
+
+function handlePicked(file) {
+  if (!file) return;
+  selectedFile = file;
+  if (previewUrl) {
+    URL.revokeObjectURL(previewUrl);
+  }
+  previewUrl = URL.createObjectURL(file);
   const preview = $('preview');
-  preview.src = url;
+  preview.src = previewUrl;
   preview.hidden = false;
   $('analyze-btn').hidden = false;
   $('result-card').hidden = true;
   $('status-line').textContent = '';
-});
+}
+
+$('pick-library').addEventListener('click', () => $('file-library').click());
+$('pick-camera').addEventListener('click', () => $('file-camera').click());
+
+$('file-library').addEventListener('change', (e) => handlePicked(e.target.files && e.target.files[0]));
+$('file-camera').addEventListener('change', (e) => handlePicked(e.target.files && e.target.files[0]));
 
 $('analyze-btn').addEventListener('click', async () => {
   if (!selectedFile) return;

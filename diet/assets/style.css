@@ -612,3 +612,22 @@ a {
   padding: 6px 8px;
   margin-right: 6px;
 }
+
+/* 1人前ボタン（×0.5 / 茶碗1杯 / ×1.5 / ×2）2026-08-24 追加。
+   利用者が「g」で量を判断できないため、日常語で量を選べるようにする。 */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.chip-row .button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.chip-row .button.is-active {
+  border-color: var(--accent, #2563eb);
+  font-weight: 700;
+}

@@ -129,6 +129,75 @@ function unitLabel(food) {
   return `${Math.round(per)}${unit}あたり`;
 }
 
+/**
+ * 1人前の目安を持つ食品かどうか。
+ * @param {object} food 食品。
+ * @returns {boolean} serving があれば true。
+ */
+function hasServing(food) {
+  return Boolean(food && food.serving && Number.isFinite(food.serving.g) && food.serving.g > 0);
+}
+
+/**
+ * 既定量（g）を返す。1人前の目安があればその量、無ければ per。
+ * ⛔ 利用者は「g」で量を判断できない（2026-08-24 要望）。
+ *    serving がある食品は必ず1人前を既定にすること。
+ * @param {object} food 食品。
+ * @returns {number} 既定量。
+ */
+function defaultServingAmount(food) {
+  if (hasServing(food)) {
+    return food.serving.g;
+  }
+  return Number.isFinite(food?.per) ? food.per : 100;
+}
+
+/**
+ * 量を人間の言葉で表す。「茶碗1杯（150g）」のように返す。
+ * serving が無い食品は「150g」のようにg表記のまま返す。
+ * @param {object} food 食品。
+ * @param {number} amount 量（g または ml）。
+ * @returns {string} 表示文字列。
+ */
+function servingText(food, amount) {
+  const unit = food?.unit || 'g';
+  if (!hasServing(food)) {
+    return `${numberText(amount)}${unit}`;
+  }
+  const ratio = amount / food.serving.g;
+  const label = food.serving.label || '1人前';
+  // ちょうど1人前なら倍率を書かない。0.5/1.5/2 は「×」で表す。
+  const ratioText = Math.abs(ratio - 1) < 0.01
+    ? label
+    : `${label} ×${Number(ratio.toFixed(2))}`;
+  return `${ratioText}（${Math.round(amount)}${unit}）`;
+}
+
+/**
+ * 人前ボタン（×0.5 / ×1 / ×1.5 / ×2）を作る。
+ * @param {object} food 食品。
+ * @param {number} current 現在量。
+ * @param {(amount:number)=>void} onPick 量が選ばれたときの処理。
+ * @returns {HTMLElement|null} serving が無ければ null。
+ */
+function createServingButtons(food, current, onPick) {
+  if (!hasServing(food)) {
+    return null;
+  }
+  const wrap = el('div', 'chip-row');
+  [0.5, 1, 1.5, 2].forEach((ratio) => {
+    const amount = Math.round(food.serving.g * ratio);
+    const button = el('button', 'button', ratio === 1 ? food.serving.label : `×${ratio}`);
+    button.type = 'button';
+    if (Math.abs(current - amount) < 0.5) {
+      button.classList.add('is-active');
+    }
+    button.addEventListener('click', () => onPick(amount));
+    wrap.append(button);
+  });
+  return wrap;
+}
+
 function normalizeSearchText(value) {
   return String(value || '').trim().toLocaleLowerCase('ja-JP');
 }
@@ -237,11 +306,27 @@ function matchFoodEntry(word, foods, myfoods) {
  * @returns {number} 既定量。
  */
 function defaultAmountFor(food, allMeals) {
+  // ⛔ 1人前の目安がある食品は必ず目安を既定にすること。
+  //    過去記録（100g等の機械的な値）を優先すると「1パック ×2.22」のような
+  //    不自然な表示になり、量が分かるという利点が失われる（2026-08-24 実測）。
+  if (hasServing(food)) {
+    const serving = food.serving.g;
+    const past = (allMeals || []).filter((m) => m.name === food.name && Number.isFinite(m.amount));
+    if (past.length) {
+      // 過去に「1人前のちょうど0.5/1/1.5/2倍」で記録していればそれを尊重する
+      const last = past[past.length - 1].amount;
+      const ratio = last / serving;
+      if ([0.5, 1, 1.5, 2].some((r) => Math.abs(ratio - r) < 0.01)) {
+        return last;
+      }
+    }
+    return serving;
+  }
   const past = (allMeals || []).filter((m) => m.name === food.name && Number.isFinite(m.amount));
   if (past.length) {
     return past[past.length - 1].amount;
   }
-  return Number.isFinite(food.per) ? food.per : 100;
+  return defaultServingAmount(food);
 }
 
 /**
@@ -268,6 +353,24 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
   submit.hidden = true;
 
   let resolvedItems = [];
+  // どの食事に入れるかを先に選ぶ。初期値は時刻からの自動判定。
+  // ⛔ 自動判定のみにしないこと。夜にまとめて1日分を入力する使い方だと、
+  //    全部「夕」に入ってしまう（2026-08-24 利用者指摘）。
+  let textSlot = detectMealSlot();
+
+  const slotTabsHolder = el('div');
+  const redrawSlotTabs = () => {
+    slotTabsHolder.replaceChildren(createSlotTabs(textSlot, (slot) => {
+      textSlot = slot;
+      redrawSlotTabs();
+      renderSlotNote();
+    }));
+  };
+  const renderSlotNote = () => {
+    slotNote.textContent = resolvedItems.length
+      ? `${MEAL_SLOT_LABELS[textSlot]}の食事として記録します`
+      : '';
+  };
 
   const renderChips = () => {
     chipArea.replaceChildren();
@@ -282,22 +385,32 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
       if (item.food) {
         const kcalPerAmount = Math.round((item.food.kcal || 0) * item.amount / (item.food.per || 100));
         line.append(el('strong', '', `✔ ${item.food.name}`));
-        const amountWrap = el('span', 'muted');
-        const amountInput = document.createElement('input');
-        amountInput.type = 'number';
-        amountInput.className = 'input input-small';
-        amountInput.setAttribute('inputmode', 'decimal');
-        amountInput.value = String(item.amount);
-        amountInput.style.width = '5.5em';
-        amountInput.addEventListener('change', () => {
-          const v = ctx.normalizeNumberInput(amountInput.value, { min: 0.1 });
-          if (Number.isFinite(v)) {
-            item.amount = v;
-            renderChips();
-          }
+        // 量は「茶碗1杯（150g）」のように人間の言葉で見せる（gだけでは判断できないため）
+        line.append(el('span', 'muted', `${servingText(item.food, item.amount)} / 約${kcalPerAmount}kcal`));
+        const servingButtons = createServingButtons(item.food, item.amount, (amount) => {
+          item.amount = amount;
+          renderChips();
         });
-        amountWrap.append(amountInput, document.createTextNode(`${unitLabel(item.food)} / 約${kcalPerAmount}kcal`));
-        line.append(amountWrap);
+        if (servingButtons) {
+          line.append(servingButtons);
+        } else {
+          // 1人前の目安が無い food（調味料など）は従来どおりgで入力する
+          const amountWrap = el('span', 'muted');
+          const amountInput = document.createElement('input');
+          amountInput.type = 'number';
+          amountInput.className = 'input input-small';
+          amountInput.setAttribute('inputmode', 'decimal');
+          amountInput.value = String(item.amount);
+          amountInput.addEventListener('change', () => {
+            const v = ctx.normalizeNumberInput(amountInput.value, { min: 0.1 });
+            if (Number.isFinite(v)) {
+              item.amount = v;
+              renderChips();
+            }
+          });
+          amountWrap.append(amountInput, document.createTextNode(unitLabel(item.food)));
+          line.append(amountWrap);
+        }
       } else {
         line.append(el('strong', '', `? ${item.word}`));
         line.append(el('span', 'muted', 'そのまま記録します（カロリー未計算・あとで設定できます）'));
@@ -305,8 +418,7 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
       chip.append(line);
       chipArea.append(chip);
     });
-    const slot = detectMealSlot();
-    slotNote.textContent = `${MEAL_SLOT_LABELS[slot]}の食事として記録します`;
+    renderSlotNote();
     submit.hidden = false;
   };
 
@@ -325,7 +437,8 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
       return;
     }
     const today = todayString();
-    const slot = detectMealSlot();
+    // ⛔ ここで detectMealSlot() を呼ばないこと。利用者がタブで選んだ食事を無視してしまう。
+    const slot = textSlot;
     const addedIds = [];
     for (const item of resolvedItems) {
       const record = item.food
@@ -346,7 +459,9 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
     await onChanged();
   });
 
-  card.append(input, chipArea, slotNote, submit);
+  // 「どの食事か」を先に選んでから打つ流れにする（利用者の指摘）
+  redrawSlotTabs();
+  card.append(el('span', 'muted', 'どの食事に入れますか？'), slotTabsHolder, input, chipArea, slotNote, submit);
 
   // 写真解析ページへの導線（外部通信はあちらのページに隔離してある）
   const photoLink = document.createElement('a');
@@ -557,8 +672,41 @@ function setPickedFood(selectionBox, amountInput, food) {
   }
   selectionBox.append(el('strong', '', food.name));
   selectionBox.append(el('span', 'muted', `${Math.round(food.kcal || 0)} kcal / ${unitLabel(food)}`));
-  amountInput.value = Number.isFinite(food.per) ? food.per : 100;
+  // 既定量は1人前（目安があるとき）。gが分からなくても選べるよう人前ボタンも出す。
+  const defaultAmount = defaultServingAmount(food);
+  amountInput.value = defaultAmount;
   amountInput.nextElementSibling.textContent = food.unit || 'g';
+  const servingButtons = createServingButtons(food, defaultAmount, (amount) => {
+    amountInput.value = amount;
+    setServingHint(selectionBox, food, amount);
+  });
+  if (servingButtons) {
+    selectionBox.append(servingButtons);
+    setServingHint(selectionBox, food, defaultAmount);
+    amountInput.addEventListener('input', () => {
+      const v = Number(amountInput.value);
+      if (Number.isFinite(v)) {
+        setServingHint(selectionBox, food, v);
+      }
+    });
+  }
+}
+
+/**
+ * 選択中の量を「茶碗1杯（150g）」形式で表示する行を更新する。
+ * @param {HTMLElement} box 表示先。
+ * @param {object} food 食品。
+ * @param {number} amount 量。
+ * @returns {void}
+ */
+function setServingHint(box, food, amount) {
+  let hint = box.querySelector('.serving-hint');
+  if (!hint) {
+    hint = el('span', 'muted serving-hint');
+    box.append(hint);
+  }
+  const kcal = Math.round((food.kcal || 0) * amount / (food.per || 100));
+  hint.textContent = `${servingText(food, amount)} → 約${kcal}kcal`;
 }
 
 function createFoodResultButton(food, onPick) {
@@ -614,7 +762,7 @@ function createMealModal(ctx, options) {
     <label class="field">
       <span class="field-label">数量</span>
       <span class="grid-2">
-        <input class="input" name="amount" type="number" inputmode="decimal" step="0.1" min="0.1" required>
+        <input class="input" name="amount" type="number" inputmode="decimal" step="0.1" min="0.1" placeholder="空欄なら1人前">
         <span class="badge">g</span>
       </span>
     </label>
@@ -634,7 +782,7 @@ function createMealModal(ctx, options) {
     <div class="grid-2">
       <label class="field">
         <span class="field-label">量</span>
-        <input class="input" name="amount" type="number" inputmode="decimal" step="0.1" min="0.1" required>
+        <input class="input" name="amount" type="number" inputmode="decimal" step="0.1" min="0.1" placeholder="空欄なら1人前">
       </label>
       <label class="field">
         <span class="field-label">単位</span>
@@ -696,7 +844,12 @@ function createMealModal(ctx, options) {
       ctx.showToast('食品を選択してください', { tone: 'warning' });
       return;
     }
-    const amount = ctx.normalizeNumberInput(amountForm.elements.amount.value, { min: 0.1 });
+    // ⛔ 量が空欄でも弾かないこと。g入力は利用者にとって苦痛（2026-08-24 指摘）。
+    //    空欄なら「大人1人前」の目安で記録する。
+    let amount = ctx.normalizeNumberInput(amountForm.elements.amount.value, { min: 0.1 });
+    if (!Number.isFinite(amount)) {
+      amount = defaultServingAmount(pickedFood);
+    }
     if (!Number.isFinite(amount)) {
       ctx.showToast('数量を入力してください', { tone: 'warning' });
       return;
@@ -724,8 +877,9 @@ function createMealModal(ctx, options) {
       c: ctx.normalizeNumberInput(manualForm.elements.c.value, { min: 0 }),
       foodId: null
     };
-    if (!name || !Number.isFinite(amount) || !Number.isFinite(record.kcal)) {
-      ctx.showToast('食品名・量・kcalを入力してください', { tone: 'warning' });
+    // 量は空欄可（g入力は苦痛という指摘への対応）。名前とkcalだけ必須にする。
+    if (!name || !Number.isFinite(record.kcal)) {
+      ctx.showToast('食品名とkcalを入力してください', { tone: 'warning' });
       return;
     }
     await addMeal(record);
@@ -733,7 +887,9 @@ function createMealModal(ctx, options) {
       await addMyFood({
         name,
         unit,
-        per: amount,
+        // 量が空欄のときは「1人前ぶんのkcal」としてマイメニューに保存する。
+        // per に null が入ると次回の計算が壊れるため必ず数値にする。
+        per: Number.isFinite(amount) ? amount : 1,
         kcal: record.kcal,
         p: record.p || 0,
         f: record.f || 0,
