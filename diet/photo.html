@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!--
+    写真解析ページ専用のCSP。
+    本体（index.html）は connect-src 'none' の外部送信ゼロを維持し、
+    GASと通信するのはこのページだけに隔離する設計。
+    ⛔ このCSPを index.html にコピーしないこと。本体の保証が壊れる。
+  -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="robots" content="noindex, nofollow">
+  <title>写真から食事を記録 - ダイエット管理</title>
+  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="icon" href="./icons/icon-192.png">
+</head>
+<body>
+  <header class="app-header">
+    <h1 id="page-title">写真から食事を記録</h1>
+  </header>
+  <main id="view" class="stack" style="padding:12px;">
+    <section class="banner banner-warning stack">
+      <strong>この機能だけは写真をインターネットに送ります</strong>
+      <span>選んだ写真1枚をAI解析のためサーバーへ送信します（解析後は保存されません）。体重や食事の記録は送信されません。使いたくない場合はこのページを閉じてください。</span>
+    </section>
+
+    <section class="card stack" id="token-card" hidden>
+      <h2 class="card-title">合言葉</h2>
+      <p class="muted">この機能は家族専用です。教えてもらった合言葉を入力してください（この端末に記憶されます）。</p>
+      <input class="input" id="token-input" type="password" autocomplete="off" placeholder="合言葉">
+      <button class="button button-primary" id="token-save" type="button">保存</button>
+    </section>
+
+    <section class="card stack" id="photo-card" hidden>
+      <h2 class="card-title">写真を選ぶ</h2>
+      <input class="input" id="photo-input" type="file" accept="image/*" capture="environment">
+      <img id="preview" alt="" style="max-width:100%; border-radius:8px;" hidden>
+      <button class="button button-primary" id="analyze-btn" type="button" hidden>この写真を解析する</button>
+      <span class="muted" id="status-line"></span>
+    </section>
+
+    <section class="card stack" id="result-card" hidden>
+      <h2 class="card-title">解析結果（直してから記録できます）</h2>
+      <div id="result-list" class="stack"></div>
+      <span class="muted" id="slot-note"></span>
+      <button class="button button-primary" id="record-btn" type="button">チェックした品目を記録する</button>
+      <span class="muted" id="record-status"></span>
+    </section>
+
+    <p><a href="./#/meal">← 食事画面へ戻る</a></p>
+  </main>
+  <script type="module" src="./assets/photo.js"></script>
+</body>
+</html>
