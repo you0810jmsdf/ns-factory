@@ -11,6 +11,9 @@ Disallow: /hanbai-room/
 Disallow: /digital-room/
 Disallow: /pr-room/
 
+# 個人利用アプリ（お試し版・検索非掲載）
+Disallow: /diet/
+
 # 内部運用ツール
 Disallow: /staff-knowledge-admin.html
 Disallow: /register.html
