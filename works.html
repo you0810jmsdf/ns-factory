@@ -1584,6 +1584,28 @@
     // 同一タブで既に管理者認証済みなら、初期表示にも反映する（トグル表記・商品登録リンク）
     updateAdminUI();
 
+    // GASは処理完了後にHTMLのエラーページだけ返すことがある（2026-08-04実測・バースト性）。
+    // 価格保存だけリトライが無く、不調な時間帯に当たると1回で「通信エラー」になり
+    // 入力した金額が失われていた。I列を読んで組み立て直す実装なので、同じ値の再送では
+    // 結果が変わらない（9回連続保存しても値が壊れないことを実測）。よって再送して安全。
+    async function savePriceWithRetry(url, onRetry, attempts = 4) {
+      let last = null;
+      for (let i = 1; i <= attempts; i++) {
+        try {
+          const res = await fetch(url);
+          const text = await res.text();
+          // ⚠ HTTP 200 でもHTMLのエラーページが返る。本文の先頭で判定すること
+          if (!text.trim().startsWith('<')) return JSON.parse(text);
+          last = new Error('Google側の一時障害（HTTP ' + res.status + '）');
+        } catch (e) { last = e; }
+        if (i < attempts) {
+          if (onRetry) onRetry(i, attempts);
+          await new Promise((r) => setTimeout(r, 1200 * i));
+        }
+      }
+      throw last || new Error('通信に失敗しました');
+    }
+
     document.getElementById('admin-price-save').addEventListener('click', () => {
       if (!activeWork) return;
       const input = document.getElementById('admin-price-input');
@@ -1599,8 +1621,9 @@
       msg.textContent = '保存中…';
       msg.className = 'admin-price-msg';
       const payload = JSON.stringify({ key: nsfStoredKey(), productId: activeWork.id, price: price });
-      fetch(WORKS_LOG_URL + '?api=updatePriceOnly&payload=' + encodeURIComponent(payload))
-        .then((r) => r.json())
+      savePriceWithRetry(WORKS_LOG_URL + '?api=updatePriceOnly&payload=' + encodeURIComponent(payload), (n, max) => {
+        msg.textContent = '応答がないため再試行中… ' + n + '/' + (max - 1);
+      })
         .then((d) => {
           if (d && d.ok) {
             activeWork.price = price;
@@ -1612,7 +1635,7 @@
           }
         })
         .catch(() => {
-          msg.textContent = '通信エラーのため保存できませんでした';
+          msg.textContent = '通信できず保存できませんでした（4回再試行済み）。時間をおいて再度お試しください';
           msg.className = 'admin-price-msg error';
         })
         .finally(() => { btn.disabled = false; });
