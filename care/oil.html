@@ -660,17 +660,17 @@ img{max-width:100%;display:block}
     }
   }
 
-  var boxes = Array.prototype.slice.call(document.querySelectorAll('.rk[data-keyword]'));
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { io.unobserve(en.target); load(en.target); }
-      });
-    }, { rootMargin: '200px' });
-    boxes.forEach(function (b) { io.observe(b); });
-  } else {
-    boxes.forEach(load);
+  // ⛔ IntersectionObserver による遅延読み込みにしないこと。
+  // バックグラウンドタブや省電力状態ではコールバックが配信されず、
+  // 商品が一件も出ないまま気付けない（2026-08-24 に実測。rAF も同時に停止する）。
+  // 収益導線なので「確実に出る」ことを優先し、読み込み時に3並列で全件取得する。
+  var queue = Array.prototype.slice.call(document.querySelectorAll('.rk[data-keyword]'));
+  function next() {
+    var box = queue.shift();
+    if (!box) return;
+    load(box).then(next, next);
   }
+  for (var i = 0; i < 3; i++) next();
 })();
 </script>
 <script src="../assets/access-counter.js"></script>
