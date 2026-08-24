@@ -154,9 +154,141 @@ function createPrivacyCard() {
   return card;
 }
 
+/**
+ * ホーム画面に追加済み（standalone）で開かれているかを判定する。
+ * iOS Safari は navigator.standalone、その他は display-mode: standalone で分かる。
+ * @returns {boolean} アイコンから起動していれば true。
+ */
+function isStandalone() {
+  if (typeof navigator !== 'undefined' && navigator.standalone === true) {
+    return true;
+  }
+  return typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && window.matchMedia('(display-mode: standalone)').matches;
+}
+
+/**
+ * 端末に合わせたホーム画面追加の手順を返す。
+ * @returns {{label: string, steps: string[]}} 見出しと手順。
+ */
+function homeScreenGuide() {
+  const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  if (isIOS) {
+    return {
+      label: 'iPhone / iPad の場合',
+      steps: [
+        '画面下の共有ボタン（四角に上向き矢印）を押す',
+        'メニューを下にスクロールして「ホーム画面に追加」を選ぶ',
+        '右上の「追加」を押す',
+        'ホーム画面にできたアイコンから開き直す'
+      ]
+    };
+  }
+  if (isAndroid) {
+    return {
+      label: 'Android の場合',
+      steps: [
+        '画面右上の「⋮」を押す',
+        '「ホーム画面に追加」または「アプリをインストール」を選ぶ',
+        '「追加」または「インストール」を押す',
+        'ホーム画面にできたアイコンから開き直す'
+      ]
+    };
+  }
+  return {
+    label: 'パソコンの場合',
+    steps: [
+      'アドレスバー右側のインストールアイコンを押す',
+      '「インストール」を選ぶ'
+    ]
+  };
+}
+
+/**
+ * ホーム画面追加をすすめる案内を作る。既にアイコン起動なら null を返す。
+ * ⛔ iPhone では Safari で開いた場合とホーム画面アイコンから開いた場合で
+ *    保存領域が別扱いになることがある。先にアイコンを作ってから設定しないと
+ *    「毎回セットアップし直し」になるため、この案内を消さないこと（2026-08-24 苦情）。
+ * @param {object} ctx viewコンテキスト。
+ * @returns {HTMLElement|null} 案内要素。
+ */
+function createHomeScreenNotice(ctx) {
+  if (isStandalone()) {
+    return null;
+  }
+  const guide = homeScreenGuide();
+  const box = el('div', 'banner banner-warning stack');
+  box.append(el('strong', '', 'さきにホーム画面へ追加してください'));
+  box.append(el('span', '', 'いまブラウザで開いています。このまま設定すると、あとでホーム画面のアイコンから開いたときに、もう一度設定が必要になることがあります。先にアイコンを作って、そこから開き直してください。'));
+  const details = document.createElement('details');
+  const summary = document.createElement('summary');
+  summary.textContent = guide.label + '｜追加のしかたを見る';
+  details.append(summary);
+  const list = document.createElement('ol');
+  list.className = 'stack';
+  guide.steps.forEach((step) => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    list.append(li);
+  });
+  details.append(list);
+  box.append(details);
+  box.append(el('span', 'muted', 'このまま続けても使えます。その場合はブラウザから開く使い方に統一してください。'));
+  return box;
+}
+
+/**
+ * バックアップから復元する導線を作る。
+ * ⛔ 初回セットアップ画面から復元できないと、データが消えた利用者が
+ *    自力で戻す手段を失う。この導線を消さないこと。
+ * @param {object} ctx viewコンテキスト。
+ * @returns {HTMLElement} 復元セクション。
+ */
+function createSetupRestore(ctx) {
+  const box = el('section', 'card stack');
+  box.append(el('strong', '', '以前に使ったことがある方へ'));
+  box.append(el('span', 'muted', '前に保存したバックアップファイルがあれば、記録をそのまま元に戻せます。'));
+  const file = createInput('restoreFile', 'file', { accept: 'application/json,.json' });
+  const button = el('button', 'button', 'バックアップから復元する');
+  button.type = 'button';
+  const status = el('span', 'muted', '');
+  button.addEventListener('click', async () => {
+    const picked = file.files && file.files[0];
+    if (!picked) {
+      ctx.showToast('バックアップファイルを選んでください', { tone: 'warning' });
+      return;
+    }
+    const agreed = await ctx.confirmDialog('バックアップを読み込みます。よろしいですか？');
+    if (!agreed) {
+      return;
+    }
+    try {
+      status.textContent = '読み込んでいます…';
+      const text = await picked.text();
+      await importAll(text, 'merge', { skipConfirm: true });
+      await ctx.refreshProfile();
+      status.textContent = '';
+      ctx.showToast('バックアップを読み込みました', { tone: 'success' });
+      ctx.navigate('home');
+    } catch (error) {
+      status.textContent = '';
+      ctx.showToast('このファイルは読み込めませんでした', { tone: 'danger' });
+    }
+  });
+  box.append(createField('バックアップJSON', file), button, status);
+  return box;
+}
+
 function createSetupMode(ctx) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', '初回セットアップ'));
+  const notice = createHomeScreenNotice(ctx);
+  if (notice) {
+    card.append(notice);
+  }
   card.append(el('p', 'muted', '身長、性別、生年月日、目標体重だけを登録します。'));
 
   const form = document.createElement('form');
@@ -207,7 +339,11 @@ function createSetupMode(ctx) {
   });
 
   card.append(form);
-  return card;
+
+  // データが消えた利用者がその場で戻せるようにする（復旧導線）
+  const wrapper = el('div', 'stack');
+  wrapper.append(card, createSetupRestore(ctx));
+  return wrapper;
 }
 
 function fillProfileForm(form, profile) {
