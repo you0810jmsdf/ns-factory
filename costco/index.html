@@ -55,7 +55,11 @@
 
     var params = new URLSearchParams(location.search);
     var key = params.get('key') || '';
-    var target = GAS_URL + (key ? '?key=' + encodeURIComponent(key) : '');
+    var group = params.get('g') || '';
+    var qs = [];
+    if (key) qs.push('key=' + encodeURIComponent(key));
+    if (group) qs.push('g=' + encodeURIComponent(group));
+    var target = GAS_URL + (qs.length ? '?' + qs.join('&') : '');
 
     document.getElementById('directLink').href = target;
 
