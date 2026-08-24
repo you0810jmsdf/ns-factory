@@ -241,6 +241,13 @@ a {
   cursor: default;
 }
 
+.section-label {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -267,6 +274,43 @@ a {
 .input,
 .select {
   padding: 0 12px;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.stepper-button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  font-size: 1.25rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.stepper-input {
+  text-align: center;
+  font-weight: 800;
+}
+
+.quick-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-chip {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .textarea {
@@ -496,6 +540,10 @@ a {
 }
 
 .toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   max-width: 520px;
   margin: 0 auto;
   padding: 12px 14px;
@@ -504,6 +552,19 @@ a {
   color: var(--color-text);
   background: var(--color-surface-raised);
   box-shadow: var(--shadow-card);
+  pointer-events: auto;
+}
+
+.toast-action {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 36px;
+  border: 1px solid var(--color-progress);
+  border-radius: var(--radius-control);
+  color: #ffffff;
+  background: var(--color-progress);
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .toast-success {
@@ -541,4 +602,13 @@ a {
   .modal {
     place-items: center;
   }
+}
+
+/* テキスト入力の量変更・カロリー後付け用の小型入力欄（2026-08-24 追加） */
+.input-small {
+  display: inline-block;
+  width: auto;
+  min-width: 4.5em;
+  padding: 6px 8px;
+  margin-right: 6px;
 }

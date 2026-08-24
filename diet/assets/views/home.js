@@ -2,7 +2,9 @@
 import {
   STORES,
   addWater,
-  getAll
+  getAll,
+  getWeight,
+  saveWeight
 } from './../db.js';
 import {
   addDays,
@@ -20,6 +22,20 @@ import {
   summarizeDailyExercises,
   summarizeRecent7DayExercises
 } from './../calc.js';
+import {
+  MEAL_SLOT_LABELS,
+  WEIGHT_PERIOD_LABELS,
+  addFrequentMeal,
+  detectMealSlot,
+  detectWeightPeriod,
+  frequentMeals,
+  latestWeightValue as getLatestWeightValue,
+  recordRoutineEntries,
+  showUndoToast,
+  stepWeight,
+  undoExercises,
+  undoMeal
+} from './../quick-entry.js';
 
 function el(tag, className = '', text = '') {
   const node = document.createElement(tag);
@@ -124,7 +140,124 @@ function createWeightGoalCard({ currentWeight, targetWeight, startWeight }) {
   return card;
 }
 
-function createTodayWeightCard(ctx, todayWeight) {
+function setWeightInputValue(input, value) {
+  input.value = Number.isFinite(value) ? value.toFixed(1) : '';
+}
+
+function adjustWeightInput(input, delta) {
+  setWeightInputValue(input, stepWeight(input.value, delta));
+}
+
+function createQuickWeightModal(ctx, weights, onSaved) {
+  let selectedPeriod = detectWeightPeriod();
+
+  const modal = el('div', 'modal');
+  modal.id = 'quick-weight-modal';
+  modal.hidden = true;
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  const panel = el('div', 'modal-panel');
+  const header = el('div', 'modal-header');
+  header.append(el('h2', 'modal-title', '体重を入力'));
+  const closeButton = el('button', 'icon-button', '×');
+  closeButton.type = 'button';
+  closeButton.setAttribute('aria-label', '閉じる');
+  closeButton.addEventListener('click', () => ctx.closeModal('quick-weight-modal'));
+  header.append(closeButton);
+
+  const form = document.createElement('form');
+  form.className = 'modal-body stack';
+
+  const tabs = el('div', 'segmented');
+  const notice = el('div', 'banner banner-success');
+  const field = el('label', 'field');
+  field.append(el('span', 'field-label', 'kg'));
+  const stepper = el('div', 'stepper');
+  const minus = el('button', 'stepper-button', '−');
+  minus.type = 'button';
+  minus.setAttribute('aria-label', '0.1kg減らす');
+  const input = document.createElement('input');
+  input.className = 'input stepper-input';
+  input.name = 'weight';
+  input.type = 'number';
+  input.inputMode = 'decimal';
+  input.step = '0.1';
+  input.min = '0';
+  input.required = true;
+  const plus = el('button', 'stepper-button', '+');
+  plus.type = 'button';
+  plus.setAttribute('aria-label', '0.1kg増やす');
+  stepper.append(minus, input, plus);
+  field.append(stepper);
+
+  const saveButton = el('button', 'button button-primary', '保存');
+  saveButton.type = 'submit';
+
+  const updatePeriod = () => {
+    tabs.querySelectorAll('.segment').forEach((button) => {
+      button.classList.toggle('is-active', button.dataset.period === selectedPeriod);
+    });
+    notice.replaceChildren(el('strong', '', `${WEIGHT_PERIOD_LABELS[selectedPeriod]}の体重として記録します`));
+    setWeightInputValue(input, getLatestWeightValue(weights, selectedPeriod));
+  };
+
+  Object.entries(WEIGHT_PERIOD_LABELS).forEach(([period, label]) => {
+    const button = el('button', `segment${period === selectedPeriod ? ' is-active' : ''}`, label);
+    button.type = 'button';
+    button.dataset.period = period;
+    button.addEventListener('click', () => {
+      selectedPeriod = period;
+      updatePeriod();
+    });
+    tabs.append(button);
+  });
+
+  minus.addEventListener('click', () => adjustWeightInput(input, -0.1));
+  plus.addEventListener('click', () => adjustWeightInput(input, 0.1));
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const value = ctx.normalizeNumberInput(input.value, { min: 0 });
+    if (!Number.isFinite(value)) {
+      ctx.showToast('体重を入力してください', { tone: 'warning' });
+      return;
+    }
+    const date = todayString();
+    const existing = await getWeight(date) || {
+      date,
+      morning: null,
+      night: null,
+      bodyFat: null,
+      waist: null,
+      memo: ''
+    };
+    await saveWeight({
+      ...existing,
+      date,
+      [selectedPeriod]: value
+    });
+    ctx.closeModal('quick-weight-modal');
+    await onSaved();
+    ctx.showToast(`${WEIGHT_PERIOD_LABELS[selectedPeriod]}の体重を保存しました`, { tone: 'success' });
+  });
+
+  form.append(tabs, notice, field, saveButton);
+  panel.append(header, form);
+  modal.append(panel);
+  updatePeriod();
+
+  return {
+    modal,
+    open() {
+      selectedPeriod = detectWeightPeriod();
+      updatePeriod();
+      ctx.openModal('quick-weight-modal');
+      window.setTimeout(() => input.focus(), 0);
+    }
+  };
+}
+
+function createTodayWeightCard(ctx, todayWeight, weights, onSaved) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', '今日の体重'));
   const grid = el('div', 'grid-2');
@@ -135,12 +268,11 @@ function createTodayWeightCard(ctx, todayWeight) {
   sub.append(el('span', 'muted', '朝'));
   sub.append(el('span', 'muted', '夜'));
   card.append(sub);
-  if (!Number.isFinite(todayWeight?.morning) || !Number.isFinite(todayWeight?.night)) {
-    const button = el('button', 'button', '体重を入力');
-    button.type = 'button';
-    button.addEventListener('click', () => ctx.navigate('weight'));
-    card.append(button);
-  }
+  const quickModal = createQuickWeightModal(ctx, weights, onSaved);
+  const button = el('button', 'button', '体重を入力');
+  button.type = 'button';
+  button.addEventListener('click', () => quickModal.open());
+  card.append(button, quickModal.modal);
   return card;
 }
 
@@ -167,7 +299,41 @@ function createBmiCard(currentWeight, profile) {
   return card;
 }
 
-function createMealCard(todayMeals, targetKcal, currentWeight) {
+async function addFrequentMealWithUndo(record, ctx, onChanged) {
+  const slot = detectMealSlot();
+  const date = todayString();
+  const id = await addFrequentMeal(record, { date, slot });
+  await onChanged();
+  showUndoToast(
+    ctx,
+    `${record.name}を${MEAL_SLOT_LABELS[slot]}に追加しました`,
+    () => undoMeal(id),
+    onChanged
+  );
+}
+
+function createFrequentMealChips(ctx, allMeals, onChanged, limit = 4) {
+  const items = frequentMeals(allMeals, limit);
+  const slot = detectMealSlot();
+  const stack = el('div', 'stack');
+  stack.append(el('p', 'muted', `タップすると${MEAL_SLOT_LABELS[slot]}の食事として追加します`));
+  if (!items.length) {
+    stack.append(el('p', 'muted', '記録が増えると、ここに候補が出ます'));
+    return stack;
+  }
+  const chips = el('div', 'quick-chip-list');
+  items.forEach((item) => {
+    const record = item.latest;
+    const button = el('button', 'button quick-chip', record.name);
+    button.type = 'button';
+    button.addEventListener('click', () => addFrequentMealWithUndo(record, ctx, onChanged));
+    chips.append(button);
+  });
+  stack.append(chips);
+  return stack;
+}
+
+function createMealCard(ctx, allMeals, todayMeals, targetKcal, currentWeight, onChanged) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', '今日の摂取'));
   const kcal = sum(todayMeals, 'kcal');
@@ -175,12 +341,19 @@ function createMealCard(todayMeals, targetKcal, currentWeight) {
   const f = sum(todayMeals, 'f');
   const c = sum(todayMeals, 'c');
   card.append(createBarRow('kcal', kcal, targetKcal || 0, 'kcal'));
+  // カロリー未設定（テキスト記録）の件数。あるときだけ表示する。
+  const uncountedMeals = (todayMeals || []).filter((m) => !Number.isFinite(m?.kcal)).length;
+  if (uncountedMeals > 0) {
+    card.append(el('span', 'muted', `未計算${uncountedMeals}件（合計に含まれていません）`));
+  }
   const pfc = calculatePFCTarget({ targetKcal: targetKcal || 0, weightKg: currentWeight || 0 });
   const bars = el('div', 'bar-list');
   bars.append(createBarRow('P', p, pfc.p || 0, 'g'));
   bars.append(createBarRow('F', f, pfc.f || 0, 'g'));
   bars.append(createBarRow('C', c, pfc.c || 0, 'g'));
   card.append(bars);
+  card.append(el('h3', 'section-label', 'よく食べたもの'));
+  card.append(createFrequentMealChips(ctx, allMeals, onChanged, 4));
   return card;
 }
 
@@ -207,7 +380,44 @@ function createWaterCard(ctx, todayWaters, waterGoalMl) {
   return card;
 }
 
-function createExerciseCard(ctx, todayExercises, weeklyExercises, currentWeight, profile, today) {
+async function recordRoutineWithUndo(routine, ctx, currentWeight, onChanged) {
+  const result = await recordRoutineEntries(routine, {
+    date: todayString(),
+    currentWeight,
+    profile: ctx.profile
+  });
+  if (!result.ids.length) {
+    ctx.showToast('ルーティンに種目がありません', { tone: 'warning' });
+    return;
+  }
+  await onChanged();
+  showUndoToast(
+    ctx,
+    `${routine.name || 'ルーティン'}を記録しました`,
+    () => undoExercises(result.ids),
+    onChanged
+  );
+}
+
+function createRoutineQuickButtons(ctx, routines, currentWeight, onChanged) {
+  const sorted = [...(routines || [])].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ja'));
+  if (!sorted.length) {
+    return null;
+  }
+  const stack = el('div', 'stack');
+  stack.append(el('p', 'muted', 'タップすると今日に記録します'));
+  const grid = el('div', 'grid-2');
+  sorted.slice(0, 2).forEach((routine) => {
+    const button = el('button', 'button button-primary', routine.name || 'ルーティン');
+    button.type = 'button';
+    button.addEventListener('click', () => recordRoutineWithUndo(routine, ctx, currentWeight, onChanged));
+    grid.append(button);
+  });
+  stack.append(grid);
+  return stack;
+}
+
+function createExerciseCard(ctx, todayExercises, weeklyExercises, currentWeight, profile, today, routines, onChanged) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', '運動'));
   const daily = summarizeDailyExercises(todayExercises, { date: today, weightKg: currentWeight });
@@ -220,7 +430,10 @@ function createExerciseCard(ctx, todayExercises, weeklyExercises, currentWeight,
   card.append(el('p', 'number-large', `${daily.totalMinutes} 分`));
   card.append(el('p', 'muted', nameText || '未記録'));
   card.append(el('span', profile?.countExerciseInBalance ? 'badge badge-warning' : 'badge', `${daily.totalAddedKcal.toFixed(1)} kcal 参考値`));
-  if (!todayExercises.length) {
+  const routineButtons = createRoutineQuickButtons(ctx, routines, currentWeight, onChanged);
+  if (routineButtons) {
+    card.append(routineButtons);
+  } else if (!todayExercises.length) {
     const button = el('button', 'button', '運動を記録');
     button.type = 'button';
     button.addEventListener('click', () => ctx.navigate('exercise'));
@@ -271,11 +484,12 @@ export async function render(ctx) {
 
   const today = todayString();
   const weekStart = addDays(today, -6);
-  const [weights, meals, waters, exercises] = await Promise.all([
+  const [weights, meals, waters, exercises, routines] = await Promise.all([
     getAll(STORES.weights),
     getAll(STORES.meals),
     getAll(STORES.waters),
-    getAll(STORES.exercises)
+    getAll(STORES.exercises),
+    getAll(STORES.myroutines)
   ]);
   const todayMeals = meals.filter((record) => record.date === today);
   const todayWaters = waters.filter((record) => record.date === today);
@@ -309,14 +523,17 @@ export async function render(ctx) {
   const targetWithExercise = applyExerciseToTargetCalories(targetBase, ctx.profile, exerciseSummary.totalAddedKcal);
   const targetKcal = targetWithExercise.targetKcal;
   const intakeKcal = sum(todayMeals, 'kcal');
+  const refreshHome = async () => {
+    ctx.navigate('home');
+  };
 
   stack.append(createWeightGoalCard({ currentWeight, targetWeight, startWeight }));
-  stack.append(createTodayWeightCard(ctx, todayWeight));
+  stack.append(createTodayWeightCard(ctx, todayWeight, weights, refreshHome));
   stack.append(createMovingAverageCard(weights));
   stack.append(createBmiCard(currentWeight, ctx.profile));
-  stack.append(createMealCard(todayMeals, targetKcal, currentWeight));
+  stack.append(createMealCard(ctx, meals, todayMeals, targetKcal, currentWeight, refreshHome));
   stack.append(createWaterCard(ctx, todayWaters, waterGoalMl));
-  stack.append(createExerciseCard(ctx, todayExercises, weeklyExercises, currentWeight, ctx.profile, today));
+  stack.append(createExerciseCard(ctx, todayExercises, weeklyExercises, currentWeight, ctx.profile, today, routines, refreshHome));
 
   const plateauCard = createPlateauCard(weights);
   if (plateauCard) {

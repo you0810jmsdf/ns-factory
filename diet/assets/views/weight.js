@@ -10,6 +10,12 @@ import {
   calculateMovingAverage7
 } from './../calc.js';
 import { renderLineChart } from './../chart.js';
+import {
+  WEIGHT_PERIOD_LABELS,
+  detectWeightPeriod,
+  latestWeightValue as getLatestWeightValue,
+  stepWeight
+} from './../quick-entry.js';
 
 const PERIODS = Object.freeze({
   '14d': { label: '2週', days: 14 },
@@ -111,21 +117,59 @@ function setInputValue(form, name, value) {
   form.elements[name].value = value ?? '';
 }
 
-function fillForm(form, record, fallbackDate) {
+function setWeightInputValue(form, name, value) {
+  form.elements[name].value = Number.isFinite(value) ? value.toFixed(1) : '';
+}
+
+function updatePresetNotice(form, period) {
+  const notice = form.querySelector('[data-weight-preset-notice]');
+  if (!notice) {
+    return;
+  }
+  notice.textContent = `現在時刻では${WEIGHT_PERIOD_LABELS[period]}の体重を入力します`;
+}
+
+function fillForm(form, record, fallbackDate, weights = []) {
+  const period = detectWeightPeriod();
   setInputValue(form, 'date', record?.date || fallbackDate);
-  setInputValue(form, 'morning', record?.morning);
-  setInputValue(form, 'night', record?.night);
+  if (record) {
+    setInputValue(form, 'morning', record.morning);
+    setInputValue(form, 'night', record.night);
+    if (!Number.isFinite(record[period])) {
+      setWeightInputValue(form, period, getLatestWeightValue(weights, period));
+    }
+  } else {
+    setWeightInputValue(form, 'morning', period === 'morning' ? getLatestWeightValue(weights, 'morning') : null);
+    setWeightInputValue(form, 'night', period === 'night' ? getLatestWeightValue(weights, 'night') : null);
+  }
   setInputValue(form, 'bodyFat', record?.bodyFat);
   setInputValue(form, 'waist', record?.waist);
   setInputValue(form, 'memo', record?.memo || '');
+  updatePresetNotice(form, period);
 }
 
-function createForm(ctx, today, onSaved) {
+function bindWeightSteppers(form) {
+  form.querySelectorAll('[data-step-target]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const input = form.elements[button.dataset.stepTarget];
+      if (!input) {
+        return;
+      }
+      const delta = Number(button.dataset.stepDelta || 0);
+      const value = stepWeight(input.value, delta);
+      input.value = value.toFixed(1);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  });
+}
+
+function createForm(ctx, today, weights, onSaved) {
   const card = el('section', 'card stack');
   const title = el('h2', 'card-title', '体重を記録');
   const form = document.createElement('form');
   form.className = 'stack';
   form.innerHTML = `
+    <div class="banner banner-success" data-weight-preset-notice></div>
     <label class="field">
       <span class="field-label">日付</span>
       <input class="input" name="date" type="date" required>
@@ -133,11 +177,19 @@ function createForm(ctx, today, onSaved) {
     <div class="grid-2">
       <label class="field">
         <span class="field-label">朝 kg</span>
-        <input class="input" name="morning" type="number" inputmode="decimal" step="0.1" min="0">
+        <span class="stepper">
+          <button class="stepper-button" type="button" data-step-target="morning" data-step-delta="-0.1" aria-label="朝の体重を0.1kg減らす">−</button>
+          <input class="input stepper-input" name="morning" type="number" inputmode="decimal" step="0.1" min="0">
+          <button class="stepper-button" type="button" data-step-target="morning" data-step-delta="0.1" aria-label="朝の体重を0.1kg増やす">+</button>
+        </span>
       </label>
       <label class="field">
         <span class="field-label">夜 kg</span>
-        <input class="input" name="night" type="number" inputmode="decimal" step="0.1" min="0">
+        <span class="stepper">
+          <button class="stepper-button" type="button" data-step-target="night" data-step-delta="-0.1" aria-label="夜の体重を0.1kg減らす">−</button>
+          <input class="input stepper-input" name="night" type="number" inputmode="decimal" step="0.1" min="0">
+          <button class="stepper-button" type="button" data-step-target="night" data-step-delta="0.1" aria-label="夜の体重を0.1kg増やす">+</button>
+        </span>
       </label>
     </div>
     <div class="grid-2">
@@ -156,7 +208,8 @@ function createForm(ctx, today, onSaved) {
     </label>
     <button class="button button-primary" type="submit">保存</button>
   `;
-  fillForm(form, null, today);
+  bindWeightSteppers(form);
+  fillForm(form, weights.find((record) => record.date === today) || null, today, weights);
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const record = {
@@ -237,13 +290,13 @@ function createHistory(weights, form, ctx, onDeleted) {
     });
 
     row.addEventListener('click', () => {
-      fillForm(form, record, todayString());
+      fillForm(form, record, todayString(), weights);
       form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     row.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        fillForm(form, record, todayString());
+        fillForm(form, record, todayString(), weights);
         form.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
@@ -270,7 +323,7 @@ export async function render(ctx) {
     ctx.navigate('weight');
   };
 
-  const formPart = createForm(ctx, today, refresh);
+  const formPart = createForm(ctx, today, weights, refresh);
   stack.append(formPart.card);
 
   const chartCard = el('section', 'card stack');

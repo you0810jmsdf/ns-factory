@@ -278,7 +278,7 @@ export async function refreshProfile() {
 /**
  * トーストを表示する。
  * @param {string} message 表示文。
- * @param {{tone?:'info'|'success'|'warning'|'danger', timeout?:number}} [options] 表示設定。
+ * @param {{tone?:'info'|'success'|'warning'|'danger', timeout?:number, action?:{label:string, onClick:Function}}} [options] 表示設定。
  * @returns {HTMLElement|null} 作成した要素。
  */
 export function showToast(message, options = {}) {
@@ -292,11 +292,29 @@ export function showToast(message, options = {}) {
   const tone = options.tone || 'info';
   const toast = document.createElement('div');
   toast.className = `toast toast-${tone}`;
-  toast.textContent = message;
+  const text = document.createElement('span');
+  text.textContent = message;
+  toast.append(text);
+
+  let timer = null;
+  if (options.action && typeof options.action.onClick === 'function') {
+    const actionButton = document.createElement('button');
+    actionButton.className = 'toast-action';
+    actionButton.type = 'button';
+    actionButton.textContent = options.action.label || '実行';
+    actionButton.addEventListener('click', async () => {
+      if (timer) {
+        window.clearTimeout(timer);
+      }
+      toast.remove();
+      await options.action.onClick();
+    });
+    toast.append(actionButton);
+  }
   root.append(toast);
 
   const timeout = Number.isFinite(options.timeout) ? options.timeout : 2600;
-  window.setTimeout(() => {
+  timer = window.setTimeout(() => {
     toast.remove();
   }, timeout);
 

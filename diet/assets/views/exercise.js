@@ -17,6 +17,11 @@ import {
   summarizeDailyExercises,
   summarizeRecent7DayExercises
 } from './../calc.js';
+import {
+  recordRoutineEntries,
+  showUndoToast,
+  undoExercises
+} from './../quick-entry.js';
 
 const CATEGORIES = Object.freeze([
   { key: 'stretch', label: 'ストレッチ' },
@@ -680,44 +685,25 @@ function createExerciseModal(ctx, options) {
   return { modal, open };
 }
 
-function routineItemCat(item, routine, exerciseApi) {
-  const source = item.exId ? exerciseApi.findExerciseById(item.exId) : null;
-  return source?.cat || routine.cat || 'other';
-}
-
 async function recordRoutineToday(routine, today, currentWeight, ctx, exerciseApi, onChanged) {
-  const items = Array.isArray(routine.items) ? routine.items : [];
-  if (!items.length) {
+  const result = await recordRoutineEntries(routine, {
+    date: today,
+    time: currentTimeString(),
+    currentWeight,
+    profile: ctx.profile,
+    exerciseApi
+  });
+  if (!result.ids.length) {
     ctx.showToast('ルーティンに種目がありません', { tone: 'warning' });
     return;
   }
-  const time = currentTimeString();
-  await Promise.all(items.map((item) => {
-    const cat = routineItemCat(item, routine, exerciseApi);
-    const mets = Number.isFinite(item.mets) ? item.mets : 3;
-    const minutes = Number.isFinite(item.minutes) ? item.minutes : 0;
-    return addExercise({
-      date: today,
-      time,
-      cat,
-      name: item.name || 'ルーティン',
-      exId: item.exId || null,
-      minutes,
-      mets,
-      kcal: calculateExerciseAddedKcal({
-        mets,
-        minutes,
-        weightKg: weightForCalc(currentWeight, ctx.profile)
-      }),
-      sets: null,
-      reps: null,
-      weightKg: null,
-      intensity: null,
-      memo: routine.name || ''
-    });
-  }));
-  ctx.showToast('ルーティンを記録しました', { tone: 'success' });
   await onChanged();
+  showUndoToast(
+    ctx,
+    `${routine.name || 'ルーティン'}を記録しました`,
+    () => undoExercises(result.ids),
+    onChanged
+  );
 }
 
 function createRoutineList(ctx, routines, today, currentWeight, exerciseApi, onChanged) {

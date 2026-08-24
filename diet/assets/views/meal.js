@@ -4,7 +4,8 @@ import {
   addMeal,
   addMyFood,
   deleteMeal,
-  getAll
+  getAll,
+  updateMeal
 } from './../db.js';
 import {
   addDays,
@@ -16,6 +17,14 @@ import {
   pickDailyWeight,
   summarizeDailyExercises
 } from './../calc.js';
+import {
+  MEAL_SLOT_LABELS,
+  addFrequentMeal,
+  detectMealSlot,
+  frequentMeals,
+  showUndoToast,
+  undoMeal
+} from './../quick-entry.js';
 
 const SLOTS = Object.freeze([
   { key: 'breakfast', label: '朝' },
@@ -146,6 +155,201 @@ function searchMyFoods(myfoods, query, limit = 8) {
     .slice(0, limit);
 }
 
+/**
+ * テキストを食品語に分割する。区切りは空白（半角・全角）・読点・カンマ。
+ * 「と」は語の一部（トマト等）を壊すため、この段階では分割しない。
+ * @param {string} text 入力文。
+ * @returns {string[]} 語の配列。
+ */
+function splitFoodText(text) {
+  return String(text || '')
+    .split(/[\s　、,，]+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+}
+
+/**
+ * 1語を食品DB・マイメニューに照合する。ヒットしなければ「と」で再分割して再試行する。
+ * 「ごはんと納豆」→ まず全体で探し、無ければ「ごはん」「納豆」に割って探す。
+ * 「トマト」は全体でヒットするので壊れない。
+ * @param {string} word 入力語。
+ * @param {Array} foods 食品DB。
+ * @param {Array} myfoods マイメニュー。
+ * @returns {Array<{word:string, food:object|null}>} 解決結果（1語が複数に割れることがある）。
+ */
+function resolveFoodWord(word, foods, myfoods) {
+  const found = matchFoodEntry(word, foods, myfoods);
+  if (found) {
+    return [{ word, food: found }];
+  }
+  if (word.includes('と')) {
+    const parts = word.split('と').map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const resolved = parts.map((part) => ({ word: part, food: matchFoodEntry(part, foods, myfoods) }));
+      // 1つでもヒットしたら分割を採用する（全滅なら元の語のまま残す）
+      if (resolved.some((r) => r.food)) {
+        return resolved;
+      }
+    }
+  }
+  return [{ word, food: null }];
+}
+
+/**
+ * 名称・かなの部分一致で1件選ぶ。複数ヒット時は名前が短いものを優先する。
+ * @param {string} word 入力語。
+ * @param {Array} foods 食品DB。
+ * @param {Array} myfoods マイメニュー。
+ * @returns {object|null} ヒットした食品。
+ */
+function matchFoodEntry(word, foods, myfoods) {
+  const query = normalizeSearchText(word);
+  if (!query) {
+    return null;
+  }
+  const pool = [
+    ...(myfoods || []).map(normalizeMyFood),
+    ...(foods || [])
+  ];
+  const hits = pool.filter((food) =>
+    normalizeSearchText(food.name).includes(query) ||
+    normalizeSearchText(food.kana || '').includes(query));
+  if (!hits.length) {
+    return null;
+  }
+  // 完全一致 > 前方一致 > 部分一致 の順で選ぶ。
+  // 「ごはん」で「玄米ごはん」（部分一致・短名）より「ごはん（白米）」（前方一致）を優先するため。
+  const rank = (food) => {
+    const n = normalizeSearchText(food.name);
+    const k = normalizeSearchText(food.kana || '');
+    if (n === query || k === query) return 0;
+    if (n.startsWith(query) || k.startsWith(query)) return 1;
+    return 2;
+  };
+  hits.sort((a, b) => rank(a) - rank(b) || a.name.length - b.name.length);
+  return hits[0];
+}
+
+/**
+ * 過去記録から同じ食品の前回量を探す。無ければ食品の既定量（per）。
+ * @param {object} food 食品。
+ * @param {Array} allMeals 全食事記録。
+ * @returns {number} 既定量。
+ */
+function defaultAmountFor(food, allMeals) {
+  const past = (allMeals || []).filter((m) => m.name === food.name && Number.isFinite(m.amount));
+  if (past.length) {
+    return past[past.length - 1].amount;
+  }
+  return Number.isFinite(food.per) ? food.per : 100;
+}
+
+/**
+ * 「テキストでまとめて記録」カード。
+ * 「ごはん 納豆 カフェオレ」と打つと端末内でDB照合し、1ボタンでまとめて追加する。
+ * DBに無い語はテキストのまま kcal=null で記録する（0にしない。集計を歪めるため）。
+ * 外部への送信は一切行わない。
+ * @returns {HTMLElement} カード要素。
+ */
+function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
+  const card = el('section', 'card stack');
+  card.append(el('h2', 'card-title', 'テキストでまとめて記録'));
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'input';
+  input.placeholder = '例: ごはん 納豆 カフェオレ';
+  input.setAttribute('aria-label', '食べたものをまとめて入力');
+
+  const chipArea = el('div', 'stack');
+  const slotNote = el('span', 'muted', '');
+  const submit = el('button', 'button button-primary', 'まとめて記録');
+  submit.type = 'button';
+  submit.hidden = true;
+
+  let resolvedItems = [];
+
+  const renderChips = () => {
+    chipArea.replaceChildren();
+    if (!resolvedItems.length) {
+      submit.hidden = true;
+      slotNote.textContent = '';
+      return;
+    }
+    resolvedItems.forEach((item) => {
+      const chip = el('div', 'banner');
+      const line = el('div', 'stack');
+      if (item.food) {
+        const kcalPerAmount = Math.round((item.food.kcal || 0) * item.amount / (item.food.per || 100));
+        line.append(el('strong', '', `✔ ${item.food.name}`));
+        const amountWrap = el('span', 'muted');
+        const amountInput = document.createElement('input');
+        amountInput.type = 'number';
+        amountInput.className = 'input input-small';
+        amountInput.setAttribute('inputmode', 'decimal');
+        amountInput.value = String(item.amount);
+        amountInput.style.width = '5.5em';
+        amountInput.addEventListener('change', () => {
+          const v = ctx.normalizeNumberInput(amountInput.value, { min: 0.1 });
+          if (Number.isFinite(v)) {
+            item.amount = v;
+            renderChips();
+          }
+        });
+        amountWrap.append(amountInput, document.createTextNode(`${unitLabel(item.food)} / 約${kcalPerAmount}kcal`));
+        line.append(amountWrap);
+      } else {
+        line.append(el('strong', '', `? ${item.word}`));
+        line.append(el('span', 'muted', 'そのまま記録します（カロリー未計算・あとで設定できます）'));
+      }
+      chip.append(line);
+      chipArea.append(chip);
+    });
+    const slot = detectMealSlot();
+    slotNote.textContent = `${MEAL_SLOT_LABELS[slot]}の食事として記録します`;
+    submit.hidden = false;
+  };
+
+  input.addEventListener('input', () => {
+    const words = splitFoodText(input.value);
+    resolvedItems = words
+      .flatMap((word) => resolveFoodWord(word, foodApi.BUILTIN_FOODS, myfoods))
+      .map((r) => r.food
+        ? { word: r.word, food: r.food, amount: defaultAmountFor(r.food, allMeals) }
+        : { word: r.word, food: null });
+    renderChips();
+  });
+
+  submit.addEventListener('click', async () => {
+    if (!resolvedItems.length) {
+      return;
+    }
+    const today = todayString();
+    const slot = detectMealSlot();
+    const addedIds = [];
+    for (const item of resolvedItems) {
+      const record = item.food
+        ? createMealRecordFromFood(item.food, item.amount, today, slot)
+        : { date: today, slot, name: item.word, amount: null, unit: '', kcal: null, p: null, f: null, c: null, foodId: null };
+      const id = await addMeal(record);
+      addedIds.push(id);
+    }
+    const count = resolvedItems.length;
+    input.value = '';
+    resolvedItems = [];
+    renderChips();
+    showUndoToast(ctx, `${count}件を${MEAL_SLOT_LABELS[slot]}に追加しました`, async () => {
+      for (const id of addedIds) {
+        await deleteMeal(id);
+      }
+    }, onChanged);
+    await onChanged();
+  });
+
+  card.append(input, chipArea, slotNote, submit);
+  return card;
+}
+
 function createSlotTabs(selectedSlot, onChange) {
   const tabs = el('div', 'segmented');
   SLOTS.forEach((slot) => {
@@ -163,6 +367,11 @@ function createTotalCard(todayMeals, pfcTarget) {
   card.append(el('h2', 'card-title', '当日合計'));
   const summary = summarizeMeals(todayMeals);
   card.append(el('p', 'number-large', `${Math.round(summary.kcal)} kcal`));
+  // カロリー未設定（テキスト記録）の件数。集計に入っていないことを隠さない。
+  const uncounted = (todayMeals || []).filter((m) => !Number.isFinite(m.kcal)).length;
+  if (uncounted > 0) {
+    card.append(el('p', 'muted', `＋未計算${uncounted}件（カロリー未設定の記録は合計に含まれていません）`));
+  }
   card.append(el('p', 'muted', `P ${numberText(summary.p)}g / F ${numberText(summary.f)}g / C ${numberText(summary.c)}g`));
 
   const bars = el('div', 'bar-list');
@@ -194,8 +403,41 @@ function createMealRow(record, ctx, onDeleted) {
   const row = el('div', 'banner');
   const body = el('div', 'stack');
   body.append(el('strong', '', record.name || '名称未設定'));
-  body.append(el('span', 'muted', `${numberText(record.amount)}${record.unit || ''} / ${Math.round(record.kcal || 0)} kcal`));
-  body.append(el('span', 'muted', `P ${numberText(record.p)}g / F ${numberText(record.f)}g / C ${numberText(record.c)}g`));
+  if (!Number.isFinite(record.kcal)) {
+    // テキスト記録などカロリー未設定の行。0kcalと表示せず、後から設定できる導線を出す。
+    body.append(el('span', 'badge badge-warning', 'カロリー未計算'));
+    const setButton = el('button', 'button', 'カロリーを設定');
+    setButton.type = 'button';
+    setButton.addEventListener('click', () => {
+      setButton.hidden = true;
+      const wrap = el('span', 'muted');
+      const kcalInput = document.createElement('input');
+      kcalInput.type = 'number';
+      kcalInput.className = 'input input-small';
+      kcalInput.setAttribute('inputmode', 'decimal');
+      kcalInput.placeholder = 'kcal';
+      kcalInput.style.width = '6em';
+      const saveButton = el('button', 'button button-primary', '保存');
+      saveButton.type = 'button';
+      saveButton.addEventListener('click', async () => {
+        const v = ctx.normalizeNumberInput(kcalInput.value, { min: 0 });
+        if (!Number.isFinite(v)) {
+          ctx.showToast('kcalを入力してください', { tone: 'warning' });
+          return;
+        }
+        await updateMeal({ ...record, kcal: v });
+        ctx.showToast('カロリーを設定しました', { tone: 'success' });
+        await onDeleted();
+      });
+      wrap.append(kcalInput, saveButton);
+      body.append(wrap);
+      kcalInput.focus();
+    });
+    body.append(setButton);
+  } else {
+    body.append(el('span', 'muted', `${numberText(record.amount)}${record.unit || ''} / ${Math.round(record.kcal || 0)} kcal`));
+    body.append(el('span', 'muted', `P ${numberText(record.p)}g / F ${numberText(record.f)}g / C ${numberText(record.c)}g`));
+  }
 
   const button = el('button', 'button button-danger', '削除');
   button.type = 'button';
@@ -237,27 +479,27 @@ function createSelectedSlotCard(ctx, todayMeals, selectedSlot, onAdd, onDeleted)
   return card;
 }
 
-function createFrequentItems(allMeals, today, getSelectedSlot, ctx, onChanged) {
+async function addFrequentMealWithUndo(record, ctx, onChanged) {
+  const slot = detectMealSlot();
+  const id = await addFrequentMeal(record, {
+    date: todayString(),
+    slot
+  });
+  await onChanged();
+  showUndoToast(
+    ctx,
+    `${record.name}を${MEAL_SLOT_LABELS[slot]}に追加しました`,
+    () => undoMeal(id),
+    onChanged
+  );
+}
+
+function createFrequentItems(allMeals, ctx, onChanged) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', 'よく食べたもの'));
-
-  const grouped = new Map();
-  allMeals.forEach((record) => {
-    const key = record.foodId || record.name;
-    if (!key || !record.name) {
-      return;
-    }
-    const current = grouped.get(key) || { count: 0, latest: record };
-    current.count += 1;
-    if (String(record.date).localeCompare(String(current.latest.date)) >= 0) {
-      current.latest = record;
-    }
-    grouped.set(key, current);
-  });
-
-  const items = [...grouped.values()]
-    .sort((a, b) => b.count - a.count || String(b.latest.date).localeCompare(String(a.latest.date)))
-    .slice(0, 10);
+  const autoSlot = detectMealSlot();
+  card.append(el('p', 'muted', `タップすると${MEAL_SLOT_LABELS[autoSlot]}の食事として追加します`));
+  const items = frequentMeals(allMeals, 10);
 
   if (!items.length) {
     card.append(el('p', 'muted', '記録が増えると、ここからワンタップで再追加できます'));
@@ -269,16 +511,7 @@ function createFrequentItems(allMeals, today, getSelectedSlot, ctx, onChanged) {
     const record = item.latest;
     const button = el('button', 'button', record.name);
     button.type = 'button';
-    button.addEventListener('click', async () => {
-      const { id, ...copy } = record;
-      await addMeal({
-        ...copy,
-        date: today,
-        slot: getSelectedSlot()
-      });
-      ctx.showToast(`${record.name} を追加しました`, { tone: 'success' });
-      await onChanged();
-    });
+    button.addEventListener('click', () => addFrequentMealWithUndo(record, ctx, onChanged));
     grid.append(button);
   });
   card.append(grid);
@@ -549,7 +782,7 @@ export async function render(ctx) {
     getAll(STORES.exercises)
   ]);
 
-  let selectedSlot = 'breakfast';
+  let selectedSlot = detectMealSlot();
   const todayMeals = allMeals.filter((record) => record.date === today);
   const pfcTarget = calculateMealTargets(ctx.profile, weights, exercises, today);
 
@@ -562,6 +795,8 @@ export async function render(ctx) {
   };
   const getSelectedSlot = () => selectedSlot;
 
+  // テキスト入力を最上部へ（「開いてすぐ打てる」ことを優先）
+  stack.append(createTextEntryCard(ctx, foodApi, myfoods, allMeals, refresh));
   stack.append(createTotalCard(todayMeals, pfcTarget));
   stack.append(createSlotSummary(todayMeals));
 
@@ -584,7 +819,7 @@ export async function render(ctx) {
   redrawSlot();
 
   stack.append(tabsHolder, slotHolder);
-  stack.append(createFrequentItems(allMeals, today, getSelectedSlot, ctx, refresh));
+  stack.append(createFrequentItems(allMeals, ctx, refresh));
   stack.append(createMealModal(ctx, {
     today,
     getSelectedSlot,
