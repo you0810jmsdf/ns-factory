@@ -74,6 +74,31 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 8px; color: var(--charcoal);
 }
 
+/* お手入れ特集への導線 */
+.care-feature {
+  display: flex; align-items: center; gap: 20px;
+  background: var(--charcoal); color: #fff;
+  border-radius: var(--radius); padding: 22px 24px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.care-feature:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.care-feature-body { flex: 1; min-width: 0; }
+.care-feature-eyebrow {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .12em;
+  color: var(--tan-light); margin-bottom: 6px;
+}
+.care-feature-title { font-size: 19px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 8px; }
+.care-feature-desc { font-size: 13px; line-height: 1.75; color: rgba(255,255,255,.66); }
+.care-feature-cta {
+  flex-shrink: 0; font-size: 13.5px; font-weight: 700;
+  background: var(--tan); color: #fff;
+  padding: 11px 20px; border-radius: 9999px; white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .care-feature { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .care-feature-cta { align-self: stretch; text-align: center; }
+}
+
 /* Affiliate links */
 .affiliate-intro { color: var(--gray); font-size: 13px; margin-bottom: 14px; }
 .tool-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
@@ -246,6 +271,22 @@ textarea { resize: vertical; min-height: 72px; }
         <h1>後方幕僚室</h1>
         <p class="lead">物流・仕入・道具・型紙・自動化を司る兵站エリア。</p>
       </div>
+    </div>
+
+    <!-- お手入れ特集（取扱説明カードのQR着地ページ。サイト内からの入口はここ） -->
+    <div class="section" id="care-feature-section">
+      <h2>お手入れ特集</h2>
+      <a class="care-feature" href="../care/oil.html">
+        <div class="care-feature-body">
+          <div class="care-feature-eyebrow">LEATHER CARE GUIDE</div>
+          <div class="care-feature-title">ヌメ革を育てるオイルの選び方</div>
+          <div class="care-feature-desc">
+            ニートフットオイル・蜜蝋ワックス・ラナパーの使い分け、塗る量と頻度、
+            コバを磨く道具まで。作品に同梱している取扱説明カードのQRからも開けます。
+          </div>
+        </div>
+        <span class="care-feature-cta">読む →</span>
+      </a>
     </div>
 
     <!-- 工程別 道具ガイド -->
