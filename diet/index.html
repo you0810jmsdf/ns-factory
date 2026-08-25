@@ -3,8 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!--
+    connect-src は自社のGASだけに限定する。
+    ⛔ ここに他のドメインを足さないこと。足した瞬間、記録が外部へ出る経路が増える。
+    ⛔ 送っているのは「内蔵の食品一覧に無かった品目名」だけ。体重・カロリー・日時は送らない。
+       送信内容を増やすときは、必ず設定画面のプライバシー説明も同時に直すこと。
+  -->
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'none'; form-action 'none'">
+    content="default-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="robots" content="noindex, nofollow">
   <title>ダイエット管理</title>
   <link rel="manifest" href="./manifest.webmanifest">

@@ -15,6 +15,13 @@ import {
   calculateWaterGoalMl,
   pickDailyWeight
 } from './../calc.js';
+import {
+  clearUnknownFoods,
+  isSendEnabled,
+  listUnknownFoods,
+  sendPending,
+  setSendEnabled
+} from './../unknown-foods.js';
 
 const ACTIVITY_LEVELS = Object.freeze([
   { value: '1.5', label: '低い（1.50）' },
@@ -22,7 +29,14 @@ const ACTIVITY_LEVELS = Object.freeze([
   { value: '2', label: '高い（2.00）' }
 ]);
 
-const PRIVACY_TEXT = 'このアプリのデータはすべてお使いの端末の中だけに保存されます。インターネット上のサーバーへ送信されることは一切ありません。アプリを削除するとデータも消えるため、定期的にバックアップを保存してください。';
+// ⛔ この文面を実態より安全に書かないこと。送信する項目を増やしたら必ずここも直す。
+//    「一切送信しません」と書けなくなった経緯: 内蔵の食品一覧に無い品目名を集めて
+//    一覧を増やすため、品目名だけを送るようにした（2026-08-26）。
+const PRIVACY_TEXT = '体重・食事・水分・運動の記録は、すべてお使いの端末の中だけに保存されます。これらがインターネットへ送られることはありません。アプリを削除するとデータも消えるため、定期的にバックアップを保存してください。';
+const PRIVACY_EXCEPTIONS = [
+  '一覧に無かった品目名（例:「切り干し大根」）だけを送ります。一覧を増やして、次から自動でカロリーが出るようにするためです。食べた量・カロリー・日時・体重は送りません。下のスイッチでいつでも止められます。',
+  '「写真から入力する」を使うときだけ、選んだ写真1枚を解析のため送ります（解析後は保存されません）。使わなければ送信は起きません。'
+];
 const EXERCISE_BALANCE_NOTICE = '身体活動レベルに「ふつう」「高い」を選んでいる場合、その中に既に運動分が含まれています。ここをONにすると運動分を二重に数えて、食べてよい量を多く見積もる恐れがあります。ONにするなら身体活動レベルを「低い（1.50）」にしてください。';
 
 function el(tag, className = '', text = '') {
@@ -152,6 +166,11 @@ function createPrivacyCard() {
   const card = el('section', 'banner');
   card.append(el('strong', '', 'プライバシー'));
   card.append(el('span', '', PRIVACY_TEXT));
+  // ⛔ 例外の明示を消さないこと。送信があるのに「一切送りません」とだけ書くのは虚偽になる。
+  card.append(el('strong', '', 'インターネットへ送るもの'));
+  PRIVACY_EXCEPTIONS.forEach((text, i) => {
+    card.append(el('span', 'muted', `${i + 1}. ${text}`));
+  });
   return card;
 }
 
@@ -566,6 +585,108 @@ function readPhotoFlag_() {
   }
 }
 
+/**
+ * 一覧に無かった品目の一覧と、送信のON/OFFを扱うカード。
+ * ⛔ 送信をOFFにする手段をここから消さないこと。断れない収集にしないこと。
+ * @param {object} ctx 画面共通コンテキスト。
+ * @returns {HTMLElement} カード要素。
+ */
+function createUnknownFoodsCard(ctx) {
+  const card = el('section', 'card stack');
+  card.append(el('h2', 'card-title', '一覧に無かった品目'));
+  card.append(el('p', 'muted', 'カロリーを引けなかった品目名です。これをもとに一覧を増やします。'));
+
+  const listBox = el('div', 'stack');
+  const status = el('span', 'muted');
+
+  const redraw = () => {
+    listBox.replaceChildren();
+    const items = listUnknownFoods();
+    if (!items.length) {
+      listBox.append(el('span', 'muted', 'まだありません。'));
+      status.textContent = '';
+      return;
+    }
+    const sorted = items.slice().sort((a, b) => b.count - a.count);
+    sorted.slice(0, 30).forEach((item) => {
+      listBox.append(el('span', '', `${item.name}（${item.count}回）${item.sent ? '' : ' ※未送信'}`));
+    });
+    if (sorted.length > 30) {
+      listBox.append(el('span', 'muted', `ほか${sorted.length - 30}件`));
+    }
+    const unsent = items.filter((i) => !i.sent).length;
+    status.textContent = `全${items.length}件` + (unsent ? ` / 未送信${unsent}件` : ' / すべて送信済み');
+  };
+
+  const toggle = createInput('unknownSend', 'checkbox');
+  toggle.className = '';
+  toggle.checked = isSendEnabled();
+  const line = el('label', 'field');
+  line.append(el('span', 'field-label', '一覧を増やす協力'));
+  const checkLine = el('span');
+  checkLine.append(toggle, document.createTextNode(' 品目名だけを送る（食べた量・カロリー・日時は送りません）'));
+  line.append(checkLine);
+  toggle.addEventListener('change', () => {
+    if (!setSendEnabled(toggle.checked)) {
+      toggle.checked = !toggle.checked;
+      ctx.showToast('この端末では設定を保存できませんでした', { tone: 'warning' });
+      return;
+    }
+    ctx.showToast(toggle.checked ? '送るようにしました' : '送らないようにしました', { tone: 'success' });
+  });
+
+  const copyButton = el('button', 'button', '一覧をコピー');
+  copyButton.type = 'button';
+  copyButton.addEventListener('click', async () => {
+    const text = listUnknownFoods().slice().sort((a, b) => b.count - a.count)
+      .map((i) => `${i.name}\t${i.count}`).join('\n');
+    if (!text) {
+      ctx.showToast('コピーするものがありません', { tone: 'warning' });
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      ctx.showToast('コピーしました', { tone: 'success' });
+    } catch (e) {
+      ctx.showToast('コピーできませんでした', { tone: 'warning' });
+    }
+  });
+
+  const sendButton = el('button', 'button', 'いま送る');
+  sendButton.type = 'button';
+  sendButton.addEventListener('click', async () => {
+    if (!isSendEnabled()) {
+      ctx.showToast('送信がOFFになっています', { tone: 'warning' });
+      return;
+    }
+    sendButton.disabled = true;
+    try {
+      const r = await sendPending();
+      ctx.showToast(r.sent ? `${r.sent}件を送りました` : '未送信のものはありません', { tone: 'success' });
+      redraw();
+    } catch (e) {
+      // ⛔ 失敗しても端末内の記録は消さないこと。次の機会に送り直せる。
+      ctx.showToast('送れませんでした。あとでもう一度お試しください', { tone: 'warning' });
+    } finally {
+      sendButton.disabled = false;
+    }
+  });
+
+  const clearButton = el('button', 'button', 'この端末の記録を消す');
+  clearButton.type = 'button';
+  clearButton.addEventListener('click', async () => {
+    const ok = await ctx.confirmDialog('一覧に無かった品目の記録を消します。よろしいですか？');
+    if (!ok) return;
+    clearUnknownFoods();
+    redraw();
+    ctx.showToast('消しました', { tone: 'success' });
+  });
+
+  card.append(line, listBox, status, copyButton, sendButton, clearButton);
+  redraw();
+  return card;
+}
+
 function createDataManagementCard(ctx) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', 'データ管理'));
@@ -655,6 +776,7 @@ export async function render(ctx) {
 
   stack.append(createPhotoFeatureCard(ctx));
   stack.append(createProfileForm(ctx, ctx.profile, weights, refresh));
+  stack.append(createUnknownFoodsCard(ctx));
   stack.append(createDataManagementCard(ctx));
   stack.append(createPrivacyCard());
   return fragment;
