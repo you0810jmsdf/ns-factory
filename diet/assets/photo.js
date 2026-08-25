@@ -13,7 +13,9 @@ import { MEAL_SLOT_LABELS, detectMealSlot, todayString, currentTimeString } from
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzzSz4bbOU_FTeWF7mC_0v8331vWfU36MlMyEwE3GdWOlZH9WSy-i8t6Gg1sXhqdqqA/exec';
 const TOKEN_KEY = 'diet_photo_token';
-const MAX_EDGE = 1280;
+// ⛔ ここを大きくしないこと。実写真は情報量が多く、大きいほど解析が長引いて
+//    GAS側がタイムアウトする（2026-08-25 実害）。1024pxで認識精度は足りている。
+const MAX_EDGE = 1024;
 const JPEG_QUALITY = 0.85;
 
 const $ = (id) => document.getElementById(id);
