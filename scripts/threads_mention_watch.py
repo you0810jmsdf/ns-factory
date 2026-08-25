@@ -253,6 +253,28 @@ def gh_request(method: str, path: str, token: str, body: dict | None = None) -> 
             return e.code, {"message": raw[:400]}
 
 
+def gh_check_issue_repo(repo: str, token: str) -> str | None:
+    """起票先リポジトリに書ける状態かを先に確かめる。問題があれば理由を返す。
+
+    起票先は public な ns-factory ではなく private の記録用リポジトリなので、
+    Actions 既定の GITHUB_TOKEN では権限が足りない。そこで黙って失敗させず、
+    何を用意すればよいかを名指しで出す。
+    """
+    status, res = gh_request("GET", f"/repos/{repo}", token)
+    if status == 200 and isinstance(res, dict):
+        if not res.get("has_issues"):
+            return f"{repo} は Issues が無効になっています（リポジトリの Settings で有効にしてください）"
+        return None
+    if status in (401, 403, 404):  # 401 = PAT が無効・期限切れ
+        return (
+            f"{repo} にアクセスできません（HTTP {status}）。\n"
+            "  起票先が別リポジトリのときは Actions 既定の GITHUB_TOKEN では書けません。\n"
+            f"  → {repo} の Issues: Read and write を持つ fine-grained PAT を作り、\n"
+            "     ns-factory の Secret `THREADS_ISSUE_TOKEN` に登録してください。"
+        )
+    return f"{repo} の確認に失敗しました (HTTP {status}: {res})"
+
+
 def gh_known_post_ids(repo: str, token: str, label: str) -> set[str]:
     """既存 Issue の本文に埋め込んだ Post ID を集める(state が失われても重複を防ぐ)。"""
     found: set[str] = set()
@@ -537,6 +559,13 @@ def main() -> int:
     exclude_authors = {normalize(a).lstrip("@") for a in conf.get("exclude_authors", [])}
     exclude_texts = [normalize(t) for t in conf.get("exclude_if_text_contains", []) if t]
     verify = conf.get("verify_text_match", True)
+
+    if not dry_run:
+        problem = gh_check_issue_repo(repo, gh_token)
+        if problem:
+            log(f"::error::起票先リポジトリに書けません: {problem}")
+            return 1
+        log(f"起票先: {repo}")
 
     check_token_age(repo, gh_token, dry_run)
 
