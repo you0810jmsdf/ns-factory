@@ -307,13 +307,40 @@ export function calculateTargetCalories(params) {
     ? (requiredLossKg > 0 ? currentWeightKg * DEFAULT_WEEKLY_LOSS_RATE * FAT_KCAL_PER_KG / 7 : 0)
     : requiredLossKg * FAT_KCAL_PER_KG / targetDays;
 
-  const targetKcal = tdee - dailyDeficit;
+  const rawTargetKcal = tdee - dailyDeficit;
   const weeklyLossKg = dailyDeficit * 7 / FAT_KCAL_PER_KG;
   const weeklyLossPercent = weeklyLossKg / currentWeightKg * 100;
-  const safety = evaluateSafetyGuard({ targetKcal, bmr, weeklyLossPercent });
+
+  // ⛔ 目標摂取カロリーを下限なしで返さないこと。無理な目標日を入れると
+  //    「明日までに20kg減」で -141600kcal のような値がそのまま画面に出る
+  //    （2026-08-26 実測）。利用者には意味が通らず、グラフも読めなくなる。
+  //    入力どおりの値は requestedKcal に残し、警告で理由を伝える。
+  const isClamped = isFiniteNumber(rawTargetKcal) && isFiniteNumber(bmr) && rawTargetKcal < bmr;
+  const targetKcal = isClamped ? bmr : rawTargetKcal;
+  const safety = evaluateSafetyGuard({ targetKcal: rawTargetKcal, bmr, weeklyLossPercent });
+
+  // 目標体重が現在より重い場合、このアプリは減量を前提としているため指針を出せない。
+  // ⛔ 黙って現状維持の数値を返さないこと。利用者は設定が効いていると誤解する。
+  if (isFiniteNumber(requiredLossKg) && requiredLossKg < 0) {
+    safety.warnings = safety.warnings.concat([{
+      level: 'warning',
+      code: 'target_weight_above_current',
+      message: '目標体重が今の体重より重く設定されています。増量には対応していないため、現状維持のカロリーを表示しています'
+    }]);
+  }
+
+  if (isClamped) {
+    safety.warnings = safety.warnings.concat([{
+      level: 'danger',
+      code: 'target_kcal_clamped_to_bmr',
+      message: `この目標日だと1日${round(rawTargetKcal, 0)}kcalになり実行できません。基礎代謝の${round(bmr, 0)}kcalで表示しています。目標日を延ばしてください`
+    }]);
+  }
 
   return {
     targetKcal: round(targetKcal, 0),
+    requestedKcal: round(rawTargetKcal, 0),
+    isClamped,
     dailyDeficit: round(dailyDeficit, 0),
     days: useDefaultPace ? null : targetDays,
     weeklyLossKg: round(weeklyLossKg, 2),

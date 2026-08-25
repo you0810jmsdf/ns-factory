@@ -124,16 +124,17 @@ function readProfileForm(form, ctx, existing = {}) {
   return {
     ...existing,
     id: 'me',
-    heightCm: ctx.normalizeNumberInput(form.elements.heightCm.value, { min: 1 }),
+    heightCm: ctx.normalizeNumberInput(form.elements.heightCm.value, { min: 50, max: 250 }),
     sex: form.elements.sex.value,
     birth: form.elements.birth.value,
     activityLevel: activityValue(form.elements.activityLevel.value),
-    targetWeight: ctx.normalizeNumberInput(form.elements.targetWeight.value, { min: 1 }),
+    targetWeight: ctx.normalizeNumberInput(form.elements.targetWeight.value, { min: 10, max: 300 }),
     targetDate: form.elements.targetDate?.value || null,
     bmrFormula: form.elements.bmrFormula?.value === 'mifflin' ? 'mifflin' : 'ganpule',
-    waterGoalMl: ctx.normalizeNumberInput(form.elements.waterGoalMl?.value, { min: 1 }),
+    waterGoalMl: ctx.normalizeNumberInput(form.elements.waterGoalMl?.value, { min: 200, max: 10000 }),
     exerciseGoalMinPerWeek: ctx.normalizeNumberInput(form.elements.exerciseGoalMinPerWeek?.value, {
-      min: 1,
+      min: 10,
+      max: 2000,
       fallback: 150
     }),
     countExerciseInBalance: Boolean(form.elements.countExerciseInBalance?.checked)
@@ -316,10 +317,10 @@ function createSetupMode(ctx) {
     event.preventDefault();
     const profile = {
       id: 'me',
-      heightCm: ctx.normalizeNumberInput(height.value, { min: 1 }),
+      heightCm: ctx.normalizeNumberInput(height.value, { min: 50, max: 250 }),
       sex: sex.value,
       birth: birth.value,
-      targetWeight: ctx.normalizeNumberInput(targetWeight.value, { min: 1 }),
+      targetWeight: ctx.normalizeNumberInput(targetWeight.value, { min: 10, max: 300 }),
       targetDate: null,
       activityLevel: 1.5,
       bmrFormula: 'ganpule',

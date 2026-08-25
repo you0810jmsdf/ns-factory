@@ -81,7 +81,8 @@ function createAddCard(ctx, today, onChanged) {
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const ml = ctx.normalizeNumberInput(form.elements.ml.value, { min: 1 });
+    const ml = // ⛔ 上限を外さないこと。1回の飲水量に 99999 が入ると達成率の表示が壊れる。
+    ctx.normalizeNumberInput(form.elements.ml.value, { min: 1, max: 5000 });
     if (!Number.isFinite(ml)) {
       ctx.showToast('水分量を入力してください', { tone: 'warning' });
       return;

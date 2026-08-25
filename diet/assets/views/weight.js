@@ -17,6 +17,15 @@ import {
   stepWeight
 } from './../quick-entry.js';
 
+// 体重として現実的にありうる範囲。範囲外はJS側でこの値に丸め、通知で理由を伝える。
+// ⛔ input要素に min / max 属性を付けないこと。ブラウザの標準検証が submit ごと
+//    止めてしまい、iPhoneではメッセージも出ず「保存ボタンが効かない」状態になる
+//    （2026-08-26 実測。トーストも履歴も出ず、JS例外も無いため原因が分かりにくい）。
+// 体重として現実的にありうる範囲。
+// ⛔ WEIGHT_MAX を外したり極端に大きくしないこと。誤入力1件でグラフが読めなくなる。
+const WEIGHT_MIN = 10;
+const WEIGHT_MAX = 300;
+
 const PERIODS = Object.freeze({
   '14d': { label: '2週', days: 14 },
   '30d': { label: '1か月', days: 30 },
@@ -179,7 +188,7 @@ function createForm(ctx, today, weights, onSaved) {
         <span class="field-label">朝 kg</span>
         <span class="stepper">
           <button class="stepper-button" type="button" data-step-target="morning" data-step-delta="-0.1" aria-label="朝の体重を0.1kg減らす">−</button>
-          <input class="input stepper-input" name="morning" type="number" inputmode="decimal" step="0.1" min="0">
+          <input class="input stepper-input" name="morning" type="number" inputmode="decimal" step="0.1">
           <button class="stepper-button" type="button" data-step-target="morning" data-step-delta="0.1" aria-label="朝の体重を0.1kg増やす">+</button>
         </span>
       </label>
@@ -187,7 +196,7 @@ function createForm(ctx, today, weights, onSaved) {
         <span class="field-label">夜 kg</span>
         <span class="stepper">
           <button class="stepper-button" type="button" data-step-target="night" data-step-delta="-0.1" aria-label="夜の体重を0.1kg減らす">−</button>
-          <input class="input stepper-input" name="night" type="number" inputmode="decimal" step="0.1" min="0">
+          <input class="input stepper-input" name="night" type="number" inputmode="decimal" step="0.1">
           <button class="stepper-button" type="button" data-step-target="night" data-step-delta="0.1" aria-label="夜の体重を0.1kg増やす">+</button>
         </span>
       </label>
@@ -195,11 +204,11 @@ function createForm(ctx, today, weights, onSaved) {
     <div class="grid-2">
       <label class="field">
         <span class="field-label">体脂肪率 %</span>
-        <input class="input" name="bodyFat" type="number" inputmode="decimal" step="0.1" min="0" max="99.9">
+        <input class="input" name="bodyFat" type="number" inputmode="decimal" step="0.1">
       </label>
       <label class="field">
         <span class="field-label">ウエスト cm</span>
-        <input class="input" name="waist" type="number" inputmode="decimal" step="0.1" min="0">
+        <input class="input" name="waist" type="number" inputmode="decimal" step="0.1">
       </label>
     </div>
     <label class="field">
@@ -212,16 +221,34 @@ function createForm(ctx, today, weights, onSaved) {
   fillForm(form, weights.find((record) => record.date === today) || null, today, weights);
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    // ⛔ 上限を外さないこと。体重に 9999 のような誤入力が1件混じると、
+    //    グラフの縦軸が自動でその値まで伸び、以後の変化が読めなくなる
+    //    （2026-08-26 発見。縦軸は Math.min/max の自動計算）。
     const record = {
       date: form.elements.date.value || today,
-      morning: ctx.normalizeNumberInput(form.elements.morning.value, { min: 0 }),
-      night: ctx.normalizeNumberInput(form.elements.night.value, { min: 0 }),
+      morning: ctx.normalizeNumberInput(form.elements.morning.value, { min: WEIGHT_MIN, max: WEIGHT_MAX }),
+      night: ctx.normalizeNumberInput(form.elements.night.value, { min: WEIGHT_MIN, max: WEIGHT_MAX }),
       bodyFat: ctx.normalizeNumberInput(form.elements.bodyFat.value, { min: 0, max: 99.9 }),
-      waist: ctx.normalizeNumberInput(form.elements.waist.value, { min: 0 }),
+      waist: ctx.normalizeNumberInput(form.elements.waist.value, { min: 10, max: 300 }),
       memo: form.elements.memo.value.trim()
     };
+
+    // ⛔ 範囲外を黙って書き換えないこと。押し間違いに気づけないまま記録が残る。
+    const adjusted = [
+      ['朝', form.elements.morning.value, record.morning],
+      ['夜', form.elements.night.value, record.night]
+    ].filter(([, typed, saved]) => {
+      const n = Number(String(typed).trim());
+      return String(typed).trim() !== '' && Number.isFinite(n) && Number.isFinite(saved) && n !== saved;
+    });
+
     await saveWeight(record);
-    ctx.showToast('体重を保存しました', { tone: 'success' });
+    if (adjusted.length) {
+      const [name, typed, saved] = adjusted[0];
+      ctx.showToast(`${name}は${WEIGHT_MIN}〜${WEIGHT_MAX}kgで記録します（${typed}→${saved}kg）`, { tone: 'warning' });
+    } else {
+      ctx.showToast('体重を保存しました', { tone: 'success' });
+    }
     await onSaved();
   });
   card.append(title, form);
