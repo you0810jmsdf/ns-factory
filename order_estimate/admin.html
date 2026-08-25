@@ -4757,6 +4757,7 @@ const RC_SUB_LABELS = {
   // 証憑ビューアの候補画面でチェックして採り込んだ証憑がここに集まる（2026-08-22追加）。
   // 送信元ごとに列を増やすと表が横に伸びるため1列にまとめている。
   camera: 'スマホ取込',
+  car_insurance: '自動車保険',
   manual_pick: '個別採用',
 };
 const ACCOUNTING_QUEUE_KEY = 'nsf_moneyforward_import_queue_v1';
@@ -5073,6 +5074,12 @@ function rcAccountingRowFromRecord(month, sub, record) {
   // レシート取込ツール側が「MF取込CSV（未登録分）」を出すため、ここからも送ると二重計上になる。
   // この列の仕訳は監理幕僚室のレシート取込ツールで出すこと。
   if (sub === 'camera') return null;
+  // 2026-08-25: car_insurance（自動車保険）も会計送信の対象外。
+  // 年額のカード決済でMFの連携により本体仕訳が自動取込されるため、ここから送ると二重計上になる。
+  // ⛔ RC_ACCOUNT_DEFAULTS に無い列はフォールバックの「通信費」で送られてしまう。
+  //    保険料は車両費・按分71.4%なので、通信費で全額計上されると科目も金額も誤る。
+  //    按分の適用はMF側で行うこと（この列は金額の根拠＝証憑の保管だけを担う）。
+  if (sub === 'car_insurance') return null;
   const subject = record.subject || RC_SUB_LABELS[sub] || sub;
   const date = String(record.date || `${month}-01`).replace(/\//g, '-');
   const defaults = RC_ACCOUNT_DEFAULTS[sub] || { debit: '通信費', tax: '課税仕入10%' };
