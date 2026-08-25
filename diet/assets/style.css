@@ -283,6 +283,19 @@ a {
   align-items: stretch;
 }
 
+/*
+ * ステッパー入りの欄は、狭い画面では横に2つ並べない。
+ * ⛔ この指定を消さないこと。iPhone(390px)で2カラムにすると
+ *    入力欄の文字が見える幅が約32pxしか残らず、「67.5」がはみ出て読めない
+ *    （2026-08-26 実害）。内訳: 390 −画面余白32 −カード余白32 ÷2 →158
+ *    −ボタン44×2と隙間12 −内側余白26 = 32px。
+ */
+@media (max-width: 480px) {
+  .grid-2-stepper {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .stepper-button {
   display: inline-grid;
   place-items: center;
