@@ -341,6 +341,15 @@ a{color:inherit;text-decoration:none}
             URLをまとめて一括処理／処理済みは自動でスキップ／取得できない状態かをその場で確認／Markdown形式でそのまま使えます。
           </div>
           <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">配布開始時はSNSでお知らせします。</p>
+
+          <!-- 管理者（事業主）専用の起動ボタン。既定は非表示。
+               有効化: このページを ?admin=1 付きで1回開く（localStorageに記憶する）。無効化は ?admin=0。
+               ⛔ 一般来訪者に見せないこと。事業主のPCでしか動かないため。 -->
+          <div id="yt-admin-launch" style="display:none;margin-top:10px;padding-top:12px;border-top:1px dashed var(--line);">
+            <div style="font-size:10px;font-weight:800;color:var(--danger);letter-spacing:.08em;margin-bottom:6px;">管理者用</div>
+            <button onclick="drLaunchYtApp()" id="yt-launch-btn" style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer;">▶ アプリを起動</button>
+            <div id="yt-launch-status" style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7;"></div>
+          </div>
         </div>
       </div>
 
@@ -381,8 +390,46 @@ a{color:inherit;text-decoration:none}
   </div>
 </main>
 
-<!-- 2026-08-25: 事業主PC専用だった「▶ アプリを起動」（ytapp:// + localhost:8501）を削除。
-     一般の来訪者には動かないボタンだったため。復活させるなら管理者向けページに置くこと。 -->
+<script>
+// YouTube文字起こしツールの起動ボタン（管理者＝事業主のPCでのみ意味がある）。
+// 2026-08-25にいったん削除したが、事業主の起動導線だったため 2026-08-26 に管理者限定で復活させた。
+(function () {
+  // ?admin=1 で有効化して記憶する（?admin=0 で解除）。以後そのブラウザでは常に表示される。
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.has('admin')) {
+      localStorage.setItem('nsf_dr_admin', q.get('admin') === '1' ? '1' : '');
+    }
+  } catch (e) { /* プライベートモード等でlocalStorageが使えなくても本体は動かす */ }
+
+  var isAdmin = false;
+  try {
+    isAdmin = localStorage.getItem('nsf_dr_admin') === '1'
+           || !!sessionStorage.getItem('nsf_admin_key');
+  } catch (e) { isAdmin = false; }
+
+  if (isAdmin) {
+    var el = document.getElementById('yt-admin-launch');
+    if (el) { el.style.display = 'block'; }
+  }
+})();
+
+function drLaunchYtApp() {
+  var s = document.getElementById('yt-launch-status');
+  var b = document.getElementById('yt-launch-btn');
+  // ⛔ fetch でローカルサーバの生存確認をしないこと。
+  //    本番httpsページから http://localhost への fetch はブラウザが送出前に遮断する（2026-08-22 実測）。
+  //    window.open によるトップレベル遷移は通るので、待ってから開く。
+  s.textContent = '⏳ 起動しています。初回は10〜20秒かかります…';
+  b.disabled = true;
+  location.href = 'ytapp://start';
+  setTimeout(function () {
+    window.open('http://localhost:8501', '_blank');
+    s.innerHTML = '別タブで開きます。開かないときは <a href="http://localhost:8501" target="_blank" style="color:var(--accent-dark);font-weight:700;">http://localhost:8501</a> を直接開いてください。';
+    b.disabled = false;
+  }, 12000);
+}
+</script>
 <script>
 // 各アプリカードのクリックをGA4イベントとして記録する。
 // ⛔ 同一サイト内のリンクはGA4が自動計測しない（自動の対象は外部サイトへのリンクだけ）。
