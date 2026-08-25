@@ -182,9 +182,18 @@
         }
       },
       "car_insurance": {
-        "status": "未対応",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-08-25",
+            "amount": 61750,
+            "amount_text": "¥61,750",
+            "subject": "自動車保険（証券96731354）",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260825_151427_自動車保険_1a037620e5057643.txt"
+          }
+        ],
         "guide": {
           "url": "",
           "steps": "取得手順未登録。情報が確定次第追記予定。"
@@ -3590,12 +3599,12 @@
       }
     }
   },
-  "checked_at": "2026-08-25 15:13:46",
+  "checked_at": "2026-08-25 15:14:35",
   "health": {
     "token_updated": "2026-08-25",
     "token_age_days": 0,
-    "latest_receipt": "2026-08-23",
-    "receipt_age_days": 2,
+    "latest_receipt": "2026-08-25",
+    "receipt_age_days": 0,
     "warnings": []
   }
 }
