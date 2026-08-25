@@ -774,3 +774,26 @@
 - 検証: 実トークンで権限不足→warning/exit 0、無効トークン→error/exit 1、起票先チェック3パターン、
   pyflakes 0、YAMLパース通過、`check_public_leak.py` 危険度「高」ゼロ、
   **Pages deploy success ＋ 公開URL HTTP 200・記載5項目の実在を実測**。
+
+## 2026-08-25（撤収）— Threads言及監視を取りやめ・関連ファイルを削除
+
+- 削除: `.github/workflows/threads-mention-watch.yml` / `scripts/threads_mention_watch.py` /
+  `scripts/threads_watch_keywords.json` / `scripts/threads_watch_state.json` /
+  `scripts/threads_mention_watch_README.md` / `threads-app-privacy.html`
+- **実装は完成し、動作も確認できていた。取りやめた理由は Meta 側の手続き負担。**
+  他人の公開投稿を検索するには `threads_keyword_search` の **App Review（詳細アクセス）** が必須で、
+  権限追加・トークン再発行・PAT発行・スクリーンキャスト撮影・審査待ち（数日〜数週間）、
+  場合によってはビジネス認証まで必要になる。得られる価値に対して事業主の作業負担が見合わないと判断。
+- **副作用なし**を確認してから削除した: Threadsトークンを一度も Secret に入れていないため、
+  ワークフローは毎回スキップして正常終了しており、**Issue もラベルも1件も作られていない**。
+  既存の投稿用トークン（`保全部\.env` / `Nsfactory-SNS-AutoPost`）にも一切触れていない。
+- 残置物: private リポジトリ `you0810jmsdf/ns-factory-mentions`（空・記録先として作ったもの）。
+  `gh` に `delete_repo` スコープが無いため削除は事業主の手作業。放置しても害はない。
+- ⛔ **再開するなら、まず HTTP 500 の罠を思い出すこと。** 投稿用トークンで `/keyword_search` を
+  叩くと 401/403 ではなく **HTTP 500 / code=1** が返る（＝検索スコープが無いだけ）。
+  検証経緯と申請資料は `デジタル部\サイト管理\_archive_threads言及監視\` に退避してある。
+- ⛔ **Instagram で同じことはできない**（実測）。自由文キーワード検索APIが存在せず、
+  ハッシュタグ検索のみ・`username` 取得不可・直近24時間のみ・30ハッシュタグ/7日。
+  さらに IG は `MEDIA_CREATOR` で FBページに `instagram_business_account` 未連携のため現状は不可。
+- 代替: @メンションは Threads の標準通知で気づける。それ以外はスマホの Threads で
+  店名を手動検索する運用にする。
