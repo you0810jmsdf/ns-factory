@@ -488,8 +488,11 @@ function isPhotoFeatureEnabled() {
       localStorage.setItem('diet_photo_enabled', '1');
       return true;
     }
-    return localStorage.getItem('diet_photo_enabled') === '1'
-      || Boolean(localStorage.getItem('diet_photo_token'));
+    const flag = localStorage.getItem('diet_photo_enabled');
+    if (flag === '1') return true;
+    // ⛔ '0' を無視しないこと。設定画面でOFFにした意思を、合言葉の有無で上書きしてしまう。
+    if (flag === '0') return false;
+    return Boolean(localStorage.getItem('diet_photo_token'));
   } catch (e) {
     // プライベートブラウズ等で localStorage が使えない場合は非表示（安全側）
     return false;
