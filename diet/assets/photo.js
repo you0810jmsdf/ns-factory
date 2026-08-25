@@ -284,6 +284,18 @@ $('pick-camera').addEventListener('click', () => $('file-camera').click());
 $('file-library').addEventListener('change', (e) => handlePicked(e.target.files && e.target.files[0]));
 $('file-camera').addEventListener('change', (e) => handlePicked(e.target.files && e.target.files[0]));
 
+/**
+ * 解析が失敗したときの表示。
+ * ⛔ 「もう一度押せば通ることがある」という案内を削らないこと。
+ *    同じ写真でも失敗と成功が入れ替わる（2026-08-25 実測: 1回目失敗→2回目成功）。
+ *    案内が無いと利用者は写真を選び直すところからやり直してしまう。
+ * @param {string} message 失敗の理由。
+ */
+function showAnalyzeFailure(message) {
+  $('status-line').textContent = message + '（もう一度ボタンを押すと通ることがあります）';
+  $('analyze-btn').textContent = 'もう一度解析する';
+}
+
 $('analyze-btn').addEventListener('click', async () => {
   if (!selectedFile) return;
   const btn = $('analyze-btn');
@@ -310,7 +322,7 @@ $('analyze-btn').addEventListener('click', async () => {
         return;
       }
       clearInterval(tick);
-      $('status-line').textContent = '解析できませんでした: ' + res.error;
+      showAnalyzeFailure('解析できませんでした: ' + res.error);
       return;
     }
     const took = Math.round((Date.now() - startedAt) / 1000);
@@ -318,9 +330,10 @@ $('analyze-btn').addEventListener('click', async () => {
     $('status-line').textContent = server !== null
       ? took + '秒で解析しました（うちAI ' + server + '秒）'
       : took + '秒で解析しました';
+    $('analyze-btn').textContent = 'この写真を解析する';
     renderResults(res.data || {});
   } catch (err) {
-    $('status-line').textContent = 'エラー: ' + (err && err.message ? err.message : '通信に失敗しました');
+    showAnalyzeFailure(err && err.message ? err.message : '通信に失敗しました');
   } finally {
     clearInterval(tick);
     btn.disabled = false;
