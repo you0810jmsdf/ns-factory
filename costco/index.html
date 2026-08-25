@@ -101,6 +101,17 @@
     };
     document.body.appendChild(frame);
 
+    // アプリ側（iframe内）からの「別のモードで開き直したい」依頼を受ける。
+    // iframe内で location を変えると入れ子になって白画面になるため、親がここで差し替える。
+    window.addEventListener('message', function (ev) {
+      var d = ev.data;
+      if (!d || d.type !== 'cgb-reopen' || typeof d.url !== 'string') return;
+      // 自分のサイト内のURLだけ許可する
+      var base = location.origin + location.pathname;
+      if (d.url.indexOf(base) !== 0) return;
+      location.replace(d.url);
+    });
+
     // 8秒待っても読み込まれない場合は、直接開くボタンを出す
     setTimeout(function () {
       var boot = document.getElementById('boot');
