@@ -728,3 +728,33 @@
 - 検証: ドライラン実測（自社アカウント除外／キーワード不一致の除外／複数キーワードの1件化／
   空本文は取りこぼさない／既知IDの除外／トークン期限警告の発火・不発火・書式不正）、
   pyflakes 指摘0、YAML パース通過、**Actions 手動実行 success**（Secret 未設定時のスキップ動作を実測）。
+
+## 2026-08-25（続報）— Threads言及監視: 起票先をprivate化＋App Review準備
+
+- 対象: `.github/workflows/threads-mention-watch.yml` / `scripts/threads_mention_watch.py` /
+  `scripts/threads_mention_watch_README.md` / `threads-app-privacy.html`（新設）
+- **実測で判明**: 既存の Threads トークン（`保全部\.env`・投稿用）で `/keyword_search` を叩くと
+  **HTTP 500 / code=1 "An unknown error occurred"**。`/me` は 200 で通る。
+  → **トークンに `threads_keyword_search` スコープが無い**。401/403 で返らないのが罠。
+  ⛔ **既存の投稿用トークンを上書きしないこと。** 自動投稿（`Nsfactory-SNS-AutoPost`）が止まる。
+  監視用は**別の1本**として発行し、GitHub Secret にだけ入れる。
+- ⛔ **HTTP 500 を一律「異常」として落とさないこと。** App Review 待ちの数週間ずっと毎時赤くなる。
+  権限不足のときは警告Issueを1本立てて **exit 0**。ただし Meta 側の一時障害と区別がつかないので、
+  **`/me` プローブでトークンの生死を確かめてから**分岐する（/me が通る＝検索権限だけが無い）。
+- ⛔ **第三者の投稿を public な Issue に記録しないこと。** ns-factory は public。
+  苦情投稿が本文・ユーザー名ごと世界中から読める。記録先を private の
+  `you0810jmsdf/ns-factory-mentions`（2026-08-25新設・Issuesのみ）に変更した。
+  書き込みは Secret `THREADS_ISSUE_TOKEN`（対象リポジトリの Issues: RW を持つ fine-grained PAT）。
+  起動時に起票先へ書けるかを事前確認し、駄目なら**何を用意すればよいかを名指しして停止**する。
+- `threads-app-privacy.html` は App Review 提出用。申請対象アプリ（「スレッズ自動投稿」）は
+  **投稿機能も持つ**ため、投稿とモニタリングの両方を1ページで説明してある。
+  ⛔ **保存項目・保管期間・第三者提供の記載を実装とずらさないこと。** 虚偽記載は審査で問題になる。
+- **Instagram では同じことができない**（実測）: 自由文のキーワード検索APIが存在せず、
+  ハッシュタグ検索のみ。`username` は要求不可・直近24時間のみ・30ハッシュタグ/7日。
+  さらに IG は `account_type: MEDIA_CREATOR` で、FBページ「N's Factory」に
+  `instagram_business_account` が連携されていないため現状ハッシュタグ検索も不可。
+- 申請手順・申請文（日英）・スクリーンキャスト台本は
+  `デジタル部\サイト管理\Threads言及監視_AppReview申請資料.md`（リポジトリ外）。
+- 検証: 実トークンで権限不足→warning/exit 0、無効トークン→error/exit 1、起票先チェック3パターン、
+  pyflakes 0、YAMLパース通過、`check_public_leak.py` 危険度「高」ゼロ、
+  **Pages deploy success ＋ 公開URL HTTP 200・記載5項目の実在を実測**。
