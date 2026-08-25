@@ -926,6 +926,14 @@ canvas{
             <p class="help" id="motionIntensityHelp">写真ごとに選んだ動き（ズームイン等）はそのままに、動く量だけを全コマまとめて強めます。プレビューにすぐ反映されます。</p>
           </div>
           <div class="field">
+            <label for="filmStripMode">フィルムシーン（全編）</label>
+            <select id="filmStripMode">
+              <option value="off" selected>使わない</option>
+              <option value="diagonal">全写真をネガフィルム風に斜めへ流す</option>
+            </select>
+            <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます（最後まで行くと最初の写真から繰り返し）。セリフ音声・字幕・作品名はそのまま入ります。「動きの強さ」で流れる速さが変わります。</p>
+          </div>
+          <div class="field">
             <label for="creativePreset">演出プリセット</label>
             <select id="creativePreset">
               <option value="standard">標準</option>
@@ -1101,6 +1109,7 @@ const els = {
   speakScript: document.getElementById('speakScript'),
   videoFormat: document.getElementById('videoFormat'),
   motionIntensity: document.getElementById('motionIntensity'),
+  filmStripMode: document.getElementById('filmStripMode'),
   saveStats: document.getElementById('saveStats'),
   saveStatsSummary: document.getElementById('saveStatsSummary'),
   saveStatsTables: document.getElementById('saveStatsTables'),
@@ -3317,6 +3326,12 @@ function drawFrame(time){
   }
   const state = frameState(time);
   if(!state) return;
+  if(filmStripActive()){
+    const active = state.type === 'transition' ? state.nextSlide : state.slide;
+    drawFilmStripScene(time, active, state.type === 'hold' ? state.progress : 0);
+    els.currentScript.textContent = active.narration || '';
+    return;
+  }
   if(state.type === 'transition'){
     drawTransition(state.slide, state.nextSlide, state.progress);
     els.currentScript.textContent = state.nextSlide.narration || '';
@@ -3396,6 +3411,93 @@ function drawSlide(slide, progress, alpha){
   drawTexts(slide);
   drawNarrationSubtitle(slide, progress);
   ctx.restore();
+}
+
+/* ══ フィルムシーン（全編モード・2026-08-25）══
+   使用中の全写真をネガフィルム風のひと繋がりのストリップにし、画面を斜めに流し続ける。
+   写真の色はそのまま（革の色味を変えない方針。SOLDOUTホワイトアウト廃止と同じ思想）。
+   セリフ音声のタイミング・字幕・作品名などの文字要素は通常モードと同一のものを重ねる。
+   最後のコマの次は最初のコマに戻る循環なので、尺が何秒でも途切れない。 */
+function filmStripActive(){
+  return !!(els.filmStripMode && els.filmStripMode.value !== 'off');
+}
+
+function drawFilmStripScene(time, slide, progress){
+  const list = playableSlides();
+  if(!list.length) return;
+
+  // 暗室調の背景
+  ctx.fillStyle = '#0E0D0C';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const frameW = Math.round(canvas.width * .58);   // 写真窓は横3:縦2（実フィルムのコマ比）
+  const frameH = Math.round(frameW * 2 / 3);
+  const gap = Math.round(frameW * .055);           // コマ間の桟
+  const perf = Math.round(frameH * .16);           // パーフォレーション帯
+  const stripH = frameH + perf * 2;
+  const pitch = frameW + gap;
+
+  // 速さ: 標準で1コマ約2.2秒。「動きの強さ」で加速
+  const speedScale = ({1:1, 4:1.6, 6:2.1, 7:2.7})[motionIntensity().scale] || 1;
+  const drift = time * (pitch / 2.2) * speedScale;
+
+  const angle = -Math.PI / 10;                     // 約18度・左下から右上へ
+  const diag = Math.hypot(canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(angle);
+
+  // フィルムベース（ストリップ本体）
+  ctx.fillStyle = '#1B1A18';
+  ctx.fillRect(-diag / 2 - pitch, -stripH / 2, diag + pitch * 2, stripH);
+
+  // コマ（写真は循環で繰り返す）
+  const firstK = Math.floor((-diag / 2 - pitch - drift) / pitch);
+  const lastK = Math.ceil((diag / 2 + pitch - drift) / pitch);
+  for(let k = firstK; k <= lastK; k++){
+    const x = k * pitch + drift;
+    const img = list[((k % list.length) + list.length) % list.length].img;
+    if(!img) continue;
+    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    if(!iw || !ih) continue;
+    const scale = Math.max(frameW / iw, frameH / ih);
+    const sw = frameW / scale, sh = frameH / scale;
+    ctx.drawImage(img, (iw - sw) / 2, (ih - sh) / 2, sw, sh, x, -frameH / 2, frameW, frameH);
+    ctx.strokeStyle = 'rgba(0,0,0,.55)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x + 1.5, -frameH / 2 + 1.5, frameW - 3, frameH - 3);
+  }
+
+  // パーフォレーション（送り穴）。ストリップと同じ速度で動かす
+  const holePitch = pitch / 8;
+  const holeW = Math.round(holePitch * .42);
+  const holeH = Math.round(perf * .52);
+  const holeR = Math.min(6, holeW / 2.5, holeH / 2.5);
+  ctx.fillStyle = 'rgba(243,237,226,.92)';
+  const firstM = Math.floor((-diag / 2 - holePitch - drift) / holePitch);
+  const lastM = Math.ceil((diag / 2 + holePitch - drift) / holePitch);
+  for(let m = firstM; m <= lastM; m++){
+    const hx = m * holePitch + drift + (holePitch - holeW) / 2;
+    roundRect(ctx, hx, -stripH / 2 + (perf - holeH) / 2, holeW, holeH, holeR);
+    ctx.fill();
+    roundRect(ctx, hx, stripH / 2 - perf + (perf - holeH) / 2, holeW, holeH, holeR);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // 四隅を落として奥行きを出す
+  const vg = ctx.createRadialGradient(
+    canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * .45,
+    canvas.width / 2, canvas.height / 2, diag * .62);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,.5)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 文字要素は通常モードと同じものを、いま読んでいる写真基準で重ねる
+  drawTexts(slide);
+  drawNarrationSubtitle(slide, progress);
 }
 
 function drawExcludedOverlay(){
@@ -6101,6 +6203,13 @@ els.motionIntensity.addEventListener('change', () => {
   drawSelectedOrFirstFrame();
   const label = els.motionIntensity.options[els.motionIntensity.selectedIndex].textContent;
   setLog(`動きの強さを「${label}」にしました。プレビューと保存MP4の両方に反映されます。`);
+});
+els.filmStripMode.addEventListener('change', () => {
+  resetRecordingOutput();
+  drawSelectedOrFirstFrame();
+  setLog(filmStripActive()
+    ? 'フィルムシーン（全編）をONにしました。全写真がフィルム状につながって斜めに流れ続けます。プレビューで確認してから保存してください。'
+    : 'フィルムシーンをOFFにしました。通常の1枚ずつ表示へ戻ります。');
 });
 els.applyCreativePreset.addEventListener('click', () => applyCreativePreset());
 els.bgMode.addEventListener('change', () => { updateBgUi(); ensureCutoutsForSolidBg(); });
