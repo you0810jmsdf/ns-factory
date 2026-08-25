@@ -505,6 +505,66 @@ function readFileAsText(file) {
   });
 }
 
+/**
+ * 写真から入力する機能のON/OFFカード。
+ * ⛔ 既定をONにしないこと。写真解析はAPIの従量課金で、利用者数に比例して費用が増える。
+ * ⛔ 保存キー 'diet_photo_enabled' を変えないこと。meal.js の isPhotoFeatureEnabled() が同じキーを見ている。
+ * ⛔ このカードを画面の下へ移動しないこと。設定画面は基本設定フォームが長く、
+ *    下に置くとスクロールされず「そんな項目はない」と言われる（2026-08-25 実害）。
+ * @param {object} ctx 画面共通コンテキスト。
+ * @returns {HTMLElement} カード要素。
+ */
+function createPhotoFeatureCard(ctx) {
+  const card = el('section', 'card stack');
+  card.append(el('h2', 'card-title', '写真から入力する'));
+  card.append(el('p', 'muted', '食事の写真をAIに見てもらい、料理の候補とカロリーを出す機能です。ONにすると、食事の画面のいちばん下に入口が出ます。'));
+
+  const toggle = createInput('photoFeature', 'checkbox');
+  toggle.className = '';
+  toggle.checked = readPhotoFlag_();
+
+  const line = el('label', 'field');
+  line.append(el('span', 'field-label', '機能の使用'));
+  const checkboxLine = el('span');
+  checkboxLine.append(toggle, document.createTextNode(' 写真から入力する機能を使う'));
+  line.append(checkboxLine);
+
+  const notice = el('div', 'banner banner-warning');
+  notice.append(el('strong', '', 'この機能だけは写真を外部へ送ります'));
+  notice.append(el('span', '', '解析のあいだだけ、選んだ写真1枚を解析サーバーへ送ります。体重・食事・水分などの記録は、ONにしても送信されません。利用には合言葉が必要です。'));
+
+  card.append(line, notice);
+
+  toggle.addEventListener('change', () => {
+    try {
+      localStorage.setItem('diet_photo_enabled', toggle.checked ? '1' : '0');
+      ctx.showToast(
+        toggle.checked ? 'ONにしました。食事の画面のいちばん下に入口が出ます' : 'OFFにしました',
+        { tone: 'success' }
+      );
+    } catch (e) {
+      toggle.checked = !toggle.checked;
+      ctx.showToast('この端末では設定を保存できませんでした', { tone: 'warning' });
+    }
+  });
+  return card;
+}
+
+/**
+ * 写真機能が有効かを読む。meal.js の isPhotoFeatureEnabled() と判定を揃えること。
+ * @returns {boolean} 有効なら true。
+ */
+function readPhotoFlag_() {
+  try {
+    const flag = localStorage.getItem('diet_photo_enabled');
+    if (flag === '1') return true;
+    if (flag === '0') return false;
+    return Boolean(localStorage.getItem('diet_photo_token'));
+  } catch (e) {
+    return false;
+  }
+}
+
 function createDataManagementCard(ctx) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', 'データ管理'));
@@ -592,6 +652,7 @@ export async function render(ctx) {
     ctx.navigate('settings');
   };
 
+  stack.append(createPhotoFeatureCard(ctx));
   stack.append(createProfileForm(ctx, ctx.profile, weights, refresh));
   stack.append(createDataManagementCard(ctx));
   stack.append(createPrivacyCard());
