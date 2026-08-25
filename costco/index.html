@@ -60,12 +60,32 @@
     var GAS_URL = 'https://script.google.com/macros/s/AKfycbwDvb6MlWT6P0rjLh9W7G59cpOxvb172sstt6OakI-To99ne1XvyV5ZGrYtglFpGVsi/exec';
 
     var params = new URLSearchParams(location.search);
-    // g=グループ / h=とりまとめ役の鍵 / key=全体管理キー をそのまま引き継ぐ
+
+    // ホーム画面に追加すると manifest の start_url（./）で起動するため、
+    // URLに付けた key / g / h が失われる。そこで端末に控えて復元する。
+    var STORE = 'cgb_entry';
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch (e) { saved = {}; }
+
+    // ?reset=1 で端末の記憶を消す（共用端末や、おためしに戻したいとき）
+    if (params.get('reset') === '1') {
+      try { localStorage.removeItem(STORE); } catch (e) {}
+      saved = {};
+      location.replace(location.pathname);
+      throw new Error('reset');
+    }
+
+    // g=グループ / h=とりまとめ役の鍵 / key=全体管理キー
     var qs = [];
+    var picked = {};
     ['key', 'g', 'h'].forEach(function (name) {
-      var v = params.get(name);
-      if (v) qs.push(name + '=' + encodeURIComponent(v));
+      var v = params.get(name) || saved[name] || '';
+      if (v) { qs.push(name + '=' + encodeURIComponent(v)); picked[name] = v; }
     });
+    // URLで指定されたものがあれば、次回ホーム画面から開いたときのために覚えておく
+    if (params.get('key') || params.get('g') || params.get('h')) {
+      try { localStorage.setItem(STORE, JSON.stringify(picked)); } catch (e) {}
+    }
     var target = GAS_URL + (qs.length ? '?' + qs.join('&') : '');
 
     document.getElementById('directLink').href = target;
