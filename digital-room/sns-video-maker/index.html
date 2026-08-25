@@ -934,14 +934,9 @@ canvas{
             <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます（最後まで行くと最初の写真から繰り返し）。セリフ音声・字幕・作品名はそのまま入ります。</p>
           </div>
           <div class="field" id="filmSpeedField" hidden>
-            <label for="filmSpeed">フィルムの流れる速さ</label>
-            <select id="filmSpeed">
-              <option value="3.5">ゆっくり（1コマ 約3.5秒）</option>
-              <option value="2.2" selected>標準（1コマ 約2.2秒）</option>
-              <option value="1.5">速め（1コマ 約1.5秒）</option>
-              <option value="1.0">速い（1コマ 約1.0秒）</option>
-            </select>
-            <p class="help">プレビューにすぐ反映されます。保存するMP4にも同じ速さが使われます。</p>
+            <label for="filmSpeed">フィルムの速さ（1コマの秒数）</label>
+            <input id="filmSpeed" type="number" min="1" max="60" step="0.5" value="8">
+            <p class="help">数字が大きいほどゆっくり（1〜60秒）。プレビューにすぐ反映され、保存するMP4にも同じ速さが使われます。</p>
           </div>
           <div class="field">
             <label for="creativePreset">演出プリセット</label>
@@ -3451,7 +3446,7 @@ function drawFilmStripScene(time, slide, progress){
 
   // 速さ: 専用セレクト「フィルムの流れる速さ」で1コマあたりの秒数を直接指定する。
   // 「動きの強さ」との連動は廃止（2026-08-26）。2系統で速度が変わると調整できないため
-  const secPerFrame = parseFloat(els.filmSpeed && els.filmSpeed.value) || 2.2;
+  const secPerFrame = clamp(parseFloat(els.filmSpeed && els.filmSpeed.value) || 8, 1, 60);
   const drift = time * (pitch / secPerFrame);
 
   const angle = -Math.PI / 10;                     // 約18度・左下から右上へ
@@ -6225,11 +6220,12 @@ els.filmStripMode.addEventListener('change', () => {
     ? 'フィルムシーン（全編）をONにしました。全写真がフィルム状につながって斜めに流れ続けます。すぐ下の「フィルムの流れる速さ」で速度を調整できます。'
     : 'フィルムシーンをOFFにしました。通常の1枚ずつ表示へ戻ります。');
 });
+els.filmSpeed.addEventListener('input', () => drawSelectedOrFirstFrame());
 els.filmSpeed.addEventListener('change', () => {
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
-  const label = els.filmSpeed.options[els.filmSpeed.selectedIndex].textContent;
-  setLog(`フィルムの流れる速さを「${label}」にしました。プレビューと保存MP4の両方に反映されます。`);
+  const sec = clamp(parseFloat(els.filmSpeed.value) || 8, 1, 60);
+  setLog(`フィルムの速さを1コマ${sec}秒にしました。プレビューと保存MP4の両方に反映されます。`);
 });
 els.applyCreativePreset.addEventListener('click', () => applyCreativePreset());
 els.bgMode.addEventListener('change', () => { updateBgUi(); ensureCutoutsForSolidBg(); });
