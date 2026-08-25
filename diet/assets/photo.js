@@ -33,7 +33,17 @@ function refreshCards() {
 
 // ── 画像の縮小（端末内・送信量を抑える） ─────────────────
 async function shrinkImage(file) {
-  const bitmap = await createImageBitmap(file);
+  // ⛔ imageOrientation: 'from-image' を外さないこと。
+  //    既定（'none'）だとEXIFの回転情報が無視され、スマホで縦に撮った写真が
+  //    横倒しのままAIへ送られる。人が見れば分かる料理でも認識精度が大きく落ちる
+  //    （2026-08-25 実写真で発覚。「精度が悪すぎる」の主因と判断）。
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch (e) {
+    // 古いブラウザはこのオプションを解釈できないことがある。その場合は従来動作にする。
+    bitmap = await createImageBitmap(file);
+  }
   const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
   const w = Math.round(bitmap.width * scale);
   const h = Math.round(bitmap.height * scale);
