@@ -88,6 +88,9 @@ a{color:inherit;text-decoration:none}
 .tool-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--accent)}
 .tool-card.disabled{opacity:.5;cursor:not-allowed}
 .tool-card.disabled:hover{transform:none;box-shadow:none;border-color:var(--line)}
+/* リンク先がまだ無いカード（近日公開など）。薄くはせずホバーの浮き上がりだけ止める。 */
+.tool-card.static{cursor:default}
+.tool-card.static:hover{transform:none;box-shadow:none}
 .tool-card .tag{
   display:inline-block;font-size:10px;font-weight:800;
   letter-spacing:.1em;text-transform:uppercase;
@@ -95,8 +98,23 @@ a{color:inherit;text-decoration:none}
   padding:3px 8px;border-radius:999px;width:fit-content;
 }
 .tool-card .tag.soon{color:var(--muted);background:var(--soft)}
-.tool-card h3{font-size:17px;letter-spacing:-.01em;margin-top:4px}
+/* アプリ名称はカード内で最も目立つ要素にする（2026-08-25 事業主指示）。小さくしないこと。 */
+.tool-card h3{
+  font-size:21px;font-weight:800;color:var(--ink);
+  letter-spacing:-.02em;line-height:1.4;margin-top:2px;
+}
 .tool-card p{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* ⛔ カード全体を <a> で囲まないこと。
+   カード内に「使い方ガイド」等のリンクがあると、HTMLは <a> のネストを許さないため
+   ブラウザがカードを複数の枠に分割してしまう（2026-08-25 実害）。
+   代わりにアプリ名のリンクを擬似要素でカード全面へ伸ばす。 */
+.tool-card{position:relative}
+.tool-card a{position:relative;z-index:2}
+/* ⛔ h3 内のリンクは position:static のままにすること。
+   relative にすると ::after の基準がリンク自身になり、カード全面クリックが効かなくなる。 */
+.tool-card h3 a{position:static;color:inherit}
+.tool-card h3 a::after{content:"";position:absolute;inset:0;z-index:1}
 
 .section-label{
   color:var(--accent-dark);font-size:11px;font-weight:800;
@@ -105,6 +123,30 @@ a{color:inherit;text-decoration:none}
 }
 .section-label + .section-label,
 .tool-grid + .section-label{margin-top:42px}
+
+/* 無料提供の3本柱（免責・通報のお願い・Webアプリの利点）。
+   ⛔ この3つは事業主指示の掲載事項（2026-08-25）。文言を削るときは必ず確認を取ること。 */
+.policy{
+  margin:0 0 36px;
+  padding:22px 24px;
+  background:linear-gradient(135deg,var(--accent-soft),#fff);
+  border:1px solid var(--accent);
+  border-radius:var(--radius);
+}
+.policy-head{
+  font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-dark);margin-bottom:14px;
+}
+.policy-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;
+}
+.policy-item h4{font-size:14px;letter-spacing:-.01em;margin-bottom:6px}
+.policy-item p{font-size:13px;color:var(--muted);line-height:1.8}
+.policy-item .icon{font-size:18px;margin-right:6px}
+.policy-foot{
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:13px;color:var(--muted);line-height:1.8;
+}
 
 .note{
   margin-top:32px;
@@ -155,7 +197,170 @@ a{color:inherit;text-decoration:none}
 <main class="hub">
   <div class="hub-inner">
 
-    <div class="section-label">デジタルコンテンツ販売</div>
+    <section class="policy">
+      <div class="policy-head">ABOUT / ここのアプリについて</div>
+      <div class="policy-grid">
+        <div class="policy-item">
+          <h4><span class="icon">🆓</span>すべて無料。ただし無保証です</h4>
+          <p>すべて無料でお使いいただけます。そのかわり、ご利用に伴って生じたいかなる損害についても、当方は一切の責任を負いません。大切なデータは必ずご自身でバックアップのうえ、自己責任でご利用ください。</p>
+        </div>
+        <div class="policy-item">
+          <h4><span class="icon">🛠</span>不具合を教えてください</h4>
+          <p>「動かない」「ここが使いにくい」というご連絡が、そのまま改善につながります。作った側だけでは気づけないことばかりですので、お気づきの点はぜひお知らせください。ご協力に感謝します。</p>
+        </div>
+        <div class="policy-item">
+          <h4><span class="icon">🔄</span>インストール不要・常に最新</h4>
+          <p>すべてブラウザで動くWebアプリです。インストールも、アップデートの入れ直しも要りません。開けばいつでも最新版。改善した内容はその場ですぐ反映されます。</p>
+        </div>
+      </div>
+      <div class="policy-foot">
+        不具合のご連絡・ご要望は
+        <a href="../links.html" style="color:var(--accent-dark);font-weight:700;">こちらの連絡先</a>までお願いします。
+        どれも、デジタル幕僚が自分たちの仕事のために作ったものをそのまま公開しています。
+      </div>
+    </section>
+
+    <!-- ⛔ 各カードは画像付き・data-app 付きで統一すること。
+         data-app を消すとGA4でどのアプリが押されたか分からなくなる。
+         告知画像は 広報部\告知画像\promo_template.py で生成する（手作りしない）。
+         ⛔ カテゴリは「くらし・家計 / 手帳・ものづくり / 発信・制作 / 実験・展示 / 準備中」の5本立て。
+            すべて無料なので、特定のツールだけ独立セクションに出さないこと（2026-08-25 整理）。 -->
+
+    <div class="section-label">くらし・家計</div>
+    <div class="tool-grid">
+
+      <div class="tool-card" data-app="diet" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/diet-announce.png" alt="ダイエット管理アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3><a href="../diet/">⚖ ダイエット管理</a></h3>
+          <p style="color:var(--ink);">朝夜の体重、食べたもの、運動、水分を記録すると、目標まであと何kgか・今日はあとどれくらい食べられるかが一目でわかります。BMI・基礎代謝・PFCバランス・7日移動平均・停滞期の目安まで自動で計算します。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">記録は端末の中だけに保存されます。</strong>サーバーへ送られることは一切ありません（そもそも送信できない作りです）。<br>
+            入力は最短2タップ。食事は「ごはん 納豆」と打つだけ、量は「茶碗1杯」で選べます。<br>
+            ホーム画面に追加すると、電波がなくても使えます。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">機種変更の前に、設定画面からバックアップを保存してください。</p>
+        </div>
+      </div>
+
+      <div class="tool-card" data-app="costco" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/costco-announce.png" alt="コストコ共同購入アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3><a href="../costco/">🛒 コストコ共同購入</a></h3>
+          <p style="color:var(--ink);">コストコのセール案内から商品・写真・価格を自動で取り込み、みんなでチェックするだけで「誰が何を何個」を集計します。人ごとの請求額・受領記録まで一画面で管理できます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">チェックする側はアカウント登録不要です。</strong><br>
+            ホーム画面に追加するとアプリのように使えます。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">グループは自分ですぐ作れます（申し込み不要）。グループごとに注文と請求が分かれ、他のグループの内容は見えません。</p>
+        <p style="font-size:12px;margin-top:6px;"><span style="color:var(--muted);">はじめての方は</span> <a href="../costco/guide.html" style="color:var(--accent-dark);font-weight:700;" onclick="event.stopPropagation();">📖 使い方ガイド</a></p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="section-label">手帳・ものづくり</div>
+    <div class="tool-grid">
+
+      <div class="tool-card" data-app="refill" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/refill-announce.png" alt="手帳リフィル印刷ツール 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB TOOL</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3><a href="../a6-weekly/">📅 手帳リフィル印刷ツール</a></h3>
+          <p style="color:var(--ink);">システム手帳のリフィルを自分で印刷できます。日付を入れて印刷するだけ。市販のリフィルが見つからないサイズ・レイアウトも自分で用意できます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">6種類そろっています。</strong><br>
+            A6サイズ: <a href="../a6-weekly/" style="color:var(--accent-dark);">週間</a> ／ <a href="../a6-monthly/" style="color:var(--accent-dark);">月間</a> ／ <a href="../a6-daily/" style="color:var(--accent-dark);">日次</a><br>
+            聖書サイズ: <a href="../bible-weekly/" style="color:var(--accent-dark);">週間</a> ／ <a href="../bible-monthly/" style="color:var(--accent-dark);">月間</a> ／ <a href="../bible-daily/" style="color:var(--accent-dark);">日次</a>
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">2026-08-24より、パスワードなしでどなたでもお使いいただけます。</p>
+        </div>
+      </div>
+
+      <div class="tool-card" data-app="password-note" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/password-note-announce.png" alt="N's notebook パスワード管理 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3><a href="../password-note.html">🔐 N's notebook パスワード管理</a></h3>
+          <p style="color:var(--ink);">パスワードやアカウント情報を整理し、A6リフィルに印刷して紙で残せます。終活や家族への引き継ぎを想定した作りです。2026-08-24より無料公開しています。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">保存は端末の中だけ。</strong>販売者のサーバーへパスワード一覧が送られることはありません。<br>
+            開くときは合言葉が必要です。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">合言葉を忘れると復旧できません。紙にも残す使い方を前提としています。</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="section-label">発信・制作</div>
+    <div class="tool-grid">
+
+      <div class="tool-card" data-app="sns-video-maker" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/sns-video-maker-announce.png" alt="SNS紹介動画メーカー 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP β</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / ブラウザで完結</span>
+          </div>
+          <h3><a href="sns-video-maker/">🎞 SNS紹介動画メーカー</a></h3>
+          <p style="color:var(--ink);">作品写真を選ぶだけで、SNS用の縦型動画をブラウザ上で作成できます。写真ごとのセリフ、写真の動き、切り替え方を指定できます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">写真はサーバーへ送信されません。</strong><br>
+            動画編集アプリを用意する必要はありません。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">β版の保存形式はWebMです。音楽は投稿時にInstagram等で追加してください。</p>
+        </div>
+      </div>
+
+      <div class="tool-card static" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/yt-transcribe-announce.png" alt="YouTube 文字起こしツール 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag soon">近日公開</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / ダウンロード配布</span>
+          </div>
+          <h3>🎬 YouTube 文字起こしツール</h3>
+          <p style="color:var(--ink);">YouTubeのURLを入れるだけで、字幕を文章として取り出して保存します。動画を見返さなくても内容を検索・引用できます。URLをまとめて指定した一括処理にも対応しています。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">ご自身のパソコンの中だけで動きます。</strong><br>
+            URLをまとめて一括処理／処理済みは自動でスキップ／取得できない状態かをその場で確認／Markdown形式でそのまま使えます。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">配布開始時はSNSでお知らせします。</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="section-label">実験・展示</div>
+    <div class="tool-grid">
+      <div class="tool-card" data-app="site-design-lab">
+        <span class="tag">LIVE</span>
+        <h3><a href="site-design-lab/">🧪 サイトデザイン研究室</a></h3>
+        <p>インタラクティブ表現・UI表現の試作サンプルを集めた実験室。第一弾は水面インタラクションページ。</p>
+      </div>
+      <div class="tool-card" data-app="showroom">
+        <span class="tag">LIVE</span>
+        <h3><a href="../showroom/">🏬 3D ショールーム（メタバース店舗）</a></h3>
+        <p>バーチャル空間に展開した N's factory の店舗。革小物・システム手帳が並ぶ 3D ショールームです。</p>
+      </div>
+    </div>
+
+    <div class="section-label">準備中（デジタルコンテンツ販売）</div>
     <div class="tool-grid">
       <div class="tool-card disabled">
         <span class="tag soon">準備中</span>
@@ -169,157 +374,6 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
 
-    <div class="section-label">デジタル幕僚 開発ツール</div>
-    <div class="tool-grid">
-      <div class="tool-card" style="border-color:var(--accent);background:var(--accent-soft);padding:0;overflow:hidden;">
-        <img src="../assets/yt-transcribe-announce.png" alt="YouTube 文字起こしツール 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="tag soon">近日公開</span>
-          <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE DOWNLOAD</span>
-        </div>
-        <h3>🎬 YouTube 文字起こしツール</h3>
-        <p style="color:var(--ink);">YouTubeのURLを入力するだけで字幕をMarkdown形式で自動取得・保存。バッチ処理・URLリスト管理・IPブロック検知機能を搭載。デジタル幕僚が自社業務用に開発したローカルアプリを無料配布予定。</p>
-        <div style="margin-top:6px;padding:10px 12px;background:#fff;border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-          <strong style="color:var(--ink);">主な機能</strong><br>
-          ✅ URLリスト一括バッチ処理<br>
-          ✅ 処理済み管理・スキップ制御<br>
-          ✅ IPブロック状態リアルタイム確認<br>
-          ✅ Markdown形式で即使える出力<br>
-          📦 配布形式：Pythonスクリプト（無料・ローカル動作）
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
-          <button disabled style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--muted);color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:not-allowed;opacity:.6;">🛒 購入する（近日公開）</button>
-          <button onclick="drLaunchYtApp()" id="dr-launch-btn" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer;">▶ アプリを起動</button>
-        </div>
-        <div id="dr-launch-status" style="font-size:12px;color:var(--muted);margin-top:6px;min-height:18px;"></div>
-        <p style="font-size:12px;color:var(--accent-dark);font-weight:700;margin-top:4px;">配布開始時はSNSでお知らせします</p>
-        </div><!-- /padding -->
-      </div>
-      </div>
-
-    <div class="section-label">サイトデザイン研究室</div>
-    <div class="tool-grid">
-      <a class="tool-card" href="site-design-lab/" data-app="site-design-lab">
-        <span class="tag">LIVE</span>
-        <h3>サイトデザイン研究室</h3>
-        <p>インタラクティブ表現・UI表現の試作サンプルを集めた実験室。第一弾は水面インタラクションページ。</p>
-      </a>
-    </div>
-
-        <div class="section-label">無料アプリ・ツール</div>
-    <p style="font-size:13px;color:var(--muted);line-height:1.8;margin:-6px 0 16px;">
-      デジタル幕僚が自分たちの仕事のために作ったものを、そのまま公開しています。
-      <strong style="color:var(--ink);">どれも無料・登録不要</strong>です。
-      うまく動かない、こうしてほしい等ありましたら
-      <a href="../links.html" style="color:var(--accent-dark);font-weight:700;">こちら</a>からお知らせください。
-    </p>
-    <div class="tool-grid">
-
-      <!-- ⛔ 各カードは画像付き・data-app 付きで統一すること。
-           data-app を消すとGA4でどのアプリが押されたか分からなくなる。
-           告知画像は 広報部\告知画像\promo_template.py で生成する（手作りしない）。 -->
-
-      <a class="tool-card" href="../diet/" data-app="diet" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/diet-announce.png" alt="ダイエット管理アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="tag">WEB APP</span>
-            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
-          </div>
-          <h3>⚖ ダイエット管理</h3>
-          <p style="color:var(--ink);">朝夜の体重、食べたもの、運動、水分を記録すると、目標まであと何kgか・今日はあとどれくらい食べられるかが一目でわかります。BMI・基礎代謝・PFCバランス・7日移動平均・停滞期の目安まで自動で計算します。</p>
-          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-            <strong style="color:var(--ink);">記録は端末の中だけに保存されます。</strong>サーバーへ送られることは一切ありません（そもそも送信できない作りです）。<br>
-            入力は最短2タップ。食事は「ごはん 納豆」と打つだけ、量は「茶碗1杯」で選べます。<br>
-            ホーム画面に追加すると、電波がなくても使えます。
-          </div>
-          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">機種変更の前に、設定画面からバックアップを保存してください。</p>
-        </div>
-      </a>
-
-      <a class="tool-card" href="../costco/" data-app="costco" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/costco-announce.png" alt="コストコ共同購入アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="tag">WEB APP</span>
-            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
-          </div>
-          <h3>🛒 コストコ共同購入</h3>
-          <p style="color:var(--ink);">コストコのセール案内から商品・写真・価格を自動で取り込み、みんなでチェックするだけで「誰が何を何個」を集計します。人ごとの請求額・受領記録まで一画面で管理できます。</p>
-          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-            <strong style="color:var(--ink);">チェックする側はアカウント登録不要です。</strong><br>
-            ホーム画面に追加するとアプリのように使えます。
-          </div>
-          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">グループは自分ですぐ作れます（申し込み不要）。グループごとに注文と請求が分かれ、他のグループの内容は見えません。</p>
-        <p style="font-size:12px;margin-top:6px;"><span style="color:var(--muted);">はじめての方は</span> <a href="../costco/guide.html" style="color:var(--accent-dark);font-weight:700;" onclick="event.stopPropagation();">📖 使い方ガイド</a></p>
-        </div>
-      </a>
-
-      <a class="tool-card" href="../a6-weekly/" data-app="refill" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/refill-announce.png" alt="手帳リフィル印刷ツール 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="tag">WEB TOOL</span>
-            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
-          </div>
-          <h3>📅 手帳リフィル印刷ツール</h3>
-          <p style="color:var(--ink);">システム手帳のリフィルを自分で印刷できます。日付を入れて印刷するだけ。市販のリフィルが見つからないサイズ・レイアウトも自分で用意できます。</p>
-          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-            <strong style="color:var(--ink);">6種類そろっています。</strong><br>
-            A6サイズ: <a href="../a6-weekly/" style="color:var(--accent-dark);">週間</a> ／ <a href="../a6-monthly/" style="color:var(--accent-dark);">月間</a> ／ <a href="../a6-daily/" style="color:var(--accent-dark);">日次</a><br>
-            聖書サイズ: <a href="../bible-weekly/" style="color:var(--accent-dark);">週間</a> ／ <a href="../bible-monthly/" style="color:var(--accent-dark);">月間</a> ／ <a href="../bible-daily/" style="color:var(--accent-dark);">日次</a>
-          </div>
-          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">2026-08-24より、パスワードなしでどなたでもお使いいただけます。</p>
-        </div>
-      </a>
-
-      <a class="tool-card" href="../password-note.html" data-app="password-note" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/password-note-announce.png" alt="N's notebook パスワード管理 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="tag">WEB APP</span>
-            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
-          </div>
-          <h3>🔐 N's notebook パスワード管理</h3>
-          <p style="color:var(--ink);">パスワードやアカウント情報を整理し、A6リフィルに印刷して紙で残せます。終活や家族への引き継ぎを想定した作りです。2026-08-24より無料公開しています。</p>
-          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-            <strong style="color:var(--ink);">保存は端末の中だけ。</strong>販売者のサーバーへパスワード一覧が送られることはありません。<br>
-            開くときは合言葉が必要です。
-          </div>
-          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">合言葉を忘れると復旧できません。紙にも残す使い方を前提としています。</p>
-        </div>
-      </a>
-
-      <a class="tool-card" href="sns-video-maker/" data-app="sns-video-maker" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/sns-video-maker-announce.png" alt="SNS紹介動画メーカー 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="tag">WEB APP β</span>
-            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / ブラウザで完結</span>
-          </div>
-          <h3>🎞 SNS紹介動画メーカー</h3>
-          <p style="color:var(--ink);">作品写真を選ぶだけで、SNS用の縦型動画をブラウザ上で作成できます。写真ごとのセリフ、写真の動き、切り替え方を指定できます。</p>
-          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-            <strong style="color:var(--ink);">写真はサーバーへ送信されません。</strong><br>
-            動画編集アプリを用意する必要はありません。
-          </div>
-          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">β版の保存形式はWebMです。音楽は投稿時にInstagram等で追加してください。</p>
-        </div>
-      </a>
-
-    </div>
-
-
-    <div class="section-label">メタバース販売</div>
-    <div class="tool-grid">
-      <a class="tool-card" href="../showroom/" data-app="showroom">
-        <span class="tag">LIVE</span>
-        <h3>3D ショールーム（メタバース店舗）</h3>
-        <p>バーチャル空間に展開した N's factory の店舗。革小物・システム手帳が並ぶ 3D ショールームです。</p>
-      </a>
-    </div>
-
     <div class="note">
       デジタル部は、自社サイト（GitHub Pages）の運営・GAS連携・ECツール管理・メタバース販売開拓を担当しています。<br>
       型紙・CADデータ販売の公開準備が整い次第、本ページで順次ご案内いたします。
@@ -327,40 +381,8 @@ a{color:inherit;text-decoration:none}
   </div>
 </main>
 
-<script>
-async function drLaunchYtApp() {
-  var btn = document.getElementById('dr-launch-btn');
-  var status = document.getElementById('dr-launch-status');
-  btn.disabled = true; btn.textContent = '確認中...';
-  var running = await drCheckRunning();
-  if (running) {
-    status.textContent = '✅ 起動済み — ブラウザで開きます';
-    window.open('http://localhost:8501', '_blank');
-    btn.disabled = false; btn.textContent = '▶ アプリを起動'; return;
-  }
-  status.textContent = '⏳ 起動しています（初回は10〜20秒かかります）...';
-  window.location.href = 'ytapp://start';
-  btn.textContent = '起動待機中...';
-  var waited = 0;
-  var timer = setInterval(async function() {
-    waited += 2;
-    if (await drCheckRunning()) {
-      clearInterval(timer);
-      status.textContent = '✅ 起動完了 — ブラウザで開きます';
-      window.open('http://localhost:8501', '_blank');
-      btn.disabled = false; btn.textContent = '▶ アプリを起動';
-    } else if (waited >= 25) {
-      clearInterval(timer);
-      status.innerHTML = '⚠️ 自動起動できませんでした。PowerShellで <code>py -m streamlit run yt_app.py</code> を実行してください。';
-      btn.disabled = false; btn.textContent = '▶ アプリを起動';
-    }
-  }, 2000);
-}
-async function drCheckRunning() {
-  try { await fetch('http://localhost:8501', {mode:'no-cors',cache:'no-store'}); return true; }
-  catch(e) { return false; }
-}
-</script>
+<!-- 2026-08-25: 事業主PC専用だった「▶ アプリを起動」（ytapp:// + localhost:8501）を削除。
+     一般の来訪者には動かないボタンだったため。復活させるなら管理者向けページに置くこと。 -->
 <script>
 // 各アプリカードのクリックをGA4イベントとして記録する。
 // ⛔ 同一サイト内のリンクはGA4が自動計測しない（自動の対象は外部サイトへのリンクだけ）。
