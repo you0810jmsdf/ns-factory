@@ -85,12 +85,29 @@ async function frequentMealNames() {
   }
 }
 
+// ⛔ この打ち切りを外さないこと。外すと応答が返らないとき画面が
+//    「解析しています…」のまま永久に止まり、利用者は何もできなくなる（2026-08-25 実害）。
+const ANALYZE_TIMEOUT_MS = 50000;
+
 async function callAnalyze(image, frequent) {
-  const res = await fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'analyze', token: getToken(), image, frequent })
-  });
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ANALYZE_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'analyze', token: getToken(), image, frequent }),
+      signal: ctrl.signal
+    });
+  } catch (err) {
+    if (err && err.name === 'AbortError') {
+      throw new Error('50秒かかっても返事がありませんでした。写真を明るく撮り直すか、時間をおいてお試しください。');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
   const text = await res.text();
   if (text.trim().startsWith('<')) {
     throw new Error('サーバーの準備ができていません（管理者のGAS承認待ちの可能性）');
@@ -271,26 +288,41 @@ $('analyze-btn').addEventListener('click', async () => {
   if (!selectedFile) return;
   const btn = $('analyze-btn');
   btn.disabled = true;
-  $('status-line').textContent = '解析しています…（10秒ほどかかります）';
+  // ⛔ 経過秒数の表示を消さないこと。止まっているのか待てば済むのかを
+  //    利用者が判断できず、また「途中で止まる」と言われる（2026-08-25 実害）。
+  const startedAt = Date.now();
+  const tick = setInterval(() => {
+    const sec = Math.round((Date.now() - startedAt) / 1000);
+    $('status-line').textContent = '解析しています… ' + sec + '秒（ふつう15〜30秒／50秒で打ち切ります）';
+  }, 1000);
+  $('status-line').textContent = '解析しています… 0秒（ふつう15〜30秒／50秒で打ち切ります）';
   try {
     const image = await shrinkImage(selectedFile);
     const frequent = await frequentMealNames();
     const res = await callAnalyze(image, frequent);
+    clearInterval(tick);
     if (res.error) {
       if (res.error === 'unauthorized') {
         try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* noop */ }
         refreshCards();
+        clearInterval(tick);
         $('status-line').textContent = '合言葉が違います。もう一度入力してください。';
         return;
       }
+      clearInterval(tick);
       $('status-line').textContent = '解析できませんでした: ' + res.error;
       return;
     }
-    $('status-line').textContent = '';
+    const took = Math.round((Date.now() - startedAt) / 1000);
+    const server = res.elapsedMs ? Math.round(res.elapsedMs / 1000) : null;
+    $('status-line').textContent = server !== null
+      ? took + '秒で解析しました（うちAI ' + server + '秒）'
+      : took + '秒で解析しました';
     renderResults(res.data || {});
   } catch (err) {
     $('status-line').textContent = 'エラー: ' + (err && err.message ? err.message : '通信に失敗しました');
   } finally {
+    clearInterval(tick);
     btn.disabled = false;
   }
 });
