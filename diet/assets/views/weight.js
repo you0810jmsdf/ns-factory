@@ -174,7 +174,7 @@ function createForm(ctx, today, weights, onSaved) {
       <span class="field-label">日付</span>
       <input class="input" name="date" type="date" required>
     </label>
-    <div class="grid-2">
+    <div class="grid-2 grid-2-stepper">
       <label class="field">
         <span class="field-label">朝 kg</span>
         <span class="stepper">
