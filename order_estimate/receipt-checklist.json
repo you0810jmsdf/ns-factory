@@ -183,8 +183,16 @@
       },
       "car_insurance": {
         "status": "取得済み",
-        "count": 1,
+        "count": 2,
         "records": [
+          {
+            "date": "2026-08-07",
+            "amount": 61750,
+            "amount_text": "¥61,750",
+            "subject": "自動車保険（証券96731354）",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-08\\20260807_151557_自動車保険_19fdb069096f372e.txt"
+          },
           {
             "date": "2026-08-25",
             "amount": 61750,
@@ -512,9 +520,26 @@
         }
       },
       "car_insurance": {
-        "status": "未対応",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 2,
+        "records": [
+          {
+            "date": "2026-07-09",
+            "amount": 74930,
+            "amount_text": "¥74,930",
+            "subject": "自動車保険（証券99029715）",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260709_151559_自動車保険_19f43b1d9cc9df8f.txt"
+          },
+          {
+            "date": "2026-07-25",
+            "amount": 74930,
+            "amount_text": "¥74,930",
+            "subject": "自動車保険（証券99029715）",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-07\\20260725_151558_自動車保険_19f97294e06def79.txt"
+          }
+        ],
         "guide": {
           "url": "",
           "steps": "取得手順未登録。情報が確定次第追記予定。"
@@ -3599,7 +3624,7 @@
       }
     }
   },
-  "checked_at": "2026-08-25 15:14:55",
+  "checked_at": "2026-08-25 15:17:50",
   "health": {
     "token_updated": "2026-08-25",
     "token_age_days": 0,
