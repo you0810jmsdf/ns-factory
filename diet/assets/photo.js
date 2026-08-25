@@ -10,6 +10,7 @@
 
 import { addMeal, deleteMeal, getAll, STORES } from './db.js';
 import { MEAL_SLOT_LABELS, detectMealSlot, todayString, currentTimeString } from './quick-entry.js';
+import { BUILTIN_FOODS } from './foods.js';
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzzSz4bbOU_FTeWF7mC_0v8331vWfU36MlMyEwE3GdWOlZH9WSy-i8t6Gg1sXhqdqqA/exec';
 const TOKEN_KEY = 'diet_photo_token';
@@ -191,6 +192,49 @@ function renderResults(data) {
 }
 
 /**
+ * 品目名から端末内の食品データを引き当て、1人前のカロリーを返す。
+ * ⛔ 優先順位（完全一致 > 前方一致 > 部分一致、同順位なら名前が短いもの）を変えないこと。
+ *    部分一致を先にすると「ごはん」で「玄米ごはん」が選ばれる（meal.js と同じ考え方）。
+ * @param {string} name 品目名。
+ * @returns {{kcal: number, label: string}|null} 見つからなければ null。
+ */
+function lookupFoodKcal(name) {
+  const q = String(name || '').trim();
+  if (!q) return null;
+  const hits = BUILTIN_FOODS.filter((f) => f.name.includes(q) || f.kana.includes(q)
+    || q.includes(f.name) || q.includes(f.kana));
+  if (!hits.length) return null;
+  const rank = (f) => {
+    if (f.name === q || f.kana === q) return 0;
+    if (f.name.startsWith(q) || f.kana.startsWith(q)) return 1;
+    return 2;
+  };
+  hits.sort((a, b) => rank(a) - rank(b) || a.name.length - b.name.length);
+  const f = hits[0];
+  const grams = f.serving && Number.isFinite(f.serving.g) ? f.serving.g : f.per;
+  const kcal = Math.round(f.kcal * (grams / f.per));
+  const label = f.serving && f.serving.label ? f.serving.label : (grams + f.unit);
+  return { kcal: kcal, label: f.name + '（' + label + '）' };
+}
+
+/**
+ * 記録する品目の合計カロリーを描き直す。
+ * ⛔ カロリー未入力を 0 として合計しないこと。集計が実際より軽く見える。
+ *    件数を別に出して「分からないものがある」と分かるようにする。
+ * @param {HTMLElement} node 合計を表示する要素。
+ * @returns {void}
+ */
+function refreshTotalKcal(node) {
+  const picked = resultItems.filter((it) => it.checked);
+  const known = picked.filter((it) => Number.isFinite(it.kcal));
+  const total = known.reduce((sum, it) => sum + it.kcal, 0);
+  const unknown = picked.length - known.length;
+  node.textContent = '合計 約' + total + 'kcal'
+    + (unknown > 0 ? '（＋未計算' + unknown + '件）' : '')
+    + ' / ' + picked.length + '件';
+}
+
+/**
  * 選んだ候補の中身を編集できる形で描画する。
  * @param {object} cand 選ばれた候補。
  * @param {object} data 元の応答（候補選び直し用）。
@@ -213,6 +257,9 @@ function renderPickedCandidate(cand, data) {
   back.addEventListener('click', () => renderResults(data));
   list.append(back);
 
+  const total = document.createElement('p');
+  total.className = 'banner';
+
   resultItems.forEach((item) => {
     const row = document.createElement('div');
     row.className = 'banner stack';
@@ -221,11 +268,13 @@ function renderPickedCandidate(cand, data) {
     const check = document.createElement('input');
     check.type = 'checkbox';
     check.checked = true;
-    check.addEventListener('change', () => { item.checked = check.checked; });
+    check.addEventListener('change', () => {
+      item.checked = check.checked;
+      refreshTotalKcal(total);
+    });
     const nameInput = document.createElement('input');
     nameInput.className = 'input';
     nameInput.value = item.name;
-    nameInput.addEventListener('change', () => { item.name = nameInput.value.trim() || item.name; });
     label.append(check, nameInput);
 
     const meta = document.createElement('span');
@@ -238,12 +287,36 @@ function renderPickedCandidate(cand, data) {
     kcalInput.addEventListener('change', () => {
       const v = Number(kcalInput.value);
       item.kcal = Number.isFinite(v) && v >= 0 ? Math.round(v) : null;
+      refreshTotalKcal(total);
     });
-    meta.append(kcalInput, document.createTextNode(`kcal / ${item.amount_desc || '量は目安'}`));
+    const note = document.createElement('span');
+    note.className = 'muted';
+    note.textContent = item.amount_desc || '量は目安';
 
-    row.append(label, meta);
+    // ⛔ 名前を直したらカロリーを引き直すこと。これが無いと「納豆」を「豆腐」に直しても
+    //    納豆のカロリーのまま記録される（2026-08-26 指摘）。
+    nameInput.addEventListener('change', () => {
+      const next = nameInput.value.trim();
+      if (!next) { nameInput.value = item.name; return; }
+      item.name = next;
+      const found = lookupFoodKcal(next);
+      if (found) {
+        item.kcal = found.kcal;
+        kcalInput.value = String(found.kcal);
+        note.textContent = found.label + 'で計算しました';
+      } else {
+        note.textContent = '一覧に無い品目です。数字は手で直せます';
+      }
+      refreshTotalKcal(total);
+    });
+
+    meta.append(kcalInput, document.createTextNode('kcal'));
+    row.append(label, meta, note);
     list.append(row);
   });
+
+  list.append(total);
+  refreshTotalKcal(total);
 
   const slot = detectMealSlot();
   $('slot-note').textContent = `${MEAL_SLOT_LABELS[slot]}の食事として記録します`;
