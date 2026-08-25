@@ -3433,8 +3433,15 @@ function drawFilmStripScene(time, slide, progress){
   const list = playableSlides();
   if(!list.length) return;
 
-  // 暗室調の背景
-  ctx.fillStyle = '#0E0D0C';
+  // 暗室調の背景。平坦な黒だとフィルムの端が同化して見えないため、
+  // 中央をわずかに明るくして黒い帯の輪郭が浮き出るようにする（2026-08-26 事業主指摘）
+  const bgGrad = ctx.createRadialGradient(
+    canvas.width / 2, canvas.height / 2, 0,
+    canvas.width / 2, canvas.height / 2, Math.hypot(canvas.width, canvas.height) / 2);
+  bgGrad.addColorStop(0, '#2A2622');
+  bgGrad.addColorStop(.55, '#171512');
+  bgGrad.addColorStop(1, '#0A0908');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const frameW = Math.round(canvas.width * .58);   // 写真窓は横3:縦2（実フィルムのコマ比）
@@ -3456,9 +3463,14 @@ function drawFilmStripScene(time, slide, progress){
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate(angle);
 
-  // フィルムベース（ストリップ本体）
-  ctx.fillStyle = '#1B1A18';
+  // フィルムベース（ストリップ本体）。実物のネガのベース色に寄せた
+  // ダークブラウンの透過色（2026-08-26 事業主指定）。背景の光がわずかに透ける
+  ctx.fillStyle = 'rgba(54,37,22,.86)';
   ctx.fillRect(-diag / 2 - pitch, -stripH / 2, diag + pitch * 2, stripH);
+  // 上下の縁はアンバー系のハイライトで境目を立たせる（ブランドのゴールドとも馴染む）
+  ctx.fillStyle = 'rgba(255,214,150,.32)';
+  ctx.fillRect(-diag / 2 - pitch, -stripH / 2, diag + pitch * 2, 4);
+  ctx.fillRect(-diag / 2 - pitch, stripH / 2 - 4, diag + pitch * 2, 4);
 
   // コマ（写真は循環で繰り返す）
   const firstK = Math.floor((-diag / 2 - pitch - drift) / pitch);
