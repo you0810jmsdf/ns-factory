@@ -25,6 +25,7 @@ import {
   showUndoToast,
   undoMeal
 } from './../quick-entry.js';
+import { recordUnknownFood } from './../unknown-foods.js';
 
 const SLOTS = Object.freeze([
   { key: 'breakfast', label: '朝' },
@@ -439,6 +440,11 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
     const today = todayString();
     // ⛔ ここで detectMealSlot() を呼ばないこと。利用者がタブで選んだ食事を無視してしまう。
     const slot = textSlot;
+
+    // 一覧に無かった品目名を控える（一覧を増やすため）。
+    // ⛔ 入力中（input イベント）で呼ばないこと。打ちかけの文字まで集めてしまう。
+    //    実際に記録した語だけを対象にする。
+    recordUnknownFood(resolvedItems.filter((it) => !it.food).map((it) => it.word));
     const addedIds = [];
     for (const item of resolvedItems) {
       const record = item.food

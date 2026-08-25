@@ -11,6 +11,7 @@
 import { addMeal, deleteMeal, getAll, STORES } from './db.js';
 import { MEAL_SLOT_LABELS, detectMealSlot, todayString, currentTimeString } from './quick-entry.js';
 import { BUILTIN_FOODS } from './foods.js';
+import { recordUnknownFood } from './unknown-foods.js';
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzzSz4bbOU_FTeWF7mC_0v8331vWfU36MlMyEwE3GdWOlZH9WSy-i8t6Gg1sXhqdqqA/exec';
 const TOKEN_KEY = 'diet_photo_token';
@@ -306,6 +307,7 @@ function renderPickedCandidate(cand, data) {
         note.textContent = found.label + 'で計算しました';
       } else {
         note.textContent = '一覧に無い品目です。数字は手で直せます';
+        recordUnknownFood(next);
       }
       refreshTotalKcal(total);
     });
