@@ -128,6 +128,33 @@ function countRecordStreak(dates, anchorDate) {
   return streak;
 }
 
+/**
+ * 目標設定の警告を出すカード。警告が無ければ null を返す。
+ * ⛔ この表示を消さないこと。設定画面のプレビューにしか警告が無かったため、
+ *    危険な目標（基礎代謝を大きく下回る等）を設定しても毎日見る画面には
+ *    何も出ていなかった（2026-08-26 発見）。
+ * @param {{warnings?: Array<{level:string,message:string}>}} target 目標計算の結果。
+ * @returns {HTMLElement|null} 警告カード。警告が無ければ null。
+ */
+function createGoalWarningCard(target) {
+  const warnings = (target && target.warnings) || [];
+  if (!warnings.length) {
+    return null;
+  }
+  const hasDanger = warnings.some((w) => w.level === 'danger');
+  const card = el('section', 'card stack');
+  card.append(el('h2', 'card-title', hasDanger ? '目標設定を見直してください' : '目標設定の注意'));
+  warnings.forEach((w) => {
+    card.append(el('p', w.level === 'danger' ? 'banner banner-danger' : 'banner banner-warning', w.message));
+  });
+  // ⛔ 警告を出すだけで終わらせないこと。その場で直せる導線を必ず添える。
+  const go = el('button', 'button', '設定を開いて直す');
+  go.type = 'button';
+  go.addEventListener('click', () => { location.hash = '#/settings'; });
+  card.append(go);
+  return card;
+}
+
 function createWeightGoalCard({ currentWeight, targetWeight, startWeight }) {
   const card = el('section', 'card stack');
   const remaining = Number.isFinite(currentWeight) && Number.isFinite(targetWeight)
@@ -217,7 +244,9 @@ function createQuickWeightModal(ctx, weights, onSaved) {
   plus.addEventListener('click', () => adjustWeightInput(input, 0.1));
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const value = ctx.normalizeNumberInput(input.value, { min: 0 });
+    // ⛔ ここも体重画面と同じ範囲にすること。片方だけ緩いと、そちらから
+    //    誤入力が入りグラフが読めなくなる（2026-08-26）。
+    const value = ctx.normalizeNumberInput(input.value, { min: 10, max: 300 });
     if (!Number.isFinite(value)) {
       ctx.showToast('体重を入力してください', { tone: 'warning' });
       return;
@@ -527,6 +556,10 @@ export async function render(ctx) {
     ctx.navigate('home');
   };
 
+  const goalWarning = createGoalWarningCard(targetWithExercise.warnings ? targetWithExercise : targetBase);
+  if (goalWarning) {
+    stack.append(goalWarning);
+  }
   stack.append(createWeightGoalCard({ currentWeight, targetWeight, startWeight }));
   stack.append(createTodayWeightCard(ctx, todayWeight, weights, refreshHome));
   stack.append(createMovingAverageCard(weights));

@@ -402,7 +402,7 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
           amountInput.setAttribute('inputmode', 'decimal');
           amountInput.value = String(item.amount);
           amountInput.addEventListener('change', () => {
-            const v = ctx.normalizeNumberInput(amountInput.value, { min: 0.1 });
+            const v = ctx.normalizeNumberInput(amountInput.value, { min: 0.1, max: 50 });
             if (Number.isFinite(v)) {
               item.amount = v;
               renderChips();
@@ -569,7 +569,7 @@ function createMealRow(record, ctx, onDeleted) {
       const saveButton = el('button', 'button button-primary', '保存');
       saveButton.type = 'button';
       saveButton.addEventListener('click', async () => {
-        const v = ctx.normalizeNumberInput(kcalInput.value, { min: 0 });
+        const v = ctx.normalizeNumberInput(kcalInput.value, { min: 0, max: 10000 });
         if (!Number.isFinite(v)) {
           ctx.showToast('kcalを入力してください', { tone: 'warning' });
           return;
@@ -873,7 +873,7 @@ function createMealModal(ctx, options) {
     }
     // ⛔ 量が空欄でも弾かないこと。g入力は利用者にとって苦痛（2026-08-24 指摘）。
     //    空欄なら「大人1人前」の目安で記録する。
-    let amount = ctx.normalizeNumberInput(amountForm.elements.amount.value, { min: 0.1 });
+    let amount = ctx.normalizeNumberInput(amountForm.elements.amount.value, { min: 0.1, max: 50 });
     if (!Number.isFinite(amount)) {
       amount = defaultServingAmount(pickedFood);
     }
@@ -890,7 +890,7 @@ function createMealModal(ctx, options) {
   manualForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const name = manualForm.elements.name.value.trim();
-    const amount = ctx.normalizeNumberInput(manualForm.elements.amount.value, { min: 0.1 });
+    const amount = ctx.normalizeNumberInput(manualForm.elements.amount.value, { min: 0.1, max: 50 });
     const unit = manualForm.elements.unit.value.trim() || 'g';
     const record = {
       date: today,
@@ -898,10 +898,10 @@ function createMealModal(ctx, options) {
       name,
       amount,
       unit,
-      kcal: ctx.normalizeNumberInput(manualForm.elements.kcal.value, { min: 0 }),
-      p: ctx.normalizeNumberInput(manualForm.elements.p.value, { min: 0 }),
-      f: ctx.normalizeNumberInput(manualForm.elements.f.value, { min: 0 }),
-      c: ctx.normalizeNumberInput(manualForm.elements.c.value, { min: 0 }),
+      kcal: ctx.normalizeNumberInput(manualForm.elements.kcal.value, { min: 0, max: 10000 }),
+      p: ctx.normalizeNumberInput(manualForm.elements.p.value, { min: 0, max: 1000 }),
+      f: ctx.normalizeNumberInput(manualForm.elements.f.value, { min: 0, max: 1000 }),
+      c: ctx.normalizeNumberInput(manualForm.elements.c.value, { min: 0, max: 1000 }),
       foodId: null
     };
     // 量は空欄可（g入力は苦痛という指摘への対応）。名前とkcalだけ必須にする。

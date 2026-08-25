@@ -544,7 +544,7 @@ function createExerciseModal(ctx, options) {
 
   function updatePreview() {
     const mets = ctx.normalizeNumberInput(metsInput.value, { min: 1, max: 15 });
-    const minutes = ctx.normalizeNumberInput(minutesInput.value, { min: 0 });
+    const minutes = ctx.normalizeNumberInput(minutesInput.value, { min: 0, max: 1440 });
     const weight = weightForCalc(currentWeight, ctx.profile);
     const added = calculateExerciseAddedKcal({ mets, minutes, weightKg: weight });
     const total = calculateExerciseTotalKcal({ mets, minutes, weightKg: weight });
@@ -614,7 +614,7 @@ function createExerciseModal(ctx, options) {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const name = nameInput.value.trim();
-    const minutes = ctx.normalizeNumberInput(minutesInput.value, { min: 1 });
+    const minutes = ctx.normalizeNumberInput(minutesInput.value, { min: 1, max: 1440 });
     const mets = ctx.normalizeNumberInput(metsInput.value, { min: 1, max: 15 });
     if (!name) {
       ctx.showToast('実施内容を入力してください', { tone: 'warning' });
@@ -638,9 +638,9 @@ function createExerciseModal(ctx, options) {
       minutes,
       mets,
       kcal,
-      sets: categorySelect.value === 'strength' ? ctx.normalizeNumberInput(setsInput.value, { min: 0 }) : null,
-      reps: categorySelect.value === 'strength' ? ctx.normalizeNumberInput(repsInput.value, { min: 0 }) : null,
-      weightKg: categorySelect.value === 'strength' ? ctx.normalizeNumberInput(weightInput.value, { min: 0 }) : null,
+      sets: categorySelect.value === 'strength' ? ctx.normalizeNumberInput(setsInput.value, { min: 0, max: 100 }) : null,
+      reps: categorySelect.value === 'strength' ? ctx.normalizeNumberInput(repsInput.value, { min: 0, max: 1000 }) : null,
+      weightKg: categorySelect.value === 'strength' ? ctx.normalizeNumberInput(weightInput.value, { min: 0, max: 500 }) : null,
       intensity: intensitySelect.value || null,
       memo: memoInput.value.trim()
     };
@@ -850,7 +850,7 @@ function createRoutineBuilder(ctx, options) {
   search.addEventListener('input', renderResults);
   addItem.addEventListener('click', () => {
     const name = itemName.value.trim();
-    const minuteValue = ctx.normalizeNumberInput(minutes.value, { min: 1 });
+    const minuteValue = ctx.normalizeNumberInput(minutes.value, { min: 1, max: 1440 });
     const metsValue = ctx.normalizeNumberInput(mets.value, { min: 1, max: 15 });
     if (!name || !Number.isFinite(minuteValue) || !Number.isFinite(metsValue)) {
       ctx.showToast('種目名・時間・METsを入力してください', { tone: 'warning' });
