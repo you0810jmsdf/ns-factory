@@ -1162,6 +1162,29 @@ function setLoadStatus(text) {
   if (el) el.textContent = text || '';
 }
 
+// 商品マスターのI列（価格）は「3000 SOLDOUT」「3000 再販予定なし」のように
+// 数値のあとへ販売状態の語が付く。編集画面の数値欄と往復させるために分解する。
+// ⛔ 数値だけを送って更新すると販売状態が消え、売り切れ品が販売中扱いになる。
+let editingPriceSuffix = '';   // 読み込んだ商品の販売状態（例: ' SOLDOUT'）
+function numericPart(v) {
+  if (v === null || v === undefined) return '';
+  const m = String(v).match(/-?\d+(?:\.\d+)?/);
+  return m ? m[0] : '';
+}
+function statusSuffix(v) {
+  if (v === null || v === undefined) return '';
+  const str = String(v);
+  const m = str.match(/-?\d+(?:\.\d+)?/);
+  if (!m) return '';
+  return str.slice(m.index + m[0].length);   // 数値の後ろをそのまま温存
+}
+// 数値欄の値へ、退避しておいた販売状態を戻す
+function priceWithStatus(numText) {
+  const n = String(numText || '').trim();
+  if (!n) return n;
+  return n + (editingPriceSuffix || '');
+}
+
 async function loadProduct() {
   const id = document.getElementById('editProductId').value.trim();
   if (!id) { alert('商品IDを入力してください'); return; }
@@ -1182,8 +1205,13 @@ async function loadProduct() {
     setSelectValue('f_color', p.color);
     setSelectValue('f_size', p.size);
     document.getElementById('f_hours').value = p.hours;
-    document.getElementById('f_cost').value  = p.cost;
-    document.getElementById('f_price').value = p.price;
+    // ⚠ 商品マスターのI列は「3000 SOLDOUT」のように販売状態の語が付く。
+    //    <input type="number"> は非数値を受け付けず**空欄になる**ため、
+    //    数値部分だけを入れ、残りは editingPriceSuffix に退避して更新時に戻す
+    //    （2026-08-25 実害: 再編集で価格が消える）。
+    document.getElementById('f_cost').value  = numericPart(p.cost);
+    document.getElementById('f_price').value = numericPart(p.price);
+    editingPriceSuffix = statusSuffix(p.price);
     document.getElementById('f_stock').value = p.stock;
     document.getElementById('f_shortDesc').value = p.shortDesc;
     document.getElementById('f_longDesc').value  = p.longDesc;
@@ -1862,7 +1890,7 @@ async function doUpdate() {
     key: REGISTER_KEY, productId: editingProductId,
     name: val('f_name'), category: catValue(), material: val('f_material'),
     color: val('f_color'), size: val('f_size'), hours: val('f_hours'),
-    cost: val('f_cost'), price: val('f_price'), stock: val('f_stock'),
+    cost: val('f_cost'), price: priceWithStatus(val('f_price')), stock: val('f_stock'),
     shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
     hashtags: val('f_hashtags'), mainPhotoUrl,
   };
@@ -2175,6 +2203,7 @@ async function uploadOnePhoto(p, i, folderId) {
 function resetAll() {
   deleteRegisterDraft();
   pendingRegisterRequestId = ''; // フォームを空にするので登録単位も切り替える
+  editingPriceSuffix = '';       // 前に編集した商品の販売状態を次へ持ち越さない
   photos = [];
   mainPhotoIndex = -1;
   ['f_name','f_material','f_color','f_size','f_hours','f_cost','f_price','f_shortDesc','f_longDesc','f_hashtags'].forEach(id => {
