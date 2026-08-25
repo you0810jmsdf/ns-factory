@@ -658,3 +658,73 @@
   フィールドへ反映するようにした（従来は payload に入っていたのに未設定で空だった）。
 - 検証: 本番で OFF→非表示・ON→〒付き表示・宛名の上に配置を座標で実測。
   フクロウ印影は 15.0mm・発行者テキストとの重なりなし。
+
+## 2026-08-24 — ダイエット管理アプリ（PWA）を新設 `/diet/`
+
+- 対象: `diet/`（新規一式）/ `robots.txt` / `digital-room/index.html`
+- 家族が使うお試し版。将来インストール版を販売予定。仕様書は `デジタル部\サイト管理\diet_app_仕様書.md`。
+- 記録できるもの: 体重（朝・夜）/ 食事（朝昼夕＋間食・内蔵食品DB140品目）/ 運動（ストレッチ・ヨガ等・METs表32種）/ 水分（時刻つき）。
+  BMI・基礎代謝（Ganpule／Mifflin併記）・TDEE・PFC・7日移動平均・停滞期判定を計算する。
+- ⛔ **外部ライブラリ・CDNを使わないこと。** グラフも自前SVG。`Content-Security-Policy: connect-src 'none'` を
+  HTMLに埋め込み、外部送信をブラウザレベルで禁止している。「データは端末内だけ」を約束ではなく構造で担保する設計。
+- ⛔ **運動の消費kcalは `(METs - 1) × 体重kg × 時間h × 1.05` を使うこと。** TDEEには既に安静時代謝が
+  含まれるため、`METs ×` のまま収支に足すと二重計上になる。既定では収支に加算せず参考表示のみ。
+  設定でONにできるが、身体活動レベルが1.50以外なら警告を出す。
+- ⛔ **noindex運用。** `robots.txt` に `Disallow: /diet/`、**sitemap には載せない**。導線は `digital-room` のみ。
+  ただし noindex は検索避けであってアクセス制限ではない（URLを知れば誰でも開ける）。
+- ⛔ **`assets/` 配下や `index.html` を変更したら `sw.js` の `CACHE` を必ずインクリメントすること。**
+  上げないと利用者のブラウザに反映されない。
+- 複数タブ対策: `onblocked`（他タブがDBを掴んでいると無言でフリーズするため理由を表示）＋
+  `BroadcastChannel('diet-app-sync')` でタブ間同期。実測でタブAの追加がタブBへ即反映されることを確認。
+- 検証（本番実測）: 全数値を検算（BMI 24.8 / Ganpule BMR 1523 / TDEE 2285 / 目標摂取1916 / 収支▼1563）、
+  外部ドメイン通信0件、375pxで横スクロールなし、SW配下19ファイル全キャッシュ、
+  エクスポート→再インポートで件数不変（冪等）。
+
+### 同日の修正（実害2件）
+
+- **初回セットアップから先へ進めずアプリが使えない状態だった。** フェーズ分割で作った仮の器
+  `renderSetupShell()` が残り、`renderRoute()` が profile 未設定時に settings.js を呼ばずに return していた。
+  ⛔ ここで仮画面を出して return しないこと。プロフィールを入力する手段が無くなる。
+- **描画の競合。** DBオープン前のhome描画が、後から完了して settings 画面を上書きしていた。
+  `renderRoute` に世代トークン（`state.renderToken`）を追加。⛔ このガードを外さないこと。
+
+### 2026-08-24 追記 — 「毎回セットアップし直し」の苦情への対応
+
+- ⛔ **iPhone では Safari で開いた場合とホーム画面アイコンから開いた場合で保存領域が別扱いになることがある。**
+  Safariで設定 → アイコンから開く → また初期設定、というループが起きる。
+  初回セットアップ画面に、ブラウザで開いているときだけ「さきにホーム画面へ追加してください」を表示し、
+  端末（iOS/Android/PC）別の手順を出すようにした。この案内を消さないこと。
+  判定は `navigator.standalone`（iOS）と `display-mode: standalone`（その他）。
+- ⛔ **初回セットアップ画面の「バックアップから復元」を消さないこと。** 従来は復元導線が設定画面にしかなく、
+  データが消えた利用者が自力で戻す手段がなかった。フォールバックには必ず復旧導線をセットで置く。
+
+## 2026-08-25 — Threads言及監視（ブランドモニタリング）を新設
+
+- 対象: `.github/workflows/threads-mention-watch.yml` / `scripts/threads_mention_watch.py` /
+  `scripts/threads_watch_keywords.json` / `scripts/threads_watch_state.json` /
+  `scripts/threads_mention_watch_README.md`（すべて新設。既存ファイルは無改修）
+- 目的: Threads の公開投稿から `N's factory` / `中司祐樹` への言及を毎時拾い、GitHub Issue に記録する。
+  **悪評の検出だけが目的ではない。** 口コミ・紹介・好意的な投稿も同じ扱いで拾うブランドモニタリング。
+- API: Meta 公式 Threads API `GET /v1.0/keyword_search`（`search_type=RECENT` / `search_mode=KEYWORD` / `since`）。
+  必要権限は `threads_basic` + `threads_keyword_search`。**後者が App Review 未承認の間は
+  自分の投稿しか検索対象にならない**（エラーにはならず0件になるだけなので、故障と間違えないこと）。
+- ⛔ **重複判定を state ファイルだけに頼らないこと。** push が失敗すると state が失われ、
+  同じ投稿で Issue が再作成される。Issue 本文の `<!-- threads-post-id: ... -->` を毎回読み直す
+  二重ガードにしてある。**この HTML コメントを Issue から消さないこと。**
+- ⛔ **投稿本文を素の Markdown で Issue に入れないこと。** 第三者が書いた文字列なので、
+  本文中の `@名前` が無関係の GitHub ユーザーへ通知を飛ばす。コードフェンス（5連バッククォート）に入れてある。
+- ⛔ **state を毎回コミットしないこと。** このリポジトリの Pages は legacy（main/root 直配信）なので、
+  push のたびにサイトが再ビルドされる。**新しい言及が0件のときは書き込まない**設計にしてある
+  （`save_state()` が内容一致なら書かない）。
+- ⚠ **このリポジトリは public。起票された Issue は全世界から読める**（悪評の投稿本文を含む）。
+  非公開にしたい場合は Variable `THREADS_WATCH_ISSUE_REPO` と Secret `THREADS_ISSUE_TOKEN` で
+  別リポジトリへ逃がせる（手順は README）。
+- ⚠ Threads の長期トークンは **60日で失効**する。Variable `THREADS_TOKEN_SET_ON`（YYYY-MM-DD）から
+  45日経つと警告 Issue が自動で立つ。Gmail 連携トークンの失効に8日間気付かなかった前例への対策。
+- キーワードの増減は `scripts/threads_watch_keywords.json` だけを編集する（スクリプトは触らない）。
+  照合は NFKC + 小文字化 + アポストロフィ除去なので `N's factory` `N’s factory` `Ｎｓ Factory` は同一視される。
+- 既存ワークフローとの非干渉: sparse-checkout で `scripts/` の3ファイルしか取得しない。
+  concurrency group `threads-mention-watch` も既存4本と重複なし。実行は毎時 :07（okcoin の `*/5` と分をずらしてある）。
+- 検証: ドライラン実測（自社アカウント除外／キーワード不一致の除外／複数キーワードの1件化／
+  空本文は取りこぼさない／既知IDの除外／トークン期限警告の発火・不発火・書式不正）、
+  pyflakes 指摘0、YAML パース通過、**Actions 手動実行 success**（Secret 未設定時のスキップ動作を実測）。
