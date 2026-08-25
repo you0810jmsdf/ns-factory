@@ -90,6 +90,8 @@ Threads の公開投稿から `N's factory` / `中司祐樹` などへの言及�
 
 ## 4. GitHubにトークンを登録する
 
+### 4-1. Threads のトークン
+
 1. https://github.com/you0810jmsdf/ns-factory を開く
 2. 上の「**Settings**」タブ →左メニュー「**Secrets and variables**」→「**Actions**」
 3. 「**New repository secret**」を押す
@@ -100,6 +102,25 @@ Threads の公開投稿から `N's factory` / `中司祐樹` などへの言及�
    - Name: `THREADS_TOKEN_SET_ON`
    - Value: 今日の日付（例 `2026-08-25`）
    - → **トークンが切れる前に警告Issueを立てるために使う**（後述）
+
+### 4-2. 起票先リポジトリに書くための PAT（必須）
+
+**言及の記録先は private の [ns-factory-mentions](https://github.com/you0810jmsdf/ns-factory-mentions) です。**
+このリポジトリ（ns-factory）は public なので、第三者の苦情投稿を本文ごと公開Issueにするわけに
+いかないためです。別リポジトリへ書くには Actions 既定のトークンでは権限が足りません。
+
+5. https://github.com/settings/personal-access-tokens/new を開く
+   （Settings → Developer settings → Personal access tokens → **Fine-grained tokens**）
+6. 次のとおり設定する
+   - Token name: `threads-mention-issues`
+   - Expiration: 1年（期限が切れると起票が止まるので、カレンダーに入れておく）
+   - Repository access: **Only select repositories** → `ns-factory-mentions` を選ぶ
+   - Permissions → Repository permissions → **Issues** を **Read and write** にする
+     （ほかは触らない。Metadata が自動で Read になるのは正常）
+7. 「Generate token」→ 出てきた `github_pat_...` をコピー
+8. ns-factory の Settings → Secrets and variables → Actions → New repository secret
+   - Name: `THREADS_ISSUE_TOKEN`
+   - Secret: コピーした値
 
 > ⚠️ トークンをソースコードやコミットに書かないこと。
 > リポジトリは public なので、1回でも push したら世界中から読める。
@@ -208,19 +229,27 @@ Threads の長期トークンは **発行から60日で失効する**（Meta公�
 | 制約 | 内容 |
 |---|---|
 | **匿名の言及は拾えない** | 「例の革屋」「千葉の手帳屋さん」など、屋号・氏名を含まない表現はキーワード検索では原理的に検出できない |
-| **Issueは公開される** | このリポジトリは public。**悪評の投稿本文がそのまま世界中から読めるIssueになる**。気になる場合は下記「起票先を変える」を参照 |
+| **Issueは別リポジトリに立つ** | 記録先は private の `ns-factory-mentions`。ns-factory 側には立たない（public なので第三者の投稿本文を置けない） |
 | **審査前は自分の投稿だけ** | `threads_keyword_search` が未承認の間は、自分の投稿しか検索対象にならない |
 | **APIの上限** | 2,200クエリ／24時間。現在の設定（6キーワード×24回＝144件/日）なら余裕がある |
 | **取りこぼしの可能性** | Actionsのcronは数十分遅れることがある。そのため直近**90分**を毎時見る（重なり分は重複判定で捨てる） |
 | **センシティブ語は空になる** | Metaが「センシティブ／攻撃的」と判定したキーワードは、APIが常に空配列を返す |
 
-### 起票先を別リポジトリに変えたい場合
+### 起票先をさらに変えたい場合
 
-1. Issue用の**privateリポジトリ**を用意する
-2. そのリポジトリの Issues: Read and write を持つ fine-grained PAT を作る
-3. Secret `THREADS_ISSUE_TOKEN` に入れ、ワークフローの `GITHUB_TOKEN:` の行を
-   `${{ secrets.THREADS_ISSUE_TOKEN }}` に差し替える
-4. Variable `THREADS_WATCH_ISSUE_REPO` に `owner/repo` を入れる
+既定は `you0810jmsdf/ns-factory-mentions`（private）。変えるときは Variable
+`THREADS_WATCH_ISSUE_REPO` に `owner/repo` を入れ、`THREADS_ISSUE_TOKEN` の PAT の
+アクセス先も新しいリポジトリに付け替える。
+
+起票先に書けない状態で起動すると、**何を用意すればよいかを名指ししたエラーで停止**する
+（黙って ns-factory 側に立ててしまうことはない）。
+
+### プライバシーポリシー
+
+App Review 用に [threads-app-privacy.html](../threads-app-privacy.html) を用意してある
+（公開URL: https://you0810jmsdf.github.io/ns-factory/threads-app-privacy.html ）。
+⛔ **記載内容と実際の動作がずれないようにすること。** 保存項目・保管期間・第三者提供の有無を
+変更したときは、このページも必ず直す。虚偽記載は審査で問題になる。
 
 ---
 

@@ -59,12 +59,13 @@ jobs:
       - name: Watch Threads mentions
         env:
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # 起票先を別リポジトリに移したくなったら、リポジトリ変数 THREADS_WATCH_ISSUE_REPO に
-          # "owner/repo" を入れる（このリポジトリは public なので Issue も全世界に公開される）。
-          # ※ その場合は GITHUB_TOKEN では書けないので、対象リポジトリの Issues: RW を持つ
-          #    fine-grained PAT を Secret THREADS_ISSUE_TOKEN に入れて上の GITHUB_TOKEN を差し替える。
-          THREADS_WATCH_ISSUE_REPO: ${{ vars.THREADS_WATCH_ISSUE_REPO }}
+          # ⛔ このリポジトリは public。第三者の苦情投稿を本文ごと public な Issue に
+          #    書くわけにはいかないので、起票先は private の ns-factory-mentions にする。
+          #    別リポジトリへ書くには GITHUB_TOKEN では権限が足りないため、
+          #    Issues: Read and write を持つ fine-grained PAT を Secret THREADS_ISSUE_TOKEN に入れる。
+          #    （未設定なら GITHUB_TOKEN にフォールバックし、スクリプト側が理由を明示して止まる）
+          GITHUB_TOKEN: ${{ secrets.THREADS_ISSUE_TOKEN || secrets.GITHUB_TOKEN }}
+          THREADS_WATCH_ISSUE_REPO: ${{ vars.THREADS_WATCH_ISSUE_REPO || 'you0810jmsdf/ns-factory-mentions' }}
           # トークンを Secret に入れた日（YYYY-MM-DD）をリポジトリ変数に入れておくと、
           # 60日の失効を迎える前に Issue で警告する。空でも監視自体は動く。
           THREADS_TOKEN_SET_ON: ${{ vars.THREADS_TOKEN_SET_ON }}
