@@ -123,7 +123,17 @@ def load_keywords(path: Path) -> tuple[list[Keyword], dict]:
 # --------------------------------------------------------------------------
 
 class ThreadsAuthError(RuntimeError):
-    """トークンが無効・期限切れ・権限不足。人間の対応が要る。"""
+    """トークンが無効・期限切れ。人間の対応が要る。"""
+
+
+class ThreadsPermissionError(RuntimeError):
+    """トークンに threads_keyword_search が付いていない（＝検索できない）。
+
+    2026-08-25 実測: 投稿用スコープだけのトークンで /keyword_search を叩くと
+    HTTP 500 / code=1 "An unknown error occurred" が返る。権限不足を素直に
+    401/403 で返してくれないため、この形を権限不足として扱う。
+    App Review 待ちの間もこの状態が続くので、**ジョブは落とさない**。
+    """
 
 
 def threads_search(token: str, keyword: Keyword, since_ts: int) -> list[dict]:
@@ -154,6 +164,14 @@ def threads_search(token: str, keyword: Keyword, since_ts: int) -> list[dict]:
             detail = _threads_error(e)
             if detail["auth"]:
                 raise ThreadsAuthError(detail["message"]) from None
+            if detail["permission"]:
+                # HTTP 500 は「権限不足」と「Meta側の一時障害」の区別がつかない。
+                # /me が通るなら token は生きている＝検索権限だけが無い、と判定する。
+                if detail["code_1_5xx"] and not _token_alive(token):
+                    raise RuntimeError(
+                        f"Threads API が応答しません (q={keyword.q}): {detail['message']}"
+                    ) from None
+                raise ThreadsPermissionError(detail["message"]) from None
             raise RuntimeError(f"Threads API エラー (q={keyword.q}): {detail['message']}") from None
         out.extend(payload.get("data") or [])
         nxt = (payload.get("paging") or {}).get("next")
@@ -177,12 +195,35 @@ def _threads_error(e: urllib.error.HTTPError) -> dict:
     code = err.get("code")
     etype = err.get("type", "")
     message = err.get("message") or raw[:400]
-    # 190=トークン無効/期限切れ, 102=セッション切れ, 10/200/2500=権限不足
+    # 190=トークン無効/期限切れ, 102=セッション切れ
     auth = (
         e.code in (400, 401, 403)
-        and (code in (10, 102, 190, 200, 2500) or etype == "OAuthException")
+        and (code in (102, 190) or etype == "OAuthException")
     )
-    return {"auth": auth, "message": f"HTTP {e.code} / code={code} / {message}"}
+    # 10/200/2500 は権限不足。加えて HTTP 500 / code=1 も権限不足として扱う
+    # （2026-08-25 実測: threads_keyword_search を持たないトークンはこの形で返る）。
+    permission = (not auth) and (
+        code in (10, 200, 2500)
+        or (e.code >= 500 and code in (1, None))
+        or "permission" in message.lower()
+    )
+    return {
+        "auth": auth,
+        "permission": permission,
+        "code_1_5xx": e.code >= 500 and code in (1, None),
+        "message": f"HTTP {e.code} / code={code} / {message}",
+    }
+
+
+def _token_alive(token: str) -> bool:
+    """トークンが生きているかだけを確かめる（/me は threads_basic だけで通る）。"""
+    url = f"{API_BASE}/me?fields=id&access_token={urllib.parse.quote(token)}"
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT_SEC) as res:
+            return res.status == 200
+    except Exception:  # noqa: BLE001 - 落ちたら「生きていない」で十分
+        return False
 
 
 # --------------------------------------------------------------------------
@@ -335,7 +376,26 @@ TOKEN_FIX_STEPS = [
 ]
 
 
-def gh_alert(repo: str, token: str, title: str, lines: list[str]) -> None:
+PERMISSION_FIX_STEPS = [
+    "### 直し方",
+    "",
+    "1. https://developers.facebook.com/apps/ →「スレッズ自動投稿」アプリを開く",
+    "2. ユースケース「Threads API」→ 権限の一覧で **`threads_keyword_search`** を追加する",
+    "   （標準アクセスなら審査不要で追加できる）",
+    "3.「Threads API」→ アクセストークンを生成。**`threads_keyword_search` にチェックを入れる**",
+    "   ⚠ 既存の投稿用トークン（`保全部\\.env` / GAS）は**触らない**。監視用に別途1本発行する",
+    "4. Secret `THREADS_ACCESS_TOKEN` を新しいトークンに更新し、",
+    "   Variable `THREADS_TOKEN_SET_ON` を今日の日付にする",
+    "5. Actions →「Threads言及監視」→ Run workflow（`dry_run=true`）で確認する",
+    "",
+    "**自分の投稿しかヒットしない場合はそれで正常。**",
+    "他人の公開投稿まで検索するには App Review で `threads_keyword_search` の",
+    "詳細アクセス（Advanced Access）を取る必要がある。",
+]
+
+
+def gh_alert(repo: str, token: str, title: str, lines: list[str],
+             steps: list[str] | None = None) -> None:
     """人間の対応が要ることを Issue で伝える。開いている警告 Issue があれば作らない。"""
     q = urllib.parse.urlencode({"labels": ALERT_LABEL, "state": "open", "per_page": "5"})
     status, items = gh_request("GET", f"/repos/{repo}/issues?{q}", token)
@@ -343,7 +403,25 @@ def gh_alert(repo: str, token: str, title: str, lines: list[str]) -> None:
         log("既に警告 Issue が開いているため、追加起票しません。")
         return
     gh_ensure_label(repo, token, ALERT_LABEL, "b60205", "Threads監視の異常通知")
-    gh_create_issue(repo, token, title, "\n".join(lines + [""] + TOKEN_FIX_STEPS), [ALERT_LABEL])
+    body = "\n".join(lines + [""] + (steps if steps is not None else TOKEN_FIX_STEPS))
+    gh_create_issue(repo, token, title, body, [ALERT_LABEL])
+
+
+def gh_raise_permission_alert(repo: str, token: str, message: str) -> None:
+    """検索権限が付いていないことを伝える。監視は動いていないが、ジョブは落とさない。"""
+    gh_alert(
+        repo, token,
+        "⚠️ Threads言及監視: トークンに検索権限（threads_keyword_search）がありません",
+        [
+            "`/keyword_search` が権限不足で失敗しました。**言及の検出はできていません。**",
+            "（トークン自体は生きています。投稿用の自動投稿には影響しません）",
+            "",
+            "```",
+            message,
+            "```",
+        ],
+        steps=PERMISSION_FIX_STEPS,
+    )
 
 
 def gh_raise_alert(repo: str, token: str, message: str) -> None:
@@ -484,6 +562,14 @@ def main() -> int:
             if not dry_run:
                 gh_raise_alert(repo, gh_token, str(e))
             return 1
+        except ThreadsPermissionError as e:
+            # App Review 待ちの間ずっとこの状態になる。毎時ジョブを赤くしても
+            # 情報量がないので、警告 Issue を1本立てて正常終了する。
+            log(f"::warning::トークンに threads_keyword_search がありません: {e}")
+            log("::warning::権限を付けるまで言及は検出できません。手順は警告Issueを参照してください")
+            if not dry_run:
+                gh_raise_permission_alert(repo, gh_token, str(e))
+            return 0
         log(f"  q={kw.q!r}: {len(posts)} 件")
 
         for post in posts:
