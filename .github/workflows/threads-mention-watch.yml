@@ -1,0 +1,98 @@
+name: Threads言及監視
+
+# Threads の公開投稿から N's factory / 中司祐樹 への言及を拾い、GitHub Issue に起票する。
+# 悪口の検出だけが目的ではなく、口コミ・紹介・好意的な投稿も含めた「言及そのもの」を拾う。
+#
+# 設定手順（Meta Developers 側の申請・トークン発行を含む）:
+#   scripts/threads_mention_watch_README.md
+#
+# 既存ワークフローとの関係:
+#   - 触るファイルは scripts/threads_watch_state.json のみ。サイト本体は sparse-checkout で
+#     そもそも取得しないので、works-data / news-publish / kawamura-crawl と衝突しない。
+#   - state のコミットは「新しい言及を見つけたときだけ」。0件なら push しないので、
+#     GitHub Pages の再ビルドを毎時起こすことはない。
+
+on:
+  schedule:
+    # 毎時 :07（UTC）に実行。okcoin-price-notify(*/5) や works-data(:10) と分単位でずらしてある。
+    # scheduled workflow は数十分遅れることがあるため、検索は既定で直近90分を対象にする。
+    - cron: "7 * * * *"
+  workflow_dispatch:
+    inputs:
+      window_minutes:
+        description: "何分前まで遡って検索するか（初回のお試しは 10080 = 過去7日 などにするとよい）"
+        required: false
+        default: "90"
+      dry_run:
+        description: "true にすると Issue を作らず、ログに出すだけ"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write   # state ファイルのコミット用
+  issues: write     # 言及Issueの起票用
+
+concurrency:
+  group: threads-mention-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # このジョブが触れるのは監視まわりの3ファイルだけ。サイト本体は取得しない。
+          sparse-checkout: |
+            scripts/threads_mention_watch.py
+            scripts/threads_watch_keywords.json
+            scripts/threads_watch_state.json
+          sparse-checkout-cone-mode: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Watch Threads mentions
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 起票先を別リポジトリに移したくなったら、リポジトリ変数 THREADS_WATCH_ISSUE_REPO に
+          # "owner/repo" を入れる（このリポジトリは public なので Issue も全世界に公開される）。
+          # ※ その場合は GITHUB_TOKEN では書けないので、対象リポジトリの Issues: RW を持つ
+          #    fine-grained PAT を Secret THREADS_ISSUE_TOKEN に入れて上の GITHUB_TOKEN を差し替える。
+          THREADS_WATCH_ISSUE_REPO: ${{ vars.THREADS_WATCH_ISSUE_REPO }}
+          # トークンを Secret に入れた日（YYYY-MM-DD）をリポジトリ変数に入れておくと、
+          # 60日の失効を迎える前に Issue で警告する。空でも監視自体は動く。
+          THREADS_TOKEN_SET_ON: ${{ vars.THREADS_TOKEN_SET_ON }}
+          THREADS_WATCH_WINDOW_MINUTES: ${{ inputs.window_minutes || '90' }}
+          THREADS_WATCH_DRY_RUN: ${{ inputs.dry_run == 'true' && '1' || '0' }}
+        run: |
+          if [ -z "$THREADS_ACCESS_TOKEN" ]; then
+            echo "::notice::Secret THREADS_ACCESS_TOKEN が未設定のため、今回はスキップします。"
+            echo "::notice::設定手順: scripts/threads_mention_watch_README.md"
+            exit 0
+          fi
+          python scripts/threads_mention_watch.py
+
+      - name: Commit state
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          if git diff --quiet -- scripts/threads_watch_state.json; then
+            echo "新しい言及なし。コミットしません。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/threads_watch_state.json
+          git commit -m "auto: Threads言及の通知済みIDを更新"
+          # 他の自動更新と競合することがあるため rebase してから push（最大3回再試行）
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 10
+          done
+          echo "::error::pushに3回失敗しました"
+          exit 1
