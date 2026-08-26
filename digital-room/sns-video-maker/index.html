@@ -931,12 +931,16 @@ canvas{
               <option value="off" selected>使わない</option>
               <option value="diagonal">全写真をネガフィルム風に斜めへ流す</option>
             </select>
-            <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます（最後まで行くと最初の写真から繰り返し）。セリフ音声・字幕・作品名はそのまま入ります。</p>
+            <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます。締めのCTAをONにすると、最後にN's factoryのロゴだけが静かに浮かびます。</p>
           </div>
           <div class="field" id="filmSpeedField" hidden>
             <label for="filmSpeed">フィルムの速さ（1コマの秒数）</label>
             <input id="filmSpeed" type="number" min="1" max="60" step="0.5" value="8">
             <p class="help">数字が大きいほどゆっくり（1〜60秒）。プレビューにすぐ反映され、保存するMP4にも同じ速さが使われます。</p>
+            <label class="check-row" for="filmCtaEnabled">
+              <input id="filmCtaEnabled" type="checkbox" checked>
+              <span><strong>最後にロゴを表示（CTA）</strong>N's factoryのロゴだけが、じわっと浮かび上がる締めのコマを加えます。OFFにすると作品写真だけで終了します。</span>
+            </label>
             <label class="check-row" for="filmSpeedAuto">
               <input id="filmSpeedAuto" type="checkbox">
               <span><strong>原稿の長さに合わせて自動調整</strong>動画の長さ（セリフに合わせて延びた表示秒数の合計）から1コマの秒数を逆算し、最後のセリフが終わるのと同時に全写真がちょうど1回流れ切ります。ONの間は上の秒数入力は使われません。</span>
@@ -1120,6 +1124,7 @@ const els = {
   motionIntensity: document.getElementById('motionIntensity'),
   filmStripMode: document.getElementById('filmStripMode'),
   filmSpeed: document.getElementById('filmSpeed'),
+  filmCtaEnabled: document.getElementById('filmCtaEnabled'),
   filmSpeedAuto: document.getElementById('filmSpeedAuto'),
   filmSpeedField: document.getElementById('filmSpeedField'),
   saveStats: document.getElementById('saveStats'),
@@ -3430,21 +3435,21 @@ function drawSlide(slide, progress, alpha){
    写真の色はそのまま（革の色味を変えない方針。SOLDOUTホワイトアウト廃止と同じ思想）。
    セリフ音声のタイミング・字幕・作品名などの文字要素は通常モードと同一のものを重ねる。
    最後のコマの次は最初のコマに戻る循環なので、尺が何秒でも途切れない。 */
-/* フィルム列の最終コマ: ロゴ＋一言だけのCTAコマ（2026-08-26 事業主要望）。
-   写真ではなく描画で作る。文面は静かな締め（売り込みコピー禁止のブランド方針）。
+/* フィルム列の最終コマ: ロゴだけのCTAコマ（2026-08-26 事業主要望）。
+   背景とロゴを別レイヤーで作り、フィルムが画面へ入る間にロゴだけをフェードインする。
    ロゴ読み込み完了時に作り直せるようキャッシュはサイズ＋ロゴ状態で判定する。 */
 let filmCtaCache = null;
 
-function filmCtaFrame(frameW, frameH){
+function filmCtaLayers(frameW, frameH){
   const logo = brandAssets.owlWhite;
   const logoReady = !!(logo && logo.complete && logo.naturalWidth);
   const wordmark = brandAssets.wordmarkWhite;
   const wordmarkReady = !!(wordmark && wordmark.complete && wordmark.naturalWidth);
   const key = `${frameW}x${frameH}:${logoReady}:${wordmarkReady}`;
-  if(filmCtaCache && filmCtaCache.key === key) return filmCtaCache.canvas;
-  const c = document.createElement('canvas');
-  c.width = frameW; c.height = frameH;
-  const g = c.getContext('2d');
+  if(filmCtaCache && filmCtaCache.key === key) return filmCtaCache;
+  const background = document.createElement('canvas');
+  background.width = frameW; background.height = frameH;
+  const g = background.getContext('2d');
   // 濃い焦げ茶の無地（フィルムベースより一段暗く、写真コマと並んでも喧嘩しない）
   g.fillStyle = '#171310';
   g.fillRect(0, 0, frameW, frameH);
@@ -3453,35 +3458,36 @@ function filmCtaFrame(frameW, frameH){
   grad.addColorStop(1, 'rgba(0,0,0,.25)');
   g.fillStyle = grad;
   g.fillRect(0, 0, frameW, frameH);
-  // フクロウロゴ（上寄せ中央）
-  const logoH = Math.round(frameH * .34);
+
+  const mark = document.createElement('canvas');
+  mark.width = frameW; mark.height = frameH;
+  const mg = mark.getContext('2d');
+  // フクロウとワードマークだけを中央へまとめる。説明文や誘導文は入れない。
+  const logoH = Math.round(frameH * .42);
   if(logoReady){
     const logoW = Math.round(logoH * logo.naturalWidth / logo.naturalHeight);
-    g.drawImage(logo, (frameW - logoW) / 2, Math.round(frameH * .14), logoW, logoH);
+    mg.drawImage(logo, (frameW - logoW) / 2, Math.round(frameH * .13), logoW, logoH);
   }
-  // 一言（中央下寄り）
-  g.fillStyle = '#F3EDE2';
-  g.textAlign = 'center';
-  g.font = canvasFont(600, Math.round(frameH * .085));
-  g.fillText('一冊ずつ、手で縫っています。', frameW / 2, Math.round(frameH * .66));
-  // ワードマーク（下端）
   if(wordmarkReady){
-    const wmH = Math.round(frameH * .085);
+    const wmH = Math.round(frameH * .11);
     const wmW = Math.round(wmH * wordmark.naturalWidth / wordmark.naturalHeight);
-    g.globalAlpha = .9;
-    g.drawImage(wordmark, (frameW - wmW) / 2, Math.round(frameH * .78), wmW, wmH);
-    g.globalAlpha = 1;
+    mg.drawImage(wordmark, (frameW - wmW) / 2, Math.round(frameH * .65), wmW, wmH);
   }else{
-    g.font = canvasFont(500, Math.round(frameH * .06));
-    g.fillStyle = 'rgba(243,237,226,.85)';
-    g.fillText("N's factory", frameW / 2, Math.round(frameH * .84));
+    mg.font = canvasFont(500, Math.round(frameH * .075));
+    mg.fillStyle = '#F3EDE2';
+    mg.textAlign = 'center';
+    mg.fillText("N's factory", frameW / 2, Math.round(frameH * .73));
   }
-  filmCtaCache = {key, canvas: c};
-  return c;
+  filmCtaCache = {key, background, mark};
+  return filmCtaCache;
 }
 
 function filmStripActive(){
   return !!(els.filmStripMode && els.filmStripMode.value !== 'off');
+}
+
+function filmCtaActive(){
+  return !!(els.filmCtaEnabled && els.filmCtaEnabled.checked);
 }
 
 function drawFilmStripScene(time, slide, progress){
@@ -3506,9 +3512,12 @@ function drawFilmStripScene(time, slide, progress){
   const stripH = frameH + perf * 2;
   const pitch = frameW + gap;
 
-  // コマ列: 写真＋最終コマのCTA（ロゴ＋一言）。循環にもCTAが含まれる
-  const frames = list.map(slide => slide.img).filter(Boolean);
-  frames.push(filmCtaFrame(frameW, frameH));
+  // コマ列: 写真＋任意のCTA。CTAは背景とロゴを分け、ロゴだけを動的に浮かばせる。
+  const frames = list.map(slide => ({image:slide.img, isCta:false})).filter(frame => frame.image);
+  if(filmCtaActive()){
+    const cta = filmCtaLayers(frameW, frameH);
+    frames.push({image:cta.background, mark:cta.mark, isCta:true});
+  }
 
   // 速さ: 手動＝数値入力（1コマの秒数）／自動＝原稿の長さから逆算（2026-08-26）。
   // 自動は「総尺 ÷ コマ数（CTA込み）」。描画のたびに計算するため、セリフ延長・
@@ -3540,13 +3549,23 @@ function drawFilmStripScene(time, slide, progress){
   const lastK = Math.ceil((diag / 2 + pitch - drift) / pitch);
   for(let k = firstK; k <= lastK; k++){
     const x = k * pitch + drift;
-    const img = frames[((k % frames.length) + frames.length) % frames.length];
+    const frame = frames[((k % frames.length) + frames.length) % frames.length];
+    const img = frame.image;
     if(!img) continue;
     const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
     if(!iw || !ih) continue;
     const scale = Math.max(frameW / iw, frameH / ih);
     const sw = frameW / scale, sh = frameH / scale;
     ctx.drawImage(img, (iw - sw) / 2, (ih - sh) / 2, sw, sh, x, -frameH / 2, frameW, frameH);
+    if(frame.isCta && frame.mark){
+      const fadeStart = -diag / 2 + frameW * .15;
+      const fadeEnd = -diag * .08;
+      const fade = easeInOut(clamp((x - fadeStart) / Math.max(1, fadeEnd - fadeStart), 0, 1));
+      ctx.save();
+      ctx.globalAlpha = fade;
+      ctx.drawImage(frame.mark, x, -frameH / 2, frameW, frameH);
+      ctx.restore();
+    }
     ctx.strokeStyle = 'rgba(0,0,0,.55)';
     ctx.lineWidth = 3;
     ctx.strokeRect(x + 1.5, -frameH / 2 + 1.5, frameW - 3, frameH - 3);
@@ -6302,13 +6321,21 @@ els.filmSpeedAuto.addEventListener('change', () => {
   if(els.filmSpeedAuto.checked){
     const n = playableSlides().length;
     const total = n ? totalDuration() : 0;
-    const sec = n ? (total / (n + 1)) : 0;  // +1 は最終コマのCTA
+    const frameCount = n + (filmCtaActive() ? 1 : 0);
+    const sec = n ? (total / frameCount) : 0;
     setLog(n
-      ? `自動調整をONにしました。現在の動画の長さ${total.toFixed(1)}秒 ÷ ${n + 1}コマ（写真${n}枚＋締めのロゴコマ）＝ 1コマ約${sec.toFixed(1)}秒で、最後にちょうど流れ切ります。セリフで長さが変わっても自動で追従します。`
+      ? `自動調整をONにしました。現在の動画の長さ${total.toFixed(1)}秒 ÷ ${frameCount}コマ（写真${n}枚${filmCtaActive() ? '＋締めのロゴコマ' : ''}）＝ 1コマ約${sec.toFixed(1)}秒で、最後にちょうど流れ切ります。セリフで長さが変わっても自動で追従します。`
       : '自動調整をONにしました。写真を追加すると動画の長さから速度を逆算します。');
   }else{
     setLog('自動調整をOFFにしました。上の「フィルムの速さ」の数値を使います。');
   }
+});
+els.filmCtaEnabled.addEventListener('change', () => {
+  resetRecordingOutput();
+  drawSelectedOrFirstFrame();
+  setLog(filmCtaActive()
+    ? '締めのCTAをONにしました。最後にN\'s factoryのロゴだけが静かに浮かび上がります。'
+    : '締めのCTAをOFFにしました。作品写真だけで動画を終了します。');
 });
 els.filmSpeed.addEventListener('input', () => drawSelectedOrFirstFrame());
 els.filmSpeed.addEventListener('change', () => {
