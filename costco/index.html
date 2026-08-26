@@ -1,111 +1,2270 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="robots" content="noindex, nofollow">
-  <title>コストコ共同購入</title>
-  <meta property="og:title" content="コストコ、まとめ買いを楽に。">
-  <meta property="og:description" content="チェックするだけで、誰が何を何個かが集計される。商品ごとの合計購入数と、人別の請求まで自動。無料・登録不要。">
-  <meta property="og:image" content="https://you0810jmsdf.github.io/ns-factory/costco/ogp.png">
-  <meta property="og:url" content="https://you0810jmsdf.github.io/ns-factory/costco/">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="コストコ共同購入">
-  <meta name="theme-color" content="#e31837">
-  <style>
-    html, body { margin: 0; padding: 0; height: 100%; background: #f5f6f8; }
-    #boot {
-      position: fixed; inset: 0; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 14px;
-      font-family: "Hiragino Sans", Meiryo, sans-serif; background: #f5f6f8; color: #555;
-      padding: 24px; text-align: center;
-    }
-    #boot .logo { font-size: 42px; }
-    #boot .t { font-size: 15px; font-weight: 700; color: #e31837; }
-    #boot .s { font-size: 12px; line-height: 1.7; }
-    #boot .spin {
-      width: 26px; height: 26px; border: 3px solid #e0e0e0; border-top-color: #e31837;
-      border-radius: 50%; animation: sp 0.9s linear infinite;
-    }
-    @keyframes sp { to { transform: rotate(360deg); } }
-    #boot .fallback { display: none; margin-top: 8px; }
-    #boot .fallback a {
-      display: inline-block; background: #e31837; color: #fff; text-decoration: none;
-      padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 700;
-    }
-    #boot .fallback p { font-size: 11px; color: #888; margin: 10px 0 0; }
-  </style>
+<meta charset="UTF-8">
+<title>コストコ共同購入</title>
+<style>
+  :root {
+    --red: #e31837;
+    --blue: #005daa;
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #777;
+    --line: #e3e5e8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* 固定ヘッダーの下に要素が隠れないよう、スクロール基準をずらす */
+  html { scroll-padding-top: 150px; }
+  body { font-family: "Hiragino Sans", Meiryo, sans-serif; background: var(--bg); color: var(--ink); padding-bottom: 90px; }
+  /* ヘッダー・名前・タブを1つの固定ブロックに（スクロールしても操作可） */
+  .topbar { position: sticky; top: 0; z-index: 30; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  header { background: var(--red); color: #fff; padding: 14px 16px; transition: padding .2s; }
+  header h1 { font-size: 17px; font-weight: 700; }
+  header .sub { font-size: 11px; opacity: .85; margin-top: 2px; transition: opacity .2s, max-height .2s; max-height: 20px; overflow: hidden; }
+  /* スクロール時は縮小して画面を広く使う */
+  .topbar.shrink header { padding: 8px 16px; }
+  .topbar.shrink header h1 { font-size: 15px; }
+  .topbar.shrink header .sub { opacity: 0; max-height: 0; margin-top: 0; }
+  .namebar { background: #fff; border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 8px; align-items: center; transition: padding .2s; }
+  .topbar.shrink .namebar { padding: 6px 16px; }
+  .namebar label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .namebar input { flex: 1; min-width: 0; max-width: 200px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; }
+  .namebar .hello { font-size: 13px; color: var(--blue); font-weight: 600; white-space: nowrap; }
+  .namebar select { padding: 8px 4px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; background: #fff; max-width: 90px; }
+  .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--line); }
+  .tabs button { flex: 1; padding: 12px 4px; border: none; background: none; font-size: 13px; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; }
+  .tabs button.active { color: var(--red); border-bottom-color: var(--red); font-weight: 700; }
+  main { padding: 12px; max-width: 900px; margin: 0 auto; }
+  .campaign { background: var(--card); border-radius: 12px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .campaign > .head { padding: 12px 14px; background: var(--blue); color: #fff; }
+  .campaign > .head .title { font-size: 14px; font-weight: 700; }
+  .campaign > .head .period { font-size: 12px; opacity: .9; margin-top: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 12px; }
+  .pcard { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+  .pcard.checked { border-color: var(--red); box-shadow: 0 0 0 2px rgba(227,24,55,.15); }
+  .pcard img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; }
+  .pcard .noimg { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 12px; background: #fafafa; }
+  .pcard .body { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .pcard .pname { font-size: 12px; line-height: 1.4; min-height: 3.9em; }
+  .pcard .itemno { font-size: 10px; color: var(--muted); }
+  .prices { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+  .prices .sale { color: var(--red); font-size: 17px; font-weight: 800; }
+  .prices .orig { color: var(--muted); font-size: 11px; text-decoration: line-through; }
+  .prices .offb { background: var(--red); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 999px; }
+  .prices .nop { color: var(--muted); font-size: 12px; }
+  .stepper { display: flex; align-items: center; gap: 0; margin-top: auto; }
+  .stepper button { width: 40px; height: 38px; font-size: 20px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  .stepper button:first-child { border-radius: 8px 0 0 8px; }
+  .stepper button:last-child { border-radius: 0 8px 8px 0; }
+  .stepper .qty { width: 44px; height: 38px; display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 700; }
+  .stepper .qty.on { color: var(--red); }
+  .savebar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 10px; align-items: center; justify-content: center; z-index: 20; }
+  .savebar .info { font-size: 13px; color: var(--muted); }
+  .savebar button { background: var(--red); color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .savebar button:disabled { background: #ccc; }
+  table.mx { border-collapse: collapse; width: 100%; background: #fff; font-size: 12px; }
+  table.mx th, table.mx td { border: 1px solid var(--line); padding: 6px 8px; text-align: center; }
+  table.mx th { background: #eef2f7; font-weight: 700; }
+  table.mx td.pname { text-align: left; max-width: 220px; }
+  table.mx td.qty { font-weight: 700; color: var(--blue); }
+  table.mx tr.total td { background: #fff6f7; font-weight: 700; color: var(--red); }
+  .tablewrap { overflow-x: auto; background: #fff; border-radius: 12px; padding: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .bill { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .bill h3 { font-size: 15px; color: var(--blue); margin-bottom: 8px; }
+  .bill table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .bill td { padding: 4px 2px; border-bottom: 1px dashed var(--line); }
+  .bill td.r { text-align: right; white-space: nowrap; }
+  .bill .sum { font-size: 16px; font-weight: 800; color: var(--red); text-align: right; margin-top: 8px; }
+  .bill .copy { background: var(--blue); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+  .mini-del { border: 1px solid #f0c0be; background: #fff; color: #c5221f; border-radius: 7px; padding: 5px 9px; font-size: 11px; cursor: pointer; white-space: nowrap; }
+  .bill.paid { background: #f6fbf7; border-left: 4px solid #137333; }
+  .bill .paidinfo { font-size: 12px; color: #137333; margin-top: 6px; }
+  .admin-row { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.08); scroll-margin-top: 150px; }
+  .campaign { scroll-margin-top: 150px; }
+  .admin-row .subj { font-size: 13px; font-weight: 700; }
+  .admin-row .meta { font-size: 12px; color: var(--muted); margin: 4px 0; }
+  .admin-row .ctrl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .admin-row input.period { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; width: 180px; }
+  .btn { border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  .btn.pub { background: var(--red); color: #fff; }
+  .btn.unpub { background: #888; color: #fff; }
+  .btn.ghost { background: #eef2f7; color: var(--ink); }
+  .btn.del { background: #fff; color: #c5221f; border: 1px solid #f0c0be; }
+  .pill { font-size: 11px; padding: 2px 10px; border-radius: 999px; }
+  .pill.published { background: #e6f4ea; color: #137333; }
+  .pill.draft { background: #fef3e0; color: #b06000; }
+  .empty { text-align: center; color: var(--muted); padding: 40px 10px; font-size: 14px; }
+  .preview { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 10px; }
+  .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .pmini { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+  .pmini img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; }
+  .pmini .noimg { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 10px; background: #fafafa; }
+  .pmini-name { font-size: 10px; line-height: 1.3; padding: 4px 5px 0; height: 3.9em; overflow: hidden; }
+  .pmini-price { font-size: 11px; font-weight: 700; color: var(--red); padding: 2px 5px 5px; }
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.8); color: #fff; padding: 10px 22px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: 1; }
+  .loading { text-align: center; padding: 50px; color: var(--muted); }
+  .notice { background: #fff; border-radius: 12px; padding: 24px 18px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .notice-icon { font-size: 40px; margin-bottom: 8px; }
+  .notice-title { font-size: 16px; font-weight: 700; color: #137333; margin-bottom: 12px; }
+  .notice-body { font-size: 14px; line-height: 1.7; margin-bottom: 12px; }
+  .notice-sub { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .notice-admin { margin-top: 16px; padding: 12px; background: #eef2f7; border-radius: 8px; font-size: 12px; line-height: 1.6; text-align: left; }
+  .grp { font-size: 13px; font-weight: 700; margin: 18px 2px 8px; color: var(--ink); display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .grp:first-of-type { margin-top: 4px; }
+  .grp-active { color: #137333; }
+  .grp-note { font-size: 11px; font-weight: 400; color: var(--muted); }
+  .grp-fold { margin-top: 18px; background: #fff; border-radius: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .grp-fold > summary { font-size: 13px; font-weight: 700; cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; color: var(--muted); }
+  .grp-fold > summary::-webkit-details-marker { display: none; }
+  .grp-fold > summary::before { content: '▶'; font-size: 10px; color: var(--muted); }
+  .grp-fold[open] > summary::before { content: '▼'; }
+  .gbadge { font-size: 11px; font-weight: 600; background: rgba(255,255,255,.25); padding: 2px 10px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .trial { background: #fff8e1; border-bottom: 1px solid #f0d9a0; color: #7a5b00; font-size: 12px; line-height: 1.7; padding: 10px 16px; text-align: center; }
+  .join-row { display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .join-row input { padding: 8px 10px; border: 1px solid #e0cba0; border-radius: 8px; font-size: 16px; max-width: 160px; }
+  .join-msg { font-size: 11px; margin-top: 6px; min-height: 1em; }
+  /* いまの立場を示すパネル */
+  .seat { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-left: 4px solid var(--line); }
+  .seat-me { border-left-color: #2e7d32; background: #f6fbf7; }
+  .seat-open { border-left-color: var(--red); background: #fffaf0; }
+  .seat-role { font-size: 14px; font-weight: 700; }
+  .seat-desc { font-size: 12px; color: var(--muted); line-height: 1.8; margin-top: 4px; }
+  .seat .btn { margin-top: 10px; }
+  .seat-quit { display: inline-block; margin-top: 8px; font-size: 11px; color: var(--muted); text-decoration: underline; }
+  .members { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; }
+  .members > summary { font-size: 12px; color: var(--muted); cursor: pointer; }
+  .members-body { margin-top: 8px; }
+  .member { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 5px 0; border-bottom: 1px solid #f0f0f2; }
+  .member-name { font-weight: 600; }
+  .member-meta { color: var(--muted); font-size: 11px; }
+  .selected-box { background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-left: 4px solid var(--red); }
+  .selected-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-size: 13px; font-weight: 700; color: var(--ink); }
+  .selected-total { color: var(--red); white-space: nowrap; }
+  .selected-list { margin-top: 8px; display: grid; gap: 6px; }
+  .selected-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px dashed var(--line); }
+  .selected-name { font-size: 12px; line-height: 1.5; }
+  .selected-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .selected-remove { border: 1px solid #f0c0be; background: #fff; color: #c5221f; border-radius: 8px; padding: 8px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  /* 買えなかった商品 */
+  .row-soldout td { background: #f7f7f8; color: #9a9aa0; text-decoration: line-through; }
+  .row-soldout td.pname { text-decoration: none; }
+  .so-tag { display: inline-block; background: #ececef; color: #6b6b70; font-size: 10px; padding: 1px 7px; border-radius: 999px; margin-left: 6px; text-decoration: none; }
+  .so-btn { display: block; margin-top: 5px; font-size: 10px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #c5221f; cursor: pointer; }
+  .so-btn.on { color: #137333; border-color: #b7dfc4; }
+  .unavail { margin-top: 10px; padding: 10px 12px; background: #f7f7f8; border-radius: 8px; }
+  .unavail-h { font-size: 12px; font-weight: 700; color: #6b6b70; margin-bottom: 6px; }
+  .unavail-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #6b6b70; padding: 3px 0; }
+  .unavail-r { white-space: nowrap; font-size: 11px; }
+  /* 定番（いつもの）セクション */
+  .campaign.staple > .head { background: #2e7d32; }
+  .staple-add { padding: 12px 12px 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .staple-add input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; }
+  .staple-add input#stName { flex: 1; min-width: 140px; }
+  .staple-add input#stPrice { width: 96px; }
+  .staple-add .btn { padding: 8px 16px; }
+  .staple-note { width: 100%; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .add-staple { margin-top: 6px; width: 100%; background: #fff; color: #2e7d32; border: 1px solid #b7dfc4; border-radius: 8px; padding: 7px; font-size: 11px; cursor: pointer; }
+  .staple-ops { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
+  .staple-ops input { width: 62px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; }
+  .staple-ops button { flex: 1; padding: 6px 4px; font-size: 11px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; }
+  .staple-ops button.rm { color: #c5221f; border-color: #f0c0be; }
+  /* 過去の商品を探す */
+  .past-row { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .past-row img { width: 52px; height: 52px; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 6px; flex-shrink: 0; }
+  .past-noimg { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #bbb; background: #fafafa; border-radius: 6px; flex-shrink: 0; }
+  .past-body { flex: 1; min-width: 0; }
+  .past-name { font-size: 12px; line-height: 1.5; }
+  .past-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .past-add { background: #2e7d32; color: #fff; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; white-space: nowrap; cursor: pointer; flex-shrink: 0; }
+  .past-add:disabled { background: #aaa; }
+  .past-done { font-size: 11px; color: #137333; white-space: nowrap; flex-shrink: 0; }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 24px 12px; }
+  .modal-box { background: #fff; border-radius: 14px; padding: 20px 18px; max-width: 460px; width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+  .modal-box h3 { font-size: 16px; color: var(--blue); margin-bottom: 8px; }
+  .fb-lead { font-size: 12px; color: var(--muted); line-height: 1.8; margin-bottom: 14px; }
+  .fb-label { display: block; font-size: 12px; font-weight: 700; margin: 12px 0 4px; }
+  .fb-input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 16px; font-family: inherit; }
+  textarea.fb-input { resize: vertical; line-height: 1.7; }
+  .fb-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+  .fb-msg { font-size: 12px; margin-top: 10px; text-align: center; }
+  .pill.unread { background: var(--red); color: #fff; font-weight: 700; }
+  .tabdot { display: inline-block; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; min-width: 16px; height: 16px; line-height: 16px; border-radius: 999px; margin-left: 4px; padding: 0 4px; vertical-align: top; }
+  footer#appFooter { text-align: center; padding: 24px 16px 12px; color: var(--muted); font-size: 11px; line-height: 1.8; }
+  footer#appFooter .foot-line a { color: var(--blue); font-weight: 700; text-decoration: none; font-size: 13px; display: inline-block; margin-top: 4px; padding: 6px 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
+  footer#appFooter .foot-note { margin-top: 8px; opacity: .7; }
+</style>
 </head>
 <body>
-  <div id="boot">
-    <div class="logo">🛒</div>
-    <div class="t">コストコ共同購入</div>
-    <div class="spin"></div>
-    <div class="s">読み込んでいます…</div>
-    <div class="fallback" id="fallback">
-      <a id="directLink" href="#">アプリを開く</a>
-      <p>表示されない場合はこのボタンから開いてください</p>
-    </div>
+<div class="topbar" id="topbar">
+  <header>
+    <h1>🛒 コストコ共同購入 <span id="groupBadge" class="gbadge" style="display:none"></span></h1>
+    <div class="sub">欲しい商品をチェックするだけ。まとめて買ってきます</div>
+  </header>
+
+  <div class="namebar" id="namebar">
+    <label>あなたの名前</label>
+    <input id="personInput" placeholder="例: たろう" maxlength="20" list="personList">
+    <datalist id="personList"></datalist>
+    <select id="personPick" style="display:none">
+      <option value="">選ぶ▼</option>
+    </select>
+    <span class="hello" id="hello"></span>
   </div>
 
-  <script>
-    // GAS WebApp 本体。key はこのページには持たせず、URLパラメータで受け取って引き継ぐだけ
-    var GAS_URL = 'https://script.google.com/macros/s/AKfycbwDvb6MlWT6P0rjLh9W7G59cpOxvb172sstt6OakI-To99ne1XvyV5ZGrYtglFpGVsi/exec';
+  <div class="tabs" id="tabs">
+    <button data-tab="shop" class="active">商品を選ぶ</button>
+    <button data-tab="matrix" data-role="host" style="display:none">みんなの選択</button>
+    <button data-tab="bill" id="billTabButton">自分の注文</button>
+    <button data-tab="host" data-role="host" style="display:none">とりまとめ</button>
+    <button data-tab="admin" data-role="admin" style="display:none">運営</button>
+  </div>
+</div>
 
-    var params = new URLSearchParams(location.search);
+<div id="trialBanner" class="trial" style="display:none">
+  <b>おためし表示です。</b>ここでチェックしても買い出しには反映されません。<br>
+  <div class="join-row">
+    <input id="joinPass" type="text" placeholder="合言葉" autocomplete="off"
+           autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button class="btn pub" onclick="joinByPass()">グループに参加</button>
+  </div>
+  <div id="joinMsg" class="join-msg"></div>
+  <div style="font-size:11px;margin-top:6px">
+    合言葉は取りまとめる人にお聞きください（管理用の鍵もここに入れられます）　/　<a id="guideLink2" href="#" target="_blank" rel="noopener" style="color:#7a5b00;font-weight:700">📖 はじめての方へ</a>
+  </div>
+  <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e0cba0">
+    <span style="font-size:11px">自分が取りまとめる場合は</span>
+    <button class="btn pub" style="margin-left:6px;padding:6px 14px;font-size:12px" onclick="openMakeGroup()">＋ グループを作る</button>
+  </div>
+</div>
 
-    // ホーム画面に追加すると manifest の start_url（./）で起動するため、
-    // URLに付けた key / g / h が失われる。そこで端末に控えて復元する。
-    var STORE = 'cgb_entry';
-    var saved = {};
-    try { saved = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch (e) { saved = {}; }
+<div id="pastModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3>🔍 過去の商品から探す</h3>
+    <p class="fb-lead">これまでに届いたセール案内の商品から探せます。<br>終わったセールの商品も、定番に登録すればいつでも注文できます。</p>
+    <div style="display:flex;gap:8px">
+      <input id="pastQ" class="fb-input" type="text" placeholder="例）ティッシュ、コーヒー、洗剤" maxlength="30">
+      <button class="btn pub" onclick="doPastSearch()">探す</button>
+    </div>
+    <div id="pastResult" style="margin-top:14px;max-height:52vh;overflow-y:auto"></div>
+    <div class="fb-actions">
+      <button class="btn ghost" onclick="closePastSearch()">閉じる</button>
+    </div>
+  </div>
+</div>
 
-    // ?reset=1 で端末の記憶を消す（共用端末や、おためしに戻したいとき）
-    if (params.get('reset') === '1') {
-      try { localStorage.removeItem(STORE); } catch (e) {}
-      saved = {};
-      location.replace(location.pathname);
-      throw new Error('reset');
+<div id="mkModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3>＋ グループを作る</h3>
+    <p class="fb-lead">あなたが取りまとめ役になります。<br>作ったあとに出るURLを、忘れずに保存してください。</p>
+    <label class="fb-label">グループ名</label>
+    <input id="mkName" class="fb-input" type="text" maxlength="20" placeholder="例）〇〇家、ママ友、職場">
+    <label class="fb-label">合言葉（参加する人に伝えます）</label>
+    <input id="mkPass" class="fb-input" type="text" maxlength="30" placeholder="例）さくらもち" autocomplete="off">
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.7">
+      ひらがな・カタカナも使えます。他のグループと同じ言葉は使えません。
+    </div>
+    <div class="fb-actions">
+      <button class="btn ghost" onclick="closeMakeGroup()">やめる</button>
+      <button class="btn pub" id="mkBtn" onclick="doMakeGroup()">作る</button>
+    </div>
+    <div id="mkMsg" class="fb-msg"></div>
+    <div id="mkResult" style="display:none;margin-top:14px;padding:14px;background:#f6fbf7;border:1px solid #b7dfc4;border-radius:10px">
+      <div style="font-size:13px;font-weight:700;color:#137333;margin-bottom:8px">できました！</div>
+      <div style="font-size:12px;line-height:1.8">
+        <b>あなた専用のURL</b>（他の人に渡さないでください）<br>
+        <span id="mkHostUrl" style="font-size:11px;word-break:break-all;color:var(--muted)"></span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="copy" onclick="mkCopyHost()">📋 自分用URLをコピー</button>
+        <button class="btn pub" onclick="mkGoHost()">このまま始める</button>
+      </div>
+      <div style="font-size:11px;color:var(--red);margin-top:10px;line-height:1.7">
+        ⚠️ 自分用URLは再発行できません。かならずメモかブックマークに保存してください。
+      </div>
+    </div>
+  </div>
+</div>
+
+<main id="main"><div class="loading">読み込み中…</div></main>
+
+<div class="savebar" id="savebar" style="display:none">
+  <span class="info" id="saveinfo"></span>
+  <button id="savebtn">選択を保存</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer id="appFooter">
+  <div class="foot-line">このアプリは無料で使えます。運営は個人の私費でまかなっています。</div>
+  <div class="foot-line">
+    <a id="guideLink" href="#" target="_blank" rel="noopener">📖 はじめての方へ（使い方）</a>
+    <a href="#" onclick="openFeedback();return false;">💬 不具合・改善のご意見を送る</a>
+  </div>
+  <div class="foot-line" id="donateLine" style="display:none">
+    <a id="donateLink" href="#" target="_blank" rel="noopener">☕ 運営を応援する（任意）</a>
+  </div>
+  <div class="foot-note">N's factory / 中司祐樹</div>
+</footer>
+
+<div id="fbModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3>💬 ご意見・不具合のご報告</h3>
+    <p class="fb-lead">無料で公開している代わりに、お気づきの点を教えていただけると助かります。<br>いただいた内容は改善にだけ使います。</p>
+    <label class="fb-label">種類</label>
+    <select id="fbKind" class="fb-input">
+      <option value="不具合">うまく動かない（不具合）</option>
+      <option value="改善要望">こうなると嬉しい（改善要望）</option>
+      <option value="使い方の質問">使い方がわからない</option>
+      <option value="その他">その他・感想</option>
+    </select>
+    <label class="fb-label">内容</label>
+    <textarea id="fbBody" class="fb-input" rows="5" maxlength="1000" placeholder="例）商品を選んで保存したのに、自分の注文に出てきません。iPhoneのSafariで開いています。"></textarea>
+    <label class="fb-label">連絡先（任意・返信がいる場合だけ）</label>
+    <input id="fbContact" class="fb-input" type="text" maxlength="120" placeholder="メールアドレスやLINE名など">
+    <div class="fb-actions">
+      <button class="btn ghost" onclick="closeFeedback()">閉じる</button>
+      <button class="btn pub" id="fbSend" onclick="sendFeedback()">送信する</button>
+    </div>
+    <div id="fbMsg" class="fb-msg"></div>
+  </div>
+</div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwDvb6MlWT6P0rjLh9W7G59cpOxvb172sstt6OakI-To99ne1XvyV5ZGrYtglFpGVsi/exec';
+var PUBLIC_BASE = new URL('./', window.location.href).href;
+var ENTRY_PARAMS = new URLSearchParams(location.search);
+var ENTRY_STORE = 'cgb_entry';
+var ENTRY_SAVED = {};
+try { ENTRY_SAVED = JSON.parse(localStorage.getItem(ENTRY_STORE) || '{}'); } catch (e) { ENTRY_SAVED = {}; }
+
+if (ENTRY_PARAMS.get('reset') === '1') {
+  try { localStorage.removeItem(ENTRY_STORE); } catch (e) {}
+  location.replace(PUBLIC_BASE);
+  throw new Error('reset');
+}
+
+var ENTRY_PICKED = {};
+['key', 'g', 'h'].forEach(function (name) {
+  var v = ENTRY_PARAMS.get(name) || ENTRY_SAVED[name] || '';
+  if (v) ENTRY_PICKED[name] = v;
+});
+if (ENTRY_PARAMS.get('key') || ENTRY_PARAMS.get('g') || ENTRY_PARAMS.get('h')) {
+  try { localStorage.setItem(ENTRY_STORE, JSON.stringify(ENTRY_PICKED)); } catch (e) {}
+}
+
+var IS_ADMIN = !!ENTRY_PICKED.key;
+var ADMIN_KEY = ENTRY_PICKED.key || '';
+var APP_URL = GAS_URL;
+var GROUP_ID = ENTRY_PICKED.g || 'guest';
+var HOST_KEY = ENTRY_PICKED.h || '';
+var IS_HOST = !!HOST_KEY;
+var DONATE_URL = '';
+var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
+
+(function () {
+  if (window.google && window.google.script && window.google.script.run) return;
+  window.google = window.google || {};
+  window.google.script = window.google.script || {};
+
+  function callRpc(fn, args, success, failure) {
+    var cb = '__cgbRpc_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+    var script = document.createElement('script');
+    var finished = false;
+    var timer = setTimeout(function () {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      if (failure) failure({ message: '通信がタイムアウトしました' });
+    }, 30000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
     }
 
-    // g=グループ / h=とりまとめ役の鍵 / key=全体管理キー
-    var qs = [];
-    var picked = {};
-    ['key', 'g', 'h'].forEach(function (name) {
-      var v = params.get(name) || saved[name] || '';
-      if (v) { qs.push(name + '=' + encodeURIComponent(v)); picked[name] = v; }
-    });
-    // URLで指定されたものがあれば、次回ホーム画面から開いたときのために覚えておく
-    if (params.get('key') || params.get('g') || params.get('h')) {
-      try { localStorage.setItem(STORE, JSON.stringify(picked)); } catch (e) {}
-    }
-    var target = GAS_URL + (qs.length ? '?' + qs.join('&') : '');
-
-    var directLink = document.getElementById('directLink');
-    directLink.href = target;
-
-    // GAS WebApp を iframe 内で動かすと、一部ブラウザ/PWA環境で
-    // google.script.run が応答せず「読み込み中」のまま止まることがある。
-    // 入口ページは key / g / h の記憶と復元だけを担当し、アプリ本体はトップレベルで開く。
-    setTimeout(function () {
-      location.replace(target);
-    }, 120);
-
-    // 自動遷移がブロックされた場合だけ、手動ボタンを出す。
-    setTimeout(function () {
-      var boot = document.getElementById('boot');
-      if (boot) {
-        document.querySelector('#boot .spin').style.display = 'none';
-        document.querySelector('#boot .s').textContent = '読み込みに時間がかかっています。';
-        document.getElementById('fallback').style.display = 'block';
+    window[cb] = function (payload) {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      if (payload && payload.ok) {
+        if (success) success(payload.result);
+      } else if (failure) {
+        failure({ message: (payload && payload.error) || '通信エラー' });
       }
-    }, 3000);
-  </script>
+    };
+
+    script.onerror = function () {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      if (failure) failure({ message: '通信に失敗しました' });
+    };
+    script.src = GAS_URL
+      + '?action=rpc'
+      + '&fn=' + encodeURIComponent(fn)
+      + '&args=' + encodeURIComponent(JSON.stringify(Array.prototype.slice.call(args || [])))
+      + '&callback=' + encodeURIComponent(cb)
+      + '&_=' + Date.now();
+    document.head.appendChild(script);
+  }
+
+  function runner(success, failure) {
+    return new Proxy({}, {
+      get: function (_, prop) {
+        if (prop === 'withSuccessHandler') return function (fn) { return runner(fn, failure); };
+        if (prop === 'withFailureHandler') return function (fn) { return runner(success, fn); };
+        if (typeof prop !== 'string') return undefined;
+        return function () { callRpc(prop, arguments, success, failure); };
+      }
+    });
+  }
+
+  window.google.script.run = runner(null, null);
+})();
+
+var state = {
+  tab: 'shop',
+  person: localStorage.getItem('cgb_person') || '',
+  data: null,       // {campaigns, products, checks}
+  myQty: {},        // key: campaignId + '|' + itemNo -> qty
+  dirty: false,
+  adminData: null
+};
+
+function $(id) { return document.getElementById(id); }
+function yen(n) { return '¥' + Number(n).toLocaleString('ja-JP'); }
+function key2(c, i) { return c + '|' + i; }
+function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+function canSeeGroupOrders() { return !!(IS_HOST || IS_ADMIN); }
+
+function toast(msg) {
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(function () { t.classList.remove('show'); }, 2200);
+}
+
+/* ---------- 初期化 ---------- */
+$('personInput').value = state.person;
+updateHello();
+syncRoleTabs();
+$('personInput').addEventListener('change', function () {
+  var newPerson = this.value.trim();
+  if (newPerson === state.person) return;
+  state.person = newPerson;
+  localStorage.setItem('cgb_person', state.person);
+  updateHello();
+  if (!canSeeGroupOrders()) {
+    state.myQty = {};
+    state.dirty = false;
+    reloadAll();
+    return;
+  }
+  loadMyChecks();
+  // 商品タブではDOM全再構築をしない（blur由来のchangeで直後のタップが失われるため）
+  if (state.tab === 'shop') { refreshQtyDisplays(); render(); }
+  else render();
+});
+
+function refreshQtyDisplays() {
+  if (!state.data) return;
+  state.data.products.forEach(function (p) {
+    var k = key2(p.campaignId, p.itemNo);
+    var q = state.myQty[k] || 0;
+    var idSafe = k.split('|').join('_');
+    var el = $('qty_' + idSafe);
+    if (el) { el.textContent = q; el.className = 'qty' + (q > 0 ? ' on' : ''); }
+    var card = $('card_' + idSafe);
+    if (card) card.className = 'pcard' + (q > 0 ? ' checked' : '');
+  });
+  updateSavebar();
+}
+function updateHello() {
+  $('hello').textContent = state.person ? state.person + ' さん' : '';
+}
+
+function applyServerData(d) {
+  if (!d) return;
+  if (typeof d.isAdmin === 'boolean') IS_ADMIN = d.isAdmin;
+  if (typeof d.isHost === 'boolean') IS_HOST = d.isHost;
+  if (d.publicBase) PUBLIC_BASE = d.publicBase;
+  if (typeof d.donateUrl === 'string') {
+    DONATE_URL = d.donateUrl;
+    updateDonateLine();
+  }
+  syncRoleTabs();
+}
+
+function updateDonateLine() {
+  var line = $('donateLine');
+  var link = $('donateLink');
+  if (!line || !link) return;
+  if (DONATE_URL) {
+    link.href = DONATE_URL;
+    line.style.display = '';
+  } else {
+    line.style.display = 'none';
+  }
+}
+
+function syncRoleTabs() {
+  var canAll = canSeeGroupOrders();
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs [data-role="host"]'), function (el) {
+    el.style.display = canAll ? '' : 'none';
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs [data-role="admin"]'), function (el) {
+    el.style.display = IS_ADMIN ? '' : 'none';
+  });
+  var bill = $('billTabButton');
+  if (bill) bill.textContent = canAll ? '請求金額' : '自分の注文';
+  if ((state.tab === 'matrix' || state.tab === 'host') && !canAll) state.tab = 'bill';
+  if (state.tab === 'admin' && !IS_ADMIN) state.tab = 'shop';
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (x) {
+    x.classList.toggle('active', x.getAttribute('data-tab') === state.tab);
+  });
+}
+
+// スクロールでヘッダーを縮小（名前欄とタブは常に見える状態を保つ）
+window.addEventListener('scroll', function () {
+  var y = window.scrollY || document.documentElement.scrollTop;
+  var tb = $('topbar');
+  if (y > 40) tb.classList.add('shrink');
+  else tb.classList.remove('shrink');
+}, { passive: true });
+
+Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) {
+  b.addEventListener('click', function () {
+    state.tab = b.getAttribute('data-tab');
+    syncRoleTabs();
+    if (state.tab === 'admin' && !state.adminData) loadAdmin();
+    if (state.tab === 'host' && !state.hostData) loadHost();
+    render();
+  });
+});
+
+/* ---------- 起動: 合言葉が要るグループならゲートを出す ---------- */
+function boot() {
+  // 管理者・とりまとめ役は合言葉なしで入れる
+  if (IS_ADMIN || IS_HOST) { startApp(); return; }
+  google.script.run.withSuccessHandler(function (info) {
+    if (!info.exists) {
+      $('main').innerHTML = '<div class="notice"><div class="notice-icon">🔍</div>'
+        + '<div class="notice-title">グループが見つかりません</div>'
+        + '<div class="notice-body">URLをもう一度確認してください。</div></div>';
+      return;
+    }
+    if (!info.needsPass || GROUP_PASS) { startApp(); return; }
+    showGate(info);
+  }).withFailureHandler(function (e) {
+    $('main').innerHTML = '<div class="empty">読み込みエラー: ' + esc(e.message) + '</div>';
+  }).apiGroupInfo(GROUP_ID);
+}
+
+function showGate(info) {
+  $('main').innerHTML = '<div class="notice">'
+    + '<div class="notice-icon">🔑</div>'
+    + '<div class="notice-title">' + esc(info.name) + '</div>'
+    + '<div class="notice-body">このグループは合言葉が必要です。<br>誘ってくれた方に聞いてください。</div>'
+    + '<div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
+    // type="password" はスマホのIMEで日本語が入力できないことがあるため text にする
+    // （合言葉は「知人の輪」を守る程度の用途なので、伏せ字にする必要はない）
+    + '<input id="passInput" type="text" placeholder="合言葉" '
+    + 'autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" '
+    + 'style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:16px;max-width:200px">'
+    + '<button class="btn pub" onclick="submitPass()">入る</button>'
+    + '</div>'
+    + '<div id="passError" style="color:var(--red);font-size:12px;margin-top:10px"></div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.8">'
+    + 'ひらがな・カタカナもそのまま入力できます。<br>'
+    + '空白や全角・半角の違いは自動で調整されます。<br>'
+    + '<a href="' + esc(PUBLIC_BASE) + '" style="color:var(--blue)">合言葉がわからない方は「おためし」で中を見る</a>'
+    + '</div>'
+    + '</div>';
+  var el = $('passInput');
+  el.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') submitPass(); });
+  el.focus();
+}
+
+function submitPass() {
+  var pw = $('passInput').value.trim();
+  if (!pw) { $('passError').textContent = '合言葉を入れてください'; return; }
+  $('passError').textContent = '確認中…';
+  google.script.run.withSuccessHandler(function (r) {
+    GROUP_PASS = r.pass;
+    localStorage.setItem('cgb_pass_' + GROUP_ID, r.pass);
+    startApp();
+  }).withFailureHandler(function (e) {
+    $('passError').textContent = e.message;
+  }).apiVerifyGroup(GROUP_ID, pw);
+}
+
+function startApp() {
+  google.script.run.withSuccessHandler(function (d) {
+    state.data = d;
+    applyServerData(d);
+    loadMyChecks();
+    refreshPersonList();
+    updateGroupBadge();
+    render();
+    google.script.run.apiLogOpen(GROUP_ID);
+    loadSeat();
+    loadMembers();
+    // 管理者は起動時に未対応のご意見を確認してタブに印を出す
+    if (IS_ADMIN) loadAdmin();
+  }).withFailureHandler(function (e) {
+    // 合言葉が変えられた等で手元の合言葉が通らなくなったとき、
+    // エラー画面で行き止まりにせず、その場で入れ直せるようにする
+    if (String(e.message || '').indexOf('合言葉') >= 0) {
+      GROUP_PASS = '';
+      try { localStorage.removeItem('cgb_pass_' + GROUP_ID); } catch (er) {}
+      google.script.run.withSuccessHandler(function (info) { showGate(info); })
+        .withFailureHandler(function () {
+          $('main').innerHTML = '<div class="empty">読み込みエラー: ' + esc(e.message) + '</div>';
+        }).apiGroupInfo(GROUP_ID);
+      return;
+    }
+    $('main').innerHTML = '<div class="empty">読み込みエラー: ' + esc(e.message) + '</div>';
+  }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
+}
+
+// 使い方ページへの導線
+['guideLink', 'guideLink2'].forEach(function (id) {
+  var el = document.getElementById(id);
+  if (el) el.href = PUBLIC_BASE + 'guide.html';
+});
+
+// 寄付導線は設定されているときだけ出す
+if (DONATE_URL) {
+  document.getElementById('donateLink').href = DONATE_URL;
+  document.getElementById('donateLine').style.display = '';
+}
+
+/* ---------- 自分でグループを作る ---------- */
+var mkCreated = null;
+
+function openMakeGroup() {
+  mkCreated = null;
+  $('mkMsg').textContent = '';
+  $('mkResult').style.display = 'none';
+  $('mkBtn').style.display = '';
+  $('mkModal').style.display = 'flex';
+  setTimeout(function () { $('mkName').focus(); }, 100);
+}
+function closeMakeGroup() { $('mkModal').style.display = 'none'; }
+
+function doMakeGroup() {
+  var name = $('mkName').value.trim();
+  var pass = $('mkPass').value.trim();
+  var msg = $('mkMsg');
+  if (!name) { msg.style.color = 'var(--red)'; msg.textContent = 'グループ名を入れてください'; return; }
+  if (!pass) { msg.style.color = 'var(--red)'; msg.textContent = '合言葉を決めてください'; return; }
+  var btn = $('mkBtn');
+  btn.disabled = true; btn.textContent = '作成中…';
+  msg.style.color = 'var(--muted)'; msg.textContent = '作っています…';
+  var tag = localStorage.getItem('cgb_tag');
+  if (!tag) { tag = String(Math.random()).slice(2); localStorage.setItem('cgb_tag', tag); }
+  google.script.run.withSuccessHandler(function (r) {
+    mkCreated = r;
+    msg.textContent = '';
+    btn.style.display = 'none';
+    $('mkHostUrl').textContent = r.hostUrl;
+    $('mkResult').style.display = 'block';
+    // 自分用URLを端末にも控えておく（紛失対策）
+    try { localStorage.setItem('cgb_myhost_' + r.groupId, r.hostUrl); } catch (e) { }
+  }).withFailureHandler(function (e) {
+    msg.style.color = 'var(--red)'; msg.textContent = e.message;
+    btn.disabled = false; btn.textContent = '作る';
+  }).apiCreateOwnGroup(name, pass, tag);
+}
+
+function mkCopyHost() {
+  if (!mkCreated) return;
+  var nl = String.fromCharCode(10);
+  copyToClipboard(
+    'コストコ共同購入アプリ「' + mkCreated.name + '」' + nl + nl
+    + '▼あなた専用URL（他の人に渡さない）' + nl + mkCreated.hostUrl + nl + nl
+    + '▼参加者に配るURL' + nl + mkCreated.memberUrl,
+    'コピーしました📋 メモに保存してください');
+}
+
+function mkGoHost() {
+  if (mkCreated) reopenAs(String(mkCreated.hostUrl).split('?')[1] || '', mkCreated.name + ' を開きます');
+}
+
+/** おためし画面から、合言葉だけで自分のグループに入る */
+function joinByPass() {
+  var pw = $('joinPass').value.trim();
+  var msg = $('joinMsg');
+  if (!pw) { msg.style.color = 'var(--red)'; msg.textContent = '合言葉を入れてください'; return; }
+  msg.style.color = 'var(--muted)';
+  msg.textContent = '確認しています…';
+  // 端末ごとの試行回数を数えるための目印（個人を特定するものではない）
+  var tag = localStorage.getItem('cgb_tag');
+  if (!tag) { tag = String(Math.random()).slice(2) + String(Date.now ? 1 : 1); localStorage.setItem('cgb_tag', tag); }
+  google.script.run.withSuccessHandler(function (r) {
+    msg.style.color = '#137333';
+    // 管理キー・とりまとめ役の鍵が入力された場合は、その権限の画面へ移動する
+    if (r.redirect) {
+      msg.textContent = (r.role === 'admin' ? '運営モードで開きます…' : r.name + ' のとりまとめ役として開きます…');
+      reopenAs(String(r.redirect).split('?')[1] || '', msg.textContent);
+      return;
+    }
+    localStorage.setItem('cgb_pass_' + r.groupId, r.pass);
+    msg.textContent = r.name + ' に参加します…';
+    reopenAs('g=' + encodeURIComponent(r.groupId), r.name + ' に参加します');
+  }).withFailureHandler(function (e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = e.message;
+  }).apiJoinByPass(pw, tag);
+}
+
+/* ---------- ご意見・不具合報告 ---------- */
+function openFeedback() {
+  $('fbMsg').textContent = '';
+  $('fbModal').style.display = 'flex';
+  setTimeout(function () { $('fbBody').focus(); }, 100);
+}
+function closeFeedback() { $('fbModal').style.display = 'none'; }
+
+function sendFeedback() {
+  var body = $('fbBody').value.trim();
+  if (!body) { $('fbMsg').style.color = 'var(--red)'; $('fbMsg').textContent = '内容を入力してください'; return; }
+  var btn = $('fbSend');
+  btn.disabled = true; btn.textContent = '送信中…';
+  $('fbMsg').style.color = 'var(--muted)';
+  $('fbMsg').textContent = '送信しています…';
+  google.script.run.withSuccessHandler(function () {
+    $('fbMsg').style.color = '#137333';
+    $('fbMsg').textContent = '送信しました。ありがとうございます！';
+    $('fbBody').value = '';
+    $('fbContact').value = '';
+    btn.disabled = false; btn.textContent = '送信する';
+    setTimeout(closeFeedback, 1800);
+  }).withFailureHandler(function (e) {
+    $('fbMsg').style.color = 'var(--red)';
+    $('fbMsg').textContent = 'エラー: ' + e.message;
+    btn.disabled = false; btn.textContent = '送信する';
+  }).apiSendFeedback(GROUP_ID, $('fbKind').value, body, $('fbContact').value);
+}
+
+function updateGroupBadge() {
+  var el = $('groupBadge');
+  if (!el || !state.data) return;
+  if (state.data.groupId && state.data.groupId !== 'main') {
+    el.textContent = state.data.groupName;
+    el.style.display = '';
+  } else {
+    el.style.display = 'none';
+  }
+  // おためしグループには「体験用」であることを常に出す（実際の買い出しと混同させない）
+  var tb = $('trialBanner');
+  if (tb) {
+    tb.style.display = (state.data.isPublicGroup && !IS_ADMIN) ? '' : 'none';
+    var jp = $('joinPass');
+    if (jp && !jp.getAttribute('data-bound')) {
+      jp.setAttribute('data-bound', '1');
+      jp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') joinByPass(); });
+    }
+  }
+}
+
+boot();
+
+/** 既存参加者を候補に出す（名前を打ち直さず選べるように） */
+/** サーバーから全データを取り直して画面を描き直す（管理操作の後に必ず呼ぶ） */
+function reloadAll(cb) {
+  google.script.run.withSuccessHandler(function (d) {
+    state.data = d;
+    applyServerData(d);
+    loadMyChecks();
+    refreshPersonList();
+    render();
+    if (cb) cb();
+  }).withFailureHandler(function (e) { toast('再読込エラー: ' + e.message); }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
+}
+
+function refreshPersonList() {
+  if (!state.data) return;
+  var dl = $('personList');
+  var sel = $('personPick');
+  if (!canSeeGroupOrders()) {
+    dl.innerHTML = '';
+    sel.style.display = 'none';
+    return;
+  }
+  var persons = [];
+  state.data.checks.forEach(function (c) { if (persons.indexOf(c.person) === -1) persons.push(c.person); });
+  persons.sort();
+  dl.innerHTML = persons.map(function (p) { return '<option value="' + esc(p) + '">'; }).join('');
+  if (persons.length) {
+    sel.style.display = '';
+    sel.innerHTML = '<option value="">選ぶ▼</option>' + persons.map(function (p) {
+      return '<option value="' + esc(p) + '">' + esc(p) + '</option>';
+    }).join('');
+  } else {
+    sel.style.display = 'none';
+  }
+}
+
+$('personPick').addEventListener('change', function () {
+  if (!this.value) return;
+  $('personInput').value = this.value;
+  state.person = this.value;
+  localStorage.setItem('cgb_person', state.person);
+  updateHello();
+  loadMyChecks();
+  this.value = '';
+  if (state.tab === 'shop') refreshQtyDisplays(); else render();
+  toast(state.person + ' さんの選択を読み込みました');
+});
+
+function loadMyChecks() {
+  state.myQty = {};
+  if (!state.data || !state.person) return;
+  state.data.checks.forEach(function (c) {
+    if (c.person === state.person) state.myQty[key2(c.campaignId, c.itemNo)] = c.qty;
+  });
+  state.dirty = false;
+}
+
+/* ---------- 描画 ---------- */
+function render() {
+  var m = $('main');
+  $('savebar').style.display = 'none';
+  if (!state.data) { m.innerHTML = '<div class="loading">読み込み中…</div>'; return; }
+  if (state.tab === 'matrix' && !canSeeGroupOrders()) state.tab = 'bill';
+  syncRoleTabs();
+  if (state.tab === 'shop') renderShop(m);
+  else if (state.tab === 'matrix') renderMatrix(m);
+  else if (state.tab === 'bill') renderBill(m);
+  else if (state.tab === 'host') renderHost(m);
+  else if (state.tab === 'admin') renderAdmin(m);
+}
+
+/** いまの立場と、取りまとめ役の枠の状態を分かりやすく見せる */
+function seatPanelHtml() {
+  if (!state.data || state.data.isPublicGroup) return '';
+  var seat = state.seat;
+  var gname = esc(state.data.groupName || '');
+
+  if (IS_HOST || IS_ADMIN) {
+    return '<div class="seat seat-me">'
+      + '<div class="seat-role">🧑‍🍳 あなたは <b>' + gname + '</b> の取りまとめ役です</div>'
+      + '<div class="seat-desc">買い出しと集金をまとめる係です。'
+      + '<b>「とりまとめ」タブ</b>で、受け付けるセールの選択・請求・集金ができます。</div>'
+      + membersHtml()
+      + (IS_ADMIN ? ''
+        : '<a href="#" class="seat-quit" onclick="releaseHost();return false;">取りまとめ役をやめる</a>')
+      + '</div>';
+  }
+  if (!seat) return '';
+  if (seat.taken) {
+    var iAmHolder = state.person && state.person === seat.holder;
+    return '<div class="seat' + (iAmHolder ? ' seat-open' : '') + '">'
+      + '<div class="seat-role">🧑‍🍳 取りまとめ役: <b>' + esc(seat.holder) + '</b> さん</div>'
+      + (iAmHolder
+        ? '<div class="seat-desc">あなたご本人ですね。この端末はまだ取りまとめ役として登録されていません。<br>'
+          + '下のボタンを押すと、この端末で管理できるようになります。</div>'
+          + '<button class="btn pub" onclick="resumeHost()">この端末で取りまとめる</button>'
+        : '<div class="seat-desc">この人が買い出しと集金をします。あなたは欲しい物を選ぶだけでOKです。</div>')
+      + membersHtml()
+      + '</div>';
+  }
+  return '<div class="seat seat-open">'
+    + '<div class="seat-role">🙋 取りまとめ役がまだ決まっていません</div>'
+    + '<div class="seat-desc">買い出しに行く人が担当してください。<b>先に決めた1人だけ</b>がなれます。</div>'
+    + '<button class="btn pub" onclick="claimHost()">私が取りまとめます</button>'
+    + membersHtml()
+    + '</div>';
+}
+
+/** いま誰がこのグループに入っているかを見せる */
+function membersHtml() {
+  if (!canSeeGroupOrders()) return '';
+  var ms = state.members;
+  if (!ms || !ms.length) return '';
+  var h = '<details class="members"><summary>👥 参加している人（' + ms.length + '人）</summary><div class="members-body">';
+  ms.forEach(function (m) {
+    h += '<div class="member">'
+      + '<span class="member-name">' + (m.isHost ? '🧑‍🍳 ' : '🙋 ') + esc(m.name) + '</span>'
+      + '<span class="member-meta">' + (m.items > 0 ? m.items + '点' : 'まだ選んでいません') + '</span>'
+      + '</div>';
+  });
+  h += '</div></details>';
+  return h;
+}
+
+function loadMembers() {
+  if (!state.data || state.data.isPublicGroup) return;
+  if (!canSeeGroupOrders()) return;
+  google.script.run.withSuccessHandler(function (r) {
+    state.members = r.members || [];
+    if (state.tab === 'shop') render();
+  }).withFailureHandler(function () { }).apiGroupMembers(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY);
+}
+
+/** 取りまとめ役ご本人が、鍵の無い端末から復帰する */
+function resumeHost() {
+  if (!state.person) { toast('先にあなたの名前を入れてください'); return; }
+  google.script.run.withSuccessHandler(function (r) {
+    reopenAs('g=' + encodeURIComponent(GROUP_ID) + '&h=' + encodeURIComponent(r.hostKey),
+      'この端末で取りまとめられるようになりました');
+  }).withFailureHandler(function (e) { toast(e.message); })
+    .apiResumeHost(GROUP_ID, state.person, GROUP_PASS);
+}
+
+function loadSeat() {
+  if (!state.data || state.data.isPublicGroup) return;
+  google.script.run.withSuccessHandler(function (r) {
+    state.seat = r;
+    if (state.tab === 'shop') render();
+  }).withFailureHandler(function () { }).apiHostSeat(GROUP_ID, HOST_KEY, GROUP_PASS, ADMIN_KEY);
+}
+
+/**
+ * 画面を別のモードで開き直す。
+ * GitHub Pages版では同じページのURLパラメータだけを差し替える。
+ * 旧iframe構成やGAS直開きでも動けるよう、親ページがある場合だけpostMessageを併用する。
+ */
+function reopenAs(params, fallbackMsg) {
+  var url = PUBLIC_BASE + '?' + params;
+  var sent = false;
+  try {
+    // GAS直開きや旧iframe構成では parent が中間フレームになる場合があるため top を使う。
+    if (window.top && window.top !== window) {
+      window.top.postMessage({ type: 'cgb-reopen', url: url }, '*');
+      sent = true;
+    }
+  } catch (e) { sent = false; }
+  if (!sent) {
+    // 親がいない（直接開いている）ときは自分で移動する
+    try { window.top.location.href = url; return; } catch (e) { }
+    location.href = url;
+    return;
+  }
+  // 親が動くまでの間、操作できないことを伝える
+  $('main').innerHTML = '<div class="notice"><div class="notice-icon">✅</div>'
+    + '<div class="notice-title">' + esc(fallbackMsg || '切り替えています') + '</div>'
+    + '<div class="notice-body">画面を開き直しています…<br>'
+    + '<span style="font-size:11px">切り替わらないときは下のリンクを押してください</span><br>'
+    + '<a href="' + esc(url) + '" target="_top" style="color:var(--blue);font-weight:700">開き直す</a></div></div>';
+}
+
+function claimHost() {
+  if (!state.person) { toast('先にあなたの名前を入れてください'); $('personInput').focus(); return; }
+  if (!confirm(state.person + ' さんが取りまとめ役になります。' + String.fromCharCode(10) + String.fromCharCode(10)
+    + '買い出しと集金をまとめる係です。' + String.fromCharCode(10)
+    + 'この端末だけが管理できるようになります。')) return;
+  google.script.run.withSuccessHandler(function (r) {
+    reopenAs('g=' + encodeURIComponent(GROUP_ID) + '&h=' + encodeURIComponent(r.hostKey),
+      '取りまとめ役になりました 🧑‍🍳');
+  }).withFailureHandler(function (e) {
+    toast(e.message);
+    loadSeat();
+  }).apiClaimHost(GROUP_ID, state.person, GROUP_PASS);
+}
+
+function releaseHost() {
+  if (!confirm('取りまとめ役を手放しますか？' + String.fromCharCode(10) + String.fromCharCode(10)
+    + '・この端末では管理できなくなります' + String.fromCharCode(10)
+    + '・次の人が「私が取りまとめます」を押せるようになります' + String.fromCharCode(10)
+    + '・注文や請求のデータは残ります')) return;
+  google.script.run.withSuccessHandler(function () {
+    reopenAs('g=' + encodeURIComponent(GROUP_ID) + '&reset=1', '取りまとめ役を手放しました');
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiReleaseHost(GROUP_ID, HOST_KEY, ADMIN_KEY);
+}
+
+function renderShop(m) {
+  var d = state.data;
+  // 終了したセールは「商品を選ぶ」には出さない（請求・集計タブでのみ残る）
+  var active = d.campaigns.filter(function (c) { return !c.ended; });
+  if (!active.length) {
+    var msg = seatPanelHtml() + '<div class="notice">'
+      + '<div class="notice-icon">✅</div>'
+      + '<div class="notice-title">アプリは正常に動いています</div>'
+      + '<div class="notice-body">いまは<b>セールの受付期間外</b>です。<br>'
+      + '前のセールが終わり、次のセール案内メールを待っている状態です。</div>'
+      + '<div class="notice-sub">コストコのセールメールは自動で取り込まれます（毎日10時台・19時台）。'
+      + '新しいセールが始まればこの画面に商品が並びます。</div>';
+    if (IS_ADMIN) {
+      msg += '<div class="notice-admin">👤 管理者向け: 下書きが <b>' + (d.draftCount || 0) + '件</b> あります。'
+        + '「管理」タブから［公開する］を押すと、ここに商品が並びます。<br>'
+        + '<span style="color:var(--muted)">（セール期間が終わっているものは公開しても自動的に非表示になります）</span></div>';
+    }
+    msg += '</div>';
+    m.innerHTML = msg;
+    return;
+  }
+  var html = seatPanelHtml() + selectedSummaryHtml();
+  active.forEach(function (c) {
+    var prods = d.products.filter(function (p) { return p.campaignId === c.mailId; });
+    html += '<section class="campaign' + (c.isStaple ? ' staple' : '') + '"><div class="head">'
+      + '<div class="title">' + esc(c.subject) + '</div>'
+      + '<div class="period">' + (c.isStaple ? '🔁 ' : '📅 ')
+      + (c.periodText ? esc(c.periodText) : 'メール配信日: ' + esc(c.mailDate))
+      + remainLabel(c.endDate) + '</div></div>';
+    if (c.isStaple) {
+      html += '<div class="staple-add">'
+        + '<input type="text" id="stName" placeholder="定番に追加したい商品名" maxlength="150">'
+        + '<input type="number" inputmode="numeric" id="stPrice" placeholder="価格(任意)">'
+        + '<button class="btn pub" onclick="addStapleManual()">追加</button>'
+        + '<button class="btn ghost" onclick="openPastSearch()">🔍 過去の商品から探す</button>'
+        + '<div class="staple-note">セールに出ていない品も登録できます。みんなで育てるリストです。</div>'
+        + '</div>';
+    }
+    html += '<div class="grid">';
+    prods.forEach(function (p) {
+      var k = key2(p.campaignId, p.itemNo);
+      var q = state.myQty[k] || 0;
+      html += '<div class="pcard' + (q > 0 ? ' checked' : '') + '" id="card_' + esc(k).split('|').join('_') + '">';
+      if (p.imageUrl) html += '<img src="' + esc(p.imageUrl) + '" loading="lazy" alt="">';
+      else html += '<div class="noimg">画像なし</div>';
+      html += '<div class="body"><div class="pname">' + esc(p.name) + '</div>'
+        + '<div class="itemno">ITEM #' + esc(p.itemNo) + '</div>'
+        + '<div class="prices">';
+      if (p.salePrice) {
+        html += '<span class="sale">' + yen(p.salePrice) + '</span>';
+        if (p.price) html += '<span class="orig">' + yen(p.price) + '</span>';
+        if (p.off) html += '<span class="offb">' + yen(p.off) + ' OFF</span>';
+      } else if (p.off) {
+        html += '<span class="offb">' + yen(p.off) + ' OFF</span><span class="nop">価格はリンク先参照</span>';
+      } else {
+        html += '<span class="nop">価格未取得</span>';
+      }
+      html += '</div>'
+        + '<div class="stepper">'
+        + '<button onclick="chg(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',-1)">−</button>'
+        + '<div class="qty' + (q > 0 ? ' on' : '') + '" id="qty_' + esc(k).split('|').join('_') + '">' + q + '</div>'
+        + '<button onclick="chg(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',1)">＋</button>'
+        + '</div>';
+      if (c.isStaple) {
+        // 定番の価格は買うときに実際の値段を入れる（取りまとめ役のみ）
+        if (IS_HOST || IS_ADMIN) {
+          html += '<div class="staple-ops">'
+            + '<input type="number" inputmode="numeric" id="sp_' + esc(p.itemNo) + '" value="' + (p.salePrice || '') + '" placeholder="価格">'
+            + '<button onclick="saveStaplePrice(\'' + jsq(p.itemNo) + '\')">価格</button>'
+            + '<button class="rm" onclick="removeStaple(\'' + jsq(p.itemNo) + '\')">外す</button>'
+            + '</div>';
+        }
+      } else {
+        html += '<button class="add-staple" onclick="addStaple(\'' + jsq(p.itemNo) + '\')">🔁 定番にする</button>';
+      }
+      html += '</div></div>';
+    });
+    html += '</div></section>';
+  });
+  m.innerHTML = html;
+  updateSavebar();
+}
+
+function jsq(s) { return String(s).split("'").join(''); }
+
+function findCampaign(campaignId) {
+  var hit = null;
+  if (!state.data) return null;
+  (state.data.campaigns || []).forEach(function (c) {
+    if (c.mailId === campaignId) hit = c;
+  });
+  return hit;
+}
+
+function currentSelections(activeOnly) {
+  var items = [], count = 0, total = 0;
+  if (!state.data) return { items: items, count: count, total: total };
+  Object.keys(state.myQty || {}).forEach(function (k) {
+    var q = Number(state.myQty[k]) || 0;
+    if (q <= 0) return;
+    var parts = k.split('|');
+    var campaignId = parts[0];
+    var itemNo = parts[1];
+    var camp = findCampaign(campaignId);
+    if (activeOnly && (!camp || camp.ended)) return;
+    var p = findProduct(campaignId, itemNo);
+    if (!p) return;
+    count += q;
+    total += q * (p.salePrice || 0);
+    items.push({ campaignId: campaignId, itemNo: itemNo, campaign: camp, product: p, qty: q });
+  });
+  return { items: items, count: count, total: total };
+}
+
+function selectedSummaryHtml() {
+  if (!state.person) return '';
+  var s = currentSelections(true);
+  if (!s.items.length) return '';
+  var h = '<div class="selected-box">'
+    + '<div class="selected-head"><span>選択中の商品</span><span class="selected-total">'
+    + s.count + '点 / ' + yen(s.total) + '</span></div>'
+    + '<div class="selected-list">';
+  s.items.forEach(function (it) {
+    var p = it.product;
+    h += '<div class="selected-row">'
+      + '<div><div class="selected-name">' + esc(p.name) + '</div>'
+      + '<div class="selected-meta">' + esc(it.campaign ? it.campaign.subject : '') + ' / '
+      + (p.salePrice ? yen(p.salePrice) : '価格未取得') + ' × ' + it.qty + '</div></div>'
+      + '<button class="selected-remove" onclick="removeLocalItem(\'' + jsq(it.campaignId) + '\',\'' + jsq(it.itemNo) + '\')">削除</button>'
+      + '</div>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
+function removeLocalItem(campaignId, itemNo) {
+  if (!state.person) { toast('先に名前を入力してください'); $('personInput').focus(); return; }
+  delete state.myQty[key2(campaignId, itemNo)];
+  state.dirty = true;
+  render();
+  toast('選択から外しました');
+}
+
+/* ---------- 定番商品（いつもの） ---------- */
+function findProduct(campaignId, itemNo) {
+  var found = null;
+  (state.data.products || []).forEach(function (p) {
+    if (p.campaignId === campaignId && p.itemNo === itemNo) found = p;
+  });
+  return found;
+}
+
+/** セール品を定番に登録する（誰でもできる。みんなで育てるリスト） */
+function addStaple(itemNo) {
+  var p = null;
+  (state.data.products || []).forEach(function (x) {
+    if (x.itemNo === itemNo && !x.isStaple) p = x;
+  });
+  if (!p) { toast('商品が見つかりません'); return; }
+  if (!confirm('「' + p.name.slice(0, 24) + '」を定番に登録しますか？\nセールが終わってもいつでも注文できるようになります。')) return;
+  google.script.run.withSuccessHandler(function (r) {
+    toast(r.already ? 'すでに定番に入っています' : '定番に登録しました 🔁');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAddStaple(p.itemNo, p.name, p.salePrice || 0, p.imageUrl || '', state.person || '');
+}
+
+/** 定番から外す（取りまとめ役のみ） */
+function removeStaple(itemNo) {
+  var p = findProduct('__STAPLE__', itemNo);
+  if (!confirm('「' + (p ? p.name.slice(0, 24) : itemNo) + '」を定番から外しますか？')) return;
+  google.script.run.withSuccessHandler(function () {
+    toast('定番から外しました');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiRemoveStaple(itemNo, GROUP_ID, HOST_KEY, ADMIN_KEY);
+}
+
+/** 定番の価格を更新する（買い物のときの実売価格） */
+function saveStaplePrice(itemNo) {
+  var v = $('sp_' + itemNo).value;
+  google.script.run.withSuccessHandler(function () {
+    toast('価格を更新しました');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiSetStaplePrice(itemNo, Number(v) || 0, GROUP_ID, HOST_KEY, ADMIN_KEY);
+}
+
+/* ---------- 過去の商品から定番に登録する ---------- */
+function openPastSearch() {
+  $('pastResult').innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:20px">'
+    + '探したい言葉を入れてください</div>';
+  $('pastModal').style.display = 'flex';
+  setTimeout(function () { $('pastQ').focus(); }, 100);
+  var q = $('pastQ');
+  if (!q.getAttribute('data-bound')) {
+    q.setAttribute('data-bound', '1');
+    q.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') doPastSearch(); });
+  }
+}
+function closePastSearch() { $('pastModal').style.display = 'none'; }
+
+function doPastSearch() {
+  var kw = $('pastQ').value.trim();
+  var box = $('pastResult');
+  if (!kw) { box.innerHTML = '<div class="empty">探したい言葉を入れてください</div>'; return; }
+  box.innerHTML = '<div class="loading">探しています…</div>';
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.items.length) {
+      box.innerHTML = '<div class="empty">「' + esc(kw) + '」は見つかりませんでした<br>'
+        + '<span style="font-size:11px">別の言葉でお試しください</span></div>';
+      return;
+    }
+    var h = '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">' + r.total + '件見つかりました（新しい順）</div>';
+    r.items.forEach(function (p) {
+      h += '<div class="past-row">'
+        + (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" loading="lazy" alt="">' : '<div class="past-noimg">画像なし</div>')
+        + '<div class="past-body">'
+        + '<div class="past-name">' + esc(p.name) + '</div>'
+        + '<div class="past-meta">' + (p.mailDate ? esc(p.mailDate) + ' のセール' : '')
+        + (p.salePrice ? '　' + yen(p.salePrice) : '') + '</div>'
+        + '</div>'
+        + (p.isStaple
+          ? '<span class="past-done">登録済</span>'
+          : '<button class="past-add" onclick="addStapleFromPast(\'' + jsq(p.itemNo) + '\',this)">＋定番</button>')
+        + '</div>';
+    });
+    box.innerHTML = h;
+    pastCache = r.items;
+  }).withFailureHandler(function (e) {
+    box.innerHTML = '<div class="empty">検索エラー: ' + esc(e.message) + '</div>';
+  }).apiSearchProducts(kw);
+}
+
+var pastCache = [];
+
+function addStapleFromPast(itemNo, btn) {
+  var p = null;
+  pastCache.forEach(function (x) { if (x.itemNo === itemNo) p = x; });
+  if (!p) { toast('商品が見つかりません'); return; }
+  btn.disabled = true; btn.textContent = '登録中';
+  google.script.run.withSuccessHandler(function (r) {
+    btn.outerHTML = '<span class="past-done">' + (r.already ? '登録済' : '登録しました') + '</span>';
+    reloadAll();
+  }).withFailureHandler(function (e) {
+    btn.disabled = false; btn.textContent = '＋定番';
+    toast('エラー: ' + e.message);
+  }).apiAddStaple(p.itemNo, p.name, p.salePrice || 0, p.imageUrl || '', state.person || '');
+}
+
+/** 定番に手入力で追加する（セールに出ていないもの） */
+function addStapleManual() {
+  var name = $('stName').value.trim();
+  var price = $('stPrice').value;
+  if (!name) { toast('商品名を入れてください'); return; }
+  google.script.run.withSuccessHandler(function (r) {
+    toast(r.already ? 'すでに定番に入っています' : '定番に追加しました 🔁');
+    $('stName').value = ''; $('stPrice').value = '';
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAddStaple('', name, Number(price) || 0, '', state.person || '');
+}
+
+/** 締切までの残り日数ラベル（期限切れは自動非表示なので「あと0日=最終日」まで出る） */
+function remainLabel(endDate) {
+  if (!endDate || !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) return '';
+  var parts = endDate.split('-');
+  var end = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var days = Math.round((end - today) / 86400000);
+  if (days < 0) return '';
+  if (days === 0) return '　<b>本日最終日</b>';
+  if (days <= 3) return '　<b>あと' + days + '日</b>';
+  return '　あと' + days + '日';
+}
+
+function chg(cid, itemNo, delta) {
+  if (!state.person) { toast('先に名前を入力してください'); $('personInput').focus(); return; }
+  var k = key2(cid, itemNo);
+  var q = (state.myQty[k] || 0) + delta;
+  if (q < 0) q = 0;
+  if (q > 99) q = 99;
+  if (q > 0) state.myQty[k] = q;
+  else delete state.myQty[k];
+  state.dirty = true;
+  var idSafe = k.split('|').join('_');
+  var el = $('qty_' + idSafe);
+  if (el) { el.textContent = q; el.className = 'qty' + (q > 0 ? ' on' : ''); }
+  var card = $('card_' + idSafe);
+  if (card) card.className = 'pcard' + (q > 0 ? ' checked' : '');
+  updateSavebar();
+}
+
+function updateSavebar() {
+  var n = 0, total = 0;
+  var priceMap = {};
+  state.data.products.forEach(function (p) { priceMap[key2(p.campaignId, p.itemNo)] = p.salePrice || 0; });
+  Object.keys(state.myQty).forEach(function (k) {
+    var q = state.myQty[k];
+    if (q > 0) { n += q; total += q * (priceMap[k] || 0); }
+  });
+  if (state.tab === 'shop' && (n > 0 || state.dirty)) {
+    $('savebar').style.display = 'flex';
+    $('saveinfo').textContent = n + '点 / ' + yen(total);
+    $('savebtn').disabled = !state.dirty;
+  } else {
+    $('savebar').style.display = 'none';
+  }
+}
+
+$('savebtn').addEventListener('click', function () {
+  if (!state.person) { toast('名前を入力してください'); return; }
+  var byCamp = {};
+  // 終了セールは書き換えない（過去の請求内容を守る）
+  state.data.campaigns.forEach(function (c) { if (!c.ended) byCamp[c.mailId] = []; });
+  Object.keys(state.myQty).forEach(function (k) {
+    var parts = k.split('|');
+    if (byCamp[parts[0]]) byCamp[parts[0]].push({ itemNo: parts[1], qty: state.myQty[k] });
+  });
+  var campIds = Object.keys(byCamp);
+  var done = 0;
+  $('savebtn').disabled = true;
+  $('savebtn').textContent = '保存中…';
+  campIds.forEach(function (cid) {
+    google.script.run.withSuccessHandler(function () {
+      done++;
+      if (done === campIds.length) afterSave();
+    }).withFailureHandler(function (e) {
+      $('savebtn').disabled = false;
+      $('savebtn').textContent = '選択を保存';
+      toast('保存エラー: ' + e.message);
+    }).apiSaveChecks(state.person, cid, byCamp[cid], GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY);
+  });
+});
+
+function afterSave() {
+  state.dirty = false;
+  $('savebtn').textContent = '選択を保存';
+  toast('保存しました ✅');
+  // 全体データ再取得（マトリクス反映）
+  google.script.run.withSuccessHandler(function (d) {
+    var keep = state.myQty, dirty = state.dirty;
+    state.data = d;
+    applyServerData(d);
+    loadMyChecks();
+    refreshPersonList();
+    // 保存直後の再取得中にユーザーが操作していた場合は手元の値を優先
+    if (dirty) { state.myQty = keep; state.dirty = true; }
+    if (state.tab !== 'shop') { render(); return; }
+    updateSavebar();
+    // セール期間が自動解析されていたら📅表示を差し替え
+    var heads = document.querySelectorAll('.campaign .head .period');
+    state.data.campaigns.forEach(function (c, i) {
+      if (heads[i] && c.periodText) heads[i].textContent = '📅 ' + c.periodText;
+    });
+  }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
+}
+
+/* ---------- マトリクス ---------- */
+function renderMatrix(m) {
+  var d = state.data;
+  var persons = [];
+  d.checks.forEach(function (c) { if (persons.indexOf(c.person) === -1) persons.push(c.person); });
+  persons.sort();
+  if (!persons.length) { m.innerHTML = '<div class="empty">まだ誰もチェックしていません</div>'; return; }
+
+  var html = '';
+  d.campaigns.forEach(function (camp) {
+    var prods = d.products.filter(function (p) {
+      if (p.campaignId !== camp.mailId) return false;
+      return d.checks.some(function (c) { return c.campaignId === p.campaignId && c.itemNo === p.itemNo; });
+    });
+    if (!prods.length) return;
+    html += '<h3 style="font-size:14px;margin:14px 4px 8px;color:var(--blue)">' + esc(camp.subject) + '</h3>';
+    html += '<div class="tablewrap"><table class="mx"><tr><th>商品</th><th>単価</th>';
+    persons.forEach(function (p) { html += '<th>' + esc(p) + '</th>'; });
+    html += '<th style="background:#fff6f7;color:var(--red)">合計購入数</th></tr>';
+    prods.forEach(function (p) {
+      var rowTotal = 0;
+      var cells = '';
+      persons.forEach(function (per) {
+        var q = 0;
+        d.checks.forEach(function (c) {
+          if (c.campaignId === p.campaignId && c.itemNo === p.itemNo && c.person === per) q = c.qty;
+        });
+        rowTotal += q;
+        cells += '<td class="qty">' + (q > 0 ? q : '') + '</td>';
+      });
+      var so = soldoutOf(p.campaignId, p.itemNo);
+      html += '<tr' + (so ? ' class="row-soldout"' : '') + '>'
+        + '<td class="pname">' + esc(p.name)
+        + (so ? '<span class="so-tag">' + esc(so.reason) + '</span>' : '')
+        + ((IS_HOST || IS_ADMIN)
+          ? '<button class="so-btn' + (so ? ' on' : '') + '" onclick="toggleSoldOut(&quot;' + jsq(p.campaignId) + '&quot;,&quot;' + jsq(p.itemNo) + '&quot;,' + (so ? 'true' : 'false') + ')">'
+            + (so ? '買えた' : '買えなかった') + '</button>'
+          : '')
+        + '</td>'
+        + '<td>' + (p.salePrice ? yen(p.salePrice) : '—') + '</td>'
+        + cells
+        + '<td style="background:#fff6f7;font-weight:800;color:var(--red)">' + rowTotal + '</td></tr>';
+    });
+    // 人別金額合計行
+    html += '<tr class="total"><td>金額合計</td><td></td>';
+    persons.forEach(function (per) {
+      var t = personTotal(per, camp.mailId);
+      html += '<td>' + (t.total > 0 ? yen(t.total) : '') + '</td>';
+    });
+    html += '<td></td></tr>';
+    html += '</table></div>';
+  });
+  m.innerHTML = html || '<div class="empty">まだ誰もチェックしていません</div>';
+}
+
+/** その商品が「買えなかった」記録に入っているか */
+function soldoutOf(campaignId, itemNo) {
+  var list = (state.data && state.data.soldout) || [];
+  var hit = null;
+  list.forEach(function (x) {
+    if (x.campaignId === campaignId && x.itemNo === itemNo) hit = x;
+  });
+  return hit;
+}
+
+/** 買えなかった／買えた を切り替える（取りまとめ役のみ） */
+function toggleSoldOut(campaignId, itemNo, isSoldNow) {
+  var reason = '売り切れ';
+  if (!isSoldNow) {
+    var ans = prompt('買えなかった理由を選んでください' + String.fromCharCode(10) + String.fromCharCode(10)
+      + '1: 売り切れ' + String.fromCharCode(10)
+      + '2: 販売終了' + String.fromCharCode(10)
+      + '3: 見つからなかった' + String.fromCharCode(10) + String.fromCharCode(10)
+      + '番号か、自由に理由を入力してください', '1');
+    if (ans === null) return;
+    ans = String(ans).trim();
+    if (ans === '1' || ans === '') reason = '売り切れ';
+    else if (ans === '2') reason = '販売終了';
+    else if (ans === '3') reason = '見つからず';
+    else reason = ans.slice(0, 20);
+  }
+  google.script.run.withSuccessHandler(function () {
+    toast(isSoldNow ? '買えたことにしました' : '「' + reason + '」として記録しました');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiMarkSoldOut(GROUP_ID, campaignId, itemNo, reason, isSoldNow, HOST_KEY, ADMIN_KEY);
+}
+
+function personTotal(person, campaignId) {
+  var d = state.data;
+  var total = 0, items = [], missing = 0, unavailable = [];
+  d.checks.forEach(function (c) {
+    if (c.person !== person) return;
+    if (campaignId && c.campaignId !== campaignId) return;
+    var prod = null;
+    d.products.forEach(function (p) {
+      if (p.campaignId === c.campaignId && p.itemNo === c.itemNo) prod = p;
+    });
+    if (!prod) return;
+    // 買えなかった商品は請求に含めない
+    var so = soldoutOf(c.campaignId, c.itemNo);
+    if (so) {
+      unavailable.push({ campaignId: c.campaignId, itemNo: c.itemNo, name: prod.name, qty: c.qty, reason: so.reason });
+      return;
+    }
+    var sub = (prod.salePrice || 0) * c.qty;
+    if (!prod.salePrice) missing++;
+    total += sub;
+    items.push({ campaignId: c.campaignId, itemNo: c.itemNo, name: prod.name, qty: c.qty, unit: prod.salePrice || 0, sub: sub });
+  });
+  return { total: total, items: items, missing: missing, unavailable: unavailable };
+}
+
+/* ---------- 請求 ---------- */
+function renderBill(m) {
+  var d = state.data;
+  var canSeeAll = canSeeGroupOrders();
+  var persons = [];
+  if (canSeeAll) {
+    d.checks.forEach(function (c) { if (persons.indexOf(c.person) === -1) persons.push(c.person); });
+    persons.sort();
+    if (!persons.length) { m.innerHTML = '<div class="empty">まだ誰もチェックしていません</div>'; return; }
+  } else {
+    if (!state.person) { m.innerHTML = '<div class="empty">名前を入力すると、自分の注文だけ確認できます</div>'; return; }
+    var mine = personTotal(state.person, null);
+    if (!mine.items.length && !mine.unavailable.length) {
+      m.innerHTML = '<div class="empty">自分の注文はまだありません</div>';
+      return;
+    }
+    persons = [state.person];
+  }
+  var html = '';
+  var unpaidTotal = 0, paidTotal = 0;
+  persons.forEach(function (per) {
+    var t = personTotal(per, null);
+    var pay = findPayment(per);
+    if (pay) paidTotal += pay.amount; else unpaidTotal += t.total;
+    var canRemoveItem = canSeeAll || state.person === per;
+    html += '<div class="bill' + (pay ? ' paid' : '') + '"><h3>👤 ' + esc(per) + ' さん'
+      + (pay ? ' <span class="pill published">受領済</span>' : ' <span class="pill draft">未受領</span>') + '</h3><table>';
+    t.items.forEach(function (it) {
+      html += '<tr><td>' + esc(it.name) + '</td>'
+        + '<td class="r">' + (it.unit ? yen(it.unit) : '価格未取得') + ' × ' + it.qty + '</td>'
+        + '<td class="r">' + (it.unit ? yen(it.sub) : '—') + '</td>'
+        + (canRemoveItem ? '<td class="r"><button class="mini-del" onclick="removeSavedItem(\'' + jsq(per) + '\',\'' + jsq(it.campaignId) + '\',\'' + jsq(it.itemNo) + '\',this)">削除</button></td>' : '')
+        + '</tr>';
+    });
+    html += '</table>';
+    if (t.unavailable && t.unavailable.length) {
+      html += '<div class="unavail"><div class="unavail-h">🚫 買えなかったもの（請求に含みません）</div>';
+      t.unavailable.forEach(function (u) {
+        html += '<div class="unavail-row"><span>' + esc(u.name) + ' × ' + u.qty + '</span>'
+          + '<span class="unavail-r">' + esc(u.reason) + '</span>'
+          + (canRemoveItem ? '<button class="mini-del" onclick="removeSavedItem(\'' + jsq(per) + '\',\'' + jsq(u.campaignId) + '\',\'' + jsq(u.itemNo) + '\',this)">削除</button>' : '')
+          + '</div>';
+      });
+      html += '</div>';
+    }
+    html += '<div class="sum">合計 ' + yen(t.total) + (t.missing ? ' ＋価格未取得' + t.missing + '点' : '') + '</div>';
+    if (pay) {
+      html += '<div class="paidinfo">✅ ' + yen(pay.amount) + ' 受領済（' + esc(pay.receivedAt) + '）'
+        + (pay.amount !== t.total ? ' <b>※請求額と差額 ' + yen(t.total - pay.amount) + '</b>' : '') + '</div>';
+    }
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'
+      + '<button class="copy" onclick="copyBill(\'' + jsq(per) + '\')">📋 請求文をコピー</button>';
+    // 本人（名前欄が一致）なら自分で取り消せる。終了セールでも取消は可能
+    if (!IS_ADMIN && state.person === per) {
+      html += '<button class="btn del" onclick="cancelMine()">🗑 自分の注文を取り消す</button>';
+    }
+    if (IS_ADMIN || IS_HOST) {
+      if (pay) {
+        html += '<button class="btn unpub" onclick="markPaid(\'' + jsq(per) + '\',0,true)">受領を取消</button>';
+      } else {
+        html += '<button class="btn pub" onclick="markPaid(\'' + jsq(per) + '\',' + t.total + ',false)">💰 受領した</button>';
+      }
+      html += '<button class="btn del" onclick="deletePerson(\'' + jsq(per) + '\')">🗑 この人の注文を削除</button>';
+    }
+    html += '</div></div>';
+  });
+  if (IS_ADMIN) {
+    html = '<div class="bill" style="background:#eef2f7"><h3>📊 集金状況</h3>'
+      + '<div style="font-size:14px">受領済 <b style="color:#137333">' + yen(paidTotal) + '</b>'
+      + '　／　未受領 <b style="color:var(--red)">' + yen(unpaidTotal) + '</b></div></div>' + html;
+  }
+  m.innerHTML = html;
+}
+
+/** 全セール一括の受領記録を探す（campaignId='ALL'で保持） */
+function findPayment(person) {
+  if (!state.data || !state.data.payments) return null;
+  var found = null;
+  state.data.payments.forEach(function (p) {
+    if (p.person === person && p.campaignId === 'ALL') found = p;
+  });
+  return found;
+}
+
+/** 本人: 自分の注文を全セール分取り消す（終了セールも取消は可能） */
+function cancelMine() {
+  if (!state.person) { toast('先に名前を入力してください'); return; }
+  if (!confirm(state.person + ' さんの注文をすべて取り消しますか？')) return;
+  var ids = state.data.campaigns.map(function (c) { return c.mailId; });
+  var done = 0, failed = 0;
+  ids.forEach(function (cid) {
+    google.script.run.withSuccessHandler(function () {
+      done++; if (done + failed === ids.length) afterCancel();
+    }).withFailureHandler(function () {
+      failed++; if (done + failed === ids.length) afterCancel();
+    }).apiSaveChecks(state.person, cid, [], GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY);
+  });
+}
+
+function afterCancel() {
+  toast('取り消しました');
+  reloadAll();
+}
+
+/** 管理者: その人の注文を全削除（受領記録も消す） */
+function deletePerson(person) {
+  if (!confirm(person + ' さんの注文をすべて削除しますか？\n（全セール分＋受領記録が消えます。元に戻せません）')) return;
+  google.script.run.withSuccessHandler(function (r) {
+    toast(person + ' さんの注文を削除しました（' + r.removed + '件）');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiHostDeletePerson(GROUP_ID, HOST_KEY, person, ADMIN_KEY);
+}
+
+function removeSavedItem(person, campaignId, itemNo, btn) {
+  if (!canSeeGroupOrders() && person !== state.person) {
+    toast('自分の注文だけ削除できます');
+    return;
+  }
+  var p = findProduct(campaignId, itemNo);
+  var name = p ? p.name.slice(0, 28) : itemNo;
+  if (!confirm('「' + name + '」を注文から削除しますか？')) return;
+  if (btn) { btn.disabled = true; btn.textContent = '削除中'; }
+  google.script.run.withSuccessHandler(function (r) {
+    delete state.myQty[key2(campaignId, itemNo)];
+    toast((r && r.removed ? '削除しました' : '削除済みです'));
+    reloadAll();
+  }).withFailureHandler(function (e) {
+    if (btn) { btn.disabled = false; btn.textContent = '削除'; }
+    toast('削除エラー: ' + e.message);
+  }).apiRemoveCheckItem(person, campaignId, itemNo, GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY);
+}
+
+function markPaid(person, amount, unset) {
+  if (!unset && !confirm(person + ' さんから ' + yen(amount) + ' を受領しましたか？')) return;
+  if (unset && !confirm(person + ' さんの受領記録を取り消しますか？')) return;
+  // 管理者・とりまとめ役とも同じ入口を使う（サーバー側で権限を判定）
+  google.script.run.withSuccessHandler(function () {
+    toast(unset ? '受領を取消しました' : '受領を記録しました ✅');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiHostMarkPaid(GROUP_ID, HOST_KEY, person, amount, unset, ADMIN_KEY);
+}
+
+function copyBill(person) {
+  var t = personTotal(person, null);
+  var lines = [person + ' さん　コストコ購入分のご請求です'];
+  lines.push('----------------');
+  t.items.forEach(function (it) {
+    lines.push(it.name + '　' + (it.unit ? yen(it.unit) : '価格未取得') + ' × ' + it.qty + ' = ' + (it.unit ? yen(it.sub) : '—'));
+  });
+  if (t.unavailable && t.unavailable.length) {
+    lines.push('');
+    lines.push('【買えませんでした（請求に含みません）】');
+    t.unavailable.forEach(function (u) {
+      lines.push('・' + u.name + ' × ' + u.qty + '（' + u.reason + '）');
+    });
+  }
+  lines.push('----------------');
+  lines.push('合計: ' + yen(t.total) + (t.missing ? '（＋価格未取得' + t.missing + '点は別途）' : ''));
+  if (state.data.paypayId) {
+    lines.push('');
+    lines.push('お支払いはPayPay送金でお願いします🙏');
+    lines.push('PayPay ID: ' + state.data.paypayId);
+  }
+  copyToClipboard(lines.join(String.fromCharCode(10)), 'コピーしました 📋');
+}
+
+/* ---------- 管理 ---------- */
+function loadAdmin() {
+  google.script.run.withSuccessHandler(function (d) {
+    state.adminData = d;
+    updateAdminTabBadge();
+    if (state.tab === 'admin') render();
+  }).withFailureHandler(function (e) {
+    toast('管理データ取得エラー: ' + e.message);
+  }).apiAdminData(ADMIN_KEY);
+}
+
+/** 未対応のご意見があれば管理タブに赤い印を出す（開かなくても気づける） */
+function updateAdminTabBadge() {
+  var btn = document.querySelector('#tabs button[data-tab="admin"]');
+  if (!btn) return;
+  var n = (state.adminData && state.adminData.unreadFeedback) || 0;
+  btn.textContent = '運営';
+  if (n > 0) {
+    var dot = document.createElement('span');
+    dot.className = 'tabdot';
+    dot.textContent = n;
+    btn.appendChild(dot);
+  }
+}
+
+/* ---------- とりまとめ役（ホスト）の画面 ---------- */
+function loadHost(cb) {
+  google.script.run.withSuccessHandler(function (d) {
+    state.hostData = d;
+    if (cb) cb();
+    if (state.tab === 'host') render();
+  }).withFailureHandler(function (e) {
+    state.hostError = e.message;
+    if (state.tab === 'host') render();
+  }).apiHostData(GROUP_ID, HOST_KEY, ADMIN_KEY);
+}
+
+function renderHost(m) {
+  if (state.hostError) { m.innerHTML = '<div class="empty">' + esc(state.hostError) + '</div>'; return; }
+  if (!state.hostData) { m.innerHTML = '<div class="loading">読み込み中…</div>'; loadHost(); return; }
+  var d = state.hostData;
+
+  var h = '<div class="bill" style="margin-bottom:12px;padding:14px">'
+    + '<h3>👥 ' + esc(d.groupName) + ' のとりまとめ</h3>'
+    + '<div style="font-size:12px;color:var(--muted);line-height:1.8">'
+    + '<b>取りまとめ役の仕事</b>は3つです。<br>'
+    + '　① 受け付けるセールを選ぶ　② 注文を見ながら買い物　③ 請求と集金<br>'
+    + 'ここで操作できるのはこのグループの分だけで、他のグループの注文や金額は見えません。<br>'
+    + '📱 この端末は<b>とりまとめ役</b>として記憶されています。ホーム画面から開いてもこのままです。</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">'
+    + '<button class="copy" onclick="hostShare()">📤 みんなに共有</button>'
+    + '<button class="copy" onclick="hostCopyUrl(true)">💌 案内文つき</button>'
+    + '<button class="copy" onclick="hostCopyUrl(false)">📋 URL</button>'
+    + '</div>'
+    + '</div>'
+    + '<div class="bill" style="margin-bottom:12px;padding:14px">'
+    + '<h3>💰 集金の設定</h3>'
+    + '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">PayPay IDを入れると、請求文に送金先が自動で付きます。</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    + '<input class="period" type="text" id="hostPaypay" value="' + esc(d.paypayId || '') + '" placeholder="例: yuki_nsfactory">'
+    + '<button class="btn ghost" onclick="hostSavePaypay()">保存</button>'
+    + '</div>'
+    + '<details style="margin-top:12px"><summary style="font-size:11px;color:var(--muted);cursor:pointer">🔑 合言葉を変える</summary>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'
+    + '<input class="period" type="text" id="hostPass" placeholder="新しい合言葉" autocomplete="off">'
+    + '<button class="btn ghost" onclick="hostSavePass()">保存</button>'
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:6px">変えると、いまの参加者も入り直しになります。</div>'
+    + '</details>'
+    + '</div>'
+    + '<div class="bill" style="margin-bottom:12px;padding:14px">'
+    + '<h3>🔄 取りまとめ役をやめる・交代する</h3>'
+    + '<div style="font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:10px">'
+    + 'やめると枠が空き、次の人が「私が取りまとめます」を押せるようになります。<br>'
+    + '注文や請求のデータはそのまま残ります。あとで自分がまた引き受けることもできます。</div>'
+    + '<button class="btn del" onclick="releaseHost()">取りまとめ役をやめる</button>'
+    + '</div>';
+
+  h += '<h3 class="grp">🛒 このグループで受け付けるセール</h3>'
+    + '<div style="font-size:11px;color:var(--muted);margin:0 2px 10px;line-height:1.7">'
+    + '「受付中」にしたセールだけ、みんなの画面に並びます。</div>';
+
+  var active = d.campaigns.filter(function (c) { return !c.expired; });
+  var past = d.campaigns.filter(function (c) { return c.expired; });
+
+  if (!active.length) {
+    h += '<div class="notice"><div class="notice-icon">🕐</div>'
+      + '<div class="notice-title">いま受付できるセールはありません</div>'
+      + '<div class="notice-body">新しいセール案内が届くと、ここに並びます。</div></div>';
+  }
+  active.forEach(function (c) {
+    h += '<div class="admin-row">'
+      + '<div class="subj">' + esc(c.subject) + ' '
+      + '<span class="pill ' + (c.acceptingHere ? 'published' : 'draft') + '">'
+      + (c.acceptingHere ? '受付中' : '受け付けない') + '</span></div>'
+      + '<div class="meta">' + (c.periodText ? '📅 ' + esc(c.periodText) : '配信 ' + esc(c.mailDate))
+      + remainLabel(c.endDate).replace(/<[^>]+>/g, '') + '</div>'
+      + '<div class="ctrl">'
+      + '<button class="btn ' + (c.acceptingHere ? 'unpub' : 'pub') + '" onclick="hostToggle(\'' + jsq(c.mailId) + '\',' + (!c.acceptingHere) + ')">'
+      + (c.acceptingHere ? 'このグループでは受け付けない' : '受け付ける') + '</button>'
+      + '</div></div>';
+  });
+
+  if (past.length) {
+    h += '<details class="grp-fold"><summary>🗂 終わったセール（' + past.length + '件）'
+      + '<span class="grp-note">タップで開く</span></summary><div style="margin-top:10px">';
+    past.forEach(function (c) {
+      h += '<div class="admin-row" style="opacity:.7"><div class="subj">' + esc(c.subject) + '</div>'
+        + '<div class="meta">' + (c.periodText ? esc(c.periodText) : esc(c.mailDate)) + '</div></div>';
+    });
+    h += '</div></details>';
+  }
+
+  m.innerHTML = h;
+}
+
+function hostShare() {
+  var nl = String.fromCharCode(10);
+  var text = 'コストコのセール品をまとめ買いします🛒' + nl + nl
+    + '欲しい物があれば下のページで名前を入れてチェックしてください。' + nl
+    + '無料で使えます。' + nl + nl
+    + '▼注文はこちら' + nl + state.hostData.memberUrl + nl + nl
+    + '▼使い方' + nl + PUBLIC_BASE + 'guide.html';
+  if (navigator.share) navigator.share({ title: 'コストコ共同購入', text: text }).catch(function () { });
+  else copyToClipboard(text, 'この端末は共有に非対応のためコピーしました 📋');
+}
+
+function hostCopyUrl(withGuide) {
+  var nl = String.fromCharCode(10);
+  var url = state.hostData.memberUrl;
+  var text = url;
+  if (withGuide) {
+    text = 'コストコのセール品をまとめ買いします🛒' + nl + nl
+      + '欲しい物があれば下のページで名前を入れてチェックしてください。' + nl
+      + '無料で使えます。' + nl + nl
+      + '▼注文はこちら' + nl + url + nl + nl
+      + '▼使い方' + nl + PUBLIC_BASE + 'guide.html';
+  }
+  copyToClipboard(text, 'コピーしました 📋');
+}
+
+function hostToggle(mailId, accept) {
+  google.script.run.withSuccessHandler(function () {
+    toast(accept ? '受付を始めました' : '受付を止めました');
+    state.hostData = null;
+    loadHost();
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiHostToggleCampaign(GROUP_ID, HOST_KEY, mailId, accept, ADMIN_KEY);
+}
+
+function hostSavePaypay() {
+  var v = $('hostPaypay').value.trim();
+  google.script.run.withSuccessHandler(function () {
+    toast('送金先を保存しました');
+    state.hostData = null;
+    loadHost();
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiHostSetPaypay(GROUP_ID, HOST_KEY, v, ADMIN_KEY);
+}
+
+function hostSavePass() {
+  var pw = $('hostPass').value.trim();
+  if (!confirm(pw ? '合言葉を変更しますか？\n（いまの参加者も入り直しになります）'
+                  : '合言葉を空にしますか？\n（URLを知っている人は誰でも入れるようになります）')) return;
+  google.script.run.withSuccessHandler(function () {
+    toast('合言葉を変更しました');
+    state.hostData = null;
+    loadHost();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiHostSetPass(GROUP_ID, HOST_KEY, pw, ADMIN_KEY);
+}
+
+function renderAdmin(m) {
+  if (!state.adminData) { m.innerHTML = '<div class="loading">読み込み中…</div>'; return; }
+  var unread = state.adminData.unreadFeedback || 0;
+  var html = '<div class="bill" style="margin-bottom:12px;padding:12px 14px;background:#eef2f7">'
+    + '<div style="font-size:13px;font-weight:700;color:var(--blue)">🛠 運営（アプリ全体）の管理</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.7">'
+    + 'ここはアプリ全体の設定です。<br>'
+    + 'グループの案内URLや集金の設定は「とりまとめ」タブにあります。</div>'
+    + '<div style="font-size:11px;margin-top:8px;padding-top:8px;border-top:1px solid #d8dee8;color:var(--muted)">'
+    + '📱 この端末は<b>運営モード</b>として記憶されています。ホーム画面から開いてもこのままです。<br>'
+    + '<a href="' + esc(PUBLIC_BASE) + '?reset=1" style="color:var(--blue)">この端末の記憶を消す（通常の利用者に戻す）</a>'
+    + '</div></div>'
+    + '<details class="grp-fold" style="margin-top:0;margin-bottom:12px"><summary>⚙️ 全体の設定'
+    + '<span class="grp-note">通知先・寄付・メンテナンス</span></summary>'
+    + '<div style="margin-top:12px">'
+    + '<div style="font-size:13px;font-weight:700;margin-bottom:6px">📧 ご意見の通知先メール</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    + '<input class="period" id="notifyInput" type="text" placeholder="you@example.com">'
+    + '<button class="btn ghost" onclick="saveNotify()">保存</button>'
+    + '<button class="btn ghost" onclick="checkMail()">📨 通知テスト</button>'
+    + '</div>'
+    + '<div id="mailStatus" style="font-size:11px;color:var(--muted);margin:6px 0 12px">確認中…</div>'
+    + '<div style="font-size:13px;font-weight:700;margin-bottom:6px">☕ 寄付ページのURL（任意）</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    + '<input class="period" id="donateInput" value="' + esc(DONATE_URL) + '" placeholder="https://... 空にすると非表示">'
+    + '<button class="btn ghost" onclick="saveDonate()">保存</button>'
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin:6px 0 12px">全画面の下部に「運営を応援する（任意）」リンクが出ます。空欄なら何も出ません。</div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    + '<button class="btn ghost" onclick="adminFetch()">📩 メールを再取込</button>'
+    + '<button class="btn ghost" onclick="adminBackfill()">🗓 公開中の期限を埋める</button></div>'
+    + '<div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">'
+    + '<button class="btn del" onclick="resetAllOrders()">🗑 全グループの注文記録を消去</button>'
+    + '<div style="font-size:11px;color:var(--muted);margin-top:6px">お試しで入れた注文をまとめて消します。商品データとグループは残ります。</div>'
+    + '</div>'
+    + '</div></details>'
+    + '<details class="grp-fold" style="margin-top:0;margin-bottom:12px"><summary>👥 グループと利用状況'
+    + '<span class="grp-note">外部の方への開放</span></summary>'
+    + '<div id="groupPanel" style="margin-top:12px"><div class="loading">読み込み中…</div></div>'
+    + '</details>'
+    + '<details class="grp-fold" style="margin-top:0;margin-bottom:12px"' + (unread ? ' open' : '') + '><summary>💬 届いたご意見'
+    + (unread ? ' <span class="pill unread">未対応 ' + unread + '件</span>' : '<span class="grp-note">不具合・改善要望</span>')
+    + '</summary>'
+    + '<div id="fbPanel" style="margin-top:12px"><div class="loading">読み込み中…</div></div>'
+    + '</details>';
+  // 状態別にグループ分け（受付中 → 下書き → 終了は折りたたみ）
+  var groups = { active: [], draft: [], done: [] };
+  state.adminData.campaigns.forEach(function (c) {
+    if (c.status === 'ended' || (c.status === 'published' && c.expired)) groups.done.push(c);
+    else if (c.status === 'published') groups.active.push(c);
+    else groups.draft.push(c);
+  });
+
+  function renderGroup(list) {
+    var h = '';
+    list.forEach(function (c) { h += adminRowHtml(c); });
+    return h;
+  }
+
+  if (groups.active.length) {
+    html += '<h3 class="grp grp-active">🟢 受付中（' + groups.active.length + '件）</h3>'
+      + renderGroup(groups.active);
+  }
+  if (groups.draft.length) {
+    html += '<h3 class="grp">📥 下書き（' + groups.draft.length + '件）'
+      + '<span class="grp-note">公開すると知人に見えます</span></h3>'
+      + renderGroup(groups.draft);
+  }
+  if (groups.done.length) {
+    html += '<details class="grp-fold"><summary>🗂 終了したセール（' + groups.done.length + '件）'
+      + '<span class="grp-note">タップで開く</span></summary>'
+      + '<div style="margin-top:10px">' + renderGroup(groups.done) + '</div></details>';
+  }
+  m.innerHTML = html;
+  // 折りたたみを開いたら中身を読み込む
+  var gp = m.querySelector('#groupPanel');
+  if (gp) {
+    var det = gp.closest('details');
+    if (det) det.addEventListener('toggle', function () { if (det.open) loadGroupPanel(); });
+  }
+  var fp = m.querySelector('#fbPanel');
+  if (fp) {
+    var det2 = fp.closest('details');
+    if (det2) det2.addEventListener('toggle', function () { if (det2.open) loadFeedbackPanel(); });
+  }
+  var ms = m.querySelector('#mailStatus');
+  if (ms) {
+    var det3 = ms.closest('details');
+    if (det3) det3.addEventListener('toggle', function () { if (det3.open) checkMailStatus(); });
+  }
+}
+
+function loadFeedbackPanel() {
+  var box = $('fbPanel');
+  if (!box || box.getAttribute('data-loaded') === '1') return;
+  box.setAttribute('data-loaded', '1');
+  google.script.run.withSuccessHandler(function (r) {
+    if (!r.items || !r.items.length) {
+      box.innerHTML = '<div class="empty">まだご意見は届いていません</div>';
+      return;
+    }
+    var h = '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">新しい順（最大50件）。届くとメールでも通知します。</div>';
+    r.items.forEach(function (it) {
+      var done = it.status === '対応済み';
+      h += '<div class="admin-row"' + (done ? ' style="opacity:.6"' : '') + '>'
+        + '<div class="subj">' + esc(it.kind) + ' <span class="pill ' + (done ? 'published' : 'draft') + '">' + esc(it.status) + '</span></div>'
+        + '<div class="meta">' + esc(it.at) + ' / グループ ' + esc(it.groupId)
+        + (it.contact ? ' / 連絡先 ' + esc(it.contact) : '') + '</div>'
+        + '<div style="font-size:13px;line-height:1.8;white-space:pre-wrap;margin:6px 0;padding:10px;background:#f8f9fb;border-radius:8px">' + esc(it.body) + '</div>'
+        + '<div class="ctrl"><button class="btn ghost" onclick="setFbStatus(' + it.row + ',\'' + (done ? '未対応' : '対応済み') + '\')">'
+        + (done ? '未対応に戻す' : '対応済みにする') + '</button></div></div>';
+    });
+    box.innerHTML = h;
+  }).withFailureHandler(function (e) {
+    box.innerHTML = '<div class="empty">取得エラー: ' + esc(e.message) + '</div>';
+    box.setAttribute('data-loaded', '0');
+  }).apiAdminFeedback(ADMIN_KEY);
+}
+
+function setFbStatus(row, status) {
+  google.script.run.withSuccessHandler(function () {
+    toast('更新しました');
+    $('fbPanel').setAttribute('data-loaded', '0');
+    loadFeedbackPanel();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminFeedbackStatus(ADMIN_KEY, row, status);
+}
+
+function adminRowHtml(c) {
+  var html = '';
+  var pill, pillCls;
+  if (c.status === 'ended') { pill = '終了（請求のため保持）'; pillCls = 'draft'; }
+  else if (c.status === 'published') {
+    pill = c.expired ? '期限切れ（自動非表示）' : '公開中';
+    pillCls = c.expired ? 'draft' : 'published';
+  } else { pill = '下書き'; pillCls = 'draft'; }
+  html += '<div class="admin-row">'
+    + '<div class="subj">' + esc(c.subject) + ' <span class="pill ' + pillCls + '">' + pill + '</span></div>'
+    + '<div class="meta">配信 ' + esc(c.mailDate) + ' / 商品 ' + c.productCount + '点'
+    + (c.periodText ? ' / 📅 ' + esc(c.periodText) : '')
+    + (c.endDate ? '（最終日 ' + esc(c.endDate) + '）' : '') + '</div>'
+    + '<div class="ctrl">'
+    + '<button class="btn ghost" onclick="togglePreview(\'' + jsq(c.mailId) + '\')">🖼 商品を見る</button>'
+    + '<input class="period" id="per_' + esc(c.mailId) + '" value="' + esc(c.periodText) + '" placeholder="セール期間 例: 8/22(金)〜8/24(日)">'
+    + '<input class="period" style="width:130px" id="end_' + esc(c.mailId) + '" value="' + esc(c.endDate || '') + '" placeholder="最終日 2026-08-24">'
+    + '<button class="btn ghost" onclick="savePeriod(\'' + jsq(c.mailId) + '\')">期間保存</button>';
+  if (c.status === 'published' || c.status === 'ended') {
+    html += '<button class="btn unpub" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'draft\')">非公開にする</button>';
+  } else {
+    html += '<button class="btn pub" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'published\')">公開する</button>';
+  }
+  html += '<button class="btn ghost" onclick="demoPublish(\'' + jsq(c.mailId) + '\')" title="期間が終わっていても3日間だけ表示させて動作を試せます">🧪 お試し表示</button>';
+  html += '</div><div id="prev_' + esc(c.mailId) + '" class="preview" style="display:none"></div></div>';
+  return html;
+}
+
+function setStatus(mailId, status) {
+  google.script.run.withSuccessHandler(function () {
+    toast(status === 'published' ? '公開しました' : '非公開にしました');
+    state.adminData = null;
+    loadAdmin();
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminUpdate(ADMIN_KEY, mailId, { status: status });
+}
+
+function savePeriod(mailId) {
+  var v = $('per_' + mailId).value;
+  var e2 = $('end_' + mailId).value.trim();
+  google.script.run.withSuccessHandler(function () {
+    toast('期間を保存しました');
+    state.adminData = null; loadAdmin();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminUpdate(ADMIN_KEY, mailId, { periodText: v, endDate: e2 });
+}
+
+/** 商品プレビュー開閉。開くと同時に期間をAI解析（未設定のときだけ） */
+function togglePreview(mailId) {
+  var box = $('prev_' + mailId);
+  if (!box) return;
+  if (box.style.display !== 'none') { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  if (box.getAttribute('data-loaded') === '1') return;
+  box.innerHTML = '<div class="loading">商品と期間を読み込み中…</div>';
+
+  google.script.run.withSuccessHandler(function (r) {
+    box.setAttribute('data-loaded', '1');
+    var h = '<div class="pgrid">';
+    r.products.forEach(function (p) {
+      h += '<div class="pmini">'
+        + (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" loading="lazy" alt="">' : '<div class="noimg">画像なし</div>')
+        + '<div class="pmini-name">' + esc(p.name) + '</div>'
+        + '<div class="pmini-price">' + (p.salePrice ? yen(p.salePrice) : (p.off ? yen(p.off) + ' OFF' : '—')) + '</div>'
+        + '</div>';
+    });
+    h += '</div>';
+    box.innerHTML = h;
+  }).withFailureHandler(function (e) {
+    box.innerHTML = '<div class="empty">商品の読み込みエラー: ' + esc(e.message) + '</div>';
+  }).apiAdminProducts(ADMIN_KEY, mailId);
+
+  // 期間のAI解析（既に入っていればサーバー側で何もしない）
+  var perEl = $('per_' + mailId);
+  if (perEl && !perEl.value.trim()) {
+    perEl.placeholder = '期間をAI解析中…';
+    google.script.run.withSuccessHandler(function (r) {
+      if (r && r.period) {
+        perEl.value = r.period;
+        if (r.endDate) $('end_' + mailId).value = r.endDate;
+        toast('期間を読み取りました: ' + r.period);
+      } else {
+        perEl.placeholder = 'バナーから読めず（手入力してください）';
+      }
+    }).withFailureHandler(function (e) {
+      perEl.placeholder = 'セール期間 例: 8/22(金)〜8/24(日)';
+      toast('期間解析エラー: ' + e.message);
+    }).apiAdminAnalyze(ADMIN_KEY, mailId);
+  }
+}
+
+function copyToClipboard(text, doneMsg) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { toast(doneMsg); });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    toast(doneMsg);
+  }
+}
+
+function saveNotify() {
+  var v = $('notifyInput').value.trim();
+  google.script.run.withSuccessHandler(function () {
+    toast('通知先を保存しました');
+    checkMailStatus();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiSetNotifyEmail(ADMIN_KEY, v);
+}
+
+function checkMailStatus() {
+  var el = $('mailStatus');
+  if (!el) return;
+  google.script.run.withSuccessHandler(function (r) {
+    if ($('notifyInput') && !$('notifyInput').value) $('notifyInput').value = r.notifyEmail || '';
+    var h = '';
+    if (r.canSend) {
+      h = '✅ メール通知は使えます（' + esc(r.route || '') + '）';
+      if (r.quota !== undefined) h += '　本日の残り ' + r.quota + '通';
+      if (r.relayTo) h += '<br>通知先: ' + esc(r.relayTo);
+      else if (!r.notifyEmail) h += '<br>⚠️ 通知先が未設定です。上の欄にメールアドレスを入れて保存してください。';
+    } else {
+      h = '⚠️ メール通知が送れません。<br>管理タブの赤い数字では気づけます。';
+    }
+    if (r.last) h += '<br>直近の送信: ' + esc(r.last);
+    el.innerHTML = h;
+  }).withFailureHandler(function (e) {
+    el.textContent = '状態を取得できません: ' + e.message;
+  }).apiMailStatus(ADMIN_KEY);
+}
+
+function checkMail() {
+  toast('テスト送信しています…');
+  google.script.run.withSuccessHandler(function () {
+    toast('送信しました。メールをご確認ください📨');
+    checkMailStatus();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiSendFeedback(GROUP_ID, 'その他', '【通知テスト】この通知が届けば設定は正常です。', '');
+}
+
+function saveDonate() {
+  var v = $('donateInput').value.trim();
+  google.script.run.withSuccessHandler(function (r) {
+    DONATE_URL = r.url;
+    var line = document.getElementById('donateLine');
+    if (r.url) { document.getElementById('donateLink').href = r.url; line.style.display = ''; }
+    else line.style.display = 'none';
+    toast('寄付ページを保存しました');
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiSetDonateUrl(ADMIN_KEY, v);
+}
+
+/* ---------- グループ管理・利用状況 ---------- */
+function loadGroupPanel() {
+  var box = $('groupPanel');
+  if (!box || box.getAttribute('data-loaded') === '1') return;
+  box.setAttribute('data-loaded', '1');
+  google.script.run.withSuccessHandler(function (g) {
+    google.script.run.withSuccessHandler(function (st) {
+      renderGroupPanel(g, st);
+    }).withFailureHandler(function (e) { renderGroupPanel(g, null); })
+      .apiAdminStats(ADMIN_KEY);
+  }).withFailureHandler(function (e) {
+    box.innerHTML = '<div class="empty">取得エラー: ' + esc(e.message) + '</div>';
+    box.setAttribute('data-loaded', '0');
+  }).apiAdminGroups(ADMIN_KEY);
+}
+
+function renderGroupPanel(g, st) {
+  var box = $('groupPanel');
+  var h = '';
+
+  if (st) {
+    h += '<div style="background:#eef2f7;border-radius:8px;padding:12px;margin-bottom:14px">'
+      + '<div style="font-size:13px;font-weight:700;margin-bottom:6px">📊 利用状況</div>'
+      + '<div style="font-size:13px">開いた回数 <b>' + st.totalOpen + '</b>　／　注文の保存 <b>' + st.totalSave + '</b></div>';
+    if (st.days && st.days.length) {
+      h += '<div style="margin-top:8px;overflow-x:auto"><table class="mx" style="font-size:11px"><tr><th>日付</th><th>開いた</th><th>保存</th></tr>';
+      st.days.slice().reverse().forEach(function (d) {
+        h += '<tr><td>' + esc(d.date) + '</td><td>' + d.open + '</td><td>' + d.save + '</td></tr>';
+      });
+      h += '</table></div>';
+    } else {
+      h += '<div style="font-size:11px;color:var(--muted);margin-top:6px">まだ記録がありません（この機能を入れた後から集計されます）</div>';
+    }
+    h += '</div>';
+  }
+
+  h += '<div style="font-size:13px;font-weight:700;margin-bottom:4px">👥 グループ一覧</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.7">'
+    + 'URLに <b>?g=</b> が付いていないと「おためし」グループに入ります。'
+    + '身内用は <b>?g=main</b> を必ず付けてください。</div>';
+  (g.groups || []).forEach(function (gr) {
+    // グループ指定なしの入口は「おためし」なので、それ以外は必ず ?g= を付ける
+    var url = PUBLIC_BASE + '?g=' + encodeURIComponent(gr.groupId);
+    var adminUrl = url + '&key=' + encodeURIComponent(ADMIN_KEY);
+    var stat = null;
+    if (st && st.groups) st.groups.forEach(function (x) { if (x.groupId === gr.groupId) stat = x; });
+    h += '<div class="admin-row">'
+      + '<div class="subj">' + esc(gr.name) + ' <span class="pill ' + (gr.hasPass ? 'published' : 'draft') + '">'
+      + (gr.hasPass ? '🔑 合言葉あり' : '合言葉なし') + '</span></div>'
+      + '<div class="meta">ID: ' + esc(gr.groupId)
+      + ' / 参加者 ' + (stat ? stat.personCount : gr.personCount) + '人'
+      + (stat ? ' / 注文 ' + stat.itemCount + '点' : '') + '</div>'
+      + '<div style="font-size:11px;color:var(--muted);word-break:break-all;margin:4px 0">' + esc(url) + '</div>'
+      + '<div class="ctrl">'
+      + '<button class="copy" onclick="copyGroupUrl(\'' + jsq(gr.groupId) + '\',false)">📋 参加者用URL</button>'
+      + '<button class="copy" onclick="copyGroupUrl(\'' + jsq(gr.groupId) + '\',true)">💌 案内文つき</button>'
+      + '<button class="btn ghost" onclick="copyHostUrl(\'' + jsq(gr.groupId) + '\',\'' + jsq(gr.hostKey || '') + '\')">🧑‍🍳 とりまとめ役用URL</button>'
+      + '<button class="btn ghost" onclick="copyAdminUrl(\'' + jsq(gr.groupId) + '\')">🔑 自分用（全体管理）</button>'
+      + '</div><div class="ctrl">'
+      + '<input class="period" type="text" style="width:130px" id="gn_' + esc(gr.groupId) + '" value="' + esc(gr.name) + '" placeholder="グループ名">'
+      + '<input class="period" type="text" autocomplete="off" style="width:130px" id="gp_' + esc(gr.groupId) + '" placeholder="合言葉を変更">'
+      + '<button class="btn ghost" onclick="saveGroup(\'' + jsq(gr.groupId) + '\')">名前と合言葉を保存</button>';
+    if (gr.groupId !== 'main') {
+      h += '<button class="btn del" onclick="deleteGroup(\'' + jsq(gr.groupId) + '\',\'' + jsq(gr.name) + '\')">🗑 削除</button>';
+    }
+    h += '</div></div>';
+  });
+
+  h += '<div class="admin-row" style="background:#f8fbff">'
+    + '<div class="subj">➕ 新しいグループを作る</div>'
+    + '<div class="meta">外部の方に配るときは、グループを分けると注文と請求が混ざりません</div>'
+    + '<div class="ctrl">'
+    + '<input class="period" style="width:120px" id="newGid" placeholder="ID（英数字）">'
+    + '<input class="period" style="width:130px" id="newGname" placeholder="表示名">'
+    + '<input class="period" style="width:120px" id="newGpass" placeholder="合言葉">'
+    + '<button class="btn pub" onclick="createGroup()">作成</button>'
+    + '</div></div>';
+
+  box.innerHTML = h;
+}
+
+/** とりまとめ役用URL。そのグループだけ管理できる。ホスト本人にだけ渡す */
+function copyHostUrl(gid, hostKey) {
+  if (!hostKey) { toast('このグループにはまだ鍵がありません。setupを実行してください'); return; }
+  var nl = String.fromCharCode(10);
+  var url = PUBLIC_BASE + '?g=' + encodeURIComponent(gid) + '&h=' + encodeURIComponent(hostKey);
+  var text = 'コストコ共同購入アプリの「とりまとめ役」用URLです🧑‍🍳' + nl + nl
+    + 'このURLはあなた専用です。他の人には渡さないでください。' + nl
+    + '（このグループの受付・請求・受領だけを管理できます）' + nl + nl
+    + url + nl + nl
+    + '参加者に配るURLは、開いたあと「とりまとめ」タブの共有ボタンから取れます。';
+  copyToClipboard(text, 'とりまとめ役用URLをコピーしました🧑‍🍳');
+}
+
+/** 管理者用URL（keyつき）。このURLは他人に渡さない */
+function copyAdminUrl(gid) {
+  var url = PUBLIC_BASE + '?g=' + encodeURIComponent(gid) + '&key=' + encodeURIComponent(ADMIN_KEY);
+  copyToClipboard(url, '管理者用URLをコピーしました🔑 他の人に渡さないでください');
+}
+
+function copyGroupUrl(gid, withGuide) {
+  var url = PUBLIC_BASE + '?g=' + encodeURIComponent(gid);
+  var nl = String.fromCharCode(10);
+  var text = url;
+  if (withGuide) {
+    text = 'コストコのセール品をまとめ買いします🛒' + nl + nl
+      + '下のページを開いて、名前を入れて欲しい物にチェックするだけです。' + nl
+      + '無料で使えます。締切までならいつでも変更できます。' + nl + nl
+      + '▼注文はこちら' + nl + url + nl + nl
+      + '▼使い方がわからないときは' + nl + PUBLIC_BASE + 'guide.html';
+  }
+  copyToClipboard(text, 'コピーしました 📋');
+}
+
+function saveGroup(gid) {
+  var name = $('gn_' + gid).value.trim();
+  var pw = $('gp_' + gid).value.trim();
+  if (!name) { toast('グループ名を入れてください'); return; }
+  if (!pw && !confirm('合言葉の欄が空です。\n（空のまま保存すると、いまの合言葉はそのまま残ります）\n名前だけ変更しますか？')) return;
+  // 合言葉欄が空なら現在の合言葉を保持する
+  google.script.run.withSuccessHandler(function () {
+    toast('保存しました');
+    $('groupPanel').setAttribute('data-loaded', '0');
+    loadGroupPanel();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminSaveGroup(ADMIN_KEY, gid, name, pw || '__KEEP__', '');
+}
+
+function createGroup() {
+  var gid = $('newGid').value.trim();
+  var name = $('newGname').value.trim();
+  var pw = $('newGpass').value.trim();
+  if (!gid || !name) { toast('IDと表示名を入れてください'); return; }
+  google.script.run.withSuccessHandler(function () {
+    toast('グループを作成しました');
+    $('groupPanel').setAttribute('data-loaded', '0');
+    loadGroupPanel();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminSaveGroup(ADMIN_KEY, gid, name, pw, '');
+}
+
+function deleteGroup(gid, name) {
+  if (!confirm(name + ' を削除しますか？\nこのグループの注文と受領記録もすべて消えます。元に戻せません。')) return;
+  google.script.run.withSuccessHandler(function (r) {
+    toast('削除しました（注文' + r.removedChecks + '件）');
+    $('groupPanel').setAttribute('data-loaded', '0');
+    loadGroupPanel();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminDeleteGroup(ADMIN_KEY, gid);
+}
+
+/** 期間終了済みでも3日間だけ表示させて動作を試す */
+function demoPublish(mailId) {
+  if (!confirm('このセールを「動作確認用」として3日間表示しますか？\n（実際のセールは終了している可能性があります）')) return;
+  google.script.run.withSuccessHandler(function (r) {
+    toast('お試し表示にしました（〜' + r.endDate + '）');
+    state.adminData = null;
+    loadAdmin();
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminDemo(ADMIN_KEY, mailId);
+}
+
+function resetAllOrders() {
+  if (!confirm('すべてのグループの注文記録と受領記録を消します。\n商品データとグループ設定は残ります。\n元に戻せませんが、よろしいですか？')) return;
+  google.script.run.withSuccessHandler(function (r) {
+    toast('注文' + r.removedChecks + '件・受領' + r.removedPayments + '件を消去しました');
+    state.adminData = null;
+    $('groupPanel') && $('groupPanel').setAttribute('data-loaded', '0');
+    loadAdmin();
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminResetOrders(ADMIN_KEY);
+}
+
+function adminBackfill() {
+  toast('公開中セールの期限を確認中…');
+  google.script.run.withSuccessHandler(function (r) {
+    toast('期限を設定: ' + ((r.filled && r.filled.length) || 0) + '件');
+    state.adminData = null; loadAdmin();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminBackfill(ADMIN_KEY);
+}
+
+function adminFetch() {
+  toast('取込中…（最大1分）');
+  google.script.run.withSuccessHandler(function (r) {
+    toast('取込完了: 新規 ' + (r.added ? r.added.length : 0) + '件');
+    state.adminData = null;
+    loadAdmin();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminFetch(ADMIN_KEY);
+}
+</script>
 </body>
 </html>
