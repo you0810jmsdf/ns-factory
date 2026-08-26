@@ -346,11 +346,13 @@ if (ENTRY_PARAMS.get('reset') === '1') {
 }
 
 var ENTRY_PICKED = {};
+var ENTRY_HAS_EXPLICIT = false;
 ['key', 'g', 'h'].forEach(function (name) {
-  var v = ENTRY_PARAMS.get(name) || ENTRY_SAVED[name] || '';
+  if (ENTRY_PARAMS.has(name)) ENTRY_HAS_EXPLICIT = true;
+  var v = ENTRY_PARAMS.has(name) ? (ENTRY_PARAMS.get(name) || '') : (ENTRY_SAVED[name] || '');
   if (v) ENTRY_PICKED[name] = v;
 });
-if (ENTRY_PARAMS.get('key') || ENTRY_PARAMS.get('g') || ENTRY_PARAMS.get('h')) {
+if (ENTRY_HAS_EXPLICIT) {
   try { localStorage.setItem(ENTRY_STORE, JSON.stringify(ENTRY_PICKED)); } catch (e) {}
 }
 
