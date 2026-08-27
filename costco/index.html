@@ -442,7 +442,8 @@ var ADMIN_KEY = ENTRY_PICKED.key || '';
 var APP_URL = GAS_URL;
 var GROUP_ID = ENTRY_PICKED.g || 'guest';
 var HOST_KEY = ENTRY_PICKED.h || '';
-var IS_HOST = !!HOST_KEY;
+var HAS_HOST_KEY = !!HOST_KEY;
+var IS_HOST = false;
 var DONATE_URL = '';
 var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
 
@@ -538,6 +539,12 @@ $('personInput').addEventListener('change', function () {
   state.person = newPerson;
   localStorage.setItem('cgb_person', state.person);
   updateHello();
+  if (HAS_HOST_KEY) {
+    state.myQty = {};
+    state.dirty = false;
+    reloadAll();
+    return;
+  }
   if (!canSeeGroupOrders()) {
     state.myQty = {};
     state.dirty = false;
@@ -571,6 +578,12 @@ function applyServerData(d) {
   if (!d) return;
   if (typeof d.isAdmin === 'boolean') IS_ADMIN = d.isAdmin;
   if (typeof d.isHost === 'boolean') IS_HOST = d.isHost;
+  if (typeof d.hasHostKey === 'boolean') HAS_HOST_KEY = d.hasHostKey;
+  if (!canSeeGroupOrders()) {
+    state.hostData = null;
+    state.hostError = '';
+    state.members = [];
+  }
   if (d.publicBase) PUBLIC_BASE = d.publicBase;
   if (typeof d.donateUrl === 'string') {
     DONATE_URL = d.donateUrl;
@@ -629,7 +642,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function
 /* ---------- 起動: 合言葉が要るグループならゲートを出す ---------- */
 function boot() {
   // 管理者・とりまとめ役は合言葉なしで入れる
-  if (IS_ADMIN || IS_HOST) { startApp(); return; }
+  if (IS_ADMIN || HAS_HOST_KEY) { startApp(); return; }
   google.script.run.withSuccessHandler(function (info) {
     if (!info.exists) {
       $('main').innerHTML = '<div class="notice"><div class="notice-icon">🔍</div>'
@@ -868,26 +881,10 @@ function reloadAll(cb) {
 }
 
 function refreshPersonList() {
-  if (!state.data) return;
   var dl = $('personList');
   var sel = $('personPick');
-  if (!canSeeGroupOrders()) {
-    dl.innerHTML = '';
-    sel.style.display = 'none';
-    return;
-  }
-  var persons = [];
-  state.data.checks.forEach(function (c) { if (persons.indexOf(c.person) === -1) persons.push(c.person); });
-  persons.sort();
-  dl.innerHTML = persons.map(function (p) { return '<option value="' + esc(p) + '">'; }).join('');
-  if (persons.length) {
-    sel.style.display = '';
-    sel.innerHTML = '<option value="">選ぶ▼</option>' + persons.map(function (p) {
-      return '<option value="' + esc(p) + '">' + esc(p) + '</option>';
-    }).join('');
-  } else {
-    sel.style.display = 'none';
-  }
+  dl.innerHTML = '';
+  sel.style.display = 'none';
 }
 
 $('personPick').addEventListener('change', function () {
@@ -984,7 +981,7 @@ function loadMembers() {
   google.script.run.withSuccessHandler(function (r) {
     state.members = r.members || [];
     if (state.tab === 'shop') render();
-  }).withFailureHandler(function () { }).apiGroupMembers(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY);
+  }).withFailureHandler(function () { }).apiGroupMembers(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
 }
 
 /** 取りまとめ役ご本人が、鍵の無い端末から復帰する */
@@ -1002,7 +999,7 @@ function loadSeat() {
   google.script.run.withSuccessHandler(function (r) {
     state.seat = r;
     if (state.tab === 'shop') render();
-  }).withFailureHandler(function () { }).apiHostSeat(GROUP_ID, HOST_KEY, GROUP_PASS, ADMIN_KEY);
+  }).withFailureHandler(function () { }).apiHostSeat(GROUP_ID, HOST_KEY, GROUP_PASS, ADMIN_KEY, state.person);
 }
 
 /**
@@ -1056,7 +1053,7 @@ function releaseHost() {
   google.script.run.withSuccessHandler(function () {
     reopenAs('g=' + encodeURIComponent(GROUP_ID) + '&reset=1', '取りまとめ役を手放しました');
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiReleaseHost(GROUP_ID, HOST_KEY, ADMIN_KEY);
+    .apiReleaseHost(GROUP_ID, HOST_KEY, ADMIN_KEY, state.person);
 }
 
 function renderShop(m) {
@@ -1234,7 +1231,7 @@ function removeStaple(itemNo) {
     toast('定番から外しました');
     reloadAll();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiRemoveStaple(itemNo, GROUP_ID, HOST_KEY, ADMIN_KEY);
+    .apiRemoveStaple(itemNo, GROUP_ID, HOST_KEY, ADMIN_KEY, state.person);
 }
 
 /** 定番の価格を更新する（買い物のときの実売価格） */
@@ -1244,7 +1241,7 @@ function saveStaplePrice(itemNo) {
     toast('価格を更新しました');
     reloadAll();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiSetStaplePrice(itemNo, Number(v) || 0, GROUP_ID, HOST_KEY, ADMIN_KEY);
+    .apiSetStaplePrice(itemNo, Number(v) || 0, GROUP_ID, HOST_KEY, ADMIN_KEY, state.person);
 }
 
 /* ---------- 過去の商品から定番に登録する ---------- */
@@ -1503,7 +1500,7 @@ function toggleSoldOut(campaignId, itemNo, isSoldNow) {
     toast(isSoldNow ? '買えたことにしました' : '「' + reason + '」として記録しました');
     reloadAll();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiMarkSoldOut(GROUP_ID, campaignId, itemNo, reason, isSoldNow, HOST_KEY, ADMIN_KEY);
+    .apiMarkSoldOut(GROUP_ID, campaignId, itemNo, reason, isSoldNow, HOST_KEY, ADMIN_KEY, state.person);
 }
 
 function personTotal(person, campaignId) {
@@ -1642,7 +1639,7 @@ function deletePerson(person) {
     toast(person + ' さんの注文を削除しました（' + r.removed + '件）');
     reloadAll();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiHostDeletePerson(GROUP_ID, HOST_KEY, person, ADMIN_KEY);
+    .apiHostDeletePerson(GROUP_ID, HOST_KEY, person, ADMIN_KEY, state.person);
 }
 
 function removeSavedItem(person, campaignId, itemNo, btn) {
@@ -1661,7 +1658,7 @@ function removeSavedItem(person, campaignId, itemNo, btn) {
   }).withFailureHandler(function (e) {
     if (btn) { btn.disabled = false; btn.textContent = '削除'; }
     toast('削除エラー: ' + e.message);
-  }).apiRemoveCheckItem(person, campaignId, itemNo, GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY);
+  }).apiRemoveCheckItem(person, campaignId, itemNo, GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
 }
 
 function markPaid(person, amount, unset) {
@@ -1672,7 +1669,7 @@ function markPaid(person, amount, unset) {
     toast(unset ? '受領を取消しました' : '受領を記録しました ✅');
     reloadAll();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiHostMarkPaid(GROUP_ID, HOST_KEY, person, amount, unset, ADMIN_KEY);
+    .apiHostMarkPaid(GROUP_ID, HOST_KEY, person, amount, unset, ADMIN_KEY, state.person);
 }
 
 function copyBill(person) {
@@ -1733,7 +1730,7 @@ function loadHost(cb) {
   }).withFailureHandler(function (e) {
     state.hostError = e.message;
     if (state.tab === 'host') render();
-  }).apiHostData(GROUP_ID, HOST_KEY, ADMIN_KEY);
+  }).apiHostData(GROUP_ID, HOST_KEY, ADMIN_KEY, state.person);
 }
 
 function renderHost(m) {
@@ -1847,7 +1844,7 @@ function hostToggle(mailId, accept) {
     loadHost();
     reloadAll();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiHostToggleCampaign(GROUP_ID, HOST_KEY, mailId, accept, ADMIN_KEY);
+    .apiHostToggleCampaign(GROUP_ID, HOST_KEY, mailId, accept, ADMIN_KEY, state.person);
 }
 
 function hostSavePaypay() {
@@ -1858,7 +1855,7 @@ function hostSavePaypay() {
     loadHost();
     reloadAll();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiHostSetPaypay(GROUP_ID, HOST_KEY, v, ADMIN_KEY);
+    .apiHostSetPaypay(GROUP_ID, HOST_KEY, v, ADMIN_KEY, state.person);
 }
 
 function hostSavePass() {
@@ -1870,7 +1867,7 @@ function hostSavePass() {
     state.hostData = null;
     loadHost();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
-    .apiHostSetPass(GROUP_ID, HOST_KEY, pw, ADMIN_KEY);
+    .apiHostSetPass(GROUP_ID, HOST_KEY, pw, ADMIN_KEY, state.person);
 }
 
 function renderAdmin(m) {
@@ -2128,6 +2125,20 @@ function checkMailStatus() {
       h = '⚠️ メール通知が送れません。<br>管理タブの赤い数字では気づけます。';
     }
     if (r.last) h += '<br>直近の送信: ' + esc(r.last);
+    if (r.fetchTriggerCount !== undefined) {
+      h += '<br>取込監視: ' + r.fetchTriggerCount + '本 / ' + (r.fetchEveryMinutes || '?') + '分ごと';
+      if (r.lastTriggerSetup && r.lastTriggerSetup.at) h += '（設定: ' + esc(r.lastTriggerSetup.at) + '）';
+    }
+    if (r.lastFetch) {
+      var f = r.lastFetch;
+      h += '<br>最終取込: ' + esc(f.finishedAt || f.startedAt || '記録なし')
+        + (f.ok ? '' : '（失敗）')
+        + ' / Gmail ' + (f.threadsScanned || 0) + '件・' + (f.messagesSeen || 0) + '通'
+        + ' / 新規 ' + (f.addedCount || 0)
+        + ' / 自動公開 ' + (f.autoPublishedCount || 0)
+        + ' / オンライン除外 ' + ((f.skippedOnlineCount || 0) + (f.archivedOnlineCount || 0));
+      if (f.error) h += '<br>取込エラー: ' + esc(f.error);
+    }
     el.innerHTML = h;
   }).withFailureHandler(function (e) {
     el.textContent = '状態を取得できません: ' + e.message;
@@ -2342,7 +2353,9 @@ function adminBackfill() {
 function adminFetch() {
   toast('取込中…（最大1分）');
   google.script.run.withSuccessHandler(function (r) {
-    toast('取込完了: 新規 ' + (r.added ? r.added.length : 0) + '件');
+    var online = ((r.skippedOnline || []).length + (r.archivedOnline || []).length);
+    toast('取込完了: 新規 ' + (r.added ? r.added.length : 0)
+      + '件 / 公開 ' + ((r.autoPublished || []).length) + '件 / オンライン除外 ' + online + '件');
     state.adminData = null;
     loadAdmin();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
