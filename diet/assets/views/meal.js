@@ -35,6 +35,7 @@ const SLOTS = Object.freeze([
 ]);
 
 const SLOT_LABELS = Object.freeze(Object.fromEntries(SLOTS.map((slot) => [slot.key, slot.label])));
+let activeMealDate = null;
 
 function el(tag, className = '', text = '') {
   const node = document.createElement(tag);
@@ -50,6 +51,60 @@ function el(tag, className = '', text = '') {
 function todayString() {
   const date = new Date();
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function isDateString(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
+}
+
+function normalizeMealDate(value) {
+  const today = todayString();
+  if (!isDateString(value)) {
+    return today;
+  }
+  return String(value) > today ? today : String(value);
+}
+
+function getActiveMealDate() {
+  activeMealDate = normalizeMealDate(activeMealDate || todayString());
+  return activeMealDate;
+}
+
+function createDateSelector(selectedDate, onChange) {
+  const today = todayString();
+  const card = el('section', 'card stack');
+  card.append(el('h2', 'card-title', '記録日'));
+
+  const field = document.createElement('label');
+  field.className = 'field';
+  const label = el('span', 'field-label', '日付');
+  const input = document.createElement('input');
+  input.className = 'input';
+  input.type = 'date';
+  input.value = selectedDate;
+  input.max = today;
+  input.addEventListener('change', () => {
+    onChange(normalizeMealDate(input.value));
+  });
+  field.append(label, input);
+
+  const buttons = el('div', 'chip-row');
+  const prev = el('button', 'button', '前日');
+  prev.type = 'button';
+  prev.addEventListener('click', () => onChange(addDays(selectedDate, -1)));
+
+  const todayButton = el('button', selectedDate === today ? 'button is-active' : 'button', '今日');
+  todayButton.type = 'button';
+  todayButton.addEventListener('click', () => onChange(today));
+
+  const next = el('button', 'button', '翌日');
+  next.type = 'button';
+  next.disabled = selectedDate >= today;
+  next.addEventListener('click', () => onChange(normalizeMealDate(addDays(selectedDate, 1))));
+  buttons.append(prev, todayButton, next);
+
+  card.append(field, buttons);
+  return card;
 }
 
 function numberText(value, digits = 1, fallback = '--') {
@@ -337,7 +392,7 @@ function defaultAmountFor(food, allMeals) {
  * 外部への送信は一切行わない。
  * @returns {HTMLElement} カード要素。
  */
-function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
+function createTextEntryCard(ctx, foodApi, myfoods, allMeals, mealDate, onChanged) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', 'テキストでまとめて記録'));
 
@@ -369,7 +424,7 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
   };
   const renderSlotNote = () => {
     slotNote.textContent = resolvedItems.length
-      ? `${MEAL_SLOT_LABELS[textSlot]}の食事として記録します`
+      ? `${mealDate} ${MEAL_SLOT_LABELS[textSlot]}の食事として記録します`
       : '';
   };
 
@@ -437,7 +492,6 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
     if (!resolvedItems.length) {
       return;
     }
-    const today = todayString();
     // ⛔ ここで detectMealSlot() を呼ばないこと。利用者がタブで選んだ食事を無視してしまう。
     const slot = textSlot;
 
@@ -448,8 +502,8 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
     const addedIds = [];
     for (const item of resolvedItems) {
       const record = item.food
-        ? createMealRecordFromFood(item.food, item.amount, today, slot)
-        : { date: today, slot, name: item.word, amount: null, unit: '', kcal: null, p: null, f: null, c: null, foodId: null };
+        ? createMealRecordFromFood(item.food, item.amount, mealDate, slot)
+        : { date: mealDate, slot, name: item.word, amount: null, unit: '', kcal: null, p: null, f: null, c: null, foodId: null };
       const id = await addMeal(record);
       addedIds.push(id);
     }
@@ -457,7 +511,7 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
     input.value = '';
     resolvedItems = [];
     renderChips();
-    showUndoToast(ctx, `${count}件を${MEAL_SLOT_LABELS[slot]}に追加しました`, async () => {
+    showUndoToast(ctx, `${mealDate} ${MEAL_SLOT_LABELS[slot]}に${count}件追加しました`, async () => {
       for (const id of addedIds) {
         await deleteMeal(id);
       }
@@ -474,7 +528,7 @@ function createTextEntryCard(ctx, foodApi, myfoods, allMeals, onChanged) {
   //    表示条件: ?photo=on を一度開いた端末、または既に合言葉を持っている端末（＝家族）だけ。
   if (isPhotoFeatureEnabled()) {
     const photoLink = document.createElement('a');
-    photoLink.href = './photo.html';
+    photoLink.href = `./photo.html?date=${encodeURIComponent(mealDate)}`;
     photoLink.className = 'muted';
     photoLink.textContent = '📷 写真から入力する（写真1枚を解析サーバーへ送ります）';
     card.append(photoLink);
@@ -517,13 +571,13 @@ function createSlotTabs(selectedSlot, onChange) {
   return tabs;
 }
 
-function createTotalCard(todayMeals, pfcTarget) {
+function createTotalCard(dayMeals, pfcTarget) {
   const card = el('section', 'card stack');
-  card.append(el('h2', 'card-title', '当日合計'));
-  const summary = summarizeMeals(todayMeals);
+  card.append(el('h2', 'card-title', 'この日の合計'));
+  const summary = summarizeMeals(dayMeals);
   card.append(el('p', 'number-large', `${Math.round(summary.kcal)} kcal`));
   // カロリー未設定（テキスト記録）の件数。集計に入っていないことを隠さない。
-  const uncounted = (todayMeals || []).filter((m) => !Number.isFinite(m.kcal)).length;
+  const uncounted = (dayMeals || []).filter((m) => !Number.isFinite(m.kcal)).length;
   if (uncounted > 0) {
     card.append(el('p', 'muted', `＋未計算${uncounted}件（カロリー未設定の記録は合計に含まれていません）`));
   }
@@ -541,12 +595,12 @@ function createTotalCard(todayMeals, pfcTarget) {
   return card;
 }
 
-function createSlotSummary(todayMeals) {
+function createSlotSummary(dayMeals) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', 'スロット小計'));
   SLOTS.forEach((slot) => {
     const row = el('div', 'banner');
-    const summary = summarizeMeals(todayMeals.filter((record) => record.slot === slot.key));
+    const summary = summarizeMeals(dayMeals.filter((record) => record.slot === slot.key));
     row.append(el('strong', '', slot.label));
     row.append(el('span', 'muted', nutritionLine(summary)));
     card.append(row);
@@ -610,7 +664,7 @@ function createMealRow(record, ctx, onDeleted) {
   return row;
 }
 
-function createSelectedSlotCard(ctx, todayMeals, selectedSlot, onAdd, onDeleted) {
+function createSelectedSlotCard(ctx, dayMeals, selectedSlot, onAdd, onDeleted) {
   const card = el('section', 'card stack');
   const title = el('h2', 'card-title', `${SLOT_LABELS[selectedSlot]}の食事`);
   const addButton = el('button', 'button button-primary', '＋追加');
@@ -618,7 +672,7 @@ function createSelectedSlotCard(ctx, todayMeals, selectedSlot, onAdd, onDeleted)
   addButton.addEventListener('click', onAdd);
   card.append(title, addButton);
 
-  const selectedMeals = todayMeals.filter((record) => record.slot === selectedSlot);
+  const selectedMeals = dayMeals.filter((record) => record.slot === selectedSlot);
   const summary = summarizeMeals(selectedMeals);
   card.append(el('p', 'muted', nutritionLine(summary)));
 
@@ -634,26 +688,26 @@ function createSelectedSlotCard(ctx, todayMeals, selectedSlot, onAdd, onDeleted)
   return card;
 }
 
-async function addFrequentMealWithUndo(record, ctx, onChanged) {
+async function addFrequentMealWithUndo(record, ctx, mealDate, onChanged) {
   const slot = detectMealSlot();
   const id = await addFrequentMeal(record, {
-    date: todayString(),
+    date: mealDate,
     slot
   });
   await onChanged();
   showUndoToast(
     ctx,
-    `${record.name}を${MEAL_SLOT_LABELS[slot]}に追加しました`,
+    `${mealDate} ${MEAL_SLOT_LABELS[slot]}に${record.name}を追加しました`,
     () => undoMeal(id),
     onChanged
   );
 }
 
-function createFrequentItems(allMeals, ctx, onChanged) {
+function createFrequentItems(allMeals, ctx, mealDate, onChanged) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', 'よく食べたもの'));
   const autoSlot = detectMealSlot();
-  card.append(el('p', 'muted', `タップすると${MEAL_SLOT_LABELS[autoSlot]}の食事として追加します`));
+  card.append(el('p', 'muted', `タップすると${mealDate} ${MEAL_SLOT_LABELS[autoSlot]}の食事として追加します`));
   const items = frequentMeals(allMeals, 10);
 
   if (!items.length) {
@@ -666,7 +720,7 @@ function createFrequentItems(allMeals, ctx, onChanged) {
     const record = item.latest;
     const button = el('button', 'button', record.name);
     button.type = 'button';
-    button.addEventListener('click', () => addFrequentMealWithUndo(record, ctx, onChanged));
+    button.addEventListener('click', () => addFrequentMealWithUndo(record, ctx, mealDate, onChanged));
     grid.append(button);
   });
   card.append(grid);
@@ -674,16 +728,16 @@ function createFrequentItems(allMeals, ctx, onChanged) {
 }
 
 function createYesterdayButton(allMeals, today, ctx, onChanged) {
-  const button = el('button', 'button', '昨日と同じ');
+  const button = el('button', 'button', '前日と同じ');
   button.type = 'button';
   button.addEventListener('click', async () => {
     const yesterday = addDays(today, -1);
     const records = allMeals.filter((record) => record.date === yesterday);
     if (!records.length) {
-      ctx.showToast('昨日の食事記録がありません', { tone: 'warning' });
+      ctx.showToast('前日の食事記録がありません', { tone: 'warning' });
       return;
     }
-    const ok = await ctx.confirmDialog(`${yesterday} の食事 ${records.length}件を今日へコピーしますか？`);
+    const ok = await ctx.confirmDialog(`${yesterday} の食事 ${records.length}件を ${today} へコピーしますか？`);
     if (!ok) {
       return;
     }
@@ -691,7 +745,7 @@ function createYesterdayButton(allMeals, today, ctx, onChanged) {
       const { id, ...copy } = record;
       return addMeal({ ...copy, date: today });
     }));
-    ctx.showToast('昨日の食事をコピーしました', { tone: 'success' });
+    ctx.showToast('前日の食事をコピーしました', { tone: 'success' });
     await onChanged();
   });
   return button;
@@ -970,7 +1024,7 @@ function calculateMealTargets(profile, weights, exercises, today) {
 
 export async function render(ctx) {
   const foodApi = await import('./../foods.js');
-  const today = todayString();
+  const selectedDate = getActiveMealDate();
   const [allMeals, myfoods, weights, exercises] = await Promise.all([
     getAll(STORES.meals),
     getAll(STORES.myfoods),
@@ -979,8 +1033,8 @@ export async function render(ctx) {
   ]);
 
   let selectedSlot = detectMealSlot();
-  const todayMeals = allMeals.filter((record) => record.date === today);
-  const pfcTarget = calculateMealTargets(ctx.profile, weights, exercises, today);
+  const dayMeals = allMeals.filter((record) => record.date === selectedDate);
+  const pfcTarget = calculateMealTargets(ctx.profile, weights, exercises, selectedDate);
 
   const fragment = document.createDocumentFragment();
   const stack = el('div', 'stack');
@@ -989,16 +1043,21 @@ export async function render(ctx) {
   const refresh = async () => {
     ctx.navigate('meal');
   };
+  const changeDate = (date) => {
+    activeMealDate = normalizeMealDate(date);
+    refresh();
+  };
   const getSelectedSlot = () => selectedSlot;
 
+  stack.append(createDateSelector(selectedDate, changeDate));
   // テキスト入力を最上部へ（「開いてすぐ打てる」ことを優先）
-  stack.append(createTextEntryCard(ctx, foodApi, myfoods, allMeals, refresh));
-  stack.append(createTotalCard(todayMeals, pfcTarget));
-  stack.append(createSlotSummary(todayMeals));
+  stack.append(createTextEntryCard(ctx, foodApi, myfoods, allMeals, selectedDate, refresh));
+  stack.append(createTotalCard(dayMeals, pfcTarget));
+  stack.append(createSlotSummary(dayMeals));
 
   const actionCard = el('section', 'card stack');
   actionCard.append(el('h2', 'card-title', '追加ショートカット'));
-  actionCard.append(createYesterdayButton(allMeals, today, ctx, refresh));
+  actionCard.append(createYesterdayButton(allMeals, selectedDate, ctx, refresh));
   stack.append(actionCard);
 
   const tabsHolder = el('div');
@@ -1008,16 +1067,16 @@ export async function render(ctx) {
       selectedSlot = slot;
       redrawSlot();
     }));
-    slotHolder.replaceChildren(createSelectedSlotCard(ctx, todayMeals, selectedSlot, () => {
+    slotHolder.replaceChildren(createSelectedSlotCard(ctx, dayMeals, selectedSlot, () => {
       ctx.openModal('meal-add-modal');
     }, refresh));
   };
   redrawSlot();
 
   stack.append(tabsHolder, slotHolder);
-  stack.append(createFrequentItems(allMeals, ctx, refresh));
+  stack.append(createFrequentItems(allMeals, ctx, selectedDate, refresh));
   stack.append(createMealModal(ctx, {
-    today,
+    today: selectedDate,
     getSelectedSlot,
     foodApi,
     myfoods,

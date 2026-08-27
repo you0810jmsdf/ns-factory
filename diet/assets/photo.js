@@ -25,6 +25,38 @@ const $ = (id) => document.getElementById(id);
 let selectedFile = null;
 let resultItems = [];
 
+function isDateString(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
+}
+
+function normalizeMealDate(value) {
+  const today = todayString();
+  if (!isDateString(value)) {
+    return today;
+  }
+  return String(value) > today ? today : String(value);
+}
+
+function getMealDate() {
+  return normalizeMealDate($('meal-date')?.value);
+}
+
+function setupDateInput() {
+  const input = $('meal-date');
+  if (!input) return;
+  const today = todayString();
+  const urlDate = new URLSearchParams(location.search).get('date');
+  input.max = today;
+  input.value = normalizeMealDate(urlDate || today);
+  input.addEventListener('change', () => {
+    input.value = normalizeMealDate(input.value);
+    if (!$('record-btn').hidden) {
+      const slot = detectMealSlot();
+      $('slot-note').textContent = `${input.value} ${MEAL_SLOT_LABELS[slot]}の食事として記録します`;
+    }
+  });
+}
+
 function getToken() {
   try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
 }
@@ -321,7 +353,7 @@ function renderPickedCandidate(cand, data) {
   refreshTotalKcal(total);
 
   const slot = detectMealSlot();
-  $('slot-note').textContent = `${MEAL_SLOT_LABELS[slot]}の食事として記録します`;
+  $('slot-note').textContent = `${getMealDate()} ${MEAL_SLOT_LABELS[slot]}の食事として記録します`;
   $('record-btn').hidden = false;
   $('record-status').textContent = '';
 }
@@ -421,12 +453,12 @@ $('record-btn').addEventListener('click', async () => {
     $('record-status').textContent = '記録する品目にチェックを入れてください';
     return;
   }
-  const today = todayString();
+  const date = getMealDate();
   const slot = detectMealSlot();
   const ids = [];
   for (const it of picked) {
     const id = await addMeal({
-      date: today,
+      date,
       slot,
       name: it.name,
       amount: null,
@@ -441,7 +473,7 @@ $('record-btn').addEventListener('click', async () => {
   }
   $('record-btn').hidden = true;
   const status = $('record-status');
-  status.textContent = `${picked.length}件を${MEAL_SLOT_LABELS[slot]}に記録しました。`;
+  status.textContent = `${date} ${MEAL_SLOT_LABELS[slot]}に${picked.length}件を記録しました。`;
   // 直後の取り消し（このページ内で完結させる）
   const undo = document.createElement('button');
   undo.type = 'button';
@@ -458,4 +490,5 @@ $('record-btn').addEventListener('click', async () => {
   status.append(document.createTextNode(' '), undo);
 });
 
+setupDateInput();
 refreshCards();
