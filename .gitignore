@@ -10,3 +10,6 @@ okcoin-state.json
 # GitHub Pages は静的配信のため、置いた時点で全世界から取得可能になる。
 staff-monitor-data.json
 knowledge-graph.html
+
+# BASE登録用の生成物。価格未設定や個人名候補の確認レポートを含むため公開しない。
+tools/output/base-export/
