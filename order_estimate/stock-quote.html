@@ -214,7 +214,7 @@
 <body>
 
 <header class="topbar">
-  <h1>在庫品お見積り <span class="badge-stock">STOCK</span></h1>
+  <h1><span id="page-title">在庫品お見積り</span> <span class="badge-stock" id="page-badge">STOCK</span></h1>
   <a class="back" href="../works.html">← 作品一覧へ戻る</a>
 </header>
 
@@ -321,7 +321,7 @@
       ※ 表示価格は税込です。インボイス制度未登録事業者のため、適格請求書は発行できません。<br>
       ※ 送料は別途実費（注文確定後にご案内）。<br>
       ※ 他サイト決済の手数料は当方の手取りが元単価と同額になるよう上乗せ表示しています。<br>
-      ※ 在庫品のため、原則オーダー後3営業日以内に発送いたします。
+      <span id="fulfillment-note">※ 在庫品のため、原則オーダー後3営業日以内に発送いたします。</span>
     </p>
   </div>
 
@@ -363,7 +363,7 @@
         <select id="f-intent" required>
           <option value="">選択してください</option>
           <option value="stock_purchase_quote">この在庫品を購入したい</option>
-          <option value="similar_order_quote">似た仕様でオーダーしたい</option>
+          <option value="similar_order_quote">同じものを再注文したい（受注製作）</option>
           <option value="quote_only">まず金額・見積書だけ確認したい</option>
         </select>
       </div>
@@ -423,7 +423,7 @@
   const SHOP = { name:"N's factory", owner:'中司 祐樹', mail:'you0810jmsdf@gmail.com' };
   const REQUEST_INTENTS = {
     stock_purchase_quote: 'この在庫品を購入したい',
-    similar_order_quote: '似た仕様でオーダーしたい',
+    similar_order_quote: '同じものを再注文したい（受注製作）',
     quote_only: 'まず金額・見積書だけ確認したい'
   };
 
@@ -438,6 +438,20 @@
     color:    params.get('color')    || '',
     intent:   params.get('intent')   || '',
   };
+  const isReorderContext = item.intent === 'similar_order_quote';
+
+  function configureIntentOptions(){
+    if (!isReorderContext) return;
+    const stockPurchaseOption = document.querySelector('#f-intent option[value="stock_purchase_quote"]');
+    if (stockPurchaseOption) stockPurchaseOption.remove();
+    document.title = '同じ作品の再注文お見積り | N\'s factory';
+    document.getElementById('page-title').textContent = '同じ作品の再注文お見積り';
+    document.getElementById('page-badge').textContent = 'REORDER';
+    document.getElementById('btn-request').textContent = '再注文・見積もり相談を送る';
+    document.getElementById('fulfillment-note').textContent = '※ 売り切れ作品は在庫販売ではなく、同じ仕様をもとに受注製作します。材料在庫などにより一部仕様・納期をご相談する場合があります。';
+  }
+
+  configureIntentOptions();
 
   const fmtJpy = n => '¥' + Math.round(n).toLocaleString('ja-JP');
   const fmtBtc = n => Number(n).toFixed(8);
@@ -587,11 +601,13 @@
       : (pay === 'btc' ? 'Bitcoin（BTC）3%OFF適用' : '銀行振込');
     const grandLabel = isPlatform ? 'お客様請求額（税込）' : '合計（税込）';
 
-    const subject = '【在庫品お見積り】' + (item.name || '商品') + '（' + quoteId + '）';
+    const subjectPrefix = isReorderContext ? '【同一作品の再注文見積り】' : '【在庫品お見積り】';
+    const requestLine = isReorderContext ? '以下の作品と同じものの再注文を希望します。' : '以下の商品について購入を希望します。';
+    const subject = subjectPrefix + (item.name || '商品') + '（' + quoteId + '）';
     const body = [
       'N\'s factory 御中',
       '',
-      '以下の商品について購入を希望します。',
+      requestLine,
       '',
       '──────────────────',
       '見積番号: ' + quoteId,
@@ -649,7 +665,7 @@
 
   function defaultSubject(code){
     const subjectPrefix = code === 'similar_order_quote'
-      ? '類似仕様のオーダー相談'
+      ? '同一作品の再注文相談'
       : code === 'quote_only'
         ? '見積書確認'
         : '在庫品購入相談';

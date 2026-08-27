@@ -1433,7 +1433,7 @@
       // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
       const quoteIntent = unavailable ? 'similar_order_quote' : 'stock_purchase_quote';
       const quoteConf = hasPrice
-        ? { href: buildStockQuoteUrl(work, quoteIntent), label: unavailable ? T('cta.reorder', '似た仕様のオーダー相談をする（名前・連絡先を送る）') : T('cta.buyQuote', 'この在庫品の購入相談をする（名前・連絡先を送る）'), action: unavailable ? '見積フォームを開いた（類似オーダー相談）' : '見積フォームを開いた（在庫品購入相談）' }
+        ? { href: buildStockQuoteUrl(work, quoteIntent), label: unavailable ? T('cta.reorder', '同じものを再注文したい（受注製作・名前と連絡先を送る）') : T('cta.buyQuote', 'この在庫品の購入相談をする（名前・連絡先を送る）'), action: unavailable ? '見積フォームを開いた（同一作品の再注文相談）' : '見積フォームを開いた（在庫品購入相談）' }
         : null;
       const estimateConf = null;
       const lineConf = { href: LINE_URL, label: T('cta.line', '💬 類似したフルオーダー品を作家に直接LINEで相談する'), action: 'LINE相談' };
