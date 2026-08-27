@@ -2,7 +2,22 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
 <title>コストコ共同購入</title>
+<meta property="og:title" content="コストコ、まとめ買いを楽に。">
+<meta property="og:description" content="参加者は自分の注文だけを確認。取りまとめ役だけが全体集計・請求・受領を管理できます。無料・登録不要。">
+<meta property="og:image" content="https://you0810jmsdf.github.io/ns-factory/costco/ogp.png">
+<meta property="og:url" content="https://you0810jmsdf.github.io/ns-factory/costco/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="コストコ共同購入">
+<meta name="theme-color" content="#e31837">
 <style>
   :root {
     --red: #e31837;
@@ -194,6 +209,72 @@
   footer#appFooter { text-align: center; padding: 24px 16px 12px; color: var(--muted); font-size: 11px; line-height: 1.8; }
   footer#appFooter .foot-line a { color: var(--blue); font-weight: 700; text-decoration: none; font-size: 13px; display: inline-block; margin-top: 4px; padding: 6px 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
   footer#appFooter .foot-note { margin-top: 8px; opacity: .7; }
+
+  @media (max-width: 640px) {
+    html { scroll-padding-top: 170px; }
+    body { font-size: 16px; padding-bottom: 108px; }
+    header { padding: 12px 14px; }
+    header h1 { font-size: 18px; line-height: 1.35; }
+    header .sub { font-size: 12px; }
+    .topbar.shrink header h1 { font-size: 17px; }
+    .namebar { padding: 10px 12px; flex-wrap: wrap; }
+    .topbar.shrink .namebar { padding: 8px 12px; }
+    .namebar label { font-size: 14px; }
+    .namebar input { max-width: none; min-height: 44px; flex: 1 1 180px; font-size: 16px; }
+    .namebar .hello { flex: 1 0 100%; font-size: 14px; }
+    .tabs button { min-height: 46px; padding: 10px 4px; font-size: 14px; line-height: 1.25; }
+    main { padding: 10px; }
+    .campaign { border-radius: 10px; margin-bottom: 12px; }
+    .campaign > .head { padding: 12px; }
+    .campaign > .head .title { font-size: 16px; line-height: 1.45; }
+    .campaign > .head .period { font-size: 13px; }
+    .grid { grid-template-columns: 1fr; gap: 10px; padding: 10px; }
+    .pcard { display: grid; grid-template-columns: 108px minmax(0, 1fr); min-height: 116px; }
+    .pcard img,
+    .pcard .noimg { width: 108px; height: 116px; aspect-ratio: auto; align-self: stretch; }
+    .pcard .body { min-width: 0; padding: 10px 10px 10px 12px; gap: 6px; }
+    .pcard .pname { min-height: 0; font-size: 15px; line-height: 1.5; }
+    .pcard .itemno { font-size: 12px; }
+    .prices .sale { font-size: 21px; }
+    .prices .orig { font-size: 13px; }
+    .prices .offb { font-size: 12px; padding: 2px 8px; }
+    .prices .nop { font-size: 14px; }
+    .stepper { margin-top: 4px; }
+    .stepper button { width: 48px; height: 46px; font-size: 24px; }
+    .stepper .qty { width: 54px; height: 46px; font-size: 19px; }
+    .seat,
+    .selected-box,
+    .notice,
+    .bill { border-radius: 10px; padding: 14px; }
+    .seat-role { font-size: 15px; }
+    .seat-desc,
+    .notice-sub { font-size: 13px; }
+    .selected-head,
+    .selected-name { font-size: 14px; }
+    .selected-meta { font-size: 12px; }
+    .selected-remove,
+    .mini-del { min-height: 36px; padding: 7px 10px; font-size: 12px; }
+    .bill h3 { font-size: 16px; }
+    .bill table { font-size: 14px; }
+    .bill td { padding: 6px 2px; }
+    .bill .sum { font-size: 18px; }
+    .btn { min-height: 38px; font-size: 14px; }
+    .trial { padding: 10px 12px; font-size: 13px; }
+    .savebar { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); flex-wrap: wrap; }
+    .savebar .info { font-size: 14px; }
+    .savebar button { width: 100%; max-width: 360px; min-height: 48px; font-size: 16px; }
+    footer#appFooter { font-size: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  }
+
+  @media (max-width: 360px) {
+    .pcard { grid-template-columns: 92px minmax(0, 1fr); min-height: 104px; }
+    .pcard img,
+    .pcard .noimg { width: 92px; height: 104px; }
+    .pcard .pname { font-size: 14px; }
+    .stepper button { width: 42px; }
+    .stepper .qty { width: 46px; }
+    .tabs button { font-size: 13px; }
+  }
 </style>
 </head>
 <body>
