@@ -338,7 +338,7 @@
     <div class="btc-rate-line" id="btc-rate-info" style="display:none"></div>
 
     <div class="actions">
-      <button type="button" class="btn btn-accent btn-block" id="btn-request">正式見積依頼を送る</button>
+      <button type="button" class="btn btn-accent btn-block" id="btn-request">購入・オーダー相談を送る</button>
       <button type="button" class="btn btn-secondary" id="btn-pdf">印刷 / PDFで保存</button>
       <button type="button" class="btn btn-secondary" id="btn-mail">メール送信（旧）</button>
     </div>
@@ -358,6 +358,15 @@
       ご入力いただいた内容で正式見積書を作成し、メールでお送りします。<span style="color:#c00;">＊は必須</span>
     </p>
     <form id="request-form" novalidate>
+      <div class="form-row">
+        <label>ご希望内容 <span style="color:#c00;">＊</span></label>
+        <select id="f-intent" required>
+          <option value="">選択してください</option>
+          <option value="stock_purchase_quote">この在庫品を購入したい</option>
+          <option value="similar_order_quote">似た仕様でオーダーしたい</option>
+          <option value="quote_only">まず金額・見積書だけ確認したい</option>
+        </select>
+      </div>
       <div class="form-row">
         <label>お名前 <span style="color:#c00;">＊</span></label>
         <div class="form-grid-2">
@@ -410,14 +419,24 @@
 <script>
 (function(){
   const BTC_RATE_API = 'https://script.google.com/macros/s/AKfycbzMp1YQYBNnwvwspSbBP5lWnK5GtT3sKXuXhSA9DAwgPO7gFDG2VvB9mzJdme6KYn5Y/exec';
+  const WORKS_LOG_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
   const SHOP = { name:"N's factory", owner:'中司 祐樹', mail:'you0810jmsdf@gmail.com' };
+  const REQUEST_INTENTS = {
+    stock_purchase_quote: 'この在庫品を購入したい',
+    similar_order_quote: '似た仕様でオーダーしたい',
+    quote_only: 'まず金額・見積書だけ確認したい'
+  };
 
   const params = new URLSearchParams(location.search);
   const item = {
-    id:   params.get('id')   || '',
-    name: params.get('name') || '',
-    price: parseInt(params.get('price') || '0', 10) || 0,
-    qty:   parseInt(params.get('qty')   || '1', 10) || 1,
+    id:       params.get('id')       || '',
+    name:     params.get('name')     || '',
+    price:    parseInt(params.get('price') || '0', 10) || 0,
+    qty:      parseInt(params.get('qty')   || '1', 10) || 1,
+    size:     params.get('size')     || '',
+    material: params.get('material') || '',
+    color:    params.get('color')    || '',
+    intent:   params.get('intent')   || '',
   };
 
   const fmtJpy = n => '¥' + Math.round(n).toLocaleString('ja-JP');
@@ -614,23 +633,71 @@
   function openModal(){
     modalMsg.textContent = '';
     modalMsg.className = 'modal-msg';
-    document.getElementById('f-subject').value = '在庫品お見積り依頼：' + (item.name || '商品');
+    const intentEl = document.getElementById('f-intent');
+    document.getElementById('f-subject').value = defaultSubject(intentEl ? intentEl.value : initialIntentCode());
     modal.style.display = 'flex';
   }
   function closeModal(){ modal.style.display = 'none'; }
 
-  document.getElementById('btn-request').addEventListener('click', openModal);
+  function initialIntentCode(){
+    return REQUEST_INTENTS[item.intent] ? item.intent : '';
+  }
+
+  function intentLabel(code){
+    return REQUEST_INTENTS[code] || '';
+  }
+
+  function defaultSubject(code){
+    const subjectPrefix = code === 'similar_order_quote'
+      ? '類似仕様のオーダー相談'
+      : code === 'quote_only'
+        ? '見積書確認'
+        : '在庫品購入相談';
+    return subjectPrefix + '：' + (item.name || '商品');
+  }
+
+  function logFormalQuoteAction(customerName, intentText, number, orderNo){
+    try {
+      const s = document.createElement('script');
+      const detail = [
+        '正式見積フォーム送信',
+        intentText,
+        customerName,
+        number ? ('見積番号: ' + number) : '',
+        orderNo ? ('進捗: ' + orderNo) : ''
+      ].filter(Boolean).join(' / ');
+      s.src = WORKS_LOG_URL
+        + '?api=log&type=' + encodeURIComponent('オーダー依頼')
+        + '&id=' + encodeURIComponent(item.id || '')
+        + '&name=' + encodeURIComponent(item.name || '')
+        + '&detail=' + encodeURIComponent(detail);
+      s.onload = s.onerror = () => { if (s.parentNode) s.remove(); };
+      document.body.appendChild(s);
+    } catch(e) {}
+  }
+
+  document.getElementById('btn-request').addEventListener('click', () => {
+    const intentEl = document.getElementById('f-intent');
+    const initialIntent = initialIntentCode();
+    if (intentEl && initialIntent && !intentEl.value) intentEl.value = initialIntent;
+    document.getElementById('f-subject').value = defaultSubject(intentEl ? intentEl.value : initialIntent);
+    openModal();
+  });
   document.getElementById('btn-cancel').addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
   reqForm.addEventListener('submit', e => {
     e.preventDefault();
 
+    const intentCode = document.getElementById('f-intent').value;
+    const intentText = intentLabel(intentCode);
     const name    = document.getElementById('f-name').value.trim();
     const email   = document.getElementById('f-email').value.trim();
     const phone   = document.getElementById('f-phone').value.trim();
+    if (!intentCode) { showMsg('ご希望内容を選択してください', 'error'); return; }
     if (!name)  { showMsg('お名前を入力してください', 'error'); return; }
     if (!email) { showMsg('メールアドレスを入力してください', 'error'); return; }
+    if (!email.includes('@')) { showMsg('正しいメールアドレスを入力してください', 'error'); return; }
 
     const qty = Math.max(1, parseInt(qtyInput.value || '1', 10) || 1);
     const pay = document.querySelector('input[name=pay]:checked').value;
@@ -661,15 +728,33 @@
         note:      ''
       },
       doc: {
-        subject: document.getElementById('f-subject').value.trim() || ('在庫品お見積り：' + (item.name || '商品')),
-        source:  'stock-quote'
+        subject: document.getElementById('f-subject').value.trim() || defaultSubject(intentCode),
+        source:  'stock-quote',
+        intentCode: intentCode,
+        intentLabel: intentText,
+        productId: item.id,
+        productName: item.name,
+        productSize: item.size,
+        productMaterial: item.material,
+        productColor: item.color,
+        sourceUrl: location.href
+      },
+      request: {
+        intentCode: intentCode,
+        intentLabel: intentText,
+        productId: item.id,
+        productName: item.name,
+        productSize: item.size,
+        productMaterial: item.material,
+        productColor: item.color,
+        sourceUrl: location.href
       },
       details: [{
         itemName:  (item.name || '商品') + (item.id ? '（ID: ' + item.id + '）' : ''),
         qty:       qty,
         unit:      '点',
         unitPrice: item.price,
-        note:      [payNote, userNote].filter(Boolean).join(' / ')
+        note:      [intentText, payNote, userNote].filter(Boolean).join(' / ')
       }]
     };
 
@@ -684,7 +769,10 @@
       .then(r => r.json())
       .then(j => {
         if (j && j.success) {
-          showMsg('お見積り依頼を受け付けました。書類番号: ' + j.number + ' / 担当者よりメールでご連絡します。', 'success');
+          logFormalQuoteAction(name, intentText, j.number, j.orderNo);
+          const orderText = j.orderNo ? ' / 進捗番号: ' + j.orderNo : '';
+          const warnText = j.warning ? ' / 進捗反映は管理側で確認します。' : '';
+          showMsg('ご相談を受け付けました。書類番号: ' + j.number + orderText + ' / 担当者よりメールでご連絡します。' + warnText, 'success');
           setTimeout(closeModal, 4000);
         } else {
           throw new Error((j && j.error) || '送信に失敗しました');
