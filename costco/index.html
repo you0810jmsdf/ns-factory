@@ -1900,7 +1900,8 @@ function renderAdmin(m) {
     + '<div style="font-size:11px;color:var(--muted);margin:6px 0 12px">全画面の下部に「運営を応援する（任意）」リンクが出ます。空欄なら何も出ません。</div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
     + '<button class="btn ghost" onclick="adminFetch()">📩 メールを再取込</button>'
-    + '<button class="btn ghost" onclick="adminBackfill()">🗓 公開中の期限を埋める</button></div>'
+    + '<button class="btn ghost" onclick="adminBackfill()">🗓 公開中の期限を埋める</button>'
+    + '<button class="btn ghost" onclick="investigateTentative()">🔎 暫定を1件調査</button></div>'
     + '<div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">'
     + '<button class="btn del" onclick="resetAllOrders()">🗑 全グループの注文記録を消去</button>'
     + '<div style="font-size:11px;color:var(--muted);margin-top:6px">お試しで入れた注文をまとめて消します。商品データとグループは残ります。</div>'
@@ -2136,8 +2137,15 @@ function checkMailStatus() {
         + ' / Gmail ' + (f.threadsScanned || 0) + '件・' + (f.messagesSeen || 0) + '通'
         + ' / 新規 ' + (f.addedCount || 0)
         + ' / 自動公開 ' + (f.autoPublishedCount || 0)
+        + ' / 暫定残 ' + (f.tentativeCount || 0)
         + ' / オンライン除外 ' + ((f.skippedOnlineCount || 0) + (f.archivedOnlineCount || 0));
       if (f.error) h += '<br>取込エラー: ' + esc(f.error);
+    }
+    if (r.tentative) {
+      h += '<br>現在の暫定: ' + (r.tentative.count || 0) + '件';
+      if (r.tentative.items && r.tentative.items.length) {
+        h += '（' + esc(r.tentative.items[0].subject || '') + ' など）';
+      }
     }
     el.innerHTML = h;
   }).withFailureHandler(function (e) {
@@ -2355,11 +2363,26 @@ function adminFetch() {
   google.script.run.withSuccessHandler(function (r) {
     var online = ((r.skippedOnline || []).length + (r.archivedOnline || []).length);
     toast('取込完了: 新規 ' + (r.added ? r.added.length : 0)
-      + '件 / 公開 ' + ((r.autoPublished || []).length) + '件 / オンライン除外 ' + online + '件');
+      + '件 / 公開 ' + ((r.autoPublished || []).length)
+      + '件 / 暫定残 ' + (r.tentativeCount || 0)
+      + '件 / オンライン除外 ' + online + '件');
     state.adminData = null;
     loadAdmin();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
     .apiAdminFetch(ADMIN_KEY);
+}
+
+function investigateTentative() {
+  if (!confirm('暫定期間が残っているセールを1件だけAI解析で調査しますか？\n商品別に期間が違う場合は、メール全体の期間としては確定できないことがあります。')) return;
+  toast('暫定期間を1件調査中…');
+  google.script.run.withSuccessHandler(function (r) {
+    var retried = (r.retried || []);
+    var changed = retried.filter(function (x) { return x.changed; }).length;
+    toast('調査 ' + retried.length + '件 / 置換 ' + changed + '件 / 暫定残 ' + ((r.after && r.after.count) || 0) + '件');
+    state.adminData = null;
+    loadAdmin();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminInvestigateTentative(ADMIN_KEY);
 }
 </script>
 </body>
