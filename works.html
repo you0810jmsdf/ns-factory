@@ -206,7 +206,7 @@
       margin: 0 auto;
       padding: 12px 24px 0;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto auto;
       gap: 12px;
       align-items: center;
     }
@@ -225,6 +225,25 @@
       font-size: 13px;
       white-space: nowrap;
     }
+    .admin-filter-btn {
+      min-height: 44px;
+      padding: 9px 14px;
+      border: 1px solid #d8b888;
+      border-radius: var(--radius);
+      background: #fff4e0;
+      color: #7a4a1f;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .admin-filter-btn.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--white);
+    }
+    .admin-filter-btn[hidden] { display: none; }
     .gallery {
       max-width: 1080px;
       margin: 0 auto;
@@ -1023,6 +1042,7 @@
     <div id="filters" class="filters"></div>
     <div class="tools">
       <input id="search" class="search" type="search" placeholder="作品名で探す" aria-label="作品名で探す" data-i18n-placeholder="tools.search">
+      <button id="missing-price-filter" class="admin-filter-btn" type="button" hidden>価格未設定だけ</button>
       <div id="count" class="count" data-i18n="tools.loading">読み込み中</div>
     </div>
     <div id="gallery" class="gallery" aria-live="polite"></div>
@@ -1198,6 +1218,7 @@
     const gallery = document.getElementById('gallery');
     const count = document.getElementById('count');
     const search = document.getElementById('search');
+    const missingPriceFilterBtn = document.getElementById('missing-price-filter');
     const modal = document.getElementById('modal');
     const modalTitle = document.getElementById('modal-title');
     const modalCount = document.getElementById('modal-count');
@@ -1217,11 +1238,15 @@
     const MAIL_URL = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('作品に関するお問い合わせ');
     const LINKS_URL = 'https://you0810jmsdf.github.io/ns-factory/links.html';
 
-    function buildStockQuoteUrl(work) {
+    function buildStockQuoteUrl(work, intent) {
       const params = new URLSearchParams();
       if (work.id) params.set('id', work.id);
       if (work.title) params.set('name', work.title);
       if (work.price != null && work.price !== '') params.set('price', String(work.price));
+      if (work.size) params.set('size', work.size);
+      if (work.material) params.set('material', work.material);
+      if (work.color) params.set('color', work.color);
+      if (intent) params.set('intent', intent);
       params.set('qty', '1');
       return `${STOCK_QUOTE_URL}?${params.toString()}`;
     }
@@ -1231,6 +1256,8 @@
     let activeIndex = 0;
     let thumbObserver = null;
     let activeCategory = '';
+    let showMissingPriceOnly = false;
+    let priceUrlFilterApplied = false;
 
     /* ── 英語モード（2026-08-17）──
        静的部分は data-i18n＋assets/i18n.js が置換。JS生成部分（フィルタ・件数・
@@ -1313,9 +1340,18 @@
         .replace(/'/g, '&#39;');
     }
 
-    function formatPrice(value) {
+    function priceAmount(value) {
       const amount = Number(value || 0);
+      return Number.isFinite(amount) ? amount : 0;
+    }
+
+    function formatPrice(value) {
+      const amount = priceAmount(value);
       return amount > 0 ? `${amount.toLocaleString('ja-JP')}円` : '';
+    }
+
+    function isMissingPrice(work) {
+      return priceAmount(work && work.price) <= 0;
     }
 
     function compact(values) {
@@ -1395,8 +1431,9 @@
 
       // 価格が入っていない（0円）商品は、金額の出ない見積り帳票を表示しても意味が無いため
       // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
+      const quoteIntent = unavailable ? 'similar_order_quote' : 'stock_purchase_quote';
       const quoteConf = hasPrice
-        ? { href: buildStockQuoteUrl(work), label: unavailable ? T('cta.reorder', '再販を依頼する（見積書作成）') : T('cta.buyQuote', 'この作品を購入する見積もり（概算シミュレーション）'), action: unavailable ? '再販依頼（見積書作成）' : '購入見積もり' }
+        ? { href: buildStockQuoteUrl(work, quoteIntent), label: unavailable ? T('cta.reorder', '似た仕様のオーダー相談をする（名前・連絡先を送る）') : T('cta.buyQuote', 'この在庫品の購入相談をする（名前・連絡先を送る）'), action: unavailable ? '見積フォームを開いた（類似オーダー相談）' : '見積フォームを開いた（在庫品購入相談）' }
         : null;
       const estimateConf = null;
       const lineConf = { href: LINE_URL, label: T('cta.line', '💬 類似したフルオーダー品を作家に直接LINEで相談する'), action: 'LINE相談' };
@@ -1482,6 +1519,7 @@
     function render() {
       const keyword = normalize(search.value).trim();
       filtered = works.filter((work) => {
+        if (showMissingPriceOnly && !isMissingPrice(work)) return false;
         if (activeMajor && !workCats(work).some((c) => majorOf(c) === activeMajor)) return false;
         if (activeCategory && !workCats(work).includes(activeCategory)) return false;
         if (activeSize && sizeOf(work) !== activeSize) return false;
@@ -1551,6 +1589,14 @@
       if (registerLink) registerLink.hidden = !isAdmin;
       const sizeSortLink = document.getElementById('nav-size-sort');
       if (sizeSortLink) sizeSortLink.hidden = !isAdmin;
+      if (missingPriceFilterBtn) {
+        const missingCount = works.filter(isMissingPrice).length;
+        missingPriceFilterBtn.hidden = !isAdmin;
+        missingPriceFilterBtn.classList.toggle('active', showMissingPriceOnly);
+        missingPriceFilterBtn.textContent = showMissingPriceOnly
+          ? `価格未設定だけ解除（${missingCount}件）`
+          : `価格未設定だけ（${missingCount}件）`;
+      }
       const panel = document.getElementById('admin-price-panel');
       if (panel) panel.hidden = !isAdmin;
       if (isAdmin && activeWork) {
@@ -1566,7 +1612,9 @@
     document.getElementById('nsf-admin-toggle').addEventListener('click', () => {
       if (nsfStoredKey()) {
         try { sessionStorage.removeItem('nsf_admin_key'); } catch (e) {}
+        showMissingPriceOnly = false;
         updateAdminUI();
+        render();
         return;
       }
       const pw = prompt('管理者パスワードを入力してください');
@@ -1580,6 +1628,14 @@
         }
       }).catch(() => alert('照合に失敗しました（https環境で開いてください）'));
     });
+
+    if (missingPriceFilterBtn) {
+      missingPriceFilterBtn.addEventListener('click', () => {
+        showMissingPriceOnly = !showMissingPriceOnly;
+        updateAdminUI();
+        render();
+      });
+    }
 
     // 同一タブで既に管理者認証済みなら、初期表示にも反映する（トグル表記・商品登録リンク）
     updateAdminUI();
@@ -1629,6 +1685,8 @@
             activeWork.price = price;
             msg.textContent = '保存しました（' + d.newValue + '）';
             msg.className = 'admin-price-msg success';
+            updateModal();
+            render();
           } else {
             msg.textContent = '保存に失敗しました: ' + ((d && d.error) || '不明なエラー');
             msg.className = 'admin-price-msg error';
@@ -2027,6 +2085,7 @@
       applyUrlFilter();
       buildFilters();
       render();
+      updateAdminUI();
       openDeepLinkedWork();
     }
 
@@ -2110,11 +2169,13 @@
     // URLパラメータによる初期絞り込み（トップページのAIチャット等からの導線用）
     //   ?cat=システム手帳 … カテゴリ完全一致（実在しないカテゴリは無視して全件表示）
     //   ?q=ウォレット     … キーワード部分一致（検索ボックスに投入）
+    //   ?price=missing    … 管理者の価格入力用。価格0/未設定の作品だけ表示
     function applyUrlFilter() {
       try {
         const params = new URLSearchParams(location.search);
         const cat = (params.get('cat') || '').trim();
         const q = (params.get('q') || '').trim();
+        const price = (params.get('price') || '').trim();
         if (cat) {
           const exists = works.some((w) => workCats(w).includes(cat));
           if (exists) {
@@ -2125,6 +2186,10 @@
           }
         }
         if (q && search) search.value = q;
+        if (price === 'missing' && !priceUrlFilterApplied) {
+          showMissingPriceOnly = true;
+          priceUrlFilterApplied = true;
+        }
       } catch (e) { /* URLSearchParams非対応環境では何もしない */ }
     }
 
