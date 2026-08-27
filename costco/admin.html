@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>コストコ共同購入 運営</title>
+  <!-- ホーム画面アプリ用（運営モード専用アイコン）。
+       ⛔ manifest は付けない。付けると start_url が優先され、ホーム画面から開いたとき
+          URL の ?key= が失われて通常モードに戻る（2026-08-28 対策）。
+          manifest 無しなら iOS はブックマークした現在URL（鍵付き）でアイコンを作る。 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="コストコ運営">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="theme-color" content="#1a3a6b">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #eef1f5; }
+    #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+    #boot, #ask {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      font-family: "Hiragino Sans", Meiryo, sans-serif; background: #eef1f5; color: #444;
+      padding: 24px; text-align: center;
+    }
+    #ask { display: none; }
+    .logo { font-size: 40px; }
+    .badge { font-size: 12px; font-weight: 700; color: #fff; background: #1a3a6b; border-radius: 999px; padding: 4px 12px; }
+    .t { font-size: 15px; font-weight: 700; color: #1a3a6b; }
+    .s { font-size: 12.5px; line-height: 1.8; color: #666; max-width: 320px; }
+    .spin { width: 26px; height: 26px; border: 3px solid #d3d9e2; border-top-color: #1a3a6b; border-radius: 50%; animation: sp .9s linear infinite; }
+    @keyframes sp { to { transform: rotate(360deg); } }
+    #ask input {
+      width: 100%; max-width: 280px; padding: 12px 14px; font-size: 16px;
+      border: 1px solid #c3ccd8; border-radius: 10px; box-sizing: border-box;
+      text-align: center; letter-spacing: .5px;
+    }
+    #ask button, .fallback a {
+      display: inline-block; background: #1a3a6b; color: #fff; border: 0; text-decoration: none;
+      padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .fallback { display: none; margin-top: 8px; }
+    .fallback p { font-size: 11px; color: #999; margin: 10px 0 0; }
+    .err { color: #c0392b; font-size: 12px; min-height: 16px; }
+  </style>
+</head>
+<body>
+  <!-- 起動中 -->
+  <div id="boot">
+    <div class="logo">🛒</div>
+    <div class="badge">運営モード</div>
+    <div class="t">コストコ共同購入 運営</div>
+    <div class="spin"></div>
+    <div class="s">読み込んでいます…</div>
+    <div class="fallback" id="fallback">
+      <a id="directLink" href="#" target="_blank" rel="noopener">アプリを開く</a>
+      <p>表示されない場合はこのボタンから開いてください</p>
+    </div>
+  </div>
+
+  <!-- 管理キー未保存のときだけ表示（初回・ホーム画面初回など） -->
+  <div id="ask">
+    <div class="logo">🔑</div>
+    <div class="badge">運営モード</div>
+    <div class="t">管理キーを1回だけ入力してください</div>
+    <div class="s">
+      このキーは<b>この端末の中だけ</b>に保存され、次からは自動で運営画面が開きます。<br>
+      キーは案内資料（QR「運営用」）に記載のものです。
+    </div>
+    <input id="keyInput" type="text" inputmode="text" autocomplete="off" autocapitalize="off"
+      autocorrect="off" spellcheck="false" placeholder="管理キーを貼り付け">
+    <div class="err" id="askErr"></div>
+    <button onclick="saveKey()">運営画面をひらく</button>
+  </div>
+
+  <script>
+    var GAS_URL = 'https://script.google.com/macros/s/AKfycbwDvb6MlWT6P0rjLh9W7G59cpOxvb172sstt6OakI-To99ne1XvyV5ZGrYtglFpGVsi/exec';
+    var STORE = 'cgb_admin_key';
+    var params = new URLSearchParams(location.search);
+
+    // ?reset=1 で保存した鍵を消す（別端末に渡す・入れ直したいとき）
+    if (params.get('reset') === '1') {
+      try { localStorage.removeItem(STORE); } catch (e) {}
+      location.replace(location.pathname);
+    }
+
+    function savedKey() {
+      try { return localStorage.getItem(STORE) || ''; } catch (e) { return ''; }
+    }
+
+    // URLに鍵があれば端末に保存して以後も使えるようにする
+    var urlKey = (params.get('key') || '').trim();
+    if (urlKey) { try { localStorage.setItem(STORE, urlKey); } catch (e) {} }
+
+    var key = urlKey || savedKey();
+
+    function saveKey() {
+      var v = (document.getElementById('keyInput').value || '').trim();
+      if (!v) { document.getElementById('askErr').textContent = 'キーを入力してください'; return; }
+      try { localStorage.setItem(STORE, v); } catch (e) {}
+      location.replace(location.pathname + '?key=' + encodeURIComponent(v));
+    }
+
+    if (!key) {
+      // 鍵が無い → 入力画面へ
+      document.getElementById('boot').style.display = 'none';
+      document.getElementById('ask').style.display = 'flex';
+      var ki = document.getElementById('keyInput');
+      ki.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') saveKey(); });
+      ki.focus();
+    } else {
+      // 鍵あり → 運営モードでアプリを起動
+      var target = GAS_URL + '?key=' + encodeURIComponent(key);
+      document.getElementById('directLink').href = target;
+
+      var frame = document.createElement('iframe');
+      frame.id = 'app';
+      frame.src = target;
+      frame.setAttribute('allow', 'clipboard-write; web-share');
+      frame.setAttribute('referrerpolicy', 'no-referrer');
+      frame.onload = function () {
+        var boot = document.getElementById('boot');
+        if (boot) boot.style.display = 'none';
+      };
+      document.body.appendChild(frame);
+
+      // アプリ側からの「別モードで開き直す」依頼（白画面回避）。costco/ 配下のURLだけ許可。
+      window.addEventListener('message', function (ev) {
+        var d = ev.data;
+        if (!d || d.type !== 'cgb-reopen' || typeof d.url !== 'string') return;
+        var okBase = location.origin + '/ns-factory/costco/';
+        if (d.url.indexOf(okBase) !== 0) return;
+        location.replace(d.url);
+      });
+
+      // 8秒待っても出ないときは直接開くボタン
+      setTimeout(function () {
+        var boot = document.getElementById('boot');
+        if (boot && boot.style.display !== 'none') {
+          var sp = document.querySelector('#boot .spin'); if (sp) sp.style.display = 'none';
+          document.querySelector('#boot .s').textContent = '読み込みに時間がかかっています。';
+          document.getElementById('fallback').style.display = 'block';
+        }
+      }, 8000);
+    }
+  </script>
+</body>
+</html>
