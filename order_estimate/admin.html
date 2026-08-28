@@ -198,6 +198,9 @@ body{
 .ring-chip .chip-del:hover{opacity:1;color:#a33a2a}
 .ring-matrix-card .src-edit{border:none;background:transparent;color:#6b3a1f;text-decoration:underline;cursor:pointer;font-size:11px;padding:0;margin-left:6px}
 .ring-matrix-card .src-edit:hover{color:#a33a2a}
+.ring-chip.jumpable{cursor:pointer}
+.ring-chip.jumpable:hover{filter:brightness(.93)}
+.stock-card-flash{outline:3px solid #e08a3c;box-shadow:0 0 0 5px rgba(224,138,60,.25);border-radius:12px}
 .src-form{display:flex;flex-direction:column;gap:6px;margin-top:6px;padding:8px;border:1px solid #e8d3a0;border-radius:8px;background:#fffdf7}
 .src-form>div:first-child{font-size:10px;color:#8a6100;line-height:1.5}
 .src-form input{font-size:12px;padding:6px 8px;border:1px solid #d9c7b2;border-radius:8px;width:100%;box-sizing:border-box;background:#fff}
@@ -1014,8 +1017,9 @@ tr.row-out-stock td{
       <h2 style="margin:0 0 6px;font-size:16px;color:#6b3a1f">リング在庫マトリクス（欠品発見用）</h2>
       <div class="hint">
         シリーズ×手帳規格×内径×色で全リングを俯瞰します。外径 = 内径 + 3mm。
-        色チップの「×」でその行を削除できます（「リング在庫をGitHubへ反映」を押すまで公開データは変わりません）。
-        数値の編集は下の一覧表で行うと、このマトリクスも自動で追従します。
+        <strong>色チップをクリックすると下の在庫入力欄へジャンプ</strong>します（「×」はその行の削除）。
+        「＋店を追加」で同じリングの別の購入先（店・URL・価格・送料）を登録でき、購入先=最安・見積総額=最高値が自動で選び直されます。
+        いずれも「リング在庫をGitHubへ反映」を押すまで公開データは変わりません。
       </div>
       <div class="ring-matrix-legend">
         <span class="ring-chip ok">在庫あり（数字 = 個数）</span>
@@ -3300,6 +3304,7 @@ function renderStockList() {
       status === 'preorder' ? '取寄対応' :
       status === 'backorder' ? '入荷待ち' : '未確認';
     const rowIndex = rows.indexOf(row);
+    card.id = `stock-card-${rowIndex}`;
     card.innerHTML = `
       <div class="stock-card-head">
         <div class="stock-card-title">
@@ -3383,6 +3388,70 @@ const MATRIX_PLANNER_ORDER = ['Micro5', 'Mini6', 'Bible', 'A6', 'A5'];
 const MATRIX_SERIES_ORDER = ['normal', 'klause'];
 const MATRIX_SERIES_LABEL = { normal: '通常リング', klause: 'クラウゼリング（KRAUSE社）' };
 
+function jumpToStockCard(rowIndex) {
+  let el = document.getElementById(`stock-card-${rowIndex}`);
+  if (!el) {
+    // 絞り込みで隠れている場合はフィルタを解除してから探し直す
+    const search = document.getElementById('stockSearchInput');
+    const planner = document.getElementById('stockPlannerFilter');
+    const series = document.getElementById('stockSeriesFilter');
+    const visible = document.getElementById('stockOnlyFilter');
+    if (search) search.value = '';
+    if (planner) planner.value = '';
+    if (series) series.value = '';
+    if (visible) visible.value = '';
+    applyFilters();
+    el = document.getElementById(`stock-card-${rowIndex}`);
+  }
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('stock-card-flash');
+  setTimeout(() => el.classList.remove('stock-card-flash'), 2600);
+}
+
+function ringSourceCandidates(row) {
+  const cands = [];
+  for (let i = 1; i <= 3; i++) {
+    const shop = String(row[`source_shop_${i}`] || '').trim();
+    const price = Number(String(row[`source_price_${i}_jpy`] || '').trim());
+    if (!shop || !(price > 0)) continue;
+    cands.push({
+      shop,
+      url: row[`source_url_${i}`] || '',
+      price,
+      ship: Number(String(row[`source_shipping_${i}_jpy`] || '').trim()) || 0,
+      checked: row[`source_checked_${i}`] || '',
+    });
+  }
+  const pShop = String(row.preferred_source_shop || '').trim();
+  const pPrice = Number(String(row.preferred_source_price_jpy || '').trim());
+  if (pShop && pPrice > 0 && !cands.some(c => c.shop === pShop)) {
+    cands.push({
+      shop: pShop,
+      url: row.preferred_source_url || '',
+      price: pPrice,
+      ship: Number(String(row.preferred_source_shipping_jpy || '').trim()) || 0,
+      checked: row.preferred_last_checked || '',
+    });
+  }
+  return cands;
+}
+
+function recomputeRowPricing(row) {
+  // 巡回スクリプトと同じ方針: 購入先=送料込み最安、見積総額=候補中の送料込み最高値
+  const cands = ringSourceCandidates(row);
+  if (!cands.length) return;
+  const total = c => c.price + c.ship;
+  const best = cands.reduce((a, b) => (total(b) < total(a) ? b : a));
+  const worst = Math.round(Math.max(...cands.map(total)));
+  row.preferred_source_shop = best.shop;
+  row.preferred_source_url = best.url;
+  row.preferred_source_price_jpy = String(Math.round(best.price));
+  row.preferred_source_shipping_jpy = String(Math.round(best.ship));
+  if (best.checked) row.preferred_last_checked = best.checked;
+  row.price_jpy = String(worst);
+}
+
 function matrixChipState(row) {
   const qtyRaw = String(row.stock_qty ?? '').trim();
   if (qtyRaw === '') return { cls: 'noqty', text: '数量未入力' };
@@ -3391,7 +3460,7 @@ function matrixChipState(row) {
   return { cls: 'ok', text: String(qty) };
 }
 
-function makeRingChip(cls, swColor, label, onDelete) {
+function makeRingChip(cls, swColor, label, onDelete, onJump) {
   const chip = document.createElement('span');
   chip.className = `ring-chip ${cls}`;
   if (swColor) {
@@ -3401,13 +3470,21 @@ function makeRingChip(cls, swColor, label, onDelete) {
     chip.appendChild(sw);
   }
   chip.appendChild(document.createTextNode(label));
+  if (onJump) {
+    chip.classList.add('jumpable');
+    chip.title = 'クリックで下の在庫入力欄へジャンプ';
+    chip.onclick = onJump;
+  }
   if (onDelete) {
     const del = document.createElement('button');
     del.type = 'button';
     del.className = 'chip-del';
     del.textContent = '×';
     del.title = 'この行を削除（GitHubへ反映するまで公開データは変わりません）';
-    del.onclick = onDelete;
+    del.onclick = (e) => {
+      e.stopPropagation();
+      onDelete();
+    };
     chip.appendChild(del);
   }
   return chip;
@@ -3524,7 +3601,9 @@ function renderRingMatrix() {
           bl.className = 'dims';
           const shop = String(bestRow.preferred_source_shop || '').trim() || '購入先未設定';
           const colorLabel = String(bestRow.color_label || '').trim();
-          bl.textContent = `最安: ${shop} ${colorLabel} ¥${bestTotal.toLocaleString()}（送料込）`;
+          const candCount = Math.max(...[...group.colors.values()].map(r => ringSourceCandidates(r).length));
+          bl.textContent = `最安: ${shop} ${colorLabel} ¥${bestTotal.toLocaleString()}（送料込）`
+            + (candCount > 1 ? ` ｜ ${candCount}店を比較中` : '');
           card.appendChild(bl);
         }
 
@@ -3685,6 +3764,109 @@ function renderRingMatrix() {
           shopInput.focus();
         };
         src.appendChild(srcEditBtn);
+
+        const addShopBtn = document.createElement('button');
+        addShopBtn.type = 'button';
+        addShopBtn.className = 'src-edit';
+        addShopBtn.textContent = '＋店を追加';
+        addShopBtn.title = '同じリングの別の購入先（店・URL・価格・送料）を追加します';
+        addShopBtn.onclick = () => {
+          src.innerHTML = '';
+          const form = document.createElement('div');
+          form.className = 'src-form';
+
+          const note = document.createElement('div');
+          note.textContent = '別の店を追加します（1色につき3店まで）。保存すると「購入先=最安・見積総額=最高値」が自動で計算し直されます。反映は「リング在庫をGitHubへ反映」。';
+          form.appendChild(note);
+
+          const colorSel = document.createElement('select');
+          group.colors.forEach((row, colorId) => {
+            const opt = document.createElement('option');
+            opt.value = colorId;
+            opt.textContent = String(row.color_label || '').trim() || colorId;
+            colorSel.appendChild(opt);
+          });
+          form.appendChild(colorSel);
+
+          const shopInput = document.createElement('input');
+          shopInput.type = 'text';
+          shopInput.placeholder = '店名（例: AliExpress ○○ストア）';
+          form.appendChild(shopInput);
+
+          const urlInput = document.createElement('input');
+          urlInput.type = 'text';
+          urlInput.placeholder = '購入ページURL（https://〜）';
+          form.appendChild(urlInput);
+
+          const priceInput = document.createElement('input');
+          priceInput.type = 'number';
+          priceInput.min = '0';
+          priceInput.step = '1';
+          priceInput.placeholder = '購入価格（円）';
+          form.appendChild(priceInput);
+
+          const shipInput = document.createElement('input');
+          shipInput.type = 'number';
+          shipInput.min = '0';
+          shipInput.step = '1';
+          shipInput.placeholder = '送料（円・無料なら0）';
+          form.appendChild(shipInput);
+
+          const btnRow = document.createElement('div');
+          btnRow.className = 'src-form-actions';
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.textContent = '保存';
+          saveBtn.onclick = () => {
+            const row = group.colors.get(colorSel.value);
+            if (!row) return;
+            const shop = shopInput.value.trim();
+            const url = urlInput.value.trim();
+            const price = Number(priceInput.value.trim());
+            const ship = shipInput.value.trim() === '' ? 0 : Number(shipInput.value.trim());
+            if (!shop) { alert('店名を入力してください。'); return; }
+            if (!(price > 0)) { alert('購入価格は1以上の数値で入力してください。'); return; }
+            if (!(ship >= 0)) { alert('送料は0以上の数値で入力してください。'); return; }
+            if (url && !/^https?:\/\//i.test(url)) {
+              alert('URLは https:// から始まる形式で入力してください。');
+              return;
+            }
+            let slot = 0;
+            for (let i = 1; i <= 3; i++) {
+              if (String(row[`source_shop_${i}`] || '').trim() === shop) { slot = i; break; }
+            }
+            if (!slot) {
+              for (let i = 1; i <= 3; i++) {
+                if (!String(row[`source_shop_${i}`] || '').trim()) { slot = i; break; }
+              }
+            }
+            if (!slot) {
+              alert('この色は既に3店が登録されています。下の一覧表（source_shop_1〜3列）で不要な店を消してから追加してください。');
+              return;
+            }
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            row[`source_shop_${slot}`] = shop;
+            row[`source_url_${slot}`] = url;
+            row[`source_price_${slot}_jpy`] = String(Math.round(price));
+            row[`source_shipping_${slot}_jpy`] = String(Math.round(ship));
+            row[`source_checked_${slot}`] = todayStr;
+            recomputeRowPricing(row);
+            setDirty(true);
+            applyFilters();
+          };
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.textContent = 'キャンセル';
+          cancelBtn.onclick = () => renderRingMatrix();
+          btnRow.appendChild(saveBtn);
+          btnRow.appendChild(cancelBtn);
+          form.appendChild(btnRow);
+
+          src.appendChild(form);
+          shopInput.focus();
+        };
+        src.appendChild(addShopBtn);
         card.appendChild(src);
 
         const chips = document.createElement('div');
@@ -3710,14 +3892,16 @@ function renderRingMatrix() {
           const state = matrixChipState(row);
           if (state.cls === 'out') hasOut = true;
           const label = String(row.color_label || '').trim() || meta.label;
-          chips.appendChild(makeRingChip(state.cls, meta.sw, `${label} ${state.text}`, chipDeleter(row, label)));
+          chips.appendChild(makeRingChip(state.cls, meta.sw, `${label} ${state.text}`,
+            chipDeleter(row, label), () => jumpToStockCard(rows.indexOf(row))));
         });
         group.colors.forEach((row, colorId) => {
           if (MATRIX_COLOR_ORDER.includes(colorId)) return;
           const state = matrixChipState(row);
           if (state.cls === 'out') hasOut = true;
           const label = String(row.color_label || '').trim() || colorId;
-          chips.appendChild(makeRingChip(state.cls, null, `${label} ${state.text}`, chipDeleter(row, label)));
+          chips.appendChild(makeRingChip(state.cls, null, `${label} ${state.text}`,
+            chipDeleter(row, label), () => jumpToStockCard(rows.indexOf(row))));
         });
         if (hasOut) card.classList.add('has-out');
         card.appendChild(chips);
