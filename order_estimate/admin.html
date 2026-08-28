@@ -212,6 +212,9 @@ body{
 .src-form .shop-entry button{align-self:flex-end;font-size:11px;padding:3px 10px;border-radius:8px;border:1px solid #d9c7b2;background:#fff;color:#a33a2a;cursor:pointer}
 .src-form .shop-entry button:hover{opacity:.8}
 .src-form select{font-size:12px;padding:6px 8px;border:1px solid #d9c7b2;border-radius:8px;background:#fff}
+.unsaved-bar{position:fixed;left:0;right:0;bottom:0;z-index:9999;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 16px;background:#b42318;color:#fff;font-size:13px;box-shadow:0 -2px 10px rgba(0,0,0,.25)}
+.unsaved-bar button{font-size:13px;padding:6px 16px;border-radius:8px;border:1px solid #fff;background:#fff;color:#b42318;cursor:pointer;font-weight:700}
+.unsaved-bar button:hover{opacity:.9}
 .ring-matrix-card{border:1px solid #eadccf;border-radius:12px;background:#fffaf6;padding:10px 12px}
 .ring-matrix-card.has-out{border-color:#e8a79f;background:#fffafa}
 .ring-matrix-card h3{margin:0;font-size:13px;color:#3f2a18}
@@ -3119,6 +3122,30 @@ function hasStock(row) {
 function setDirty(nextDirty) {
   dirty = nextDirty;
   document.getElementById('dirtyPill').textContent = `状態: ${dirty ? '未保存' : '保存済み'}`;
+  updateUnsavedBar();
+}
+
+function updateUnsavedBar() {
+  let bar = document.getElementById('unsavedBar');
+  if (!dirty) {
+    if (bar) bar.remove();
+    return;
+  }
+  if (bar) return;
+  bar = document.createElement('div');
+  bar.id = 'unsavedBar';
+  bar.className = 'unsaved-bar';
+  const msg = document.createElement('span');
+  msg.textContent = '⚠ リング在庫に未保存の変更があります。ページを更新・閉じると消えます。';
+  bar.appendChild(msg);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'いますぐGitHubへ反映';
+  btn.onclick = () => {
+    publishRingToGitHub().catch(err => alert(`GitHub反映に失敗しました: ${err.message}`));
+  };
+  bar.appendChild(btn);
+  document.body.appendChild(bar);
 }
 
 function updateMeta(sourceLabel = null) {
