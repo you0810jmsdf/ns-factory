@@ -206,8 +206,12 @@ body{
 .src-form input{font-size:12px;padding:6px 8px;border:1px solid #d9c7b2;border-radius:8px;width:100%;box-sizing:border-box;background:#fff}
 .src-form-actions{display:flex;gap:8px}
 .src-form-actions button{font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #d9c7b2;background:#fff;cursor:pointer;color:#6b3a1f}
-.src-form-actions button:first-child{background:#6b3a1f;border-color:#6b3a1f;color:#fff}
+.src-form-actions button.primary{background:#6b3a1f;border-color:#6b3a1f;color:#fff}
 .src-form-actions button:hover{opacity:.85}
+.src-form .shop-entry{display:flex;flex-direction:column;gap:4px;padding:6px 8px;border:1px dashed #d9c7b2;border-radius:8px;background:#fff}
+.src-form .shop-entry button{align-self:flex-end;font-size:11px;padding:3px 10px;border-radius:8px;border:1px solid #d9c7b2;background:#fff;color:#a33a2a;cursor:pointer}
+.src-form .shop-entry button:hover{opacity:.8}
+.src-form select{font-size:12px;padding:6px 8px;border:1px solid #d9c7b2;border-radius:8px;background:#fff}
 .ring-matrix-card{border:1px solid #eadccf;border-radius:12px;background:#fffaf6;padding:10px 12px}
 .ring-matrix-card.has-out{border-color:#e8a79f;background:#fffafa}
 .ring-matrix-card h3{margin:0;font-size:13px;color:#3f2a18}
@@ -3452,6 +3456,66 @@ function recomputeRowPricing(row) {
   row.price_jpy = String(worst);
 }
 
+function managerShopList(row) {
+  // 管理フォーム表示用: source枠1〜3の全店＋（枠に居ない）購入先を、価格の有無に関わらず列挙する
+  const list = [];
+  for (let i = 1; i <= 3; i++) {
+    const shop = String(row[`source_shop_${i}`] || '').trim();
+    if (!shop) continue;
+    list.push({
+      shop,
+      url: String(row[`source_url_${i}`] || '').trim(),
+      price: String(row[`source_price_${i}_jpy`] || '').trim(),
+      ship: String(row[`source_shipping_${i}_jpy`] || '').trim(),
+    });
+  }
+  const pShop = String(row.preferred_source_shop || '').trim();
+  if (pShop && !list.some(e => e.shop === pShop)) {
+    list.unshift({
+      shop: pShop,
+      url: String(row.preferred_source_url || '').trim(),
+      price: String(row.preferred_source_price_jpy || '').trim(),
+      ship: String(row.preferred_source_shipping_jpy || '').trim(),
+    });
+  }
+  return list.slice(0, 3);
+}
+
+function saveShopListToRow(row, entries) {
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  for (let i = 1; i <= 3; i++) {
+    row[`source_shop_${i}`] = '';
+    row[`source_url_${i}`] = '';
+    row[`source_price_${i}_jpy`] = '';
+    row[`source_shipping_${i}_jpy`] = '';
+    row[`source_checked_${i}`] = '';
+  }
+  entries.slice(0, 3).forEach((e, idx) => {
+    const i = idx + 1;
+    row[`source_shop_${i}`] = e.shop;
+    row[`source_url_${i}`] = e.url;
+    row[`source_price_${i}_jpy`] = e.price === '' ? '' : String(Math.round(Number(e.price)));
+    row[`source_shipping_${i}_jpy`] = e.ship === '' ? '' : String(Math.round(Number(e.ship)));
+    row[`source_checked_${i}`] = todayStr;
+  });
+  // 消した店が購入先に残らないよう、購入先はリストから必ず選び直す
+  const first = entries[0];
+  if (!first) {
+    row.preferred_source_shop = '';
+    row.preferred_source_url = '';
+    row.preferred_source_price_jpy = '';
+    row.preferred_source_shipping_jpy = '';
+    return;
+  }
+  row.preferred_source_shop = first.shop;
+  row.preferred_source_url = first.url;
+  row.preferred_source_price_jpy = first.price === '' ? '' : String(Math.round(Number(first.price)));
+  row.preferred_source_shipping_jpy = first.ship === '' ? '' : String(Math.round(Number(first.ship)));
+  row.preferred_last_checked = todayStr;
+  recomputeRowPricing(row);
+}
+
 function matrixChipState(row) {
   const qtyRaw = String(row.stock_qty ?? '').trim();
   if (qtyRaw === '') return { cls: 'noqty', text: '数量未入力' };
@@ -3671,84 +3735,118 @@ function renderRingMatrix() {
         srcEditBtn.className = 'src-edit';
         srcEditBtn.textContent = sources.length ? '編集' : '設定';
         srcEditBtn.onclick = () => {
-          const cur = sources[0] || { shop: '', url: '' };
           src.innerHTML = '';
           const form = document.createElement('div');
           form.className = 'src-form';
 
-          const formNote = document.createElement('div');
-          formNote.textContent = '購入先（この規格・内径の全色共通）。別タブでURLを調べてもこのフォームは消えません。';
-          form.appendChild(formNote);
+          const note = document.createElement('div');
+          note.textContent = '色ごとに登録済みの店を修正・削除できます（1色3店まで）。書き換えて「保存」を押してください。色を切り替えると未保存の変更は破棄されます。反映は「リング在庫をGitHubへ反映」。';
+          form.appendChild(note);
 
-          const shopInput = document.createElement('input');
-          shopInput.type = 'text';
-          shopInput.placeholder = 'ショップ名（例: Rakuten lc-palette）';
-          shopInput.value = cur.shop;
-          form.appendChild(shopInput);
+          const colorSel = document.createElement('select');
+          group.colors.forEach((row, colorId) => {
+            const opt = document.createElement('option');
+            opt.value = colorId;
+            opt.textContent = String(row.color_label || '').trim() || colorId;
+            colorSel.appendChild(opt);
+          });
+          form.appendChild(colorSel);
 
-          const urlInput = document.createElement('input');
-          urlInput.type = 'text';
-          urlInput.placeholder = '購入ページURL（https://〜）';
-          urlInput.value = cur.url;
-          form.appendChild(urlInput);
+          const listWrap = document.createElement('div');
+          listWrap.style.display = 'flex';
+          listWrap.style.flexDirection = 'column';
+          listWrap.style.gap = '6px';
+          form.appendChild(listWrap);
 
-          const uniqueVals = field => [...new Set([...group.colors.values()]
-            .map(r => String(r[field] ?? '').trim()).filter(v => v !== ''))];
-          const curPrices = uniqueVals('preferred_source_price_jpy');
-          const curShips = uniqueVals('preferred_source_shipping_jpy');
+          const entryInputs = [];
+          const addEntryRow = (e) => {
+            if (entryInputs.length >= 3) {
+              alert('1色につき3店までです。');
+              return;
+            }
+            const box = document.createElement('div');
+            box.className = 'shop-entry';
+            const shopIn = document.createElement('input');
+            shopIn.type = 'text';
+            shopIn.placeholder = '店名';
+            shopIn.value = e.shop || '';
+            const urlIn = document.createElement('input');
+            urlIn.type = 'text';
+            urlIn.placeholder = '購入ページURL（https://〜）';
+            urlIn.value = e.url || '';
+            const priceIn = document.createElement('input');
+            priceIn.type = 'number';
+            priceIn.min = '0';
+            priceIn.step = '1';
+            priceIn.placeholder = '購入価格（円）';
+            priceIn.value = e.price ?? '';
+            const shipIn = document.createElement('input');
+            shipIn.type = 'number';
+            shipIn.min = '0';
+            shipIn.step = '1';
+            shipIn.placeholder = '送料（円・無料なら0）';
+            shipIn.value = e.ship ?? '';
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.textContent = 'この店を削除';
+            const rec = { shopIn, urlIn, priceIn, shipIn };
+            delBtn.onclick = () => {
+              const i = entryInputs.indexOf(rec);
+              if (i >= 0) entryInputs.splice(i, 1);
+              box.remove();
+            };
+            box.appendChild(shopIn);
+            box.appendChild(urlIn);
+            box.appendChild(priceIn);
+            box.appendChild(shipIn);
+            box.appendChild(delBtn);
+            entryInputs.push(rec);
+            listWrap.appendChild(box);
+          };
 
-          const priceInput = document.createElement('input');
-          priceInput.type = 'number';
-          priceInput.min = '0';
-          priceInput.step = '1';
-          priceInput.placeholder = '購入価格（円）';
-          if (curPrices.length === 1) priceInput.value = curPrices[0];
-          form.appendChild(priceInput);
-
-          const shipInput = document.createElement('input');
-          shipInput.type = 'number';
-          shipInput.min = '0';
-          shipInput.step = '1';
-          shipInput.placeholder = '送料（円・無料なら0）';
-          if (curShips.length === 1) shipInput.value = curShips[0];
-          form.appendChild(shipInput);
-
-          let noteText = '価格・送料は空欄のまま保存すると変更しません。';
-          if (curPrices.length > 1) noteText += `現在の購入価格は色ごとに異なります（${curPrices.join(' / ')}円）— 入力すると全色に上書きされます。`;
-          if (curShips.length > 1) noteText += `現在の送料は色ごとに異なります（${curShips.join(' / ')}円）。`;
-          formNote.textContent += noteText;
+          const renderEntries = () => {
+            listWrap.innerHTML = '';
+            entryInputs.length = 0;
+            const row = group.colors.get(colorSel.value);
+            if (!row) return;
+            managerShopList(row).forEach(addEntryRow);
+            if (!entryInputs.length) addEntryRow({});
+          };
+          colorSel.onchange = renderEntries;
+          renderEntries();
 
           const btnRow = document.createElement('div');
           btnRow.className = 'src-form-actions';
+          const addRowBtn = document.createElement('button');
+          addRowBtn.type = 'button';
+          addRowBtn.textContent = '＋行を追加';
+          addRowBtn.onclick = () => addEntryRow({});
           const saveBtn = document.createElement('button');
           saveBtn.type = 'button';
+          saveBtn.className = 'primary';
           saveBtn.textContent = '保存';
           saveBtn.onclick = () => {
-            const shop = shopInput.value.trim();
-            const url = urlInput.value.trim();
-            if (url && !/^https?:\/\//i.test(url)) {
-              alert('URLは https:// から始まる形式で入力してください。');
-              return;
+            const row = group.colors.get(colorSel.value);
+            if (!row) return;
+            const entries = [];
+            for (const rec of entryInputs) {
+              const shop = rec.shopIn.value.trim();
+              const url = rec.urlIn.value.trim();
+              const priceRaw = rec.priceIn.value.trim();
+              const shipRaw = rec.shipIn.value.trim();
+              if (!shop && !url && priceRaw === '' && shipRaw === '') continue;
+              if (!shop) { alert('店名が空の行があります。'); return; }
+              if (url && !/^https?:\/\//i.test(url)) { alert(`${shop} のURLは https:// から始めてください。`); return; }
+              if (priceRaw !== '' && !(Number(priceRaw) > 0)) { alert(`${shop} の購入価格は1以上の数値で入力してください。`); return; }
+              if (shipRaw !== '' && !(Number(shipRaw) >= 0)) { alert(`${shop} の送料は0以上の数値で入力してください。`); return; }
+              entries.push({
+                shop,
+                url,
+                price: priceRaw === '' ? '' : Number(priceRaw),
+                ship: shipRaw === '' ? '' : Number(shipRaw),
+              });
             }
-            const priceRaw = priceInput.value.trim();
-            const shipRaw = shipInput.value.trim();
-            if (priceRaw !== '' && (!Number.isFinite(Number(priceRaw)) || Number(priceRaw) < 0)) {
-              alert('購入価格は0以上の数値で入力してください。');
-              return;
-            }
-            if (shipRaw !== '' && (!Number.isFinite(Number(shipRaw)) || Number(shipRaw) < 0)) {
-              alert('送料は0以上の数値で入力してください。');
-              return;
-            }
-            const today = new Date();
-            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-            group.colors.forEach(row => {
-              row.preferred_source_shop = shop;
-              row.preferred_source_url = url;
-              if (priceRaw !== '') row.preferred_source_price_jpy = String(Number(priceRaw));
-              if (shipRaw !== '') row.preferred_source_shipping_jpy = String(Number(shipRaw));
-              if (shop || url || priceRaw !== '' || shipRaw !== '') row.preferred_last_checked = todayStr;
-            });
+            saveShopListToRow(row, entries);
             setDirty(true);
             applyFilters();
           };
@@ -3756,12 +3854,12 @@ function renderRingMatrix() {
           cancelBtn.type = 'button';
           cancelBtn.textContent = 'キャンセル';
           cancelBtn.onclick = () => renderRingMatrix();
+          btnRow.appendChild(addRowBtn);
           btnRow.appendChild(saveBtn);
           btnRow.appendChild(cancelBtn);
           form.appendChild(btnRow);
 
           src.appendChild(form);
-          shopInput.focus();
         };
         src.appendChild(srcEditBtn);
 
@@ -3816,6 +3914,7 @@ function renderRingMatrix() {
           btnRow.className = 'src-form-actions';
           const saveBtn = document.createElement('button');
           saveBtn.type = 'button';
+          saveBtn.className = 'primary';
           saveBtn.textContent = '保存';
           saveBtn.onclick = () => {
             const row = group.colors.get(colorSel.value);
