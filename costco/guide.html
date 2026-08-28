@@ -84,6 +84,12 @@
     </div>
   </div>
 
+  <!-- ここから下は help-data.js（正本）から自動で描画される。
+       ⛔ 機能説明・更新履歴を直すときは help-data.js を編集すること。ここを直接書き換えない。 -->
+  <div id="helpDyn"></div>
+
+  <!-- help-data.js が読めなかったときだけ表示される予備の内容 -->
+  <div id="helpStatic">
   <h3 class="sec">よくある質問</h3>
 
   <dl class="qa">
@@ -126,11 +132,68 @@
     アプリの一番下にある「💬 不具合・改善のご意見を送る」からお知らせください。
     無料で公開している代わりに、お気づきの点を教えていただけると助かります。
   </div>
+  </div>
 </main>
 
 <footer>
   <a href="./">アプリを開く</a>　|　<a href="../digital-room/">デジタル幕僚室</a><br>
   N's factory / 中司祐樹
 </footer>
+<script src="./help-data.js" onerror="window.__helpFailed=1"></script>
+<script>
+(function () {
+  var H = window.CGB_HELP;
+  var dyn = document.getElementById('helpDyn');
+  if (!H || !dyn) return; // 読めなければ静的な内容がそのまま残る
+
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  // 本文は <b> だけ許可（help-data.js は自前で書くファイルなので、タグを限定して通す）
+  function rich(t) { return esc(t).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>'); }
+
+  var h = '';
+  (H.sections || []).forEach(function (sec) {
+    h += '<h3 class="sec">' + esc(sec.icon || '') + ' ' + esc(sec.title) + '</h3>';
+    h += '<div class="qa">';
+    (sec.body || []).forEach(function (t) { h += '<p style="font-size:14px;margin-bottom:8px">' + rich(t) + '</p>'; });
+    if (sec.steps && sec.steps.length) {
+      h += '<ol style="margin:4px 0 0 20px;font-size:14px">';
+      sec.steps.forEach(function (t) { h += '<li style="margin-bottom:8px">' + rich(t) + '</li>'; });
+      h += '</ol>';
+    }
+    if (sec.qa && sec.qa.length) {
+      h += '<dl>';
+      sec.qa.forEach(function (x) {
+        h += '<dt style="font-weight:700;font-size:14px;margin-top:12px">' + rich(x.q) + '</dt>'
+          + '<dd style="font-size:13px;color:#444;margin:2px 0 0">' + rich(x.a) + '</dd>';
+      });
+      h += '</dl>';
+    }
+    if (sec.notes && sec.notes.length) {
+      h += '<div class="warn" style="margin-top:12px">';
+      sec.notes.forEach(function (t) { h += '<div>・' + rich(t) + '</div>'; });
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+
+  // 更新履歴
+  h += '<h3 class="sec">🆕 更新履歴</h3><div class="qa">';
+  h += '<p style="font-size:12px;color:#6b6b70;margin-bottom:10px">いま使えるのは バージョン ' + esc(H.version) + '（' + esc(H.updated) + ' 更新）です。</p>';
+  (H.history || []).forEach(function (v) {
+    h += '<div style="margin-bottom:14px">'
+      + '<div style="font-weight:700;font-size:13px;color:#005daa">v' + esc(v.version) + '　<span style="color:#6b6b70;font-weight:400">' + esc(v.date) + '</span></div>'
+      + '<ul style="margin:4px 0 0 18px;font-size:13px">';
+    (v.items || []).forEach(function (t) { h += '<li style="margin-bottom:4px">' + rich(t) + '</li>'; });
+    h += '</ul></div>';
+  });
+  h += '</div>';
+
+  dyn.innerHTML = h;
+  var stat = document.getElementById('helpStatic');
+  if (stat) stat.style.display = 'none'; // 正本が読めたので予備は隠す
+})();
+</script>
 </body>
 </html>
