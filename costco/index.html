@@ -34,11 +34,12 @@
   body { font-family: "Hiragino Sans", Meiryo, sans-serif; background: var(--bg); color: var(--ink); padding-bottom: 90px; }
   /* ヘッダー・名前・タブを1つの固定ブロックに（スクロールしても操作可） */
   .topbar { position: sticky; top: 0; z-index: 30; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
-  header { background: var(--red); color: #fff; padding: 14px 16px; transition: padding .2s; }
+  /* iPhoneのノッチ/時計/カメラにヘッダー文字が被らないよう、上端にセーフエリア分の余白を足す */
+  header { background: var(--red); color: #fff; padding: 14px 16px; padding-top: calc(14px + env(safe-area-inset-top)); transition: padding .2s; }
   header h1 { font-size: 17px; font-weight: 700; }
   header .sub { font-size: 11px; opacity: .85; margin-top: 2px; transition: opacity .2s, max-height .2s; max-height: 20px; overflow: hidden; }
   /* スクロール時は縮小して画面を広く使う */
-  .topbar.shrink header { padding: 8px 16px; }
+  .topbar.shrink header { padding: 8px 16px; padding-top: calc(8px + env(safe-area-inset-top)); }
   .topbar.shrink header h1 { font-size: 15px; }
   .topbar.shrink header .sub { opacity: 0; max-height: 0; margin-top: 0; }
   .namebar { background: #fff; border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 8px; align-items: center; transition: padding .2s; }
@@ -47,14 +48,59 @@
   .namebar input { flex: 1; min-width: 0; max-width: 200px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; }
   .namebar .hello { font-size: 13px; color: var(--blue); font-weight: 600; white-space: nowrap; }
   .namebar select { padding: 8px 4px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; background: #fff; max-width: 90px; }
-  .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--line); }
-  .tabs button { flex: 1; padding: 12px 4px; border: none; background: none; font-size: 13px; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; }
+  /* タブは折り返さず横一列。入りきらなければ横スクロール（スマホで文字が2段になるのを防ぐ） */
+  .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--line); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { flex: 0 0 auto; padding: 12px 14px; border: none; background: none; font-size: 13px; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
   .tabs button.active { color: var(--red); border-bottom-color: var(--red); font-weight: 700; }
+  /* 全画面の商品拡大表示 */
+  .prod-modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.93); display: none; flex-direction: column; }
+  .prod-modal.show { display: flex; }
+  .pm-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; }
+  .pm-bar span { color: #ddd; font-size: 13px; }
+  .pm-close { background: rgba(255,255,255,.16); color: #fff; border: 0; border-radius: 999px; padding: 9px 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .pm-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding: 0 16px calc(24px + env(safe-area-inset-bottom)); }
+  .pm-img { max-width: 100%; max-height: 54vh; object-fit: contain; border-radius: 12px; background: #fff; }
+  .pm-name { color: #fff; font-size: 18px; font-weight: 700; margin: 18px 0 4px; text-align: center; line-height: 1.5; }
+  .pm-item { color: #aaa; font-size: 12px; margin-bottom: 12px; }
+  .pm-price { color: #fff; font-size: 28px; font-weight: 800; text-align: center; }
+  .pm-price .orig { font-size: 15px; color: #999; text-decoration: line-through; margin-left: 10px; font-weight: 400; }
+  .pm-off { color: #ff8a80; font-size: 15px; font-weight: 700; margin-left: 8px; }
+  .pm-stepper { display: flex; align-items: center; margin: 22px 0 10px; }
+  .pm-stepper button { width: 64px; height: 58px; font-size: 28px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; cursor: pointer; }
+  .pm-stepper button:first-child { border-radius: 12px 0 0 12px; }
+  .pm-stepper button:last-child { border-radius: 0 12px 12px 0; }
+  .pm-qty { min-width: 74px; height: 58px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; color: #fff; border-top: 1px solid rgba(255,255,255,.28); border-bottom: 1px solid rgba(255,255,255,.28); }
+  .pm-qty.on { color: #ffd54f; }
+  /* 価格未取得の商品に実売価格を入れる欄（取りまとめ役・運営のみ） */
+  .price-set { display: flex; gap: 6px; align-items: center; margin-top: 8px; background: #fff8e7; border: 1px dashed #e0b96a; border-radius: 8px; padding: 7px 8px; }
+  .price-set .lbl { font-size: 11px; color: #8a5a00; font-weight: 700; white-space: nowrap; }
+  .price-set input { flex: 1; min-width: 0; width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; }
+  .price-set button { border: 0; background: var(--blue); color: #fff; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .pm-priceset { width: 100%; max-width: 340px; margin-top: 16px; }
+  /* 請求画面: 買い物後に価格を入れる欄（取りまとめ役・運営のみ） */
+  .need-price { background: #fff8e7; border: 1px solid #f0d48a; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+  .need-price-h { font-size: 14px; font-weight: 700; color: #8a5a00; }
+  .need-price-sub { font-size: 12px; color: #a06a10; margin: 4px 0 10px; line-height: 1.6; }
+  .need-price-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid #f0dca8; }
+  .need-price-row img { width: 44px; height: 44px; object-fit: contain; background: #fff; border-radius: 6px; flex: 0 0 auto; }
+  .need-price-row .np-name { flex: 1; min-width: 0; font-size: 13px; line-height: 1.4; }
+  .need-price-row .np-off { display: block; font-size: 11px; color: #b06000; margin-top: 2px; }
+  .need-price-row input { width: 84px; flex: 0 0 auto; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 15px; }
+  .need-price-row button { flex: 0 0 auto; border: 0; background: var(--blue); color: #fff; border-radius: 6px; padding: 7px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
   main { padding: 12px; max-width: 900px; margin: 0 auto; }
   .campaign { background: var(--card); border-radius: 12px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-  .campaign > .head { padding: 12px 14px; background: var(--blue); color: #fff; }
+  .campaign > .head { padding: 12px 14px; background: var(--blue); color: #fff; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; }
+  .campaign > .head::-webkit-details-marker { display: none; }
+  .campaign > .head::before { content: '▸'; font-size: 12px; flex: 0 0 auto; }
+  .campaign[open] > .head::before { content: '▾'; }
+  .campaign > .head .head-main { flex: 1; min-width: 0; }
+  .campaign > .head .head-count { flex: 0 0 auto; font-size: 11.5px; background: rgba(255,255,255,.22); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+  .camp-tools { display: flex; gap: 8px; margin: 0 2px 10px; }
+  .camp-tools .btn { flex: 1; font-size: 12px; padding: 8px 4px; }
   .campaign > .head .title { font-size: 14px; font-weight: 700; }
   .campaign > .head .period { font-size: 12px; opacity: .9; margin-top: 2px; }
+  .campaign > .head .mailsrc { display: block; margin-top: 2px; font-size: 11px; opacity: .9; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 12px; }
   .pcard { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
   .pcard.checked { border-color: var(--red); box-shadow: 0 0 0 2px rgba(227,24,55,.15); }
@@ -75,7 +121,29 @@
   .stepper .qty { width: 44px; height: 38px; display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 700; }
   .stepper .qty.on { color: var(--red); }
   .savebar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 10px; align-items: center; justify-content: center; z-index: 20; }
-  .savebar .info { font-size: 13px; color: var(--muted); }
+  .savebar .info { font-size: 13px; color: var(--blue); font-weight: 700; cursor: pointer; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fc; }
+  .cart-panel { position: fixed; left: 10px; right: 10px; bottom: 70px; max-height: 48vh; overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 -6px 24px rgba(0,0,0,.2); z-index: 21; padding: 12px 14px; }
+  .cart-panel .selected-head { display: flex; align-items: center; gap: 8px; }
+  .help-modal { background: #f5f6f8; }
+  .help-modal .pm-bar { background: var(--red); }
+  .help-modal .pm-bar span { color: #fff; font-weight: 700; }
+  .help-wrap { flex: 1; overflow-y: auto; padding: 14px 14px calc(28px + env(safe-area-inset-bottom)); }
+  .help-sec { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .help-sec h4 { font-size: 15px; margin-bottom: 8px; }
+  .help-sec p, .help-sec li { font-size: 13.5px; line-height: 1.85; }
+  .help-sec ol { margin: 4px 0 0 20px; }
+  .help-sec .hq { font-weight: 700; font-size: 13.5px; margin-top: 10px; }
+  .help-sec .ha { font-size: 13px; color: #444; }
+  .help-note { background: #fff8e7; border: 1px solid #f0d48a; color: #7a5b00; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; line-height: 1.8; margin-top: 10px; }
+  .help-ver { font-size: 12px; color: var(--muted); margin: 2px 2px 12px; }
+  .help-hist h5 { font-size: 13px; color: var(--blue); margin-top: 12px; }
+  .help-hist ul { margin: 4px 0 0 18px; }
+  .help-hist li { font-size: 13px; margin-bottom: 4px; }
+  .staple-mark { display: inline-block; background: #e8f5e9; color: #137333; border-radius: 999px; padding: 1px 8px; font-size: 10px; font-weight: 700; margin-left: 4px; }
+  .pnote { display: block; width: 100%; font-size: 10.5px; line-height: 1.5; margin-top: 3px; }
+  .pnote.ok { color: #137333; }
+  .pnote.warn { color: #b06000; }
+  .cart-close { margin-left: auto; border: 0; background: #eef2f7; color: #333; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .savebar button { background: var(--red); color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 15px; font-weight: 700; cursor: pointer; }
   .savebar button:disabled { background: #ccc; }
   table.mx { border-collapse: collapse; width: 100%; background: #fff; font-size: 12px; }
@@ -83,6 +151,9 @@
   table.mx th { background: #eef2f7; font-weight: 700; }
   table.mx td.pname { text-align: left; max-width: 220px; }
   table.mx td.qty { font-weight: 700; color: var(--blue); }
+  .mx-del { border: 0; background: none; font-weight: 700; color: var(--blue); font-size: 12px; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+  .mx-del:active { background: #ffecec; }
+  .mx-del .x { color: #c0392b; font-size: 10px; margin-left: 2px; opacity: .7; }
   table.mx tr.total td { background: #fff6f7; font-weight: 700; color: var(--red); }
   .tablewrap { overflow-x: auto; background: #fff; border-radius: 12px; padding: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   .bill { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
@@ -101,6 +172,16 @@
   .admin-row .meta { font-size: 12px; color: var(--muted); margin: 4px 0; }
   .admin-row .ctrl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
   .admin-row input.period { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; width: 180px; }
+  /* 受付判断用の折りたたみ行（受信日＋タイトル＋状態のみ、展開で詳細） */
+  .camp-fold { background: #fff; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); overflow: hidden; }
+  .camp-fold > summary { list-style: none; cursor: pointer; padding: 11px 12px; display: flex; align-items: center; gap: 9px; }
+  .camp-fold > summary::-webkit-details-marker { display: none; }
+  .camp-fold > summary::before { content: '▸'; color: var(--muted); font-size: 11px; flex: 0 0 auto; }
+  .camp-fold[open] > summary::before { content: '▾'; }
+  .camp-date { font-size: 11px; color: var(--muted); flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+  .camp-title { font-size: 13px; font-weight: 700; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .camp-body { padding: 2px 12px 12px; }
+  .pill.archived { background: #eceff3; color: #5a6b7b; }
   .btn { border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
   .btn.pub { background: var(--red); color: #fff; }
   .btn.unpub { background: #888; color: #fff; }
@@ -109,6 +190,18 @@
   .pill { font-size: 11px; padding: 2px 10px; border-radius: 999px; }
   .pill.published { background: #e6f4ea; color: #137333; }
   .pill.draft { background: #fef3e0; color: #b06000; }
+  .usage-box { background: #eef2f7; border-radius: 8px; padding: 12px; margin: 10px 0 14px; }
+  .usage-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--blue); }
+  .usage-metrics { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; line-height: 1.8; }
+  .usage-metrics span { background: #fff; border-radius: 8px; padding: 4px 8px; }
+  .usage-active { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .usage-list { margin-top: 8px; display: grid; gap: 6px; }
+  .usage-user { display: flex; justify-content: space-between; gap: 8px; background: #fff; border-radius: 8px; padding: 7px 9px; font-size: 12px; }
+  .usage-user .time { color: var(--muted); white-space: nowrap; }
+  .announce { background: #fff8e7; border: 1px solid #f0d48a; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .announce-title { font-size: 13px; font-weight: 700; color: #8a5a00; margin-bottom: 5px; }
+  .announce-body { font-size: 13px; line-height: 1.7; }
+  .announce-actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
   .empty { text-align: center; color: var(--muted); padding: 40px 10px; font-size: 14px; }
   .preview { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 10px; }
   .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
@@ -181,10 +274,18 @@
   .staple-add .btn { padding: 8px 16px; }
   .staple-note { width: 100%; font-size: 11px; color: var(--muted); margin-top: 2px; }
   .add-staple { margin-top: 6px; width: 100%; background: #fff; color: #2e7d32; border: 1px solid #b7dfc4; border-radius: 8px; padding: 7px; font-size: 11px; cursor: pointer; }
-  .staple-ops { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
-  .staple-ops input { width: 62px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; }
-  .staple-ops button { flex: 1; padding: 6px 4px; font-size: 11px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; }
-  .staple-ops button.rm { color: #c5221f; border-color: #f0c0be; }
+  /* 定番の実売価格を入れる欄。何をする欄か分かるよう見出しと「保存」を出す */
+  .staple-ops { display: flex; gap: 6px; margin-top: 8px; align-items: center; background: #fff8e7; border: 1px dashed #e0b96a; border-radius: 8px; padding: 7px 8px; }
+  .staple-ops .lbl { font-size: 11px; color: #8a5a00; font-weight: 700; white-space: nowrap; }
+  .staple-ops input { flex: 1; min-width: 0; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 15px; }
+  .staple-ops button.save { flex: 0 0 auto; padding: 7px 14px; font-size: 13px; font-weight: 700; border: 0; border-radius: 6px; background: var(--blue); color: #fff; cursor: pointer; }
+  .staple-rm { width: 100%; margin-top: 6px; font-size: 12px; color: #c5221f; }
+  /* セール中のため定番欄に出していない商品の一覧（名前をタップでセール欄へ移動） */
+  .staple-onsale { margin-top: 8px; background: #eef4ff; border: 1px solid #c9dcff; border-radius: 8px; padding: 8px 10px; color: #14448c; }
+  .sos-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .sos-item { background: #fff; border: 1px solid #c9dcff; color: #14448c; border-radius: 999px; padding: 5px 11px; font-size: 11.5px; cursor: pointer; text-align: left; }
+  .sos-item:active { background: #dce8ff; }
+  .pcard.flash { outline: 3px solid var(--red); outline-offset: 2px; transition: outline .2s; }
   /* 過去の商品を探す */
   .past-row { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
   .past-row img { width: 52px; height: 52px; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 6px; flex-shrink: 0; }
@@ -206,75 +307,11 @@
   .fb-msg { font-size: 12px; margin-top: 10px; text-align: center; }
   .pill.unread { background: var(--red); color: #fff; font-weight: 700; }
   .tabdot { display: inline-block; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; min-width: 16px; height: 16px; line-height: 16px; border-radius: 999px; margin-left: 4px; padding: 0 4px; vertical-align: top; }
+  .admin-alert { background: #fff4e5; border-bottom: 1px solid #f0c98a; color: #8a4b00; font-size: 13px; font-weight: 700; padding: 11px 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .admin-alert::after { content: '確認 ›'; margin-left: auto; font-size: 12px; color: #b06000; }
   footer#appFooter { text-align: center; padding: 24px 16px 12px; color: var(--muted); font-size: 11px; line-height: 1.8; }
   footer#appFooter .foot-line a { color: var(--blue); font-weight: 700; text-decoration: none; font-size: 13px; display: inline-block; margin-top: 4px; padding: 6px 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
   footer#appFooter .foot-note { margin-top: 8px; opacity: .7; }
-
-  @media (max-width: 640px) {
-    html { scroll-padding-top: 170px; }
-    body { font-size: 16px; padding-bottom: 108px; }
-    header { padding: 12px 14px; }
-    header h1 { font-size: 18px; line-height: 1.35; }
-    header .sub { font-size: 12px; }
-    .topbar.shrink header h1 { font-size: 17px; }
-    .namebar { padding: 10px 12px; flex-wrap: wrap; }
-    .topbar.shrink .namebar { padding: 8px 12px; }
-    .namebar label { font-size: 14px; }
-    .namebar input { max-width: none; min-height: 44px; flex: 1 1 180px; font-size: 16px; }
-    .namebar .hello { flex: 1 0 100%; font-size: 14px; }
-    .tabs button { min-height: 46px; padding: 10px 4px; font-size: 14px; line-height: 1.25; }
-    main { padding: 10px; }
-    .campaign { border-radius: 10px; margin-bottom: 12px; }
-    .campaign > .head { padding: 12px; }
-    .campaign > .head .title { font-size: 16px; line-height: 1.45; }
-    .campaign > .head .period { font-size: 13px; }
-    .grid { grid-template-columns: 1fr; gap: 10px; padding: 10px; }
-    .pcard { display: grid; grid-template-columns: 108px minmax(0, 1fr); min-height: 116px; }
-    .pcard img,
-    .pcard .noimg { width: 108px; height: 116px; aspect-ratio: auto; align-self: stretch; }
-    .pcard .body { min-width: 0; padding: 10px 10px 10px 12px; gap: 6px; }
-    .pcard .pname { min-height: 0; font-size: 15px; line-height: 1.5; }
-    .pcard .itemno { font-size: 12px; }
-    .prices .sale { font-size: 21px; }
-    .prices .orig { font-size: 13px; }
-    .prices .offb { font-size: 12px; padding: 2px 8px; }
-    .prices .nop { font-size: 14px; }
-    .stepper { margin-top: 4px; }
-    .stepper button { width: 48px; height: 46px; font-size: 24px; }
-    .stepper .qty { width: 54px; height: 46px; font-size: 19px; }
-    .seat,
-    .selected-box,
-    .notice,
-    .bill { border-radius: 10px; padding: 14px; }
-    .seat-role { font-size: 15px; }
-    .seat-desc,
-    .notice-sub { font-size: 13px; }
-    .selected-head,
-    .selected-name { font-size: 14px; }
-    .selected-meta { font-size: 12px; }
-    .selected-remove,
-    .mini-del { min-height: 36px; padding: 7px 10px; font-size: 12px; }
-    .bill h3 { font-size: 16px; }
-    .bill table { font-size: 14px; }
-    .bill td { padding: 6px 2px; }
-    .bill .sum { font-size: 18px; }
-    .btn { min-height: 38px; font-size: 14px; }
-    .trial { padding: 10px 12px; font-size: 13px; }
-    .savebar { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); flex-wrap: wrap; }
-    .savebar .info { font-size: 14px; }
-    .savebar button { width: 100%; max-width: 360px; min-height: 48px; font-size: 16px; }
-    footer#appFooter { font-size: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
-  }
-
-  @media (max-width: 360px) {
-    .pcard { grid-template-columns: 92px minmax(0, 1fr); min-height: 104px; }
-    .pcard img,
-    .pcard .noimg { width: 92px; height: 104px; }
-    .pcard .pname { font-size: 14px; }
-    .stepper button { width: 42px; }
-    .stepper .qty { width: 46px; }
-    .tabs button { font-size: 13px; }
-  }
 </style>
 </head>
 <body>
@@ -296,12 +333,18 @@
 
   <div class="tabs" id="tabs">
     <button data-tab="shop" class="active">商品を選ぶ</button>
-    <button data-tab="matrix" data-role="host" style="display:none">みんなの選択</button>
+    <button data-tab="matrix" data-role="host" style="display:none">お買い物かご（まとめ）</button>
     <button data-tab="bill" id="billTabButton">自分の注文</button>
     <button data-tab="host" data-role="host" style="display:none">とりまとめ</button>
     <button data-tab="admin" data-role="admin" style="display:none">運営</button>
   </div>
 </div>
+<!-- 運営専用: 未対応のご意見があると、どのタブでも見える通知バー（タップで確認） -->
+<div id="adminAlert" class="admin-alert" style="display:none" onclick="openAdminFeedback()"></div>
+<!-- 商品の全画面拡大表示（カードをタップで開く・再読み込みなしで戻れる） -->
+<div id="prodModal" class="prod-modal"></div>
+<!-- ヘルプ（内容の正本は help-data.js。ここには文章を書かない） -->
+<div id="helpModal" class="prod-modal help-modal"></div>
 
 <div id="trialBanner" class="trial" style="display:none">
   <b>おためし表示です。</b>ここでチェックしても買い出しには反映されません。<br>
@@ -370,8 +413,10 @@
 
 <main id="main"><div class="loading">読み込み中…</div></main>
 
+<!-- 下バーの「N点/¥X」をタップすると、スクロール位置に関係なく選択中リストを確認・削除できる -->
+<div id="cartPanel" class="cart-panel" style="display:none"></div>
 <div class="savebar" id="savebar" style="display:none">
-  <span class="info" id="saveinfo"></span>
+  <span class="info" id="saveinfo" onclick="toggleCartPanel()" title="タップで選択中の商品を確認"></span>
   <button id="savebtn">選択を保存</button>
 </div>
 
@@ -452,6 +497,15 @@ var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
   window.google = window.google || {};
   window.google.script = window.google.script || {};
 
+  // 通信の失敗を開発者へ自動通知する。
+  // ⛔ apiHealthEvent 自身の失敗は通知しないこと（通知が通知を呼び無限に増える）。
+  //    同じ内容の連発は reportHealth 側が10分間まとめる。
+  function shouldReportFailure(fn, message) {
+    if (!message) return false;
+    if (String(fn || '').indexOf('apiHealthEvent') === 0) return false;
+    return typeof reportHealth === 'function';
+  }
+
   function callRpc(fn, args, success, failure) {
     var cb = '__cgbRpc_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
     var script = document.createElement('script');
@@ -460,6 +514,7 @@ var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
       if (finished) return;
       finished = true;
       cleanup();
+      if (shouldReportFailure(fn, '通信がタイムアウトしました')) reportHealth('rpc:' + fn, '通信がタイムアウトしました', '');
       if (failure) failure({ message: '通信がタイムアウトしました' });
     }, 30000);
 
@@ -476,6 +531,7 @@ var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
       if (payload && payload.ok) {
         if (success) success(payload.result);
       } else if (failure) {
+        if (shouldReportFailure(fn, (payload && payload.error) || '通信エラー')) reportHealth('rpc:' + fn, (payload && payload.error) || '通信エラー', '');
         failure({ message: (payload && payload.error) || '通信エラー' });
       }
     };
@@ -484,6 +540,7 @@ var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
       if (finished) return;
       finished = true;
       cleanup();
+      if (shouldReportFailure(fn, '通信に失敗しました')) reportHealth('network:' + fn, '通信に失敗しました', '');
       if (failure) failure({ message: '通信に失敗しました' });
     };
     script.src = GAS_URL
@@ -517,6 +574,40 @@ var state = {
   dirty: false,
   adminData: null
 };
+
+function getVisitorId() {
+  var id = localStorage.getItem('cgb_visitor_id');
+  if (!id) {
+    id = 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    localStorage.setItem('cgb_visitor_id', id);
+  }
+  return id;
+}
+var VISITOR_ID = getVisitorId();
+var healthSeen = {};
+
+function reportHealth(area, message, detail) {
+  try {
+    if (!window.google || !google.script || !google.script.run) return;
+    area = String(area || 'unknown').slice(0, 60);
+    message = String(message || '').slice(0, 240);
+    detail = String(detail || '').slice(0, 500);
+    if (!message) return;
+    var key = area + '|' + message;
+    var now = Date.now();
+    if (healthSeen[key] && now - healthSeen[key] < 600000) return;
+    healthSeen[key] = now;
+    var person = (window.state && window.state.person) || '';
+    google.script.run.apiHealthEvent(GROUP_ID, person, VISITOR_ID, area, message, detail);
+  } catch (e) {}
+}
+
+window.addEventListener('error', function (ev) {
+  reportHealth('js', ev.message || 'JavaScript error', (ev.filename || '') + ':' + (ev.lineno || ''));
+});
+window.addEventListener('unhandledrejection', function (ev) {
+  reportHealth('promise', (ev.reason && ev.reason.message) || String(ev.reason || 'Unhandled promise'), '');
+});
 
 function $(id) { return document.getElementById(id); }
 function yen(n) { return '¥' + Number(n).toLocaleString('ja-JP'); }
@@ -703,11 +794,11 @@ function startApp() {
     refreshPersonList();
     updateGroupBadge();
     render();
-    google.script.run.apiLogOpen(GROUP_ID);
+    google.script.run.apiLogOpen(GROUP_ID, state.person, VISITOR_ID);
     loadSeat();
     loadMembers();
     // 管理者は起動時に未対応のご意見を確認してタブに印を出す
-    if (IS_ADMIN) loadAdmin();
+    if (IS_ADMIN) { loadAdmin(); startAdminFeedbackWatch(); }
   }).withFailureHandler(function (e) {
     // 合言葉が変えられた等で手元の合言葉が通らなくなったとき、
     // エラー画面で行き止まりにせず、その場で入れ直せるようにする
@@ -721,20 +812,19 @@ function startApp() {
       return;
     }
     $('main').innerHTML = '<div class="empty">読み込みエラー: ' + esc(e.message) + '</div>';
-  }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
+  }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person, VISITOR_ID);
 }
 
-// 使い方ページへの導線
+// 使い方の導線。アプリを離れずその場で読めるようにする。
+// href は残しておく（ヘルプが読めなかったときは公開ページへ飛べる保険）。
 ['guideLink', 'guideLink2'].forEach(function (id) {
   var el = document.getElementById(id);
-  if (el) el.href = PUBLIC_BASE + 'guide.html';
+  if (!el) return;
+  el.href = PUBLIC_BASE + 'guide.html';
+  el.addEventListener('click', function (ev) { ev.preventDefault(); openHelp(); });
 });
 
-// 寄付導線は設定されているときだけ出す
-if (DONATE_URL) {
-  document.getElementById('donateLink').href = DONATE_URL;
-  document.getElementById('donateLine').style.display = '';
-}
+updateDonateLine();
 
 /* ---------- 自分でグループを作る ---------- */
 var mkCreated = null;
@@ -877,7 +967,7 @@ function reloadAll(cb) {
     refreshPersonList();
     render();
     if (cb) cb();
-  }).withFailureHandler(function (e) { toast('再読込エラー: ' + e.message); }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
+  }).withFailureHandler(function (e) { toast('再読込エラー: ' + e.message); }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person, VISITOR_ID);
 }
 
 function refreshPersonList() {
@@ -914,7 +1004,6 @@ function render() {
   $('savebar').style.display = 'none';
   if (!state.data) { m.innerHTML = '<div class="loading">読み込み中…</div>'; return; }
   if (state.tab === 'matrix' && !canSeeGroupOrders()) state.tab = 'bill';
-  syncRoleTabs();
   if (state.tab === 'shop') renderShop(m);
   else if (state.tab === 'matrix') renderMatrix(m);
   else if (state.tab === 'bill') renderBill(m);
@@ -1004,14 +1093,17 @@ function loadSeat() {
 
 /**
  * 画面を別のモードで開き直す。
- * GitHub Pages版では同じページのURLパラメータだけを差し替える。
- * 旧iframe構成やGAS直開きでも動けるよう、親ページがある場合だけpostMessageを併用する。
+ * ⛔ このアプリは親ページ（GitHub Pages）のiframeの中で動くため、
+ *    ここで location.href を変えると入れ子になって白画面になる（2026-08-25 実害）。
+ *    親へ postMessage して、親にURLを差し替えてもらう。
  */
 function reopenAs(params, fallbackMsg) {
   var url = PUBLIC_BASE + '?' + params;
   var sent = false;
   try {
-    // GAS直開きや旧iframe構成では parent が中間フレームになる場合があるため top を使う。
+    // ⛔ window.parent ではなく window.top へ送ること。
+    //    GASのWebAppは二重iframe（script.google.com の中に googleusercontent.com）なので、
+    //    parent は中間フレームであって親ページ（GitHub Pages）ではない（2026-08-25 実測）。
     if (window.top && window.top !== window) {
       window.top.postMessage({ type: 'cgb-reopen', url: url }, '*');
       sent = true;
@@ -1056,17 +1148,46 @@ function releaseHost() {
     .apiReleaseHost(GROUP_ID, HOST_KEY, ADMIN_KEY, state.person);
 }
 
+// セール欄・定番欄の開閉状態を端末に覚える（既定は開く）
+function campOpenKey() { return 'cgb_open_' + GROUP_ID; }
+function closedCampSet() {
+  try { return JSON.parse(localStorage.getItem(campOpenKey()) || '{}') || {}; } catch (e) { return {}; }
+}
+function isCampOpen(mailId) { return !closedCampSet()[mailId]; }
+function rememberCampOpen(mailId, open) {
+  var m = closedCampSet();
+  if (open) delete m[mailId]; else m[mailId] = 1;
+  try { localStorage.setItem(campOpenKey(), JSON.stringify(m)); } catch (e) {}
+}
+// 開閉はブラウザが行うので、結果だけ記憶する
+document.addEventListener('toggle', function (ev) {
+  var el = ev.target;
+  if (!el || !el.classList || !el.classList.contains('campaign')) return;
+  var id = el.getAttribute('data-camp');
+  if (id) rememberCampOpen(id, el.open);
+}, true);
+
+// すべて開く／たたむ
+function setAllCamps(open) {
+  [].forEach.call(document.querySelectorAll('#main details.campaign'), function (el) {
+    el.open = open;
+    var id = el.getAttribute('data-camp');
+    if (id) rememberCampOpen(id, open);
+  });
+}
+
 function renderShop(m) {
   var d = state.data;
+  var topHtml = seatPanelHtml() + announcementHtml();
   // 終了したセールは「商品を選ぶ」には出さない（請求・集計タブでのみ残る）
   var active = d.campaigns.filter(function (c) { return !c.ended; });
   if (!active.length) {
-    var msg = seatPanelHtml() + '<div class="notice">'
+    var msg = topHtml + '<div class="notice">'
       + '<div class="notice-icon">✅</div>'
       + '<div class="notice-title">アプリは正常に動いています</div>'
       + '<div class="notice-body">いまは<b>セールの受付期間外</b>です。<br>'
       + '前のセールが終わり、次のセール案内メールを待っている状態です。</div>'
-      + '<div class="notice-sub">コストコのセールメールは自動で取り込まれます（毎日10時台・19時台）。'
+      + '<div class="notice-sub">コストコのセールメールは30分ごとに自動で確認しています。'
       + '新しいセールが始まればこの画面に商品が並びます。</div>';
     if (IS_ADMIN) {
       msg += '<div class="notice-admin">👤 管理者向け: 下書きが <b>' + (d.draftCount || 0) + '件</b> あります。'
@@ -1077,32 +1198,54 @@ function renderShop(m) {
     m.innerHTML = msg;
     return;
   }
-  var html = seatPanelHtml() + selectedSummaryHtml();
+  var html = topHtml + selectedSummaryHtml();
+  if (active.length > 1) {
+    html += '<div class="camp-tools">'
+      + '<button class="btn ghost" onclick="setAllCamps(false)">▸ すべてたたむ</button>'
+      + '<button class="btn ghost" onclick="setAllCamps(true)">▾ すべて開く</button>'
+      + '</div>';
+  }
   active.forEach(function (c) {
-    var prods = d.products.filter(function (p) { return p.campaignId === c.mailId; });
-    html += '<section class="campaign' + (c.isStaple ? ' staple' : '') + '"><div class="head">'
+    var prods = d.products.filter(function (p) {
+      if (p.campaignId !== c.mailId) return false;
+      // 同じ商品がセール中のときは定番側に出さない（二重注文を防ぐ）。
+      // ただし既に注文が入っているものは、増減・取り消しができるよう残す。
+      if (p.onSaleNow && !(state.myQty[key2(p.campaignId, p.itemNo)] > 0)) return false;
+      return true;
+    });
+    // 折りたたみ。開いているかは端末に記憶する（既定は開く）
+    var openAttr = isCampOpen(c.mailId) ? ' open' : '';
+    var picked = prods.filter(function (pp) { return state.myQty[key2(pp.campaignId, pp.itemNo)] > 0; }).length;
+    html += '<details class="campaign' + (c.isStaple ? ' staple' : '') + '"' + openAttr
+      + ' data-camp="' + esc(c.mailId) + '"><summary class="head">'
+      + '<div class="head-main">'
       + '<div class="title">' + esc(c.subject) + '</div>'
-      + '<div class="period">' + (c.isStaple ? '🔁 ' : '📅 ')
-      + (c.periodText ? esc(c.periodText) : 'メール配信日: ' + esc(c.mailDate))
-      + remainLabel(c.endDate) + '</div></div>';
+      + '<div class="period">' + campaignPeriodHtml(c) + '</div></div>'
+      + '<span class="head-count">' + prods.length + '点'
+      + (picked ? '<b> / 選択' + picked + '</b>' : '') + '</span>'
+      + '</summary>';
     if (c.isStaple) {
       html += '<div class="staple-add">'
         + '<input type="text" id="stName" placeholder="定番に追加したい商品名" maxlength="150">'
         + '<input type="number" inputmode="numeric" id="stPrice" placeholder="価格(任意)">'
         + '<button class="btn pub" onclick="addStapleManual()">追加</button>'
         + '<button class="btn ghost" onclick="openPastSearch()">🔍 過去の商品から探す</button>'
-        + '<div class="staple-note">セールに出ていない品も登録できます。みんなで育てるリストです。</div>'
+        + '<div class="staple-note">セールに出ていない品も登録できます。みんなで育てるリストです。'
+        + stapleOnSaleHtml()
+        + '</div>'
         + '</div>';
     }
     html += '<div class="grid">';
     prods.forEach(function (p) {
       var k = key2(p.campaignId, p.itemNo);
       var q = state.myQty[k] || 0;
+      var openArgs = '\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',' + (c.isStaple ? 1 : 0);
       html += '<div class="pcard' + (q > 0 ? ' checked' : '') + '" id="card_' + esc(k).split('|').join('_') + '">';
-      if (p.imageUrl) html += '<img src="' + esc(p.imageUrl) + '" loading="lazy" alt="">';
-      else html += '<div class="noimg">画像なし</div>';
-      html += '<div class="body"><div class="pname">' + esc(p.name) + '</div>'
-        + '<div class="itemno">ITEM #' + esc(p.itemNo) + '</div>'
+      if (p.imageUrl) html += '<img src="' + esc(p.imageUrl) + '" loading="lazy" alt="" onclick="openProduct(' + openArgs + ')" style="cursor:zoom-in" title="タップで拡大">';
+      else html += '<div class="noimg" onclick="openProduct(' + openArgs + ')" style="cursor:zoom-in">画像なし</div>';
+      html += '<div class="body"><div class="pname" onclick="openProduct(' + openArgs + ')" style="cursor:zoom-in">' + esc(p.name) + '</div>'
+        + '<div class="itemno">ITEM #' + esc(p.itemNo)
+        + (p.isStapleItem && !p.isStaple ? ' <span class="staple-mark">🔁 定番</span>' : '') + '</div>'
         + '<div class="prices">';
       if (p.salePrice) {
         html += '<span class="sale">' + yen(p.salePrice) + '</span>';
@@ -1113,6 +1256,7 @@ function renderShop(m) {
       } else {
         html += '<span class="nop">価格未取得</span>';
       }
+      html += stapleNote(p);
       html += '</div>'
         + '<div class="stepper">'
         + '<button onclick="chg(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',-1)">−</button>'
@@ -1120,20 +1264,22 @@ function renderShop(m) {
         + '<button onclick="chg(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',1)">＋</button>'
         + '</div>';
       if (c.isStaple) {
-        // 定番の価格は買うときに実際の値段を入れる（取りまとめ役のみ）
+        // 定番の価格は買ったときの実際の値段をここで入れる（取りまとめ役・運営のみ）。
+        // ⛔ 「価格」だけのボタンでは何をする欄か伝わらない。見出しと「保存」を明示すること。
         if (IS_HOST || IS_ADMIN) {
           html += '<div class="staple-ops">'
-            + '<input type="number" inputmode="numeric" id="sp_' + esc(p.itemNo) + '" value="' + (p.salePrice || '') + '" placeholder="価格">'
-            + '<button onclick="saveStaplePrice(\'' + jsq(p.itemNo) + '\')">価格</button>'
-            + '<button class="rm" onclick="removeStaple(\'' + jsq(p.itemNo) + '\')">外す</button>'
-            + '</div>';
+            + '<span class="lbl">実売価格</span>'
+            + '<input type="number" inputmode="numeric" id="sp_' + esc(p.itemNo) + '" value="' + (p.salePrice || '') + '" placeholder="円">'
+            + '<button class="save" onclick="saveStaplePrice(\'' + jsq(p.itemNo) + '\')">保存</button>'
+            + '</div>'
+            + '<button class="btn ghost staple-rm" onclick="removeStaple(\'' + jsq(p.itemNo) + '\')">定番から外す</button>';
         }
       } else {
         html += '<button class="add-staple" onclick="addStaple(\'' + jsq(p.itemNo) + '\')">🔁 定番にする</button>';
       }
       html += '</div></div>';
     });
-    html += '</div></section>';
+    html += '</div></details>';
   });
   m.innerHTML = html;
   updateSavebar();
@@ -1197,6 +1343,129 @@ function removeLocalItem(campaignId, itemNo) {
   state.dirty = true;
   render();
   toast('選択から外しました');
+}
+
+/* ---------- ヘルプ（内容の正本は help-data.js） ----------
+   ⛔ 説明文をこのファイルに書かないこと。help-data.js を1か所直せば
+      アプリ内ヘルプと公開ページの両方が自動で更新される。 */
+function openHelp() {
+  var el = document.getElementById('helpModal');
+  el.innerHTML = '<div class="pm-bar"><span>❓ ヘルプ・更新履歴</span>'
+    + '<button class="pm-close" onclick="closeHelp()">✕ 閉じる</button></div>'
+    + '<div class="help-wrap"><div class="empty">読み込み中…</div></div>';
+  el.classList.add('show');
+  try { history.pushState({ hp: 1 }, ''); } catch (e) {}
+
+  if (window.CGB_HELP) { renderHelp(); return; }
+  // 正本を公開ページから読み込む（アプリ側に説明文を持たないための仕組み）
+  var sc = document.createElement('script');
+  sc.src = PUBLIC_BASE + 'help-data.js?v=' + Date.now();
+  sc.onload = function () { renderHelp(); };
+  sc.onerror = function () {
+    var w = el.querySelector('.help-wrap');
+    if (w) {
+      w.innerHTML = '<div class="help-sec"><h4>ヘルプを読み込めませんでした</h4>'
+        + '<p>通信が不安定なようです。下のボタンから使い方ページを開いてください。</p>'
+        + '<p style="margin-top:10px"><a href="' + esc(PUBLIC_BASE) + 'guide.html" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">📖 使い方ページを開く</a></p></div>';
+    }
+  };
+  document.body.appendChild(sc);
+}
+
+function closeHelp(fromPop) {
+  var el = document.getElementById('helpModal');
+  if (!el || !el.classList.contains('show')) return;
+  el.classList.remove('show');
+  el.innerHTML = '';
+  if (!fromPop) { try { if (history.state && history.state.hp) history.back(); } catch (e) {} }
+}
+window.addEventListener('popstate', function () {
+  var el = document.getElementById('helpModal');
+  if (el && el.classList.contains('show')) closeHelp(true);
+});
+
+function renderHelp() {
+  var H = window.CGB_HELP;
+  var el = document.getElementById('helpModal');
+  var w = el && el.querySelector('.help-wrap');
+  if (!H || !w) return;
+  // help-data.js は自前のファイルなので <b> だけ通す
+  function rich(t) { return esc(t).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>'); }
+
+  var h = '<div class="help-ver">バージョン ' + esc(H.version) + '（' + esc(H.updated) + ' 更新）</div>';
+  (H.sections || []).forEach(function (sec) {
+    h += '<div class="help-sec"><h4>' + esc(sec.icon || '') + ' ' + esc(sec.title) + '</h4>';
+    (sec.body || []).forEach(function (t) { h += '<p>' + rich(t) + '</p>'; });
+    if (sec.steps && sec.steps.length) {
+      h += '<ol>';
+      sec.steps.forEach(function (t) { h += '<li>' + rich(t) + '</li>'; });
+      h += '</ol>';
+    }
+    (sec.qa || []).forEach(function (x) {
+      h += '<div class="hq">' + rich(x.q) + '</div><div class="ha">' + rich(x.a) + '</div>';
+    });
+    if (sec.notes && sec.notes.length) {
+      h += '<div class="help-note">';
+      sec.notes.forEach(function (t) { h += '<div>・' + rich(t) + '</div>'; });
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+
+  h += '<div class="help-sec help-hist"><h4>🆕 更新履歴</h4>';
+  (H.history || []).forEach(function (v) {
+    h += '<h5>v' + esc(v.version) + '　' + esc(v.date) + '</h5><ul>';
+    (v.items || []).forEach(function (t) { h += '<li>' + rich(t) + '</li>'; });
+    h += '</ul>';
+  });
+  h += '</div>';
+  w.innerHTML = h;
+}
+
+// いまセール中のため定番欄に出していない商品を、名前で具体的に知らせる。
+// ⛔ 件数だけでは「どれが隠れているか」が分からず、探す手間になる。必ず名前を出すこと。
+function stapleOnSaleHtml() {
+  if (!state.data) return '';
+  var hidden = (state.data.products || []).filter(function (p) {
+    return p.isStaple && p.onSaleNow && !(state.myQty[key2(p.campaignId, p.itemNo)] > 0);
+  });
+  if (!hidden.length) return '';
+  var h = '<div class="staple-onsale"><b>いま' + hidden.length + '点がセール中です（下のセール欄で注文できます）</b><div class="sos-list">';
+  hidden.forEach(function (p) {
+    h += '<button class="sos-item" onclick="jumpToSaleItem(\'' + jsq(p.itemNo) + '\')">'
+      + esc(String(p.name).slice(0, 30)) + '</button>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
+// 名前をタップしたら、セール欄のその商品まで移動して目立たせる
+function jumpToSaleItem(itemNo) {
+  var target = (state.data.products || []).filter(function (p) {
+    return !p.isStaple && String(p.itemNo) === String(itemNo);
+  })[0];
+  if (!target) { toast('セール欄に見つかりませんでした'); return; }
+  var idSafe = esc(key2(target.campaignId, target.itemNo)).split('|').join('_');
+  var card = document.getElementById('card_' + idSafe);
+  if (!card) { toast('セール欄に見つかりませんでした'); return; }
+  // 折りたたまれていると移動できないので、先に開く
+  var box = card.closest('details.campaign');
+  if (box && !box.open) { box.open = true; rememberCampOpen(box.getAttribute('data-camp'), true); }
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.add('flash');
+  setTimeout(function () { card.classList.remove('flash'); }, 1600);
+}
+
+// 定番の価格が「セール時の参考値」か「実際に買った価格」かを示すラベル
+function stapleNote(p) {
+  if (!p || !p.isStaple || !p.salePrice) return '';
+  if (p.priceSource === 'actual') {
+    return '<span class="pnote ok">前回買った価格' + (p.priceAt ? '（' + esc(p.priceAt) + '）' : '') + '</span>';
+  }
+  if (p.priceSource === 'sale') {
+    return '<span class="pnote warn">セール時の価格（通常はもっと高いことがあります）</span>';
+  }
+  return '';
 }
 
 /* ---------- 定番商品（いつもの） ---------- */
@@ -1333,6 +1602,62 @@ function remainLabel(endDate) {
   return '　あと' + days + '日';
 }
 
+function mailSourceText(c) {
+  if (!c || c.isStaple) return '';
+  var dt = c.mailDateTime || c.mailDate || '';
+  return dt ? 'メール受信: ' + dt : '';
+}
+
+function mailSourceHtml(c) {
+  var t = mailSourceText(c);
+  return t ? '<span class="mailsrc">' + esc(t) + '</span>' : '';
+}
+
+function campaignPeriodHtml(c) {
+  var body = c.periodText ? esc(c.periodText) : 'メール配信日: ' + esc(c.mailDate || '');
+  return (c.isStaple ? '🔁 ' : '📅 ') + body + remainLabel(c.endDate) + mailSourceHtml(c);
+}
+
+function usageSummaryHtml(u, includeGroup) {
+  if (!u) return '';
+  var h = '<div class="usage-box">'
+    + '<div class="usage-title">📡 利用状況</div>'
+    + '<div class="usage-metrics">'
+    + '<span>本日 PV <b>' + (u.todayPv || 0) + '</b></span>'
+    + '<span>本日 VV <b>' + (u.todayVv || 0) + '</b></span>'
+    + '<span>累計 PV <b>' + (u.totalPv || 0) + '</b></span>'
+    + '<span>累計 VV <b>' + (u.totalVv || 0) + '</b></span>'
+    + '</div>'
+    + '<div class="usage-active">直近' + (u.windowMinutes || 10) + '分の利用者: <b>' + (u.activeCount || 0) + '</b>人</div>';
+  if (u.activeUsers && u.activeUsers.length) {
+    h += '<div class="usage-list">';
+    u.activeUsers.forEach(function (x) {
+      h += '<div class="usage-user"><span>' + esc(x.person || '名前未入力')
+        + (includeGroup ? ' / ' + esc(x.groupId || '') : '')
+        + '</span><span class="time">' + esc(x.lastAt || '') + '</span></div>';
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+// 管理者が「利用者へのお知らせ」を設定していないときに出す既定の案内。
+// 無料提供中である旨と、不具合連絡の導線を常に見せる（開発者は自動通知＋この連絡で気づく）。
+var DEFAULT_ANNOUNCE = '現在このアプリは無料でご利用いただけます。\n使いにくい点や不具合に気づいたら、下のボタンからお気軽にお知らせください。できるだけ早く直します。';
+
+function announcementHtml() {
+  if (!state.data) return '';
+  var text = String(state.data.announcementText || '').trim();
+  var isDefault = !text;
+  if (isDefault) text = DEFAULT_ANNOUNCE;
+  return '<div class="announce">'
+    + '<div class="announce-title">お知らせ</div>'
+    + '<div class="announce-body">' + esc(text).replace(/\n/g, '<br>') + '</div>'
+    + '<div class="announce-actions"><button class="btn ghost" onclick="openFeedback()">不具合・改善を連絡</button></div>'
+    + '</div>';
+}
+
 function chg(cid, itemNo, delta) {
   if (!state.person) { toast('先に名前を入力してください'); $('personInput').focus(); return; }
   var k = key2(cid, itemNo);
@@ -1347,8 +1672,103 @@ function chg(cid, itemNo, delta) {
   if (el) { el.textContent = q; el.className = 'qty' + (q > 0 ? ' on' : ''); }
   var card = $('card_' + idSafe);
   if (card) card.className = 'pcard' + (q > 0 ? ' checked' : '');
+  // 全画面表示を開いているときは、そちらの個数表示も同期する
+  var mel = $('mqty_' + idSafe);
+  if (mel) { mel.textContent = q; mel.className = 'pm-qty' + (q > 0 ? ' on' : ''); }
   updateSavebar();
 }
+
+// 価格未取得の商品に実売価格を入れて保存（全グループ共通に反映）。取りまとめ役・運営のみ。
+function saveProductPrice(cid, itemNo, inputId) {
+  var el = $(inputId);
+  var v = el ? String(el.value || '').trim() : '';
+  if (v === '') { toast('価格を入れてください'); if (el) el.focus(); return; }
+  var yen = Number(v);
+  if (!isFinite(yen) || yen < 0) { toast('数字で入れてください'); return; }
+  var runner = google.script.run.withSuccessHandler(function () {
+    toast('価格を保存しました（みんなの画面に反映されます）');
+    // 手元のデータにも即反映。実際に買った価格なので出どころも actual にする
+    (state.data && state.data.products || []).forEach(function (p) {
+      if (String(p.campaignId) === String(cid) && String(p.itemNo) === String(itemNo)) {
+        p.salePrice = yen;
+        if (p.isStaple) { p.priceSource = 'actual'; p.priceAt = ''; }
+      }
+    });
+    // 拡大表示を開いていれば中身を更新
+    var pm = document.getElementById('prodModal');
+    if (pm && pm.classList.contains('show')) openProduct(cid, itemNo, String(cid) === '__STAPLE__');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); });
+  // ⛔ 定番(__STAPLE__)は products シートに無い。定番用のAPIへ振り分けること。
+  if (String(cid) === '__STAPLE__') {
+    runner.apiSetStaplePrice(itemNo, yen, GROUP_ID, HOST_KEY, ADMIN_KEY, state.person);
+  } else {
+    runner.apiSetProductPrice(cid, itemNo, yen, GROUP_ID, HOST_KEY, ADMIN_KEY);
+  }
+}
+
+// カードをタップ → 商品を全画面で拡大表示（再読み込みなし。閉じると元の位置に戻る）
+function openProduct(cid, itemNo, isStaple) {
+  if (!state.data || !state.data.products) return;
+  var p = state.data.products.filter(function (x) {
+    return String(x.campaignId) === String(cid) && String(x.itemNo) === String(itemNo);
+  })[0];
+  if (!p) return;
+  var k = key2(cid, itemNo);
+  var idSafe = esc(k).split('|').join('_');
+  var q = state.myQty[k] || 0;
+  var priceHtml;
+  if (p.salePrice) {
+    priceHtml = '<span>' + yen(p.salePrice) + '</span>';
+    if (p.price) priceHtml += '<span class="orig">' + yen(p.price) + '</span>';
+    if (p.off) priceHtml += '<span class="pm-off">' + yen(p.off) + ' OFF</span>';
+  } else if (p.off) {
+    priceHtml = '<span class="pm-off">' + yen(p.off) + ' OFF</span>';
+  } else {
+    priceHtml = '<span style="font-size:16px;color:#bbb">価格未取得</span>';
+  }
+  var imgHtml = p.imageUrl
+    ? '<img class="pm-img" src="' + esc(p.imageUrl) + '" alt="">'
+    : '<div class="pm-img" style="padding:50px 30px;color:#888;text-align:center">画像なし</div>';
+  var stapleBtn = '';
+  if (!isStaple) {
+    stapleBtn = '<button class="pm-close" style="background:rgba(255,255,255,.16);margin-top:14px" '
+      + 'onclick="addStaple(\'' + jsq(itemNo) + '\');closeProduct()">🔁 定番にする</button>';
+  }
+  var el = document.getElementById('prodModal');
+  el.innerHTML = '<div class="pm-bar"><span>商品の詳細</span>'
+    + '<button class="pm-close" onclick="closeProduct()">✕ 閉じる</button></div>'
+    + '<div class="pm-scroll" onclick="if(event.target===this)closeProduct()">'
+    + imgHtml
+    + '<div class="pm-name">' + esc(p.name || ('ITEM ' + p.itemNo)) + '</div>'
+    + '<div class="pm-item">ITEM #' + esc(p.itemNo) + '</div>'
+    + '<div class="pm-price">' + priceHtml + '</div>'
+    + '<div class="pm-stepper">'
+    + '<button onclick="chg(\'' + jsq(cid) + '\',\'' + jsq(itemNo) + '\',-1)">−</button>'
+    + '<div class="pm-qty' + (q > 0 ? ' on' : '') + '" id="mqty_' + idSafe + '">' + q + '</div>'
+    + '<button onclick="chg(\'' + jsq(cid) + '\',\'' + jsq(itemNo) + '\',1)">＋</button>'
+    + '</div>'
+    + '<button class="pm-close" style="background:#137333;padding:12px 26px" onclick="closeProduct()">一覧に戻る</button>'
+    + stapleBtn
+    + '</div>';
+  var wasOpen = el.classList.contains('show');
+  el.classList.add('show');
+  // スマホの「戻る」ジェスチャーで閉じられるよう履歴を1つ積む（再描画時は積まない）
+  if (!wasOpen) { try { history.pushState({ pm: 1 }, ''); } catch (e) {} }
+}
+
+function closeProduct(fromPop) {
+  var el = document.getElementById('prodModal');
+  if (!el || !el.classList.contains('show')) return;
+  el.classList.remove('show');
+  el.innerHTML = '';
+  // ボタンで閉じたときは、積んだ履歴を戻して整合させる（戻るジェスチャー由来なら何もしない）
+  if (!fromPop) { try { if (history.state && history.state.pm) history.back(); } catch (e) {} }
+}
+window.addEventListener('popstate', function () {
+  var el = document.getElementById('prodModal');
+  if (el && el.classList.contains('show')) closeProduct(true);
+});
 
 function updateSavebar() {
   var n = 0, total = 0;
@@ -1360,11 +1780,58 @@ function updateSavebar() {
   });
   if (state.tab === 'shop' && (n > 0 || state.dirty)) {
     $('savebar').style.display = 'flex';
-    $('saveinfo').textContent = n + '点 / ' + yen(total);
+    var cartOpen = $('cartPanel') && $('cartPanel').style.display !== 'none';
+    $('saveinfo').textContent = '🛒 ' + n + '点 / ' + yen(total) + (cartOpen ? ' ▾ 閉じる' : ' ▴ 中身');
     $('savebtn').disabled = !state.dirty;
+    // 選択中リストを開いていれば中身を最新化
+    if ($('cartPanel').style.display !== 'none') renderCartPanel();
   } else {
     $('savebar').style.display = 'none';
+    $('cartPanel').style.display = 'none';
   }
+}
+
+// 下バーの「N点/¥X」タップで、選択中の商品リストをその場に開閉（スクロール位置に関係なく確認・削除できる）
+function toggleCartPanel() {
+  var el = $('cartPanel');
+  if (el.style.display !== 'none') { el.style.display = 'none'; updateSavebar(); return; }
+  renderCartPanel();
+  el.style.display = 'block';
+  updateSavebar();
+}
+
+// パネルの外をタップしても閉じられるようにする（開いた瞬間のタップは saveinfo 除外で誤閉じしない）
+document.addEventListener('click', function (ev) {
+  var panel = document.getElementById('cartPanel');
+  if (!panel || panel.style.display === 'none') return;
+  if (panel.contains(ev.target)) return;
+  var info = document.getElementById('saveinfo');
+  if (info && info.contains(ev.target)) return;
+  panel.style.display = 'none';
+  updateSavebar();
+});
+
+function renderCartPanel() {
+  var el = $('cartPanel');
+  var s = currentSelections(true);
+  if (!s.items.length) {
+    el.innerHTML = '<div class="empty" style="padding:8px">選択中の商品はありません</div>';
+    return;
+  }
+  var h = '<div class="selected-head"><span>🛒 選択中の商品</span><span class="selected-total">'
+    + s.count + '点 / ' + yen(s.total) + '</span>'
+    + '<button class="cart-close" onclick="toggleCartPanel()">✕ 閉じる</button></div>'
+    + '<div class="selected-list">';
+  s.items.forEach(function (it) {
+    var pp = it.product;
+    h += '<div class="selected-row">'
+      + '<div><div class="selected-name">' + esc(pp.name) + '</div>'
+      + '<div class="selected-meta">' + (pp.salePrice ? yen(pp.salePrice) : '価格未取得') + ' × ' + it.qty + '</div></div>'
+      + '<button class="selected-remove" onclick="removeLocalItem(\'' + jsq(it.campaignId) + '\',\'' + jsq(it.itemNo) + '\')">削除</button>'
+      + '</div>';
+  });
+  h += '</div>';
+  el.innerHTML = h;
 }
 
 $('savebtn').addEventListener('click', function () {
@@ -1388,7 +1855,7 @@ $('savebtn').addEventListener('click', function () {
       $('savebtn').disabled = false;
       $('savebtn').textContent = '選択を保存';
       toast('保存エラー: ' + e.message);
-    }).apiSaveChecks(state.person, cid, byCamp[cid], GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY);
+    }).apiSaveChecks(state.person, cid, byCamp[cid], GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, VISITOR_ID);
   });
 });
 
@@ -1400,7 +1867,6 @@ function afterSave() {
   google.script.run.withSuccessHandler(function (d) {
     var keep = state.myQty, dirty = state.dirty;
     state.data = d;
-    applyServerData(d);
     loadMyChecks();
     refreshPersonList();
     // 保存直後の再取得中にユーザーが操作していた場合は手元の値を優先
@@ -1409,10 +1875,10 @@ function afterSave() {
     updateSavebar();
     // セール期間が自動解析されていたら📅表示を差し替え
     var heads = document.querySelectorAll('.campaign .head .period');
-    state.data.campaigns.forEach(function (c, i) {
-      if (heads[i] && c.periodText) heads[i].textContent = '📅 ' + c.periodText;
+    state.data.campaigns.filter(function (c) { return !c.ended; }).forEach(function (c, i) {
+      if (heads[i] && c.periodText) heads[i].innerHTML = campaignPeriodHtml(c);
     });
-  }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
+  }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person, VISITOR_ID);
 }
 
 /* ---------- マトリクス ---------- */
@@ -1424,6 +1890,11 @@ function renderMatrix(m) {
   if (!persons.length) { m.innerHTML = '<div class="empty">まだ誰もチェックしていません</div>'; return; }
 
   var html = '';
+  if (IS_HOST || IS_ADMIN) {
+    html += '<div style="font-size:12px;color:var(--muted);margin:4px 2px 10px;line-height:1.6">'
+      + '「合計購入数」が、その商品を何個買えばよいかの目安です。<br>'
+      + '各自の数字を <b>タップすると、その人の注文を削除</b>できます。</div>';
+  }
   d.campaigns.forEach(function (camp) {
     var prods = d.products.filter(function (p) {
       if (p.campaignId !== camp.mailId) return false;
@@ -1443,7 +1914,12 @@ function renderMatrix(m) {
           if (c.campaignId === p.campaignId && c.itemNo === p.itemNo && c.person === per) q = c.qty;
         });
         rowTotal += q;
-        cells += '<td class="qty">' + (q > 0 ? q : '') + '</td>';
+        if (q > 0 && (IS_HOST || IS_ADMIN)) {
+          // 数字をタップでその人の注文を削除（確認あり）
+          cells += '<td class="qty"><button class="mx-del" onclick="removeSavedItem(\'' + jsq(per) + '\',\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',this)" title="タップで削除">' + q + '<span class="x">✕</span></button></td>';
+        } else {
+          cells += '<td class="qty">' + (q > 0 ? q : '') + '</td>';
+        }
       });
       var so = soldoutOf(p.campaignId, p.itemNo);
       html += '<tr' + (so ? ' class="row-soldout"' : '') + '>'
@@ -1547,6 +2023,40 @@ function renderBill(m) {
     persons = [state.person];
   }
   var html = '';
+  // 買い物のあとに価格を入れる欄（取りまとめ役・運営のみ）。事前は価格不明が前提なので、ここで入れて全員の請求に反映する。
+  if (canSeeAll) {
+    var npMap = {};
+    d.checks.forEach(function (c) {
+      if (soldoutOf(c.campaignId, c.itemNo)) return;
+      var prod = null;
+      d.products.forEach(function (p) { if (p.campaignId === c.campaignId && p.itemNo === c.itemNo) prod = p; });
+      if (!prod) return;
+      // 定番の価格は「商品を選ぶ」の定番欄で入れる運用なので、ここには出さない（二重に入力させない）
+      if (prod.isStaple) return;
+      if (prod.salePrice) return;
+      var k2 = c.campaignId + '|' + c.itemNo;
+      if (!npMap[k2]) npMap[k2] = {
+        campaignId: c.campaignId, itemNo: c.itemNo, name: prod.name,
+        off: prod.off || (prod.isStaple && prod.priceSource === 'sale' && prod.salePrice ? 'セール時 ' + yen(prod.salePrice) : ''),
+        imageUrl: prod.imageUrl
+      };
+    });
+    var npList = Object.keys(npMap).map(function (k) { return npMap[k]; });
+    if (npList.length) {
+      html += '<div class="need-price"><div class="need-price-h">🧾 買い物のあとに価格を入れてください（' + npList.length + '点）</div>'
+        + '<div class="need-price-sub">セール価格が読み取れなかった商品です。実際に買った金額を入れると、みんなの請求額に反映されます。</div>';
+      npList.forEach(function (p) {
+        var idSafe = esc(key2(p.campaignId, p.itemNo)).split('|').join('_');
+        html += '<div class="need-price-row">'
+          + (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" loading="lazy" alt="">' : '')
+          + '<div class="np-name">' + esc(p.name) + (p.off ? '<span class="np-off">' + esc(p.off) + '</span>' : '') + '</div>'
+          + '<input type="number" inputmode="numeric" id="psetb_' + idSafe + '" placeholder="' + (p.off ? esc(p.off) : '円') + '">'
+          + '<button onclick="saveProductPrice(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',\'psetb_' + idSafe + '\')">保存</button>'
+          + '</div>';
+      });
+      html += '</div>';
+    }
+  }
   var unpaidTotal = 0, paidTotal = 0;
   persons.forEach(function (per) {
     var t = personTotal(per, null);
@@ -1623,7 +2133,7 @@ function cancelMine() {
       done++; if (done + failed === ids.length) afterCancel();
     }).withFailureHandler(function () {
       failed++; if (done + failed === ids.length) afterCancel();
-    }).apiSaveChecks(state.person, cid, [], GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY);
+    }).apiSaveChecks(state.person, cid, [], GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, VISITOR_ID);
   });
 }
 
@@ -1658,7 +2168,7 @@ function removeSavedItem(person, campaignId, itemNo, btn) {
   }).withFailureHandler(function (e) {
     if (btn) { btn.disabled = false; btn.textContent = '削除'; }
     toast('削除エラー: ' + e.message);
-  }).apiRemoveCheckItem(person, campaignId, itemNo, GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person);
+  }).apiRemoveCheckItem(person, campaignId, itemNo, GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person, VISITOR_ID);
 }
 
 function markPaid(person, amount, unset) {
@@ -1700,11 +2210,63 @@ function copyBill(person) {
 function loadAdmin() {
   google.script.run.withSuccessHandler(function (d) {
     state.adminData = d;
+    adminUnread = d.unreadFeedback || 0;
+    renderAdminAlert(adminUnread);
     updateAdminTabBadge();
     if (state.tab === 'admin') render();
   }).withFailureHandler(function (e) {
     toast('管理データ取得エラー: ' + e.message);
   }).apiAdminData(ADMIN_KEY);
+}
+
+// 運営専用: 未対応のご意見の通知バー。件数に応じて表示/更新（どのタブでも見える）。
+var adminUnread = 0;
+function renderAdminAlert(n) {
+  var el = document.getElementById('adminAlert');
+  if (!el) return;
+  if (!IS_ADMIN || !n || n < 1) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.textContent = '💬 未対応のご意見・不具合が ' + n + '件 あります';
+  el.style.display = 'flex';
+}
+
+// 通知バーをタップ → 運営タブのご意見欄を開く
+function openAdminFeedback() {
+  if (!IS_ADMIN) return;
+  state.tab = 'admin';
+  var tb = document.querySelector('#tabs button[data-tab="admin"]');
+  if (tb) { [].forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.remove('active'); }); tb.classList.add('active'); }
+  if (!state.adminData) loadAdmin(); else render();
+  // 描画後にご意見の折りたたみを開いて読み込む
+  setTimeout(function () {
+    var fp = document.getElementById('fbPanel');
+    if (fp) {
+      var det = fp.closest('details');
+      if (det && !det.open) det.open = true;
+      loadFeedbackPanel();
+      det && det.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 400);
+}
+
+// 運営で開いている間、起動時＋5分毎に未対応件数を確認。増えたらトーストも出す。
+function pollAdminFeedback() {
+  if (!IS_ADMIN) return;
+  google.script.run.withSuccessHandler(function (r) {
+    var n = (r && r.unread) || 0;
+    if (n > adminUnread) toast('💬 新しいご意見が届きました（' + n + '件 未対応）');
+    adminUnread = n;
+    if (state.adminData) state.adminData.unreadFeedback = n;
+    renderAdminAlert(n);
+    updateAdminTabBadge();
+  }).withFailureHandler(function () { /* 一時失敗は無視（次回再試行） */ })
+    .apiAdminFeedbackCount(ADMIN_KEY);
+}
+
+var adminFeedbackTimer = null;
+function startAdminFeedbackWatch() {
+  if (!IS_ADMIN || adminFeedbackTimer) return;
+  pollAdminFeedback();
+  adminFeedbackTimer = setInterval(pollAdminFeedback, 5 * 60 * 1000);
 }
 
 /** 未対応のご意見があれば管理タブに赤い印を出す（開かなくても気づける） */
@@ -1751,6 +2313,7 @@ function renderHost(m) {
     + '<button class="copy" onclick="hostCopyUrl(false)">📋 URL</button>'
     + '</div>'
     + '</div>'
+    + usageSummaryHtml(d.usage, false)
     + '<div class="bill" style="margin-bottom:12px;padding:14px">'
     + '<h3>💰 集金の設定</h3>'
     + '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">PayPay IDを入れると、請求文に送金先が自動で付きます。</div>'
@@ -1792,7 +2355,8 @@ function renderHost(m) {
       + '<span class="pill ' + (c.acceptingHere ? 'published' : 'draft') + '">'
       + (c.acceptingHere ? '受付中' : '受け付けない') + '</span></div>'
       + '<div class="meta">' + (c.periodText ? '📅 ' + esc(c.periodText) : '配信 ' + esc(c.mailDate))
-      + remainLabel(c.endDate).replace(/<[^>]+>/g, '') + '</div>'
+      + remainLabel(c.endDate).replace(/<[^>]+>/g, '')
+      + (mailSourceText(c) ? ' / ' + esc(mailSourceText(c)) : '') + '</div>'
       + '<div class="ctrl">'
       + '<button class="btn ' + (c.acceptingHere ? 'unpub' : 'pub') + '" onclick="hostToggle(\'' + jsq(c.mailId) + '\',' + (!c.acceptingHere) + ')">'
       + (c.acceptingHere ? 'このグループでは受け付けない' : '受け付ける') + '</button>'
@@ -1804,7 +2368,8 @@ function renderHost(m) {
       + '<span class="grp-note">タップで開く</span></summary><div style="margin-top:10px">';
     past.forEach(function (c) {
       h += '<div class="admin-row" style="opacity:.7"><div class="subj">' + esc(c.subject) + '</div>'
-        + '<div class="meta">' + (c.periodText ? esc(c.periodText) : esc(c.mailDate)) + '</div></div>';
+        + '<div class="meta">' + (c.periodText ? esc(c.periodText) : esc(c.mailDate))
+        + (mailSourceText(c) ? ' / ' + esc(mailSourceText(c)) : '') + '</div></div>';
     });
     h += '</div></details>';
   }
@@ -1898,6 +2463,10 @@ function renderAdmin(m) {
     + '<button class="btn ghost" onclick="saveDonate()">保存</button>'
     + '</div>'
     + '<div style="font-size:11px;color:var(--muted);margin:6px 0 12px">全画面の下部に「運営を応援する（任意）」リンクが出ます。空欄なら何も出ません。</div>'
+    + '<div style="font-size:13px;font-weight:700;margin-bottom:6px">📣 利用者へのお知らせ</div>'
+    + '<textarea class="fb-input" id="announcementInput" rows="3" maxlength="500" placeholder="空にすると非表示">' + esc((state.data && state.data.announcementText) || '') + '</textarea>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px">'
+    + '<button class="btn ghost" onclick="saveAnnouncement()">お知らせを保存</button></div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
     + '<button class="btn ghost" onclick="adminFetch()">📩 メールを再取込</button>'
     + '<button class="btn ghost" onclick="adminBackfill()">🗓 公開中の期限を埋める</button>'
@@ -1916,10 +2485,11 @@ function renderAdmin(m) {
     + '</summary>'
     + '<div id="fbPanel" style="margin-top:12px"><div class="loading">読み込み中…</div></div>'
     + '</details>';
-  // 状態別にグループ分け（受付中 → 下書き → 終了は折りたたみ）
-  var groups = { active: [], draft: [], done: [] };
+  // 状態別にグループ分け（受付中 → 準備中 → 非表示 → 終了）
+  var groups = { active: [], draft: [], hidden: [], done: [] };
   state.adminData.campaigns.forEach(function (c) {
-    if (c.status === 'ended' || (c.status === 'published' && c.expired)) groups.done.push(c);
+    if (c.status === 'archived') groups.hidden.push(c);
+    else if (c.status === 'ended' || (c.status === 'published' && c.expired)) groups.done.push(c);
     else if (c.status === 'published') groups.active.push(c);
     else groups.draft.push(c);
   });
@@ -1930,14 +2500,22 @@ function renderAdmin(m) {
     return h;
   }
 
+  html += '<div style="font-size:12px;color:var(--muted);margin:2px 2px 10px">タップで開くと商品・期間の確認や、公開/非表示の操作ができます。</div>';
+
   if (groups.active.length) {
-    html += '<h3 class="grp grp-active">🟢 受付中（' + groups.active.length + '件）</h3>'
+    html += '<h3 class="grp grp-active">🟢 受付中（' + groups.active.length + '件）'
+      + '<span class="grp-note">知人に見えています</span></h3>'
       + renderGroup(groups.active);
   }
   if (groups.draft.length) {
-    html += '<h3 class="grp">📥 下書き（' + groups.draft.length + '件）'
-      + '<span class="grp-note">公開すると知人に見えます</span></h3>'
+    html += '<h3 class="grp">📥 準備中（' + groups.draft.length + '件）'
+      + '<span class="grp-note">開いて中身を見て、公開するか判断</span></h3>'
       + renderGroup(groups.draft);
+  }
+  if (groups.hidden.length) {
+    html += '<details class="grp-fold"><summary>🗄 非表示リスト（' + groups.hidden.length + '件）'
+      + '<span class="grp-note">復活できます</span></summary>'
+      + '<div style="margin-top:10px">' + renderGroup(groups.hidden) + '</div></details>';
   }
   if (groups.done.length) {
     html += '<details class="grp-fold"><summary>🗂 終了したセール（' + groups.done.length + '件）'
@@ -1995,21 +2573,30 @@ function setFbStatus(row, status) {
     toast('更新しました');
     $('fbPanel').setAttribute('data-loaded', '0');
     loadFeedbackPanel();
+    pollAdminFeedback();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
     .apiAdminFeedbackStatus(ADMIN_KEY, row, status);
 }
 
 function adminRowHtml(c) {
-  var html = '';
   var pill, pillCls;
-  if (c.status === 'ended') { pill = '終了（請求のため保持）'; pillCls = 'draft'; }
+  if (c.status === 'archived') { pill = '非表示'; pillCls = 'archived'; }
+  else if (c.status === 'ended') { pill = '終了（請求のため保持）'; pillCls = 'draft'; }
   else if (c.status === 'published') {
     pill = c.expired ? '期限切れ（自動非表示）' : '公開中';
     pillCls = c.expired ? 'draft' : 'published';
-  } else { pill = '下書き'; pillCls = 'draft'; }
-  html += '<div class="admin-row">'
-    + '<div class="subj">' + esc(c.subject) + ' <span class="pill ' + pillCls + '">' + pill + '</span></div>'
-    + '<div class="meta">配信 ' + esc(c.mailDate) + ' / 商品 ' + c.productCount + '点'
+  } else { pill = '準備中（未公開）'; pillCls = 'draft'; }
+
+  // 折りたたみの見出し＝メール受信日＋セールタイトル＋状態のみ
+  var recv = c.mailDate || (c.mailDateTime || '').slice(0, 10) || '';
+  var html = '<details class="camp-fold" id="camp_' + esc(c.mailId) + '">'
+    + '<summary>'
+    + '<span class="camp-date">' + esc(recv) + '</span>'
+    + '<span class="camp-title">' + esc(c.subject) + '</span>'
+    + '<span class="pill ' + pillCls + '">' + pill + '</span>'
+    + '</summary>'
+    + '<div class="camp-body">'
+    + '<div class="meta">' + esc(mailSourceText(c) || ('配信 ' + (c.mailDate || ''))) + ' / 商品 ' + c.productCount + '点'
     + (c.periodText ? ' / 📅 ' + esc(c.periodText) : '')
     + (c.endDate ? '（最終日 ' + esc(c.endDate) + '）' : '') + '</div>'
     + '<div class="ctrl">'
@@ -2017,24 +2604,56 @@ function adminRowHtml(c) {
     + '<input class="period" id="per_' + esc(c.mailId) + '" value="' + esc(c.periodText) + '" placeholder="セール期間 例: 8/22(金)〜8/24(日)">'
     + '<input class="period" style="width:130px" id="end_' + esc(c.mailId) + '" value="' + esc(c.endDate || '') + '" placeholder="最終日 2026-08-24">'
     + '<button class="btn ghost" onclick="savePeriod(\'' + jsq(c.mailId) + '\')">期間保存</button>';
-  if (c.status === 'published' || c.status === 'ended') {
-    html += '<button class="btn unpub" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'draft\')">非公開にする</button>';
+  var isDone = c.status === 'ended' || (c.status === 'published' && c.expired);
+  if (c.status === 'archived') {
+    // 非表示リストの行：受付検討に戻す
+    html += '<button class="btn pub" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'draft\')">↩ 復活する</button>';
+  } else if (isDone) {
+    // 終了/期限切れの行：期限を延長して受付に戻す（年の読み違え等の救済）＋非表示
+    html += '<button class="btn pub" onclick="reopenCampaign(\'' + jsq(c.mailId) + '\')" title="終了日を2週間先に延長して、もう一度受付中にします">▶ 受付に戻す（期限延長）</button>';
+    html += '<button class="btn ghost" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'archived\')" title="非表示リストに移します。あとで復活できます">🗄 非表示にする</button>';
   } else {
-    html += '<button class="btn pub" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'published\')">公開する</button>';
+    if (c.status === 'published') {
+      html += '<button class="btn unpub" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'draft\')">非公開にする</button>';
+    } else {
+      html += '<button class="btn pub" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'published\')">公開する（受付開始）</button>';
+    }
+    html += '<button class="btn ghost" onclick="demoPublish(\'' + jsq(c.mailId) + '\')" title="期間が終わっていても3日間だけ表示させて動作を試せます">🧪 お試し表示</button>';
+    // 非表示リストへ退避（復活可能）
+    html += '<button class="btn ghost" onclick="setStatus(\'' + jsq(c.mailId) + '\',\'archived\')" title="非表示リストに移します。あとで復活できます">🗄 非表示にする</button>';
   }
-  html += '<button class="btn ghost" onclick="demoPublish(\'' + jsq(c.mailId) + '\')" title="期間が終わっていても3日間だけ表示させて動作を試せます">🧪 お試し表示</button>';
-  html += '</div><div id="prev_' + esc(c.mailId) + '" class="preview" style="display:none"></div></div>';
+  html += '</div><div id="prev_' + esc(c.mailId) + '" class="preview" style="display:none"></div>'
+    + '</div></details>';
   return html;
 }
 
 function setStatus(mailId, status) {
+  var msg = status === 'published' ? '公開しました（受付開始）'
+    : status === 'archived' ? '非表示にしました（非表示リストに移動）'
+    : status === 'draft' ? '準備中に戻しました'
+    : '更新しました';
   google.script.run.withSuccessHandler(function () {
-    toast(status === 'published' ? '公開しました' : '非公開にしました');
+    toast(msg);
     state.adminData = null;
     loadAdmin();
     reloadAll();
   }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
     .apiAdminUpdate(ADMIN_KEY, mailId, { status: status });
+}
+
+// 終了/期限切れのセールを、終了日を2週間先に延ばして受付中に戻す
+function reopenCampaign(mailId) {
+  var d = new Date(Date.now() + 14 * 86400000);
+  var end = d.getFullYear() + '-'
+    + String(d.getMonth() + 1).padStart(2, '0') + '-'
+    + String(d.getDate()).padStart(2, '0');
+  google.script.run.withSuccessHandler(function () {
+    toast('受付に戻しました（終了日 ' + end + ' まで）');
+    state.adminData = null;
+    loadAdmin();
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiAdminUpdate(ADMIN_KEY, mailId, { status: 'published', endDate: end });
 }
 
 function savePeriod(mailId) {
@@ -2174,6 +2793,16 @@ function saveDonate() {
     .apiSetDonateUrl(ADMIN_KEY, v);
 }
 
+function saveAnnouncement() {
+  var v = $('announcementInput').value.trim();
+  google.script.run.withSuccessHandler(function (r) {
+    if (state.data) state.data.announcementText = r.text || '';
+    toast('お知らせを保存しました');
+    render();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiSetAnnouncement(ADMIN_KEY, v);
+}
+
 /* ---------- グループ管理・利用状況 ---------- */
 function loadGroupPanel() {
   var box = $('groupPanel');
@@ -2195,7 +2824,8 @@ function renderGroupPanel(g, st) {
   var h = '';
 
   if (st) {
-    h += '<div style="background:#eef2f7;border-radius:8px;padding:12px;margin-bottom:14px">'
+    h += usageSummaryHtml(st.usage, true)
+      + '<div style="background:#eef2f7;border-radius:8px;padding:12px;margin-bottom:14px">'
       + '<div style="font-size:13px;font-weight:700;margin-bottom:6px">📊 利用状況</div>'
       + '<div style="font-size:13px">開いた回数 <b>' + st.totalOpen + '</b>　／　注文の保存 <b>' + st.totalSave + '</b></div>';
     if (st.days && st.days.length) {
