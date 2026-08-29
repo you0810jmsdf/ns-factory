@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>そだてろぐ｜母子手帳に書かないことを、ここに。</title>
+<meta name="description" content="授乳・睡眠・排泄・体温・症状。毎日のこまかな記録を残す育児記録アプリ。診察前の症状メモや予防接種の予定管理にも。データは端末の中だけに保存されます。">
+<meta property="og:title" content="そだてろぐ｜母子手帳に書かないことを、ここに。">
+<meta property="og:description" content="授乳・睡眠・排泄・体温・症状。毎日のこまかな記録を残す育児記録アプリ。">
+<meta property="og:type" content="website">
+<link rel="icon" href="./logo.png">
+<style>
+  :root {
+    --bg: #f7f4ee;
+    --surface: #fffefa;
+    --surface-muted: #eeebe3;
+    --line: #d8d4ca;
+    --text: #2c3531;
+    --text-muted: #6a726d;
+    --brand: #5f766b;
+    --brand-dark: #40564c;
+    --accent: #b45f4d;
+    --warning-bg: #f6e2b7;
+    --shadow: 0 12px 30px rgb(38 51 47 / 0.08);
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img { max-width: 100%; height: auto; }
+
+  .wrap {
+    width: min(760px, 100% - 2.5rem);
+    margin-inline: auto;
+  }
+
+  /* ヒーロー */
+  .hero {
+    padding: 4.5rem 0 3.5rem;
+    text-align: center;
+  }
+
+  .hero-logo {
+    height: 88px;
+    width: auto;
+    margin-bottom: 2rem;
+  }
+
+  .hero h1 {
+    margin: 0 0 1.2rem;
+    font-size: clamp(1.5rem, 5.2vw, 2.15rem);
+    line-height: 1.55;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .hero h1 .em { color: var(--accent); }
+
+  .hero p {
+    margin: 0 auto;
+    max-width: 30rem;
+    color: var(--text-muted);
+    font-size: 1.02rem;
+  }
+
+  /* セクション共通 */
+  section { padding: 3.2rem 0; }
+
+  .section-label {
+    margin: 0 0 0.5rem;
+    color: var(--accent);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+  }
+
+  h2 {
+    margin: 0 0 1.8rem;
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.02rem;
+    font-weight: 600;
+  }
+
+  p { margin: 0 0 1rem; }
+  p:last-child { margin-bottom: 0; }
+
+  /* 課題 */
+  .voices {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .voice {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.3rem;
+    color: var(--text-muted);
+    position: relative;
+    padding-left: 2.6rem;
+  }
+
+  .voice::before {
+    content: "";
+    position: absolute;
+    left: 1.25rem;
+    top: 1.55rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.55;
+  }
+
+  .lead {
+    margin-top: 1.8rem;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface-muted);
+    border-radius: var(--radius);
+    font-size: 1.02rem;
+  }
+
+  /* 機能 */
+  .features {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+
+  .feature {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.4rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+
+  .feature .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 10px;
+    background: var(--surface-muted);
+    margin-bottom: 0.9rem;
+  }
+
+  .feature p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.94rem;
+  }
+
+  /* 比較表 */
+  .table-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 0.95rem;
+    min-width: 30rem;
+  }
+
+  th, td {
+    padding: 0.9rem 1.1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  thead th {
+    background: var(--surface-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child th,
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody th {
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--text-muted);
+  }
+
+  /* 安心 */
+  .safety {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .safety-item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+  }
+
+  .safety-item p {
+    margin: 0.35rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.94rem;
+  }
+
+  /* 注意書き */
+  .notice {
+    background: var(--warning-bg);
+    border-radius: var(--radius);
+    padding: 1.3rem 1.5rem;
+    font-size: 0.94rem;
+  }
+
+  .notice strong { display: block; margin-bottom: 0.4rem; }
+
+  /* CTA */
+  .cta {
+    text-align: center;
+    background: var(--brand);
+    color: #f7f4ee;
+    border-radius: 22px;
+    padding: 2.8rem 1.8rem;
+    margin: 1rem 0 3rem;
+  }
+
+  .cta h2 { margin-bottom: 0.8rem; color: #f7f4ee; }
+
+  .cta p {
+    color: rgb(247 244 238 / 0.82);
+    font-size: 0.96rem;
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+
+  .cta-button {
+    display: inline-block;
+    margin-top: 1.6rem;
+    padding: 0.85rem 2.4rem;
+    background: var(--surface);
+    color: var(--brand-dark);
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+
+  .cta-note {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: rgb(247 244 238 / 0.7);
+  }
+
+  footer {
+    padding: 2.2rem 0 3rem;
+    border-top: 1px solid var(--line);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  footer p { margin: 0.3rem 0; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <img class="hero-logo" src="./logo.png" alt="そだてろぐ">
+    <h1>母子手帳に書かないことを、<br><span class="em">ここに</span>。</h1>
+    <p>授乳、睡眠、排泄、体温、そして体調のこと。毎日のこまかな記録を、無理なく残していくためのアプリです。</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">こんなこと、ありませんか</p>
+    <h2>覚えていられないことが、<br>毎日たくさんあります。</h2>
+    <div class="voices">
+      <div class="voice">夜中に何度も起きて、最後の授乳が何時だったか思い出せない。</div>
+      <div class="voice">「今日はどうだった？」と聞かれても、うまく言葉にできない。</div>
+      <div class="voice">病院で「いつから熱が出ましたか」と聞かれて、答えに詰まる。</div>
+      <div class="voice">予防接種の予定が多すぎて、次がいつなのか分からなくなる。</div>
+    </div>
+    <p class="lead">母子手帳は、健診の結果や予防接種を残す大切な公的記録です。でも、毎日の授乳や睡眠を書き込む場所ではありません。<strong>そだてろぐは、その手前にある日々の記録</strong>を引き受けます。</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">できること</p>
+    <h2>記録して、残して、<br>必要なときに取り出す。</h2>
+    <div class="features">
+
+      <article class="feature">
+        <span class="icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f766b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </span>
+        <h3>毎日の記録</h3>
+        <p>授乳・睡眠・排泄・体温を、数タップで。時刻は最初から「今」が入り、前回の量も覚えています。寝かしつけた時刻だけ先に残し、起きてから終わりを足すこともできます。</p>
+      </article>
+
+      <article class="feature">
+        <span class="icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f766b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        </span>
+        <h3>バックアップ</h3>
+        <p>記録はこの端末の中だけに保存されます。機種変更やブラウザのデータを消すときに備えて、ファイルに書き出して保存できます。写真は別ファイルなので、記録だけこまめに残すこともできます。</p>
+      </article>
+
+      <article class="feature">
+        <span class="icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f766b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+        </span>
+        <h3>予防接種と健診の予定</h3>
+        <p>生年月日から、標準的な接種・健診の予定を自動で並べます。期限切れ・今月・今後が一目で分かります。日付の変更も、手動での追加もできます。</p>
+      </article>
+
+      <article class="feature">
+        <span class="icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f766b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 15h6M12 12v6"/></svg>
+        </span>
+        <h3>体調のメモ</h3>
+        <p>熱、咳、発疹、機嫌。気づいたことを時刻つきで残せます。言葉にしづらいものは写真で。診察のとき、経過をそのまま医師に見せられます。</p>
+      </article>
+
+      <article class="feature">
+        <span class="icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f766b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        </span>
+        <h3>そのまま渡せる1枚</h3>
+        <p>受診のときの経過、健診での転記用、保育園に出す生活リズム表。用途に合わせて、必要な期間の記録を1枚にまとめて印刷できます。</p>
+      </article>
+
+      <article class="feature">
+        <span class="icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f766b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+        </span>
+        <h3>迷ったときの連絡先</h3>
+        <p>子ども医療電話相談（#8000）や救急への導線を、いつでも開ける場所に。厚生労働省が公表している「迷わず119番を呼ぶとき」の項目も、出典つきで確認できます。</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">母子手帳との違い</p>
+    <h2>置き換えるものでは<br>ありません。</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">母子健康手帳</th>
+            <th scope="col">そだてろぐ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">役割</th>
+            <td>公的な記録</td>
+            <td>日々の記録と共有</td>
+          </tr>
+          <tr>
+            <th scope="row">残すもの</th>
+            <td>健診の結果、予防接種の証明</td>
+            <td>授乳、睡眠、排泄、体温、体調</td>
+          </tr>
+          <tr>
+            <th scope="row">書く頻度</th>
+            <td>健診や接種のたび</td>
+            <td>毎日、何度でも</td>
+          </tr>
+          <tr>
+            <th scope="row">正式な記録は</th>
+            <td>こちらが正</td>
+            <td>母子手帳が正。日付の控えとして使う</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="section-label">安心のために</p>
+    <h2>記録は、家族の外に<br>出しません。</h2>
+    <div class="safety">
+      <div class="safety-item">
+        <h3>記録は、この端末の中だけ</h3>
+        <p>お子さんの記録も写真も、あなたの端末の中にしか保存されません。私たちのサーバーには送られませんし、預かってもいません。誰かに見られる心配がありません。</p>
+      </div>
+      <div class="safety-item">
+        <h3>登録もアカウントも要りません</h3>
+        <p>メールアドレスも名前も聞きません。ブラウザで開けば、すぐに書きはじめられます。</p>
+      </div>
+      <div class="safety-item">
+        <h3>圏外でも書けます</h3>
+        <p>そもそも通信を使わないので、電波の届かない場所でも普段どおり記録できます。</p>
+      </div>
+      <div class="safety-item">
+        <h3>スマホに入れられます</h3>
+        <p>ブラウザで開いて「ホーム画面に追加」するだけ。アプリストアからの入手は要りません。</p>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-top:1.6rem;">
+      <strong>大切なお願い</strong>
+      記録がこの端末にしかない、ということは、<strong>端末を変えたときやブラウザのデータを消したときに失われる</strong>ということでもあります。ときどきバックアップを取ってください。アプリの中から、ファイルに書き出して保存できます。
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="notice">
+      <strong>医療的な判断はしません</strong>
+      このアプリは記録を残し、整理してお見せするものです。病名を判断したり、重症度を判定したりする機能はありません。受診の目安として表示している内容は、厚生労働省など公的機関が公表している資料をそのまま引用したものです。判断に迷うときは #8000（子ども医療電話相談）や、かかりつけの医療機関にご相談ください。
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="cta">
+    <h2>今日から、残しはじめる。</h2>
+    <p>登録は要りません。ブラウザで開いて、そのまま書きはじめられます。</p>
+    <a class="cta-button" href="./">はじめる</a>
+    <p class="cta-note">記録はこの端末の中だけに保存されます</p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>そだてろぐ</p>
+    <p>お子さんの毎日を、家族で残すために。</p>
+  </div>
+</footer>
+
+</body>
+</html>
