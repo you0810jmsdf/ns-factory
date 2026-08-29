@@ -64,6 +64,15 @@ body{
 
 .staff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 @media(max-width:1400px){.staff-grid{grid-template-columns:repeat(2,1fr)}}
+
+.know-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:1400px){.know-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.know-grid{grid-template-columns:1fr}}
+.know-card{border:1px solid #30363d;border-radius:10px;padding:10px 12px;background:#0d1117}
+.know-name{font-weight:600;color:#c9d1d9;margin-bottom:8px}
+.know-bar{height:8px;background:#21262d;border-radius:4px;overflow:hidden;margin-bottom:8px}
+.know-bar-fill{height:100%;background:#3fb950}
+.know-nums{display:flex;gap:10px;font-size:12px;color:#9aa4af;flex-wrap:wrap}
 .staff{border:1px solid #30363d;border-radius:10px;padding:10px 12px;background:#0d1117;cursor:pointer}
 .staff:hover{border-color:#58a6ff}
 .staff.warn{border-color:#f85149;background:#1d1113}
@@ -151,6 +160,11 @@ td.cat{white-space:nowrap;color:#9aa4af}
     <h2>⏰ 期限超過タスク <span class="sub">status≠完了・中止 かつ 開始日が過去</span></h2>
     <div id="overdueList"></div>
   </div>
+
+  <div class="panel">
+    <h2>📚 幕僚別 知識量 <span class="sub" id="knowSub"></span></h2>
+    <div class="know-grid" id="knowGrid"><div class="empty">読み込み中…</div></div>
+  </div>
 </div>
 
 <div class="auth-overlay" id="authOverlay">
@@ -193,6 +207,38 @@ function unlockAuth() {
   document.getElementById('calLink').href = GAS_URL + '?key=' + encodeURIComponent(getKey());
   tick();
   setInterval(tick, REFRESH_MS);
+  loadKnowledgeStats();
+}
+
+// ================================================================
+// 幕僚別 知識量（Obsidian Vaultの集計値のみ・GAS不要・認証不要の静的JSON）
+// ⛔ knowledge-stats.json にファイル名・パス・中身を追加しないこと（集計値3つだけの設計）
+// ================================================================
+async function loadKnowledgeStats(){
+  try {
+    const res = await fetch('knowledge-stats.json?_=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    renderKnowledgeStats(await res.json());
+  } catch (e) {
+    document.getElementById('knowGrid').innerHTML = '<div class="empty">読み込めませんでした（' + esc(e.message) + '）</div>';
+  }
+}
+
+function renderKnowledgeStats(d){
+  const depts = d.departments || [];
+  const maxChars = Math.max(1, ...depts.map(x => x.totalChars));
+  document.getElementById('knowSub').textContent =
+    '集計日時: ' + esc((d.generatedAt || '').replace('T', ' ')) + '（毎朝の索引同期で自動更新）';
+  document.getElementById('knowGrid').innerHTML = depts.map(x => `
+    <div class="know-card">
+      <div class="know-name">${esc(x.dept)}</div>
+      <div class="know-bar"><div class="know-bar-fill" style="width:${Math.round(x.totalChars / maxChars * 100)}%"></div></div>
+      <div class="know-nums">
+        <span>📄 ${x.fileCount}件</span>
+        <span>📝 ${x.totalChars.toLocaleString()}字</span>
+        <span>🕒 ${esc(x.lastUpdated || '—')}</span>
+      </div>
+    </div>`).join('');
 }
 function submitAuth() {
   const input = document.getElementById('authPassword');
