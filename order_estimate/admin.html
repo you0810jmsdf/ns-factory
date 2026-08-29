@@ -801,6 +801,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn active" type="button" data-admin-tab="calendar" data-admin-cat="keiei" role="tab" aria-selected="true">📅 幕僚計画</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="sales" data-admin-cat="keiei" role="tab" aria-selected="false">💹 売上分析</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="customers" data-admin-cat="keiei" role="tab" aria-selected="false">👥 顧客マスタ</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="waitlist" data-admin-cat="keiei" role="tab" aria-selected="false">🔔 再製作待ち</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="receipt-checklist" data-admin-cat="keiei" role="tab" aria-selected="false">🧾 証憑チェックリスト</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="jhcs-dl" data-admin-cat="keiei" role="tab" aria-selected="false">🎓 JHCS講習DL管理</button>
@@ -1692,6 +1693,33 @@ tr.row-out-stock td{
             </tr>
           </thead>
           <tbody id="stats-orders-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 再製作待ちタブ（2026-08-29 追加）
+         売り切れ品に連絡先を残したお客様。ここに出たら作れるかどうかを返信する。 -->
+    <div class="panel waitlist-section admin-section-hidden" id="waitlistPanel">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#3d1a08;margin-bottom:6px">🔔 再製作待ちリスト</div>
+          <div style="font-size:12px;color:#7d644d;line-height:1.6">売り切れ品の作品ページで「知らせてもらう」を押したお客様です。連絡したら「連絡済み」にしてください。</div>
+        </div>
+        <button type="button" id="waitlist-reload" style="padding:8px 14px;border:1px solid #d8c2a8;border-radius:8px;background:#fff8f1;color:#6b3a1f;font-size:12px;font-weight:700;cursor:pointer">🔄 再読み込み</button>
+      </div>
+      <div id="waitlist-admin-msg" style="font-size:12px;color:#8a6a4a;margin-bottom:10px">読み込み中…</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px">
+          <thead>
+            <tr style="background:#f7ede2">
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:120px">登録日時</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf">商品</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:200px">連絡先</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:90px">状態</th>
+              <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:150px">操作</th>
+            </tr>
+          </thead>
+          <tbody id="waitlist-rows"></tbody>
         </table>
       </div>
     </div>
@@ -5860,7 +5888,7 @@ async function saveJhcsStudent() {
 }
 
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'jhcs-dl': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'jhcs-dl': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics',
@@ -5887,7 +5915,8 @@ function setAdminTab(tab) {
   const isStaffMonitor = tab === 'staff-monitor';
   const isChatlog = tab === 'chatlog';
   const isJhcsDl = tab === 'jhcs-dl';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl;
+  const isWaitlist = tab === 'waitlist';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -5948,8 +5977,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.jhcs-dl-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isJhcsDl);
   });
+  document.querySelectorAll('.waitlist-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isWaitlist);
+  });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -5998,6 +6030,9 @@ function setAdminTab(tab) {
     if (brandPriceRows.length === 0) loadBrandPriceCsv();
     renderDashboard();
   }
+  if (isWaitlist) {
+    loadWaitlist();
+  }
   document.querySelectorAll('[data-admin-tab]').forEach(btn => {
     const active = btn.dataset.adminTab === tab;
     btn.classList.toggle('active', active);
@@ -6027,6 +6062,8 @@ function setAdminTab(tab) {
       ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
       : isLeather
       ? '革の残量を半裁基準の%で入力します。0%=お取り寄せ／20%以下=残りわずか（店長アラート）／80%以上=入荷したて。反映するとショールーム接客に即適用されます。'
+      : isWaitlist
+      ? '売り切れ品に「再製作されたら知らせて」と連絡先を残したお客様の一覧です。作れるかどうかと納期の目安を返信してください。'
       : isStats
       ? '商品閲覧ランキングとオーダー依頼の履歴をスプレッドシートのアクセスログから表示します。'
       : isThreadsSns
@@ -6077,6 +6114,95 @@ function setAdminTab(tab) {
 
 // ── アクセス解析 ──
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+// ===== 再製作待ちリスト（2026-08-29 追加） =====
+// 売り切れ品に連絡先を残したお客様の一覧。ここに出た時点で「対応すべき案件」。
+function wlH(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function waitlistSetMsg(text) {
+  const el = document.getElementById('waitlist-admin-msg');
+  if (el) el.textContent = text;
+}
+
+function loadWaitlist() {
+  waitlistSetMsg('読み込み中…');
+  const cbName = 'wlCb' + Date.now();
+  const script = document.createElement('script');
+  script.src = GAS_URL + '?api=waitlistList&key=' + encodeURIComponent(getAdminKey())
+             + '&callback=' + cbName;
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (script.parentNode) document.body.removeChild(script);
+    if (!data || !data.ok) {
+      waitlistSetMsg('読み込みに失敗しました' + (data && data.error ? '（' + data.error + '）' : ''));
+      return;
+    }
+    renderWaitlist(data.rows || []);
+  };
+  script.onerror = function() {
+    if (script.parentNode) document.body.removeChild(script);
+    waitlistSetMsg('読み込みに失敗しました。');
+  };
+  document.body.appendChild(script);
+}
+
+function renderWaitlist(rows) {
+  const tbody = document.getElementById('waitlist-rows');
+  if (!tbody) return;
+  const pending = rows.filter(r => r.status !== '連絡済み').length;
+  waitlistSetMsg(rows.length
+    ? '全' + rows.length + '件（未対応 ' + pending + '件）'
+    : 'まだ登録はありません。');
+
+  tbody.innerHTML = rows.length ? rows.map(r => {
+    const done = r.status === '連絡済み';
+    const productLabel = r.productName || r.productId || '(不明)';
+    const productLink = r.productId
+      ? '<a href="https://you0810jmsdf.github.io/ns-factory/works.html?id=' + encodeURIComponent(r.productId)
+        + '" target="_blank" style="color:#5C3D2E;text-decoration:underline dotted">' + wlH(productLabel) + '</a>'
+        + '<div style="font-size:11px;color:#a08a72">' + wlH(r.productId) + '</div>'
+      : wlH(productLabel);
+    return '<tr' + (done ? ' style="opacity:.55"' : '') + '>'
+      + '<td style="padding:8px;border-bottom:1px solid #efe3d7;font-size:12px;white-space:nowrap">' + wlH(r.date) + '</td>'
+      + '<td style="padding:8px;border-bottom:1px solid #efe3d7">' + productLink + '</td>'
+      + '<td style="padding:8px;border-bottom:1px solid #efe3d7"><a href="mailto:' + wlH(r.email) + '" style="color:#c8553d;font-weight:700">' + wlH(r.email) + '</a></td>'
+      + '<td style="padding:8px;border-bottom:1px solid #efe3d7;font-size:12px;font-weight:700;color:' + (done ? '#8a6a4a' : '#c8553d') + '">' + wlH(r.status || '受付') + '</td>'
+      + '<td style="padding:8px;border-bottom:1px solid #efe3d7;white-space:nowrap">'
+      + '<button type="button" class="wl-act" data-act="' + (done ? 'reopen' : 'contacted') + '" data-id="' + wlH(r.productId) + '" data-email="' + wlH(r.email) + '" style="padding:4px 8px;margin-right:4px;border:1px solid #d8c2a8;border-radius:6px;background:#fff8f1;font-size:11px;cursor:pointer">' + (done ? '戻す' : '連絡済み') + '</button>'
+      + '<button type="button" class="wl-act" data-act="delete" data-id="' + wlH(r.productId) + '" data-email="' + wlH(r.email) + '" style="padding:4px 8px;border:1px solid #e0b8b0;border-radius:6px;background:#fff;color:#b54238;font-size:11px;cursor:pointer">削除</button>'
+      + '</td></tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center;color:#8a6a4a;padding:24px">まだ登録はありません</td></tr>';
+}
+
+// 状態変更・削除。お客様のメールアドレスを扱うためURLではなくPOST本文で送る。
+function waitlistAct(productId, email, act) {
+  if (act === 'delete' && !confirm(email + ' の登録を削除します。よろしいですか？')) return;
+  waitlistSetMsg('更新中…');
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ api: 'waitlistUpdate', key: getAdminKey(), productId: productId, email: email, action: act })
+  })
+    .then(r => r.json())
+    .then(j => {
+      if (!j || !j.ok) throw new Error((j && j.error) || 'failed');
+      loadWaitlist();
+    })
+    .catch(err => waitlistSetMsg('更新に失敗しました（' + err.message + '）'));
+}
+
+document.addEventListener('click', function(ev) {
+  const btn = ev.target.closest ? ev.target.closest('.wl-act') : null;
+  if (!btn) return;
+  waitlistAct(btn.dataset.id || '', btn.dataset.email || '', btn.dataset.act || '');
+});
+
+const wlReloadBtn = document.getElementById('waitlist-reload');
+if (wlReloadBtn) wlReloadBtn.addEventListener('click', loadWaitlist);
+
 const GA_PAGE_NAMES = {
   '/':                              'トップ',
   '/ns-factory/':                   'トップ',
