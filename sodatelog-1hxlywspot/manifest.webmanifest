@@ -1,0 +1,1 @@
+{"name":"そだてろぐ","short_name":"そだてろぐ","description":"日常ケア記録と家族共有のための育児PWA","start_url":"./","display":"standalone","background_color":"#f7f4ee","theme_color":"#5f766b","lang":"ja","scope":"./","orientation":"portrait","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

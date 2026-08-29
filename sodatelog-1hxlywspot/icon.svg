@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="そだてろぐ">
+  <rect width="512" height="512" rx="96" fill="#5f766b"/>
+  <circle cx="256" cy="214" r="96" fill="#f7f4ee"/>
+  <path d="M155 383c20-62 66-98 101-98s81 36 101 98" fill="none" stroke="#f7f4ee" stroke-width="42" stroke-linecap="round"/>
+  <path d="M204 202c15 21 34 32 56 32s43-11 58-32" fill="none" stroke="#b45f4d" stroke-width="24" stroke-linecap="round"/>
+</svg>
