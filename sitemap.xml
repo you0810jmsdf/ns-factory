@@ -129,4 +129,35 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <!-- リフィル印刷ツール。2026-08-24に無料開放済みのため検索から直接使えるようにする（2026-08-29 追加） -->
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/a6-daily/</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/a6-monthly/</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/bible-daily/</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/bible-weekly/</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/bible-monthly/</loc>
+    <lastmod>2026-08-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
