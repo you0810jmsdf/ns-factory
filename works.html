@@ -527,6 +527,50 @@
       font-weight: 700;
       letter-spacing: 0.04em;
     }
+
+    /* 売り切れ品の再製作待ちリスト（2026-08-29）。
+       購入意思があってもフォームが重く離脱していたため、メールだけで受け付ける。 */
+    .waitlist-box {
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border: 1px solid #d8c2a8;
+      border-radius: 8px;
+      background: #fdf8f1;
+    }
+    .waitlist-lead {
+      font-size: 13px;
+      font-weight: 700;
+      color: #5C3D2E;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .waitlist-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .waitlist-input {
+      flex: 1 1 200px;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid #c9ad8c;
+      border-radius: 6px;
+      font-size: 15px;
+      background: #fff;
+      color: #3A2410;
+    }
+    .waitlist-btn {
+      flex: 0 0 auto;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 6px;
+      background: #5C3D2E;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .waitlist-btn:disabled { opacity: .55; cursor: default; }
+    .waitlist-note { margin-top: 8px; font-size: 11px; color: #8B6048; line-height: 1.5; }
+    .waitlist-msg { margin-top: 10px; font-size: 13px; font-weight: 700; }
+    .waitlist-msg.ok { color: #2f6b3a; }
+    .waitlist-msg.ng { color: #b54238; }
     .modal-actions {
       display: grid;
       gap: 10px;
@@ -1078,6 +1122,17 @@
         <div id="modal-meta" class="modal-meta"></div>
         <div id="modal-desc" class="modal-desc"></div>
         <div id="modal-availability" class="modal-availability" hidden></div>
+        <!-- 売り切れ・再販予定なしの作品にだけ出る受け皿。名前も住所も聞かない。
+             見積フォーム（本名・住所・支払い方法）まで進めず離脱していた層を拾うための導線。 -->
+        <div id="waitlist-box" class="waitlist-box" hidden>
+          <div class="waitlist-lead" id="waitlist-lead"></div>
+          <div class="waitlist-row">
+            <input type="email" id="waitlist-email" class="waitlist-input" placeholder="mail@example.com" autocomplete="email" inputmode="email">
+            <button type="button" id="waitlist-submit" class="waitlist-btn"></button>
+          </div>
+          <div class="waitlist-note" id="waitlist-note"></div>
+          <div id="waitlist-msg" class="waitlist-msg" hidden></div>
+        </div>
         <!-- SNS等でこの作品を名指しで案内するためのリンク（2026-08-12 事業主要望）。
              コピー先は works/商品ID.html（OGP付きの案内ページ）で、開くと詳細が直接開く。 -->
         <button id="share-work-link" class="btn-share-work" type="button" data-i18n="modal.share">🔗 この作品のリンクをコピー</button>
@@ -1429,6 +1484,8 @@
         }
       }
 
+      configureWaitlist(work, unavailable);
+
       // 価格が入っていない（0円）商品は、金額の出ない見積り帳票を表示しても意味が無いため
       // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
       const quoteIntent = unavailable ? 'similar_order_quote' : 'stock_purchase_quote';
@@ -1744,6 +1801,91 @@
         s.onload = s.onerror = () => { if (s.parentNode) s.remove(); };
         document.body.appendChild(s);
       } catch(e) {}
+    }
+
+    // ===== 再製作待ちリスト（2026-08-29 追加） =====
+    // 見積フォームは本名・メール・住所・支払い方法を求めるため、
+    // 「買いたいが売り切れ」の人がそこまで進めず離脱していた。
+    // ここではメールアドレスだけを預かり、再製作できたときに知らせる。
+    const waitlistBox = document.getElementById('waitlist-box');
+    const waitlistLead = document.getElementById('waitlist-lead');
+    const waitlistNote = document.getElementById('waitlist-note');
+    const waitlistEmail = document.getElementById('waitlist-email');
+    const waitlistSubmit = document.getElementById('waitlist-submit');
+    const waitlistMsg = document.getElementById('waitlist-msg');
+    let waitlistWork = null;
+
+    function showWaitlistMsg(text, kind) {
+      if (!waitlistMsg) return;
+      waitlistMsg.textContent = text;
+      waitlistMsg.className = 'waitlist-msg ' + (kind || '');
+      waitlistMsg.hidden = !text;
+    }
+
+    function configureWaitlist(work, unavailable) {
+      if (!waitlistBox) return;
+      waitlistWork = work || null;
+      showWaitlistMsg('', '');
+      if (waitlistEmail) waitlistEmail.value = '';
+      if (waitlistSubmit) waitlistSubmit.disabled = false;
+      if (!unavailable || !work) {
+        waitlistBox.hidden = true;
+        return;
+      }
+      waitlistBox.hidden = false;
+      if (waitlistLead) {
+        waitlistLead.textContent = T('waitlist.lead', '同じものをお作りできる場合があります。再製作できるようになったらお知らせします。');
+      }
+      if (waitlistSubmit) {
+        waitlistSubmit.textContent = T('waitlist.submit', '知らせてもらう');
+      }
+      if (waitlistNote) {
+        waitlistNote.textContent = T('waitlist.note', 'お預かりするのはメールアドレスだけです。この作品の再製作のご案内以外には使いません。');
+      }
+    }
+
+    if (waitlistSubmit) {
+      waitlistSubmit.addEventListener('click', () => {
+        const work = waitlistWork;
+        if (!work) return;
+        const email = (waitlistEmail && waitlistEmail.value || '').trim();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          showWaitlistMsg(T('waitlist.invalid', 'メールアドレスの形式をご確認ください。'), 'ng');
+          return;
+        }
+        waitlistSubmit.disabled = true;
+        showWaitlistMsg(T('waitlist.sending', '送信中…'), '');
+
+        // メールアドレスはURLに載せずPOST本文で送る。
+        // Content-Type を text/plain にするのはGASのCORSプリフライトを避けるため（既存フォームと同じ方式）。
+        fetch(WORKS_LOG_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            api: 'waitlist',
+            email: email,
+            productId: work.id || '',
+            productName: work.title || '',
+            vid: getVisitorId()
+          })
+        })
+          .then(r => r.json())
+          .then(j => {
+            if (j && j.ok) {
+              showWaitlistMsg(j.already
+                ? T('waitlist.already', 'すでに登録済みです。作れるようになりましたらご連絡します。')
+                : T('waitlist.done', '承りました。再製作できるようになりましたらご連絡します。'), 'ok');
+              if (waitlistEmail) waitlistEmail.value = '';
+              logProductAction(work, '再製作リクエスト');
+            } else {
+              throw new Error((j && j.error) || 'failed');
+            }
+          })
+          .catch(() => {
+            showWaitlistMsg(T('waitlist.error', '送信できませんでした。時間をおいて再度お試しください。'), 'ng');
+            waitlistSubmit.disabled = false;
+          });
+      });
     }
 
     // ===== オーダー相談チャット（showroom/chat-widget.js を流用） =====
