@@ -382,12 +382,27 @@ function copyDirective(id, btn){
 // ================================================================
 // ポーリング
 // ================================================================
+// getMonitorはGASの間欠障害（Failed to fetch / HTTP 404 / HTML応答）が実際に頻発するため、
+// 書き込み系（updateEvent等）とは別に、読み取り専用のこの呼び出しにだけリトライを付ける。
+async function gasPostRetry(body, attempts){
+  attempts = attempts || 4;
+  const delays = [800, 1600, 3200];
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await gasPost(body);
+    } catch (e) {
+      if (i === attempts - 1) throw e;
+      await new Promise(r => setTimeout(r, delays[i] || 3200));
+    }
+  }
+}
+
 async function tick(){
   if(suspendRefresh) return;
   const badge = document.getElementById("liveBadge");
   const errEl = document.getElementById("loadErr");
   try{
-    const r = await gasPost({ action: "getMonitor", apiKey: getKey(), key: getKey() });
+    const r = await gasPostRetry({ action: "getMonitor", apiKey: getKey(), key: getKey() });
     if(r.error) throw new Error(r.error);
     render(r.data);
     errEl.style.display = "none";
