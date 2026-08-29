@@ -822,6 +822,13 @@ tr.row-out-stock td{
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="hearing" data-admin-cat="promo" role="tab" aria-selected="false">🧵 対話ナレッジ</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="chatlog" data-admin-cat="promo" role="tab" aria-selected="false">💬 接客ログ</button>
     </div>
+    <!-- システム警告バナー（2026-08-29 追加）
+         メール通知が5か月間止まっていたのに気付けなかったため、
+         「壊れたこと」をメール以外の経路で必ず目に入れる。 -->
+    <div id="sysAlertBanner" style="display:none;margin:0 0 14px;padding:12px 16px;border:2px solid #b54238;border-radius:10px;background:#fdecea">
+      <div style="font-size:13px;font-weight:800;color:#8f2f26;margin-bottom:6px">⚠ システム警告</div>
+      <div id="sysAlertBody" style="font-size:12px;color:#7a2b23;line-height:1.7"></div>
+    </div>
     <div class="admin-tab-note" id="adminTabNote">N's Factory 幕僚計画。各幕僚の予定・期限付きタスク・販売実績を一覧で確認します。</div>
 
     <!-- 幕僚計画タブ -->
@@ -1904,6 +1911,8 @@ function saveAdminSession() {
   } catch (err) {
     // ignore
   }
+  // 管理キーが入った時点で、未解決のシステム警告を取りにいく
+  try { loadSysAlerts(); } catch (err) { /* バナーの失敗で画面を壊さない */ }
 }
 
 // ── 管理画面アクセスの記録 ────────────────────────
@@ -6114,6 +6123,32 @@ function setAdminTab(tab) {
 
 // ── アクセス解析 ──
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+// ===== システム警告バナー（2026-08-29 追加） =====
+// メール送信が壊れても「壊れたこと」を知る手段がメールしかない状態だったため、
+// 画面という別経路に必ず出す。管理キーが入っている画面でのみ取得する。
+function loadSysAlerts() {
+  const key = getAdminKey();
+  if (!key) return;
+  const cbName = 'saCb' + Date.now();
+  const script = document.createElement('script');
+  script.src = GAS_URL + '?api=sysAlerts&key=' + encodeURIComponent(key) + '&callback=' + cbName;
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (script.parentNode) document.body.removeChild(script);
+    const banner = document.getElementById('sysAlertBanner');
+    const body = document.getElementById('sysAlertBody');
+    if (!banner || !body) return;
+    const rows = (data && data.ok && data.rows) || [];
+    if (!rows.length) { banner.style.display = 'none'; return; }
+    body.innerHTML = rows.map(r =>
+      '<div style="margin-bottom:6px"><b>' + wlH(r.kind) + '</b>（' + wlH(r.date) + '）<br>' + wlH(r.message) + '</div>'
+    ).join('') + '<div style="margin-top:8px;font-size:11px;color:#9b5a52">※ 原因を直すと次回の成功時に自動で消えます。</div>';
+    banner.style.display = 'block';
+  };
+  script.onerror = function() { if (script.parentNode) document.body.removeChild(script); };
+  document.body.appendChild(script);
+}
+
 // ===== 再製作待ちリスト（2026-08-29 追加） =====
 // 売り切れ品に連絡先を残したお客様の一覧。ここに出た時点で「対応すべき案件」。
 function wlH(v) {
