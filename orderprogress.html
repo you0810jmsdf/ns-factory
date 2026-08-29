@@ -809,6 +809,22 @@ function parseLooseDate(v) {
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3] || 1));
   return isNaN(d.getTime()) ? null : d;
 }
+// 進捗タイムラインは入力順のまま保持されているため、表示時に日付の昇順へ並べ替える
+// （事業主指摘 2026-08-30: 8-30 の次に 8-29 が出て日付が遡って見えた）。
+// 同じ日付は入力順を維持し、日付が読めない行は末尾へ回す。データ自体は書き換えない。
+function sortTimeline(tl) {
+  if (!Array.isArray(tl)) return [];
+  return tl
+    .map((t, i) => ({ t: t, i: i, d: parseLooseDate(t && t.date) }))
+    .sort((a, b) => {
+      if (a.d && b.d) return (a.d - b.d) || (a.i - b.i);
+      if (a.d) return -1;
+      if (b.d) return 1;
+      return a.i - b.i;
+    })
+    .map(x => x.t);
+}
+
 // 入力順が前後していても取りこぼさないよう、最後の要素ではなく最も新しい日付を採る
 function timelineLastDate(r) {
   const tl = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
@@ -995,7 +1011,7 @@ function renderCards(records) {
 
   grid.innerHTML = records.map(r => {
     const id  = r['ID'];
-    const tl  = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    const tl  = sortTimeline(r['タイムライン']);  // 表示は日付の昇順
     const cls = 's-' + (r['ステータス']||'受付中').replace(/\s/g,'');
     const stampSrc = STAMP_MAP[r['ステータス']||'受付中'] || '';
     const stampHtml = stampSrc
@@ -1083,7 +1099,7 @@ function renderRrCards(records) {
   grid.innerHTML = records.map(r => {
     const id      = r['ID'];
     const isOp    = r._type === 'op';
-    const tl      = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    const tl      = sortTimeline(r['タイムライン']);  // 表示は日付の昇順
     const cls     = 's-' + (r['ステータス']||'受付済').replace(/\s/g,'');
     const itemName = r['品物'] || r['品名'] || T('card.noName','（品名未設定）');
     const catHtml = r['カテゴリ'] ? `<span class="cat-badge">${esc(r['カテゴリ'])}</span>` : '';
@@ -1239,7 +1255,8 @@ async function openModal(id) {
     document.getElementById('f-memo').value   = r['メモ（非公開）']||'';
     document.getElementById('f-customer-id').value = r['顧客ID']||'';
     onCustomerSelectChange();
-    const tl = Array.isArray(r['タイムライン']) ? r['タイムライン'] : [];
+    // 編集画面もカードと同じ並び（日付の昇順）にする。保存するとこの順で記録される
+    const tl = sortTimeline(r['タイムライン']);
     tl.forEach(t => addTlRow(t.date||'', t.text||''));
   } else {
     document.getElementById('f-client').value = '';
