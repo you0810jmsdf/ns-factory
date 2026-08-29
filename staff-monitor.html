@@ -33,7 +33,7 @@ body{
 .updated{margin-left:auto;font-size:12px;color:#9aa4af;text-align:right;line-height:1.5}
 .main{padding:16px 20px;max-width:1880px;margin:0 auto}
 
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
 .kpi{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:12px 16px}
 .kpi .label{font-size:12px;color:#9aa4af}
 .kpi .value{font-size:32px;font-weight:bold;line-height:1.2;font-variant-numeric:tabular-nums}
@@ -137,21 +137,14 @@ td.cat{white-space:nowrap;color:#9aa4af}
   <p class="err" id="loadErr"></p>
 
   <div class="kpis">
-    <div class="kpi" id="kpiSess"><div class="label">稼働セッション</div><div class="value">–<span class="unit">件</span></div></div>
     <div class="kpi" id="kpiWarn"><div class="label">警告幕僚（日誌沈黙×期限超過）</div><div class="value">–<span class="unit">名</span></div></div>
     <div class="kpi" id="kpiOverdue"><div class="label">期限超過タスク</div><div class="value">–<span class="unit">件</span></div></div>
     <div class="kpi" id="kpiOpen"><div class="label">未完了タスク合計</div><div class="value">–<span class="unit">件</span></div></div>
   </div>
 
-  <div class="cols">
-    <div class="panel">
-      <h2>🖥 セッション活動 <span class="sub" id="sessSub"></span></h2>
-      <div id="sessList"><div class="empty">読み込み中…</div></div>
-    </div>
-    <div class="panel">
-      <h2>👥 幕僚別ステータス <span class="sub">カードクリックでタスク明細</span></h2>
-      <div class="staff-grid" id="staffGrid"></div>
-    </div>
+  <div class="panel">
+    <h2>👥 幕僚別ステータス <span class="sub">カードクリックでタスク明細</span></h2>
+    <div class="staff-grid" id="staffGrid"></div>
   </div>
 
   <div class="panel overdue-panel">
@@ -247,33 +240,13 @@ function render(d){
   if(ageMin <= STALE_MIN){ badge.textContent = "● 稼働中"; badge.className = "live"; }
   else { badge.textContent = "⚠ データ古い（アップローダー停止？）"; badge.className = "live stale"; }
 
-  const active = d.sessions.filter(s => s.active);
   const warned = d.staff.filter(s => s.warning);
   const overdueTasks = d.staff.flatMap(s => s.openTasks.filter(t => t.overdue).map(t => ({...t, staff: s.name})));
   const openTotal = d.staff.reduce((a,s) => a + s.openTotal, 0);
 
-  setKpi("kpiSess", active.length, active.length > 0 ? "ok" : "");
   setKpi("kpiWarn", warned.length, warned.length > 0 ? "alert" : "ok");
   setKpi("kpiOverdue", overdueTasks.length, overdueTasks.length > 0 ? "alert" : "ok");
   setKpi("kpiOpen", openTotal, "");
-
-  document.getElementById("sessSub").textContent =
-    `稼働 ${active.length}件（${d.activeWindowHours}時間以内の更新のみ稼働扱い）`;
-  const shown = d.sessions.slice(0, 8);
-  document.getElementById("sessList").innerHTML = shown.length === 0
-    ? '<div class="empty">セッション記録がありません</div>'
-    : shown.map(s => `
-      <div class="sess ${s.active ? "active" : "ended"}">
-        <div class="head">
-          <span class="dot"></span>
-          <span class="sid">${esc(s.sessionId.slice(0,8))}</span>
-          <span>${s.active ? "稼働中" : "停止"}</span>
-          <span class="staff-badge">${s.staff && s.staff.length ? "担当: " + s.staff.map(esc).join("・") : "担当: 推定不能"}</span>
-          <span class="age">更新 ${fmtAge(s.ageMinutes)}</span>
-        </div>
-        <div class="title">${esc(s.theme || s.title || "（テーマ未取得）")}</div>
-        <div class="work">直近指示: ${esc(s.latestWork)}</div>
-      </div>`).join("");
 
   taskIndex = {};
   d.staff.forEach(s => s.openTasks.forEach(t => { taskIndex[t.id] = {...t, staff: s.name}; }));
