@@ -6208,7 +6208,16 @@ function gaLoad(days, noCache) {
   document.body.appendChild(script);
 }
 
+// 旧Googleサイト（sites.google.com/view/ns-factory/）のパスか
+function gaIsLegacySite(path) {
+  return path.indexOf('/view/') === 0;
+}
+// ページパスから実際に開けるURLを組み立てる
+function gaPageUrl(path) {
+  return (gaIsLegacySite(path) ? 'https://sites.google.com' : 'https://you0810jmsdf.github.io') + path;
+}
 function gaIsOld(path) {
+  if (gaIsLegacySite(path)) return true;
   if (!path.endsWith('.html')) return false;
   if (GA_PAGE_NAMES[path]) return false;
   const dir = path.replace(/\/index\.html$/, '/').replace(/([^/])\.html$/, '$1/');
@@ -6252,7 +6261,7 @@ function gaRender(data) {
     const lastDLabel = lastD ? gaFmtDateLabel(lastD) : '–';
     const lastDColor = !lastD ? '#ccc' : (lastD < gaBuildDateAxis(7)[0] ? '#c8553d' : '#29613d');
     return '<tr>'
-      + '<td style="padding:8px 10px;border-bottom:1px solid #f0e6da"><a href="https://you0810jmsdf.github.io' + r.page + '" target="_blank" style="color:#5C3D2E;text-decoration:underline dotted;font-size:13px" title="' + r.page + '">' + name + '</a></td>'
+      + '<td style="padding:8px 10px;border-bottom:1px solid #f0e6da"><a href="' + gaPageUrl(r.page) + '" target="_blank" style="color:#5C3D2E;text-decoration:underline dotted;font-size:13px" title="' + gaPageUrl(r.page) + '">' + name + (gaIsLegacySite(r.page) ? ' <span style="font-size:10px;color:#a06a3a;border:1px solid #d8c2a8;border-radius:3px;padding:1px 4px;white-space:nowrap">旧Googleサイト</span>' : '') + '</a></td>'
       + '<td style="padding:4px 6px;border-bottom:1px solid #f0e6da"><div style="background:#f0e6da;border-radius:4px;height:6px;overflow:hidden"><div style="background:#6b3a1f;height:100%;width:' + pct + '%"></div></div></td>'
       + '<td style="padding:8px 10px;text-align:right;font-weight:700;border-bottom:1px solid #f0e6da">' + r.views.toLocaleString() + '</td>'
       + '<td style="padding:8px 10px;text-align:right;color:#8a6a4a;font-size:12px;border-bottom:1px solid #f0e6da">' + r.users.toLocaleString() + '</td>'
