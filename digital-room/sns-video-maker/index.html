@@ -933,6 +933,10 @@ canvas{
             </select>
             <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます。締めのCTAをONにすると、最後にN's factoryのロゴだけが静かに浮かびます。</p>
           </div>
+          <label class="check-row" for="endLogoCta">
+            <input id="endLogoCta" type="checkbox">
+            <span><strong>締めのロゴを最後に浮かび上がらせる</strong>動画の最後の約2.6秒、画面がすっと暗くなり金のフクロウとN's factoryのロゴが浮かび上がります。動画の長さは変わりません。プレビューと保存MP4の両方に入ります（フィルムシーン使用中は、フィルム側の締めコマがあるためこの演出は入りません）。</span>
+          </label>
           <div class="field" id="filmSpeedField" hidden>
             <label for="filmSpeed">フィルムの速さ（1コマの秒数）</label>
             <input id="filmSpeed" type="number" min="1" max="60" step="0.5" value="8">
@@ -1047,7 +1051,9 @@ const brandAssets = {
   wordmarkWhite: loadBrandAsset('./assets/nsfactory-wordmark-white.png'),
   wordmarkBlack: loadBrandAsset('./assets/nsfactory-wordmark-black.png'),
   owlWhite: loadBrandAsset('./assets/nsfactory-owl-white.png'),
-  owlBlack: loadBrandAsset('./assets/nsfactory-owl-black.png')
+  owlBlack: loadBrandAsset('./assets/nsfactory-owl-black.png'),
+  owlGold: loadBrandAsset('./assets/nsfactory-owl-gold.png'),
+  wordmarkGold: loadBrandAsset('./assets/nsfactory-wordmark-gold.png')
 };
 const SNS_VIDEO_DRIVE_API = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 const LIVE_WORKS_API = `${SNS_VIDEO_DRIVE_API}?api=products`;
@@ -1126,6 +1132,7 @@ const els = {
   filmSpeed: document.getElementById('filmSpeed'),
   filmCtaEnabled: document.getElementById('filmCtaEnabled'),
   filmSpeedAuto: document.getElementById('filmSpeedAuto'),
+  endLogoCta: document.getElementById('endLogoCta'),
   filmSpeedField: document.getElementById('filmSpeedField'),
   saveStats: document.getElementById('saveStats'),
   saveStatsSummary: document.getElementById('saveStatsSummary'),
@@ -3356,6 +3363,49 @@ function drawFrame(time){
     drawSlide(state.slide, state.progress, 1);
     els.currentScript.textContent = state.slide.narration || '';
   }
+  // 締めのロゴ（通常モードのみ。フィルムシーンはCTAコマが担うため重ねない）
+  if(els.endLogoCta && els.endLogoCta.checked) drawEndLogoCta(time);
+}
+
+/* ══ 締めのロゴCTA（2026-08-30 追加・オーバーレイ方式）══
+   動画の最後の約2.6秒に暗幕をかけ、金のフクロウ＋ワードマークを浮かび上がらせる。
+   タイムライン（総尺・セリフ音声の同期）には一切触らない安全設計。
+   drawFrame経由なのでプレビュー・全保存モードに自動で効く。 */
+const END_LOGO_CTA_SEC = 2.6;
+
+function drawEndLogoCta(time){
+  const total = totalDuration();
+  if(!total) return;
+  const start = Math.max(0, total - END_LOGO_CTA_SEC);
+  if(time < start) return;
+  const a = easeInOut(clamp((time - start) / 0.9, 0, 1));
+  if(a <= 0) return;
+  ctx.save();
+  // 暗幕（革の暗室調に寄せた焦げ茶がかった黒）
+  ctx.fillStyle = `rgba(10,8,6,${(0.62 * a).toFixed(3)})`;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // 「浮かび上がる」動き: フェードしながらわずかに上へ
+  const rise = (1 - a) * canvas.height * 0.02;
+  ctx.globalAlpha = a;
+  const owl = brandAssets.owlGold;
+  if(owl && owl.complete && owl.naturalWidth){
+    const oh = Math.round(canvas.height * 0.155);
+    const ow = Math.round(oh * owl.naturalWidth / owl.naturalHeight);
+    ctx.drawImage(owl, (canvas.width - ow) / 2, Math.round(canvas.height * 0.355 + rise), ow, oh);
+  }
+  const wm = brandAssets.wordmarkGold;
+  if(wm && wm.complete && wm.naturalWidth){
+    const wh = Math.round(canvas.height * 0.048);
+    const ww = Math.round(wh * wm.naturalWidth / wm.naturalHeight);
+    ctx.drawImage(wm, (canvas.width - ww) / 2, Math.round(canvas.height * 0.545 + rise), ww, wh);
+  }else if(!owl || !owl.complete || !owl.naturalWidth){
+    // 両方とも未読込のときだけ文字で代替（真っ暗な締めを防ぐ）
+    ctx.fillStyle = '#D9BE8C';
+    ctx.font = canvasFont(600, Math.round(canvas.height * 0.032));
+    ctx.textAlign = 'center';
+    ctx.fillText("N's factory", canvas.width / 2, Math.round(canvas.height * 0.5 + rise));
+  }
+  ctx.restore();
 }
 
 function drawTransition(from, to, p){
@@ -6305,6 +6355,13 @@ els.motionIntensity.addEventListener('change', () => {
   drawSelectedOrFirstFrame();
   const label = els.motionIntensity.options[els.motionIntensity.selectedIndex].textContent;
   setLog(`動きの強さを「${label}」にしました。プレビューと保存MP4の両方に反映されます。`);
+});
+els.endLogoCta.addEventListener('change', () => {
+  resetRecordingOutput();
+  drawSelectedOrFirstFrame();
+  setLog(els.endLogoCta.checked
+    ? '締めのロゴをONにしました。動画の最後の約2.6秒に金のフクロウが浮かび上がります（フィルムシーン使用中はフィルム側の締めコマが優先されます）。'
+    : '締めのロゴをOFFにしました。');
 });
 els.filmStripMode.addEventListener('change', () => {
   els.filmSpeedField.hidden = !filmStripActive();
