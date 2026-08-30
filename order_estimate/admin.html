@@ -1693,7 +1693,7 @@ tr.row-out-stock td{
       <div id="stats-ranking-wrap" style="display:none;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div style="font-size:13px;font-weight:700;color:#6b3a1f;border-left:3px solid #d4a96a;padding-left:8px" id="stats-ranking-title">商品閲覧ランキング</div>
-          <div style="flex:1 1 100%;font-size:11px;color:#8a6a4a;line-height:1.7;order:9">PVは作家自身の閲覧が多く混ざるため、既定は<b>VV（実際に見た人数）順</b>です。PVに対してVVが極端に少ない行（同じ人が何度も開いている）には印を付けています。</div>
+          <div style="flex:1 1 100%;font-size:11px;color:#8a6a4a;line-height:1.7;order:9">商品IDをクリックすると<b>編集画面</b>、商品名をクリックすると<b>作品ページ</b>が開きます。PVは作家自身の閲覧が多く混ざるため、既定は<b>VV（実際に見た人数）順</b>です。PVに対してVVが極端に少ない行（同じ人が何度も開いている）には印を付けています。</div>
           <div style="display:flex;gap:6px">
             <button type="button" id="stats-sort-vv" style="font-size:11px;padding:4px 10px;border:1px solid #d4a96a;border-radius:6px;background:#d4a96a;color:#fff;cursor:pointer;font-weight:700">VV順</button>
             <button type="button" id="stats-sort-pv" style="font-size:11px;padding:4px 10px;border:1px solid #d4a96a;border-radius:6px;background:#fff;color:#6b3a1f;cursor:pointer;font-weight:700">PV順</button>
@@ -6730,8 +6730,8 @@ function statsRenderRanking() {
           : '<span style="font-size:11px;color:#aaa">販売中</span>';
         return `<tr>
           <td style="padding:6px 8px;text-align:center;font-weight:700;color:#d4a96a;border-bottom:1px solid #efe3d7">${i+1}</td>
-          <td style="padding:6px 8px;font-size:12px;font-family:monospace;color:#6b3a1f;border-bottom:1px solid #efe3d7">${statsH(r.id||'—')}</td>
-          <td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${statsH(r.name)}</td>
+          <td style="padding:6px 8px;font-size:12px;font-family:monospace;border-bottom:1px solid #efe3d7">${r.id ? `<a href="../register.html?edit=${encodeURIComponent(r.id)}" target="_blank" title="商品情報を編集する" style="color:#6b3a1f;text-decoration:underline dotted">${statsH(r.id)}</a>` : '<span style="color:#bbb">—</span>'}</td>
+          <td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${r.id ? `<a href="../works.html?id=${encodeURIComponent(r.id)}" target="_blank" title="作品ページを開く" style="color:#5C3D2E;text-decoration:none">${statsH(r.name)}</a>` : statsH(r.name)}</td>
           <td style="padding:6px 8px;text-align:right;font-weight:700;border-bottom:1px solid #efe3d7">${r.count}</td>
           <td style="padding:6px 8px;text-align:right;border-bottom:1px solid #efe3d7">${r.vv||0}${selfMark}</td>
           <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #efe3d7">${deltaCell}</td>
@@ -6833,7 +6833,9 @@ function statsRenderUnseen() {
     + (total ? '（掲載' + total + '件中 ' + pct + '%）' : '');
   listEl.innerHTML = statsUnseenData.map(u =>
     '<div style="display:flex;gap:10px;align-items:center;padding:6px 4px;border-bottom:1px solid #f3e9dd;font-size:12px">'
-    + '<span style="font-family:monospace;color:#8a6a4a;flex:0 0 110px">' + statsH(u.id || '—') + '</span>'
+    + '<span style="font-family:monospace;flex:0 0 110px">'
+    + (u.id ? '<a href="../register.html?edit=' + encodeURIComponent(u.id) + '" target="_blank" title="商品情報を編集する" style="color:#8a6a4a;text-decoration:underline dotted">' + statsH(u.id) + '</a>' : '—')
+    + '</span>'
     + '<a href="https://you0810jmsdf.github.io/ns-factory/works.html?id=' + encodeURIComponent(u.id || '')
     + '" target="_blank" style="flex:1;color:#5C3D2E;text-decoration:underline dotted">' + statsH(u.name || '') + '</a>'
     + (u.soldout ? '<span style="flex:0 0 auto;font-size:10px;font-weight:700;color:#c00">SOLDOUT</span>' : '')
