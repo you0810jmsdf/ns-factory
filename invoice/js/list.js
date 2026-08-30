@@ -129,6 +129,11 @@
         ? `<a href="../orderprogress.html?focus=${encodeURIComponent(doc.relatedOrderNumber)}" target="_blank" class="btn btn-ghost btn-sm" title="関連オーダー: ${escHtml(doc.relatedOrderNumber)}">📋 ${escHtml(doc.relatedOrderNumber)}</a>`
         : '';
 
+      // オーダー番号をクリップボードへコピー（見積書・請求書作成時の入力を省く）
+      const orderCopyBtn = doc.relatedOrderNumber
+        ? `<button class="btn btn-ghost btn-sm" onclick="copyOrderNumber('${escHtml(doc.relatedOrderNumber)}')" title="オーダー番号 ${escHtml(doc.relatedOrderNumber)} をコピー">&#x29C9; コピー</button>`
+        : '';
+
       return `<tr>
         <td><a href="editor.html?id=${encodeURIComponent(doc.number)}&type=${doc.type}" style="color:var(--color-accent-dark);font-weight:600;">${escHtml(doc.number)}</a></td>
         <td>${escHtml(typeLabel)}</td>
@@ -141,6 +146,7 @@
         <td style="white-space:nowrap;">
           <a href="editor.html?id=${encodeURIComponent(doc.number)}&type=${doc.type}" class="btn btn-ghost btn-sm">編集</a>
           ${orderBtn}
+          ${orderCopyBtn}
           ${promoteBtn}
           <button class="btn btn-danger btn-sm" onclick="deleteDoc('${escHtml(doc.number)}')">削除</button>
         </td>
@@ -175,6 +181,33 @@
       })
       .catch(function (err) { showToast('昇格エラー: ' + err.message, 'error'); });
   };
+
+  // ---- オーダー番号のコピー ----
+  window.copyOrderNumber = function (number) {
+    copyText(number)
+      .then(function () { showToast('コピーしました（' + number + '）', 'success'); })
+      .catch(function () { showToast('コピーできませんでした: ' + number, 'error'); });
+  };
+
+  // navigator.clipboard は https / localhost でのみ使える。
+  // それ以外（file:// で開いた場合など）は execCommand へ退避する。
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      ok ? resolve() : reject(new Error('copy failed'));
+    });
+  }
 
   // ---- UI ヘルパー ----
   function setLoading(flag) {

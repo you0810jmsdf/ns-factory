@@ -69,6 +69,9 @@
 
     // 関連受付番号 入力時にリンク更新
     document.getElementById('doc-related-order').addEventListener('input', updateOrderProgressLink);
+
+    // 関連受付番号のコピー
+    document.getElementById('btn-copy-order').addEventListener('click', copyRelatedOrderNumber);
   });
 
   // ---- タイトル更新 ----
@@ -548,9 +551,12 @@
   }
 
   // ---- オーダー進捗ページへのリンク更新 ----
+  // コピーボタンの出し分けもここで行う（番号が空のときは両方隠す）
   function updateOrderProgressLink() {
     const v = (document.getElementById('doc-related-order').value || '').trim();
     const link = document.getElementById('link-to-order-progress');
+    const copyBtn = document.getElementById('btn-copy-order');
+    if (copyBtn) copyBtn.style.display = v ? '' : 'none';
     if (!link) return;
     if (v) {
       link.href = '../orderprogress.html?focus=' + encodeURIComponent(v);
@@ -559,6 +565,35 @@
       link.href = '#';
       link.style.display = 'none';
     }
+  }
+
+  // ---- オーダー番号のコピー ----
+  function copyRelatedOrderNumber() {
+    const v = (document.getElementById('doc-related-order').value || '').trim();
+    if (!v) return;
+    copyText(v)
+      .then(function () { showToast('コピーしました（' + v + '）', 'success'); })
+      .catch(function () { showToast('コピーできませんでした: ' + v, 'error'); });
+  }
+
+  // navigator.clipboard は https / localhost でのみ使える。
+  // それ以外（file:// で開いた場合など）は execCommand へ退避する。
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      ok ? resolve() : reject(new Error('copy failed'));
+    });
   }
 
   function buildDetails() {
