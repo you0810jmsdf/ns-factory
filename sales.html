@@ -167,7 +167,7 @@ tr.row-canceled td { opacity: .45; }
     <input type="search" id="filter-text" placeholder="顧客名・商品名で絞り込み" oninput="renderOrders()" style="min-width:200px">
   </div>
 
-  <div id="loading"><div class="spinner"></div>Gmailから受注データを集計中…（初回・強制更新は30秒ほどかかります）</div>
+  <div id="loading"><div class="spinner"></div>Gmailから集計中…（毎朝の作り置きがあれば数秒。作り直すときは1〜2分かかります）</div>
   <div id="error-msg"></div>
 
   <div class="chart-wrap" id="chart-wrap" style="display:none">
@@ -334,13 +334,32 @@ function showError(msg) {
 
 function yen(v) { return "¥" + (v || 0).toLocaleString(); }
 
+/**
+ * 集計がいつのものかを1行で出す。
+ * 毎朝6時に自動集計しているので、そこから何日空いているかが分かるようにしておく
+ * （自動更新が止まっても画面は普通に出てしまうため、気付ける手がかりを残す）。
+ */
+function setMeta(data, tail) {
+  var el = document.getElementById("meta");
+  var note, warn = false;
+  if (data.daily) {
+    var age = data.ageDays;
+    if (data.rebuilt) note = "（今日はじめて開いたので集計し直しました）";
+    else if (age === 0) note = "（今朝の自動集計）";
+    else if (age === 1) note = "（昨日の集計）";
+    else { note = "（" + age + "日前の集計。毎朝の自動更新が止まっている可能性があります）"; warn = true; }
+  } else {
+    note = data.cached ? "（15分以内の再表示）" : "（いま集計しました）";
+  }
+  el.textContent = "集計時点: " + data.generatedAt + note + " ／ " + tail;
+  el.style.color = warn ? "var(--red)" : "";
+}
+
 function render(data) {
   var months = data.months;
   var channels = data.channels.slice().sort(function (a, b) { return b.totalCount - a.totalCount; });
 
-  document.getElementById("meta").textContent =
-    "集計時点: " + data.generatedAt + (data.cached ? "（キャッシュ表示・15分以内）" : "（再集計済み）")
-    + " ／ 期間: " + months[0] + " 〜 " + months[months.length - 1] + "（" + months.length + "ヶ月）";
+  setMeta(data, "期間: " + months[0] + " 〜 " + months[months.length - 1] + "（" + months.length + "ヶ月）");
   document.getElementById("channel-table-header").textContent = "チャネル別（直近" + months.length + "ヶ月）";
   document.querySelector(".summary-cards .card .label").textContent = "受注件数（" + months.length + "ヶ月）";
   document.querySelectorAll(".summary-cards .card .label")[1].textContent = "売上金額（" + months.length + "ヶ月・解析分）";
@@ -623,9 +642,7 @@ function renderOrders() {
   staleEl.style.color = staleCount ? "#D6B48C" : "var(--text-sub)";
   document.getElementById("ord-done").textContent = doneCount.toLocaleString() + " 件";
 
-  document.getElementById("meta").textContent =
-    "集計時点: " + ordersData.generatedAt + (ordersData.cached ? "（キャッシュ表示・15分以内）" : "（再集計済み）")
-    + " ／ 直近" + ordersData.monthsBack + "ヶ月 ／ 表示 " + rows.length + " 件";
+  setMeta(ordersData, "直近" + ordersData.monthsBack + "ヶ月 ／ 表示 " + rows.length + " 件");
 
   if (ordersView === "order") renderOrderView(rows);
   else if (ordersView === "customer") renderCustomerView(rows);
