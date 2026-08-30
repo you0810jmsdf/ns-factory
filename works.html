@@ -19,7 +19,12 @@
   <meta name="twitter:title" content="作品集 | N's factory">
   <meta name="twitter:description" content="N's factory のシステム手帳・革小物の作品集。オーダーメイド制作例を写真でご覧いただけます。">
   <meta name="twitter:image" content="https://you0810jmsdf.github.io/ns-factory/assets/logo.png">
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+  <script>
+// 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
+// GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}

@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>管理画面 | N's factory</title>
 <!-- Google tag (gtag.js) -->
+<script>
+// 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
+// GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -1665,6 +1670,7 @@ tr.row-out-stock td{
       <div id="stats-exclude-wrap" style="background:#fffdf6;border:1px solid #eadccf;border-radius:12px;padding:12px 14px;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="font-size:12px;font-weight:700;color:#6b3a1f">👤 自分の閲覧を集計から外す</div>
+          <div style="flex:1 1 100%;font-size:11px;color:#8a6a4a;line-height:1.7;order:9">除外すると、作品ページのログに加えて<b>この端末のアクセス解析（GA4）の計測も止まります</b>。※過去のデータは変わりません。※端末ごとの設定なので、スマホでも使う場合はその端末でも操作してください。</div>
           <button type="button" id="stats-myvid-btn" style="padding:5px 12px;border:1px solid #d8c2a8;border-radius:8px;background:#fff8f1;color:#6b3a1f;font-size:12px;font-weight:700;cursor:pointer">この端末のIDを表示</button>
           <span id="stats-myvid" style="font-size:12px;font-family:monospace;color:#8a6a4a"></span>
           <button type="button" id="stats-myvid-add" style="display:none;padding:5px 12px;border:0;border-radius:8px;background:#6b3a1f;color:#fff;font-size:12px;font-weight:700;cursor:pointer">この端末を除外する</button>
@@ -6757,6 +6763,17 @@ function statsRenderExcluded() {
 }
 
 function statsSetExclude(vid, action) {
+  // この端末のGA4計測も同時に止める／再開する。
+  // アクセス解析（GA4）と作品ページログは別系統なので、両方を揃える必要がある。
+  try {
+    let myVid = '';
+    try { myVid = localStorage.getItem('nsf_vid') || ''; } catch (e) {}
+    if (myVid && myVid === vid) {
+      if (action === 'add') localStorage.setItem('nsf_ga_optout', '1');
+      else localStorage.removeItem('nsf_ga_optout');
+    }
+  } catch (e) { /* localStorage が使えない環境では何もしない */ }
+
   fetch(GAS_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
