@@ -240,7 +240,13 @@
   .grp-fold > summary::-webkit-details-marker { display: none; }
   .grp-fold > summary::before { content: '▶'; font-size: 10px; color: var(--muted); }
   .grp-fold[open] > summary::before { content: '▼'; }
-  .gbadge { font-size: 11px; font-weight: 600; background: rgba(255,255,255,.25); padding: 2px 10px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .gbadge { font-size: 11px; font-weight: 600; background: rgba(255,255,255,.25); color: #fff; border: 0; padding: 3px 12px; border-radius: 999px; margin-left: 6px; vertical-align: middle; cursor: pointer; font-family: inherit; }
+  .gbadge:active { background: rgba(255,255,255,.4); }
+  .gswitch { background: #fff; border-bottom: 1px solid var(--line); padding: 14px 16px; }
+  .gswitch-title { font-size: 14px; font-weight: 700; color: var(--blue); margin-bottom: 6px; }
+  .gswitch-now { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .gswitch-foot { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.8; }
+  .gswitch-foot .btn { margin-top: 6px; margin-right: 6px; font-size: 12px; padding: 7px 14px; }
   .trial { background: #fff8e1; border-bottom: 1px solid #f0d9a0; color: #7a5b00; font-size: 12px; line-height: 1.7; padding: 10px 16px; text-align: center; }
   .join-row { display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 8px; flex-wrap: wrap; }
   .join-row input { padding: 8px 10px; border: 1px solid #e0cba0; border-radius: 8px; font-size: 16px; max-width: 160px; }
@@ -329,7 +335,7 @@
 <body>
 <div class="topbar" id="topbar">
   <header>
-    <h1>🛒 コストコ共同購入 <span id="groupBadge" class="gbadge" style="display:none"></span></h1>
+    <h1>🛒 コストコ共同購入 <button id="groupBadge" class="gbadge" onclick="toggleGroupSwitch()" title="グループを切り替える"></button></h1>
     <div class="sub">欲しい商品をチェックするだけ。まとめて買ってきます</div>
   </header>
 
@@ -358,6 +364,22 @@
 <!-- ヘルプ（内容の正本は help-data.js。ここには文章を書かない） -->
 <div id="helpModal" class="prod-modal help-modal"></div>
 
+<!-- グループの切り替え（上のバッジをタップで開く） -->
+<div id="groupSwitch" class="gswitch" style="display:none">
+  <div class="gswitch-title">グループを切り替える</div>
+  <div class="gswitch-now">いま: <b id="gswitchNow"></b></div>
+  <div class="join-row">
+    <input id="gswitchPass" type="text" placeholder="移りたいグループの合言葉" autocomplete="off"
+           autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button class="btn pub" onclick="switchByPass()">切り替える</button>
+  </div>
+  <div id="gswitchMsg" class="join-msg"></div>
+  <div class="gswitch-foot">
+    合言葉は取りまとめる人にお聞きください（運営キー・とりまとめ役の鍵も使えます）<br>
+    <button class="btn ghost" onclick="goTrial()">おためしに戻る</button>
+    <button class="btn ghost" onclick="toggleGroupSwitch()">閉じる</button>
+  </div>
+</div>
 <div id="trialBanner" class="trial" style="display:none">
   <b>おためし表示です。</b>ここでチェックしても買い出しには反映されません。<br>
   <div class="join-row">
@@ -946,15 +968,61 @@ function sendFeedback() {
   }).apiSendFeedback(GROUP_ID, $('fbKind').value, body, $('fbContact').value);
 }
 
+// グループ切り替えパネルの開閉（上のバッジをタップ）
+function toggleGroupSwitch() {
+  var el = $('groupSwitch');
+  if (!el) return;
+  var open = el.style.display === 'none';
+  el.style.display = open ? '' : 'none';
+  if (open) {
+    var now = $('gswitchNow');
+    if (now && state.data) now.textContent = state.data.groupName || state.data.groupId;
+    $('gswitchMsg').textContent = '';
+    $('gswitchPass').value = '';
+    setTimeout(function () { $('gswitchPass').focus(); }, 100);
+  }
+}
+
+// 合言葉で別のグループへ移る。運営キー・とりまとめ役の鍵もここで使える。
+function switchByPass() {
+  var pw = $('gswitchPass').value.trim();
+  var msg = $('gswitchMsg');
+  if (!pw) { msg.style.color = 'var(--red)'; msg.textContent = '合言葉を入れてください'; return; }
+  msg.style.color = 'var(--muted)';
+  msg.textContent = '確認しています…';
+  var tag = localStorage.getItem('cgb_tag');
+  if (!tag) { tag = String(Math.random()).slice(2); localStorage.setItem('cgb_tag', tag); }
+  google.script.run.withSuccessHandler(function (r) {
+    msg.style.color = '#137333';
+    if (r.redirect) {
+      msg.textContent = (r.role === 'admin' ? '運営モードで開きます…' : r.name + ' のとりまとめ役として開きます…');
+      reopenAs(String(r.redirect).split('?')[1] || '', msg.textContent);
+      return;
+    }
+    localStorage.setItem('cgb_pass_' + r.groupId, r.pass);
+    msg.textContent = r.name + ' に切り替えます…';
+    reopenAs('g=' + encodeURIComponent(r.groupId), r.name + ' に切り替えます');
+  }).withFailureHandler(function (e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = e.message;
+  }).apiJoinByPass(pw, tag);
+}
+
+// おためし（体験用）に戻る
+function goTrial() {
+  if (!confirm('おためし表示に戻りますか？（いまのグループの注文は残ります）')) return;
+  reopenAs('g=guest', 'おためしに戻ります');
+}
+
 function updateGroupBadge() {
   var el = $('groupBadge');
   if (!el || !state.data) return;
-  if (state.data.groupId && state.data.groupId !== 'main') {
-    el.textContent = state.data.groupName;
-    el.style.display = '';
-  } else {
-    el.style.display = 'none';
-  }
+  // ⛔ バッジを隠さないこと。いまどのグループにいるかが分からず、
+  //    別グループで注文してしまう事故につながる（2026-08-30 事業主報告）。
+  el.textContent = (state.data.groupName || state.data.groupId) + ' ▾';
+  el.style.display = '';
+  var now = $('gswitchNow');
+  if (now) now.textContent = state.data.groupName || state.data.groupId;
   // おためしグループには「体験用」であることを常に出す（実際の買い出しと混同させない）
   var tb = $('trialBanner');
   if (tb) {
