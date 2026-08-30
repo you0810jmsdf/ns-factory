@@ -806,6 +806,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn active" type="button" data-admin-tab="calendar" data-admin-cat="keiei" role="tab" aria-selected="true">📅 幕僚計画</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="sales" data-admin-cat="keiei" role="tab" aria-selected="false">💹 売上分析</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="customers" data-admin-cat="keiei" role="tab" aria-selected="false">👥 顧客マスタ</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="favorites" data-admin-cat="keiei" role="tab" aria-selected="false">⭐ お気に入り</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="waitlist" data-admin-cat="keiei" role="tab" aria-selected="false">🔔 再製作待ち</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="receipt-checklist" data-admin-cat="keiei" role="tab" aria-selected="false">🧾 証憑チェックリスト</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
@@ -1748,6 +1749,38 @@ tr.row-out-stock td{
           <tbody id="stats-orders-rows"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- お気に入りタブ（2026-08-31 追加）
+         minne・Creemaのお気に入り通知メールを集計する。
+         ニックネームは実在ユーザーのアカウント名なので管理画面の中だけで扱い、公開ページには出さない。 -->
+    <div class="panel favorites-section admin-section-hidden" id="favoritesPanel">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#3d1a08;margin-bottom:6px">⭐ お気に入り</div>
+          <div style="font-size:12px;color:#7d644d;line-height:1.6">minne・Creemaから届く通知メールの集計です。<b>作品名をクリックすると各サイトの商品ページが開きます</b>（登録情報の確認・修正用）。</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <select id="fav-days" style="padding:6px 10px;border:1px solid #d8c2a8;border-radius:8px;font-size:12px">
+            <option value="30">直近30日</option>
+            <option value="90" selected>直近90日</option>
+            <option value="180">直近180日</option>
+            <option value="365">直近1年</option>
+          </select>
+          <button type="button" id="fav-reload" style="padding:6px 12px;border:1px solid #d8c2a8;border-radius:8px;background:#fff8f1;color:#6b3a1f;font-size:12px;font-weight:700;cursor:pointer">🔄 最新に更新</button>
+        </div>
+      </div>
+
+      <div id="fav-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+      <div id="fav-msg" style="font-size:12px;color:#8a6a4a;margin-bottom:10px">読み込み中…（Gmailを集計するため20秒ほどかかります）</div>
+
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button type="button" class="fav-view-btn" data-fav-view="items" style="padding:5px 12px;border:1px solid #d4a96a;border-radius:8px;background:#d4a96a;color:#fff;font-size:12px;font-weight:700;cursor:pointer">作品別ランキング</button>
+        <button type="button" class="fav-view-btn" data-fav-view="nicks" style="padding:5px 12px;border:1px solid #d4a96a;border-radius:8px;background:#fff;color:#6b3a1f;font-size:12px;font-weight:700;cursor:pointer">お客様別</button>
+        <button type="button" class="fav-view-btn" data-fav-view="matrix" style="padding:5px 12px;border:1px solid #d4a96a;border-radius:8px;background:#fff;color:#6b3a1f;font-size:12px;font-weight:700;cursor:pointer">マトリクス</button>
+      </div>
+
+      <div id="fav-body" style="overflow:auto;max-height:560px"></div>
     </div>
 
     <!-- 再製作待ちタブ（2026-08-29 追加）
@@ -5943,7 +5976,7 @@ async function saveJhcsStudent() {
 }
 
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'jhcs-dl': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'jhcs-dl': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics',
@@ -5971,7 +6004,8 @@ function setAdminTab(tab) {
   const isChatlog = tab === 'chatlog';
   const isJhcsDl = tab === 'jhcs-dl';
   const isWaitlist = tab === 'waitlist';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist;
+  const isFavorites = tab === 'favorites';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -6035,8 +6069,11 @@ function setAdminTab(tab) {
   document.querySelectorAll('.waitlist-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isWaitlist);
   });
+  document.querySelectorAll('.favorites-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isFavorites);
+  });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -6088,6 +6125,9 @@ function setAdminTab(tab) {
   if (isWaitlist) {
     loadWaitlist();
   }
+  if (isFavorites) {
+    loadFavorites();
+  }
   document.querySelectorAll('[data-admin-tab]').forEach(btn => {
     const active = btn.dataset.adminTab === tab;
     btn.classList.toggle('active', active);
@@ -6117,6 +6157,8 @@ function setAdminTab(tab) {
       ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
       : isLeather
       ? '革の残量を半裁基準の%で入力します。0%=お取り寄せ／20%以下=残りわずか（店長アラート）／80%以上=入荷したて。反映するとショールーム接客に即適用されます。'
+      : isFavorites
+      ? 'minne・Creemaから届くお気に入り通知メールを集計しています。作品名をクリックすると各サイトの商品ページが開きます。'
       : isWaitlist
       ? '売り切れ品に「再製作されたら知らせて」と連絡先を残したお客様の一覧です。作れるかどうかと納期の目安を返信してください。'
       : isStats
@@ -6194,6 +6236,178 @@ function loadSysAlerts() {
   script.onerror = function() { if (script.parentNode) document.body.removeChild(script); };
   document.body.appendChild(script);
 }
+
+// ===== お気に入り（2026-08-31 追加） =====
+// minne・Creemaの通知メールを集計する。データ源は売上ダッシュボードGAS。
+// ニックネームは実在ユーザーのアカウント名なので、この画面の中だけで扱う。
+const FAV_GAS_URL = 'https://script.google.com/macros/s/AKfycbxgpDhSfNsFQvyLPEwdzKIlFDm3JZ6epOhmlIEROuBLJRQ-67fdm7e4QpZC2C7rrI9xrg/exec';
+let favData = null;
+let favView = 'items';
+
+function favSiteChip(site) {
+  const color = site === 'minne' ? '#e35b5b' : '#2f8f6f';
+  return '<span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700;color:#fff;background:' + color + '">' + wlH(site) + '</span>';
+}
+
+function loadFavorites(force) {
+  const key = getAdminKey();
+  if (!key) return;
+  const daysEl = document.getElementById('fav-days');
+  const days = daysEl ? daysEl.value : '90';
+  const msg = document.getElementById('fav-msg');
+  if (msg) msg.textContent = '読み込み中…（Gmailを集計するため20秒ほどかかります）';
+  const cbName = 'favCb' + Date.now();
+  const script = document.createElement('script');
+  script.src = FAV_GAS_URL + '?api=favorites&key=' + encodeURIComponent(key)
+             + '&days=' + encodeURIComponent(days) + (force ? '&refresh=1' : '') + '&callback=' + cbName;
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (script.parentNode) document.body.removeChild(script);
+    if (!data || data.error) {
+      if (msg) msg.textContent = '読み込みに失敗しました' + (data && data.error ? '（' + data.error + '）' : '');
+      return;
+    }
+    favData = data;
+    favRender();
+  };
+  script.onerror = function() {
+    if (script.parentNode) document.body.removeChild(script);
+    if (msg) msg.textContent = '読み込みに失敗しました。';
+  };
+  document.body.appendChild(script);
+}
+
+function favCard(label, value, color) {
+  return '<div style="background:#fff8f1;border:1px solid #eadccf;border-radius:10px;padding:12px 14px">'
+    + '<div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">' + wlH(label) + '</div>'
+    + '<div style="font-size:22px;font-weight:800;color:' + color + '">' + Number(value || 0).toLocaleString() + '</div></div>';
+}
+
+function favRender() {
+  if (!favData) return;
+  const d = favData;
+  const bySite = d.bySite || {};
+  document.getElementById('fav-summary').innerHTML =
+      favCard('お気に入り合計', d.total, '#6b3a1f')
+    + favCard('minne', bySite.minne, '#e35b5b')
+    + favCard('Creema', bySite.Creema, '#2f8f6f')
+    + favCard('お客様（minne）', (d.nicks || []).length, '#8a6a4a');
+
+  document.getElementById('fav-msg').textContent =
+    '直近' + d.days + '日 ／ 集計時刻 ' + (d.updatedAt || '') + (d.cached ? '（キャッシュ）' : '');
+
+  document.querySelectorAll('.fav-view-btn').forEach(function(b) {
+    const on = b.dataset.favView === favView;
+    b.style.background = on ? '#d4a96a' : '#fff';
+    b.style.color = on ? '#fff' : '#6b3a1f';
+  });
+
+  const body = document.getElementById('fav-body');
+  if (favView === 'items') body.innerHTML = favItemsHtml(d.items || []);
+  else if (favView === 'nicks') body.innerHTML = favNicksHtml(d.nicks || []);
+  else body.innerHTML = favMatrixHtml(d.nicks || []);
+}
+
+function favItemsHtml(items) {
+  if (!items.length) return '<div style="padding:20px;text-align:center;color:#8a6a4a">データがありません</div>';
+  const th = 'padding:6px 8px;font-size:11px;color:#6b3a1f';
+  const td = 'padding:6px 8px;border-bottom:1px solid #efe3d7';
+  return '<table style="width:100%;border-collapse:collapse;font-size:13px">'
+    + '<thead><tr style="background:#f7ede2">'
+    + '<th style="' + th + ';text-align:center;width:40px">#</th>'
+    + '<th style="' + th + ';text-align:left;width:70px">サイト</th>'
+    + '<th style="' + th + ';text-align:left">作品</th>'
+    + '<th style="' + th + ';text-align:right;width:60px">件数</th>'
+    + '<th style="' + th + ';text-align:right;width:60px">人数</th>'
+    + '<th style="' + th + ';text-align:right;width:90px">最終</th>'
+    + '</tr></thead><tbody>'
+    + items.map(function(it, i) {
+        return '<tr>'
+          + '<td style="' + td + ';text-align:center;color:#d4a96a;font-weight:700">' + (i + 1) + '</td>'
+          + '<td style="' + td + '">' + favSiteChip(it.site) + '</td>'
+          + '<td style="' + td + '">'
+          + (it.url
+              ? '<a href="' + wlH(it.url) + '" target="_blank" rel="noopener" title="' + wlH(it.site) + 'の商品ページを開く" style="color:#5C3D2E;text-decoration:underline dotted">' + wlH(it.item) + '</a>'
+              : wlH(it.item))
+          + '</td>'
+          + '<td style="' + td + ';text-align:right;font-weight:700">' + it.count + '</td>'
+          + '<td style="' + td + ';text-align:right;color:#8a6a4a">' + (it.people ? it.people : '—') + '</td>'
+          + '<td style="' + td + ';text-align:right;font-size:12px;color:#8a6a4a">' + wlH(it.last || '') + '</td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table>';
+}
+
+function favNicksHtml(nicks) {
+  if (!nicks.length) return '<div style="padding:20px;text-align:center;color:#8a6a4a">minneの通知にはニックネームが入りますが、Creemaの通知には含まれません。</div>';
+  const th = 'padding:6px 8px;font-size:11px;color:#6b3a1f';
+  const td = 'padding:6px 8px;border-bottom:1px solid #efe3d7';
+  return '<div style="font-size:11px;color:#8a6a4a;margin-bottom:8px">同じお客様が繰り返しお気に入りしている作品が分かります。<b>公開ページには一切出していません。</b></div>'
+    + '<table style="width:100%;border-collapse:collapse;font-size:13px">'
+    + '<thead><tr style="background:#f7ede2">'
+    + '<th style="' + th + ';text-align:left;width:70px">サイト</th>'
+    + '<th style="' + th + ';text-align:left;width:150px">お客様</th>'
+    + '<th style="' + th + ';text-align:right;width:60px">件数</th>'
+    + '<th style="' + th + ';text-align:left">お気に入りした作品</th>'
+    + '<th style="' + th + ';text-align:right;width:90px">最終</th>'
+    + '</tr></thead><tbody>'
+    + nicks.map(function(nk) {
+        return '<tr>'
+          + '<td style="' + td + '">' + favSiteChip(nk.site) + '</td>'
+          + '<td style="' + td + ';font-weight:700;color:#6b3a1f">' + wlH(nk.nick) + '</td>'
+          + '<td style="' + td + ';text-align:right;font-weight:700">' + nk.count + '</td>'
+          + '<td style="' + td + ';font-size:12px;color:#5C3D2E;line-height:1.7">' + (nk.items || []).map(function(x) { return wlH(x); }).join('、') + '</td>'
+          + '<td style="' + td + ';text-align:right;font-size:12px;color:#8a6a4a">' + wlH(nk.last || '') + '</td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table>';
+}
+
+function favMatrixHtml(nicks) {
+  if (!nicks.length) return '<div style="padding:20px;text-align:center;color:#8a6a4a">マトリクスに出せるデータがありません（minneのみ対応）。</div>';
+  // 2人以上が見ている作品だけを列にする。1人だけの作品まで並べると横に伸びすぎるため。
+  const count = {};
+  nicks.forEach(function(nk) {
+    (nk.items || []).forEach(function(it) { count[it] = (count[it] || 0) + 1; });
+  });
+  const cols = Object.keys(count).filter(function(k) { return count[k] >= 2; })
+    .sort(function(a, b) { return count[b] - count[a]; });
+  if (!cols.length) return '<div style="padding:20px;text-align:center;color:#8a6a4a">複数のお客様が見ている作品はまだありません。</div>';
+  const rows = nicks.filter(function(nk) {
+    return (nk.items || []).some(function(it) { return cols.indexOf(it) !== -1; });
+  });
+  return '<div style="font-size:11px;color:#8a6a4a;margin-bottom:8px">2人以上が見ている作品だけを並べています（★＝その方がお気に入り済み）。列が埋まっている作品ほど需要があります。</div>'
+    + '<table style="border-collapse:collapse;font-size:12px">'
+    + '<thead><tr>'
+    + '<th style="position:sticky;left:0;background:#f7ede2;padding:6px 8px;text-align:left;font-size:11px;color:#6b3a1f;min-width:120px;z-index:2">お客様</th>'
+    + cols.map(function(c) {
+        return '<th style="background:#f7ede2;padding:6px 4px;font-size:10px;color:#6b3a1f;font-weight:700;white-space:nowrap;height:130px;vertical-align:bottom">'
+          + '<div style="writing-mode:vertical-rl;max-height:110px;overflow:hidden">' + wlH(c) + '</div>'
+          + '<div style="font-size:9px;color:#a89880;text-align:center;margin-top:2px">' + count[c] + '</div></th>';
+      }).join('')
+    + '</tr></thead><tbody>'
+    + rows.map(function(nk) {
+        return '<tr>'
+          + '<td style="position:sticky;left:0;background:#fff;padding:6px 8px;font-weight:700;color:#6b3a1f;border-bottom:1px solid #efe3d7;white-space:nowrap">' + wlH(nk.nick) + '</td>'
+          + cols.map(function(c) {
+              const hit = (nk.items || []).indexOf(c) !== -1;
+              return '<td style="padding:6px 4px;text-align:center;border-bottom:1px solid #efe3d7;background:' + (hit ? '#fff3d8' : '#fff') + '">'
+                + (hit ? '<span style="color:#c9a02a;font-size:14px">★</span>' : '<span style="color:#e5ddd2">·</span>') + '</td>';
+            }).join('')
+          + '</tr>';
+      }).join('')
+    + '</tbody></table>';
+}
+
+document.addEventListener('click', function(ev) {
+  const v = ev.target.closest ? ev.target.closest('.fav-view-btn') : null;
+  if (v) { favView = v.dataset.favView; favRender(); return; }
+  const r = ev.target.closest ? ev.target.closest('#fav-reload') : null;
+  if (r) { favData = null; loadFavorites(true); }
+});
+document.addEventListener('change', function(ev) {
+  if (ev.target && ev.target.id === 'fav-days') { favData = null; loadFavorites(false); }
+});
 
 // ===== 再製作待ちリスト（2026-08-29 追加） =====
 // 売り切れ品に連絡先を残したお客様の一覧。ここに出た時点で「対応すべき案件」。
