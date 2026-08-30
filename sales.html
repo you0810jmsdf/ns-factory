@@ -74,6 +74,45 @@ a.ch-link:hover { transform: scale(1.12); box-shadow: 0 0 0 2px rgba(255,255,255
 @keyframes spin { to { transform: rotate(360deg); } }
 #error-msg { color: var(--red); text-align: center; padding: 32px; display: none; font-size: .9rem; white-space: pre-line; }
 .note { font-size: .72rem; color: var(--text-sub); margin-top: 10px; line-height: 1.7; }
+
+/* ── 取引マトリクス ───────────────────────────── */
+.tab-bar { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  padding: 11px 22px; background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--text-sub); font-size: .95rem; cursor: pointer; font-family: inherit;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+.filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.filter-bar select, .filter-bar input[type="search"] {
+  background: var(--bg-card); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 10px; font-size: .85rem; font-family: inherit;
+}
+.chk { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--text-sub); cursor: pointer; }
+.chk input { accent-color: var(--accent); width: 15px; height: 15px; }
+.matrix-scroll { overflow-x: auto; }
+#orders-table { min-width: 940px; }
+#orders-table th, #orders-table td { padding: 10px 12px; font-size: .84rem; vertical-align: top; }
+#orders-table th { white-space: nowrap; }
+.step-cell { text-align: center; white-space: nowrap; font-size: .78rem; }
+.step-done { color: var(--green); font-weight: 600; }
+.step-miss { color: var(--red); font-weight: 700; }
+.step-na   { color: #5A5A5E; }
+.step-wait { color: var(--text-sub); }
+tr.row-alert td:first-child { box-shadow: inset 3px 0 0 var(--red); }
+tr.row-stale td:first-child { box-shadow: inset 3px 0 0 #8E6E3A; }
+.alert-tag.stale { background: rgba(160,120,90,.20); color: #D6B48C; }
+tr.row-canceled td { opacity: .45; }
+.alert-tag {
+  display: inline-block; background: rgba(255,69,58,.16); color: #FF8A80;
+  border-radius: 6px; padding: 2px 7px; font-size: .72rem; margin: 1px 3px 1px 0; white-space: nowrap;
+}
+.status-tag { font-size: .78rem; color: var(--text-sub); display: block; margin-bottom: 3px; }
+.link-row a { color: var(--accent); text-decoration: none; font-size: .74rem; margin-right: 8px; white-space: nowrap; }
+.link-row a:hover { text-decoration: underline; }
+.item-name { display: block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legend { font-size: .72rem; color: var(--text-sub); line-height: 1.9; margin-top: 10px; }
+.legend b { color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -81,12 +120,17 @@ a.ch-link:hover { transform: scale(1.12); box-shadow: 0 0 0 2px rgba(255,255,255
 <div id="main">
   <div class="head-row">
     <h1>売上ダッシュボード</h1>
-    <button class="btn" id="btn-reload" onclick="load(false)">再表示</button>
-    <button class="btn primary" id="btn-refresh" onclick="load(true)">最新データに更新</button>
+    <button class="btn" id="btn-reload" onclick="reloadCurrent(false)">再表示</button>
+    <button class="btn primary" id="btn-refresh" onclick="reloadCurrent(true)">最新データに更新</button>
   </div>
   <div class="meta" id="meta">—</div>
 
-  <div class="summary-cards">
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-sales" onclick="setTab('sales')">売上額</button>
+    <button class="tab-btn" id="tab-orders" onclick="setTab('orders')">取引マトリクス</button>
+  </div>
+
+  <div class="summary-cards" id="sales-cards">
     <div class="card"><div class="label">受注件数（12ヶ月）</div><div class="value accent" id="sum-count">—</div></div>
     <div class="card"><div class="label">売上金額（12ヶ月・解析分）</div><div class="value green" id="sum-amount">—</div></div>
     <div class="card"><div class="label">稼働チャネル</div><div class="value" id="sum-active">—</div></div>
@@ -99,9 +143,28 @@ a.ch-link:hover { transform: scale(1.12); box-shadow: 0 0 0 2px rgba(255,255,255
     <button class="mode-btn" data-m="24" onclick="setPeriod(24)">24ヶ月</button>
   </div>
 
-  <div class="mode-bar">
+  <div class="mode-bar" id="value-mode-bar">
     <button class="mode-btn active" id="mode-amount" onclick="setMode('amount')">金額</button>
     <button class="mode-btn" id="mode-count" onclick="setMode('count')">件数</button>
+  </div>
+
+  <div class="mode-bar" id="orders-view-bar" style="display:none">
+    <button class="mode-btn active" data-v="order" onclick="setOrdersView('order')">取引ごと</button>
+    <button class="mode-btn" data-v="customer" onclick="setOrdersView('customer')">顧客ごと</button>
+    <button class="mode-btn" data-v="item" onclick="setOrdersView('item')">商品ごと</button>
+  </div>
+
+  <div class="filter-bar" id="orders-filter" style="display:none">
+    <select id="filter-state" onchange="renderOrders()">
+      <option value="">すべての状態</option>
+      <option value="alert">いま要対応</option>
+      <option value="stale">長期未完了（60日超）</option>
+      <option value="open">未完了すべて</option>
+      <option value="done">完了</option>
+      <option value="dead">不成立・キャンセル</option>
+    </select>
+    <select id="filter-channel" onchange="renderOrders()"><option value="">全チャネル</option></select>
+    <input type="search" id="filter-text" placeholder="顧客名・商品名で絞り込み" oninput="renderOrders()" style="min-width:200px">
   </div>
 
   <div id="loading"><div class="spinner"></div>Gmailから受注データを集計中…（初回・強制更新は30秒ほどかかります）</div>
@@ -127,7 +190,48 @@ a.ch-link:hover { transform: scale(1.12); box-shadow: 0 0 0 2px rgba(255,255,255
     </table>
   </div>
 
-  <p class="note">
+  <div id="orders-section" style="display:none">
+    <div class="summary-cards">
+      <div class="card"><div class="label">取引件数</div><div class="value accent" id="ord-count">—</div></div>
+      <div class="card"><div class="label">いま要対応</div><div class="value" id="ord-alert">—</div></div>
+      <div class="card"><div class="label">長期未完了（60日超）</div><div class="value" id="ord-stale">—</div></div>
+      <div class="card"><div class="label">完了</div><div class="value green" id="ord-done">—</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header" id="orders-header">取引マトリクス</div>
+      <div class="matrix-scroll">
+        <table id="orders-table">
+          <thead id="orders-head"></thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="unlinked-wrap" style="display:none; margin-top:20px;">
+      <div class="table-header">取引に紐付かなかった通知（<span id="unlinked-count">0</span>件）</div>
+      <div class="matrix-scroll">
+        <table>
+          <thead><tr><th>日付</th><th>チャネル</th><th>種別</th><th>相手</th><th>件名</th></tr></thead>
+          <tbody id="unlinked-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="payouts-wrap" style="display:none; margin-top:20px;">
+      <div class="table-header">売上金の振込・入金（メール通知分）</div>
+      <div class="matrix-scroll">
+        <table>
+          <thead><tr><th>日付</th><th>チャネル</th><th class="num">金額</th><th>件名</th></tr></thead>
+          <tbody id="payouts-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="legend" id="orders-legend"></p>
+  </div>
+
+  <p class="note" id="sales-note">
     ※ データ源はGmailの受注通知メール。金額は本文から自動解析できた分のみ（解析率が低いチャネルは件数を参照）。<br>
     ※ メール通知が無いチャネル（ラクマ・Yahoo!フリマ等）やマルシェ売上は「売上ダッシュボード_手動入力」シートに記入すると合算されます。
     メール通知が届くチャネルをシートに書くと二重計上になるため記入しないこと。<br>
@@ -174,7 +278,8 @@ function setPeriod(m) {
   document.querySelectorAll("#period-bar .mode-btn").forEach(function (b) {
     b.classList.toggle("active", parseInt(b.dataset.m) === m);
   });
-  load(false);
+  ordersData = null;   // 期間が変わったので取引側も取り直す
+  reloadCurrent(false);
 }
 
 function load(force) {
@@ -347,6 +452,426 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
   });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   取引マトリクス（action=orders）
+   受注→入金→発送→受取→評価 の各段階がいつ済んだかを並べ、
+   止まっている取引を見つける。
+   ══════════════════════════════════════════════════════════════ */
+
+var currentTab = "sales";
+var ordersData = null;
+var ordersView = "order";
+var STEP_COLS = ["order", "paid", "shipped", "received", "reviewed"];
+var STEP_JA = { order: "受注", paid: "入金", shipped: "発送", received: "受取", reviewed: "評価" };
+
+// 取引マトリクス側だけで使うチャネル表示（売上集計とIDが違うものを補う）
+function chStyle(id) {
+  return CH_STYLE[id] || (id === "yahoo" ? CH_STYLE.yahoo_fleamarket : null) || CH_STYLE.other;
+}
+
+// チャネル名・ショップURL・発送通知の有無は取引ごとに持たせず、ここから引く
+// （取引1件あたりの重複を無くすため。全体で216KB→80KBに収まりキャッシュが効く）
+function chInfo(id) {
+  var list = (ordersData && ordersData.channels) || [];
+  for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+  return { id: id, name: id, shopUrl: "", hasShipMail: false, arrivalTracked: false };
+}
+
+function setTab(name) {
+  currentTab = name;
+  document.getElementById("tab-sales").classList.toggle("active", name === "sales");
+  document.getElementById("tab-orders").classList.toggle("active", name === "orders");
+
+  var salesOnly = ["sales-cards", "value-mode-bar", "chart-wrap", "table-wrap", "items-wrap", "sales-note"];
+  salesOnly.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (name !== "sales") { el.style.display = "none"; return; }
+    // データ取得後にだけ出す要素は、未取得なら隠したままにする
+    var lazy = (id === "chart-wrap" || id === "table-wrap" || id === "items-wrap");
+    el.style.display = lazy ? (lastData ? "block" : "none") : "";
+  });
+
+  var isOrders = (name === "orders");
+  document.getElementById("orders-view-bar").style.display = isOrders ? "flex" : "none";
+  document.getElementById("orders-filter").style.display = isOrders ? "flex" : "none";
+  document.getElementById("orders-section").style.display = isOrders ? "block" : "none";
+  document.getElementById("error-msg").style.display = "none";
+
+  if (isOrders && !ordersData) loadOrders(false);
+  // 売上タブへ戻したときは、取引側が書き換えた集計時点の表示を売上側に戻す
+  if (!isOrders && lastData) render(lastData);
+}
+
+function reloadCurrent(force) {
+  if (currentTab === "orders") loadOrders(force);
+  else load(force);
+}
+
+function setOrdersView(v) {
+  ordersView = v;
+  document.querySelectorAll("#orders-view-bar .mode-btn").forEach(function (b) {
+    b.classList.toggle("active", b.dataset.v === v);
+  });
+  renderOrders();
+}
+
+function loadOrders(force) {
+  var key = adminKey();
+  if (!key) {
+    showError("認証キーが取得できません。ページを再読み込みしてログインし直してください。");
+    return;
+  }
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("error-msg").style.display = "none";
+  document.getElementById("btn-refresh").disabled = true;
+  document.getElementById("btn-reload").disabled = true;
+
+  var cbName = "ordercb" + Date.now();
+  var script = document.createElement("script");
+  script.src = GAS_URL + "?key=" + encodeURIComponent(key)
+             + "&action=orders&months=" + currentMonths
+             + (force ? "&refresh=1" : "") + "&callback=" + cbName;
+
+  var timer = setTimeout(function () {
+    fail("タイムアウトしました。取引の読み取りは初回90秒ほどかかります。もう一度お試しください。");
+  }, 180000);
+
+  function cleanup() {
+    clearTimeout(timer);
+    delete window[cbName];
+    if (script.parentNode) script.parentNode.removeChild(script);
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("btn-refresh").disabled = false;
+    document.getElementById("btn-reload").disabled = false;
+  }
+  function fail(msg) { cleanup(); showError(msg); }
+
+  window[cbName] = function (data) {
+    cleanup();
+    if (data.error) {
+      showError(data.error === "unauthorized" ? "パスワードが違います" : "エラー: " + data.error);
+      return;
+    }
+    ordersData = data;
+    buildChannelFilter(data);
+    renderOrders();
+  };
+  script.onerror = function () { fail("GASに接続できません。"); };
+  document.body.appendChild(script);
+}
+
+function buildChannelFilter(data) {
+  var sel = document.getElementById("filter-channel");
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">全チャネル</option>';
+  (data.channels || []).forEach(function (c) {
+    var opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name + "（" + c.orderCount + "件）";
+    sel.appendChild(opt);
+  });
+  sel.value = cur;
+}
+
+/** いま手を動かすべき取引（古くて片付いていないものは別扱い） */
+function isActionable(o) {
+  return !!(o.alerts && o.alerts.length) && !o.canceled && !o.expired && !o.stale;
+}
+
+/** 絞り込み条件を通った取引だけを返す */
+function filteredOrders() {
+  if (!ordersData) return [];
+  var state = document.getElementById("filter-state").value;
+  var chFilter = document.getElementById("filter-channel").value;
+  var text = (document.getElementById("filter-text").value || "").trim().toLowerCase();
+
+  return ordersData.orders.filter(function (o) {
+    if (state === "alert" && !isActionable(o)) return false;
+    if (state === "stale" && !o.stale) return false;
+    if (state === "open" && (o.settled || o.canceled || o.expired)) return false;
+    if (state === "done" && !o.settled) return false;
+    if (state === "dead" && !(o.canceled || o.expired)) return false;
+    if (chFilter && o.ch !== chFilter) return false;
+    if (text) {
+      var hay = ((o.customer || "") + " " + (o.item || "") + " " + (o.orderId || "")).toLowerCase();
+      if (hay.indexOf(text) === -1) return false;
+    }
+    return true;
+  });
+}
+
+function renderOrders() {
+  if (!ordersData) return;
+  var all = ordersData.orders || [];
+  var rows = filteredOrders();
+
+  var alertCount = 0, staleCount = 0, doneCount = 0;
+  all.forEach(function (o) {
+    if (isActionable(o)) alertCount++;
+    if (o.stale) staleCount++;
+    if (o.settled) doneCount++;
+  });
+  document.getElementById("ord-count").textContent = all.length.toLocaleString() + " 件";
+  var alertEl = document.getElementById("ord-alert");
+  alertEl.textContent = alertCount + " 件";
+  alertEl.style.color = alertCount ? "var(--red)" : "var(--green)";
+  var staleEl = document.getElementById("ord-stale");
+  staleEl.textContent = staleCount + " 件";
+  staleEl.style.color = staleCount ? "#D6B48C" : "var(--text-sub)";
+  document.getElementById("ord-done").textContent = doneCount.toLocaleString() + " 件";
+
+  document.getElementById("meta").textContent =
+    "集計時点: " + ordersData.generatedAt + (ordersData.cached ? "（キャッシュ表示・15分以内）" : "（再集計済み）")
+    + " ／ 直近" + ordersData.monthsBack + "ヶ月 ／ 表示 " + rows.length + " 件";
+
+  if (ordersView === "order") renderOrderView(rows);
+  else if (ordersView === "customer") renderCustomerView(rows);
+  else renderItemView(rows);
+
+  renderUnlinked();
+  renderPayouts();
+  renderLegend();
+}
+
+/** 段階セル。日付が無い場合は「なぜ無いのか」を区別して出す */
+function stepCell(o, step) {
+  var d = o.dates[step];
+  if (d) return '<span class="step-done">' + d.slice(5).replace("-", "/") + "</span>";
+  if (step === "shipped" && !chInfo(o.ch).hasShipMail) {
+    return '<span class="step-na" title="このサイトは出品者に発送完了メールが届かないため、メールでは確認できません">通知なし</span>';
+  }
+  if (o.canceled || o.expired) return '<span class="step-na">—</span>';
+  // 次にやるべき段階（未達で最初に来るもの）だけを赤くする
+  var next = "";
+  for (var i = 0; i < STEP_COLS.length; i++) {
+    var s = STEP_COLS[i];
+    if (s === "shipped" && !chInfo(o.ch).hasShipMail) continue;
+    if (!o.dates[s]) { next = s; break; }
+  }
+  if (step === next && (isActionable(o) || o.stale)) return '<span class="step-miss">未</span>';
+  return '<span class="step-wait">—</span>';
+}
+
+function chChip(id, name) {
+  var st = chStyle(id);
+  var mark = '<span class="ch-mark" style="background:' + st.color + '">' + escapeHtml(st.mark) + "</span>";
+  if (st.url) {
+    mark = '<a class="ch-link" href="' + st.url + '" target="_blank" rel="noopener">' + mark + "</a>";
+  }
+  return '<span class="ch-chip">' + mark + "<span>" + escapeHtml(name) + "</span></span>";
+}
+
+function orderLinks(o) {
+  var out = [];
+  if (o.tradeUrl) out.push('<a href="' + o.tradeUrl + '" target="_blank" rel="noopener">取引ページ</a>');
+  if (o.itemUrl) out.push('<a href="' + o.itemUrl + '" target="_blank" rel="noopener">商品ページ</a>');
+  var shop = chInfo(o.ch).shopUrl;
+  if (shop) out.push('<a href="' + shop + '" target="_blank" rel="noopener">管理画面</a>');
+  return '<span class="link-row">' + out.join("") + "</span>";
+}
+
+function renderOrderView(rows) {
+  document.getElementById("orders-header").textContent =
+    "取引マトリクス（1行＝1取引・新しい順）";
+  document.getElementById("orders-head").innerHTML =
+    "<tr><th>チャネル</th><th>取引</th><th>顧客</th><th>商品</th><th class=\"num\">金額</th>"
+    + STEP_COLS.map(function (s) { return '<th class="step-cell">' + STEP_JA[s] + "</th>"; }).join("")
+    + "<th>状態・要対応</th></tr>";
+
+  var body = document.getElementById("orders-body");
+  body.innerHTML = "";
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="11" class="sub" style="padding:28px;text-align:center">該当する取引はありません</td></tr>';
+    return;
+  }
+  rows.forEach(function (o) {
+    var tr = document.createElement("tr");
+    if (o.canceled || o.expired) tr.className = "row-canceled";
+    else if (o.stale) tr.className = "row-stale";
+    else if (o.alerts && o.alerts.length) tr.className = "row-alert";
+
+    var tagClass = o.stale ? "alert-tag stale" : "alert-tag";
+    var tags = (o.alerts || []).map(function (a) {
+      return '<span class="' + tagClass + '">' + escapeHtml(a) + "</span>";
+    }).join("");
+
+    tr.innerHTML =
+      "<td>" + chChip(o.ch, chInfo(o.ch).name) + "</td>"
+      + '<td><span class="sub">' + escapeHtml(o.orderId) + "</span><br>" + orderLinks(o) + "</td>"
+      + "<td>" + escapeHtml(o.customer || "—") + "</td>"
+      + '<td><span class="item-name" title="' + escapeHtml(o.item || "") + '">' + escapeHtml(o.item || "—") + "</span></td>"
+      + '<td class="num">' + (o.amount ? yen(o.amount) : "—") + "</td>"
+      + STEP_COLS.map(function (s) { return '<td class="step-cell">' + stepCell(o, s) + "</td>"; }).join("")
+      + '<td><span class="status-tag">' + escapeHtml(o.status) + "</span>" + tags + "</td>";
+    body.appendChild(tr);
+  });
+}
+
+function renderCustomerView(rows) {
+  document.getElementById("orders-header").textContent = "顧客ごと（購入回数の多い順）";
+  document.getElementById("orders-head").innerHTML =
+    '<tr><th>チャネル</th><th>顧客</th><th class="num">取引数</th><th class="num">合計金額</th>'
+    + "<th>最終取引日</th><th>買ってくれたもの</th><th>未完了</th></tr>";
+
+  var map = {};
+  rows.forEach(function (o) {
+    // 顧客名が取れない取引は同一人物として束ねない（別人が混ざるため）
+    var known = !!o.customer;
+    var name = known ? o.customer : "（名前が通知に無い）";
+    var k = known ? (o.ch + "|" + o.customer) : (o.ch + "|?" + o.orderId);
+    if (!map[k]) map[k] = { ch: o.ch, chName: chInfo(o.ch).name, name: name, known: known, c: 0, amt: 0, last: "", items: {}, alerts: 0 };
+    var g = map[k];
+    g.c++;
+    g.amt += o.amount || 0;
+    if ((o.lastDate || "") > g.last) g.last = o.lastDate;
+    if (o.item) g.items[o.item] = (g.items[o.item] || 0) + 1;
+    if (isActionable(o) || o.stale) g.alerts++;
+  });
+
+  var list = Object.keys(map).map(function (k) { return map[k]; });
+  list.sort(function (a, b) { return b.c - a.c || b.amt - a.amt; });
+
+  var body = document.getElementById("orders-body");
+  body.innerHTML = "";
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="7" class="sub" style="padding:28px;text-align:center">該当する顧客はいません</td></tr>';
+    return;
+  }
+  list.forEach(function (g) {
+    var items = Object.keys(g.items).map(function (n) {
+      return escapeHtml(n) + (g.items[n] > 1 ? " ×" + g.items[n] : "");
+    }).join(" / ");
+    var tr = document.createElement("tr");
+    if (g.alerts) tr.className = "row-alert";
+    tr.innerHTML =
+      "<td>" + chChip(g.ch, g.chName) + "</td>"
+      + "<td>" + escapeHtml(g.name) + (g.known && g.c > 1 ? ' <span class="alert-tag" style="background:rgba(48,209,88,.16);color:#7BE29B">リピーター</span>' : "") + "</td>"
+      + '<td class="num">' + g.c + "</td>"
+      + '<td class="num">' + (g.amt ? yen(g.amt) : "—") + "</td>"
+      + "<td>" + (g.last || "—") + "</td>"
+      + '<td><span class="sub">' + (items || "—") + "</span></td>"
+      + "<td>" + (g.alerts ? '<span class="alert-tag">' + g.alerts + "件</span>" : '<span class="step-wait">—</span>') + "</td>";
+    body.appendChild(tr);
+  });
+}
+
+function renderItemView(rows) {
+  document.getElementById("orders-header").textContent = "商品ごと（販売数の多い順）";
+  document.getElementById("orders-head").innerHTML =
+    '<tr><th>商品</th><th>チャネル</th><th class="num">販売数</th><th class="num">合計金額</th>'
+    + "<th>最終販売日</th><th>未完了</th></tr>";
+
+  var map = {};
+  rows.forEach(function (o) {
+    var name = o.itemNorm || o.item || "（商品名なし）";
+    if (!map[name]) map[name] = { name: name, c: 0, amt: 0, last: "", chs: {}, alerts: 0 };
+    var g = map[name];
+    g.c++;
+    g.amt += o.amount || 0;
+    if ((o.lastDate || "") > g.last) g.last = o.lastDate;
+    g.chs[o.ch] = chInfo(o.ch).name;
+    if (isActionable(o) || o.stale) g.alerts++;
+  });
+
+  var list = Object.keys(map).map(function (k) { return map[k]; });
+  list.sort(function (a, b) { return b.c - a.c || b.amt - a.amt; });
+
+  var body = document.getElementById("orders-body");
+  body.innerHTML = "";
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="6" class="sub" style="padding:28px;text-align:center">該当する商品はありません</td></tr>';
+    return;
+  }
+  list.forEach(function (g) {
+    var chips = Object.keys(g.chs).map(function (id) {
+      var st = chStyle(id);
+      return '<span class="ch-mark" style="background:' + st.color + ';margin-right:4px">' + escapeHtml(st.mark) + "</span>";
+    }).join("");
+    var tr = document.createElement("tr");
+    if (g.alerts) tr.className = "row-alert";
+    tr.innerHTML =
+      "<td>" + escapeHtml(g.name) + "</td>"
+      + "<td>" + chips + "</td>"
+      + '<td class="num">' + g.c + "</td>"
+      + '<td class="num">' + (g.amt ? yen(g.amt) : "—") + "</td>"
+      + "<td>" + (g.last || "—") + "</td>"
+      + "<td>" + (g.alerts ? '<span class="alert-tag">' + g.alerts + "件</span>" : '<span class="step-wait">—</span>') + "</td>";
+    body.appendChild(tr);
+  });
+}
+
+function renderUnlinked() {
+  var list = (ordersData.unlinked || []);
+  var wrap = document.getElementById("unlinked-wrap");
+  if (!list.length) { wrap.style.display = "none"; return; }
+  document.getElementById("unlinked-count").textContent = list.length;
+  var body = document.getElementById("unlinked-body");
+  body.innerHTML = "";
+  list.slice(0, 60).forEach(function (u) {
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + u.date + "</td>"
+      + "<td>" + chChip(u.ch, chInfo(u.ch).name) + "</td>"
+      + "<td>" + escapeHtml(ordersData.stepLabels[u.step] || u.step) + "</td>"
+      + "<td>" + escapeHtml(u.customer || "—") + "</td>"
+      + '<td><span class="sub">' + escapeHtml(u.subject) + "</span></td>";
+    body.appendChild(tr);
+  });
+  wrap.style.display = "block";
+}
+
+function renderPayouts() {
+  var list = (ordersData.payouts || []);
+  var wrap = document.getElementById("payouts-wrap");
+  if (!list.length) { wrap.style.display = "none"; return; }
+  var body = document.getElementById("payouts-body");
+  body.innerHTML = "";
+  list.forEach(function (p) {
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + p.date + "</td>"
+      + "<td>" + chChip(p.ch, chInfo(p.ch).name) + "</td>"
+      + '<td class="num">' + (p.amount ? yen(p.amount) : "—") + "</td>"
+      + '<td><span class="sub">' + escapeHtml(p.subject) + "</span></td>";
+    body.appendChild(tr);
+  });
+  wrap.style.display = "block";
+}
+
+function renderLegend() {
+  var chs = ordersData.channels || [];
+  var noShip = chs.filter(function (c) { return !c.hasShipMail && c.orderCount > 0; });
+  var noArrival = chs.filter(function (c) { return !c.arrivalTracked && c.orderCount > 0; });
+  var zero = chs.filter(function (c) { return c.orderCount === 0; });
+
+  var html =
+    "<b>読み方</b>　緑の日付＝その手続きが済んだ日／<span class=\"step-miss\">未</span>＝次にやるべきなのに止まっている／—＝まだその段階に来ていない<br>"
+    + "<b>いま要対応</b>　受注から60日以内で止まっている取引。ここだけ見れば足ります。<br>"
+    + "<b>長期未完了（茶色の帯）</b>　60日を超えて完了通知が来ていない取引。"
+    + "購入者が受取通知をしないまま自動的に取引終了になることが多いため、"
+    + "<b>実際には終わっているのに通知だけ来なかった</b>ものが大半です。"
+    + "ただし本当の取りこぼしが混ざる可能性があるので消さずに残しています。<br>"
+    + "<b>判定の日数</b>　入金待ち3日／発送3日／受取10日（発送後は14日）／顧客連絡への返信2日／"
+    + "入金されないまま14日過ぎたものは「不成立」<br>";
+
+  if (noShip.length) {
+    html += "<b>発送欄が「通知なし」のサイト</b>　" + noShip.map(function (c) { return escapeHtml(c.name); }).join("・")
+          + "：出品者に発送完了メールが届かないため、メールからは発送したかを確認できません。<br>";
+  }
+  if (noArrival.length) {
+    html += "<b>受取を追えないサイト</b>　" + noArrival.map(function (c) { return escapeHtml(c.name); }).join("・")
+          + "：受取・レビューの通知に注文番号が入っていない（minneはレビューがアカウント名、発送通知が本名で名義も違う）ため、"
+          + "取引と結び付けられません。発送まで済めば完了として数えています。<br>";
+  }
+  if (zero.length) {
+    html += "<b>この期間に取引の無いサイト</b>　" + zero.map(function (c) { return escapeHtml(c.name); }).join("・") + "<br>";
+  }
+  html += "<b>注意</b>　評価・メッセージの通知には注文番号が入っていないため、顧客名で取引に寄せています。"
+        + "寄せられなかったものは下の表にそのまま出しています。";
+  document.getElementById("orders-legend").innerHTML = html;
 }
 
 // 初期表示（ゲート通過後にキーが入るまで少し待つ）
