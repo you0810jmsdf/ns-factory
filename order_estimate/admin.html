@@ -1675,8 +1675,10 @@ tr.row-out-stock td{
       <div id="stats-ranking-wrap" style="display:none;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div style="font-size:13px;font-weight:700;color:#6b3a1f;border-left:3px solid #d4a96a;padding-left:8px" id="stats-ranking-title">商品閲覧ランキング</div>
+          <div style="flex:1 1 100%;font-size:11px;color:#8a6a4a;line-height:1.7;order:9">PVは作家自身の閲覧が多く混ざるため、既定は<b>VV（実際に見た人数）順</b>です。PVに対してVVが極端に少ない行（同じ人が何度も開いている）には印を付けています。</div>
           <div style="display:flex;gap:6px">
-            <button type="button" id="stats-sort-pv" style="font-size:11px;padding:4px 10px;border:1px solid #d4a96a;border-radius:6px;background:#d4a96a;color:#fff;cursor:pointer;font-weight:700">PV順</button>
+            <button type="button" id="stats-sort-vv" style="font-size:11px;padding:4px 10px;border:1px solid #d4a96a;border-radius:6px;background:#d4a96a;color:#fff;cursor:pointer;font-weight:700">VV順</button>
+            <button type="button" id="stats-sort-pv" style="font-size:11px;padding:4px 10px;border:1px solid #d4a96a;border-radius:6px;background:#fff;color:#6b3a1f;cursor:pointer;font-weight:700">PV順</button>
             <button type="button" id="stats-sort-date" style="font-size:11px;padding:4px 10px;border:1px solid #d4a96a;border-radius:6px;background:#fff;color:#6b3a1f;cursor:pointer;font-weight:700">新しい順</button>
           <input type="search" id="stats-rank-search" placeholder="商品名・IDで絞り込む" style="flex:1 1 180px;min-width:0;padding:5px 10px;border:1px solid #d8c2a8;border-radius:8px;font-size:12px">
           </div>
@@ -1689,6 +1691,7 @@ tr.row-out-stock td{
               <th style="padding:6px 8px;text-align:left;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf">商品名</th>
               <th style="padding:6px 8px;text-align:right;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:52px">PV</th>
               <th style="padding:6px 8px;text-align:right;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:52px">VV</th>
+              <th style="padding:6px 8px;text-align:center;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:86px">前期比</th>
               <th style="padding:6px 8px;text-align:center;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:100px">ステータス</th>
               <th style="padding:6px 8px;text-align:right;color:#6b3a1f;font-size:11px;border-bottom:1px solid #eadccf;width:120px">最終閲覧</th>
             </tr>
@@ -6660,7 +6663,9 @@ function statsH(s) {
 }
 
 let statsRankingData = [];
-let statsSortMode = 'pv'; // 'pv' | 'date'
+// 既定はVV順。PVは作家自身の閲覧が大半を占め、実際の人気を反映しないため（2026-08-30 事業主指摘）
+let statsSortMode = 'vv'; // 'vv' | 'pv' | 'date'
+let statsComparable = false;
 
 function statsRenderRanking() {
   const statusColor = s => s === 'SOLDOUT' ? '#c00' : s === '再販予定なし' ? '#e07b00' : '#3a3';
@@ -6676,12 +6681,32 @@ function statsRenderRanking() {
   }
   if (statsSortMode === 'date') {
     list.sort((a, b) => String(b.lastSeen || '').localeCompare(String(a.lastSeen || '')));
-  } else {
+  } else if (statsSortMode === 'pv') {
     list.sort((a, b) => (b.count || 0) - (a.count || 0));
+  } else {
+    // VV順。同数ならPVで補助的に並べる
+    list.sort((a, b) => (b.vv || 0) - (a.vv || 0) || (b.count || 0) - (a.count || 0));
   }
   const rankRows = list.length
     ? list.map((r, i) => {
         const st = r.status || '';
+        // 1人が3回以上開いている＝作家自身の可能性が高い
+        const selfMark = (r.vv === 1 && (r.count || 0) >= 3)
+          ? ' <span title="同じ人が繰り返し開いています。作家自身の可能性があります" style="font-size:10px;color:#b08a00">⚠</span>' : '';
+        let deltaCell = '<span style="font-size:11px;color:#ccc">—</span>';
+        if (statsComparable) {
+          const d = r.delta || 0;
+          const prev = r.prevCount || 0;
+          if (prev === 0 && (r.count || 0) > 0) {
+            deltaCell = '<span style="font-size:11px;font-weight:700;color:#2a7fb2">NEW</span>';
+          } else if (d > 0) {
+            deltaCell = `<span style="font-size:11px;font-weight:700;color:#29613d">▲ +${d}</span>`;
+          } else if (d < 0) {
+            deltaCell = `<span style="font-size:11px;font-weight:700;color:#c8553d">▼ ${d}</span>`;
+          } else {
+            deltaCell = '<span style="font-size:11px;color:#8a6a4a">±0</span>';
+          }
+        }
         const stCell = st
           ? `<span style="font-size:11px;font-weight:700;color:${statusColor(st)}">${statsH(st)}</span>`
           : '<span style="font-size:11px;color:#aaa">販売中</span>';
@@ -6690,12 +6715,13 @@ function statsRenderRanking() {
           <td style="padding:6px 8px;font-size:12px;font-family:monospace;color:#6b3a1f;border-bottom:1px solid #efe3d7">${statsH(r.id||'—')}</td>
           <td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${statsH(r.name)}</td>
           <td style="padding:6px 8px;text-align:right;font-weight:700;border-bottom:1px solid #efe3d7">${r.count}</td>
-          <td style="padding:6px 8px;text-align:right;border-bottom:1px solid #efe3d7">${r.vv||0}</td>
+          <td style="padding:6px 8px;text-align:right;border-bottom:1px solid #efe3d7">${r.vv||0}${selfMark}</td>
+          <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #efe3d7">${deltaCell}</td>
           <td style="padding:6px 8px;text-align:center;border-bottom:1px solid #efe3d7">${stCell}</td>
           <td style="padding:6px 8px;text-align:right;font-size:12px;color:#888;border-bottom:1px solid #efe3d7">${statsH(r.lastSeen||'')}</td>
         </tr>`;
       }).join('')
-    : '<tr><td colspan="7" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
+    : '<tr><td colspan="8" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
   document.getElementById('stats-ranking-rows').innerHTML = rankRows;
 }
 
@@ -6724,11 +6750,13 @@ function statsRenderUnseen() {
 
 function statsSetSortMode(mode) {
   statsSortMode = mode;
+  const btnVv = document.getElementById('stats-sort-vv');
   const btnPv = document.getElementById('stats-sort-pv');
   const btnDate = document.getElementById('stats-sort-date');
-  const on  = b => { b.style.background = '#d4a96a'; b.style.color = '#fff'; };
-  const off = b => { b.style.background = '#fff'; b.style.color = '#6b3a1f'; };
-  if (mode === 'date') { on(btnDate); off(btnPv); } else { on(btnPv); off(btnDate); }
+  const on  = b => { if (b) { b.style.background = '#d4a96a'; b.style.color = '#fff'; } };
+  const off = b => { if (b) { b.style.background = '#fff'; b.style.color = '#6b3a1f'; } };
+  [btnVv, btnPv, btnDate].forEach(off);
+  on(mode === 'date' ? btnDate : mode === 'pv' ? btnPv : btnVv);
   statsRenderRanking();
 }
 
@@ -6753,6 +6781,7 @@ function statsRender(s) {
 
   statsRankingData = s.ranking || [];
   statsUnseenData = s.unseen || [];
+  statsComparable = !!s.comparable;
   statsRenderRanking();
   statsRenderUnseen();
   document.getElementById('stats-ranking-wrap').style.display = 'block';
@@ -6779,6 +6808,7 @@ document.getElementById('stats-refresh-btn')?.addEventListener('click', () => {
   statsLoad();
 });
 
+document.getElementById('stats-sort-vv')?.addEventListener('click', () => statsSetSortMode('vv'));
 document.getElementById('stats-sort-pv')?.addEventListener('click', () => statsSetSortMode('pv'));
 document.getElementById('stats-sort-date')?.addEventListener('click', () => statsSetSortMode('date'));
 
