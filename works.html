@@ -521,6 +521,77 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       line-height: 1.8;
       margin-bottom: 18px;
     }
+    /* 注目度ランキング（2026-08-30 追加）。順位だけを出し、人数は公開しない。 */
+    .rank-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #1a1512, #3a2a1a);
+      border: 1px solid #c9a96e;
+      color: #f0d9a8;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      line-height: 1;
+      box-shadow: 0 2px 8px rgba(0,0,0,.22);
+      pointer-events: none;
+    }
+    .rank-badge .rank-num { font-size: 13px; color: #f5e6c8; }
+    .rank-badge.is-top { background: linear-gradient(135deg, #6b4a12, #a8802a); border-color: #f0d9a8; }
+    .rank-badge .rank-move { font-size: 10px; font-weight: 700; }
+    .rank-move.up { color: #8fd6a0; }
+    .rank-move.down { color: #e9a49a; }
+    .rank-move.new { color: #f0d9a8; }
+    .work-card { position: relative; }
+
+    /* 一覧上部の TOP3 */
+    .rank-top3 {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border: 1px solid #d8c2a8;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fdf8f1, #f7ece0);
+    }
+    .rank-top3-head {
+      font-size: 11px;
+      letter-spacing: .18em;
+      color: #a8802a;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .rank-top3-list { display: flex; gap: 10px; flex-wrap: wrap; }
+    .rank-top3-item {
+      flex: 1 1 200px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid #e5d5c0;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+    }
+    .rank-top3-item:hover { border-color: #c9a96e; }
+    .rank-top3-no {
+      flex: 0 0 auto;
+      width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: #5C3D2E; color: #f5e6c8;
+      font-size: 13px; font-weight: 700;
+    }
+    .rank-top3-item:first-child .rank-top3-no { background: #a8802a; }
+    .rank-top3-name { flex: 1; font-size: 13px; font-weight: 700; color: #3A2410; line-height: 1.4; }
+    .rank-top3-move { flex: 0 0 auto; font-size: 11px; font-weight: 700; }
+
     .modal-availability {
       display: inline-block;
       margin-bottom: 12px;
@@ -1094,6 +1165,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <button id="missing-price-filter" class="admin-filter-btn" type="button" hidden>価格未設定だけ</button>
       <div id="count" class="count" data-i18n="tools.loading">読み込み中</div>
     </div>
+    <!-- いま注目されている作品 TOP3（2026-08-30 追加）。人数は出さず順位と先週比のみ。 -->
+    <div id="rank-top3" class="rank-top3" hidden></div>
     <div id="gallery" class="gallery" aria-live="polite"></div>
   </main>
 
@@ -1603,6 +1676,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         return;
       }
 
+      renderRankTop3();
       gallery.innerHTML = filtered.map((work, index) => {
         const unavailable = work.soldout || work.noRestock;
         const badge = work.soldout
@@ -1612,6 +1686,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
             : '';
         return `
         <button class="work-card${unavailable ? ' is-unavailable' : ''}" type="button" data-index="${index}">
+          ${rankBadgeHtml(work.id)}
           ${work.photos[0]
             ? `<span class="thumb-wrap"><img class="thumb" src="${esc(work.photos[0])}" alt="${esc(work.title)}" loading="lazy"></span>`
             : '<span class="thumb-placeholder">' + T('gallery.loadingPhoto', '写真を読み込み中') + '</span>'}
@@ -1631,6 +1706,97 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }
 
     const WORKS_LOG_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+
+    // ===== 注目度ランキング（2026-08-30 追加） =====
+    // 公開APIは順位と先週比だけを返す。人数はサイトに出さない。
+    let rankMap = {};      // 商品ID → { rank, change }
+    let rankTop3 = [];
+
+    function rankMoveHtml(change) {
+      if (!change) return '';
+      if (change === 'new') return '<span class="rank-move new">NEW</span>';
+      if (change === 'same') return '';
+      const m = String(change).split(':');
+      const n = parseInt(m[1] || '0', 10);
+      if (!n) return '';
+      return m[0] === 'up'
+        ? `<span class="rank-move up">▲${n}</span>`
+        : `<span class="rank-move down">▼${n}</span>`;
+    }
+
+    function rankBadgeHtml(id) {
+      const r = id && rankMap[id];
+      if (!r) return '';
+      return `<span class="rank-badge${r.rank <= 3 ? ' is-top' : ''}">`
+        + `<span>${T('rank.label', '注目度')}</span>`
+        + `<span class="rank-num">${r.rank}${T('rank.suffix', '位')}</span>`
+        + rankMoveHtml(r.change)
+        + '</span>';
+    }
+
+    function renderRankTop3() {
+      const box = document.getElementById('rank-top3');
+      if (!box) return;
+      if (!rankTop3.length) { box.hidden = true; return; }
+      box.hidden = false;
+      box.innerHTML = '<div class="rank-top3-head">' + T('rank.top3Head', 'NOW TRENDING ／ いま注目されている作品') + '</div>'
+        + '<div class="rank-top3-list">'
+        + rankTop3.map(r =>
+            `<button class="rank-top3-item" type="button" data-rank-id="${esc(r.id)}">`
+            + `<span class="rank-top3-no">${r.rank}</span>`
+            + `<span class="rank-top3-name">${esc(r.name)}</span>`
+            + `<span class="rank-top3-move">${rankMoveHtml(r.change)}</span>`
+            + '</button>').join('')
+        + '</div>';
+    }
+
+    // TOP3から該当作品を開く
+    document.addEventListener('click', (ev) => {
+      const btn = ev.target.closest ? ev.target.closest('[data-rank-id]') : null;
+      if (!btn) return;
+      const id = btn.dataset.rankId;
+      const idx = works.findIndex(w => String(w.id) === String(id));
+      if (idx >= 0) openWork(works[idx], 0);
+    });
+
+    function loadRanking() {
+      const cbName = 'nsfRankCb' + Date.now();
+      const sc = document.createElement('script');
+      sc.src = WORKS_LOG_URL + '?api=publicRanking&callback=' + cbName;
+      window[cbName] = function(data) {
+        delete window[cbName];
+        if (sc.parentNode) sc.remove();
+        if (!data || !data.ok) return;
+        rankMap = {};
+        (data.ranking || []).forEach(r => { if (r.id) rankMap[r.id] = { rank: r.rank, change: r.change }; });
+        rankTop3 = (data.ranking || []).filter(r => r.rank <= 3);
+        renderRankTop3();
+        // 一覧が描画済みならバッジを後から差し込む
+        document.querySelectorAll('.work-card').forEach((card) => {
+          if (card.querySelector('.rank-badge')) return;
+          const idEl = card.querySelector('.work-id');
+          const id = idEl && idEl.dataset ? idEl.dataset.id : '';
+          const html = rankBadgeHtml(id);
+          if (html) card.insertAdjacentHTML('afterbegin', html);
+        });
+        // 詳細を開いている場合も反映
+        if (typeof activeWork !== 'undefined' && activeWork) applyModalRankBadge(activeWork);
+      };
+      sc.onerror = function() { if (sc.parentNode) sc.remove(); };
+      document.body.appendChild(sc);
+    }
+
+    function applyModalRankBadge(work) {
+      const host = document.querySelector('.modal-detail') || document.querySelector('.modal-content');
+      if (!host) return;
+      const old = host.querySelector('.rank-badge');
+      if (old) old.remove();
+      const html = rankBadgeHtml(work && work.id);
+      if (html) {
+        host.style.position = host.style.position || 'relative';
+        host.insertAdjacentHTML('afterbegin', html);
+      }
+    }
 
     // ===== 管理者ゲート（index.htmlと同じSHA-256照合パターン。サイト全体で共通のパスワード） =====
     const NSF_GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
@@ -1774,6 +1940,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       activeWork = work;
       activeIndex = index;
       updateModal();
+      applyModalRankBadge(work);
       resetOrderChat(work);
       refreshTextureSimCta(work); // 型紙SVGがある作品だけCTAを出す（非同期・判定後に現れる）
       modal.classList.add('open');
@@ -2234,6 +2401,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       render();
       updateAdminUI();
       openDeepLinkedWork();
+      // 注目度ランキングは作品データが揃ってから一度だけ取りにいく
+      if (!window.__nsfRankLoaded) { window.__nsfRankLoaded = true; loadRanking(); }
     }
 
     // ?id=NF2026_633 で指定された作品の詳細を直接開く（SNSからの名指し導線用）。
