@@ -13,3 +13,8 @@ knowledge-graph.html
 
 # BASE登録用の生成物。価格未設定や個人名候補の確認レポートを含むため公開しない。
 tools/output/base-export/
+
+# バックアップファイルは公開リポジトリに入れない（2026-08-30 誤追加の再発防止）
+*.bak
+*.bak_*
+*_backup.html.bak
