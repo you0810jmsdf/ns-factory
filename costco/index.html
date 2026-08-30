@@ -146,6 +146,11 @@
   tr.row-picked td.pname { color: #137333; }
   .pick-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 2px 10px; font-size: 12px; }
   .pick-progress { font-weight: 700; color: #137333; }
+  .done-bar { background: #eef2f7; border-radius: 10px; padding: 11px 14px; margin: 4px 2px 12px; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+  .done-bar .done-toggle { margin-left: auto; font-weight: 700; color: var(--blue); }
+  .done-mark { display: inline-block; background: #e8f5e9; color: #137333; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+  .done-ops { margin: 0 2px 14px; }
+  .done-ops .btn { font-size: 12px; padding: 8px 14px; }
   .pend { font-size: 10.5px; color: #137333; margin-top: 2px; font-weight: 700; }
   .pend.soon { color: #b06000; }
   .pend.over { color: #9a9aa0; font-weight: 400; }
@@ -1507,6 +1512,39 @@ function renderHelp() {
   w.innerHTML = h;
 }
 
+// 完了したセール（買い物・集金が済んだもの）。⛔ データは消さず、表示を畳むだけ。
+function isDone(campaignId) {
+  var list = (state.data && state.data.done) || [];
+  for (var i = 0; i < list.length; i++) if (list[i].campaignId === campaignId) return list[i];
+  return null;
+}
+
+// 「完了したセールも見る」を開いているか（画面の中だけの状態）
+var showDoneCamps = false;
+function toggleShowDone() { showDoneCamps = !showDoneCamps; render(); }
+
+function toggleDone(campaignId, nowDone) {
+  var name = (findCampaign(campaignId) || {}).subject || 'このセール';
+  var msg = nowDone
+    ? '「' + String(name).slice(0, 24) + '」を完了にしますか？ 買い物・請求の一覧から畳みます。記録は残るので、いつでも見返せます。'
+    : '「' + String(name).slice(0, 24) + '」を進行中に戻しますか？';
+  if (!confirm(msg)) return;
+  google.script.run.withSuccessHandler(function () {
+    toast(nowDone ? '完了にしました（記録は残っています）' : '進行中に戻しました');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiToggleDone(GROUP_ID, campaignId, nowDone, HOST_KEY, ADMIN_KEY, state.person);
+}
+
+// 完了セールの開閉バー。件数が0なら出さない。
+function doneBarHtml(doneCount) {
+  if (!doneCount) return '';
+  return '<div class="done-bar" onclick="toggleShowDone()">'
+    + '✅ 完了したセール（' + doneCount + '件）'
+    + '<span class="done-toggle">' + (showDoneCamps ? '▾ 隠す' : '▸ 見返す') + '</span>'
+    + '</div>';
+}
+
 // 買い物チェック（かごに入れた）。取りまとめ役が店内で押していく。
 function pickedOf(campaignId, itemNo) {
   var list = (state.data && state.data.picked) || [];
@@ -2031,13 +2069,24 @@ function renderMatrix(m) {
       + '「合計購入数」が、その商品を何個買えばよいかの目安です。<br>'
       + '各自の数字を <b>タップすると、その人の注文を削除</b>できます。</div>';
   }
+  // 完了したセールは畳む。⛔ データは消していないので、いつでも開いて見返せる。
+  var doneCount = d.campaigns.filter(function (c) { return !c.isStaple && isDone(c.mailId); }).length;
+  html += doneBarHtml(doneCount);
   d.campaigns.forEach(function (camp) {
+    var campDone = !camp.isStaple && isDone(camp.mailId);
+    if (campDone && !showDoneCamps) return;
     var prods = d.products.filter(function (p) {
       if (p.campaignId !== camp.mailId) return false;
       return d.checks.some(function (c) { return c.campaignId === p.campaignId && c.itemNo === p.itemNo; });
     });
     if (!prods.length) return;
-    html += '<h3 style="font-size:14px;margin:14px 4px 8px;color:var(--blue)">' + esc(camp.subject) + '</h3>';
+    html += '<h3 style="font-size:14px;margin:14px 4px 8px;color:var(--blue)">' + esc(camp.subject)
+      + (campDone ? '<span class="done-mark">✅ 完了</span>' : '') + '</h3>';
+    if (!camp.isStaple && (IS_HOST || IS_ADMIN)) {
+      html += '<div class="done-ops"><button class="btn ghost" onclick="toggleDone(\'' + jsq(camp.mailId) + '\',' + (campDone ? 'false' : 'true') + ')">'
+        + (campDone ? '↩ 進行中に戻す' : '✅ 買い物・集金が終わった（一覧から畳む）')
+        + '</button></div>';
+    }
     var canPick = IS_HOST || IS_ADMIN;
     if (canPick) {
       var doneN = prods.filter(function (pp) { return pickedOf(pp.campaignId, pp.itemNo); }).length;
@@ -2138,6 +2187,8 @@ function personTotal(person, campaignId) {
   d.checks.forEach(function (c) {
     if (c.person !== person) return;
     if (campaignId && c.campaignId !== campaignId) return;
+    // 完了にしたセールは請求一覧から畳む（⛔ データは消していないので「見返す」で戻る）
+    if (!campaignId && !showDoneCamps && isDone(c.campaignId)) return;
     var prod = null;
     d.products.forEach(function (p) {
       if (p.campaignId === c.campaignId && p.itemNo === c.itemNo) prod = p;
@@ -2176,6 +2227,18 @@ function renderBill(m) {
     persons = [state.person];
   }
   var html = '';
+  // 完了したセールは請求一覧からも畳む。記録は残っているのでいつでも見返せる。
+  var doneCamps = (d.campaigns || []).filter(function (c) { return !c.isStaple && isDone(c.mailId); });
+  html += doneBarHtml(doneCamps.length);
+  if (showDoneCamps && doneCamps.length) {
+    html += '<div class="done-ops">';
+    doneCamps.forEach(function (c) {
+      html += '<div style="font-size:12px;margin-bottom:6px">✅ ' + esc(String(c.subject).slice(0, 30))
+        + (canSeeAll ? ' <button class="btn ghost" onclick="toggleDone(\'' + jsq(c.mailId) + '\',false)">↩ 進行中に戻す</button>' : '')
+        + '</div>';
+    });
+    html += '</div>';
+  }
   // 買い物のあとに価格を入れる欄（取りまとめ役・運営のみ）。事前は価格不明が前提なので、ここで入れて全員の請求に反映する。
   if (canSeeAll) {
     var npMap = {};
@@ -2184,6 +2247,7 @@ function renderBill(m) {
       var prod = null;
       d.products.forEach(function (p) { if (p.campaignId === c.campaignId && p.itemNo === c.itemNo) prod = p; });
       if (!prod) return;
+      if (!showDoneCamps && isDone(c.campaignId)) return; // 完了したセールは対象外
       // 定番の価格は「商品を選ぶ」の定番欄で入れる運用なので、ここには出さない（二重に入力させない）
       if (prod.isStaple) return;
       if (prod.salePrice) return;
