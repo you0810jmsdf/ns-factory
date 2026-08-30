@@ -1678,6 +1678,19 @@ tr.row-out-stock td{
         <div id="stats-excluded-list" style="font-size:12px;color:#8a6a4a;margin-top:8px;line-height:1.9"></div>
       </div>
 
+      <!-- 要確認の商品（2026-08-30 追加）
+           実在の個人名が商品として公開されていた事故を受けて新設。 -->
+      <div id="stats-issues-wrap" style="display:none;background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700;color:#8f4b2f;border-left:3px solid #c8553d;padding-left:8px">🔎 要確認の商品</div>
+          <button type="button" id="stats-issues-reload" style="padding:5px 12px;border:1px solid #d8c2a8;border-radius:8px;background:#fff8f1;color:#6b3a1f;font-size:12px;font-weight:700;cursor:pointer">🔄 再チェック</button>
+        </div>
+        <div style="font-size:11px;color:#8a6a4a;line-height:1.7;margin-bottom:10px">サイトに公開中の商品データを点検した結果です。<b>商品IDをクリックすると編集画面が開きます。</b>判定は「疑い」までなので、消すかどうかはご自身で確認してください。</div>
+        <div id="stats-issues-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+        <div id="stats-issues-note" style="font-size:11px;color:#8a6a4a;line-height:1.7;margin-bottom:8px"></div>
+        <div id="stats-issues-list" style="max-height:380px;overflow:auto;border-top:1px solid #efe3d7"></div>
+      </div>
+
       <!-- 30日間まったく見られていない商品（2026-08-30 追加）
            売れ筋だけを見ていると、眠っている商品に気付けない。 -->
       <div id="stats-unseen-wrap" style="display:none;background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:14px">
@@ -6743,6 +6756,75 @@ function statsRenderRanking() {
   document.getElementById('stats-ranking-rows').innerHTML = rankRows;
 }
 
+// 要確認の商品（データ品質の点検）
+let statsIssues = [];
+let statsIssueKey = '';
+
+function statsRenderIssues() {
+  const wrap = document.getElementById('stats-issues-wrap');
+  const tabs = document.getElementById('stats-issues-tabs');
+  const note = document.getElementById('stats-issues-note');
+  const list = document.getElementById('stats-issues-list');
+  if (!wrap || !tabs) return;
+  if (!statsIssues.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  // 件数0の種別も出す（0であることが分かるのが大事）
+  tabs.innerHTML = statsIssues.map(g => {
+    const on = g.key === statsIssueKey;
+    const zero = g.count === 0;
+    return '<button type="button" data-issue-key="' + wlH(g.key) + '"'
+      + ' style="padding:5px 11px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;'
+      + 'border:1px solid ' + (on ? '#c8553d' : '#d8c2a8') + ';'
+      + 'background:' + (on ? '#c8553d' : (zero ? '#f7f3ee' : '#fff8f1')) + ';'
+      + 'color:' + (on ? '#fff' : (zero ? '#a89880' : '#6b3a1f')) + '">'
+      + wlH(g.label) + ' <span style="font-family:monospace">' + g.count + '</span></button>';
+  }).join('');
+
+  const g = statsIssues.find(x => x.key === statsIssueKey);
+  if (!g) { note.textContent = ''; list.innerHTML = ''; return; }
+  note.textContent = g.note;
+  list.innerHTML = g.items.length
+    ? g.items.map(it =>
+        '<div style="display:flex;gap:10px;align-items:center;padding:6px 4px;border-bottom:1px solid #f3e9dd;font-size:12px">'
+        + '<a href="../register.html?edit=' + encodeURIComponent(it.id) + '" target="_blank" title="商品情報を編集する"'
+        + ' style="flex:0 0 110px;font-family:monospace;color:#6b3a1f;text-decoration:underline dotted">' + wlH(it.id) + '</a>'
+        + '<a href="../works.html?id=' + encodeURIComponent(it.id) + '" target="_blank"'
+        + ' style="flex:1;color:#5C3D2E;text-decoration:none">' + (wlH(it.name) || '<span style="color:#c8553d">（商品名なし）</span>') + '</a>'
+        + (it.sameNameCount ? '<span style="flex:0 0 auto;font-size:10px;color:#8a6a4a">同名' + it.sameNameCount + '件</span>' : '')
+        + (it.category ? '<span style="flex:0 0 auto;font-size:10px;color:#a89880">' + wlH(it.category) + '</span>' : '')
+        + '</div>').join('')
+    : '<div style="padding:16px;text-align:center;color:#8a6a4a;font-size:12px">該当する商品はありません</div>';
+}
+
+function loadProductIssues() {
+  const key = getAdminKey();
+  if (!key) return;
+  const cbName = 'piCb' + Date.now();
+  const script = document.createElement('script');
+  script.src = GAS_URL + '?api=productIssues&key=' + encodeURIComponent(key) + '&callback=' + cbName;
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (script.parentNode) document.body.removeChild(script);
+    if (!data || !data.ok) return;
+    statsIssues = data.groups || [];
+    // 最初は件数のある種別のうち、危険度の高いものを開く
+    const priority = ['person', 'notProduct', 'noPhoto', 'shortDesc', 'noCategory', 'dupName', 'noPrice'];
+    const first = priority.find(k => (statsIssues.find(g => g.key === k) || {}).count > 0);
+    statsIssueKey = first || (statsIssues[0] && statsIssues[0].key) || '';
+    statsRenderIssues();
+  };
+  script.onerror = function() { if (script.parentNode) document.body.removeChild(script); };
+  document.body.appendChild(script);
+}
+
+document.addEventListener('click', function(ev) {
+  const b = ev.target.closest ? ev.target.closest('[data-issue-key]') : null;
+  if (b) { statsIssueKey = b.dataset.issueKey; statsRenderIssues(); return; }
+  const rl = ev.target.closest ? ev.target.closest('#stats-issues-reload') : null;
+  if (rl) loadProductIssues();
+});
+
 // 集計から除外する訪問者ID
 let statsExcluded = [];
 
@@ -6879,6 +6961,7 @@ function statsRender(s) {
   statsComparable = !!s.comparable;
   statsExcluded = s.excludedVids || [];
   statsRenderExcluded();
+  if (!statsIssues.length) loadProductIssues();
   statsRenderRanking();
   statsRenderUnseen();
   document.getElementById('stats-ranking-wrap').style.display = 'block';
