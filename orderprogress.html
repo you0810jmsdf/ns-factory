@@ -140,6 +140,19 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       font-size:.72rem; font-weight:600; color:var(--color-text-mute);
       letter-spacing:.04em; white-space:nowrap;
     }
+    /* 受付番号はクリックでコピーできる（見積書・請求書作成時の手入力をなくすため） */
+    .order-no.copyable {
+      cursor:pointer; border-radius:4px; padding:2px 5px; margin:-2px -5px;
+      transition:background .15s, color .15s;
+    }
+    .order-no.copyable::after {
+      content:' 9C9'; opacity:.45; font-weight:400;
+    }
+    .order-no.copyable:hover {
+      background:var(--color-bg-sub); color:var(--color-text);
+    }
+    .order-no.copyable:hover::after { opacity:.9; }
+    .order-no.copyable:active { transform:scale(.96); }
     .card-title { flex:1; }
     .card-title .item-name { font-size:.95rem; font-weight:600; }
     .card-title .client-name { font-size:.78rem; color:var(--color-text-sub); margin-top:1px; }
@@ -1058,7 +1071,7 @@ function renderCards(records) {
       <div class="card-header" id="hdr-${id}" onclick="toggleCard('${id}')">
         ${stampHtml}
         <div>
-          <div class="order-no">${esc(r['受付番号']||'')}</div>
+          ${orderNoHtml(r['受付番号'])}
           <div style="font-size:.7rem;color:var(--color-text-mute)">${esc(r['サイズ']||'')}</div>
         </div>
         <div class="card-title">
@@ -1109,7 +1122,7 @@ function renderRrCards(records) {
     const itemName = r['品物'] || r['品名'] || T('card.noName','（品名未設定）');
     const catHtml = r['カテゴリ'] ? `<span class="cat-badge">${esc(r['カテゴリ'])}</span>` : '';
     const headerSub = isOp
-      ? `<div class="order-no">${esc(r['受付番号']||'')}</div><div style="font-size:.7rem;color:var(--color-text-mute)">${T('rr.label','リメイク・修理')}</div>`
+      ? `${orderNoHtml(r['受付番号'])}<div style="font-size:.7rem;color:var(--color-text-mute)">${T('rr.label','リメイク・修理')}</div>`
       : `<div class="order-no">${esc(r['受付日']||'')}</div>${catHtml}`;
     const tlHtml = tl.length
       ? tl.map(t => `<div class="tl-item"><div class="tl-dot"></div>
@@ -1484,6 +1497,48 @@ function openRrSettings() {
     localStorage.removeItem(RR_GAS_KEY);
   }
   if (currentSize === 'リメイク・修理') loadRrRecords();
+}
+
+// ─── 受付番号のコピー ───────────────────────
+// 見積書・請求書を作るとき、この番号を手で打ち直さずに済ませるため。
+// 番号が空のカードはコピー対象にしない。
+// 属性に値を埋め、クリックは下の委譲で拾う（onclick に文字列を埋めると引用符が壊れるため）。
+function orderNoHtml(no) {
+  const v = String(no || '').trim();
+  if (!v) return '<div class="order-no"></div>';
+  return '<div class="order-no copyable" data-copy-no="' + esc(v) + '" title="' + esc(v) + ' をコピー">' + esc(v) + '</div>';
+}
+
+// カードは描画し直されるので、個々にリスナを付けず document で拾う。
+document.addEventListener('click', function (ev) {
+  const el = ev.target.closest && ev.target.closest('.order-no.copyable');
+  if (!el) return;
+  ev.stopPropagation();   // カードヘッダの開閉を走らせない
+  const no = el.getAttribute('data-copy-no') || '';
+  if (!no) return;
+  copyTextToClipboard(no)
+    .then(function () { showMsg('コピーしました（' + no + '）'); })
+    .catch(function () { showMsg('コピーできませんでした: ' + no, true); });
+}, true);   // 開閉の onclick より先に受け取る
+
+// navigator.clipboard は https / localhost でのみ使える。
+// それ以外（file:// で開いた場合など）は execCommand へ退避する。
+function copyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise(function (resolve, reject) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.remove();
+    ok ? resolve() : reject(new Error('copy failed'));
+  });
 }
 
 // ─── Toast ───────────────────────────────────
