@@ -1660,6 +1660,18 @@ tr.row-out-stock td{
         </div>
       </div>
 
+      <!-- 集計から除外する訪問者（2026-08-30 追加）
+           作家自身の閲覧が全ログの38%を占め、ランキングが実態を反映していなかった。 -->
+      <div id="stats-exclude-wrap" style="background:#fffdf6;border:1px solid #eadccf;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-size:12px;font-weight:700;color:#6b3a1f">👤 自分の閲覧を集計から外す</div>
+          <button type="button" id="stats-myvid-btn" style="padding:5px 12px;border:1px solid #d8c2a8;border-radius:8px;background:#fff8f1;color:#6b3a1f;font-size:12px;font-weight:700;cursor:pointer">この端末のIDを表示</button>
+          <span id="stats-myvid" style="font-size:12px;font-family:monospace;color:#8a6a4a"></span>
+          <button type="button" id="stats-myvid-add" style="display:none;padding:5px 12px;border:0;border-radius:8px;background:#6b3a1f;color:#fff;font-size:12px;font-weight:700;cursor:pointer">この端末を除外する</button>
+        </div>
+        <div id="stats-excluded-list" style="font-size:12px;color:#8a6a4a;margin-top:8px;line-height:1.9"></div>
+      </div>
+
       <!-- 30日間まったく見られていない商品（2026-08-30 追加）
            売れ筋だけを見ていると、眠っている商品に気付けない。 -->
       <div id="stats-unseen-wrap" style="display:none;background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:14px">
@@ -6725,6 +6737,70 @@ function statsRenderRanking() {
   document.getElementById('stats-ranking-rows').innerHTML = rankRows;
 }
 
+// 集計から除外する訪問者ID
+let statsExcluded = [];
+
+function statsRenderExcluded() {
+  const el = document.getElementById('stats-excluded-list');
+  if (!el) return;
+  if (!statsExcluded.length) {
+    el.innerHTML = '<span style="color:#a89880">現在、除外している端末はありません。数字には作家自身の閲覧が含まれています。</span>';
+    return;
+  }
+  el.innerHTML = '<b style="color:#29613d">除外中（' + statsExcluded.length + '件）：</b>'
+    + statsExcluded.map(v =>
+        '<span style="display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;background:#eef5ee;border:1px solid #cfe0cf;border-radius:12px;font-family:monospace;font-size:11px">'
+        + wlH(v)
+        + ' <a href="#" data-unexclude="' + wlH(v) + '" style="color:#c8553d;text-decoration:none;font-weight:700">×</a></span>'
+      ).join('')
+    + '<div style="margin-top:4px;font-size:11px;color:#8a6a4a">上の数字とランキングから、これらの端末の閲覧は除かれています。</div>';
+}
+
+function statsSetExclude(vid, action) {
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ api: 'excludeVid', key: getAdminKey(), vid: vid, action: action })
+  })
+    .then(r => r.json())
+    .then(j => {
+      if (!j || !j.ok) throw new Error((j && j.error) || 'failed');
+      statsExcluded = j.vids || [];
+      statsRenderExcluded();
+      statsLoad();   // 除外を反映して集計し直す
+    })
+    .catch(err => alert('更新に失敗しました: ' + err.message));
+}
+
+(function wireExcludeControls() {
+  const btn = document.getElementById('stats-myvid-btn');
+  if (btn) btn.addEventListener('click', () => {
+    let vid = '';
+    try { vid = localStorage.getItem('nsf_vid') || ''; } catch (e) {}
+    const label = document.getElementById('stats-myvid');
+    const addBtn = document.getElementById('stats-myvid-add');
+    if (!vid) {
+      label.textContent = 'この端末にはIDがありません（作品ページを一度開くと発行されます）';
+      addBtn.style.display = 'none';
+      return;
+    }
+    label.textContent = vid;
+    if (statsExcluded.includes(vid)) {
+      label.textContent = vid + '（除外済み）';
+      addBtn.style.display = 'none';
+    } else {
+      addBtn.style.display = 'inline-block';
+      addBtn.onclick = () => statsSetExclude(vid, 'add');
+    }
+  });
+  document.addEventListener('click', ev => {
+    const a = ev.target.closest ? ev.target.closest('[data-unexclude]') : null;
+    if (!a) return;
+    ev.preventDefault();
+    statsSetExclude(a.dataset.unexclude, 'remove');
+  });
+})();
+
 // 30日間まったく見られていない商品
 let statsUnseenData = [];
 function statsRenderUnseen() {
@@ -6782,6 +6858,8 @@ function statsRender(s) {
   statsRankingData = s.ranking || [];
   statsUnseenData = s.unseen || [];
   statsComparable = !!s.comparable;
+  statsExcluded = s.excludedVids || [];
+  statsRenderExcluded();
   statsRenderRanking();
   statsRenderUnseen();
   document.getElementById('stats-ranking-wrap').style.display = 'block';
