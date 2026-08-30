@@ -139,6 +139,18 @@
   .help-hist h5 { font-size: 13px; color: var(--blue); margin-top: 12px; }
   .help-hist ul { margin: 4px 0 0 18px; }
   .help-hist li { font-size: 13px; margin-bottom: 4px; }
+  table.mx td.pick { width: 44px; }
+  .pick-btn { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--line); background: #fff; font-size: 15px; line-height: 1; cursor: pointer; color: transparent; }
+  .pick-btn.on { background: #137333; border-color: #137333; color: #fff; }
+  tr.row-picked td { background: #f2fbf4; }
+  tr.row-picked td.pname { color: #137333; }
+  .pick-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 2px 10px; font-size: 12px; }
+  .pick-progress { font-weight: 700; color: #137333; }
+  .pend { font-size: 10.5px; color: #137333; margin-top: 2px; font-weight: 700; }
+  .pend.soon { color: #b06000; }
+  .pend.over { color: #9a9aa0; font-weight: 400; }
+  .pend.none { color: var(--muted); font-weight: 400; }
+  .ended-note { font-size: 11px; color: #9a9aa0; text-align: center; padding: 8px 4px; border-top: 1px solid var(--line); margin-top: 6px; }
   .staple-mark { display: inline-block; background: #e8f5e9; color: #137333; border-radius: 999px; padding: 1px 8px; font-size: 10px; font-weight: 700; margin-left: 4px; }
   .pnote { display: block; width: 100%; font-size: 10.5px; line-height: 1.5; margin-top: 3px; }
   .pnote.ok { color: #137333; }
@@ -1246,6 +1258,7 @@ function renderShop(m) {
       html += '<div class="body"><div class="pname" onclick="openProduct(' + openArgs + ')" style="cursor:zoom-in">' + esc(p.name) + '</div>'
         + '<div class="itemno">ITEM #' + esc(p.itemNo)
         + (p.isStapleItem && !p.isStaple ? ' <span class="staple-mark">🔁 定番</span>' : '') + '</div>'
+        + productEndHtml(p)
         + '<div class="prices">';
       if (p.salePrice) {
         html += '<span class="sale">' + yen(p.salePrice) + '</span>';
@@ -1258,11 +1271,15 @@ function renderShop(m) {
       }
       html += stapleNote(p);
       html += '</div>'
-        + '<div class="stepper">'
-        + '<button onclick="chg(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',-1)">−</button>'
-        + '<div class="qty' + (q > 0 ? ' on' : '') + '" id="qty_' + esc(k).split('|').join('_') + '">' + q + '</div>'
-        + '<button onclick="chg(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',1)">＋</button>'
-        + '</div>';
+        // 販売期間が終わった商品は選べないようにする。ただし既に注文済みなら
+        // 数量の調整・取り消しができるようステッパーを残す。
+        + ((p.expired && !(q > 0))
+            ? '<div class="ended-note">販売期間が終了しました</div>'
+            : '<div class="stepper">'
+              + '<button onclick="chg(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',-1)">−</button>'
+              + '<div class="qty' + (q > 0 ? ' on' : '') + '" id="qty_' + esc(k).split('|').join('_') + '">' + q + '</div>'
+              + '<button onclick="chg(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',1)">＋</button>'
+              + '</div>');
       if (c.isStaple) {
         // 定番の価格は買ったときの実際の値段をここで入れる（取りまとめ役・運営のみ）。
         // ⛔ 「価格」だけのボタンでは何をする欄か伝わらない。見出しと「保存」を明示すること。
@@ -1420,6 +1437,57 @@ function renderHelp() {
   });
   h += '</div>';
   w.innerHTML = h;
+}
+
+// 買い物チェック（かごに入れた）。取りまとめ役が店内で押していく。
+function pickedOf(campaignId, itemNo) {
+  var list = (state.data && state.data.picked) || [];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].campaignId === campaignId && list[i].itemNo === itemNo) return list[i];
+  }
+  return null;
+}
+
+function togglePicked(campaignId, itemNo, nowPicked) {
+  // 画面を先に切り替えて、押した手応えを止めない（保存は裏で行う）
+  var list = (state.data && state.data.picked) || [];
+  if (nowPicked) list.push({ campaignId: campaignId, itemNo: itemNo, pickedAt: '', pickedBy: state.person || '' });
+  else {
+    for (var i = list.length - 1; i >= 0; i--) {
+      if (list[i].campaignId === campaignId && list[i].itemNo === itemNo) list.splice(i, 1);
+    }
+  }
+  if (state.data) state.data.picked = list;
+  render();
+  google.script.run.withFailureHandler(function (e) {
+    toast('保存できませんでした: ' + e.message);
+    reloadAll();
+  }).apiTogglePicked(GROUP_ID, campaignId, itemNo, nowPicked, HOST_KEY, ADMIN_KEY, state.person);
+}
+
+function clearPicked(campaignId) {
+  if (!confirm('このセールの買い物チェックを全部外しますか？')) return;
+  google.script.run.withSuccessHandler(function () {
+    toast('チェックを外しました');
+    reloadAll();
+  }).withFailureHandler(function (e) { toast('エラー: ' + e.message); })
+    .apiClearPicked(GROUP_ID, campaignId, HOST_KEY, ADMIN_KEY, state.person);
+}
+
+// その商品だけの販売期限を出す。セール全体ではなく商品ごとに期限が違うため。
+function productEndHtml(p) {
+  if (!p || p.isStaple) return '';
+  // 期限バッジが無い商品はセール期限のない通常商品（例: ロティサリーチキン）。
+  // ⛔ 「読み取れなかった」と混同しないこと。実物に日付が印字されていない。
+  if (!p.endYmd) return '<div class="pend none">期限なし（通常販売）</div>';
+  var d = new Date(p.endYmd + 'T00:00:00+09:00');
+  if (isNaN(d.getTime())) return '';
+  var md = (d.getMonth() + 1) + '/' + d.getDate();
+  if (p.expired) return '<div class="pend over">終了（〜' + md + '）</div>';
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var days = Math.round((d - today) / 86400000);
+  return '<div class="pend' + (days <= 2 ? ' soon' : '') + '">〜' + md + 'まで'
+    + (days >= 0 && days <= 6 ? '（あと' + days + '日）' : '') + '</div>';
 }
 
 // いまセール中のため定番欄に出していない商品を、名前で具体的に知らせる。
@@ -1902,7 +1970,18 @@ function renderMatrix(m) {
     });
     if (!prods.length) return;
     html += '<h3 style="font-size:14px;margin:14px 4px 8px;color:var(--blue)">' + esc(camp.subject) + '</h3>';
-    html += '<div class="tablewrap"><table class="mx"><tr><th>商品</th><th>単価</th>';
+    var canPick = IS_HOST || IS_ADMIN;
+    if (canPick) {
+      var doneN = prods.filter(function (pp) { return pickedOf(pp.campaignId, pp.itemNo); }).length;
+      html += '<div class="pick-head">'
+        + '<span class="pick-progress">🛒 ' + doneN + ' / ' + prods.length + ' 点 かごに入れた</span>'
+        + (doneN ? '<button class="btn ghost" onclick="clearPicked(\'' + jsq(camp.mailId) + '\')">チェックを全部外す</button>' : '')
+        + '<span style="color:var(--muted)">買い物中に「かご」を押すと買い忘れを防げます</span>'
+        + '</div>';
+    }
+    html += '<div class="tablewrap"><table class="mx"><tr>'
+      + (canPick ? '<th class="pick">かご</th>' : '')
+      + '<th>商品</th><th>単価</th>';
     persons.forEach(function (p) { html += '<th>' + esc(p) + '</th>'; });
     html += '<th style="background:#fff6f7;color:var(--red)">合計購入数</th></tr>';
     prods.forEach(function (p) {
@@ -1922,7 +2001,13 @@ function renderMatrix(m) {
         }
       });
       var so = soldoutOf(p.campaignId, p.itemNo);
-      html += '<tr' + (so ? ' class="row-soldout"' : '') + '>'
+      var pk = canPick ? pickedOf(p.campaignId, p.itemNo) : null;
+      var rowCls = so ? ' class="row-soldout"' : (pk ? ' class="row-picked"' : '');
+      html += '<tr' + rowCls + '>'
+        + (canPick
+            ? '<td class="pick"><button class="pick-btn' + (pk ? ' on' : '') + '" title="かごに入れた"'
+              + ' onclick="togglePicked(\'' + jsq(p.campaignId) + '\',\'' + jsq(p.itemNo) + '\',' + (pk ? 'false' : 'true') + ')">✓</button></td>'
+            : '')
         + '<td class="pname">' + esc(p.name)
         + (so ? '<span class="so-tag">' + esc(so.reason) + '</span>' : '')
         + ((IS_HOST || IS_ADMIN)
@@ -1935,7 +2020,7 @@ function renderMatrix(m) {
         + '<td style="background:#fff6f7;font-weight:800;color:var(--red)">' + rowTotal + '</td></tr>';
     });
     // 人別金額合計行
-    html += '<tr class="total"><td>金額合計</td><td></td>';
+    html += '<tr class="total">' + (canPick ? '<td></td>' : '') + '<td>金額合計</td><td></td>';
     persons.forEach(function (per) {
       var t = personTotal(per, camp.mailId);
       html += '<td>' + (t.total > 0 ? yen(t.total) : '') + '</td>';
