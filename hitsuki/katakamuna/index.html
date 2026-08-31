@@ -30,7 +30,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <nav class="site-nav" aria-label="ページ内ナビゲーション">
       <a href="#about">カタカムナとは</a>
       <a href="#persons">登場人物</a>
-      <a href="#archive">80首索引</a>
+      <a href="#archive">80首</a>
       <a href="#phonetics">48音</a>
       <a href="#glossary">用語集</a>
       <a href="#goods" class="nav-goods">グッズ</a>
@@ -94,7 +94,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           </article>
           <article class="info-panel">
             <h3>構成</h3>
-            <p>全80首のウタヒ。序・宇宙創生・天地万物・生命と道・完成と帰還の5群に大別される。</p>
+            <p>全80首のウタヒ。序・天地開闢・神生み・国生み・魂の修行・完成と帰還の6群に大別される。</p>
           </article>
           <article class="info-panel">
             <h3>文字</h3>
@@ -120,51 +120,35 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </div>
     </section>
 
-    <!-- Archive -->
+    <!-- Archive（原文80首アーカイブへの導線） -->
     <section id="archive" class="section archive-section" aria-labelledby="archive-title">
       <div class="section-inner">
         <div class="section-heading compact">
           <p class="eyebrow">Archive</p>
-          <h2 id="archive-title">80首 索引</h2>
+          <h2 id="archive-title">80首のウタヒ</h2>
           <p>
-            楢崎皐月が記録した原文80首のウタヒ・要約・解釈を収録。
-            左の一覧から首を選ぶと右パネルに詳細が表示される。
+            カタカムナウタヒの原文80首は、専用のアーカイブページに全首を収録している。
+            原文テキスト・要約・解釈に加え、複数資料で確認できた首には「確認済」の印を付けている。
           </p>
         </div>
 
-        <div class="archive-toolbar" aria-label="絞り込み">
-          <label class="search-field" for="archive-search">
-            <span>検索</span>
-            <input id="archive-search" type="search" placeholder="ウタヒの言葉・テーマで検索">
-          </label>
-          <div class="segmented" role="group" aria-label="群で絞り込み">
-            <button class="segment active" type="button" data-group="all">全て</button>
-            <button class="segment" type="button" data-group="序">序</button>
-            <button class="segment" type="button" data-group="天地開闢">天地開闢</button>
-            <button class="segment" type="button" data-group="神生み">神生み</button>
-            <button class="segment" type="button" data-group="国生み">国生み</button>
-            <button class="segment" type="button" data-group="修行">修行</button>
-            <button class="segment" type="button" data-group="完成と帰還">完成と帰還</button>
-          </div>
-        </div>
-
-        <div class="archive-layout">
-          <aside class="volume-list-wrap" aria-label="首一覧">
-            <div id="song-list" class="volume-list"></div>
-          </aside>
-
-          <section class="passage-panel" aria-labelledby="selected-song-title">
-            <div class="selected-volume">
-              <p id="selected-song-meta" class="eyebrow"></p>
-              <h3 id="selected-song-title"></h3>
-              <p id="selected-song-lead"></p>
-              <div id="selected-song-tags" class="tag-row"></div>
-            </div>
-            <div class="passage-tools">
-              <span id="song-count" class="count-label"></span>
-            </div>
-            <div id="song-detail-list" class="passage-list"></div>
-          </section>
+        <div class="archive-links">
+          <a class="archive-link-card" href="./utahi/">
+            <span class="archive-link-eyebrow">Katakamuna Utahi — 80 Songs</span>
+            <strong>原文80首アーカイブ</strong>
+            <span class="archive-link-desc">
+              全80首の原文・要約・楢崎皐月の解釈。序／天地開闢／神生み／国生み／魂の修行／完成と帰還の6群で絞り込める。
+            </span>
+            <span class="archive-link-go">80首を読む →</span>
+          </a>
+          <a class="archive-link-card" href="./moji/">
+            <span class="archive-link-eyebrow">Katakamuna Characters — 48 Sounds</span>
+            <strong>カタカムナ48音表</strong>
+            <span class="archive-link-desc">
+              渦巻き状のカタカムナ文字を1音ずつ収録。文字を組み合わせてウタヒを描くこともできる。
+            </span>
+            <span class="archive-link-go">48音表を見る →</span>
+          </a>
         </div>
       </div>
     </section>
@@ -325,7 +309,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </footer>
 
   <script src="data/katakamnaData.js"></script>
-  <script src="utahi/data/utahiData.js"></script>
   <script src="data/goodsData.js"></script>
   <script src="app.js"></script>
 <script src="../../assets/access-counter.js"></script>

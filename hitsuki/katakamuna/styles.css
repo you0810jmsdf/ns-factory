@@ -294,6 +294,65 @@ button { cursor: pointer; }
   background: linear-gradient(180deg, rgba(74, 58, 128, 0.1), rgba(12, 14, 24, 0) 32%), #0c0e18;
 }
 
+/* 原文80首・48音表への導線カード */
+.archive-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.archive-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: rgba(238, 240, 248, 0.05);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.18);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.archive-link-card:hover,
+.archive-link-card:focus-visible {
+  background: rgba(168, 184, 248, 0.1);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.archive-link-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.archive-link-card strong {
+  font-size: 1.24rem;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.archive-link-desc {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.archive-link-go {
+  margin-top: 6px;
+  color: var(--gold);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 720px) {
+  .archive-links { grid-template-columns: minmax(0, 1fr); }
+}
+
 .archive-toolbar {
   display: flex;
   flex-wrap: wrap;
