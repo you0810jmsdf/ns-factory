@@ -166,6 +166,11 @@ tr:hover td{background:#1c2128}
 .fb-status.err{color:#ff9d9d}
 /* ✅指摘済バッジ・折りたたみ行・🗑削除ボタン（2026-08-07） */
 .badge-done{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:#12331f;color:#4ade80;border:1px solid #2ea043;white-space:nowrap}
+/* 接客が外れたまま終わった相談の印（2026-08-31） */
+.badge-issue{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;background:#3a2408;color:#f0b429;border:1px solid #8a5a10;white-space:nowrap;margin-right:4px}
+.issue-bar{margin:0 0 10px;padding:10px 12px;border-radius:8px;background:#3a2408;border:1px solid #8a5a10;color:#f0b429;font-size:13px;line-height:1.6}
+.issue-bar b{color:#ffd479}
+.issue-bar .sub{display:block;color:#c9a96e;font-size:11.5px;margin-top:3px}
 .badge-done[data-fbview]{cursor:pointer;text-decoration:underline dotted}
 .badge-done[data-fbview]:hover{background:#1a4a2c}
 tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
@@ -232,6 +237,7 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
 
   <div class="panel">
     <h2>📋 発言一覧 <span class="sub" id="listSub">新しい順</span></h2>
+    <div id="issueBar" style="display:none"></div>
     <div class="table-wrap">
       <table>
         <thead id="thead"></thead>
@@ -403,11 +409,49 @@ function normalizeHearingLog(log, from, to) {
       reply: o.legacy ? '（旧形式のため応答本文は未保存）' : String(o.r || ''),
       replyLen: Number(o.rlen || 0),
       img: Number(o.img || 0),
+      sid: String(o.sid || ''),      // 相談1件を通しで追う識別子（2026-08-31以降のログのみ）
+      miss: !!o.miss || MISS_PATTERNS_VIEW.test(String(o.q || '')),  // GASの印を優先し、古いログはここで判定
       legacy: !!o.legacy
     });
   });
   // recentlog は古い順に積まれるため、他系統と同じ「新しい順」に揃える
   return out.reverse();
+}
+
+/* 相談を1件ずつに束ねて、接客が外れたまま終わったものに印を付ける（2026-08-31）。
+   8/08に同じお客様が4回言い直していたのに、ログが1発言ずつバラバラで気付けなかった。
+   sid はGASが記録し始めた2026-08-31以降のログにしか無いため、
+   sidが無い過去ログは「前の発言から30分以内なら同じ相談」とみなして束ねる。 */
+/* ⛔ この正規表現は Apps Script/hearing_ai_proxy/Code.js の MISS_PATTERNS と同じ内容を保つこと。
+   GASが miss を記録し始めたのは2026-08-31から。それより古いログには印が無いため、
+   ここでも同じ条件で判定して過去分も拾えるようにしている。 */
+const MISS_PATTERNS_VIEW = /(だけなん|だけです|ではありません|じゃありません|ではなく|じゃなく|そうでは|そうじゃ|違います|ちがいます|見にくい|見づらい|みにくい|小さくて|見つかりま|みつかりま|分かりにく|わかりにく|もう一度|さっきの|同じこと|伝わ)/;
+const HEARING_CLOSING = /(ありがとう|よろしくお願い|検討します|また(来|き)ます|また(伺|うかが)|以上です|注文します|お願いします)/;
+function markHearingIssues(list) {
+  const asc = list.slice().reverse();          // listは新しい順なので古い順に直す
+  const groups = [];
+  let cur = null, prevTime = null;
+  asc.forEach((r) => {
+    const tm = Date.parse(String(r.datetime).replace(/-/g, '/'));
+    const sameBySid  = cur && r.sid && cur.sid === r.sid;
+    const sameByTime = cur && !r.sid && !cur.sid && prevTime && (tm - prevTime) <= 30 * 60 * 1000;
+    if (!cur || !(sameBySid || sameByTime)) { cur = { sid: r.sid || '', items: [] }; groups.push(cur); }
+    cur.items.push(r);
+    prevTime = tm;
+  });
+  let flagged = 0;
+  groups.forEach((g) => {
+    const miss = g.items.filter((x) => x.miss).length;
+    const last = g.items[g.items.length - 1];
+    const closed = HEARING_CLOSING.test(String(last.question || ''));
+    const tags = [];
+    if (miss) tags.push('⚠️ 言い直し' + (miss > 1 ? '×' + miss : ''));
+    if (g.items.length >= 6) tags.push('🔁 やりとり' + g.items.length + '回');   // 通常のヒアリングも4往復程度はあるため6回から
+    if (g.items.length >= 3 && !closed) tags.push('🚪 途中で終了');
+    g.items.forEach((x) => { x.issueTags = null; });
+    if (tags.length) { last.issueTags = tags; flagged++; }   // 表示は新しい順なので最新の行に出す
+  });
+  return { groups: groups.length, flagged: flagged };
 }
 
 // 文字化け（CP932崩れ）の疑いを検出する。U+FFFD や CJK互換外の記号が連続する行を印付けする
@@ -758,20 +802,37 @@ function render() {
   const tbody = document.getElementById('tbody');
 
   fbList = list;   // ✏️ 指摘ボタンの行参照用（ナレッジ学習ループ）
+  // 接客が外れたまま終わった相談を洗い出して上部に出す（2026-08-31）
+  const issueBar = document.getElementById('issueBar');
   if (currentSrc === 'hearing') {
+    const st = markHearingIssues(list);
+    if (st.flagged) {
+      issueBar.style.display = '';
+      issueBar.className = 'issue-bar';
+      issueBar.innerHTML = '⚠️ 見直したい相談が <b>' + st.flagged + '件</b> あります'
+        + '（この期間の相談 ' + st.groups + '件中）'
+        + '<span class="sub">⚠️言い直し＝お客様が言い方を変えて聞き直した／'
+        + '🔁やりとり6回以上＝答えに辿り着けていない可能性／'
+        + '🚪途中で終了＝お礼や次の約束がないまま会話が途切れた</span>';
+    } else {
+      issueBar.style.display = 'none';
+    }
     thead.innerHTML = '<tr><th>日時</th><th>お客様の相談</th><th>AIの応答</th><th>応答字数</th><th></th></tr>';
     tbody.innerHTML = list.length ? list.map((r, i) => {
       const k = fbKeyOf('hearing', r.datetime, '');
       const done = fbInfo.has(k);
+      // 見直したい相談の印。指摘済みで畳まれた行にも必ず出す（畳んだまま見落とすため）
+      const issue = (r.issueTags || []).map(t =>
+        '<span class="badge-issue">' + esc(t) + '</span>').join('');
       if (done && foldDone && !unfolded.has(k)) {
         // 指摘済みは1行に畳む（「開く」でこのセッション中だけ展開できる）
         return '<tr class="folded"><td class="dt">' + esc(r.datetime) + '</td>'
-          + '<td colspan="3"><span class="badge-done" data-fbview="' + esc(k) + '" title="クリックで指摘内容を表示">✅ 指摘済</span> '
+          + '<td colspan="3">' + issue + '<span class="badge-done" data-fbview="' + esc(k) + '" title="クリックで指摘内容を表示">✅ 指摘済</span> '
           + esc(String(r.question || '').slice(0, 40)) + (String(r.question || '').length > 40 ? '…' : '') + '</td>'
           + '<td><button class="more" type="button" data-unfold="' + esc(k) + '">開く</button></td></tr>';
       }
       return '<tr><td class="dt">' + esc(r.datetime) + (r.img ? ' 📷' : '') + '</td>'
-        + '<td class="q">' + cellText(r.question, 'hq' + i) + '</td>'
+        + '<td class="q">' + issue + (issue ? '<br>' : '') + cellText(r.question, 'hq' + i) + '</td>'
         + '<td class="a">' + (r.legacy ? '<span style="color:#6e7681">' + esc(r.reply) + '</span>' : cellText(r.reply, 'ha' + i)) + '</td>'
         + '<td class="num">' + (r.replyLen || 0) + '</td>'
         + '<td style="white-space:nowrap">' + (done ? '<span class="badge-done" data-fbview="' + esc(k) + '" title="クリックで指摘内容を表示">✅ 指摘済</span> ' : '')
@@ -780,6 +841,7 @@ function render() {
     }).join('')
       : '<tr><td class="empty" colspan="5">該当する相談はありません</td></tr>';
   } else if (currentSrc === 'ai') {
+    issueBar.style.display = 'none';
     thead.innerHTML = '<tr><th>日時</th><th>担当幕僚</th><th>会話の場所</th><th>お客様の質問</th><th>AIの応答</th><th>応答字数</th><th></th></tr>';
     tbody.innerHTML = list.length ? list.map((r, i) => {
       const k = fbKeyOf('ai', r.datetime, r.staffId);
