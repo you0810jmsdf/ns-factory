@@ -5,6 +5,10 @@ import {
   subscribeChanges,
   subscribeVersionChanges
 } from './db.js';
+import {
+  installHealthMonitor,
+  reportHealthIssue
+} from './health-monitor.js';
 
 const ROUTES = Object.freeze(['home', 'weight', 'meal', 'exercise', 'water', 'settings']);
 const TAB_ROUTES = Object.freeze(['home', 'weight', 'meal', 'exercise', 'water']);
@@ -238,6 +242,11 @@ async function renderRoute(route = currentRouteFromHash()) {
       root.replaceChildren(result);
     }
   } catch (error) {
+    reportHealthIssue('route_render_failed', error, {
+      route: state.route,
+      dbReady: state.dbReady,
+      reloadRequired: state.reloadRequired
+    });
     renderPreparing(state.route);
   }
 }
@@ -481,6 +490,7 @@ export async function startApp() {
     return;
   }
   state.started = true;
+  installHealthMonitor({ page: 'main' });
   bindShellEvents();
   bindDatabaseEvents();
   registerServiceWorker();
@@ -498,6 +508,12 @@ export async function startApp() {
     renderRoute(currentRouteFromHash());
   } catch (error) {
     state.dbReady = false;
+    reportHealthIssue(isDBBlockedError(error) ? 'db_open_blocked' : 'startup_failed', error, {
+      dbReady: state.dbReady,
+      serviceWorkerRegistered: state.serviceWorkerRegistered
+    }, {
+      severity: isDBBlockedError(error) ? 'warning' : 'error'
+    });
     renderStartupError(error);
     showToast(isDBBlockedError(error) ? DB_BLOCKED_MESSAGE : '保存領域を開けませんでした', {
       tone: 'danger',
