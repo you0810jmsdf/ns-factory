@@ -145,13 +145,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       cursor:pointer; border-radius:4px; padding:2px 5px; margin:-2px -5px;
       transition:background .15s, color .15s;
     }
-    .order-no.copyable::after {
-      content:' ⧉'; opacity:.45; font-weight:400;
-    }
     .order-no.copyable:hover {
       background:var(--color-bg-sub); color:var(--color-text);
     }
-    .order-no.copyable:hover::after { opacity:.9; }
     .order-no.copyable:active { transform:scale(.96); }
     .card-title { flex:1; }
     .card-title .item-name { font-size:.95rem; font-weight:600; }
