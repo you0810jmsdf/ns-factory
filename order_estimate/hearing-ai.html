@@ -361,6 +361,15 @@ function renderQuick(items){
     }
     quickEl.appendChild(btn);
   });
+
+  // 写真付きの一覧は、そのままだと画面の外に出てお客様に1枚も見えない
+  // （2026-08-31 実測: 390×844 の画面で最初の1枚が851px＝画面外）。先頭が見える位置まで送る。
+  if(zoomList.length){
+    requestAnimationFrame(()=>{
+      const first=quickEl.querySelector('button.img-chip');
+      if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+  }
 }
 
 /* ---------- 写真の拡大モーダル（2026-08-31） ---------- */
@@ -1238,12 +1247,25 @@ function autoEnterLiveMode(userText){
   addMsg('bot','承知しました、そのままお伺いしますね🧵');
   liveTurn(userText, true);
 }
+/* 相談1件を通しで追えるようにセッションIDを持つ（2026-08-31）。
+   ログが1発言ずつバラバラに残っていたため、同じお客様が何度も言い直していても
+   管理画面から気付けなかった（8/08に4回言い直させた件は事業主の目視で発覚）。
+   個人を特定する情報は持たない。タブを閉じれば消えるsessionStorage。 */
+const HEARING_SID=(function(){
+  try{
+    var s=sessionStorage.getItem('nsf_hearing_sid');
+    if(!s){ s=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+            sessionStorage.setItem('nsf_hearing_sid',s); }
+    return s;
+  }catch(e){ return Date.now().toString(36); }  // プライベートモード等で使えない場合
+})();
+
 async function liveTurn(userText, skipEcho){
   if(!skipEcho) addMsg('user', userText);
   history.push({role:'user', content:userText});
   showTyping();
   try{
-    const livePayload={ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5', lang:(isEN()?'en':'ja') };
+    const livePayload={ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5', lang:(isEN()?'en':'ja'), sid:HEARING_SID };
     if(pendingAIImages.length){
       livePayload.images=pendingAIImages.slice();
       pendingAIImages=[]; // 1回送ったらクリア（失敗時も再送しない＝有料枠・トークンの浪費防止を優先）
