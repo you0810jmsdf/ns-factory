@@ -307,6 +307,19 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     /* AIチャット連携で構造化選択・購入手段・会話ログ等が入り長文化したため、
        他のテキストエリアより広めの初期高さにする（#f-memoのみ） */
     #f-memo { min-height:220px; font-family:inherit; white-space:pre-wrap; }
+    /* メモ内のURLをクリックで開くためのボタン列（textarea内の文字は押せないため） */
+    .memo-links { display:none; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .memo-links.has-links { display:flex; }
+    .memo-links .memo-link-label {
+      width:100%; font-size:.72rem; color:var(--color-text-mute); margin-bottom:2px;
+    }
+    .memo-links a {
+      display:inline-flex; align-items:center; gap:4px; max-width:100%;
+      font-size:.76rem; padding:4px 10px; border-radius:99px;
+      background:#EEF2FF; color:#3730A3; text-decoration:none;
+      border:1px solid #C7D2FE; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .memo-links a:hover { background:#E0E7FF; }
     .field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
     /* Timeline editor */
@@ -487,6 +500,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <div class="field">
       <label>メモ（非公開・管理用）</label>
       <textarea id="f-memo" placeholder="顧客への連絡事項、メモ等（表示されません）"></textarea>
+      <!-- textarea の中の文字はクリックできないため、検出したURLを下にボタンとして出す -->
+      <div id="memo-links" class="memo-links"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal()">キャンセル</button>
@@ -690,6 +705,10 @@ function fetchLocalPhotos(client) {
 function init() {
   const today = new Date().toISOString().slice(0,10);
   document.getElementById('f-start').value = today;
+
+  // メモを書き換えたらリンクボタンもその場で追従させる
+  const memoEl = document.getElementById('f-memo');
+  if (memoEl) memoEl.addEventListener('input', renderMemoLinks);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1286,7 +1305,61 @@ async function openModal(id) {
     if (cBox) cBox.style.display = 'none';
     addTlRow(new Date().toISOString().slice(0,10), 'ご注文ありがとうございます。受け付けいたしました。');
   }
+  renderMemoLinks();
   document.getElementById('modal-bg').classList.add('open');
+}
+
+// ── メモ内のリンクをクリックで開けるようにする（2026-08-31 事業主要望）──
+// textarea の中身は文字列なのでリンクにできない。入力欄の下にボタンとして出す。
+// ⛔ innerHTML で組み立てないこと。メモにはお客様の文面がそのまま入るため、
+//    必ず DOM API（textContent）で組み立て、http/https 以外は採用しない。
+function extractMemoUrls(text) {
+  const found = [];
+  // URLに使える文字（RFC3986）だけを対象にする。
+  // ⛔ [^\s] のような広い集合にしないこと。「…/abc/。よろしく」のように
+  //    後ろの日本語まで1つのURLとして飲み込む（2026-08-31 実測）。
+  const re = /https?:\/\/[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;=%]+/gi;
+  let m;
+  while ((m = re.exec(String(text || ''))) !== null) {
+    // 文末の句読点・閉じ括弧は URL に含めない（「…/abc/」の後に 。や ） が続くケース）
+    let url = m[0].replace(/[)\]}>、。，．！？」』）】\.,;:!?]+$/, '');
+    if (!/^https?:\/\/[^\/]/i.test(url)) continue;
+    if (found.indexOf(url) === -1) found.push(url);
+  }
+  return found;
+}
+// 表示用の短いラベル（ドメイン＋末尾）。長いURLでボタンが画面からはみ出さないようにする
+function memoLinkLabel(url) {
+  try {
+    const u = new URL(url);
+    const tail = (u.pathname + u.search).replace(/\/$/, '');
+    const short = tail.length > 24 ? tail.slice(0, 12) + '…' + tail.slice(-10) : tail;
+    return u.hostname.replace(/^www\./, '') + short;
+  } catch (e) {
+    return url.length > 40 ? url.slice(0, 40) + '…' : url;
+  }
+}
+function renderMemoLinks() {
+  const box = document.getElementById('memo-links');
+  const ta  = document.getElementById('f-memo');
+  if (!box || !ta) return;
+  const urls = extractMemoUrls(ta.value);
+  box.textContent = '';
+  if (!urls.length) { box.classList.remove('has-links'); return; }
+  const label = document.createElement('div');
+  label.className = 'memo-link-label';
+  label.textContent = 'メモ内のリンク（クリックで別タブで開きます）';
+  box.appendChild(label);
+  urls.forEach(u => {
+    const a = document.createElement('a');
+    a.href = u;                       // http/https のみ通過済み
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.title = u;                      // 全文はツールチップで確認できる
+    a.textContent = '🔗 ' + memoLinkLabel(u);
+    box.appendChild(a);
+  });
+  box.classList.add('has-links');
 }
 
 function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
