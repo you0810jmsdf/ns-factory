@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>定期実行モニタ | N's factory</title>
+<style>
+/* 幕僚活動モニタ（staff-monitor.html）と同じダーク管制室テーマ */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#0d1117;color:#e6edf3;min-height:100vh;
+}
+.topbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 20px;border-bottom:1px solid #30363d;background:#161b22;
+}
+.topbar h1{margin:0;font-size:17px;letter-spacing:.04em}
+.live{font-size:11px;font-weight:bold;padding:3px 10px;border-radius:999px;
+  background:#12331f;color:#4ade80;border:1px solid #2ea043}
+.live.stale{background:#3a2d10;color:#e3b341;border-color:#9e6a03}
+.live.down{background:#3d1214;color:#ff9d9d;border-color:#f85149}
+.meta{font-size:11px;color:#9aa4af;line-height:1.5}
+.wrap{padding:16px 20px 60px;display:grid;gap:14px;max-width:1200px}
+.panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px 16px}
+.panel h2{margin:0 0 10px;font-size:14px;color:#c9d1d9;letter-spacing:.03em}
+.panel h2 .sub{font-size:11px;color:#9aa4af;font-weight:normal;margin-left:8px}
+.empty{color:#9aa4af;font-size:13px;padding:8px 2px}
+.err{display:none;margin:0 0 10px;padding:8px 12px;border-radius:8px;
+  background:#3d1214;border:1px solid #f85149;color:#ff9d9d;font-size:12px}
+
+/* 件数サマリー */
+.counts{display:flex;gap:8px;flex-wrap:wrap}
+.count-card{
+  background:#0d1117;border:1px solid #30363d;border-radius:10px;
+  padding:8px 14px;min-width:104px;
+}
+.count-card .n{font-size:20px;font-weight:bold;font-variant-numeric:tabular-nums}
+.count-card .l{font-size:11px;color:#9aa4af}
+.count-card.bad{border-color:#f85149}
+.count-card.bad .n{color:#ff9d9d}
+
+/* 状態バッジ */
+.st{font-size:11px;padding:2px 8px;border-radius:999px;white-space:nowrap;border:1px solid}
+.st-ok{background:#12331f;color:#4ade80;border-color:#2ea043}
+.st-error{background:#3d1214;color:#ff9d9d;border-color:#f85149}
+.st-stale{background:#3a2d10;color:#e3b341;border-color:#9e6a03}
+.st-never{background:#21262d;color:#c9d1d9;border-color:#484f58}
+.st-disabled{background:#21262d;color:#8b949e;border-color:#30363d}
+.st-running{background:#0d2b45;color:#79c0ff;border-color:#1f6feb}
+.st-assumed{background:#1c2b1c;color:#a5d6a7;border-color:#2d5a2d}
+.st-unverified{background:#21262d;color:#9aa4af;border-color:#30363d}
+
+/* 時間帯タイムライン */
+.tl{display:grid;gap:4px}
+.tl-row{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:start;
+  padding:5px 6px;border-radius:8px;background:#0d1117;border:1px solid #21262d}
+.tl-row.busy{border-color:#9e6a03;background:#1d1808}
+.tl-row.conflict{border-color:#f85149;background:#20100f}
+.tl-hour{font-variant-numeric:tabular-nums;font-size:13px;color:#c9d1d9;font-weight:bold;padding-top:3px}
+.tl-items{display:flex;gap:5px;flex-wrap:wrap}
+.chip{
+  font-size:11px;padding:3px 9px;border-radius:999px;
+  background:#161b22;border:1px solid #30363d;color:#c9d1d9;white-space:nowrap;
+}
+.chip .t{color:#8b949e;font-variant-numeric:tabular-nums;margin-right:4px}
+.chip.k-windows{border-left:3px solid #58a6ff}
+.chip.k-actions{border-left:3px solid #a371f7}
+.chip.k-gas{border-left:3px solid #3fb950}
+.chip.bad{border-color:#f85149;color:#ff9d9d}
+.tl-note{font-size:11px;color:#e3b341;margin-top:4px}
+
+/* 一覧 */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.fbtn{
+  font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;
+  background:#0d1117;border:1px solid #30363d;color:#c9d1d9;
+}
+.fbtn.on{background:#1f6feb;border-color:#388bfd;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:#9aa4af;font-size:11px;text-align:left;padding:4px 10px;
+  border-bottom:1px solid #30363d;font-weight:normal;white-space:nowrap}
+td{padding:6px 10px;border-bottom:1px solid #21262d;vertical-align:top}
+td.mono{font-variant-numeric:tabular-nums;white-space:nowrap;color:#9aa4af;font-size:12px}
+td.name{color:#e6edf3}
+td.name small{display:block;color:#6e7681;font-size:11px;margin-top:2px;word-break:break-all}
+.kind{font-size:10px;color:#8b949e;border:1px solid #30363d;border-radius:4px;padding:1px 5px}
+.detail{color:#e3b341;font-size:11px}
+.table-scroll{overflow-x:auto}
+
+.auth-overlay{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(1,4,9,.8);backdrop-filter:blur(4px);
+}
+.auth-card{
+  width:min(420px,100%);background:#161b22;border:1px solid #30363d;border-radius:18px;
+  padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.5);
+}
+.auth-card h2{margin:0 0 8px;font-size:20px;color:#e6edf3}
+.auth-card p{margin:0 0 14px;font-size:13px;color:#9aa4af;line-height:1.6}
+.auth-card input{
+  width:100%;border:1px solid #30363d;border-radius:8px;padding:10px 12px;font-size:14px;
+  margin-bottom:10px;outline:none;background:#0d1117;color:#e6edf3;
+}
+.auth-card input:focus{border-color:#58a6ff}
+.auth-btn{
+  width:100%;padding:10px;background:#1f6feb;color:#fff;border:none;border-radius:8px;
+  font-size:14px;font-weight:bold;cursor:pointer;
+}
+.auth-btn:hover{background:#388bfd}
+.auth-error{min-height:18px;margin:6px 0 0;font-size:12px;color:#ff9d9d}
+.auth-locked{overflow:hidden}
+@media(max-width:640px){
+  .wrap{padding:12px 12px 60px}
+  .tl-row{grid-template-columns:44px 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>⏰ 定期実行モニタ</h1>
+  <span class="live" id="liveBadge">読み込み中…</span>
+  <div class="meta" id="updatedAt" style="margin-left:auto"></div>
+</div>
+
+<div class="wrap">
+  <div class="err" id="loadErr"></div>
+
+  <div class="panel">
+    <h2>件数 <span class="sub">自宅PCが5分おきに収集</span></h2>
+    <div class="counts" id="countCards"></div>
+  </div>
+
+  <div class="panel">
+    <h2>⚠ 要対処 <span class="sub">失敗・停止・未実行のもの</span></h2>
+    <div class="table-scroll"><div id="problemList"><div class="empty">読み込み中…</div></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>🕐 時間帯の混み具合 <span class="sub">同じ時刻に集中していないかを見る（無効なものは除外）</span></h2>
+    <div class="tl" id="timeline"><div class="empty">読み込み中…</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>🔁 時刻を持たない繰り返し <span class="sub">◯分おきに動くもの</span></h2>
+    <div class="tl-items" id="intervalList"><div class="empty">読み込み中…</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>📋 全件一覧</h2>
+    <div class="filters" id="filters"></div>
+    <div class="table-scroll"><table>
+      <thead><tr>
+        <th>状態</th><th>時刻</th><th>処理</th><th>系統</th><th>所管</th><th>前回</th><th>次回</th>
+      </tr></thead>
+      <tbody id="listBody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <h2>N's Factory</h2>
+    <p>定期実行モニタ<br>サイト管理者パスワードを入力してください。</p>
+    <input type="password" id="authPassword" placeholder="パスワード" onkeydown="if(event.key==='Enter')submitAuth()">
+    <button class="auth-btn" onclick="submitAuth()">ログイン</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// 認証（SHA-256照合）。admin.html と同じ nsf_admin_key を使うため、
+// admin.html の iframe から開かれた場合は再入力不要。
+// ================================================================
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const SESSION_KEY = 'nsfactory-automations-auth';
+const KEY_STORE = 'nsf_admin_key';  // admin.html と共通
+// 幕僚計画GAS。upload_monitor.py が5分おきに送ったデータを getMonitor で受け取る
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec';
+const REFRESH_MS = 60000;
+const STALE_MIN = 12;   // データ生成からこの分数を超えたら鮮度警告
+
+function sha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
+function getKey() {
+  try { return sessionStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; }
+}
+function checkSession() {
+  try { return sessionStorage.getItem(SESSION_KEY) === 'ok' && !!getKey(); } catch (e) { return false; }
+}
+function unlockAuth() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.classList.remove('auth-locked');
+  tick();
+  setInterval(tick, REFRESH_MS);
+}
+function submitAuth() {
+  const input = document.getElementById('authPassword');
+  const errEl = document.getElementById('authError');
+  sha256(input.value).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, 'ok');
+        sessionStorage.setItem(KEY_STORE, input.value);
+      } catch (e) {}
+      unlockAuth();
+    } else {
+      errEl.textContent = 'パスワードが違います';
+    }
+  }).catch(() => { errEl.textContent = '照合に失敗しました（https環境で開いてください）'; });
+}
+
+// ================================================================
+// 表示の共通部品
+// ================================================================
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// 状態の日本語ラベル。payloadを小さく保つため、定型の説明文は画面側で持つ
+const ST = {
+  ok:         { label: '正常',      note: '' },
+  error:      { label: '失敗',      note: '' },
+  stale:      { label: '止まっている', note: '' },
+  never:      { label: '未実行',    note: '' },
+  running:    { label: '実行中',    note: '' },
+  disabled:   { label: '無効',      note: 'このタスクは無効化されています' },
+  assumed:    { label: '登録済み',  note: 'GASに登録済みと確認したもの（実行履歴は取得できません）' },
+  unverified: { label: '未確認',    note: 'コードに定義はありますが、GASへ登録済みかは未確認です' }
+};
+const KIND = { windows: 'PC', actions: 'GitHub', gas: 'GAS' };
+const BAD = ['error', 'stale', 'never'];
+
+function fmtAge(min){
+  if(min < 60) return min + '分前';
+  if(min < 1440) return Math.floor(min/60) + '時間' + (min%60) + '分前';
+  return Math.floor(min/1440) + '日前';
+}
+function fmtWhen(iso){
+  if(!iso) return '—';
+  const t = new Date(iso);
+  if(isNaN(t)) return esc(iso);
+  const min = Math.round((Date.now() - t.getTime()) / 60000);
+  const stamp = iso.replace('T', ' ').replace(/[+Z].*$/, '').slice(5, 16);
+  return min >= 0 ? stamp + '<br><small style="color:#6e7681">' + fmtAge(min) + '</small>' : stamp;
+}
+function stBadge(s){
+  const m = ST[s] || { label: s };
+  return '<span class="st st-' + esc(s) + '">' + esc(m.label) + '</span>';
+}
+
+// ================================================================
+// 描画
+// ================================================================
+let allItems = [];
+let filterKind = 'all';
+
+function render(root){
+  const d = root.automations;
+  const genAt = new Date(root.generatedAt);
+  const ageMin = Math.max(0, Math.round((Date.now() - genAt.getTime()) / 60000));
+  const badge = document.getElementById('liveBadge');
+  document.getElementById('updatedAt').innerHTML =
+    'データ生成: ' + esc(String(root.generatedAt).replace('T',' ')) + '（' + fmtAge(ageMin) + '）'
+    + '<br>自宅PCから5分おきにアップロード';
+
+  if(!d){
+    badge.textContent = '✕ データなし'; badge.className = 'live down';
+    const msg = root.automationsError
+      ? '定期実行データを収集できませんでした: ' + esc(root.automationsError)
+      : '定期実行データがまだ届いていません（自宅PCの upload_monitor.py が次に動けば入ります）';
+    showErr(msg);
+    return;
+  }
+  if(ageMin > STALE_MIN){
+    badge.textContent = '⚠ データが古い'; badge.className = 'live stale';
+  }else{
+    badge.textContent = '● 更新中'; badge.className = 'live';
+  }
+
+  allItems = d.items || [];
+  renderCounts(d.counts || {});
+  renderProblems(allItems);
+  renderTimeline(allItems);
+  renderIntervals(allItems);
+  renderFilters();
+  renderList();
+
+  if((d.errors || []).length){
+    showErr('収集時の警告: ' + d.errors.map(esc).join(' / '));
+  }
+}
+
+function showErr(html){
+  const el = document.getElementById('loadErr');
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
+function renderCounts(c){
+  const cards = [
+    { n: c.total   || 0, l: '全体' },
+    { n: c.problem || 0, l: '要対処', bad: (c.problem || 0) > 0 },
+    { n: c.windows || 0, l: 'PCのタスク' },
+    { n: c.actions || 0, l: 'GitHub' },
+    { n: c.gas     || 0, l: 'GASトリガー' }
+  ];
+  document.getElementById('countCards').innerHTML = cards.map(x =>
+    '<div class="count-card' + (x.bad ? ' bad' : '') + '">'
+    + '<div class="n">' + x.n + '</div><div class="l">' + esc(x.l) + '</div></div>'
+  ).join('');
+}
+
+function renderProblems(items){
+  const bad = items.filter(i => BAD.indexOf(i.status) >= 0);
+  const el = document.getElementById('problemList');
+  if(!bad.length){
+    el.innerHTML = '<div class="empty">失敗・停止しているものはありません。</div>';
+    return;
+  }
+  el.innerHTML = '<table><thead><tr><th>状態</th><th>処理</th><th>予定</th><th>前回</th><th>内容</th></tr></thead><tbody>'
+    + bad.map(i =>
+      '<tr>'
+      + '<td>' + stBadge(i.status) + '</td>'
+      + '<td class="name">' + esc(i.label) + '<small>' + esc(i.name) + '</small></td>'
+      + '<td class="mono">' + esc(i.schedule || '—') + '</td>'
+      + '<td class="mono">' + fmtWhen(i.lastRun) + '</td>'
+      + '<td class="detail">' + esc(i.detail || (ST[i.status] || {}).note || '') + '</td>'
+      + '</tr>').join('')
+    + '</tbody></table>';
+}
+
+function renderTimeline(items){
+  // 時刻を持ち、有効なものだけを時間帯ごとに並べる
+  const timed = items.filter(i => i.slot && i.enabled);
+  const byHour = {};
+  timed.forEach(i => { (byHour[i.slot.slice(0,2)] = byHour[i.slot.slice(0,2)] || []).push(i); });
+
+  const hours = Object.keys(byHour).sort();
+  if(!hours.length){
+    document.getElementById('timeline').innerHTML = '<div class="empty">時刻の決まった処理がありません。</div>';
+    return;
+  }
+  document.getElementById('timeline').innerHTML = hours.map(h => {
+    const list = byHour[h].slice().sort((a,b) => (a.slot > b.slot ? 1 : -1));
+    // 同じ「時:分」に毎日動くものが2つ以上あれば、実際にぶつかる
+    const bySlot = {};
+    list.forEach(i => { (bySlot[i.slot] = bySlot[i.slot] || []).push(i); });
+    const clash = Object.keys(bySlot).filter(s =>
+      bySlot[s].filter(i => /^daily/.test(i.schedule || '')).length >= 2);
+    const cls = clash.length ? 'conflict' : (list.length >= 3 ? 'busy' : '');
+    const note = clash.length
+      ? '<div class="tl-note">⚠ ' + clash.map(s => esc(s) + ' に毎日'
+          + bySlot[s].filter(i => /^daily/.test(i.schedule || '')).length + '件が重なります').join(' / ') + '</div>'
+      : (list.length >= 3 ? '<div class="tl-note">この時間帯に' + list.length + '件</div>' : '');
+    return '<div class="tl-row ' + cls + '">'
+      + '<div class="tl-hour">' + esc(h) + '時</div>'
+      + '<div><div class="tl-items">' + list.map(i => chip(i, true)).join('') + '</div>' + note + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function renderIntervals(items){
+  const iv = items.filter(i => !i.slot && i.enabled);
+  document.getElementById('intervalList').innerHTML = iv.length
+    ? iv.map(i => chip(i, false)).join('')
+    : '<div class="empty">ありません。</div>';
+}
+
+function chip(i, showTime){
+  const bad = BAD.indexOf(i.status) >= 0;
+  const title = i.name + ' / ' + (i.schedule || '') + (i.detail ? ' / ' + i.detail : '');
+  return '<span class="chip k-' + esc(i.kind) + (bad ? ' bad' : '') + '" title="' + esc(title) + '">'
+    + (showTime ? '<span class="t">' + esc(i.slot) + '</span>' : '<span class="t">' + esc(i.schedule) + '</span>')
+    + esc(i.label) + (bad ? ' ⚠' : '') + '</span>';
+}
+
+function renderFilters(){
+  const defs = [
+    { k: 'all',      l: '全て' },
+    { k: 'problem',  l: '⚠ 要対処' },
+    { k: 'windows',  l: 'PCのタスク' },
+    { k: 'actions',  l: 'GitHub' },
+    { k: 'gas',      l: 'GASトリガー' },
+    { k: 'disabled', l: '無効' }
+  ];
+  document.getElementById('filters').innerHTML = defs.map(d =>
+    '<button class="fbtn' + (filterKind === d.k ? ' on' : '') + '" data-f="' + d.k + '">' + esc(d.l) + '</button>'
+  ).join('');
+  document.querySelectorAll('#filters .fbtn').forEach(b => {
+    b.onclick = () => { filterKind = b.dataset.f; renderFilters(); renderList(); };
+  });
+}
+
+function renderList(){
+  let rows = allItems.slice();
+  if(filterKind === 'problem')       rows = rows.filter(i => BAD.indexOf(i.status) >= 0);
+  else if(filterKind === 'disabled') rows = rows.filter(i => !i.enabled);
+  else if(filterKind !== 'all')      rows = rows.filter(i => i.kind === filterKind);
+
+  rows.sort((a,b) => (a.slot || 'zz').localeCompare(b.slot || 'zz') || a.name.localeCompare(b.name));
+
+  document.getElementById('listBody').innerHTML = rows.length ? rows.map(i =>
+    '<tr>'
+    + '<td>' + stBadge(i.status) + '</td>'
+    + '<td class="mono">' + esc(i.schedule || '—') + '</td>'
+    + '<td class="name">' + esc(i.label) + '<small>' + esc(i.name) + '</small>'
+    + (i.detail || (ST[i.status] || {}).note
+        ? '<small class="detail">' + esc(i.detail || ST[i.status].note) + '</small>' : '')
+    + '</td>'
+    + '<td><span class="kind">' + esc(KIND[i.kind] || i.kind) + '</span></td>'
+    + '<td class="mono">' + esc(i.owner || '—') + '</td>'
+    + '<td class="mono">' + fmtWhen(i.lastRun) + '</td>'
+    + '<td class="mono">' + fmtWhen(i.nextRun) + '</td>'
+    + '</tr>').join('')
+    : '<tr><td colspan="7" class="empty">該当なし</td></tr>';
+}
+
+// ================================================================
+// 取得（GASの間欠障害が頻発するためリトライ付き）
+// ================================================================
+async function gasPost(body) {
+  // Content-Type: text/plain で simple request にし CORS preflight を回避（GAS定石）
+  const res = await fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+async function gasPostRetry(body, attempts){
+  attempts = attempts || 4;
+  const delays = [800, 1600, 3200];
+  for (let i = 0; i < attempts; i++) {
+    try { return await gasPost(body); }
+    catch (e) {
+      if (i === attempts - 1) throw e;
+      await new Promise(r => setTimeout(r, delays[i] || 3200));
+    }
+  }
+}
+async function tick(){
+  const badge = document.getElementById('liveBadge');
+  const errEl = document.getElementById('loadErr');
+  try{
+    const r = await gasPostRetry({ action: 'getMonitor', apiKey: getKey(), key: getKey() });
+    if(r.error) throw new Error(r.error);
+    errEl.style.display = 'none';
+    render(r.data);
+  }catch(e){
+    badge.textContent = '✕ 取得失敗'; badge.className = 'live down';
+    showErr('⚠ ' + esc(e.message));
+  }
+}
+
+if (checkSession()) {
+  document.getElementById('authOverlay').style.display = 'none';
+  unlockAuth();
+} else {
+  document.body.classList.add('auth-locked');
+}
+</script>
+</body>
+</html>
