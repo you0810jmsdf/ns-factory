@@ -1,5 +1,9 @@
 (function () {
-  const { songs, groups, persons, glossary, phonetics } = window.KATAKAMNA_DATA;
+  const { persons, glossary, phonetics } = window.KATAKAMNA_DATA;
+  // 80首索引は「原文80首」（utahi/data/utahiData.js）を正本とする
+  const utahiData = window.KATAKAMUNA_UTAHI_DATA;
+  const songs = utahiData.songs;
+  const groups = utahiData.groups;
   const goods = window.KATAKAMNA_GOODS || { shopUrl: '', items: [] };
 
   const state = {
@@ -45,9 +49,9 @@
       if (!q) return true;
       return (
         s.utahi.toLowerCase().includes(q) ||
-        s.translation.toLowerCase().includes(q) ||
+        (s.summary || '').toLowerCase().includes(q) ||
         s.interpretation.toLowerCase().includes(q) ||
-        (s.themes || []).some(t => t.toLowerCase().includes(q))
+        (s.keywords || []).some(t => t.toLowerCase().includes(q))
       );
     });
   }
@@ -63,7 +67,7 @@
       btn.setAttribute('aria-pressed', s.id === state.selectedId ? 'true' : 'false');
       btn.dataset.id = s.id;
 
-      const themes = (s.themes || []).slice(0, 2).map(t => `<span>${esc(t)}</span>`).join('');
+      const themes = (s.keywords || []).slice(0, 2).map(t => `<span>${esc(t)}</span>`).join('');
 
       btn.innerHTML = `
         <div class="volume-card-top">
@@ -130,17 +134,17 @@
       card.className = 'song-card';
       card.id = `song-${s.id}`;
 
-      const themes = (s.themes || []).map(t => `<span>${esc(t)}</span>`).join('');
+      const themes = (s.keywords || []).map(t => `<span>${esc(t)}</span>`).join('');
 
       card.innerHTML = `
         <div class="song-card-head">
           <div>
-            <p class="song-label">第 ${esc(s.id)} 首 ／ ${esc(s.kana)}</p>
+            <p class="song-label">第 ${esc(s.id)} 首 ／ ${esc(s.group)}</p>
           </div>
           <div class="song-number" aria-hidden="true">${esc(s.id)}</div>
         </div>
         <p class="utahi-text">${esc(s.utahi)}</p>
-        <p class="translation-text">「${esc(s.translation)}」</p>
+        <p class="translation-text">「${esc(s.summary)}」</p>
         <div class="tag-row">${themes}</div>
         <button class="accordion-toggle" aria-expanded="false" aria-controls="interp-${s.id}">
           <span>楢崎解釈を読む</span>
