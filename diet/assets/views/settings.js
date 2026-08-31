@@ -22,6 +22,13 @@ import {
   sendPending,
   setSendEnabled
 } from './../unknown-foods.js';
+import {
+  isHealthMonitorEnabled,
+  setHealthMonitorEnabled
+} from './../health-monitor.js';
+import { BUILTIN_FOODS } from './../foods.js';
+import { findFoodEntry, servingCalories } from './../food-match.js';
+import { updateMeal } from './../db.js';
 
 const ACTIVITY_LEVELS = Object.freeze([
   { value: '1.5', label: '低い（1.50）' },
@@ -35,7 +42,8 @@ const ACTIVITY_LEVELS = Object.freeze([
 const PRIVACY_TEXT = '体重・食事・水分・運動の記録は、すべてお使いの端末の中だけに保存されます。これらがインターネットへ送られることはありません。アプリを削除するとデータも消えるため、定期的にバックアップを保存してください。';
 const PRIVACY_EXCEPTIONS = [
   '一覧に無かった品目名（例:「切り干し大根」）だけを送ります。一覧を増やして、次から自動でカロリーが出るようにするためです。食べた量・カロリー・日時・体重は送りません。下のスイッチでいつでも止められます。',
-  '「写真から入力する」を使うときだけ、選んだ写真1枚を解析のため送ります（解析後は保存されません）。使わなければ送信は起きません。'
+  '「写真から入力する」を使うときだけ、選んだ写真1枚を解析のため送ります（解析後は保存されません）。使わなければ送信は起きません。',
+  '不具合を見つけるため、エラーの種類・画面名・ブラウザ情報だけを送ることがあります。体重・食事内容・写真・合言葉は送りません。下のスイッチで止められます。'
 ];
 const EXERCISE_BALANCE_NOTICE = '身体活動レベルに「ふつう」「高い」を選んでいる場合、その中に既に運動分が含まれています。ここをONにすると運動分を二重に数えて、食べてよい量を多く見積もる恐れがあります。ONにするなら身体活動レベルを「低い（1.50）」にしてください。';
 
@@ -687,6 +695,153 @@ function createUnknownFoodsCard(ctx) {
   return card;
 }
 
+/**
+ * 健全性モニタリングのON/OFFカード。
+ * ⛔ 記録内容を送る仕組みに変えないこと。開発者へ送るのはエラー概要だけ。
+ * @param {object} ctx 画面共通コンテキスト。
+ * @returns {HTMLElement} カード要素。
+ */
+function createHealthMonitorCard(ctx) {
+  const card = el('section', 'card stack');
+  card.append(el('h2', 'card-title', '健全性モニタリング'));
+  card.append(el('p', 'muted', 'アプリが起動できない、画面が壊れる、写真解析が失敗するなどの不具合を開発者へ知らせます。'));
+
+  const toggle = createInput('healthMonitor', 'checkbox');
+  toggle.className = '';
+  toggle.checked = isHealthMonitorEnabled();
+
+  const line = el('label', 'field');
+  line.append(el('span', 'field-label', '不具合検知'));
+  const checkLine = el('span');
+  checkLine.append(toggle, document.createTextNode(' エラーの概要だけを送る'));
+  line.append(checkLine);
+
+  const notice = el('div', 'banner');
+  notice.append(el('strong', '', '送るもの'));
+  notice.append(el('span', '', 'エラー種別、画面名、ブラウザ、画面サイズ、オンライン状態です。体重・食事内容・写真・合言葉は送りません。'));
+
+  toggle.addEventListener('change', () => {
+    if (!setHealthMonitorEnabled(toggle.checked)) {
+      toggle.checked = !toggle.checked;
+      ctx.showToast('この端末では設定を保存できませんでした', { tone: 'warning' });
+      return;
+    }
+    ctx.showToast(toggle.checked ? '不具合検知をONにしました' : '不具合検知をOFFにしました', { tone: 'success' });
+  });
+
+  card.append(line, notice);
+  return card;
+}
+
+/**
+ * 過去の食事記録のカロリーを、1人前を基準に計算し直すカード。
+ *
+ * ⛔ 何も言わずに全件を書き換えないこと。手で直したカロリーを壊す。
+ *    必ず「何件がどう変わるか」を先に出し、利用者に選ばせる。
+ * ⛔ 計算し直しは取り消せない。実行前にバックアップを促すこと。
+ * @param {object} ctx 画面共通コンテキスト。
+ * @returns {HTMLElement} カード要素。
+ */
+function createRecalcCard(ctx) {
+  const card = el('section', 'card stack');
+  card.append(el('h2', 'card-title', 'カロリーの計算し直し'));
+  card.append(el('p', 'muted', '食品の一覧を増やしたあとに使います。品目名から1人前ぶんのカロリーを引き直します。'));
+
+  const result = el('div', 'stack');
+  const status = el('span', 'muted');
+
+  // 対象を集める。onlyEmpty=true ならカロリーが入っていないものだけ。
+  const collect = async (onlyEmpty) => {
+    const meals = await getAll(STORES.meals);
+    const plans = [];
+    (meals || []).forEach((m) => {
+      if (!m || !m.name) return;
+      if (onlyEmpty && Number.isFinite(m.kcal)) return;
+      const found = findFoodEntry(m.name, BUILTIN_FOODS);
+      if (!found) return;
+      const serving = servingCalories(found.food);
+      if (Number.isFinite(m.kcal) && m.kcal === serving.kcal) return;
+      plans.push({ meal: m, food: found.food, serving });
+    });
+    return plans;
+  };
+
+  const showPlans = (plans, onlyEmpty) => {
+    result.replaceChildren();
+    if (!plans.length) {
+      result.append(el('span', 'muted', '計算し直す記録はありませんでした。'));
+      return;
+    }
+    result.append(el('strong', '', `${plans.length}件が変わります`));
+    plans.slice(0, 12).forEach((p) => {
+      const before = Number.isFinite(p.meal.kcal) ? `${p.meal.kcal}kcal` : '未計算';
+      result.append(el('span', 'muted',
+        `${p.meal.date} ${p.meal.name}: ${before} → ${p.serving.kcal}kcal（${p.food.name}・${p.serving.label}）`));
+    });
+    if (plans.length > 12) {
+      result.append(el('span', 'muted', `ほか${plans.length - 12}件`));
+    }
+
+    const run = el('button', 'button button-primary', `この${plans.length}件を計算し直す`);
+    run.type = 'button';
+    run.addEventListener('click', async () => {
+      const ok = await ctx.confirmDialog(
+        `${plans.length}件のカロリーを1人前で計算し直します。元には戻せません。`
+        + '先に「データ管理 → JSONエクスポート」で控えを取ることをおすすめします。実行しますか？');
+      if (!ok) return;
+      run.disabled = true;
+      status.textContent = '計算し直しています…';
+      let done = 0;
+      for (const p of plans) {
+        const per = Number.isFinite(p.food.per) && p.food.per > 0 ? p.food.per : 100;
+        const factor = p.serving.grams / per;
+        try {
+          await updateMeal({
+            ...p.meal,
+            name: p.food.name,
+            amount: p.serving.grams,
+            unit: p.food.unit || 'g',
+            kcal: p.serving.kcal,
+            p: Math.round((p.food.p || 0) * factor * 10) / 10,
+            f: Math.round((p.food.f || 0) * factor * 10) / 10,
+            c: Math.round((p.food.c || 0) * factor * 10) / 10,
+            foodId: p.food.id
+          });
+          done++;
+        } catch (e) {
+          // ⛔ 1件の失敗で全体を止めないこと。残りは計算し直せる。
+        }
+      }
+      status.textContent = `${done}件を計算し直しました`;
+      ctx.showToast(`${done}件を計算し直しました`, { tone: 'success' });
+      result.replaceChildren();
+    });
+    result.append(run);
+  };
+
+  const emptyBtn = el('button', 'button', 'カロリーが入っていないものを調べる');
+  emptyBtn.type = 'button';
+  emptyBtn.addEventListener('click', async () => {
+    status.textContent = '調べています…';
+    const plans = await collect(true);
+    status.textContent = '';
+    showPlans(plans, true);
+  });
+
+  const allBtn = el('button', 'button', 'すべて1人前で調べ直す');
+  allBtn.type = 'button';
+  allBtn.addEventListener('click', async () => {
+    status.textContent = '調べています…';
+    const plans = await collect(false);
+    status.textContent = '';
+    showPlans(plans, false);
+  });
+
+  card.append(emptyBtn, allBtn, status, result);
+  card.append(el('span', 'muted', '※「すべて」は手で直したカロリーも1人前の値に戻します。'));
+  return card;
+}
+
 function createDataManagementCard(ctx) {
   const card = el('section', 'card stack');
   card.append(el('h2', 'card-title', 'データ管理'));
@@ -776,7 +931,9 @@ export async function render(ctx) {
 
   stack.append(createPhotoFeatureCard(ctx));
   stack.append(createProfileForm(ctx, ctx.profile, weights, refresh));
+  stack.append(createRecalcCard(ctx));
   stack.append(createUnknownFoodsCard(ctx));
+  stack.append(createHealthMonitorCard(ctx));
   stack.append(createDataManagementCard(ctx));
   stack.append(createPrivacyCard());
   return fragment;

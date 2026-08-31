@@ -1,8 +1,7 @@
 // 写真から食事を記録するページ（photo.html）専用スクリプト。
 //
-// ⛔ このファイル以外から GAS_URL へ通信するコードを書かないこと。
-//    本体アプリは CSP connect-src 'none' の外部送信ゼロを維持しており、
-//    外部通信はこのページだけに隔離している（2026-08-24 事業主承認済みのオプション機能）。
+// ⛔ 写真そのものを送る通信はこのファイルだけにすること。
+//    本体アプリ側のGAS通信は、未知の品目名と不具合検知の概要だけに限定する。
 //
 // 流れ: 合言葉 → 写真選択 → 端末内で長辺1280pxに縮小 → GASへ送信（写真1枚のみ）
 //       → Claude Visionの推定結果を編集可能なリストで表示 → 確認して IndexedDB へ記録。
@@ -11,7 +10,9 @@
 import { addMeal, deleteMeal, getAll, STORES } from './db.js';
 import { MEAL_SLOT_LABELS, detectMealSlot, todayString, currentTimeString } from './quick-entry.js';
 import { BUILTIN_FOODS } from './foods.js';
+import { findFoodEntry, servingCalories } from './food-match.js';
 import { recordUnknownFood } from './unknown-foods.js';
+import { installHealthMonitor, reportHealthIssue } from './health-monitor.js';
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzzSz4bbOU_FTeWF7mC_0v8331vWfU36MlMyEwE3GdWOlZH9WSy-i8t6Gg1sXhqdqqA/exec';
 const TOKEN_KEY = 'diet_photo_token';
@@ -21,6 +22,8 @@ const MAX_EDGE = 768;
 const JPEG_QUALITY = 0.85;
 
 const $ = (id) => document.getElementById(id);
+
+installHealthMonitor({ page: 'photo' });
 
 let selectedFile = null;
 let resultItems = [];
@@ -232,22 +235,12 @@ function renderResults(data) {
  * @returns {{kcal: number, label: string}|null} 見つからなければ null。
  */
 function lookupFoodKcal(name) {
-  const q = String(name || '').trim();
-  if (!q) return null;
-  const hits = BUILTIN_FOODS.filter((f) => f.name.includes(q) || f.kana.includes(q)
-    || q.includes(f.name) || q.includes(f.kana));
-  if (!hits.length) return null;
-  const rank = (f) => {
-    if (f.name === q || f.kana === q) return 0;
-    if (f.name.startsWith(q) || f.kana.startsWith(q)) return 1;
-    return 2;
-  };
-  hits.sort((a, b) => rank(a) - rank(b) || a.name.length - b.name.length);
-  const f = hits[0];
-  const grams = f.serving && Number.isFinite(f.serving.g) ? f.serving.g : f.per;
-  const kcal = Math.round(f.kcal * (grams / f.per));
-  const label = f.serving && f.serving.label ? f.serving.label : (grams + f.unit);
-  return { kcal: kcal, label: f.name + '（' + label + '）' };
+  // ⛔ ここで独自の照合を書かないこと。テキスト入力（views/meal.js）と結果がずれる。
+  //    共通処理は assets/food-match.js。
+  const found = findFoodEntry(name, BUILTIN_FOODS);
+  if (!found) return null;
+  const serving = servingCalories(found.food);
+  return { kcal: serving.kcal, label: found.food.name + '（' + serving.label + '）' };
 }
 
 /**
@@ -429,6 +422,15 @@ $('analyze-btn').addEventListener('click', async () => {
         return;
       }
       clearInterval(tick);
+      reportHealthIssue('photo_analyze_error', new Error(res.error), {
+        elapsedSec: Math.round((Date.now() - startedAt) / 1000),
+        serverElapsedMs: res.elapsedMs || '',
+        attempts: res.attempts || '',
+        model: res.model || ''
+      }, {
+        page: 'photo',
+        severity: String(res.error).includes('上限') ? 'warning' : 'error'
+      });
       showAnalyzeFailure('解析できませんでした: ' + res.error);
       return;
     }
@@ -438,8 +440,29 @@ $('analyze-btn').addEventListener('click', async () => {
       ? took + '秒で解析しました（うちAI ' + server + '秒）'
       : took + '秒で解析しました';
     $('analyze-btn').textContent = 'この写真を解析する';
+    if (!((res.data && res.data.candidates) || []).length) {
+      reportHealthIssue('photo_no_candidates', new Error('解析結果の候補が0件でした'), {
+        elapsedSec: took,
+        serverElapsedSec: server || '',
+        detectedCount: ((res.data && res.data.detected) || []).length,
+        warningCount: ((res.data && res.data.warnings) || []).length,
+        attempts: res.attempts || '',
+        model: res.model || ''
+      }, {
+        page: 'photo',
+        severity: 'warning'
+      });
+    }
     renderResults(res.data || {});
   } catch (err) {
+    reportHealthIssue('photo_analyze_exception', err, {
+      elapsedSec: Math.round((Date.now() - startedAt) / 1000),
+      fileType: selectedFile && selectedFile.type ? selectedFile.type : '',
+      fileSizeKb: selectedFile && Number.isFinite(selectedFile.size) ? Math.round(selectedFile.size / 1024) : ''
+    }, {
+      page: 'photo',
+      severity: 'error'
+    });
     showAnalyzeFailure(err && err.message ? err.message : '通信に失敗しました');
   } finally {
     clearInterval(tick);

@@ -26,6 +26,7 @@ import {
   undoMeal
 } from './../quick-entry.js';
 import { recordUnknownFood } from './../unknown-foods.js';
+import { findFoodEntry } from './../food-match.js';
 
 const SLOTS = Object.freeze([
   { key: 'breakfast', label: '朝' },
@@ -328,31 +329,15 @@ function resolveFoodWord(word, foods, myfoods) {
  * @returns {object|null} ヒットした食品。
  */
 function matchFoodEntry(word, foods, myfoods) {
-  const query = normalizeSearchText(word);
-  if (!query) {
-    return null;
-  }
+  // ⛔ ここで独自の照合を書かないこと。写真解析の修正（photo.js）と結果がずれる。
+  //    共通処理は assets/food-match.js。「ご飯」「味噌汁」「甘栗4個」が引けなかった
+  //    のは、ここに単純な includes 比較しか無かったため（2026-08-31 実測 0/19）。
   const pool = [
     ...(myfoods || []).map(normalizeMyFood),
     ...(foods || [])
   ];
-  const hits = pool.filter((food) =>
-    normalizeSearchText(food.name).includes(query) ||
-    normalizeSearchText(food.kana || '').includes(query));
-  if (!hits.length) {
-    return null;
-  }
-  // 完全一致 > 前方一致 > 部分一致 の順で選ぶ。
-  // 「ごはん」で「玄米ごはん」（部分一致・短名）より「ごはん（白米）」（前方一致）を優先するため。
-  const rank = (food) => {
-    const n = normalizeSearchText(food.name);
-    const k = normalizeSearchText(food.kana || '');
-    if (n === query || k === query) return 0;
-    if (n.startsWith(query) || k.startsWith(query)) return 1;
-    return 2;
-  };
-  hits.sort((a, b) => rank(a) - rank(b) || a.name.length - b.name.length);
-  return hits[0];
+  const found = findFoodEntry(word, pool);
+  return found ? found.food : null;
 }
 
 /**
