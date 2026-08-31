@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <!--
     写真解析ページ専用のCSP。
-    本体（index.html）は connect-src 'none' の外部送信ゼロを維持し、
-    GASと通信するのはこのページだけに隔離する設計。
-    ⛔ このCSPを index.html にコピーしないこと。本体の保証が壊れる。
+    GAS以外には接続しない。写真解析・未知の品目名・不具合検知の受け口を同じGASに集約する。
+    ⛔ ここに他のドメインを足さないこと。記録が外部へ出る経路が増える。
   -->
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self'; connect-src https://script.google.com https://script.googleusercontent.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'none'; form-action 'none'">
