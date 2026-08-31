@@ -930,8 +930,9 @@ canvas{
             <select id="filmStripMode">
               <option value="off" selected>使わない</option>
               <option value="diagonal">全写真をネガフィルム風に斜めへ流す</option>
+              <option value="cross">フィルム2本を斜めに交差させる</option>
             </select>
-            <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます。締めのCTAをONにすると、最後にN's factoryのロゴだけが静かに浮かびます。</p>
+            <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます。「2本を交差」は太いフィルムと細いフィルムが違う角度・違う速さですれ違い、写真が二重に流れます。締めのCTAをONにすると、最後にN's factoryのロゴだけが静かに浮かびます。</p>
           </div>
           <label class="check-row" for="endLogoCta">
             <input id="endLogoCta" type="checkbox">
@@ -3540,49 +3541,24 @@ function filmCtaActive(){
   return !!(els.filmCtaEnabled && els.filmCtaEnabled.checked);
 }
 
-function drawFilmStripScene(time, slide, progress){
-  const list = playableSlides();
-  if(!list.length) return;
-
-  // 暗室調の背景。平坦な黒だとフィルムの端が同化して見えないため、
-  // 中央をわずかに明るくして黒い帯の輪郭が浮き出るようにする（2026-08-26 事業主指摘）
-  const bgGrad = ctx.createRadialGradient(
-    canvas.width / 2, canvas.height / 2, 0,
-    canvas.width / 2, canvas.height / 2, Math.hypot(canvas.width, canvas.height) / 2);
-  bgGrad.addColorStop(0, '#2A2622');
-  bgGrad.addColorStop(.55, '#171512');
-  bgGrad.addColorStop(1, '#0A0908');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const frameW = Math.round(canvas.width * .58);   // 写真窓は横3:縦2（実フィルムのコマ比）
-  const frameH = Math.round(frameW * 2 / 3);
+/* ストリップ1本分の描画。角度・通過位置・コマ幅・速さ・向き・位相を引数で受け、
+   複数本を非対称に重ねられるようにしてある（2026-09-01 2本クロス対応で関数化）。
+   drift は time から一意に決まるので、プレビューとMP4で同じ絵になる決定性は維持。 */
+function drawFilmStrip(options){
+  const {time, frames, frameW, secPerFrame, angle, offsetX, offsetY, direction, speedMul, phase, alpha, shade} = options;
+  if(!frames.length || !frameW) return;
+  const frameH = Math.round(frameW * 2 / 3);       // 写真窓は横3:縦2（実フィルムのコマ比）
   const gap = Math.round(frameW * .055);           // コマ間の桟
   const perf = Math.round(frameH * .16);           // パーフォレーション帯
   const stripH = frameH + perf * 2;
   const pitch = frameW + gap;
-
-  // コマ列: 写真＋任意のCTA。CTAは背景とロゴを分け、ロゴだけを動的に浮かばせる。
-  const frames = list.map(slide => ({image:slide.img, isCta:false})).filter(frame => frame.image);
-  if(filmCtaActive()){
-    const cta = filmCtaLayers(frameW, frameH);
-    frames.push({image:cta.background, mark:cta.mark, isCta:true});
-  }
-
-  // 速さ: 手動＝数値入力（1コマの秒数）／自動＝原稿の長さから逆算（2026-08-26）。
-  // 自動は「総尺 ÷ コマ数（CTA込み）」。描画のたびに計算するため、セリフ延長・
-  // 実音声での秒数確定・写真の増減があっても「最後のセリフ終了＝ちょうど1周」で合う。
-  // 「動きの強さ」との連動は廃止済み（2系統で速度が変わると調整できないため）
-  const secPerFrame = (els.filmSpeedAuto && els.filmSpeedAuto.checked)
-    ? Math.max(totalDuration() / frames.length, .5)
-    : clamp(parseFloat(els.filmSpeed && els.filmSpeed.value) || 8, 1, 60);
-  const drift = time * (pitch / secPerFrame);
-
-  const angle = -Math.PI / 10;                     // 約18度・左下から右上へ
   const diag = Math.hypot(canvas.width, canvas.height);
+  const drift = (time || 0) * (pitch / Math.max(.1, secPerFrame)) * (speedMul || 1) * (direction === -1 ? -1 : 1)
+    + (phase || 0) * pitch;
 
   ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.globalAlpha = alpha === undefined ? 1 : alpha;
+  ctx.translate(canvas.width / 2 + (offsetX || 0), canvas.height / 2 + (offsetY || 0));
   ctx.rotate(angle);
 
   // フィルムベース（ストリップ本体）。実物のネガのベース色に寄せた
@@ -3636,9 +3612,89 @@ function drawFilmStripScene(time, slide, progress){
     roundRect(ctx, hx, stripH / 2 - perf + (perf - holeH) / 2, holeW, holeH, holeR);
     ctx.fill();
   }
+  // 奥のストリップだけ薄い暗幕をかけ、手前との前後関係を作る
+  if(shade){
+    ctx.fillStyle = `rgba(8,6,4,${shade})`;
+    ctx.fillRect(-diag / 2 - pitch, -stripH / 2, diag + pitch * 2, stripH);
+  }
   ctx.restore();
+}
+
+/* 2本クロスの配置。左右対称のX字にはせず、角度・太さ・速さ・通過位置を
+   すべてずらして非対称にする（2026-09-01 事業主指示「対称にクロスではなく非対称に」）。
+   主ストリップ＝太く手前・ゆっくり／副ストリップ＝細く奥・速く逆方向。
+   交差点も画面中央から外している。 */
+// subLoops: 副ストリップが「主が1周する間に何周するか」。速さを直接指定せず周回数で持つのは、
+// 写真枚数が変わっても t=0 と t=総尺 で副の位置が揃い、ループの切れ目が出ないようにするため。
+const FILM_CROSS_LAYOUT = Object.freeze({
+  main: {angleDeg:-18, offsetXRatio:-.06, offsetYRatio:-.04, frameRatio:.62, direction:1, phase:0, alpha:1, shade:0},
+  sub:  {angleDeg:34,  offsetXRatio:.10,  offsetYRatio:-.128, frameRatio:.40, direction:-1, phase:.37, alpha:.9, shade:.26, subLoops:2}
+});
+
+function filmStripLayers(){
+  return (els.filmStripMode && els.filmStripMode.value) === 'cross'
+    ? [FILM_CROSS_LAYOUT.sub, FILM_CROSS_LAYOUT.main]   // 奥→手前の順で描く
+    : [{angleDeg:-18, offsetXRatio:0, offsetYRatio:0, frameRatio:.66, direction:1, phase:0, alpha:1, shade:0}];
+}
+
+function drawFilmStripScene(time, slide, progress){
+  const list = playableSlides();
+  if(!list.length) return;
+
+  // 暗室調の背景。平坦な黒だとフィルムの端が同化して見えないため、
+  // 中央をわずかに明るくして黒い帯の輪郭が浮き出るようにする（2026-08-26 事業主指摘）
+  const bgGrad = ctx.createRadialGradient(
+    canvas.width / 2, canvas.height / 2, 0,
+    canvas.width / 2, canvas.height / 2, Math.hypot(canvas.width, canvas.height) / 2);
+  bgGrad.addColorStop(0, '#2A2622');
+  bgGrad.addColorStop(.55, '#171512');
+  bgGrad.addColorStop(1, '#0A0908');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const layers = filmStripLayers();
+  const mainLayer = layers[layers.length - 1];      // 最後に描く＝手前＝主ストリップ
+  const mainFrameW = Math.round(canvas.width * mainLayer.frameRatio);
+  const photoFrames = list.map(item => ({image:item.img, isCta:false})).filter(frame => frame.image);
+  // CTAコマは主ストリップにだけ入れる（2本に入れるとロゴが二重に流れるため）
+  const mainFrames = filmCtaActive()
+    ? photoFrames.concat([(cta => ({image:cta.background, mark:cta.mark, isCta:true}))(filmCtaLayers(mainFrameW, Math.round(mainFrameW * 2 / 3)))])
+    : photoFrames;
+
+  // 速さ: 手動＝数値入力（1コマの秒数）／自動＝原稿の長さから逆算（2026-08-26）。
+  // 自動は「総尺 ÷ コマ数（CTA込み）」。描画のたびに計算するため、セリフ延長・
+  // 実音声での秒数確定・写真の増減があっても「最後のセリフ終了＝ちょうど1周」で合う。
+  // 副ストリップは速度倍率で動くだけなので、この基準は主ストリップのまま変えない。
+  // 「動きの強さ」との連動は廃止済み（2系統で速度が変わると調整できないため）
+  const secPerFrame = (els.filmSpeedAuto && els.filmSpeedAuto.checked)
+    ? Math.max(totalDuration() / Math.max(1, mainFrames.length), .5)
+    : clamp(parseFloat(els.filmSpeed && els.filmSpeed.value) || 8, 1, 60);
+
+  layers.forEach(layer => {
+    const isMain = layer === mainLayer;
+    const frames = isMain ? mainFrames : photoFrames;
+    // 副は「主が1周する間に subLoops 周」で走らせる。枚数が変わっても総尺の端で位置が揃う。
+    const speedMul = isMain
+      ? 1
+      : (frames.length * (layer.subLoops || 2)) / Math.max(1, mainFrames.length);
+    drawFilmStrip({
+      time,
+      frames,
+      frameW: Math.round(canvas.width * layer.frameRatio),
+      secPerFrame,
+      angle: layer.angleDeg * Math.PI / 180,
+      offsetX: canvas.width * layer.offsetXRatio,
+      offsetY: canvas.height * layer.offsetYRatio,
+      direction: layer.direction,
+      speedMul,
+      phase: layer.phase,
+      alpha: layer.alpha,
+      shade: layer.shade
+    });
+  });
 
   // 四隅を落として奥行きを出す
+  const diag = Math.hypot(canvas.width, canvas.height);
   const vg = ctx.createRadialGradient(
     canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * .45,
     canvas.width / 2, canvas.height / 2, diag * .62);
@@ -6367,9 +6423,11 @@ els.filmStripMode.addEventListener('change', () => {
   els.filmSpeedField.hidden = !filmStripActive();
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
-  setLog(filmStripActive()
-    ? 'フィルムシーン（全編）をONにしました。全写真がフィルム状につながって斜めに流れ続けます。すぐ下の「フィルムの流れる速さ」で速度を調整できます。'
-    : 'フィルムシーンをOFFにしました。通常の1枚ずつ表示へ戻ります。');
+  setLog(!filmStripActive()
+    ? 'フィルムシーンをOFFにしました。通常の1枚ずつ表示へ戻ります。'
+    : (els.filmStripMode.value === 'cross'
+      ? 'フィルム2本を斜めに交差させます。太いフィルムと細いフィルムが違う角度・違う速さですれ違います。すぐ下の「フィルムの速さ」は太い方（締めのロゴが流れる側）の速度です。'
+      : 'フィルムシーン（全編）をONにしました。全写真がフィルム状につながって斜めに流れ続けます。すぐ下の「フィルムの速さ」で速度を調整できます。'));
 });
 els.filmSpeedAuto.addEventListener('change', () => {
   els.filmSpeed.disabled = els.filmSpeedAuto.checked;
