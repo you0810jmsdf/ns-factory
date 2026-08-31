@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>建築3Dモデラー 取扱説明書</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Meiryo", "Yu Gothic", sans-serif; color: #2b3440; font-size: 12px;
+         max-width: 178mm; margin: 0 auto; line-height: 1.8; padding: 0 8px; }
+  h1 { font-size: 22px; color: #1a4f8b; text-align: center; margin: 28px 0 4px;
+       border-bottom: 3px double #1a4f8b; padding-bottom: 10px; }
+  .subtitle { text-align: center; color: #b07c10; font-weight: bold; margin-bottom: 20px; }
+  h2 { font-size: 15px; color: #fff; background: #1a4f8b; padding: 5px 12px;
+       margin: 26px 0 10px; border-radius: 3px; }
+  h3 { font-size: 13px; color: #1a4f8b; border-left: 4px solid #e8a020;
+       padding-left: 8px; margin: 16px 0 6px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  th, td { border: 1px solid #9aa8b8; padding: 4px 8px; font-size: 11.5px; text-align: left; }
+  th { background: #e8eef5; color: #1a4f8b; font-weight: bold; }
+  kbd { background: #eef2f7; border: 1px solid #c0c9d4; border-radius: 3px;
+        padding: 1px 6px; font-family: inherit; font-size: 11px; white-space: nowrap; }
+  .tip { border-left: 4px solid #2e7d32; background: #f0f7f0; padding: 6px 12px; margin: 8px 0; }
+  .warn { border: 2px solid #c62828; background: #fdf0f0; color: #b03030;
+          padding: 8px 14px; margin: 12px 0; font-weight: bold; border-radius: 4px; }
+  .toc { background: #f4f6f9; border: 1px solid #d4dae2; border-radius: 4px; padding: 12px 24px; }
+  .toc a { color: #1a4f8b; text-decoration: none; }
+  .toc li { margin: 2px 0; }
+  .note { font-size: 11px; color: #5a6a7e; }
+  .toolbar { text-align: center; margin: 16px 0; }
+  .toolbar button { font-size: 14px; padding: 8px 24px; background: #1a4f8b; color: #fff;
+                    border: none; border-radius: 4px; cursor: pointer; }
+  .pagebreak { page-break-before: always; }
+  @media print { .toolbar { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="toolbar"><button onclick="window.print()">🖨 印刷 / PDF保存</button></div>
+
+<h1>建築3Dモデラー 取扱説明書</h1>
+<div class="subtitle">Ver. 2.3　—　N's factory デジタル部　—　2026年6月</div>
+
+<div class="toc">
+<b>目次</b>
+<ol>
+  <li><a href="#s1">このアプリでできること</a></li>
+  <li><a href="#s2">起動方法</a></li>
+  <li><a href="#s3">画面構成</a></li>
+  <li><a href="#s4">間取りを描く（2Dエディタ）</a></li>
+  <li><a href="#s5">階層管理（2階建て以上）</a></li>
+  <li><a href="#s6">3Dビューの操作と家具配置</a></li>
+  <li><a href="#s7">屋根の設定</a></li>
+  <li><a href="#s8">日照シミュレーション</a></li>
+  <li><a href="#s9">照度解析（部屋ごとの明るさ）</a></li>
+  <li><a href="#s10">壁量チェックと構造検討書</a></li>
+  <li><a href="#s11">3Dプリント用STL出力</a></li>
+  <li><a href="#s12">データの保存と読込</a></li>
+  <li><a href="#s13">ショートカット一覧・FAQ・免責</a></li>
+</ol>
+</div>
+
+<h2 id="s1">1. このアプリでできること</h2>
+<table>
+  <tr><th style="width:30%">機能</th><th>概要</th></tr>
+  <tr><td>間取り作成</td><td>壁・窓・ドアをマウスで作図。複数階に対応</td></tr>
+  <tr><td>3D表示</td><td>間取りから建物を自動で立体化。家具12種を配置</td></tr>
+  <tr><td>日照シミュレーション</td><td>緯度経度・日付・時刻から太陽位置を計算し、影をリアルタイム表示</td></tr>
+  <tr><td>照度解析</td><td>部屋ごとの昼光照度(lx)を計算しヒートマップ表示</td></tr>
+  <tr><td>構造検討（簡易）</td><td>壁量計算・四分割法・偏心率・N値計算・横架材・基礎の検討書をPDF出力</td></tr>
+  <tr><td>3Dプリント出力</td><td>縮尺模型用のSTLファイルを出力（1/50〜1/200）</td></tr>
+</table>
+
+<h2 id="s2">2. 起動方法</h2>
+<p>コマンドプロンプト（またはPowerShell）で以下を実行します。</p>
+<table><tr><td style="font-family:Consolas,monospace">
+cd "C:\Users\nsfactory\OneDrive\レザークラフト\デジタル部\建築3Dモデラー"<br>
+npm start
+</td></tr></table>
+<p class="note">初回のみ事前に <kbd>npm install</kbd> が必要です（インストール済み）。</p>
+
+<h2 id="s3">3. 画面構成</h2>
+<table>
+  <tr><th style="width:30%">部位</th><th>内容</th></tr>
+  <tr><td>左サイドバー</td><td>ツール・設定・各機能のボタン類。上部のタブで「間取り(2D)」と「3Dビュー」を切替</td></tr>
+  <tr><td>中央ビュー</td><td>2Dの作図キャンバス、または3Dビュー</td></tr>
+  <tr><td>下部ステータスバー</td><td>現在のモードと操作ヒントを常時表示</td></tr>
+</table>
+<div class="tip">迷ったら画面下のステータスバーを見てください。次にすべき操作が表示されています。</div>
+
+<h2 id="s4">4. 間取りを描く（2Dエディタ）</h2>
+<h3>4-1. 作図ツール</h3>
+<table>
+  <tr><th style="width:18%">ツール</th><th>使い方</th></tr>
+  <tr><td>選択</td><td>壁や開口部をクリックで選択。開口部はドラッグで壁に沿って移動。<kbd>Delete</kbd>で削除</td></tr>
+  <tr><td>壁</td><td>クリックで始点 → クリックで確定。そのまま連続して描けます。<b>右クリック</b>または<kbd>Esc</kbd>で終了</td></tr>
+  <tr><td>窓</td><td>壁の上をクリックで配置（初期値: 幅1.2m×高さ1.1m・床から0.9m）</td></tr>
+  <tr><td>ドア</td><td>壁の上をクリックで配置（初期値: 幅0.8m×高さ2.0m）</td></tr>
+  <tr><td>削除</td><td>壁・開口部をクリックで削除</td></tr>
+</table>
+<h3>4-2. 画面操作と寸法</h3>
+<ul>
+  <li>ズーム: マウスホイール ／ 画面移動: 中ボタンドラッグ または <kbd>Alt</kbd>＋ドラッグ</li>
+  <li>グリッドは0.25m単位でスナップ。既存の壁の端点にも自動で吸着します</li>
+  <li>壁には長さ(m)が常時表示。<b>画面の上方向＝北</b>です</li>
+</ul>
+<h3>4-3. 開口部の寸法変更</h3>
+<p>選択ツールで窓・ドアをクリックすると、サイドバーに「開口部の編集」欄が現れ、幅・高さ・床からの高さを数値で変更できます。</p>
+<h3>4-4. 壁の規定値</h3>
+<p>「壁の高さ」「壁の厚さ」は<b>これから描く壁</b>に適用されます（既存の壁は変わりません）。</p>
+
+<h2 id="s5">5. 階層管理（2階建て以上）</h2>
+<ol>
+  <li>「階を追加」で2F・3F…を追加（最大制限なし。構造計算は3階まで）</li>
+  <li>「編集する階」セレクタで作図対象の階を切替</li>
+  <li>「下階を下書き表示」をONにすると下の階の壁が薄いグレーで表示され、上下階の壁位置を合わせやすくなります</li>
+</ol>
+<div class="tip">家具の配置先も「編集する階」に従います。2Fに家具を置くときは先に2Fへ切り替えてください。</div>
+
+<h2 id="s6" class="pagebreak">6. 3Dビューの操作と家具配置</h2>
+<h3>6-1. カメラ操作</h3>
+<table>
+  <tr><th style="width:30%">操作</th><th>動作</th></tr>
+  <tr><td>左ドラッグ</td><td>視点の回転</td></tr>
+  <tr><td>ホイール</td><td>ズーム</td></tr>
+  <tr><td>右ドラッグ</td><td>視点の平行移動</td></tr>
+</table>
+<h3>6-2. 家具の配置（全12種）</h3>
+<ol>
+  <li>サイドバーの家具ボタン（ベッド・テーブル・ソファ等）をクリック</li>
+  <li>3Dビューの床をクリック → その場所に配置</li>
+  <li>家具をクリックで選択（明るくハイライト）→ ドラッグで移動</li>
+  <li><kbd>R</kbd>で45°回転、<kbd>Delete</kbd>で削除</li>
+</ol>
+<div class="tip"><b>磁石吸着:</b> ドラッグ中に壁や他のパーツへ25cm以内に近づくと、磁石のように自動でぴったり吸着します（面の接触・端揃え）。家具は同じ階の壁・家具に、外構は建物の外壁・他の外構（塀の端と端など）に吸着。自由な位置に置きたいときは<kbd>Shift</kbd>を押しながらドラッグしてください。※斜め壁は吸着対象外。</div>
+
+<h3>6-3. 外構の配置（全12種）</h3>
+<p>家具と同じ操作で、敷地まわりの外構を配置できます（配置先は常に地面）。</p>
+<table>
+  <tr><th style="width:35%">アイテム</th><th>用途・特徴</th></tr>
+  <tr><td>隣家（日影検討用）</td><td>幅・奥行・軒高を調整できる箱。<b>隣家の影が室内採光に与える影響</b>を検討できます</td></tr>
+  <tr><td>ブロック塀・フェンス・生垣</td><td>長さ・高さ調整可。境界まわりの目隠しと日影の検討に</td></tr>
+  <tr><td>落葉樹・針葉樹</td><td>樹高調整可。木陰のでき方を確認</td></tr>
+  <tr><td>カーポート・駐車場（土間）</td><td>駐車スペースの計画に</td></tr>
+  <tr><td>ウッドデッキ・物置・門柱・芝生</td><td>庭まわりの計画に</td></tr>
+</table>
+<ul>
+  <li>配置した外構を<b>クリックで選択すると、サイドバーにサイズ調整欄</b>が表示されます</li>
+  <li>隣家・塀・樹木などの立体物は<b>日照シミュレーションの影と照度解析の遮蔽物</b>として反映されます</li>
+  <li>外構はSTL出力（建築模型）には含まれません</li>
+</ul>
+<div class="tip">南側に「隣家」を置いて冬至の正午を再生すると、隣家の影が自宅の窓にどこまでかかるかが一目で分かります。</div>
+
+<h2 id="s7">7. 屋根の設定</h2>
+<table>
+  <tr><th style="width:25%">形状</th><th>説明</th></tr>
+  <tr><td>なし</td><td>屋根を表示しない</td></tr>
+  <tr><td>陸屋根</td><td>フラットな屋根（厚さ15cm）</td></tr>
+  <tr><td>切妻</td><td>三角屋根。棟は建物の長辺方向に自動で通ります</td></tr>
+  <tr><td>寄棟</td><td>四方に勾配のある屋根</td></tr>
+</table>
+<p>勾配（10〜50°）と軒の出（0〜1.5m）を調整できます。屋根は最上階の外形に自動でフィットし、STL出力・日照・構造計算すべてに反映されます。</p>
+
+<h2 id="s8">8. 日照シミュレーション</h2>
+<ul>
+  <li><b>日付・時刻</b>を設定すると、太陽の位置と建物の影がリアルタイムに変わります</li>
+  <li><b>緯度・経度</b>: 初期値は印西市（35.83, 140.15）。任意の場所に変更可</li>
+  <li><b>北の方位</b>: 敷地に合わせて建物に対する北の向きを回転できます</li>
+  <li><b>▶ 1日を再生</b>: 朝4時〜夜20時までの太陽の動きをアニメーション</li>
+  <li>オレンジの弧＝その日の太陽軌跡、黄色い球＝現在の太陽、赤矢印＝北</li>
+  <li>太陽高度・方位・日の出/日の入時刻はサイドバーに数値表示されます</li>
+</ul>
+<div class="tip">冬至（12/22頃）と夏至（6/21頃）で比較すると、日当たりの季節差がよく分かります。</div>
+
+<h2 id="s9">9. 照度解析（部屋ごとの明るさ）</h2>
+<ol>
+  <li>3Dビューで日付・時刻を設定</li>
+  <li>「照度を計算」をクリック → 壁で囲まれた部屋を自動検出し、数秒で計算完了</li>
+  <li>床にヒートマップ（青＝暗い → 黄＝明るい・対数スケール）と部屋番号が表示</li>
+  <li>サイドバーに部屋ごとの平均・最低・最高照度(lx)と面積を表示</li>
+</ol>
+<table>
+  <tr><th>照度の目安</th><th>用途</th></tr>
+  <tr><td>300〜750 lx</td><td>読書・勉強・調理</td></tr>
+  <tr><td>150〜300 lx</td><td>団らん・食事</td></tr>
+  <tr><td>50〜150 lx</td><td>廊下・収納</td></tr>
+</table>
+<p class="note">晴天時の直達日光＋天空光の簡易計算です。室内反射光を含まないため実際よりやや暗めに出ます。
+隣家・塀・樹木などの外構も遮蔽物として計算されます。間取りや外構を変更するとヒートマップは消えるので再計算してください。
+計算時間は数秒〜十数秒（外構が多いほど長くなり、計算中は画面が一時停止します）。</p>
+
+<h2 id="s10" class="pagebreak">10. 壁量チェックと構造検討書</h2>
+<h3>10-1. クイックチェック</h3>
+<ol>
+  <li>「屋根の重さ」（金属・スレート＝軽い／瓦＝重い）と「壁倍率」を設定</li>
+  <li>「壁量を計算」→ サイドバーに階・方向ごとの充足率と判定が表示</li>
+</ol>
+<h3>10-2. 構造検討書（全12章）の作成</h3>
+<ol>
+  <li>建物名称・所在地（任意）と地耐力を設定</li>
+  <li>「計算書を作成（印刷/PDF）」→ 別ウィンドウに検討書が開く</li>
+  <li>上部の「印刷/PDF保存」ボタンからPDF化</li>
+</ol>
+<table>
+  <tr><th style="width:35%">章</th><th>内容</th></tr>
+  <tr><td>1. 建物概要</td><td>名称・階数・屋根・床面積・地耐力</td></tr>
+  <tr><td>2〜3. 必要壁量</td><td>地震力（床面積×係数）・風圧力（見付面積×50）</td></tr>
+  <tr><td>4〜5. 存在壁量と判定</td><td>壁1枚ごとの内訳表と充足率判定</td></tr>
+  <tr><td>6. 四分割法</td><td>建物両端1/4ゾーンの壁配置バランス</td></tr>
+  <tr><td>7. 偏心率</td><td>重心と剛心のズレ（Re≦0.3で適合）</td></tr>
+  <tr><td>8. N値計算</td><td>柱頭柱脚の接合金物選定（告示1460号）</td></tr>
+  <tr><td>9. 横架材</td><td>部屋スパンから梁せいの目安</td></tr>
+  <tr><td>10. 基礎</td><td>接地圧チェックと基礎形式の提案</td></tr>
+  <tr><td>11〜12. 配置図・総合判定</td><td>耐力壁配置図（重心G・剛心K表示）と判定一覧</td></tr>
+</table>
+<div class="warn">構造検討書は簡易計算による参考資料です。確認申請に使用するには建築士による検証と正規図書の作成が必要です。</div>
+
+<h2 id="s11">11. 3Dプリント用STL出力</h2>
+<ol>
+  <li>3Dビューの「3Dプリント出力」で縮尺（1/50〜1/200）を選択</li>
+  <li>「壁厚の最小保証」: 縮尺後に壁が薄くなりすぎる場合、印刷可能な厚みまで自動補強（推奨2mm）</li>
+  <li>床スラブ・屋根を含めるかチェックで選択</li>
+  <li>「STLエクスポート」→ ダウンロードフォルダに保存。印刷サイズ(mm)が表示されます</li>
+</ol>
+<table>
+  <tr><th>縮尺</th><th>8m×6mの家の模型サイズ</th><th>壁厚15cmの模型厚</th></tr>
+  <tr><td>1/50</td><td>約160×120mm</td><td>3.0mm（そのまま印刷可）</td></tr>
+  <tr><td>1/100</td><td>約80×60mm</td><td>1.5mm（最小保証2mm推奨）</td></tr>
+  <tr><td>1/200</td><td>約40×30mm</td><td>0.75mm（最小保証2mm必須）</td></tr>
+</table>
+
+<h2 id="s12">12. データの保存と読込</h2>
+<ul>
+  <li><b>自動保存</b>: 操作のたびに自動保存され、次回起動時に復元されます</li>
+  <li><b>保存(JSON)</b>: 間取りデータをファイルに書き出し（ダウンロードフォルダ）</li>
+  <li><b>読込(JSON)</b>: 保存したファイルを読み込み。旧バージョンの形式も自動変換</li>
+  <li><b>サンプル読込</b>: 2階建て・切妻屋根のサンプル住宅を読み込み</li>
+  <li><b>全消去</b>: すべてのデータを消去（確認ダイアログあり）</li>
+</ul>
+
+<h2 id="s13" class="pagebreak">13. ショートカット一覧・FAQ・免責</h2>
+<h3>13-1. ショートカット</h3>
+<table>
+  <tr><th style="width:30%">キー</th><th>動作</th></tr>
+  <tr><td><kbd>Esc</kbd></td><td>壁の作図を終了／家具の配置モードを解除</td></tr>
+  <tr><td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td><td>選択中の壁・開口部・家具を削除</td></tr>
+  <tr><td><kbd>R</kbd></td><td>選択中の家具を45°回転（3Dビュー）</td></tr>
+  <tr><td><kbd>F1</kbd> / <kbd>？ヘルプ</kbd>ボタン</td><td>クイックヘルプを表示（上部の検索ボックスでキーワード検索可。例:「屋根」「照度」「STL」→ 回答と本書該当章へのリンクを表示）</td></tr>
+  <tr><td>右クリック</td><td>壁の連続作図を終了（2D）</td></tr>
+</table>
+<h3>13-2. よくある質問（FAQ）</h3>
+<table>
+  <tr><th style="width:42%">質問</th><th>回答</th></tr>
+  <tr><td>照度解析で「部屋が見つかりません」と出る</td><td>壁が完全に閉じていません。壁の端点同士をスナップで接続してください</td></tr>
+  <tr><td>計算書のウィンドウが開かない</td><td>ポップアップブロックを許可してください（Electron版では通常発生しません）</td></tr>
+  <tr><td>STLが薄すぎて印刷に失敗する</td><td>「壁厚の最小保証」を2mm以上に設定してください</td></tr>
+  <tr><td>2Fの壁が1Fとずれる</td><td>「下階を下書き表示」をONにし、グレーの線に合わせて描いてください</td></tr>
+  <tr><td>影が表示されない</td><td>時刻が夜間（太陽高度マイナス）になっていないか確認してください</td></tr>
+  <tr><td>斜めの壁は使える？</td><td>作図・3D表示は可能ですが、壁量計算では集計対象外です（注記が出ます）</td></tr>
+</table>
+<h3>13-3. 免責事項</h3>
+<ul class="note">
+  <li>本アプリの計算結果（日照・照度・構造検討）はすべて簡易計算による参考値です。</li>
+  <li>構造検討書を確認申請に使用するには、建築士による検証・正規図書の作成が必要です。</li>
+  <li>本アプリの利用により生じたいかなる損害についても、作成者は責任を負いません。</li>
+</ul>
+<h3>13-4. バージョン履歴</h3>
+<table>
+  <tr><th style="width:18%">Ver.</th><th style="width:25%">日付</th><th>内容</th></tr>
+  <tr><td>1.0</td><td>2026-06-10</td><td>初版（間取り・3D・日照・家具・STL）</td></tr>
+  <tr><td>2.0</td><td>2026-06-10</td><td>階層管理・屋根形状・照度解析</td></tr>
+  <tr><td>2.1〜2.2</td><td>2026-06-11</td><td>壁量計算・構造検討書（帳票出力）</td></tr>
+  <tr><td>2.3</td><td>2026-06-11</td><td>偏心率・N値計算・横架材・基礎を追加、取扱説明書・ヘルプ</td></tr>
+  <tr><td>2.4</td><td>2026-06-11</td><td>外構シミュレーション（隣家・塀・樹木等12種、日照/照度の遮蔽に反映）</td></tr>
+  <tr><td>2.5〜2.6</td><td>2026-06-11</td><td>検索型ヘルプ、磁石吸着（家具・外構が壁や他パーツへ自動でぴったり配置）</td></tr>
+</table>
+
+</body>
+</html>

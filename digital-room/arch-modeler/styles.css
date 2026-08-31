@@ -1,0 +1,141 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #app { height: 100%; overflow: hidden; }
+body { font-family: "Meiryo", "Yu Gothic UI", sans-serif; font-size: 13px; color: #2b3440; }
+
+#app { display: flex; }
+
+/* ===== サイドバー ===== */
+#sidebar {
+  width: 270px; min-width: 270px;
+  background: #f4f6f9;
+  border-right: 1px solid #d4dae2;
+  padding: 12px;
+  overflow-y: auto;
+}
+#sidebar h1 { font-size: 16px; color: #1a4f8b; }
+.titlebar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.titlebar button {
+  padding: 4px 10px; border: 1px solid #1a4f8b; background: #fff; color: #1a4f8b;
+  border-radius: 12px; cursor: pointer; font-size: 11px; font-weight: bold;
+}
+.titlebar button:hover { background: #1a4f8b; color: #fff; }
+.free-notice {
+  margin-top: 16px; padding: 8px 10px;
+  background: #eef2f7; border: 1px solid #d4dae2; border-radius: 4px;
+  font-size: 11px; color: #5a6a7e; line-height: 1.7;
+}
+.free-notice a { color: #1a4f8b; }
+#sidebar h2 {
+  font-size: 12px; color: #5a6a7e;
+  border-bottom: 1px solid #d4dae2;
+  margin: 14px 0 6px; padding-bottom: 3px;
+}
+
+.tabs { display: flex; gap: 4px; }
+.tab {
+  flex: 1; padding: 8px 0; border: 1px solid #c0c9d4; background: #e6ebf1;
+  border-radius: 4px; cursor: pointer; font-size: 13px;
+}
+.tab.active { background: #1a4f8b; color: #fff; border-color: #1a4f8b; font-weight: bold; }
+
+.toolgrid { display: flex; flex-wrap: wrap; gap: 4px; }
+.tool, .toolgrid button {
+  padding: 6px 10px; border: 1px solid #c0c9d4; background: #fff;
+  border-radius: 4px; cursor: pointer; font-size: 12px;
+}
+.tool.active { background: #e8a020; color: #fff; border-color: #d08800; font-weight: bold; }
+.toolgrid button:hover { background: #eef3f9; }
+.tool.active:hover { background: #e8a020; }
+
+label { display: block; margin: 6px 0; font-size: 12px; }
+label input[type="number"], label input[type="date"], label input[type="text"], label select {
+  width: 100%; padding: 4px 6px; margin-top: 2px;
+  border: 1px solid #c0c9d4; border-radius: 3px; font-size: 13px;
+}
+label input[type="range"] { width: 100%; margin-top: 4px; }
+label.check { display: flex; align-items: center; gap: 6px; }
+label.check input { width: auto; }
+
+.btnrow { display: flex; gap: 4px; margin: 4px 0; }
+.btnrow button {
+  flex: 1; padding: 6px 4px; border: 1px solid #c0c9d4; background: #fff;
+  border-radius: 4px; cursor: pointer; font-size: 12px;
+}
+.btnrow button:hover { background: #eef3f9; }
+
+button.primary {
+  width: 100%; padding: 9px; margin-top: 6px;
+  background: #2e7d32; color: #fff; border: none; border-radius: 4px;
+  font-size: 14px; font-weight: bold; cursor: pointer;
+}
+button.primary:hover { background: #1b5e20; }
+
+.hint { font-size: 11px; color: #7a8696; margin-top: 6px; line-height: 1.5; }
+.info { font-size: 12px; color: #1a4f8b; margin-top: 6px; line-height: 1.6; white-space: pre-line; }
+.hidden { display: none !important; }
+
+/* ===== ビューポート ===== */
+#viewport { flex: 1; position: relative; background: #fff; }
+#canvas2d { width: 100%; height: 100%; display: block; cursor: crosshair; }
+#view3d { width: 100%; height: 100%; }
+#statusbar {
+  position: absolute; left: 0; bottom: 0; right: 0;
+  background: rgba(244,246,249,.92); border-top: 1px solid #d4dae2;
+  padding: 4px 10px; font-size: 12px; color: #5a6a7e;
+}
+
+/* ===== ヘルプモーダル ===== */
+.modal {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(30, 40, 55, .55);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-box {
+  width: min(640px, 92vw); max-height: 88vh;
+  background: #fff; border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  display: flex; flex-direction: column;
+}
+.modal-head {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #1a4f8b; color: #fff; border-radius: 8px 8px 0 0; padding: 8px 14px;
+}
+.modal-head h2 { font-size: 15px; }
+.modal-head button {
+  background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 2px 6px;
+}
+.modal-head button:hover { color: #e8a020; }
+.modal-body { padding: 12px 18px 18px; overflow-y: auto; }
+.modal-body h3 {
+  font-size: 13px; color: #1a4f8b; border-left: 4px solid #e8a020;
+  padding-left: 8px; margin: 14px 0 6px;
+}
+.modal-body table { border-collapse: collapse; width: 100%; margin: 4px 0; }
+.modal-body td {
+  border: 1px solid #d4dae2; padding: 4px 8px; font-size: 12px;
+}
+.modal-body td:first-child { width: 30%; background: #f4f6f9; color: #1a4f8b; font-weight: bold; }
+.modal-body kbd {
+  background: #eef2f7; border: 1px solid #c0c9d4; border-radius: 3px;
+  padding: 0 5px; font-family: inherit; font-size: 11px;
+}
+
+/* ===== ヘルプ検索 ===== */
+.help-search { margin-bottom: 6px; }
+.help-search input {
+  width: 100%; padding: 8px 12px; font-size: 13px;
+  border: 2px solid #1a4f8b; border-radius: 18px; outline: none;
+}
+.help-search input:focus { border-color: #e8a020; }
+#helpResults { margin-top: 8px; }
+.help-hit {
+  border: 1px solid #d4dae2; border-left: 4px solid #e8a020;
+  border-radius: 4px; padding: 8px 12px; margin: 6px 0; background: #fdfcf9;
+}
+.help-hit h4 { font-size: 13px; color: #1a4f8b; margin-bottom: 4px; }
+.help-hit p { font-size: 12px; line-height: 1.6; }
+.help-hit a {
+  display: inline-block; margin-top: 4px; font-size: 11px;
+  color: #2e7d32; cursor: pointer; text-decoration: underline;
+}
+.help-noresult { font-size: 12px; color: #7a8696; padding: 8px 4px; }

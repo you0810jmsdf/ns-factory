@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>建築3Dモデラー | N's factory</title>
+<meta name="viewport" content="width=1200">
+<meta name="description" content="間取り作成・複数階・屋根・日照シミュレーション・照度解析・家具/外構配置・木造壁量の簡易チェック・3Dプリント用STL出力までブラウザだけでできる無料の建築3Dモデラー。データは端末内に保存され、サーバーへ送信されません。">
+<link rel="stylesheet" href="styles.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/controls/OrbitControls.js": "./vendor/OrbitControls.js",
+    "three/addons/exporters/STLExporter.js": "./vendor/STLExporter.js",
+    "three/addons/utils/BufferGeometryUtils.js": "./vendor/BufferGeometryUtils.js"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== 左サイドバー ===== -->
+  <aside id="sidebar">
+    <div class="titlebar">
+      <h1>建築3Dモデラー</h1>
+      <button id="btnHelp" title="ヘルプ (F1)">？ヘルプ</button>
+    </div>
+
+    <!-- 表示モード切替 -->
+    <div class="tabs">
+      <button id="tab2d" class="tab active">間取り(2D)</button>
+      <button id="tab3d" class="tab">3Dビュー</button>
+    </div>
+
+    <!-- 2D用ツール -->
+    <section id="panel2d" class="panel">
+      <h2>階層</h2>
+      <label>編集する階
+        <select id="floorSelect"></select>
+      </label>
+      <div class="btnrow">
+        <button id="btnAddFloor">階を追加</button>
+        <button id="btnDelFloor">この階を削除</button>
+      </div>
+      <label class="check"><input type="checkbox" id="ghostFloor" checked> 下階を下書き表示</label>
+
+      <h2>作図ツール</h2>
+      <div class="toolgrid">
+        <button class="tool active" data-tool="select">選択</button>
+        <button class="tool" data-tool="wall">壁</button>
+        <button class="tool" data-tool="window">窓</button>
+        <button class="tool" data-tool="door">ドア</button>
+        <button class="tool" data-tool="delete">削除</button>
+      </div>
+      <h2>壁の規定値</h2>
+      <label>壁の高さ(m) <input type="number" id="wallHeight" value="2.4" min="1" max="10" step="0.1"></label>
+      <label>壁の厚さ(m) <input type="number" id="wallThickness" value="0.15" min="0.05" max="0.5" step="0.01"></label>
+
+      <div id="openingProps" class="hidden">
+        <h2>開口部の編集</h2>
+        <label>幅(m) <input type="number" id="opWidth" step="0.1" min="0.3" max="5"></label>
+        <label>高さ(m) <input type="number" id="opHeight" step="0.1" min="0.3" max="3"></label>
+        <label>床からの高さ(m) <input type="number" id="opSill" step="0.1" min="0" max="2.5"></label>
+      </div>
+
+      <h2>壁量チェック（木造・簡易）</h2>
+      <label>屋根の重さ
+        <select id="roofWeight">
+          <option value="light">軽い屋根（金属・スレート）</option>
+          <option value="heavy">重い屋根（瓦）</option>
+        </select>
+      </label>
+      <label>壁倍率 <input type="number" id="wallRatio" value="2.0" min="0.5" max="7" step="0.5"></label>
+      <label>地耐力（長期許容）
+        <select id="soil">
+          <option value="50">50 kN/㎡（良好な地盤）</option>
+          <option value="30" selected>30 kN/㎡（標準）</option>
+          <option value="20">20 kN/㎡（軟弱め）</option>
+          <option value="15">15 kN/㎡（軟弱・要改良検討）</option>
+        </select>
+      </label>
+      <div class="btnrow">
+        <button id="btnKabe">壁量を計算</button>
+      </div>
+      <label>建物名称 <input type="text" id="bldgName" placeholder="（計算書に記載・任意）"></label>
+      <label>所在地 <input type="text" id="bldgAddr" placeholder="（計算書に記載・任意）"></label>
+      <div class="btnrow">
+        <button id="btnReport">計算書を作成（印刷/PDF）</button>
+      </div>
+      <div id="kabeInfo" class="info"></div>
+      <p class="hint">建築基準法46条の壁量計算の簡易版。長さ0.9m以上の無開口壁を耐力壁としてカウントし、地震力・風圧力の必要壁量と四分割法バランスを判定。<b>参考値であり確認申請には使用できません。</b></p>
+
+      <h2>データ</h2>
+      <div class="btnrow">
+        <button id="btnSample">サンプル読込</button>
+        <button id="btnClear">全消去</button>
+      </div>
+      <div class="btnrow">
+        <button id="btnSaveJson">保存(JSON)</button>
+        <button id="btnLoadJson">読込(JSON)</button>
+      </div>
+      <input type="file" id="fileInput" accept=".json" class="hidden">
+      <p class="hint">壁: クリックで始点→クリックで確定（連続作図、右クリックで終了）。グリッドは0.25m単位でスナップ。</p>
+    </section>
+
+    <!-- 3D用ツール -->
+    <section id="panel3d" class="panel hidden">
+      <h2>日照シミュレーション</h2>
+      <label>日付 <input type="date" id="sunDate" value="2026-06-21"></label>
+      <label>時刻 <span id="timeLabel">12:00</span>
+        <input type="range" id="sunTime" min="4" max="20" step="0.1" value="12">
+      </label>
+      <div class="btnrow">
+        <button id="btnAnimate">▶ 1日を再生</button>
+      </div>
+      <label>緯度 <input type="number" id="lat" value="35.83" step="0.01" min="-90" max="90"></label>
+      <label>経度 <input type="number" id="lon" value="140.15" step="0.01" min="-180" max="180"></label>
+      <label>北の方位(°) <span id="northLabel">0</span>
+        <input type="range" id="northAngle" min="0" max="359" step="1" value="0">
+      </label>
+      <div id="sunInfo" class="info"></div>
+
+      <h2>屋根</h2>
+      <label>形状
+        <select id="roofType">
+          <option value="none">なし</option>
+          <option value="flat">陸屋根（フラット）</option>
+          <option value="gable" selected>切妻</option>
+          <option value="hip">寄棟</option>
+        </select>
+      </label>
+      <label>勾配(°) <span id="pitchLabel">30</span>
+        <input type="range" id="roofPitch" min="10" max="50" step="1" value="30">
+      </label>
+      <label>軒の出(m) <input type="number" id="roofOverhang" value="0.4" min="0" max="1.5" step="0.1"></label>
+
+      <h2>照度解析（部屋ごと）</h2>
+      <div class="btnrow">
+        <button id="btnDaylight">照度を計算</button>
+        <button id="btnHeatClear">表示を消す</button>
+      </div>
+      <div id="daylightInfo" class="info"></div>
+      <p class="hint">現在の日時・太陽位置で直達光＋天空光を簡易計算します（晴天・反射光は含まず）。壁で閉じた領域を部屋として自動検出。</p>
+
+      <h2>家具を配置</h2>
+      <div id="furnitureList" class="toolgrid"></div>
+      <p class="hint">家具ボタン→床をクリックで配置。ドラッグで移動、Rキーで回転、Deleteで削除。</p>
+
+      <h2>外構を配置</h2>
+      <div id="exteriorList" class="toolgrid"></div>
+      <div id="extProps" class="hidden">
+        <h2>外構のサイズ調整</h2>
+        <div id="extPropsBody"></div>
+      </div>
+      <p class="hint">外構ボタン→地面をクリックで配置。操作は家具と同じ。隣家・塀・樹木は日照の影と照度解析の遮蔽に反映されます（STL出力には含まれません）。</p>
+
+      <h2>3Dプリント出力</h2>
+      <label>縮尺
+        <select id="exportScale">
+          <option value="50">1/50</option>
+          <option value="100" selected>1/100</option>
+          <option value="150">1/150</option>
+          <option value="200">1/200</option>
+        </select>
+      </label>
+      <label>壁厚の最小保証(mm) <input type="number" id="minWallMm" value="2" min="0" max="10" step="0.5"></label>
+      <label class="check"><input type="checkbox" id="exportFloor" checked> 床スラブを含める</label>
+      <label class="check"><input type="checkbox" id="exportRoof" checked> 屋根を含める</label>
+      <button id="btnExportStl" class="primary">STLエクスポート</button>
+      <div id="exportInfo" class="info"></div>
+    </section>
+
+    <!-- ⛔ この案内は消さないこと。個人開発のため利用者の報告が唯一の不具合検知手段（デジタル幕僚室共通ルール）。 -->
+    <div class="free-notice">
+      無料でお使いください（無保証）。データは端末内にのみ保存されます。<br>
+      不具合・ご要望は <a href="https://you0810jmsdf.github.io/ns-factory/links.html" target="_blank" rel="noopener">こちらの連絡先</a> へお知らせください。
+    </div>
+  </aside>
+
+  <!-- ===== メインビュー ===== -->
+  <main id="viewport">
+    <canvas id="canvas2d"></canvas>
+    <div id="view3d" class="hidden"></div>
+    <div id="statusbar"></div>
+  </main>
+
+</div>
+<!-- ===== ヘルプモーダル ===== -->
+<div id="helpModal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>クイックヘルプ</h2>
+      <button id="btnHelpClose" title="閉じる (Esc)">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="help-search">
+        <input type="text" id="helpSearch" placeholder="🔍 キーワードで検索（例: 屋根 / 照度 / 2階 / STL）" autocomplete="off">
+        <div id="helpResults" class="hidden"></div>
+      </div>
+
+      <div id="helpStatic">
+      <h3>🏠 間取りを描く（2Dタブ）</h3>
+      <table>
+        <tr><td>壁を描く</td><td>「壁」→ クリックで始点 → クリックで確定（右クリック/Escで終了）</td></tr>
+        <tr><td>窓・ドア</td><td>ツール選択 → 壁の上をクリック。「選択」でドラッグ移動・寸法編集</td></tr>
+        <tr><td>2階を作る</td><td>「階を追加」→ セレクタで階を切替。「下階を下書き表示」で位置合わせ</td></tr>
+        <tr><td>画面操作</td><td>ホイール＝ズーム／中ボタン or Alt＋ドラッグ＝移動</td></tr>
+      </table>
+
+      <h3>🌞 3Dビュー・日照（3Dタブ）</h3>
+      <table>
+        <tr><td>カメラ</td><td>左ドラッグ＝回転／ホイール＝ズーム／右ドラッグ＝移動</td></tr>
+        <tr><td>日照</td><td>日付・時刻スライダーで影が動く。「▶ 1日を再生」でアニメ</td></tr>
+        <tr><td>家具</td><td>家具ボタン → 床をクリックで配置。ドラッグ移動・<kbd>R</kbd>回転・<kbd>Delete</kbd>削除</td></tr>
+        <tr><td>磁石吸着</td><td>ドラッグ中、壁や他パーツに近づくと自動でぴったり吸着。<kbd>Shift</kbd>+ドラッグで吸着オフ</td></tr>
+        <tr><td>照度</td><td>「照度を計算」→ 部屋ごとの明るさをヒートマップ表示</td></tr>
+        <tr><td>外構</td><td>隣家・塀・樹木等を配置。選択でサイズ調整。日照/照度の遮蔽に反映</td></tr>
+      </table>
+
+      <h3>📋 構造チェック・出力</h3>
+      <table>
+        <tr><td>壁量チェック</td><td>2Dタブ「壁量を計算」で充足率を即時判定</td></tr>
+        <tr><td>構造検討書</td><td>「計算書を作成」→ 全12章の検討書を印刷/PDF保存（参考資料）</td></tr>
+        <tr><td>3Dプリント</td><td>3Dタブ「STLエクスポート」。壁厚の最小保証は2mm推奨</td></tr>
+      </table>
+
+      <h3>⌨ ショートカット</h3>
+      <table>
+        <tr><td><kbd>Esc</kbd></td><td>作図終了・配置解除・このヘルプを閉じる</td></tr>
+        <tr><td><kbd>Delete</kbd></td><td>選択中の壁・開口部・家具を削除</td></tr>
+        <tr><td><kbd>R</kbd></td><td>家具を45°回転</td></tr>
+        <tr><td><kbd>F1</kbd></td><td>このヘルプを開く</td></tr>
+      </table>
+      </div><!-- /helpStatic -->
+
+      <p class="hint">構造・照度の計算結果はすべて簡易計算による参考値です。確認申請には建築士による検証が必要です。</p>
+      <button id="btnManual" class="primary">📖 詳しい取扱説明書を開く</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
