@@ -176,7 +176,22 @@ export const BUILTIN_FOODS = Object.freeze([
   { id: 'f137', name: 'マヨネーズ', kana: 'まよねーず', cat: '調味料', unit: 'g', per: 100, kcal: 668, p: 1.4, f: 76.0, c: 3.6 },
   { id: 'f138', name: 'トマトケチャップ', kana: 'とまとけちゃっぷ', cat: '調味料', unit: 'g', per: 100, kcal: 104, p: 1.6, f: 0.1, c: 27.4 },
   { id: 'f139', name: 'ウスターソース', kana: 'うすたーそーす', cat: '調味料', unit: 'g', per: 100, kcal: 117, p: 1.0, f: 0.1, c: 26.8 },
-  { id: 'f140', name: 'オリーブ油', kana: 'おりーぶゆ', cat: '調味料', unit: 'g', per: 100, kcal: 894, p: 0.0, f: 100.0, c: 0.0 }
+  { id: 'f140', name: 'オリーブ油', kana: 'おりーぶゆ', cat: '調味料', unit: 'g', per: 100, kcal: 894, p: 0.0, f: 100.0, c: 0.0 },
+  // ここから下は、実際に記録されたのに引けなかった品目（2026-08-31 の収集19件より）。
+  // ⛔ 憶測で品目を増やさないこと。「一覧に無かった品目」に溜まった実績をもとに足す。
+  // ⛔ IDは f200 番台を使うこと。f141 は既に「カフェオレ」で使われており番号が飛んでいる。
+  // 栄養値は日本食品標準成分表の代表値に基づく概算。惣菜は調理法で幅があるため目安。
+  { id: 'f201', name: 'キムチ', kana: 'きむち', cat: '野菜', unit: 'g', per: 100, kcal: 27, p: 2.3, f: 0.1, c: 7.9, serving: { label: '小鉢1杯', g: 50 } },
+  { id: 'f202', name: '厚焼き卵', kana: 'あつやきたまご', cat: '卵・大豆', unit: 'g', per: 100, kcal: 146, p: 10.5, f: 9.2, c: 6.4, serving: { label: '2切れ', g: 60 } },
+  { id: 'f203', name: '切り干し大根の煮物', kana: 'きりぼしだいこん', cat: '惣菜・外食', unit: 'g', per: 100, kcal: 66, p: 2.0, f: 1.9, c: 10.0, serving: { label: '小鉢1杯', g: 60 } },
+  { id: 'f204', name: 'ザーサイ', kana: 'ざーさい', cat: '野菜', unit: 'g', per: 100, kcal: 20, p: 2.5, f: 0.1, c: 4.6, serving: { label: '小皿1杯', g: 20 } },
+  { id: 'f205', name: '甘栗', kana: 'あまぐり', cat: '菓子', unit: 'g', per: 100, kcal: 222, p: 4.9, f: 0.9, c: 48.5, serving: { label: '5個', g: 40 } },
+  { id: 'f206', name: '大豆（水煮）', kana: 'だいず', cat: '卵・大豆', unit: 'g', per: 100, kcal: 124, p: 12.9, f: 6.7, c: 7.7, serving: { label: '小鉢1杯', g: 50 } },
+  { id: 'f207', name: 'ゴーヤチャンプルー', kana: 'ごーやちゃんぷるー', cat: '惣菜・外食', unit: 'g', per: 100, kcal: 110, p: 8.0, f: 7.5, c: 4.0, serving: { label: '1皿', g: 200 } },
+  { id: 'f208', name: 'サイコロステーキ', kana: 'さいころすてーき', cat: '主菜(肉)', unit: 'g', per: 100, kcal: 250, p: 17.0, f: 19.0, c: 1.0, serving: { label: '3個', g: 90 } },
+  { id: 'f209', name: 'ボロネーゼ', kana: 'ぼろねーぜ', cat: '麺類', unit: 'g', per: 100, kcal: 150, p: 6.0, f: 5.0, c: 20.0, serving: { label: '1皿', g: 330 } },
+  { id: 'f210', name: '野菜サラダ', kana: 'やさいさらだ', cat: '野菜', unit: 'g', per: 100, kcal: 25, p: 1.2, f: 0.2, c: 4.5, serving: { label: '1皿', g: 100 } },
+  { id: 'f211', name: 'がんもどき', kana: 'がんもどき', cat: '卵・大豆', unit: 'g', per: 100, kcal: 223, p: 15.3, f: 17.8, c: 1.6, serving: { label: '1個', g: 80 } }
 ]);
 
 /**
