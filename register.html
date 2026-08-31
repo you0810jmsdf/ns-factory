@@ -730,6 +730,22 @@ textarea{min-height:80px;resize:vertical}
       <p id="worksRebuildStatus" style="font-size:12px;color:#7a5a3f;margin-top:4px"></p>
       <div id="matAllocResult" style="font-size:12px;text-align:left;margin-top:10px;padding:10px;background:#fdf6ec;border:1px solid #d8b888;border-radius:8px;display:none"></div>
 
+      <!-- SNS用キャプション（2026-08-31 事業主要望）
+           説明文の最後に作品番号と作品ページURLを付けて投稿できるようにする。
+           作品番号を載せておくと、お客様が「インスタで見た○○」と言ったときに
+           オーダー相談AIがその番号で作品ページを出せる。 -->
+      <div style="margin-top:18px;padding:14px;background:#fff8ec;border:1px solid #d9b466;border-radius:8px;text-align:left">
+        <div style="font-weight:bold;color:#8a6a2e;margin-bottom:6px">📸 SNS用キャプション（Instagram・Threads）</div>
+        <p style="font-size:12px;color:#5a4a2e;margin:4px 0 8px">
+          説明文の最後に<b>作品番号</b>と<b>作品ページのURL</b>を付けてあります。直してから使っても大丈夫です。
+        </p>
+        <textarea id="igCaption" rows="12" style="width:100%;font-size:12.5px;line-height:1.6;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fff;resize:vertical"></textarea>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-primary" style="font-size:13px" onclick="copyIgCaption()">📋 キャプションをコピー</button>
+          <span id="igCaptionStatus" style="font-size:12px;color:#7a5a3f"></span>
+        </div>
+      </div>
+
       <div style="margin-top:18px;padding:14px;background:#fff8ec;border:1px solid #d9b466;border-radius:8px;text-align:left">
         <div style="font-weight:bold;color:#8a6a2e;margin-bottom:6px">📣 Threads に投稿するには</div>
         <p style="font-size:13px;color:#5a4a2e;margin:4px 0 10px">
@@ -1851,6 +1867,7 @@ async function doNewRegister() {
   pendingRegisterRequestId = ''; // 次回の登録は別の商品なので新しいIDを採番させる
   deleteRegisterDraft();
   document.getElementById('completeId').textContent = productId;
+  fillIgCaption(productId);   // SNS用キャプションを用意する（2026-08-31）
 
   // 作品集の静的データを即時再生成（結果は完了画面に表示。失敗しても登録は成立）
   const rebuildEl = document.getElementById('worksRebuildStatus');
@@ -2848,6 +2865,58 @@ function downloadReferenceImage(url, filename) {
       }
       console.warn('downloadReferenceImage failed:', err);
     });
+}
+
+/* ===== SNS用キャプション（2026-08-31 事業主要望）=====
+   作品集の説明文をそのままInstagram等に流用しているため、末尾に作品番号と
+   作品ページのURLを付けた形で取り出せるようにする。作品番号を載せておくと、
+   お客様が「インスタで見た○○」と言ったときにオーダー相談AIが番号で特定できる。 */
+const WORKS_PAGE_BASE = 'https://you0810jmsdf.github.io/ns-factory/works/';
+function buildIgCaption(productId, shortDesc, longDesc, hashtags) {
+  const parts = [];
+  if (shortDesc && shortDesc.trim()) parts.push(shortDesc.trim());
+  if (longDesc  && longDesc.trim())  parts.push(longDesc.trim());
+  parts.push('作品番号: ' + productId + '\n' + WORKS_PAGE_BASE + productId + '.html');
+  const tags = String(hashtags || '').split(/[\s　]+/).filter(Boolean)
+    .map(t => t.charAt(0) === '#' ? t : '#' + t);
+  if (tags.length) parts.push(tags.join(' '));
+  return parts.join('\n\n');
+}
+function fillIgCaption(productId) {
+  const ta = document.getElementById('igCaption');
+  if (!ta) return;
+  const tags = val('f_hashtags');
+  ta.value = buildIgCaption(productId, val('f_shortDesc'), val('f_longDesc'), tags);
+  const n = String(tags || '').split(/[\s　]+/).filter(Boolean).length;
+  const st = document.getElementById('igCaptionStatus');
+  // ハッシュタグは5個以内という自分で決めた運用があるので、超えていたら気付けるようにする
+  if (st) st.textContent = n > 5 ? '※ ハッシュタグが' + n + '個です（運用ルールは5個以内）' : '';
+}
+function writeToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+  return new Promise((resolve, reject) => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error('execCommand failed'));
+    } catch (e) { reject(e); }
+  });
+}
+function copyIgCaption() {
+  const ta = document.getElementById('igCaption');
+  const st = document.getElementById('igCaptionStatus');
+  if (!ta || !ta.value.trim()) { if (st) st.textContent = '⚠️ キャプションが空です'; return; }
+  writeToClipboard(ta.value).then(() => {
+    if (st) { st.style.color = '#2e7d32'; st.textContent = '✓ コピーしました。SNSに貼り付けてください'; }
+    setTimeout(() => { if (st) { st.style.color = '#7a5a3f'; st.textContent = ''; } }, 8000);
+  }).catch(() => {
+    // コピーできない環境でも手で取れるように選択状態にする
+    ta.select();
+    if (st) { st.style.color = '#b00'; st.textContent = '⚠️ 自動コピーできません。Ctrl+C を押してください'; }
+  });
 }
 
 function openProductFolder() {

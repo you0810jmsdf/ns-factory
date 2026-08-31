@@ -1270,6 +1270,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <!-- SNS等でこの作品を名指しで案内するためのリンク（2026-08-12 事業主要望）。
              コピー先は works/商品ID.html（OGP付きの案内ページ）で、開くと詳細が直接開く。 -->
         <button id="share-work-link" class="btn-share-work" type="button" data-i18n="modal.share">🔗 この作品のリンクをコピー</button>
+        <!-- SNS投稿用のキャプション（2026-08-31 事業主要望）。
+             説明文の末尾に作品番号と作品ページURLを付けた形で取り出す。作品番号を投稿に載せておくと、
+             お客様が「インスタで見た○○」と言ったときにオーダー相談AIが番号で作品を特定できる。
+             ハッシュタグは works-data.json に無いため、ここでは付かない（登録画面のキャプションには付く）。 -->
+        <button id="copy-caption-btn" class="btn-share-work" type="button" hidden>📸 SNSキャプションをコピー</button>
         <div class="modal-actions">
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
@@ -1895,6 +1900,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       }
       const panel = document.getElementById('admin-price-panel');
       if (panel) panel.hidden = !isAdmin;
+      // SNSキャプションは投稿作業のための道具なので管理者だけに出す
+      const capBtn = document.getElementById('copy-caption-btn');
+      if (capBtn) capBtn.hidden = !isAdmin;
       if (isAdmin && activeWork) {
         document.getElementById('admin-price-input').value = activeWork.price || '';
         // 開いている作品の編集画面へ直行（IDコピー不要）
@@ -2527,6 +2535,37 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (!work || !work.id) return '';
       return location.origin + location.pathname.replace(/works\.html$/, '')
         + 'works/' + encodeURIComponent(work.id) + '.html';
+    }
+
+    /* SNS投稿用キャプションを組み立てる（2026-08-31）。
+       作品集の説明文をそのままSNSへ流用しているため、末尾に作品番号と作品ページURLを付ける。 */
+    function buildWorkCaption(work) {
+      if (!work) return '';
+      const parts = [];
+      if (work.shortDesc && String(work.shortDesc).trim()) parts.push(String(work.shortDesc).trim());
+      if (work.longDesc  && String(work.longDesc).trim())  parts.push(String(work.longDesc).trim());
+      parts.push('作品番号: ' + work.id + '\n' + workShareUrl(work));
+      return parts.join('\n\n');
+    }
+    const captionBtn = document.getElementById('copy-caption-btn');
+    if (captionBtn) {
+      captionBtn.addEventListener('click', () => {
+        const text = buildWorkCaption(activeWork);
+        if (!text) return;
+        const done = () => {
+          captionBtn.classList.add('copied');
+          captionBtn.textContent = '✓ コピーしました（SNSに貼れます）';
+          setTimeout(() => {
+            captionBtn.classList.remove('copied');
+            captionBtn.textContent = '📸 SNSキャプションをコピー';
+          }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(() => { fallbackCopy(text); done(); });
+        } else {
+          fallbackCopy(text); done();
+        }
+      });
     }
 
     const shareWorkBtn = document.getElementById('share-work-link');
