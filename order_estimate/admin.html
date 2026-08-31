@@ -810,6 +810,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="waitlist" data-admin-cat="keiei" role="tab" aria-selected="false">🔔 再製作待ち</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="receipt-checklist" data-admin-cat="keiei" role="tab" aria-selected="false">🧾 証憑チェックリスト</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="automations" data-admin-cat="keiei" role="tab" aria-selected="false">⏰ 定期実行</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="jhcs-dl" data-admin-cat="keiei" role="tab" aria-selected="false">🎓 JHCS講習DL管理</button>
       <!-- 📦 在庫管理 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ring" data-admin-cat="stock" role="tab" aria-selected="false">リング在庫</button>
@@ -897,6 +898,25 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
         title="幕僚稼働監視"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- 定期実行タブ -->
+    <div class="panel automations-section admin-section-hidden" id="automationsPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:#8a6a4a">毎日定時で動く処理の一覧・時間帯の競合・止まっている処理の監視。認証は本画面と共通・自動ログイン</div>
+        <a href="../automations.html" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット -->
+      <iframe
+        id="automationsFrame"
+        data-src="../automations.html"
+        src="about:blank"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
+        title="定期実行モニタ"
         loading="lazy"></iframe>
     </div>
 
@@ -1948,6 +1968,7 @@ function unlockAdmin() {
   // 幕僚稼働監視（staff-monitor.html）・接客ログ（chatlog.html）は同一パスワードのため、認証通過を引き継ぐ
   try {
     sessionStorage.setItem('nsfactory-staff-monitor-auth', 'ok');
+    sessionStorage.setItem('nsfactory-automations-auth', 'ok');
     sessionStorage.setItem('nsfactory-chatlog-auth', 'ok');
   } catch (err) { /* ignore */ }
   tryAutoFetchToken();
@@ -5976,7 +5997,7 @@ async function saveJhcsStudent() {
 }
 
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'jhcs-dl': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'jhcs-dl': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics',
@@ -6001,11 +6022,12 @@ function setAdminTab(tab) {
   const isReceiptChecklist = tab === 'receipt-checklist';
   const isDashboard = tab === 'dashboard';
   const isStaffMonitor = tab === 'staff-monitor';
+  const isAutomations = tab === 'automations';
   const isChatlog = tab === 'chatlog';
   const isJhcsDl = tab === 'jhcs-dl';
   const isWaitlist = tab === 'waitlist';
   const isFavorites = tab === 'favorites';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -6059,6 +6081,9 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.staff-monitor-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isStaffMonitor);
+  });
+  document.querySelectorAll('.automations-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isAutomations);
   });
   document.querySelectorAll('.chatlog-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isChatlog);
@@ -6198,6 +6223,13 @@ function setAdminTab(tab) {
     const smFrame = document.getElementById('staffMonitorFrame');
     if (smFrame && smFrame.src.indexOf('staff-monitor.html') === -1 && smFrame.dataset.src) {
       smFrame.src = smFrame.dataset.src;
+    }
+  }
+  if (isAutomations) {
+    // 初回表示時のみ src をセット（認証は unlockAdmin() が automations 側のセッションキーを付与済み）
+    const auFrame = document.getElementById('automationsFrame');
+    if (auFrame && auFrame.src.indexOf('automations.html') === -1 && auFrame.dataset.src) {
+      auFrame.src = auFrame.dataset.src;
     }
   }
   if (isChatlog) {
