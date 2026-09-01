@@ -152,7 +152,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .nav-spacer{flex:1}
 .nav-links{
   display:flex;align-items:center;gap:4px;
+  /* ナビ項目が増えてもページ全体を横に広げない。
+     入りきらないときはナビの中だけを横に送る（2026-09-01 AI経営奮闘記の追加時）。 */
+  min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
 }
+.nav-links::-webkit-scrollbar{display:none}
 .nav-link{
   font-size:13px;color:var(--color-text-sub);
   padding:6px 10px;border-radius:var(--radius-sm);
