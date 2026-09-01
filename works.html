@@ -1257,6 +1257,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
              ⛔ 管理者限定にしないこと。お客様の問い合わせ導線として必要（同日、一度限定して差し戻した）。
              ※ 投稿用の「SNSキャプション」は別物で、あちらは管理者のみ。 -->
         <button id="share-work-link" class="btn-share-work" type="button" data-i18n="modal.share">🔗 この作品のリンクをコピー</button>
+        <!-- SNS投稿用のキャプション（2026-08-31 事業主要望）。
+             説明文の末尾に作品番号と作品ページURLを付けた形で取り出す。作品番号を投稿に載せておくと、
+             お客様が「インスタで見た○○」と言ったときにオーダー相談AIが番号で作品を特定できる。
+             ハッシュタグは works-data.json に無いため、ここでは付かない（登録画面のキャプションには付く）。
+             ⛔ これは投稿作業の道具。管理者モードのときだけ出す（作品リンクと違いお客様には不要）。 -->
+        <button id="copy-caption-btn" class="btn-share-work" type="button" hidden>📸 SNSキャプションをコピー</button>
         <div class="modal-detail-label">Product</div>
         <div id="modal-meta" class="modal-meta"></div>
         <div id="modal-desc" class="modal-desc"></div>
@@ -1272,11 +1278,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <div class="waitlist-note" id="waitlist-note"></div>
           <div id="waitlist-msg" class="waitlist-msg" hidden></div>
         </div>
-        <!-- SNS投稿用のキャプション（2026-08-31 事業主要望）。
-             説明文の末尾に作品番号と作品ページURLを付けた形で取り出す。作品番号を投稿に載せておくと、
-             お客様が「インスタで見た○○」と言ったときにオーダー相談AIが番号で作品を特定できる。
-             ハッシュタグは works-data.json に無いため、ここでは付かない（登録画面のキャプションには付く）。 -->
-        <button id="copy-caption-btn" class="btn-share-work" type="button" hidden>📸 SNSキャプションをコピー</button>
         <div class="modal-actions">
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
