@@ -83,11 +83,13 @@ h1{font-size:clamp(26px,4.4vw,38px);font-weight:700;letter-spacing:.04em;margin-
 }
 .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
 .thumb{
-  aspect-ratio:16/9;background:var(--color-bg-sub);overflow:hidden;position:relative;
+  /* カードの高さを揃えるため枠は正方形で固定する。
+     比率を出どころ別に変えると、同じ行のカードの背が揃わず大きな余白ができた。 */
+  aspect-ratio:1/1;background:var(--color-bg-sub);overflow:hidden;position:relative;
 }
-/* SNSに投稿した画像は正方形。noteの固定バナーは横長なので、
-   同じ比率で切ると文字が欠ける。出どころで比率を変える。 */
-.thumb.is-sns{aspect-ratio:1/1}
+/* SNS投稿画像は正方形なので枠いっぱいに敷く（cover）。
+   noteの固定バナーは横長で、coverだと文字が切れるため全体を収める（contain）。 */
+.thumb:not(.is-sns) img{object-fit:contain}
 /* 下地(.ph)は position:absolute なので、何もしないと通常フローの img より前面に来る。
    画像側を positioned にして必ず上に重ねる（画像が落ちたときだけ下地が見える）。 */
 .thumb img{width:100%;height:100%;object-fit:cover;position:relative;z-index:1}
