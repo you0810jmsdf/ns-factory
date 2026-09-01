@@ -152,8 +152,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .nav-spacer{flex:1}
 .nav-links{
   display:flex;align-items:center;gap:4px;
-  /* ナビ項目が増えてもページ全体を横に広げない。
-     入りきらないときはナビの中だけを横に送る（2026-09-01 AI経営奮闘記の追加時）。 */
+  /* ナビが入りきらないときは、ページ全体ではなくナビの中だけを横に送る。
+     2026-09-01時点で iPhone 13(390px) で23pxはみ出していたのもこれで解消している。 */
   min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
 }
 .nav-links::-webkit-scrollbar{display:none}
@@ -1509,7 +1509,6 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
       </div>
     </div>
     <a href="#staff" class="nav-link" data-i18n="nav.staff">スタッフ</a>
-    <a href="./note.html" class="nav-link" data-i18n="nav.diary">AI経営奮闘記</a>
     <!-- 2026-08-04 導線一本化: オーダー系の入口は「オーダー相談窓口」（hearing-ai.html）のみに統一。
          ガイド・見積もりシミュレーターへは相談の中から誘導する（事業主指示） -->
     <a href="./order_estimate/hearing-ai.html" class="nav-cta" data-i18n="nav.order">オーダー相談</a>
@@ -2044,7 +2043,6 @@ window.NSF_I18N_DICT = {
   'nav.room.jinji': 'HR Office',
   'nav.room.kyouiku': 'Education Office',
   'nav.staff': 'Staff',
-  'nav.diary': 'AI Management Diary',
   'nav.order': 'Order Consultation',
   'nav.qrLabel': 'This page',
   'qr.caption': 'Scan with your phone camera',
