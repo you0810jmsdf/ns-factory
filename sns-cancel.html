@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>SNS予約の取り消し｜N's factory</title>
+<!--
+  AI経営奮闘記のSNS予約を取り消すページ（2026-09-01 新設）
+
+  ⚠ なぜ GAS を直接開かせないか:
+     スマホのブラウザは Google にログイン済みのため、GAS WebApp の /exec を
+     メールから直接開くと Drive の「現在、ファイルを開くことができません」に落ちる。
+     （2026-09-01 実機で発生。未認証HTTPでは200が返るので気づきにくい）
+     GAS は Access-Control-Allow-Origin: * を返すため、ここから fetch すれば
+     Googleのログイン状態に一切左右されずに取り消せる。
+
+  URL: /sns-cancel.html?id=<id1>,<id2>&k=<合言葉>
+  合言葉はURLパラメータでのみ渡す。このファイルには絶対に書かない。
+-->
+<style>
+  :root{ --bg:#0d1b37; --gold:#c9a84c; --gold-l:#e6d28c; --text:#f3f0e8; --danger:#b91c1c; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; padding:28px 20px 60px; background:var(--bg); color:var(--text);
+        font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+        font-size:17px; line-height:1.9; }
+  .wrap{ max-width:520px; margin:0 auto; }
+  .eyebrow{ color:var(--gold); font-size:13px; letter-spacing:.18em; margin:0 0 6px; }
+  h1{ font-size:23px; margin:0 0 20px; font-weight:600; }
+  .card{ background:rgba(255,255,255,.05); border:1px solid rgba(201,168,76,.35);
+         border-radius:12px; padding:18px; margin:0 0 22px; font-size:15px; }
+  .card dt{ color:var(--gold); font-size:12px; letter-spacing:.1em; }
+  .card dd{ margin:2px 0 12px; word-break:break-all; }
+  .card dd:last-child{ margin-bottom:0; }
+  button{ display:block; width:100%; border:0; border-radius:12px; padding:20px 14px;
+          font-size:19px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .btn-danger{ background:var(--danger); color:#fff; }
+  .btn-ghost{ background:transparent; color:var(--gold); border:1px solid var(--gold); margin-top:12px; }
+  button[disabled]{ opacity:.5; }
+  .result{ border-radius:12px; padding:18px; margin:0 0 18px; font-size:16px; display:none; }
+  .ok{ background:#14532d; color:#dcfce7; }
+  .ng{ background:#4c0519; color:#ffe4e6; }
+  .note{ font-size:13px; color:#a8b0c0; }
+  ul{ padding-left:1.1em; margin:8px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">N'S FACTORY</p>
+  <h1>SNS予約の取り消し</h1>
+
+  <div id="result" class="result"></div>
+
+  <dl class="card" id="target">
+    <dt>対象の予約</dt>
+    <dd id="ids">読み込み中…</dd>
+    <dt>投稿先</dt>
+    <dd>Threads と Instagram（両方まとめて止まります）</dd>
+  </dl>
+
+  <button id="go" class="btn-danger">予約を取り消す</button>
+  <button id="retry" class="btn-ghost" style="display:none">もう一度試す</button>
+  <p class="note" id="hint">押すとその場で取り消され、予定していた投稿は行われません。</p>
+</div>
+
+<script>
+(function () {
+  var GAS = 'https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec';
+  var q = new URLSearchParams(location.search);
+  var ids = (q.get('id') || '').trim();
+  var key = (q.get('k') || '').trim();
+  var elIds = document.getElementById('ids');
+  var elResult = document.getElementById('result');
+  var elGo = document.getElementById('go');
+  var elRetry = document.getElementById('retry');
+  var elHint = document.getElementById('hint');
+
+  function show(kind, html) {
+    elResult.className = 'result ' + kind;
+    elResult.innerHTML = html;
+    elResult.style.display = 'block';
+  }
+
+  if (!ids || !key) {
+    elIds.textContent = '—';
+    elGo.style.display = 'none';
+    elHint.style.display = 'none';
+    show('ng', '<b>取り消し情報がURLに含まれていません。</b><br>' +
+      '通知メールの「この予約を取り消す」ボタンから開き直してください。' +
+      'それでも駄目な場合は予約シートで状態を canceled に書き換えれば止まります。');
+    return;
+  }
+  elIds.textContent = ids.split(',').join(' / ');
+
+  function run() {
+    elGo.disabled = true;
+    elRetry.style.display = 'none';
+    elGo.textContent = '取り消しています…';
+    var url = GAS + '?action=snsqueue_cancel&format=json'
+            + '&pass=' + encodeURIComponent(key)
+            + '&id=' + encodeURIComponent(ids);
+    fetch(url, { method: 'GET', cache: 'no-store' })
+      .then(function (r) { return r.text(); })
+      .then(function (t) {
+        var data;
+        try { data = JSON.parse(t); }
+        catch (e) { throw new Error('応答を解釈できません: ' + t.slice(0, 120)); }
+        elGo.style.display = 'none';
+        elHint.style.display = 'none';
+        if (data.ok) {
+          show('ok', '<b>✅ 予約を取り消しました。</b><br>この記事の投稿は行われません。');
+        } else if (data.error === 'bad_passphrase') {
+          throw new Error('合言葉が一致しません。URLが途中で切れている可能性があります。');
+        } else if (data.okCount > 0) {
+          show('ng', '<b>⚠ 一部だけ取り消しました。</b><ul><li>' +
+            (data.lines || []).join('</li><li>') + '</li></ul>');
+        } else {
+          show('ng', '<b>取り消せませんでした。</b><ul><li>' +
+            ((data.lines || [data.error || '不明なエラー']).join('</li><li>')) + '</li></ul>' +
+            '<span class="note">すでに投稿済み、または取消済みの可能性があります。</span>');
+        }
+      })
+      .catch(function (err) {
+        elGo.disabled = false;
+        elGo.textContent = '予約を取り消す';
+        elRetry.style.display = 'block';
+        show('ng', '<b>通信に失敗しました。</b><br>' + String(err.message || err) +
+          '<br><span class="note">電波の良い場所でもう一度お試しください。' +
+          '急ぐ場合は予約シートで状態を canceled に書き換えれば止まります。</span>');
+      });
+  }
+
+  elGo.addEventListener('click', run);
+  elRetry.addEventListener('click', run);
+})();
+</script>
+</body>
+</html>
