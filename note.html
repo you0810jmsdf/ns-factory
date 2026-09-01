@@ -82,8 +82,18 @@ h1{font-size:clamp(26px,4.4vw,38px);font-weight:700;letter-spacing:.04em;margin-
   transition:transform .2s ease,box-shadow .2s ease;display:flex;flex-direction:column;
 }
 .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
-.thumb{aspect-ratio:1/1;background:var(--color-bg-sub);overflow:hidden}
+.thumb{
+  aspect-ratio:16/9;background:var(--color-bg-sub);overflow:hidden;position:relative;
+}
+/* SNSに投稿した画像は正方形。noteの固定バナーは横長なので、
+   同じ比率で切ると文字が欠ける。出どころで比率を変える。 */
+.thumb.is-sns{aspect-ratio:1/1}
 .thumb img{width:100%;height:100%;object-fit:cover}
+.thumb .ph{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;
+  color:var(--color-text-mute);background:var(--color-bg-sub);
+}
 .card-body{padding:16px 18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
 .card-date{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.12em;color:var(--color-accent-dark)}
 .card-title{font-size:16px;line-height:1.65;font-weight:700}
@@ -194,11 +204,15 @@ footer{
     var next = filtered.slice(shown, shown + PAGE);
     var html = next.map(function (it) {
       var title = cleanTitle(it.title);
+      // 画像が落ちてもカードが白く抜けないよう、必ず下に屋号を敷いておく
+      var ph = '<span class="ph">N&#39;S FACTORY</span>';
       var img = it.image
-        ? '<img src="' + esc(it.image) + '" alt="" loading="lazy" decoding="async">'
-        : '';
+        ? ph + '<img src="' + esc(it.image) + '" alt="" loading="lazy" decoding="async"' +
+          ' onerror="this.remove()">'
+        : ph;
+      var thumbCls = 'thumb' + (it.imageSource === 'sns' ? ' is-sns' : '');
       return '<a class="card" href="' + esc(it.url) + '" target="_blank" rel="noopener">' +
-             '<div class="thumb">' + img + '</div>' +
+             '<div class="' + thumbCls + '">' + img + '</div>' +
              '<div class="card-body">' +
                '<span class="card-date">' + fmtDate(it.date) + '</span>' +
                '<span class="card-title">' + esc(title) + '</span>' +
