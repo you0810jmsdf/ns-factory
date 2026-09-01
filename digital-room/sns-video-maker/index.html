@@ -627,6 +627,9 @@ canvas{
           <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveへアップロード</button>
         </div>
         <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
+        <div class="actions" id="shareToSnsBox" hidden>
+          <button class="primary" id="shareToSns" type="button">📤 SNSへ投稿（動画＋キャプション）</button>
+        </div>
         <div class="notice">自動ナレーション付き保存は、AI音声をバックグラウンドで生成してMP4へ直接合成します。画面共有は不要です。初回だけ約100MBを読み込みますが、画面操作は続けられます。中止するときは上の「停止」を押してください。</div>
         <div class="log" id="log"></div>
         <details class="save-stats" id="saveStats">
@@ -1134,6 +1137,8 @@ const els = {
   filmCtaEnabled: document.getElementById('filmCtaEnabled'),
   filmSpeedAuto: document.getElementById('filmSpeedAuto'),
   endLogoCta: document.getElementById('endLogoCta'),
+  shareToSns: document.getElementById('shareToSns'),
+  shareToSnsBox: document.getElementById('shareToSnsBox'),
   filmSpeedField: document.getElementById('filmSpeedField'),
   saveStats: document.getElementById('saveStats'),
   saveStatsSummary: document.getElementById('saveStatsSummary'),
@@ -2604,6 +2609,7 @@ function findWorkForDriveData(data, workNo){
 
 function applyWorkInfo(work, {translate = false, showLog = false} = {}){
   currentWork = work;
+  updateShareToSnsUi();
   els.productName.value = work.title || 'レザー作品';
   els.materialNote.value = formatWorkMeta(work);
   if(work.shortDesc) els.featureNote.value = work.shortDesc;
@@ -4519,6 +4525,77 @@ function resetRecordingOutput(){
   lastRecordingBlob = null;
   lastRecordingMeta = null;
   refreshUploadButton();
+  updateShareToSnsUi();
+}
+
+/* ══ SNSへ投稿ボタン（2026-09-01・管理者限定）══
+   公開アプリのため次の原則を守る:
+   - 新しい秘密情報は一切埋め込まない（管理者ゲートは works.html と同じ公開済みハッシュの共有。
+     キャプションの元データは公開済みの作品集カタログのみ。APIトークン不使用）
+   - 投稿はOSの共有シート越しに事業主自身が行う（自動公開はしない）
+   - ボタンは「合言葉照合OK ＋ 録画済み ＋ 作品情報あり」の3条件が揃ったときだけ現れる。
+     works.html 側で管理者モードをONにした sessionStorage を共有する。 */
+const NSF_GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+let nsfAdminVerified = false;
+
+async function verifyNsfAdmin(){
+  try{
+    const key = sessionStorage.getItem('nsf_admin_key') || '';
+    if(!key || !crypto.subtle){ nsfAdminVerified = false; return false; }
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key));
+    const hex = Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, '0')).join('');
+    nsfAdminVerified = (hex === NSF_GATE_HASH);
+  }catch(_){ nsfAdminVerified = false; }
+  return nsfAdminVerified;
+}
+
+/* キャプションは works.html の buildWorkCaption と同じ書式を保つこと
+   （説明文＋作品番号＋OGP付き作品ページURL。片方だけ変えると投稿文面がぶれる） */
+function buildSnsVideoCaption(work){
+  if(!work || !work.id) return '';
+  const parts = [];
+  if(work.shortDesc && String(work.shortDesc).trim()) parts.push(String(work.shortDesc).trim());
+  if(work.longDesc && String(work.longDesc).trim()) parts.push(String(work.longDesc).trim());
+  parts.push('作品番号: ' + work.id + '\nhttps://you0810jmsdf.github.io/ns-factory/works/' + encodeURIComponent(work.id) + '.html');
+  return parts.join('\n\n');
+}
+
+function updateShareToSnsUi(){
+  if(!els.shareToSnsBox) return;
+  const ready = nsfAdminVerified && !!lastRecordingBlob && !!(currentWork && currentWork.id);
+  els.shareToSnsBox.hidden = !ready;
+}
+
+async function shareVideoToSns(){
+  const caption = buildSnsVideoCaption(currentWork);
+  if(!lastRecordingBlob || !caption){
+    setLog('投稿できる動画と作品情報が揃っていません。');
+    return;
+  }
+  // まずキャプションをクリップボードへ（共有先アプリが本文を受け取らない場合の保険）
+  let copied = false;
+  try{
+    await navigator.clipboard.writeText(caption);
+    copied = true;
+  }catch(_){}
+  const ext = (lastRecordingMeta && lastRecordingMeta.ext) || 'mp4';
+  const file = new File([lastRecordingBlob], `${safeFileName(currentWork.id)}.${ext}`,
+                       {type: lastRecordingBlob.type || 'video/mp4'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({files:[file], text: caption});
+      setLog(copied
+        ? '共有シートを開きました。キャプションはコピー済みなので、投稿画面で貼り付けられます。'
+        : '共有シートを開きました。');
+      return;
+    }catch(err){
+      if(err && err.name === 'AbortError'){ setLog('共有をキャンセルしました。'); return; }
+    }
+  }
+  // 共有シート非対応（PC等）: キャプションコピー＋ダウンロード案内
+  setLog(copied
+    ? 'この端末は動画の直接共有に対応していないため、キャプションだけコピーしました。上の「完成動画をダウンロード」で保存した動画と一緒にSNSアプリへ貼り付けてください。'
+    : 'この端末では共有もコピーもできませんでした。動画をダウンロードし、作品集ページのキャプションコピーをご利用ください。');
 }
 
 function finishRecordingBlob(blob, format, message){
@@ -4529,6 +4606,7 @@ function finishRecordingBlob(blob, format, message){
   lastRecordingBlob = blob;
   lastRecordingMeta = format;
   refreshUploadButton();
+  updateShareToSnsUi();
   const driveWarning = currentWork && currentWork.folderId && blob.size > UPLOAD_VIDEO_MAX_BYTES
     ? ` ただしDrive保存には大きすぎます（${formatMb(blob.size)}MB / 上限${formatMb(UPLOAD_VIDEO_MAX_BYTES)}MB）。「Drive用に秒数を自動短縮」を押してから再録画してください。`
     : '';
@@ -6412,6 +6490,8 @@ els.motionIntensity.addEventListener('change', () => {
   const label = els.motionIntensity.options[els.motionIntensity.selectedIndex].textContent;
   setLog(`動きの強さを「${label}」にしました。プレビューと保存MP4の両方に反映されます。`);
 });
+els.shareToSns.addEventListener('click', shareVideoToSns);
+verifyNsfAdmin().then(updateShareToSnsUi);
 els.endLogoCta.addEventListener('change', () => {
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
