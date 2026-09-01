@@ -1268,8 +1268,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <div id="waitlist-msg" class="waitlist-msg" hidden></div>
         </div>
         <!-- SNS等でこの作品を名指しで案内するためのリンク（2026-08-12 事業主要望）。
+             ⛔ 投稿作業の道具なので管理者モードのときだけ出す（2026-09-01 事業主指示）。お客様には出さない。
              コピー先は works/商品ID.html（OGP付きの案内ページ）で、開くと詳細が直接開く。 -->
-        <button id="share-work-link" class="btn-share-work" type="button" data-i18n="modal.share">🔗 この作品のリンクをコピー</button>
+        <button id="share-work-link" class="btn-share-work" type="button" hidden data-i18n="modal.share">🔗 この作品のリンクをコピー</button>
         <!-- SNS投稿用のキャプション（2026-08-31 事業主要望）。
              説明文の末尾に作品番号と作品ページURLを付けた形で取り出す。作品番号を投稿に載せておくと、
              お客様が「インスタで見た○○」と言ったときにオーダー相談AIが番号で作品を特定できる。
@@ -1900,9 +1901,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       }
       const panel = document.getElementById('admin-price-panel');
       if (panel) panel.hidden = !isAdmin;
-      // SNSキャプションは投稿作業のための道具なので管理者だけに出す
+      // コピー系は投稿作業のための道具なので管理者だけに出す（お客様には無関係）
       const capBtn = document.getElementById('copy-caption-btn');
       if (capBtn) capBtn.hidden = !isAdmin;
+      const shareBtn = document.getElementById('share-work-link');
+      if (shareBtn) shareBtn.hidden = !isAdmin;
       if (isAdmin && activeWork) {
         document.getElementById('admin-price-input').value = activeWork.price || '';
         // 開いている作品の編集画面へ直行（IDコピー不要）
