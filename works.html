@@ -483,6 +483,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }
     .btn-share-work:hover { background: #faf5ee; }
     .btn-share-work.copied { border-style: solid; background: var(--accent); color: var(--white); }
+    /* ⛔ display を指定したクラスは [hidden] を必ず添えること。
+       これが無いと hidden 属性が効かず、管理者限定のはずのボタンが
+       お客様にも見えてしまう（2026-08-31〜09-01 SNSキャプションで実害）。 */
+    .btn-share-work[hidden] { display: none; }
     .btn-admin-edit {
       display: inline-flex;
       align-items: center;
@@ -498,6 +502,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       text-decoration: none;
     }
     .btn-admin-edit:hover { background: var(--accent); color: var(--white); }
+    .btn-admin-edit[hidden] { display: none; }
     .modal-detail-label {
       color: var(--warm);
       font-size: 12px;
