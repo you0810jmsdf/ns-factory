@@ -2,6 +2,21 @@
 
 このファイルは、Claude Code がリポジトリを開いたときに今回の変更意図を把握できるように残す作業メモです。
 
+## 2026-09-01 — SNS動画メーカー: 「SNSへ投稿」ボタン（管理者限定・共有シート方式）
+
+- 対象: `digital-room/sns-video-maker/index.html`
+- 要望: 動画生成後、作品集掲載のキャプションを付けてそのままSNSへ投稿するボタン。**一般利用者には見せない**（公開アプリのため）。
+- 方式: **Web Share API（OSの共有シート）**。`navigator.share({files:[mp4], text:キャプション})` でスマホの共有シートを開き、事業主がInstagram等を選んで投稿する。APIトークン不使用・自動公開なし。キャプションは保険で先にクリップボードへコピー（共有先が本文を受け取らないアプリ対策）。PC等の非対応環境はキャプションコピー＋ダウンロード案内にフォールバック。
+- 管理者限定の実装:
+  - `NSF_GATE_HASH`（works.html と同一の公開済みSHA-256定数）＋ `sessionStorage['nsf_admin_key']` 共有。works.html 側で管理者モードONにすれば動画メーカーでも有効。
+  - **works.html と違い、鍵の存在チェックだけでなく毎回SHA-256照合してから表示**（`verifyNsfAdmin`）。
+  - 表示条件は3つ: 照合OK ＋ `lastRecordingBlob` あり ＋ `currentWork.id` あり。`finishRecordingBlob` / `resetRecordingOutput` / `applyWorkInfo`（currentWork代入）の3箇所で `updateShareToSnsUi()` を呼ぶ。
+- キャプション: `buildSnsVideoCaption` — **works.html の `buildWorkCaption` と同一書式**（shortDesc＋longDesc＋作品番号＋OGP付き作品ページURL）。書式を変えるときは両方揃えること。
+- 検証: 一般利用者=非表示／誤った鍵をsessionStorageに直接入れても照合で拒否／3条件成立でのみ出現／録画消去で非表示復帰／キャプション書式一致、の6項目をブラウザ実測。`check_public_leak.py` 高リスク0件（index.htmlの「.env参照×2」は `ort.env`（ONNX Runtime API）の誤検知）。本番反映grep 11箇所。
+- 注意:
+  - ⛔ このボタンにAPIトークンを持ち込まないこと。自動投稿化したくなったら既存のThreads GAS（サーバー側にトークン保持）経由で設計する。
+  - JSゲートはUIの出し分けであって機密保護ではない（静的ホスティングの教訓）。このボタンが扱うデータはすべて公開済み（作品集カタログ・自分で生成した動画）なので成立している設計。非公開データを足さないこと。
+
 ## 2026-08-30 — SNS動画メーカー: 通常モードの「締めのロゴ」CTA（ON/OFF付き）
 
 - 対象: `digital-room/sns-video-maker/index.html`
