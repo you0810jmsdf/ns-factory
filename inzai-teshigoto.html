@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>いんざい手仕事工房 レザークラフト講座 | N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script>
+// 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
+// GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<meta name="description" content="2026年11月20日(金)、印西市文化ホールで開催される「いんざい手仕事工房」レザークラフト講座のご案内。本格的な道具と材料でスクエアコインケースを作ります。講師：中司祐樹（N's factory）。">
+<meta property="og:title" content="いんざい手仕事工房 レザークラフト講座 | N's factory">
+<meta property="og:description" content="2026年11月20日(金) 印西市文化ホール。本格的な道具と材料でスクエアコインケース作りに挑戦しましょう。参加費2,500円（材料費込み）。">
+<meta property="og:type" content="article">
+<style>
+:root{
+  --ink:#1D1D1F;
+  --muted:#636366;
+  --line:#E8E8ED;
+  --soft:#F5F5F7;
+  --paper:#FFFFFF;
+  --accent:#A0785A;
+  --accent-soft:#F3ECE4;
+  --accent-dark:#7A5540;
+  --radius:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.10);
+  font-family:-apple-system,'SF Pro Display','SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;height:auto;display:block}
+
+.nav{
+  position:sticky;top:0;z-index:10;
+  height:56px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.nav-title{font-size:14px;font-weight:800;letter-spacing:.04em}
+.nav-spacer{flex:1}
+.nav-link{font-size:13px;color:var(--muted);padding:6px 10px;border-radius:var(--radius);white-space:nowrap}
+.nav-link:hover{background:var(--soft);color:var(--ink)}
+
+.hero{
+  padding:48px 24px 36px;
+  background:linear-gradient(135deg,#fff,var(--accent-soft));
+  border-bottom:1px solid var(--line);
+}
+.hero-inner{max-width:1040px;margin:0 auto}
+.hero-eyebrow{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;
+}
+.hero h1{font-size:clamp(24px,4.2vw,38px);letter-spacing:-.02em;margin-bottom:12px;line-height:1.35}
+.hero .lead{color:var(--muted);font-size:15px;max-width:640px}
+.hero-badge{
+  display:inline-block;margin-top:18px;
+  background:var(--accent-dark);color:#fff;
+  font-size:14px;font-weight:800;letter-spacing:.02em;
+  padding:8px 16px;border-radius:999px;
+}
+
+main{padding:48px 24px 80px}
+.wrap{max-width:1040px;margin:0 auto}
+
+.section-label{
+  color:var(--accent-dark);font-size:11px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;
+  margin:0 0 14px;
+}
+section + section{margin-top:52px}
+h2.h{font-size:22px;letter-spacing:-.01em;margin-bottom:16px}
+p.desc{color:var(--muted);font-size:14px;margin-bottom:18px}
+
+.info-table{
+  width:100%;border-collapse:collapse;
+  border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  font-size:14px;
+}
+.info-table th,.info-table td{padding:14px 16px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.info-table tr:last-child th,.info-table tr:last-child td{border-bottom:0}
+.info-table th{background:var(--soft);font-weight:700;width:132px;white-space:nowrap}
+.info-table td{color:var(--muted)}
+.info-table td strong{color:var(--ink);font-weight:700}
+
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.photo-grid figure{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--soft)}
+.photo-grid figure img{aspect-ratio:4/3;object-fit:cover;width:100%}
+.photo-grid figcaption{padding:12px 14px;font-size:12px;color:var(--muted);background:#fff;border-top:1px solid var(--line)}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.step{
+  border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;background:#fff;
+  display:flex;flex-direction:column;gap:8px;
+}
+.step .num{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--accent-soft);color:var(--accent-dark);
+  font-size:12px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.step h3{font-size:15px;letter-spacing:-.01em}
+.step p{font-size:13px;color:var(--muted);line-height:1.7}
+
+.tool-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.tool-box{border:1px solid var(--line);border-radius:var(--radius);padding:22px;background:#fff}
+.tool-box.bring{background:var(--accent-soft);border-color:#E4D5C6}
+.tool-box h3{font-size:16px;margin-bottom:6px}
+.tool-box .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.tool-box ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.tool-box li{
+  font-size:14px;padding-left:20px;position:relative;line-height:1.6;
+}
+.tool-box li::before{
+  content:'';position:absolute;left:2px;top:9px;
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+}
+.tool-box li span{display:block;font-size:12px;color:var(--muted)}
+
+.flyer-wrap{display:flex;flex-direction:column;gap:18px}
+.flyer-wrap figure{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--soft)}
+.flyer-wrap figcaption{padding:12px 14px;font-size:12px;color:var(--muted);background:#fff;border-top:1px solid var(--line)}
+
+.cta{
+  margin-top:52px;
+  border:2px solid var(--accent);border-radius:var(--radius);
+  padding:32px 28px;background:linear-gradient(135deg,#fff,var(--accent-soft));
+  text-align:center;
+}
+.cta .when{font-size:13px;color:var(--accent-dark);font-weight:800;letter-spacing:.06em;margin-bottom:8px}
+.cta h2{font-size:clamp(20px,3.4vw,26px);margin-bottom:14px;letter-spacing:-.01em}
+.cta p{font-size:14px;color:var(--muted);margin-bottom:20px}
+.cta-tel{
+  display:inline-block;
+  font-size:clamp(24px,5vw,32px);font-weight:800;letter-spacing:.02em;
+  color:var(--accent-dark);margin-bottom:6px;
+}
+.cta-note{font-size:12px;color:var(--muted)}
+.cta-links{margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-block;padding:11px 22px;border-radius:999px;
+  font-size:14px;font-weight:700;
+  border:1px solid var(--accent);color:var(--accent-dark);background:#fff;
+  transition:background .15s,color .15s;
+}
+.btn:hover{background:var(--accent);color:#fff}
+
+.note{
+  margin-top:32px;
+  padding:18px 20px;
+  background:var(--soft);border-radius:var(--radius);
+  font-size:13px;color:var(--muted);line-height:1.8;
+}
+.note strong{color:var(--ink)}
+
+@media(max-width:520px){
+  .hero{padding:32px 18px 26px}
+  main{padding:36px 18px 64px}
+  .info-table th{width:96px;padding:12px 10px}
+  .info-table td{padding:12px 10px}
+  .cta{padding:26px 18px}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">いんざい手仕事工房</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="/ns-factory/jinji-room/">人事幕僚室</a>
+  <a class="nav-link" href="/ns-factory/">TOPへ戻る</a>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">INZAI TESHIGOTO KOBO / LEATHER CRAFT</div>
+    <h1>いんざい手仕事工房<br>レザークラフト講座</h1>
+    <p class="lead">
+      印西市文化ホール主催のワークショップシリーズ「いんざい手仕事工房」に、
+      N's factory 中司祐樹が講師として登壇します。
+      本格的な道具と材料を使って、四角く折りたたむコインケースを作ります。
+      革を触るのが初めての方でも、2時間で完成できる内容です。
+    </p>
+    <div class="hero-badge">2026年11月20日（金）10:00〜12:00</div>
+  </div>
+</section>
+
+<main>
+<div class="wrap">
+
+  <section>
+    <div class="section-label">Overview</div>
+    <h2 class="h">開催概要</h2>
+    <table class="info-table">
+      <tr><th>日時</th><td><strong>2026年11月20日（金）10:00〜12:00</strong>（予定）</td></tr>
+      <tr><th>会場</th><td>印西市文化ホール　2階 大会議室<br>〒270-1327 千葉県印西市大森2535</td></tr>
+      <tr><th>作るもの</th><td>スクエアコインケース（約8×8×2cm・牛ヌメ革・ボタン4点留め）</td></tr>
+      <tr><th>参加費</th><td><strong>2,500円</strong>（材料費込み）</td></tr>
+      <tr><th>対象</th><td>18歳以上の方</td></tr>
+      <tr><th>定員</th><td>10名（先着順・定員に達し次第 募集終了）</td></tr>
+      <tr><th>講師</th><td>中司 祐樹（N's factory）</td></tr>
+      <tr><th>申込受付</th><td><strong>2026年9月13日（日）10:00〜</strong><br>印西市文化ホールの電話または窓口にて受付</td></tr>
+      <tr><th>主催</th><td>印西市文化ホール（指定管理者：株式会社ケイミックスパブリックビジネス）</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-label">Work</div>
+    <h2 class="h">作る作品</h2>
+    <p class="desc">
+      四隅をボタンで留めると四角い箱の形になり、開くと平らに広がるコインケースです。
+      小銭が一目で見渡せて取り出しやすく、革の質感がそのまま手に残ります。
+      講座では牛ヌメ革（肌色）をご用意します。使い込むほどに色が深く育っていく革です。
+    </p>
+    <div class="photo-grid">
+      <figure>
+        <img src="assets/inzai-teshigoto/work-1.jpg" alt="スクエアコインケースの完成例。ワイン色とヌメ革の2色、四隅をボタンで留めた四角い形" loading="lazy">
+        <figcaption>閉じた状態。四隅のボタンを留めると四角い形になります（写真は制作例）</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/inzai-teshigoto/work-2.jpg" alt="スクエアコインケースを開いた状態。中の小銭が見えている" loading="lazy">
+        <figcaption>開くと平らに。小銭が見渡せて取り出しやすい形です</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Process</div>
+    <h2 class="h">当日の流れ</h2>
+    <p class="desc">型紙に沿って革を切り出すところから始めます。すべての工程を体験していただきます。</p>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>革の切り出し</h3>
+        <p>型紙を革に写し、カッターで切り出します。まっすぐ切るコツからお伝えします。</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>穴あけ</h3>
+        <p>縫い穴とボタン穴を開けます。菱キリとポンチを使う、革ならではの作業です。</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>ボタン取り付け</h3>
+        <p>ハンドプレス機で4か所のボタンを留めます。カチッと決まる瞬間が気持ちのいい工程です。</p>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <h3>仕上げ</h3>
+        <p>コバ（革の断面）を整えて完成です。そのままお持ち帰りいただけます。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Tools</div>
+    <h2 class="h">使用する道具</h2>
+    <p class="desc">
+      道具はすべて会場でご用意します。手ぶらでお越しいただいて問題ありません。
+      革工芸のご経験があり道具をお持ちの方は、ご持参いただけると作業がよりスムーズに進みます。
+    </p>
+    <div class="tool-cols">
+      <div class="tool-box">
+        <h3>会場でご用意するもの</h3>
+        <p class="sub">お持ちでない方はこちらをお使いいただけます</p>
+        <ul>
+          <li>カッター・カッターマット<span>革を切り出すのに使います</span></li>
+          <li>菱キリ<span>縫い穴を開ける、先の尖った錐です</span></li>
+          <li>ゴム板<span>穴を開けるときの下敷きです</span></li>
+          <li>穴あけポンチ<span>ボタン用の丸穴を開けます</span></li>
+          <li>木槌・ゴムハンマー<span>ポンチを叩いて穴を開けます</span></li>
+          <li>ハンドプレス機・駒<span>ボタンを留める機械です（講師が持参します）</span></li>
+          <li>革・ボタン金具<span>参加費に含まれています</span></li>
+        </ul>
+      </div>
+      <div class="tool-box bring">
+        <h3>お持ちの方はご持参ください</h3>
+        <p class="sub">任意です。お持ちでなくてもご参加いただけます</p>
+        <ul>
+          <li>菱目打ち（4mmピッチ）<span>等間隔の縫い穴が一度に開けられます</span></li>
+          <li>木槌またはゴムハンマー</li>
+          <li>カッター</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Flyer</div>
+    <h2 class="h">チラシ</h2>
+    <p class="desc">
+      印西市文化ホールが発行するシリーズ共通のチラシです。
+      レザークラフト講座のほか、フラワーアレンジメント・裂き織り・つまみ細工の全4講座が掲載されています。
+    </p>
+    <div class="flyer-wrap">
+      <figure>
+        <img src="assets/inzai-teshigoto/flyer-leather.jpg" alt="チラシのレザークラフト講座部分。講師 中司祐樹、日時 11月20日金曜 10時から12時、持ち物の記載" loading="lazy">
+        <figcaption>レザークラフト講座の掲載部分</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/inzai-teshigoto/flyer-full.jpg" alt="いんざい手仕事工房 2026年秋冬のチラシ全体。4講座の案内と申込方法" loading="lazy">
+        <figcaption>チラシ全体（発行：印西市文化ホール）</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="cta">
+    <div class="when">申込受付開始　2026年9月13日（日）10:00〜</div>
+    <h2>お申し込みは印西市文化ホールへ</h2>
+    <p>お電話または窓口にて受付いたします（先着順・定員10名）</p>
+    <div class="cta-tel">0476-42-8811</div>
+    <div class="cta-note">受付時間 9:00〜21:30／休館日 毎週月曜日（月曜が休日の場合はその後の最も近い休日でない日）</div>
+    <div class="cta-links">
+      <a class="btn" href="https://www.inzai-bunka.jp/" target="_blank" rel="noopener">印西市文化ホール 公式サイト</a>
+      <a class="btn" href="/ns-factory/JHCS.html">講師の他の講座を見る</a>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>お申し込みは印西市文化ホールが受け付けています。</strong>
+    N's factory では本講座のお申し込み・キャンセルの受付はしておりません。
+    お申し込みに関するお問い合わせは、上記の文化ホールへ直接ご連絡ください。<br>
+    作品や材料についてのご質問は、N's factory へお気軽にお問い合わせください。
+  </div>
+
+</div>
+</main>
+
+<script src="assets/access-counter.js"></script>
+</body>
+</html>
