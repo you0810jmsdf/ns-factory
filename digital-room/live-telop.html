@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ライブテロップ | N's factory デジタル幕僚室</title>
+<meta name="description" content="話した言葉が、そのまま配信のテロップに。Chromeの音声認識でリアルタイム字幕を表示し、OBSのクロマキーで配信に載せるツール。">
+<style>
+  :root {
+    --chroma: #00ff00;
+    --panel-bg: #16120d;
+    --panel-edge: #2a231a;
+    --gold: #c9a961;
+    --gold-dim: #8a744a;
+    --ink: #e8e2d6;
+    --ink-dim: #a89f8e;
+    --danger: #d46a5a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--chroma);
+    font-family: "Meiryo", "メイリオ", "Hiragino Sans", sans-serif;
+    overflow: hidden;
+  }
+
+  /* ===== テロップ表示部（OBSが映す領域） ===== */
+  #stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 4vw 6vh;
+    pointer-events: none;
+  }
+  .line {
+    max-width: 92vw;
+    text-align: center;
+    font-weight: bold;
+    line-height: 1.45;
+    color: var(--cap-color, #ffffff);
+    font-size: var(--cap-size, 48px);
+    text-shadow:
+      calc(var(--cap-stroke, 3px) * 1) 0 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * -1) 0 0 var(--cap-outline, #000),
+      0 calc(var(--cap-stroke, 3px) * 1) 0 var(--cap-outline, #000),
+      0 calc(var(--cap-stroke, 3px) * -1) 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * 1) calc(var(--cap-stroke, 3px) * 1) 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * -1) calc(var(--cap-stroke, 3px) * -1) 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * 1) calc(var(--cap-stroke, 3px) * -1) 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * -1) calc(var(--cap-stroke, 3px) * 1) 0 var(--cap-outline, #000);
+    transition: opacity 0.6s ease;
+  }
+  .line.fading { opacity: 0; }
+  .line.interim { opacity: 0.85; }
+
+  /* ===== 操作UI（マウスを動かすと現れ、3秒で消える） ===== */
+  #hud {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 20;
+  }
+  body.ui-visible #hud { opacity: 1; }
+  .hud-btn {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: 1px solid var(--gold-dim);
+    background: var(--panel-bg);
+    color: var(--gold);
+    cursor: pointer;
+  }
+  .hud-btn:hover { border-color: var(--gold); }
+  .hud-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  #btnToggle.running { color: var(--danger); border-color: var(--danger); }
+  #status {
+    font-size: 13px;
+    color: var(--panel-bg);
+    background: rgba(255,255,255,0.75);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+  }
+
+  /* ===== 設定パネル ===== */
+  #panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: min(380px, 92vw);
+    background: var(--panel-bg);
+    border-left: 1px solid var(--panel-edge);
+    color: var(--ink);
+    padding: 24px 22px 40px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    z-index: 30;
+  }
+  #panel.open { transform: translateX(0); }
+  #panel h1 {
+    font-size: 17px;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--panel-edge);
+    padding-bottom: 12px;
+    margin-bottom: 6px;
+  }
+  #panel .sub { font-size: 12px; color: var(--ink-dim); margin-bottom: 20px; }
+  #panel section { margin-bottom: 22px; }
+  #panel h2 {
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border-left: 3px solid var(--gold-dim);
+  }
+  #panel label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  #panel input[type="range"] { flex: 1; max-width: 170px; accent-color: var(--gold); }
+  #panel input[type="color"] {
+    width: 44px; height: 28px;
+    border: 1px solid var(--panel-edge);
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #panel select, #panel textarea {
+    font-family: inherit;
+    font-size: 13px;
+    background: #0e0b08;
+    color: var(--ink);
+    border: 1px solid var(--panel-edge);
+    border-radius: 6px;
+    padding: 8px;
+  }
+  #panel textarea {
+    width: 100%;
+    min-height: 110px;
+    line-height: 1.7;
+    resize: vertical;
+  }
+  #panel .val { font-size: 12px; color: var(--ink-dim); min-width: 44px; text-align: right; }
+  #panel .hint { font-size: 11.5px; color: var(--ink-dim); line-height: 1.7; margin-top: 6px; }
+  #panel .close-row { text-align: right; margin-bottom: 14px; }
+  #panelClose {
+    font-family: inherit;
+    background: none;
+    border: 1px solid var(--panel-edge);
+    color: var(--ink-dim);
+    border-radius: 6px;
+    padding: 5px 14px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  #panelClose:hover { color: var(--gold); border-color: var(--gold-dim); }
+
+  /* ===== 非対応ブラウザ・許可エラー ===== */
+  #notice {
+    position: fixed;
+    inset: 0;
+    display: none;
+    place-items: center;
+    background: var(--panel-bg);
+    color: var(--ink);
+    z-index: 50;
+    padding: 24px;
+    text-align: center;
+    line-height: 2;
+  }
+  #notice.show { display: grid; }
+  #notice strong { color: var(--gold); display: block; font-size: 18px; margin-bottom: 10px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .line, #hud, #panel { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage" aria-live="polite"></div>
+
+<div id="hud">
+  <button class="hud-btn" id="btnToggle">▶ 認識を開始</button>
+  <button class="hud-btn" id="btnSettings">⚙ 設定</button>
+  <button class="hud-btn" id="btnClear">消去</button>
+  <span id="status">停止中</span>
+</div>
+
+<aside id="panel" aria-label="設定">
+  <div class="close-row"><button id="panelClose">閉じる ✕</button></div>
+  <h1>ライブテロップ 設定</h1>
+  <p class="sub">N's factory デジタル幕僚室 ／ 設定は自動保存されます</p>
+
+  <section>
+    <h2>文字の見た目</h2>
+    <label>大きさ
+      <input type="range" id="setSize" min="24" max="120" step="2">
+      <span class="val" id="valSize"></span>
+    </label>
+    <label>縁取りの太さ
+      <input type="range" id="setStroke" min="0" max="8" step="1">
+      <span class="val" id="valStroke"></span>
+    </label>
+    <label>文字色 <input type="color" id="setColor"></label>
+    <label>縁取り色 <input type="color" id="setOutline"></label>
+  </section>
+
+  <section>
+    <h2>表示のふるまい</h2>
+    <label>同時に出す行数
+      <input type="range" id="setLines" min="1" max="4" step="1">
+      <span class="val" id="valLines"></span>
+    </label>
+    <label>消えるまでの秒数
+      <input type="range" id="setFade" min="3" max="20" step="1">
+      <span class="val" id="valFade"></span>
+    </label>
+  </section>
+
+  <section>
+    <h2>背景色（クロマキー用）</h2>
+    <label>色を選ぶ
+      <select id="setChroma">
+        <option value="#00ff00">グリーン（標準）</option>
+        <option value="#0000ff">ブルー</option>
+        <option value="#ff00ff">マゼンタ</option>
+        <option value="#000000">黒（プレビュー用）</option>
+      </select>
+    </label>
+    <p class="hint">文字色と同系の背景は避けてください。文字ごと抜けます。</p>
+  </section>
+
+  <section>
+    <h2>置き換え辞書</h2>
+    <textarea id="setDict" spellcheck="false" placeholder="誤認識=>正しい表記&#10;例：&#10;小場=>コバ&#10;ぬめがわ=>ヌメ革"></textarea>
+    <p class="hint">1行に1組、「=>」で区切って書きます。確定した字幕に適用されます。革用語など、よく間違われる言葉を登録してください。</p>
+  </section>
+
+  <section>
+    <h2>OBSへの載せ方</h2>
+    <p class="hint">
+      1. このページをChromeで開き「▶ 認識を開始」<br>
+      2. OBS →「ソース」→「ウィンドウキャプチャ」でこのChromeウィンドウを選択<br>
+      3. そのソースを右クリック →「フィルタ」→「クロマキー」を追加（色: 緑）<br>
+      4. マウスを止めるとボタン類は自動で消えます
+    </p>
+  </section>
+</aside>
+
+<div id="notice" role="alert">
+  <div>
+    <strong>このブラウザでは音声認識を使えません</strong>
+    パソコンの Google Chrome か Microsoft Edge で開いてください。<br>
+    スマホや OBS 内蔵ブラウザでは動作しません。
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 設定の保存・復元 ---------- */
+  var DEFAULTS = {
+    size: 48, stroke: 3, color: "#ffffff", outline: "#000000",
+    lines: 2, fade: 8, chroma: "#00ff00", dict: ""
+  };
+  var KEY = "ns-live-telop-v1";
+  var cfg = DEFAULTS;
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+    cfg = Object.assign({}, DEFAULTS, saved);
+  } catch (e) { /* 破損時は初期値 */ }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) {}
+  }
+
+  function applyCfg() {
+    var r = document.documentElement.style;
+    r.setProperty("--cap-size", cfg.size + "px");
+    r.setProperty("--cap-stroke", cfg.stroke + "px");
+    r.setProperty("--cap-color", cfg.color);
+    r.setProperty("--cap-outline", cfg.outline);
+    r.setProperty("--chroma", cfg.chroma);
+    document.getElementById("valSize").textContent = cfg.size + "px";
+    document.getElementById("valStroke").textContent = cfg.stroke + "px";
+    document.getElementById("valLines").textContent = cfg.lines + "行";
+    document.getElementById("valFade").textContent = cfg.fade + "秒";
+  }
+
+  /* 設定パネルの各入力を紐づけ */
+  function bind(id, prop, isNum) {
+    var el = document.getElementById(id);
+    el.value = cfg[prop];
+    el.addEventListener("input", function () {
+      cfg[prop] = isNum ? Number(el.value) : el.value;
+      applyCfg(); save();
+    });
+  }
+  bind("setSize", "size", true);
+  bind("setStroke", "stroke", true);
+  bind("setColor", "color", false);
+  bind("setOutline", "outline", false);
+  bind("setLines", "lines", true);
+  bind("setFade", "fade", true);
+  bind("setChroma", "chroma", false);
+  bind("setDict", "dict", false);
+  applyCfg();
+
+  /* ---------- 置き換え辞書 ---------- */
+  function applyDict(text) {
+    var rules = cfg.dict.split("\n");
+    for (var i = 0; i < rules.length; i++) {
+      var p = rules[i].split("=>");
+      if (p.length === 2 && p[0].trim()) {
+        text = text.split(p[0].trim()).join(p[1].trim());
+      }
+    }
+    return text;
+  }
+
+  /* ---------- テロップ表示 ---------- */
+  var stage = document.getElementById("stage");
+  var interimEl = null;
+
+  function trimLines() {
+    var finals = stage.querySelectorAll(".line:not(.interim)");
+    while (finals.length > cfg.lines) {
+      finals[0].remove();
+      finals = stage.querySelectorAll(".line:not(.interim)");
+    }
+  }
+
+  function addFinalLine(text) {
+    if (!text) return;
+    var div = document.createElement("div");
+    div.className = "line";
+    div.textContent = applyDict(text);
+    if (interimEl) { stage.insertBefore(div, interimEl); }
+    else { stage.appendChild(div); }
+    trimLines();
+    setTimeout(function () {
+      div.classList.add("fading");
+      setTimeout(function () { div.remove(); }, 700);
+    }, cfg.fade * 1000);
+  }
+
+  function showInterim(text) {
+    if (!text) {
+      if (interimEl) { interimEl.remove(); interimEl = null; }
+      return;
+    }
+    if (!interimEl) {
+      interimEl = document.createElement("div");
+      interimEl.className = "line interim";
+      stage.appendChild(interimEl);
+    }
+    interimEl.textContent = text;
+  }
+
+  /* ---------- 音声認識 ---------- */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var statusEl = document.getElementById("status");
+  var btnToggle = document.getElementById("btnToggle");
+  var running = false;
+  var rec = null;
+
+  if (!SR) {
+    document.getElementById("notice").classList.add("show");
+  }
+
+  function setStatus(t) { statusEl.textContent = t; }
+
+  function buildRec() {
+    var r = new SR();
+    r.lang = "ja-JP";
+    r.continuous = true;
+    r.interimResults = true;
+
+    r.onresult = function (ev) {
+      var interim = "";
+      for (var i = ev.resultIndex; i < ev.results.length; i++) {
+        var res = ev.results[i];
+        if (res.isFinal) {
+          addFinalLine(res[0].transcript.trim());
+        } else {
+          interim += res[0].transcript;
+        }
+      }
+      showInterim(interim.trim());
+    };
+
+    r.onend = function () {
+      showInterim("");
+      if (running) {
+        /* Chromeは無音や時間経過で勝手に止まるため、動作中は再起動する */
+        setTimeout(function () {
+          if (running) { try { rec.start(); } catch (e) {} }
+        }, 250);
+      } else {
+        setStatus("停止中");
+      }
+    };
+
+    r.onerror = function (ev) {
+      if (ev.error === "not-allowed" || ev.error === "service-not-allowed") {
+        running = false;
+        setStatus("マイクが許可されていません");
+        btnToggle.textContent = "▶ 認識を開始";
+        btnToggle.classList.remove("running");
+        alert("マイクの使用が許可されていません。アドレスバーのマイクアイコンから許可してください。");
+      }
+      /* no-speech / network などは onend の再起動に任せる */
+    };
+
+    r.onstart = function () { setStatus("● 認識中"); };
+    return r;
+  }
+
+  btnToggle.addEventListener("click", function () {
+    if (!SR) return;
+    if (!running) {
+      running = true;
+      rec = buildRec();
+      try { rec.start(); } catch (e) {}
+      btnToggle.textContent = "■ 停止";
+      btnToggle.classList.add("running");
+    } else {
+      running = false;
+      if (rec) { try { rec.stop(); } catch (e) {} }
+      btnToggle.textContent = "▶ 認識を開始";
+      btnToggle.classList.remove("running");
+    }
+  });
+
+  document.getElementById("btnClear").addEventListener("click", function () {
+    stage.innerHTML = "";
+    interimEl = null;
+  });
+
+  /* ---------- 設定パネル開閉 ---------- */
+  var panel = document.getElementById("panel");
+  document.getElementById("btnSettings").addEventListener("click", function () {
+    panel.classList.add("open");
+  });
+  document.getElementById("panelClose").addEventListener("click", function () {
+    panel.classList.remove("open");
+  });
+
+  /* ---------- 操作UIの自動非表示 ---------- */
+  var hideTimer = null;
+  function wakeUI() {
+    document.body.classList.add("ui-visible");
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function () {
+      if (!panel.classList.contains("open")) {
+        document.body.classList.remove("ui-visible");
+      }
+    }, 3000);
+  }
+  document.addEventListener("mousemove", wakeUI);
+  document.addEventListener("keydown", wakeUI);
+  wakeUI();
+})();
+</script>
+</body>
+</html>
