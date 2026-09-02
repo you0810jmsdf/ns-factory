@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>テロッププレーヤー | N's factory デジタル幕僚室</title>
+<meta name="description" content="手元の動画とSRT字幕ファイルを同期再生。焼き込まずにテロップ付きで見せるプレーヤー。データは端末の外に出ません。">
+<style>
+  :root {
+    --panel-bg: #16120d;
+    --panel-edge: #2a231a;
+    --gold: #c9a961;
+    --gold-dim: #8a744a;
+    --ink: #e8e2d6;
+    --ink-dim: #a89f8e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0e0b08;
+    color: var(--ink);
+    font-family: "Meiryo", "メイリオ", "Hiragino Sans", sans-serif;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--panel-edge);
+  }
+  header h1 { font-size: 17px; color: var(--gold); letter-spacing: 0.06em; }
+  header p { font-size: 12px; color: var(--ink-dim); margin-top: 4px; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* ===== ファイル読み込み ===== */
+  #loader {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .pick {
+    flex: 1;
+    min-width: 240px;
+    border: 1.5px dashed var(--gold-dim);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    background: var(--panel-bg);
+  }
+  .pick:hover, .pick.dragover { border-color: var(--gold); }
+  .pick strong { display: block; font-size: 14px; color: var(--gold); margin-bottom: 4px; }
+  .pick span { font-size: 12px; color: var(--ink-dim); }
+  .pick .fname { display: block; font-size: 12px; color: var(--ink); margin-top: 6px; word-break: break-all; }
+  .pick input { display: none; }
+
+  /* ===== プレーヤー ===== */
+  #playerWrap {
+    position: relative;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--panel-edge);
+  }
+  video { display: block; width: 100%; max-height: 72vh; background: #000; }
+
+  #caption {
+    position: absolute;
+    left: 3%;
+    right: 3%;
+    bottom: var(--cap-bottom, 9%);
+    text-align: center;
+    pointer-events: none;
+    font-weight: bold;
+    line-height: 1.5;
+    white-space: pre-line;
+    color: var(--cap-color, #ffffff);
+    font-size: var(--cap-size, 34px);
+    text-shadow:
+      calc(var(--cap-stroke, 3px) * 1) 0 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * -1) 0 0 var(--cap-outline, #000),
+      0 calc(var(--cap-stroke, 3px) * 1) 0 var(--cap-outline, #000),
+      0 calc(var(--cap-stroke, 3px) * -1) 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * 1) calc(var(--cap-stroke, 3px) * 1) 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * -1) calc(var(--cap-stroke, 3px) * -1) 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * 1) calc(var(--cap-stroke, 3px) * -1) 0 var(--cap-outline, #000),
+      calc(var(--cap-stroke, 3px) * -1) calc(var(--cap-stroke, 3px) * 1) 0 var(--cap-outline, #000);
+  }
+
+  /* ===== 調整パネル ===== */
+  #controls {
+    margin-top: 16px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-edge);
+    border-radius: 10px;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 8px 28px;
+  }
+  #controls h2 {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    color: var(--gold);
+    padding-left: 10px;
+    border-left: 3px solid var(--gold-dim);
+    margin-bottom: 4px;
+  }
+  #controls label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  #controls input[type="range"] { flex: 1; max-width: 160px; accent-color: var(--gold); }
+  #controls input[type="color"] {
+    width: 44px; height: 28px;
+    border: 1px solid var(--panel-edge);
+    background: none; border-radius: 4px; cursor: pointer;
+  }
+  #controls .val { font-size: 12px; color: var(--ink-dim); min-width: 52px; text-align: right; }
+  #controls .full { grid-column: 1 / -1; }
+  .btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--gold-dim);
+    background: none;
+    color: var(--gold);
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--gold); }
+  .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  #hint {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>テロッププレーヤー</h1>
+  <p>動画とSRT字幕を同期再生します。焼き込み不要、ファイルは端末の外に出ません。</p>
+</header>
+
+<main>
+  <div id="loader">
+    <label class="pick" id="pickVideo">
+      <strong>① 動画を選ぶ</strong>
+      <span>クリックして選択、またはここにドロップ（mp4 / webm / mov）</span>
+      <span class="fname" id="videoName"></span>
+      <input type="file" id="fileVideo" accept="video/*,.mov,.mp4,.webm">
+    </label>
+    <label class="pick" id="pickSrt">
+      <strong>② 字幕を選ぶ</strong>
+      <span>クリックして選択、またはここにドロップ（.srt / .vtt）</span>
+      <span class="fname" id="srtName"></span>
+      <input type="file" id="fileSrt" accept=".srt,.vtt,text/plain">
+    </label>
+  </div>
+
+  <div id="playerWrap">
+    <video id="video" controls playsinline></video>
+    <div id="caption" aria-live="off"></div>
+  </div>
+
+  <div id="controls">
+    <h2>テロップの見た目・タイミング</h2>
+    <label>大きさ
+      <input type="range" id="setSize" min="16" max="80" step="2">
+      <span class="val" id="valSize"></span>
+    </label>
+    <label>縁取りの太さ
+      <input type="range" id="setStroke" min="0" max="8" step="1">
+      <span class="val" id="valStroke"></span>
+    </label>
+    <label>文字色 <input type="color" id="setColor"></label>
+    <label>縁取り色 <input type="color" id="setOutline"></label>
+    <label>下からの位置
+      <input type="range" id="setBottom" min="2" max="45" step="1">
+      <span class="val" id="valBottom"></span>
+    </label>
+    <label>タイミング補正
+      <input type="range" id="setOffset" min="-5" max="5" step="0.1">
+      <span class="val" id="valOffset"></span>
+    </label>
+    <div class="full">
+      <button class="btn" id="btnFullscreen">⛶ 全画面で再生</button>
+    </div>
+  </div>
+
+  <p id="hint">
+    タイミング補正は、字幕が声より遅れて出るときはマイナス、早く出るときはプラスへ。設定は自動保存されます。<br>
+    全画面でもテロップは表示されます。展示・接客・上映用にどうぞ。
+  </p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 設定 ---------- */
+  var DEFAULTS = { size: 34, stroke: 3, color: "#ffffff", outline: "#000000", bottom: 9, offset: 0 };
+  var KEY = "ns-telop-player-v1";
+  var cfg = DEFAULTS;
+  try { cfg = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) {} }
+
+  function applyCfg() {
+    var r = document.documentElement.style;
+    r.setProperty("--cap-size", cfg.size + "px");
+    r.setProperty("--cap-stroke", cfg.stroke + "px");
+    r.setProperty("--cap-color", cfg.color);
+    r.setProperty("--cap-outline", cfg.outline);
+    r.setProperty("--cap-bottom", cfg.bottom + "%");
+    document.getElementById("valSize").textContent = cfg.size + "px";
+    document.getElementById("valStroke").textContent = cfg.stroke + "px";
+    document.getElementById("valBottom").textContent = cfg.bottom + "%";
+    document.getElementById("valOffset").textContent = (cfg.offset > 0 ? "+" : "") + cfg.offset.toFixed(1) + "秒";
+  }
+  function bind(id, prop, isNum) {
+    var el = document.getElementById(id);
+    el.value = cfg[prop];
+    el.addEventListener("input", function () {
+      cfg[prop] = isNum ? Number(el.value) : el.value;
+      applyCfg(); save();
+    });
+  }
+  bind("setSize", "size", true);
+  bind("setStroke", "stroke", true);
+  bind("setColor", "color", false);
+  bind("setOutline", "outline", false);
+  bind("setBottom", "bottom", true);
+  bind("setOffset", "offset", true);
+  applyCfg();
+
+  /* ---------- SRT / VTT 解析 ---------- */
+  var cues = [];
+
+  function toSeconds(t) {
+    /* 00:00:01,500 / 00:00:01.500 / 00:01.500 に対応 */
+    t = t.trim().replace(",", ".");
+    var parts = t.split(":");
+    var s = 0;
+    for (var i = 0; i < parts.length; i++) {
+      s = s * 60 + parseFloat(parts[i]);
+    }
+    return s;
+  }
+
+  function parseSubs(text) {
+    var out = [];
+    text = text.replace(/^\uFEFF/, "").replace(/\r/g, "");
+    var blocks = text.split(/\n\s*\n/);
+    for (var i = 0; i < blocks.length; i++) {
+      var lines = blocks[i].split("\n").filter(function (l) { return l.trim() !== ""; });
+      if (!lines.length) continue;
+      var timeIdx = -1;
+      for (var j = 0; j < lines.length; j++) {
+        if (lines[j].indexOf("-->") !== -1) { timeIdx = j; break; }
+      }
+      if (timeIdx === -1) continue;
+      var tt = lines[timeIdx].split("-->");
+      var start = toSeconds(tt[0]);
+      var end = toSeconds(tt[1].split(" ")[1] || tt[1]);
+      var body = lines.slice(timeIdx + 1).join("\n")
+        .replace(/<[^>]+>/g, ""); /* VTT等のタグを除去 */
+      if (!isNaN(start) && !isNaN(end) && body) {
+        out.push({ start: start, end: end, text: body });
+      }
+    }
+    out.sort(function (a, b) { return a.start - b.start; });
+    return out;
+  }
+
+  /* ---------- ファイル読み込み ---------- */
+  var video = document.getElementById("video");
+  var captionEl = document.getElementById("caption");
+
+  function loadVideoFile(file) {
+    if (!file) return;
+    video.src = URL.createObjectURL(file);
+    document.getElementById("videoName").textContent = "▶ " + file.name;
+  }
+  function loadSrtFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      cues = parseSubs(String(reader.result));
+      document.getElementById("srtName").textContent =
+        "▶ " + file.name + "（" + cues.length + "件）";
+      if (!cues.length) {
+        alert("字幕を読み取れませんでした。SRT/VTT形式かご確認ください。");
+      }
+    };
+    reader.readAsText(file, "UTF-8");
+  }
+
+  document.getElementById("fileVideo").addEventListener("change", function (e) {
+    loadVideoFile(e.target.files[0]);
+  });
+  document.getElementById("fileSrt").addEventListener("change", function (e) {
+    loadSrtFile(e.target.files[0]);
+  });
+
+  /* ドラッグ＆ドロップ（動画・字幕どちらの枠でも中身で自動判別） */
+  ["pickVideo", "pickSrt"].forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener("dragover", function (e) { e.preventDefault(); el.classList.add("dragover"); });
+    el.addEventListener("dragleave", function () { el.classList.remove("dragover"); });
+    el.addEventListener("drop", function (e) {
+      e.preventDefault();
+      el.classList.remove("dragover");
+      var files = e.dataTransfer.files;
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i];
+        if (/\.(srt|vtt)$/i.test(f.name)) { loadSrtFile(f); }
+        else if (f.type.indexOf("video") === 0 || /\.(mp4|webm|mov|m4v)$/i.test(f.name)) { loadVideoFile(f); }
+      }
+    });
+  });
+
+  /* ---------- 同期表示ループ ---------- */
+  var lastText = "";
+  function tick() {
+    if (cues.length && !video.paused && !video.ended || true) {
+      var t = video.currentTime + cfg.offset;
+      var text = "";
+      /* 件数は多くても数千。線形でも十分速いが、途中から前方一致で探す */
+      for (var i = 0; i < cues.length; i++) {
+        if (t < cues[i].start) break;
+        if (t >= cues[i].start && t <= cues[i].end) { text = cues[i].text; break; }
+      }
+      if (text !== lastText) {
+        captionEl.textContent = text;
+        lastText = text;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  /* ---------- 全画面 ---------- */
+  document.getElementById("btnFullscreen").addEventListener("click", function () {
+    var wrap = document.getElementById("playerWrap");
+    if (document.fullscreenElement) { document.exitFullscreen(); }
+    else if (wrap.requestFullscreen) { wrap.requestFullscreen(); }
+  });
+})();
+</script>
+</body>
+</html>
