@@ -370,6 +370,11 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
 
+      <div style="grid-column:1/-1;padding:12px 16px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);font-size:13px;color:var(--ink);line-height:1.8;">
+        <strong style="color:var(--accent-dark);">字幕・テロップの3点セット（使い分け）</strong><br>
+        <strong>撮った後</strong>に字幕を作るなら「文字起こし＆テロップ」／<strong>配信中</strong>にその場で字幕を出すなら「ライブテロップ」／<strong>できた字幕</strong>を動画に重ねて上映するなら「テロッププレーヤー」。
+      </div>
+
       <div class="tool-card static" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/yt-transcribe-announce.png" alt="文字起こし＆テロップ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
@@ -377,7 +382,7 @@ a{color:inherit;text-decoration:none}
             <span class="tag soon">近日公開</span>
             <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / ダウンロード配布</span>
           </div>
-          <h3>🎬 文字起こし＆テロップ</h3>
+          <h3>🎬 文字起こし＆テロップ（撮った後）</h3>
           <p style="color:var(--ink);">YouTubeのURLを入れるだけで、字幕を文章として取り出して保存します。動画を見返さなくても内容を検索・引用できます。さらに、手元の動画ファイルからは音声を聞き取って字幕を作り、動画そのものにテロップを焼き込めます。</p>
           <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
             <strong style="color:var(--ink);">ご自身のパソコンの中だけで動きます。</strong><br>
@@ -404,14 +409,15 @@ a{color:inherit;text-decoration:none}
             <span class="tag">WEB APP</span>
             <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
           </div>
-          <h3><a href="live-telop.html">📡 ライブテロップ（配信用字幕）</a></h3>
-          <p style="color:var(--ink);">配信中に話した言葉が、そのまま画面のテロップになります。ブラウザだけでリアルタイムに字幕化し、OBSのクロマキーで配信映像に重ねられます。文字の大きさ・縁取り・色は自由に調整できます。</p>
+          <h3><a href="live-telop.html">📡 ライブテロップ（配信中）</a></h3>
+          <p style="color:var(--ink);">配信の最中に、いま話している声をその場で字幕にします。録画は要りません。ブラウザだけでリアルタイムに字幕化し、OBSのクロマキーで配信映像に重ねられます。文字の大きさ・縁取り・色は自由に調整できます。</p>
           <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
             <strong style="color:var(--ink);">録音データは残りません。</strong>音声認識はChromeの機能で行われ、このサイトのサーバーは音声を受け取りません。<br>
             マウスを止めるとボタン類は自動で消え、緑背景＋字幕だけの画面になります。<br>
             「小場=>コバ」のような置き換え辞書に登録すると、専門用語の誤認識をその場で直せます。
           </div>
           <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">パソコンのGoogle Chrome専用です。スマホ・OBS内蔵ブラウザでは動きません。</p>
+          <p style="font-size:12px;color:var(--muted);">配信先ごとの手順は <a href="live-telop-guide.html" onclick="event.stopPropagation();" style="color:var(--accent-dark);text-decoration:underline;">配信先別ガイド（インスタライブ・YouTube Live・Zoom）</a> にまとめています。</p>
         </div>
       </div>
 
@@ -422,7 +428,7 @@ a{color:inherit;text-decoration:none}
             <span class="tag">WEB APP</span>
             <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
           </div>
-          <h3><a href="telop-player.html">📺 テロッププレーヤー</a></h3>
+          <h3><a href="telop-player.html">📺 テロッププレーヤー（上映用）</a></h3>
           <p style="color:var(--ink);">動画と字幕ファイル（SRT）を選ぶだけで、テロップ付きで再生できます。動画に焼き込まないので、誤字は字幕ファイルを直すだけで反映。展示・接客・上映のための再生機です。</p>
           <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
             <strong style="color:var(--ink);">動画も字幕も、端末の外に出ません。</strong>サーバーへ送られることはありません。<br>

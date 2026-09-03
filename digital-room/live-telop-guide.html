@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ライブテロップ 配信先別ガイド | N's factory デジタル幕僚室</title>
+<meta name="description" content="ライブテロップ（配信用リアルタイム字幕）をインスタライブ・YouTube Live・Zoomなどで使うための手順と注意点。OBSの設定から配信先ごとの違いまで。">
+<!-- Google tag (gtag.js) -->
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+  :root {
+    --bg: #16120d;
+    --bg-card: #1e1913;
+    --edge: #2a231a;
+    --gold: #c9a961;
+    --gold-dim: #8a744a;
+    --ink: #e8e2d6;
+    --ink-dim: #a89f8e;
+    --danger: #d46a5a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Meiryo", "メイリオ", "Hiragino Sans", sans-serif;
+    line-height: 1.8;
+    font-size: 15px;
+  }
+  a { color: var(--gold); }
+  a:hover { color: #e0c27a; }
+  header { border-bottom: 1px solid var(--edge); padding: 18px 22px; }
+  header .eyebrow { font-size: 11px; letter-spacing: .16em; color: var(--gold-dim); font-weight: bold; }
+  header h1 { font-size: 22px; color: var(--gold); margin-top: 4px; }
+  header p { font-size: 13px; color: var(--ink-dim); margin-top: 6px; }
+  main { max-width: 820px; margin: 0 auto; padding: 28px 22px 60px; }
+  nav.toc {
+    background: var(--bg-card); border: 1px solid var(--edge); border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 30px; font-size: 14px;
+  }
+  nav.toc strong { color: var(--gold-dim); font-size: 12px; letter-spacing: .1em; }
+  nav.toc ol { margin: 6px 0 0 20px; }
+  nav.toc li { margin: 2px 0; }
+  section { margin-bottom: 40px; }
+  h2 {
+    font-size: 18px; color: var(--gold);
+    border-left: 3px solid var(--gold); padding-left: 12px; margin-bottom: 14px;
+  }
+  h3 { font-size: 15px; color: var(--ink); margin: 18px 0 8px; }
+  p { margin-bottom: 10px; }
+  ol.steps { margin-left: 22px; }
+  ol.steps li { margin-bottom: 8px; }
+  ul.plain { margin-left: 22px; }
+  ul.plain li { margin-bottom: 6px; }
+  .note {
+    background: var(--bg-card); border: 1px solid var(--edge); border-left: 3px solid var(--gold-dim);
+    border-radius: 6px; padding: 12px 16px; margin: 12px 0; font-size: 13.5px; color: var(--ink-dim);
+  }
+  .note strong { color: var(--ink); }
+  .warn { border-left-color: var(--danger); }
+  .warn strong { color: var(--danger); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--edge); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-card); color: var(--gold-dim); font-weight: bold; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; }
+  code {
+    background: #0e0b08; border: 1px solid var(--edge); border-radius: 4px;
+    padding: 1px 6px; font-size: 13px; color: var(--ink);
+  }
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: bold; letter-spacing: .08em;
+    padding: 2px 8px; border-radius: 999px; border: 1px solid var(--gold-dim); color: var(--gold-dim);
+    margin-left: 8px; vertical-align: middle;
+  }
+  .sources li { font-size: 13px; color: var(--ink-dim); margin-bottom: 4px; }
+  footer {
+    border-top: 1px solid var(--edge); padding: 18px 22px; font-size: 13px; color: var(--ink-dim);
+    display: flex; flex-wrap: wrap; gap: 8px 22px;
+  }
+  @media (max-width: 600px) {
+    body { font-size: 14px; }
+    header h1 { font-size: 19px; }
+    main { padding: 22px 16px 50px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">N's factory デジタル幕僚室 ／ 参考情報</div>
+  <h1>ライブテロップ 配信先別ガイド</h1>
+  <p>ライブテロップ（配信用リアルタイム字幕）を、インスタライブ・YouTube Live・Zoomなどで使うための手順と注意点をまとめています。</p>
+</header>
+
+<main>
+
+<nav class="toc">
+  <strong>目次</strong>
+  <ol>
+    <li><a href="#basics">まず知っておくこと（仕組みと共通の準備）</a></li>
+    <li><a href="#instagram">インスタライブで使う</a></li>
+    <li><a href="#youtube">YouTube Liveで使う</a></li>
+    <li><a href="#zoom">Zoom・Google Meetで使う（オンライン講座向け）</a></li>
+    <li><a href="#offline">配信しない使い方（展示・対面の接客）</a></li>
+    <li><a href="#trouble">よくあるつまずき</a></li>
+    <li><a href="#sources">出典</a></li>
+  </ol>
+</nav>
+
+<section id="basics">
+  <h2>1. まず知っておくこと</h2>
+  <p>ライブテロップは、話した言葉を緑一色の画面の上に字幕として出すだけの道具です。<strong>配信そのものは行いません。</strong>配信ソフト <strong>OBS Studio</strong>（無料）がこの緑画面を取り込み、緑を透明にして（クロマキー）カメラ映像の上に字幕を重ね、OBSが配信先へ送ります。</p>
+  <p>つまり「どこへ配信できるか」はOBS側で決まります。OBSから送れる先なら、インスタライブでもYouTube LiveでもZoomでも使えます。</p>
+
+  <h3>必要なもの</h3>
+  <ul class="plain">
+    <li>パソコン（Windows / Mac）と、Google Chrome または Microsoft Edge。<strong>スマホ単体では使えません。</strong></li>
+    <li>OBS Studio（<a href="https://obsproject.com/ja" target="_blank" rel="noopener">obsproject.com</a>・無料）</li>
+    <li>マイク。OBSとChromeの両方が同じマイクを使います。</li>
+  </ul>
+
+  <h3>OBS側の共通設定（配信先を問わず同じ）</h3>
+  <ol class="steps">
+    <li>ライブテロップを開き「▶ 認識を開始」。マイクの使用を許可します。</li>
+    <li>OBSの「ソース」で「ウィンドウキャプチャ」を追加し、ライブテロップのブラウザ窓を選びます。</li>
+    <li>そのソースを右クリック →「フィルタ」→「クロマキー」を追加。色の種類は「緑」。</li>
+    <li>ソース一覧で、字幕のソースをカメラ映像より<strong>上</strong>に置きます。</li>
+    <li>マウスを動かさずにいると、ライブテロップのボタン類は自動で消えます。</li>
+  </ol>
+  <div class="note"><strong>ウィンドウキャプチャで真っ黒になるとき</strong>：OBSの「ウィンドウキャプチャ」のプロパティで、キャプチャ方法を「Windows 10 (1903以降)」に変えると映ることが多いです。</div>
+</section>
+
+<section id="instagram">
+  <h2>2. インスタライブで使う <span class="tag">縦画面</span></h2>
+  <p>スマホのInstagramアプリからではなく、<strong>パソコンのブラウザ版Instagram</strong>にある「ライブプロデューサー」を使います。OBSの映像をInstagramへ送る仕組みです。</p>
+
+  <h3>条件</h3>
+  <ul class="plain">
+    <li><strong>プロアカウント</strong>（ビジネスまたはクリエイター）であること。個人アカウントではライブプロデューサーが出ません。設定から無料で切り替えられます。</li>
+    <li>インスタライブは縦長（9:16）です。OBSの画面も縦長にします。</li>
+  </ul>
+
+  <h3>手順</h3>
+  <ol class="steps">
+    <li>OBSの「設定」→「映像」で、基準解像度と出力解像度を <code>1080x1920</code> にします（縦長）。</li>
+    <li>ライブテロップのブラウザ窓も縦長に細くしておくと、字幕の折り返しが配信画面と揃います。</li>
+    <li>パソコンで <a href="https://www.instagram.com/" target="_blank" rel="noopener">instagram.com</a> にログイン →「作成」→「ライブ動画」を選ぶと、ライブプロデューサーが開きます。</li>
+    <li>タイトルと公開範囲を決めると、<strong>サーバーURL</strong>と<strong>ストリームキー</strong>が表示されます。</li>
+    <li>OBSの「設定」→「配信」でサービスを「カスタム」にし、サーバーURLとストリームキーを貼り付けます。</li>
+    <li>OBSで「配信開始」を押します。Instagram側のプレビューに映像が出るまで少し待ちます。</li>
+    <li>プレビューを確認したら、Instagram側で「ライブ動画を開始」を押します。ここで初めてフォロワーに公開されます。</li>
+    <li>終わるときはInstagram側で終了してから、OBSの「配信終了」を押します。</li>
+  </ol>
+
+  <div class="note warn"><strong>ストリームキーは他人に見せない</strong>：キーを知っている人は、あなたのアカウントでライブ配信できてしまいます。画面共有やスクリーンショットに写り込まないよう注意してください。キーは配信のたびに新しく発行されます。</div>
+  <div class="note"><strong>コメントの確認</strong>：視聴者のコメントはライブプロデューサーの画面に表示されます。配信中はブラウザのInstagramを見える位置に置いておくと便利です。</div>
+</section>
+
+<section id="youtube">
+  <h2>3. YouTube Liveで使う <span class="tag">横画面</span></h2>
+  <p>OBSは最初からYouTubeに対応しています。ライブプロデューサーのような別画面は不要です。</p>
+
+  <h3>条件</h3>
+  <ul class="plain">
+    <li>YouTubeでライブ配信を有効にしておく必要があります。<strong>初めて有効にするときは、使えるようになるまで24時間ほどかかります。</strong>配信当日に初めて設定するのは避けてください。</li>
+    <li>電話番号によるチャンネル確認が必要です。</li>
+  </ul>
+
+  <h3>手順</h3>
+  <ol class="steps">
+    <li>OBSの「設定」→「映像」で解像度を <code>1920x1080</code>（横長）にします。</li>
+    <li>OBSの「設定」→「配信」でサービスを「YouTube - RTMPS」にし、「アカウント接続」でGoogleアカウントにログインします。</li>
+    <li>OBSの「配信の管理」でタイトル・公開範囲を入力し、「配信開始」を押します。</li>
+    <li>YouTube Studioのライブ管理画面で映像を確認し、公開します。</li>
+  </ol>
+  <div class="note">アカウント接続を使わず、YouTube Studioで表示されるストリームキーを「カスタム」設定に貼り付ける方法でも配信できます。インスタライブと同じ流れです。</div>
+</section>
+
+<section id="zoom">
+  <h2>4. Zoom・Google Meetで使う <span class="tag">オンライン講座向け</span></h2>
+  <p>ZoomやGoogle Meetには「配信」の仕組みがありません。代わりに、OBSの映像を<strong>カメラとして</strong>Zoomに渡します。受講者には、字幕付きのカメラ映像として見えます。</p>
+
+  <h3>手順</h3>
+  <ol class="steps">
+    <li>OBSで字幕とカメラのソースを組んだら、「配信開始」ではなく「<strong>仮想カメラ開始</strong>」を押します。</li>
+    <li>Zoomの「ビデオ」設定でカメラを「<strong>OBS Virtual Camera</strong>」に切り替えます。Google Meetも同様にカメラの選択で選びます。</li>
+    <li>マイクはZoom側でいつものマイクを選びます（音声はOBSを通しません）。</li>
+  </ol>
+  <div class="note"><strong>自分の画面で字幕が裏返って見えるとき</strong>：Zoomの「マイビデオをミラーリング」がオンになっています。自分にだけ反転して見える設定で、受講者には正しい向きで届いています。気になる場合はミラーリングをオフにしてください。</div>
+</section>
+
+<section id="offline">
+  <h2>5. 配信しない使い方（展示・対面の接客）</h2>
+  <p>OBSを使わず、ライブテロップの画面をそのままモニターやプロジェクターに映す使い方もできます。工房の見学や実演販売で、話している内容を横のモニターに字幕で出す、といった用途です。</p>
+  <ol class="steps">
+    <li>ライブテロップの「⚙ 設定」→「背景色（クロマキー用）」で「<strong>黒（プレビュー用）</strong>」を選びます。緑のままだと目に刺さります。</li>
+    <li>ブラウザを全画面（F11）にして、外部モニターに表示します。</li>
+    <li>「文字の見た目」で大きさを上げ、離れた位置からも読める大きさにします。</li>
+  </ol>
+  <div class="note">この使い方なら、ノートパソコン1台とマイクだけで済みます。配信の準備を試す前の練習にも向いています。</div>
+</section>
+
+<section id="trouble">
+  <h2>6. よくあるつまずき</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>症状</th><th>原因と対処</th></tr>
+    <tr><td>「このブラウザでは音声認識を使えません」と出る</td><td>Safari・Firefox・スマホ・OBS内蔵ブラウザでは動きません。パソコンのChromeかEdgeで開いてください。</td></tr>
+    <tr><td>字幕は出るのに、OBSに映らない</td><td>ウィンドウキャプチャの対象が別の窓になっているか、キャプチャ方法の相性です。プロパティでキャプチャ方法を変えてみてください。</td></tr>
+    <tr><td>字幕の縁が緑っぽく残る</td><td>クロマキーのフィルタで「類似性」「滑らかさ」を少し上げます。字幕の縁取り色を黒にしておくと目立ちにくくなります。</td></tr>
+    <tr><td>認識が途中で止まる</td><td>Chromeの仕様で、無音が続くと止まることがあります。ライブテロップは自動で再開しますが、止まったままなら「▶ 認識を開始」を押し直してください。</td></tr>
+    <tr><td>専門用語が毎回誤変換される</td><td>「⚙ 設定」→「置き換え辞書」に <code>小場=>コバ</code> のように登録すると、確定した字幕に自動で反映されます。</td></tr>
+    <tr><td>インスタライブでライブプロデューサーが出ない</td><td>個人アカウントの可能性があります。プロアカウントに切り替えてから、パソコンのブラウザで開き直してください。</td></tr>
+    <tr><td>音声が二重に聞こえる</td><td>OBSのマイクとZoomのマイクを両方有効にしている状態です。仮想カメラで使うときはOBS側の音声をミュートにします。</td></tr>
+  </table>
+  </div>
+</section>
+
+<section id="sources">
+  <h2>7. 出典</h2>
+  <p>手順は次の資料を参考にしています。各サービスの画面や条件は変わることがあるため、うまくいかないときは最新の公式ヘルプも確認してください。</p>
+  <ul class="plain sources">
+    <li><a href="https://www.epidemicsound.com/blog/what-is-instagram-live-producer/" target="_blank" rel="noopener">Instagram Live Producer: Eligibility &amp; how-to（Epidemic Sound）</a></li>
+    <li><a href="https://streamlabs.com/content-hub/post/how-to-stream-instagram-live-producer-with-streamlabs-desktop" target="_blank" rel="noopener">How to Stream to Instagram Live from Your Computer（Streamlabs）</a></li>
+    <li><a href="https://streamyard.com/blog/streaming-software-for-instagram-live" target="_blank" rel="noopener">Streaming Software for Instagram Live: What Actually Works in 2026（StreamYard）</a></li>
+    <li><a href="https://thats-it.co.jp/2023/12/15/obs-instagram/" target="_blank" rel="noopener">Instagramが公式にOBS連携を開始！配信方法を説明します（ひとみマンのOBS学校）</a></li>
+    <li><a href="https://note.com/nobuyosicom/n/n44ea208c053b" target="_blank" rel="noopener">PCからのインスタライブ、実はこんなに簡単だった？（note）</a></li>
+    <li><a href="https://obsproject.com/ja" target="_blank" rel="noopener">OBS Studio 公式サイト</a></li>
+  </ul>
+</section>
+
+</main>
+
+<footer>
+  <a href="live-telop.html">← ライブテロップを開く</a>
+  <a href="telop-player.html">テロッププレーヤー</a>
+  <a href="./">デジタル幕僚室へ戻る</a>
+</footer>
+
+</body>
+</html>
