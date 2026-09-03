@@ -125,8 +125,12 @@
       document.getElementById('customer-id').value = matched.id;
       document.getElementById('customer-honorific').value = matched.honorific || '様';
       // 住所・連絡先を自動入力
-      const zip     = matched.zip     || '';
-      const address = matched.address || '';
+      // 法人で請求先住所があるときは請求先を宛先住所に使う（顧客マスタの zip/address は発送先・2026-09-03）
+      const useBilling = (matched.customerType === '法人') && !!((matched.billingZip || '') || (matched.billingAddress || ''));
+      const zip     = useBilling ? (matched.billingZip || '')     : (matched.zip     || '');
+      const address = useBilling ? (matched.billingAddress || '') : (matched.address || '');
+      const kindEl  = document.getElementById('customer-address-kind');
+      if (kindEl) kindEl.textContent = useBilling ? '（請求先）' : '';
       const phone   = matched.phone   || '';
       const email   = matched.email   || '';
       document.getElementById('customer-zip').value     = zip;
@@ -145,6 +149,8 @@
       document.getElementById('customer-email').value   = '';
       document.getElementById('customer-detail-fields').style.display  = 'none';
       document.getElementById('customer-contact-fields').style.display = 'none';
+      const kindEl2 = document.getElementById('customer-address-kind');
+      if (kindEl2) kindEl2.textContent = '';
     }
   }
 
@@ -170,6 +176,7 @@
     });
     sel.innerHTML = opts.join('');
     // 新規かつ既存書類未読込の場合は既定口座を選択
+    // 既存書類は loadDocument() の末尾で syncBankSelectWithNote() が備考と揃える（2026-09-03）
     if (!editId) {
       const def = bankAccounts.find(a => a.isDefault);
       if (def) {
@@ -177,6 +184,26 @@
         applyBankAccountToNote(def, /*overwrite=*/true);
       }
     }
+  }
+
+  // ---- 既存書類を開いたとき、備考の振込先ブロックとセレクトを揃える（2026-09-03） ----
+  // 以前は !editId の分岐で既存書類が素通りし、備考が空のまま PDF の振込先も空になっていた。
+  // - 備考に振込先ブロックが無ければ既定口座を選んで差し込む（新規作成時と同じ挙動）
+  // - ブロックがあれば、口座番号/アドレスが本文に含まれる口座をセレクトに反映する（備考は触らない）
+  function syncBankSelectWithNote() {
+    const sel = document.getElementById('bank-account-select');
+    if (!sel || bankAccounts.length === 0) return;
+    const note = document.getElementById('doc-note').value || '';
+    if (note.indexOf(BANK_MARK_START) < 0) {
+      const def = bankAccounts.find(a => a.isDefault);
+      if (def) {
+        sel.value = def.id;
+        applyBankAccountToNote(def, /*overwrite=*/true);
+      }
+      return;
+    }
+    const hit = bankAccounts.find(a => a.accountNumber && note.indexOf(String(a.accountNumber)) >= 0);
+    if (hit) sel.value = hit.id;
   }
 
   // ---- 口座セレクト変更 ----
@@ -420,10 +447,13 @@
       document.getElementById('customer-name').value    = doc.customerName || '';
       document.getElementById('customer-id').value      = doc.customerId || '';
       onCustomerNameChange(); // 住所・連絡先を顧客マスタから復元
+      // 台帳に保存された敬称を優先（2026-09-03 から保存。空＝旧書類はマスタの敬称のまま）
+      if (doc.customerHonorific) document.getElementById('customer-honorific').value = doc.customerHonorific;
       document.getElementById('doc-source-number').value = doc.sourceNumber || '';
       document.getElementById('doc-related-order').value = doc.relatedOrderNumber || '';
       updateOrderProgressLink();
       document.getElementById('doc-note').value         = doc.note || '';
+      syncBankSelectWithNote(); // 振込先セレクトを備考と揃える（空なら既定口座を差し込む）
 
       if (doc.driveUrl) {
         document.getElementById('drive-url-link').href = doc.driveUrl;

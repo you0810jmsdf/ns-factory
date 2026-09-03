@@ -1433,10 +1433,14 @@ function onCustomerSelectChange() {
   // 顧客情報パネル表示
   if (box) {
     const lines = [];
-    lines.push(`<b>${esc(c.id)}　${esc(c.name)} ${esc(c.honorific || '様')}</b>`);
+    const isCorp = (c.customerType || '') === '法人';
+    lines.push(`<b>${esc(c.id)}　${esc(c.name)} ${esc(c.honorific || '様')}</b>${isCorp ? ' <span style="font-size:.72rem;padding:1px 6px;border:1px solid #9fb6dc;border-radius:10px;color:#2f4f86;">法人</span>' : ''}`);
+    if (c.contactPerson) lines.push(`👤 担当: ${esc(c.contactPerson)} 様`);
     if (c.email)   lines.push(`📧 ${esc(c.email)}`);
     if (c.phone)   lines.push(`📞 ${esc(c.phone)}`);
-    if (c.address) lines.push(`🏠 ${esc((c.zip ? c.zip + ' ' : '') + c.address)}`);
+    // 顧客マスタの zip/address は発送先。法人で請求先が別なら両方出す（2026-09-03）
+    if (c.address) lines.push(`🏠 ${isCorp ? '発送先: ' : ''}${esc((c.zip ? c.zip + ' ' : '') + c.address)}`);
+    if (c.billingAddress) lines.push(`🏢 請求先: ${esc((c.billingZip ? c.billingZip + ' ' : '') + c.billingAddress)}`);
     document.getElementById('customer-info-text').innerHTML = lines.join('<br>');
     // リンク先（invoice 配下のページに ?customerId= で渡す）
     document.getElementById('link-to-customer').href = 'invoice/customers.html?id=' + encodeURIComponent(c.id);
