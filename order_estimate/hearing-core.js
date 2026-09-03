@@ -447,10 +447,11 @@
         var jp = x.jp || '';
         if (!jp) return x.label;
         var alias = (x.alias && x.alias !== jp) ? x.alias : '';
-        if (!alias) return x.label + ' ' + jp;
+        var tag = x.inStock ? '' : '[取寄]';   // 在庫ありは無印（革カタログと同じ流儀）
+        if (!alias) return x.label + ' ' + jp + tag;
         return jp.slice(-1) === '）'
-          ? x.label + ' ' + jp.slice(0, -1) + '／' + alias + '）'
-          : x.label + ' ' + jp + '（' + alias + '）';
+          ? x.label + ' ' + jp.slice(0, -1) + '／' + alias + '）' + tag
+          : x.label + ' ' + jp + '（' + alias + '）' + tag;
       };
       var stIn  = stitches.filter(function (x) { return x.inStock; }).map(stFmt);
       var stOut = stitches.filter(function (x) { return !x.inStock; }).map(stFmt);
@@ -461,6 +462,7 @@
         + 'お客様がどちらの言い方をされても同じ糸として扱う。\n'
         + '※一覧に無い色名（例:「シルバー」）を言われたら「ありません」で終わらせず、'
         + '近い色を番号と名前で2〜3色挙げて確認する。\n'
+        + '※在庫の有無を答えるときは、必ず上の在庫ありリストにその番号があるかを確かめる。[取寄]が付いた色を「在庫あり」と言わない。\n'
         + '※実際の色は画面の『ステッチの色を見る』で写真をご覧いただける。\n';
     }
 
