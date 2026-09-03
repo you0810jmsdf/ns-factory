@@ -144,10 +144,11 @@
    "id": "sc_28",
    "name": "ビニモMBT #28",
    "label": "#28",
-   "image": "data:image/gif;base64,R0lGODlhFwAVAJEAAGuhf2uif2qhfmuhfiH5BAAAAAAALAAAAAAXABUAAAKL1DKic32CggnUpAHMYgwBLnULBEjbUV1axo1XYrBOtiGOMkVhe4VUd8iYYLCdpfcKaRLDAA03FHximprCs6AgcCoca0maWE4J2gOyowi3p7QTxuXIG1teEdKS7F7ikU2OB/fAhCdW5gVGNMZQgqLCsHgWgXRUIQUECZGlxfFVJZdRYqJ0MrWUJxhYAAA7",
+   "image": "data:image/gif;base64,R0lGODdhFwAVAIMAAHiPhD5aTStDNR48LR4zJxUxIhYpHRAoGw8kGAwfFQobEgUaEAgWDgQWDQMRCQINBiwAAAAAFwAVAEAI/wADGDBwoGABAggYPFhYQIABBwkUOBAwAEEAAQUSLHiA4MACBAg4DiCgYEEDBQ0aBAAQYMBKAgkYOHDwIEHBAQYeEBjAQMFKAAgHNkBQwIBJAgQcGBhQQIHMBwoIGBBANUCAhA0cfGyw1KaAmAwWrCwwIKIBhQ8MBCBpgOwABQkGPhAAwKECBAmIFjAJ98GBkSdnJlh7gMBBAgsW7B2acmkBBE4dqLTq0MHIAwwYPHbwF8EClE5VAiBLN4AClA8YgDyc00FPAgDqFrB6ACVNBhEPkI2dAOKA2AJBGmxKc+EBjAtiOiAgAIHUjskNmxwgYCjTzw9cUxxIQPdqk545M2xNkFIy1Z07HyrYC1cyWc8NGMRfedFAA6gGShronUB6YpOiXfTXWhIxYAACDZAVEUmhrTQAdVZBphBXC/z1V1KSIRAbRfSdRtNduo2kUH4L0MWSS0BFll0CeTElgEC4/UQaQRItBFiIVuEnWkAAOw==",
    "jp": "深緑",
    "verified": true,
-   "alias": "セージグリーン"
+   "alias": "セージグリーン",
+   "note": "色見本を2026-09-04に差し替え（それまで #26 の色が入っていた。メーカー見本写真 後方部\\関連業者\\モノタロウ\\ビニモMBTカラー.pdf から採取）。"
   },
   {
    "id": "sc_31",
@@ -207,7 +208,7 @@
    "label": "#38",
    "image": "data:image/gif;base64,R0lGODlhFwAVAJEAAHx+enx+e3x9ent9eiH5BAAAAAAALAAAAAAXABUAAAJe3GSXEhltQFJ0NGTgdAZrWW2cOIAQBmDkIoKOarGJq9ArnI1h11wb8tgxBBKNCKPSQE6rQ4rE+JU2xliTA0KtlrDlldR4dra3MQeBq6okxa/aOsHlqiK6nII8S6erAgA7",
    "jp": "青灰色（ロシアンブルー）",
-   "alias": "グレー"
+   "note": "工房では以前この糸を「グレー」と呼んでいたが、#34の正式名と重なるため呼称としては使わない（番号で確認する）。"
   },
   {
    "id": "sc_39",
@@ -283,7 +284,7 @@
    "image": "data:image/gif;base64,R0lGODlhFwAVAJEAAHTa7XTb7XPa7XTb7iH5BAAAAAAALAAAAAAXABUAAAJ01BIiMWMOmwLPKZPOagwapTWWdYmmJFbftUpg5H5wlnFjJitd2aJ9rGORWCVT5fTyFFEpZdNnBDFAC+pwZqBQV69jdXSAWU2JV5knK4twOVWYE+ySnDmEYzcqdcKqqWcAoDYTtfXGxaOhQ6gU93cBwJQnUAAAOw==",
    "jp": "スカイブルー（ティファニーブルー）",
    "verified": true,
-   "alias": "ターコイズ"
+   "note": "工房では以前この糸を「ターコイズ」と呼んでいたが、#55の正式名と重なるため呼称としては使わない（番号で確認する）。"
   },
   {
    "id": "sc_55",
@@ -365,7 +366,7 @@
    "image": "data:image/gif;base64,R0lGODlhFwAVAJEAAN25iN26id25idy5iCH5BAAAAAAALAAAAAAXABUAAAJrVDIYImM7XDMRpOhQMgwnFTXhpwGaJ1lMB3THJTKgNyF15QxtdDKWrjD8Fh1Z43UwSiaXDQ1z7I0EpsaOEpLactAt9ohREFHZR4jKA4sqmoUJxTyLebnWKfNCJZvkvv8PGCg4SFhoeIhIVgAAOw==",
    "jp": "ベージュ（ヘーゼルナッツ）",
    "verified": true,
-   "alias": "キャメル"
+   "note": "工房では以前この糸を「キャメル」と呼んでいたが、#143の正式名と重なるため呼称としては使わない（番号で確認する）。"
   },
   {
    "id": "sc_109",
@@ -373,7 +374,8 @@
    "label": "#109",
    "image": "data:image/gif;base64,R0lGODlhFwAVAJEAANmIW9mHW9mIXNqIXCH5BAAAAAAALAAAAAAXABUAAAKSnDYBeXESYkDAJYSxewNAcWANA20LaEDdhBriMiERUi5A1bkN61SoFBLcSrJIA2TphDyXRQr5kz2gjl7yIix+UMIp8YlySii0kEIVS1WqqdiVadUEdUalDMZoMh8Wc9UzknOlQgN0kXJI0nKSodKFxOLhpOKjpkPBpmj1NVbSBzLXw8Dy8YmEaJBGYrRXdrczUAAAOw==",
    "jp": "ミルクチョコ",
-   "alias": "ライトブラウン"
+   "alias": "ライトブラウン",
+   "note": "色見本が見本写真より明るい（写真 rgb(126,60,32) / 画面 rgb(217,136,92)）。現物で要確認。"
   },
   {
    "id": "sc_113",
@@ -398,7 +400,7 @@
    "image": "data:image/gif;base64,R0lGODlhFwAVAJEAAK6qda2pdK6pda2pdSH5BAAAAAAALAAAAAAXABUAAAJj3GSXh9rylAJLNgazM/eumEBcMCFmxTFOE3ipQoKcKVDgQ4e6Qcbol+nAXqqcKeDziHCz3AdF2ZCIokpQefrNtMSVJgZBbq2IKdcFRG+dS1XXfdLABVOnxSKsWp+HOj+blVAAADs=",
    "jp": "抹茶（ローズマリー）",
    "verified": true,
-   "alias": "オリーブ"
+   "note": "工房では以前この糸を「オリーブ」と呼んでいたが、#132の正式名と重なるため呼称としては使わない（番号で確認する）。"
   },
   {
    "id": "sc_123",
