@@ -412,7 +412,10 @@
   /* ---------- AI会話モード用 system prompt ----------
      stockMap: 革id→残量%（0-100 または null）。省略可。渡すと革名に在庫タグを付け、
      在庫のある革を優先提案できる状態にする（leather-stock.csv 由来・chat-widget/hearing-ai から渡す）。 */
-  function buildSystemPrompt(KB, leathers, stockMap) {
+  /* stitches（第4引数・2026-09-04追加）: [{label,jp,alias,inStock}] の配列。
+     渡すとステッチ糸の全色をプロンプトに載せる。省略時は従来どおり KB.stitchInStock だけを使う
+     （まだ渡していない呼び出し元との互換のため）。 */
+  function buildSystemPrompt(KB, leathers, stockMap, stitches) {
     var extra = (KB.extraKnowledge || '').trim();
     // 残量%→在庫タグ。null/未登録は在庫あり扱い（無印・安全側）。通常在庫も無印にしてトークンを抑える。
     function stockTag(l) {
@@ -434,6 +437,33 @@
         '\n※お客様が色の希望（例:「青っぽい」「ワインレッド」）を言ったら、上記から同系色を2〜3種ピックアップして名前で提案する。\n' +
         (stockMap ? '※革名の後ろのタグは在庫状況（無印=在庫あり／[入荷]=入荷したてでエイジング未進行のおすすめ／[残少]=残りわずか／[取寄]=現在在庫なし・お取り寄せに2〜3週間＋取寄せ経費が若干）。提案は在庫のある革（無印・[入荷]・[残少]）を優先し、[入荷]は「入荷したてで育てがいがある」と一言添える。[取寄]の革を希望されたら、お取り寄せになる旨を正直に伝えたうえで在庫のある同系色も併せて提案する。在庫は変動するため最終確認は職人が行う前提で案内する。\n' : '');
     }
+    /* ステッチ糸（ビニモMBT・全92色）。在庫16色しかAIに渡していなかったため
+       「シルバーは何番？」に「在庫にありません」で終わっていた（2026-09-04 実ログ）。全色を渡す。 */
+    var stitchSection = '';
+    if (stitches && stitches.length) {
+      /* 「#53 スカイブルー（ティファニーブルー／ターコイズ）」の形にする。
+         ⛔ 書式は hearing-ai.html / chat-widget.js の stitchName と揃えること。 */
+      var stFmt = function (x) {
+        var jp = x.jp || '';
+        if (!jp) return x.label;
+        var alias = (x.alias && x.alias !== jp) ? x.alias : '';
+        if (!alias) return x.label + ' ' + jp;
+        return jp.slice(-1) === '）'
+          ? x.label + ' ' + jp.slice(0, -1) + '／' + alias + '）'
+          : x.label + ' ' + jp + '（' + alias + '）';
+      };
+      var stIn  = stitches.filter(function (x) { return x.inStock; }).map(stFmt);
+      var stOut = stitches.filter(function (x) { return !x.inStock; }).map(stFmt);
+      stitchSection = '■ステッチ糸（ビニモMBT・全' + stitches.length + '色）\n'
+        + '在庫あり(' + stIn.length + '色・納期が早い): ' + stIn.join(' / ') + '\n'
+        + (stOut.length ? 'お取り寄せ(' + stOut.length + '色): ' + stOut.join(' / ') + '\n' : '')
+        + '※番号が正式な識別子で、名前は通称。括弧内は工房でこれまで使ってきた呼び名。'
+        + 'お客様がどちらの言い方をされても同じ糸として扱う。\n'
+        + '※一覧に無い色名（例:「シルバー」）を言われたら「ありません」で終わらせず、'
+        + '近い色を番号と名前で2〜3色挙げて確認する。\n'
+        + '※実際の色は画面の『ステッチの色を見る』で写真をご覧いただける。\n';
+    }
+
     return 'あなたは「' + KB.shop + '」のオーダー相談AI「幕僚（ばくりょう）」です。革職人 中司祐樹の名代として、お客様からレザーアイテムのフルオーダー（システム手帳・財布・キーケース・名刺入れ・ポーチ/ペンケース・コインケース 他）のご要望を丁寧にヒアリングし、プロの視点で提案します。\n\n' +
       '【口調】親しみやすく丁寧な日本語。専門用語には一言そえる。押し売りはしない。1回の返信は簡潔に、質問は基本1つずつ。\n\n' +
       '【進め方】まず何のアイテムを作りたいかを確認し、そのアイテムに応じた仕様を聞く。\n\n' +
@@ -470,7 +500,7 @@
       '■コインケース: 馬蹄型/BOX型/ファスナー型。カード収納有無。\n' +
       '■革: ' + KB.leatherNote + ' 代表色 ' + KB.leatherColors.map(function (c) { return c.group + '(' + c.ex + ')'; }).join(' / ') + '\n' +
       leatherSection +
-      '■ステッチ在庫(納期早): ' + KB.stitchInStock.join(', ') + '。' + KB.stitchAdvice + '\n' +
+      (stitchSection || ('■ステッチ在庫(納期早): ' + KB.stitchInStock.join(', ') + '\n')) + KB.stitchAdvice + '\n' +
       '■概算目安(円): 手帳 Micro5 9,000-16,000/Mini6 13,000-22,000/A6 22,000-38,000/バイブル 24,000-40,000/A5 38,000-60,000。財布 長財布30,000-55,000/二つ折り20,000-38,000/ラウンドファスナー35,000-60,000/ミニ15,000-28,000。キーケース8,000-16,000。名刺入れ12,000-22,000。ポーチ12,000-30,000。コインケース8,000-18,000。正確な額は職人確認で確定と伝える。\n' +
       (extra ? '\n【工房からの追加メモ（最新の方針・お知らせ・注意事項。他の記述と矛盾する場合はこちらを優先）】\n' + extra + '\n' : '') +
       '\n【注意】価格は「概算・目安」とし断定しない。在庫や最終仕様は職人が確認する前提で案内する。分からないことは正直に「職人に確認します」と答える。';
