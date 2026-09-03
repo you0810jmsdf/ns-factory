@@ -633,21 +633,6 @@ section { padding:100px 24px; }
   content:"–"; position:absolute; left:0; color:var(--leather-light);
 }
 
-/* 資格・スキル */
-.career-def { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
-.career-def-item {
-  background:var(--leather-pale);
-  border-radius:var(--radius-sm);
-  padding:18px 20px;
-}
-.career-def-term {
-  font-size:11px; font-weight:600; letter-spacing:0.12em;
-  text-transform:uppercase; color:var(--leather);
-  margin-bottom:7px;
-}
-.career-def-desc { font-size:14px; line-height:1.7; color:#3a3a3c; }
-.career-def-desc em { font-style:normal; font-weight:600; color:var(--near-black); }
-
 /* 強み */
 .career-strength + .career-strength { margin-top:20px; }
 .career-strength h4 {
@@ -728,7 +713,6 @@ footer {
   .career-tl-year { margin-bottom:4px; }
   .career-tl-body { border-left:none; padding-left:0; padding-bottom:20px; }
   .career-tl-body::before { display:none; }
-  .career-def { grid-template-columns:1fr; }
   .career-acc > summary { padding:18px 48px 18px 18px; font-size:15px; }
   .career-acc-body { padding:22px 18px 24px; }
   .nav-links { display:none; }
@@ -824,14 +808,14 @@ footer {
     <p class="section-eyebrow reveal">Career</p>
     <h2 class="section-heading reveal">経歴</h2>
     <p class="career-lead reveal">
-      N&#39;s factory を立ち上げる前は、海上自衛隊の幹部自衛官として24年間、
+      N&#39;s factory を立ち上げる前は、海上自衛隊の幹部自衛官として25年間、
       航空機の整備管理と搭載装備品の研究開発に従事していました。<br>
       手を動かす精度と、設計・予算を組み立てる論理。いまの工房の仕事は、その延長線上にあります。
     </p>
 
     <div class="career-highlights">
       <div class="career-hl reveal reveal-delay-1">
-        <div class="career-hl-num">24<span>年</span></div>
+        <div class="career-hl-num">25<span>年</span></div>
         <div class="career-hl-label">海上自衛隊 幹部自衛官<br>2000年4月 – 2024年4月</div>
       </div>
       <div class="career-hl reveal reveal-delay-2">
@@ -840,7 +824,7 @@ footer {
       </div>
       <div class="career-hl reveal reveal-delay-3">
         <div class="career-hl-num">P-1</div>
-        <div class="career-hl-label">固定翼哨戒機 強度試験<br>ロードマスターを担当</div>
+        <div class="career-hl-label">固定翼哨戒機の<br>強度試験を担当</div>
       </div>
     </div>
 
@@ -942,7 +926,7 @@ footer {
                 <div class="career-tl-title">技術研究本部 航空装備研究所</div>
                 <div class="career-tl-role">航空機構造研究室（約2年）</div>
                 <ul class="career-tl-tasks">
-                  <li>海上自衛隊 固定翼哨戒機（P-1）の開発担当 — 強度試験（静強度・疲労強度）ロードマスター</li>
+                  <li>海上自衛隊 固定翼哨戒機（P-1）の開発担当 — 強度試験（静強度・疲労強度）</li>
                   <li>航空自衛隊 輸送機の共同開発（同上）</li>
                   <li>試験用治具の調達（年間20件程度）</li>
                 </ul>
@@ -1011,14 +995,6 @@ footer {
             </li>
 
             <li class="career-tl-item">
-              <div class="career-tl-year">2017.8</div>
-              <div class="career-tl-body">
-                <div class="career-tl-title">防衛装備庁 長官官房</div>
-                <div class="career-tl-role">装備開発官（航空装備担当）付 第5開発室（約3年）</div>
-              </div>
-            </li>
-
-            <li class="career-tl-item">
               <div class="career-tl-year">2020.4</div>
               <div class="career-tl-body">
                 <div class="career-tl-title">第3術科学校</div>
@@ -1048,33 +1024,6 @@ footer {
 
       <details class="career-acc">
         <summary>
-          資格・PCスキル
-          <span class="career-acc-note">免許および実務レベル</span>
-        </summary>
-        <div class="career-acc-body">
-          <div class="career-def">
-            <div class="career-def-item">
-              <div class="career-def-term">License</div>
-              <div class="career-def-desc"><em>運転免許　中型免許（第一種）</em><br>1999年12月 取得<br>※中型車（8t）、準中型車と普通車はATに限る</div>
-            </div>
-            <div class="career-def-item">
-              <div class="career-def-term">Word</div>
-              <div class="career-def-desc">書式設定、表の挿入、目次作成が可能なレベル</div>
-            </div>
-            <div class="career-def-item">
-              <div class="career-def-term">Excel</div>
-              <div class="career-def-desc">VLOOKUP の使用が可能なレベル</div>
-            </div>
-            <div class="career-def-item">
-              <div class="career-def-term">PowerPoint</div>
-              <div class="career-def-desc">既存資料の修正、スライドの挿入／削除が可能なレベル</div>
-            </div>
-          </div>
-        </div>
-      </details>
-
-      <details class="career-acc">
-        <summary>
           前職で培った強み
           <span class="career-acc-note">職務要約と自己PR</span>
         </summary>
@@ -1082,13 +1031,13 @@ footer {
           <div class="career-strength">
             <h4>ロジスティクス基盤づくり</h4>
             <p>
-              約25年にわたり、日本の平和と安全を守るため、特に監視用航空機の整備管理業務に従事。うち約10年は航空機搭載装備品の研究開発業務にあたり、利用者である搭乗員と、航空機・搭載装備品を提供する企業との間に立って、双方が Win-Win となる関係づくりに貢献してきました。
+              約25年にわたり、監視用航空機の整備管理業務に従事。うち約10年は航空機搭載装備品の研究開発業務にあたり、利用者である搭乗員と、航空機・搭載装備品を提供する企業との間に立って、双方が Win-Win となる関係づくりに貢献してきました。
             </p>
           </div>
           <div class="career-strength">
-            <h4>教育と、アートセラピーの推進</h4>
+            <h4>整備員への教育</h4>
             <p>
-              後年は航空機整備員の教官として、整備の基礎から応用までを教育するための環境を整備。あわせてメンタルヘルス担当者としてアートセラピー（レザークラフト）を推進し、自殺者の削減に尽力しました。いまのカルチャースクール講師業は、この経験の延長にあります。
+              後年は航空機整備員の教官として、整備の基礎から応用までを教育するための環境を整備しました。いまのカルチャースクール講師業は、この経験の延長にあります。
             </p>
           </div>
           <div class="career-strength">
