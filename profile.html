@@ -527,6 +527,141 @@ section { padding:100px 24px; }
 }
 .contact-item strong { display:block; font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--leather); margin-bottom:4px; }
 
+/* ── Career（司令官プロフィール・経歴） ───────── */
+.career {
+  background:var(--light-gray);
+  color:var(--near-black);
+  border-top:1px solid rgba(0,0,0,0.07);
+}
+.career .section-eyebrow { color:var(--leather); }
+.career .section-heading { color:var(--near-black); margin-bottom:36px; }
+.career-lead {
+  font-size:16px; line-height:1.75; color:#3a3a3c;
+  max-width:680px; margin:0 auto 44px; text-align:center;
+}
+.career-highlights {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:16px; margin-bottom:44px;
+}
+.career-hl {
+  background:var(--white);
+  border-radius:var(--radius-md);
+  padding:26px 22px;
+  text-align:center;
+  box-shadow:0 1px 6px rgba(0,0,0,0.06);
+  border-top:3px solid var(--leather-light);
+}
+.career-hl-num {
+  font-size:clamp(26px,3.2vw,34px); font-weight:600;
+  letter-spacing:-0.02em; color:var(--near-black); line-height:1.1;
+}
+.career-hl-num span { font-size:15px; font-weight:500; margin-left:3px; color:var(--leather); }
+.career-hl-label {
+  font-size:12px; color:var(--text-dark-sub);
+  margin-top:10px; line-height:1.55; letter-spacing:0.02em;
+}
+
+/* アコーディオン（既定は全て閉じた状態） */
+.career-acc {
+  background:var(--white);
+  border:1px solid rgba(0,0,0,0.07);
+  border-radius:var(--radius-md);
+  margin-bottom:12px;
+  overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.career-acc > summary {
+  list-style:none; cursor:pointer;
+  padding:20px 56px 20px 24px;
+  position:relative;
+  font-size:16px; font-weight:600; letter-spacing:0.01em;
+  color:var(--near-black);
+  transition:background .2s;
+}
+.career-acc > summary::-webkit-details-marker { display:none; }
+.career-acc > summary:hover { background:rgba(139,99,71,0.05); }
+.career-acc > summary::after {
+  content:"＋";
+  position:absolute; right:22px; top:50%;
+  transform:translateY(-50%);
+  font-size:17px; font-weight:400; color:var(--leather);
+  transition:transform .2s, color .2s;
+}
+.career-acc[open] > summary::after { content:"−"; }
+.career-acc[open] > summary { border-bottom:1px solid rgba(0,0,0,0.07); }
+.career-acc-note {
+  display:block; font-size:12px; font-weight:400;
+  color:var(--text-dark-sub); margin-top:5px; letter-spacing:0;
+}
+.career-acc-body { padding:26px 24px 28px; }
+
+/* タイムライン */
+.career-tl { list-style:none; }
+.career-tl-item {
+  display:grid; grid-template-columns:82px 1fr; gap:16px;
+}
+.career-tl-year {
+  font-size:13px; font-weight:600; color:var(--leather);
+  letter-spacing:0.03em; padding-top:1px;
+}
+.career-tl-body {
+  border-left:2px solid rgba(139,99,71,0.22);
+  padding:0 0 24px 22px; position:relative;
+}
+.career-tl-item:last-child .career-tl-body { border-left-color:transparent; padding-bottom:0; }
+.career-tl-body::before {
+  content:""; position:absolute; left:-6px; top:5px;
+  width:10px; height:10px; border-radius:50%;
+  background:var(--leather-light);
+  border:2px solid var(--light-gray);
+}
+.career-acc-body .career-tl-body::before { border-color:var(--white); }
+.career-tl-title {
+  font-size:15px; font-weight:600; line-height:1.55;
+  color:var(--near-black);
+}
+.career-tl-role {
+  font-size:13px; line-height:1.65; color:var(--text-dark-sub);
+  margin-top:4px;
+}
+.career-tl-tasks { list-style:none; margin-top:10px; }
+.career-tl-tasks li {
+  font-size:13px; line-height:1.75; color:#3a3a3c;
+  padding-left:15px; position:relative;
+}
+.career-tl-tasks li::before {
+  content:"–"; position:absolute; left:0; color:var(--leather-light);
+}
+
+/* 資格・スキル */
+.career-def { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.career-def-item {
+  background:var(--leather-pale);
+  border-radius:var(--radius-sm);
+  padding:18px 20px;
+}
+.career-def-term {
+  font-size:11px; font-weight:600; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--leather);
+  margin-bottom:7px;
+}
+.career-def-desc { font-size:14px; line-height:1.7; color:#3a3a3c; }
+.career-def-desc em { font-style:normal; font-weight:600; color:var(--near-black); }
+
+/* 強み */
+.career-strength + .career-strength { margin-top:20px; }
+.career-strength h4 {
+  font-size:15px; font-weight:600; color:var(--near-black);
+  margin-bottom:8px; padding-left:13px; position:relative;
+}
+.career-strength h4::before {
+  content:""; position:absolute; left:0; top:4px;
+  width:3px; height:calc(100% - 8px);
+  background:linear-gradient(to bottom, var(--leather-light), var(--leather));
+  border-radius:2px;
+}
+.career-strength p { font-size:14px; line-height:1.8; color:#3a3a3c; }
+
 /* ── Footer ──────────────────────────────────── */
 footer {
   background:var(--near-black);
@@ -588,6 +723,14 @@ footer {
   .activity-grid { grid-template-columns:1fr; }
   .shop-grid { grid-template-columns:repeat(2,1fr); }
   .comm-grid { grid-template-columns:1fr; }
+  .career-highlights { grid-template-columns:1fr; gap:12px; }
+  .career-tl-item { grid-template-columns:1fr; gap:0; }
+  .career-tl-year { margin-bottom:4px; }
+  .career-tl-body { border-left:none; padding-left:0; padding-bottom:20px; }
+  .career-tl-body::before { display:none; }
+  .career-def { grid-template-columns:1fr; }
+  .career-acc > summary { padding:18px 48px 18px 18px; font-size:15px; }
+  .career-acc-body { padding:22px 18px 24px; }
   .nav-links { display:none; }
 }
 @media (max-width:480px) {
@@ -671,6 +814,298 @@ footer {
           <div class="stat-label" data-i18n="stat.l4">透明性ある事業運営</div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Career（経歴・アコーディオン／既定は全て閉） ── -->
+<section class="career" id="career">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Career</p>
+    <h2 class="section-heading reveal">経歴</h2>
+    <p class="career-lead reveal">
+      N&#39;s factory を立ち上げる前は、海上自衛隊の幹部自衛官として24年間、
+      航空機の整備管理と搭載装備品の研究開発に従事していました。<br>
+      手を動かす精度と、設計・予算を組み立てる論理。いまの工房の仕事は、その延長線上にあります。
+    </p>
+
+    <div class="career-highlights">
+      <div class="career-hl reveal reveal-delay-1">
+        <div class="career-hl-num">24<span>年</span></div>
+        <div class="career-hl-label">海上自衛隊 幹部自衛官<br>2000年4月 – 2024年4月</div>
+      </div>
+      <div class="career-hl reveal reveal-delay-2">
+        <div class="career-hl-num">約10<span>年</span></div>
+        <div class="career-hl-label">航空機搭載装備品の<br>研究開発業務に従事</div>
+      </div>
+      <div class="career-hl reveal reveal-delay-3">
+        <div class="career-hl-num">P-1</div>
+        <div class="career-hl-label">固定翼哨戒機 強度試験<br>ロードマスターを担当</div>
+      </div>
+    </div>
+
+    <div class="reveal">
+
+      <details class="career-acc">
+        <summary>
+          学歴
+          <span class="career-acc-note">1992年 – 2000年</span>
+        </summary>
+        <div class="career-acc-body">
+          <ul class="career-tl">
+            <li class="career-tl-item">
+              <div class="career-tl-year">1992.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">山口県岩国市 麻里布中学校　卒業</div>
+              </div>
+            </li>
+            <li class="career-tl-item">
+              <div class="career-tl-year">1995.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">山口県立 山口高等学校（理数科）　卒業</div>
+              </div>
+            </li>
+            <li class="career-tl-item">
+              <div class="career-tl-year">2000.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">防衛大学校 理工学部 航空宇宙工学科　卒業</div>
+                <div class="career-tl-role">在職中の2005年4月から2年間、同校 理工学研究科 前期課程（航空宇宙工学科・第44期）に学ぶ。</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="career-acc">
+        <summary>
+          職歴 — 海上自衛隊
+          <span class="career-acc-note">2000年4月 – 2024年4月／主要配置と実績</span>
+        </summary>
+        <div class="career-acc-body">
+          <ul class="career-tl">
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2000.4</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">海上自衛隊 入隊</div>
+                <div class="career-tl-role">幹部候補生学校</div>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2001.9</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">第3術科学校</div>
+                <div class="career-tl-role">第1301期 幹部航空装備課程</div>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2002.4</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">第4整備補給隊</div>
+                <div class="career-tl-role">武器整備隊 魚雷班長／本部 品質管理班／第42検査隊 機体検査班長（約2年）</div>
+                <ul class="career-tl-tasks">
+                  <li>航空魚雷の整備監督業務</li>
+                  <li>航空機の品質管理業務</li>
+                  <li>回転翼哨戒機の整備管理業務</li>
+                  <li>新入隊員の教育</li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2004.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">第9航空隊</div>
+                <div class="career-tl-role">列線整備隊 航空機班（約1年）</div>
+                <ul class="career-tl-tasks">
+                  <li>航空機の列線（ラインサービス）作業監督業務</li>
+                  <li>米海軍基地における列線整備作業の調整業務</li>
+                  <li>人事管理業務</li>
+                  <li>民間航空機整備員との交流調整</li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2005.4</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">防衛大学校 理工学研究科 前期課程</div>
+                <div class="career-tl-role">第44期（航空宇宙工学科）</div>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2007.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">技術研究本部 航空装備研究所</div>
+                <div class="career-tl-role">航空機構造研究室（約2年）</div>
+                <ul class="career-tl-tasks">
+                  <li>海上自衛隊 固定翼哨戒機（P-1）の開発担当 — 強度試験（静強度・疲労強度）ロードマスター</li>
+                  <li>航空自衛隊 輸送機の共同開発（同上）</li>
+                  <li>試験用治具の調達（年間20件程度）</li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2009.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">第3術科学校</div>
+                <div class="career-tl-role">第2002期 幹部中級航空装備課程</div>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2010.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">第51航空隊</div>
+                <div class="career-tl-role">計測隊 解析班長 兼 器材班長（約2年）</div>
+                <ul class="career-tl-tasks">
+                  <li>固定翼哨戒機（P-1）の実用性評価試験</li>
+                  <li>回転翼哨戒機（SH-60K）の開発後フォローアップ試験支援（計測員）</li>
+                  <li>飛行試験の解析用器材の調達・修理</li>
+                  <li>事故発生時の飛行データ記録器の解析作業</li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2012.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">海上幕僚監部 技術部 技術課</div>
+                <div class="career-tl-role">航空技術班（約2年）</div>
+                <ul class="career-tl-tasks">
+                  <li>哨戒機搭載用 音響処理機・センサー（ソーナー、ソノブイ）の開発要求担当 — 予算要求、設計監督検査、評価</li>
+                  <li>哨戒機搭載用 磁気探知信号処理装置・センサの開発要求担当 — 予算要求、調査研究</li>
+                  <li>米海軍哨戒機の能力調査、研究開発に関する交流調整</li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2014.1</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">第21整備補給隊</div>
+                <div class="career-tl-role">武器整備隊長（約2年）</div>
+                <ul class="career-tl-tasks">
+                  <li>回転翼哨戒機 搭載武器および救命器材の整備管理業務</li>
+                  <li>整備員の整備教育管理</li>
+                  <li>会計実地検査への対応（2回）</li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2016.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">補給本部 航空機部</div>
+                <div class="career-tl-role">航空武器整備課 航空装備整備班長／航空武器整備班長（約1年）</div>
+                <ul class="career-tl-tasks">
+                  <li>哨戒機搭載用 音響処理機・センサー（ソーナー、ソノブイ）の開発試作担当 — 予算要求、設計監督検査、評価</li>
+                  <li>哨戒機搭載用 磁気探知信号処理装置・センサの開発試作担当 — 予算要求、調査研究</li>
+                  <li>哨戒機搭載用武器（空対艦ミサイル）の開発支援 — 試験準備</li>
+                </ul>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2017.8</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">防衛装備庁 長官官房</div>
+                <div class="career-tl-role">装備開発官（航空装備担当）付 第5開発室（約3年）</div>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2020.4</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">第3術科学校</div>
+                <div class="career-tl-role">教育第2部 航空武器整備科長</div>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2022.3</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">第203整備補給隊</div>
+                <div class="career-tl-role">武器整備隊長</div>
+              </div>
+            </li>
+
+            <li class="career-tl-item">
+              <div class="career-tl-year">2024.4</div>
+              <div class="career-tl-body">
+                <div class="career-tl-title">海上自衛隊　退職</div>
+                <div class="career-tl-role">第3術科学校付を経て退職。同年、N&#39;s factory として独立。</div>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+      </details>
+
+      <details class="career-acc">
+        <summary>
+          資格・PCスキル
+          <span class="career-acc-note">免許および実務レベル</span>
+        </summary>
+        <div class="career-acc-body">
+          <div class="career-def">
+            <div class="career-def-item">
+              <div class="career-def-term">License</div>
+              <div class="career-def-desc"><em>運転免許　中型免許（第一種）</em><br>1999年12月 取得<br>※中型車（8t）、準中型車と普通車はATに限る</div>
+            </div>
+            <div class="career-def-item">
+              <div class="career-def-term">Word</div>
+              <div class="career-def-desc">書式設定、表の挿入、目次作成が可能なレベル</div>
+            </div>
+            <div class="career-def-item">
+              <div class="career-def-term">Excel</div>
+              <div class="career-def-desc">VLOOKUP の使用が可能なレベル</div>
+            </div>
+            <div class="career-def-item">
+              <div class="career-def-term">PowerPoint</div>
+              <div class="career-def-desc">既存資料の修正、スライドの挿入／削除が可能なレベル</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="career-acc">
+        <summary>
+          前職で培った強み
+          <span class="career-acc-note">職務要約と自己PR</span>
+        </summary>
+        <div class="career-acc-body">
+          <div class="career-strength">
+            <h4>ロジスティクス基盤づくり</h4>
+            <p>
+              約25年にわたり、日本の平和と安全を守るため、特に監視用航空機の整備管理業務に従事。うち約10年は航空機搭載装備品の研究開発業務にあたり、利用者である搭乗員と、航空機・搭載装備品を提供する企業との間に立って、双方が Win-Win となる関係づくりに貢献してきました。
+            </p>
+          </div>
+          <div class="career-strength">
+            <h4>教育と、アートセラピーの推進</h4>
+            <p>
+              後年は航空機整備員の教官として、整備の基礎から応用までを教育するための環境を整備。あわせてメンタルヘルス担当者としてアートセラピー（レザークラフト）を推進し、自殺者の削減に尽力しました。いまのカルチャースクール講師業は、この経験の延長にあります。
+            </p>
+          </div>
+          <div class="career-strength">
+            <h4>生産管理・コスト管理</h4>
+            <p>
+              航空機の研究開発事業に従事した経験から、各種プロジェクトの計画・実施にかかる管理職として勤務。防衛関連予算取得のための財務省との折衝、会計実地検査への対応など、予算管理に関する業務を通じて、コスト削減・効率化の提案ができます。
+            </p>
+          </div>
+          <div class="career-strength">
+            <h4>使い手との対話でつくる</h4>
+            <p>
+              強みは、製作依頼者との対話を通じた作品づくり。斬新なデザインと、忍耐力を要する緻密な作業を得意としています。SNS を通じて日本各地から製作依頼を受けるなかで、使う人の意見をよく聞き、より使いやすく、お洒落な革小物を提供することを心がけています。
+            </p>
+          </div>
+        </div>
+      </details>
+
     </div>
   </div>
 </section>
