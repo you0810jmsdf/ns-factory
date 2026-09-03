@@ -582,6 +582,7 @@ async function load() {
   errEl.style.display = 'none';
   btn.disabled = true;
   applySrcUI();
+  renderMonthlyQuota();   // 当月件数のアラートはログ取得を待たずに出す（GASが遅い日でも見えるように）
   document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">読み込み中…</td></tr>';
 
   if (currentSrc === 'orders') {
@@ -815,7 +816,6 @@ function render() {
 
   fbList = list;   // ✏️ 指摘ボタンの行参照用（ナレッジ学習ループ）
   // 接客が外れたまま終わった相談を洗い出して上部に出す（2026-08-31）
-  renderMonthlyQuota();   // 当月件数のアラート（hearing以外では自動で隠れる）
   const issueBar = document.getElementById('issueBar');
   if (currentSrc === 'hearing') {
     const st = markHearingIssues(list);
@@ -1057,7 +1057,7 @@ function openFbView(key) {
    AIをSonnetに上げて単価が約3倍になったため、件数が増えたことに気づけるようにする。
    ⛔ メール通知は使わない（Gmailの権限が失効すると気づけないまま止まるため・事業主指示）。
    しきい値はこの画面から変更できる（GAS ScriptProperties の MONTHLY_ALERT_THRESHOLD）。 */
-async function renderMonthlyQuota() {
+async function renderMonthlyQuota(flash) {
   const box = document.getElementById('quotaBar');
   if (!box) return;
   if (currentSrc !== 'hearing') { box.style.display = 'none'; return; }
@@ -1081,16 +1081,27 @@ async function renderMonthlyQuota() {
     + '<input id="quotaThresholdInput" type="number" min="1" max="100000" value="' + d.threshold + '"> 件 '
     + '<button type="button" id="quotaThresholdSave">保存</button> '
     + '<span id="quotaThresholdMsg" class="sub"></span></div>';
-  document.getElementById('quotaThresholdSave').addEventListener('click', async () => {
+  if (flash) document.getElementById('quotaThresholdMsg').textContent = flash;
+  const saveBtn = document.getElementById('quotaThresholdSave');
+  saveBtn.addEventListener('click', async () => {
     const n = parseInt(document.getElementById('quotaThresholdInput').value, 10);
     const msg = document.getElementById('quotaThresholdMsg');
     if (!(n > 0)) { msg.textContent = '1以上の数値を入れてください'; return; }
-    msg.textContent = '保存中…';
+    // GASの応答は数秒かかる。押しっぱなしの二重送信を防ぐ
+    saveBtn.disabled = true;
+    msg.textContent = '保存中…（数秒かかります）';
     try {
       const r = await fetchJsonRetry(SOURCES.hearing.url + '?action=setalert&key=' + encodeURIComponent(getKey()) + '&n=' + n);
-      msg.textContent = (r && r.status === 'ok') ? '✓ ' + r.threshold + '件に変更しました' : ('⚠️ ' + ((r && r.error) || '失敗'));
-      if (r && r.status === 'ok') renderMonthlyQuota();
-    } catch (e) { msg.textContent = '⚠️ 通信に失敗しました'; }
+      if (r && r.status === 'ok') {
+        renderMonthlyQuota('✓ 目安を ' + r.threshold + ' 件に変更しました');   // 再描画するので結果は引数で渡す
+      } else {
+        saveBtn.disabled = false;
+        msg.textContent = '⚠️ ' + ((r && r.error) || '保存できませんでした');
+      }
+    } catch (e) {
+      saveBtn.disabled = false;
+      msg.textContent = '⚠️ 通信に失敗しました。少し待って再度お試しください';
+    }
   });
 }
 
