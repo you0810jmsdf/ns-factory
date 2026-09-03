@@ -89,6 +89,13 @@
 
 ## 直近の作業記録（2026-08-20 以降）
 
+## 2026-09-03 — デジタル幕僚室: ライブテロップ／テロッププレーヤーを追加
+
+- 対象: `digital-room/live-telop.html`（配信用リアルタイム字幕・Chrome/Edgeの音声認識・緑背景でOBSクロマキー）、`digital-room/telop-player.html`（動画＋SRTをブラウザで同期再生・焼き込み不要）、`digital-room/index.html`「発信・制作」にカード2枚（`data-app="live-telop"` / `"telop-player"`）。
+- 告知画像: `assets/live-telop-announce.png` / `telop-player-announce.png`。生成は `広報部\告知画像\promo_template.py`（apps.json に2件追加）。1枚ずつ手作りしない。
+- 「文字起こし＆テロップ」との違い: あちらは**録画済み動画**の文字起こし・焼き込み（ダウンロード配布のPCアプリ）。ライブテロップは**生放送中**の音声をその場で字幕表示、テロッププレーヤーは**できたSRTを重ねて再生**する再生機。見出し文言はこの違いが出るように書く。
+- 検証: 本番URL2本 HTTP 200・md5一致、Chrome以外での警告表示（SpeechRecognition無効化）実測、カード4枚の幅335px一致（Playwright 1280px）。
+
 ## 2026-09-01 — SNS動画メーカー: 「SNSへ投稿」ボタン（管理者限定・共有シート方式）
 
 - 対象: `digital-room/sns-video-maker/index.html`
