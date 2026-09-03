@@ -71,6 +71,27 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .platform-row { grid-template-columns: 1fr 1fr; }
     .platform-row .btn-remove { grid-column: 1 / -1; }
   }
+  /* === 会社情報 編集モーダル（2026-09-03） === */
+  .cm-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+  }
+  .cm-overlay.open { display: flex; }
+  .cm-modal {
+    background: #fff; border-radius: 10px; width: 100%; max-width: 560px;
+    padding: 20px 22px; box-shadow: 0 12px 40px rgba(0,0,0,.25);
+  }
+  .cm-modal h2 { font-size: 16px; margin: 0 0 4px; }
+  .cm-modal .cm-sub { font-size: 12px; color: var(--color-text-sub); margin-bottom: 14px; }
+  .cm-modal .cm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+  .badge-type {
+    display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px;
+    border: 1px solid var(--color-border); color: var(--color-text-sub); white-space: nowrap;
+  }
+  .badge-type.corp { background: #eef3fb; border-color: #9fb6dc; color: #2f4f86; }
+  /* 11列になったので横スクロールで逃がす（縦に折れて読めなくなるのを防ぐ） */
+  .table-scroll { overflow-x: auto; }
+  #cust-table th, #cust-table td { white-space: nowrap; }
   .col-sns {
     max-width: 200px;
     overflow: hidden;
@@ -96,7 +117,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <div class="page-title">顧客マスタ</div>
 
   <div class="toolbar" style="background:#fbf3e6;border:1px solid var(--color-accent,#a07d3e);border-radius:8px;padding:10px 14px;">
-    <span style="font-size:13px;color:var(--color-accent-dark,#7a5d2a);">📌 このページは閲覧専用です。新規登録・編集・削除は <strong>customer_manager.html</strong>（ローカル）で行ってください。保存すると自動でここに反映されます。</span>
+    <span style="font-size:13px;color:var(--color-accent-dark,#7a5d2a);">📌 氏名・発送先住所・電話・SNSの登録・編集・削除は <strong>customer_manager.html</strong>（ローカル）で行ってください。保存すると自動でここに反映されます。<br>🏢 <strong>会社情報</strong>（区分・敬称・担当者・請求先住所）だけは、このページの各行「会社情報」ボタンで編集できます。住所欄は「発送先」です。</span>
   </div>
 
   <div class="toolbar">
@@ -113,23 +134,70 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </div>
 
   <!-- 一覧テーブル -->
-  <div class="card" style="padding:0;overflow:hidden;">
+  <div class="card table-scroll" style="padding:0;">
     <table class="data-table" id="cust-table">
       <thead>
         <tr>
           <th>ID</th>
+          <th>区分</th>
           <th>顧客名</th>
           <th>敬称</th>
+          <th>担当者</th>
           <th>電話</th>
           <th>メール</th>
-          <th>住所</th>
+          <th>発送先住所</th>
+          <th>請求先住所</th>
           <th>SNS等ID</th>
+          <th></th>
         </tr>
       </thead>
       <tbody id="cust-tbody">
-        <tr><td colspan="7"><div class="empty-state"><span class="icon">&#x1F465;</span>読み込み中...</div></td></tr>
+        <tr><td colspan="11"><div class="empty-state"><span class="icon">&#x1F465;</span>読み込み中...</div></td></tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- 会社情報 編集モーダル：新列（customerType/contactPerson/billingZip/billingAddress）と敬称だけを部分更新する -->
+<div class="cm-overlay" id="company-modal">
+  <div class="cm-modal">
+    <h2>会社情報 <span id="cm-target" style="font-weight:400;font-size:13px;color:var(--color-text-sub);"></span></h2>
+    <div class="cm-sub">氏名・発送先住所・電話はここでは変更できません（customer_manager.html で編集）。</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">区分</label>
+        <select class="form-control" id="cm-type">
+          <option value="個人">個人</option>
+          <option value="法人">法人</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">敬称（請求書の宛名）</label>
+        <select class="form-control" id="cm-honorific">
+          <option value="様">様</option>
+          <option value="御中">御中</option>
+          <option value="">（なし）</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">担当者名（法人のとき。発送先の宛名に使う）</label>
+      <input type="text" class="form-control" id="cm-contact-person" placeholder="例: 酒田健典">
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:0 0 140px;">
+        <label class="form-label">請求先 郵便番号</label>
+        <input type="text" class="form-control" id="cm-billing-zip" placeholder="000-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">請求先 住所（空なら発送先と同じ扱い）</label>
+        <input type="text" class="form-control" id="cm-billing-address" placeholder="例: 東京都渋谷区神宮前5-41-8">
+      </div>
+    </div>
+    <div class="cm-actions">
+      <button class="btn btn-secondary" id="cm-cancel">キャンセル</button>
+      <button class="btn btn-primary" id="cm-save">保存</button>
+    </div>
   </div>
 </div>
 
