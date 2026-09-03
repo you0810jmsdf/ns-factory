@@ -152,11 +152,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .nav-spacer{flex:1}
 .nav-links{
   display:flex;align-items:center;gap:4px;
-  /* ナビが入りきらないときは、ページ全体ではなくナビの中だけを横に送る。
-     2026-09-01時点で iPhone 13(390px) で23pxはみ出していたのもこれで解消している。 */
-  min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  /* 2026-09-04: overflow-x:auto は縦方向も同時にクリップするため（CSS仕様）、
+     幕僚室ドロップダウンがナビ枠内に切り取られて見えなくなっていた（9/1〜）。
+     この横送り対策が要った「AI経営奮闘記」直リンクは同日に撤去済みのため指定を外す。
+     ⛔ .nav-links / .nav に overflow を付けない（ドロップダウンが消える）。 */
+  min-width:0;
 }
-.nav-links::-webkit-scrollbar{display:none}
 .nav-link{
   font-size:13px;color:var(--color-text-sub);
   padding:6px 10px;border-radius:var(--radius-sm);
@@ -1228,6 +1229,11 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
      アイコンのみ表示にして確実に収める（機能は維持）。 */
   .nav-qr-btn{padding:6px 7px;gap:0}
   .nav-qr-btn-label{display:none}
+  /* 2026-09-04: .nav-links の横送り(overflow-x)を外したため、320px級では
+     幕僚室/スタッフ/オーダー相談/EN の4項目が約25pxはみ出す。余白だけ詰めて収める。 */
+  .nav-links{gap:0}
+  .nav-link,.nav-dropdown-toggle{padding:6px 4px}
+  .nav-cta{padding:6px 7px}
 }
 
 /* ── Scroll Reveal（スクロール連動の上品な出現演出） ── */
