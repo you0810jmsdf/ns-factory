@@ -1229,9 +1229,21 @@
       } else {
         appendStaffMsg('ステッチ色は' + list.length + '色ございます🧵 気に入った色をタップすると選択できます。');
       }
+      /* 表示名は「#14 赤」。番号だけでは色が分からない（2026-09-04 事業主指摘）。
+         ⛔ 書式は hearing-ai.html の stitchName と揃えること。 */
+      var stitchName = function (c) {
+        var jp = c.jp || '';
+        if (!jp) return c.name;
+        var alias = (c.alias && c.alias !== jp) ? c.alias : '';
+        if (!alias) return c.label + ' ' + jp;
+        return jp.slice(-1) === '）'
+          ? c.label + ' ' + jp.slice(0, -1) + '／' + alias + '）'
+          : c.label + ' ' + jp + '（' + alias + '）';
+      };
       var swatchChips = list.map(function (c) {
         var sub = stockKnown ? (nsfStitchStock[c.id] !== false ? '✅ 在庫あり' : '📦 お取り寄せ') : '';
-        return { label: c.name, sub: sub, image: c.image, onClick: function () { nsfSetSelection('ステッチ色', c.name); } };
+        var nm = stitchName(c);
+        return { label: nm, sub: sub, image: c.image, onClick: function () { nsfSetSelection('ステッチ色', nm); } };
       });
       var chips = [{ label: '閉じる', exit: true, onClick: nsfDefaultChips }].concat(swatchChips);
       renderChips(chips);
@@ -1773,7 +1785,15 @@
         // GAS側は e.postData.contents をJSON.parseするだけなのでMIMEは影響しない。
         contentType = 'text/plain';
         // nsfLeatherStock（id→残量%。在庫CSV読込済み）を渡し、AIが在庫のある革を優先提案できるようにする
-        var systemPrompt = global.NSF_HEARING.buildSystemPrompt(hearingKB, hearingLeathers, nsfLeatherStock) || '';
+        // ステッチ全92色（在庫状態つき）もAIに渡す。在庫16色しか渡しておらず
+        // 「シルバーは何番？」に答えられなかった（2026-09-04 実ログ）。
+        var stitchesForPrompt = (hearingStitchColors && hearingStitchColors.length)
+          ? hearingStitchColors.map(function (c) {
+              return { label: c.label, jp: c.jp || '', alias: c.alias || '',
+                       inStock: nsfStitchStock ? (nsfStitchStock[c.id] !== false) : true };
+            })
+          : null;
+        var systemPrompt = global.NSF_HEARING.buildSystemPrompt(hearingKB, hearingLeathers, nsfLeatherStock, stitchesForPrompt) || '';
         // 2026-07-17 Phase5: 業務相談でも「どの幕僚と話しているか」を維持する（口調のみ・内容は不変）
         systemPrompt += nsfPersonaAddendum(staffId);
         // 2026-07-17 Phase5-2: 自作派サポート知識（素材ガイド）を注入

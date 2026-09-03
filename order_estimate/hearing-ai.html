@@ -761,6 +761,16 @@ function loadStitchColors(){
     .then(j=>(j&&j.stitchColors&&j.stitchColors.length)?j.stitchColors:null)
     .catch(()=>null);
 }
+/* buildSystemPrompt に渡すステッチ一覧を作る（2026-09-04）。
+   在庫の有無は stitch-thread-stock.csv が正。未収録は在庫あり扱い（安全側・ギャラリーと同じ判断）。 */
+function stitchListForPrompt(colors, stock){
+  if(!colors || !colors.length) return null;
+  return colors.map(c=>({
+    label: c.label, jp: c.jp || '', alias: c.alias || '',
+    inStock: stock ? (stock[c.id] !== false) : true
+  }));
+}
+
 function loadStitchStock(){
   return fetch('./stitch-thread-stock.csv?t='+Date.now(),{cache:'no-store'})
     .then(r=>r.ok?r.text():null)
@@ -815,12 +825,24 @@ function showStitchGallery(){
     ? '\n気に入った色をタップすると、そのままステッチ色として選択できます。'
     : '\n気になる色は、あとでステッチ色を伺う際にお選びいただけます。';
   addMsg('bot', lead);
+  /* 表示名は「#14 赤」。番号だけでは色が分からず、お客様が色名で聞いてきても
+     噛み合わなかった（2026-09-04 事業主指摘）。工房のこれまでの呼び名(alias)も併記する。 */
+  const stitchName=c=>{
+    const jp=c.jp||'';
+    if(!jp) return c.name;
+    const alias=(c.alias && c.alias!==jp) ? c.alias : '';
+    if(!alias) return c.label+' '+jp;
+    return jp.slice(-1)==='）'
+      ? c.label+' '+jp.slice(0,-1)+'／'+alias+'）'
+      : c.label+' '+jp+'（'+alias+'）';
+  };
   const swatchChips=list.map(c=>{
     const sub=stockKnown?(STITCH_STOCK[c.id]!==false?'✅ 在庫あり':'📦 お取り寄せ'):'';
-    return { label:c.name, sub:sub, val:'', image:c.image,
+    const nm=stitchName(c);
+    return { label:nm, sub:sub, val:'', image:c.image,
       onClick:()=>{
-        if(state._awaitKey==='stitch'){ handleAnswer(c.name, c.name); return; }
-        addMsg('bot','『'+c.name+'』ですね！'+(sub?('こちらは「'+sub+'」です。'):'')+'ヒアリングでステッチ色を伺う際に、この名前をお選びください🧵');
+        if(state._awaitKey==='stitch'){ handleAnswer(nm, nm); return; }
+        addMsg('bot','『'+nm+'』ですね！'+(sub?('こちらは「'+sub+'」です。'):'')+'ヒアリングでステッチ色を伺う際に、この番号でお伝えください🧵');
       } };
   });
   renderQuick([
@@ -1347,6 +1369,9 @@ Promise.all([
   STOCK_MAP=stockMap;
   STITCH_COLORS=stitchColors; // ステッチ色の即答ギャラリー用
   STITCH_STOCK=stitchStock;
+  // ステッチ全92色（在庫状態つき）をAIにも渡す。在庫16色しか渡しておらず
+  // 「シルバーは何番？」に答えられなかった（2026-09-04 実ログ）。
+  SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers, stockMap, stitchListForPrompt(stitchColors, stitchStock));
   startPicker();
   maybeShowModeTip();   // ⚙AI会話モードの説明（初回訪問時のみ・2026-08-19）
 });
