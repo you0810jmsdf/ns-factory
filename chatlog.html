@@ -171,6 +171,17 @@ tr:hover td{background:#1c2128}
 .issue-bar{margin:0 0 10px;padding:10px 12px;border-radius:8px;background:#3a2408;border:1px solid #8a5a10;color:#f0b429;font-size:13px;line-height:1.6}
 .issue-bar b{color:#ffd479}
 .issue-bar .sub{display:block;color:#c9a96e;font-size:11.5px;margin-top:3px}
+/* 当月の相談件数としきい値（2026-09-04）。AI費用の増加に気づくため */
+.quota-bar{margin:0 0 10px;padding:10px 12px;border-radius:8px;border:1px solid #30363d;background:#161b22;font-size:13px;line-height:1.7}
+.quota-bar.over{background:#3a1010;border-color:#8a2020;color:#ff9b9b}
+.quota-bar b{font-size:15px}
+.quota-bar .meter{display:block;height:6px;border-radius:3px;background:#30363d;margin:6px 0 4px;overflow:hidden}
+.quota-bar .meter span{display:block;height:100%;background:#2ea043;border-radius:3px}
+.quota-bar.over .meter span{background:#f85149}
+.quota-bar .sub{color:#8b949e;font-size:11.5px}
+.quota-bar input{width:70px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:4px 8px;font-size:13px}
+.quota-bar button{background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
+.quota-bar button:hover{background:#30363d}
 .badge-done[data-fbview]{cursor:pointer;text-decoration:underline dotted}
 .badge-done[data-fbview]:hover{background:#1a4a2c}
 tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
@@ -237,6 +248,7 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
 
   <div class="panel">
     <h2>📋 発言一覧 <span class="sub" id="listSub">新しい順</span></h2>
+    <div id="quotaBar" style="display:none"></div>
     <div id="issueBar" style="display:none"></div>
     <div class="table-wrap">
       <table>
@@ -803,6 +815,7 @@ function render() {
 
   fbList = list;   // ✏️ 指摘ボタンの行参照用（ナレッジ学習ループ）
   // 接客が外れたまま終わった相談を洗い出して上部に出す（2026-08-31）
+  renderMonthlyQuota();   // 当月件数のアラート（hearing以外では自動で隠れる）
   const issueBar = document.getElementById('issueBar');
   if (currentSrc === 'hearing') {
     const st = markHearingIssues(list);
@@ -1040,6 +1053,48 @@ function openFbView(key) {
 }
 
 // GET系のGAS呼び出し（HTMLエラーページが返ることがあるため再試行つき）
+/* 当月の相談件数としきい値（2026-09-04 事業主要望）。
+   AIをSonnetに上げて単価が約3倍になったため、件数が増えたことに気づけるようにする。
+   ⛔ メール通知は使わない（Gmailの権限が失効すると気づけないまま止まるため・事業主指示）。
+   しきい値はこの画面から変更できる（GAS ScriptProperties の MONTHLY_ALERT_THRESHOLD）。 */
+async function renderMonthlyQuota() {
+  const box = document.getElementById('quotaBar');
+  if (!box) return;
+  if (currentSrc !== 'hearing') { box.style.display = 'none'; return; }
+  let d = null;
+  try {
+    d = await fetchJsonRetry(SOURCES.hearing.url + '?action=monthlystats&key=' + encodeURIComponent(getKey()));
+  } catch (e) { d = null; }
+  if (!d || d.error) { box.style.display = 'none'; return; }   // 未対応のGASでも画面を壊さない
+  const pct = Math.min(100, Math.round(d.count / Math.max(1, d.threshold) * 100));
+  const ym = String(d.month || '');
+  const label = ym.length === 6 ? (ym.slice(0, 4) + '年' + Number(ym.slice(4)) + '月') : ym;
+  box.style.display = '';
+  box.className = 'quota-bar' + (d.over ? ' over' : '');
+  box.innerHTML =
+    (d.over ? '⚠️ ' : '📊 ') + label + 'の相談 <b>' + d.count + '件</b> / 目安 ' + d.threshold + '件'
+    + (d.over ? '　<b>目安を超えています</b>' : '')
+    + '<span class="meter"><span style="width:' + pct + '%"></span></span>'
+    + '<span class="sub">応答モデル: ' + esc(String(d.model || '—')) + '／1日の上限 ' + d.limitPerDay + '件'
+    + '／相談があった日数 ' + d.activeDays + '日</span>'
+    + '<div style="margin-top:6px">目安の件数 '
+    + '<input id="quotaThresholdInput" type="number" min="1" max="100000" value="' + d.threshold + '"> 件 '
+    + '<button type="button" id="quotaThresholdSave">保存</button> '
+    + '<span id="quotaThresholdMsg" class="sub"></span></div>';
+  document.getElementById('quotaThresholdSave').addEventListener('click', async () => {
+    const n = parseInt(document.getElementById('quotaThresholdInput').value, 10);
+    const msg = document.getElementById('quotaThresholdMsg');
+    if (!(n > 0)) { msg.textContent = '1以上の数値を入れてください'; return; }
+    msg.textContent = '保存中…';
+    try {
+      const r = await fetchJsonRetry(SOURCES.hearing.url + '?action=setalert&key=' + encodeURIComponent(getKey()) + '&n=' + n);
+      msg.textContent = (r && r.status === 'ok') ? '✓ ' + r.threshold + '件に変更しました' : ('⚠️ ' + ((r && r.error) || '失敗'));
+      if (r && r.status === 'ok') renderMonthlyQuota();
+    } catch (e) { msg.textContent = '⚠️ 通信に失敗しました'; }
+  });
+}
+
+
 async function fetchJsonRetry(url) {
   let last = '';
   for (let i = 1; i <= 3; i++) {

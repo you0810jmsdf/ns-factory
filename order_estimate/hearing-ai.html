@@ -390,15 +390,33 @@ function openZoom(i){
   zoomSubEl.textContent=it.sub||'';
   zoomNoteEl.textContent=(zoomList.length>1 ? (i+1)+' / '+zoomList.length+'　' : '')
     +'写真の色味はご覧の画面によって多少変わります。実物の見え方は職人が最終確認いたします。';
-  zoomPickBtn.textContent = (state._awaitKey==='leather') ? 'この色にする' : 'この色を選びたい';
-  zoomPrevBtn.disabled = (i<=0);
-  zoomNextBtn.disabled = (i>=zoomList.length-1);
+  // 実物見本の写真など、選択の対象でないものは決定ボタンを出さない
+  // 実物見本の写真は選ぶ対象ではないので、前後移動を隠し、原寸で開く導線に差し替える
+  // （スマホ幅では330px程度に収まり、糸の番号が読めないため）
+  if (it.hidePick) {
+    zoomPickBtn.style.display = '';
+    zoomPickBtn.textContent = '🔍 大きな画像で開く';
+    zoomPrevBtn.style.display = 'none';
+    zoomNextBtn.style.display = 'none';
+  } else {
+    zoomPickBtn.style.display = '';
+    zoomPrevBtn.style.display = '';
+    zoomNextBtn.style.display = '';
+    zoomPickBtn.textContent = (state._awaitKey==='leather' || state._awaitKey==='stitch') ? 'この色にする' : 'この色を選びたい';
+    zoomPrevBtn.disabled = (i<=0);
+    zoomNextBtn.disabled = (i>=zoomList.length-1);
+  }
   zoomEl.hidden=false;
 }
-function closeZoom(){ if(zoomEl) zoomEl.hidden=true; }
+function closeZoom(){
+  if(zoomEl) zoomEl.hidden=true;
+  if(zoomListBackup!==null){ zoomList=zoomListBackup; zoomListBackup=null; }   // 実物写真から戻す
+}
 if(zoomEl){
   zoomPickBtn.onclick=()=>{
-    const it=zoomList[zoomIdx]; closeZoom();
+    const it=zoomList[zoomIdx];
+    if(it && it.hidePick){ window.open(it.image,'_blank','noopener'); return; }
+    closeZoom();
     if(it){ it.onClick ? it.onClick() : handleAnswer(it.val, it.label); }
   };
   zoomPrevBtn.onclick=()=>openZoom(zoomIdx-1);
@@ -803,6 +821,23 @@ function detectStitchQuery(text){
   return text.length<=12; // 「ステッチです」「ステッチは？」等
 }
 
+/* メーカーの実物糸見本の写真（2026-09-04 事業主要望）。
+   1色ずつの小さな色見本だけでは艶や質感が伝わらないため、実物の糸が並んだ写真も見せる。
+   出典: 後方部\関連業者\モノタロウ\ビニモMBTカラー.pdf（54色分・#123以降の多くは未収録）。 */
+const STITCH_PHOTO_SRC = '../assets/stitch-sample-photo.jpg';
+let zoomListBackup=null;   // 実物写真を出す間だけ一覧を退避する
+function showStitchPhoto(){
+  if(zoomListBackup===null) zoomListBackup = zoomList;
+  zoomList = [{
+    image: STITCH_PHOTO_SRC,
+    label: 'ビニモMBT 実物の糸見本',
+    sub: '番号は写真の上の目盛りをご覧ください',
+    hidePick: true
+  }];
+  openZoom(0);
+}
+
+
 function showStitchGallery(){
   lastTopic='stitch';
   const backLabel = state._picking ? '◀ アイテム選択に戻る' : '◀ 相談の続きに戻る';
@@ -847,7 +882,8 @@ function showStitchGallery(){
   });
   renderQuick([
     {label:backLabel,sub:'',val:'',onClick:backToFlow},
-    {label:'🎨 革の色を見る',sub:'',val:'',onClick:()=>showLeatherGallery('ask')}
+    {label:'🎨 革の色を見る',sub:'',val:'',onClick:()=>showLeatherGallery('ask')},
+    {label:'📷 実物の糸見本（写真）',sub:'',val:'',onClick:showStitchPhoto}
   ].concat(swatchChips));
 }
 
