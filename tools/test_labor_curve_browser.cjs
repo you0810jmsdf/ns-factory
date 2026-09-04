@@ -130,6 +130,46 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
     await admin.waitForFunction(() => !NSFLaborCurves.draft);
     assert.equal(saved.curves.simplist[0].hours, after);
     assert.equal(await admin.evaluate(() => localStorage.getItem('nsfactory-labor-curves-draft-v1')), null);
+
+    // Regression: curve selection must drive the quote even from an unselected structure/A5 Slim.
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await page.evaluate(() => { sel.brandId = null; sel.brand = null; sel.sizeId = 'a5slim'; sel.size = 'A5スリム'; updateSummary(); });
+    await page.locator('#laborCurveEditor select').selectOption('simplist_kl');
+    assert.equal(await page.evaluate(() => sel.brandId), 'simplist_kl');
+    const a5 = page.locator('#laborCurveEditor circle[data-point="7"]');
+    await a5.scrollIntoViewIfNeeded(); const a5box = await a5.boundingBox();
+    await page.mouse.move(a5box.x + 7, a5box.y + 7); await page.mouse.down();
+    assert.equal(await page.evaluate(() => sel.sizeId), 'a5');
+    const a5Price = await price(page);
+    await page.mouse.move(a5box.x + 7, a5box.y - 20, { steps: 6 }); await page.mouse.up();
+    assert.ok(await price(page) > a5Price, 'moving A5 up must increase the A5 quote');
+    assert.ok((await page.locator('#laborCurveCurrent').innerText()).includes('A5'));
+
+    page.removeAllListeners('dialog'); page.on('dialog', d => d.accept('試験見積 <確認>'));
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: '見積書＋使用カーブを保存', exact: true }).click();
+    const download = await downloadPromise;
+    const archivePath = path.join(os.tmpdir(), 'nsf-quote-archive-test.html');
+    await download.saveAs(archivePath);
+    const archiveHtml = fs.readFileSync(archivePath, 'utf8');
+    const snapshot = JSON.parse(archiveHtml.match(/id="quote-snapshot">([\s\S]*?)<\/script>/)[1]);
+    assert.equal(snapshot.selection.brandId, 'simplist_kl'); assert.equal(snapshot.selection.sizeId, 'a5');
+    assert.equal(snapshot.calculation.total, await price(page));
+    assert.equal(snapshot.curve[7].hours, snapshot.calculation.totalHours);
+    assert.equal(snapshot.coefficients.length, 7);
+    assert.ok(archiveHtml.includes('試験見積 &lt;確認&gt;'));
+    const archivePage = await context.newPage(); await archivePage.setContent(archiveHtml);
+    await archivePage.emulateMedia({ media: 'print' });
+    assert.equal(await archivePage.locator('.internal').isVisible(), false);
+    assert.equal(await archivePage.locator('h1').isVisible(), true);
+    await page.locator('#laborCurveEditor circle[data-point="7"]').press('ArrowUp');
+    assert.equal(JSON.parse(await archivePage.locator('#quote-snapshot').textContent()).curve[7].hours, snapshot.curve[7].hours);
+    await page.evaluate(() => { refreshSidebarColorPreview(); });
+    assert.equal(await page.locator('#sidebarColorPreview').isVisible(), false);
+    assert.equal(await page.locator('#inlineColorPreview').isVisible(), false);
+    assert.equal(await page.locator('#sidebarColorFrame').getAttribute('src'), null);
+    await archivePage.emulateMedia({ media: 'screen' });
+    await archivePage.screenshot({ path: path.join(os.tmpdir(), 'nsf-quote-archive-preview.png'), fullPage: true });
     console.log(JSON.stringify({ beforeHours: before, afterHours: after, beforePrice, afterPrice, desktop: path.join(os.tmpdir(), 'nsf-labor-curve-desktop.png'), mobile: path.join(os.tmpdir(), 'nsf-labor-curve-mobile.png') }));
   } finally {
     if (browser) await browser.close();

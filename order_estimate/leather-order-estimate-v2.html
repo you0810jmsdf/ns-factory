@@ -1131,7 +1131,8 @@ body{
 </div>
 
 <script src="./labor-curve-model.js?v=20260905"></script>
-<script src="./labor-curve-editor.js?v=20260905"></script>
+<script src="./labor-curve-editor.js?v=20260905b"></script>
+<script src="./quote-archive.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
    ▼▼▼  データ設定エリア  ▼▼▼
@@ -2097,43 +2098,13 @@ function syncComponentInlinePreviewViewUI() {
 }
 
 function refreshSidebarColorPreview() {
-  const box = document.getElementById('sidebarColorPreview');
-  const frame = document.getElementById('sidebarColorFrame');
-  const title = document.getElementById('sidebarColorPreviewTitle');
-  const inlineBox = document.getElementById('inlineColorPreview');
-  const inlineFrame = document.getElementById('inlineColorFrame');
-  const inlineTitle = document.getElementById('inlineColorPreviewTitle');
-  const componentBox = document.getElementById('componentInlinePreview');
-  const componentFrame = document.getElementById('componentInlinePreviewFrame');
-  const componentTitle = document.getElementById('componentInlinePreviewTitle');
-  if (!hasAlaskaLeatherSelected()) {
-    if (box) box.style.display = 'none';
-    if (frame) frame.src = 'about:blank';
-    if (inlineBox) inlineBox.style.display = 'none';
-    if (inlineFrame) inlineFrame.src = 'about:blank';
-    if (componentBox) componentBox.style.display = 'none';
-    if (componentFrame) componentFrame.src = 'about:blank';
-    renderSidebarPreviewGallery([]);
-    return;
-  }
-  const active = getActiveColorComponents();
-  const meta = getComponentMeta(activeColorComponentKey);
-  const previewTitle = `${meta.label} のカラーシミュレーション`;
-  if (title) title.textContent = previewTitle;
-  if (inlineTitle) inlineTitle.textContent = previewTitle;
-  if (componentTitle) componentTitle.textContent = previewTitle;
-  const url = new URL(buildSimulatorUrl(activeColorComponentKey));
-  url.searchParams.set('embed', '1');
-  url.searchParams.set('preview', '1');
-  url.searchParams.set('view', componentInlinePreviewView);
-  const nextSrc = url.toString();
-  if (frame && frame.src !== nextSrc) frame.src = nextSrc;
-  if (inlineFrame && inlineFrame.src !== 'about:blank') inlineFrame.src = 'about:blank';
-  if (componentFrame && componentFrame.src !== 'about:blank') componentFrame.src = 'about:blank';
-  if (box) box.style.display = 'block';
-  if (inlineBox) inlineBox.style.display = 'none';
-  if (componentBox) componentBox.style.display = 'none';
-  renderSidebarPreviewGallery(active);
+  // 2026-09-05: 廃止済みのカラーシミュレーターは表示・読込とも停止。
+  ['sidebarColorPreview', 'inlineColorPreview', 'componentInlinePreview'].forEach(id => {
+    const box = document.getElementById(id); if (box) box.style.display = 'none';
+  });
+  ['sidebarColorFrame', 'inlineColorFrame', 'componentInlinePreviewFrame'].forEach(id => {
+    const frame = document.getElementById(id); if (frame) frame.removeAttribute('src');
+  });
 }
 
 function renderComponentColorControls() {
@@ -3414,6 +3385,15 @@ function updateSummary(options = {}) {
   if (!options.preserveComponentEditor) renderComponentColorControls();
   refreshSidebarColorPreview();
   buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier, initDesignFee);
+  if (isAdmin) window._quoteSnapshot = JSON.parse(JSON.stringify({
+    selection: sel, prices,
+    quoteRows: [...document.querySelectorAll('#printDetail tr')].map(tr => [...tr.cells].map(td => td.textContent)),
+    curve: NSFLaborCurves.data?.curves[sel.brandId] || null,
+    curveSource: NSFLaborCurves.draft ? 'draft' : 'published',
+    settings: { laborRate, baseFee: BASE_FEE, wasteRate: WASTE_RATE, numerDsPrice: NUMER_DS_PRICE, areaMultiplier, brandExtraBase, leatherDsP, leatherDsPEff, liningRatio },
+    calculation: { productionArea, totalHours, baseCost, leatherCost, sizeDs, opts, initDesignFee, unit, qty, sub, volRate, volDisc, discRate, manDisc, taxRate, tax, total, platformFeeRate, platformFeeAmt, sellPrice },
+    model: 'monotone-hermite-v1'
+  }));
 }
 
 function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier=1, initDesignFee=0) {
@@ -3820,6 +3800,19 @@ window.addEventListener('DOMContentLoaded', () => {
     host.hidden = false;
     NSFLaborCurves.mount(host, {
       brands: () => BRANDS,
+      archive: () => { updateSummary(); NSFQuoteArchive.save(window._quoteSnapshot); },
+      onSelect: (brandId, point) => {
+        // Reuse card handlers so lining, flap and ring compatibility stay in sync.
+        if (sel.brandId !== brandId) document.querySelector(`#brandGrid [data-id="${brandId}"]`)?.click();
+        if (point) {
+          const brand = BRANDS.find(b => b.id === brandId);
+          const size = SIZES.find(s => s.name === point.label) || SIZES.reduce((best, s) => {
+            const distance = x => Math.abs(x.w * x.h / 10000 * (brand?.areaMulti ?? 1) - point.area);
+            return !best || distance(s) < distance(best) ? s : best;
+          }, null);
+          if (size && sel.sizeId !== size.id) document.querySelector(`#sizeGrid [data-id="${size.id}"]`)?.click();
+        }
+      },
       onChange: () => { updateSummary(); updateSizePrices(); },
       current: () => {
         const b = BRANDS.find(b => b.id === sel.brandId), s = SIZES.find(s => s.id === sel.sizeId);

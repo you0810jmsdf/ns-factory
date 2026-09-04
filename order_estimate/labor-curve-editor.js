@@ -18,6 +18,7 @@
     return n;
   };
   function notify() { if (state.config?.onChange) state.config.onChange(); }
+  function selectQuote(point) { state.config?.onSelect?.(state.brand, point); }
   function storeDraft() {
     state.draft = true;
     try { localStorage.setItem(KEY, JSON.stringify({ base: state.base, data: state.data })); state.error = ''; }
@@ -62,7 +63,7 @@
     const candidate = copy(state.data);
     candidate.curves[state.brand][index].area = area;
     candidate.curves[state.brand][index].hours = hoursValue;
-    try { state.data = M.validate(candidate); storeDraft(); notify(); return true; }
+    try { state.data = M.validate(candidate); storeDraft(); selectQuote(state.data.curves[state.brand][index]); notify(); return true; }
     catch (e) { state.error = e.message; return false; }
   }
   function render() {
@@ -75,6 +76,7 @@
     }
     host.append(el('h2', '面積と作業工数のカーブ'));
     host.append(el('p', '構造ごとの点を上下にドラッグ、または表の数値を編集してください。横軸は製作に使う革の面積（ロス前・1 ds = 100 cm²）、縦軸は合計工数です。'));
+    if (state.config.onSelect) host.append(el('p', '点を操作すると、見積もりもその構造・サイズに切り替わります。A5とA5スリムは別の点です。'));
     const status = el('p', state.error || (state.draft ? '端末下書きで試算中（お客様向けには未反映）' : '公開設定で試算中'), { role: 'status', class: 'lc-status' });
     host.append(status);
     if (!state.data) { host.append(button('曲線を再読込', () => load(true))); return; }
@@ -86,7 +88,7 @@
     if (!state.data.curves[state.brand]) state.brand = select.options[0]?.value;
     select.value = state.brand;
     select.disabled = state.busy;
-    select.onchange = () => { state.brand = select.value; state.selected = 0; render(); };
+    select.onchange = () => { state.brand = select.value; state.selected = 0; selectQuote(); render(); };
     controls.append(el('label', '調整する構造'), select);
     host.append(controls);
     const points = state.data.curves[state.brand];
@@ -132,6 +134,7 @@
       const index = e.target.getAttribute('data-point');
       if (index === null || state.busy) return;
       e.preventDefault(); state.selected = Number(index); state.drag = { index: Number(index), id: e.pointerId };
+      selectQuote(state.data.curves[state.brand][Number(index)]);
       svg.setPointerCapture(e.pointerId);
     };
     svg.onpointermove = e => {
@@ -166,6 +169,7 @@
     const coeff = el('pre', M.segments(points).map(s => `${s.x.toFixed(4)}〜${s.end.toFixed(4)} ds: a=${s.a.toFixed(6)}, b=${s.b.toFixed(6)}, c=${s.c.toFixed(6)}, d=${s.d.toFixed(6)}`).join('\n'));
     coeff.style.overflow = 'auto'; details.append(coeff); host.append(details);
     const actions = el('div', null, { class: 'lc-controls lc-actions' });
+    if (state.config.archive) actions.append(button('見積書＋使用カーブを保存', state.config.archive));
     actions.append(button('設定をダウンロード', () => {
       const url = URL.createObjectURL(new Blob([JSON.stringify(state.data, null, 2) + '\n'], { type: 'application/json' }));
       const a = el('a', null, { href: url, download: 'labor-curves.json' }); a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
