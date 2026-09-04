@@ -205,7 +205,6 @@ body{
 .ring-matrix-card .src-edit:hover{color:#a33a2a}
 .ring-chip.jumpable{cursor:pointer}
 .ring-chip.jumpable:hover{filter:brightness(.93)}
-.stock-card-flash{outline:3px solid #e08a3c;box-shadow:0 0 0 5px rgba(224,138,60,.25);border-radius:12px}
 .src-form{display:flex;flex-direction:column;gap:6px;margin-top:6px;padding:8px;border:1px solid #e8d3a0;border-radius:8px;background:#fffdf7}
 .src-form>div:first-child{font-size:10px;color:#8a6100;line-height:1.5}
 .src-form input{font-size:12px;padding:6px 8px;border:1px solid #d9c7b2;border-radius:8px;width:100%;box-sizing:border-box;background:#fff}
@@ -3555,27 +3554,6 @@ const MATRIX_COLOR_META = {
 const MATRIX_PLANNER_ORDER = ['Micro5', 'Mini6', 'Bible', 'A6', 'A5'];
 const MATRIX_SERIES_ORDER = ['normal', 'klause'];
 const MATRIX_SERIES_LABEL = { normal: '通常リング', klause: 'クラウゼリング（KRAUSE社）' };
-
-function jumpToStockCard(rowIndex) {
-  let el = document.getElementById(`stock-card-${rowIndex}`);
-  if (!el) {
-    // 絞り込みで隠れている場合はフィルタを解除してから探し直す
-    const search = document.getElementById('stockSearchInput');
-    const planner = document.getElementById('stockPlannerFilter');
-    const series = document.getElementById('stockSeriesFilter');
-    const visible = document.getElementById('stockOnlyFilter');
-    if (search) search.value = '';
-    if (planner) planner.value = '';
-    if (series) series.value = '';
-    if (visible) visible.value = '';
-    applyFilters();
-    el = document.getElementById(`stock-card-${rowIndex}`);
-  }
-  if (!el) return;
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  el.classList.add('stock-card-flash');
-  setTimeout(() => el.classList.remove('stock-card-flash'), 2600);
-}
 
 function ringSourceCandidates(row) {
   const cands = [];
