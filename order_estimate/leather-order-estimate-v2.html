@@ -1385,6 +1385,10 @@ const SIZES = [
   { id:'a6',       name:'A6',               sub:'6穴 スタンダードA判',       refill:'105×148mm（じぶん手帳 等）',             w:105, h:148, baseCost:19000, price:19000, emoji:'', image:'' },
   { id:'bible',    name:'バイブル',          sub:'6穴 パーソナルサイズ定番',  refill:'95×171mm（Filofax Personal 等）',        w:95,  h:171, baseCost:20500, price:20500, emoji:'', image:'' },
   { id:'a5',       name:'A5',               sub:'6穴 最も一般的な大判',      refill:'148×210mm（A5ノート対応）',               w:148, h:210, baseCost:33500, price:33500, emoji:'', image:'' },
+  // A5スリム（2026-09-04 追加）: 高さはA5と同じ210mm、横幅だけ110mm。穴位置もA5と同一（ピッチ19/19/70/19/19）
+  // のためA5用6穴金具をそのまま流用でき、リング一覧はA5と共用する（SIZE_TO_PLANNER_TYPE を参照）。
+  // 規格の詳細は kouhou-room/ring-standards.html（リング規格図鑑）。
+  { id:'a5slim',   name:'A5スリム',          sub:'6穴 横幅を絞った大判',      refill:'110×210mm（A5と同じ高さ・幅は38mm細い）', w:110, h:210, baseCost:26500, price:26500, emoji:'', image:'' },
 ];
 
 // ── リング一覧 ──
@@ -2306,6 +2310,10 @@ const SIZE_TO_PLANNER_TYPE = {
   bible: 'Bible',
   a6: 'A6',
   a5: 'A5',
+  // A5スリムはA5と穴位置（ピッチ19/19/70/19/19・スパン146mm）が同一で、A5用6穴金具を
+  // そのまま流用できる。よってリング在庫も planner_type=A5 の行を共用する
+  // （ring-price-stock.csv に A5スリム専用行を作らない。作ると同じ金具を二重管理することになる）。
+  a5slim: 'A5',
 };
 
 const PLANNER_RING_PREFIX = {
