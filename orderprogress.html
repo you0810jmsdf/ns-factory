@@ -307,6 +307,45 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     /* AIチャット連携で構造化選択・購入手段・会話ログ等が入り長文化したため、
        他のテキストエリアより広めの初期高さにする（#f-memoのみ） */
     #f-memo { min-height:220px; font-family:inherit; white-space:pre-wrap; }
+    /* メモ欄: お客様とのやり取りを見分けるためのUI（2026-09-04） */
+    .memo-tools { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; align-items:center; }
+    .memo-tools button {
+      font-size:.74rem; padding:4px 10px; border-radius:99px; cursor:pointer;
+      border:1px solid var(--color-border, #e0d6c6); background:#fff; color:var(--color-text-sub);
+    }
+    .memo-tools button:hover { background:#f5efe6; }
+    .memo-tools button.active { background:var(--color-accent, #a07d3e); color:#fff; border-color:transparent; }
+    .memo-tools .memo-tools-sep { flex:1; }
+    /* 会話ビュー（読み取り専用） */
+    #memo-thread {
+      display:none; flex-direction:column; gap:10px; padding:12px;
+      background:#faf7f2; border:1px solid var(--color-border, #e9e0d0); border-radius:8px;
+      min-height:220px; max-height:60vh; overflow-y:auto;
+    }
+    #memo-thread.show { display:flex; }
+    .memo-row { display:flex; flex-direction:column; max-width:100%; }
+    .memo-row.memo-customer { align-items:flex-start; }
+    .memo-row.memo-me       { align-items:flex-end; }
+    .memo-row.memo-note     { align-items:center; }
+    .memo-who { font-size:.68rem; color:var(--color-text-mute); margin-bottom:3px; }
+    .memo-bubble {
+      max-width:85%; font-size:.82rem; line-height:1.6; white-space:pre-wrap; word-break:break-word;
+      padding:8px 12px; border-radius:12px;
+    }
+    .memo-customer .memo-bubble { background:#fff; border:1px solid #e5e0d8; border-top-left-radius:3px; }
+    .memo-me       .memo-bubble { background:#EDE9FE; border:1px solid #DDD6FE; border-top-right-radius:3px; color:#3b2f5e; }
+    .memo-note     .memo-bubble {
+      background:transparent; border:1px dashed #ddd4c4; color:var(--color-text-sub);
+      max-width:100%; width:100%; font-size:.78rem;
+    }
+    .memo-empty { font-size:.78rem; color:var(--color-text-mute); text-align:center; padding:12px; }
+    /* 全画面拡大 */
+    .field.memo-zoom {
+      position:fixed; inset:0; z-index:6000; margin:0; padding:16px;
+      background:var(--color-bg, #fdfbf7); overflow-y:auto; display:flex; flex-direction:column;
+    }
+    .field.memo-zoom #f-memo { flex:1; min-height:50vh; }
+    .field.memo-zoom #memo-thread { max-height:none; flex:1; }
     /* メモ内のURLをクリックで開くためのボタン列（textarea内の文字は押せないため） */
     .memo-links { display:none; flex-wrap:wrap; gap:6px; margin-top:8px; }
     .memo-links.has-links { display:flex; }
@@ -499,9 +538,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         </div>
       </div>
     </div>
-    <div class="field">
+    <div class="field" id="memo-field">
       <label>メモ（非公開・管理用）</label>
+      <div class="memo-tools">
+        <button type="button" onclick="insertMemoSpeaker('お客様')" title="お客様の発言としてこの日の見出しを足す">👤 お客様</button>
+        <button type="button" onclick="insertMemoSpeaker('私')" title="自分の発言としてこの日の見出しを足す">🏭 私</button>
+        <span class="memo-tools-sep"></span>
+        <button type="button" id="memo-view-btn" onclick="toggleMemoView()">💬 会話で見る</button>
+        <button type="button" id="memo-zoom-btn" onclick="toggleMemoZoom()">⛶ 拡大</button>
+      </div>
       <textarea id="f-memo" placeholder="顧客への連絡事項、メモ等（表示されません）"></textarea>
+      <!-- 会話ビュー（読み取り専用）。編集は textarea 側で行う -->
+      <div id="memo-thread"></div>
       <!-- textarea の中の文字はクリックできないため、検出したURLを下にボタンとして出す -->
       <div id="memo-links" class="memo-links"></div>
     </div>
@@ -1309,7 +1357,126 @@ async function openModal(id) {
     addTlRow(new Date().toISOString().slice(0,10), 'ご注文ありがとうございます。受け付けいたしました。');
   }
   renderMemoLinks();
+  setMemoView('edit');
+  const memoField = document.getElementById('memo-field');
+  if (memoField) memoField.classList.remove('memo-zoom');
+  const zoomBtn = document.getElementById('memo-zoom-btn');
+  if (zoomBtn) { zoomBtn.classList.remove('active'); zoomBtn.textContent = '⛶ 拡大'; }
   document.getElementById('modal-bg').classList.add('open');
+}
+
+// ── メモ欄: お客様と自分のやり取りを見分ける（2026-09-04 事業主要望）──
+// 保存形式は今までどおり「ただのテキスト」。行頭が「日付 話者」または「話者:」の行を
+// 発言の始まりとみなす。書式に合わない行は直前の発言の続き、発言が始まる前の行は
+// 話者なしの「メモ」として中央に出す。書式を守らなくても表示が壊れない設計。
+// ⛔ 話者を推測で決めないこと。既存メモ118件中108件は話者の手がかりを持たない（2026-09-04実測）。
+//    推測で色分けすると、お客様の発言を自分の発言として記録に残すことになる。
+const MEMO_SPEAKERS = {
+  'お客様':'customer', 'お客さま':'customer', '先方':'customer',
+  '私':'me', '当方':'me', 'こちら':'me'
+};
+// 例:「2026-09-04 お客様」「お客様:」「2026/9/4 私 了解しました」
+// 話者の直後は「コロン」「空白」「行末」のいずれかを必須にする。
+// ⛔ ここを [:：]? だけの任意にしないこと。「私見ですが」の『私』を話者と誤判定する（2026-09-04実測）。
+const MEMO_SPEAKER_RE = /^[ 　]*(?:(\d{4}[-\/.]\d{1,2}[-\/.]\d{1,2})[ 　]+)?(お客様|お客さま|先方|私|当方|こちら)(?:[ 　]*[:：][ 　]*|[ 　]+|[ 　]*$)(.*)$/;
+
+function parseMemoThread(text) {
+  const blocks = [];
+  let cur = null;
+  String(text || '').split('\n').forEach(function (line) {
+    const m = line.match(MEMO_SPEAKER_RE);
+    if (m && MEMO_SPEAKERS[m[2]]) {
+      cur = { who: MEMO_SPEAKERS[m[2]], label: m[2], date: m[1] || '', lines: [] };
+      if (m[3].trim()) cur.lines.push(m[3]);
+      blocks.push(cur);
+      return;
+    }
+    if (!cur) {
+      cur = { who: 'note', label: '', date: '', lines: [] };
+      blocks.push(cur);
+    }
+    cur.lines.push(line);
+  });
+  return blocks.filter(function (b) { return b.lines.join('\n').trim() !== ''; });
+}
+
+function renderMemoThread() {
+  const wrap = document.getElementById('memo-thread');
+  const ta   = document.getElementById('f-memo');
+  if (!wrap || !ta) return;
+  wrap.textContent = '';
+  const blocks = parseMemoThread(ta.value);
+  if (!blocks.length) {
+    const e = document.createElement('div');
+    e.className = 'memo-empty';
+    e.textContent = 'メモはまだありません。「👤 お客様」「🏭 私」を押すと、その日の見出しが入ります。';
+    wrap.appendChild(e);
+    return;
+  }
+  blocks.forEach(function (b) {
+    const row = document.createElement('div');
+    row.className = 'memo-row memo-' + b.who;
+    if (b.who !== 'note') {
+      const head = document.createElement('div');
+      head.className = 'memo-who';
+      head.textContent = (b.date ? b.date + '　' : '')
+        + (b.who === 'customer' ? '👤 ' : '🏭 ') + b.label;
+      row.appendChild(head);
+    }
+    const body = document.createElement('div');
+    body.className = 'memo-bubble';
+    // ⛔ innerHTML を使わないこと。メモにはお客様の文面がそのまま入る
+    body.textContent = b.lines.join('\n').replace(/\s+$/, '');
+    row.appendChild(body);
+    wrap.appendChild(row);
+  });
+}
+
+// 末尾に「日付 話者」の見出し行を足す。直前との間に空行を1つ入れて発言の区切りを作る
+function insertMemoSpeaker(label) {
+  const ta = document.getElementById('f-memo');
+  if (!ta) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const cur = ta.value;
+  let sep = '';
+  if (cur.trim()) {
+    if (/\n[ 　]*\n$/.test(cur)) sep = '';
+    else if (/\n$/.test(cur))    sep = '\n';
+    else                         sep = '\n\n';
+  }
+  ta.value = cur + sep + today + ' ' + label + '\n';
+  setMemoView('edit');   // 見出しを足した直後にそのまま書けるよう編集へ戻す
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = ta.value.length;
+  ta.scrollTop = ta.scrollHeight;
+  ta.dispatchEvent(new Event('input'));
+}
+
+function setMemoView(mode) {
+  const ta   = document.getElementById('f-memo');
+  const wrap = document.getElementById('memo-thread');
+  const btn  = document.getElementById('memo-view-btn');
+  if (!ta || !wrap || !btn) return;
+  const thread = (mode === 'thread');
+  ta.style.display = thread ? 'none' : '';
+  wrap.classList.toggle('show', thread);
+  btn.classList.toggle('active', thread);
+  btn.textContent = thread ? '✏️ 編集する' : '💬 会話で見る';
+  if (thread) renderMemoThread();
+}
+function toggleMemoView() {
+  const wrap = document.getElementById('memo-thread');
+  setMemoView(wrap && wrap.classList.contains('show') ? 'edit' : 'thread');
+}
+
+function toggleMemoZoom() {
+  const field = document.getElementById('memo-field');
+  const btn   = document.getElementById('memo-zoom-btn');
+  if (!field || !btn) return;
+  const zoom = !field.classList.contains('memo-zoom');
+  field.classList.toggle('memo-zoom', zoom);
+  btn.classList.toggle('active', zoom);
+  btn.textContent = zoom ? '⛶ 閉じる' : '⛶ 拡大';
 }
 
 // ── メモ内のリンクをクリックで開けるようにする（2026-08-31 事業主要望）──
