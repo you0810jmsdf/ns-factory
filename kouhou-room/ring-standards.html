@@ -702,6 +702,7 @@ function figureSvg(f, opt) {
       s += '<line x1="' + (W * 0.24 - fs * 0.28) + '" y1="' + (y + f.pitch[i]) + '" x2="' + (W * 0.24 + fs * 0.28) + '" y2="' + (y + f.pitch[i]) + '" stroke="rgba(0,0,0,.22)" stroke-width="' + (W / 300) + '"/>';
     }
   }
+  s += '<text x="' + (W / 2) + '" y="' + (H + padB * 0.6) + '" text-anchor="middle" font-size="' + (fs * 0.72) + '" fill="#B0AEA9">縦位置は上下中央の理論値／穴の左右位置・穴径は目安</text>';
   s += '</svg>';
   return s;
 }
