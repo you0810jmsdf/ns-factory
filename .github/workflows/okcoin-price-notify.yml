@@ -1,9 +1,12 @@
 name: OKJ BTC/JPY 価格通知
 
 on:
-  schedule:
-    # 5 分ごとに実行（GitHub Actions の cron は最短 5 分間隔）
-    - cron: "*/5 * * * *"
+  # 2026-09-04 定時実行を停止。
+  # 同じ通知が okj-btc-notify リポジトリでも定義されており二重だったため、
+  # 定時実行は okj-btc-notify 側に一本化した（あちらは 15 分間隔）。
+  # ここは手動実行（workflow_dispatch）専用として残す。
+  # schedule:
+  #   - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       reset_state:
