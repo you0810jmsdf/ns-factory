@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>システム手帳 リング規格図鑑 | 後方幕僚室 | N's factory</title>
+<meta name="description" content="Micro5・Mini6・A6・バイブル・A5・A4、そしてFranklin Planner独自規格まで。システム手帳のリング（穴）規格を、穴位置の作図・実寸ものさし・互換グループで整理した図鑑です。N's factory 後方幕僚室。">
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --tan: #A0785A; --tan-light: #C4956A; --charcoal: #1D1D1F;
+  --gray: #6E6E73; --bg: #F5F5F7; --white: #FFFFFF;
+  --line: #E8E8ED; --soft: #F5F5F7;
+  --accent: #A0785A; --accent-soft: #F2E8DD; --accent-dark: #6E4F3A;
+  --ink: #2B3440;
+  --radius: 14px;
+  --shadow: 0 8px 32px rgba(0,0,0,.10);
+  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
+}
+body { background: var(--bg); color: var(--charcoal); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ---------- nav ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 40; height: 56px;
+  display: flex; align-items: center; gap: 12px; padding: 0 20px;
+  background: rgba(255,255,255,.88); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-title { font-size: 14px; font-weight: 800; letter-spacing: .04em; }
+.nav-spacer { flex: 1; }
+.nav-link { font-size: 13px; color: var(--gray); padding: 6px 10px; border-radius: 8px; white-space: nowrap; }
+.nav-link:hover { background: var(--soft); color: var(--charcoal); }
+
+/* ---------- hero ---------- */
+.hero { position: relative; color: #fff; overflow: hidden; background: #14110E; }
+.hero-photo {
+  position: absolute; inset: 0;
+  background-image: url('../assets/workshop/patchwork-planner.jpg');
+  background-size: cover; background-position: center 42%;
+  opacity: .5; transform: scale(1.04);
+}
+.hero-veil { position: absolute; inset: 0; background: linear-gradient(105deg, rgba(12,10,8,.94) 0%, rgba(12,10,8,.74) 46%, rgba(12,10,8,.36) 100%); }
+.hero-inner { position: relative; max-width: 1080px; margin: 0 auto; padding: 72px 24px 64px; }
+.hero-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .18em; color: var(--tan-light); margin-bottom: 14px; }
+.hero h1 { font-size: clamp(28px, 5.2vw, 46px); line-height: 1.22; letter-spacing: -.02em; margin-bottom: 16px; }
+.hero h1 small { display: block; font-size: clamp(13px, 2vw, 16px); font-weight: 600; color: rgba(255,255,255,.68); letter-spacing: .04em; margin-top: 10px; }
+.hero p { max-width: 640px; font-size: 14.5px; line-height: 1.85; color: rgba(255,255,255,.76); }
+.hero-stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.hero-stat { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 10px 16px; backdrop-filter: blur(6px); }
+.hero-stat b { display: block; font-size: 22px; letter-spacing: -.02em; color: #fff; }
+.hero-stat span { font-size: 11px; color: rgba(255,255,255,.6); letter-spacing: .06em; }
+.hero-updated { margin-top: 20px; font-size: 11.5px; color: rgba(255,255,255,.5); }
+
+/* ---------- layout ---------- */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 56px 0 8px; }
+.sec-head { margin-bottom: 22px; }
+.sec-eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: .16em; color: var(--accent-dark); margin-bottom: 8px; }
+.sec-head h2 { font-size: clamp(20px, 3vw, 26px); letter-spacing: -.02em; margin-bottom: 8px; }
+.sec-head p { color: var(--gray); font-size: 13.5px; line-height: 1.85; max-width: 720px; }
+
+.callout {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: #FFF8EE; border: 1px solid #F0DFC5; border-left: 4px solid var(--tan);
+  border-radius: 12px; padding: 16px 18px; margin-top: 24px;
+}
+.callout-ico { font-size: 20px; line-height: 1.2; }
+.callout b { display: block; font-size: 13.5px; margin-bottom: 5px; }
+.callout p { font-size: 13px; color: #6B5B49; line-height: 1.8; }
+
+/* ---------- 重ね比較 ---------- */
+.overlay-box { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; background: var(--white); border-radius: var(--radius); padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+@media (max-width: 780px) { .overlay-box { grid-template-columns: 1fr; } }
+.overlay-stage { background: linear-gradient(180deg,#FCFBF9,#F4F1EC); border-radius: 12px; padding: 10px; }
+.overlay-stage svg { width: 100%; height: auto; display: block; }
+.ov-paper { fill: rgba(255,255,255,.55); stroke-width: .9; transition: fill .18s ease, stroke-width .18s ease; cursor: pointer; }
+.ov-paper.dim { opacity: .22; }
+.ov-paper.on { fill: rgba(255,255,255,.96); stroke-width: 2.2; }
+.ov-label { font-size: 5px; font-weight: 700; pointer-events: none; }
+.chip-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--white); border-radius: 9999px;
+  padding: 6px 13px 6px 9px; font-size: 12.5px; font-weight: 700; color: var(--charcoal);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.chip:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,.09); }
+.chip.on { border-color: currentColor; }
+.chip i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.chip small { color: var(--gray); font-weight: 600; font-size: 11px; }
+.ov-readout { margin-top: 16px; border-top: 1px dashed var(--line); padding-top: 14px; min-height: 92px; }
+.ov-readout h4 { font-size: 15px; margin-bottom: 6px; }
+.ov-readout p { font-size: 12.5px; color: var(--gray); line-height: 1.8; }
+.ov-readout .ov-num { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--charcoal); }
+
+/* ---------- 実寸ものさし ---------- */
+.ruler-box { background: var(--white); border-radius: var(--radius); padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.ruler-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.card-sample {
+  height: 54px; border-radius: 7px; flex-shrink: 0;
+  background: linear-gradient(135deg,#3A4A5C,#22303F); color: rgba(255,255,255,.62);
+  display: flex; align-items: flex-end; justify-content: flex-end; padding: 6px 9px;
+  font-size: 10px; letter-spacing: .06em; box-shadow: 0 3px 10px rgba(0,0,0,.18);
+}
+.ruler-ctrl { flex: 1; min-width: 240px; }
+.ruler-ctrl label { display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 8px; }
+.ruler-ctrl input[type=range] { width: 100%; accent-color: var(--tan); }
+.ruler-note { font-size: 12px; color: var(--gray); margin-top: 8px; line-height: 1.75; }
+.toggle {
+  display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none;
+  background: var(--charcoal); color: #fff; border: 0; border-radius: 9999px;
+  padding: 11px 19px; font-size: 13.5px; font-weight: 700; font-family: inherit;
+  transition: background .18s ease, transform .15s ease;
+}
+.toggle:hover { transform: translateY(-1px); }
+.toggle.on { background: var(--tan); }
+.toggle i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.45); }
+.toggle.on i { background: #9CE49C; box-shadow: 0 0 0 3px rgba(156,228,156,.28); }
+
+/* ---------- フィルタ ---------- */
+.filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.filter-btn {
+  padding: 8px 14px; border: 1px solid rgba(160,120,90,.24); border-radius: 9px;
+  background: var(--white); color: var(--charcoal); font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.filter-btn:hover { border-color: rgba(160,120,90,.5); }
+.filter-btn.active { background: rgba(160,120,90,.14); border-color: rgba(160,120,90,.55); color: var(--accent-dark); }
+
+/* ---------- 規格カード ---------- */
+.fmt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px; }
+.fmt-card {
+  background: var(--white); border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07); border-top: 3px solid var(--c);
+  display: flex; flex-direction: column;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.fmt-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.fmt-head { padding: 16px 18px 12px; }
+.fmt-badge { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--c); background: color-mix(in srgb, var(--c) 12%, #fff); border-radius: 6px; padding: 3px 8px; margin-bottom: 9px; }
+.fmt-name { font-size: 18px; font-weight: 800; letter-spacing: -.01em; }
+.fmt-alias { font-size: 11.5px; color: var(--gray); margin-top: 3px; }
+.fmt-lead { font-size: 12.5px; color: #55534F; line-height: 1.8; margin-top: 10px; }
+.fmt-figure { padding: 4px 14px 8px; background: linear-gradient(180deg,#FDFCFA,#F6F3EE); }
+.fmt-figure svg { width: 100%; height: auto; max-height: 340px; display: block; margin: 0 auto; }
+.fmt-figure.realsize { overflow-x: auto; text-align: center; }
+.fmt-figure.realsize svg { max-height: none; margin: 0 auto; }
+.fmt-spec { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.spec-cell { background: var(--white); padding: 10px 14px; }
+.spec-cell.wide { grid-column: 1 / -1; }
+.spec-k { font-size: 10.5px; color: var(--gray); letter-spacing: .06em; }
+.spec-v { font-size: 14.5px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.01em; margin-top: 2px; }
+.spec-v small { font-size: 11px; font-weight: 600; color: var(--gray); }
+.fmt-notes { padding: 12px 18px 14px; }
+.fmt-notes li { list-style: none; font-size: 12px; color: #5C5A56; line-height: 1.75; padding-left: 15px; position: relative; margin-bottom: 5px; }
+.fmt-notes li::before { content: "・"; position: absolute; left: 0; color: var(--c); font-weight: 800; }
+.fmt-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--line); }
+.fmt-photos a { position: relative; aspect-ratio: 1; overflow: hidden; background: #EDE9E3; }
+.fmt-photos img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+.fmt-photos a:hover img { transform: scale(1.07); }
+.fmt-photos-cap { grid-column: 1 / -1; background: var(--white); padding: 9px 18px 3px; font-size: 11px; color: var(--gray); }
+
+/* 穴が打たれるアニメーション */
+.hole-dot { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.fmt-card.seen .hole-dot, .overlay-box .hole-dot { animation: pop .42s cubic-bezier(.34,1.56,.64,1) forwards; }
+@keyframes pop { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: scale(1); } }
+
+/* ---------- 互換チャート ---------- */
+.compat { background: var(--white); border-radius: var(--radius); padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.compat-group { margin-bottom: 22px; }
+.compat-group:last-child { margin-bottom: 0; }
+.compat-gh { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; flex-wrap: wrap; }
+.compat-gh i { width: 11px; height: 11px; border-radius: 3px; }
+.compat-gh b { font-size: 14px; }
+.compat-gh span { font-size: 11.5px; color: var(--gray); font-variant-numeric: tabular-nums; }
+.compat-members { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+.compat-member { font-size: 12px; font-weight: 700; border-radius: 7px; padding: 4px 10px; background: var(--soft); }
+.pitch-bar { display: flex; align-items: center; gap: 2px; }
+.pitch-seg { height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; min-width: 0; overflow: hidden; }
+.pitch-dot { width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--charcoal); background: var(--white); flex-shrink: 0; }
+.compat-note { font-size: 12px; color: var(--gray); margin-top: 8px; line-height: 1.75; }
+
+/* ---------- リング径 ---------- */
+.rings-stage { background: var(--white); border-radius: var(--radius); padding: 24px 22px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.ring-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; justify-content: center; }
+.ring-item { text-align: center; }
+.ring-circle {
+  border: 3px solid var(--tan); border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.9), rgba(196,149,106,.16));
+  transition: transform .18s ease, border-color .18s ease;
+}
+.ring-item:hover .ring-circle { transform: scale(1.06); border-color: var(--accent-dark); }
+.ring-cap { font-size: 11.5px; font-weight: 800; margin-top: 7px; font-variant-numeric: tabular-nums; }
+.ring-use { font-size: 10px; color: var(--gray); margin-top: 1px; line-height: 1.5; }
+.ring-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+.ring-photo { background: var(--white); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.ring-photo img { aspect-ratio: 4/3; object-fit: contain; background: #fff; padding: 6px; }
+.ring-photo figcaption { padding: 9px 11px 11px; border-top: 1px solid var(--line); }
+.ring-photo b { display: block; font-size: 12.5px; }
+.ring-photo span { font-size: 11px; color: var(--gray); }
+
+/* ---------- 表 ---------- */
+.table-scroll { overflow-x: auto; background: var(--white); border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+table.data { width: 100%; border-collapse: collapse; min-width: 640px; }
+table.data th, table.data td { padding: 11px 14px; text-align: left; font-size: 12.5px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.data th { background: #FAF8F5; font-size: 11px; letter-spacing: .06em; color: var(--accent-dark); font-weight: 800; position: sticky; top: 0; }
+table.data td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+table.data tr:last-child td { border-bottom: 0; }
+table.data tbody tr:hover { background: #FDFAF6; }
+.tag-dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 7px; vertical-align: -1px; }
+
+/* ---------- CAD ---------- */
+.code-box { position: relative; background: #1B1F24; border-radius: var(--radius); overflow: hidden; }
+.code-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.code-head b { color: #E9E4DC; font-size: 12.5px; letter-spacing: .04em; }
+.code-head .sp { flex: 1; }
+.copy-btn { background: rgba(255,255,255,.1); color: #fff; border: 0; border-radius: 8px; padding: 7px 13px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.copy-btn:hover { background: rgba(255,255,255,.2); }
+.code-box pre { margin: 0; padding: 16px; overflow-x: auto; max-height: 420px; }
+.code-box code { color: #CBD5C0; font-size: 11.5px; line-height: 1.65; font-family: 'SF Mono', Consolas, monospace; white-space: pre; }
+
+/* ---------- 注意・参考 ---------- */
+.caution-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.caution-card { background: var(--white); border-radius: 12px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.07); border-left: 3px solid var(--tan); }
+.caution-card b { display: block; font-size: 14px; margin-bottom: 7px; }
+.caution-card p { font-size: 12.5px; color: var(--gray); line-height: 1.8; }
+.ref-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.ref-card { display: flex; gap: 11px; align-items: flex-start; background: var(--white); border-radius: 11px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.ref-card:hover { box-shadow: var(--shadow); }
+.ref-card span { font-size: 17px; }
+.ref-card b { display: block; font-size: 13px; margin-bottom: 3px; }
+.ref-card small { font-size: 11px; color: var(--gray); word-break: break-all; }
+
+footer.ft { margin-top: 64px; padding: 34px 24px 46px; background: var(--charcoal); color: rgba(255,255,255,.62); }
+footer.ft .wrap { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+footer.ft b { color: #fff; font-size: 13px; }
+footer.ft p { font-size: 11.5px; line-height: 1.8; }
+footer.ft a { color: var(--tan-light); }
+
+@media (max-width: 560px) {
+  .hero-inner { padding: 54px 20px 46px; }
+  .wrap { padding: 0 18px; }
+  .fmt-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">リング規格図鑑</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="./">後方幕僚室</a>
+  <a class="nav-link" href="../">TOPへ戻る</a>
+</header>
+
+<section class="hero">
+  <div class="hero-photo"></div>
+  <div class="hero-veil"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">RING &amp; HOLE STANDARDS</div>
+    <h1>システム手帳 リング規格図鑑
+      <small>穴の位置が合うかどうか。それだけが、リフィルの互換を決めています。</small>
+    </h1>
+    <p>
+      「M6」「A6」「バイブル」──呼び名は同じでも、メーカーが違えば紙の寸法も穴の間隔も変わります。
+      このページでは、N's factory が製作・CAD設計・在庫管理で実際に使う主要規格を、
+      <b style="color:#fff">穴の位置がひと目で分かる作図</b>と、画面上で原寸を確かめられる<b style="color:#fff">実寸ものさし</b>で整理しました。
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat"><b id="statFormats">12</b><span>収録している規格</span></div>
+      <div class="hero-stat"><b id="statGroups">8</b><span>穴ピッチのグループ</span></div>
+      <div class="hero-stat"><b>12</b><span>リング内径のバリエーション</span></div>
+    </div>
+    <div class="hero-updated">最終確認日: 2026-09-04 ／ 後方幕僚室（N's factory 後方部）</div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <div class="callout" style="margin-top:34px">
+    <div class="callout-ico">⚠️</div>
+    <div>
+      <b>はじめに ── リング規格は、世界共通で完全統一されてはいません</b>
+      <p>
+        同じ呼称でも、メーカーによって用紙寸法・穴間隔・リング径が異なる場合があります。
+        またリング径（内径）は手帳サイズそのものの規格ではなく、金具メーカーや製品ごとに複数種類があります。
+        そのためこのページでは <b>「穴数・穴中心間隔・リフィル寸法」を主規格</b>として扱い、リング径は別項目にまとめています。
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ 大きさ比較 ============ -->
+  <section class="section" id="compare">
+    <div class="sec-head">
+      <div class="sec-eyebrow">SIZE OVERLAY</div>
+      <h2>まず、大きさを重ねて見る</h2>
+      <p>全規格のリフィルを同じ縮尺で左下に揃えて重ねた図です。名前のボタン（またはシルエット）に触れると、その規格だけが浮かび上がります。</p>
+    </div>
+    <div class="overlay-box">
+      <div class="overlay-stage"><div id="overlaySvg"></div></div>
+      <div>
+        <div class="chip-list" id="overlayChips"></div>
+        <div class="ov-readout" id="overlayReadout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 実寸ものさし ============ -->
+  <section class="section" id="realsize">
+    <div class="sec-head">
+      <div class="sec-eyebrow">TRUE SCALE</div>
+      <h2>画面を「原寸」に合わせる</h2>
+      <p>手元のカード（クレジットカード・運転免許証／幅85.60mm）を画面に当てて、青い長方形の幅がぴったり重なるまでスライダーを動かしてください。合わせたあと原寸モードを入れると、下の作図とリング径が実物大で表示されます。設定はこの端末に保存されます。</p>
+    </div>
+    <div class="ruler-box">
+      <div class="ruler-row">
+        <div class="card-sample" id="cardSample">85.60 mm</div>
+        <div class="ruler-ctrl">
+          <label for="calib">カードの幅に合わせる（現在 <span id="calibVal">--</span> px / mm）</label>
+          <input type="range" id="calib" min="2.2" max="7.5" step="0.01">
+          <div class="ruler-note">スマートフォンでも同じ手順で合わせられます。ブラウザの拡大率を変えたら合わせ直してください。</div>
+        </div>
+      </div>
+      <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="toggle" id="realBtn"><i></i>原寸モード：オフ</button>
+        <span style="font-size:12px;color:var(--gray)">オンにすると各規格の作図とリング径が実物大になります（大きい規格は横スクロールします）。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 規格カード ============ -->
+  <section class="section" id="formats">
+    <div class="sec-head">
+      <div class="sec-eyebrow">FORMAT CATALOG</div>
+      <h2>規格ごとの作図と数値</h2>
+      <p>紙の外形、穴の位置、穴中心間隔（ピッチ）を作図しました。穴の縦位置は「穴列全体を紙の上下中央に置いた理論値」で描いています。写真は N's factory の製作実績から、その規格の作品を自動で表示しています。</p>
+    </div>
+    <div class="filter" id="fmtFilter"></div>
+    <div class="fmt-grid" id="fmtGrid"></div>
+    <div class="callout" style="margin-top:22px">
+      <div class="callout-ico">📐</div>
+      <div>
+        <b>作図についての但し書き</b>
+        <p>
+          穴の「紙の左端からの距離」と「穴の直径」は、メーカー・製品ごとに差があり本資料の対象外です。作図では見やすさのための目安値で描いています。
+          型紙・パンチ位置を決めるときは、必ず実物のリフィルかメーカー図面で確認してください。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 互換グループ ============ -->
+  <section class="section" id="compat">
+    <div class="sec-head">
+      <div class="sec-eyebrow">COMPATIBILITY</div>
+      <h2>穴ピッチで見る互換グループ</h2>
+      <p>リフィルが差し替えられるかどうかは、紙の大きさではなく<b>穴中心間隔が一致するか</b>で決まります。同じ帯のかたちなら、穴位置は互換します（紙幅は別）。</p>
+    </div>
+    <div class="compat" id="compatBox"></div>
+  </section>
+
+  <!-- ============ 一覧表 ============ -->
+  <section class="section" id="table">
+    <div class="sec-head">
+      <div class="sec-eyebrow">QUICK REFERENCE</div>
+      <h2>主要規格 早見表</h2>
+      <p>作業台の横で数値だけ確認したいとき用の一覧です。</p>
+    </div>
+    <div class="table-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>呼称</th><th>代表的リフィル寸法</th><th>穴数</th><th>穴中心間隔 (mm)</th><th>1番〜最終穴</th><th>備考</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ リング径 ============ -->
+  <section class="section" id="rings">
+    <div class="sec-head">
+      <div class="sec-eyebrow">RING DIAMETER</div>
+      <h2>リング内径 ── 規格とは別に選ぶもの</h2>
+      <p>リング内径は、リフィル規格とは独立して選択します。「16mmだからA5専用」「20mmだからバイブル専用」という関係ではありません。原寸モードをオンにすると実物大の円になります。</p>
+    </div>
+    <div class="rings-stage">
+      <div class="ring-row" id="ringRow"></div>
+      <div class="ruler-note" style="margin-top:18px;text-align:center">
+        ※ すべてのサイズ・メーカーに全リング径が存在するわけではありません。上の「使用例」は確認できた製品例です。
+      </div>
+    </div>
+
+    <div class="sec-head" style="margin-top:34px;margin-bottom:14px">
+      <h2 style="font-size:18px">金具の実物 ── A6用リング（在庫品より）</h2>
+      <p>同じ穴規格でも、内径と仕上げ（メッキ）でこれだけ表情が変わります。</p>
+    </div>
+    <div class="ring-photos" id="ringPhotos"></div>
+  </section>
+
+  <!-- ============ Mulberry ============ -->
+  <section class="section" id="mulberry">
+    <div class="sec-head">
+      <div class="sec-eyebrow">LEGACY</div>
+      <h2>Mulberry系の代表的な旧規格</h2>
+      <p>Filofax に似ていて、互換しない旧規格です。3穴内のピッチが12mmと狭く、見た目のサイズが近くても差し替えられません。</p>
+    </div>
+    <div class="table-scroll">
+      <table class="data">
+        <thead><tr><th>Mulberry呼称</th><th>リフィル寸法</th><th>3穴内ピッチ</th><th>中央ピッチ</th></tr></thead>
+        <tbody>
+          <tr><td>Pocket</td><td class="num">約76 × 120 mm</td><td class="num">12 mm</td><td class="num">13 mm</td></tr>
+          <tr><td>Agenda</td><td class="num">約105 × 149 mm</td><td class="num">12 mm</td><td class="num">32 mm</td></tr>
+          <tr><td>Planner / A5相当</td><td class="num">約147 × 209 mm</td><td class="num">12 mm</td><td class="num">45 mm</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ CAD ============ -->
+  <section class="section" id="cad">
+    <div class="sec-head">
+      <div class="sec-eyebrow">FOR CAD</div>
+      <h2>CAD用データ（YAML）</h2>
+      <p>型紙設計にそのまま持ち込める形式です。コピーして後方部の CAD データ側で使ってください。</p>
+    </div>
+    <div class="code-box">
+      <div class="code-head">
+        <b>ring_formats.yaml</b><span class="sp"></span>
+        <button class="copy-btn" id="copyYaml">コピー</button>
+      </div>
+      <pre><code id="yamlCode"></code></pre>
+    </div>
+  </section>
+
+  <!-- ============ 注意 ============ -->
+  <section class="section" id="caution">
+    <div class="sec-head">
+      <div class="sec-eyebrow">PRACTICE</div>
+      <h2>製作上の注意 ── 情報の限界</h2>
+    </div>
+    <div class="caution-grid">
+      <div class="caution-card"><b>呼称だけで互換を判断しない</b><p>A6・Pocket・Personal などは、ブランドによって指すものが異なります。</p></div>
+      <div class="caution-card"><b>穴中心間隔を最優先する</b><p>リフィル寸法が同じでも、穴位置が違えば互換しません。</p></div>
+      <div class="caution-card"><b>リング径と穴規格は別</b><p>16mmリングだからA5専用、20mmだからバイブル専用、という関係ではありません。</p></div>
+      <div class="caution-card"><b>金具の取付穴位置は別資料</b><p>革へ取り付けるカシメ・ネジ穴の位置は金具型番ごとに異なります。CAD型紙製作時はメーカー図面か実物採寸が必要です。</p></div>
+      <div class="caution-card"><b>「全て」には限界がある</b><p>廃番・ヴィンテージ・地域限定・ノーブランド独自規格まで完全に列挙することはできません。ここに載せたのは、商品開発で実用性が高い主要規格と、確認できた代表的独自規格です。</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 参考 ============ -->
+  <section class="section" id="refs" style="padding-bottom:20px">
+    <div class="sec-head">
+      <div class="sec-eyebrow">SOURCES</div>
+      <h2>参考資料</h2>
+      <p>数値の出典です（外部サイト・PDFを含みます）。</p>
+    </div>
+    <div class="ref-list" id="refList"></div>
+  </section>
+
+</div>
+
+<footer class="ft">
+  <div class="wrap">
+    <div style="flex:1;min-width:260px">
+      <b>N's factory ／ 後方幕僚室</b>
+      <p>仕入・CAD・型紙・自動化を担当する部署の資料棚です。数値は制作の実務で使うために整理したもので、各メーカーの公式仕様に代わるものではありません。</p>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <a href="./">後方幕僚室トップ</a>
+      <a href="./textbook.html">工程と道具の教科書</a>
+      <a href="../">サイトトップ</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   規格データ（出典: 後方部 リング規格一覧 2026-09-04）
+   pitch = 穴中心間隔の配列（mm）／ span = 1番穴〜最終穴の中心距離
+   ============================================================ */
+var GROUPS = {
+  e19:   { c: '#1565C0', label: '19mm 等間隔', pitch: '19 / 19 / …', desc: '穴がすべて19mm間隔で並ぶ最も素直な並び。穴数だけが違います。' },
+  a6g:   { c: '#2E7D32', label: '19-19-38-19-19', pitch: '19 / 19 / 38 / 19 / 19', desc: '中央だけが38mm開く6穴。Filofaxの標準ラインにはない並びです。' },
+  bible: { c: '#A0785A', label: '19-19-50.8-19-19', pitch: '19.05 / 19.05 / 50.8 / 19.05 / 19.05', desc: 'インチ起源（3/4インチと2インチ）の並び。日本のバイブルサイズもここに入ります。' },
+  a5g:   { c: '#6A1B9A', label: '19-19-70-19-19', pitch: '19 / 19 / 70 / 19 / 19', desc: 'A5系。中央が70mmと大きく開きます。' },
+  a4g:   { c: '#E65100', label: '80-80-80', pitch: '80 / 80 / 80', desc: 'ISO系4穴ファイルで一般的な等間隔。' },
+  fp:    { c: '#00838F', label: '19-19-38.1-19-19（Franklin）', pitch: '19.05 / 19.05 / 38.10 / 19.05 / 19.05', desc: 'Franklin Pocket 独自。公式に「一般的なナローサイズ6穴とは互換性がない」と明記されています。' },
+  fc:    { c: '#C62828', label: '25.4-25.4-19-19-25.4-25.4', pitch: '25.4 / 25.4 / 19.05 / 19.05 / 25.4 / 25.4', desc: 'Franklin Classic 独自の7穴。A5 6穴とは互換しません。' },
+  fm:    { c: '#AD1457', label: '25.4-25.4-57.2-57.2-25.4-25.4', pitch: '25.4 / 25.4 / 57.15 / 57.15 / 25.4 / 25.4', desc: 'Franklin Monarch 独自の7穴。' },
+  unk:   { c: '#6E6E73', label: 'ピッチ未確定', pitch: 'メーカー依存', desc: '流通量が少なく、具体的なピッチはメーカー・年代で確認が必要です。' }
+};
+
+var FORMATS = [
+  {
+    k: 'm5', name: 'Mini / M5', badge: 'MINI · M5 · MICRO5',
+    alias: 'Mini5 / Micro5 / Filofax Mini', paper: [67, 105], holes: 5,
+    pitch: [19, 19, 19, 19], span: 76, grp: 'e19', fam: 'std', match: /micro\s*5|mini\s*5|^m5$/i,
+    lead: '手のひらに収まる最小サイズ。5穴で、間隔はすべて19mm。日本では「M5」「Mini5」「Micro5」と呼ばれます。',
+    notes: ['Filofax Mini の標準は 67 × 105 mm・5穴。', 'ブランド独自寸法も存在するため、実物確認を推奨。'],
+    ringEx: '製品例で15mm（Filofax Mini）'
+  },
+  {
+    k: 'm6', name: 'Pocket / M6', badge: 'POCKET · M6 · MINI6',
+    alias: 'Mini6 / M6 / Filofax Pocket', paper: [81, 120], holes: 6,
+    pitch: [19, 19, 19, 19, 19], span: 95, grp: 'e19', fam: 'std', match: /mini\s*6|^m6$|（m6）/i,
+    lead: "M5に1穴足した6穴。間隔はすべて19mmのまま。N's factory でいちばん製作数の多いサイズです。",
+    notes: ['日本で「Mini6」「M6」と呼ばれるものは Filofax Pocket 系とほぼ同系統。', 'リフィル幅・高さはブランドごとに若干差があります。'],
+    ringEx: '製品例で19mm（Filofax Pocket）'
+  },
+  {
+    k: 'a6', name: 'A6 6穴', badge: 'A6 · 6 RING',
+    alias: 'Gillio / Van der Spek / Mulberry系など', paper: [105, 148], holes: 6,
+    pitch: [19, 19, 38, 19, 19], span: 114, grp: 'a6g', fam: 'std', match: /^a6$/i,
+    lead: '中央だけが38mm開く6穴。紙のサイズはA6判そのもので、リフィルを自作しやすい規格です。',
+    notes: ['Filofax の標準ラインではありません。', 'Gillio・Van der Spek・Mulberry / Sucess 系などで使われます。', '「A6」と書かれていても 19-19-38-19-19 ではない商品があるため要確認。'],
+    ringEx: '当工房の在庫は20mm・30mm（下の写真）'
+  },
+  {
+    k: 'bible', name: 'Personal / バイブル', badge: 'PERSONAL · BIBLE',
+    alias: 'Filofax Personal / 日本のバイブルサイズ', paper: [95, 171], holes: 6,
+    pitch: [19.05, 19.05, 50.8, 19.05, 19.05], span: 127, grp: 'bible', fam: 'std', match: /バイブル|personal|bible/i,
+    lead: '中央が2インチ（50.8mm）開く6穴。日本の「バイブルサイズ」とほぼ同系統で、流通量がもっとも多い規格のひとつです。',
+    notes: ['Filofax 資料では中央間隔を50mmまたは51mmとするものがあります。', 'インチ起源では 3/4インチ=19.05mm・2インチ=50.8mm と考えると整合します。', 'CAD互換設計では 19.05 / 19.05 / 50.8 / 19.05 / 19.05 を基準候補に。'],
+    ringEx: '製品例で23mm（Filofax Personal）'
+  },
+  {
+    k: 'a5', name: 'A5 6穴', badge: 'A5 · 6 RING',
+    alias: 'Filofax A5', paper: [148, 210], holes: 6,
+    pitch: [19, 19, 70, 19, 19], span: 146, grp: 'a5g', fam: 'std', match: /^a5$/i,
+    lead: 'ノートに近い書き味の大判。中央が70mmと大きく開きます。用紙上端から第1穴までは理論値で32mm。',
+    notes: ['210mm高の紙に穴列146mmを上下中央に置くと (210-146)/2 = 32mm。', '上端から 32 / 51 / 70 / 140 / 159 / 178 mm が理論上の穴中心。', 'ただし32mmが全メーカー共通と断定はできません。実物かパンチ基準で確認を。'],
+    ringEx: '製品例で30mm（Filofax A5）'
+  },
+  {
+    k: 'a5slim', name: 'A5 Slim', badge: 'A5 SLIM · odoru / monta系',
+    alias: '横幅だけ細いA5', paper: [110, 210], holes: 6,
+    pitch: [19, 19, 70, 19, 19], span: 146, grp: 'a5g', fam: 'std', match: /a5\s*slim/i,
+    lead: '高さはA5と同じ210mmのまま、横幅だけ110mmに絞った規格。A5用6穴金具をそのまま流用できます。',
+    notes: ['通常A5 148mm に対し横幅差は 38mm。高さは共通。', 'リング径の採用例は16mm。', 'KRAUSE の 210-6-16（6穴・内径16mm・ベース長210mm）が候補。ただし odoru が実際に使用しているかは未確認。'],
+    ringEx: '採用例16mm（KRAUSE 210-6-16 が候補）',
+    highlight: true
+  },
+  {
+    k: 'a4', name: 'A4 4穴', badge: 'A4 · 4 RING',
+    alias: 'ISO系4穴', paper: [210, 297], holes: 4,
+    pitch: [80, 80, 80], span: 240, grp: 'a4g', fam: 'std', match: /^a4$/i,
+    lead: '書類をそのまま綴じる大判。80mm等間隔の4穴です。',
+    notes: ['A4システム手帳では Filofax 等で4穴が使われます。', '一般ファイルには2穴・4穴など複数方式があり「A4＝必ず4穴」ではありません。'],
+    ringEx: '—'
+  },
+  {
+    k: 'deskfax', name: 'Deskfax / B5系', badge: 'DESKFAX · 9 RING',
+    alias: 'Filofax Deskfax', paper: [176, 250], holes: 9,
+    pitch: null, span: null, grp: 'unk', fam: 'std', match: null,
+    lead: '9穴の大判。現在は流通量が少なく、ピッチの確定値は取れていません。',
+    notes: ['9穴の具体的ピッチはメーカー・年代で確認が必要です。', 'CAD設計に使う場合は実物またはメーカー図面が必須。'],
+    ringEx: '—'
+  },
+  {
+    k: 'fpocket', name: 'Franklin Pocket', badge: 'FRANKLIN · POCKET',
+    alias: 'Franklin Planner 独自', paper: [89, 153], holes: 6,
+    pitch: [19.05, 19.05, 38.10, 19.05, 19.05], span: 114.30, grp: 'fp', fam: 'franklin', match: null,
+    lead: '公式の穴ガイドは 0.75" / 0.75" / 1.5" / 0.75" / 0.75"。ミリに直すと 19.05 / 19.05 / 38.10 / 19.05 / 19.05 です。',
+    notes: ['Franklin 公式が「一般的なナローサイズ6穴とは互換性がない独自穴間隔」と明記。', 'A6 6穴（19-19-38-19-19）とは数値が近いものの、公式に互換をうたっているわけではありません。差し替える前に実物で確認を。'],
+    ringEx: 'Franklin Planner は 15 / 20 / 25 / 30 / 40mm 等の展開'
+  },
+  {
+    k: 'fcompact', name: 'Franklin Compact', badge: 'FRANKLIN · COMPACT',
+    alias: 'バイブル穴位置互換', paper: [108, 172], holes: 6,
+    pitch: [19.05, 19.05, 50.8, 19.05, 19.05], span: 127.0, grp: 'bible', fam: 'franklin', match: null,
+    lead: 'Franklin Planner 公式が「他社のバイブルサイズと穴位置間隔は同じ」と明記している規格。穴は互換します。',
+    notes: ['穴位置は互換しても、リフィル幅は108mm（一般的なバイブル95mm）と広い。', '革カバーやポケット寸法は別設計が必要です。'],
+    ringEx: 'Franklin Planner は 15 / 20 / 25 / 30 / 40mm 等の展開'
+  },
+  {
+    k: 'fclassic', name: 'Franklin Classic', badge: 'FRANKLIN · CLASSIC',
+    alias: 'Franklin Planner 独自 7穴', paper: [140, 216], holes: 7,
+    pitch: [25.4, 25.4, 19.05, 19.05, 25.4, 25.4], span: 139.7, grp: 'fc', fam: 'franklin', match: null,
+    lead: '公式の穴ガイドは 1.0" / 1.0" / 0.75" / 0.75" / 1.0" / 1.0" の7穴。A5 6穴とは互換しません。',
+    notes: ['1番穴〜7番穴の中心距離は 139.7mm。', 'A5（146mm・6穴）とは穴数もピッチも異なります。'],
+    ringEx: 'Franklin Planner は 15 / 20 / 25 / 30 / 40mm 等の展開'
+  },
+  {
+    k: 'fmonarch', name: 'Franklin Monarch', badge: 'FRANKLIN · MONARCH',
+    alias: 'Franklin Planner 独自 7穴（大判）', paper: [216, 280], holes: 7,
+    pitch: [25.4, 25.4, 57.15, 57.15, 25.4, 25.4], span: 215.9, grp: 'fm', fam: 'franklin', match: null,
+    lead: '最大級の7穴。公式の穴ガイドは 1.0" / 1.0" / 2.25" / 2.25" / 1.0" / 1.0"。',
+    notes: ['1番穴〜7番穴の中心距離は 215.9mm。', '紙は約 216 × 280 mm。'],
+    ringEx: 'Franklin Planner は 15 / 20 / 25 / 30 / 40mm 等の展開'
+  }
+];
+
+var RING_DIAMETERS = [
+  { mm: 8,  use: '' }, { mm: 11, use: '' }, { mm: 13, use: '' },
+  { mm: 15, use: 'Filofax Mini 例' }, { mm: 16, use: 'A5 Slim / KRAUSE 210-6-16' },
+  { mm: 19, use: 'Filofax Pocket 例' }, { mm: 20, use: '当工房A6在庫' },
+  { mm: 23, use: 'Filofax Personal 例' }, { mm: 25, use: '' },
+  { mm: 30, use: 'Filofax A5 例 / 当工房A6在庫' }, { mm: 35, use: '' }, { mm: 40, use: '' }
+];
+
+var RING_PHOTOS = [
+  { f: 'A6_20mm_gold_Klause_5000.png',   t: 'A6 20mm ゴールド', s: 'KRAUSE' },
+  { f: 'A6_20mm_silver_Klause_3000.png', t: 'A6 20mm シルバー', s: 'KRAUSE' },
+  { f: 'A6_20mm_rose_Klause_5000.png',   t: 'A6 20mm ローズ', s: 'KRAUSE' },
+  { f: 'A6_20mm_black_Klause_5000.png',  t: 'A6 20mm ブラック', s: 'KRAUSE' },
+  { f: 'A6_30mm_gold_2000.png',          t: 'A6 30mm ゴールド', s: '' },
+  { f: 'A6_30mm_silever_2000.png',       t: 'A6 30mm シルバー', s: '' },
+  { f: 'A6_30mm_rose_2000.png',          t: 'A6 30mm ローズ', s: '' },
+  { f: 'A6_30mm_brass_2000.png',         t: 'A6 30mm 真鍮色', s: '' }
+];
+
+var REFS = [
+  { i: '📘', t: 'Filofax 2024 Catalogue / Organiser Size Guide', u: 'https://philofaxy.com/filocatalogue/wp-content/uploads/2024/09/Filofax_Catalogue_2024.pdf' },
+  { i: '📗', t: 'Rapesco Organiser / Refill Inserts Size Guide', u: 'https://manuals.plus/m/0d740c603d5edd1d530c2b5fef96544d4a4027a609290950d8125c01f8a674f0.pdf' },
+  { i: '🌐', t: 'Philofaxy Organiser Sizes', u: 'https://philofaxy.blogspot.com/2015/05/organiser-sizes.html' },
+  { i: '📕', t: 'Franklin Planner 2026 Catalog', u: 'https://www.franklinplanner.jp/shopping/dc/2026_catalog/FPJ2026catalog.pdf' },
+  { i: '🕳️', t: 'Franklin Planner Hole Punch Guide', u: 'https://blog.franklinplanner.com/wp-content/uploads/sites/2/2022/07/Hole-Punch-Guide.pdf' },
+  { i: '📏', t: 'Franklin Planner サイズ案内', u: 'https://www.franklinplanner.jp/shopping/guide/sizeindex.html' },
+  { i: '📄', t: 'Franklin Planner リフィルサイズ説明', u: 'https://www.franklinplanner.jp/shopping/ch/ch-refill.html' }
+];
+
+/* ============================================================
+   共通ヘルパー
+   ============================================================ */
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+  return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+}); }
+function cum(pitch) { var a = [0], s = 0; (pitch || []).forEach(function (p) { s += p; a.push(s); }); return a; }
+function nm(v) { return (Math.round(v * 100) / 100).toString(); }
+function grpOf(f) { return GROUPS[f.grp]; }
+
+/* 穴位置の作図 SVG -------------------------------------------------- */
+function figureSvg(f, opt) {
+  opt = opt || {};
+  var W = f.paper[0], H = f.paper[1];
+  var color = grpOf(f).c;
+  var padL = Math.max(26, W * 0.32), padR = W * 0.1, padT = H * 0.075, padB = H * 0.075;
+  var fs = W / 21;                       // 図中フォント（mm）
+  var hx = Math.max(6.5, W * 0.085);     // 穴の左端からの距離（目安）
+  var hr = Math.min(3, W / 24);          // 穴半径（目安）
+  var uid = 'g' + f.k;
+  var s = '';
+
+  s += '<svg viewBox="' + (-padL) + ' ' + (-padT) + ' ' + (W + padL + padR) + ' ' + (H + padT + padB) + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + esc(f.name) + ' の穴位置作図">';
+  s += '<defs><pattern id="' + uid + '" width="10" height="10" patternUnits="userSpaceOnUse">'
+     + '<path d="M10 0H0V10" fill="none" stroke="rgba(0,0,0,.055)" stroke-width=".35"/></pattern></defs>';
+
+  // 紙
+  s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" rx="' + (W * 0.02) + '" fill="#fff" stroke="' + color + '" stroke-width="' + (W / 120) + '"/>';
+  s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" rx="' + (W * 0.02) + '" fill="url(#' + uid + ')"/>';
+
+  // 紙サイズラベル（上・右）
+  s += '<text x="' + (W / 2) + '" y="' + (-padT * 0.28) + '" text-anchor="middle" font-size="' + fs + '" fill="#8A8A8F" font-weight="700">' + W + ' mm</text>';
+  s += '<text x="' + (W + padR * 0.55) + '" y="' + (H / 2) + '" text-anchor="middle" font-size="' + fs + '" fill="#8A8A8F" font-weight="700" transform="rotate(90 ' + (W + padR * 0.55) + ' ' + (H / 2) + ')">' + H + ' mm</text>';
+
+  if (!f.pitch) {
+    // ピッチ未確定（Deskfax）
+    var n = f.holes, gapU = H * 0.62 / (n - 1), topU = (H - H * 0.62) / 2;
+    for (var u = 0; u < n; u++) {
+      s += '<circle cx="' + hx + '" cy="' + (topU + gapU * u) + '" r="' + hr + '" fill="none" stroke="' + color + '" stroke-width="' + (W / 150) + '" stroke-dasharray="' + (hr * 0.7) + ' ' + (hr * 0.5) + '"/>';
+    }
+    s += '<text x="' + (W / 2) + '" y="' + (H / 2) + '" text-anchor="middle" font-size="' + (fs * 1.15) + '" fill="' + color + '" font-weight="800">ピッチ未確定</text>';
+    s += '<text x="' + (W / 2) + '" y="' + (H / 2 + fs * 1.7) + '" text-anchor="middle" font-size="' + (fs * 0.85) + '" fill="#8A8A8F">実物・メーカー図面で要確認</text>';
+    return s + '</svg>';
+  }
+
+  var c = cum(f.pitch), top = (H - f.span) / 2;
+  var dimX = -padL * 0.42;
+
+  // 全長の寸法線
+  s += '<line x1="' + dimX + '" y1="' + top + '" x2="' + dimX + '" y2="' + (top + f.span) + '" stroke="' + color + '" stroke-width="' + (W / 220) + '"/>';
+  [top, top + f.span].forEach(function (y) {
+    s += '<line x1="' + (dimX - fs * 0.32) + '" y1="' + y + '" x2="' + (dimX + fs * 0.32) + '" y2="' + y + '" stroke="' + color + '" stroke-width="' + (W / 220) + '"/>';
+  });
+  s += '<text x="' + (dimX - fs * 0.5) + '" y="' + (top + f.span / 2) + '" text-anchor="middle" font-size="' + (fs * 1.05) + '" fill="' + color + '" font-weight="800" transform="rotate(-90 ' + (dimX - fs * 0.5) + ' ' + (top + f.span / 2) + ')">' + nm(f.span) + ' mm</text>';
+
+  // 各穴＋ピッチ寸法
+  for (var i = 0; i < c.length; i++) {
+    var y = top + c[i];
+    s += '<line x1="' + dimX + '" y1="' + y + '" x2="' + (hx - hr - 1) + '" y2="' + y + '" stroke="rgba(0,0,0,.16)" stroke-width="' + (W / 300) + '" stroke-dasharray="' + (W / 60) + ' ' + (W / 90) + '"/>';
+    s += '<circle class="hole-dot" cx="' + hx + '" cy="' + y + '" r="' + hr + '" fill="#fff" stroke="' + color + '" stroke-width="' + (W / 110) + '" style="animation-delay:' + (0.06 * i + 0.1) + 's"/>';
+    s += '<text x="' + (hx + hr + fs * 0.42) + '" y="' + (y + fs * 0.34) + '" font-size="' + (fs * 0.78) + '" fill="#B0AEA9" font-weight="700">' + (i + 1) + '</text>';
+    if (i < f.pitch.length) {
+      var my = y + f.pitch[i] / 2;
+      s += '<text x="' + (W * 0.44) + '" y="' + (my + fs * 0.34) + '" text-anchor="middle" font-size="' + (fs * 0.92) + '" fill="#5C5A56" font-weight="800">' + nm(f.pitch[i]) + '</text>';
+      s += '<line x1="' + (W * 0.24) + '" y1="' + y + '" x2="' + (W * 0.24) + '" y2="' + (y + f.pitch[i]) + '" stroke="rgba(0,0,0,.22)" stroke-width="' + (W / 300) + '"/>';
+      s += '<line x1="' + (W * 0.24 - fs * 0.28) + '" y1="' + y + '" x2="' + (W * 0.24 + fs * 0.28) + '" y2="' + y + '" stroke="rgba(0,0,0,.22)" stroke-width="' + (W / 300) + '"/>';
+      s += '<line x1="' + (W * 0.24 - fs * 0.28) + '" y1="' + (y + f.pitch[i]) + '" x2="' + (W * 0.24 + fs * 0.28) + '" y2="' + (y + f.pitch[i]) + '" stroke="rgba(0,0,0,.22)" stroke-width="' + (W / 300) + '"/>';
+    }
+  }
+  s += '</svg>';
+  return s;
+}
+
+/* ============================================================
+   1. 重ね比較図
+   ============================================================ */
+var MAXW = 0, MAXH = 0;
+FORMATS.forEach(function (f) { MAXW = Math.max(MAXW, f.paper[0]); MAXH = Math.max(MAXH, f.paper[1]); });
+
+function renderOverlay() {
+  var pad = 16;
+  var s = '<svg viewBox="' + (-pad) + ' ' + (-pad) + ' ' + (MAXW + pad * 2) + ' ' + (MAXH + pad * 2) + '" xmlns="http://www.w3.org/2000/svg" style="max-height:520px">';
+  s += '<defs><pattern id="ovgrid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="rgba(0,0,0,.05)" stroke-width=".3"/></pattern></defs>';
+  s += '<rect x="' + (-pad) + '" y="' + (-pad) + '" width="' + (MAXW + pad * 2) + '" height="' + (MAXH + pad * 2) + '" fill="url(#ovgrid)"/>';
+  var sorted = FORMATS.slice().sort(function (a, b) { return (b.paper[0] * b.paper[1]) - (a.paper[0] * a.paper[1]); });
+  sorted.forEach(function (f) {
+    var W = f.paper[0], H = f.paper[1], y = MAXH - H;
+    s += '<rect class="ov-paper" data-k="' + f.k + '" x="0" y="' + y + '" width="' + W + '" height="' + H + '" rx="1.6" stroke="' + grpOf(f).c + '"/>';
+  });
+  sorted.forEach(function (f) {
+    var W = f.paper[0], H = f.paper[1], y = MAXH - H;
+    s += '<text class="ov-label" data-k="' + f.k + '" x="' + (W - 2.5) + '" y="' + (y + 7.5) + '" text-anchor="end" fill="' + grpOf(f).c + '">' + esc(f.name) + '</text>';
+  });
+  s += '</svg>';
+  document.getElementById('overlaySvg').innerHTML = s;
+
+  document.getElementById('overlayChips').innerHTML = FORMATS.map(function (f) {
+    return '<button class="chip" data-k="' + f.k + '" style="color:' + grpOf(f).c + '">'
+      + '<i style="background:' + grpOf(f).c + '"></i>' + esc(f.name)
+      + ' <small>' + f.paper[0] + '×' + f.paper[1] + '</small></button>';
+  }).join('');
+
+  function focus(k) {
+    var f = FORMATS.filter(function (x) { return x.k === k; })[0];
+    document.querySelectorAll('.ov-paper').forEach(function (el) {
+      el.classList.toggle('on', el.dataset.k === k);
+      el.classList.toggle('dim', !!k && el.dataset.k !== k);
+    });
+    document.querySelectorAll('.ov-label').forEach(function (el) { el.style.opacity = (!k || el.dataset.k === k) ? 1 : .12; });
+    document.querySelectorAll('.chip').forEach(function (el) { el.classList.toggle('on', el.dataset.k === k); });
+    var box = document.getElementById('overlayReadout');
+    if (!f) { box.innerHTML = '<h4>12規格を重ねています</h4><p>名前に触れると、その規格だけが浮かび上がります。いちばん外側の枠が Franklin Monarch（216×280mm）、いちばん内側が Mini / M5（67×105mm）です。</p>'; return; }
+    box.innerHTML = '<h4 style="color:' + grpOf(f).c + '">' + esc(f.name) + '</h4>'
+      + '<p>リフィル <span class="ov-num">' + f.paper[0] + ' × ' + f.paper[1] + ' mm</span>'
+      + ' ／ <span class="ov-num">' + f.holes + '穴</span>'
+      + (f.pitch ? ' ／ 穴中心間隔 <span class="ov-num">' + f.pitch.map(nm).join(' - ') + ' mm</span>' : ' ／ ピッチ未確定')
+      + (f.span ? '<br>1番穴〜最終穴 <span class="ov-num">' + nm(f.span) + ' mm</span>' : '')
+      + '<br>' + esc(f.lead) + '</p>';
+  }
+  document.querySelectorAll('.chip').forEach(function (el) {
+    el.addEventListener('mouseenter', function () { focus(el.dataset.k); });
+    el.addEventListener('click', function () { focus(el.dataset.k); document.getElementById('card-' + el.dataset.k) && document.getElementById('card-' + el.dataset.k).scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+  });
+  document.querySelectorAll('.ov-paper').forEach(function (el) {
+    el.addEventListener('mouseenter', function () { focus(el.dataset.k); });
+  });
+  document.querySelector('.overlay-stage').addEventListener('mouseleave', function () { focus(null); });
+  focus(null);
+}
+
+/* ============================================================
+   2. 実寸ものさし
+   ============================================================ */
+var PX_KEY = 'nsf_ring_pxpermm';
+var pxPerMM = parseFloat(localStorage.getItem(PX_KEY) || '') || (96 / 25.4);
+var realSize = false;
+
+function applyCalib() {
+  document.getElementById('calibVal').textContent = pxPerMM.toFixed(2);
+  var card = document.getElementById('cardSample');
+  card.style.width = (85.6 * pxPerMM) + 'px';
+  card.style.height = (53.98 * pxPerMM) + 'px';
+  document.getElementById('calib').value = pxPerMM;
+}
+function applyRealSize() {
+  document.querySelectorAll('.fmt-figure').forEach(function (fig) {
+    var f = FORMATS.filter(function (x) { return x.k === fig.dataset.k; })[0];
+    var svg = fig.querySelector('svg');
+    if (!svg) return;
+    fig.classList.toggle('realsize', realSize);
+    if (realSize) {
+      var vb = svg.getAttribute('viewBox').split(' ').map(parseFloat);
+      svg.style.width = (vb[2] * pxPerMM) + 'px';
+      svg.style.height = (vb[3] * pxPerMM) + 'px';
+      svg.style.maxWidth = 'none';
+    } else {
+      svg.style.width = ''; svg.style.height = ''; svg.style.maxWidth = '';
+    }
+  });
+  renderRings();
+}
+
+/* ============================================================
+   3. 規格カード
+   ============================================================ */
+var worksByFormat = {};
+
+function cardHtml(f) {
+  var g = grpOf(f);
+  var photos = worksByFormat[f.k] || [];
+  var h = '<article class="fmt-card" id="card-' + f.k + '" data-fam="' + f.fam + '" data-holes="' + f.holes + '" data-k="' + f.k + '" style="--c:' + g.c + '">';
+  h += '<div class="fmt-head">'
+     + '<span class="fmt-badge">' + esc(f.badge) + '</span>'
+     + '<div class="fmt-name">' + esc(f.name) + '</div>'
+     + '<div class="fmt-alias">' + esc(f.alias) + '</div>'
+     + '<p class="fmt-lead">' + esc(f.lead) + '</p></div>';
+  h += '<div class="fmt-figure" data-k="' + f.k + '">' + figureSvg(f) + '</div>';
+  h += '<div class="fmt-spec">'
+     + '<div class="spec-cell"><div class="spec-k">リフィル寸法</div><div class="spec-v">' + f.paper[0] + ' × ' + f.paper[1] + ' <small>mm</small></div></div>'
+     + '<div class="spec-cell"><div class="spec-k">穴数</div><div class="spec-v">' + f.holes + ' <small>穴</small></div></div>'
+     + '<div class="spec-cell wide"><div class="spec-k">穴中心間隔（ピッチ）</div><div class="spec-v" style="font-size:13.5px">' + (f.pitch ? f.pitch.map(nm).join(' / ') + ' <small>mm</small>' : '未確定') + '</div></div>'
+     + '<div class="spec-cell"><div class="spec-k">1番穴〜最終穴</div><div class="spec-v">' + (f.span ? nm(f.span) + ' <small>mm</small>' : '—') + '</div></div>'
+     + '<div class="spec-cell"><div class="spec-k">穴位置の互換</div><div class="spec-v" style="font-size:12.5px;color:' + g.c + '">' + esc(g.label) + '</div></div>'
+     + '<div class="spec-cell wide"><div class="spec-k">リング径の例</div><div class="spec-v" style="font-size:12.5px">' + esc(f.ringEx) + '</div></div>'
+     + '</div>';
+  h += '<ul class="fmt-notes">' + f.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+  if (photos.length) {
+    h += '<div class="fmt-photos"><div class="fmt-photos-cap">' + "N's factory" + ' の製作実績から（' + photos.length + '点）</div>'
+      + photos.map(function (w) {
+        return '<a href="../works.html?id=' + encodeURIComponent(w.id) + '" title="' + esc(w.name + ' ／ ' + (w.material || '')) + '">'
+          + '<img loading="lazy" src="' + esc(w.mainPhoto) + '" alt="' + esc(w.name) + '"></a>';
+      }).join('') + '</div>';
+  }
+  h += '</article>';
+  return h;
+}
+
+function renderCards(filter) {
+  var list = FORMATS.filter(function (f) {
+    if (filter === 'all') return true;
+    if (filter === 'std') return f.fam === 'std';
+    if (filter === 'franklin') return f.fam === 'franklin';
+    if (filter === 'h6') return f.holes === 6;
+    if (filter === 'works') return (worksByFormat[f.k] || []).length > 0;
+    return true;
+  });
+  document.getElementById('fmtGrid').innerHTML = list.map(cardHtml).join('');
+  applyRealSize();
+  observeCards();
+}
+
+function observeCards() {
+  var io = new IntersectionObserver(function (ents) {
+    ents.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('seen'); io.unobserve(e.target); } });
+  }, { threshold: .18 });
+  document.querySelectorAll('.fmt-card').forEach(function (el) { io.observe(el); });
+}
+
+/* ============================================================
+   4. 互換グループ
+   ============================================================ */
+function renderCompat() {
+  var order = ['e19', 'bible', 'a6g', 'fp', 'a5g', 'a4g', 'fc', 'fm', 'unk'];
+  var html = order.map(function (gk) {
+    var g = GROUPS[gk];
+    var members = FORMATS.filter(function (f) { return f.grp === gk; });
+    if (!members.length) return '';
+    var ref = members.filter(function (m) { return m.pitch; })[0];
+    var bar = '';
+    if (ref) {
+      var total = ref.span;
+      bar = '<div class="pitch-bar"><span class="pitch-dot" style="border-color:' + g.c + '"></span>'
+        + ref.pitch.map(function (p) {
+          return '<span class="pitch-seg" style="background:' + g.c + ';flex:' + p + ' 1 0;opacity:' + (0.62 + 0.38 * (p / Math.max.apply(null, ref.pitch))) + '">' + nm(p) + '</span>'
+               + '<span class="pitch-dot" style="border-color:' + g.c + '"></span>';
+        }).join('') + '</div>'
+        + '<div class="compat-note">1番穴から最終穴まで <b>' + nm(total) + ' mm</b>（帯の長さは実際の比率）</div>';
+    }
+    return '<div class="compat-group">'
+      + '<div class="compat-gh"><i style="background:' + g.c + '"></i><b>' + esc(g.label) + '</b><span>' + esc(g.pitch) + '</span></div>'
+      + '<div class="compat-members">' + members.map(function (m) {
+          return '<a class="compat-member" href="#card-' + m.k + '" style="color:' + g.c + ';background:color-mix(in srgb,' + g.c + ' 10%,#fff)">' + esc(m.name) + ' <span style="color:var(--gray);font-weight:600">' + m.paper[0] + '×' + m.paper[1] + '</span></a>';
+        }).join('') + '</div>'
+      + bar
+      + '<div class="compat-note">' + esc(g.desc) + '</div>'
+      + '</div>';
+  }).join('');
+  html += '<div class="callout" style="margin-top:4px"><div class="callout-ico">🔍</div><div><b>グループが同じ＝紙も同じ、ではありません</b>'
+       + '<p>たとえば バイブル（95mm幅）と Franklin Compact（108mm幅）は穴位置が互換しますが、紙幅は13mm違います。革カバーやポケットの寸法は必ず個別に設計してください。</p></div></div>';
+  document.getElementById('compatBox').innerHTML = html;
+}
+
+/* ============================================================
+   5. 早見表
+   ============================================================ */
+function renderTable() {
+  document.getElementById('tableBody').innerHTML = FORMATS.map(function (f) {
+    var g = grpOf(f);
+    return '<tr>'
+      + '<td><span class="tag-dot" style="background:' + g.c + '"></span><a href="#card-' + f.k + '" style="font-weight:700">' + esc(f.name) + '</a></td>'
+      + '<td class="num">' + f.paper[0] + ' × ' + f.paper[1] + '</td>'
+      + '<td class="num">' + f.holes + '</td>'
+      + '<td class="num">' + (f.pitch ? f.pitch.map(nm).join('-') : 'メーカー依存') + '</td>'
+      + '<td class="num">' + (f.span ? nm(f.span) + ' mm' : '—') + '</td>'
+      + '<td style="white-space:normal;color:var(--gray);min-width:220px">' + esc(f.alias) + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+/* ============================================================
+   6. リング径
+   ============================================================ */
+function renderRings() {
+  var scale = realSize ? pxPerMM : Math.min(pxPerMM, 3.2) * 0.86;
+  document.getElementById('ringRow').innerHTML = RING_DIAMETERS.map(function (r) {
+    var d = Math.max(18, r.mm * scale);
+    return '<div class="ring-item">'
+      + '<div class="ring-circle" style="width:' + d + 'px;height:' + d + 'px"></div>'
+      + '<div class="ring-cap">' + r.mm + ' mm</div>'
+      + (r.use ? '<div class="ring-use">' + esc(r.use) + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+function renderRingPhotos() {
+  document.getElementById('ringPhotos').innerHTML = RING_PHOTOS.map(function (p) {
+    return '<figure class="ring-photo"><img loading="lazy" src="../order_estimate/ring/' + p.f + '" alt="' + esc(p.t) + '">'
+      + '<figcaption><b>' + esc(p.t) + '</b>' + (p.s ? '<span>' + esc(p.s) + '</span>' : '') + '</figcaption></figure>';
+  }).join('');
+}
+
+/* ============================================================
+   7. CAD YAML
+   ============================================================ */
+function buildYaml() {
+  var y = 'ring_formats:\n';
+  FORMATS.forEach(function (f) {
+    y += '  ' + f.k + ':\n';
+    y += '    name: "' + f.name + '"\n';
+    if (f.alias) y += '    aliases: "' + f.alias + '"\n';
+    y += '    paper_mm: [' + f.paper[0] + ', ' + f.paper[1] + ']\n';
+    y += '    holes: ' + f.holes + '\n';
+    y += '    spacing_mm: ' + (f.pitch ? '[' + f.pitch.map(nm).join(', ') + ']' : 'null  # メーカー依存・未確定') + '\n';
+    y += '    span_mm: ' + (f.span ? nm(f.span) : 'null') + '\n';
+    y += '    hole_group: ' + f.grp + '\n';
+  });
+  y += '\n# 在庫管理で分ける推奨フィールド\n';
+  y += 'stock_fields:\n';
+  ['format_name', 'paper_width_mm', 'paper_height_mm', 'hole_count', 'hole_spacing_mm',
+   'ring_inner_diameter_mm', 'mechanism_length_mm', 'mechanism_width_mm', 'mount_hole_spacing_mm',
+   'manufacturer', 'manufacturer_part_no', 'finish', 'supplier', 'supplier_url', 'compatibility_notes'
+  ].forEach(function (k) { y += '  - ' + k + '\n'; });
+  return y;
+}
+
+/* ============================================================
+   8. 製作実績写真（works-data.json）
+   ============================================================ */
+function loadWorks() {
+  return fetch('../works-data.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : []; })
+    .then(function (list) {
+      if (!Array.isArray(list)) return;
+      var planners = list.filter(function (w) {
+        return /手帳|リフィル|リングサポーター/.test(w.category || '') && w.mainPhoto && w.size;
+      });
+      FORMATS.forEach(function (f) {
+        if (!f.match) return;
+        var hit = planners.filter(function (w) { return f.match.test(String(w.size).trim()); });
+        // 同じ写真の重複を除き、最大6点
+        var seen = {}, out = [];
+        hit.forEach(function (w) { if (!seen[w.mainPhoto]) { seen[w.mainPhoto] = 1; out.push(w); } });
+        worksByFormat[f.k] = out.slice(0, 6);
+      });
+    })
+    .catch(function () { /* 写真が出ないだけで資料としては成立させる */ });
+}
+
+/* ============================================================
+   起動
+   ============================================================ */
+document.getElementById('statFormats').textContent = FORMATS.length;
+document.getElementById('statGroups').textContent = Object.keys(GROUPS).filter(function (g) {
+  return FORMATS.some(function (f) { return f.grp === g; });
+}).length;
+
+renderOverlay();
+renderCompat();
+renderTable();
+renderRingPhotos();
+renderRings();
+document.getElementById('yamlCode').textContent = buildYaml();
+document.getElementById('refList').innerHTML = REFS.map(function (r) {
+  return '<a class="ref-card" href="' + esc(r.u) + '" target="_blank" rel="noopener"><span>' + r.i + '</span>'
+    + '<div><b>' + esc(r.t) + '</b><small>' + esc(r.u.replace(/^https?:\/\//, '').slice(0, 58)) + '…</small></div></a>';
+}).join('');
+
+var FILTERS = [
+  { k: 'all', t: 'すべて（12）' },
+  { k: 'std', t: 'Filofax系・一般規格' },
+  { k: 'franklin', t: 'Franklin Planner 独自' },
+  { k: 'h6', t: '6穴だけ' },
+  { k: 'works', t: '当工房の製作実績あり' }
+];
+document.getElementById('fmtFilter').innerHTML = FILTERS.map(function (f, i) {
+  return '<button class="filter-btn' + (i === 0 ? ' active' : '') + '" data-f="' + f.k + '">' + f.t + '</button>';
+}).join('');
+document.getElementById('fmtFilter').addEventListener('click', function (e) {
+  var b = e.target.closest('.filter-btn'); if (!b) return;
+  document.querySelectorAll('.filter-btn').forEach(function (x) { x.classList.remove('active'); });
+  b.classList.add('active');
+  renderCards(b.dataset.f);
+});
+
+applyCalib();
+renderCards('all');
+
+document.getElementById('calib').addEventListener('input', function (e) {
+  pxPerMM = parseFloat(e.target.value) || (96 / 25.4);
+  try { localStorage.setItem(PX_KEY, String(pxPerMM)); } catch (err) {}
+  applyCalib(); applyRealSize();
+});
+document.getElementById('realBtn').addEventListener('click', function () {
+  realSize = !realSize;
+  this.classList.toggle('on', realSize);
+  this.innerHTML = '<i></i>原寸モード：' + (realSize ? 'オン' : 'オフ');
+  applyRealSize();
+});
+document.getElementById('copyYaml').addEventListener('click', function () {
+  var btn = this;
+  navigator.clipboard.writeText(buildYaml()).then(function () {
+    btn.textContent = 'コピーしました';
+    setTimeout(function () { btn.textContent = 'コピー'; }, 1800);
+  }).catch(function () { btn.textContent = 'コピーできませんでした'; });
+});
+
+loadWorks().then(function () {
+  var active = document.querySelector('.filter-btn.active');
+  renderCards(active ? active.dataset.f : 'all');
+});
+</script>
+</body>
+</html>
