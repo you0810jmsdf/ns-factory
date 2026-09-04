@@ -1280,6 +1280,7 @@ tr.row-out-stock td{
               <th style="padding:8px;text-align:center;border:1px solid #d8c8b0">allows_krause<br><span style="font-weight:normal;font-size:11px">クラウゼ可</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">extra_base_cost<br><span style="font-weight:normal;font-size:11px">固定加算</span></th>
               <th style="padding:8px;text-align:right;border:1px solid #d8c8b0;background:#fff5e0">work_hour_multiplier<br><span style="font-weight:normal;font-size:11px">⭐ 構造工数倍率 (×)</span></th>
+              <th style="padding:8px;text-align:right;border:1px solid #d8c8b0">lining_ratio<br><span style="font-weight:normal;font-size:11px">内張り面積比 (0〜1)</span></th>
               <th style="padding:8px;text-align:left;border:1px solid #d8c8b0">note</th>
             </tr>
           </thead>
@@ -3027,7 +3028,7 @@ function downloadSizeBasePriceCsv() {
 // ── 構造タイプ価格倍率（brand-price.csv） ──
 const BRAND_PRICE_CSV_PATH = 'order_estimate/brand-price.csv';
 const BRAND_PRICE_CSV_URL = new URL('./brand-price.csv', location.href).toString();
-const BRAND_PRICE_HEADERS = ['brand_id','name','area_mult','krause_no_multi','allows_krause','extra_base_cost','work_hour_multiplier','note'];
+const BRAND_PRICE_HEADERS = ['brand_id','name','area_mult','krause_no_multi','allows_krause','extra_base_cost','work_hour_multiplier','lining_ratio','note'];  // lining_ratio: 内張り面積比 0〜1（2026-09-04追加）
 let brandPriceRows = [];
 let brandPriceDirty = false;
 
@@ -3078,6 +3079,9 @@ function renderBrandPriceTable() {
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:right;background:#fffaf0">
         <input type="number" step="0.1" min="0" value="${row.work_hour_multiplier || ''}" data-brand-edit="work_hour_multiplier" data-row="${idx}" style="width:70px;text-align:right;font-weight:bold">
+      </td>
+      <td style="padding:6px;border:1px solid #e0d4bb;text-align:right">
+        <input type="number" step="0.05" min="0" max="1" value="${row.lining_ratio ?? ''}" data-brand-edit="lining_ratio" data-row="${idx}" style="width:70px;text-align:right">
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;font-size:11px;color:#777">${row.note || ''}</td>
     `;
