@@ -126,30 +126,64 @@ async function frequentMealNames() {
 //    「解析しています…」のまま永久に止まり、利用者は何もできなくなる（2026-08-25 実害）。
 const ANALYZE_TIMEOUT_MS = 50000;
 
+// GASは同じリクエストでも間欠的に404＋HTMLを返すことがある（2026-09-04 実測。
+// 1回目404 → 再試行で200）。この応答は「スクリプトが実行される前に弾かれた」ものなので、
+// 再送してもAI解析は二重に走らない。
+//
+// ⛔ 再送してよいのは「GASに届かなかった応答」（404・HTML）だけにすること。
+//    タイムアウト・通信断は解析が走っている可能性があり、再送するとAI呼び出しが
+//    二重に課金される（CLAUDE.md「書き込み系APIは冪等化してからリトライ」と同じ考え方）。
+const GAS_RETRY_MAX = 3;
+const GAS_RETRY_WAIT_MS = 1200;
+
+// 経過秒の表示は毎秒 status-line を書き換えるため、ここで直接文言を出しても消える。
+// ⛔ 再送中の案内は setLog / status-line への直接書き込みではなく、この変数を経由すること
+//    （2026-08-20 progressTicker と同じ罠）。
+let retryNote = '';
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function callAnalyze(image, frequent) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ANALYZE_TIMEOUT_MS);
-  let res;
-  try {
-    res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'analyze', token: getToken(), image, frequent }),
-      signal: ctrl.signal
-    });
-  } catch (err) {
-    if (err && err.name === 'AbortError') {
-      throw new Error('50秒かかっても返事がありませんでした。写真を明るく撮り直すか、時間をおいてお試しください。');
+  const body = JSON.stringify({ action: 'analyze', token: getToken(), image, frequent });
+  let lastStatus = '';
+
+  for (let attempt = 1; attempt <= GAS_RETRY_MAX; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ANALYZE_TIMEOUT_MS);
+    let res;
+    try {
+      res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body,
+        signal: ctrl.signal
+      });
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        throw new Error('50秒かかっても返事がありませんでした。写真を明るく撮り直すか、時間をおいてお試しください。');
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
     }
-    throw err;
-  } finally {
-    clearTimeout(timer);
+
+    const text = await res.text();
+    // 本文先頭が < ならGASのエラーページ。⛔ ステータスコードだけで判定しないこと
+    //    （HTTP 200 でもHTMLが返る。CLAUDE.md 恒久ルール）。
+    if (res.ok && !text.trim().startsWith('<')) {
+      retryNote = '';
+      return JSON.parse(text);
+    }
+
+    lastStatus = 'HTTP ' + res.status;
+    if (attempt < GAS_RETRY_MAX) {
+      retryNote = `／サーバーが応答しないため再送します（${attempt + 1}回目）`;
+      await sleep(GAS_RETRY_WAIT_MS);
+    }
   }
-  const text = await res.text();
-  if (text.trim().startsWith('<')) {
-    throw new Error('サーバーの準備ができていません（管理者のGAS承認待ちの可能性）');
-  }
-  return JSON.parse(text);
+
+  retryNote = '';
+  throw new Error(`サーバーが応答しませんでした（${GAS_RETRY_MAX}回試しました / ${lastStatus}）。少し時間をおいてお試しください。`);
 }
 
 // ── 候補選択の描画 ─────────────────────────────────────
@@ -403,9 +437,10 @@ $('analyze-btn').addEventListener('click', async () => {
   // ⛔ 経過秒数の表示を消さないこと。止まっているのか待てば済むのかを
   //    利用者が判断できず、また「途中で止まる」と言われる（2026-08-25 実害）。
   const startedAt = Date.now();
+  retryNote = '';
   const tick = setInterval(() => {
     const sec = Math.round((Date.now() - startedAt) / 1000);
-    $('status-line').textContent = '解析しています… ' + sec + '秒（ふつう15〜30秒／50秒で打ち切ります）';
+    $('status-line').textContent = '解析しています… ' + sec + '秒（ふつう15〜30秒／50秒で打ち切ります）' + retryNote;
   }, 1000);
   $('status-line').textContent = '解析しています… 0秒（ふつう15〜30秒／50秒で打ち切ります）';
   try {
