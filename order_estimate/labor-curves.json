@@ -1,0 +1,341 @@
+{
+  "version": 1,
+  "curves": {
+    "simplist": [
+      {
+        "area": 0.4536,
+        "hours": 1.0,
+        "label": "Micro 5"
+      },
+      {
+        "area": 0.7035,
+        "hours": 1.55,
+        "label": "mini 6"
+      },
+      {
+        "area": 0.7056,
+        "hours": 1.56,
+        "label": "Micro 5 スクエア"
+      },
+      {
+        "area": 1.1025,
+        "hours": 2.43,
+        "label": "mini 6 スクエア"
+      },
+      {
+        "area": 1.554,
+        "hours": 3.43,
+        "label": "A6"
+      },
+      {
+        "area": 1.6245,
+        "hours": 3.58,
+        "label": "バイブル"
+      },
+      {
+        "area": 2.31,
+        "hours": 5.09,
+        "label": "A5スリム"
+      },
+      {
+        "area": 3.108,
+        "hours": 6.85,
+        "label": "A5"
+      }
+    ],
+    "simplist_kl": [
+      {
+        "area": 0.9072,
+        "hours": 1.3,
+        "label": "Micro 5"
+      },
+      {
+        "area": 1.407,
+        "hours": 2.015,
+        "label": "mini 6"
+      },
+      {
+        "area": 1.4112,
+        "hours": 2.028,
+        "label": "Micro 5 スクエア"
+      },
+      {
+        "area": 2.205,
+        "hours": 3.159,
+        "label": "mini 6 スクエア"
+      },
+      {
+        "area": 3.108,
+        "hours": 4.459,
+        "label": "A6"
+      },
+      {
+        "area": 3.249,
+        "hours": 4.654,
+        "label": "バイブル"
+      },
+      {
+        "area": 4.62,
+        "hours": 6.617,
+        "label": "A5スリム"
+      },
+      {
+        "area": 6.216,
+        "hours": 8.905,
+        "label": "A5"
+      }
+    ],
+    "simplist_klpad": [
+      {
+        "area": 1.134,
+        "hours": 1.5,
+        "label": "Micro 5"
+      },
+      {
+        "area": 1.75875,
+        "hours": 2.325,
+        "label": "mini 6"
+      },
+      {
+        "area": 1.764,
+        "hours": 2.34,
+        "label": "Micro 5 スクエア"
+      },
+      {
+        "area": 2.75625,
+        "hours": 3.645,
+        "label": "mini 6 スクエア"
+      },
+      {
+        "area": 3.885,
+        "hours": 5.145,
+        "label": "A6"
+      },
+      {
+        "area": 4.06125,
+        "hours": 5.37,
+        "label": "バイブル"
+      },
+      {
+        "area": 5.775,
+        "hours": 7.635,
+        "label": "A5スリム"
+      },
+      {
+        "area": 7.77,
+        "hours": 10.275,
+        "label": "A5"
+      }
+    ],
+    "npad": [
+      {
+        "area": 1.134,
+        "hours": 1.6,
+        "label": "Micro 5"
+      },
+      {
+        "area": 1.75875,
+        "hours": 2.48,
+        "label": "mini 6"
+      },
+      {
+        "area": 1.764,
+        "hours": 2.496,
+        "label": "Micro 5 スクエア"
+      },
+      {
+        "area": 2.75625,
+        "hours": 3.888,
+        "label": "mini 6 スクエア"
+      },
+      {
+        "area": 3.885,
+        "hours": 5.488,
+        "label": "A6"
+      },
+      {
+        "area": 4.06125,
+        "hours": 5.728,
+        "label": "バイブル"
+      },
+      {
+        "area": 5.775,
+        "hours": 8.144,
+        "label": "A5スリム"
+      },
+      {
+        "area": 7.77,
+        "hours": 10.96,
+        "label": "A5"
+      }
+    ],
+    "npad_nf": [
+      {
+        "area": 0.9072,
+        "hours": 1.4,
+        "label": "Micro 5"
+      },
+      {
+        "area": 1.407,
+        "hours": 2.17,
+        "label": "mini 6"
+      },
+      {
+        "area": 1.4112,
+        "hours": 2.184,
+        "label": "Micro 5 スクエア"
+      },
+      {
+        "area": 2.205,
+        "hours": 3.402,
+        "label": "mini 6 スクエア"
+      },
+      {
+        "area": 3.108,
+        "hours": 4.802,
+        "label": "A6"
+      },
+      {
+        "area": 3.249,
+        "hours": 5.012,
+        "label": "バイブル"
+      },
+      {
+        "area": 4.62,
+        "hours": 7.126,
+        "label": "A5スリム"
+      },
+      {
+        "area": 6.216,
+        "hours": 9.59,
+        "label": "A5"
+      }
+    ],
+    "npadw": [
+      {
+        "area": 0.9072,
+        "hours": 1.5,
+        "label": "Micro 5"
+      },
+      {
+        "area": 1.407,
+        "hours": 2.325,
+        "label": "mini 6"
+      },
+      {
+        "area": 1.4112,
+        "hours": 2.34,
+        "label": "Micro 5 スクエア"
+      },
+      {
+        "area": 2.205,
+        "hours": 3.645,
+        "label": "mini 6 スクエア"
+      },
+      {
+        "area": 3.108,
+        "hours": 5.145,
+        "label": "A6"
+      },
+      {
+        "area": 3.249,
+        "hours": 5.37,
+        "label": "バイブル"
+      },
+      {
+        "area": 4.62,
+        "hours": 7.635,
+        "label": "A5スリム"
+      },
+      {
+        "area": 6.216,
+        "hours": 10.275,
+        "label": "A5"
+      }
+    ],
+    "nthrough": [
+      {
+        "area": 0.9072,
+        "hours": 1.3,
+        "label": "Micro 5"
+      },
+      {
+        "area": 1.407,
+        "hours": 2.015,
+        "label": "mini 6"
+      },
+      {
+        "area": 1.4112,
+        "hours": 2.028,
+        "label": "Micro 5 スクエア"
+      },
+      {
+        "area": 2.205,
+        "hours": 3.159,
+        "label": "mini 6 スクエア"
+      },
+      {
+        "area": 3.108,
+        "hours": 4.459,
+        "label": "A6"
+      },
+      {
+        "area": 3.249,
+        "hours": 4.654,
+        "label": "バイブル"
+      },
+      {
+        "area": 4.62,
+        "hours": 6.617,
+        "label": "A5スリム"
+      },
+      {
+        "area": 6.216,
+        "hours": 8.905,
+        "label": "A5"
+      }
+    ],
+    "other": [
+      {
+        "area": 0.4536,
+        "hours": 1.2,
+        "label": "Micro 5"
+      },
+      {
+        "area": 0.7035,
+        "hours": 1.86,
+        "label": "mini 6"
+      },
+      {
+        "area": 0.7056,
+        "hours": 1.872,
+        "label": "Micro 5 スクエア"
+      },
+      {
+        "area": 1.1025,
+        "hours": 2.916,
+        "label": "mini 6 スクエア"
+      },
+      {
+        "area": 1.554,
+        "hours": 4.116,
+        "label": "A6"
+      },
+      {
+        "area": 1.6245,
+        "hours": 4.296,
+        "label": "バイブル"
+      },
+      {
+        "area": 2.31,
+        "hours": 6.108,
+        "label": "A5スリム"
+      },
+      {
+        "area": 3.108,
+        "hours": 8.22,
+        "label": "A5"
+      }
+    ]
+  }
+}
