@@ -197,6 +197,9 @@ body{
 
   <div class="chat" id="chat"></div>
   <div class="quick" id="quick"></div>
+  <!-- AI会話中の色見本ボタン（2026-09-04）。AI会話モードではクイックボタンが出ないため、
+       色を見る手段が画面上に無く、AIが「画面下のボタン」と実在しない案内をしていた。 -->
+  <div class="sim-entry" id="paletteEntry"></div>
   <div class="sim-entry" id="simEntry"></div>
 
 <!-- 革・ステッチ写真の拡大モーダル（2026-08-31）
@@ -450,6 +453,25 @@ function renderSimEntry(){
   }
 }
 
+/* AI会話モード中の色見本ボタン（2026-09-04 事業主指摘）。
+   ガイドモードはクイックボタンに「革の色を見る」等が出るが、AI会話モードでは
+   何も出ず、お客様に色を見る手段が無かった。AIが「画面下のボタンから」と
+   案内しても実在せず、噛み合わない会話になっていた。 */
+const paletteEntry = document.getElementById('paletteEntry');
+function renderPaletteEntry(){
+  if(!paletteEntry) return;
+  paletteEntry.innerHTML='';
+  if(!state.liveMode) return;            // ガイド中はクイックボタン側に出るので不要
+  const add=(label,fn)=>{
+    const b=document.createElement('button');
+    b.type='button'; b.textContent=label; b.onclick=fn;
+    b.style.marginRight='6px';
+    paletteEntry.appendChild(b);
+  };
+  if(LEATHERS && LEATHERS.length) add('🎨 革の色を見る',()=>showLeatherGallery('ask'));
+  if(STITCH_COLORS && STITCH_COLORS.length) add('🧵 ステッチの色を見る',showStitchGallery);
+}
+
 /* ---------- AI会話中の見積もり文脈ジャンプ（2026-08-04 導線一本化） ----------
    LPから見積もりシミュレーターへの直リンクを外し、入口を本ページに一本化したため、
    AI会話の中で金額の話題になったタイミングでシミュレーターへの導線を出す。
@@ -527,6 +549,7 @@ function startPicker(){
 /* 英語モード: ガイド（日本語のみ）を出さず、最初からAI会話モードで応対する */
 function startEnglishLive(){
   state.liveMode=true; state._autoLive=false; state._picking=false;
+  renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   history=[];
   const mb=document.getElementById('modeBtn');
   if(mb) mb.style.display='none'; // ガイド対話は日本語のみのため切替ボタンを隠す
@@ -560,6 +583,7 @@ function runStep(){
     renderQuick(items);
     state._awaitKey = typeof step.key==='function'?step.key(a):step.key;
     renderSimEntry();
+    renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
     if(step.freeInput) txt.focus();
   }, 420);
 }
@@ -1273,6 +1297,7 @@ let history=[];
 function enterLiveMode(){
   dismissModeTip();   // 切替できた＝説明は役目を終えたので消す（2026-08-19）
   state.liveMode=true;
+  renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   state._autoLive=false;
   quickEl.innerHTML=''; chat.innerHTML='';
   history=[];
@@ -1281,6 +1306,7 @@ function enterLiveMode(){
 }
 function exitLiveMode(){
   state.liveMode=false;
+  renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   state._autoLive=false;
   chat.innerHTML=''; quickEl.innerHTML='';
   document.getElementById('modeBtn').textContent='⚙ AI会話モード';
@@ -1295,6 +1321,7 @@ function exitLiveMode(){
 function autoEnterLiveMode(userText){
   dismissModeTip();   // 自動切替に気づけた＝説明不要（2026-08-19）
   state.liveMode=true;
+  renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   state._autoLive=true;           // 上限到達時にガイドへ戻すための目印
   quickEl.innerHTML='';
   simEntry.innerHTML='';
@@ -1343,6 +1370,7 @@ async function liveTurn(userText, skipEcho){
       // その場合だけ、会話を消さずにガイドの選択ボタンを出し直す
       if(data.error==='quota exceeded' && state._autoLive && !isEN()){
         state.liveMode=false; state._autoLive=false;
+        renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
         document.getElementById('modeBtn').textContent='⚙ AI会話モード';
         renderQuick(productQuickItems());
         state._picking=true;
