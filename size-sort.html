@@ -65,7 +65,8 @@ const GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac0
 // サイズの物差しは2系統（2026-08-06 事業主指示）。
 //   システム手帳 … リング規格 ／ 手帳カバー … ノートの判型
 // 「その他サイズ」は特殊判型（NOLTY・お薬手帳等）の確定用。押すとこのページに二度と並ばない。
-const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5', 'その他サイズ'];
+// A5スリムはA5より幅が狭い別規格（2026-09-04 追加）。判定は必ず A5 より前に置くこと。
+const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5スリム', 'A5', 'その他サイズ'];
 const COVER_SIZES = ['A6', 'B6', 'A5', 'B5', 'A4', '新書判', 'トラベラーズ レギュラー', 'トラベラーズ パスポート', 'その他サイズ'];
 let ADMIN_KEY = '';
 
@@ -114,6 +115,7 @@ function detectSize(p) {
   if (/a6/.test(t)) return 'A6';
   if (/b6/.test(t)) return 'B6';
   if (/バイブル|bible|bivle|ﾊﾞｲﾌﾞﾙ/.test(t)) return 'バイブル';
+  if (/a5\s*(スリム|slim|ｽﾘﾑ)/.test(t)) return 'A5スリム'; // A5判定より必ず前
   if (/a5/.test(t)) return 'A5';
   return null;
 }
