@@ -2960,6 +2960,9 @@ function scrollToSummary() {
 function sideCount(v) { return v === 'both' ? 2 : (v === 'left' || v === 'right') ? 1 : 0; }
 function getOptionMultiplier() { return (SIZES.find(s => s.id === sel.sizeId)?.optionMultiplier) ?? 1; }
 function sideCost(v)  { return Math.round(sideCount(v) * 1000 * getOptionMultiplier()); }
+// あおりポケットは1箇所2,000円の固定額（顧客への案内額と一致させるため・サイズ倍率非適用／2026-09-04変更）
+const INNER_POCKET_UNIT_PRICE = 2000;
+function innerPocketCost(v) { return sideCount(v) * INNER_POCKET_UNIT_PRICE; }
 function sideLabel(v) {
   return isEN()
     ? (({none:'None', left:'Left only', right:'Right only', both:'Both sides'})[v] || 'None')
@@ -3165,10 +3168,11 @@ function updateSummary(options = {}) {
 
   let opts = 0;
   const optionMultiplierEased = 1.0 + (optionMultiplier - 1.0) / 2; // 面積比の増分を半分に緩和（2026-07-09変更）
-  ['ring','metal','coin','stamp'].forEach(k => opts += Math.round((prices[k]||0) * optionMultiplierEased));
+  ['metal','coin','stamp'].forEach(k => opts += Math.round((prices[k]||0) * optionMultiplierEased));
+  opts += Math.round(prices.ring||0); // リングは仕入値をそのまま計上（ring-price-stock.csv がサイズ別に登録済のため倍率は二重計上／2026-09-04変更）
   opts += Math.round(prices.pen||0); // ペンホルダーは固定額・サイズ倍率非適用（2026-07-09変更）
   opts += (prices.stitchColor||0); // ステッチ色は無料オプションのため倍率非適用
-  opts += sideCost(freePocket) + sideCost(innerPocketSide) + sideCost(slitSide) + dkanCost + wrappingCost
+  opts += sideCost(freePocket) + innerPocketCost(innerPocketSide) + sideCost(slitSide) + dkanCost + wrappingCost
         + Math.round(cardPCC * 1000) // カードポケットは固定額・サイズ倍率非適用（2026-07-09変更）
         + flapPrice
         + sideCount(window._clearWindowSide) * 3000
@@ -3243,7 +3247,7 @@ function updateSummary(options = {}) {
     if (!sel.leather) {
       add(T('sum.leather', '革素材'), T('sum.pickLeather', '革を選択してください'));
     }
-    if(sel.ring)  add(`${T('sum.ring', 'リング')}: ${sel.ring}`, prices.ring ? `+¥${Math.round(prices.ring * optionMultiplierEased).toLocaleString()}` : T('sum.standard', '標準'));
+    if(sel.ring)  add(`${T('sum.ring', 'リング')}: ${sel.ring}`, prices.ring ? `+¥${Math.round(prices.ring).toLocaleString()}` : T('sum.standard', '標準'));
     if(sel.ringStockText) add(T('sum.ringStock', 'リング在庫'), sel.ringStockText);
     if(sel.metal) add(`${T('sum.metal', '金具')}: ${sel.metal}`, prices.metal ? `+¥${Math.round(prices.metal * optionMultiplierEased).toLocaleString()}` : T('sum.standard', '標準'));
     if(sel.metalStockText) add(T('sum.metalStock', '金具在庫'), sel.metalStockText);
@@ -3259,7 +3263,7 @@ function updateSummary(options = {}) {
     if(wrappingCost > 0)            add(`${T('sum.wrapping', 'ラッピング')}（${wrappingObj.name})`, `+¥${wrappingCost.toLocaleString()}`);
     if(dkanCost > 0)               add(`${T('opt.dkan', 'Dカン取り付け')}×${dkanCount}`, `+¥${dkanCost.toLocaleString()}`);
     if(freePocket !== 'none')     add(`${T('opt.freePocket', 'フリーポケット')}(${sideLabel(freePocket)})`,   `+¥${sideCost(freePocket).toLocaleString()}`);
-    if(innerPocketSide !== 'none') add(`${T('opt.innerPocket', 'あおりポケット')}(${sideLabel(innerPocketSide)})`, `+¥${sideCost(innerPocketSide).toLocaleString()}`);
+    if(innerPocketSide !== 'none') add(`${T('opt.innerPocket', 'あおりポケット')}(${sideLabel(innerPocketSide)})`, `+¥${innerPocketCost(innerPocketSide).toLocaleString()}`);
     if(cardPCC > 0)              add(`${T('opt.cardPocket', 'カードポケット')}×${cardPCC}`, `+¥${Math.round(cardPCC * 1000).toLocaleString()}`);
     if(slitSide !== 'none')      add(`${T('opt.slit', 'スリット加工')}(${sideLabel(slitSide)})`, `+¥${sideCost(slitSide).toLocaleString()}`);
     if(window._clearWindowSide !== 'none') add(`${T('opt.clearWindow', 'クリア窓枠')}(${sideLabel(window._clearWindowSide)})`, `+¥${(sideCount(window._clearWindowSide)*3000).toLocaleString()}`);
