@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-09-04T07:34:13",
+  "generatedAt": "2026-09-04T14:23:19",
   "departments": [
     {
       "dept": "経営戦略本部",
-      "fileCount": 25,
-      "totalChars": 190741,
+      "fileCount": 41,
+      "totalChars": 206297,
       "lastUpdated": "2026-09-04"
     },
     {
       "dept": "監理部",
       "fileCount": 32,
-      "totalChars": 1893604,
+      "totalChars": 1908423,
       "lastUpdated": "2026-09-04"
     },
     {
@@ -28,7 +28,7 @@
     {
       "dept": "デジタル部",
       "fileCount": 106,
-      "totalChars": 683520,
+      "totalChars": 685236,
       "lastUpdated": "2026-09-04"
     },
     {
