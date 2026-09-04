@@ -1231,6 +1231,15 @@ tr.row-out-stock td{
       <div class="inline-note" style="margin-top:8px">
         💡 反映先: <code>order_estimate/size-baseprice.csv</code>（公開サイトのサイズ基準価格を制御）
       </div>
+      <!-- サイズカーブ グラフ（2026-09-05追加）: 点を上下にドラッグして work_hours を編集。テーブルと同じ配列・同じ保存経路 -->
+      <div id="sizeCurveChartWrap" style="margin-top:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+          <strong style="font-size:13px;color:#6b3a1f">📈 サイズカーブ（点を上下にドラッグして工数を調整）</strong>
+          <span style="font-size:11px;color:#8a7a66"><span style="color:#c9a96e">●━</span> 現在の工数　<span style="color:#b9a58a">┈</span> 面積比の理論値（Micro5基準）　<span style="color:#3b7dd8">━</span> size_curve_factor 適用後（1.0のときは非表示）</span>
+        </div>
+        <svg id="sizeCurveChart" viewBox="0 0 760 300" style="width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none"></svg>
+        <div style="font-size:11px;color:#8a7a66;margin-top:6px">ドラッグは 0.05h 刻み。下の数値入力と双方向に同期します。価格ラベルは Standard構造・本体のみ・税込。保存は上の「サイズ基準価格をGitHubへ反映」。</div>
+      </div>
       <div id="sizeBasePriceTableWrap" style="margin-top:16px;overflow-x:auto">
         <table id="sizeBasePriceTable" style="width:100%;border-collapse:collapse;font-size:13px">
           <thead>
@@ -2547,6 +2556,7 @@ function renderSettingsTable() {
       // 時給変更時に試算マトリクスも再計算
       renderEstimateMatrix();
       renderPriceAdjustMatrix();
+      renderSizeCurveChart();   // 設定変更→グラフの価格ラベル・curve線へ同期
     });
   });
   // 試算マトリクス描画（時給CSV読込完了時にも再描画）
@@ -2915,6 +2925,111 @@ function updateSizeDirtyPill() {
   pill.style.background = sizeBasePriceDirty ? '#f9d6d5' : '';
 }
 
+// ── サイズカーブ グラフ（2026-09-05追加）──
+// 点をドラッグ → sizeBasePriceRows[].work_hours を書き換える（テーブル・試算表と同じ配列・同じ保存経路）。
+// size_curve_factor は表示のみ（変更は⚙設定タブ）。option_multiplier は触らない（面積比の意味で工数と独立）。
+const SIZE_CURVE_SVG = { w: 760, h: 300, padL: 56, padR: 24, padT: 22, padB: 54 };
+let sizeCurveDrag = null;
+function renderSizeCurveChart() {
+  const svg = document.getElementById('sizeCurveChart');
+  if (!svg || !sizeBasePriceRows.length) return;
+  const P = SIZE_CURVE_SVG;
+  const rows = sizeBasePriceRows.map(r => ({
+    row: r, id: r.size_id, name: r.name,
+    area: (parseFloat(r.refill_w) || 0) * (parseFloat(r.refill_h) || 0),
+    hours: parseFloat(r.work_hours) || 0,
+  })).filter(x => x.area > 0).sort((a, b) => a.area - b.area);
+  if (!rows.length) return;
+  const m5 = rows.find(x => x.id === 'micro5');
+  const m5Area = m5?.area || rows[0].area;
+  const m5Hours = m5?.hours || 0;
+  const curve = getSizeCurveFactorFromSettings();
+  const stdBrand = brandPriceRows.find(b => b.brand_id === 'simplist') || { work_hour_multiplier: 1, area_mult: 1, extra_base_cost: 0 };
+  const theo = rows.map(x => m5Hours * x.area / m5Area);          // 面積比の理論値
+  const yMax = Math.max(1, ...rows.map(x => x.hours), ...theo) * 1.15;
+  // 横軸は面積の小さい順に等間隔（面積比で並べると Micro5スクエア≒mini6、A6≒バイブルが重なって読めないため）
+  const X = i => P.padL + (rows.length > 1 ? i / (rows.length - 1) : 0.5) * (P.w - P.padL - P.padR);
+  const settingsLoaded = typeof settingsRows !== 'undefined' && settingsRows.length > 0;  // 未読込だと初期値で誤った価格が出る
+  const Y = h => P.h - P.padB - (h / yMax) * (P.h - P.padT - P.padB);
+  const yFromPx = py => Math.max(0, (P.h - P.padB - py) / (P.h - P.padT - P.padB) * yMax);
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  let g = '';
+  const yStep = yMax > 8 ? 2 : yMax > 4 ? 1 : 0.5;
+  for (let h = 0; h <= yMax; h += yStep) {
+    g += `<line x1="${P.padL}" y1="${Y(h)}" x2="${P.w - P.padR}" y2="${Y(h)}" stroke="#e6d9c6" stroke-width="1"/>`;
+    g += `<text x="${P.padL - 8}" y="${Y(h) + 4}" font-size="11" fill="#8a7a66" text-anchor="end">${h}h</text>`;
+  }
+  g += `<line x1="${P.padL}" y1="${Y(0)}" x2="${P.w - P.padR}" y2="${Y(0)}" stroke="#b9a58a" stroke-width="1.2"/>`;
+  g += `<text x="${(P.padL + P.w - P.padR) / 2}" y="${P.h - 6}" font-size="11" fill="#8a7a66" text-anchor="middle">→ サイズ（リフィル面積の小さい順）${settingsLoaded ? '' : '　※⚙設定タブ未読込のため価格ラベルは非表示'}</text>`;
+  g += `<polyline points="${rows.map((x, i) => `${X(i)},${Y(theo[i])}`).join(' ')}" fill="none" stroke="#b9a58a" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  if (Math.abs(curve - 1) > 1e-9) {
+    g += `<polyline points="${rows.map((x, i) => `${X(i)},${Y(m5Hours + (x.hours - m5Hours) * curve)}`).join(' ')}" fill="none" stroke="#3b7dd8" stroke-width="2" opacity=".75"/>`;
+  }
+  g += `<polyline points="${rows.map((x, i) => `${X(i)},${Y(x.hours)}`).join(' ')}" fill="none" stroke="#c9a96e" stroke-width="2.5"/>`;
+  rows.forEach((x, i) => {
+    const cx = X(i), cy = Y(x.hours);
+    const isM5 = x.id === 'micro5';
+    const above = cy > 60;
+    // 両端の点は軸目盛・枠と重ならないよう内側寄せ
+    const anchor = i === 0 ? 'start' : i === rows.length - 1 ? 'end' : 'middle';
+    const lx = i === 0 ? cx + 10 : i === rows.length - 1 ? cx - 10 : cx;
+    g += `<g class="scp" data-size-id="${esc(x.id)}" style="cursor:ns-resize">`;
+    g += `<circle cx="${cx}" cy="${cy}" r="16" fill="transparent"/>`;   // 掴みやすさ用の透明ヒット領域
+    g += `<circle cx="${cx}" cy="${cy}" r="7" fill="${isM5 ? '#6b3a1f' : '#c9a96e'}" stroke="#fff" stroke-width="2"/>`;
+    g += `<text x="${lx}" y="${above ? cy - 16 : cy + 30}" font-size="11" font-weight="700" fill="#4a3320" text-anchor="${anchor}">${x.hours.toFixed(2)}h</text>`;
+    if (settingsLoaded) {
+      const cell = calcMatrixCell(x.row, stdBrand);
+      const priceTax = Math.floor(cell.total * 1.1 / 100) * 100;
+      g += `<text x="${lx}" y="${above ? cy - 30 : cy + 44}" font-size="10" fill="#8a7a66" text-anchor="${anchor}">¥${priceTax.toLocaleString()}</text>`;
+    }
+    // サイズ名は隣と重ならないよう交互に段をずらす
+    g += `<text x="${cx}" y="${P.h - P.padB + (i % 2 ? 30 : 16)}" font-size="11" fill="#4a3320" text-anchor="middle">${esc(x.name)}</text>`;
+    g += `</g>`;
+  });
+  svg.innerHTML = g;
+  svg._sizeCurve = { yFromPx };
+}
+function sizeCurveSvgPoint(svg, ev) {
+  const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function bindSizeCurveChart() {
+  const svg = document.getElementById('sizeCurveChart');
+  if (!svg || svg._bound) return;
+  svg._bound = true;
+  svg.addEventListener('pointerdown', ev => {
+    const gEl = ev.target.closest && ev.target.closest('g.scp');
+    if (!gEl) return;
+    sizeCurveDrag = { id: gEl.dataset.sizeId, moved: false };
+    try { svg.setPointerCapture(ev.pointerId); } catch (_) {}
+    ev.preventDefault();
+  });
+  svg.addEventListener('pointermove', ev => {
+    if (!sizeCurveDrag || !svg._sizeCurve) return;
+    const p = sizeCurveSvgPoint(svg, ev);
+    const h = Math.max(0.05, Math.round(svg._sizeCurve.yFromPx(p.y) / 0.05) * 0.05);
+    const row = sizeBasePriceRows.find(r => r.size_id === sizeCurveDrag.id);
+    if (!row) return;
+    const v = h.toFixed(2);
+    if (row.work_hours === v) return;
+    row.work_hours = v;
+    sizeCurveDrag.moved = true;
+    renderSizeCurveChart();   // ドラッグ中はグラフだけ更新（テーブル・試算表は離したとき）
+  });
+  const end = ev => {
+    if (!sizeCurveDrag) return;
+    const moved = sizeCurveDrag.moved;
+    sizeCurveDrag = null;
+    try { svg.releasePointerCapture(ev.pointerId); } catch (_) {}
+    if (!moved) return;
+    sizeBasePriceDirty = true;
+    updateSizeDirtyPill();
+    renderSizeBasePriceTable();   // 同じ配列を読むので、テーブル・試算表・グラフが揃う
+  };
+  svg.addEventListener('pointerup', end);
+  svg.addEventListener('pointercancel', end);
+}
+
 function renderSizeBasePriceTable() {
   const tbody = document.getElementById('sizeBasePriceTbody');
   if (!tbody) return;
@@ -2981,11 +3096,15 @@ function renderSizeBasePriceTable() {
       // 試算マトリクス再描画
       renderEstimateMatrix();
       renderPriceAdjustMatrix();
+      renderSizeCurveChart();   // テーブル入力→グラフへ同期
     });
   });
   // 試算マトリクス描画
   renderEstimateMatrix();
   renderPriceAdjustMatrix();
+  // サイズカーブ グラフ（同じ配列を描く）
+  renderSizeCurveChart();
+  bindSizeCurveChart();
 }
 
 function sizeBasePriceToCsv() {
