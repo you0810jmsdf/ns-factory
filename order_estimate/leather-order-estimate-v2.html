@@ -793,6 +793,14 @@ body{
   </div>
   <div id="patchworkNote" style="display:none;font-size:11px;color:#b06820;background:#fff8ee;border:1px solid #e8c87a;border-radius:6px;padding:6px 10px;margin-bottom:8px" data-i18n="ui.patchworkNote">🎨 パッチワーク加工ON：革を複数選択できます</div>
   <div class="img-grid" id="leatherGrid"></div>
+  <!-- 内張り革（2026-09-04追加）: 構造の lining_ratio が 0 のときは非表示。既定は外装と同じ革 -->
+  <div id="liningRow" style="display:none;margin-top:12px;padding:10px 12px;background:#fbf7f1;border:1px solid #e6d9c6;border-radius:8px">
+    <label for="liningSelect" style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">🧵 内張り革 <span style="font-weight:normal;font-size:11px;color:#8a7a66" id="liningRatioNote"></span></label>
+    <select id="liningSelect" onchange="onLiningChange(this.value)" style="width:100%;max-width:420px;padding:7px 10px;font-size:13px;border:1px solid #d8c8b0;border-radius:6px;background:#fff">
+      <option value="">外装と同じ革</option>
+    </select>
+    <div style="font-size:11px;color:#8a7a66;margin-top:5px">内張りをヌメ革にすると原材料費が下がります（面積比は構造ごとの設定値）。</div>
+  </div>
 </div>
 
 <div class="section">
@@ -1155,11 +1163,12 @@ const RING_SPINE_RATIO = 3;     // スパイン幅 = リング内径 × この�
 let WASTE_RATE         = 0.30;  // 半裁革の使用不可部分。settings.csv で上書き可能
 // WASTE_FACTOR は WASTE_RATE が動的になったため getter で計算
 function getWasteFactor() { return 1 / (1 - WASTE_RATE); }
-const CRAFT_MULTIPLIER = 1.5;   // 工賃込み倍率（縫製・コバ磨き等を革材料費に上乗せ）
 // ── 新計算式（2026-05-25）── 製作費 = (サイズ別工数 + 構造別追加工数) × LABOR_RATE_PER_HOUR
-let LABOR_RATE_PER_HOUR = 3000;   // 時給単価（¥/h）settings.csv で上書き可能
-// ── 価格調整パラメータ（2026-07-09追加）── settings.csv で上書き可能。初期値は既存計算と完全一致する値
-let BASE_FEE = 0;             // 基本料金（円）：サイズによらない固定費
+// ⛔ 以下の初期値は settings.csv の現行値と同じにしておくこと（CSV読込失敗時にこの値で計算される。
+//    2026-09-04 まで 3000 / 0 のままで、障害時に製作費が半額以下で表示される状態だった）
+let LABOR_RATE_PER_HOUR = 6000;   // 時給単価（¥/h）settings.csv で上書き可能
+// ── 価格調整パラメータ（2026-07-09追加）── settings.csv で上書き可能
+let BASE_FEE = 10000;         // 基本料金（円）：サイズによらない固定費
 let SIZE_CURVE_FACTOR = 1.0;  // サイズカーブ緩和度（0〜1）：1.0で現状のサイズ工数差そのまま、0.0で全サイズ同一工数
 // 管理者調整モードのリセット（?admin時のみ意味あり）
 function resetAdminOverrides() {
@@ -1400,7 +1409,7 @@ const RINGS = [
   { id:'r11mm',name:'11mm',         sub:'極薄・スリム',     id_mm:11, price:1500, isKlause:false, emoji:'⭕', image:'' },
   { id:'r13mm',name:'13mm',         sub:'薄型・スマート',   id_mm:13, price:1500, isKlause:false, emoji:'⭕', image:'' },
   { id:'r15',  name:'15mm',         sub:'薄型・スマート',   id_mm:15, price:1000, isKlause:false, emoji:'⭕', image:'' },
-  { id:'r20',  name:'19mm',         sub:'標準サイズ',       id_mm:19, price:1000, isKlause:false, emoji:'⭕', image:'' },
+  { id:'r20',  name:'19mm',         sub:'標準サイズ',       id_mm:19, price:1000, isKlause:false, emoji:'⭕', image:'' }, // ⚠ id は歴史的経緯で r20 だが実体は 19mm（id_mm が正）。ring-price-stock.csv の ring_id と対応するため id は変えないこと
   { id:'r20mm',name:'20mm',         sub:'標準サイズ',       id_mm:20, price:1500, isKlause:false, emoji:'⭕', image:'' },
   { id:'r25',  name:'25mm',         sub:'厚めリング',       id_mm:25, price:1000, isKlause:false, emoji:'🔵', image:'' },
   { id:'r30',  name:'30mm',         sub:'大容量タイプ',     id_mm:30, price:1000, isKlause:false, notMicro5:true, emoji:'🔵', image:'' },
@@ -1421,8 +1430,6 @@ const RINGS = [
 const METALS = [
   { id:'silver', name:'シルバー',    sub:'A6 19/25/30mm共通イメージ', price:0,   emoji:'⚪', image:RING_IMAGES.silver },
   { id:'gold',   name:'ゴールド',    sub:'A6 19/25/30mm共通イメージ', price:500, emoji:'🟡', image:RING_IMAGES.gold },
-  { id:'s_text',    name:'文字ロゴ',                sub:'標準',                      price:0,    hasInitFee:false, emoji:'📝', image:'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAcFBQYFBAcGBQYIBwcIChELCgkJChUPEAwRGBUaGRgVGBcbHichGx0lHRcYIi4iJSgpKywrGiAvMy8qMicqKyr/2wBDAQcICAoJChQLCxQqHBgcKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKir/wAARCACFAMgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD6RooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKxPFXi3TfB2ljUdZS7+yAkPLbWrzCIYzl9oO0e54rbrG8Zf8iJr3/YNuP/AEU1AGV4M+KHhTx9dXNt4a1Bp57ZBJJFJE0bbScbgGAyM4Bx0yPWpPGPxG0HwG0J8SG9gimGUuI7OSSLPPyl1GA3GcdcV8xa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' },
-  { id:'s_owl',     name:'ふくろうロゴ',            sub:'フクロウ柄',                price:0,    hasInitFee:false, emoji:'🦉', image:'data:image/jpeg;base64,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' },
 ];
 
 // ── ステッチ ──
@@ -2478,6 +2485,9 @@ async function loadBrandPriceCatalog() {
       if (!isNaN(eb)) brand.extraBaseCost = eb;
       const whm = parseFloat(row.work_hour_multiplier);
       if (!isNaN(whm)) brand.workHourMultiplier = whm;
+      // lining_ratio: 革面積のうち内張りが占める比率（0〜1）。0なら内張りなし＝内張り革の選択UIを出さない（2026-09-04追加）
+      const lr = parseFloat(row.lining_ratio);
+      brand.liningRatio = (!isNaN(lr) && lr >= 0 && lr <= 1) ? lr : 0;
       if (row.krause_no_multi !== undefined && row.krause_no_multi !== '') {
         brand.krauseNoMulti = csvBool(row.krause_no_multi);
       }
@@ -2623,6 +2633,7 @@ function buildBrandGrid() {
       }
       updateFlapOptionUI();
       updateKlauseSection();
+      updateLiningRow();
       updateSizePrices();
       updateSummary();
     };
@@ -2762,6 +2773,51 @@ function buildPlatformGrid() {
 }
 
 // ── BUILD LEATHER GRID ──
+// ── 内張り革（2026-09-04追加）──
+// 状態: sel.liningId / sel.lining / prices.lining（null＝外装と同じ革）
+// 原材料費 = ds × ( 外装単価×(1−r) ＋ 内張単価×r )、r は brand-price.csv の lining_ratio
+function getLiningRatio() {
+  const b = BRANDS.find(x => x.id === sel.brandId);
+  return b?.liningRatio ?? 0;
+}
+function getLiningCandidates() {
+  // 内張りは実運用でほぼヌメのため、名前かタグに「ヌメ」を含む革だけを候補にする（将来は全革へ拡張可）
+  return LEATHERS.filter(l => /ヌメ/.test(l.name || '') || (l.tags || []).some(t => /ヌメ/.test(t)));
+}
+function buildLiningSelect() {
+  const el = document.getElementById('liningSelect');
+  if (!el) return;
+  const cur = el.value;
+  el.innerHTML = '<option value="">外装と同じ革</option>';
+  getLiningCandidates().forEach(l => {
+    const o = document.createElement('option');
+    o.value = l.id; o.textContent = `${l.name}（¥${l.dsPrice}/ds）`;
+    el.appendChild(o);
+  });
+  el.value = (cur && [...el.options].some(o => o.value === cur)) ? cur : '';
+}
+function updateLiningRow() {
+  const row = document.getElementById('liningRow');
+  if (!row) return;
+  const r = getLiningRatio();
+  row.style.display = r > 0 ? '' : 'none';
+  const note = document.getElementById('liningRatioNote');
+  if (note) note.textContent = r > 0 ? `（革面積の${Math.round(r * 100)}%）` : '';
+  if (r <= 0 && sel.liningId) onLiningChange('');  // 内張りなし構造へ変えたら解除
+}
+function onLiningChange(id) {
+  const el = document.getElementById('liningSelect');
+  if (!id) {
+    sel.liningId = null; sel.lining = null; prices.lining = null;
+  } else {
+    const l = LEATHERS.find(x => x.id === id);
+    if (!l) return;
+    sel.liningId = l.id; sel.lining = l.name; prices.lining = l.dsPrice;
+  }
+  if (el && el.value !== (id || '')) el.value = id || '';
+  updateSummary();
+}
+
 function buildLeatherGrid() {
   const grid = document.getElementById('leatherGrid');
   grid.innerHTML = '';
@@ -2894,6 +2950,7 @@ async function loadLeatherExtension() {
     // 選択状態を保持したままグリッド再構築
     const selectedId = sel.leatherId;
     buildLeatherGrid();
+    buildLiningSelect();  // 拡張カタログ・単価CSVのマージ後に候補と単価を確定させる
     applyLeatherStockBadges();
     if (selectedId && selectedId !== 'patchwork') {
       const card = document.querySelector(`.img-card[data-id="${selectedId}"]`);
@@ -3164,12 +3221,16 @@ function updateSummary(options = {}) {
   const sizeHoursAdjusted = micro5Hours + ((sizeHours || 0) - micro5Hours) * SIZE_CURVE_FACTOR;
   const totalHours = sizeHoursAdjusted * (workHourMultiplier || 0);
   const baseCost = Math.round(BASE_FEE + totalHours * laborRate + brandExtraBase);
-  const leatherCost = Math.round(sizeDs * (leatherDsP || NUMER_DS_PRICE));
+  // 内張り革（2026-09-04追加）: 外装が選ばれていて内張りを別革にしたときだけ面積比で按分する
+  const liningRatio = (leatherDsP > 0 && sel.liningId && prices.lining != null) ? getLiningRatio() : 0;
+  const leatherDsPEff = liningRatio > 0 ? (leatherDsP * (1 - liningRatio) + prices.lining * liningRatio) : leatherDsP;
+  const leatherCost = Math.round(sizeDs * (leatherDsPEff || NUMER_DS_PRICE));
 
   let opts = 0;
   const optionMultiplierEased = 1.0 + (optionMultiplier - 1.0) / 2; // 面積比の増分を半分に緩和（2026-07-09変更）
-  ['metal','coin','stamp'].forEach(k => opts += Math.round((prices[k]||0) * optionMultiplierEased));
+  ['metal','coin'].forEach(k => opts += Math.round((prices[k]||0) * optionMultiplierEased));
   opts += Math.round(prices.ring||0); // リングは仕入値をそのまま計上（ring-price-stock.csv がサイズ別に登録済のため倍率は二重計上／2026-09-04変更）
+  opts += Math.round(prices.stamp||0); // 刻印は物理サイズに依存しないため固定額・サイズ倍率非適用（2026-09-04変更）
   opts += Math.round(prices.pen||0); // ペンホルダーは固定額・サイズ倍率非適用（2026-07-09変更）
   opts += (prices.stitchColor||0); // ステッチ色は無料オプションのため倍率非適用
   opts += sideCost(freePocket) + innerPocketCost(innerPocketSide) + sideCost(slitSide) + dkanCost + wrappingCost
@@ -3224,7 +3285,9 @@ function updateSummary(options = {}) {
       add('└ = 製作費（工賃）', `= ¥${baseCost.toLocaleString()}`);
       if (sizeDs > 0) {
         add('└ 革面積', `${sizeDs} ds（リフィル ${sizeObj?.w||0}×${sizeObj?.h||0}mm = ${refillMm2}mm² × 面積倍率 ${areaMultiplier}（${brandMulti}×${ringMulti}） × ロス込 ${getWasteFactor().toFixed(2)}倍 [ロス率${(WASTE_RATE*100).toFixed(0)}%]）`);
-        add('└ × 革単価', `× ¥${(leatherDsP || NUMER_DS_PRICE)}/ds`);
+        add('└ × 革単価', liningRatio > 0
+          ? `× ¥${Math.round(leatherDsPEff)}/ds（外装 ¥${leatherDsP} × ${(1 - liningRatio).toFixed(2)} ＋ 内張 ¥${prices.lining} × ${liningRatio.toFixed(2)}）`
+          : `× ¥${(leatherDsP || NUMER_DS_PRICE)}/ds`);
         add('└ = 原材料費', `= ¥${leatherCost.toLocaleString()}`);
       }
       // input にイベントハンドラを bind（次の microtask で）
@@ -3246,6 +3309,11 @@ function updateSummary(options = {}) {
     }
     if (!sel.leather) {
       add(T('sum.leather', '革素材'), T('sum.pickLeather', '革を選択してください'));
+    }
+    if (liningRatio > 0) {
+      // 内張りを別革にした分の差額（マイナスなら安くなる）を見せる
+      const liningDiff = Math.round(sizeDs * leatherDsPEff) - Math.round(sizeDs * leatherDsP);
+      add(`${T('sum.lining', '内張り')}: ${sel.lining}（${Math.round(liningRatio * 100)}%）`, `${liningDiff < 0 ? '−' : '+'}¥${Math.abs(liningDiff).toLocaleString()}`);
     }
     if(sel.ring)  add(`${T('sum.ring', 'リング')}: ${sel.ring}`, prices.ring ? `+¥${Math.round(prices.ring).toLocaleString()}` : T('sum.standard', '標準'));
     if(sel.ringStockText) add(T('sum.ringStock', 'リング在庫'), sel.ringStockText);
@@ -3273,7 +3341,7 @@ function updateSummary(options = {}) {
     const stampNoneName = (STAMPS.find(s => s.id === 's_none') || {}).name;
     if(sel.pen  && sel.pen  !== penNoneName) add(`${T('opt.pen', 'ペンホルダー')}: ${sel.pen}`,  `+¥${Math.round(prices.pen||0).toLocaleString()}`);
     if(sel.coin && prices.coin > 0)      add(T('opt.coin', '小銭入れ'), `+¥${Math.round(prices.coin * optionMultiplierEased).toLocaleString()}`);
-    if(sel.stamp && sel.stamp !== stampNoneName)       add(`${T('sum.stamp', '刻印')}: ${sel.stamp}`, `+¥${Math.round(prices.stamp * optionMultiplierEased).toLocaleString()}`);
+    if(sel.stamp && sel.stamp !== stampNoneName)       add(`${T('sum.stamp', '刻印')}: ${sel.stamp}`, `+¥${Math.round(prices.stamp||0).toLocaleString()}`);
     if(prices.brandInitFee > 0) add(T('sum.initFeeStructure', '✨ 初度設計費・構造設計（1回のみ）'), `+¥${prices.brandInitFee.toLocaleString()}`);
     if(prices.initDesignFee > 0) add(T('sum.initFeeStamp', '✨ 初度設計費・刻印デザイン（1回のみ）'), `+¥${prices.initDesignFee.toLocaleString()}`);
     if(initDesignFee > 1000) add(T('sum.initFeeTotal', '　初度設計費 合計'), `+¥${initDesignFee.toLocaleString()}`);
@@ -3341,6 +3409,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   h += r(T('pd.size', 'サイズ'), sel.size||NS);
   // 構造タイプ倍率・革素材ds比率は原価類推可能なため依頼人向け見積書から除外
   h += r(T('pd.leather', 'レザー'), sel.leather||NS);
+  if (sel.lining && getLiningRatio() > 0) h += r(T('pd.lining', '内張り'), sel.lining);
   // 本体カラーはレザー名と重複するため見積書では除外（その他コンポーネントのカラーのみ表示）
   getActiveColorComponents().forEach(meta => {
     if (meta.key === 'main') return;
@@ -3411,6 +3480,7 @@ function buildEstText() {
         : `${sel.leather}（¥${_lDsP}/ds、ヌメ革基準比 ×${_leatherRatio}${_sDs > 0 ? '、参考' + _sDs + 'ds' : ''}）`)
     : NSt;
   t += `${T('pd.size', 'サイズ')}：${sel.size||NSt}\n${T('pd.leather', 'レザー')}：${_leatherDetail}\n`;
+  if (sel.lining && getLiningRatio() > 0) t += `${T('pd.lining', '内張り')}：${sel.lining}（${T('pd.liningRatio', '革面積の')}${Math.round(getLiningRatio() * 100)}%）\n`;
   // 本体カラーはレザー名と重複するためメール本文では除外
   getActiveColorComponents().forEach(meta => {
     if (meta.key === 'main') return;
@@ -3753,6 +3823,7 @@ window.addEventListener('DOMContentLoaded', () => {
     updateSummary();
   });
   buildLeatherGrid();
+  buildLiningSelect(); updateLiningRow();  // 内張り革（2026-09-04追加）
   loadLeatherExtension(); // 280色カタログ＋公式ds単価＋在庫バッジを非同期マージ
   buildMetalGrid();
   buildStitchColors();
@@ -3965,7 +4036,7 @@ window.NSF_I18N_DICT = {
   'rq.addrPh': 'Country, city, street…', 'rq.subject': 'Subject', 'rq.subjectPh': 'Ring planner full order quote request',
   'rq.est': 'Quote contents (auto)', 'rq.note': 'Notes & requests', 'rq.notePh': 'Requests, delivery wishes, etc.',
   'rq.submit': '📤 Submit request',
-  'sum.pickSize': 'Please select a size', 'sum.body': '▶ Body', 'sum.leather': 'Leather',
+  'sum.pickSize': 'Please select a size', 'sum.body': '▶ Body', 'sum.leather': 'Leather', 'sum.lining': 'Lining',
   'sum.pickLeather': 'Please select a leather', 'sum.ring': 'Rings', 'sum.standard': 'Standard',
   'sum.ringStock': 'Ring stock', 'sum.metal': 'Hardware', 'sum.metalStock': 'Hardware stock',
   'sum.colors': '▶ Colors', 'sum.custom': '▶ Customization', 'sum.stitchColor': 'Stitch color',
@@ -3975,7 +4046,7 @@ window.NSF_I18N_DICT = {
   'sum.volDisc': 'Volume discount', 'sum.disc': 'Discount', 'sum.yen': 'JPY',
   'sum.sellPrice': '▶ Listing price', 'sum.platform': 'Platform', 'sum.fee': 'fee',
   'sum.recommendedPrice': '🏷 Suggested listing price',
-  'pd.brand': 'Structure', 'pd.size': 'Size', 'pd.leather': 'Leather',
+  'pd.brand': 'Structure', 'pd.size': 'Size', 'pd.leather': 'Leather', 'pd.lining': 'Lining', 'pd.liningRatio': 'of leather area ',
   'pd.initFee': '✨ One-time design fee', 'pd.remarks': 'Notes',
   'pd.unitPrice': 'Unit price (excl. tax)', 'pd.qty': 'Quantity', 'pd.subtotal': 'Subtotal',
   'pd.totalTax': 'Total (tax incl.)',
