@@ -175,9 +175,18 @@
         }
       },
       "minne": {
-        "status": "未取得",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-08-31",
+            "amount": 11113,
+            "amount_text": "¥11,113",
+            "subject": "売上金",
+            "status": "取得済み",
+            "local_path": "監理部\\receipts\\processed\\2026-09\\20260903_222846_minne_1a0652905b799f13.txt"
+          }
+        ],
         "guide": {
           "url": "https://minne.com/",
           "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
@@ -3607,12 +3616,12 @@
       }
     }
   },
-  "checked_at": "2026-09-01 07:00:43",
+  "checked_at": "2026-09-04 22:28:54",
   "health": {
-    "token_updated": "2026-09-01",
+    "token_updated": "2026-09-04",
     "token_age_days": 0,
-    "latest_receipt": "2026-08-25",
-    "receipt_age_days": 6,
+    "latest_receipt": "2026-09-04",
+    "receipt_age_days": 0,
     "warnings": []
   }
 }
