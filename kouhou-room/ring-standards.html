@@ -195,7 +195,7 @@ img { max-width: 100%; display: block; }
 /* ---------- リング径 ---------- */
 .rings-stage { background: var(--white); border-radius: var(--radius); padding: 24px 22px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
 .ring-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; justify-content: center; }
-.ring-item { text-align: center; }
+.ring-item { text-align: center; min-width: 62px; }
 .ring-circle {
   border: 3px solid var(--tan); border-radius: 50%;
   background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.9), rgba(196,149,106,.16));
@@ -203,7 +203,7 @@ img { max-width: 100%; display: block; }
 }
 .ring-item:hover .ring-circle { transform: scale(1.06); border-color: var(--accent-dark); }
 .ring-cap { font-size: 11.5px; font-weight: 800; margin-top: 7px; font-variant-numeric: tabular-nums; }
-.ring-use { font-size: 10px; color: var(--gray); margin-top: 1px; line-height: 1.5; }
+.ring-use { font-size: 10px; color: var(--gray); margin-top: 1px; line-height: 1.5; max-width: 96px; margin-left: auto; margin-right: auto; }
 .ring-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
 .ring-photo { background: var(--white); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .ring-photo img { aspect-ratio: 4/3; object-fit: contain; background: #fff; padding: 6px; }
@@ -548,7 +548,7 @@ var FORMATS = [
   {
     k: 'a5slim', name: 'A5 Slim', badge: 'A5 SLIM · odoru / monta系',
     alias: '横幅だけ細いA5', paper: [110, 210], holes: 6,
-    pitch: [19, 19, 70, 19, 19], span: 146, grp: 'a5g', fam: 'std', match: /a5\s*slim/i,
+    pitch: [19, 19, 70, 19, 19], span: 146, grp: 'a5g', fam: 'std', match: /a5\s*(slim|スリム)/i,
     lead: '高さはA5と同じ210mmのまま、横幅だけ110mmに絞った規格。A5用6穴金具をそのまま流用できます。',
     notes: ['通常A5 148mm に対し横幅差は 38mm。高さは共通。', 'リング径の採用例は16mm。', 'KRAUSE の 210-6-16（6穴・内径16mm・ベース長210mm）が候補。ただし odoru が実際に使用しているかは未確認。'],
     ringEx: '採用例16mm（KRAUSE 210-6-16 が候補）',
