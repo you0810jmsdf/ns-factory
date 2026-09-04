@@ -1493,7 +1493,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     // 名前とサイズ欄から判定する（マスターに専用の欄が無いため）。
     // 表記ゆれ（micor5/mni6/bivle/torinco等）も拾う。
     // size-sort.html の detectSize と同じ条件。片方だけ変えないこと。
-    const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5', 'その他サイズ'];
+    // A5スリムはA5より幅が狭い別規格（2026-09-04 追加）。判定は必ず A5 より前に置くこと
+    // （/a5/ が先に当たると A5スリムがA5に吸収される）。
+    const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5スリム', 'A5', 'その他サイズ'];
     const COVER_SIZES = ['A6', 'B6', 'A5', 'B5', 'A4', '新書判', 'トラベラーズ レギュラー', 'トラベラーズ パスポート', 'その他サイズ'];
     // チップの表示順（両系統の和集合。重複ラベルA6/B6/A5は1つに畳まれる）
     const ALL_SIZES = [...new Set([...PLANNER_SIZES, ...COVER_SIZES])];
@@ -1506,6 +1508,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (/a6/.test(t)) return 'A6';
       if (/b6/.test(t)) return 'B6';
       if (/バイブル|bible|bivle|ﾊﾞｲﾌﾞﾙ/.test(t)) return 'バイブル';
+      if (/a5\s*(スリム|slim|ｽﾘﾑ)/.test(t)) return 'A5スリム'; // A5判定より必ず前
       if (/a5/.test(t)) return 'A5';
       return 'その他サイズ';
     }
