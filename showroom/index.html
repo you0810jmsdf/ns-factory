@@ -1316,18 +1316,19 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       return wrap;
     }
 
-    /* リング在庫一覧（ring-price-stock.csv・見積もりページと同じ在庫判定） */
+    /* リング在庫一覧（ring-price-stock.csv・見積もりページと同じ在庫判定）
+       判定と表記は chat-widget.js の nsfRingStockInfo() に集約している（二重管理を避けるため）。
+       在庫ありだけでなく、残りわずか・取寄・入荷待ちも区分を添えて表示する。 */
     function buildRingStockList() {
       var box = document.createElement('div');
       box.className = 'vc-stocklist';
       var rows = window.nsfRingRows;
-      if (!rows) {
+      var stockInfo = window.nsfRingStockInfo;
+      if (!rows || typeof stockInfo !== 'function') {
         box.appendChild(stockFallbackLink());
         return box;
       }
-      var inRows = rows.filter(function (r) {
-        return r.stock_status === 'in_stock' && Number(r.stock_qty || 0) > 0;
-      });
+      var inRows = rows.filter(function (r) { return stockInfo(r).available; });
       if (!inRows.length) {
         box.textContent = 'ただいまリング在庫切れです。お取り寄せでご対応します🙏';
         return box;
@@ -1336,7 +1337,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       inRows.forEach(function (r) {
         var key = r.series_label + ' ' + r.size_label + (r.planner_type ? '（' + r.planner_type + '）' : '');
         if (!groups[key]) { groups[key] = []; order.push(key); }
-        groups[key].push(r.color_label);
+        groups[key].push(r.color_label + stockInfo(r).suffix);
       });
       order.forEach(function (k) {
         var d = document.createElement('div');
