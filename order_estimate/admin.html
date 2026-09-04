@@ -1058,7 +1058,7 @@ tr.row-out-stock td{
       <h2 style="margin:0 0 6px;font-size:16px;color:#6b3a1f">リング在庫マトリクス（欠品発見用）</h2>
       <div class="hint">
         シリーズ×手帳規格×内径×色で全リングを俯瞰します。外径 = 内径 + 3mm。
-        <strong>色チップをクリックすると下の在庫入力欄へジャンプ</strong>します（「×」はその行の削除）。
+        <strong>色チップをクリックすると在庫数を直接修正</strong>できます（「×」はその行の削除）。
         「＋店を追加」で同じリングの別の購入先（店・URL・価格・送料）を登録でき、購入先=最安・見積総額=最高値が自動で選び直されます。
         いずれも「リング在庫をGitHubへ反映」を押すまで公開データは変わりません。
       </div>
@@ -3688,7 +3688,7 @@ function matrixChipState(row) {
   return { cls: 'ok', text: String(qty) };
 }
 
-function makeRingChip(cls, swColor, label, onDelete, onJump) {
+function makeRingChip(cls, swColor, label, onDelete, onActivate, activateTitle) {
   const chip = document.createElement('span');
   chip.className = `ring-chip ${cls}`;
   if (swColor) {
@@ -3698,10 +3698,19 @@ function makeRingChip(cls, swColor, label, onDelete, onJump) {
     chip.appendChild(sw);
   }
   chip.appendChild(document.createTextNode(label));
-  if (onJump) {
+  if (onActivate) {
     chip.classList.add('jumpable');
-    chip.title = 'クリックで下の在庫入力欄へジャンプ';
-    chip.onclick = onJump;
+    chip.title = activateTitle || 'クリックで操作';
+    chip.tabIndex = 0;
+    chip.setAttribute('role', 'button');
+    chip.onclick = onActivate;
+    chip.onkeydown = (e) => {
+      if (e.target !== chip) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onActivate();
+      }
+    };
   }
   if (onDelete) {
     const del = document.createElement('button');
@@ -3716,6 +3725,34 @@ function makeRingChip(cls, swColor, label, onDelete, onJump) {
     chip.appendChild(del);
   }
   return chip;
+}
+
+function editRingStockFromMatrix(row) {
+  const currentRaw = String(row.stock_qty ?? '').trim();
+  const currentQty = currentRaw === '' ? '' : String(numberValue(row.stock_qty));
+  const target = [
+    row.planner_type || '規格未設定',
+    row.series_label || row.series || '系列未設定',
+    row.size_label || (row.size_mm ? `${row.size_mm}mm` : ''),
+    row.color_label || row.color_id || '色未設定'
+  ].filter(Boolean).join(' / ');
+  const nextRaw = prompt(`${target}\n在庫数を入力してください。0で欠品、空欄で数量未入力にします。`, currentQty);
+  if (nextRaw === null) return;
+  const next = nextRaw.trim();
+  if (next === '') {
+    row.stock_qty = '';
+    row.stock_status = 'unknown';
+  } else {
+    const qty = Number(next);
+    if (!Number.isInteger(qty) || qty < 0) {
+      alert('在庫数は0以上の整数で入力してください。');
+      return;
+    }
+    row.stock_qty = String(qty);
+    row.stock_status = qty > 0 ? 'in_stock' : 'out_of_stock';
+  }
+  setDirty(true);
+  applyFilters(false);
 }
 
 function renderRingMatrix() {
@@ -4156,7 +4193,7 @@ function renderRingMatrix() {
           if (state.cls === 'out') hasOut = true;
           const label = String(row.color_label || '').trim() || meta.label;
           chips.appendChild(makeRingChip(state.cls, meta.sw, `${label} ${state.text}`,
-            chipDeleter(row, label), () => jumpToStockCard(rows.indexOf(row))));
+            chipDeleter(row, label), () => editRingStockFromMatrix(row), 'クリックで在庫数を修正'));
         });
         group.colors.forEach((row, colorId) => {
           if (MATRIX_COLOR_ORDER.includes(colorId)) return;
@@ -4164,7 +4201,7 @@ function renderRingMatrix() {
           if (state.cls === 'out') hasOut = true;
           const label = String(row.color_label || '').trim() || colorId;
           chips.appendChild(makeRingChip(state.cls, null, `${label} ${state.text}`,
-            chipDeleter(row, label), () => jumpToStockCard(rows.indexOf(row))));
+            chipDeleter(row, label), () => editRingStockFromMatrix(row), 'クリックで在庫数を修正'));
         });
         if (hasOut) card.classList.add('has-out');
         card.appendChild(chips);
