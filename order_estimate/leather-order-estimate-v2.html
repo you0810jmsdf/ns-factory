@@ -772,6 +772,7 @@ body{
 <div class="main">
 <!-- ═══════════ CONTENT ═══════════ -->
 <div class="content">
+<div id="laborCurveEditor" hidden></div>
 
 <!-- ══ STEP 1: BRAND ══ -->
 <div class="section">
@@ -1129,6 +1130,8 @@ body{
   </div>
 </div>
 
+<script src="./labor-curve-model.js?v=20260905"></script>
+<script src="./labor-curve-editor.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
    ▼▼▼  データ設定エリア  ▼▼▼
@@ -2460,6 +2463,10 @@ async function loadSizeBasePriceCatalog() {
       if (!size) return;
       const wh = parseFloat(row.work_hours);
       if (!isNaN(wh)) size.workHours = wh;
+      // CSVの寸法を曲線・材料費の両方に反映する。
+      const rw = Number(row.refill_w), rh = Number(row.refill_h);
+      if (Number.isFinite(rw) && rw > 0) size.w = rw;
+      if (Number.isFinite(rh) && rh > 0) size.h = rh;
       const om = parseFloat(row.option_multiplier);
       if (!isNaN(om)) size.optionMultiplier = om;
     });
@@ -2650,7 +2657,9 @@ function updateSizePrices() {
     const sizeObj = SIZES.find(s => s.id === card.dataset.id);
     const sizeHours = sizeObj?.workHours ?? 0;
     const sizeHoursAdjusted = micro5Hours + (sizeHours - micro5Hours) * SIZE_CURVE_FACTOR;
-    const totalHours = sizeHoursAdjusted * workHourMultiplier;
+    const ringMulti = 1; // 裏貼りは構造のareaMultiに含む。リングで再加算しない。
+    const area = (sizeObj?.w || 0) * (sizeObj?.h || 0) / 10000 * (brandObj?.areaMulti ?? 1) * ringMulti;
+    const totalHours = NSFLaborCurves.hours(sel.brandId, area, sizeHoursAdjusted * workHourMultiplier);
     const displayed = Math.round(BASE_FEE + totalHours * LABOR_RATE_PER_HOUR + extra);
     const priceEl = card.querySelector('.opt-price');
     if (priceEl) {
@@ -3194,8 +3203,8 @@ function updateSummary(options = {}) {
   const brandObj    = BRANDS.find(b => b.id === sel.brandId);
   const brandMulti  = brandObj ? brandObj.areaMulti : 1;  // リフィル面積に対する構造別倍率
   const ringIsKlause = !!(RINGS.find(r => r.id === sel.ringId)?.isKlause);
-  const ringMulti   = (ringIsKlause && !brandObj?.krauseNoMulti) ? 2 : 1;
-  const areaMultiplier = brandMulti * ringMulti;  // 例: N-Pad + クラウゼ = 2×2 = 4
+  const ringMulti   = 1; // 裏貼り面積は構造で決定。クラウゼ選択で2倍にしない。
+  const areaMultiplier = brandMulti * ringMulti;  // 総面積は構造の倍率のみ。
 
   if (sizeObj) {
     // ── 新方式（2026-05-25）：革面積 = リフィル面積 × area_mult × ロス係数 ──
@@ -3219,7 +3228,10 @@ function updateSummary(options = {}) {
   // ── 価格調整パラメータ（2026-07-09追加）：Micro5工数を基準にサイズ工数差を緩和 ──
   const micro5Hours = SIZES.find(s => s.id === 'micro5')?.workHours ?? 0;
   const sizeHoursAdjusted = micro5Hours + ((sizeHours || 0) - micro5Hours) * SIZE_CURVE_FACTOR;
-  const totalHours = sizeHoursAdjusted * (workHourMultiplier || 0);
+  // 曲線は構造ごとの最終工数。構造工数倍率・サイズ緩和度を再乗算しない。
+  const productionArea = refillMm2 / 10000 * areaMultiplier;
+  const curveActive = !!NSFLaborCurves.data?.curves[sel.brandId];
+  const totalHours = NSFLaborCurves.hours(sel.brandId, productionArea, sizeHoursAdjusted * (workHourMultiplier || 0));
   const baseCost = Math.round(BASE_FEE + totalHours * laborRate + brandExtraBase);
   // 内張り革（2026-09-04追加）: 外装が選ばれていて内張りを別革にしたときだけ面積比で按分する
   const liningRatio = (leatherDsP > 0 && sel.liningId && prices.lining != null) ? getLiningRatio() : 0;
@@ -3252,6 +3264,8 @@ function updateSummary(options = {}) {
   const tax   = Math.round((afterDisc + initDesignFee) * taxRate / 100);
   const total = Math.floor((afterDisc + initDesignFee + tax) / 100) * 100;
 
+  NSFLaborCurves.updateCurrent();
+  updateSizePrices();
   // Build list
   const list = document.getElementById('summaryList');
   list.innerHTML = '';
@@ -3262,6 +3276,7 @@ function updateSummary(options = {}) {
     list.appendChild(li);
   };
 
+  if (!NSFLaborCurves.data) add('工数設定未取得：参考価格です', '<button type="button" onclick="location.reload()">再読込</button>');
   if (!baseCost) {
     add(T('sum.pickSize', 'サイズを選択してください'), '―');
   } else {
@@ -3270,15 +3285,16 @@ function updateSummary(options = {}) {
       // 管理者調整パネル（リアルタイム試算）※原価内訳は管理者のみ閲覧のため表示継続
       const ovActive = (ov.sizeHours != null || ov.workHourMultiplier != null || ov.laborRate != null);
       add(`⚙ 調整モード（管理者）${ovActive ? ' ⚠上書き中' : ''}`, '', 'lbl-title');
-      add('└ サイズ工数', `<input type="number" step="0.5" min="0" value="${sizeHours||0}" id="adjSizeHours" style="width:70px"> h（CSV値: ${sizeHoursCsv ?? '―'}h）`);
-      add('└ 構造工数倍率', `<input type="number" step="0.1" min="0" value="${workHourMultiplier||0}" id="adjWorkHourMultiplier" style="width:70px"> ×（CSV値: ${workHourMultiplierCsv ?? '―'}×）`);
+      if (!curveActive) add('└ サイズ工数', `<input type="number" step="0.5" min="0" value="${sizeHours||0}" id="adjSizeHours" style="width:70px"> h（CSV値: ${sizeHoursCsv ?? '―'}h）`);
+      if (!curveActive) add('└ 構造工数倍率', `<input type="number" step="0.1" min="0" value="${workHourMultiplier||0}" id="adjWorkHourMultiplier" style="width:70px"> ×（CSV値: ${workHourMultiplierCsv ?? '―'}×）`);
       add('└ 時給', `<input type="number" step="100" min="0" value="${laborRate}" id="adjLaborRate" style="width:90px"> ¥/h（CSV値: ¥${LABOR_RATE_PER_HOUR.toLocaleString()}/h）`);
       add('└ 操作', `<button onclick="resetAdminOverrides()" style="padding:2px 8px;font-size:11px">リセット</button> <span style="font-size:11px;color:#888">編集→即時試算</span>`);
       add('▶ 計算式詳細', '', 'lbl-title');
-      if (SIZE_CURVE_FACTOR !== 1.0) {
+      if (!curveActive && SIZE_CURVE_FACTOR !== 1.0) {
         add('└ サイズ工数カーブ補正', `Micro5基準 ${micro5Hours}h + (${sizeHours||0}h − ${micro5Hours}h) × ${SIZE_CURVE_FACTOR} = ${sizeHoursAdjusted.toFixed(2)}h`);
       }
-      add('└ サイズ工数(補正後) × 構造工数倍率', `${sizeHoursAdjusted.toFixed(2)} h × ${workHourMultiplier||0} = ${totalHours.toFixed(2)} h`);
+      if (curveActive) add('└ 面積 → 構造別工数曲線', `${productionArea.toFixed(4)} ds → ${totalHours.toFixed(2)} h${NSFLaborCurves.draft ? '（端末下書き）' : ''}`);
+      else add('└ サイズ工数(補正後) × 構造工数倍率', `${sizeHoursAdjusted.toFixed(2)} h × ${workHourMultiplier||0} = ${totalHours.toFixed(2)} h`);
       add('└ 合計工数 × 時給', `${totalHours.toFixed(2)} h × ¥${laborRate.toLocaleString()} = ¥${(totalHours * laborRate).toLocaleString()}`);
       if (BASE_FEE > 0) add('└ + 基本料金（base_fee）', `+ ¥${BASE_FEE.toLocaleString()}`);
       if (brandExtraBase > 0) add('└ + 固定加算（extraBaseCost）', `+ ¥${brandExtraBase.toLocaleString()}`);
@@ -3798,7 +3814,20 @@ function localizeDefsForEN() {
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', () => {
-  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog(), loadSizeBasePriceCatalog(), loadBrandPriceCatalog(), loadSettingsCatalog()]).finally(() => {
+  Promise.all([loadRingPriceCatalog(), loadThreadStockCatalog(), loadSizeBasePriceCatalog(), loadBrandPriceCatalog(), loadSettingsCatalog(), NSFLaborCurves.load(isAdmin)]).finally(() => {
+  if (isAdmin) {
+    const host = document.getElementById('laborCurveEditor');
+    host.hidden = false;
+    NSFLaborCurves.mount(host, {
+      brands: () => BRANDS,
+      onChange: () => { updateSummary(); updateSizePrices(); },
+      current: () => {
+        const b = BRANDS.find(b => b.id === sel.brandId), s = SIZES.find(s => s.id === sel.sizeId);
+        const rm = 1; // 構造の倍率が裏貼り込みの総面積。
+        return { brand: sel.brandId, name: `${b?.name || '構造未選択'} / ${s?.name || 'サイズ未選択'}`, area: (s?.w || 0) * (s?.h || 0) / 10000 * (b?.areaMulti ?? 1) * rm };
+      }
+    });
+  }
   localizeDefsForEN(); // 英語表示時のみ定義配列を英語化（CSV読込後・初回描画前）
   buildBrandGrid();
   syncNpadFlapImageFromSimulator();

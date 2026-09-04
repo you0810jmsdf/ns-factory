@@ -1200,10 +1200,10 @@ tr.row-out-stock td{
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">🎛 価格チューニングダッシュボード</h2>
       <div class="hint">
         <strong>本番の見積もりページと同一の計算式</strong>で、全サイズ×全構造の価格をその場で試算します。
-        スライダーや表内の <span style="background:#fff5e0;padding:0 4px;border-radius:3px">オレンジ色の入力欄</span> を動かすと、全セルが即座に再計算されます。
-        <br>計算式：<strong>製作費 = 基本料金 + [Micro5工数 + (サイズ工数 − Micro5工数) × カーブ緩和度] × 構造工数倍率 × 時給 + 構造固定加算</strong>
+        時給・基本料金はスライダー、工数は「サイズ基準価格」タブの面積カーブで調整します。
+        <br>計算式：<strong>製作費 = 基本料金 + 構造別の面積カーブから求めた工数 × 時給 + 構造固定加算</strong>
         <br>　　　　<strong>原材料費 = リフィル面積 × 革面積倍率 × ロス補正 × DS単価</strong>（表示は本体価格のみ。オプション・数量割引・税は別）
-        <br>⚠ ここでの変更は <strong>「価格設定をまとめてGitHubへ反映」を押すまで公開サイトに反映されません</strong>。
+        <br>時給などの変更は「価格設定をまとめてGitHubへ反映」、工数カーブは「サイズ基準価格」タブの「工数曲線をGitHubへ反映」で、それぞれ公開します。
       </div>
       <div id="dashParamsWrap" style="margin-top:14px"></div>
       <div id="dashMatrixWrap" style="margin-top:16px;overflow-x:auto"></div>
@@ -1229,17 +1229,10 @@ tr.row-out-stock td{
         <span class="status-pill" id="sizeDirtyPill">未保存: なし</span>
       </div>
       <div class="inline-note" style="margin-top:8px">
-        💡 反映先: <code>order_estimate/size-baseprice.csv</code>（公開サイトのサイズ基準価格を制御）
+        💡 反映先: <code>order_estimate/size-baseprice.csv</code>（サイズ寸法・従来工数の控え）
       </div>
-      <!-- サイズカーブ グラフ（2026-09-05追加）: 点を上下にドラッグして work_hours を編集。テーブルと同じ配列・同じ保存経路 -->
-      <div id="sizeCurveChartWrap" style="margin-top:16px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px">
-          <strong style="font-size:13px;color:#6b3a1f">📈 サイズカーブ（点を上下にドラッグして工数を調整）</strong>
-          <span style="font-size:11px;color:#8a7a66"><span style="color:#c9a96e">●━</span> 現在の工数　<span style="color:#b9a58a">┈</span> 面積比の理論値（Micro5基準）　<span style="color:#3b7dd8">━</span> size_curve_factor 適用後（1.0のときは非表示）</span>
-        </div>
-        <svg id="sizeCurveChart" viewBox="0 0 760 300" style="width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none"></svg>
-        <div style="font-size:11px;color:#8a7a66;margin-top:6px">ドラッグは 0.05h 刻み。下の数値入力と双方向に同期します。価格ラベルは Standard構造・本体のみ・税込。保存は上の「サイズ基準価格をGitHubへ反映」。</div>
-      </div>
+      <div id="laborCurveEditor"></div>
+      <p class="inline-note">工数は上の構造別カーブが正本です。下の work_hours・旧サイズ緩和度・構造工数倍率は従来方式の控えで、曲線読込時の見積額には使いません。refill_w / refill_h と構造の area_mult は製作面積に使います。</p>
       <div id="sizeBasePriceTableWrap" style="margin-top:16px;overflow-x:auto">
         <table id="sizeBasePriceTable" style="width:100%;border-collapse:collapse;font-size:13px">
           <thead>
@@ -1263,9 +1256,9 @@ tr.row-out-stock td{
     <div class="panel brand-section admin-section-hidden">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">構造タイプ価格倍率・工数倍率</h2>
       <div class="hint">
-        各構造タイプ（Simplist / N-Pad など）の <strong>工数倍率（work_hour_multiplier）</strong> を編集できます（⭐推奨運用）。<br>
-        計算式（2026-07-09 乗算方式）：<strong>製作費 = サイズ別工数 × 構造工数倍率 × 時給</strong>（時給は ⚙設定タブで管理）<br>
-        Simplist を基準（1.0）として、各構造の手間を倍率で設定します。例：N-Pad flap が Simplist の1.6倍手間なら 1.6。
+        <strong>製作費 = 基本料金 + 構造別カーブの工数 × 時給 + 固定加算</strong>。工数は「サイズ」タブの曲線で調整します。<br>
+        革面積倍率（area_mult）は裏貼りを含む総使用面積の倍率です。lining_ratio はその面積内の革単価の配分に使い、面積をさらに2倍にはしません。<br>
+        work_hour_multiplier は従来方式の控えです。
         編集後は上の <code>構造タイプ価格をGitHubへ反映</code> ボタンで <code>brand-price.csv</code> を更新してください。
       </div>
       <div class="controls" style="margin-top:12px">
@@ -1929,6 +1922,8 @@ tr.row-out-stock td{
 <input id="fallbackFileInput" type="file" accept=".csv,text/csv" style="display:none">
 
 <script src="../assets/js/github-token.js"></script>
+<script src="./labor-curve-model.js?v=20260905"></script>
+<script src="./labor-curve-editor.js?v=20260905"></script>
 <script>
 // 管理者パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）。
 // 通過時の入力平文を nsf_admin_key として保持し、GAS API の key に使用する。
@@ -2674,7 +2669,7 @@ function renderDashParams() {
     return;
   }
   let h = '<div style="display:flex;flex-wrap:wrap;gap:16px 24px">';
-  DASH_PARAMS.forEach(p => {
+  DASH_PARAMS.filter(p => !NSFLaborCurves.data || p.key !== "size_curve_factor").forEach(p => {
     const row = settingsRows.find(r => r.key === p.key);
     const val = parseFloat(row?.value);
     const cur = isNaN(val) ? p.min : val;
@@ -2686,7 +2681,7 @@ function renderDashParams() {
   });
   h += `</div>
     <div style="margin-top:10px;font-size:12px;color:#6b3a1f">
-      <label style="cursor:pointer"><input type="checkbox" id="dashKlauseToggle"> クラウゼリング選択時の価格で表示（対応構造は革面積×2）</label>
+      <label style="cursor:pointer"><input type="checkbox" id="dashKlauseToggle" disabled> クラウゼ比較（裏貼りは構造で決定・金具代は見積画面で選択）</label>
     </div>`;
   wrap.innerHTML = h;
   wrap.querySelectorAll('[data-dash-param]').forEach(input => {
@@ -2754,6 +2749,11 @@ function updateDashDirtyPill() {
 function renderDashboard() {
   renderDashParams();
   renderDashMatrix();
+  if (NSFLaborCurves.data) {
+    document.querySelectorAll('[data-size-edit="work_hours"], [data-brand-edit="work_hour_multiplier"]').forEach(input => {
+      input.disabled = true; input.title = '従来設定の控え。工数はサイズタブの曲線で調整してください。';
+    });
+  }
 }
 // 旧・価格調整パラメータパネルの呼び出し互換（ダッシュボードへ委譲）
 function initPriceAdjustControls() { renderDashboard(); }
@@ -2806,7 +2806,7 @@ function renderEstimateMatrix() {
   });
 }
 
-// 本番（leather-order-estimate-v2.html）と同一の1セル計算。klause=true でクラウゼ選択時の革面積×2を再現
+// 本番と同一の製作費・材料費（リング代・オプション・税は含まない）。
 function calcMatrixCell(sizeRow, brandRow, opts = {}) {
   const rate = getLaborRateFromSettings();
   const dsPrice = getLeatherUnitPriceFromSettings();
@@ -2820,11 +2820,12 @@ function calcMatrixCell(sizeRow, brandRow, opts = {}) {
   const whm = parseFloat(brandRow.work_hour_multiplier) || 1;
   const eb = parseFloat(brandRow.extra_base_cost) || 0;
   const am = parseFloat(brandRow.area_mult) || 1;
-  const klauseApplies = opts.klause && boolValue(brandRow.allows_krause) && !boolValue(brandRow.krause_no_multi);
-  const ringMulti = klauseApplies ? 2 : 1;
+  // クラウゼの可否は選択肢で管理。製作面積には重ねて掛けない。
+  const ringMulti = 1; // 裏貼りは構造area_multに含む。リング種類では総面積を変えない。
 
   const sizeHoursAdjusted = micro5Hours + (sh - micro5Hours) * curve;
-  const totalHours = sizeHoursAdjusted * whm;
+  const productionArea = (parseFloat(sizeRow.refill_w) || 0) * (parseFloat(sizeRow.refill_h) || 0) / 10000 * am * ringMulti;
+  const totalHours = NSFLaborCurves.hours(brandRow.brand_id, productionArea, sizeHoursAdjusted * whm);
   const makeCost = Math.round(baseFee + totalHours * rate + eb);
   const refillMm2 = (parseFloat(sizeRow.refill_w) || 0) * (parseFloat(sizeRow.refill_h) || 0);
   const dsArea = Math.round((refillMm2 / 10000) * am * ringMulti * wasteFactor * 10) / 10;
@@ -2836,7 +2837,8 @@ function buildEstimateMatrixHtml(opts = {}) {
   if (!sizeBasePriceRows.length || !brandPriceRows.length) {
     return '<div style="color:#888;font-size:12px">サイズ・構造のCSVを読み込むと試算表が表示されます</div>';
   }
-  const editable = !!opts.editable;
+  const curveActive = !!NSFLaborCurves.data;
+  const editable = !!opts.editable && !curveActive;
   const rate = getLaborRateFromSettings();
   const NUMER_DS = getLeatherUnitPriceFromSettings();
   const WASTE_RATE = getWasteRateFromSettings();
@@ -2857,7 +2859,7 @@ function buildEstimateMatrixHtml(opts = {}) {
     <h3 style="margin:0 0 8px;font-size:15px;color:#6b3a1f">📊 全サイズ × 全構造 価格マトリクス（本番と同一式${opts.klause ? '・クラウゼ選択時' : ''}）</h3>
     <div class="hint" style="margin-bottom:8px">
       各セル: <span style="color:#2d5a3d;font-weight:bold">製作費</span> / <span style="color:#7a5a2d;font-weight:bold">原材料費</span> / <span style="color:#6b3a1f;font-weight:bold">本体合計</span>（背景が濃いほど高価格）
-      <br>時給 ¥${rate.toLocaleString()}/h ・ 革 ¥${NUMER_DS}/ds ・ ロス込 ${WASTE_FACTOR.toFixed(2)}倍 ・ 基本料金 ¥${getBaseFeeFromSettings().toLocaleString()} ・ カーブ緩和度 ${getSizeCurveFactorFromSettings().toFixed(2)}
+      <br>時給 ¥${rate.toLocaleString()}/h ・ 革 ¥${NUMER_DS}/ds ・ ロス込 ${WASTE_FACTOR.toFixed(2)}倍 ・ 基本料金 ¥${getBaseFeeFromSettings().toLocaleString()} ・ ${curveActive ? "構造別面積カーブ" + (NSFLaborCurves.draft ? "（端末下書き）" : "（公開設定）") : "従来方式・曲線未読込"}
     </div>
     <div style="overflow-x:auto">
       <table style="border-collapse:collapse;font-size:11px;width:100%">
@@ -2868,7 +2870,7 @@ function buildEstimateMatrixHtml(opts = {}) {
     const eb = parseFloat(b.extra_base_cost) || 0;
     const am = parseFloat(b.area_mult) || 1;
     const extraTxt = eb > 0 ? ` <span style="color:#b06820">+¥${eb.toLocaleString()}</span>` : '';
-    const whmCell = editable
+    const whmCell = curveActive ? "面積→工数" : editable
       ? `工数<input type="number" step="0.1" min="0" value="${whm}" data-dash-brand-mult="${b.brand_id}" style="width:52px;text-align:right;font-weight:bold;background:#fff5e0;border:1px solid #e8c87a;border-radius:4px">×`
       : `工数×${whm}`;
     h += `<th style="padding:6px;border:1px solid #d8c8b0;text-align:right;min-width:110px"><div style="font-size:11px">${b.name || b.brand_id}</div><div style="font-size:10px;color:#888;font-weight:normal">${whmCell}${extraTxt} / 革×${am}</div></th>`;
@@ -2876,7 +2878,7 @@ function buildEstimateMatrixHtml(opts = {}) {
   h += '</tr></thead><tbody>';
   sizeBasePriceRows.forEach((s, si) => {
     const sh = parseFloat(s.work_hours) || 0;
-    const hoursCell = editable
+    const hoursCell = curveActive ? `${((Number(s.refill_w) || 0) * (Number(s.refill_h) || 0) / 10000).toFixed(4)} ds（リフィル）` : editable
       ? `<input type="number" step="0.5" min="0" value="${sh}" data-dash-size-hours="${s.size_id}" style="width:52px;text-align:right;font-weight:bold;background:#fff5e0;border:1px solid #e8c87a;border-radius:4px">h`
       : `${sh}h`;
     h += `<tr><td style="padding:6px;border:1px solid #e0d4bb;font-weight:bold;background:#fcf6ec;position:sticky;left:0;z-index:1"><div>${s.name || s.size_id}</div><div style="font-size:10px;color:#888;font-weight:normal">${hoursCell}</div></td>`;
@@ -3188,7 +3190,7 @@ function renderBrandPriceTable() {
         <input type="number" step="0.1" min="0" value="${row.area_mult || ''}" data-brand-edit="area_mult" data-row="${idx}" style="width:70px;text-align:right">
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:center">
-        <input type="checkbox" data-brand-edit="krause_no_multi" data-row="${idx}" ${boolValue(row.krause_no_multi) ? 'checked' : ''}>
+        <input disabled title="従来設定の控え。革面積はarea_multのみで決定します。" type="checkbox" data-brand-edit="krause_no_multi" data-row="${idx}" ${boolValue(row.krause_no_multi) ? 'checked' : ''}>
       </td>
       <td style="padding:6px;border:1px solid #e0d4bb;text-align:center">
         <input type="checkbox" data-brand-edit="allows_krause" data-row="${idx}" ${boolValue(row.allows_krause) ? 'checked' : ''}>
@@ -7442,5 +7444,37 @@ checkCrawlServer().catch(() => {});
 <script src="../assets/access-counter.js"></script>
 
 <!-- GitHubトークン設定ダイアログは ../assets/js/github-token.js が動的注入する -->
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  await NSFLaborCurves.load(true);
+  await Promise.all([
+    brandPriceRows.length ? Promise.resolve() : loadBrandPriceCsv(),
+    sizeBasePriceRows.length ? Promise.resolve() : loadSizeBasePriceCsv(),
+    settingsRows.length ? Promise.resolve() : loadSettingsCsv()
+  ]);
+  NSFLaborCurves.mount(document.getElementById('laborCurveEditor'), {
+    brands: () => Object.keys(NSFLaborCurves.data?.curves || {}).map(id => ({id, name: brandPriceRows.find(b => b.brand_id === id)?.name || id})),
+    onChange: () => { renderSizeBasePriceTable(); renderPriceAdjustMatrix(); },
+    publish: async (jsonText, base) => {
+      let token = NSFGitHubToken.get();
+      if (!token) { if (!await NSFGitHubToken.prompt()) return false; token = NSFGitHubToken.get(); }
+      if (!token) throw new Error('GitHubトークンが未設定です。');
+      const url = `https://api.github.com/repos/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/contents/order_estimate/labor-curves.json`;
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
+      const res = await fetch(url + '?ref=' + encodeURIComponent(GITHUB_REPO_BRANCH), { headers });
+      if (!res.ok) throw new Error('現在の設定取得: HTTP ' + res.status);
+      const remote = await res.json();
+      const content = new TextDecoder().decode(Uint8Array.from(atob(remote.content.replace(/\s/g, '')), c => c.charCodeAt(0)));
+      if (JSON.stringify(NSFLaborCurveModel.validate(JSON.parse(content))) !== base) throw new Error('別の画面で公開設定が更新されています。下書きをダウンロードしてからページを再読込し、変更を確認してください。');
+      const put = await fetch(url, { method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Update labor curves via admin', content: utf8ToBase64(jsonText), sha: remote.sha, branch: GITHUB_REPO_BRANCH }) });
+      if (!put.ok) throw new Error('保存: HTTP ' + put.status + '（権限または競合を確認してください）');
+      return true;
+    }
+  });
+  renderPriceAdjustMatrix();
+});
+</script>
+
 </body>
 </html>
