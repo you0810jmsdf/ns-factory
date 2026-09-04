@@ -440,7 +440,8 @@
     /* ===== 在庫データ（革・リング） =====
        革在庫: order_estimate/leather-stock.csv（id,name,stock_status,note）
        リング在庫: order_estimate/ring-price-stock.csv（見積もりページと共用・
-       在庫判定は「stock_status=in_stock かつ stock_qty>0」で見積もりページと同一）
+       在庫判定は nsfRingStockInfo() に集約。in_stock/low_stock は数量>0、preorder/backorder は
+       取り扱い可として扱う＝見積もりページ rowHasStock と同一条件）
        ※ どちらも window 直下に置き、みんなのチャット側スクリプトからも共用する */
     var nsfLeatherStock = null;  // id -> true(在庫あり)/false(お取り寄せ)
     var nsfRingRows = null;      // ring-price-stock.csv の全行
@@ -540,18 +541,35 @@
       return t ? t.key : null;
     };
 
-    /* 在庫のあるリングを「シリーズ サイズ（手帳タイプ）: 色」の行に整形 */
+    /* リング在庫の区分判定（2026-09-04 在庫入力方法の拡充に追従）。
+       stock_status は6種（in_stock / low_stock / out_of_stock / unknown / preorder / backorder）。
+       ⛔ 見積もりシミュレーター leather-order-estimate-v2.html の rowHasStock / formatStockText と
+       　 同一条件に保つこと。片方だけ変えると「見積もりでは選べるのにチャットでは在庫なし」という
+       　 食い違いが出る（旧実装は in_stock だけを見ており、入荷待ちのリングを在庫なしと案内していた）。
+       表示は showroom/index.html のリング在庫一覧とも共用するため global に出す。 */
+    function nsfRingStockInfo(r) {
+      var status = String((r && r.stock_status) || '').trim().toLowerCase();
+      var qty = Number((r && r.stock_qty) || 0);
+      if (!isFinite(qty)) qty = 0;
+      if (status === 'preorder')  return { available: true, suffix: '（取寄）' };
+      if (status === 'backorder') return { available: true, suffix: '（入荷待ち）' };
+      if (status === 'low_stock' && qty > 0) return { available: true, suffix: '（残りわずか）' };
+      if (status === 'in_stock'  && qty > 0) return { available: true, suffix: qty > 1 ? '×' + qty : '' };
+      return { available: false, suffix: '' };
+    }
+    global.nsfRingStockInfo = nsfRingStockInfo;
+
+    /* 取り扱えるリングを「シリーズ サイズ（手帳タイプ）: 色」の行に整形
+       （在庫ありに加え、残りわずか・取寄・入荷待ちも区分を添えて出す） */
     function nsfRingStockLines() {
       if (!nsfRingRows) return null;
-      var inRows = nsfRingRows.filter(function (r) {
-        return r.stock_status === 'in_stock' && Number(r.stock_qty || 0) > 0;
-      });
+      var inRows = nsfRingRows.filter(function (r) { return nsfRingStockInfo(r).available; });
       if (!inRows.length) return '';
       var groups = {}, order = [];
       inRows.forEach(function (r) {
         var key = r.series_label + ' ' + r.size_label + (r.planner_type ? '（' + r.planner_type + '）' : '');
         if (!groups[key]) { groups[key] = []; order.push(key); }
-        groups[key].push(r.color_label + (Number(r.stock_qty) > 1 ? '×' + r.stock_qty : ''));
+        groups[key].push(r.color_label + nsfRingStockInfo(r).suffix);
       });
       return order.map(function (k) { return '・' + k + ': ' + groups[k].join('、'); }).join('\n');
     }
