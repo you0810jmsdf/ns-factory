@@ -291,8 +291,17 @@ function render(root){
   renderFilters();
   renderList();
 
+  // 2026-09-04: 送信容量が足りない日は要対処だけが届く（upload_monitor.py の段階縮退）。
+  // そのとき一覧・時間帯から正常なものが消えるので、black boxにせず理由を出す。
+  const msgs = [];
+  if(d.trimmed){
+    msgs.push('⚠ 今回は容量の都合で<b>要対処だけ</b>を送っています。正常に動いているものは一覧・時間帯に出ていません（次回以降の送信で全件に戻ります）。');
+  }
   if((d.errors || []).length){
-    showErr('収集時の警告: ' + d.errors.map(esc).join(' / '));
+    msgs.push('収集時の警告: ' + d.errors.map(esc).join(' / '));
+  }
+  if(msgs.length){
+    showErr(msgs.join('<br>'));
   }
 }
 
