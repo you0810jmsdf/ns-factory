@@ -446,11 +446,32 @@
     var nsfLeatherStock = null;  // id -> true(在庫あり)/false(お取り寄せ)
     var nsfRingRows = null;      // ring-price-stock.csv の全行
 
+    /* CSVの1行を列に分ける。引用符で囲まれた値の中のカンマは区切りとして扱わない。
+       ⛔ 単純な split(',') に戻さないこと。ring-price-stock.csv の note には
+       　 「商品価格1,550円」のようにカンマを含む値が引用符付きで入っており、
+       　 split では列がずれる（2026-09-04 実測で note の値が途中で切れていた）。
+       規則は leather-order-estimate-v2.html / admin.html の parseCsvLine と同一。 */
+    function nsfParseCsvLine(line) {
+      var out = [], cur = '', inQuotes = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; } // 値の中の "" は " 1文字
+          else { inQuotes = !inQuotes; }
+          continue;
+        }
+        if (ch === ',' && !inQuotes) { out.push(cur); cur = ''; continue; }
+        cur += ch;
+      }
+      out.push(cur);
+      return out;
+    }
+
     function nsfParseCsv(text) {
       var lines = text.replace(/\r/g, '').split('\n').filter(function (l) { return l.trim(); });
-      var head = lines.shift().split(',');
+      var head = nsfParseCsvLine(lines.shift());
       return lines.map(function (line) {
-        var cols = line.split(',');
+        var cols = nsfParseCsvLine(line);
         var o = {};
         head.forEach(function (h, i) { o[h.trim()] = (cols[i] || '').trim(); });
         return o;
