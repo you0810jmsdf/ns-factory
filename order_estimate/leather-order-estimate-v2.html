@@ -767,7 +767,7 @@ body{
   <button class="lp-tool-btn" onclick="goBackToParentSite()" data-i18n="ui.backSite">↩ 元のサイト</button>
   <a class="lp-tool-btn" href="./admin.html" data-i18n="ui.adminBtn">🗂 管理画面</a>
   <button class="lp-tool-btn" onclick="resetAll()" data-i18n="ui.resetBtn">🔄 リセット</button>
-  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.05.1</span>
+  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.05.2</span>
 </div>
 
 <div class="main">
@@ -1132,8 +1132,8 @@ body{
 </div>
 
 <script src="./labor-curve-model.js?v=20260905"></script>
-<script src="./labor-curve-editor.js?v=20260905b"></script>
-<script src="./quote-archive.js?v=20260905"></script>
+<script src="./labor-curve-editor.js?v=20260905.2"></script>
+<script src="./quote-archive.js?v=20260905.2"></script>
 <script src="./estimate-fulfillment.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
@@ -3429,7 +3429,7 @@ function updateSummary(options = {}) {
   refreshSidebarColorPreview();
   buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier, initDesignFee);
   if (isAdmin) window._quoteSnapshot = JSON.parse(JSON.stringify({
-    selection: sel, prices, fulfillment,
+    selection: sel, prices, fulfillment, simulatorVersion: window.NSFSimulatorVersion, settingsFilename: NSFLaborCurves.settingsFilename(),
     quoteRows: [...document.querySelectorAll('#printDetail tr')].map(tr => [...tr.cells].map(td => td.textContent)),
     curve: NSFLaborCurves.data?.curves[sel.brandId] || null,
     curveSource: NSFLaborCurves.draft ? 'draft' : 'published',
@@ -3497,6 +3497,8 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
     h += r(T('pd.totalTax', '合計（税込）'), `¥${total.toLocaleString()}`, true);
   }
   h += '</table>';
+  const settingsFilename = NSFLaborCurves.settingsFilename();
+  if (settingsFilename) h += `<p class="quote-settings-file" style="font-size:9px;color:#777;overflow-wrap:anywhere;margin:8px 0">設定ファイル：${settingsFilename}</p>`;
   d.innerHTML = h;
 }
 

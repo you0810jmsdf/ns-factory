@@ -25,6 +25,7 @@
 <div class="actions notice">工房保管用のHTMLです。カーブ・原価情報を含むため、このファイル自体はお客様へ渡さず「お客様用に印刷／PDF保存」を使ってください。<p><button onclick="window.print()">お客様用に印刷／PDF保存</button></p></div>
 <h1>お見積書 — N's factory</h1><p>管理名：${esc(name)}<br>作成日時：${esc(new Date(record.savedAt).toLocaleString('ja-JP'))}</p>
 <table>${record.quoteRows.map(row => `<tr>${row.map(cell => `<td>${esc(cell)}</td>`).join('')}</tr>`).join('')}</table>
+${record.settingsFilename ? `<p class="quote-settings-file" style="font-size:9px;color:#777;overflow-wrap:anywhere">設定ファイル：${esc(record.settingsFilename)}</p>` : ''}
 <section class="internal"><h2>工房控え：この見積もりで使用したカーブ</h2><p>構造：${esc(record.selection.brand)} ／ サイズ：${esc(record.selection.size)}<br>緑の点：${record.calculation.productionArea.toFixed(4)} ds → ${record.calculation.totalHours.toFixed(4)} h<br>設定：${record.curveSource === 'draft' ? '見積作成時の端末下書き' : '見積作成時の公開値'}。以後の設定変更はこの控えに影響しません。</p>${graph}
 <h2>制御点</h2><table><tr><th>基準点</th><th>面積 ds</th><th>工数 h</th></tr>${points.map(p => `<tr><td>${esc(p.label)}</td><td>${p.area}</td><td>${p.hours}</td></tr>`).join('')}</table>
 <h2>計算条件・係数</h2><p>h = a + b·t + c·t² + d·t³（t = 面積 − 区間開始）。モデル：単調3次Hermite v1。</p><pre>${esc(JSON.stringify({calculation:record.calculation,settings:record.settings,coefficients}, null, 2))}</pre></section>

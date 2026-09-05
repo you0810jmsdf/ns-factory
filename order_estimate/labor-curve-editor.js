@@ -1,9 +1,20 @@
 /* Shared curve data and editor. Public estimates never read administrative drafts. */
 (function () {
   'use strict';
+  const SIMULATOR_VERSION = '2026.09.05.2';
+  window.NSFSimulatorVersion = SIMULATOR_VERSION;
+  const versionLabel = document.getElementById('simulatorVersion');
+  if (versionLabel) versionLabel.textContent = '見積シミュレータ v' + SIMULATOR_VERSION;
   const M = window.NSFLaborCurveModel;
   const KEY = 'nsfactory-labor-curves-draft-v1';
   const state = { data: null, published: null, base: '', error: '', draft: false, host: null, config: null, brand: '', selected: 0, drag: null, busy: false };
+  function settingsFilename() {
+    if (!state.data) return '';
+    // Content-based ID keeps repeated downloads and the printed quote paired.
+    let hash = 2166136261;
+    for (const c of JSON.stringify(state.data)) hash = Math.imul(hash ^ c.charCodeAt(0), 16777619);
+    return 'labor-curves_v' + SIMULATOR_VERSION + '_' + (hash >>> 0).toString(16).padStart(8, '0') + '.json';
+  }
   const copy = x => JSON.parse(JSON.stringify(x));
   function validateComplete(data) {
     const result = M.validate(data);
@@ -122,11 +133,34 @@
       });
       return c;
     });
+    const pointLabels = points.map((p, i) => ({
+      line: shape('line', { stroke: '#ab947b', 'stroke-width': 1, 'pointer-events': 'none' }),
+      text: shape('text', { 'data-point-label': i, 'font-size': 11, fill: '#60452c', 'text-anchor': 'middle', 'pointer-events': 'none', stroke: 'white', 'stroke-width': 3, 'paint-order': 'stroke' }, p.label || '点 ' + (i + 1))
+    }));
     function draw() {
       const ps = state.data.curves[state.brand];
       let d = '';
       for (let i = 0; i <= 300; i++) { const x = xmax * i / 300; d += (i ? 'L' : 'M') + sx(x).toFixed(2) + ',' + sy(M.evaluate(ps, x)).toFixed(2); }
       path.setAttribute('d', d);
+      const placed = [];
+      ps.forEach((p, i) => {
+        const x = sx(p.area), y = sy(p.hours);
+        const width = [...pointLabels[i].text.textContent].reduce((n, c) => n + (c.charCodeAt(0) > 255 ? 11 : 6), 0) + 8;
+        const cx = Math.max(left + width / 2, Math.min(left + pw - width / 2, x));
+        let box;
+        for (const offset of [-18, 24, -36, 42, -54, 60, -72, 78, -90, 96]) {
+          const baseline = Math.max(top + 12, Math.min(top + ph - 8, y + offset));
+          box = { x: cx - width / 2, y: baseline - 11, w: width, h: 15, baseline };
+          const overlapsLabel = placed.some(b => box.x < b.x+b.w && box.x+box.w > b.x && box.y < b.y+b.h && box.y+box.h > b.y);
+          const overlapsPoint = ps.some(q => sx(q.area)+9 > box.x && sx(q.area)-9 < box.x+box.w && sy(q.hours)+9 > box.y && sy(q.hours)-9 < box.y+box.h);
+          if (!overlapsLabel && !overlapsPoint) break;
+        }
+        placed.push(box);
+        pointLabels[i].text.setAttribute('x', cx); pointLabels[i].text.setAttribute('y', box.baseline);
+        const line = pointLabels[i].line;
+        line.setAttribute('x1', x); line.setAttribute('y1', y); line.setAttribute('x2', cx);
+        line.setAttribute('y2', box.baseline < y ? box.baseline + 3 : box.baseline - 12);
+      });
       ps.forEach((p, i) => { circles[i].setAttribute('cy', sy(p.hours)); circles[i].setAttribute('aria-valuenow', p.hours); });
     }
     draw();
@@ -172,7 +206,7 @@
     if (state.config.archive) actions.append(button('見積書＋使用カーブを保存', state.config.archive));
     actions.append(button('設定をダウンロード', () => {
       const url = URL.createObjectURL(new Blob([JSON.stringify(state.data, null, 2) + '\n'], { type: 'application/json' }));
-      const a = el('a', null, { href: url, download: 'labor-curves.json' }); a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const a = el('a', null, { href: url, download: settingsFilename() }); a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     }));
     const file = el('input', null, { type: 'file', accept: '.json,application/json', 'aria-label': '工数設定ファイルを読み込む' });
     file.style.width = '220px'; file.disabled = state.busy;
@@ -200,5 +234,5 @@
     const n = document.getElementById('laborCurveCurrent'), c = state.config?.current?.();
     if (n && c) n.textContent = `現在の見積もり：${c.name} ／ ${c.area.toFixed(4)} ds → ${hours(c.brand, c.area, 0).toFixed(2)} h`;
   }
-  window.NSFLaborCurves = { load, mount, hours, updateCurrent, get data() { return state.data; }, get error() { return state.error; }, get draft() { return state.draft; } };
+  window.NSFLaborCurves = { load, mount, hours, updateCurrent, settingsFilename, get data() { return state.data; }, get error() { return state.error; }, get draft() { return state.draft; } };
 })();
