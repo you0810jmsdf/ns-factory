@@ -1,7 +1,7 @@
 /* Shared curve data and editor. Public estimates never read administrative drafts. */
 (function () {
   'use strict';
-  const SIMULATOR_VERSION = '2026.09.05.2';
+  const SIMULATOR_VERSION = '2026.09.05.3';
   window.NSFSimulatorVersion = SIMULATOR_VERSION;
   const versionLabel = document.getElementById('simulatorVersion');
   if (versionLabel) versionLabel.textContent = '見積シミュレータ v' + SIMULATOR_VERSION;
@@ -29,7 +29,6 @@
     return n;
   };
   function notify() { if (state.config?.onChange) state.config.onChange(); }
-  function selectQuote(point) { state.config?.onSelect?.(state.brand, point); }
   function storeDraft() {
     state.draft = true;
     try { localStorage.setItem(KEY, JSON.stringify({ base: state.base, data: state.data })); state.error = ''; }
@@ -61,7 +60,7 @@
   }
   function mount(host, config) {
     state.host = host; state.config = config;
-    state.brand = config.brands()[0]?.id || Object.keys(state.data?.curves || {})[0] || '';
+    state.brand = config.current?.().brand || config.brands()[0]?.id || Object.keys(state.data?.curves || {})[0] || '';
     render();
   }
   function button(text, action) {
@@ -74,7 +73,7 @@
     const candidate = copy(state.data);
     candidate.curves[state.brand][index].area = area;
     candidate.curves[state.brand][index].hours = hoursValue;
-    try { state.data = M.validate(candidate); storeDraft(); selectQuote(state.data.curves[state.brand][index]); notify(); return true; }
+    try { state.data = M.validate(candidate); storeDraft(); notify(); return true; }
     catch (e) { state.error = e.message; return false; }
   }
   function render() {
@@ -86,8 +85,8 @@
       css.id = 'labor-editor-style'; document.head.append(css);
     }
     host.append(el('h2', '面積と作業工数のカーブ'));
-    host.append(el('p', '構造ごとの点を上下にドラッグ、または表の数値を編集してください。横軸は製作に使う革の面積（ロス前・1 ds = 100 cm²）、縦軸は合計工数です。'));
-    if (state.config.onSelect) host.append(el('p', '点を操作すると、見積もりもその構造・サイズに切り替わります。A5とA5スリムは別の点です。'));
+    host.append(el('p', '構造ごとの点を上下にドラッグ、または表の数値を編集してください。規格名も上下にドラッグできます。横軸は製作に使う革の面積（ロス前・1 ds = 100 cm²）、縦軸は合計工数です。'));
+    if (state.config.current) host.append(el('p', '工数を調整しても、見積もりの構造・サイズ・革・リングなどの条件は変わりません。選択中の構造の曲線を編集します。'));
     const status = el('p', state.error || (state.draft ? '端末下書きで試算中（お客様向けには未反映）' : '公開設定で試算中'), { role: 'status', class: 'lc-status' });
     host.append(status);
     if (!state.data) { host.append(button('曲線を再読込', () => load(true))); return; }
@@ -98,8 +97,8 @@
     }
     if (!state.data.curves[state.brand]) state.brand = select.options[0]?.value;
     select.value = state.brand;
-    select.disabled = state.busy;
-    select.onchange = () => { state.brand = select.value; state.selected = 0; selectQuote(); render(); };
+    select.disabled = state.busy || !!state.config.current?.().brand;
+    select.onchange = () => { state.brand = select.value; state.selected = 0; render(); };
     controls.append(el('label', '調整する構造'), select);
     host.append(controls);
     const points = state.data.curves[state.brand];
@@ -135,7 +134,7 @@
     });
     const pointLabels = points.map((p, i) => ({
       line: shape('line', { stroke: '#ab947b', 'stroke-width': 1, 'pointer-events': 'none' }),
-      text: shape('text', { 'data-point-label': i, 'font-size': 11, fill: '#60452c', 'text-anchor': 'middle', 'pointer-events': 'none', stroke: 'white', 'stroke-width': 3, 'paint-order': 'stroke' }, p.label || '点 ' + (i + 1))
+      text: shape('text', { 'data-point-label': i, 'data-point': i, style: 'cursor:ns-resize', 'font-size': 11, fill: '#60452c', 'text-anchor': 'middle', 'pointer-events': 'all', stroke: 'white', 'stroke-width': 3, 'paint-order': 'stroke' }, p.label || '点 ' + (i + 1))
     }));
     function draw() {
       const ps = state.data.curves[state.brand];
@@ -167,15 +166,16 @@
     svg.onpointerdown = e => {
       const index = e.target.getAttribute('data-point');
       if (index === null || state.busy) return;
-      e.preventDefault(); state.selected = Number(index); state.drag = { index: Number(index), id: e.pointerId };
-      selectQuote(state.data.curves[state.brand][Number(index)]);
+      e.preventDefault(); state.selected = Number(index);
+      const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse());
+      state.drag = { index: Number(index), id: e.pointerId, startY: pt.y, startHours: state.data.curves[state.brand][Number(index)].hours };
       svg.setPointerCapture(e.pointerId);
     };
     svg.onpointermove = e => {
       if (!state.drag || state.drag.id !== e.pointerId) return;
       const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse());
       const ps = state.data.curves[state.brand], i = state.drag.index;
-      const h = Math.max(ps[i - 1]?.hours ?? 0, Math.min(ps[i + 1]?.hours ?? ymax, Math.round((top + ph - pt.y) / ph * ymax * 20) / 20));
+      const h = Math.max(ps[i - 1]?.hours ?? 0, Math.min(ps[i + 1]?.hours ?? ymax, Math.round((state.drag.startHours + (state.drag.startY - pt.y) / ph * ymax) * 20) / 20));
       commitPoint(i, ps[i].area, h); draw();
       const input = host.querySelector(`[data-hours="${i}"]`); if (input) input.value = h;
       status.textContent = `${ps[i].label || '点'}: ${ps[i].area.toFixed(4)} ds → ${h.toFixed(2)} h（端末下書き）`;
@@ -232,6 +232,7 @@
   }
   function updateCurrent() {
     const n = document.getElementById('laborCurveCurrent'), c = state.config?.current?.();
+    if (c?.brand && state.data?.curves[c.brand] && state.brand !== c.brand) { state.brand = c.brand; state.selected = 0; render(); return; }
     if (n && c) n.textContent = `現在の見積もり：${c.name} ／ ${c.area.toFixed(4)} ds → ${hours(c.brand, c.area, 0).toFixed(2)} h`;
   }
   window.NSFLaborCurves = { load, mount, hours, updateCurrent, settingsFilename, get data() { return state.data; }, get error() { return state.error; }, get draft() { return state.draft; } };
