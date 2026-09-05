@@ -169,11 +169,26 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
     }
     assert.match(await admin.locator('#adminEstimateLink').getAttribute('href'), /\?admin/);
     await page.locator('#sizeGrid [data-id="a5slim"]').click();
+    // A plateau must not lock the middle point or leave its quote unchanged.
+    for (const i of [1, 2, 3]) {
+      const input = page.locator('#laborCurveEditor [data-hours="' + i + '"]');
+      await input.fill('3'); await input.dispatchEvent('change');
+    }
+    const plateauLabel = page.locator('#laborCurveEditor [data-point-label="2"]');
+    await plateauLabel.scrollIntoViewIfNeeded(); const plateauBox = await plateauLabel.boundingBox();
+    await page.mouse.move(plateauBox.x + plateauBox.width / 2, plateauBox.y + plateauBox.height / 2); await page.mouse.down();
+    const plateauPrice = await price(page);
+    await page.mouse.move(plateauBox.x + plateauBox.width / 2, plateauBox.y + plateauBox.height / 2 - 20, {steps: 5}); await page.mouse.up();
+    assert.ok(await price(page) > plateauPrice, 'plateau edit must increase quote');
+    const plateauHours = await page.evaluate(() => NSFLaborCurves.data.curves.simplist_klpad.map(p => p.hours));
+    assert.ok(plateauHours[2] > 3); assert.equal(plateauHours[3], plateauHours[2]);
+    assert.equal(await page.evaluate(() => sel.brandId), 'simplist_klpad');
+    await page.locator('#sizeGrid [data-id="a5slim"]').click();
     const settingsDownloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: '設定をダウンロード', exact: true }).click();
     const settingsDownload = await settingsDownloadPromise;
     const settingsFilename = settingsDownload.suggestedFilename();
-    assert.match(settingsFilename, /^labor-curves_v2026\.09\.05\.4_[0-9a-f]{8}\.json$/);
+    assert.match(settingsFilename, /^labor-curves_v2026\.09\.05\.5_[0-9a-f]{8}\.json$/);
     assert.equal(settingsFilename, await page.evaluate(() => NSFLaborCurves.settingsFilename()));
     assert.ok((await page.locator('#printDetail .quote-settings-file').textContent()).includes(settingsFilename));
     const settingsPath = path.join(os.tmpdir(), settingsFilename);
