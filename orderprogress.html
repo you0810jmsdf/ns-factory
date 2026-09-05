@@ -1131,7 +1131,8 @@ function renderCards(records) {
         : '';
     const leatherInfo = r['使用革']||'';
     const hearingContent = r['ヒアリング内容']||'';
-    const colorOrderHtml = (leatherInfo || hearingContent)
+    // ヒアリング内容にはお客様のメール等が入るため、管理者ログイン後だけ表示する（2026-09-06 公開露出の応急対処）
+    const colorOrderHtml = isAdmin() && (leatherInfo || hearingContent)
       ? `<div class="color-order-info">
            <div class="tl-title">${T('card.colorOrder','🎨 カラーオーダー情報')}</div>
            ${leatherInfo ? `<div class="color-order-row"><b>${T('card.leather','使用革:')}</b> ${esc(leatherInfo).replace(/\n/g,'<br>')}</div>` : ''}
