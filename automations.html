@@ -528,7 +528,10 @@ async function tick(){
   const badge = document.getElementById('liveBadge');
   const errEl = document.getElementById('loadErr');
   try{
+    // 対処履歴はGASを介さずサイト上のJSONから読むので、先に描いてしまう。
+    // GASが落ちている日でも「何をしたか」は読めるようにするため。
     await loadFixHistory();
+    renderFixHistory();
     const r = await gasPostRetry({ action: 'getMonitor', apiKey: getKey(), key: getKey() });
     if(r.error) throw new Error(r.error);
     errEl.style.display = 'none';
