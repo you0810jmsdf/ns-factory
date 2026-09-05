@@ -1133,6 +1133,7 @@ body{
 <script src="./labor-curve-model.js?v=20260905"></script>
 <script src="./labor-curve-editor.js?v=20260905b"></script>
 <script src="./quote-archive.js?v=20260905"></script>
+<script src="./estimate-fulfillment.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
    ▼▼▼  データ設定エリア  ▼▼▼
@@ -1172,6 +1173,8 @@ function getWasteFactor() { return 1 / (1 - WASTE_RATE); }
 //    2026-09-04 まで 3000 / 0 のままで、障害時に製作費が半額以下で表示される状態だった）
 let LABOR_RATE_PER_HOUR = 6000;   // 時給単価（¥/h）settings.csv で上書き可能
 // ── 価格調整パラメータ（2026-07-09追加）── settings.csv で上書き可能
+let LINING_SKIVING_FEE = 3000; // 税込・1冊ごとの別途加工料
+let RING_ORDER_SHIPPING_FEE = 500; // 税込・取寄せ発生時に1注文1回
 let BASE_FEE = 10000;         // 基本料金（円）：サイズによらない固定費
 let SIZE_CURVE_FACTOR = 1.0;  // サイズカーブ緩和度（0〜1）：1.0で現状のサイズ工数差そのまま、0.0で全サイズ同一工数
 // 管理者調整モードのリセット（?admin時のみ意味あり）
@@ -2324,7 +2327,7 @@ function getRingCatalogRows(ringId, plannerType = getPlannerTypeForSize()) {
   return RING_PRICE_ROWS
     .filter(row => ringIds.includes(row.ring_id)
       && (!plannerType || !String(row.planner_type || '').trim() || String(row.planner_type || '').trim() === plannerType)
-      && csvBool(row.check_enabled) && csvBool(row.ui_visible))
+)
     .sort((a, b) => csvNum(a.ui_order, 9999) - csvNum(b.ui_order, 9999));
 }
 
@@ -2339,26 +2342,28 @@ function rowHasStock(row) {
 function formatStockText(row) {
   const status = String(row?.stock_status || '').trim().toLowerCase();
   const qty = csvNum(row?.stock_qty, 0);
+  if (csvBool(row?.hard_to_source) && !NSFFulfillment.physicalStock(row)) return isEN() ? 'Hard to source — contact us' : '入手困難・要相談';
   if (isEN()) {
     if (status === 'preorder' || status === 'backorder') return 'Backorder OK';
     if (status === 'low_stock' && qty > 0) return `Only ${qty} left`;
     if (status === 'in_stock' && qty > 0) return `${qty} in stock`;
-    return 'Out of stock';
+    return 'Available to order';
   }
   if (status === 'preorder' || status === 'backorder') return '取寄対応';
   if (status === 'low_stock' && qty > 0) return `残り ${qty}`;
   if (status === 'in_stock' && qty > 0) return `在庫 ${qty}`;
-  return '在庫なし';
+  return '取寄せ対応';
 }
 
 function getAvailableRingCatalogRows(ringId, plannerType = getPlannerTypeForSize()) {
-  return getRingCatalogRows(ringId, plannerType).filter(rowHasStock);
+  return getRingCatalogRows(ringId, plannerType); // 在庫なしも取寄せ候補として公開。入手困難は個別表示。
 }
 
 function getRingBasePrice(ringId, fallback = 0, plannerType = getPlannerTypeForSize()) {
+  if (!(fallback > 0)) fallback = RINGS.find(r => r.id === ringId)?.price || 1500;
   const rows = getAvailableRingCatalogRows(ringId, plannerType);
   if (!rows.length) return fallback;
-  return Math.min(...rows.map(row => csvNum(row.price_jpy, fallback)));
+  return Math.min(...rows.map(row => Number(row.price_jpy) > 0 ? Number(row.price_jpy) : fallback));
 }
 
 function syncRingCatalogToUi() {
@@ -2395,6 +2400,13 @@ async function loadSettingsCatalog() {
     const text = await res.text();
     const rows = parseCsv(text);
     rows.forEach(row => {
+      if (['lining_skiving_fee', 'ring_order_shipping_fee'].includes(row.key)) {
+        const v = Number(row.value);
+        if (row.value !== '' && Number.isFinite(v) && v >= 0) {
+          if (row.key === 'lining_skiving_fee') LINING_SKIVING_FEE = v;
+          else RING_ORDER_SHIPPING_FEE = v;
+        }
+      }
       if (row.key === 'labor_rate_per_hour') {
         const v = parseFloat(row.value);
         if (!isNaN(v) && v > 0) LABOR_RATE_PER_HOUR = v;
@@ -2529,11 +2541,12 @@ function getMetalOptions() {
           id: row.color_id,
           name: row.color_label || metal.name || row.color_id,
           sub: isKlauseRing ? 'クラウゼ 実写見本' : (row.finish_label || metal.sub || ''),
-        price: Math.max(0, csvNum(row.price_jpy, ringBasePrice) - ringBasePrice),
+        price: Math.max(0, (Number(row.price_jpy) > 0 ? Number(row.price_jpy) : ringBasePrice) - ringBasePrice),
+          unavailable: csvBool(row.hard_to_source) && !NSFFulfillment.physicalStock(row),
           image,
           stockStatus: row.stock_status,
           stockQty: csvNum(row.stock_qty, 0),
-          stockText: formatStockText(row),
+          stockText: formatStockText(row) + (Number(row.price_jpy) > 0 ? '' : '・参考価格（価格要確認）'),
           crawlUpdatedText: csvBool(row.crawl_updated_flag) ? `巡回更新 ${row.crawl_updated_at_jst || ''}` : '',
         };
       });
@@ -2545,7 +2558,11 @@ function buildMetalGrid() {
   const grid = document.getElementById('metalGrid');
   if (!grid) return;
   const options = getMetalOptions();
-  buildOptGrid(grid, options, 'metal');
+  buildOptGrid(grid, options, 'metal', (el, d) => { if (!d.unavailable) defaultSelect(el, d, 'metal'); });
+  options.filter(d => d.unavailable).forEach(d => {
+    const card = grid.querySelector(`[data-id="${d.id}"]`);
+    if (card) { card.setAttribute('aria-disabled', 'true'); card.style.opacity = '.55'; card.style.cursor = 'not-allowed'; }
+  });
   if (sel.metalId) {
     const selected = options.find(m => m.id === sel.metalId);
     if (selected) {
@@ -2676,12 +2693,10 @@ function buildRingGrids(sizeId) {
       div.dataset.id  = d.id;
       div.dataset.key = 'ring';
       const stockRows = getAvailableRingCatalogRows(d.id, plannerType);
-      const totalStockQty = stockRows.reduce((sum, row) => sum + csvNum(row.stock_qty, 0), 0);
-        const ringStockText = stockRows.length
-          ? (isEN()
-              ? (totalStockQty > 0 ? `${stockRows.length} colors in stock / ${totalStockQty} pcs` : `${stockRows.length} colors in stock`)
-              : (totalStockQty > 0 ? `在庫 ${stockRows.length}色 / ${totalStockQty}` : `在庫 ${stockRows.length}色`))
-          : '';
+      const inStockRows = stockRows.filter(row => NSFFulfillment.physicalStock(row));
+      const totalStockQty = inStockRows.reduce((sum, row) => sum + csvNum(row.stock_qty, 0), 0);
+      const orderCount = stockRows.filter(row => !NSFFulfillment.physicalStock(row) && !csvBool(row.hard_to_source)).length;
+      const ringStockText = `在庫 ${inStockRows.length}色 / ${totalStockQty}個・取寄せ ${orderCount}色`;
         const latestCrawlRow = stockRows
           .filter(row => csvBool(row.crawl_updated_flag))
           .sort((a, b) => String(b.crawl_updated_at_jst || '').localeCompare(String(a.crawl_updated_at_jst || '')))[0];
@@ -2706,6 +2721,25 @@ function buildRingGrids(sizeId) {
       el.appendChild(div);
     });
   });
+}
+
+function getSelectedRingRow() {
+  if (!sel.ringId || !sel.metalId) return null;
+  return getRingCatalogRows(sel.ringId).find(row => row.color_id === sel.metalId) || null;
+}
+function getFulfillment(qty = Number(document.getElementById('qty').value) || 1) {
+  const ids = sel.leatherId === 'patchwork'
+    ? [...document.querySelectorAll('#leatherGrid .img-card.selected')].map(el => el.dataset.id)
+    : [sel.leatherId];
+  if (getLiningRatio() > 0 && sel.liningId) ids.push(sel.liningId);
+  const materialStocks = ids.map(id => leatherStockPctMap[id] ?? null);
+  const thread = THREAD_STOCK_MAP.get(sel.stitchColorId);
+  if (sel.stitchColorId) materialStocks.push(thread ? (csvBool(thread.available) ? 1 : 0) : null);
+  const result = NSFFulfillment.assess({ qty, leatherSelected: !!sel.leatherId,
+    liningRatio: getLiningRatio(), sameLining: !sel.liningId || sel.liningId === sel.leatherId,
+    skivingFee: LINING_SKIVING_FEE, shippingFee: RING_ORDER_SHIPPING_FEE,
+    ringRow: getSelectedRingRow(), complete: !!(sel.brandId && sel.sizeId && sel.leatherId && sel.ringId && sel.metalId), materialStocks });
+  return result;
 }
 
 // ── BUILD PLATFORM GRID ──
@@ -2864,7 +2898,7 @@ let leatherStockPctMap = {};   // id -> 0-100 or null(未入力)
 
 function leatherStockBadge(pct) {
   if (pct === null || pct === undefined || !Number.isFinite(pct)) return null;
-  if (pct <= 0)  return { text: '📦 お取り寄せ（2〜3週間）', color: '#b0563a' };
+  if (pct <= 0)  return { text: '📦 お取り寄せ（2〜4週間）', color: '#b0563a' };
   if (pct <= 20) return { text: '⚠️ 残りわずか', color: '#c07a1a' };
   if (pct >= 80) return { text: '✨ 入荷したて（エイジング未進行）', color: '#2a8a5a' };
   return null; // 通常在庫はバッジなし
@@ -3211,7 +3245,8 @@ function updateSummary(options = {}) {
 
   let opts = 0;
   const optionMultiplierEased = 1.0 + (optionMultiplier - 1.0) / 2; // 面積比の増分を半分に緩和（2026-07-09変更）
-  ['metal','coin'].forEach(k => opts += Math.round((prices[k]||0) * optionMultiplierEased));
+  opts += Math.round((prices.coin || 0) * optionMultiplierEased);
+  opts += Math.round(prices.metal || 0); // リングの色差額もCSV価格そのまま。サイズ倍率を掛けない。
   opts += Math.round(prices.ring||0); // リングは仕入値をそのまま計上（ring-price-stock.csv がサイズ別に登録済のため倍率は二重計上／2026-09-04変更）
   opts += Math.round(prices.stamp||0); // 刻印は物理サイズに依存しないため固定額・サイズ倍率非適用（2026-09-04変更）
   opts += Math.round(prices.pen||0); // ペンホルダーは固定額・サイズ倍率非適用（2026-07-09変更）
@@ -3232,8 +3267,11 @@ function updateSummary(options = {}) {
   const afterVol = sub - volDisc;
   const manDisc  = Math.round(afterVol * discRate / 100);
   const afterDisc = afterVol - manDisc;
-  const tax   = Math.round((afterDisc + initDesignFee) * taxRate / 100);
-  const total = Math.floor((afterDisc + initDesignFee + tax) / 100) * 100;
+  const fulfillment = getFulfillment(qty);
+  const baseTax = Math.round((afterDisc + initDesignFee) * taxRate / 100);
+  const tax = baseTax + Math.round(fulfillment.totalFees * taxRate / (100 + taxRate));
+  // 新たな別途料金は税込設定。既存価格の割引・100円丸め後に加算して二重課税を防止。
+  const total = Math.floor((afterDisc + initDesignFee + baseTax) / 100) * 100 + fulfillment.totalFees;
 
   NSFLaborCurves.updateCurrent();
   updateSizePrices();
@@ -3304,7 +3342,7 @@ function updateSummary(options = {}) {
     }
     if(sel.ring)  add(`${T('sum.ring', 'リング')}: ${sel.ring}`, prices.ring ? `+¥${Math.round(prices.ring).toLocaleString()}` : T('sum.standard', '標準'));
     if(sel.ringStockText) add(T('sum.ringStock', 'リング在庫'), sel.ringStockText);
-    if(sel.metal) add(`${T('sum.metal', '金具')}: ${sel.metal}`, prices.metal ? `+¥${Math.round(prices.metal * optionMultiplierEased).toLocaleString()}` : T('sum.standard', '標準'));
+    if(sel.metal) add(`${T('sum.metal', '金具')}: ${sel.metal}`, prices.metal ? `+¥${Math.round(prices.metal).toLocaleString()}` : T('sum.standard', '標準'));
     if(sel.metalStockText) add(T('sum.metalStock', '金具在庫'), sel.metalStockText);
     const colorComponents = getActiveColorComponents();
     if (colorComponents.length > 0) {
@@ -3332,6 +3370,10 @@ function updateSummary(options = {}) {
     if(prices.brandInitFee > 0) add(T('sum.initFeeStructure', '✨ 初度設計費・構造設計（1回のみ）'), `+¥${prices.brandInitFee.toLocaleString()}`);
     if(prices.initDesignFee > 0) add(T('sum.initFeeStamp', '✨ 初度設計費・刻印デザイン（1回のみ）'), `+¥${prices.initDesignFee.toLocaleString()}`);
     if(initDesignFee > 1000) add(T('sum.initFeeTotal', '　初度設計費 合計'), `+¥${initDesignFee.toLocaleString()}`);
+    if (fulfillment.skiving) add('革漉き加工料（税込）', `¥${fulfillment.skiving.toLocaleString()}（${qty}冊分）`);
+    if (fulfillment.ringShipping) add('リング取寄せ送料（税込）', `¥${fulfillment.ringShipping.toLocaleString()}（1注文）`);
+    add('納期目安', fulfillment.lead);
+    if (getSelectedRingRow() && !(Number(getSelectedRingRow().price_jpy) > 0)) add('リング価格', '参考価格・正式価格は要確認');
     add(T('sum.total', '▶ 合計'), '', 'lbl-title');
     add(`×${qty}${T('sum.pcs', '個')}`, `¥${sub.toLocaleString()}`);
     if(volDisc > 0) add(`${T('sum.volDisc', 'ボリューム割引')}(${volRate * 100}%)`, `−¥${volDisc.toLocaleString()}`);
@@ -3386,11 +3428,11 @@ function updateSummary(options = {}) {
   refreshSidebarColorPreview();
   buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, tax, taxRate, total, baseCost, leatherCost, sizeDs, leatherDsP, platformFeeRate, platformFeeAmt, sellPrice, areaMultiplier, initDesignFee);
   if (isAdmin) window._quoteSnapshot = JSON.parse(JSON.stringify({
-    selection: sel, prices,
+    selection: sel, prices, fulfillment,
     quoteRows: [...document.querySelectorAll('#printDetail tr')].map(tr => [...tr.cells].map(td => td.textContent)),
     curve: NSFLaborCurves.data?.curves[sel.brandId] || null,
     curveSource: NSFLaborCurves.draft ? 'draft' : 'published',
-    settings: { laborRate, baseFee: BASE_FEE, wasteRate: WASTE_RATE, numerDsPrice: NUMER_DS_PRICE, areaMultiplier, brandExtraBase, leatherDsP, leatherDsPEff, liningRatio },
+    settings: { laborRate, baseFee: BASE_FEE, wasteRate: WASTE_RATE, numerDsPrice: NUMER_DS_PRICE, liningSkivingFee: LINING_SKIVING_FEE, ringOrderShippingFee: RING_ORDER_SHIPPING_FEE, areaMultiplier, brandExtraBase, leatherDsP, leatherDsPEff, liningRatio },
     calculation: { productionArea, totalHours, baseCost, leatherCost, sizeDs, opts, initDesignFee, unit, qty, sub, volRate, volDisc, discRate, manDisc, taxRate, tax, total, platformFeeRate, platformFeeAmt, sellPrice },
     model: 'monotone-hermite-v1'
   }));
@@ -3412,6 +3454,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
     h += r(isEN() ? `${meta.label} color` : `${meta.label}カラー`, formatComponentColorSummary(meta.key));
   });
   h += r(T('sum.ring', 'リング'), sel.ring||NS);
+  if (getSelectedRingRow() && !(Number(getSelectedRingRow().price_jpy) > 0)) h += r('リング価格', '参考価格・正式価格は要確認');
   // リング在庫・金具在庫は依頼人向け情報ではないため除外
   h += r(T('sum.metal', '金具'), sel.metal||NS);
   if(sel.stitchColor) h += r(T('sum.stitchColor', 'ステッチ色'), sel.stitchColor);
@@ -3435,6 +3478,8 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   if(st) h += r(T('ui.stampText', '刻印内容'), st);
   const rem = document.getElementById('remarks').value;
   if(rem) h += r(T('pd.remarks', '備考'), rem);
+  const fulfillment = getFulfillment(qty);
+  h += r('納期目安', fulfillment.lead);
   h += r('━━━━━━━', '━━━━━━━');
   // 製作費（工数×時給）・原価概算は原価類推可能なため依頼人向け見積書から除外
   h += r(T('pd.unitPrice', '1個単価（税抜）'), `¥${unit.toLocaleString()}`);
@@ -3442,6 +3487,8 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   h += r(T('pd.subtotal', '小計'), `¥${sub.toLocaleString()}`);
   if(volDisc > 0) h += r(`${T('sum.volDisc', 'ボリューム割引')}(${volRate*100}%)`, `−¥${volDisc.toLocaleString()}`);
   if(manDisc > 0) h += r(`${T('sum.disc', '割引')}(${discRate}%)`, `−¥${manDisc.toLocaleString()}`);
+  if (fulfillment.skiving) h += r(`別途 革漉き加工料（税込・${qty}冊分）`, `¥${fulfillment.skiving.toLocaleString()}`);
+  if (fulfillment.ringShipping) h += r('別途 リング取寄せ送料（税込・1注文）', `¥${fulfillment.ringShipping.toLocaleString()}`);
   if (platformFeeRate > 0) {
     h += r(`${sel.platform||''}${T('sum.fee', '手数料')} (${platformFeeRate}%)`, `+¥${(platformFeeAmt||0).toLocaleString()}`);
     h += r(T('sum.recommendedPrice', '🏷 推奨出品価格'), `¥${(sellPrice||total).toLocaleString()}`, true);
@@ -3455,6 +3502,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
 // ── EMAIL ──
 function buildEstText() {
   const qty = document.getElementById('qty').value;
+  const fulfillment = getFulfillment(Number(qty));
   const discRate = (document.getElementById('discountRate')||{}).value || 0;
   const st = document.getElementById('stampText').value;
   const rem = document.getElementById('remarks').value;
@@ -3511,6 +3559,10 @@ function buildEstText() {
   }
   if(rem) t += `\n${T('est.remarksHeader', '【ご要望・備考】')}\n${rem}\n`;
   t += '────────────────\n';
+  t += `\n納期目安：${fulfillment.lead}\n`;
+  if (getSelectedRingRow() && !(Number(getSelectedRingRow().price_jpy) > 0)) t += 'リング価格：参考価格・正式価格は要確認\n';
+  if (fulfillment.skiving) t += `別途 革漉き加工料（税込・${qty}冊分）：¥${fulfillment.skiving.toLocaleString()}\n`;
+  if (fulfillment.ringShipping) t += `別途 リング取寄せ送料（税込・1注文）：¥${fulfillment.ringShipping.toLocaleString()}\n`;
   return t;
 }
 // ── PRINT ──

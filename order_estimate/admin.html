@@ -1058,7 +1058,7 @@ tr.row-out-stock td{
       <h2 style="margin:0 0 6px;font-size:16px;color:#6b3a1f">リング在庫マトリクス（欠品発見用）</h2>
       <div class="hint">
         シリーズ×手帳規格×内径×色で全リングを俯瞰します。外径 = 内径 + 3mm。
-        <strong>色チップをクリックすると在庫数を直接修正</strong>できます（「×」はその行の削除）。
+        <strong>色チップをクリックすると在庫数を直接修正</strong>できます（「×」はその行の削除）。色ごとの「入手困難」にチェックすると、在庫切れ時は要相談になります。
         「＋店を追加」で同じリングの別の購入先（店・URL・価格・送料）を登録でき、購入先=最安・見積総額=最高値が自動で選び直されます。
         いずれも「リング在庫をGitHubへ反映」を押すまで公開データは変わりません。
       </div>
@@ -2238,15 +2238,15 @@ const THREAD_SWATCH_COLORS = {
   "sc_black": "#000000",
   "sc_white": "#FFFFFF"
 };
-const BOOLEAN_FIELDS = new Set(['check_enabled','ui_visible','monitor_enabled']);
+const BOOLEAN_FIELDS = new Set(['check_enabled','ui_visible','monitor_enabled','hard_to_source']);
 const NUMBER_FIELDS = new Set(['size_mm','ui_order','price_jpy','stock_qty','lead_time_days','price_min_jpy','price_max_jpy','preferred_source_price_jpy','preferred_source_shipping_jpy','source_price_1_jpy','source_price_2_jpy','source_price_3_jpy','source_shipping_1_jpy','source_shipping_2_jpy','source_shipping_3_jpy']);
 const URL_FIELDS = new Set(['preferred_source_url','source_url_1','source_url_2','source_url_3']);
 const STOCK_STATUS_OPTIONS = ['in_stock','low_stock','out_of_stock','unknown','preorder','backorder'];
-const EXTRA_HEADERS = ['planner_type','preferred_source_shipping_jpy','source_shipping_1_jpy','source_shipping_2_jpy','source_shipping_3_jpy','crawl_updated_flag','crawl_updated_at_jst','crawl_updated_run_id','crawl_updated_from_shop'];
+const EXTRA_HEADERS = ['hard_to_source','planner_type','preferred_source_shipping_jpy','source_shipping_1_jpy','source_shipping_2_jpy','source_shipping_3_jpy','crawl_updated_flag','crawl_updated_at_jst','crawl_updated_run_id','crawl_updated_from_shop'];
 const CRAWL_SERVER_URL = 'http://127.0.0.1:8766';
 const HEADER_ORDER = [
   'planner_type','ring_id','series','series_label','maker','size_label','size_mm','color_id','color_label','finish_label',
-  'check_enabled','ui_visible','ui_order','price_jpy','stock_status','stock_qty','lead_time_days','monitor_enabled',
+  'check_enabled','ui_visible','ui_order','price_jpy','stock_status','stock_qty','hard_to_source','lead_time_days','monitor_enabled',
   'price_min_jpy','price_max_jpy','preferred_source_shop','preferred_source_url','preferred_source_price_jpy','preferred_source_shipping_jpy','preferred_last_checked',
   'source_shop_1','source_url_1','source_price_1_jpy','source_shipping_1_jpy','source_checked_1',
   'source_shop_2','source_url_2','source_price_2_jpy','source_shipping_2_jpy','source_checked_2',
@@ -3360,7 +3360,7 @@ function ensureHeadersAndRows() {
   });
   rows.forEach(row => {
     EXTRA_HEADERS.forEach(header => {
-      if (!(header in row)) row[header] = '';
+      if (!(header in row)) row[header] = header === 'hard_to_source' ? 'FALSE' : '';
     });
   });
 }
@@ -3636,6 +3636,7 @@ function renderStockList() {
       <div class="stock-checks">
         <label><input type="checkbox" data-stock-edit="visible" data-row="${rowIndex}" ${boolValue(row.ui_visible) ? 'checked' : ''}>見積もり表示</label>
         <label><input type="checkbox" data-stock-edit="checked" data-row="${rowIndex}" ${boolValue(row.check_enabled) ? 'checked' : ''}>候補有効</label>
+        <label><input type="checkbox" data-stock-edit="hard_to_source" data-row="${rowIndex}" ${boolValue(row.hard_to_source) ? 'checked' : ''}>入手困難（在庫切れ時は要相談）</label>
         <label><input type="checkbox" data-stock-edit="monitor" data-row="${rowIndex}" ${boolValue(row.monitor_enabled) ? 'checked' : ''}>価格監視</label>
       </div>
       <div class="review-actions">
@@ -3660,6 +3661,7 @@ function renderStockList() {
       }
       if (kind === 'visible') row.ui_visible = input.checked ? 'TRUE' : 'FALSE';
       if (kind === 'checked') row.check_enabled = input.checked ? 'TRUE' : 'FALSE';
+      if (kind === 'hard_to_source') row.hard_to_source = input.checked ? 'TRUE' : 'FALSE';
       if (kind === 'monitor') row.monitor_enabled = input.checked ? 'TRUE' : 'FALSE';
       setDirty(true);
       applyFilters(false);
@@ -3790,6 +3792,23 @@ function matrixChipState(row) {
   const qty = Number(qtyRaw);
   if (!Number.isFinite(qty) || qty <= 0) return { cls: 'out', text: '欠品' };
   return { cls: 'ok', text: String(qty) };
+}
+
+function makeRingSourcingFlag(row, colorLabel) {
+  const label = document.createElement('label');
+  label.className = 'ring-chip';
+  label.title = '入手困難な金具。在庫切れ時は通常の取寄せではなく要相談になります。';
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.checked = boolValue(row.hard_to_source);
+  input.setAttribute('aria-label', `${colorLabel} 入手困難`);
+  input.onchange = () => {
+    row.hard_to_source = input.checked ? 'TRUE' : 'FALSE';
+    setDirty(true);
+    applyFilters(false);
+  };
+  label.append(input, document.createTextNode(`${colorLabel} 入手困難`));
+  return label;
 }
 
 function makeRingChip(cls, swColor, label, onDelete, onActivate, activateTitle) {
@@ -4298,6 +4317,7 @@ function renderRingMatrix() {
           const label = String(row.color_label || '').trim() || meta.label;
           chips.appendChild(makeRingChip(state.cls, meta.sw, `${label} ${state.text}`,
             chipDeleter(row, label), () => editRingStockFromMatrix(row), 'クリックで在庫数を修正'));
+          chips.appendChild(makeRingSourcingFlag(row, label));
         });
         group.colors.forEach((row, colorId) => {
           if (MATRIX_COLOR_ORDER.includes(colorId)) return;
@@ -4306,6 +4326,7 @@ function renderRingMatrix() {
           const label = String(row.color_label || '').trim() || colorId;
           chips.appendChild(makeRingChip(state.cls, null, `${label} ${state.text}`,
             chipDeleter(row, label), () => editRingStockFromMatrix(row), 'クリックで在庫数を修正'));
+          chips.appendChild(makeRingSourcingFlag(row, label));
         });
         if (hasOut) card.classList.add('has-out');
         card.appendChild(chips);
@@ -4408,7 +4429,7 @@ function renderTable() {
         input.onchange = () => {
           row[header] = input.checked ? 'TRUE' : 'FALSE';
           setDirty(true);
-          if (header === 'ui_visible' || header === 'check_enabled' || header === 'monitor_enabled') applyFilters();
+          if (header === 'ui_visible' || header === 'check_enabled' || header === 'monitor_enabled' || header === 'hard_to_source') applyFilters();
         };
         wrap.appendChild(input);
         td.appendChild(wrap);
