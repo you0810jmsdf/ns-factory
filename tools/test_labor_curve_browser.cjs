@@ -170,6 +170,35 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
     assert.equal(await page.locator('#sidebarColorFrame').getAttribute('src'), null);
     await archivePage.emulateMedia({ media: 'screen' });
     await archivePage.screenshot({ path: path.join(os.tmpdir(), 'nsf-quote-archive-preview.png'), fullPage: true });
+    const fulfillmentChecks = await page.evaluate(() => {
+      sel.brandId='simplist_kl'; sel.brand='Simplist+クラウゼ'; sel.sizeId='mini6'; sel.size='mini 6';
+      sel.leatherId='numer_25'; sel.leather='生成りヌメ革'; prices.leather=160; sel.liningId=null; prices.lining=null;
+      sel.ringId='r15'; sel.ring='15mm'; sel.metalId='silver'; sel.metal='シルバー'; prices.ring=1000; prices.metal=0;
+      sel.stitchColorId=null; leatherStockPctMap.numer_25=100;
+      document.getElementById('qty').value=1; if(document.getElementById('discountRate')) document.getElementById('discountRate').value=0;
+      const row = getSelectedRingRow(); row.stock_status='in_stock'; row.stock_qty=10; row.hard_to_source='FALSE';
+      LINING_SKIVING_FEE=0; RING_ORDER_SHIPPING_FEE=500; updateSummary(); const base=window._quoteSnapshot.calculation.total;
+      LINING_SKIVING_FEE=3000; updateSummary(); const same=window._quoteSnapshot.calculation.total;
+      const ready=getFulfillment().lead;
+      row.stock_status='out_of_stock'; row.stock_qty=0; updateSummary(); const order=window._quoteSnapshot.calculation.total;
+      const lead=getFulfillment().lead, print=document.getElementById('printDetail').textContent, text=buildEstText();
+      document.getElementById('qty').value=2; updateSummary(); const two=getFulfillment();
+      row.hard_to_source='TRUE'; buildMetalGrid(); const hard=!!document.querySelector('#metalGrid [data-id="silver"][aria-disabled="true"]');
+      const hardLead=getFulfillment().lead;
+      row.stock_status='in_stock';row.stock_qty=10;buildMetalGrid();const stockedHard=!document.querySelector('#metalGrid [data-id="silver"][aria-disabled="true"]');
+      sel.brandId='simplist'; updateSummary(); const noLining=getFulfillment().skiving;
+      sel.brandId='simplist_kl';sel.liningId='ska08';prices.lining=160;updateSummary();const different=getFulfillment().skiving;
+      row.hard_to_source='FALSE';row.stock_qty=0;row.stock_status='out_of_stock';buildRingGrids('mini6');buildMetalGrid();
+      const orderSelectable=!!document.querySelector('#ringNormalGrid [data-id="r15"]') && !!document.querySelector('#metalGrid [data-id="silver"]:not([aria-disabled="true"])');
+      return {base,same,order,ready,lead,print,text,two,hard,hardLead,stockedHard,noLining,different,orderSelectable};
+    });
+    assert.equal(fulfillmentChecks.same-fulfillmentChecks.base,3000);
+    assert.equal(fulfillmentChecks.order-fulfillmentChecks.same,500);
+    assert.match(fulfillmentChecks.ready,/7日/);assert.match(fulfillmentChecks.lead,/2〜4週間/);
+    assert.match(fulfillmentChecks.print,/革漉き加工料/);assert.match(fulfillmentChecks.print,/取寄せ送料/);assert.match(fulfillmentChecks.text,/2〜4週間/);
+    assert.equal(fulfillmentChecks.two.skiving,6000);assert.equal(fulfillmentChecks.two.ringShipping,500);
+    assert.ok(fulfillmentChecks.hard);assert.ok(fulfillmentChecks.stockedHard);assert.match(fulfillmentChecks.hardLead,/個別/);
+    assert.equal(fulfillmentChecks.noLining,0);assert.equal(fulfillmentChecks.different,0);assert.ok(fulfillmentChecks.orderSelectable);
     console.log(JSON.stringify({ beforeHours: before, afterHours: after, beforePrice, afterPrice, desktop: path.join(os.tmpdir(), 'nsf-labor-curve-desktop.png'), mobile: path.join(os.tmpdir(), 'nsf-labor-curve-mobile.png') }));
   } finally {
     if (browser) await browser.close();
