@@ -116,6 +116,26 @@ td.name small{display:block;color:#6e7681;font-size:11px;margin-top:2px;word-bre
   .wrap{padding:12px 12px 60px}
   .tl-row{grid-template-columns:44px 1fr}
 }
+
+/* 対処履歴（2026-09-05 追加） */
+.fx { border-left: 3px solid #30363d; padding: 10px 0 10px 12px; margin-bottom: 12px; }
+.fx.st-done { border-left-color: #3fb950; }
+.fx.st-doing { border-left-color: #d29922; }
+.fx.st-todo { border-left-color: #f85149; }
+.fx.st-drop { border-left-color: #8b949e; }
+.fx-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.fx-date { color: #6e7681; font-size: 12px; font-family: ui-monospace, monospace; }
+.fx-label { font-weight: 600; }
+.fx-badge { font-size: 11px; padding: 1px 8px; border-radius: 10px; border: 1px solid #30363d; }
+.fx-badge.st-done { color: #3fb950; border-color: #238636; }
+.fx-badge.st-doing { color: #d29922; border-color: #9e6a03; }
+.fx-badge.st-todo { color: #f85149; border-color: #da3633; }
+.fx-badge.st-drop { color: #8b949e; }
+.fx dl { margin: 0; display: grid; grid-template-columns: 5.5em 1fr; gap: 3px 10px; font-size: 13px; }
+.fx dt { color: #6e7681; }
+.fx dd { margin: 0; color: #c9d1d9; line-height: 1.6; }
+.fx-inline { margin-top: 4px; font-size: 12px; color: #8b949e; line-height: 1.5; }
+.fx-inline b { color: #adbac7; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -137,6 +157,11 @@ td.name small{display:block;color:#6e7681;font-size:11px;margin-top:2px;word-bre
   <div class="panel">
     <h2>⚠ 要対処 <span class="sub">失敗・停止・未実行のもの</span></h2>
     <div class="table-scroll"><div id="problemList"><div class="empty">読み込み中…</div></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>🛠 対処履歴 <span class="sub">失敗に対して何をしたかの記録（新しい順）</span></h2>
+    <div id="fixHistory"><div class="empty">読み込み中…</div></div>
   </div>
 
   <div class="panel">
@@ -259,6 +284,49 @@ function stBadge(s){
 // ================================================================
 let allItems = [];
 let filterKind = 'all';
+// 対処履歴（automations-history.json）。失敗を直したときの記録をセッション側で追記する。
+// GitHub Pages は最大10分キャッシュするので no-store とキャッシュバスターを必ず付ける。
+let fixHistory = [];
+
+async function loadFixHistory(){
+  try{
+    const r = await fetch('automations-history.json?t=' + Date.now(), { cache: 'no-store' });
+    if(!r.ok) return;
+    const j = await r.json();
+    fixHistory = Array.isArray(j.entries) ? j.entries.slice() : [];
+    fixHistory.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  }catch(e){ /* 履歴が無くても本体の表示は続ける */ }
+}
+
+const FX_CLASS = { '対処済': 'st-done', '対処中': 'st-doing', '未対処': 'st-todo', '廃止': 'st-drop' };
+
+// 要対処の行に、その処理の最新の対処を1件だけ添える
+function fixFor(item){
+  const keys = [item.name, item.label];
+  return fixHistory.find(h => keys.indexOf(h.id) >= 0 || keys.indexOf(h.label) >= 0) || null;
+}
+
+function renderFixHistory(){
+  const el = document.getElementById('fixHistory');
+  if(!el) return;
+  if(!fixHistory.length){
+    el.innerHTML = '<div class="empty">まだ記録がありません。</div>';
+    return;
+  }
+  el.innerHTML = fixHistory.map(h => {
+    const cls = FX_CLASS[h.status] || 'st-doing';
+    const row = (label, value) => value
+      ? '<dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd>' : '';
+    return '<div class="fx ' + cls + '">'
+      + '<div class="fx-head">'
+      +   '<span class="fx-date">' + esc(h.date || '') + '</span>'
+      +   '<span class="fx-label">' + esc(h.label || h.id || '') + '</span>'
+      +   '<span class="fx-badge ' + cls + '">' + esc(h.status || '') + '</span>'
+      + '</div>'
+      + '<dl>' + row('原因', h.cause) + row('やったこと', h.action) + row('確認', h.verify) + '</dl>'
+      + '</div>';
+  }).join('');
+}
 
 function render(root){
   const d = root.automations;
@@ -285,6 +353,7 @@ function render(root){
 
   allItems = d.items || [];
   renderCounts(d.counts || {});
+  renderFixHistory();
   renderProblems(allItems);
   renderTimeline(allItems);
   renderIntervals(allItems);
@@ -339,7 +408,12 @@ function renderProblems(items){
       + '<td class="name">' + esc(i.label) + '<small>' + esc(i.name) + '</small></td>'
       + '<td class="mono">' + esc(i.schedule || '—') + '</td>'
       + '<td class="mono">' + fmtWhen(i.lastRun) + '</td>'
-      + '<td class="detail">' + esc(i.detail || (ST[i.status] || {}).note || '') + '</td>'
+      + '<td class="detail">' + esc(i.detail || (ST[i.status] || {}).note || '')
+      +   (fixFor(i)
+            ? '<div class="fx-inline"><b>' + esc(fixFor(i).date) + ' ' + esc(fixFor(i).status) + '</b>：'
+              + esc(fixFor(i).action || '') + '</div>'
+            : '')
+      + '</td>'
       + '</tr>').join('')
     + '</tbody></table>';
 }
@@ -454,6 +528,7 @@ async function tick(){
   const badge = document.getElementById('liveBadge');
   const errEl = document.getElementById('loadErr');
   try{
+    await loadFixHistory();
     const r = await gasPostRetry({ action: 'getMonitor', apiKey: getKey(), key: getKey() });
     if(r.error) throw new Error(r.error);
     errEl.style.display = 'none';
