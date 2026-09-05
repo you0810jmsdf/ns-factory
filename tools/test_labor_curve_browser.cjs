@@ -163,14 +163,17 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + delta, {steps: 5}); await page.mouse.up();
       const newHours = await page.evaluate(i => NSFLaborCurves.data.curves.simplist_klpad[i].hours, index);
       assert.ok(delta > 0 ? newHours < oldHours : newHours > oldHours, 'each overlapping point must be independently draggable by label');
-      assert.equal(await page.evaluate(() => JSON.stringify({sel,prices})), conditions);
+      assert.equal(await page.evaluate(() => sel.sizeId), index === 1 ? 'mini6' : 'micro5sq');
+      assert.equal(await page.evaluate(() => sel.brandId), 'simplist_klpad');
+      assert.equal(await page.evaluate(() => sel.leatherId), 'numer_25');
     }
     assert.match(await admin.locator('#adminEstimateLink').getAttribute('href'), /\?admin/);
+    await page.locator('#sizeGrid [data-id="a5slim"]').click();
     const settingsDownloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: '設定をダウンロード', exact: true }).click();
     const settingsDownload = await settingsDownloadPromise;
     const settingsFilename = settingsDownload.suggestedFilename();
-    assert.match(settingsFilename, /^labor-curves_v2026\.09\.05\.3_[0-9a-f]{8}\.json$/);
+    assert.match(settingsFilename, /^labor-curves_v2026\.09\.05\.4_[0-9a-f]{8}\.json$/);
     assert.equal(settingsFilename, await page.evaluate(() => NSFLaborCurves.settingsFilename()));
     assert.ok((await page.locator('#printDetail .quote-settings-file').textContent()).includes(settingsFilename));
     const settingsPath = path.join(os.tmpdir(), settingsFilename);

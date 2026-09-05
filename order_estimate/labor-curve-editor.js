@@ -1,7 +1,7 @@
 /* Shared curve data and editor. Public estimates never read administrative drafts. */
 (function () {
   'use strict';
-  const SIMULATOR_VERSION = '2026.09.05.3';
+  const SIMULATOR_VERSION = '2026.09.05.4';
   window.NSFSimulatorVersion = SIMULATOR_VERSION;
   const versionLabel = document.getElementById('simulatorVersion');
   if (versionLabel) versionLabel.textContent = '見積シミュレータ v' + SIMULATOR_VERSION;
@@ -73,7 +73,7 @@
     const candidate = copy(state.data);
     candidate.curves[state.brand][index].area = area;
     candidate.curves[state.brand][index].hours = hoursValue;
-    try { state.data = M.validate(candidate); storeDraft(); notify(); return true; }
+    try { state.data = M.validate(candidate); storeDraft(); state.config.onPointSelect?.(state.data.curves[state.brand][index]); notify(); return true; }
     catch (e) { state.error = e.message; return false; }
   }
   function render() {
@@ -86,7 +86,7 @@
     }
     host.append(el('h2', '面積と作業工数のカーブ'));
     host.append(el('p', '構造ごとの点を上下にドラッグ、または表の数値を編集してください。規格名も上下にドラッグできます。横軸は製作に使う革の面積（ロス前・1 ds = 100 cm²）、縦軸は合計工数です。'));
-    if (state.config.current) host.append(el('p', '工数を調整しても、見積もりの構造・サイズ・革・リングなどの条件は変わりません。選択中の構造の曲線を編集します。'));
+    if (state.config.current) host.append(el('p', '点を操作すると対応する手帳規格を自動選択します。構造は維持します。変更先の規格に対応しないリングは選び直してください。'));
     const status = el('p', state.error || (state.draft ? '端末下書きで試算中（お客様向けには未反映）' : '公開設定で試算中'), { role: 'status', class: 'lc-status' });
     host.append(status);
     if (!state.data) { host.append(button('曲線を再読込', () => load(true))); return; }
@@ -169,6 +169,7 @@
       e.preventDefault(); state.selected = Number(index);
       const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse());
       state.drag = { index: Number(index), id: e.pointerId, startY: pt.y, startHours: state.data.curves[state.brand][Number(index)].hours };
+      state.config.onPointSelect?.(state.data.curves[state.brand][Number(index)]);
       svg.setPointerCapture(e.pointerId);
     };
     svg.onpointermove = e => {
