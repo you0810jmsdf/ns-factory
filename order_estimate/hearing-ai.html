@@ -1350,7 +1350,11 @@ async function liveTurn(userText, skipEcho){
   history.push({role:'user', content:userText});
   showTyping();
   try{
-    const livePayload={ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5', lang:(isEN()?'en':'ja'), sid:HEARING_SID };
+    // hasContact: 事業主への即時通知で「返信できる相手か」が分かるようにする（2026-09-05）。
+    // 連絡先の中身は送らない（通知メールには記入の有無だけ載せる）。
+    const hasContact = !!(document.getElementById('hr-contact-info')||{}).value?.trim()
+                    && !!(document.getElementById('hr-contact-name')||{}).value?.trim();
+    const livePayload={ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5', lang:(isEN()?'en':'ja'), sid:HEARING_SID, hasContact };
     if(pendingAIImages.length){
       livePayload.images=pendingAIImages.slice();
       pendingAIImages=[]; // 1回送ったらクリア（失敗時も再送しない＝有料枠・トークンの浪費防止を優先）
