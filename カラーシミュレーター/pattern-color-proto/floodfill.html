@@ -179,6 +179,37 @@ function mixHex(hexA, hexB, t){
   return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
 }
 
+/* 金具の縁を立体的に見せるための情報を作る。
+   塗り領域の境界から内側へ depth ピクセルまで距離(dist: 1〜depth)を求め、
+   境界が上・左側に開いている縁は「光が当たる側」(+1)、下・右側は「影になる側」(-1)とする */
+function computeBevel(visited, w, h, regionSize){
+  const depth = Math.max(2, Math.min(10, Math.round(regionSize * 0.08)));
+  const dist = new Uint8Array(w*h);
+  const sign = new Int8Array(w*h);
+  let frontier = [];
+  for(let i=0;i<visited.length;i++){
+    if(!visited[i]) continue;
+    const y = (i / w) | 0, x = i - y*w;
+    const up = y===0 || !visited[i-w], left = x===0 || !visited[i-1];
+    const down = y===h-1 || !visited[i+w], right = x===w-1 || !visited[i+1];
+    if(up||left||down||right){ dist[i] = 1; sign[i] = (up||left) ? 1 : -1; frontier.push(i); }
+  }
+  for(let d=2; d<=depth && frontier.length; d++){
+    const next = [];
+    for(const i of frontier){
+      const y = (i / w) | 0, x = i - y*w;
+      const nb = [];
+      if(y>0) nb.push(i-w); if(y<h-1) nb.push(i+w); if(x>0) nb.push(i-1); if(x<w-1) nb.push(i+1);
+      for(const n of nb){
+        if(!visited[n] || dist[n]) continue;
+        dist[n] = d; sign[n] = sign[i]; next.push(n);
+      }
+    }
+    frontier = next;
+  }
+  return { dist, sign, depth, strength: 0.55 };
+}
+
 function cropTopRightScaled(img){
   const base = cropTopRight(img);
   const c = document.createElement('canvas');
@@ -512,15 +543,27 @@ function applyTextureAt(clickX, clickY){
   const texCanvas = document.createElement('canvas');
   texCanvas.width = state.DISP_W; texCanvas.height = state.DISP_H;
   const texCtx = texCanvas.getContext('2d');
+  let bevel = null; // 金具のとき、縁の立体処理（面取り）用の情報
   if(useMetal){
-    // 金具は単色だと平板に見えるため、塗り領域の上下範囲で軽い光沢グラデーションを付ける
-    let minY = state.DISP_H, maxY = 0;
-    for(let i=0;i<visited.length;i++){ if(visited[i]){ const y = (i / state.DISP_W) | 0; if(y<minY) minY=y; if(y>maxY) maxY=y; } }
-    const grad = texCtx.createLinearGradient(0, minY, 0, Math.max(maxY, minY+1));
-    grad.addColorStop(0,    mixHex(currentMetal.hex, '#ffffff', 0.28));
-    grad.addColorStop(0.45, currentMetal.hex);
-    grad.addColorStop(1,    mixHex(currentMetal.hex, '#000000', 0.25));
+    // 金具は磨いた金属に見せる。塗り領域の範囲に斜め方向の多段グラデーション
+    // （ハイライト帯 → 地色 → 暗部 → 鏡面の細い光筋 → 地色 → 暗部）を敷く
+    let minX = state.DISP_W, maxX = 0, minY = state.DISP_H, maxY = 0;
+    for(let i=0;i<visited.length;i++){
+      if(!visited[i]) continue;
+      const y = (i / state.DISP_W) | 0, x = i - y*state.DISP_W;
+      if(x<minX) minX=x; if(x>maxX) maxX=x; if(y<minY) minY=y; if(y>maxY) maxY=y;
+    }
+    const hex = currentMetal.hex;
+    const grad = texCtx.createLinearGradient(minX, minY, Math.max(maxX, minX+1), Math.max(maxY, minY+1));
+    grad.addColorStop(0.00, mixHex(hex, '#ffffff', 0.55));
+    grad.addColorStop(0.22, hex);
+    grad.addColorStop(0.40, mixHex(hex, '#000000', 0.30));
+    grad.addColorStop(0.50, mixHex(hex, '#ffffff', 0.70)); // 鏡面反射の光筋
+    grad.addColorStop(0.58, mixHex(hex, '#ffffff', 0.15));
+    grad.addColorStop(0.78, hex);
+    grad.addColorStop(1.00, mixHex(hex, '#000000', 0.45));
     texCtx.fillStyle = grad;
+    bevel = computeBevel(visited, state.DISP_W, state.DISP_H, Math.min(maxX-minX, maxY-minY));
   }else{
     const leatherImg = leatherImgCache[currentLeather.id];
     if(!leatherImg){ console.log('leather image not loaded yet'); return; }
@@ -534,9 +577,16 @@ function applyTextureAt(clickX, clickY){
   for(let i=0;i<visited.length;i++){
     if(visited[i]){
       const o = i*4;
-      offData.data[o]   = texData.data[o];
-      offData.data[o+1] = texData.data[o+1];
-      offData.data[o+2] = texData.data[o+2];
+      let r = texData.data[o], g = texData.data[o+1], b = texData.data[o+2];
+      if(bevel && bevel.dist[i]){
+        // 縁の面取り: 光の当たる上・左側は白へ、影になる下・右側は黒へ寄せる。縁に近いほど強く
+        const t = bevel.strength * (1 - (bevel.dist[i]-1) / bevel.depth);
+        const target = bevel.sign[i] > 0 ? 255 : 0;
+        r = r + (target - r) * t; g = g + (target - g) * t; b = b + (target - b) * t;
+      }
+      offData.data[o]   = r;
+      offData.data[o+1] = g;
+      offData.data[o+2] = b;
       offData.data[o+3] = 255;
     }
   }
