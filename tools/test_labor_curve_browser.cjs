@@ -48,7 +48,7 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
     await page.goto(url + '?admin', { waitUntil: 'domcontentloaded' });
     await waitEditor(page);
     await selectQuote(page);
-    await page.locator('#laborCurveEditor select').selectOption('simplist');
+    assert.equal(await page.locator('#laborCurveEditor select').inputValue(), 'simplist');
     const before = await page.evaluate(() => NSFLaborCurves.data.curves.simplist[0].hours);
     const beforePrice = await price(page);
     const first = page.locator('#laborCurveEditor circle[data-point="0"]');
@@ -131,27 +131,46 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
     assert.equal(saved.curves.simplist[0].hours, after);
     assert.equal(await admin.evaluate(() => localStorage.getItem('nsfactory-labor-curves-draft-v1')), null);
 
-    // Regression: curve selection must drive the quote even from an unselected structure/A5 Slim.
+    // Editing labor must preserve every quote condition, including padded structure and A5 Slim.
     await page.setViewportSize({ width: 1280, height: 960 });
-    await page.evaluate(() => { sel.brandId = null; sel.brand = null; sel.sizeId = 'a5slim'; sel.size = 'A5スリム'; updateSummary(); });
-    await page.locator('#laborCurveEditor select').selectOption('simplist_kl');
-    assert.equal(await page.evaluate(() => sel.brandId), 'simplist_kl');
-    assert.deepEqual(await page.locator('#laborCurveEditor [data-point-label]').allTextContents(), await page.evaluate(() => NSFLaborCurves.data.curves.simplist_kl.map(p => p.label)));
-    await page.locator('#laborCurveEditor svg').screenshot({path: path.join(os.tmpdir(), 'nsf-curve-point-labels.png')});
-    const a5 = page.locator('#laborCurveEditor circle[data-point="7"]');
+    await page.locator('#brandGrid [data-id="simplist_klpad"]').click();
+    await page.locator('#sizeGrid [data-id="a5slim"]').click();
+    await page.evaluate(() => { sel.leatherId='numer_25'; sel.leather='生成りヌメ革'; prices.leather=160; sel.liningId=null; sel.ringId='r15'; sel.metalId='silver'; prices.ring=1000; prices.metal=0; prices.platform=10; updateSummary(); });
+    const conditions = await page.evaluate(() => JSON.stringify({sel,prices}));
+    assert.equal(await page.locator('#laborCurveEditor select').inputValue(), 'simplist_klpad');
+    assert.equal(await page.locator('#laborCurveEditor select').isDisabled(), true);
+    assert.deepEqual(await page.locator('#laborCurveEditor [data-point-label]').allTextContents(), await page.evaluate(() => NSFLaborCurves.data.curves.simplist_klpad.map(p => p.label)));
+    const a5 = page.locator('#laborCurveEditor circle[data-point="6"]');
     await a5.scrollIntoViewIfNeeded(); const a5box = await a5.boundingBox();
-    await page.mouse.move(a5box.x + 7, a5box.y + 7); await page.mouse.down();
-    assert.equal(await page.evaluate(() => sel.sizeId), 'a5');
     const a5Price = await price(page);
+    await page.mouse.move(a5box.x + 7, a5box.y + 7); await page.mouse.down();
     await page.mouse.move(a5box.x + 7, a5box.y - 20, { steps: 6 }); await page.mouse.up();
-    assert.ok(await price(page) > a5Price, 'moving A5 up must increase the A5 quote');
-    assert.ok((await page.locator('#laborCurveCurrent').innerText()).includes('A5'));
+    assert.equal(await page.evaluate(() => JSON.stringify({sel,prices})), conditions);
+    assert.ok(await price(page) > a5Price, 'changing curve labor must change the existing A5 Slim quote');
+    assert.ok((await page.locator('#laborCurveCurrent').innerText()).includes('A5スリム'));
+    const panel = await page.locator('#adminCostBreakdown').innerText();
+    assert.match(panel, /材料費/); assert.match(panel, /製作加工費/); assert.match(panel, /販売手数料/);
+    assert.equal(await publicPage.locator('#adminCostBreakdown').count(), 0);
+    await page.locator('#laborCurveEditor [data-hours="6"]').fill(String(await page.evaluate(() => NSFLaborCurves.data.curves.simplist_klpad[6].hours + 0.1)));
+    await page.locator('#laborCurveEditor [data-hours="6"]').dispatchEvent('change');
+    assert.equal(await page.evaluate(() => JSON.stringify({sel,prices})), conditions);
 
+    for (const [index, delta] of [[1, 12], [2, -12]]) {
+      const label = page.locator('#laborCurveEditor [data-point-label="' + index + '"]');
+      await label.scrollIntoViewIfNeeded(); const box = await label.boundingBox();
+      const oldHours = await page.evaluate(i => NSFLaborCurves.data.curves.simplist_klpad[i].hours, index);
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + delta, {steps: 5}); await page.mouse.up();
+      const newHours = await page.evaluate(i => NSFLaborCurves.data.curves.simplist_klpad[i].hours, index);
+      assert.ok(delta > 0 ? newHours < oldHours : newHours > oldHours, 'each overlapping point must be independently draggable by label');
+      assert.equal(await page.evaluate(() => JSON.stringify({sel,prices})), conditions);
+    }
+    assert.match(await admin.locator('#adminEstimateLink').getAttribute('href'), /\?admin/);
     const settingsDownloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: '設定をダウンロード', exact: true }).click();
     const settingsDownload = await settingsDownloadPromise;
     const settingsFilename = settingsDownload.suggestedFilename();
-    assert.match(settingsFilename, /^labor-curves_v2026\.09\.05\.2_[0-9a-f]{8}\.json$/);
+    assert.match(settingsFilename, /^labor-curves_v2026\.09\.05\.3_[0-9a-f]{8}\.json$/);
     assert.equal(settingsFilename, await page.evaluate(() => NSFLaborCurves.settingsFilename()));
     assert.ok((await page.locator('#printDetail .quote-settings-file').textContent()).includes(settingsFilename));
     const settingsPath = path.join(os.tmpdir(), settingsFilename);
@@ -168,9 +187,9 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
     const archiveHtml = fs.readFileSync(archivePath, 'utf8');
     const snapshot = JSON.parse(archiveHtml.match(/id="quote-snapshot">([\s\S]*?)<\/script>/)[1]);
     assert.equal(snapshot.settingsFilename, settingsFilename);
-    assert.equal(snapshot.selection.brandId, 'simplist_kl'); assert.equal(snapshot.selection.sizeId, 'a5');
+    assert.equal(snapshot.selection.brandId, 'simplist_klpad'); assert.equal(snapshot.selection.sizeId, 'a5slim');
     assert.equal(snapshot.calculation.total, await price(page));
-    assert.equal(snapshot.curve[7].hours, snapshot.calculation.totalHours);
+    assert.equal(snapshot.calculation.totalHours, await page.evaluate(() => window._quoteSnapshot.calculation.totalHours));
     assert.equal(snapshot.coefficients.length, 7);
     assert.ok(archiveHtml.includes('試験見積 &lt;確認&gt;'));
     const archivePage = await context.newPage(); await archivePage.setContent(archiveHtml);

@@ -767,7 +767,7 @@ body{
   <button class="lp-tool-btn" onclick="goBackToParentSite()" data-i18n="ui.backSite">↩ 元のサイト</button>
   <a class="lp-tool-btn" href="./admin.html" data-i18n="ui.adminBtn">🗂 管理画面</a>
   <button class="lp-tool-btn" onclick="resetAll()" data-i18n="ui.resetBtn">🔄 リセット</button>
-  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.05.2</span>
+  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.05.3</span>
 </div>
 
 <div class="main">
@@ -1132,8 +1132,8 @@ body{
 </div>
 
 <script src="./labor-curve-model.js?v=20260905"></script>
-<script src="./labor-curve-editor.js?v=20260905.2"></script>
-<script src="./quote-archive.js?v=20260905.2"></script>
+<script src="./labor-curve-editor.js?v=20260905.3"></script>
+<script src="./quote-archive.js?v=20260905.3"></script>
 <script src="./estimate-fulfillment.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
@@ -3396,6 +3396,22 @@ function updateSummary(options = {}) {
     }
   }
 
+  if (isAdmin) {
+    const ringMaterials = Math.round(prices.ring || 0) + Math.round(prices.metal || 0);
+    const panel = document.createElement('li'); panel.id = 'adminCostBreakdown';
+    panel.style.cssText = 'display:block;background:#fff7ec;border:1px solid #dcc5a9;border-radius:8px;padding:12px;margin:8px 0';
+    const row = (label, amount) => '<div style="display:flex;justify-content:space-between;gap:8px;margin:6px 0"><span>' + label + '</span><strong>¥' + amount.toLocaleString() + '</strong></div>';
+    panel.innerHTML = '<strong>費用内訳（管理者用・注文全体）</strong>'
+      + '<p style="font-size:10px;color:#78634f;margin:6px 0">材料・製作加工・オプションは税抜／割引前</p>'
+      + row('材料費（革・リング）', (leatherCost + ringMaterials) * qty)
+      + row('製作加工費（基本料・工賃・設計）', baseCost * qty + initDesignFee)
+      + row('その他オプション', (opts - ringMaterials) * qty)
+      + (fulfillment.skiving ? row('革漉き加工料（税込）', fulfillment.skiving) : '')
+      + (fulfillment.ringShipping ? row('取寄せ送料（税込）', fulfillment.ringShipping) : '')
+      + row('販売手数料分の加算（丸め込み）', platformFeeAmt);
+    list.prepend(panel);
+  }
+
   // totalDisplay: コスト表示
   document.getElementById('totalDisplay').innerHTML = `¥${total.toLocaleString()} <span>${T('sum.yen', '円')}</span>`;
   const mBar = document.getElementById('mobileTotalBar');
@@ -3856,18 +3872,6 @@ window.addEventListener('DOMContentLoaded', () => {
     NSFLaborCurves.mount(host, {
       brands: () => BRANDS,
       archive: () => { updateSummary(); NSFQuoteArchive.save(window._quoteSnapshot); },
-      onSelect: (brandId, point) => {
-        // Reuse card handlers so lining, flap and ring compatibility stay in sync.
-        if (sel.brandId !== brandId) document.querySelector(`#brandGrid [data-id="${brandId}"]`)?.click();
-        if (point) {
-          const brand = BRANDS.find(b => b.id === brandId);
-          const size = SIZES.find(s => s.name === point.label) || SIZES.reduce((best, s) => {
-            const distance = x => Math.abs(x.w * x.h / 10000 * (brand?.areaMulti ?? 1) - point.area);
-            return !best || distance(s) < distance(best) ? s : best;
-          }, null);
-          if (size && sel.sizeId !== size.id) document.querySelector(`#sizeGrid [data-id="${size.id}"]`)?.click();
-        }
-      },
       onChange: () => { updateSummary(); updateSizePrices(); },
       current: () => {
         const b = BRANDS.find(b => b.id === sel.brandId), s = SIZES.find(s => s.id === sel.sizeId);
