@@ -767,7 +767,7 @@ body{
   <button class="lp-tool-btn" onclick="goBackToParentSite()" data-i18n="ui.backSite">↩ 元のサイト</button>
   <a class="lp-tool-btn" href="./admin.html" data-i18n="ui.adminBtn">🗂 管理画面</a>
   <button class="lp-tool-btn" onclick="resetAll()" data-i18n="ui.resetBtn">🔄 リセット</button>
-  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.05.3</span>
+  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.05.4</span>
 </div>
 
 <div class="main">
@@ -1132,8 +1132,8 @@ body{
 </div>
 
 <script src="./labor-curve-model.js?v=20260905"></script>
-<script src="./labor-curve-editor.js?v=20260905.3"></script>
-<script src="./quote-archive.js?v=20260905.3"></script>
+<script src="./labor-curve-editor.js?v=20260905.4"></script>
+<script src="./quote-archive.js?v=20260905.4"></script>
 <script src="./estimate-fulfillment.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
@@ -3872,6 +3872,10 @@ window.addEventListener('DOMContentLoaded', () => {
     NSFLaborCurves.mount(host, {
       brands: () => BRANDS,
       archive: () => { updateSummary(); NSFQuoteArchive.save(window._quoteSnapshot); },
+      onPointSelect: point => {
+        const size = SIZES.find(s => s.name === point.label);
+        if (size && sel.sizeId !== size.id) document.querySelector('#sizeGrid [data-id="' + size.id + '"]')?.click();
+      },
       onChange: () => { updateSummary(); updateSizePrices(); },
       current: () => {
         const b = BRANDS.find(b => b.id === sel.brandId), s = SIZES.find(s => s.id === sel.sizeId);
