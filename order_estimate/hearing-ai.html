@@ -1223,6 +1223,7 @@ attachFileEl.onchange=()=>{
   if(!files.length){ addMsg('bot', T('img.onlyImages','画像ファイル（JPEG・PNGなど）のみ添付できます🙏')); return; }
   const room=MAX_CUSTOMER_IMAGES-customerImages.length;
   if(room<=0){ addMsg('bot', isEN() ? T('img.maxReached','').replace('{n}', MAX_CUSTOMER_IMAGES) : '添付できる画像は'+MAX_CUSTOMER_IMAGES+'枚までです🙏'); return; }
+  const stashFrom=customerImages.length;   // 今回添付した分だけを工房へ一時保管する（重複送信防止）
   // 添付順と表示順がずれないよう1枚ずつ直列に処理する
   files.slice(0,room).reduce((chain,file)=>chain.then(()=>
     compressImage(file).then(dataUrl=>{
@@ -1239,11 +1240,29 @@ attachFileEl.onchange=()=>{
     addMsg('bot', isEN()
       ? T('img.received','').replace('{n}', customerImages.length).replace('{max}', MAX_CUSTOMER_IMAGES)
       : (state.liveMode
-      ? '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）このままご希望をお送りいただくと、AIが画像を拝見してご提案します。下の「📨 相談内容と画像を工房へ送信」ボタンで、いつでも工房へもお送りいただけます。'
+      ? '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）このままご希望をお送りいただくと、AIが画像を拝見してご提案します。画像は工房にも控えとして届いていますが、職人からご返信するにはお名前とご連絡先が必要です。下の「📨 相談内容と画像を工房へ送信」ボタンからお送りください。'
       : '画像をお預かりしました📷（'+customerImages.length+'/'+MAX_CUSTOMER_IMAGES+'枚）発注票が完成すると、ご相談内容と一緒に工房へ届きます。'));
     showLiveSendChip();
+    stashConsultImages(stashFrom);
   });
 };
+
+/* 添付した時点で画像を工房へ一時保管する（2026-09-05 事業主判断・案A）。
+   背景: 従来は「工房に送る」を押した時だけ保存され、名前・連絡先を入れずに離脱した
+   お客様の画像はどこにも残らなかった（9/5 ロルバーンM相談: 実寸2枚・リング1枚を喪失）。
+   一方でAIは「画像は工房に届いています」と答えており、事実に反していた。
+   ⛔ 失敗しても相談は止めない（お客様には見せない）。⛔ 連絡先の中身はここでは送らない。
+   保存先は相談セッションID単位の「未確定」フォルダで、30日で自動削除される（GAS側）。 */
+function stashConsultImages(fromIdx){
+  const fresh=customerImages.slice(fromIdx);
+  if(!fresh.length) return;
+  const images=fresh.map(ci=>({fileName:ci.fileName,label:ci.label,base64:ci.dataUrl.split(',')[1]}));
+  const context=history.slice(-8).map(h=>(h.role==='user'?'お客様: ':'AI: ')+String(h.content||'').slice(0,600)).join('\n');
+  try{
+    fetch(ORDER_PROGRESS_GAS_URL,{method:'POST',body:JSON.stringify({action:'saveConsultImages',sid:HEARING_SID,images,context})})
+      .catch(()=>{});
+  }catch(e){}
+}
 
 function copy(text,okMsg){
   navigator.clipboard.writeText(text).then(()=>toast(okMsg)).catch(()=>{
