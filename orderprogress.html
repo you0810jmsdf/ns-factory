@@ -689,8 +689,8 @@ function checkAuth() {
         sessionStorage.setItem('nsf_admin_key', pw);
         sessionStorage.setItem('nsf_admin_auth', hex);
       } catch(e) {}
-      // 認証後にカード再描画して依頼者名を表示反映
-      try { applyFilter(); } catch(e) {}
+      // 認証後は全列版（依頼者名・メモ・ヒアリング内容）を取り直す。取り直せなくても表示は続ける
+      try { loadRecords(); } catch(e) { try { applyFilter(); } catch(e2) {} }
       return true;
     }
     return false;
@@ -749,13 +749,16 @@ const localPhotoCache = {};  // client別の取得結果をキャッシュ
 //   廃止理由（2026-08-04）: GitHub Pages に置いた JSON は直URLで誰でも取得でき、
 //     キーであるお客様のお名前・ハンドルネームが一覧で漏れるため。
 // ⛔ 一覧を取得する実装に戻さないこと。
-function fetchLocalPhotos(client) {
-  if (localPhotoCache[client]) return localPhotoCache[client];
-  localPhotoCache[client] = fetch(`${gasUrl}?action=localPhotos&client=${encodeURIComponent(client)}`)
+function fetchLocalPhotos(client, recId) {
+  const cacheKey = recId || client;
+  if (localPhotoCache[cacheKey]) return localPhotoCache[cacheKey];
+  // 公開版の一覧は依頼者名を返さないため、レコードIDで取る（GAS側で名前に解決）。2026-09-06
+  const q = recId ? `id=${encodeURIComponent(recId)}` : `client=${encodeURIComponent(client)}`;
+  localPhotoCache[cacheKey] = fetch(`${gasUrl}?action=localPhotos&${q}`)
     .then(r => r.json())
     .then(d => (d && d.ok && Array.isArray(d.photos)) ? d.photos : [])
     .catch(() => []);
-  return localPhotoCache[client];
+  return localPhotoCache[cacheKey];
 }
 
 // ─── Init ────────────────────────────────────
@@ -798,10 +801,19 @@ function init() {
 async function loadRecords() {
   if (!gasUrl) return loadFallbackRecords();
   try {
-    const res = await fetch(gasUrl);
+    // 鍵なしは公開版（依頼者名・メモ・ヒアリング内容・顧客IDを含まない）。管理者ログイン後は key 付きで全列（2026-09-06）
+    let adminKey = '';
+    try { adminKey = isAdmin() ? (sessionStorage.getItem('nsf_admin_key') || '') : ''; } catch (e) {}
+    const listUrl = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'action=records' + (adminKey ? '&key=' + encodeURIComponent(adminKey) : '');
+    const res = await fetch(listUrl, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     setAdminAvailable(true);
+    // 管理者のつもりで公開版しか取れていない＝この状態で保存するとメモ等を空で上書きしてしまう。ログアウト扱いにして再入力を促す
+    if (isAdmin() && !data.full) {
+      try { sessionStorage.removeItem('op_auth'); } catch (e) {}
+      showMsg('管理者データを取得できませんでした。もう一度ログインしてください。');
+    }
     const gasRecords = data.records || [];
     gasRecordCount = gasRecords.length;
     allRecords = gasRecords;
@@ -1127,7 +1139,7 @@ function renderCards(records) {
     const carHtml  = folderId
       ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
       : hasLocal
-        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
+        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}" data-localid="${id}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
         : '';
     const leatherInfo = r['使用革']||'';
     const hearingContent = r['ヒアリング内容']||'';
@@ -1212,7 +1224,7 @@ function renderRrCards(records) {
     const carHtml  = folderId
       ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}"${gastype}>${T('car.loading','📷 画像を読み込み中…')}</div></div>`
       : hasLocal
-        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
+        ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-localclient="${esc(client)}" data-localid="${id}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
         : '';
     const endLabel = isOp ? T('card.dueShort','予定完了') : T('card.doneDate','完了日');
     const endVal   = isOp ? fmtDate(r['予定完了日']||'—') : esc(r['完了日']||'—');
@@ -1267,9 +1279,9 @@ function lazyLoadImages(id) {
   // 過去オーダー写真（GAS: action=localPhotos で client 指定の1件のみ取得）
   const localClient = el.dataset.localclient;
   if (localClient) {
-    fetchLocalPhotos(localClient).then(urls => {
+    fetchLocalPhotos(localClient, el.dataset.localid || '').then(urls => {
       if (urls.length) {
-        const images = urls.map((u, i) => ({ url: u, name: localClient + '_' + (i+1) }));
+        const images = urls.map((u, i) => ({ url: u, name: 'photo_' + (i+1) }));
         renderCarousel(el, images, id);
       } else { el.innerHTML = ''; }
     });
