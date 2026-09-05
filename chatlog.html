@@ -1073,6 +1073,7 @@ function liveOpen(sid) {
   document.getElementById('liveThread').textContent = '';
   document.getElementById('liveThreadWrap').hidden = false;
   document.getElementById('liveHeadSid').textContent = '相談ID ' + sid;
+  liveSetModeUI('ai');   // 取得結果で上書きされるまでの初期表示
   document.querySelectorAll('.live-item').forEach(x => x.classList.toggle('active', x.dataset.sid === sid));
   livePollOwner();
   document.getElementById('liveThreadWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
