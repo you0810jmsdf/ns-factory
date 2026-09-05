@@ -72,7 +72,7 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient
       <br>（次にクリックして塗った箇所から反映されます）
     </div>
     <div style="font-size:12px;font-weight:bold;margin:14px 0 6px">金具カラーを選ぶ（任意）</div>
-    <div class="note" style="margin-bottom:6px">革色とは別に記録されます。金具の色を革色パレットで代用しないでください。</div>
+    <div class="note" style="margin-bottom:6px">金具を選んだあと、図面の金具部分をクリックするとその色で塗れます。革に戻すときは革色パレットを選び直してください。</div>
     <div class="palette" id="metalPalette" style="max-height:none"></div>
   </div>
 </div>
@@ -87,8 +87,11 @@ const METALS = [
   { id:'gold',     name:'ゴールド',       hex:'#c9a96a' },
   { id:'silver',   name:'シルバー',       hex:'#c9c9c9' },
   { id:'pinkgold', name:'ピンクゴールド', hex:'#e6b8a2' },
+  { id:'black',    name:'ブラック',       hex:'#333333' },
 ];
 let currentMetal = null;
+/* キャンバスをクリックしたとき何で塗るか。革パレットを押せば'leather'、金具パレットを押せば'metal'に切り替わる */
+let activeFill = 'leather';
 
 function buildMetalPalette(){
   const p = document.getElementById('metalPalette');
@@ -99,6 +102,7 @@ function buildMetalPalette(){
     d.innerHTML = `<div style="width:100%;height:48px;background:${m.hex}"></div><div>${m.name}</div>`;
     d.addEventListener('click', ()=>{
       currentMetal = (currentMetal && currentMetal.id===m.id) ? null : m; // もう一度押すと選択解除
+      activeFill = currentMetal ? 'metal' : 'leather'; // 金具を選んだら以後のクリックは金具色で塗る
       document.querySelectorAll('#metalPalette .sw').forEach(el=>el.classList.remove('on'));
       if(currentMetal) d.classList.add('on');
     });
@@ -168,6 +172,13 @@ function cropTopRight(img){
 }
 
 let textureScale = 3; // クロップ画像が小さいままタイル状に敷き詰めると継ぎ目が目立つため拡大する（スライダーで変更可能）
+/* 2つの16進カラーを比率tで混ぜる（金具の光沢グラデーション用） */
+function mixHex(hexA, hexB, t){
+  const a = parseInt(hexA.slice(1),16), b = parseInt(hexB.slice(1),16);
+  const ch = (sh) => Math.round(((a>>sh)&255)*(1-t) + ((b>>sh)&255)*t);
+  return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+}
+
 function cropTopRightScaled(img){
   const base = cropTopRight(img);
   const c = document.createElement('canvas');
@@ -193,7 +204,8 @@ function buildPalette(){
     // 在庫なしでも取り寄せで対応できる場合があるため、選択自体は常に可能にする
     d.addEventListener('click', ()=>{
       currentLeather = lt;
-      document.querySelectorAll('.sw').forEach(el=>el.classList.remove('on'));
+      activeFill = 'leather'; // 革を選び直したら以後のクリックは革テクスチャで塗る
+      document.querySelectorAll('#palette .sw').forEach(el=>el.classList.remove('on')); // 金具パレットの選択枠は消さない
       d.classList.add('on');
     });
     p.appendChild(d);
@@ -248,6 +260,26 @@ function summarizeTabLeathers(tabKey){
   return seen;
 }
 
+/* 指定タブの塗り履歴から、実際に塗りに使った金具色を出現順で返す */
+function summarizeTabMetals(tabKey){
+  const history = paintHistory[tabKey] || [];
+  const seen = [];
+  history.forEach(h=>{
+    if(!h.metalId) return;
+    const m = METALS.find(x => x.id === h.metalId);
+    if(m && !seen.some(s=>s.id===m.id)) seen.push(m);
+  });
+  return seen;
+}
+
+/* 通知・保存用の金具色名。塗りに使った金具があればそれを優先し、無ければパレットで選択中の金具を使う */
+function metalColorNameForTabs(tabKeys){
+  const used = [];
+  tabKeys.forEach(k => summarizeTabMetals(k).forEach(m => { if(!used.some(u=>u.id===m.id)) used.push(m); }));
+  if(used.length) return used.map(m=>m.name).join('／');
+  return currentMetal ? currentMetal.name : null;
+}
+
 /* embed=1でhearing-ai.html等のiframeに埋め込まれている場合、確定内容を親ウィンドウへ通知する。
    folderId方式（Drive保存）とは独立した経路のため、注文がまだ存在しない段階（チャット中）でも使える */
 function sendFloodfillConfirmMessage(){
@@ -265,7 +297,7 @@ function sendFloodfillConfirmMessage(){
       imageDataUrl: state.offCanvas.toDataURL('image/png'),
     };
   }).filter(Boolean);
-  window.parent.postMessage({ type: 'nsfactory-floodfill-confirm', parts, metalColor: currentMetal ? currentMetal.name : null }, '*');
+  window.parent.postMessage({ type: 'nsfactory-floodfill-confirm', parts, metalColor: metalColorNameForTabs(tabKeys) }, '*');
 }
 
 async function loadSvgListFromDrive(folderId){
@@ -472,21 +504,33 @@ function applyTextureAt(clickX, clickY){
   }
   console.log('filled pixel count:', result.count);
 
-  const leatherImg = leatherImgCache[currentLeather.id];
-  if(!leatherImg){ console.log('leather image not loaded yet'); return; }
-  const croppedTexture = cropTopRightScaled(leatherImg); // 商品ラベルを避けた右上部分を拡大して使う
+  const useMetal = activeFill === 'metal' && !!currentMetal;
+  if(!useMetal && !currentLeather){ console.log('leather not selected'); return; }
+  const { visited } = result;
 
-  // オフスクリーンに革テクスチャをタイル状に敷き詰めた画像を作る
+  // オフスクリーンに塗り素材（革テクスチャのタイル or 金具色）を敷いた画像を作る
   const texCanvas = document.createElement('canvas');
   texCanvas.width = state.DISP_W; texCanvas.height = state.DISP_H;
   const texCtx = texCanvas.getContext('2d');
-  const pat = texCtx.createPattern(croppedTexture, 'repeat');
-  texCtx.fillStyle = pat;
+  if(useMetal){
+    // 金具は単色だと平板に見えるため、塗り領域の上下範囲で軽い光沢グラデーションを付ける
+    let minY = state.DISP_H, maxY = 0;
+    for(let i=0;i<visited.length;i++){ if(visited[i]){ const y = (i / state.DISP_W) | 0; if(y<minY) minY=y; if(y>maxY) maxY=y; } }
+    const grad = texCtx.createLinearGradient(0, minY, 0, Math.max(maxY, minY+1));
+    grad.addColorStop(0,    mixHex(currentMetal.hex, '#ffffff', 0.28));
+    grad.addColorStop(0.45, currentMetal.hex);
+    grad.addColorStop(1,    mixHex(currentMetal.hex, '#000000', 0.25));
+    texCtx.fillStyle = grad;
+  }else{
+    const leatherImg = leatherImgCache[currentLeather.id];
+    if(!leatherImg){ console.log('leather image not loaded yet'); return; }
+    const croppedTexture = cropTopRightScaled(leatherImg); // 商品ラベルを避けた右上部分を拡大して使う
+    texCtx.fillStyle = texCtx.createPattern(croppedTexture, 'repeat');
+  }
   texCtx.fillRect(0,0,state.DISP_W,state.DISP_H);
   const texData = texCtx.getImageData(0,0,state.DISP_W,state.DISP_H);
 
   const offData = state.offCtx.getImageData(0,0,state.DISP_W,state.DISP_H);
-  const { visited } = result;
   for(let i=0;i<visited.length;i++){
     if(visited[i]){
       const o = i*4;
@@ -507,7 +551,9 @@ function applyTextureAt(clickX, clickY){
   // 再生中の自動塗りは履歴に記録しない（次回読み込み時に同じ内容が重複して積み上がるのを防ぐ）
   if(!isReplayingPaint){
     if(!paintHistory[currentTabKey]) paintHistory[currentTabKey] = [];
-    paintHistory[currentTabKey].push({ x: clickX, y: clickY, leatherId: currentLeather.id });
+    paintHistory[currentTabKey].push(useMetal
+      ? { x: clickX, y: clickY, metalId: currentMetal.id }
+      : { x: clickX, y: clickY, leatherId: currentLeather.id });
   }
 }
 
@@ -519,17 +565,26 @@ window.exportPaintHistory = function(tabKey){
 /* 指定タブの塗り履歴を先頭から順に再生し、前回終了時と同じ塗り状態を再現する */
 async function replayPaintHistory(tabKey, history){
   if(!history || !history.length) return;
-  const savedTabKey = currentTabKey, savedLeather = currentLeather;
+  const savedTabKey = currentTabKey, savedLeather = currentLeather, savedMetal = currentMetal, savedFill = activeFill;
   isReplayingPaint = true;
   currentTabKey = tabKey;
   history.forEach(entry => {
+    if(entry.metalId){
+      const metal = METALS.find(m => m.id === entry.metalId);
+      if(!metal){ console.log('塗り履歴の再生スキップ（金具が見つかりません）:', entry.metalId); return; }
+      currentMetal = metal; activeFill = 'metal';
+      applyTextureAt(entry.x, entry.y);
+      return;
+    }
     const leather = LEATHERS.find(l => l.id === entry.leatherId);
     if(!leather){ console.log('塗り履歴の再生スキップ（革が見つかりません）:', entry.leatherId); return; }
-    currentLeather = leather;
+    currentLeather = leather; activeFill = 'leather';
     applyTextureAt(entry.x, entry.y);
   });
   currentTabKey = savedTabKey;
   currentLeather = savedLeather;
+  currentMetal = savedMetal;
+  activeFill = savedFill;
   isReplayingPaint = false;
 }
 
@@ -593,7 +648,8 @@ function saveCurrentTabAsPng(){
   const captionLines = usedLeathers.length
     ? usedLeathers.map((l,i)=> (usedLeathers.length > 1 ? `革${i+1}: ${l.name}` : `革: ${l.name}`))
     : ['革: （未選択）'];
-  if(currentMetal) captionLines.push(`金具: ${currentMetal.name}`);
+  const metalName = metalColorNameForTabs([currentTabKey]);
+  if(metalName) captionLines.push(`金具: ${metalName}`);
 
   const fontSize = Math.max(14, Math.floor(dispCanvas.width / 32));
   const lineH = Math.round(fontSize * 1.6);
