@@ -551,6 +551,7 @@ function startEnglishLive(){
   state.liveMode=true; state._autoLive=false; state._picking=false;
   renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   history=[];
+  saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
   const mb=document.getElementById('modeBtn');
   if(mb) mb.style.display='none'; // ガイド対話は日本語のみのため切替ボタンを隠す
   showTyping();
@@ -1294,6 +1295,57 @@ document.getElementById('modeTipClose').onclick=dismissModeTip;
 /* SYSTEM_PROMPT は hearing-core.js の buildSystemPrompt(KB) で生成（KB読込後に更新） */
 
 let history=[];
+
+/* 会話の続きを端末に覚えておく（2026-09-05 事業主指示）。
+   お客様が一度閉じて戻ってきたとき「履歴は残ってますか?」と聞かれ、AIが
+   「見当たりません」と答えて最初から説明させてしまった（9/5 19:18 実害）。
+   ⛔ 勝手に復元しない。おかえりの挨拶とボタンを出し、お客様が選んだときだけ戻す。
+   ⛔ 端末の中だけに置く（外部へは送らない）。7日で自動的に消える。 */
+const HIST_KEY='nsf_hearing_history';
+const HIST_KEEP_DAYS=7;
+function saveHistory(){
+  try{
+    if(!history.length){ localStorage.removeItem(HIST_KEY); return; }
+    localStorage.setItem(HIST_KEY, JSON.stringify({
+      at: Date.now(),
+      history: history.slice(-14)   // 送信時の上限と揃える（これ以上は持っていても使えない）
+    }));
+  }catch(e){ /* プライベートモード等で使えなくても相談は続けられる */ }
+}
+function loadSavedHistory(){
+  try{
+    const raw=localStorage.getItem(HIST_KEY); if(!raw) return null;
+    const d=JSON.parse(raw);
+    if(!d || !Array.isArray(d.history) || !d.history.length) return null;
+    if(Date.now()-(d.at||0) > HIST_KEEP_DAYS*86400000){ localStorage.removeItem(HIST_KEY); return null; }
+    return d;
+  }catch(e){ return null; }
+}
+function clearSavedHistory(){ try{ localStorage.removeItem(HIST_KEY); }catch(e){} }
+
+/* 起動時に「前回の続き」を提案する。復元するものが無ければ false を返す。 */
+function offerResume(){
+  const d=loadSavedHistory(); if(!d) return false;
+  const w=new Date(d.at);
+  const when=(w.getMonth()+1)+'月'+w.getDate()+'日';
+  addMsg('bot','おかえりなさい🧵 '+when+'にご相談いただいた内容が残っています。\n続きから再開できますし、はじめからでも大丈夫です。');
+  renderQuick([
+    {label:'▶ 前回の続きから', sub:'内容を覚えています', val:'', onClick:()=>resumeSaved(d)},
+    {label:'はじめから相談する', sub:'前回の内容は消します', val:'', onClick:()=>{ clearSavedHistory(); chat.innerHTML=''; startPicker(); }}
+  ]);
+  return true;
+}
+function resumeSaved(d){
+  state.liveMode=true; state._autoLive=false;
+  chat.innerHTML=''; quickEl.innerHTML='';
+  history=d.history.slice();
+  history.forEach(m=>addMsg(m.role==='user'?'user':'bot', m.content));
+  addMsg('bot','ここまでの内容は覚えていますので、続きからどうぞ🧵');
+  document.getElementById('modeBtn').textContent='↩ ガイドに戻る';
+  renderPaletteEntry();
+  showLiveSendChip();
+}
+
 function enterLiveMode(){
   dismissModeTip();   // 切替できた＝説明は役目を終えたので消す（2026-08-19）
   state.liveMode=true;
@@ -1301,6 +1353,7 @@ function enterLiveMode(){
   state._autoLive=false;
   quickEl.innerHTML=''; chat.innerHTML='';
   history=[];
+  saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
   addMsg('bot','AI会話モードに切り替えました🧵 自由にご相談ください。「A6でシンプルな手帳がほしい」「二つ折り財布を作りたい」のように、思いつくままに話しかけてくださいね。');
   document.getElementById('modeBtn').textContent='↩ ガイドに戻る';
 }
@@ -1326,6 +1379,7 @@ function autoEnterLiveMode(userText){
   quickEl.innerHTML='';
   simEntry.innerHTML='';
   history=[];
+  saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
   document.getElementById('modeBtn').textContent='↩ ガイドに戻る';
   // お客様の発言→相槌→AI応答の順に並ぶよう、発言表示はここで行い liveTurn 側では省く
   addMsg('user', userText);
@@ -1348,6 +1402,7 @@ const HEARING_SID=(function(){
 async function liveTurn(userText, skipEcho){
   if(!skipEcho) addMsg('user', userText);
   history.push({role:'user', content:userText});
+  saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
   showTyping();
   try{
     // hasContact: 事業主への即時通知で「返信できる相手か」が分かるようにする（2026-09-05）。
@@ -1383,6 +1438,7 @@ async function liveTurn(userText, skipEcho){
     }
     const reply=data.reply||'(応答が空でした)';
     history.push({role:'assistant', content:reply});
+    saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
     addMsg('bot', reply);
     liveConsultSent=false;   // やり取りが増えたら再送信を許可（最新の相談内容を送り直せるように）
     showLiveSendChip();      // 画像なしの相談でも工房へ送れるボタンを常設（2026-08-07）
@@ -1440,7 +1496,7 @@ Promise.all([
   // ステッチ全92色（在庫状態つき）をAIにも渡す。在庫16色しか渡しておらず
   // 「シルバーは何番？」に答えられなかった（2026-09-04 実ログ）。
   SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers, stockMap, stitchListForPrompt(stitchColors, stitchStock));
-  startPicker();
+  if(!offerResume()) startPicker();   // 前回の続きがあれば先に提案する（2026-09-05）
   maybeShowModeTip();   // ⚙AI会話モードの説明（初回訪問時のみ・2026-08-19）
 });
 </script>
