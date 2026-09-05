@@ -2335,13 +2335,63 @@ function matRingKey(row) {
     .map(v => v == null ? '' : String(v)).join('\t');
 }
 
+const MAT_RING_PLANNER_ORDER = ['Micro5', 'Mini6', 'Bible', 'A6', 'A5'];
+const MAT_RING_COLOR_ORDER = ['silver', 'gold', 'pinkgold', 'black'];
+
+function matRingStockNum(row) {
+  const q = String(row.stock_qty == null ? '' : row.stock_qty).trim();
+  if (q === '') return 0;
+  const n = Number(q);
+  return Number.isFinite(n) ? n : 0;
+}
+
+// リング選択肢は「手帳規格→内径→通常/クラウゼ→色」の順に並べ、在庫のある行を規格別グループにまとめる。
+// ⛔ CSVの登録順のまま出すと、同じ規格・内径でも後から足した色が末尾に離れて並び、
+//    目的の色が「無い」ように見える（2026-09-05 A6 30mmシルバーの取り違えが実際に発生）。
+function matRingSortKey(row) {
+  const p = MAT_RING_PLANNER_ORDER.indexOf(String(row.planner_type || ''));
+  const c = MAT_RING_COLOR_ORDER.indexOf(String(row.color_id || ''));
+  return [
+    p < 0 ? 99 : p,
+    Number(row.size_mm) || 0,
+    String(row.series || '') === 'normal' ? 0 : 1,
+    c < 0 ? 99 : c,
+  ];
+}
+
 function matRenderSelects() {
   const ringSel = document.getElementById('matRing');
-  ringSel.innerHTML = '<option value="">（引当しない）</option>' + matData.ring.map(r => {
+  const sorted = matData.ring.slice().sort((a, b) => {
+    const ka = matRingSortKey(a), kb = matRingSortKey(b);
+    for (let i = 0; i < ka.length; i++) { if (ka[i] !== kb[i]) return ka[i] - kb[i]; }
+    return 0;
+  });
+  const ringOption = (r) => {
+    const raw = String(r.stock_qty == null ? '' : r.stock_qty).trim();
+    const st = String(r.stock_status || '').toLowerCase();
+    const note = (st === 'backorder' || st === 'preorder') ? '・入荷待ち' : '';
     const label = [r.planner_type || '共通', r.series_label, r.size_label, r.color_label]
-      .filter(Boolean).join(' ') + '（残' + (r.stock_qty === '' ? '—' : r.stock_qty) + '）';
+      .filter(Boolean).join(' ') + '（残' + (raw === '' ? '—' : raw) + note + '）';
     return '<option value="' + matRingKey(r).replace(/"/g, '&quot;') + '">' + label + '</option>';
-  }).join('');
+  };
+  const inStock = sorted.filter(r => matRingStockNum(r) > 0);
+  const noStock = sorted.filter(r => matRingStockNum(r) <= 0);
+  let html = '<option value="">（引当しない）</option>';
+  const groups = [];
+  inStock.forEach(r => {
+    const key = r.planner_type || '共通';
+    let g = groups.find(x => x.key === key);
+    if (!g) { g = { key: key, items: [] }; groups.push(g); }
+    g.items.push(r);
+  });
+  groups.forEach(g => {
+    html += '<optgroup label="' + g.key + '">' + g.items.map(ringOption).join('') + '</optgroup>';
+  });
+  if (noStock.length) {
+    html += '<optgroup label="― 在庫なし（' + noStock.length + '件）―">'
+      + noStock.map(ringOption).join('') + '</optgroup>';
+  }
+  ringSel.innerHTML = html;
   const thSel = document.getElementById('matThread');
   thSel.innerHTML = '<option value="">（引当しない）</option>' + matData.thread
     .filter(t => String(t.available).toUpperCase() === 'TRUE')
