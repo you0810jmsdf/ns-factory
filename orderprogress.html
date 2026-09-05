@@ -339,6 +339,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       max-width:100%; width:100%; font-size:.78rem;
     }
     .memo-empty { font-size:.78rem; color:var(--color-text-mute); text-align:center; padding:12px; }
+    /* ヒアリング内容（AI相談の記録）を吹き出しで見せる（2026-09-05 事業主要望「AIと客のセリフがどっちか分からない」）
+       メモ欄の会話ビューと同じ見た目。お客様=左・AI=右 */
+    .hearing-thread { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+    .hearing-thread .memo-bubble { font-size:.8rem; }
+    .memo-row.memo-ai { align-items:flex-end; }
+    .memo-ai .memo-bubble { background:#FBF3E4; border:1px solid #EAD9B5; border-top-right-radius:3px; color:#4a3b1e; }
     /* 全画面拡大 */
     .field.memo-zoom {
       position:fixed; inset:0; z-index:6000; margin:0; padding:16px;
@@ -1129,7 +1135,7 @@ function renderCards(records) {
       ? `<div class="color-order-info">
            <div class="tl-title">${T('card.colorOrder','🎨 カラーオーダー情報')}</div>
            ${leatherInfo ? `<div class="color-order-row"><b>${T('card.leather','使用革:')}</b> ${esc(leatherInfo).replace(/\n/g,'<br>')}</div>` : ''}
-           ${hearingContent ? `<div class="color-order-row"><b>${T('card.hearing','ヒアリング内容:')}</b><br>${esc(hearingContent).replace(/\n/g,'<br>')}</div>` : ''}
+           ${hearingContent ? `<div class="color-order-row"><b>${T('card.hearing','ヒアリング内容:')}</b>${hearingThreadHtml(hearingContent)}</div>` : ''}
          </div>`
       : '';
 
@@ -1809,6 +1815,40 @@ function exportJson() {
 }
 
 // ─── Util ────────────────────────────────────
+// ── ヒアリング内容（AI相談の会話記録）を吹き出しで表示する（2026-09-05 事業主要望）──
+// submitChatOrder が保存する形式は「お客様: 〜」「AI: 〜」を行頭に持つ。行頭の話者だけを見て
+// 左右に分け、話者行が1つも無い旧形式（ガイド対話の発注票）は今までどおり本文をそのまま出す。
+// ⛔ 話者を推測で決めない（メモ欄と同じ方針）。⛔ 本文は必ず esc() を通す（お客様の文面が入る）。
+const HEARING_SPEAKER_RE = /^[ 　]*(お客様|お客さま|AI|職人|私)[ 　]*[:：][ 　]?(.*)$/;
+function parseHearingThread(text) {
+  const blocks = [];
+  let cur = null, hasSpeaker = false;
+  String(text || '').split('\n').forEach(function (line) {
+    const m = line.match(HEARING_SPEAKER_RE);
+    if (m) {
+      hasSpeaker = true;
+      const who = (m[1] === 'AI') ? 'ai' : (m[1] === '職人' || m[1] === '私') ? 'me' : 'customer';
+      cur = { who: who, label: m[1], lines: [] };
+      if (m[2].trim()) cur.lines.push(m[2]);
+      blocks.push(cur);
+      return;
+    }
+    if (!cur) { cur = { who: 'note', label: '', lines: [] }; blocks.push(cur); }
+    cur.lines.push(line);
+  });
+  return { hasSpeaker: hasSpeaker, blocks: blocks.filter(function (b) { return b.lines.join('\n').trim() !== ''; }) };
+}
+function hearingThreadHtml(text) {
+  const parsed = parseHearingThread(text);
+  if (!parsed.hasSpeaker) return '<br>' + esc(text).replace(/\n/g, '<br>');
+  const icon = { customer: '👤 ', ai: '🤖 ', me: '🏭 ' };
+  return '<div class="hearing-thread">' + parsed.blocks.map(function (b) {
+    const head = b.who === 'note' ? '' : '<div class="memo-who">' + icon[b.who] + esc(b.label) + '</div>';
+    const body = esc(b.lines.join('\n').replace(/\s+$/, '')).replace(/\n/g, '<br>');
+    return '<div class="memo-row memo-' + b.who + '">' + head + '<div class="memo-bubble">' + body + '</div></div>';
+  }).join('') + '</div>';
+}
+
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
