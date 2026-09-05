@@ -65,6 +65,8 @@ body{
 .bubble{padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.65;max-width:calc(100% - 46px);white-space:pre-wrap;word-break:break-word}
 .msg.bot .bubble{background:#fff;border:1px solid #ede0d4;border-top-left-radius:4px}
 .msg.user .bubble{background:#6b3a1f;color:#fff;border-top-right-radius:4px}
+.msg.bot.owner .ic{background:#a07d3e}
+.msg.bot.owner .bubble{background:#fbf3e4;border-color:#ead9b5}
 .bubble .tip{display:block;margin-top:6px;font-size:11.5px;color:#8a6a4f;background:#fdf6ef;border-left:3px solid #d4b896;padding:6px 9px;border-radius:0 6px 6px 0;white-space:pre-wrap}
 .msg.bot .bubble b{color:#6b3a1f}
 
@@ -613,6 +615,7 @@ function handleAnswer(val, label){
 function handleFreeInput(){
   const v=txt.value.trim(); if(!v) return;
   txt.value='';
+  if(LIVE.mode==='owner'){ liveCustomerSend(v); return; }   // 職人が引き継ぎ中はAIへ送らない（2026-09-05）
   if(state.liveMode){ liveTurn(v); return; }
   // ステッチ（縫い糸）の質問は革より先に判定する（「ステッチの色」は色・在庫の単語だけ見ると
   // 革の回答に誤ルーティングされるため。2026-07-20: ステッチ質問が革在庫で返った問題の対策）
@@ -1422,6 +1425,7 @@ async function liveTurn(userText, skipEcho){
   if(!skipEcho) addMsg('user', userText);
   history.push({role:'user', content:userText});
   saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
+  LIVE.lastQ=userText; if(LIVE.started) liveResume(); else liveStart();   // 職人の引き継ぎを受け取れるようにする（2026-09-05）
   showTyping();
   try{
     // hasContact: 事業主への即時通知で「返信できる相手か」が分かるようにする（2026-09-05）。
@@ -1466,6 +1470,91 @@ async function liveTurn(userText, skipEcho){
     hideTyping();
     addMsg('bot', T('live.netError','⚠️ 通信に失敗しました。ネットワークをご確認のうえ、もう一度お試しください。'));
   }
+}
+
+/* ---------- ライブ対応：職人がAIから会話を引き継ぐ（2026-09-05 事業主判断・案A） ----------
+   背景: 相談が始まった通知は職人に届くが、その時点で会話に入る手段が無く、連絡先を入れずに
+   帰ってしまうお客様をその場で捕まえられなかった。
+   仕組み: AI会話が始まったら order_progress GAS の liveState を数秒ごとに取りに行く。
+   職人が chatlog.html で「引き継ぐ」を押すと mode が owner になり、この画面はAIを止めて
+   お客様の発言を工房へ送り、職人の返信を吹き出しで出す。「AIに戻す」で元に戻る。
+   ⛔ 職人とのやり取りは history に直接積まない（Claude API は user/assistant の交互が前提）。
+      AIに戻すとき、最後のAI発言の末尾に「職人との直接のやり取り」として追記する。
+   ⛔ GETのクエリ名に sid を使わない（script.google.com が予約名として扱い400/500になる）。
+   ⛔ 通信に失敗しても相談は止めない。 */
+const LIVE={mode:'ai', since:0, timer:null, lastQ:'', started:0, log:[]};
+function liveStart(){ if(LIVE.timer||LIVE.started) return; LIVE.started=Date.now(); livePoll(); }
+function liveInterval(){
+  if(LIVE.mode==='owner') return 4000;
+  const age=Date.now()-LIVE.started;
+  if(age<10*60000) return 6000;      // 相談直後の10分は6秒ごと（通知を見た職人が入ってくる時間帯）
+  if(age<60*60000) return 15000;     // その後1時間は15秒ごと
+  return 0;                          // 1時間で打ち切り（次の発言で再開する）
+}
+async function livePoll(){
+  LIVE.timer=null;
+  try{
+    const qs='?action=liveState&chat='+encodeURIComponent(HEARING_SID)+'&since='+LIVE.since+'&q='+encodeURIComponent(LIVE.lastQ.slice(0,120));
+    const r=await fetch(ORDER_PROGRESS_GAS_URL+qs,{cache:'no-store'});
+    const d=await r.json();
+    if(d&&d.ok){
+      (d.msgs||[]).forEach(m=>{
+        if(m.i>LIVE.since) LIVE.since=m.i;
+        if(m.who==='customer'||m.who==='ctx') return; // 自分の発言は送信時に表示済み／ctxは職人向けの文脈
+        if(m.who==='sys'){ addMsg('bot','🏭 '+m.text); return; }
+        if(m.who==='owner'){ addOwnerMsg(m.text); LIVE.log.push('職人: '+m.text); }
+      });
+      if(d.mode!==LIVE.mode) liveSetMode(d.mode);
+    }
+  }catch(e){ /* 取りに行けなくても相談は続けられる */ }
+  const iv=liveInterval();
+  if(iv) LIVE.timer=setTimeout(livePoll, iv);
+}
+function liveResume(){ if(!LIVE.started) return; LIVE.started=Date.now(); if(!LIVE.timer) livePoll(); }
+function addOwnerMsg(text){
+  addMsg('bot', text);
+  const last=chat.lastElementChild;
+  if(last){ last.classList.add('owner'); const ic=last.querySelector('.ic'); if(ic) ic.textContent='🏭'; }
+}
+function liveSetMode(mode){
+  LIVE.mode=mode;
+  if(mode==='owner'){
+    hideTyping();
+    // それまでのAI会話を職人向けに送る（職人の画面で文脈が分かるように）。連絡先は伏せない＝職人本人が読む
+    try{
+      const ctx=history.slice(-14).map(h=>(h.role==='user'?'お客様: ':'AI: ')+String(h.content||'').slice(0,500)).join('\n');
+      if(ctx) fetch(ORDER_PROGRESS_GAS_URL,{method:'POST',body:JSON.stringify({action:'liveContext',sid:HEARING_SID,text:ctx})}).catch(()=>{});
+    }catch(e){}
+    txt.placeholder=isEN()?'Message to the craftsman':'職人へのメッセージを入力';
+  }else{
+    txt.placeholder=isEN()?'Type your message':'メッセージを入力…（自由に話しかけてOK）';
+    if(LIVE.log.length){
+      // 職人とのやり取りをAIの文脈に残す（最後のAI発言の末尾へ追記＝役割の交互を崩さない）
+      const note='\n\n（この後、職人が直接お答えしました。以下がそのやり取りです。この内容を最優先で踏まえて続けてください）\n'+LIVE.log.join('\n');
+      let k=history.length-1; while(k>=0&&history[k].role!=='assistant') k--;
+      if(k>=0) history[k]={role:'assistant', content:history[k].content+note};
+      else history.push({role:'assistant', content:note.trim()});
+      LIVE.log=[];
+      saveHistory();
+    }
+  }
+}
+// 引き継ぎ中のお客様の発言は AI ではなく工房へ送る
+async function liveCustomerSend(v){
+  addMsg('user', v);
+  LIVE.log.push('お客様: '+v);
+  LIVE.lastQ=v;
+  try{
+    const r=await fetch(ORDER_PROGRESS_GAS_URL,{method:'POST',body:JSON.stringify({action:'liveCustomerSay',sid:HEARING_SID,text:v})});
+    const d=await r.json();
+    if(!(d&&d.ok)){
+      if(d&&d.error==='not live'){ liveSetMode('ai'); liveTurn(v, true); return; }   // 戻された直後ならAIへ
+      addMsg('bot', isEN()?'⚠️ Could not deliver. Please try again.':'⚠️ 送信できませんでした。もう一度お試しください。');
+    }
+  }catch(e){
+    addMsg('bot', isEN()?'⚠️ Could not deliver. Please try again.':'⚠️ 通信に失敗しました。もう一度お試しください。');
+  }
+  if(!LIVE.timer) livePoll();
 }
 
 /* ---------- 起動 ---------- */

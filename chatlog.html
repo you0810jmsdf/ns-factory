@@ -187,6 +187,36 @@ tr:hover td{background:#1c2128}
 tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
 .del-btn{background:none;border:1px solid #30363d;color:#ff9d9d;border-radius:8px;padding:4px 8px;font-size:11.5px;cursor:pointer;white-space:nowrap}
 .del-btn:hover{border-color:#f85149}
+/* ライブ対応パネル（2026-09-05）。スマホで引き継ぐ前提＝ボタンは指で押せる大きさ・横スクロールなし */
+.live-mini{padding:6px 12px;font-size:12px;margin-left:8px;vertical-align:middle}
+.live-sessions{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.live-empty{font-size:12px;color:#9aa4af;padding:6px 2px}
+.live-item{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:10px;padding:10px 12px;cursor:pointer;font-size:13px}
+.live-item:hover,.live-item.active{border-color:#58a6ff}
+.live-item .live-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live-item .live-when{font-size:11px;color:#9aa4af;white-space:nowrap}
+.live-badge{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid #30363d;color:#9aa4af;white-space:nowrap}
+.live-badge.owner{background:#3b2f00;border-color:#9e7b00;color:#ffd866}
+.live-badge.ai{background:#0d2a1a;border-color:#2ea043;color:#7ee787}
+.live-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}
+.live-head .live-sep{flex:1}
+.live-sid{font-size:11px;color:#9aa4af;font-family:ui-monospace,monospace}
+.live-thread{display:flex;flex-direction:column;gap:8px;background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:10px;max-height:52vh;overflow-y:auto}
+.live-row{display:flex;flex-direction:column}
+.live-row.customer{align-items:flex-start}
+.live-row.owner{align-items:flex-end}
+.live-row.sys,.live-row.ctx{align-items:center}
+.live-who{font-size:10.5px;color:#9aa4af;margin-bottom:2px}
+.live-bubble{max-width:88%;font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word;padding:8px 11px;border-radius:12px}
+.live-row.customer .live-bubble{background:#161b22;border:1px solid #30363d;border-top-left-radius:3px}
+.live-row.owner .live-bubble{background:#3b2f00;border:1px solid #9e7b00;color:#ffe9a8;border-top-right-radius:3px}
+.live-row.sys .live-bubble{background:transparent;border:1px dashed #30363d;color:#9aa4af;font-size:12px}
+.live-row.ctx{align-items:stretch}
+.live-row.ctx details{background:#11161d;border:1px solid #30363d;border-radius:8px;padding:6px 10px;font-size:12px;color:#9aa4af}
+.live-row.ctx summary{cursor:pointer;color:#c9d1d9}
+.live-row.ctx pre{white-space:pre-wrap;word-break:break-word;margin:6px 0 0;font-family:inherit;font-size:12px;max-height:30vh;overflow-y:auto}
+.live-input{display:flex;gap:8px;margin-top:8px;align-items:flex-end}
+.live-input textarea{flex:1;min-width:0;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;padding:8px;font-size:14px;font-family:inherit;resize:vertical}
 </style>
 </head>
 <body class="auth-locked">
@@ -205,6 +235,29 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
 
 <div class="main">
   <p class="err" id="loadErr"></p>
+
+  <!-- ライブ対応：職人がAIから会話を引き継ぐ（2026-09-05）。通知メールの #live=<相談ID> で直接開く -->
+  <div class="panel" id="livePanel">
+    <h2>🎧 ライブ対応 <span class="sub">通知が来た相談を、AIの代わりに自分で受け答えする</span>
+      <button class="btn sub live-mini" type="button" id="liveRefreshBtn">更新</button></h2>
+    <div id="liveSessions" class="live-sessions"><div class="live-empty">読み込み中…</div></div>
+    <div id="liveThreadWrap" hidden>
+      <div class="live-head">
+        <span id="liveHeadSid" class="live-sid"></span>
+        <span id="liveHeadMode" class="live-badge"></span>
+        <span class="live-sep"></span>
+        <button class="btn live-mini" type="button" id="liveTakeBtn">🏭 私が引き継ぐ</button>
+        <button class="btn sub live-mini" type="button" id="liveReleaseBtn">🤖 AIに戻す</button>
+      </div>
+      <div id="liveThread" class="live-thread"></div>
+      <div class="live-input">
+        <textarea id="liveText" rows="2" placeholder="お客様への返信（引き継ぎ中だけ送れます）"></textarea>
+        <button class="btn" type="button" id="liveSendBtn">送信</button>
+      </div>
+      <p class="note">お客様の画面には「🏭 職人が直接お答えします」と出て、以後の発言はAIではなくここに届きます。「AIに戻す」でAIが続きを引き継ぎます（このやり取りはAIにも渡ります）。</p>
+    </div>
+  </div>
+
 
   <div class="filters">
     <div class="f live-only"><label for="fFrom">開始日</label><input type="date" id="fFrom"></div>
@@ -372,6 +425,7 @@ function unlockAuth() {
   setRange('thisMonth');
   loadFeedbackSet();   // ✅指摘済バッジの照合データ（失敗してもバッジが出ないだけ）
   load();
+  liveInit();          // ライブ対応パネル（2026-09-05）
 }
 function submitAuth() {
   const input = document.getElementById('authPassword');
@@ -953,6 +1007,178 @@ function saveCsvFile(csv, filename) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// ================================================================
+// ライブ対応：職人がAIから会話を引き継ぐ（2026-09-05 事業主判断・案A）
+//   GAS: order_progress の liveSessions / liveState / liveTakeover / liveOwnerSay
+//   通知メールの「今すぐ自分で対応する」リンク（#live=<相談ID>）で該当相談を直接開く。
+//   ⛔ お客様の文面は textContent で描く（innerHTMLに流さない）。
+//   ⛔ GETのクエリ名に sid を使わない（script.google.com が予約名として扱い400/500になる）。
+// ================================================================
+const LIVE_GAS = SOURCES.orders.url;
+const LIVEO = { sid: '', since: 0, mode: 'ai', pollTimer: null, listTimer: null, seen: {} };
+
+function liveGet(params) {
+  const qs = new URLSearchParams(params);
+  return fetch(LIVE_GAS + '?' + qs.toString(), { cache: 'no-store' }).then(r => r.json());
+}
+function livePost(body) {
+  return fetch(LIVE_GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) }).then(r => r.json());
+}
+function liveFmtWhen(s) {
+  // 'yyyy-MM-dd HH:mm:ss' → 'HH:mm'（今日以外は 'M/d HH:mm'）
+  if (!s) return '';
+  const today = new Date().toLocaleDateString('sv-SE');
+  return s.slice(0, 10) === today ? s.slice(11, 16) : (parseInt(s.slice(5, 7), 10) + '/' + parseInt(s.slice(8, 10), 10) + ' ' + s.slice(11, 16));
+}
+
+async function liveLoadSessions() {
+  const box = document.getElementById('liveSessions');
+  if (!box) return;
+  let data;
+  try { data = await liveGet({ action: 'liveSessions', key: getKey() }); }
+  catch (e) { data = null; }
+  const list = (data && data.ok && Array.isArray(data.sessions)) ? data.sessions : [];
+  box.textContent = '';
+  if (!list.length) {
+    const e = document.createElement('div');
+    e.className = 'live-empty';
+    e.textContent = data && data.ok ? '今つながっている相談はありません（お客様がAI会話を始めると、ここに出ます）' : '一覧を取得できませんでした';
+    box.appendChild(e);
+    return;
+  }
+  list.forEach(s => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'live-item' + (s.sid === LIVEO.sid ? ' active' : '');
+    b.dataset.sid = s.sid;
+    const badge = document.createElement('span');
+    badge.className = 'live-badge ' + (s.mode === 'owner' ? 'owner' : 'ai');
+    badge.textContent = s.mode === 'owner' ? '🏭 自分が対応中' : '🤖 AI対応中';
+    const t = document.createElement('span');
+    t.className = 'live-txt';
+    t.textContent = (s.last || s.first || '（発言なし）');
+    const w = document.createElement('span');
+    w.className = 'live-when';
+    w.textContent = liveFmtWhen(s.lastSeen);
+    b.appendChild(badge); b.appendChild(t); b.appendChild(w);
+    b.addEventListener('click', () => liveOpen(s.sid));
+    box.appendChild(b);
+  });
+}
+
+function liveOpen(sid) {
+  LIVEO.sid = sid; LIVEO.since = 0; LIVEO.seen = {};
+  document.getElementById('liveThread').textContent = '';
+  document.getElementById('liveThreadWrap').hidden = false;
+  document.getElementById('liveHeadSid').textContent = '相談ID ' + sid;
+  document.querySelectorAll('.live-item').forEach(x => x.classList.toggle('active', x.dataset.sid === sid));
+  livePollOwner();
+  document.getElementById('liveThreadWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function liveSetModeUI(mode) {
+  LIVEO.mode = mode;
+  const badge = document.getElementById('liveHeadMode');
+  badge.className = 'live-badge ' + (mode === 'owner' ? 'owner' : 'ai');
+  badge.textContent = mode === 'owner' ? '🏭 自分が対応中' : '🤖 AI対応中';
+  document.getElementById('liveTakeBtn').hidden = (mode === 'owner');
+  document.getElementById('liveReleaseBtn').hidden = (mode !== 'owner');
+  document.getElementById('liveText').disabled = (mode !== 'owner');
+  document.getElementById('liveSendBtn').disabled = (mode !== 'owner');
+}
+
+function liveAppendRow(m) {
+  const wrap = document.getElementById('liveThread');
+  const row = document.createElement('div');
+  row.className = 'live-row ' + m.who;
+  if (m.who === 'ctx') {
+    const d = document.createElement('details');
+    const sm = document.createElement('summary');
+    sm.textContent = '📜 引き継ぐ前のAIとのやり取り（タップで開く）';
+    const pre = document.createElement('pre');
+    pre.textContent = m.text;
+    d.appendChild(sm); d.appendChild(pre);
+    row.appendChild(d);
+  } else {
+    if (m.who !== 'sys') {
+      const who = document.createElement('div');
+      who.className = 'live-who';
+      who.textContent = (m.who === 'owner' ? '🏭 私' : '👤 お客様') + '　' + liveFmtWhen(m.t);
+      row.appendChild(who);
+    }
+    const b = document.createElement('div');
+    b.className = 'live-bubble';
+    b.textContent = m.text;
+    row.appendChild(b);
+  }
+  wrap.appendChild(row);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function livePollOwner() {
+  if (LIVEO.pollTimer) { clearTimeout(LIVEO.pollTimer); LIVEO.pollTimer = null; }
+  if (!LIVEO.sid) return;
+  const sid = LIVEO.sid;
+  try {
+    const d = await liveGet({ action: 'liveState', chat: sid, since: LIVEO.since, role: 'owner' });
+    if (sid !== LIVEO.sid) return;   // 途中で別の相談に切り替えた
+    if (d && d.ok) {
+      (d.msgs || []).forEach(m => {
+        if (m.i > LIVEO.since) LIVEO.since = m.i;
+        if (LIVEO.seen[m.i]) return;
+        LIVEO.seen[m.i] = 1;
+        liveAppendRow(m);
+      });
+      if (d.mode !== LIVEO.mode) liveSetModeUI(d.mode);
+    }
+  } catch (e) { /* 次の周回で取り直す */ }
+  LIVEO.pollTimer = setTimeout(livePollOwner, LIVEO.mode === 'owner' ? 3000 : 6000);
+}
+
+async function liveTakeover(on) {
+  if (!LIVEO.sid) return;
+  const btn = document.getElementById(on ? 'liveTakeBtn' : 'liveReleaseBtn');
+  btn.disabled = true;
+  try {
+    const d = await livePost({ action: 'liveTakeover', sid: LIVEO.sid, on: !!on, key: getKey() });
+    if (!(d && d.ok)) alert('切り替えできませんでした: ' + (d && d.error || '不明なエラー'));
+    else { liveSetModeUI(d.mode); livePollOwner(); liveLoadSessions(); }
+  } catch (e) { alert('通信に失敗しました'); }
+  btn.disabled = false;
+}
+
+async function liveSend() {
+  const ta = document.getElementById('liveText');
+  const text = ta.value.trim();
+  if (!text || !LIVEO.sid) return;
+  const btn = document.getElementById('liveSendBtn');
+  btn.disabled = true;
+  try {
+    const d = await livePost({ action: 'liveOwnerSay', sid: LIVEO.sid, text, key: getKey() });
+    if (d && d.ok) { ta.value = ''; livePollOwner(); }
+    else alert('送信できませんでした: ' + (d && d.error || '不明なエラー'));
+  } catch (e) { alert('通信に失敗しました'); }
+  btn.disabled = false;
+  ta.focus();
+}
+
+function liveInit() {
+  document.getElementById('liveRefreshBtn').addEventListener('click', liveLoadSessions);
+  document.getElementById('liveTakeBtn').addEventListener('click', () => liveTakeover(true));
+  document.getElementById('liveReleaseBtn').addEventListener('click', () => liveTakeover(false));
+  document.getElementById('liveSendBtn').addEventListener('click', liveSend);
+  document.getElementById('liveText').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); liveSend(); }
+  });
+  liveSetModeUI('ai');
+  liveLoadSessions();
+  if (LIVEO.listTimer) clearInterval(LIVEO.listTimer);
+  LIVEO.listTimer = setInterval(liveLoadSessions, 10000);
+  // 通知メールのリンク（#live=<相談ID>）から来たら、その相談を開く
+  const m = /[#&]live=([A-Za-z0-9_-]{6,64})/.exec(location.hash || '');
+  if (m) liveOpen(m[1]);
 }
 
 // ================================================================
