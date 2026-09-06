@@ -5451,7 +5451,9 @@ function requestExportGate(mode){
   const assignedRoles = list.filter(slide => slide.storyRole).length;
   const emptyNarration = list.filter(slide => !String(slide.narration || '').trim()).length;
   const narrationMode = mode === 'narration';
-  const fatal = !list.length || (narrationMode && els.narrationLang.value !== 'en-US');
+  // 日本語も中継サーバ経由のAI音声で保存できるため、言語は生成不可の理由にしない（2026-09-06）
+  const fatal = !list.length;
+  const narrationVoiceLabel = els.narrationLang.value === 'en-US' ? '英語' : '日本語';
   const checks = [
     {warn:!list.length, text:`写真: ${list.length}枚を使用`},
     {warn:assignedRoles !== list.length, text:`構成: ${template.label}（役割設定 ${assignedRoles}/${list.length}枚）`},
@@ -5459,7 +5461,7 @@ function requestExportGate(mode){
     {warn:false, text:`出力サイズ: ${currentVideoFormat().label}（${currentVideoFormat().w}×${currentVideoFormat().h}）`},
     {warn:emptyNarration > 0, text:`セリフ: ${emptyNarration ? `${emptyNarration}枚が空欄` : '全コマ入力済み'}`},
     {warn:!previewReviewed, text:`プレビュー: ${previewReviewed ? '確認済み' : '未確認（先に確認推奨）'}`},
-    {warn:narrationMode && els.narrationLang.value !== 'en-US', text:`出力: ${narrationMode ? '英語AIナレーション付きMP4' : (mode === 'mic' ? '自分の声付きMP4' : '動画のみMP4')}`}
+    {warn:false, text:`出力: ${narrationMode ? `${narrationVoiceLabel}AIナレーション付きMP4` : (mode === 'mic' ? '自分の声付きMP4' : '動画のみMP4')}`}
   ];
   els.exportGateList.innerHTML = checks
     .map(check => `<li class="${check.warn ? 'warn' : ''}"><strong>${check.warn ? '要確認' : 'OK'}</strong>　${escapeHtml(check.text)}</li>`)
