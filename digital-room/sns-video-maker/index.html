@@ -1048,11 +1048,11 @@ canvas{
             </details>
           </div>
           <div class="field">
-            <label for="voiceSelect">確認用の読み上げ声（完成動画には入りません）</label>
+            <label for="voiceSelect">「音声つきプレビュー」で使う声（完成動画には入りません）</label>
             <select id="voiceSelect">
               <option value="">ブラウザ標準</option>
             </select>
-            <p class="help">「音声つきプレビュー」「音声だけ確認」で聞こえる声です。セリフの長さや言い回しを耳で確認するためのもので、保存されるMP4には入りません。</p>
+            <p class="help">映像と一緒に確認する「音声つきプレビュー」で鳴る声です。この声は保存されるMP4には入りません。<strong>完成動画と同じ声で聞きたいときは「音声だけ確認」を使ってください。</strong></p>
           </div>
           <label class="check-row" for="syncNarrationDuration">
             <input id="syncNarrationDuration" type="checkbox" checked>
@@ -5855,52 +5855,83 @@ async function recordVideoCore(mode = 'silent'){
   await recordMediaRecorderVideo(withMic);
 }
 
+/* ══ 音声だけ確認（2026-09-06 改修）══
+   以前はブラウザ標準の読み上げで鳴らしていたため、聞こえる声と完成動画に入る声が
+   別物だった。ブラウザ標準は英文を読み飛ばすことがあり、「読んでくれない」という
+   誤解のもとになっていた。いまは完成動画と同じ音声で鳴らす。 */
+let previewAudioSource = null;
+
+function stopPreviewAudioSource(){
+  if(!previewAudioSource) return;
+  try{ previewAudioSource.stop(); }catch(_){}
+  previewAudioSource = null;
+}
+
+function playAudioAndWait(audio){
+  return new Promise(resolve => {
+    if(!audio || !audio.data || !audio.data.length) return resolve({ok:true, cancelled:false});
+    const ctxAudio = ensureJpDecodeContext();
+    const buffer = ctxAudio.createBuffer(1, audio.data.length, audio.sampleRate);
+    buffer.copyToChannel(audio.data, 0);
+    const source = ctxAudio.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctxAudio.destination);
+    previewAudioSource = source;
+    source.onended = () => {
+      previewAudioSource = null;
+      resolve({ok:true, cancelled: previewStopRequested});
+    };
+    source.start();
+  });
+}
+
 async function speakScript(){
   saveSelected();
   const list = playableSlides().filter(slide => String(slide.narration || '').trim());
   if(!list.length){
-    setLog(slides.length ? '使用中写真に読むセリフがありません。右の「読むセリフ・台本」に入力してください。' : '先に写真を追加してください。');
-    return;
-  }
-  if(!('speechSynthesis' in window)){
-    setLog('このブラウザでは読み上げプレビューが使えません。');
+    setLog(slides.length ? '使用中写真に読むセリフがありません。右の「読むセリフ・台本」に入れてください。' : '先に写真を読み込んでください。');
     return;
   }
   cancelSpeechOutput();
+  stopPreviewAudioSource();
   previewStopRequested = false;
   updatePreviewStopButton();
   els.speakScript.disabled = true;
-  setLog('音声だけ確認を再生中です。左の一覧と中央画面で、読んでいる写真を確認できます。');
+  const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
+  const voice = els.aiVoiceSelect.value || AI_VOICES[language][0].value;
+  setLog('完成動画に入るのと同じ声で再生します。最初の音声を作っています…');
   let completed = true;
   try{
     for(let index = 0; index < list.length; index++){
+      if(previewStopRequested){ completed = false; break; }
       const slide = list[index];
       setAudioPreviewFocus(slide, index + 1, list.length);
       const title = slide.caption || slide.file.name || '写真';
-      const result = await speakTextAndWait(slide.narration, {
-        cancelCurrent: false,
-        startLog: `${index + 1}/${list.length}枚目を読み上げ中: ${title}`,
-        onProgress: progress => {
-          const current = index + progress;
-          els.progressBar.style.width = `${Math.min(100, current / list.length * 100)}%`;
-        }
-      });
-      if(result.cancelled){
+      setLog(`${index + 1}/${list.length}枚目の音声を作っています: ${title}`);
+      let audio;
+      try{
+        audio = await generateNarrationAudio(slide.narration, voice, language);
+      }catch(err){
+        completed = false;
+        setLog(`音声を作れませんでした（${err && err.message ? err.message : err}）。`);
+        break;
+      }
+      if(previewStopRequested){ completed = false; break; }
+      setLog(`${index + 1}/${list.length}枚目を読み上げ中: ${title}`);
+      const result = await playAudioAndWait(audio);
+      els.progressBar.style.width = `${Math.min(100, (index + 1) / list.length * 100)}%`;
+      if(result.cancelled || previewStopRequested){
         completed = false;
         setLog('音声だけ確認を停止しました。');
         break;
       }
-      if(!result.ok){
-        completed = false;
-        setLog('読み上げを途中で停止しました。別の音声を選ぶか、ブラウザの音量を確認してください。');
-        break;
-      }
     }
-    if(completed) setLog('音声だけ確認が終わりました。');
+    if(completed) setLog('音声だけ確認が終わりました。ここで聞こえた声が、そのまま動画に入ります。');
   }finally{
+    stopPreviewAudioSource();
     clearAudioPreviewFocus();
     els.progressBar.style.width = '100%';
-    els.speakScript.disabled = !('speechSynthesis' in window);
+    els.speakScript.disabled = false;
     previewStopRequested = false;
     updatePreviewStopButton();
   }
@@ -6028,6 +6059,7 @@ function stopSpeech(clearLog = false){
 }
 
 function cancelSpeechOutput(){
+  stopPreviewAudioSource();
   const resolveSpeech = activeSpeechResolve;
   activeSpeechResolve = null;
   if('speechSynthesis' in window){
@@ -6718,7 +6750,6 @@ function refreshCapabilities(){
   els.recordNarration.title = narrationReady
     ? 'AI音声を生成して映像へ直接合成し、Instagram用MP4へ保存します'
     : '自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます';
-  els.speakScript.disabled = !('speechSynthesis' in window);
   if(!recordable){
     setLog('動画保存はEdge/Chrome推奨です。このブラウザでは保存ボタンを無効にしています。');
   }else if(!mp4Ready){
