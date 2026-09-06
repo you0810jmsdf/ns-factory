@@ -3707,7 +3707,7 @@ td.amount{
         <td>${escapeHtml(it.rec.date || month + '-01')}</td>
         <td style="text-align:right">${it.amount.toLocaleString()}</td>
         <td style="text-align:right">${calc.toLocaleString()}<span class="hint">${rateNote}</span></td>
-        <td style="font-size:11px;word-break:break-all">${escapeHtml(it.rec.local_path || '')}</td>
+        <td style="font-size:11px;word-break:break-all">${escapeHtml(it.rec.receipt_id ? 'ID:' + it.rec.receipt_id : (it.rec.local_path || ''))}</td>
       </tr>`;
     }).join('');
     // 既存CSSは要素セレクタ table{} で当たるためクラスは付けない
@@ -3728,9 +3728,14 @@ td.amount{
       const acc = CL_ACCOUNTS[it.sub] || { debit:'通信費', tax:'課税仕入10%' };
       const rate = apply ? (CL_APPORTION[it.sub] || 1) : 1;
       const amount = Math.floor(it.amount * rate);
+      // 証憑の指し方（2026-09-06〜）: MFへ渡すメモにファイルパスは書かない
+      // （ファイル名に店名・氏名が入り、公開JSON経由で外に出るため）。
+      // 人が読める「チャネル 日付 金額」と、ローカルの receipt_viewer.py で
+      // 実ファイルを引ける証憑IDを併記する。admin.html と同じ書式に保つこと。
       const memo = [
         `証憑チェック ${month}`,
-        it.rec.local_path ? `証憑: ${it.rec.local_path}` : '',
+        `証憑: ${CL_LABELS[it.sub] || it.sub} ${it.rec.date || month} ${it.rec.amount_text || ('¥' + it.amount.toLocaleString())}`
+          + (it.rec.receipt_id ? `（ID:${it.rec.receipt_id}）` : ''),
         (apply && CL_APPORTION[it.sub])
           ? `家事按分 ${(rate*100).toFixed(2)}%（請求額 ${it.amount.toLocaleString()}円）` : '',
       ].filter(Boolean).join(' / ');
