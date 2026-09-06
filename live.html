@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="robots" content="noindex, nofollow">
+<title>ライブ対応 | N's factory</title>
+<!--
+  ライブ対応（スマホ専用）: 職人がAI相談の会話を引き継いで、LINEのような1画面で返信する（2026-09-06 事業主要望）。
+  背景: chatlog.html のパネル版はログ一覧と同居してスマホで見づらく、返信欄まで遠かった。
+  仕組み: order_progress GAS の liveSessions / liveState / liveTakeover / liveOwnerSay をそのまま使う（chatlog と同じ）。
+  認証: chatlog.html と同じパスワード（SHA-256照合）。通過した平文は sessionStorage nsf_admin_key に保存し、
+        chatlog / admin と共用する（どちらかでログイン済みなら再入力不要）。
+  ⛔ お客様の文面は textContent で描く（innerHTML に流さない）。
+  ⛔ GETのクエリ名に sid を使わない（script.google.com が予約名として扱い400/500になる）。相談IDは chat= で渡す。
+  通知メールの「今すぐ自分で対応する」リンクは live.html#live=<相談ID>。
+-->
+<style>
+:root{--bg:#0d1117;--card:#161b22;--line:#30363d;--fg:#e6edf3;--mute:#9aa4af;--me:#3b2f00;--me-line:#9e7b00;--me-fg:#ffe9a8;--accent:#1f6feb}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;-webkit-text-size-adjust:100%}
+body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.top{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:var(--card);border-bottom:1px solid var(--line)}
+.top h1{margin:0;font-size:15px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:11px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.pill.owner{background:var(--me);border-color:var(--me-line);color:#ffd866}
+.pill.ai{background:#0d2a1a;border-color:#2ea043;color:#7ee787}
+.iconbtn{background:none;border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:8px 10px;font-size:14px;line-height:1}
+.bar{flex:0 0 auto;display:flex;gap:8px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line)}
+.bar button{flex:1;font-size:14px;font-weight:bold;padding:11px 10px;border-radius:12px;border:1px solid var(--line);background:#21262d;color:var(--fg)}
+.bar button.primary{background:var(--accent);border-color:#388bfd;color:#fff}
+.bar button:disabled{opacity:.45}
+.thread{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 8px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;flex-direction:column}
+.row.customer{align-items:flex-start}
+.row.owner{align-items:flex-end}
+.row.sys,.row.ctx{align-items:center}
+.who{font-size:10.5px;color:var(--mute);margin:0 4px 3px}
+.bubble{max-width:86%;font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word;padding:10px 13px;border-radius:16px}
+.row.customer .bubble{background:var(--card);border:1px solid var(--line);border-top-left-radius:4px}
+.row.owner .bubble{background:var(--me);border:1px solid var(--me-line);color:var(--me-fg);border-top-right-radius:4px}
+.row.sys .bubble{background:transparent;border:1px dashed var(--line);color:var(--mute);font-size:12.5px;max-width:92%}
+.row.ctx details{width:100%;background:#11161d;border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:13px;color:var(--mute)}
+.row.ctx summary{color:var(--fg);font-size:13.5px}
+.row.ctx pre{white-space:pre-wrap;word-break:break-word;margin:8px 0 0;font-family:inherit;font-size:13px;line-height:1.5}
+.empty{color:var(--mute);font-size:13px;text-align:center;padding:24px 12px;line-height:1.7}
+.compose{flex:0 0 auto;display:flex;gap:8px;align-items:flex-end;padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);background:var(--card);border-top:1px solid var(--line)}
+.compose textarea{flex:1;min-width:0;max-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:18px;padding:10px 14px;font-size:16px;font-family:inherit;line-height:1.4;resize:none}
+.compose button{flex:0 0 auto;height:44px;padding:0 16px;border-radius:22px;border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:bold}
+.compose button:disabled,.compose textarea:disabled{opacity:.45}
+.hint{flex:0 0 auto;font-size:11.5px;color:var(--mute);padding:0 14px 6px;background:var(--card)}
+/* 相談一覧（ドロワー） */
+.drawer{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:50}
+.drawer.show{display:block}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:80dvh;overflow-y:auto;background:var(--card);border-radius:16px 16px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 14px)}
+.sheet h2{margin:0 0 10px;font-size:14px;display:flex;align-items:center;gap:8px}
+.sheet h2 span{flex:1}
+.item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);color:var(--fg);border-radius:12px;padding:12px;margin-bottom:8px;font-size:14px}
+.item.active{border-color:#58a6ff}
+.item .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .when{font-size:11px;color:var(--mute);white-space:nowrap}
+/* 認証 */
+.auth{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.auth-card{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+.auth-card h2{margin:0 0 6px;font-size:18px}
+.auth-card p{margin:0 0 14px;color:var(--mute);font-size:13px;line-height:1.6}
+.auth-card input{width:100%;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);margin-bottom:10px}
+.auth-card button{width:100%;font-size:15px;font-weight:bold;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff}
+.auth-err{color:#ff9d9d;font-size:12.5px;min-height:1.2em;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#21262d;border:1px solid var(--line);color:var(--fg);padding:9px 14px;border-radius:99px;font-size:13px;z-index:60;display:none}
+</style>
+</head>
+<body>
+
+<div class="auth" id="auth">
+  <div class="auth-card">
+    <h2>🎧 ライブ対応</h2>
+    <p>お客様のAI相談を引き継いで、あなたが直接お答えする画面です。<br>サイト管理者パスワードを入力してください。</p>
+    <input type="password" id="pw" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitAuth()">
+    <button type="button" onclick="submitAuth()">ログイン</button>
+    <div class="auth-err" id="authErr"></div>
+  </div>
+</div>
+
+<div class="top">
+  <button class="iconbtn" type="button" id="listBtn" title="相談一覧">☰</button>
+  <h1 id="title">相談を選んでください</h1>
+  <span class="pill" id="modePill">—</span>
+</div>
+<div class="bar">
+  <button class="primary" type="button" id="takeBtn">🏭 私が引き継ぐ</button>
+  <button type="button" id="releaseBtn" hidden>🤖 AIに戻す</button>
+</div>
+<div class="thread" id="thread"><div class="empty">☰ から相談を選ぶか、通知メールのリンクから開いてください。</div></div>
+<div class="hint" id="hint">「私が引き継ぐ」を押すと、お客様の画面はAIを止めてあなたの返信を待ちます。</div>
+<div class="compose">
+  <textarea id="text" rows="1" placeholder="お客様への返信" disabled></textarea>
+  <button type="button" id="sendBtn" disabled>送信</button>
+</div>
+
+<div class="drawer" id="drawer">
+  <div class="sheet">
+    <h2><span>いま接続中の相談</span><button class="iconbtn" type="button" id="refreshBtn">更新</button><button class="iconbtn" type="button" id="closeBtn">✕</button></h2>
+    <div id="sessions"><div class="empty">読み込み中…</div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- 認証（chatlog.html と同じハッシュ・同じ保存キー） ----
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const KEY_STORE = 'nsf_admin_key';
+const GAS = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
+function sha256(text){ return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(buf=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')); }
+function getKey(){ try{ return sessionStorage.getItem(KEY_STORE)||''; }catch(e){ return ''; } }
+function submitAuth(){
+  const v=document.getElementById('pw').value;
+  sha256(v).then(hex=>{
+    if(hex!==ADMIN_PASS_HASH){ document.getElementById('authErr').textContent='パスワードが違います'; return; }
+    try{ sessionStorage.setItem(KEY_STORE, v); }catch(e){}
+    unlock();
+  }).catch(()=>{ document.getElementById('authErr').textContent='照合に失敗しました（https で開いてください）'; });
+}
+function unlock(){
+  const a=document.getElementById('auth'); if(a) a.remove();
+  init();
+}
+// 既にログイン済み（chatlog/admin で入力済み）なら再入力なし。保存された平文がハッシュに一致するかで判定
+(function(){
+  const k=getKey();
+  if(!k){ return; }
+  sha256(k).then(hex=>{ if(hex===ADMIN_PASS_HASH) unlock(); }).catch(()=>{});
+})();
+
+// ---- 状態 ----
+const S={ sid:'', since:0, mode:'ai', seen:{}, pollTimer:null, listTimer:null, sessions:[] };
+const $=id=>document.getElementById(id);
+
+function get(params){ const qs=new URLSearchParams(params); return fetch(GAS+'?'+qs.toString(),{cache:'no-store'}).then(r=>r.json()); }
+function post(body){ return fetch(GAS,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).then(r=>r.json()); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',2200); }
+function when(s){ if(!s) return ''; const today=new Date().toLocaleDateString('sv-SE'); return s.slice(0,10)===today ? s.slice(11,16) : (parseInt(s.slice(5,7),10)+'/'+parseInt(s.slice(8,10),10)+' '+s.slice(11,16)); }
+
+// ---- 相談一覧 ----
+async function loadSessions(){
+  const box=$('sessions');
+  let d=null; try{ d=await get({action:'liveSessions', key:getKey()}); }catch(e){}
+  const list=(d&&d.ok&&Array.isArray(d.sessions))?d.sessions:[];
+  S.sessions=list;
+  box.textContent='';
+  if(!list.length){ const e=document.createElement('div'); e.className='empty'; e.textContent=(d&&d.ok)?'いま接続中の相談はありません。\nお客様がAI会話を始めると、ここに出ます。':'一覧を取得できませんでした'; box.appendChild(e); return; }
+  list.forEach(s=>{
+    const b=document.createElement('button'); b.type='button'; b.className='item'+(s.sid===S.sid?' active':'');
+    const p=document.createElement('span'); p.className='pill '+(s.mode==='owner'?'owner':'ai'); p.textContent=s.mode==='owner'?'🏭 自分':'🤖 AI';
+    const t=document.createElement('span'); t.className='txt'; t.textContent=s.last||s.first||'（発言なし）';
+    const w=document.createElement('span'); w.className='when'; w.textContent=when(s.lastSeen);
+    b.appendChild(p); b.appendChild(t); b.appendChild(w);
+    b.addEventListener('click',()=>{ closeDrawer(); open(s.sid, s.first||s.last||''); });
+    box.appendChild(b);
+  });
+  if(S.sid){ const cur=list.find(x=>x.sid===S.sid); if(cur&&(cur.first||cur.last)) $('title').textContent=cur.first||cur.last; }
+}
+function openDrawer(){ $('drawer').classList.add('show'); loadSessions(); }
+function closeDrawer(){ $('drawer').classList.remove('show'); }
+
+// ---- スレッド ----
+function open(sid, titleText){
+  S.sid=sid; S.since=0; S.seen={};
+  $('thread').textContent='';
+  $('title').textContent=titleText||('相談 '+sid);
+  setMode('ai');
+  poll();
+}
+function setMode(mode){
+  S.mode=mode;
+  const p=$('modePill'); p.className='pill '+(mode==='owner'?'owner':'ai'); p.textContent=mode==='owner'?'🏭 自分が対応中':'🤖 AI対応中';
+  $('takeBtn').hidden=(mode==='owner'); $('releaseBtn').hidden=(mode!=='owner');
+  $('text').disabled=(mode!=='owner'); $('sendBtn').disabled=(mode!=='owner');
+  $('hint').textContent = mode==='owner'
+    ? 'お客様の発言は数秒ごとにここへ届きます。終わったら「AIに戻す」を押してください（やり取りはAIにも渡ります）。'
+    : '「私が引き継ぐ」を押すと、お客様の画面はAIを止めてあなたの返信を待ちます。';
+}
+function addRow(m){
+  const wrap=$('thread');
+  const row=document.createElement('div'); row.className='row '+m.who;
+  if(m.who==='ctx'){
+    const d=document.createElement('details'); const sm=document.createElement('summary'); sm.textContent='📜 引き継ぐ前のAIとのやり取り（タップで開く）';
+    const pre=document.createElement('pre'); pre.textContent=m.text; d.appendChild(sm); d.appendChild(pre); row.appendChild(d);
+  }else{
+    if(m.who!=='sys'){ const w=document.createElement('div'); w.className='who'; w.textContent=(m.who==='owner'?'🏭 私':'👤 お客様')+'　'+when(m.t); row.appendChild(w); }
+    const b=document.createElement('div'); b.className='bubble'; b.textContent=m.text; row.appendChild(b);
+  }
+  wrap.appendChild(row);
+  wrap.scrollTop=wrap.scrollHeight;
+}
+async function poll(){
+  if(S.pollTimer){ clearTimeout(S.pollTimer); S.pollTimer=null; }
+  if(!S.sid) return;
+  const sid=S.sid;
+  try{
+    const d=await get({action:'liveState', chat:sid, since:S.since, role:'owner'});
+    if(sid!==S.sid) return;
+    if(d&&d.ok){
+      (d.msgs||[]).forEach(m=>{ if(m.i>S.since) S.since=m.i; if(S.seen[m.i]) return; S.seen[m.i]=1; addRow(m); });
+      if(d.mode!==S.mode) setMode(d.mode);
+    }
+  }catch(e){}
+  S.pollTimer=setTimeout(poll, S.mode==='owner'?3000:6000);
+}
+async function takeover(on){
+  if(!S.sid) return;
+  const btn=$(on?'takeBtn':'releaseBtn'); btn.disabled=true;
+  try{
+    const d=await post({action:'liveTakeover', sid:S.sid, on:!!on, key:getKey()});
+    if(d&&d.ok){ setMode(d.mode); poll(); if(on) $('text').focus(); }
+    else toast('切り替えできませんでした: '+((d&&d.error)||'不明なエラー'));
+  }catch(e){ toast('通信に失敗しました'); }
+  btn.disabled=false;
+}
+async function send(){
+  const ta=$('text'); const text=ta.value.trim(); if(!text||!S.sid) return;
+  const btn=$('sendBtn'); btn.disabled=true;
+  try{
+    const d=await post({action:'liveOwnerSay', sid:S.sid, text, key:getKey()});
+    if(d&&d.ok){ ta.value=''; ta.style.height=''; poll(); }
+    else toast('送信できませんでした: '+((d&&d.error)||'不明なエラー'));
+  }catch(e){ toast('通信に失敗しました'); }
+  btn.disabled=(S.mode!=='owner'); ta.focus();
+}
+
+function init(){
+  $('listBtn').addEventListener('click', openDrawer);
+  $('closeBtn').addEventListener('click', closeDrawer);
+  $('refreshBtn').addEventListener('click', loadSessions);
+  $('drawer').addEventListener('click', e=>{ if(e.target.id==='drawer') closeDrawer(); });
+  $('takeBtn').addEventListener('click', ()=>takeover(true));
+  $('releaseBtn').addEventListener('click', ()=>takeover(false));
+  $('sendBtn').addEventListener('click', send);
+  const ta=$('text');
+  ta.addEventListener('input', ()=>{ ta.style.height=''; ta.style.height=Math.min(120, ta.scrollHeight)+'px'; });
+  ta.addEventListener('keydown', e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); send(); } });
+  setMode('ai');
+  const m=/[#&]live=([A-Za-z0-9_-]{6,64})/.exec(location.hash||'');
+  loadSessions().then(()=>{
+    if(m){ const cur=S.sessions.find(x=>x.sid===m[1]); open(m[1], cur?(cur.first||cur.last||''):''); }
+    else if(S.sessions.length===1){ open(S.sessions[0].sid, S.sessions[0].first||S.sessions[0].last||''); }
+    else openDrawer();
+  });
+  if(S.listTimer) clearInterval(S.listTimer);
+  S.listTimer=setInterval(loadSessions, 15000);
+  // 画面が戻ってきたら即取り直す（スマホでスリープから復帰した直後の空白を減らす）
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ poll(); loadSessions(); } });
+}
+</script>
+</body>
+</html>
