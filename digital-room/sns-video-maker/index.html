@@ -515,6 +515,8 @@ canvas{
     </span>
   </div>
   <button class="nav-help" id="showGuide" type="button">使い方</button>
+  <!-- 管理者モード。以前は作品集ページでONにしてから来る必要があったため、ここでも切り替えられるようにした（2026-09-06） -->
+  <button class="nav-help" id="adminToggle" type="button">🔒 管理者モード</button>
   <a class="nav-back" href="../">デジタル幕僚室へ戻る</a>
 </header>
 
@@ -1188,7 +1190,8 @@ const els = {
   snsPostThreads: document.getElementById('snsPostThreads'),
   snsPostInstagram: document.getElementById('snsPostInstagram'),
   snsPostConfirm: document.getElementById('snsPostConfirm'),
-  snsPostCancel: document.getElementById('snsPostCancel')
+  snsPostCancel: document.getElementById('snsPostCancel'),
+  adminToggle: document.getElementById('adminToggle')
 };
 let slides = [];
 let selected = -1;
@@ -4569,9 +4572,10 @@ function resetRecordingOutput(){
    公開アプリのため次の原則を守る:
    - 新しい秘密情報は一切埋め込まない（管理者ゲートは works.html と同じ公開済みハッシュの共有。
      キャプションの元データは公開済みの作品集カタログのみ。APIトークン不使用）
-   - 投稿はOSの共有シート越しに事業主自身が行う（自動公開はしない）
    - ボタンは「合言葉照合OK ＋ 録画済み ＋ 作品情報あり」の3条件が揃ったときだけ現れる。
-     works.html 側で管理者モードをONにした sessionStorage を共有する。 */
+   - 管理者モードはこの画面でも切り替えられる（2026-09-06）。以前は works.html でONに
+     してから来る必要があり、手順が分かりにくかった。鍵は sessionStorage で共有する。
+   - 投稿そのものはGAS経由（サーバー側にトークン）。この画面にトークンは持たせない。 */
 const NSF_GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
 let nsfAdminVerified = false;
 
@@ -4584,6 +4588,47 @@ async function verifyNsfAdmin(){
     nsfAdminVerified = (hex === NSF_GATE_HASH);
   }catch(_){ nsfAdminVerified = false; }
   return nsfAdminVerified;
+}
+
+function updateAdminToggleUi(){
+  if(!els.adminToggle) return;
+  els.adminToggle.textContent = nsfAdminVerified ? '🔓 管理者モード中' : '🔒 管理者モード';
+  els.adminToggle.title = nsfAdminVerified
+    ? '押すと管理者モードを解除します'
+    : '合言葉を入れると、動画をSNSへ投稿できるようになります';
+}
+
+/** この画面で管理者モードを切り替える。作品集ページへ戻らなくて済むように（2026-09-06）。 */
+async function toggleAdminMode(){
+  let stored = '';
+  try{ stored = sessionStorage.getItem('nsf_admin_key') || ''; }catch(_){}
+  if(stored){
+    try{ sessionStorage.removeItem('nsf_admin_key'); }catch(_){}
+    await verifyNsfAdmin();
+    updateAdminToggleUi();
+    updateShareToSnsUi();
+    setLog('管理者モードを解除しました。');
+    return;
+  }
+  const key = window.prompt('管理者の合言葉を入力してください');
+  if(key === null || key === '') return;
+  if(!crypto.subtle){
+    setLog('この環境では照合できません（https で開いてください）。');
+    return;
+  }
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key));
+  const hex = Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2, '0')).join('');
+  if(hex !== NSF_GATE_HASH){
+    setLog('⛔ 合言葉が違います。');
+    return;
+  }
+  try{ sessionStorage.setItem('nsf_admin_key', key); }catch(_){}
+  await verifyNsfAdmin();
+  updateAdminToggleUi();
+  updateShareToSnsUi();
+  setLog(currentWork && currentWork.id
+    ? '管理者モードにしました。動画を保存すると「SNSへ投稿」が使えます。'
+    : '管理者モードにしました。SNSへ投稿するには、商品登録ページの「この作品の紹介動画を作る」から開き直してください（作品情報が要るため）。');
 }
 
 /* キャプションは works.html の buildWorkCaption と同じ書式を保つこと
@@ -6602,6 +6647,7 @@ els.exportGate.addEventListener('cancel', event => { event.preventDefault(); clo
 els.snsPostCancel.addEventListener('click', () => closeSnsPostGate(false));
 els.snsPostConfirm.addEventListener('click', () => closeSnsPostGate(true));
 els.snsPostGate.addEventListener('cancel', event => { event.preventDefault(); closeSnsPostGate(false); });
+els.adminToggle.addEventListener('click', () => { toggleAdminMode(); });
 els.productNamePreset.addEventListener('change', applyProductNamePreset);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
 document.getElementById('playPreview').addEventListener('click', playPreviewWithoutVoice);
@@ -6670,7 +6716,7 @@ els.motionIntensity.addEventListener('change', () => {
   setLog(`動きの強さを「${label}」にしました。プレビューと保存MP4の両方に反映されます。`);
 });
 els.shareToSns.addEventListener('click', shareVideoToSns);
-verifyNsfAdmin().then(updateShareToSnsUi);
+verifyNsfAdmin().then(() => { updateShareToSnsUi(); updateAdminToggleUi(); });
 els.endLogoCta.addEventListener('change', () => {
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
