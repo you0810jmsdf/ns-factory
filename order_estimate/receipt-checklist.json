@@ -72,7 +72,7 @@
         "records": [],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -81,7 +81,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -90,7 +90,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -126,7 +126,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -135,7 +135,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -162,7 +162,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -171,7 +171,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -189,7 +189,7 @@
         ],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -198,7 +198,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -225,7 +225,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -306,7 +306,7 @@
         ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -315,7 +315,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -324,7 +324,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -360,7 +360,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -369,7 +369,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -422,7 +422,7 @@
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -440,7 +440,7 @@
         ],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -458,7 +458,7 @@
         ],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -467,7 +467,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -503,7 +503,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -600,7 +600,7 @@
         ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -609,7 +609,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -618,7 +618,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -698,7 +698,7 @@
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -707,7 +707,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -760,7 +760,7 @@
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -769,7 +769,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -787,7 +787,7 @@
         ],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -796,7 +796,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -848,7 +848,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -954,7 +954,7 @@
         ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -963,7 +963,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -972,7 +972,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1052,7 +1052,7 @@
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -1061,7 +1061,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -1097,7 +1097,7 @@
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -1106,7 +1106,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -1115,7 +1115,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -1133,7 +1133,7 @@
         ],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -1177,7 +1177,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -1258,7 +1258,7 @@
         ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -1267,7 +1267,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -1276,7 +1276,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1372,7 +1372,7 @@
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -1381,7 +1381,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -1417,7 +1417,7 @@
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -1426,7 +1426,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -1435,7 +1435,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -1444,7 +1444,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -1471,7 +1471,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -1585,7 +1585,7 @@
         ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -1594,7 +1594,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -1603,7 +1603,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1675,7 +1675,7 @@
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -1684,7 +1684,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -1720,7 +1720,7 @@
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -1729,7 +1729,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -1738,7 +1738,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -1747,7 +1747,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -1774,7 +1774,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -1871,7 +1871,7 @@
         ],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -1880,7 +1880,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -1889,7 +1889,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -1969,7 +1969,7 @@
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -1978,7 +1978,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -2014,7 +2014,7 @@
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2023,7 +2023,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -2032,7 +2032,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -2041,7 +2041,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -2086,7 +2086,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -2174,7 +2174,7 @@
         "records": [],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -2183,7 +2183,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -2192,7 +2192,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -2280,7 +2280,7 @@
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -2289,7 +2289,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -2325,7 +2325,7 @@
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2334,7 +2334,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -2343,7 +2343,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -2352,7 +2352,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -2405,7 +2405,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -2469,7 +2469,7 @@
         "records": [],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -2478,7 +2478,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -2487,7 +2487,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -2575,7 +2575,7 @@
         ],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -2584,7 +2584,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -2620,7 +2620,7 @@
         ],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2629,7 +2629,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -2638,7 +2638,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -2647,7 +2647,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -2683,7 +2683,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -2747,7 +2747,7 @@
         "records": [],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -2756,7 +2756,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -2765,7 +2765,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -2801,7 +2801,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -2810,7 +2810,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -2837,7 +2837,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -2846,7 +2846,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -2855,7 +2855,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -2873,7 +2873,7 @@
         ],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -2918,7 +2918,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -2982,7 +2982,7 @@
         "records": [],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -2991,7 +2991,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -3000,7 +3000,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -3036,7 +3036,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -3045,7 +3045,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -3072,7 +3072,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -3081,7 +3081,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -3090,7 +3090,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -3108,7 +3108,7 @@
         ],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -3152,7 +3152,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -3224,7 +3224,7 @@
         "records": [],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -3233,7 +3233,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -3242,7 +3242,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -3278,7 +3278,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -3287,7 +3287,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -3314,7 +3314,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -3323,7 +3323,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -3332,7 +3332,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -3341,7 +3341,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -3368,7 +3368,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -3432,7 +3432,7 @@
         "records": [],
         "guide": {
           "url": "https://platform.claude.com/settings/billing",
-          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 監理部\\receipts\\processed\\YYYY-MM\\ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
+          "steps": "自動取得済み（invoice+statements@mail.anthropic.com の月次領収書メールを 所定の保存先フォルダ に保存）。金額はドル建てのため一覧では「—」表示。円換算額はカード明細（MF連携で自動取込）で確認。原本PDFは Claude Platform → Billing からDL可。"
         }
       },
       "chatgpt": {
@@ -3441,7 +3441,7 @@
         "records": [],
         "guide": {
           "url": "https://help.openai.com/ja-jp/articles/12356340-how-can-i-find-my-past-chatgpt-invoices",
-          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。監理部\\receipts\\processed\\YYYY-MM\\へ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
+          "steps": "ChatGPT Plusの請求書は chatgpt.com → 設定 → アカウント → 支払い →「管理」→ カスタマー請求ポータルの Invoice History からPDF取得。所定の保存先フォルダへ保存。※Apple App Store / Google Play 経由で契約した分はここに出ない（その場合はapple列を参照）。"
         }
       },
       "moneyforward": {
@@ -3450,7 +3450,7 @@
         "records": [],
         "guide": {
           "url": "https://biz.moneyforward.com/support/guide/u02.html",
-          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 監理部\\receipts\\processed\\YYYY-MM\\ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
+          "steps": "MoneyForwardは領収書メールが届かないため手動DL。画面右上の事業者名→アカウント管理→「料金明細」タブ→請求書を表示してPDF保存し 所定の保存先フォルダ へ。金額は毎月11日頃に確定するため、それ以降に取得すること。※2023-06-30以降の請求は「請求書」形式のみで「領収書」形式では出力できない。"
         }
       },
       "electricity": {
@@ -3486,7 +3486,7 @@
         "records": [],
         "guide": {
           "url": "https://my.ymobile.jp/",
-          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
+          "steps": "契約はワイモバイル（ソフトバンク株式会社）。料金確定メールが届かないため手動DL。My Y!mobile →「料金案内」→「過去の請求情報をみる」→ 一括印刷用PDF（ご利用料金内訳明細書）をDL。ファイル名は「一括印刷用PDFファイル_YYYY年M月分.PDF」。所定の保存先フォルダ へ保存。この明細1枚に 携帯2回線（080/090）とSoftBank光 の内訳が全部載る（internet列は本明細を参照）。画面トップの「モバイル」「インターネット」の金額は税抜の小計で、請求合計との差は消費税。按分率が異なるため、仕訳では回線分と光回線分を分けて計上すること。"
         }
       },
       "home_loan": {
@@ -3495,7 +3495,7 @@
         "records": [],
         "guide": {
           "url": "",
-          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 監理部\\receipts\\processed\\ に保存。※元本は経費不可・利息の按分のみ。"
+          "steps": "住宅ローンは請求メールが届かない。事業按分して計上する場合、金融機関の返済予定表または年末残高証明書（年1回）を 所定の保存先フォルダ に保存。※元本は経費不可・利息の按分のみ。"
         }
       },
       "car_loan": {
@@ -3522,7 +3522,7 @@
         "records": [],
         "guide": {
           "url": "https://directcloud.jp/",
-          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に jhmeisai@joyfulhonda.co.jp から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 監理部\\receipts\\processed\\YYYY-MM\\（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
+          "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
         }
       },
       "creema": {
@@ -3531,7 +3531,7 @@
         "records": [],
         "guide": {
           "url": "https://www.creema.jp/",
-          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "Creemaの売上（収入）。ログイン →「マイページ」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "minne": {
@@ -3540,7 +3540,7 @@
         "records": [],
         "guide": {
           "url": "https://minne.com/",
-          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。手数料は支払手数料として別計上する。"
+          "steps": "minneの売上（収入）。ログイン →「作家・ブランド管理」→「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。手数料は支払手数料として別計上する。"
         }
       },
       "stores": {
@@ -3549,7 +3549,7 @@
         "records": [],
         "guide": {
           "url": "https://dashboard.stores.jp/",
-          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。監理部\\receipts\\processed\\YYYY-MM\\ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
+          "steps": "STORESの売上（収入）。ダッシュボード →「売上管理」から対象月の売上・手数料明細をDL。所定の保存先フォルダ へ保存。N's notebook パスワード管理・N's pattern のデジタル商品売上もこの列に含まれる。"
         }
       },
       "rakuma": {
@@ -3602,7 +3602,7 @@
         "records": [],
         "guide": {
           "url": "https://you0810jmsdf.github.io/ns-factory/kanri-room/receipt-intake/",
-          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
+          "steps": "監理幕僚室「レシート取込（スマホ）」で撮影・登録した証憑。この表には日付と金額しか出さない（公開ファイルのため）。店名・科目・按分の明細はレシート取込ツールの台帳タブで確認する。PCへの取り込みは 監理部の作業フォルダの sync_camera_receipts.py を実行する（Drive→receipts/processed）。⛔ この列は会計送信の対象外。仕訳CSVはレシート取込ツール側で出す（二重計上防止）。"
         }
       },
       "manual_pick": {
@@ -3616,7 +3616,7 @@
       }
     }
   },
-  "checked_at": "2026-09-06 13:45:46",
+  "checked_at": "2026-09-06 13:51:49",
   "health": {
     "token_updated": "2026-09-05",
     "token_age_days": 1,
