@@ -1036,6 +1036,18 @@ canvas{
             <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語・英語とも対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
           </div>
           <div class="field">
+            <details>
+              <summary style="cursor:pointer">読み方の辞書（音声だけに効きます）</summary>
+              <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください。この端末に保存されます。</p>
+              <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
+              <div class="btn-row" style="margin-top:6px;gap:6px">
+                <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
+                <button class="secondary" id="resetReadingDict" type="button">初期値に戻す</button>
+                <button class="secondary" id="testReadingDict" type="button">今のセリフで試聴</button>
+              </div>
+            </details>
+          </div>
+          <div class="field">
             <label for="voiceSelect">確認用の読み上げ声（完成動画には入りません）</label>
             <select id="voiceSelect">
               <option value="">ブラウザ標準</option>
@@ -1194,7 +1206,11 @@ const els = {
   snsPostInstagram: document.getElementById('snsPostInstagram'),
   snsPostConfirm: document.getElementById('snsPostConfirm'),
   snsPostCancel: document.getElementById('snsPostCancel'),
-  adminToggle: document.getElementById('adminToggle')
+  adminToggle: document.getElementById('adminToggle'),
+  readingDict: document.getElementById('readingDict'),
+  saveReadingDict: document.getElementById('saveReadingDict'),
+  resetReadingDict: document.getElementById('resetReadingDict'),
+  testReadingDict: document.getElementById('testReadingDict')
 };
 let slides = [];
 let selected = -1;
@@ -4959,11 +4975,85 @@ function ensureJpDecodeContext(){
   return jpDecodeContext;
 }
 
+/* ══ 読み方の辞書（2026-09-06）══
+   屋号や型番をそのまま読ませると読み間違えるため、音声を作る直前だけ読みに置き換える。
+   ⛔ 字幕（画面に出る文字）には適用しない。見た目は元の表記のままにする。 */
+const DEFAULT_READING_RULES = [
+  ["N's factory", 'エヌズ ファクトリー'],
+  ["N's notebook", 'エヌズ ノートブック'],
+  ['Linea Vasca Box', 'リネア ヴァスカ ボックス'],
+  ['Nero', 'ネロ'],
+  ['Micro5', 'マイクロファイブ'],
+  ['A5スリム', 'エーゴ スリム'],
+  ['A5', 'エーゴ'],
+  ['A6', 'エーロク'],
+  ['B6', 'ビーロク'],
+  ['mm', 'ミリ'],
+  ['栃木レザー', 'とちぎレザー'],
+];
+const READING_DICT_KEY = 'nsf_reading_dict';
+
+function readingRulesText(rules){
+  return rules.map(([from, to]) => `${from}=${to}`).join('\n');
+}
+
+function parseReadingRules(text){
+  return String(text || '')
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('#') && line.includes('='))
+    .map(line => {
+      const at = line.indexOf('=');
+      return [line.slice(0, at).trim(), line.slice(at + 1).trim()];
+    })
+    .filter(([from]) => from);
+}
+
+function currentReadingRules(){
+  try{
+    const saved = localStorage.getItem(READING_DICT_KEY);
+    if(saved !== null) return parseReadingRules(saved);
+  }catch(_){ /* 保存できない環境では既定を使う */ }
+  return DEFAULT_READING_RULES.slice();
+}
+
+/** 音声用に読みを当てる。長い表記から先に置き換える（A6 より A6クラシック を優先） */
+function applyReadingRules(text){
+  let out = String(text || '');
+  const rules = currentReadingRules()
+    .filter(([from, to]) => from && to)
+    .sort((a, b) => b[0].length - a[0].length);
+  for(const [from, to] of rules){
+    out = out.split(from).join(to);
+  }
+  return out;
+}
+
+/** 試聴用。作った波形をその場で鳴らす（保存する動画には影響しない）。 */
+function playFloat32Audio(audio){
+  if(!audio || !audio.data || !audio.data.length) throw new Error('音声が空です');
+  const ctxAudio = ensureJpDecodeContext();
+  const buffer = ctxAudio.createBuffer(1, audio.data.length, audio.sampleRate);
+  buffer.copyToChannel(audio.data, 0);
+  const source = ctxAudio.createBufferSource();
+  source.buffer = buffer;
+  source.connect(ctxAudio.destination);
+  source.start();
+}
+
+function loadReadingDictUi(){
+  if(!els.readingDict) return;
+  let saved = null;
+  try{ saved = localStorage.getItem(READING_DICT_KEY); }catch(_){}
+  els.readingDict.value = saved !== null ? saved : readingRulesText(DEFAULT_READING_RULES);
+}
+
 /** ナレーション。中継サーバから mp3 を受け取り、動画に載せられる波形に変換する。 */
 async function generateRelayNarrationAudio(text, voice){
   const parts = [];
   let sampleRate = 24000;
-  for(const chunk of splitTtsText(text, 900)){
+  // 字幕はそのまま、読み上げだけ辞書を当てる
+  for(const chunk of splitTtsText(applyReadingRules(text), 900)){
     let response;
     try{
       response = await fetch(JP_TTS_ENDPOINT, {
@@ -6711,6 +6801,32 @@ els.snsPostCancel.addEventListener('click', () => closeSnsPostGate(false));
 els.snsPostConfirm.addEventListener('click', () => closeSnsPostGate(true));
 els.snsPostGate.addEventListener('cancel', event => { event.preventDefault(); closeSnsPostGate(false); });
 els.adminToggle.addEventListener('click', () => { toggleAdminMode(); });
+els.saveReadingDict.addEventListener('click', () => {
+  try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
+  const count = parseReadingRules(els.readingDict.value).length;
+  setLog(`読み方の辞書を保存しました（${count}件）。次に作る音声から効きます。`);
+});
+els.resetReadingDict.addEventListener('click', () => {
+  els.readingDict.value = readingRulesText(DEFAULT_READING_RULES);
+  try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
+  setLog('読み方の辞書を初期値に戻しました。');
+});
+els.testReadingDict.addEventListener('click', async () => {
+  const slide = playableSlides()[Math.max(0, selected)] || playableSlides()[0];
+  const source = slide && slide.narration ? slide.narration : '';
+  if(!source){ setLog('試聴するセリフがありません。'); return; }
+  try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
+  const spoken = applyReadingRules(source);
+  setLog(`読み上げる文: ${spoken}`);
+  const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
+  const voice = els.aiVoiceSelect.value || AI_VOICES[language][0].value;
+  try{
+    const audio = await generateNarrationAudio(source, voice, language);
+    playFloat32Audio(audio);
+  }catch(err){
+    setLog(`試聴できませんでした（${err && err.message ? err.message : err}）。`);
+  }
+});
 els.productNamePreset.addEventListener('change', applyProductNamePreset);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
 document.getElementById('playPreview').addEventListener('click', playPreviewWithoutVoice);
@@ -6780,6 +6896,7 @@ els.motionIntensity.addEventListener('change', () => {
 });
 els.shareToSns.addEventListener('click', shareVideoToSns);
 verifyNsfAdmin().then(() => { updateShareToSnsUi(); updateAdminToggleUi(); });
+loadReadingDictUi();
 els.endLogoCta.addEventListener('change', () => {
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
