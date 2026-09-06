@@ -1242,11 +1242,13 @@ const localTtsPending = new Map();
    以前の英語はブラウザ内でAIモデル（約100MB）を動かしており、メモリを圧迫して
    長い動画の書き出しが途中で止まっていた（成功率57%）。2026-09-06 に一本化。 */
 const AI_VOICES = {
+  // 多言語対応の声にしている。通常の英語の声は日本語を渡すと音声が返らず、
+  // その写真だけ無音になる（2026-09-06 実測）。セリフに日本語が残っていても鳴るようにする。
   'en-US': [
-    {value:'en-US-AvaNeural', label:'Ava（英語・女性）'},
-    {value:'en-US-EmmaNeural', label:'Emma（英語・女性）'},
-    {value:'en-US-AndrewNeural', label:'Andrew（英語・男性）'},
-    {value:'en-GB-SoniaNeural', label:'Sonia（英国英語・女性）'}
+    {value:'en-US-AvaMultilingualNeural', label:'Ava（英語・女性）'},
+    {value:'en-US-EmmaMultilingualNeural', label:'Emma（英語・女性）'},
+    {value:'en-US-AndrewMultilingualNeural', label:'Andrew（英語・男性）'},
+    {value:'en-US-BrianMultilingualNeural', label:'Brian（英語・男性）'}
   ],
   // 日本語は Microsoft Edge の読み上げ（卒論発表資料と同じ声）を中継サーバ経由で使う。
   // ブラウザ内で動く Kokoro は英語しか話せないため、日本語だけ経路が別（2026-09-06）。
