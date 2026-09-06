@@ -1,6 +1,16 @@
 # お知らせ欄「掲載する」と Threads 告知
 
-## 現状（2026-08-06 時点）
+## 現状（2026-09-06 時点）— §5「返信で承認」を本番実装済み
+
+- GAS `Nsfactory-SNS-AutoPost` @48。ローカル正本は `レザークラフト\sns-gas-nsfactory\`（`NewsReply.gs` 新規）。
+- **スマホは候補メールに「掲載」または「不要」と返信するだけ**。10分以内に結果が同スレッドへ返信で届く。
+- 実装は §5 のとおり。ただし **「告知」（Threads同時投稿）は未実装**（`NewsAnnounce.gs` 未作成のため、
+  メール文面からも外してある）。掲載後は `draft_<token>` を削除し、PCボタンの後押しで二重掲載しない。
+- トリガーの入切・即時実行は Web経由: `?action=newsreply_trigger&pass=<合言葉>&on=1|0` / `&run=1`
+  （合言葉は `保全部\.env` の `SNS_GAS_ADMIN_PASSPHRASE`）。**doGet に置く**（doPost だと無反応）。
+- 8/6〜9/6 の間、この §5 は docs のみで GAS には入っていなかった（全46版に `checkNewsReplies` なし）。
+
+## 経緯（2026-08-06 時点）
 
 **「掲載する」はすでに動いている。** PC のブラウザから押すと GitHub Contents API で
 `index.html` のお知らせ欄に `<li>` を1行追記してコミットする。
