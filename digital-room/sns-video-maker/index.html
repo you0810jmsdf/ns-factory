@@ -116,6 +116,9 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .check-row input{width:20px;height:20px;margin-top:2px;accent-color:var(--brass-dark);flex:none}
 .check-row strong{display:block;color:var(--ink);font-size:13px}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
+/* ⛔ display を指定したクラスは hidden 属性（既定の display:none）を打ち消す。
+   これが無いと「SNSへ投稿」が条件を満たさないのに出たままになる（2026-09-06 修正）。 */
+.actions[hidden]{display:none}
 .assist-flow{
   display:grid;gap:8px;margin:4px 0 14px;padding-left:2px;
   color:var(--ink-sub);font-size:12px;line-height:1.6;
@@ -4715,8 +4718,12 @@ async function deleteRelayVideo(id){
 
 async function shareVideoToSns(){
   const caption = buildSnsVideoCaption(currentWork);
-  if(!lastRecordingBlob || !caption){
-    setLog('投稿できる動画と作品情報が揃っていません。');
+  if(!lastRecordingBlob){
+    setLog('まだ動画がありません。先に「自動ナレーション付きMP4」などで保存してから押してください。');
+    return;
+  }
+  if(!caption){
+    setLog('作品情報がありません。商品登録ページの「🎬 この作品の紹介動画を作る」から開き直してください。');
     return;
   }
   const choice = await askSnsPostGate(caption);
