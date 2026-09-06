@@ -1038,7 +1038,7 @@ canvas{
           <div class="field">
             <details>
               <summary style="cursor:pointer">読み方の辞書（音声だけに効きます）</summary>
-              <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください。この端末に保存されます。</p>
+              <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください。この端末に保存されます。<strong>日本語の声のときだけ効きます</strong>（英語の声にはそのままの表記で読ませます）。</p>
               <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
               <div class="btn-row" style="margin-top:6px;gap:6px">
                 <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
@@ -5050,11 +5050,11 @@ function loadReadingDictUi(){
 }
 
 /** ナレーション。中継サーバから mp3 を受け取り、動画に載せられる波形に変換する。 */
-async function generateRelayNarrationAudio(text, voice){
-  const parts = [];
-  let sampleRate = 24000;
-  // 字幕はそのまま、読み上げだけ辞書を当てる
-  for(const chunk of splitTtsText(applyReadingRules(text), 900)){
+async function fetchRelayAudio(chunk, voice){
+  // 読み上げは何度呼んでも同じ結果になる（投稿のような副作用がない）ので、
+  // 一時的な失敗は自動でやり直す。Microsoft側は時々 502 を返す（2026-09-06 実測）。
+  let lastError = '';
+  for(let attempt = 1; attempt <= 3; attempt++){
     let response;
     try{
       response = await fetch(JP_TTS_ENDPOINT, {
@@ -5063,14 +5063,30 @@ async function generateRelayNarrationAudio(text, voice){
         body: JSON.stringify({text:chunk, voice})
       });
     }catch(error){
+      lastError = '通信エラー';
+      if(attempt < 3){ await new Promise(r => setTimeout(r, attempt * 900)); continue; }
       throw new Error('ナレーション音声の取得に失敗しました（通信エラー）。時間をおくか、「自分の声で録音」で保存してください。');
     }
-    if(!response.ok){
-      let detail = '';
-      try{ detail = (await response.json()).error || ''; }catch(_){ /* 本文なし */ }
-      throw new Error(`ナレーション音声を作れませんでした（${response.status}${detail ? '・' + detail : ''}）。「自分の声で録音」でも保存できます。`);
-    }
-    const decoded = await ensureJpDecodeContext().decodeAudioData(await response.arrayBuffer());
+    if(response.ok) return await response.arrayBuffer();
+    let detail = '';
+    try{ detail = (await response.json()).error || ''; }catch(_){ /* 本文なし */ }
+    lastError = `${response.status}${detail ? '・' + detail : ''}`;
+    // 400番台は何度やっても同じなので、その場で終わる
+    if(response.status < 500 && response.status !== 429) break;
+    if(attempt < 3) await new Promise(r => setTimeout(r, attempt * 900));
+  }
+  throw new Error(`ナレーション音声を作れませんでした（${lastError}）。「自分の声で録音」でも保存できます。`);
+}
+
+async function generateRelayNarrationAudio(text, voice){
+  const parts = [];
+  let sampleRate = 24000;
+  // 読み方の辞書は日本語の声のときだけ当てる。
+  // 英語の声にカタカナを渡すと英語なまりの棒読みになるため（2026-09-06）。
+  const spoken = /^ja-JP-/.test(String(voice || '')) ? applyReadingRules(text) : text;
+  for(const chunk of splitTtsText(spoken, 900)){
+    const buffer = await fetchRelayAudio(chunk, voice);
+    const decoded = await ensureJpDecodeContext().decodeAudioData(buffer);
     sampleRate = decoded.sampleRate;
     parts.push(new Float32Array(decoded.getChannelData(0)));
   }
