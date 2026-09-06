@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>お知らせ欄の掲載｜N's factory</title>
+<!--
+  お知らせ候補メールのボタン先（2026-09-06 新設）。sns-cancel.html と同じ方式。
+
+  ⚠ なぜ GAS を直接開かせないか:
+     スマホのブラウザは Google に複数アカウントでログイン済みのため、GAS WebApp の /exec を
+     メールから直接開くと「現在、ファイルを開くことができません」に落ちる。
+     （2026-09-06 実機で確認: 通常 Safari ×・プライベートブラウズ ○ → Cookie が原因）
+     GAS は Access-Control-Allow-Origin: * を返すため、ここから Cookie なしで fetch すれば
+     Google のログイン状態に一切左右されない。
+
+  URL: /news-approve.html?action=approve|approve_sns|cancel&token=<下書きトークン>
+  トークンは候補メールのボタンにだけ入っている。このファイルには何も秘密を書かない。
+-->
+<style>
+  :root{ --bg:#0d1b37; --gold:#c9a84c; --gold-l:#e6d28c; --text:#f3f0e8; --danger:#b91c1c; --ok:#14532d; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; padding:28px 20px 60px; background:var(--bg); color:var(--text);
+        font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+        font-size:17px; line-height:1.9; }
+  .wrap{ max-width:520px; margin:0 auto; }
+  .eyebrow{ color:var(--gold); font-size:13px; letter-spacing:.18em; margin:0 0 6px; }
+  h1{ font-size:23px; margin:0 0 20px; font-weight:600; }
+  .card{ background:rgba(255,255,255,.05); border:1px solid rgba(201,168,76,.35);
+         border-radius:12px; padding:18px; margin:0 0 22px; font-size:15px; }
+  .card dt{ color:var(--gold); font-size:12px; letter-spacing:.1em; }
+  .card dd{ margin:2px 0 12px; white-space:pre-wrap; word-break:break-word; }
+  .card dd:last-child{ margin-bottom:0; }
+  button{ display:block; width:100%; border:0; border-radius:12px; padding:20px 14px;
+          font-size:19px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .btn-main{ background:var(--gold); color:#1a1200; }
+  .btn-danger{ background:var(--danger); color:#fff; }
+  .btn-ghost{ background:transparent; color:var(--gold); border:1px solid var(--gold); margin-top:12px; }
+  button[disabled]{ opacity:.5; }
+  .result{ border-radius:12px; padding:18px; margin:0 0 18px; font-size:16px; display:none; }
+  .ok{ background:var(--ok); color:#dcfce7; }
+  .ng{ background:#4c0519; color:#ffe4e6; }
+  .note{ font-size:13px; color:#a8b0c0; }
+  a{ color:var(--gold-l); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">N'S FACTORY</p>
+  <h1 id="title">お知らせ欄の掲載</h1>
+
+  <div id="result" class="result"></div>
+
+  <dl class="card" id="target">
+    <dt>お知らせの文面</dt>
+    <dd id="text">読み込み中…</dd>
+    <dt>この画面ですること</dt>
+    <dd id="what">—</dd>
+  </dl>
+
+  <button id="go" class="btn-main" disabled>読み込み中…</button>
+  <button id="retry" class="btn-ghost" style="display:none">もう一度試す</button>
+  <p class="note" id="hint">押すとその場で実行されます。メールに「掲載」「告知」「不要」と返信しても同じことができます。</p>
+</div>
+
+<script>
+(function () {
+  var GAS = 'https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec';
+  var SITE = 'https://you0810jmsdf.github.io/ns-factory/';
+  var ACTIONS = {
+    approve:     { title: 'お知らせ欄に掲載', what: 'サイトのお知らせ欄に載せる', btn: '掲載する', cls: 'btn-main' },
+    approve_sns: { title: '掲載 ＋ Threads告知', what: 'サイトに載せて、Threads にも投稿する', btn: '掲載してThreadsで告知する', cls: 'btn-main' },
+    cancel:      { title: 'この候補を破棄', what: 'サイトには載せない（下書きを消す）', btn: '不要（載せない）', cls: 'btn-danger' }
+  };
+  var q = new URLSearchParams(location.search);
+  var action = (q.get('action') || '').trim();
+  var token = (q.get('token') || '').trim();
+  var el = function (id) { return document.getElementById(id); };
+  var elText = el('text'), elWhat = el('what'), elResult = el('result'),
+      elGo = el('go'), elRetry = el('retry'), elHint = el('hint'), elTitle = el('title');
+  var spec = ACTIONS[action];
+
+  function show(kind, html) {
+    elResult.className = 'result ' + kind;
+    elResult.innerHTML = html;
+    elResult.style.display = 'block';
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  // GAS は間欠的に HTML（404 等）を返すので、本文先頭が '<' なら最大3回まで再送する（読み取り系のみ）。
+  function gasJson(url, retries) {
+    return fetch(url, { method: 'GET', cache: 'no-store', credentials: 'omit' })
+      .then(function (r) { return r.text(); })
+      .then(function (t) {
+        if (t.charAt(0) === '<') {
+          if (retries > 0) return new Promise(function (res) { setTimeout(res, 1500); })
+                                  .then(function () { return gasJson(url, retries - 1); });
+          throw new Error('Google側から画面が返りました（一時的な不調）。少し待ってもう一度お試しください。');
+        }
+        try { return JSON.parse(t); }
+        catch (e) { throw new Error('応答を解釈できません: ' + t.slice(0, 120)); }
+      });
+  }
+
+  if (!spec || !token) {
+    elText.textContent = '—';
+    elGo.style.display = 'none';
+    elHint.style.display = 'none';
+    show('ng', '<b>操作の情報がURLに含まれていません。</b><br>候補メールのボタンから開き直してください。' +
+      'それでも駄目な場合は、候補メールに「掲載」または「不要」と返信すれば同じことができます。');
+    return;
+  }
+
+  elTitle.textContent = spec.title;
+  elWhat.textContent = spec.what;
+  elGo.className = spec.cls;
+
+  // 1. 下書きの中身を表示（何が載るかを見てから押せるように）
+  gasJson(GAS + '?action=draft_peek&format=json&token=' + encodeURIComponent(token), 3)
+    .then(function (d) {
+      if (!d.ok) {
+        elText.textContent = '—';
+        elGo.style.display = 'none';
+        elHint.style.display = 'none';
+        show('ng', '<b>' + esc(d.message || '下書きが見つかりません') + '</b><br>' +
+          '<span class="note">すでに掲載・破棄済みか、期限切れです。' +
+          '<a href="' + SITE + '">サイトのお知らせ欄</a>を確認してください。</span>');
+        return;
+      }
+      elText.textContent = d.text;
+      elGo.disabled = false;
+      elGo.textContent = spec.btn;
+    })
+    .catch(function (err) {
+      elText.textContent = '（文面を読み込めませんでした: ' + String(err.message || err) + '）';
+      elGo.disabled = false;              // 文面が読めなくても操作自体はできる
+      elGo.textContent = spec.btn;
+    });
+
+  // 2. 実行（書き込み系は再送しない。二重掲載を防ぐため）
+  function run() {
+    elGo.disabled = true;
+    elRetry.style.display = 'none';
+    elGo.textContent = '実行しています…';
+    var url = GAS + '?action=' + encodeURIComponent(action) + '&format=json&token=' + encodeURIComponent(token);
+    gasJson(url, 0)
+      .then(function (d) {
+        elGo.style.display = 'none';
+        elHint.style.display = 'none';
+        if (d.ok && d.kind === 'cancel') {
+          show('ok', '<b>破棄しました。</b><br>このお知らせは掲載しません。');
+        } else if (d.ok) {
+          show('ok', '<b>✅ サイトのお知らせ欄に反映しました。</b><br>数分でサイトに表示されます。' +
+            (d.note ? '<br>' + esc(d.note) : '') +
+            '<br><a href="' + SITE + '">サイトで確認する →</a>');
+        } else if (d.error === 'not_found') {
+          show('ng', '<b>' + esc(d.message) + '</b><br><span class="note">すでに処理済みの可能性があります。</span>');
+        } else {
+          elGo.style.display = 'block';
+          elGo.disabled = false;
+          elGo.textContent = spec.btn;
+          elRetry.style.display = 'block';
+          show('ng', '<b>実行できませんでした。</b><br>' + esc(d.message || d.error || '不明なエラー') +
+            '<br><span class="note">下書きは残っています。もう一度押すか、メールに「掲載」と返信してください。</span>');
+        }
+      })
+      .catch(function (err) {
+        elGo.disabled = false;
+        elGo.textContent = spec.btn;
+        elRetry.style.display = 'block';
+        show('ng', '<b>通信に失敗しました。</b><br>' + esc(err.message || err) +
+          '<br><span class="note">⚠ 掲載は完了している場合があります。押し直す前に' +
+          '<a href="' + SITE + '">サイトのお知らせ欄</a>を確認してください（二重掲載防止）。' +
+          '確認が面倒なら、メールに「掲載」と返信する方が安全です（処理済みなら自動で弾きます）。</span>');
+      });
+  }
+
+  elGo.addEventListener('click', run);
+  elRetry.addEventListener('click', run);
+})();
+</script>
+</body>
+</html>
