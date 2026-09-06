@@ -6063,38 +6063,71 @@ function trimSubtitle(text){
   return String(text || '').replace(/\s+/g, ' ').trim();
 }
 
+/* ══ 字幕の折り返し（2026-09-06 作り直し）══
+   以前は「文中に半角スペースが1つでもあればスペースだけで区切る」実装だったため、
+   日本語の文でも商品名（Linea Vasca Box Nero）の空白で改行され、
+   「Box」と「Nero」が別行に割れたり、1行だけ極端に短くなったりしていた。
+
+   いまは次の3点で組む:
+   - 英数字の連なりは1かたまり扱い（商品名・型番を途中で切らない）
+   - まず最大幅で行数を決め、その行数のまま幅を詰めて各行の長さを揃える
+   - 行頭に句読点・閉じ括弧が来たら前の行へ送る（禁則） */
+const SUBTITLE_HEAD_NG = /^[、。，．・…！？!?」』）\)\]｝】〕》〉”’ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮー]/;
+
+function subtitleTokens(source){
+  // 英数字（アポストロフィ・小数点・ハイフンを含む）はまとめ、それ以外は1文字ずつ
+  return String(source).match(/[A-Za-z0-9][A-Za-z0-9'’.\-]*|\s+|[^\s]/g) || [];
+}
+
+function packSubtitleTokens(tokens, width){
+  const lines = [];
+  let line = '';
+  const flush = () => { if(line.trim()) lines.push(line.trimEnd()); line = ''; };
+  for(const raw of tokens){
+    if(/^\s+$/.test(raw)){ if(line) line += ' '; continue; }
+    // 1かたまりで入りきらないときだけ文字で割る
+    if(ctx.measureText(raw).width > width){
+      for(const ch of raw){
+        const trial = line + ch;
+        if(ctx.measureText(trial).width > width && line.trim()){ flush(); line = ch; }
+        else line = trial;
+      }
+      continue;
+    }
+    const next = line ? line + raw : raw;
+    if(ctx.measureText(next).width <= width || !line.trim()) line = next;
+    else { flush(); line = raw; }
+  }
+  flush();
+  return lines;
+}
+
+function applySubtitleKinsoku(lines){
+  for(let i = 1; i < lines.length; i++){
+    let guard = 0;
+    while(lines[i] && SUBTITLE_HEAD_NG.test(lines[i]) && guard++ < 4){
+      lines[i - 1] += lines[i][0];
+      lines[i] = lines[i].slice(1);
+    }
+  }
+  return lines.filter(line => line && line.trim());
+}
+
 function wrapSubtitleLines(text,maxWidth){
   const source = trimSubtitle(text);
   if(!source) return [];
-  const tokens = /\s/.test(source)
-    ? source.split(/(\s+)/).filter(Boolean)
-    : [...source];
-  const lines = [];
-  let line = '';
-  for(const token of tokens){
-    const compactToken = token.replace(/\s+/g, ' ');
-    const next = line ? line + compactToken : compactToken.trimStart();
-    if(ctx.measureText(next).width <= maxWidth || !line){
-      if(!line && ctx.measureText(next).width > maxWidth && compactToken.length > 1){
-        for(const ch of [...compactToken.trimStart()]){
-          const trial = line + ch;
-          if(ctx.measureText(trial).width > maxWidth && line){
-            lines.push(line);
-            line = ch;
-          }else{
-            line = trial;
-          }
-        }
-        continue;
-      }
-      line = next;
-      continue;
-    }
-    lines.push(line.trimEnd());
-    line = compactToken.trimStart();
+  const tokens = subtitleTokens(source);
+  const packed = packSubtitleTokens(tokens, maxWidth);
+  if(packed.length <= 1) return applySubtitleKinsoku(packed);
+
+  // 行数を増やさない範囲で幅を詰め、各行の長さを揃える
+  let best = packed;
+  for(let ratio = 0.98; ratio >= 0.6; ratio -= 0.04){
+    const trial = packSubtitleTokens(tokens, maxWidth * ratio);
+    if(trial.length > packed.length) break;
+    best = trial;
   }
-  if(line) lines.push(line.trimEnd());
-  return lines;
+  return applySubtitleKinsoku(best);
 }
 
 function splitFeatureNotes(text){
