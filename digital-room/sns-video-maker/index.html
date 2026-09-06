@@ -588,6 +588,28 @@ canvas{
   </div>
 </dialog>
 
+<!-- SNSへ投稿する前の確認（2026-09-06）。押した瞬間に公開されないよう、必ずここを挟む。 -->
+<dialog class="export-gate" id="snsPostGate" aria-labelledby="snsPostGateTitle">
+  <div class="export-gate-body">
+    <h2 id="snsPostGateTitle">SNSへ投稿する前の確認</h2>
+    <p class="export-gate-lead"><strong>実行すると、この動画と文章がそのまま公開されます。</strong>取り消しは各SNSのアプリから行ってください。</p>
+    <ul class="export-gate-list" id="snsPostSummary"></ul>
+    <p class="help" style="margin:.6rem 0 .2rem">投稿する文章</p>
+    <pre id="snsPostCaption" style="white-space:pre-wrap;max-height:9rem;overflow:auto;padding:.6rem .7rem;border-radius:.5rem;background:rgba(0,0,0,.25);font-size:.86rem;line-height:1.5"></pre>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.7rem 0 .2rem">
+      <label><input type="checkbox" id="snsPostThreads" checked> Threadsへ投稿</label>
+      <label><input type="checkbox" id="snsPostInstagram" checked> Instagramへリール投稿</label>
+    </div>
+    <p class="help">Instagramは本文にURLを載せない運用のため、URLの行を除いて投稿します。</p>
+    <label for="snsPostPass" class="help" style="display:block;margin-top:.5rem">投稿用の合言葉</label>
+    <input type="password" id="snsPostPass" autocomplete="current-password" placeholder="SNS投稿用の合言葉">
+    <div class="export-gate-actions">
+      <button class="secondary" id="snsPostCancel" type="button">やめる</button>
+      <button class="primary" id="snsPostConfirm" type="button">この内容で投稿する</button>
+    </div>
+  </div>
+</dialog>
+
 <main class="app">
   <section class="hero">
     <h1>作品写真から、SNS用の縦型動画をつくる</h1>
@@ -1161,7 +1183,15 @@ const els = {
   exportGate: document.getElementById('exportGate'),
   exportGateList: document.getElementById('exportGateList'),
   exportGateBack: document.getElementById('exportGateBack'),
-  exportGateConfirm: document.getElementById('exportGateConfirm')
+  exportGateConfirm: document.getElementById('exportGateConfirm'),
+  snsPostGate: document.getElementById('snsPostGate'),
+  snsPostSummary: document.getElementById('snsPostSummary'),
+  snsPostCaption: document.getElementById('snsPostCaption'),
+  snsPostThreads: document.getElementById('snsPostThreads'),
+  snsPostInstagram: document.getElementById('snsPostInstagram'),
+  snsPostPass: document.getElementById('snsPostPass'),
+  snsPostConfirm: document.getElementById('snsPostConfirm'),
+  snsPostCancel: document.getElementById('snsPostCancel')
 };
 let slides = [];
 let selected = -1;
@@ -4576,36 +4606,122 @@ function updateShareToSnsUi(){
   els.shareToSnsBox.hidden = !ready;
 }
 
+/* ══ SNSへ投稿（2026-09-06 改修）══
+   以前はOSの共有シートを開くだけだった。スマホでは投稿先アプリへ渡せるが、
+   PCの共有シートにはThreads/Instagramが出ないため行き止まりになっていた。
+   いまは動画を中継サーバへ一時的に置き（1時間で自動失効）、そのURLをGASへ渡して
+   Threads / Instagramリールへ実際に投稿する。投稿の成否にかかわらず一時ファイルは消す。
+
+   ⛔ 押した瞬間に公開されないよう、必ず確認ダイアログ（snsPostGate）を挟むこと。
+   ⛔ 投稿にはGAS側の合言葉が要る（サイトの管理者ゲートとは別の合言葉）。 */
+const SNS_POST_GAS_URL = 'https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec';
+const SNS_VIDEO_RELAY = 'https://nsfactory-tts-relay.bouncy-xenoposeidon.workers.dev';
+const SNS_VIDEO_MAX_BYTES = 24 * 1024 * 1024;
+
+let snsPostGateResolve = null;
+
+function askSnsPostGate(caption){
+  const format = currentVideoFormat();
+  const sizeMb = lastRecordingBlob.size / 1048576;
+  const tooBig = lastRecordingBlob.size > SNS_VIDEO_MAX_BYTES;
+  const checks = [
+    {warn:false, text:`作品: ${currentWork.name || currentWork.id}（${currentWork.id}）`},
+    {warn:tooBig, text:`動画: ${sizeMb.toFixed(1)}MB・${format.w}×${format.h}${tooBig ? '（大きすぎます。上限24MB）' : ''}`},
+    {warn:false, text:'投稿後、一時的に置いた動画は削除します'}
+  ];
+  els.snsPostSummary.innerHTML = checks
+    .map(check => `<li class="${check.warn ? 'warn' : ''}"><strong>${check.warn ? '要確認' : 'OK'}</strong>　${escapeHtml(check.text)}</li>`)
+    .join('');
+  els.snsPostCaption.textContent = caption;
+  els.snsPostPass.value = sessionStorage.getItem('nsf_sns_pass') || '';
+  els.snsPostConfirm.disabled = tooBig;
+  els.snsPostConfirm.textContent = tooBig ? '動画を短くしてください' : 'この内容で投稿する';
+  if(typeof els.snsPostGate.showModal !== 'function'){
+    return Promise.resolve(null);
+  }
+  if(els.snsPostGate.open) els.snsPostGate.close();
+  els.snsPostGate.showModal();
+  return new Promise(resolve => { snsPostGateResolve = resolve; });
+}
+
+function closeSnsPostGate(confirmed){
+  if(els.snsPostGate.open) els.snsPostGate.close();
+  if(!snsPostGateResolve) return;
+  const resolve = snsPostGateResolve;
+  snsPostGateResolve = null;
+  if(!confirmed) return resolve(null);
+  const pass = String(els.snsPostPass.value || '').trim();
+  try{ sessionStorage.setItem('nsf_sns_pass', pass); }catch(_){}
+  resolve({
+    threads: !!(els.snsPostThreads && els.snsPostThreads.checked),
+    instagram: !!(els.snsPostInstagram && els.snsPostInstagram.checked),
+    pass
+  });
+}
+
+async function deleteRelayVideo(id){
+  if(!id) return;
+  try{
+    await fetch(`${SNS_VIDEO_RELAY}/video/${id}`, {method:'DELETE'});
+  }catch(_){ /* 消せなくても1時間で自動的に消える */ }
+}
+
 async function shareVideoToSns(){
   const caption = buildSnsVideoCaption(currentWork);
   if(!lastRecordingBlob || !caption){
     setLog('投稿できる動画と作品情報が揃っていません。');
     return;
   }
-  // まずキャプションをクリップボードへ（共有先アプリが本文を受け取らない場合の保険）
-  let copied = false;
+  const choice = await askSnsPostGate(caption);
+  if(!choice){ setLog('投稿をやめました。'); return; }
+  if(!choice.threads && !choice.instagram){ setLog('投稿先が選ばれていません。'); return; }
+  if(!choice.pass){ setLog('投稿用の合言葉が入力されていません。'); return; }
+
+  const button = els.shareToSns;
+  const originalLabel = button ? button.textContent : '';
+  if(button){ button.disabled = true; button.textContent = '投稿中…'; }
+
+  let uploadedId = '';
   try{
-    await navigator.clipboard.writeText(caption);
-    copied = true;
-  }catch(_){}
-  const ext = (lastRecordingMeta && lastRecordingMeta.ext) || 'mp4';
-  const file = new File([lastRecordingBlob], `${safeFileName(currentWork.id)}.${ext}`,
-                       {type: lastRecordingBlob.type || 'video/mp4'});
-  if(navigator.canShare && navigator.canShare({files:[file]})){
-    try{
-      await navigator.share({files:[file], text: caption});
-      setLog(copied
-        ? '共有シートを開きました。キャプションはコピー済みなので、投稿画面で貼り付けられます。'
-        : '共有シートを開きました。');
+    setLog('動画を投稿用に一時アップロードしています…');
+    const upRes = await fetch(`${SNS_VIDEO_RELAY}/video/upload`, {
+      method:'POST',
+      headers:{'Content-Type': lastRecordingBlob.type || 'video/mp4'},
+      body: lastRecordingBlob
+    });
+    const upJson = await upRes.json().catch(() => ({}));
+    if(!upRes.ok || !upJson.url) throw new Error(upJson.error || `一時アップロードに失敗しました（${upRes.status}）`);
+    uploadedId = upJson.id;
+
+    setLog('SNSへ投稿しています。動画の変換に時間がかかるため、最長で3分ほどかかります…');
+    const postRes = await fetch(SNS_POST_GAS_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({
+        action:'video_post',
+        pass: choice.pass,
+        videoUrl: upJson.url,
+        caption,
+        threads: choice.threads,
+        instagram: choice.instagram
+      }),
+      credentials:'omit'
+    });
+    const result = await postRes.json().catch(() => ({ok:false, error:'応答を読み取れませんでした。'}));
+    if(result.error && !result.results){
+      setLog(`⛔ 投稿できませんでした（${result.error}）。動画は保存済みなので、SNSアプリから手で投稿することもできます。`);
       return;
-    }catch(err){
-      if(err && err.name === 'AbortError'){ setLog('共有をキャンセルしました。'); return; }
     }
+    const lines = (result.results || []).map(r => r.ok
+      ? `✅ ${r.platform === 'threads' ? 'Threads' : 'Instagram'}へ投稿しました（ID: ${r.id}）`
+      : `⛔ ${r.platform === 'threads' ? 'Threads' : 'Instagram'}は失敗（${r.error}）`);
+    setLog(lines.join(' / ') || '投稿結果を受け取れませんでした。');
+  }catch(err){
+    setLog(`⛔ 投稿に失敗しました（${err && err.message ? err.message : err}）。動画は保存済みなので、SNSアプリから手で投稿することもできます。`);
+  }finally{
+    await deleteRelayVideo(uploadedId);
+    if(button){ button.disabled = false; button.textContent = originalLabel; }
   }
-  // 共有シート非対応（PC等）: キャプションコピー＋ダウンロード案内
-  setLog(copied
-    ? 'この端末は動画の直接共有に対応していないため、キャプションだけコピーしました。上の「完成動画をダウンロード」で保存した動画と一緒にSNSアプリへ貼り付けてください。'
-    : 'この端末では共有もコピーもできませんでした。動画をダウンロードし、作品集ページのキャプションコピーをご利用ください。');
 }
 
 function finishRecordingBlob(blob, format, message){
@@ -6464,6 +6580,9 @@ els.targetDuration.addEventListener('change', updateStorySummary);
 els.exportGateBack.addEventListener('click', () => closeExportGate(false));
 els.exportGateConfirm.addEventListener('click', () => closeExportGate(true));
 els.exportGate.addEventListener('cancel', event => { event.preventDefault(); closeExportGate(false); });
+els.snsPostCancel.addEventListener('click', () => closeSnsPostGate(false));
+els.snsPostConfirm.addEventListener('click', () => closeSnsPostGate(true));
+els.snsPostGate.addEventListener('cancel', event => { event.preventDefault(); closeSnsPostGate(false); });
 els.productNamePreset.addEventListener('change', applyProductNamePreset);
 document.getElementById('fillDefaults').addEventListener('click', fillDefaults);
 document.getElementById('playPreview').addEventListener('click', playPreviewWithoutVoice);
