@@ -5239,11 +5239,35 @@ async function encodeGeneratedAudio(track){
   return chunks;
 }
 
+/* ══ 書き出しの画質（2026-09-06）══
+   SNSへ投稿できるのは24MBまで。3.2Mbps固定だと約48秒で超えてしまうため、
+   尺から逆算して目標サイズ（18MB）に収まる画質にする。
+   短い動画は今までどおり3.2Mbps。下限を割るほど長い動画は、
+   確認ダイアログ側で秒数の短縮を促す。 */
+const VIDEO_BITRATE_MAX = 3200000;
+const VIDEO_BITRATE_MIN = 1200000;
+const VIDEO_TARGET_BYTES = 18 * 1024 * 1024;
+const AUDIO_BITRATE = 128000;
+
+function plannedVideoBitrate(){
+  const seconds = totalDuration();
+  if(!(seconds > 0)) return VIDEO_BITRATE_MAX;
+  const budget = (VIDEO_TARGET_BYTES * 8) / seconds - AUDIO_BITRATE;
+  return Math.round(clamp(budget, VIDEO_BITRATE_MIN, VIDEO_BITRATE_MAX));
+}
+
+/** 下限の画質でも収まらない長さかどうか（秒数を短くするしかない状態） */
+function videoTooLongForSns(){
+  const seconds = totalDuration();
+  if(!(seconds > 0)) return false;
+  return (VIDEO_BITRATE_MIN + AUDIO_BITRATE) * seconds / 8 > VIDEO_TARGET_BYTES;
+}
+
 async function selectMp4VideoConfig(frameRate, hardwareAcceleration = 'prefer-hardware'){
   const base = {
     width: canvas.width,
     height: canvas.height,
-    bitrate: 3200000,
+    bitrate: plannedVideoBitrate(),
     framerate: frameRate,
     hardwareAcceleration,
     avc: {format:'avc'}
@@ -5641,7 +5665,8 @@ function requestExportGate(mode){
     {warn:false, text:`出力サイズ: ${currentVideoFormat().label}（${currentVideoFormat().w}×${currentVideoFormat().h}）`},
     {warn:emptyNarration > 0, text:`セリフ: ${emptyNarration ? `${emptyNarration}枚が空欄` : '全コマ入力済み'}`},
     {warn:!previewReviewed, text:`プレビュー: ${previewReviewed ? '確認済み' : '未確認（先に確認推奨）'}`},
-    {warn:false, text:`出力: ${narrationMode ? `${narrationVoiceLabel}AIナレーション付きMP4` : (mode === 'mic' ? '自分の声付きMP4' : '動画のみMP4')}`}
+    {warn:false, text:`出力: ${narrationMode ? `${narrationVoiceLabel}AIナレーション付きMP4` : (mode === 'mic' ? '自分の声付きMP4' : '動画のみMP4')}`},
+    {warn:videoTooLongForSns(), text:`画質と大きさ: ${(plannedVideoBitrate() / 1000000).toFixed(1)}Mbps・約${formatMb((plannedVideoBitrate() + AUDIO_BITRATE) * duration / 8)}MB${videoTooLongForSns() ? '（SNSへ投稿するには長すぎます。「Drive用に秒数を短縮」で短くしてください）' : ''}`}
   ];
   els.exportGateList.innerHTML = checks
     .map(check => `<li class="${check.warn ? 'warn' : ''}"><strong>${check.warn ? '要確認' : 'OK'}</strong>　${escapeHtml(check.text)}</li>`)
