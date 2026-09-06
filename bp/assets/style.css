@@ -1,0 +1,170 @@
+/* 血圧手帳 — スタイル
+   元デザイン（Artifact版 blood-pressure-app.jsx）の配色をそのまま踏襲している。
+   ⛔ 配色を変えるときは、ゾーン色（良好=緑／やや高め=黄土／高め=赤）の意味が
+      壊れないか確認すること。数値の読み取りに直結する。 */
+
+:root {
+  --ink: #1F2A44;
+  --ink-sub: #5A6478;
+  --ink-mute: #7A8499;
+  --line: #E2E7EE;
+  --line-soft: #EDF0F4;
+  --border-in: #C6CEDB;
+  --bg: #F4F6F8;
+  --good: #2E7D5B;
+  --warn: #A87616;
+  --high: #C0442E;
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--ink);
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+}
+
+/* ---------- ヘッダー ---------- */
+.bp-head { background: var(--ink); color: var(--bg); padding: 18px 20px 14px; }
+.bp-head h1 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: .08em; }
+.bp-head .sub { font-size: 11px; color: #9AA6BD; margin-top: 3px; }
+.streak {
+  display: inline-block; margin-top: 8px; font-size: 12px; background: #2C3A5C;
+  border-radius: 4px; padding: 3px 10px; color: #D8DFEC;
+}
+.streak b { color: #fff; font-size: 14px; }
+
+/* ---------- 最新値 ---------- */
+.hero {
+  margin: 14px 16px 0; background: #fff; border: 1px solid var(--line);
+  border-left: 4px solid var(--border-in); border-radius: 6px; padding: 14px 16px;
+}
+.hero .zlabel { font-size: 12px; font-weight: 700; color: var(--ink-sub); }
+.hero .nums { font-size: 34px; font-weight: 700; letter-spacing: .02em; margin: 2px 0; }
+.hero .nums small { font-size: 14px; font-weight: 500; color: var(--ink-sub); }
+.hero .meta { font-size: 12px; color: var(--ink-sub); }
+.hero.z-good { border-left-color: var(--good); }
+.hero.z-good .zlabel { color: var(--good); }
+.hero.z-warn { border-left-color: var(--warn); }
+.hero.z-warn .zlabel { color: var(--warn); }
+.hero.z-high { border-left-color: var(--high); }
+.hero.z-high .zlabel { color: var(--high); }
+
+/* ---------- カード ---------- */
+.card {
+  background: #fff; border: 1px solid var(--line); border-radius: 6px;
+  margin: 14px 16px; padding: 16px;
+}
+.card h2 { font-size: 14px; margin: 0 0 12px; letter-spacing: .05em; }
+
+/* ---------- 入力 ---------- */
+.inrow { display: flex; gap: 10px; }
+.field { flex: 1; }
+.field label { font-size: 11px; color: var(--ink-sub); display: block; margin-bottom: 4px; }
+.field input {
+  width: 100%; box-sizing: border-box; font-size: 22px; font-weight: 700; text-align: center;
+  padding: 10px 4px; border: 1px solid var(--border-in); border-radius: 6px;
+  font-family: inherit; color: var(--ink); background: #fff;
+}
+.field input:focus { outline: 2px solid var(--ink); border-color: var(--ink); }
+.datein {
+  font-size: 14px; padding: 8px; border: 1px solid var(--border-in); border-radius: 6px;
+  font-family: inherit; color: var(--ink); background: #fff;
+}
+.daterow { display: flex; gap: 10px; margin-bottom: 12px; }
+
+.seg { display: flex; border: 1px solid var(--border-in); border-radius: 6px; overflow: hidden; margin: 12px 0; }
+.seg button {
+  flex: 1; padding: 10px; border: none; background: #fff; font-size: 14px;
+  font-family: inherit; color: var(--ink-sub); cursor: pointer;
+}
+.seg button.on { background: var(--ink); color: #fff; font-weight: 700; }
+
+.tagrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
+.tag {
+  font-size: 12px; padding: 6px 12px; border-radius: 100px; border: 1px solid var(--border-in);
+  background: #fff; color: var(--ink-sub); font-family: inherit; cursor: pointer;
+}
+.tag.on { background: #EAF0FA; border-color: var(--ink); color: var(--ink); font-weight: 700; }
+
+.memo-label { font-size: 11px; color: var(--ink-sub); }
+.memo-wrap { margin-top: 14px; }
+
+.savebtn {
+  width: 100%; padding: 14px; font-size: 16px; font-weight: 700; color: #fff;
+  background: var(--ink); border: none; border-radius: 6px; font-family: inherit; cursor: pointer;
+}
+.savebtn:active { background: #2C3A5C; }
+.flash { text-align: center; color: var(--good); font-size: 13px; font-weight: 700; margin-top: 8px; }
+.error { text-align: center; color: var(--high); font-size: 13px; font-weight: 700; margin-top: 8px; }
+
+.ghost {
+  width: 100%; padding: 10px; font-size: 13px; color: var(--ink-sub); background: none;
+  border: 1px dashed var(--border-in); border-radius: 6px; font-family: inherit;
+  cursor: pointer; margin-top: 8px;
+}
+
+/* ---------- 記録一覧 ---------- */
+.ledger { border-top: 1px solid var(--line-soft); }
+.lrow {
+  display: flex; align-items: center; gap: 10px; padding: 9px 2px;
+  border-bottom: 1px solid var(--line-soft); font-size: 14px;
+}
+.lrow .d { width: 74px; color: var(--ink-sub); font-size: 12px; }
+.lrow .t { width: 22px; font-size: 11px; color: var(--ink-mute); }
+.lrow .v { flex: 1; font-weight: 700; }
+.lrow .v small { font-weight: 400; color: var(--ink-mute); margin-left: 6px; font-size: 11px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.del { border: none; background: none; color: var(--border-in); font-size: 16px; cursor: pointer; padding: 2px 6px; }
+
+/* ---------- 気づき ---------- */
+.insight { display: flex; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--line-soft); align-items: flex-start; }
+.insight .ic {
+  flex: none; width: 30px; height: 30px; border-radius: 6px; display: flex;
+  align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff;
+}
+.insight .ic.good { background: var(--good); }
+.insight .ic.watch { background: var(--warn); }
+.insight p { margin: 3px 0 0; font-size: 13.5px; line-height: 1.65; }
+
+/* ---------- レポート ---------- */
+.repline { display: flex; justify-content: space-between; padding: 9px 2px; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+.repline b { font-size: 15px; }
+
+/* ---------- グラフ ---------- */
+.rangeseg { display: flex; gap: 6px; margin-bottom: 8px; }
+.rangeseg button {
+  font-size: 12px; padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border-in);
+  background: #fff; color: var(--ink-sub); font-family: inherit; cursor: pointer;
+}
+.rangeseg button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chart-wrap { width: 100%; }
+.chart-wrap svg { display: block; width: 100%; height: auto; }
+
+/* ---------- 共通 ---------- */
+.note { font-size: 11px; color: var(--ink-mute); line-height: 1.7; margin: 10px 16px 0; }
+.note.in-card { margin: 10px 0 0; }
+.note a { color: var(--ink-sub); }
+.empty { text-align: center; color: var(--ink-mute); font-size: 13px; line-height: 1.8; padding: 24px 0 8px; }
+
+/* ---------- タブ ---------- */
+.tabs {
+  position: fixed; bottom: 0; left: 0; right: 0; max-width: 460px; margin: 0 auto;
+  display: flex; background: #fff; border-top: 1px solid var(--line); z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tabs button {
+  flex: 1; padding: 12px 0 14px; border: none; background: none; font-size: 12px;
+  color: var(--ink-mute); font-family: inherit; cursor: pointer;
+}
+.tabs button.on { color: var(--ink); font-weight: 700; border-top: 2px solid var(--ink); margin-top: -1px; }
+
+[hidden] { display: none !important; }

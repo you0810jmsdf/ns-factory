@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!--
+    血圧は医療情報にあたるため、外部への通信経路を持たない設計にしている。
+    ⛔ connect-src 'none' を緩めないこと。緩めた瞬間、記録が外へ出る経路ができる。
+    ⛔ 外部スクリプト（CDN・解析タグを含む）を足さないこと。script-src は 'self' のみ。
+       もし将来どうしても通信が必要になったら、下の「保存先」の説明文も必ず同時に直すこと。
+  -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="robots" content="noindex, nofollow">
+  <title>血圧手帳</title>
+  <meta name="description" content="朝と夜の血圧を記録して、推移と生活習慣との関係を自分で確かめるための手帳。記録は端末内にのみ保存されます。">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="血圧手帳">
+  <meta name="theme-color" content="#1F2A44">
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+
+  <header class="bp-head">
+    <h1>血圧手帳</h1>
+    <div class="sub">記録するほど、自分のからだが読めてくる</div>
+    <span class="streak" id="streak" hidden>連続記録 <b id="streak-days">0</b> 日</span>
+  </header>
+
+  <!-- 最新の記録 -->
+  <div class="hero" id="hero" hidden>
+    <div class="zlabel" id="hero-zone"></div>
+    <div class="nums"><span id="hero-nums"></span> <small id="hero-unit"></small></div>
+    <div class="meta" id="hero-meta"></div>
+  </div>
+
+  <main>
+
+    <!-- ========== 記録 ========== -->
+    <section class="card" id="tab-record">
+      <h2>今日の記録</h2>
+
+      <div class="daterow">
+        <input class="datein" type="date" id="in-date" aria-label="記録する日付">
+      </div>
+
+      <div class="seg" role="group" aria-label="時間帯">
+        <button type="button" id="seg-am">朝</button>
+        <button type="button" id="seg-pm">夜</button>
+      </div>
+
+      <div class="inrow">
+        <div class="field">
+          <label for="in-sys">上（収縮期）</label>
+          <input type="number" inputmode="numeric" id="in-sys" placeholder="128">
+        </div>
+        <div class="field">
+          <label for="in-dia">下（拡張期）</label>
+          <input type="number" inputmode="numeric" id="in-dia" placeholder="82">
+        </div>
+        <div class="field">
+          <label for="in-pulse">脈拍</label>
+          <input type="number" inputmode="numeric" id="in-pulse" placeholder="70">
+        </div>
+      </div>
+
+      <div class="memo-wrap">
+        <span class="memo-label">きょうのメモ（あとで血圧との関係が見えてきます）</span>
+        <div class="tagrow" id="tagrow"></div>
+      </div>
+
+      <button type="button" class="savebtn" id="save">記録する</button>
+      <div class="flash" id="save-flash" hidden></div>
+      <div class="error" id="save-error" hidden></div>
+
+      <div id="record-empty" hidden>
+        <div class="empty">まだ記録がありません。<br>まず1件、今日の血圧を書き込んでみましょう。</div>
+        <button type="button" class="ghost" id="load-sample">サンプルデータで機能を試す（28日分）</button>
+      </div>
+
+      <div id="recent" hidden style="margin-top:18px;">
+        <h2>最近の記録</h2>
+        <div class="ledger" id="ledger"></div>
+        <button type="button" class="ghost" id="clear-all">すべての記録を削除</button>
+      </div>
+    </section>
+
+    <!-- ========== グラフ ========== -->
+    <section class="card" id="tab-chart" hidden>
+      <h2>推移グラフ（上の血圧）</h2>
+      <div class="rangeseg">
+        <button type="button" id="range-14" class="on">直近14日</button>
+        <button type="button" id="range-30">直近30日</button>
+      </div>
+      <div class="empty" id="chart-empty" hidden>グラフには2日分以上の記録が必要です。</div>
+      <div class="chart-wrap" id="chart"></div>
+      <div class="note in-card" id="chart-pick" hidden></div>
+      <div class="note in-card">濃い線＝朝、薄い線＝夜。点線（135）を下回る日が増えていくのが目標の目安です。点をタップすると値が出ます。</div>
+    </section>
+
+    <!-- ========== 気づき ========== -->
+    <section class="card" id="tab-insight" hidden>
+      <h2>記録から見えてきたこと</h2>
+      <div class="empty" id="insight-empty" hidden>記録が数日分たまると、<br>ここに「気づき」が自動で現れます。<br>（週ごとの変化、朝晩の差、生活習慣との関係など）</div>
+      <div id="insight-list"></div>
+    </section>
+
+    <!-- ========== レポート ========== -->
+    <section class="card" id="tab-report" hidden>
+      <h2>診察用サマリー（直近28日）</h2>
+      <div class="empty" id="report-empty" hidden>記録がたまると、そのまま医師に見せられるサマリーがここにできます。</div>
+      <div id="report-body" hidden>
+        <div class="repline"><span>記録日数</span><b id="rep-days"></b></div>
+        <div class="repline"><span>全体平均</span><b id="rep-all"></b></div>
+        <div class="repline"><span>朝の平均</span><b id="rep-am"></b></div>
+        <div class="repline"><span>夜の平均</span><b id="rep-pm"></b></div>
+        <div class="repline"><span>最高値（上）</span><b id="rep-max"></b></div>
+        <div class="repline"><span>最低値（上）</span><b id="rep-min"></b></div>
+        <div class="repline"><span>135/85以上だった日</span><b id="rep-high"></b></div>
+        <div class="note in-card">
+          診察のとき、この画面をそのまま見せるだけで家庭血圧の状況が伝わります。家庭血圧の平均は診察室の測定より診断の参考にされやすい値です。
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="note">このアプリは記録の補助であり、診断は行いません。数値が気になるときは医療機関にご相談ください。</div>
+
+  <div class="note">
+    <b>保存先について：</b>記録はこの端末のブラウザの中だけに保存され、どこにも送信されません。
+    そのため、別の端末やブラウザからは同じ記録を見られません。
+    ブラウザの履歴・サイトデータを消すと記録も消えます。
+  </div>
+
+  <!-- ⛔ この案内は消さないこと。個人開発のため利用者の報告が唯一の不具合検知手段（デジタル幕僚室共通ルール）。 -->
+  <div class="note">
+    無料でお使いください（無保証）。データは端末内にのみ保存されます。<br>
+    不具合・ご要望は <a href="../links.html">こちらの連絡先</a> へお知らせください。
+  </div>
+
+  <nav class="tabs" aria-label="画面切り替え">
+    <button type="button" id="nav-record" class="on">記録</button>
+    <button type="button" id="nav-chart">グラフ</button>
+    <button type="button" id="nav-insight">気づき</button>
+    <button type="button" id="nav-report">レポート</button>
+  </nav>
+
+  <script src="./assets/chart.js"></script>
+  <script src="./assets/app.js"></script>
+</body>
+</html>
