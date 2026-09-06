@@ -18,3 +18,16 @@ tools/output/base-export/
 *.bak
 *.bak_*
 *_backup.html.bak
+
+# ===== 内部ドキュメント（2026-09-06 保全点検）=====
+# 幕僚の運用手順・業務ログ・引き継ぎメモ。サイトからリンクされていない孤立ファイルで、
+# 公開する理由がない。ローカルには残すため追跡だけ外す（git rm --cached）。
+CLAUDE.md
+docs/ai-diary-generation-policy.md
+docs/cbi-news-publish-prompt.md
+docs/news-publish-setup.md
+docs/notes/kanri-room.md
+docs/worklog/
+scripts/site_monitor_README.md
+order_estimate/HEARING_AI_README.md
+カラーシミュレーター/pattern-color-proto/引き継ぎプロンプト_20260706.md
