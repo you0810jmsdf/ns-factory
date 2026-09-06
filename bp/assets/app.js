@@ -192,6 +192,7 @@
   var state = {
     tab: "record",
     range: 14,
+    importMode: "merge", // merge = 今の記録に足す / replace = 入れ替える
     form: {
       date: todayStr(),
       time: new Date().getHours() < 12 ? "am" : "pm",
@@ -411,6 +412,11 @@
     $("rep-high").textContent = Object.keys(highDays).length + " 日";
   }
 
+  function renderImportMode() {
+    $("mode-merge").classList.toggle("on", state.importMode === "merge");
+    $("mode-replace").classList.toggle("on", state.importMode === "replace");
+  }
+
   function renderTab() {
     ["record", "chart", "insight", "report"].forEach(function (k) {
       $("tab-" + k).hidden = state.tab !== k;
@@ -427,6 +433,7 @@
     renderChart();
     renderInsights();
     renderReport();
+    renderImportMode();
     renderTab();
   }
 
@@ -434,10 +441,137 @@
 
   function flash(id, msg) {
     var box = $(id);
+
+    // 同じ場所の成功とエラーを同時に出さない。
+    // 前回の赤い文字が残っていると、今の操作が失敗したように見えてしまう。
+    var pairId = /-flash$/.test(id) ? id.replace(/-flash$/, "-error") : id.replace(/-error$/, "-flash");
+    var other = document.getElementById(pairId);
+    if (other && other !== box) {
+      window.clearTimeout(other._timer);
+      other.hidden = true;
+    }
+
     box.textContent = msg;
     box.hidden = false;
     window.clearTimeout(box._timer);
     box._timer = window.setTimeout(function () { box.hidden = true; }, 2600);
+  }
+
+  /* ---------- バックアップ ----------
+     記録は端末の中だけにあるため、機種変更やデータ削除で消える。
+     ⛔ ここでもファイルは端末内で作って端末内で読むだけ。どこにも送らない。 */
+
+  function exportBackup() {
+    if (!records.length) {
+      flash("backup-error", "書き出す記録がまだありません。");
+      return;
+    }
+    var payload = {
+      app: "bp-notebook",
+      schemaVersion: 1,
+      exportedAt: new Date().toISOString(),
+      count: records.length,
+      records: records
+    };
+    try {
+      var blob = new Blob([JSON.stringify(payload, null, 1)], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "bp-backup-" + todayStr() + ".json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      flash("backup-flash", records.length + " 件を書き出しました。ファイルは大切に保管してください。");
+    } catch (e) {
+      console.error(e);
+      flash("backup-error", "書き出しに失敗しました。別のブラウザでお試しください。");
+    }
+  }
+
+  /* 読み込んだ中身を1件ずつ検査する。
+     ⛔ 検査を緩めないこと。壊れたファイルをそのまま取り込むと、
+        画面が出なくなって既存の記録まで触れなくなる。 */
+  function parseBackup(text) {
+    var payload = JSON.parse(text);
+    var list = null;
+    if (payload && Array.isArray(payload.records)) list = payload.records;
+    else if (Array.isArray(payload)) list = payload; // 記録の配列だけのファイルも受け付ける
+    if (!list) throw new Error("形式が違います");
+
+    var out = [], skipped = 0;
+    list.forEach(function (r) {
+      if (!r || typeof r !== "object") { skipped++; return; }
+      var date = String(r.date || "");
+      var time = (r.time === "am" || r.time === "pm") ? r.time : null;
+      var sys = Number(r.sys), dia = Number(r.dia);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !time) { skipped++; return; }
+      if (!sys || !dia || sys < 50 || sys > 260 || dia < 30 || dia > 180) { skipped++; return; }
+      var pulse = Number(r.pulse);
+      out.push({
+        id: (typeof r.id === "string" && r.id) ? r.id : (date + "-" + time + "-" + Math.random().toString(36).slice(2)),
+        date: date, time: time,
+        sys: Math.round(sys), dia: Math.round(dia),
+        pulse: (pulse > 0 && pulse < 300) ? Math.round(pulse) : null,
+        tags: Array.isArray(r.tags) ? r.tags.filter(function (t) { return typeof t === "string"; }).slice(0, 10) : []
+      });
+    });
+    return { records: out, skipped: skipped };
+  }
+
+  function importBackup() {
+    var file = $("import-file").files && $("import-file").files[0];
+    if (!file) {
+      flash("backup-error", "先にファイルを選んでください。");
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onerror = function () { flash("backup-error", "ファイルを読み込めませんでした。"); };
+    reader.onload = function () {
+      var parsed;
+      try {
+        parsed = parseBackup(String(reader.result));
+      } catch (e) {
+        flash("backup-error", "このファイルは血圧手帳のバックアップではないようです。");
+        return;
+      }
+      if (!parsed.records.length) {
+        flash("backup-error", "読み取れる記録がありませんでした。" + (parsed.skipped ? "（" + parsed.skipped + " 件が形式違いでした）" : ""));
+        return;
+      }
+
+      var msg = state.importMode === "replace"
+        ? "今ある記録をすべて消して、ファイルの " + parsed.records.length + " 件に入れ替えます。よろしいですか？"
+        : "ファイルの " + parsed.records.length + " 件を今の記録に足します。同じ日の同じ時間帯は、今ある記録をそのまま残します。よろしいですか？";
+      if (!window.confirm(msg)) return;
+
+      var before = records.length;
+      var next;
+      if (state.importMode === "replace") {
+        next = parsed.records.slice();
+      } else {
+        var seen = {};
+        records.forEach(function (r) { seen[r.date + r.time] = true; });
+        next = records.concat(parsed.records.filter(function (r) { return !seen[r.date + r.time]; }));
+      }
+      next.sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); });
+
+      if (!persist(next)) {
+        flash("backup-error", "この端末では記録を保存できません（プライベートモードの可能性があります）。");
+        return;
+      }
+      $("import-file").value = "";
+      renderAll();
+
+      var added = records.length - before;
+      var note = state.importMode === "replace"
+        ? records.length + " 件に入れ替えました。"
+        : added + " 件を足しました（" + (parsed.records.length - added) + " 件はすでにある記録と同じ日時のため残しました）。";
+      flash("backup-flash", note + (parsed.skipped ? "／" + parsed.skipped + " 件は形式違いのため取り込んでいません。" : ""));
+    };
+    reader.readAsText(file);
   }
 
   function save() {
@@ -501,6 +635,15 @@
 
     $("range-14").addEventListener("click", function () { state.range = 14; renderChart(); });
     $("range-30").addEventListener("click", function () { state.range = 30; renderChart(); });
+
+    $("export").addEventListener("click", exportBackup);
+    $("import").addEventListener("click", importBackup);
+    ["merge", "replace"].forEach(function (m) {
+      $("mode-" + m).addEventListener("click", function () {
+        state.importMode = m;
+        renderImportMode();
+      });
+    });
 
     ["record", "chart", "insight", "report"].forEach(function (k) {
       $("nav-" + k).addEventListener("click", function () {
