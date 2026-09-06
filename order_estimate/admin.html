@@ -5552,19 +5552,26 @@ function rcOpenModal(month, sub) {
 
   // 証憑の中身は「証憑ローカル閲覧サーバ」（監理部\receipt_viewer.py・localhost:8791）越しに見る。
   // 証憑本文には氏名・自宅住所・メールアドレスが含まれるため、公開リポジトリ側の
-  // receipt-checklist.json には本文を入れず、パスだけを持たせている。
+  // receipt-checklist.json には本文を入れない。
+  // 2026-09-06: パスも持たせなくなった。ファイル名に店名（ラクマ／Yahoo決済）や
+  // 氏名（振込明細書）が入り、それ自体が公開されてしまうため。かわりに receipt_id
+  // （16桁hex）を持ち、ローカル側の resolve_receipt_id() が実ファイルへ解決する。
   const records = cell.records || [];
   const recordsHtml = records.map((r, idx) => {
-    const path = r.local_path || '';
-    const enc = rcEncodePath(path);
-    const ext = path.split('.').pop().toLowerCase();
+    const rid = String(r.receipt_id || '');
+    const path = r.local_path || '';   // ローカル生成の古いJSONを開いたとき用（後方互換）
+    const ext = String(r.ext || path.split('.').pop() || '').toLowerCase();
     const isText = ext === 'txt';
     const btn ='padding:7px 12px;border-radius:8px;border:1px solid #d9c3a8;background:#fff;color:#6b3a1f;font:inherit;font-size:12px;font-weight:700;cursor:pointer';
     const label = isText ? '📄 証憑の中身を見る' : `🧾 証憑を開く（${rcEscapeHtml(ext || 'ファイル')}）`;
-    let openHtml = '<div style="font-size:11px;color:#b26b6b">証憑ファイルのパスが記録されていません。</div>';
-    if (path) {
+    let openHtml = '<div style="font-size:11px;color:#b26b6b">証憑ファイルが特定できません。</div>';
+    if (rid) {
       openHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap">
-             <button type="button" style="${btn}" onclick="rcOpenReceipt('${enc}')">${label}</button>
+             <button type="button" style="${btn}" onclick="rcOpenReceiptById('${rcEncodePath(rid)}')">${label}</button>
+           </div>`;
+    } else if (path) {
+      openHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap">
+             <button type="button" style="${btn}" onclick="rcOpenReceipt('${rcEncodePath(path)}')">${label}</button>
            </div>`;
     }
     return `
@@ -5572,7 +5579,7 @@ function rcOpenModal(month, sub) {
       <div style="font-size:12px;color:#8a6a4a;margin-bottom:4px">日付: ${r.date || '—'}　/　金額: ${rcAmountLabel(r)}</div>
       <div style="font-size:13px;font-weight:700;color:#3a2a1a;margin-bottom:6px">${r.subject || '—'}（${r.status || '—'}）</div>
       ${openHtml}
-      <div style="font-size:10px;color:#a08a72;word-break:break-all;margin-top:6px">${rcEscapeHtml(path || '—')}</div>
+      <div style="font-size:10px;color:#a08a72;word-break:break-all;margin-top:6px">${rid ? '証憑ID: ' + rcEscapeHtml(rid) : rcEscapeHtml(path || '—')}</div>
     </div>
   `;
   }).join('') || (guide.url ? '' : '<div style="color:#8a6a4a;font-size:12px">レコードなし</div>');
@@ -5654,6 +5661,12 @@ function rcOpenReceipt(encPath) {
   window.open(`${RC_VIEWER_BASE}/view?path=${encPath}`, '_blank', 'noopener');
 }
 
+// 証憑ID経由（2026-09-06〜の主経路）。公開JSONはファイル名を持たないため、
+// ローカルの receipt_viewer.py が resolve_receipt_id() でIDから実ファイルを引く。
+function rcOpenReceiptById(encId) {
+  window.open(`${RC_VIEWER_BASE}/view?id=${encId}`, '_blank', 'noopener');
+}
+
 // 証憑候補（金額入りメール）をチェックして採り込む画面を開く。
 // 画面の中身はローカルビューアが持つ。件名・金額・取引先が並ぶため公開側には置かない。
 function rcOpenCandidates() {
@@ -5721,9 +5734,13 @@ function rcAccountingRowFromRecord(month, sub, record) {
     '貸方金額': Math.round(amount),
     '摘要': `${RC_SUB_LABELS[sub] || sub} ${subject}`,
     'タグ': '固定費',
+    // 証憑の指し方（2026-09-06〜）: MFへ渡すメモにファイルパスは書かない
+    // （ファイル名に店名・氏名が入り、公開JSON経由で外に出るため）。
+    // 人が読める「チャネル 日付 金額」と、ローカルで実ファイルを引ける証憑IDを併記する。
     'メモ': [
       `固定費チェック ${month}`,
-      record.local_path ? `証憑: ${record.local_path}` : '',
+      `証憑: ${RC_SUB_LABELS[sub] || sub} ${record.date || month} ${record.amount_text || ('¥' + Math.round(amount).toLocaleString())}`
+        + (record.receipt_id ? `（ID:${record.receipt_id}）` : ''),
       record.status ? `状態: ${record.status}` : ''
     ].filter(Boolean).join(' / '),
     '決済': ''
