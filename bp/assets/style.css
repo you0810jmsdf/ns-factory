@@ -112,6 +112,23 @@ body {
   cursor: pointer; margin-top: 8px;
 }
 
+/* ---------- バックアップ ---------- */
+.backup { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line-soft); }
+.backup h2 { font-size: 14px; margin: 0 0 8px; letter-spacing: .05em; }
+.restore {
+  margin-top: 16px; padding: 12px; background: #FAFBFC;
+  border: 1px solid var(--line-soft); border-radius: 6px;
+}
+.restore .memo-label { display: block; margin-bottom: 8px; }
+.restore input[type="file"] {
+  width: 100%; box-sizing: border-box; font-size: 12px; font-family: inherit;
+  color: var(--ink-sub); padding: 8px; border: 1px solid var(--border-in);
+  border-radius: 6px; background: #fff;
+}
+.restore .seg { margin: 10px 0 0; }
+.restore .seg button { font-size: 13px; padding: 9px 4px; }
+.restore .ghost { margin-top: 10px; background: #fff; }
+
 /* ---------- 記録一覧 ---------- */
 .ledger { border-top: 1px solid var(--line-soft); }
 .lrow {

@@ -83,6 +83,30 @@
         <div class="ledger" id="ledger"></div>
         <button type="button" class="ghost" id="clear-all">すべての記録を削除</button>
       </div>
+
+      <!-- 記録が0件でも復元できるよう、この欄は常に表示する（新しい端末での復元導線） -->
+      <div class="backup">
+        <h2>バックアップ</h2>
+        <p class="note in-card" style="margin-top:0;">
+          記録はこの端末の中だけにあります。機種変更やブラウザのデータ削除で消えるため、ときどきファイルに保存しておくと安心です。
+          ファイルはお使いの端末に保存されるだけで、どこにも送信されません。
+        </p>
+
+        <button type="button" class="ghost" id="export">記録をファイルに保存する</button>
+
+        <div class="restore">
+          <label class="memo-label" for="import-file">保存したファイルから戻す</label>
+          <input type="file" id="import-file" accept="application/json,.json">
+          <div class="seg" role="group" aria-label="読み込み方">
+            <button type="button" id="mode-merge">今の記録に足す</button>
+            <button type="button" id="mode-replace">全部入れ替える</button>
+          </div>
+          <button type="button" class="ghost" id="import">このファイルを読み込む</button>
+        </div>
+
+        <div class="flash" id="backup-flash" hidden></div>
+        <div class="error" id="backup-error" hidden></div>
+      </div>
     </section>
 
     <!-- ========== グラフ ========== -->
