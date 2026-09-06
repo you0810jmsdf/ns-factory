@@ -544,7 +544,7 @@ canvas{
           <li><span class="guide-step-copy"><strong>写真を追加する</strong>「写真を読み込む・追加」を開き、「端末から写真を追加」で作品写真を選びます。写真は外部へアップロードされません。</span></li>
           <li><span class="guide-step-copy"><strong>構成・字幕・セリフを整える</strong>「使う／戻す」で使用写真を選び、「作品情報」で物語の型と長さを選びます。「① 写真の役割を提案 → ② 構成と順番を確認 → ③ カメラワークと台本を適用」の順に押すと、役割ごとに動きとセリフが変わります。必要に応じて「写真ごと」で直します。</span></li>
           <li><span class="guide-step-copy"><strong>仕上がりを確認する</strong>「音声つきプレビュー」で写真・字幕・音声を確認します。途中で止めるときは「停止」を押します。</span></li>
-          <li><span class="guide-step-copy"><strong>MP4で保存する</strong>日本語も英語も「自動ナレーション付きMP4」で保存できます。自分の声を入れたいときは「自分の声で録音」を使います。英語のAI音声は初回だけ準備に時間がかかります。</span></li>
+          <li><span class="guide-step-copy"><strong>MP4で保存する</strong>日本語も英語も「自動ナレーション付きMP4」で保存できます。自分の声を入れたいときは「自分の声で録音」を使います。</span></li>
         </ol>
         <p class="guide-note">すべて無料で利用できます。ページを閉じたり再読み込みすると編集中の内容は消えるため、MP4保存まで続けて操作してください。</p>
       </section>
@@ -655,7 +655,7 @@ canvas{
         <div class="actions" id="shareToSnsBox" hidden>
           <button class="primary" id="shareToSns" type="button">📤 SNSへ投稿（動画＋キャプション）</button>
         </div>
-        <div class="notice">自動ナレーション付き保存は、AI音声をバックグラウンドで生成してMP4へ直接合成します。画面共有は不要です。英語の声は初回だけ約100MBを読み込みます（日本語の声は読み込み不要です）。画面操作は続けられます。中止するときは上の「停止」を押してください。</div>
+        <div class="notice">自動ナレーション付き保存は、AI音声をバックグラウンドで生成してMP4へ直接合成します。画面共有は不要です。音声はサーバー側で作るため、大きな読み込みはありません。画面操作は続けられます。中止するときは上の「停止」を押してください。</div>
         <div class="log" id="log"></div>
         <details class="save-stats" id="saveStats">
           <summary>
@@ -1033,7 +1033,7 @@ canvas{
           <div class="field">
             <label for="aiVoiceSelect">完成動画に入るAI音声</label>
             <select id="aiVoiceSelect"></select>
-            <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語も英語も対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
+            <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語・英語とも対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
           </div>
           <div class="field">
             <label for="voiceSelect">確認用の読み上げ声（完成動画には入りません）</label>
@@ -1222,12 +1222,15 @@ let exportGateResolve = null;
 let previewReviewed = false;
 const localTtsPending = new Map();
 
+/* 音声はすべて中継サーバ（Microsoft Edge の読み上げ）から取る。
+   以前の英語はブラウザ内でAIモデル（約100MB）を動かしており、メモリを圧迫して
+   長い動画の書き出しが途中で止まっていた（成功率57%）。2026-09-06 に一本化。 */
 const AI_VOICES = {
   'en-US': [
-    {value:'af_heart', label:'Heart（英語・女性）'},
-    {value:'af_bella', label:'Bella（英語・女性）'},
-    {value:'am_michael', label:'Michael（英語・男性）'},
-    {value:'bf_emma', label:'Emma（英国英語・女性）'}
+    {value:'en-US-AvaNeural', label:'Ava（英語・女性）'},
+    {value:'en-US-EmmaNeural', label:'Emma（英語・女性）'},
+    {value:'en-US-AndrewNeural', label:'Andrew（英語・男性）'},
+    {value:'en-GB-SoniaNeural', label:'Sonia（英国英語・女性）'}
   ],
   // 日本語は Microsoft Edge の読み上げ（卒論発表資料と同じ声）を中継サーバ経由で使う。
   // ブラウザ内で動く Kokoro は英語しか話せないため、日本語だけ経路が別（2026-09-06）。
@@ -4956,8 +4959,8 @@ function ensureJpDecodeContext(){
   return jpDecodeContext;
 }
 
-/** 日本語ナレーション。中継サーバから mp3 を受け取り、動画に載せられる波形に変換する。 */
-async function generateJapaneseNarrationAudio(text, voice){
+/** ナレーション。中継サーバから mp3 を受け取り、動画に載せられる波形に変換する。 */
+async function generateRelayNarrationAudio(text, voice){
   const parts = [];
   let sampleRate = 24000;
   for(const chunk of splitTtsText(text, 900)){
@@ -4969,12 +4972,12 @@ async function generateJapaneseNarrationAudio(text, voice){
         body: JSON.stringify({text:chunk, voice})
       });
     }catch(error){
-      throw new Error('日本語ナレーションの取得に失敗しました（通信エラー）。時間をおくか、「自分の声で録音」で保存してください。');
+      throw new Error('ナレーション音声の取得に失敗しました（通信エラー）。時間をおくか、「自分の声で録音」で保存してください。');
     }
     if(!response.ok){
       let detail = '';
       try{ detail = (await response.json()).error || ''; }catch(_){ /* 本文なし */ }
-      throw new Error(`日本語ナレーションを作れませんでした（${response.status}${detail ? '・' + detail : ''}）。「自分の声で録音」でも保存できます。`);
+      throw new Error(`ナレーション音声を作れませんでした（${response.status}${detail ? '・' + detail : ''}）。「自分の声で録音」でも保存できます。`);
     }
     const decoded = await ensureJpDecodeContext().decodeAudioData(await response.arrayBuffer());
     sampleRate = decoded.sampleRate;
@@ -4984,14 +4987,9 @@ async function generateJapaneseNarrationAudio(text, voice){
 }
 
 async function generateNarrationAudio(text, voice, language){
-  if(language === 'ja-JP') return await generateJapaneseNarrationAudio(text, voice);
-  const tts = await loadLocalTts();
-  const parts = [];
-  for(const chunk of splitTtsText(text)){
-    const audio = await tts.generate(chunk, {voice, speed:1});
-    parts.push(new Float32Array(audio.audio));
-  }
-  return {sampleRate:24000, data:joinAudioParts(parts, 24000)};
+  // 日本語・英語とも中継サーバから受け取る（2026-09-06 一本化）。
+  // ブラウザ内のAI音声は長い動画で書き出しが止まる原因だったため使わない。
+  return await generateRelayNarrationAudio(text, voice);
 }
 
 function resampleMono(input, fromRate, toRate){
