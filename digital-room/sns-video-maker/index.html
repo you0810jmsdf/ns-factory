@@ -4928,7 +4928,8 @@ async function loadLocalTts(){
 function splitTtsText(text, limit = 260){
   const clean = String(text || '').replace(/\s+/g, ' ').trim();
   if(!clean) return [];
-  const sentences = clean.match(/[^。！？.!?]+[。！？.!?]?/g) || [clean];
+  // 区切り文字が連続する（... や !?）と、以前は2文字目以降が落ちていた（2026-09-06 修正）
+  const sentences = clean.match(/[^。！？.!?]+[。！？.!?]*|[。！？.!?]+/g) || [clean];
   const chunks = [];
   let current = '';
   sentences.forEach(sentence => {
