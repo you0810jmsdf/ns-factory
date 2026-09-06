@@ -184,7 +184,9 @@
             "amount_text": "¥11,113",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "caa84dbd00ab85fa",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -249,7 +251,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "748b2e30aa22bd7c",
+            "ext": "txt"
           },
           {
             "date": "2026-08-07",
@@ -257,7 +261,9 @@
             "amount_text": "¥220",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "58194224c61bab3f",
+            "ext": "txt"
           },
           {
             "date": "2026-08-05",
@@ -265,7 +271,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "33bafdfbc740c789",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -301,7 +309,9 @@
             "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "ac31535fe950b420",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -391,7 +401,9 @@
             "amount_text": "¥61,750",
             "subject": "自動車保険（証券96731354）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "c8c022ff2f4605cc",
+            "ext": "txt"
           },
           {
             "date": "2026-08-25",
@@ -399,7 +411,9 @@
             "amount_text": "¥61,750",
             "subject": "自動車保険（証券96731354）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "ae355bf74e18c746",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -417,7 +431,9 @@
             "amount_text": "¥10,923",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "5eb34403ddb89697",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -435,7 +451,9 @@
             "amount_text": "¥244,078",
             "subject": "自動振込予約",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "5bd6bbcc09125573",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -453,7 +471,9 @@
             "amount_text": "¥133,374",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "63233109156422f8",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -480,7 +500,9 @@
             "amount_text": "¥2,070",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "5304a39f74ae6d83",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -527,7 +549,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "9b8981d352171abe",
+            "ext": "txt"
           },
           {
             "date": "2026-07-09",
@@ -535,7 +559,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "394b6342bf52a927",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -571,7 +597,9 @@
             "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "dccbeb2e2cc1f228",
+            "ext": "txt"
           },
           {
             "date": "2026-07-26",
@@ -579,7 +607,9 @@
             "amount_text": "$22.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "b0dc5c2a577bc4f8",
+            "ext": "txt"
           },
           {
             "date": "2026-07-21",
@@ -587,7 +617,9 @@
             "amount_text": "¥17,895",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "8fc655919fbda959",
+            "ext": "txt"
           },
           {
             "date": "2026-07-26",
@@ -595,7 +627,9 @@
             "amount_text": "¥3,605",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "1fc18e9fcf263793",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -631,7 +665,9 @@
             "amount_text": "¥16,510",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "5862268f7184f928",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -649,7 +685,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a765935fef7c851f",
+            "ext": "txt"
           },
           {
             "date": "2026-07-05",
@@ -657,7 +695,9 @@
             "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "1d472d3600bbe745",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -675,7 +715,9 @@
             "amount_text": "¥3,001",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "21bf1d2ce48a16c3",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -693,7 +735,9 @@
             "amount_text": "¥11,853",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "21bf1d2ce48a16c3",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -729,7 +773,9 @@
             "amount_text": "¥74,930",
             "subject": "自動車保険（証券99029715）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "4c059068f59f797d",
+            "ext": "txt"
           },
           {
             "date": "2026-07-25",
@@ -737,7 +783,9 @@
             "amount_text": "¥74,930",
             "subject": "自動車保険（証券99029715）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "0fa4df09030fb7de",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -755,7 +803,9 @@
             "amount_text": "¥29,104",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f3b37eb5c8b4ca03",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -782,7 +832,9 @@
             "amount_text": "¥18,145",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "848b027c50f0eade",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -809,7 +861,9 @@
             "amount_text": "¥5,200",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "42c5d44ae529ad76",
+            "ext": "txt"
           },
           {
             "date": "2026-07-15",
@@ -817,7 +871,9 @@
             "amount_text": "¥4,500",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "9c55bb289ac8130a",
+            "ext": "txt"
           },
           {
             "date": "2026-07-26",
@@ -825,7 +881,9 @@
             "amount_text": "¥3,150",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "eaa1f518f200a294",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -872,7 +930,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "767d1678f355a741",
+            "ext": "txt"
           },
           {
             "date": "2026-06-09",
@@ -880,7 +940,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "5c6565f209d8fe25",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -907,7 +969,9 @@
             "amount_text": "¥14,900",
             "subject": "Microsoft 365",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "906843e705bbbec3",
+            "ext": "txt"
           },
           {
             "date": "2026-06-15",
@@ -915,7 +979,9 @@
             "amount_text": "¥14,900",
             "subject": "Microsoft 365",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "8f26a496ead70038",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -933,7 +999,9 @@
             "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "e2e9ccc0ddab3d5d",
+            "ext": "txt"
           },
           {
             "date": "2026-06-25",
@@ -941,7 +1009,9 @@
             "amount_text": "$5.50",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "8353de3b0e1fbf27",
+            "ext": "txt"
           },
           {
             "date": "2026-06-21",
@@ -949,7 +1019,9 @@
             "amount_text": "¥17,739",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "83f296964bc6426e",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -985,7 +1057,9 @@
             "amount_text": "¥14,460",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "855b1ff3d3c66e1a",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1003,7 +1077,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "faf024013da6c419",
+            "ext": "txt"
           },
           {
             "date": "2026-06-01",
@@ -1011,7 +1087,9 @@
             "amount_text": "¥18,790",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "801534d95e550172",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1029,7 +1107,9 @@
             "amount_text": "¥5,586",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "eb86f3f4ca804d42",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1047,7 +1127,9 @@
             "amount_text": "¥10,152",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "eb86f3f4ca804d42",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1092,7 +1174,9 @@
             "amount_text": "¥23,004",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "076e73e89701ebdb",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1128,7 +1212,9 @@
             "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "02e64e3dff9dd01b",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1155,7 +1241,9 @@
             "amount_text": "¥3,353",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "b397eb8c15109991",
+            "ext": "txt"
           },
           {
             "date": "2026-06-27",
@@ -1163,7 +1251,9 @@
             "amount_text": "¥2,165",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "c6f235d812af6678",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1201,7 +1291,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "86e8e5a6532a76cd",
+            "ext": "txt"
           },
           {
             "date": "2026-05-09",
@@ -1209,7 +1301,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f1304b15f8cd14e0",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1245,7 +1339,9 @@
             "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f7476f15561e11ef",
+            "ext": "txt"
           },
           {
             "date": "2026-05-21",
@@ -1253,7 +1349,9 @@
             "amount_text": "¥17,500",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "87f5048552489733",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1289,7 +1387,9 @@
             "amount_text": "¥15,182",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "7ec696392ecf0624",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1307,7 +1407,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "9e321a6af98d4c7a",
+            "ext": "txt"
           },
           {
             "date": "2026-05-06",
@@ -1315,7 +1417,9 @@
             "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f8826210bc1351fa",
+            "ext": "txt"
           },
           {
             "date": "2026-05-21",
@@ -1323,7 +1427,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "91f3d7b983faf43f",
+            "ext": "txt"
           },
           {
             "date": "2026-05-24",
@@ -1331,7 +1437,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "28cb97a45909c1d6",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1349,7 +1457,9 @@
             "amount_text": "¥6,024",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a50dfb2ac723dceb",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1367,7 +1477,9 @@
             "amount_text": "¥14,734",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a50dfb2ac723dceb",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1412,7 +1524,9 @@
             "amount_text": "¥23,003",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "4c7e41c675f6297f",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1495,7 +1609,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "99f62a59146dd5ec",
+            "ext": "txt"
           },
           {
             "date": "2026-04-09",
@@ -1503,7 +1619,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "092ed999bf6b983c",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1521,7 +1639,9 @@
             "amount_text": "¥9,900",
             "subject": "Photoroom",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "dfd5c66e1d886b6a",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1548,7 +1668,9 @@
             "amount_text": "$22.00",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "ea26028173c88224",
+            "ext": "txt"
           },
           {
             "date": "2026-04-20",
@@ -1556,7 +1678,9 @@
             "amount_text": "$49.50",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "9dc65ab5eec1f280",
+            "ext": "txt"
           },
           {
             "date": "2026-04-05",
@@ -1564,7 +1688,9 @@
             "amount_text": "¥3,507",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "07f2f280412b21c0",
+            "ext": "txt"
           },
           {
             "date": "2026-04-20",
@@ -1572,7 +1698,9 @@
             "amount_text": "¥7,856",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "e1c573223c17ec29",
+            "ext": "txt"
           },
           {
             "date": "2026-04-21",
@@ -1580,7 +1708,9 @@
             "amount_text": "¥15,858",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "27ac4d6f9db61a68",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1616,7 +1746,9 @@
             "amount_text": "¥18,390",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "ceaf1058efc69726",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1634,7 +1766,9 @@
             "amount_text": "¥17,268",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "e33ab7d47f1675de",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1652,7 +1786,9 @@
             "amount_text": "¥2,863",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "cda6ac5326fcbb16",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1670,7 +1806,9 @@
             "amount_text": "¥7,053",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "cda6ac5326fcbb16",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1715,7 +1853,9 @@
             "amount_text": "¥21,354",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "771dfca894efbbcc",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1798,7 +1938,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "425cecad85e84359",
+            "ext": "txt"
           },
           {
             "date": "2026-03-09",
@@ -1806,7 +1948,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a6f4a21d597cd4b9",
+            "ext": "txt"
           },
           {
             "date": "2026-03-13",
@@ -1814,7 +1958,9 @@
             "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "d2a9689e6d2eae57",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1850,7 +1996,9 @@
             "amount_text": "$20.00",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "70805fbb5a83a9a8",
+            "ext": "txt"
           },
           {
             "date": "2026-03-27",
@@ -1858,7 +2006,9 @@
             "amount_text": "$5.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "4e4ee7197f4634e0",
+            "ext": "txt"
           },
           {
             "date": "2026-03-05",
@@ -1866,7 +2016,9 @@
             "amount_text": "¥3,147",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "6947b3c56015aede",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1902,7 +2054,9 @@
             "amount_text": "¥21,541",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "26f32536e3902a43",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1920,7 +2074,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f29f61d956948f41",
+            "ext": "txt"
           },
           {
             "date": "2026-03-29",
@@ -1928,7 +2084,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a53d132072454610",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -1946,7 +2104,9 @@
             "amount_text": "¥9,138",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a06c897f94681bdb",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -1964,7 +2124,9 @@
             "amount_text": "¥11,353",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a06c897f94681bdb",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2009,7 +2171,9 @@
             "amount_text": "¥18,302",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "0cdc8bb4b1739c3c",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2054,7 +2218,9 @@
             "amount_text": "¥7,200",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "c690a50875266395",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2072,7 +2238,9 @@
             "amount_text": "¥19,462",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a2405660a990c72b",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2110,7 +2278,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "bbb135115a34a6bc",
+            "ext": "txt"
           },
           {
             "date": "2026-02-09",
@@ -2118,7 +2288,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "70363ece01937730",
+            "ext": "txt"
           },
           {
             "date": "2026-02-11",
@@ -2126,7 +2298,9 @@
             "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "e9d311a97ee6b543",
+            "ext": "txt"
           },
           {
             "date": "2026-02-13",
@@ -2134,7 +2308,9 @@
             "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "95d1a49edd2e2fd3",
+            "ext": "txt"
           },
           {
             "date": "2026-02-19",
@@ -2142,7 +2318,9 @@
             "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "76062e8b8f56ae68",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2205,7 +2383,9 @@
             "amount_text": "¥31,887",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "8183402a3b0bba0e",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2223,7 +2403,9 @@
             "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "51e0dbaf755be3a5",
+            "ext": "txt"
           },
           {
             "date": "2026-02-25",
@@ -2231,7 +2413,9 @@
             "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "b5009379dbb6de15",
+            "ext": "txt"
           },
           {
             "date": "2026-02-01",
@@ -2239,7 +2423,9 @@
             "amount_text": "¥18,072",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "339974e5472e27bc",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2257,7 +2443,9 @@
             "amount_text": "¥9,136",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "dc07fe594776e158",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2275,7 +2463,9 @@
             "amount_text": "¥11,815",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "dc07fe594776e158",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2320,7 +2510,9 @@
             "amount_text": "¥15,253",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "2d2328610b59dff2",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2365,7 +2557,9 @@
             "amount_text": "¥5,400",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "5f9b981a90b2ebec",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2383,7 +2577,9 @@
             "amount_text": "¥6,441",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "bc90df70fd40cab8",
+            "ext": "txt"
           },
           {
             "date": "2026-02-17",
@@ -2391,7 +2587,9 @@
             "amount_text": "¥13,761",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "c36a128f1a00e13d",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2429,7 +2627,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "bf61f92dcb23820f",
+            "ext": "txt"
           },
           {
             "date": "2026-01-09",
@@ -2437,7 +2637,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "c37cf55f257e85bc",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2500,7 +2702,9 @@
             "amount_text": "¥31,091",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "d92a7321fbbcd4ec",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2518,7 +2722,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "ca3b3aa4b7f9f3e4",
+            "ext": "txt"
           },
           {
             "date": "2026-01-07",
@@ -2526,7 +2732,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "b0630e3d34338dfb",
+            "ext": "txt"
           },
           {
             "date": "2026-01-25",
@@ -2534,7 +2742,9 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "4108d3691b36d4a8",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2552,7 +2762,9 @@
             "amount_text": "¥9,144",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a7523f3ad62b2f8b",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2570,7 +2782,9 @@
             "amount_text": "¥13,367",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "a7523f3ad62b2f8b",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2615,7 +2829,9 @@
             "amount_text": "¥27,453",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "33b43537afb81912",
+            "ext": "pdf"
           }
         ],
         "guide": {
@@ -2660,7 +2876,9 @@
             "amount_text": "¥2,700",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f691fe3a1d233264",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2707,7 +2925,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "381d0674ab0df6c9",
+            "ext": "txt"
           },
           {
             "date": "2025-12-09",
@@ -2715,7 +2935,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "611114f624e1236f",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2868,7 +3090,9 @@
             "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "e3aaf4ae03b4b6e9",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2886,7 +3110,9 @@
             "amount_text": "¥2,700",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "872831c77f845611",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2904,7 +3130,9 @@
             "amount_text": "¥3,780",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "fe5012148849bd25",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -2942,7 +3170,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f3be699df775ff3e",
+            "ext": "txt"
           },
           {
             "date": "2025-11-09",
@@ -2950,7 +3180,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f262aeb66c5c4d64",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -3103,7 +3335,9 @@
             "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "1a0c2ada45d987b1",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -3121,7 +3355,9 @@
             "amount_text": "¥810",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "8e6bc069b4fb9167",
+            "ext": "txt"
           },
           {
             "date": "2025-11-16",
@@ -3129,7 +3365,9 @@
             "amount_text": "¥3,850",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "22c5859ad23b7595",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -3176,7 +3414,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "dd28b4631358617c",
+            "ext": "txt"
           },
           {
             "date": "2025-10-09",
@@ -3184,7 +3424,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "de9469c5545c0531",
+            "ext": "txt"
           },
           {
             "date": "2025-10-15",
@@ -3192,7 +3434,9 @@
             "amount_text": "¥10,700",
             "subject": "マネーフォワード",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "80b317bc7cc1e26f",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -3392,7 +3636,9 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "f4b0da1b323581dc",
+            "ext": "txt"
           },
           {
             "date": "2025-09-09",
@@ -3400,7 +3646,9 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "b87d18738e1ed51e",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -3562,7 +3810,9 @@
             "amount_text": "¥22,500",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "6a31c9578e766c47",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -3580,7 +3830,9 @@
             "amount_text": "¥3,126",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "8cab14cea645642d",
+            "ext": "txt"
           },
           {
             "date": "2025-09-27",
@@ -3588,7 +3840,9 @@
             "amount_text": "¥7,876",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": ""
+            "local_path": "",
+            "receipt_id": "12fe9f05bb9cb9c5",
+            "ext": "txt"
           }
         ],
         "guide": {
@@ -3616,7 +3870,7 @@
       }
     }
   },
-  "checked_at": "2026-09-06 14:56:16",
+  "checked_at": "2026-09-06 15:09:42",
   "health": {
     "token_updated": "2026-09-05",
     "token_age_days": 1,
