@@ -539,7 +539,7 @@ canvas{
           <li><span class="guide-step-copy"><strong>写真を追加する</strong>「写真を読み込む・追加」を開き、「端末から写真を追加」で作品写真を選びます。写真は外部へアップロードされません。</span></li>
           <li><span class="guide-step-copy"><strong>構成・字幕・セリフを整える</strong>「使う／戻す」で使用写真を選び、「作品情報」で物語の型と長さを選びます。「① 写真の役割を提案 → ② 構成と順番を確認 → ③ カメラワークと台本を適用」の順に押すと、役割ごとに動きとセリフが変わります。必要に応じて「写真ごと」で直します。</span></li>
           <li><span class="guide-step-copy"><strong>仕上がりを確認する</strong>「音声つきプレビュー」で写真・字幕・音声を確認します。途中で止めるときは「停止」を押します。</span></li>
-          <li><span class="guide-step-copy"><strong>MP4で保存する</strong>英語台本は「自動ナレーション付きMP4」、日本語台本は「自分の声で録音」を使用します。初回のAI音声生成は準備に時間がかかります。</span></li>
+          <li><span class="guide-step-copy"><strong>MP4で保存する</strong>日本語も英語も「自動ナレーション付きMP4」で保存できます。自分の声を入れたいときは「自分の声で録音」を使います。英語のAI音声は初回だけ準備に時間がかかります。</span></li>
         </ol>
         <p class="guide-note">すべて無料で利用できます。ページを閉じたり再読み込みすると編集中の内容は消えるため、MP4保存まで続けて操作してください。</p>
       </section>
@@ -630,7 +630,7 @@ canvas{
         <div class="actions" id="shareToSnsBox" hidden>
           <button class="primary" id="shareToSns" type="button">📤 SNSへ投稿（動画＋キャプション）</button>
         </div>
-        <div class="notice">自動ナレーション付き保存は、AI音声をバックグラウンドで生成してMP4へ直接合成します。画面共有は不要です。初回だけ約100MBを読み込みますが、画面操作は続けられます。中止するときは上の「停止」を押してください。</div>
+        <div class="notice">自動ナレーション付き保存は、AI音声をバックグラウンドで生成してMP4へ直接合成します。画面共有は不要です。英語の声は初回だけ約100MBを読み込みます（日本語の声は読み込み不要です）。画面操作は続けられます。中止するときは上の「停止」を押してください。</div>
         <div class="log" id="log"></div>
         <details class="save-stats" id="saveStats">
           <summary>
@@ -1006,9 +1006,9 @@ canvas{
             </select>
           </div>
           <div class="field">
-            <label for="aiVoiceSelect">完成動画に入るAI音声（英語のみ）</label>
+            <label for="aiVoiceSelect">完成動画に入るAI音声</label>
             <select id="aiVoiceSelect"></select>
-            <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語台本の動画は「自分の声で録音」で音声を入れてください。</p>
+            <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語も英語も対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
           </div>
           <div class="field">
             <label for="voiceSelect">確認用の読み上げ声（完成動画には入りません）</label>
@@ -1195,8 +1195,18 @@ const AI_VOICES = {
     {value:'af_bella', label:'Bella（英語・女性）'},
     {value:'am_michael', label:'Michael（英語・男性）'},
     {value:'bf_emma', label:'Emma（英国英語・女性）'}
+  ],
+  // 日本語は Microsoft Edge の読み上げ（卒論発表資料と同じ声）を中継サーバ経由で使う。
+  // ブラウザ内で動く Kokoro は英語しか話せないため、日本語だけ経路が別（2026-09-06）。
+  'ja-JP': [
+    {value:'ja-JP-NanamiNeural', label:'ななみ（日本語・女性）'},
+    {value:'ja-JP-KeitaNeural', label:'けいた（日本語・男性）'}
   ]
 };
+
+// 日本語ナレーションの中継サーバ（Cloudflare Workers）。
+// Microsoft 側がブラウザからの直接接続を弾くため、ここを通して mp3 を受け取る。
+const JP_TTS_ENDPOINT = 'https://nsfactory-tts-relay.bouncy-xenoposeidon.workers.dev/tts';
 
 const STORY_TEMPLATES = Object.freeze({
   craft: {label:'手仕事の魅力', roles:['全体像','素材','仕立て','使い方','経年変化','余韻']},
@@ -4624,11 +4634,6 @@ function canEncodeMp4Video(){
 function refreshAiVoiceOptions(){
   if(!els.aiVoiceSelect) return;
   const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
-  if(language !== 'en-US'){
-    els.aiVoiceSelect.innerHTML = '<option value="">AI音声付き保存は英語台本のみ対応</option>';
-    els.aiVoiceSelect.disabled = true;
-    return;
-  }
   els.aiVoiceSelect.disabled = false;
   const current = els.aiVoiceSelect.value;
   els.aiVoiceSelect.innerHTML = AI_VOICES[language]
@@ -4754,8 +4759,45 @@ function joinAudioParts(parts, sampleRate, pauseSeconds = .12){
   return joined;
 }
 
+let jpDecodeContext = null;
+function ensureJpDecodeContext(){
+  if(!jpDecodeContext){
+    const Ctor = window.AudioContext || window.webkitAudioContext;
+    if(!Ctor) throw new Error('このブラウザは音声の取り込みに対応していません。');
+    jpDecodeContext = new Ctor();
+  }
+  return jpDecodeContext;
+}
+
+/** 日本語ナレーション。中継サーバから mp3 を受け取り、動画に載せられる波形に変換する。 */
+async function generateJapaneseNarrationAudio(text, voice){
+  const parts = [];
+  let sampleRate = 24000;
+  for(const chunk of splitTtsText(text, 900)){
+    let response;
+    try{
+      response = await fetch(JP_TTS_ENDPOINT, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({text:chunk, voice})
+      });
+    }catch(error){
+      throw new Error('日本語ナレーションの取得に失敗しました（通信エラー）。時間をおくか、「自分の声で録音」で保存してください。');
+    }
+    if(!response.ok){
+      let detail = '';
+      try{ detail = (await response.json()).error || ''; }catch(_){ /* 本文なし */ }
+      throw new Error(`日本語ナレーションを作れませんでした（${response.status}${detail ? '・' + detail : ''}）。「自分の声で録音」でも保存できます。`);
+    }
+    const decoded = await ensureJpDecodeContext().decodeAudioData(await response.arrayBuffer());
+    sampleRate = decoded.sampleRate;
+    parts.push(new Float32Array(decoded.getChannelData(0)));
+  }
+  return {sampleRate, data: joinAudioParts(parts, sampleRate)};
+}
+
 async function generateNarrationAudio(text, voice, language){
-  if(language !== 'en-US') throw new Error('AI音声付きMP4は英語台本に対応しています。読み上げ言語をEnglishへ変更してください。');
+  if(language === 'ja-JP') return await generateJapaneseNarrationAudio(text, voice);
   const tts = await loadLocalTts();
   const parts = [];
   for(const chunk of splitTtsText(text)){
@@ -4783,7 +4825,6 @@ function resampleMono(input, fromRate, toRate){
 async function generateNarrationTimeline(){
   const list = playableSlides();
   const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
-  if(language !== 'en-US') throw new Error('AI音声付きMP4は英語台本に対応しています。読み上げ言語をEnglishへ変更してください。');
   const voice = els.aiVoiceSelect.value || AI_VOICES[language][0].value;
   const generated = [];
   startProgressTicker('AIナレーションの生成を準備中');
@@ -6327,10 +6368,10 @@ function pickRecordingFormat(withAudio){
 function refreshCapabilities(){
   const mp4Ready = canEncodeMp4Video();
   const recordable = mp4Ready || canRecordVideo();
+  // 日本語も中継サーバ経由の音声で保存できるようになったため、言語での可否判定はしない（2026-09-06）
   const narrationReady = mp4Ready
     && typeof AudioEncoder !== 'undefined'
-    && typeof AudioData !== 'undefined'
-    && els.narrationLang.value === 'en-US';
+    && typeof AudioData !== 'undefined';
   [els.recordSilent, els.recordMic].forEach(button => {
     button.disabled = !recordable;
     button.title = recordable
@@ -6340,9 +6381,7 @@ function refreshCapabilities(){
   els.recordNarration.disabled = !narrationReady;
   els.recordNarration.title = narrationReady
     ? 'AI音声を生成して映像へ直接合成し、Instagram用MP4へ保存します'
-    : (els.narrationLang.value === 'en-US'
-      ? '自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます'
-      : 'AI音声付きMP4は英語台本に対応しています。読み上げ言語をEnglishへ変更してください');
+    : '自動ナレーション付きMP4は最新のEdgeまたはChromeで利用できます';
   els.speakScript.disabled = !('speechSynthesis' in window);
   if(!recordable){
     setLog('動画保存はEdge/Chrome推奨です。このブラウザでは保存ボタンを無効にしています。');
