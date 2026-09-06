@@ -600,9 +600,7 @@ canvas{
       <label><input type="checkbox" id="snsPostThreads" checked> Threadsへ投稿</label>
       <label><input type="checkbox" id="snsPostInstagram" checked> Instagramへリール投稿</label>
     </div>
-    <p class="help">Instagramは本文にURLを載せない運用のため、URLの行を除いて投稿します。</p>
-    <label for="snsPostPass" class="help" style="display:block;margin-top:.5rem">投稿用の合言葉</label>
-    <input type="password" id="snsPostPass" autocomplete="current-password" placeholder="SNS投稿用の合言葉">
+    <p class="help">Instagramは本文にURLを載せない運用のため、URLの行を除いて投稿します。合言葉は管理者モードの鍵をそのまま使うので、入力は要りません。</p>
     <div class="export-gate-actions">
       <button class="secondary" id="snsPostCancel" type="button">やめる</button>
       <button class="primary" id="snsPostConfirm" type="button">この内容で投稿する</button>
@@ -1189,7 +1187,6 @@ const els = {
   snsPostCaption: document.getElementById('snsPostCaption'),
   snsPostThreads: document.getElementById('snsPostThreads'),
   snsPostInstagram: document.getElementById('snsPostInstagram'),
-  snsPostPass: document.getElementById('snsPostPass'),
   snsPostConfirm: document.getElementById('snsPostConfirm'),
   snsPostCancel: document.getElementById('snsPostCancel')
 };
@@ -4637,7 +4634,6 @@ function askSnsPostGate(caption){
     .map(check => `<li class="${check.warn ? 'warn' : ''}"><strong>${check.warn ? '要確認' : 'OK'}</strong>　${escapeHtml(check.text)}</li>`)
     .join('');
   els.snsPostCaption.textContent = caption;
-  els.snsPostPass.value = sessionStorage.getItem('nsf_sns_pass') || '';
   els.snsPostConfirm.disabled = tooBig || tooLong;
   els.snsPostConfirm.textContent = tooBig ? '動画を短くしてください' : (tooLong ? '本文を短くしてください' : 'この内容で投稿する');
   if(typeof els.snsPostGate.showModal !== 'function'){
@@ -4654,8 +4650,10 @@ function closeSnsPostGate(confirmed){
   const resolve = snsPostGateResolve;
   snsPostGateResolve = null;
   if(!confirmed) return resolve(null);
-  const pass = String(els.snsPostPass.value || '').trim();
-  try{ sessionStorage.setItem('nsf_sns_pass', pass); }catch(_){}
+  // 合言葉はこの画面で入力させない。ボタンが出ている＝管理者ゲートを通っているので、その鍵を使う。
+  // 照合はGAS側で行うため、画面だけのゲートにはなっていない。
+  let pass = '';
+  try{ pass = sessionStorage.getItem('nsf_admin_key') || ''; }catch(_){}
   resolve({
     threads: !!(els.snsPostThreads && els.snsPostThreads.checked),
     instagram: !!(els.snsPostInstagram && els.snsPostInstagram.checked),
@@ -4679,7 +4677,7 @@ async function shareVideoToSns(){
   const choice = await askSnsPostGate(caption);
   if(!choice){ setLog('投稿をやめました。'); return; }
   if(!choice.threads && !choice.instagram){ setLog('投稿先が選ばれていません。'); return; }
-  if(!choice.pass){ setLog('投稿用の合言葉が入力されていません。'); return; }
+  if(!choice.pass){ setLog('管理者モードの鍵が見つかりません。作品集ページで管理者モードをONにしてから、もう一度お試しください。'); return; }
 
   const button = els.shareToSns;
   const originalLabel = button ? button.textContent : '';
