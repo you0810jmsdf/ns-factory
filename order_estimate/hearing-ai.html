@@ -1423,7 +1423,10 @@ const HEARING_SID=(function(){
 
 async function liveTurn(userText, skipEcho){
   if(!skipEcho) addMsg('user', userText);
-  history.push({role:'user', content:userText});
+  // 職人の引き継ぎ直後は、そのやり取りをこの発言の前置きとしてAIへ渡す（画面には本文だけ出す）
+  const sendText = LIVE.pendingNote ? (LIVE.pendingNote+'\n\n'+userText) : userText;
+  LIVE.pendingNote='';
+  history.push({role:'user', content:sendText});
   saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
   LIVE.lastQ=userText; if(LIVE.started) liveResume(); else liveStart();   // 職人の引き継ぎを受け取れるようにする（2026-09-05）
   showTyping();
@@ -1482,7 +1485,7 @@ async function liveTurn(userText, skipEcho){
       AIに戻すとき、最後のAI発言の末尾に「職人との直接のやり取り」として追記する。
    ⛔ GETのクエリ名に sid を使わない（script.google.com が予約名として扱い400/500になる）。
    ⛔ 通信に失敗しても相談は止めない。 */
-const LIVE={mode:'ai', since:0, timer:null, lastQ:'', started:0, log:[]};
+const LIVE={mode:'ai', since:0, timer:null, lastQ:'', started:0, log:[], pendingNote:''};
 function liveStart(){ if(LIVE.timer||LIVE.started) return; LIVE.started=Date.now(); livePoll(); }
 function liveInterval(){
   if(LIVE.mode==='owner') return 4000;
@@ -1529,13 +1532,12 @@ function liveSetMode(mode){
   }else{
     txt.placeholder=isEN()?'Type your message':'メッセージを入力…（自由に話しかけてOK）';
     if(LIVE.log.length){
-      // 職人とのやり取りをAIの文脈に残す（最後のAI発言の末尾へ追記＝役割の交互を崩さない）
-      const note='\n\n（この後、職人が直接お答えしました。以下がそのやり取りです。この内容を最優先で踏まえて続けてください）\n'+LIVE.log.join('\n');
-      let k=history.length-1; while(k>=0&&history[k].role!=='assistant') k--;
-      if(k>=0) history[k]={role:'assistant', content:history[k].content+note};
-      else history.push({role:'assistant', content:note.trim()});
+      // 職人とのやり取りは「次のお客様の発言」の前置きとしてAIへ渡す（2026-09-06 変更）。
+      // ⛔ AIの発言（assistant）の末尾に追記する方式は、Claudeが空応答を返す事象を本番で再現した
+      //    （assistant側が「お客様: …」で終わる形になるため）。user側に置くと正常に応答する（実測）。
+      LIVE.pendingNote='（ここまでの間、職人が直接お答えしました。以下がそのやり取りです。この内容を最優先で踏まえて続けてください）\n'
+        +LIVE.log.join('\n')+'\n（ここから再びAIが担当）';
       LIVE.log=[];
-      saveHistory();
     }
   }
 }
