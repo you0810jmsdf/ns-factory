@@ -2,8 +2,13 @@
 
 ## 現状（2026-09-06 時点）— §5「返信で承認」を本番実装済み
 
-- GAS `Nsfactory-SNS-AutoPost` @49。ローカル正本は `レザークラフト\sns-gas-nsfactory\`（`NewsReply.gs`・`NewsAnnounce.gs` 新規）。
-- **スマホは候補メールに「掲載」「告知」「不要」のどれかを返信するだけ**。10分以内に結果が同スレッドへ返信で届く。
+- GAS `Nsfactory-SNS-AutoPost` @50。ローカル正本は `レザークラフト\sns-gas-nsfactory\`（`NewsReply.gs`・`NewsAnnounce.gs` 新規）。
+- **ボタンはスマホでも通る**（@50〜）。ボタン先は GAS 直ではなく `news-approve.html`（中継ページ）。
+  スマホの Safari は複数アカウントの Cookie で `/exec` 直開きが「現在、ファイルを開くことができません」になる
+  （通常Safari×・プライベート○で確定）。中継ページは Cookie なしで fetch するので通る（`sns-cancel.html` と同方式）。
+  GAS 側は `format=json`（approve / approve_sns / cancel / draft_peek）で応答。⛔ ボタン先を GAS 直に戻さないこと。
+- **返信でも同じ操作ができる**: 候補メールに「掲載」「告知」「不要」のどれかを返信。10分以内に結果が同スレッドへ届く。
+  ボタンで処理済みの候補に返信しても二重掲載しない（下書きの有無で判定）。
 - 実装は §5（返信）と §2（`NewsAnnounce.gs`）のとおり。「告知」＝掲載＋Threads投稿。告知の失敗で掲載は取り消さない。
   掲載後は `draft_<token>` を削除し、PCボタンの後押しで二重掲載しない。
 - トリガーの入切・即時実行は Web経由: `?action=newsreply_trigger&pass=<合言葉>&on=1|0` / `&run=1`
