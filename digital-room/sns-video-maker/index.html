@@ -4617,6 +4617,7 @@ function updateShareToSnsUi(){
 const SNS_POST_GAS_URL = 'https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec';
 const SNS_VIDEO_RELAY = 'https://nsfactory-tts-relay.bouncy-xenoposeidon.workers.dev';
 const SNS_VIDEO_MAX_BYTES = 24 * 1024 * 1024;
+const SNS_CAPTION_MAX_CHARS = 1200;
 
 let snsPostGateResolve = null;
 
@@ -4624,9 +4625,12 @@ function askSnsPostGate(caption){
   const format = currentVideoFormat();
   const sizeMb = lastRecordingBlob.size / 1048576;
   const tooBig = lastRecordingBlob.size > SNS_VIDEO_MAX_BYTES;
+  // 投稿はGASへGETで渡すため、本文が長すぎるとURLの上限に当たる
+  const tooLong = caption.length > SNS_CAPTION_MAX_CHARS;
   const checks = [
     {warn:false, text:`作品: ${currentWork.name || currentWork.id}（${currentWork.id}）`},
     {warn:tooBig, text:`動画: ${sizeMb.toFixed(1)}MB・${format.w}×${format.h}${tooBig ? '（大きすぎます。上限24MB）' : ''}`},
+    {warn:tooLong, text:`本文: ${caption.length}文字${tooLong ? `（長すぎます。${SNS_CAPTION_MAX_CHARS}文字まで）` : ''}`},
     {warn:false, text:'投稿後、一時的に置いた動画は削除します'}
   ];
   els.snsPostSummary.innerHTML = checks
@@ -4634,8 +4638,8 @@ function askSnsPostGate(caption){
     .join('');
   els.snsPostCaption.textContent = caption;
   els.snsPostPass.value = sessionStorage.getItem('nsf_sns_pass') || '';
-  els.snsPostConfirm.disabled = tooBig;
-  els.snsPostConfirm.textContent = tooBig ? '動画を短くしてください' : 'この内容で投稿する';
+  els.snsPostConfirm.disabled = tooBig || tooLong;
+  els.snsPostConfirm.textContent = tooBig ? '動画を短くしてください' : (tooLong ? '本文を短くしてください' : 'この内容で投稿する');
   if(typeof els.snsPostGate.showModal !== 'function'){
     return Promise.resolve(null);
   }
@@ -4694,20 +4698,37 @@ async function shareVideoToSns(){
     uploadedId = upJson.id;
 
     setLog('SNSへ投稿しています。動画の変換に時間がかかるため、最長で3分ほどかかります…');
-    const postRes = await fetch(SNS_POST_GAS_URL, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({
-        action:'video_post',
-        pass: choice.pass,
-        videoUrl: upJson.url,
-        caption,
-        threads: choice.threads,
-        instagram: choice.instagram
-      }),
+    // GASはPOSTだとブラウザから応答を読めない（CORS・2026-09-06実測）。
+    // 既存の news-approve.html と同じくGETで呼ぶ。
+    // 同じ投稿が二度実行されないよう、依頼ごとの番号をGASへ渡す（GASは200でもHTMLを返すことがある）
+    const requestId = [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join('');
+    const query = new URLSearchParams({
+      action:'video_post',
+      pass: choice.pass,
+      rid: requestId,
+      video: upJson.url,
+      caption,
+      threads: choice.threads ? '1' : '0',
+      instagram: choice.instagram ? '1' : '0'
+    });
+    const postRes = await fetch(`${SNS_POST_GAS_URL}?${query.toString()}`, {
+      method:'GET',
+      cache:'no-store',
       credentials:'omit'
     });
-    const result = await postRes.json().catch(() => ({ok:false, error:'応答を読み取れませんでした。'}));
+    const raw = await postRes.text();
+    let result;
+    if(raw.trim().startsWith('<')){
+      // HTMLが返るのはGAS側の一時的な不調。投稿は済んでいるかもしれないので勝手に送り直さない
+      setLog('⚠️ 投稿の結果を受け取れませんでした（サーバーが一時的に不調）。投稿されている可能性があるので、SNSを確認してから操作してください。');
+      return;
+    }
+    try{
+      result = JSON.parse(raw);
+    }catch(_){
+      setLog('⚠️ 投稿の結果を読み取れませんでした。投稿されている可能性があるので、SNSを確認してから操作してください。');
+      return;
+    }
     if(result.error && !result.results){
       setLog(`⛔ 投稿できませんでした（${result.error}）。動画は保存済みなので、SNSアプリから手で投稿することもできます。`);
       return;
