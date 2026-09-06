@@ -184,7 +184,7 @@
             "amount_text": "¥11,113",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-09\\20260903_222846_minne_1a0652905b799f13.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -249,7 +249,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085335_Apple領収書_19feab0641a7c1e4.txt"
+            "local_path": ""
           },
           {
             "date": "2026-08-07",
@@ -257,7 +257,7 @@
             "amount_text": "¥220",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085423_Apple領収書_19fdc11dc4ce5e62.txt"
+            "local_path": ""
           },
           {
             "date": "2026-08-05",
@@ -265,7 +265,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260813_085447_Apple領収書_19fd2c456c30cfe8.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -301,7 +301,7 @@
             "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260822_170958_ClaudeCode_1a027efb4b41ba8a.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -391,7 +391,7 @@
             "amount_text": "¥61,750",
             "subject": "自動車保険（証券96731354）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260807_151557_自動車保険_19fdb069096f372e.txt"
+            "local_path": ""
           },
           {
             "date": "2026-08-25",
@@ -399,7 +399,7 @@
             "amount_text": "¥61,750",
             "subject": "自動車保険（証券96731354）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260825_151427_自動車保険_1a037620e5057643.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -417,7 +417,7 @@
             "amount_text": "¥10,923",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260820_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -435,7 +435,7 @@
             "amount_text": "¥244,078",
             "subject": "自動振込予約",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260801_145232_Creema_19fbaae710ed8d19.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -453,7 +453,7 @@
             "amount_text": "¥133,374",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260801_145322_minne_19fbb4350f918101.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -480,7 +480,7 @@
             "amount_text": "¥2,070",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-08\\20260804_065943_ラクマ_19fcaf3f4f52d20b.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -527,7 +527,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260706_133758_Apple領収書_19f3368c7c8aa9d8.txt"
+            "local_path": ""
           },
           {
             "date": "2026-07-09",
@@ -535,7 +535,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260710_090714_Apple領収書_19f4b034da18c5aa.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -571,7 +571,7 @@
             "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260722_145156_ClaudeCode_19f884afaf8bad2e.txt"
+            "local_path": ""
           },
           {
             "date": "2026-07-26",
@@ -579,7 +579,7 @@
             "amount_text": "$22.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260727_145155_ClaudeCode_19fa158ba0233b0c.txt"
+            "local_path": ""
           },
           {
             "date": "2026-07-21",
@@ -587,7 +587,7 @@
             "amount_text": "¥17,895",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\ClaudeCode_20260721.txt"
+            "local_path": ""
           },
           {
             "date": "2026-07-26",
@@ -595,7 +595,7 @@
             "amount_text": "¥3,605",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\ClaudeCode_20260726.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -631,7 +631,7 @@
             "amount_text": "¥16,510",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\TEPCO_202607.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -649,7 +649,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260705_145210_水道_19f2fb1166d49018.txt"
+            "local_path": ""
           },
           {
             "date": "2026-07-05",
@@ -657,7 +657,7 @@
             "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260705_145211_水道_19f2f94301cbdc1d.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -675,7 +675,7 @@
             "amount_text": "¥3,001",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\Ymobile_202607.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -693,7 +693,7 @@
             "amount_text": "¥11,853",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\Ymobile_202607.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -729,7 +729,7 @@
             "amount_text": "¥74,930",
             "subject": "自動車保険（証券99029715）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260709_151559_自動車保険_19f43b1d9cc9df8f.txt"
+            "local_path": ""
           },
           {
             "date": "2026-07-25",
@@ -737,7 +737,7 @@
             "amount_text": "¥74,930",
             "subject": "自動車保険（証券99029715）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260725_151558_自動車保険_19f97294e06def79.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -755,7 +755,7 @@
             "amount_text": "¥29,104",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260717_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -782,7 +782,7 @@
             "amount_text": "¥18,145",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260701_145343_minne_19f1bc766786acd8.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -809,7 +809,7 @@
             "amount_text": "¥5,200",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260711_065948_ラクマ_19f500e39ed4a3f2.txt"
+            "local_path": ""
           },
           {
             "date": "2026-07-15",
@@ -817,7 +817,7 @@
             "amount_text": "¥4,500",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260715_065947_ラクマ_19f64bd436ed8a66.txt"
+            "local_path": ""
           },
           {
             "date": "2026-07-26",
@@ -825,7 +825,7 @@
             "amount_text": "¥3,150",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-07\\20260726_065945_ラクマ_19f9cd0492d52ca2.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -872,7 +872,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260606_090717_Apple領収書_19e99e3e20d89fed.txt"
+            "local_path": ""
           },
           {
             "date": "2026-06-09",
@@ -880,7 +880,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260706_133824_Apple領収書_19eb0a308fc1f15d.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -907,7 +907,7 @@
             "amount_text": "¥14,900",
             "subject": "Microsoft 365",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260615_145204_Office365_19eca18676f9411a.txt"
+            "local_path": ""
           },
           {
             "date": "2026-06-15",
@@ -915,7 +915,7 @@
             "amount_text": "¥14,900",
             "subject": "Microsoft 365",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\Office365_20260615.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -933,7 +933,7 @@
             "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260622_145158_ClaudeCode_19eedcbc2e65d094.txt"
+            "local_path": ""
           },
           {
             "date": "2026-06-25",
@@ -941,7 +941,7 @@
             "amount_text": "$5.50",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260625_145157_ClaudeCode_19efdc3aae7a9170.txt"
+            "local_path": ""
           },
           {
             "date": "2026-06-21",
@@ -949,7 +949,7 @@
             "amount_text": "¥17,739",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\ClaudeCode_20260621.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -985,7 +985,7 @@
             "amount_text": "¥14,460",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\TEPCO_202606.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1003,7 +1003,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260624_145214_水道_19ef7453b8ab2e03.txt"
+            "local_path": ""
           },
           {
             "date": "2026-06-01",
@@ -1011,7 +1011,7 @@
             "amount_text": "¥18,790",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\ChibaWater_202606.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1029,7 +1029,7 @@
             "amount_text": "¥5,586",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\Ymobile_202606.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1047,7 +1047,7 @@
             "amount_text": "¥10,152",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\Ymobile_202606.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1092,7 +1092,7 @@
             "amount_text": "¥23,004",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260619_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1128,7 +1128,7 @@
             "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260628_145357_STORES_19f0c92047a7cf7b.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1155,7 +1155,7 @@
             "amount_text": "¥3,353",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260623_072856_Yahoo決済_19ef3d4862e6c760.txt"
+            "local_path": ""
           },
           {
             "date": "2026-06-27",
@@ -1163,7 +1163,7 @@
             "amount_text": "¥2,165",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-06\\20260627_072855_Yahoo決済_19f06d049967a788.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1201,7 +1201,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_090722_Apple領収書_19df9d2a095858d2.txt"
+            "local_path": ""
           },
           {
             "date": "2026-05-09",
@@ -1209,7 +1209,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\20260510_090720_Apple領収書_19e10d75eaba99cb.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1245,7 +1245,7 @@
             "amount_text": "$110.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\20260522_145159_ClaudeCode_19e4e27b03784d03.txt"
+            "local_path": ""
           },
           {
             "date": "2026-05-21",
@@ -1253,7 +1253,7 @@
             "amount_text": "¥17,500",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\ClaudeCode_20260521.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1289,7 +1289,7 @@
             "amount_text": "¥15,182",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\TEPCO_202605.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1307,7 +1307,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_145215_水道_19dfb572ac906763.txt"
+            "local_path": ""
           },
           {
             "date": "2026-05-06",
@@ -1315,7 +1315,7 @@
             "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\20260506_145216_水道_19dfb3b42d5e38ac.txt"
+            "local_path": ""
           },
           {
             "date": "2026-05-21",
@@ -1323,7 +1323,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\20260521_145215_水道_19e483124d4c3779.txt"
+            "local_path": ""
           },
           {
             "date": "2026-05-24",
@@ -1331,7 +1331,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\20260524_145214_水道_19e574ae7bc44a2f.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1349,7 +1349,7 @@
             "amount_text": "¥6,024",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\Ymobile_202605.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1367,7 +1367,7 @@
             "amount_text": "¥14,734",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\Ymobile_202605.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1412,7 +1412,7 @@
             "amount_text": "¥23,003",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-05\\20260520_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1495,7 +1495,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\20260406_090729_Apple領収書_19d627f8705fe358.txt"
+            "local_path": ""
           },
           {
             "date": "2026-04-09",
@@ -1503,7 +1503,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\20260410_090727_Apple領収書_19d7692d69dfbf25.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1521,7 +1521,7 @@
             "amount_text": "¥9,900",
             "subject": "Photoroom",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\20260414_090725_Apple領収書_19d899c2cd67e09c.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1548,7 +1548,7 @@
             "amount_text": "$22.00",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\20260406_145201_ClaudeCode_19d618db119e63c3.txt"
+            "local_path": ""
           },
           {
             "date": "2026-04-20",
@@ -1556,7 +1556,7 @@
             "amount_text": "$49.50",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\20260421_145200_ClaudeCode_19daea697cbd78ba.txt"
+            "local_path": ""
           },
           {
             "date": "2026-04-05",
@@ -1564,7 +1564,7 @@
             "amount_text": "¥3,507",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260405.txt"
+            "local_path": ""
           },
           {
             "date": "2026-04-20",
@@ -1572,7 +1572,7 @@
             "amount_text": "¥7,856",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260420.txt"
+            "local_path": ""
           },
           {
             "date": "2026-04-21",
@@ -1580,7 +1580,7 @@
             "amount_text": "¥15,858",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\ClaudeCode_20260421.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1616,7 +1616,7 @@
             "amount_text": "¥18,390",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\TEPCO_202604.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1634,7 +1634,7 @@
             "amount_text": "¥17,268",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\ChibaWater_202604.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1652,7 +1652,7 @@
             "amount_text": "¥2,863",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\Ymobile_202604.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1670,7 +1670,7 @@
             "amount_text": "¥7,053",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\Ymobile_202604.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1715,7 +1715,7 @@
             "amount_text": "¥21,354",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-04\\20260420_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1798,7 +1798,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260306_090737_Apple領収書_19cbf414fa96689c.txt"
+            "local_path": ""
           },
           {
             "date": "2026-03-09",
@@ -1806,7 +1806,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260310_090734_Apple領収書_19cd6c7b7915af2f.txt"
+            "local_path": ""
           },
           {
             "date": "2026-03-13",
@@ -1814,7 +1814,7 @@
             "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260313_090732_Apple領収書_19ce6aaa89192281.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1850,7 +1850,7 @@
             "amount_text": "$20.00",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260306_145203_ClaudeCode_19cc1afbf9694a1e.txt"
+            "local_path": ""
           },
           {
             "date": "2026-03-27",
@@ -1858,7 +1858,7 @@
             "amount_text": "$5.00",
             "subject": "Anthropic",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260328_145202_ClaudeCode_19d31cfc681b0f2d.txt"
+            "local_path": ""
           },
           {
             "date": "2026-03-05",
@@ -1866,7 +1866,7 @@
             "amount_text": "¥3,147",
             "subject": "Claude",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\ClaudeCode_20260305.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1902,7 +1902,7 @@
             "amount_text": "¥21,541",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\TEPCO_202603.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1920,7 +1920,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260305_145218_水道_19cbc0c95566dab6.txt"
+            "local_path": ""
           },
           {
             "date": "2026-03-29",
@@ -1928,7 +1928,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260329_145217_水道_19d378b1d25e3a0f.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1946,7 +1946,7 @@
             "amount_text": "¥9,138",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\Ymobile_202603.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -1964,7 +1964,7 @@
             "amount_text": "¥11,353",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\Ymobile_202603.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2009,7 +2009,7 @@
             "amount_text": "¥18,302",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260319_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2054,7 +2054,7 @@
             "amount_text": "¥7,200",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260305_065951_ラクマ_19cbca462a6bca95.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2072,7 +2072,7 @@
             "amount_text": "¥19,462",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-03\\20260323_072857_Yahoo決済_19d19ced95d39045.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2110,7 +2110,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260206_090748_Apple領収書_19c2f2c368f01ea6.txt"
+            "local_path": ""
           },
           {
             "date": "2026-02-09",
@@ -2118,7 +2118,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260210_090746_Apple領収書_19c4738c723a6300.txt"
+            "local_path": ""
           },
           {
             "date": "2026-02-11",
@@ -2126,7 +2126,7 @@
             "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260211_090744_Apple領収書_19c4b9aebd7938eb.txt"
+            "local_path": ""
           },
           {
             "date": "2026-02-13",
@@ -2134,7 +2134,7 @@
             "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260214_090742_Apple領収書_19c57f4331725ca9.txt"
+            "local_path": ""
           },
           {
             "date": "2026-02-19",
@@ -2142,7 +2142,7 @@
             "amount_text": "¥150",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260220_090739_Apple領収書_19c78830decd2727.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2205,7 +2205,7 @@
             "amount_text": "¥31,887",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\TEPCO_202602.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2223,7 +2223,7 @@
             "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c92be24392413f.txt"
+            "local_path": ""
           },
           {
             "date": "2026-02-25",
@@ -2231,7 +2231,7 @@
             "amount_text": "",
             "subject": "水道料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260225_145219_水道_19c937dc8800efc6.txt"
+            "local_path": ""
           },
           {
             "date": "2026-02-01",
@@ -2239,7 +2239,7 @@
             "amount_text": "¥18,072",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\ChibaWater_202602.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2257,7 +2257,7 @@
             "amount_text": "¥9,136",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\Ymobile_202602.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2275,7 +2275,7 @@
             "amount_text": "¥11,815",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\Ymobile_202602.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2320,7 +2320,7 @@
             "amount_text": "¥15,253",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260220_6338_中司　祐樹_振込明細書.PDF"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2365,7 +2365,7 @@
             "amount_text": "¥5,400",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260211_065953_ラクマ_19c4b9c2fe96c100.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2383,7 +2383,7 @@
             "amount_text": "¥6,441",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260204_072859_Yahoo決済_19c26ddbad9e6232.txt"
+            "local_path": ""
           },
           {
             "date": "2026-02-17",
@@ -2391,7 +2391,7 @@
             "amount_text": "¥13,761",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-02\\20260217_072858_Yahoo決済_19c69c87c36021d8.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2429,7 +2429,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_090754_Apple領収書_19b91990f6a9887a.txt"
+            "local_path": ""
           },
           {
             "date": "2026-01-09",
@@ -2437,7 +2437,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260111_090751_Apple領収書_19ba96b2bdf94607.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2500,7 +2500,7 @@
             "amount_text": "¥31,091",
             "subject": "電気料金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\TEPCO_202601.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2518,7 +2518,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260106_145223_水道_19b90cc570868e5b.txt"
+            "local_path": ""
           },
           {
             "date": "2026-01-07",
@@ -2526,7 +2526,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260107_145222_水道_19b9793fadff1a9f.txt"
+            "local_path": ""
           },
           {
             "date": "2026-01-25",
@@ -2534,7 +2534,7 @@
             "amount_text": "",
             "subject": "領収書",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260125_145220_水道_19bf31a099bee441.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2552,7 +2552,7 @@
             "amount_text": "¥9,144",
             "subject": "インターネット（SoftBank光）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\Ymobile_202601.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2570,7 +2570,7 @@
             "amount_text": "¥13,367",
             "subject": "携帯電話（Y!mobile）",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\Ymobile_202601.pdf"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2615,7 +2615,7 @@
             "amount_text": "¥27,453",
             "subject": "カルチャースクール講師謝礼",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260120_6338_中司　祐樹_振込明細書_27453.PDF"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2660,7 +2660,7 @@
             "amount_text": "¥2,700",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2026-01\\20260103_065957_ラクマ_19b8360ff19c10da.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2707,7 +2707,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-12\\20251206_145047_Apple領収書_19aefe47cd7465de.txt"
+            "local_path": ""
           },
           {
             "date": "2025-12-09",
@@ -2715,7 +2715,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-12\\20251210_145044_Apple領収書_19b077fc40d6a671.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2868,7 +2868,7 @@
             "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-12\\20251211_145416_STORES_19b0dbaf4cdab9be.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2886,7 +2886,7 @@
             "amount_text": "¥2,700",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-12\\20251228_065959_ラクマ_19b633eb743a591b.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2904,7 +2904,7 @@
             "amount_text": "¥3,780",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-12\\20251211_072900_Yahoo決済_19b0d867a109706c.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -2942,7 +2942,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-11\\20251107_145058_Apple領収書_19a5cb16cab16b97.txt"
+            "local_path": ""
           },
           {
             "date": "2025-11-09",
@@ -2950,7 +2950,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-11\\20251111_145055_Apple領収書_19a72029f1840929.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -3103,7 +3103,7 @@
             "amount_text": "¥3,135",
             "subject": "STORES",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-11\\20251116_145420_STORES_19a885ee9caf982e.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -3121,7 +3121,7 @@
             "amount_text": "¥810",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-11\\20251112_070002_ラクマ_19a77197f5fce159.txt"
+            "local_path": ""
           },
           {
             "date": "2025-11-16",
@@ -3129,7 +3129,7 @@
             "amount_text": "¥3,850",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-11\\20251116_070002_ラクマ_19a8b63746526090.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -3176,7 +3176,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-10\\20251006_145108_Apple領収書_199b5a65384d9545.txt"
+            "local_path": ""
           },
           {
             "date": "2025-10-09",
@@ -3184,7 +3184,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-10\\20251010_145104_Apple領収書_199cd137022e6029.txt"
+            "local_path": ""
           },
           {
             "date": "2025-10-15",
@@ -3192,7 +3192,7 @@
             "amount_text": "¥10,700",
             "subject": "マネーフォワード",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-10\\20251016_145101_Apple領収書_199ec8019d38f774.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -3392,7 +3392,7 @@
             "amount_text": "¥2,000",
             "subject": "Meta Verified Standard",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-09\\20250906_145114_Apple領収書_1991adac8739427f.txt"
+            "local_path": ""
           },
           {
             "date": "2025-09-09",
@@ -3400,7 +3400,7 @@
             "amount_text": "¥1,500",
             "subject": "iCloud+",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-09\\20250910_145111_Apple領収書_19932b82d5ea024b.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -3562,7 +3562,7 @@
             "amount_text": "¥22,500",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-09\\20250903_070004_ラクマ_1990ca81361109c5.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -3580,7 +3580,7 @@
             "amount_text": "¥3,126",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-09\\20250924_072902_Yahoo決済_1997c041d27dc96c.txt"
+            "local_path": ""
           },
           {
             "date": "2025-09-27",
@@ -3588,7 +3588,7 @@
             "amount_text": "¥7,876",
             "subject": "売上金",
             "status": "取得済み",
-            "local_path": "監理部\\receipts\\processed\\2025-09\\20250927_072902_Yahoo決済_1998b27f845ed94a.txt"
+            "local_path": ""
           }
         ],
         "guide": {
@@ -3616,12 +3616,12 @@
       }
     }
   },
-  "checked_at": "2026-09-05 00:26:56",
+  "checked_at": "2026-09-06 13:45:46",
   "health": {
     "token_updated": "2026-09-05",
-    "token_age_days": 0,
+    "token_age_days": 1,
     "latest_receipt": "2026-09-04",
-    "receipt_age_days": 0,
+    "receipt_age_days": 1,
     "warnings": []
   }
 }
