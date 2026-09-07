@@ -354,6 +354,21 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
   </section>
 
   <section class="card">
+    <h2>毎朝の状況サマリー（summary）</h2>
+    <p class="desc">毎朝6時（JST）に1通、4時間足・日足それぞれの向き／直近いつ切り替わったか／過去1年の回数をまとめて通知します。相場が動かない日でも状況が分かります。送る時刻の変更は workflow の cron 側（0 21 * * *）。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると朝のサマリーは届きません（クロス通知は別途届きます）。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="summaryEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
     <h2>値動きの荒さ（volatility）</h2>
     <p class="desc">4時間足のATRが過去の分布の上位に入った／戻った時に通知。</p>
     <div class="toggle">
@@ -674,6 +689,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       const rg = (c.checks && c.checks.regime)       || {};
       const cr = (c.checks && c.checks.cross_4h)     || {};
       const cd = (c.checks && c.checks.cross_daily)  || {};
+      const su = (c.checks && c.checks.summary)      || {};
       const vo = (c.checks && c.checks.volatility)   || {};
       const sp = (c.checks && c.checks.spread)       || {};
       const st = (c.checks && c.checks.status)       || {};
@@ -691,6 +707,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       $('crossDEnabled').checked = cd.enabled != null ? !!cd.enabled : true;
       $('crossDFast').value      = cd.fast != null ? cd.fast : 25;
       $('crossDSlow').value      = cd.slow != null ? cd.slow : 75;
+      $('summaryEnabled').checked = su.enabled != null ? !!su.enabled : true;
       $('volEnabled').checked   = vo.enabled != null ? !!vo.enabled : true;
       $('volAtr').value         = vo.atr_period != null ? vo.atr_period : 14;
       $('volLookback').value    = vo.lookback != null ? vo.lookback : 500;
@@ -765,6 +782,9 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
           enabled: $('crossDEnabled').checked,
           fast:    Number($('crossDFast').value),
           slow:    Number($('crossDSlow').value),
+        },
+        summary: {
+          enabled: $('summaryEnabled').checked,
         },
         volatility: {
           enabled:    $('volEnabled').checked,
