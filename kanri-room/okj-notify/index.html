@@ -177,7 +177,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 <main class="wrap" id="wrap" style="display:none">
   <div class="eyebrow">OKJ NOTIFY / CONFIG</div>
   <h1>BTC/JPY 通知設定</h1>
-  <p class="lead">GitHub Actions（15分ごと）で OKJ の BTC/JPY と GMO BTC_JPY の市場データを取得し、ntfy.sh 経由で iPhone へ通知します。</p>
+  <p class="lead">GitHub Actions で OKJ の BTC/JPY と GMO BTC_JPY の市場データを取得し、ntfy.sh 経由で iPhone へ通知します。<br>⚠ cron は15分ごとの設定ですが、<strong>GitHub は定期実行を大幅に間引きます</strong>。実測では1日7〜8回・間隔の中央値148分・最長5.7時間（2026-08-26〜09-07・実行記録の全件集計）。リアルタイム性は期待できません。</p>
 
   <div class="status-line">
     <span class="dot" id="statusDot"></span>
@@ -357,7 +357,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 
   <section class="card">
     <h2>毎朝の状況サマリー（summary）</h2>
-    <p class="desc">毎朝6時（JST）に1通、4時間足・日足それぞれの向き／直近いつ切り替わったか／過去1年の回数をまとめて通知します。相場が動かない日でも状況が分かります。送る時刻の変更は workflow の cron 側（0 21 * * *）。</p>
+    <p class="desc">4時間足・日足それぞれの向き／直近いつ切り替わったか／過去1年の回数をまとめて通知します。相場が動かない日でも状況が分かります。送る時刻の設定は workflow の cron 側（0 21 * * * ＝ 06:00 JST）。<br>⚠ <strong>この時刻に必ず届くわけではありません。</strong>GitHub の定期実行は間引かれ、2026-09-08 の初回は発火しませんでした。確実に毎朝届かせるには外部から起動する構成が必要です。</p>
     <div class="toggle">
       <div class="toggle-meta">
         <strong>有効化</strong>
