@@ -177,7 +177,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 <main class="wrap" id="wrap" style="display:none">
   <div class="eyebrow">OKJ NOTIFY / CONFIG</div>
   <h1>BTC/JPY 通知設定</h1>
-  <p class="lead">GitHub Actions（*/5 分）で OKJ の BTC/JPY を取得し、ntfy.sh 経由で iPhone へ通知します。</p>
+  <p class="lead">GitHub Actions（15分ごと）で OKJ の BTC/JPY と GMO BTC_JPY の市場データを取得し、ntfy.sh 経由で iPhone へ通知します。</p>
 
   <div class="status-line">
     <span class="dot" id="statusDot"></span>
@@ -239,6 +239,157 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       <label for="bandPctStep">変動率（％）</label>
       <input type="number" id="bandPctStep" min="0.1" max="50" step="0.1">
       <div class="hint">推奨: 1.0%。範囲: 0.1〜50.0。</div>
+    </div>
+  </section>
+
+  <!-- 市場の変化（GMO BTC_JPY）2026-09-07 追加 -->
+  <section class="card">
+    <h2>急落・急騰トリガー（velocity）</h2>
+    <p class="desc">GMOコイン BTC_JPY（レバレッジ）の確定15分足で、直近15分・1時間・4時間の変化率が閾値を超えたら通知。状態が変わった時だけ鳴り、再通知は間隔を空けます。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると急落・急騰トリガーは発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="velEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field" id="fieldVelPct15m">
+      <label for="velPct15m">15分の変化率（％）</label>
+      <input type="number" id="velPct15m" min="0.5" max="20" step="0.1">
+      <div class="hint">既定 2.0。範囲 0.5〜20。</div>
+    </div>
+    <div class="field" id="fieldVelPct1h">
+      <label for="velPct1h">1時間の変化率（％）</label>
+      <input type="number" id="velPct1h" min="0.5" max="30" step="0.1">
+      <div class="hint">既定 3.0。範囲 0.5〜30。</div>
+    </div>
+    <div class="field" id="fieldVelPct4h">
+      <label for="velPct4h">4時間の変化率（％）</label>
+      <input type="number" id="velPct4h" min="0.5" max="50" step="0.1">
+      <div class="hint">既定 5.0。範囲 0.5〜50。</div>
+    </div>
+    <div class="field" id="fieldVelCooldown">
+      <label for="velCooldown">再通知の間隔（分）</label>
+      <input type="number" id="velCooldown" min="5" max="720" step="5">
+      <div class="hint">既定 60。同じ状態が続く間は鳴りません。</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>日足の局面転換（regime）</h2>
+    <p class="desc">日足の終値と移動平均・その傾きから「上昇局面／横ばい／下落局面」を判定し、切り替わった時だけ通知。5年検証で SMA100 が最も安定。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると局面転換トリガーは発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="regEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field" id="fieldRegSma">
+      <label for="regSma">移動平均の日数</label>
+      <input type="number" id="regSma" min="20" max="300" step="1">
+      <div class="hint">既定 100。範囲 20〜300。</div>
+    </div>
+    <div class="field" id="fieldRegSlope">
+      <label for="regSlope">傾きを見る日数</label>
+      <input type="number" id="regSlope" min="5" max="60" step="1">
+      <div class="hint">既定 20。移動平均が何日前より上なら「上向き」とするか。</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>4時間足クロス（cross_4h）</h2>
+    <p class="desc">4時間足の短期SMAが長期SMAを上抜け（ゴールデン）／下抜け（デッド）した時に通知。5年検証で 12/200 は23条件中22条件で有効。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にするとクロス通知は発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="crossEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field" id="fieldCrossFast">
+      <label for="crossFast">短期SMA（本）</label>
+      <input type="number" id="crossFast" min="2" max="100" step="1">
+      <div class="hint">既定 12。短期＜長期。</div>
+    </div>
+    <div class="field" id="fieldCrossSlow">
+      <label for="crossSlow">長期SMA（本）</label>
+      <input type="number" id="crossSlow" min="5" max="400" step="1">
+      <div class="hint">既定 200。</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>値動きの荒さ（volatility）</h2>
+    <p class="desc">4時間足のATRが過去の分布の上位に入った／戻った時に通知。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると荒さ通知は発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="volEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field" id="fieldVolAtr">
+      <label for="volAtr">ATRの期間（本）</label>
+      <input type="number" id="volAtr" min="5" max="50" step="1">
+      <div class="hint">既定 14。</div>
+    </div>
+    <div class="field" id="fieldVolLookback">
+      <label for="volLookback">比較する過去の本数</label>
+      <input type="number" id="volLookback" min="100" max="2000" step="50">
+      <div class="hint">既定 500（4時間足で約83日）。</div>
+    </div>
+    <div class="field" id="fieldVolRank">
+      <label for="volRank">「荒い」と判定する上位の割合（％）</label>
+      <input type="number" id="volRank" min="50" max="99" step="1">
+      <div class="hint">既定 80（上位20%に入ったら「荒い」）。</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>板の薄さ（spread）・取引所ステータス（status）</h2>
+    <p class="desc">GMOの最良気配の差（スプレッド）が閾値以上になった時、および取引所がOPEN以外になった時に通知。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>スプレッド通知を有効化</strong>
+        <span>平常時のBTC_JPYは約1bps。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="spreadEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field" id="fieldSpreadBps">
+      <label for="spreadBps">閾値（bps）</label>
+      <input type="number" id="spreadBps" min="1" max="100" step="0.5">
+      <div class="hint">既定 5.0（1bps＝0.01%）。</div>
+    </div>
+    <div class="field" id="fieldSpreadCooldown">
+      <label for="spreadCooldown">再通知の間隔（分）</label>
+      <input type="number" id="spreadCooldown" min="5" max="720" step="5">
+      <div class="hint">既定 120。</div>
+    </div>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>取引所ステータス通知を有効化</strong>
+        <span>メンテナンス等でOPEN以外になったら通知。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="statusEnabled">
+        <span class="slider"></span>
+      </label>
     </div>
   </section>
 
@@ -494,6 +645,31 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       $('fgEnabled').checked        = fg.enabled != null ? !!fg.enabled : true;
       $('fgGreed').value            = fg.extreme_greed != null ? fg.extreme_greed : 75;
       $('fgFear').value             = fg.extreme_fear  != null ? fg.extreme_fear  : 25;
+      const ve = (c.checks && c.checks.velocity)     || {};
+      const rg = (c.checks && c.checks.regime)       || {};
+      const cr = (c.checks && c.checks.cross_4h)     || {};
+      const vo = (c.checks && c.checks.volatility)   || {};
+      const sp = (c.checks && c.checks.spread)       || {};
+      const st = (c.checks && c.checks.status)       || {};
+      $('velEnabled').checked   = ve.enabled != null ? !!ve.enabled : true;
+      $('velPct15m').value      = ve.pct_15m != null ? ve.pct_15m : 2.0;
+      $('velPct1h').value       = ve.pct_1h  != null ? ve.pct_1h  : 3.0;
+      $('velPct4h').value       = ve.pct_4h  != null ? ve.pct_4h  : 5.0;
+      $('velCooldown').value    = ve.cooldown_min != null ? ve.cooldown_min : 60;
+      $('regEnabled').checked   = rg.enabled != null ? !!rg.enabled : true;
+      $('regSma').value         = rg.sma != null ? rg.sma : 100;
+      $('regSlope').value       = rg.slope_days != null ? rg.slope_days : 20;
+      $('crossEnabled').checked = cr.enabled != null ? !!cr.enabled : true;
+      $('crossFast').value      = cr.fast != null ? cr.fast : 12;
+      $('crossSlow').value      = cr.slow != null ? cr.slow : 200;
+      $('volEnabled').checked   = vo.enabled != null ? !!vo.enabled : true;
+      $('volAtr').value         = vo.atr_period != null ? vo.atr_period : 14;
+      $('volLookback').value    = vo.lookback != null ? vo.lookback : 500;
+      $('volRank').value        = vo.high_rank != null ? Math.round(vo.high_rank * 100) : 80;
+      $('spreadEnabled').checked = sp.enabled != null ? !!sp.enabled : true;
+      $('spreadBps').value      = sp.bps != null ? sp.bps : 5.0;
+      $('spreadCooldown').value = sp.cooldown_min != null ? sp.cooldown_min : 120;
+      $('statusEnabled').checked = st.enabled != null ? !!st.enabled : true;
       currentSha = data.sha;
       $('metaUpdated').textContent = 'updated_at: ' + (c.updated_at || '-');
       $('metaSha').textContent     = 'sha: ' + (data.sha ? data.sha.substring(0,8) : '-');
@@ -539,6 +715,37 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
           extreme_greed: Number($('fgGreed').value),
           extreme_fear:  Number($('fgFear').value),
         },
+        velocity: {
+          enabled:      $('velEnabled').checked,
+          pct_15m:      Number($('velPct15m').value),
+          pct_1h:       Number($('velPct1h').value),
+          pct_4h:       Number($('velPct4h').value),
+          cooldown_min: Number($('velCooldown').value),
+        },
+        regime: {
+          enabled:    $('regEnabled').checked,
+          sma:        Number($('regSma').value),
+          slope_days: Number($('regSlope').value),
+        },
+        cross_4h: {
+          enabled: $('crossEnabled').checked,
+          fast:    Number($('crossFast').value),
+          slow:    Number($('crossSlow').value),
+        },
+        volatility: {
+          enabled:    $('volEnabled').checked,
+          atr_period: Number($('volAtr').value),
+          lookback:   Number($('volLookback').value),
+          high_rank:  Number($('volRank').value) / 100,
+        },
+        spread: {
+          enabled:      $('spreadEnabled').checked,
+          bps:          Number($('spreadBps').value),
+          cooldown_min: Number($('spreadCooldown').value),
+        },
+        status: {
+          enabled: $('statusEnabled').checked,
+        },
       },
     };
   }
@@ -576,9 +783,24 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     setFieldValid('fieldFgGreed', greedOk);
     setFieldValid('fieldFgFear',  fearOk);
 
+    const inRange = function(id, lo, hi, integer){
+      const v = Number($(id).value);
+      const ok = Number.isFinite(v) && v >= lo && v <= hi && (!integer || Number.isInteger(v));
+      setFieldValid('field' + id.charAt(0).toUpperCase() + id.slice(1), ok);
+      return ok;
+    };
+    const velOk = inRange('velPct15m', 0.5, 20) && inRange('velPct1h', 0.5, 30) && inRange('velPct4h', 0.5, 50) && inRange('velCooldown', 5, 720, true);
+    const regOk = inRange('regSma', 20, 300, true) && inRange('regSlope', 5, 60, true);
+    const crossFast = Number($('crossFast').value), crossSlow = Number($('crossSlow').value);
+    const crossOk = inRange('crossFast', 2, 100, true) && inRange('crossSlow', 5, 400, true) && crossFast < crossSlow;
+    setFieldValid('fieldCrossFast', crossOk); setFieldValid('fieldCrossSlow', crossOk);
+    const volOk = inRange('volAtr', 5, 50, true) && inRange('volLookback', 100, 2000, true) && inRange('volRank', 50, 99, true);
+    const spreadOk = inRange('spreadBps', 1, 100) && inRange('spreadCooldown', 5, 720, true);
+
     const ok = periodOk && overboughtOk && oversoldOk
             && fastOk && slowOk && signalOk
-            && greedOk && fearOk;
+            && greedOk && fearOk
+            && velOk && regOk && crossOk && volOk && spreadOk;
     saveBtn.disabled = !ok;
     return ok;
   }
@@ -622,6 +844,8 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     'rsiPeriod','rsiOverbought','rsiOversold',
     'macdFast','macdSlow','macdSignal',
     'fgGreed','fgFear',
+    'velPct15m','velPct1h','velPct4h','velCooldown','regSma','regSlope','crossFast','crossSlow',
+    'volAtr','volLookback','volRank','spreadBps','spreadCooldown',
   ].forEach(function(id){
     document.getElementById(id).addEventListener('input', validateAll);
   });
