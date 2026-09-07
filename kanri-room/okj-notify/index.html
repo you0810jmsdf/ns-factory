@@ -329,6 +329,31 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
   </section>
 
   <section class="card">
+    <h2>日足クロス（cross_daily）</h2>
+    <p class="desc">日足の短期SMAが長期SMAを上抜け／下抜けした時に「今が買いです／今が売りです」と通知。4時間足より遅いぶん、拾うのは大きな転換だけ。実測（GMO BTC_JPY・過去1年）: 25/75 は7回、4時間足12/200 は21回、日足50/200 は1回。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると日足クロスの通知は発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="crossDEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field" id="fieldCrossDFast">
+      <label for="crossDFast">短期SMA（日）</label>
+      <input type="number" id="crossDFast" min="2" max="100" step="1">
+      <div class="hint">既定 25。短期＜長期。</div>
+    </div>
+    <div class="field" id="fieldCrossDSlow">
+      <label for="crossDSlow">長期SMA（日）</label>
+      <input type="number" id="crossDSlow" min="5" max="400" step="1">
+      <div class="hint">既定 75。教科書どおりの「ゴールデンクロス」にするなら 50/200（ただし過去1年で1回しか出ていない）。</div>
+    </div>
+  </section>
+
+  <section class="card">
     <h2>値動きの荒さ（volatility）</h2>
     <p class="desc">4時間足のATRが過去の分布の上位に入った／戻った時に通知。</p>
     <div class="toggle">
@@ -648,6 +673,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       const ve = (c.checks && c.checks.velocity)     || {};
       const rg = (c.checks && c.checks.regime)       || {};
       const cr = (c.checks && c.checks.cross_4h)     || {};
+      const cd = (c.checks && c.checks.cross_daily)  || {};
       const vo = (c.checks && c.checks.volatility)   || {};
       const sp = (c.checks && c.checks.spread)       || {};
       const st = (c.checks && c.checks.status)       || {};
@@ -662,6 +688,9 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       $('crossEnabled').checked = cr.enabled != null ? !!cr.enabled : true;
       $('crossFast').value      = cr.fast != null ? cr.fast : 12;
       $('crossSlow').value      = cr.slow != null ? cr.slow : 200;
+      $('crossDEnabled').checked = cd.enabled != null ? !!cd.enabled : true;
+      $('crossDFast').value      = cd.fast != null ? cd.fast : 25;
+      $('crossDSlow').value      = cd.slow != null ? cd.slow : 75;
       $('volEnabled').checked   = vo.enabled != null ? !!vo.enabled : true;
       $('volAtr').value         = vo.atr_period != null ? vo.atr_period : 14;
       $('volLookback').value    = vo.lookback != null ? vo.lookback : 500;
@@ -732,6 +761,11 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
           fast:    Number($('crossFast').value),
           slow:    Number($('crossSlow').value),
         },
+        cross_daily: {
+          enabled: $('crossDEnabled').checked,
+          fast:    Number($('crossDFast').value),
+          slow:    Number($('crossDSlow').value),
+        },
         volatility: {
           enabled:    $('volEnabled').checked,
           atr_period: Number($('volAtr').value),
@@ -794,13 +828,16 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     const crossFast = Number($('crossFast').value), crossSlow = Number($('crossSlow').value);
     const crossOk = inRange('crossFast', 2, 100, true) && inRange('crossSlow', 5, 400, true) && crossFast < crossSlow;
     setFieldValid('fieldCrossFast', crossOk); setFieldValid('fieldCrossSlow', crossOk);
+    const crossDFast = Number($('crossDFast').value), crossDSlow = Number($('crossDSlow').value);
+    const crossDOk = inRange('crossDFast', 2, 100, true) && inRange('crossDSlow', 5, 400, true) && crossDFast < crossDSlow;
+    setFieldValid('fieldCrossDFast', crossDOk); setFieldValid('fieldCrossDSlow', crossDOk);
     const volOk = inRange('volAtr', 5, 50, true) && inRange('volLookback', 100, 2000, true) && inRange('volRank', 50, 99, true);
     const spreadOk = inRange('spreadBps', 1, 100) && inRange('spreadCooldown', 5, 720, true);
 
     const ok = periodOk && overboughtOk && oversoldOk
             && fastOk && slowOk && signalOk
             && greedOk && fearOk
-            && velOk && regOk && crossOk && volOk && spreadOk;
+            && velOk && regOk && crossOk && crossDOk && volOk && spreadOk;
     saveBtn.disabled = !ok;
     return ok;
   }
@@ -844,7 +881,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     'rsiPeriod','rsiOverbought','rsiOversold',
     'macdFast','macdSlow','macdSignal',
     'fgGreed','fgFear',
-    'velPct15m','velPct1h','velPct4h','velCooldown','regSma','regSlope','crossFast','crossSlow',
+    'velPct15m','velPct1h','velPct4h','velCooldown','regSma','regSlope','crossFast','crossSlow','crossDFast','crossDSlow',
     'volAtr','volLookback','volRank','spreadBps','spreadCooldown',
   ].forEach(function(id){
     document.getElementById(id).addEventListener('input', validateAll);
