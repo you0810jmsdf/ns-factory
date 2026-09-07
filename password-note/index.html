@@ -66,8 +66,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <div id="app-screen">
   <header>
     <span class="app-title">N's notebook パスワード管理</span>
-    <button class="icon-btn print-btn" id="print-btn" style="display:none">
-      印刷 <span>(<span id="print-count">0</span>)</span>
+    <button class="icon-btn print-btn" id="print-btn" style="display:none" title="A6カード（システム手帳用）で印刷">
+      カード印刷 <span>(<span id="print-count">0</span>)</span>
+    </button>
+    <button class="icon-btn print-btn" id="print-list-btn" style="display:none" title="A4一覧表（保管用）で印刷">
+      一覧印刷 <span>(<span id="print-list-count">0</span>)</span>
     </button>
     <button class="icon-btn danger-btn" id="delete-selected-btn" style="display:none">
       削除 <span>(<span id="delete-count">0</span>)</span>
