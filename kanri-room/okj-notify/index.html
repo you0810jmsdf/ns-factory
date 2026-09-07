@@ -305,7 +305,8 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 
   <section class="card">
     <h2>4時間足クロス（cross_4h）</h2>
-    <p class="desc">4時間足の短期SMAが長期SMAを上抜け（ゴールデン）／下抜け（デッド）した時に通知。5年検証で 12/200 は23条件中22条件で有効。</p>
+    <p class="desc">4時間足の短期SMAが長期SMAを上抜け（ゴールデン）／下抜け（デッド）した時に通知。<br>
+      ⚠ <strong>この条件で売買しても優位性は確認できていません。</strong>GMO BTC_JPY の8年分（2018-09〜2026-09）で、学習期間 2018-09〜2023-01 だけでパラメータを選び、検証期間 2023-01〜2026-09 で答え合わせした結果、<strong>持ちっぱなしを上回った設定は45通り中0通り</strong>でした（現行 25/75＋12/200 の検証期間の翌日勝率 52.1% は、同期間の全日ベースライン 52.3% を下回る）。相場の向きを知る道具として使い、売買の根拠にはしないでください（2026-09-07 実測）。</p>
     <div class="toggle">
       <div class="toggle-meta">
         <strong>有効化</strong>
@@ -330,7 +331,8 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 
   <section class="card">
     <h2>日足クロス（cross_daily）</h2>
-    <p class="desc">日足の短期SMAが長期SMAを上抜け／下抜けした時に「今が買いです／今が売りです」と通知。4時間足より遅いぶん、拾うのは大きな転換だけ。実測（GMO BTC_JPY・過去1年）: 25/75 は7回、4時間足12/200 は21回、日足50/200 は1回。</p>
+    <p class="desc">日足の短期SMAが長期SMAを上抜け／下抜けした時に「今が買いです／今が売りです」と通知。4時間足より遅いぶん、拾うのは大きな転換だけ。実測（GMO BTC_JPY・過去1年）: 25/75 は7回、4時間足12/200 は21回、日足50/200 は1回。<br>
+      ⚠ 4時間足クロスと同じく、<strong>この条件で売買する優位性は確認できていません</strong>（上の注意を参照）。8年分の実測では、該当区間50回の<strong>リターンの中央値は +0.0%</strong>、天井を付けるまで中央値6日でした。</p>
     <div class="toggle">
       <div class="toggle-meta">
         <strong>有効化</strong>
