@@ -358,6 +358,134 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
     `;
   }
 
+  // ===== A4一覧表形式（保管用・全件を少ない枚数で印刷）=====
+
+  // history[] から「最新のID」と「最新のパスワード」を取り出す。
+  // type が other/alert/warning の履歴はパスワード変更ではないため PW の対象外。
+  function latestCred(entry) {
+    const history = [...(entry.history || [])]
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    let username = '';
+    let password = '';
+    let updatedAt = '';
+
+    for (const h of history) {
+      const isOther = h.type === 'other' || h.type === 'alert' || h.type === 'warning';
+      if (!username && h.username) username = h.username;
+      if (!password && !isOther && h.password) {
+        password = h.password;
+        updatedAt = h.date;
+      }
+      if (username && password) break;
+    }
+
+    if (!updatedAt && history.length) updatedAt = history[0].date;
+    return { username, password, updatedAt };
+  }
+
+  // 行の高さを揃えるため、全角=2・半角=1 で数えて指定幅で打ち切る
+  function clipText(text, maxUnits) {
+    const str = String(text ?? '').replace(/\s+/g, ' ').trim();
+    if (!str) return '';
+    let units = 0;
+    let out = '';
+    for (const ch of Array.from(str)) {
+      units += textUnits(ch);
+      if (units > maxUnits) return out + '…';
+      out += ch;
+    }
+    return out;
+  }
+
+  function listNoteFor(entry) {
+    const parts = [];
+    if (entry.owner) parts.push(entry.owner);
+    if (entry.url) parts.push(entry.url);
+    if (entry.description) parts.push(entry.description);
+    return clipText(parts.join(' / '), 46);
+  }
+
+  function listRowHTML(entry, index) {
+    const { username, password, updatedAt } = latestCred(entry);
+    return `<tr>
+      <td class="l-no">${index + 1}</td>
+      <td class="l-title">${esc(clipText(entry.title, 34))}</td>
+      <td class="l-mono">${esc(clipText(username, 34))}</td>
+      <td class="l-mono l-pw">${esc(password)}</td>
+      <td class="l-note">${esc(listNoteFor(entry))}</td>
+      <td class="l-date">${fmtDate(updatedAt)}</td>
+    </tr>`;
+  }
+
+  function getListCSS() {
+    return `
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif; background:#fff; color:#000; }
+@page { size:A4 portrait; margin:10mm 10mm 8mm; }
+
+.list-head { margin-bottom:2.5mm; }
+.list-title { font-size:11pt; font-weight:bold; letter-spacing:0.5pt; }
+.list-meta { font-size:7pt; color:#333; margin-top:0.8mm; }
+.list-caution { font-size:7pt; color:#000; margin-top:1mm; padding:1mm 1.5mm; border:0.3mm solid #000; }
+
+table.list { width:100%; border-collapse:collapse; table-layout:fixed; }
+table.list thead { display:table-header-group; }
+table.list tr { page-break-inside:avoid; }
+table.list th, table.list td {
+  border:0.2mm solid #999;
+  padding:0.8mm 1mm;
+  font-size:7.5pt;
+  line-height:1.25;
+  vertical-align:top;
+  word-break:break-all;
+  overflow-wrap:anywhere;
+}
+table.list th { background:#eee; font-weight:bold; font-size:7pt; text-align:left; }
+.l-no    { width:8mm;  text-align:right; }
+.l-title { width:40mm; font-weight:bold; }
+.l-mono  { width:40mm; font-family:'Consolas','Courier New',monospace; }
+.l-pw    { width:40mm; font-family:'Consolas','Courier New',monospace; }
+.l-note  { width:44mm; font-size:6.8pt; color:#222; }
+.l-date  { width:16mm; font-size:6.8pt; text-align:center; }
+    `;
+  }
+
+  function printList(entries) {
+    const win = window.open('', '_blank');
+    const doc = win.document;
+
+    const d = new Date();
+    const stamp = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`
+      + ` ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+    const rows = entries.map((entry, i) => listRowHTML(entry, i)).join('');
+
+    doc.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+      <title>パスワード一覧印刷</title>
+      <style>${getListCSS()}</style></head><body>
+      <div class="list-head">
+        <div class="list-title">N's notebook パスワード一覧</div>
+        <div class="list-meta">印刷日時: ${stamp}　／　${entries.length}件</div>
+        <div class="list-caution">パスワードを伏字にせず印刷しています。金庫等で保管してください。</div>
+      </div>
+      <table class="list">
+        <thead><tr>
+          <th class="l-no">No</th>
+          <th class="l-title">サービス名</th>
+          <th class="l-mono">ID・ユーザー名</th>
+          <th class="l-pw">パスワード</th>
+          <th class="l-note">補足（所有者／URL／説明）</th>
+          <th class="l-date">更新日</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      </body></html>`);
+
+    doc.close();
+    setTimeout(() => { win.focus(); win.print(); }, 600);
+  }
+
   function printEntries(entries) {
     // 2エントリーずつ処理: 左列=表, 右列=裏メモ
     const win = window.open('', '_blank');
@@ -389,5 +517,5 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
     setTimeout(() => { win.focus(); win.print(); }, 600);
   }
 
-  return { printEntries };
+  return { printEntries, printList };
 })();

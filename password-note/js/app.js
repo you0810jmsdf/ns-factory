@@ -400,6 +400,8 @@ function renderList() {
   document.getElementById('entry-count').textContent = `${entries.length}件`;
   document.getElementById('print-btn').style.display = selectedIds.size > 0 ? 'flex' : 'none';
   document.getElementById('print-count').textContent = selectedIds.size;
+  document.getElementById('print-list-btn').style.display = selectedIds.size > 0 ? 'flex' : 'none';
+  document.getElementById('print-list-count').textContent = selectedIds.size;
   document.getElementById('delete-selected-btn').style.display = selectedIds.size > 0 ? 'flex' : 'none';
   document.getElementById('delete-count').textContent = selectedIds.size;
 
@@ -659,6 +661,15 @@ function printSelected() {
   PrintManager.printEntries(entries);
 }
 
+function printSelectedList() {
+  if (selectedIds.size === 0) {
+    toast('印刷する登録を選択してください', 'error');
+    return;
+  }
+  const entries = vault.entries.filter(e => selectedIds.has(e.id));
+  PrintManager.printList(entries);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('login-form').addEventListener('submit', handleLogin);
   document.getElementById('toggle-mode-btn').addEventListener('click', () => {
@@ -671,6 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sync-btn').addEventListener('click', () => loadFromGist());
   document.getElementById('add-btn').addEventListener('click', openNewEntry);
   document.getElementById('print-btn').addEventListener('click', printSelected);
+  document.getElementById('print-list-btn').addEventListener('click', printSelectedList);
   document.getElementById('delete-selected-btn').addEventListener('click', deleteSelectedEntries);
   document.getElementById('export-btn').addEventListener('click', exportBackup);
   document.getElementById('import-btn').addEventListener('click', chooseImportFile);
