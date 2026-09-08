@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC価格 帯跨ぎ通知テンプレート | N's factory デジタル幕僚室</title>
+<meta name="description" content="BTC/JPY が決めた金額幅を跨いだときだけ、iPhone/Androidへ通知する仕組みのテンプレート。GitHub Actions と ntfy.sh を使い、月額0円・サーバー不要で動きます。無料配布。">
+<!-- Google tag (gtag.js) -->
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+  :root {
+    --bg: #16120d;
+    --bg-card: #1e1913;
+    --edge: #2a231a;
+    --gold: #c9a961;
+    --gold-dim: #8a744a;
+    --ink: #e8e2d6;
+    --ink-dim: #a89f8e;
+    --danger: #d46a5a;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Meiryo", "メイリオ", "Hiragino Sans", sans-serif;
+    line-height: 1.8;
+    font-size: 15px;
+  }
+  a { color: var(--gold); }
+  a:hover { color: #e0c27a; }
+  header { border-bottom: 1px solid var(--edge); padding: 18px 22px; }
+  header .back { font-size: 13px; color: var(--ink-dim); text-decoration: none; }
+  header .back:hover { color: var(--gold); }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 22px 80px; }
+  .eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: .14em;
+    color: var(--gold-dim); text-transform: uppercase; margin-bottom: 10px;
+  }
+  h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.4; margin-bottom: 14px; letter-spacing: -.01em; }
+  .lead { color: var(--ink-dim); margin-bottom: 30px; }
+  h2 {
+    font-size: 17px; margin: 40px 0 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--edge); color: var(--gold);
+  }
+  h3 { font-size: 15px; margin: 24px 0 8px; }
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 0 0 16px 22px; }
+  li { margin-bottom: 6px; }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--edge);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 18px;
+  }
+  .dl {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--gold); color: #16120d; font-weight: 800;
+    padding: 14px 26px; border-radius: var(--radius); text-decoration: none;
+    font-size: 15px;
+  }
+  .dl:hover { background: #e0c27a; color: #16120d; }
+  .meta { font-size: 12px; color: var(--ink-dim); margin-top: 10px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 14px; }
+  th, td { border: 1px solid var(--edge); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #221c15; color: var(--gold-dim); font-weight: 700; white-space: nowrap; }
+  .warn {
+    border-left: 3px solid var(--danger); background: #211712;
+    padding: 14px 16px; border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 18px;
+  }
+  .warn strong { color: var(--danger); }
+  code {
+    background: #221c15; padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, monospace; font-size: 13px; color: var(--gold);
+  }
+  .scroll { overflow-x: auto; }
+  footer { border-top: 1px solid var(--edge); padding: 24px 22px; text-align: center; font-size: 12px; color: var(--ink-dim); }
+</style>
+</head>
+<body>
+
+<header><a class="back" href="../">← デジタル幕僚室へ戻る</a></header>
+
+<main>
+  <div class="eyebrow">FREE TEMPLATE / 月額0円</div>
+  <h1>BTC価格 帯跨ぎ通知テンプレート</h1>
+  <p class="lead">
+    ビットコイン（BTC/JPY）が、自分で決めた金額幅を跨いだときだけ、スマホに通知が届きます。
+    値動きをずっと見ていなくて済むように作ったものです。サーバー契約も月額費用も要りません。
+  </p>
+
+  <div class="card">
+    <a class="dl" href="./okj-notify-template-v1.1.zip" download>⬇ テンプレートをダウンロード（ZIP・18KB）</a>
+    <div class="meta">v1.1 / 2026-09-08 更新 ・ 設置マニュアル・FAQ・更新履歴を同梱 ・ 無料 ・ 登録不要</div>
+  </div>
+
+  <h2>何をするものか</h2>
+  <p>
+    たとえば刻み幅を10万円にしておくと、価格が 1,240万円 → 1,250万円 と帯を跨いだ瞬間に1通届きます。
+    同じ帯の中で動いている間は鳴りません。<strong>「動いていないのに鳴り続ける」を避ける</strong>ための作りです。
+  </p>
+  <p>
+    刻み幅は自分で決められます（5万円でも20万円でも、数字を1つ書き換えるだけです）。
+  </p>
+
+  <h2>こういう人に向いています</h2>
+  <ul>
+    <li>チャートを見続けるのをやめたい。でも大きく動いたときは知りたい</li>
+    <li>作業中や外出中にスマホを見られないことが多い</li>
+    <li>月額のかかるサービスを増やしたくない</li>
+    <li>GitHubのアカウントを持っている、または作ることに抵抗がない</li>
+  </ul>
+
+  <h3>逆に、向いていません</h3>
+  <ul>
+    <li><strong>秒単位・分単位で反応したい人</strong>（下の「正直にお伝えすること」を必ずお読みください）</li>
+    <li>GitHubの画面を触ることに強い不安がある人</li>
+    <li>売買の判断そのものを任せたい人（このテンプレートは値段を伝えるだけで、何も判断しません）</li>
+  </ul>
+
+  <h2>動作要件</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>必須</th><td>GitHubアカウント（無料）</td></tr>
+    <tr><th>必須</th><td>iPhone または Android（無料アプリ「ntfy」を入れます）</td></tr>
+    <tr><th>必須</th><td>数値を書き換える程度の操作（プログラミングの知識は要りません）</td></tr>
+    <tr><th>不要</th><td>取引所の口座（価格は公開APIから取得します）</td></tr>
+    <tr><th>不要</th><td>サーバー契約・VPS・月額費用</td></tr>
+  </table>
+  </div>
+
+  <h2>正直にお伝えすること</h2>
+  <div class="warn">
+    <p><strong>「15分ごとに必ずチェックされる」ものではありません。実際は数時間おきです。</strong></p>
+    <p style="margin-bottom:0;">
+      同梱の設定は15分ごとの定期実行ですが、GitHubは定期実行を大幅に間引きます。
+      開発元の運用リポジトリで実行記録を全件集計した実測値が下表です（2026-08-26〜09-07）。
+    </p>
+  </div>
+  <div class="scroll">
+  <table>
+    <tr><th>設定</th><th>実際に動いた回数</th><th>実行間隔の中央値</th><th>最長の空白</th></tr>
+    <tr><td><code>*/5</code>（旧版）</td><td>1日 7.1回</td><td>170分</td><td>743分（12.4時間）</td></tr>
+    <tr><td><code>*/15</code>（v1.1）</td><td>1日 8.4回</td><td>148分</td><td>341分（5.7時間）</td></tr>
+  </table>
+  </div>
+  <p>
+    間隔を短く書いても動く回数はほとんど増えません（間引かれる量が増えるだけです）。
+    これはテンプレートの不具合ではなく、GitHubの無料の定期実行そのものの性質です。
+  </p>
+  <p>
+    ですので、<strong>「気づいたら大きく動いていた」を後から知る</strong>用途には十分機能しますが、
+    <strong>リアルタイムに反応する用途には向きません。</strong>
+    確実な間隔で動かしたい場合は、常時動くサーバーや外部のスケジューラから起動する構成が別途必要になります。
+  </p>
+
+  <h2>設置の流れ</h2>
+  <ol>
+    <li>ZIPを展開し、自分のGitHubリポジトリに2つのファイルを置く</li>
+    <li>スマホに「ntfy」アプリを入れ、推測されにくいトピック名を決めて購読する</li>
+    <li>GitHubのSecretにトピック名を登録する</li>
+    <li>手動実行して、スマホに通知が届くことを確かめる</li>
+  </ol>
+  <p>
+    詳しい手順は、ZIPの中の <code>setup_manual.md</code> に画面つきで書いてあります。
+    つまずきやすい点は <code>faq.md</code> にまとめました。
+  </p>
+
+  <h2>中身</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>okcoin_price_notify.py</th><td>価格を取得して、帯を跨いだか判定する本体</td></tr>
+    <tr><th>okcoin-price-notify.yml</th><td>GitHub Actions の定期実行設定</td></tr>
+    <tr><th>setup_manual.md</th><td>設置マニュアル</td></tr>
+    <tr><th>faq.md</th><td>よくある質問</td></tr>
+    <tr><th>更新履歴.md</th><td>v1.1 での変更点</td></tr>
+    <tr><th>support_policy.md</th><td>取り扱いについて</td></tr>
+  </table>
+  </div>
+
+  <h2>お願いと免責</h2>
+  <ul>
+    <li>このテンプレートは<strong>価格を知らせるだけ</strong>のもので、売買の助言は一切行いません。投資判断はご自身の責任でお願いします。</li>
+    <li>通知の遅延・欠落が起こりえます（上記のとおりです）。これを前提にお使いください。</li>
+    <li>改変・個人利用はご自由にどうぞ。再配布や販売はご遠慮ください。</li>
+    <li>無料での配布のため、個別のサポートはお約束できません。</li>
+  </ul>
+
+  <p style="margin-top:30px;color:var(--ink-dim);font-size:13px;">
+    もともと2026年5月に有料で配布していたものを、2026年9月8日より無料公開に切り替えました。
+    作った経緯は note の記事
+    「<a href="https://note.com/you0810jmsdf/n/n52034599d67f" target="_blank" rel="noopener">板に張り付くのをやめた。BTC監視を月額0円で自動化した</a>」
+    に書いています。
+  </p>
+</main>
+
+<footer>N's factory デジタル幕僚室</footer>
+
+</body>
+</html>
