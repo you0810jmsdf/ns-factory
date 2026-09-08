@@ -57,6 +57,7 @@ async function saveVaultLocal() {
   const enc = await CryptoManager.encrypt(vault, masterPassword);
   await DB.set('vault', enc);
   await DB.pushSnapshot(enc);
+  AutoBackup.notifyChange('change');
 }
 
 async function loadVaultLocal() {
@@ -215,6 +216,7 @@ function showApp() {
   applyLaunchQuery();
   renderList();
   initGist();
+  AutoBackup.run('login');
 }
 
 // 外部（管理画面など）から「このサービスを開きたい」と指定して起動されたときに、
@@ -685,6 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('print-list-btn').addEventListener('click', printSelectedList);
   document.getElementById('delete-selected-btn').addEventListener('click', deleteSelectedEntries);
   document.getElementById('export-btn').addEventListener('click', exportBackup);
+  document.getElementById('autobackup-btn').addEventListener('click', () => AutoBackup.handleButtonClick());
   document.getElementById('import-btn').addEventListener('click', chooseImportFile);
   document.getElementById('import-file').addEventListener('change', e => importBackupFile(e.target.files[0]));
   document.getElementById('snapshot-btn').addEventListener('click', openSnapshotModal);
