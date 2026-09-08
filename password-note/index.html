@@ -93,6 +93,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <span class="entry-count" id="entry-count">0件</span>
     <button class="icon-btn" id="select-all-btn" onclick="toggleSelectAll()" style="display:none">すべて選択</button>
     <button class="icon-btn" id="export-btn" title="暗号化済みの予備コピーを保存">予備コピー保存</button>
+    <button class="icon-btn" id="autobackup-btn" title="保存先フォルダを記憶して自動で予備コピーを書き出す">自動保存</button>
     <button class="icon-btn" id="import-btn" title="暗号化済みの予備コピーを読み込む">予備コピー読込</button>
     <button class="icon-btn" id="snapshot-btn" title="保存のたびに自動で残る履歴から復元">自動復元</button>
     <input type="file" id="import-file" accept=".json,application/json" style="display:none">
@@ -216,6 +217,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <script src="js/db.js?v=28"></script>
 <script src="js/gist.js?v=28"></script>
 <script src="js/print.js?v=28"></script>
+<script src="js/autobackup.js?v=34"></script>
 <script src="js/app.js?v=28"></script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
