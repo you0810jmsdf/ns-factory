@@ -201,7 +201,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .btn-sale-mail { background: #2e7d51; }
     .btn-sale-line { background: #06c755; }
     .btn-sale:hover { opacity: .85; }
-    .pattern-sale-note { font-size: 11px; color: #4a7a58; margin-top: 8px; }
+    .pattern-sale-note { font-size: 11px; color: #4a7a58; margin-top: 8px; line-height: 1.9; }
+    .pattern-sale-flow {
+      background: #fff; border: 1px solid #cfe3d5; border-radius: 6px;
+      padding: 10px 14px; margin-top: 12px;
+    }
+    .pattern-sale-flow-title { font-size: 12px; font-weight: 700; color: #17472a; margin-bottom: 6px; }
+    .pattern-sale-flow ol { margin: 0; padding-left: 1.3em; font-size: 12px; line-height: 1.9; color: #245c34; }
+    .pattern-sale-flow li { margin-bottom: 2px; }
 
     /* ダウンロード認証モーダル */
     .dl-modal-overlay {
@@ -507,7 +514,20 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
            href="mailto:you0810jmsdf@gmail.com?subject=%E5%9E%8B%E7%B4%99%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%81%94%E5%B8%8C%E6%9C%9B%E3%81%AE%E5%9E%8B%E7%B4%99%EF%BC%88%E7%AC%AC%E4%BD%95%E5%9B%9E%E3%81%AE%E4%BD%95%EF%BC%89%E3%82%92%E3%81%94%E8%A8%98%E5%85%A5%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%E3%81%94%E5%B8%8C%E6%9C%9B%E3%81%AE%E5%9E%8B%E7%B4%99%EF%BC%9A%0A">✉️ メールで問い合わせる</a>
         <a class="btn-sale btn-sale-line" href="https://lin.ee/qsmtY2N" target="_blank" rel="noopener">💬 LINEで問い合わせる</a>
       </div>
-      <div class="pattern-sale-note">※ 価格は1件あたり税込1,500円です。お支払い方法とお渡し方法は個別にご案内いたします。</div>
+      <div class="pattern-sale-flow">
+        <div class="pattern-sale-flow-title">お申し込みからお渡しまで</div>
+        <ol>
+          <li><strong>お問い合わせ</strong>（上のボタンから、ご希望の型紙とお名前をお知らせください）</li>
+          <li><strong>お支払い方法のご案内</strong>（メールの場合は自動で返信します。銀行振込先をお送りします）</li>
+          <li><strong>お振込</strong>（1件 税込1,500円／振込手数料はご負担ください）</li>
+          <li><strong>型紙PDFをメールでお届け</strong>（ご入金確認後、通常2〜3日以内）</li>
+        </ol>
+      </div>
+      <div class="pattern-sale-note">
+        ※ メールでお問い合わせいただくと、お支払い方法を<strong>自動で返信</strong>します。数分お待ちください。<br>
+        ※ LINEでお問い合わせの場合は、作家が直接ご対応いたします。<br>
+        ※ 型紙はPDFデータでのお渡しです（印刷物の発送はしておりません）。
+      </div>
     </div>
     <div class="curriculum" id="curriculum-list">
       <div class="loading">GASに接続するとカリキュラムを編集できます。</div>
