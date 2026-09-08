@@ -11,10 +11,10 @@ Bible,r25,normal,通常リング,,25mm,25,silver,シルバー,ニッケル,TRUE,
 Bible,r25,normal,通常リング,,25mm,25,gold,ゴールド,ゴールド,TRUE,TRUE,31,1500,in_stock,1,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
 Bible,r25,normal,通常リング,,25mm,25,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,32,1500,in_stock,1,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
 Bible,r25,normal,通常リング,,25mm,25,black,ブラック,ブラック,TRUE,TRUE,33,1500,out_of_stock,0,TRUE,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
-A5,r30,normal,通常リング,,30mm,30,silver,シルバー,ニッケル,TRUE,TRUE,40,1000,out_of_stock,0,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
-A5,r30,normal,通常リング,,30mm,30,gold,ゴールド,ゴールド,TRUE,TRUE,41,1500,in_stock,1,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
-A5,r30,normal,通常リング,,30mm,30,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,42,1500,out_of_stock,0,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
-A5,r30,normal,通常リング,,30mm,30,black,ブラック,ブラック,TRUE,TRUE,43,1500,out_of_stock,0,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,通常リング標準候補,,,,,
+A5,r30,normal,通常リング,,30mm,30,silver,シルバー,ニッケル,TRUE,TRUE,40,1168,out_of_stock,0,FALSE,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,通常リング標準候補,,,,,
+A5,r30,normal,通常リング,,30mm,30,gold,ゴールド,ゴールド,TRUE,TRUE,41,1168,in_stock,1,FALSE,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,通常リング標準候補,,,,,
+A5,r30,normal,通常リング,,30mm,30,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,42,1168,out_of_stock,0,FALSE,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,通常リング標準候補,,,,,
+A5,r30,normal,通常リング,,30mm,30,black,ブラック,ブラック,TRUE,TRUE,43,1168,out_of_stock,0,FALSE,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,通常リング標準候補,,,,,
 Micro5,kl08,klause,クラウゼリング,KRAUSE,8mm,8,silver,シルバー,ニッケル,TRUE,TRUE,100,3000,in_stock,1,FALSE,,TRUE,,,,,1500,,,,,,,,,,,,,,,,,Micro5専用,,,,,
 Micro5,kl11,klause,クラウゼリング,KRAUSE,11mm,11,silver,シルバー,ニッケル,TRUE,TRUE,110,1177,out_of_stock,0,FALSE,,TRUE,1177,1177,レザークラフト材料専門店ぱれっと,https://item.rakuten.co.jp/lc-palette/eg1013/,1177,0,2026-09-08,レザークラフト材料専門店ぱれっと,https://item.rakuten.co.jp/lc-palette/eg1013/,1177,0,2026-09-08,,,,,,,,,,Micro5専用,TRUE,2026-08-09 08:30:19,20260809-082943,レザークラフト材料専門店ぱれっと,
 Micro5,kl13,klause,クラウゼリング,KRAUSE,13mm,13,silver,シルバー,ニッケル,TRUE,TRUE,120,1386,in_stock,1,FALSE,,TRUE,1386,1386,レザークラフト材料専門店ぱれっと,https://item.rakuten.co.jp/lc-palette/eg1076/,1386,0,2026-09-08,レザークラフト材料専門店ぱれっと,https://item.rakuten.co.jp/lc-palette/eg1076/,1386,0,2026-09-08,,,,,,,,,,Micro5専用,TRUE,2026-08-09 08:30:31,20260809-082943,レザークラフト材料専門店ぱれっと,
@@ -139,11 +139,11 @@ Mini6,m6n25,normal,通常リング,,25mm,25,black,ブラック,ブラック,TRUE
 Mini6,m6n30,normal,通常リング,,30mm,30,gold,ゴールド,ゴールド,TRUE,TRUE,274,,out_of_stock,0,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新
 Mini6,m6n30,normal,通常リング,,30mm,30,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,275,,out_of_stock,0,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新
 Mini6,m6n30,normal,通常リング,,30mm,30,black,ブラック,ブラック,TRUE,TRUE,276,,out_of_stock,0,TRUE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新
-A5,a5n26,normal,通常リング,,26mm,26,silver,シルバー,ニッケル,TRUE,TRUE,277,1500,in_stock,2,,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
-A5,a5n26,normal,通常リング,,26mm,26,gold,ゴールド,ゴールド,TRUE,TRUE,278,1500,out_of_stock,0,,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
-A5,a5n26,normal,通常リング,,26mm,26,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,279,1500,out_of_stock,0,,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
-A5,a5n26,normal,通常リング,,26mm,26,black,ブラック,ブラック,TRUE,TRUE,280,1500,out_of_stock,0,,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
-A5,a5n27,normal,通常リング,,27mm,27,silver,シルバー,ニッケル,TRUE,TRUE,281,1500,out_of_stock,0,,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
-A5,a5n27,normal,通常リング,,27mm,27,gold,ゴールド,ゴールド,TRUE,TRUE,282,1500,out_of_stock,0,,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
-A5,a5n27,normal,通常リング,,27mm,27,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,283,1500,in_stock,1,,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
-A5,a5n27,normal,通常リング,,27mm,27,black,ブラック,ブラック,TRUE,TRUE,284,1500,out_of_stock,0,,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
+A5,a5n26,normal,通常リング,,26mm,26,silver,シルバー,ニッケル,TRUE,TRUE,277,1168,in_stock,2,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
+A5,a5n26,normal,通常リング,,26mm,26,gold,ゴールド,ゴールド,TRUE,TRUE,278,1168,out_of_stock,0,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
+A5,a5n26,normal,通常リング,,26mm,26,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,279,1168,out_of_stock,0,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
+A5,a5n26,normal,通常リング,,26mm,26,black,ブラック,ブラック,TRUE,TRUE,280,1168,out_of_stock,0,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
+A5,a5n27,normal,通常リング,,27mm,27,silver,シルバー,ニッケル,TRUE,TRUE,281,1168,out_of_stock,0,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
+A5,a5n27,normal,通常リング,,27mm,27,gold,ゴールド,ゴールド,TRUE,TRUE,282,1168,out_of_stock,0,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
+A5,a5n27,normal,通常リング,,27mm,27,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,283,1168,in_stock,1,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
+A5,a5n27,normal,通常リング,,27mm,27,black,ブラック,ブラック,TRUE,TRUE,284,1168,out_of_stock,0,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
