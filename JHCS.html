@@ -176,6 +176,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }
     .btn-dl:hover { background: #2d5f8a; }
     .btn-dl:disabled { opacity: .5; cursor: wait; }
+    /* サイト内ページへの案内ボタン。ダウンロードではないので色を分ける */
+    .btn-dl-link { background: #5a6b3f; }
+    .btn-dl-link:hover { background: #74884f; }
     .dl-btns { display: flex; flex-wrap: wrap; gap: 6px; }
     .dl-btns .btn-dl { margin-top: 0; border: none; cursor: pointer; font-family: inherit; }
     .dl-note { font-size: 11px; color: var(--gray); margin-top: 6px; }
@@ -1752,11 +1755,32 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     renderCurriculum(cachedCurriculum && cachedCurriculum.length ? cachedCurriculum : DEFAULT_CURRICULUM);
   }
 
+  // 配布資料の代わりにサイト内ページへ案内する回。第01回は道具とCADの回で
+  // 配る型紙が無いため、既存の解説ページへ飛ばす（2026-09-09 事業主指示）。
+  // ⛔ リンク先は実在を確認してから足すこと（サイト構成MAP.md を参照）。
+  const LESSON_LINKS = {
+    '01': [
+      { href: 'kouhou-room/textbook.html', label: '📖 工程と道具の教科書' },
+      { href: 'kouhou-room/', label: '🧰 道具ガイド（工程別）' },
+    ],
+  };
+
   function dlButtonsHtml(lessonId) {
-    if (dlMaterialsError) return '<div class="dl-note">資料リストの読み込みに失敗しました。ページを再読み込みしてください。</div>';
-    if (!dlMaterials) return '<div class="dl-note">資料リストを読み込み中…</div>';
-    const entry = dlMaterials[lessonId];
-    if (!entry) return '<div class="dl-note">配布資料は準備中です。</div>';
+    const links = (LESSON_LINKS[lessonId] || [])
+      .map(l => `<a class="btn-dl btn-dl-link" href="${escAttr(l.href)}" target="_blank" rel="noopener">${l.label}</a>`);
+
+    if (dlMaterialsError) {
+      return links.length
+        ? `<div class="dl-btns">${links.join('')}</div>`
+        : '<div class="dl-note">資料リストの読み込みに失敗しました。ページを再読み込みしてください。</div>';
+    }
+    if (!dlMaterials) {
+      return links.length
+        ? `<div class="dl-btns">${links.join('')}</div>`
+        : '<div class="dl-note">資料リストを読み込み中…</div>';
+    }
+
+    const entry = dlMaterials[lessonId] || {};
     const btns = [];
     ['text', 'pattern', 'cad'].forEach(type => {
       (entry[type] || []).forEach(f => {
@@ -1765,8 +1789,15 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         btns.push(`<button class="btn-dl" data-lesson="${escAttr(lessonId)}" data-type="${type}" data-file="${escAttr(f.name)}" onclick="dlBtnClick(this)">${label}</button>`);
       });
     });
-    if (!btns.length) return '<div class="dl-note">配布資料は準備中です。</div>';
-    return `<div class="dl-btns">${btns.join('')}</div><div class="dl-note">※ダウンロードには受講生認証（メール＋氏名）が必要です</div>`;
+
+    // ダウンロードが1つも無くリンクだけの回は、受講生認証の注記を出さない（認証不要のため）
+    if (!btns.length) {
+      return links.length
+        ? `<div class="dl-btns">${links.join('')}</div>`
+        : '<div class="dl-note">配布資料は準備中です。</div>';
+    }
+    return `<div class="dl-btns">${btns.concat(links).join('')}</div>`
+      + '<div class="dl-note">※ダウンロードには受講生認証（メール＋氏名）が必要です</div>';
   }
 
   function dlBtnClick(btn) {
