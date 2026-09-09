@@ -356,6 +356,33 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
   </section>
 
   <section class="card">
+    <h2>3条件そろい（combo）</h2>
+    <p class="desc">日足ゴールデン・4時間足ゴールデン・日足RSIの3つが<strong>同時に揃った瞬間だけ</strong>通知します。崩れたときは鳴りません（鳴る回数が倍になるため）。実測（2018-09〜2026-09・7.8年）: <strong>年11.5回</strong>、揃っている日数は全体の33%、継続は中央値4日。<br>
+      ⚠ これは<strong>通知を絞るための条件であって、儲かる条件ではありません</strong>。同じ期間の検証で、この3条件を使った戦略は「ずっと持つ」に負けています（+175% vs +453%）。通知文も事実だけを伝える書き方にしてあります。</p>
+    <div class="toggle">
+      <div class="toggle-meta">
+        <strong>有効化</strong>
+        <span>OFF にすると3条件そろいの通知は発火しません。</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="comboEnabled">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="field" id="fieldComboRsiPeriod">
+      <label for="comboRsiPeriod">RSIの期間（日）</label>
+      <input type="number" id="comboRsiPeriod" min="5" max="50" step="1">
+      <div class="hint">既定 14。日足で計算します。</div>
+    </div>
+    <div class="field" id="fieldComboRsiMin">
+      <label for="comboRsiMin">RSIがこの値を超えていること</label>
+      <input type="number" id="comboRsiMin" min="10" max="95" step="1">
+      <div class="hint">既定 50（上昇の勢いがある側）。80にすると条件はさらに厳しくなり、揃う回数は年11.5回よりも減ります。<br>
+        実測: RSI80超の後の30日勝率は80.8%（全日基準55.6%）で、学習期間83.2%・検証期間78.1%と再現しました。ただし同じ上昇局面の連続日を重複して数えているため、見た目より不確かです。</div>
+    </div>
+  </section>
+
+  <section class="card">
     <h2>毎朝の状況サマリー（summary）</h2>
     <p class="desc">4時間足・日足それぞれの向き／直近いつ切り替わったか／過去1年の回数をまとめて通知します。相場が動かない日でも状況が分かります。送る時刻の設定は workflow の cron 側（0 21 * * * ＝ 06:00 JST）。<br>⚠ <strong>この時刻に必ず届くわけではありません。</strong>GitHub の定期実行は間引かれ、2026-09-08 の初回は発火しませんでした。確実に毎朝届かせるには外部から起動する構成が必要です。</p>
     <div class="toggle">
@@ -692,6 +719,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       const cr = (c.checks && c.checks.cross_4h)     || {};
       const cd = (c.checks && c.checks.cross_daily)  || {};
       const su = (c.checks && c.checks.summary)      || {};
+      const cb = (c.checks && c.checks.combo)        || {};
       const vo = (c.checks && c.checks.volatility)   || {};
       const sp = (c.checks && c.checks.spread)       || {};
       const st = (c.checks && c.checks.status)       || {};
@@ -710,6 +738,9 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
       $('crossDFast').value      = cd.fast != null ? cd.fast : 25;
       $('crossDSlow').value      = cd.slow != null ? cd.slow : 75;
       $('summaryEnabled').checked = su.enabled != null ? !!su.enabled : true;
+      $('comboEnabled').checked   = cb.enabled != null ? !!cb.enabled : true;
+      $('comboRsiPeriod').value   = cb.rsi_period != null ? cb.rsi_period : 14;
+      $('comboRsiMin').value      = cb.rsi_min != null ? cb.rsi_min : 50;
       $('volEnabled').checked   = vo.enabled != null ? !!vo.enabled : true;
       $('volAtr').value         = vo.atr_period != null ? vo.atr_period : 14;
       $('volLookback').value    = vo.lookback != null ? vo.lookback : 500;
@@ -788,6 +819,11 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
         summary: {
           enabled: $('summaryEnabled').checked,
         },
+        combo: {
+          enabled:    $('comboEnabled').checked,
+          rsi_period: Number($('comboRsiPeriod').value),
+          rsi_min:    Number($('comboRsiMin').value),
+        },
         volatility: {
           enabled:    $('volEnabled').checked,
           atr_period: Number($('volAtr').value),
@@ -855,11 +891,12 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     setFieldValid('fieldCrossDFast', crossDOk); setFieldValid('fieldCrossDSlow', crossDOk);
     const volOk = inRange('volAtr', 5, 50, true) && inRange('volLookback', 100, 2000, true) && inRange('volRank', 50, 99, true);
     const spreadOk = inRange('spreadBps', 1, 100) && inRange('spreadCooldown', 5, 720, true);
+    const comboOk = inRange('comboRsiPeriod', 5, 50, true) && inRange('comboRsiMin', 10, 95, true);
 
     const ok = periodOk && overboughtOk && oversoldOk
             && fastOk && slowOk && signalOk
             && greedOk && fearOk
-            && velOk && regOk && crossOk && crossDOk && volOk && spreadOk;
+            && velOk && regOk && crossOk && crossDOk && volOk && spreadOk && comboOk;
     saveBtn.disabled = !ok;
     return ok;
   }
@@ -904,7 +941,7 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     'macdFast','macdSlow','macdSignal',
     'fgGreed','fgFear',
     'velPct15m','velPct1h','velPct4h','velCooldown','regSma','regSlope','crossFast','crossSlow','crossDFast','crossDSlow',
-    'volAtr','volLookback','volRank','spreadBps','spreadCooldown',
+    'volAtr','volLookback','volRank','spreadBps','spreadCooldown','comboRsiPeriod','comboRsiMin',
   ].forEach(function(id){
     document.getElementById(id).addEventListener('input', validateAll);
   });
