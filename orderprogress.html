@@ -73,6 +73,15 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       padding:10px 20px; font-size:.82rem; color:#5D4037; text-align:center;
     }
     #setup-banner a { color:var(--color-accent-dark); font-weight:600; cursor:pointer; }
+    /* GAS接続失敗の帯（2026-09-11）: 失敗を黙って閲覧専用にしない。理由とその場で直すボタンを出す */
+    #conn-banner {
+      background:#FDECEA; border-bottom:1px solid #F5C2BD;
+      padding:10px 20px; font-size:.82rem; color:#8A1C12; text-align:center;
+    }
+    #conn-banner button {
+      margin-left:8px; padding:3px 12px; border:1px solid #8A1C12; border-radius:14px;
+      background:#fff; color:#8A1C12; font-size:.8rem; cursor:pointer;
+    }
 
     /* ── Hero ── */
     .hero {
@@ -404,6 +413,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 </nav>
 
 <!-- Setup banner -->
+<div id="conn-banner" hidden>
+  ⚠️ 管理データ（GAS）に接続できませんでした。今は閲覧専用です。<button type="button" onclick="retryLoad()">再読み込み</button>
+</div>
 <div id="setup-banner">
   ⚠️ GAS URLが未設定です。<a onclick="openSettings()">設定する</a>（設定するまでは閲覧専用）
 </div>
@@ -682,7 +694,7 @@ function checkAuth() {
   if (sessionStorage.getItem('op_auth') === '1') return Promise.resolve(true);
   const pw = prompt('管理者パスワードを入力してください:');
   if (pw === null || pw === '') return Promise.resolve(false);
-  return opSha256(pw).then((hex) => {
+  return opSha256(pw).then(async (hex) => {
     if (hex === ADMIN_PASS_HASH) {
       sessionStorage.setItem('op_auth', '1');
       try {
@@ -690,7 +702,10 @@ function checkAuth() {
         sessionStorage.setItem('nsf_admin_auth', hex);
       } catch(e) {}
       // 認証後は全列版（依頼者名・メモ・ヒアリング内容）を取り直す。取り直せなくても表示は続ける
-      try { loadRecords(); } catch(e) { try { applyFilter(); } catch(e2) {} }
+      // ⛔ await を外さないこと（2026-09-11）。待たずに返すと、呼び出し側の openModal が
+      //    取り直し前の公開版（メモ等を伏せた版）から編集画面を作り、保存でメモを空に上書きする。
+      //    実害: OP-2609-003 のメモ1,157字（9/8）、OP-2609-005 の521字（9/9）が消えた。
+      try { await loadRecords(); } catch(e) { try { applyFilter(); } catch(e2) {} }
       return true;
     }
     return false;
@@ -805,10 +820,9 @@ async function loadRecords() {
     let adminKey = '';
     try { adminKey = isAdmin() ? (sessionStorage.getItem('nsf_admin_key') || '') : ''; } catch (e) {}
     const listUrl = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'action=records' + (adminKey ? '&key=' + encodeURIComponent(adminKey) : '');
-    const res = await fetch(listUrl, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const data = await fetchRecordsWithRetry(listUrl);
     setAdminAvailable(true);
+    setConnBanner(false);
     // 管理者のつもりで公開版しか取れていない＝この状態で保存するとメモ等を空で上書きしてしまう。ログアウト扱いにして再入力を促す
     if (isAdmin() && !data.full) {
       try { sessionStorage.removeItem('op_auth'); } catch (e) {}
@@ -830,8 +844,39 @@ async function loadRecords() {
       return loadRecords();
     }
     gasReady = false;
+    setConnBanner(true);
     await loadFallbackRecords();
   }
+}
+
+// GAS は一時的に 404 などを返すことがある（2026-09-11 実測）。1回の失敗で閲覧専用に落とさず、
+// 間隔を空けて最大3回まで取り直す。3回とも失敗したら呼び出し側で帯を出す。
+async function fetchRecordsWithRetry(listUrl) {
+  const waits = [0, 1500, 3000];
+  let lastErr = null;
+  for (let i = 0; i < waits.length; i++) {
+    if (waits[i]) await new Promise(r => setTimeout(r, waits[i]));
+    try {
+      const res = await fetch(listUrl, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('取得に失敗しました');
+}
+
+function setConnBanner(show) {
+  const b = document.getElementById('conn-banner');
+  if (b) b.hidden = !show;
+}
+
+// 帯の「再読み込み」ボタン。ページごと読み直さず、一覧だけ取り直す
+async function retryLoad() {
+  showMsg('再読み込みしています…');
+  await loadRecords();
+  showMsg(gasReady ? '接続しました。編集できます' : 'まだ接続できません。少し待ってからもう一度お試しください', !gasReady);
 }
 
 async function loadFallbackRecords() {
@@ -1334,6 +1379,10 @@ function carGo(id, idx) {
 async function openModal(id) {
   closeSettingsMenu();
   if (!isAdmin() && !(await checkAuth())) return;
+  if (gasUrl && !gasReady) {
+    if (confirm('管理データ（GAS）に接続できていません。もう一度読み込みますか？')) retryLoad();
+    return;
+  }
   if (!gasReady || !gasUrl) {
     if (confirm('新規登録・編集にはGAS URL設定が必要です。設定しますか？')) openSettings();
     return;
@@ -1639,6 +1688,13 @@ function onCustomerSelectChange() {
 }
 
 async function saveRecord() {
+  if (gasUrl && !gasReady) {
+    // 開いた後に取り直しが一時的に失敗したケース。編集画面は GAS 取得済みのデータから作られている
+    // （openModal は gasReady のときしか開かない）ので、入力はそのまま使ってよい
+    showMsg('接続を確認しています…');
+    await loadRecords();
+    if (!gasReady) return showMsg('管理データ（GAS）に接続できません。入力内容は残っています。少し待ってから保存し直してください', true);
+  }
   if (!gasReady || !gasUrl) return showMsg('追加・編集にはGAS URL設定が必要です', true);
   const id = document.getElementById('edit-id').value;
   const payload = {
