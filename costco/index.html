@@ -2921,15 +2921,9 @@ function savePeriod(mailId) {
     .apiAdminUpdate(ADMIN_KEY, mailId, { periodText: v, endDate: e2 });
 }
 
-/** 商品プレビュー開閉。開くと同時に期間をAI解析（未設定のときだけ） */
-function togglePreview(mailId) {
-  var box = $('prev_' + mailId);
-  if (!box) return;
-  if (box.style.display !== 'none') { box.style.display = 'none'; return; }
-  box.style.display = 'block';
-  if (box.getAttribute('data-loaded') === '1') return;
-  box.innerHTML = '<div class="loading">商品と期間を読み込み中…</div>';
-
+/** 商品プレビューの商品一覧だけを読む。失敗したらその場でやり直せるボタンを出す。
+ *  ⛔ やり直しで togglePreview を呼び直さないこと。期間のAI解析（課金あり）まで二重に走る。 */
+function loadPreviewProducts(mailId, box) {
   google.script.run.withSuccessHandler(function (r) {
     box.setAttribute('data-loaded', '1');
     var h = '<div class="pgrid">';
@@ -2943,8 +2937,25 @@ function togglePreview(mailId) {
     h += '</div>';
     box.innerHTML = h;
   }).withFailureHandler(function (e) {
-    box.innerHTML = '<div class="empty">商品の読み込みエラー: ' + esc(e.message) + '</div>';
+    box.innerHTML = '<div class="empty">商品を読み込めませんでした: ' + esc(e.message)
+      + '<div style="margin-top:10px"><button class="btn pub">もう一度読み込む</button></div></div>';
+    var b = box.querySelector('button');
+    if (b) b.addEventListener('click', function () {
+      box.innerHTML = '<div class="loading">商品を読み込み中…</div>';
+      loadPreviewProducts(mailId, box);
+    });
   }).apiAdminProducts(ADMIN_KEY, mailId);
+}
+
+/** 商品プレビュー開閉。開くと同時に期間をAI解析（未設定のときだけ） */
+function togglePreview(mailId) {
+  var box = $('prev_' + mailId);
+  if (!box) return;
+  if (box.style.display !== 'none') { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  if (box.getAttribute('data-loaded') === '1') return;
+  box.innerHTML = '<div class="loading">商品と期間を読み込み中…</div>';
+  loadPreviewProducts(mailId, box);
 
   // 期間のAI解析（既に入っていればサーバー側で何もしない）
   var perEl = $('per_' + mailId);
