@@ -172,4 +172,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <!-- A5スリム月間（日付なし対応）。2026-09-11 新設 -->
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/a5slim-monthly/</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
