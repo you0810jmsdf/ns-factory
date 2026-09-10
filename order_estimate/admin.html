@@ -5703,6 +5703,11 @@ function rcAccountingRowFromRecord(month, sub, record) {
   //    保険料は車両費・按分71.4%なので、通信費で全額計上されると科目も金額も誤る。
   //    按分の適用はMF側で行うこと（この列は金額の根拠＝証憑の保管だけを担う）。
   if (sub === 'car_insurance') return null;
+  // 2026-09-10: joyfulhonda（講師謝礼）も会計送信の対象外。
+  // 振込はMFの銀行連携で「カ)ジヨイフルホンダ」として売上高で自動取込済みのため、
+  // ここから送ると同じ売上がもう1件入る（二重計上）。
+  // 源泉徴収分の補正（借:事業主貸／貸:売上高）はMF側の入金仕訳を直して行う。
+  if (sub === 'joyfulhonda') return null;
   const subject = record.subject || RC_SUB_LABELS[sub] || sub;
   const date = String(record.date || `${month}-01`).replace(/\//g, '-');
   const defaults = RC_ACCOUNT_DEFAULTS[sub] || { debit: '通信費', tax: '課税仕入10%' };
