@@ -341,26 +341,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 </head>
 <body>
 
-<!-- ===== PASSWORD OVERLAY ===== -->
-<div id="pw-overlay">
-  <div class="pw-card">
-    <div class="pw-logo">N's factory</div>
-    <p class="pw-title">ツール一覧</p>
-    <p class="pw-hint">公式LINEでご案内のパスワードを入力してください</p>
-    <div class="pw-form">
-      <input type="password" id="pw-input" placeholder="パスワード" autocomplete="off">
-      <button type="button" id="pw-btn">入力</button>
-    </div>
-    <p class="pw-error" id="pw-error" style="display:none">パスワードが違います</p>
-    <a href="https://lin.ee/qsmtY2N" class="pw-line-link" target="_blank" rel="noopener">パスワードがわからない方は公式LINEへ →</a>
-  </div>
-</div>
+<!-- 合言葉ゲートは 2026-09-11 に解除（事業主指示・掲載ツールは全て無料開放済み）。復活させる場合は git 履歴を参照 -->
 
 <!-- ===== HEADER ===== -->
 <header class="site-header">
   <div class="brand">N's factory</div>
   <h1>ツール一覧</h1>
-  <p class="subtitle">公式LINE会員限定ツール</p>
+  <p class="subtitle">無料・登録不要でお使いいただけます</p>
 </header>
 
 <!-- ===== TOOL CARDS ===== -->
@@ -596,20 +583,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 </footer>
 
 <script>
-(function(){
-  var KEY='nsf_auth';
-  if(sessionStorage.getItem(KEY)==='1'){document.getElementById('pw-overlay').style.display='none';return;}
-  function check(){
-    if(document.getElementById('pw-input').value==='nsfactory'){
-      sessionStorage.setItem(KEY,'1');
-      document.getElementById('pw-overlay').style.display='none';
-    }else{
-      document.getElementById('pw-error').style.display='block';
-    }
-  }
-  document.getElementById('pw-btn').addEventListener('click',check);
-  document.getElementById('pw-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
-})();
+// 合言葉ゲートは 2026-09-11 に解除（オーバーレイごと撤去）。復活させる場合は git 履歴を参照
 
 // === MODULE: Spec Accordion ===
 (function(){
