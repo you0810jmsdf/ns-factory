@@ -545,7 +545,14 @@ var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
     return typeof reportHealth === 'function';
   }
 
-  function callRpc(fn, args, success, failure) {
+  // Googleのサーバーは混み合うと単発で応答を落とすことがある。
+  // 読み取るだけのAPIは、利用者に見せる前に黙って数回やり直す。
+  // ⛔ 保存・注文・請求・チェックなど「書き込み系」をこの表に足さないこと。
+  //    同じ操作が二重に走って、注文が2件になる等の実害が出る。
+  var RETRY_SAFE_FNS = { apiGroupInfo: 1, apiGetAppData: 1 };
+  var RPC_MAX_TRIES = 3;
+
+  function callRpcOnce(fn, args, success, failure) {
     var cb = '__cgbRpc_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
     var script = document.createElement('script');
     var finished = false;
@@ -553,8 +560,7 @@ var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
       if (finished) return;
       finished = true;
       cleanup();
-      if (shouldReportFailure(fn, '通信がタイムアウトしました')) reportHealth('rpc:' + fn, '通信がタイムアウトしました', '');
-      if (failure) failure({ message: '通信がタイムアウトしました' });
+      failure({ message: '通信がタイムアウトしました', kind: 'rpc', retryable: true });
     }, 30000);
 
     function cleanup() {
@@ -567,20 +573,16 @@ var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
       if (finished) return;
       finished = true;
       cleanup();
-      if (payload && payload.ok) {
-        if (success) success(payload.result);
-      } else if (failure) {
-        if (shouldReportFailure(fn, (payload && payload.error) || '通信エラー')) reportHealth('rpc:' + fn, (payload && payload.error) || '通信エラー', '');
-        failure({ message: (payload && payload.error) || '通信エラー' });
-      }
+      if (payload && payload.ok) { if (success) success(payload.result); return; }
+      // 応答は返っている＝サーバーには届いている。やり直しても結果は同じなので再試行しない。
+      failure({ message: (payload && payload.error) || '通信エラー', kind: 'rpc', retryable: false });
     };
 
     script.onerror = function () {
       if (finished) return;
       finished = true;
       cleanup();
-      if (shouldReportFailure(fn, '通信に失敗しました')) reportHealth('network:' + fn, '通信に失敗しました', '');
-      if (failure) failure({ message: '通信に失敗しました' });
+      failure({ message: '通信に失敗しました', kind: 'network', retryable: true });
     };
     script.src = GAS_URL
       + '?action=rpc'
@@ -589,6 +591,25 @@ var GROUP_PASS = localStorage.getItem('cgb_pass_' + GROUP_ID) || '';
       + '&callback=' + encodeURIComponent(cb)
       + '&_=' + Date.now();
     document.head.appendChild(script);
+  }
+
+  function callRpc(fn, args, success, failure) {
+    var maxTries = RETRY_SAFE_FNS[fn] ? RPC_MAX_TRIES : 1;
+    var tries = 0;
+    function attempt() {
+      tries++;
+      callRpcOnce(fn, args, success, function (err) {
+        if (err.retryable && tries < maxTries) {
+          setTimeout(attempt, 1500 * tries);
+          return;
+        }
+        // 開発者への通知は「やり直しても駄目だった」ときだけ。何回試したかも残す。
+        var note = tries > 1 ? (tries + '回試して失敗') : '';
+        if (shouldReportFailure(fn, err.message)) reportHealth(err.kind + ':' + fn, err.message, note);
+        if (failure) failure({ message: err.message });
+      });
+    }
+    attempt();
   }
 
   function runner(success, failure) {
@@ -783,8 +804,25 @@ function boot() {
     if (!info.needsPass || GROUP_PASS) { startApp(); return; }
     showGate(info);
   }).withFailureHandler(function (e) {
-    $('main').innerHTML = '<div class="empty">読み込みエラー: ' + esc(e.message) + '</div>';
+    showLoadError(e, boot);
   }).apiGroupInfo(GROUP_ID);
+}
+
+// 通信が落ちたときに行き止まりにしない。その場でやり直せるボタンを必ず添える。
+// ⛔ ここを「エラー文だけ」に戻さないこと。利用者は再読み込みの仕方がわからず使えなくなる。
+function showLoadError(e, retry) {
+  $('main').innerHTML = '<div class="notice">'
+    + '<div class="notice-icon">📶</div>'
+    + '<div class="notice-title">読み込めませんでした</div>'
+    + '<div class="notice-body">' + esc((e && e.message) || '通信エラー') + '<br>'
+    + '電波が弱いか、Google側が一時的に混み合っているようです。<br>少し待ってからもう一度お試しください。</div>'
+    + '<div style="margin-top:14px"><button class="btn pub" id="retryLoadBtn">もう一度読み込む</button></div>'
+    + '</div>';
+  var b = $('retryLoadBtn');
+  if (b) b.addEventListener('click', function () {
+    $('main').innerHTML = '<div class="empty">読み込み中…</div>';
+    retry();
+  });
 }
 
 function showGate(info) {
@@ -846,11 +884,11 @@ function startApp() {
       try { localStorage.removeItem('cgb_pass_' + GROUP_ID); } catch (er) {}
       google.script.run.withSuccessHandler(function (info) { showGate(info); })
         .withFailureHandler(function () {
-          $('main').innerHTML = '<div class="empty">読み込みエラー: ' + esc(e.message) + '</div>';
+          showLoadError(e, boot);
         }).apiGroupInfo(GROUP_ID);
       return;
     }
-    $('main').innerHTML = '<div class="empty">読み込みエラー: ' + esc(e.message) + '</div>';
+    showLoadError(e, startApp);
   }).apiGetAppData(GROUP_ID, GROUP_PASS, HOST_KEY, ADMIN_KEY, state.person, VISITOR_ID);
 }
 
