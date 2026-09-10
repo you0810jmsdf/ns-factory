@@ -812,6 +812,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="receipt-checklist" data-admin-cat="keiei" role="tab" aria-selected="false">🧾 証憑チェックリスト</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="automations" data-admin-cat="keiei" role="tab" aria-selected="false">⏰ 定期実行</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="api-costs" data-admin-cat="keiei" role="tab" aria-selected="false">💴 API費用</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="jhcs-dl" data-admin-cat="keiei" role="tab" aria-selected="false">🎓 JHCS講習DL管理</button>
       <!-- 📦 在庫管理 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ring" data-admin-cat="stock" role="tab" aria-selected="false">リング在庫</button>
@@ -918,6 +919,25 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#fff"
         title="定期実行モニタ"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- API費用タブ -->
+    <div class="panel api-costs-section admin-section-hidden" id="apiCostsPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:#8a6a4a">Google Cloud（Gemini画像生成・Map Tiles）の今月の費用推定と予算到達の見込み。毎朝1回集計。認証は本画面と共通・自動ログイン</div>
+        <a href="../api-costs.html" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット -->
+      <iframe
+        id="apiCostsFrame"
+        data-src="../api-costs.html"
+        src="about:blank"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#0d1117"
+        title="API費用"
         loading="lazy"></iframe>
     </div>
 
@@ -1975,6 +1995,7 @@ function unlockAdmin() {
   try {
     sessionStorage.setItem('nsfactory-staff-monitor-auth', 'ok');
     sessionStorage.setItem('nsfactory-automations-auth', 'ok');
+    sessionStorage.setItem('nsfactory-api-costs-auth', 'ok');
     sessionStorage.setItem('nsfactory-chatlog-auth', 'ok');
   } catch (err) { /* ignore */ }
   tryAutoFetchToken();
@@ -6182,7 +6203,7 @@ async function saveJhcsStudent() {
 }
 
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'jhcs-dl': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'jhcs-dl': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics',
@@ -6208,11 +6229,12 @@ function setAdminTab(tab) {
   const isDashboard = tab === 'dashboard';
   const isStaffMonitor = tab === 'staff-monitor';
   const isAutomations = tab === 'automations';
+  const isApiCosts = tab === 'api-costs';
   const isChatlog = tab === 'chatlog';
   const isJhcsDl = tab === 'jhcs-dl';
   const isWaitlist = tab === 'waitlist';
   const isFavorites = tab === 'favorites';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -6270,6 +6292,9 @@ function setAdminTab(tab) {
   document.querySelectorAll('.automations-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isAutomations);
   });
+  document.querySelectorAll('.api-costs-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isApiCosts);
+  });
   document.querySelectorAll('.chatlog-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isChatlog);
   });
@@ -6283,7 +6308,7 @@ function setAdminTab(tab) {
     el.classList.toggle('admin-section-hidden', !isFavorites);
   });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites || isApiCosts);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -6383,6 +6408,8 @@ function setAdminTab(tab) {
       ? '本番の見積もりページと同一の計算式で全サイズ×全構造の価格をライブ試算します。スライダーと表内の入力欄で調整し、まとめてGitHubへ反映できます。'
       : isStaffMonitor
       ? '幕僚エージェントの稼働セッション数・さぼり警告・期限超過タスクを監視します。リアルタイム詳細（作業内容・完了操作）は自宅PCのローカルモニタから。'
+      : isApiCosts
+      ? 'Google Cloud（プロジェクト creators-map）の今月の費用推定です。AI日記の画像生成枚数から計算し、予算¥1,000に届く日と月末の見込みを出します。'
       : isChatlog
       ? 'ショールームのAI接客ログを一覧表示します。幕僚キャラ接客／みんなのチャットの2系統を切り替え、期間・担当・本文で絞り込み、CSV出力できます（月次使用量レポートの集計元）。'
       : isJhcsDl
@@ -6415,6 +6442,13 @@ function setAdminTab(tab) {
     const auFrame = document.getElementById('automationsFrame');
     if (auFrame && auFrame.src.indexOf('automations.html') === -1 && auFrame.dataset.src) {
       auFrame.src = auFrame.dataset.src;
+    }
+  }
+  if (isApiCosts) {
+    // 初回表示時のみ src をセット（認証は unlockAdmin() が api-costs 側のセッションキーを付与済み）
+    const acFrame = document.getElementById('apiCostsFrame');
+    if (acFrame && acFrame.src.indexOf('api-costs.html') === -1 && acFrame.dataset.src) {
+      acFrame.src = acFrame.dataset.src;
     }
   }
   if (isChatlog) {
