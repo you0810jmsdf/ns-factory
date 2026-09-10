@@ -1350,9 +1350,15 @@ function offerResume(){
   const d=loadSavedHistory(); if(!d) return false;
   const w=new Date(d.at);
   const when=(w.getMonth()+1)+'月'+w.getDate()+'日';
-  addMsg('bot','おかえりなさい🧵 '+when+'にご相談いただいた内容が残っています。\n続きから再開できますし、はじめからでも大丈夫です。');
+  /* 2026-09-10: 幕僚キャラ接客から会話ごと引き継いできた場合（chat-widget.js の
+     nsfHandOffHistory が from:'staff' を付ける）。たった今まで話していたお客様に
+     「おかえりなさい・◯月◯日にご相談いただいた」と言うと他人事に聞こえるため文言を変える。 */
+  const handedOff = d.from==='staff' && (Date.now()-(d.at||0)) < 60*60*1000;
+  addMsg('bot', handedOff
+    ? 'さきほどのお話は、こちらで引き継いでいます🧵\n続きからでも、はじめからでも大丈夫です。'
+    : 'おかえりなさい🧵 '+when+'にご相談いただいた内容が残っています。\n続きから再開できますし、はじめからでも大丈夫です。');
   renderQuick([
-    {label:'▶ 前回の続きから', sub:'内容を覚えています', val:'', onClick:()=>resumeSaved(d)},
+    {label: handedOff?'▶ さきほどの続きから':'▶ 前回の続きから', sub:'内容を覚えています', val:'', onClick:()=>resumeSaved(d)},
     {label:'はじめから相談する', sub:'前回の内容は消します', val:'', onClick:()=>{ clearSavedHistory(); chat.innerHTML=''; startPicker(); }}
   ]);
   return true;

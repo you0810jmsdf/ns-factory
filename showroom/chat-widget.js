@@ -431,7 +431,7 @@
               }).catch(function () {});
             }
           } },
-        { label: '🧵 くわしく相談ページへ', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/hearing-ai.html', '_blank'); } },
+        { label: '🧵 くわしく相談ページへ', onClick: function () { nsfOpenHearing(); } },
         { label: '最初からやり直す', onClick: hearingStart },
         { label: '終了する', exit: true, onClick: hearingExit }
       ]);
@@ -1077,7 +1077,7 @@
           if (currentProductContext) return null;
           // 2026-08-04 導線一本化: widget内の独自ヒアリング（hearingStart）をやめ、
           // 唯一の窓口（hearing-ai.html）へ合流させる（事業主指示）
-          return { label: '🧵 オーダー相談窓口へ', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/hearing-ai.html', '_blank'); } };
+          return { label: '🧵 オーダー相談窓口へ', onClick: function () { nsfOpenHearing(); } };
         case 'colors':
           return { label: '🎨 革の色・在庫を見る', onClick: function () { showLeatherGallery('ask'); } };
         case 'stitch':
@@ -1136,11 +1136,57 @@
        「オーダー相談窓口」への合流ボタンを応答の下に出す（ショールーム内でも同じ）。
        商品モーダル相談（productContextあり）は既存の「作家に送信」経路が正のため出さない。 */
     function nsfDetectOrderIntent(text) {
-      return /(オーダー|フルオーダー|注文|作って(ほしい|ください|もらいたい|欲しい)|カスタム|名入れ|見積|買いたい|購入したい)/.test(String(text || ''));
+      /* 2026-09-10 語彙拡張: 旧版は「作って欲しい」の形しか拾えず、実客の
+         「ゴムバンドもつけて欲しい！」（9/5 21:01）を素通りさせて窓口へ案内できなかった。
+         ⛔ 「〜て欲しい」は動詞を限定しない。⛔ 価格質問（いくら・概算）も購入意思として扱う。 */
+      var t = String(text || '');
+      // 「教えてほしい」「知りたい」だけの調べもの質問は、まだ意思ではないので窓口へ促さない
+      // （売り込みが「しつこい」と指摘された前例があるため。2026-07-20）
+      if (/教えて(欲しい|ほしい)|聞きたい|知りたいだけ/.test(t)) return false;
+      return /欲しい|ほしい|作りたい|作れます|作っても|使いたい|つけたい|付けたい|入れたい|要望|オーダー|フルオーダー|注文|カスタム|名入れ|刻印|見積|概算|いくら|値段|価格|予算|買いたい|購入したい|頼みたい|依頼したい/.test(t);
+    }
+
+    /* ── 窓口へ移るとき、それまでの会話を持っていく（2026-09-10）───────────────
+       背景: 幕僚キャラ接客とオーダー相談窓口(hearing-ai.html)は別々のAIで、履歴を共有して
+       いなかった。2026-09-05、ロルバーンMのお客様が窓口→幕僚キャラと移動し、同じ相談を
+       最初から説明し直す羽目になり、そのまま連絡先を残さず離脱した（実害）。
+       hearing-ai.html 側は起動時に offerResume() で「前回の続き」を提案する作りなので、
+       ⛔ 同じキー・同じ形式（{role:'user'|'assistant', content}）で書くこと。形式を変えると受け取れない。
+       ⛔ 勝手に復元はさせない。あちら側でお客様が「続きから」を選んだときだけ戻る。
+       ⛔ 端末の中だけに置く。連絡先などの個人情報は扱わない。 */
+    var NSF_HEARING_HIST_KEY = 'nsf_hearing_history';
+    var nsfHandedOffCount = {};   // staffId → 引き渡し済みの発言数（同じ発言を二重に渡さない）
+    function nsfHandOffHistory() {
+      try {
+        var staffId = currentChatStaffId;
+        var src = chatHistories[staffId] || [];
+        var fresh = src.slice(nsfHandedOffCount[staffId] || 0);
+        var add = [];
+        for (var i = 0; i < fresh.length; i++) {
+          var c = String(fresh[i].text || '').trim();
+          if (c) add.push({ role: fresh[i].role === 'model' ? 'assistant' : 'user', content: c });
+        }
+        if (!add.length) return;
+        var prev = [];
+        try {
+          var raw = global.localStorage.getItem(NSF_HEARING_HIST_KEY);
+          if (raw) { var d = JSON.parse(raw); if (d && Object.prototype.toString.call(d.history) === '[object Array]') prev = d.history; }
+        } catch (e) { /* 読めなければ今回分だけ渡す */ }
+        global.localStorage.setItem(NSF_HEARING_HIST_KEY, JSON.stringify({
+          at: Date.now(),
+          history: prev.concat(add).slice(-14),   // hearing-ai.html の保存上限と揃える
+          from: 'staff'
+        }));
+        nsfHandedOffCount[staffId] = src.length;
+      } catch (e) { /* 保存できなくても窓口へは進める（相談を止めない） */ }
+    }
+    function nsfOpenHearing() {
+      nsfHandOffHistory();
+      global.open(NSF_ROOT_BASE + 'order_estimate/hearing-ai.html', '_blank');
     }
     function nsfShowOrderGatewayChip() {
       renderChips([
-        { label: '🧵 オーダー相談窓口でくわしく相談', onClick: function () { global.open(NSF_ROOT_BASE + 'order_estimate/hearing-ai.html', '_blank'); } },
+        { label: '🧵 オーダー相談窓口でくわしく相談', onClick: function () { nsfOpenHearing(); } },
         { label: '閉じる', exit: true, onClick: nsfDefaultChips }
       ]);
     }
