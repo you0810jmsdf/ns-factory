@@ -1917,9 +1917,17 @@
               reply = lines[Math.floor(Math.random() * lines.length)]; isFallback = true;
             } else { reply = data.reply; isFallback = false; }
             appendStaffMsg(reply, isFallback);
-            // オーダー意図が見えたら窓口への合流チップを出す（商品モーダル相談は除く）
-            if (!currentProductContext && nsfDetectOrderIntent(text)) nsfShowOrderGatewayChip();
             chatHistories[staffId].push({ role: 'model', text: reply });
+            // オーダー意図が見えたら、会話を窓口へ渡せる形で控えたうえで合流チップを出す。
+            // 2026-09-10: 控えるのはボタンを押さずに離脱されても失わないため。9/5のお客様は
+            // 概算まで話して帰り、戻ってきたときには何も残っていなかった。
+            // ⛔ 控えるのはオーダー意図が見えたときだけ（ただの雑談まで窓口に持ち込まない）。
+            // ⛔ AIの応答をpushしてから呼ぶこと（順序を変えると応答が控えに入らない）。
+            // 商品モーダル相談（productContextあり）は既存の「作家に送信」経路が正のため対象外。
+            if (!currentProductContext && nsfDetectOrderIntent(text)) {
+              nsfHandOffHistory();
+              nsfShowOrderGatewayChip();
+            }
             chatTurnCount[staffId] = (chatTurnCount[staffId] || 0) + 1;
             if (chatTurnCount[staffId] >= CHAT_MAX_TURNS) showChatLimit();
             isChatSending = false;
