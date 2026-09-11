@@ -94,6 +94,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     /* === MODULE: Size cards === */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
     .size { position: relative; border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-2), var(--panel)); border-radius: 14px; overflow: hidden; transition: border-color .2s, transform .2s, box-shadow .2s; }
+    .pdf-card { display: block; }
     .size:hover { border-color: var(--line-2); box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04) inset; }
     .size-head { padding: 18px 18px 14px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: end; }
     .size-head .code { font-family: var(--mono); font-size: 11px; letter-spacing: .24em; color: var(--fg-3); text-transform: uppercase; }
@@ -240,7 +241,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
   </main>
 
-  <div class="sec"><span class="n">02</span><h2>Specifications</h2><span class="rule"></span></div>
+  <div class="sec"><span class="n">02</span><h2>Printed PDF</h2><span class="rule"></span></div>
+
+  <a class="size pdf-card" href="../refill-pdf/monthly-undated.html">
+    <div class="size-head">
+      <div><div class="code">N's refill · PDF</div><h3>印刷用PDFを買う</h3></div>
+      <div class="dim"><b>¥300</b>A5スリム 日付なし月間</div>
+    </div>
+    <div class="size-meta"><span>ツールを操作せずに、そのまま印刷できる完成データ</span><span>他サイズは順次・追加費用なし</span></div>
+    <div class="tool"><span class="k">Buy</span><span><span class="t">日付なし マンスリーリフィル PDF（A5スリム）</span><span class="d">両面14ページ・見開き1か月・7セグ風の透かし。カード決済は準備中のため、いまはメール申込</span></span><span class="arrow">→</span></div>
+  </a>
+
+  <div class="sec"><span class="n">03</span><h2>Specifications</h2><span class="rule"></span></div>
 
   <details class="spec" id="spec">
     <summary>

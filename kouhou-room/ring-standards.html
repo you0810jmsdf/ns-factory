@@ -164,6 +164,16 @@ img { max-width: 100%; display: block; }
 .spec-v { font-size: 14.5px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.01em; margin-top: 2px; }
 .spec-v small { font-size: 11px; font-weight: 600; color: var(--gray); }
 .fmt-notes { padding: 12px 18px 14px; }
+.fmt-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 18px 16px; }
+.fmt-tools-k { font-size: 11px; color: var(--gray); margin-right: 4px; }
+.fmt-tools a { font-size: 12px; font-weight: 700; color: var(--accent-dark); background: var(--accent-soft); border-radius: 999px; padding: 4px 12px; }
+.fmt-tools a.pdf { background: var(--charcoal); color: #fff; }
+.cta-band { margin-top: 34px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; background: var(--charcoal); color: #fff; border-radius: 16px; padding: 20px 22px; }
+.cta-txt b { display: block; font-size: 15px; margin-bottom: 4px; }
+.cta-txt span { font-size: 12.5px; color: rgba(255,255,255,.72); line-height: 1.6; }
+.cta-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.cta-btn { font-size: 13px; font-weight: 700; color: var(--charcoal); background: #fff; border-radius: 999px; padding: 10px 16px; white-space: nowrap; }
+.cta-btn.alt { color: #fff; background: var(--accent); }
 .fmt-notes li { list-style: none; font-size: 12px; color: #5C5A56; line-height: 1.75; padding-left: 15px; position: relative; margin-bottom: 5px; }
 .fmt-notes li::before { content: "・"; position: absolute; left: 0; color: var(--c); font-weight: 800; }
 .fmt-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--line); }
@@ -261,6 +271,8 @@ footer.ft a { color: var(--tan-light); }
 <header class="nav">
   <span class="nav-title">リング規格図鑑</span>
   <span class="nav-spacer"></span>
+  <a class="nav-link" href="../tools/">印刷ツール</a>
+  <a class="nav-link" href="../refill-pdf/monthly-undated.html">PDF販売</a>
   <a class="nav-link" href="./">後方幕僚室</a>
   <a class="nav-link" href="../">TOPへ戻る</a>
 </header>
@@ -289,7 +301,15 @@ footer.ft a { color: var(--tan-light); }
 
 <div class="wrap">
 
-  <div class="callout" style="margin-top:34px">
+  <div class="cta-band">
+    <div class="cta-txt"><b>規格が分かったら、リフィルは自分で刷れます。</b><span>Micro5・Mini6・バイブル・A6・A5スリムの週間・月間・日次を、期間を指定してA4に面付け。無料・登録不要。</span></div>
+    <div class="cta-btns">
+      <a class="cta-btn" href="../tools/">リフィル作成・印刷ツール →</a>
+      <a class="cta-btn alt" href="../refill-pdf/monthly-undated.html">印刷用PDFを買う（¥300）→</a>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:22px">
     <div class="callout-ico">⚠️</div>
     <div>
       <b>はじめに ── リング規格は、世界共通で完全統一されてはいません</b>
@@ -506,24 +526,24 @@ var GROUPS = {
 
 var FORMATS = [
   {
-    k: 'm5', name: 'Mini / M5', badge: 'MINI · M5 · MICRO5',
-    alias: 'Mini5 / Micro5 / Filofax Mini', paper: [62, 105], holes: 5,
+    k: 'm5', name: 'Micro5 / M5', badge: 'MICRO5 · M5 · ミニ5穴',
+    alias: 'マイクロ5 / ミニ5穴（M5）/ Filofax Mini', paper: [62, 105], holes: 5, tool: 'micro5',
     pitch: [19, 19, 19, 19], span: 76, grp: 'e19', fam: 'std', match: /micro\s*5|mini\s*5|^m5$/i,
-    lead: '手のひらに収まる最小サイズ。5穴で、間隔はすべて19mm。日本では「M5」「Mini5」「Micro5」と呼ばれます。N\'s factory の基準は 62 × 105 mm です。',
-    notes: ['N\'s factory 基準: 62 × 105 mm・5穴（穴中心は上端から 15 / 34 / 53 / 72 / 91 mm）。', 'Filofax Mini は 67 × 105 mm。幅はブランドで異なるため、実物確認を推奨。'],
+    lead: '手のひらに収まる最小の5穴サイズ。リフィルは 62 × 105 mm、穴はすべて 19 mm 間隔。日本では「Micro5」「M5」「ミニ5穴」と呼ばれます。',
+    notes: ['N\'s factory 基準: 62 × 105 mm・5穴（穴中心は上端から 15 / 34 / 53 / 72 / 91 mm・綴じ側の端から 6 mm）。', 'Filofax Mini は幅 67 mm（高さ・穴位置は同じ）。幅はブランドで異なるため、実物確認を推奨。', '印刷ツール（週間・月間・日次）あり。A4縦に3列×2段の6面付け。'],
     ringEx: '製品例で15mm（Filofax Mini）'
   },
   {
-    k: 'm6', name: 'Pocket / M6', badge: 'POCKET · M6 · MINI6',
-    alias: 'Mini6 / M6 / Filofax Pocket', paper: [80, 128], holes: 6,
+    k: 'm6', name: 'Mini6 / M6', badge: 'MINI6 · M6 · POCKET',
+    alias: 'ミニ6穴（M6）/ ポケット / Filofax Pocket', paper: [80, 128], holes: 6, tool: 'mini6',
     pitch: [19.2, 19.2, 19.2, 19.2, 19.2], span: 96, grp: 'e19', fam: 'std', match: /mini\s*6|^m6$|（m6）/i,
-    lead: "M5に1穴足した6穴。N's factory でいちばん製作数の多いサイズで、当工房の基準は 80 × 128 mm・穴間隔 19.2 mm です。",
-    notes: ['N\'s factory 基準データ（Mini6 Refill）: 80 × 128 mm・6穴（穴中心は上端から 16.3 / 35.5 / 54.7 / 73.9 / 93.1 / 112.3 mm）。', 'Filofax Pocket は 81 × 120 mm・19 mm 間隔。日本の「Mini6」は高さ 120〜128 mm とブランド差があります。'],
+    lead: "6穴の小型サイズ。リフィルは 80 × 128 mm、穴は 19.2 mm の等間隔（当工房の基準データ）。N's factory でいちばん製作数の多いサイズです。",
+    notes: ['N\'s factory 基準データ（Mini6 Refill）: 80 × 128 mm・6穴（穴中心は上端から 16.3 / 35.5 / 54.7 / 73.9 / 93.1 / 112.3 mm・綴じ側の端から 6.3 mm）。', 'Filofax Pocket は 81 × 120 mm・19 mm 間隔。呼び名が同じでもブランドで高さが違うので、穴位置は実物で確認を。', '印刷ツール（週間・月間・日次）あり。A4縦に2列×2段の4面付け。'],
     ringEx: '製品例で19mm（Filofax Pocket）'
   },
   {
     k: 'a6', name: 'A6 6穴', badge: 'A6 · 6 RING',
-    alias: 'Gillio / Van der Spek / Mulberry系など', paper: [105, 148], holes: 6,
+    alias: 'Gillio / Van der Spek / Mulberry系など', paper: [105, 148], holes: 6, tool: 'a6',
     pitch: [19, 19, 38, 19, 19], span: 114, grp: 'a6g', fam: 'std', match: /^a6$/i,
     lead: '中央だけが38mm開く6穴。紙のサイズはA6判そのもので、リフィルを自作しやすい規格です。',
     notes: ['Filofax の標準ラインではありません。', 'Gillio・Van der Spek・Mulberry / Sucess 系などで使われます。', '「A6」と書かれていても 19-19-38-19-19 ではない商品があるため要確認。'],
@@ -531,7 +551,7 @@ var FORMATS = [
   },
   {
     k: 'bible', name: 'Personal / バイブル', badge: 'PERSONAL · BIBLE',
-    alias: 'Filofax Personal / 日本のバイブルサイズ', paper: [95, 171], holes: 6,
+    alias: 'Filofax Personal / 日本のバイブルサイズ', paper: [95, 171], holes: 6, tool: 'bible',
     pitch: [19.05, 19.05, 50.8, 19.05, 19.05], span: 127, grp: 'bible', fam: 'std', match: /バイブル|personal|bible/i,
     lead: '中央が2インチ（50.8mm）開く6穴。日本の「バイブルサイズ」とほぼ同系統で、流通量がもっとも多い規格のひとつです。',
     notes: ['Filofax 資料では中央間隔を50mmまたは51mmとするものがあります。', 'インチ起源では 3/4インチ=19.05mm・2インチ=50.8mm と考えると整合します。', 'CAD互換設計では 19.05 / 19.05 / 50.8 / 19.05 / 19.05 を基準候補に。'],
@@ -547,7 +567,7 @@ var FORMATS = [
   },
   {
     k: 'a5slim', name: 'A5 Slim', badge: 'A5 SLIM · odoru / monta系',
-    alias: '横幅だけ細いA5', paper: [110, 210], holes: 6,
+    alias: '横幅だけ細いA5', paper: [110, 210], holes: 6, tool: 'a5slim',
     pitch: [19, 19, 70, 19, 19], span: 146, grp: 'a5g', fam: 'std', match: /a5\s*(slim|スリム)/i,
     lead: '高さはA5と同じ210mmのまま、横幅だけ110mmに絞った規格。A5用6穴金具をそのまま流用できます。',
     notes: ['通常A5 148mm に対し横幅差は 38mm。高さは共通。', 'リング径の採用例は16mm。', 'KRAUSE の 210-6-16（6穴・内径16mm・ベース長210mm）が候補。ただし odoru が実際に使用しているかは未確認。'],
@@ -745,7 +765,7 @@ function renderOverlay() {
     document.querySelectorAll('.ov-label').forEach(function (el) { el.style.opacity = (!k || el.dataset.k === k) ? 1 : .12; });
     document.querySelectorAll('.chip').forEach(function (el) { el.classList.toggle('on', el.dataset.k === k); });
     var box = document.getElementById('overlayReadout');
-    if (!f) { box.innerHTML = '<h4>12規格を重ねています</h4><p>名前に触れると、その規格だけが浮かび上がります。いちばん外側の枠が Franklin Monarch（216×280mm）、いちばん内側が Mini / M5（62×105mm）です。</p>'; return; }
+    if (!f) { box.innerHTML = '<h4>12規格を重ねています</h4><p>名前に触れると、その規格だけが浮かび上がります。いちばん外側の枠が Franklin Monarch（216×280mm）、いちばん内側が Micro5 / M5（62×105mm）です。</p>'; return; }
     box.innerHTML = '<h4 style="color:' + grpOf(f).c + '">' + esc(f.name) + '</h4>'
       + '<p>リフィル <span class="ov-num">' + f.paper[0] + ' × ' + f.paper[1] + ' mm</span>'
       + ' ／ <span class="ov-num">' + f.holes + '穴</span>'
@@ -820,6 +840,11 @@ function cardHtml(f) {
      + '<div class="spec-cell wide"><div class="spec-k">リング径の例</div><div class="spec-v" style="font-size:12.5px">' + esc(f.ringEx) + '</div></div>'
      + '</div>';
   h += '<ul class="fmt-notes">' + f.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+  if (f.tool) {
+    h += '<div class="fmt-tools"><span class="fmt-tools-k">この規格の印刷ツール（無料）</span>'
+      + '<a href="../' + f.tool + '-weekly/">週間</a><a href="../' + f.tool + '-monthly/">月間</a><a href="../' + f.tool + '-daily/">日次</a>'
+      + (f.tool === 'a5slim' ? '<a class="pdf" href="../refill-pdf/monthly-undated.html">印刷用PDFを買う</a>' : '') + '</div>';
+  }
   if (photos.length) {
     h += '<div class="fmt-photos"><div class="fmt-photos-cap">' + "N's factory" + ' の製作実績から（' + photos.length + '点）</div>'
       + photos.map(function (w) {
@@ -961,7 +986,9 @@ function loadWorks() {
       });
       FORMATS.forEach(function (f) {
         if (!f.match) return;
-        var hit = planners.filter(function (w) { return f.match.test(String(w.size).trim()); });
+        // 商品登録に「A5スリム」が無かった頃はサイズ「A5」で登録されているため、商品名に slim/スリム があれば A5 Slim として扱う（A5 6穴には出さない）
+        var sizeOf = function (w) { var sz = String(w.size).trim(); return /slim|スリム/i.test(sz + ' ' + (w.name || '')) ? 'A5スリム' : sz; };
+        var hit = planners.filter(function (w) { return f.match.test(sizeOf(w)); });
         // 同じ写真の重複を除き、最大6点
         var seen = {}, out = [];
         hit.forEach(function (w) { if (!seen[w.mainPhoto]) { seen[w.mainPhoto] = 1; out.push(w); } });
