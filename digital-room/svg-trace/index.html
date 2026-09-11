@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>イラストSVG変換 | デジタル幕僚室 | N's factory</title>
+<meta name="description" content="イラスト・ロゴ・家紋などの画像を、刻印やレーザー加工に使えるSVG（ベクター）に変換する無料ツール。画像はサーバーへ送らず、ブラウザの中だけで処理します。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F4EE;
+  --card:#FFFFFF;
+  --card-soft:#FBF9F3;
+  --ink:#2A241B;
+  --ink-sub:#6D6252;
+  --mute:#9A8F7D;
+  --line:#E6DFD0;
+  --brass:#A6823F;
+  --brass-dark:#7E6128;
+  --brass-light:#F3ECDA;
+  --focus:rgba(166,130,63,.22);
+  --danger:#B0452F;
+  --radius:14px;
+  --radius-sm:10px;
+  --shadow-sm:0 1px 3px rgba(42,36,27,.06),0 4px 14px rgba(42,36,27,.05);
+}
+*{box-sizing:border-box}
+/* ⛔ display を指定した要素でも hidden 属性で確実に消えるようにする（消すと「変換しています」が残り続ける） */
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);line-height:1.7;font-size:14px;
+  font-family:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+}
+button,input,select{font:inherit;color:var(--ink)}
+button{border:0;border-radius:var(--radius-sm);cursor:pointer;font-weight:700;line-height:1.45}
+button:disabled{opacity:.45;cursor:not-allowed}
+
+.nav{
+  display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:12px 18px;
+  background:linear-gradient(180deg,#332818,#241B0F);color:#F0E7D4;
+  border-bottom:2px solid var(--brass);
+}
+.nav-brand{display:flex;flex-direction:column;gap:0;min-width:0}
+.nav-word{font-family:'Cinzel',serif;font-size:20px;letter-spacing:.06em;color:#F0E7D4;line-height:1.2}
+.nav-sub{font-size:11px;color:#C4B18B;letter-spacing:.05em}
+.nav-sub b{color:#E3D2A6;text-transform:uppercase}
+.nav-back{
+  margin-left:auto;color:#E3D2A6;text-decoration:none;font-size:12.5px;white-space:nowrap;
+  border:1px solid rgba(216,196,154,.5);padding:7px 14px;border-radius:9999px;
+}
+.nav-back:hover{background:rgba(216,196,154,.14)}
+
+.app{max-width:1200px;margin:0 auto;padding:18px 16px 56px}
+.intro h1{font-size:22px;margin:4px 0 2px;letter-spacing:.02em}
+.intro .eyebrow{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.18em;color:var(--brass-dark)}
+.intro p{margin:4px 0 0;color:var(--ink-sub)}
+
+.free-notice{
+  margin:14px 0 18px;padding:12px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;
+  font-size:13px;line-height:1.8;color:#4a3a2c;
+}
+.free-notice a{color:#7A5540;font-weight:700}
+
+.layout{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:16px 16px 18px}
+.panel + .panel{margin-top:14px}
+.panel h2{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.step{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--brass);color:#fff;font-size:12px;flex:none}
+
+.drop{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;
+  border:2px dashed var(--line);border-radius:var(--radius-sm);padding:22px 12px;background:var(--card-soft);
+  cursor:pointer;color:var(--ink-sub);font-size:13px;transition:border-color .15s,background .15s;
+}
+.drop:hover,.drop.over{border-color:var(--brass);background:var(--brass-light)}
+.drop strong{color:var(--ink);font-size:14px}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.file-name{margin-top:8px;font-size:12px;color:var(--ink-sub);word-break:break-all}
+
+.field{margin-top:12px}
+.field-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;font-weight:700}
+.field-head output{font-weight:500;color:var(--brass-dark);font-variant-numeric:tabular-nums}
+.hint{font-size:11.5px;color:var(--mute);margin-top:2px;line-height:1.6}
+input[type=range]{width:100%;accent-color:var(--brass);margin:4px 0 0}
+select,input[type=number]{
+  width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-top:4px;
+}
+select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px var(--focus)}
+.check{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-sub);cursor:pointer}
+.check input{accent-color:var(--brass)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.modes{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.mode{
+  display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:#fff;
+}
+.mode:has(input:checked){border-color:var(--brass);background:var(--brass-light)}
+.mode input{margin-top:4px;accent-color:var(--brass)}
+.mode b{display:block;font-size:13px}
+.mode span{display:block;font-size:11.5px;color:var(--ink-sub);line-height:1.6}
+.mode-opts{margin-top:4px}
+
+.preview-panel{position:sticky;top:12px}
+@media (max-width:860px){.preview-panel{position:static}}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tab{padding:7px 14px;background:var(--card-soft);border:1px solid var(--line);color:var(--ink-sub);font-size:12.5px;border-radius:9999px}
+.tab[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.stage{
+  position:relative;border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:#fff;min-height:320px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:18px;
+}
+.stage.checker{
+  background-color:#fff;
+  background-image:linear-gradient(45deg,#EEE9DE 25%,transparent 25%),linear-gradient(-45deg,#EEE9DE 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#EEE9DE 75%),linear-gradient(-45deg,transparent 75%,#EEE9DE 75%);
+  background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;
+}
+.stage svg,.stage canvas,.stage img{max-width:100%;max-height:62vh;height:auto;display:block}
+.stage svg{width:100%}
+.empty{color:var(--mute);font-size:13px;text-align:center;line-height:1.9}
+.busy{
+  position:absolute;inset:0;background:rgba(255,255,255,.72);display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:var(--brass-dark);font-size:14px;
+}
+.stats{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink-sub)}
+.stats b{color:var(--ink);font-variant-numeric:tabular-nums}
+.msg{margin-top:10px;font-size:12.5px;line-height:1.7;padding:9px 12px;border-radius:8px;background:var(--brass-light);color:var(--brass-dark)}
+.msg.warn{background:#F8E6E1;color:var(--danger)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn-primary{padding:12px 22px;background:var(--brass);color:#fff;font-size:14px}
+.btn-primary:hover:not(:disabled){background:var(--brass-dark)}
+.btn-sub{padding:12px 18px;background:#fff;color:var(--ink);border:1px solid var(--line);font-size:13px}
+
+.howto{margin-top:18px}
+.howto ol{margin:6px 0 0;padding-left:1.4em;color:var(--ink-sub);font-size:13px}
+.howto li{margin:3px 0}
+.foot{margin-top:22px;font-size:11.5px;color:var(--mute);line-height:1.8}
+.foot a{color:var(--brass-dark)}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-brand">
+    <span class="nav-word">N's factory</span>
+    <span class="nav-sub"><b>Craft Studio</b> · イラストSVG変換</span>
+  </div>
+  <a class="nav-back" href="../">デジタル幕僚室へ戻る</a>
+</header>
+
+<main class="app">
+  <section class="intro">
+    <div class="eyebrow">ILLUSTRATION TO SVG</div>
+    <h1>イラストSVG変換</h1>
+    <p>イラスト・ロゴ・家紋などの白黒の画像を、刻印やレーザー加工に使えるSVG（ベクター）に変換します。小さな画像でも輪郭をなめらかにして書き出します。</p>
+  </section>
+
+  <!-- 無料開放のお知らせ。⛔ 不具合の連絡先を消さないこと。 -->
+  <div class="free-notice">
+    <strong>無料でお使いください。</strong>
+    会員登録は不要です。画像はこの端末の中だけで処理され、どこにも送信されません。<br>
+    うまく変換できない・こうしてほしい等ありましたら
+    <a href="https://you0810jmsdf.github.io/ns-factory/links.html">こちら</a>
+    からお知らせください。個人で作っているので、教えていただけると助かります。
+  </div>
+
+  <div class="layout">
+    <div>
+      <!-- 1. 画像 -->
+      <section class="panel">
+        <h2><span class="step">1</span>画像を選ぶ</h2>
+        <label class="drop" id="drop">
+          <strong>ここをタップして画像を選ぶ</strong>
+          <span>ドラッグ＆ドロップ、貼り付け（Ctrl+V）もできます</span>
+          <span>PNG・JPEG・WebP など</span>
+          <input type="file" id="file" accept="image/*">
+        </label>
+        <div class="file-name" id="fileName"></div>
+      </section>
+
+      <!-- 2. 読み取り -->
+      <section class="panel">
+        <h2><span class="step">2</span>読み取りの調整</h2>
+
+        <div class="field">
+          <div class="field-head">図柄の色</div>
+          <select id="inkColor">
+            <option value="dark">黒っぽい部分を図柄にする（白地に黒い絵）</option>
+            <option value="light">白っぽい部分を図柄にする（黒地に白い絵）</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <span>白黒の境目（しきい値）</span>
+            <label class="check"><input type="checkbox" id="thrAuto" checked>自動</label>
+          </div>
+          <input type="range" id="thr" min="1" max="254" value="128" disabled>
+          <div class="hint">自動で決まらないときは、自動を外して動かします。<output id="thrOut">128</output></div>
+        </div>
+
+        <div class="field">
+          <div class="field-head"><span>輪郭のなめらかさ</span><output id="blurOut"></output></div>
+          <input type="range" id="blur" min="0" max="3" step="0.1" value="0.6">
+          <div class="hint">小さい画像やギザギザの画像は大きめに。細い線が消えるときは小さく。</div>
+        </div>
+
+        <div class="field">
+          <div class="field-head"><span>ゴミ取り</span><output id="speckOut"></output></div>
+          <input type="range" id="speck" min="0" max="40" step="1" value="4">
+          <div class="hint">この大きさ以下の点を消します（元画像のピクセル数）。</div>
+        </div>
+
+        <div class="field">
+          <div class="field-head"><span>角の丸め</span><output id="cornerOut"></output></div>
+          <input type="range" id="corner" min="0" max="1.33" step="0.01" value="1">
+          <div class="hint">左ほど角がとがり、右ほど丸くなります。</div>
+        </div>
+
+        <div class="field">
+          <div class="field-head">処理の細かさ</div>
+          <select id="res">
+            <option value="1000">軽め（速い）</option>
+            <option value="1600" selected>標準</option>
+            <option value="2400">細かい（時間がかかる）</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- 3. 仕上がり -->
+      <section class="panel">
+        <h2><span class="step">3</span>仕上がり</h2>
+        <div class="modes" role="radiogroup">
+          <label class="mode"><input type="radio" name="mode" value="plain" checked>
+            <div><b>そのまま</b><span>図柄の部分を黒にしたSVG。</span></div></label>
+          <label class="mode"><input type="radio" name="mode" value="invert">
+            <div><b>白黒反転（四角い黒地）</b><span>図柄のまわりに黒い四角を足し、図柄を白抜きにします。</span></div></label>
+          <label class="mode"><input type="radio" name="mode" value="circle">
+            <div><b>刻印用：外に円を足して反転</b><span>外側に円を1つ足し、その内側の白黒を入れ替えます。アクリル刻印では黒い部分が彫られて凹になり、革には白い部分の形が出ます。</span></div></label>
+        </div>
+
+        <div class="mode-opts" id="optsRect">
+          <div class="row2">
+            <div class="field"><div class="field-head">仕上がりの幅（mm）</div><input type="number" id="widthMm" min="1" max="1000" step="0.5" value="50"></div>
+            <div class="field" id="rectMarginField"><div class="field-head">黒い余白（mm）</div><input type="number" id="rectMargin" min="0" max="50" step="0.1" value="1"></div>
+          </div>
+          <div class="hint" id="rectHint">高さは元の縦横比で決まります。</div>
+        </div>
+
+        <div class="mode-opts" id="optsCircle" hidden>
+          <div class="row2">
+            <div class="field"><div class="field-head">外の円の直径（mm）</div><input type="number" id="circleMm" min="1" max="1000" step="0.5" value="35"></div>
+            <div class="field"><div class="field-head">黒い余白（mm）</div><input type="number" id="circleMargin" min="0" max="50" step="0.1" value="1"></div>
+          </div>
+          <div class="field">
+            <div class="field-head">図柄の収め方</div>
+            <select id="fit">
+              <option value="round">丸い図柄（図柄の外径を円に合わせる）</option>
+              <option value="box">四角い・その他（図柄全体を円の中に収める）</option>
+            </select>
+          </div>
+          <div class="hint">例：直径35mm・余白1mmなら、図柄は直径33mmになり、まわりに1mmの黒い縁が付きます。</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- プレビュー -->
+    <section class="panel preview-panel">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-view="svg" aria-selected="true">仕上がり（SVG）</button>
+        <button class="tab" role="tab" data-view="bin" aria-selected="false">読み取った白黒</button>
+        <button class="tab" role="tab" data-view="src" aria-selected="false">元の画像</button>
+      </div>
+      <div class="stage" id="stage">
+        <div class="empty" id="empty">画像を選ぶと、ここに仕上がりが表示されます。<br>設定を変えると自動で作り直します。</div>
+        <div id="viewSvg" hidden></div>
+        <canvas id="viewBin" hidden></canvas>
+        <img id="viewSrc" alt="元の画像" hidden>
+        <div class="busy" id="busy" hidden>変換しています…</div>
+      </div>
+      <div class="stats" id="stats" hidden>
+        <span>寸法 <b id="stSize"></b></span>
+        <span>曲線 <b id="stCurves"></b> 本</span>
+        <span>ファイル <b id="stBytes"></b></span>
+      </div>
+      <div class="msg" id="msg" hidden></div>
+      <div class="actions">
+        <button class="btn-primary" id="save" disabled>SVGを保存</button>
+        <button class="btn-sub" id="savePng" disabled>確認用PNGを保存</button>
+      </div>
+      <div class="hint" style="margin-top:8px">SVGは mm 単位で書き出します。Beam Studio・Inkscape・Illustrator などで開くと、指定した大きさで読み込まれます。</div>
+    </section>
+  </div>
+
+  <section class="panel howto">
+    <h2>向いている画像・向かない画像</h2>
+    <ol>
+      <li>向いているのは、白と黒がはっきり分かれた絵です。ロゴ、家紋、ハンコ、線画、切り絵風のイラストなど。</li>
+      <li>写真やグラデーションのある絵は、白か黒かに分けられてしまうので向きません。</li>
+      <li>元の画像が小さいと、輪郭の丸みや潰れもそのまま拾います。できるだけ大きく、はっきりした画像を使ってください。</li>
+      <li>家紋などで外側の輪が画像の端で切れている場合は、切れた形のまま変換されます。</li>
+    </ol>
+  </section>
+
+  <p class="foot">
+    トレース処理には Potrace（Peter Selinger 氏）の JavaScript 移植版（kilobtye 氏）を使っています。GPLで公開されているソフトウェアで、このページで使っている版は
+    <a href="potrace.js">potrace.js</a> から読めます。<br>
+    ほかの人の作品やロゴを変換して使うときは、権利者の許可を得てからお使いください。
+  </p>
+</main>
+
+<script src="potrace.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = {
+    file: $("file"), drop: $("drop"), fileName: $("fileName"),
+    inkColor: $("inkColor"), thrAuto: $("thrAuto"), thr: $("thr"), thrOut: $("thrOut"),
+    blur: $("blur"), blurOut: $("blurOut"), speck: $("speck"), speckOut: $("speckOut"),
+    corner: $("corner"), cornerOut: $("cornerOut"), res: $("res"),
+    widthMm: $("widthMm"), rectMargin: $("rectMargin"), rectMarginField: $("rectMarginField"), rectHint: $("rectHint"),
+    circleMm: $("circleMm"), circleMargin: $("circleMargin"), fit: $("fit"),
+    optsRect: $("optsRect"), optsCircle: $("optsCircle"),
+    stage: $("stage"), empty: $("empty"), viewSvg: $("viewSvg"), viewBin: $("viewBin"), viewSrc: $("viewSrc"), busy: $("busy"),
+    stats: $("stats"), stSize: $("stSize"), stCurves: $("stCurves"), stBytes: $("stBytes"),
+    msg: $("msg"), save: $("save"), savePng: $("savePng")
+  };
+
+  var state = {
+    img: null, baseName: "illustration",
+    bin: null,          // {w, h, data}
+    curves: null,       // potrace の結果（ピクセル座標）
+    svg: "", sizeMm: null, view: "svg",
+    traceTimer: 0, buildTimer: 0, running: false, pending: false
+  };
+
+  // ── 画像の読み込み ────────────────────────────
+  function loadFile(file) {
+    if (!file || !/^image\//.test(file.type)) {
+      showMsg("画像ファイルを選んでください。", true);
+      return;
+    }
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      state.img = img;
+      state.baseName = (file.name || "illustration").replace(/\.[^.]+$/, "") || "illustration";
+      els.fileName.textContent = (file.name || "貼り付けた画像") + "（" + img.naturalWidth + " × " + img.naturalHeight + " px）";
+      els.viewSrc.src = url;
+      scheduleTrace(0);
+    };
+    img.onerror = function () { showMsg("この画像は読み込めませんでした。PNGかJPEGで保存し直してお試しください。", true); };
+    img.src = url;
+  }
+
+  els.file.addEventListener("change", function () { loadFile(els.file.files[0]); });
+  ["dragenter", "dragover"].forEach(function (ev) {
+    els.drop.addEventListener(ev, function (e) { e.preventDefault(); els.drop.classList.add("over"); });
+  });
+  ["dragleave", "drop"].forEach(function (ev) {
+    els.drop.addEventListener(ev, function (e) { e.preventDefault(); els.drop.classList.remove("over"); });
+  });
+  els.drop.addEventListener("drop", function (e) {
+    if (e.dataTransfer && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  });
+  document.addEventListener("paste", function (e) {
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type && items[i].type.indexOf("image/") === 0) {
+        loadFile(items[i].getAsFile());
+        e.preventDefault();
+        return;
+      }
+    }
+  });
+
+  // ── 前処理：拡大 → ぼかし → 白黒 ─────────────────
+  function boxBlur(src, w, h, r) {
+    if (r < 1) return src;
+    var tmp = new Float32Array(w * h), out = new Float32Array(w * h);
+    var x, y, i, acc, lo, hi, cnt;
+    for (y = 0; y < h; y++) {           // 横方向
+      var row = y * w;
+      acc = 0; cnt = 0;
+      for (x = 0; x <= r && x < w; x++) { acc += src[row + x]; cnt++; }
+      for (x = 0; x < w; x++) {
+        tmp[row + x] = acc / cnt;
+        hi = x + r + 1; lo = x - r;
+        if (hi < w) { acc += src[row + hi]; cnt++; }
+        if (lo >= 0) { acc -= src[row + lo]; cnt--; }
+      }
+    }
+    for (x = 0; x < w; x++) {           // 縦方向
+      acc = 0; cnt = 0;
+      for (y = 0; y <= r && y < h; y++) { acc += tmp[y * w + x]; cnt++; }
+      for (y = 0; y < h; y++) {
+        out[y * w + x] = acc / cnt;
+        hi = y + r + 1; lo = y - r;
+        if (hi < h) { acc += tmp[hi * w + x]; cnt++; }
+        if (lo >= 0) { acc -= tmp[lo * w + x]; cnt--; }
+      }
+    }
+    return out;
+  }
+
+  function otsu(gray) {
+    var hist = new Float64Array(256), n = gray.length, i;
+    for (i = 0; i < n; i++) hist[Math.max(0, Math.min(255, gray[i] | 0))]++;
+    var sum = 0;
+    for (i = 0; i < 256; i++) sum += i * hist[i];
+    var sumB = 0, wB = 0, best = 0, thr = 128;
+    for (i = 0; i < 256; i++) {
+      wB += hist[i];
+      if (!wB) continue;
+      var wF = n - wB;
+      if (!wF) break;
+      sumB += i * hist[i];
+      var mB = sumB / wB, mF = (sum - sumB) / wF;
+      var between = wB * wF * (mB - mF) * (mB - mF);
+      if (between > best) { best = between; thr = i; }
+    }
+    return Math.max(1, Math.min(254, thr));
+  }
+
+  function prepare() {
+    var img = state.img;
+    var iw = img.naturalWidth, ih = img.naturalHeight;
+    var target = parseInt(els.res.value, 10);
+    var scale = Math.min(8, target / Math.max(iw, ih));
+    var w = Math.max(1, Math.round(iw * scale)), h = Math.max(1, Math.round(ih * scale));
+
+    var cv = document.createElement("canvas");
+    cv.width = w; cv.height = h;
+    var ctx = cv.getContext("2d", { willReadFrequently: true });
+    ctx.fillStyle = "#fff";                     // 透過部分は白として扱う
+    ctx.fillRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, w, h);
+    var px = ctx.getImageData(0, 0, w, h).data;
+
+    var gray = new Float32Array(w * h);
+    for (var i = 0, j = 0; j < gray.length; i += 4, j++) {
+      gray[j] = 0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2];
+    }
+    // ガウスぼかし相当（σ = なめらかさ × 拡大率）を箱型ぼかし3回で近似する
+    var sigma = parseFloat(els.blur.value) * Math.max(1, scale);
+    var r = Math.round((Math.sqrt(4 * sigma * sigma + 1) - 1) / 2);
+    gray = boxBlur(boxBlur(boxBlur(gray, w, h, r), w, h, r), w, h, r);
+
+    var thr;
+    if (els.thrAuto.checked) {
+      thr = otsu(gray);
+      els.thr.value = thr;
+    } else {
+      thr = parseInt(els.thr.value, 10);
+    }
+    els.thrOut.textContent = thr;
+
+    var light = els.inkColor.value === "light";
+    var data = new Uint8Array(w * h), ink = 0;
+    for (var k = 0; k < data.length; k++) {
+      var on = light ? gray[k] > thr : gray[k] < thr;
+      if (on) { data[k] = 1; ink++; }
+    }
+    return { w: w, h: h, data: data, scale: scale, ink: ink };
+  }
+
+  // ── トレース ──────────────────────────────
+  function scheduleTrace(delay) {
+    clearTimeout(state.traceTimer);
+    state.traceTimer = setTimeout(runTrace, delay == null ? 350 : delay);
+  }
+
+  function runTrace() {
+    if (!state.img) return;
+    if (state.running) { state.pending = true; return; }
+    state.running = true;
+    els.busy.hidden = false;
+    // 「変換しています」を先に描かせてから重い処理に入る
+    requestAnimationFrame(function () { setTimeout(function () {
+      try {
+        var t0 = performance.now();
+        var bin = prepare();
+        state.bin = bin;
+        Potrace.setParameter({
+          turnpolicy: "minority",
+          turdsize: Math.round(parseFloat(els.speck.value) * bin.scale * bin.scale),
+          optcurve: true,
+          alphamax: parseFloat(els.corner.value),
+          opttolerance: 0.2
+        });
+        Potrace.loadBitmapData(bin.w, bin.h, bin.data);
+        Potrace.process(function () {});
+        state.curves = Potrace.getCurves();
+        state.traceMs = Math.round(performance.now() - t0);
+        drawBin();
+        buildSvg();
+      } catch (err) {
+        console.error(err);
+        showMsg("変換中にエラーが起きました。「処理の細かさ」を軽めにしてお試しください。（" + err.message + "）", true);
+      } finally {
+        els.busy.hidden = true;
+        state.running = false;
+        if (state.pending) { state.pending = false; scheduleTrace(0); }
+      }
+    }, 20); });
+  }
+
+  function drawBin() {
+    var b = state.bin, cv = els.viewBin;
+    cv.width = b.w; cv.height = b.h;
+    var ctx = cv.getContext("2d");
+    var im = ctx.createImageData(b.w, b.h), d = im.data;
+    for (var i = 0, j = 0; i < b.data.length; i++, j += 4) {
+      var v = b.data[i] ? 0 : 255;
+      d[j] = d[j + 1] = d[j + 2] = v; d[j + 3] = 255;
+    }
+    ctx.putImageData(im, 0, 0);
+  }
+
+  // ── SVG 組み立て（mm 単位）─────────────────────
+  function getMode() {
+    var r = document.querySelector('input[name="mode"]:checked');
+    return r ? r.value : "plain";
+  }
+  function num(el, def, min) {
+    var v = parseFloat(el.value);
+    if (!isFinite(v)) v = def;
+    return Math.max(min, v);
+  }
+  function f3(v) { return (Math.round(v * 1000) / 1000).toString(); }
+
+  function curveBBox(curves) {
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    curves.forEach(function (cv) {
+      cv.c.forEach(function (p) {
+        if (!p) return;
+        if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+      });
+    });
+    return { minX: minX, minY: minY, maxX: maxX, maxY: maxY, w: maxX - minX, h: maxY - minY };
+  }
+
+  function curvesToD(curves, tx) {
+    var out = [];
+    curves.forEach(function (cv) {
+      var n = cv.n, c = cv.c, s = [];
+      var last = tx(c[(n - 1) * 3 + 2]);
+      s.push("M" + f3(last[0]) + " " + f3(last[1]));
+      for (var i = 0; i < n; i++) {
+        if (cv.tag[i] === "CURVE") {
+          var a = tx(c[i * 3]), b = tx(c[i * 3 + 1]), e = tx(c[i * 3 + 2]);
+          s.push("C" + f3(a[0]) + " " + f3(a[1]) + " " + f3(b[0]) + " " + f3(b[1]) + " " + f3(e[0]) + " " + f3(e[1]));
+        } else {
+          var m = tx(c[i * 3 + 1]), e2 = tx(c[i * 3 + 2]);
+          s.push("L" + f3(m[0]) + " " + f3(m[1]) + "L" + f3(e2[0]) + " " + f3(e2[1]));
+        }
+      }
+      out.push(s.join("") + "Z");
+    });
+    return out.join("");
+  }
+
+  function circleD(cx, cy, r) {
+    return "M" + f3(cx - r) + " " + f3(cy) + "A" + f3(r) + " " + f3(r) + " 0 1 0 " + f3(cx + r) + " " + f3(cy) +
+           "A" + f3(r) + " " + f3(r) + " 0 1 0 " + f3(cx - r) + " " + f3(cy) + "Z";
+  }
+
+  function buildSvg() {
+    var curves = state.curves;
+    var mode = getMode();
+    els.optsCircle.hidden = mode !== "circle";
+    els.optsRect.hidden = mode === "circle";
+    els.rectMarginField.hidden = mode !== "invert";
+    els.rectHint.textContent = mode === "invert"
+      ? "幅は黒い余白を含めた全体の幅です。高さは元の縦横比で決まります。"
+      : "高さは元の縦横比で決まります。";
+    if (!curves) return;
+
+    if (!curves.length) {
+      state.svg = "";
+      showView();
+      els.stats.hidden = true;
+      els.save.disabled = els.savePng.disabled = true;
+      showMsg("図柄が見つかりませんでした。「図柄の色」を切り替えるか、しきい値の自動を外して動かしてください。", true);
+      return;
+    }
+
+    var bb = curveBBox(curves);
+    var W, H, d = "", k, tx, desc;
+
+    if (mode === "circle") {
+      var D = num(els.circleMm, 35, 1);
+      var m = Math.min(num(els.circleMargin, 1, 0), D / 2 - 0.5);
+      var inner = D - 2 * m;
+      var cx = (bb.minX + bb.maxX) / 2, cy = (bb.minY + bb.maxY) / 2;
+      var span = els.fit.value === "round" ? Math.max(bb.w, bb.h) : Math.hypot(bb.w, bb.h);
+      k = inner / span;
+      W = H = D;
+      tx = function (p) { return [D / 2 + (p.x - cx) * k, D / 2 + (p.y - cy) * k]; };
+      d = circleD(D / 2, D / 2, D / 2);
+      desc = "外の円 直径" + f3(D) + "mm / 図柄 " + f3(bb.w * k) + "×" + f3(bb.h * k) + "mm / 余白" + f3(m) + "mm";
+    } else {
+      var Wt = num(els.widthMm, 50, 1);
+      var mg = mode === "invert" ? Math.min(num(els.rectMargin, 1, 0), Wt / 2 - 0.5) : 0;
+      k = (Wt - 2 * mg) / bb.w;
+      W = Wt;
+      H = bb.h * k + 2 * mg;
+      tx = function (p) { return [mg + (p.x - bb.minX) * k, mg + (p.y - bb.minY) * k]; };
+      if (mode === "invert") d = "M0 0H" + f3(W) + "V" + f3(H) + "H0Z";
+      desc = "図柄 " + f3(bb.w * k) + "×" + f3(bb.h * k) + "mm" + (mode === "invert" ? " / 余白" + f3(mg) + "mm" : "");
+    }
+    d += curvesToD(curves, tx);
+
+    state.sizeMm = { w: W, h: H };
+    state.svg =
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' + f3(W) + 'mm" height="' + f3(H) + 'mm" viewBox="0 0 ' + f3(W) + " " + f3(H) + '">\n' +
+      "  <!-- N's factory イラストSVG変換 / " + desc + " -->\n" +
+      '  <path fill="#000" fill-rule="evenodd" stroke="none" d="' + d + '"/>\n' +
+      "</svg>\n";
+
+    els.stSize.textContent = f3(W) + " × " + f3(H) + " mm";
+    els.stCurves.textContent = curves.length;
+    els.stBytes.textContent = formatBytes(new Blob([state.svg]).size);
+    els.stats.hidden = false;
+    els.save.disabled = els.savePng.disabled = false;
+
+    if (curves.length > 3000) {
+      showMsg("曲線が " + curves.length + " 本とかなり多くなりました。写真や細かい模様の画像は、刻印には向かない場合があります。「ゴミ取り」を大きくすると減らせます。", true);
+    } else if (mode === "circle") {
+      showMsg("黒い部分が刻印の凹（彫られる部分）、白い部分が凸になります。革には白い部分の形が出ます。", false);
+    } else {
+      hideMsg();
+    }
+    showView();
+  }
+
+  function formatBytes(n) { return n < 1024 ? n + " B" : (n / 1024).toFixed(1) + " KB"; }
+
+  // ── 表示 ─────────────────────────────────
+  function showView() {
+    var v = state.view, has = !!state.img;
+    els.empty.hidden = has;
+    els.viewSvg.hidden = !(has && v === "svg");
+    els.viewBin.hidden = !(has && v === "bin" && state.bin);
+    els.viewSrc.hidden = !(has && v === "src");
+    els.stage.classList.toggle("checker", has && v === "svg");
+    if (v === "svg") {
+      els.viewSvg.innerHTML = state.svg ? state.svg.replace(/^<\?xml[^>]*>\s*/, "") : "";
+      var s = els.viewSvg.querySelector("svg");
+      if (s) { s.removeAttribute("width"); s.removeAttribute("height"); }
+    }
+  }
+
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (x) { x.setAttribute("aria-selected", String(x === t)); });
+      state.view = t.getAttribute("data-view");
+      showView();
+    });
+  });
+
+  function showMsg(text, warn) { els.msg.textContent = text; els.msg.classList.toggle("warn", !!warn); els.msg.hidden = false; }
+  function hideMsg() { els.msg.hidden = true; }
+
+  // ── 設定の変更 ──────────────────────────────
+  function updateLabels() {
+    els.blurOut.textContent = parseFloat(els.blur.value).toFixed(1);
+    els.speckOut.textContent = els.speck.value + " px";
+    els.cornerOut.textContent = parseFloat(els.corner.value).toFixed(2);
+    els.thr.disabled = els.thrAuto.checked;
+    if (!els.thrAuto.checked) els.thrOut.textContent = els.thr.value;
+  }
+  [els.inkColor, els.thrAuto, els.thr, els.blur, els.speck, els.corner, els.res].forEach(function (el) {
+    el.addEventListener("input", function () { updateLabels(); scheduleTrace(); });
+    el.addEventListener("change", function () { updateLabels(); scheduleTrace(); });
+  });
+  // 仕上がりの設定はトレースし直さず、組み立てだけやり直す
+  [els.widthMm, els.rectMargin, els.circleMm, els.circleMargin, els.fit].forEach(function (el) {
+    el.addEventListener("input", function () { clearTimeout(state.buildTimer); state.buildTimer = setTimeout(buildSvg, 150); });
+  });
+  document.querySelectorAll('input[name="mode"]').forEach(function (r) { r.addEventListener("change", buildSvg); });
+
+  // ── 保存 ─────────────────────────────────
+  function modeSuffix() {
+    var m = getMode();
+    if (m === "circle") return "_刻印用_" + f3(num(els.circleMm, 35, 1)) + "mm";
+    if (m === "invert") return "_反転_" + f3(num(els.widthMm, 50, 1)) + "mm";
+    return "_" + f3(num(els.widthMm, 50, 1)) + "mm";
+  }
+  function download(blob, name) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  els.save.addEventListener("click", function () {
+    if (!state.svg) return;
+    download(new Blob([state.svg], { type: "image/svg+xml" }), state.baseName + modeSuffix() + ".svg");
+  });
+  els.savePng.addEventListener("click", function () {
+    if (!state.svg) return;
+    var px = 1200, sz = state.sizeMm;
+    var w = sz.w >= sz.h ? px : Math.round(px * sz.w / sz.h);
+    var h = sz.w >= sz.h ? Math.round(px * sz.h / sz.w) : px;
+    var img = new Image();
+    img.onload = function () {
+      var cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      var ctx = cv.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      cv.toBlob(function (b) { download(b, state.baseName + modeSuffix() + "_確認用.png"); }, "image/png");
+    };
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(state.svg);
+  });
+
+  updateLabels();
+  buildSvg();
+})();
+</script>
+<script src="../../assets/access-counter.js"></script>
+</body>
+</html>
