@@ -527,9 +527,12 @@ img{max-width:100%;display:block}
       <a href="#" data-checkout="refill-a5slim-monthly-undated" class="btn btn-primary btn-large" style="display:none">カードで購入する（¥<span data-price>300</span>）</a>
       <a href="#" data-checkout-off="refill-a5slim-monthly-undated" class="btn btn-primary btn-large js-refill-mail">メールで購入を申し込む（銀行振込）</a>
       <p data-checkout-on="refill-a5slim-monthly-undated" style="display:none;margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
-        Stripe の安全な決済画面に移動します。お支払い後、ダウンロードリンクが表示され、メールでも届きます。<br>
-        銀行振込をご希望の方は <a href="#" class="js-refill-mail" style="color:inherit">メールでお申し込み</a> ください。
+        Stripe の安全な決済画面に移動します。お支払い後、ダウンロードリンクが表示され、メールでも届きます。
       </p>
+      <!-- カードが使えるときも振込を選べるよう、控えめな枠線ボタンで残す（2026-09-12 事業主指示 A案） -->
+      <div data-checkout-on="refill-a5slim-monthly-undated" style="display:none;margin-top:14px">
+        <a href="#" class="btn btn-large js-refill-mail" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)">銀行振込で申し込む（メール）</a>
+      </div>
       <p data-checkout-off="refill-a5slim-monthly-undated" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
         カード決済は準備中です。メールをいただければ、振込先をご案内し、ご入金確認後にPDFをお送りします。
       </p>
