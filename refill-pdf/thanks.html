@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ご購入ありがとうございます — N's refill | N's factory</title>
+<title>ご購入ありがとうございます | N's factory</title>
 <meta name="robots" content="noindex">
 <!-- Stripe 決済リンクの「支払い後のリダイレクト先」。?session_id={CHECKOUT_SESSION_ID} 付きで戻ってくる。
      GAS が Stripe に照会して支払い済みならダウンロードリンクを返す。⛔ このページ自体はPDFの場所を知らない。 -->
@@ -25,7 +25,7 @@ a{color:var(--accent-dark)}
 </head>
 <body>
 <main class="wrap">
-  <p class="eyebrow">N's refill</p>
+  <p class="eyebrow" id="eyebrow">N's factory</p>
   <h1 id="title">お支払いを確認しています…</h1>
   <p id="lead">少しお待ちください。</p>
   <div class="box" id="box" hidden>
@@ -33,10 +33,11 @@ a{color:var(--accent-dark)}
     <a class="btn" id="dl" href="#" target="_blank" rel="noopener" hidden>PDFをダウンロード</a>
     <p class="small" id="note" style="margin-top:12px"></p>
   </div>
-  <p class="small" style="margin-top:32px"><a href="monthly-undated.html">商品ページへ戻る</a> ／ <a href="../tools/">無料の印刷ツール</a></p>
+  <p class="small" style="margin-top:32px"><a id="back" href="../index.html">N's factory トップへ</a></p>
 </main>
 <script>
-// デプロイ後に refill_sales GAS の Web アプリ URL を入れる（GASリンク台帳に記載）
+// refill_sales GAS の Web アプリ URL（GASリンク台帳に記載）。リフィル・N's pattern・JHCS型紙の全商品で共用するページ。
+// 商品名・表示名・戻り先は GAS の返事（商品シート）から出す。
 const REFILL_SALES_GAS_URL = 'https://script.google.com/macros/s/AKfycbw6KnJJdWoF3-tPwzg0GslEuN3upEykW9EhFVIdTn54FNq0UuHnryPH0MoaGVKV8px9/exec';
 (async function () {
   const q = new URLSearchParams(location.search);
@@ -46,7 +47,7 @@ const REFILL_SALES_GAS_URL = 'https://script.google.com/macros/s/AKfycbw6KnJJdWo
     title.textContent = 'ダウンロードを表示できませんでした';
     lead.textContent = '';
     box.hidden = false; msg.className = 'err'; msg.textContent = text;
-    note.innerHTML = (hint || '') + 'お手数ですが <a href="mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('リフィルPDFのダウンロードについて') + '">メール</a> でご連絡ください。決済の記録から改めてお送りします。';
+    note.innerHTML = (hint || '') + 'お手数ですが <a href="mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('PDFのダウンロードについて') + '">メール</a> でご連絡ください。決済の記録から改めてお送りします。';
   }
   if (!sid) { fail('決済情報が付いていません。', 'Stripe のお支払い完了画面から自動で戻ってくるはずのページです。'); return; }
   if (REFILL_SALES_GAS_URL.indexOf('__') >= 0) { fail('配信の準備中です。', ''); return; }
@@ -55,10 +56,13 @@ const REFILL_SALES_GAS_URL = 'https://script.google.com/macros/s/AKfycbw6KnJJdWo
     const txt = await res.text();
     if (!txt || txt.trim().charAt(0) === '<') throw new Error('サーバーが混み合っています');
     const data = JSON.parse(txt);
-    if (!data.ok) throw new Error({ unpaid: 'お支払いがまだ完了していません', 'amount mismatch': '金額が商品と一致しませんでした', 'invalid session': '決済情報の形式が正しくありません', 'not configured': '配信の準備中です' }[data.error] || data.error || '確認に失敗しました');
+    if (!data.ok) throw new Error({ unpaid: 'お支払いがまだ完了していません', 'amount mismatch': '金額が商品と一致しませんでした', 'invalid session': '決済情報の形式が正しくありません', 'not configured': '配信の準備中です', 'unknown product': '商品の情報が見つかりませんでした', 'test mode': 'テスト用の決済のため配信しませんでした' }[data.error] || data.error || '確認に失敗しました');
+    if (data.label) document.getElementById('eyebrow').textContent = data.label;
+    // ⛔ 戻り先はサイト内の .html だけ（GASの返事をそのまま href に入れない）
+    if (/^[A-Za-z0-9_\-\/]+\.html$/.test(data.page || '')) { const back = document.getElementById('back'); back.href = '../' + data.page; back.textContent = '商品ページへ戻る'; }
     title.textContent = 'ご購入ありがとうございます';
-    lead.textContent = '下のボタンからPDFをダウンロードできます。' + (data.email ? ' 同じリンクを ' + data.email + ' にもお送りしました。' : '');
-    box.hidden = false; msg.textContent = 'A4横で、拡大・縮小なし（実際のサイズ）で印刷してください。';
+    lead.textContent = (data.name ? '「' + data.name + '」を' : '') + '下のボタンからダウンロードできます。' + (data.email ? ' 同じリンクを ' + data.email + ' にもお送りしました。' : '');
+    box.hidden = false; msg.textContent = '印刷するときは、拡大・縮小なし（実際のサイズ・100%）を選んでください。';
     dl.href = data.url; dl.hidden = false;
     note.textContent = 'このページを閉じても、メールのリンクからいつでもダウンロードできます。';
   } catch (e) {

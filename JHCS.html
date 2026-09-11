@@ -203,6 +203,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }
     .btn-sale-mail { background: #2e7d51; }
     .btn-sale-line { background: #06c755; }
+    .btn-sale-card { background: #17472a; }
     .btn-sale:hover { opacity: .85; }
     .pattern-sale-note { font-size: 11px; color: #4a7a58; margin-top: 8px; line-height: 1.9; }
     .pattern-sale-flow {
@@ -507,18 +508,31 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       ダウンロードには受講生名簿に登録されたメールアドレスと氏名（フルネーム）による認証が必要です。
     </div>
 
-    <!-- 型紙の有料販売案内（2026-09-08 事業主指示）。受講生以外の窓口はここが唯一の導線 -->
+    <!-- 型紙の有料販売案内（2026-09-08 事業主指示）。受講生以外の窓口はここが唯一の導線
+         2026-09-11: カード決済を追加（振込も残す）。カードのボタンは assets/pdf-checkout.js が配信GAS（refill_sales）の
+         商品シートを見て、販売中の型紙だけ表示する。型紙を足すときは商品シートに行を足し、ここにボタンを1つ足す。 -->
     <div class="pattern-sale">
       <strong>【型紙をご希望の方へ】</strong><br>
       型紙は <strong>1件につき 1,500円</strong> で有料販売しております。
-      <strong>受講生以外の方</strong>もお求めいただけますので、お気軽にお問い合わせください。
+      <strong>受講生以外の方</strong>もお求めいただけます。
+      <div class="pattern-sale-btns" data-checkout-on="jhcs-02 jhcs-03A jhcs-05B jhcs-06B" style="display:none">
+        <a href="#" class="btn-sale btn-sale-card" data-checkout="jhcs-02" style="display:none">💳 第02回 スクエアコインケース（¥<span data-price>1,500</span>）</a>
+        <a href="#" class="btn-sale btn-sale-card" data-checkout="jhcs-03A" style="display:none">💳 第03回A パスケース（¥<span data-price>1,500</span>）</a>
+        <a href="#" class="btn-sale btn-sale-card" data-checkout="jhcs-05B" style="display:none">💳 第05回B トートバッグ型キーケース（¥<span data-price>1,500</span>）</a>
+        <a href="#" class="btn-sale btn-sale-card" data-checkout="jhcs-06B" style="display:none">💳 第06回B 馬蹄型コインケース（¥<span data-price>1,500</span>）</a>
+      </div>
+      <div class="pattern-sale-note" data-checkout-on="jhcs-02 jhcs-03A jhcs-05B jhcs-06B" style="display:none">
+        ※ カードでお求めの場合は、お支払い後すぐにダウンロードでき、メールでもお届けします（Stripe の決済画面に移動します）。<br>
+        銀行振込をご希望の方は、下のボタンからお問い合わせください。
+      </div>
+      <div data-checkout-off="jhcs-02 jhcs-03A jhcs-05B jhcs-06B">お気軽にお問い合わせください。</div>
       <div class="pattern-sale-btns">
         <a class="btn-sale btn-sale-mail"
            href="mailto:you0810jmsdf@gmail.com?subject=%E5%9E%8B%E7%B4%99%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%81%94%E5%B8%8C%E6%9C%9B%E3%81%AE%E5%9E%8B%E7%B4%99%EF%BC%88%E7%AC%AC%E4%BD%95%E5%9B%9E%E3%81%AE%E4%BD%95%EF%BC%89%E3%82%92%E3%81%94%E8%A8%98%E5%85%A5%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%E3%81%94%E5%B8%8C%E6%9C%9B%E3%81%AE%E5%9E%8B%E7%B4%99%EF%BC%9A%0A">✉️ メールで問い合わせる</a>
         <a class="btn-sale btn-sale-line" href="https://lin.ee/qsmtY2N" target="_blank" rel="noopener">💬 LINEで問い合わせる</a>
       </div>
       <div class="pattern-sale-flow">
-        <div class="pattern-sale-flow-title">お申し込みからお渡しまで</div>
+        <div class="pattern-sale-flow-title">お問い合わせ（銀行振込）でのお申し込みからお渡しまで</div>
         <ol>
           <li><strong>お問い合わせ</strong>（上のボタンから、ご希望の型紙とお名前をお知らせください）</li>
           <li><strong>お支払い方法のご案内</strong>（メールの場合は自動で返信します。銀行振込先をお送りします）</li>
@@ -1983,5 +1997,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </div>
 </div>
 
+<script src="assets/pdf-checkout.js"></script>
 </body>
 </html>
