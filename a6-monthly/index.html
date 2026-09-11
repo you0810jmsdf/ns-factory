@@ -1376,7 +1376,7 @@ function renderMonths() {
       const sheetLabel = label2 ? `${label1} / ${label2}` : label1;
       html += `<div class="sheet-wrap">
         <div class="sheet-label">${sheetLabel}</div>
-        ${buildA4([leftPage1, rightPage1, leftPage2, rightPage2], [0,1,2,3].map(j => (j < 2 || m2) ? { leaf: i * 2 + j, face: 'front' } : null))}
+        ${buildA4([leftPage1, rightPage1, leftPage2, rightPage2], [0,1,2,3].map(j => (j < 2 || m2) ? { leaf: i * 2 + j, face: j % 2 ? 'front' : 'back' } : null))}
       </div>`;
     }
   } else {
