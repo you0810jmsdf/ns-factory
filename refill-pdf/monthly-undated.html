@@ -522,23 +522,21 @@ img{max-width:100%;display:block}
       <span class="cta-price">¥300 <small>税込</small></span>
     </div>
     <div class="cta-actions">
-      <!-- 購入ボタン。Stripe 決済リンクは下の STRIPE_PAYMENT_LINK に入れる（未設定の間はメール申込に切り替わる） -->
-      <a href="#" id="buy-btn" class="btn btn-primary btn-large">購入してダウンロード</a>
-      <p id="buy-note" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)"></p>
+      <!-- 購入ボタン。カード決済は assets/pdf-checkout.js が配信GAS（商品シート）に販売可否を問い合わせて出す。
+           商品コード refill-a5slim-monthly-undated。カードが使えない間（鍵未設定・商品停止・通信失敗）はメール申込だけが見える。 -->
+      <a href="#" data-checkout="refill-a5slim-monthly-undated" class="btn btn-primary btn-large" style="display:none">カードで購入する（¥<span data-price>300</span>）</a>
+      <a href="#" data-checkout-off="refill-a5slim-monthly-undated" class="btn btn-primary btn-large js-refill-mail">メールで購入を申し込む（銀行振込）</a>
+      <p data-checkout-on="refill-a5slim-monthly-undated" style="display:none;margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
+        Stripe の安全な決済画面に移動します。お支払い後、ダウンロードリンクが表示され、メールでも届きます。<br>
+        銀行振込をご希望の方は <a href="#" class="js-refill-mail" style="color:inherit">メールでお申し込み</a> ください。
+      </p>
+      <p data-checkout-off="refill-a5slim-monthly-undated" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
+        カード決済は準備中です。メールをいただければ、振込先をご案内し、ご入金確認後にPDFをお送りします。
+      </p>
       <script>
       (function () {
-        // ⛔ Stripe ダッシュボードで発行した決済リンク（https://buy.stripe.com/…）を入れる。空の間は銀行振込のメール申込。
-        var STRIPE_PAYMENT_LINK = '';
-        var btn = document.getElementById('buy-btn'), note = document.getElementById('buy-note');
-        if (STRIPE_PAYMENT_LINK) {
-          btn.href = STRIPE_PAYMENT_LINK; btn.target = '_blank'; btn.rel = 'noopener';
-          btn.textContent = 'カードで購入する（¥300）';
-          note.textContent = 'Stripe の安全な決済画面に移動します。お支払い後、ダウンロードリンクが表示されメールでも届きます。';
-        } else {
-          btn.href = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('リフィルPDF購入のお問合せ') + '&body=' + encodeURIComponent('日付なし マンスリーリフィルPDF（A5スリム・300円）を購入したいです。\n\nお名前：\n');
-          btn.textContent = 'メールで購入を申し込む（銀行振込）';
-          note.textContent = 'カード決済は準備中です。メールをいただければ、振込先をご案内し、ご入金確認後にPDFをお送りします。';
-        }
+        var href = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('リフィルPDF購入のお問合せ') + '&body=' + encodeURIComponent('日付なし マンスリーリフィルPDF（A5スリム・300円）を購入したいです。\n\nお名前：\n');
+        Array.prototype.forEach.call(document.querySelectorAll('.js-refill-mail'), function (a) { a.href = href; });
       })();
       </script>
     </div>
@@ -567,5 +565,6 @@ img{max-width:100%;display:block}
 </footer>
 
 <script src="../assets/access-counter.js"></script>
+<script src="../assets/pdf-checkout.js"></script>
 </body>
 </html>
