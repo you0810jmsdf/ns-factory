@@ -655,15 +655,16 @@ function renderSingle(){
   // 4 days → 1 A4 sheet (2 pages front, 2 pages back)
   const dates = [0,1,2,3].map(i=>addDays(startDate,i));
 
-  // Front: slot0(left=hole left), slot2(left=hole left → right page, hole also left for binding)
-  // 2-up: both holes on left side of each page sub-unit for standard left-bind
-  const frontL = buildDailyPage(dates[0], 1, 'left',  holidays);
-  const frontR = buildDailyPage(dates[1], 2, 'left',  holidays);
-  const backL  = buildDailyPage(dates[2], 3, 'left',  holidays);
-  const backR  = buildDailyPage(dates[3], 4, 'left',  holidays);
+  // 長辺綴じの両面面付け（バイブル週間の2面付けと同じ）: 表L=1日・表R=3日／裏L=4日・裏R=2日
+  // → 切り分けると 紙1=1日(表)/2日(裏)、紙2=3日(表)/4日(裏) で 1→2→3→4 の順に綴じられる
+  // 奇数日（右ページ）は穴が左、偶数日（左ページ＝裏面）は穴が右
+  const p1 = buildDailyPage(dates[0], 1, 'left',  holidays);
+  const p2 = buildDailyPage(dates[1], 2, 'right', holidays);
+  const p3 = buildDailyPage(dates[2], 3, 'left',  holidays);
+  const p4 = buildDailyPage(dates[3], 4, 'right', holidays);
 
-  const frontSheet = makeA4HTML([frontL, frontR], LEAF_META_FRONT(0));
-  const backSheet  = makeA4HTML([backL,  backR],  LEAF_META_BACK(0));
+  const frontSheet = makeA4HTML([p1, p3], LEAF_META_FRONT(0));
+  const backSheet  = makeA4HTML([p4, p2], LEAF_META_BACK(0));
 
   const wrapper = document.createElement('div');
   wrapper.innerHTML = frontSheet + backSheet;
@@ -695,11 +696,12 @@ function renderMonthly(){
     while(group.length<4) group.push(null);
     const pages = group.map((d,idx)=>{
       if(!d) return '<div class="daily-page" style="background:#f8f8f8"></div>';
-      return buildDailyPage(d, pageNum++, 'left', holidays);
+      // 奇数日（右ページ）は穴が左、偶数日（裏面）は穴が右
+      return buildDailyPage(d, pageNum++, idx % 2 ? 'right' : 'left', holidays);
     });
-    // front: idx0,1 / back: idx2,3
-    const frontSheet = makeA4HTML([pages[0], pages[1]], LEAF_META_FRONT(i / 2));
-    const backSheet  = makeA4HTML([pages[2], pages[3]], LEAF_META_BACK(i / 2));
+    // 長辺綴じの両面面付け: 表=[idx0, idx2] / 裏=[idx3, idx1]（renderSingle と同じ）
+    const frontSheet = makeA4HTML([pages[0], pages[2]], LEAF_META_FRONT(i / 2));
+    const backSheet  = makeA4HTML([pages[3], pages[1]], LEAF_META_BACK(i / 2));
     wrapper.innerHTML += frontSheet + backSheet;
   }
   preview.appendChild(wrapper);

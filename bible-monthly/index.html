@@ -2,10 +2,10 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>N's factory – バイブル マンスリー ブロック</title>
-<meta name="description" content="バイブルサイズのシステム手帳用マンスリー（月間ブロック）リフィルを無料で作成・印刷できるツール。年月を選んでPDFを出力できます。会員登録もパスワードも不要です。">
-<!-- Google tag (gtag.js) -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バイブル月間ブロックリフィル印刷ツール | N's factory</title>
+<meta name="description" content="バイブル（95×170mm）システム手帳用マンスリー（月間ブロック）リフィルを無料で作成・印刷できるツール。日付入りのほか、日付なし（曜日・日付を自分で書き込む透かし版）も出力できます。会員登録もパスワードも不要です。">
+<!-- Google Analytics -->
 <script>
 // 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
 // GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
@@ -18,248 +18,359 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   gtag('js', new Date());
   gtag('config', 'G-ND1T7H067Y');
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-/* === MODULE: Reset & Variables === */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --page-w-mm:95;
-  --page-h-mm:170;
-  --hole-w-mm:8;
-  --header-h-mm:18;
-  --dow-h-mm:6;
-  --footer-h-mm:3;
-  --memo-h-mm:10;
-  --border-color:#bbb;
-  --light-border:#e0e0e0;
-  --accent:#4a6fa5;
-  --accent-light:#e8eff9;
-  --holiday-color:#c0392b;
-  --sat-color:#2980b9;
-  --font-main:'Noto Sans JP',sans-serif;
-  --font-serif:'Noto Serif JP',serif;
-}
+/* === MODULE: Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0f0f0; }
 
-/* === MODULE: Auth === */
-#auth-overlay{
-  position:fixed;inset:0;background:#2c3e50;display:flex;
-  align-items:center;justify-content:center;z-index:9999;
+/* === MODULE: CSS Variables (デフォルト値) === */
+:root {
+  --text-wm-size: 6mm;
+  --text-wm-angle: -30deg;
+  --text-wm-x: 0mm;
+  --text-wm-y: 0mm;
+  --font-sidebar: 'Times New Roman', Times, serif;
+  --font-col-header: 'Noto Sans JP', sans-serif;
+  --font-date-num: 'Noto Sans JP', sans-serif;
+  --font-month-abbr: 'Times New Roman', Times, serif;
+  --font-text-wm: 'Noto Sans JP', sans-serif;
+  --owl-wm-x: 0mm;
+  --owl-wm-y: 0mm;
+  --owl-wm-size: 70mm;
+  --owl-wm-opacity: 0.04;
+  --img-wm-x: 0mm;
+  --img-wm-y: 0mm;
+  --img-wm-size: 60mm;
+  --img-wm-opacity: 0.08;
+  --title-x: 0mm;
+  --title-y: 0mm;
+  --title-size: 14mm;
+  --title-angle: 0deg;
+  --font-title: 'Noto Serif JP', serif;
+  --ghost-opacity: 0.18;
+  --memo-height: 24mm;
 }
-.auth-box{
-  background:#fff;border-radius:12px;padding:40px 48px;text-align:center;
-  box-shadow:0 8px 32px rgba(0,0,0,.4);min-width:320px;
-}
-.auth-box h2{font-family:var(--font-serif);font-size:20px;margin-bottom:8px;color:#2c3e50}
-.auth-box p{font-size:12px;color:#888;margin-bottom:24px}
-.auth-box input{
-  width:100%;padding:10px 14px;border:2px solid #ddd;border-radius:8px;
-  font-size:16px;outline:none;transition:border .2s;
-}
-.auth-box input:focus{border-color:var(--accent)}
-.auth-box button{
-  margin-top:16px;width:100%;padding:10px;background:var(--accent);color:#fff;
-  border:none;border-radius:8px;font-size:15px;cursor:pointer;transition:opacity .2s;
-}
-.auth-box button:hover{opacity:.85}
-#auth-error{color:#e74c3c;font-size:13px;margin-top:8px;min-height:18px}
-
-/* === MODULE: App Shell === */
-#app{display:none;min-height:100vh;background:#f0f0f0;font-family:var(--font-main)}
 
 /* === MODULE: Control Panel === */
-#ctrl{
-  position:sticky;top:0;z-index:100;background:#2c3e50;color:#fff;
-  padding:8px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;
-  font-size:13px;
+#ctrl-toggle-btn {
+  position: fixed; top: 10px; left: 10px; z-index: 200;
+  width: 36px; height: 36px; border-radius: 6px;
+  background: #1a1a2e; color: #7ec8e3; border: 1px solid #444;
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-#ctrl label{display:flex;align-items:center;gap:4px;white-space:nowrap}
-#ctrl input[type=month],#ctrl select{
-  padding:3px 6px;border:1px solid #555;border-radius:4px;
-  background:#3d5166;color:#fff;font-size:12px;
+#controls {
+  position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+  background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px;
+  font-size: 11px; z-index: 100;
+  transform: translateX(-100%); transition: transform 0.25s ease;
 }
-.ctrl-sep{width:1px;height:24px;background:#4a6278;margin:0 4px}
-#ctrl button{
-  padding:5px 12px;border:none;border-radius:5px;cursor:pointer;
-  font-size:12px;font-weight:500;transition:opacity .2s;
+#controls.open { transform: translateX(0); }
+#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; letter-spacing: 1px; }
+.ctrl-section { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.ctrl-section h3 { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+.ctrl-row label { min-width: 80px; color: #ccc; }
+.ctrl-row input[type=range] { flex: 1; min-width: 80px; accent-color: #7ec8e3; }
+.ctrl-row input[type=number], .ctrl-row select, .ctrl-row input[type=text] {
+  flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee;
+  padding: 3px 5px; border-radius: 3px; font-size: 10px;
 }
-#btn-single{background:#27ae60;color:#fff}
-#btn-annual{background:#8e44ad;color:#fff}
-#btn-pdf{background:#e67e22;color:#fff}
-#ctrl button:hover{opacity:.85}
-#status{margin-left:auto;font-size:11px;color:#aaa;min-width:120px;text-align:right}
+.ctrl-row .val { min-width: 28px; text-align: right; color: #7ec8e3; font-size: 10px; }
+.btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+button {
+  padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+}
+.btn-primary { background: #7ec8e3; color: #1a1a2e; }
+.btn-secondary { background: #444; color: #eee; }
+.btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
+.btn-toggle.on { background: #7ec8e3; color: #1a1a2e; border-color: #7ec8e3; }
+.ctrl-row textarea { flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; resize: vertical; }
+.undated-only { display: none; }
+body.undated .undated-only { display: flex; }
+body.undated .dated-only { display: none; }
 
-/* === MODULE: Preview === */
-#preview{padding:20px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
-
-/* === MODULE: A4 Sheet === */
-.a4-sheet{
-  width:210mm;height:297mm;background:#fff;
-  box-shadow:0 4px 16px rgba(0,0,0,.25);
-  display:flex;flex-direction:row;
-  overflow:hidden;flex-shrink:0;
-}
-
-/* === MODULE: Monthly Page === */
-.monthly-page{
-  width:95mm;height:170mm;position:relative;
-  display:flex;flex-direction:column;overflow:hidden;
-  flex-shrink:0;
-  /* vertical center in A4 */
-  margin-top:calc((297mm - 170mm)/2);
-}
-
-/* Hole strip */
-.hole-strip{
-  position:absolute;top:0;bottom:0;left:0;width:8mm;
-  background:#f8f8f8;border-right:0.3mm solid var(--border-color);
-  z-index:2;
-}
-.hole{
-  position:absolute;left:2mm;width:4mm;height:5mm;
-  background:#fff;border:0.3mm solid #bbb;border-radius:1mm;
+/* === MODULE: Preview Area === */
+#preview { margin-left: 0; padding: 60px 20px 20px; }
+body.panel-open #preview { margin-left: 280px; }
+.sheet-wrap { margin-bottom: 20px; }
+.sheet-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+/* A4縦（210×297）に バイブル（95×170）を2面。左右10mm・上下63.5mmは余白（バイブル週間・日次と同じ配置） */
+.a4-sheet {
+  width: 210mm; height: 297mm; background: white;
+  position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-/* Page body */
-.page-body{
-  position:absolute;top:0;bottom:0;left:8mm;right:0;
-  display:flex;flex-direction:column;
+/* === MODULE: Slot (リフィル枠) === */
+.slot {
+  position: absolute; top: 63.5mm; width: 95mm; height: 170mm; overflow: hidden;
+  display: flex; flex-direction: row;
+}
+.slot[data-pos="L"] { left: 10mm; }
+.slot[data-pos="R"] { left: 105mm; }
+.slot.empty { background: white; }
+.slot.title-slot { background: white; display: flex; position: absolute; }
+.title-text {
+  position: absolute;
+  left: calc(50% + var(--title-x, 0mm));
+  top: calc(50% + var(--title-y, 0mm));
+  transform: translate(-50%, -50%) rotate(var(--title-angle, 0deg));
+  font-size: var(--title-size, 14mm);
+  font-family: var(--font-title, 'Noto Serif JP', serif);
+  font-weight: 700;
+  white-space: nowrap;
+  color: #000;
 }
 
-/* === MODULE: Monthly Header === */
-.monthly-header{
-  height:18mm;display:flex;flex-direction:column;justify-content:center;
-  padding:1.5mm 2mm 1mm 2mm;border-bottom:0.5mm solid var(--accent);
-  flex-shrink:0;
+/* === MODULE: 穴ストリップ（穴中心は綴じ側端から5mm・穴径5mm・バイブル週間/日次と同じ） === */
+.hole-strip {
+  width: 10mm; flex-shrink: 0; position: relative; background: #fff;
+  display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
 }
-.month-title-row{
-  display:flex;align-items:baseline;gap:3mm;
+.hole-strip.left  { border-right: 0.3mm solid #e0e0e0; }
+.hole-strip.right { order: 2; border-left: 0.3mm solid #e0e0e0; }
+.hole {
+  position: absolute; width: 5mm; height: 5mm;
+  border-radius: 50%; background: white; border: 0.3mm solid #bbb;
+  left: 50%; transform: translate(-50%, -50%);
 }
-.month-num{
-  font-size:9mm;font-weight:700;font-family:var(--font-serif);line-height:1;color:#1a1a1a;
+.punch-guide {
+  position: absolute; width: 2mm;
+  top: 85mm; height: 0;
+  border-top: 0.2mm dashed #bbb;
+  pointer-events: none;
 }
-.month-sub{
-  display:flex;flex-direction:column;gap:0.3mm;
-}
-.month-en{
-  font-size:3.5mm;color:var(--accent);font-weight:500;text-transform:uppercase;
-  font-family:var(--font-serif);
-}
-.month-year{
-  font-size:2.5mm;color:#888;
-}
-.goal-line{
-  margin-top:1mm;border-bottom:0.2mm solid var(--light-border);width:100%;height:3mm;
-  display:flex;align-items:center;
-}
-.goal-label{font-size:2mm;color:#bbb;margin-right:2mm;white-space:nowrap}
+.hole-strip.left  .punch-guide { left: 0; }
+.hole-strip.right .punch-guide { right: 0; }
 
-/* === MODULE: DOW Header === */
-.dow-header{
-  height:6mm;display:flex;border-bottom:0.3mm solid var(--border-color);
-  flex-shrink:0;background:var(--accent-light);
-}
-.dow-cell{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  font-size:2.2mm;font-weight:700;color:#444;
-}
-.dow-cell.sun{color:var(--holiday-color)}
-.dow-cell.sat{color:var(--sat-color)}
-
-/* === MODULE: Calendar Grid === */
-.cal-grid{
-  flex:1;display:flex;flex-direction:column;overflow:hidden;
-}
-.cal-row{
-  flex:1;display:flex;border-bottom:0.2mm solid var(--light-border);
-  min-height:0;
-}
-.cal-row:last-child{border-bottom:none}
-.cal-cell{
-  flex:1;border-right:0.2mm solid var(--light-border);
-  display:flex;flex-direction:column;overflow:hidden;
-  padding:0.3mm;position:relative;
-}
-.cal-cell:last-child{border-right:none}
-.cal-cell.empty{background:#f8f8f8}
-.cal-cell.today-cell{background:#fff9e6}
-.cal-cell.holiday-cell .day-num{color:var(--holiday-color)}
-.cal-cell.sat-cell .day-num{color:var(--sat-color)}
-
-.day-num{
-  font-size:2.8mm;font-weight:700;font-family:var(--font-serif);line-height:1.1;
-  flex-shrink:0;
-}
-.hol-name{
-  font-size:1.5mm;color:var(--holiday-color);line-height:1;margin-top:0.3mm;
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex-shrink:0;
-}
-.cell-lines{
-  flex:1;display:flex;flex-direction:column;justify-content:flex-end;
-}
-.cell-line{
-  border-bottom:0.15mm solid var(--light-border);flex:1;min-height:0;
+/* === MODULE: ページ本体 === */
+.page-body {
+  flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden;
+  box-sizing: border-box;
+  padding-top: 0; padding-bottom: 0; /* リフィルは用紙中央に置くのでセーフゾーン不要 */
 }
 
-/* === MODULE: Memo Block === */
-.memo-block{
-  height:10mm;flex-shrink:0;border-top:0.3mm solid var(--border-color);
-  padding:0.5mm 1.5mm;display:flex;flex-direction:column;
+/* === MODULE: カット線 === */
+.cut-line-h {
+  position: absolute; left: 0; right: 0; height: 0;
+  border-top: 0.2mm dashed #aaa; z-index: 5; pointer-events: none;
 }
-.memo-label{font-size:2mm;color:#aaa;font-weight:500;margin-bottom:0.3mm}
-.memo-lines{flex:1;display:flex;flex-direction:column;justify-content:space-around}
-.memo-line{border-bottom:0.2mm solid var(--light-border);flex:1}
+.cut-line-v {
+  position: absolute; top: 0; bottom: 0; width: 0;
+  border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none;
+}
 
-/* === MODULE: Page Num Bar === */
-.page-num-bar{
-  height:3mm;flex-shrink:0;display:flex;align-items:center;
-  justify-content:flex-end;padding:0 2mm;
-  background:#f8f8f8;border-top:0.2mm solid var(--light-border);
-  flex-shrink:0;
+/* === MODULE: ウォーターマーク === */
+.logo-wm {
+  position: absolute;
+  top: calc(50% + var(--owl-wm-y, 0mm)); left: calc(50% + var(--owl-wm-x, 0mm));
+  transform: translate(-50%, -50%);
+  width: var(--owl-wm-size, 70mm); height: var(--owl-wm-size, 70mm);
+  pointer-events: none; z-index: 1;
 }
-.page-num-bar span{font-size:2mm;color:#bbb}
+.logo-wm svg { opacity: var(--owl-wm-opacity, 0.04); }
+.text-wm {
+  position: absolute; pointer-events: none; z-index: 1;
+  font-size: var(--text-wm-size, 6mm); color: #888; opacity: 0.1;
+  font-weight: 700; white-space: nowrap; letter-spacing: 0.5mm;
+  font-family: var(--font-text-wm, 'Noto Sans JP', sans-serif);
+  left: calc(50% + var(--text-wm-x, 0mm)); top: calc(50% + var(--text-wm-y, 0mm));
+  transform: translate(-50%, -50%) rotate(var(--text-wm-angle, -30deg));
+  transform-origin: center center;
+}
+.img-wm {
+  position: absolute; pointer-events: none; z-index: 1;
+  top: calc(50% + var(--img-wm-y, 0mm)); left: calc(50% + var(--img-wm-x, 0mm));
+  transform: translate(-50%, -50%);
+  width: var(--img-wm-size, 60mm); height: auto;
+  opacity: var(--img-wm-opacity, 0.08);
+}
 
-/* === MODULE: Settings Panel === */
-#settings-toggle{
-  position:fixed;right:16px;bottom:16px;z-index:200;
-  background:var(--accent);color:#fff;border:none;border-radius:50%;
-  width:44px;height:44px;font-size:20px;cursor:pointer;
-  box-shadow:0 4px 12px rgba(0,0,0,.3);
+/* === MODULE: 日付なし透かし（7セグ数字・曜日） === */
+.seg-ghost { display: inline-block; color: #000; opacity: var(--ghost-opacity, 0.18); vertical-align: top; }
+.seg-ghost svg { display: block; height: 100%; width: auto; }
+.wd-ghost {
+  display: flex; justify-content: space-between; width: 100%; padding: 0 0.6mm;
+  font-size: 1.9mm; font-weight: 700; color: #000; opacity: var(--ghost-opacity, 0.18); letter-spacing: 0;
 }
-#settings-panel{
-  position:fixed;right:16px;bottom:68px;z-index:200;
-  background:#fff;border-radius:12px;padding:20px;min-width:260px;
-  box-shadow:0 8px 32px rgba(0,0,0,.2);display:none;
-  font-family:var(--font-main);font-size:13px;
-}
-#settings-panel h3{
-  font-size:14px;font-weight:700;margin-bottom:14px;color:#2c3e50;
-  border-bottom:1px solid #eee;padding-bottom:8px;
-}
-.srow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.srow label{color:#444;font-size:12px}
-.srow select{
-  padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;width:110px;
-}
-#btn-save-settings{
-  width:100%;margin-top:8px;padding:8px;background:var(--accent);color:#fff;
-  border:none;border-radius:8px;cursor:pointer;font-size:13px;
-}
-#btn-save-settings:hover{opacity:.85}
-#settings-saved{color:var(--accent);font-size:12px;text-align:center;margin-top:6px;min-height:16px}
+.wd-ghost span { flex: 1; text-align: center; }
 
-/* === MODULE: Print === */
-@media print{
-  #ctrl,#settings-toggle,#settings-panel,#auth-overlay{display:none!important}
-  #preview{padding:0}
-  .a4-sheet{box-shadow:none;margin:0;page-break-after:always}
+/* === MODULE: 月間ページ CSS === */
+.monthly-page {
+  width: 100%; height: 100%; display: flex; flex-direction: row; position: relative;
+}
+.month-sidebar {
+  width: 13mm; flex-shrink: 0;
+  background: white; border-right: 0.3mm solid #ccc;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2mm;
+}
+.sidebar-month-num {
+  font-size: 10mm; font-weight: 700; line-height: 1;
+  font-family: var(--font-sidebar, 'Times New Roman', Times, serif);
+}
+.sidebar-month-num .seg-ghost { height: 10mm; }
+.sidebar-month-name {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-size: 2.5mm; font-weight: 700; letter-spacing: 0.5mm; text-transform: uppercase;
+  font-family: var(--font-sidebar, 'Times New Roman', Times, serif);
+  color: #555; min-height: 8mm;
+}
+.sidebar-year {
+  writing-mode: vertical-rl; text-orientation: mixed;
+  font-size: 2mm; color: #999; min-height: 6mm;
+  font-family: var(--font-sidebar, 'Times New Roman', Times, serif);
+}
+.month-grid-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.month-cols-row { flex: 1; display: flex; flex-direction: row; }
+.month-col { flex: 1; display: flex; flex-direction: column; border-right: 0.2mm solid #ddd; }
+.month-col:last-child { border-right: none; }
+.col-day-header {
+  height: 6mm; flex-shrink: 0;
+  border-bottom: 0.3mm solid #bbb;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2mm; font-weight: 700;
+  font-family: var(--font-col-header, 'Noto Sans JP', sans-serif);
+}
+.col-day-header.is-sat { color: #3377cc; }
+.col-day-header.is-sun { color: #cc3333; }
+.month-memo {
+  height: var(--memo-height, 24mm); flex-shrink: 0;
+  border-top: 0.3mm solid #bbb;
+  display: flex; flex-direction: column;
+  padding: 0 1mm;
+}
+.memo-label { font-size: 1.8mm; font-weight: 700; color: #aaa; letter-spacing: 0.5mm; padding: 0.5mm 0 0.3mm; }
+.memo-lines { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; gap: var(--memo-line-gap, 0); }
+.memo-line { height: 0; width: var(--memo-line-length, 100%); border-top: var(--memo-line-width, 0.2mm) solid #ddd; }
+.month-cells { flex: 1; display: flex; flex-direction: column; }
+.month-cell {
+  flex: 1; border-bottom: 0.2mm solid #eee; padding: 0.5mm 1mm;
+  display: flex; flex-direction: column;
+}
+.month-cell:last-child { border-bottom: none; }
+.cell-date {
+  font-size: 3.5mm; font-weight: 700; line-height: 1.1;
+  font-family: var(--font-date-num, 'Noto Sans JP', sans-serif);
+}
+.cell-date .seg-ghost { height: 3.8mm; }
+.cell-holiday { font-size: 1.6mm; color: #cc3333; line-height: 1.2; margin-top: 0.2mm; }
+.month-col.is-sat .cell-date { color: #3377cc; }
+.month-col.is-sun .cell-date { color: #cc3333; }
+.month-cell.is-holiday .cell-date { color: #cc3333 !important; }
+.month-cell.is-out .cell-date { color: #ccc !important; }
+.month-cell.is-out .cell-holiday { display: none; }
+.month-footer {
+  height: 8mm; flex-shrink: 0;
+  border-top: var(--month-footer-border, 0.3mm solid #bbb);
+  display: flex; align-items: center; justify-content: flex-end; padding-right: 3mm;
+}
+.footer-month-abbr {
+  font-size: 4.5mm; font-weight: 700; letter-spacing: 1mm; color: #bbb;
+  font-family: var(--font-month-abbr, 'Times New Roman', Times, serif);
+}
+
+/* === MODULE: 縦型月間 CSS === */
+.monthly-vert { width:100%; height:100%; display:flex; flex-direction:row; position:relative; }
+.vert-content { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+.vert-header { height:13mm; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:0 2mm; border-bottom:0.3mm solid #555; }
+.vert-month-num { font-size:8mm; font-weight:700; line-height:1; font-family:var(--font-month-num,'Times New Roman',Times,serif); }
+.vert-month-num .seg-ghost { height:8mm; }
+.vert-month-name { font-size:3.5mm; font-weight:700; letter-spacing:0.5mm; text-align:right; font-family:var(--font-month-abbr,'Times New Roman',Times,serif); }
+.vert-year { font-size:2.8mm; color:#888; text-align:right; }
+.vert-grid { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.vert-day-header-row { display:grid; grid-template-columns:repeat(7,1fr); height:6mm; flex-shrink:0; border-bottom:0.2mm solid #bbb; }
+.vert-day-header { display:flex; align-items:center; justify-content:center; font-size:2.2mm; font-weight:700; color:#555; }
+.vert-day-header.is-sat { color:#2255aa; } .vert-day-header.is-sun { color:#aa2222; }
+.vert-day-header .wd-ghost { font-size:1.4mm; padding:0; }
+.vert-week-rows { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.vert-week { flex:1; display:grid; grid-template-columns:repeat(7,1fr); border-bottom:0.15mm solid #ddd; }
+.vert-week:last-child { border-bottom:none; }
+.vert-cell { border-right:0.15mm solid #ddd; display:flex; flex-direction:column; padding:0.5mm; overflow:hidden; }
+.vert-cell:last-child { border-right:none; }
+.vert-cell.is-sat .vert-cell-date { color:#2255aa; } .vert-cell.is-sun .vert-cell-date { color:#aa2222; }
+.vert-cell.is-holiday .vert-cell-date { color:#aa2222; } .vert-cell.out-of-month { background:#f8f8f8; }
+.vert-cell-date { font-size:2.8mm; font-weight:700; line-height:1.2; font-family:var(--font-date,'Times New Roman',Times,serif); }
+.vert-cell-date .seg-ghost { height:3mm; }
+.vert-cell-holiday { font-size:1.5mm; color:#aa4444; line-height:1.1; overflow:hidden; }
+.vert-memo { height:var(--memo-height,24mm); flex-shrink:0; border-top:0.3mm solid #555; padding:1mm 2mm; display:flex; flex-direction:column; }
+.vert-memo-lines { flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:var(--memo-line-gap,3mm); }
+.vert-memo-line { height:0; width:var(--memo-line-length,100%); border-bottom:var(--memo-line-width,0.15mm) solid #ccc; }
+.vert-cell-grid { display:grid; flex:1; overflow:hidden; min-height:0; }
+.vert-cell-grid-item { border-right:0.1mm dotted #bbb; border-bottom:0.1mm dotted #bbb; }
+.vert-cell-grid-item.last-col { border-right:none; }
+.vert-cell-grid-item.last-row { border-bottom:none; }
+
+/* === MODULE: UpdateHistory / Help === */
+.history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
+.history-overlay.open { display:flex; }
+.history-box { background:#1a1a2e; color:#eee; border-radius:8px; padding:20px; width:min(480px,92vw); max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+.history-box h3 { font-size:13px; color:#7ec8e3; margin-bottom:12px; }
+.history-entry { border-top:1px solid #333; padding:10px 0; font-size:10px; line-height:1.6; }
+.history-entry:first-of-type { border-top:none; }
+.history-date { color:#aaa; font-size:9px; }
+.history-type { display:inline-block; padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; margin-left:6px; }
+.history-type.feat { background:#1a3a1a; color:#7ec8e3; }
+.history-type.fix  { background:#3a1a1a; color:#f0b27a; }
+.history-type.improve { background:#1a1a3a; color:#b27af0; }
+.history-title { font-weight:700; margin-top:3px; }
+.history-detail { color:#bbb; margin-top:2px; }
+.history-close { float:right; background:#444; color:#eee; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:10px; }
+
+/* === MODULE: Checklist === */
+.cl-block { position: absolute; z-index: 3; pointer-events: none; line-height: 1.4; }
+.cl-title { font-weight: 700; padding-bottom: 0.3mm; border-bottom: 0.2mm solid #555; margin-bottom: 0.5mm; white-space: nowrap; }
+.cl-item { display: flex; align-items: center; gap: 0.6mm; white-space: nowrap; }
+.cl-checkbox { width: 1.2em; height: 1.2em; border: 0.2mm solid #555; flex-shrink: 0; display: inline-block; }
+
+/* === MODULE: Screen Scale === */
+@media screen {
+  .a4-sheet { transform: scale(0.65); transform-origin: top left; margin-bottom: calc(297mm * 0.65 - 297mm); }
+  .sheet-wrap { width: calc(210mm * 0.65); overflow: visible; }
+}
+@media screen and (max-width: 900px) {
+  .a4-sheet { transform: scale(0.45); margin-bottom: calc(297mm * 0.45 - 297mm); }
+  .sheet-wrap { width: calc(210mm * 0.45); }
+}
+@media screen and (max-width: 560px) {
+  .a4-sheet { transform: scale(0.3); margin-bottom: calc(297mm * 0.3 - 297mm); }
+  .sheet-wrap { width: calc(210mm * 0.3); }
+}
+
+/* === MODULE: Print（A4縦） === */
+@page { size: 210mm 297mm; margin: 0; }
+@media print {
+  html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: white; }
+  .slot.empty { background: white !important; }
+  .month-sidebar { background: white !important; }
+  .vert-cell.out-of-month { background: white !important; }
+  body.panel-open #preview { margin-left: 0 !important; }
+  #controls, #ctrl-toggle-btn, .history-overlay, #nsf-free-notice, #nsf-size-switch { display: none !important; }
+  #preview { margin: 0 !important; padding: 0 !important; width: 210mm !important; }
+  .sheet-wrap {
+    width: 210mm !important; height: 297mm !important;
+    margin: 0 !important; padding: 0 !important;
+    page-break-after: always; break-after: page;
+    page-break-inside: avoid; break-inside: avoid;
+    overflow: hidden; position: relative;
+  }
+  .sheet-wrap:last-child { page-break-after: auto; break-after: auto; }
+  .sheet-label { display: none !important; }
+  .a4-sheet {
+    transform: none !important; box-shadow: none !important;
+    width: 210mm !important; height: 297mm !important;
+    margin: 0 !important; padding: 0 !important;
+    display: block !important; position: relative !important;
+    overflow: hidden;
+  }
 }
 </style>
 </head>
 <body>
-<!-- 無料開放のお知らせ（2026-08-24 追加）。⛔ 不具合の連絡先を消さないこと。 -->
+<!-- 無料開放のお知らせ。⛔ 不具合の連絡先を消さないこと。 -->
 <div id="nsf-free-notice" style="max-width:760px;margin:12px auto;padding:12px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:1.8;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;">
   <strong>無料でお使いください。</strong>
   会員登録もパスワードも不要です。作ったデータはこの端末の中だけで処理され、どこにも送信されません。<br>
@@ -267,371 +378,1176 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <a href="https://you0810jmsdf.github.io/ns-factory/links.html" style="color:#7A5540;font-weight:700;">こちら</a>
   からお知らせください。個人で作っているので、教えていただけると助かります。
 </div>
-<!-- サイズ切り替え（2026-09-11 追加）。サイドバー#controlsは既定で閉じているため、常時見えるここに置く。 -->
+<!-- サイズ切り替え。サイドバー#controlsは既定で閉じているため、常時見えるここに置く。 -->
 <nav id="nsf-size-switch" aria-label="サイズ切り替え" style="max-width:760px;margin:0 auto 12px;padding:10px 14px;background:#fff;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:2;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;">
   <span style="font-size:11px;color:#8a7362;letter-spacing:.06em;">いま開いているのは <b style="color:#4a3a2c;">バイブル 月間</b></span>
+  <span><span style="color:#8a7362;">A5スリム：</span><a href="../a5slim-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../bible-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../a5slim-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
   <span><span style="color:#8a7362;">A6：</span><a href="../a6-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../a6-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../a6-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
   <span><span style="color:#8a7362;">バイブル：</span><a href="../bible-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <strong aria-current="page" style="background:#7A5540;color:#fff;padding:1px 9px;border-radius:4px;font-weight:700;">月間</strong> ／ <a href="../bible-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
-  <a href="../refill/" style="margin-left:auto;color:#7A5540;font-weight:700;text-decoration:none;border:1px solid #E0D2C2;border-radius:6px;padding:2px 10px;background:#F3ECE4;">サイズ選択へ ›</a>
+  <a href="../tools/" style="margin-left:auto;color:#7A5540;font-weight:700;text-decoration:none;border:1px solid #E0D2C2;border-radius:6px;padding:2px 10px;background:#F3ECE4;">ツール一覧へ ›</a>
 </nav>
 
+<!-- === MODULE: Control Panel HTML === -->
+<button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
+<div id="controls">
+  <h2>N's factory<br>バイブル 月間ブロック 印刷ツール</h2>
+  <div style="text-align:center;margin-bottom:6px"><button onclick="resetSettings()" style="font-size:11px;padding:2px 10px;cursor:pointer">設定リセット</button></div>
 
-<!-- Auth -->
-<!-- パスワードゲートは2026-08-24に解除（無料開放）。復活はgit履歴を参照 -->
+  <div class="ctrl-section">
+    <h3>印刷モード</h3>
+    <div class="ctrl-row">
+      <label>日付</label>
+      <button class="btn-toggle on" id="btnDated" onclick="setUndated(false)">日付あり</button>
+      <button class="btn-toggle" id="btnUndated" onclick="setUndated(true)">日付なし</button>
+    </div>
+    <div class="ctrl-row">
+      <label>言語</label>
+      <button class="btn-toggle on" id="btnJA" onclick="setLang(false)">日本語</button>
+      <button class="btn-toggle" id="btnEN" onclick="setLang(true)">English</button>
+    </div>
+    <div class="ctrl-row">
+      <label>両面印刷</label>
+      <button class="btn-toggle on" id="btnDuplex" onclick="toggleDuplex()">ON</button>
+      <span style="font-size:9px;color:#aaa;">（見開きの裏に前後の月・長辺綴じ）</span>
+    </div>
+    <div class="ctrl-row">
+      <label>レイアウト</label>
+      <button class="btn-toggle on" id="btnBlock" onclick="setLayout('block')">横ブロック</button>
+      <button class="btn-toggle" id="btnVert" onclick="setLayout('vert')">縦型</button>
+    </div>
+  </div>
+
+  <div class="ctrl-section dated-only">
+    <h3>年月設定</h3>
+    <div class="ctrl-row">
+      <label>年</label>
+      <input type="number" id="yearPicker" min="2000" max="2099" value="2026" onchange="renderMonths()" style="width:70px;flex:none;">
+    </div>
+    <div class="ctrl-row">
+      <label>開始月</label>
+      <select id="startMonthPicker" onchange="renderMonths()">
+        <option value="1" selected>1月</option><option value="2">2月</option><option value="3">3月</option>
+        <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+        <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>終了月</label>
+      <select id="endMonthPicker" onchange="renderMonths()">
+        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+        <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+        <option value="10">10月</option><option value="11">11月</option><option value="12" selected>12月</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="ctrl-section" id="undatedSection" style="display:none;">
+    <h3>日付なしの設定</h3>
+    <div class="ctrl-row">
+      <label>月数（枚数）</label>
+      <input type="number" id="undatedCount" min="1" max="12" value="1" onchange="rerender()" style="width:60px;flex:none;">
+    </div>
+    <div class="ctrl-row">
+      <label>数字の透かし</label>
+      <select id="ghostStyle" onchange="opts.ghostStyle=this.value; rerender()">
+        <option value="seg" selected>デジタル風（7セグ・塗って使う）</option>
+        <option value="none">なし（空欄）</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>曜日の透かし</label>
+      <button class="btn-toggle on" id="btnGhostWd" onclick="toggleOpt('ghostWeekday','btnGhostWd')">7曜すべて薄く</button>
+    </div>
+    <div class="ctrl-row"><label>透かし濃さ</label>
+      <input type="range" id="ghostOpacity" min="0.05" max="0.6" step="0.01" value="0.18"
+        oninput="setCSSVar('--ghost-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)">
+      <span class="val">18</span>%
+    </div>
+    <div style="font-size:9px;color:#aaa;line-height:1.6;margin-top:4px;">
+      日付・曜日・月を印刷せず、薄い透かしだけ出します。使う人が塗る・書くことで、月曜始まりでも日曜始まりでも、いつからでも使えます。
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>表示要素</h3>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnHoles" onclick="toggleOpt('showHoles','btnHoles')">穴印刷</button>
+      <button class="btn-toggle on" id="btnHoleLine" onclick="toggleOpt('showHoleLine','btnHoleLine')">穴仕切線</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnHoleBisect" onclick="toggleOpt('showHoleBisect','btnHoleBisect')">穴あけパンチガイド</button>
+      <button class="btn-toggle on" id="btnCutLine" onclick="toggleOpt('showCutLine','btnCutLine')">カット線</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
+      <button class="btn-toggle on" id="btnMonthAbbr" onclick="toggleOpt('showMonthAbbr','btnMonthAbbr')">月略称</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnTextWm" onclick="toggleOpt('showTextWm','btnTextWm')">テキスト透かし</button>
+      <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
+      <button class="btn-toggle on" id="btnCellGrid" onclick="toggleOpt('showCellGrid','btnCellGrid')">日マスグリッド</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnMonthNum" onclick="toggleOpt('showMonthNum','btnMonthNum')">月</button>
+      <button class="btn-toggle on" id="btnDateNum" onclick="toggleOpt('showDateNum','btnDateNum')">日付</button>
+      <button class="btn-toggle on" id="btnDayHeader" onclick="toggleOpt('showDayHeader','btnDayHeader')">曜日</button>
+    </div>
+    <div class="ctrl-row"><label>グリッド列数</label>
+      <input type="range" id="cellGridCols" min="1" max="8" step="1" value="2"
+        oninput="opts.cellGridCols=+this.value; this.nextElementSibling.textContent=this.value; rerender()">
+      <span class="val">2</span>
+    </div>
+    <div class="ctrl-row"><label>グリッド行数</label>
+      <input type="range" id="cellGridRows" min="1" max="20" step="1" value="8"
+        oninput="opts.cellGridRows=+this.value; this.nextElementSibling.textContent=this.value; rerender()">
+      <span class="val">8</span>
+    </div>
+    <div class="ctrl-row"><label>MEMO高さ(mm)</label>
+      <input type="range" id="memoHeight" min="0" max="80" step="1" value="24"
+        oninput="setCSSVar('--memo-height', this.value+'mm'); this.nextElementSibling.textContent=this.value; updateMemoLines()">
+      <span class="val">24</span>
+    </div>
+    <div class="ctrl-row"><label>MEMO罫線太さ(mm)</label>
+      <input type="range" id="memoLineWidth" min="0" max="1" step="0.05" value="0.2"
+        oninput="setCSSVar('--memo-line-width', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0.2</span>
+    </div>
+    <div class="ctrl-row"><label>MEMO罫線幅(%)</label>
+      <input type="range" id="memoLineLength" min="10" max="100" step="1" value="100"
+        oninput="setCSSVar('--memo-line-length', this.value+'%'); this.nextElementSibling.textContent=this.value">
+      <span class="val">100</span>
+    </div>
+    <div class="ctrl-row"><label>MEMO罫線間隔(mm)</label>
+      <input type="range" id="memoLineGap" min="0" max="15" step="0.5" value="3"
+        oninput="setCSSVar('--memo-line-gap', this.value+'mm'); this.nextElementSibling.textContent=this.value; updateMemoLines()">
+      <span class="val">3</span>
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>タイトルページ（両面印刷時・1枚目左ページの裏）</h3>
+    <div class="btn-row">
+      <button class="btn-toggle" id="btnTitle" onclick="toggleOpt('showTitle','btnTitle')">タイトル表示</button>
+    </div>
+    <div class="ctrl-row" style="align-items:flex-start">
+      <label>テキスト</label>
+      <textarea id="titleContent" rows="2" style="flex:1; resize:vertical; font-family:inherit; font-size:13px;" oninput="rerender()">SCHEDULE</textarea>
+    </div>
+    <div class="ctrl-row" style="flex-wrap:wrap">
+      <label>透かし</label>
+      <label style="display:flex;align-items:center;gap:4px;font-weight:normal"><input type="checkbox" id="titleWmLogo" onchange="rerender()">ロゴ</label>
+      <label style="display:flex;align-items:center;gap:4px;font-weight:normal"><input type="checkbox" id="titleWmText" onchange="rerender()">テキスト</label>
+      <label style="display:flex;align-items:center;gap:4px;font-weight:normal"><input type="checkbox" id="titleWmImg" onchange="rerender()">画像</label>
+    </div>
+    <div class="ctrl-row">
+      <label>X（左右）</label>
+      <input type="range" id="titleX" min="-50" max="50" step="1" value="0"
+        oninput="setCSSVar('--title-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>Y（上下）</label>
+      <input type="range" id="titleY" min="-100" max="100" step="1" value="0"
+        oninput="setCSSVar('--title-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>文字サイズ</label>
+      <input type="range" id="titleSize" min="3" max="60" step="0.5" value="14"
+        oninput="setCSSVar('--title-size', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">14</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>角度</label>
+      <input type="range" id="titleAngle" min="-90" max="90" step="1" value="0"
+        oninput="setCSSVar('--title-angle', this.value+'deg'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>°
+      <button type="button" style="margin-left:4px;padding:2px 6px;font-size:11px"
+        onclick="document.getElementById('titleAngle').value=0; setCSSVar('--title-angle','0deg'); document.getElementById('titleAngle').nextElementSibling.textContent='0';">0</button>
+    </div>
+    <div class="ctrl-row">
+      <label>フォント</label>
+      <select id="fontTitle" onchange="updateFontVars()"></select>
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>テキスト透かし</h3>
+    <div class="ctrl-row">
+      <label>テキスト</label>
+      <input type="text" id="textWmContent" value="N's factory" style="flex:1" oninput="rerender()">
+    </div>
+    <div class="ctrl-row">
+      <label>X（左右）</label>
+      <input type="range" id="textWmX" min="-50" max="50" step="1" value="0"
+        oninput="setCSSVar('--text-wm-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>Y（上下）</label>
+      <input type="range" id="textWmY" min="-100" max="100" step="1" value="0"
+        oninput="setCSSVar('--text-wm-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>文字サイズ</label>
+      <input type="range" id="textWmSize" min="2" max="100" step="0.5" value="6"
+        oninput="setCSSVar('--text-wm-size', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">6</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>角度</label>
+      <input type="range" id="textWmAngle" min="-90" max="90" step="1" value="-30"
+        oninput="setCSSVar('--text-wm-angle', this.value+'deg'); this.nextElementSibling.textContent=this.value">
+      <span class="val">-30</span>°
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>フォント設定</h3>
+    <div class="ctrl-row"><label>サイドバー</label><select id="fontSidebar" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>列ヘッダー</label><select id="fontColHeader" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>日付数字</label><select id="fontDateNum" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>月略称</label><select id="fontMonthAbbr" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>テキスト透かし</label><select id="fontTextWm" onchange="updateFontVars()"></select></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>フクロウ透かし位置</h3>
+    <div class="ctrl-row">
+      <label>X（左右）</label>
+      <input type="range" id="owlWmX" min="-50" max="50" step="1" value="0"
+        oninput="setCSSVar('--owl-wm-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>Y（上下）</label>
+      <input type="range" id="owlWmY" min="-90" max="90" step="1" value="0"
+        oninput="setCSSVar('--owl-wm-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="owlWmSize" min="10" max="100" step="1" value="70"
+        oninput="setCSSVar('--owl-wm-size', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">70</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>不透明度</label>
+      <input type="range" id="owlWmOpacity" min="0.01" max="0.3" step="0.01" value="0.04"
+        oninput="setCSSVar('--owl-wm-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)">
+      <span class="val">4</span>%
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>画像透かし</h3>
+    <div class="ctrl-row">
+      <label>画像選択</label>
+      <input type="file" accept="image/*" onchange="handleImageUpload(event)" style="flex:1;font-size:9px;color:#ccc">
+    </div>
+    <div class="ctrl-row">
+      <label>X（左右）</label>
+      <input type="range" id="imgWmX" min="-50" max="50" step="1" value="0"
+        oninput="setCSSVar('--img-wm-x', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>Y（上下）</label>
+      <input type="range" id="imgWmY" min="-90" max="90" step="1" value="0"
+        oninput="setCSSVar('--img-wm-y', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">0</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>サイズ</label>
+      <input type="range" id="imgWmSize" min="10" max="100" step="1" value="60"
+        oninput="setCSSVar('--img-wm-size', this.value+'mm'); this.nextElementSibling.textContent=this.value">
+      <span class="val">60</span>mm
+    </div>
+    <div class="ctrl-row">
+      <label>不透明度</label>
+      <input type="range" id="imgWmOpacity" min="0.01" max="0.5" step="0.01" value="0.08"
+        oninput="setCSSVar('--img-wm-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)">
+      <span class="val">8</span>%
+    </div>
+  </div>
+
+  <!-- チェックリスト -->
+  <div class="ctrl-section">
+    <h3>チェックリスト</h3>
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow0" onchange="toggleCL(0)"> グループ1</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle0" value="チェックリスト1" oninput="updateCL(0)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems0" rows="5" oninput="updateCL(0)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont0" onchange="updateCL(0)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize0" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(0)"><span class="val" id="clSizeVal0">2.5</span></div>
+      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX0" min="0" max="90" step="0.5" value="2" oninput="updateCL(0)"><span class="val" id="clXVal0">2</span></div>
+      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY0" min="0" max="200" step="0.5" value="15" oninput="updateCL(0)"><span class="val" id="clYVal0">15</span></div>
+    </details>
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow1" onchange="toggleCL(1)"> グループ2</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle1" value="チェックリスト2" oninput="updateCL(1)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems1" rows="5" oninput="updateCL(1)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont1" onchange="updateCL(1)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize1" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(1)"><span class="val" id="clSizeVal1">2.5</span></div>
+      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX1" min="0" max="90" step="0.5" value="2" oninput="updateCL(1)"><span class="val" id="clXVal1">2</span></div>
+      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY1" min="0" max="200" step="0.5" value="80" oninput="updateCL(1)"><span class="val" id="clYVal1">80</span></div>
+    </details>
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;">
+      <label style="cursor:pointer;"><input type="checkbox" id="clShow2" onchange="toggleCL(2)"> グループ3</label>
+    </summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle2" value="チェックリスト3" oninput="updateCL(2)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems2" rows="5" oninput="updateCL(2)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont2" onchange="updateCL(2)"></select></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize2" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(2)"><span class="val" id="clSizeVal2">2.5</span></div>
+      <div class="ctrl-row"><label>X位置(mm)</label><input type="range" id="clX2" min="0" max="90" step="0.5" value="2" oninput="updateCL(2)"><span class="val" id="clXVal2">2</span></div>
+      <div class="ctrl-row"><label>Y位置(mm)</label><input type="range" id="clY2" min="0" max="200" step="0.5" value="145" oninput="updateCL(2)"><span class="val" id="clYVal2">145</span></div>
+    </details>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>印刷</h3>
+    <div class="btn-row">
+      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
+      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+    </div>
+    <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
+      ⚠️ <strong>印刷時の注意</strong><br>
+      用紙は <strong>A4 縦向き</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、バイブルリフィルとして使えません。
+    </div>
+    <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
+      ※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>
+      ※ PCは「印刷」ボタンで直接印刷可
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHelp()" style="flex:1">📖 使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="flex:1;margin-left:6px">📋 更新履歴</button>
+    </div>
+  </div>
 </div>
 
-<!-- App -->
-<div id="app">
+<!-- === MODULE: Help Modal === -->
+<div class="history-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
+    <h3>使い方マニュアル（バイブル 月間ブロック印刷ツール）</h3>
+    <div style="font-size:11px; line-height:1.7; color:#ddd;">
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>左メニュー「印刷モード」で <b>日付あり／なし</b>・<b>言語</b> を選ぶ</li>
+        <li>日付ありは <b>年・開始月・終了月</b>、日付なしは <b>月数（枚数）</b> を設定</li>
+        <li>プレビューを確認後、PCは「印刷」、スマホは「PDFを生成」</li>
+        <li>印刷ダイアログで <b>A4縦・「実際のサイズ（100%）」</b> を選ぶ</li>
+      </ol>
 
-  <div id="ctrl">
-    <label>年月
-      <input type="month" id="inp-month">
-    </label>
-    <div class="ctrl-sep"></div>
-    <label>目標行
-      <select id="sel-goal">
-        <option value="1">表示</option>
-        <option value="0">非表示</option>
-      </select>
-    </label>
-    <label>メモ欄
-      <select id="sel-memo">
-        <option value="1">表示</option>
-        <option value="0">非表示</option>
-      </select>
-    </label>
-    <div class="ctrl-sep"></div>
-    <button id="btn-single" onclick="renderSingle()">2ヶ月プレビュー</button>
-    <button id="btn-annual" onclick="renderAnnual()">年間プレビュー</button>
-    <button id="btn-pdf" onclick="generatePDF()">PDF出力</button>
-    <span id="status">準備完了</span>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 日付なしモードについて</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>年・月・日付・曜日・祝日を印刷しません。かわりに薄い透かし（デジタル風の「8」の形と、7つの曜日）を出します</li>
+        <li>使う人が透かしをなぞる・塗ることで日付と曜日を決めます。月曜始まりでも日曜始まりでも、年の途中からでも使えます</li>
+        <li>マスは常に 6週×7列（42マス）。使わないマスはメモ欄として使えます</li>
+        <li>「透かし濃さ」で見え方を調整できます。透かし自体を出したくないときは「なし（空欄）」を選んでください</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙と面付け</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>A4を <b>縦向き</b> に使い、バイブル（95×170mm）を左右に2面並べます。周囲の余白（左右10mm・上下63.5mm）は切り落とします</li>
+        <li>穴は6穴（バイブル規格。上端から 18.5 / 37.5 / 56.5 / 107.5 / 126.5 / 145.5 mm、綴じ側の端から5mm。バイブル週間・日次ツールと同じ位置）</li>
+        <li>リフィルは用紙の中央に置くので、プリンターの印刷できない縁にはかかりません</li>
+      </ul>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 両面印刷の手順</p>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>「両面印刷」をON</li>
+        <li>プリンターの両面設定を <b>「長辺綴じ」</b> に（縦向き用紙のため）</li>
+        <li>印刷後、左右の余白とカット線で切り分け、画面の表示順に束ねてリングに綴じます</li>
+        <li>※ 両面の面付けは実物での組み立て確認が済んでいません。まず1か月分で試してから本番印刷をおすすめします</li>
+      </ol>
+
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>サイズが合わない → 用紙の向き（横）と印刷倍率100%を再確認</li>
+        <li>iPhone/iPadでレイアウトが崩れる → 「PDFを生成」を使用</li>
+        <li>機能変更点を確認したい → 「更新履歴」ボタン</li>
+      </ul>
+    </div>
   </div>
+</div>
 
-  <div id="preview"></div>
-
-  <button id="settings-toggle" title="設定" onclick="toggleSettings()">⚙</button>
-
-  <div id="settings-panel">
-    <h3>⚙ 表示設定</h3>
-    <div class="srow"><label>目標行</label>
-      <select id="s-goal">
-        <option value="1">表示</option>
-        <option value="0">非表示</option>
-      </select>
-    </div>
-    <div class="srow"><label>メモ欄</label>
-      <select id="s-memo">
-        <option value="1">表示</option>
-        <option value="0">非表示</option>
-      </select>
-    </div>
-    <div class="srow"><label>週の始まり</label>
-      <select id="s-week-start">
-        <option value="0">日曜</option>
-        <option value="1">月曜</option>
-      </select>
-    </div>
-    <button id="btn-save-settings" onclick="saveSettings()">保存して反映</button>
-    <div id="settings-saved"></div>
+<!-- === MODULE: UpdateHistory Modal === -->
+<div class="history-overlay" id="historyOverlay" onclick="if(event.target===this)closeHistory()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHistory()">✕ 閉じる</button>
+    <h3>更新履歴</h3>
+    <div id="historyList"></div>
   </div>
+</div>
+
+<!-- === MODULE: Preview Area === -->
+<div id="preview">
+  <p style="color:#666; font-size:12px; margin-bottom:10px;">← 左パネル（☰）で設定すると自動で描画されます</p>
 </div>
 
 <script>
-/* === MODULE: Auth === */
-// ゲート解除済み（2026-08-24 無料開放）: 認証を経ずに起動する
-// ⛔ ここで init() を直接呼ばないこと。CFG等の定数がまだ初期化されておらず
-//    「Cannot access 'CFG' before initialization」で落ちる。読み込み完了後に呼ぶ。
-(function(){
-  var app=document.getElementById('app');
-  if(app) app.style.display='block';
-  window.addEventListener('load', function(){
-    if(typeof init==='function') init();
-  });
-})();
-function tryAuth(){
-  if(document.getElementById('pw-input').value==='nsfactory'){
-    sessionStorage.setItem('nsf_auth','ok');
-    document.getElementById('auth-overlay').style.display='none';
-    document.getElementById('app').style.display='block';
-    init();
-  } else {
-    document.getElementById('auth-error').textContent='パスワードが違います';
-  }
-}
-
-/* === MODULE: Constants === */
+// === MODULE: Constants ===
+const WD_JA       = ['日','月','火','水','木','金','土'];
+const WD_EN_SHORT = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const WD_JA_MON_FIRST = ['月','火','水','木','金','土','日'];
+const WD_EN_1     = ['M','T','W','T','F','S','S'];
+const MONTH_JA    = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+// バイブル 95×170mm。穴中心の上端からの距離（バイブル週間・日次ツールと同じ値。実機印刷で2mm上げた位置）
 const HOLE_POSITIONS_MM = [18.5, 37.5, 56.5, 107.5, 126.5, 145.5];
-const MONTH_EN = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
+const SLOT_POSITIONS = ['L', 'R'];
+const CUT_LINES_MM = [10, 105, 200];      // 縦カット線（用紙左端からの x）
+const CUT_LINES_H_MM = [63.5, 233.5];     // 横カット線（用紙上端からの y）
 
-/* === MODULE: Settings === */
-const SETTINGS_KEY = 'nsf_bible_monthly_v1';
-let CFG = { showGoal:1, showMemo:1, weekStart:0 };
-function loadSettings(){
-  try{ const s=localStorage.getItem(SETTINGS_KEY); if(s) Object.assign(CFG,JSON.parse(s)); }catch(e){}
+const OWL_PATH = `M 84.045202 154.08962 C 74.342376 153.72021 66.575763 156.22553 59.803014 162.15016 C 52.400852 168.8731 48.858024 176.12283 52.306921 185.56227 C 53.00894 186.94984 54.145651 191.34463 55.318639 193.36891 C 43.597631 193.28582 37.491668 195.36222 34.332311 201.01344 C 31.172954 206.66467 32.51024 209.75294 34.523718 212.74782 C 40.529201 220.94697 53.989997 220.37842 62.986608 218.24977 C 73.776887 214.54343 82.201949 206.98481 86.234655 195.68923 C 87.640514 192.00332 88.500775 192.27078 94.00028 192.1443 C 97.934826 192.05381 96.909988 190.04001 92.888952 190.02321 C 89.117166 190.00747 88.334264 189.47713 88.334264 186.94118 C 88.334264 183.29034 90.340945 172.70728 91.746374 168.95094 C 93.744162 163.61136 95.468404 162.2706 101.03153 161.72243 C 104.9379 161.3375 106.10236 160.92284 108.02567 159.23415 C 110.49685 157.06442 111.23535 154.79522 109.1663 155.73024 C 106.68328 156.85231 101.04888 156.72601 94.428014 155.39821 C 90.728406 154.65626 87.279477 154.21275 84.045202 154.08962 z M 76.736608 159.40798 C 79.865037 159.31714 83.200604 159.64494 86.689733 160.40993 C 89.79346 161.09042 92.334264 161.92551 92.334264 162.26735 C 92.334264 162.60918 91.168186 164.41773 89.742468 166.28493 C 85.884861 171.33708 83.884623 175.80571 82.709264 182.00173 C 82.129645 185.05722 81.414359 188.42392 81.006139 188.91579 C 80.53514 189.48331 78.678525 189.35019 76.086218 189.35719 C 71.923052 189.36759 71.231051 188.97322 71.019811 190.92751 C 71.559531 191.10296 72.572184 192.39635 74.982702 191.90602 C 76.89659 191.51671 79.382413 192.128 79.752233 192.49782 C 80.508222 193.25381 78.723545 199.35137 76.467077 203.72243 C 74.420169 207.68756 68.540842 213.16016 63.847936 215.47048 C 58.221432 218.24038 49.33315 218.78535 43.666296 216.7068 C 38.389721 214.77141 36.334264 212.26385 36.334264 207.76735 C 36.449454 200.47828 44.640522 195.68826 52.521764 196.02321 C 57.500549 196.01372 65.18778 198.46657 65.18778 198.46657 C 58.308717 195.61045 49.261948 180.11197 55.732702 170.99782 C 59.84161 163.71722 67.351323 159.68049 76.736608 159.40798 z M 99.810827 200.87477 C 93.558213 200.78092 88.425059 207.32775 89.236608 214.28884 C 89.890337 219.3237 93.449458 222.62769 101.5452 218.94704 C 103.83033 220.73167 102.2351 221.20692 104.85966 221.84938 C 107.48421 222.49184 110.7829 220.17941 112.24051 217.50954 C 111.73214 217.71612 109.24399 218.34066 108.57841 218.16579 C 106.70819 217.67446 107.07228 217.49523 109.87723 211.40602 C 111.41502 208.06768 112.78601 207.02629 113.04716 203.94704 C 110.37711 203.13065 108.48642 203.67045 106.10575 203.51735 C 105.98723 202.49311 101.54459 200.90077 99.810827 200.87477 z M 101.34012 204.31423 C 101.96513 204.2959 102.57668 204.46415 103.16239 204.79469 C 105.39445 206.05434 103.90399 212.26978 100.89481 215.69704 C 98.797421 218.08584 97.514408 218.46586 95.50028 217.29274 C 93.960732 216.39604 94.026116 214.1747 95.709264 210.23415 C 97.470855 206.10991 99.465102 204.36921 101.34012 204.31423 z M 126.09598 207.44313 C 124.43941 207.49338 122.74199 207.96077 121.00614 208.84548 C 117.6737 210.54391 115.82085 213.36948 115.23466 217.64626 C 114.63861 221.99495 116.68996 224.39572 122.00028 225.56423 C 124.38301 226.08853 125.29794 225.96703 127.61942 224.81423 C 130.08858 223.58808 131.51973 221.3978 129.25809 222.30641 C 126.43597 223.1866 124.27186 224.07168 122.09208 221.93923 C 120.64951 219.87969 120.79304 217.72717 122.31864 214.37477 C 124.08204 210.49983 127.39665 209.27816 128.57059 210.00368 C 128.92352 210.22181 128.62666 211.10081 127.75223 212.02516 C 126.39784 213.45687 127.50108 214.2147 128.98466 215.33376 C 130.90343 216.7811 133.1708 215.95594 133.66239 213.68727 C 134.03123 211.98508 134.10993 210.12739 130.93973 208.54469 C 129.36856 207.7603 127.75255 207.39288 126.09598 207.44313 z M 7.7053581 207.58571 C 4.8680466 207.49271 1.909488 208.75628 0.58817063 211.52712 C -0.47979831 213.76676 -0.54190323 215.52075 0.60379563 217.64821 C 1.8415344 219.94655 3.2330952 220.65359 6.5452019 220.66969 C 10.964438 220.69112 12.54808 223.73174 9.2209831 225.98219 C 7.394915 227.21735 6.5599538 226.92972 5.359655 226.0818 C 6.0692643 224.59792 5.4932712 223.05235 3.5647331 222.86891 C 1.9464847 222.71499 0.74299814 223.19836 0.13699875 224.02712 C -1.0008801 225.58324 -0.57678831 226.18816 1.09403 228.31227 C 5.054546 231.57102 11.846859 228.60537 14.217077 224.41188 C 16.587295 220.21839 13.117028 215.34548 8.1643425 215.34548 C 4.0210666 215.34548 2.8042603 213.05472 4.3869988 211.71657 C 5.4138977 210.84836 6.117299 210.06796 7.5862175 210.94899 C 7.4522376 212.73166 9.1418508 213.62174 11.261999 213.08962 C 13.560586 212.51271 14.065939 210.61443 12.301061 209.18532 C 11.066457 208.1856 9.407745 207.64151 7.7053581 207.58571 z M 24.459264 236.03298 C 23.950034 236.07579 23.584915 236.27098 23.367468 236.62282 C 23.159838 236.95877 21.783722 241.98508 20.308874 247.79079 C 15.244259 267.72758 12.363073 275.41648 5.5061394 287.29079 C 1.5037634 294.22181 0.18218329 297.12108 -1.546595 302.75563 C -5.7760908 316.54066 -4.9157558 332.95537 0.51199875 342.01344 C 1.280988 343.29677 3.0646639 345.74896 4.4768425 347.46462 C 7.3890996 351.0027 7.5544494 350.63376 1.2912956 354.59743 C -7.6980354 360.28636 -19.906174 373.7893 -26.810267 385.67946 C -32.865791 396.10824 -37.616112 409.99995 -39.056361 421.4861 C -40.197509 430.58696 -41.168124 429.95689 -26.161829 429.84743 C -18.165787 429.78911 -12.077228 430.05478 -9.99972 430.55251 C -8.1663918 430.99174 0.23296408 433.58521 8.6662956 436.31423 C 17.099617 439.04324 26.697994 441.97201 29.994421 442.82399 C 34.431656 443.97083 36.047254 444.67886 36.215124 445.55055 C 36.352914 446.266 34.914912 448.36962 32.553014 450.91188 C 28.804478 454.94665 25.00028 461.00476 25.00028 462.93727 C 25.00028 464.06286 26.624819 464.78211 27.986608 464.25954 C 28.529188 464.05133 29.64879 462.78566 30.474889 461.44704 C 32.616587 457.97665 36.373276 453.95824 37.072546 454.3904 C 37.399285 454.59234 37.666296 457.26677 37.666296 460.3318 C 37.666296 467.01165 37.982813 468.01344 40.088171 468.01344 C 42.244008 468.01344 43.00028 465.8552 43.00028 459.7068 C 43.00028 456.00407 43.239152 454.7307 43.988561 454.44313 C 45.04226 454.03878 47.879444 457.40416 51.150671 462.93923 C 53.139829 466.30496 53.689938 466.56207 55.347936 464.90407 C 57.534064 462.71795 54.555516 456.62567 48.482702 450.8611 C 45.105555 447.65537 44.965564 445.55216 48.176061 446.26735 C 49.17983 446.49095 54.459289 447.03739 59.908483 447.48219 C 66.722356 448.03839 69.917638 448.55738 70.142858 449.1443 C 70.322978 449.61368 69.096324 451.52767 67.416296 453.39626 C 63.970689 457.2286 59.972387 464.77525 60.566686 466.32399 C 61.429385 468.57213 63.446204 467.46162 65.982702 463.34548 C 68.00268 460.06754 70.29589 457.34548 71.037389 457.34548 C 71.296769 457.34548 71.724812 459.97112 71.988561 463.17946 C 72.252321 466.38779 72.761038 469.36987 73.117468 469.80641 C 73.809847 470.65442 75.683035 470.24153 76.490514 469.06227 C 76.759904 468.66885 76.985514 466.03855 76.990514 463.21852 C 76.996794 460.06213 77.298258 457.90886 77.773718 457.61501 C 78.544487 457.13865 81.311965 459.82722 85.369421 464.99391 C 87.648778 467.89641 89.00028 467.75267 89.00028 464.60719 C 89.00028 461.6845 87.635831 459.52431 82.728796 454.67946 C 76.676322 448.70367 76.863622 447.69864 84.334264 446.04274 C 92.532586 444.15732 102.33295 440.27231 110.00028 431.46462 C 105.71244 426.84729 103.09689 422.59944 104.53934 417.36891 C 105.98179 412.13839 111.19184 409.34548 113.97294 409.34548 C 117.98952 409.34548 118.55297 408.31341 118.55497 400.94118 C 118.54501 395.79466 118.19775 390.11335 117.58817 384.69509 C 127.03271 382.46333 128.90519 380.0928 137.0745 372.85915 C 142.30502 367.37859 146.60629 360.1326 149.05497 352.6736 C 150.59269 347.98947 153.00028 336.63912 153.00028 334.07594 C 153.00028 329.89057 160.68895 302.84824 166.72489 285.80641 C 168.80444 279.93504 168.78317 278.81681 166.57059 278.26149 C 163.48701 277.48755 149.00538 278.58371 139.00028 280.34743 C 124.62818 282.88097 114.28088 284.00287 105.33426 283.99587 C 89.220128 283.98422 84.429481 281.77928 65.00028 265.43532 C 62.616952 263.43044 60.517604 261.61113 60.334264 261.39235 C 60.150935 261.17356 57.876214 259.19874 55.279577 257.00368 C 38.660465 242.95477 28.023878 235.73331 24.459264 236.03298 z M 28.043249 247.34548 C 35.348211 255.39014 41.682874 261.33898 49.666296 267.70485 C 62.247753 278.22369 67.145215 284.43326 70.008093 293.49587 C 70.843692 296.19585 73.5386 306.74843 69.902624 304.84548 C 66.239217 293.87109 58.088701 283.68047 47.582311 276.93727 C 36.707402 269.95754 31.564321 264.642 28.777624 257.49977 C 27.743765 254.85004 27.20127 247.34548 28.043249 247.34548 z M 40.666296 296.39235 C 45.89398 296.39235 47.114821 296.62473 50.142858 298.20094 C 55.158273 300.81166 57.810632 303.39556 60.00028 307.80055 C 65.329985 318.52257 60.943356 331.87862 50.279577 337.3943 C 46.048841 339.58259 37.2809 339.88648 32.771764 338.00173 C 26.114311 335.21899 21.778945 330.13119 19.873327 322.86305 C 17.356449 313.26352 22.14087 302.91799 31.306921 298.14235 C 34.207398 296.63115 35.487021 296.39235 40.666296 296.39235 z M 41.338171 308.88259 C 37.281075 308.84074 35.356259 310.52856 34.65653 311.22829 C 36.264368 313.33199 36.764724 314.92965 38.451452 317.07399 C 35.863654 317.64978 34.451205 318.07156 32.148718 318.56423 C 32.148718 320.23477 34.181969 325.32744 39.215124 326.28493 C 44.248269 327.24242 48.506035 323.60855 49.371374 318.45094 C 50.236713 313.29335 45.395267 308.92448 41.338171 308.88259 z M 105.09989 315.45485 C 116.12761 315.0707 126.53383 323.62311 127.50223 335.68727 C 128.3149 345.81147 122.46419 354.89522 113.00028 358.2029 C 99.881031 362.78812 87.018308 354.9417 84.338171 340.72048 C 82.654612 331.78727 88.606118 321.13769 97.474889 317.21462 C 99.977572 316.10756 102.55503 315.5435 105.09989 315.45485 z M 107.34794 328.99391 C 104.50963 328.65526 101.45144 329.66342 99.722936 331.80837 C 100.43072 332.81886 102.13065 335.35532 102.80692 336.5154 C 101.69094 336.98028 98.384204 338.31958 97.328405 338.45876 C 97.927084 342.63839 100.55332 345.49079 104.00028 346.18337 C 107.44724 346.87595 111.97284 345.35463 113.80301 341.57399 C 115.91424 337.21278 114.09391 332.11065 110.05497 329.78884 C 109.21516 329.36901 108.29404 329.1068 107.34794 328.99391 z M 10.558874 367.45094 C 11.741635 367.48958 13.077727 367.74921 15.209264 368.25173 C 23.856566 370.29033 27.567142 375.14745 26.814733 383.44509 C 25.719164 395.52725 14.323256 407.49981 -1.3610481 413.04665 C -5.9795835 414.68002 -7.8928715 414.95993 -16.157923 415.20876 C -27.294452 415.54403 -27.212249 415.59923 -25.431361 408.91579 C -22.810353 399.07947 -14.86492 385.31538 -7.1422981 377.23219 C -1.6345936 371.46735 1.6719139 369.27617 6.8244988 367.97829 C 8.3457672 367.59509 9.3761124 367.41231 10.558874 367.45094 z M 45.273718 376.3279 C 47.852875 375.86278 62.664652 377.59126 67.972936 378.97634 C 70.158304 379.54656 73.308308 380.02012 74.972936 380.02712 C 76.637565 380.0345 79.950937 380.33502 82.334264 380.69509 C 84.717602 381.05516 88.916298 381.67131 91.666296 382.06618 C 99.873257 383.2446 109.6663 389.01948 109.6663 392.67946 C 109.6663 398.05179 106.90045 404.47405 102.14286 410.14626 C 98.22625 414.8158 96.334264 419.37699 96.334264 424.14821 L 96.334264 428.15212 L 92.385046 432.0154 C 89.665888 434.67608 87.271747 436.31448 84.693639 437.27907 C 78.741525 439.50605 73.801881 439.13798 65.00028 435.81032 C 59.623475 433.77748 50.001067 431.68904 41.666296 430.74587 C 33.559594 429.82851 30.873399 429.04704 28.263952 426.85134 C 25.438795 424.47412 24.333634 421.57383 24.334264 416.53493 C 24.334894 411.52971 26.50272 406.47566 31.228796 400.46657 C 34.853282 395.85811 37.334717 390.80866 38.004186 386.67946 C 38.908955 381.09895 41.822761 376.95024 45.273718 376.3279 z`;
+
+// === MODULE: Font Options ===
+const FONT_OPTIONS = [
+  { label: 'Times New Roman', value: "'Times New Roman', Times, serif" },
+  { label: 'Georgia',         value: "Georgia, serif" },
+  { label: 'Arial',           value: "Arial, Helvetica, sans-serif" },
+  { label: 'Noto Serif JP',   value: "'Noto Serif JP', serif" },
+  { label: 'Noto Sans JP',    value: "'Noto Sans JP', sans-serif" },
+  { label: '游明朝',           value: "'Yu Mincho', '游明朝', serif" },
+  { label: '游ゴシック',        value: "'Yu Gothic', '游ゴシック', sans-serif" },
+  { label: 'Stencil',         value: "Stencil, fantasy" },
+  { label: 'Impact',          value: "Impact, fantasy" },
+  { label: 'メイリオ',          value: "Meiryo, 'メイリオ', sans-serif" },
+];
+
+// === MODULE: State ===
+let isEN = false;
+let opts = {
+  showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
+  showLogo: true, showMonthAbbr: true, showTextWm: true,
+  showImgWm: false, showHoliday: true, showTitle: false,
+  showCellGrid: true, cellGridCols: 2, cellGridRows: 8,
+  showMonthNum: true, showDateNum: true, showDayHeader: true,
+  undated: false, ghostStyle: 'seg', ghostWeekday: true
+};
+let customImgDataUrl = null;
+let hasRendered = false;
+let isDuplex = true; // 既定は両面（リーフ方式）。A6・バイブル月間と同じ「見開き＝ひと月・裏に前後の月」
+let layoutMode = 'block';
+
+// === MODULE: Utility Functions ===
+function pad(n) { return String(n).padStart(2,'0'); }
+function setCSSVar(name, val) { document.documentElement.style.setProperty(name, val); }
+function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// === MODULE: 7セグ透かし ===
+// 2桁の「8」を薄く印刷し、使う人が必要な画を塗って数字にする。
+// 1桁は 10×18 の枠。セグメントは a(上) b(右上) c(右下) d(下) e(左下) f(左上) g(中)
+function segDigitSVG(x) {
+  const t = 1.6; // セグメントの太さ
+  const w = 10, h = 18;
+  const r = t / 2;
+  const seg = (sx, sy, sw, sh) => `<rect x="${(x + sx).toFixed(2)}" y="${sy.toFixed(2)}" width="${sw.toFixed(2)}" height="${sh.toFixed(2)}" rx="${r}" ry="${r}"/>`;
+  return [
+    seg(t, 0, w - 2 * t, t),                 // a
+    seg(w - t, t * 0.6, t, h / 2 - t),       // b
+    seg(w - t, h / 2 + t * 0.4, t, h / 2 - t), // c
+    seg(t, h - t, w - 2 * t, t),             // d
+    seg(0, h / 2 + t * 0.4, t, h / 2 - t),   // e
+    seg(0, t * 0.6, t, h / 2 - t),           // f
+    seg(t, h / 2 - t / 2, w - 2 * t, t),     // g
+  ].join('');
 }
-function saveSettings(){
-  CFG.showGoal   = parseInt(document.getElementById('s-goal').value);
-  CFG.showMemo   = parseInt(document.getElementById('s-memo').value);
-  CFG.weekStart  = parseInt(document.getElementById('s-week-start').value);
-  localStorage.setItem(SETTINGS_KEY,JSON.stringify(CFG));
-  syncCtrl();
-  document.getElementById('settings-saved').textContent='✓ 保存しました';
-  setTimeout(()=>document.getElementById('settings-saved').textContent='',2000);
+function segGhostHTML(digits) {
+  const gap = 2.5, w = 10, h = 18;
+  const totalW = digits * w + (digits - 1) * gap;
+  let inner = '';
+  for (let i = 0; i < digits; i++) inner += segDigitSVG(i * (w + gap));
+  return `<span class="seg-ghost"><svg viewBox="0 0 ${totalW} ${h}" xmlns="http://www.w3.org/2000/svg" fill="currentColor">${inner}</svg></span>`;
 }
-function syncCtrl(){
-  document.getElementById('sel-goal').value     = CFG.showGoal;
-  document.getElementById('sel-memo').value     = CFG.showMemo;
-  document.getElementById('s-goal').value       = CFG.showGoal;
-  document.getElementById('s-memo').value       = CFG.showMemo;
-  document.getElementById('s-week-start').value = CFG.weekStart;
-}
-function toggleSettings(){
-  const p=document.getElementById('settings-panel');
-  p.style.display=p.style.display==='block'?'none':'block';
+function weekdayGhostHTML() {
+  const labels = isEN ? WD_EN_1 : WD_JA_MON_FIRST;
+  return `<span class="wd-ghost">${labels.map(l => `<span>${l}</span>`).join('')}</span>`;
 }
 
-/* === MODULE: Init === */
-function init(){
-  loadSettings();
-  syncCtrl();
-  const now=new Date();
-  document.getElementById('inp-month').value=
-    `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-}
-
-/* === MODULE: Holidays === */
-function getJPHolidays(){
-  return {
-    '2025-01-01':'元日','2025-01-13':'成人の日','2025-02-11':'建国記念の日',
-    '2025-02-23':'天皇誕生日','2025-03-20':'春分の日','2025-04-29':'昭和の日',
-    '2025-05-03':'憲法記念日','2025-05-04':'みどりの日','2025-05-05':'こどもの日',
-    '2025-05-06':'振替休日','2025-07-21':'海の日','2025-08-11':'山の日',
-    '2025-09-15':'敬老の日','2025-09-23':'秋分の日','2025-10-13':'体育の日',
-    '2025-11-03':'文化の日','2025-11-23':'勤労感謝の日','2025-11-24':'振替休日',
-    '2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日',
-    '2026-02-23':'天皇誕生日','2026-03-20':'春分の日','2026-04-29':'昭和の日',
-    '2026-05-03':'憲法記念日','2026-05-04':'みどりの日','2026-05-05':'こどもの日',
-    '2026-07-20':'海の日','2026-08-11':'山の日','2026-09-21':'敬老の日',
-    '2026-09-23':'秋分の日','2026-10-12':'体育の日','2026-11-03':'文化の日',
-    '2026-11-23':'勤労感謝の日'
-  };
-}
-
-/* === MODULE: Date Utilities === */
-function fmtDate(d){ return d.toISOString().slice(0,10); }
-function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
-
-/* === MODULE: Build Hole Strip === */
-function buildHoleStrip(){
-  let holes='';
-  HOLE_POSITIONS_MM.forEach(pos=>{
-    holes+=`<div class="hole" style="top:${pos}mm"></div>`;
-  });
-  return `<div class="hole-strip">${holes}</div>`;
-}
-
-/* === MODULE: Build Monthly Page === */
-function buildMonthlyPage(year, month, pageNum, holidays){
-  // month: 1-12
-  const weekStart = CFG.weekStart; // 0=Sun,1=Mon
-  const showGoal  = CFG.showGoal;
-  const showMemo  = CFG.showMemo;
-
-  const totalDays = daysInMonth(year, month);
-  const firstDate = new Date(year, month-1, 1);
-  const today = new Date();
-  const todayStr = fmtDate(today);
-
-  // DOW labels (Sun start or Mon start)
-  const DOW_JP_SUN = ['日','月','火','水','木','金','土'];
-  const DOW_JP_MON = ['月','火','水','木','金','土','日'];
-  const dowLabels = weekStart===0 ? DOW_JP_SUN : DOW_JP_MON;
-
-  // DOW header
-  let dowHeaderHTML = '';
-  dowLabels.forEach((d,i)=>{
-    let cls = 'dow-cell';
-    if(weekStart===0){ if(i===0) cls+=' sun'; if(i===6) cls+=' sat'; }
-    else { if(i===5) cls+=' sat'; if(i===6) cls+=' sun'; }
-    dowHeaderHTML += `<div class="${cls}">${d}</div>`;
-  });
-
-  // Calendar cells
-  // firstDow: 0=Sun...6=Sat, adjust for weekStart
-  let firstDow = firstDate.getDay(); // 0=Sun
-  if(weekStart===1) firstDow = (firstDow + 6) % 7; // shift for Mon start
-
-  const totalCells = Math.ceil((firstDow + totalDays) / 7) * 7;
-  const rows = totalCells / 7;
-
-  let cells = [];
-  for(let i=0;i<totalCells;i++){
-    const dayNum = i - firstDow + 1;
-    if(dayNum<1 || dayNum>totalDays){
-      cells.push({ empty:true });
-    } else {
-      const d = new Date(year, month-1, dayNum);
-      const ds = fmtDate(d);
-      const dow = d.getDay(); // 0=Sun
-      const isSat = dow===6;
-      const isSun = dow===0;
-      const holeName = holidays[ds]||'';
-      const isHol = !!holeName;
-      const isToday = ds===todayStr;
-      cells.push({ dayNum, ds, isSat, isSun, isHol, holeName, isToday });
+// === MODULE: Japanese Holidays ===
+function getJPHolidays(y) {
+  const h = {};
+  const add = (m, d, name) => { h[`${y}-${pad(m)}-${pad(d)}`] = name; };
+  function nthWd(m, wd, n) {
+    const first = new Date(y, m - 1, 1).getDay();
+    return 1 + ((wd - first + 7) % 7) + (n - 1) * 7;
+  }
+  add(1, 1, '元日'); add(2, 11, '建国記念の日'); add(2, 23, '天皇誕生日'); add(4, 29, '昭和の日');
+  add(5, 3, '憲法記念日'); add(5, 4, 'みどりの日'); add(5, 5, 'こどもの日');
+  if (y >= 2016) add(8, 11, '山の日');
+  add(11, 3, '文化の日'); add(11, 23, '勤労感謝の日');
+  add(1, nthWd(1, 1, 2), '成人の日'); add(7, nthWd(7, 1, 3), '海の日'); add(9, nthWd(9, 1, 3), '敬老の日');
+  if (y >= 2000) add(10, nthWd(10, 1, 2), 'スポーツの日');
+  const shunbun = Math.floor(20.8431 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
+  add(3, shunbun, '春分の日');
+  const shubun = Math.floor(23.2488 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4));
+  add(9, shubun, '秋分の日');
+  const keys = Object.keys(h);
+  const viburi = {};
+  for (const k of keys) {
+    const d = new Date(k);
+    if (d.getDay() === 0) {
+      let next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      while (h[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`]) next.setDate(next.getDate() + 1);
+      viburi[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`] = '振替休日';
     }
   }
+  Object.assign(h, viburi);
+  for (let m = 1; m <= 12; m++) {
+    const days = new Date(y, m, 0).getDate();
+    for (let d = 2; d < days; d++) {
+      const prev = `${y}-${pad(m)}-${pad(d-1)}`, cur = `${y}-${pad(m)}-${pad(d)}`, next = `${y}-${pad(m)}-${pad(d+1)}`;
+      const wd = new Date(y, m-1, d).getDay();
+      if (h[prev] && h[next] && !h[cur] && wd !== 0 && wd !== 6) h[cur] = '国民の休日';
+    }
+  }
+  return h;
+}
 
-  // Build rows
-  let rowsHTML = '';
-  for(let r=0;r<rows;r++){
-    let rowHTML = '<div class="cal-row">';
-    for(let c=0;c<7;c++){
-      const cell = cells[r*7+c];
-      if(cell.empty){
-        rowHTML += '<div class="cal-cell empty"></div>';
+// === MODULE: Month Grid（6行×7列、col0=月 … col6=日） ===
+function getMonthGrid(y, m) {
+  const first = new Date(y, m - 1, 1);
+  const diffToMon = (first.getDay() + 6) % 7;
+  const startMon = new Date(first);
+  startMon.setDate(startMon.getDate() - diffToMon);
+  const grid = [];
+  const cur = new Date(startMon);
+  for (let row = 0; row < 6; row++) {
+    const week = [];
+    for (let col = 0; col < 7; col++) { week.push(new Date(cur)); cur.setDate(cur.getDate() + 1); }
+    grid.push(week);
+  }
+  return grid;
+}
+
+// === MODULE: Hole Strip Builder ===
+function buildHoleStrip(side, showPunchGuide) {
+  const lineStyle = opts.showHoleLine ? '' : 'border-right:none;border-left:none;';
+  let inner = '';
+  if (opts.showHoles) HOLE_POSITIONS_MM.forEach(c => { inner += `<div class="hole" style="top:${c}mm;"></div>`; });
+  if (opts.showHoleBisect && showPunchGuide) inner += `<div class="punch-guide"></div>`;
+  return `<div class="hole-strip ${side}" style="${lineStyle}">${inner}</div>`;
+}
+
+// === MODULE: PDF Generator（A4縦） ===
+async function generatePDF(ev) {
+  const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
+  const wrappers = document.querySelectorAll('#preview .sheet-wrap');
+  if (!wrappers.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
+  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
+  const orig = btn.textContent;
+  btn.disabled = true;
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
+  document.body.appendChild(stage);
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    for (let i = 0; i < wrappers.length; i++) {
+      btn.textContent = `PDF生成中 ${i+1}/${wrappers.length}`;
+      const srcPage = wrappers[i].querySelector('.a4-sheet');
+      if (!srcPage) continue;
+      const clone = srcPage.cloneNode(true);
+      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      stage.appendChild(clone);
+      const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+      stage.removeChild(clone);
+      const img = canvas.toDataURL('image/jpeg', 0.88);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(img, 'JPEG', (window.nsfPrintOffset ? window.nsfPrintOffset().x : 0), (window.nsfPrintOffset ? window.nsfPrintOffset().y : 0), 210, 297);
+    }
+    const fname = `bible-monthly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
+    const blob = pdf.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) {
+    console.error(e);
+    alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (stage.parentNode) stage.parentNode.removeChild(stage);
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+// === MODULE: Watermarks Builder ===
+function owlSVG() {
+  return `<div class="logo-wm"><svg viewBox="0 0 323.67773 316.20041" xmlns="http://www.w3.org/2000/svg"><g transform="translate(89.827845,-154.05446)"><path d="${OWL_PATH}" fill="#888"/></g></svg></div>`;
+}
+function buildTitleWatermarks() {
+  let out = '';
+  const wmText = escapeHTML((document.getElementById('textWmContent') || {}).value || "N's factory");
+  if ((document.getElementById('titleWmLogo') || {}).checked) out += owlSVG();
+  if ((document.getElementById('titleWmText') || {}).checked) out += `<div class="text-wm">${wmText}</div>`;
+  if ((document.getElementById('titleWmImg')  || {}).checked && customImgDataUrl) out += `<img class="img-wm" src="${customImgDataUrl}" alt="">`;
+  return out;
+}
+function buildWatermarks() {
+  let out = '';
+  const wmText = escapeHTML((document.getElementById('textWmContent') || {}).value || "N's factory");
+  if (opts.showLogo) out += owlSVG();
+  if (opts.showTextWm) out += `<div class="text-wm">${wmText}</div>`;
+  if (opts.showImgWm && customImgDataUrl) out += `<img class="img-wm" src="${customImgDataUrl}" alt="">`;
+  return out;
+}
+
+// === MODULE: 日マス内グリッド ===
+function cellGridHTML() {
+  if (!opts.showCellGrid) return '';
+  const cols = opts.cellGridCols, rows = opts.cellGridRows;
+  const items = Array.from({length: cols * rows}, (_, i) => {
+    const isLastCol = (i + 1) % cols === 0;
+    const isLastRow = i >= cols * (rows - 1);
+    return `<div class="vert-cell-grid-item${isLastCol ? ' last-col' : ''}${isLastRow ? ' last-row' : ''}"></div>`;
+  }).join('');
+  return `<div class="vert-cell-grid" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr);">${items}</div>`;
+}
+
+// === MODULE: 横ブロック 月間ページ Builder ===
+// ctx: { y, m, grid, holidays } 日付なしのときは grid/holidays を使わない
+function buildLeftPage(ctx, holeSide) {
+  const colDefs = [
+    { gridIdx: 0, label: isEN ? 'MON' : '月', cls: '' },
+    { gridIdx: 1, label: isEN ? 'TUE' : '火', cls: '' },
+    { gridIdx: 2, label: isEN ? 'WED' : '水', cls: '' },
+  ];
+  return buildMonthlyPage(ctx, holeSide, colDefs, true, false);
+}
+function buildRightPage(ctx, holeSide) {
+  const colDefs = [
+    { gridIdx: 3, label: isEN ? 'THU' : '木', cls: '' },
+    { gridIdx: 4, label: isEN ? 'FRI' : '金', cls: '' },
+    { gridIdx: 5, label: isEN ? 'SAT' : '土', cls: 'is-sat' },
+    { gridIdx: 6, label: isEN ? 'SUN' : '日', cls: 'is-sun' },
+  ];
+  return buildMonthlyPage(ctx, holeSide, colDefs, false, true);
+}
+
+function buildMonthlyPage(ctx, holeSide, colDefs, isLeft, isRight) {
+  const { y, m, grid, holidays } = ctx;
+  const U = opts.undated;
+  const holeStrip = buildHoleStrip(holeSide, opts.showHoleBisect);
+  const wm = buildWatermarks();
+  const cl = buildChecklistsHTML();
+
+  let sidebar = '';
+  if (isLeft) {
+    let numHTML = '';
+    if (opts.showMonthNum) numHTML = U ? (opts.ghostStyle === 'seg' ? segGhostHTML(2) : '') : String(m);
+    sidebar = `<div class="month-sidebar">
+      <div class="sidebar-month-num" style="font-family:var(--font-sidebar)">${numHTML}</div>
+      <div class="sidebar-month-name" style="font-family:var(--font-sidebar)">${U ? '' : MONTH_EN_ABB[m-1]}</div>
+      <div class="sidebar-year" style="font-family:var(--font-sidebar)">${U ? '' : y}</div>
+    </div>`;
+  }
+
+  const dateCols = colDefs.map(cd => {
+    const rows = [];
+    for (let r = 0; r < 6; r++) {
+      let cellCls = '', dateHTML = '', holName = '';
+      if (U) {
+        if (opts.showDateNum && opts.ghostStyle === 'seg') dateHTML = segGhostHTML(2);
       } else {
-        let cls = 'cal-cell';
-        if(cell.isToday) cls += ' today-cell';
-        if(cell.isHol||cell.isSun) cls += ' holiday-cell';
-        else if(cell.isSat) cls += ' sat-cell';
-        const holHTML = cell.holeName
-          ? `<div class="hol-name">${cell.holeName}</div>` : '';
-        rowHTML += `<div class="${cls}">
-          <div class="day-num">${cell.dayNum}</div>
-          ${holHTML}
-          <div class="cell-lines">
-            <div class="cell-line"></div>
-            <div class="cell-line"></div>
-          </div>
-        </div>`;
+        const dt = grid[r][cd.gridIdx];
+        const inMonth = (dt.getMonth() + 1 === m && dt.getFullYear() === y);
+        const dateKey = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+        const isHol = opts.showHoliday && inMonth && holidays[dateKey];
+        if (!inMonth) cellCls = 'is-out'; else if (isHol) cellCls = 'is-holiday';
+        holName = isHol ? holidays[dateKey] : '';
+        if (opts.showDateNum) dateHTML = String(dt.getDate());
+        if (!inMonth) { rows.push(`<div class="month-cell ${cellCls}"><div class="cell-date" style="font-family:var(--font-date-num)">${dateHTML}</div></div>`); continue; }
       }
+      rows.push(`<div class="month-cell ${cellCls}">
+        <div class="cell-date" style="font-family:var(--font-date-num)">${dateHTML}</div>
+        ${holName ? `<div class="cell-holiday">${holName}</div>` : ''}
+        ${cellGridHTML()}
+      </div>`);
     }
-    rowHTML += '</div>';
-    rowsHTML += rowHTML;
+    let headerHTML = '';
+    if (opts.showDayHeader) headerHTML = U ? (opts.ghostWeekday ? weekdayGhostHTML() : '') : cd.label;
+    const headerCls = U ? '' : cd.cls;
+    return `<div class="month-col ${U ? '' : cd.cls}"><div class="col-day-header ${headerCls}" style="font-family:var(--font-col-header)">${headerHTML}</div><div class="month-cells">${rows.join('')}</div></div>`;
+  }).join('');
+
+  let footer = '';
+  if (isRight) {
+    const show = opts.showMonthAbbr && !U;
+    const content = show ? `<span class="footer-month-abbr" style="font-family:var(--font-month-abbr)">${MONTH_EN_ABB[m-1]}</span>` : '';
+    footer = `<div class="month-footer" style="${show ? '' : 'border-top:none;'}">${content}</div>`;
+  } else {
+    footer = `<div class="month-footer" style="border-top:none;"></div>`;
   }
 
-  // Memo
-  const memoHTML = showMemo ? `
-    <div class="memo-block">
-      <div class="memo-label">MEMO</div>
-      <div class="memo-lines">
-        <div class="memo-line"></div>
-        <div class="memo-line"></div>
-        <div class="memo-line"></div>
-      </div>
-    </div>` : '';
+  const memoSection = `<div class="month-memo"><div class="memo-label">MEMO</div><div class="vert-memo-lines memo-lines"></div></div>`;
+  const gridArea = `<div class="month-grid-area"><div class="month-cols-row">${dateCols}</div>${memoSection}${footer}</div>`;
 
-  // Goal line
-  const goalHTML = showGoal ? `
-    <div class="goal-line">
-      <span class="goal-label">今月の目標</span>
-    </div>` : '';
-
-  return `
-  <div class="monthly-page">
-    ${buildHoleStrip()}
-    <div class="page-body">
-      <div class="monthly-header">
-        <div class="month-title-row">
-          <span class="month-num">${month}</span>
-          <div class="month-sub">
-            <span class="month-en">${MONTH_EN[month-1]}</span>
-            <span class="month-year">${year}</span>
-          </div>
-        </div>
-        ${goalHTML}
-      </div>
-      <div class="dow-header">${dowHeaderHTML}</div>
-      <div class="cal-grid">${rowsHTML}</div>
-      ${memoHTML}
-      <div class="page-num-bar"><span>${pageNum}</span></div>
-    </div>
+  return `<div class="monthly-page">
+    ${wm}${cl}
+    ${holeSide === 'left' ? holeStrip : ''}
+    <div class="page-body"><div style="display:flex;flex-direction:row;flex:1;overflow:hidden;">${sidebar}${gridArea}</div></div>
+    ${holeSide === 'right' ? holeStrip : ''}
   </div>`;
 }
 
-/* === MODULE: Make A4 Sheet === */
-// meta: [{leaf, face}, {leaf, face}]（綴じ後プレビュー用。片面印刷なので各ページが1枚の表）
-function makeA4Sheet(leftPage, rightPage, meta){
-  const tag = (html, m) => (html && m) ? html.replace('<div class="monthly-page"', `<div class="monthly-page" data-leaf="${m.leaf}" data-face="${m.face}"`) : html;
-  return `<div class="a4-sheet">${tag(leftPage, meta && meta[0])}${tag(rightPage, meta && meta[1])||'<div class="monthly-page" style="background:#f5f5f5;margin-top:calc((297mm - 170mm)/2)"></div>'}</div>`;
+// === MODULE: 縦型月間ページ Builder ===
+function buildVerticalMonth(ctx, holeSide) {
+  const { y, m, holidays } = ctx;
+  const U = opts.undated;
+  const holeStrip = buildHoleStrip(holeSide, opts.showHoleBisect);
+  const wm = buildWatermarks();
+  const cl = buildChecklistsHTML();
+  const grid = U ? null : getMonthGrid(y, m);
+  const dayLabels = isEN ? ['MON','TUE','WED','THU','FRI','SAT','SUN'] : ['月','火','水','木','金','土','日'];
+  const dayClasses = ['','','','','','is-sat','is-sun'];
+
+  let numHTML = '';
+  if (opts.showMonthNum) numHTML = U ? (opts.ghostStyle === 'seg' ? segGhostHTML(2) : '') : String(m);
+  const headerHTML = `<div class="vert-header">
+    <div class="vert-month-num">${numHTML}</div>
+    <div>
+      <div class="vert-month-name">${(opts.showMonthAbbr && !U) ? (isEN ? MONTH_EN_ABB[m-1] : MONTH_JA[m-1]) : ''}</div>
+      <div class="vert-year">${U ? '' : y}</div>
+    </div>
+  </div>`;
+  let dayHeaderRowHTML = '';
+  if (opts.showDayHeader) {
+    const cells = dayLabels.map((lbl, i) => {
+      const inner = U ? (opts.ghostWeekday ? weekdayGhostHTML() : '') : lbl;
+      return `<div class="vert-day-header ${U ? '' : dayClasses[i]}">${inner}</div>`;
+    }).join('');
+    dayHeaderRowHTML = `<div class="vert-day-header-row">${cells}</div>`;
+  }
+  const weeksHTML = Array.from({length: 6}, (_, r) => {
+    const cellsHTML = Array.from({length: 7}, (_, col) => {
+      let cls = '', dateHTML = '', hName = '';
+      if (U) {
+        if (opts.showDateNum && opts.ghostStyle === 'seg') dateHTML = segGhostHTML(2);
+        return `<div class="vert-cell"><div class="vert-cell-date">${dateHTML}</div>${cellGridHTML()}</div>`;
+      }
+      const dateObj = grid[r][col];
+      const inMonth = dateObj.getMonth() + 1 === m;
+      const d = dateObj.getDate();
+      const dateKey = `${y}-${pad(dateObj.getMonth()+1)}-${pad(d)}`;
+      hName = (opts.showHoliday && inMonth && holidays[dateKey]) ? holidays[dateKey] : '';
+      cls = `${dayClasses[col]}${!inMonth ? ' out-of-month' : ''}${hName ? ' is-holiday' : ''}`;
+      if (opts.showDateNum) dateHTML = inMonth ? String(d) : '';
+      return `<div class="vert-cell ${cls}">
+        <div class="vert-cell-date">${dateHTML}</div>
+        ${hName ? `<div class="vert-cell-holiday">${hName}</div>` : ''}
+        ${inMonth ? cellGridHTML() : ''}
+      </div>`;
+    }).join('');
+    return `<div class="vert-week">${cellsHTML}</div>`;
+  }).join('');
+  const memoHTML = `<div class="vert-memo"><div class="vert-memo-lines"></div></div>`;
+  return `${holeSide === 'left' ? holeStrip : ''}
+    <div class="monthly-vert">${wm}${cl}
+      <div class="vert-content">${headerHTML}
+        <div class="vert-grid">${dayHeaderRowHTML}<div class="vert-week-rows">${weeksHTML}</div></div>
+        ${memoHTML}
+      </div>
+    </div>
+    ${holeSide === 'right' ? holeStrip : ''}`;
 }
 
-/* === MODULE: Render Single (2 months) === */
-function renderSingle(){
-  const mv = document.getElementById('inp-month').value;
-  if(!mv){ alert('年月を選択してください'); return; }
-  const [y,m] = mv.split('-').map(Number);
-  const holidays = getJPHolidays();
-  setStatus('プレビュー生成中…');
-
-  const p1 = buildMonthlyPage(y, m, 1, holidays);
-  const nm = m===12 ? 1 : m+1;
-  const ny = m===12 ? y+1 : y;
-  const p2 = buildMonthlyPage(ny, nm, 2, holidays);
-
-  document.getElementById('preview').innerHTML = makeA4Sheet(p1, p2, [{ leaf: 0, face: 'front' }, { leaf: 1, face: 'front' }]);
-  setStatus('プレビュー完了');
+// === MODULE: A4縦 Sheet Builder（L・R の2面） ===
+// meta: 各スロットの {leaf: 紙の通し番号, face: 'front'|'back'}（綴じ後プレビュー用。null なら印を付けない）
+function buildA4(slots, meta) {
+  const cuts = opts.showCutLine
+    ? CUT_LINES_MM.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') + CUT_LINES_H_MM.map(y => `<div class="cut-line-h" style="top:${y}mm;"></div>`).join('')
+    : '';
+  let html = `<div class="a4-sheet">${cuts}`;
+  SLOT_POSITIONS.forEach((pos, i) => {
+    const content = slots[i];
+    const m = meta && meta[i];
+    const dl = m ? ` data-leaf="${m.leaf}" data-face="${m.face}"` : '';
+    if (content && typeof content === 'string' && content.startsWith('__TITLE__')) {
+      const safe = escapeHTML(content.slice(9)).replace(/\r?\n/g, '<br>');
+      html += `<div class="slot title-slot" data-pos="${pos}"${dl}>${buildHoleStrip('left', true)}${buildTitleWatermarks()}<div class="title-text">${safe}</div></div>`;
+    } else if (content) {
+      html += `<div class="slot" data-pos="${pos}"${dl}>${content}</div>`;
+    } else {
+      html += `<div class="slot empty" data-pos="${pos}"${dl}></div>`;
+    }
+  });
+  html += `</div>`;
+  return html;
 }
 
-/* === MODULE: Render Annual (12 months) === */
-function renderAnnual(){
-  const mv = document.getElementById('inp-month').value;
-  if(!mv){ alert('年月を選択してください'); return; }
-  const [y,m] = mv.split('-').map(Number);
-  const holidays = getJPHolidays();
-  setStatus('年間プレビュー生成中…');
+// === MODULE: Render ===
+function buildContexts() {
+  if (opts.undated) {
+    const n = Math.min(12, Math.max(1, parseInt(document.getElementById('undatedCount').value) || 1));
+    return Array.from({length: n}, (_, i) => ({ y: 0, m: i + 1, grid: null, holidays: {}, label: `日付なし ${i + 1}枚目` }));
+  }
+  const y  = parseInt(document.getElementById('yearPicker').value);
+  const sM = parseInt(document.getElementById('startMonthPicker').value);
+  const eM = parseInt(document.getElementById('endMonthPicker').value);
+  const holidays = getJPHolidays(y);
+  const out = [];
+  for (let m = sM; m <= eM; m++) {
+    out.push({ y, m, grid: getMonthGrid(y, m), holidays, label: isEN ? `${MONTH_EN_ABB[m-1]} ${y}` : `${y}年${m}月` });
+  }
+  return out;
+}
 
+function renderMonths() {
+  hasRendered = true;
+  const ctxs = buildContexts();
   let html = '';
-  let pageNum = 1;
-  for(let i=0;i<12;i+=2){
-    const m1 = ((m-1+i)%12)+1;
-    const y1 = y + Math.floor((m-1+i)/12);
-    const m2 = ((m-1+i+1)%12)+1;
-    const y2 = y + Math.floor((m-1+i+1)/12);
-    const p1 = buildMonthlyPage(y1, m1, pageNum++, holidays);
-    const p2 = buildMonthlyPage(y2, m2, pageNum++, holidays);
-    html += makeA4Sheet(p1, p2, [{ leaf: pageNum - 2, face: 'front' }, { leaf: pageNum - 1, face: 'front' }]);
-  }
-  document.getElementById('preview').innerHTML = html;
-  setStatus('年間プレビュー完了（12ヶ月）');
-}
+  // 穴はページ種別で決める: 左ページ(月火水)=右穴, 右ページ(木金土日)=左穴（見開きの背側に穴）
+  const HOLE_FOR_LEFT = 'right', HOLE_FOR_RIGHT = 'left';
+  const titleDef = () => `__TITLE__${(document.getElementById('titleContent') || {}).value || ''}`;
 
-/* === MODULE: Generate PDF === */
-async function generatePDF(){
-  const mv = document.getElementById('inp-month').value;
-  if(!mv){ alert('年月を選択してください'); return; }
-  const sheets = document.querySelectorAll('.a4-sheet');
-  if(!sheets.length){ alert('先にプレビューを表示してください'); return; }
-
-  setStatus('PDF生成中…');
-  await new Promise(r=>setTimeout(r,100));
-
-  const {jsPDF} = window.jspdf;
-  const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  let first = true;
-
-  for(const sheet of sheets){
-    const canvas = await html2canvas(sheet,{
-      scale:3, useCORS:true, allowTaint:true, backgroundColor:'#ffffff'
+  if (layoutMode === 'vert') {
+    if (!isDuplex) {
+      for (let i = 0; i < ctxs.length; i += 2) {
+        const a = ctxs[i], b = ctxs[i + 1] || null;
+        const slots = [buildVerticalMonth(a, 'left'), b ? buildVerticalMonth(b, 'left') : null];
+        const label = b ? `${a.label} / ${b.label}` : a.label;
+        const meta = [{ leaf: i, face: 'front' }, b ? { leaf: i + 1, face: 'front' } : null];
+        html += `<div class="sheet-wrap"><div class="sheet-label">${label}</div>${buildA4(slots, meta)}</div>`;
+      }
+    } else {
+      // 両面（長辺綴じ）: リーフ = {表, 裏}。1枚目の表はタイトル（または白紙）
+      const leafs = [];
+      leafs.push({ front: opts.showTitle ? { type: 'title' } : null, back: { ci: 0 } });
+      for (let i = 1; i < ctxs.length; i += 2) leafs.push({ front: { ci: i }, back: i + 1 < ctxs.length ? { ci: i + 1 } : null });
+      while (leafs.length % 2 !== 0) leafs.push({ front: null, back: null });
+      const build = (def, side) => {
+        if (!def) return null;
+        if (def.type === 'title') return titleDef();
+        return buildVerticalMonth(ctxs[def.ci], side);
+      };
+      for (let s = 0; s < leafs.length / 2; s++) {
+        const A = leafs[s * 2], B = leafs[s * 2 + 1];
+        // 表面は左穴、裏面は左右反転して印刷されるので右穴（切り離すと同じ綴じ側になる）
+        const front = [build(A.front, 'left'), build(B.front, 'left')];
+        const back  = [build(B.back, 'right'), build(A.back, 'right')];
+        const mA = (A.front || A.back) ? s * 2 : null, mB = (B.front || B.back) ? s * 2 + 1 : null;
+        const mf = [mA != null ? { leaf: mA, face: 'front' } : null, mB != null ? { leaf: mB, face: 'front' } : null];
+        const mb = [mB != null ? { leaf: mB, face: 'back' } : null, mA != null ? { leaf: mA, face: 'back' } : null];
+        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front, mf)}</div>`;
+        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back, mb)}</div>`;
+      }
+    }
+  } else if (!isDuplex) {
+    // 単票: 1枚に 左ページ＋右ページ（見開き1か月）
+    ctxs.forEach((ctx, i) => {
+      const slots = [buildLeftPage(ctx, HOLE_FOR_LEFT), buildRightPage(ctx, HOLE_FOR_RIGHT)];
+      const meta = [{ leaf: i * 2, face: 'front' }, { leaf: i * 2 + 1, face: 'front' }];
+      html += `<div class="sheet-wrap"><div class="sheet-label">${ctx.label}</div>${buildA4(slots, meta)}</div>`;
     });
-    const imgData = canvas.toDataURL('image/jpeg',0.92);
-    if(!first) pdf.addPage();
-    pdf.addImage(imgData,'JPEG',0,0,210,297);
-    first=false;
+  } else {
+    // 両面（長辺綴じ・物理リーフ方式）: leaf1 = 表:タイトル/白紙・裏:M1左, leaf k = 表:M(k-1)右・裏:Mk左, 最終 = 表:MN右・裏:白紙
+    const N = ctxs.length;
+    const leafs = [];
+    leafs.push({ front: opts.showTitle ? { type: 'title' } : null, back: { type: 'left', ci: 0 } });
+    for (let k = 1; k < N; k++) leafs.push({ front: { type: 'right', ci: k - 1 }, back: { type: 'left', ci: k } });
+    leafs.push({ front: { type: 'right', ci: N - 1 }, back: null });
+    while (leafs.length % 2 !== 0) leafs.push({ front: null, back: null });
+    const build = (def) => {
+      if (!def) return null;
+      if (def.type === 'title') return titleDef();
+      return def.type === 'left' ? buildLeftPage(ctxs[def.ci], HOLE_FOR_LEFT) : buildRightPage(ctxs[def.ci], HOLE_FOR_RIGHT);
+    };
+    for (let s = 0; s < leafs.length / 2; s++) {
+      const A = leafs[s * 2], B = leafs[s * 2 + 1];
+      const front = [build(A.front), build(B.front)];
+      const back  = [build(B.back), build(A.back)]; // 長辺綴じの裏面は左右が入れ替わる
+      const mA = (A.front || A.back) ? s * 2 : null, mB = (B.front || B.back) ? s * 2 + 1 : null;
+      const mf = [mA != null ? { leaf: mA, face: 'front' } : null, mB != null ? { leaf: mB, face: 'front' } : null];
+      const mb = [mB != null ? { leaf: mB, face: 'back' } : null, mA != null ? { leaf: mA, face: 'back' } : null];
+      html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front, mf)}</div>`;
+      html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back, mb)}</div>`;
+    }
   }
 
-  const fname = `bible-monthly-${mv}.pdf`;
-  pdf.save(fname);
-  setStatus(`PDF保存: ${fname}`);
+  document.getElementById('preview').innerHTML = html;
+  updateMemoLines();
+  saveSettings();
 }
 
-/* === MODULE: Status === */
-function setStatus(msg){ document.getElementById('status').textContent=msg; }
+function updateMemoLines() {
+  const gap    = parseFloat(document.getElementById('memoLineGap').value) || 0;
+  const height = parseFloat(document.getElementById('memoHeight').value)  || 24;
+  let numLines, justify;
+  if (gap <= 0) { numLines = 4; justify = 'space-between'; }
+  else { numLines = Math.max(2, Math.floor(height / gap) + 1); justify = 'flex-start'; }
+  const lineHTML = Array(numLines).fill('<div class="vert-memo-line"></div>').join('');
+  document.querySelectorAll('.vert-memo-lines').forEach(el => { el.style.justifyContent = justify; el.innerHTML = lineHTML; });
+}
+
+function rerender() { if (hasRendered) renderMonths(); }
+
+// === MODULE: UI Helpers ===
+function setUndated(u) {
+  opts.undated = !!u;
+  document.getElementById('btnDated').classList.toggle('on', !opts.undated);
+  document.getElementById('btnUndated').classList.toggle('on', opts.undated);
+  document.body.classList.toggle('undated', opts.undated);
+  document.getElementById('undatedSection').style.display = opts.undated ? '' : 'none';
+  rerender();
+}
+function setLayout(mode) {
+  layoutMode = mode;
+  document.getElementById('btnBlock').classList.toggle('on', mode === 'block');
+  document.getElementById('btnVert').classList.toggle('on', mode === 'vert');
+  rerender();
+}
+function toggleSidebar() {
+  document.body.classList.toggle('panel-open');
+  document.getElementById('controls').classList.toggle('open');
+}
+function setLang(en) {
+  isEN = en;
+  document.getElementById('btnJA').classList.toggle('on', !en);
+  document.getElementById('btnEN').classList.toggle('on', en);
+  rerender();
+}
+function toggleDuplex() {
+  isDuplex = !isDuplex;
+  const btn = document.getElementById('btnDuplex');
+  btn.textContent = isDuplex ? 'ON' : 'OFF';
+  btn.classList.toggle('on', isDuplex);
+  rerender();
+}
+function toggleOpt(key, btnId) {
+  opts[key] = !opts[key];
+  document.getElementById(btnId).classList.toggle('on', opts[key]);
+  rerender();
+}
+function updateFontVars() {
+  const get = id => document.getElementById(id) ? document.getElementById(id).value : '';
+  setCSSVar('--font-sidebar',    get('fontSidebar'));
+  setCSSVar('--font-col-header', get('fontColHeader'));
+  setCSSVar('--font-date-num',   get('fontDateNum'));
+  setCSSVar('--font-month-abbr', get('fontMonthAbbr'));
+  setCSSVar('--font-text-wm',    get('fontTextWm'));
+  setCSSVar('--font-title',      get('fontTitle'));
+}
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { customImgDataUrl = ev.target.result; rerender(); };
+  reader.readAsDataURL(file);
+}
+function initFontSelectors() {
+  const selectors = [
+    { id: 'fontSidebar',    def: "'Times New Roman', Times, serif" },
+    { id: 'fontColHeader',  def: "'Noto Sans JP', sans-serif" },
+    { id: 'fontDateNum',    def: "'Noto Sans JP', sans-serif" },
+    { id: 'fontMonthAbbr',  def: "'Times New Roman', Times, serif" },
+    { id: 'fontTextWm',     def: "'Noto Sans JP', sans-serif" },
+    { id: 'fontTitle',      def: "'Noto Serif JP', serif" },
+  ];
+  selectors.forEach(({ id, def }) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    FONT_OPTIONS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value; opt.textContent = f.label;
+      if (f.value === def) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+// === MODULE: Settings Persistence ===
+const SETTINGS_KEY = 'nsf_bible_monthly_v3'; // v3: 2026-09-11 両面リーフ方式へ作り直し（旧 v1 の設定は形が違うので引き継がない）
+
+function saveSettings() {
+  const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
+  const getChk = id => { const e = document.getElementById(id); return e ? e.checked : null; };
+  const s = {
+    memoHeight: get('memoHeight'), memoLineWidth: get('memoLineWidth'),
+    memoLineLength: get('memoLineLength'), memoLineGap: get('memoLineGap'),
+    titleContent: get('titleContent'),
+    titleWmLogo: getChk('titleWmLogo'), titleWmText: getChk('titleWmText'), titleWmImg: getChk('titleWmImg'),
+    titleX: get('titleX'), titleY: get('titleY'), titleSize: get('titleSize'), titleAngle: get('titleAngle'),
+    textWmContent: get('textWmContent'),
+    textWmX: get('textWmX'), textWmY: get('textWmY'), textWmSize: get('textWmSize'), textWmAngle: get('textWmAngle'),
+    fontSidebar: get('fontSidebar'), fontColHeader: get('fontColHeader'),
+    fontDateNum: get('fontDateNum'), fontMonthAbbr: get('fontMonthAbbr'),
+    fontTextWm: get('fontTextWm'), fontTitle: get('fontTitle'),
+    owlWmX: get('owlWmX'), owlWmY: get('owlWmY'), owlWmSize: get('owlWmSize'), owlWmOpacity: get('owlWmOpacity'),
+    imgWmX: get('imgWmX'), imgWmY: get('imgWmY'), imgWmSize: get('imgWmSize'), imgWmOpacity: get('imgWmOpacity'),
+    undatedCount: get('undatedCount'), ghostOpacity: get('ghostOpacity'),
+    opts: { ...opts }, isEN, isDuplex, layoutMode
+  };
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+
+function loadSettings() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch(e) {}
+  if (!s) return;
+  function setRange(id, val, cssVar, unit) {
+    const el = document.getElementById(id);
+    if (!el || val == null) return;
+    el.value = val;
+    if (cssVar) setCSSVar(cssVar, val + unit);
+    const sp = el.nextElementSibling;
+    if (sp && sp.classList.contains('val')) sp.textContent = val;
+  }
+  setRange('memoHeight',    s.memoHeight,    '--memo-height',     'mm');
+  setRange('memoLineWidth', s.memoLineWidth, '--memo-line-width',  'mm');
+  setRange('memoLineLength',s.memoLineLength,'--memo-line-length', '%');
+  setRange('memoLineGap',   s.memoLineGap,   '--memo-line-gap',   'mm');
+  const tc = document.getElementById('titleContent');
+  if (tc && s.titleContent != null) tc.value = s.titleContent;
+  ['titleWmLogo','titleWmText','titleWmImg'].forEach(id => { const el = document.getElementById(id); if (el && s[id] != null) el.checked = s[id]; });
+  setRange('titleX', s.titleX, '--title-x', 'mm');
+  setRange('titleY', s.titleY, '--title-y', 'mm');
+  setRange('titleSize', s.titleSize, '--title-size', 'mm');
+  setRange('titleAngle', s.titleAngle, '--title-angle', 'deg');
+  const twc = document.getElementById('textWmContent');
+  if (twc && s.textWmContent != null) twc.value = s.textWmContent;
+  setRange('textWmX', s.textWmX, '--text-wm-x', 'mm');
+  setRange('textWmY', s.textWmY, '--text-wm-y', 'mm');
+  setRange('textWmSize', s.textWmSize, '--text-wm-size', 'mm');
+  setRange('textWmAngle', s.textWmAngle, '--text-wm-angle', 'deg');
+  ['fontSidebar','fontColHeader','fontDateNum','fontMonthAbbr','fontTextWm','fontTitle'].forEach(id => { const el = document.getElementById(id); if (el && s[id] != null) el.value = s[id]; });
+  updateFontVars();
+  setRange('owlWmX', s.owlWmX, '--owl-wm-x', 'mm');
+  setRange('owlWmY', s.owlWmY, '--owl-wm-y', 'mm');
+  setRange('owlWmSize', s.owlWmSize, '--owl-wm-size', 'mm');
+  if (s.owlWmOpacity != null) { const el = document.getElementById('owlWmOpacity'); if (el) { el.value = s.owlWmOpacity; setCSSVar('--owl-wm-opacity', s.owlWmOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.owlWmOpacity * 100); } }
+  setRange('imgWmX', s.imgWmX, '--img-wm-x', 'mm');
+  setRange('imgWmY', s.imgWmY, '--img-wm-y', 'mm');
+  setRange('imgWmSize', s.imgWmSize, '--img-wm-size', 'mm');
+  if (s.imgWmOpacity != null) { const el = document.getElementById('imgWmOpacity'); if (el) { el.value = s.imgWmOpacity; setCSSVar('--img-wm-opacity', s.imgWmOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.imgWmOpacity * 100); } }
+  if (s.undatedCount != null) { const el = document.getElementById('undatedCount'); if (el) el.value = s.undatedCount; }
+  if (s.ghostOpacity != null) { const el = document.getElementById('ghostOpacity'); if (el) { el.value = s.ghostOpacity; setCSSVar('--ghost-opacity', s.ghostOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.ghostOpacity * 100); } }
+
+  if (s.opts) {
+    const btnMap = {
+      showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showHoleBisect: 'btnHoleBisect',
+      showCutLine: 'btnCutLine', showLogo: 'btnLogo', showMonthAbbr: 'btnMonthAbbr',
+      showTextWm: 'btnTextWm', showImgWm: 'btnImgWm', showHoliday: 'btnHoliday',
+      showTitle: 'btnTitle', showCellGrid: 'btnCellGrid',
+      showMonthNum: 'btnMonthNum', showDateNum: 'btnDateNum', showDayHeader: 'btnDayHeader',
+      ghostWeekday: 'btnGhostWd'
+    };
+    for (const [key, btnId] of Object.entries(btnMap)) {
+      if (s.opts[key] != null) { opts[key] = s.opts[key]; const btn = document.getElementById(btnId); if (btn) btn.classList.toggle('on', !!s.opts[key]); }
+    }
+    if (s.opts.cellGridCols != null) { opts.cellGridCols = +s.opts.cellGridCols; const el = document.getElementById('cellGridCols'); if (el) { el.value = s.opts.cellGridCols; const sp = el.nextElementSibling; if (sp) sp.textContent = s.opts.cellGridCols; } }
+    if (s.opts.cellGridRows != null) { opts.cellGridRows = +s.opts.cellGridRows; const el = document.getElementById('cellGridRows'); if (el) { el.value = s.opts.cellGridRows; const sp = el.nextElementSibling; if (sp) sp.textContent = s.opts.cellGridRows; } }
+    if (s.opts.ghostStyle != null) { opts.ghostStyle = s.opts.ghostStyle; const el = document.getElementById('ghostStyle'); if (el) el.value = opts.ghostStyle; }
+    if (s.opts.undated != null) {
+      opts.undated = !!s.opts.undated;
+      document.getElementById('btnDated').classList.toggle('on', !opts.undated);
+      document.getElementById('btnUndated').classList.toggle('on', opts.undated);
+      document.body.classList.toggle('undated', opts.undated);
+      document.getElementById('undatedSection').style.display = opts.undated ? '' : 'none';
+    }
+  }
+  if (s.isEN != null) { isEN = s.isEN; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); }
+  if (s.isDuplex != null) { isDuplex = s.isDuplex; const btn = document.getElementById('btnDuplex'); if (btn) { btn.textContent = isDuplex ? 'ON' : 'OFF'; btn.classList.toggle('on', isDuplex); } }
+  if (s.layoutMode != null) { layoutMode = s.layoutMode; document.getElementById('btnBlock').classList.toggle('on', layoutMode === 'block'); document.getElementById('btnVert').classList.toggle('on', layoutMode === 'vert'); }
+}
+
+function resetSettings() {
+  if (!confirm('設定をリセットしますか？\nブラウザに保存された設定を削除してページを再読み込みします。')) return;
+  try { localStorage.removeItem(SETTINGS_KEY); } catch(e) {}
+  location.reload();
+}
+
+// === MODULE: UpdateHistory ===
+const HISTORY_ENTRIES = [
+  { date: '2026-05-03', type: 'feat', title: 'バイブル マンスリー ブロック印刷ツール（初版）',
+    detail: '1ページに1か月を置く片面印刷の版。2か月プレビューと年間（12か月）プレビュー、目標行・メモ欄・週の始まりの設定。' },
+  { date: '2026-09-11', type: 'improve', title: '両面リーフ方式（見開き＝ひと月・裏に前後の月）へ作り直し',
+    detail: 'A6・バイブルの月間ブロック印刷ツールと同じ作りに統一しました。見開きの左右で1か月、両面印刷（長辺綴じ）で裏に前後の月が来ます。日付なしモード（7セグ風の透かし）・縦ブロックレイアウト・タイトルページ・チェックリスト・印刷ズレ補正・綴じ後プレビューが使えます。旧版の設定は引き継がれません（初期状態から始まります）。' },
+]
+function openHistory() {
+  const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
+  document.getElementById('historyList').innerHTML = [...HISTORY_ENTRIES].reverse().map(e =>
+    `<div class="history-entry"><span class="history-date">${e.date}</span><span class="history-type ${e.type}">${typeLabel[e.type] || e.type}</span><div class="history-title">${e.title}</div><div class="history-detail">${e.detail}</div></div>`
+  ).join('');
+  document.getElementById('historyOverlay').classList.add('open');
+}
+function closeHistory() { document.getElementById('historyOverlay').classList.remove('open'); }
+function openHelp()  { document.getElementById('helpOverlay').classList.add('open'); }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
+
+// === MODULE: Checklist ===
+const clGroups = [
+  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
+  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 80 },
+  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
+];
+function initCLFontSelectors() {
+  for (let i = 0; i < 3; i++) {
+    const sel = document.getElementById(`clFont${i}`);
+    if (!sel) continue;
+    FONT_OPTIONS.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.value; opt.textContent = f.label;
+      if (f.value === clGroups[i].font) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+}
+function toggleCL(idx) { clGroups[idx].show = document.getElementById(`clShow${idx}`).checked; rerender(); }
+function updateCL(idx) {
+  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
+  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
+  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
+  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
+  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
+  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
+  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
+  document.getElementById(`clXVal${idx}`).textContent    = clGroups[idx].x;
+  document.getElementById(`clYVal${idx}`).textContent    = clGroups[idx].y;
+  rerender();
+}
+function buildChecklistsHTML() {
+  return clGroups.map(g => {
+    if (!g.show) return '';
+    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
+    const itemsHTML = items.map(s => `<div class="cl-item"><span class="cl-checkbox"></span><span>${escapeHTML(s.trim())}</span></div>`).join('');
+    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` +
+      (g.title ? `<div class="cl-title">${escapeHTML(g.title)}</div>` : '') + itemsHTML + `</div>`;
+  }).join('');
+}
+
+// === MODULE: Init ===
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('yearPicker').value = new Date().getFullYear();
+  initFontSelectors();
+  initCLFontSelectors();
+  loadSettings();
+  renderMonths();
+});
 </script>
 <script src="../assets/access-counter.js"></script>
 <script src="../assets/bug-report.js"></script>
+<script>
+// 印刷ズレ補正・テスト印刷用の用紙形状（print-adjust.js が参照）
+window.NSF_PRINT_GEOMETRY = { sheet: [210, 297], slots: [{ x: 10, y: 63.5, w: 95, h: 170, holeSide: 'left' }, { x: 105, y: 63.5, w: 95, h: 170, holeSide: 'right' }], holes: [18.5, 37.5, 56.5, 107.5, 126.5, 145.5], holeEdge: 5, holeD: 5, cuts: [{ x: 10 }, { x: 105 }, { x: 200 }, { y: 63.5 }, { y: 233.5 }] };
+</script>
+<script src="../assets/print-adjust.js"></script>
 <script src="../assets/flip-sim.js"></script>
 </body>
 </html>
