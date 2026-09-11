@@ -1247,11 +1247,12 @@ function buildVerticalMonth(y, m, holidays, holeSide) {
 }
 
 // === MODULE: A4 Sheet Builder ===
-function buildEmptySlot() {
-  return `<div class="slot empty"></div>`;
+function buildEmptySlot(dl) {
+  return `<div class="slot empty"${dl || ''}></div>`;
 }
 
-function buildA4(slots) {
+// meta: 各スロットの {leaf: 紙の通し番号, face: 'front'|'back'}（綴じ後プレビュー用。null なら印を付けない）
+function buildA4(slots, meta) {
   // slots: [TL, TR, BL, BR] — each is HTML string or null
   const positions = ['TL','TR','BL','BR'];
   const cutH = opts.showCutLine ? `<div class="cut-line-h" style="top:148.5mm;"></div>` : '';
@@ -1260,15 +1261,17 @@ function buildA4(slots) {
   positions.forEach((pos, i) => {
     const holeSide = HOLE_SIDE[pos];
     const content = slots[i];
+    const m = meta && meta[i];
+    const dl = m ? ` data-leaf="${m.leaf}" data-face="${m.face}"` : '';
     if (content && typeof content === 'string' && content.startsWith('__TITLE__')) {
       const titleText = content.slice(9);
       const safe = String(titleText).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r?\n/g,'<br>');
       const tWm = buildTitleWatermarks();
-      html += `<div class="slot title-slot" data-pos="${pos}">${buildHoleStrip('left', true)}${tWm}<div class="title-text">${safe}</div></div>`;
+      html += `<div class="slot title-slot" data-pos="${pos}"${dl}>${buildHoleStrip('left', true)}${tWm}<div class="title-text">${safe}</div></div>`;
     } else if (content) {
-      html += `<div class="slot" data-pos="${pos}">${content}</div>`;
+      html += `<div class="slot" data-pos="${pos}"${dl}>${content}</div>`;
     } else {
-      html += buildEmptySlot();
+      html += buildEmptySlot(dl);
     }
   });
   html += `</div>`;
@@ -1305,7 +1308,7 @@ function renderMonths() {
             labels.push(isEN ? `${MONTH_EN_ABB[months[mi]-1]} ${y}` : `${y}年${months[mi]}月`);
           } else { slots.push(null); labels.push(''); }
         }
-        html += `<div class="sheet-wrap"><div class="sheet-label">${labels.filter(Boolean).join(' / ')}</div>${buildA4(slots)}</div>`;
+        html += `<div class="sheet-wrap"><div class="sheet-label">${labels.filter(Boolean).join(' / ')}</div>${buildA4(slots, slots.map((sl, j) => sl ? { leaf: i + j, face: 'front' } : null))}</div>`;
       }
     } else {
       // 両面: Leaf0=タイトル(表)/1月(裏), Leaf1=2月(表)/3月(裏), ...
@@ -1349,8 +1352,10 @@ function renderMonths() {
           buildVDef(L[1].back), buildVDef(L[0].back),
           buildVDef(L[3].back), buildVDef(L[2].back),
         ];
-        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(frontSlots)}</div>`;
-        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(backSlots)}</div>`;
+        // 綴じ後プレビュー用: 紙の通し番号は b+j。奇数番リーフは上で front/back を入替済み（組み立て時に180°反転）なので、印刷面と読む面が逆になる
+        const leafMeta = (j, printed) => (L[j].front || L[j].back) ? { leaf: b + j, face: ((b + j) % 2) ? (printed === 'front' ? 'back' : 'front') : printed } : null;
+        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(frontSlots, [0,1,2,3].map(j => leafMeta(j, 'front')))}</div>`;
+        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(backSlots, [1,0,3,2].map(j => leafMeta(j, 'back')))}</div>`;
       }
     }
   } else if (!isDuplex) {
@@ -1371,7 +1376,7 @@ function renderMonths() {
       const sheetLabel = label2 ? `${label1} / ${label2}` : label1;
       html += `<div class="sheet-wrap">
         <div class="sheet-label">${sheetLabel}</div>
-        ${buildA4([leftPage1, rightPage1, leftPage2, rightPage2])}
+        ${buildA4([leftPage1, rightPage1, leftPage2, rightPage2], [0,1,2,3].map(j => (j < 2 || m2) ? { leaf: i * 2 + j, face: 'front' } : null))}
       </div>`;
     }
   } else {
@@ -1435,17 +1440,19 @@ function renderMonths() {
 
       const frontSlots = frontDefs.map((d, i) => buildDef(d, i));
       const backSlots  = backDefs.map((d, i) => buildDef(d, i));
+      // 綴じ後プレビュー用: 紙の通し番号は b+j。奇数番リーフは上で front/back を入替済み（組み立て時に180°反転）なので、印刷面と読む面が逆になる
+      const leafMeta = (j, printed) => (L[j].front || L[j].back) ? { leaf: b + j, face: ((b + j) % 2) ? (printed === 'front' ? 'back' : 'front') : printed } : null;
 
       console.log(`シート${s+1} 表 | TL:${labelDef(frontDefs[0])} TR:${labelDef(frontDefs[1])} BL:${labelDef(frontDefs[2])} BR:${labelDef(frontDefs[3])}`);
       console.log(`シート${s+1} 裏 | TL:${labelDef(backDefs[0])} TR:${labelDef(backDefs[1])} BL:${labelDef(backDefs[2])} BR:${labelDef(backDefs[3])}`);
 
       html += `<div class="sheet-wrap">
         <div class="sheet-label">シート${s+1}（表）</div>
-        ${buildA4(frontSlots)}
+        ${buildA4(frontSlots, [0,1,2,3].map(j => leafMeta(j, 'front')))}
       </div>`;
       html += `<div class="sheet-wrap">
         <div class="sheet-label">シート${s+1}（裏）</div>
-        ${buildA4(backSlots)}
+        ${buildA4(backSlots, [1,0,3,2].map(j => leafMeta(j, 'back')))}
       </div>`;
     }
   }
@@ -1864,5 +1871,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <script src="../assets/access-counter.js"></script>
 <script src="../assets/bug-report.js"></script>
+<script src="../assets/flip-sim.js"></script>
 </body>
 </html>

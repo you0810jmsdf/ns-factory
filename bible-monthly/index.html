@@ -552,8 +552,10 @@ function buildMonthlyPage(year, month, pageNum, holidays){
 }
 
 /* === MODULE: Make A4 Sheet === */
-function makeA4Sheet(leftPage, rightPage){
-  return `<div class="a4-sheet">${leftPage}${rightPage||'<div class="monthly-page" style="background:#f5f5f5;margin-top:calc((297mm - 170mm)/2)"></div>'}</div>`;
+// meta: [{leaf, face}, {leaf, face}]（綴じ後プレビュー用。片面印刷なので各ページが1枚の表）
+function makeA4Sheet(leftPage, rightPage, meta){
+  const tag = (html, m) => (html && m) ? html.replace('<div class="monthly-page"', `<div class="monthly-page" data-leaf="${m.leaf}" data-face="${m.face}"`) : html;
+  return `<div class="a4-sheet">${tag(leftPage, meta && meta[0])}${tag(rightPage, meta && meta[1])||'<div class="monthly-page" style="background:#f5f5f5;margin-top:calc((297mm - 170mm)/2)"></div>'}</div>`;
 }
 
 /* === MODULE: Render Single (2 months) === */
@@ -569,7 +571,7 @@ function renderSingle(){
   const ny = m===12 ? y+1 : y;
   const p2 = buildMonthlyPage(ny, nm, 2, holidays);
 
-  document.getElementById('preview').innerHTML = makeA4Sheet(p1, p2);
+  document.getElementById('preview').innerHTML = makeA4Sheet(p1, p2, [{ leaf: 0, face: 'front' }, { leaf: 1, face: 'front' }]);
   setStatus('プレビュー完了');
 }
 
@@ -590,7 +592,7 @@ function renderAnnual(){
     const y2 = y + Math.floor((m-1+i+1)/12);
     const p1 = buildMonthlyPage(y1, m1, pageNum++, holidays);
     const p2 = buildMonthlyPage(y2, m2, pageNum++, holidays);
-    html += makeA4Sheet(p1, p2);
+    html += makeA4Sheet(p1, p2, [{ leaf: pageNum - 2, face: 'front' }, { leaf: pageNum - 1, face: 'front' }]);
   }
   document.getElementById('preview').innerHTML = html;
   setStatus('年間プレビュー完了（12ヶ月）');
@@ -630,5 +632,6 @@ function setStatus(msg){ document.getElementById('status').textContent=msg; }
 </script>
 <script src="../assets/access-counter.js"></script>
 <script src="../assets/bug-report.js"></script>
+<script src="../assets/flip-sim.js"></script>
 </body>
 </html>
