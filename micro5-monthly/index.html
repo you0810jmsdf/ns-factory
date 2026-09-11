@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A5スリム月間ブロックリフィル印刷ツール | N's factory</title>
-<meta name="description" content="A5スリム（110×210mm）システム手帳用マンスリー（月間ブロック）リフィルを無料で作成・印刷できるツール。日付入りのほか、日付なし（曜日・日付を自分で書き込む透かし版）も出力できます。会員登録もパスワードも不要です。">
+<title>Micro5月間ブロックリフィル印刷ツール | N's factory</title>
+<meta name="description" content="Micro5（62×105mm）システム手帳用マンスリー（月間ブロック）リフィルを無料で作成・印刷できるツール。日付入りのほか、日付なし（曜日・日付を自分で書き込む透かし版）も出力できます。会員登録もパスワードも不要です。">
 <!-- Google Analytics -->
 <script>
 // 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
@@ -98,20 +98,20 @@ body.undated .dated-only { display: none; }
 body.panel-open #preview { margin-left: 280px; }
 .sheet-wrap { margin-bottom: 20px; }
 .sheet-label { font-size: 11px; color: #666; margin-bottom: 4px; }
-/* A4横（297×210）に A5スリム（110×210）を2面。左右38.5mmは余白 */
+/* A4縦（210×297）に Micro5（62×105mm） を3列×2段の6面。周囲は余白 */
 .a4-sheet {
-  width: 297mm; height: 210mm; background: white;
+  width: 210mm; height: 297mm; background: white;
   position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 /* === MODULE: Slot (リフィル枠) === */
-.slot {
-  position: absolute; top: 0; width: 110mm; height: 210mm; overflow: hidden;
-  display: flex; flex-direction: row;
-  padding-left: 2mm; padding-right: 2mm; /* 左右ともカット線なので2mm余白 */
-}
-.slot[data-pos="L"] { left: 38.5mm; }
-.slot[data-pos="R"] { left: 148.5mm; }
+.slot { position: absolute; width: 62mm; height: 105mm; overflow: hidden; display: flex; flex-direction: row; }
+.slot[data-pos="P0"] { left: 12mm; top: 43.5mm; }
+.slot[data-pos="P1"] { left: 74mm; top: 43.5mm; }
+.slot[data-pos="P2"] { left: 136mm; top: 43.5mm; }
+.slot[data-pos="P3"] { left: 12mm; top: 148.5mm; }
+.slot[data-pos="P4"] { left: 74mm; top: 148.5mm; }
+.slot[data-pos="P5"] { left: 136mm; top: 148.5mm; }
 .slot.empty { background: white; }
 .slot.title-slot { background: white; display: flex; position: absolute; }
 .title-text {
@@ -126,7 +126,7 @@ body.panel-open #preview { margin-left: 280px; }
   color: #000;
 }
 
-/* === MODULE: 穴ストリップ（穴中心は綴じ側端から6mm・穴径5mm・A5規格と同じ位置） === */
+/* === MODULE: 穴ストリップ（穴中心は綴じ側端から6mm・穴径5mm・当工房基準） === */
 .hole-strip {
   width: 12mm; flex-shrink: 0; position: relative; background: #fff;
   display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
@@ -140,7 +140,7 @@ body.panel-open #preview { margin-left: 280px; }
 }
 .punch-guide {
   position: absolute; width: 2mm;
-  top: 105mm; height: 0;
+  top: 52.5mm; height: 0;
   border-top: 0.2mm dashed #bbb;
   pointer-events: none;
 }
@@ -151,10 +151,11 @@ body.panel-open #preview { margin-left: 280px; }
 .page-body {
   flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden;
   box-sizing: border-box;
-  padding-top: 3mm; padding-bottom: 3mm; /* 上下は用紙端＝プリンター印刷不可域のためセーフゾーン */
+  padding-top: 0; padding-bottom: 0; /* 上下は用紙端＝プリンター印刷不可域のためセーフゾーン */
 }
 
 /* === MODULE: カット線 === */
+.cut-line-h { position: absolute; left: 0; right: 0; height: 0; border-top: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
 .cut-line-v {
   position: absolute; top: 0; bottom: 0; width: 0;
   border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none;
@@ -325,30 +326,30 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* === MODULE: Screen Scale === */
 @media screen {
-  .a4-sheet { transform: scale(0.65); transform-origin: top left; margin-bottom: calc(210mm * 0.65 - 210mm); }
-  .sheet-wrap { width: calc(297mm * 0.65); overflow: visible; }
+  .a4-sheet { transform: scale(0.65); transform-origin: top left; margin-bottom: calc(297mm * 0.65 - 297mm); }
+  .sheet-wrap { width: calc(210mm * 0.65); overflow: visible; }
 }
 @media screen and (max-width: 900px) {
-  .a4-sheet { transform: scale(0.45); margin-bottom: calc(210mm * 0.45 - 210mm); }
-  .sheet-wrap { width: calc(297mm * 0.45); }
+  .a4-sheet { transform: scale(0.45); margin-bottom: calc(297mm * 0.45 - 297mm); }
+  .sheet-wrap { width: calc(210mm * 0.45); }
 }
 @media screen and (max-width: 560px) {
-  .a4-sheet { transform: scale(0.3); margin-bottom: calc(210mm * 0.3 - 210mm); }
-  .sheet-wrap { width: calc(297mm * 0.3); }
+  .a4-sheet { transform: scale(0.3); margin-bottom: calc(297mm * 0.3 - 297mm); }
+  .sheet-wrap { width: calc(210mm * 0.3); }
 }
 
-/* === MODULE: Print（A4横） === */
-@page { size: 297mm 210mm; margin: 0; }
+/* === MODULE: Print（A4縦） === */
+@page { size: 210mm 297mm; margin: 0; }
 @media print {
-  html, body { width: 297mm; height: 210mm; margin: 0 !important; padding: 0 !important; background: white; }
+  html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: white; }
   .slot.empty { background: white !important; }
   .month-sidebar { background: white !important; }
   .vert-cell.out-of-month { background: white !important; }
   body.panel-open #preview { margin-left: 0 !important; }
   #controls, #ctrl-toggle-btn, .history-overlay, #nsf-free-notice, #nsf-size-switch { display: none !important; }
-  #preview { margin: 0 !important; padding: 0 !important; width: 297mm !important; }
+  #preview { margin: 0 !important; padding: 0 !important; width: 210mm !important; }
   .sheet-wrap {
-    width: 297mm !important; height: 210mm !important;
+    width: 210mm !important; height: 297mm !important;
     margin: 0 !important; padding: 0 !important;
     page-break-after: always; break-after: page;
     page-break-inside: avoid; break-inside: avoid;
@@ -358,12 +359,13 @@ body.panel-open #preview { margin-left: 280px; }
   .sheet-label { display: none !important; }
   .a4-sheet {
     transform: none !important; box-shadow: none !important;
-    width: 297mm !important; height: 210mm !important;
+    width: 210mm !important; height: 297mm !important;
     margin: 0 !important; padding: 0 !important;
     display: block !important; position: relative !important;
     overflow: hidden;
   }
 }
+.logo-wm { max-width: 90%; max-height: 60%; }
 </style>
 </head>
 <body>
@@ -377,17 +379,19 @@ body.panel-open #preview { margin-left: 280px; }
 </div>
 <!-- サイズ切り替え。サイドバー#controlsは既定で閉じているため、常時見えるここに置く。 -->
 <nav id="nsf-size-switch" aria-label="サイズ切り替え" style="max-width:760px;margin:0 auto 12px;padding:10px 14px;background:#fff;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:2;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;">
-  <span style="font-size:11px;color:#8a7362;letter-spacing:.06em;">いま開いているのは <b style="color:#4a3a2c;">A5スリム 月間</b></span>
-  <span><span style="color:#8a7362;">A5スリム：</span><a href="../a5slim-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <strong aria-current="page" style="background:#7A5540;color:#fff;padding:1px 9px;border-radius:4px;font-weight:700;">月間</strong> ／ <a href="../a5slim-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
+  <span style="font-size:11px;color:#8a7362;letter-spacing:.06em;">いま開いているのは <b style="color:#4a3a2c;">Micro5 月間</b></span>
+  <span><span style="color:#8a7362;">A5スリム：</span><a href="../a5slim-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../a5slim-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../a5slim-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
   <span><span style="color:#8a7362;">A6：</span><a href="../a6-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../a6-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../a6-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
   <span><span style="color:#8a7362;">バイブル：</span><a href="../bible-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../bible-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../bible-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
+  <span><span style="color:#8a7362;">Mini6：</span><a href="../mini6-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../mini6-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../mini6-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
+  <span><span style="color:#8a7362;">Micro5：</span><a href="../micro5-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <strong aria-current="page" style="background:#7A5540;color:#fff;padding:1px 9px;border-radius:4px;font-weight:700;">月間</strong> ／ <a href="../micro5-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
   <a href="../tools/" style="margin-left:auto;color:#7A5540;font-weight:700;text-decoration:none;border:1px solid #E0D2C2;border-radius:6px;padding:2px 10px;background:#F3ECE4;">ツール一覧へ ›</a>
 </nav>
 
 <!-- === MODULE: Control Panel HTML === -->
 <button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
 <div id="controls">
-  <h2>N's factory<br>A5スリム 月間ブロック 印刷ツール</h2>
+  <h2>N's factory<br>Micro5 月間ブロック 印刷ツール</h2>
   <div style="text-align:center;margin-bottom:6px"><button onclick="resetSettings()" style="font-size:11px;padding:2px 10px;cursor:pointer">設定リセット</button></div>
 
   <div class="ctrl-section">
@@ -405,7 +409,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row">
       <label>両面印刷</label>
       <button class="btn-toggle on" id="btnDuplex" onclick="toggleDuplex()">ON</button>
-      <span style="font-size:9px;color:#aaa;">（見開きの裏に前後の月・短辺綴じ）</span>
+      <span style="font-size:9px;color:#aaa;">（見開きの裏に前後の月・長辺綴じ）</span>
     </div>
     <div class="ctrl-row">
       <label>レイアウト</label>
@@ -717,7 +721,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
       ⚠️ <strong>印刷時の注意</strong><br>
-      用紙は <strong>A4 横向き</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A5スリムリフィルとして使えません。
+      用紙は <strong>A4 縦向き</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、Micro5リフィルとして使えません。
     </div>
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
       ※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>
@@ -738,14 +742,14 @@ body.panel-open #preview { margin-left: 280px; }
 <div class="history-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
   <div class="history-box">
     <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
-    <h3>使い方マニュアル（A5スリム 月間ブロック印刷ツール）</h3>
+    <h3>使い方マニュアル（Micro5 月間ブロック印刷ツール）</h3>
     <div style="font-size:11px; line-height:1.7; color:#ddd;">
       <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
       <ol style="padding-left:18px; margin:4px 0;">
         <li>左メニュー「印刷モード」で <b>日付あり／なし</b>・<b>言語</b> を選ぶ</li>
         <li>日付ありは <b>年・開始月・終了月</b>、日付なしは <b>月数（枚数）</b> を設定</li>
         <li>プレビューを確認後、PCは「印刷」、スマホは「PDFを生成」</li>
-        <li>印刷ダイアログで <b>A4横・「実際のサイズ（100%）」</b> を選ぶ</li>
+        <li>印刷ダイアログで <b>A4縦・「実際のサイズ（100%）」</b> を選ぶ</li>
       </ol>
 
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 日付なしモードについて</p>
@@ -758,16 +762,16 @@ body.panel-open #preview { margin-left: 280px; }
 
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙と面付け</p>
       <ul style="padding-left:18px; margin:4px 0;">
-        <li>A4を <b>横向き</b> に使い、A5スリム（110×210mm）を左右に2面並べます。左右の余白38.5mmは切り落とします</li>
-        <li>穴は6穴（A5規格と同じ位置：上端から 32 / 51 / 70 / 140 / 159 / 178 mm、綴じ側の端から6mm）</li>
-        <li>用紙の上下端は多くのプリンターで約3mmが印刷できないため、内容はその内側に配置しています</li>
+        <li>A4を <b>縦向き</b> に使い、Micro5（62×105mm）を3列×2段に6面並べます。周囲の余白（カット線の外側）は切り落とします</li>
+        <li>穴は5穴（上端から 15 / 34 / 53 / 72 / 91 mm、綴じ側の端から6mm。当工房の基準データ（Micro5 refill）と同じ。穴間隔19mm）</li>
+        <li>リフィルは用紙の中央に置くので、プリンターの印刷できない縁にはかかりません</li>
       </ul>
 
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 両面印刷の手順</p>
       <ol style="padding-left:18px; margin:4px 0;">
         <li>「両面印刷」をON</li>
-        <li>プリンターの両面設定を <b>「短辺綴じ」</b> に（横向き用紙のため）</li>
-        <li>印刷後、左右の余白とカット線で切り分け、画面の表示順に束ねてリングに綴じます</li>
+        <li>プリンターの両面設定を <b>「長辺綴じ」</b> に（縦向き用紙のため）</li>
+        <li>印刷後、周囲の余白とカット線で切り分け、画面の表示順に束ねてリングに綴じます</li>
         <li>※ 両面の面付けは実物での組み立て確認が済んでいません。まず1か月分で試してから本番印刷をおすすめします</li>
       </ol>
 
@@ -803,10 +807,12 @@ const WD_JA_MON_FIRST = ['月','火','水','木','金','土','日'];
 const WD_EN_1     = ['M','T','W','T','F','S','S'];
 const MONTH_JA    = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-// A5スリム 110×210mm。穴中心の上端からの距離（後方部 基準データ A5 slim refill.svg と一致）
-const HOLE_POSITIONS_MM = [32, 51, 70, 140, 159, 178];
-const SLOT_POSITIONS = ['L', 'R'];
-const CUT_LINES_MM = [38.5, 148.5, 258.5];
+// Micro5 110×210mm。穴中心の上端からの距離（後方部 基準データ A5 slim refill.svg と一致）
+const HOLE_POSITIONS_MM = [15, 34, 53, 72, 91]; // 当工房の基準データ（Micro5 refill）と同じ。穴間隔19mm
+const CUT_LINES_MM = [12, 74, 136, 198];   // 縦カット線 x
+const CUT_LINES_H_MM = [43.5, 148.5, 253.5]; // 横カット線 y
+const SHEET_COLS = 3, SHEET_ROWS = 2;
+const SLOT_POSITIONS = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5']; // 読み順（左上→右上→…）
 
 const OWL_PATH = `M 84.045202 154.08962 C 74.342376 153.72021 66.575763 156.22553 59.803014 162.15016 C 52.400852 168.8731 48.858024 176.12283 52.306921 185.56227 C 53.00894 186.94984 54.145651 191.34463 55.318639 193.36891 C 43.597631 193.28582 37.491668 195.36222 34.332311 201.01344 C 31.172954 206.66467 32.51024 209.75294 34.523718 212.74782 C 40.529201 220.94697 53.989997 220.37842 62.986608 218.24977 C 73.776887 214.54343 82.201949 206.98481 86.234655 195.68923 C 87.640514 192.00332 88.500775 192.27078 94.00028 192.1443 C 97.934826 192.05381 96.909988 190.04001 92.888952 190.02321 C 89.117166 190.00747 88.334264 189.47713 88.334264 186.94118 C 88.334264 183.29034 90.340945 172.70728 91.746374 168.95094 C 93.744162 163.61136 95.468404 162.2706 101.03153 161.72243 C 104.9379 161.3375 106.10236 160.92284 108.02567 159.23415 C 110.49685 157.06442 111.23535 154.79522 109.1663 155.73024 C 106.68328 156.85231 101.04888 156.72601 94.428014 155.39821 C 90.728406 154.65626 87.279477 154.21275 84.045202 154.08962 z M 76.736608 159.40798 C 79.865037 159.31714 83.200604 159.64494 86.689733 160.40993 C 89.79346 161.09042 92.334264 161.92551 92.334264 162.26735 C 92.334264 162.60918 91.168186 164.41773 89.742468 166.28493 C 85.884861 171.33708 83.884623 175.80571 82.709264 182.00173 C 82.129645 185.05722 81.414359 188.42392 81.006139 188.91579 C 80.53514 189.48331 78.678525 189.35019 76.086218 189.35719 C 71.923052 189.36759 71.231051 188.97322 71.019811 190.92751 C 71.559531 191.10296 72.572184 192.39635 74.982702 191.90602 C 76.89659 191.51671 79.382413 192.128 79.752233 192.49782 C 80.508222 193.25381 78.723545 199.35137 76.467077 203.72243 C 74.420169 207.68756 68.540842 213.16016 63.847936 215.47048 C 58.221432 218.24038 49.33315 218.78535 43.666296 216.7068 C 38.389721 214.77141 36.334264 212.26385 36.334264 207.76735 C 36.449454 200.47828 44.640522 195.68826 52.521764 196.02321 C 57.500549 196.01372 65.18778 198.46657 65.18778 198.46657 C 58.308717 195.61045 49.261948 180.11197 55.732702 170.99782 C 59.84161 163.71722 67.351323 159.68049 76.736608 159.40798 z M 99.810827 200.87477 C 93.558213 200.78092 88.425059 207.32775 89.236608 214.28884 C 89.890337 219.3237 93.449458 222.62769 101.5452 218.94704 C 103.83033 220.73167 102.2351 221.20692 104.85966 221.84938 C 107.48421 222.49184 110.7829 220.17941 112.24051 217.50954 C 111.73214 217.71612 109.24399 218.34066 108.57841 218.16579 C 106.70819 217.67446 107.07228 217.49523 109.87723 211.40602 C 111.41502 208.06768 112.78601 207.02629 113.04716 203.94704 C 110.37711 203.13065 108.48642 203.67045 106.10575 203.51735 C 105.98723 202.49311 101.54459 200.90077 99.810827 200.87477 z M 101.34012 204.31423 C 101.96513 204.2959 102.57668 204.46415 103.16239 204.79469 C 105.39445 206.05434 103.90399 212.26978 100.89481 215.69704 C 98.797421 218.08584 97.514408 218.46586 95.50028 217.29274 C 93.960732 216.39604 94.026116 214.1747 95.709264 210.23415 C 97.470855 206.10991 99.465102 204.36921 101.34012 204.31423 z M 126.09598 207.44313 C 124.43941 207.49338 122.74199 207.96077 121.00614 208.84548 C 117.6737 210.54391 115.82085 213.36948 115.23466 217.64626 C 114.63861 221.99495 116.68996 224.39572 122.00028 225.56423 C 124.38301 226.08853 125.29794 225.96703 127.61942 224.81423 C 130.08858 223.58808 131.51973 221.3978 129.25809 222.30641 C 126.43597 223.1866 124.27186 224.07168 122.09208 221.93923 C 120.64951 219.87969 120.79304 217.72717 122.31864 214.37477 C 124.08204 210.49983 127.39665 209.27816 128.57059 210.00368 C 128.92352 210.22181 128.62666 211.10081 127.75223 212.02516 C 126.39784 213.45687 127.50108 214.2147 128.98466 215.33376 C 130.90343 216.7811 133.1708 215.95594 133.66239 213.68727 C 134.03123 211.98508 134.10993 210.12739 130.93973 208.54469 C 129.36856 207.7603 127.75255 207.39288 126.09598 207.44313 z M 7.7053581 207.58571 C 4.8680466 207.49271 1.909488 208.75628 0.58817063 211.52712 C -0.47979831 213.76676 -0.54190323 215.52075 0.60379563 217.64821 C 1.8415344 219.94655 3.2330952 220.65359 6.5452019 220.66969 C 10.964438 220.69112 12.54808 223.73174 9.2209831 225.98219 C 7.394915 227.21735 6.5599538 226.92972 5.359655 226.0818 C 6.0692643 224.59792 5.4932712 223.05235 3.5647331 222.86891 C 1.9464847 222.71499 0.74299814 223.19836 0.13699875 224.02712 C -1.0008801 225.58324 -0.57678831 226.18816 1.09403 228.31227 C 5.054546 231.57102 11.846859 228.60537 14.217077 224.41188 C 16.587295 220.21839 13.117028 215.34548 8.1643425 215.34548 C 4.0210666 215.34548 2.8042603 213.05472 4.3869988 211.71657 C 5.4138977 210.84836 6.117299 210.06796 7.5862175 210.94899 C 7.4522376 212.73166 9.1418508 213.62174 11.261999 213.08962 C 13.560586 212.51271 14.065939 210.61443 12.301061 209.18532 C 11.066457 208.1856 9.407745 207.64151 7.7053581 207.58571 z M 24.459264 236.03298 C 23.950034 236.07579 23.584915 236.27098 23.367468 236.62282 C 23.159838 236.95877 21.783722 241.98508 20.308874 247.79079 C 15.244259 267.72758 12.363073 275.41648 5.5061394 287.29079 C 1.5037634 294.22181 0.18218329 297.12108 -1.546595 302.75563 C -5.7760908 316.54066 -4.9157558 332.95537 0.51199875 342.01344 C 1.280988 343.29677 3.0646639 345.74896 4.4768425 347.46462 C 7.3890996 351.0027 7.5544494 350.63376 1.2912956 354.59743 C -7.6980354 360.28636 -19.906174 373.7893 -26.810267 385.67946 C -32.865791 396.10824 -37.616112 409.99995 -39.056361 421.4861 C -40.197509 430.58696 -41.168124 429.95689 -26.161829 429.84743 C -18.165787 429.78911 -12.077228 430.05478 -9.99972 430.55251 C -8.1663918 430.99174 0.23296408 433.58521 8.6662956 436.31423 C 17.099617 439.04324 26.697994 441.97201 29.994421 442.82399 C 34.431656 443.97083 36.047254 444.67886 36.215124 445.55055 C 36.352914 446.266 34.914912 448.36962 32.553014 450.91188 C 28.804478 454.94665 25.00028 461.00476 25.00028 462.93727 C 25.00028 464.06286 26.624819 464.78211 27.986608 464.25954 C 28.529188 464.05133 29.64879 462.78566 30.474889 461.44704 C 32.616587 457.97665 36.373276 453.95824 37.072546 454.3904 C 37.399285 454.59234 37.666296 457.26677 37.666296 460.3318 C 37.666296 467.01165 37.982813 468.01344 40.088171 468.01344 C 42.244008 468.01344 43.00028 465.8552 43.00028 459.7068 C 43.00028 456.00407 43.239152 454.7307 43.988561 454.44313 C 45.04226 454.03878 47.879444 457.40416 51.150671 462.93923 C 53.139829 466.30496 53.689938 466.56207 55.347936 464.90407 C 57.534064 462.71795 54.555516 456.62567 48.482702 450.8611 C 45.105555 447.65537 44.965564 445.55216 48.176061 446.26735 C 49.17983 446.49095 54.459289 447.03739 59.908483 447.48219 C 66.722356 448.03839 69.917638 448.55738 70.142858 449.1443 C 70.322978 449.61368 69.096324 451.52767 67.416296 453.39626 C 63.970689 457.2286 59.972387 464.77525 60.566686 466.32399 C 61.429385 468.57213 63.446204 467.46162 65.982702 463.34548 C 68.00268 460.06754 70.29589 457.34548 71.037389 457.34548 C 71.296769 457.34548 71.724812 459.97112 71.988561 463.17946 C 72.252321 466.38779 72.761038 469.36987 73.117468 469.80641 C 73.809847 470.65442 75.683035 470.24153 76.490514 469.06227 C 76.759904 468.66885 76.985514 466.03855 76.990514 463.21852 C 76.996794 460.06213 77.298258 457.90886 77.773718 457.61501 C 78.544487 457.13865 81.311965 459.82722 85.369421 464.99391 C 87.648778 467.89641 89.00028 467.75267 89.00028 464.60719 C 89.00028 461.6845 87.635831 459.52431 82.728796 454.67946 C 76.676322 448.70367 76.863622 447.69864 84.334264 446.04274 C 92.532586 444.15732 102.33295 440.27231 110.00028 431.46462 C 105.71244 426.84729 103.09689 422.59944 104.53934 417.36891 C 105.98179 412.13839 111.19184 409.34548 113.97294 409.34548 C 117.98952 409.34548 118.55297 408.31341 118.55497 400.94118 C 118.54501 395.79466 118.19775 390.11335 117.58817 384.69509 C 127.03271 382.46333 128.90519 380.0928 137.0745 372.85915 C 142.30502 367.37859 146.60629 360.1326 149.05497 352.6736 C 150.59269 347.98947 153.00028 336.63912 153.00028 334.07594 C 153.00028 329.89057 160.68895 302.84824 166.72489 285.80641 C 168.80444 279.93504 168.78317 278.81681 166.57059 278.26149 C 163.48701 277.48755 149.00538 278.58371 139.00028 280.34743 C 124.62818 282.88097 114.28088 284.00287 105.33426 283.99587 C 89.220128 283.98422 84.429481 281.77928 65.00028 265.43532 C 62.616952 263.43044 60.517604 261.61113 60.334264 261.39235 C 60.150935 261.17356 57.876214 259.19874 55.279577 257.00368 C 38.660465 242.95477 28.023878 235.73331 24.459264 236.03298 z M 28.043249 247.34548 C 35.348211 255.39014 41.682874 261.33898 49.666296 267.70485 C 62.247753 278.22369 67.145215 284.43326 70.008093 293.49587 C 70.843692 296.19585 73.5386 306.74843 69.902624 304.84548 C 66.239217 293.87109 58.088701 283.68047 47.582311 276.93727 C 36.707402 269.95754 31.564321 264.642 28.777624 257.49977 C 27.743765 254.85004 27.20127 247.34548 28.043249 247.34548 z M 40.666296 296.39235 C 45.89398 296.39235 47.114821 296.62473 50.142858 298.20094 C 55.158273 300.81166 57.810632 303.39556 60.00028 307.80055 C 65.329985 318.52257 60.943356 331.87862 50.279577 337.3943 C 46.048841 339.58259 37.2809 339.88648 32.771764 338.00173 C 26.114311 335.21899 21.778945 330.13119 19.873327 322.86305 C 17.356449 313.26352 22.14087 302.91799 31.306921 298.14235 C 34.207398 296.63115 35.487021 296.39235 40.666296 296.39235 z M 41.338171 308.88259 C 37.281075 308.84074 35.356259 310.52856 34.65653 311.22829 C 36.264368 313.33199 36.764724 314.92965 38.451452 317.07399 C 35.863654 317.64978 34.451205 318.07156 32.148718 318.56423 C 32.148718 320.23477 34.181969 325.32744 39.215124 326.28493 C 44.248269 327.24242 48.506035 323.60855 49.371374 318.45094 C 50.236713 313.29335 45.395267 308.92448 41.338171 308.88259 z M 105.09989 315.45485 C 116.12761 315.0707 126.53383 323.62311 127.50223 335.68727 C 128.3149 345.81147 122.46419 354.89522 113.00028 358.2029 C 99.881031 362.78812 87.018308 354.9417 84.338171 340.72048 C 82.654612 331.78727 88.606118 321.13769 97.474889 317.21462 C 99.977572 316.10756 102.55503 315.5435 105.09989 315.45485 z M 107.34794 328.99391 C 104.50963 328.65526 101.45144 329.66342 99.722936 331.80837 C 100.43072 332.81886 102.13065 335.35532 102.80692 336.5154 C 101.69094 336.98028 98.384204 338.31958 97.328405 338.45876 C 97.927084 342.63839 100.55332 345.49079 104.00028 346.18337 C 107.44724 346.87595 111.97284 345.35463 113.80301 341.57399 C 115.91424 337.21278 114.09391 332.11065 110.05497 329.78884 C 109.21516 329.36901 108.29404 329.1068 107.34794 328.99391 z M 10.558874 367.45094 C 11.741635 367.48958 13.077727 367.74921 15.209264 368.25173 C 23.856566 370.29033 27.567142 375.14745 26.814733 383.44509 C 25.719164 395.52725 14.323256 407.49981 -1.3610481 413.04665 C -5.9795835 414.68002 -7.8928715 414.95993 -16.157923 415.20876 C -27.294452 415.54403 -27.212249 415.59923 -25.431361 408.91579 C -22.810353 399.07947 -14.86492 385.31538 -7.1422981 377.23219 C -1.6345936 371.46735 1.6719139 369.27617 6.8244988 367.97829 C 8.3457672 367.59509 9.3761124 367.41231 10.558874 367.45094 z M 45.273718 376.3279 C 47.852875 375.86278 62.664652 377.59126 67.972936 378.97634 C 70.158304 379.54656 73.308308 380.02012 74.972936 380.02712 C 76.637565 380.0345 79.950937 380.33502 82.334264 380.69509 C 84.717602 381.05516 88.916298 381.67131 91.666296 382.06618 C 99.873257 383.2446 109.6663 389.01948 109.6663 392.67946 C 109.6663 398.05179 106.90045 404.47405 102.14286 410.14626 C 98.22625 414.8158 96.334264 419.37699 96.334264 424.14821 L 96.334264 428.15212 L 92.385046 432.0154 C 89.665888 434.67608 87.271747 436.31448 84.693639 437.27907 C 78.741525 439.50605 73.801881 439.13798 65.00028 435.81032 C 59.623475 433.77748 50.001067 431.68904 41.666296 430.74587 C 33.559594 429.82851 30.873399 429.04704 28.263952 426.85134 C 25.438795 424.47412 24.333634 421.57383 24.334264 416.53493 C 24.334894 411.52971 26.50272 406.47566 31.228796 400.46657 C 34.853282 395.85811 37.334717 390.80866 38.004186 386.67946 C 38.908955 381.09895 41.822761 376.95024 45.273718 376.3279 z`;
 
@@ -940,7 +946,7 @@ function buildHoleStrip(side, showPunchGuide) {
   return `<div class="hole-strip ${side}" style="${lineStyle}">${inner}</div>`;
 }
 
-// === MODULE: PDF Generator（A4横） ===
+// === MODULE: PDF Generator（A4縦） ===
 async function generatePDF(ev) {
   const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
   const wrappers = document.querySelectorAll('#preview .sheet-wrap');
@@ -949,25 +955,25 @@ async function generatePDF(ev) {
   const orig = btn.textContent;
   btn.disabled = true;
   const stage = document.createElement('div');
-  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:297mm;background:white;';
+  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
   document.body.appendChild(stage);
   try {
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
     for (let i = 0; i < wrappers.length; i++) {
       btn.textContent = `PDF生成中 ${i+1}/${wrappers.length}`;
       const srcPage = wrappers[i].querySelector('.a4-sheet');
       if (!srcPage) continue;
       const clone = srcPage.cloneNode(true);
-      clone.style.cssText = 'width:297mm;height:210mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
       stage.appendChild(clone);
       const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
       stage.removeChild(clone);
       const img = canvas.toDataURL('image/jpeg', 0.88);
       if (i > 0) pdf.addPage();
-      pdf.addImage(img, 'JPEG', (window.nsfPrintOffset ? window.nsfPrintOffset().x : 0), (window.nsfPrintOffset ? window.nsfPrintOffset().y : 0), 297, 210);
+      pdf.addImage(img, 'JPEG', (window.nsfPrintOffset ? window.nsfPrintOffset().x : 0), (window.nsfPrintOffset ? window.nsfPrintOffset().y : 0), 210, 297);
     }
-    const fname = `a5slim-monthly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
+    const fname = `micro5-monthly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
     const blob = pdf.output('blob');
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1164,10 +1170,10 @@ function buildVerticalMonth(ctx, holeSide) {
     ${holeSide === 'right' ? holeStrip : ''}`;
 }
 
-// === MODULE: A4横 Sheet Builder（L・R の2面） ===
+// === MODULE: A4縦 Sheet Builder（L・R の2面） ===
 // meta: 各スロットの {leaf: 紙の通し番号, face: 'front'|'back'}（綴じ後プレビュー用。null なら印を付けない）
 function buildA4(slots, meta) {
-  const cuts = opts.showCutLine ? CUT_LINES_MM.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') : '';
+  const cuts = opts.showCutLine ? (CUT_LINES_MM.map(x => `<div class=\"cut-line-v\" style=\"left:${x}mm;\"></div>`).join('') + CUT_LINES_H_MM.map(y => `<div class=\"cut-line-h\" style=\"top:${y}mm;\"></div>`).join('')) : '';
   let html = `<div class="a4-sheet">${cuts}`;
   SLOT_POSITIONS.forEach((pos, i) => {
     const content = slots[i];
@@ -1211,69 +1217,56 @@ function renderMonths() {
   const HOLE_FOR_LEFT = 'right', HOLE_FOR_RIGHT = 'left';
   const titleDef = () => `__TITLE__${(document.getElementById('titleContent') || {}).value || ''}`;
 
+  // ── N面付け（長辺綴じ・ページ役割方式）。紙 j の表は表面のスロット j、裏は裏面の左右反転位置 mirror(j) に置く
+  const K = SLOT_POSITIONS.length;
+  const mirror = j => Math.floor(j / SHEET_COLS) * SHEET_COLS + (SHEET_COLS - 1 - j % SHEET_COLS);
+  const sheetsFromLeafs = (leafs, buildFn) => {
+    while (leafs.length % K !== 0) leafs.push({ front: null, back: null });
+    let out = '';
+    for (let s = 0; s < leafs.length / K; s++) {
+      const L = Array.from({ length: K }, (_, j) => leafs[s * K + j]);
+      const front = L.map(l => buildFn(l.front, 'left'));                 // 表面＝右ページ＝左穴
+      const back  = L.map((_, j) => buildFn(L[mirror(j)].back, 'right')); // 裏面＝左ページ＝右穴（列は左右反転）
+      const real = j => (L[j].front || L[j].back) ? s * K + j : null;
+      const mf = L.map((_, j) => real(j) != null ? { leaf: real(j), face: 'front' } : null);
+      const mb = L.map((_, j) => real(mirror(j)) != null ? { leaf: real(mirror(j)), face: 'back' } : null);
+      out += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front, mf)}</div>`;
+      out += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back, mb)}</div>`;
+    }
+    return out;
+  };
+  const sheetsFromPages = (pages, labels, faces) => { // 単票: 1ページ＝1枚。右ページは紙の表（裏は白紙）、左ページは紙の裏（表は白紙）
+    let out = '';
+    for (let i = 0; i < pages.length; i += K) {
+      const slots = Array.from({ length: K }, (_, j) => pages[i + j] || null);
+      const meta = slots.map((p, j) => p ? { leaf: i + j, face: faces ? faces[i + j] : 'front' } : null);
+      out += `<div class="sheet-wrap"><div class="sheet-label">${labels.slice(i, i + K).filter(Boolean).join(' / ')}</div>${buildA4(slots, meta)}</div>`;
+    }
+    return out;
+  };
   if (layoutMode === 'vert') {
     if (!isDuplex) {
-      for (let i = 0; i < ctxs.length; i += 2) {
-        const a = ctxs[i], b = ctxs[i + 1] || null;
-        const slots = [buildVerticalMonth(a, 'left'), b ? buildVerticalMonth(b, 'left') : null];
-        const label = b ? `${a.label} / ${b.label}` : a.label;
-        const meta = [{ leaf: i, face: 'front' }, b ? { leaf: i + 1, face: 'front' } : null];
-        html += `<div class="sheet-wrap"><div class="sheet-label">${label}</div>${buildA4(slots, meta)}</div>`;
-      }
+      html = sheetsFromPages(ctxs.map(c => buildVerticalMonth(c, 'left')), ctxs.map(c => c.label));
     } else {
-      // 両面（短辺綴じ）: リーフ = {表, 裏}。1枚目の表はタイトル（または白紙）
+      // 両面: リーフ = {表, 裏}。1枚目の表はタイトル（または白紙）
       const leafs = [];
       leafs.push({ front: opts.showTitle ? { type: 'title' } : null, back: { ci: 0 } });
       for (let i = 1; i < ctxs.length; i += 2) leafs.push({ front: { ci: i }, back: i + 1 < ctxs.length ? { ci: i + 1 } : null });
-      while (leafs.length % 2 !== 0) leafs.push({ front: null, back: null });
-      const build = (def, side) => {
-        if (!def) return null;
-        if (def.type === 'title') return titleDef();
-        return buildVerticalMonth(ctxs[def.ci], side);
-      };
-      for (let s = 0; s < leafs.length / 2; s++) {
-        const A = leafs[s * 2], B = leafs[s * 2 + 1];
-        // 表面は左穴、裏面は左右反転して印刷されるので右穴（切り離すと同じ綴じ側になる）
-        const front = [build(A.front, 'left'), build(B.front, 'left')];
-        const back  = [build(B.back, 'right'), build(A.back, 'right')];
-        const mA = (A.front || A.back) ? s * 2 : null, mB = (B.front || B.back) ? s * 2 + 1 : null;
-        const mf = [mA != null ? { leaf: mA, face: 'front' } : null, mB != null ? { leaf: mB, face: 'front' } : null];
-        const mb = [mB != null ? { leaf: mB, face: 'back' } : null, mA != null ? { leaf: mA, face: 'back' } : null];
-        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front, mf)}</div>`;
-        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back, mb)}</div>`;
-      }
+      html = sheetsFromLeafs(leafs, (def, side) => !def ? null : (def.type === 'title' ? titleDef() : buildVerticalMonth(ctxs[def.ci], side)));
     }
   } else if (!isDuplex) {
-    // 単票: 1枚に 左ページ＋右ページ（見開き1か月）
-    ctxs.forEach((ctx, i) => {
-      const slots = [buildLeftPage(ctx, HOLE_FOR_LEFT), buildRightPage(ctx, HOLE_FOR_RIGHT)];
-      // 綴じ後プレビュー用: 左ページ（右穴）は紙の裏・右ページ（左穴）は紙の表。単票なので反対面は白紙
-      const meta = [{ leaf: i * 2, face: 'back' }, { leaf: i * 2 + 1, face: 'front' }];
-      html += `<div class="sheet-wrap"><div class="sheet-label">${ctx.label}</div>${buildA4(slots, meta)}</div>`;
-    });
+    // 単票: 左ページ・右ページをそれぞれ1枚の表として並べる
+    const pages = [], labels = [];
+    ctxs.forEach(ctx => { pages.push(buildLeftPage(ctx, HOLE_FOR_LEFT), buildRightPage(ctx, HOLE_FOR_RIGHT)); labels.push(ctx.label + ' 左', ctx.label + ' 右'); });
+    html = sheetsFromPages(pages, labels, pages.map((_, i) => i % 2 ? 'front' : 'back'));
   } else {
-    // 両面（短辺綴じ・物理リーフ方式）: leaf1 = 表:タイトル/白紙・裏:M1左, leaf k = 表:M(k-1)右・裏:Mk左, 最終 = 表:MN右・裏:白紙
+    // 両面（物理リーフ方式）: leaf1 = 表:タイトル/白紙・裏:M1左, leaf k = 表:M(k-1)右・裏:Mk左, 最終 = 表:MN右・裏:白紙
     const N = ctxs.length;
     const leafs = [];
     leafs.push({ front: opts.showTitle ? { type: 'title' } : null, back: { type: 'left', ci: 0 } });
     for (let k = 1; k < N; k++) leafs.push({ front: { type: 'right', ci: k - 1 }, back: { type: 'left', ci: k } });
     leafs.push({ front: { type: 'right', ci: N - 1 }, back: null });
-    while (leafs.length % 2 !== 0) leafs.push({ front: null, back: null });
-    const build = (def) => {
-      if (!def) return null;
-      if (def.type === 'title') return titleDef();
-      return def.type === 'left' ? buildLeftPage(ctxs[def.ci], HOLE_FOR_LEFT) : buildRightPage(ctxs[def.ci], HOLE_FOR_RIGHT);
-    };
-    for (let s = 0; s < leafs.length / 2; s++) {
-      const A = leafs[s * 2], B = leafs[s * 2 + 1];
-      const front = [build(A.front), build(B.front)];
-      const back  = [build(B.back), build(A.back)]; // 短辺綴じの裏面は左右が入れ替わる
-      const mA = (A.front || A.back) ? s * 2 : null, mB = (B.front || B.back) ? s * 2 + 1 : null;
-      const mf = [mA != null ? { leaf: mA, face: 'front' } : null, mB != null ? { leaf: mB, face: 'front' } : null];
-      const mb = [mB != null ? { leaf: mB, face: 'back' } : null, mA != null ? { leaf: mA, face: 'back' } : null];
-      html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front, mf)}</div>`;
-      html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back, mb)}</div>`;
-    }
+    html = sheetsFromLeafs(leafs, def => !def ? null : (def.type === 'title' ? titleDef() : (def.type === 'left' ? buildLeftPage(ctxs[def.ci], HOLE_FOR_LEFT) : buildRightPage(ctxs[def.ci], HOLE_FOR_RIGHT))));
   }
 
   document.getElementById('preview').innerHTML = html;
@@ -1368,7 +1361,7 @@ function initFontSelectors() {
 }
 
 // === MODULE: Settings Persistence ===
-const SETTINGS_KEY = 'nsf_a5slim_monthly_v2'; // v2: 両面を既定ONにしたため旧設定を引き継がない
+const SETTINGS_KEY = 'nsf_micro5_monthly_v1'; // v2: 両面を既定ONにしたため旧設定を引き継がない
 
 function saveSettings() {
   const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
@@ -1470,11 +1463,9 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
-  { date: '2026-09-11', type: 'fix', title: '両面印刷（見開きの裏に前後の月）を初期状態に',
-    detail: '初期状態が単票（裏面が白紙）になっていたため、A6・バイブル月間と同じ「見開き＝ひと月・裏に前後の月」のリーフ方式を既定にしました。単票が必要なときは「両面印刷」をOFFにしてください。' },
-  { date: '2026-09-11', type: 'feat', title: 'A5スリム 月間ブロック印刷ツールを新規作成（日付なしモード付き）',
-    detail: 'A6月間ブロック印刷ツールを土台に、A5スリム（110×210mm）版を作成しました。A4横に2面付け、穴はA5規格と同じ6穴（上端から32/51/70/140/159/178mm・綴じ側端から6mm）。「日付なし」モードでは年・月・日付・曜日・祝日を印刷せず、デジタル風（7セグ）の薄い数字と7つの曜日を透かしで出します。使う人が塗る・書くことで、月曜始まりでも日曜始まりでも、いつからでも使えます。両面印刷の面付けは実物での組み立て確認が未了です。' },
-];
+  { date: '2026-09-11', type: 'feat', title: 'Micro5 月間印刷ツールを新規作成',
+    detail: 'Micro5月間印刷ツールを土台に、Micro5（62×105mm）版を作成しました。A4縦に3列×2段の6面付け。穴は5穴（上端から 15 / 34 / 53 / 72 / 91 mm・綴じ側の端から6mm。当工房の基準データ（Micro5 refill）と同じ。穴間隔19mm）。両面印刷は長辺綴じで、表面に右ページ（左穴）・裏面に左ページ（右穴）を置くので、切り分けた紙はすべて同じ向きのまま重ねて綴じられます。綴じ後プレビューで見開きの順と穴の位置を確認できます。' },
+]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
   document.getElementById('historyList').innerHTML = [...HISTORY_ENTRIES].reverse().map(e =>
@@ -1540,7 +1531,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="../assets/bug-report.js"></script>
 <script>
 // 印刷ズレ補正・テスト印刷用の用紙形状（print-adjust.js が参照）
-window.NSF_PRINT_GEOMETRY = { sheet: [297, 210], slots: [{ x: 38.5, y: 0, w: 110, h: 210, holeSide: 'left' }, { x: 148.5, y: 0, w: 110, h: 210, holeSide: 'right' }], holes: [32, 51, 70, 140, 159, 178], holeEdge: 6, holeD: 5, cuts: [{ x: 38.5 }, { x: 148.5 }, { x: 258.5 }] };
+window.NSF_PRINT_GEOMETRY = { sheet: [210, 297], slots: [{ x: 12, y: 43.5, w: 62, h: 105, holeSide: 'left' }, { x: 74, y: 43.5, w: 62, h: 105, holeSide: 'left' }, { x: 136, y: 43.5, w: 62, h: 105, holeSide: 'left' }, { x: 12, y: 148.5, w: 62, h: 105, holeSide: 'left' }, { x: 74, y: 148.5, w: 62, h: 105, holeSide: 'left' }, { x: 136, y: 148.5, w: 62, h: 105, holeSide: 'left' }], holes: [15, 34, 53, 72, 91], holeEdge: 6, holeD: 5, cuts: [{ x: 12 }, { x: 74 }, { x: 136 }, { x: 198 }, { y: 43.5 }, { y: 148.5 }, { y: 253.5 }] };
 </script>
 <script src="../assets/print-adjust.js"></script>
 <script src="../assets/flip-sim.js"></script>

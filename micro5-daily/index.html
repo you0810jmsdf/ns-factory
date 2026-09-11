@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Micro5デイリーリフィル印刷ツール | N's factory</title>
+<meta name="description" content="Micro5（62×105mm）システム手帳用デイリー（1日1ページ・時間軸つき）リフィルを無料で作成・印刷できるツール。日付入りのほか、日付なし（日付・曜日を自分で書き込む透かし版）も出力できます。会員登録もパスワードも不要です。">
+<!-- Google tag (gtag.js) -->
+<script>
+// 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
+// GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* === MODULE: Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0f0f0; }
+
+/* === MODULE: CSS Variables === */
+:root {
+  --line-h: 0mm; --memo-gap: 4mm; --memo-h: 30mm; --time-font: 1.9mm; --time-label-top: 0.3mm;
+  --text-wm-size: 20mm; --text-wm-angle: 0deg; --text-wm-x: 0mm; --text-wm-y: 0mm;
+  --month-cal-top: 1mm; --month-cal-right: 1mm; --month-cal-scale: 1; --month-cal-opacity: 1;
+  --font-brand: 'Times New Roman', Times, serif; --font-date-num: 'Noto Sans JP', sans-serif; --font-date-wd: 'Noto Sans JP', sans-serif;
+  --font-month-abbr: 'Times New Roman', Times, serif; --font-text-wm: 'Noto Sans JP', sans-serif;
+  --owl-wm-x: 0mm; --owl-wm-y: 0mm; --owl-wm-size: 50mm; --owl-wm-opacity: 0.07;
+  --img-wm-x: 0mm; --img-wm-y: 0mm; --img-wm-size: 60mm; --img-wm-opacity: 0.08;
+  --ghost-opacity: 0.18;
+}
+
+/* === MODULE: Control Panel === */
+#ctrl-toggle-btn { position: fixed; top: 10px; left: 10px; z-index: 200; width: 36px; height: 36px; border-radius: 6px; background: #1a1a2e; color: #7ec8e3; border: 1px solid #444; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#controls { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px; font-size: 11px; z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; }
+#controls.open { transform: translateX(0); }
+#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; }
+.ctrl-section { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.ctrl-section h3 { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+.ctrl-row label { min-width: 80px; color: #ccc; }
+.ctrl-row input[type=range] { flex: 1; min-width: 80px; accent-color: #7ec8e3; }
+.ctrl-row input[type=date], .ctrl-row select, .ctrl-row input[type=text], .ctrl-row input[type=month] { flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; }
+.ctrl-row input[type=number] { width: 60px; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; text-align: right; }
+.ctrl-row .val { min-width: 28px; text-align: right; color: #7ec8e3; font-size: 10px; }
+.ctrl-row textarea { flex: 1; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; resize: vertical; }
+.btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; touch-action: manipulation; }
+.btn-primary { background: #7ec8e3; color: #1a1a2e; }
+.btn-secondary { background: #444; color: #eee; }
+.btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
+.btn-toggle.on { background: #7ec8e3; color: #1a1a2e; border-color: #7ec8e3; }
+body.undated .dated-only { display: none; }
+
+/* === MODULE: Preview === */
+#preview { margin-left: 0; padding: 60px 20px 20px; }
+body.panel-open #preview { margin-left: 280px; }
+.sheet-wrap { margin-bottom: 20px; }
+.sheet-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+.a4-sheet { width: 210mm; height: 297mm; background: white; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+
+/* === MODULE: Slot === */
+.slot { position: absolute; width: 62mm; height: 105mm; overflow: hidden; display: flex; flex-direction: row; }
+.slot[data-pos="P0"] { left: 12mm; top: 43.5mm; }
+.slot[data-pos="P1"] { left: 74mm; top: 43.5mm; }
+.slot[data-pos="P2"] { left: 136mm; top: 43.5mm; }
+.slot[data-pos="P3"] { left: 12mm; top: 148.5mm; }
+.slot[data-pos="P4"] { left: 74mm; top: 148.5mm; }
+.slot[data-pos="P5"] { left: 136mm; top: 148.5mm; }
+.slot.empty { background: white; }
+.cut-line-h { position: absolute; left: 0; right: 0; height: 0; border-top: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
+.cut-line-v { position: absolute; top: 0; bottom: 0; width: 0; border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
+
+/* === MODULE: 穴ストリップ（綴じ側端から6mm・径5mm・当工房基準） === */
+.hole-strip { width: 12mm; flex-shrink: 0; position: relative; }
+.hole-strip.left { border-right: 0.3mm solid #e0e0e0; order: -1; }
+.hole-strip.right { border-left: 0.3mm solid #e0e0e0; order: 1; }
+.hole { position: absolute; left: 50%; transform: translate(-50%, -50%); width: 5mm; height: 5mm; border: 0.3mm solid #c8c8c8; border-radius: 50%; background: white; }
+.hole-bisector { position: absolute; top: 52.5mm; left: 0; width: 2mm; height: 0; border-top: 0.2mm dashed #bbb; pointer-events: none; }
+
+/* === MODULE: デイリーページ === */
+.daily-page { width: 100%; height: 100%; display: flex; position: relative; min-height: 0; overflow: hidden; }
+.page-body { flex: 1; position: relative; display: flex; flex-direction: column; padding: 1mm 1.5mm; min-width: 0; min-height: 0; height: 100%; overflow: hidden; }
+.date-header { height: 13mm; flex-shrink: 0; border-bottom: 0.45mm solid #222; display: flex; align-items: center; gap: 2mm; padding: 1mm 0; position: relative; }
+.date-num { font-size: 9.5mm; font-weight: 700; line-height: 1; letter-spacing: -0.5mm; font-family: var(--font-date-num, 'Noto Sans JP', sans-serif); }
+.date-num .seg-ghost { height: 9.5mm; }
+.date-meta { display: flex; flex-direction: column; gap: 0.8mm; }
+.date-ym { font-size: 2mm; color: #999; letter-spacing: 0.3mm; min-height: 2mm; }
+.date-wd { font-size: 3.2mm; font-weight: 700; font-family: var(--font-date-wd, 'Noto Sans JP', sans-serif); }
+.is-sun .date-num, .is-sun .date-wd { color: #c0392b; }
+.is-sat .date-num, .is-sat .date-wd { color: #2471a3; }
+.is-holiday .date-num, .is-holiday .date-wd { color: #c0392b; }
+.date-holiday { font-size: 2mm; color: #c0392b; line-height: 1.2; }
+.ns-brand { font-family: var(--font-brand, 'Times New Roman', Times, serif); font-size: 5mm; color: #555; letter-spacing: 0.3mm; position: absolute; left: 50%; bottom: 0.8mm; transform: translateX(-50%) scale(0.52); transform-origin: center bottom; white-space: nowrap; }
+.month-abbr-large { font-family: var(--font-month-abbr, 'Times New Roman', Times, serif); font-size: 7mm; font-weight: 700; color: #888; letter-spacing: 0.5mm; margin-left: auto; align-self: flex-end; padding-bottom: 0.5mm; line-height: 1; flex-shrink: 0; }
+.month-abbr-large .seg-ghost { height: 7mm; }
+.time-grid { flex: 1 1 auto; display: flex; flex-direction: column; border-bottom: 0.3mm solid #ccc; overflow: hidden; min-height: 0; }
+.time-row { flex: 1 1 0; display: flex; align-items: stretch; min-height: var(--line-h, 0mm); }
+.time-row:not(:last-child) { border-bottom: 0.25mm solid #ebebeb; }
+.time-row:nth-child(even) { background: #fafafa; }
+.time-label { width: 7mm; font-size: var(--time-font, 1.9mm); color: #bbb; text-align: right; padding: 0 1mm 0 0; transform: translateY(var(--time-label-top, 0.3mm)); flex-shrink: 0; border-right: 0.25mm solid #ddd; line-height: 1; }
+.time-fill { flex: 1; }
+.memo-section { flex-shrink: 0; height: var(--memo-h, 30mm); padding-top: 1.5mm; display: flex; flex-direction: column; }
+.memo-title { font-size: 1.8mm; color: #bbb; letter-spacing: 1mm; margin-bottom: 1mm; flex-shrink: 0; }
+.memo-lines { flex: 1; display: flex; flex-direction: column; gap: var(--memo-gap, 4mm); overflow: hidden; padding-top: 0.5mm; }
+.memo-line { flex-shrink: 0; height: 0; border-bottom: 0.25mm solid #e5e5e5; }
+.page-num { flex-shrink: 0; height: 3mm; font-size: 1.8mm; color: #d5d5d5; display: flex; align-items: center; justify-content: flex-end; padding-bottom: 0.5mm; }
+
+/* === MODULE: 透かし === */
+.watermark-logo { position: absolute; width: var(--owl-wm-size, 50mm); height: auto; top: calc(50% + var(--owl-wm-y, 0mm)); left: calc(50% + var(--owl-wm-x, 0mm)); transform: translate(-50%, -50%); opacity: var(--owl-wm-opacity, 0.07); pointer-events: none; }
+.text-watermark { position: absolute; top: calc(50% + var(--text-wm-y, 0mm)); left: calc(50% + var(--text-wm-x, 0mm)); transform: translate(-50%, -50%) rotate(var(--text-wm-angle, 0deg)); font-size: var(--text-wm-size, 20mm); font-weight: 900; color: #000; opacity: 0.05; pointer-events: none; z-index: 1; line-height: 1; font-family: var(--font-text-wm, 'Noto Sans JP', sans-serif); white-space: nowrap; }
+.img-wm { position: absolute; pointer-events: none; z-index: 1; top: calc(50% + var(--img-wm-y, 0mm)); left: calc(50% + var(--img-wm-x, 0mm)); transform: translate(-50%, -50%); width: var(--img-wm-size, 60mm); height: auto; opacity: var(--img-wm-opacity, 0.08); }
+.seg-ghost { display: inline-block; color: #000; opacity: var(--ghost-opacity, 0.18); vertical-align: top; }
+.seg-ghost svg { display: block; height: 100%; width: auto; }
+.wd-ghost { display: inline-flex; gap: 1.2mm; font-size: 2.6mm; font-weight: 700; color: #000; opacity: var(--ghost-opacity, 0.18); }
+
+/* === MODULE: 月カレンダー === */
+.month-cal { position: absolute; top: var(--month-cal-top, 1mm); right: var(--month-cal-right, 1mm); width: 30mm; background: rgba(255,255,255,0.93); opacity: var(--month-cal-opacity, 1); border-radius: 0.5mm; padding: 0 0 0.5mm; pointer-events: none; z-index: 2; transform: scale(var(--month-cal-scale, 1)); transform-origin: top right; }
+.mc-header { font-size: 2mm; font-weight: 700; text-align: center; padding: 1mm 0 0.5mm; color: #333; letter-spacing: 0.3mm; }
+.mc-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 0 0.5mm 0.5mm; gap: 0; }
+.mc-wd { font-size: 1.5mm; text-align: center; color: #aaa; padding: 0.2mm 0; }
+.mc-wd.sun { color: #c0392b; } .mc-wd.sat { color: #2471a3; }
+.mc-day { font-size: 1.8mm; text-align: center; padding: 0.3mm 0; line-height: 1.2; }
+.mc-day.sun { color: #c0392b; } .mc-day.sat { color: #2471a3; }
+.mc-day.cur { background: #222; color: white; border-radius: 50%; font-weight: 700; }
+
+/* === MODULE: History / Help === */
+.history-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
+.history-overlay.open { display:flex; }
+.history-box { background:#1a1a2e; color:#eee; border-radius:8px; padding:20px; width:min(480px,92vw); max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+.history-box h3 { font-size:13px; color:#7ec8e3; margin-bottom:12px; }
+.history-entry { border-top:1px solid #333; padding:10px 0; font-size:10px; line-height:1.6; }
+.history-entry:first-of-type { border-top:none; }
+.history-date { color:#aaa; font-size:9px; }
+.history-type { display:inline-block; padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; margin-left:6px; }
+.history-type.feat { background:#1a3a1a; color:#7ec8e3; }
+.history-type.fix  { background:#3a1a1a; color:#f0b27a; }
+.history-type.improve { background:#1a1a3a; color:#b27af0; }
+.history-title { font-weight:700; margin-top:3px; }
+.history-detail { color:#bbb; margin-top:2px; }
+.history-close { float:right; background:#444; color:#eee; border:none; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:10px; }
+
+/* === MODULE: Checklist === */
+.cl-block { position: absolute; z-index: 3; pointer-events: none; line-height: 1.4; }
+.cl-title { font-weight: 700; padding-bottom: 0.3mm; border-bottom: 0.2mm solid #555; margin-bottom: 0.5mm; white-space: nowrap; }
+.cl-item { display: flex; align-items: center; gap: 0.6mm; white-space: nowrap; }
+.cl-checkbox { width: 1.2em; height: 1.2em; border: 0.2mm solid #555; flex-shrink: 0; display: inline-block; }
+
+/* === MODULE: Screen Scale === */
+@media screen {
+  .a4-sheet { transform: scale(0.65); transform-origin: top left; margin-bottom: calc(297mm * 0.65 - 297mm); }
+  .sheet-wrap { width: calc(210mm * 0.65); overflow: visible; }
+}
+@media screen and (max-width: 900px) { .a4-sheet { transform: scale(0.45); margin-bottom: calc(297mm * 0.45 - 297mm); } .sheet-wrap { width: calc(210mm * 0.45); } }
+@media screen and (max-width: 560px) { .a4-sheet { transform: scale(0.3); margin-bottom: calc(297mm * 0.3 - 297mm); } .sheet-wrap { width: calc(210mm * 0.3); } }
+
+/* === MODULE: Print（A4縦） === */
+@page { size: 210mm 297mm; margin: 0; }
+@media print {
+  html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; background: white; }
+  .slot.empty { background: white !important; }
+  .time-row:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.panel-open #preview { margin-left: 0 !important; }
+  #controls, #ctrl-toggle-btn, .history-overlay, #nsf-free-notice, #nsf-size-switch { display: none !important; }
+  #preview { margin: 0 !important; padding: 0 !important; width: 210mm !important; }
+  .sheet-wrap { width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; overflow: hidden; position: relative; }
+  .sheet-wrap:last-child { page-break-after: auto; break-after: auto; }
+  .sheet-label { display: none !important; }
+  .a4-sheet { transform: none !important; box-shadow: none !important; width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; display: block !important; position: relative !important; overflow: hidden; }
+}
+.logo-wm { max-width: 90%; max-height: 60%; }
+</style>
+</head>
+<body>
+<!-- 無料開放のお知らせ。⛔ 不具合の連絡先を消さないこと。 -->
+<div id="nsf-free-notice" style="max-width:760px;margin:12px auto;padding:12px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:1.8;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;">
+  <strong>無料でお使いください。</strong>
+  会員登録もパスワードも不要です。作ったデータはこの端末の中だけで処理され、どこにも送信されません。<br>
+  うまく動かない・印刷がずれる・こうしてほしい等ありましたら
+  <a href="https://you0810jmsdf.github.io/ns-factory/links.html" style="color:#7A5540;font-weight:700;">こちら</a>
+  か、右下の「不具合を報告」からお知らせください。個人で作っているので、教えていただけると助かります。
+</div>
+<nav id="nsf-size-switch" aria-label="サイズ切り替え" style="max-width:760px;margin:0 auto 12px;padding:10px 14px;background:#fff;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:2;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;">
+  <span style="font-size:11px;color:#8a7362;letter-spacing:.06em;">いま開いているのは <b style="color:#4a3a2c;">Micro5 日次</b></span>
+  <span><span style="color:#8a7362;">A5スリム：</span><a href="../a5slim-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../a5slim-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../a5slim-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
+  <span><span style="color:#8a7362;">A6：</span><a href="../a6-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../a6-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../a6-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
+  <span><span style="color:#8a7362;">バイブル：</span><a href="../bible-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../bible-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../bible-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
+  <span><span style="color:#8a7362;">Mini6：</span><a href="../mini6-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../mini6-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <a href="../mini6-daily/" style="color:#7A5540;font-weight:700;text-decoration:underline;">日次</a></span>
+  <span><span style="color:#8a7362;">Micro5：</span><a href="../micro5-weekly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">週間</a> ／ <a href="../micro5-monthly/" style="color:#7A5540;font-weight:700;text-decoration:underline;">月間</a> ／ <strong aria-current="page" style="background:#7A5540;color:#fff;padding:1px 9px;border-radius:4px;font-weight:700;">日次</strong></span>
+  <a href="../tools/" style="margin-left:auto;color:#7A5540;font-weight:700;text-decoration:none;border:1px solid #E0D2C2;border-radius:6px;padding:2px 10px;background:#F3ECE4;">ツール一覧へ ›</a>
+</nav>
+
+<button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
+<div id="controls">
+  <h2>N's factory<br>Micro5 デイリー 印刷ツール</h2>
+  <div style="text-align:center;margin-bottom:6px"><button onclick="resetSettings()" style="font-size:11px;padding:2px 10px;cursor:pointer">設定リセット</button></div>
+
+  <div class="ctrl-section">
+    <h3>印刷モード</h3>
+    <div class="ctrl-row">
+      <label>日付</label>
+      <button class="btn-toggle on" id="btnDated" onclick="setUndated(false)">日付あり</button>
+      <button class="btn-toggle" id="btnUndated" onclick="setUndated(true)">日付なし</button>
+    </div>
+    <div class="ctrl-row dated-only">
+      <label>モード</label>
+      <select id="printMode" onchange="togglePrintMode()">
+        <option value="single">期間指定</option>
+        <option value="monthly">月指定</option>
+      </select>
+    </div>
+    <div class="ctrl-row dated-only" id="monthlyPickerCtrl" style="display:none">
+      <label>対象月</label>
+      <input type="month" id="monthPicker" onchange="render()">
+    </div>
+    <div class="ctrl-row">
+      <label>用紙面</label>
+      <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
+      <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
+    </div>
+    <div class="ctrl-row">
+      <label>両面印刷方式</label>
+      <select id="duplexMode" onchange="onDuplexChange()">
+        <option value="manual">手動（表→裏の順）</option>
+        <option value="auto">自動両面プリンタ用（表裏交互）</option>
+      </select>
+    </div>
+    <div style="font-size:9px;color:#aaa;line-height:1.5;margin:2px 2px 0">A4縦に6面付け（3列×2段）。表面に奇数日、裏面に偶数日。両面は<b>長辺綴じ</b>。</div>
+    <div class="ctrl-row" style="margin-top:6px">
+      <label>言語</label>
+      <button class="btn-toggle on" id="btnJA" onclick="setLang(false)">日本語</button>
+      <button class="btn-toggle" id="btnEN" onclick="setLang(true)">English</button>
+    </div>
+  </div>
+
+  <div class="ctrl-section dated-only">
+    <h3>日付設定</h3>
+    <div class="ctrl-row"><label>開始日</label><input type="date" id="startDate"></div>
+    <div class="ctrl-row" id="endDateCtrl"><label>終了日</label><input type="date" id="endDate"></div>
+  </div>
+
+  <div class="ctrl-section" id="undatedSection" style="display:none;">
+    <h3>日付なしの設定</h3>
+    <div class="ctrl-row"><label>日数（枚数）</label><input type="number" id="undatedCount" min="1" max="120" value="8" onchange="render()"></div>
+    <div class="ctrl-row">
+      <label>数字の透かし</label>
+      <select id="ghostStyle" onchange="opts.ghostStyle=this.value; render()">
+        <option value="seg" selected>デジタル風（7セグ・塗って使う）</option>
+        <option value="none">なし（空欄）</option>
+      </select>
+    </div>
+    <div class="ctrl-row"><label>曜日の透かし</label><button class="btn-toggle on" id="btnGhostWd" onclick="toggleOpt('ghostWeekday','btnGhostWd')">7曜すべて薄く</button></div>
+    <div class="ctrl-row"><label>透かし濃さ</label>
+      <input type="range" id="ghostOpacity" min="0.05" max="0.6" step="0.01" value="0.18" oninput="document.documentElement.style.setProperty('--ghost-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)"><span class="val">18</span>%</div>
+    <div style="font-size:9px;color:#aaa;line-height:1.6;margin-top:4px;">日付・年月・曜日・祝日・月カレンダーを印刷せず、薄い透かしだけ出します。時間軸とメモは残ります。</div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>時間設定</h3>
+    <div class="ctrl-row"><label>開始h</label><input type="range" id="startHour" min="0" max="23" step="1" value="6" oninput="document.getElementById('startHourVal').textContent=this.value;render()"><span class="val" id="startHourVal">6</span></div>
+    <div class="ctrl-row"><label>終了h</label><input type="range" id="endHour" min="0" max="23" step="1" value="22" oninput="document.getElementById('endHourVal').textContent=this.value;render()"><span class="val" id="endHourVal">22</span></div>
+    <div class="ctrl-row"><label>ライン間隔</label><input type="range" id="lineSpacing" min="0" max="15" step="0.5" value="0" oninput="document.getElementById('lineSpacingVal').textContent=this.value;updateVars()"><span class="val" id="lineSpacingVal">0</span></div>
+    <div class="ctrl-row"><label>メモ高さ</label><input type="range" id="memoH" min="0" max="80" step="1" value="30" oninput="document.getElementById('memoHVal').textContent=this.value;updateVars()"><span class="val" id="memoHVal">30</span></div>
+    <div class="ctrl-row"><label>メモ間隔</label><input type="range" id="memoGap" min="1" max="12" step="0.5" value="4" oninput="document.getElementById('memoGapVal').textContent=this.value;updateVars()"><span class="val" id="memoGapVal">4</span></div>
+    <div class="ctrl-row"><label>時刻文字</label><input type="range" id="timeFontSize" min="1" max="4" step="0.1" value="1.9" oninput="document.getElementById('timeFontSizeVal').textContent=this.value;updateVars()"><span class="val" id="timeFontSizeVal">1.9</span></div>
+    <div class="ctrl-row"><label>時刻Y</label><input type="range" id="timeLabelTop" min="-10" max="20" step="0.1" value="0.3" oninput="document.getElementById('timeLabelTopVal').textContent=this.value;updateVars()"><span class="val" id="timeLabelTopVal">0.3</span></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>表示要素</h3>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnCutLines" onclick="toggleOpt('showCutLines','btnCutLines')">カット線</button>
+      <button class="btn-toggle on" id="btnHoleLine" onclick="toggleOpt('showHoleLine','btnHoleLine')">穴仕切線</button>
+      <button class="btn-toggle on" id="btnHoles" onclick="toggleOpt('showHoles','btnHoles')">穴表示</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle" id="btnHoleBisect" onclick="toggleOpt('showHoleBisect','btnHoleBisect')">穴あけ中心線</button>
+      <button class="btn-toggle" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle" id="btnTextWm" onclick="toggleOpt('showTextWm','btnTextWm')">テキスト透かし</button>
+      <button class="btn-toggle" id="btnImgWm" onclick="toggleOpt('showImgWm','btnImgWm')">画像透かし</button>
+      <button class="btn-toggle" id="btnMonthCal" onclick="toggleOpt('showMonthCal','btnMonthCal')">月間カレンダー</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnMonthAbbr" onclick="toggleOpt('showMonthAbbr','btnMonthAbbr')">月名表示</button>
+      <button class="btn-toggle on" id="btnDateNum" onclick="toggleOpt('showDateNum','btnDateNum')">日付数字</button>
+      <button class="btn-toggle on" id="btnDateWd" onclick="toggleOpt('showDateWd','btnDateWd')">曜日</button>
+      <button class="btn-toggle on" id="btnDateYm" onclick="toggleOpt('showDateYm','btnDateYm')">年月</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnTimeLabel" onclick="toggleOpt('showTimeLabel','btnTimeLabel')">時間数字</button>
+      <button class="btn-toggle on" id="btnTimeLine" onclick="toggleOpt('showTimeLine','btnTimeLine')">時間縦線</button>
+      <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
+    </div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>テキスト透かし</h3>
+    <div class="ctrl-row"><label>テキスト</label><input type="text" id="textWmContent" value="N's factory" oninput="render()"></div>
+    <div class="ctrl-row"><label>上下</label><input type="range" id="textWmY" min="-100" max="100" step="1" value="0" oninput="document.getElementById('textWmYVal').textContent=this.value;updateVars()"><span class="val" id="textWmYVal">0</span></div>
+    <div class="ctrl-row"><label>左右</label><input type="range" id="textWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('textWmXVal').textContent=this.value;updateVars()"><span class="val" id="textWmXVal">0</span></div>
+    <div class="ctrl-row"><label>サイズ</label><input type="range" id="textWmSize" min="3" max="60" step="1" value="20" oninput="document.getElementById('textWmSizeVal').textContent=this.value;updateVars()"><span class="val" id="textWmSizeVal">20</span></div>
+    <div class="ctrl-row"><label>角度</label><input type="range" id="textWmAngle" min="-180" max="180" step="5" value="0" oninput="document.getElementById('textWmAngleVal').textContent=this.value;updateVars()"><span class="val" id="textWmAngleVal">0</span></div>
+  </div>
+
+  <div class="ctrl-section dated-only">
+    <h3>月間カレンダー</h3>
+    <div class="ctrl-row"><label>上下</label><input type="range" id="monthCalTop" min="-10" max="200" step="0.5" value="1" oninput="document.getElementById('monthCalTopVal').textContent=this.value;updateVars()"><span class="val" id="monthCalTopVal">1</span></div>
+    <div class="ctrl-row"><label>左右</label><input type="range" id="monthCalRight" min="-10" max="70" step="0.5" value="1" oninput="document.getElementById('monthCalRightVal').textContent=this.value;updateVars()"><span class="val" id="monthCalRightVal">1</span></div>
+    <div class="ctrl-row"><label>サイズ</label><input type="range" id="monthCalSize" min="0.3" max="2.0" step="0.05" value="1" oninput="document.getElementById('monthCalSizeVal').textContent=this.value;updateVars()"><span class="val" id="monthCalSizeVal">1</span></div>
+    <div class="ctrl-row"><label>透明度</label><input type="range" id="monthCalOpacity" min="0.1" max="1" step="0.01" value="1" oninput="document.getElementById('monthCalOpacityVal').textContent=this.value;updateVars()"><span class="val" id="monthCalOpacityVal">1</span></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>フクロウ透かし</h3>
+    <div class="ctrl-row"><label>上下</label><input type="range" id="owlWmY" min="-100" max="100" step="1" value="0" oninput="document.getElementById('owlWmYVal').textContent=this.value;updateVars()"><span class="val" id="owlWmYVal">0</span></div>
+    <div class="ctrl-row"><label>左右</label><input type="range" id="owlWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('owlWmXVal').textContent=this.value;updateVars()"><span class="val" id="owlWmXVal">0</span></div>
+    <div class="ctrl-row"><label>サイズ</label><input type="range" id="owlWmSize" min="10" max="100" step="1" value="50" oninput="document.getElementById('owlWmSizeVal').textContent=this.value;updateVars()"><span class="val" id="owlWmSizeVal">50</span></div>
+    <div class="ctrl-row"><label>透明度</label><input type="range" id="owlWmOpacity" min="0.01" max="1" step="0.01" value="0.07" oninput="document.getElementById('owlWmOpacityVal').textContent=this.value;updateVars()"><span class="val" id="owlWmOpacityVal">0.07</span></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>画像透かし</h3>
+    <div class="ctrl-row"><label>画像</label><input type="file" id="imgWmFile" accept="image/*" onchange="handleImageUpload(event)" style="flex:1;font-size:10px;color:#aaa;"></div>
+    <div class="ctrl-row"><label>上下</label><input type="range" id="imgWmY" min="-100" max="100" step="1" value="0" oninput="document.getElementById('imgWmYVal').textContent=this.value;updateVars()"><span class="val" id="imgWmYVal">0</span></div>
+    <div class="ctrl-row"><label>左右</label><input type="range" id="imgWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('imgWmXVal').textContent=this.value;updateVars()"><span class="val" id="imgWmXVal">0</span></div>
+    <div class="ctrl-row"><label>サイズ</label><input type="range" id="imgWmSize" min="5" max="100" step="1" value="60" oninput="document.getElementById('imgWmSizeVal').textContent=this.value;updateVars()"><span class="val" id="imgWmSizeVal">60</span></div>
+    <div class="ctrl-row"><label>透明度</label><input type="range" id="imgWmOpacity" min="0.01" max="1" step="0.01" value="0.08" oninput="document.getElementById('imgWmOpacityVal').textContent=this.value;updateVars()"><span class="val" id="imgWmOpacityVal">0.08</span></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>チェックリスト</h3>
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;"><label style="cursor:pointer;"><input type="checkbox" id="clShow0" onchange="toggleCL(0)"> グループ1</label></summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle0" value="チェックリスト1" oninput="updateCL(0)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems0" rows="5" oninput="updateCL(0)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont0" onchange="updateCL(0)"></select></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY0" min="0" max="200" step="0.5" value="15" oninput="document.getElementById('clYVal0').textContent=this.value;updateCL(0)"><span class="val" id="clYVal0">15</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX0" min="0" max="90" step="0.5" value="2" oninput="document.getElementById('clXVal0').textContent=this.value;updateCL(0)"><span class="val" id="clXVal0">2</span></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize0" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(0)"><span class="val" id="clSizeVal0">2.5</span></div>
+    </details>
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;"><label style="cursor:pointer;"><input type="checkbox" id="clShow1" onchange="toggleCL(1)"> グループ2</label></summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle1" value="チェックリスト2" oninput="updateCL(1)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems1" rows="5" oninput="updateCL(1)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont1" onchange="updateCL(1)"></select></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY1" min="0" max="200" step="0.5" value="80" oninput="document.getElementById('clYVal1').textContent=this.value;updateCL(1)"><span class="val" id="clYVal1">80</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX1" min="0" max="90" step="0.5" value="2" oninput="document.getElementById('clXVal1').textContent=this.value;updateCL(1)"><span class="val" id="clXVal1">2</span></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize1" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(1)"><span class="val" id="clSizeVal1">2.5</span></div>
+    </details>
+    <details><summary style="cursor:pointer;color:#7ec8e3;font-size:10px;margin-bottom:4px;"><label style="cursor:pointer;"><input type="checkbox" id="clShow2" onchange="toggleCL(2)"> グループ3</label></summary>
+      <div class="ctrl-row"><label>タイトル</label><input type="text" id="clTitle2" value="チェックリスト3" oninput="updateCL(2)"></div>
+      <div class="ctrl-row" style="align-items:flex-start;"><label style="padding-top:3px;">項目</label><textarea id="clItems2" rows="5" oninput="updateCL(2)" placeholder="1行1項目（最大10）"></textarea></div>
+      <div class="ctrl-row"><label>フォント</label><select id="clFont2" onchange="updateCL(2)"></select></div>
+      <div class="ctrl-row"><label>上下</label><input type="range" id="clY2" min="0" max="200" step="0.5" value="145" oninput="document.getElementById('clYVal2').textContent=this.value;updateCL(2)"><span class="val" id="clYVal2">145</span></div>
+      <div class="ctrl-row"><label>左右</label><input type="range" id="clX2" min="0" max="90" step="0.5" value="2" oninput="document.getElementById('clXVal2').textContent=this.value;updateCL(2)"><span class="val" id="clXVal2">2</span></div>
+      <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="clSize2" min="1" max="6" step="0.5" value="2.5" oninput="updateCL(2)"><span class="val" id="clSizeVal2">2.5</span></div>
+    </details>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>フォント設定</h3>
+    <div class="ctrl-row"><label>日付数字</label><select id="fontDateNum" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>曜日</label><select id="fontDateWd" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>月名</label><select id="fontMonthAbbr" onchange="updateFontVars()"></select></div>
+    <div class="ctrl-row"><label>透かし</label><select id="fontTextWm" onchange="updateFontVars()"></select></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>印刷</h3>
+    <div class="btn-row">
+      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
+      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+    </div>
+    <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
+      ⚠️ <strong>印刷時の注意</strong><br>
+      用紙は <strong>A4 縦向き</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> を必ず選択してください。「ページに合わせる」のままだと縮小され、Micro5リフィルとして使えません。
+    </div>
+    <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>※ PCは「印刷」ボタンで直接印刷可</div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHelp()" style="flex:1">📖 使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="flex:1;margin-left:6px">📋 更新履歴</button>
+    </div>
+  </div>
+</div>
+
+<div id="preview"></div>
+
+<div class="history-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
+    <h3>使い方マニュアル（Micro5 デイリー印刷ツール）</h3>
+    <div style="font-size:11px; line-height:1.7; color:#ddd;">
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>「印刷モード」で <b>日付あり／なし</b> を選ぶ</li>
+        <li>日付ありは <b>期間指定</b>（開始日〜終了日）か <b>月指定</b>。日付なしは <b>日数（枚数）</b></li>
+        <li>表面をON → 印刷（またはPDF生成）。同じ用紙を戻して裏面をON → 印刷。自動両面プリンタなら「自動両面（表裏交互）」</li>
+        <li>印刷ダイアログで <b>A4縦・「実際のサイズ（100%）」</b>。両面は <b>長辺綴じ</b></li>
+      </ol>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 日付なしモードについて</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>日付・年月・曜日・祝日・月カレンダーを印刷せず、日付欄にデジタル風「8」の薄い透かし、曜日欄に7つの曜日を薄く出します。なぞる・塗って使います</li>
+        <li>時間軸とメモ欄はそのまま。「透かし濃さ」で見え方を調整できます</li>
+      </ul>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙と面付け</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>A4を <b>縦向き</b> に使い、Micro5（62×105mm）を3列×2段に6面並べます。周囲の余白（カット線の外側）は切り落とします</li>
+        <li>表面は「1日目（左穴）／3日目（右穴）」、裏面は「4日目／2日目」。切り分けると各片の表裏で1・2日目、3・4日目が対になります</li>
+        <li>穴は5穴（上端から 15 / 34 / 53 / 72 / 91 mm、綴じ側の端から6mm。当工房の基準データ（Micro5 refill）と同じ。穴間隔19mm）</li>
+        <li>※ 両面の面付けは実物での組み立て確認が済んでいません。まず1枚で試してから本番印刷をおすすめします</li>
+      </ul>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>サイズが合わない → 用紙の向き（横）と印刷倍率100%を再確認</li>
+        <li>iPhone/iPadでレイアウトが崩れる → 「PDFを生成」を使用</li>
+        <li>不具合・要望 → 右下の「不具合を報告」ボタン</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="history-overlay" id="historyOverlay" onclick="if(event.target===this)closeHistory()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHistory()">✕ 閉じる</button>
+    <h3>更新履歴</h3>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script>
+// === MODULE: Constants ===
+const WD_JA = ['日','月','火','水','木','金','土'];
+const WD_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const WD_EN_1 = ['S','M','T','W','T','F','S'];
+const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+// Micro5 110×210mm。穴中心の上端からの距離（基準データ A5 slim refill.svg と一致）
+const HOLE_POSITIONS_MM = [15, 34, 53, 72, 91]; // 当工房の基準データ（Micro5 refill）と同じ。穴間隔19mm
+const CUT_LINES_MM = [12, 74, 136, 198];   // 縦カット線 x
+const CUT_LINES_H_MM = [43.5, 148.5, 253.5]; // 横カット線 y
+const SHEET_COLS = 3, SHEET_ROWS = 2;
+const SLOT_POSITIONS = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5']; // 読み順（左上→右上→…）
+// 2面付け（長辺綴じ）: 表=[1日目,3日目] 裏=[4日目,2日目]
+// 6面付け（長辺綴じ・ページ役割方式）: 表面に奇数番、裏面は列を左右反転して偶数番。紙 j の表＝2j・裏＝2j+1
+const SLOT_MAP = { front: { P0: 0, P1: 2, P2: 4, P3: 6, P4: 8, P5: 10 }, back: { P0: 5, P1: 3, P2: 1, P3: 11, P4: 9, P5: 7 } };
+const PER_SHEET = 12; // 1枚の用紙に載るページ数（表裏）
+// 穴はページの役割で決める: 表面（奇数日＝右ページ）は左穴、裏面（偶数日＝左ページ）は右穴。Micro5月間・バイブル週間と同じ
+const HOLE_SIDE_BY_FACE = { front: 'left', back: 'right' };
+
+const OWL_PATH = `M 84.045202 154.08962 C 74.342376 153.72021 66.575763 156.22553 59.803014 162.15016 C 52.400852 168.8731 48.858024 176.12283 52.306921 185.56227 C 53.00894 186.94984 54.145651 191.34463 55.318639 193.36891 C 43.597631 193.28582 37.491668 195.36222 34.332311 201.01344 C 31.172954 206.66467 32.51024 209.75294 34.523718 212.74782 C 40.529201 220.94697 53.989997 220.37842 62.986608 218.24977 C 73.776887 214.54343 82.201949 206.98481 86.234655 195.68923 C 87.640514 192.00332 88.500775 192.27078 94.00028 192.1443 C 97.934826 192.05381 96.909988 190.04001 92.888952 190.02321 C 89.117166 190.00747 88.334264 189.47713 88.334264 186.94118 C 88.334264 183.29034 90.340945 172.70728 91.746374 168.95094 C 93.744162 163.61136 95.468404 162.2706 101.03153 161.72243 C 104.9379 161.3375 106.10236 160.92284 108.02567 159.23415 C 110.49685 157.06442 111.23535 154.79522 109.1663 155.73024 C 106.68328 156.85231 101.04888 156.72601 94.428014 155.39821 C 90.728406 154.65626 87.279477 154.21275 84.045202 154.08962 z M 76.736608 159.40798 C 79.865037 159.31714 83.200604 159.64494 86.689733 160.40993 C 89.79346 161.09042 92.334264 161.92551 92.334264 162.26735 C 92.334264 162.60918 91.168186 164.41773 89.742468 166.28493 C 85.884861 171.33708 83.884623 175.80571 82.709264 182.00173 C 82.129645 185.05722 81.414359 188.42392 81.006139 188.91579 C 80.53514 189.48331 78.678525 189.35019 76.086218 189.35719 C 71.923052 189.36759 71.231051 188.97322 71.019811 190.92751 C 71.559531 191.10296 72.572184 192.39635 74.982702 191.90602 C 76.89659 191.51671 79.382413 192.128 79.752233 192.49782 C 80.508222 193.25381 78.723545 199.35137 76.467077 203.72243 C 74.420169 207.68756 68.540842 213.16016 63.847936 215.47048 C 58.221432 218.24038 49.33315 218.78535 43.666296 216.7068 C 38.389721 214.77141 36.334264 212.26385 36.334264 207.76735 C 36.449454 200.47828 44.640522 195.68826 52.521764 196.02321 C 57.500549 196.01372 65.18778 198.46657 65.18778 198.46657 C 58.308717 195.61045 49.261948 180.11197 55.732702 170.99782 C 59.84161 163.71722 67.351323 159.68049 76.736608 159.40798 z M 99.810827 200.87477 C 93.558213 200.78092 88.425059 207.32775 89.236608 214.28884 C 89.890337 219.3237 93.449458 222.62769 101.5452 218.94704 C 103.83033 220.73167 102.2351 221.20692 104.85966 221.84938 C 107.48421 222.49184 110.7829 220.17941 112.24051 217.50954 C 111.73214 217.71612 109.24399 218.34066 108.57841 218.16579 C 106.70819 217.67446 107.07228 217.49523 109.87723 211.40602 C 111.41502 208.06768 112.78601 207.02629 113.04716 203.94704 C 110.37711 203.13065 108.48642 203.67045 106.10575 203.51735 C 105.98723 202.49311 101.54459 200.90077 99.810827 200.87477 z M 101.34012 204.31423 C 101.96513 204.2959 102.57668 204.46415 103.16239 204.79469 C 105.39445 206.05434 103.90399 212.26978 100.89481 215.69704 C 98.797421 218.08584 97.514408 218.46586 95.50028 217.29274 C 93.960732 216.39604 94.026116 214.1747 95.709264 210.23415 C 97.470855 206.10991 99.465102 204.36921 101.34012 204.31423 z M 126.09598 207.44313 C 124.43941 207.49338 122.74199 207.96077 121.00614 208.84548 C 117.6737 210.54391 115.82085 213.36948 115.23466 217.64626 C 114.63861 221.99495 116.68996 224.39572 122.00028 225.56423 C 124.38301 226.08853 125.29794 225.96703 127.61942 224.81423 C 130.08858 223.58808 131.51973 221.3978 129.25809 222.30641 C 126.43597 223.1866 124.27186 224.07168 122.09208 221.93923 C 120.64951 219.87969 120.79304 217.72717 122.31864 214.37477 C 124.08204 210.49983 127.39665 209.27816 128.57059 210.00368 C 128.92352 210.22181 128.62666 211.10081 127.75223 212.02516 C 126.39784 213.45687 127.50108 214.2147 128.98466 215.33376 C 130.90343 216.7811 133.1708 215.95594 133.66239 213.68727 C 134.03123 211.98508 134.10993 210.12739 130.93973 208.54469 C 129.36856 207.7603 127.75255 207.39288 126.09598 207.44313 z M 7.7053581 207.58571 C 4.8680466 207.49271 1.909488 208.75628 0.58817063 211.52712 C -0.47979831 213.76676 -0.54190323 215.52075 0.60379563 217.64821 C 1.8415344 219.94655 3.2330952 220.65359 6.5452019 220.66969 C 10.964438 220.69112 12.54808 223.73174 9.2209831 225.98219 C 7.394915 227.21735 6.5599538 226.92972 5.359655 226.0818 C 6.0692643 224.59792 5.4932712 223.05235 3.5647331 222.86891 C 1.9464847 222.71499 0.74299814 223.19836 0.13699875 224.02712 C -1.0008801 225.58324 -0.57678831 226.18816 1.09403 228.31227 C 5.054546 231.57102 11.846859 228.60537 14.217077 224.41188 C 16.587295 220.21839 13.117028 215.34548 8.1643425 215.34548 C 4.0210666 215.34548 2.8042603 213.05472 4.3869988 211.71657 C 5.4138977 210.84836 6.117299 210.06796 7.5862175 210.94899 C 7.4522376 212.73166 9.1418508 213.62174 11.261999 213.08962 C 13.560586 212.51271 14.065939 210.61443 12.301061 209.18532 C 11.066457 208.1856 9.407745 207.64151 7.7053581 207.58571 z M 24.459264 236.03298 C 23.950034 236.07579 23.584915 236.27098 23.367468 236.62282 C 23.159838 236.95877 21.783722 241.98508 20.308874 247.79079 C 15.244259 267.72758 12.363073 275.41648 5.5061394 287.29079 C 1.5037634 294.22181 0.18218329 297.12108 -1.546595 302.75563 C -5.7760908 316.54066 -4.9157558 332.95537 0.51199875 342.01344 C 1.280988 343.29677 3.0646639 345.74896 4.4768425 347.46462 C 7.3890996 351.0027 7.5544494 350.63376 1.2912956 354.59743 C -7.6980354 360.28636 -19.906174 373.7893 -26.810267 385.67946 C -32.865791 396.10824 -37.616112 409.99995 -39.056361 421.4861 C -40.197509 430.58696 -41.168124 429.95689 -26.161829 429.84743 C -18.165787 429.78911 -12.077228 430.05478 -9.99972 430.55251 C -8.1663918 430.99174 0.23296408 433.58521 8.6662956 436.31423 C 17.099617 439.04324 26.697994 441.97201 29.994421 442.82399 C 34.431656 443.97083 36.047254 444.67886 36.215124 445.55055 C 36.352914 446.266 34.914912 448.36962 32.553014 450.91188 C 28.804478 454.94665 25.00028 461.00476 25.00028 462.93727 C 25.00028 464.06286 26.624819 464.78211 27.986608 464.25954 C 28.529188 464.05133 29.64879 462.78566 30.474889 461.44704 C 32.616587 457.97665 36.373276 453.95824 37.072546 454.3904 C 37.399285 454.59234 37.666296 457.26677 37.666296 460.3318 C 37.666296 467.01165 37.982813 468.01344 40.088171 468.01344 C 42.244008 468.01344 43.00028 465.8552 43.00028 459.7068 C 43.00028 456.00407 43.239152 454.7307 43.988561 454.44313 C 45.04226 454.03878 47.879444 457.40416 51.150671 462.93923 C 53.139829 466.30496 53.689938 466.56207 55.347936 464.90407 C 57.534064 462.71795 54.555516 456.62567 48.482702 450.8611 C 45.105555 447.65537 44.965564 445.55216 48.176061 446.26735 C 49.17983 446.49095 54.459289 447.03739 59.908483 447.48219 C 66.722356 448.03839 69.917638 448.55738 70.142858 449.1443 C 70.322978 449.61368 69.096324 451.52767 67.416296 453.39626 C 63.970689 457.2286 59.972387 464.77525 60.566686 466.32399 C 61.429385 468.57213 63.446204 467.46162 65.982702 463.34548 C 68.00268 460.06754 70.29589 457.34548 71.037389 457.34548 C 71.296769 457.34548 71.724812 459.97112 71.988561 463.17946 C 72.252321 466.38779 72.761038 469.36987 73.117468 469.80641 C 73.809847 470.65442 75.683035 470.24153 76.490514 469.06227 C 76.759904 468.66885 76.985514 466.03855 76.990514 463.21852 C 76.996794 460.06213 77.298258 457.90886 77.773718 457.61501 C 78.544487 457.13865 81.311965 459.82722 85.369421 464.99391 C 87.648778 467.89641 89.00028 467.75267 89.00028 464.60719 C 89.00028 461.6845 87.635831 459.52431 82.728796 454.67946 C 76.676322 448.70367 76.863622 447.69864 84.334264 446.04274 C 92.532586 444.15732 102.33295 440.27231 110.00028 431.46462 C 105.71244 426.84729 103.09689 422.59944 104.53934 417.36891 C 105.98179 412.13839 111.19184 409.34548 113.97294 409.34548 C 117.98952 409.34548 118.55297 408.31341 118.55497 400.94118 C 118.54501 395.79466 118.19775 390.11335 117.58817 384.69509 C 127.03271 382.46333 128.90519 380.0928 137.0745 372.85915 C 142.30502 367.37859 146.60629 360.1326 149.05497 352.6736 C 150.59269 347.98947 153.00028 336.63912 153.00028 334.07594 C 153.00028 329.89057 160.68895 302.84824 166.72489 285.80641 C 168.80444 279.93504 168.78317 278.81681 166.57059 278.26149 C 163.48701 277.48755 149.00538 278.58371 139.00028 280.34743 C 124.62818 282.88097 114.28088 284.00287 105.33426 283.99587 C 89.220128 283.98422 84.429481 281.77928 65.00028 265.43532 C 62.616952 263.43044 60.517604 261.61113 60.334264 261.39235 C 60.150935 261.17356 57.876214 259.19874 55.279577 257.00368 C 38.660465 242.95477 28.023878 235.73331 24.459264 236.03298 z M 28.043249 247.34548 C 35.348211 255.39014 41.682874 261.33898 49.666296 267.70485 C 62.247753 278.22369 67.145215 284.43326 70.008093 293.49587 C 70.843692 296.19585 73.5386 306.74843 69.902624 304.84548 C 66.239217 293.87109 58.088701 283.68047 47.582311 276.93727 C 36.707402 269.95754 31.564321 264.642 28.777624 257.49977 C 27.743765 254.85004 27.20127 247.34548 28.043249 247.34548 z M 40.666296 296.39235 C 45.89398 296.39235 47.114821 296.62473 50.142858 298.20094 C 55.158273 300.81166 57.810632 303.39556 60.00028 307.80055 C 65.329985 318.52257 60.943356 331.87862 50.279577 337.3943 C 46.048841 339.58259 37.2809 339.88648 32.771764 338.00173 C 26.114311 335.21899 21.778945 330.13119 19.873327 322.86305 C 17.356449 313.26352 22.14087 302.91799 31.306921 298.14235 C 34.207398 296.63115 35.487021 296.39235 40.666296 296.39235 z M 41.338171 308.88259 C 37.281075 308.84074 35.356259 310.52856 34.65653 311.22829 C 36.264368 313.33199 36.764724 314.92965 38.451452 317.07399 C 35.863654 317.64978 34.451205 318.07156 32.148718 318.56423 C 32.148718 320.23477 34.181969 325.32744 39.215124 326.28493 C 44.248269 327.24242 48.506035 323.60855 49.371374 318.45094 C 50.236713 313.29335 45.395267 308.92448 41.338171 308.88259 z M 105.09989 315.45485 C 116.12761 315.0707 126.53383 323.62311 127.50223 335.68727 C 128.3149 345.81147 122.46419 354.89522 113.00028 358.2029 C 99.881031 362.78812 87.018308 354.9417 84.338171 340.72048 C 82.654612 331.78727 88.606118 321.13769 97.474889 317.21462 C 99.977572 316.10756 102.55503 315.5435 105.09989 315.45485 z M 107.34794 328.99391 C 104.50963 328.65526 101.45144 329.66342 99.722936 331.80837 C 100.43072 332.81886 102.13065 335.35532 102.80692 336.5154 C 101.69094 336.98028 98.384204 338.31958 97.328405 338.45876 C 97.927084 342.63839 100.55332 345.49079 104.00028 346.18337 C 107.44724 346.87595 111.97284 345.35463 113.80301 341.57399 C 115.91424 337.21278 114.09391 332.11065 110.05497 329.78884 C 109.21516 329.36901 108.29404 329.1068 107.34794 328.99391 z M 10.558874 367.45094 C 11.741635 367.48958 13.077727 367.74921 15.209264 368.25173 C 23.856566 370.29033 27.567142 375.14745 26.814733 383.44509 C 25.719164 395.52725 14.323256 407.49981 -1.3610481 413.04665 C -5.9795835 414.68002 -7.8928715 414.95993 -16.157923 415.20876 C -27.294452 415.54403 -27.212249 415.59923 -25.431361 408.91579 C -22.810353 399.07947 -14.86492 385.31538 -7.1422981 377.23219 C -1.6345936 371.46735 1.6719139 369.27617 6.8244988 367.97829 C 8.3457672 367.59509 9.3761124 367.41231 10.558874 367.45094 z M 45.273718 376.3279 C 47.852875 375.86278 62.664652 377.59126 67.972936 378.97634 C 70.158304 379.54656 73.308308 380.02012 74.972936 380.02712 C 76.637565 380.0345 79.950937 380.33502 82.334264 380.69509 C 84.717602 381.05516 88.916298 381.67131 91.666296 382.06618 C 99.873257 383.2446 109.6663 389.01948 109.6663 392.67946 C 109.6663 398.05179 106.90045 404.47405 102.14286 410.14626 C 98.22625 414.8158 96.334264 419.37699 96.334264 424.14821 L 96.334264 428.15212 L 92.385046 432.0154 C 89.665888 434.67608 87.271747 436.31448 84.693639 437.27907 C 78.741525 439.50605 73.801881 439.13798 65.00028 435.81032 C 59.623475 433.77748 50.001067 431.68904 41.666296 430.74587 C 33.559594 429.82851 30.873399 429.04704 28.263952 426.85134 C 25.438795 424.47412 24.333634 421.57383 24.334264 416.53493 C 24.334894 411.52971 26.50272 406.47566 31.228796 400.46657 C 34.853282 395.85811 37.334717 390.80866 38.004186 386.67946 C 38.908955 381.09895 41.822761 376.95024 45.273718 376.3279 z`;
+
+// === MODULE: State ===
+let showFront = true, showBack = false, isEN = false;
+let startDate = new Date(), endDate = new Date(startDate.getTime() + 7 * 86400000);
+let duplexMode = 'manual';
+let customImgDataUrl = null;
+let opts = {
+  showCutLines: true, showHoleLine: true, showHoles: true, showHoleBisect: false,
+  showLogo: false, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false,
+  showDateNum: true, showDateWd: true, showDateYm: true,
+  showTimeLabel: true, showTimeLine: true, showHoliday: true,
+  undated: false, ghostStyle: 'seg', ghostWeekday: true
+};
+
+// === MODULE: Utility ===
+function toDateVal(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function pad(n) { return String(n).padStart(2,'0'); }
+function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toggleSidebar() { document.getElementById('controls').classList.toggle('open'); document.body.classList.toggle('panel-open'); }
+function setLang(en) { isEN = en; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); render(); }
+function toggleOpt(key, btnId) { opts[key] = !opts[key]; document.getElementById(btnId).classList.toggle('on', opts[key]); render(); }
+function setUndated(u) {
+  opts.undated = !!u;
+  document.getElementById('btnDated').classList.toggle('on', !opts.undated);
+  document.getElementById('btnUndated').classList.toggle('on', opts.undated);
+  document.body.classList.toggle('undated', opts.undated);
+  document.getElementById('undatedSection').style.display = opts.undated ? '' : 'none';
+  render();
+}
+function togglePageSide(side) {
+  if (side === 'front') { showFront = !showFront; document.getElementById('btnOdd').classList.toggle('on', showFront); }
+  else { showBack = !showBack; document.getElementById('btnEven').classList.toggle('on', showBack); }
+  render();
+}
+function togglePrintMode() {
+  const mode = document.getElementById('printMode').value;
+  document.getElementById('monthlyPickerCtrl').style.display = mode === 'monthly' ? '' : 'none';
+  document.getElementById('endDateCtrl').style.display = mode === 'single' ? '' : 'none';
+  render();
+}
+function onDuplexChange() {
+  duplexMode = document.getElementById('duplexMode').value;
+  if (duplexMode === 'auto') { showFront = true; showBack = true; document.getElementById('btnOdd').classList.add('on'); document.getElementById('btnEven').classList.add('on'); }
+  render();
+}
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { customImgDataUrl = ev.target.result; render(); };
+  reader.readAsDataURL(file);
+}
+
+// === MODULE: 7セグ透かし ===
+function segDigitSVG(x) {
+  const t = 1.6, w = 10, h = 18, r = t / 2;
+  const seg = (sx, sy, sw, sh) => `<rect x="${(x + sx).toFixed(2)}" y="${sy.toFixed(2)}" width="${sw.toFixed(2)}" height="${sh.toFixed(2)}" rx="${r}" ry="${r}"/>`;
+  return [seg(t, 0, w - 2 * t, t), seg(w - t, t * 0.6, t, h / 2 - t), seg(w - t, h / 2 + t * 0.4, t, h / 2 - t), seg(t, h - t, w - 2 * t, t), seg(0, h / 2 + t * 0.4, t, h / 2 - t), seg(0, t * 0.6, t, h / 2 - t), seg(t, h / 2 - t / 2, w - 2 * t, t)].join('');
+}
+function segGhostHTML(digits) {
+  const gap = 2.5, w = 10, h = 18;
+  const totalW = digits * w + (digits - 1) * gap;
+  let inner = '';
+  for (let i = 0; i < digits; i++) inner += segDigitSVG(i * (w + gap));
+  return `<span class="seg-ghost"><svg viewBox="0 0 ${totalW} ${h}" xmlns="http://www.w3.org/2000/svg" fill="currentColor">${inner}</svg></span>`;
+}
+function weekdayGhostHTML() {
+  const labels = isEN ? WD_EN_1 : WD_JA;
+  return `<span class="wd-ghost">${labels.map(l => `<span>${l}</span>`).join('')}</span>`;
+}
+
+// === MODULE: CSS変数更新 ===
+function updateVars() {
+  const g = id => parseFloat(document.getElementById(id).value);
+  const v = (name, val) => document.documentElement.style.setProperty(name, val);
+  v('--line-h', (g('lineSpacing') || 0) + 'mm'); v('--memo-h', (isNaN(g('memoH')) ? 30 : g('memoH')) + 'mm'); v('--memo-gap', (g('memoGap') || 4) + 'mm');
+  v('--time-font', (g('timeFontSize') || 1.9) + 'mm'); v('--time-label-top', (isNaN(g('timeLabelTop')) ? 0.3 : g('timeLabelTop')) + 'mm');
+  v('--month-cal-top', (isNaN(g('monthCalTop')) ? 1 : g('monthCalTop')) + 'mm'); v('--month-cal-right', (isNaN(g('monthCalRight')) ? 1 : g('monthCalRight')) + 'mm');
+  v('--month-cal-scale', g('monthCalSize') || 1); v('--month-cal-opacity', g('monthCalOpacity') || 1);
+  v('--text-wm-size', (g('textWmSize') || 20) + 'mm'); v('--text-wm-angle', (g('textWmAngle') || 0) + 'deg'); v('--text-wm-x', (g('textWmX') || 0) + 'mm'); v('--text-wm-y', (g('textWmY') || 0) + 'mm');
+  v('--owl-wm-x', (g('owlWmX') || 0) + 'mm'); v('--owl-wm-y', (g('owlWmY') || 0) + 'mm'); v('--owl-wm-size', (g('owlWmSize') || 50) + 'mm'); v('--owl-wm-opacity', g('owlWmOpacity') || 0.07);
+  v('--img-wm-x', (g('imgWmX') || 0) + 'mm'); v('--img-wm-y', (g('imgWmY') || 0) + 'mm'); v('--img-wm-size', (g('imgWmSize') || 60) + 'mm'); v('--img-wm-opacity', g('imgWmOpacity') || 0.08);
+}
+
+// === MODULE: Font Options ===
+const FONT_OPTIONS = [
+  { label: 'Times New Roman', value: "'Times New Roman', Times, serif" },
+  { label: 'Georgia',         value: "Georgia, serif" },
+  { label: 'Arial',           value: "Arial, sans-serif" },
+  { label: 'Noto Serif JP',   value: "'Noto Serif JP', serif" },
+  { label: 'Noto Sans JP',    value: "'Noto Sans JP', sans-serif" },
+  { label: '游明朝',           value: "'Yu Mincho', '游明朝', serif" },
+  { label: '游ゴシック',        value: "'Yu Gothic', '游ゴシック', sans-serif" },
+  { label: 'Stencil',         value: "Stencil, Impact, sans-serif" },
+  { label: 'Impact',          value: "Impact, Charcoal, sans-serif" },
+  { label: 'メイリオ',          value: "Meiryo, 'メイリオ', sans-serif" },
+];
+function initFontSelectors() {
+  const map = [{ id: 'fontDateNum', def: "'Noto Sans JP', sans-serif" }, { id: 'fontDateWd', def: "'Noto Sans JP', sans-serif" }, { id: 'fontMonthAbbr', def: "'Times New Roman', Times, serif" }, { id: 'fontTextWm', def: "'Noto Sans JP', sans-serif" }];
+  map.forEach(({ id, def }) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    FONT_OPTIONS.forEach(f => { const opt = document.createElement('option'); opt.value = f.value; opt.textContent = f.label; if (f.value === def) opt.selected = true; sel.appendChild(opt); });
+  });
+}
+function updateFontVars() {
+  const ids = ['fontDateNum','fontDateWd','fontMonthAbbr','fontTextWm'];
+  const vars = ['--font-date-num','--font-date-wd','--font-month-abbr','--font-text-wm'];
+  ids.forEach((id, i) => { const el = document.getElementById(id); if (el) document.documentElement.style.setProperty(vars[i], el.value); });
+  render();
+}
+
+// === MODULE: Japanese Holidays ===
+function getJPHolidays(y) {
+  const h = {};
+  const add = (m, d, name) => { h[`${y}-${pad(m)}-${pad(d)}`] = name; };
+  function nthWd(m, wd, n) { const first = new Date(y, m - 1, 1).getDay(); return 1 + ((wd - first + 7) % 7) + (n - 1) * 7; }
+  add(1, 1, '元日'); add(2, 11, '建国記念の日'); add(2, 23, '天皇誕生日'); add(4, 29, '昭和の日');
+  add(5, 3, '憲法記念日'); add(5, 4, 'みどりの日'); add(5, 5, 'こどもの日');
+  if (y >= 2016) add(8, 11, '山の日');
+  add(11, 3, '文化の日'); add(11, 23, '勤労感謝の日');
+  add(1, nthWd(1, 1, 2), '成人の日'); add(7, nthWd(7, 1, 3), '海の日'); add(9, nthWd(9, 1, 3), '敬老の日');
+  if (y >= 2000) add(10, nthWd(10, 1, 2), 'スポーツの日');
+  add(3, Math.floor(20.8431 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4)), '春分の日');
+  add(9, Math.floor(23.2488 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4)), '秋分の日');
+  const viburi = {};
+  for (const k of Object.keys(h)) {
+    const d = new Date(k);
+    if (d.getDay() === 0) {
+      let next = new Date(d); next.setDate(next.getDate() + 1);
+      while (h[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`]) next.setDate(next.getDate() + 1);
+      viburi[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`] = '振替休日';
+    }
+  }
+  Object.assign(h, viburi);
+  for (let m = 1; m <= 12; m++) {
+    const days = new Date(y, m, 0).getDate();
+    for (let d = 2; d < days; d++) {
+      const prev = `${y}-${pad(m)}-${pad(d-1)}`, cur = `${y}-${pad(m)}-${pad(d)}`, next = `${y}-${pad(m)}-${pad(d+1)}`;
+      const wd = new Date(y, m-1, d).getDay();
+      if (h[prev] && h[next] && !h[cur] && wd !== 0 && wd !== 6) h[cur] = '国民の休日';
+    }
+  }
+  return h;
+}
+
+// === MODULE: 月カレンダー ===
+function buildMonthCalHTML(date) {
+  const y = date.getFullYear(), m = date.getMonth();
+  const firstWd = new Date(y, m, 1).getDay(), lastDate = new Date(y, m + 1, 0).getDate(), curDate = date.getDate();
+  const wdLabels = isEN ? ['Su','Mo','Tu','We','Th','Fr','Sa'] : WD_JA;
+  const wdHeaders = wdLabels.map((wd, i) => `<div class="mc-wd${i===0?' sun':i===6?' sat':''}">${wd}</div>`).join('');
+  let cells = '';
+  for (let i = 0; i < firstWd; i++) cells += '<div class="mc-day"></div>';
+  for (let d = 1; d <= lastDate; d++) {
+    const wd = (firstWd + d - 1) % 7;
+    const cls = [wd===0?'sun':wd===6?'sat':'', d===curDate?'cur':''].filter(Boolean).join(' ');
+    cells += `<div class="mc-day${cls?' '+cls:''}">${d}</div>`;
+  }
+  return `<div class="month-cal"><div class="mc-header">${y}.${pad(m+1)}</div><div class="mc-grid">${wdHeaders}${cells}</div></div>`;
+}
+
+// === MODULE: デイリーページ（date=null で日付なし） ===
+function buildDailyPage(date, pageNum, holeSide, p) {
+  const U = opts.undated;
+  let wdClass = '', holName = '', ymStr = '', wdLabel = '';
+  if (!U) {
+    const wd = date.getDay();
+    const dateKey = toDateVal(date);
+    holName = p.showHoliday ? (getJPHolidays(date.getFullYear())[dateKey] || '') : '';
+    const isHol = holName && wd !== 0 && wd !== 6;
+    wdClass = wd === 0 ? 'is-sun' : wd === 6 ? 'is-sat' : (isHol ? 'is-holiday' : '');
+    ymStr = `${date.getFullYear()}.${pad(date.getMonth()+1)}`;
+    wdLabel = isEN ? WD_EN[wd] : `${WD_JA[wd]}曜日`;
+  }
+  const bisectorHTML = (p.showHoleBisect && holeSide === 'left') ? '<div class="hole-bisector"></div>' : '';
+  const holeStripStyle = !p.showHoles ? 'visibility:hidden' : (!p.showHoleLine ? 'border:none' : '');
+  const holesHTML = `<div class="hole-strip ${holeSide}"${holeStripStyle ? ` style="${holeStripStyle}"` : ''}>${bisectorHTML}${HOLE_POSITIONS_MM.map(pos => `<div class="hole" style="top:${pos}mm;"></div>`).join('')}</div>`;
+  const watermarkHTML = p.showLogo ? `<svg class="watermark-logo" viewBox="0 0 323.67773 316.20041" xmlns="http://www.w3.org/2000/svg"><g transform="translate(89.827845,-154.05446)"><path d="${OWL_PATH}" fill="#000"/></g></svg>` : '';
+  const textWmHTML = p.showTextWm ? `<div class="text-watermark">${escapeHTML(p.textWmContent)}</div>` : '';
+  const imgWmHTML = (p.showImgWm && customImgDataUrl) ? `<img class="img-wm" src="${customImgDataUrl}" alt="">` : '';
+  let monthAbbrHTML = '';
+  if (p.showMonthAbbr) monthAbbrHTML = U ? (opts.ghostStyle === 'seg' ? `<div class="month-abbr-large">${segGhostHTML(2)}</div>` : '') : `<div class="month-abbr-large">${isEN ? MONTH_EN_ABB[date.getMonth()] : (date.getMonth()+1)+'月'}</div>`;
+  const monthHTML = (!U && opts.showMonthCal) ? buildMonthCalHTML(date) : '';
+  const timeLabelStyle = (() => {
+    if (!p.showTimeLabel && !p.showTimeLine) return ' style="width:0;padding:0;border-right:none;overflow:hidden;"';
+    if (!p.showTimeLabel) return ' style="color:transparent;"';
+    if (!p.showTimeLine)  return ' style="border-right:none;"';
+    return '';
+  })();
+  const timeRowsHTML = p.hours.map(h => `<div class="time-row"><div class="time-label"${timeLabelStyle}>${p.showTimeLabel ? h : ''}</div><div class="time-fill"></div></div>`).join('');
+  const memoLinesHTML = Array(6).fill('<div class="memo-line"></div>').join('');
+  let dateNumHTML = '';
+  if (p.showDateNum) dateNumHTML = U ? (opts.ghostStyle === 'seg' ? `<div class="date-num">${segGhostHTML(2)}</div>` : '') : `<div class="date-num">${date.getDate()}</div>`;
+  let wdHTML = '';
+  if (p.showDateWd) wdHTML = U ? (opts.ghostWeekday ? `<div class="date-wd">${weekdayGhostHTML()}</div>` : '') : `<div class="date-wd">${wdLabel}</div>`;
+  return `<div class="daily-page ${wdClass}">
+  ${holeSide === 'left' ? holesHTML : ''}
+  <div class="page-body">
+    ${watermarkHTML}${imgWmHTML}${textWmHTML}${monthHTML}
+    <div class="date-header">
+      ${dateNumHTML}
+      <div class="date-meta">
+        ${(p.showDateYm && !U) ? `<div class="date-ym">${ymStr}</div>` : ''}
+        ${wdHTML}
+        ${holName ? `<div class="date-holiday">${holName}</div>` : ''}
+      </div>
+      <div class="ns-brand">N's factory</div>
+      ${monthAbbrHTML}
+    </div>
+    <div class="time-grid">${timeRowsHTML}</div>
+    <div class="memo-section"><div class="memo-title">MEMO</div><div class="memo-lines">${memoLinesHTML}</div></div>
+    <div class="page-num">${pageNum}</div>
+    ${buildChecklistsHTML()}
+  </div>
+  ${holeSide === 'right' ? holesHTML : ''}
+</div>`;
+}
+
+// === MODULE: 面付け ===
+function getCommonParams() {
+  const startH = parseInt(document.getElementById('startHour').value) || 0;
+  const endH = parseInt(document.getElementById('endHour').value);
+  const e = isNaN(endH) ? 22 : endH;
+  return { ...opts, textWmContent: document.getElementById('textWmContent').value, hours: Array.from({ length: Math.max(1, e - startH + 1) }, (_, i) => i + startH) };
+}
+function makeA4HTML(slots, showCutLines, meta) {
+  const cuts = showCutLines ? (CUT_LINES_MM.map(x => `<div class=\"cut-line-v\" style=\"left:${x}mm;\"></div>`).join('') + CUT_LINES_H_MM.map(y => `<div class=\"cut-line-h\" style=\"top:${y}mm;\"></div>`).join('')) : '';
+  const dl = pos => (meta && meta[pos]) ? ` data-leaf="${meta[pos].leaf}" data-face="${meta[pos].face}"` : '';
+  return `<div class="a4-sheet">${cuts}${SLOT_POSITIONS.map(pos => slots[pos] ? `<div class="slot" data-pos="${pos}"${dl(pos)}>${slots[pos]}</div>` : `<div class="slot empty" data-pos="${pos}"${dl(pos)}></div>`).join('')}</div>`;
+}
+// dates: Date の配列（日付あり）または長さ n の配列（日付なし・値は無視）
+function buildSheet(side, sheetIndex, dates, p) {
+  const map = SLOT_MAP[side];
+  const slots = {}, meta = {};
+  for (const pos of SLOT_POSITIONS) {
+    const idx = sheetIndex * PER_SHEET + map[pos];
+    if (idx < dates.length) slots[pos] = buildDailyPage(opts.undated ? null : dates[idx], idx + 1, HOLE_SIDE_BY_FACE[side], p);
+    // 綴じ後プレビュー用: 通し idx → 紙 floor(idx/2)、偶数が表・奇数が裏。片面だけ実在する紙の裏も白紙として印を付ける
+    const other = (idx % 2 === 0) ? idx + 1 : idx - 1;
+    if (idx < dates.length || (other >= 0 && other < dates.length)) meta[pos] = { leaf: Math.floor(idx / 2), face: idx % 2 ? 'back' : 'front' };
+  }
+  return `<div class="sheet-wrap"><div class="sheet-label">Sheet ${sheetIndex + 1} · ${side === 'front' ? '表面' : '裏面'}</div>${makeA4HTML(slots, p.showCutLines, meta)}</div>`;
+}
+function renderDates(dates) {
+  const p = getCommonParams();
+  const sheetsNeeded = Math.ceil(dates.length / PER_SHEET);
+  let html = '';
+  if (duplexMode === 'auto') {
+    for (let s = 0; s < sheetsNeeded; s++) { html += buildSheet('front', s, dates, p); html += buildSheet('back', s, dates, p); }
+  } else {
+    for (const side of ['front', 'back']) {
+      if (side === 'front' && !showFront) continue;
+      if (side === 'back' && !showBack) continue;
+      for (let s = 0; s < sheetsNeeded; s++) html += buildSheet(side, s, dates, p);
+    }
+  }
+  if (!html) html = '<p style="color:#666;font-size:12px;">用紙面（表面／裏面）を選択してください</p>';
+  document.getElementById('preview').innerHTML = html;
+  saveSettings();
+}
+function render() {
+  if (opts.undated) {
+    const n = Math.min(120, Math.max(1, parseInt(document.getElementById('undatedCount').value) || 8));
+    renderDates(Array.from({ length: n }, (_, i) => i));
+    return;
+  }
+  const mode = document.getElementById('printMode').value;
+  if (mode === 'monthly') {
+    const mp = document.getElementById('monthPicker').value;
+    if (!mp) return;
+    const [y, mo] = mp.split('-').map(Number);
+    const daysInMonth = new Date(y, mo, 0).getDate();
+    renderDates(Array.from({ length: daysInMonth }, (_, i) => new Date(y, mo - 1, i + 1)));
+  } else {
+    const totalDays = Math.max(1, Math.floor((endDate - startDate) / 86400000) + 1);
+    renderDates(Array.from({ length: totalDays }, (_, i) => addDays(startDate, i)));
+  }
+}
+
+// === MODULE: PDF（A4縦） ===
+async function generatePDF(ev) {
+  const btn = ev && ev.target ? ev.target : document.getElementById('btnPdf');
+  const sheets = document.querySelectorAll('#preview .a4-sheet');
+  if (!sheets.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
+  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
+  const orig = btn.textContent;
+  btn.disabled = true;
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
+  document.body.appendChild(stage);
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    for (let i = 0; i < sheets.length; i++) {
+      btn.textContent = `PDF生成中 ${i+1}/${sheets.length}`;
+      const clone = sheets[i].cloneNode(true);
+      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      stage.appendChild(clone);
+      const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+      stage.removeChild(clone);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', (window.nsfPrintOffset ? window.nsfPrintOffset().x : 0), (window.nsfPrintOffset ? window.nsfPrintOffset().y : 0), 210, 297);
+    }
+    const fname = `micro5-daily-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
+    const url = URL.createObjectURL(pdf.output('blob'));
+    const a = document.createElement('a'); a.href = url; a.download = fname; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) {
+    console.error(e);
+    alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (stage.parentNode) stage.parentNode.removeChild(stage);
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+// === MODULE: Settings Persistence ===
+const SETTINGS_KEY = 'nsf_micro5_daily_v1';
+const RANGE_IDS = ['lineSpacing','memoH','memoGap','timeFontSize','timeLabelTop','startHour','endHour','textWmSize','textWmAngle','textWmX','textWmY','monthCalTop','monthCalRight','monthCalSize','monthCalOpacity','owlWmX','owlWmY','owlWmSize','owlWmOpacity','imgWmX','imgWmY','imgWmSize','imgWmOpacity'];
+function saveSettings() {
+  const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
+  const s = { opts: { ...opts }, showFront, showBack, isEN, duplexMode, printMode: get('printMode'), undatedCount: get('undatedCount'), ghostOpacity: get('ghostOpacity'), textWmContent: get('textWmContent'), fontDateNum: get('fontDateNum'), fontDateWd: get('fontDateWd'), fontMonthAbbr: get('fontMonthAbbr'), fontTextWm: get('fontTextWm') };
+  RANGE_IDS.forEach(id => { s[id] = get(id); });
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+function loadSettings() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch(e) {}
+  if (!s) return;
+  function setVal(id, val) { const el = document.getElementById(id); if (!el || val == null) return; el.value = val; const sp = document.getElementById(id + 'Val'); if (sp) sp.textContent = val; }
+  RANGE_IDS.forEach(id => setVal(id, s[id]));
+  const twc = document.getElementById('textWmContent'); if (twc && s.textWmContent != null) twc.value = s.textWmContent;
+  ['fontDateNum','fontDateWd','fontMonthAbbr','fontTextWm'].forEach(id => { const el = document.getElementById(id); if (el && s[id] != null) el.value = s[id]; });
+  if (s.printMode != null) { const pm = document.getElementById('printMode'); if (pm) { pm.value = s.printMode; document.getElementById('monthlyPickerCtrl').style.display = s.printMode === 'monthly' ? '' : 'none'; document.getElementById('endDateCtrl').style.display = s.printMode === 'single' ? '' : 'none'; } }
+  if (s.duplexMode != null) { duplexMode = s.duplexMode; const dm = document.getElementById('duplexMode'); if (dm) dm.value = duplexMode; }
+  if (s.undatedCount != null) { const el = document.getElementById('undatedCount'); if (el) el.value = s.undatedCount; }
+  if (s.ghostOpacity != null) { const el = document.getElementById('ghostOpacity'); if (el) { el.value = s.ghostOpacity; document.documentElement.style.setProperty('--ghost-opacity', s.ghostOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.ghostOpacity * 100); } }
+  if (s.opts) {
+    const btnMap = { showCutLines: 'btnCutLines', showHoleLine: 'btnHoleLine', showHoles: 'btnHoles', showHoleBisect: 'btnHoleBisect', showLogo: 'btnLogo', showMonthAbbr: 'btnMonthAbbr', showTextWm: 'btnTextWm', showImgWm: 'btnImgWm', showMonthCal: 'btnMonthCal', showDateNum: 'btnDateNum', showDateWd: 'btnDateWd', showDateYm: 'btnDateYm', showTimeLabel: 'btnTimeLabel', showTimeLine: 'btnTimeLine', showHoliday: 'btnHoliday', ghostWeekday: 'btnGhostWd' };
+    for (const [key, btnId] of Object.entries(btnMap)) { if (s.opts[key] != null) { opts[key] = s.opts[key]; const btn = document.getElementById(btnId); if (btn) btn.classList.toggle('on', !!s.opts[key]); } }
+    if (s.opts.ghostStyle != null) { opts.ghostStyle = s.opts.ghostStyle; const el = document.getElementById('ghostStyle'); if (el) el.value = opts.ghostStyle; }
+    if (s.opts.undated != null) {
+      opts.undated = !!s.opts.undated;
+      document.getElementById('btnDated').classList.toggle('on', !opts.undated);
+      document.getElementById('btnUndated').classList.toggle('on', opts.undated);
+      document.body.classList.toggle('undated', opts.undated);
+      document.getElementById('undatedSection').style.display = opts.undated ? '' : 'none';
+    }
+  }
+  if (s.showFront != null) { showFront = s.showFront; document.getElementById('btnOdd').classList.toggle('on', showFront); }
+  if (s.showBack != null) { showBack = s.showBack; document.getElementById('btnEven').classList.toggle('on', showBack); }
+  if (s.isEN != null) { isEN = s.isEN; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); }
+}
+function resetSettings() {
+  if (!confirm('設定をリセットしますか？\nブラウザに保存された設定を削除してページを再読み込みします。')) return;
+  try { localStorage.removeItem(SETTINGS_KEY); } catch(e) {}
+  location.reload();
+}
+
+// === MODULE: History / Help ===
+const HISTORY_ENTRIES = [
+  { date: '2026-09-11', type: 'feat', title: 'Micro5 日次印刷ツールを新規作成',
+    detail: 'Micro5日次印刷ツールを土台に、Micro5（62×105mm）版を作成しました。A4縦に3列×2段の6面付け。穴は5穴（上端から 15 / 34 / 53 / 72 / 91 mm・綴じ側の端から6mm。当工房の基準データ（Micro5 refill）と同じ。穴間隔19mm）。両面印刷は長辺綴じで、表面に右ページ（左穴）・裏面に左ページ（右穴）を置くので、切り分けた紙はすべて同じ向きのまま重ねて綴じられます。綴じ後プレビューで見開きの順と穴の位置を確認できます。' },
+]
+function openHistory() {
+  const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
+  document.getElementById('historyList').innerHTML = [...HISTORY_ENTRIES].reverse().map(e => `<div class="history-entry"><span class="history-date">${e.date}</span><span class="history-type ${e.type}">${typeLabel[e.type] || e.type}</span><div class="history-title">${e.title}</div><div class="history-detail">${e.detail}</div></div>`).join('');
+  document.getElementById('historyOverlay').classList.add('open');
+}
+function closeHistory() { document.getElementById('historyOverlay').classList.remove('open'); }
+function openHelp()  { document.getElementById('helpOverlay').classList.add('open'); }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeHistory(); closeHelp(); } });
+
+// === MODULE: Checklist ===
+const clGroups = [
+  { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
+  { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 80 },
+  { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
+];
+function initCLFontSelectors() {
+  for (let i = 0; i < 3; i++) {
+    const sel = document.getElementById(`clFont${i}`);
+    if (!sel) continue;
+    FONT_OPTIONS.forEach(f => { const opt = document.createElement('option'); opt.value = f.value; opt.textContent = f.label; if (f.value === clGroups[i].font) opt.selected = true; sel.appendChild(opt); });
+  }
+}
+function toggleCL(idx) { clGroups[idx].show = document.getElementById(`clShow${idx}`).checked; render(); }
+function updateCL(idx) {
+  clGroups[idx].title = document.getElementById(`clTitle${idx}`).value;
+  clGroups[idx].items = document.getElementById(`clItems${idx}`).value;
+  clGroups[idx].font  = document.getElementById(`clFont${idx}`).value;
+  clGroups[idx].size  = parseFloat(document.getElementById(`clSize${idx}`).value);
+  clGroups[idx].x     = parseFloat(document.getElementById(`clX${idx}`).value);
+  clGroups[idx].y     = parseFloat(document.getElementById(`clY${idx}`).value);
+  document.getElementById(`clSizeVal${idx}`).textContent = clGroups[idx].size;
+  render();
+}
+function buildChecklistsHTML() {
+  return clGroups.map(g => {
+    if (!g.show) return '';
+    const items = g.items.split('\n').filter(s => s.trim()).slice(0, 10);
+    const itemsHTML = items.map(s => `<div class="cl-item"><span class="cl-checkbox"></span><span>${escapeHTML(s.trim())}</span></div>`).join('');
+    return `<div class="cl-block" style="left:${g.x}mm;top:${g.y}mm;font-size:${g.size}mm;font-family:${g.font};">` + (g.title ? `<div class="cl-title">${escapeHTML(g.title)}</div>` : '') + itemsHTML + `</div>`;
+  }).join('');
+}
+
+// === MODULE: Init ===
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  const el = document.getElementById('startDate');
+  el.value = toDateVal(today);
+  el.addEventListener('change', e => { const [y,m,d] = e.target.value.split('-').map(Number); startDate = new Date(y, m-1, d); render(); });
+  const edEl = document.getElementById('endDate');
+  endDate = addDays(today, 7);
+  edEl.value = toDateVal(endDate);
+  edEl.addEventListener('change', e => { const [y,m,d] = e.target.value.split('-').map(Number); endDate = new Date(y, m-1, d); render(); });
+  document.getElementById('monthPicker').value = `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
+  initFontSelectors();
+  initCLFontSelectors();
+  loadSettings();
+  updateVars();
+  render();
+});
+</script>
+<script src="../assets/access-counter.js"></script>
+<script src="../assets/bug-report.js"></script>
+<script>
+// 印刷ズレ補正・テスト印刷用の用紙形状（print-adjust.js が参照）
+window.NSF_PRINT_GEOMETRY = { sheet: [210, 297], slots: [{ x: 12, y: 43.5, w: 62, h: 105, holeSide: 'left' }, { x: 74, y: 43.5, w: 62, h: 105, holeSide: 'left' }, { x: 136, y: 43.5, w: 62, h: 105, holeSide: 'left' }, { x: 12, y: 148.5, w: 62, h: 105, holeSide: 'left' }, { x: 74, y: 148.5, w: 62, h: 105, holeSide: 'left' }, { x: 136, y: 148.5, w: 62, h: 105, holeSide: 'left' }], holes: [15, 34, 53, 72, 91], holeEdge: 6, holeD: 5, cuts: [{ x: 12 }, { x: 74 }, { x: 136 }, { x: 198 }, { y: 43.5 }, { y: 148.5 }, { y: 253.5 }] };
+</script>
+<script src="../assets/print-adjust.js"></script>
+<script src="../assets/flip-sim.js"></script>
+</body>
+</html>

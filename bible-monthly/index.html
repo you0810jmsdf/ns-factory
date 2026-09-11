@@ -1253,7 +1253,8 @@ function renderMonths() {
     // 単票: 1枚に 左ページ＋右ページ（見開き1か月）
     ctxs.forEach((ctx, i) => {
       const slots = [buildLeftPage(ctx, HOLE_FOR_LEFT), buildRightPage(ctx, HOLE_FOR_RIGHT)];
-      const meta = [{ leaf: i * 2, face: 'front' }, { leaf: i * 2 + 1, face: 'front' }];
+      // 綴じ後プレビュー用: 左ページ（右穴）は紙の裏・右ページ（左穴）は紙の表。単票なので反対面は白紙
+      const meta = [{ leaf: i * 2, face: 'back' }, { leaf: i * 2 + 1, face: 'front' }];
       html += `<div class="sheet-wrap"><div class="sheet-label">${ctx.label}</div>${buildA4(slots, meta)}</div>`;
     });
   } else {
