@@ -129,7 +129,8 @@ select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0
 }
 .stats{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink-sub)}
 .stats b{color:var(--ink);font-variant-numeric:tabular-nums}
-.msg{margin-top:10px;font-size:12.5px;line-height:1.7;padding:9px 12px;border-radius:8px;background:var(--brass-light);color:var(--brass-dark)}
+.msg{margin-top:10px;font-size:12.5px;line-height:1.7;padding:9px 12px;border-radius:8px;background:var(--brass-light);color:var(--brass-dark);white-space:pre-line}
+.check-strong{font-size:13px;font-weight:700;color:var(--ink)}
 .msg.warn{background:#F8E6E1;color:var(--danger)}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .btn-primary{padding:12px 22px;background:var(--brass);color:#fff;font-size:14px}
@@ -202,6 +203,11 @@ select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0
           </div>
           <input type="range" id="thr" min="1" max="254" value="128" disabled>
           <div class="hint">自動で決まらないときは、自動を外して動かします。<output id="thrOut">128</output></div>
+        </div>
+
+        <div class="field">
+          <label class="check check-strong"><input type="checkbox" id="roundFix">丸い輪を真円に直す（家紋など）</label>
+          <div class="hint">いちばん大きな丸い輪を見つけて、真円に描き直します。画像の端で輪が切れていても直せます。輪が見つからないときは、そのまま変換します。</div>
         </div>
 
         <div class="field">
@@ -303,7 +309,7 @@ select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0
       <li>向いているのは、白と黒がはっきり分かれた絵です。ロゴ、家紋、ハンコ、線画、切り絵風のイラストなど。</li>
       <li>写真やグラデーションのある絵は、白か黒かに分けられてしまうので向きません。</li>
       <li>元の画像が小さいと、輪郭の丸みや潰れもそのまま拾います。できるだけ大きく、はっきりした画像を使ってください。</li>
-      <li>家紋などで外側の輪が画像の端で切れている場合は、切れた形のまま変換されます。</li>
+      <li>家紋などで外側の輪がゆがんでいる・画像の端で切れているときは、「丸い輪を真円に直す」をオンにしてください。</li>
     </ol>
   </section>
 
@@ -324,7 +330,7 @@ select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0
     file: $("file"), drop: $("drop"), fileName: $("fileName"),
     inkColor: $("inkColor"), thrAuto: $("thrAuto"), thr: $("thr"), thrOut: $("thrOut"),
     blur: $("blur"), blurOut: $("blurOut"), speck: $("speck"), speckOut: $("speckOut"),
-    corner: $("corner"), cornerOut: $("cornerOut"), res: $("res"),
+    corner: $("corner"), cornerOut: $("cornerOut"), res: $("res"), roundFix: $("roundFix"),
     widthMm: $("widthMm"), rectMargin: $("rectMargin"), rectMarginField: $("rectMarginField"), rectHint: $("rectHint"),
     circleMm: $("circleMm"), circleMargin: $("circleMargin"), fit: $("fit"),
     optsRect: $("optsRect"), optsCircle: $("optsCircle"),
@@ -470,7 +476,160 @@ select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0
       var on = light ? gray[k] > thr : gray[k] < thr;
       if (on) { data[k] = 1; ink++; }
     }
+
+    state.ringNote = null;
+    if (els.roundFix.checked) {
+      var fixed = fixRing(data, w, h);
+      if (fixed.ok) {
+        data = fixed.data; w = fixed.w; h = fixed.h;
+        state.ringNote = { warn: false, text: "丸い輪を真円に直しました（輪の太さは外径の " + (fixed.thickRatio * 100).toFixed(1) + "%）。" };
+      } else {
+        state.ringNote = { warn: true, text: "丸い輪が見つからなかったため、真円に直さずに変換しました。（" + fixed.reason + "）" };
+      }
+    }
     return { w: w, h: h, data: data, scale: scale, ink: ink };
+  }
+
+  // ── 真円補正 ──────────────────────────────
+  // いちばん大きな黒い塊を「輪」とみなし、外側の縁から円を求め、太さは放射方向の中央値で決める。
+  // 図柄が輪に接していても、外側の縁と太さの中央値は崩れにくい。
+  function largestComponent(data, w, h) {
+    var n = w * h, lab = new Int32Array(n), stack = new Int32Array(n);
+    var cur = 0, best = 0, bestArea = 0;
+    for (var i = 0; i < n; i++) {
+      if (!data[i] || lab[i]) continue;
+      cur++;
+      var sp = 0, area = 0;
+      stack[sp++] = i; lab[i] = cur;
+      while (sp) {
+        var p = stack[--sp]; area++;
+        var x = p % w, y = (p - x) / w;
+        for (var dy = -1; dy <= 1; dy++) {
+          var ny = y + dy;
+          if (ny < 0 || ny >= h) continue;
+          for (var dx = -1; dx <= 1; dx++) {
+            var nx = x + dx;
+            if (nx < 0 || nx >= w) continue;
+            var q = ny * w + nx;
+            if (data[q] && !lab[q]) { lab[q] = cur; stack[sp++] = q; }
+          }
+        }
+      }
+      if (area > bestArea) { bestArea = area; best = cur; }
+    }
+    return { lab: lab, id: best, area: bestArea };
+  }
+
+  function fitCircle(px, py) {                  // 代数的最小二乗（Kasa法）
+    var n = px.length, mx = 0, my = 0, i;
+    for (i = 0; i < n; i++) { mx += px[i]; my += py[i]; }
+    mx /= n; my /= n;
+    var Suu = 0, Suv = 0, Svv = 0, Su = 0, Sv = 0, Suz = 0, Svz = 0, Sz = 0;
+    for (i = 0; i < n; i++) {
+      var u = px[i] - mx, v = py[i] - my, z = u * u + v * v;
+      Suu += u * u; Suv += u * v; Svv += v * v; Su += u; Sv += v; Suz += u * z; Svz += v * z; Sz += z;
+    }
+    var A = [[4 * Suu, 4 * Suv, 2 * Su], [4 * Suv, 4 * Svv, 2 * Sv], [2 * Su, 2 * Sv, n]], B = [2 * Suz, 2 * Svz, Sz];
+    var det = function (M) {
+      return M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+    };
+    var D = det(A);
+    if (!D) return null;
+    var sol = [0, 1, 2].map(function (c) {
+      var M = A.map(function (row, r) { var t = row.slice(); t[c] = B[r]; return t; });
+      return det(M) / D;
+    });
+    var r2 = sol[2] + sol[0] * sol[0] + sol[1] * sol[1];
+    if (!(r2 > 0)) return null;
+    return { cx: sol[0] + mx, cy: sol[1] + my, r: Math.sqrt(r2) };
+  }
+
+  function median(arr) {
+    var s = arr.slice().sort(function (a, b) { return a - b; });
+    return s.length ? s[s.length >> 1] : 0;
+  }
+
+  function fixRing(data, w, h) {
+    var comp = largestComponent(data, w, h);
+    if (!comp.id) return { ok: false, reason: "図柄がありません" };
+    var lab = comp.lab, id = comp.id, n = w * h;
+
+    // 画像の外側につながる背景（輪の外）を塗りつぶして求める
+    var ext = new Uint8Array(n), stack = new Int32Array(n), sp = 0, i, x, y;
+    var seed = function (p) { if (lab[p] !== id && !ext[p]) { ext[p] = 1; stack[sp++] = p; } };
+    for (x = 0; x < w; x++) { seed(x); seed((h - 1) * w + x); }
+    for (y = 0; y < h; y++) { seed(y * w); seed(y * w + w - 1); }
+    while (sp) {
+      var p = stack[--sp]; x = p % w; y = (p - x) / w;
+      if (x > 0) seed(p - 1);
+      if (x < w - 1) seed(p + 1);
+      if (y > 0) seed(p - w);
+      if (y < h - 1) seed(p + w);
+    }
+
+    // 輪の外側の縁（画像の端から3px以内は、切れた部分なので使わない）
+    var px = [], py = [], m = 3;
+    for (y = m; y < h - m; y++) {
+      for (x = m; x < w - m; x++) {
+        i = y * w + x;
+        if (lab[i] !== id) continue;
+        if (ext[i - 1] || ext[i + 1] || ext[i - w] || ext[i + w]) { px.push(x + 0.5); py.push(y + 0.5); }
+      }
+    }
+    if (px.length < 50) return { ok: false, reason: "輪の縁が短すぎます" };
+
+    var c = fitCircle(px, py);
+    if (!c) return { ok: false, reason: "円が求まりません" };
+    // ずれの大きい1割を除いて求め直す（小さなゴミ対策）
+    var res = px.map(function (_, k) { return Math.abs(Math.hypot(px[k] - c.cx, py[k] - c.cy) - c.r); });
+    var cut = res.slice().sort(function (a, b) { return a - b; })[Math.floor(res.length * 0.9)];
+    var qx = [], qy = [];
+    for (i = 0; i < px.length; i++) if (res[i] <= cut) { qx.push(px[i]); qy.push(py[i]); }
+    c = fitCircle(qx, qy) || c;
+
+    // 丸い輪かどうかの判定: 縁が円に沿っている・ぐるりと一周分ある・十分大きい
+    var res2 = qx.map(function (_, k) { return Math.abs(Math.hypot(qx[k] - c.cx, qy[k] - c.cy) - c.r); });
+    var bins = new Uint8Array(36), covered = 0;
+    for (i = 0; i < qx.length; i++) {
+      var b = Math.floor(((Math.atan2(qy[i] - c.cy, qx[i] - c.cx) + Math.PI) / (2 * Math.PI)) * 36) % 36;
+      if (!bins[b]) { bins[b] = 1; covered++; }
+    }
+    if (median(res2) > c.r * 0.01 + 1) return { ok: false, reason: "外側の形が円ではありません" };
+    if (covered < 27) return { ok: false, reason: "輪が一周つながっていません" };
+    if (c.r < Math.min(w, h) * 0.2) return { ok: false, reason: "いちばん大きな塊が小さすぎます" };
+
+    // 輪の太さ: 360方向で、外径から内側へ黒が続く長さの中央値
+    var ro = c.r + 0.5, thick = [];
+    for (var a = 0; a < 360; a++) {
+      var ca = Math.cos(a * Math.PI / 180), sa = Math.sin(a * Math.PI / 180), t;
+      var inside = false;
+      for (t = 1.5; t < ro; t += 1) {
+        var ix = Math.floor(c.cx + (ro - t) * ca), iy = Math.floor(c.cy + (ro - t) * sa);
+        if (ix < 0 || iy < 0 || ix >= w || iy >= h) { inside = false; break; }
+        var on = lab[iy * w + ix] === id;
+        if (!inside) { if (on) inside = true; else if (t > 4) break; continue; }
+        if (!on) { thick.push(t); break; }
+      }
+    }
+    if (thick.length < 90) return { ok: false, reason: "輪の太さが測れません" };
+    var tk = median(thick);
+    if (tk < ro * 0.01 || tk > ro * 0.45) return { ok: false, reason: "輪の太さが不自然です" };
+    var ri = ro - tk;
+
+    // 切れた分がはみ出さないよう余白を足し、理想の輪を描き込む（外は白・輪は黒・内側はそのまま）
+    var pad = Math.ceil(Math.max(0, ro - c.cx, ro - c.cy, c.cx + ro - w, c.cy + ro - h)) + 2;
+    var W = w + 2 * pad, H = h + 2 * pad, out = new Uint8Array(W * H);
+    for (y = 0; y < h; y++) out.set(data.subarray(y * w, y * w + w), (y + pad) * W + pad);
+    var cx = c.cx + pad, cy = c.cy + pad, ro2 = ro * ro, ri2 = ri * ri;
+    for (y = 0; y < H; y++) {
+      var dy2 = (y + 0.5 - cy) * (y + 0.5 - cy), row = y * W;
+      for (x = 0; x < W; x++) {
+        var d2 = (x + 0.5 - cx) * (x + 0.5 - cx) + dy2;
+        if (d2 > ro2) out[row + x] = 0;
+        else if (d2 >= ri2) out[row + x] = 1;
+      }
+    }
+    return { ok: true, data: out, w: W, h: H, thickRatio: tk / ro };
   }
 
   // ── トレース ──────────────────────────────
@@ -538,14 +697,31 @@ select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0
   }
   function f3(v) { return (Math.round(v * 1000) / 1000).toString(); }
 
+  // ⛔ 範囲は「曲線上の点」で測る。制御点で測ると、長いベジェ曲線（真円に直した輪など）の
+  //    制御点が外へはみ出し、図柄が小さく・中心がずれて配置される（2026-09-11 実測で0.8mmずれた）。
   function curveBBox(curves) {
     var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    var add = function (x, y) {
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    };
     curves.forEach(function (cv) {
-      cv.c.forEach(function (p) {
-        if (!p) return;
-        if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
-        if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
-      });
+      var n = cv.n, c = cv.c, prev = c[(n - 1) * 3 + 2];
+      add(prev.x, prev.y);
+      for (var i = 0; i < n; i++) {
+        var e = c[i * 3 + 2];
+        if (cv.tag[i] === "CURVE") {
+          var p1 = c[i * 3], p2 = c[i * 3 + 1];
+          for (var s = 1; s <= 16; s++) {
+            var t = s / 16, u = 1 - t, a = u * u * u, b = 3 * u * u * t, d = 3 * u * t * t, f = t * t * t;
+            add(a * prev.x + b * p1.x + d * p2.x + f * e.x, a * prev.y + b * p1.y + d * p2.y + f * e.y);
+          }
+        } else {
+          add(c[i * 3 + 1].x, c[i * 3 + 1].y);
+          add(e.x, e.y);
+        }
+        prev = e;
+      }
     });
     return { minX: minX, minY: minY, maxX: maxX, maxY: maxY, w: maxX - minX, h: maxY - minY };
   }
@@ -635,13 +811,14 @@ select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0
     els.stats.hidden = false;
     els.save.disabled = els.savePng.disabled = false;
 
+    var notes = [], warn = false;
+    if (state.ringNote) { notes.push(state.ringNote.text); if (state.ringNote.warn) warn = true; }
     if (curves.length > 3000) {
-      showMsg("曲線が " + curves.length + " 本とかなり多くなりました。写真や細かい模様の画像は、刻印には向かない場合があります。「ゴミ取り」を大きくすると減らせます。", true);
-    } else if (mode === "circle") {
-      showMsg("黒い部分が刻印の凹（彫られる部分）、白い部分が凸になります。革には白い部分の形が出ます。", false);
-    } else {
-      hideMsg();
+      notes.push("曲線が " + curves.length + " 本とかなり多くなりました。写真や細かい模様の画像は、刻印には向かない場合があります。「ゴミ取り」を大きくすると減らせます。");
+      warn = true;
     }
+    if (mode === "circle") notes.push("黒い部分が刻印の凹（彫られる部分）、白い部分が凸になります。革には白い部分の形が出ます。");
+    if (notes.length) showMsg(notes.join("\n"), warn); else hideMsg();
     showView();
   }
 
@@ -681,7 +858,7 @@ select:focus,input:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0
     els.thr.disabled = els.thrAuto.checked;
     if (!els.thrAuto.checked) els.thrOut.textContent = els.thr.value;
   }
-  [els.inkColor, els.thrAuto, els.thr, els.blur, els.speck, els.corner, els.res].forEach(function (el) {
+  [els.inkColor, els.thrAuto, els.thr, els.blur, els.speck, els.corner, els.res, els.roundFix].forEach(function (el) {
     el.addEventListener("input", function () { updateLabels(); scheduleTrace(); });
     el.addEventListener("change", function () { updateLabels(); scheduleTrace(); });
   });
