@@ -826,6 +826,7 @@ tr.row-out-stock td{
       <!-- 📊 アクセス解析 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="analytics" data-admin-cat="analytics" role="tab" aria-selected="false">アクセス解析</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="stats" data-admin-cat="analytics" role="tab" aria-selected="false">作品ページアクセスログ</button>
+      <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="toolstats" data-admin-cat="analytics" role="tab" aria-selected="false">🧰 ツール利用状況</button>
       <!-- 📣 発信・接客 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="threads-sns" data-admin-cat="promo" role="tab" aria-selected="false">📣 Threads投稿管理</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="hearing" data-admin-cat="promo" role="tab" aria-selected="false">🧵 対話ナレッジ</button>
@@ -1681,6 +1682,76 @@ tr.row-out-stock td{
         </table>
       </div>
     </div><!-- /analyticsPanel -->
+
+    <!-- ツール利用状況タブ（2026-09-11 追加）
+         データ源はオーダー進捗GASの「アクセス集計」シート（公開ページ右上のアクセスカウンターの累計）。
+         ページ別の累計PV/UU/初回/最終だけで、日別の履歴は持っていない。 -->
+    <div class="panel toolstats-section admin-section-hidden" id="toolstatsPanel">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+        <div style="font-size:11px;color:#8a6a4a;line-height:1.7">各ページ右上に出ているアクセスカウンターの累計です。UUは端末ごとの匿名ID（登録なし）で数えています。<b>日別の推移は記録していません</b>（累計のみ）。</div>
+        <button id="toolstats-refresh-btn" type="button"
+          style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;cursor:pointer">
+          🔄 再読み込み
+        </button>
+      </div>
+      <div id="toolstats-loading" style="display:none;text-align:center;padding:32px;color:#8a6a4a">読み込み中…</div>
+      <div id="toolstats-error" style="display:none;color:#b42318;font-size:13px;padding:8px 0"></div>
+
+      <div id="toolstats-summary" style="display:none;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">表示中ページのPV合計</div>
+          <div id="ts-pv" style="font-size:1.8rem;font-weight:800;color:#6b3a1f">—</div>
+        </div>
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">表示中ページのUU合計</div>
+          <div id="ts-uu" style="font-size:1.8rem;font-weight:800;color:#29613d">—</div>
+        </div>
+        <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">表示中ページ数</div>
+          <div id="ts-pages" style="font-size:1.8rem;font-weight:800;color:#c8553d">—</div>
+        </div>
+      </div>
+
+      <div id="toolstats-controls" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+        <select id="toolstats-group" style="padding:6px 10px;border:1px solid #d8c2a8;border-radius:8px;background:#fff;font-size:12px;color:#5C3D2E">
+          <option value="tools" selected>ツールだけ（印刷ツール＋幕僚室アプリ）</option>
+          <option value="refill">リフィル印刷ツール</option>
+          <option value="apps">デジタル幕僚室アプリ</option>
+          <option value="order">オーダー・見積・ショールーム</option>
+          <option value="all">全ページ</option>
+        </select>
+        <select id="toolstats-sort" style="padding:6px 10px;border:1px solid #d8c2a8;border-radius:8px;background:#fff;font-size:12px;color:#5C3D2E">
+          <option value="pv" selected>PVが多い順</option>
+          <option value="uu">UUが多い順</option>
+          <option value="last">最終アクセスが新しい順</option>
+          <option value="first">初回アクセスが新しい順</option>
+        </select>
+        <input id="toolstats-search" type="search" placeholder="ページ名・タイトルで絞り込み" style="flex:1;min-width:180px;padding:6px 10px;border:1px solid #d8c2a8;border-radius:8px;font-size:12px">
+        <span id="toolstats-count" style="font-size:11px;color:#8a6a4a"></span>
+      </div>
+
+      <div style="overflow:auto;border:1px solid #eadccf;border-radius:12px;background:#fff">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px">
+          <thead>
+            <tr style="background:#fff8f1;color:#6b3a1f;font-size:11px">
+              <th style="padding:8px;text-align:center">#</th>
+              <th style="padding:8px;text-align:left">分類</th>
+              <th style="padding:8px;text-align:left">ページ</th>
+              <th style="padding:8px;text-align:left">タイトル</th>
+              <th style="padding:8px;text-align:right">PV</th>
+              <th style="padding:8px;text-align:right">UU</th>
+              <th style="padding:8px;text-align:right">初回</th>
+              <th style="padding:8px;text-align:right">最終</th>
+            </tr>
+          </thead>
+          <tbody id="toolstats-rows"></tbody>
+        </table>
+      </div>
+      <div style="font-size:11px;color:#8a6a4a;line-height:1.7;margin-top:8px">
+        ※ 先頭スラッシュ違いの同一ページは合算し、ローカルプレビュー由来の記録（<code>C:/Users/…</code>）は除外しています。
+        ※ 2026年5月以前に作られた行はUUの集計開始前のため、UUが実態より小さく出ます。
+      </div>
+    </div><!-- /toolstatsPanel -->
 
     <!-- アクセスログタブ -->
     <div class="panel stats-section admin-section-hidden" id="statsPanel">
@@ -6206,7 +6277,7 @@ const ADMIN_TAB_TO_CAT = {
   'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'jhcs-dl': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
-  'analytics': 'analytics', 'stats': 'analytics',
+  'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics',
   'threads-sns': 'promo', 'hearing': 'promo', 'chatlog': 'promo',
 };
 // カテゴリごとに最後に開いたタブを覚えておき、カテゴリ再選択時に復元する
@@ -6217,6 +6288,7 @@ function setAdminTab(tab) {
   const isThread = tab === 'thread';
   const isAnalytics = tab === 'analytics';
   const isStats = tab === 'stats';
+  const isToolstats = tab === 'toolstats';
   const isThreadsSns = tab === 'threads-sns';
   const isCustomers = tab === 'customers';
   const isBrand = tab === 'brand';
@@ -6234,7 +6306,7 @@ function setAdminTab(tab) {
   const isJhcsDl = tab === 'jhcs-dl';
   const isWaitlist = tab === 'waitlist';
   const isFavorites = tab === 'favorites';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -6267,6 +6339,9 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.stats-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isStats);
+  });
+  document.querySelectorAll('.toolstats-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isToolstats);
   });
   document.querySelectorAll('.threads-sns-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThreadsSns);
@@ -6308,7 +6383,7 @@ function setAdminTab(tab) {
     el.classList.toggle('admin-section-hidden', !isFavorites);
   });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites || isApiCosts);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isToolstats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites || isApiCosts);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -6396,6 +6471,8 @@ function setAdminTab(tab) {
       ? 'minne・Creemaから届くお気に入り通知メールを集計しています。作品名をクリックすると各サイトの商品ページが開きます。'
       : isWaitlist
       ? '売り切れ品に「再製作されたら知らせて」と連絡先を残したお客様の一覧です。作れるかどうかと納期の目安を返信してください。'
+      : isToolstats
+      ? 'リフィル印刷ツールや幕僚室アプリなど、各ツールページの利用状況（アクセスカウンターの累計PV/UU）を一覧します。'
       : isStats
       ? '商品閲覧ランキングとオーダー依頼の履歴をスプレッドシートのアクセスログから表示します。'
       : isThreadsSns
@@ -6421,6 +6498,7 @@ function setAdminTab(tab) {
   if (isJhcsDl && !jhcsDownloadsLoaded) loadJhcsDownloads();
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
+  if (isToolstats && !toolstatsLoaded) toolstatsLoad();
   if (isHearing && !hearingKbLoaded) loadHearingKb();
   if (isReceiptChecklist) loadReceiptChecklist();
   if (isSales) {
@@ -7118,6 +7196,129 @@ function gaDrawPageChart(dailyRows, days, topRows) {
 document.getElementById('ga-refresh-btn')?.addEventListener('click', () => {
   gaLoad(gaCurrentDays, true);
 });
+
+// ── ツール利用状況（アクセスカウンター集計・2026-09-11） ──
+// データ源: オーダー進捗GAS ?action=counts（「アクセス集計」シート＝ページ別の累計PV/UU/初回/最終）。
+// 読み取り専用・公開エンドポイント（各ページのカウンター表示と同じもの）。日別履歴は無い。
+const TOOLSTATS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
+const TOOLSTATS_SITE = 'https://you0810jmsdf.github.io/ns-factory/';
+const TOOLSTATS_GROUPS = [
+  { key: 'refill', label: 'リフィル印刷', test: p => /^(a6|bible|a5slim)-(weekly|monthly|daily)\/index\.html$/.test(p) || /^a6-print-tool\//.test(p) || p === 'refill/index.html' || p === 'tools/index.html' },
+  { key: 'apps',   label: '幕僚室アプリ', test: p => /^digital-room\//.test(p) || /^(password-note|diet|bp|costco)\//.test(p) || p === 'password-note.html' },
+  { key: 'order',  label: 'オーダー・見積', test: p => (/^order_estimate\//.test(p) && !/admin\.html$/.test(p)) || p === 'orderprogress.html' || /^showroom\//.test(p) || p === 'planner-guide.html' || p === 'order-guide.html' },
+  { key: 'other',  label: 'その他', test: () => true },
+];
+let toolstatsLoaded = false;
+let toolstatsRows = [];
+let toolstatsWired = false;
+
+// 先頭スラッシュの有無・拡張子なしの揺れを寄せ、ローカルプレビュー由来の記録は捨てる
+function toolstatsNormalize(page) {
+  let p = String(page || '').trim().replace(/^\/+/, '');
+  if (/^[A-Za-z]:\//.test(p) || /Users\/nsfactory/.test(p)) return null;
+  if (p === '') p = 'index.html';
+  if (p.endsWith('/')) p += 'index.html';
+  else if (!/\.[A-Za-z0-9]+$/.test(p)) p += '.html';
+  return p;
+}
+function toolstatsDate(s) {
+  if (!s) return null;
+  const d = new Date(String(s).replace(/\s*\(.*\)\s*$/, ''));
+  return isNaN(d.getTime()) ? null : d;
+}
+function toolstatsFmtDate(d) {
+  if (!d) return '';
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+function toolstatsGroupOf(page) {
+  return TOOLSTATS_GROUPS.find(g => g.test(page)) || TOOLSTATS_GROUPS[TOOLSTATS_GROUPS.length - 1];
+}
+function toolstatsAggregate(counts) {
+  const map = new Map();
+  (counts || []).forEach(c => {
+    const page = toolstatsNormalize(c.page);
+    if (!page) return;
+    const cur = map.get(page) || { page, title: '', pv: 0, uu: 0, first: null, last: null, group: toolstatsGroupOf(page) };
+    cur.pv += Number(c.pv || c.count || 0);
+    cur.uu += Number(c.uu || 0);
+    if (!cur.title && c.title) cur.title = String(c.title);
+    const f = toolstatsDate(c.firstAccess), l = toolstatsDate(c.lastAccess);
+    if (f && (!cur.first || f < cur.first)) cur.first = f;
+    if (l && (!cur.last || l > cur.last)) cur.last = l;
+    map.set(page, cur);
+  });
+  return [...map.values()];
+}
+
+function toolstatsLoad() {
+  toolstatsLoaded = true;
+  const show = (id, disp) => { const el = document.getElementById(id); if (el) el.style.display = disp; };
+  show('toolstats-loading', 'block');
+  show('toolstats-error', 'none');
+  if (!toolstatsWired) {
+    toolstatsWired = true;
+    document.getElementById('toolstats-refresh-btn')?.addEventListener('click', () => toolstatsLoad());
+    ['toolstats-group', 'toolstats-sort'].forEach(id => document.getElementById(id)?.addEventListener('change', toolstatsRender));
+    document.getElementById('toolstats-search')?.addEventListener('input', toolstatsRender);
+  }
+  fetch(TOOLSTATS_GAS_URL + '?action=counts&t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(txt => {
+      // GASはHTTP 200でもHTMLを返すことがある。本文の先頭で判定する
+      if (!txt || txt.trim().charAt(0) === '<') throw new Error('GASが集計ではなくHTMLを返しました。しばらくして再読み込みしてください。');
+      const data = JSON.parse(txt);
+      if (!data || !data.ok) throw new Error((data && data.error) || '応答が不正です');
+      toolstatsRows = toolstatsAggregate(data.counts);
+      show('toolstats-loading', 'none');
+      show('toolstats-summary', 'grid');
+      show('toolstats-controls', 'flex');
+      toolstatsRender();
+    })
+    .catch(err => {
+      show('toolstats-loading', 'none');
+      const em = document.getElementById('toolstats-error');
+      if (em) { em.textContent = 'データ取得に失敗しました: ' + (err && err.message ? err.message : err); em.style.display = 'block'; }
+    });
+}
+
+function toolstatsRender() {
+  const group = document.getElementById('toolstats-group')?.value || 'tools';
+  const sort  = document.getElementById('toolstats-sort')?.value || 'pv';
+  const kw    = (document.getElementById('toolstats-search')?.value || '').trim().toLowerCase();
+  let list = toolstatsRows.filter(r => {
+    if (group === 'all') return true;
+    if (group === 'tools') return r.group.key === 'refill' || r.group.key === 'apps';
+    return r.group.key === group;
+  });
+  if (kw) list = list.filter(r => (r.page + ' ' + r.title).toLowerCase().includes(kw));
+  const t = d => d ? d.getTime() : 0;
+  if (sort === 'uu') list.sort((a, b) => b.uu - a.uu || b.pv - a.pv);
+  else if (sort === 'last') list.sort((a, b) => t(b.last) - t(a.last));
+  else if (sort === 'first') list.sort((a, b) => t(b.first) - t(a.first));
+  else list.sort((a, b) => b.pv - a.pv || b.uu - a.uu);
+
+  const sum = (k) => list.reduce((s, r) => s + (r[k] || 0), 0);
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('ts-pv', sum('pv').toLocaleString('ja-JP'));
+  setText('ts-uu', sum('uu').toLocaleString('ja-JP'));
+  setText('ts-pages', String(list.length));
+  setText('toolstats-count', `${list.length}ページ（全${toolstatsRows.length}ページ中）`);
+
+  const rows = list.length ? list.map((r, i) => `<tr>
+      <td style="padding:6px 8px;text-align:center;font-weight:700;color:#d4a96a;border-bottom:1px solid #efe3d7">${i + 1}</td>
+      <td style="padding:6px 8px;font-size:11px;color:#8a6a4a;white-space:nowrap;border-bottom:1px solid #efe3d7">${statsH(r.group.label)}</td>
+      <td style="padding:6px 8px;font-size:12px;font-family:monospace;border-bottom:1px solid #efe3d7"><a href="${TOOLSTATS_SITE}${encodeURI(r.page)}" target="_blank" rel="noopener" style="color:#6b3a1f;text-decoration:underline dotted">${statsH(r.page)}</a></td>
+      <td style="padding:6px 8px;border-bottom:1px solid #efe3d7">${statsH(r.title)}</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;border-bottom:1px solid #efe3d7">${r.pv.toLocaleString('ja-JP')}</td>
+      <td style="padding:6px 8px;text-align:right;border-bottom:1px solid #efe3d7">${r.uu.toLocaleString('ja-JP')}</td>
+      <td style="padding:6px 8px;text-align:right;font-size:12px;color:#888;border-bottom:1px solid #efe3d7">${toolstatsFmtDate(r.first)}</td>
+      <td style="padding:6px 8px;text-align:right;font-size:12px;color:#888;border-bottom:1px solid #efe3d7">${toolstatsFmtDate(r.last)}</td>
+    </tr>`).join('')
+    : '<tr><td colspan="8" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
+  const tb = document.getElementById('toolstats-rows');
+  if (tb) tb.innerHTML = rows;
+}
 
 // ── アクセスログ統計 ──
 let statsLoaded = false;
