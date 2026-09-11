@@ -740,6 +740,16 @@ textarea{min-height:80px;resize:vertical}
         <p style="font-size:12px;color:#5a4a2e;margin:4px 0 8px">
           説明文の最後に<b>作品番号</b>と<b>作品ページのURL</b>を付けてあります。直してから使っても大丈夫です。
         </p>
+        <!-- 自分の言葉でキャプション（2026-09-11）。文体の正本は 広報部\SNS文体ガイド.md → GAS SnsVoice.js。
+             作品説明文（shortDesc/longDesc）は書き換えない。キャプション欄だけを差し替える。 -->
+        <label for="igMemo" style="display:block;font-size:12px;color:#5a4a2e;margin:4px 0 4px">
+          ひとこと（この作品の事実を1〜2行。<b>ここに無い話はAIも書きません</b>）
+        </label>
+        <textarea id="igMemo" rows="2" placeholder="例: お客様と3回やり取りして決めた仕様。裁断で1枚だめにした。" style="width:100%;font-size:12.5px;line-height:1.6;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fff;resize:vertical"></textarea>
+        <div style="display:flex;gap:10px;align-items:center;margin:6px 0 10px;flex-wrap:wrap">
+          <button type="button" class="btn btn-primary" id="igGenBtn" style="font-size:13px" onclick="generateSnsCaption()">✍️ 自分の言葉でキャプションを作る</button>
+          <span id="igGenStatus" style="font-size:12px;color:#7a5a3f"></span>
+        </div>
         <textarea id="igCaption" rows="12" style="width:100%;font-size:12.5px;line-height:1.6;padding:8px;border:1px solid #d8b888;border-radius:6px;background:#fff;resize:vertical"></textarea>
         <div style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap">
           <button type="button" class="btn btn-primary" style="font-size:13px" onclick="copyIgCaption()">📋 キャプションをコピー</button>
@@ -2930,7 +2940,9 @@ function buildIgCaption(productId, shortDesc, longDesc, hashtags) {
   if (tags.length) parts.push(tags.join(' '));
   return parts.join('\n\n');
 }
+let igProductId = '';   // generateSnsCaption が作品番号付きのキャプションを組み立てるために使う
 function fillIgCaption(productId) {
+  igProductId = productId;
   const ta = document.getElementById('igCaption');
   if (!ta) return;
   const tags = val('f_hashtags');
@@ -2939,6 +2951,48 @@ function fillIgCaption(productId) {
   const st = document.getElementById('igCaptionStatus');
   // ハッシュタグは5個以内という自分で決めた運用があるので、超えていたら気付けるようにする
   if (st) st.textContent = n > 5 ? '※ ハッシュタグが' + n + '個です（運用ルールは5個以内）' : '';
+}
+/* ===== 自分の言葉でキャプション（2026-09-11 事業主要望）=====
+   GAS generateSnsCaption が、文体ガイド（広報部\SNS文体ガイド.md → SnsVoice.js）と
+   「ひとこと」メモから本文を作る。作品説明文（f_shortDesc / f_longDesc）は書き換えない。
+   ⛔ 自動の再送はしない（gasPostJson は通信断でも再送するため、AIが二重に呼ばれる）。
+   失敗したら理由を出して、ボタンをもう一度押してもらう。 */
+async function generateSnsCaption() {
+  const btn = document.getElementById('igGenBtn');
+  const st  = document.getElementById('igGenStatus');
+  if (!igProductId) { st.textContent = '⚠️ 登録が完了してから使えます'; return; }
+  btn.disabled = true;
+  st.textContent = '⏳ 作成中…（10〜20秒）';
+  const payload = {
+    api: 'generateSnsCaption', key: REGISTER_KEY,
+    name: val('f_name'),
+    category: document.getElementById('f_category').value,
+    material: document.getElementById('f_material').value,
+    color: document.getElementById('f_color').value,
+    size: document.getElementById('f_size').value,
+    price: val('f_price'),
+    memo: val('igMemo'),
+    longDesc: val('f_longDesc')
+  };
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: new URLSearchParams({ api: payload.api, payload: JSON.stringify(payload) })
+    });
+    const text = await res.text();
+    if (text.trim().startsWith('<')) throw new Error('Google側の一時障害です（HTTP ' + res.status + '）。少し待ってもう一度押してください');
+    const d = JSON.parse(text);
+    if (!d.ok) throw new Error(d.error || '作成に失敗しました');
+    document.getElementById('igCaption').value = buildIgCaption(igProductId, d.caption, '', val('f_hashtags'));
+    const ng = d.ngWords || [];
+    st.textContent = ng.length
+      ? '⚠️ 使わない言葉が入っています：' + ng.join('、') + '（直すか、もう一度作ってください）'
+      : '✅ できました。読んで直してから使ってください';
+  } catch (e) {
+    st.textContent = '⚠️ ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
 }
 function writeToClipboard(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
