@@ -535,10 +535,7 @@ img{max-width:100%;display:block}
           btn.textContent = 'カードで購入する（¥300）';
           note.textContent = 'Stripe の安全な決済画面に移動します。お支払い後、ダウンロードリンクが表示されメールでも届きます。';
         } else {
-          btn.href = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('リフィルPDF購入のお問合せ') + '&body=' + encodeURIComponent('日付なし マンスリーリフィルPDF（A5スリム・300円）を購入したいです。
-
-お名前：
-');
+          btn.href = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('リフィルPDF購入のお問合せ') + '&body=' + encodeURIComponent('日付なし マンスリーリフィルPDF（A5スリム・300円）を購入したいです。\n\nお名前：\n');
           btn.textContent = 'メールで購入を申し込む（銀行振込）';
           note.textContent = 'カード決済は準備中です。メールをいただければ、振込先をご案内し、ご入金確認後にPDFをお送りします。';
         }
