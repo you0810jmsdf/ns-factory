@@ -9,13 +9,15 @@
 
   function collect() {
     const leaves = new Map();
-    document.querySelectorAll('#preview .slot[data-leaf]').forEach(slot => {
+    // 枠のクラス名はツールごとに違う（.slot / .a6-slot 等）ので data-leaf だけで拾う
+    document.querySelectorAll('#preview [data-leaf]').forEach(slot => {
       const leaf = parseInt(slot.dataset.leaf, 10); if (isNaN(leaf)) return;
       const face = slot.dataset.face === 'back' ? 'back' : 'front';
-      const wrap = slot.closest('.sheet-wrap');
-      const src = wrap && wrap.querySelector('.sheet-label') ? wrap.querySelector('.sheet-label').textContent : '';
+      const wrap = slot.closest('.sheet-wrap, .a4-wrapper');
+      const lab = wrap && wrap.querySelector('.sheet-label');
+      const src = lab ? lab.textContent : (slot.dataset.src || '');
       if (!leaves.has(leaf)) leaves.set(leaf, {});
-      leaves.get(leaf)[face] = { slot, src, empty: slot.classList.contains('empty') };
+      leaves.get(leaf)[face] = { slot, src, empty: slot.classList.contains('empty') || !slot.innerHTML.trim() };
     });
     return [...leaves.keys()].sort((a, b) => a - b).map(k => {
       const l = leaves.get(k);
@@ -56,8 +58,9 @@
   function render() {
     const s = sp[idx]; if (!s) return;
     stage.innerHTML = '';
-    const L = pageBox(s.left, s.left ? `紙 ${s.leftLeaf + 1} の裏（${s.left.src}）` : '');
-    const R = pageBox(s.right, s.right ? `紙 ${s.rightLeaf + 1} の表（${s.right.src}）` : '');
+    const cap = (n, side, f) => `紙 ${n + 1} の${side}` + (f.src ? `（${f.src}）` : '');
+    const L = pageBox(s.left, s.left ? cap(s.leftLeaf, '裏', s.left) : '');
+    const R = pageBox(s.right, s.right ? cap(s.rightLeaf, '表', s.right) : '');
     stage.appendChild(L); stage.appendChild(R);
     // 画面に収まるよう縮小
     requestAnimationFrame(() => {
@@ -93,7 +96,7 @@
       '#nsf-flip-wrap{position:relative;width:100%;display:flex;justify-content:center}',
       '#nsf-flip-stage{display:flex;gap:24px;align-items:flex-start}',
       '.nsf-flip-page{position:relative;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.5);overflow:hidden;flex-shrink:0}',
-      '.nsf-flip-page .slot{position:static!important;transform:none!important}',
+      '.nsf-flip-page>:not(.nsf-flip-cap){position:static!important;transform:none!important;margin:0!important;left:auto!important;top:auto!important}',
       '.nsf-flip-blank,.nsf-flip-none{display:flex;align-items:center;justify-content:center;color:#999;font-size:14px}',
       '.nsf-flip-none{width:220px;height:300px;background:transparent;box-shadow:none;border:1px dashed #555}',
       '.nsf-flip-cap{position:absolute;left:0;right:0;bottom:0;background:rgba(26,26,46,.85);color:#fff;font-size:11px;padding:4px 8px;text-align:center}',
@@ -128,6 +131,13 @@
       const b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'btn-secondary'; b2.textContent = '📖 綴じ後プレビュー（紙を使わず確認）'; b2.style.flex = '1';
       b2.addEventListener('click', open); row.appendChild(b2);
       printH3.insertAdjacentElement('afterend', row);
+    } else {
+      // 「印刷」セクションが無いツール（バイブル日次・月間）は PDF出力ボタンの隣に置く
+      const pdfBtn = document.getElementById('btn-pdf');
+      if (pdfBtn) {
+        const b2 = document.createElement('button'); b2.type = 'button'; b2.className = pdfBtn.className; b2.textContent = '📖 綴じ後プレビュー';
+        b2.addEventListener('click', open); pdfBtn.insertAdjacentElement('afterend', b2);
+      }
     }
   }
   window.nsfFlipSim = { open, close, collect, spreads, get index() { return idx; }, get count() { return sp.length; }, go };

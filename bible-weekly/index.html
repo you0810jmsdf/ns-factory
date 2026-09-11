@@ -1224,8 +1224,10 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
       const idx = map[pos];
       const ws = weekStartDates[idx];
       const pn = pageNums[idx];
-      if (!ws) return '<div class="slot empty"></div>';
-      return buildWeeklyPage(ws, pn, HOLE_SIDE_DIRECT[pos], pos === 'L');
+      // 綴じ後プレビュー用（片面2面）: 1ページ＝1枚の表。裏は白紙
+      const dl = ws ? ` data-leaf="${pn - 1}" data-face="front"` : '';
+      if (!ws) return `<div class="slot empty"${dl}></div>`;
+      return buildWeeklyPage(ws, pn, HOLE_SIDE_DIRECT[pos], pos === 'L').replace('<div class="slot"', `<div class="slot"${dl}`);
     });
     return `<div class="a4-sheet mode-2up"><div class="slots-wrapper">${slots.join('')}</div></div>`;
   } else {
@@ -1238,8 +1240,11 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
       const idx = map[pos];
       const ws = weekStartDates[idx];
       const pn = pageNums[idx];
-      if (!ws) return '<div class="slot empty"></div>';
-      return buildWeeklyPage(ws, pn, holeMap[pos], pos === 'L');
+      // 綴じ後プレビュー用: 通し番号 pn(1始まり) → 紙 floor((pn-1)/2)、奇数番が表・偶数番が裏。片面だけ実在する紙の裏も白紙として印を付ける
+      const other = (idx % 2 === 0) ? idx + 1 : idx - 1;
+      const dl = (ws || weekStartDates[other]) ? ` data-leaf="${Math.floor((pn - 1) / 2)}" data-face="${(pn - 1) % 2 ? 'back' : 'front'}"` : '';
+      if (!ws) return `<div class="slot empty"${dl}></div>`;
+      return buildWeeklyPage(ws, pn, holeMap[pos], pos === 'L').replace('<div class="slot"', `<div class="slot"${dl}`);
     });
     return `<div class="a4-sheet mode-2up"><div class="slots-wrapper">${slots.join('')}</div></div>`;
   }
@@ -1491,5 +1496,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <script src="../assets/access-counter.js"></script>
 <script src="../assets/bug-report.js"></script>
+<script src="../assets/flip-sim.js"></script>
 </body>
 </html>

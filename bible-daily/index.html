@@ -630,12 +630,17 @@ function buildDailyPage(date, pageNum, holeSide, holidays){
 }
 
 /* === MODULE: Make A4 Sheet HTML === */
-function makeA4HTML(pages){
+function makeA4HTML(pages, meta){
   // pages: array of {html, holeSide}
   // Always 2-up side by side
+  // meta: [{leaf, face}, {leaf, face}]（綴じ後プレビュー用。紙の通し番号と表裏）
+  const tag = (html, m) => (html && m) ? html.replace('<div class="daily-page"', `<div class="daily-page" data-leaf="${m.leaf}" data-face="${m.face}"`) : (html || '');
   const [p0, p1] = pages;
-  return `<div class="a4-sheet two-up">${p0}${p1||''}</div>`;
+  return `<div class="a4-sheet two-up">${tag(p0, meta && meta[0])}${tag(p1, meta && meta[1])}</div>`;
 }
+// 綴じ後プレビュー用の紙割り当て。⚠ 裏面の左右は長辺綴じ（bible-weekly の2面付けと同じ前提）: 表L↔裏R・表R↔裏L が同じ紙
+const LEAF_META_FRONT = base => [{ leaf: base, face: 'front' }, { leaf: base + 1, face: 'front' }];
+const LEAF_META_BACK  = base => [{ leaf: base + 1, face: 'back' }, { leaf: base, face: 'back' }];
 
 /* === MODULE: Render Single (4 days) === */
 function renderSingle(){
@@ -657,8 +662,8 @@ function renderSingle(){
   const backL  = buildDailyPage(dates[2], 3, 'left',  holidays);
   const backR  = buildDailyPage(dates[3], 4, 'left',  holidays);
 
-  const frontSheet = makeA4HTML([frontL, frontR]);
-  const backSheet  = makeA4HTML([backL,  backR]);
+  const frontSheet = makeA4HTML([frontL, frontR], LEAF_META_FRONT(0));
+  const backSheet  = makeA4HTML([backL,  backR],  LEAF_META_BACK(0));
 
   const wrapper = document.createElement('div');
   wrapper.innerHTML = frontSheet + backSheet;
@@ -693,8 +698,8 @@ function renderMonthly(){
       return buildDailyPage(d, pageNum++, 'left', holidays);
     });
     // front: idx0,1 / back: idx2,3
-    const frontSheet = makeA4HTML([pages[0], pages[1]]);
-    const backSheet  = makeA4HTML([pages[2], pages[3]]);
+    const frontSheet = makeA4HTML([pages[0], pages[1]], LEAF_META_FRONT(i / 2));
+    const backSheet  = makeA4HTML([pages[2], pages[3]], LEAF_META_BACK(i / 2));
     wrapper.innerHTML += frontSheet + backSheet;
   }
   preview.appendChild(wrapper);
@@ -740,5 +745,6 @@ function setStatus(msg){
 </script>
 <script src="../assets/access-counter.js"></script>
 <script src="../assets/bug-report.js"></script>
+<script src="../assets/flip-sim.js"></script>
 </body>
 </html>

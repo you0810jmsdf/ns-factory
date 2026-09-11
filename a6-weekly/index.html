@@ -1172,9 +1172,12 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
     const idx = map[pos];
     const ws = weekStartDates[idx];
     const pn = pageNums[idx];
-    if (!ws) return '<div class="slot empty"></div>';
+    // 綴じ後プレビュー用: 通し番号 pn(1始まり) → 紙 floor((pn-1)/2)、奇数番が表・偶数番が裏。片面だけ実在する紙の裏も白紙として印を付ける
+    const other = (idx % 2 === 0) ? idx + 1 : idx - 1;
+    const dl = (ws || weekStartDates[other]) ? ` data-leaf="${Math.floor((pn - 1) / 2)}" data-face="${(pn - 1) % 2 ? 'back' : 'front'}"` : '';
+    if (!ws) return `<div class="slot empty"${dl}></div>`;
     const holeSide = HOLE_SIDE[pos];
-    return buildWeeklyPage(ws, pn, holeSide);
+    return buildWeeklyPage(ws, pn, holeSide).replace('<div class="slot">', `<div class="slot"${dl}>`);
   });
   return `<div class="a4-sheet">${slots.join('')}</div>`;
 }
@@ -1413,5 +1416,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <script src="../assets/access-counter.js"></script>
 <script src="../assets/bug-report.js"></script>
+<script src="../assets/flip-sim.js"></script>
 </body>
 </html>
