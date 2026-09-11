@@ -507,18 +507,18 @@ var GROUPS = {
 var FORMATS = [
   {
     k: 'm5', name: 'Mini / M5', badge: 'MINI · M5 · MICRO5',
-    alias: 'Mini5 / Micro5 / Filofax Mini', paper: [67, 105], holes: 5,
+    alias: 'Mini5 / Micro5 / Filofax Mini', paper: [62, 105], holes: 5,
     pitch: [19, 19, 19, 19], span: 76, grp: 'e19', fam: 'std', match: /micro\s*5|mini\s*5|^m5$/i,
-    lead: '手のひらに収まる最小サイズ。5穴で、間隔はすべて19mm。日本では「M5」「Mini5」「Micro5」と呼ばれます。',
-    notes: ['Filofax Mini の標準は 67 × 105 mm・5穴。', 'ブランド独自寸法も存在するため、実物確認を推奨。'],
+    lead: '手のひらに収まる最小サイズ。5穴で、間隔はすべて19mm。日本では「M5」「Mini5」「Micro5」と呼ばれます。N\'s factory の基準は 62 × 105 mm です。',
+    notes: ['N\'s factory 基準: 62 × 105 mm・5穴（穴中心は上端から 15 / 34 / 53 / 72 / 91 mm）。', 'Filofax Mini は 67 × 105 mm。幅はブランドで異なるため、実物確認を推奨。'],
     ringEx: '製品例で15mm（Filofax Mini）'
   },
   {
     k: 'm6', name: 'Pocket / M6', badge: 'POCKET · M6 · MINI6',
-    alias: 'Mini6 / M6 / Filofax Pocket', paper: [81, 120], holes: 6,
-    pitch: [19, 19, 19, 19, 19], span: 95, grp: 'e19', fam: 'std', match: /mini\s*6|^m6$|（m6）/i,
-    lead: "M5に1穴足した6穴。間隔はすべて19mmのまま。N's factory でいちばん製作数の多いサイズです。",
-    notes: ['日本で「Mini6」「M6」と呼ばれるものは Filofax Pocket 系とほぼ同系統。', 'リフィル幅・高さはブランドごとに若干差があります。'],
+    alias: 'Mini6 / M6 / Filofax Pocket', paper: [80, 128], holes: 6,
+    pitch: [19.2, 19.2, 19.2, 19.2, 19.2], span: 96, grp: 'e19', fam: 'std', match: /mini\s*6|^m6$|（m6）/i,
+    lead: "M5に1穴足した6穴。N's factory でいちばん製作数の多いサイズで、当工房の基準は 80 × 128 mm・穴間隔 19.2 mm です。",
+    notes: ['N\'s factory 基準データ（Mini6 Refill）: 80 × 128 mm・6穴（穴中心は上端から 16.3 / 35.5 / 54.7 / 73.9 / 93.1 / 112.3 mm）。', 'Filofax Pocket は 81 × 120 mm・19 mm 間隔。日本の「Mini6」は高さ 120〜128 mm とブランド差があります。'],
     ringEx: '製品例で19mm（Filofax Pocket）'
   },
   {
@@ -745,7 +745,7 @@ function renderOverlay() {
     document.querySelectorAll('.ov-label').forEach(function (el) { el.style.opacity = (!k || el.dataset.k === k) ? 1 : .12; });
     document.querySelectorAll('.chip').forEach(function (el) { el.classList.toggle('on', el.dataset.k === k); });
     var box = document.getElementById('overlayReadout');
-    if (!f) { box.innerHTML = '<h4>12規格を重ねています</h4><p>名前に触れると、その規格だけが浮かび上がります。いちばん外側の枠が Franklin Monarch（216×280mm）、いちばん内側が Mini / M5（67×105mm）です。</p>'; return; }
+    if (!f) { box.innerHTML = '<h4>12規格を重ねています</h4><p>名前に触れると、その規格だけが浮かび上がります。いちばん外側の枠が Franklin Monarch（216×280mm）、いちばん内側が Mini / M5（62×105mm）です。</p>'; return; }
     box.innerHTML = '<h4 style="color:' + grpOf(f).c + '">' + esc(f.name) + '</h4>'
       + '<p>リフィル <span class="ov-num">' + f.paper[0] + ' × ' + f.paper[1] + ' mm</span>'
       + ' ／ <span class="ov-num">' + f.holes + '穴</span>'
