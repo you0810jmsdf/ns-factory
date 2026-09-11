@@ -1918,11 +1918,11 @@ async function doUpdate() {
     hashtags: val('f_hashtags'), mainPhotoUrl,
   };
   // POST化（URL長制限回避: longDesc/hashtags を含む大きい payload を body で送る）
-  const updRes = await fetch(GAS_URL, {
-    method: 'POST',
-    body: new URLSearchParams({ api: 'updateProduct', payload: JSON.stringify(updPayload) })
+  // GASは処理完了後にHTMLのエラーページだけ返すことがある（2026-09-11 NF2026_651で実害）。
+  // updateProduct は同じ値でB〜J列を上書きするだけなので、再送しても結果は変わらず安全。
+  const updData = await gasPostJson('updateProduct', updPayload, (n, max) => {
+    setProgress(null, null, 'Google側の応答が不安定なため再試行しています（' + n + '/' + (max - 1) + '回目）…');
   });
-  const updData = await updRes.json();
   if (!updData.ok) throw new Error('更新失敗: ' + (updData.error || ''));
 
   setProgress(100, '完了！', '更新完了です！');
