@@ -671,19 +671,23 @@ function getCommonParams() {
   const e = isNaN(endH) ? 22 : endH;
   return { ...opts, textWmContent: document.getElementById('textWmContent').value, hours: Array.from({ length: Math.max(1, e - startH + 1) }, (_, i) => i + startH) };
 }
-function makeA4HTML(slots, showCutLines) {
+function makeA4HTML(slots, showCutLines, meta) {
   const cuts = showCutLines ? CUT_LINES_MM.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') : '';
-  return `<div class="a4-sheet">${cuts}${['L', 'R'].map(pos => slots[pos] ? `<div class="slot" data-pos="${pos}">${slots[pos]}</div>` : `<div class="slot empty" data-pos="${pos}"></div>`).join('')}</div>`;
+  const dl = pos => (meta && meta[pos]) ? ` data-leaf="${meta[pos].leaf}" data-face="${meta[pos].face}"` : '';
+  return `<div class="a4-sheet">${cuts}${['L', 'R'].map(pos => slots[pos] ? `<div class="slot" data-pos="${pos}"${dl(pos)}>${slots[pos]}</div>` : `<div class="slot empty" data-pos="${pos}"${dl(pos)}></div>`).join('')}</div>`;
 }
 // dates: Date の配列（日付あり）または長さ n の配列（日付なし・値は無視）
 function buildSheet(side, sheetIndex, dates, p) {
   const map = SLOT_MAP[side];
-  const slots = {};
+  const slots = {}, meta = {};
   for (const pos of ['L', 'R']) {
     const idx = sheetIndex * 4 + map[pos];
     if (idx < dates.length) slots[pos] = buildDailyPage(opts.undated ? null : dates[idx], idx + 1, HOLE_SIDE[pos], p);
+    // 綴じ後プレビュー用: 通し idx → 紙 floor(idx/2)、偶数が表・奇数が裏。片面だけ実在する紙の裏も白紙として印を付ける
+    const other = (idx % 2 === 0) ? idx + 1 : idx - 1;
+    if (idx < dates.length || (other >= 0 && other < dates.length)) meta[pos] = { leaf: Math.floor(idx / 2), face: idx % 2 ? 'back' : 'front' };
   }
-  return `<div class="sheet-wrap"><div class="sheet-label">Sheet ${sheetIndex + 1} · ${side === 'front' ? '表面' : '裏面'}</div>${makeA4HTML(slots, p.showCutLines)}</div>`;
+  return `<div class="sheet-wrap"><div class="sheet-label">Sheet ${sheetIndex + 1} · ${side === 'front' ? '表面' : '裏面'}</div>${makeA4HTML(slots, p.showCutLines, meta)}</div>`;
 }
 function renderDates(dates) {
   const p = getCommonParams();
@@ -876,5 +880,6 @@ window.addEventListener('DOMContentLoaded', () => {
 window.NSF_PRINT_GEOMETRY = { sheet: [297, 210], slots: [{ x: 38.5, y: 0, w: 110, h: 210, holeSide: 'left' }, { x: 148.5, y: 0, w: 110, h: 210, holeSide: 'right' }], holes: [32, 51, 70, 140, 159, 178], holeEdge: 6, holeD: 5, cuts: [{ x: 38.5 }, { x: 148.5 }, { x: 258.5 }] };
 </script>
 <script src="../assets/print-adjust.js"></script>
+<script src="../assets/flip-sim.js"></script>
 </body>
 </html>
