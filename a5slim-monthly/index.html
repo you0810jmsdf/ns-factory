@@ -404,8 +404,8 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="ctrl-row">
       <label>両面印刷</label>
-      <button class="btn-toggle" id="btnDuplex" onclick="toggleDuplex()">OFF</button>
-      <span style="font-size:9px;color:#aaa;">（A4横・短辺綴じ）</span>
+      <button class="btn-toggle on" id="btnDuplex" onclick="toggleDuplex()">ON</button>
+      <span style="font-size:9px;color:#aaa;">（見開きの裏に前後の月・短辺綴じ）</span>
     </div>
     <div class="ctrl-row">
       <label>レイアウト</label>
@@ -836,7 +836,7 @@ let opts = {
 };
 let customImgDataUrl = null;
 let hasRendered = false;
-let isDuplex = false;
+let isDuplex = true; // 既定は両面（リーフ方式）。A6・バイブル月間と同じ「見開き＝ひと月・裏に前後の月」
 let layoutMode = 'block';
 
 // === MODULE: Utility Functions ===
@@ -1356,7 +1356,7 @@ function initFontSelectors() {
 }
 
 // === MODULE: Settings Persistence ===
-const SETTINGS_KEY = 'nsf_a5slim_monthly_v1';
+const SETTINGS_KEY = 'nsf_a5slim_monthly_v2'; // v2: 両面を既定ONにしたため旧設定を引き継がない
 
 function saveSettings() {
   const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
@@ -1458,6 +1458,8 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
+  { date: '2026-09-11', type: 'fix', title: '両面印刷（見開きの裏に前後の月）を初期状態に',
+    detail: '初期状態が単票（裏面が白紙）になっていたため、A6・バイブル月間と同じ「見開き＝ひと月・裏に前後の月」のリーフ方式を既定にしました。単票が必要なときは「両面印刷」をOFFにしてください。' },
   { date: '2026-09-11', type: 'feat', title: 'A5スリム 月間ブロック印刷ツールを新規作成（日付なしモード付き）',
     detail: 'A6月間ブロック印刷ツールを土台に、A5スリム（110×210mm）版を作成しました。A4横に2面付け、穴はA5規格と同じ6穴（上端から32/51/70/140/159/178mm・綴じ側端から6mm）。「日付なし」モードでは年・月・日付・曜日・祝日を印刷せず、デジタル風（7セグ）の薄い数字と7つの曜日を透かしで出します。使う人が塗る・書くことで、月曜始まりでも日曜始まりでも、いつからでも使えます。両面印刷の面付けは実物での組み立て確認が未了です。' },
 ];
