@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ご購入ありがとうございます — N's refill | N's factory</title>
+<meta name="robots" content="noindex">
+<!-- Stripe 決済リンクの「支払い後のリダイレクト先」。?session_id={CHECKOUT_SESSION_ID} 付きで戻ってくる。
+     GAS が Stripe に照会して支払い済みならダウンロードリンクを返す。⛔ このページ自体はPDFの場所を知らない。 -->
+<style>
+:root { --accent:#A0785A; --accent-dark:#7A5540; --bg:#FFFFFF; --sub:#F5F5F7; --border:#E8E8ED; --text:#1D1D1F; --muted:#636366; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;line-height:1.7}
+.wrap{max-width:640px;margin:0 auto;padding:56px 20px 80px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+h1{font-size:clamp(22px,4vw,30px);font-weight:700;letter-spacing:-.02em;margin-bottom:16px}
+p{color:var(--muted);font-size:15px;margin-bottom:12px}
+.box{margin-top:24px;padding:22px;border:1px solid var(--border);border-radius:12px;background:var(--sub)}
+.btn{display:inline-block;margin-top:8px;padding:14px 26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;text-decoration:none;font-size:16px}
+.btn:hover{opacity:.9}
+.err{color:#b42318}
+.small{font-size:13px}
+a{color:var(--accent-dark)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow">N's refill</p>
+  <h1 id="title">お支払いを確認しています…</h1>
+  <p id="lead">少しお待ちください。</p>
+  <div class="box" id="box" hidden>
+    <p id="msg"></p>
+    <a class="btn" id="dl" href="#" target="_blank" rel="noopener" hidden>PDFをダウンロード</a>
+    <p class="small" id="note" style="margin-top:12px"></p>
+  </div>
+  <p class="small" style="margin-top:32px"><a href="monthly-undated.html">商品ページへ戻る</a> ／ <a href="../tools/">無料の印刷ツール</a></p>
+</main>
+<script>
+// デプロイ後に refill_sales GAS の Web アプリ URL を入れる（GASリンク台帳に記載）
+const REFILL_SALES_GAS_URL = 'https://script.google.com/macros/s/AKfycbw6KnJJdWoF3-tPwzg0GslEuN3upEykW9EhFVIdTn54FNq0UuHnryPH0MoaGVKV8px9/exec';
+(async function () {
+  const q = new URLSearchParams(location.search);
+  const sid = q.get('session_id') || '';
+  const title = document.getElementById('title'), lead = document.getElementById('lead'), box = document.getElementById('box'), msg = document.getElementById('msg'), dl = document.getElementById('dl'), note = document.getElementById('note');
+  function fail(text, hint) {
+    title.textContent = 'ダウンロードを表示できませんでした';
+    lead.textContent = '';
+    box.hidden = false; msg.className = 'err'; msg.textContent = text;
+    note.innerHTML = (hint || '') + 'お手数ですが <a href="mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('リフィルPDFのダウンロードについて') + '">メール</a> でご連絡ください。決済の記録から改めてお送りします。';
+  }
+  if (!sid) { fail('決済情報が付いていません。', 'Stripe のお支払い完了画面から自動で戻ってくるはずのページです。'); return; }
+  if (REFILL_SALES_GAS_URL.indexOf('__') >= 0) { fail('配信の準備中です。', ''); return; }
+  try {
+    const res = await fetch(REFILL_SALES_GAS_URL + '?action=deliver&session=' + encodeURIComponent(sid) + '&t=' + Date.now(), { cache: 'no-store' });
+    const txt = await res.text();
+    if (!txt || txt.trim().charAt(0) === '<') throw new Error('サーバーが混み合っています');
+    const data = JSON.parse(txt);
+    if (!data.ok) throw new Error({ unpaid: 'お支払いがまだ完了していません', 'amount mismatch': '金額が商品と一致しませんでした', 'invalid session': '決済情報の形式が正しくありません', 'not configured': '配信の準備中です' }[data.error] || data.error || '確認に失敗しました');
+    title.textContent = 'ご購入ありがとうございます';
+    lead.textContent = '下のボタンからPDFをダウンロードできます。' + (data.email ? ' 同じリンクを ' + data.email + ' にもお送りしました。' : '');
+    box.hidden = false; msg.textContent = 'A4横で、拡大・縮小なし（実際のサイズ）で印刷してください。';
+    dl.href = data.url; dl.hidden = false;
+    note.textContent = 'このページを閉じても、メールのリンクからいつでもダウンロードできます。';
+  } catch (e) {
+    fail(String(e && e.message ? e.message : e) + '。', '');
+  }
+})();
+</script>
+</body>
+</html>
