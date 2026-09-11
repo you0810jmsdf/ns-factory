@@ -10,6 +10,7 @@
 <style>
 :root { --accent:#A0785A; --accent-dark:#7A5540; --bg:#FFFFFF; --sub:#F5F5F7; --border:#E8E8ED; --text:#1D1D1F; --muted:#636366; }
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important} /* .btn{display:inline-block} が hidden に勝ち、エラー時にもダウンロードボタンが出ていた（2026-09-12） */
 body{background:var(--bg);color:var(--text);font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;line-height:1.7}
 .wrap{max-width:640px;margin:0 auto;padding:56px 20px 80px}
 .eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
@@ -52,10 +53,16 @@ const REFILL_SALES_GAS_URL = 'https://script.google.com/macros/s/AKfycbw6KnJJdWo
   if (!sid) { fail('決済情報が付いていません。', 'Stripe のお支払い完了画面から自動で戻ってくるはずのページです。'); return; }
   if (REFILL_SALES_GAS_URL.indexOf('__') >= 0) { fail('配信の準備中です。', ''); return; }
   try {
-    const res = await fetch(REFILL_SALES_GAS_URL + '?action=deliver&session=' + encodeURIComponent(sid) + '&t=' + Date.now(), { cache: 'no-store' });
-    const txt = await res.text();
-    if (!txt || txt.trim().charAt(0) === '<') throw new Error('サーバーが混み合っています');
-    const data = JSON.parse(txt);
+    // deliver は冪等（配信済みなら記録から返す）。GASに届かなかった応答（非200・本文先頭が '<'）だけ3回まで再送する。
+    // 2026-09-12 のテスト購入で、配信は済んでいたのに1回目がHTML応答で「混み合っています」になった。
+    let data = null;
+    for (let i = 0; i < 3 && !data; i++) {
+      if (i) { lead.textContent = 'もう少しお待ちください…（' + (i + 1) + '回目の確認）'; await new Promise(r => setTimeout(r, 1500 * i)); }
+      const res = await fetch(REFILL_SALES_GAS_URL + '?action=deliver&session=' + encodeURIComponent(sid) + '&t=' + Date.now(), { cache: 'no-store' });
+      const txt = await res.text();
+      if (res.ok && txt && txt.trim().charAt(0) !== '<') data = JSON.parse(txt);
+    }
+    if (!data) throw new Error('サーバーが混み合っています');
     if (!data.ok) throw new Error({ unpaid: 'お支払いがまだ完了していません', 'amount mismatch': '金額が商品と一致しませんでした', 'invalid session': '決済情報の形式が正しくありません', 'not configured': '配信の準備中です', 'unknown product': '商品の情報が見つかりませんでした', 'test mode': 'テスト用の決済のため配信しませんでした' }[data.error] || data.error || '確認に失敗しました');
     if (data.label) document.getElementById('eyebrow').textContent = data.label;
     // ⛔ 戻り先はサイト内の .html だけ（GASの返事をそのまま href に入れない）
