@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1a1a2e">
-  <title>N's factory ツール一覧</title>
+  <title>N's factory リフィル印刷ツール</title>
+  <meta name="description" content="システム手帳リフィル（Micro5・Mini6・バイブル・A6・A5スリム）の週間・月間・日次を無料で作成・A4印刷できるツール一覧。日付なし版、綴じ後プレビュー、印刷ズレ補正つき。">
   <!-- Google tag (gtag.js) -->
   <script>
 // 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
 // GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
 try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
-</script>
+  </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -19,742 +19,292 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     gtag('config', 'G-ND1T7H067Y');
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    /* ============================================================
+       N's factory — REFILL PRINT TOOLS（2026-09-11 全面刷新）
+       モノトーン・近未来調。このページはリフィル作成・印刷ツール専用。
+       他のアプリはデジタル幕僚室（/digital-room/）に置く（重複掲載しない）。
+       ============================================================ */
+    :root {
+      --bg: #0a0a0c;
+      --bg-2: #101013;
+      --panel: #141418;
+      --panel-2: #1a1a1f;
+      --line: #26262c;
+      --line-2: #34343b;
+      --fg: #ececee;
+      --fg-2: #a9a9b1;
+      --fg-3: #6c6c75;
+      --glow: rgba(255,255,255,.06);
+      --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: 'Inter', 'Noto Sans JP', -apple-system, 'Hiragino Sans', Meiryo, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { color-scheme: dark; }
     body {
-      font-family: 'Noto Sans JP', sans-serif;
-      background: #f5f5f7;
-      min-height: 100vh;
-      color: #1d1d1f;
+      background: var(--bg); color: var(--fg); font-family: var(--sans); font-weight: 400;
+      line-height: 1.6; -webkit-font-smoothing: antialiased; min-height: 100vh; overflow-x: hidden;
     }
+    /* 背景: 細いグリッド＋上部のわずかな光 */
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 48px 48px; opacity: .35;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 100%);
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(255,255,255,.07), transparent 70%);
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 20px 60px; }
 
-    /* === MODULE: Password Overlay === */
-    #pw-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: rgba(15,15,15,.92);
-      backdrop-filter: blur(6px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .pw-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 40px 32px;
-      width: 100%;
-      max-width: 360px;
-      text-align: center;
-      box-shadow: 0 8px 40px rgba(0,0,0,.4);
-    }
-    .pw-logo { font-size: 12px; color: #6e6e73; margin-bottom: 10px; }
-    .pw-title { font-size: 17px; font-weight: 700; color: #1d1d1f; margin-bottom: 10px; line-height: 1.4; }
-    .pw-hint { font-size: 13px; color: #6e6e73; margin-bottom: 20px; line-height: 1.6; }
-    .pw-form { display: flex; gap: 8px; margin-bottom: 10px; }
-    .pw-form input {
-      flex: 1;
-      padding: 10px 12px;
-      border: 1.5px solid #d2d2d7;
-      border-radius: 8px;
-      font-size: 15px;
-      outline: none;
-      font-family: 'Noto Sans JP', sans-serif;
-    }
-    .pw-form input:focus { border-color: #06C755; }
-    .pw-form button {
-      padding: 10px 18px;
-      background: #06C755;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Noto Sans JP', sans-serif;
-    }
-    .pw-form button:hover { background: #05a847; }
-    .pw-error { font-size: 12px; color: #ff3b30; margin-bottom: 10px; }
-    .pw-line-link {
-      font-size: 12px;
-      color: #06C755;
-      text-decoration: none;
-      display: block;
-      margin-top: 16px;
-    }
-    .pw-line-link:hover { text-decoration: underline; }
+    /* === MODULE: Top bar === */
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .brand { font-family: var(--mono); font-size: 12px; letter-spacing: .28em; color: var(--fg-2); text-transform: uppercase; }
+    .brand b { color: var(--fg); font-weight: 500; }
+    .topbar nav { display: flex; gap: 18px; font-size: 12px; color: var(--fg-2); }
+    .topbar nav a:hover { color: var(--fg); }
 
-    /* === MODULE: Header === */
-    .site-header {
-      background: #1a1a2e;
-      color: #fff;
-      padding: 28px 24px 24px;
-      text-align: center;
-    }
-    .site-header .brand { font-size: 12px; color: #a0a0b0; margin-bottom: 6px; letter-spacing: 0.05em; }
-    .site-header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em; }
-    .site-header .subtitle { font-size: 13px; color: #a0a0b0; margin-top: 6px; }
+    /* === MODULE: Hero === */
+    .hero { padding: 56px 0 36px; }
+    .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .3em; color: var(--fg-3); text-transform: uppercase; margin-bottom: 14px; }
+    .hero h1 { font-size: clamp(30px, 5vw, 52px); font-weight: 300; letter-spacing: -.01em; line-height: 1.12; }
+    .hero h1 strong { font-weight: 600; }
+    .hero p { margin-top: 16px; max-width: 640px; color: var(--fg-2); font-size: 14px; }
+    .hero .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--fg-2); border: 1px solid var(--line-2); border-radius: 999px; padding: 5px 12px; background: var(--bg-2); }
 
-    /* === MODULE: Tool Cards === */
-    .tools-container {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 28px 16px 60px;
-    }
+    /* === MODULE: Free notice（不具合連絡先を消さない） === */
+    .notice { display: flex; gap: 14px; align-items: flex-start; border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 14px 16px; font-size: 12.5px; color: var(--fg-2); margin: 8px 0 36px; }
+    .notice .dot { flex: none; width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: var(--fg); box-shadow: 0 0 12px rgba(255,255,255,.6); }
+    .notice b { color: var(--fg); font-weight: 500; }
+    .notice a { color: var(--fg); border-bottom: 1px solid var(--line-2); }
 
-    .tools-top-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: #6e6e73;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 14px;
-      padding-left: 2px;
-    }
+    /* === MODULE: Section label === */
+    .sec { display: flex; align-items: baseline; gap: 14px; margin: 44px 0 18px; }
+    .sec .n { font-family: var(--mono); font-size: 11px; color: var(--fg-3); letter-spacing: .2em; }
+    .sec h2 { font-size: 15px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
+    .sec .rule { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); }
 
-    /* === Size Groups === */
-    .size-group {
-      background: #fff;
-      border-radius: 18px;
-      margin-bottom: 16px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,.07);
-    }
-    .size-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 13px 20px;
-      border-bottom: 1px solid #f0f0f5;
-    }
-    .size-badge {
-      font-size: 11px;
-      font-weight: 700;
-      color: #fff;
-      border-radius: 6px;
-      padding: 3px 10px;
-      letter-spacing: 0.05em;
-      flex-shrink: 0;
-    }
-    .badge-a6    { background: #3b82f6; }
-    .badge-bible { background: #8b5cf6; }
-    .size-label { font-size: 13px; font-weight: 700; color: #1d1d1f; }
-    .size-sub   { font-size: 11px; color: #b0b0ba; margin-left: auto; }
+    /* === MODULE: Size cards === */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    .size { position: relative; border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-2), var(--panel)); border-radius: 14px; overflow: hidden; transition: border-color .2s, transform .2s, box-shadow .2s; }
+    .size:hover { border-color: var(--line-2); box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04) inset; }
+    .size-head { padding: 18px 18px 14px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: end; }
+    .size-head .code { font-family: var(--mono); font-size: 11px; letter-spacing: .24em; color: var(--fg-3); text-transform: uppercase; }
+    .size-head h3 { font-size: 20px; font-weight: 500; letter-spacing: .02em; margin-top: 2px; }
+    .size-head .dim { grid-row: 1 / span 2; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--fg-2); line-height: 1.7; }
+    .size-head .dim b { display: block; font-size: 15px; color: var(--fg); font-weight: 500; }
+    .size-meta { padding: 10px 18px; font-family: var(--mono); font-size: 10.5px; color: var(--fg-3); letter-spacing: .04em; border-bottom: 1px solid var(--line); display: flex; gap: 14px; flex-wrap: wrap; }
+    .tool { display: grid; grid-template-columns: 54px 1fr auto; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--line); transition: background .15s; }
+    .tool:last-child { border-bottom: none; }
+    .tool:hover { background: var(--glow); }
+    .tool .k { font-family: var(--mono); font-size: 10px; letter-spacing: .18em; color: var(--fg-3); text-transform: uppercase; }
+    .tool .t { font-size: 14px; font-weight: 500; color: var(--fg); }
+    .tool .d { font-size: 11.5px; color: var(--fg-2); margin-top: 1px; }
+    .tool .arrow { font-family: var(--mono); color: var(--fg-3); transition: transform .15s, color .15s; }
+    .tool:hover .arrow { transform: translateX(3px); color: var(--fg); }
+    .new { display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: .16em; color: var(--bg); background: var(--fg); border-radius: 3px; padding: 1px 6px; margin-left: 8px; vertical-align: 2px; }
 
-    .tool-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: transparent;
-      border-radius: 0;
-      padding: 16px 20px;
-      margin-bottom: 0;
-      text-decoration: none;
-      color: inherit;
-      box-shadow: none;
-      border-bottom: 1px solid #f5f5f7;
-      transition: background .12s;
-    }
-    .tool-card:last-child { border-bottom: none; }
-    .tool-card:hover { background: #f8f8fa; }
-    .tool-card:active { background: #f0f0f4; }
-
-    .tool-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 11px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .icon-daily  { background: #e8f4f8; }
-    .icon-weekly { background: #e8f8ee; }
-    .icon-monthly{ background: #f8f0e8; }
-    .icon-pw     { background: #f0e8f8; }
-
-    .tool-info { flex: 1; min-width: 0; }
-    .tool-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .tool-desc { font-size: 12px; color: #6e6e73; }
-    .tool-note { font-size: 11px; color: #06C755; margin-top: 3px; }
-    .badge-beta { font-size: 10px; font-weight: 700; color: #fff; background: #ff9500; border-radius: 4px; padding: 1px 5px; letter-spacing: 0.03em; flex-shrink: 0; }
-
-    .tool-arrow {
-      font-size: 18px;
-      color: #c7c7cc;
-      flex-shrink: 0;
-    }
-
-    .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: #6e6e73;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 12px;
-      padding-left: 4px;
-    }
-
-    /* === MODULE: Notebook Series Cards (詳細形式) === */
-    .notebook-card {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-      padding: 16px 20px 18px;
-      border-bottom: 1px solid #f5f5f7;
-      transition: background .12s;
-    }
-    .notebook-card:last-child { border-bottom: none; }
-    .notebook-card:hover { background: #f8f8fa; }
-    .notebook-card:active { background: #f0f0f4; }
-    .notebook-card-img {
-      width: 100%;
-      border-radius: 10px;
-      overflow: hidden;
-      background: #f0f0f5;
-      margin-bottom: 12px;
-      aspect-ratio: 16 / 9;
-    }
-    .notebook-card-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .notebook-card-num {
-      font-size: 11px;
-      font-weight: 700;
-      color: #6e6e73;
-      letter-spacing: 0.08em;
-      margin-bottom: 6px;
-    }
-    .notebook-card-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #1d1d1f;
-      line-height: 1.45;
-      margin-bottom: 8px;
-    }
-    .notebook-card-desc {
-      font-size: 12px;
-      color: #4a4a4f;
-      line-height: 1.7;
-      margin-bottom: 10px;
-    }
-    .notebook-card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-    }
-    .notebook-card-tags span {
-      font-size: 10px;
-      font-weight: 500;
-      color: #6e6e73;
-      background: #f0f0f5;
-      border-radius: 4px;
-      padding: 3px 8px;
-      letter-spacing: 0.02em;
-    }
-
-    /* === MODULE: Refill Spec Accordion === */
-    .spec-accordion {
-      background: #fff;
-      border-radius: 18px;
-      margin-top: 24px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,.07);
-    }
-    .spec-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 15px 20px;
-      cursor: pointer;
-      user-select: none;
-      border: none;
-      background: transparent;
-      width: 100%;
-      text-align: left;
-      font-family: 'Noto Sans JP', sans-serif;
-    }
-    .spec-toggle:hover { background: #f8f8fa; }
-    .spec-toggle-label { font-size: 13px; font-weight: 700; color: #1d1d1f; }
-    .spec-toggle-sub { font-size: 11px; color: #6e6e73; margin-top: 2px; }
-    .spec-toggle-icon { font-size: 18px; color: #c7c7cc; transition: transform .2s; flex-shrink: 0; }
-    .spec-accordion.open .spec-toggle-icon { transform: rotate(90deg); }
-    .spec-body {
-      display: none;
-      padding: 0 16px 20px;
-      border-top: 1px solid #f0f0f5;
-    }
-    .spec-accordion.open .spec-body { display: block; }
-    .spec-size-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #6e6e73;
-      margin: 16px 0 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .spec-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-    .spec-table th {
-      background: #f5f5f7;
-      color: #6e6e73;
-      font-weight: 700;
-      padding: 6px 8px;
-      text-align: left;
-      border-bottom: 1px solid #e5e5ea;
-    }
-    .spec-table td {
-      padding: 6px 8px;
-      border-bottom: 1px solid #f5f5f7;
-      color: #1d1d1f;
-      vertical-align: top;
-    }
-    .spec-table tr:last-child td { border-bottom: none; }
-    .spec-table .num { font-weight: 700; color: #1a1a2e; }
-    .spec-note { font-size: 11px; color: #a0a0a0; margin-top: 8px; line-height: 1.6; }
-    .spec-badge { display: inline-block; font-size: 10px; font-weight: 700; color: #fff; border-radius: 4px; padding: 1px 6px; margin-left: 4px; vertical-align: middle; }
-    .spec-badge-done { background: #06C755; }
-    .spec-badge-wip  { background: #ff9500; }
-    .spec-source { font-size: 10px; color: #a0a0a0; margin-top: 14px; line-height: 1.8; }
-    .spec-source a { color: #06C755; text-decoration: none; }
+    /* === MODULE: Spec tables === */
+    details.spec { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; }
+    details.spec summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; }
+    details.spec summary::-webkit-details-marker { display: none; }
+    details.spec summary .l { font-size: 14px; font-weight: 500; }
+    details.spec summary .s { font-size: 11.5px; color: var(--fg-2); margin-top: 2px; }
+    details.spec summary .i { font-family: var(--mono); color: var(--fg-3); transition: transform .2s; }
+    details.spec[open] summary .i { transform: rotate(90deg); }
+    .spec-body { padding: 4px 20px 22px; border-top: 1px solid var(--line); }
+    .spec-title { font-family: var(--mono); font-size: 11px; letter-spacing: .2em; color: var(--fg-3); text-transform: uppercase; margin: 22px 0 10px; }
+    .tscroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th { text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; color: var(--fg-3); font-weight: 400; padding: 8px 10px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+    td { padding: 9px 10px; border-bottom: 1px solid var(--line); color: var(--fg-2); vertical-align: top; white-space: nowrap; }
+    td:first-child { color: var(--fg); font-weight: 500; }
+    td.num { font-family: var(--mono); text-align: right; color: var(--fg); }
+    td .sub { display: block; font-size: 10.5px; color: var(--fg-3); white-space: normal; }
+    .ok { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--fg); border: 1px solid var(--line-2); border-radius: 3px; padding: 1px 7px; }
+    .ok.dim { color: var(--fg-3); border-style: dashed; }
+    .note { font-size: 11px; color: var(--fg-3); margin-top: 10px; line-height: 1.7; }
+    .note a { color: var(--fg-2); border-bottom: 1px solid var(--line-2); }
 
     /* === MODULE: Footer === */
-    .site-footer {
-      text-align: center;
-      padding: 24px 16px;
-      font-size: 11px;
-      color: #a0a0a0;
-      border-top: 1px solid #e5e5ea;
+    footer { margin-top: 60px; padding-top: 22px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--fg-3); letter-spacing: .08em; }
+    footer a { color: var(--fg-2); }
+    footer a:hover { color: var(--fg); }
+
+    @media (max-width: 560px) {
+      .wrap { padding: 0 14px 40px; }
+      .hero { padding: 40px 0 28px; }
+      .tool { grid-template-columns: 46px 1fr auto; padding: 12px 14px; }
+      .size-head, .size-meta { padding-left: 14px; padding-right: 14px; }
+      .topbar nav { gap: 12px; }
     }
-    .site-footer a { color: #06C755; text-decoration: none; }
+    @media print { body::before, body::after { display: none; } }
   </style>
 </head>
 <body>
 
 <!-- 合言葉ゲートは 2026-09-11 に解除（事業主指示・掲載ツールは全て無料開放済み）。復活させる場合は git 履歴を参照 -->
+<!-- 2026-09-11: パスワード管理・デジタル幕僚の開発ツールの掲載をやめ、リフィル作成・印刷ツール専用ページにした（他アプリは /digital-room/ に集約・重複掲載しない） -->
 
-<!-- ===== HEADER ===== -->
-<header class="site-header">
-  <div class="brand">N's factory</div>
-  <h1>ツール一覧</h1>
-  <p class="subtitle">無料・登録不要でお使いいただけます</p>
-</header>
+<div class="wrap">
 
-<!-- ===== TOOL CARDS ===== -->
-<main class="tools-container">
+  <header class="topbar">
+    <div class="brand"><b>N's factory</b> / refill print tools</div>
+    <nav>
+      <a href="../refill/">リフィル案内</a>
+      <a href="../digital-room/">デジタル幕僚室</a>
+      <a href="../">TOP</a>
+    </nav>
+  </header>
 
-  <div class="tools-top-label">手帳リフィル 印刷ツール</div>
-
-  <!-- A6 -->
-  <div class="size-group">
-    <div class="size-header">
-      <span class="size-badge badge-a6">A6</span>
-      <span class="size-label">A6サイズ</span>
-      <span class="size-sub">105 × 148 mm</span>
+  <section class="hero">
+    <div class="eyebrow">System planner refill — free print tools</div>
+    <h1>手帳リフィルを、<strong>自分で刷る。</strong></h1>
+    <p>5つの判型 × 週間・月間・日次。期間を指定してA4に面付けし、そのまま両面印刷・裁断・6穴パンチ。日付なし版（透かし）、綴じ後プレビュー、印刷ズレ補正つき。無料・登録不要、データは端末の外に出ません。</p>
+    <div class="tags">
+      <span class="tag">A4 両面印刷</span><span class="tag">期間指定</span><span class="tag">日付なし版</span><span class="tag">綴じ後プレビュー</span><span class="tag">印刷ズレ補正</span><span class="tag">PDF出力</span>
     </div>
-    <a class="notebook-card" href="https://you0810jmsdf.github.io/ns-factory/a6-daily/" target="_blank" rel="noopener">
-      <div class="notebook-card-img">
-        <img src="../assets/a6-print-tool-main.png" alt="A6デイリーリフィル印刷ツール">
-      </div>
-      <div class="notebook-card-num">02 — A6デイリーリフィル印刷ツール</div>
-      <div class="notebook-card-title">A6デイリースケジュールを、自由にレイアウトして印刷。</div>
-      <div class="notebook-card-desc">A4用紙1枚に4面のA6リフィルを自動配置。日付・時間グリッド・メモ欄のサイズ、穴ガイド位置、透かしテキストまで自由にカスタマイズできます。ブラウザだけで動作するため、インストール不要。印刷ボタン1クリックでそのまま出力できます。</div>
-      <div class="notebook-card-tags">
-        <span>A6システム手帳</span>
-        <span>デイリーリフィル</span>
-        <span>インストール不要</span>
-        <span>カスタマイズ自由</span>
-        <span>日英切替対応</span>
-      </div>
-    </a>
-    <a class="notebook-card" href="https://you0810jmsdf.github.io/ns-factory/a6-weekly/" target="_blank" rel="noopener">
-      <div class="notebook-card-img">
-        <img src="../assets/weekly-block-main.png" alt="A6週間ブロックリフィル印刷ツール">
-      </div>
-      <div class="notebook-card-num">03 — A6週間ブロックリフィル印刷ツール</div>
-      <div class="notebook-card-title">週間ブロック型スケジュール帳を、ブラウザだけで自由に印刷。</div>
-      <div class="notebook-card-desc">曜日ブロック型のA6リフィルを自由にカスタマイズ。月曜・日曜始まり切替、土日カラー対応、月次一括印刷、日英切替など多彩なオプションを搭載。インストール不要、印刷ボタン1クリックで出力できます。</div>
-      <div class="notebook-card-tags">
-        <span>A6システム手帳</span>
-        <span>週間ブロック</span>
-        <span>インストール不要</span>
-        <span>月曜/日曜始まり</span>
-        <span>日英切替対応</span>
-      </div>
-    </a>
-    <a class="notebook-card" href="https://you0810jmsdf.github.io/ns-factory/a6-monthly/" target="_blank" rel="noopener">
-      <div class="notebook-card-img">
-        <img src="../assets/monthly-block-main.png" alt="A6月間ブロックリフィル印刷ツール">
-      </div>
-      <div class="notebook-card-num">04 — A6月間ブロックリフィル印刷ツール</div>
-      <div class="notebook-card-title">月間ブロック型スケジュール帳を、ブラウザだけで自由に印刷。</div>
-      <div class="notebook-card-desc">見開き2ページ構成のA6月間リフィルを自由にカスタマイズ。祝日・土日カラー対応、年月範囲を自由に指定、日英切替など多彩なオプションを搭載。インストール不要、印刷ボタン1クリックで出力できます。</div>
-      <div class="notebook-card-tags">
-        <span>A6システム手帳</span>
-        <span>月間ブロック</span>
-        <span>インストール不要</span>
-        <span>祝日対応</span>
-        <span>日英切替対応</span>
-      </div>
-    </a>
+  </section>
+
+  <!-- 無料開放のお知らせ。⛔ 不具合の連絡先を消さないこと。 -->
+  <div class="notice">
+    <span class="dot"></span>
+    <div><b>無料でお使いください。</b>会員登録もパスワードも不要です。作ったデータはこの端末の中だけで処理され、どこにも送信されません。うまく動かない・印刷がずれる・こうしてほしい等は <a href="../links.html">こちら</a> か、各ツール右下の「不具合を報告」からお知らせください。個人で作っているので、教えていただけると助かります。</div>
   </div>
 
-  <!-- バイブル -->
-  <div class="size-group">
-    <div class="size-header">
-      <span class="size-badge badge-bible">バイブル</span>
-      <span class="size-label">バイブルサイズ</span>
-      <span class="size-sub">95 × 171 mm</span>
-    </div>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/bible-weekly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-weekly">🗓️</div>
-      <div class="tool-info">
-        <div class="tool-name">ウィークリーリフィル <span class="badge-beta">試作中</span></div>
-        <div class="tool-desc">1週間のブロック式週間スケジュール</div>
-        <div class="tool-note">モニター募集中 ／ 不具合・機能追加のご意見はLINEへ</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/bible-daily/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-daily">📅</div>
-      <div class="tool-info">
-        <div class="tool-name">デイリーリフィル <span class="badge-beta">試作中</span></div>
-        <div class="tool-desc">1日1ページ・時間軸付きデイリーログ</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/bible-monthly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-monthly">📆</div>
-      <div class="tool-info">
-        <div class="tool-name">マンスリーリフィル <span class="badge-beta">試作中</span></div>
-        <div class="tool-desc">月間ブロックカレンダー</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-  </div>
+  <div class="sec"><span class="n">01</span><h2>Tools by size</h2><span class="rule"></span></div>
 
-  <!-- A5スリム（2026-09-11 追加） -->
-  <div class="size-group">
-    <div class="size-header">
-      <span class="size-badge badge-bible">A5スリム</span>
-      <span class="size-label">A5スリムサイズ</span>
-      <span class="size-sub">110 × 210 mm</span>
-    </div>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/a5slim-weekly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-weekly">🗓️</div>
-      <div class="tool-info">
-        <div class="tool-name">ウィークリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">1ページ1週間のブロック式。日付なし（透かし版）も出力可</div>
-        <div class="tool-note">A4横に2面付け ／ 両面印刷は実物での組み立て確認が未了</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/a5slim-daily/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-daily">📅</div>
-      <div class="tool-info">
-        <div class="tool-name">デイリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">1日1ページ・時間軸付き。日付なし（透かし版）も出力可</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/a5slim-monthly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-monthly">📆</div>
-      <div class="tool-info">
-        <div class="tool-name">マンスリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">月間ブロックカレンダー。日付なし（曜日・日付を自分で塗って使う透かし版）も出力可</div>
-        <div class="tool-note">A4横に2面付け ／ 両面印刷は実物での組み立て確認が未了</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-  </div>
+  <main class="grid" id="tools">
 
-  <!-- Mini6（2026-09-11 追加） -->
-  <div class="size-group">
-    <div class="size-header">
-      <span class="size-badge badge-bible">Mini6</span>
-      <span class="size-label">Mini6（ミニ6穴）</span>
-      <span class="size-sub">80 × 128 mm</span>
-    </div>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/mini6-weekly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-weekly">🗓️</div>
-      <div class="tool-info">
-        <div class="tool-name">ウィークリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">1ページ1週間のブロック式。日付なし（透かし版）も出力可</div>
-        <div class="tool-note">A4縦に4面付け（2列×2段） ／ 両面印刷は実物での組み立て確認が未了</div>
+    <article class="size">
+      <div class="size-head">
+        <div><div class="code">Micro 5 · M5</div><h3>Micro5</h3></div>
+        <div class="dim"><b>62 × 105</b>mm · 5穴</div>
       </div>
-      <div class="tool-arrow">›</div>
-    </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/mini6-daily/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-daily">📅</div>
-      <div class="tool-info">
-        <div class="tool-name">デイリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">1日1ページ・時間軸付き。日付なし（透かし版）も出力可</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/mini6-monthly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-monthly">📆</div>
-      <div class="tool-info">
-        <div class="tool-name">マンスリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">見開き1か月の月間ブロック。日付なし（透かし版）も出力可</div>
-        <div class="tool-note">A4縦に4面付け（2列×2段） ／ 両面印刷は実物での組み立て確認が未了</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-  </div>
+      <div class="size-meta"><span>A4縦 3×2 = 6面</span><span>穴 15/34/53/72/91</span><span>長辺綴じ</span></div>
+      <a class="tool" href="../micro5-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック<span class="new">NEW</span></span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../micro5-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック<span class="new">NEW</span></span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../micro5-daily/"><span class="k">Daily</span><span><span class="t">デイリー<span class="new">NEW</span></span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+    </article>
 
-  <!-- Micro5（2026-09-11 追加） -->
-  <div class="size-group">
-    <div class="size-header">
-      <span class="size-badge badge-bible">Micro5</span>
-      <span class="size-label">Micro5（ミニ5穴）</span>
-      <span class="size-sub">62 × 105 mm</span>
-    </div>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/micro5-weekly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-weekly">🗓️</div>
-      <div class="tool-info">
-        <div class="tool-name">ウィークリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">1ページ1週間のブロック式。日付なし（透かし版）も出力可</div>
-        <div class="tool-note">A4縦に6面付け（3列×2段） ／ 両面印刷は実物での組み立て確認が未了</div>
+    <article class="size">
+      <div class="size-head">
+        <div><div class="code">Mini 6 · M6 · Pocket</div><h3>Mini6</h3></div>
+        <div class="dim"><b>80 × 128</b>mm · 6穴</div>
       </div>
-      <div class="tool-arrow">›</div>
-    </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/micro5-daily/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-daily">📅</div>
-      <div class="tool-info">
-        <div class="tool-name">デイリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">1日1ページ・時間軸付き。日付なし（透かし版）も出力可</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/micro5-monthly/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-monthly">📆</div>
-      <div class="tool-info">
-        <div class="tool-name">マンスリーリフィル <span class="badge-beta">新規</span></div>
-        <div class="tool-desc">見開き1か月の月間ブロック。日付なし（透かし版）も出力可</div>
-        <div class="tool-note">A4縦に6面付け（3列×2段） ／ 両面印刷は実物での組み立て確認が未了</div>
-      </div>
-      <div class="tool-arrow">›</div>
-    </a>
-  </div>
+      <div class="size-meta"><span>A4縦 2×2 = 4面</span><span>穴 16.3〜112.3 / 19.2mm</span><span>長辺綴じ</span></div>
+      <a class="tool" href="../mini6-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック<span class="new">NEW</span></span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../mini6-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック<span class="new">NEW</span></span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../mini6-daily/"><span class="k">Daily</span><span><span class="t">デイリー<span class="new">NEW</span></span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+    </article>
 
-  <!-- その他 -->
-  <div class="section-label" style="margin-top:8px;">その他のツール</div>
-  <div class="size-group">
-    <a class="tool-card" href="https://you0810jmsdf.github.io/ns-factory/password-note/" target="_blank" rel="noopener">
-      <div class="tool-icon icon-pw">🔑</div>
-      <div class="tool-info">
-        <div class="tool-name">N's notebook パスワード管理</div>
-        <div class="tool-desc">端末内だけで動くパスワード整理ノート</div>
+    <article class="size">
+      <div class="size-head">
+        <div><div class="code">Personal · Bible</div><h3>バイブル</h3></div>
+        <div class="dim"><b>95 × 170</b>mm · 6穴</div>
       </div>
-      <div class="tool-arrow">›</div>
-    </a>
-  </div>
+      <div class="size-meta"><span>A4縦 2×1 = 2面</span><span>穴 18.5〜145.5 / 群間50.8</span><span>長辺綴じ</span></div>
+      <a class="tool" href="../bible-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック</span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../bible-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック</span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../bible-daily/"><span class="k">Daily</span><span><span class="t">デイリー</span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+    </article>
 
-  <!-- デジタル幕僚開発ツール -->
-  <div class="section-label" style="margin-top:24px;">デジタル幕僚 開発ツール</div>
-  <div class="size-group">
-    <div style="padding:0;overflow:hidden;background:#fdf8f4;border-radius:14px;">
-      <img src="../assets/yt-transcribe-announce.png" alt="YouTube 文字起こしツール 告知画像" style="width:100%;display:block;">
-      <div style="padding:14px 18px;">
-        <div class="tool-name" style="margin-bottom:4px;">
-          YouTube 文字起こしツール
-          <span class="badge-beta" style="background:#A0785A;">社内用</span>
-        </div>
-        <div class="tool-desc" style="margin-bottom:10px;">URLを入れるだけで字幕をMarkdown自動取得。バッチ処理・IPブロック検知搭載。</div>
-        <button id="yt-launch-btn" onclick="launchYtApp()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;background:#A0785A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">▶ アプリを起動</button>
-        <div id="yt-launch-status" style="font-size:12px;color:#6e6e73;margin-top:6px;min-height:18px;"></div>
+    <article class="size">
+      <div class="size-head">
+        <div><div class="code">A6 · N's original</div><h3>A6</h3></div>
+        <div class="dim"><b>105 × 148</b>mm · 6穴</div>
       </div>
-    </div>
-  </div>
+      <div class="size-meta"><span>A4縦 2×2 = 4面</span><span>穴 14.75〜128.75 / 群間38</span><span>長辺綴じ</span></div>
+      <a class="tool" href="../a6-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック</span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../a6-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック</span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../a6-daily/"><span class="k">Daily</span><span><span class="t">デイリー</span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+    </article>
 
-
-  <!-- ===== REFILL SPEC ACCORDION ===== -->
-  <div class="section-label" style="margin-top:24px;">リフィル規格一覧</div>
-  <div class="spec-accordion" id="spec-accordion">
-    <button class="spec-toggle" id="spec-toggle" aria-expanded="false">
-      <div>
-        <div class="spec-toggle-label">システム手帳リフィル 規格データ</div>
-        <div class="spec-toggle-sub">穴位置・リフィル寸法・開発状況</div>
+    <article class="size">
+      <div class="size-head">
+        <div><div class="code">A5 Slim · A5 6-hole</div><h3>A5スリム</h3></div>
+        <div class="dim"><b>110 × 210</b>mm · 6穴</div>
       </div>
-      <span class="spec-toggle-icon">›</span>
-    </button>
-    <div class="spec-body" id="spec-body">
+      <div class="size-meta"><span>A4横 2面</span><span>穴 32〜178 / 群間69.9（A5規格）</span><span>短辺綴じ</span></div>
+      <a class="tool" href="../a5slim-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック</span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../a5slim-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック</span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      <a class="tool" href="../a5slim-daily/"><span class="k">Daily</span><span><span class="t">デイリー</span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+    </article>
 
-      <!-- サイズ寸法 -->
-      <div class="spec-size-title">サイズ一覧</div>
-      <table class="spec-table">
-        <thead>
-          <tr><th>サイズ</th><th>通称</th><th>幅</th><th>高さ</th><th>穴数</th></tr>
-        </thead>
+  </main>
+
+  <div class="sec"><span class="n">02</span><h2>Specifications</h2><span class="rule"></span></div>
+
+  <details class="spec" id="spec">
+    <summary>
+      <div><div class="l">システム手帳リフィル 規格データ</div><div class="s">リフィル寸法・穴位置・対応状況</div></div>
+      <span class="i">›</span>
+    </summary>
+    <div class="spec-body">
+
+      <div class="spec-title">Sizes</div>
+      <div class="tscroll">
+      <table>
+        <thead><tr><th>サイズ</th><th>通称</th><th>幅</th><th>高さ</th><th>穴数</th></tr></thead>
         <tbody>
           <tr><td>Micro 5</td><td>M5 / ミニ5穴</td><td class="num">62 mm</td><td class="num">105 mm</td><td>5穴</td></tr>
-          <tr><td>Pocket</td><td>mini6 / ポケット</td><td class="num">80 mm</td><td class="num">128 mm</td><td>6穴</td></tr>
-          <tr><td>Personal</td><td>バイブル / 聖書</td><td class="num">95 mm</td><td class="num">171 mm</td><td>6穴</td></tr>
+          <tr><td>Pocket</td><td>Mini6 / ポケット</td><td class="num">80 mm</td><td class="num">128 mm</td><td>6穴</td></tr>
+          <tr><td>Personal</td><td>バイブル / 聖書</td><td class="num">95 mm</td><td class="num">170 mm</td><td>6穴</td></tr>
           <tr><td>A6 ※</td><td>A6（独自）</td><td class="num">105 mm</td><td class="num">148 mm</td><td>6穴</td></tr>
+          <tr><td>A5 スリム</td><td>A5規格の穴・幅110</td><td class="num">110 mm</td><td class="num">210 mm</td><td>6穴</td></tr>
           <tr><td>A5</td><td>A5 / デスク</td><td class="num">148 mm</td><td class="num">210 mm</td><td>6穴</td></tr>
         </tbody>
       </table>
-      <p class="spec-note">※ A6はN's factory独自サイズ（標準規格外）／穴径：JIS Z 8303準拠 6 ± 0.5 mm</p>
+      </div>
+      <p class="note">※ A6はN's factory独自サイズ（標準規格外）／穴径：JIS Z 8303準拠 6 ± 0.5 mm（ツールのガイド円は4〜5mm）</p>
 
-      <!-- 穴位置 -->
-      <div class="spec-size-title">穴位置（上端から・mm）</div>
-      <table class="spec-table">
-        <thead>
-          <tr><th>サイズ</th><th>穴1</th><th>穴2</th><th>穴3</th><th>穴4</th><th>穴5</th><th>穴6</th><th>構成</th></tr>
-        </thead>
+      <div class="spec-title">Hole positions — from top edge (mm)</div>
+      <div class="tscroll">
+      <table>
+        <thead><tr><th>サイズ</th><th>穴1</th><th>穴2</th><th>穴3</th><th>穴4</th><th>穴5</th><th>穴6</th><th>構成</th></tr></thead>
         <tbody>
-          <tr>
-            <td>Micro5</td>
-            <td class="num">15</td><td class="num">34</td><td class="num">53</td><td class="num">72</td><td class="num">91</td><td>—</td>
-            <td style="font-size:11px;color:#6e6e73;">等間隔 19mm</td>
-          </tr>
-          <tr>
-            <td>mini6</td>
-            <td class="num">16.3</td><td class="num">35.5</td><td class="num">54.7</td><td class="num">73.9</td><td class="num">93.1</td><td class="num">112.3</td>
-            <td style="font-size:11px;color:#6e6e73;">等間隔 19.2mm<br>（当工房基準データ）</td>
-          </tr>
-          <tr>
-            <td>バイブル</td>
-            <td class="num">22</td><td class="num">41</td><td class="num">60</td><td class="num">111</td><td class="num">130</td><td class="num">149</td>
-            <td style="font-size:11px;color:#6e6e73;">2群×3穴<br>群間 50.8mm</td>
-          </tr>
-          <tr>
-            <td>A5</td>
-            <td class="num">32</td><td class="num">51</td><td class="num">70</td><td class="num">140</td><td class="num">159</td><td class="num">178</td>
-            <td style="font-size:11px;color:#6e6e73;">2群×3穴<br>群間 69.9mm</td>
-          </tr>
+          <tr><td>Micro5</td><td class="num">15</td><td class="num">34</td><td class="num">53</td><td class="num">72</td><td class="num">91</td><td>—</td><td>等間隔 19mm</td></tr>
+          <tr><td>Mini6</td><td class="num">16.3</td><td class="num">35.5</td><td class="num">54.7</td><td class="num">73.9</td><td class="num">93.1</td><td class="num">112.3</td><td>等間隔 19.2mm<span class="sub">当工房基準データ</span></td></tr>
+          <tr><td>バイブル</td><td class="num">18.5</td><td class="num">37.5</td><td class="num">56.5</td><td class="num">107.5</td><td class="num">126.5</td><td class="num">145.5</td><td>2群×3穴 群間 50.8mm<span class="sub">ツールの値（実機で2mm上げ）</span></td></tr>
+          <tr><td>A6</td><td class="num">14.75</td><td class="num">33.75</td><td class="num">52.75</td><td class="num">90.75</td><td class="num">109.75</td><td class="num">128.75</td><td>2群×3穴 群間 38mm</td></tr>
+          <tr><td>A5 / A5スリム</td><td class="num">32</td><td class="num">51</td><td class="num">70</td><td class="num">140</td><td class="num">159</td><td class="num">178</td><td>2群×3穴 群間 69.9mm</td></tr>
         </tbody>
       </table>
-      <p class="spec-note">群内間隔はすべて 19mm（¾インチ）共通。メーカーにより ±1〜2mm の誤差あり。</p>
+      </div>
+      <p class="note">群内間隔はすべて 19mm（¾インチ）共通。メーカーにより ±1〜2mm の誤差あり。穴中心は綴じ側の端から 5〜6.3mm（サイズごとの値は各ツールの「使い方」に記載）。</p>
 
-      <!-- 開発状況 -->
-      <div class="spec-size-title">ツール開発状況</div>
-      <table class="spec-table">
-        <thead>
-          <tr><th>サイズ</th><th>デイリー</th><th>ウィークリー</th><th>マンスリー</th></tr>
-        </thead>
+      <div class="spec-title">Status</div>
+      <div class="tscroll">
+      <table>
+        <thead><tr><th>サイズ</th><th>週間</th><th>月間</th><th>日次</th><th>備考</th></tr></thead>
         <tbody>
-          <tr>
-            <td>Micro5</td>
-            <td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td><td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td><td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td>
-          </tr>
-          <tr>
-            <td>mini6</td>
-            <td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td><td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td><td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td>
-          </tr>
-          <tr>
-            <td>バイブル</td>
-            <td><span class="spec-badge spec-badge-wip">試作中</span></td>
-            <td><span class="spec-badge spec-badge-wip">試作中</span></td>
-            <td><span class="spec-badge spec-badge-wip">試作中</span></td>
-          </tr>
-          <tr>
-            <td>A6（独自）</td>
-            <td><span class="spec-badge spec-badge-done">完成</span></td>
-            <td><span class="spec-badge spec-badge-done">完成</span></td>
-            <td><span class="spec-badge spec-badge-done">完成</span></td>
-          </tr>
-          <tr>
-            <td>A5</td>
-            <td>—</td><td>—</td><td>—</td>
-          </tr>
-          <tr>
-            <td>A5スリム（110×210）</td>
-            <td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td>
-            <td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td>
-            <td><span class="spec-badge spec-badge-done">完成</span><br><span style="font-size:10px;color:#6e6e73;">日付なし対応</span></td>
-          </tr>
+          <tr><td>Micro5</td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td>日付なし対応</td></tr>
+          <tr><td>Mini6</td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td>日付なし対応</td></tr>
+          <tr><td>バイブル</td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td>日付なし対応</td></tr>
+          <tr><td>A6</td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td>日付なし対応</td></tr>
+          <tr><td>A5スリム</td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td><span class="ok">READY</span></td><td>日付なし対応</td></tr>
+          <tr><td>A5</td><td><span class="ok dim">—</span></td><td><span class="ok dim">—</span></td><td><span class="ok dim">—</span></td><td>未着手</td></tr>
         </tbody>
       </table>
+      </div>
+      <p class="note">両面印刷後の組み立ては全サイズ共通：切り分けた紙を<b>すべて同じ向き</b>のまま重ねて綴じます（各ツールの「綴じ後プレビュー」で見開きの順と穴の位置を確認できます）。実物での組み立て確認は各サイズとも進行中です。</p>
+      <p class="note">出典：<a href="https://philofaxy.blogspot.com/2012/01/great-organiser-hole-spacing-conspiracy.html" target="_blank" rel="noopener">Philofaxy - Hole Spacing</a>　／　<a href="https://www.slide-techo.com/2017/10/27/%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E6%89%8B%E5%B8%B3%E3%81%AE%E7%A9%B4%E3%81%AE%E8%A9%B1/" target="_blank" rel="noopener">スライド手帳 - 穴の話</a>　／　当工房 基準データ（CAD）</p>
+    </div>
+  </details>
 
-      <p class="spec-source">
-        出典：
-        <a href="https://philofaxy.blogspot.com/2012/01/great-organiser-hole-spacing-conspiracy.html" target="_blank" rel="noopener">Philofaxy - Hole Spacing</a>　／
-        <a href="https://www.slide-techo.com/2017/10/27/%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E6%89%8B%E5%B8%B3%E3%81%AE%E7%A9%B4%E3%81%AE%E8%A9%B1/" target="_blank" rel="noopener">スライド手帳 - 穴の話</a>
-      </p>
-    </div><!-- /.spec-body -->
-  </div><!-- /.spec-accordion -->
+  <footer>
+    <span>© 2025–2026 N's factory</span>
+    <span><a href="https://lin.ee/qsmtY2N" target="_blank" rel="noopener">公式LINE</a> · <a href="../links.html">お問い合わせ</a> · <a href="../kouhou-room/ring-standards.html">リング規格図鑑</a></span>
+  </footer>
 
-</main>
-
-<!-- ===== FOOTER ===== -->
-<footer class="site-footer">
-  <p>© 2025 N's factory &nbsp;|&nbsp; <a href="https://lin.ee/qsmtY2N" target="_blank" rel="noopener">公式LINE</a></p>
-</footer>
-
-<script>
-// 合言葉ゲートは 2026-09-11 に解除（オーバーレイごと撤去）。復活させる場合は git 履歴を参照
-
-// === MODULE: Spec Accordion ===
-(function(){
-  var btn = document.getElementById('spec-toggle');
-  var acc = document.getElementById('spec-accordion');
-  btn.addEventListener('click', function(){
-    var open = acc.classList.toggle('open');
-    btn.setAttribute('aria-expanded', open);
-  });
-})();
-
-// === MODULE: YT App Launcher ===
-async function launchYtApp() {
-  var btn = document.getElementById('yt-launch-btn');
-  var status = document.getElementById('yt-launch-status');
-  btn.disabled = true;
-  btn.textContent = '確認中...';
-  status.textContent = '';
-
-  var running = await ytCheckRunning();
-  if (running) {
-    status.textContent = '✅ 起動済み — ブラウザで開きます';
-    window.open('http://localhost:8501', '_blank');
-    btn.disabled = false;
-    btn.textContent = '▶ アプリを起動';
-    return;
-  }
-
-  status.textContent = '⏳ 起動しています（初回は10〜20秒かかります）...';
-  window.location.href = 'ytapp://start';
-
-  btn.textContent = '起動待機中...';
-  var waited = 0;
-  var timer = setInterval(async function() {
-    waited += 2;
-    var ok = await ytCheckRunning();
-    if (ok) {
-      clearInterval(timer);
-      status.textContent = '✅ 起動完了 — ブラウザで開きます';
-      window.open('http://localhost:8501', '_blank');
-      btn.disabled = false;
-      btn.textContent = '▶ アプリを起動';
-    } else if (waited >= 25) {
-      clearInterval(timer);
-      status.innerHTML = '⚠️ 自動起動できませんでした。<br>PowerShellで <code>py -m streamlit run yt_app.py</code> を実行してください。';
-      btn.disabled = false;
-      btn.textContent = '▶ アプリを起動';
-    }
-  }, 2000);
-}
-
-async function ytCheckRunning() {
-  try {
-    await fetch('http://localhost:8501', { mode: 'no-cors', cache: 'no-store' });
-    return true;
-  } catch(e) {
-    return false;
-  }
-}
-</script>
+</div>
 
 <script src="../assets/access-counter.js"></script>
 </body>
