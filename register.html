@@ -861,13 +861,12 @@ function setVideoMakerLink(elementId, productId) {
 // ====== MASTER DATA ======
 const FIELD_MAP = { category: 'categories', material: 'materials', color: 'colors' };
 
+// GASの間欠障害（404・HTML応答）1回で「手動で入力」に落ち、選択肢が選べなくなっていた（2026-09-11）。
+// 読み取り専用なので jsonpCallRetry で再送し、それでも駄目なときだけ手動入力に切り替える。
 function fetchMasterData() {
-  return new Promise((resolve) => {
-    const url = GAS_URL + '?api=getMasterData&key=' + encodeURIComponent(REGISTER_KEY) + '&cb=' + Date.now();
-    const script = document.createElement('script');
-    window._masterDataCb = function(data) {
-      document.head.removeChild(script);
-      if (!data.ok) { console.warn('getMasterData error:', data.error); setFallbackOptions(); resolve(); return; }
+  return jsonpCallRetry({ api: 'getMasterData', key: REGISTER_KEY }, { tries: 3, timeoutMs: 25000 })
+    .then((data) => {
+      if (!data || !data.ok) { console.warn('getMasterData error:', data && data.error); setFallbackOptions(); return; }
       ['category','material','color'].forEach(field => {
         const sel = document.getElementById('f_' + field);
         const items = data[FIELD_MAP[field]] || [];
@@ -883,12 +882,8 @@ function fetchMasterData() {
       // サイズはマスターデータシートD列（2026-08-04新設）。既定値とマージして出す
       MASTER_SIZES = data.sizes || [];
       initSizeOptions();
-      resolve();
-    };
-    script.onerror = () => { try { document.head.removeChild(script); } catch(_){} setFallbackOptions(); resolve(); };
-    script.src = url + '&callback=_masterDataCb';
-    document.head.appendChild(script);
-  });
+    })
+    .catch((e) => { console.warn('getMasterData failed:', e && e.message); setFallbackOptions(); });
 }
 
 function fetchProductNames() {
@@ -1214,7 +1209,9 @@ async function loadProduct() {
   try {
     const d = await jsonpCallRetry(
       { api: 'getProductById', id, key: REGISTER_KEY },
-      { tries: 4, timeoutMs: 15000,
+      // 2026-09-11 実測: NF2026_651 の正常応答が 5.7〜14.1秒。15秒では4回とも打ち切られたため25秒へ
+      // （失敗時のHTML応答は約29.5秒なので、25秒ならそちらは従来どおり早めに見切れる）。
+      { tries: 4, timeoutMs: 25000,
         onRetry: (n, total) => setLoadStatus('応答がないため再試行中… ' + n + '/' + total) }
     );
     if (!d.ok) { setLoadStatus(''); alert('読込失敗: ' + (d.error || 'unknown')); return; }
