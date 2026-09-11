@@ -74,7 +74,7 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: Slot === */
 .slot {
   position: absolute; top: 0; width: 110mm; height: 210mm; overflow: hidden;
-  display: flex; flex-direction: row; padding-left: 2mm; padding-right: 2mm;
+  display: flex; flex-direction: row;
 }
 .slot[data-pos="L"] { left: 38.5mm; }
 .slot[data-pos="R"] { left: 148.5mm; }
@@ -89,7 +89,7 @@ body.panel-open #preview { margin-left: 280px; }
 .hole-strip.right .punch-guide { right: 0; }
 
 /* === MODULE: ページ本体 === */
-.page-body { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding-top: 3mm; padding-bottom: 3mm; }
+.page-body { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 3mm 2mm; }
 .cut-line-v { position: absolute; top: 0; bottom: 0; width: 0; border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
 
 /* === MODULE: ウォーターマーク === */
@@ -230,10 +230,9 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle" id="btnUndated" onclick="setUndated(true)">日付なし</button>
     </div>
     <div class="btn-row dated-only">
-      <button class="btn-primary" onclick="renderSingle()">4週分</button>
-      <button class="btn-primary" onclick="renderMonthly()">月次（月内の全週）</button>
+      <button class="btn-primary" onclick="renderSingle()">作成（期間の全週）</button>
     </div>
-    <div class="ctrl-row">
+    <div class="ctrl-row" style="display:none">
       <label>用紙面</label>
       <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
       <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
@@ -248,9 +247,11 @@ body.panel-open #preview { margin-left: 280px; }
 
   <div class="ctrl-section dated-only">
     <h3>日付・週設定</h3>
-    <div class="ctrl-row"><label>開始日</label><input type="date" id="startDate"></div>
-    <div class="ctrl-row"><label>週数</label><input type="number" id="weekCount" min="1" max="60" value="4" onchange="rerender()" style="width:60px;flex:none;"><span style="font-size:9px;color:#aaa;margin-left:6px;">開始日から何週分（最大60）。1枚の用紙に載る週数の倍数だと無駄が出ません</span></div>
-    <div class="ctrl-row"><label>月次（年月）</label><input type="month" id="monthPicker" value="2026-09"></div>
+    <div class="ctrl-row"><label>開始日</label><input type="date" id="startDate" onchange="rerender()"></div>
+    <div class="ctrl-row"><label>終了日</label><input type="date" id="periodEnd" onchange="rerender()"></div>
+    <div style="font-size:9px;color:#aaa;line-height:1.5;margin:0 2px 4px;">期間にかかる週をすべて作ります（最大60週）。用紙は必要枚数ぶん自動で増えます</div>
+    <div class="ctrl-row" style="display:none"><label>週数</label><input type="number" id="weekCount" min="1" max="60" value="4" onchange="rerender()" style="width:60px;flex:none;"><span style="font-size:9px;color:#aaa;margin-left:6px;">開始日から何週分（最大60）。1枚の用紙に載る週数の倍数だと無駄が出ません</span></div>
+    <div class="ctrl-row" style="display:none"><label>月次（年月）</label><input type="month" id="monthPicker" value="2026-09"></div>
   </div>
   <div class="ctrl-section">
     <h3>週の並び</h3>
@@ -430,7 +431,7 @@ body.panel-open #preview { margin-left: 280px; }
       <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
       <ol style="padding-left:18px; margin:4px 0;">
         <li>「印刷モード」で <b>日付あり／なし</b> と <b>言語</b> を選ぶ</li>
-        <li>日付ありは <b>開始日</b> から指定した <b>週数</b>（最大60週）、または <b>月次</b> で月内の全週。日付なしは <b>週数（枚数）</b></li>
+        <li>日付ありは <b>期間（開始日〜終了日）</b> にかかる週をすべて（最大60週）。日付なしは <b>週数（枚数）</b></li>
         <li>用紙面（表面／裏面）を選んでプレビュー。PCは「印刷」、スマホは「PDFを生成」</li>
         <li>印刷ダイアログで <b>A4横・「実際のサイズ（100%）」</b> を選ぶ</li>
       </ol>
@@ -503,7 +504,7 @@ const FONT_OPTIONS = [
 
 // === MODULE: State ===
 let showFront = true;
-let showBack = false;
+let showBack = true; // 常に両面を出す（2026-09-11 表裏選択を廃止）
 let isEN = false;
 let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
@@ -763,26 +764,18 @@ function renderSingle() {
     const startDay = parseInt(document.getElementById('weekStartDay').value);
     const rawDate = document.getElementById('startDate').value || toDateVal(new Date());
     const baseWeek = getWeekStart(new Date(rawDate), startDay);
-    const cnt = Math.min(60, Math.max(1, parseInt(document.getElementById('weekCount').value) || PER_SHEET));
-    const weeks = Array.from({ length: cnt }, (_, n) => addWeeks(baseWeek, n));
-    html = renderSets(weeks, s => `${toDateVal(weeks[0])} から${cnt}週 · Sheet ${s + 1}`);
+    // 期間にかかる週をすべて（終了日が未入力なら用紙1枚ぶん）
+    const rawEnd = document.getElementById('periodEnd').value;
+    const endD = rawEnd ? new Date(rawEnd) : addWeeks(baseWeek, PER_SHEET - 1);
+    const weeks = [];
+    for (let cur = baseWeek; cur <= endD && weeks.length < 60; cur = addWeeks(cur, 1)) weeks.push(cur);
+    if (!weeks.length) weeks.push(baseWeek);
+    html = renderSets(weeks, s => `${toDateVal(weeks[0])}〜 ${weeks.length}週 · Sheet ${s + 1}`);
   }
   document.getElementById('preview').innerHTML = html;
   saveSettings();
 }
-function renderMonthly() {
-  if (opts.undated) { renderSingle(); return; }
-  lastRenderMode = 'monthly';
-  const startDay = parseInt(document.getElementById('weekStartDay').value);
-  const monthVal = document.getElementById('monthPicker').value || toDateVal(new Date()).slice(0, 7);
-  const [y, m] = monthVal.split('-').map(Number);
-  const monthStart = new Date(y, m-1, 1), monthEnd = new Date(y, m, 0);
-  const weeks = [];
-  let cur = getWeekStart(monthStart, startDay);
-  while (cur <= monthEnd) { weeks.push(new Date(cur)); cur = addWeeks(cur, 1); }
-  document.getElementById('preview').innerHTML = renderSets(weeks, s => `${y}年${m}月 Sheet ${s+1}`);
-  saveSettings();
-}
+function renderMonthly() { renderSingle(); } // 月次表示は期間指定に統合（2026-09-11）
 
 // === MODULE: PDF Generation（A4横） ===
 async function generatePDF(ev) {
@@ -885,8 +878,7 @@ function loadSettings() {
     }
   }
   if (s.isEN != null) { isEN = s.isEN; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); }
-  if (s.showFront != null) { showFront = s.showFront; document.getElementById('btnOdd').classList.toggle('on', showFront); }
-  if (s.showBack != null) { showBack = s.showBack; document.getElementById('btnEven').classList.toggle('on', showBack); }
+  showFront = true; showBack = true; // 保存値に関わらず常に両面（表裏選択は廃止）
 }
 function resetSettings() {
   if (!confirm('設定をリセットしますか？\nブラウザに保存された設定を削除してページを再読み込みします。')) return;
@@ -902,6 +894,10 @@ const HISTORY_ENTRIES = [
     detail: '綴じ後プレビュー（同日追加）で判明。穴を用紙の位置ではなくページの役割で決めるようにしました（右ページ＝表面は左穴、左ページ＝裏面は右穴）。A5スリム月間・バイブル週間と同じ方式で、切り分けた紙はすべて同じ向きのまま重ねて綴じられます。' },
   { date: '2026-09-11', type: 'feat', title: '「週数」指定で任意の期間（最大60週）を一度に出力',
     detail: '開始日指定が1枚の用紙ぶん（固定週数）しか出せなかったのを、開始日から指定した週数（最大60週≒1年）を続けて出力できるようにしました。用紙は必要枚数ぶん自動で増えます。' },
+  { date: '2026-09-11', type: 'improve', title: '期間（開始日〜終了日）指定に統一・表面／裏面の選択を廃止',
+    detail: '年・月や週数の指定をやめ、すべて「開始日〜終了日」の期間で作るようにしました（月間は期間にかかる月をすべて、週間は期間にかかる週をすべて、日次は期間の全日）。用紙は常に表面・裏面を続けて出します（片面だけ印刷したいときは印刷ダイアログの奇数／偶数ページ指定を使ってください）。' },
+  { date: '2026-09-11', type: 'fix', title: '穴の位置が綴じ側の端から約8mmになっていた不具合を修正（仕様どおり6mm）',
+    detail: 'リフィル枠の左右に2mmの余白を取り、その内側に穴帯を置いていたため、穴中心が端から約8mmになっていました。穴帯を枠の端に置き、本文側だけに余白を残す形に直しました（A5規格の穴位置＝端から6mm）。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -952,6 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   document.getElementById('startDate').value = toDateVal(today);
   document.getElementById('monthPicker').value = `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
+  { const e = new Date(today); e.setDate(e.getDate() + PER_SHEET * 7 - 1); document.getElementById('periodEnd').value = toDateVal(e); }
   initFontSelectors();
   initCLFontSelectors();
   loadSettings();
