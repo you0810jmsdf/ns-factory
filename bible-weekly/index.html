@@ -419,6 +419,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row" id="rowStartDate">
       <label>開始日</label>
       <input type="date" id="startDate" onchange="renderSingle()" oninput="renderSingle()">
+      <label style="margin-left:6px;">週数</label><input type="number" id="weekCount" min="1" max="60" value="4" onchange="renderSingle()" style="width:56px;flex:none;" title="開始日から何週分（最大60）">
     </div>
     <div class="ctrl-row" id="rowMonthPicker" style="display:none">
       <label>年月</label>
@@ -1251,6 +1252,25 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
 }
 
 // === MODULE: Single Week Render ===
+// === MODULE: Render（週の配列 → 1枚の用紙に4週: 表2＋裏2） ===
+const PER_SHEET = 4; // 1枚の用紙に載る週数（2面付け=表W1・W3／裏W4・W2。片面2面も4週で1セット）
+function renderSets(weeks, labelFn) {
+  const is2up = printMode === '2up';
+  let html = '';
+  const setCount = Math.max(1, Math.ceil(weeks.length / PER_SHEET));
+  for (let s = 0; s < setCount; s++) {
+    const ws = [], pn = [];
+    for (let i = 0; i < PER_SHEET; i++) { const idx = s * PER_SHEET + i; ws.push(idx < weeks.length ? weeks[idx] : null); pn.push(idx + 1); }
+    const sides = [...(showFront?['front']:[]), ...(showBack?['back']:[])];
+    for (const sideKey of sides) {
+      const lab = sideKey === 'front' ? (is2up ? '表面（1回目印刷）' : '表面（片面）') : (is2up ? '裏面（反転して印刷）' : '裏面（片面）');
+      html += `<div class="sheet-wrap"><div class="sheet-label">${labelFn(s)} · ${lab}</div>${makeA4HTML(ws, pn, sideKey)}</div>`;
+    }
+  }
+  if (!showFront && !showBack) html = '<p style="color:#666;font-size:12px;">ページ面を選択してください</p>';
+  return html;
+}
+
 function renderSingle() {
   lastRenderMode = 'single';
   document.getElementById('btnSingle').classList.add('on');
@@ -1261,17 +1281,9 @@ function renderSingle() {
   const rawDate = document.getElementById('startDate').value || toDateVal(new Date());
   // 'T00:00:00' でローカル時刻として解釈しUTCずれを防ぐ
   const baseWeek = getWeekStart(new Date(rawDate + 'T00:00:00'), startDay);
-
-  const weekOffsets = [0, 1, 2, 3];
-  const weekStartDates = weekOffsets.map(n => addWeeks(baseWeek, n));
-  const pageNums = weekOffsets.map((_, i) => i + 1);
-
-  let html = '';
-  const is2up = printMode === '2up';
-  if (showFront) html += `<div class="sheet-wrap"><div class="sheet-label">${is2up ? '表面（1回目印刷）W1・W3' : '表面（片面）W1・W2'}</div>${makeA4HTML(weekStartDates, pageNums, 'front')}</div>`;
-  if (showBack)  html += `<div class="sheet-wrap"><div class="sheet-label">${is2up ? '裏面（反転して印刷）W2・W4' : '裏面（片面）W3・W4'}</div>${makeA4HTML(weekStartDates, pageNums, 'back')}</div>`;
-  if (!showFront && !showBack) html = '<p style="color:#666;font-size:12px;">ページ面を選択してください</p>';
-  document.getElementById('preview').innerHTML = html;
+  const cnt = Math.min(60, Math.max(1, parseInt((document.getElementById('weekCount') || {}).value) || PER_SHEET));
+  const weeks = Array.from({ length: cnt }, (_, n) => addWeeks(baseWeek, n));
+  document.getElementById('preview').innerHTML = renderSets(weeks, s => `${toDateVal(weeks[0])} から${cnt}週 · Sheet ${s + 1}`);
   saveSettings();
 }
 
@@ -1287,38 +1299,13 @@ function renderMonthly() {
   const [y, m] = monthVal.split('-').map(Number);
   const monthStart = new Date(y, m-1, 1);
   const monthEnd = new Date(y, m, 0);
-
   const weeks = [];
   let cur = getWeekStart(monthStart, startDay);
-  while (cur <= monthEnd) {
-    weeks.push(new Date(cur));
-    cur = addWeeks(cur, 1);
-  }
-
-  const slotsPerSheet = 2;
-  const sheetsNeeded = Math.ceil(weeks.length / slotsPerSheet);
-  let html = '';
-
-  for (let s = 0; s < sheetsNeeded; s++) {
-    const sides = [...(showFront?['front']:[]), ...(showBack?['back']:[])];
-    for (const sideKey of sides) {
-      const weekStartDates = [];
-      const pageNums = [];
-      for (let slot = 0; slot < 4; slot++) {
-        const idx = s * slotsPerSheet + slot;
-        weekStartDates.push(weeks[idx] || null);
-        pageNums.push(idx + 1);
-      }
-      html += `<div class="sheet-wrap">
-        <div class="sheet-label">Sheet ${s+1} · ${sideKey === 'front' ? '表面（1回目印刷）' : '裏面（反転して印刷）'}</div>
-        ${makeA4HTML(weekStartDates, pageNums, sideKey)}
-      </div>`;
-    }
-  }
-
-  document.getElementById('preview').innerHTML = html;
+  while (cur <= monthEnd) { weeks.push(new Date(cur)); cur = addWeeks(cur, 1); }
+  document.getElementById('preview').innerHTML = renderSets(weeks, s => `${y}年${m}月 Sheet ${s + 1}`);
   saveSettings();
 }
+
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
@@ -1346,6 +1333,8 @@ const HISTORY_ENTRIES = [
   { date: '2026-05-04', type: 'improve', title: '月間カレンダー「上端」スライダーの最大値を115mmから200mmに拡張', detail: '' },
   { date: '2026-05-04', type: 'fix', title: '穴位置をさらに1mm上に修正（18.5/37.5/56.5/107.5/126.5/145.5）', detail: '' },
   { date: '2026-05-04', type: 'feat', title: '設定の自動保存・復元機能を追加（ページを開き直しても設定が保持されます）', detail: 'localStorageに保存。パネル上部の「設定リセット」ボタンで初期値に戻せます。' },
+  { date: '2026-09-11', type: 'fix', title: '月別表示で5週以上ある月に週が重複して出る不具合を修正／「週数」指定を追加',
+    detail: '月別表示の面付けで1枚あたりの週数を2として計算していたため、5週以上の月では2枚目に3・4週目がもう一度印刷されていました。1枚4週で計算するよう修正。あわせて開始日指定に「週数」（最大60週）を追加し、任意の期間を一度に出力できるようにしました。' },
 ];
 
 function openHistory() {

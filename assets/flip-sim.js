@@ -55,6 +55,20 @@
   }
 
   let sp = [], idx = 0, ov, stage, counter, note;
+  // 各ツールの「表面／裏面」表示がOFFだと裏が描画されず白紙に見えるので、開いている間だけ両面を描画する（閉じたら元に戻す）
+  let restoreSides = null;
+  function ensureBothSides() {
+    try {
+      if (typeof showFront === 'undefined' || typeof showBack === 'undefined' || typeof togglePageSide !== 'function') return;
+      const need = []; if (!showFront) need.push('front'); if (!showBack) need.push('back');
+      if (need.length) { need.forEach(sd => togglePageSide(sd)); restoreSides = need; }
+    } catch (e) { restoreSides = null; }
+  }
+  function restoreSidesIfNeeded() {
+    if (!restoreSides) return;
+    try { restoreSides.forEach(sd => togglePageSide(sd)); } catch (e) {}
+    restoreSides = null;
+  }
   function render() {
     const s = sp[idx]; if (!s) return;
     stage.innerHTML = '';
@@ -77,12 +91,13 @@
   }
   function go(d) { idx = Math.max(0, Math.min(sp.length - 1, idx + d)); render(); }
   function open() {
+    ensureBothSides();
     const leaves = collect();
-    if (!leaves.length) { alert('綴じ後プレビューを出せません。両面印刷をONにして、先にプレビューを表示してください。'); return; }
+    if (!leaves.length) { restoreSidesIfNeeded(); alert('綴じ後プレビューを出せません。両面印刷をONにして、先にプレビューを表示してください。'); return; }
     sp = spreads(leaves); idx = 0;
     ov.style.display = 'flex'; render();
   }
-  function close() { ov.style.display = 'none'; }
+  function close() { ov.style.display = 'none'; restoreSidesIfNeeded(); }
 
   function mount() {
     const st = document.createElement('style');

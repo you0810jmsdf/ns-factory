@@ -252,6 +252,7 @@ body.panel-open #preview { margin-left: 280px; }
   <div class="ctrl-section dated-only">
     <h3>日付・週設定</h3>
     <div class="ctrl-row"><label>開始日</label><input type="date" id="startDate"></div>
+    <div class="ctrl-row"><label>週数</label><input type="number" id="weekCount" min="1" max="60" value="8" onchange="rerender()" style="width:60px;flex:none;"><span style="font-size:9px;color:#aaa;margin-left:6px;">開始日から何週分（最大60）。1枚の用紙に載る週数の倍数だと無駄が出ません</span></div>
     <div class="ctrl-row"><label>月次（年月）</label><input type="month" id="monthPicker" value="2026-09"></div>
   </div>
   <div class="ctrl-section">
@@ -432,7 +433,7 @@ body.panel-open #preview { margin-left: 280px; }
       <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
       <ol style="padding-left:18px; margin:4px 0;">
         <li>「印刷モード」で <b>日付あり／なし</b> と <b>言語</b> を選ぶ</li>
-        <li>日付ありは <b>開始日</b> から4週分、または <b>月次</b> で月内の全週。日付なしは <b>週数（枚数）</b></li>
+        <li>日付ありは <b>開始日</b> から指定した <b>週数</b>（最大60週）、または <b>月次</b> で月内の全週。日付なしは <b>週数（枚数）</b></li>
         <li>用紙面（表面／裏面）を選んでプレビュー。PCは「印刷」、スマホは「PDFを生成」</li>
         <li>印刷ダイアログで <b>A4縦・「実際のサイズ（100%）」</b> を選ぶ</li>
       </ol>
@@ -769,8 +770,9 @@ function renderSingle() {
     const startDay = parseInt(document.getElementById('weekStartDay').value);
     const rawDate = document.getElementById('startDate').value || toDateVal(new Date());
     const baseWeek = getWeekStart(new Date(rawDate), startDay);
-    const weeks = Array.from({ length: PER_SHEET }, (_, n) => addWeeks(baseWeek, n));
-    html = renderSets(weeks, () => `${toDateVal(weeks[0])} から${PER_SHEET}週`);
+    const cnt = Math.min(60, Math.max(1, parseInt(document.getElementById('weekCount').value) || PER_SHEET));
+    const weeks = Array.from({ length: cnt }, (_, n) => addWeeks(baseWeek, n));
+    html = renderSets(weeks, s => `${toDateVal(weeks[0])} から${cnt}週 · Sheet ${s + 1}`);
   }
   document.getElementById('preview').innerHTML = html;
   saveSettings();
@@ -833,7 +835,7 @@ const SETTINGS_KEY = 'nsf_mini6_weekly_v1';
 function saveSettings() {
   const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
   const s = {
-    weekStartDay: get('weekStartDay'), undatedCount: get('undatedCount'), ghostOpacity: get('ghostOpacity'),
+    weekStartDay: get('weekStartDay'), undatedCount: get('undatedCount'), weekCount: (document.getElementById('weekCount') || {}).value, ghostOpacity: get('ghostOpacity'),
     dayLabelW: get('dayLabelW'), dayNumFont: get('dayNumFont'), dayWdFont: get('dayWdFont'),
     dayBlockH: get('dayBlockH'), lineCount: get('lineCount'), memoLineCount: get('memoLineCount'),
     textWmContent: get('textWmContent'), textWmX: get('textWmX'), textWmY: get('textWmY'), textWmSize: get('textWmSize'), textWmAngle: get('textWmAngle'),
@@ -859,6 +861,7 @@ function loadSettings() {
   }
   const sd = document.getElementById('weekStartDay'); if (sd && s.weekStartDay != null) sd.value = s.weekStartDay;
   if (s.undatedCount != null) { const el = document.getElementById('undatedCount'); if (el) el.value = s.undatedCount; }
+  if (s.weekCount != null) { const el = document.getElementById('weekCount'); if (el) el.value = s.weekCount; }
   if (s.ghostOpacity != null) { const el = document.getElementById('ghostOpacity'); if (el) { el.value = s.ghostOpacity; setCSSVar('--ghost-opacity', s.ghostOpacity); const sp = el.nextElementSibling; if (sp) sp.textContent = Math.round(s.ghostOpacity * 100); } }
   setRange('dayLabelW', s.dayLabelW, '--day-label-w', 'mm');
   setRange('dayNumFont', s.dayNumFont, '--day-num-font', 'mm');
