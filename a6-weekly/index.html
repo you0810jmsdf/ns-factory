@@ -366,6 +366,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row">
       <label>開始日</label>
       <input type="date" id="startDate">
+      <label style="margin-left:6px;">週数</label><input type="number" id="weekCount" min="1" max="60" value="8" onchange="renderSingle()" style="width:56px;flex:none;" title="開始日から何週分（最大60）">
     </div>
     <div class="ctrl-row">
       <label>月次（年月）</label>
@@ -1185,22 +1186,32 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
 }
 
 // === MODULE: Single Week Render ===
+// === MODULE: Render（週の配列 → 1枚の用紙に8週: 表4＋裏4） ===
+const PER_SHEET = 8; // 1枚の用紙に載る週数（表裏）
+function renderSets(weeks, labelFn) {
+  let html = '';
+  const setCount = Math.max(1, Math.ceil(weeks.length / PER_SHEET));
+  for (let s = 0; s < setCount; s++) {
+    const ws = [], pn = [];
+    for (let i = 0; i < PER_SHEET; i++) { const idx = s * PER_SHEET + i; ws.push(idx < weeks.length ? weeks[idx] : null); pn.push(idx + 1); }
+    const sides = [...(showFront?['front']:[]), ...(showBack?['back']:[])];
+    for (const sideKey of sides) {
+      html += `<div class="sheet-wrap"><div class="sheet-label">${labelFn(s)} · ${sideKey === 'front' ? '表面' : '裏面'}</div>${makeA4HTML(ws, pn, sideKey)}</div>`;
+    }
+  }
+  if (!showFront && !showBack) html = '<p style="color:#666;font-size:12px;">ページ面を選択してください</p>';
+  return html;
+}
+
 function renderSingle() {
   lastRenderMode = 'single';
   const startDay = parseInt(document.getElementById('weekStartDay').value);
   const rawDate = document.getElementById('startDate').value
     || toDateVal(new Date());
   const baseWeek = getWeekStart(new Date(rawDate), startDay);
-
-  const weekOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
-  const weekStartDates = weekOffsets.map(n => addWeeks(baseWeek, n));
-  const pageNums = weekOffsets.map((_, i) => i + 1);
-
-  let html = '';
-  if (showFront) html += `<div class="sheet-wrap"><div class="sheet-label">表面</div>${makeA4HTML(weekStartDates, pageNums, 'front')}</div>`;
-  if (showBack)  html += `<div class="sheet-wrap"><div class="sheet-label">裏面</div>${makeA4HTML(weekStartDates, pageNums, 'back')}</div>`;
-  if (!showFront && !showBack) html = '<p style="color:#666;font-size:12px;">ページ面を選択してください</p>';
-  document.getElementById('preview').innerHTML = html;
+  const cnt = Math.min(60, Math.max(1, parseInt((document.getElementById('weekCount') || {}).value) || PER_SHEET));
+  const weeks = Array.from({ length: cnt }, (_, n) => addWeeks(baseWeek, n));
+  document.getElementById('preview').innerHTML = renderSets(weeks, s => `${toDateVal(weeks[0])} から${cnt}週 · Sheet ${s + 1}`);
   saveSettings();
 }
 
@@ -1212,36 +1223,11 @@ function renderMonthly() {
   const [y, m] = monthVal.split('-').map(Number);
   const monthStart = new Date(y, m-1, 1);
   const monthEnd = new Date(y, m, 0);
-
   // 月内の全週を収集
   const weeks = [];
   let cur = getWeekStart(monthStart, startDay);
-  while (cur <= monthEnd) {
-    weeks.push(new Date(cur));
-    cur = addWeeks(cur, 1);
-  }
-
-  const sheetsNeeded = Math.ceil(weeks.length / 8);
-  let html = '';
-
-  for (let s = 0; s < sheetsNeeded; s++) {
-    const sides = [...(showFront?['front']:[]), ...(showBack?['back']:[])];
-    for (const sideKey of sides) {
-      const weekStartDates = [];
-      const pageNums = [];
-      for (let slot = 0; slot < 8; slot++) {
-        const idx = s * 8 + slot;
-        weekStartDates.push(weeks[idx] || null);
-        pageNums.push(idx + 1);
-      }
-      html += `<div class="sheet-wrap">
-        <div class="sheet-label">Sheet ${s+1} · ${sideKey === 'front' ? '表面' : '裏面'}</div>
-        ${makeA4HTML(weekStartDates, pageNums, sideKey)}
-      </div>`;
-    }
-  }
-
-  document.getElementById('preview').innerHTML = html;
+  while (cur <= monthEnd) { weeks.push(new Date(cur)); cur = addWeeks(cur, 1); }
+  document.getElementById('preview').innerHTML = renderSets(weeks, s => `${y}年${m}月 Sheet ${s + 1}`);
   saveSettings();
 }
 
@@ -1270,6 +1256,8 @@ const HISTORY_ENTRIES = [
     detail: 'ラベル幅・メモ行数・フォント・透かし位置など全ての設定がブラウザに自動保存されるようになりました。次回アクセス時に前回の設定が自動的に復元されます。設定を初期状態に戻したい場合は、パネル上部の「設定リセット」ボタンをご利用ください。' },
   { date: '2026-09-11', type: 'fix', title: '両面印刷の右列（右上・右下）で表裏のページが逆になる不具合を修正',
     detail: '綴じ後プレビュー（同日追加）で判明。A4を切って重ねると右列の紙は裏返して綴じる（A6月間で実物確認済みの物理リーフ方式）ため、右列だけ表裏のページを入れ替える必要がありました。従来は右列の紙をめくると 4→3 のように順番が逆になっていました。穴の位置（A4の外端側）は変わりません。組み立て: 左列の紙はそのまま、右列の紙は裏返して重ねてください。' },
+  { date: '2026-09-11', type: 'feat', title: '「週数」指定で任意の期間（最大60週）を一度に出力',
+    detail: '開始日指定が1枚の用紙ぶん（固定週数）しか出せなかったのを、開始日から指定した週数（最大60週≒1年）を続けて出力できるようにしました。用紙は必要枚数ぶん自動で増えます。' },
 ];
 
 function openHistory() {
