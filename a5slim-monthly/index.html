@@ -1165,18 +1165,21 @@ function buildVerticalMonth(ctx, holeSide) {
 }
 
 // === MODULE: A4横 Sheet Builder（L・R の2面） ===
-function buildA4(slots) {
+// meta: 各スロットの {leaf: 紙の通し番号, face: 'front'|'back'}（綴じ後プレビュー用。null なら印を付けない）
+function buildA4(slots, meta) {
   const cuts = opts.showCutLine ? CUT_LINES_MM.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') : '';
   let html = `<div class="a4-sheet">${cuts}`;
   SLOT_POSITIONS.forEach((pos, i) => {
     const content = slots[i];
+    const m = meta && meta[i];
+    const dl = m ? ` data-leaf="${m.leaf}" data-face="${m.face}"` : '';
     if (content && typeof content === 'string' && content.startsWith('__TITLE__')) {
       const safe = escapeHTML(content.slice(9)).replace(/\r?\n/g, '<br>');
-      html += `<div class="slot title-slot" data-pos="${pos}">${buildHoleStrip('left', true)}${buildTitleWatermarks()}<div class="title-text">${safe}</div></div>`;
+      html += `<div class="slot title-slot" data-pos="${pos}"${dl}>${buildHoleStrip('left', true)}${buildTitleWatermarks()}<div class="title-text">${safe}</div></div>`;
     } else if (content) {
-      html += `<div class="slot" data-pos="${pos}">${content}</div>`;
+      html += `<div class="slot" data-pos="${pos}"${dl}>${content}</div>`;
     } else {
-      html += `<div class="slot empty" data-pos="${pos}"></div>`;
+      html += `<div class="slot empty" data-pos="${pos}"${dl}></div>`;
     }
   });
   html += `</div>`;
@@ -1214,7 +1217,8 @@ function renderMonths() {
         const a = ctxs[i], b = ctxs[i + 1] || null;
         const slots = [buildVerticalMonth(a, 'left'), b ? buildVerticalMonth(b, 'left') : null];
         const label = b ? `${a.label} / ${b.label}` : a.label;
-        html += `<div class="sheet-wrap"><div class="sheet-label">${label}</div>${buildA4(slots)}</div>`;
+        const meta = [{ leaf: i, face: 'front' }, b ? { leaf: i + 1, face: 'front' } : null];
+        html += `<div class="sheet-wrap"><div class="sheet-label">${label}</div>${buildA4(slots, meta)}</div>`;
       }
     } else {
       // 両面（短辺綴じ）: リーフ = {表, 裏}。1枚目の表はタイトル（または白紙）
@@ -1232,15 +1236,19 @@ function renderMonths() {
         // 表面は左穴、裏面は左右反転して印刷されるので右穴（切り離すと同じ綴じ側になる）
         const front = [build(A.front, 'left'), build(B.front, 'left')];
         const back  = [build(B.back, 'right'), build(A.back, 'right')];
-        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front)}</div>`;
-        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back)}</div>`;
+        const mA = (A.front || A.back) ? s * 2 : null, mB = (B.front || B.back) ? s * 2 + 1 : null;
+        const mf = [mA != null ? { leaf: mA, face: 'front' } : null, mB != null ? { leaf: mB, face: 'front' } : null];
+        const mb = [mB != null ? { leaf: mB, face: 'back' } : null, mA != null ? { leaf: mA, face: 'back' } : null];
+        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front, mf)}</div>`;
+        html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back, mb)}</div>`;
       }
     }
   } else if (!isDuplex) {
     // 単票: 1枚に 左ページ＋右ページ（見開き1か月）
-    ctxs.forEach(ctx => {
+    ctxs.forEach((ctx, i) => {
       const slots = [buildLeftPage(ctx, HOLE_FOR_LEFT), buildRightPage(ctx, HOLE_FOR_RIGHT)];
-      html += `<div class="sheet-wrap"><div class="sheet-label">${ctx.label}</div>${buildA4(slots)}</div>`;
+      const meta = [{ leaf: i * 2, face: 'front' }, { leaf: i * 2 + 1, face: 'front' }];
+      html += `<div class="sheet-wrap"><div class="sheet-label">${ctx.label}</div>${buildA4(slots, meta)}</div>`;
     });
   } else {
     // 両面（短辺綴じ・物理リーフ方式）: leaf1 = 表:タイトル/白紙・裏:M1左, leaf k = 表:M(k-1)右・裏:Mk左, 最終 = 表:MN右・裏:白紙
@@ -1259,8 +1267,11 @@ function renderMonths() {
       const A = leafs[s * 2], B = leafs[s * 2 + 1];
       const front = [build(A.front), build(B.front)];
       const back  = [build(B.back), build(A.back)]; // 短辺綴じの裏面は左右が入れ替わる
-      html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front)}</div>`;
-      html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back)}</div>`;
+      const mA = (A.front || A.back) ? s * 2 : null, mB = (B.front || B.back) ? s * 2 + 1 : null;
+      const mf = [mA != null ? { leaf: mA, face: 'front' } : null, mB != null ? { leaf: mB, face: 'front' } : null];
+      const mb = [mB != null ? { leaf: mB, face: 'back' } : null, mA != null ? { leaf: mA, face: 'back' } : null];
+      html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（表）</div>${buildA4(front, mf)}</div>`;
+      html += `<div class="sheet-wrap"><div class="sheet-label">シート${s+1}（裏）</div>${buildA4(back, mb)}</div>`;
     }
   }
 
@@ -1531,5 +1542,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.NSF_PRINT_GEOMETRY = { sheet: [297, 210], slots: [{ x: 38.5, y: 0, w: 110, h: 210, holeSide: 'left' }, { x: 148.5, y: 0, w: 110, h: 210, holeSide: 'right' }], holes: [32, 51, 70, 140, 159, 178], holeEdge: 6, holeD: 5, cuts: [{ x: 38.5 }, { x: 148.5 }, { x: 258.5 }] };
 </script>
 <script src="../assets/print-adjust.js"></script>
+<script src="../assets/flip-sim.js"></script>
 </body>
 </html>

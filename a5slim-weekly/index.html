@@ -721,9 +721,13 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
   const cuts = opts.showCutLine ? CUT_LINES_MM.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') : '';
   const slots = ['L', 'R'].map(pos => {
     const idx = map[pos];
+    // 綴じ後プレビュー用: 通し番号 pn(1始まり) → 紙 floor((pn-1)/2)、偶数番が表・奇数番が裏。片面だけ実在する紙の裏も白紙として印を付ける
+    const pn = pageNums[idx], other = (idx % 2 === 0) ? idx + 1 : idx - 1;
+    const pieceReal = (weekStartDates[idx] != null) || (weekStartDates[other] != null);
+    const dl = pieceReal ? ` data-leaf="${Math.floor((pn - 1) / 2)}" data-face="${(pn - 1) % 2 ? 'back' : 'front'}"` : '';
     // null/undefined だけを空き枠にする（日付なしの週番号 0 は有効）
-    if (idx >= weekStartDates.length || weekStartDates[idx] == null) return `<div class="slot empty" data-pos="${pos}"></div>`;
-    return buildWeeklyPage(weekStartDates[idx], pageNums[idx], HOLE_SIDE[pos]).replace('__POS__', pos);
+    if (idx >= weekStartDates.length || weekStartDates[idx] == null) return `<div class="slot empty" data-pos="${pos}"${dl}></div>`;
+    return buildWeeklyPage(weekStartDates[idx], pageNums[idx], HOLE_SIDE[pos]).replace('data-pos="__POS__"', 'data-pos="' + pos + '"' + dl);
   });
   return `<div class="a4-sheet">${cuts}${slots.join('')}</div>`;
 }
@@ -952,5 +956,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.NSF_PRINT_GEOMETRY = { sheet: [297, 210], slots: [{ x: 38.5, y: 0, w: 110, h: 210, holeSide: 'left' }, { x: 148.5, y: 0, w: 110, h: 210, holeSide: 'right' }], holes: [32, 51, 70, 140, 159, 178], holeEdge: 6, holeD: 5, cuts: [{ x: 38.5 }, { x: 148.5 }, { x: 258.5 }] };
 </script>
 <script src="../assets/print-adjust.js"></script>
+<script src="../assets/flip-sim.js"></script>
 </body>
 </html>
