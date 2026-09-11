@@ -1747,6 +1747,27 @@ tr.row-out-stock td{
           <tbody id="toolstats-rows"></tbody>
         </table>
       </div>
+      <!-- 日別推移（2026-09-11 追加）。GAS ?action=daily（「アクセス日次」シート）。記録は 2026-09-11 から -->
+      <div id="toolstats-daily-wrap" style="display:none;margin-top:16px;background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700;color:#6b3a1f;border-left:3px solid #A0785A;padding-left:8px">📈 日別推移（表示中の分類）</div>
+          <select id="toolstats-daily-range" style="padding:5px 10px;border:1px solid #d8c2a8;border-radius:8px;background:#fff;font-size:12px;color:#5C3D2E">
+            <option value="7">過去7日</option>
+            <option value="30" selected>過去30日</option>
+            <option value="90">過去90日</option>
+          </select>
+          <span id="toolstats-daily-note" style="font-size:11px;color:#8a6a4a">日次の記録は 2026-09-11 から蓄積しています。それ以前は累計のみです。</span>
+        </div>
+        <div id="toolstats-daily-empty" style="display:none;font-size:12px;color:#8a6a4a;padding:8px 0">この期間の記録はまだありません。</div>
+        <div style="overflow:auto">
+          <table style="border-collapse:collapse;font-size:12px;min-width:480px">
+            <thead id="toolstats-daily-head"></thead>
+            <tbody id="toolstats-daily-rows"></tbody>
+          </table>
+        </div>
+        <div style="font-size:11px;color:#8a6a4a;margin-top:6px">各セルは PV（下段の小さい数字が UU）。列は期間中のPVが多いページ上位8つ、残りは「その他」にまとめています。</div>
+      </div>
+
       <div style="font-size:11px;color:#8a6a4a;line-height:1.7;margin-top:8px">
         ※ 先頭スラッシュ違いの同一ページは合算し、ローカルプレビュー由来の記録（<code>C:/Users/…</code>）は除外しています。
         ※ 2026年5月以前に作られた行はUUの集計開始前のため、UUが実態より小さく出ます。
@@ -7318,6 +7339,83 @@ function toolstatsRender() {
     : '<tr><td colspan="8" style="padding:16px;text-align:center;color:#bbb">データなし</td></tr>';
   const tb = document.getElementById('toolstats-rows');
   if (tb) tb.innerHTML = rows;
+  toolstatsDailyRender();
+}
+
+// 日別推移（?action=daily）。累計とは別シートで、記録は 2026-09-11 から。
+let toolstatsDaily = { days: 30, rows: [], loaded: false, loading: false };
+function toolstatsDailyYmd(v) {
+  const s = String(v || '');
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s.replace(/\s*\(.*\)\s*$/, ''));
+  return isNaN(d.getTime()) ? s : toolstatsFmtDate(d);
+}
+function toolstatsDailyLoad(days) {
+  toolstatsDaily.days = days || toolstatsDaily.days;
+  toolstatsDaily.loading = true;
+  const wrap = document.getElementById('toolstats-daily-wrap');
+  if (wrap) wrap.style.display = 'block';
+  if (!toolstatsDailyLoad.wired) {
+    toolstatsDailyLoad.wired = true;
+    document.getElementById('toolstats-daily-range')?.addEventListener('change', e => toolstatsDailyLoad(parseInt(e.target.value, 10) || 30));
+  }
+  fetch(TOOLSTATS_GAS_URL + '?action=daily&days=' + toolstatsDaily.days + '&t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(txt => {
+      if (!txt || txt.trim().charAt(0) === '<') throw new Error('HTML応答');
+      const data = JSON.parse(txt);
+      if (!data || !data.ok) throw new Error((data && data.error) || '応答が不正');
+      toolstatsDaily.rows = (data.rows || []).map(x => ({ date: toolstatsDailyYmd(x.date), page: toolstatsNormalize(x.page), pv: Number(x.pv || 0), uu: Number(x.uu || 0) })).filter(x => x.page);
+      toolstatsDaily.loaded = true;
+    })
+    .catch(err => {
+      toolstatsDaily.rows = [];
+      const note = document.getElementById('toolstats-daily-note');
+      if (note) note.textContent = '日別データを取得できませんでした: ' + (err && err.message ? err.message : err);
+    })
+    .finally(() => { toolstatsDaily.loading = false; toolstatsDailyRender(); });
+}
+function toolstatsDailyRender() {
+  const head = document.getElementById('toolstats-daily-head');
+  const body = document.getElementById('toolstats-daily-rows');
+  const empty = document.getElementById('toolstats-daily-empty');
+  if (!head || !body) return;
+  if (!toolstatsDaily.loaded && !toolstatsDaily.loading) { toolstatsDailyLoad(); return; }
+  const group = document.getElementById('toolstats-group')?.value || 'tools';
+  const inGroup = p => {
+    const g = toolstatsGroupOf(p).key;
+    if (group === 'all') return true;
+    if (group === 'tools') return g === 'refill' || g === 'apps';
+    return g === group;
+  };
+  const rows = toolstatsDaily.rows.filter(r => inGroup(r.page));
+  if (!rows.length) { head.innerHTML = ''; body.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+  if (empty) empty.style.display = 'none';
+  const pvByPage = {};
+  rows.forEach(r => { pvByPage[r.page] = (pvByPage[r.page] || 0) + r.pv; });
+  const pages = Object.keys(pvByPage).sort((a, b) => pvByPage[b] - pvByPage[a]);
+  const top = pages.slice(0, 8);
+  const hasOther = pages.length > top.length;
+  const dates = [...new Set(rows.map(r => r.date))].sort().reverse();
+  const cell = {};
+  rows.forEach(r => {
+    const col = top.includes(r.page) ? r.page : '__other__';
+    const k = r.date + '|' + col;
+    cell[k] = cell[k] || { pv: 0, uu: 0 };
+    cell[k].pv += r.pv; cell[k].uu += r.uu;
+  });
+  const shortName = p => p.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+  const th = s => `<th style="padding:6px 8px;text-align:right;white-space:nowrap;background:#fff8f1;color:#6b3a1f;font-weight:700;border-bottom:1px solid #eadccf">${s}</th>`;
+  head.innerHTML = '<tr>' + th('日付').replace('text-align:right', 'text-align:left') + top.map(p => th(statsH(shortName(p)))).join('') + (hasOther ? th('その他') : '') + th('合計') + '</tr>';
+  body.innerHTML = dates.map(d => {
+    let sumPv = 0, sumUu = 0;
+    const cols = [...top, ...(hasOther ? ['__other__'] : [])].map(c => {
+      const v = cell[d + '|' + c];
+      if (v) { sumPv += v.pv; sumUu += v.uu; }
+      return `<td style="padding:5px 8px;text-align:right;border-bottom:1px solid #efe3d7;white-space:nowrap">${v ? `${v.pv}<span style="display:block;font-size:10px;color:#8a6a4a">${v.uu}</span>` : '<span style="color:#ccc">—</span>'}</td>`;
+    }).join('');
+    return `<tr><td style="padding:5px 8px;font-family:monospace;border-bottom:1px solid #efe3d7;white-space:nowrap">${d}</td>${cols}<td style="padding:5px 8px;text-align:right;font-weight:700;border-bottom:1px solid #efe3d7">${sumPv}<span style="display:block;font-size:10px;color:#8a6a4a;font-weight:400">${sumUu}</span></td></tr>`;
+  }).join('');
 }
 
 // ── アクセスログ統計 ──
