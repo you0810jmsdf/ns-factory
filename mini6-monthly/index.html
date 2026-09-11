@@ -149,7 +149,7 @@ body.panel-open #preview { margin-left: 280px; }
 .page-body {
   flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden;
   box-sizing: border-box;
-  padding-top: 0; padding-bottom: 0; /* 上下は用紙端＝プリンター印刷不可域のためセーフゾーン */
+  padding: 0 2mm; /* 上下は用紙端＝プリンター印刷不可域のためセーフゾーン。左右2mmはカット線からの余白（穴帯は枠の端） */
 }
 
 /* === MODULE: カット線 === */
@@ -417,23 +417,26 @@ body.panel-open #preview { margin-left: 280px; }
   </div>
 
   <div class="ctrl-section dated-only">
-    <h3>年月設定</h3>
-    <div class="ctrl-row">
+    <h3>期間</h3>
+    <div class="ctrl-row"><label>開始日</label><input type="date" id="periodStart" onchange="renderMonths()"></div>
+    <div class="ctrl-row"><label>終了日</label><input type="date" id="periodEnd" onchange="renderMonths()"></div>
+    <div style="font-size:9px;color:#aaa;line-height:1.5;margin:0 2px 4px;">期間にかかる月をすべて作ります（年またぎ可・最大24か月）</div>
+    <div class="ctrl-row" style="display:none">
       <label>年</label>
-      <input type="number" id="yearPicker" min="2000" max="2099" value="2026" onchange="renderMonths()" style="width:70px;flex:none;">
+      <input type="number" id="yearPicker" min="2000" max="2099" value="2026" style="width:70px;flex:none;">
     </div>
-    <div class="ctrl-row">
+    <div class="ctrl-row" style="display:none">
       <label>開始月</label>
-      <select id="startMonthPicker" onchange="renderMonths()">
+      <select id="startMonthPicker">
         <option value="1" selected>1月</option><option value="2">2月</option><option value="3">3月</option>
         <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
         <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
         <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
       </select>
     </div>
-    <div class="ctrl-row">
+    <div class="ctrl-row" style="display:none">
       <label>終了月</label>
-      <select id="endMonthPicker" onchange="renderMonths()">
+      <select id="endMonthPicker">
         <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
         <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
         <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
@@ -745,7 +748,7 @@ body.panel-open #preview { margin-left: 280px; }
       <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
       <ol style="padding-left:18px; margin:4px 0;">
         <li>左メニュー「印刷モード」で <b>日付あり／なし</b>・<b>言語</b> を選ぶ</li>
-        <li>日付ありは <b>年・開始月・終了月</b>、日付なしは <b>月数（枚数）</b> を設定</li>
+        <li>日付ありは <b>期間（開始日・終了日）</b>（かかる月をすべて作ります）、日付なしは <b>月数（枚数）</b> を設定</li>
         <li>プレビューを確認後、PCは「印刷」、スマホは「PDFを生成」</li>
         <li>印刷ダイアログで <b>A4縦・「実際のサイズ（100%）」</b> を選ぶ</li>
       </ol>
@@ -1196,14 +1199,19 @@ function buildContexts() {
     const n = Math.min(12, Math.max(1, parseInt(document.getElementById('undatedCount').value) || 1));
     return Array.from({length: n}, (_, i) => ({ y: 0, m: i + 1, grid: null, holidays: {}, label: `日付なし ${i + 1}枚目` }));
   }
-  const y  = parseInt(document.getElementById('yearPicker').value);
-  const sM = parseInt(document.getElementById('startMonthPicker').value);
-  const eM = parseInt(document.getElementById('endMonthPicker').value);
-  const holidays = getJPHolidays(y);
+  // 期間（開始日〜終了日）にかかる月をすべて（年またぎ可・最大24か月）
+  const ps = document.getElementById('periodStart').value, pe = document.getElementById('periodEnd').value;
+  const today = new Date();
+  let [y, m] = ps ? ps.split('-').map(Number) : [today.getFullYear(), 1];
+  const [ey, em] = pe ? pe.split('-').map(Number) : [y, 12];
+  const holidaysByYear = {};
   const out = [];
-  for (let m = sM; m <= eM; m++) {
-    out.push({ y, m, grid: getMonthGrid(y, m), holidays, label: isEN ? `${MONTH_EN_ABB[m-1]} ${y}` : `${y}年${m}月` });
+  while ((y < ey || (y === ey && m <= em)) && out.length < 24) {
+    if (!holidaysByYear[y]) holidaysByYear[y] = getJPHolidays(y);
+    out.push({ y, m, grid: getMonthGrid(y, m), holidays: holidaysByYear[y], label: isEN ? `${MONTH_EN_ABB[m-1]} ${y}` : `${y}年${m}月` });
+    m++; if (m > 12) { m = 1; y++; }
   }
+  if (!out.length) { const yy = ps ? Number(ps.slice(0, 4)) : today.getFullYear(), mm = ps ? Number(ps.slice(5, 7)) : 1; out.push({ y: yy, m: mm, grid: getMonthGrid(yy, mm), holidays: getJPHolidays(yy), label: isEN ? `${MONTH_EN_ABB[mm-1]} ${yy}` : `${yy}年${mm}月` }); }
   return out;
 }
 
@@ -1359,7 +1367,7 @@ function initFontSelectors() {
 }
 
 // === MODULE: Settings Persistence ===
-const SETTINGS_KEY = 'nsf_mini6_monthly_v1'; // v2: 両面を既定ONにしたため旧設定を引き継がない
+const SETTINGS_KEY = 'nsf_mini6_monthly_g2'; // g2: 2026-09-11 Mini6版から生成（旧設定とは形が違うので引き継がない） // v2: 両面を既定ONにしたため旧設定を引き継がない
 
 function saveSettings() {
   const get = id => { const e = document.getElementById(id); return e ? e.value : null; };
@@ -1518,7 +1526,7 @@ function buildChecklistsHTML() {
 
 // === MODULE: Init ===
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('yearPicker').value = new Date().getFullYear();
+  { const yy = new Date().getFullYear(); document.getElementById('periodStart').value = `${yy}-01-01`; document.getElementById('periodEnd').value = `${yy}-12-31`; }
   initFontSelectors();
   initCLFontSelectors();
   loadSettings();
