@@ -965,7 +965,7 @@ async function generatePDF(ev) {
       stage.removeChild(clone);
       const img = canvas.toDataURL('image/jpeg', 0.88);
       if (i > 0) pdf.addPage();
-      pdf.addImage(img, 'JPEG', 0, 0, 297, 210);
+      pdf.addImage(img, 'JPEG', (window.nsfPrintOffset ? window.nsfPrintOffset().x : 0), (window.nsfPrintOffset ? window.nsfPrintOffset().y : 0), 297, 210);
     }
     const fname = `a5slim-monthly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
     const blob = pdf.output('blob');
@@ -1524,5 +1524,10 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <script src="../assets/access-counter.js"></script>
 <script src="../assets/bug-report.js"></script>
+<script>
+// 印刷ズレ補正・テスト印刷用の用紙形状（print-adjust.js が参照）
+window.NSF_PRINT_GEOMETRY = { sheet: [297, 210], slots: [{ x: 38.5, y: 0, w: 110, h: 210, holeSide: 'left' }, { x: 148.5, y: 0, w: 110, h: 210, holeSide: 'right' }], holes: [32, 51, 70, 140, 159, 178], holeEdge: 6, holeD: 5, cuts: [{ x: 38.5 }, { x: 148.5 }, { x: 258.5 }] };
+</script>
+<script src="../assets/print-adjust.js"></script>
 </body>
 </html>
