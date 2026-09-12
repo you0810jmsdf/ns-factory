@@ -767,7 +767,7 @@ body{
   <button class="lp-tool-btn" onclick="goBackToParentSite()" data-i18n="ui.backSite">↩ 元のサイト</button>
   <a class="lp-tool-btn" href="./admin.html" data-i18n="ui.adminBtn">🗂 管理画面</a>
   <button class="lp-tool-btn" onclick="resetAll()" data-i18n="ui.resetBtn">🔄 リセット</button>
-  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.12.2</span>
+  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.12.3</span>
 </div>
 
 <div class="main">
@@ -1134,8 +1134,8 @@ body{
 </div>
 
 <script src="./labor-curve-model.js?v=20260905"></script>
-<script src="./labor-curve-editor.js?v=20260912.2"></script>
-<script src="./quote-archive.js?v=20260912.2"></script>
+<script src="./labor-curve-editor.js?v=20260912.3"></script>
+<script src="./quote-archive.js?v=20260912.3"></script>
 <script src="./estimate-fulfillment.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
@@ -1238,7 +1238,7 @@ let THREAD_STOCK_MAP = new Map();
 const npadFlapBrand = BRANDS.find(b => b.id === 'npad');
 if (npadFlapBrand) {
   npadFlapBrand.name = 'N-Pad flap';
-  npadFlapBrand.sub = 'N-Pad＋フラップ・ペンホルダー付き（内張あり・クラウゼ非対応）';
+  npadFlapBrand.sub = 'N-Pad＋フラップ・ペンホルダー付き（内張あり・クラウゼ非対応）。フラップとペンホルダーがオプションとして自動的に加わります。';
   npadFlapBrand.allowsKrause = false;
   npadFlapBrand.krauseNoMulti = false;
   // 2026-09-12: N-Pad flap は「N-Pad non flap＋フラップ・ペンホルダー（オプション）」として計算する（事業主指示）。
@@ -3812,7 +3812,7 @@ function localizeDefsForEN() {
     // simplist_klpad は 2026-09-12 に N-Classic へ改名（通常リングも可）。id は工数カーブ・価格CSVのキーなので変えない
     simplist_kl:    { name: 'Simplist + Krause', sub: 'Krause-compatible, no pad' },
     simplist_klpad: { name: 'N-Classic', sub: 'Krause or standard rings, padded' },
-    npad:           { sub: 'N-Pad + flap & pen holder (lined / no Krause)' },
+    npad:           { sub: 'N-Pad + flap & pen holder (lined / no Krause). The flap and pen holder are added automatically as options.' },
     npad_nf:        { sub: 'No flap (lined / no Krause)' },
     npadw:          { sub: 'Zip + free pocket (no core)' },
     nthrough:       { sub: 'Clear insert structure (leather both sides)' },
