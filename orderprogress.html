@@ -1687,7 +1687,18 @@ function onCustomerSelectChange() {
   }
 }
 
-async function saveRecord() {
+// 書き込み（追加・更新・削除・取込）は GAS 側で管理者キーを検査する（2026-09-13）
+function adminWriteKey() {
+  try { return sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) { return ''; }
+}
+// unauthorized が返った＝何も書き込まれていない。ログインをやり直してもらい、成功したら true
+async function reauthAfterUnauthorized() {
+  try { sessionStorage.removeItem('op_auth'); sessionStorage.removeItem('nsf_admin_key'); } catch (e) {}
+  showMsg('管理者パスワードの確認が取れませんでした。もう一度入力してください', true);
+  return await checkAuth();
+}
+
+async function saveRecord(retried) {
   if (gasUrl && !gasReady) {
     // 開いた後に取り直しが一時的に失敗したケース。編集画面は GAS 取得済みのデータから作られている
     // （openModal は gasReady のときしか開かない）ので、入力はそのまま使ってよい
@@ -1710,6 +1721,7 @@ async function saveRecord() {
     memo:       document.getElementById('f-memo').value.trim(),
     timeline:   getTlRows(),
     customerId: document.getElementById('f-customer-id').value,
+    key:        adminWriteKey(),
   };
   try {
     const res  = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload) });
@@ -1718,18 +1730,26 @@ async function saveRecord() {
       closeModal();
       showMsg(id ? '更新しました' : '追加しました（受付番号: ' + (data.orderNo||'') + '）');
       await loadRecords();
+    } else if (data.error === 'unauthorized' && !retried) {
+      // 入力は編集画面に残っている。ログインし直せたら1回だけ送り直す
+      if (await reauthAfterUnauthorized()) return saveRecord(true);
     } else { showMsg('エラー: ' + data.error, true); }
   } catch(e) { showMsg('通信エラー: ' + e.message, true); }
 }
 
 // ─── Delete ──────────────────────────────────
-async function deleteRecord(id) {
-  if (!isAdmin() && !(await checkAuth())) return;
-  if (!confirm('このオーダーを削除しますか？')) return;
+async function deleteRecord(id, retried) {
+  if (!retried) {
+    if (!isAdmin() && !(await checkAuth())) return;
+    if (!confirm('このオーダーを削除しますか？')) return;
+  }
   try {
-    const res  = await fetch(gasUrl, { method:'POST', body:JSON.stringify({ action:'delete', id }) });
+    const res  = await fetch(gasUrl, { method:'POST', body:JSON.stringify({ action:'delete', id, key: adminWriteKey() }) });
     const data = await res.json();
     if (data.ok) { showMsg('削除しました'); await loadRecords(); }
+    else if (data.error === 'unauthorized' && !retried) {
+      if (await reauthAfterUnauthorized()) return deleteRecord(id, true);
+    }
     else showMsg('エラー: ' + data.error, true);
   } catch(e) { showMsg('通信エラー: ' + e.message, true); }
 }
@@ -1764,7 +1784,7 @@ async function importFallbackToGas() {
   if (!confirm('転載データをGASへ取り込みますか？')) return;
   try {
     const fallback = await fetchFallbackRecords();
-    const payload = { action:'import', records:fallback.map(toGasImportRecord) };
+    const payload = { action:'import', records:fallback.map(toGasImportRecord), key: adminWriteKey() };
     const res = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload) });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'import failed');
