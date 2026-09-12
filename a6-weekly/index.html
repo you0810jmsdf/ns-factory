@@ -411,7 +411,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
       ⚠️ <strong>印刷時の注意</strong><br>
-      用紙は <strong>A4 縦向き</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> を必ず選択してください。「ページに合わせる」のままだと縮小され、A6リフィルとして使えません。
+      用紙は <strong>A4 縦向き</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> を必ず選択してください。「ページに合わせる」のままだと縮小され、A6リフィルとして使えません。<br>両面印刷は、プリンターの両面設定で <strong>「長辺綴じ」</strong> を選んでください（用紙が縦向きのため。逆を選ぶと裏面が上下逆になります）。
     </div>
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>※ PCは「印刷」ボタンで直接印刷可</div>
   </div>
@@ -806,7 +806,8 @@ async function generatePDF(ev) {
       const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
       stage.removeChild(clone);
       if (i > 0) pdf.addPage();
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', (window.nsfPrintOffset ? window.nsfPrintOffset().x : 0), (window.nsfPrintOffset ? window.nsfPrintOffset().y : 0), 210, 297);
+      const off = window.nsfPrintOffsetFor ? window.nsfPrintOffsetFor(sheets[i]) : { x: 0, y: 0 }; // 表裏別の印刷ズレ補正
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', off.x, off.y, 210, 297);
     }
     const fname = `a6-weekly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
     const url = URL.createObjectURL(pdf.output('blob'));

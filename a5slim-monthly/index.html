@@ -721,7 +721,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
       ⚠️ <strong>印刷時の注意</strong><br>
-      用紙は <strong>A4 横向き</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A5スリムリフィルとして使えません。
+      用紙は <strong>A4 横向き</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> または <strong>「カスタム倍率：100%」</strong> を必ず選択してください。「ページに合わせる」のままだとサイズが縮小され、A5スリムリフィルとして使えません。<br>両面印刷は、プリンターの両面設定で <strong>「短辺綴じ」</strong> を選んでください（用紙が横向きのため。逆を選ぶと裏面が上下逆になります）。
     </div>
     <div style="font-size:9px;color:#888;line-height:1.6;margin-top:6px;">
       ※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>
@@ -969,7 +969,8 @@ async function generatePDF(ev) {
       stage.removeChild(clone);
       const img = canvas.toDataURL('image/jpeg', 0.88);
       if (i > 0) pdf.addPage();
-      pdf.addImage(img, 'JPEG', (window.nsfPrintOffset ? window.nsfPrintOffset().x : 0), (window.nsfPrintOffset ? window.nsfPrintOffset().y : 0), 297, 210);
+      const off = window.nsfPrintOffsetFor ? window.nsfPrintOffsetFor(wrappers[i]) : { x: 0, y: 0 }; // 表裏別の印刷ズレ補正
+      pdf.addImage(img, 'JPEG', off.x, off.y, 297, 210);
     }
     const fname = `a5slim-monthly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
     const blob = pdf.output('blob');
@@ -1487,6 +1488,8 @@ const HISTORY_ENTRIES = [
     detail: '年・月や週数の指定をやめ、すべて「開始日〜終了日」の期間で作るようにしました（月間は期間にかかる月をすべて、週間は期間にかかる週をすべて、日次は期間の全日）。用紙は常に表面・裏面を続けて出します（片面だけ印刷したいときは印刷ダイアログの奇数／偶数ページ指定を使ってください）。' },
   { date: '2026-09-11', type: 'fix', title: '穴の位置が綴じ側の端から約8mmになっていた不具合を修正（仕様どおり6mm）',
     detail: 'リフィル枠の左右に2mmの余白を取り、その内側に穴帯を置いていたため、穴中心が端から約8mmになっていました。穴帯を枠の端に置き、本文側だけに余白を残す形に直しました（A5規格の穴位置＝端から6mm）。' },
+  { date: '2026-09-12', type: 'improve', title: '印刷ズレ補正を表面／裏面で別々に指定できるように・両面設定の注意書きを追加',
+    detail: '両面印刷では裏面だけ別方向にずれることが多いため、補正を「表面のずれ」と「裏面の追加ずれ（表面に対して）」の2系統にしました。テスト印刷も表裏1枚ずつ出ます。PDF生成にも同じ補正がかかります。印刷ボタン横の注意書きに両面設定（綴じ方向）を明記しました。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
