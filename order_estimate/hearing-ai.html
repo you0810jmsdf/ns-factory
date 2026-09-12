@@ -1617,5 +1617,10 @@ Promise.all([
 });
 </script>
 
+<!-- アクセス数の記録（2026-09-12 事業主指示）。窓口まで来て相談せずに帰った人数を測るため。
+     ⛔ 右上のPV/UU表示はお客様向けの相談画面に出さない。access-counter.js は id="access-counter" の
+        要素がすでにあると表示を作らない作りなので、空の要素を先に置いて表示だけ止めている（記録は行われる）。 -->
+<div id="access-counter" hidden></div>
+<script src="../assets/access-counter.js"></script>
 </body>
 </html>
