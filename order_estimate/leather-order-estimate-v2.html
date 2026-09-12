@@ -767,7 +767,7 @@ body{
   <button class="lp-tool-btn" onclick="goBackToParentSite()" data-i18n="ui.backSite">↩ 元のサイト</button>
   <a class="lp-tool-btn" href="./admin.html" data-i18n="ui.adminBtn">🗂 管理画面</a>
   <button class="lp-tool-btn" onclick="resetAll()" data-i18n="ui.resetBtn">🔄 リセット</button>
-  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.12.1</span>
+  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.12.2</span>
 </div>
 
 <div class="main">
@@ -861,7 +861,7 @@ body{
       </div>
       <span id="flapNote" class="num-note">+¥3,000</span>
     </div>
-    <!-- ベルト加工（2026-09-12）: 本体ループ＋ベルト取り付けで合計 +¥3,000。N-Pad flap（構造に含まれる）では非表示 -->
+    <!-- ベルト加工（2026-09-12）: 本体ループ＋ベルト取り付けで合計 +¥3,000。フラップ・ベルトがONのときはベルトを含むため非表示 -->
     <div id="beltRow" class="num-row" style="align-items:center">
       <span class="num-label" data-i18n="opt.belt">ベルト加工</span>
       <div class="num-field" style="gap:0">
@@ -1134,8 +1134,8 @@ body{
 </div>
 
 <script src="./labor-curve-model.js?v=20260905"></script>
-<script src="./labor-curve-editor.js?v=20260912.1"></script>
-<script src="./quote-archive.js?v=20260912.1"></script>
+<script src="./labor-curve-editor.js?v=20260912.2"></script>
+<script src="./quote-archive.js?v=20260912.2"></script>
 <script src="./estimate-fulfillment.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
@@ -1210,7 +1210,6 @@ const BRANDS = [
   { id:'other',          name:'その他',                  sub:'既存モデル外・初度設計費あり',   areaMulti:1, allowsKrause:false, krauseNoMulti:false, hasInitFee:true,  emoji:'✨', badge:'要設計', image:'' },
 ];
 
-const NPAD_FLAP_EXTRA_COST = 2000;
 const NPAD_NON_FLAP_IMAGE = new URL('../カラーシミュレーター/assets/models/npad_non_flap_close.jpg', location.href).toString();
 const NPAD_FLAP_IMAGE = new URL('../カラーシミュレーター/assets/models/npad_flap_close.png', location.href).toString();
 const SIMPLIST_KL_PAD_IMAGE = new URL('../カラーシミュレーター/assets/models/simplist_kl-pad-closed.png', location.href).toString();
@@ -1239,10 +1238,11 @@ let THREAD_STOCK_MAP = new Map();
 const npadFlapBrand = BRANDS.find(b => b.id === 'npad');
 if (npadFlapBrand) {
   npadFlapBrand.name = 'N-Pad flap';
-  npadFlapBrand.sub = 'フラップあり（内張あり・クラウゼ非対応）';
+  npadFlapBrand.sub = 'N-Pad＋フラップ・ペンホルダー付き（内張あり・クラウゼ非対応）';
   npadFlapBrand.allowsKrause = false;
   npadFlapBrand.krauseNoMulti = false;
-  npadFlapBrand.extraBaseCost = NPAD_FLAP_EXTRA_COST;
+  // 2026-09-12: N-Pad flap は「N-Pad non flap＋フラップ・ペンホルダー（オプション）」として計算する（事業主指示）。
+  // 構造側の固定加算は廃止。係数・工数カーブは npad_nf と同値に保つこと（brand-price.csv / labor-curves.json）。
   npadFlapBrand.image = NPAD_FLAP_IMAGE;
 }
 const simplistKlPadBrand = BRANDS.find(b => b.id === 'simplist_klpad');
@@ -1742,7 +1742,7 @@ function getLeatherPaletteEntries(leatherId = sel.leatherId) {
 }
 
 function getBrandFlapMode(brandId = sel.brandId) {
-  if (brandId === 'npad') return 'fixed_on';
+  if (brandId === 'npad') return 'optional'; // 2026-09-12: 選んだ時点でONから始まり、外すと減額
   if (brandId === 'npad_nf') return 'fixed_off';
   return 'hidden';
 }
@@ -1754,16 +1754,16 @@ function isFlapPriceOptional(brandId = sel.brandId) {
 function isFlapEffectivelyOn(brandId = sel.brandId) {
   const mode = getBrandFlapMode(brandId);
   if (mode === 'fixed_on') return true;
-  if (mode === 'fixed_off') return false;
+  if (mode === 'fixed_off' || mode === 'hidden') return false; // hidden 構造へ切り替えた直後に古い _flapOn を拾わない
   return !!window._flapOn;
 }
 
 // ── ベルト加工（2026-09-12 事業主指示）──
 // 本体側のループ＋ベルト取り付けで合計 +¥3,000（固定額・サイズ倍率非適用）。
-// N-Pad flap は構造にフラップ・ベルトが含まれる（fixed_on）ため非表示にして二重請求を防ぐ。
+// フラップ（フラップ・ベルト）がONのときはベルトを含むため非表示にして二重請求を防ぐ（N-Pad flap の既定状態）。
 const BELT_OPTION_PRICE = 3000;
 function isBeltAvailable(brandId = sel.brandId) {
-  return getBrandFlapMode(brandId) !== 'fixed_on';
+  return !isFlapEffectivelyOn(brandId);
 }
 function isBeltEffectivelyOn(brandId = sel.brandId) {
   return isBeltAvailable(brandId) && !!window._beltOn;
@@ -1785,7 +1785,6 @@ function updateBeltOptionUI() {
 }
 
 function updateFlapOptionUI() {
-  updateBeltOptionUI(); // 構造選択・リセット・初期化の全経路がここを通るため、ベルトの表示もここで追従させる
   const mode = getBrandFlapMode();
   const row = document.getElementById('flapRow');
   const btnNo = document.getElementById('flapNo');
@@ -1816,6 +1815,7 @@ function updateFlapOptionUI() {
   if (row) row.dataset.mode = mode;
   if (btnNo)  { btnNo.style.background  = window._flapOn ? '' : '#6b3a1f'; btnNo.style.color  = window._flapOn ? '' : '#fff'; }
   if (btnYes) { btnYes.style.background = window._flapOn ? '#6b3a1f' : ''; btnYes.style.color = window._flapOn ? '#fff' : ''; }
+  updateBeltOptionUI(); // フラップの状態を確定させた後に呼ぶ（構造選択・リセット・初期化・フラップ切替の全経路がここを通る）
 }
 
 function defaultComponentColors() {
@@ -2654,6 +2654,8 @@ function buildBrandGrid() {
           document.querySelectorAll('[data-key="ring"]').forEach(c => c.classList.remove('selected'));
         }
       }
+      // N-Pad flap は N-Pad＋フラップ・ペンホルダーのオプション構成。選んだ時点で両方ONにする（外すと減額）
+      if (b.id === 'npad') { window._flapOn = true; setPen('pen1'); }
       updateFlapOptionUI();
       updateKlauseSection();
       updateLiningRow();
@@ -3241,7 +3243,7 @@ function updateSummary(options = {}) {
 
   const leatherDsP   = window._patchworkOn ? (prices.leather > 0 ? NUMER_DS_PRICE : 0) : (prices.leather || 0); // パッチワーク時は基準単価固定
   const leatherRatio = leatherDsP > 0 ? leatherDsP / NUMER_DS_PRICE : 1;  // 革素材比率（¥160/ds基準・表示用）
-  const brandExtraBase = brandObj?.extraBaseCost ?? 0;          // 構造タイプ別固定加算（N-Pad flap +¥2,000等）
+  const brandExtraBase = brandObj?.extraBaseCost ?? 0;          // 構造タイプ別固定加算（CSVのextra_base_cost。N-Pad flapの+¥2,000は2026-09-12に廃止しオプション計上へ）
   // ── 計算式（2026-07-09 乗算方式に変更）──
   // 製作費   = サイズ別工数 × 構造別工数倍率(work_hour_multiplier) × 時給 + 固定加算
   // 原材料費 = 革面積(ds) × 革素材単価
@@ -3810,7 +3812,7 @@ function localizeDefsForEN() {
     // simplist_klpad は 2026-09-12 に N-Classic へ改名（通常リングも可）。id は工数カーブ・価格CSVのキーなので変えない
     simplist_kl:    { name: 'Simplist + Krause', sub: 'Krause-compatible, no pad' },
     simplist_klpad: { name: 'N-Classic', sub: 'Krause or standard rings, padded' },
-    npad:           { sub: 'With flap (lined / no Krause)' },
+    npad:           { sub: 'N-Pad + flap & pen holder (lined / no Krause)' },
     npad_nf:        { sub: 'No flap (lined / no Krause)' },
     npadw:          { sub: 'Zip + free pocket (no core)' },
     nthrough:       { sub: 'Clear insert structure (leather both sides)' },
