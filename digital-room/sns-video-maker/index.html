@@ -974,6 +974,15 @@ canvas{
             <input id="endLogoCta" type="checkbox">
             <span><strong>締めのロゴを最後に浮かび上がらせる</strong>動画の最後の約2.6秒、画面がすっと暗くなり金のフクロウとN's factoryのロゴが浮かび上がります。動画の長さは変わりません。プレビューと保存MP4の両方に入ります（フィルムシーン使用中は、フィルム側の締めコマがあるためこの演出は入りません）。</span>
           </label>
+          <label class="check-row" for="workIdOverlay">
+            <input id="workIdOverlay" type="checkbox">
+            <span><strong>作品IDを最初から最後まで表示する</strong>画面右上（ロゴと同じ高さ）に作品集サイトの作品ID（例: NF2026_648）を動画の最初から最後まで出し続けます。見た人が作品集で同じ作品を探せます。プレビューと保存MP4の両方に入ります。</span>
+          </label>
+          <div class="field">
+            <label for="workIdOverlayText">表示する作品ID</label>
+            <input id="workIdOverlayText" maxlength="24" autocomplete="off" placeholder="例: NF2026_648">
+            <p class="help">作品集から読み込むと自動で入ります。端末の写真で作るときは手で入力してください。空欄のときは表示しません。</p>
+          </div>
           <div class="field" id="filmSpeedField" hidden>
             <label for="filmSpeed">フィルムの速さ（1コマの秒数）</label>
             <input id="filmSpeed" type="number" min="1" max="60" step="0.5" value="8">
@@ -1182,6 +1191,8 @@ const els = {
   filmCtaEnabled: document.getElementById('filmCtaEnabled'),
   filmSpeedAuto: document.getElementById('filmSpeedAuto'),
   endLogoCta: document.getElementById('endLogoCta'),
+  workIdOverlay: document.getElementById('workIdOverlay'),
+  workIdOverlayText: document.getElementById('workIdOverlayText'),
   shareToSns: document.getElementById('shareToSns'),
   shareToSnsBox: document.getElementById('shareToSnsBox'),
   filmSpeedField: document.getElementById('filmSpeedField'),
@@ -2686,6 +2697,8 @@ function findWorkForDriveData(data, workNo){
 function applyWorkInfo(work, {translate = false, showLog = false} = {}){
   currentWork = work;
   updateShareToSnsUi();
+  // 作品を読み込んだら表示用の作品IDも差し替える（別作品のIDが残ったまま書き出されるのを防ぐ）
+  if(els.workIdOverlayText && work.id) els.workIdOverlayText.value = work.id;
   els.productName.value = work.title || 'レザー作品';
   els.materialNote.value = formatWorkMeta(work);
   if(work.shortDesc) els.featureNote.value = work.shortDesc;
@@ -3437,6 +3450,7 @@ function drawFrame(time){
     const active = state.type === 'transition' ? state.nextSlide : state.slide;
     drawFilmStripScene(time, active, state.type === 'hold' ? state.progress : 0);
     els.currentScript.textContent = active.narration || '';
+    drawWorkIdBadge();
     return;
   }
   if(state.type === 'transition'){
@@ -3448,6 +3462,46 @@ function drawFrame(time){
   }
   // 締めのロゴ（通常モードのみ。フィルムシーンはCTAコマが担うため重ねない）
   if(els.endLogoCta && els.endLogoCta.checked) drawEndLogoCta(time);
+  drawWorkIdBadge();
+}
+
+/* ══ 作品IDの常時表示（2026-09-12 事業主要望）══
+   drawFrame の最後で1回だけ描く。drawTexts の中で描くと、写真の切替（フェードで二重描画・
+   スライドで横移動）と締めロゴの暗幕に巻き込まれるため。ここなら全フレーム同じ位置・同じ濃さ。
+   位置はロゴ行の右端。暗い下地を敷くので単色の白背景でも読める。 */
+function drawWorkIdBadge(){
+  if(!els.workIdOverlay || !els.workIdOverlay.checked) return;
+  const text = String((els.workIdOverlayText && els.workIdOverlayText.value) || '').trim();
+  if(!text) return;
+  const brand = REEL_LAYOUT.brand;
+  const right = canvas.width - brand.x;          // 左のロゴと同じ余白で右寄せ
+  const maxW = canvas.width * .42;                // ロゴ（左端〜約410px）に届かない幅
+  const padX = 22;
+  let size = 30;
+  ctx.save();
+  for(; size > 18; size -= 2){
+    ctx.font = canvasFont(700, size);
+    if(ctx.measureText(text).width + padX * 2 <= maxW) break;
+  }
+  ctx.font = canvasFont(700, size);
+  const w = Math.min(maxW, ctx.measureText(text).width + padX * 2);
+  const h = Math.round(size * 1.9);
+  const cy = brand.y + brand.owlHeight / 2;       // フクロウの縦中心に揃える
+  const x = right - w;
+  const y = Math.round(cy - h / 2);
+  ctx.globalAlpha = 1;
+  // 下地は濃いめ（.88）。薄いと写真のスライド切替で横に流れる左上ロゴがバッジ越しに透けて見えた（実測）
+  ctx.fillStyle = 'rgba(16,12,8,.88)';
+  roundRect(ctx, x, y, w, h, h / 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(227,214,197,.38)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#F3E6C8';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x + w / 2, cy + 1, w - padX * 2);
+  ctx.restore();
 }
 
 /* ══ 締めのロゴCTA（2026-08-30 追加・オーバーレイ方式）══
@@ -7015,6 +7069,21 @@ els.motionIntensity.addEventListener('change', () => {
 els.shareToSns.addEventListener('click', shareVideoToSns);
 verifyNsfAdmin().then(() => { updateShareToSnsUi(); updateAdminToggleUi(); });
 loadReadingDictUi();
+els.workIdOverlay.addEventListener('change', () => {
+  resetRecordingOutput();
+  drawSelectedOrFirstFrame();
+  const id = els.workIdOverlayText.value.trim();
+  setLog(!els.workIdOverlay.checked
+    ? '作品IDの表示をOFFにしました。'
+    : (id
+      ? `作品ID「${id}」を動画の最初から最後まで右上に表示します。`
+      : '作品IDの表示をONにしました。下の「表示する作品ID」に入力すると表示されます（作品集から読み込むと自動で入ります）。'));
+});
+// 入力中は再描画だけ（ログを連発しない）。確定時に古い録画を消して取り違えを防ぐ
+els.workIdOverlayText.addEventListener('input', () => drawSelectedOrFirstFrame());
+els.workIdOverlayText.addEventListener('change', () => {
+  if(els.workIdOverlay.checked) resetRecordingOutput();
+});
 els.endLogoCta.addEventListener('change', () => {
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
