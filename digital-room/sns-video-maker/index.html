@@ -599,8 +599,16 @@ canvas{
     <h2 id="snsPostGateTitle">SNSへ投稿する前の確認</h2>
     <p class="export-gate-lead"><strong>実行すると、この動画と文章がそのまま公開されます。</strong>取り消しは各SNSのアプリから行ってください。</p>
     <ul class="export-gate-list" id="snsPostSummary"></ul>
-    <p class="help" style="margin:.6rem 0 .2rem">投稿する文章</p>
-    <pre id="snsPostCaption" style="white-space:pre-wrap;max-height:9rem;overflow:auto;padding:.6rem .7rem;border-radius:.5rem;background:rgba(0,0,0,.25);font-size:.86rem;line-height:1.5"></pre>
+    <!-- 自分の言葉でキャプション（2026-09-12）。register.html と同じ GAS generateSnsCaption を使う。
+         文体の正本は 広報部\SNS文体ガイド.md → GAS SnsVoice.js。ボタンを押さなければ従来の文面のまま。 -->
+    <p class="help" style="margin:.6rem 0 .2rem">ひとこと（この作品の事実を1〜2行。<strong>ここに無い話はAIも書きません</strong>）</p>
+    <textarea id="snsPostMemo" rows="2" placeholder="例: お客様と3回やり取りして決めた仕様。裁断で1枚だめにした。" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border-radius:.5rem;background:rgba(0,0,0,.25);color:inherit;border:1px solid rgba(255,255,255,.2);font-size:.86rem;line-height:1.5;resize:vertical"></textarea>
+    <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin:.4rem 0 .2rem">
+      <button class="secondary" id="snsPostVoiceGen" type="button">✍️ 自分の言葉で作る</button>
+      <span class="help" id="snsPostVoiceStatus"></span>
+    </div>
+    <p class="help" style="margin:.6rem 0 .2rem">投稿する文章（直してから投稿できます）</p>
+    <textarea id="snsPostCaption" rows="8" style="width:100%;box-sizing:border-box;padding:.6rem .7rem;border-radius:.5rem;background:rgba(0,0,0,.25);color:inherit;border:1px solid rgba(255,255,255,.2);font-size:.86rem;line-height:1.5;resize:vertical"></textarea>
     <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.7rem 0 .2rem">
       <label><input type="checkbox" id="snsPostThreads" checked> Threadsへ投稿</label>
       <label><input type="checkbox" id="snsPostInstagram" checked> Instagramへリール投稿</label>
@@ -1202,6 +1210,9 @@ const els = {
   snsPostGate: document.getElementById('snsPostGate'),
   snsPostSummary: document.getElementById('snsPostSummary'),
   snsPostCaption: document.getElementById('snsPostCaption'),
+  snsPostMemo: document.getElementById('snsPostMemo'),
+  snsPostVoiceGen: document.getElementById('snsPostVoiceGen'),
+  snsPostVoiceStatus: document.getElementById('snsPostVoiceStatus'),
   snsPostThreads: document.getElementById('snsPostThreads'),
   snsPostInstagram: document.getElementById('snsPostInstagram'),
   snsPostConfirm: document.getElementById('snsPostConfirm'),
@@ -2579,6 +2590,7 @@ function normalizeWorkItem(item){
     size: String(item.size || '').trim(),
     shortDesc: String(item.shortDesc || '').trim(),
     longDesc: String(item.longDesc || '').trim(),
+    price: String(item.price == null ? '' : item.price).trim(),   // 自分の言葉でキャプション（価格の行）用
     folderId: String(item.folderId || '').trim()
   };
 }
@@ -4688,6 +4700,22 @@ const SNS_CAPTION_MAX_CHARS = 1200;
 let snsPostGateResolve = null;
 
 function askSnsPostGate(caption){
+  // 文章は確認画面で直せる（2026-09-12）。投稿するのは closeSnsPostGate で読む入力欄の値。
+  els.snsPostCaption.value = caption;
+  if(els.snsPostMemo) els.snsPostMemo.value = '';
+  if(els.snsPostVoiceStatus) els.snsPostVoiceStatus.textContent = '';
+  refreshSnsPostChecks();
+  if(typeof els.snsPostGate.showModal !== 'function'){
+    return Promise.resolve(null);
+  }
+  if(els.snsPostGate.open) els.snsPostGate.close();
+  els.snsPostGate.showModal();
+  return new Promise(resolve => { snsPostGateResolve = resolve; });
+}
+
+// 入力欄の文章で、文字数・動画サイズの確認と「投稿する」ボタンの可否を出し直す
+function refreshSnsPostChecks(){
+  const caption = els.snsPostCaption.value;
   const format = currentVideoFormat();
   const sizeMb = lastRecordingBlob.size / 1048576;
   const tooBig = lastRecordingBlob.size > SNS_VIDEO_MAX_BYTES;
@@ -4702,15 +4730,9 @@ function askSnsPostGate(caption){
   els.snsPostSummary.innerHTML = checks
     .map(check => `<li class="${check.warn ? 'warn' : ''}"><strong>${check.warn ? '要確認' : 'OK'}</strong>　${escapeHtml(check.text)}</li>`)
     .join('');
-  els.snsPostCaption.textContent = caption;
-  els.snsPostConfirm.disabled = tooBig || tooLong;
-  els.snsPostConfirm.textContent = tooBig ? '動画を短くしてください' : (tooLong ? '本文を短くしてください' : 'この内容で投稿する');
-  if(typeof els.snsPostGate.showModal !== 'function'){
-    return Promise.resolve(null);
-  }
-  if(els.snsPostGate.open) els.snsPostGate.close();
-  els.snsPostGate.showModal();
-  return new Promise(resolve => { snsPostGateResolve = resolve; });
+  const empty = !caption.trim();
+  els.snsPostConfirm.disabled = tooBig || tooLong || empty;
+  els.snsPostConfirm.textContent = tooBig ? '動画を短くしてください' : (tooLong ? '本文を短くしてください' : (empty ? '本文が空です' : 'この内容で投稿する'));
 }
 
 function closeSnsPostGate(confirmed){
@@ -4726,8 +4748,52 @@ function closeSnsPostGate(confirmed){
   resolve({
     threads: !!(els.snsPostThreads && els.snsPostThreads.checked),
     instagram: !!(els.snsPostInstagram && els.snsPostInstagram.checked),
+    caption: els.snsPostCaption.value.trim(),   // 確認画面で直した（または自分の言葉で作った）文章
     pass
   });
+}
+
+/* ══ 自分の言葉でキャプション（2026-09-12 事業主要望）══
+   register.html と同じ商品登録GASの generateSnsCaption を呼ぶ。文体の正本は 広報部\SNS文体ガイド.md。
+   鍵は管理者モードの鍵（nsf_admin_key）。GAS側の ADMIN_KEY と同じ鍵であることをハッシュで確認済み。
+   ⛔ 自動の再送はしない（AIが二重に呼ばれるため）。失敗したら理由を出して、もう一度押してもらう。
+   末尾の作品番号とURLは buildSnsVideoCaption と同じ書式で付ける。 */
+async function generateSnsPostVoiceCaption(){
+  const btn = els.snsPostVoiceGen;
+  const st = els.snsPostVoiceStatus;
+  if(!currentWork || !currentWork.id){ st.textContent = '⚠️ 作品情報がありません'; return; }
+  let key = '';
+  try{ key = sessionStorage.getItem('nsf_admin_key') || ''; }catch(_){}
+  if(!key){ st.textContent = '⚠️ 管理者モードの鍵が見つかりません'; return; }
+  btn.disabled = true;
+  els.snsPostConfirm.disabled = true;   // 作成中に古い文章のまま投稿されないようにする
+  st.textContent = '⏳ 作成中…（10〜20秒）';
+  const payload = {
+    api: 'generateSnsCaption', key,
+    name: currentWork.title, category: currentWork.category, material: currentWork.material,
+    color: currentWork.color, size: currentWork.size, price: currentWork.price,
+    memo: els.snsPostMemo.value.trim(), longDesc: currentWork.longDesc
+  };
+  try{
+    const res = await fetch(SNS_VIDEO_DRIVE_API, {
+      method: 'POST',
+      body: new URLSearchParams({ api: payload.api, payload: JSON.stringify(payload) })
+    });
+    const text = await res.text();
+    if(text.trim().startsWith('<')) throw new Error('Google側の一時障害です（HTTP ' + res.status + '）。少し待ってもう一度押してください');
+    const d = JSON.parse(text);
+    if(!d.ok) throw new Error(d.error || '作成に失敗しました');
+    els.snsPostCaption.value = d.caption + '\n\n作品番号: ' + currentWork.id + '\nhttps://you0810jmsdf.github.io/ns-factory/works/' + encodeURIComponent(currentWork.id) + '.html';
+    const ng = d.ngWords || [];
+    st.textContent = ng.length
+      ? '⚠️ 使わない言葉が入っています：' + ng.join('、') + '（直すか、もう一度作ってください）'
+      : '✅ できました。読んで直してから投稿してください';
+  }catch(e){
+    st.textContent = '⚠️ ' + e.message;
+  }finally{
+    btn.disabled = false;
+    refreshSnsPostChecks();
+  }
 }
 
 async function deleteRelayVideo(id){
@@ -4778,7 +4844,7 @@ async function shareVideoToSns(){
       pass: choice.pass,
       rid: requestId,
       video: upJson.url,
-      caption,
+      caption: choice.caption || caption,
       threads: choice.threads ? '1' : '0',
       instagram: choice.instagram ? '1' : '0'
     });
@@ -6850,6 +6916,8 @@ els.exportGate.addEventListener('cancel', event => { event.preventDefault(); clo
 els.snsPostCancel.addEventListener('click', () => closeSnsPostGate(false));
 els.snsPostConfirm.addEventListener('click', () => closeSnsPostGate(true));
 els.snsPostGate.addEventListener('cancel', event => { event.preventDefault(); closeSnsPostGate(false); });
+els.snsPostVoiceGen.addEventListener('click', generateSnsPostVoiceCaption);
+els.snsPostCaption.addEventListener('input', refreshSnsPostChecks);   // 直すたびに文字数と「投稿する」の可否を出し直す
 els.adminToggle.addEventListener('click', () => { toggleAdminMode(); });
 els.saveReadingDict.addEventListener('click', () => {
   try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
