@@ -129,43 +129,43 @@
     ],
     "npad": [
       {
-        "area": 1.134,
-        "hours": 1.6,
+        "area": 0.9072,
+        "hours": 1.4,
         "label": "Micro 5"
       },
       {
-        "area": 1.75875,
-        "hours": 2.48,
+        "area": 1.407,
+        "hours": 2.17,
         "label": "mini 6"
       },
       {
-        "area": 1.764,
-        "hours": 2.496,
+        "area": 1.4112,
+        "hours": 2.184,
         "label": "Micro 5 スクエア"
       },
       {
-        "area": 2.75625,
-        "hours": 3.888,
+        "area": 2.205,
+        "hours": 3.402,
         "label": "mini 6 スクエア"
       },
       {
-        "area": 3.885,
-        "hours": 5.488,
+        "area": 3.108,
+        "hours": 4.802,
         "label": "A6"
       },
       {
-        "area": 4.06125,
-        "hours": 5.728,
+        "area": 3.249,
+        "hours": 5.012,
         "label": "バイブル"
       },
       {
-        "area": 5.775,
-        "hours": 8.144,
+        "area": 4.62,
+        "hours": 7.126,
         "label": "A5スリム"
       },
       {
-        "area": 7.77,
-        "hours": 10.96,
+        "area": 6.216,
+        "hours": 9.59,
         "label": "A5"
       }
     ],
