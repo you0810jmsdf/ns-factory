@@ -1516,7 +1516,9 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
     </div>
     <a href="#staff" class="nav-link" data-i18n="nav.staff">スタッフ</a>
     <!-- 2026-08-04 導線一本化: オーダー系の入口は「オーダー相談窓口」（hearing-ai.html）のみに統一。
-         ガイド・見積もりシミュレーターへは相談の中から誘導する（事業主指示） -->
+         ガイド・見積もりシミュレーターへは相談の中から誘導する（事業主指示）
+         2026-09-12 変更: 見積もりの精度が上がったため、Heroにだけ見積もりシミュレーターへの副ボタンを追加（事業主決定）。
+         オーダー系の主ボタンは引き続き「オーダー相談」。副ボタンのラベルに「相談」を使わない -->
     <a href="./order_estimate/hearing-ai.html" class="nav-cta" data-i18n="nav.order">オーダー相談</a>
     <!-- 言語切替（i18n.jsが文言・クリックを制御）。フローティングだとQR・PVカウンターに重なるためナビ内へ設置 -->
     <button type="button" id="nsfLangToggle" class="nav-link" style="border:1px solid var(--color-border);border-radius:var(--radius-full);padding:6px 12px;margin-left:4px;">EN</button>
@@ -1551,6 +1553,7 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
     </p>
     <div class="hero-actions">
       <a href="./order_estimate/hearing-ai.html" class="btn btn-primary" data-i18n="hero.cta">オーダー相談 →</a>
+      <a href="./order_estimate/leather-order-estimate-v2.html" class="btn btn-ghost" data-i18n="hero.estimate">システム手帳の金額目安を見る</a>
     </div>
   </div>
   <div class="hero-photo">
@@ -2038,6 +2041,7 @@ window.NSF_I18N_DICT = {
   'hero.title': 'One of a kind,<br>made just for you',
   'hero.desc': 'Leather speaks, and hands answer.<br>Where maker and owner meet directly, one-of-a-kind planners, leather goods, seals, acrylic and woodwork come to life.<br><br>Materials and design — everything is in your hands.',
   'hero.cta': 'Order Consultation →',
+  'hero.estimate': 'Price estimate (system planner)',
   'planner.title': 'Ring Planner Full Order',
   'planner.desc': 'Size, leather, rings, hardware, embossing — everything made to your specification. Available in all 7 sizes from Micro5 to A5.',
   'ai.title': 'Our AI staff welcomes you 24/7',
