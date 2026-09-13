@@ -1,14 +1,21 @@
+# ⚠ このファイルは Google には読まれない（2026-09-04 実測）。
+# プロジェクトサイト（user.github.io/ns-factory/）では、ホストのルート
+# https://you0810jmsdf.github.io/robots.txt だけが読まれ、そこは404。
+# 検索避けは各ページの <meta name="robots" content="noindex,nofollow"> で行う。
+# 下の Disallow は「非公開の方針」の記録として残している。
+# 公開ページ（無料ツール・道具紹介・リング規格図鑑など）がある
+# /digital-room/ と /kouhou-room/ は載せない（2026-09-13 事業主決定）。
+# ⛔ /works/ を Disallow しない（SNSクローラーがOGPを読めなくなる）。
+
 User-agent: *
 Allow: /
 
 # 内部管理ページ・幕僚室（非公開）
 Disallow: /sakusen-room/
 Disallow: /kanri-room/
-Disallow: /kouhou-room/
 Disallow: /hozen-room/
 Disallow: /jinji-room/
 Disallow: /hanbai-room/
-Disallow: /digital-room/
 Disallow: /pr-room/
 
 # 個人利用アプリ（お試し版・検索非掲載）
@@ -28,8 +35,5 @@ Disallow: /invoice/
 # 未完成・準備中（2026-08-24 一時凍結。N's pattern 第1弾の発売準備が整うまで）
 Disallow: /patterns/
 Disallow: /material-guide/
-
-# バックアップ・開発ファイル
-Disallow: /a6-weekly/index_backup_20260426.html
 
 Sitemap: https://you0810jmsdf.github.io/ns-factory/sitemap.xml
