@@ -1411,7 +1411,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'nav.progress': 'Order progress',
     'card.buy': '💳 Buy by card',
     'card.shipIncl': ', shipping incl.',
-    'card.note': 'One of a kind. Enter your shipping address (Japan only) on the payment page. We ship within 7 days of payment.',
+    'card.note': 'One of a kind, so returns are not accepted (except for defective items). Enter your shipping address (Japan only) on the payment page. We ship within 7 days of payment.',
     'card.pending': 'Someone is checking out this item right now',
     'card.pendingNote': 'If that checkout is not completed, the item becomes available again in about 30 minutes.',
     'card.preparing': 'Preparing the payment page…',
@@ -2634,7 +2634,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       } else {
         btn.disabled = false;
         btn.textContent = T('card.buy', '💳 カードで購入する') + '（¥' + Number(s.amount).toLocaleString('ja-JP') + T('card.shipIncl', '・送料込み') + '）';
-        note.textContent = T('card.note', '一点物です。決済画面で配送先（日本国内）を入力してください。決済から7日以内に発送します。');
+        note.textContent = T('card.note', '一点物のため、返品はお受けできません（不良品を除く）。決済画面で配送先（日本国内）を入力してください。決済から7日以内に発送します。');
       }
     }
 
