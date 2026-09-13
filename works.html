@@ -744,6 +744,29 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }
     /* .modal-actions 内は既存が <a> のため、<button> でも同じ見た目になるよう補う */
     button.modal-cta { font-family: inherit; cursor: pointer; }
+    /* ===== 作品のカード販売（2026-09-14）。販売中の作品にだけ出る購入ボタン・決済後の確認表示 ===== */
+    .modal-cta.card-buy { background: #1f1a14; border-color: #c9a96e; color: #f3e3bf; }
+    .modal-cta.card-buy:disabled { background: #d8dee8; border-color: #d8dee8; color: #667085; cursor: not-allowed; }
+    .card-buy-note { margin: -2px 0 4px; font-size: 12px; line-height: 1.6; color: #667085; }
+    .card-buy-note[hidden] { display: none; }
+    .card-paid-toast {
+      position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 3000;
+      width: min(560px, calc(100% - 24px)); display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px 14px; border-radius: 10px; border: 1px solid #d8dee8; background: #fff; color: #1f2937;
+      font-size: 14px; line-height: 1.6; box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+    .card-paid-toast[hidden] { display: none; }
+    .card-paid-toast.is-ok { border-color: #9fd3a5; background: #f1fbf2; }
+    .card-paid-toast.is-warn { border-color: #f0c38a; background: #fff8ec; }
+    .card-paid-toast > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+    .card-paid-toast button { flex: 0 0 auto; border: 1px solid #c9a96e; background: #fff; border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 12.5px; cursor: pointer; }
+    .card-paid-toast button[hidden] { display: none; }
+    .card-filter-bar { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin: 0 0 14px; padding: 8px 12px; border-radius: 8px; background: #1f1a14; color: #f3e3bf; font-size: 13px; }
+    .card-filter-bar[hidden] { display: none; }
+    .card-filter-bar a { color: #c9a96e; font-weight: 700; }
+    .admin-card-sale { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d8c7a8; }
+    .admin-card-state { font-size: 12px; color: #667085; margin-top: 4px; }
+    .admin-price-row button.admin-card-off { background: #fff; color: #8a2a1f; }
     /* ===== テクスチャシミュレーター（型紙SVG登録済みの作品だけに出る導線） =====
        表示条件は chat-widget.js と同一（folderId 内に svg1.svg / svg2.svg があるか）。
        オーダー相談チャットのオーバーレイ(z-index:4000)より上に重ねる。 */
@@ -1226,6 +1249,17 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <button id="missing-price-filter" class="admin-filter-btn" type="button" hidden>価格未設定だけ</button>
       <div id="count" class="count" data-i18n="tools.loading">読み込み中</div>
     </div>
+    <!-- カードで購入できる作品だけの表示（?card=1・リンク集のボタンから）。解除の導線を必ず出す -->
+    <div id="card-filter-bar" class="card-filter-bar" hidden>
+      <span id="card-filter-text">カードで購入できる作品だけを表示しています</span>
+      <a href="works.html" id="card-filter-all">すべての作品を見る</a>
+    </div>
+    <!-- 決済から戻ったときの確認表示（?paid=cs_xxx）。失敗時は「もう一度確認する」で再照会できる -->
+    <div id="card-paid-toast" class="card-paid-toast" role="status" aria-live="polite" hidden>
+      <span id="card-paid-text"></span>
+      <button type="button" id="card-paid-retry" hidden>もう一度確認する</button>
+      <button type="button" id="card-paid-close" aria-label="閉じる">×</button>
+    </div>
     <!-- いま注目されている作品 TOP3（2026-08-30 追加）。人数は出さず順位と先週比のみ。 -->
     <div id="rank-top3" class="rank-top3" hidden></div>
     <div id="gallery" class="gallery" aria-live="polite"></div>
@@ -1253,6 +1287,19 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
             <button type="button" id="admin-price-save">保存</button>
           </div>
           <div id="admin-price-msg" class="admin-price-msg"></div>
+          <!-- カード販売（2026-09-14 事業主決定）。お客様と調整した送料込みの価格で「販売開始」すると、
+               作品ページに誰でも押せる購入ボタンが出る（SOLDOUT も外れる）。売れたら自動で SOLDOUT に戻り、
+               オーダー進捗に登録される。停止すると SOLDOUT に戻る。処理は配信GAS refill_sales。 -->
+          <div id="admin-card-sale" class="admin-card-sale">
+            <label for="admin-card-amount">💳 カード販売（送料込みの価格・誰でも購入可）</label>
+            <div class="admin-price-row">
+              <input type="number" id="admin-card-amount" min="50" step="1" placeholder="送料込みの価格">
+              <button type="button" id="admin-card-on">販売開始</button>
+              <button type="button" id="admin-card-off" class="admin-card-off">停止</button>
+            </div>
+            <div id="admin-card-state" class="admin-card-state"></div>
+            <div id="admin-card-msg" class="admin-price-msg"></div>
+          </div>
           <!-- IDコピー→貼り付けの手間を無くす直行ボタン（2026-08-06 事業主要望）。
                register.html は ?edit=商品ID で開くと自動で編集モードになる。 -->
           <a id="admin-edit-link" href="#" class="btn-admin-edit">📝 登録画面でこの作品を編集</a>
@@ -1284,6 +1331,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <div id="waitlist-msg" class="waitlist-msg" hidden></div>
         </div>
         <div class="modal-actions">
+          <!-- カードで購入（2026-09-14）。管理者が販売開始した作品にだけ出る。configureCardBuy が表示を決める -->
+          <button id="card-buy-btn" class="modal-cta card-buy" type="button" hidden></button>
+          <p id="card-buy-note" class="card-buy-note" hidden></p>
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
@@ -1359,6 +1409,28 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'meta.title': "Gallery — N's factory",
     'nav.works': 'Gallery',
     'nav.progress': 'Order progress',
+    'card.buy': '💳 Buy by card',
+    'card.shipIncl': ', shipping incl.',
+    'card.note': 'One of a kind. Enter your shipping address (Japan only) on the payment page. We ship within 7 days of payment.',
+    'card.pending': 'Someone is checking out this item right now',
+    'card.pendingNote': 'If that checkout is not completed, the item becomes available again in about 30 minutes.',
+    'card.preparing': 'Preparing the payment page…',
+    'card.notOnSale': 'This item is not available for card purchase right now',
+    'card.failed': 'Could not open the payment page',
+    'card.busy': 'The server is busy',
+    'card.retryHint': 'Please try again later, or contact us by email.',
+    'card.confirming': 'Confirming your payment…',
+    'card.thanks': 'Thank you for your purchase. ',
+    'card.orderNo': 'Order number: ',
+    'card.period': '. ',
+    'card.mailSent': 'A confirmation email was sent to ',
+    'card.mailSent2': '. ',
+    'card.ship': 'We will ship within 7 days of payment.',
+    'card.unpaid': 'We could not confirm the payment yet. Please press “Check again” in a few minutes.',
+    'card.confirmFailed': 'A problem occurred while confirming your payment. Please let us know by email (you0810jmsdf@gmail.com).',
+    'card.confirmRetry': 'Connection failed. Please press “Check again”.',
+    'card.retry': 'Check again',
+    'card.emptyList': 'No items are available for card purchase right now. You can ask about any item from its page.',
     'nav.jhcs': 'JHCS workshops',
     'nav.links': 'Links',
     'hero.title': 'Gallery',
@@ -1459,6 +1531,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     let thumbObserver = null;
     let activeCategory = '';
     let showMissingPriceOnly = false;
+    // 作品のカード販売（2026-09-14）。状態は配信GAS refill_sales の ?action=works から取る
+    const CARD_GAS = 'https://script.google.com/macros/s/AKfycbw6KnJJdWoF3-tPwzg0GslEuN3upEykW9EhFVIdTn54FNq0UuHnryPH0MoaGVKV8px9/exec';
+    const CARD_TEST_OK = /[?&]stripe_test=1(&|$)/.test(location.search);
+    let cardSales = {};      // 作品ID → { amount, state: 'on' | 'pending' }
+    let cardMode = '';       // 'live' | 'test' | ''（鍵なし）
+    let cardLoaded = false;  // true | 'error'
+    let showCardOnly = false;
     let priceUrlFilterApplied = false;
 
     /* ── 英語モード（2026-08-17）──
@@ -1725,8 +1804,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     function render() {
       const keyword = normalize(search.value).trim();
+      const cardBar = document.getElementById('card-filter-bar');
+      if (cardBar) cardBar.hidden = !showCardOnly;
       filtered = works.filter((work) => {
         if (showMissingPriceOnly && !isMissingPrice(work)) return false;
+        if (showCardOnly && !cardSaleOf(work)) return false;
         if (activeMajor && !workCats(work).some((c) => majorOf(c) === activeMajor)) return false;
         if (activeCategory && !workCats(work).includes(activeCategory)) return false;
         if (activeSize && sizeOf(work) !== activeSize) return false;
@@ -1744,7 +1826,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         : `${filtered.length}件 / 写真 ${filtered.reduce((sum, work) => sum + work.photos.length, 0)}枚`;
 
       if (!filtered.length) {
-        gallery.innerHTML = '<div class="empty">' + T('gallery.empty', '該当する作品がありません。') + '</div>';
+        gallery.innerHTML = '<div class="empty">' + (showCardOnly
+          ? T('card.emptyList', 'いまカードで購入できる作品はありません。気になる作品は、各作品のページから購入相談ができます。')
+          : T('gallery.empty', '該当する作品がありません。')) + '</div>';
         return;
       }
 
@@ -2382,6 +2466,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       ].filter(Boolean).map((line) => `<div>${esc(line)}</div>`).join('');
       modalDesc.textContent = activeWork.longDesc || activeWork.shortDesc || '詳細は公式LINEからお問い合わせください。';
       configureOrderLinks(activeWork);
+      configureCardBuy(activeWork);
+      updateAdminCardUI();
       updateAdminUI();
     }
 
@@ -2491,6 +2577,199 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       // 注目度ランキングは作品データが揃ってから一度だけ取りにいく
       if (!window.__nsfRankLoaded) { window.__nsfRankLoaded = true; loadRanking(); }
     }
+
+    // ── 作品のカード販売（2026-09-14 事業主決定・配信GAS refill_sales）──────────────
+    // 作品は基本 SOLDOUT。事業主が管理者モードで「カード販売を開始」した作品にだけ購入ボタンを出す（誰でも購入可）。
+    // 流れ: ?action=works で販売中一覧 → ボタンで ?action=workCheckout（Stripe の決済画面へ）
+    //       → 支払い後 works.html?id=ID&paid=cs_xxx に戻る → ?action=workConfirm で確定（オーダー進捗に登録・SOLDOUT）
+    // ⛔ テスト鍵の間は ?stripe_test=1 のときだけボタンを出す（お客様にテスト決済を見せない・pdf-checkout.js と同じ）。
+    // ⛔ 再送は「GASに届かなかった応答」（HTTP非200・本文先頭が '<'）だけ。決済画面の作成は rid 付きで、
+    //    同じ人の再送には GAS が同じ決済画面を返す（再送した本人が「決済中」で締め出されない）。
+    function cardGas(query, tries) {
+      return fetch(CARD_GAS + '?' + query + '&t=' + Date.now(), { cache: 'no-store' })
+        .then((res) => res.text().then((txt) => {
+          if (!res.ok || !txt || txt.trim().charAt(0) === '<') {
+            const e = new Error(T('card.busy', 'サーバーが混み合っています'));
+            e.retry = true;
+            throw e;
+          }
+          return JSON.parse(txt);
+        }))
+        .catch((e) => {
+          if (e.retry && tries > 1) return new Promise((r) => setTimeout(r, 900)).then(() => cardGas(query, tries - 1));
+          throw e;
+        });
+    }
+    function cardUsable() { return cardMode === 'live' || (cardMode === 'test' && CARD_TEST_OK); }
+    function cardSaleOf(work) { return (work && cardUsable() && cardSales[work.id]) || null; }
+    function loadCardSales() {
+      return cardGas('action=works', 3)
+        .then((d) => {
+          cardMode = (d && d.mode) || '';
+          cardSales = {};
+          ((d && d.works) || []).forEach((w) => { cardSales[w.id] = w; });
+          cardLoaded = true;
+          if (cardMode === 'test' && CARD_TEST_OK) console.info('[card-sale] Stripe テストモードで表示中');
+        })
+        .catch(() => { cardSales = {}; cardLoaded = 'error'; })
+        .then(() => {
+          render();
+          if (activeWork && modal.classList.contains('open')) { configureCardBuy(activeWork); updateAdminCardUI(); }
+        });
+    }
+
+    function configureCardBuy(work) {
+      const btn = document.getElementById('card-buy-btn');
+      const note = document.getElementById('card-buy-note');
+      if (!btn || !note) return;
+      const s = cardSaleOf(work);
+      btn.hidden = !s;
+      note.hidden = !s;
+      if (!s) return;
+      btn.removeAttribute('aria-busy');
+      if (s.state === 'pending') {
+        btn.disabled = true;
+        btn.textContent = T('card.pending', 'ただいま他の方が購入手続き中です');
+        note.textContent = T('card.pendingNote', '手続きが完了しなかった場合は、30分ほどで再び購入できるようになります。');
+      } else {
+        btn.disabled = false;
+        btn.textContent = T('card.buy', '💳 カードで購入する') + '（¥' + Number(s.amount).toLocaleString('ja-JP') + T('card.shipIncl', '・送料込み') + '）';
+        note.textContent = T('card.note', '一点物です。決済画面で配送先（日本国内）を入力してください。決済から7日以内に発送します。');
+      }
+    }
+
+    document.getElementById('card-buy-btn').addEventListener('click', () => {
+      const btn = document.getElementById('card-buy-btn');
+      const work = activeWork;
+      if (!work || btn.getAttribute('aria-busy') === 'true') return;
+      // 同じ人が押し直したときに同じ決済画面へ戻れるよう、作品ごとの乱数をタブの間だけ覚える
+      let rid = '';
+      try { rid = sessionStorage.getItem('nsf_card_rid_' + work.id) || ''; } catch (e) {}
+      if (!rid) {
+        rid = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, '0')).join('');
+        try { sessionStorage.setItem('nsf_card_rid_' + work.id, rid); } catch (e) {}
+      }
+      btn.setAttribute('aria-busy', 'true');
+      btn.disabled = true;
+      btn.textContent = T('card.preparing', '決済画面を準備しています…');
+      cardGas('action=workCheckout&work=' + encodeURIComponent(work.id) + '&rid=' + rid, 3)
+        .then((d) => {
+          if (!d || !d.ok || !d.url) {
+            throw new Error(d && d.error === 'pending' ? T('card.pending', 'ただいま他の方が購入手続き中です')
+              : d && d.error === 'not on sale' ? T('card.notOnSale', 'この作品は現在カード販売していません')
+              : T('card.failed', '決済画面を作れませんでした'));
+          }
+          logProductAction(work, 'カード購入の決済画面へ');
+          location.href = d.url;
+        })
+        .catch((e) => {
+          alert((e && e.message ? e.message : e) + '\n' + T('card.retryHint', '時間をおいてもう一度お試しいただくか、メールでお問い合わせください。'));
+          loadCardSales();
+        });
+    });
+    // Stripe の画面から「戻る」で帰ってきたとき、ボタンが「準備しています…」のまま残らないようにする
+    window.addEventListener('pageshow', () => { if (activeWork) configureCardBuy(activeWork); });
+
+    // 決済から戻ったとき（?paid=cs_xxx）。確定は何度呼んでも同じ結果（GAS側で冪等）なので、再照会のボタンを置ける
+    function handleCardReturn() {
+      let sid = '';
+      try { sid = (new URLSearchParams(location.search).get('paid') || '').trim(); } catch (e) { return; }
+      if (!/^cs_(test|live)_[A-Za-z0-9]{10,}$/.test(sid)) return;
+      const box = document.getElementById('card-paid-toast');
+      const text = document.getElementById('card-paid-text');
+      const retry = document.getElementById('card-paid-retry');
+      const show = (cls, msg, canRetry) => {
+        box.className = 'card-paid-toast ' + cls;
+        text.textContent = msg;
+        retry.hidden = !canRetry;
+        box.hidden = false;
+      };
+      retry.textContent = T('card.retry', 'もう一度確認する');
+      show('is-wait', T('card.confirming', 'お支払いを確認しています…'), false);
+      cardGas('action=workConfirm&session=' + encodeURIComponent(sid), 4)
+        .then((d) => {
+          if (d && d.ok) {
+            show('is-ok', T('card.thanks', 'ご購入ありがとうございます。')
+              + (d.orderNo ? T('card.orderNo', '受付番号：') + d.orderNo + T('card.period', '。') : '')
+              + (d.email ? T('card.mailSent', '確認メールを ') + d.email + T('card.mailSent2', ' にお送りしました。') : '')
+              + T('card.ship', '決済から7日以内に発送します。'), false);
+            try { sessionStorage.removeItem('nsf_card_rid_' + d.work); } catch (e) {}
+            loadCardSales();
+          } else if (d && d.error === 'unpaid') {
+            show('is-warn', T('card.unpaid', 'お支払いの完了を確認できませんでした。数分後に「もう一度確認する」を押してください。'), true);
+          } else {
+            show('is-warn', T('card.confirmFailed', 'お支払いの確認中に問題が起きました。お手数ですがメール（you0810jmsdf@gmail.com）でお知らせください。')
+              + '（' + sid.slice(-8) + (d && d.error ? ' / ' + d.error : '') + '）', true);
+          }
+        })
+        .catch(() => show('is-warn', T('card.confirmRetry', '通信に失敗しました。「もう一度確認する」を押してください。'), true));
+    }
+    document.getElementById('card-paid-retry').addEventListener('click', handleCardReturn);
+    document.getElementById('card-paid-close').addEventListener('click', () => { document.getElementById('card-paid-toast').hidden = true; });
+
+    // 管理者：カード販売の開始・停止（在庫を直す操作）
+    function updateAdminCardUI() {
+      const st = document.getElementById('admin-card-state');
+      const amt = document.getElementById('admin-card-amount');
+      if (!st || !amt || !activeWork) return;
+      const s = cardSales[activeWork.id];
+      if (document.activeElement !== amt) amt.value = s ? s.amount : (activeWork.price || '');
+      if (cardLoaded === 'error') st.textContent = '⚠ 販売状態を取得できませんでした（再読み込みしてください）';
+      else if (!cardLoaded) st.textContent = '販売状態を読み込み中…';
+      else if (!cardMode) st.textContent = '⚠ Stripe の鍵が未設定です（販売を開始しても購入ボタンは出ません）';
+      else if (s) st.textContent = (s.state === 'pending' ? '状態：決済手続き中' : '状態：販売中（¥' + Number(s.amount).toLocaleString('ja-JP') + '）')
+        + (cardMode === 'test' ? '・テスト鍵（?stripe_test=1 のときだけ購入ボタンが出ます）' : '');
+      else st.textContent = '状態：カード販売なし（SOLDOUT が基本）';
+    }
+    function cardAdmin(on) {
+      const work = activeWork;
+      if (!work) return;
+      const msg = document.getElementById('admin-card-msg');
+      const amount = Math.round(Number(document.getElementById('admin-card-amount').value));
+      if (on && !(amount >= 50)) {
+        msg.textContent = '送料込みの価格を50円以上で入力してください';
+        msg.className = 'admin-price-msg error';
+        return;
+      }
+      const ask = on
+        ? '「' + work.title + '」を ¥' + amount.toLocaleString('ja-JP') + '（送料込み）でカード販売します。\n作品ページに誰でも押せる購入ボタンが出ます（SOLDOUT も外れます）。よろしいですか？'
+        : '「' + work.title + '」のカード販売を停止し、SOLDOUT に戻します。よろしいですか？';
+      if (!confirm(ask)) return;
+      const btns = [document.getElementById('admin-card-on'), document.getElementById('admin-card-off')];
+      btns.forEach((b) => { b.disabled = true; });
+      msg.textContent = '保存中…';
+      msg.className = 'admin-price-msg';
+      const payload = JSON.stringify({ key: nsfStoredKey(), work: work.id, name: work.title, amount: on ? amount : (Number(work.price) || amount || 0), on: on });
+      cardGas('action=workSale&payload=' + encodeURIComponent(payload), 3)
+        .then((d) => {
+          if (!d || !d.ok) {
+            const reasons = { unauthorized: '管理者パスワードが違います', pending: '決済手続き中のため変更できません（30分ほどで解除されます）', amount: '価格が不正です', busy: '混み合っています。もう一度押してください' };
+            throw new Error(reasons[d && d.error] || (d && d.error) || '不明なエラー');
+          }
+          if (d.state === 'sold') {
+            msg.textContent = 'この作品は売約済みです（停止の必要はありません）';
+            msg.className = 'admin-price-msg success';
+            return null;
+          }
+          work.soldout = !on;
+          if (on) work.price = amount;
+          msg.textContent = (on ? 'カード販売を開始しました' : '停止して SOLDOUT に戻しました')
+            + (d.warn ? '（⚠ 作品集の SOLDOUT 切替に失敗: ' + d.warn + '。登録画面で直してください）' : '');
+          msg.className = 'admin-price-msg ' + (d.warn ? 'error' : 'success');
+          updateModal();
+          return loadCardSales();
+        })
+        .catch((e) => {
+          msg.textContent = '保存に失敗しました: ' + (e && e.message ? e.message : e);
+          msg.className = 'admin-price-msg error';
+        })
+        .then(() => { btns.forEach((b) => { b.disabled = false; }); });
+    }
+    document.getElementById('admin-card-on').addEventListener('click', () => cardAdmin(true));
+    document.getElementById('admin-card-off').addEventListener('click', () => cardAdmin(false));
+
+    loadCardSales();
+    handleCardReturn();
 
     // ?id=NF2026_633 で指定された作品の詳細を直接開く（SNSからの名指し導線用）。
     // applyData は静的データ→GASデータの2回呼ばれるため、自動オープンは1回だけにする
@@ -2610,6 +2889,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         const cat = (params.get('cat') || '').trim();
         const q = (params.get('q') || '').trim();
         const price = (params.get('price') || '').trim();
+        const card = (params.get('card') || '').trim();
+        if (card === '1') showCardOnly = true;   // ?card=1 … カードで購入できる作品だけ（リンク集のボタン）
         if (cat) {
           const exists = works.some((w) => workCats(w).includes(cat));
           if (exists) {
