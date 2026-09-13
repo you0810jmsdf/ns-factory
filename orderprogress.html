@@ -82,6 +82,15 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       margin-left:8px; padding:3px 12px; border:1px solid #8A1C12; border-radius:14px;
       background:#fff; color:#8A1C12; font-size:.8rem; cursor:pointer;
     }
+    /* 控えデータ表示中の注意（件数カードの直上・2026-09-13） */
+    #stale-banner {
+      background:#FFF4D6; border:1px solid #E8C76A; border-radius:10px;
+      padding:10px 14px; margin-bottom:12px; font-size:.85rem; color:#6B4E00; line-height:1.6;
+    }
+    #stale-banner button {
+      margin-left:8px; padding:3px 12px; border:1px solid #6B4E00; border-radius:14px;
+      background:#fff; color:#6B4E00; font-size:.8rem; cursor:pointer;
+    }
 
     /* ── Hero ── */
     .hero {
@@ -445,6 +454,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
 <!-- Main content -->
 <div class="content">
+  <!-- 控えデータ表示中の注意。GASに届かず orderprogress-data.json（2026年4月時点）へ切り替えたときだけ出す -->
+  <div id="stale-banner" hidden>
+    ⚠️ <span data-i18n="stale.msg">最新のデータを読み込めなかったため、2026年4月時点の古い控えを表示しています。件数や案件は最新ではありません。</span><button type="button" onclick="retryLoad()" data-i18n="stale.retry">再読み込み</button>
+  </div>
   <!-- Stats -->
   <div class="stats-row">
     <div class="stat-card" data-stat-filter="all"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl" data-i18n="stat.total">受付総数</div></div>
@@ -600,6 +613,11 @@ window.NSF_I18N_DICT = {
   'stat.shown': 'Shown',
   'search.ph': '🔍 Filter by reference no. or name…',
   'empty.orders': 'No matching orders.',
+  'loading.orders': 'Loading orders…',
+  'loading.slow': 'The server is responding slowly. Please wait.',
+  'loading.sec': 's',
+  'stale.msg': 'Could not load the latest data, so an older backup copy is shown. Counts and orders may be out of date.',
+  'stale.retry': 'Reload',
   'tl.none': 'No progress updates yet',
   'card.client': 'Customer',
   'card.noName': '(item name not set)',
@@ -815,6 +833,7 @@ function init() {
 // ─── GAS Load ────────────────────────────────
 async function loadRecords() {
   if (!gasUrl) return loadFallbackRecords();
+  startLoadingMsg();
   try {
     // 鍵なしは公開版（依頼者名・メモ・ヒアリング内容・顧客IDを含まない）。管理者ログイン後は key 付きで全列（2026-09-06）
     let adminKey = '';
@@ -823,6 +842,7 @@ async function loadRecords() {
     const data = await fetchRecordsWithRetry(listUrl);
     setAdminAvailable(true);
     setConnBanner(false);
+    setStaleBanner(false);
     // 管理者のつもりで公開版しか取れていない＝この状態で保存するとメモ等を空で上書きしてしまう。ログアウト扱いにして再入力を促す
     if (isAdmin() && !data.full) {
       try { sessionStorage.removeItem('op_auth'); } catch (e) {}
@@ -845,6 +865,7 @@ async function loadRecords() {
     }
     gasReady = false;
     setConnBanner(true);
+    setStaleBanner(true);
     await loadFallbackRecords();
   }
 }
@@ -870,6 +891,33 @@ async function fetchRecordsWithRetry(listUrl) {
 function setConnBanner(show) {
   const b = document.getElementById('conn-banner');
   if (b) b.hidden = !show;
+}
+
+// 控え（古いデータ）を表示中であることを件数カードの直上に出す（2026-09-13）
+// 出さないと「件数が減った」「最新の案件が消えた」と誤解される（実際にあった）
+function setStaleBanner(show) {
+  const b = document.getElementById('stale-banner');
+  if (b) b.hidden = !show;
+}
+
+// GAS は数十秒かかることがある（2026-09-13 実測 43.8秒）。空の画面で止まって見えないよう、
+// 一覧がまだ無いときだけ「読み込み中（経過秒）」を出す。一覧の描画（renderAll）で止まる
+let loadingTimer = null;
+function startLoadingMsg() {
+  const grid = document.getElementById('order-grid');
+  if (!grid || loadingTimer) return;
+  if (grid.querySelector(':scope > :not(.empty)')) return;  // 既に案件カードが出ていれば出さない
+  const t0 = Date.now();
+  const draw = () => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    const msg = s >= 10 ? T('loading.slow', 'サーバーの応答が遅れています。そのままお待ちください') : T('loading.orders', 'オーダー情報を読み込んでいます…');
+    grid.innerHTML = '<div class="empty loading-msg">⏳ ' + msg + (s >= 3 ? '（' + s + T('loading.sec', '秒') + '）' : '') + '</div>';
+  };
+  draw();
+  loadingTimer = setInterval(draw, 1000);
+}
+function stopLoadingMsg() {
+  if (loadingTimer) { clearInterval(loadingTimer); loadingTimer = null; }
 }
 
 // 帯の「再読み込み」ボタン。ページごと読み直さず、一覧だけ取り直す
@@ -918,6 +966,7 @@ async function loadRrRecords() {
 
 // ─── Render ──────────────────────────────────
 function renderAll(records) {
+  stopLoadingMsg();
   updateStats(records);
   applyFilter();
 }
