@@ -481,6 +481,8 @@ body{
 }
 .brand-card-img{width:100%;height:90px;object-fit:cover;display:block}
 .brand-card-img-placeholder{width:100%;height:90px;display:flex;align-items:center;justify-content:center;background:#faf7f4}
+.brand-card-imgs{display:flex;gap:2px}
+.brand-card-imgs img{width:50%;height:90px;object-fit:cover;display:block}
 .brand-card-body{padding:8px 10px}
 .klause-section.disabled{opacity:0.4;pointer-events:none}
 .brand-card:hover{border-color:#b5895a;transform:translateY(-2px);box-shadow:0 4px 14px rgba(107,58,31,.1)}
@@ -767,7 +769,7 @@ body{
   <button class="lp-tool-btn" onclick="goBackToParentSite()" data-i18n="ui.backSite">↩ 元のサイト</button>
   <a class="lp-tool-btn" href="./admin.html" data-i18n="ui.adminBtn">🗂 管理画面</a>
   <button class="lp-tool-btn" onclick="resetAll()" data-i18n="ui.resetBtn">🔄 リセット</button>
-  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.12.4</span>
+  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.12.5</span>
 </div>
 
 <div class="main">
@@ -825,6 +827,7 @@ body{
   <div class="opt-grid" id="ringNormalGrid"></div>
   <div id="klauseSection" class="klause-section">
   <div class="ring-section-lbl klause" data-i18n="ui.klauseRing">🔒 クラウゼリング（スライドロック式）</div>
+  <div style="font-size:11px;color:#b05a00;margin-bottom:6px" data-i18n="ui.klauseFitNote">当て革加工が必要なため、通常リングより取り付け加工費が +¥2,000 かかります</div>
   <div id="klauseNote" style="display:none;font-size:11px;color:#b05a00;background:#fff8f0;border:1px solid #e8c9a8;border-radius:6px;padding:7px 10px;margin-bottom:8px" data-i18n="ui.klauseNote">⚠ この構造タイプはクラウゼリング非対応です</div>
   <div id="klausePadNote" style="display:none"></div>
   <div class="opt-grid" id="ringKlauseGrid"></div>
@@ -1134,8 +1137,8 @@ body{
 </div>
 
 <script src="./labor-curve-model.js?v=20260905"></script>
-<script src="./labor-curve-editor.js?v=20260912.4"></script>
-<script src="./quote-archive.js?v=20260912.4"></script>
+<script src="./labor-curve-editor.js?v=20260912.5"></script>
+<script src="./quote-archive.js?v=20260912.5"></script>
 <script src="./estimate-fulfillment.js?v=20260905"></script>
 <script>
 /* ═══════════════════════════════════════════════════
@@ -1247,6 +1250,22 @@ if (npadFlapBrand) {
 }
 const simplistKlPadBrand = BRANDS.find(b => b.id === 'simplist_klpad');
 if (simplistKlPadBrand) simplistKlPadBrand.image = SIMPLIST_KL_PAD_IMAGE;
+
+// 2026-09-13 事業主決定: 構造カードは Standard に一本化し、Simplist（simplist_kl）はカードに出さない。
+// 「オプションを一切付けない状態が Simplist」という案内に変えたため。id・brand-price.csv・工数カーブは
+// 過去の見積もり控えとの互換のために残す（表示しないだけ）。
+const HIDDEN_BRAND_IDS = ['simplist_kl'];
+const standardBrand = BRANDS.find(b => b.id === 'simplist');
+const simplistKlBrand = BRANDS.find(b => b.id === 'simplist_kl');
+// Standardカードは写真2枚（左=Standardの写真／右=旧Simplistカードの写真）
+if (standardBrand && simplistKlBrand) standardBrand.image2 = simplistKlBrand.image;
+if (standardBrand) standardBrand.sub = 'リングサポータで包み込みタイプ。オプションを一切付けない状態が Simplist です。';
+// クラウゼリングは当て革加工が必要なため、通常リングより取り付け加工費が高い（2026-09-13 事業主指示）
+const KRAUSE_FITTING_FEE = 2000;
+function isKrauseRingSelected() {
+  const r = RINGS.find(x => x.id === sel.ringId);
+  return !!(r && r.isKlause);
+}
 
 async function syncNpadFlapImageFromSimulator() {
   if (!npadFlapBrand) return;
@@ -2625,12 +2644,14 @@ function defaultSelect(el, d, stateKey) {
 function buildBrandGrid() {
   const grid = document.getElementById('brandGrid');
   grid.innerHTML = '';
-  BRANDS.forEach(b => {
+  BRANDS.filter(b => !HIDDEN_BRAND_IDS.includes(b.id)).forEach(b => {
     const div = document.createElement('div');
     div.className = 'brand-card';
     div.dataset.id = b.id;
     if (sel.brandId === b.id) div.classList.add('selected');
-    const imgHtml = b.image
+    const imgHtml = b.image2
+      ? `<div class="brand-card-imgs"><img src="${b.image}" alt="${b.name}" loading="lazy"><img src="${b.image2}" alt="${b.name}" loading="lazy"></div>`
+      : b.image
       ? `<img class="brand-card-img" src="${b.image}" alt="${b.name}" loading="lazy">`
       : `<div class="brand-card-img-placeholder"><div class="brand-icon">${b.emoji}</div></div>`;
     div.innerHTML = `
@@ -3224,6 +3245,7 @@ function updateSummary(options = {}) {
   const flapOn    = isFlapEffectivelyOn();
   const flapPrice = isFlapPriceOptional() && flapOn ? 3000 : 0;
   const beltPrice = isBeltEffectivelyOn() ? BELT_OPTION_PRICE : 0; // ベルト加工は固定額・サイズ倍率非適用（2026-09-12）
+  const krauseFitting = isKrauseRingSelected() ? KRAUSE_FITTING_FEE : 0; // クラウゼは当て革加工が必要（2026-09-13）
   const freePocket    = window._freePocket    || 'none';
   const innerPocketSide = window._innerPocketSide || 'none';
   const slitSide      = window._slitSide      || 'none';
@@ -3278,6 +3300,7 @@ function updateSummary(options = {}) {
         + Math.round(cardPCC * 1000) // カードポケットは固定額・サイズ倍率非適用（2026-07-09変更）
         + flapPrice
         + beltPrice
+        + krauseFitting
         + sideCount(window._clearWindowSide) * 3000
         + sideCount(window._patchworkSide)   * 5000;
 
@@ -3378,6 +3401,7 @@ function updateSummary(options = {}) {
     if (getBrandFlapMode() === 'fixed_on') add(T('opt.flap', 'フラップ・ベルト'), T('sum.inclStructure', '構造タイプ込み'));
     else if (flapOn) add(T('opt.flap', 'フラップ・ベルト'), '+¥3,000');
     if (beltPrice > 0) add(T('opt.belt', 'ベルト加工'), `+¥${beltPrice.toLocaleString()}`);
+    if (krauseFitting > 0) add(T('opt.krauseFit', 'クラウゼ当て革加工'), `+¥${krauseFitting.toLocaleString()}`);
     if(wrappingCost > 0)            add(`${T('sum.wrapping', 'ラッピング')}（${wrappingObj.name})`, `+¥${wrappingCost.toLocaleString()}`);
     if(dkanCost > 0)               add(`${T('opt.dkan', 'Dカン取り付け')}×${dkanCount}`, `+¥${dkanCost.toLocaleString()}`);
     if(freePocket !== 'none')     add(`${T('opt.freePocket', 'フリーポケット')}(${sideLabel(freePocket)})`,   `+¥${sideCost(freePocket).toLocaleString()}`);
@@ -3510,6 +3534,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   if(window._clearWindowSide !== 'none') h += r(T('opt.clearWindow', 'クリア窓枠'), sideLabel(window._clearWindowSide));
   if(window._patchworkSide   !== 'none') h += r(T('opt.patchwork', 'パッチワーク加工'), sideLabel(window._patchworkSide));
   if(isBeltEffectivelyOn()) h += r(T('opt.belt', 'ベルト加工'), isEN() ? 'Yes (body loop + belt)' : 'あり（本体ループ＋ベルト取り付け）');
+  if(isKrauseRingSelected()) h += r(T('opt.krauseFit', 'クラウゼ当て革加工'), isEN() ? 'Included (+¥2,000)' : 'あり（+¥2,000）');
   // 「なし」「未選択」「標準」表記のものは見積書に記載しない（依頼人視点で冗長。EN名も併せて判定）
   if(sel.pen   && !/(なし|未選択|^No pen)/.test(sel.pen))   h += r(T('opt.pen', 'ペンホルダー'), sel.pen);
   if(sel.stamp && sel.stamp !== '未選択')           h += r(T('sum.stamp', '刻印'), sel.stamp);
@@ -3587,6 +3612,8 @@ function buildEstText() {
   if(window._clearWindowSide !== 'none') t += `${T('opt.clearWindow', 'クリア窓枠')}：${sideLabel(window._clearWindowSide)}\n`;
   if(window._patchworkSide   !== 'none') t += `${T('opt.patchwork', 'パッチワーク加工')}：${sideLabel(window._patchworkSide)}\n`;
   if(isBeltEffectivelyOn()) t += `${T('opt.belt', 'ベルト加工')}：${isEN() ? 'Yes (body loop + belt)' : 'あり（本体ループ＋ベルト取り付け）'}\n`;
+  if(isKrauseRingSelected()) t += `${T('opt.krauseFit', 'クラウゼ当て革加工')}：${isEN() ? 'Included (+¥2,000)' : 'あり（+¥2,000）'}
+`;
   // 「なし」「未選択」「標準」表記のものはメール本文に記載しない（EN名も併せて判定）
   if(sel.pen   && !/(なし|未選択|^No pen)/.test(sel.pen))   t += `${T('opt.pen', 'ペンホルダー')}：${sel.pen}\n`;
   if(sel.stamp && sel.stamp !== '未選択')           t += `${T('sum.stamp', '刻印')}：${sel.stamp}\n`;
@@ -3807,7 +3834,7 @@ function localizeDefsForEN() {
     (fields || ['name', 'sub']).forEach(f => { if (en[f] !== undefined) o[f] = en[f]; });
   });
   apply(BRANDS, {
-    simplist:       { sub: 'Wrap-around ring-supporter type' },
+    simplist:       { sub: 'Wrap-around ring-supporter type. With no options at all, this is the Simplist.' },
     // simplist_kl は 2026-09-13 に「Simplist＋クラウゼ」→「Simplist」へ改名（事業主指示）。
     // simplist_klpad は 2026-09-12 に N-Classic へ改名（通常リングも可）。id は工数カーブ・価格CSVのキーなので変えない
     simplist_kl:    { name: 'Simplist', sub: 'Krause-compatible, no pad' },
@@ -4121,6 +4148,8 @@ window.NSF_I18N_DICT = {
   'opt.std': 'Standard',
   'opt.flap': 'Flap & belt', 'opt.yes': 'Yes',
   'opt.belt': 'Belt', 'opt.beltNote': '+¥3,000 (body loop + belt attachment)',
+  'opt.krauseFit': 'Krause backing-leather work',
+  'ui.klauseFitNote': 'Krause rings need a backing-leather step: +¥2,000 fitting work.',
   'opt.freePocket': 'Free pocket', 'opt.freePocketNote': '+¥1,000 each (inner sleeve type)',
   'opt.innerPocket': 'Gusset pocket', 'opt.perSheet1000': '+¥1,000 each',
   'opt.cardPocket': 'Card pockets', 'opt.cardPocketNote': '+¥1,000 each (CC size)', 'opt.cardPocketCC': 'Card pockets (CC)',
