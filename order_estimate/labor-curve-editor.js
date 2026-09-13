@@ -1,7 +1,7 @@
 /* Shared curve data and editor. Public estimates never read administrative drafts. */
 (function () {
   'use strict';
-  const SIMULATOR_VERSION = '2026.09.12.3';
+  const SIMULATOR_VERSION = '2026.09.12.4';
   window.NSFSimulatorVersion = SIMULATOR_VERSION;
   const versionLabel = document.getElementById('simulatorVersion');
   if (versionLabel) versionLabel.textContent = '見積シミュレータ v' + SIMULATOR_VERSION;
