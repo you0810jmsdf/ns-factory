@@ -1051,6 +1051,11 @@ canvas{
             <label for="aiVoiceSelect">完成動画に入るAI音声</label>
             <select id="aiVoiceSelect"></select>
             <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語・英語とも対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
+            <div id="voicevoxBox" hidden>
+              <p class="help">「VOICEVOX・このPC」の声は、このパソコンでVOICEVOXのエンジンを起動しているときだけ使えます（無料）。使う前に <strong>C:\Tools\voicevox_engine\start_for_sns_video.bat</strong> をダブルクリックしてください。初回だけブラウザに「ローカルネットワーク上のデバイスへのアクセス」を聞かれるので「許可」を押します。1コマの音声づくりに15〜20秒ほどかかります。動画の右下とSNSのキャプションに「VOICEVOX:キャラ名」が自動で入ります（利用規約で必要な表記です）。</p>
+              <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXとの接続を確認</button>
+              <p class="help" id="voicevoxStatus" aria-live="polite"></p>
+            </div>
           </div>
           <div class="field">
             <details>
@@ -1193,6 +1198,9 @@ const els = {
   endLogoCta: document.getElementById('endLogoCta'),
   workIdOverlay: document.getElementById('workIdOverlay'),
   workIdOverlayText: document.getElementById('workIdOverlayText'),
+  voicevoxBox: document.getElementById('voicevoxBox'),
+  voicevoxCheck: document.getElementById('voicevoxCheck'),
+  voicevoxStatus: document.getElementById('voicevoxStatus'),
   shareToSns: document.getElementById('shareToSns'),
   shareToSnsBox: document.getElementById('shareToSnsBox'),
   filmSpeedField: document.getElementById('filmSpeedField'),
@@ -1263,6 +1271,21 @@ const localTtsPending = new Map();
 /* 音声はすべて中継サーバ（Microsoft Edge の読み上げ）から取る。
    以前の英語はブラウザ内でAIモデル（約100MB）を動かしており、メモリを圧迫して
    長い動画の書き出しが途中で止まっていた（成功率57%）。2026-09-06 に一本化。 */
+// VOICEVOX（このPCで動かす無料の音声合成エンジン・2026-09-13）。
+// 規約上「クレジット表記だけで商用利用できる」人から、よく使う6人に絞った（事業主決定）。
+// ⛔ 人を足すときはエンジンの /speaker_info の規約を読み、「企業・法人は事前確認」「非商用のみ」の人を入れないこと
+//   （青山龍星・もち子さん・後鬼・Voidoll＝企業・法人は事前確認／No.7・ユーレイちゃん＝非商用のみ。2026-09-13 実読）。
+const VOICEVOX_ENDPOINT = 'http://127.0.0.1:50021';
+const VOICEVOX_START_FILE = 'C:\\Tools\\voicevox_engine\\start_for_sns_video.bat';
+const VOICEVOX_VOICES = [
+  {value:'vv:3',  name:'ずんだもん',   label:'ずんだもん（VOICEVOX・このPC）'},
+  {value:'vv:2',  name:'四国めたん',   label:'四国めたん（VOICEVOX・このPC）'},
+  {value:'vv:8',  name:'春日部つむぎ', label:'春日部つむぎ（VOICEVOX・このPC）'},
+  {value:'vv:14', name:'冥鳴ひまり',   label:'冥鳴ひまり（VOICEVOX・このPC）'},
+  {value:'vv:11', name:'玄野武宏',     label:'玄野武宏（VOICEVOX・このPC）'},
+  {value:'vv:12', name:'白上虎太郎',   label:'白上虎太郎（VOICEVOX・このPC）'}
+];
+
 const AI_VOICES = {
   // 多言語対応の声にしている。通常の英語の声は日本語を渡すと音声が返らず、
   // その写真だけ無音になる（2026-09-06 実測）。セリフに日本語が残っていても鳴るようにする。
@@ -1276,7 +1299,8 @@ const AI_VOICES = {
   // ブラウザ内で動く Kokoro は英語しか話せないため、日本語だけ経路が別（2026-09-06）。
   'ja-JP': [
     {value:'ja-JP-NanamiNeural', label:'ななみ（日本語・女性）'},
-    {value:'ja-JP-KeitaNeural', label:'けいた（日本語・男性）'}
+    {value:'ja-JP-KeitaNeural', label:'けいた（日本語・男性）'},
+    ...VOICEVOX_VOICES.map(voice => ({value:voice.value, label:voice.label}))
   ]
 };
 
@@ -3451,6 +3475,7 @@ function drawFrame(time){
     drawFilmStripScene(time, active, state.type === 'hold' ? state.progress : 0);
     els.currentScript.textContent = active.narration || '';
     drawWorkIdBadge();
+    drawVoicevoxCredit();
     return;
   }
   if(state.type === 'transition'){
@@ -3463,6 +3488,36 @@ function drawFrame(time){
   // 締めのロゴ（通常モードのみ。フィルムシーンはCTAコマが担うため重ねない）
   if(els.endLogoCta && els.endLogoCta.checked) drawEndLogoCta(time);
   drawWorkIdBadge();
+  drawVoicevoxCredit();
+}
+
+/* ══ VOICEVOXのクレジット表記（規約上の義務・2026-09-13）══
+   VOICEVOXの声を選んでいる間、動画の最初から最後まで「VOICEVOX:キャラ名」を小さく出す。
+   作品IDと同じく drawFrame の最後で1回だけ描く（切替・暗幕・フィルムに巻き込まれない）。
+   位置は各サイズの layout.credit。リールは下の投稿文に隠れないよう字幕と素材欄のすき間、
+   4:5と1:1は素材欄のすぐ下。声を入れない保存（動画のみ・自分の声）の間は描かない。 */
+let voicevoxCreditSuppressed = false;
+function drawVoicevoxCredit(){
+  if(voicevoxCreditSuppressed) return;
+  const text = selectedVoicevoxCredit();
+  const anchor = REEL_LAYOUT.credit;
+  if(!text || !anchor) return;
+  const size = 21;
+  const padX = 16;
+  const h = anchor.h || 36;
+  ctx.save();
+  ctx.font = canvasFont(500, size);
+  const w = ctx.measureText(text).width + padX * 2;
+  const x = anchor.right - w;
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = 'rgba(16,12,8,.78)';
+  roundRect(ctx, x, anchor.y, w, h, h / 2);
+  ctx.fill();
+  ctx.fillStyle = '#E8DCC4';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x + w / 2, anchor.y + h / 2 + 1);
+  ctx.restore();
 }
 
 /* ══ 作品IDの常時表示（2026-09-12 事業主要望）══
@@ -4019,7 +4074,8 @@ const VIDEO_FORMATS = Object.freeze({
       brand:{x:84, y:280, owlHeight:84, wordmarkWidth:236, gap:16},
       title:{x:540, y:420, maxWidth:720, maxSize:40, minSize:28},
       subtitle:{x:82, w:820, bottom:1288, padX:46, padY:26, minH:138, maxH:286},
-      info:{x:76, y:1360, w:850, h:150}
+      info:{x:76, y:1360, w:850, h:150},
+      credit:{right:926, y:1294, h:36}   // 字幕の下・写真枠(下端1335)の内側。1306だと枠の下端をはみ出した（実描画で確認）
     }
   },
   feed: {
@@ -4029,7 +4085,8 @@ const VIDEO_FORMATS = Object.freeze({
       brand:{x:84, y:90, owlHeight:84, wordmarkWidth:236, gap:16},
       title:{x:540, y:230, maxWidth:720, maxSize:40, minSize:28},
       subtitle:{x:82, w:820, bottom:1070, padX:46, padY:24, minH:120, maxH:240},
-      info:{x:76, y:1090, w:850, h:130}
+      info:{x:76, y:1090, w:850, h:130},
+      credit:{right:926, y:1232, h:36}
     }
   },
   square: {
@@ -4039,7 +4096,8 @@ const VIDEO_FORMATS = Object.freeze({
       brand:{x:84, y:70, owlHeight:84, wordmarkWidth:236, gap:16},
       title:{x:540, y:200, maxWidth:720, maxSize:38, minSize:26},
       subtitle:{x:82, w:820, bottom:855, padX:46, padY:22, minH:110, maxH:200},
-      info:{x:76, y:880, w:850, h:120}
+      info:{x:76, y:880, w:850, h:120},
+      credit:{right:926, y:1012, h:36}
     }
   }
 });
@@ -4729,7 +4787,15 @@ function buildSnsVideoCaption(work){
   if(work.shortDesc && String(work.shortDesc).trim()) parts.push(String(work.shortDesc).trim());
   if(work.longDesc && String(work.longDesc).trim()) parts.push(String(work.longDesc).trim());
   parts.push('作品番号: ' + work.id + '\nhttps://you0810jmsdf.github.io/ns-factory/works/' + encodeURIComponent(work.id) + '.html');
+  const credit = recordedVoiceCredit();
+  if(credit) parts.push(credit);
   return parts.join('\n\n');
+}
+
+// 直近に保存した動画が VOICEVOX の声で作られていれば、そのクレジット（規約上の表記義務）。
+// 画面で今選んでいる声ではなく「実際に保存した動画の声」を見る（声を変えた後でも取り違えない）。
+function recordedVoiceCredit(){
+  return (lastRecordingBlob && lastRecordingMeta && lastRecordingMeta.voiceCredit) || '';
 }
 
 function updateShareToSnsUi(){
@@ -4837,7 +4903,8 @@ async function generateSnsPostVoiceCaption(){
     if(text.trim().startsWith('<')) throw new Error('Google側の一時障害です（HTTP ' + res.status + '）。少し待ってもう一度押してください');
     const d = JSON.parse(text);
     if(!d.ok) throw new Error(d.error || '作成に失敗しました');
-    els.snsPostCaption.value = d.caption + '\n\n作品番号: ' + currentWork.id + '\nhttps://you0810jmsdf.github.io/ns-factory/works/' + encodeURIComponent(currentWork.id) + '.html';
+    els.snsPostCaption.value = d.caption + '\n\n作品番号: ' + currentWork.id + '\nhttps://you0810jmsdf.github.io/ns-factory/works/' + encodeURIComponent(currentWork.id) + '.html'
+      + (recordedVoiceCredit() ? '\n\n' + recordedVoiceCredit() : '');
     const ng = d.ngWords || [];
     st.textContent = ng.length
       ? '⚠️ 使わない言葉が入っています：' + ng.join('、') + '（直すか、もう一度作ってください）'
@@ -4968,6 +5035,7 @@ function refreshAiVoiceOptions(){
     .map(voice => `<option value="${voice.value}">${voice.label}</option>`)
     .join('');
   if(AI_VOICES[language].some(voice => voice.value === current)) els.aiVoiceSelect.value = current;
+  updateVoicevoxUi();
 }
 
 function ttsProgressLabel(progress){
@@ -5215,7 +5283,80 @@ async function generateRelayNarrationAudio(text, voice){
   return {sampleRate, data: joinAudioParts(parts, sampleRate)};
 }
 
+/* ══ VOICEVOX（このPCのエンジン・2026-09-13）══
+   公開ページ（https）から http://127.0.0.1:50021 を直接呼ぶ。通るための条件は2つ（実測）:
+   ① エンジンが --allow_origin https://you0810jmsdf.github.io 付きで起動している（無いと403）
+   ② ブラウザが「ローカルネットワークへのアクセス」を許可している（無いとブラウザが遮断）
+   どちらが原因でも fetch は同じ TypeError になり区別できないため、案内は2点を並べて出す（原因を断定しない）。
+   読み上げは副作用がないので、エンジンの500番台だけ1回やり直す。 */
+const VOICEVOX_HELP = `VOICEVOXにつながりませんでした。次の2点を確かめてから、もう一度お試しください。①このPCで「${VOICEVOX_START_FILE}」をダブルクリックしてエンジンを起動する ②ブラウザに「ローカルネットワーク上のデバイスへのアクセス」を聞かれたら「許可」を押す（アドレスバー左の鍵マークからも許可できます）。`;
+
+function isVoicevoxVoice(voice){ return /^vv:\d+$/.test(String(voice || '')); }
+function voicevoxVoiceOf(voice){ return VOICEVOX_VOICES.find(item => item.value === voice) || null; }
+function selectedVoicevoxCredit(){
+  const voice = voicevoxVoiceOf(els.aiVoiceSelect && els.aiVoiceSelect.value);
+  return voice ? `VOICEVOX:${voice.name}` : '';
+}
+
+async function voicevoxFetch(path, options){
+  try{ return await fetch(VOICEVOX_ENDPOINT + path, options); }
+  catch(_){ throw new Error(VOICEVOX_HELP); }
+}
+
+async function fetchVoicevoxAudio(chunk, speaker){
+  let lastStatus = '';
+  for(let attempt = 1; attempt <= 2; attempt++){
+    const queryRes = await voicevoxFetch(`/audio_query?speaker=${speaker}&text=${encodeURIComponent(chunk)}`, {method:'POST'});
+    if(queryRes.ok){
+      const query = await queryRes.json();
+      const synthRes = await voicevoxFetch(`/synthesis?speaker=${speaker}`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(query)
+      });
+      if(synthRes.ok) return await synthRes.arrayBuffer();
+      lastStatus = String(synthRes.status);
+    }else{
+      lastStatus = String(queryRes.status);
+    }
+    if(Number(lastStatus) < 500) break;
+    await new Promise(resolve => setTimeout(resolve, 900));
+  }
+  throw new Error(`VOICEVOXで音声を作れませんでした（${lastStatus}）。${VOICEVOX_HELP}`);
+}
+
+async function generateVoicevoxNarrationAudio(text, voice){
+  const speaker = String(voice).slice(3);
+  const parts = [];
+  let sampleRate = 24000;
+  // 読み方の辞書は日本語の声なので当てる。1回に渡す文は短めに区切る（URLに入れて送るため）
+  for(const chunk of splitTtsText(applyReadingRules(text), 200)){
+    const buffer = await fetchVoicevoxAudio(chunk, speaker);
+    const decoded = await ensureJpDecodeContext().decodeAudioData(buffer);
+    sampleRate = decoded.sampleRate;
+    parts.push(new Float32Array(decoded.getChannelData(0)));
+  }
+  return {sampleRate, data: joinAudioParts(parts, sampleRate)};
+}
+
+function updateVoicevoxUi(){
+  if(els.voicevoxBox) els.voicevoxBox.hidden = !selectedVoicevoxCredit();
+}
+
+async function checkVoicevoxConnection(){
+  if(!els.voicevoxStatus) return;
+  els.voicevoxStatus.textContent = '確認しています…';
+  try{
+    const res = await fetch(VOICEVOX_ENDPOINT + '/version');
+    const version = res.ok ? (await res.text()).replace(/"/g, '') : '';
+    els.voicevoxStatus.textContent = res.ok
+      ? `✓ つながりました（VOICEVOX ${version}）。VOICEVOXの声で保存できます。`
+      : `エンジンは応答しましたが使えません（${res.status}）。${VOICEVOX_HELP}`;
+  }catch(_){
+    els.voicevoxStatus.textContent = VOICEVOX_HELP;
+  }
+}
+
 async function generateNarrationAudio(text, voice, language){
+  if(isVoicevoxVoice(voice)) return await generateVoicevoxNarrationAudio(text, voice);
   // 日本語・英語とも中継サーバから受け取る（2026-09-06 一本化）。
   // ブラウザ内のAI音声は長い動画で書き出しが止まる原因だったため使わない。
   return await generateRelayNarrationAudio(text, voice);
@@ -5724,7 +5865,7 @@ async function recordNarratedMp4(){
   if(!blob) throw new Error(`MP4の映像処理に失敗しました: ${lastError ? lastError.message : '不明なエラー'}`);
   finishRecordingBlob(
     blob,
-    {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true},
+    {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true, voiceCredit:selectedVoicevoxCredit()},
     currentWork && currentWork.folderId
       ? 'AIナレーションを直接合成したMP4を保存しました。ダウンロードまたはDrive保存ができます。'
       : 'AIナレーションを直接合成したMP4を保存しました。完成動画をダウンロードできます。'
@@ -5900,7 +6041,10 @@ function requestExportGate(mode){
     {warn:emptyNarration > 0, text:`セリフ: ${emptyNarration ? `${emptyNarration}枚が空欄` : '全コマ入力済み'}`},
     {warn:!previewReviewed, text:`プレビュー: ${previewReviewed ? '確認済み' : '未確認（先に確認推奨）'}`},
     {warn:false, text:`出力: ${narrationMode ? `${narrationVoiceLabel}AIナレーション付きMP4` : (mode === 'mic' ? '自分の声付きMP4' : '動画のみMP4')}`},
-    {warn:videoTooLongForSns(), text:`画質と大きさ: ${(plannedVideoBitrate() / 1000000).toFixed(1)}Mbps・約${formatMb((plannedVideoBitrate() + AUDIO_BITRATE) * duration / 8)}MB${videoTooLongForSns() ? '（SNSへ投稿するには長すぎます。「Drive用に秒数を短縮」で短くしてください）' : ''}`}
+    ...(narrationMode && selectedVoicevoxCredit()
+      ? [{warn:false, text:`声: ${selectedVoicevoxCredit()}（このPCのVOICEVOXで作成・1コマ15〜20秒・動画の右下とキャプションにクレジットが入ります）`}]
+      : []),
+    {warn:videoTooLongForSns(), text:`画質と大きさ:${(plannedVideoBitrate() / 1000000).toFixed(1)}Mbps・約${formatMb((plannedVideoBitrate() + AUDIO_BITRATE) * duration / 8)}MB${videoTooLongForSns() ? '（SNSへ投稿するには長すぎます。「Drive用に秒数を短縮」で短くしてください）' : ''}`}
   ];
   els.exportGateList.innerHTML = checks
     .map(check => `<li class="${check.warn ? 'warn' : ''}"><strong>${check.warn ? '要確認' : 'OK'}</strong>　${escapeHtml(check.text)}</li>`)
@@ -5927,8 +6071,11 @@ async function recordVideo(mode = 'silent'){
   const startedAt = performance.now();
   const photos = playableSlides().length;
   let failure = null;
+  // 声を入れない保存（動画のみ・自分の声）では VOICEVOX のクレジットを描かない（使っていない声を表記しない）
+  voicevoxCreditSuppressed = mode !== 'narration';
   try{
-    return await recordVideoCore(mode);
+    try{ return await recordVideoCore(mode); }
+    finally{ voicevoxCreditSuppressed = false; }
   }catch(err){
     failure = err;
     throw err;
@@ -7069,6 +7216,11 @@ els.motionIntensity.addEventListener('change', () => {
 els.shareToSns.addEventListener('click', shareVideoToSns);
 verifyNsfAdmin().then(() => { updateShareToSnsUi(); updateAdminToggleUi(); });
 loadReadingDictUi();
+els.aiVoiceSelect.addEventListener('change', () => {
+  updateVoicevoxUi();
+  drawSelectedOrFirstFrame();   // クレジット表示の有無が変わるため描き直す
+});
+els.voicevoxCheck.addEventListener('click', checkVoicevoxConnection);
 els.workIdOverlay.addEventListener('change', () => {
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
