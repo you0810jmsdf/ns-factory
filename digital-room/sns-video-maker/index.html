@@ -179,6 +179,16 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .assist-help{margin:4px 0 14px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line)}
 .assist-help summary{cursor:pointer;padding:9px 0;color:var(--brass-dark);font-size:12px;font-weight:700}
 .assist-help .assist-flow{margin:0;padding:0 0 10px}
+/* ── 画面整理（2026-09-13）: よく使う設定を前に、他は「▶ 詳しい設定」に畳む ── */
+.quick-panel{border:1.5px solid var(--brass)!important}
+details.fold{
+  border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card-soft);
+  padding:0 12px;margin:12px 0;
+}
+details.fold > summary{cursor:pointer;padding:10px 0;font-weight:700;font-size:12.5px;color:var(--brass-dark);letter-spacing:.02em}
+details.fold[open] > summary{border-bottom:1px dashed var(--line);margin-bottom:12px}
+.voice-narration{margin:12px 0;padding:12px;border:1.5px dashed var(--brass);border-radius:var(--radius-sm);background:#FFF}
+.voice-narration .primary{width:100%}
 details.drive{
   border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--card-soft);
   padding:0 12px;margin:12px 0;
@@ -656,9 +666,15 @@ canvas{
           <button class="primary" id="recordNarration">自動ナレーション付きMP4</button>
           <button class="secondary" id="recordSilent">動画のみMP4</button>
           <button class="secondary" id="recordMic">自分の声で録音</button>
-          <button class="secondary" id="fitDriveSize" title="録画済みサイズから逆算して、使用中写真の表示秒数をまとめて短くします">Drive用に秒数を短縮</button>
-          <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveへアップロード</button>
         </div>
+        <!-- Drive関連は普段使わないので畳む（2026-09-13 画面整理）。id はそのまま -->
+        <details class="fold">
+          <summary>Driveへ保存（秒数の短縮・アップロード）</summary>
+          <div class="actions">
+            <button class="secondary" id="fitDriveSize" title="録画済みサイズから逆算して、使用中写真の表示秒数をまとめて短くします">Drive用に秒数を短縮</button>
+            <button class="secondary" id="uploadVideoToDrive" disabled title="録画が完了し、作品が選択されていると押せます">Driveへアップロード</button>
+          </div>
+        </details>
         <div class="download" id="downloadBox"><a id="downloadLink" download="sns-video-maker.mp4">完成動画をダウンロード</a></div>
         <div class="actions" id="shareToSnsBox" hidden>
           <button class="primary" id="shareToSns" type="button">📤 SNSへ投稿（動画＋キャプション）</button>
@@ -705,35 +721,33 @@ canvas{
                 <button class="secondary" id="clearAllPhotos" type="button" hidden>🗑 写真を全部クリア</button>
               </div>
               <p class="help" id="clearAllPhotosHelp" hidden>別の作品に入れ替えるときに使います。写真だけを消し、作品名・台本の設定はそのまま残します。</p>
-              <details class="drive">
-                <summary>Google Driveから読み込む</summary>
-                <div class="field">
-                  <label for="driveFolder">Google DriveフォルダURL / ID</label>
-                  <input id="driveFolder" value="https://drive.google.com/drive/u/0/folders/1yhc1nSkAzwq_QOIQjbsrKQTeSvtdeH_3" autocomplete="off">
-                </div>
+              <!-- 作品番号での読み込みは毎回使うので最初から開いておく（2026-09-13 画面整理） -->
+              <details class="drive" open>
+                <summary>Google Driveから読み込む（作品番号）</summary>
                 <div class="field">
                   <label for="driveWorkSelect">作品をリストから選択</label>
                   <select id="driveWorkSelect">
                     <option value="">作品集を読み込み中 / 番号を直接入力</option>
                   </select>
                 </div>
-                <div class="row">
-                  <div class="field">
-                    <label for="driveWorkNo">作品番号</label>
-                    <input id="driveWorkNo" list="driveWorkNoList" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
-                    <datalist id="driveWorkNoList"></datalist>
-                  </div>
-                  <div class="field">
-                    <label for="driveLimit">最大枚数</label>
-                    <input id="driveLimit" type="number" min="1" max="12" value="8">
-                  </div>
+                <div class="field">
+                  <label for="driveWorkNo">作品番号</label>
+                  <input id="driveWorkNo" list="driveWorkNoList" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
+                  <datalist id="driveWorkNoList"></datalist>
                 </div>
                 <div class="drive-work-info is-empty" id="driveWorkInfo" role="status">作品を選ぶか番号を入力すると、作品名とDriveフォルダ登録状況を表示します。</div>
                 <div class="actions">
                   <button class="secondary" id="loadDrivePhotos">Driveから写真を表示</button>
                 </div>
                 <div class="drive-status" id="driveStatus" role="status"></div>
-                <p class="help">リスト選択または番号入力後、EnterかボタンでDrive写真を読み込みます。</p>
+                <p class="help">フォルダ内の写真を全部読み込みます（枚数の上限なし）。要らない写真は、写真コマの「使う／戻す」か削除で外してください。</p>
+                <details class="fold">
+                  <summary>詳しい設定（DriveフォルダURL）</summary>
+                  <div class="field">
+                    <label for="driveFolder">Google DriveフォルダURL / ID</label>
+                    <input id="driveFolder" value="https://drive.google.com/drive/u/0/folders/1yhc1nSkAzwq_QOIQjbsrKQTeSvtdeH_3" autocomplete="off">
+                  </div>
+                </details>
               </details>
             </div>
           </details>
@@ -750,86 +764,96 @@ canvas{
           <div id="slides" class="slides"></div>
         </section>
 
+        <!-- よく使う設定（2026-09-13 画面整理・事業主「普段使うのは言語・声・フィルム・最後のロゴ」）。
+             部品は id そのままで移しただけ（JSは id で参照しているので動きは変わらない）。 -->
+        <section class="panel quick-panel" aria-labelledby="quickPanelTitle">
+          <h2 id="quickPanelTitle">よく使う設定</h2>
+          <div class="field">
+          <label for="narrationLang">台本・読み上げの言語</label>
+          <select id="narrationLang">
+          <option value="ja-JP">日本語</option>
+          <option value="en-US">English</option>
+          </select>
+          </div>
+          <div class="field">
+          <label for="aiVoiceSelect">完成動画に入るAI音声</label>
+          <select id="aiVoiceSelect"></select>
+          <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語・英語とも対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
+          <div id="voicevoxBox" hidden>
+          <p class="help">「VOICEVOX・このPC」の声は、このパソコンのVOICEVOXで作ります（管理者モード専用）。使う前に下のボタンを押してください。初回だけブラウザに「アプリを開きますか」「ローカルネットワークへのアクセス」を聞かれるので、どちらも許可します。1コマの音声づくりに15〜20秒ほどかかります。動画の右下とSNSのキャプションに「VOICEVOX:キャラ名」が自動で入ります（利用規約で必要な表記です）。</p>
+          <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXを起動してつなぐ</button>
+          <p class="help" id="voicevoxStatus" aria-live="polite"></p>
+          </div>
+          </div>
+          <div class="field">
+          <label for="filmStripMode">フィルムシーン（全編）</label>
+          <select id="filmStripMode">
+          <option value="off" selected>使わない</option>
+          <option value="diagonal">全写真をネガフィルム風に斜めへ流す</option>
+          <option value="cross">フィルム2本を斜めに交差させる</option>
+          </select>
+          <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます。「2本を交差」は太いフィルムと細いフィルムが違う角度・違う速さですれ違い、写真が二重に流れます。締めのCTAをONにすると、最後にN's factoryのロゴだけが静かに浮かびます。</p>
+          </div>
+          <div class="field" id="filmSpeedField" hidden>
+          <label for="filmSpeed">フィルムの速さ（1コマの秒数）</label>
+          <input id="filmSpeed" type="number" min="1" max="60" step="0.5" value="8">
+          <p class="help">数字が大きいほどゆっくり（1〜60秒）。プレビューにすぐ反映され、保存するMP4にも同じ速さが使われます。</p>
+          <label class="check-row" for="filmCtaEnabled">
+          <input id="filmCtaEnabled" type="checkbox" checked>
+          <span><strong>最後にロゴを表示（CTA）</strong>N's factoryのロゴだけが、じわっと浮かび上がる締めのコマを加えます。OFFにすると作品写真だけで終了します。</span>
+          </label>
+          <label class="check-row" for="filmSpeedAuto">
+          <input id="filmSpeedAuto" type="checkbox">
+          <span><strong>原稿の長さに合わせて自動調整</strong>動画の長さ（セリフに合わせて延びた表示秒数の合計）から1コマの秒数を逆算し、最後のセリフが終わるのと同時に全写真がちょうど1回流れ切ります。ONの間は上の秒数入力は使われません。</span>
+          </label>
+          </div>
+          <label class="check-row" for="endLogoCta">
+          <input id="endLogoCta" type="checkbox">
+          <span><strong>締めのロゴを最後に浮かび上がらせる</strong>動画の最後の約2.6秒、画面がすっと暗くなり金のフクロウとN's factoryのロゴが浮かび上がります。動画の長さは変わりません。プレビューと保存MP4の両方に入ります（フィルムシーン使用中は、フィルム側の締めコマがあるためこの演出は入りません）。</span>
+          </label>
+        </section>
+
         <section class="panel">
         <div class="tabs" role="tablist">
-          <button class="tab-btn active" data-tab="tab-info" type="button">作品情報</button>
+          <button class="tab-btn active" data-tab="tab-info" type="button">作品と台本</button>
           <button class="tab-btn" data-tab="tab-slide" type="button">写真ごと</button>
-          <button class="tab-btn" data-tab="tab-output" type="button">出力設定</button>
+          <button class="tab-btn" data-tab="tab-output" type="button">詳しい設定</button>
         </div>
 
         <div class="tab-panel active" id="tab-info">
           <div class="field">
-            <label for="productNamePreset">作品名プリセット（作品集から選択）</label>
-            <select id="productNamePreset">
-              <option value="">作品集を読み込み中 / 手入力</option>
-              <option value="N's factory 作品集">N's factory 作品集</option>
-            </select>
+          <label for="productName">作品名（ロゴと写真の間）</label>
+          <input id="productName" value="レザー作品" autocomplete="off">
           </div>
           <div class="field">
-            <label for="productName">作品名（ロゴと写真の間）</label>
-            <input id="productName" value="レザー作品" autocomplete="off">
+          <label for="materialNote">素材・サイズ等（動画下方の情報）</label>
+          <input id="materialNote" list="materialStockList" value="革の質感と手仕事の仕立て" autocomplete="off">
+          <datalist id="materialStockList"></datalist>
           </div>
           <div class="field">
-            <label for="materialNote">素材・サイズ等（動画下方の情報）</label>
-            <input id="materialNote" list="materialStockList" value="革の質感と手仕事の仕立て" autocomplete="off">
-            <datalist id="materialStockList"></datalist>
-          </div>
-          <div class="field">
-            <label for="featureNote">見どころメモ（セリフ案用・非公開）</label>
-            <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
-          </div>
-          <div class="field">
-            <label for="workLongDesc">作品集の長文紹介</label>
-            <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに取得します。見どころメモへ変換できます。"></textarea>
-          </div>
-          <div class="field">
-            <label for="translationDirection">長文紹介・見どころメモの変換方向</label>
-            <select id="translationDirection">
-              <option value="ja-en">日本語の長文紹介 → 英語の見どころメモ</option>
-              <option value="en-ja">英語の見どころメモ → 日本語の見どころメモ</option>
-            </select>
-            <p class="help" id="translationHelp">作品集の長文を英訳し、写真枚数分へ広げます。</p>
+          <label for="featureNote">見どころ・ひとことメモ（セリフの材料・非公開）</label>
+          <textarea id="featureNote">革の表情、手縫い、使うほど育つ雰囲気</textarea>
           </div>
           <section class="story-planner" aria-labelledby="storyPlannerTitle">
             <h3 id="storyPlannerTitle">動画の構成を決める</h3>
             <div class="row">
-              <div class="field">
-                <label for="storyTemplate">物語の型</label>
-                <select id="storyTemplate"></select>
-              </div>
-              <div class="field">
-                <label for="targetDuration">目標の長さ</label>
-                <select id="targetDuration">
-                  <option value="15">15秒</option>
-                  <option value="20">20秒</option>
-                  <option value="25">25秒</option>
-                  <option value="30" selected>30秒</option>
-                  <option value="45">45秒</option>
-                  <option value="60">60秒</option>
-                </select>
-              </div>
+            <div class="field">
+            <label for="storyTemplate">物語の型</label>
+            <select id="storyTemplate"></select>
             </div>
             <div class="field">
-              <label for="lifeStoryPreset">命の物語プリセット</label>
-              <select id="lifeStoryPreset">
-                <option value="">使わない</option>
-                <option value="lifeLeather">L1 革の命「この革は、生きていた」</option>
-                <option value="lifeMaker">L2 作り手の命「一冊に、何時間かかるか」</option>
-                <option value="lifeUser">L3 使い手の命「持ち主の時間」</option>
-                <option value="lifeTool">L4 道具の命「十年目の手帳」</option>
-              </select>
-              <p class="help">作品情報・見どころメモ・物語の型・演出プリセットをまとめて切り替えます。</p>
+            <label for="targetDuration">目標の長さ</label>
+            <select id="targetDuration">
+            <option value="15">15秒</option>
+            <option value="20">20秒</option>
+            <option value="25">25秒</option>
+            <option value="30" selected>30秒</option>
+            <option value="45">45秒</option>
+            <option value="60">60秒</option>
+            </select>
             </div>
-            <div class="field">
-              <label for="scriptApplyMode">セリフの扱い（③で適用するとき）</label>
-              <select id="scriptApplyMode">
-                <option value="keep" selected>手編集は残す（空欄と自動生成分だけ作り直す）</option>
-                <option value="all">全コマを作り直す（確認あり）</option>
-                <option value="none">セリフは変えない（動きだけ整える）</option>
-              </select>
             </div>
             <div class="story-steps">
-              <button class="secondary" id="applyLifeStoryPreset" type="button">命の物語設定を適用</button>
               <button class="secondary" id="suggestRoles" type="button">① 写真の役割を提案（この端末内で解析）</button>
               <button class="secondary" id="reviewStructure" type="button">② 構成と順番を確認</button>
               <button class="secondary" id="applyStoryStructure" type="button">③ カメラワークと台本を適用</button>
@@ -837,252 +861,283 @@ canvas{
             <div class="reorder-proposal" id="reorderProposal" hidden></div>
             <p class="story-summary" id="storySummary">写真を追加すると、①提案 → ②確認 → ③適用の順で、役割・順番・動き・セリフをまとめて整えられます。</p>
           </section>
-          <details class="assist-help">
+          <!-- 本人の文体でセリフを作る（管理者モード・日本語のときだけ表示。updateVoiceNarrationUi） -->
+          <div class="voice-narration" id="voiceNarrationBox" hidden>
+            <button class="primary" id="voiceNarrationGen" type="button">✍️ 自分の言葉でセリフを作る</button>
+            <p class="help">SNS投稿文と同じ文体ガイドで、写真ごとのセリフを作ります（1回 約1円）。材料は上の作品名・素材・見どころメモと、各写真の役割・秒数です。手で直したセリフは残します。</p>
+            <p class="help" id="voiceNarrationStatus" aria-live="polite"></p>
+          </div>
+          <details class="fold">
+            <summary>詳しい操作（セリフの扱い・空欄補完・再構成・翻訳）</summary>
+            <div class="field">
+            <label for="scriptApplyMode">セリフの扱い（③で適用するとき）</label>
+            <select id="scriptApplyMode">
+            <option value="keep" selected>手編集は残す（空欄と自動生成分だけ作り直す）</option>
+            <option value="all">全コマを作り直す（確認あり）</option>
+            <option value="none">セリフは変えない（動きだけ整える）</option>
+            </select>
+            </div>
+            <details class="assist-help">
             <summary>台本作成ボタンの使い方</summary>
             <div class="assist-flow" aria-label="台本作成ボタンの流れ">
-              <div><b>1</b><span><strong>空欄を補完</strong>空の見出し・セリフだけに案を入れます。</span></div>
-              <div><b>2</b><span><strong>メモを変換</strong>長文紹介と見どころメモを日英変換します。</span></div>
-              <div><b>3</b><span><strong>台本を再構成</strong>除外後の使用写真だけでセリフを組み直します。</span></div>
+            <div><b>1</b><span><strong>空欄を補完</strong>空の見出し・セリフだけに案を入れます。</span></div>
+            <div><b>2</b><span><strong>メモを変換</strong>長文紹介と見どころメモを日英変換します。</span></div>
+            <div><b>3</b><span><strong>台本を再構成</strong>除外後の使用写真だけでセリフを組み直します。</span></div>
             </div>
-          </details>
-          <div class="actions">
+            </details>
+            <div class="actions">
             <button class="secondary" id="fillDefaults" title="入力済みのセリフは残し、空欄だけ補完します">空欄を補完</button>
             <button class="secondary" id="translateFeatureNote" title="選んだ方向で翻訳し、見どころメモへ入れます">長文を英語メモへ</button>
             <button class="secondary" id="distributeFeatureNote" title="除外中写真は変更せず、使用中写真だけでナレーションを組み直します">台本を再構成</button>
-          </div>
+            </div>
+          </details>
+          <details class="fold">
+            <summary>作品の説明文（作品集の長文・作品名プリセット）</summary>
+            <div class="field">
+            <label for="productNamePreset">作品名プリセット（作品集から選択）</label>
+            <select id="productNamePreset">
+            <option value="">作品集を読み込み中 / 手入力</option>
+            <option value="N's factory 作品集">N's factory 作品集</option>
+            </select>
+            </div>
+            <div class="field">
+            <label for="workLongDesc">作品集の長文紹介</label>
+            <textarea id="workLongDesc" placeholder="作品集の長文紹介をここに取得します。見どころメモへ変換できます。"></textarea>
+            </div>
+            <div class="field">
+            <label for="translationDirection">長文紹介・見どころメモの変換方向</label>
+            <select id="translationDirection">
+            <option value="ja-en">日本語の長文紹介 → 英語の見どころメモ</option>
+            <option value="en-ja">英語の見どころメモ → 日本語の見どころメモ</option>
+            </select>
+            <p class="help" id="translationHelp">作品集の長文を英訳し、写真枚数分へ広げます。</p>
+            </div>
+          </details>
+          <details class="fold">
+            <summary>命の物語プリセット</summary>
+            <div class="field">
+            <label for="lifeStoryPreset">命の物語プリセット</label>
+            <select id="lifeStoryPreset">
+            <option value="">使わない</option>
+            <option value="lifeLeather">L1 革の命「この革は、生きていた」</option>
+            <option value="lifeMaker">L2 作り手の命「一冊に、何時間かかるか」</option>
+            <option value="lifeUser">L3 使い手の命「持ち主の時間」</option>
+            <option value="lifeTool">L4 道具の命「十年目の手帳」</option>
+            </select>
+            <p class="help">作品情報・見どころメモ・物語の型・演出プリセットをまとめて切り替えます。</p>
+            </div>
+            <div class="actions">
+            <button class="secondary" id="applyLifeStoryPreset" type="button">命の物語設定を適用</button>
+            </div>
+          </details>
         </div>
 
         <div class="tab-panel" id="tab-slide">
           <div class="field">
-            <label for="caption">写真ごとの見出し（一覧整理用）</label>
-            <input id="caption" autocomplete="off">
-          </div>
-          <div class="field">
-            <label for="slideRole">この写真の役割</label>
-            <select id="slideRole"></select>
+          <label for="slideRole">この写真の役割</label>
+          <select id="slideRole"></select>
           </div>
           <p class="role-info" id="slideRoleInfo">「① 写真の役割を提案」を押すと、提案の理由と信頼度がここに表示されます。手で選んだ役割は自動処理で上書きされません。</p>
           <div class="field">
-            <label for="narration">読むセリフ・台本</label>
-            <textarea id="narration"></textarea>
-          </div>
-          <div class="row">
-            <div class="field">
-              <label for="duration">表示秒数</label>
-              <input id="duration" type="number" min="1.8" max="60" step="0.2" value="3.5">
-            </div>
-            <div class="field">
-              <label for="transitionDuration">切替秒数</label>
-              <input id="transitionDuration" type="number" min="0.1" max="2" step="0.1" value="0.6">
-            </div>
-          </div>
-          <div class="row">
-            <div class="field">
-              <label for="motion">写真の動き（カメラワーク）</label>
-              <select id="motion">
-                <optgroup label="役割向けの演出">
-                  <option value="hookPush">すっと近づく（注目させる）</option>
-                  <option value="overviewIn">ゆっくり近づく（全体を見せる）</option>
-                  <option value="detailPushIn">質感へゆっくり寄る</option>
-                  <option value="detailPanLeft">右から左へ細部を見せる</option>
-                  <option value="detailPanRight">左から右へ細部を見せる</option>
-                  <option value="sidePanLeft">右から左へ流して見せる</option>
-                  <option value="sidePanRight">左から右へ流して見せる</option>
-                  <option value="pullBack">少し引いて使う場面を見せる</option>
-                  <option value="beforeCalm">控えめにゆっくり引く</option>
-                  <option value="afterPush">仕上がりへ寄って強調</option>
-                  <option value="ctaCalm">ほぼ静止（字幕を読みやすく）</option>
-                  <option value="closingOut">ゆっくり引いて余韻を残す</option>
-                </optgroup>
-                <optgroup label="基本の動き">
-                  <option value="zoomIn">ズームイン</option>
-                  <option value="zoomOut">ズームアウト</option>
-                  <option value="panLeft">左へパン</option>
-                  <option value="panRight">右へパン</option>
-                  <option value="panUp">上へパン</option>
-                  <option value="panDown">下へパン</option>
-                  <option value="still">静止</option>
-                </optgroup>
-              </select>
-            </div>
-            <div class="field">
-              <label for="transition">次写真への移行</label>
-              <select id="transition">
-                <option value="fade">フェード</option>
-                <option value="wipeLeft">左ワイプ</option>
-                <option value="wipeRight">右ワイプ</option>
-                <option value="slideLeft">左スライド</option>
-                <option value="slideRight">右スライド</option>
-                <option value="cut">カット</option>
-              </select>
-            </div>
+          <label for="narration">読むセリフ・台本</label>
+          <textarea id="narration"></textarea>
           </div>
           <div class="field">
-            <label for="subtitleMotion">ナレーション字幕の動き</label>
-            <select id="subtitleMotion">
-              <option value="fadeUp">ふわっと下から表示</option>
-              <option value="typewriter">中央タイプ表示</option>
-              <option value="typewriterLeft">左からタイプ表示</option>
-              <option value="pop">一文字ずつポップ</option>
-              <option value="highlight">読み進みハイライト</option>
-              <option value="slideIn">横からスライド</option>
-              <option value="none">表示しない</option>
-            </select>
+          <label for="duration">表示秒数</label>
+          <input id="duration" type="number" min="1.8" max="60" step="0.2" value="3.5">
           </div>
           <div class="actions">
             <button class="secondary" id="toggleSlideUse">動画から除外</button>
-            <button class="secondary" id="resetRoleAuto" title="このコマの役割を、①で解析した自動提案へ戻します">役割を自動提案へ戻す</button>
             <button class="secondary" id="regenSlideScript" title="このコマのセリフだけを役割に合わせて作り直します">このコマのセリフだけ再生成</button>
+          </div>
+          <details class="fold">
+            <summary>動きと切替（カメラワーク・移行・字幕の動き）</summary>
+            <div class="row">
+            <div class="field">
+            <label for="motion">写真の動き（カメラワーク）</label>
+            <select id="motion">
+            <optgroup label="役割向けの演出">
+            <option value="hookPush">すっと近づく（注目させる）</option>
+            <option value="overviewIn">ゆっくり近づく（全体を見せる）</option>
+            <option value="detailPushIn">質感へゆっくり寄る</option>
+            <option value="detailPanLeft">右から左へ細部を見せる</option>
+            <option value="detailPanRight">左から右へ細部を見せる</option>
+            <option value="sidePanLeft">右から左へ流して見せる</option>
+            <option value="sidePanRight">左から右へ流して見せる</option>
+            <option value="pullBack">少し引いて使う場面を見せる</option>
+            <option value="beforeCalm">控えめにゆっくり引く</option>
+            <option value="afterPush">仕上がりへ寄って強調</option>
+            <option value="ctaCalm">ほぼ静止（字幕を読みやすく）</option>
+            <option value="closingOut">ゆっくり引いて余韻を残す</option>
+            </optgroup>
+            <optgroup label="基本の動き">
+            <option value="zoomIn">ズームイン</option>
+            <option value="zoomOut">ズームアウト</option>
+            <option value="panLeft">左へパン</option>
+            <option value="panRight">右へパン</option>
+            <option value="panUp">上へパン</option>
+            <option value="panDown">下へパン</option>
+            <option value="still">静止</option>
+            </optgroup>
+            </select>
+            </div>
+            <div class="field">
+            <label for="transition">次写真への移行</label>
+            <select id="transition">
+            <option value="fade">フェード</option>
+            <option value="wipeLeft">左ワイプ</option>
+            <option value="wipeRight">右ワイプ</option>
+            <option value="slideLeft">左スライド</option>
+            <option value="slideRight">右スライド</option>
+            <option value="cut">カット</option>
+            </select>
+            </div>
+            </div>
+            <div class="field">
+            <label for="transitionDuration">切替秒数</label>
+            <input id="transitionDuration" type="number" min="0.1" max="2" step="0.1" value="0.6">
+            </div>
+            <div class="field">
+            <label for="subtitleMotion">ナレーション字幕の動き</label>
+            <select id="subtitleMotion">
+            <option value="fadeUp">ふわっと下から表示</option>
+            <option value="typewriter">中央タイプ表示</option>
+            <option value="typewriterLeft">左からタイプ表示</option>
+            <option value="pop">一文字ずつポップ</option>
+            <option value="highlight">読み進みハイライト</option>
+            <option value="slideIn">横からスライド</option>
+            <option value="none">表示しない</option>
+            </select>
+            </div>
+            <div class="actions">
             <button class="secondary" id="previewSubtitleMotion">字幕動きを確認</button>
             <button class="secondary" id="applySubtitleMotionAll">字幕動きを全コマへ適用</button>
+            </div>
+          </details>
+          <details class="fold">
+            <summary>その他（見出し・並べ替え・削除・役割を戻す）</summary>
+            <div class="field">
+            <label for="caption">写真ごとの見出し（一覧整理用）</label>
+            <input id="caption" autocomplete="off">
+            </div>
+            <div class="actions">
+            <button class="secondary" id="resetRoleAuto" title="このコマの役割を、①で解析した自動提案へ戻します">役割を自動提案へ戻す</button>
             <button class="secondary" id="moveUp">上へ</button>
             <button class="secondary" id="moveDown">下へ</button>
             <button class="danger" id="removeSlide">削除</button>
-          </div>
+            </div>
+          </details>
         </div>
 
         <div class="tab-panel" id="tab-output">
-          <div class="field">
+          <p class="help">普段は触らなくてよい設定です。必要なときだけ開いてください。</p>
+          <details class="fold">
+            <summary>動画サイズ・作品IDの表示</summary>
+            <div class="field">
             <label for="videoFormat">動画サイズ（投稿先に合わせて選択）</label>
             <select id="videoFormat">
-              <option value="reel" selected>リール・ストーリーズ用 9:16（縦長フル）</option>
-              <option value="feed">フィード投稿用 4:5（上下が切れない）</option>
-              <option value="square">正方形 1:1（グリッド・カルーセル向け）</option>
+            <option value="reel" selected>リール・ストーリーズ用 9:16（縦長フル）</option>
+            <option value="feed">フィード投稿用 4:5（上下が切れない）</option>
+            <option value="square">正方形 1:1（グリッド・カルーセル向け）</option>
             </select>
             <p class="help">Instagramのフィード（ホーム・プロフィール一覧）は縦長9:16動画の上下をトリミング表示します。フィードへ投稿する動画は「4:5」を選ぶとタイトルや字幕が切れません。</p>
-          </div>
-          <div class="field">
-            <label for="motionIntensity">動きの強さ</label>
-            <select id="motionIntensity">
-              <option value="standard" selected>標準（落ち着いた寄り引き）</option>
-              <option value="bold">大胆（寄り引きを大きく）</option>
-              <option value="extra">超大胆（寄り引き＋カメラの傾き）</option>
-              <option value="max">最大（傾き＋切替も派手・テンポ速め）</option>
-            </select>
-            <p class="help" id="motionIntensityHelp">写真ごとに選んだ動き（ズームイン等）はそのままに、動く量だけを全コマまとめて強めます。プレビューにすぐ反映されます。</p>
-          </div>
-          <div class="field">
-            <label for="filmStripMode">フィルムシーン（全編）</label>
-            <select id="filmStripMode">
-              <option value="off" selected>使わない</option>
-              <option value="diagonal">全写真をネガフィルム風に斜めへ流す</option>
-              <option value="cross">フィルム2本を斜めに交差させる</option>
-            </select>
-            <p class="help">動画全編を通して、使用中の写真がひと繋がりのフィルムになって斜めに流れ続けます。「2本を交差」は太いフィルムと細いフィルムが違う角度・違う速さですれ違い、写真が二重に流れます。締めのCTAをONにすると、最後にN's factoryのロゴだけが静かに浮かびます。</p>
-          </div>
-          <label class="check-row" for="endLogoCta">
-            <input id="endLogoCta" type="checkbox">
-            <span><strong>締めのロゴを最後に浮かび上がらせる</strong>動画の最後の約2.6秒、画面がすっと暗くなり金のフクロウとN's factoryのロゴが浮かび上がります。動画の長さは変わりません。プレビューと保存MP4の両方に入ります（フィルムシーン使用中は、フィルム側の締めコマがあるためこの演出は入りません）。</span>
-          </label>
-          <label class="check-row" for="workIdOverlay">
+            </div>
+            <label class="check-row" for="workIdOverlay">
             <input id="workIdOverlay" type="checkbox">
             <span><strong>作品IDを最初から最後まで表示する</strong>画面右上（ロゴと同じ高さ）に作品集サイトの作品ID（例: NF2026_648）を動画の最初から最後まで出し続けます。見た人が作品集で同じ作品を探せます。プレビューと保存MP4の両方に入ります。</span>
-          </label>
-          <div class="field">
+            </label>
+            <div class="field">
             <label for="workIdOverlayText">表示する作品ID</label>
             <input id="workIdOverlayText" maxlength="24" autocomplete="off" placeholder="例: NF2026_648">
             <p class="help">作品集から読み込むと自動で入ります。端末の写真で作るときは手で入力してください。空欄のときは表示しません。</p>
-          </div>
-          <div class="field" id="filmSpeedField" hidden>
-            <label for="filmSpeed">フィルムの速さ（1コマの秒数）</label>
-            <input id="filmSpeed" type="number" min="1" max="60" step="0.5" value="8">
-            <p class="help">数字が大きいほどゆっくり（1〜60秒）。プレビューにすぐ反映され、保存するMP4にも同じ速さが使われます。</p>
-            <label class="check-row" for="filmCtaEnabled">
-              <input id="filmCtaEnabled" type="checkbox" checked>
-              <span><strong>最後にロゴを表示（CTA）</strong>N's factoryのロゴだけが、じわっと浮かび上がる締めのコマを加えます。OFFにすると作品写真だけで終了します。</span>
-            </label>
-            <label class="check-row" for="filmSpeedAuto">
-              <input id="filmSpeedAuto" type="checkbox">
-              <span><strong>原稿の長さに合わせて自動調整</strong>動画の長さ（セリフに合わせて延びた表示秒数の合計）から1コマの秒数を逆算し、最後のセリフが終わるのと同時に全写真がちょうど1回流れ切ります。ONの間は上の秒数入力は使われません。</span>
-            </label>
-          </div>
-          <div class="field">
+            </div>
+          </details>
+          <details class="fold">
+            <summary>動き・演出・背景・フォント</summary>
+            <div class="field">
+            <label for="motionIntensity">動きの強さ</label>
+            <select id="motionIntensity">
+            <option value="standard" selected>標準（落ち着いた寄り引き）</option>
+            <option value="bold">大胆（寄り引きを大きく）</option>
+            <option value="extra">超大胆（寄り引き＋カメラの傾き）</option>
+            <option value="max">最大（傾き＋切替も派手・テンポ速め）</option>
+            </select>
+            <p class="help" id="motionIntensityHelp">写真ごとに選んだ動き（ズームイン等）はそのままに、動く量だけを全コマまとめて強めます。プレビューにすぐ反映されます。</p>
+            </div>
+            <div class="field">
             <label for="creativePreset">演出プリセット</label>
             <select id="creativePreset">
-              <option value="standard">標準</option>
-              <option value="quietStory">静かな物語</option>
-              <option value="texture">革の質感重視</option>
-              <option value="workshop">工房記録</option>
-              <option value="aging">経年変化</option>
-              <option value="productPr">商品PR</option>
+            <option value="standard">標準</option>
+            <option value="quietStory">静かな物語</option>
+            <option value="texture">革の質感重視</option>
+            <option value="workshop">工房記録</option>
+            <option value="aging">経年変化</option>
+            <option value="productPr">商品PR</option>
             </select>
             <p class="help">動きの強さ・字幕演出・フォントをまとめて変えます。写真ごとの台本は変えません。</p>
-          </div>
-          <div class="actions">
+            </div>
+            <div class="actions">
             <button class="secondary" id="applyCreativePreset" type="button">演出を適用</button>
-          </div>
-          <div class="field">
+            </div>
+            <div class="field">
             <label for="bgMode">背景</label>
             <select id="bgMode">
-              <option value="photo">元の写真のまま（ぼかし背景）</option>
-              <option value="solid">単色背景（被写体を自動で切り抜き）</option>
+            <option value="photo">元の写真のまま（ぼかし背景）</option>
+            <option value="solid">単色背景（被写体を自動で切り抜き）</option>
             </select>
-          </div>
-          <div class="field" id="bgColorField" hidden>
+            </div>
+            <div class="field" id="bgColorField" hidden>
             <label for="bgColor">背景色</label>
             <div class="bg-color-row">
-              <input id="bgColor" type="color" value="#F6F1E3" title="好きな色を選ぶ">
-              <button type="button" class="bg-swatch" data-color="#FFFFFF" style="background:#FFFFFF" title="白"></button>
-              <button type="button" class="bg-swatch" data-color="#F6F1E3" style="background:#F6F1E3" title="生成り"></button>
-              <button type="button" class="bg-swatch" data-color="#111111" style="background:#111111" title="黒"></button>
-              <button type="button" class="bg-swatch" data-color="#7A5E2A" style="background:#7A5E2A" title="ブラス"></button>
+            <input id="bgColor" type="color" value="#F6F1E3" title="好きな色を選ぶ">
+            <button type="button" class="bg-swatch" data-color="#FFFFFF" style="background:#FFFFFF" title="白"></button>
+            <button type="button" class="bg-swatch" data-color="#F6F1E3" style="background:#F6F1E3" title="生成り"></button>
+            <button type="button" class="bg-swatch" data-color="#111111" style="background:#111111" title="黒"></button>
+            <button type="button" class="bg-swatch" data-color="#7A5E2A" style="background:#7A5E2A" title="ブラス"></button>
             </div>
             <p class="help" id="bgCutoutStatus">AIが写真の被写体を切り抜いて単色背景に置き換えます（初回のみ約5MBのモデル読み込み。写真は端末外へ送信されません）。通常版と単色版はそれぞれ保存できます（単色版はファイル名に _solid が付きます）。</p>
-          </div>
-          <div class="field">
+            </div>
+            <div class="field">
             <label for="videoFont">動画内フォント</label>
             <select id="videoFont">
-              <option value="system">標準ゴシック</option>
-              <option value="serif">上品な明朝</option>
-              <option value="rounded">やわらか丸ゴシック</option>
-              <option value="mincho">和文クラシック</option>
-              <option value="mono">クラフト記録風</option>
-              <option value="english">English clean</option>
+            <option value="system">標準ゴシック</option>
+            <option value="serif">上品な明朝</option>
+            <option value="rounded">やわらか丸ゴシック</option>
+            <option value="mincho">和文クラシック</option>
+            <option value="mono">クラフト記録風</option>
+            <option value="english">English clean</option>
             </select>
-          </div>
-          <div class="field">
-            <label for="narrationLang">台本・読み上げの言語</label>
-            <select id="narrationLang">
-              <option value="ja-JP">日本語</option>
-              <option value="en-US">English</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="aiVoiceSelect">完成動画に入るAI音声</label>
-            <select id="aiVoiceSelect"></select>
-            <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語・英語とも対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
-            <div id="voicevoxBox" hidden>
-              <p class="help">「VOICEVOX・このPC」の声は、このパソコンのVOICEVOXで作ります（管理者モード専用）。使う前に下のボタンを押してください。初回だけブラウザに「アプリを開きますか」「ローカルネットワークへのアクセス」を聞かれるので、どちらも許可します。1コマの音声づくりに15〜20秒ほどかかります。動画の右下とSNSのキャプションに「VOICEVOX:キャラ名」が自動で入ります（利用規約で必要な表記です）。</p>
-              <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXを起動してつなぐ</button>
-              <p class="help" id="voicevoxStatus" aria-live="polite"></p>
             </div>
-          </div>
-          <div class="field">
+          </details>
+          <details class="fold">
+            <summary>音声の細かい設定（読み方の辞書・プレビューの声・秒数合わせ）</summary>
+            <div class="field">
             <details>
-              <summary style="cursor:pointer">読み方の辞書（音声だけに効きます）</summary>
-              <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください。この端末に保存されます。<strong>日本語の声のときだけ効きます</strong>（英語の声にはそのままの表記で読ませます）。</p>
-              <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
-              <div class="btn-row" style="margin-top:6px;gap:6px">
-                <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
-                <button class="secondary" id="resetReadingDict" type="button">初期値に戻す</button>
-                <button class="secondary" id="testReadingDict" type="button">今のセリフで試聴</button>
-              </div>
+            <summary style="cursor:pointer">読み方の辞書（音声だけに効きます）</summary>
+            <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください。この端末に保存されます。<strong>日本語の声のときだけ効きます</strong>（英語の声にはそのままの表記で読ませます）。</p>
+            <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
+            <div class="btn-row" style="margin-top:6px;gap:6px">
+            <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
+            <button class="secondary" id="resetReadingDict" type="button">初期値に戻す</button>
+            <button class="secondary" id="testReadingDict" type="button">今のセリフで試聴</button>
+            </div>
             </details>
-          </div>
-          <div class="field">
+            </div>
+            <div class="field">
             <label for="voiceSelect">「音声つきプレビュー」で使う声（完成動画には入りません）</label>
             <select id="voiceSelect">
-              <option value="">ブラウザ標準</option>
+            <option value="">ブラウザ標準</option>
             </select>
             <p class="help">映像と一緒に確認する「音声つきプレビュー」で鳴る声です。この声は保存されるMP4には入りません。<strong>完成動画と同じ声で聞きたいときは「音声だけ確認」を使ってください。</strong></p>
-          </div>
-          <label class="check-row" for="syncNarrationDuration">
+            </div>
+            <label class="check-row" for="syncNarrationDuration">
             <input id="syncNarrationDuration" type="checkbox" checked>
             <span><strong>セリフが終わるまで写真を待たせる</strong>プレビュー・MP4保存の前に、ナレーションの長さから各写真の表示秒数を自動で延長します。AIナレーション付きMP4では、音声が終わると同時に次の写真へ移るよう、実際の音声の長さに合わせて短縮もします。</span>
-          </label>
-          <div class="actions">
+            </label>
+            <div class="actions">
             <button class="secondary" id="fitDurationsToNarration" type="button">セリフ長で秒数を整える</button>
-          </div>
+            </div>
+          </details>
         </div>
         <button class="primary next-step" type="button" data-goto-step="preview">次へ：プレビューで確認</button>
         </section>
@@ -1159,7 +1214,6 @@ const els = {
   driveWorkNo: document.getElementById('driveWorkNo'),
   driveWorkNoList: document.getElementById('driveWorkNoList'),
   driveWorkInfo: document.getElementById('driveWorkInfo'),
-  driveLimit: document.getElementById('driveLimit'),
   driveStatus: document.getElementById('driveStatus'),
   driveProgress: document.getElementById('driveProgress'),
   driveProgressLabel: document.getElementById('driveProgressLabel'),
@@ -1201,6 +1255,9 @@ const els = {
   voicevoxBox: document.getElementById('voicevoxBox'),
   voicevoxCheck: document.getElementById('voicevoxCheck'),
   voicevoxStatus: document.getElementById('voicevoxStatus'),
+  voiceNarrationBox: document.getElementById('voiceNarrationBox'),
+  voiceNarrationGen: document.getElementById('voiceNarrationGen'),
+  voiceNarrationStatus: document.getElementById('voiceNarrationStatus'),
   shareToSns: document.getElementById('shareToSns'),
   shareToSnsBox: document.getElementById('shareToSnsBox'),
   filmSpeedField: document.getElementById('filmSpeedField'),
@@ -2241,7 +2298,9 @@ function addFiles(files){
 
 async function addDrivePhotos(){
   const workNo = els.driveWorkNo.value.trim();
-  const limit = clamp(parseInt(els.driveLimit.value, 10) || 8, 1, 12);
+  // 枚数の上限は設けない（全部読み込んでから、要らない写真を「使う／戻す」や削除で外す運用・2026-09-13 事業主決定）。
+  // サーバーへは DRIVE_PAGE_SIZE 枚ずつ取りに行き、続きがある間は繰り返す（fetchDrivePhotosCandidate）。
+  const limit = DRIVE_PAGE_SIZE;
   if(!workNo){
     setDriveStatus('作品番号を入力してください。', 'error');
     setLog('作品番号を入力してください。');
@@ -2325,16 +2384,39 @@ function drivePhotoCandidates(){
   return candidates;
 }
 
+// Drive写真は1回に8枚ずつ取り、続き（hasMore）がある間は取りに行く（2026-09-13）。
+// 一度に全部だと写真の多い作品で応答が大きく遅くなり、1回の待ち時間（45秒）を超えるため。
+// 旧サーバー（hasMore を返さない）でも1回で終わるだけなので、そのまま動く。
+const DRIVE_PAGE_SIZE = 8;
+const DRIVE_MAX_PAGES = 25;   // 暴走防止（8枚×25回＝200枚。サーバー側の一覧上限と同じ）
+
 async function fetchDrivePhotosCandidate(candidate, workNo, limit){
+  const pageSize = limit || DRIVE_PAGE_SIZE;
+  const baseUrl = `${SNS_VIDEO_DRIVE_API}?api=snsVideoPhotos&folderId=${encodeURIComponent(candidate.folder)}&workNo=${encodeURIComponent(workNo)}&limit=${encodeURIComponent(pageSize)}`;
+  let first = null;
+  const photos = [];
   try{
-    const url = `${SNS_VIDEO_DRIVE_API}?api=snsVideoPhotos&folderId=${encodeURIComponent(candidate.folder)}&workNo=${encodeURIComponent(workNo)}&limit=${encodeURIComponent(limit)}`;
-    const data = await loadJsonp(url);
-    if(data && data.ok) return {ok:true, data};
-    const apiMessage = (data && (data.message || data.error)) || 'Drive写真を取得できませんでした。';
-    return {ok:false, message:`${candidate.label}: ${apiMessage}`};
+    for(let page = 0; page < DRIVE_MAX_PAGES; page++){
+      const data = await loadJsonp(`${baseUrl}&offset=${photos.length}`);
+      if(!data || !data.ok){
+        // 1回目の失敗は候補の失敗。2回目以降の失敗は、ここまでの写真で続ける（全部を捨てない）
+        if(!first){
+          const apiMessage = (data && (data.message || data.error)) || 'Drive写真を取得できませんでした。';
+          return {ok:false, message:`${candidate.label}: ${apiMessage}`};
+        }
+        first.partialError = (data && (data.message || data.error)) || '続きの写真を取得できませんでした。';
+        break;
+      }
+      if(!first) first = data;
+      photos.push(...(data.photos || []));
+      if(data.total) setDriveProgress(2, `Driveから写真を取得中（${photos.length} / ${data.total}枚）`);
+      if(!data.hasMore || !(data.photos || []).length) break;
+    }
   }catch(err){
-    return {ok:false, message:`${candidate.label}: ${err.message}`};
+    if(!first) return {ok:false, message:`${candidate.label}: ${err.message}`};
+    first.partialError = err.message;
   }
+  return {ok:true, data:{...first, photos, count:photos.length}};
 }
 
 function folderNumberMismatch(folderName, workNo){
@@ -2351,10 +2433,14 @@ async function applyDrivePhotoData(data, workNo, candidate){
   updatePhotoPanelUi({collapse:true});
   setDriveProgress(4);
   const matchedWork = await applyWorkInfoFromDriveData(data, workNo);
-  const successMessage = candidate.kind === 'root'
+  // 続きの取得が途中で失敗したときは、読めた分だけで進め、その旨を添える（全部を捨てない）
+  const partialNote = data.partialError
+    ? ` ただし続きの写真の取得に失敗しました（${data.partialError}）。足りない場合はもう一度「Driveから写真を表示」を押す前に、写真を全部クリアしてください。`
+    : (data.total && data.total > data.photos.length ? `（フォルダ内は${data.total}枚）` : '');
+  const successMessage = (candidate.kind === 'root'
     ? `作品集の登録フォルダではなく、Driveルート検索で ${data.photos.length} 枚の写真を表示しました。`
-    : `Driveから ${data.photos.length} 枚の写真を表示しました。`;
-  setDriveStatus(successMessage, 'success');
+    : `Driveから ${data.photos.length} 枚の写真を表示しました。`) + partialNote;
+  setDriveStatus(successMessage, data.partialError ? 'info' : 'success');
   if(matchedWork && matchedWork.longDesc){
     setLog(`Driveから ${data.photos.length} 枚追加しました。作品集「${matchedWork.title}」の長文紹介を英語へ変換しています。`);
     setDriveProgress(5);
@@ -2485,7 +2571,7 @@ async function translateLongDescToFeatureNote(options = {}){
     const url = `${SNS_VIDEO_DRIVE_API}?api=translateSnsMemo&source=${encodeURIComponent(sourceLang)}&target=${encodeURIComponent(target)}&text=${encodeURIComponent(source)}`;
     const data = await loadJsonp(url);
     if(!data || !data.ok){ throw new Error((data && (data.message || data.error)) || `${targetLabel}変換に失敗しました。`); }
-    const targetCount = Math.max(8, slides.length, clamp(parseInt(els.driveLimit.value, 10) || 8, 1, 12));
+    const targetCount = Math.max(8, slides.length);
     if(target === 'en') await translateDisplayFieldsToEnglish();
     els.featureNote.value = target === 'en'
       ? expandEnglishFeatureMemo(data.translated || '', targetCount)
@@ -4920,6 +5006,85 @@ async function generateSnsPostVoiceCaption(){
   }
 }
 
+/* ══ 動画のセリフを本人の文体で作る（2026-09-13 事業主要望）══
+   SNS投稿文の「自分の言葉で作る」と同じ文体ガイド（広報部\SNS文体ガイド.md → GAS SnsVoice.js）で、
+   使用中の写真ごとのセリフを1回でまとめて作る（商品登録GAS generateSnsNarration）。日本語・管理者モード専用。
+   材料は作品情報＋見どころメモ（ひとこと）＋各コマの役割と表示秒数（秒数から文字数の上限をGAS側で決める）。
+   ⛔ 自動の再送はしない（AIが二重に呼ばれ費用が二重になるため）。失敗したら理由を出して、もう一度押してもらう。
+   ⛔ 手で直したセリフは「セリフの扱い」が「全コマを作り直す」のときだけ上書きする（確認あり）。 */
+async function generateVoiceNarration(){
+  const st = els.voiceNarrationStatus;
+  const btn = els.voiceNarrationGen;
+  if(!st || !btn) return;
+  saveSelected();
+  if(els.narrationLang.value !== 'ja-JP'){ st.textContent = '⚠️ 日本語の台本のときだけ使えます（読み上げの言語を「日本語」にしてください）。'; return; }
+  if(!nsfAdminVerified){ st.textContent = '⚠️ 管理者モードのときだけ使えます。'; return; }
+  let key = '';
+  try{ key = sessionStorage.getItem('nsf_admin_key') || ''; }catch(_){}
+  if(!key){ st.textContent = '⚠️ 管理者モードの鍵が見つかりません。管理者モードを入れ直してください。'; return; }
+  const targets = playableSlides();
+  if(!targets.length){ st.textContent = '⚠️ 使う写真がありません。'; return; }
+  const mode = els.scriptApplyMode ? els.scriptApplyMode.value : 'keep';
+  if(mode === 'none'){ st.textContent = '「詳しい操作」のセリフの扱いが「セリフは変えない」になっているため作りませんでした。'; return; }
+  const manual = targets.filter(slide => slide.narrationSource === 'manual' && String(slide.narration || '').trim()).length;
+  if(mode === 'all' && manual && !window.confirm(`手で直した${manual}コマのセリフも作り直します。よろしいですか？`)){
+    st.textContent = '中止しました。セリフは変えていません。';
+    return;
+  }
+  const roles = templateRolesForCount(selectedStoryTemplate(), targets.length);
+  const work = currentWork || {};
+  const payload = {
+    api:'generateSnsNarration', key,
+    name: work.title || els.productName.value.trim() || 'レザー作品',
+    category: work.category || '', material: work.material || els.materialNote.value.trim(),
+    color: work.color || '', size: work.size || '',
+    memo: els.featureNote.value.trim(),
+    longDesc: work.longDesc || els.workLongDesc.value.trim(),
+    slides: targets.map((slide, index) => ({role: slide.storyRole || roles[index] || '', seconds: slide.duration}))
+  };
+  btn.disabled = true;
+  st.textContent = '⏳ 作成中…（10〜30秒）';
+  try{
+    const res = await fetch(SNS_VIDEO_DRIVE_API, {
+      method:'POST',
+      body:new URLSearchParams({api:payload.api, payload:JSON.stringify(payload)})
+    });
+    const text = await res.text();
+    if(text.trim().startsWith('<')) throw new Error('Google側の一時障害です（HTTP ' + res.status + '）。少し待ってもう一度押してください。');
+    const data = JSON.parse(text);
+    if(!data.ok) throw new Error(data.error === 'unauthorized' ? '管理者の鍵が違います。管理者モードを入れ直してください。' : (data.error || '作成に失敗しました。'));
+    if(!Array.isArray(data.lines) || data.lines.length !== targets.length) throw new Error('セリフの数が写真の数と合いませんでした。もう一度押してください。');
+    let applied = 0;
+    let kept = 0;
+    targets.forEach((slide, index) => {
+      if(mode !== 'all' && slide.narrationSource === 'manual' && String(slide.narration || '').trim()){ kept += 1; return; }
+      const line = String(data.lines[index] || '').trim();
+      if(!line) return;
+      slide.narration = line;
+      slide.narrationGenerated = line;
+      slide.narrationSource = 'generated';
+      // セリフが表示秒数に収まらないときだけ、必要な分だけ延ばす（文章は削らない＝本人の言葉を崩さない）
+      const needed = estimateNarrationDuration(line);
+      if(els.syncNarrationDuration && els.syncNarrationDuration.checked && needed > slide.duration) slide.duration = needed;
+      applied += 1;
+    });
+    if(selected >= 0) loadSelected();
+    renderList();
+    drawSelectedOrFirstFrame();
+    const ng = data.ngWords || [];
+    st.textContent = `✅ ${applied}コマのセリフを作りました${kept ? `（手で直した${kept}コマはそのまま）` : ''}。読んで直してから保存してください。`
+      + (ng.length ? ` ⚠️ 使わない言葉が入っています：${ng.join('、')}（直すか、もう一度作ってください）` : '');
+  }catch(e){
+    st.textContent = '⚠️ ' + e.message;
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function updateVoiceNarrationUi(){
+  if(els.voiceNarrationBox) els.voiceNarrationBox.hidden = !(nsfAdminVerified && els.narrationLang.value === 'ja-JP');
+}
+
 async function deleteRelayVideo(id){
   if(!id) return;
   try{
@@ -5041,6 +5206,7 @@ function refreshAiVoiceOptions(){
     .join('');
   if(voices.some(voice => voice.value === current)) els.aiVoiceSelect.value = current;
   updateVoicevoxUi();
+  updateVoiceNarrationUi();   // 管理者モード・言語が変わるたびに「自分の言葉でセリフを作る」の表示も切り替える
 }
 
 function ttsProgressLabel(progress){
@@ -7258,6 +7424,7 @@ els.aiVoiceSelect.addEventListener('change', () => {
   drawSelectedOrFirstFrame();   // クレジット表示の有無が変わるため描き直す
 });
 els.voicevoxCheck.addEventListener('click', startVoicevoxEngine);
+els.voiceNarrationGen.addEventListener('click', generateVoiceNarration);
 els.workIdOverlay.addEventListener('change', () => {
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
