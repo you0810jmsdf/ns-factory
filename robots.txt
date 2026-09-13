@@ -5,6 +5,8 @@
 # 下の Disallow は「非公開の方針」の記録として残している。
 # 公開ページ（無料ツール・道具紹介・リング規格図鑑など）がある
 # /digital-room/ と /kouhou-room/ は載せない（2026-09-13 事業主決定）。
+# 販売・人事・広報幕僚室の入口と材料調達ガイド（アフィリエイトの本拠地）も
+# 公開ページのため載せない（2026-09-13 事業主決定）。
 # ⛔ /works/ を Disallow しない（SNSクローラーがOGPを読めなくなる）。
 
 User-agent: *
@@ -14,9 +16,6 @@ Allow: /
 Disallow: /sakusen-room/
 Disallow: /kanri-room/
 Disallow: /hozen-room/
-Disallow: /jinji-room/
-Disallow: /hanbai-room/
-Disallow: /pr-room/
 
 # 個人利用アプリ（お試し版・検索非掲載）
 Disallow: /diet/
@@ -34,6 +33,5 @@ Disallow: /invoice/
 
 # 未完成・準備中（2026-08-24 一時凍結。N's pattern 第1弾の発売準備が整うまで）
 Disallow: /patterns/
-Disallow: /material-guide/
 
 Sitemap: https://you0810jmsdf.github.io/ns-factory/sitemap.xml
