@@ -437,6 +437,17 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <!-- ========== 販売サイト ========== -->
   <div class="section" id="shop">
     <div class="section-title" data-i18n="shop.title">販売サイト</div>
+    <!-- 自社サイトでカード購入できる作品（2026-09-14 事業主決定）。Instagram のプロフィール欄はこのリンク集を貼る。
+         作品集の ?card=1 は、管理者モードで「カード販売を開始」した作品だけを並べる（0件のときは案内とすべての作品への導線）。 -->
+    <a class="link-btn" href="works.html?card=1">
+      <div class="btn-icon" style="background:#1f1a14;color:#c9a96e;">💳</div>
+      <div class="btn-text">
+        <div class="btn-name" data-i18n="shop.cardWorks">今すぐ購入できる作品</div>
+        <div class="btn-desc" data-i18n="shop.cardWorksD">この工房のサイトでカード決済（送料込み）</div>
+      </div>
+      <span class="btn-arrow">›</span>
+    </a>
+
     <div class="subsection-title" data-i18n="shop.marketplace">マーケットプレイス</div>
 
     <a class="link-btn" href="https://www.mercari.com/jp/u/817617289/" target="_blank">
@@ -705,6 +716,8 @@ window.NSF_I18N_DICT = {
   'svc.n4': 'Classes & courses',
   'svc.d4': 'As a culture school instructor, I teach from the basics up.',
   'shop.title': 'Where to buy',
+  'shop.cardWorks': 'Items you can buy now',
+  'shop.cardWorksD': 'Pay by card on this site (shipping included)',
   'shop.marketplace': 'Marketplaces',
   'shop.mercari': 'Mercari',
   'shop.mercariD': "Japan's largest flea-market app",
