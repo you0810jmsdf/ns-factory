@@ -1,6 +1,6 @@
 brand_id,name,area_mult,krause_no_multi,allows_krause,extra_base_cost,work_hour_multiplier,lining_ratio,note
 simplist,Standard,1,TRUE,TRUE,0,1.0,0,リングサポータで包み込みタイプ
-simplist_kl,Simplist,2,FALSE,TRUE,0,1.3,0.3,クラウゼ対応・padなし（2026-09-13 旧名Simplist+クラウゼ）／内張面積比0.3は仮値・要調整
+simplist_kl,Simplist,2,FALSE,TRUE,0,1.3,0.3,2026-09-13にカード非表示（Standardへ一本化・オプションなしの状態をSimplistと案内）。過去の見積もり控えとの互換のため行は残す／内張面積比0.3は仮値・要調整
 simplist_klpad,N-Classic,2.5,TRUE,TRUE,0,1.5,0.4,クラウゼ・通常リング対応・pad加工あり（2026-09-12 旧名Simplist+クラウゼ+Pad）／内張面積比0.4は仮値・要調整
 npad,N-Pad flap,2,FALSE,FALSE,0,1.4,0.4,N-Pad＋フラップ・ペンホルダー（オプション・選択時にON）。係数と工数カーブはnpad_nfと同値に保つ（2026-09-12）／内張面積比0.4は仮値・要調整
 npad_nf,N-Pad non flap,2,FALSE,FALSE,0,1.4,0.4,フラップなし（内張あり・クラウゼ非対応）／内張面積比0.4は仮値・要調整
