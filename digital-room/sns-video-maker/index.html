@@ -2508,21 +2508,32 @@ async function loadJsonp(url){
   throw new Error(`${lastErr.message} ${JSONP_RETRY_DELAYS.length + 1}回試しても届きませんでした。Google側の一時的な不調の可能性が高いので、少し時間を置いてもう一度お試しください。`);
 }
 
+// 打ち切った通信の遅れた返事を受け流す時間（GAS は数分遅れて返すことがあるため長めに取る）
+const JSONP_LATE_CALLBACK_MS = 10 * 60 * 1000;
+
 function loadJsonpOnce(url){
   return new Promise((resolve, reject) => {
     const callback = `snsVideoDrive_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
     const script = document.createElement('script');
     const timer = setTimeout(() => {
-      cleanup();
+      cleanup(true);
       reject(new Error('Drive APIの応答がタイムアウトしました。'));
     }, 45000);
-    function cleanup(){
+    // 打ち切った後に返事が遅れて届くと、読み込み途中の script は止められず実行される。
+    // そのとき受け取り口（window[callback]）が消えていると ReferenceError になるため（2026-09-13 実測）、
+    // 打ち切り・失敗のときは「何もしない受け取り口」を残し、しばらくしてから片付ける。
+    function cleanup(late){
       clearTimeout(timer);
-      delete window[callback];
       script.remove();
+      if(late){
+        window[callback] = () => { delete window[callback]; };
+        setTimeout(() => { delete window[callback]; }, JSONP_LATE_CALLBACK_MS);
+      }else{
+        delete window[callback];
+      }
     }
-    window[callback] = data => { cleanup(); resolve(data); };
-    script.onerror = () => { cleanup(); reject(new Error('Drive APIへ接続できませんでした。')); };
+    window[callback] = data => { cleanup(false); resolve(data); };
+    script.onerror = () => { cleanup(true); reject(new Error('Drive APIへ接続できませんでした。')); };
     script.src = `${url}&callback=${encodeURIComponent(callback)}&cb=${Date.now()}`;
     document.head.appendChild(script);
   });
