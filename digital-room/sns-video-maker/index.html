@@ -1052,8 +1052,8 @@ canvas{
             <select id="aiVoiceSelect"></select>
             <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語・英語とも対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
             <div id="voicevoxBox" hidden>
-              <p class="help">「VOICEVOX・このPC」の声は、このパソコンでVOICEVOXのエンジンを起動しているときだけ使えます（無料）。使う前に <strong>C:\Tools\voicevox_engine\start_for_sns_video.bat</strong> をダブルクリックしてください。初回だけブラウザに「ローカルネットワーク上のデバイスへのアクセス」を聞かれるので「許可」を押します。1コマの音声づくりに15〜20秒ほどかかります。動画の右下とSNSのキャプションに「VOICEVOX:キャラ名」が自動で入ります（利用規約で必要な表記です）。</p>
-              <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXとの接続を確認</button>
+              <p class="help">「VOICEVOX・このPC」の声は、このパソコンのVOICEVOXで作ります（管理者モード専用）。使う前に下のボタンを押してください。初回だけブラウザに「アプリを開きますか」「ローカルネットワークへのアクセス」を聞かれるので、どちらも許可します。1コマの音声づくりに15〜20秒ほどかかります。動画の右下とSNSのキャプションに「VOICEVOX:キャラ名」が自動で入ります（利用規約で必要な表記です）。</p>
+              <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXを起動してつなぐ</button>
               <p class="help" id="voicevoxStatus" aria-live="polite"></p>
             </div>
           </div>
@@ -4755,6 +4755,8 @@ async function toggleAdminMode(){
     await verifyNsfAdmin();
     updateAdminToggleUi();
     updateShareToSnsUi();
+    refreshAiVoiceOptions();        // VOICEVOX の声を一覧から外す
+    drawSelectedOrFirstFrame();
     setLog('管理者モードを解除しました。');
     return;
   }
@@ -4774,6 +4776,7 @@ async function toggleAdminMode(){
   await verifyNsfAdmin();
   updateAdminToggleUi();
   updateShareToSnsUi();
+  refreshAiVoiceOptions();          // VOICEVOX の声を一覧に出す
   setLog(currentWork && currentWork.id
     ? '管理者モードにしました。動画を保存すると「SNSへ投稿」が使えます。'
     : '管理者モードにしました。SNSへ投稿するには、商品登録ページの「この作品の紹介動画を作る」から開き直してください（作品情報が要るため）。');
@@ -5031,10 +5034,12 @@ function refreshAiVoiceOptions(){
   const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
   els.aiVoiceSelect.disabled = false;
   const current = els.aiVoiceSelect.value;
-  els.aiVoiceSelect.innerHTML = AI_VOICES[language]
+  // VOICEVOX はこのPCのエンジンが要るため管理者モードのときだけ出す（一般公開の利用者には出さない・2026-09-13 事業主決定）
+  const voices = AI_VOICES[language].filter(voice => nsfAdminVerified || !isVoicevoxVoice(voice.value));
+  els.aiVoiceSelect.innerHTML = voices
     .map(voice => `<option value="${voice.value}">${voice.label}</option>`)
     .join('');
-  if(AI_VOICES[language].some(voice => voice.value === current)) els.aiVoiceSelect.value = current;
+  if(voices.some(voice => voice.value === current)) els.aiVoiceSelect.value = current;
   updateVoicevoxUi();
 }
 
@@ -5289,7 +5294,12 @@ async function generateRelayNarrationAudio(text, voice){
    ② ブラウザが「ローカルネットワークへのアクセス」を許可している（無いとブラウザが遮断）
    どちらが原因でも fetch は同じ TypeError になり区別できないため、案内は2点を並べて出す（原因を断定しない）。
    読み上げは副作用がないので、エンジンの500番台だけ1回やり直す。 */
-const VOICEVOX_HELP = `VOICEVOXにつながりませんでした。次の2点を確かめてから、もう一度お試しください。①このPCで「${VOICEVOX_START_FILE}」をダブルクリックしてエンジンを起動する ②ブラウザに「ローカルネットワーク上のデバイスへのアクセス」を聞かれたら「許可」を押す（アドレスバー左の鍵マークからも許可できます）。`;
+const VOICEVOX_HELP = `VOICEVOXにつながりませんでした。「VOICEVOXを起動してつなぐ」を押してから、もう一度お試しください。それでもつながらないときは ①ブラウザに「ローカルネットワーク上のデバイスへのアクセス」を聞かれたら「許可」（アドレスバー左の鍵マークからも許可できます）②ボタンで起動しないときは「${VOICEVOX_START_FILE}」をダブルクリック、を確かめてください。`;
+// 押すとPC側で決まった起動ファイル（VBS→bat）だけが動く専用リンク（HKCU に登録・2026-09-13）。
+// 未登録のPCでは何も起きないので、待ち時間切れの案内で登録ファイルを示す。
+const VOICEVOX_LAUNCH_URL = 'nsf-voicevox://start';
+const VOICEVOX_REGISTER_FILE = 'C:\\Tools\\voicevox_engine\\register_nsf_voicevox.reg';
+const VOICEVOX_START_WAIT_MS = 90000;
 
 function isVoicevoxVoice(voice){ return /^vv:\d+$/.test(String(voice || '')); }
 function voicevoxVoiceOf(voice){ return VOICEVOX_VOICES.find(item => item.value === voice) || null; }
@@ -5341,17 +5351,44 @@ function updateVoicevoxUi(){
   if(els.voicevoxBox) els.voicevoxBox.hidden = !selectedVoicevoxCredit();
 }
 
-async function checkVoicevoxConnection(){
-  if(!els.voicevoxStatus) return;
-  els.voicevoxStatus.textContent = '確認しています…';
+async function voicevoxVersion(){
   try{
-    const res = await fetch(VOICEVOX_ENDPOINT + '/version');
-    const version = res.ok ? (await res.text()).replace(/"/g, '') : '';
-    els.voicevoxStatus.textContent = res.ok
+    const res = await fetch(VOICEVOX_ENDPOINT + '/version', {cache:'no-store'});
+    return res.ok ? (await res.text()).replace(/"/g, '') : '';
+  }catch(_){ return ''; }
+}
+
+/* ボタン1つで「確認→（つながらなければ）起動→つながるまで待つ」。
+   許可なしで動いているエンジンもブラウザからは「つながらない」に見えるが、
+   起動ファイル側がVOICEVOXだけを許可付きで起動し直すので同じ手順で直る。 */
+let voicevoxStarting = false;
+async function startVoicevoxEngine(){
+  if(voicevoxStarting || !els.voicevoxStatus) return;
+  voicevoxStarting = true;
+  if(els.voicevoxCheck) els.voicevoxCheck.disabled = true;
+  try{
+    els.voicevoxStatus.textContent = '確認しています…';
+    let version = await voicevoxVersion();
+    if(!version){
+      const link = document.createElement('a');
+      link.href = VOICEVOX_LAUNCH_URL;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      const startedAt = Date.now();
+      while(!version && Date.now() - startedAt < VOICEVOX_START_WAIT_MS){
+        els.voicevoxStatus.textContent = `起動しています…（${Math.round((Date.now() - startedAt) / 1000)}秒）初めてのときはブラウザの「開く」「許可」を押してください。`;
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        version = await voicevoxVersion();
+      }
+    }
+    els.voicevoxStatus.textContent = version
       ? `✓ つながりました（VOICEVOX ${version}）。VOICEVOXの声で保存できます。`
-      : `エンジンは応答しましたが使えません（${res.status}）。${VOICEVOX_HELP}`;
-  }catch(_){
-    els.voicevoxStatus.textContent = VOICEVOX_HELP;
+      : `90秒待ちましたがつながりませんでした。このPCで初めて使うときは「${VOICEVOX_REGISTER_FILE}」をダブルクリックして登録してから、もう一度押してください。ブラウザに「ローカルネットワークへのアクセス」を聞かれたら「許可」を押してください。`;
+  }finally{
+    voicevoxStarting = false;
+    if(els.voicevoxCheck) els.voicevoxCheck.disabled = false;
   }
 }
 
@@ -7214,13 +7251,13 @@ els.motionIntensity.addEventListener('change', () => {
   setLog(`動きの強さを「${label}」にしました。プレビューと保存MP4の両方に反映されます。`);
 });
 els.shareToSns.addEventListener('click', shareVideoToSns);
-verifyNsfAdmin().then(() => { updateShareToSnsUi(); updateAdminToggleUi(); });
+verifyNsfAdmin().then(() => { updateShareToSnsUi(); updateAdminToggleUi(); refreshAiVoiceOptions(); });
 loadReadingDictUi();
 els.aiVoiceSelect.addEventListener('change', () => {
   updateVoicevoxUi();
   drawSelectedOrFirstFrame();   // クレジット表示の有無が変わるため描き直す
 });
-els.voicevoxCheck.addEventListener('click', checkVoicevoxConnection);
+els.voicevoxCheck.addEventListener('click', startVoicevoxEngine);
 els.workIdOverlay.addEventListener('change', () => {
   resetRecordingOutput();
   drawSelectedOrFirstFrame();
