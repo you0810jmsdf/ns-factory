@@ -118,9 +118,12 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
 .foot .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
 .foot a{color:var(--fg-2)}
 .foot a:hover{color:var(--fg)}
+.brand,.nav a.link{white-space:nowrap}
 @media (max-width:760px){
   .hero{grid-template-columns:1fr;gap:22px;padding:28px 0}
   .nav a.link.opt{display:none}
+  .nav .wrap{gap:6px}
+  .brand small{display:none}   /* 390px で「BY N'S FACTORY」とメニューが2行に折り返したため（2026-09-14） */
   .btn{width:100%}
   .buy{align-items:stretch}
 }
