@@ -421,11 +421,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <div class="svc-name" data-i18n="svc.n2">オーダーメイド</div>
         <div class="svc-desc" data-i18n="svc.d2">革・色・ステッチ・金具を選んで、あなただけの一品に。</div>
       </div>
-      <div class="svc-card">
+      <!-- 2026-09-14: N's pattern（型紙一覧）へのリンク。四角ごと押せる -->
+      <a class="svc-card" href="patterns/" style="display:block;text-decoration:none;color:inherit">
         <div class="svc-no">03</div>
         <div class="svc-name" data-i18n="svc.n3">型紙PDF販売</div>
         <div class="svc-desc" data-i18n="svc.d3">ご自身でつくりたい方へ。N's pattern シリーズ。</div>
-      </div>
+      </a>
       <div class="svc-card">
         <div class="svc-no">04</div>
         <div class="svc-name" data-i18n="svc.n4">教室・講座</div>

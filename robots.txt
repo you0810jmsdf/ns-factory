@@ -31,7 +31,7 @@ Disallow: /order_estimate/admin.html
 Disallow: /order_estimate/stock-quote.html
 Disallow: /invoice/
 
-# 未完成・準備中（2026-08-24 一時凍結。N's pattern 第1弾の発売準備が整うまで）
-Disallow: /patterns/
+# /patterns/ は 2026-09-14 に公開（N's pattern 型紙一覧・事業主決定）。Disallow を外した。
+# 旧 patterns/horseshoe-coin-case.html（¥2,800版・販売しない）はページ側の noindex で検索避けしている。
 
 Sitemap: https://you0810jmsdf.github.io/ns-factory/sitemap.xml
