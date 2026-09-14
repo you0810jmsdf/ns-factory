@@ -1717,6 +1717,23 @@ tr.row-out-stock td{
       <div id="toolstats-loading" style="display:none;text-align:center;padding:32px;color:#8a6a4a">読み込み中…</div>
       <div id="toolstats-error" style="display:none;color:#b42318;font-size:13px;padding:8px 0"></div>
 
+      <!-- 改善要望（公開ツールの「💡 改善要望」ボタンから届いたもの・2026-09-15） -->
+      <div id="toolstats-reports" style="background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:16px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <div style="font-size:14px;font-weight:700;color:#5C3D2E">💡 改善要望 <span id="toolstats-reports-badge" style="display:inline-block;min-width:1.6em;padding:1px 8px;border-radius:999px;background:#b42318;color:#fff;font-size:12px;text-align:center">–</span> 件 未対応</div>
+          <label style="font-size:11px;color:#8a6a4a;display:flex;align-items:center;gap:4px;margin-left:auto"><input type="checkbox" id="toolstats-reports-showdone"> 対応済みも表示</label>
+          <button id="toolstats-reports-refresh" type="button" style="background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:4px 10px;font-size:11px;color:#8B5E3C;cursor:pointer">🔄</button>
+        </div>
+        <div style="font-size:11px;color:#8a6a4a;margin-bottom:6px">公開ツール右下の「💡 改善要望」から届いたものです（メールでも同時に届きます）。対応したら「対応済み」を押してください。</div>
+        <div id="toolstats-reports-msg" style="font-size:12px;color:#8a6a4a;padding:6px 0"></div>
+        <div style="overflow-x:auto">
+          <table id="toolstats-reports-table" style="display:none;width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:#fff8f1;color:#8a6a4a;font-size:11px"><th style="text-align:left;padding:6px;border-bottom:1px solid #eadccf;white-space:nowrap">日時</th><th style="text-align:left;padding:6px;border-bottom:1px solid #eadccf">ページ</th><th style="text-align:left;padding:6px;border-bottom:1px solid #eadccf">内容</th><th style="text-align:left;padding:6px;border-bottom:1px solid #eadccf">連絡先</th><th style="padding:6px;border-bottom:1px solid #eadccf"></th></tr></thead>
+            <tbody id="toolstats-reports-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div id="toolstats-summary" style="display:none;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
         <div style="background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:14px;text-align:center">
           <div style="font-size:11px;color:#8a6a4a;margin-bottom:4px">表示中ページのPV合計</div>
@@ -7306,8 +7323,77 @@ function toolstatsAggregate(counts) {
   return [...map.values()];
 }
 
+// ── 改善要望（オーダー進捗GAS ?action=reports・管理者キー必須。対応済み切替は ?action=reportDone）──
+let toolstatsReportsItems = [];
+let toolstatsReportsWired = false;
+function toolstatsReportsLoad() {
+  const msg = document.getElementById('toolstats-reports-msg');
+  const badge = document.getElementById('toolstats-reports-badge');
+  const table = document.getElementById('toolstats-reports-table');
+  if (!msg || !badge || !table) return;
+  if (!toolstatsReportsWired) {
+    toolstatsReportsWired = true;
+    document.getElementById('toolstats-reports-refresh')?.addEventListener('click', toolstatsReportsLoad);
+    document.getElementById('toolstats-reports-showdone')?.addEventListener('change', toolstatsReportsRender);
+  }
+  const key = getAdminKey();
+  if (!key) { msg.textContent = '管理者キーが無いため一覧を取得できません（管理者モードでログインし直してください）。'; table.style.display = 'none'; return; }
+  msg.textContent = '読み込み中…';
+  fetch(TOOLSTATS_GAS_URL + '?action=reports&limit=200&key=' + encodeURIComponent(key) + '&t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(txt => {
+      if (!txt || txt.trim().charAt(0) === '<') throw new Error('GASがHTMLを返しました。しばらくして再読み込みしてください。');
+      const data = JSON.parse(txt);
+      if (!data || !data.ok) throw new Error((data && data.error) || '応答が不正です');
+      toolstatsReportsItems = data.items || [];
+      badge.textContent = String(data.open ?? '–');
+      badge.style.background = (data.open > 0) ? '#b42318' : '#2f7d4f';
+      msg.textContent = '';
+      toolstatsReportsRender();
+    })
+    .catch(err => { msg.textContent = '改善要望の取得に失敗しました: ' + (err && err.message ? err.message : err); table.style.display = 'none'; });
+}
+function toolstatsReportsRender() {
+  const table = document.getElementById('toolstats-reports-table');
+  const rows = document.getElementById('toolstats-reports-rows');
+  const msg = document.getElementById('toolstats-reports-msg');
+  if (!table || !rows) return;
+  const showDone = !!document.getElementById('toolstats-reports-showdone')?.checked;
+  const list = toolstatsReportsItems.filter(x => showDone || !x.done);
+  if (!list.length) { table.style.display = 'none'; if (msg) msg.textContent = showDone ? 'まだ届いていません。' : '未対応の改善要望はありません。'; return; }
+  if (msg) msg.textContent = '';
+  const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  rows.innerHTML = list.map(x => {
+    const page = esc(x.page || '');
+    const link = page ? '<a href="' + TOOLSTATS_SITE + page + '" target="_blank" rel="noopener" style="color:#8B5E3C">' + page + '</a>' : '';
+    const contact = esc(x.contact || '');
+    const contactHtml = /@/.test(contact) ? '<a href="mailto:' + contact + '" style="color:#8B5E3C">' + contact + '</a>' : (contact || '<span style="color:#bbb">（未記入）</span>');
+    const btn = x.done
+      ? '<button type="button" data-rid="' + esc(x.rid) + '" data-row="' + x.row + '" data-done="0" style="background:#fff;border:1px solid #d8c2a8;border-radius:999px;padding:3px 10px;font-size:11px;color:#8a6a4a;cursor:pointer;white-space:nowrap">未対応に戻す</button>'
+      : '<button type="button" data-rid="' + esc(x.rid) + '" data-row="' + x.row + '" data-done="1" style="background:#2f7d4f;border:none;border-radius:999px;padding:4px 12px;font-size:11px;color:#fff;cursor:pointer;white-space:nowrap">対応済み</button>';
+    return '<tr style="' + (x.done ? 'color:#999;' : '') + 'vertical-align:top"><td style="padding:6px;border-bottom:1px solid #f0e6da;white-space:nowrap">' + esc(x.at) + (x.done ? '<br><span style="font-size:10px">済 ' + esc(x.doneAt) + '</span>' : '') + '</td><td style="padding:6px;border-bottom:1px solid #f0e6da;word-break:break-all">' + link + (x.title ? '<br><span style="font-size:10px;color:#8a6a4a">' + esc(x.title) + '</span>' : '') + '</td><td style="padding:6px;border-bottom:1px solid #f0e6da;white-space:pre-wrap;min-width:200px">' + esc(x.msg) + '<br><span style="font-size:10px;color:#aaa">' + esc((x.ua || '').slice(0, 80)) + '</span></td><td style="padding:6px;border-bottom:1px solid #f0e6da">' + contactHtml + '</td><td style="padding:6px;border-bottom:1px solid #f0e6da;text-align:right">' + btn + '</td></tr>';
+  }).join("");
+  table.style.display = 'table';
+  rows.querySelectorAll('button[data-done]').forEach(b => b.addEventListener('click', () => toolstatsReportDone(b)));
+}
+function toolstatsReportDone(btn) {
+  const key = getAdminKey(); if (!key) return;
+  btn.disabled = true; btn.textContent = '送信中…';
+  const q = '?action=reportDone&done=' + btn.dataset.done + (btn.dataset.rid ? '&rid=' + encodeURIComponent(btn.dataset.rid) : '&row=' + btn.dataset.row) + '&key=' + encodeURIComponent(key) + '&t=' + Date.now();
+  fetch(TOOLSTATS_GAS_URL + q, { cache: 'no-store' })
+    .then(r => r.text())
+    .then(txt => {
+      if (!txt || txt.trim().charAt(0) === '<') throw new Error('GASがHTMLを返しました');
+      const data = JSON.parse(txt);
+      if (!data || !data.ok) throw new Error((data && data.error) || '更新に失敗しました');
+      toolstatsReportsLoad();
+    })
+    .catch(err => { btn.disabled = false; btn.textContent = '失敗（再試行）'; const m = document.getElementById('toolstats-reports-msg'); if (m) m.textContent = '更新に失敗しました: ' + (err && err.message ? err.message : err); });
+}
+
 function toolstatsLoad() {
   toolstatsLoaded = true;
+  toolstatsReportsLoad();
   const show = (id, disp) => { const el = document.getElementById(id); if (el) el.style.display = disp; };
   show('toolstats-loading', 'block');
   show('toolstats-error', 'none');
