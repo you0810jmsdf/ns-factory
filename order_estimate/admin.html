@@ -813,6 +813,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="automations" data-admin-cat="keiei" role="tab" aria-selected="false">⏰ 定期実行</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="api-costs" data-admin-cat="keiei" role="tab" aria-selected="false">💴 API費用</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="sns-trend" data-admin-cat="keiei" role="tab" aria-selected="false">📈 SNSトレンド</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="jhcs-dl" data-admin-cat="keiei" role="tab" aria-selected="false">🎓 JHCS講習DL管理</button>
       <!-- 📦 在庫管理 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ring" data-admin-cat="stock" role="tab" aria-selected="false">リング在庫</button>
@@ -939,6 +940,25 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#0d1117"
         title="API費用"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- SNSトレンドタブ -->
+    <div class="panel sns-trend-section admin-section-hidden" id="snsTrendPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:#8a6a4a">週次のSNSトレンド集計（要約・示唆・推奨アクション・収集記事）。認証は本画面と共通・自動ログイン</div>
+        <a href="../sns-trend.html" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット -->
+      <iframe
+        id="snsTrendFrame"
+        data-src="../sns-trend.html"
+        src="about:blank"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#0d1117"
+        title="SNSトレンド"
         loading="lazy"></iframe>
     </div>
 
@@ -2088,6 +2108,7 @@ function unlockAdmin() {
     sessionStorage.setItem('nsfactory-staff-monitor-auth', 'ok');
     sessionStorage.setItem('nsfactory-automations-auth', 'ok');
     sessionStorage.setItem('nsfactory-api-costs-auth', 'ok');
+    sessionStorage.setItem('nsfactory-sns-trend-auth', 'ok');
     sessionStorage.setItem('nsfactory-chatlog-auth', 'ok');
   } catch (err) { /* ignore */ }
   tryAutoFetchToken();
@@ -6295,7 +6316,7 @@ async function saveJhcsStudent() {
 }
 
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'jhcs-dl': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'sns-trend': 'keiei', 'jhcs-dl': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics',
@@ -6323,11 +6344,12 @@ function setAdminTab(tab) {
   const isStaffMonitor = tab === 'staff-monitor';
   const isAutomations = tab === 'automations';
   const isApiCosts = tab === 'api-costs';
+  const isSnsTrend = tab === 'sns-trend';
   const isChatlog = tab === 'chatlog';
   const isJhcsDl = tab === 'jhcs-dl';
   const isWaitlist = tab === 'waitlist';
   const isFavorites = tab === 'favorites';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isSnsTrend;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -6391,6 +6413,9 @@ function setAdminTab(tab) {
   document.querySelectorAll('.api-costs-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isApiCosts);
   });
+  document.querySelectorAll('.sns-trend-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isSnsTrend);
+  });
   document.querySelectorAll('.chatlog-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isChatlog);
   });
@@ -6404,7 +6429,7 @@ function setAdminTab(tab) {
     el.classList.toggle('admin-section-hidden', !isFavorites);
   });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isToolstats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites || isApiCosts);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isToolstats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites || isApiCosts || isSnsTrend);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -6508,6 +6533,8 @@ function setAdminTab(tab) {
       ? '幕僚エージェントの稼働セッション数・さぼり警告・期限超過タスクを監視します。リアルタイム詳細（作業内容・完了操作）は自宅PCのローカルモニタから。'
       : isApiCosts
       ? 'Google Cloud（プロジェクト creators-map）の今月の費用推定です。AI日記の画像生成枚数から計算し、予算¥1,000に届く日と月末の見込みを出します。'
+      : isSnsTrend
+      ? "週次で集計したSNSトレンドのレポートです。トレンド要約・N's factoryへの示唆・推奨アクション・収集記事を週ごとに確認できます。"
       : isChatlog
       ? 'ショールームのAI接客ログを一覧表示します。幕僚キャラ接客／みんなのチャットの2系統を切り替え、期間・担当・本文で絞り込み、CSV出力できます（月次使用量レポートの集計元）。'
       : isJhcsDl
@@ -6548,6 +6575,13 @@ function setAdminTab(tab) {
     const acFrame = document.getElementById('apiCostsFrame');
     if (acFrame && acFrame.src.indexOf('api-costs.html') === -1 && acFrame.dataset.src) {
       acFrame.src = acFrame.dataset.src;
+    }
+  }
+  if (isSnsTrend) {
+    // 初回表示時のみ src をセット（認証は unlockAdmin() が sns-trend 側のセッションキーを付与済み）
+    const stFrame = document.getElementById('snsTrendFrame');
+    if (stFrame && stFrame.src.indexOf('sns-trend.html') === -1 && stFrame.dataset.src) {
+      stFrame.src = stFrame.dataset.src;
     }
   }
   if (isChatlog) {
