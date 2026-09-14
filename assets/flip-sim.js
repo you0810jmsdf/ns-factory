@@ -69,7 +69,7 @@
     try { restoreSides.forEach(sd => togglePageSide(sd)); } catch (e) {}
     restoreSides = null;
   }
-  // ツールが横向き（リングが上）レイアウトで描画しているとき #preview に data-orient="landscape" が付く
+  // ツールが上下見開き（リングが上）レイアウトで描画しているとき #preview に data-orient="landscape" が付く
   function isLandscape() { const p = document.getElementById('preview'); return !!(p && p.dataset.orient === 'landscape'); }
   function render() {
     const s = sp[idx]; if (!s) return;
@@ -107,7 +107,7 @@
       const parts = [];
       if (s.left) parts.push('上：' + cap(s.leftLeaf, '裏', s.left));
       if (s.right) parts.push('下：' + cap(s.rightLeaf, '表', s.right));
-      note.textContent = (idx === 0 ? '表紙側。リングを上にして、下のページから始まります。' : (idx === sp.length - 1 ? '最後の紙の裏。' : 'リングを上にした向き（上へめくる）。')) + '　' + parts.join('／');
+      note.textContent = (idx === 0 ? '表紙側。上下見開き（リングが上）で、下のページから始まります。' : (idx === sp.length - 1 ? '最後の紙の裏。' : '上下見開き（上へめくる）。上＝前の紙の裏、下＝次の紙の表。')) + '　' + parts.join('／');
     } else {
       note.textContent = idx === 0 ? '表紙側（1枚目の表）。左綴じで、右ページから始まります。' : (idx === sp.length - 1 ? '最後の紙の裏。' : '左＝前の紙の裏、右＝次の紙の表。');
     }
