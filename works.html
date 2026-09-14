@@ -653,6 +653,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       .rank-top3-item:hover { transform: none; }
     }
 
+    /* 在庫ありの作品では hidden で隠す。display 指定が hidden に勝って空の赤い帯が出ていた（2026-09-14 修正） */
+    .modal-availability[hidden] { display: none; }
     .modal-availability {
       display: inline-block;
       margin-bottom: 12px;
