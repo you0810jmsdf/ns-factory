@@ -141,7 +141,7 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* === MODULE: CSS Variables === */
 :root {
-  --day-label-w: 15mm; --day-num-font: 6mm; --day-wd-font: 2.2mm; --day-block-h: 20mm;
+  --day-label-w: 15mm; --day-num-font: 6mm; --day-wd-font: 2.2mm; --day-block-h: 13mm;
   --text-wm-size: 6mm; --text-wm-angle: -30deg; --text-wm-x: 0mm; --text-wm-y: 0mm;
   --month-cal-top: 10mm; --month-cal-right: 0mm;
   --font-brand: 'Times New Roman', Times, serif; --font-date-num: 'Noto Sans JP', sans-serif; --font-date-wd: 'Noto Sans JP', sans-serif;
@@ -299,7 +299,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>曜日文字</label>
       <input type="range" id="dayWdFont" min="1" max="5" step="0.1" value="2.2" oninput="setCSSVar('--day-wd-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">2.2</span>mm</div>
     <div class="ctrl-row"><label>各日の高さ</label>
-      <input type="range" id="dayBlockH" min="8" max="26" step="0.5" value="20" oninput="updateDayBlockH(this.value)"><span class="val" id="dayBlockHVal">20</span>mm</div>
+      <input type="range" id="dayBlockH" min="6" max="15" step="0.5" value="13" oninput="updateDayBlockH(this.value)"><span class="val" id="dayBlockHVal">13</span>mm</div>
     <div class="ctrl-row"><label>各日の罫線</label>
       <input type="range" id="lineCount" min="0" max="8" step="1" value="3" oninput="updateLineCount(this.value)"><span class="val" id="lineCountVal">3</span>本</div>
     <div class="ctrl-row"><label>メモ行数</label>
@@ -898,6 +898,8 @@ function resetSettings() {
 const HISTORY_ENTRIES = [
   { date: '2026-09-11', type: 'feat', title: 'Mini6 週間印刷ツールを新規作成',
     detail: 'Mini6週間印刷ツールを土台に、Mini6（80×128mm）版を作成しました。A4縦に2列×2段の4面付け。穴は6穴（上端から 16.3 / 35.5 / 54.7 / 73.9 / 93.1 / 112.3 mm・綴じ側の端から6.3mm。当工房の基準データ（Mini6 Refill.svg）と同じ。穴間隔19.2mm）。両面印刷は長辺綴じで、表面に右ページ（左穴）・裏面に左ページ（右穴）を置くので、切り分けた紙はすべて同じ向きのまま重ねて綴じられます。綴じ後プレビューで見開きの順と穴の位置を確認できます。' },
+  { date: '2026-09-14', type: 'fix', title: '初期設定で1週間が入りきらず、後半の日とメモ欄が消えていた不具合を修正',
+    detail: '「各日の高さ」の初期値がA5スリム用の20mmのままで、128mmのページに7日分（140mm）が収まっていませんでした。初期値を13mmにし、スライダーの範囲も6〜15mmに変更しました。以前に設定を保存している場合は「設定リセット」か「各日の高さ」を13mm以下にしてください。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
