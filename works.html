@@ -3020,22 +3020,30 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         const callback = `worksCallback_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
         const script = document.createElement('script');
         const timer = window.setTimeout(() => {
-          cleanup();
+          cleanup(true);
           reject(new Error('JSONP timeout'));
         }, timeout);
 
-        function cleanup() {
+        // late=true（打ち切り・失敗）のときは受け取り口を消さずに空の関数へ差し替え、10分後に片付ける。
+        //   ⛔ すぐ delete しないこと。読み込み途中の script は止められず、GAS の返事が遅れて届くと
+        //   「worksCallback_… is not defined」の ReferenceError になる（2026-09-14 本番で実測。SNS動画メーカーと同じ対処）。
+        function cleanup(late) {
           window.clearTimeout(timer);
-          delete window[callback];
           script.remove();
+          if (late) {
+            window[callback] = () => {};
+            window.setTimeout(() => { delete window[callback]; }, 10 * 60 * 1000);
+          } else {
+            delete window[callback];
+          }
         }
 
         window[callback] = (data) => {
-          cleanup();
+          cleanup(false);
           resolve(data);
         };
         script.onerror = () => {
-          cleanup();
+          cleanup(true);
           reject(new Error('JSONP failed'));
         };
         script.src = `${url}&callback=${encodeURIComponent(callback)}`;
