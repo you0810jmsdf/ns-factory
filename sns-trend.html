@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>SNSトレンド | N's factory</title>
+<style>
+/* api-costs.html と同じダーク管制室テーマ */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#0d1117;color:#e6edf3;min-height:100vh;
+}
+.topbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 20px;border-bottom:1px solid #30363d;background:#161b22;
+}
+.topbar h1{margin:0;font-size:17px;letter-spacing:.04em;color:#c9a96e}
+.live{font-size:11px;font-weight:bold;padding:3px 10px;border-radius:999px;
+  background:#12331f;color:#4ade80;border:1px solid #2ea043}
+.live.stale{background:#3a2d10;color:#e3b341;border-color:#9e6a03}
+.live.down{background:#3d1214;color:#ff9d9d;border-color:#f85149}
+.meta{font-size:11px;color:#9aa4af;line-height:1.5}
+.wrap{padding:16px 20px 60px;display:grid;gap:14px;max-width:1000px}
+.panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px 16px;min-width:0}
+.panel h2{margin:0 0 10px;font-size:14px;color:#c9a96e;letter-spacing:.03em}
+.panel h3{margin:18px 0 8px;font-size:13px;color:#c9d1d9}
+.panel h3:first-of-type{margin-top:4px}
+.empty{color:#9aa4af;font-size:13px;padding:8px 2px}
+.err{display:none;margin:0;padding:10px 12px;border-radius:8px;
+  background:#3d1214;border:1px solid #f85149;color:#ff9d9d;font-size:12px;line-height:1.7}
+.err button{margin-top:8px;font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;
+  background:#0d1117;border:1px solid #f85149;color:#ff9d9d}
+.info{display:none;margin:0;padding:10px 12px;border-radius:8px;background:#1c2333;border:1px solid #3a4a6b;
+  color:#9ab4e6;font-size:12px;line-height:1.7}
+.info button{margin-top:8px;font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;
+  background:#0d1117;border:1px solid #3a4a6b;color:#9ab4e6}
+
+.week-list{display:flex;flex-wrap:wrap;gap:8px}
+.week-chip{
+  font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;
+  background:#0d1117;border:1px solid #30363d;color:#9aa4af;
+}
+.week-chip:hover{border-color:#c9a96e;color:#e6edf3}
+.week-chip.active{background:#2a2115;border-color:#c9a96e;color:#c9a96e;font-weight:bold}
+
+.report-date{font-size:20px;font-weight:bold;color:#e6edf3;margin:0 0 4px}
+.report-origin{font-size:11px;color:#8b949e;margin:0 0 14px}
+.summary-box{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:14px 16px;
+  font-size:14px;line-height:1.9;color:#e6edf3;white-space:pre-wrap}
+
+ul.insight-list{margin:0;padding-left:20px;font-size:13px;line-height:1.9;color:#c9d1d9}
+
+.action-card{
+  background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:10px 14px;margin-bottom:8px;
+  display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;
+}
+.action-card.high{border-color:#c9a96e;background:#231c10}
+.action-priority{
+  flex:0 0 auto;font-size:11px;font-weight:bold;padding:3px 9px;border-radius:999px;
+  background:#21262d;color:#9aa4af;border:1px solid #30363d;white-space:nowrap;
+}
+.action-priority.high{background:#3a2d10;color:#e3b341;border-color:#9e6a03}
+.action-priority.mid{background:#122333;color:#79c0ff;border-color:#1f4870}
+.action-priority.low{background:#161b22;color:#8b949e;border-color:#30363d}
+.action-body{flex:1 1 200px;min-width:0}
+.action-title{font-size:13px;color:#e6edf3;line-height:1.6}
+.action-deadline{font-size:11px;color:#e3b341;margin-top:3px}
+
+ul.article-list{margin:0;padding-left:0;list-style:none;font-size:13px;line-height:1.9}
+ul.article-list li{padding:6px 0;border-bottom:1px solid #21262d}
+ul.article-list li:last-child{border-bottom:none}
+ul.article-list a{color:#79c0ff;text-decoration:none}
+ul.article-list a:hover{text-decoration:underline}
+.article-source{color:#8b949e;font-size:11px;margin-right:6px}
+
+.auth-overlay{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(1,4,9,.8);backdrop-filter:blur(4px);
+}
+.auth-card{
+  width:min(420px,100%);background:#161b22;border:1px solid #30363d;border-radius:18px;
+  padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.5);
+}
+.auth-card h2{margin:0 0 8px;font-size:20px;color:#e6edf3}
+.auth-card p{margin:0 0 14px;font-size:13px;color:#9aa4af;line-height:1.6}
+.auth-card input{
+  width:100%;border:1px solid #30363d;border-radius:8px;padding:10px 12px;font-size:14px;
+  margin-bottom:10px;outline:none;background:#0d1117;color:#e6edf3;
+}
+.auth-card input:focus{border-color:#c9a96e}
+.auth-btn{
+  width:100%;padding:10px;background:#c9a96e;color:#161310;border:none;border-radius:8px;
+  font-size:14px;font-weight:bold;cursor:pointer;
+}
+.auth-btn:hover{background:#d9bd88}
+.auth-error{min-height:18px;margin:6px 0 0;font-size:12px;color:#ff9d9d}
+.auth-locked{overflow:hidden}
+@media(max-width:640px){ .wrap{padding:12px 12px 60px} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>&#128200; SNSトレンド</h1>
+  <span class="live" id="liveBadge">読み込み中…</span>
+  <div class="meta" id="updatedAt" style="margin-left:auto"></div>
+</div>
+
+<div class="wrap">
+  <div class="err" id="loadErr"></div>
+  <div class="info" id="loadInfo"></div>
+
+  <div class="panel" id="weekListPanel" style="display:none">
+    <h2>週を選ぶ</h2>
+    <div class="week-list" id="weekList"></div>
+  </div>
+
+  <div class="panel" id="reportPanel" style="display:none">
+    <p class="report-date" id="reportDate"></p>
+    <p class="report-origin" id="reportOrigin"></p>
+
+    <h3>トレンド要約</h3>
+    <div class="summary-box" id="reportSummary"></div>
+
+    <h3>N's factoryへの示唆</h3>
+    <ul class="insight-list" id="reportInsights"></ul>
+
+    <h3>推奨アクション</h3>
+    <div id="reportActions"></div>
+
+    <h3>収集記事</h3>
+    <ul class="article-list" id="reportArticles"></ul>
+  </div>
+</div>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <h2>N's Factory</h2>
+    <p>SNSトレンドレポート<br>サイト管理者パスワードを入力してください。</p>
+    <input type="password" id="authPassword" placeholder="パスワード" onkeydown="if(event.key==='Enter')submitAuth()">
+    <button class="auth-btn" onclick="submitAuth()">ログイン</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// 認証（SHA-256照合）。admin.html と同じ nsf_admin_key を使うため、
+// admin.html の iframe から開かれた場合は再入力不要。
+// 画面側の照合は出し分けにすぎない。中身はGASがキーを確認してから返す。
+// ================================================================
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const SESSION_KEY = 'nsfactory-sns-trend-auth';
+const KEY_STORE = 'nsf_admin_key';  // admin.html と共通
+// 幕僚計画GAS。作戦幕僚が並行整備している getSnsTrend の窓口。
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec';
+const REPORT_LIMIT = 52;
+
+function sha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
+function getKey() {
+  try { return sessionStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; }
+}
+function checkSession() {
+  try { return sessionStorage.getItem(SESSION_KEY) === 'ok' && !!getKey(); } catch (e) { return false; }
+}
+function unlockAuth() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.classList.remove('auth-locked');
+  load();
+}
+function submitAuth() {
+  const input = document.getElementById('authPassword');
+  const errEl = document.getElementById('authError');
+  sha256(input.value).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, 'ok');
+        sessionStorage.setItem(KEY_STORE, input.value);
+      } catch (e) {}
+      unlockAuth();
+    } else {
+      errEl.textContent = 'パスワードが違います';
+    }
+  }).catch(() => { errEl.textContent = '照合に失敗しました（https環境で開いてください）'; });
+}
+
+// ================================================================
+// 表示
+// ================================================================
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PRIORITY_LABEL = { '高': '高', '中': '中', '低': '低' };
+const PRIORITY_CLASS = { '高': 'high', '中': 'mid', '低': 'low' };
+
+let REPORTS = [];
+let SELECTED_INDEX = 0;
+
+function renderWeekList() {
+  const panel = document.getElementById('weekListPanel');
+  const list = document.getElementById('weekList');
+  if (!REPORTS.length) { panel.style.display = 'none'; return; }
+  panel.style.display = REPORTS.length > 1 ? 'block' : 'none';
+  list.innerHTML = REPORTS.map((r, i) =>
+    '<span class="week-chip' + (i === SELECTED_INDEX ? ' active' : '') + '" data-idx="' + i + '">' + esc(r.date || '(日付不明)') + '</span>'
+  ).join('');
+  list.querySelectorAll('.week-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      SELECTED_INDEX = Number(chip.dataset.idx);
+      renderWeekList();
+      renderReport(REPORTS[SELECTED_INDEX]);
+    });
+  });
+}
+
+function renderReport(r) {
+  const panel = document.getElementById('reportPanel');
+  if (!r) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+
+  document.getElementById('reportDate').textContent = (r.date || '(日付不明)') + ' の週';
+  document.getElementById('reportOrigin').textContent =
+    r.origin === 'backfill' ? '過去分の遡及集計' : r.origin === 'weekly' ? '週次自動集計' : '';
+
+  document.getElementById('reportSummary').textContent = r.summary || '（要約はありません）';
+
+  const insights = Array.isArray(r.insights) ? r.insights : [];
+  document.getElementById('reportInsights').innerHTML = insights.length
+    ? insights.map(t => '<li>' + esc(t) + '</li>').join('')
+    : '<li class="empty" style="list-style:none;margin-left:-20px">示唆はありません</li>';
+
+  const actions = Array.isArray(r.actions) ? r.actions : [];
+  document.getElementById('reportActions').innerHTML = actions.length
+    ? actions.map(a => {
+        const pr = String(a.priority || '');
+        const cls = PRIORITY_CLASS[pr] || 'low';
+        const label = PRIORITY_LABEL[pr] || (pr || '未設定');
+        const deadline = a.deadline ? '<div class="action-deadline">期限: ' + esc(a.deadline) + '</div>' : '';
+        return '<div class="action-card' + (cls === 'high' ? ' high' : '') + '">'
+          + '<span class="action-priority ' + cls + '">優先度: ' + esc(label) + '</span>'
+          + '<div class="action-body"><div class="action-title">' + esc(a.title || '（タイトルなし）') + '</div>' + deadline + '</div>'
+          + '</div>';
+      }).join('')
+    : '<div class="empty">推奨アクションはありません</div>';
+
+  const articles = Array.isArray(r.articles) ? r.articles : [];
+  document.getElementById('reportArticles').innerHTML = articles.length
+    ? articles.map(a => {
+        const title = esc(a.title || '（タイトルなし）');
+        const source = a.source ? '<span class="article-source">' + esc(a.source) + '</span>' : '';
+        const body = a.url
+          ? '<a href="' + esc(a.url) + '" target="_blank" rel="noopener">' + title + '</a>'
+          : title;
+        return '<li>' + source + body + '</li>';
+      }).join('')
+    : '<li class="empty" style="border-bottom:none">収集記事はありません</li>';
+}
+
+// ================================================================
+// 取得（GASの間欠障害に備えて再送。読み取り専用なので再送しても副作用はない）
+// ================================================================
+async function gasPost(body) {
+  // Content-Type: text/plain で simple request にし CORS preflight を回避（GAS定石）
+  const res = await fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(body) });
+  const text = await res.text();
+  // HTTP 200 でもHTMLが返ることがある。本文先頭で判定する
+  if (!res.ok || text.trim().startsWith('<')) throw new Error('GASに届きませんでした（HTTP ' + res.status + '）');
+  return JSON.parse(text);
+}
+async function gasPostRetry(body) {
+  const delays = [800, 1600, 3200];
+  for (let i = 0; ; i++) {
+    try { return await gasPost(body); }
+    catch (e) {
+      if (i >= delays.length) throw e;
+      await new Promise(r => setTimeout(r, delays[i]));
+    }
+  }
+}
+
+function showErr(html) {
+  const el = document.getElementById('loadErr');
+  document.getElementById('loadInfo').style.display = 'none';
+  el.innerHTML = html + '<br><button type="button" onclick="load()">もう一度読み込む</button>';
+  el.style.display = 'block';
+}
+function showInfo(html) {
+  const el = document.getElementById('loadInfo');
+  document.getElementById('loadErr').style.display = 'none';
+  el.innerHTML = html + '<br><button type="button" onclick="load()">もう一度読み込む</button>';
+  el.style.display = 'block';
+}
+
+async function load() {
+  const badge = document.getElementById('liveBadge');
+  badge.textContent = '読み込み中…'; badge.className = 'live';
+  document.getElementById('loadErr').style.display = 'none';
+  document.getElementById('loadInfo').style.display = 'none';
+  try {
+    const r = await gasPostRetry({ action: 'getSnsTrend', apiKey: getKey(), key: getKey(), limit: REPORT_LIMIT });
+    if (r.error === 'unknown action') {
+      document.getElementById('weekListPanel').style.display = 'none';
+      document.getElementById('reportPanel').style.display = 'none';
+      badge.textContent = '⏳ 準備中'; badge.className = 'live stale';
+      showInfo('⏳ SNSトレンドの窓口はまだ反映されていません（作戦幕僚が並行整備中）。しばらくしてからもう一度お試しください。');
+      return;
+    }
+    if (r.error) throw new Error(r.error === 'unauthorized' ? '認証に失敗しました（パスワードをご確認ください）' : r.error);
+    const reports = Array.isArray(r.reports) ? r.reports : [];
+    REPORTS = reports;
+    SELECTED_INDEX = 0;
+    if (!reports.length) {
+      document.getElementById('weekListPanel').style.display = 'none';
+      document.getElementById('reportPanel').style.display = 'none';
+      badge.textContent = '● 0件'; badge.className = 'live';
+      showInfo('まだレポートがありません。週次の自動集計が最初の1回を終えると、ここに表示されます。');
+      document.getElementById('updatedAt').textContent = '';
+      return;
+    }
+    renderWeekList();
+    renderReport(reports[0]);
+    document.getElementById('updatedAt').textContent = '最新: ' + esc(reports[0].date || '') + ' の週（全' + reports.length + '件）';
+    badge.textContent = '● 最新'; badge.className = 'live';
+  } catch (e) {
+    badge.textContent = '✕ 取得失敗'; badge.className = 'live down';
+    showErr('⚠ ' + esc(e.message));
+  }
+}
+
+if (checkSession()) {
+  document.getElementById('authOverlay').style.display = 'none';
+  unlockAuth();
+} else {
+  document.body.classList.add('auth-locked');
+}
+</script>
+</body>
+</html>
