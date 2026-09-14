@@ -1,4 +1,4 @@
-// 公開ツール共通の「不具合を報告」ボタン。access-counter.js と同じGASへ GET で送る。
+// 公開ツール共通の「改善要望」ボタン（不具合もここから）。access-counter.js と同じGASへ GET で送る。
 // ⛔ ブラウザからGASへは GET で送る（POSTはCORSで応答が読めない）。rid で二重送信を防ぐ。
 (function () {
   const GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
@@ -21,10 +21,10 @@
     'border:1px solid rgba(120,86,60,.35);background:rgba(255,255,255,.94);color:#6f4e37;',
     'font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.10);',
     'font-family:-apple-system,"Hiragino Sans",Meiryo,sans-serif;'
-  ].join(''), '🐞 不具合を報告');
+  ].join(''), '💡 改善要望');
   btn.id = 'nsf-bug-btn';
   btn.type = 'button';
-  btn.setAttribute('aria-label', '不具合を報告する');
+  btn.setAttribute('aria-label', '改善要望・不具合を送る');
 
   const overlay = el('div', 'position:fixed;inset:0;z-index:960;background:rgba(15,15,15,.55);display:none;align-items:center;justify-content:center;padding:16px;');
   overlay.id = 'nsf-bug-overlay';
@@ -33,7 +33,7 @@
     'font-family:-apple-system,"Hiragino Sans",Meiryo,sans-serif;color:#1d1d1f;font-size:13px;line-height:1.7;'
   ].join(''));
   card.innerHTML = [
-    '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">不具合・ご要望を送る</div>',
+    '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">改善要望・不具合を送る</div>',
     '<div style="font-size:12px;color:#6e6e73;margin-bottom:12px;">うまく動かない・印刷がずれる・こうしてほしい等、そのまま書いてください。ページ名は自動で添えます。</div>',
     '<textarea id="nsf-bug-msg" rows="5" maxlength="1000" placeholder="例：A4横で印刷したら左右が3mmずれる" style="width:100%;box-sizing:border-box;padding:10px;border:1.5px solid #d2d2d7;border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;"></textarea>',
     '<input id="nsf-bug-contact" type="text" maxlength="200" placeholder="返信先（メール等・任意）" style="width:100%;box-sizing:border-box;margin-top:8px;padding:9px 10px;border:1.5px solid #d2d2d7;border-radius:8px;font-size:13px;font-family:inherit;">',
