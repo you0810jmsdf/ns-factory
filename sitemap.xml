@@ -227,4 +227,36 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+
+  <!-- N's pattern（型紙PDF・2026-09-14 公開）。旧 horseshoe-coin-case.html（¥2,800版・noindex）は載せない -->
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/patterns/</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/patterns/jhcs-02-square-coin-case.html</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/patterns/jhcs-03a-pass-case.html</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/patterns/jhcs-05b-tote-key-case.html</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/patterns/jhcs-06b-horseshoe-coin-case.html</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>
