@@ -2564,6 +2564,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }
 
     function applyData(data) {
+      const prevActive = activeWork;   // 差し替え前に詳細で開いていた作品
       works = toWorks(data)
         .filter((work) => work.folderId || (Array.isArray(work.photos) && work.photos.length))
         .sort((a, b) => {
@@ -2571,6 +2572,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           const numB = parseInt((b.id || '').replace(/\D/g, ''), 10) || 0;
           return numB - numA;
         });
+      rebindActiveWork(prevActive);
       applyUrlFilter();
       buildFilters();
       render();
@@ -2578,6 +2580,34 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       openDeepLinkedWork();
       // 注目度ランキングは作品データが揃ってから一度だけ取りにいく
       if (!window.__nsfRankLoaded) { window.__nsfRankLoaded = true; loadRanking(); }
+    }
+
+    // 詳細を開いたまま最新データ（GAS）が届いたとき、開いている作品を新しいデータの同じ作品に付け替えて描き直す。
+    //   付け替えないと、SOLDOUT・価格などが古い静的データのまま残り、閉じて開き直すまで直らなかった（2026-09-14 修正）。
+    // ⛔ 写真は古いデータの側で読み込み済み・読み込み中なので引き継ぐ（引き継がないと代表写真1枚に戻る）。
+    //    読み込み中の Promise は古い作品に写真を書くので、終わったら新しい作品へ写して描き直す。
+    function rebindActiveWork(prev) {
+      if (!prev || !prev.id || !modal.classList.contains('open')) return;
+      const next = works.find((w) => w.id === prev.id);
+      if (!next || next === prev) return;
+      if (prev.photosLoaded || prev.photosLoading) {
+        next.photos = prev.photos;
+        next.videos = prev.videos;
+        next.photosLoaded = prev.photosLoaded;
+        next.photosLoading = prev.photosLoading;
+        if (prev.photosLoading) {
+          prev.photosLoading.then(() => {
+            next.photos = prev.photos;
+            next.videos = prev.videos;
+            next.photosLoaded = true;
+            next.photosLoading = false;
+            if (activeWork === next && modal.classList.contains('open')) updateModal();
+            render();
+          });
+        }
+      }
+      activeWork = next;
+      updateModal();
     }
 
     // ── 作品のカード販売（2026-09-14 事業主決定・配信GAS refill_sales）──────────────
