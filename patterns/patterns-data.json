@@ -1,0 +1,45 @@
+{
+  "_note": "N's pattern（型紙PDF）の商品データ。tools/build_pattern_pages.js がここから patterns/index.html と各詳細ページを生成する。価格の正本は配信GAS refill_sales の商品シート（ページの金額は表示時にGASの値で書き換わる）。code は商品シートのコードと一致させること。2026-09-14 事業主決定: 最初はJHCS講習の型紙4件（JHCSページ側はそのまま）・説明文はJHCSカリキュラムの文・写真は後で足す。",
+  "items": [
+    {
+      "code": "jhcs-02",
+      "slug": "jhcs-02-square-coin-case",
+      "lesson": "第02回",
+      "title": "スクエアコインケース",
+      "en": "Square Coin Case",
+      "price": 1500,
+      "summary": "直線裁断とコバ処理の基本を学びます。Leathercraft CADで型紙を設計し、ばねホック取り付けまで一人で完成させます。",
+      "photo": ""
+    },
+    {
+      "code": "jhcs-03A",
+      "slug": "jhcs-03a-pass-case",
+      "lesson": "第03回A",
+      "title": "パスケース",
+      "en": "Pass Case",
+      "price": 1500,
+      "summary": "薄革の正確な裁断・平縫い・コバ磨きをマスターします。ICカード・交通カードを収納できるパスケースを完成させます。",
+      "photo": ""
+    },
+    {
+      "code": "jhcs-05B",
+      "slug": "jhcs-05b-tote-key-case",
+      "lesson": "第05回B",
+      "title": "トートバッグ型キーケース",
+      "en": "Tote-bag Key Case",
+      "price": 1500,
+      "summary": "持ち手付きのトートバッグ型キーケースを制作します。複数のナスカン取り付けと立体縫いを学びます。",
+      "photo": ""
+    },
+    {
+      "code": "jhcs-06B",
+      "slug": "jhcs-06b-horseshoe-coin-case",
+      "lesson": "第06回B",
+      "title": "馬蹄型コインケース",
+      "en": "Horseshoe Coin Case",
+      "price": 1500,
+      "summary": "折り部の縫製処理と菱目穴間隔の調整方法をマスターします。ばねホックまたはジャンパーホック留めのコインケースを完成させます。",
+      "photo": ""
+    }
+  ]
+}
