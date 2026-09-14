@@ -124,7 +124,7 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
       <div class="price">¥1,500<small>税込</small></div>
       <div class="buy">
       <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
-      <a href="#" class="btn btn-gold" data-checkout="jhcs-05B" style="display:none">カードで購入する（¥<span data-price>1,500</span>）</a>
+      <a href="#" class="btn btn-gold" data-checkout="jhcs-05B" style="display:none"><span>カードで購入する（¥<span data-price>1,500</span>）</span></a><!-- 文字を1つの span に包む（.btn の gap が金額の前後に空きを作ったため・2026-09-14） -->
       <p class="note" data-checkout-on="jhcs-05B" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
       <a href="mailto:you0810jmsdf@gmail.com?subject=%E5%9E%8B%E7%B4%99%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E7%AC%AC05%E5%9B%9EB%20%E3%83%88%E3%83%BC%E3%83%88%E3%83%90%E3%83%83%E3%82%B0%E5%9E%8B%E3%82%AD%E3%83%BC%E3%82%B1%E3%83%BC%E3%82%B9%20%E5%9E%8B%E7%B4%99PDF%EF%BC%881%2C500%E5%86%86%EF%BC%89%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A" class="btn btn-line" data-checkout-on="jhcs-05B" style="display:none">銀行振込で申し込む（メール）</a>
       <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
@@ -158,7 +158,7 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
     <div class="price">¥1,500<small>税込</small></div>
     <div class="buy">
       <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
-      <a href="#" class="btn btn-gold" data-checkout="jhcs-05B" style="display:none">カードで購入する（¥<span data-price>1,500</span>）</a>
+      <a href="#" class="btn btn-gold" data-checkout="jhcs-05B" style="display:none"><span>カードで購入する（¥<span data-price>1,500</span>）</span></a><!-- 文字を1つの span に包む（.btn の gap が金額の前後に空きを作ったため・2026-09-14） -->
       <p class="note" data-checkout-on="jhcs-05B" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
       <a href="mailto:you0810jmsdf@gmail.com?subject=%E5%9E%8B%E7%B4%99%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E7%AC%AC05%E5%9B%9EB%20%E3%83%88%E3%83%BC%E3%83%88%E3%83%90%E3%83%83%E3%82%B0%E5%9E%8B%E3%82%AD%E3%83%BC%E3%82%B1%E3%83%BC%E3%82%B9%20%E5%9E%8B%E7%B4%99PDF%EF%BC%881%2C500%E5%86%86%EF%BC%89%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A" class="btn btn-line" data-checkout-on="jhcs-05B" style="display:none">銀行振込で申し込む（メール）</a>
       <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
