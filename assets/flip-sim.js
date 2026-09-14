@@ -69,25 +69,48 @@
     try { restoreSides.forEach(sd => togglePageSide(sd)); } catch (e) {}
     restoreSides = null;
   }
+  // ツールが横向き（リングが上）レイアウトで描画しているとき #preview に data-orient="landscape" が付く
+  function isLandscape() { const p = document.getElementById('preview'); return !!(p && p.dataset.orient === 'landscape'); }
   function render() {
     const s = sp[idx]; if (!s) return;
+    const ls = isLandscape();
     stage.innerHTML = '';
+    stage.classList.toggle('nsf-flip-ls', ls);
     const cap = (n, side, f) => `紙 ${n + 1} の${side}` + (f.src ? `（${f.src}）` : '');
     const L = pageBox(s.left, s.left ? cap(s.leftLeaf, '裏', s.left) : '');
     const R = pageBox(s.right, s.right ? cap(s.rightLeaf, '表', s.right) : '');
     stage.appendChild(L); stage.appendChild(R);
     // 画面に収まるよう縮小
     requestAnimationFrame(() => {
-      const avail = Math.min(stage.clientWidth, window.innerWidth - 48);
+      const avail = Math.min(stage.parentElement.clientWidth, window.innerWidth - 48);
       const availH = window.innerHeight - 170;
       const totalW = L.offsetWidth + R.offsetWidth + 24, totalH = Math.max(L.offsetHeight, R.offsetHeight);
-      const k = Math.min(1, avail / totalW, availH / totalH);
-      stage.style.transform = `scale(${k})`;
-      stage.style.transformOrigin = 'top center';
-      stage.parentElement.style.height = (totalH * k + 40) + 'px';
+      if (ls) {
+        // 手帳を時計回りに90°回した見え方: 見開き全体を回す（左ページ＝上、右ページ＝下、綴じ具は間）
+        const k = Math.min(1, avail / totalH, availH / totalW);
+        stage.style.position = 'absolute'; stage.style.top = '0';
+        stage.style.left = `calc(50% - ${totalH * k / 2}px)`;
+        stage.style.transformOrigin = 'top left';
+        stage.style.transform = `translate(${totalH * k}px, 0) rotate(90deg) scale(${k})`;
+        stage.parentElement.style.height = (totalW * k + 40) + 'px';
+      } else {
+        const k = Math.min(1, avail / totalW, availH / totalH);
+        stage.style.position = ''; stage.style.top = ''; stage.style.left = '';
+        stage.style.transform = `scale(${k})`;
+        stage.style.transformOrigin = 'top center';
+        stage.parentElement.style.height = (totalH * k + 40) + 'px';
+      }
     });
     counter.textContent = `見開き ${idx + 1} / ${sp.length}`;
-    note.textContent = idx === 0 ? '表紙側（1枚目の表）。左綴じで、右ページから始まります。' : (idx === sp.length - 1 ? '最後の紙の裏。' : '左＝前の紙の裏、右＝次の紙の表。');
+    if (ls) {
+      // ページ内の説明帯は回ると読めないので、ここに書く
+      const parts = [];
+      if (s.left) parts.push('上：' + cap(s.leftLeaf, '裏', s.left));
+      if (s.right) parts.push('下：' + cap(s.rightLeaf, '表', s.right));
+      note.textContent = (idx === 0 ? '表紙側。リングを上にして、下のページから始まります。' : (idx === sp.length - 1 ? '最後の紙の裏。' : 'リングを上にした向き（上へめくる）。')) + '　' + parts.join('／');
+    } else {
+      note.textContent = idx === 0 ? '表紙側（1枚目の表）。左綴じで、右ページから始まります。' : (idx === sp.length - 1 ? '最後の紙の裏。' : '左＝前の紙の裏、右＝次の紙の表。');
+    }
   }
   function go(d) { idx = Math.max(0, Math.min(sp.length - 1, idx + d)); render(); }
   function open() {
@@ -115,6 +138,7 @@
       '.nsf-flip-blank,.nsf-flip-none{display:flex;align-items:center;justify-content:center;color:#999;font-size:14px}',
       '.nsf-flip-none{width:220px;height:300px;background:transparent;box-shadow:none;border:1px dashed #555}',
       '.nsf-flip-cap{position:absolute;left:0;right:0;bottom:0;background:rgba(26,26,46,.85);color:#fff;font-size:11px;padding:4px 8px;text-align:center}',
+      '.nsf-flip-ls .nsf-flip-cap{display:none}',
       '#nsf-flip-btn{position:fixed;right:12px;bottom:58px;z-index:950;padding:8px 12px;border-radius:999px;border:1px solid rgba(120,86,60,.35);background:rgba(255,255,255,.94);color:#6f4e37;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.10);font-family:-apple-system,"Hiragino Sans",Meiryo,sans-serif}',
       '@media print{#nsf-flip-btn,#nsf-flip-ov{display:none!important}}',
     ].join('');
