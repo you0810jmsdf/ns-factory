@@ -169,8 +169,14 @@ body.panel-open #preview { margin-left: 280px; }
   .dbox:hover { outline: 0.4mm dashed #7ec8e3; outline-offset: 0.6mm; }
   .dbox.dragging { outline: 0.4mm solid #7ec8e3; outline-offset: 0.6mm; }
 }
-.dbox-row input[type=number] { width: 52px; flex: none; }
-.dbox-row .wdl { min-width: 24px; color: #7ec8e3; font-weight: 700; }
+.dbox-row { display: grid; grid-template-columns: 22px 10px 1fr 36px; align-items: center; gap: 2px 4px; margin-bottom: 4px; }
+.dbox-row .wdl { color: #7ec8e3; font-weight: 700; grid-row: span 2; }
+.dbox-row .ax { color: #aaa; font-size: 9px; }
+.dbox-row input[type=range] { width: 100%; min-width: 0; margin: 0; }
+.dbox-row .val { font-size: 9px; }
+.dbox-grid { display: grid; grid-template-columns: 30px 1fr 36px; align-items: center; gap: 2px 4px; margin-bottom: 4px; }
+.dbox-grid label { min-width: 0; font-size: 9px; }
+.dbox-grid input[type=range] { width: 100%; min-width: 0; margin: 0; }
 body.img-mode #layoutSection .img-na { display: block; }
 #layoutSection .img-na { display: none; font-size: 9px; color: #f0b27a; margin-bottom: 4px; }
 
@@ -356,10 +362,14 @@ body.img-mode #layoutSection .img-na { display: block; }
         <input type="range" id="dboxWdSize" min="1.5" max="6" step="0.1" value="2.4" oninput="setDboxVar('--dbox-wd-size', this.value+'mm', this)"><span class="val">2.4</span>mm</div>
       <div class="ctrl-row"><label>日付の色</label><input type="color" id="dboxNumColor" value="#333333" oninput="setDboxVar('--dbox-num-color', this.value)" style="flex:none;width:40px;height:22px;padding:0;">
         <label style="min-width:0;margin-left:8px;">曜日の色</label><input type="color" id="dboxWdColor" value="#666666" oninput="setDboxVar('--dbox-wd-color', this.value)" style="flex:none;width:40px;height:22px;padding:0;"></div>
-      <div style="font-size:9px;color:#aaa;line-height:1.6;margin:6px 0 3px;">日付枠の位置はページ左上からの mm（X＝左右・Y＝上下、枠の中心）。プレビューの日付をドラッグしても動かせます。</div>
-      <div class="ctrl-row dbox-row"><label>等間隔に並べる</label>
-        X<input type="number" id="dboxGridX" value="74" step="0.5"> 上端<input type="number" id="dboxGridY0" value="20" step="0.5"> 間隔<input type="number" id="dboxGridPitch" value="28" step="0.5">
-        <button class="btn-secondary" onclick="applyDboxGrid()">適用</button></div>
+      <div style="font-size:9px;color:#aaa;line-height:1.6;margin:6px 0 3px;">日付枠の位置（ページ左上からの mm・枠の中心）。スライダーを動かすとその場でプレビューに反映します。プレビューの日付を直接ドラッグしても動かせます。矢印キーで 0.5mm ずつ微調整できます。</div>
+      <div style="font-size:10px;color:#ccc;margin:4px 0 2px;">7個まとめて（等間隔）</div>
+      <div class="dbox-grid">
+        <label>左右</label><input type="range" id="dboxGridX" min="0" max="148" step="0.5" value="74" oninput="applyDboxGrid()"><span class="val" id="dboxGridXVal">74</span>
+        <label>上端</label><input type="range" id="dboxGridY0" min="0" max="210" step="0.5" value="20" oninput="applyDboxGrid()"><span class="val" id="dboxGridY0Val">20</span>
+        <label>間隔</label><input type="range" id="dboxGridPitch" min="5" max="40" step="0.5" value="28" oninput="applyDboxGrid()"><span class="val" id="dboxGridPitchVal">28</span>
+      </div>
+      <div style="font-size:10px;color:#ccc;margin:6px 0 2px;">1個ずつ</div>
       <div id="dboxRows"></div>
       <div class="btn-row" style="margin-top:6px">
         <button class="btn-secondary" onclick="exportDesign()">デザイン設定を書き出す（JSON）</button>
@@ -1062,6 +1072,8 @@ const HISTORY_ENTRIES = [
     detail: 'A5スリム週間印刷ツールを土台に、A5（148×210mm）版を作成しました。A4横に2面付け（左右の余白はほぼ無し・中央のカット線で切り分け）、穴はA5規格の6穴（上端から32/51/70/140/159/178mm・綴じ側の端から6mm）。日付なしモード・上下見開き（リングが上）・綴じ後プレビュー・印刷ズレ補正はA5スリム版と同じです。実物での組み立て確認は未了です。' },
   { date: '2026-09-15', type: 'feat', title: 'デザイン画像モード（AI生成画像などを全面に敷き、日付と曜日だけを置く）を追加（試作）',
     detail: '左パネルの「🌹 デザイン画像」で画像モードにすると、選んだ画像（表面・裏面別も可）を1ページ全面に敷き、その上に日付と曜日の枠を7個置きます。枠はプレビュー上のドラッグでも、X／Yの数値でも動かせ、「等間隔に並べる」で一気に配置できます。濃さ・収め方・文字の白フチ・土日の色分け・日付と曜日の大きさと色を変えられます。配置と画像は「デザイン設定を書き出す（JSON）」で1ファイルにまとめて保存・配布でき、「読み込む」で再現できます。サンプル（バラ7輪）を同梱。画像モードでは罫線・メモ欄・ページ番号は出しません。上下見開きとは併用できません。' },
+  { date: '2026-09-16', type: 'improve', title: '画像モードの日付枠の位置指定をスライダーに（動かした瞬間に反映）',
+    detail: '数値を打ち込む方式は手間がかかるため（事業主指摘）、日付枠7個のX／Yと「7個まとめて（左右・上端・間隔）」をスライダーにしました。動かすとその場でプレビューが追従し、適用ボタンは不要です。矢印キーで0.5mmずつ微調整できます。プレビュー上のドラッグは引き続き使えます。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -1182,6 +1194,7 @@ function shrinkImage(dataUrl, type, cb) {
 function loadSampleBg() {
   bgOpt.front = SAMPLE_BG; bgOpt.back = null; bgOpt.on = true;
   if (bgOpt.boxes.every((b, i) => b.x === 74 && b.y === 20 + i * 28)) bgOpt.boxes = SAMPLE_BOXES.map(b => ({ ...b }));
+  syncDboxGridInputs(74, 24, 27);
   syncImgModeUI();
   if (opts.landscape) setOrient(false); else rerender();
 }
@@ -1191,13 +1204,20 @@ function buildDboxRows() {
   const wrap = document.getElementById('dboxRows');
   if (!wrap) return;
   const startDay = parseInt(document.getElementById('weekStartDay').value);
-  wrap.innerHTML = bgOpt.boxes.map((b, i) => `<div class="ctrl-row dbox-row"><span class="wdl">${isEN ? WD_EN_SHORT[(startDay + i) % 7] : WD_JA[(startDay + i) % 7]}</span>
-    X<input type="number" id="dboxX${i}" value="${b.x}" step="0.5" min="0" max="${PAGE_W_MM}" onchange="updateDbox(${i})">
-    Y<input type="number" id="dboxY${i}" value="${b.y}" step="0.5" min="0" max="${PAGE_H_MM}" onchange="updateDbox(${i})"></div>`).join('');
+  wrap.innerHTML = bgOpt.boxes.map((b, i) => `<div class="dbox-row"><span class="wdl">${isEN ? WD_EN_SHORT[(startDay + i) % 7] : WD_JA[(startDay + i) % 7]}</span>
+    <span class="ax">X</span><input type="range" id="dboxX${i}" value="${b.x}" step="0.5" min="0" max="${PAGE_W_MM}" oninput="updateDbox(${i})"><span class="val" id="dboxXVal${i}">${b.x}</span>
+    <span class="ax">Y</span><input type="range" id="dboxY${i}" value="${b.y}" step="0.5" min="0" max="${PAGE_H_MM}" oninput="updateDbox(${i})"><span class="val" id="dboxYVal${i}">${b.y}</span></div>`).join('');
 }
 function syncDboxInputs(i) {
+  const b = bgOpt.boxes[i];
   const x = document.getElementById(`dboxX${i}`), y = document.getElementById(`dboxY${i}`);
-  if (x) x.value = bgOpt.boxes[i].x; if (y) y.value = bgOpt.boxes[i].y;
+  if (x) x.value = b.x; if (y) y.value = b.y;
+  const xv = document.getElementById(`dboxXVal${i}`), yv = document.getElementById(`dboxYVal${i}`);
+  if (xv) xv.textContent = b.x; if (yv) yv.textContent = b.y;
+}
+function syncDboxGridInputs(x, y0, p) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; const sp = document.getElementById(id + 'Val'); if (sp) sp.textContent = v; };
+  set('dboxGridX', x); set('dboxGridY0', y0); set('dboxGridPitch', p);
 }
 function updateDbox(i) {
   const x = parseFloat(document.getElementById(`dboxX${i}`).value), y = parseFloat(document.getElementById(`dboxY${i}`).value);
@@ -1207,8 +1227,10 @@ function updateDbox(i) {
 function clampMM(v, max) { if (isNaN(v)) return 0; return Math.round(Math.min(max, Math.max(0, v)) * 2) / 2; }
 function applyDboxGrid() {
   const x = parseFloat(document.getElementById('dboxGridX').value), y0 = parseFloat(document.getElementById('dboxGridY0').value), p = parseFloat(document.getElementById('dboxGridPitch').value);
+  syncDboxGridInputs(x, y0, p);
   bgOpt.boxes = Array.from({ length: 7 }, (_, i) => ({ x: clampMM(x, PAGE_W_MM), y: clampMM(y0 + i * p, PAGE_H_MM) }));
-  buildDboxRows(); applyDboxPositions(); saveSettings();
+  for (let i = 0; i < 7; i++) syncDboxInputs(i);
+  applyDboxPositions(); saveSettings();
 }
 // 描画済みの全ページの枠を動かす（再描画せずに追従）
 function applyDboxPositions() {
