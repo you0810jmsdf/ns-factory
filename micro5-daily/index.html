@@ -67,6 +67,10 @@ body.panel-open #preview { margin-left: 280px; }
 .sheet-label { font-size: 11px; color: #666; margin-bottom: 4px; }
 .a4-sheet { width: 210mm; height: 297mm; background: white; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
 
+/* === MODULE: 上下見開き（リングが上）レイアウト === 中身を反時計回りに90°回して置く。⛔ overflow:hidden 禁止（PDFが半分欠ける） */
+.ls-rot { position: absolute; left: 0; top: 0; width: 105mm; height: 50mm; transform-origin: 0 0; transform: translateY(105mm) rotate(-90deg); padding: 1.5mm 1.5mm; display: flex; flex-direction: column; }
+.ls-rot .time-grid { border-bottom: none; }
+
 /* === MODULE: Slot === */
 .slot { position: absolute; width: 62mm; height: 105mm; overflow: hidden; display: flex; flex-direction: row; }
 .slot[data-pos="P0"] { left: 12mm; top: 43.5mm; }
@@ -210,6 +214,12 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle on" id="btnDated" onclick="setUndated(false)">日付あり</button>
       <button class="btn-toggle" id="btnUndated" onclick="setUndated(true)">日付なし</button>
     </div>
+    <div class="ctrl-row">
+      <label>使う向き</label>
+      <button class="btn-toggle on" id="btnPortrait" onclick="setOrient(false)">左右見開き</button>
+      <button class="btn-toggle" id="btnLandscape" onclick="setOrient(true)">上下見開き</button>
+    </div>
+    <div style="font-size:9px;color:#888;line-height:1.5;margin:-2px 0 5px;">左右見開き＝リングが左（通常）。上下見開き＝リングが上（手帳を時計回りに90°回して使う）で、見開き1面に1日（上：日付＋時間軸の前半／下：時間軸の後半＋メモ）。</div>
     <div class="ctrl-row dated-only" style="display:none">
       <label>モード</label>
       <select id="printMode" onchange="togglePrintMode()">
@@ -414,6 +424,13 @@ body.panel-open #preview { margin-left: 280px; }
         <li>日付・年月・曜日・祝日・月カレンダーを印刷せず、日付欄にデジタル風「8」の薄い透かし、曜日欄に7つの曜日を薄く出します。なぞる・塗って使います</li>
         <li>時間軸とメモ欄はそのまま。「透かし濃さ」で見え方を調整できます</li>
       </ul>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 上下見開き（リングが上）で使う場合</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>「印刷モード」の <b>使う向き</b> で「上下見開き」を選ぶと、手帳を時計回りに90°回して（リングを上にして）使うレイアウトになります。上下の見開き1面で1日：上のページに日付と時間軸の前半、下のページに時間軸の後半とメモ</li>
+        <li>最初の紙の表と最後の紙の裏は、罫線だけのメモページになります</li>
+        <li>用紙・両面設定・穴の位置は左右見開きと同じです。「📖 綴じ後プレビュー」も上下見開きで表示されます</li>
+        <li>※ 上下見開きは試作です。実物での組み立て確認が済んでいません</li>
+      </ul>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙と面付け</p>
       <ul style="padding-left:18px; margin:4px 0;">
         <li>A4を <b>縦向き</b> に使い、Micro5（62×105mm）を3列×2段に6面並べます。周囲の余白（カット線の外側）は切り落とします</li>
@@ -469,7 +486,7 @@ let opts = {
   showLogo: false, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false,
   showDateNum: true, showDateWd: true, showDateYm: true,
   showTimeLabel: true, showTimeLine: true, showHoliday: true,
-  undated: false, ghostStyle: 'seg', ghostWeekday: true
+  undated: false, ghostStyle: 'seg', ghostWeekday: true, landscape: false
 };
 
 // === MODULE: Utility ===
@@ -479,6 +496,7 @@ function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n)
 function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function toggleSidebar() { document.getElementById('controls').classList.toggle('open'); document.body.classList.toggle('panel-open'); }
 function setLang(en) { isEN = en; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); render(); }
+function setOrient(ls) { opts.landscape = ls; document.getElementById('btnPortrait').classList.toggle('on', !ls); document.getElementById('btnLandscape').classList.toggle('on', ls); render(); }
 function toggleOpt(key, btnId) { opts[key] = !opts[key]; document.getElementById(btnId).classList.toggle('on', opts[key]); render(); }
 function setUndated(u) {
   opts.undated = !!u;
@@ -678,6 +696,70 @@ function buildDailyPage(date, pageNum, holeSide, p) {
 </div>`;
 }
 
+// === MODULE: 上下見開き（リングが上）Page Builder ===
+// item: { kind: 'upper'|'lower'|'memo', date }。上=日付+時間軸前半、下=時間軸後半+メモ。1日=1見開き。
+function buildDailyLandscapePage(item, pageNum, holeSide, p) {
+  const U = opts.undated;
+  const bisectorHTML = (p.showHoleBisect && holeSide === 'left') ? '<div class="hole-bisector"></div>' : '';
+  const holeStripStyle = !p.showHoles ? 'visibility:hidden' : (!p.showHoleLine ? 'border:none' : '');
+  const holesHTML = `<div class="hole-strip ${holeSide}"${holeStripStyle ? ` style="${holeStripStyle}"` : ''}>${bisectorHTML}${HOLE_POSITIONS_MM.map(pos => `<div class="hole" style="top:${pos}mm;"></div>`).join('')}</div>`;
+  const watermarkHTML = p.showLogo ? `<svg class="watermark-logo" viewBox="0 0 323.67773 316.20041" xmlns="http://www.w3.org/2000/svg"><g transform="translate(89.827845,-154.05446)"><path d="${OWL_PATH}" fill="#000"/></g></svg>` : '';
+  const textWmHTML = p.showTextWm ? `<div class="text-watermark">${escapeHTML(p.textWmContent)}</div>` : '';
+  const imgWmHTML = (p.showImgWm && customImgDataUrl) ? `<img class="img-wm" src="${customImgDataUrl}" alt="">` : '';
+  const timeLabelStyle = (() => {
+    if (!p.showTimeLabel && !p.showTimeLine) return ' style="width:0;padding:0;border-right:none;overflow:hidden;"';
+    if (!p.showTimeLabel) return ' style="color:transparent;"';
+    if (!p.showTimeLine)  return ' style="border-right:none;"';
+    return '';
+  })();
+  const rowsFor = hrs => hrs.map(h => `<div class="time-row"><div class="time-label"${timeLabelStyle}>${p.showTimeLabel ? h : ''}</div><div class="time-fill"></div></div>`).join('');
+
+  let inner = '';
+  if (item.kind === 'memo') {
+    inner = `<div class="memo-section" style="flex:1 1 auto;height:auto;"><div class="memo-title">MEMO</div><div class="memo-lines" style="flex:1 1 auto;">${Array(16).fill('<div class="memo-line"></div>').join('')}</div></div>`;
+  } else {
+    const half = Math.ceil(p.hours.length / 2);
+    const hrs = item.kind === 'upper' ? p.hours.slice(0, half) : p.hours.slice(half);
+    const timeGridHTML = `<div class="time-grid" style="flex:1 1 auto;">${rowsFor(hrs)}</div>`;
+    if (item.kind === 'upper') {
+      let headerHTML = '';
+      const date = item.date;
+      let wdClass = '', holName = '', ymStr = '', wdLabel = '', dateNumHTML = '', wdHTML = '', monthAbbrHTML = '', monthHTML = '';
+      if (!U && date instanceof Date) {
+        const wd = date.getDay();
+        holName = p.showHoliday ? (getJPHolidays(date.getFullYear())[toDateVal(date)] || '') : '';
+        const isHol = holName && wd !== 0 && wd !== 6;
+        wdClass = wd === 0 ? 'is-sun' : wd === 6 ? 'is-sat' : (isHol ? 'is-holiday' : '');
+        ymStr = `${date.getFullYear()}.${pad(date.getMonth()+1)}`;
+        wdLabel = isEN ? WD_EN[wd] : `${WD_JA[wd]}曜日`;
+        if (p.showDateNum) dateNumHTML = `<div class="date-num">${date.getDate()}</div>`;
+        if (p.showDateWd) wdHTML = `<div class="date-wd">${wdLabel}</div>`;
+        if (p.showMonthAbbr) monthAbbrHTML = `<div class="month-abbr-large">${isEN ? MONTH_EN_ABB[date.getMonth()] : (date.getMonth()+1)+'月'}</div>`;
+      } else if (U) {
+        if (p.showDateNum && opts.ghostStyle === 'seg') dateNumHTML = `<div class="date-num">${segGhostHTML(2)}</div>`;
+        if (p.showDateWd && opts.ghostWeekday) wdHTML = `<div class="date-wd">${weekdayGhostHTML()}</div>`;
+        if (p.showMonthAbbr && opts.ghostStyle === 'seg') monthAbbrHTML = `<div class="month-abbr-large">${segGhostHTML(2)}</div>`;
+      }
+      headerHTML = `<div class="date-header">${dateNumHTML}<div class="date-meta">${(p.showDateYm && !U) ? `<div class="date-ym">${ymStr}</div>` : ''}${wdHTML}${holName ? `<div class="date-holiday">${holName}</div>` : ''}</div><div class="ns-brand">N's factory</div>${monthAbbrHTML}</div>`;
+      inner = `<div class="daily-page ${wdClass}" style="display:block;height:auto;">${headerHTML}${timeGridHTML}</div>`;
+    } else {
+      inner = `${timeGridHTML}<div class="memo-section"><div class="memo-title">MEMO</div><div class="memo-lines">${Array(6).fill('<div class="memo-line"></div>').join('')}</div></div>`;
+    }
+  }
+  return `<div class="daily-page" style="display:flex;">
+  ${holeSide === 'left' ? holesHTML : ''}
+  <div class="page-body"><div class="ls-rot" data-ls="${item.kind}">${watermarkHTML}${imgWmHTML}${textWmHTML}${inner}<div class="page-num">${pageNum}</div>${buildChecklistsHTML()}</div></div>
+  ${holeSide === 'right' ? holesHTML : ''}
+</div>`;
+}
+// 1日=1見開き: [memo, 日1上, 日1下, 日2上, 日2下, ..., memo]。上=紙の裏・下=次の紙の表
+function dailyLandscapePages(dates) {
+  const out = [{ kind: 'memo' }];
+  dates.forEach(d => out.push({ kind: 'upper', date: d }, { kind: 'lower', date: d }));
+  out.push({ kind: 'memo' });
+  return out;
+}
+
 // === MODULE: 面付け ===
 function getCommonParams() {
   const startH = parseInt(document.getElementById('startHour').value) || 0;
@@ -696,7 +778,10 @@ function buildSheet(side, sheetIndex, dates, p) {
   const slots = {}, meta = {};
   for (const pos of SLOT_POSITIONS) {
     const idx = sheetIndex * PER_SHEET + map[pos];
-    if (idx < dates.length) slots[pos] = buildDailyPage(opts.undated ? null : dates[idx], idx + 1, HOLE_SIDE_BY_FACE[side], p);
+    if (idx < dates.length) {
+      const it = dates[idx];
+      slots[pos] = (opts.landscape && it && it.kind) ? buildDailyLandscapePage(it, idx + 1, HOLE_SIDE_BY_FACE[side], p) : buildDailyPage(opts.undated ? null : it, idx + 1, HOLE_SIDE_BY_FACE[side], p);
+    }
     // 綴じ後プレビュー用: 通し idx → 紙 floor(idx/2)、偶数が表・奇数が裏。片面だけ実在する紙の裏も白紙として印を付ける
     const other = (idx % 2 === 0) ? idx + 1 : idx - 1;
     if (idx < dates.length || (other >= 0 && other < dates.length)) meta[pos] = { leaf: Math.floor(idx / 2), face: idx % 2 ? 'back' : 'front' };
@@ -705,18 +790,20 @@ function buildSheet(side, sheetIndex, dates, p) {
 }
 function renderDates(dates) {
   const p = getCommonParams();
-  const sheetsNeeded = Math.ceil(dates.length / PER_SHEET);
+  const items = opts.landscape ? dailyLandscapePages(dates) : dates;
+  const sheetsNeeded = Math.ceil(items.length / PER_SHEET);
   let html = '';
   if (duplexMode === 'auto') {
-    for (let s = 0; s < sheetsNeeded; s++) { html += buildSheet('front', s, dates, p); html += buildSheet('back', s, dates, p); }
+    for (let s = 0; s < sheetsNeeded; s++) { html += buildSheet('front', s, items, p); html += buildSheet('back', s, items, p); }
   } else {
     for (const side of ['front', 'back']) {
       if (side === 'front' && !showFront) continue;
       if (side === 'back' && !showBack) continue;
-      for (let s = 0; s < sheetsNeeded; s++) html += buildSheet(side, s, dates, p);
+      for (let s = 0; s < sheetsNeeded; s++) html += buildSheet(side, s, items, p);
     }
   }
   if (!html) html = '<p style="color:#666;font-size:12px;">用紙面（表面／裏面）を選択してください</p>';
+  document.getElementById('preview').dataset.orient = opts.landscape ? 'landscape' : 'portrait';
   document.getElementById('preview').innerHTML = html;
   saveSettings();
 }
@@ -825,6 +912,8 @@ function resetSettings() {
 const HISTORY_ENTRIES = [
   { date: '2026-09-11', type: 'feat', title: 'Micro5 日次印刷ツールを新規作成',
     detail: 'Micro5日次印刷ツールを土台に、Micro5（62×105mm）版を作成しました。A4縦に3列×2段の6面付け。穴は5穴（上端から 15 / 34 / 53 / 72 / 91 mm・綴じ側の端から6mm。当工房の基準データ（Micro5 refill）と同じ。穴間隔19mm）。両面印刷は長辺綴じで、表面に右ページ（左穴）・裏面に左ページ（右穴）を置くので、切り分けた紙はすべて同じ向きのまま重ねて綴じられます。綴じ後プレビューで見開きの順と穴の位置を確認できます。' },
+  { date: '2026-09-15', type: 'feat', title: '上下見開き（リングが上）で使う人向けのレイアウトを追加（試作）',
+    detail: '「印刷モード」の「使う向き」で「左右見開き／上下見開き」を選べます。上下見開きは手帳を時計回りに90°回して（リングが上）、見開き1面に1日（上：日付＋時間軸の前半、下：時間軸の後半＋メモ）。文字や罫線が正しい向きになるよう中身を回して印刷します。綴じ後プレビューも上下見開きで表示します。実物での組み立て確認は未了です。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
