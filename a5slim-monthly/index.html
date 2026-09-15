@@ -104,6 +104,10 @@ body.panel-open #preview { margin-left: 280px; }
   position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
+/* === MODULE: 上下見開き（リングが上）レイアウト === ⛔ overflow:hidden 禁止（PDFが半分欠ける） */
+.ls-rot { position: absolute; left: 0; top: 0; width: 210mm; height: 98mm; transform-origin: 0 0; transform: translateY(210mm) rotate(-90deg); padding: 3mm 2mm; display: flex; flex-direction: column; }
+.ls-rot .vert-content { flex: 1 1 auto; }
+
 /* === MODULE: Slot (リフィル枠) === */
 .slot {
   position: absolute; top: 0; width: 110mm; height: 210mm; overflow: hidden;
@@ -398,6 +402,12 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle on" id="btnDated" onclick="setUndated(false)">日付あり</button>
       <button class="btn-toggle" id="btnUndated" onclick="setUndated(true)">日付なし</button>
     </div>
+    <div class="ctrl-row">
+      <label>使う向き</label>
+      <button class="btn-toggle on" id="btnPortrait" onclick="setOrient(false)">左右見開き</button>
+      <button class="btn-toggle" id="btnLandscape" onclick="setOrient(true)">上下見開き</button>
+    </div>
+    <div style="font-size:9px;color:#888;line-height:1.5;margin:-2px 0 5px;">左右見開き＝リングが左（通常）。上下見開き＝リングが上（手帳を時計回りに90°回して使う）で、見開き1面に1ヶ月（上：前半3週＋曜日見出し／下：後半3週＋メモ）。上下見開きのとき「レイアウト（横ブロック／縦型）」は使いません</div>
     <div class="ctrl-row">
       <label>言語</label>
       <button class="btn-toggle on" id="btnJA" onclick="setLang(false)">日本語</button>
@@ -760,6 +770,13 @@ body.panel-open #preview { margin-left: 280px; }
         <li>「透かし濃さ」で見え方を調整できます。透かし自体を出したくないときは「なし（空欄）」を選んでください</li>
       </ul>
 
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 上下見開き（リングが上）で使う場合</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>「印刷モード」の <b>使う向き</b> で「上下見開き」を選ぶと、手帳を時計回りに90°回して（リングを上にして）使うレイアウトになります。上下の見開き1面で1ヶ月：上のページに前半3週と曜日見出し、下のページに後半3週とメモ</li>
+        <li>最初の紙の表と最後の紙の裏は、罫線だけのメモページになります</li>
+        <li>用紙・穴の位置は左右見開きと同じ（両面・短辺綴じ）。「📖 綴じ後プレビュー」も上下見開きで表示されます。上下見開きのときは「レイアウト（横ブロック／縦型）」の選択は使いません</li>
+        <li>※ 上下見開きは試作です。実物での組み立て確認が済んでいません</li>
+      </ul>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙と面付け</p>
       <ul style="padding-left:18px; margin:4px 0;">
         <li>A4を <b>横向き</b> に使い、A5スリム（110×210mm）を左右に2面並べます。左右の余白38.5mmは切り落とします</li>
@@ -836,7 +853,7 @@ let opts = {
   showImgWm: false, showHoliday: true, showTitle: false,
   showCellGrid: true, cellGridCols: 2, cellGridRows: 8,
   showMonthNum: true, showDateNum: true, showDayHeader: true,
-  undated: false, ghostStyle: 'seg', ghostWeekday: true
+  undated: false, ghostStyle: 'seg', ghostWeekday: true, landscape: false
 };
 let customImgDataUrl = null;
 let hasRendered = false;
@@ -1191,6 +1208,92 @@ function buildA4(slots, meta) {
   return html;
 }
 
+// === MODULE: 上下見開き（リングが上）Monthly Builder ===
+// item: { kind:'upper'|'lower'|'memo', ctx }。上=前半3週+曜日見出し、下=後半3週+メモ。中身を90°回転。
+function monthlyVertWeeksHTML(ctx, r0, r1) {
+  const { y, m, holidays } = ctx;
+  const U = opts.undated;
+  const grid = U ? null : (ctx.grid || getMonthGrid(y, m));
+  const dayClasses = ['','','','','','is-sat','is-sun'];
+  let out = '';
+  for (let r = r0; r < r1; r++) {
+    const cells = Array.from({ length: 7 }, (_, col) => {
+      if (U) {
+        const gh = (opts.showDateNum && opts.ghostStyle === 'seg') ? segGhostHTML(2) : '';
+        return `<div class="vert-cell"><div class="vert-cell-date">${gh}</div>${cellGridHTML()}</div>`;
+      }
+      const dt = grid[r][col];
+      const inMonth = dt.getMonth() + 1 === m;
+      const dateKey = `${y}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+      const hName = (opts.showHoliday && inMonth && holidays[dateKey]) ? holidays[dateKey] : '';
+      const cls = `${dayClasses[col]}${!inMonth ? ' out-of-month' : ''}${hName ? ' is-holiday' : ''}`;
+      const dateHTML = opts.showDateNum ? (inMonth ? String(dt.getDate()) : '') : '';
+      return `<div class="vert-cell ${cls}"><div class="vert-cell-date">${dateHTML}</div>${hName ? `<div class="vert-cell-holiday">${hName}</div>` : ''}${inMonth ? cellGridHTML() : ''}</div>`;
+    }).join('');
+    out += `<div class="vert-week">${cells}</div>`;
+  }
+  return out;
+}
+function buildMonthlyLandscapePage(item, pageNum, holeSide) {
+  const holeStrip = buildHoleStrip(holeSide, opts.showHoleBisect);
+  const wm = buildWatermarks();
+  const cl = buildChecklistsHTML();
+  const U = opts.undated;
+  let inner = '';
+  if (item.kind === 'memo') {
+    inner = `<div class="vert-content"><div class="vert-memo" style="flex:1 1 auto;"><div class="memo-label" style="font-size:2mm;color:#aaa;padding:0 1mm 0.5mm;">MEMO</div><div class="vert-memo-lines memo-lines" style="flex:1 1 auto;"></div></div></div>`;
+  } else {
+    const ctx = item.ctx;
+    const m = ctx.m, y = ctx.y;
+    const dayLabels = isEN ? ['MON','TUE','WED','THU','FRI','SAT','SUN'] : ['月','火','水','木','金','土','日'];
+    const dayClasses = ['','','','','','is-sat','is-sun'];
+    if (item.kind === 'upper') {
+      let numHTML = '';
+      if (opts.showMonthNum) numHTML = U ? (opts.ghostStyle === 'seg' ? segGhostHTML(2) : '') : String(m);
+      const headerHTML = `<div class="vert-header"><div class="vert-month-num">${numHTML}</div><div><div class="vert-month-name">${(opts.showMonthAbbr && !U) ? (isEN ? MONTH_EN_ABB[m-1] : MONTH_JA[m-1]) : ''}</div><div class="vert-year">${U ? '' : y}</div></div></div>`;
+      let dayHeaderRowHTML = '';
+      if (opts.showDayHeader) {
+        const cells = dayLabels.map((lbl, i) => `<div class="vert-day-header ${U ? '' : dayClasses[i]}">${U ? (opts.ghostWeekday ? weekdayGhostHTML() : '') : lbl}</div>`).join('');
+        dayHeaderRowHTML = `<div class="vert-day-header-row">${cells}</div>`;
+      }
+      inner = `<div class="vert-content">${headerHTML}<div class="vert-grid" style="flex:1 1 auto;">${dayHeaderRowHTML}<div class="vert-week-rows">${monthlyVertWeeksHTML(ctx, 0, 3)}</div></div></div>`;
+    } else {
+      inner = `<div class="vert-content"><div class="vert-grid" style="flex:1 1 auto;"><div class="vert-week-rows">${monthlyVertWeeksHTML(ctx, 3, 6)}</div></div><div class="vert-memo"><div class="vert-memo-lines memo-lines"></div></div></div>`;
+    }
+  }
+  return `${holeSide === 'left' ? holeStrip : ''}<div class="page-body"><div class="ls-rot" data-ls="${item.kind}">${wm}${cl}${inner}</div></div>${holeSide === 'right' ? holeStrip : ''}`;
+}
+// [memo, 月1上, 月1下, 月2上, 月2下, ..., memo]。上=紙の裏・下=次の紙の表
+function monthlyLandscapePages(ctxs) {
+  const out = [{ kind: 'memo' }];
+  ctxs.forEach(ctx => out.push({ kind: 'upper', ctx }, { kind: 'lower', ctx }));
+  out.push({ kind: 'memo' });
+  return out;
+}
+function renderMonthlyLandscape() {
+  const ctxs = buildContexts();
+  const pages = monthlyLandscapePages(ctxs);
+  while (pages.length % 4 !== 0) pages.push({ kind: 'memo' });
+  const LSMAP = { front: { L: 0, R: 2 }, back: { L: 3, R: 1 } };
+  const LSHOLE = { front: 'left', back: 'right' };
+  const sheets = pages.length / 4;
+  let html = '';
+  for (let s = 0; s < sheets; s++) {
+    for (const face of ['front', 'back']) {
+      const map = LSMAP[face];
+      const slots = ['L', 'R'].map(pos => buildMonthlyLandscapePage(pages[s * 4 + map[pos]], s * 4 + map[pos] + 1, LSHOLE[face]));
+      const meta = ['L', 'R'].map(pos => { const pn = s * 4 + map[pos] + 1; return { leaf: Math.floor((pn - 1) / 2), face: (pn - 1) % 2 ? 'back' : 'front' }; });
+      const lbl = ctxs.length ? `${ctxs[0].label}〜 ${ctxs.length}ヶ月（上下見開き）· シート${s + 1}・${face === 'front' ? '表' : '裏'}` : '上下見開き';
+      html += `<div class="sheet-wrap"><div class="sheet-label">${lbl}</div>${buildA4(slots, meta)}</div>`;
+    }
+  }
+  const pv = document.getElementById('preview');
+  pv.dataset.orient = 'landscape';
+  pv.innerHTML = html;
+  updateMemoLines();
+  saveSettings();
+}
+
 // === MODULE: Render ===
 function buildContexts() {
   if (opts.undated) {
@@ -1215,6 +1318,8 @@ function buildContexts() {
 
 function renderMonths() {
   hasRendered = true;
+  if (opts.landscape) { renderMonthlyLandscape(); return; }
+  document.getElementById('preview').dataset.orient = 'portrait';
   const ctxs = buildContexts();
   let html = '';
   // 穴はページ種別で決める: 左ページ(月火水)=右穴, 右ページ(木金土日)=左穴（見開きの背側に穴）
@@ -1302,6 +1407,7 @@ function updateMemoLines() {
 }
 
 function rerender() { if (hasRendered) renderMonths(); }
+function setOrient(ls) { opts.landscape = ls; document.getElementById('btnPortrait').classList.toggle('on', !ls); document.getElementById('btnLandscape').classList.toggle('on', ls); rerender(); }
 
 // === MODULE: UI Helpers ===
 function setUndated(u) {
@@ -1490,6 +1596,8 @@ const HISTORY_ENTRIES = [
     detail: 'リフィル枠の左右に2mmの余白を取り、その内側に穴帯を置いていたため、穴中心が端から約8mmになっていました。穴帯を枠の端に置き、本文側だけに余白を残す形に直しました（A5規格の穴位置＝端から6mm）。' },
   { date: '2026-09-12', type: 'improve', title: '印刷ズレ補正を表面／裏面で別々に指定できるように・両面設定の注意書きを追加',
     detail: '両面印刷では裏面だけ別方向にずれることが多いため、補正を「表面のずれ」と「裏面の追加ずれ（表面に対して）」の2系統にしました。テスト印刷も表裏1枚ずつ出ます。PDF生成にも同じ補正がかかります。印刷ボタン横の注意書きに両面設定（綴じ方向）を明記しました。' },
+  { date: '2026-09-15', type: 'feat', title: '上下見開き（リングが上）で使う人向けのレイアウトを追加（試作）',
+    detail: '「印刷モード」の「使う向き」で「左右見開き／上下見開き」を選べます。上下見開きは手帳を時計回りに90°回して（リングが上）、見開き1面に1ヶ月（上：前半3週＋曜日見出し、下：後半3週＋メモ）。文字や罫線が正しい向きになるよう中身を回して印刷します。綴じ後プレビューも上下見開きで表示します。実物での組み立て確認は未了です。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
