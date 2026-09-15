@@ -6984,15 +6984,35 @@ function gaFmtCacheAge(ms) {
   return h + '時間前';
 }
 
+// 表示の高速化（2026-09-15 事業主指示「いつも表示が遅い」）:
+// ・GAS側は毎朝の作り置き（シート「GA4集計」）を返す。
+// ・画面側は前回の結果を端末に控えておき、開いた瞬間に出してから最新に差し替える。
+// ・script の読み込み失敗は最大3回まで自動でやり直す（読み取りだけなので重複の害はない）。
+// ⛔ タイムアウトでは再送しない（GA4への問い合わせが二重になる）。
+// ⛔ 失敗の文言に原因を断定して書かない（原因は特定できていない）。
+const GA_LOCAL_PREFIX = 'nsf_ga_last_';
+const GA_MAX_TRIES = 3;
+const GA_TIMEOUT_MS = 45000;
+let gaLoadSeq = 0;
+
+function gaReadLocal(days) {
+  try { const s = localStorage.getItem(GA_LOCAL_PREFIX + days); return s ? JSON.parse(s) : null; } catch (err) { return null; }
+}
+function gaWriteLocal(days, data) {
+  try { localStorage.setItem(GA_LOCAL_PREFIX + days, JSON.stringify(data)); } catch (err) {}
+}
+
 function gaLoad(days, noCache) {
   gaLoaded = true;
   gaCurrentDays = days;
+  const seq = ++gaLoadSeq;   // 期間を切り替えたら、古い応答は描かない
   document.querySelectorAll('.ga-period-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.days) === days);
   });
-  document.getElementById('ga-loading').style.display = 'block';
+  const loading = document.getElementById('ga-loading');
+  const em = document.getElementById('ga-error');
   document.getElementById('ga-table-wrap').style.display = 'none';
-  document.getElementById('ga-error').style.display = 'none';
+  em.style.display = 'none';
   document.getElementById('ga-chart-total-wrap').style.display = 'none';
   document.getElementById('ga-chart-page-wrap').style.display = 'none';
   document.getElementById('ga-refresh-btn').style.display = 'none';
@@ -7000,34 +7020,88 @@ function gaLoad(days, noCache) {
   document.getElementById('ga-pv').textContent = '—';
   document.getElementById('ga-uv').textContent = '—';
 
-  const cbName = 'gaCb' + Date.now();
-  const script = document.createElement('script');
-  script.src = GAS_URL + '?api=analytics&key=' + encodeURIComponent(getAdminKey())
-             + '&days=' + days + '&callback=' + cbName
-             + (noCache ? '&nocache=1' : '');
+  const local = noCache ? null : gaReadLocal(days);
+  let shownLocal = false;
+  if (local && local.totals) {
+    try { gaLastData = local; gaRender(local); shownLocal = true; } catch (err) { shownLocal = false; }
+  }
+  loading.textContent = shownLocal ? '最新の集計を確認中…（いま表示しているのは前回の結果です）' : '読み込み中…';
+  loading.style.display = 'block';
 
-  window[cbName] = function(data) {
-    delete window[cbName];
-    if (script.parentNode) document.body.removeChild(script);
-    document.getElementById('ga-loading').style.display = 'none';
-    if (data.error) {
-      const em = document.getElementById('ga-error');
-      em.textContent = 'エラー: ' + data.error
-        + (data.quotaUsed != null ? '（' + data.quotaUsed + '/' + data.quotaLimit + '）' : '');
-      em.style.display = 'block';
-      return;
-    }
-    gaLastData = data;
-    gaRender(data);
-  };
-
-  script.onerror = function() {
-    document.getElementById('ga-loading').style.display = 'none';
-    const em = document.getElementById('ga-error');
-    em.textContent = 'データ取得に失敗しました。';
+  const fail = (msg) => {
+    if (seq !== gaLoadSeq) return;
+    loading.style.display = 'none';
+    em.textContent = shownLocal
+      ? '最新の集計を取得できませんでした（' + msg + '）。表示中は前回の結果です。'
+      : 'データ取得に失敗しました（' + msg + '）。';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn light';
+    btn.style.marginLeft = '8px';
+    btn.textContent = 'もう一度読み込む';
+    btn.addEventListener('click', () => gaLoad(gaCurrentDays));
+    em.appendChild(btn);
     em.style.display = 'block';
   };
-  document.body.appendChild(script);
+
+  const attempt = (n) => {
+    if (seq !== gaLoadSeq) return;
+    const cbName = 'gaCb' + Date.now() + '_' + n;
+    const script = document.createElement('script');
+    let settled = false;
+    const retire = () => {
+      // 遅れて届いた応答で ReferenceError にならないよう、受け取り口は空にして10分後に片付ける
+      window[cbName] = function() {};
+      setTimeout(() => { delete window[cbName]; }, 600000);
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      retire();
+      fail(Math.round(GA_TIMEOUT_MS / 1000) + '秒たっても応答がありません');
+    }, GA_TIMEOUT_MS);
+
+    window[cbName] = function(data) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (seq !== gaLoadSeq) return;
+      loading.style.display = 'none';
+      if (!data || data.error) {
+        em.textContent = 'エラー: ' + (data ? data.error : '空の応答')
+          + (data && data.quotaUsed != null ? '（' + data.quotaUsed + '/' + data.quotaLimit + '）' : '')
+          + (shownLocal ? '　表示中は前回の結果です。' : '');
+        em.style.display = 'block';
+        return;
+      }
+      gaWriteLocal(days, data);
+      gaLastData = data;
+      gaRender(data);
+    };
+
+    script.onerror = function() {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      retire();
+      if (seq !== gaLoadSeq) return;
+      if (n < GA_MAX_TRIES) {
+        loading.textContent = '読み込みに失敗したため、やり直しています（' + (n + 1) + '/' + GA_MAX_TRIES + '回目）…';
+        setTimeout(() => attempt(n + 1), 1500 * n);
+      } else {
+        fail(GA_MAX_TRIES + '回試しても読み込めませんでした');
+      }
+    };
+
+    script.src = GAS_URL + '?api=analytics&key=' + encodeURIComponent(getAdminKey())
+               + '&days=' + days + '&callback=' + cbName
+               + (noCache ? '&nocache=1' : '');
+    document.body.appendChild(script);
+  };
+  attempt(1);
 }
 
 // 旧Googleサイト（sites.google.com/view/ns-factory/）のパスか
