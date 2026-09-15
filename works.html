@@ -555,6 +555,38 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .rank-move.new { color: #f0d9a8; }
     .work-card { position: relative; }
 
+    /* いんザイ君グッズ特設ページへの導線（2026-09-10 追加） */
+    .inzai-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 0 0 18px;
+      padding: 12px 16px 12px 12px;
+      border: 1px solid #f0c9d8;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fdeef3, #fff);
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .inzai-banner:hover { box-shadow: 0 6px 18px rgba(231,127,163,.18); transform: translateY(-1px); }
+    .inzai-banner-thumb {
+      width: 72px; height: 72px; flex: 0 0 72px;
+      object-fit: cover; border-radius: 8px; display: block;
+    }
+    .inzai-banner-text { display: block; flex: 1; min-width: 0; }
+    .inzai-banner-title {
+      display: block; font-size: 15px; font-weight: 800; margin-bottom: 2px;
+    }
+    .inzai-banner-lead {
+      display: block; font-size: 12.5px; line-height: 1.5; color: #667085;
+    }
+    .inzai-banner-go { flex: 0 0 auto; color: #e77fa3; font-size: 20px; font-weight: 700; }
+    @media (max-width: 520px) {
+      .inzai-banner-thumb { width: 56px; height: 56px; flex-basis: 56px; }
+      .inzai-banner-lead { font-size: 12px; }
+    }
+
     /* 一覧上部の TOP3 */
     .rank-top3 {
       margin: 0 0 18px;
@@ -1171,6 +1203,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <a href="./" class="nav-brand">N's factory</a>
     <span class="nav-spacer"></span>
     <a href="works.html" class="nav-link" data-i18n="nav.works">作品集</a>
+    <a href="inzai-goods.html" class="nav-link" data-i18n="nav.inzai">いんザイ君グッズ</a>
     <a href="orderprogress.html" class="nav-link" data-i18n="nav.progress">オーダー進捗</a>
     <a href="JHCS.html" class="nav-link" data-i18n="nav.jhcs">JHCS講習案内</a>
     <a href="links.html" class="nav-link" data-i18n="nav.links">リンク集</a>
@@ -1251,6 +1284,16 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <button id="missing-price-filter" class="admin-filter-btn" type="button" hidden>価格未設定だけ</button>
       <div id="count" class="count" data-i18n="tools.loading">読み込み中</div>
     </div>
+    <!-- いんザイ君グッズ特設ページへの導線（2026-09-10 追加）。定番品は別ページにまとめている。 -->
+    <a class="inzai-banner" href="inzai-goods.html">
+      <img class="inzai-banner-thumb" src="assets/inzai-goods/hero.jpg" alt="" loading="lazy">
+      <span class="inzai-banner-text">
+        <span class="inzai-banner-title" data-i18n="banner.inzai.title">いんザイ君グッズはこちら</span>
+        <span class="inzai-banner-lead" data-i18n="banner.inzai.lead">印西市マスコットキャラクターの革小物。キーホルダー・名刺入れ・パスケースなど、市の承認を受けて製作しています。</span>
+      </span>
+      <span class="inzai-banner-go" aria-hidden="true">→</span>
+    </a>
+
     <!-- カードで購入できる作品だけの表示（?card=1・リンク集のボタンから）。解除の導線を必ず出す -->
     <div id="card-filter-bar" class="card-filter-bar" hidden>
       <span id="card-filter-text">カードで購入できる作品だけを表示しています</span>
@@ -1410,6 +1453,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   window.NSF_I18N_DICT = {
     'meta.title': "Gallery — N's factory",
     'nav.works': 'Gallery',
+    'nav.inzai': 'Inzai-kun goods',
+    'banner.inzai.title': 'Inzai-kun goods',
+    'banner.inzai.lead': "Leather goods featuring Inzai City's mascot. Keyholders, card cases and pass cases, made under the city's approval.",
     'nav.progress': 'Order progress',
     'card.buy': '💳 Buy by card',
     'card.shipIncl': ', shipping incl.',
