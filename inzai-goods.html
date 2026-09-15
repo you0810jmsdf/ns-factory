@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>いんザイ君グッズ | N's factory</title>
+<meta name="description" content="印西市マスコットキャラクター「いんザイ君」の革小物。印西市の手仕事で、コスモス色の相棒を持ち歩けるかたちにしました。">
+<meta property="og:title" content="いんザイ君グッズ | N's factory">
+<meta property="og:description" content="印西市マスコットキャラクター「いんザイ君」の革小物。市の承認を受けて製作しています。">
+<meta property="og:image" content="https://you0810jmsdf.github.io/ns-factory/assets/inzai-goods/hero.jpg">
+<meta property="og:type" content="website">
+<script>
+// 作家自身の端末では計測しない（works.html と同じオプトアウト機構）。
+// GA4公式の仕組みのため、gtag 読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+:root{
+  --ink:#1f2933;
+  --muted:#667085;
+  --line:#d8dee8;
+  --paper:#f7f8fa;
+  --white:#ffffff;
+  --accent:#2f6f73;
+  --accent-dark:#234f52;
+  --warm:#9a6a43;
+  --cosmos:#e77fa3;
+  --cosmos-soft:#fdeef3;
+  --shadow:0 10px 30px rgba(31,41,51,.10);
+  --radius:8px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  line-height:1.7;
+}
+a{color:var(--accent-dark)}
+
+/* ---- nav（works.html と同じ作り） ---- */
+.nav{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 24px;background:var(--white);border-bottom:1px solid var(--line);
+}
+.nav-brand{font-weight:800;font-size:16px;text-decoration:none;color:var(--ink)}
+.nav-spacer{flex:1}
+.nav-link{font-size:13px;text-decoration:none;color:var(--muted)}
+.nav-link:hover{color:var(--ink)}
+
+/* ---- hero ---- */
+.hero{
+  background:linear-gradient(160deg,var(--cosmos-soft) 0%,#fff 70%);
+  border-bottom:1px solid var(--line);
+  padding:44px 24px 40px;
+}
+.hero-inner{max-width:1080px;margin:0 auto}
+.eyebrow{
+  display:inline-block;margin:0 0 10px;padding:4px 12px;border-radius:999px;
+  background:var(--cosmos);color:#fff;font-size:12px;font-weight:700;letter-spacing:.04em;
+}
+.hero h1{margin:0 0 14px;font-size:30px;line-height:1.35;letter-spacing:.02em}
+.hero-lead{margin:0 0 22px;max-width:680px;font-size:15px;color:#3f4a56}
+.hero-event{
+  display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:0 0 22px;padding:8px 14px;border-radius:8px;
+  background:var(--white);border:1px solid #f0c9d8;font-size:14px;font-weight:700;
+}
+.hero-event-label{
+  padding:2px 10px;border-radius:999px;background:var(--cosmos);color:#fff;font-size:12px;
+}
+.hero-grid{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
+.hero-photo{
+  width:100%;aspect-ratio:16/10;object-fit:cover;
+  border-radius:var(--radius);box-shadow:var(--shadow);display:block;
+}
+
+.profile{
+  margin:0;padding:16px 18px;background:var(--white);
+  border:1px solid var(--line);border-radius:var(--radius);
+}
+.profile h2{margin:0 0 10px;font-size:14px;letter-spacing:.04em}
+.profile dl{display:grid;grid-template-columns:5.5em 1fr;gap:4px 10px;margin:0;font-size:13px}
+.profile dt{color:var(--muted)}
+.profile dd{margin:0}
+.profile-note{margin:12px 0 0;font-size:12px;color:var(--muted)}
+.official-links{margin:12px 0 0;padding:0;list-style:none;font-size:13px}
+.official-links li{margin:0 0 4px}
+
+/* ---- gallery（works.html のカードを踏襲） ---- */
+.section{max-width:1080px;margin:0 auto;padding:34px 24px 0}
+.section h2{margin:0 0 6px;font-size:19px}
+.section-lead{margin:0 0 18px;font-size:14px;color:var(--muted)}
+
+.gallery{
+  max-width:1080px;margin:0 auto;padding:6px 24px 8px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;
+}
+.goods-card{
+  position:relative;display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--white);
+  box-shadow:0 2px 10px rgba(31,41,51,.05);
+  transition:box-shadow .15s,transform .15s;
+}
+.goods-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.thumb-wrap{display:block;width:100%;aspect-ratio:4/3;overflow:hidden;background:#e9edf2}
+.thumb{width:100%;height:100%;object-fit:cover;display:block}
+.card-body{padding:13px 14px 15px;display:flex;flex-direction:column;flex:1}
+.goods-title{display:block;font-size:15px;font-weight:800;margin:0 0 4px}
+.goods-spec{margin:0 0 8px;color:var(--muted);font-size:12px;line-height:1.5}
+.goods-price{margin:0 0 12px;font-size:15px;font-weight:700}
+.goods-price .tax{font-size:11px;font-weight:400;color:var(--muted)}
+.card-actions{margin-top:auto;display:grid;gap:6px}
+.btn{
+  display:block;padding:9px 10px;border-radius:6px;text-align:center;
+  font-size:13px;font-weight:700;text-decoration:none;border:1px solid transparent;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-sub{background:var(--white);color:var(--accent-dark);border-color:var(--line);font-weight:400;font-size:12px}
+.btn-sub:hover{border-color:var(--accent)}
+
+/* ---- order ---- */
+.order-box{
+  max-width:1080px;margin:34px auto 0;padding:22px 24px;
+  background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+}
+.order-box h2{margin:0 0 8px;font-size:17px}
+.order-box p{margin:0 0 14px;font-size:14px;color:#3f4a56}
+.order-actions{display:flex;flex-wrap:wrap;gap:10px}
+.order-actions .btn{min-width:220px}
+
+/* ---- credit ---- */
+.credit{
+  max-width:1080px;margin:30px auto 0;padding:16px 20px;
+  background:var(--cosmos-soft);border-radius:var(--radius);font-size:13px;
+}
+.credit p{margin:0 0 4px}
+.credit .mark{font-weight:700}
+.footer{margin-top:40px;padding:22px 24px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+
+@media (max-width:860px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero h1{font-size:24px}
+}
+@media (max-width:720px){
+  .gallery{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));padding:6px 18px 8px;gap:12px}
+  .section{padding:26px 18px 0}
+  .hero{padding:32px 18px 28px}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="./" class="nav-brand">N's factory</a>
+  <span class="nav-spacer"></span>
+  <a href="works.html" class="nav-link">作品集</a>
+  <a href="inzai-goods.html" class="nav-link">いんザイ君グッズ</a>
+  <a href="orderprogress.html" class="nav-link">オーダー進捗</a>
+  <a href="JHCS.html" class="nav-link">JHCS講習案内</a>
+  <a href="links.html" class="nav-link">リンク集</a>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">印西市マスコットキャラクター</span>
+    <h1>いんザイ君グッズ</h1>
+    <p class="hero-lead">
+      千葉県印西市のマスコットキャラクター「いんザイ君」を、革に彫って持ち歩けるかたちにしました。
+      印西市内の工房で、一点ずつ手縫いで仕立てています。
+      鞄や鍵につけて連れ歩くことが、そのまま印西市を知ってもらうきっかけになれば嬉しいです。
+    </p>
+    <p class="hero-event">
+      <span class="hero-event-label">初回販売</span>
+      11月3日（火・祝）文化の日　武蔵屋マルシェ（CBIブース）
+    </p>
+    <div class="hero-grid">
+      <img class="hero-photo" src="assets/inzai-goods/hero.jpg" alt="いんザイ君グッズ一式（キーホルダー、チャーム、身分証ケースなど）">
+      <div class="profile">
+        <h2>いんザイ君ってどんな子？</h2>
+        <dl>
+          <dt>誕生日</dt><dd>9月14日（コスモスの日）</dd>
+          <dt>生まれ</dt><dd>印西市内のコスモス畑</dd>
+          <dt>性格</dt><dd>おっとりさん、好奇心旺盛で元気</dd>
+          <dt>役目</dt><dd>印西市をみんなにPRすること</dd>
+          <dt>就任</dt><dd>平成23年11月16日</dd>
+        </dl>
+        <p class="profile-note">
+          体の色は、印西市の花コスモスと同じピンク。しっぽにもコスモスが咲いています。
+        </p>
+        <ul class="official-links">
+          <li><a data-log="印西市公式（プロフィール）へ" data-id="inzai-goods" data-name="いんザイ君グッズ" href="https://www.city.inzai.lg.jp/0000001289.html" target="_blank" rel="noopener">いんザイ君のプロフィール（印西市公式）</a></li>
+          <li><a data-log="印西市公式（民間企業の商品紹介）へ" data-id="inzai-goods" data-name="いんザイ君グッズ" href="https://www.city.inzai.lg.jp/0000016948.html" target="_blank" rel="noopener">民間企業が作成した「いんザイ君」商品（印西市公式）</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <h2>グッズ一覧</h2>
+  <p class="section-lead">
+    価格はすべて税込です。購入はSTORESの通販ページから。売り切れの場合は、同じものを受注製作でお作りできます。
+  </p>
+</section>
+
+<div class="gallery" id="gallery"></div>
+
+<section class="section">
+  <div class="order-box">
+    <h2>売り切れていたら</h2>
+    <p>
+      いんザイ君グッズはすべて手作りのため、在庫が切れることがあります。
+      同じものを受注製作でお作りしますので、下のボタンからご相談ください。
+      革の色や仕様を変えたい場合も、あわせてご相談いただけます。
+    </p>
+    <div class="order-actions">
+      <a class="btn btn-primary" data-log="受注製作の相談を開いた（一覧下）" data-id="inzai-goods" data-name="いんザイ君グッズ" href="./order_estimate/stock-quote.html?intent=reorder&amp;qty=1&amp;name=%E3%81%84%E3%82%93%E3%82%B6%E3%82%A4%E5%90%9B%E3%82%B0%E3%83%83%E3%82%BA" target="_blank" rel="noopener">受注製作を相談する（名前・連絡先を送る）</a>
+      <a class="btn btn-sub" data-log="LINE相談" data-id="inzai-goods" data-name="いんザイ君グッズ" href="https://lin.ee/XOcD2pd" target="_blank" rel="noopener">LINEで直接相談する</a>
+      <a class="btn btn-sub" data-log="メール相談" data-id="inzai-goods" data-name="いんザイ君グッズ" href="mailto:you0810jmsdf@gmail.com?subject=%E3%81%84%E3%82%93%E3%82%B6%E3%82%A4%E5%90%9B%E3%82%B0%E3%83%83%E3%82%BA%E3%81%AB%E9%96%A2%E3%81%99%E3%82%8B%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B">メールで問い合わせる</a>
+    </div>
+  </div>
+
+  <div class="credit">
+    <p class="mark">印西市マスコットキャラクター「いんザイ君」</p>
+    <p class="mark">いんザイ君&copy;2011 印西市</p>
+    <p style="margin-top:8px;color:var(--muted)">
+      このページに掲載しているいんザイ君のデザインは、印西市の承認を受けて使用しています。
+    </p>
+  </div>
+</section>
+
+<footer class="footer">&copy; N's factory</footer>
+
+<script>
+// 商品データ。在庫の有無はSTORES側が正なので、ここでは持たない。
+// 「買う」はSTORESへ、「売り切れていたら」は受注製作の相談へ流す。
+var STORES_URL = 'https://nsfactory.stores.jp/';
+var STOCK_QUOTE_URL = './order_estimate/stock-quote.html';
+
+// ===== アクセスログ（works.html と同じGASへ送る） =====
+// GA4はページビューを、GASログはどの商品のどのボタンが押されたかを記録する。
+// GASはブラウザからPOSTするとCORSで応答が読めないため、JSONP（scriptタグ）でGETする。
+var WORKS_LOG_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+
+function getVisitorId(){
+  try {
+    var vid = localStorage.getItem('nsf_vid');
+    if (!vid) {
+      vid = Date.now().toString(36) + Math.random().toString(36).slice(2);
+      localStorage.setItem('nsf_vid', vid);
+    }
+    return vid;
+  } catch (e) { return ''; }
+}
+
+function isOptedOut(){
+  try { return localStorage.getItem('nsf_ga_optout') === '1'; } catch (e) { return false; }
+}
+
+function sendLog(type, id, name, detail){
+  if (isOptedOut()) return;   // 作家自身の端末では記録しない
+  try {
+    var s = document.createElement('script');
+    s.src = WORKS_LOG_URL
+      + '?api=log&type=' + encodeURIComponent(type)
+      + '&id=' + encodeURIComponent(id || '')
+      + '&name=' + encodeURIComponent(name || '')
+      + '&detail=' + encodeURIComponent(detail || '')
+      + '&vid=' + encodeURIComponent(getVisitorId());
+    s.onload = s.onerror = function(){ if (s.parentNode) s.remove(); };
+    document.body.appendChild(s);
+  } catch (e) {}
+}
+
+var GOODS = [
+  { id:'inzai-keyholder-horsebutt', name:'キーホルダー（ホースバット・黒）',
+    spec:'馬のお尻の革／真鍮金具付き／直径約4cm', price:2500, photo:'keyholder-black.jpg' },
+  { id:'inzai-cardcase', name:'名刺入れ',
+    spec:'アラスカレザー（ピンク）', price:9800, photo:'cardcase.jpg' },
+  { id:'inzai-passcase', name:'パスケース（身分証ケース）',
+    spec:'アラスカレザー（ピンク）／窓付き', price:9800, photo:'passcase.jpg' },
+  { id:'inzai-strap', name:'レザーストラップ',
+    spec:'パスケース用／リール付き', price:3500, photo:'strap.jpg' },
+  { id:'inzai-keyholder-alaska', name:'キーホルダー（アラスカレザー）',
+    spec:'アラスカレザー（ピンク）', price:1000, photo:'keyholder-pink.jpg' },
+  { id:'inzai-coincase', name:'コインケース／エアタグケース',
+    spec:'アラスカレザー（ピンク）／ボールチェーン付き', price:1000, photo:'coincase.jpg' },
+  { id:'inzai-charm', name:'チャーム',
+    spec:'アラスカレザー（ピンク）／ボールチェーン付き', price:500, photo:'charm.jpg' },
+  { id:'inzai-tag', name:'革タグ・木製タグ',
+    spec:'直径約4cm／革・木の2種', price:500, photo:'tag.jpg' }
+];
+
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function yen(n){ return '¥' + Number(n).toLocaleString('ja-JP'); }
+
+function reorderUrl(item){
+  var p = new URLSearchParams();
+  p.set('id', item.id);
+  p.set('name', item.name);
+  p.set('price', String(item.price));
+  p.set('intent', 'reorder');
+  p.set('qty', '1');
+  return STOCK_QUOTE_URL + '?' + p.toString();
+}
+
+function render(){
+  var html = GOODS.map(function(item){
+    return '' +
+      '<article class="goods-card">' +
+        '<span class="thumb-wrap">' +
+          '<img class="thumb" src="assets/inzai-goods/' + esc(item.photo) + '" alt="' + esc(item.name) + '" loading="lazy">' +
+        '</span>' +
+        '<div class="card-body">' +
+          '<span class="goods-title">' + esc(item.name) + '</span>' +
+          '<p class="goods-spec">' + esc(item.spec) + '</p>' +
+          '<p class="goods-price">' + yen(item.price) + ' <span class="tax">税込</span></p>' +
+          '<div class="card-actions">' +
+            '<a class="btn btn-primary" data-log="STORESを開いた" data-id="' + esc(item.id) + '" data-name="' + esc(item.name) + '" href="' + esc(STORES_URL) + '" target="_blank" rel="noopener">STORESで購入する</a>' +
+            '<a class="btn btn-sub" data-log="受注製作の相談を開いた" data-id="' + esc(item.id) + '" data-name="' + esc(item.name) + '" href="' + esc(reorderUrl(item)) + '" target="_blank" rel="noopener">売り切れの場合は受注製作を相談</a>' +
+          '</div>' +
+        '</div>' +
+      '</article>';
+  }).join('');
+  document.getElementById('gallery').innerHTML = html;
+}
+
+render();
+
+// ページ表示を記録する（works.html の「商品閲覧」と揃えて集計できるようにする）
+sendLog('ページ閲覧', 'inzai-goods', 'いんザイ君グッズ特集', document.referrer || '直接');
+
+// data-log を持つリンクのクリックを記録する。
+// render() 後に一度だけ委譲で拾うので、カードを作り直しても付け直す必要がない。
+document.addEventListener('click', function(ev){
+  var a = ev.target.closest ? ev.target.closest('a[data-log]') : null;
+  if (!a) return;
+  sendLog('アクション', a.getAttribute('data-id') || '', a.getAttribute('data-name') || '',
+          a.getAttribute('data-log'));
+});
+</script>
+
+</body>
+</html>
