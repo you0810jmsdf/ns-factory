@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>サイトの歩き方 | N's factory</title>
+<meta name="description" content="オーダー相談、作品集、講習、型紙PDF、リフィル印刷ツール、無料アプリ。N's factory のサイトで「どこに行けば何ができるか」を目的から辿れる案内図です。">
+<link rel="canonical" href="https://you0810jmsdf.github.io/ns-factory/site-guide.html">
+<meta property="og:type" content="website"><meta property="og:title" content="サイトの歩き方 | N's factory"><meta property="og:description" content="迷ったら、ここから。目的別の入口と、サイト全体の地図。"><meta property="og:url" content="https://you0810jmsdf.github.io/ns-factory/site-guide.html"><meta property="og:image" content="https://you0810jmsdf.github.io/ns-factory/assets/logo.png">
+<!-- Google tag (gtag.js) -->
+<script>
+// GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Zen+Old+Mincho:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#33291c;--sub:#6e5c44;--gold:#a6823f;--gold2:#7a5e2a;--paper:#f7f1e3;--paper2:#efe5d0;--line:#dccdaf;--white:#fcf7eb;--shadow:0 8px 26px rgba(74,52,18,.10)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Zen Old Mincho','Yu Mincho',serif;line-height:1.9;background-image:linear-gradient(135deg,rgba(166,130,63,.04),transparent 40%),radial-gradient(110% 70% at 20% 0%,rgba(255,255,255,.55),transparent 60%)}
+a{text-decoration:none;color:inherit}
+.wrap{max-width:980px;margin:auto;padding:0 22px}
+.top{padding:14px 0;border-bottom:1px solid var(--line);background:rgba(247,241,227,.94);position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;font-family:Cinzel,serif;font-weight:600}.brand img{height:38px;width:auto}.back{font-size:13px;color:var(--sub)}
+.hero{padding:56px 0 26px;text-align:center}
+.eyebrow{font-family:Cinzel,serif;letter-spacing:.18em;color:var(--gold2);font-size:12px;text-transform:uppercase}
+.hero h1{font-size:clamp(30px,6vw,50px);line-height:1.3;margin:14px 0 16px;text-wrap:balance}
+.lead{max-width:640px;margin:auto;color:var(--sub);font-size:16px}
+.jump{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:22px auto 0}
+.jump a{font-size:13px;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--gold2)}
+.jump a:hover{border-color:var(--gold)}
+h2.sec{font-size:26px;margin:0 0 6px;text-wrap:balance}
+.sec-head{margin:44px 0 18px}.sec-head p{margin:0;color:var(--sub)}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:24px 24px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.card .num{font-family:Cinzel,serif;color:var(--gold);font-size:12px;letter-spacing:.14em}
+.card h3{margin:0;font-size:20px;line-height:1.4}
+.card p{margin:0;color:var(--sub);font-size:14px}
+.card .main{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;padding:12px 16px;border-radius:12px;background:#2b2117;color:#fff;font-weight:700}
+.card .main small{display:block;font-weight:400;font-size:12px;color:rgba(255,255,255,.66)}
+.card .main:hover{background:#3a2c1e}
+.card ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.card li a{display:flex;justify-content:space-between;gap:10px;padding:7px 4px;border-bottom:1px dashed var(--line);font-size:14px}
+.card li a:hover{color:var(--gold2)}
+.card li a span:last-child{color:var(--gold);flex:none}
+.faq{display:grid;gap:14px}
+.faq details{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:4px 20px}
+.faq summary{cursor:pointer;font-weight:700;padding:12px 0;font-size:16px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.faq summary::after{content:"＋";color:var(--gold);flex:none}
+.faq details[open] summary::after{content:"−"}
+.faq details p{margin:0 0 14px;color:var(--sub)}
+.faq details a{color:var(--gold2);border-bottom:1px solid var(--gold)}
+.map{background:var(--white);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:14px;overflow-x:auto}
+.map svg{display:block;width:100%;min-width:760px;height:auto;font-family:'Zen Old Mincho','Yu Mincho',serif}
+.map .mapnote{margin:8px 4px 0;font-size:12px;color:var(--sub)}
+.map a text{cursor:pointer}
+.map a:hover rect{stroke:var(--gold2);stroke-width:2}
+.map a:focus-visible rect{stroke:var(--gold2);stroke-width:2.5}
+.allpages{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.group{background:rgba(252,247,235,.72);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.group h4{margin:0 0 8px;font-size:14px;color:var(--gold2);font-family:Cinzel,'Zen Old Mincho',serif;letter-spacing:.06em}
+.group ul{list-style:none;margin:0;padding:0}
+.group li{font-size:14px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.group li:last-child{border-bottom:0}
+.group li a:hover{color:var(--gold2)}
+.group li small{color:var(--sub);font-size:12px;margin-left:6px}
+.cta{margin:48px 0 72px;padding:36px;background:#2b2117;color:#fff;border-radius:20px;box-shadow:0 14px 34px rgba(43,33,23,.18)}
+.cta h2{font-size:28px;margin:0 0 10px}.cta p{color:rgba(255,255,255,.72);margin:0}
+.buttons{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.btn{display:inline-block;padding:12px 18px;border-radius:9px;font-weight:700}.primary{background:var(--gold);color:#fff}.ghost{border:1px solid rgba(255,255,255,.25);color:#fff}
+.note{font-size:12px;color:rgba(255,255,255,.58);margin-top:16px}
+.footer{text-align:center;color:var(--sub);font-size:12px;padding:30px 0 50px;border-top:1px solid var(--line)}
+@media(max-width:700px){.cards,.allpages{grid-template-columns:1fr}.hero{padding-top:44px}.card{padding:20px}.cta{padding:28px 22px}.buttons{flex-direction:column}.btn{text-align:center}.brand span{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="./"><img src="assets/logo.png" alt="N's factory"><span>N's factory</span></a><a class="back" href="./">ホームへ戻る</a></div></header>
+<main class="wrap">
+
+<section class="hero">
+  <div class="eyebrow">Site Guide</div>
+  <h1>迷ったら、ここから。</h1>
+  <p class="lead">「どこに行けば何ができるのか分からない」というお声をいただきました。<br>このページは、やりたいことから入口を辿れる案内図です。</p>
+  <nav class="jump" aria-label="ページ内リンク">
+    <a href="#purpose">やりたいことから探す</a><a href="#faq">よく迷うところ</a><a href="#map">サイト全体図</a><a href="#all">ページ一覧</a>
+  </nav>
+</section>
+
+<div class="sec-head" id="purpose"><div class="eyebrow">Find by Purpose</div><h2 class="sec">やりたいことから探す</h2><p>濃い色のボタンが、その目的の「まず開く場所」です。</p></div>
+<section class="cards">
+  <article class="card"><div class="num">01</div><h3>革製品をオーダーしたい</h3><p>入口はひとつ。まず相談窓口で「こう使いたい」を伝えてください。金額の目安だけ知りたい方は見積もりへ。</p>
+    <a class="main" href="order_estimate/hearing-ai.html"><span>オーダー相談窓口<small>幕僚AIが24時間ご案内・連絡先を添えて送れます</small></span><span>→</span></a>
+    <ul>
+      <li><a href="order_estimate/leather-order-estimate-v2.html"><span>システム手帳の金額目安（見積もりシミュレーター）</span><span>→</span></a></li>
+      <li><a href="order-guide.html"><span>初めての革製品オーダーガイド</span><span>→</span></a></li>
+      <li><a href="planner-guide.html"><span>システム手帳オーダーガイド</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">02</div><h3>作品を見たい</h3><p>これまでの制作例は作品集に全部あります。革の色を変えて試す機能もここから。</p>
+    <a class="main" href="works.html"><span>作品集<small>600点以上・カテゴリや革で絞り込み</small></span><span>→</span></a>
+    <ul>
+      <li><a href="showroom/"><span>3D ショールーム（メタバース店舗）</span><span>→</span></a></li>
+      <li><a href="inzai-goods.html"><span>いんザイ君グッズ</span><span>→</span></a></li>
+      <li><a href="products/memorial-photo-frame.html"><span>メモリアルフォトフレーム</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">03</div><h3>買いたい</h3><p>各ショップとSNSはリンク集にまとめてあります。作品集の作品は基本的に過去のオーダー品で、「販売中」のものだけカードで購入できます。</p>
+    <a class="main" href="links.html"><span>リンク集（ショップ・SNS）<small>Creema / minne / BASE / STORES / メルカリ ほか</small></span><span>→</span></a>
+    <ul>
+      <li><a href="works.html?card=1"><span>作品集で今カード購入できる作品</span><span>→</span></a></li>
+      <li><a href="patterns/"><span>型紙PDF（N's pattern）</span><span>→</span></a></li>
+      <li><a href="refill-pdf/monthly-undated.html"><span>印刷用リフィルPDF（N's refill）</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">04</div><h3>オーダーの進み具合を知りたい</h3><p>受付番号ごとに、制作の段階と写真を公開しています。サイズのタブで絞り込めます。</p>
+    <a class="main" href="orderprogress.html"><span>オーダー進捗確認<small>受付番号で探す</small></span><span>→</span></a>
+    <ul>
+      <li><a href="index.html#contact"><span>進捗が見つからないときは問い合わせへ</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">05</div><h3>レザークラフトを習いたい</h3><p>ジョイフルホンダの講習（JHCS）と、印西市文化ホールの講座があります。</p>
+    <a class="main" href="JHCS.html"><span>JHCS 講習案内<small>全12回カリキュラム・生徒作品・受講生向け資料</small></span><span>→</span></a>
+    <ul>
+      <li><a href="inzai-teshigoto.html"><span>いんざい手仕事工房（印西市文化ホール）</span><span>→</span></a></li>
+      <li><a href="patterns/"><span>講習で使う型紙PDFを買う</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">06</div><h3>手帳リフィルを自分で印刷したい</h3><p>Micro5・Mini6・バイブル・A6・A5スリム・A5の月間／週間／日次を、A4プリンターで刷れる無料ツールです。</p>
+    <a class="main" href="tools/"><span>リフィル印刷ツール<small>6判型 × 月間・週間・日次</small></span><span>→</span></a>
+    <ul>
+      <li><a href="kouhou-room/ring-standards.html"><span>システム手帳 リング規格図鑑（穴位置・寸法）</span><span>→</span></a></li>
+      <li><a href="refill-pdf/monthly-undated.html"><span>できあがった印刷用PDFを買う</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">07</div><h3>道具・お手入れを知りたい</h3><p>工程ごとの道具の選び方と、革のお手入れ。</p>
+    <a class="main" href="kouhou-room/"><span>レザークラフト道具ガイド<small>工程別・楽天と専門店を併記</small></span><span>→</span></a>
+    <ul>
+      <li><a href="kouhou-room/textbook.html"><span>工程と道具の教科書</span><span>→</span></a></li>
+      <li><a href="care/oil.html"><span>ヌメ革を育てるオイルの選び方</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">08</div><h3>無料アプリを使いたい</h3><p>工房で作って使っているツールを、そのまま公開しています。登録不要。</p>
+    <a class="main" href="digital-room/"><span>デジタル幕僚室（アプリ一覧）<small>すべて無料・ブラウザで動きます</small></span><span>→</span></a>
+    <ul>
+      <li><a href="password-note.html"><span>パスワード管理ノート</span><span>→</span></a></li>
+      <li><a href="bp/"><span>血圧手帳</span><span>→</span></a></li>
+      <li><a href="diet/"><span>ダイエット管理</span><span>→</span></a></li>
+      <li><a href="digital-room/sns-video-maker/"><span>SNS紹介動画メーカー</span><span>→</span></a></li>
+      <li><a href="digital-room/svg-trace/"><span>イラストSVG変換</span><span>→</span></a></li>
+      <li><a href="digital-room/live-telop.html"><span>ライブテロップ（配信用字幕）</span><span>→</span></a></li>
+      <li><a href="digital-room/arch-modeler/"><span>建築3Dモデラー</span><span>→</span></a></li>
+      <li><a href="costco/"><span>コストコ共同購入</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">09</div><h3>工房のことを知りたい・読み物</h3><p>作り手のこと、AIスタッフ（幕僚）のこと、連載。</p>
+    <a class="main" href="profile.html"><span>プロフィール<small>作り手と工房の紹介</small></span><span>→</span></a>
+    <ul>
+      <li><a href="index.html#staff"><span>N's factory を動かすスタッフ（幕僚AI）</span><span>→</span></a></li>
+      <li><a href="note.html"><span>AI経営奮闘記（note 連載）</span><span>→</span></a></li>
+      <li><a href="shirei-room/"><span>司令官室</span><span>→</span></a></li>
+      <li><a href="hitsuki/"><span>教育幕僚室（日月神示・カタカムナのアーカイブ）</span><span>→</span></a></li>
+    </ul></article>
+  <article class="card"><div class="num">10</div><h3>問い合わせたい</h3><p>メールかLINEでどうぞ。SNSのDMでも受け付けています。</p>
+    <a class="main" href="index.html#contact"><span>作家に直接メールを送る<small>トップページの問い合わせ欄へ</small></span><span>→</span></a>
+    <ul>
+      <li><a href="https://lin.ee/55mjR4Q" target="_blank" rel="noopener"><span>LINE で問い合わせる</span><span>↗</span></a></li>
+      <li><a href="https://www.instagram.com/leathercraft_nsfactory/" target="_blank" rel="noopener"><span>Instagram</span><span>↗</span></a></li>
+      <li><a href="https://www.threads.com/@leathercraft_nsfactory" target="_blank" rel="noopener"><span>Threads</span><span>↗</span></a></li>
+    </ul></article>
+</section>
+
+<div class="sec-head" id="faq"><div class="eyebrow">Common Questions</div><h2 class="sec">よく迷うところ</h2></div>
+<section class="faq">
+  <details open><summary>オーダーの入口はどれですか？</summary><p>ひとつだけです。<a href="order_estimate/hearing-ai.html">オーダー相談窓口</a>で希望を伝えてください。見積もりシミュレーターは金額の目安を見る道具で、正式なやりとりは相談窓口から始まります。</p></details>
+  <details><summary>作品集の作品は買えますか？</summary><p>作品集は過去のオーダー品の記録が中心で、多くは一点物のためお渡し済みです。「カードで購入する」ボタンが出ている作品だけ、その場で購入できます。同じものを作ってほしいときは、作品ページの番号（NF2026_〇〇〇）を添えて<a href="order_estimate/hearing-ai.html">相談窓口</a>へ。</p></details>
+  <details><summary>「幕僚室」とは何ですか？どれを見ればいいですか？</summary><p>工房を支えるAIスタッフ（幕僚）の部屋です。訪問者の方に役立つのは、無料アプリの<a href="digital-room/">デジタル幕僚室</a>、道具ガイドの<a href="kouhou-room/">後方幕僚室</a>、読み物の<a href="hitsuki/">教育幕僚室</a>と<a href="shirei-room/">司令官室</a>です。ほかの部屋は工房の内部業務用で、見ても大きな情報はありません。</p></details>
+  <details><summary>型紙やリフィルのPDFはどう届きますか？</summary><p>カード決済（Stripe）のあと、ダウンロードリンクをメールでお送りします。カードを使わない場合は、メールでの銀行振込申込も受け付けています。</p></details>
+</section>
+
+<div class="sec-head" id="map"><div class="eyebrow">Site Map</div><h2 class="sec">サイト全体図</h2><p>トップページから、どこへ枝分かれしているか。四角を押すとそのページへ移動します。</p></div>
+<section class="map" aria-label="サイト全体図"><div id="sitemap"></div><p class="mapnote">※ 工房の内部業務に使うページ（管理画面など）は載せていません。</p></section>
+
+<div class="sec-head" id="all"><div class="eyebrow">All Public Pages</div><h2 class="sec">公開ページ一覧</h2></div>
+<section class="allpages">
+  <div class="group"><h4>Order</h4><ul>
+    <li><a href="order_estimate/hearing-ai.html">オーダー相談窓口</a></li>
+    <li><a href="order_estimate/leather-order-estimate-v2.html">見積もりシミュレーター</a></li>
+    <li><a href="orderprogress.html">オーダー進捗確認</a></li>
+    <li><a href="order-guide.html">初めての革製品オーダーガイド</a></li>
+    <li><a href="planner-guide.html">システム手帳オーダーガイド</a></li>
+  </ul></div>
+  <div class="group"><h4>Works &amp; Shop</h4><ul>
+    <li><a href="works.html">作品集</a></li>
+    <li><a href="showroom/">3D ショールーム</a></li>
+    <li><a href="inzai-goods.html">いんザイ君グッズ</a></li>
+    <li><a href="products/memorial-photo-frame.html">メモリアルフォトフレーム</a></li>
+    <li><a href="links.html">リンク集（ショップ・SNS）</a></li>
+    <li><a href="patterns/">型紙PDF</a><small>4種</small></li>
+    <li><a href="refill-pdf/monthly-undated.html">印刷用リフィルPDF</a></li>
+  </ul></div>
+  <div class="group"><h4>Lesson</h4><ul>
+    <li><a href="JHCS.html">JHCS 講習案内</a></li>
+    <li><a href="inzai-teshigoto.html">いんざい手仕事工房</a></li>
+  </ul></div>
+  <div class="group"><h4>Tools</h4><ul>
+    <li><a href="tools/">リフィル印刷ツール</a><small>6判型 × 3</small></li>
+    <li><a href="kouhou-room/ring-standards.html">リング規格図鑑</a></li>
+    <li><a href="digital-room/">デジタル幕僚室（無料アプリ）</a></li>
+    <li><a href="password-note.html">パスワード管理ノート</a></li>
+    <li><a href="bp/">血圧手帳</a></li>
+    <li><a href="diet/">ダイエット管理</a></li>
+    <li><a href="costco/">コストコ共同購入</a></li>
+  </ul></div>
+  <div class="group"><h4>Craft Knowledge</h4><ul>
+    <li><a href="kouhou-room/">道具ガイド（後方幕僚室）</a></li>
+    <li><a href="kouhou-room/textbook.html">工程と道具の教科書</a></li>
+    <li><a href="care/oil.html">オイルの選び方</a></li>
+  </ul></div>
+  <div class="group"><h4>About &amp; Reading</h4><ul>
+    <li><a href="profile.html">プロフィール</a></li>
+    <li><a href="index.html#staff">スタッフ（幕僚AI）</a></li>
+    <li><a href="note.html">AI経営奮闘記</a></li>
+    <li><a href="shirei-room/">司令官室</a></li>
+    <li><a href="hitsuki/">教育幕僚室</a></li>
+    <li><a href="hitsuki/katakamuna/">カタカムナ アーカイブ</a></li>
+    <li><a href="minamo-water.html">MINAMO ― 水面で、あそぶ。</a></li>
+  </ul></div>
+</section>
+
+<section class="cta"><div class="eyebrow" style="color:#d3b875">Start Here</div><h2>まずは、作品を見るか、相談するか。</h2><p>どちらから入っても大丈夫です。分からないことは、そのまま相談窓口に書いてください。</p>
+  <div class="buttons"><a class="btn primary" href="order_estimate/hearing-ai.html">オーダー相談窓口へ</a><a class="btn ghost" href="works.html">作品集を見る</a><a class="btn ghost" href="./">トップページへ</a></div>
+  <p class="note">このページは 2026年9月 に作りました。見つけにくい場所があれば、問い合わせ欄から教えてください。</p></section>
+
+</main>
+<footer class="footer">© 2024–2026 N's factory. All rights reserved.</footer>
+
+<script>
+/* サイト全体図（公開ページのみ）。データを直せば図が変わる */
+(function(){
+  var ROOT = {label:"トップページ", href:"./"};
+  var BRANCHES = [
+    {label:"オーダー", href:"order_estimate/hearing-ai.html", pages:[["オーダー相談窓口","order_estimate/hearing-ai.html"],["見積もりシミュレーター","order_estimate/leather-order-estimate-v2.html"],["オーダー進捗確認","orderprogress.html"],["オーダーガイド2本","order-guide.html"]]},
+    {label:"作品・買う", href:"works.html", pages:[["作品集","works.html"],["3Dショールーム","showroom/"],["リンク集（ショップ・SNS）","links.html"],["いんザイ君グッズ","inzai-goods.html"],["型紙PDF","patterns/"],["印刷用リフィルPDF","refill-pdf/monthly-undated.html"]]},
+    {label:"習う", href:"JHCS.html", pages:[["JHCS 講習案内","JHCS.html"],["いんざい手仕事工房","inzai-teshigoto.html"]]},
+    {label:"ツール", href:"tools/", pages:[["リフィル印刷ツール","tools/"],["リング規格図鑑","kouhou-room/ring-standards.html"],["デジタル幕僚室（無料アプリ）","digital-room/"]]},
+    {label:"知る", href:"kouhou-room/", pages:[["道具ガイド","kouhou-room/"],["工程と道具の教科書","kouhou-room/textbook.html"],["オイルの選び方","care/oil.html"]]},
+    {label:"工房・読み物", href:"profile.html", pages:[["プロフィール","profile.html"],["スタッフ（幕僚AI）","index.html#staff"],["AI経営奮闘記","note.html"],["司令官室","shirei-room/"],["教育幕僚室","hitsuki/"]]},
+  ];
+  var NS="http://www.w3.org/2000/svg", W=900, rowH=30, gap=12, x0=40, xB=250, xP=470, bw=150, bh=34, pw=330, ph=26;
+  var total = BRANCHES.reduce(function(s,b){return s+b.pages.length*rowH+gap*2;},0)+20;
+  var svg=document.createElementNS(NS,"svg"); svg.setAttribute("viewBox","0 0 "+W+" "+total); svg.setAttribute("role","img"); svg.setAttribute("aria-label","トップページから各ページへの枝分かれ図");
+  function el(t,a,p){var n=document.createElementNS(NS,t);for(var k in a)n.setAttribute(k,a[k]);(p||svg).appendChild(n);return n;}
+  function box(x,y,w,h,label,href,strong){
+    var a=el("a",{href:href}); a.setAttribute("tabindex","0");
+    el("rect",{x:x,y:y,width:w,height:h,rx:8,fill:strong?"#2b2117":"#fcf7eb",stroke:strong?"#2b2117":"#dccdaf","stroke-width":1.2},a);
+    var t=el("text",{x:x+12,y:y+h/2+5,"font-size":strong?14:13,fill:strong?"#fff":"#33291c","font-weight":strong?700:400},a); t.textContent=label;
+    return a;
+  }
+  var lines=el("g",{fill:"none",stroke:"#c9b68a","stroke-width":1.4});
+  var y=10, rootY=total/2-bh/2;
+  BRANCHES.forEach(function(b){
+    var top=y+gap, height=b.pages.length*rowH, by=top+height/2-bh/2;
+    el("path",{d:"M"+(x0+bw)+","+(rootY+bh/2)+" C"+(x0+bw+60)+","+(rootY+bh/2)+" "+(xB-60)+","+(by+bh/2)+" "+xB+","+(by+bh/2)},lines);
+    box(xB,by,bw,bh,b.label,b.href,true);
+    b.pages.forEach(function(pg,i){
+      var py=top+i*rowH+(rowH-ph)/2;
+      el("path",{d:"M"+(xB+bw)+","+(by+bh/2)+" C"+(xB+bw+40)+","+(by+bh/2)+" "+(xP-40)+","+(py+ph/2)+" "+xP+","+(py+ph/2)},lines);
+      box(xP,py,pw,ph,pg[0],pg[1],false);
+    });
+    y=top+height+gap;
+  });
+  box(x0,rootY,bw,bh,ROOT.label,ROOT.href,true);
+  document.getElementById("sitemap").appendChild(svg);
+})();
+</script>
+</body></html>
