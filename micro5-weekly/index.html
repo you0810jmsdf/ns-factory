@@ -141,6 +141,15 @@ body.panel-open #preview { margin-left: 280px; }
 .month-cal .cal-sat { color: #44c; }
 .month-cal .cal-in-week { background: rgba(200,230,255,0.5); }
 
+/* === MODULE: 上下見開き（リングが上）レイアウト === */
+/* 手帳を時計回りに90°回して使う人向け。上ページ＝紙の裏・下ページ＝紙の表で、見開き1面に1週間。中身を反時計回りに90°回して置く。 */
+.ls-rot { position: absolute; left: 0; top: 0; width: 105mm; height: 50mm; transform-origin: 0 0; transform: translateY(105mm) rotate(-90deg); padding: 1mm 1.5mm; display: flex; flex-direction: column; }
+/* ⛔ .ls-rot に overflow:hidden を付けない。html2canvas（PDF生成）が回す前の位置で切り抜き、ページの半分しか出なくなる。はみ出しは .page-body が切る */
+.ls-rot .day-blocks { flex: 0 0 auto; }
+.ls-rot .day-block { flex: 0 0 8.25mm; border-bottom: 0.15mm solid #ddd; }
+.ls-rot .day-block:last-child { border-bottom: 0.15mm solid #ddd; }
+.ls-rot .memo-area { border-top: none; }
+
 /* === MODULE: CSS Variables === */
 :root {
   --day-label-w: 15mm; --day-num-font: 6mm; --day-wd-font: 2.2mm; --day-block-h: 10mm;
@@ -234,6 +243,12 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle on" id="btnDated" onclick="setUndated(false)">日付あり</button>
       <button class="btn-toggle" id="btnUndated" onclick="setUndated(true)">日付なし</button>
     </div>
+    <div class="ctrl-row">
+      <label>使う向き</label>
+      <button class="btn-toggle on" id="btnPortrait" onclick="setOrient(false)">左右見開き</button>
+      <button class="btn-toggle" id="btnLandscape" onclick="setOrient(true)">上下見開き</button>
+    </div>
+    <div style="font-size:9px;color:#888;line-height:1.5;margin:-2px 0 5px;">左右見開き＝リングが左（通常）。上下見開き＝リングが上（手帳を時計回りに90°回して使う）で、見開き1面に1週間（上：前半4日＋週の見出し／下：後半3日＋メモ）。上下見開きでは「各日の高さ」は使いません</div>
     <div class="btn-row dated-only">
       <button class="btn-primary" onclick="renderSingle()">作成（期間の全週）</button>
     </div>
@@ -446,6 +461,13 @@ body.panel-open #preview { margin-left: 280px; }
         <li>曜日は「週開始」で選んだ並びで印刷します（月曜始まり／日曜始まり）。曜日も自分で書きたいときは「表示要素」の「曜日」をOFF</li>
         <li>年の途中からでも、使わない週があっても無駄になりません</li>
       </ul>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 上下見開き（リングが上）で使う場合</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>「印刷モード」の <b>使う向き</b> で「上下見開き」を選ぶと、手帳を時計回りに90°回して（リングを上にして）使うためのレイアウトになります。上下の見開き1面で1週間：上のページに前半4日と週の見出し、下のページに後半3日とメモ</li>
+        <li>最初の紙の表と最後の紙の裏は、罫線だけのメモページになります</li>
+        <li>用紙・両面設定（A4横・短辺綴じ）と穴の位置は左右見開きと同じです。「📖 綴じ後プレビュー」も上下見開きで表示されます</li>
+        <li>※ 上下見開きは試作です。実物での組み立て確認が済んでいません</li>
+      </ul>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙と面付け</p>
       <ul style="padding-left:18px; margin:4px 0;">
         <li>A4を <b>縦向き</b> に使い、Micro5（62×105mm）を3列×2段に6面並べます。周囲の余白（カット線の外側）は切り落とします</li>
@@ -520,7 +542,7 @@ let opts = {
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
   showImgWm: false, showHoliday: true,
   showDateNum: true, showDayWd: true, showWeekMeta: true,
-  undated: false, ghostStyle: 'seg'
+  undated: false, ghostStyle: 'seg', landscape: false
 };
 let lineCount = 3;
 let memoLineCount = 6;
@@ -605,6 +627,7 @@ function togglePageSide(side) {
   rerender();
 }
 function setLang(en) { isEN = en; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); rerender(); }
+function setOrient(ls) { opts.landscape = ls; document.getElementById('btnPortrait').classList.toggle('on', !ls); document.getElementById('btnLandscape').classList.toggle('on', ls); rerender(); }
 function toggleOpt(key, btnId) { opts[key] = !opts[key]; document.getElementById(btnId).classList.toggle('on', opts[key]); rerender(); }
 function rerender() { if (lastRenderMode === 'monthly' && !opts.undated) renderMonthly(); else renderSingle(); }
 function updateMemoCount(v) { memoLineCount = parseInt(v); document.getElementById('memoCountVal').textContent = v; rerender(); }
@@ -728,6 +751,68 @@ function buildWeeklyPage(weekStart, pageNum, holeSide) {
   </div>`;
 }
 
+// === MODULE: 上下見開き（リングが上）Page Builder ===
+// item: { ls: 'upper' | 'lower' | 'memo', week }。上（紙の裏）＝前半4日＋週の見出し、下（次の紙の表）＝後半3日＋メモ。
+function buildLandscapePage(item, pageNum, holeSide) {
+  const U = opts.undated;
+  const startDay = parseInt(document.getElementById('weekStartDay').value);
+  const holeStripLeft = holeSide === 'left';
+  const holeItems = opts.showHoles ? HOLE_POSITIONS_MM.map(pos => `<div class="hole" style="top:${pos}mm"></div>`).join('') : '';
+  const borderStyle = opts.showHoleLine ? (holeStripLeft ? 'border-right:0.2mm solid #ddd;' : 'border-left:0.2mm solid #ddd;') : '';
+  const punchGuideHTML = opts.showHoleBisect ? `<div class="punch-guide"></div>` : '';
+  const holesHTML = `<div class="hole-strip ${holeStripLeft?'':'right'}" style="${borderStyle}">${holeItems}${punchGuideHTML}</div>`;
+  const logoHTML = opts.showLogo ? `<div class="logo-wm"><svg viewBox="0 0 323.67773 316.20041" xmlns="http://www.w3.org/2000/svg"><g transform="translate(89.827845,-154.05446)"><path d="${OWL_PATH}" fill="#888"/></g></svg></div>` : '';
+  const textWmContent = escapeHTML(document.getElementById('textWmContent').value);
+  const textWmHTML = opts.showTextWm && textWmContent ? `<div class="text-wm">${textWmContent}</div>` : '';
+  const imgWmHTML = opts.showImgWm && customImgDataUrl ? `<img class="img-wm" src="${customImgDataUrl}" alt="">` : '';
+
+  let inner = '';
+  if (item.ls === 'memo') {
+    inner = `<div class="memo-area"><div class="memo-label">MEMO</div>${Array(14).fill('<div class="memo-line"></div>').join('')}</div>`;
+  } else {
+    const ws = item.week;
+    let holidays = null;
+    if (!U) {
+      const we = addDays(ws, 6);
+      holidays = getJPHolidays(ws.getFullYear());
+      if (ws.getFullYear() !== we.getFullYear()) holidays = Object.assign({}, holidays, getJPHolidays(we.getFullYear()));
+    }
+    const range = item.ls === 'upper' ? [0, 1, 2, 3] : [4, 5, 6];
+    const days = range.map(i => {
+      if (U) return buildDayBlock(null, (startDay + i) % 7, null);
+      const d = addDays(ws, i); return buildDayBlock(d, d.getDay(), holidays);
+    }).join('');
+    if (item.ls === 'upper') {
+      let metaHTML = '', monthAbbr = '';
+      if (U) {
+        if (opts.showMonthAbbr && opts.ghostStyle === 'seg') monthAbbr = `<div class="week-month-abbr">${segGhostHTML(2)}</div>`;
+      } else {
+        const we = addDays(ws, 6);
+        const rangeStr = (ws.getMonth() === we.getMonth()) ? `${ws.getMonth()+1}/${ws.getDate()} – ${we.getDate()}` : `${ws.getMonth()+1}/${ws.getDate()} – ${we.getMonth()+1}/${we.getDate()}`;
+        if (opts.showWeekMeta) metaHTML = `<div class="week-meta"><div class="week-range">${rangeStr}</div><div class="week-num">W${pad(getWeekNumber(ws))} · ${ws.getFullYear()}</div></div>`;
+        if (opts.showMonthAbbr) monthAbbr = `<div class="week-month-abbr">${isEN ? MONTH_EN_ABB[ws.getMonth()] : `${ws.getMonth()+1}月`}</div>`;
+      }
+      const monthHTML = (!U && opts.showMonthCal) ? buildMonthCalHTML(ws) : '';
+      inner = `<div class="week-header">${metaHTML}<div class="week-brand">N's factory</div>${monthAbbr}</div><div class="day-blocks">${days}</div>${monthHTML}`;
+    } else {
+      const memoHTML = memoLineCount > 0 ? `<div class="memo-area"><div class="memo-label">MEMO</div>${Array(memoLineCount).fill('<div class="memo-line"></div>').join('')}</div>` : '<div style="flex:1"></div>';
+      inner = `<div class="day-blocks">${days}</div>${memoHTML}`;
+    }
+  }
+  return `<div class="slot" data-pos="__POS__">
+    ${holeStripLeft ? holesHTML : ''}
+    <div class="page-body"><div class="ls-rot" data-ls="${item.ls}">${logoHTML}${textWmHTML}${imgWmHTML}${buildChecklistsHTML()}${inner}<div class="page-num-bar"><span>${pageNum}</span></div></div></div>
+    ${!holeStripLeft ? holesHTML : ''}
+  </div>`;
+}
+// 上下見開き: 週ごとに [上＝紙の裏, 下＝次の紙の表] を並べる。先頭（最初の紙の表）と末尾（最後の紙の裏）は罫線メモ
+function landscapePages(weeks) {
+  const out = [{ ls: 'memo' }];
+  weeks.forEach(w => out.push({ ls: 'upper', week: w }, { ls: 'lower', week: w }));
+  out.push({ ls: 'memo' });
+  return out;
+}
+
 // === MODULE: A4縦 Sheet Builder ===
 function makeA4HTML(weekStartDates, pageNums, sideKey) {
   const map = SLOT_MAP[sideKey];
@@ -740,7 +825,9 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
     const dl = pieceReal ? ` data-leaf="${Math.floor((pn - 1) / 2)}" data-face="${(pn - 1) % 2 ? 'back' : 'front'}"` : '';
     // null/undefined だけを空き枠にする（日付なしの週番号 0 は有効）
     if (idx >= weekStartDates.length || weekStartDates[idx] == null) return `<div class="slot empty" data-pos="${pos}"${dl}></div>`;
-    return buildWeeklyPage(weekStartDates[idx], pageNums[idx], HOLE_SIDE_BY_FACE[sideKey]).replace('data-pos="__POS__"', 'data-pos="' + pos + '"' + dl);
+    const item = weekStartDates[idx];
+    const pageHTML = (item && item.ls) ? buildLandscapePage(item, pageNums[idx], HOLE_SIDE_BY_FACE[sideKey]) : buildWeeklyPage(item, pageNums[idx], HOLE_SIDE_BY_FACE[sideKey]);
+    return pageHTML.replace('data-pos="__POS__"', 'data-pos="' + pos + '"' + dl);
   });
   return `<div class="a4-sheet">${cuts}${slots.join('')}</div>`;
 }
@@ -768,7 +855,8 @@ function renderSingle() {
   if (opts.undated) {
     const n = Math.min(60, Math.max(1, parseInt(document.getElementById('undatedCount').value) || 4));
     const weeks = Array.from({ length: n }, (_, i) => i);
-    html = renderSets(weeks, s => `日付なし ${s * PER_SHEET + 1}〜${Math.min(n, s * PER_SHEET + PER_SHEET)}週目`);
+    html = opts.landscape ? renderSets(landscapePages(weeks), s => `日付なし ${n}週（上下見開き） · Sheet ${s + 1}`)
+                          : renderSets(weeks, s => `日付なし ${s * PER_SHEET + 1}〜${Math.min(n, s * PER_SHEET + PER_SHEET)}週目`);
   } else {
     const startDay = parseInt(document.getElementById('weekStartDay').value);
     const rawDate = document.getElementById('startDate').value || toDateVal(new Date());
@@ -779,8 +867,11 @@ function renderSingle() {
     const weeks = [];
     for (let cur = baseWeek; cur <= endD && weeks.length < 60; cur = addWeeks(cur, 1)) weeks.push(cur);
     if (!weeks.length) weeks.push(baseWeek);
-    html = renderSets(weeks, s => `${toDateVal(weeks[0])}〜 ${weeks.length}週 · Sheet ${s + 1}`);
+    html = opts.landscape ? renderSets(landscapePages(weeks), s => `${toDateVal(weeks[0])}〜 ${weeks.length}週（上下見開き） · Sheet ${s + 1}`)
+                          : renderSets(weeks, s => `${toDateVal(weeks[0])}〜 ${weeks.length}週 · Sheet ${s + 1}`);
   }
+  // 綴じ後プレビュー（flip-sim.js）はこれを見て、上下見開き（リングが上）で表示する
+  document.getElementById('preview').dataset.orient = opts.landscape ? 'landscape' : 'portrait';
   document.getElementById('preview').innerHTML = html;
   saveSettings();
 }
@@ -886,6 +977,11 @@ function loadSettings() {
       document.body.classList.toggle('undated', opts.undated);
       document.getElementById('undatedSection').style.display = opts.undated ? '' : 'none';
     }
+    if (s.opts.landscape != null) {
+      opts.landscape = !!s.opts.landscape;
+      document.getElementById('btnPortrait').classList.toggle('on', !opts.landscape);
+      document.getElementById('btnLandscape').classList.toggle('on', opts.landscape);
+    }
   }
   if (s.isEN != null) { isEN = s.isEN; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); }
   showFront = true; showBack = true; // 保存値に関わらず常に両面（表裏選択は廃止）
@@ -902,6 +998,8 @@ const HISTORY_ENTRIES = [
     detail: 'Micro5週間印刷ツールを土台に、Micro5（62×105mm）版を作成しました。A4縦に3列×2段の6面付け。穴は5穴（上端から 15 / 34 / 53 / 72 / 91 mm・綴じ側の端から6mm。当工房の基準データ（Micro5 refill）と同じ。穴間隔19mm）。両面印刷は長辺綴じで、表面に右ページ（左穴）・裏面に左ページ（右穴）を置くので、切り分けた紙はすべて同じ向きのまま重ねて綴じられます。綴じ後プレビューで見開きの順と穴の位置を確認できます。' },
   { date: '2026-09-14', type: 'fix', title: '初期設定で1週間が入りきらず、後半の日とメモ欄が消えていた不具合を修正',
     detail: '「各日の高さ」の初期値がA5スリム用の20mmのままで、105mmのページに7日分（140mm）が収まっていませんでした。初期値を10mmにし、スライダーの範囲も5〜12mmに変更しました。以前に設定を保存している場合は「設定リセット」か「各日の高さ」を10mm以下にしてください。' },
+  { date: '2026-09-15', type: 'feat', title: '上下見開き（リングが上）で使う人向けのレイアウトを追加（試作）',
+    detail: '「印刷モード」の「使う向き」で「左右見開き／上下見開き」を選べます。上下見開きは手帳を時計回りに90°回して（リングが上）、見開き1面に1週間（上：前半4日＋週の見出し、下：後半3日＋メモ）。文字や罫線が正しい向きになるよう中身を回して印刷します。綴じ後プレビューも上下見開きで表示します。実物での組み立て確認は未了です。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
