@@ -54,7 +54,33 @@
     document.body.appendChild(badge);
   }
 
+  // 明らかに外部でない閲覧（事業主の端末・撮影や検証の自動操作）は数えない（2026-09-16 事業主指示）。
+  // 管理者モードに入った端末は以後ずっと除外。?nsf_internal=1 で手動登録、?nsf_internal=0 で解除
+  function isInternal() {
+    try {
+      const flag = new URLSearchParams(location.search).get('nsf_internal');
+      if (flag === '1') localStorage.setItem('nsf_internal', '1');
+      if (flag === '0') localStorage.removeItem('nsf_internal');
+      if (sessionStorage.getItem('nsf_admin_key')) localStorage.setItem('nsf_internal', '1');
+      if (localStorage.getItem('nsf_internal') === '1') return true;
+    } catch (_) {}
+    if (navigator.webdriver) return true;
+    return /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || location.protocol === 'file:';
+  }
+
+  // 数えずに今の件数だけ表示する
+  async function peek() {
+    try {
+      const res = await fetch(`${GAS_URL}?action=counts`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const row = data && data.ok && (data.counts || []).find(c => c.page === pageKey());
+      if (row) addBadge(row.pv, row.uu, true);
+    } catch (_) {}
+  }
+
   async function track() {
+    if (isInternal()) return peek();
     try {
       const url = `${GAS_URL}?action=track`
         + `&page=${encodeURIComponent(pageKey())}`
