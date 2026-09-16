@@ -409,6 +409,10 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle" id="btnUndated" onclick="setUndated(true)">日付なし</button>
     </div>
     <div class="ctrl-row">
+      <label>週開始</label>
+      <select id="weekStartDay" onchange="setWeekStart(this.value)"><option value="1" selected>月曜始まり</option><option value="0">日曜始まり</option></select>
+    </div>
+    <div class="ctrl-row">
       <label>使う向き</label>
       <button class="btn-toggle on" id="btnPortrait" onclick="setOrient(false)">左右見開き</button>
       <button class="btn-toggle" id="btnLandscape" onclick="setOrient(true)">上下見開き</button>
@@ -477,6 +481,7 @@ body.panel-open #preview { margin-left: 280px; }
       <label>曜日の透かし</label>
       <button class="btn-toggle on" id="btnGhostWd" onclick="toggleOpt('ghostWeekday','btnGhostWd')">7曜すべて薄く</button>
     </div>
+    <div class="btn-row"><button class="btn-toggle on" id="btnWdPrint" onclick="toggleOpt(\'printWeekdayUndated\',\'btnWdPrint\')">曜日を印字（日付なしでも）</button></div>
     <div class="ctrl-row"><label>透かし濃さ</label>
       <input type="range" id="ghostOpacity" min="0.05" max="0.6" step="0.01" value="0.10"
         oninput="setCSSVar('--ghost-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)">
@@ -827,6 +832,12 @@ body.panel-open #preview { margin-left: 280px; }
 const WD_JA       = ['日','月','火','水','木','金','土'];
 const WD_EN_SHORT = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const WD_JA_MON_FIRST = ['月','火','水','木','金','土','日'];
+// 週の開始（1=月曜・0=日曜）。2026-09-16 事業主決定「曜日は印字で固定。月曜始まり版と日曜始まり版」
+let weekStart = 1;
+function weekdayOrder() { return weekStart === 1 ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6]; }
+function wdLabel(wd) { return isEN ? WD_EN_SHORT[wd] : WD_JA[wd]; }
+function wdCls(wd) { return wd === 6 ? 'is-sat' : wd === 0 ? 'is-sun' : ''; }
+function setWeekStart(v) { weekStart = parseInt(v) === 0 ? 0 : 1; const el = document.getElementById('weekStartDay'); if (el) el.value = String(weekStart); rerender(); }
 const WD_EN_1     = ['M','T','W','T','F','S','S'];
 const MONTH_JA    = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -859,7 +870,7 @@ let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showTextWm: true,
   showImgWm: false, showHoliday: true, showTitle: false,
-  showCellGrid: false, cellGridCols: 2, cellGridRows: 8,
+  showCellGrid: false, printWeekdayUndated: true, cellGridCols: 2, cellGridRows: 8,
   showMonthNum: true, showDateNum: true, showDayHeader: true,
   undated: false, ghostStyle: 'seg', ghostWeekday: true, landscape: false
 };
@@ -947,7 +958,7 @@ function getJPHolidays(y) {
 // === MODULE: Month Grid（6行×7列、col0=月 … col6=日） ===
 function getMonthGrid(y, m) {
   const first = new Date(y, m - 1, 1);
-  const diffToMon = (first.getDay() + 6) % 7;
+  const diffToMon = (first.getDay() - weekStart + 7) % 7; // 週の開始曜日までさかのぼる
   const startMon = new Date(first);
   startMon.setDate(startMon.getDate() - diffToMon);
   const grid = [];
@@ -1050,20 +1061,11 @@ function cellGridHTML() {
 // === MODULE: 横ブロック 月間ページ Builder ===
 // ctx: { y, m, grid, holidays } 日付なしのときは grid/holidays を使わない
 function buildLeftPage(ctx, holeSide) {
-  const colDefs = [
-    { gridIdx: 0, label: isEN ? 'MON' : '月', cls: '' },
-    { gridIdx: 1, label: isEN ? 'TUE' : '火', cls: '' },
-    { gridIdx: 2, label: isEN ? 'WED' : '水', cls: '' },
-  ];
+  const colDefs = weekdayOrder().slice(0, 3).map((wd, i) => ({ gridIdx: i, label: wdLabel(wd), cls: wdCls(wd) }));
   return buildMonthlyPage(ctx, holeSide, colDefs, true, false);
 }
 function buildRightPage(ctx, holeSide) {
-  const colDefs = [
-    { gridIdx: 3, label: isEN ? 'THU' : '木', cls: '' },
-    { gridIdx: 4, label: isEN ? 'FRI' : '金', cls: '' },
-    { gridIdx: 5, label: isEN ? 'SAT' : '土', cls: 'is-sat' },
-    { gridIdx: 6, label: isEN ? 'SUN' : '日', cls: 'is-sun' },
-  ];
+  const colDefs = weekdayOrder().slice(3).map((wd, i) => ({ gridIdx: 3 + i, label: wdLabel(wd), cls: wdCls(wd) }));
   return buildMonthlyPage(ctx, holeSide, colDefs, false, true);
 }
 
@@ -1108,9 +1110,10 @@ function buildMonthlyPage(ctx, holeSide, colDefs, isLeft, isRight) {
       </div>`);
     }
     let headerHTML = '';
-    if (opts.showDayHeader) headerHTML = U ? (opts.ghostWeekday ? weekdayGhostHTML() : '') : cd.label;
-    const headerCls = U ? '' : cd.cls;
-    return `<div class="month-col ${U ? '' : cd.cls}"><div class="col-day-header ${headerCls}" style="font-family:var(--font-col-header)">${headerHTML}</div><div class="month-cells">${rows.join('')}</div></div>`;
+    const printWd = !U || opts.printWeekdayUndated;   // 日付なしでも曜日を印字（2026-09-16 既定ON）
+    if (opts.showDayHeader) headerHTML = printWd ? cd.label : (opts.ghostWeekday ? weekdayGhostHTML() : '');
+    const headerCls = printWd ? cd.cls : '';
+    return `<div class="month-col ${printWd ? cd.cls : ''}"><div class="col-day-header ${headerCls}" style="font-family:var(--font-col-header)">${headerHTML}</div><div class="month-cells">${rows.join('')}</div></div>`;
   }).join('');
 
   let footer = '';
@@ -1141,8 +1144,9 @@ function buildVerticalMonth(ctx, holeSide) {
   const wm = buildWatermarks();
   const cl = buildChecklistsHTML();
   const grid = U ? null : getMonthGrid(y, m);
-  const dayLabels = isEN ? ['MON','TUE','WED','THU','FRI','SAT','SUN'] : ['月','火','水','木','金','土','日'];
-  const dayClasses = ['','','','','','is-sat','is-sun'];
+  const dayLabels = weekdayOrder().map(wdLabel);
+  const dayClasses = weekdayOrder().map(wdCls);
+  const printWd = !U || opts.printWeekdayUndated;
 
   let numHTML = '';
   if (opts.showMonthNum) numHTML = U ? (opts.ghostStyle === 'seg' ? segGhostHTML(2) : '') : String(m);
@@ -1156,8 +1160,8 @@ function buildVerticalMonth(ctx, holeSide) {
   let dayHeaderRowHTML = '';
   if (opts.showDayHeader) {
     const cells = dayLabels.map((lbl, i) => {
-      const inner = U ? (opts.ghostWeekday ? weekdayGhostHTML() : '') : lbl;
-      return `<div class="vert-day-header ${U ? '' : dayClasses[i]}">${inner}</div>`;
+      const inner = printWd ? lbl : (opts.ghostWeekday ? weekdayGhostHTML() : '');
+      return `<div class="vert-day-header ${printWd ? dayClasses[i] : ''}">${inner}</div>`;
     }).join('');
     dayHeaderRowHTML = `<div class="vert-day-header-row">${cells}</div>`;
   }
@@ -1222,7 +1226,7 @@ function monthlyVertWeeksHTML(ctx, r0, r1) {
   const { y, m, holidays } = ctx;
   const U = opts.undated;
   const grid = U ? null : (ctx.grid || getMonthGrid(y, m));
-  const dayClasses = ['','','','','','is-sat','is-sun'];
+  const dayClasses = weekdayOrder().map(wdCls);
   let out = '';
   for (let r = r0; r < r1; r++) {
     const cells = Array.from({ length: 7 }, (_, col) => {
@@ -1253,15 +1257,16 @@ function buildMonthlyLandscapePage(item, pageNum, holeSide) {
   } else {
     const ctx = item.ctx;
     const m = ctx.m, y = ctx.y;
-    const dayLabels = isEN ? ['MON','TUE','WED','THU','FRI','SAT','SUN'] : ['月','火','水','木','金','土','日'];
-    const dayClasses = ['','','','','','is-sat','is-sun'];
+    const dayLabels = weekdayOrder().map(wdLabel);
+    const dayClasses = weekdayOrder().map(wdCls);
+    const printWd = !U || opts.printWeekdayUndated;
     if (item.kind === 'upper') {
       let numHTML = '';
       if (opts.showMonthNum) numHTML = U ? (opts.ghostStyle === 'seg' ? segGhostHTML(2) : '') : String(m);
       const headerHTML = `<div class="vert-header"><div class="vert-month-num">${numHTML}</div><div><div class="vert-month-name">${(opts.showMonthAbbr && !U) ? (isEN ? MONTH_EN_ABB[m-1] : MONTH_JA[m-1]) : ''}</div><div class="vert-year">${U ? '' : y}</div></div></div>`;
       let dayHeaderRowHTML = '';
       if (opts.showDayHeader) {
-        const cells = dayLabels.map((lbl, i) => `<div class="vert-day-header ${U ? '' : dayClasses[i]}">${U ? (opts.ghostWeekday ? weekdayGhostHTML() : '') : lbl}</div>`).join('');
+        const cells = dayLabels.map((lbl, i) => `<div class="vert-day-header ${printWd ? dayClasses[i] : ''}">${printWd ? lbl : (opts.ghostWeekday ? weekdayGhostHTML() : '')}</div>`).join('');
         dayHeaderRowHTML = `<div class="vert-day-header-row">${cells}</div>`;
       }
       inner = `<div class="vert-content">${headerHTML}<div class="vert-grid" style="flex:1 1 auto;">${dayHeaderRowHTML}<div class="vert-week-rows">${monthlyVertWeeksHTML(ctx, 0, 3)}</div></div></div>`;
@@ -1500,7 +1505,7 @@ function saveSettings() {
     owlWmX: get('owlWmX'), owlWmY: get('owlWmY'), owlWmSize: get('owlWmSize'), owlWmOpacity: get('owlWmOpacity'),
     imgWmX: get('imgWmX'), imgWmY: get('imgWmY'), imgWmSize: get('imgWmSize'), imgWmOpacity: get('imgWmOpacity'),
     undatedCount: get('undatedCount'), ghostOpacity: get('ghostOpacity'),
-    opts: { ...opts }, isEN, isDuplex, layoutMode
+    weekStart,     opts: { ...opts }, isEN, isDuplex, layoutMode
   };
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
 }
@@ -1552,7 +1557,7 @@ function loadSettings() {
       showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showHoleBisect: 'btnHoleBisect',
       showCutLine: 'btnCutLine', showLogo: 'btnLogo', showMonthAbbr: 'btnMonthAbbr',
       showTextWm: 'btnTextWm', showImgWm: 'btnImgWm', showHoliday: 'btnHoliday',
-      showTitle: 'btnTitle', showCellGrid: 'btnCellGrid',
+      showTitle: 'btnTitle', showCellGrid: 'btnCellGrid', printWeekdayUndated: 'btnWdPrint',
       showMonthNum: 'btnMonthNum', showDateNum: 'btnDateNum', showDayHeader: 'btnDayHeader',
       ghostWeekday: 'btnGhostWd'
     };
@@ -1570,6 +1575,7 @@ function loadSettings() {
       document.getElementById('undatedSection').style.display = opts.undated ? '' : 'none';
     }
   }
+  if (s.weekStart != null) { weekStart = parseInt(s.weekStart) === 0 ? 0 : 1; const wse = document.getElementById('weekStartDay'); if (wse) wse.value = String(weekStart); }
   if (s.isEN != null) { isEN = s.isEN; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); }
   if (s.isDuplex != null) { isDuplex = s.isDuplex; const btn = document.getElementById('btnDuplex'); if (btn) { btn.textContent = isDuplex ? 'ON' : 'OFF'; btn.classList.toggle('on', isDuplex); } }
   if (s.layoutMode != null) { layoutMode = s.layoutMode; document.getElementById('btnBlock').classList.toggle('on', layoutMode === 'block'); document.getElementById('btnVert').classList.toggle('on', layoutMode === 'vert'); }
@@ -1604,6 +1610,8 @@ const clGroups = [
   { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
   { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 80 },
   { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
+  { date: '2026-09-16', type: 'feat', title: '週の開始（月曜／日曜）を選べるように・日付なしでも曜日を印字',
+    detail: '「印刷モード」の「週開始」で月曜始まり・日曜始まりを切り替えられます（左ページに最初の3日、右ページに残りの4日）。日付なしモードでは曜日を透かしでなく印字するのが既定になりました（「日付なし」欄の「曜日を印字」で従来の透かしに戻せます）。' },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {
