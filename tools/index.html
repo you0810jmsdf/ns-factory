@@ -205,7 +205,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       .tool { gap: 10px; padding: 11px 12px; }
       .tool .k { min-width: 0; padding: 4px 6px; font-size: 9px; }
       .tool .t { font-size: 15px; }
-      .topbar nav { gap: 12px; }
+      .topbar { flex-wrap: wrap; gap: 8px 14px; padding: 14px 0; }   /* 390px でナビの文字が3行に折れたため、ナビを2行目に */
+      .topbar nav { gap: 12px; width: 100%; }
+      .topbar nav a { white-space: nowrap; }
     }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
