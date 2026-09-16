@@ -44,6 +44,17 @@ h1{font-size:20px;margin:6px 0 2px}
 .preview.show{display:block}
 .preview img{width:100%;max-height:46vh;object-fit:contain;border-radius:8px;background:#222}
 .preview .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;gap:8px}
+.queue-note{font-size:12px;color:var(--muted);margin-top:10px;min-height:1em}
+.scan-queue{display:flex;gap:8px;overflow-x:auto;padding:6px 0 2px;-webkit-overflow-scrolling:touch}
+.scan-queue:empty{display:none}
+.qitem{position:relative;flex:0 0 72px;width:72px;border-radius:8px;overflow:hidden;background:#222;border:2px solid #333;cursor:pointer}
+.qitem img{width:100%;height:72px;object-fit:cover;display:block}
+.qitem .qs{font-size:10px;text-align:center;padding:2px 0;background:#333;color:#ddd}
+.qitem.analyzing .qs{background:#5a4a00;color:#ffd54f}
+.qitem.ready .qs{background:#0b3d1a;color:#7ee2a0}
+.qitem.error .qs{background:#5a1010;color:#ff8a80}
+.qitem.on{border-color:var(--accent,#c9a96e)}
+.qitem .qx{position:absolute;top:2px;right:2px;width:20px;height:20px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:13px;line-height:20px;padding:0;cursor:pointer}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:14px;color:var(--ink)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.primary:disabled{opacity:.5}
@@ -164,8 +175,10 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     <div class="card">
       <div class="big-actions">
         <label class="big-btn primary"><span class="ic">📷</span>カメラで撮影<input type="file" id="camInput" accept="image/*" capture="environment"></label>
-        <label class="big-btn"><span class="ic">🖼️</span>スクショ・画像を選ぶ<input type="file" id="fileInput" accept="image/*"></label>
+        <label class="big-btn"><span class="ic">🖼️</span>スクショ・画像を選ぶ<input type="file" id="fileInput" accept="image/*" multiple></label>
       </div>
+      <div class="queue-note" id="queueNote"></div>
+      <div class="scan-queue" id="scanQueue"></div>
       <div class="preview" id="preview">
         <img id="previewImg" alt="プレビュー">
         <div class="meta"><span id="previewName"></span><span id="previewSize"></span></div>
@@ -332,8 +345,6 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   const $ = id => document.getElementById(id);
   let rules = null;
   let rulesOk = false;
-  let currentImage = null;   // {dataUrl, name, bytes}
-  let currentRequestId = null;
   let ledgerCache = [];
   let mfRows = [];
   let mergeResult = null;
@@ -507,42 +518,138 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     const ctx = canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cw,ch); ctx.drawImage(img,0,0,cw,ch);
     return canvas.toDataURL('image/jpeg', JPEG_Q);
   }
-  async function onPick(ev){
-    const file = ev.target.files && ev.target.files[0];
-    ev.target.value='';
-    if(!file) return;
-    setStatus('captureStatus','画像を準備中…');
+  // ── 連続スキャン（キュー）──────────────────────────────────
+  // 撮った写真はキューに入れ、裏で1件ずつAI解析する。撮影は解析中も続けられる。
+  // 確認待ちになった先頭の1件をフォームへ自動で展開し、登録したら次へ進む。
+  // ⛔ 解析は必ず1件ずつ直列（pumpQueue）。並列に投げると GAS の日次上限・課金が読めなくなる。
+  // ⛔ 登録の requestId はキュー項目ごとに固定する（再送しても二重登録にならない）。
+  // ⛔ 「未確認のまま台帳に入れない」原則は変えない。自動でやるのは解析まで、登録は必ず人が押す。
+  let scanQueue = [];        // {id, dataUrl, name, bytes, requestId, status, data, error, usage, todayCount}
+  let queueBusy = false;     // 解析中（直列化のためのフラグ）
+  let currentItem = null;    // いまフォームに展開している項目
+
+  const Q_LABEL = { pending:'待機', analyzing:'解析中', ready:'確認待ち', error:'失敗' };
+
+  function queueCounts(){
+    const c = { pending:0, analyzing:0, ready:0, error:0 };
+    scanQueue.forEach(q => { c[q.status] = (c[q.status] || 0) + 1; });
+    return c;
+  }
+
+  function renderQueue(){
+    const box = $('scanQueue'), note = $('queueNote');
+    box.innerHTML = '';
+    scanQueue.forEach(q => {
+      const d = document.createElement('div');
+      d.className = 'qitem ' + q.status + (currentItem && currentItem.id === q.id ? ' on' : '');
+      d.innerHTML = '<img alt=""><div class="qs">' + (Q_LABEL[q.status] || q.status) + '</div>'
+                  + '<button type="button" class="qx" title="この1枚を取り消す" aria-label="この1枚を取り消す">×</button>';
+      d.querySelector('img').src = q.dataUrl;
+      d.addEventListener('click', () => { if(q.status === 'ready' || q.status === 'error') showItem(q); });
+      d.querySelector('.qx').addEventListener('click', ev => { ev.stopPropagation(); dropItem(q); });
+      box.appendChild(d);
+    });
+    const c = queueCounts(), parts = [];
+    if(c.analyzing) parts.push('解析中 ' + c.analyzing + '枚');
+    if(c.pending)   parts.push('待機 ' + c.pending + '枚');
+    if(c.ready)     parts.push('確認待ち ' + c.ready + '枚');
+    if(c.error)     parts.push('失敗 ' + c.error + '枚');
+    note.textContent = scanQueue.length ? parts.join('・') + '　— 撮影は続けられます' : '';
+  }
+
+  async function enqueue(file){
+    setStatus('captureStatus', '画像を準備中…');
     try{
       const dataUrl = await fileToResizedDataUrl(file);
-      currentImage = { dataUrl, name:file.name||'camera.jpg', bytes: Math.round(dataUrl.length*0.75) };
-      currentRequestId = uuid();
-      $('previewImg').src = dataUrl; $('previewName').textContent = currentImage.name; $('previewSize').textContent = Math.round(currentImage.bytes/1024)+' KB（縮小後）';
-      $('preview').classList.add('show'); $('formCard').style.display='none';
-      setStatus('captureStatus','');
-      analyze();
-    }catch(e){ setStatus('captureStatus','画像を読み込めませんでした: '+e.message,'err'); }
+      scanQueue.push({ id: uuid(), dataUrl, name: file.name || 'camera.jpg', bytes: Math.round(dataUrl.length * 0.75),
+                       requestId: uuid(), status: 'pending', data: null, error: '', usage: null, todayCount: null });
+      setStatus('captureStatus', '');
+      renderQueue();
+      pumpQueue();
+    }catch(e){ setStatus('captureStatus', '画像を読み込めませんでした: ' + e.message, 'err'); }
+  }
+
+  // 待機中の先頭を1件だけ解析し、終わったら次へ。撮影で pending が増えても取りこぼさない。
+  async function pumpQueue(){
+    if(queueBusy) return;
+    const item = scanQueue.find(q => q.status === 'pending');
+    if(!item) return;
+    if(!adminKey()){
+      item.status = 'error';
+      item.error = '管理者キーが見つかりません。ページを開き直してゲートを通過してください。';
+      renderQueue(); maybeShowNext(); return;
+    }
+    queueBusy = true; item.status = 'analyzing'; renderQueue();
+    try{
+      const slimRules = { accounts: (rules.accounts || []).map(a => ({ name: a.name, keywords: (a.keywords || []).slice(0, 8) })) };
+      const r = await gas('analyze', { image: item.dataUrl, rules: slimRules }, 2);
+      item.data = r.data || {}; item.usage = r.usage || null; item.todayCount = r.todayCount; item.error = ''; item.status = 'ready';
+    }catch(e){
+      item.data = {}; item.error = e.message || '読み取りに失敗しました'; item.status = 'error';
+    }finally{
+      queueBusy = false;
+      renderQueue();
+      if(currentItem && currentItem.id === item.id) showItem(item);   // 「もう一度読み取る」の戻り
+      else maybeShowNext();
+      pumpQueue();
+    }
+  }
+
+  // フォームが空いていれば、撮った順に「確認待ち／失敗」の先頭を自動で展開する（撮影順を崩さない）
+  function maybeShowNext(){
+    if(currentItem) return;
+    const next = scanQueue.find(q => q.status === 'ready' || q.status === 'error');
+    if(next) showItem(next);
+  }
+
+  function showItem(item){
+    currentItem = item;
+    $('previewImg').src = item.dataUrl;
+    $('previewName').textContent = item.name;
+    $('previewSize').textContent = Math.round(item.bytes / 1024) + ' KB（縮小後）';
+    $('preview').classList.add('show');
+    $('analyzeBtn').disabled = false; $('analyzeBtn').textContent = '🤖 もう一度読み取る';
+    setStatus('registerStatus', '');
+    fillForm(item.data || {});
+    if(item.status === 'error'){
+      setStatus('captureStatus', '読み取り失敗: ' + item.error + '（手入力で登録できます）', 'err');
+    }else{
+      const usage = item.usage ? `（入力${item.usage.input_tokens}tok／出力${item.usage.output_tokens}tok・本日${item.todayCount}件目）` : '';
+      setStatus('captureStatus', '読み取り完了。内容を確認して登録してください ' + usage, 'ok');
+    }
+    renderQueue();
+  }
+
+  function dropItem(item){
+    if(item.status === 'analyzing'){ toast('解析中の写真は取り消せません。少し待ってください'); return; }
+    scanQueue = scanQueue.filter(q => q.id !== item.id);
+    if(currentItem && currentItem.id === item.id){
+      currentItem = null;
+      $('formCard').style.display = 'none'; $('preview').classList.remove('show');
+      setStatus('captureStatus', ''); setStatus('registerStatus', '');
+    }
+    renderQueue(); maybeShowNext();
+  }
+
+  async function onPick(ev){
+    const files = Array.from(ev.target.files || []);
+    ev.target.value = '';
+    for(const f of files) await enqueue(f);
   }
   $('camInput').addEventListener('change', onPick);
   $('fileInput').addEventListener('change', onPick);
-  $('analyzeBtn').addEventListener('click', analyze);
 
-  // ── AI解析 ─────────────────────────────────────────────
-  async function analyze(){
-    if(!currentImage) return;
-    if(!adminKey()){ setStatus('captureStatus','管理者キーが見つかりません。ページを開き直してゲートを通過してください。','err'); return; }
-    const btn=$('analyzeBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 読み取り中…';
-    setStatus('captureStatus','AIがレシートを読んでいます（数秒）');
-    try{
-      const slimRules = { accounts: (rules.accounts||[]).map(a=>({name:a.name, keywords:(a.keywords||[]).slice(0,8)})) };
-      const r = await gas('analyze', { image: currentImage.dataUrl, rules: slimRules }, 2);
-      fillForm(r.data||{});
-      const usage = r.usage ? `（入力${r.usage.input_tokens}tok／出力${r.usage.output_tokens}tok・本日${r.todayCount}件目）` : '';
-      setStatus('captureStatus','読み取り完了。内容を確認して登録してください '+usage,'ok');
-    }catch(e){
-      setStatus('captureStatus','読み取り失敗: '+e.message+'（手入力で登録できます）','err');
-      fillForm({});
-    }finally{ btn.disabled=false; btn.textContent='🤖 もう一度読み取る'; }
-  }
+  // 「もう一度読み取る」＝いま開いている1枚だけ。待機列の先頭へ動かして即解析する
+  $('analyzeBtn').addEventListener('click', () => {
+    if(!currentItem) return;
+    const it = currentItem;
+    it.status = 'pending'; it.data = null; it.error = '';
+    scanQueue = [it].concat(scanQueue.filter(q => q.id !== it.id));
+    $('analyzeBtn').disabled = true; $('analyzeBtn').innerHTML = '<span class="spinner"></span> 読み取り中…';
+    setStatus('captureStatus', 'AIがレシートを読んでいます（数秒）');
+    renderQueue(); pumpQueue();
+  });
+
   function fillForm(d){
     $('formCard').style.display='block';
     $('fDate').value = d.date || new Date().toISOString().slice(0,10);
@@ -573,22 +680,31 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
 
   // ── 登録 ─────────────────────────────────────────────
   $('registerBtn').addEventListener('click', async ()=>{
-    if(!currentImage){ toast('画像がありません'); return; }
+    if(!currentItem){ toast('画像がありません'); return; }
+    const item = currentItem;
     const rec = collectForm();
     if(!rec) return;
     const btn=$('registerBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 保存中…';
     setStatus('registerStatus','Driveへ保存し、台帳に追記しています…');
     try{
-      const r = await gas('register', { requestId: currentRequestId, record: rec, image: currentImage.dataUrl }, 3);
-      if(r.duplicate){ setStatus('registerStatus','同じ画像が既に登録済みです（ID: '+r.id+'）。二重登録を防ぎました。','ok'); }
-      else { setStatus('registerStatus','登録完了。Drive: '+(r.record&&r.record.file_name||''),'ok'); toast('台帳に登録しました'); }
+      const r = await gas('register', { requestId: item.requestId, record: rec, image: item.dataUrl }, 3);
       ledgerCache = [];
-      setTimeout(resetCapture, 1500);
+      scanQueue = scanQueue.filter(q => q.id !== item.id);
+      currentItem = null;
+      const remain = scanQueue.length;
+      if(r.duplicate) toast('同じ画像が既に登録済みです（二重登録を防ぎました）');
+      else toast('台帳に登録しました' + (remain ? '（残り ' + remain + '枚）' : '。全部終わりました'));
+      $('formCard').style.display='none'; $('preview').classList.remove('show');
+      setStatus('registerStatus','');
+      setStatus('captureStatus', remain ? '' : '全部登録しました。続けて撮影できます。', remain ? '' : 'ok');
+      renderQueue(); maybeShowNext();
+      if(!currentItem) window.scrollTo(0,0);
     }catch(e){ setStatus('registerStatus','登録失敗: '+e.message,'err'); }
     finally{ btn.disabled=false; btn.textContent='📒 台帳に登録してDriveへ保存'; }
   });
-  $('resetBtn').addEventListener('click', resetCapture);
-  function resetCapture(){ currentImage=null; currentRequestId=null; $('preview').classList.remove('show'); $('formCard').style.display='none'; $('analyzeBtn').textContent='🤖 AIで読み取る'; setStatus('captureStatus',''); setStatus('registerStatus',''); window.scrollTo(0,0); }
+  $('resetBtn').addEventListener('click', ()=>{ if(currentItem) dropItem(currentItem); });
+  // 互換用（全部捨てて初期状態へ）。画面のボタンからは呼ばない
+  function resetCapture(){ scanQueue=[]; currentItem=null; queueBusy=false; $('preview').classList.remove('show'); $('formCard').style.display='none'; $('analyzeBtn').textContent='🤖 AIで読み取る'; setStatus('captureStatus',''); setStatus('registerStatus',''); renderQueue(); window.scrollTo(0,0); }
   function collectForm(){
     const date=$('fDate').value, amount=Number($('fAmount').value||0), store=$('fStore').value.trim();
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){ toast('日付を入力してください'); $('fDate').focus(); return null; }
