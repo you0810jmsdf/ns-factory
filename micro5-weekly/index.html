@@ -1016,6 +1016,8 @@ const clGroups = [
   { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
   { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 80 },
   { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
+  { date: '2026-09-16', type: 'fix', title: '綴じ後プレビューで平日の日付・週見出しが薄い灰色に見えていたのを修正',
+    detail: '綴じ後プレビュー（assets/flip-sim.js）の紙面が暗い背景の文字色を受け継いでいました。紙面の文字色を黒に指定しました。印刷やPDFには影響ありません。' },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {
