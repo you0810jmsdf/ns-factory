@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<!-- 内部向け構造マップ（概念図／画面設計／ER図）。管理画面「🗺 構造マップ」タブから iframe で読む。
+     正本は Claude Artifact（https://claude.ai/artifact/DQ9a77NdnRqKQ3jYVoYhMN）と同じ内容。
+     ⛔ 認証情報・顧客データ・シートの中身は載せない（構造だけ）。2026-09-16 事業主決定A で同梱 -->
+<style>[hidden]{display:none!important}</style>
+<title>N's factory 構造マップ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root{
+    --bg:#0e0c0a; --bg2:#141110; --surface:#1a1613; --line:#33291f; --line2:#4a3d2f;
+    --text:#ece3d3; --muted:#9c9080; --gold:#c9a96e; --gold2:#e6cf9a;
+    --k-actor:#ece3d3; --k-page:#c9a96e; --k-admin:#a596cc; --k-gas:#6fb8a0; --k-sheet:#84bf6e; --k-data:#6fa4cf; --k-ext:#d0806f; --k-mail:#c9b98a;
+    --display:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+    --ui:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI",sans-serif;
+    --mono:"JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ui);font-size:14px;overflow:hidden;color-scheme:dark}
+  button{font-family:inherit;color:inherit}
+
+  .bar{position:fixed;inset:0 0 auto 0;z-index:10;display:flex;align-items:center;gap:16px;padding:10px 16px;background:linear-gradient(to bottom,rgba(14,12,10,.98),rgba(14,12,10,.86));border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+  .brand{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .brand .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+  .brand h1{margin:0;font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.02em;white-space:nowrap}
+  .views{display:flex;gap:4px;padding:3px;border:1px solid var(--line2);border-radius:999px;background:var(--bg2);margin-inline:auto}
+  .views button{border:0;background:transparent;padding:7px 16px;border-radius:999px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.1;transition:background .2s,color .2s}
+  .views button small{font-size:10px;font-weight:400;letter-spacing:.04em;opacity:.8}
+  .views button[aria-selected="true"]{background:var(--gold);color:#1a1409}
+  .views button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+  .tools{display:flex;gap:6px}
+  .tools button{border:1px solid var(--line2);background:var(--bg2);border-radius:8px;min-width:36px;height:34px;padding:0 10px;cursor:pointer;font-size:14px}
+  .tools button:hover{border-color:var(--gold)}
+  .tools button:focus-visible{outline:2px solid var(--gold2)}
+
+  .stage{position:fixed;inset:0;padding-top:58px}
+  svg#canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none;background:
+    radial-gradient(circle at 1px 1px, #211c17 1px, transparent 1.5px) 0 0/28px 28px, var(--bg)}
+  svg#canvas.drag{cursor:grabbing}
+  .node{cursor:pointer}
+  .node rect.body{transition:filter .15s}
+  .node:hover rect.body{filter:brightness(1.18)}
+  .node.sel rect.body{stroke-width:3}
+  .edge path{fill:none;stroke:#5b4e40;stroke-width:1.6;marker-end:url(#arrow)}
+  .edge.dashed path{stroke-dasharray:6 5}
+  .edge.lit path{stroke:var(--gold2);stroke-width:2.4;marker-end:url(#arrowLit)}
+  .edge text{font-size:11px;fill:var(--muted)}
+  .edge.lit text{fill:var(--gold2)}
+  .edge.dim path{opacity:.18}
+  .edge.dim text{opacity:.18}
+  .node.dim{opacity:.3}
+  .rel path{fill:none;stroke:#6a5a48;stroke-width:1.5}
+  .rel.lit path{stroke:var(--gold2);stroke-width:2.4}
+  .rel text{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+  .rel.lit text{fill:var(--gold2)}
+  .rel.dim{opacity:.18}
+
+  .legend{position:fixed;left:16px;bottom:16px;z-index:5;display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 14px;background:rgba(20,17,16,.92);border:1px solid var(--line);border-radius:10px;font-size:12px;max-width:min(92vw,720px)}
+  .legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+  .legend i{width:12px;height:12px;border-radius:3px;border:2px solid var(--c);background:color-mix(in srgb,var(--c) 18%,#1a1613)}
+  .hint{position:fixed;right:16px;bottom:16px;z-index:5;font-size:12px;color:var(--muted);background:rgba(20,17,16,.9);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+
+  #panel{position:fixed;top:70px;right:16px;bottom:64px;width:360px;max-width:calc(100vw - 32px);z-index:8;overflow:auto;background:rgba(26,22,19,.97);border:1px solid var(--line2);border-radius:14px;padding:18px 20px 22px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  #panel .close{position:absolute;top:10px;right:10px;border:1px solid var(--line2);background:var(--bg2);border-radius:8px;width:30px;height:30px;cursor:pointer}
+  #panel .kind{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--c,var(--gold))}
+  #panel h2{font-family:var(--display);font-size:20px;margin:4px 0 12px;line-height:1.35;text-wrap:balance;padding-right:30px}
+  #panel dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0 0 14px;font-size:13px}
+  #panel dt{color:var(--muted);white-space:nowrap}
+  #panel dd{margin:0;word-break:break-all}
+  #panel dd code{font-family:var(--mono);font-size:12px;color:var(--gold2)}
+  #panel p{margin:0 0 12px;line-height:1.7;font-size:13.5px}
+  #panel .rows{margin:0;padding:0;list-style:none;border-top:1px solid var(--line);font-family:var(--mono);font-size:12px}
+  #panel .rows li{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line)}
+  #panel .rows .tag{font-size:9px;letter-spacing:.08em;padding:1px 5px;border-radius:4px;border:1px solid var(--gold);color:var(--gold);flex:none}
+  #panel .rows .tag.fk{border-color:var(--k-data);color:var(--k-data)}
+  #panel .rows .memo{margin-left:auto;color:var(--muted);font-family:var(--ui);font-size:11.5px;text-align:right}
+  #panel a.open{display:inline-block;margin-top:8px;padding:8px 14px;border-radius:8px;background:var(--gold);color:#1a1409;text-decoration:none;font-weight:700;font-size:13px}
+  #panel .links{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  #panel .links button{border:1px solid var(--line2);background:var(--bg2);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer}
+  #panel .links button:hover{border-color:var(--gold)}
+
+  @media (max-width:760px){
+    .bar{flex-wrap:wrap;gap:8px;padding:8px 12px}
+    .brand h1{font-size:15px}
+    .views{order:3;width:100%;margin:0;justify-content:space-between}
+    .views button{padding:6px 8px;flex:1}
+    .tools{margin-left:auto}
+    .stage{padding-top:104px}
+    .hint{display:none}
+    .legend{left:8px;right:8px;bottom:8px;max-width:none;font-size:11px;gap:4px 10px;padding:8px 10px}
+    #panel{top:auto;left:8px;right:8px;bottom:8px;width:auto;max-height:52vh;padding:14px 16px}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+
+<header class="bar">
+  <div class="brand"><span class="eyebrow">ns-factory · github pages</span><h1>N's factory 構造マップ</h1></div>
+  <nav class="views" role="tablist" aria-label="図の切替" id="viewTabs"></nav>
+  <div class="tools">
+    <button id="zoomOut" title="縮小" aria-label="縮小">−</button>
+    <button id="zoomIn" title="拡大" aria-label="拡大">＋</button>
+    <button id="fitAll" title="3つの図を同時に見る">全体</button>
+  </div>
+</header>
+
+<div class="stage">
+  <svg id="canvas" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="サイトの概念図・画面設計・ER図を載せたキャンバス"></svg>
+  <aside id="panel" hidden aria-live="polite"></aside>
+  <div class="legend" id="legend"></div>
+  <div class="hint">ドラッグで移動 · ホイールで拡大縮小 · ← → で図を切替 · 箱を押すと説明</div>
+</div>
+
+<script>
+/* ───────────────────────────── 共通 ───────────────────────────── */
+const SITE = "https://you0810jmsdf.github.io/ns-factory/";
+const NS = "http://www.w3.org/2000/svg";
+const KIND = {
+  actor:{c:"var(--k-actor)",fill:"#1c1917",label:"人"},
+  page: {c:"var(--k-page)", fill:"#251d14",label:"公開ページ"},
+  admin:{c:"var(--k-admin)",fill:"#1e1a24",label:"管理ページ（合言葉）"},
+  gas:  {c:"var(--k-gas)",  fill:"#14211d",label:"GAS（Apps Script）"},
+  sheet:{c:"var(--k-sheet)",fill:"#15231a",label:"スプレッドシート"},
+  data: {c:"var(--k-data)", fill:"#151f2a",label:"JSON / CSV（リポジトリ内）"},
+  ext:  {c:"var(--k-ext)",  fill:"#261a19",label:"外部サービス"},
+  mail: {c:"var(--k-mail)", fill:"#231f16",label:"メール"},
+};
+const VIEWS = [
+  {id:"concept",label:"概念図",sub:"誰が・何を・どこへ",x:0,   y:0,w:1900,h:1250},
+  {id:"design", label:"画面設計",sub:"主要12画面と行き来",x:2100,y:0,w:1900,h:1250},
+  {id:"er",     label:"ER図",  sub:"表と参照関係",     x:4200,y:0,w:2200,h:1470},
+];
+
+/* ───────────────────────────── 概念図 ───────────────────────────── */
+const C = {x:0,y:0};
+const LANES_C = [
+  {y:70, h:330, label:"お客様の導線（相談 → 見積 → 受注 → 進捗）"},
+  {y:425,h:290, label:"講座・型紙・リフィル（デジタル販売）"},
+  {y:740,h:470, label:"工房の裏側（登録・管理・発信）"},
+];
+const N = (id,kind,x,y,title,sub,d={},w=190,h=64)=>({id,kind,x,y,w,h,title,sub,d});
+const CN = [
+  N("cust","actor",40,170,"お客様","SNS・検索・リンク集から",{note:"入口はトップページ、作品集、リンク集（links.html）、Instagram プロフィールのリンク。"},130,64),
+  N("index","page",200,100,"トップページ","index.html",{path:"index.html",backend:"幕僚計画GAS（管理向け）・BTC換算GAS",data:"news-data.json",note:"Hero の主ボタンは「オーダー相談」、副ボタンが「金額目安」。ナビに幕僚室10室、下部にお知らせ・特商法。"}),
+  N("guide","page",200,300,"ガイド2本","order-guide / planner-guide",{path:"order-guide.html, planner-guide.html",note:"初めての革製品オーダーガイドと、システム手帳オーダーガイド。どちらもオーダー相談へ送る。"}),
+  N("showroom","page",200,200,"3D ショールーム","showroom/",{path:"showroom/index.html",backend:"showroom_ai_chat（幕僚AI接客）・visitor_chat（訪問者同士）",note:"3D非対応の環境では通常表示。会話はオーダー相談へ引き継げる。"}),
+  N("hearing","page",440,100,"オーダー相談AI","order_estimate/hearing-ai.html",{path:"order_estimate/hearing-ai.html",backend:"hearing_ai_proxy（Gemini中継）・オーダー進捗GAS submitChatOrder",data:"hearing-kb.json / leather-catalog.json / leather-stock.csv / stitch-colors.json",note:"オーダー導線の主入口。連絡先必須。革の即答ギャラリーと見積もりへの引き継ぎを持つ。"}),
+  N("estimate","page",680,100,"見積もりシミュレーター","leather-order-estimate-v2.html",{path:"order_estimate/leather-order-estimate-v2.html",backend:"請求書GAS submitQuoteRequest",data:"brand-price.csv / size-baseprice.csv / labor-curves.json / ring-price-stock.csv / leather-catalog.json / stitch-thread-stock.csv / settings.csv",note:"構造7種・サイズ・リング・革280色・ステッチ92色から税込合計を出す。管理者は ?admin で工数カーブを編集。"}),
+  N("quote","mail",920,100,"正式見積依頼","メール（GAS経由）",{backend:"請求書GAS（Nsfactory-Billing）submitQuoteRequest",note:"見積もり画面の「正式見積依頼を送る」。条件と控えが事業主へ届く。"}),
+  N("invoice","admin",1160,100,"見積書・請求書・領収書","invoice/",{path:"invoice/index.html ほか4画面",backend:"請求書GAS Nsfactory-Billing",note:"書類台帳・顧客マスタ・商品マスタ・振込先口座。番号は保存時に採番。オーダー進捗の受付番号と関連付け。"}),
+  N("orderprogress","page",1400,100,"オーダー進捗","orderprogress.html",{path:"orderprogress.html",backend:"オーダー進捗GAS（add/update/delete は管理者キー必須）",data:"orderprogress-data.json（静的控え）",note:"サイズ別タブとキャンセルタブ。受付番号ごとにタイムラインと公開写真。カード購入の売約はここへ自動登録。"}),
+  N("done","actor",1640,100,"製作・発送","決済から7日以内（作品）",{note:"完成の連絡と発送。フルオーダーは材料取寄せ2〜4週間。"},190,64),
+  N("works","page",440,230,"作品集","works.html（613件）",{path:"works.html",backend:"商品登録GAS api=products・配信GAS works（カード販売）",data:"works-data.json",note:"カテゴリ3段階の絞り込み。詳細モーダルで写真・動画・SOLDOUT。管理者モードで編集・カード販売の開始。"}),
+  N("workpage","page",680,230,"作品ページ","works/NF2026_NNN.html",{path:"works/*.html（自動生成・613本）",data:"works-data.json → tools/build_work_pages.js",note:"OGP付きの1作品1ページ。開くと作品集の該当モーダルへ転送（location.replace）。手で編集しない。"}),
+  N("stripeWork","ext",920,230,"カードで購入（Stripe）","作品の1点物販売",{backend:"配信GAS refill_sales workCheckout → workConfirm",note:"販売開始した作品だけ購入ボタンが出る。支払い確認 → 売約済 → オーダー進捗へ rid 付きで登録 → 商品マスター SOLDOUT → メール。"}),
+  N("chatOrder","gas",680,320,"AI相談の受付","submitChatOrder → 案件一覧",{backend:"オーダー進捗GAS（顧客が呼ぶ受付系5アクションは鍵なし）",note:"相談内容・画像は案件一覧シートに溜まり、管理画面「再製作待ち」「接客ログ」から追える。"}),
+
+  N("jhcs","page",200,470,"JHCS 講習案内","JHCS.html",{path:"JHCS.html",backend:"jhcs_downloads（名簿照合＋メールコード）・rakuten_tool_search",data:"assets/jhcs/works/works.json",note:"教室概要・全12回カリキュラム・生徒作品集・講習実績。型紙PDF4件のカード購入もここに併存。"}),
+  N("jhcsdl","gas",440,470,"講習資料ダウンロード","受講生名簿を照合",{backend:"jhcs_downloads GAS（生徒名簿・DLログ・認証ログ）",note:"メールアドレスが名簿にあればコードを送り、検証後に資料を渡す。生徒追加は管理シートへの追記のみ。"}),
+  N("patterns","page",200,600,"型紙PDF（N's pattern）","patterns/（4件）",{path:"patterns/index.html + jhcs-*.html",data:"patterns/patterns-data.json → tools/build_pattern_pages.js",note:"JHCS講習の型紙4件・各1,500円。一覧と詳細は自動生成。写真は講座テキストと同じ製作例。"}),
+  N("bank","mail",440,600,"銀行振込の申込","件名「型紙購入のお問合せ」",{backend:"pattern_sales GAS（Gmail自動返信・問い合わせシート）",note:"カードを使わない人向け。振込先を自動返信する。"}),
+  N("stripePdf","ext",680,530,"カード決済（Stripe Checkout）","PDF商品",{backend:"配信GAS refill_sales checkout（価格は商品シートが正本）",note:"assets/pdf-checkout.js が data-checkout のボタンを出し、裏で ping して状態を合わせる。テスト鍵の間は ?stripe_test=1 のときだけ。"}),
+  N("deliver","gas",920,530,"PDF配信","Driveの限定リンクをメール",{backend:"配信GAS refill_sales deliver（購入シートに記録）",note:"販売PDFの実体は公開リポジトリに置かない。Webhook は使わず戻り先で照会。"}),
+  N("thanks","page",1160,530,"購入完了ページ","refill-pdf/thanks.html",{path:"refill-pdf/thanks.html",note:"全商品共用。?session_id= を配信GASに照会して表示名と戻り先を出す。"}),
+  N("tools","page",1400,470,"リフィル印刷ツール一覧","tools/",{path:"tools/index.html",note:"5判型（Micro5・Mini6・バイブル・A6・A5スリム）× 月間/週間/日次。無料公開。このページに印刷ツール以外は載せない。"}),
+  N("printtools","page",1640,470,"印刷ツール 15本＋A5 3本","a5slim-* / a6-* / bible-* / mini6-* / micro5-* / a5-*",{path:"a5slim-weekly/ ほか",note:"正本は A5スリム3本。他は生成物で手で直さない。面付け・穴・綴じ後プレビュー・印刷ズレ補正を共有。"}),
+  N("refillpdf","page",1400,600,"販売PDF（N's refill）","refill-pdf/monthly-undated.html",{path:"refill-pdf/monthly-undated.html",note:"日付なし月間リフィル ¥300。カード決済か銀行振込。"}),
+
+  N("register","admin",200,790,"商品登録","register.html",{path:"register.html",backend:"商品登録GAS（AdminAuth.js isAdminKey_）",data:"leather-stock.csv / ring-price-stock.csv / stitch-thread-stock.csv / material-usage.csv",note:"ID採番 NF2026_NNN → Driveフォルダ作成 → 商品マスター行追加。在庫自動減算、Threads投稿文生成、動画メーカーへの導線。"}),
+  N("prodGas","gas",200,900,"商品登録GAS","Nsfactory-product-register",{backend:"deploymentId AKfycbw-ghhu…（版159）",note:"商品・写真・アクセス解析（GA4作り置き）・動画用写真・SNS投稿文。clasp push は全置換なので pull と履歴確認が先。"}),
+  N("sheetMaster","sheet",440,790,"商品マスター","スプレッドシート（A〜Q列）",{note:"A 商品コード・B 商品名・J 在庫数（0=SOLDOUT）・L 写真フォルダID・M 代表写真URL・Q ステータス。編集頻度が高いため2週間分の自動バックアップ。"}),
+  N("drive","ext",440,900,"Google Drive","商品フォルダ（写真・動画）",{note:"NFYYYY_NNN_商品名 のフォルダ。product_master_sync.js がフォルダID基準で重複チェックしながらシートへ自動登録。"}),
+  N("worksdata","data",680,790,"works-data.json","静的カタログ（16項目）",{path:"works-data.json",note:"商品マスターから tools/build_works_data.js が生成。作品集・作品ページ・動画メーカー・リング規格図鑑・BASE用CSVが読む。登録・更新完了時に即再生成。"}),
+  N("videomaker","page",920,790,"SNS動画メーカー","digital-room/sns-video-maker/",{path:"digital-room/sns-video-maker/index.html",backend:"商品登録GAS（Drive写真・本人文体のセリフ）・SNS予約GAS",data:"works-data.json / leather-stock.csv",note:"作品IDから写真を読み、ナレーション（VOICEVOX含む）付きMP4を作る。管理者は共有シートでSNSへ。"}),
+  N("threads","ext",1160,790,"Threads / Instagram","SNS予約投稿GAS",{backend:"SNS予約投稿GAS（Threads自動投稿・AKfycbxZ…）news-approve / sns-cancel",note:"公開ページにトークンを置かず、投稿はサーバー側GASが持つ。お知らせ掲載後の告知も同じGAS。"}),
+  N("news","data",1160,900,"お知らせ欄","news-data.json（メール返信で承認）",{path:"news-data.json / news-approve.html",note:"候補メールに「掲載/告知/不要」と返信すると載る。描画は足し込み方式。"}),
+  N("admin","admin",200,1030,"管理画面","order_estimate/admin.html",{path:"order_estimate/admin.html",backend:"商品登録GAS・幕僚計画GAS・オーダー進捗GAS・売上GAS・JHCS GAS・SNS予約GAS・admin_guard",note:"5分類24タブ。在庫・価格・解析・接客ログ・幕僚計画・売上・顧客・証憑チェックリスト・API費用を1画面で。"}),
+  N("rooms","page",440,1030,"幕僚室 9室＋司令官室","*-room/ · hitsuki/ · digital-room/",{path:"shirei-room, sakusen-room, kanri-room, kouhou-room, hanbai-room, pr-room, hozen-room, digital-room, jinji-room, hitsuki",note:"各幕僚の入口。デジタル幕僚室に無料アプリ（血圧手帳・ダイエット・コストコ共同購入・パスワード管理・ライブテロップ・SVG変換・建築3D）、監理幕僚室に経理ツール。"}),
+  N("planGas","gas",680,1030,"幕僚計画GAS","カレンダーDB（予定・モニタ）",{backend:"AKfycbwG…（イベント・getMonitor・SNSトレンド・API費用）",note:"予定登録は全項目上書き。稼働モニタ・定期実行台帳は自宅PCのアップローダーが5分ごとに同梱。"}),
+  N("salesGas","gas",920,1030,"売上ダッシュボードGAS","sales.html · お気に入り",{backend:"AKfycbxg…（orders / dailyStatus / refreshDaily）",note:"毎朝6時に作り置き。チャネル別売上・取引マトリクス・minne/Creemaのお気に入り集計。"}),
+  N("billingGas","gas",1160,1030,"請求書GAS","Nsfactory-Billing",{backend:"AKfycbzE…（顧客・書類・明細・商品・口座）",note:"顧客マスタは法人4列を含む部分更新。書類は見積書→請求書→領収書へ昇格（promoteDocument）。"}),
+  N("opGas","gas",1400,1030,"オーダー進捗GAS","order_progress",{backend:"AKfycby-…（版58）進捗・相談・ライブ対応・アクセス集計・改善要望・道具リンク",note:"公開ツールの「改善要望」ボタンと右上のアクセスカウンターもここ。書き込み系は rid で冪等化。"}),
+  N("kanri","admin",1640,1030,"監理幕僚室ツール","kanri-room/*",{path:"kanri-room/receipt-intake, moneyforward-csv, crypto-calc, okj-notify",backend:"receipt-intake GAS・okj-notify-config GAS",note:"レシート取込（Claude解析）・MoneyForward CSV・暗号資産計算書・BTC通知設定。"}),
+];
+const CE = [
+  ["cust","index","来訪"],["index","hearing","オーダー相談"],["index","estimate","金額目安"],["index","works","新着・作品集"],
+  ["guide","hearing","相談へ"],["showroom","hearing","会話を引き継ぐ"],["showroom","works","購入ページへ"],
+  ["hearing","estimate","条件を引き継ぐ"],["hearing","chatOrder","相談を送る"],["chatOrder","orderprogress","案件→進捗",1],
+  ["estimate","quote","正式見積依頼"],["quote","invoice","見積書を作る"],["invoice","orderprogress","受付番号で紐づけ"],["orderprogress","done","完成"],
+  ["works","workpage","1作品1ページ"],["workpage","stripeWork","販売開始した作品のみ"],["stripeWork","orderprogress","売約→自動登録"],
+  ["jhcs","jhcsdl","受講生のみ"],["jhcs","patterns","型紙4件"],["patterns","stripePdf","カード"],["patterns","bank","振込"],["jhcs","stripePdf","講習案内内のボタン",1],
+  ["stripePdf","deliver","支払い確認"],["deliver","thanks","戻り先"],["tools","printtools","15本"],["tools","refillpdf","PDFを買う"],["refillpdf","stripePdf","¥300"],
+  ["register","prodGas","登録・更新"],["prodGas","sheetMaster","行追加・SOLDOUT"],["prodGas","drive","フォルダ作成"],["sheetMaster","worksdata","build_works_data.js"],
+  ["worksdata","works","作品集が読む"],["worksdata","videomaker","作品を読む"],["register","videomaker","動画をつくる"],["videomaker","threads","共有シート"],
+  ["threads","news","掲載後に告知",1],["news","index","お知らせ欄"],
+  ["rooms","admin","入口"],["rooms","kanri","監理幕僚室"],["admin","prodGas","在庫・価格・解析"],["admin","planGas","幕僚計画"],["admin","salesGas","売上"],["admin","billingGas","顧客"],["admin","opGas","接客ログ・再製作待ち"],
+  ["opGas","orderprogress","進捗データ"],["billingGas","invoice","書類・顧客"],
+];
+
+/* ───────────────────────────── 画面設計 ───────────────────────────── */
+const W = (id,title,path,badge,blocks,d={})=>({id,title,path,badge,blocks,d});
+const WIRES = [
+  W("w_index","トップページ","index.html","公開",[
+    ["ナビ：幕僚室10室 ▾ ／ スタッフ ／ オーダー相談","tabs"],
+    ["Hero「世界にひとつだけのオリジナルを」 ▶ オーダー相談 ／ 金額目安","hero"],
+    ["幕僚AIが24時間ご案内 ／ 新着商品（works-data.json）","grid"],
+    ["note連載 ／ 3Dショールーム ／ スタッフ ／ BTC決済","text"],
+    ["お知らせ（news-data.json） ／ 特定商取引法","list"]],
+    {note:"導線の起点。オーダー導線は窓口一本化のため主ボタンは「オーダー相談」、副ボタンは1つだけ。"}),
+  W("w_hearing","オーダー相談AI","order_estimate/hearing-ai.html","公開",[
+    ["EN切替 ／ ⚙ AI会話モード","tabs"],
+    ["チャット（幕僚AI・Gemini中継 hearing_ai_proxy）連絡先は必須","chat"],
+    ["革の即答ギャラリー（leather-catalog.json 280色）","grid"],
+    ["テクスチャシミュレーターで試す → 見積もりへ","cta"]],
+    {note:"会話の引き継ぎキーはショールームのチャットと共有。"}),
+  W("w_estimate","見積もりシミュレーター","order_estimate/leather-order-estimate-v2.html","公開",[
+    ["構造カード7枚（Standard／N-Pad flap／N-Pad W／N-Classic…）","grid"],
+    ["サイズ ／ リング（クラウゼ当て革+¥2,000） ／ 革280色 ／ ステッチ92色","list"],
+    ["オプション：フラップ・ベルト・ペンホルダー・同革内張り","list"],
+    ["明細（税込合計）・印刷/PDF・設定ファイル","text"],
+    ["📝 正式見積依頼を送る ／ 📧 お問い合わせ","cta"]],
+    {note:"工数は labor-curves.json の構造別曲線。管理者は ?admin で点をドラッグ。"}),
+  W("w_op","オーダー進捗","orderprogress.html","公開",[
+    ["タブ：すべて／mini6／バイブル／A6／A5／A5スリム／Micro5／リメイク・修理／手帳カバー／革小物／🗂キャンセル","tabs"],
+    ["進捗カード：受付番号・依頼者・ステータス・タイムライン・公開写真","list"],
+    ["＋進捗を追加（管理者キー） ／ 顧客管理 ／ 関連書類","cta"]],
+    {note:"書き込みは管理者キー必須。売約の自動登録は rid で二重防止。"}),
+  W("w_works","作品集","works.html","公開",[
+    ["ナビ：作品集／いんザイ君グッズ／進捗／JHCS／リンク集","tabs"],
+    ["絞り込み：カテゴリ（大→中→小）・素材・色・サイズ・価格未設定","form"],
+    ["作品カード 613件（works-data.json → GAS最新に差し替え）","grid"],
+    ["詳細モーダル：写真・動画・価格・SOLDOUT札 ／ カードで購入する","modal"],
+    ["管理者：登録画面で編集・カード販売・キャプションをコピー","text"]],
+    {note:"?id= で作品を名指し、?card=1 でカード購入可能な作品だけ。"}),
+  W("w_showroom","3D ショールーム","showroom/index.html","公開",[
+    ["入室する（3D非対応なら通常表示）","hero"],
+    ["3D空間：作品を眺めて購入ページへ","grid"],
+    ["幕僚AI接客チャット（showroom_ai_chat） ／ 訪問者チャット（visitor_chat）","chat"]],
+    {note:"会話はオーダー相談へ引き継げる。"}),
+  W("w_jhcs","JHCS 講習案内","JHCS.html","公開",[
+    ["教室概要 ／ お知らせ ／ カリキュラム全12回 ／ 習得技術","text"],
+    ["型紙PDF 4件：💳 カード購入（各¥1,500） ／ ✉️ ✉ 問い合わせ","cta"],
+    ["生徒作品集（works.json） ／ 講習実績","grid"],
+    ["講習資料ダウンロード（受講生認証：名簿照合＋メールコード）","form"]],
+    {note:"型紙の販売欄は patterns/ と併存。"}),
+  W("w_patterns","型紙PDF（N's pattern）","patterns/index.html","公開",[
+    ["一覧 4件（patterns-data.json から自動生成）","grid"],
+    ["詳細：製作例写真・仕様・価格 ¥1,500","hero"],
+    ["カードで購入する ／ 銀行振込で申し込む（メール）","cta"]],
+    {note:"黒×金。CTAは「カードで購入する」が主。"}),
+  W("w_register","商品登録","register.html","管理",[
+    ["合言葉ゲート（SHA-256・sessionStorage）","form"],
+    ["登録フォーム：ID採番 NF2026_NNN・カテゴリ・素材・色・サイズ・価格・在庫","form"],
+    ["写真：Driveフォルダ作成 → アップロード","grid"],
+    ["💾 保存 → 商品マスター ／ ① 投稿文を生成 ／ 🎬 動画をつくる","cta"]],
+    {note:"在庫CSVは自動減算。下書きは自動保存。"}),
+  W("w_admin","管理画面","order_estimate/admin.html","管理",[
+    ["合言葉ゲート → アクセス記録（admin_guard）","form"],
+    ["分類：📅経営・業務 ／ 📦在庫管理 ／ 💰価格設定 ／ 📊アクセス解析 ／ 📣発信・接客","tabs"],
+    ["24タブ：幕僚計画・売上分析・顧客マスタ・お気に入り・再製作待ち・証憑・幕僚稼働・定期実行・API費用・SNSトレンド・JHCS DL・リング/革/糸在庫・価格DB・設定・サイズ/構造価格・解析・作品ログ・ツール利用・Threads・対話ナレッジ・接客ログ","list"]],
+    {note:"7つのGASを1画面から呼ぶ。GA4は毎朝5時の作り置きを即表示。"}),
+  W("w_invoice","書類台帳","invoice/index.html","管理",[
+    ["ナビ：書類台帳 ／ 顧客 ／ 商品 ／ 振込先","tabs"],
+    ["タブ：すべて／見積書／請求書／領収書  ＋新規作成","tabs"],
+    ["書類一覧：番号・宛名・金額・状態・Drive","list"],
+    ["編集画面：明細行・振込先・PDF保存・昇格（見積→請求→領収）","form"],
+    ["顧客マスタ（法人4列） ／ 商品マスタ（請求用）","text"]],
+    {note:"番号は保存時に採番。"}),
+  W("w_tools","リフィル印刷ツール","tools/index.html","公開",[
+    ["Hero「手帳リフィルを、自分で刷る。」","hero"],
+    ["5判型 × 月間／週間／日次 ＝ 15本（各ツールは面付け・綴じ後プレビュー・ズレ補正付き）","grid"],
+    ["印刷用PDFを買う（refill-pdf ¥300）","cta"],
+    ["規格表（穴位置・寸法）","list"]],
+    {note:"正本は A5スリム3本。他は生成。"}),
+];
+const WE = [
+  ["w_index","w_hearing","オーダー相談"],["w_index","w_estimate","金額目安"],["w_index","w_works","新着"],["w_index","w_showroom","入場"],
+  ["w_hearing","w_estimate","テクスチャ"],["w_hearing","w_op","相談を受付",1],["w_estimate","w_op","受付後"],["w_op","w_invoice","関連書類"],
+  ["w_works","w_register","登録画面で編集"],["w_showroom","w_works","購入ページへ"],["w_jhcs","w_patterns","型紙"],
+  ["w_estimate","w_admin","管理画面"],["w_register","w_works","保存→作品集"],["w_admin","w_invoice","顧客マスタ",1],
+];
+
+/* ───────────────────────────── ER図 ───────────────────────────── */
+const E = (id,x,y,w,title,store,rows,d={})=>({id,x,y,w,title,store,rows,d});
+const T = (id,x,y,w,title,store,text,d={})=>({id,x,y,w,title,store,text,d});
+const ENT = [
+  // 商品登録GAS
+  E("e_master",40,90,290,"商品マスター","シート",[["商品コード","PK","NF2026_NNN"],["商品名"],["カテゴリ","","大→中→小"],["素材（革）"],["カラー"],["サイズ"],["価格","","SOLDOUT可"],["在庫数","","J列・0=SOLDOUT"],["写真フォルダID","","L列 Drive"],["代表写真URL","","M列"],["ステータス","","Q列 販売中"],["短い説明 shortDesc"],["長い説明 longDesc"],["登録日 date"],["再入荷なし noRestock"]],{note:"商品登録GASが書く正本。works-data.json はここから生成。"}),
+  T("e_worksdata",40,385,290,"works-data.json","JSON・生成物","商品マスター16項目の静的控え（613件）。作品集・作品ページ・動画メーカー・リング規格図鑑・BASE用CSVが読む。",{note:"tools/build_works_data.js が生成。手で編集しない。"}),
+  // 配信GAS
+  E("e_worksale",40,470,290,"作品販売","シート（配信GAS）",[["作品ID","FK","→ 商品マスター"],["商品名"],["価格","","送料込み"],["状態","","販売中/確保中/売約済"],["session","","Stripe Checkout"],["期限","","32分確保"],["受付番号","FK","→ オーダー進捗"],["更新日時"],["メモ"]],{note:"「売約済」をオーダー進捗の登録より先に書く。"}),
+  E("e_pdfprod",40,680,290,"商品（PDF）","シート（配信GAS）",[["コード","PK","jhcs-02 / refill…"],["商品名"],["価格","","正本"],["ファイルID","","Drive・返さない"],["状態"],["表示名"],["商品ページ","","JHCS.html 等"],["案内文"]],{note:"型紙4件＋リフィル。価格はこのシートが正本。"}),
+  E("e_purchase",40,870,290,"購入","シート（配信GAS）",[["日時"],["session","PK","Stripe"],["メール"],["金額"],["通貨"],["商品","FK","→ 商品（PDF）.コード"],["状態"],["コード"]],{note:"deliver が金額照合してから配信し記録。"}),
+  E("e_patterns",40,1060,290,"patterns-data.json","JSON",[["code","FK","→ 商品（PDF）.コード"],["slug","PK","ページ名"],["lesson","","第02回 等"],["title"],["en"],["price"],["summary"],["photo"]],{note:"型紙一覧・詳細ページの生成元。"}),
+  // オーダー進捗GAS
+  E("e_op",400,90,300,"オーダー進捗","シート",[["ID","PK"],["受付番号","","一意・書類/販売が参照"],["依頼者"],["サイズ","","タブ分類"],["品目"],["ステータス"],["受付日"],["予定完了日"],["タイムライン","","日付付き行"],["DriveフォルダID"],["写真（公開）"],["登録日時"],["更新日時"]],{note:"キャンセル起算はタイムライン最終日付。"}),
+  T("e_opdata",400,350,300,"orderprogress-data.json","JSON・控え","records[]。公開表示の静的フォールバック。"),
+  T("e_consult",400,440,300,"案件一覧（AI相談）","シート","hearing-ai / ショールームの submitChatOrder・addConsultation・画像。管理画面の接客ログが読む。"),
+  T("e_waitlist",400,540,300,"再製作待ち","シート","SOLDOUT作品への購入意思。即時通知＋一覧。読み取りにも管理キー。"),
+  T("e_bug",400,640,300,"不具合報告（改善要望）","シート","公開ツールの💡ボタン。rid で二重防止・事業主メール。"),
+  T("e_access",400,740,300,"アクセス集計 ／ アクセス日次","シート","ページ別累計（PV/UU/初回/最終）と日別。右上カウンターと管理画面「ツール利用状況」。"),
+  T("e_toollinks",400,850,300,"道具リンク","シート","後方幕僚室の楽天/専門店リンク（優先度・編集）。",{}),
+  T("e_affil",400,950,300,"affiliate-links.json","JSON","道具リンクの静的控え（29件：name / category / description / links）。"),
+  T("e_fav",400,1050,300,"お気に入りログ","シート（売上GAS）","minne / Creema のお気に入り通知の集計。ニックネームは公開しない。"),
+  // 請求書GAS
+  E("e_cust",760,90,300,"顧客マスタ","シート（請求書GAS）",[["id","PK"],["name","","宛名"],["honorific"],["zip"],["address","","発送先"],["phone"],["email"],["contact"],["note"],["platforms_json","","販売チャネル"],["created_at"],["updated_at"],["customerType","","個人/法人"],["contactPerson"],["billingZip"],["billingAddress","","請求先"]],{note:"部分更新。編集は invoice/customers.html のモーダルのみ。"}),
+  E("e_tx",760,400,300,"顧客取引履歴","シート（請求書GAS）",[["tx_id","PK"],["customer_id","FK","→ 顧客マスタ.id"],["date"],["platform"],["product"],["amount"],["note"],["created_at"]]),
+  E("e_doc",760,590,300,"書類台帳","シート（請求書GAS）",[["number","PK","保存時に採番"],["type","","見積書/請求書/領収書"],["issueDate"],["customerId","FK","→ 顧客マスタ.id"],["customerName"],["subject"],["subtotal"],["tax"],["total"],["status"],["driveUrl","","PDF"],["sourceNumber","","昇格元"],["createdAt"],["updatedAt"],["relatedOrderNumber","FK","→ オーダー進捗.受付番号"],["note"],["customerHonorific"]]),
+  E("e_line",760,915,300,"明細","シート（請求書GAS）",[["number","FK","→ 書類台帳.number"],["lineNo","PK"],["itemName"],["qty"],["unit"],["unitPrice"],["lineTotal"],["note"]]),
+  E("e_prod2",760,1105,300,"商品マスタ（請求用）","シート（請求書GAS）",[["id","PK"],["name"],["standardPrice"],["unit"],["category"],["note"]]),
+  E("e_bank",760,1265,300,"振込先口座マスタ","シート（請求書GAS）",[["id","PK"],["kind","","銀行/BTC"],["label"],["bankName","","銀行名/通貨"],["accountNumber","","口座番号/アドレス"],["isDefault"]]),
+  // JHCS
+  E("e_students",1120,90,300,"生徒名簿","シート（JHCS GAS）",[["メールアドレス","PK"],["氏名"],["状態","","有効"],["登録日"],["備考"]],{note:"生徒追加は管理シートへの追記のみ。"}),
+  E("e_dllog",1120,240,300,"DLログ","シート（JHCS GAS）",[["日時"],["メールアドレス","FK","→ 生徒名簿"],["氏名"],["講義"],["資料種別"],["ファイル名"]]),
+  E("e_authlog",1120,400,300,"認証ログ","シート（JHCS GAS）",[["日時"],["メールアドレス","FK","→ 生徒名簿"],["氏名"],["操作","","requestCode/verifyCode"],["結果"],["詳細"]]),
+  // 幕僚計画
+  T("e_events",1120,560,300,"イベント（幕僚計画）","シート（幕僚計画GAS）","幕僚ごとの予定。updateEvent は全項目上書き。毎朝06:00の予定サマリー。"),
+  T("e_snstrend",1120,660,300,"SNSトレンド","シート（幕僚計画GAS）","週次トレンド。日付列はテキスト固定。中身を公開リポジトリに置かない。"),
+  T("e_monitor",1120,760,300,"稼働モニタ・定期実行・API費用","Cache（幕僚計画GAS）","自宅PCのアップローダーが5分ごとに同梱。95KB上限。getMonitor はキー必須。"),
+  // 接客
+  T("e_chatlog",1120,880,300,"接客ログ ／ 指摘台帳","シート（showroom_ai_chat）","幕僚AIの会話ログと✏️指摘。ナレッジ学習ループの入口。"),
+  T("e_hearlog",1120,980,300,"相談ログ","シート（hearing_ai_proxy）","オーダー相談AIの会話。月次レポートと stats。"),
+  T("e_visitor",1120,1080,300,"訪問者チャット","シート（visitor_chat）","ショールーム内の訪問者同士。ライブ対応（live.html）はオーダー進捗GAS側。"),
+  // 見積もり静的
+  E("e_leather",1480,90,310,"leather-catalog.json","JSON（280色）",[["id","PK"],["name"],["sub","","シリーズ"],["tags"],["image"]]),
+  E("e_lstock",1480,240,310,"leather-stock.csv","CSV",[["id","FK","→ leather-catalog.id"],["name"],["stock_pct","","半裁の残量%"],["note"]]),
+  E("e_stitch",1480,380,310,"stitch-colors.json","JSON（92色）",[["id","PK"],["name"],["label"],["image"],["jp","","和名の正本"],["verified"],["alias"]]),
+  E("e_thread",1480,560,310,"stitch-thread-stock.csv","CSV",[["thread_id","FK","→ stitch-colors.id"],["name"],["label","","旧名が残る"],["available"],["note"]]),
+  E("e_ring",1480,710,310,"ring-price-stock.csv","CSV（抜粋）",[["planner_type","FK","→ size-baseprice.size_id"],["ring_id","PK"],["series / maker"],["size_label / size_mm"],["color_id / color_label"],["price_jpy"],["stock_status / stock_qty"],["hard_to_source","","取寄せ¥500"],["lead_time_days"],["ui_visible / ui_order"],["monitor_enabled"],["preferred_source_*","","巡回先"]]),
+  E("e_size",1480,960,310,"size-baseprice.csv","CSV",[["size_id","PK","micro5〜a5"],["name"],["work_hours","","旧式・曲線有効時は不使用"],["refill_w"],["refill_h"],["note"],["option_multiplier"]]),
+  E("e_brand",1840,90,300,"brand-price.csv","CSV（構造）",[["brand_id","PK","standard / npad…"],["name","","表示名"],["area_mult","","裏貼り総面積"],["krause_no_multi"],["allows_krause"],["extra_base_cost"],["work_hour_multiplier"],["lining_ratio"],["note"]]),
+  T("e_curves",1840,300,300,"labor-curves.json","JSON","構造別の面積→工数カーブ（工数の正本）。管理画面 #tab=size で点編集。"),
+  E("e_settings",1840,400,300,"settings.csv","CSV",[["key","PK","時給・基本料…"],["value"],["label"],["note"]]),
+  E("e_kb",1840,530,300,"hearing-kb.json","JSON（AI知識）",[["shop"],["staffName"],["greeting"],["ringAdvice"],["sizeAdvice"],["leatherNote"],["stitchAdvice"],["stitchInStock"],["price"],["extraKnowledge","","上限6,000字"]]),
+  T("e_news",1840,1150,300,"news-data.json","JSON","トップのお知らせ（groups[年].items）。メール返信で承認して追記。"),
+  T("e_note",1840,1240,300,"note-data.json","JSON","note「AI経営奮闘記」の記事一覧（自動中継）。"),
+  T("e_toolskb",1840,1330,300,"tools-knowledge.json","JSON","工程別の道具ガイド（processes / references / tools）。後方幕僚室と教科書が読む。"),
+];
+const REL = [
+  ["e_master","e_worksale","1","0..1","作品ID"],["e_master","e_worksdata","","","生成"],
+  ["e_worksale","e_op","","1","受付番号"],["e_purchase","e_pdfprod","n","1","商品=コード"],["e_patterns","e_pdfprod","1","1","code"],
+  ["e_op","e_opdata","","","書き出し"],["e_consult","e_op","","","受付→add"],
+  ["e_tx","e_cust","n","1","customer_id"],["e_doc","e_cust","n","1","customerId"],["e_line","e_doc","n","1","number"],["e_doc","e_op","0..1","1","relatedOrderNumber"],
+  ["e_dllog","e_students","n","1","メール"],["e_authlog","e_students","n","1","メール"],
+  ["e_lstock","e_leather","1","1","id"],["e_thread","e_stitch","1","1","thread_id"],["e_ring","e_size","n","1","planner_type"],
+  ["e_toollinks","e_affil","","","静的控え"],
+];
+const GROUPS = [
+  {label:"商品登録GAS  Nsfactory-product-register  AKfycbw-…",members:["e_master","e_worksdata"],c:"var(--k-gas)"},
+  {label:"配信GAS  refill_sales（Stripe）  AKfycbw6…",members:["e_worksale","e_pdfprod","e_purchase"],c:"var(--k-gas)"},
+  {label:"オーダー進捗GAS  order_progress  AKfycby-…",members:["e_op","e_opdata","e_consult","e_waitlist","e_bug","e_access","e_toollinks"],c:"var(--k-gas)"},
+  {label:"請求書GAS  Nsfactory-Billing  AKfycbzE…",members:["e_cust","e_tx","e_doc","e_line","e_prod2","e_bank"],c:"var(--k-gas)"},
+  {label:"JHCS受講生DL GAS  AKfycbwp…",members:["e_students","e_dllog","e_authlog"],c:"var(--k-gas)"},
+  {label:"幕僚計画GAS  AKfycbwG…",members:["e_events","e_snstrend","e_monitor"],c:"var(--k-gas)"},
+  {label:"接客系GAS（showroom_ai_chat / hearing_ai_proxy / visitor_chat）",members:["e_chatlog","e_hearlog","e_visitor"],c:"var(--k-gas)"},
+  {label:"見積もりの静的マスタ  order_estimate/（管理画面で編集 → GitHub保存）",members:["e_leather","e_lstock","e_stitch","e_thread","e_ring","e_size","e_brand","e_curves","e_settings","e_kb"],c:"var(--k-data)"},
+];
+
+/* ───────────────────────────── 描画ヘルパー ───────────────────────────── */
+const svg = document.getElementById("canvas");
+function el(tag,attrs={},parent){ const n=document.createElementNS(NS,tag); for(const k in attrs){ if(attrs[k]!=null) n.setAttribute(k,attrs[k]); } if(parent) parent.appendChild(n); return n; }
+function tw(s,fs){ let w=0; for(const ch of s){ const c=ch.codePointAt(0); w+= c>0x2E80 ? fs : (c>0x7F ? fs*.62 : fs*.56); } return w; }
+function wrap(s,maxW,fs){ const out=[]; let cur=""; for(const ch of s){ if(cur && tw(cur+ch,fs)>maxW){ out.push(cur); cur=ch; } else cur+=ch; } if(cur) out.push(cur); return out; }
+function text(parent,x,y,str,o={}){ const t=el("text",{x,y,"font-size":o.fs||12,fill:o.fill||"var(--text)","font-family":o.mono?"var(--mono)":(o.display?"var(--display)":"var(--ui)"),"font-weight":o.fw||400,"text-anchor":o.anchor||"start","letter-spacing":o.ls||null,"pointer-events":"none"},parent); t.textContent=str; return t; }
+function para(parent,x,y,str,maxW,fs,o={}){ const lines=wrap(str,maxW,fs); lines.forEach((l,i)=>text(parent,x,y+i*(o.lh||fs*1.45),l,{fs,...o})); return lines.length; }
+function rrect(parent,x,y,w,h,r,o={}){ return el("rect",{x,y,width:w,height:h,rx:r,ry:r,fill:o.fill||"none",stroke:o.stroke||null,"stroke-width":o.sw||1,"stroke-dasharray":o.dash||null,class:o.cls||null},parent); }
+
+const defs = el("defs",{},svg);
+for(const [id,col] of [["arrow","#7a6a58"],["arrowLit","#e6cf9a"]]){
+  const m=el("marker",{id,viewBox:"0 0 10 10",refX:9,refY:5,markerWidth:7,markerHeight:7,orient:"auto-start-reverse"},defs);
+  el("path",{d:"M0,1 L9,5 L0,9 z",fill:col},m);
+}
+const root = el("g",{id:"root"},svg);
+const rects = {};   // id -> {x,y,w,h} absolute
+const nodeEls = {}; // id -> g
+const edgeEls = []; // {a,b,el}
+const details = {}; // id -> panel info
+
+/* 領域の枠 */
+VIEWS.forEach(v=>{
+  const g=el("g",{class:"region"},root);
+  rrect(g,v.x,v.y,v.w,v.h,26,{fill:"rgba(26,22,19,.35)",stroke:"#2a2219",sw:1.5});
+  text(g,v.x+40,v.y+46,v.label,{fs:30,display:true,fw:700,fill:"var(--gold)"});
+  text(g,v.x+40+tw(v.label,30)+16,v.y+44,v.sub,{fs:13,fill:"var(--muted)",ls:".04em"});
+});
+
+/* ── 概念図 ── */
+(function drawConcept(){
+  const v=VIEWS[0], g=el("g",{id:"concept"},root);
+  LANES_C.forEach(l=>{
+    rrect(g,v.x+20,v.y+l.y,v.w-40,l.h,18,{stroke:"#3a2f24",dash:"8 6"});
+    text(g,v.x+40,v.y+l.y+22,l.label,{fs:12.5,fill:"var(--muted)",ls:".06em"});
+  });
+  CN.forEach(n=>{
+    const k=KIND[n.kind]; const x=v.x+n.x, y=v.y+n.y;
+    rects[n.id]={x,y,w:n.w,h:n.h};
+    const ng=el("g",{class:"node","data-id":n.id,tabindex:0,role:"button"},g);
+    rrect(ng,x,y,n.w,n.h,10,{fill:k.fill,stroke:k.c,sw:1.6,cls:"body"});
+    const lines=wrap(n.title,n.w-22,14);
+    lines.slice(0,2).forEach((l,i)=>text(ng,x+11,y+22+i*17,l,{fs:14,fw:700}));
+    const subY=y+22+Math.min(lines.length,2)*17-2;
+    wrap(n.sub,n.w-22,10.5).slice(0,1).forEach(l=>text(ng,x+11,subY+2,l,{fs:10.5,fill:"var(--muted)",mono:/[a-z]/.test(n.sub)}));
+    nodeEls[n.id]=ng;
+    details[n.id]={kind:n.kind,title:n.title,sub:n.sub,d:n.d};
+  });
+  CE.forEach(([a,b,label,dashed])=>drawEdge(g,a,b,label,dashed,"edge"));
+})();
+
+/* ── 画面設計 ── */
+(function drawDesign(){
+  const v=VIEWS[1], g=el("g",{id:"design"},root);
+  const cols=[60,520,980,1440], rows=[100,480,860], CW=400, CH=330;
+  WIRES.forEach((w,i)=>{
+    const x=v.x+cols[i%4], y=v.y+rows[Math.floor(i/4)];
+    rects[w.id]={x,y,w:CW,h:CH};
+    const k=w.badge==="管理"?KIND.admin:KIND.page;
+    const ng=el("g",{class:"node","data-id":w.id,tabindex:0,role:"button"},g);
+    rrect(ng,x,y,CW,CH,8,{fill:"#120f0d",stroke:k.c,sw:1.4,cls:"body"});
+    // ブラウザ風の題名帯
+    rrect(ng,x,y,CW,30,8,{fill:"#1f1a16"}); el("rect",{x,y:y+22,width:CW,height:8,fill:"#1f1a16"},ng);
+    [0,1,2].forEach(i=>el("circle",{cx:x+14+i*13,cy:y+15,r:3.5,fill:"#3d332a"},ng));
+    text(ng,x+56,y+19,w.title,{fs:13,fw:700});
+    text(ng,x+CW-12,y+19,w.badge,{fs:10,fill:k.c,anchor:"end",ls:".08em"});
+    text(ng,x+12,y+46,w.path,{fs:9.5,fill:"var(--muted)",mono:true});
+    // ブロック
+    let cy=y+56; const innerW=CW-24, avail=CH-70;
+    const weight={hero:1.35,grid:1.5,chat:1.5,list:1.25,tabs:.8,form:1.15,cta:.8,text:.9,modal:1.35};
+    const tot=w.blocks.reduce((s,b)=>s+(weight[b[1]]||1),0);
+    w.blocks.forEach(([label,kind])=>{
+      const bh=Math.floor(avail*(weight[kind]||1)/tot)-6;
+      drawBlock(ng,x+12,cy,innerW,bh,kind,label,k.c);
+      cy+=bh+6;
+    });
+    nodeEls[w.id]=ng;
+    details[w.id]={kind:w.badge==="管理"?"admin":"page",title:w.title,sub:w.path,d:{path:w.path,blocks:w.blocks,...w.d}};
+  });
+  WE.forEach(([a,b,label,dashed])=>drawEdge(g,a,b,label,dashed,"edge"));
+})();
+function drawBlock(g,x,y,w,h,kind,label,c){
+  rrect(g,x,y,w,h,4,{fill:"#191512",stroke:"#2e261f"});
+  const fs=10.5; const pad=8;
+  if(kind==="hero"){ rrect(g,x+6,y+6,w-12,h-12,3,{fill:"#22190f"}); rrect(g,x+14,y+h-20,72,10,3,{fill:c}); }
+  if(kind==="grid"){ const n=Math.max(3,Math.min(6,Math.floor(w/70))); const cw=(w-12-(n-1)*6)/n; const rowsN=h>70?2:1; const ch=(h-12-(rowsN-1)*6)/rowsN; for(let r=0;r<rowsN;r++)for(let i=0;i<n;i++) rrect(g,x+6+i*(cw+6),y+6+r*(ch+6),cw,ch,3,{fill:"#241d16",stroke:"#332a21"}); }
+  if(kind==="list"){ const lines=Math.max(2,Math.floor((h-12)/12)); for(let i=0;i<lines;i++) el("rect",{x:x+8,y:y+8+i*12,width:(w-16)*(i%2?.72:.9),height:5,rx:2,fill:"#2b241d"},g); }
+  if(kind==="tabs"){ let tx=x+6; for(let i=0;i<5;i++){ const pw=34+(i*7)%20; rrect(g,tx,y+(h-14)/2,pw,14,7,{fill:i===0?c:"#2b241d"}); tx+=pw+5; if(tx>x+w-30)break; } }
+  if(kind==="form"){ const n=Math.max(2,Math.floor((h-12)/16)); for(let i=0;i<n;i++) rrect(g,x+8,y+8+i*16,w-16-(i%2)*60,10,2,{fill:"#120f0d",stroke:"#3a3027"}); }
+  if(kind==="cta"){ rrect(g,x+(w-150)/2,y+(h-16)/2,150,16,8,{fill:c}); }
+  if(kind==="text"){ for(let i=0;i<Math.floor((h-12)/10);i++) el("rect",{x:x+8,y:y+9+i*10,width:(w-16)*(.55+((i*37)%40)/100),height:4,rx:2,fill:"#2b241d"},g); }
+  if(kind==="chat"){ rrect(g,x+8,y+8,w*.55,Math.max(12,(h-24)/2.6),8,{fill:"#241d16"}); rrect(g,x+w-8-w*.5,y+8+Math.max(12,(h-24)/2.6)+6,w*.5,Math.max(12,(h-24)/2.6),8,{fill:"#2a2214",stroke:c}); }
+  if(kind==="modal"){ rrect(g,x+w*.15,y+6,w*.7,h-12,4,{fill:"#1f1914",stroke:c,sw:1.2}); rrect(g,x+w*.15+8,y+14,w*.7*.45,h-30,3,{fill:"#2a2119"}); rrect(g,x+w*.5+8,y+h-24,w*.3,10,5,{fill:c}); }
+  // ラベル（下地付き）
+  const lines=wrap(label,w-pad*2,fs).slice(0,3);
+  const lh=fs*1.35, bh=lines.length*lh+6, by=y+h-bh-3;
+  rrect(g,x+4,by,w-8,bh,3,{fill:"rgba(14,12,10,.86)"});
+  lines.forEach((l,i)=>text(g,x+pad,by+fs+2+i*lh,l,{fs,fill:"#d9d0c0"}));
+}
+
+/* ── ER図 ── */
+(function drawER(){
+  const v=VIEWS[2], g=el("g",{id:"er"},root);
+  const RH=15, HH=28;
+  ENT.forEach(e=>{
+    const x=v.x+e.x, y=v.y+e.y; const isNote=!!e.text;
+    const h = isNote ? 30 + wrap(e.text,e.w-22,10.5).length*14 + 10 : HH + e.rows.length*RH + 8;
+    rects[e.id]={x,y,w:e.w,h};
+    const isSheet=/シート/.test(e.store), col = isSheet? KIND.sheet.c : KIND.data.c, fill = isSheet? KIND.sheet.fill : KIND.data.fill;
+    const ng=el("g",{class:"node","data-id":e.id,tabindex:0,role:"button"},g);
+    rrect(ng,x,y,e.w,h,6,{fill:"#120f0d",stroke:col,sw:1.4,cls:"body"});
+    rrect(ng,x,y,e.w,HH-2,6,{fill}); el("rect",{x,y:y+16,width:e.w,height:HH-18,fill},ng);
+    text(ng,x+10,y+18,e.title,{fs:13,fw:700,mono:/^[a-z]/.test(e.title)});
+    text(ng,x+e.w-8,y+18,e.store,{fs:9.5,fill:col,anchor:"end"});
+    if(isNote){ para(ng,x+11,y+HH+12,e.text,e.w-22,10.5,{fill:"#cfc5b4",lh:14}); }
+    else e.rows.forEach((r,i)=>{
+      const ry=y+HH+i*RH+11;
+      const [name,tag,memo]=r;
+      if(tag){ const tagW=tag.length*7+8; rrect(ng,x+8,ry-9,tagW,12,3,{stroke:tag==="PK"?"var(--gold)":"var(--k-data)",sw:1}); text(ng,x+8+tagW/2,ry,tag,{fs:8.5,fill:tag==="PK"?"var(--gold)":"var(--k-data)",anchor:"middle",mono:true}); }
+      text(ng,x+(tag?36:10),ry,name,{fs:10.5,mono:true,fill:tag==="PK"?"var(--gold2)":"var(--text)"});
+      if(memo) text(ng,x+e.w-8,ry,memo,{fs:9,fill:"var(--muted)",anchor:"end"});
+    });
+    nodeEls[e.id]=ng;
+    details[e.id]={kind:isSheet?"sheet":"data",title:e.title,sub:e.store,d:{rows:e.rows,text:e.text,...e.d}};
+  });
+  // グループ枠（メンバーの外接矩形）
+  GROUPS.forEach(gr=>{
+    const rs=gr.members.map(m=>rects[m]); const x0=Math.min(...rs.map(r=>r.x))-14, y0=Math.min(...rs.map(r=>r.y))-30, x1=Math.max(...rs.map(r=>r.x+r.w))+14, y1=Math.max(...rs.map(r=>r.y+r.h))+14;
+    const gg=el("g",{},g); g.insertBefore(gg,g.firstChild);
+    rrect(gg,x0,y0,x1-x0,y1-y0,12,{stroke:gr.c,dash:"6 5",sw:1,fill:"rgba(255,255,255,.015)"});
+    text(gg,x0+12,y0+16,gr.label,{fs:10.5,fill:gr.c,ls:".03em"});
+  });
+  REL.forEach(([a,b,ca,cb,label])=>drawRel(g,a,b,ca,cb,label));
+})();
+
+/* 接続線（矢印つき・ラベルつき） */
+function anchors(A,B){
+  const ax=A.x+A.w/2, ay=A.y+A.h/2, bx=B.x+B.w/2, by=B.y+B.h/2;
+  const dx=bx-ax, dy=by-ay;
+  if(Math.abs(dx)*1.0 > Math.abs(dy) && (B.x>A.x+A.w || B.x+B.w<A.x)){
+    return dx>0 ? [{x:A.x+A.w,y:ay},{x:B.x,y:by},"h"] : [{x:A.x,y:ay},{x:B.x+B.w,y:by},"h"];
+  }
+  return dy>0 ? [{x:ax,y:A.y+A.h},{x:bx,y:B.y},"v"] : [{x:ax,y:A.y},{x:bx,y:B.y+B.h},"v"];
+}
+function curve(p,q,dir){ const k= dir==="h" ? Math.max(40,Math.abs(q.x-p.x)*.45) : Math.max(30,Math.abs(q.y-p.y)*.45);
+  return dir==="h" ? `M${p.x},${p.y} C${p.x+Math.sign(q.x-p.x)*k},${p.y} ${q.x-Math.sign(q.x-p.x)*k},${q.y} ${q.x},${q.y}`
+                   : `M${p.x},${p.y} C${p.x},${p.y+Math.sign(q.y-p.y)*k} ${q.x},${q.y-Math.sign(q.y-p.y)*k} ${q.x},${q.y}`; }
+function drawEdge(g,a,b,label,dashed,cls){
+  const A=rects[a],B=rects[b]; if(!A||!B) return;
+  const [p,q,dir]=anchors(A,B);
+  const eg=el("g",{class:cls+(dashed?" dashed":"")},g); g.insertBefore(eg,g.querySelector(".node"));
+  el("path",{d:curve(p,q,dir)},eg);
+  if(label){ const mx=(p.x+q.x)/2, my=(p.y+q.y)/2; const w=tw(label,11)+10; rrect(eg,mx-w/2,my-9,w,16,4,{fill:"rgba(14,12,10,.9)"}); text(eg,mx,my+3,label,{fs:11,fill:"var(--muted)",anchor:"middle"}); }
+  edgeEls.push({a,b,el:eg});
+}
+function drawRel(g,a,b,ca,cb,label){
+  const A=rects[a],B=rects[b]; if(!A||!B) return;
+  const [p,q,dir]=anchors(A,B);
+  const eg=el("g",{class:"rel"},g); g.insertBefore(eg,g.querySelector(".node"));
+  el("path",{d:curve(p,q,dir)},eg);
+  // 端の記号：多側は三叉、1側は短い縦線
+  const mark=(pt,card,side)=>{ if(!card) return; const s=6; const vert = dir==="h";
+    if(card.startsWith("n")){ const dx= vert? (side==="a"?1:-1)*s : 0, dy= vert?0:(side==="a"?1:-1)*s;
+      el("path",{d:`M${pt.x+dx},${pt.y+dy} L${pt.x},${pt.y-(vert?s:0)+(vert?0:0)} M${pt.x+dx},${pt.y+dy} L${pt.x},${pt.y+(vert?s:0)} M${pt.x+dx},${pt.y+dy} L${pt.x},${pt.y}`,stroke:"currentColor"},eg).setAttribute("style","stroke:#8a7a66;fill:none");
+    } else { el("path",{d: vert? `M${pt.x+(side==="a"?s:-s)},${pt.y-s} L${pt.x+(side==="a"?s:-s)},${pt.y+s}` : `M${pt.x-s},${pt.y+(side==="a"?s:-s)} L${pt.x+s},${pt.y+(side==="a"?s:-s)}`},eg).setAttribute("style","stroke:#8a7a66;fill:none"); }
+    const off=14; text(eg, vert? pt.x+(side==="a"?off:-off) : pt.x+10, vert? pt.y-5 : pt.y+(side==="a"?off+4:-off), card,{fs:10.5,fill:"var(--muted)",mono:true,anchor:"middle"}); };
+  mark(p,ca,"a"); mark(q,cb,"b");
+  if(label){ const mx=(p.x+q.x)/2, my=(p.y+q.y)/2; const w=tw(label,10.5)+10; rrect(eg,mx-w/2,my-8,w,15,3,{fill:"rgba(14,12,10,.92)"}); text(eg,mx,my+3,label,{fs:10.5,fill:"var(--muted)",anchor:"middle",mono:true}); }
+  edgeEls.push({a,b,el:eg});
+}
+
+/* ───────────────────────────── 視点（viewBox）操作 ───────────────────────────── */
+let vb={x:0,y:0,w:1900,h:1250}; let anim=null;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function applyVB(){ svg.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); }
+function fitRect(r,pad=40){ const W=svg.clientWidth||1, H=svg.clientHeight||1; const ar=W/H; let w=r.w+pad*2, h=r.h+pad*2+90; /* 下端は凡例ぶん余白 */ if(w/h<ar) w=h*ar; else h=w/ar; return {x:r.x+r.w/2-w/2,y:r.y+r.h/2-h/2,w,h}; }
+function animateTo(t,ms=520){ if(anim) cancelAnimationFrame(anim); if(reduced||ms===0){ vb=t; applyVB(); return; } const s={...vb}, t0=performance.now(); const ease=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+  const step=now=>{ const u=Math.min(1,(now-t0)/ms), e=ease(u); vb={x:s.x+(t.x-s.x)*e,y:s.y+(t.y-s.y)*e,w:s.w+(t.w-s.w)*e,h:s.h+(t.h-s.h)*e}; applyVB(); if(u<1) anim=requestAnimationFrame(step); }; anim=requestAnimationFrame(step); }
+let current=0;
+function goView(i,ms){ current=(i+VIEWS.length)%VIEWS.length; const v=VIEWS[current]; animateTo(fitRect(v),ms); document.querySelectorAll("#viewTabs button").forEach((b,j)=>b.setAttribute("aria-selected",j===current)); try{localStorage.setItem("nsf_map_view",String(current));}catch(e){} }
+function fitAll(){ const x0=Math.min(...VIEWS.map(v=>v.x)), y0=0, x1=Math.max(...VIEWS.map(v=>v.x+v.w)), y1=Math.max(...VIEWS.map(v=>v.h)); animateTo(fitRect({x:x0,y:y0,w:x1-x0,h:y1-y0},80)); document.querySelectorAll("#viewTabs button").forEach(b=>b.setAttribute("aria-selected","false")); }
+function zoomAt(f,cx,cy){ const nx=cx-(cx-vb.x)*f, ny=cy-(cy-vb.y)*f; vb={x:nx,y:ny,w:vb.w*f,h:vb.h*f}; applyVB(); }
+function clientToSvg(px,py){ const r=svg.getBoundingClientRect(); return {x:vb.x+(px-r.left)/r.width*vb.w, y:vb.y+(py-r.top)/r.height*vb.h}; }
+
+// メニュー
+const tabs=document.getElementById("viewTabs");
+VIEWS.forEach((v,i)=>{ const b=document.createElement("button"); b.setAttribute("role","tab"); b.dataset.view=i; b.innerHTML=`${v.label}<small>${v.sub}</small>`; b.addEventListener("click",()=>goView(i)); tabs.appendChild(b); });
+document.getElementById("zoomIn").addEventListener("click",()=>zoomAt(.8,vb.x+vb.w/2,vb.y+vb.h/2));
+document.getElementById("zoomOut").addEventListener("click",()=>zoomAt(1.25,vb.x+vb.w/2,vb.y+vb.h/2));
+document.getElementById("fitAll").addEventListener("click",fitAll);
+addEventListener("keydown",e=>{ if(e.target.closest("input,textarea")) return; if(e.key==="ArrowRight") goView(current+1); else if(e.key==="ArrowLeft") goView(current-1); else if(e.key==="Escape") closePanel(); else if(e.key==="0") goView(current); });
+
+// ドラッグ・ホイール・ピンチ
+const ptrs=new Map(); let dragStart=null, moved=false, pinch0=null, downTarget=null;
+svg.addEventListener("pointerdown",e=>{ downTarget=e.target.closest("[data-id]"); svg.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(ptrs.size===1){ dragStart={px:e.clientX,py:e.clientY,vx:vb.x,vy:vb.y}; moved=false; svg.classList.add("drag"); } else if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch0={d:Math.hypot(a.x-b.x,a.y-b.y),vb:{...vb},mid:clientToSvg((a.x+b.x)/2,(a.y+b.y)/2)}; } });
+svg.addEventListener("pointermove",e=>{ if(!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2 && pinch0){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const f=pinch0.d/Math.max(1,d); const m=pinch0.mid; vb={x:m.x-(m.x-pinch0.vb.x)*f,y:m.y-(m.y-pinch0.vb.y)*f,w:pinch0.vb.w*f,h:pinch0.vb.h*f}; applyVB(); moved=true; return; }
+  if(!dragStart) return; const r=svg.getBoundingClientRect(); const dx=(e.clientX-dragStart.px)/r.width*vb.w, dy=(e.clientY-dragStart.py)/r.height*vb.h; if(Math.abs(e.clientX-dragStart.px)+Math.abs(e.clientY-dragStart.py)>4) moved=true; vb.x=dragStart.vx-dx; vb.y=dragStart.vy-dy; applyVB(); });
+const endPtr=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=null; if(ptrs.size===0){ dragStart=null; svg.classList.remove("drag"); } };
+svg.addEventListener("pointerup",endPtr); svg.addEventListener("pointercancel",endPtr);
+svg.addEventListener("wheel",e=>{ e.preventDefault(); const p=clientToSvg(e.clientX,e.clientY); zoomAt(e.deltaY>0?1.12:1/1.12,p.x,p.y); },{passive:false});
+/* ポインターキャプチャ中は click の対象が svg 自体になるため、押した瞬間の対象（downTarget）で判定する */
+svg.addEventListener("click",e=>{ if(moved) return; const n=downTarget||e.target.closest("[data-id]"); downTarget=null; if(n) select(n.dataset.id); else closePanel(); });
+svg.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ const n=e.target.closest("[data-id]"); if(n){ e.preventDefault(); select(n.dataset.id); } } });
+addEventListener("resize",()=>{ if(current>=0) animateTo(fitRect(VIEWS[current]),0); });
+
+/* ───────────────────────────── 選択と説明パネル ───────────────────────────── */
+const panel=document.getElementById("panel"); let selected=null;
+function closePanel(){ panel.hidden=true; selected=null; Object.values(nodeEls).forEach(n=>n.classList.remove("sel","dim")); edgeEls.forEach(x=>x.el.classList.remove("lit","dim")); }
+function select(id){ const info=details[id]; if(!info) return; selected=id;
+  Object.entries(nodeEls).forEach(([k,n])=>{ n.classList.toggle("sel",k===id); });
+  const near=new Set([id]); edgeEls.forEach(x=>{ const hit=x.a===id||x.b===id; x.el.classList.toggle("lit",hit); x.el.classList.toggle("dim",!hit); if(hit){near.add(x.a);near.add(x.b);} });
+  Object.entries(nodeEls).forEach(([k,n])=>n.classList.toggle("dim",!near.has(k)));
+  const k=KIND[info.kind]||KIND.page; const d=info.d||{};
+  let html=`<button class="close" aria-label="閉じる">✕</button><div class="kind" style="--c:${k.c}">${k.label}</div><h2>${esc(info.title)}</h2>`;
+  const dl=[]; if(d.path) dl.push(["場所",`<code>${esc(d.path)}</code>`]); else if(info.sub) dl.push(["補足",esc(info.sub)]);
+  if(d.backend) dl.push(["裏側",esc(d.backend)]); if(d.data) dl.push(["読むデータ",esc(d.data)]);
+  if(dl.length) html+=`<dl>${dl.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join("")}</dl>`;
+  if(d.note) html+=`<p>${esc(d.note)}</p>`; if(d.text) html+=`<p>${esc(d.text)}</p>`;
+  if(d.blocks) html+=`<ul class="rows">${d.blocks.map(b=>`<li><span>${esc(b[0])}</span></li>`).join("")}</ul>`;
+  if(d.rows) html+=`<ul class="rows">${d.rows.map(r=>`<li>${r[1]?`<span class="tag ${r[1]==="FK"?"fk":""}">${r[1]}</span>`:""}<span>${esc(r[0])}</span>${r[2]?`<span class="memo">${esc(r[2])}</span>`:""}</li>`).join("")}</ul>`;
+  const related=[...near].filter(x=>x!==id); if(related.length) html+=`<div class="links">${related.map(r=>`<button data-go="${r}">${esc(details[r]?.title||r)}</button>`).join("")}</div>`;
+  const url = d.path && /\.html/.test(d.path) && !/[ ,*]/.test(d.path.split(/\s/)[0]) ? SITE+d.path.split(/\s|,/)[0] : (d.path && /\/$/.test(d.path.split(/\s/)[0]) ? SITE+d.path.split(/\s/)[0] : null);
+  if(url && (info.kind==="page"||info.kind==="admin")) html+=`<a class="open" href="${url}" target="_blank" rel="noopener">本番ページを開く ↗</a>`;
+  panel.innerHTML=html; panel.hidden=false;
+  panel.querySelector(".close").addEventListener("click",closePanel);
+  panel.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{ select(b.dataset.go); centerOn(b.dataset.go); }));
+}
+function centerOn(id){ const r=rects[id]; if(!r) return; const cx=r.x+r.w/2, cy=r.y+r.h/2; if(cx<vb.x||cx>vb.x+vb.w||cy<vb.y||cy>vb.y+vb.h) animateTo({x:cx-vb.w/2,y:cy-vb.h/2,w:vb.w,h:vb.h},380); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* 凡例 */
+document.getElementById("legend").innerHTML = Object.values(KIND).map(k=>`<span><i style="--c:${k.c}"></i>${k.label}</span>`).join("") + `<span><i style="--c:#7a6a58;border-style:dashed"></i>点線＝GASのまとまり／間接の流れ</span>`;
+
+/* 初期表示：前回の図を復元 */
+let start=0; try{ const s=localStorage.getItem("nsf_map_view"); if(s!=null) start=+s; }catch(e){}
+goView(start,0);
+</script>
+
+</html>
