@@ -19,46 +19,52 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     gtag('config', 'G-ND1T7H067Y');
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
-       N's factory — REFILL PRINT TOOLS（2026-09-11 全面刷新）
-       モノトーン・近未来調。このページはリフィル作成・印刷ツール専用。
-       他のアプリはデジタル幕僚室（/digital-room/）に置く（重複掲載しない）。
+       N's factory — REFILL PRINT TOOLS
+       2026-09-11 全面刷新（モノトーン）→ 2026-09-17 再設計（事業主指示）:
+       「ごちゃごちゃして分かりにくい。フォントの大きさでメリハリを。欲しい規格に素早くたどり着ける案内を。色も黒で単調」
+       「各規格カードにモーションを」
+       - 判型ごとにアクセント色（--ac）。上部の「判型を選ぶ」から該当カードへ飛ぶ
+       - 判型名を主役（大）・寸法は補足（小）・3ツールは大きなボタン
+       - モーション: 出現時フェードイン／ホバーで浮き上がり＋色の縁光／シルエットが揺れる（prefers-reduced-motion で停止）
+       このページはリフィル作成・印刷ツール専用。他のアプリはデジタル幕僚室（/digital-room/）に置く（重複掲載しない）。
        ============================================================ */
     :root {
-      --bg: #0a0a0c;
-      --bg-2: #101013;
-      --panel: #141418;
-      --panel-2: #1a1a1f;
-      --line: #26262c;
-      --line-2: #34343b;
-      --fg: #ececee;
-      --fg-2: #a9a9b1;
-      --fg-3: #6c6c75;
-      --glow: rgba(255,255,255,.06);
+      --bg: #0b0b10;
+      --bg-2: #111118;
+      --panel: #15151d;
+      --panel-2: #1b1b25;
+      --line: #262631;
+      --line-2: #363644;
+      --fg: #f1f1f4;
+      --fg-2: #b0b0ba;
+      --fg-3: #74747f;
+      --gold: #d8b36a;
       --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       --sans: 'Inter', 'Noto Sans JP', -apple-system, 'Hiragino Sans', Meiryo, sans-serif;
+      /* 判型ごとのアクセント色（カードの data-size と選択ボタンで共有） */
+      --c-micro5: #4fc3f7;
+      --c-mini6:  #7ed491;
+      --c-bible:  #e6b85c;
+      --c-a6:     #f4879b;
+      --c-a5slim: #b79cff;
+      --c-a5:     #ffa45c;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { color-scheme: dark; }
+    html { color-scheme: dark; scroll-behavior: smooth; }
     body {
       background: var(--bg); color: var(--fg); font-family: var(--sans); font-weight: 400;
       line-height: 1.6; -webkit-font-smoothing: antialiased; min-height: 100vh; overflow-x: hidden;
     }
-    /* 背景: 細いグリッド＋上部のわずかな光 */
+    /* 背景: 上部に色のにじみ（黒一色にしない） */
     body::before {
       content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image:
-        linear-gradient(var(--line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--line) 1px, transparent 1px);
-      background-size: 48px 48px; opacity: .35;
-      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 100%);
-      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 100%);
-    }
-    body::after {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(255,255,255,.07), transparent 70%);
+      background:
+        radial-gradient(ellipse 50% 35% at 15% -5%, rgba(79,195,247,.16), transparent 70%),
+        radial-gradient(ellipse 45% 35% at 85% -5%, rgba(255,164,92,.16), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 50% 110%, rgba(183,156,255,.10), transparent 70%);
     }
     a { color: inherit; text-decoration: none; }
     .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 20px 60px; }
@@ -71,52 +77,96 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .topbar nav a:hover { color: var(--fg); }
 
     /* === MODULE: Hero === */
-    .hero { padding: 56px 0 36px; }
+    .hero { padding: 48px 0 8px; }
     .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .3em; color: var(--fg-3); text-transform: uppercase; margin-bottom: 14px; }
-    .hero h1 { font-size: clamp(30px, 5vw, 52px); font-weight: 300; letter-spacing: -.01em; line-height: 1.12; }
-    .hero h1 strong { font-weight: 600; }
-    .hero p { margin-top: 16px; max-width: 640px; color: var(--fg-2); font-size: 14px; }
-    .hero .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
-    .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--fg-2); border: 1px solid var(--line-2); border-radius: 999px; padding: 5px 12px; background: var(--bg-2); }
+    .hero h1 { font-size: clamp(32px, 5.4vw, 56px); font-weight: 300; letter-spacing: -.01em; line-height: 1.1; }
+    .hero h1 strong { font-weight: 700; }
+    .hero p { margin-top: 16px; max-width: 620px; color: var(--fg-2); font-size: 15px; }
+    .hero p b { color: var(--fg); font-weight: 600; }
+
+    /* === MODULE: 判型セレクター（ここが入口） === */
+    .picker { margin: 34px 0 10px; padding: 22px 22px 18px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); }
+    .picker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .picker-head h2 { font-size: 20px; font-weight: 700; letter-spacing: .01em; }
+    .picker-head h2 small { display: block; font-size: 12px; font-weight: 400; color: var(--fg-2); margin-top: 2px; }
+    .picker-head .help { font-size: 12px; color: var(--fg-2); }
+    .picker-head .help a { color: var(--fg); border-bottom: 1px solid var(--line-2); }
+    .picker-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+    .pick { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-2); cursor: pointer; color: var(--fg); text-align: center; transition: transform .2s, border-color .2s, box-shadow .2s, background .2s; }
+    .pick:hover, .pick:focus-visible { transform: translateY(-4px); border-color: var(--ac); box-shadow: 0 14px 34px rgba(0,0,0,.45), 0 0 0 1px var(--ac) inset, 0 0 24px color-mix(in srgb, var(--ac) 35%, transparent); outline: none; }
+    .pick .sil { height: 90px; display: flex; align-items: flex-end; }
+    .pick .sil i { display: block; border: 2px solid var(--ac); border-radius: 3px; background: color-mix(in srgb, var(--ac) 18%, transparent); position: relative; box-shadow: 0 0 18px color-mix(in srgb, var(--ac) 30%, transparent); }
+    .pick .sil i::before { content: ''; position: absolute; left: 3px; top: 12%; bottom: 12%; width: 2px; border-left: 2px dotted var(--ac); opacity: .8; }
+    .pick .nm { font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+    .pick .mm { font-family: var(--mono); font-size: 10.5px; color: var(--fg-2); letter-spacing: .04em; }
+    .pick .hole { font-family: var(--mono); font-size: 9.5px; color: var(--ac); letter-spacing: .12em; }
 
     /* === MODULE: Free notice（改善要望の連絡先を消さない） === */
-    .notice { display: flex; gap: 14px; align-items: flex-start; border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 14px 16px; font-size: 12.5px; color: var(--fg-2); margin: 8px 0 36px; }
-    .notice .dot { flex: none; width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: var(--fg); box-shadow: 0 0 12px rgba(255,255,255,.6); }
-    .notice b { color: var(--fg); font-weight: 500; }
+    .notice { display: flex; gap: 14px; align-items: flex-start; border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 14px 16px; font-size: 12.5px; color: var(--fg-2); margin: 18px 0 8px; }
+    .notice .dot { flex: none; width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: var(--c-mini6); box-shadow: 0 0 12px var(--c-mini6); }
+    .notice b { color: var(--fg); font-weight: 600; }
     .notice a { color: var(--fg); border-bottom: 1px solid var(--line-2); }
 
     /* === MODULE: Section label === */
-    .sec { display: flex; align-items: baseline; gap: 14px; margin: 44px 0 18px; }
+    .sec { display: flex; align-items: baseline; gap: 14px; margin: 48px 0 18px; }
     .sec .n { font-family: var(--mono); font-size: 11px; color: var(--fg-3); letter-spacing: .2em; }
-    .sec h2 { font-size: 15px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
+    .sec h2 { font-size: 22px; font-weight: 700; letter-spacing: .01em; }
+    .sec h2 small { font-size: 12px; font-weight: 400; color: var(--fg-2); margin-left: 10px; letter-spacing: 0; }
     .sec .rule { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); }
 
     /* === MODULE: Size cards === */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-    .size { position: relative; border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-2), var(--panel)); border-radius: 14px; overflow: hidden; transition: border-color .2s, transform .2s, box-shadow .2s; }
-    .pdf-card { display: block; }
-    .size:hover { border-color: var(--line-2); box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04) inset; }
-    .size-head { padding: 18px 18px 14px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: end; }
-    .size-head .code { font-family: var(--mono); font-size: 11px; letter-spacing: .24em; color: var(--fg-3); text-transform: uppercase; }
-    .size-head h3 { font-size: 20px; font-weight: 500; letter-spacing: .02em; margin-top: 2px; }
-    .size-head .dim { grid-row: 1 / span 2; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--fg-2); line-height: 1.7; }
-    .size-head .dim b { display: block; font-size: 15px; color: var(--fg); font-weight: 500; }
-    .size-meta { padding: 10px 18px; font-family: var(--mono); font-size: 10.5px; color: var(--fg-3); letter-spacing: .04em; border-bottom: 1px solid var(--line); display: flex; gap: 14px; flex-wrap: wrap; }
-    .tool { display: grid; grid-template-columns: 54px 1fr auto; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--line); transition: background .15s; }
-    .tool:last-child { border-bottom: none; }
-    .tool:hover { background: var(--glow); }
-    .tool .k { font-family: var(--mono); font-size: 10px; letter-spacing: .18em; color: var(--fg-3); text-transform: uppercase; }
-    .tool .t { font-size: 14px; font-weight: 500; color: var(--fg); }
-    .tool .d { font-size: 11.5px; color: var(--fg-2); margin-top: 1px; }
-    .tool .arrow { font-family: var(--mono); color: var(--fg-3); transition: transform .15s, color .15s; }
-    .tool:hover .arrow { transform: translateX(3px); color: var(--fg); }
-    .new { display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: .16em; color: var(--bg); background: var(--fg); border-radius: 3px; padding: 1px 6px; margin-left: 8px; vertical-align: 2px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+    .size { position: relative; border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-2), var(--panel)); border-radius: 18px; overflow: hidden; transition: border-color .25s, transform .25s, box-shadow .25s; scroll-margin-top: 24px; }
+    .size::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--ac), color-mix(in srgb, var(--ac) 20%, transparent)); }
+    .size:hover { transform: translateY(-4px); border-color: var(--ac); box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 30px color-mix(in srgb, var(--ac) 22%, transparent); }
+    .size.flash { animation: flash 1.4s ease-out; }
+    @keyframes flash { 0% { box-shadow: 0 0 0 3px var(--ac), 0 0 40px var(--ac); border-color: var(--ac); } 100% { box-shadow: none; } }
+    /* 出現モーション */
+    .size.reveal { opacity: 0; transform: translateY(18px); }
+    .size.reveal.in { opacity: 1; transform: none; transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1), border-color .25s, box-shadow .25s; }
+    .size.reveal.in:hover { transform: translateY(-4px); }
+    .size-head { padding: 22px 20px 16px; display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: center; }
+    .size-head .code { font-family: var(--mono); font-size: 10.5px; letter-spacing: .24em; color: var(--ac); text-transform: uppercase; }
+    .size-head h3 { font-size: 30px; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; margin-top: 4px; }
+    .size-head .dim { font-family: var(--mono); font-size: 12.5px; color: var(--fg-2); margin-top: 6px; }
+    .size-head .dim b { color: var(--fg); font-weight: 500; font-size: 14px; }
+    .size-head .sil { grid-row: 1 / span 3; display: flex; align-items: center; justify-content: center; width: 72px; height: 96px; }
+    .size-head .sil i { display: block; border: 2px solid var(--ac); border-radius: 3px; background: color-mix(in srgb, var(--ac) 16%, transparent); position: relative; box-shadow: 0 0 22px color-mix(in srgb, var(--ac) 30%, transparent); animation: floaty 4.5s ease-in-out infinite; }
+    .size-head .sil i::before { content: ''; position: absolute; left: 3px; top: 12%; bottom: 12%; width: 2px; border-left: 2px dotted var(--ac); opacity: .8; }
+    .size:nth-child(2n) .size-head .sil i { animation-delay: -1.5s; }
+    .size:nth-child(3n) .size-head .sil i { animation-delay: -3s; }
+    @keyframes floaty { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-6px) rotate(2deg); } }
+    .size-meta { padding: 0 20px 14px; font-family: var(--mono); font-size: 10.5px; color: var(--fg-3); letter-spacing: .04em; display: flex; gap: 6px 14px; flex-wrap: wrap; }
+    .tools { display: grid; gap: 8px; padding: 0 14px 14px; }
+    .tool { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-2); transition: background .15s, border-color .15s, transform .15s; }
+    .tool:hover { background: color-mix(in srgb, var(--ac) 10%, var(--bg-2)); border-color: color-mix(in srgb, var(--ac) 60%, var(--line)); transform: translateX(3px); }
+    .tool .k { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; color: var(--ac); text-transform: uppercase; border: 1px solid color-mix(in srgb, var(--ac) 45%, transparent); border-radius: 6px; padding: 5px 8px; min-width: 76px; text-align: center; }
+    .tool .t { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .tool .d { display: block; font-size: 11.5px; color: var(--fg-2); margin-top: 2px; line-height: 1.5; }
+    .tool .arrow { font-family: var(--mono); font-size: 18px; color: var(--ac); transition: transform .15s; }
+    .tool:hover .arrow { transform: translateX(4px); }
+    .new { display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: .16em; color: var(--bg); background: var(--ac); border-radius: 3px; padding: 1px 6px; margin-left: 8px; vertical-align: 2px; }
+
+    /* 判型ごとの色 */
+    [data-size="micro5"] { --ac: var(--c-micro5); }
+    [data-size="mini6"]  { --ac: var(--c-mini6); }
+    [data-size="bible"]  { --ac: var(--c-bible); }
+    [data-size="a6"]     { --ac: var(--c-a6); }
+    [data-size="a5slim"] { --ac: var(--c-a5slim); }
+    [data-size="a5"]     { --ac: var(--c-a5); }
+    [data-size="refill"] { --ac: var(--gold); }
+
+    /* === MODULE: 販売PDF カード === */
+    .pdf-card .size-head h3 { font-size: 24px; }
+    .pdf-card .size-head h3 a:hover { color: var(--ac); }
+    .pdf-card .size-head .dim a { color: var(--ac); border-bottom: 1px solid color-mix(in srgb, var(--ac) 50%, transparent); }
+    .pdf-card .size-head .dim b { display: block; }
 
     /* === MODULE: Spec tables === */
     details.spec { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); overflow: hidden; }
     details.spec summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; }
     details.spec summary::-webkit-details-marker { display: none; }
-    details.spec summary .l { font-size: 14px; font-weight: 500; }
+    details.spec summary .l { font-size: 15px; font-weight: 600; }
     details.spec summary .s { font-size: 11.5px; color: var(--fg-2); margin-top: 2px; }
     details.spec summary .i { font-family: var(--mono); color: var(--fg-3); transition: transform .2s; }
     details.spec[open] summary .i { transform: rotate(90deg); }
@@ -129,7 +179,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     td:first-child { color: var(--fg); font-weight: 500; }
     td.num { font-family: var(--mono); text-align: right; color: var(--fg); }
     td .sub { display: block; font-size: 10.5px; color: var(--fg-3); white-space: normal; }
-    .ok { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--fg); border: 1px solid var(--line-2); border-radius: 3px; padding: 1px 7px; }
+    .ok { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--c-mini6); border: 1px solid color-mix(in srgb, var(--c-mini6) 50%, transparent); border-radius: 3px; padding: 1px 7px; }
     .ok.dim { color: var(--fg-3); border-style: dashed; }
     .note { font-size: 11px; color: var(--fg-3); margin-top: 10px; line-height: 1.7; }
     .note a { color: var(--fg-2); border-bottom: 1px solid var(--line-2); }
@@ -139,14 +189,31 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     footer a { color: var(--fg-2); }
     footer a:hover { color: var(--fg); }
 
+    @media (max-width: 860px) {
+      .picker-grid { grid-template-columns: repeat(3, 1fr); }
+    }
     @media (max-width: 560px) {
       .wrap { padding: 0 14px 40px; }
-      .hero { padding: 40px 0 28px; }
-      .tool { grid-template-columns: 46px 1fr auto; padding: 12px 14px; }
-      .size-head, .size-meta { padding-left: 14px; padding-right: 14px; }
+      .hero { padding: 36px 0 4px; }
+      .picker { padding: 16px 14px 14px; }
+      .picker-grid { gap: 8px; }
+      .pick { padding: 10px 6px 10px; }
+      .pick .sil { height: 76px; transform: scale(.85); transform-origin: bottom center; }
+      .size-head { padding: 18px 16px 12px; }
+      .size-head h3 { font-size: 26px; }
+      .tools { padding: 0 10px 10px; }
+      .tool { gap: 10px; padding: 11px 12px; }
+      .tool .k { min-width: 0; padding: 4px 6px; font-size: 9px; }
+      .tool .t { font-size: 15px; }
       .topbar nav { gap: 12px; }
     }
-    @media print { body::before, body::after { display: none; } }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .size.reveal { opacity: 1; transform: none; }
+      .size-head .sil i, .size.flash { animation: none; }
+      .pick, .size, .tool, .tool .arrow { transition: none; }
+    }
+    @media print { body::before { display: none; } }
   </style>
 </head>
 <body>
@@ -159,6 +226,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <header class="topbar">
     <div class="brand"><b>N's factory</b> / refill print tools</div>
     <nav>
+      <a href="../refill-pdf/">N's refill（PDF販売）</a>
       <a href="../digital-room/">デジタル幕僚室</a>
       <a href="../">TOP</a>
     </nav>
@@ -167,9 +235,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <section class="hero">
     <div class="eyebrow">System planner refill — free print tools</div>
     <h1>手帳リフィルを、<strong>自分で刷る。</strong></h1>
-    <p>6つの判型 × 週間・月間・日次。期間を指定してA4に面付けし、そのまま両面印刷・裁断・6穴パンチ。日付なし版（透かし）、綴じ後プレビュー、印刷ズレ補正つき。無料・登録不要、データは端末の外に出ません。</p>
-    <div class="tags">
-      <span class="tag">A4 両面印刷</span><span class="tag">期間指定</span><span class="tag">日付なし版</span><span class="tag">綴じ後プレビュー</span><span class="tag">印刷ズレ補正</span><span class="tag">PDF出力</span>
+    <p><b>無料・登録不要。</b>6つの判型 × 週間・月間・日次。期間を指定してA4に面付けし、そのまま両面印刷・裁断・穴あけ。日付なし版、綴じ後プレビュー、印刷ズレ補正つき。データは端末の外に出ません。</p>
+  </section>
+
+  <!-- ── 判型セレクター: まず自分の手帳の判型を選ぶ → 該当カードへ移動 ── -->
+  <section class="picker" aria-label="判型を選ぶ">
+    <div class="picker-head">
+      <h2>まず、お使いの手帳の判型を選んでください<small>押すとその判型のツール（週間・月間・日次）へ移動します</small></h2>
+      <div class="help">判型がわからないときは <a href="../kouhou-room/ring-standards.html">リング規格図鑑</a> か、下の<a href="#spec">規格表</a>（寸法・穴位置）で確認できます</div>
+    </div>
+    <div class="picker-grid">
+      <button class="pick" type="button" data-size="micro5" data-target="s-micro5"><span class="sil"><i style="width:26px;height:44px"></i></span><span class="nm">Micro5</span><span class="mm">62 × 105</span><span class="hole">5穴</span></button>
+      <button class="pick" type="button" data-size="mini6" data-target="s-mini6"><span class="sil"><i style="width:33px;height:53px"></i></span><span class="nm">Mini6</span><span class="mm">80 × 128</span><span class="hole">6穴</span></button>
+      <button class="pick" type="button" data-size="bible" data-target="s-bible"><span class="sil"><i style="width:39px;height:70px"></i></span><span class="nm">バイブル</span><span class="mm">95 × 170</span><span class="hole">6穴</span></button>
+      <button class="pick" type="button" data-size="a6" data-target="s-a6"><span class="sil"><i style="width:43px;height:61px"></i></span><span class="nm">A6</span><span class="mm">105 × 148</span><span class="hole">6穴</span></button>
+      <button class="pick" type="button" data-size="a5slim" data-target="s-a5slim"><span class="sil"><i style="width:45px;height:86px"></i></span><span class="nm">A5スリム</span><span class="mm">110 × 210</span><span class="hole">6穴</span></button>
+      <button class="pick" type="button" data-size="a5" data-target="s-a5"><span class="sil"><i style="width:61px;height:86px"></i></span><span class="nm">A5</span><span class="mm">148 × 210</span><span class="hole">6穴</span></button>
     </div>
   </section>
 
@@ -179,93 +260,119 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <div><b>無料でお使いください。</b>会員登録もパスワードも不要です。作ったデータはこの端末の中だけで処理され、どこにも送信されません。うまく動かない・印刷がずれる・こうしてほしい等は <a href="../links.html">こちら</a> か、各ツール右下の「改善要望」からお知らせください。個人で作っているので、教えていただけると助かります。</div>
   </div>
 
-  <div class="sec"><span class="n">01</span><h2>Tools by size</h2><span class="rule"></span></div>
+  <div class="sec"><span class="n">01</span><h2>判型ごとのツール<small>週間・月間・日次の3本ずつ</small></h2><span class="rule"></span></div>
 
   <main class="grid" id="tools">
 
-    <article class="size">
+    <article class="size reveal" id="s-micro5" data-size="micro5">
       <div class="size-head">
-        <div><div class="code">Micro 5 · M5</div><h3>Micro5</h3></div>
-        <div class="dim"><b>62 × 105</b>mm · 5穴</div>
+        <div class="code">Micro 5 · M5</div>
+        <span class="sil"><i style="width:26px;height:44px"></i></span>
+        <h3>Micro5</h3>
+        <div class="dim"><b>62 × 105</b> mm · 5穴</div>
       </div>
       <div class="size-meta"><span>A4縦 3×2 = 6面</span><span>穴 15/34/53/72/91</span><span>長辺綴じ</span></div>
+      <div class="tools">
       <a class="tool" href="../micro5-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック<span class="new">NEW</span></span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../micro5-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック<span class="new">NEW</span></span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../micro5-daily/"><span class="k">Daily</span><span><span class="t">デイリー<span class="new">NEW</span></span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      </div>
     </article>
 
-    <article class="size">
+    <article class="size reveal" id="s-mini6" data-size="mini6">
       <div class="size-head">
-        <div><div class="code">Mini 6 · M6 · Pocket</div><h3>Mini6</h3></div>
-        <div class="dim"><b>80 × 128</b>mm · 6穴</div>
+        <div class="code">Mini 6 · M6 · Pocket</div>
+        <span class="sil"><i style="width:33px;height:53px"></i></span>
+        <h3>Mini6</h3>
+        <div class="dim"><b>80 × 128</b> mm · 6穴</div>
       </div>
       <div class="size-meta"><span>A4縦 4面 ／ はがき 1面</span><span>穴 16.3〜112.3 / 19.2mm</span><span>長辺綴じ</span></div>
+      <div class="tools">
       <a class="tool" href="../mini6-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック<span class="new">NEW</span></span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../mini6-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック<span class="new">NEW</span></span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../mini6-daily/"><span class="k">Daily</span><span><span class="t">デイリー<span class="new">NEW</span></span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      </div>
     </article>
 
-    <article class="size">
+    <article class="size reveal" id="s-bible" data-size="bible">
       <div class="size-head">
-        <div><div class="code">Personal · Bible</div><h3>バイブル</h3></div>
-        <div class="dim"><b>95 × 170</b>mm · 6穴</div>
+        <div class="code">Personal · Bible</div>
+        <span class="sil"><i style="width:39px;height:70px"></i></span>
+        <h3>バイブル</h3>
+        <div class="dim"><b>95 × 170</b> mm · 6穴</div>
       </div>
       <div class="size-meta"><span>A4横 3面（従来のA4縦2面も可）</span><span>穴 18.5〜145.5 / 群間50.8</span><span>短辺綴じ</span></div>
+      <div class="tools">
       <a class="tool" href="../bible-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック</span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../bible-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック</span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../bible-daily/"><span class="k">Daily</span><span><span class="t">デイリー</span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      </div>
     </article>
 
-    <article class="size">
+    <article class="size reveal" id="s-a6" data-size="a6">
       <div class="size-head">
-        <div><div class="code">A6 · N's original</div><h3>A6</h3></div>
-        <div class="dim"><b>105 × 148</b>mm · 6穴</div>
+        <div class="code">A6 · N's original</div>
+        <span class="sil"><i style="width:43px;height:61px"></i></span>
+        <h3>A6</h3>
+        <div class="dim"><b>105 × 148</b> mm · 6穴</div>
       </div>
       <div class="size-meta"><span>A4縦 2×2 = 4面</span><span>穴 14.75〜128.75 / 群間38</span><span>長辺綴じ</span></div>
+      <div class="tools">
       <a class="tool" href="../a6-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック</span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../a6-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック</span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../a6-daily/"><span class="k">Daily</span><span><span class="t">デイリー</span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      </div>
     </article>
 
-    <article class="size">
+    <article class="size reveal" id="s-a5slim" data-size="a5slim">
       <div class="size-head">
-        <div><div class="code">A5 Slim · A5 6-hole</div><h3>A5スリム</h3></div>
-        <div class="dim"><b>110 × 210</b>mm · 6穴</div>
+        <div class="code">A5 Slim · A5 6-hole</div>
+        <span class="sil"><i style="width:45px;height:86px"></i></span>
+        <h3>A5スリム</h3>
+        <div class="dim"><b>110 × 210</b> mm · 6穴</div>
       </div>
       <div class="size-meta"><span>A4横 2面</span><span>穴 32〜178 / 群間69.9（A5規格）</span><span>短辺綴じ</span></div>
+      <div class="tools">
       <a class="tool" href="../a5slim-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック</span><span class="d">1ページ1週間。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../a5slim-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック</span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../a5slim-daily/"><span class="k">Daily</span><span><span class="t">デイリー</span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      </div>
     </article>
 
-    <article class="size">
+    <article class="size reveal" id="s-a5" data-size="a5">
       <div class="size-head">
-        <div><div class="code">A5 · A5 6-hole</div><h3>A5</h3></div>
-        <div class="dim"><b>148 × 210</b>mm · 6穴</div>
+        <div class="code">A5 · A5 6-hole</div>
+        <span class="sil"><i style="width:61px;height:86px"></i></span>
+        <h3>A5</h3>
+        <div class="dim"><b>148 × 210</b> mm · 6穴</div>
       </div>
       <div class="size-meta"><span>A4横 2面 ／ A5用紙 1面（直接）</span><span>穴 32〜178 / 群間69.9（A5規格）</span><span>短辺綴じ／長辺綴じ</span></div>
+      <div class="tools">
       <a class="tool" href="../a5-weekly/"><span class="k">Weekly</span><span><span class="t">週間ブロック</span><span class="d">1ページ1週間。日付なし版・デザイン画像モード（AI画像の上に日付だけ置く・試作）</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../a5-monthly/"><span class="k">Monthly</span><span><span class="t">月間ブロック</span><span class="d">見開き1か月・裏に前後の月。日付なし版も出力可</span></span><span class="arrow">→</span></a>
       <a class="tool" href="../a5-daily/"><span class="k">Daily</span><span><span class="t">デイリー</span><span class="d">1日1ページ・時間軸つき。日付なし版も出力可</span></span><span class="arrow">→</span></a>
+      </div>
     </article>
 
   </main>
 
-  <div class="sec"><span class="n">02</span><h2>Printed PDF</h2><span class="rule"></span></div>
+  <div class="sec"><span class="n">02</span><h2>印刷用PDFを買う<small>ツールを操作せずに、そのまま印刷できる完成データ</small></h2><span class="rule"></span></div>
 
-  <article class="size pdf-card">
+  <article class="size reveal pdf-card" data-size="refill">
     <div class="size-head">
-      <div><div class="code">N's refill · PDF</div><h3><a href="../refill-pdf/">印刷用PDFを買う</a></h3></div>
-      <div class="dim"><b>N's refill</b><a href="../refill-pdf/">シリーズ一覧 →</a></div>
+      <div class="code">N's refill · PDF</div>
+      <h3><a href="../refill-pdf/">N's refill</a></h3>
+      <div class="dim"><b>Micro5・ミニ6・バイブル・A6・A5スリム・A5</b><a href="../refill-pdf/">シリーズ一覧 →</a></div>
     </div>
-    <div class="size-meta"><span>ツールを操作せずに、そのまま印刷できる完成データ</span><span>Micro5・ミニ6・バイブル・A6・A5スリム・A5</span></div>
     <!-- 商品行は tools/build_refill_pages.js が refill-pdf/refills-data.json から差し替える（⛔ 手で直さない） -->
+    <div class="tools">
     <!-- REFILL_PRODUCTS:start -->
       <a class="tool" href="../refill-pdf/monthly-undated.html"><span class="k">Buy</span><span><span class="t">日付なし マンスリーリフィル PDF 6判型セット</span><span class="d">各判型12か月分・曜日は英語で印字・月曜始まり／日曜始まり同梱。 <span data-checkout-off="refill-monthly-undated-all">いまはメール申込（銀行振込）</span><span data-checkout-on="refill-monthly-undated-all" style="display:none">カード決済ですぐダウンロード（銀行振込も可）</span></span></span><span class="arrow">→</span></a>
 <!-- REFILL_PRODUCTS:end -->
+    </div>
   </article>
 
-  <div class="sec"><span class="n">03</span><h2>Specifications</h2><span class="rule"></span></div>
+  <div class="sec"><span class="n">03</span><h2>規格データ<small>寸法・穴位置・対応状況</small></h2><span class="rule"></span></div>
 
   <details class="spec" id="spec">
     <summary>
@@ -331,6 +438,33 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
 </div>
 
+<script>
+// 判型セレクター: 押した判型のカードへ移動し、1.4秒だけ縁を光らせる
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.pick[data-target]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var el = document.getElementById(btn.getAttribute('data-target'));
+      if (!el) return;
+      el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+      var first = el.querySelector('a.tool'); if (first) first.focus({ preventScroll: true });
+    });
+  });
+  // カードの出現モーション（画面に入ったら順に表示）。IntersectionObserver が無い環境は即表示
+  var cards = document.querySelectorAll('.size.reveal');
+  if (reduce || !('IntersectionObserver' in window)) { cards.forEach(function (c) { c.classList.add('in'); }); return; }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      var i = Array.prototype.indexOf.call(cards, e.target);
+      setTimeout(function () { e.target.classList.add('in'); }, Math.min(i, 5) * 70);
+      io.unobserve(e.target);
+    });
+  }, { rootMargin: '0px 0px 0px 0px', threshold: 0 });   // 少しでも見えたら出す（画面の下端に掛かるカードが空に見えないように）
+  cards.forEach(function (c) { io.observe(c); });
+})();
+</script>
 <script src="../assets/access-counter.js"></script>
 <script src="../assets/pdf-checkout.js"></script>
 </body>
