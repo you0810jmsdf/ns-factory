@@ -272,7 +272,7 @@ footer.ft a { color: var(--tan-light); }
   <span class="nav-title">リング規格図鑑</span>
   <span class="nav-spacer"></span>
   <a class="nav-link" href="../tools/">印刷ツール</a>
-  <a class="nav-link" href="../refill-pdf/monthly-undated.html">PDF販売</a>
+  <a class="nav-link" href="../refill-pdf/">N's refill（PDF販売）</a>
   <a class="nav-link" href="./">後方幕僚室</a>
   <a class="nav-link" href="../">TOPへ戻る</a>
 </header>
@@ -305,7 +305,7 @@ footer.ft a { color: var(--tan-light); }
     <div class="cta-txt"><b>規格が分かったら、リフィルは自分で刷れます。</b><span>Micro5・Mini6・バイブル・A6・A5スリムの週間・月間・日次を、期間を指定してA4に面付け。無料・登録不要。</span></div>
     <div class="cta-btns">
       <a class="cta-btn" href="../tools/">リフィル作成・印刷ツール →</a>
-      <a class="cta-btn alt" href="../refill-pdf/monthly-undated.html">印刷用PDFを買う（¥300）→</a>
+      <a class="cta-btn alt" href="../refill-pdf/">印刷用PDFを買う（N's refill）→</a>
     </div>
   </div>
 
@@ -843,7 +843,7 @@ function cardHtml(f) {
   if (f.tool) {
     h += '<div class="fmt-tools"><span class="fmt-tools-k">この規格の印刷ツール（無料）</span>'
       + '<a href="../' + f.tool + '-weekly/">週間</a><a href="../' + f.tool + '-monthly/">月間</a><a href="../' + f.tool + '-daily/">日次</a>'
-      + (f.tool === 'a5slim' ? '<a class="pdf" href="../refill-pdf/monthly-undated.html">印刷用PDFを買う</a>' : '') + '</div>';
+      + (f.tool ? '<a class="pdf" href="../refill-pdf/">印刷用PDFを買う</a>' : '') + '</div>';
   }
   if (photos.length) {
     h += '<div class="fmt-photos"><div class="fmt-photos-cap">' + "N's factory" + ' の製作実績から（' + photos.length + '点）</div>'

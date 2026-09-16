@@ -253,14 +253,17 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
   <div class="sec"><span class="n">02</span><h2>Printed PDF</h2><span class="rule"></span></div>
 
-  <a class="size pdf-card" href="../refill-pdf/monthly-undated.html">
+  <article class="size pdf-card">
     <div class="size-head">
-      <div><div class="code">N's refill · PDF</div><h3>印刷用PDFを買う</h3></div>
-      <div class="dim"><b>¥500</b>6判型セット 日付なし月間</div>
+      <div><div class="code">N's refill · PDF</div><h3><a href="../refill-pdf/">印刷用PDFを買う</a></h3></div>
+      <div class="dim"><b>N's refill</b><a href="../refill-pdf/">シリーズ一覧 →</a></div>
     </div>
     <div class="size-meta"><span>ツールを操作せずに、そのまま印刷できる完成データ</span><span>Micro5・ミニ6・バイブル・A6・A5スリム・A5</span></div>
-    <div class="tool"><span class="k">Buy</span><span><span class="t">日付なし マンスリーリフィル PDF 6判型セット</span><span class="d">各判型12か月分・曜日は英語で印字・月曜始まり／日曜始まり同梱。<span data-checkout-off="refill-monthly-undated-all">いまはメール申込（銀行振込）</span><span data-checkout-on="refill-monthly-undated-all" style="display:none">カード決済ですぐダウンロード（銀行振込も可）</span></span></span><span class="arrow">→</span></div>
-  </a>
+    <!-- 商品行は tools/build_refill_pages.js が refill-pdf/refills-data.json から差し替える（⛔ 手で直さない） -->
+    <!-- REFILL_PRODUCTS:start -->
+      <a class="tool" href="../refill-pdf/monthly-undated.html"><span class="k">Buy</span><span><span class="t">日付なし マンスリーリフィル PDF 6判型セット</span><span class="d">各判型12か月分・曜日は英語で印字・月曜始まり／日曜始まり同梱。 <span data-checkout-off="refill-monthly-undated-all">いまはメール申込（銀行振込）</span><span data-checkout-on="refill-monthly-undated-all" style="display:none">カード決済ですぐダウンロード（銀行振込も可）</span></span></span><span class="arrow">→</span></a>
+<!-- REFILL_PRODUCTS:end -->
+  </article>
 
   <div class="sec"><span class="n">03</span><h2>Specifications</h2><span class="rule"></span></div>
 
