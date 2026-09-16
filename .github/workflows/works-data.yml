@@ -55,4 +55,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add works-data.json works/
           git commit -m "auto: 作品集フォールバックデータと作品ページを更新"
-          git push
+          # 他の push と重なると「fetch first」で拒否される（2026-09-16 に実際に失敗し、作品集が古いままになった）。
+          # 取り込み直して最大3回まで送り直す。
+          for i in 1 2 3; do
+            if git push; then exit 0; fi
+            echo "push が拒否されました。取り込み直して再試行します（$i/3）"
+            git pull --rebase origin "$GITHUB_REF_NAME" || exit 1
+            sleep 5
+          done
+          echo "3回試しても push できませんでした。"
+          exit 1
