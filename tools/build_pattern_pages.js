@@ -174,6 +174,7 @@ const FOOT = `
   <div style="display:flex;gap:18px;flex-wrap:wrap">
     <a href="index.html">型紙一覧</a>
     <a href="../JHCS.html">レザークラフト講座</a>
+    <a href="../terms.html">デジタルデータの利用条件</a>
     <a href="../index.html">特定商取引法に基づく表記（トップページ下部）</a>
   </div>
 </div></footer>
@@ -229,13 +230,17 @@ function detail(it) {
       <tr><th>印刷</th><td>印刷するときは「実際のサイズ（100%）」を選んでください（拡大・縮小しない）。</td></tr>
       <tr><th>お届け</th><td>カード決済：お支払い後すぐに画面からダウンロードでき、同じリンクをメールでもお送りします。<br>銀行振込：ご入金を確認してから、メールでお送りします。</td></tr>
       <tr><th>講座</th><td>レザークラフト講座（JHCS）${esc(it.lesson)}で使う型紙です。<a href="../JHCS.html" style="color:var(--accent)">講座のご案内</a></td></tr>
+      <tr><th>利用条件</th><td>ご自身で作って、ご自身でお使いいただくための型紙です。お作りいただいた作品の販売と、データの再配布はご遠慮いただいています。<a href="../terms.html" style="color:var(--accent)">デジタルデータの利用条件</a></td></tr>
     </table>
   </section>
 
   <section class="sec">
     <p class="eyebrow">Terms</p>
     <h2>ご利用について</h2>
-    <p class="muted">PDFデータの転売・再配布はご遠慮ください。購入後のキャンセル・返金はデジタルコンテンツの性質上お受けできません。
+    <p class="muted">この型紙は、ご自身の手で作って、ご自身で使っていただくためのものです。印刷する枚数や作る数に制限はありませんが、
+    <b>お作りいただいた作品の販売</b>（フリマアプリ・委託販売・イベント・受注制作を含みます）と、<b>データの再配布・転売</b>はご遠慮いただいています。
+    作品の写真をSNSに載せていただくのは大歓迎です。詳しくは <a href="../terms.html">デジタルデータの利用条件</a> をご覧ください。</p>
+    <p class="muted">購入後のキャンセル・返金はデジタルコンテンツの性質上お受けできません（ファイルが開けないなどの不具合はお取り替えします）。
     販売者情報は <a href="../index.html">特定商取引法に基づく表記（トップページ下部）</a> をご覧ください。</p>
   </section>
 
