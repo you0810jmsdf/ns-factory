@@ -7936,8 +7936,24 @@ function mergeFixBuild(rows){
   return c.map(m => ({ no: m.no, date: m.date, amount: Number(m.amount), cur: m.crAccount, next: mergeFixGuess(m) || '要判断', desc: m.desc, tag: m.tag }))
           .sort((a,b) => String(a.date).localeCompare(String(b.date)) || String(a.no).localeCompare(String(b.no)));
 }
-function mergeFixReadDone(){ try{ const v = JSON.parse(localStorage.getItem(MERGE_FIX_DONE_KEY)||'{}'); return (v && typeof v === 'object') ? v : {}; }catch(e){ return {}; } }
+// 「直した」記録の正は台帳（GAS「MF修正」シート）。PCとスマホで同じ状態を見るため（2026-09-16 事業主決定A）。
+// 端末内（localStorage）は通信できないときの控え。GASから読めたら必ず上書きする。
+let mergeFixDone = null;        // GASから読んだ {取引No: 'YYYY-MM-DD'}。null=まだ読めていない
+let mergeFixSource = 'local';   // 'gas' | 'local'（画面に出す）
+function mergeFixReadDone(){
+  if(mergeFixDone) return mergeFixDone;
+  try{ const v = JSON.parse(localStorage.getItem(MERGE_FIX_DONE_KEY)||'{}'); return (v && typeof v === 'object') ? v : {}; }catch(e){ return {}; }
+}
 function mergeFixWriteDone(d){ try{ localStorage.setItem(MERGE_FIX_DONE_KEY, JSON.stringify(d)); }catch(e){} }
+async function mergeFixLoadDone(){
+  try{
+    const r = await mergeGas('mfFixList', {}, 2);
+    mergeFixDone = r.done || {}; mergeFixSource = 'gas';
+    mergeFixWriteDone(mergeFixDone);
+  }catch(e){
+    mergeFixDone = null; mergeFixSource = 'local';
+  }
+}
 
 function mergeFixRender(){
   const box = document.getElementById('merge-fix-list'), sum = document.getElementById('merge-fix-summary'), wrap = document.getElementById('merge-fix');
@@ -7951,9 +7967,10 @@ function mergeFixRender(){
   const yenTodo = todo.reduce((s,i) => s + i.amount, 0);
   const byNext = {};
   todo.forEach(i => { byNext[i.next] = (byNext[i.next]||0) + i.amount; });
-  sum.textContent = items.length
+  const src = mergeFixSource === 'gas' ? '　記録先: 台帳（PC・スマホ共通）' : '　⚠ 台帳に接続できず、この端末の控えを表示中';
+  sum.textContent = (items.length
     ? `未対応 ${todo.length}件 ${mergeYen(yenTodo)}（${Object.entries(byNext).map(([k,v]) => k + ' ' + mergeYen(v)).join('・') || 'なし'}）／ 対応済 ${items.length - todo.length}件`
-    : '売上高に計上されていない入金は見つかりませんでした。';
+    : '売上高に計上されていない入金は見つかりませんでした。') + src;
   const list = showDone ? items : todo;
   if(!list.length){ box.innerHTML = '<p style="font-size:13px;color:#8a6a4a;padding:8px 0">未対応はありません。</p>'; return; }
   let html = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#fdf8f3;color:#5C3D2E">'
@@ -7973,11 +7990,23 @@ function mergeFixRender(){
   });
   html += '</tbody></table>';
   box.innerHTML = html;
-  box.querySelectorAll('.merge-fix-chk').forEach(chk => chk.addEventListener('change', ev => {
+  box.querySelectorAll('.merge-fix-chk').forEach(chk => chk.addEventListener('change', async ev => {
     const no = ev.target.closest('tr').dataset.no;
+    const item = items.find(i => i.no === no);
     const d = mergeFixReadDone();
-    if(ev.target.checked) d[no] = new Date().toISOString().slice(0,10); else delete d[no];
-    mergeFixWriteDone(d);
+    const doneAt = ev.target.checked ? new Date().toISOString().slice(0,10) : '';
+    ev.target.disabled = true;
+    try{
+      // 台帳に記録してから画面を更新する。摘要（顧客名）は送らない
+      await mergeGas('mfFixSet', { no, done: doneAt, amount: item ? item.amount : '', cur: item ? item.cur : '', next: item ? (doneAt ? item.next : '') : '' }, 2);
+      if(doneAt) d[no] = doneAt; else delete d[no];
+      if(mergeFixDone) mergeFixDone = d;
+      mergeFixWriteDone(d);
+    }catch(e){
+      ev.target.checked = !ev.target.checked; ev.target.disabled = false;
+      alert('台帳に記録できませんでした: ' + e.message + '\nチェックは戻しました。');
+      return;
+    }
     mergeFixRender();
   }));
 }
@@ -8149,6 +8178,8 @@ async function mergeLoad(){
     st.textContent = `完了: 台帳${mergeLedger.length}件 / MF${mergeMfRows.length}件 / メール証憑${mergeEmails.length}件 / 銀行明細${mergeBankRows.length}件　→ 未処理 ${undecided}件`;
   });
   await mergeLoadSources();
+  await mergeFixLoadDone();
+  mergeFixRender();
 }
 
 function toolstatsLoad() {
