@@ -91,6 +91,7 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: ページ本体 === */
 .page-body { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 3mm 2mm; }
 .cut-line-v { position: absolute; top: 0; bottom: 0; width: 0; border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
+.cut-line-h { position: absolute; left: 0; right: 0; height: 0; border-top: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
 
 /* === MODULE: ウォーターマーク === */
 .logo-wm { position: absolute; top: calc(50% + var(--owl-wm-y, 0mm)); left: calc(50% + var(--owl-wm-x, 0mm)); transform: translate(-50%, -50%); width: var(--owl-wm-size, 70mm); height: var(--owl-wm-size, 70mm); pointer-events: none; z-index: 1; }
@@ -286,7 +287,7 @@ body.img-mode #layoutSection .img-na { display: block; }
       <label>用紙面</label>
       <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
       <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
-      <span style="font-size:9px;color:#aaa;">（A4横・短辺綴じ）</span>
+      <span style="font-size:9px;color:#aaa;">（<span data-nsf-duplex>短辺綴じ</span>）</span>
     </div>
     <div class="ctrl-row">
       <label>言語</label>
@@ -543,6 +544,7 @@ body.img-mode #layoutSection .img-na { display: block; }
       </ul>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙と面付け</p>
       <ul style="padding-left:18px; margin:4px 0;">
+        <li>「印刷モード」の <b>用紙</b> で「A5用紙に1面」を選ぶと、A5の用紙に直接印刷します（切る作業なし・両面は長辺綴じ・プリンターの用紙設定をA5に）。以下はA4のときの説明です</li>
         <li>A4を <b>横向き</b> に使い、A5（148×210mm）を左右に2面（用紙いっぱい・中央のカット線で切り分け）。左右の余白は0.5mmしかないので、プリンターの「フチなし印刷」を選ぶか、端が数mm欠けてもよい前提で印刷してください</li>
         <li>表面は「1週目（左穴）／3週目（右穴）」、裏面は「4週目／2週目」。両面印刷（<b>短辺綴じ</b>）で切り分けると、各片の表裏で1・2週目、3・4週目が対になります</li>
         <li>穴は6穴（A5規格と同じ位置：上端から 32 / 51 / 70 / 140 / 159 / 178 mm、綴じ側の端から6mm）</li>
@@ -579,10 +581,11 @@ const WD_EN_SHORT= ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 // A5 148×210mm。穴中心の上端からの距離（基準データ A5 slim refill.svg と一致）
 const HOLE_POSITIONS_MM = [32, 51, 70, 140, 159, 178];
-const CUT_LINES_MM = [148.5]; // 中央のみ（左右端はほぼ用紙端）
+let CUT_LINES_MM = [148.5], CUT_LINES_H_MM = []; // 用紙切り替え（paper-switch.js）で入れ替わる
+let SLOT_POSITIONS = ['L', 'R'];
 // 2面付け（短辺綴じ）: 表=[1週目,3週目] 裏=[4週目,2週目]。左片は表1裏2、右片は表3裏4になる
-const SLOT_MAP = { front: { L: 0, R: 2 }, back: { L: 3, R: 1 } };
-const PER_SHEET = 4; // 1枚の用紙に載る週数（表裏）
+let SLOT_MAP = { front: { L: 0, R: 2 }, back: { L: 3, R: 1 } };
+let PER_SHEET = 4; // 1枚の用紙に載る週数（表裏）。用紙切り替えで入れ替わる
 // 穴はページの役割で決める: 表面（奇数週＝右ページ）は左穴、裏面（偶数週＝左ページ）は右穴。A5スリム月間・バイブル週間と同じ
 const HOLE_SIDE_BY_FACE = { front: 'left', back: 'right' };
 
@@ -887,8 +890,8 @@ function landscapePages(weeks) {
 // === MODULE: A4横 Sheet Builder ===
 function makeA4HTML(weekStartDates, pageNums, sideKey) {
   const map = SLOT_MAP[sideKey];
-  const cuts = opts.showCutLine ? CUT_LINES_MM.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') : '';
-  const slots = ['L', 'R'].map(pos => {
+  const cuts = opts.showCutLine ? (CUT_LINES_MM.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') + CUT_LINES_H_MM.map(y => `<div class="cut-line-h" style="top:${y}mm;"></div>`).join('')) : '';
+  const slots = SLOT_POSITIONS.map(pos => {
     const idx = map[pos];
     // 綴じ後プレビュー用: 通し番号 pn(1始まり) → 紙 floor((pn-1)/2)、偶数番が表・奇数番が裏。片面だけ実在する紙の裏も白紙として印を付ける
     const pn = pageNums[idx], other = (idx % 2 === 0) ? idx + 1 : idx - 1;
@@ -957,21 +960,22 @@ async function generatePDF(ev) {
   const orig = btn.textContent;
   btn.disabled = true;
   const stage = document.createElement('div');
-  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:297mm;background:white;';
+  const PW = window.nsfPaper ? nsfPaper().sheet[0] : 297, PH = window.nsfPaper ? nsfPaper().sheet[1] : 210;
+  stage.style.cssText = `position:fixed;left:-99999px;top:0;width:${PW}mm;background:white;`;
   document.body.appendChild(stage);
   try {
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+    const pdf = new jsPDF({ unit: 'mm', format: window.nsfPaper ? nsfPaper().pdf.format : 'a4', orientation: window.nsfPaper ? nsfPaper().pdf.orientation : 'landscape' });
     for (let i = 0; i < sheets.length; i++) {
       btn.textContent = `PDF生成中 ${i+1}/${sheets.length}`;
       const clone = sheets[i].cloneNode(true);
-      clone.style.cssText = 'width:297mm;height:210mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      clone.style.cssText = `width:${PW}mm;height:${PH}mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;`;
       stage.appendChild(clone);
       const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
       stage.removeChild(clone);
       if (i > 0) pdf.addPage();
       const off = window.nsfPrintOffsetFor ? window.nsfPrintOffsetFor(sheets[i]) : { x: 0, y: 0 }; // 表裏別の印刷ズレ補正
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', off.x, off.y, 297, 210);
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', off.x, off.y, PW, PH);
     }
     const fname = `a5-weekly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
     const url = URL.createObjectURL(pdf.output('blob'));
@@ -1074,6 +1078,8 @@ const HISTORY_ENTRIES = [
     detail: '左パネルの「🌹 デザイン画像」で画像モードにすると、選んだ画像（表面・裏面別も可）を1ページ全面に敷き、その上に日付と曜日の枠を7個置きます。枠はプレビュー上のドラッグでも、X／Yの数値でも動かせ、「等間隔に並べる」で一気に配置できます。濃さ・収め方・文字の白フチ・土日の色分け・日付と曜日の大きさと色を変えられます。配置と画像は「デザイン設定を書き出す（JSON）」で1ファイルにまとめて保存・配布でき、「読み込む」で再現できます。サンプル（バラ7輪）を同梱。画像モードでは罫線・メモ欄・ページ番号は出しません。上下見開きとは併用できません。' },
   { date: '2026-09-16', type: 'improve', title: '画像モードの日付枠の位置指定をスライダーに（動かした瞬間に反映）',
     detail: '数値を打ち込む方式は手間がかかるため（事業主指摘）、日付枠7個のX／Yと「7個まとめて（左右・上端・間隔）」をスライダーにしました。動かすとその場でプレビューが追従し、適用ボタンは不要です。矢印キーで0.5mmずつ微調整できます。プレビュー上のドラッグは引き続き使えます。' },
+  { date: '2026-09-16', type: 'feat', title: '用紙を「A4横に2面／A5用紙に1面」から選べるように',
+    detail: '国内外の自作リフィルの印刷方法を調べたところ、A5は「A5用紙に直接印刷」が最も一般的でした（切る作業が要らない）。「印刷モード」の「用紙」で切り替えられます。A5用紙のときは1枚に表裏1ページずつ（長辺綴じ）、カット線なし。PDF生成・印刷ズレ補正のテスト印刷・綴じ後プレビューも選んだ用紙に合わせます。既定は従来どおりA4横2面です。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -1356,6 +1362,25 @@ document.addEventListener('DOMContentLoaded', () => {
 window.NSF_PRINT_GEOMETRY = { sheet: [297, 210], slots: [{ x: 0.5, y: 0, w: 148, h: 210, holeSide: 'left' }, { x: 148.5, y: 0, w: 148, h: 210, holeSide: 'right' }], holes: [32, 51, 70, 140, 159, 178], holeEdge: 6, holeD: 5, cuts: [{ x: 148.5 }] };
 </script>
 <script src="../assets/print-adjust.js"></script>
+<script>
+// 用紙切り替え（paper-switch.js）。A5 は「A5用紙に1面・直接印刷」が国内外で最も一般的（2026-09-16 調査）なので選べるようにする。既定は従来どおり A4横2面
+window.NSF_PAPERS = { default: 'a4', options: {
+  a4: { label: 'A4横に2面', note: 'A4を横に使い148mm幅を2面。中央のカット線で切り分けます（余白0.5mm・フチなし推奨）。両面は短辺綴じ', sheet: [297, 210], cols: 2, rows: 1,
+        slots: [{ pos: 'L', x: 0.5, y: 0, w: 148, h: 210, holeSide: 'left' }, { pos: 'R', x: 148.5, y: 0, w: 148, h: 210, holeSide: 'right' }],
+        map: { front: { L: 0, R: 2 }, back: { L: 3, R: 1 } }, perSheet: 4, cuts: [{ x: 148.5 }], pdf: { format: 'a4', orientation: 'landscape' }, duplex: '短辺綴じ' },
+  a5: { label: 'A5用紙に1面', note: 'A5（148×210mm）の用紙にそのまま印刷。切る作業なし。プリンターの用紙サイズをA5にし、両面は長辺綴じ（自動両面はA5対応機のみ・非対応なら手差しで裏面）', sheet: [148, 210], cols: 1, rows: 1,
+        slots: [{ pos: 'L', x: 0, y: 0, w: 148, h: 210, holeSide: 'left' }],
+        map: { front: { L: 0 }, back: { L: 1 } }, perSheet: 2, cuts: [], pdf: { format: [148, 210], orientation: 'portrait' }, duplex: '長辺綴じ' }
+} };
+window.nsfOnPaperChange = function (p, key, info) {
+  SLOT_POSITIONS = p.slots.map(s => s.pos);
+  SLOT_MAP = p.map; PER_SHEET = p.perSheet;
+  CUT_LINES_MM = p.cuts.filter(c => c.x != null).map(c => c.x);
+  CUT_LINES_H_MM = p.cuts.filter(c => c.y != null).map(c => c.y);
+  if (!info.initial) { if (typeof rerender === 'function') rerender(); else if (typeof render === 'function') render(); else if (typeof renderMonths === 'function') renderMonths(); }
+};
+</script>
+<script src="../assets/paper-switch.js"></script>
 <script src="../assets/flip-sim.js"></script>
 </body>
 </html>

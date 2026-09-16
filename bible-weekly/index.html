@@ -253,7 +253,7 @@ body.panel-open #preview { margin-left: 280px; }
       <label>用紙面</label>
       <button class="btn-toggle on" id="btnOdd" onclick="togglePageSide('front')">表面</button>
       <button class="btn-toggle" id="btnEven" onclick="togglePageSide('back')">裏面</button>
-      <span style="font-size:9px;color:#aaa;">（A4縦・長辺綴じ）</span>
+      <span style="font-size:9px;color:#aaa;">（<span data-nsf-duplex>長辺綴じ</span>）</span>
     </div>
     <div class="ctrl-row">
       <label>言語</label>
@@ -450,6 +450,7 @@ body.panel-open #preview { margin-left: 280px; }
         <li>「印刷モード」で <b>日付あり／なし</b> と <b>言語</b> を選ぶ</li>
         <li>日付ありは <b>期間（開始日〜終了日）</b> にかかる週をすべて（最大60週）。日付なしは <b>週数（枚数）</b></li>
         <li>用紙面（表面／裏面）を選んでプレビュー。PCは「印刷」、スマホは「PDFを生成」</li>
+        <li>「印刷モード」の <b>用紙</b> で印刷する用紙を選べます（選んだ用紙の説明はボタンの下に出ます）</li>
         <li>印刷ダイアログで <b>A4縦・「実際のサイズ（100%）」</b> を選ぶ</li>
       </ol>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 日付なしモードについて</p>
@@ -503,14 +504,14 @@ const WD_EN_SHORT= ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 // バイブル 110×210mm。穴中心の上端からの距離（基準データ A5 slim refill.svg と一致）
 const HOLE_POSITIONS_MM = [18.5, 37.5, 56.5, 107.5, 126.5, 145.5]; // バイブル週間・日次の旧ツールと同じ位置（実機印刷で2mm上げた値）
-const CUT_LINES_MM = [10, 105, 200];   // 縦カット線 x
-const CUT_LINES_H_MM = [63.5, 233.5]; // 横カット線 y
-const SHEET_COLS = 2, SHEET_ROWS = 1;
-const SLOT_POSITIONS = ['P0', 'P1']; // 読み順（左上→右上→…）
+let CUT_LINES_MM = [10, 105, 200];   // 縦カット線 x // 用紙切り替え（paper-switch.js）で入れ替わる
+let CUT_LINES_H_MM = [63.5, 233.5]; // 横カット線 y
+let SHEET_COLS = 2, SHEET_ROWS = 1;
+let SLOT_POSITIONS = ['P0', 'P1']; // 読み順（左上→右上→…）
 // 2面付け（長辺綴じ）: 表=[1週目,3週目] 裏=[4週目,2週目]。左片は表1裏2、右片は表3裏4になる
 // 2面付け（長辺綴じ・ページ役割方式）: 表面に奇数番、裏面は列を左右反転して偶数番。紙 j の表＝2j・裏＝2j+1
-const SLOT_MAP = { front: { P0: 0, P1: 2 }, back: { P0: 3, P1: 1 } };
-const PER_SHEET = 4; // 1枚の用紙に載るページ数（表裏）
+let SLOT_MAP = { front: { P0: 0, P1: 2 }, back: { P0: 3, P1: 1 } };
+let PER_SHEET = 4; // 1枚の用紙に載るページ数（表裏）
 // 穴はページの役割で決める: 表面（奇数週＝右ページ）は左穴、裏面（偶数週＝左ページ）は右穴。バイブル月間・バイブル週間と同じ
 const HOLE_SIDE_BY_FACE = { front: 'left', back: 'right' };
 
@@ -883,21 +884,22 @@ async function generatePDF(ev) {
   const orig = btn.textContent;
   btn.disabled = true;
   const stage = document.createElement('div');
-  stage.style.cssText = 'position:fixed;left:-99999px;top:0;width:210mm;background:white;';
+  const PW = window.nsfPaper ? nsfPaper().sheet[0] : 297, PH = window.nsfPaper ? nsfPaper().sheet[1] : 210;
+  stage.style.cssText = `position:fixed;left:-99999px;top:0;width:${PW}mm;background:white;`;
   document.body.appendChild(stage);
   try {
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const pdf = new jsPDF({ unit: 'mm', format: window.nsfPaper ? nsfPaper().pdf.format : 'a4', orientation: window.nsfPaper ? nsfPaper().pdf.orientation : 'portrait' });
     for (let i = 0; i < sheets.length; i++) {
       btn.textContent = `PDF生成中 ${i+1}/${sheets.length}`;
       const clone = sheets[i].cloneNode(true);
-      clone.style.cssText = 'width:210mm;height:297mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;';
+      clone.style.cssText = `width:${PW}mm;height:${PH}mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;`;
       stage.appendChild(clone);
       const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
       stage.removeChild(clone);
       if (i > 0) pdf.addPage();
       const off = window.nsfPrintOffsetFor ? window.nsfPrintOffsetFor(sheets[i]) : { x: 0, y: 0 }; // 表裏別の印刷ズレ補正
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', off.x, off.y, 210, 297);
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', off.x, off.y, PW, PH);
     }
     const fname = `bible-weekly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
     const url = URL.createObjectURL(pdf.output('blob'));
@@ -1010,6 +1012,8 @@ const clGroups = [
   { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
   { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 80 },
   { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
+  { date: '2026-09-16', type: 'improve', title: '用紙の既定を「A4横に3面」に変更（従来のA4縦2面も選べます）',
+    detail: 'A4縦2面は用紙の4割が余白でした。A4を横に使うと95mm幅が3面入り、1枚から3ページ取れます（縦のカット線2本＋端）。「印刷モード」の「用紙」で従来のA4縦2面にも戻せます。両面設定は3面のとき短辺綴じ、2面のとき長辺綴じです。PDF生成・テスト印刷・綴じ後プレビューも選んだ用紙に合わせます。' },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {
@@ -1059,6 +1063,25 @@ document.addEventListener('DOMContentLoaded', () => {
 window.NSF_PRINT_GEOMETRY = { sheet: [210, 297], slots: [{ x: 10, y: 63.5, w: 95, h: 170, holeSide: 'left' }, { x: 105, y: 63.5, w: 95, h: 170, holeSide: 'left' }], holes: [18.5, 37.5, 56.5, 107.5, 126.5, 145.5], holeEdge: 5, holeD: 5, cuts: [{ x: 10 }, { x: 105 }, { x: 200 }, { y: 63.5 }, { y: 233.5 }] };
 </script>
 <script src="../assets/print-adjust.js"></script>
+<script>
+// 用紙切り替え（paper-switch.js）。2026-09-16 国内外の自作リフィル印刷方法の調査を反映
+window.NSF_PAPERS = { default: 'a4x3', options: {
+  a4x3: { label: 'A4横に3面', note: 'A4を横に使い、95×170mmを3面（左右の余白6mm・上下20mm）。1枚から3ページ取れます。縦のカット線2本＋端で切り分け。両面は短辺綴じ', sheet: [297, 210], cols: 3, rows: 1,
+        slots: [{ pos: 'P0', x: 6, y: 20, w: 95, h: 170, holeSide: 'left' }, { pos: 'P1', x: 101, y: 20, w: 95, h: 170, holeSide: 'left' }, { pos: 'P2', x: 196, y: 20, w: 95, h: 170, holeSide: 'left' }],
+        map: { front: { P0: 0, P1: 2, P2: 4 }, back: { P0: 5, P1: 3, P2: 1 } }, perSheet: 6, cuts: [{ x: 6 }, { x: 101 }, { x: 196 }, { x: 291 }, { y: 20 }, { y: 190 }], pdf: { format: 'a4', orientation: 'landscape' }, duplex: '短辺綴じ' },
+  a4: { label: 'A4縦に2面（従来）', note: 'A4を縦に使い2面（上下の余白が大きい）。両面は長辺綴じ。2026-09-16 までの既定', sheet: [210, 297], cols: 2, rows: 1,
+        slots: [{ pos: 'P0', x: 10, y: 63.5, w: 95, h: 170, holeSide: 'left' }, { pos: 'P1', x: 105, y: 63.5, w: 95, h: 170, holeSide: 'left' }],
+        map: { front: { P0: 0, P1: 2 }, back: { P0: 3, P1: 1 } }, perSheet: 4, cuts: [{ x: 10 }, { x: 105 }, { x: 200 }, { y: 63.5 }, { y: 233.5 }], pdf: { format: 'a4', orientation: 'portrait' }, duplex: '長辺綴じ' }
+} };
+window.nsfOnPaperChange = function (p, key, info) {
+  SLOT_POSITIONS = p.slots.map(s => s.pos);
+  SLOT_MAP = p.map; PER_SHEET = p.perSheet; SHEET_COLS = p.cols; SHEET_ROWS = p.rows;
+  CUT_LINES_MM = p.cuts.filter(c => c.x != null).map(c => c.x);
+  CUT_LINES_H_MM = p.cuts.filter(c => c.y != null).map(c => c.y);
+  if (!info.initial) { if (typeof rerender === 'function') rerender(); else if (typeof render === 'function') render(); else if (typeof renderMonths === 'function') renderMonths(); }
+};
+</script>
+<script src="../assets/paper-switch.js"></script>
 <script src="../assets/flip-sim.js"></script>
 </body>
 </html>
