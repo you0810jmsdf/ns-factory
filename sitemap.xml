@@ -104,6 +104,14 @@
     <priority>0.5</priority>
   </url>
 
+  <!-- サイトの歩き方（目的別の入口・2026-09-16 事業主決定A で新設・ナビ末尾から接続） -->
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/site-guide.html</loc>
+    <lastmod>2026-09-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- 顧客が検索から辿り着くべき主要ページ。登録漏れを2026-08-29の点検で発見し追加 -->
   <url>
     <loc>https://you0810jmsdf.github.io/ns-factory/order-guide.html</loc>

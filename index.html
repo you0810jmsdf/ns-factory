@@ -165,6 +165,19 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   white-space:nowrap;
 }
 .nav-link:hover{background:var(--color-bg-sub);color:var(--color-text)}
+/* 2026-09-16 サイトの歩き方: 広い幅は文字、狭い幅はコンパス印だけ（ナビをはみ出させないため） */
+.nav-guide-icon{display:none;font-size:15px;line-height:1}
+@media(max-width:520px){
+  .nav-guide-text{display:none}
+  .nav-guide-icon{display:inline}
+  .nav-guide{padding:6px 5px}
+}
+.nav-guide-menu{display:none}
+@media(max-width:360px){
+  /* 320px級では印だけでも26pxはみ出す（元々1pxしか余裕がない）。ナビからは外し、幕僚室メニューの先頭に置く */
+  .nav-guide{display:none}
+  .nav-guide-menu{display:block}
+}
 .nav-cta{
   font-size:13px;font-weight:600;
   padding:7px 14px;border-radius:var(--radius-full);
@@ -1502,6 +1515,8 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
     <div class="nav-dropdown" id="bakuryo-dropdown">
       <button type="button" class="nav-dropdown-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="bakuryo-menu"><span data-i18n="nav.rooms">幕僚室</span><span class="nav-dropdown-caret">▾</span></button>
       <div class="nav-dropdown-menu" id="bakuryo-menu" role="menu">
+        <!-- 320px級だけ: ナビ末尾の「サイトの歩き方」が26px収まらないため、この幅ではメニュー先頭に移す（CSSで出し分け） -->
+        <a href="./site-guide.html" class="nav-dropdown-item nav-guide-menu" role="menuitem">🧭 <span data-i18n="nav.guide">サイトの歩き方</span></a>
         <a href="./shirei-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.shirei">司令官室</a>
         <a href="./sakusen-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.sakusen">作戦幕僚室</a>
         <a href="./kanri-room/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.kanri">監理幕僚室</a>
@@ -1515,6 +1530,10 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
       </div>
     </div>
     <a href="#staff" class="nav-link" data-i18n="nav.staff">スタッフ</a>
+    <!-- 2026-09-16 事業主決定A: 迷子対策の案内ページ（目的別の入口）。ナビ末尾に1つだけ。
+         狭い幅（≤520px）では文字を隠しコンパス印だけにする（.nav-links に overflow を付けずに収めるため）。
+         i18n は内側の span の文言だけ差し替えるので表示切替と干渉しない -->
+    <a href="./site-guide.html" class="nav-link nav-guide" title="サイトの歩き方" aria-label="サイトの歩き方"><span class="nav-guide-icon" aria-hidden="true">🧭</span><span class="nav-guide-text" data-i18n="nav.guide">サイトの歩き方</span></a>
     <!-- 2026-08-04 導線一本化: オーダー系の入口は「オーダー相談窓口」（hearing-ai.html）のみに統一。
          ガイド・見積もりシミュレーターへは相談の中から誘導する（事業主指示）
          2026-09-12 変更: 見積もりの精度が上がったため、Heroにだけ見積もりシミュレーターへの副ボタンを追加（事業主決定）。
@@ -2053,6 +2072,7 @@ window.NSF_I18N_DICT = {
   'nav.room.jinji': 'HR Office',
   'nav.room.kyouiku': 'Education Office',
   'nav.staff': 'Staff',
+  'nav.guide': 'Site Guide',
   'nav.order': 'Order Consultation',
   'nav.qrLabel': 'This page',
   'qr.caption': 'Scan with your phone camera',
