@@ -448,6 +448,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     btn.addEventListener('click', function () {
       var el = document.getElementById(btn.getAttribute('data-target'));
       if (!el) return;
+      document.querySelectorAll('.size.reveal').forEach(function (c) { c.classList.add('in'); });   // 飛び越えたカードが未表示のままにならないように
       el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
       el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
       var first = el.querySelector('a.tool'); if (first) first.focus({ preventScroll: true });
@@ -465,6 +466,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     });
   }, { rootMargin: '0px 0px 0px 0px', threshold: 0 });   // 少しでも見えたら出す（画面の下端に掛かるカードが空に見えないように）
   cards.forEach(function (c) { io.observe(c); });
+  setTimeout(function () { cards.forEach(function (c) { c.classList.add('in'); }); }, 2500);   // 保険: 何があっても2.5秒後には全部見える
 })();
 </script>
 <script src="../assets/access-counter.js"></script>
