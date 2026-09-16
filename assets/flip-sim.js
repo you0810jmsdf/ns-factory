@@ -133,7 +133,7 @@
       '#nsf-flip-note{font-size:12px;color:#bbb;margin-bottom:8px;text-align:center}',
       '#nsf-flip-wrap{position:relative;width:100%;display:flex;justify-content:center}',
       '#nsf-flip-stage{display:flex;gap:24px;align-items:flex-start}',
-      '.nsf-flip-page{position:relative;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.5);overflow:hidden;flex-shrink:0}',
+      '.nsf-flip-page{position:relative;background:#fff;color:#000;box-shadow:0 8px 30px rgba(0,0,0,.5);overflow:hidden;flex-shrink:0}',
       '.nsf-flip-page>:not(.nsf-flip-cap){position:static!important;transform:none!important;margin:0!important;left:auto!important;top:auto!important}',
       '.nsf-flip-blank,.nsf-flip-none{display:flex;align-items:center;justify-content:center;color:#999;font-size:14px}',
       '.nsf-flip-none{width:220px;height:300px;background:transparent;box-shadow:none;border:1px dashed #555}',
