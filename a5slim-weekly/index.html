@@ -89,7 +89,7 @@ body.panel-open #preview { margin-left: 280px; }
 .hole-strip.right .punch-guide { right: 0; }
 
 /* === MODULE: ページ本体 === */
-.page-body { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 3mm 2mm; }
+.page-body { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 6mm 2mm; }
 .cut-line-v { position: absolute; top: 0; bottom: 0; width: 0; border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
 
 /* === MODULE: ウォーターマーク === */
@@ -143,7 +143,7 @@ body.panel-open #preview { margin-left: 280px; }
 /* 手帳を時計回りに90°回して使う人向け。上ページ＝紙の裏・下ページ＝紙の表で、見開き1面に1週間。
    中身を反時計回りに90°回して置く（210×98mm）。表裏どちらもページ本体の左端が中身の上端になる
    （表＝左穴なので上端がリング側、裏＝右穴なので下端がリング側）。 */
-.ls-rot { position: absolute; left: 0; top: 0; width: 210mm; height: 98mm; transform-origin: 0 0; transform: translateY(210mm) rotate(-90deg); padding: 2mm 3mm; display: flex; flex-direction: column; }
+.ls-rot { position: absolute; left: 0; top: 0; width: 210mm; height: 98mm; transform-origin: 0 0; transform: translateY(210mm) rotate(-90deg); padding: 2mm 6mm; display: flex; flex-direction: column; }
 /* ⛔ .ls-rot に overflow:hidden を付けない。html2canvas（PDF生成）が回す前の位置で切り抜き、ページの半分しか出なくなる。はみ出しは .page-body が切る */
 .ls-rot .day-blocks { flex: 0 0 auto; }
 .ls-rot .day-block { flex: 0 0 20.25mm; border-bottom: 0.15mm solid #ddd; }

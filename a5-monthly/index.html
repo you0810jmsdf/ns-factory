@@ -105,7 +105,7 @@ body.panel-open #preview { margin-left: 280px; }
 }
 
 /* === MODULE: 上下見開き（リングが上）レイアウト === ⛔ overflow:hidden 禁止（PDFが半分欠ける） */
-.ls-rot { position: absolute; left: 0; top: 0; width: 210mm; height: 136mm; transform-origin: 0 0; transform: translateY(210mm) rotate(-90deg); padding: 3mm 2mm; display: flex; flex-direction: column; }
+.ls-rot { position: absolute; left: 0; top: 0; width: 210mm; height: 136mm; transform-origin: 0 0; transform: translateY(210mm) rotate(-90deg); padding: 3mm 6mm; display: flex; flex-direction: column; }
 .ls-rot .vert-content { flex: 1 1 auto; }
 
 /* === MODULE: Slot (リフィル枠) === */
@@ -154,7 +154,7 @@ body.panel-open #preview { margin-left: 280px; }
 .page-body {
   flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden;
   box-sizing: border-box;
-  padding: 3mm 2mm; /* 上下は用紙端＝プリンター印刷不可域のためセーフゾーン。左右2mmはカット線からの余白（穴帯は枠の端） */
+  padding: 6mm 2mm; /* 上下は用紙端＝プリンター印刷不可域のためセーフゾーン。左右2mmはカット線からの余白（穴帯は枠の端） */
 }
 
 /* === MODULE: カット線 === */
