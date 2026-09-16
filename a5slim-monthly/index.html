@@ -191,6 +191,8 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* === MODULE: 日付なし透かし（7セグ数字・曜日） === */
 .seg-ghost { display: inline-block; color: #000; opacity: var(--ghost-opacity, 0.18); vertical-align: top; }
+.wd-ghost-seg { display: inline-flex; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 1; }
+.wd-ghost-seg .seg-ghost { height: 3.6mm; }
 .seg-ghost svg { display: block; height: 100%; width: auto; }
 .wd-ghost {
   display: flex; justify-content: space-between; width: 100%; padding: 0 0.6mm;
@@ -212,7 +214,7 @@ body.panel-open #preview { margin-left: 280px; }
   font-size: 10mm; font-weight: 700; line-height: 1;
   font-family: var(--font-sidebar, 'Times New Roman', Times, serif);
 }
-.sidebar-month-num .seg-ghost { height: 10mm; }
+.sidebar-month-num .seg-ghost { height: 7mm; }
 .sidebar-month-name {
   writing-mode: vertical-rl; text-orientation: mixed;
   font-size: 2.5mm; font-weight: 700; letter-spacing: 0.5mm; text-transform: uppercase;
@@ -502,7 +504,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="btn-row">
       <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button>
-      <button class="btn-toggle on" id="btnCellGrid" onclick="toggleOpt('showCellGrid','btnCellGrid')">日マスグリッド</button>
+      <button class="btn-toggle" id="btnCellGrid" onclick="toggleOpt('showCellGrid','btnCellGrid')">日マスグリッド</button>
     </div>
     <div class="btn-row">
       <button class="btn-toggle on" id="btnMonthNum" onclick="toggleOpt('showMonthNum','btnMonthNum')">月</button>
@@ -852,7 +854,7 @@ let opts = {
   showHoles: true, showHoleLine: true, showHoleBisect: true, showCutLine: true,
   showLogo: true, showMonthAbbr: true, showTextWm: true,
   showImgWm: false, showHoliday: true, showTitle: false,
-  showCellGrid: true, cellGridCols: 2, cellGridRows: 8,
+  showCellGrid: false, cellGridCols: 2, cellGridRows: 8,
   showMonthNum: true, showDateNum: true, showDayHeader: true,
   undated: false, ghostStyle: 'seg', ghostWeekday: true, landscape: false
 };
@@ -892,8 +894,8 @@ function segGhostHTML(digits) {
   return `<span class="seg-ghost"><svg viewBox="0 0 ${totalW} ${h}" xmlns="http://www.w3.org/2000/svg" fill="currentColor">${inner}</svg></span>`;
 }
 function weekdayGhostHTML() {
-  const labels = isEN ? WD_EN_1 : WD_JA_MON_FIRST;
-  return `<span class="wd-ghost">${labels.map(l => `<span>${l}</span>`).join('')}</span>`;
+  // 2026-09-16 事業主指示: 7曜を1マスに詰めず、7セグの「88」を置いて英字2文字（MO・TU…）をなぞる方式
+  return `<span class="wd-ghost wd-ghost-seg">${segGhostHTML(2)}</span>`;
 }
 
 // === MODULE: Japanese Holidays ===
