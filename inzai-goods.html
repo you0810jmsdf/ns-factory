@@ -138,6 +138,18 @@ a{color:var(--accent-dark)}
 .order-actions{display:flex;flex-wrap:wrap;gap:10px}
 .order-actions .btn{min-width:220px}
 
+/* ---- 刻印デザイン選択 ---- */
+.design-box{margin-top:0}
+.design-ready{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-wrap:wrap;gap:14px}
+.design-ready li{position:relative;width:150px;padding:10px 10px 12px;border:1px solid var(--line);border-radius:var(--radius);background:var(--white);text-align:center;font-size:13px}
+.design-ready img{display:block;width:100%;height:150px;object-fit:contain;margin-bottom:6px}
+.design-id{display:block;font-weight:700}
+.design-name{display:block;color:var(--muted);font-size:12px}
+.design-badge{position:absolute;top:0;left:0;background:#c8003c;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--radius) 0 8px 0}
+.design-catalog{margin-top:6px}
+.design-catalog summary{cursor:pointer;font-weight:700;color:var(--accent-dark);font-size:14px;padding:6px 0}
+.design-catalog img{display:block;width:100%;max-width:1080px;margin-top:8px;border:1px solid var(--line);border-radius:var(--radius)}
+
 /* ---- credit ---- */
 .credit{
   max-width:1080px;margin:30px auto 0;padding:16px 20px;
@@ -214,6 +226,29 @@ a{color:var(--accent-dark)}
 </section>
 
 <div class="gallery" id="gallery"></div>
+
+<section class="section" id="designs">
+  <div class="order-box design-box">
+    <h2>刻印のデザインを選べます</h2>
+    <p>
+      キーホルダーの刻印は、印西市が公開しているいんザイ君の公式デザイン（全179種）から番号で選べるようにしていきます。
+      刻印の型ができたものから順に追加します。いまお選びいただけるのは次の2種です。
+    </p>
+    <ul class="design-ready">
+      <li><img src="assets/inzai-goods/design-11-8.png" alt="いんザイ君 11-8 まつり" loading="lazy"><span class="design-id">11-8</span><span class="design-name">まつり</span><span class="design-badge">刻印対応済</span></li>
+      <li><img src="assets/inzai-goods/design-11-9.png" alt="いんザイ君 11-9 ハロウィン" loading="lazy"><span class="design-id">11-9</span><span class="design-name">ハロウィン</span><span class="design-badge">刻印対応済</span></li>
+    </ul>
+    <p>
+      STORESの商品ページで「刻印デザイン」を選んでご注文ください。
+      一覧にあるほかの番号をご希望の場合は、受注製作のご相談で番号（例：1-1 正面）をお知らせください。型ができ次第お作りします。
+    </p>
+    <details class="design-catalog">
+      <summary>デザイン一覧を見る（番号付き・全179種）</summary>
+      <p class="section-lead">赤い帯が付いているものが刻印対応済みです。画像を押すと大きく開きます。</p>
+      <a data-log="デザイン一覧（原寸）を開いた" data-id="inzai-goods" data-name="いんザイ君グッズ" href="assets/inzai-goods/design-catalog.jpg" target="_blank" rel="noopener"><img src="assets/inzai-goods/design-catalog.jpg" alt="いんザイ君 刻印デザイン一覧（番号付き・全179種）" loading="lazy"></a>
+    </details>
+  </div>
+</section>
 
 <section class="section">
   <div class="order-box">
