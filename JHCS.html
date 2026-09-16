@@ -129,6 +129,15 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
     .skill-tag { background: rgba(160,120,90,.12); color: var(--tan); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
 
+    /* Leathercraft CAD 公式チュートリアル案内（外部サイト・2026-09-16 追加） */
+    .cad-tut { margin-top: 18px; background: var(--white); border: 1px solid rgba(160,120,90,.3); border-left: 4px solid var(--tan); border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .cad-tut-title { font-size: 15px; font-weight: 700; color: var(--charcoal); margin-bottom: 8px; }
+    .cad-tut-text { font-size: 13px; line-height: 1.9; color: var(--charcoal); margin: 0 0 10px; }
+    .cad-tut-text strong { color: var(--tan); }
+    .cad-tut-btn { display: inline-block; padding: 9px 20px; border-radius: 20px; background: var(--tan); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .cad-tut-btn:hover { background: var(--tan-light); }
+    .cad-tut-note { font-size: 11px; color: var(--gray); margin: 12px 0 0; line-height: 1.8; }
+
     /* Notice */
     .notice-board { background: var(--white); border-left: 4px solid var(--tan); border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 14px; }
     .notice-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
@@ -563,6 +572,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <span class="skill-tag">CADパターン設計</span><span class="skill-tag">ファスナー取り付け</span>
       <span class="skill-tag">インターロッキング（イントレチャート）</span>
       <span class="skill-tag">パッチワーク</span><span class="skill-tag">インレイ技法</span>
+    </div>
+
+    <!-- Leathercraft CAD 公式チュートリアル（外部サイト）2026-09-16 事業主指示で追加 -->
+    <div class="cad-tut">
+      <div class="cad-tut-title">📐 Leathercraft CAD 公式チュートリアル（外部サイト・無料）</div>
+      <p class="cad-tut-text">
+        講座で型紙設計に使う <strong>Leathercraft CAD</strong> の使い方を、ソフトの制作者が公開しているチュートリアルサイトです。
+        <strong>クイックスタート</strong>／<strong>作図（基本図形・編集と基本機能）</strong>／<strong>印刷</strong>／<strong>応用機能</strong>／<strong>シミュレータ</strong>／<strong>困ったときは</strong>
+        などの項目に分かれていて、▶ 印の付いた項目は動画で確認できます。日本語・英語の切り替えに対応しています。
+      </p>
+      <p class="cad-tut-text">
+        講習の復習や、講座では扱っていない機能をご自分で試したいときにお使いください。
+        ブラウザのブックマークに入れておくと、CADを起動していなくてもいつでも開けます。
+      </p>
+      <a class="cad-tut-btn" href="https://luthierleather.github.io/tutorials/#lang=ja" target="_blank" rel="noopener">チュートリアルを開く ↗</a>
+      <p class="cad-tut-note">※ N's factory が運営するサイトではありません。掲載内容・公開状況は提供元の都合で変わることがあります。</p>
     </div>
   </details>
 
