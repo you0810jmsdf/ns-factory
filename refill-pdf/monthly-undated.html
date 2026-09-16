@@ -7,10 +7,10 @@
 <meta name="description" content="いつからでも使い始められる、日付なしのシステム手帳マンスリーリフィルPDF。A5スリム（110×210mm）。曜日欄が空なので月曜始まりでも日曜始まりでも使えます。他サイズは順次追加（追加費用なし）。">
 
 <!--
-  ⛔ 公開前の未確定項目（2026-09-11 時点）
+  現状メモ（2026-09-16 見直し）
      1. 価格 ¥300・第1弾はA5スリムのみ（他サイズ順次追加・追加費用なし）は事業主承認済み。
-     2. カード決済は assets/pdf-checkout.js（配信GASの商品シートで販売中のときだけボタンを表示・それ以外はメール申込）。決済リンクは使わない（2026-09-11）。
-     3. プレビュー画像・実物写真は未撮影（プレースホルダー表示）。
+     2. カード決済は assets/pdf-checkout.js（配信GASの商品シートで販売中のときだけボタンを表示・それ以外はメール申込）。Stripe は 2026-09-14 から本番鍵。
+     3. 画像は販売PDF（v1・14ページ）の実ページを画像化したもの（assets/refill-pdf/）。実物のシステム手帳に挟んだ写真は未撮影。
   ⛔ このリポジトリは public。販売するPDFの実体をリポジトリ内に置かないこと。
      購入者への受け渡しは Stripe 決済確認 → GAS が Drive の限定リンクを発行する経路で行う。
 -->
@@ -174,7 +174,7 @@ img{max-width:100%;display:block}
 
 /* ── サイズ一覧 ── */
 .size-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px;
 }
 .size-card{
   background:var(--color-bg-sub);border:1px solid var(--color-border);
@@ -301,10 +301,7 @@ img{max-width:100%;display:block}
     </div>
   </div>
   <div class="hero-photo">
-    <div class="hero-photo-placeholder">
-      商品写真（未撮影）<br>
-      実物のシステム手帳に挟んだ状態を想定
-    </div>
+    <img src="../assets/refill-pdf/spread.jpg" alt="日付なしマンスリーリフィルの見開き。左ページに月〜水、右ページに木〜日の6週分と、薄い透かしの曜日・日付欄" style="width:100%;height:100%;min-height:520px;object-fit:cover;object-position:center top;">
   </div>
 </section>
 
@@ -331,10 +328,10 @@ img{max-width:100%;display:block}
       </div>
       <div class="contents-card">
         <div class="contents-card-icon">🖍️</div>
-        <div class="contents-card-title">曜日欄は空けてあります</div>
+        <div class="contents-card-title">曜日と日付は薄い透かし</div>
         <div class="contents-card-desc">
-          月曜始まり・日曜始まりのどちらにも対応。
-          色を塗る、頭文字を書く、シールを貼る。使い方は自由です。
+          曜日欄には7曜が薄く並び、日付欄はデジタル数字の透かしです。
+          当てはまる曜日をなぞり、数字を塗って使います。月曜始まり・日曜始まりのどちらにも対応。
         </div>
       </div>
       <div class="contents-card">
@@ -367,6 +364,11 @@ img{max-width:100%;display:block}
         <div class="size-note">6穴（A5規格と同じ穴位置）・収録済み</div>
       </div>
       <div class="size-card" style="opacity:.7">
+        <div class="size-name">A5</div>
+        <div class="size-mm">148 × 210 mm</div>
+        <div class="size-note">6穴・順次追加</div>
+      </div>
+      <div class="size-card" style="opacity:.7">
         <div class="size-name">バイブル</div>
         <div class="size-mm">95 × 171 mm</div>
         <div class="size-note">6穴・順次追加</div>
@@ -378,10 +380,19 @@ img{max-width:100%;display:block}
       </div>
       <div class="size-card" style="opacity:.7">
         <div class="size-name">ミニ6</div>
-        <div class="size-mm">80 × 120 mm</div>
+        <div class="size-mm">80 × 128 mm</div>
         <div class="size-note">6穴・順次追加</div>
       </div>
+      <div class="size-card" style="opacity:.7">
+        <div class="size-name">Micro5（M5）</div>
+        <div class="size-mm">62 × 105 mm</div>
+        <div class="size-note">5穴・順次追加</div>
+      </div>
     </div>
+    <p style="font-size:13px;color:var(--color-text-sub);margin-top:16px;line-height:1.8">
+      寸法は当工房のリング規格表（<a href="../kouhou-room/ring-standards.html" style="color:var(--color-accent)">リング規格図鑑</a>）に合わせています。
+      追加サイズを待たずに使いたい方は、下の無料印刷ツールで各サイズの日付なし版をご自分で出力できます。
+    </p>
   </div>
 </section>
 
@@ -395,30 +406,30 @@ img{max-width:100%;display:block}
     </div>
     <div class="step-grid">
       <div>
-        <div class="step-photo">説明図（未作成）<br>印刷設定の画面</div>
+        <div class="step-photo" style="padding:0;color:inherit"><img src="../assets/refill-pdf/sheet-a4.jpg" alt="A4横に2ページを面付けした印刷イメージ。中央と左右に断裁線、綴じ側に6つの穴の印" style="width:100%;height:100%;object-fit:cover;"></div>
         <p class="step-label">Step 01</p>
         <p class="step-title">A4に印刷する</p>
         <p class="step-caption">
-          A4横・両面（短辺綴じ）・拡大縮小なし（実際のサイズ）で印刷します。
+          A4横に2ページずつ面付け済み。両面（短辺綴じ）・拡大縮小なし（実際のサイズ）で印刷します。
           見開きの裏に前後の月が来る配置で、切り分けて綴じるだけで月が続きます。フチなし印刷はオフにしてください。
         </p>
       </div>
       <div>
-        <div class="step-photo">説明図（未作成）<br>曜日欄を塗っているところ</div>
+        <div class="step-photo" style="padding:0;color:inherit"><img src="../assets/refill-pdf/weekday-ghost.jpg" alt="ページ上部の拡大。各列の上に薄い7曜、各マスにデジタル数字の透かし" style="width:100%;height:100%;object-fit:cover;object-position:left top;"></div>
         <p class="step-label">Step 02</p>
-        <p class="step-title">曜日を決める</p>
+        <p class="step-title">曜日と日付をなぞる</p>
         <p class="step-caption">
-          空いている曜日欄に、月曜始まり・日曜始まりのお好きな方を書き込みます。
-          色を塗って土日を目立たせる使い方もできます。
+          曜日欄の薄い7曜から当てはまるものをなぞり、日付欄のデジタル数字の透かしを塗ります。
+          月曜始まりでも日曜始まりでも同じページで使えます。土日に色を塗って目立たせる使い方もできます。
         </p>
       </div>
       <div>
-        <div class="step-photo">説明図（未作成）<br>裁断して綴じたところ</div>
+        <div class="step-photo" style="padding:0;color:inherit"><img src="../assets/refill-pdf/page-right.jpg" alt="切り分けた1ページ。綴じ側に6穴の印" style="width:100%;height:100%;object-fit:cover;object-position:center top;"></div>
         <p class="step-label">Step 03</p>
         <p class="step-title">切って綴じる</p>
         <p class="step-caption">
-          断裁線に沿って切り、穴を開けて手帳に綴じます。
-          日付は使い始める月に合わせてご自分で記入してください。
+          断裁線に沿って切り、穴の印に合わせてパンチで穴を開け、手帳に綴じます。
+          穴の位置はA5規格と同じ6穴です。
         </p>
       </div>
     </div>
@@ -436,7 +447,7 @@ img{max-width:100%;display:block}
     <table class="spec-table">
       <tr>
         <th>書式</th>
-        <td>マンスリー（月間ブロック）／ 6週 × 7列 = 42マス ／ 12か月分・A4横7枚（両面）</td>
+        <td>マンスリー（見開き1か月・左ページ 月〜水／右ページ 木〜日）／ 6週 × 7列 = 42マス＋メモ欄 ／ 12か月分・A4横7枚（両面14ページ）</td>
       </tr>
       <tr>
         <th>収録サイズ</th>
@@ -444,7 +455,7 @@ img{max-width:100%;display:block}
       </tr>
       <tr>
         <th>日付・曜日</th>
-        <td>いずれも印刷されていません（ご自分で記入する方式）</td>
+        <td>数字と曜日は薄い透かしだけ（なぞって使う方式）。祝日・年月の印字はありません</td>
       </tr>
       <tr>
         <th>ファイル形式</th>
@@ -456,7 +467,7 @@ img{max-width:100%;display:block}
       </tr>
       <tr>
         <th>お届け方法</th>
-        <td>ご購入後、ダウンロードリンクをメールでお送りします</td>
+        <td>カード決済（Stripe）はお支払い直後にダウンロードリンクを表示し、メールでもお送りします。銀行振込はご入金確認後にメールでお送りします</td>
       </tr>
     </table>
   </div>
@@ -500,8 +511,8 @@ img{max-width:100%;display:block}
     </div>
     <p class="lead">
       ブラウザ上で自分でレイアウトを調整して印刷できる無料ツールを公開しています。
-      日付入り（A6・バイブル・A5スリム）のほか、A5スリムは日付なしも出力できます。会員登録もパスワードも不要です。
-      このPDFは、そのツールで作れる書式を4サイズぶんデザインして仕上げ、印刷するだけにしたものです。
+      Micro5・ミニ6・バイブル・A6・A5スリム・A5の6判型それぞれに週間・月間・日次があり、どれも日付入りと日付なしを出力できます。会員登録もパスワードも不要です。
+      このPDFは、そのツールのA5スリム月間（日付なし）を12か月分に仕上げ、印刷するだけにしたものです。
     </p>
     <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:12px">
       <a href="../tools/" class="btn btn-primary" style="background:var(--color-accent)">ツール一覧を見る</a>
@@ -535,7 +546,7 @@ img{max-width:100%;display:block}
         <a href="#" class="btn btn-large js-refill-mail" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)">銀行振込で申し込む（メール）</a>
       </div>
       <p data-checkout-off="refill-a5slim-monthly-undated" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
-        カード決済は準備中です。メールをいただければ、振込先をご案内し、ご入金確認後にPDFをお送りします。
+        いまカード決済がご利用いただけない状態です。メールをいただければ、振込先をご案内し、ご入金確認後にPDFをお送りします。
       </p>
       <script>
       (function () {
@@ -564,7 +575,7 @@ img{max-width:100%;display:block}
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 N's factory 中司 祐樹</span>
+    <span>© 2025–2026 N's factory 中司 祐樹</span>
     <span>個人利用ライセンス / データ転売不可 / 印刷物の販売不可</span>
   </div>
 </footer>
