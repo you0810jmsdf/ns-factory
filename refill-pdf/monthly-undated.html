@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>日付なし マンスリーリフィル PDF — N's refill | N's factory</title>
-<meta name="description" content="いつからでも使い始められる、日付なしのシステム手帳マンスリーリフィルPDF。A5スリム（110×210mm）。曜日欄が空なので月曜始まりでも日曜始まりでも使えます。他サイズは順次追加（追加費用なし）。">
+<title>日付なし マンスリーリフィル PDF 6判型セット — N's refill | N's factory</title>
+<meta name="description" content="いつからでも使い始められる、日付なしのシステム手帳マンスリーリフィルPDF。Micro5・ミニ6・バイブル・A6・A5スリム・A5の6判型セット（¥500）。曜日と日付は薄い透かしで、月曜始まりでも日曜始まりでも使えます。">
 
 <!--
-  現状メモ（2026-09-16 見直し）
-     1. 価格 ¥300・第1弾はA5スリムのみ（他サイズ順次追加・追加費用なし）は事業主承認済み。
+  現状メモ（2026-09-16 見直し・同日 6判型セットへ）
+     1. 2026-09-16 事業主決定: 6判型（Micro5・ミニ6・バイブル・A6・A5スリム・A5）の月間をまとめて1本 ¥500。商品コード refill-monthly-undated-all（配信物はZIP・PDF6本＋印刷のしかた.txt）。
+        A5スリム単品（refill-a5slim-monthly-undated・¥300）は商品シートで「停止」。
      2. カード決済は assets/pdf-checkout.js（配信GASの商品シートで販売中のときだけボタンを表示・それ以外はメール申込）。Stripe は 2026-09-14 から本番鍵。
-     3. 画像は販売PDF（v1・14ページ）の実ページを画像化したもの（assets/refill-pdf/）。実物のシステム手帳に挟んだ写真は未撮影。
+     3. 画像は販売PDF（A5スリム・14ページ）の実ページを画像化したもの（assets/refill-pdf/）。実物のシステム手帳に挟んだ写真は未撮影。
+     4. PDFは各判型の月間ツール（日付なし・12か月）をブラウザ印刷（ベクター）で書き出したもの。生成は後方部 販売PDF_全判型 の手順（scratchpad gen_undated_pdfs_vector.py）。
   ⛔ このリポジトリは public。販売するPDFの実体をリポジトリ内に置かないこと。
      購入者への受け渡しは Stripe 決済確認 → GAS が Drive の限定リンクを発行する経路で行う。
 -->
@@ -288,15 +290,15 @@ img{max-width:100%;display:block}
 <section class="hero">
   <div class="hero-content">
     <p class="hero-eyebrow">N's refill — Undated Planner Insert PDF</p>
-    <h1 class="hero-title">日付なし<br>マンスリーリフィル PDF</h1>
+    <h1 class="hero-title">日付なし<br>マンスリーリフィル PDF<br><span style="font-size:.6em;font-weight:600;opacity:.85">6判型セット</span></h1>
     <p class="hero-desc">
       日付も曜日も入っていません。だから、いつからでも使い始められます。
       月曜始まりでも日曜始まりでも、自分の使い方に合わせて。
-      まずはA5スリム（110×210mm）から。他のサイズは順次追加し、ご購入者には追加費用なしでお渡しします。
+      Micro5・ミニ6・バイブル・A6・A5スリム・A5の6判型ぶんをまとめてお渡しします。手帳を替えても買い直し不要です。
     </p>
-    <div class="hero-price">¥300 <small>税込</small></div>
+    <div class="hero-price">¥500 <small>税込・6判型セット</small></div>
     <div class="hero-actions">
-      <a href="#buy" class="btn btn-primary">購入する（¥300）</a>
+      <a href="#buy" class="btn btn-primary">購入する（¥500）</a>
       <a href="../tools/" class="btn btn-ghost">無料の印刷ツールを見る</a>
     </div>
   </div>
@@ -352,46 +354,46 @@ img{max-width:100%;display:block}
   <div class="section-inner">
     <div class="section-header">
       <p class="section-label">Sizes</p>
-      <h2 class="section-title">まずはA5スリムから。他のサイズは順次追加します</h2>
+      <h2 class="section-title">6判型すべて収録。手帳を替えても買い直し不要です</h2>
     </div>
     <p class="lead">
-      サイズが増えても買い直しは不要です。ご購入者には、追加されたサイズを追加費用なしでお渡しします。
+      1本のZIPに6判型のPDF（各12か月分）と「印刷のしかた」が入っています。お使いの手帳の判型のPDFだけ印刷してください。
     </p>
     <div class="size-grid">
       <div class="size-card" style="border-color:var(--color-accent)">
         <div class="size-name">A5スリム</div>
         <div class="size-mm">110 × 210 mm</div>
-        <div class="size-note">6穴（A5規格と同じ穴位置）・収録済み</div>
+        <div class="size-note">6穴（A5規格）・A4横2面・14ページ</div>
       </div>
-      <div class="size-card" style="opacity:.7">
+      <div class="size-card" style="border-color:var(--color-accent)">
         <div class="size-name">A5</div>
         <div class="size-mm">148 × 210 mm</div>
-        <div class="size-note">6穴・順次追加</div>
+        <div class="size-note">6穴（A5規格）・A4横2面・14ページ</div>
       </div>
-      <div class="size-card" style="opacity:.7">
+      <div class="size-card" style="border-color:var(--color-accent)">
         <div class="size-name">バイブル</div>
-        <div class="size-mm">95 × 171 mm</div>
-        <div class="size-note">6穴・順次追加</div>
+        <div class="size-mm">95 × 170 mm</div>
+        <div class="size-note">6穴・A4横3面・10ページ</div>
       </div>
-      <div class="size-card" style="opacity:.7">
+      <div class="size-card" style="border-color:var(--color-accent)">
         <div class="size-name">A6</div>
         <div class="size-mm">105 × 148 mm</div>
-        <div class="size-note">6穴・順次追加</div>
+        <div class="size-note">6穴・A4縦4面・8ページ</div>
       </div>
-      <div class="size-card" style="opacity:.7">
+      <div class="size-card" style="border-color:var(--color-accent)">
         <div class="size-name">ミニ6</div>
         <div class="size-mm">80 × 128 mm</div>
-        <div class="size-note">6穴・順次追加</div>
+        <div class="size-note">6穴・A4縦4面・8ページ</div>
       </div>
-      <div class="size-card" style="opacity:.7">
+      <div class="size-card" style="border-color:var(--color-accent)">
         <div class="size-name">Micro5（M5）</div>
         <div class="size-mm">62 × 105 mm</div>
-        <div class="size-note">5穴・順次追加</div>
+        <div class="size-note">5穴・A4縦6面・6ページ</div>
       </div>
     </div>
     <p style="font-size:13px;color:var(--color-text-sub);margin-top:16px;line-height:1.8">
-      寸法は当工房のリング規格表（<a href="../kouhou-room/ring-standards.html" style="color:var(--color-accent)">リング規格図鑑</a>）に合わせています。
-      追加サイズを待たずに使いたい方は、下の無料印刷ツールで各サイズの日付なし版をご自分で出力できます。
+      寸法と穴位置は当工房のリング規格表（<a href="../kouhou-room/ring-standards.html" style="color:var(--color-accent)">リング規格図鑑</a>）に合わせています。
+      A5スリムとA5は高さがA4の短辺と同じなので、上下6mmを余白にしてあります（一般的なプリンターの印刷できない範囲）。
     </p>
   </div>
 </section>
@@ -410,8 +412,9 @@ img{max-width:100%;display:block}
         <p class="step-label">Step 01</p>
         <p class="step-title">A4に印刷する</p>
         <p class="step-caption">
-          A4横に2ページずつ面付け済み。両面（短辺綴じ）・拡大縮小なし（実際のサイズ）で印刷します。
-          見開きの裏に前後の月が来る配置で、切り分けて綴じるだけで月が続きます。フチなし印刷はオフにしてください。
+          A4に面付け済み。拡大縮小なし（実際のサイズ）・両面で印刷します。
+          A5スリム・A5・バイブルはA4横で短辺綴じ、A6・ミニ6・Micro5はA4縦で長辺綴じ（同梱の「印刷のしかた」に判型ごとの設定があります）。
+          見開きの裏に前後の月が来る配置で、切り分けて綴じるだけで月が続きます。
         </p>
       </div>
       <div>
@@ -447,11 +450,15 @@ img{max-width:100%;display:block}
     <table class="spec-table">
       <tr>
         <th>書式</th>
-        <td>マンスリー（見開き1か月・左ページ 月〜水／右ページ 木〜日）／ 6週 × 7列 = 42マス＋メモ欄 ／ 12か月分・A4横7枚（両面14ページ）</td>
+        <td>マンスリー（見開き1か月・左ページ 月〜水／右ページ 木〜日）／ 6週 × 7列 = 42マス＋メモ欄 ／ 各判型12か月分</td>
       </tr>
       <tr>
         <th>収録サイズ</th>
-        <td>A5スリム（110×210mm） <span class="badge">他サイズは順次追加・追加費用なし</span></td>
+        <td>Micro5（62×105）・ミニ6（80×128）・バイブル（95×170）・A6（105×148）・A5スリム（110×210）・A5（148×210） <span class="badge">6判型セット</span></td>
+      </tr>
+      <tr>
+        <th>ページ数（A4）</th>
+        <td>A5スリム 14／A5 14／バイブル 10／A6 8／ミニ6 8／Micro5 6（いずれも両面）</td>
       </tr>
       <tr>
         <th>日付・曜日</th>
@@ -459,7 +466,7 @@ img{max-width:100%;display:block}
       </tr>
       <tr>
         <th>ファイル形式</th>
-        <td>PDF（A4印刷対応 / 拡大縮小なし推奨）</td>
+        <td>ZIP（PDF 6本＋印刷のしかた.txt）／ A4印刷対応・拡大縮小なし</td>
       </tr>
       <tr>
         <th>推奨用紙</th>
@@ -512,7 +519,7 @@ img{max-width:100%;display:block}
     <p class="lead">
       ブラウザ上で自分でレイアウトを調整して印刷できる無料ツールを公開しています。
       Micro5・ミニ6・バイブル・A6・A5スリム・A5の6判型それぞれに週間・月間・日次があり、どれも日付入りと日付なしを出力できます。会員登録もパスワードも不要です。
-      このPDFは、そのツールのA5スリム月間（日付なし）を12か月分に仕上げ、印刷するだけにしたものです。
+      このPDFセットは、そのツールの月間（日付なし）を6判型それぞれ12か月分に仕上げ、印刷するだけにしたものです。
     </p>
     <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:12px">
       <a href="../tools/" class="btn btn-primary" style="background:var(--color-accent)">ツール一覧を見る</a>
@@ -525,32 +532,32 @@ img{max-width:100%;display:block}
 <section class="cta-section" id="buy">
   <div class="cta-inner">
     <p class="cta-label">Buy now</p>
-    <h2 class="cta-title">日付なし マンスリーリフィル<br>PDF を手に入れる</h2>
+    <h2 class="cta-title">日付なし マンスリーリフィル<br>PDF 6判型セットを手に入れる</h2>
     <p class="cta-desc">
-      A5スリム（110×210mm）。他サイズは順次追加・追加費用なし。<br>
+      Micro5・ミニ6・バイブル・A6・A5スリム・A5の6判型（各12か月分）をZIPでまとめてお渡しします。<br>
       ご購入後、ダウンロードリンクをメールでお送りします。
     </p>
     <div class="cta-price-block">
-      <span class="cta-price">¥300 <small>税込</small></span>
+      <span class="cta-price">¥500 <small>税込・6判型セット</small></span>
     </div>
     <div class="cta-actions">
       <!-- 購入ボタン。カード決済は assets/pdf-checkout.js が配信GAS（商品シート）に販売可否を問い合わせて出す。
-           商品コード refill-a5slim-monthly-undated。カードが使えない間（鍵未設定・商品停止・通信失敗）はメール申込だけが見える。 -->
-      <a href="#" data-checkout="refill-a5slim-monthly-undated" class="btn btn-primary btn-large" style="display:none">カードで購入する（¥<span data-price>300</span>）</a>
-      <a href="#" data-checkout-off="refill-a5slim-monthly-undated" class="btn btn-primary btn-large js-refill-mail">メールで購入を申し込む（銀行振込）</a>
-      <p data-checkout-on="refill-a5slim-monthly-undated" style="display:none;margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
+           商品コード refill-monthly-undated-all（6判型セット・ZIP）。カードが使えない間（鍵未設定・商品停止・通信失敗）はメール申込だけが見える。 -->
+      <a href="#" data-checkout="refill-monthly-undated-all" class="btn btn-primary btn-large" style="display:none">カードで購入する（¥<span data-price>500</span>）</a>
+      <a href="#" data-checkout-off="refill-monthly-undated-all" class="btn btn-primary btn-large js-refill-mail">メールで購入を申し込む（銀行振込）</a>
+      <p data-checkout-on="refill-monthly-undated-all" style="display:none;margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
         Stripe の安全な決済画面に移動します。お支払い後、ダウンロードリンクが表示され、メールでも届きます。
       </p>
       <!-- カードが使えるときも振込を選べるよう、控えめな枠線ボタンで残す（2026-09-12 事業主指示 A案） -->
-      <div data-checkout-on="refill-a5slim-monthly-undated" style="display:none;margin-top:14px">
+      <div data-checkout-on="refill-monthly-undated-all" style="display:none;margin-top:14px">
         <a href="#" class="btn btn-large js-refill-mail" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)">銀行振込で申し込む（メール）</a>
       </div>
-      <p data-checkout-off="refill-a5slim-monthly-undated" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
+      <p data-checkout-off="refill-monthly-undated-all" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">
         いまカード決済がご利用いただけない状態です。メールをいただければ、振込先をご案内し、ご入金確認後にPDFをお送りします。
       </p>
       <script>
       (function () {
-        var href = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('リフィルPDF購入のお問合せ') + '&body=' + encodeURIComponent('日付なし マンスリーリフィルPDF（A5スリム・300円）を購入したいです。\n\nお名前：\n');
+        var href = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('リフィルPDF購入のお問合せ') + '&body=' + encodeURIComponent('日付なし マンスリーリフィルPDF 6判型セット（500円）を購入したいです。\n\nお名前：\n');
         Array.prototype.forEach.call(document.querySelectorAll('.js-refill-mail'), function (a) { a.href = href; });
       })();
       </script>
