@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>初心者の革の選び方 — N's factory</title>
+<meta name="description" content="レザークラフトを始める方向けの革の選び方。なめし方（タンニン・クロム）・厚み・部位・買い方の基本と、JHCSレザークラフト講座 全12回の作品ごとの革の厚み早見表。A4 1枚のPDFもあります。">
+<meta property="og:title" content="初心者の革の選び方 — N's factory">
+<meta property="og:description" content="なめし方・厚み・部位・買い方の4つと、講座の作品ごとの厚み早見表。A4 1枚で印刷できます。">
+<meta property="og:type" content="article">
+<!-- Google tag (gtag.js) -->
+<script>
+// 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
+// GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+/* ── Design Tokens（care/oil.html と共通） ── */
+:root {
+  --color-primary:       #1D1D1F;
+  --color-accent:        #A0785A;
+  --color-accent-light:  #F3ECE4;
+  --color-accent-dark:   #7A5540;
+  --color-bg:            #FFFFFF;
+  --color-bg-sub:        #F5F5F7;
+  --color-border:        #E8E8ED;
+  --color-text:          #1D1D1F;
+  --color-text-sub:      #636366;
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --transition-base: .2s ease;
+  font-family: -apple-system,'SF Pro Display','SF Pro Text',
+               'Hiragino Sans','Hiragino Kaku Gothic ProN',
+               'Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--color-bg);color:var(--color-text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+
+/* ── Navigation ── */
+.nav{
+  position:sticky;top:0;z-index:100;height:56px;
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--color-border);
+  display:flex;align-items:center;padding:0 24px;gap:16px;
+}
+.nav-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.nav-spacer{flex:1}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{
+  font-size:13px;color:var(--color-text-sub);
+  padding:6px 10px;border-radius:var(--radius-sm);
+  transition:background var(--transition-base),color var(--transition-base);white-space:nowrap;
+}
+.nav-link:hover{background:var(--color-bg-sub);color:var(--color-text)}
+
+/* ── Hero ── */
+.page-hero{background:#111;padding:56px 24px 48px}
+.page-hero-inner{max-width:960px;margin:0 auto}
+.hero-eyebrow{
+  font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--color-accent);margin-bottom:14px;
+}
+.hero-title{
+  font-size:clamp(24px,3vw,38px);font-weight:700;color:#fff;
+  letter-spacing:-.03em;line-height:1.25;margin-bottom:14px;
+}
+.hero-desc{font-size:14px;line-height:1.9;color:rgba(255,255,255,.7);max-width:640px}
+.hero-actions{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:14px;font-weight:600;padding:11px 20px;border-radius:var(--radius-sm);
+  transition:opacity var(--transition-base),transform var(--transition-base);
+}
+.btn:hover{opacity:.85;transform:translateY(-1px)}
+.btn-primary{background:var(--color-accent);color:#fff}
+.btn-ghost{border:1px solid rgba(255,255,255,.3);color:#fff;background:none;cursor:pointer;font-family:inherit}
+.print-only{display:none}
+
+/* ── 本文 ── */
+.sheet{max-width:960px;margin:0 auto;padding:40px 24px 56px}
+.pick{
+  background:var(--color-accent-light);border:1px solid #d4b09a;border-radius:var(--radius-md);
+  padding:14px 18px;font-size:14px;line-height:1.8;color:var(--color-accent-dark);margin-bottom:28px;
+}
+.pick b{color:var(--color-text)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:18px 20px;min-width:0}
+.card-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent);margin-bottom:4px}
+.card h2{font-size:18px;font-weight:700;letter-spacing:-.02em;margin-bottom:10px}
+.card h2 .no{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+  background:var(--color-accent);color:#fff;font-size:13px;margin-right:8px;vertical-align:2px}
+.card p,.card li{font-size:13.5px;line-height:1.8;color:var(--color-text-sub)}
+.card b{color:var(--color-text)}
+.card ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.card li{padding-left:14px;position:relative}
+.card li::before{content:"";position:absolute;left:2px;top:.72em;width:5px;height:5px;border-radius:50%;background:var(--color-accent)}
+.tip{margin-top:10px;font-size:12.5px;line-height:1.75;color:var(--color-accent-dark);background:var(--color-bg-sub);border-radius:var(--radius-sm);padding:8px 12px}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{padding:7px 10px;border:1px solid var(--color-border);text-align:left;vertical-align:top}
+.tbl th{background:var(--color-bg-sub);font-weight:600;white-space:nowrap}
+.tbl td.good{color:var(--color-accent-dark);font-weight:700}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.course{margin-top:28px}
+.course h2{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.course .sub{font-size:13px;color:var(--color-text-sub);margin-bottom:12px}
+.course .tbl td:nth-child(3){font-weight:700;white-space:nowrap}
+.course .tbl td:nth-child(1){white-space:nowrap}
+.note{margin-top:10px;font-size:12px;line-height:1.7;color:var(--color-text-sub)}
+
+.related{margin-top:32px;display:flex;flex-wrap:wrap;gap:10px}
+.related a{font-size:13px;font-weight:600;color:var(--color-accent-dark);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:9px 14px}
+.related a:hover{background:var(--color-bg-sub)}
+
+/* ── Footer ── */
+.footer{background:var(--color-primary);color:rgba(255,255,255,.6);padding:40px 24px 28px}
+.footer-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:start}
+.footer-brand{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px}
+.footer-tagline{font-size:13px;line-height:1.6}
+.footer-links{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.footer-link{font-size:13px;color:rgba(255,255,255,.55)}
+.footer-link:hover{color:#fff}
+.footer-bottom{max-width:960px;margin:20px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);font-size:12px;color:rgba(255,255,255,.35)}
+
+@media(max-width:768px){
+  .nav-links{display:none}
+  .grid2{grid-template-columns:1fr}
+  .footer-inner{grid-template-columns:1fr}
+  .footer-links{align-items:flex-start}
+}
+@media(max-width:480px){ .sheet{padding:28px 16px 44px} .page-hero{padding:44px 16px 40px} }
+
+/* ── 印刷：A4 1枚に収める ── */
+@page{size:A4 portrait;margin:9mm 10mm}
+@media print{
+  html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-size:8pt}
+  .nav,.footer,.hero-actions,.related,.screen-only{display:none !important}
+  .print-only{display:block}
+  .page-hero{background:none;padding:0 0 2.5mm;border-bottom:.6mm solid var(--color-accent)}
+  .page-hero-inner{max-width:none;display:flex;align-items:flex-end;justify-content:space-between;gap:4mm}
+  .hero-eyebrow{font-size:6.5pt;margin-bottom:1mm}
+  .hero-title{color:var(--color-text);font-size:17pt;margin:0}
+  .hero-title br{display:none}
+  .hero-desc{color:var(--color-text-sub);font-size:7.5pt;line-height:1.5;max-width:105mm;text-align:right}
+  .sheet{max-width:none;padding:2.5mm 0 0}
+  .pick{padding:1.6mm 3mm;font-size:8pt;line-height:1.5;margin-bottom:2.5mm;border-radius:2mm}
+  .grid2{gap:2.5mm}
+  .card{padding:2mm 3mm;border-radius:2mm;break-inside:avoid}
+  .card-label{font-size:5.5pt;margin-bottom:.3mm}
+  .card h2{font-size:10pt;margin-bottom:1.2mm}
+  .card h2 .no{width:4.2mm;height:4.2mm;font-size:7pt;margin-right:1.5mm;vertical-align:.3mm}
+  .card p,.card li{font-size:7.3pt;line-height:1.5}
+  .card ul{gap:.6mm}
+  .card li{padding-left:2.6mm}
+  .card li::before{width:1.1mm;height:1.1mm;top:.68em;left:.3mm}
+  .tip{margin-top:1.2mm;font-size:6.8pt;line-height:1.45;padding:1mm 2mm;border-radius:1.5mm}
+  .tbl{font-size:7pt}
+  .tbl th,.tbl td{padding:.7mm 1.6mm;line-height:1.35}
+  .course{margin-top:2.5mm;break-inside:avoid}
+  .course h2{font-size:10.5pt;margin-bottom:.3mm}
+  .course .sub{font-size:7pt;margin-bottom:1.2mm}
+  .note{margin-top:1mm;font-size:6.5pt;line-height:1.45}
+  .print-foot{margin-top:2mm;padding-top:1.2mm;border-top:.2mm solid var(--color-border);font-size:6.5pt;color:var(--color-text-sub);display:flex;justify-content:space-between}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav class="nav">
+  <a href="../index.html" class="nav-brand">
+    <img src="../assets/logo.png" alt="N's factory" style="height:40px;width:auto;display:block;">
+  </a>
+  <span class="nav-spacer"></span>
+  <div class="nav-links">
+    <a href="../works.html" class="nav-link">作品紹介</a>
+    <a href="../JHCS.html" class="nav-link">JHCS講習案内</a>
+    <a href="../kouhou-room/index.html" class="nav-link">工程別 道具ガイド</a>
+    <a href="../index.html" class="nav-link">トップ</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div>
+      <p class="hero-eyebrow">Leather Basics — レザークラフト講座 配布資料</p>
+      <h1 class="hero-title">初心者の<br>革の選び方</h1>
+    </div>
+    <p class="hero-desc">
+      革は「なめし方」「厚み」「部位」の3つで性格が決まります。
+      買う前にこの3つと「どれくらいの大きさが要るか」を決めておけば、お店で迷いません。
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="leather-choice.pdf" download>A4 1枚のPDFをダウンロード</a>
+      <button class="btn btn-ghost" type="button" onclick="window.print()">このページを印刷</button>
+    </div>
+  </div>
+</section>
+
+<main class="sheet">
+
+  <div class="pick">
+    <b>迷ったら：</b>タンニンなめし（ヌメ革）の <b>1.0〜1.5mm</b> を、<b>A4サイズ</b>で1枚。
+    講座の多くの作品がこの厚みで作れ、コバ（革の断面）を磨く練習にも向いています。
+  </div>
+
+  <div class="grid2">
+
+    <!-- 1. なめし方 -->
+    <section class="card">
+      <p class="card-label">Tanning</p>
+      <h2><span class="no">1</span>なめし方で選ぶ</h2>
+      <div class="tbl-scroll">
+        <table class="tbl">
+          <thead>
+            <tr><th></th><th>タンニンなめし（ヌメ革）</th><th>クロムなめし</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>手ざわり</th><td>張りがあり、形が決まりやすい</td><td>柔らかく、しなやか</td></tr>
+            <tr><th>コバ磨き</th><td class="good">磨くと艶が出る</td><td>艶が出にくい（コバ用の塗料で仕上げる）</td></tr>
+            <tr><th>刻印</th><td class="good">きれいに入る</td><td>入りにくい</td></tr>
+            <tr><th>水・汚れ</th><td>シミになりやすい</td><td>比較的強い</td></tr>
+            <tr><th>使い込むと</th><td>色が深まり艶が出る</td><td>変化は少ない</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tip">はじめはタンニンなめしがおすすめです。両方の性質をあわせ持つ「コンビなめし」もあります。</p>
+    </section>
+
+    <!-- 2. 厚み -->
+    <section class="card">
+      <p class="card-label">Thickness</p>
+      <h2><span class="no">2</span>厚みで選ぶ</h2>
+      <ul>
+        <li><b>0.5mm</b> … 内装・仕切り・編み込み（イントレチャート）・パッチワーク</li>
+        <li><b>0.8〜1.0mm</b> … 薄い小物（パスケース・名刺入れ・コインケース）</li>
+        <li><b>1.0〜1.5mm</b> … キーケース・ポーチ・財布の外装・文庫本カバー</li>
+        <li><b>1.5〜2.0mm</b> … 眼鏡ケース・サコッシュ・手帳の表紙</li>
+      </ul>
+      <p class="tip">2枚を貼り合わせるときは<b>合計の厚み</b>で考えます（1mm＋1mm＝約2mm）。厚すぎる革は、お店によっては「漉き（すき）」で薄くしてもらえます。</p>
+    </section>
+
+    <!-- 3. 部位 -->
+    <section class="card">
+      <p class="card-label">Part of the hide</p>
+      <h2><span class="no">3</span>部位で選ぶ</h2>
+      <ul>
+        <li><b>ショルダー（肩）</b> … 「トラ」と呼ばれるシワ模様が出やすい。表情を楽しむ作品に。</li>
+        <li><b>ベンズ（背〜お尻）</b> … 繊維が詰まっていて伸びにくく丈夫。形を保ちたい作品に。</li>
+        <li><b>ベリー（お腹）</b> … 柔らかく伸びやすい。練習用や、見えない部分に。</li>
+      </ul>
+      <p class="tip">革は背骨に沿った向きが伸びにくくなっています。持ち手・ベルトなど引っぱられるパーツは、伸びにくい向きで裁ちます。</p>
+    </section>
+
+    <!-- 4. 買い方 -->
+    <section class="card">
+      <p class="card-label">How to buy</p>
+      <h2><span class="no">4</span>買うときに見るところ</h2>
+      <ul>
+        <li><b>単位は「デシ（ds）」</b> … 10cm×10cm。価格は「1デシあたり◯円」で書かれていることが多いです。</li>
+        <li><b>大きさ</b> … 「半裁」は牛1頭の半分で、初心者には大きすぎます。A4・A5などのカット革やハギレから始めましょう。</li>
+        <li><b>余裕</b> … 型紙より上下左右に1〜2cm大きく。傷をよけて裁つ分も見込みます。</li>
+        <li><b>表と裏</b> … 表（銀面）の傷・シミと、裏（床面）の毛羽立ちを確認。毛羽立ちはトコノールなどで整えます。</li>
+      </ul>
+      <p class="tip">取り寄せは届くまで日数がかかります。講座の日から逆算して、早めに注文してください。</p>
+    </section>
+
+  </div>
+
+  <!-- 5. JHCS 早見表 -->
+  <section class="course">
+    <h2>講座の作品ごとの革（JHCS レザークラフト講座 全12回）</h2>
+    <p class="sub">講座テキストの「必要な革」から抜き出したものです。サイズは1枚あたりの目安です。</p>
+    <div class="tbl-scroll">
+      <table class="tbl">
+        <thead>
+          <tr><th>回</th><th>作品</th><th>本体の厚み</th><th>本体のサイズ</th><th>ほかに使う革</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>02</td><td>スクエアコインケース</td><td>1mm</td><td>A5 ×2枚</td><td>―</td></tr>
+          <tr><td>03A</td><td>パスケース</td><td>0.8〜1mm</td><td>B6 ×2枚</td><td>―</td></tr>
+          <tr><td>03B</td><td>名刺入れ</td><td>0.8〜1mm</td><td>A5 ×1枚</td><td>内ポケット 0.5mm（A6）</td></tr>
+          <tr><td>04</td><td>文庫本カバー（A6）</td><td>1〜1.2mm</td><td>B4 ×1枚</td><td>しおり用の革紐</td></tr>
+          <tr><td>05A</td><td>キーケース（三つ折り）</td><td>1〜1.5mm</td><td>B6 ×1枚</td><td>―</td></tr>
+          <tr><td>05B</td><td>キーケース（トートバッグ型）</td><td>1〜1.5mm</td><td>A5 ×1枚</td><td>持ち手 0.8mm（30cm）</td></tr>
+          <tr><td>06A</td><td>眼鏡ケース</td><td>1.5mm</td><td>A4 ×1枚</td><td>―</td></tr>
+          <tr><td>06B</td><td>馬蹄型コインケース</td><td>1.2mm</td><td>A5 ×1枚</td><td>―</td></tr>
+          <tr><td>07</td><td>サコッシュ</td><td>1.5〜2mm</td><td>A3 ×1枚</td><td>ショルダー紐（120cm）</td></tr>
+          <tr><td>08・09</td><td>ラウンドファスナーポーチ</td><td>1.2〜1.5mm</td><td>A4 ×2枚</td><td>―（09は08で裁断したパーツを使用）</td></tr>
+          <tr><td>10</td><td>ハーフウォレット</td><td>1mm（外装）</td><td>B5</td><td>内装・仕切り 0.5mm／インレイは別色 0.5mm×2色</td></tr>
+          <tr><td>11</td><td>ペンケース</td><td>1.5mm</td><td>A4 ×1枚</td><td>マチ 1mm（B5）</td></tr>
+          <tr><td>12A</td><td>イントレチャート システム手帳</td><td>1.5mm（表紙）</td><td>A4 ×2枚</td><td>編み込み 0.5mm（2色以上・A3）／内装 1mm</td></tr>
+          <tr><td>12B</td><td>パッチワーク システム手帳</td><td>1.5mm（表紙）</td><td>A4 ×2枚</td><td>パッチワーク 0.5mm（複数色・A3）／内装 1mm</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">第01回（道具・CAD基礎）は革を使いません。わからないときは、買う前に講座で講師に聞いてください。</p>
+  </section>
+
+  <div class="print-only print-foot">
+    <span>N's factory ／ JHCS レザークラフト講座（ジョイフル本田 千葉ニュータウン店）</span>
+    <span>you0810jmsdf.github.io/ns-factory/care/leather-choice.html</span>
+  </div>
+
+  <div class="related">
+    <a href="../JHCS.html">JHCS講習案内</a>
+    <a href="oil.html">ヌメ革を育てるオイルの選び方</a>
+    <a href="../kouhou-room/index.html">工程別 道具ガイド</a>
+  </div>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">N's factory</div>
+      <p class="footer-tagline">世界にひとつだけのオリジナルを<br>千葉県印西市 中司 祐樹</p>
+    </div>
+    <div class="footer-links">
+      <a href="../index.html" class="footer-link">N's factory トップ</a>
+      <a href="../JHCS.html" class="footer-link">JHCS講習案内</a>
+      <a href="oil.html" class="footer-link">オイルの選び方</a>
+      <a href="../kouhou-room/index.html" class="footer-link">工程別 道具ガイド</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 N's factory 中司 祐樹</div>
+</footer>
+
+</body>
+</html>
