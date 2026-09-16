@@ -42,7 +42,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
 #ctrl-toggle-btn { position: fixed; top: 10px; left: 10px; z-index: 200; width: 36px; height: 36px; border-radius: 6px; background: #1a1a2e; color: #7ec8e3; border: 1px solid #444; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 #controls { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px; font-size: 11px; z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; }
 #controls.open { transform: translateX(0); }
-#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; }
+#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; padding-left: 44px; }
 .ctrl-section { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px; }
 .ctrl-section h3 { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
 .ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
@@ -913,6 +913,10 @@ const HISTORY_ENTRIES = [
     detail: 'バイブル日次印刷ツールを土台に、バイブル（95×170mm）版を作成しました。A4縦に2列×1段の2面付け。穴は6穴（上端から 18.5 / 37.5 / 56.5 / 107.5 / 126.5 / 145.5 mm・綴じ側の端から5mm。バイブル週間・日次の旧ツールと同じ位置（実機印刷で2mm上げた値））。両面印刷は長辺綴じで、表面に右ページ（左穴）・裏面に左ページ（右穴）を置くので、切り分けた紙はすべて同じ向きのまま重ねて綴じられます。綴じ後プレビューで見開きの順と穴の位置を確認できます。' },
   { date: '2026-09-15', type: 'feat', title: '上下見開き（リングが上）で使う人向けのレイアウトを追加（試作）',
     detail: '「印刷モード」の「使う向き」で「左右見開き／上下見開き」を選べます。上下見開きは手帳を時計回りに90°回して（リングが上）、見開き1面に1日（上：日付＋時間軸の前半、下：時間軸の後半＋メモ）。文字や罫線が正しい向きになるよう中身を回して印刷します。綴じ後プレビューも上下見開きで表示します。実物での組み立て確認は未了です。' },
+  { date: '2026-09-16', type: 'fix', title: '綴じ後プレビューで平日の日付・週見出しが薄い灰色に見えていたのを修正',
+    detail: '綴じ後プレビュー（assets/flip-sim.js）の紙面が暗い背景の文字色を受け継いでいました。紙面の文字色を黒に指定しました。印刷やPDFには影響ありません。' },
+  { date: '2026-09-16', type: 'fix', title: '設定パネルを開いたとき、左上の☰ボタンがパネルの題名に重なっていたのを修正',
+    detail: '☰ボタンが題名「N\'s factory」の上に重なって読みにくくなっていました。題名をボタン1個分だけ右にずらして、重ならないようにしました。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -931,8 +935,6 @@ const clGroups = [
   { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
   { date: '2026-09-16', type: 'improve', title: '用紙の既定を「A4横に3面」に変更（従来のA4縦2面も選べます）',
     detail: 'A4縦2面は用紙の4割が余白でした。A4を横に使うと95mm幅が3面入り、1枚から3ページ取れます（縦のカット線2本＋端）。「印刷モード」の「用紙」で従来のA4縦2面にも戻せます。両面設定は3面のとき短辺綴じ、2面のとき長辺綴じです。PDF生成・テスト印刷・綴じ後プレビューも選んだ用紙に合わせます。' },
-  { date: '2026-09-16', type: 'fix', title: '綴じ後プレビューで平日の日付・週見出しが薄い灰色に見えていたのを修正',
-    detail: '綴じ後プレビュー（assets/flip-sim.js）の紙面が暗い背景の文字色を受け継いでいました。紙面の文字色を黒に指定しました。印刷やPDFには影響ありません。' },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {
