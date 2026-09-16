@@ -68,7 +68,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   transform: translateX(-100%); transition: transform 0.25s ease;
 }
 #controls.open { transform: translateX(0); }
-#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; letter-spacing: 1px; }
+#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; letter-spacing: 1px; padding-left: 44px; }
 .ctrl-section { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px; }
 .ctrl-section h3 { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
 .ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
@@ -1611,6 +1611,8 @@ const HISTORY_ENTRIES = [
     detail: '「印刷モード」の「週開始」で月曜始まり・日曜始まりを切り替えられます（左ページに最初の3日、右ページに残りの4日）。日付なしモードでは曜日を透かしでなく印字するのが既定になりました（「日付なし」欄の「曜日を印字」で従来の透かしに戻せます）。' },
   { date: '2026-09-16', type: 'fix', title: '綴じ後プレビューで平日の日付・週見出しが薄い灰色に見えていたのを修正',
     detail: '綴じ後プレビュー（assets/flip-sim.js）の紙面が暗い背景の文字色を受け継いでいました。紙面の文字色を黒に指定しました。印刷やPDFには影響ありません。' },
+  { date: '2026-09-16', type: 'fix', title: '設定パネルを開いたとき、左上の☰ボタンがパネルの題名に重なっていたのを修正',
+    detail: '☰ボタンが題名「N\'s factory」の上に重なって読みにくくなっていました。題名をボタン1個分だけ右にずらして、重ならないようにしました。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };

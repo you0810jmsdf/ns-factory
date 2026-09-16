@@ -40,7 +40,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   transform: translateX(-100%); transition: transform 0.25s ease;
 }
 #controls.open { transform: translateX(0); }
-#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; letter-spacing: 1px; }
+#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; letter-spacing: 1px; padding-left: 44px; }
 .ctrl-section { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px; }
 .ctrl-section h3 { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
 .ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
@@ -1001,6 +1001,10 @@ const HISTORY_ENTRIES = [
     detail: '「各日の高さ」の初期値がA5スリム用の20mmのままで、128mmのページに7日分（140mm）が収まっていませんでした。初期値を13mmにし、スライダーの範囲も6〜15mmに変更しました。以前に設定を保存している場合は「設定リセット」か「各日の高さ」を13mm以下にしてください。' },
   { date: '2026-09-15', type: 'feat', title: '上下見開き（リングが上）で使う人向けのレイアウトを追加（試作）',
     detail: '「印刷モード」の「使う向き」で「左右見開き／上下見開き」を選べます。上下見開きは手帳を時計回りに90°回して（リングが上）、見開き1面に1週間（上：前半4日＋週の見出し、下：後半3日＋メモ）。文字や罫線が正しい向きになるよう中身を回して印刷します。綴じ後プレビューも上下見開きで表示します。実物での組み立て確認は未了です。' },
+  { date: '2026-09-16', type: 'fix', title: '綴じ後プレビューで平日の日付・週見出しが薄い灰色に見えていたのを修正',
+    detail: '綴じ後プレビュー（assets/flip-sim.js）の紙面が暗い背景の文字色を受け継いでいました。紙面の文字色を黒に指定しました。印刷やPDFには影響ありません。' },
+  { date: '2026-09-16', type: 'fix', title: '設定パネルを開いたとき、左上の☰ボタンがパネルの題名に重なっていたのを修正',
+    detail: '☰ボタンが題名「N\'s factory」の上に重なって読みにくくなっていました。題名をボタン1個分だけ右にずらして、重ならないようにしました。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -1018,8 +1022,6 @@ const clGroups = [
   { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
   { date: '2026-09-16', type: 'feat', title: '用紙に「はがきに1面」を追加（既定はA4縦4面のまま）',
     detail: '国内の自作リフィルではA4に4面が主流ですが、はがき（100×148mm）なら80×128mmが1面入り、周囲10mmを切り落とすだけで済みます。はがきトレイで給紙でき、上位機は自動両面も使えます。「印刷モード」の「用紙」で切り替えられます。PDF生成・テスト印刷・綴じ後プレビューも選んだ用紙に合わせます。' },
-  { date: '2026-09-16', type: 'fix', title: '綴じ後プレビューで平日の日付・週見出しが薄い灰色に見えていたのを修正',
-    detail: '綴じ後プレビュー（assets/flip-sim.js）の紙面が暗い背景の文字色を受け継いでいました。紙面の文字色を黒に指定しました。印刷やPDFには影響ありません。' },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {
