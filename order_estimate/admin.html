@@ -810,11 +810,13 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="favorites" data-admin-cat="keiei" role="tab" aria-selected="false">⭐ お気に入り</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="waitlist" data-admin-cat="keiei" role="tab" aria-selected="false">🔔 再製作待ち</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="receipt-checklist" data-admin-cat="keiei" role="tab" aria-selected="false">🧾 証憑チェックリスト</button>
+      <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="merge" data-admin-cat="keiei" role="tab" aria-selected="false">🔀 統合整理</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="automations" data-admin-cat="keiei" role="tab" aria-selected="false">⏰ 定期実行</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="api-costs" data-admin-cat="keiei" role="tab" aria-selected="false">💴 API費用</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="sns-trend" data-admin-cat="keiei" role="tab" aria-selected="false">📈 SNSトレンド</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="jhcs-dl" data-admin-cat="keiei" role="tab" aria-selected="false">🎓 JHCS講習DL管理</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="structure-map" data-admin-cat="keiei" role="tab" aria-selected="false">🗺 構造マップ</button>
       <!-- 📦 在庫管理 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ring" data-admin-cat="stock" role="tab" aria-selected="false">リング在庫</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="leather" data-admin-cat="stock" role="tab" aria-selected="false">🎨 革在庫</button>
@@ -940,6 +942,25 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#0d1117"
         title="API費用"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- 構造マップタブ（2026-09-16 事業主決定A）: 概念図／画面設計／ER図を1キャンバスで。structure-map.html は noindex・構造だけで認証情報や顧客データは含まない -->
+    <div class="panel structure-map-section admin-section-hidden" id="structureMapPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:#8a6a4a">サイトのページ・GAS・シート・データファイルのつながり。上のメニュー（概念図／画面設計／ER図）か ← → キーで切替、箱を押すと説明。内容を直すときは structure-map.html の JS データ（CN / WIRES / ENT）を編集</div>
+        <a href="./structure-map.html" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット -->
+      <iframe
+        id="structureMapFrame"
+        data-src="./structure-map.html"
+        src="about:blank"
+        style="width:100%;height:82vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#0e0c0a"
+        title="構造マップ"
         loading="lazy"></iframe>
     </div>
 
@@ -1810,6 +1831,72 @@ tr.row-out-stock td{
         ※ 2026年5月以前に作られた行はUUの集計開始前のため、UUが実態より小さく出ます。
       </div>
     </div><!-- /toolstatsPanel -->
+
+    <!-- ══════════════════════════════════════════════════════════
+         🔀 統合整理（MF仕訳帳 × スマホ台帳 × メール証憑）
+         1件ずつ「MFにある／無い／保留」を決めて片付ける画面。
+         ⛔ 一括で「MF登録済」にする操作はここには置かない（誤って登録済みにすると
+            その経費は二度とCSVに出ず計上漏れになる）。判断は必ず1件ずつ。
+         ══════════════════════════════════════════════════════════ -->
+    <div class="panel merge-section admin-section-hidden" id="mergePanel">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:700;color:#5C3D2E">🔀 統合整理</div>
+        <button id="merge-reload-btn" type="button"
+                style="background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:4px 12px;font-size:12px;color:#8B5E3C;cursor:pointer">🔄 台帳を読み直す</button>
+        <span id="merge-source-status" style="font-size:12px;color:#8a6a4a"></span>
+      </div>
+
+      <!-- 手順 -->
+      <details id="merge-howto" style="border:1px solid #eadccf;border-radius:10px;background:#fff;margin-bottom:12px">
+        <summary style="cursor:pointer;padding:10px 14px;font-weight:700;font-size:13px;color:#5C3D2E;background:#fdf8f3">📖 使い方（3ステップ）</summary>
+        <div style="padding:12px 14px;font-size:13px;color:#5C3D2E;line-height:1.7">
+          <b>目的:</b> 同じ支出・収入を2回帳簿に載せないこと。カード払い・口座振替はMoneyForwardの連携で既に仕訳が入っているため、証憑からも取り込むと二重計上になる。
+          <ol style="margin:8px 0 0;padding-left:20px">
+            <li><b>MFの仕訳帳CSVを読み込む</b> — MoneyForward → 会計帳簿 → 仕訳帳 → エクスポート（CSV）。期間は当年1月1日〜今日。この端末の中だけで処理し、外部へ送信しません。</li>
+            <li><b>突合する</b> — 金額一致＋日付±3日＋店名の照合で、同じ取引を探します。</li>
+            <li><b>1件ずつ決める</b> — 「MFにある（登録済にする）」「MFに無い（CSVに入れる）」「保留」。<b>迷ったら保留</b>のままで構いません。次回また出てきます。</li>
+          </ol>
+          <div style="margin-top:8px;padding:8px 10px;background:#fdf3f1;border:1px solid #e6c3bf;border-radius:8px;color:#8c2f26">
+            ⛔ 裏が取れていないものを「MFにある」にしないこと。実際はMFに無い経費が二度とCSVに出ず、<b>計上漏れ</b>になります。
+          </div>
+        </div>
+      </details>
+
+      <!-- ステップ1: MF仕訳帳CSV -->
+      <div style="background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:#5C3D2E;margin-bottom:6px">1. MoneyForward 仕訳帳CSVを読み込む</div>
+        <input type="file" id="merge-mf-file" accept=".csv,text/csv" style="font-size:13px">
+        <div id="merge-mf-status" style="font-size:12px;color:#8a6a4a;margin-top:6px">未読込です。読み込むまで「MFにあるか」の判定はできません。</div>
+      </div>
+
+      <!-- ステップ2: 突合 -->
+      <div style="background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:#5C3D2E;margin-bottom:8px">2. 突合する</div>
+        <button id="merge-run-btn" type="button"
+                style="background:#8B5E3C;border:none;border-radius:999px;padding:9px 20px;font-size:14px;font-weight:700;color:#fff;cursor:pointer">🔀 突合を実行</button>
+        <div id="merge-run-status" style="font-size:12px;color:#8a6a4a;margin-top:8px"></div>
+      </div>
+
+      <!-- ステップ3: 1件ずつ判断 -->
+      <div id="merge-result" style="display:none">
+        <div id="merge-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+          <div style="background:#f6f4f1;border-radius:8px;padding:8px;text-align:center"><b id="merge-n-todo" style="display:block;font-size:18px;color:#b42318">0</b><span style="font-size:11px;color:#8a6a4a">未処理</span></div>
+          <div style="background:#f6f4f1;border-radius:8px;padding:8px;text-align:center"><b id="merge-n-mf" style="display:block;font-size:18px;color:#256f4a">0</b><span style="font-size:11px;color:#8a6a4a">MFにある</span></div>
+          <div style="background:#f6f4f1;border-radius:8px;padding:8px;text-align:center"><b id="merge-n-csv" style="display:block;font-size:18px;color:#2f5f8f">0</b><span style="font-size:11px;color:#8a6a4a">CSVに入れる</span></div>
+          <div style="background:#f6f4f1;border-radius:8px;padding:8px;text-align:center"><b id="merge-n-hold" style="display:block;font-size:18px;color:#b7791f">0</b><span style="font-size:11px;color:#8a6a4a">保留</span></div>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <label style="font-size:12px;color:#5C3D2E;display:flex;align-items:center;gap:4px">
+            <input type="checkbox" id="merge-show-done"> 処理済みも表示
+          </label>
+          <button id="merge-export-btn" type="button"
+                  style="margin-left:auto;background:#fff;border:1px solid #8B5E3C;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;color:#8B5E3C;cursor:pointer">📤 「CSVに入れる」分を出力</button>
+        </div>
+
+        <div id="merge-cards"></div>
+      </div>
+    </div><!-- /mergePanel -->
 
     <!-- アクセスログタブ -->
     <div class="panel stats-section admin-section-hidden" id="statsPanel">
@@ -6333,7 +6420,7 @@ async function saveJhcsStudent() {
 }
 
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'sns-trend': 'keiei', 'jhcs-dl': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'merge': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'sns-trend': 'keiei', 'jhcs-dl': 'keiei', 'structure-map': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics',
@@ -6348,6 +6435,7 @@ function setAdminTab(tab) {
   const isAnalytics = tab === 'analytics';
   const isStats = tab === 'stats';
   const isToolstats = tab === 'toolstats';
+  const isMerge = tab === 'merge';
   const isThreadsSns = tab === 'threads-sns';
   const isCustomers = tab === 'customers';
   const isBrand = tab === 'brand';
@@ -6366,7 +6454,8 @@ function setAdminTab(tab) {
   const isJhcsDl = tab === 'jhcs-dl';
   const isWaitlist = tab === 'waitlist';
   const isFavorites = tab === 'favorites';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isSnsTrend;
+  const isStructureMap = tab === 'structure-map';
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isSnsTrend && !isStructureMap;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -6403,6 +6492,9 @@ function setAdminTab(tab) {
   document.querySelectorAll('.toolstats-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isToolstats);
   });
+  document.querySelectorAll('.merge-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isMerge);
+  });
   document.querySelectorAll('.threads-sns-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isThreadsSns);
   });
@@ -6429,6 +6521,9 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.api-costs-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isApiCosts);
+  });
+  document.querySelectorAll('.structure-map-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isStructureMap);
   });
   document.querySelectorAll('.sns-trend-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isSnsTrend);
@@ -6542,6 +6637,8 @@ function setAdminTab(tab) {
       ? 'Threads自動投稿システム（Nsfactory-SNS-AutoPost）。投稿候補の確認・承認・予約投稿を管理します。'
       : isHearing
       ? 'オーダー相談AI・ショールーム販売幕僚の対話知識（hearing-kb.json）を編集し、GitHubへ反映します。'
+      : isMerge
+      ? 'MFの仕訳帳CSV・スマホ台帳・メール証憑を突き合わせ、1件ずつ「MFにある／無い／保留」を決めて片付けます。決めた分だけMF取込CSVを出力できます。'
       : isReceiptChecklist
       ? '監理部のGmail領収書自動取得スクリプト実行時に生成される証憑チェックリストを表示します（読み取り専用）。'
       : isDashboard
@@ -6564,6 +6661,7 @@ function setAdminTab(tab) {
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
   if (isToolstats && !toolstatsLoaded) toolstatsLoad();
+  if (isMerge && !mergeLoaded) mergeLoad();
   if (isHearing && !hearingKbLoaded) loadHearingKb();
   if (isReceiptChecklist) loadReceiptChecklist();
   if (isSales) {
@@ -6592,6 +6690,13 @@ function setAdminTab(tab) {
     const acFrame = document.getElementById('apiCostsFrame');
     if (acFrame && acFrame.src.indexOf('api-costs.html') === -1 && acFrame.dataset.src) {
       acFrame.src = acFrame.dataset.src;
+    }
+  }
+  if (isStructureMap) {
+    // 初回表示時のみ src をセット（structure-map.html は静的な図で認証不要）
+    const smFrame = document.getElementById('structureMapFrame');
+    if (smFrame && smFrame.src.indexOf('structure-map.html') === -1 && smFrame.dataset.src) {
+      smFrame.src = smFrame.dataset.src;
     }
   }
   if (isSnsTrend) {
@@ -7463,6 +7568,338 @@ function toolstatsReportDone(btn) {
       toolstatsReportsLoad();
     })
     .catch(err => { btn.disabled = false; btn.textContent = '失敗（再試行）'; const m = document.getElementById('toolstats-reports-msg'); if (m) m.textContent = '更新に失敗しました: ' + (err && err.message ? err.message : err); });
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// 🔀 統合整理（MF仕訳帳 × スマホ台帳 × メール証憑）
+// 1件ずつ「MFにある／無い／保留」を決める。判定ロジックは
+// kanri-room/receipt-intake/index.html と同一（店名照合は3値）。
+// ⛔ 店名を見ない照合を復活させないこと。金額と日付だけで照合すると
+//    無関係な同額取引と一致し、その経費は二度とCSVに出ない（計上漏れ）。
+// ══════════════════════════════════════════════════════════════
+const MERGE_GAS_URL = 'https://script.google.com/macros/s/AKfycbybL6NbJVtb7HUZ8oFPq38zBWe5AWoLjZ3LfbAxbvkM11t1iMeZZT47ga77OxuKaVpR/exec';
+const MERGE_CHECKLIST_URL = 'receipt-checklist.json';
+const MERGE_TOL_DAYS = 3;
+const MERGE_MF_HEADERS = ['取引日','借方勘定科目','借方補助科目','借方税区分','借方金額','貸方勘定科目','貸方補助科目','貸方税区分','貸方金額','摘要','タグ','メモ','決済'];
+
+let mergeLedger = [];      // スマホ台帳（GAS）
+let mergeEmails = [];      // メール証憑
+let mergeMfRows = [];      // MF仕訳帳CSV
+let mergeGroups = [];      // 突合結果
+let mergeRules = null;     // 経理ルール（貸方科目の既定）
+
+function mergeYen(n){ return '¥' + Number(n||0).toLocaleString('ja-JP'); }
+function mergeEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function mergeDays(a,b){ return Math.abs((new Date(a)-new Date(b))/86400000); }
+function mergeNorm(s){
+  let t = String(s||'').replace(/－/g,'ー').replace(/　/g,' ');
+  try{ t = t.normalize('NFKC'); }catch(e){}
+  return t.replace(/([ァ-ヶー])-([ァ-ヶー])/g,'$1ー$2').replace(/[\s()（）株式会社有限会社]/g,'').toLowerCase();
+}
+// 3値: 'yes'（一致）/ 'no'（不一致）/ 'unknown'（MFの摘要が空で判定できない）
+function mergeStoreMatch(a,b){
+  const x = mergeNorm(a), y = mergeNorm(b);
+  if(!x || !y) return 'unknown';
+  return (x.includes(y) || y.includes(x) || x.slice(0,2) === y.slice(0,2)) ? 'yes' : 'no';
+}
+
+function mergeAdminKey(){
+  try{ return sessionStorage.getItem('nsf_admin_key') || ''; }catch(e){ return ''; }
+}
+
+// GAS呼び出し（HTML応答・間欠404を3回まで再送。読み取り専用なので再送は安全）
+async function mergeGas(action, body, tries){
+  tries = tries || 3;
+  let last = null;
+  for(let i=0;i<tries;i++){
+    try{
+      const res = await fetch(MERGE_GAS_URL, {
+        method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(Object.assign({action, key: mergeAdminKey()}, body||{}))
+      });
+      const text = await res.text();
+      let json;
+      try{ json = JSON.parse(text); }catch(e){ throw new Error('GAS応答がJSONではありません（HTTP '+res.status+'）'); }
+      if(json && json.error) throw new Error(json.error);
+      return json;
+    }catch(e){
+      last = e;
+      if(/unauthorized|がありません/.test(String(e.message))) break;   // 再送しても変わらない
+      await new Promise(r=>setTimeout(r, 700*(i+1)));
+    }
+  }
+  throw last;
+}
+
+// ── データ読み込み ────────────────────────────────────────────
+async function mergeLoadSources(){
+  const st = document.getElementById('merge-source-status');
+  st.textContent = '読み込み中…';
+  try{
+    const r = await mergeGas('list', {}, 3);
+    mergeLedger = (r.records || []).filter(x => x.status !== '削除');
+  }catch(e){
+    mergeLedger = [];
+    st.textContent = '台帳を読めませんでした: ' + e.message;
+    st.style.color = '#b42318';
+    return false;
+  }
+  try{
+    const rr = await mergeGas('rules', {}, 2);
+    mergeRules = rr.rules || null;
+  }catch(e){ mergeRules = null; }
+  try{
+    const res = await fetch(MERGE_CHECKLIST_URL + '?v=' + Date.now(), {cache:'no-cache'});
+    const cl = await res.json();
+    mergeEmails = [];
+    Object.entries(cl.matrix||{}).forEach(([month, subs]) =>
+      Object.entries(subs).forEach(([sub, info]) =>
+        (info.records||[]).forEach(rec => {
+          if(rec.amount) mergeEmails.push({date: rec.date, amount: Number(rec.amount), store: sub, subject: rec.subject||''});
+        })));
+  }catch(e){ mergeEmails = []; }
+  st.textContent = `台帳 ${mergeLedger.length}件 / メール証憑 ${mergeEmails.length}件`;
+  st.style.color = '#8a6a4a';
+  return true;
+}
+
+// ── MF仕訳帳CSV ───────────────────────────────────────────────
+function mergeParseCsvLine(line, delim){
+  const cells = []; let cell = '', q = false;
+  for(let i=0;i<line.length;i++){
+    const ch = line[i];
+    if(ch === '"'){ if(q && line[i+1] === '"'){ cell += '"'; i++; } else q = !q; }
+    else if(ch === delim && !q){ cells.push(cell); cell = ''; }
+    else cell += ch;
+  }
+  cells.push(cell);
+  return cells.map(c => c.trim());
+}
+
+async function mergeReadMfCsv(file){
+  const buf = await file.arrayBuffer();
+  let text;
+  try{ text = new TextDecoder('utf-8', {fatal:true}).decode(buf); }
+  catch(e){ text = new TextDecoder('shift_jis').decode(buf); }
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if(lines.length < 2) throw new Error('データ行がありません');
+  const header = mergeParseCsvLine(lines[0], ',');
+  const find = cands => header.findIndex(h => cands.some(c => h.includes(c)));
+  const di = find(['取引日','日付']), ai = find(['借方金額','金額']), si = find(['摘要']), ki = find(['借方勘定科目']);
+  if(di < 0 || ai < 0) throw new Error('「取引日」「借方金額」の列が見つかりません: ' + header.join(' | '));
+  const rows = [];
+  lines.slice(1).forEach(line => {
+    const c = mergeParseCsvLine(line, ',');
+    const m = /(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/.exec(c[di] || '');
+    const amt = Number(String(c[ai] || '').replace(/[^\d]/g, ''));
+    if(!m || !amt) return;
+    rows.push({
+      date: `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`,
+      amount: amt,
+      desc: (si >= 0 ? c[si] : '') || '',
+      account: (ki >= 0 ? c[ki] : '') || '',
+      used: false
+    });
+  });
+  return rows;
+}
+
+// ── 突合 ──────────────────────────────────────────────────────
+function mergeRun(){
+  mergeMfRows.forEach(m => m.used = false);
+  const ledger = mergeLedger.slice().sort((a,b) => String(a.date).localeCompare(String(b.date)));
+
+  // 台帳内の重複（同額・±tol日・店名類似）
+  const selfDup = new Set();
+  for(let i=0;i<ledger.length;i++) for(let j=i+1;j<ledger.length;j++){
+    const a = ledger[i], b = ledger[j];
+    if(Number(a.total_amount) === Number(b.total_amount)
+       && mergeDays(a.date, b.date) <= MERGE_TOL_DAYS
+       && mergeStoreMatch(a.store, b.store) !== 'no'){ selfDup.add(a.id); selfDup.add(b.id); }
+  }
+
+  mergeGroups = ledger.map(r => {
+    // 金額（税込 or 按分後）と日付が合う候補を集め、店名で確定させる
+    const cands = mergeMfRows.filter(m => !m.used
+      && (m.amount === Number(r.total_amount) || m.amount === Number(r.business_amount))
+      && mergeDays(m.date, r.date) <= MERGE_TOL_DAYS);
+    let mf = null, uncertain = null;
+    for(const c of cands){
+      const v = mergeStoreMatch(c.desc, r.store);
+      if(v === 'yes'){ mf = c; break; }
+      if(v === 'unknown' && !uncertain) uncertain = c;
+    }
+    if(mf) mf.used = true; else if(uncertain) uncertain.used = true;
+    const em = mergeEmails.find(e => e.amount === Number(r.total_amount) && mergeDays(e.date, r.date) <= MERGE_TOL_DAYS);
+    // 既に台帳側で決まっているものは処理済みとして扱う
+    const st = r.mf_status || '未登録';
+    const decided = (st === 'MF登録済') ? 'mf' : (st === 'MF対象外' ? 'skip' : '');
+    return { rec: r, mf, uncertain: mf ? null : uncertain, em, selfDup: selfDup.has(r.id), decision: decided };
+  });
+  mergeRenderCards();
+}
+
+// ── 1件ずつの判断カード ────────────────────────────────────────
+function mergeRenderCards(){
+  const box = document.getElementById('merge-cards');
+  const showDone = document.getElementById('merge-show-done').checked;
+  const todo = mergeGroups.filter(g => !g.decision);
+  const nMf = mergeGroups.filter(g => g.decision === 'mf').length;
+  const nCsv = mergeGroups.filter(g => g.decision === 'csv').length;
+  const nHold = mergeGroups.filter(g => g.decision === 'hold').length;
+  document.getElementById('merge-n-todo').textContent = todo.length;
+  document.getElementById('merge-n-mf').textContent = nMf;
+  document.getElementById('merge-n-csv').textContent = nCsv;
+  document.getElementById('merge-n-hold').textContent = nHold;
+  document.getElementById('merge-result').style.display = '';
+
+  const list = showDone ? mergeGroups : mergeGroups.filter(g => !g.decision);
+  if(!list.length){
+    box.innerHTML = '<p style="font-size:13px;color:#8a6a4a;padding:12px">未処理はありません。「処理済みも表示」で全件見られます。</p>';
+    return;
+  }
+  box.innerHTML = '';
+  list.forEach(g => {
+    const r = g.rec;
+    // どう見えているかを1行で言う（推測を断定しない）
+    let verdict, vColor;
+    if(g.mf){ verdict = 'MFに同じ取引がありました'; vColor = '#256f4a'; }
+    else if(g.uncertain){ verdict = 'MFに同額・近い日付の仕訳がありますが、摘要が空で店名を確認できません'; vColor = '#2f5f8f'; }
+    else if(!mergeMfRows.length){ verdict = 'MFのCSVが未読込のため、MFにあるかは判定していません'; vColor = '#8a6a4a'; }
+    else { verdict = 'MFに該当が見つかりませんでした'; vColor = '#b42318'; }
+
+    const card = document.createElement('div');
+    card.style.cssText = 'border:1px solid #eadccf;border-left:4px solid ' + vColor + ';border-radius:10px;background:#fff;padding:12px 14px;margin-bottom:10px';
+    card.innerHTML =
+      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap">'
+        + '<div style="font-weight:700;color:#5C3D2E">' + mergeEsc(r.store) + '</div>'
+        + '<div style="font-weight:800;font-size:16px;color:#5C3D2E">' + mergeYen(r.total_amount) + '</div>'
+      + '</div>'
+      + '<div style="font-size:12px;color:#8a6a4a;margin-top:2px">'
+        + mergeEsc(r.date) + '　' + mergeEsc(r.account)
+        + (Number(r.business_ratio) < 1 ? '　按分' + (Math.round(Number(r.business_ratio)*1000)/10) + '%→' + mergeYen(r.business_amount) : '')
+        + (r.memo ? '　' + mergeEsc(String(r.memo).slice(0,40)) : '')
+      + '</div>'
+      + '<div style="font-size:12px;color:' + vColor + ';margin-top:6px">' + verdict + '</div>'
+      + (g.mf ? '<div style="font-size:12px;color:#8a6a4a;margin-top:2px">MF: ' + mergeEsc(g.mf.date) + '　' + mergeEsc(g.mf.account) + '　' + mergeEsc(g.mf.desc) + '</div>' : '')
+      + (g.uncertain ? '<div style="font-size:12px;color:#8a6a4a;margin-top:2px">MF: ' + mergeEsc(g.uncertain.date) + '　' + mergeEsc(g.uncertain.account) + '　（摘要が空）</div>' : '')
+      + (g.em ? '<div style="font-size:12px;color:#b7791f;margin-top:2px">メール証憑にも同額あり: ' + mergeEsc(g.em.store) + ' ' + mergeEsc(g.em.subject) + '</div>' : '')
+      + (g.selfDup ? '<div style="font-size:12px;color:#b42318;margin-top:2px">台帳内に同じ取引が2件ある疑い</div>' : '')
+      + '<div class="merge-actions" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"></div>';
+
+    const actions = card.querySelector('.merge-actions');
+    const mkBtn = (label, kind, bg, fg, bd) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      const on = g.decision === kind;
+      b.style.cssText = 'border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid ' + bd
+        + ';background:' + (on ? bg : '#fff') + ';color:' + (on ? '#fff' : fg);
+      b.addEventListener('click', () => mergeDecide(g, kind, b));
+      return b;
+    };
+    actions.appendChild(mkBtn('✅ MFにある（登録済にする）', 'mf', '#256f4a', '#256f4a', '#256f4a'));
+    actions.appendChild(mkBtn('📤 MFに無い（CSVに入れる）', 'csv', '#2f5f8f', '#2f5f8f', '#2f5f8f'));
+    actions.appendChild(mkBtn('⏸ 保留', 'hold', '#b7791f', '#b7791f', '#eadccf'));
+    if(g.decision){
+      const undo = document.createElement('button');
+      undo.type = 'button'; undo.textContent = '↩ 取り消す';
+      undo.style.cssText = 'border-radius:999px;padding:7px 12px;font-size:12px;cursor:pointer;border:1px solid #eadccf;background:#fff;color:#8a6a4a';
+      undo.addEventListener('click', () => mergeDecide(g, '', undo));
+      actions.appendChild(undo);
+    }
+    const msg = document.createElement('span');
+    msg.className = 'merge-msg';
+    msg.style.cssText = 'font-size:11px;color:#8a6a4a;align-self:center';
+    actions.appendChild(msg);
+    box.appendChild(card);
+  });
+}
+
+// 判断を台帳（GAS）へ記録する。
+// ⛔ 「MFにある」= mf_status を「MF登録済」にする＝以後CSVに出なくなる。取り消しは同じ画面から。
+async function mergeDecide(g, kind, btn){
+  const card = btn.closest('div[style*="border-left"]');
+  const msg = card ? card.querySelector('.merge-msg') : null;
+  const statusMap = { mf: 'MF登録済', csv: '未登録', hold: '未登録', '': '未登録' };
+  const next = statusMap[kind];
+  const buttons = card ? card.querySelectorAll('button') : [];
+  buttons.forEach(b => b.disabled = true);
+  if(msg) msg.textContent = '保存中…';
+  try{
+    if((g.rec.mf_status || '未登録') !== next){
+      await mergeGas('update', { id: g.rec.id, patch: { mf_status: next } }, 3);
+      g.rec.mf_status = next;
+    }
+    g.decision = kind;
+    if(msg) msg.textContent = '';
+    mergeRenderCards();
+  }catch(e){
+    buttons.forEach(b => b.disabled = false);
+    if(msg){ msg.textContent = '保存できませんでした: ' + e.message; msg.style.color = '#b42318'; }
+  }
+}
+
+// ── CSV出力（「CSVに入れる」と決めた分だけ）────────────────────
+function mergeCsvEscape(v){
+  const s = String(v == null ? '' : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+function mergeExportCsv(){
+  const rows = mergeGroups.filter(g => g.decision === 'csv').map(g => g.rec);
+  if(!rows.length){ alert('「MFに無い（CSVに入れる）」と決めた記録がありません。'); return; }
+  const credit = (mergeRules && mergeRules.credit_account) || '事業主借';
+  const lines = [MERGE_MF_HEADERS.join(',')];
+  rows.forEach(r => {
+    const amt = Number(r.business_amount || Math.round(Number(r.total_amount) * Number(r.business_ratio || 1)));
+    const memo = [r.memo, r.items,
+      Number(r.business_ratio) < 1 ? '家事按分 事業' + (Math.round(Number(r.business_ratio)*1000)/10) + '%（税込' + r.total_amount + '円）' : '',
+      'スマホ取込:' + (r.file_name || '')].filter(Boolean).join(' / ');
+    lines.push([
+      String(r.date).replace(/-/g,'/'), r.account, '', r.tax_class || '課税仕入10%', amt,
+      credit, '', '対象外', amt, (r.store + ' ' + (r.memo || '')).trim(), '', memo, ''
+    ].map(mergeCsvEscape).join(','));
+  });
+  const blob = new Blob(['﻿' + lines.join('\r\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mf_import_' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+// ── 初期化 ────────────────────────────────────────────────────
+let mergeLoaded = false;
+async function mergeLoad(){
+  mergeLoaded = true;
+  document.getElementById('merge-reload-btn')?.addEventListener('click', () => { mergeLoaded = false; mergeLoadSources().then(() => { mergeLoaded = true; }); });
+  document.getElementById('merge-show-done')?.addEventListener('change', mergeRenderCards);
+  document.getElementById('merge-export-btn')?.addEventListener('click', mergeExportCsv);
+  document.getElementById('merge-mf-file')?.addEventListener('change', async ev => {
+    const f = ev.target.files && ev.target.files[0];
+    if(!f) return;
+    const st = document.getElementById('merge-mf-status');
+    try{
+      mergeMfRows = await mergeReadMfCsv(f);
+      st.textContent = `読み込み完了: ${mergeMfRows.length}件（${f.name}）。この端末の中だけで処理しています。`;
+      st.style.color = '#256f4a';
+    }catch(e){
+      mergeMfRows = [];
+      st.textContent = '読み込みに失敗しました: ' + e.message;
+      st.style.color = '#b42318';
+    }
+  });
+  document.getElementById('merge-run-btn')?.addEventListener('click', async () => {
+    const st = document.getElementById('merge-run-status');
+    st.style.color = '#8a6a4a';
+    st.textContent = '突合中…';
+    if(!mergeLedger.length){ const ok = await mergeLoadSources(); if(!ok){ st.textContent = '台帳を読めないため突合できません。'; st.style.color = '#b42318'; return; } }
+    mergeRun();
+    const undecided = mergeGroups.filter(g => !g.decision).length;
+    st.textContent = `完了: 台帳${mergeLedger.length}件 / MF${mergeMfRows.length}件 / メール証憑${mergeEmails.length}件　→ 未処理 ${undecided}件`;
+  });
+  await mergeLoadSources();
 }
 
 function toolstatsLoad() {
