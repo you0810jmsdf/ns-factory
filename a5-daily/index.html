@@ -67,7 +67,7 @@ body.panel-open #preview { margin-left: 280px; }
 .sheet-label { font-size: 11px; color: #666; margin-bottom: 4px; }
 .a4-sheet { width: 297mm; height: 210mm; background: white; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
 /* === MODULE: 上下見開き（リングが上）レイアウト === 中身を反時計回りに90°回して置く。⛔ overflow:hidden を付けない（PDFが半分欠ける） */
-.ls-rot { position: absolute; left: 0; top: 0; width: 210mm; height: 136mm; transform-origin: 0 0; transform: translateY(210mm) rotate(-90deg); padding: 3mm 2mm; display: flex; flex-direction: column; }
+.ls-rot { position: absolute; left: 0; top: 0; width: 210mm; height: 136mm; transform-origin: 0 0; transform: translateY(210mm) rotate(-90deg); padding: 3mm 6mm; display: flex; flex-direction: column; }
 .ls-rot .time-grid { border-bottom: none; }
 
 /* === MODULE: Slot === */
@@ -87,7 +87,7 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* === MODULE: デイリーページ === */
 .daily-page { width: 100%; height: 100%; display: flex; position: relative; min-height: 0; overflow: hidden; }
-.page-body { flex: 1; position: relative; display: flex; flex-direction: column; padding: 3mm 2mm; min-width: 0; min-height: 0; height: 100%; overflow: hidden; }
+.page-body { flex: 1; position: relative; display: flex; flex-direction: column; padding: 6mm 2mm; min-width: 0; min-height: 0; height: 100%; overflow: hidden; }
 .date-header { height: 13mm; flex-shrink: 0; border-bottom: 0.45mm solid #222; display: flex; align-items: center; gap: 2mm; padding: 1mm 0; position: relative; }
 .date-num { font-size: 9.5mm; font-weight: 700; line-height: 1; letter-spacing: -0.5mm; font-family: var(--font-date-num, 'Noto Sans JP', sans-serif); }
 .date-num .seg-ghost { height: 9.5mm; }
