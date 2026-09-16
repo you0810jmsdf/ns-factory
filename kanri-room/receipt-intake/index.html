@@ -505,8 +505,62 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   $('fTaxRate').addEventListener('change', ()=>{ if($('fTaxRate').value==='8' && [...$('fTaxClass').options].some(o=>o.value==='課税仕入8%（軽）')) $('fTaxClass').value='課税仕入8%（軽）'; });
 
   // ── 画像取り込み → 縮小 ───────────────────────────────────
+  // ── 傾き補正（回転だけ・ライブラリ不要）────────────────────────
+  // 文字の行が水平になる角度を「投影の揃い具合」で探す。±15°まで。台形の歪みは直さない（事業主決定A・2026-09-16）。
+  // ⛔ 文字が少ない・0°と差が無い写真は回さない（風景やスクショを誤って回すのを防ぐ）。
+  const DESKEW_MAX_DEG = 15, DESKEW_MIN_DEG = 0.5, DESKEW_SAMPLE_EDGE = 400;
+  function estimateSkewDeg(canvas){
+    // 小さな複製で計測する（スマホでも数百ms以内）
+    const sw = Math.max(1, Math.round(canvas.width * Math.min(1, DESKEW_SAMPLE_EDGE / Math.max(canvas.width, canvas.height))));
+    const sh = Math.max(1, Math.round(canvas.height * sw / canvas.width));
+    const c = document.createElement('canvas'); c.width = sw; c.height = sh;
+    const g = c.getContext('2d'); g.drawImage(canvas, 0, 0, sw, sh);
+    const px = g.getImageData(0, 0, sw, sh).data;
+    const gray = new Float32Array(sw * sh);
+    for(let i = 0, j = 0; i < px.length; i += 4, j++){ gray[j] = 0.299*px[i] + 0.587*px[i+1] + 0.114*px[i+2]; }
+    // 「周囲より明確に暗い画素」＝文字の線。全体の平均で切ると机の色や影を文字と誤認する（2026-09-16 合成画像で実測）
+    const R = 4, W1 = sw + 1;
+    const integ = new Float64Array(W1 * (sh + 1));
+    for(let y = 1; y <= sh; y++){ let row = 0; for(let x = 1; x <= sw; x++){ row += gray[(y-1)*sw + (x-1)]; integ[y*W1 + x] = integ[(y-1)*W1 + x] + row; } }
+    const xs = [], ys = [];
+    for(let y = 0; y < sh; y++) for(let x = 0; x < sw; x++){
+      const x0 = Math.max(0, x-R), y0 = Math.max(0, y-R), x1 = Math.min(sw, x+R+1), y1 = Math.min(sh, y+R+1);
+      const local = (integ[y1*W1 + x1] - integ[y0*W1 + x1] - integ[y1*W1 + x0] + integ[y0*W1 + x0]) / ((x1-x0)*(y1-y0));
+      if(gray[y*sw + x] < local - 22){ xs.push(x - sw/2); ys.push(y - sh/2); }
+    }
+    if(xs.length < 400) return { deg: 0, apply: false, reason: 'few' };
+    // 間引き（最大12,000点）
+    const step = Math.max(1, Math.floor(xs.length / 12000));
+    const score = (deg) => {
+      const r = deg * Math.PI / 180, cs = Math.cos(r), sn = Math.sin(r);
+      const bins = new Map(); let n = 0;
+      for(let k = 0; k < xs.length; k += step){ const yy = Math.round(ys[k]*cs - xs[k]*sn); bins.set(yy, (bins.get(yy)||0) + 1); n++; }
+      let s = 0; bins.forEach(v => { s += v*v; });
+      return s / n;   // 行に集中しているほど大きい
+    };
+    let best = 0, bestS = -1;
+    for(let d = -DESKEW_MAX_DEG; d <= DESKEW_MAX_DEG; d += 0.5){ const s = score(d); if(s > bestS){ bestS = s; best = d; } }
+    let fine = best, fineS = bestS;
+    for(let d = best - 0.4; d <= best + 0.4001; d += 0.1){ const s = score(d); if(s > fineS){ fineS = s; fine = d; } }
+    const s0 = score(0);
+    const deg = Math.round(fine * 10) / 10;
+    const apply = Math.abs(deg) >= DESKEW_MIN_DEG && fineS > s0 * 1.08;   // 0°より明確に揃うときだけ
+    return { deg, apply, reason: apply ? 'ok' : (Math.abs(deg) < DESKEW_MIN_DEG ? 'flat' : 'weak') };
+  }
+  // 画像を -deg 回して白地に描き直す（切れないよう外接サイズに広げる）
+  function rotateCanvas(src, deg){
+    const r = -deg * Math.PI / 180, cs = Math.abs(Math.cos(r)), sn = Math.abs(Math.sin(r));
+    const w = src.width, h = src.height;
+    const out = document.createElement('canvas');
+    out.width = Math.round(w*cs + h*sn); out.height = Math.round(w*sn + h*cs);
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, out.width, out.height);
+    ctx.translate(out.width/2, out.height/2); ctx.rotate(r); ctx.drawImage(src, -w/2, -h/2);
+    return out;
+  }
+  let lastDeskew = null;   // 直近の補正結果（プレビュー表示用）
   async function fileToResizedDataUrl(file){
-    const bmp = await createImageBitmap(file).catch(()=>null);
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(()=>null);
     let img = bmp;
     if(!img){
       img = await new Promise((ok,ng)=>{ const im=new Image(); im.onload=()=>ok(im); im.onerror=ng; im.src=URL.createObjectURL(file); });
@@ -514,8 +568,12 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     const w = img.width, h = img.height;
     const scale = Math.min(1, MAX_EDGE/Math.max(w,h));
     const cw = Math.round(w*scale), ch = Math.round(h*scale);
-    const canvas = document.createElement('canvas'); canvas.width=cw; canvas.height=ch;
+    let canvas = document.createElement('canvas'); canvas.width=cw; canvas.height=ch;
     const ctx = canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cw,ch); ctx.drawImage(img,0,0,cw,ch);
+    let dk = { deg: 0, apply: false, reason: 'skip' };
+    try{ dk = estimateSkewDeg(canvas); }catch(e){ /* 計測に失敗しても取込は続ける */ }
+    if(dk.apply) canvas = rotateCanvas(canvas, dk.deg);
+    lastDeskew = dk;
     return canvas.toDataURL('image/jpeg', JPEG_Q);
   }
   // ── 連続スキャン（キュー）──────────────────────────────────
@@ -561,7 +619,8 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     setStatus('captureStatus', '画像を準備中…');
     try{
       const dataUrl = await fileToResizedDataUrl(file);
-      scanQueue.push({ id: uuid(), dataUrl, name: file.name || 'camera.jpg', bytes: Math.round(dataUrl.length * 0.75),
+      const deskew = lastDeskew && lastDeskew.apply ? lastDeskew.deg : 0;
+      scanQueue.push({ id: uuid(), dataUrl, name: file.name || 'camera.jpg', bytes: Math.round(dataUrl.length * 0.75), deskew,
                        requestId: uuid(), status: 'pending', data: null, error: '', usage: null, todayCount: null });
       setStatus('captureStatus', '');
       renderQueue();
@@ -622,7 +681,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     currentItem = item;
     $('previewImg').src = item.dataUrl;
     $('previewName').textContent = item.name;
-    $('previewSize').textContent = Math.round(item.bytes / 1024) + ' KB（縮小後）';
+    $('previewSize').textContent = Math.round(item.bytes / 1024) + ' KB（縮小後' + (item.deskew ? '・傾き ' + Math.abs(item.deskew).toFixed(1) + '° を補正' : '') + '）';
     $('preview').classList.add('show');
     $('analyzeBtn').disabled = false; $('analyzeBtn').textContent = '🤖 もう一度読み取る';
     setStatus('registerStatus', '');
