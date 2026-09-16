@@ -583,7 +583,23 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     try{
       const slimRules = { accounts: (rules.accounts || []).map(a => ({ name: a.name, keywords: (a.keywords || []).slice(0, 8) })) };
       const r = await gas('analyze', { image: item.dataUrl, rules: slimRules }, 2);
-      item.data = r.data || {}; item.usage = r.usage || null; item.todayCount = r.todayCount; item.error = ''; item.status = 'ready';
+      const list = (Array.isArray(r.receipts) && r.receipts.length) ? r.receipts : [r.data || {}];
+      if(item.splitTotal){
+        // 分割済みの1件の取り直し: 自分の番号だけ受け取る（再分割して増やさない）
+        item.data = list[item.splitIndex] || list[0] || {};
+      }else if(list.length > 1){
+        // 1枚の写真に複数のレシート → 同じ写真を件数分に展開。各件は別requestId・別imageIndexで登録される
+        item.data = list[0]; item.splitIndex = 0; item.splitTotal = list.length; item.baseName = item.name;
+        item.name = item.baseName + ' (1/' + list.length + ')';
+        const pos = scanQueue.indexOf(item);
+        const extra = list.slice(1).map((d, i) => ({ id: uuid(), dataUrl: item.dataUrl, name: item.baseName + ' (' + (i+2) + '/' + list.length + ')', bytes: item.bytes,
+          requestId: uuid(), status: 'ready', data: d, error: '', usage: null, todayCount: r.todayCount, splitIndex: i+1, splitTotal: list.length, baseName: item.baseName }));
+        scanQueue.splice(pos + 1, 0, ...extra);
+        toast('1枚の写真から ' + list.length + ' 件を読み取りました。1件ずつ確認してください');
+      }else{
+        item.data = list[0];
+      }
+      item.usage = r.usage || null; item.todayCount = r.todayCount; item.error = ''; item.status = 'ready';
     }catch(e){
       item.data = {}; item.error = e.message || '読み取りに失敗しました'; item.status = 'error';
     }finally{
@@ -615,7 +631,8 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
       setStatus('captureStatus', '読み取り失敗: ' + item.error + '（手入力で登録できます）', 'err');
     }else{
       const usage = item.usage ? `（入力${item.usage.input_tokens}tok／出力${item.usage.output_tokens}tok・本日${item.todayCount}件目）` : '';
-      setStatus('captureStatus', '読み取り完了。内容を確認して登録してください ' + usage, 'ok');
+      const part = item.splitTotal ? '（同じ写真の ' + (item.splitIndex+1) + '/' + item.splitTotal + ' 件目）' : '';
+      setStatus('captureStatus', '読み取り完了。内容を確認して登録してください' + part + ' ' + usage, 'ok');
     }
     renderQueue();
   }
@@ -687,7 +704,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     const btn=$('registerBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 保存中…';
     setStatus('registerStatus','Driveへ保存し、台帳に追記しています…');
     try{
-      const r = await gas('register', { requestId: item.requestId, record: rec, image: item.dataUrl }, 3);
+      const r = await gas('register', { requestId: item.requestId, record: rec, image: item.dataUrl, imageIndex: item.splitIndex || 0 }, 3);
       ledgerCache = [];
       scanQueue = scanQueue.filter(q => q.id !== item.id);
       currentItem = null;
