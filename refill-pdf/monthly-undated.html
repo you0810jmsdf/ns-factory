@@ -186,6 +186,19 @@ img{max-width:100%;display:block}
 .size-mm{font-size:13px;color:var(--color-text-sub)}
 .size-note{font-size:12px;color:var(--color-text-mute);margin-top:6px}
 
+/* ── 収録内容のプレビュー ── */
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}
+.preview-card{
+  display:block;background:var(--color-bg-sub);border:1px solid var(--color-border);
+  border-radius:var(--radius-md);overflow:hidden;transition:border-color var(--transition-base),transform var(--transition-base);
+}
+.preview-card:hover{border-color:var(--color-accent);transform:translateY(-2px)}
+.preview-card img{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center top;display:block;background:#fff}
+.preview-name{display:block;padding:10px 14px;font-size:14px;font-weight:700}
+.preview-name small{font-weight:400;color:var(--color-text-sub);margin-left:6px;font-size:12px}
+@media(max-width:768px){.preview-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.preview-grid{grid-template-columns:1fr}}
+
 /* ── 使い方 ── */
 .step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:32px}
 .step-photo{
@@ -394,6 +407,32 @@ img{max-width:100%;display:block}
     <p style="font-size:13px;color:var(--color-text-sub);margin-top:16px;line-height:1.8">
       寸法と穴位置は当工房のリング規格表（<a href="../kouhou-room/ring-standards.html" style="color:var(--color-accent)">リング規格図鑑</a>）に合わせています。
       A5スリムとA5は高さがA4の短辺と同じなので、上下6mmを余白にしてあります（一般的なプリンターの印刷できない範囲）。
+    </p>
+  </div>
+</section>
+
+<!-- ── 収録内容のプレビュー（6判型・実際のPDFから切り出した見開き1か月） ── -->
+<hr class="section-divider">
+<section class="section" id="preview">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">Preview</p>
+      <h2 class="section-title">購入前に、中身を判型ごとに見られます</h2>
+    </div>
+    <p class="lead">
+      実際にお渡しするPDFから切り出した「見開き1か月」です。画像をクリックすると大きく表示します。
+      薄い数字と曜日が透かし、罫線は印刷で消えにくい濃さにしてあります。
+    </p>
+    <div class="preview-grid">
+      <a class="preview-card" href="../assets/refill-pdf/preview-a5slim.jpg" target="_blank" rel="noopener"><img src="../assets/refill-pdf/preview-a5slim.jpg" alt="A5スリムの見開き1か月" loading="lazy"><span class="preview-name">A5スリム <small>110×210</small></span></a>
+      <a class="preview-card" href="../assets/refill-pdf/preview-a5.jpg" target="_blank" rel="noopener"><img src="../assets/refill-pdf/preview-a5.jpg" alt="A5の見開き1か月" loading="lazy"><span class="preview-name">A5 <small>148×210</small></span></a>
+      <a class="preview-card" href="../assets/refill-pdf/preview-bible.jpg" target="_blank" rel="noopener"><img src="../assets/refill-pdf/preview-bible.jpg" alt="バイブルの見開き1か月" loading="lazy"><span class="preview-name">バイブル <small>95×170</small></span></a>
+      <a class="preview-card" href="../assets/refill-pdf/preview-a6.jpg" target="_blank" rel="noopener"><img src="../assets/refill-pdf/preview-a6.jpg" alt="A6の見開き1か月" loading="lazy"><span class="preview-name">A6 <small>105×148</small></span></a>
+      <a class="preview-card" href="../assets/refill-pdf/preview-mini6.jpg" target="_blank" rel="noopener"><img src="../assets/refill-pdf/preview-mini6.jpg" alt="ミニ6の見開き1か月" loading="lazy"><span class="preview-name">ミニ6 <small>80×128</small></span></a>
+      <a class="preview-card" href="../assets/refill-pdf/preview-micro5.jpg" target="_blank" rel="noopener"><img src="../assets/refill-pdf/preview-micro5.jpg" alt="Micro5の見開き1か月" loading="lazy"><span class="preview-name">Micro5 <small>62×105</small></span></a>
+    </div>
+    <p style="font-size:13px;color:var(--color-text-sub);margin-top:16px;line-height:1.8">
+      同じ書式は<a href="../tools/" style="color:var(--color-accent)">無料の印刷ツール</a>でも画面で確認できます（日付なしモード）。
     </p>
   </div>
 </section>

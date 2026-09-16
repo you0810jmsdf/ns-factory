@@ -50,7 +50,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   --title-size: 14mm;
   --title-angle: 0deg;
   --font-title: 'Noto Serif JP', serif;
-  --ghost-opacity: 0.18;
+  --ghost-opacity: 0.10;
   --memo-height: 24mm;
 }
 
@@ -224,7 +224,7 @@ body.panel-open #preview { margin-left: 280px; }
 }
 .month-grid-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .month-cols-row { flex: 1; display: flex; flex-direction: row; }
-.month-col { flex: 1; display: flex; flex-direction: column; border-right: 0.2mm solid #ddd; }
+.month-col { flex: 1; display: flex; flex-direction: column; border-right: 0.2mm solid #999; }
 .month-col:last-child { border-right: none; }
 .col-day-header {
   height: 6mm; flex-shrink: 0;
@@ -243,10 +243,10 @@ body.panel-open #preview { margin-left: 280px; }
 }
 .memo-label { font-size: 1.8mm; font-weight: 700; color: #aaa; letter-spacing: 0.5mm; padding: 0.5mm 0 0.3mm; }
 .memo-lines { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; gap: var(--memo-line-gap, 0); }
-.memo-line { height: 0; width: var(--memo-line-length, 100%); border-top: var(--memo-line-width, 0.2mm) solid #ddd; }
+.memo-line { height: 0; width: var(--memo-line-length, 100%); border-top: var(--memo-line-width, 0.2mm) solid #999; }
 .month-cells { flex: 1; display: flex; flex-direction: column; }
 .month-cell {
-  flex: 1; border-bottom: 0.2mm solid #eee; padding: 0.5mm 1mm;
+  flex: 1; border-bottom: 0.2mm solid #999; padding: 0.5mm 1mm;
   display: flex; flex-direction: column;
 }
 .month-cell:last-child { border-bottom: none; }
@@ -280,14 +280,14 @@ body.panel-open #preview { margin-left: 280px; }
 .vert-month-name { font-size:3.5mm; font-weight:700; letter-spacing:0.5mm; text-align:right; font-family:var(--font-month-abbr,'Times New Roman',Times,serif); }
 .vert-year { font-size:2.8mm; color:#888; text-align:right; }
 .vert-grid { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.vert-day-header-row { display:grid; grid-template-columns:repeat(7,1fr); height:6mm; flex-shrink:0; border-bottom:0.2mm solid #bbb; }
+.vert-day-header-row { display:grid; grid-template-columns:repeat(7,1fr); height:6mm; flex-shrink:0; border-bottom:0.2mm solid #777; }
 .vert-day-header { display:flex; align-items:center; justify-content:center; font-size:2.2mm; font-weight:700; color:#555; }
 .vert-day-header.is-sat { color:#2255aa; } .vert-day-header.is-sun { color:#aa2222; }
 .vert-day-header .wd-ghost { font-size:1.4mm; padding:0; }
 .vert-week-rows { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.vert-week { flex:1; display:grid; grid-template-columns:repeat(7,1fr); border-bottom:0.15mm solid #ddd; }
+.vert-week { flex:1; display:grid; grid-template-columns:repeat(7,1fr); border-bottom:0.15mm solid #999; }
 .vert-week:last-child { border-bottom:none; }
-.vert-cell { border-right:0.15mm solid #ddd; display:flex; flex-direction:column; padding:0.5mm; overflow:hidden; }
+.vert-cell { border-right:0.15mm solid #999; display:flex; flex-direction:column; padding:0.5mm; overflow:hidden; }
 .vert-cell:last-child { border-right:none; }
 .vert-cell.is-sat .vert-cell-date { color:#2255aa; } .vert-cell.is-sun .vert-cell-date { color:#aa2222; }
 .vert-cell.is-holiday .vert-cell-date { color:#aa2222; } .vert-cell.out-of-month { background:#f8f8f8; }
@@ -296,9 +296,9 @@ body.panel-open #preview { margin-left: 280px; }
 .vert-cell-holiday { font-size:1.5mm; color:#aa4444; line-height:1.1; overflow:hidden; }
 .vert-memo { height:var(--memo-height,24mm); flex-shrink:0; border-top:0.3mm solid #555; padding:1mm 2mm; display:flex; flex-direction:column; }
 .vert-memo-lines { flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:var(--memo-line-gap,3mm); }
-.vert-memo-line { height:0; width:var(--memo-line-length,100%); border-bottom:var(--memo-line-width,0.15mm) solid #ccc; }
+.vert-memo-line { height:0; width:var(--memo-line-length,100%); border-bottom:var(--memo-line-width,0.15mm) solid #999; }
 .vert-cell-grid { display:grid; flex:1; overflow:hidden; min-height:0; }
-.vert-cell-grid-item { border-right:0.1mm dotted #bbb; border-bottom:0.1mm dotted #bbb; }
+.vert-cell-grid-item { border-right:0.1mm dotted #999; border-bottom:0.1mm dotted #999; }
 .vert-cell-grid-item.last-col { border-right:none; }
 .vert-cell-grid-item.last-row { border-bottom:none; }
 
@@ -472,9 +472,9 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle on" id="btnGhostWd" onclick="toggleOpt('ghostWeekday','btnGhostWd')">7曜すべて薄く</button>
     </div>
     <div class="ctrl-row"><label>透かし濃さ</label>
-      <input type="range" id="ghostOpacity" min="0.05" max="0.6" step="0.01" value="0.18"
+      <input type="range" id="ghostOpacity" min="0.05" max="0.6" step="0.01" value="0.10"
         oninput="setCSSVar('--ghost-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)">
-      <span class="val">18</span>%
+      <span class="val">10</span>%
     </div>
     <div style="font-size:9px;color:#aaa;line-height:1.6;margin-top:4px;">
       日付・曜日・月を印刷せず、薄い透かしだけ出します。使う人が塗る・書くことで、月曜始まりでも日曜始まりでも、いつからでも使えます。
