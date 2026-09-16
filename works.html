@@ -2679,7 +2679,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         });
     }
     function cardUsable() { return cardMode === 'live' || (cardMode === 'test' && CARD_TEST_OK); }
-    function cardSaleOf(work) { return (work && cardUsable() && cardSales[work.id]) || null; }
+    /* 在庫がある作品は、事業主の操作なしでカードで買える（2026-09-16 事業主決定）。
+       金額は作品集の表示価格＝送料込み扱い（特商法の表記と同じ）。在庫1以上・SOLDOUTでない・再販予定なしでない・50円以上が条件。
+       ⛔ 別の価格で売りたいときは管理者モードの「💳 販売開始」。作品販売シートの行があればそちらが優先される。 */
+    function autoCardOk(work) {
+      // soldout は商品マスター側で「価格欄のSOLDOUT表記 または 在庫0」のときに立つ（作品データに stock は入っていない）。
+      // 在庫の最終確認は決済画面を作るときにGASが商品マスターで行う。
+      return !!(work && !work.soldout && !work.noRestock && Number(work.price) >= 50);
+    }
+    function cardSaleOf(work) {
+      if (!work || !cardUsable()) return null;
+      return cardSales[work.id] || (autoCardOk(work) ? { id: work.id, amount: Number(work.price), state: "on", auto: true } : null);
+    }
     function loadCardSales() {
       return cardGas('action=works', 3)
         .then((d) => {
