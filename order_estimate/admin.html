@@ -1869,6 +1869,14 @@ tr.row-out-stock td{
         <div id="merge-mf-status" style="font-size:12px;color:#8a6a4a;margin-top:6px">未読込です。読み込むまで「MFにあるか」の判定はできません。</div>
       </div>
 
+      <!-- ステップ1b: 銀行明細（裏付け専用・起票しない） -->
+      <div style="background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:#5C3D2E;margin-bottom:6px">1b. 銀行明細CSVを読み込む（任意・4行まとめて複数選択可）</div>
+        <input type="file" id="merge-bank-file" accept=".csv,text/csv" multiple style="font-size:13px">
+        <div id="merge-bank-status" style="font-size:12px;color:#8a6a4a;margin-top:6px">未読込です。読み込むと各カードに「口座からも同額が出ている」裏付けを添えます。楽天・イオン・ドコモSMTB・ゆうちょ（ZIPは解凍したCSV）。</div>
+        <div style="font-size:11px;color:#8a6a4a;margin-top:4px">4行ともMoneyForwardと口座連携済みのため、<b>銀行明細から仕訳は起こしません</b>（起こすと二重計上）。カード払いは口座には「カード会社への引落」でまとめて出るので、見つからなくて正常です。</div>
+      </div>
+
       <!-- ステップ2: 突合 -->
       <div style="background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:700;color:#5C3D2E;margin-bottom:8px">2. 突合する</div>
@@ -7706,9 +7714,129 @@ async function mergeReadMfCsv(file){
   return rows;
 }
 
+// ── 銀行明細（突合の裏付け専用）──────────────────────────────
+// 4行とも MoneyForward と口座連携済み（2026-09-16 事業主確認）。
+// ⛔ 銀行明細から仕訳を起こさない。ここで読むのは「台帳の支出が実際に口座から出ているか」の裏付けだけ。
+//    起票すると MF の連携仕訳と二重計上になる。CSV出力（mergeExportCsv）にも一切関与させない。
+// 仕様の正本: 監理部\銀行明細_取込仕様.md ／ 同等実装: kanri-room/moneyforward-csv（BANK_SPECS）・監理部\bank_parser.py
+// ⛔ 列名を推測で足さないこと。実物のCSVで確認してから追記する。
+// ⚠ ゆうちょはZIPで落ちてくる。解凍したCSVを選ぶこと（ZIPはこの画面では読めない）。
+const MERGE_BANK_SPECS = {
+  rakuten: { label:'楽天銀行', marker:'取引日', date:['取引日'], desc:['入出金内容'],
+    signedAmount:['入出金(円)','入出金（円）'], balance:['残高(円)','残高（円）'], uid:[], signed:true },
+  aeon: { label:'イオン銀行', marker:'日付', date:['日付'], desc:['お取引内容'],
+    in:['お預入れ'], out:['お引出し'], balance:['残高（お借入れはマイナス表示）','残高'], uid:[], signed:false },
+  docomo_smtb: { label:'ドコモSMTBネット銀行', marker:'日付', date:['日付'], desc:['内容'],
+    in:['入金金額(円)','入金金額（円）'], out:['出金金額(円)','出金金額（円）'],
+    balance:['残高(円)','残高（円）'], uid:[], signed:false },
+  yucho: { label:'ゆうちょ銀行', marker:'取引日', date:['取引日'], desc:['詳細１','詳細1'], desc2:['詳細２','詳細2'],
+    in:['受入金額（円）','受入金額(円)'], out:['払出金額（円）','払出金額(円)'],
+    balance:['現在（貸付）高','現在(貸付)高'], uid:['入出金明細ＩＤ','入出金明細ID'], signed:false }
+};
+let mergeBankRows = [];    // 読み込んだ銀行明細（複数ファイル・複数行を合算。keyで重複排除）
+
+// 列名だけで銀行を判別する（ファイル名には依存しない＝リネームされても効く）
+function mergeDetectBank(text){
+  const head = text.split(/\r?\n/).slice(0, 20).join('\n');
+  if(/入出金明細(ＩＤ|ID)/.test(head)) return 'yucho';
+  if(head.includes('お預入れ') && head.includes('お引出し')) return 'aeon';
+  if(head.includes('入金金額') && head.includes('出金金額')) return 'docomo_smtb';
+  if(head.includes('入出金内容')) return 'rakuten';
+  return null;
+}
+function mergeBankPick(row, names){
+  for(const n of (names||[])){ if(row[n] !== undefined && row[n] !== null) return String(row[n]); }
+  return '';
+}
+function mergeBankInt(v){ const t = String(v==null?'':v).replace(/[^\d\-]/g,''); return (t && t !== '-') ? Number(t) : 0; }
+function mergeBankDate(v){
+  const m = /^(\d{4})[\/\-年]?(\d{1,2})[\/\-月]?(\d{1,2})/.exec(String(v||'').trim().replace(/^"|"$/g,''));
+  return m ? `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}` : '';
+}
+// 再取得で期間が重なっても同じ明細を二度数えないための鍵。⛔ 残高を必ず含める（同日同額を区別するため）
+function mergeBankKey(r){
+  if(r.uid) return `${r.bank}:${r.uid}`;
+  const raw = `${r.bank}|${r.date}|${r.in}|${r.out}|${r.desc}|${r.balance}`;
+  let h = 0;
+  for(let i=0;i<raw.length;i++){ h = (Math.imul(h, 31) + raw.charCodeAt(i)) >>> 0; }
+  return `${r.bank}:${h.toString(16)}`;
+}
+// 摘要の正規化。ゆうちょは半角カナ・楽天は長音が全角ハイフン。NFKCで揃える（外すと照合が落ちる・2026-08-24実測）
+function mergeBankNorm(s){
+  let t = String(s||'').replace(/－/g,'ー').replace(/　/g,' ');
+  try{ t = t.normalize('NFKC'); }catch(e){}
+  return t.replace(/([ァ-ヶー])-([ァ-ヶー])/g,'$1ー$2').replace(/\s+/g,' ').trim();
+}
+
+async function mergeReadBankCsv(file){
+  const buf = await file.arrayBuffer();
+  let text;
+  try{ text = new TextDecoder('utf-8', {fatal:true}).decode(buf); }
+  catch(e){ text = new TextDecoder('shift_jis').decode(buf); }
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const bank = mergeDetectBank(text);
+  if(!bank) throw new Error('銀行を判別できません（楽天・イオン・ドコモSMTB・ゆうちょの明細CSVを選んでください。ゆうちょはZIPを解凍したCSV）');
+  const spec = MERGE_BANK_SPECS[bank];
+  const lines = text.split(/\r?\n/);
+  // ゆうちょは先頭に口座情報が7行あるため、明細ヘッダの位置を探す
+  let hi = 0;
+  for(let i=0;i<Math.min(lines.length,30);i++){ if(lines[i].replace(/^"/,'').startsWith(spec.marker)){ hi = i; break; } }
+  const table = lines.slice(hi).filter(l => l.trim()).map(l => mergeParseCsvLine(l, ','));
+  if(table.length < 2) throw new Error('明細が1件もありません');
+  const header = table[0].map(h => h.trim());
+  const rows = [];
+  for(const cols of table.slice(1)){
+    const row = {};
+    header.forEach((h,i) => { row[h] = cols[i]; });
+    const date = mergeBankDate(mergeBankPick(row, spec.date));
+    if(!date) continue;
+    let inAmt, outAmt;
+    if(spec.signed){ const a = mergeBankInt(mergeBankPick(row, spec.signedAmount)); inAmt = a >= 0 ? a : 0; outAmt = a < 0 ? -a : 0; }
+    else { inAmt = mergeBankInt(mergeBankPick(row, spec.in)); outAmt = mergeBankInt(mergeBankPick(row, spec.out)); }
+    let desc = mergeBankPick(row, spec.desc).trim();
+    if(spec.desc2){ const d2 = mergeBankPick(row, spec.desc2).trim(); if(d2) desc = `${desc} ${d2}`.trim(); }
+    const rec = { bank, bankLabel: spec.label, date, in: inAmt, out: outAmt, desc: mergeBankNorm(desc),
+                  balance: mergeBankInt(mergeBankPick(row, spec.balance)), uid: spec.uid.length ? mergeBankPick(row, spec.uid).trim() : '' };
+    rec.key = mergeBankKey(rec);
+    rows.push(rec);
+  }
+  if(!rows.length) throw new Error('日付を読み取れる明細がありませんでした');
+  return rows;
+}
+
+// 複数ファイルを読み、keyで重複を除いて合算する（年末に再取得しても二度数えない）
+async function mergeAddBankFiles(files){
+  const st = document.getElementById('merge-bank-status');
+  const seen = new Set(mergeBankRows.map(r => r.key));
+  const report = [];
+  for(const f of files){
+    try{
+      const rows = await mergeReadBankCsv(f);
+      let added = 0;
+      rows.forEach(r => { if(!seen.has(r.key)){ seen.add(r.key); mergeBankRows.push(r); added++; } });
+      report.push(`${rows[0].bankLabel} ${rows.length}件（新規${added}）`);
+    }catch(e){ report.push(`${f.name}: ${e.message}`); }
+  }
+  const byBank = {};
+  mergeBankRows.forEach(r => { byBank[r.bankLabel] = (byBank[r.bankLabel]||0) + 1; });
+  const total = Object.entries(byBank).map(([k,v]) => `${k} ${v}件`).join('・');
+  st.textContent = report.join(' / ') + (total ? `　→ 合計: ${total}。この端末の中だけで処理しています。` : '');
+  st.style.color = report.some(x => /判別できません|失敗|ありません/.test(x)) ? '#b42318' : '#256f4a';
+}
+
+// 台帳1件に対する裏付け探し。出金額＝税込額（口座からは按分前の全額が出る）、日付±MERGE_TOL_DAYS。
+// 摘要は表示するだけで判定には使わない（銀行の摘要は店名と一致しないことが多い）。
+// ⚠ カード払いは口座から「カード会社への引落」としてまとめて出るので、ここでは見つからない。それは正常。
+function mergeFindBank(r){
+  const amt = Number(r.total_amount);
+  if(!amt) return null;
+  return mergeBankRows.find(b => !b.used && b.out === amt && mergeDays(b.date, r.date) <= MERGE_TOL_DAYS) || null;
+}
+
 // ── 突合 ──────────────────────────────────────────────────────
 function mergeRun(){
   mergeMfRows.forEach(m => m.used = false);
+  mergeBankRows.forEach(b => b.used = false);
   const ledger = mergeLedger.slice().sort((a,b) => String(a.date).localeCompare(String(b.date)));
 
   // 台帳内の重複（同額・±tol日・店名類似）
@@ -7733,10 +7861,13 @@ function mergeRun(){
     }
     if(mf) mf.used = true; else if(uncertain) uncertain.used = true;
     const em = mergeEmails.find(e => e.amount === Number(r.total_amount) && mergeDays(e.date, r.date) <= MERGE_TOL_DAYS);
+    // 銀行明細の裏付け（表示だけ。判定・CSV出力には使わない）
+    const bank = mergeFindBank(r);
+    if(bank) bank.used = true;
     // 既に台帳側で決まっているものは処理済みとして扱う
     const st = r.mf_status || '未登録';
     const decided = (st === 'MF登録済') ? 'mf' : (st === 'MF対象外' ? 'skip' : '');
-    return { rec: r, mf, uncertain: mf ? null : uncertain, em, selfDup: selfDup.has(r.id), decision: decided };
+    return { rec: r, mf, uncertain: mf ? null : uncertain, em, bank, selfDup: selfDup.has(r.id), decision: decided };
   });
   mergeRenderCards();
 }
@@ -7786,6 +7917,7 @@ function mergeRenderCards(){
       + (g.mf ? '<div style="font-size:12px;color:#8a6a4a;margin-top:2px">MF: ' + mergeEsc(g.mf.date) + '　' + mergeEsc(g.mf.account) + '　' + mergeEsc(g.mf.desc) + '</div>' : '')
       + (g.uncertain ? '<div style="font-size:12px;color:#8a6a4a;margin-top:2px">MF: ' + mergeEsc(g.uncertain.date) + '　' + mergeEsc(g.uncertain.account) + '　（摘要が空）</div>' : '')
       + (g.em ? '<div style="font-size:12px;color:#b7791f;margin-top:2px">メール証憑にも同額あり: ' + mergeEsc(g.em.store) + ' ' + mergeEsc(g.em.subject) + '</div>' : '')
+      + (g.bank ? '<div style="font-size:12px;color:#256f4a;margin-top:2px">🏦 銀行明細にも同額の出金あり: ' + mergeEsc(g.bank.bankLabel) + ' ' + mergeEsc(g.bank.date) + '　' + mergeEsc(g.bank.desc) + '</div>' : '')
       + (g.selfDup ? '<div style="font-size:12px;color:#b42318;margin-top:2px">台帳内に同じ取引が2件ある疑い</div>' : '')
       + '<div class="merge-actions" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"></div>';
 
@@ -7876,6 +8008,11 @@ async function mergeLoad(){
   document.getElementById('merge-reload-btn')?.addEventListener('click', () => { mergeLoaded = false; mergeLoadSources().then(() => { mergeLoaded = true; }); });
   document.getElementById('merge-show-done')?.addEventListener('change', mergeRenderCards);
   document.getElementById('merge-export-btn')?.addEventListener('click', mergeExportCsv);
+  document.getElementById('merge-bank-file')?.addEventListener('change', async ev => {
+    const files = Array.from(ev.target.files || []);
+    ev.target.value = '';
+    if(files.length) await mergeAddBankFiles(files);
+  });
   document.getElementById('merge-mf-file')?.addEventListener('change', async ev => {
     const f = ev.target.files && ev.target.files[0];
     if(!f) return;
@@ -7897,7 +8034,7 @@ async function mergeLoad(){
     if(!mergeLedger.length){ const ok = await mergeLoadSources(); if(!ok){ st.textContent = '台帳を読めないため突合できません。'; st.style.color = '#b42318'; return; } }
     mergeRun();
     const undecided = mergeGroups.filter(g => !g.decision).length;
-    st.textContent = `完了: 台帳${mergeLedger.length}件 / MF${mergeMfRows.length}件 / メール証憑${mergeEmails.length}件　→ 未処理 ${undecided}件`;
+    st.textContent = `完了: 台帳${mergeLedger.length}件 / MF${mergeMfRows.length}件 / メール証憑${mergeEmails.length}件 / 銀行明細${mergeBankRows.length}件　→ 未処理 ${undecided}件`;
   });
   await mergeLoadSources();
 }
