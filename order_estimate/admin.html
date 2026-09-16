@@ -1904,6 +1904,19 @@ tr.row-out-stock td{
 
         <div id="merge-cards"></div>
       </div>
+
+      <!-- ステップ4: MF側の未整理仕訳（MF画面で手で直す・ここはリストとチェックだけ） -->
+      <div id="merge-fix" style="display:none;background:#fff;border:1px solid #eadccf;border-radius:12px;padding:14px;margin-top:12px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+          <div style="font-size:13px;font-weight:700;color:#5C3D2E">4. MF側で直す仕訳（売上高に計上されていない入金）</div>
+          <label style="font-size:12px;color:#5C3D2E;display:flex;align-items:center;gap:4px;margin-left:auto">
+            <input type="checkbox" id="merge-fix-show-done"> 対応済みも表示
+          </label>
+        </div>
+        <div id="merge-fix-summary" style="font-size:12px;color:#8a6a4a;margin-bottom:8px"></div>
+        <div style="font-size:11px;color:#8a6a4a;margin-bottom:8px">MoneyForwardの仕訳帳で<b>取引No</b>を検索し、貸方を「直す貸方」に変えてください。直したらチェック（この端末のブラウザに保存）。「要判断」は候補を出せないもの。<b>売掛金は事業主が作った仕訳ではないため由来の確認が先</b>です。</div>
+        <div id="merge-fix-list" style="overflow-x:auto"></div>
+      </div>
     </div><!-- /mergePanel -->
 
     <!-- アクセスログタブ -->
@@ -7696,6 +7709,8 @@ async function mergeReadMfCsv(file){
   const header = mergeParseCsvLine(lines[0], ',');
   const find = cands => header.findIndex(h => cands.some(c => h.includes(c)));
   const di = find(['取引日','日付']), ai = find(['借方金額','金額']), si = find(['摘要']), ki = find(['借方勘定科目']);
+  // 修正リスト（mergeFixBuild）用。無い列は空のまま
+  const ni = find(['取引No']), dsi = find(['借方補助科目']), ci = find(['貸方勘定科目']), ti = find(['タグ']);
   if(di < 0 || ai < 0) throw new Error('「取引日」「借方金額」の列が見つかりません: ' + header.join(' | '));
   const rows = [];
   lines.slice(1).forEach(line => {
@@ -7708,6 +7723,10 @@ async function mergeReadMfCsv(file){
       amount: amt,
       desc: (si >= 0 ? c[si] : '') || '',
       account: (ki >= 0 ? c[ki] : '') || '',
+      no: (ni >= 0 ? c[ni] : '') || '',
+      drSub: (dsi >= 0 ? c[dsi] : '') || '',
+      crAccount: (ci >= 0 ? c[ci] : '') || '',
+      tag: (ti >= 0 ? c[ti] : '') || '',
       used: false
     });
   });
@@ -7872,6 +7891,97 @@ function mergeRun(){
   mergeRenderCards();
 }
 
+// ── MF側の未整理仕訳（直すリスト）──────────────────────────────
+// 監理部\mf_journal_audit.py §2「売上高に計上されていない入金」と同じ判定をブラウザ内で行う。
+// 出すのは「取引No・今の貸方・直す貸方（候補）・金額」。直すのはMFの画面で人が行い、ここでは「直した」チェックを残すだけ。
+// ⛔ この画面からMFへ書き込む機能は作らない（MFにAPIは無く、仕訳の自動修正は誤りを量産する）。
+// ⛔ 候補科目は「候補」。確定は人。特に売掛金（No.1〜No.7〜）は事業主が作った仕訳ではないため由来の確認が先。
+// ⛔ 摘要には顧客名が含まれる。この一覧をファイルへ書き出す機能を足さないこと（公開リポジトリに漏れる）。
+const MERGE_FIX_DEPOSIT = ['普通預金','その他の預金','現金'];
+// 「オンラインストア」等は買い物の精算であって売上ではない。⛔ 緩めると仕入先を売上と誤判定する
+const MERGE_FIX_NOT_SALES_DESC = ['LIFEDRINK','オンラインストア','利息','オリソク','利子','ジエイテイ','JTB','ジモテイ','アオヤマメインランド','トウデン'];
+const MERGE_FIX_DONE_KEY = 'nsf_mf_fix_done_v1';   // {取引No: 'YYYY-MM-DD'}（この端末のブラウザ内だけ）
+
+function mergeFixTagBucket(tag){
+  const t = String(tag||'');
+  if(t.startsWith('不動産')) return '不動産';
+  if(t.includes('事業') || t === '講師料' || t === 'ガソリン') return '事業';
+  if(t.includes('按分')) return '按分';
+  return '';
+}
+function mergeFixGuess(m){
+  const desc = ((m.desc||'') + ' ' + (m.drSub||'')).toUpperCase();
+  if(mergeFixTagBucket(m.tag) === '不動産') return '賃貸料(不動産)';
+  if(MERGE_FIX_NOT_SALES_DESC.some(k => desc.includes(k))) return '';
+  if(['MINNE','ミンネ','ペパボ'].some(k => desc.includes(k))) return '売上高（minne）';
+  if(['クリ-マ','クリーマ','CREEMA'].some(k => desc.includes(k))) return '売上高（Creema）';
+  // ⛔「ストア」だけで判定しないこと。「オンラインストア」（買い物）に誤爆する
+  if(['ストア-ズ','ストアーズ','STORES'].some(k => desc.includes(k))) return '売上高（STORES）';
+  if(['ジヨイフル','ジョイフル'].some(k => desc.includes(k))) return '売上高（講師謝礼）';
+  if(String(m.tag||'').includes('事業')) return '売上高（要確認）';
+  return '';
+}
+function mergeFixIsNoise(m){
+  const desc = ((m.desc||'') + ' ' + (m.drSub||'')).toUpperCase();
+  if(MERGE_FIX_NOT_SALES_DESC.some(k => desc.includes(k))) return true;
+  return Number(m.amount) < 1000;   // 利息など少額のノイズ
+}
+// 直すべき入金を抽出（audit §2 と同じ順序で絞る）
+function mergeFixBuild(rows){
+  let inc = rows.filter(m => MERGE_FIX_DEPOSIT.includes(m.account) && Number(m.amount) > 0);
+  let c = inc.filter(m => m.crAccount !== '売上高' && m.crAccount !== '賃貸料(不動産)' && mergeFixTagBucket(m.tag) !== '不動産');
+  c = c.filter(m => !(MERGE_FIX_DEPOSIT.includes(m.crAccount) && !mergeFixGuess(m)));   // 口座間振替は除く
+  c = c.filter(m => !mergeFixIsNoise(m));
+  c = c.filter(m => m.crAccount !== '未払金');   // 立替の精算・返金は対象外（audit では別枠）
+  return c.map(m => ({ no: m.no, date: m.date, amount: Number(m.amount), cur: m.crAccount, next: mergeFixGuess(m) || '要判断', desc: m.desc, tag: m.tag }))
+          .sort((a,b) => String(a.date).localeCompare(String(b.date)) || String(a.no).localeCompare(String(b.no)));
+}
+function mergeFixReadDone(){ try{ const v = JSON.parse(localStorage.getItem(MERGE_FIX_DONE_KEY)||'{}'); return (v && typeof v === 'object') ? v : {}; }catch(e){ return {}; } }
+function mergeFixWriteDone(d){ try{ localStorage.setItem(MERGE_FIX_DONE_KEY, JSON.stringify(d)); }catch(e){} }
+
+function mergeFixRender(){
+  const box = document.getElementById('merge-fix-list'), sum = document.getElementById('merge-fix-summary'), wrap = document.getElementById('merge-fix');
+  if(!box) return;
+  if(!mergeMfRows.length){ wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const items = mergeFixBuild(mergeMfRows);
+  const done = mergeFixReadDone();
+  const showDone = document.getElementById('merge-fix-show-done').checked;
+  const todo = items.filter(i => !done[i.no]);
+  const yenTodo = todo.reduce((s,i) => s + i.amount, 0);
+  const byNext = {};
+  todo.forEach(i => { byNext[i.next] = (byNext[i.next]||0) + i.amount; });
+  sum.textContent = items.length
+    ? `未対応 ${todo.length}件 ${mergeYen(yenTodo)}（${Object.entries(byNext).map(([k,v]) => k + ' ' + mergeYen(v)).join('・') || 'なし'}）／ 対応済 ${items.length - todo.length}件`
+    : '売上高に計上されていない入金は見つかりませんでした。';
+  const list = showDone ? items : todo;
+  if(!list.length){ box.innerHTML = '<p style="font-size:13px;color:#8a6a4a;padding:8px 0">未対応はありません。</p>'; return; }
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#fdf8f3;color:#5C3D2E">'
+    + '<th style="padding:6px;text-align:center">直した</th><th style="padding:6px;text-align:left">取引No</th><th style="padding:6px;text-align:left">取引日</th>'
+    + '<th style="padding:6px;text-align:right">金額</th><th style="padding:6px;text-align:left">今の貸方</th><th style="padding:6px;text-align:left">直す貸方（候補）</th><th style="padding:6px;text-align:left">摘要</th></tr></thead><tbody>';
+  list.forEach(i => {
+    const d = done[i.no];
+    html += '<tr data-no="' + mergeEsc(i.no) + '" style="border-top:1px solid #eadccf;' + (d ? 'color:#9a8a7a;background:#faf7f3' : '') + '">'
+      + '<td style="padding:6px;text-align:center"><input type="checkbox" class="merge-fix-chk" ' + (d ? 'checked' : '') + ' title="' + (d ? '対応日 ' + mergeEsc(d) : 'MFで直したらチェック') + '"></td>'
+      + '<td style="padding:6px;font-weight:700">' + mergeEsc(i.no) + '</td>'
+      + '<td style="padding:6px;white-space:nowrap">' + mergeEsc(i.date) + '</td>'
+      + '<td style="padding:6px;text-align:right;white-space:nowrap">' + mergeYen(i.amount) + '</td>'
+      + '<td style="padding:6px;color:#b42318">' + mergeEsc(i.cur) + '</td>'
+      + '<td style="padding:6px;color:' + (i.next === '要判断' ? '#b7791f' : '#256f4a') + ';font-weight:700">' + mergeEsc(i.next) + '</td>'
+      + '<td style="padding:6px;color:#8a6a4a">' + mergeEsc(String(i.desc||'').slice(0,36)) + (i.tag ? ' <span style="font-size:10px;border:1px solid #eadccf;border-radius:999px;padding:0 6px">' + mergeEsc(i.tag) + '</span>' : '') + '</td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  box.innerHTML = html;
+  box.querySelectorAll('.merge-fix-chk').forEach(chk => chk.addEventListener('change', ev => {
+    const no = ev.target.closest('tr').dataset.no;
+    const d = mergeFixReadDone();
+    if(ev.target.checked) d[no] = new Date().toISOString().slice(0,10); else delete d[no];
+    mergeFixWriteDone(d);
+    mergeFixRender();
+  }));
+}
+
 // ── 1件ずつの判断カード ────────────────────────────────────────
 function mergeRenderCards(){
   const box = document.getElementById('merge-cards');
@@ -8007,6 +8117,7 @@ async function mergeLoad(){
   mergeLoaded = true;
   document.getElementById('merge-reload-btn')?.addEventListener('click', () => { mergeLoaded = false; mergeLoadSources().then(() => { mergeLoaded = true; }); });
   document.getElementById('merge-show-done')?.addEventListener('change', mergeRenderCards);
+  document.getElementById('merge-fix-show-done')?.addEventListener('change', mergeFixRender);
   document.getElementById('merge-export-btn')?.addEventListener('click', mergeExportCsv);
   document.getElementById('merge-bank-file')?.addEventListener('change', async ev => {
     const files = Array.from(ev.target.files || []);
@@ -8021,6 +8132,7 @@ async function mergeLoad(){
       mergeMfRows = await mergeReadMfCsv(f);
       st.textContent = `読み込み完了: ${mergeMfRows.length}件（${f.name}）。この端末の中だけで処理しています。`;
       st.style.color = '#256f4a';
+      mergeFixRender();
     }catch(e){
       mergeMfRows = [];
       st.textContent = '読み込みに失敗しました: ' + e.message;
