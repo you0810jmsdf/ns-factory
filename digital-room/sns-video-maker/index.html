@@ -745,11 +745,12 @@ canvas{
           </div>
           <details class="lang-bar-dict">
           <summary>読み方の辞書（読み間違いを直す）</summary>
-          <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください（書くとその場で保存されます）。「写真ごと」のセリフ欄で言葉を選んで「選んだ言葉の読みを登録」を押しても足せます。<strong>日本語の声のときだけ効きます</strong>。<br>アクセントも直せます（VOICEVOXの声だけ）：読みの中に <code>'</code> を入れると、その直前の音のあとで声が下がります。例 <code>箸=ハ'シ</code>（頭が高い）／<code>橋=ハシ'</code>（後ろが高い）／最後に <code>_</code> で平ら <code>端=ハシ_</code>。</p>
+          <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください（書くとその場で保存されます）。「写真ごと」のセリフ欄で言葉を選んで「選んだ言葉の読みを登録」を押しても足せます。<strong>日本語の声のときだけ効きます</strong>。<br>アクセントも直せます（VOICEVOXの声だけ）：読みの中に <code>'</code> を入れると、その直前の音のあとで声が下がります。例 <code>箸=ハ'シ</code>（頭が高い）／<code>橋=ハシ'</code>（後ろが高い）／最後に <code>_</code> で平ら <code>端=ハシ_</code>。<br>直した言葉だけ聴きたいときは、下の欄でその行をなぞって選ぶ（またはカーソルを置く）→「選んだ行を試聴」。</p>
           <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
           <div class="btn-row" style="margin-top:6px;gap:6px">
           <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
           <button class="secondary" id="resetReadingDict" type="button">初期値に戻す</button>
+          <button class="secondary" id="testReadingSelection" type="button" title="辞書の中で聴きたい行をなぞって選ぶか、その行にカーソルを置いてから押します">選んだ行を試聴</button>
           <button class="secondary" id="testReadingDict" type="button">今のセリフで試聴</button>
           </div>
           </details>
@@ -8014,6 +8015,51 @@ document.getElementById('resetVoiceTuning').addEventListener('click', () => {
 });
 document.getElementById('testVoiceTuning').addEventListener('click', () => els.testReadingDict.click());
 renderVoiceTuning();
+// 辞書で選んだ部分だけを試聴する（2026-09-17 事業主指示「今のセリフではなく辞書から一部を選択して聴きたい」）。
+// 選んだ範囲の各行から「表記」側（= の左）を取り出して読む。表記を読ませるので、辞書の読みとアクセント指定がそのまま効く。
+// 何も選んでいなければカーソルのある行。= の無い文字を選んだときは、その文字をそのまま読む。写真が無くても使える。
+function readingDictSelectionSource(){
+  const area = els.readingDict;
+  const value = String(area.value || '');
+  let start = area.selectionStart || 0;
+  let end = area.selectionEnd || 0;
+  if(start === end){
+    // カーソルのある行全体
+    start = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+    const next = value.indexOf('\n', end);
+    end = next === -1 ? value.length : next;
+  }
+  const words = value.slice(start, end)
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('#'))
+    .map(line => {
+      const at = line.indexOf('=');
+      return (at > 0 ? line.slice(0, at) : line.replace(/^=+/, '')).trim();
+    })
+    .filter(Boolean);
+  return words.slice(0, 12).join('、');
+}
+
+async function previewSpokenText(source, label){
+  if(!source){ setLog('試聴する言葉がありません。辞書の中で、聴きたい行をなぞって選ぶか、その行にカーソルを置いてください。'); return; }
+  try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
+  const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
+  const voice = els.aiVoiceSelect.value || AI_VOICES[language][0].value;
+  setLog(`${label}: ${applyReadingRules(source)}（声を作っています…）`);
+  try{
+    const audio = await generateNarrationAudio(source, voice, language);
+    stopPreviewAudioSource();
+    playFloat32Audio(audio);
+    setLog(`${label}: ${applyReadingRules(source)}`);
+  }catch(err){
+    setLog(`試聴できませんでした（${err && err.message ? err.message : err}）。`);
+  }
+}
+
+document.getElementById('testReadingSelection').addEventListener('click', () => {
+  previewSpokenText(readingDictSelectionSource(), '辞書から試聴');
+});
 els.resetReadingDict.addEventListener('click', () => {
   els.readingDict.value = readingRulesText(DEFAULT_READING_RULES);
   try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
