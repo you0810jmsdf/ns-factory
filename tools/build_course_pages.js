@@ -13,6 +13,8 @@
  *   data の code は商品シートのコードと一致させる。価格の正本は商品シート（ボタン内の金額はGASの値で書き換わる）。
  * - 購入後のページは refill-pdf/thanks.html を共用（商品シートの「商品ページ」列に ai-course/<slug>.html を入れる）。
  * - デザインは N's pattern と同じ黒×金（#c9a96e）・英語 eyebrow＋日本語見出し。CTAは「カードで購入する」主・銀行振込（メール）従。
+ * - セット販売（2026-09-17）: sets[]（id・code・name・range・price・status）に、教材の set で所属させる。セットの教材は単品で売らず、
+ *   購入ボタンはセットの code（商品シートにはセット1行・配信ファイルは教材ごとのダウンロード先をまとめた案内PDF）。カードとページは教材ごとに別々。
  * - 見出し画像（hero.img・assets/ からの相対）は必須。status: "sale"（販売中）／"soon"（準備中: 一覧にだけ出し、ページは作らない）。
  * - ⛔ 教材の実体（動画・テンプレート・PDF）は公開リポジトリに置かない。配信は Drive の非公開フォルダ。
  * - ⛔ 視聴回数・売上などの数字をページに書かない。
@@ -35,16 +37,29 @@ function esc(s) {
 }
 function yen(n) { return Number(n).toLocaleString('ja-JP'); }
 function today() { return new Date().toISOString().slice(0, 10); }
+// セット販売（2026-09-17 事業主決定: 第4〜9弾は「第1セット」980円。単品では売らない。ページとカードは弾ごとに別々）
+const SETS = {};
+(DATA.sets || []).forEach(s => { SETS[s.id] = s; });
+function setOf(it) { return it.set ? SETS[it.set] : null; }
 function mailHref(it) {
-  const body = `「${it.no} ${it.title}」の教材を購入したいです。\n\nお名前：\n\n（振込先をご案内します。ご入金の確認後、ダウンロードリンクをメールでお送りします）`;
+  const s = setOf(it);
+  const what = s ? `「${s.name}（${s.range}）」` : `「${it.no} ${it.title}」の教材`;
+  const body = `${what}を購入したいです。\n\nお名前：\n\n（振込先をご案内します。ご入金の確認後、ダウンロードリンクをメールでお送りします）`;
   return 'mailto:' + MAIL + '?subject=' + encodeURIComponent(MAIL_SUBJECT) + '&body=' + encodeURIComponent(body);
 }
 
 // ── 検査 ────────────────────────────────────────
+(DATA.sets || []).forEach(s => {
+  ['id', 'code', 'name', 'range', 'status'].forEach(k => { if (!s[k]) throw new Error(`courses-data.json: sets ${s.id || '?'} の ${k} が空です`); });
+  if (!['sale', 'soon'].includes(s.status)) throw new Error(`sets ${s.id}: status は sale か soon`);
+  if (s.status === 'sale' && !(s.price > 0)) throw new Error(`sets ${s.id}: 販売中のセットには price が必要です`);
+});
 const seen = new Set();
 (DATA.items || []).forEach(it => {
   const id = it.code || it.slug || '?';
-  ['code', 'slug', 'no', 'title', 'price', 'summary', 'status'].forEach(k => {
+  if (it.set && !SETS[it.set]) throw new Error(`${id}: set「${it.set}」が sets にありません`);
+  if (it.set && it.status === 'sale' && SETS[it.set].status !== 'sale') throw new Error(`${id}: セットが販売前なので status は soon にします`);
+  ['code', 'slug', 'no', 'title', 'summary', 'status'].concat(it.set ? [] : ['price']).forEach(k => {
     if (it[k] === undefined || it[k] === '') throw new Error(`courses-data.json: ${id} の ${k} が空です`);
   });
   if (!/^[a-z0-9-]+$/.test(it.slug)) throw new Error(`slug は英小文字・数字・ハイフンのみ: ${it.slug}`);
@@ -94,6 +109,11 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
 .buy .note{font-size:12px;color:var(--fg-3);line-height:1.8}
 .price{font-size:30px;font-weight:700;margin-top:18px}
 .price small{font-size:13px;color:var(--fg-3);font-weight:400;margin-left:6px}
+.set-tag{display:inline-block;font-size:12px;font-weight:700;color:#0b0b0c;background:var(--accent);border-radius:999px;padding:2px 10px;margin-right:10px;vertical-align:middle}
+.set-head{margin:26px 0 14px;padding:14px 16px;border:1px solid var(--line-2);border-radius:var(--radius);background:var(--accent-soft)}
+.set-head b{font-size:15px}
+.set-price{font-size:20px;font-weight:700;margin-left:14px;white-space:nowrap}
+.set-price small{font-size:12px;color:var(--fg-3);font-weight:400;margin-left:4px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;margin-top:26px}
 .card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-2);overflow:hidden;transition:border-color .2s,transform .2s}
 a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
@@ -191,11 +211,19 @@ const FOOT = `
 </html>
 `;
 
+function priceOf(it) { const s = setOf(it); return s ? s.price : it.price; }
+function priceBlock(it) {
+  const s = setOf(it);
+  if (!s) return `<div class="price">¥${yen(it.price)}<small>税込</small></div>`;
+  return `<div class="price"><span class="set-tag">${esc(s.name)}</span>¥${yen(s.price)}<small>税込（${esc(s.range)}）</small></div>
+      <p class="note">この教材は、${esc(s.name)}（${esc(s.range)}）に収録しています。1回のご購入で、セットの教材をすべてお届けします。単品での販売はしていません。</p>`;
+}
 function buyBlock(it) {
-  const code = esc(it.code);
+  const s = setOf(it);
+  const code = esc(s ? s.code : it.code);
   return `<div class="buy">
       <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
-      <a href="#" class="btn btn-gold" data-checkout="${code}" style="display:none"><span>カードで購入する（¥<span data-price>${yen(it.price)}</span>）</span></a>
+      <a href="#" class="btn btn-gold" data-checkout="${code}" style="display:none"><span>カードで購入する（${s ? esc(s.name) + '・' : ''}¥<span data-price>${yen(priceOf(it))}</span>）</span></a>
       <p class="note" data-checkout-on="${code}" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
       <a href="${esc(mailHref(it))}" class="btn btn-line" data-checkout-on="${code}" style="display:none">銀行振込で申し込む（メール）</a>
       <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
@@ -207,7 +235,8 @@ function buyBlock(it) {
 // ── 教材の販売ページ ────────────────────────────
 function detail(it) {
   const title = `${it.no} ${it.title} — AIで作る 作家の道具 | N's factory`;
-  const desc = `${it.title}（${yen(it.price)}円・税込）。${it.summary}`;
+  const s = setOf(it);
+  const desc = s ? `${it.title}（${s.name}〔${s.range}〕${yen(s.price)}円・税込に収録）。${it.summary}` : `${it.title}（${yen(it.price)}円・税込）。${it.summary}`;
   const li = a => (a || []).map(x => `<li>${esc(x)}</li>`).join('\n      ');
   return head(title, desc, `ai-course/${it.slug}.html`, it.hero.img) + `
 <main class="wrap">
@@ -219,7 +248,7 @@ function detail(it) {
       <p class="eyebrow">Handmade × AI — ${esc(it.en || 'Course')}</p>
       <h1>${esc(it.no)}<br>${esc(it.title)}</h1>
       <p class="lead">${esc(it.lead || it.summary)}</p>
-      <div class="price">¥${yen(it.price)}<small>税込</small></div>
+      ${priceBlock(it)}
       ${buyBlock(it)}
     </div>
   </section>
@@ -244,7 +273,7 @@ ${it.teaser ? `
     <table class="facts">
       ${(it.includes || []).map(x => `<tr><th>${esc(x[0])}</th><td>${esc(x[1])}</td></tr>`).join('\n      ')}
       <tr><th>動作環境</th><td>${esc(it.env || '')}</td></tr>
-      <tr><th>お届け</th><td>カード決済：お支払い後すぐに画面からダウンロードでき、同じリンクをメールでもお送りします（ZIPファイル）。<br>銀行振込：ご入金を確認してから、メールでお送りします。</td></tr>
+      <tr><th>お届け</th><td>${s ? `${esc(s.name)}（${esc(s.range)}）をまとめてお届けします。カード決済：お支払い後すぐに、教材ごとのダウンロード先（ZIPファイル）をまとめた案内PDFを画面から開けます。同じリンクをメールでもお送りします。` : 'カード決済：お支払い後すぐに画面からダウンロードでき、同じリンクをメールでもお送りします（ZIPファイル）。'}<br>銀行振込：ご入金を確認してから、メールでお送りします。</td></tr>
     </table>
   </section>
 
@@ -260,8 +289,8 @@ ${it.teaser ? `
 
   <section class="sec" id="buy">
     <p class="eyebrow">Buy now</p>
-    <h2>${esc(it.no)} ${esc(it.title)} を手に入れる</h2>
-    <div class="price">¥${yen(it.price)}<small>税込</small></div>
+    <h2>${s ? `${esc(s.name)}（${esc(s.range)}）を手に入れる` : `${esc(it.no)} ${esc(it.title)} を手に入れる`}</h2>
+    ${priceBlock(it)}
     ${buyBlock(it)}
   </section>
 </main>
@@ -282,14 +311,15 @@ function index() {
         <div class="card-foot"><span class="card-price">無料</span><span class="card-more">YouTube で見る →</span></div>
       </div>
     </a>`).join('');
-  const paid = (DATA.items || []).map(it => it.status === 'sale' ? `
+  const cardPrice = it => { const s = setOf(it); return s ? `${esc(s.name)}に収録` : `¥${yen(it.price)}`; };
+  const cards = list => list.map(it => it.status === 'sale' ? `
     <a class="card" href="${esc(it.slug)}.html">
       <div class="ph"><img src="../assets/${esc(it.hero.img)}" alt="${esc(it.hero.alt)}" loading="lazy"></div>
       <div class="card-body">
         <div class="card-no">${esc(it.no)}</div>
         <div class="card-title">${esc(it.title)}</div>
         <div class="card-sum">${esc(it.summary)}</div>
-        <div class="card-foot"><span class="card-price">¥${yen(it.price)}</span><span class="card-more">詳しく見る →</span></div>
+        <div class="card-foot"><span class="card-price">${cardPrice(it)}</span><span class="card-more">詳しく見る →</span></div>
       </div>
     </a>` : `
     <div class="card">
@@ -299,6 +329,18 @@ function index() {
         <div class="card-title">${esc(it.title)}</div>
         <div class="card-sum">${esc(it.summary)}</div>
       </div>
+    </div>`).join('');
+  // セットごとに見出しを付けて並べる（セットに入っていない教材は最後にまとめる）
+  const groups = (DATA.sets || []).map(s => ({ s, list: (DATA.items || []).filter(it => it.set === s.id) }))
+    .concat([{ s: null, list: (DATA.items || []).filter(it => !it.set) }]).filter(g => g.list.length);
+  const paid = groups.map(g => g.s ? `
+    <div class="set-head" id="${esc(g.s.id)}">
+      <div><span class="set-tag">${esc(g.s.name)}</span><b>${esc(g.s.range)}</b>${g.s.status === 'sale' ? `<span class="set-price">¥${yen(g.s.price)}<small>税込・${g.list.length}本まとめて</small></span>` : '<span class="badge soon">準備中</span>'}</div>
+      <p class="muted">${esc(g.s.desc || '')}</p>
+    </div>
+    <div class="grid">${cards(g.list)}
+    </div>` : `
+    <div class="grid">${cards(g.list)}
     </div>`).join('');
   return head(title, desc, 'ai-course/', (DATA.items[0] || {}).hero ? DATA.items[0].hero.img : '') + `
 <main class="wrap">
@@ -319,9 +361,8 @@ function index() {
   <section class="sec">
     <p class="eyebrow">Course materials</p>
     <h2>教材（動画＋完成テンプレート＋依頼文集PDF）</h2>
-    <p class="muted">無料の3本で身につけた頼み方を使って、日々の仕事でそのまま使える表を作ります。1本ずつお求めいただけます。</p>
-    <div class="grid">${paid}
-    </div>
+    <p class="muted">無料の3本で身につけた頼み方を使って、日々の仕事でそのまま使える表を作ります。${(DATA.sets || []).length ? '教材はセットでお求めいただけます。' : '1本ずつお求めいただけます。'}</p>
+${paid}
   </section>
 ${SERIES.form ? `
   <section class="sec">

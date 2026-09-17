@@ -72,6 +72,8 @@ const REFILL_SALES_GAS_URL = 'https://script.google.com/macros/s/AKfycbw6KnJJdWo
     box.hidden = false; msg.textContent = '印刷するときは、拡大・縮小なし（実際のサイズ・100%）を選んでください。';
     // 講座の教材（動画＋テンプレート＋依頼文集の ZIP）は、PDF・印刷の案内ではなく ZIP の案内にする（2026-09-17）
     if (/^ai-course\//.test(data.page || '')) { msg.textContent = 'ZIPファイルです。ダウンロードして展開し、最初に「00_はじめに.txt」をお読みください。'; dl.textContent = '教材（ZIP）をダウンロード'; }
+    // 講座のセット（商品シートの商品ページが ai-course/index.html）は、教材ごとのダウンロード先をまとめた案内PDFを届ける（2026-09-17）
+    if (/^ai-course\/index\.html$/.test(data.page || '')) { msg.textContent = 'ダウンロード案内（PDF）です。開くと、セットの教材ごとのダウンロード先が並んでいます。PDFは保存しておいてください。'; dl.textContent = 'ダウンロード案内（PDF）を開く'; }
     dl.href = data.url; dl.hidden = false;
     note.textContent = 'このページを閉じても、メールのリンクからいつでもダウンロードできます。';
   } catch (e) {
