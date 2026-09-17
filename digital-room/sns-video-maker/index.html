@@ -338,6 +338,22 @@ canvas{
 }
 .tab-btn:hover{color:var(--brass-dark)}
 .tab-btn.active{color:var(--brass-dark);background:#FFF;box-shadow:var(--shadow-sm)}
+
+/* ── 台本の言語（右列の最上段・2026-09-17 事業主指示「一番目立つところに」）── */
+.lang-bar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:linear-gradient(135deg,#FFF8E8,#FFFFFF);border:2px solid var(--brass);
+  border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow-sm);
+}
+.lang-bar-label{font-size:13px;font-weight:700;color:var(--brass-dark);letter-spacing:.14em;flex:none}
+.lang-bar-note{flex:1 1 100%;margin:0;color:var(--mute);font-size:12px;line-height:1.6}
+.lang-seg{display:flex;gap:4px;background:var(--card-soft);border:1px solid var(--line);border-radius:12px;padding:4px;flex:1;min-width:220px}
+.lang-seg button{
+  flex:1;background:none;padding:12px 8px;font-size:16px;font-weight:700;color:var(--ink-sub);
+  border-radius:9px;transition:color .15s ease,background .15s ease;
+}
+.lang-seg button.active{color:#fff;background:var(--brass-dark);box-shadow:var(--shadow-sm)}
+.lang-seg button:disabled{opacity:.5}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
@@ -699,6 +715,18 @@ canvas{
     </div>
 
     <aside class="control-col" aria-label="動画編集の操作パネル">
+      <div class="lang-bar" id="langBar">
+        <span class="lang-bar-label">台本・読み上げの言語</span>
+        <div class="lang-seg" role="group" aria-label="台本の言語">
+          <button type="button" data-lang="ja-JP" class="active">日本語</button>
+          <button type="button" data-lang="en-US">English</button>
+        </div>
+        <select id="narrationLang" hidden aria-hidden="true">
+          <option value="ja-JP">日本語</option>
+          <option value="en-US">English</option>
+        </select>
+        <p class="lang-bar-note" id="langBarNote">切り替えると、台本・作品名・素材欄・AI音声がその言語にそろいます。日本語へは作品集の原文を戻すだけなので一瞬です（英語へは翻訳します）。</p>
+      </div>
       <section class="pane" id="sec-photos">
         <section class="panel">
           <div class="drive-progress" id="driveProgress" role="status" aria-live="polite">
@@ -768,13 +796,6 @@ canvas{
              部品は id そのままで移しただけ（JSは id で参照しているので動きは変わらない）。 -->
         <section class="panel quick-panel" aria-labelledby="quickPanelTitle">
           <h2 id="quickPanelTitle">よく使う設定</h2>
-          <div class="field">
-          <label for="narrationLang">台本・読み上げの言語</label>
-          <select id="narrationLang">
-          <option value="ja-JP">日本語</option>
-          <option value="en-US">English</option>
-          </select>
-          </div>
           <div class="field">
           <label for="aiVoiceSelect">完成動画に入るAI音声</label>
           <select id="aiVoiceSelect"></select>
@@ -2483,12 +2504,19 @@ async function applyDrivePhotoData(data, workNo, candidate){
     : `Driveから ${data.photos.length} 枚の写真を表示しました。`) + partialNote;
   setDriveStatus(successMessage, data.partialError ? 'info' : 'success');
   if(matchedWork && matchedWork.longDesc){
-    setLog(`Driveから ${data.photos.length} 枚追加しました。作品集「${matchedWork.title}」の長文紹介を英語へ変換しています。`);
-    setDriveProgress(5);
-    const translated = await translateLongDescToFeatureNote({source: matchedWork.longDesc, target:'en', showLog:false});
-    setLog(translated
-      ? `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報と長文英訳を反映しました。`
-      : `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。長文英訳は手動で再実行してください。`);
+    // 台本は言語セレクトに従う（2026-09-17 事業主指示）。以前は言語に関係なく必ず英訳していた
+    if(els.narrationLang.value === 'en-US'){
+      setLog(`Driveから ${data.photos.length} 枚追加しました。作品集「${matchedWork.title}」の長文紹介を英語へ変換しています。`);
+      setDriveProgress(5);
+      const translated = await translateLongDescToFeatureNote({source: matchedWork.longDesc, target:'en', showLog:false});
+      setLog(translated
+        ? `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報と長文英訳を反映しました。`
+        : `Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。長文英訳は手動で再実行してください。`);
+    }else{
+      setDriveProgress(5);
+      const distributed = buildJapaneseScriptFromOriginal(matchedWork.longDesc);
+      setLog(`Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の長文紹介から日本語の台本を${distributed ? `${distributed}枚分` : ''}組みました。英語にしたいときは右上の「English」を押してください。`);
+    }
   }else if(matchedWork){
     setLog(`Driveから ${data.photos.length} 枚追加し、作品集「${matchedWork.title}」の情報を反映しました。`);
   }else{
@@ -2584,6 +2612,75 @@ function loadJsonpOnce(url){
 function selectedTranslationTarget(options = {}){
   if(options.target) return options.target === 'ja' ? 'ja' : 'en';
   return els.translationDirection.value === 'en-ja' ? 'ja' : 'en';
+}
+
+/* ══ 台本の言語切替（2026-09-17 事業主指示「日本語切替をもっと楽に」）══
+   右列最上段の「日本語／English」を押すと、台本・見どころメモ・作品名・素材欄・AI音声をその言語にそろえる。
+   日本語へ: 作品集の原文（長文紹介・作品名・素材）を戻して台本を組み直すだけ。通信なし・費用0円。
+            原文が無い（英語メモしか無い）ときだけ、既存の「英語メモを日本語へ」（翻訳API）を使う。
+   英語へ:   既存の「長文を英語メモへ」と同じ（翻訳API・作品名と素材欄も英語化）。
+   手直し済みのセリフがあるコマは上書き前に確認し、やめたら言語も元に戻す。 */
+let lastNarrationLang = 'ja-JP';
+
+function buildJapaneseScriptFromOriginal(source){
+  const text = String(source || '').trim();
+  if(currentWork){
+    els.productName.value = currentWork.title || els.productName.value;
+    els.materialNote.value = formatWorkMeta(currentWork);
+  }
+  if(text) els.featureNote.value = expandJapaneseFeatureMemo(text, Math.max(8, slides.length));
+  drawSelectedOrFirstFrame();
+  return slides.length && els.featureNote.value.trim() ? distributeFeatureNoteToSlides({overwrite:true, showLog:false}) : 0;
+}
+
+function scriptHasManualEdits(){
+  return playableSlides().filter(slide => slide.narrationSource === 'manual' && String(slide.narration || '').trim()).length;
+}
+
+function syncLangBar(){
+  const lang = els.narrationLang.value;
+  document.querySelectorAll('#langBar .lang-seg button').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+}
+
+async function applyNarrationLanguageToScript(){
+  const lang = els.narrationLang.value;
+  const toEnglish = lang === 'en-US';
+  const hasScript = !!(els.featureNote.value.trim() || playableSlides().some(slide => String(slide.narration || '').trim()));
+  if(!hasScript){ lastNarrationLang = lang; return; }   // 台本がまだ無い（写真追加前）なら声の切替だけ
+  const sample = els.featureNote.value.trim() || (playableSlides().find(slide => String(slide.narration || '').trim()) || {}).narration || '';
+  const alreadyEnglish = sample && !hasJapaneseText(sample);
+  if(toEnglish === !!alreadyEnglish){ lastNarrationLang = lang; return; }   // すでにその言語
+  const manual = scriptHasManualEdits();
+  if(manual && !confirm(`手直し済みのセリフが${manual}コマあります。${toEnglish ? '英語' : '日本語'}に切り替えると自動生成のセリフに置き換わります。切り替えますか？`)){
+    els.narrationLang.value = lastNarrationLang;
+    populateVoices(); refreshAiVoiceOptions(); refreshCapabilities(); syncLangBar();
+    return;
+  }
+  if(manual) playableSlides().forEach(slide => { if(slide.narrationSource === 'manual') slide.narrationSource = 'generated'; });
+  document.querySelectorAll('#langBar .lang-seg button').forEach(btn => btn.disabled = true);
+  try{
+    if(toEnglish){
+      setLog('英語へ変換しています（台本・作品名・素材欄）。');
+      const ok = await translateLongDescToFeatureNote({target:'en', source: els.workLongDesc.value || els.featureNote.value, showLog:false});
+      setLog(ok ? '台本を英語にしました。AI音声も英語の声に切り替わりました。' : '英語への変換に失敗しました。もう一度「English」を押してください。');
+    }else{
+      const original = String(els.workLongDesc.value || (currentWork && currentWork.longDesc) || '').trim();
+      if(original && hasJapaneseText(original)){
+        const distributed = buildJapaneseScriptFromOriginal(original);
+        setLog(`台本を日本語に戻しました${distributed ? `（${distributed}枚分）` : ''}。作品名・素材欄も作品集の原文です。AI音声は日本語の声（ずんだもん等）を選べます。`);
+      }else{
+        setLog('日本語へ変換しています（原文が無いため翻訳します）。');
+        const ok = await translateLongDescToFeatureNote({target:'ja', source: els.featureNote.value, showLog:false});
+        setLog(ok ? '台本を日本語にしました。' : '日本語への変換に失敗しました。もう一度「日本語」を押してください。');
+      }
+    }
+    lastNarrationLang = els.narrationLang.value;
+  }finally{
+    document.querySelectorAll('#langBar .lang-seg button').forEach(btn => btn.disabled = false);
+    syncLangBar();
+    renderList();
+    loadSelected();
+  }
 }
 
 function translationSourceText(target, options = {}){
@@ -7719,7 +7816,18 @@ els.narrationLang.addEventListener('change', () => {
   populateVoices();
   refreshAiVoiceOptions();
   refreshCapabilities();
+  syncLangBar();
+  applyNarrationLanguageToScript();
 });
+document.querySelectorAll('#langBar .lang-seg button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if(els.narrationLang.value === btn.dataset.lang) return;
+    els.narrationLang.value = btn.dataset.lang;
+    els.narrationLang.dispatchEvent(new Event('change'));
+  });
+});
+lastNarrationLang = els.narrationLang.value;
+syncLangBar();
 els.voiceSelect.addEventListener('change', handleVoiceChange);
 els.translationDirection.addEventListener('change', updateTranslationUi);
 if('speechSynthesis' in window){
