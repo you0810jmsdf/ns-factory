@@ -267,6 +267,18 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/refill-pdf/weekly-undated.html</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/refill-pdf/daily-undated.html</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 <!-- REFILL:end -->
 
   <!-- N's pattern（型紙PDF・2026-09-14 公開）。旧 horseshoe-coin-case.html（¥2,800版・noindex）は載せない -->

@@ -359,7 +359,7 @@ function featuresSection(it) {
 
 function sizesSection(it) {
   if (!it.sizes || !it.sizes.length) return '';
-  const cards = it.sizes.map(k => { const s = SIZES[k]; return `
+  const cards = it.sizes.map(k => { const s = Object.assign({}, SIZES[k], { pages: (it.sizePages && it.sizePages[k]) || SIZES[k].pages }); return `
       <div class="size-card">
         <div class="size-name">${esc(s.name)}</div>
         <div class="size-mm">${esc(s.mm)}</div>
