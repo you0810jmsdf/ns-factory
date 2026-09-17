@@ -745,7 +745,7 @@ canvas{
           </div>
           <details class="lang-bar-dict">
           <summary>読み方の辞書（読み間違いを直す）</summary>
-          <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください（書くとその場で保存されます）。「写真ごと」のセリフ欄で言葉を選んで「選んだ言葉の読みを登録」を押しても足せます。<strong>日本語の声のときだけ効きます</strong>。<br>アクセントも直せます（VOICEVOXの声だけ）：読みの中に <code>'</code> を入れると、その直前の音のあとで声が下がります。例 <code>箸=ハ'シ</code>（頭が高い）／<code>橋=ハシ'</code>（後ろが高い）／最後に <code>_</code> で平ら <code>端=ハシ_</code>。<br>直した言葉だけ聴きたいときは、下の欄でその行をなぞって選ぶ（またはカーソルを置く）→「選んだ行を試聴」。</p>
+          <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください（書くとその場で保存されます）。「写真ごと」のセリフ欄で言葉を選んで「選んだ言葉の読みを登録」を押しても足せます。<strong>日本語の声のときだけ効きます</strong>。<br>アクセントも直せます（VOICEVOXの声だけ）：読みの中に <code>'</code> を入れると、その直前の音のあとで声が下がります。例 <code>箸=ハ'シ</code>（頭が高い）／<code>橋=ハシ'</code>（後ろが高い）／最後に <code>_</code> で平ら <code>端=ハシ_</code>。<strong>高くしたい最後の音の直後に <code>'</code></strong> と覚えてください（ズまで高く＝<code>エヌズ'</code>）。読みを空白で区切ったときは、区切りごとに書けます（例 <code>エヌズ' ファ'クトリー</code>）。抑揚の強さを下げていると違いが聞き取りにくくなります。<br>直した言葉だけ聴きたいときは、下の欄でその行をなぞって選ぶ（またはカーソルを置く）→「選んだ行を試聴」。</p>
           <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
           <div class="btn-row" style="margin-top:6px;gap:6px">
           <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
@@ -6013,12 +6013,12 @@ function relayProsody(){
 const ACCENT_FALL_MARKS = "'’＇";
 function readingHasAccentMark(reading){
   const text = String(reading || '').trim();
-  return [...ACCENT_FALL_MARKS].some(mark => text.includes(mark)) || /[_＿]$/.test(text);
+  return [...ACCENT_FALL_MARKS].some(mark => text.includes(mark)) || /[_＿](?=[\s　]|$)/.test(text);
 }
 function stripAccentMarks(reading){
   let text = String(reading || '');
   [...ACCENT_FALL_MARKS].forEach(mark => { text = text.split(mark).join(''); });
-  return text.replace(/[_＿]\s*$/, '');
+  return text.replace(/[_＿](?=[\s　]|$)/g, '');   // 平らの記号は、区切り（空白）の前と読みの最後だけ
 }
 function toKatakana(text){
   return String(text || '').replace(/[ぁ-ゖ]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
@@ -6028,17 +6028,24 @@ function countMoras(kana){
   return [...toKatakana(kana)].filter(ch => /[ァ-ヶー]/.test(ch) && !'ァィゥェォャュョヮ'.includes(ch)).length;
 }
 function accentRules(){
-  return currentReadingRules()
+  // 読みを空白で区切ったとき（例: エヌズ' ファクトリー）、エンジンは区切りごとに別のアクセント句として読む。
+  // そのため記号は区切りごとに見る（2026-09-17 事業主の「N's factory=エ'ヌズ 'ファクトリー」が効かなかった原因）。
+  // 記号が区切りの先頭にある（'ファクトリー）ときは「最初の音のあとで下がる」として扱う。
+  const rules = [];
+  currentReadingRules()
     .filter(([from, to]) => from && to && readingHasAccentMark(to))
-    .map(([from, to]) => {
-      const text = String(to).trim();
-      const flat = /[_＿]$/.test(text);
-      const markAt = Math.min(...[...ACCENT_FALL_MARKS].map(mark => text.indexOf(mark)).filter(index => index >= 0).concat([Infinity]));
-      const kana = toKatakana(stripAccentMarks(text)).replace(/\s+/g, '');
-      const fallAfter = flat || !Number.isFinite(markAt) ? -1 : countMoras(text.slice(0, markAt));
-      return {from, kana, fallAfter};
-    })
-    .filter(rule => rule.kana && (rule.fallAfter === -1 || rule.fallAfter >= 1));
+    .forEach(([from, to]) => {
+      String(to).trim().split(/[\s　]+/).filter(Boolean).forEach(segment => {
+        if(!readingHasAccentMark(segment)) return;
+        const flat = /[_＿]$/.test(segment);
+        const markAt = Math.min(...[...ACCENT_FALL_MARKS].map(mark => segment.indexOf(mark)).filter(index => index >= 0).concat([Infinity]));
+        const kana = toKatakana(stripAccentMarks(segment));
+        if(!kana) return;
+        const fallAfter = flat || !Number.isFinite(markAt) ? -1 : Math.max(1, countMoras(segment.slice(0, markAt)));
+        rules.push({from, kana, fallAfter});
+      });
+    });
+  return rules;
 }
 
 const engineMoraCache = new Map();
