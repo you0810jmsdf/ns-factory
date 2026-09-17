@@ -62,6 +62,11 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
 .buy .note{font-size:12px;color:var(--fg-3);line-height:1.8}
 .price{font-size:30px;font-weight:700;margin-top:18px}
 .price small{font-size:13px;color:var(--fg-3);font-weight:400;margin-left:6px}
+.set-tag{display:inline-block;font-size:12px;font-weight:700;color:#0b0b0c;background:var(--accent);border-radius:999px;padding:2px 10px;margin-right:10px;vertical-align:middle}
+.set-head{margin:26px 0 14px;padding:14px 16px;border:1px solid var(--line-2);border-radius:var(--radius);background:var(--accent-soft)}
+.set-head b{font-size:15px}
+.set-price{font-size:20px;font-weight:700;margin-left:14px;white-space:nowrap}
+.set-price small{font-size:12px;color:var(--fg-3);font-weight:400;margin-left:4px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;margin-top:26px}
 .card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-2);overflow:hidden;transition:border-color .2s,transform .2s}
 a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
@@ -158,7 +163,12 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
   <section class="sec">
     <p class="eyebrow">Course materials</p>
     <h2>教材（動画＋完成テンプレート＋依頼文集PDF）</h2>
-    <p class="muted">無料の3本で身につけた頼み方を使って、日々の仕事でそのまま使える表を作ります。1本ずつお求めいただけます。</p>
+    <p class="muted">無料の3本で身につけた頼み方を使って、日々の仕事でそのまま使える表を作ります。教材はセットでお求めいただけます。</p>
+
+    <div class="set-head" id="set1">
+      <div><span class="set-tag">第1セット</span><b>第4弾〜第9弾の6本</b><span class="set-price">¥980<small>税込・6本まとめて</small></span></div>
+      <p class="muted">在庫と仕入れ・制作時間・お問い合わせの返信文・発送と送料・経費のまとめ・作品カタログの6本を、まとめてお届けします。どの教材のページからでもお求めいただけます。</p>
+    </div>
     <div class="grid">
     <a class="card" href="04-inventory.html">
       <div class="ph"><img src="../assets/ai-course/04-inventory.jpg" alt="第4弾 材料の在庫と仕入れ の見出し画像（案内役の黒いフクロウ）" loading="lazy"></div>
@@ -166,7 +176,7 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
         <div class="card-no">第4弾</div>
         <div class="card-title">材料の在庫と仕入れ</div>
         <div class="card-sum">材料の残りと発注のタイミングが分かる表を、AIに日本語で頼んで作る方法。動画とすぐ使えるテンプレート、依頼文集のセットです。</div>
-        <div class="card-foot"><span class="card-price">¥980</span><span class="card-more">詳しく見る →</span></div>
+        <div class="card-foot"><span class="card-price">第1セットに収録</span><span class="card-more">詳しく見る →</span></div>
       </div>
     </a>
     <a class="card" href="05-worktime.html">
@@ -175,7 +185,7 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
         <div class="card-no">第5弾</div>
         <div class="card-title">制作時間の記録と計画</div>
         <div class="card-sum">作品ごとの制作時間の記録から、受けている注文がいつ仕上がるかの目安まで分かる表を、AIに日本語で頼んで作る方法。動画とすぐ使えるテンプレート、依頼文集のセットです。</div>
-        <div class="card-foot"><span class="card-price">¥980</span><span class="card-more">詳しく見る →</span></div>
+        <div class="card-foot"><span class="card-price">第1セットに収録</span><span class="card-more">詳しく見る →</span></div>
       </div>
     </a>
     <a class="card" href="06-reply.html">
@@ -184,7 +194,7 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
         <div class="card-no">第6弾</div>
         <div class="card-title">お問い合わせの返信文</div>
         <div class="card-sum">よくあるお問い合わせへの返信の型を、AIに日本語で頼んで作る方法。種類を選んでお名前などを埋めるだけで、返信文の下書きが組み上がります。動画とテンプレート、依頼文集のセットです。</div>
-        <div class="card-foot"><span class="card-price">¥980</span><span class="card-more">詳しく見る →</span></div>
+        <div class="card-foot"><span class="card-price">第1セットに収録</span><span class="card-more">詳しく見る →</span></div>
       </div>
     </a>
     <a class="card" href="07-shipping.html">
@@ -193,23 +203,39 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
         <div class="card-no">第7弾</div>
         <div class="card-title">発送と送料</div>
         <div class="card-sum">作品の大きさ・重さ・厚さから、使える発送方法と送料の目安が分かる早見表を、AIに日本語で頼んで作る方法。動画とすぐ使えるテンプレート、依頼文集のセットです。</div>
-        <div class="card-foot"><span class="card-price">¥980</span><span class="card-more">詳しく見る →</span></div>
+        <div class="card-foot"><span class="card-price">第1セットに収録</span><span class="card-more">詳しく見る →</span></div>
       </div>
     </a>
-    <div class="card">
+    <a class="card" href="08-expenses.html">
       <div class="ph"><img src="../assets/ai-course/08-expenses.jpg" alt="第8弾 経費のまとめ の見出し画像（案内役の黒いフクロウ）" loading="lazy"></div>
       <div class="card-body">
-        <div class="card-no">第8弾　<span class="badge soon">準備中</span></div>
+        <div class="card-no">第8弾</div>
         <div class="card-title">経費のまとめ</div>
         <div class="card-sum">レシートや領収書の内容を1行ずつ記録して、月別・区分別に何にいくら使ったかが分かる表を、AIに日本語で頼んで作る方法。動画とテンプレート、依頼文集のセットです。</div>
+        <div class="card-foot"><span class="card-price">第1セットに収録</span><span class="card-more">詳しく見る →</span></div>
       </div>
-    </div>
-    <div class="card">
+    </a>
+    <a class="card" href="09-catalog.html">
       <div class="ph"><img src="../assets/ai-course/09-catalog.jpg" alt="第9弾 作品カタログ の見出し画像（案内役の黒いフクロウ）" loading="lazy"></div>
       <div class="card-body">
-        <div class="card-no">第9弾　<span class="badge soon">準備中</span></div>
+        <div class="card-no">第9弾</div>
         <div class="card-title">作品カタログ</div>
         <div class="card-sum">作品の情報を1か所にまとめて、作品IDを選ぶだけで取り出せる作品カタログを、AIに日本語で頼んで作る方法。シリーズ最終回。動画とテンプレート、依頼文集のセットです。</div>
+        <div class="card-foot"><span class="card-price">第1セットに収録</span><span class="card-more">詳しく見る →</span></div>
+      </div>
+    </a>
+    </div>
+    <div class="set-head" id="set2">
+      <div><span class="set-tag">第2セット</span><b>第10弾から</b><span class="badge soon">準備中</span></div>
+      <p class="muted">新しく始まるセットです。本数がそろったら販売を始めます。</p>
+    </div>
+    <div class="grid">
+    <div class="card">
+      <div class="ph"><img src="../assets/ai-course/10-pricing.jpg" alt="第10弾 価格の決め方 の見出し画像（案内役の黒いフクロウ）" loading="lazy"></div>
+      <div class="card-body">
+        <div class="card-no">第10弾　<span class="badge soon">準備中</span></div>
+        <div class="card-title">価格の決め方</div>
+        <div class="card-sum">材料費・制作時間・手数料・送料を積み上げて、利益がきちんと残る販売価格を計算する表を、AIに日本語で頼んで作る方法。第2セットの1本目です。</div>
       </div>
     </div>
     </div>
