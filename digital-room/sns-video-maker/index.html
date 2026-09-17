@@ -4949,14 +4949,52 @@ async function playTimelineWithVoice(){
 async function playPreviewWithVoice(){
   if(!playableSlides().length){ setLog(slides.length ? '動画で使う写真を1枚以上選んでください。' : '先に写真を追加してください。'); return; }
   await ensureCutoutsForSolidBg();
-  const adjusted = prepareTimelineForPlayback();
+  prepareTimelineForPlayback();
   stopSpeech(false);
-  setLog(adjusted
-    ? 'セリフが終わるまで写真を待たせながら、音声つきプレビューを再生中です。'
-    : '音声つきプレビューを再生中です。聞こえない場合はPC/ブラウザの音量も確認してください。');
-  const result = await playTimelineWithVoice();
+  // 完成動画と同じ声で鳴らす（2026-09-17 事業主指示「ずんだもんで完成プレビューしたい」）。
+  // 以前はブラウザ標準の読み上げ（完成動画には入らない別の声）だった。声は保存のときと同じ手順で先に全コマ分を作り、
+  // 映像と同時に鳴らす。作った声は作り置きされるので、このあと保存するときは作り直さない。
+  if(!playableSlides().some(slide => String(slide.narration || '').trim())){
+    setLog('読むセリフがありません。映像だけ再生します。');
+    const silent = await playTimeline(false);
+    if(!silent || !silent.stopped) previewReviewed = true;
+    return;
+  }
+  let track;
+  ttsBusy = true;
+  narratedSaveCancelled = false;
+  previewStopRequested = false;
+  updatePreviewStopButton();
+  if(els.playPreviewVoice) els.playPreviewVoice.disabled = true;
+  try{
+    const voiceCredit = selectedVoicevoxCredit();
+    setLog(`完成動画と同じ声（${voiceCredit || 'AI音声'}）でプレビューします。先に全コマの声を作っています…${voiceCredit ? '（VOICEVOXは1コマ15〜20秒。2回目からはすぐ始まります）' : ''}`);
+    track = await generateNarrationTimeline();
+  }catch(err){
+    setLog(narratedSaveCancelled ? '音声つきプレビューを停止しました。' : `声を作れなかったため、プレビューを始められませんでした（${err && err.message ? err.message : err}）。`);
+    return;
+  }finally{
+    ttsBusy = false;
+    stopProgressTicker();
+    updatePreviewStopButton();
+    if(els.playPreviewVoice) els.playPreviewVoice.disabled = false;
+  }
+  if(narratedSaveCancelled || previewStopRequested){ setLog('音声つきプレビューを停止しました。'); return; }
+  const ctxAudio = ensureJpDecodeContext();
+  try{ if(ctxAudio.state === 'suspended') await ctxAudio.resume(); }catch(_){}
+  const buffer = ctxAudio.createBuffer(1, Math.max(1, track.data.length), track.sampleRate);
+  buffer.copyToChannel(track.data, 0);
+  const source = ctxAudio.createBufferSource();
+  source.buffer = buffer;
+  source.connect(ctxAudio.destination);
+  previewAudioSource = source;          // 「停止」で cancelSpeechOutput → stopPreviewAudioSource が止める
+  source.onended = () => { if(previewAudioSource === source) previewAudioSource = null; };
+  setLog('音声つきプレビューを再生中です（完成動画と同じ声）。聞こえない場合はPC/ブラウザの音量も確認してください。');
+  source.start();
+  const result = await playTimeline(false);
+  stopPreviewAudioSource();
   if(!result || !result.stopped) previewReviewed = true;
-  setLog(result && result.stopped ? '音声つきプレビューを停止しました。' : '音声つきプレビューが終わりました。');
+  setLog(result && result.stopped ? '音声つきプレビューを停止しました。' : '音声つきプレビューが終わりました。ここで聞こえた声が、そのまま動画に入ります。');
 }
 
 async function playPreviewWithoutVoice(){
@@ -5976,7 +6014,28 @@ async function startVoicevoxEngine(){
   }
 }
 
+/* 作った音声の作り置き（2026-09-17）。「音声つきプレビュー」を完成動画と同じ声にしたため、
+   プレビュー → 保存で同じセリフを2回作らないようにする（VOICEVOX は1コマ15〜20秒かかる）。
+   鍵は 声＋セリフ＋読み方の辞書。どれかを変えれば作り直す。ページを閉じれば消える。 */
+const narrationAudioCache = new Map();
+const NARRATION_AUDIO_CACHE_MAX = 80;
+function narrationAudioCacheKey(text, voice){
+  return [voice, String(text || '').trim(), (els.readingDict && els.readingDict.value) || ''].join('');
+}
+
 async function generateNarrationAudio(text, voice, language){
+  const key = narrationAudioCacheKey(text, voice);
+  const cached = narrationAudioCache.get(key);
+  if(cached) return cached;
+  const audio = await generateNarrationAudioUncached(text, voice, language);
+  if(audio && audio.data && audio.data.length){
+    narrationAudioCache.set(key, audio);
+    if(narrationAudioCache.size > NARRATION_AUDIO_CACHE_MAX) narrationAudioCache.delete(narrationAudioCache.keys().next().value);
+  }
+  return audio;
+}
+
+async function generateNarrationAudioUncached(text, voice, language){
   if(isVoicevoxVoice(voice)) return await generateVoicevoxNarrationAudio(text, voice);
   // 日本語・英語とも中継サーバから受け取る（2026-09-06 一本化）。
   // ブラウザ内のAI音声は長い動画で書き出しが止まる原因だったため使わない。
