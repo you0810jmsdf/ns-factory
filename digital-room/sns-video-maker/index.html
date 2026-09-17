@@ -359,6 +359,10 @@ canvas{
 .lang-bar-voice .help:last-child{margin-bottom:0}
 .lang-bar-dict{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
 .lang-bar-dict > summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--brass-dark)}
+.tune-row{margin:8px 0}
+.tune-row label{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--brass-dark);margin-bottom:2px}
+.tune-row output{font-weight:400;color:var(--ink-sub)}
+.tune-row input[type=range]{width:100%;padding:0;border:none;accent-color:var(--brass-dark)}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
@@ -741,12 +745,24 @@ canvas{
           </div>
           <details class="lang-bar-dict">
           <summary>読み方の辞書（読み間違いを直す）</summary>
-          <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください（書くとその場で保存されます）。「写真ごと」のセリフ欄で言葉を選んで「選んだ言葉の読みを登録」を押しても足せます。<strong>日本語の声のときだけ効きます</strong>。</p>
+          <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください（書くとその場で保存されます）。「写真ごと」のセリフ欄で言葉を選んで「選んだ言葉の読みを登録」を押しても足せます。<strong>日本語の声のときだけ効きます</strong>。<br>アクセントも直せます（VOICEVOXの声だけ）：読みの中に <code>'</code> を入れると、その直前の音のあとで声が下がります。例 <code>箸=ハ'シ</code>（頭が高い）／<code>橋=ハシ'</code>（後ろが高い）／最後に <code>_</code> で平ら <code>端=ハシ_</code>。</p>
           <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
           <div class="btn-row" style="margin-top:6px;gap:6px">
           <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
           <button class="secondary" id="resetReadingDict" type="button">初期値に戻す</button>
           <button class="secondary" id="testReadingDict" type="button">今のセリフで試聴</button>
+          </div>
+          </details>
+          <details class="lang-bar-dict" id="voiceTuningBox">
+          <summary>声の調子（抑揚・速さ・高さ・間）</summary>
+          <p class="help" style="margin-top:6px">全コマの声に効きます。動かすとその場で保存され、次に作る声から変わります（声は作り直しになります）。<strong>抑揚と間はVOICEVOXの声だけ</strong>に効き、ななみ・けいたは速さと高さだけ変わります。</p>
+          <div class="tune-row"><label for="tuneIntonation">抑揚の強さ <output id="tuneIntonationOut"></output></label><input id="tuneIntonation" type="range" min="0" max="2" step="0.05"></div>
+          <div class="tune-row"><label for="tuneSpeed">話す速さ <output id="tuneSpeedOut"></output></label><input id="tuneSpeed" type="range" min="0.7" max="1.5" step="0.05"></div>
+          <div class="tune-row"><label for="tunePitch">声の高さ <output id="tunePitchOut"></output></label><input id="tunePitch" type="range" min="-0.15" max="0.15" step="0.01"></div>
+          <div class="tune-row"><label for="tunePause">「、」の間の長さ <output id="tunePauseOut"></output></label><input id="tunePause" type="range" min="0.3" max="2" step="0.05"></div>
+          <div class="btn-row" style="margin-top:6px;gap:6px">
+          <button class="secondary" id="resetVoiceTuning" type="button">初期値に戻す</button>
+          <button class="secondary" id="testVoiceTuning" type="button">今のセリフで試聴</button>
           </div>
           </details>
         </div>
@@ -5846,7 +5862,7 @@ function applyReadingRules(text){
     .filter(([from, to]) => from && to)
     .sort((a, b) => b[0].length - a[0].length);
   for(const [from, to] of rules){
-    out = out.split(from).join(to);
+    out = out.split(from).join(stripAccentMarks(to));   // アクセントの記号（' と末尾の _）は読み上げ文には入れない
   }
   return out;
 }
@@ -5881,7 +5897,7 @@ async function fetchRelayAudio(chunk, voice){
       response = await fetch(JP_TTS_ENDPOINT, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({text:chunk, voice})
+        body: JSON.stringify(Object.assign({text:chunk, voice}, relayProsody()))
       });
     }catch(error){
       lastError = '通信エラー';
@@ -5939,12 +5955,137 @@ async function voicevoxFetch(path, options){
   catch(_){ throw new Error(VOICEVOX_HELP); }
 }
 
+/* ══ 声の調子（全体のつまみ）と、言葉ごとのアクセント（2026-09-17 事業主指示「抑揚まで調整したい」→ A と B）══
+   A: 抑揚・速さ・高さ・間を言語カードのスライダーで決め、全コマの声に効かせる。
+      VOICEVOX は audio_query の intonationScale / speedScale / pitchScale / pauseLengthScale。
+      Microsoft の声（ななみ等）は中継の rate / pitch だけ（抑揚と間は変えられない）。
+   B: 読み方の辞書の「読み」に ' を入れると、その直前の音のあとで声が下がる（例: 箸=ハ'シ／橋=ハシ'）。
+      最後に _ を付けると平らに読む（例: 端=ハシ_）。VOICEVOX の声だけに効く。
+      やり方: 文全体を普通に audio_query → 該当する言葉が入っているアクセント句の accent だけ差し替え →
+      /mora_data で音の高さを計算し直してから合成（2026-09-17 実機で確認）。エンジン側の共有ユーザー辞書は触らない
+      （同じエンジンを講座動画のスクリプトも使うため）。
+      言葉の探し方: エンジンは長音を母音に（コーヒー→コ|オ|ヒ|イ）、ヴァをバに直すので、読みを一度エンジンに通した
+      区切り（/accent_phrases）と突き合わせる。言葉が2つのアクセント句にまたがるときは直さない（そのまま読む）。 */
+const VOICE_TUNING_KEY = 'nsf_voice_tuning';
+const VOICE_TUNING_DEFAULT = Object.freeze({intonation:1, speed:1, pitch:0, pause:1});
+const VOICE_TUNING_RANGE = Object.freeze({intonation:[0, 2], speed:[0.7, 1.5], pitch:[-0.15, 0.15], pause:[0.3, 2]});
+
+function currentVoiceTuning(){
+  const tuning = Object.assign({}, VOICE_TUNING_DEFAULT);
+  try{
+    const saved = JSON.parse(localStorage.getItem(VOICE_TUNING_KEY) || 'null');
+    if(saved && typeof saved === 'object'){
+      Object.keys(VOICE_TUNING_DEFAULT).forEach(key => {
+        const value = Number(saved[key]);
+        if(Number.isFinite(value)) tuning[key] = clamp(value, VOICE_TUNING_RANGE[key][0], VOICE_TUNING_RANGE[key][1]);
+      });
+    }
+  }catch(_){ /* 保存できない環境では初期値 */ }
+  return tuning;
+}
+
+function saveVoiceTuning(tuning){
+  try{ localStorage.setItem(VOICE_TUNING_KEY, JSON.stringify(tuning)); }catch(_){}
+}
+
+function applyVoiceTuningToQuery(query){
+  const tuning = currentVoiceTuning();
+  query.intonationScale = tuning.intonation;
+  query.speedScale = tuning.speed;
+  query.pitchScale = tuning.pitch;
+  if('pauseLengthScale' in query) query.pauseLengthScale = tuning.pause;
+  return query;
+}
+
+// Microsoft の声（中継）に渡せるのは速さと高さだけ。初期値のときは何も足さない（従来と同じ要求になる）
+function relayProsody(){
+  const tuning = currentVoiceTuning();
+  const out = {};
+  const ratePct = Math.round((tuning.speed - 1) * 100);
+  const pitchHz = Math.round(tuning.pitch * 200);
+  if(ratePct) out.rate = `${ratePct > 0 ? '+' : '-'}${Math.abs(ratePct)}%`;
+  if(pitchHz) out.pitch = `${pitchHz > 0 ? '+' : '-'}${Math.abs(pitchHz)}Hz`;
+  return out;
+}
+
+/* ── B: アクセントの記号 ── */
+const ACCENT_FALL_MARKS = "'’＇";
+function readingHasAccentMark(reading){
+  const text = String(reading || '').trim();
+  return [...ACCENT_FALL_MARKS].some(mark => text.includes(mark)) || /[_＿]$/.test(text);
+}
+function stripAccentMarks(reading){
+  let text = String(reading || '');
+  [...ACCENT_FALL_MARKS].forEach(mark => { text = text.split(mark).join(''); });
+  return text.replace(/[_＿]\s*$/, '');
+}
+function toKatakana(text){
+  return String(text || '').replace(/[ぁ-ゖ]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
+}
+// 拍（モーラ）の数。小さい ァィゥェォャュョヮ は前の字とひとまとまり。ー・ッ・ン は1拍
+function countMoras(kana){
+  return [...toKatakana(kana)].filter(ch => /[ァ-ヶー]/.test(ch) && !'ァィゥェォャュョヮ'.includes(ch)).length;
+}
+function accentRules(){
+  return currentReadingRules()
+    .filter(([from, to]) => from && to && readingHasAccentMark(to))
+    .map(([from, to]) => {
+      const text = String(to).trim();
+      const flat = /[_＿]$/.test(text);
+      const markAt = Math.min(...[...ACCENT_FALL_MARKS].map(mark => text.indexOf(mark)).filter(index => index >= 0).concat([Infinity]));
+      const kana = toKatakana(stripAccentMarks(text)).replace(/\s+/g, '');
+      const fallAfter = flat || !Number.isFinite(markAt) ? -1 : countMoras(text.slice(0, markAt));
+      return {from, kana, fallAfter};
+    })
+    .filter(rule => rule.kana && (rule.fallAfter === -1 || rule.fallAfter >= 1));
+}
+
+const engineMoraCache = new Map();
+async function engineMorasFor(kana, speaker){
+  const key = `${speaker}:${kana}`;
+  if(engineMoraCache.has(key)) return engineMoraCache.get(key);
+  const res = await voicevoxFetch(`/accent_phrases?speaker=${speaker}&text=${encodeURIComponent(kana)}`, {method:'POST'});
+  const phrases = res.ok ? await res.json() : [];
+  const moras = phrases.flatMap(phrase => (phrase.moras || []).map(mora => mora.text));
+  engineMoraCache.set(key, moras);
+  return moras;
+}
+
+async function applyAccentOverrides(query, speaker){
+  const rules = accentRules();
+  if(!rules.length || !Array.isArray(query.accent_phrases)) return 0;
+  let changed = 0;
+  for(const rule of rules){
+    const target = await engineMorasFor(rule.kana, speaker);
+    if(!target.length) continue;
+    for(const phrase of query.accent_phrases){
+      const texts = (phrase.moras || []).map(mora => mora.text);
+      for(let start = 0; start + target.length <= texts.length; start++){
+        if(!target.every((text, index) => texts[start + index] === text)) continue;
+        const accent = rule.fallAfter === -1 ? texts.length : Math.min(texts.length, start + rule.fallAfter);
+        if(phrase.accent !== accent){ phrase.accent = accent; changed += 1; }
+        break;
+      }
+    }
+  }
+  if(changed){
+    const res = await voicevoxFetch(`/mora_data?speaker=${speaker}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(query.accent_phrases)
+    });
+    if(res.ok) query.accent_phrases = await res.json();
+  }
+  return changed;
+}
+
 async function fetchVoicevoxAudio(chunk, speaker){
   let lastStatus = '';
   for(let attempt = 1; attempt <= 2; attempt++){
     const queryRes = await voicevoxFetch(`/audio_query?speaker=${speaker}&text=${encodeURIComponent(chunk)}`, {method:'POST'});
     if(queryRes.ok){
       const query = await queryRes.json();
+      // B: 辞書にアクセント指定のある言葉だけ差し替え（失敗しても普通の読みで続ける）／A: 声の調子
+      try{ await applyAccentOverrides(query, speaker); }catch(err){ console.warn('[accent] アクセントの差し替えを飛ばしました:', err && err.message); }
+      applyVoiceTuningToQuery(query);
       const synthRes = await voicevoxFetch(`/synthesis?speaker=${speaker}`, {
         method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(query)
       });
@@ -6024,7 +6165,7 @@ async function startVoicevoxEngine(){
 const narrationAudioCache = new Map();
 const NARRATION_AUDIO_CACHE_MAX = 80;
 function narrationAudioCacheKey(text, voice){
-  return [voice, String(text || '').trim(), readingRulesText(currentReadingRules())].join('');
+  return [voice, String(text || '').trim(), readingRulesText(currentReadingRules()), JSON.stringify(currentVoiceTuning())].join('');
 }
 
 async function generateNarrationAudio(text, voice, language){
@@ -7825,7 +7966,7 @@ els.addReadingFromSelection.addEventListener('click', () => {
   if(word.length > 40 || /[\r\n=]/.test(word)){ setLog('選ぶ言葉は1行・40文字以内・「=」を含まないものにしてください。'); return; }
   const rules = currentReadingRules();
   const existing = rules.find(([from]) => from === word);
-  const answer = window.prompt(`「${word}」の読み方を、ひらがな・カタカナで入れてください`, existing ? existing[1] : '');
+  const answer = window.prompt(`「${word}」の読み方を、ひらがな・カタカナで入れてください（アクセントも直すなら、声が下がる直前の音のあとに ' を入れます。例: ハ'シ）`, existing ? existing[1] : '');
   if(answer === null) return;
   const reading = answer.trim().replace(/[\r\n=]/g, '');
   if(!reading){ setLog('読みが空のため登録しませんでした。'); return; }
@@ -7836,6 +7977,43 @@ els.addReadingFromSelection.addEventListener('click', () => {
   try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
   setLog(`辞書に「${word}=${reading}」を${at >= 0 ? '上書き' : '登録'}しました。次に作る声から効きます（字幕の文字は変わりません）。`);
 });
+// 声の調子のスライダー（2026-09-17）。動かすとその場で保存し、次に作る声から効く
+const VOICE_TUNING_INPUTS = {intonation:'tuneIntonation', speed:'tuneSpeed', pitch:'tunePitch', pause:'tunePause'};
+function voiceTuningLabel(key, value){
+  if(key === 'pitch') return value === 0 ? '標準' : `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+  return `${Math.round(value * 100)}%`;
+}
+function renderVoiceTuning(){
+  const tuning = currentVoiceTuning();
+  Object.keys(VOICE_TUNING_INPUTS).forEach(key => {
+    const input = document.getElementById(VOICE_TUNING_INPUTS[key]);
+    const out = document.getElementById(VOICE_TUNING_INPUTS[key] + 'Out');
+    if(input) input.value = tuning[key];
+    if(out) out.textContent = voiceTuningLabel(key, tuning[key]);
+  });
+}
+Object.keys(VOICE_TUNING_INPUTS).forEach(key => {
+  const input = document.getElementById(VOICE_TUNING_INPUTS[key]);
+  if(!input) return;
+  input.addEventListener('input', () => {
+    const tuning = currentVoiceTuning();
+    tuning[key] = clamp(parseFloat(input.value), VOICE_TUNING_RANGE[key][0], VOICE_TUNING_RANGE[key][1]);
+    saveVoiceTuning(tuning);
+    renderVoiceTuning();
+  });
+  input.addEventListener('change', () => {
+    resetRecordingOutput();
+    setLog('声の調子を変えました。次に作る声から効きます（全コマの声を作り直します）。');
+  });
+});
+document.getElementById('resetVoiceTuning').addEventListener('click', () => {
+  saveVoiceTuning(Object.assign({}, VOICE_TUNING_DEFAULT));
+  renderVoiceTuning();
+  resetRecordingOutput();
+  setLog('声の調子を初期値に戻しました。');
+});
+document.getElementById('testVoiceTuning').addEventListener('click', () => els.testReadingDict.click());
+renderVoiceTuning();
 els.resetReadingDict.addEventListener('click', () => {
   els.readingDict.value = readingRulesText(DEFAULT_READING_RULES);
   try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
