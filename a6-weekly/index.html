@@ -156,7 +156,7 @@ body.panel-open #preview { margin-left: 280px; }
   --month-cal-top: 10mm; --month-cal-right: 0mm;
   --font-brand: 'Times New Roman', Times, serif; --font-date-num: 'Noto Sans JP', sans-serif; --font-date-wd: 'Noto Sans JP', sans-serif;
   --font-month-abbr: 'Times New Roman', Times, serif; --font-text-wm: 'Noto Sans JP', sans-serif;
-  --owl-wm-x: 0mm; --owl-wm-y: 0mm; --owl-wm-size: 70mm; --owl-wm-opacity: 0.04;
+  --owl-wm-x: 0mm; --owl-wm-y: 0mm; --owl-wm-size: 70mm; --owl-wm-opacity: 0.10;
   --img-wm-x: 0mm; --img-wm-y: 0mm; --img-wm-size: 60mm; --img-wm-opacity: 0.08;
   --ghost-opacity: 0.18;
 }
@@ -380,7 +380,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>X（左右）</label><input type="range" id="owlWmX" min="-50" max="50" step="1" value="0" oninput="setCSSVar('--owl-wm-x', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">0</span>mm</div>
     <div class="ctrl-row"><label>Y（上下）</label><input type="range" id="owlWmY" min="-90" max="90" step="1" value="0" oninput="setCSSVar('--owl-wm-y', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">0</span>mm</div>
     <div class="ctrl-row"><label>サイズ</label><input type="range" id="owlWmSize" min="10" max="120" step="1" value="70" oninput="setCSSVar('--owl-wm-size', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">70</span>mm</div>
-    <div class="ctrl-row"><label>不透明度</label><input type="range" id="owlWmOpacity" min="0.01" max="0.3" step="0.01" value="0.04" oninput="setCSSVar('--owl-wm-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)"><span class="val">4</span>%</div>
+    <div class="ctrl-row"><label>不透明度</label><input type="range" id="owlWmOpacity" min="0.01" max="0.3" step="0.01" value="0.10" oninput="setCSSVar('--owl-wm-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)"><span class="val">10</span>%</div>
   </div>
 
   <div class="ctrl-section">
@@ -1004,6 +1004,10 @@ const HISTORY_ENTRIES = [
     detail: '綴じ後プレビュー（assets/flip-sim.js）の紙面が暗い背景の文字色を受け継いでいました。紙面の文字色を黒に指定しました。印刷やPDFには影響ありません。' },
   { date: '2026-09-16', type: 'fix', title: '設定パネルを開いたとき、左上の☰ボタンがパネルの題名に重なっていたのを修正',
     detail: '☰ボタンが題名「N\'s factory」の上に重なって読みにくくなっていました。題名をボタン1個分だけ右にずらして、重ならないようにしました。' },
+  { date: '2026-09-17', type: 'improve', title: 'ロゴ透かしの既定を10%に',
+    detail: 'ロゴ透かしの既定の濃さを 4%→10% にしました（印刷で薄すぎて胸のNや文字が出なかったため）。「ロゴ透かし」の不透明度で従来どおり調整できます。保存済みの設定がある方はそのままです。' },
+  { date: '2026-09-17', type: 'fix', title: 'ロゴ透かしが欠けていたのを修正（「N\'s Factory」の文字・胸の{N}・Since 2018）',
+    detail: '透かしに使っていたロゴのデータがフクロウ本体と文字の一部だけの欠けたものでした。完全なロゴ画像に差し替えました。位置・大きさ・不透明度の設定はそのまま使えます。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -1019,8 +1023,6 @@ const clGroups = [
   { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
   { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 80 },
   { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
-  { date: '2026-09-17', type: 'fix', title: 'ロゴ透かしが欠けていたのを修正（「N\'s Factory」の文字・胸の{N}・Since 2018）',
-    detail: '透かしに使っていたロゴのデータがフクロウ本体と文字の一部だけの欠けたものでした。完全なロゴ画像に差し替えました。位置・大きさ・不透明度の設定はそのまま使えます。' },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {

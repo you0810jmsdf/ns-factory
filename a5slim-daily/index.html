@@ -33,7 +33,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   --month-cal-top: 1mm; --month-cal-right: 1mm; --month-cal-scale: 1; --month-cal-opacity: 1;
   --font-brand: 'Times New Roman', Times, serif; --font-date-num: 'Noto Sans JP', sans-serif; --font-date-wd: 'Noto Sans JP', sans-serif;
   --font-month-abbr: 'Times New Roman', Times, serif; --font-text-wm: 'Noto Sans JP', sans-serif;
-  --owl-wm-x: 0mm; --owl-wm-y: 0mm; --owl-wm-size: 50mm; --owl-wm-opacity: 0.07;
+  --owl-wm-x: 0mm; --owl-wm-y: 0mm; --owl-wm-size: 50mm; --owl-wm-opacity: 0.10;
   --img-wm-x: 0mm; --img-wm-y: 0mm; --img-wm-size: 60mm; --img-wm-opacity: 0.08;
   --ghost-opacity: 0.18;
 }
@@ -287,7 +287,7 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="btn-row">
       <button class="btn-toggle" id="btnHoleBisect" onclick="toggleOpt('showHoleBisect','btnHoleBisect')">穴あけ中心線</button>
-      <button class="btn-toggle" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
+      <button class="btn-toggle on" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
     </div>
     <div class="btn-row">
       <button class="btn-toggle" id="btnTextWm" onclick="toggleOpt('showTextWm','btnTextWm')">テキスト透かし</button>
@@ -329,7 +329,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>上下</label><input type="range" id="owlWmY" min="-100" max="100" step="1" value="0" oninput="document.getElementById('owlWmYVal').textContent=this.value;updateVars()"><span class="val" id="owlWmYVal">0</span></div>
     <div class="ctrl-row"><label>左右</label><input type="range" id="owlWmX" min="-50" max="50" step="1" value="0" oninput="document.getElementById('owlWmXVal').textContent=this.value;updateVars()"><span class="val" id="owlWmXVal">0</span></div>
     <div class="ctrl-row"><label>サイズ</label><input type="range" id="owlWmSize" min="10" max="100" step="1" value="50" oninput="document.getElementById('owlWmSizeVal').textContent=this.value;updateVars()"><span class="val" id="owlWmSizeVal">50</span></div>
-    <div class="ctrl-row"><label>透明度</label><input type="range" id="owlWmOpacity" min="0.01" max="1" step="0.01" value="0.07" oninput="document.getElementById('owlWmOpacityVal').textContent=this.value;updateVars()"><span class="val" id="owlWmOpacityVal">0.07</span></div>
+    <div class="ctrl-row"><label>透明度</label><input type="range" id="owlWmOpacity" min="0.01" max="1" step="0.01" value="0.10" oninput="document.getElementById('owlWmOpacityVal').textContent=this.value;updateVars()"><span class="val" id="owlWmOpacityVal">0.10</span></div>
   </div>
 
   <div class="ctrl-section">
@@ -472,7 +472,7 @@ let duplexMode = 'manual';
 let customImgDataUrl = null;
 let opts = {
   showCutLines: true, showHoleLine: true, showHoles: true, showHoleBisect: false,
-  showLogo: false, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false,
+  showLogo: true, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false,
   showDateNum: true, showDateWd: true, showDateYm: true,
   showTimeLabel: true, showTimeLine: true, showHoliday: true,
   undated: false, ghostStyle: 'seg', ghostWeekday: true, landscape: false
@@ -917,6 +917,8 @@ const HISTORY_ENTRIES = [
     detail: '☰ボタンが題名「N\'s factory」の上に重なって読みにくくなっていました。題名をボタン1個分だけ右にずらして、重ならないようにしました。' },
   { date: '2026-09-17', type: 'fix', title: 'ロゴ透かしが欠けていたのを修正（「N\'s Factory」の文字・胸の{N}・Since 2018）',
     detail: '透かしに使っていたロゴのデータがフクロウ本体と文字の一部だけの欠けたものでした。完全なロゴ画像に差し替えました。位置・大きさ・不透明度の設定はそのまま使えます。' },
+  { date: '2026-09-17', type: 'improve', title: 'ロゴ透かしの既定を10%に・日次はロゴ既定ON',
+    detail: 'ロゴ透かしの既定の濃さを 7%→10% にし、読みやすいロゴ（N\'s Factory・胸のN・Since 2018）が既定で入るようにしました（「ロゴ透かし」ボタンで外せます）。保存済みの設定がある方はそのままです。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };

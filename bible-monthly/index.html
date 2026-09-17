@@ -40,7 +40,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-ser
   --owl-wm-x: 0mm;
   --owl-wm-y: 0mm;
   --owl-wm-size: 70mm;
-  --owl-wm-opacity: 0.04;
+  --owl-wm-opacity: 0.10;
   --img-wm-x: 0mm;
   --img-wm-y: 0mm;
   --img-wm-size: 60mm;
@@ -658,9 +658,9 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="ctrl-row">
       <label>不透明度</label>
-      <input type="range" id="owlWmOpacity" min="0.01" max="0.3" step="0.01" value="0.04"
+      <input type="range" id="owlWmOpacity" min="0.01" max="0.3" step="0.01" value="0.10"
         oninput="setCSSVar('--owl-wm-opacity', this.value); this.nextElementSibling.textContent=Math.round(this.value*100)">
-      <span class="val">4</span>%
+      <span class="val">10</span>%
     </div>
   </div>
 
@@ -1597,6 +1597,14 @@ const HISTORY_ENTRIES = [
     detail: '綴じ後プレビュー（assets/flip-sim.js）の紙面が暗い背景の文字色を受け継いでいました。紙面の文字色を黒に指定しました。印刷やPDFには影響ありません。' },
   { date: '2026-09-16', type: 'fix', title: '設定パネルを開いたとき、左上の☰ボタンがパネルの題名に重なっていたのを修正',
     detail: '☰ボタンが題名「N\'s factory」の上に重なって読みにくくなっていました。題名をボタン1個分だけ右にずらして、重ならないようにしました。' },
+  { date: '2026-09-16', type: 'improve', title: '用紙の既定を「A4横に3面」に変更（従来のA4縦2面も選べます）',
+    detail: 'A4縦2面は用紙の4割が余白でした。A4を横に使うと95mm幅が3面入り、1枚から3ページ取れます（縦のカット線2本＋端）。「印刷モード」の「用紙」で従来のA4縦2面にも戻せます。両面設定は3面のとき短辺綴じ、2面のとき長辺綴じです。PDF生成・テスト印刷・綴じ後プレビューも選んだ用紙に合わせます。' },
+  { date: '2026-09-16', type: 'feat', title: '週の開始（月曜／日曜）を選べるように・日付なしでも曜日を印字',
+    detail: '「印刷モード」の「週開始」で月曜始まり・日曜始まりを切り替えられます（左ページに最初の3日、右ページに残りの4日）。日付なしモードでは曜日を透かしでなく印字するのが既定になりました（「日付なし」欄の「曜日を印字」で従来の透かしに戻せます）。' },
+  { date: '2026-09-17', type: 'improve', title: 'ロゴ透かしの既定を10%に',
+    detail: 'ロゴ透かしの既定の濃さを 4%→10% にしました（印刷で薄すぎて胸のNや文字が出なかったため）。「ロゴ透かし」の不透明度で従来どおり調整できます。保存済みの設定がある方はそのままです。' },
+  { date: '2026-09-17', type: 'fix', title: 'ロゴ透かしが欠けていたのを修正（「N\'s Factory」の文字・胸の{N}・Since 2018）',
+    detail: '透かしに使っていたロゴのデータがフクロウ本体と文字の一部だけの欠けたものでした。完全なロゴ画像に差し替えました。位置・大きさ・不透明度の設定はそのまま使えます。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -1614,12 +1622,6 @@ const clGroups = [
   { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
   { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 80 },
   { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
-  { date: '2026-09-16', type: 'improve', title: '用紙の既定を「A4横に3面」に変更（従来のA4縦2面も選べます）',
-    detail: 'A4縦2面は用紙の4割が余白でした。A4を横に使うと95mm幅が3面入り、1枚から3ページ取れます（縦のカット線2本＋端）。「印刷モード」の「用紙」で従来のA4縦2面にも戻せます。両面設定は3面のとき短辺綴じ、2面のとき長辺綴じです。PDF生成・テスト印刷・綴じ後プレビューも選んだ用紙に合わせます。' },
-  { date: '2026-09-16', type: 'feat', title: '週の開始（月曜／日曜）を選べるように・日付なしでも曜日を印字',
-    detail: '「印刷モード」の「週開始」で月曜始まり・日曜始まりを切り替えられます（左ページに最初の3日、右ページに残りの4日）。日付なしモードでは曜日を透かしでなく印字するのが既定になりました（「日付なし」欄の「曜日を印字」で従来の透かしに戻せます）。' },
-  { date: '2026-09-17', type: 'fix', title: 'ロゴ透かしが欠けていたのを修正（「N\'s Factory」の文字・胸の{N}・Since 2018）',
-    detail: '透かしに使っていたロゴのデータがフクロウ本体と文字の一部だけの欠けたものでした。完全なロゴ画像に差し替えました。位置・大きさ・不透明度の設定はそのまま使えます。' },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {
