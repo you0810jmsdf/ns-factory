@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>講座動画の視聴数 | N's factory</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<style>
+/* 定期実行モニタ（automations.html）と同じダーク管制室テーマ */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#0d1117;color:#e6edf3;min-height:100vh;
+}
+.topbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 20px;border-bottom:1px solid #30363d;background:#161b22;
+}
+.topbar h1{margin:0;font-size:17px;letter-spacing:.04em}
+.live{font-size:11px;font-weight:bold;padding:3px 10px;border-radius:999px;
+  background:#12331f;color:#4ade80;border:1px solid #2ea043}
+.live.stale{background:#3a2d10;color:#e3b341;border-color:#9e6a03}
+.live.down{background:#3d1214;color:#ff9d9d;border-color:#f85149}
+.meta{font-size:11px;color:#9aa4af;line-height:1.5}
+.wrap{padding:16px 20px 60px;display:grid;gap:14px;max-width:1200px}
+.panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px 16px;min-width:0}
+.panel h2{margin:0 0 10px;font-size:14px;color:#c9d1d9;letter-spacing:.03em}
+.panel h2 .sub{font-size:11px;color:#9aa4af;font-weight:normal;margin-left:8px}
+.empty{color:#9aa4af;font-size:13px;padding:8px 2px}
+.err{display:none;margin:0;padding:10px 12px;border-radius:8px;
+  background:#3d1214;border:1px solid #f85149;color:#ff9d9d;font-size:12px;line-height:1.7}
+.err button{margin-top:8px;font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;
+  background:#0d1117;border:1px solid #f85149;color:#ff9d9d}
+.warn{display:none;padding:10px 12px;border-radius:8px;background:#3a2d10;border:1px solid #9e6a03;
+  color:#e3b341;font-size:12px;line-height:1.7}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.card{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:10px 14px}
+.card .l{font-size:11px;color:#9aa4af}
+.card .n{font-size:22px;font-weight:bold;font-variant-numeric:tabular-nums;margin-top:2px}
+.card .s{font-size:11px;color:#8b949e;margin-top:2px}
+.card.bad{border-color:#f85149}.card.bad .n{color:#ff9d9d}
+.card.ok .n{color:#4ade80}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 8px;font-size:12px;color:#9aa4af}
+.legend span{display:flex;align-items:center;gap:5px}
+.sw{width:16px;height:0;border-top:2px solid}
+.box{width:10px;height:10px;border-radius:2px}
+.chart{position:relative;width:100%}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:#9aa4af;font-size:11px;text-align:right;padding:4px 10px;
+  border-bottom:1px solid #30363d;font-weight:normal;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:5px 10px;border-bottom:1px solid #21262d;text-align:right;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+td.hot{color:#ffb38a}
+.table-scroll{overflow-x:auto}
+.notes{margin:0;padding-left:18px;font-size:12px;color:#9aa4af;line-height:1.8}
+.notes b{color:#c9d1d9}
+
+.auth-overlay{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(1,4,9,.8);backdrop-filter:blur(4px);
+}
+.auth-card{
+  width:min(420px,100%);background:#161b22;border:1px solid #30363d;border-radius:18px;
+  padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.5);
+}
+.auth-card h2{margin:0 0 8px;font-size:20px;color:#e6edf3}
+.auth-card p{margin:0 0 14px;font-size:13px;color:#9aa4af;line-height:1.6}
+.auth-card input{
+  width:100%;border:1px solid #30363d;border-radius:8px;padding:10px 12px;font-size:14px;
+  margin-bottom:10px;outline:none;background:#0d1117;color:#e6edf3;
+}
+.auth-card input:focus{border-color:#58a6ff}
+.auth-btn{
+  width:100%;padding:10px;background:#1f6feb;color:#fff;border:none;border-radius:8px;
+  font-size:14px;font-weight:bold;cursor:pointer;
+}
+.auth-btn:hover{background:#388bfd}
+.auth-error{min-height:18px;margin:6px 0 0;font-size:12px;color:#ff9d9d}
+.auth-locked{overflow:hidden}
+@media(max-width:640px){ .wrap{padding:12px 12px 60px} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🎬 講座動画（YouTube）</h1>
+  <span class="live" id="liveBadge">読み込み中…</span>
+  <div class="meta" id="updatedAt" style="margin-left:auto"></div>
+</div>
+
+<div class="wrap">
+  <div class="err" id="loadErr"></div>
+  <div class="warn" id="staleWarn"></div>
+
+  <div class="panel">
+    <h2>30日後の判定基準に対する現在地 <span class="sub" id="periodLabel"></span></h2>
+    <div class="cards" id="cards"><div class="empty">読み込み中…</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>日別の視聴回数 <span class="sub">再生リスト「AIで作る 作家の道具」の公開動画の合計・YouTube アナリティクス（2〜3日遅れで確定）</span></h2>
+    <div class="chart" style="height:240px"><canvas id="dayChart" role="img" aria-label="日別の視聴回数">日別の視聴回数</canvas></div>
+  </div>
+
+  <div class="panel">
+    <h2>動画ごとの数字</h2>
+    <div class="table-scroll"><table>
+      <thead><tr><th>動画</th><th>状態</th><th>視聴回数</th><th>平均視聴維持率</th><th>平均視聴時間</th><th>総再生（分）</th><th>登録者増</th><th>高評価</th><th>コメント</th><th>主な流入元</th></tr></thead>
+      <tbody id="videoBody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    <h2>数字の前提</h2>
+    <ul class="notes" id="notes"><li>読み込み中…</li></ul>
+  </div>
+</div>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <h2>N's Factory</h2>
+    <p>講座動画の視聴数<br>サイト管理者パスワードを入力してください。</p>
+    <input type="password" id="authPassword" placeholder="パスワード" onkeydown="if(event.key==='Enter')submitAuth()">
+    <button class="auth-btn" onclick="submitAuth()">ログイン</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// 認証（SHA-256照合）。admin.html と同じ nsf_admin_key を使うため、
+// admin.html の iframe から開かれた場合は再入力不要。
+// 画面側の照合は出し分けにすぎない。数字はGASがキーを確認してから返す。
+// ================================================================
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const SESSION_KEY = 'nsfactory-youtube-stats-auth';
+const KEY_STORE = 'nsf_admin_key';  // admin.html と共通
+// 幕僚計画GAS。自宅PCのアップローダーが5分おきに送ったデータ（youtubeStats は毎朝1回集計）を getMonitor で受け取る
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec';
+const STALE_HOURS = 30;  // 毎朝の集計が止まったと判断する経過時間
+
+function sha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
+function getKey() {
+  try { return sessionStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; }
+}
+function checkSession() {
+  try { return sessionStorage.getItem(SESSION_KEY) === 'ok' && !!getKey(); } catch (e) { return false; }
+}
+function unlockAuth() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.classList.remove('auth-locked');
+  load();
+}
+function submitAuth() {
+  const input = document.getElementById('authPassword');
+  const errEl = document.getElementById('authError');
+  sha256(input.value).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, 'ok');
+        sessionStorage.setItem(KEY_STORE, input.value);
+      } catch (e) {}
+      unlockAuth();
+    } else {
+      errEl.textContent = 'パスワードが違います';
+    }
+  }).catch(() => { errEl.textContent = '照合に失敗しました（https環境で開いてください）'; });
+}
+
+// ================================================================
+// 表示
+// ================================================================
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const yen = v => (v == null ? '—' : '¥' + Math.round(v).toLocaleString());
+const TICK = '#8b949e', GRID = '#21262d';
+const charts = {};
+
+function drawChart(id, config) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), config);
+}
+
+const SRC_JA = { YT_SEARCH:'YouTube検索', EXT_URL:'外部サイト・SNS', RELATED_VIDEO:'関連動画', SUBSCRIBER:'登録者フィード', YT_CHANNEL:'チャンネルページ', PLAYLIST:'再生リスト', NO_LINK_OTHER:'直接・不明', YT_OTHER_PAGE:'YouTube内その他', NOTIFICATION:'通知', SHORTS:'ショート', END_SCREEN:'終了画面', ADVERTISING:'広告', HASHTAGS:'ハッシュタグ' };
+const fmtSec = v => v == null ? '—' : Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0');
+const privacyJa = v => v.privacy === 'public' ? '公開' : (v.publishAt ? '予約 ' + new Date(v.publishAt).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}) : (v.privacy === 'unlisted' ? '限定公開' : '非公開'));
+
+function render(a) {
+  const s = a.summary || {}, g = a.goals || {};
+  const first = a.firstPublishedAt ? new Date(a.firstPublishedAt) : null;
+  const dayN = first ? Math.floor((Date.now() - first.getTime()) / 86400000) + 1 : null;
+  document.getElementById('periodLabel').textContent = first ? '初公開 ' + first.toLocaleDateString('ja-JP') + '・' + dayN + '日目／30日' : '';
+  const card = (l, v, goal, unit, sub) => {
+    const ok = v != null && goal != null && v >= goal;
+    return '<div class="card ' + (ok ? 'ok' : '') + '"><div class="l">' + esc(l) + '</div><div class="n">' + esc(v == null ? '—' : v + unit) + '</div><div class="s">' + esc('目標 ' + goal + unit + (sub ? '・' + sub : '')) + '</div></div>';
+  };
+  document.getElementById('cards').innerHTML = [
+    card('視聴回数（公開 ' + (s.videos || 0) + '本の合計）', s.views, g.views, '回', '事業主は公開ページで再生しない運用'),
+    card('平均視聴維持率', s.avgViewPct, g.avgViewPct, '%', 'アナリティクス確定分'),
+    card('事前登録（フォーム）', s.signups, g.signups, '件', ''),
+    '<div class="card"><div class="l">具体的な問い合わせ</div><div class="n">手集計</div><div class="s">目標 ' + esc(g.inquiries) + '件・コメントとメールを数える</div></div>',
+  ].join('');
+
+  const days = a.daily || [];
+  drawChart('dayChart', {
+    type: 'bar',
+    data: { labels: days.map(d => Number(d.d.slice(5, 7)) + '/' + Number(d.d.slice(8))), datasets: [
+      { label: '視聴回数', data: days.map(d => d.views), backgroundColor: '#58a6ff', maxBarThickness: 18, borderRadius: 3 } ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.raw + '回・' + (days[c.dataIndex].minutes || 0) + '分' } } },
+      scales: { x: { grid: { display: false }, ticks: { color: TICK, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
+                y: { beginAtZero: true, grid: { color: GRID }, ticks: { color: TICK, precision: 0 } } } }
+  });
+
+  const vs = a.videos || [];
+  document.getElementById('videoBody').innerHTML = vs.length
+    ? vs.map(v => '<tr><td style="white-space:normal;min-width:220px">' + esc(v.title) + '</td><td>' + esc(privacyJa(v)) + '</td><td>' + v.views + '</td>'
+        + '<td>' + (v.avgViewPct == null ? '—' : v.avgViewPct + '%') + '</td><td>' + fmtSec(v.avgViewSec) + '</td><td>' + (v.minutes == null ? '—' : v.minutes) + '</td>'
+        + '<td>' + (v.subsGained == null ? '—' : v.subsGained) + '</td><td>' + v.likes + '</td><td>' + v.comments + '</td>'
+        + '<td style="white-space:normal;text-align:left">' + esc((v.traffic || []).slice(0, 3).map(t => (SRC_JA[t.source] || t.source) + ' ' + t.views).join(' / ') || '—') + '</td></tr>').join('')
+    : '<tr><td colspan="10" class="empty">再生リストに動画がありません</td></tr>';
+
+  document.getElementById('notes').innerHTML = [
+    '<b>YouTube は投稿者自身の再生も数えます（除外する設定はありません）。</b>事業主は公開ページで再生せず、確認は手元の MP4 か Studio の編集画面で行う運用です。ここの数字はその前提の値です。',
+    '<b>「視聴回数」は YouTube の現在値、維持率・日別・流入元はアナリティクスの確定値です。</b>アナリティクスは2〜3日遅れて確定するため、公開直後は「—」や 0 になります。',
+    '<b>判定基準</b>は初公開から30日後（視聴 ' + esc(g.views) + '回・維持率 ' + esc(g.avgViewPct) + '%・事前登録 ' + esc(g.signups) + '件・問い合わせ ' + esc(g.inquiries) + '件）。問い合わせは自動で数えられないので手で数えます。',
+    '<b>数字は毎朝6時以降に1回だけ更新されます。</b>自宅PCが止まっている間は更新されません。',
+  ].map(t => '<li>' + t + '</li>').join('');
+}
+
+// ================================================================
+// 取得（GASの間欠障害に備えて再送。読み取り専用なので再送しても副作用はない）
+// ================================================================
+async function gasPost(body) {
+  // Content-Type: text/plain で simple request にし CORS preflight を回避（GAS定石）
+  const res = await fetch(GAS_URL, { method: 'POST', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(body) });
+  const text = await res.text();
+  // HTTP 200 でもHTMLが返ることがある。本文先頭で判定する
+  if (!res.ok || text.trim().startsWith('<')) throw new Error('GASに届きませんでした（HTTP ' + res.status + '）');
+  return JSON.parse(text);
+}
+async function gasPostRetry(body) {
+  const delays = [800, 1600, 3200];
+  for (let i = 0; ; i++) {
+    try { return await gasPost(body); }
+    catch (e) {
+      if (i >= delays.length) throw e;
+      await new Promise(r => setTimeout(r, delays[i]));
+    }
+  }
+}
+
+function showErr(html) {
+  const el = document.getElementById('loadErr');
+  el.innerHTML = html + '<br><button type="button" onclick="load()">もう一度読み込む</button>';
+  el.style.display = 'block';
+}
+
+async function load() {
+  const badge = document.getElementById('liveBadge');
+  const warn = document.getElementById('staleWarn');
+  badge.textContent = '読み込み中…'; badge.className = 'live';
+  try {
+    const r = await gasPostRetry({ action: 'getMonitor', apiKey: getKey(), key: getKey() });
+    if (r.error) throw new Error(r.error);
+    const a = r.data && r.data.youtubeStats;
+    if (!a) {
+      const why = (r.data && r.data.youtubeStatsError) || 'まだ集計が届いていません';
+      throw new Error('視聴データがありません: ' + why + '。自宅PCで collect_youtube_stats.py --force を実行すると作り直せます');
+    }
+    document.getElementById('loadErr').style.display = 'none';
+    render(a);
+    const ageH = (Date.now() - new Date(a.generatedAt).getTime()) / 3600000;
+    document.getElementById('updatedAt').textContent = '集計: ' + new Date(a.generatedAt).toLocaleString('ja-JP');
+    const notes = [];
+    if (ageH > STALE_HOURS) notes.push('集計が ' + Math.floor(ageH) + ' 時間前のままです。毎朝の自動集計が止まっている可能性があります。');
+    (a.errors || []).forEach(e => notes.push(e));
+    warn.innerHTML = notes.map(esc).join('<br>');
+    warn.style.display = notes.length ? 'block' : 'none';
+    badge.textContent = ageH > STALE_HOURS ? '⚠ 古い集計' : '● 最新';
+    badge.className = ageH > STALE_HOURS ? 'live stale' : 'live';
+  } catch (e) {
+    badge.textContent = '✕ 取得失敗'; badge.className = 'live down';
+    showErr('⚠ ' + esc(e.message));
+  }
+}
+
+if (checkSession()) {
+  document.getElementById('authOverlay').style.display = 'none';
+  unlockAuth();
+} else {
+  document.body.classList.add('auth-locked');
+}
+</script>
+</body>
+</html>
