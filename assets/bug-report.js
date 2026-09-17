@@ -5,6 +5,11 @@
   const GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
   if (document.getElementById('nsf-bug-btn')) return;
   const MAX_PHOTOS = 3;
+  // 読み込む <script> の data-label / data-title / data-placeholder で文言を差し替えられる（N's refill 販売ページは「様式の改善意見」・2026-09-17 事業主指示）
+  const CFG = (document.currentScript && document.currentScript.dataset) || {};
+  const LABEL = CFG.label || '💡 改善要望';
+  const TITLE = CFG.title || '改善要望・不具合を送る';
+  const PLACEHOLDER = CFG.placeholder || '例：A4横で印刷したら左右が3mmずれる／◯◯の機能がほしい';
 
   function pageKey() {
     let path = location.pathname.replace(/^\/ns-factory\/?/, '');
@@ -23,10 +28,10 @@
     'border:1px solid rgba(120,86,60,.35);background:rgba(255,255,255,.94);color:#6f4e37;',
     'font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.10);',
     'font-family:-apple-system,"Hiragino Sans",Meiryo,sans-serif;'
-  ].join(''), '💡 改善要望');
+  ].join(''), LABEL);
   btn.id = 'nsf-bug-btn';
   btn.type = 'button';
-  btn.setAttribute('aria-label', '改善要望・不具合を送る');
+  btn.setAttribute('aria-label', TITLE);
 
   const overlay = el('div', 'position:fixed;inset:0;z-index:960;background:rgba(15,15,15,.55);display:none;align-items:center;justify-content:center;padding:16px;');
   overlay.id = 'nsf-bug-overlay';
@@ -35,9 +40,9 @@
     'font-family:-apple-system,"Hiragino Sans",Meiryo,sans-serif;color:#1d1d1f;font-size:13px;line-height:1.7;max-height:90vh;overflow:auto;'
   ].join(''));
   card.innerHTML = [
-    '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">改善要望・不具合を送る</div>',
+    '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">' + TITLE + '</div>',
     '<div style="font-size:12px;color:#6e6e73;margin-bottom:12px;">うまく動かない・こうしてほしい等、そのまま書いてください。写真も添付できます。ページ名は自動で添えます。</div>',
-    '<textarea id="nsf-bug-msg" rows="5" maxlength="1000" placeholder="例：A4横で印刷したら左右が3mmずれる／◯◯の機能がほしい" style="width:100%;box-sizing:border-box;padding:10px;border:1.5px solid #d2d2d7;border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;"></textarea>',
+    '<textarea id="nsf-bug-msg" rows="5" maxlength="1000" placeholder="' + PLACEHOLDER.replace(/"/g, '&quot;') + '" style="width:100%;box-sizing:border-box;padding:10px;border:1.5px solid #d2d2d7;border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;"></textarea>',
     '<div style="margin-top:10px;">',
     '  <label for="nsf-bug-photo" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1.5px dashed #c9a96e;border-radius:8px;background:#fbf7ef;color:#6f4e37;font-size:13px;cursor:pointer;font-family:inherit;">📷 写真を追加<span style="font-size:11px;color:#8a7362;">（最大' + MAX_PHOTOS + '枚）</span></label>',
     '  <input id="nsf-bug-photo" type="file" accept="image/*" multiple style="display:none;">',
