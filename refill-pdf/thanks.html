@@ -70,6 +70,8 @@ const REFILL_SALES_GAS_URL = 'https://script.google.com/macros/s/AKfycbw6KnJJdWo
     title.textContent = 'ご購入ありがとうございます';
     lead.textContent = (data.name ? '「' + data.name + '」を' : '') + '下のボタンからダウンロードできます。' + (data.email ? ' 同じリンクを ' + data.email + ' にもお送りしました。' : '');
     box.hidden = false; msg.textContent = '印刷するときは、拡大・縮小なし（実際のサイズ・100%）を選んでください。';
+    // 講座の教材（動画＋テンプレート＋依頼文集の ZIP）は、PDF・印刷の案内ではなく ZIP の案内にする（2026-09-17）
+    if (/^ai-course\//.test(data.page || '')) { msg.textContent = 'ZIPファイルです。ダウンロードして展開し、最初に「00_はじめに.txt」をお読みください。'; dl.textContent = '教材（ZIP）をダウンロード'; }
     dl.href = data.url; dl.hidden = false;
     note.textContent = 'このページを閉じても、メールのリンクからいつでもダウンロードできます。';
   } catch (e) {
