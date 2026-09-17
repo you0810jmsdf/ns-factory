@@ -811,6 +811,10 @@ canvas{
           <input id="endLogoCta" type="checkbox">
           <span><strong>締めのロゴを最後に浮かび上がらせる</strong>動画の最後の約2.6秒、画面がすっと暗くなり金のフクロウとN's factoryのロゴが浮かび上がります。動画の長さは変わりません。プレビューと保存MP4の両方に入ります（フィルムシーン使用中は、フィルム側の締めコマがあるためこの演出は入りません）。</span>
           </label>
+          <label class="check-row" for="owlOverlay">
+          <input id="owlOverlay" type="checkbox">
+          <span><strong>フクロウのキャラクターを重ねる</strong>YouTube講座動画と同じ黒いフクロウが写真枠の右下に立ち、字幕がフクロウのセリフに見えます（ずんだもん等のVOICEVOXの声と組み合わせる前提）。ポーズはコマの役割に合わせて自動で変わり、「写真ごと」タブで個別に選べます。AIで作った絵のため、動画の左下とSNSキャプションに「※画像はAIで作成しています」が自動で入ります。フィルムシーン使用中は出ません。</span>
+          </label>
         </section>
 
         <section class="panel">
@@ -945,6 +949,11 @@ canvas{
           <div class="field">
           <label for="duration">表示秒数</label>
           <input id="duration" type="number" min="1.8" max="60" step="0.2" value="3.5">
+          </div>
+          <div class="field" id="owlPoseField" hidden>
+          <label for="owlPose">このコマのフクロウ（ポーズ）</label>
+          <select id="owlPose"></select>
+          <p class="help" id="owlPoseHelp">「自動」はコマの役割から選び、同じ動画の中でポーズが重ならないように割り当てます。</p>
           </div>
           <div class="actions">
             <button class="secondary" id="toggleSlideUse">動画から除外</button>
@@ -1250,6 +1259,10 @@ const els = {
   filmCtaEnabled: document.getElementById('filmCtaEnabled'),
   filmSpeedAuto: document.getElementById('filmSpeedAuto'),
   endLogoCta: document.getElementById('endLogoCta'),
+  owlOverlay: document.getElementById('owlOverlay'),
+  owlPose: document.getElementById('owlPose'),
+  owlPoseField: document.getElementById('owlPoseField'),
+  owlPoseHelp: document.getElementById('owlPoseHelp'),
   workIdOverlay: document.getElementById('workIdOverlay'),
   workIdOverlayText: document.getElementById('workIdOverlayText'),
   voicevoxBox: document.getElementById('voicevoxBox'),
@@ -1364,6 +1377,33 @@ const AI_VOICES = {
 // 日本語ナレーションの中継サーバ（Cloudflare Workers）。
 // Microsoft 側がブラウザからの直接接続を弾くため、ここを通して mp3 を受け取る。
 const JP_TTS_ENDPOINT = 'https://nsfactory-tts-relay.bouncy-xenoposeidon.workers.dev/tts';
+
+// フクロウのキャラクター（2026-09-17 事業主指示）。YouTube講座動画と同じ絵を写真枠の右下に重ね、
+// 字幕をフクロウのセリフに見せる（VOICEVOX ずんだもん等の声と組み合わせる前提）。
+// 絵は 人事部\講座企画\AI業務ツール講座\本編\素材\生成\ の18ポーズ×2（Geminiで生成・文字なし透過）を
+// 長辺600pxのWebPにして assets/owl/ に置いたもの。AI生成のため「※画像はAIで作成しています」を動画とキャプションに必ず出す。
+// roles はコマの役割名（storyRole・日本語）に当てるパターン。「自動」はこれで候補を絞り、同じ動画内で重ならないよう割り当てる。
+const OWL_AI_NOTE = '※画像はAIで作成しています';
+const OWL_POSES = Object.freeze([
+  {value:'binocular', label:'双眼鏡でのぞく（全体・注目）',   roles:/全体|全景|注目|Hook|問い|手がかり/i},
+  {value:'point',     label:'ここがポイント（細部・仕立て）', roles:/細部|仕立て|縫|コバ|価値|理由|興味/i},
+  {value:'check',     label:'チェックリスト（素材・確認）',   roles:/素材|質感|傷|しわ|証拠|正面|側面/i},
+  {value:'sheet',     label:'表を見せる（使い方・特徴）',     roles:/使い方|使用|場面|期待/i},
+  {value:'pc',        label:'パソコンで作業（作り方）',       roles:/仕立て|工程|作り/i},
+  {value:'gather',    label:'紙をかき集める（困りごと）',     roles:/課題|Before|困/i},
+  {value:'bind',      label:'カードをまとめる（解決）',       roles:/変化|完成像|答え|Bridge/i},
+  {value:'lock',      label:'南京錠を抱える（安心）',         roles:/安心|保証|経年/i},
+  {value:'badge',     label:'星のバッジを掲げる（誇り）',     roles:/完成|After|欲求/i},
+  {value:'flag',      label:'旗を振る（次へ）',               roles:/次の一歩|行動|CTA/i},
+  {value:'bye',       label:'手を振る（締め）',               roles:/締め|CTA|行動/i},
+  {value:'rest',      label:'お辞儀（締め・余韻）',           roles:/余韻|締め/i},
+  {value:'heart',     label:'ハートを差し出す（想い・贈り物）', roles:/想い|贈|気持ち|余韻/i},
+  {value:'ribbon',    label:'メダルを指さす（自慢の一品）',   roles:/完成|After|価値/i},
+  {value:'sign',      label:'矢印の案内板（次へ・誘導）',     roles:/次の一歩|行動|CTA/i},
+  {value:'clock',     label:'懐中時計を抱える（時間・経年）', roles:/経年|変化|時間/i},
+  {value:'scale',     label:'天秤で見比べる（比較・選ぶ）',   roles:/比較|選|課題/i},
+  {value:'calc',      label:'電卓で悩む（価格・困りごと）',   roles:/価格|値段|困|課題/i}
+]);
 
 const STORY_TEMPLATES = Object.freeze({
   craft: {label:'手仕事の魅力', roles:['全体像','素材','仕立て','使い方','経年変化','余韻']},
@@ -2279,7 +2319,8 @@ function addFiles(files){
         transitionDuration: .6,
         motion: ['zoomIn','panLeft','zoomOut','panRight'][index % 4],
         transition: ['fade','wipeLeft','fade','slideLeft'][index % 4],
-        subtitleMotion: ['fadeUp','typewriter','highlight','pop'][index % 4]
+        subtitleMotion: ['fadeUp','typewriter','highlight','pop'][index % 4],
+        owlPose: 'auto'
       });
       added += 1;
       selected = slides.length - 1;
@@ -2476,7 +2517,8 @@ function addDataUrlPhotos(photos){
         transitionDuration: .7,
         motion: ['zoomIn','panLeft','zoomOut','panRight'][index % 4],
         transition: ['fade','wipeLeft','fade','slideLeft'][index % 4],
-        subtitleMotion: ['fadeUp','typewriter','highlight','pop'][index % 4]
+        subtitleMotion: ['fadeUp','typewriter','highlight','pop'][index % 4],
+        owlPose: 'auto'
       });
       selected = slides.length - 1;
       renderList();
@@ -3267,6 +3309,10 @@ function loadSelected(){
   els.motion.value = slide.motion;
   els.transition.value = slide.transition;
   els.subtitleMotion.value = slide.subtitleMotion || 'fadeUp';
+  if(els.owlPose){
+    els.owlPose.innerHTML = owlPoseOptionsHtml(slide);
+    els.owlPose.value = slide.owlPose || 'auto';
+  }
   if(els.slideRole){
     els.slideRole.innerHTML = roleSelectOptionsHtml(slide.storyRole);
     els.slideRole.value = slide.storyRole || '';
@@ -3314,6 +3360,7 @@ function saveSelected(){
   slide.transition = els.transition.value;
   slide.transitionPreset = slide.transitionPreset || slide.transition;
   slide.subtitleMotion = els.subtitleMotion.value;
+  if(els.owlPose && els.owlPose.value) slide.owlPose = els.owlPose.value;
 }
 
 function roundDuration(seconds){
@@ -3586,6 +3633,148 @@ function drawFrame(time){
   if(els.endLogoCta && els.endLogoCta.checked) drawEndLogoCta(time);
   drawWorkIdBadge();
   drawVoicevoxCredit();
+  drawAiImageNote();
+}
+
+/* ══ フクロウのキャラクター重ね合わせ（2026-09-17 事業主指示）══
+   YouTube講座動画と同じ黒いフクロウを、写真枠の右下・字幕ボックスの真上に立たせる。
+   drawSlide の中（字幕の直前）で描くので、切替（フェード・ワイプ・スライド）にも写真と一緒に巻き込まれる。
+   ポーズは slide.owlPose（'auto'／'none'／'pc_1' など）。'auto' は役割から候補を絞り、同じ動画内で重ならないよう割り当てる。
+   絵の読み込みは初めて必要になったときに行い、読み込み完了でプレビューを描き直す（loadBrandAsset と同じ）。
+   保存前は preloadOwlImages で全コマ分を待つ（最初のフレームで絵が抜けないように）。 */
+const owlImages = {};
+function owlOverlayActive(){
+  return !!(els.owlOverlay && els.owlOverlay.checked) && !filmStripActive();
+}
+function owlImage(name){
+  if(!owlImages[name]) owlImages[name] = loadBrandAsset(`./assets/owl/${name}.webp`);
+  return owlImages[name];
+}
+function owlPoseOptionsHtml(slide){
+  const auto = resolvedOwlPose(slide, {forceAuto:true});
+  const autoLabel = auto ? `自動（今は「${owlPoseLabel(auto)}」）` : '自動（役割から選ぶ）';
+  const options = [`<option value="auto">${escapeHtml(autoLabel)}</option>`, '<option value="none">出さない</option>'];
+  OWL_POSES.forEach(pose => {
+    [1, 2].forEach(n => options.push(`<option value="${pose.value}_${n}">${escapeHtml(pose.label)} ${n}</option>`));
+  });
+  return options.join('');
+}
+function owlPoseLabel(name){
+  const pose = OWL_POSES.find(p => name.startsWith(`${p.value}_`));
+  return pose ? `${pose.label} ${name.slice(-1)}` : name;
+}
+/* 「自動」の割り当て。手で選んだポーズは先に確保し、残りを役割の合う順→他の順で埋める。
+   同じ動画内で同じ絵を使い回さない（講座動画と同じ方針）。24枚を超える枚数なら後ろは繰り返し。 */
+function autoOwlPlan(){
+  const targets = playableSlides();
+  const used = new Set();
+  const plan = new Map();
+  targets.forEach(slide => {
+    const v = slide.owlPose || 'auto';
+    if(v !== 'auto' && v !== 'none') used.add(v);
+  });
+  targets.forEach((slide, index) => {
+    if((slide.owlPose || 'auto') !== 'auto') return;
+    const role = String(slide.storyRole || '');
+    const matched = OWL_POSES.filter(p => role && p.roles.test(role));
+    const rest = OWL_POSES.filter(p => !matched.includes(p));
+    // 役割が無いコマは、コマ番号でずらして順に使う（1枚目から双眼鏡・指さし…と並ぶ）
+    const order = matched.length ? matched.concat(rest) : rest.slice(index % rest.length).concat(rest.slice(0, index % rest.length));
+    let pick = '';
+    for(const pose of order){
+      for(const n of [1, 2]){
+        const name = `${pose.value}_${n}`;
+        if(!used.has(name)){ pick = name; break; }
+      }
+      if(pick) break;
+    }
+    if(!pick) pick = `${OWL_POSES[index % OWL_POSES.length].value}_${(index % 2) + 1}`;
+    used.add(pick);
+    plan.set(slide, pick);
+  });
+  return plan;
+}
+function resolvedOwlPose(slide, {forceAuto = false} = {}){
+  const v = forceAuto ? 'auto' : (slide.owlPose || 'auto');
+  if(v === 'none') return '';
+  if(v !== 'auto') return v;
+  if(forceAuto && (slide.owlPose || 'auto') !== 'auto'){
+    // 手動選択中のコマの「自動なら何になるか」を見せる用。いったん自動扱いで計算する
+    const keep = slide.owlPose; slide.owlPose = 'auto';
+    try{ return autoOwlPlan().get(slide) || ''; } finally { slide.owlPose = keep; }
+  }
+  return autoOwlPlan().get(slide) || '';
+}
+function activeOwlPoseNames(){
+  if(!owlOverlayActive()) return [];
+  return [...new Set(playableSlides().map(slide => resolvedOwlPose(slide)).filter(Boolean))];
+}
+async function preloadOwlImages(){
+  const names = activeOwlPoseNames();
+  if(!names.length) return;
+  updateProgressTicker && updateProgressTicker('フクロウの絵を読み込み中');
+  await Promise.all(names.map(name => new Promise(resolve => {
+    const img = owlImage(name);
+    if(img.complete && img.naturalWidth) return resolve();
+    img.addEventListener('load', () => resolve(), {once:true});
+    img.addEventListener('error', () => resolve(), {once:true});   // 失敗しても保存は止めない（その絵だけ抜ける）
+  })));
+}
+function drawOwlCharacter(slide, progress){
+  if(!owlOverlayActive()) return;
+  const name = resolvedOwlPose(slide);
+  if(!name) return;
+  const img = owlImage(name);
+  if(!img.complete || !img.naturalWidth) return;
+  const photo = REEL_LAYOUT.photo;
+  const spec = REEL_LAYOUT.owl || {h:Math.round(photo.h * .31), right:18};
+  const h = spec.h;
+  const w = Math.round(h * img.naturalWidth / img.naturalHeight);
+  // 立ち位置の下端: 字幕ボックスの真上（字幕が無いコマは写真枠の下端近く）
+  let bottom = photo.y + photo.h - 22;
+  if(slide.narration && slide.subtitleMotion !== 'none'){
+    bottom = buildSubtitleLayout(trimSubtitle(slide.narration)).box.y - 6;
+  }
+  const t = progress * (slide.duration || 3.5);
+  const bob = Math.sin(t * 2.2) * 5;                        // ゆっくり上下（呼吸）
+  const enter = easeOut(clamp(progress / .22, 0, 1));       // コマの最初だけ下からふわっと
+  const x = photo.x + photo.w - w - spec.right;
+  const y = bottom - h + bob + (1 - enter) * 34;
+  ctx.save();
+  ctx.globalAlpha *= enter;
+  ctx.shadowColor = 'rgba(0,0,0,.38)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 6;
+  ctx.drawImage(img, Math.round(x), Math.round(y), w, h);
+  ctx.restore();
+}
+/* AI生成画像の注記。フクロウを出している間、動画の最初から最後まで左下に小さく出す（VOICEVOXクレジットと同じ行・左寄せ）。
+   drawFrame の最後で1回だけ描く（切替・暗幕に巻き込まれない）。声なし保存でもフクロウが出る限り描く。 */
+function drawAiImageNote(){
+  if(!owlOverlayActive()) return;
+  const anchor = REEL_LAYOUT.credit;
+  if(!anchor) return;
+  const text = OWL_AI_NOTE;
+  const size = 19;
+  const padX = 14;
+  const h = anchor.h || 36;
+  ctx.save();
+  ctx.font = canvasFont(500, size);
+  const w = ctx.measureText(text).width + padX * 2;
+  const x = REEL_LAYOUT.subtitle.x;
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = 'rgba(16,12,8,.78)';
+  roundRect(ctx, x, anchor.y, w, h, h / 2);
+  ctx.fill();
+  ctx.fillStyle = '#E8DCC4';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x + w / 2, anchor.y + h / 2 + 1);
+  ctx.restore();
+}
+// 直近に保存した動画にフクロウ（AI生成画像）が入っていれば、キャプション用の注記
+function recordedAiImageNote(){
+  return (lastRecordingBlob && lastRecordingMeta && lastRecordingMeta.aiImage) ? OWL_AI_NOTE : '';
 }
 
 /* ══ VOICEVOXのクレジット表記（規約上の義務・2026-09-13）══
@@ -3765,6 +3954,7 @@ function drawSlide(slide, progress, alpha){
     drawPhoto(slide.img, slide, progress);
   }
   drawTexts(slide);
+  drawOwlCharacter(slide, progress);   // 字幕より先に描く（字幕ボックスの上に立ち、字幕がセリフに見える）
   drawNarrationSubtitle(slide, progress);
   ctx.restore();
 }
@@ -4172,7 +4362,8 @@ const VIDEO_FORMATS = Object.freeze({
       title:{x:540, y:420, maxWidth:720, maxSize:40, minSize:28},
       subtitle:{x:82, w:820, bottom:1288, padX:46, padY:26, minH:138, maxH:286},
       info:{x:76, y:1360, w:850, h:150},
-      credit:{right:926, y:1294, h:36}   // 字幕の下・写真枠(下端1335)の内側。1306だと枠の下端をはみ出した（実描画で確認）
+      credit:{right:926, y:1294, h:36},   // 字幕の下・写真枠(下端1335)の内側。1306だと枠の下端をはみ出した（実描画で確認）
+      owl:{h:260, right:18}               // フクロウの高さと写真枠右端からの余白（字幕ボックスの上に立つ）
     }
   },
   feed: {
@@ -4183,7 +4374,8 @@ const VIDEO_FORMATS = Object.freeze({
       title:{x:540, y:230, maxWidth:720, maxSize:40, minSize:28},
       subtitle:{x:82, w:820, bottom:1070, padX:46, padY:24, minH:120, maxH:240},
       info:{x:76, y:1090, w:850, h:130},
-      credit:{right:926, y:1232, h:36}
+      credit:{right:926, y:1232, h:36},
+      owl:{h:220, right:18}
     }
   },
   square: {
@@ -4194,7 +4386,8 @@ const VIDEO_FORMATS = Object.freeze({
       title:{x:540, y:200, maxWidth:720, maxSize:38, minSize:26},
       subtitle:{x:82, w:820, bottom:855, padX:46, padY:22, minH:110, maxH:200},
       info:{x:76, y:880, w:850, h:120},
-      credit:{right:926, y:1012, h:36}
+      credit:{right:926, y:1012, h:36},
+      owl:{h:180, right:18}
     }
   }
 });
@@ -5004,7 +5197,7 @@ async function generateSnsPostVoiceCaption(){
     const d = JSON.parse(text);
     if(!d.ok) throw new Error(d.error || '作成に失敗しました');
     els.snsPostCaption.value = d.caption + '\n\n作品番号: ' + currentWork.id + '\nhttps://you0810jmsdf.github.io/ns-factory/works/' + encodeURIComponent(currentWork.id) + '.html'
-      + (recordedVoiceCredit() ? '\n\n' + recordedVoiceCredit() : '');
+      + ((recordedVoiceCredit() || recordedAiImageNote()) ? '\n\n' + [recordedVoiceCredit(), recordedAiImageNote()].filter(Boolean).join('\n') : '');
     const ng = d.ngWords || [];
     st.textContent = ng.length
       ? '⚠️ 使わない言葉が入っています：' + ng.join('、') + '（直すか、もう一度作ってください）'
@@ -5188,6 +5381,7 @@ function finishRecordingBlob(blob, format, message){
   els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}${currentVideoFormat().suffix}${solidBgActive() ? '_solid' : ''}.${format.ext}`;
   els.downloadBox.style.display = 'block';
   lastRecordingBlob = blob;
+  format.aiImage = owlOverlayActive();   // フクロウ（AI生成画像）入りならキャプションに注記を足す
   lastRecordingMeta = format;
   refreshUploadButton();
   updateShareToSnsUi();
@@ -6258,6 +6452,9 @@ function requestExportGate(mode){
     ...(narrationMode && selectedVoicevoxCredit()
       ? [{warn:false, text:`声: ${selectedVoicevoxCredit()}（このPCのVOICEVOXで作成・1コマ15〜20秒・動画の右下とキャプションにクレジットが入ります）`}]
       : []),
+    ...(owlOverlayActive()
+      ? [{warn:false, text:`フクロウ: ${activeOwlPoseNames().length}ポーズを重ねます（動画の左下とキャプションに「${OWL_AI_NOTE}」が入ります）`}]
+      : []),
     {warn:videoTooLongForSns(), text:`画質と大きさ:${(plannedVideoBitrate() / 1000000).toFixed(1)}Mbps・約${formatMb((plannedVideoBitrate() + AUDIO_BITRATE) * duration / 8)}MB${videoTooLongForSns() ? '（SNSへ投稿するには長すぎます。「Drive用に秒数を短縮」で短くしてください）' : ''}`}
   ];
   els.exportGateList.innerHTML = checks
@@ -6324,6 +6521,7 @@ async function recordVideoCore(mode = 'silent'){
   resetRecordingOutput();
   try{
     await ensureCutoutsForSolidBg();
+    await preloadOwlImages();
     if(narrationMode){
       await recordNarratedMp4();
       return;
@@ -7404,11 +7602,12 @@ document.getElementById('moveUp').addEventListener('click', () => moveSelected(-
 document.getElementById('moveDown').addEventListener('click', () => moveSelected(1));
 document.getElementById('removeSlide').addEventListener('click', removeSelected);
 els.clearAllPhotos.addEventListener('click', clearAllPhotos);
-['caption','narration','duration','transitionDuration','motion','transition','subtitleMotion'].forEach(id => {
+['caption','narration','duration','transitionDuration','motion','transition','subtitleMotion','owlPose'].forEach(id => {
   const control = document.getElementById(id);
   const redraw = () => {
     saveSelected();
     renderList();
+    if(id === 'owlPose') loadSelected();   // 「自動（今は…）」の表示を他コマの割り当て変化に合わせて更新
     if(id === 'subtitleMotion') previewCurrentSubtitleMotion();
     else drawSelectedPreviewFrame(.35);
   };
@@ -7450,6 +7649,15 @@ els.workIdOverlay.addEventListener('change', () => {
 els.workIdOverlayText.addEventListener('input', () => drawSelectedOrFirstFrame());
 els.workIdOverlayText.addEventListener('change', () => {
   if(els.workIdOverlay.checked) resetRecordingOutput();
+});
+els.owlOverlay.addEventListener('change', () => {
+  resetRecordingOutput();
+  if(els.owlPoseField) els.owlPoseField.hidden = !els.owlOverlay.checked;
+  if(selected >= 0) loadSelected();
+  drawSelectedOrFirstFrame();
+  setLog(els.owlOverlay.checked
+    ? `フクロウを重ねます。ポーズはコマの役割から自動で選び、「写真ごと」タブで変えられます。動画の左下とキャプションに「${OWL_AI_NOTE}」が入ります。`
+    : 'フクロウを外しました。');
 });
 els.endLogoCta.addEventListener('change', () => {
   resetRecordingOutput();
