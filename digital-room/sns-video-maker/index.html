@@ -354,6 +354,8 @@ canvas{
 }
 .lang-seg button.active{color:#fff;background:var(--brass-dark);box-shadow:var(--shadow-sm)}
 .lang-seg button:disabled{opacity:.5}
+.lang-bar-voice{flex:1 1 100%;margin:4px 0 0;padding-top:10px;border-top:1px dashed var(--line)}
+.lang-bar-voice .help:last-child{margin-bottom:0}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
@@ -725,7 +727,16 @@ canvas{
           <option value="ja-JP">日本語</option>
           <option value="en-US">English</option>
         </select>
-        <p class="lang-bar-note" id="langBarNote">切り替えると、台本・作品名・素材欄・AI音声がその言語にそろいます。日本語へは作品集の原文を戻すだけなので一瞬です（英語へは翻訳します）。</p>
+        <p class="lang-bar-note" id="langBarNote">切り替えると台本・作品名・素材欄・声がその言語にそろいます（日本語へは一瞬、英語へは翻訳）。</p>
+        <div class="field lang-bar-voice">
+          <label for="aiVoiceSelect">完成動画に入るAI音声</label>
+          <select id="aiVoiceSelect"></select>
+          <div id="voicevoxBox" hidden>
+          <p class="help">「VOICEVOX・このPC」の声は、このパソコンのVOICEVOXで作ります（管理者モード専用）。使う前に下のボタンを押してください。初回だけブラウザに「アプリを開きますか」「ローカルネットワークへのアクセス」を聞かれるので、どちらも許可します。1コマの音声づくりに15〜20秒ほどかかります。動画の右下とSNSのキャプションに「VOICEVOX:キャラ名」が自動で入ります（利用規約で必要な表記です）。</p>
+          <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXを起動してつなぐ</button>
+          <p class="help" id="voicevoxStatus" aria-live="polite"></p>
+          </div>
+        </div>
       </div>
       <section class="pane" id="sec-photos">
         <section class="panel">
@@ -796,16 +807,6 @@ canvas{
              部品は id そのままで移しただけ（JSは id で参照しているので動きは変わらない）。 -->
         <section class="panel quick-panel" aria-labelledby="quickPanelTitle">
           <h2 id="quickPanelTitle">よく使う設定</h2>
-          <div class="field">
-          <label for="aiVoiceSelect">完成動画に入るAI音声</label>
-          <select id="aiVoiceSelect"></select>
-          <p class="help">「自動ナレーション付きMP4」で保存するとき、この声がそのまま動画に入ります。日本語・英語とも対応しています。自分の声を入れたいときは「自分の声で録音」を使ってください。</p>
-          <div id="voicevoxBox" hidden>
-          <p class="help">「VOICEVOX・このPC」の声は、このパソコンのVOICEVOXで作ります（管理者モード専用）。使う前に下のボタンを押してください。初回だけブラウザに「アプリを開きますか」「ローカルネットワークへのアクセス」を聞かれるので、どちらも許可します。1コマの音声づくりに15〜20秒ほどかかります。動画の右下とSNSのキャプションに「VOICEVOX:キャラ名」が自動で入ります（利用規約で必要な表記です）。</p>
-          <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXを起動してつなぐ</button>
-          <p class="help" id="voicevoxStatus" aria-live="polite"></p>
-          </div>
-          </div>
           <div class="field">
           <label for="filmStripMode">フィルムシーン（全編）</label>
           <select id="filmStripMode">
@@ -1140,7 +1141,7 @@ canvas{
             </div>
           </details>
           <details class="fold">
-            <summary>音声の細かい設定（読み方の辞書・プレビューの声・秒数合わせ）</summary>
+            <summary>音声の細かい設定（読み方の辞書・秒数合わせ）</summary>
             <div class="field">
             <details>
             <summary style="cursor:pointer">読み方の辞書（音声だけに効きます）</summary>
@@ -1153,7 +1154,8 @@ canvas{
             </div>
             </details>
             </div>
-            <div class="field">
+            <!-- プレビュー用の声は完成動画に入らないため非表示（2026-09-17 事業主指示「完成版の音声しか興味ない」）。要素は音声つきプレビューが参照するので残す -->
+            <div class="field" hidden>
             <label for="voiceSelect">「音声つきプレビュー」で使う声（完成動画には入りません）</label>
             <select id="voiceSelect">
             <option value="">ブラウザ標準</option>
@@ -2623,9 +2625,10 @@ function selectedTranslationTarget(options = {}){
 let lastNarrationLang = 'ja-JP';
 
 function buildJapaneseScriptFromOriginal(source){
-  const text = String(source || '').trim();
+  // 長文紹介の冒頭にある登録名（アンダースコア入り）も、読み上げで「アンダーバー」と読まれないよう空白に直す
+  const text = String(source || '').replace(/_/g, ' ').trim();
   if(currentWork){
-    els.productName.value = currentWork.title || els.productName.value;
+    els.productName.value = displayInfoText(currentWork.title) || els.productName.value;
     els.materialNote.value = formatWorkMeta(currentWork);
   }
   if(text) els.featureNote.value = expandJapaneseFeatureMemo(text, Math.max(8, slides.length));
@@ -2959,7 +2962,8 @@ function applyWorkInfo(work, {translate = false, showLog = false} = {}){
   updateShareToSnsUi();
   // 作品を読み込んだら表示用の作品IDも差し替える（別作品のIDが残ったまま書き出されるのを防ぐ）
   if(els.workIdOverlayText && work.id) els.workIdOverlayText.value = work.id;
-  els.productName.value = work.title || 'レザー作品';
+  // 登録名のアンダースコア（N-Classic_A6_…）は表示・読み上げとも空白に直す（2026-09-17）
+  els.productName.value = displayInfoText(work.title) || 'レザー作品';
   els.materialNote.value = formatWorkMeta(work);
   if(work.shortDesc) els.featureNote.value = work.shortDesc;
   if(work.longDesc) els.workLongDesc.value = work.longDesc;
