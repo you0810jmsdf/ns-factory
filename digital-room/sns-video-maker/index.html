@@ -357,6 +357,8 @@ canvas{
 .lang-seg button:disabled{opacity:.5}
 .lang-bar-voice{flex:1 1 100%;margin:4px 0 0;padding-top:10px;border-top:1px dashed var(--line)}
 .lang-bar-voice .help:last-child{margin-bottom:0}
+.lang-bar-dict{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.lang-bar-dict > summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--brass-dark)}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
@@ -737,6 +739,16 @@ canvas{
           <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXを起動してつなぐ</button>
           <p class="help" id="voicevoxStatus" aria-live="polite"></p>
           </div>
+          <details class="lang-bar-dict">
+          <summary>読み方の辞書（読み間違いを直す）</summary>
+          <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください（書くとその場で保存されます）。「写真ごと」のセリフ欄で言葉を選んで「選んだ言葉の読みを登録」を押しても足せます。<strong>日本語の声のときだけ効きます</strong>。</p>
+          <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
+          <div class="btn-row" style="margin-top:6px;gap:6px">
+          <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
+          <button class="secondary" id="resetReadingDict" type="button">初期値に戻す</button>
+          <button class="secondary" id="testReadingDict" type="button">今のセリフで試聴</button>
+          </div>
+          </details>
         </div>
       </div>
       <section class="pane" id="sec-photos">
@@ -968,6 +980,9 @@ canvas{
           <div class="field">
           <label for="narration">読むセリフ・台本</label>
           <textarea id="narration"></textarea>
+          <div class="actions" style="margin-top:6px">
+            <button class="secondary" id="addReadingFromSelection" type="button" title="セリフ欄で言葉をなぞって選んでから押すと、その言葉の読み方を辞書に登録できます">選んだ言葉の読みを登録</button>
+          </div>
           </div>
           <div class="field">
           <label for="duration">表示秒数</label>
@@ -1142,19 +1157,7 @@ canvas{
             </div>
           </details>
           <details class="fold">
-            <summary>音声の細かい設定（読み方の辞書・秒数合わせ）</summary>
-            <div class="field">
-            <details>
-            <summary style="cursor:pointer">読み方の辞書（音声だけに効きます）</summary>
-            <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください。この端末に保存されます。<strong>日本語の声のときだけ効きます</strong>（英語の声にはそのままの表記で読ませます）。</p>
-            <textarea id="readingDict" rows="7" spellcheck="false" style="width:100%;font-size:12px;line-height:1.6"></textarea>
-            <div class="btn-row" style="margin-top:6px;gap:6px">
-            <button class="secondary" id="saveReadingDict" type="button">辞書を保存</button>
-            <button class="secondary" id="resetReadingDict" type="button">初期値に戻す</button>
-            <button class="secondary" id="testReadingDict" type="button">今のセリフで試聴</button>
-            </div>
-            </details>
-            </div>
+            <summary>音声の細かい設定（秒数合わせ）</summary>
             <!-- プレビュー用の声は完成動画に入らないため非表示（2026-09-17 事業主指示「完成版の音声しか興味ない」）。要素は音声つきプレビューが参照するので残す -->
             <div class="field" hidden>
             <label for="voiceSelect">「音声つきプレビュー」で使う声（完成動画には入りません）</label>
@@ -1332,6 +1335,7 @@ const els = {
   snsPostCancel: document.getElementById('snsPostCancel'),
   adminToggle: document.getElementById('adminToggle'),
   readingDict: document.getElementById('readingDict'),
+  addReadingFromSelection: document.getElementById('addReadingFromSelection'),
   saveReadingDict: document.getElementById('saveReadingDict'),
   resetReadingDict: document.getElementById('resetReadingDict'),
   testReadingDict: document.getElementById('testReadingDict')
@@ -6020,7 +6024,7 @@ async function startVoicevoxEngine(){
 const narrationAudioCache = new Map();
 const NARRATION_AUDIO_CACHE_MAX = 80;
 function narrationAudioCacheKey(text, voice){
-  return [voice, String(text || '').trim(), (els.readingDict && els.readingDict.value) || ''].join('');
+  return [voice, String(text || '').trim(), readingRulesText(currentReadingRules())].join('');
 }
 
 async function generateNarrationAudio(text, voice, language){
@@ -7808,6 +7812,29 @@ els.saveReadingDict.addEventListener('click', () => {
   try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
   const count = parseReadingRules(els.readingDict.value).length;
   setLog(`読み方の辞書を保存しました（${count}件）。次に作る音声から効きます。`);
+});
+// 書いたらその場で保存（保存ボタンの押し忘れで「直したのに読みが変わらない」を防ぐ・2026-09-17）
+els.readingDict.addEventListener('input', () => {
+  try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
+});
+// セリフ欄で選んだ言葉の読みを辞書に足す（2026-09-17 事業主指示「もっと楽に辞書にアクセスしたい」）
+els.addReadingFromSelection.addEventListener('click', () => {
+  const area = els.narration;
+  const word = String(area.value || '').slice(area.selectionStart || 0, area.selectionEnd || 0).trim();
+  if(!word){ setLog('セリフ欄で、読みを直したい言葉をなぞって選んでから押してください。'); return; }
+  if(word.length > 40 || /[\r\n=]/.test(word)){ setLog('選ぶ言葉は1行・40文字以内・「=」を含まないものにしてください。'); return; }
+  const rules = currentReadingRules();
+  const existing = rules.find(([from]) => from === word);
+  const answer = window.prompt(`「${word}」の読み方を、ひらがな・カタカナで入れてください`, existing ? existing[1] : '');
+  if(answer === null) return;
+  const reading = answer.trim().replace(/[\r\n=]/g, '');
+  if(!reading){ setLog('読みが空のため登録しませんでした。'); return; }
+  const lines = String(els.readingDict.value || readingRulesText(rules)).split(/\r?\n/);
+  const at = lines.findIndex(line => { const i = line.indexOf('='); return i > 0 && !line.trim().startsWith('#') && line.slice(0, i).trim() === word; });
+  if(at >= 0) lines[at] = `${word}=${reading}`; else lines.push(`${word}=${reading}`);
+  els.readingDict.value = lines.filter((line, index) => line.trim() || index < lines.length - 1).join('\n');
+  try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
+  setLog(`辞書に「${word}=${reading}」を${at >= 0 ? '上書き' : '登録'}しました。次に作る声から効きます（字幕の文字は変わりません）。`);
 });
 els.resetReadingDict.addEventListener('click', () => {
   els.readingDict.value = readingRulesText(DEFAULT_READING_RULES);
