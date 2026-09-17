@@ -2398,6 +2398,13 @@ async function addDrivePhotos(){
       setDriveStatus(loadingMessage, 'info');
       setLog(loadingMessage);
       setDriveProgress(2, loadingMessage);
+      // 高速経路（2026-09-17）: 一覧だけGASから取り、写真本体はブラウザが画像サーバから直接・並行で読む。
+      // 1枚でも直接読めなければ何も足さずに従来の経路（GASが写真を変換して返す）へ進む。
+      if(candidate.kind === 'catalog'){
+        const direct = await fetchDrivePhotosDirect(candidate, workNo);
+        if(direct.ok) return await applyDrivePhotoData(direct.data, workNo, candidate);
+        setDriveProgress(2, `${loadingMessage}（直接読み込みは使えなかったため、従来の方法で取得します）`);
+      }
       const result = await fetchDrivePhotosCandidate(candidate, workNo, limit);
       if(!result.ok){
         errors.push(result.message);
@@ -2454,6 +2461,107 @@ function drivePhotoCandidates(){
 // 旧サーバー（hasMore を返さない）でも1回で終わるだけなので、そのまま動く。
 const DRIVE_PAGE_SIZE = 8;
 const DRIVE_MAX_PAGES = 25;   // 暴走防止（8枚×25回＝200枚。サーバー側の一覧上限と同じ）
+
+/* ══ Drive写真の直接読み込み（2026-09-17 事業主指示「写真読み取りに時間がかかる」）══
+   実測（作品249・9枚）: 従来は GAS が1枚ずつ文字データに変換して返すため約24秒（1枚約2.4秒・順番待ち・4.7MB）。
+   写真の一覧だけ返す既存の窓口（api=photos・作品集が使用中・約3秒）でファイルIDを取り、
+   本体は lh3.googleusercontent.com/d/<ID>=w1600 をブラウザが並行で読む（1枚約0.8秒・Access-Control-Allow-Origin:* を実測）。
+   crossOrigin='anonymous' で読むので、キャンバスは汚れず MP4保存・背景の切り抜きもそのまま使える。
+   共有されていないフォルダ等で1枚でも読めなければ {ok:false} を返し、呼び出し側が従来の経路へ進む（写真は1枚も足さない）。
+   読み取り専用のGETなので loadJsonp の自動再試行を通してよい。 */
+const DRIVE_DIRECT_SIZE = 1600;          // 従来の GAS 経路（=s1600）と同じ長辺
+const DRIVE_DIRECT_TIMEOUT_MS = 20000;   // 1枚あたりの待ち時間
+const DRIVE_DIRECT_IMAGE_RE = /\.(jpe?g|png|webp|heic|heif|gif|bmp)$/i;
+
+function loadDirectDriveImageOnce(url){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.decoding = 'async';
+    const timer = setTimeout(() => { img.onload = img.onerror = null; img.src = ''; reject(new Error('timeout')); }, DRIVE_DIRECT_TIMEOUT_MS);
+    img.onload = () => { clearTimeout(timer); img.naturalWidth ? resolve(img) : reject(new Error('empty')); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error('load error')); };
+    img.src = url;
+  });
+}
+
+// 画像サーバ（lh3）は短時間に何度も頼むと一部を 429（取りすぎ）で断る（2026-09-17 実測: 9枚中2〜4枚。数分続く）。
+// 断られた写真だけ、従来の GAS 窓口から「その1枚だけ」（offset=順番・limit=1）を取る。GAS は並行で頼めるので、
+// 全部断られても順番待ちの従来方式（約24秒）より速い（実測: 5枚並行で約7秒）。読み取り専用なので再試行に副作用はない。
+function loadDataUrlImage(dataUrl){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => img.naturalWidth ? resolve(img) : reject(new Error('empty'));
+    img.onerror = () => reject(new Error('dataUrl load error'));
+    img.src = dataUrl;
+  });
+}
+
+async function loadDriveImageViaGas(candidate, workNo, index, expectedName){
+  const url = `${SNS_VIDEO_DRIVE_API}?api=snsVideoPhotos&folderId=${encodeURIComponent(candidate.folder)}&workNo=${encodeURIComponent(workNo)}&limit=1&offset=${index}`;
+  const data = await loadJsonp(url);
+  const photo = data && data.ok && data.photos && data.photos[0];
+  if(!photo || !photo.dataUrl) throw new Error('GASから写真を取得できませんでした');
+  // 一覧（api=photos）と並び順が食い違っていたら、別の写真を入れてしまうので使わない
+  if(expectedName && photo.name && photo.name !== expectedName) throw new Error('写真の並び順が一致しません');
+  return loadDataUrlImage(photo.dataUrl);
+}
+
+// 同時に読むのは DRIVE_DIRECT_PARALLEL 枚まで（順番は保つ）
+const DRIVE_DIRECT_PARALLEL = 4;
+async function loadDirectDriveImages(entries, candidate, workNo, onProgress){
+  const images = new Array(entries.length);
+  const stats = {direct:0, viaGas:0};
+  let next = 0, done = 0;
+  async function worker(){
+    while(next < entries.length){
+      const index = next++;
+      const entry = entries[index];
+      try{
+        images[index] = await loadDirectDriveImageOnce(`https://lh3.googleusercontent.com/d/${encodeURIComponent(entry.id)}=w${DRIVE_DIRECT_SIZE}`);
+        stats.direct += 1;
+      }catch(_){
+        images[index] = await loadDriveImageViaGas(candidate, workNo, index, entry.name);
+        stats.viaGas += 1;
+      }
+      done += 1;
+      if(onProgress) onProgress(done);
+    }
+  }
+  await Promise.all(Array.from({length: Math.min(DRIVE_DIRECT_PARALLEL, entries.length)}, worker));
+  return {images, stats};
+}
+
+async function fetchDrivePhotosDirect(candidate, workNo){
+  const startedAt = performance.now();
+  try{
+    const list = await loadJsonp(`${SNS_VIDEO_DRIVE_API}?api=photos&folderId=${encodeURIComponent(candidate.folder)}`);
+    if(!Array.isArray(list) || !list.length) return {ok:false, reason:'一覧が空'};
+    const entries = list
+      .map(item => {
+        const match = String((item && item.url) || '').match(/[?&]id=([A-Za-z0-9_-]{10,})/);
+        const name = String((item && item.name) || '');
+        return match ? {id:match[1], name} : null;
+      })
+      .filter(entry => entry && (!/\.[A-Za-z0-9]{2,5}$/.test(entry.name) || DRIVE_DIRECT_IMAGE_RE.test(entry.name)));
+    if(!entries.length) return {ok:false, reason:'写真のIDを取り出せない'};
+    // 作品集の登録フォルダが別の作品を指していないか（従来経路の folderName 照合の代わりに、写真のファイル名で見る）
+    const numbered = entries.find(entry => /NF\d{4}[_-]?\d+/i.test(entry.name));
+    if(numbered && folderNumberMismatch(numbered.name, workNo)) return {ok:false, reason:'作品番号と写真名が不一致'};
+    setDriveProgress(2, `写真を直接読み込み中（0 / ${entries.length}枚）`);
+    const {images, stats} = await loadDirectDriveImages(entries, candidate, workNo, done => {
+      setDriveProgress(2, `写真を直接読み込み中（${done} / ${entries.length}枚）`);
+    });
+    const photos = entries.map((entry, index) => ({
+      id: entry.id, name: entry.name, mimeType: 'image/jpeg', folderId: candidate.folder, img: images[index]
+    }));
+    console.info(`[drive-direct] ${photos.length}枚を ${((performance.now() - startedAt) / 1000).toFixed(1)}秒で読み込み（直接 ${stats.direct}枚・GAS経由 ${stats.viaGas}枚）`);
+    return {ok:true, data:{ok:true, direct:true, folderId:candidate.folder, folderName:'', photos, total:photos.length, hasMore:false}};
+  }catch(err){
+    console.warn('[drive-direct] 直接読み込みを中止して従来の経路へ:', err && err.message);
+    return {ok:false, reason: String((err && err.message) || err)};
+  }
+}
 
 async function fetchDrivePhotosCandidate(candidate, workNo, limit){
   const pageSize = limit || DRIVE_PAGE_SIZE;
@@ -2530,8 +2638,10 @@ async function applyDrivePhotoData(data, workNo, candidate){
 
 function addDataUrlPhotos(photos){
   return Promise.all(photos.map(photo => new Promise(resolve => {
-    const img = new Image();
-    const url = photo.dataUrl;
+    // 直接読み込み（fetchDrivePhotosDirect）の写真は読み込み済みの img を持っている
+    const preloaded = photo.img && photo.img.complete && photo.img.naturalWidth ? photo.img : null;
+    const img = preloaded || new Image();
+    const url = preloaded ? preloaded.src : photo.dataUrl;
     const index = slides.length;
     const defaults = defaultTexts(index);
     img.onload = () => {
@@ -2558,6 +2668,7 @@ function addDataUrlPhotos(photos){
       resolve();
     };
     img.onerror = () => resolve();
+    if(preloaded){ img.onload(); return; }   // 読み込み済みはその場で足す（map の順＝ファイル名順が保たれる）
     img.src = url;
   })));
 }
