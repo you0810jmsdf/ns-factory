@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高配当株 判定表（楽天RSS用・自分のPCで動く） — N&#39;s factory</title>
+<meta name="description" content="楽天証券マーケットスピード II RSS で自分の口座のデータを読み、高配当株の生データ（利回り・配当性向・ROE・PER・PBR・50/200日線・RSI・MACD・ボリンジャーバンド・出来高）と、目安から外れた箇所だけを1枚の画面に出す道具。買い・売りの判断や助言はしません。980円（税込）。">
+<link rel="canonical" href="https://you0810jmsdf.github.io/ns-factory/digital-room/kabu-board/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="高配当株 判定表（楽天RSS用・自分のPCで動く） — N&#39;s factory">
+<meta property="og:description" content="高配当株の生データと、目安から外れた箇所だけを1枚の画面に。買い・売りの判断はしない道具。楽天証券 RSS・Windows・Excel・Python で動きます。980円（税込）。">
+<meta property="og:url" content="https://you0810jmsdf.github.io/ns-factory/digital-room/kabu-board/">
+<meta property="og:image" content="https://you0810jmsdf.github.io/ns-factory/assets/kabu-board/board.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google tag (gtag.js) -->
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+:root{
+  --bg:#0b0b0c;--bg-2:#111113;--panel:#151517;--line:#2a2724;--line-2:#3a352f;
+  --fg:#efeae2;--fg-2:#b9b1a5;--fg-3:#7d766c;
+  --accent:#c9a96e;--accent-2:#a8884f;--accent-soft:rgba(201,169,110,.12);
+  --radius:14px;
+  font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:dark;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);line-height:1.75;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.nav{position:sticky;top:0;z-index:10;background:rgba(11,11,12,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:16px;height:56px}
+.brand{font-size:16px;font-weight:700;letter-spacing:.04em;color:var(--accent);white-space:nowrap}
+.brand small{font-size:11px;letter-spacing:.2em;color:var(--fg-3);margin-left:8px;text-transform:uppercase;font-weight:400}
+.nav-spacer{flex:1}
+.nav a.link{font-size:13px;color:var(--fg-2);padding:6px 8px;white-space:nowrap}
+.nav a.link:hover{color:var(--fg)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.35;letter-spacing:-.01em}
+h2{font-size:20px;font-weight:700;margin-bottom:14px}
+.lead{color:var(--fg-2);font-size:15px;margin-top:14px;max-width:680px}
+.sec{padding:44px 0;border-top:1px solid var(--line)}
+.ph{border:1px solid var(--line-2);border-radius:var(--radius);background:var(--panel);overflow:hidden}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 26px;border-radius:999px;font-size:15px;font-weight:700;transition:opacity .2s,background .2s}
+.btn:hover{opacity:.88}
+.btn-gold{background:var(--accent);color:#1a140c}
+.btn-line{background:transparent;color:var(--fg);border:1px solid var(--line-2)}
+.buy{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:22px}
+.buy .note{font-size:12px;color:var(--fg-3);line-height:1.8}
+.price{font-size:30px;font-weight:700;margin-top:18px}
+.price small{font-size:13px;color:var(--fg-3);font-weight:400;margin-left:6px}
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;align-items:center;padding:44px 0}
+.facts{width:100%;border-collapse:collapse;font-size:14px}
+.facts th,.facts td{border-bottom:1px solid var(--line);padding:12px 8px;text-align:left;vertical-align:top}
+.facts th{color:var(--fg-3);font-weight:500;width:9em}
+.checks{list-style:none;display:grid;gap:10px;margin-top:6px}
+.checks li{position:relative;padding-left:30px;font-size:15px;color:var(--fg)}
+.checks li:before{content:"";position:absolute;left:4px;top:.55em;width:12px;height:7px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
+.muted{color:var(--fg-2);font-size:14px}
+.muted a{color:var(--accent);border-bottom:1px solid var(--accent-2)}
+.crumb{font-size:12px;color:var(--fg-3);padding-top:18px}
+.warn{border:1px solid var(--accent-2);background:var(--accent-soft);border-radius:var(--radius);padding:16px 18px;margin-top:18px;font-size:14px}
+.warn b{color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.foot{border-top:1px solid var(--line);padding:30px 0 40px;color:var(--fg-3);font-size:12px}
+.foot .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
+.foot a{color:var(--fg-2)}
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;gap:22px;padding:28px 0}
+  .grid2{grid-template-columns:1fr}
+  .nav .wrap{gap:6px}
+  .brand small{display:none}
+  .btn{width:100%}
+  .buy{align-items:stretch}
+}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="brand" href="../">デジタル幕僚室<small>by N's factory</small></a>
+  <span class="nav-spacer"></span>
+  <a class="link" href="../">道具の一覧</a>
+  <a class="link" href="../../index.html">N's factory</a>
+</div></nav>
+
+<main class="wrap">
+  <p class="crumb"><a href="../">デジタル幕僚室</a> ／ 高配当株 判定表</p>
+
+  <section class="hero">
+    <div class="ph"><img src="../../assets/kabu-board/board.png" alt="高配当株 判定表の画面。利回り・配当性向・ROE・PER・PBR と 50日・200日線などの列が並び、目安から外れたセルに色が付いている"></div>
+    <div>
+      <p class="eyebrow">Stock screening board — for Rakuten RSS</p>
+      <h1>高配当株 判定表<br><span style="font-size:.6em;font-weight:600;opacity:.85">楽天RSS用・自分のPCで動く</span></h1>
+      <p class="lead">楽天証券「マーケットスピード II RSS」で自分の口座のデータを読み、高配当株の<b>生データ</b>と<b>目安から外れた箇所</b>だけを1枚の画面に出します。買い・売りの結論は出しません。判断はご自身で。</p>
+      <div class="price">¥980<small>税込・ZIP でお渡し</small></div>
+      <div class="buy">
+      <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
+      <a href="#" class="btn btn-gold" data-checkout="kabu-board" style="display:none"><span>カードで購入する（¥<span data-price>980</span>）</span></a>
+      <p class="note" data-checkout-on="kabu-board" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
+      <a href="mailto:you0810jmsdf@gmail.com?subject=%E9%AB%98%E9%85%8D%E5%BD%93%E6%A0%AA%E5%88%A4%E5%AE%9A%E8%A1%A8%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E9%AB%98%E9%85%8D%E5%BD%93%E6%A0%AA%20%E5%88%A4%E5%AE%9A%E8%A1%A8%EF%BC%88980%E5%86%86%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-line" data-checkout-on="kabu-board" style="display:none">銀行振込で申し込む（メール）</a>
+      <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
+      <a href="mailto:you0810jmsdf@gmail.com?subject=%E9%AB%98%E9%85%8D%E5%BD%93%E6%A0%AA%E5%88%A4%E5%AE%9A%E8%A1%A8%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E9%AB%98%E9%85%8D%E5%BD%93%E6%A0%AA%20%E5%88%A4%E5%AE%9A%E8%A1%A8%EF%BC%88980%E5%86%86%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-gold" data-checkout-off="kabu-board">メールで購入を申し込む（銀行振込）</a>
+      <p class="note" data-checkout-off="kabu-board">メールをいただければ振込先をご案内し、ご入金確認後にダウンロードリンクをお送りします。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <p class="eyebrow">Important</p>
+    <h2>この道具がすること・しないこと</h2>
+    <div class="warn">
+      <b>数値と、目安から外れた箇所を表示するだけです。売買の判断・助言はしません。</b><br>
+      特定の銘柄を勧めることも、買い・売りの結論を示すこともありません。目安の数値は一般に知られた考え方をもとにした初期値で、ご自身で変えられます。投資の判断と結果はすべてご自身の責任となります。FCF・有利子負債・過去の配当の推移は RSS に含まれないため、画面のリンクからご自身で確認していただく作りです。発注機能は含みません。
+    </div>
+  </section>
+
+  <section class="sec">
+    <p class="eyebrow">What you get</p>
+    <h2>画面に出るもの</h2>
+    <div class="grid2">
+      <div>
+        <h3 style="font-size:16px;margin-bottom:8px;color:var(--accent)">会社の評価</h3>
+        <ul class="checks">
+          <li>配当利回り（RSS の年間配当予想 ÷ 株価）</li>
+          <li>配当性向（利回り × PER）・ROE（PBR ÷ PER）</li>
+          <li>PER・PBR・単位株数・必要資金・配当落日・決算発表日</li>
+          <li>利回り 3〜5%、配当性向 60/80/100%、ROE 8%、PER 15 倍、PBR 1.5 倍 などの目安から外れると色が付く</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="font-size:16px;margin-bottom:8px;color:var(--accent)">タイミング（貯めた日足から計算）</h3>
+        <ul class="checks">
+          <li>50日・200日移動平均：株価との並び・差・200日線の向き・クロスの日</li>
+          <li>RSI（14日）：値・区分（30／40／60／70）・向き</li>
+          <li>MACD（12・26・9）：位置・シグナルとのクロス</li>
+          <li>ボリンジャーバンド（20日・±2σ）・ATR（14日）・出来高の20日平均比</li>
+        </ul>
+      </div>
+    </div>
+    <div class="ph" style="margin-top:22px"><img src="../../assets/kabu-board/detail.png" alt="銘柄をクリックして開いた詳細。目安から外れた箇所の理由、会社の評価とタイミングの全数値、外部サイトへのリンク" loading="lazy"></div>
+    <ul class="checks" style="margin-top:22px">
+      <li>絞り込み（利回り・配当性向・ROE・PER・PBR・必要資金・市場・業種）と、列クリックでの並べ替え</li>
+      <li>「基本セット」ボタン：利回り 3% 以上・配当性向 60% 以下・ROE 8% 以上・注意なし にひと押しで絞る</li>
+      <li>目安の数値は画面で変えられ、理由と変更の履歴（備考つき）が残る</li>
+      <li>チェックした銘柄を確認リスト（CSV）に書き出す。メモ欄つき</li>
+      <li>ドライラン：場中に条件（例：日足の RSI が 40 以下）を監視して、当てはまった銘柄を記録する。発注はしない</li>
+    </ul>
+  </section>
+
+  <section class="sec">
+    <p class="eyebrow">Requirements</p>
+    <h2>動かすために必要なもの</h2>
+    <table class="facts">
+      <tr><th>パソコン</th><td>Windows 10 / 11（Mac は不可。マーケットスピード II が Windows 専用のため）</td></tr>
+      <tr><th>証券口座</th><td>楽天証券の口座と マーケットスピード II（無料）。RSS の利用登録（無料・初回のみ）</td></tr>
+      <tr><th>Excel</th><td>デスクトップ版の Excel（Microsoft 365 または Excel 2019 以降・64bit）。Web 版・スマホ版は不可</td></tr>
+      <tr><th>Python</th><td>Python 3.11 以降（無料）と部品2つ（pywin32・openpyxl）。入れ方は手順書に書いてあります</td></tr>
+      <tr><th>銘柄の一覧</th><td>日本取引所グループ（JPX）が無料で公開している「東証上場銘柄一覧」を月1回ダウンロードして置く</td></tr>
+      <tr><th>毎日の操作</th><td>マーケットスピード II のログインと RSS の接続は毎日手で行います。そのあと bat ファイルをダブルクリックするだけ（全銘柄の収集は数分、初回の日足の取り込みは数時間）</td></tr>
+      <tr><th>お届け</th><td>ZIP ファイル（プログラム一式・はじめに（手順書）・利用条件と免責）。カード決済：お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。銀行振込：ご入金を確認してからメールでお送りします</td></tr>
+    </table>
+  </section>
+
+  <section class="sec">
+    <p class="eyebrow">Notes</p>
+    <h2>ご購入の前に</h2>
+    <ul class="muted" style="padding-left:1.2em;display:grid;gap:6px">
+      <li>ご購入者本人が、ご自身のパソコンで使うための道具です。再配布・転売はできません</li>
+      <li>データはご自身の楽天証券口座の RSS で取得するもので、楽天証券の利用規程・RSS の利用同意書に従ってお使いください。取得したデータを第三者に提供・公開しないでください</li>
+      <li>サポートは同梱の手順書の範囲での案内に限ります。パソコンの設定代行、投資に関するご相談は承れません</li>
+      <li>楽天証券・マーケットスピード II・RSS の仕様変更で動かなくなることがあります。その場合の修正・返金は保証しません</li>
+      <li>本ツールは楽天証券株式会社とは無関係の個人が作成したものです。「マーケットスピード」は楽天証券株式会社の商標です</li>
+    </ul>
+    <p class="muted" style="margin-top:14px">購入後のキャンセル・返金はデジタルコンテンツの性質上お受けできません（ZIP が開けないなどの不具合はお取り替えします）。詳しくは <a href="../../terms.html">デジタルデータの利用条件</a>、販売者情報は <a href="../../index.html">特定商取引法に基づく表記（トップページ下部）</a> をご覧ください。</p>
+  </section>
+
+  <section class="sec" id="buy">
+    <p class="eyebrow">Buy now</p>
+    <h2>高配当株 判定表を手に入れる</h2>
+    <div class="price">¥980<small>税込・ZIP でお渡し</small></div>
+    <div class="buy">
+      <a href="#" class="btn btn-gold" data-checkout="kabu-board" style="display:none"><span>カードで購入する（¥<span data-price>980</span>）</span></a>
+      <p class="note" data-checkout-on="kabu-board" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
+      <a href="mailto:you0810jmsdf@gmail.com?subject=%E9%AB%98%E9%85%8D%E5%BD%93%E6%A0%AA%E5%88%A4%E5%AE%9A%E8%A1%A8%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E9%AB%98%E9%85%8D%E5%BD%93%E6%A0%AA%20%E5%88%A4%E5%AE%9A%E8%A1%A8%EF%BC%88980%E5%86%86%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-line" data-checkout-on="kabu-board" style="display:none">銀行振込で申し込む（メール）</a>
+      <a href="mailto:you0810jmsdf@gmail.com?subject=%E9%AB%98%E9%85%8D%E5%BD%93%E6%A0%AA%E5%88%A4%E5%AE%9A%E8%A1%A8%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E9%AB%98%E9%85%8D%E5%BD%93%E6%A0%AA%20%E5%88%A4%E5%AE%9A%E8%A1%A8%EF%BC%88980%E5%86%86%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-gold" data-checkout-off="kabu-board">メールで購入を申し込む（銀行振込）</a>
+      <p class="note" data-checkout-off="kabu-board">メールをいただければ振込先をご案内し、ご入金確認後にダウンロードリンクをお送りします。</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <div>N's factory（千葉県印西市 中司 祐樹）</div>
+  <div style="display:flex;gap:18px;flex-wrap:wrap">
+    <a href="../">デジタル幕僚室</a>
+    <a href="../../terms.html">デジタルデータの利用条件</a>
+    <a href="../../index.html">特定商取引法に基づく表記（トップページ下部）</a>
+  </div>
+</div></footer>
+<script src="../../assets/access-counter.js"></script>
+<script src="../../assets/pdf-checkout.js"></script>
+</body>
+</html>
