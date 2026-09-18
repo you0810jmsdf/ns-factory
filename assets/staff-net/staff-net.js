@@ -102,6 +102,38 @@
       }
     }
 
+    // 9幕僚の名前を球の下に常に出す（2026-09-19 事業主指示「どこに誰がいるか分かりにくい。名前を入れて」）。
+    // 複写元の drawOverlay は首席幕僚と、指・マウスを合わせた球にしか名前を出さない。
+    // drawTooltip は drawOverlay の最後（球の位置の計算後）に呼ばれるので、ここで名前を描いてから吹き出しを重ねる。
+    drawTooltip() {
+      var ctx = this.ctx, T = window.THREE;
+      if (ctx && T && this.world && this.camera) {
+        var v = this._labelVec || (this._labelVec = new T.Vector3());
+        var k = this.height / (2 * Math.tan(25 * Math.PI / 180));
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '600 12px "Yu Gothic UI", "Hiragino Sans", sans-serif';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(3,5,12,.9)';
+        ctx.fillStyle = '#e7eef8';
+        for (var i = 1; i < this.nodes.length; i++) {
+          var node = this.nodes[i];
+          if (!node.onScreen || !node.labelText) continue;
+          // 複写元が自分で名前を出す球（発光中・キー選択中・吹き出し中）は二重に描かない
+          if (this.expires.has(node.id) || (this.keyboardFocus && this.focused === i) || this.tooltipNode === node) continue;
+          v.copy(node.mesh.position).applyMatrix4(this.world.matrixWorld);
+          var radius = node.mesh.scale.x * k / Math.max(1, this.camera.position.z - v.z);
+          var y = node.y + radius + 12;
+          ctx.strokeText(node.labelText, node.x, y);
+          ctx.fillText(node.labelText, node.x, y);
+        }
+        ctx.restore();
+      }
+      super.drawTooltip();
+    }
+
     keyDown(event) {
       super.keyDown(event);
       var node = this.nodes[this.focused];
