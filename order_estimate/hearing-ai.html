@@ -308,6 +308,67 @@ const PRODUCT_PATTERN_FOLDERS = {
 // オーダー進捗GAS（deploymentId据え置き）。発注票確定時にsubmitChatOrderへ送信する。
 const ORDER_PROGRESS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
 
+/* ---------- 相談窓口の訪問を工房へ知らせる（2026-09-18 事業主要望 B・C） ----------
+   ページを閉じた（または裏へ回した）ときに1回だけ、滞在時間と「AIに話しかけたか・工房へ送ったか」を送る。
+   AIに話しかけず・送らずに帰った人は、工房側で事業主へ即メールになる（order_progress の hearingVisit）。
+   相談があれば別途「【AI相談】」の通知が出るので、こちらは話さず帰った人を拾うための仕組み。
+   ⛔ 連絡先・入力した文章は送らない。送るのは滞在秒・端末の種類・来た場所・押したボタン名だけ。
+   ⛔ 事業主の端末（管理者として覚えさせたPC）と自動操作（Playwright等）からは送らない。
+      動作確認は URL に ?nsf_visit_test=1 を付けると送られ、メール件名に【テスト】が付き、集計からは外れる。 */
+const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent: false };
+(function setupVisitBeacon(){
+  let test = false, skip = false;
+  try { test = new URLSearchParams(location.search).get('nsf_visit_test') === '1'; } catch(e){}
+  try {
+    if (localStorage.getItem('nsf_admin_remember_key') || sessionStorage.getItem('nsf_admin_key')) skip = true;
+  } catch(e){}
+  if (navigator.webdriver) skip = true;
+  if (test) skip = false;
+  if (skip) return;
+
+  // 押したボタンの名前だけを控える（連続する同じ操作はまとめる・最大12件）
+  document.addEventListener('click', ev => {
+    const b = ev.target && ev.target.closest && ev.target.closest('button');
+    if (!b || b.id === 'send') return;
+    const label = (b.textContent || '').trim().split('\n')[0].replace(/\s+/g, ' ').slice(0, 24);
+    if (!label || VISIT.acts[VISIT.acts.length - 1] === label) return;
+    if (VISIT.acts.length < 12) VISIT.acts.push(label);
+  }, true);
+
+  function fromLabel(){
+    const r = document.referrer || '';
+    if (!r) return '';
+    try {
+      const u = new URL(r);
+      if (u.host === location.host) return 'サイト内: ' + u.pathname.replace(/^\/ns-factory\//, '').slice(0, 50);
+      return u.host.replace(/^(www|l|m)\./, '');
+    } catch(e){ return ''; }
+  }
+  function send(){
+    if (VISIT.sent) return;
+    const sec = Math.round((Date.now() - VISIT.t0) / 1000);
+    if (sec < 3) return;              // 開いてすぐ閉じた・先読みは数えない
+    VISIT.sent = true;
+    const body = JSON.stringify({
+      action: 'hearingVisit',
+      sec: sec,
+      chatted: VISIT.chatted,
+      submitted: VISIT.submitted,
+      device: (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'スマホ' : 'PC') + ' ' + window.innerWidth + 'px',
+      from: fromLabel(),
+      acts: VISIT.acts,
+      lang: (typeof isEN === 'function' && isEN()) ? 'en' : 'ja',
+      test: test
+    });
+    try {
+      const ok = navigator.sendBeacon && navigator.sendBeacon(ORDER_PROGRESS_GAS_URL, new Blob([body], { type: 'text/plain' }));
+      if (!ok) fetch(ORDER_PROGRESS_GAS_URL, { method: 'POST', body: body, keepalive: true }).catch(() => {});
+    } catch(e){}
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') send(); });
+  window.addEventListener('pagehide', send);
+})();
+
 /* ---------- レンダリング ---------- */
 const chat=document.getElementById('chat');
 const quickEl=document.getElementById('quick');
@@ -1115,7 +1176,7 @@ function submitToOrderProgress(prod, hearingContent, textureSimulation, client, 
     method:'POST',
     body:JSON.stringify({ action:'submitChatOrder', client:client||'', contact:contact||'', item:prod.name, hearingContent, images })
   }).then(r=>r.json()).then(res=>{
-    if(res.ok) addMsg('bot','📋 オーダー進捗に登録しました（受付番号: '+res.orderNo+'）。');
+    if(res.ok){ VISIT.submitted=true; addMsg('bot','📋 オーダー進捗に登録しました（受付番号: '+res.orderNo+'）。'); }
     else addMsg('bot','⚠️ オーダー進捗への登録に失敗しました：'+(res.error||'不明なエラー'));
   }).catch(()=>{
     addMsg('bot','⚠️ オーダー進捗への登録通信に失敗しました。お手数ですが、発注票をコピーして直接お問い合わせください。');
@@ -1203,6 +1264,7 @@ function sendLiveConsultation(){
   }).then(r=>r.json()).then(res=>{
     if(res.ok){
       liveConsultSent=true;
+      VISIT.submitted=true;   // 相談窓口の訪問記録: 工房へ送った（2026-09-18）
       addMsg('bot', isEN()
         ? T('live.sentMsg','').replace('{no}', res.orderNo)
         : '📨 ご相談内容と画像を工房へお送りしました（受付番号: '+res.orderNo+'）。職人が確認してご案内いたします。');
@@ -1470,6 +1532,7 @@ async function liveTurn(userText, skipEcho){
     }
     const reply=data.reply||'(応答が空でした)';
     history.push({role:'assistant', content:reply});
+    VISIT.chatted=true;   // 相談窓口の訪問記録: AIと話した（2026-09-18）
     saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
     addMsg('bot', reply);
     liveConsultSent=false;   // やり取りが増えたら再送信を許可（最新の相談内容を送り直せるように）
