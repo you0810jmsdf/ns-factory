@@ -54,6 +54,7 @@
 
   // ピンチの寄り・引きの範囲（小さいほど寄る。初期値は下の graph.distance）
   var ZOOM_MIN = 3.5, ZOOM_MAX = 16;
+  var PAN_MAX = 4.5;  // 画面を動かせる範囲（網を見失わないよう、中心からこの距離まで）
   function clampZoom(d) { return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, d)); }
 
   var core = {
@@ -79,7 +80,40 @@
     wheel(event) {
       if (!event.ctrlKey) return;
       event.preventDefault();
-      this.distance = clampZoom(this.distance * Math.exp(Math.max(-200, Math.min(200, event.deltaY)) * 0.01));
+      // マウスポインターの位置に向かって寄る（A）
+      var a = this.anchorAt(event.clientX, event.clientY);
+      this.placeAnchor(a, event.clientX, event.clientY,
+        this.distance * Math.exp(Math.max(-200, Math.min(200, event.deltaY)) * 0.01));
+    }
+
+    // ── 画面の平行移動（2026-09-19 事業主指示 A「指の位置に向かって寄る」＋B「2本指で画面を動かす」）──
+    // カメラを上下左右にずらすだけ（向きは変えない）。panX/panY は3D空間の単位。
+    updateScene(now, dt) {
+      super.updateScene(now, dt);
+      this.camera.position.x = this.panX || 0;
+      this.camera.position.y = this.panY || 0;
+      this.camera.updateMatrixWorld();
+    }
+    // 画面1pxが、網の中心の高さで3D空間の何単位にあたるか（カメラの視野50°・複写元と同じ距離の計算）
+    unitsPerPx(d) {
+      var camZ = d / Math.min(1, this.camera.aspect);
+      return 2 * camZ * Math.tan(25 * Math.PI / 180) / Math.max(1, this.height);
+    }
+    screenOffset(clientX, clientY) {
+      var r = this.canvas.getBoundingClientRect();
+      return { x: clientX - r.left - r.width / 2, y: clientY - r.top - r.height / 2 };
+    }
+    // 画面上のその点の下にある地点（3D空間）
+    anchorAt(clientX, clientY) {
+      var o = this.screenOffset(clientX, clientY), u = this.unitsPerPx(this.distance);
+      return { x: (this.panX || 0) + o.x * u, y: (this.panY || 0) - o.y * u };
+    }
+    // 寄り具合を d にしたうえで、地点 a が画面のその点に来るように動かす
+    placeAnchor(a, clientX, clientY, d) {
+      this.distance = clampZoom(d);
+      var o = this.screenOffset(clientX, clientY), u = this.unitsPerPx(this.distance);
+      this.panX = Math.max(-PAN_MAX, Math.min(PAN_MAX, a.x - o.x * u));
+      this.panY = Math.max(-PAN_MAX, Math.min(PAN_MAX, a.y + o.y * u));
     }
 
     updateLabels() {
@@ -194,14 +228,22 @@
       var a = pts[ids[0]], b = pts[ids[1]];
       return Math.hypot(a.x - b.x, a.y - b.y);
     }
+    function mid() {
+      var ids = Object.keys(pts), a = pts[ids[0]], b = pts[ids[1]];
+      return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    }
     function isTouch(e) { return e.pointerType === 'touch' && e.target === canvas; }
     ROOT.addEventListener('pointerdown', function (e) {
       if (!isTouch(e)) return;
+      // 新しい触り始め（1本目の指）なら、前回の記録を捨てる（離した合図を取りこぼしても引きずらない）
+      if (e.isPrimary) { pts = {}; count = 0; pinch = null; swallow = false; }
       if (!pts[e.pointerId]) count++;
       pts[e.pointerId] = { x: e.clientX, y: e.clientY };
       if (count >= 2) {
         if (!pinch) {
-          pinch = { d0: Math.max(10, gap()), z0: graph.distance };
+          // 2本指の真ん中にある地点を覚え、以後ずっとその地点を指の真ん中に置き続ける（寄る＝A・動かす＝B）
+          var m = mid();
+          pinch = { d0: Math.max(10, gap()), z0: graph.distance, a: graph.anchorAt(m.x, m.y) };
           graph.releaseDrag();
           graph.tooltipNode = null;
           armed = null;
@@ -214,7 +256,8 @@
       if (!pts[e.pointerId]) return;
       pts[e.pointerId] = { x: e.clientX, y: e.clientY };
       if (pinch && count >= 2) {
-        graph.distance = clampZoom(pinch.z0 * pinch.d0 / Math.max(10, gap()));
+        var m = mid();
+        graph.placeAnchor(pinch.a, m.x, m.y, pinch.z0 * pinch.d0 / Math.max(10, gap()));
       }
       if (swallow) { e.stopPropagation(); e.preventDefault(); }
     }, true);
@@ -228,8 +271,9 @@
         if (count === 0) swallow = false;
       }
     }
-    ROOT.addEventListener('pointerup', lift, true);
-    ROOT.addEventListener('pointercancel', lift, true);
+    // 指を枠の外で離すと合図が枠に届かない（実測: 画面外で離した指の pointerup は html 宛て）。ページ全体で受ける
+    window.addEventListener('pointerup', lift, true);
+    window.addEventListener('pointercancel', lift, true);
     // 2本指のときだけブラウザのページ拡大・スクロールを止める（1本指の縦スクロールは残す）
     function blockMulti(e) { if (e.touches && e.touches.length >= 2) e.preventDefault(); }
     canvas.addEventListener('touchstart', blockMulti, { passive: false });
