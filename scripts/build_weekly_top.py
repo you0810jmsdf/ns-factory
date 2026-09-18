@@ -190,7 +190,9 @@ def build_image(items, photos, sub_line, title):
 
 def clean_name(name):
     # ハッシュタグ全面禁止（2026-09-18）。名前に # が入っていてもタグにならないよう外す
-    return " ".join(str(name).replace("#", "").replace("＃", "").split())
+    # アンダーバーは空白にする（事業主指示 2026-09-18・作品名はそれ以外そのまま）
+    name = str(name).replace("#", "").replace("＃", "").replace("_", " ")
+    return " ".join(name.split())
 
 
 def short(name, n):
