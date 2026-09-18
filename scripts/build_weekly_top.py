@@ -222,6 +222,10 @@ def main():
     top_n = max(1, min(int(cfg.get("topN", 10)), 30))
     photo_n = max(1, min(int(cfg.get("photoCount", 3)), 3))
     cfg["metric"] = metric
+    import re
+    if not re.fullmatch(r"([01]?\d|2[0-3]):[0-5]\d", str(cfg.get("postTime", "20:00"))):
+        print(f"config.json の postTime が時刻の形ではありません: {cfg.get('postTime')!r}（例: \"20:00\"）")
+        return 1
 
     with open(os.path.join(ROOT, "works-data.json"), encoding="utf-8") as f:
         works = {str(w["id"]): w for w in json.load(f)}
@@ -299,6 +303,7 @@ def main():
         "period": {"from": data.get("from", ""), "to": data.get("to", "")},
         "items": [{"rank": it["rank"], "id": it["id"], "name": it["name"]} for it in items],
         "image": f"{SITE}/weekly-top/{img_rel}",
+        "postTime": str(cfg.get("postTime", "20:00")),
         "platforms": cfg.get("platforms", {"threads": True, "instagram": True, "facebook": True}),
         "text": {"threads": with_link, "facebook": with_link, "instagram": instagram},
     }
