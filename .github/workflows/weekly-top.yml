@@ -1,0 +1,76 @@
+name: 作品集閲覧ランキング（週1回SNS配信）
+
+# 毎週日曜の朝に作品集閲覧ランキングを集計し、TOP3の合成画像と投稿文を
+# weekly-top/ に置く。投稿は SNS投稿GAS（sns-gas-nsfactory/WeeklyTop.gs）が
+# 毎日12時台に weekly-top/latest.json を見て、新しい週の分があれば予約キューへ入れる。
+# 集計の条件（期間・指標・件数）は weekly-top/config.json で変える。
+#
+# ⚠ 手動実行は既定で「試し」（post=false）。GAS は post=true の分しか投稿しない。
+#    手動で本番投稿させたいときだけ post を true にして実行する。
+
+on:
+  schedule:
+    # 日曜 09:00 JST（= 土曜 24:00 UTC）
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+    inputs:
+      post:
+        description: "SNSへ投稿させる（true で本番。既定は試し）"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-top
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow and Japanese fonts
+        run: |
+          pip install pillow
+          sudo apt-get update -q
+          sudo apt-get install -y -q fonts-noto-cjk
+
+      - name: Build ranking image and texts
+        env:
+          POST_FLAG: ${{ github.event_name == 'schedule' || inputs.post == true }}
+        run: |
+          if [ "$POST_FLAG" = "true" ]; then
+            python scripts/build_weekly_top.py --post
+          else
+            python scripts/build_weekly_top.py
+          fi
+
+      - name: Commit
+        run: |
+          if git diff --quiet -- weekly-top/ && [ -z "$(git ls-files --others --exclude-standard weekly-top/)" ]; then
+            echo "変更なし。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add weekly-top/
+          git commit -m "auto: 作品集閲覧ランキング（週次SNS配信）を更新"
+          # 他の push と重なると拒否されるので、取り込み直して最大3回まで送り直す（works-data.yml と同じ）
+          for i in 1 2 3; do
+            if git push; then exit 0; fi
+            echo "push が拒否されました。取り込み直して再試行します（$i/3）"
+            git pull --rebase origin "$GITHUB_REF_NAME" || exit 1
+            sleep 5
+          done
+          echo "3回試しても push できませんでした。"
+          exit 1
