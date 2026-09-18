@@ -2618,7 +2618,7 @@ function gateConfidential(e, url) {
   function load(i) {
     if (i >= files.length) return;
     var s = document.createElement('script');
-    s.src = base + files[i] + '?v=20260918';
+    s.src = base + files[i] + '?v=20260918b';
     s.onload = function () { load(i + 1); };
     s.onerror = function () { root.classList.add('is-fallback'); };
     document.body.appendChild(s);

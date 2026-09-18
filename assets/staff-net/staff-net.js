@@ -12,7 +12,7 @@
 
   // id は Jarvis の core.STAFF と同じ並び（粒の割り当て順が変わるため入れ替えない）
   var STAFF = [
-    { id: 'operations', label: '作戦', en: 'Operations', href: './sakusen-room/',
+    { id: 'operations', label: '作戦', en: 'Operations', href: './sakusen-room/', room: '作戦室',
       ja: ['全体戦略・意思決定', 'タスク管理・幕僚の調整'],
       enTasks: ['Overall strategy & decisions', 'Task management & coordination'] },
     { id: 'administration', label: '監理', en: 'Administration', href: './kanri-room/',
@@ -87,7 +87,7 @@
         var lines = [node.labelText];
         if (s) {
           lines = lines.concat(en ? s.enTasks : s.ja);
-          lines.push(en ? '▶ Click to open the room' : '▶ クリックで' + s.label + '幕僚室へ');
+          lines.push(en ? '▶ Click to open the room' : '▶ クリックで' + (s.room || s.label + '幕僚室') + 'へ');
         }
         node.tooltipLines = lines.map(function (line) { return this.fitText(line, width); }, this);
       }
