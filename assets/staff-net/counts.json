@@ -1,0 +1,42 @@
+{
+  "available": true,
+  "generated_at": "2026-09-18T09:36:20Z",
+  "staff": {
+    "operations": {
+      "count": 50,
+      "recent": []
+    },
+    "administration": {
+      "count": 44,
+      "recent": []
+    },
+    "sales": {
+      "count": 22,
+      "recent": []
+    },
+    "publicity": {
+      "count": 118,
+      "recent": []
+    },
+    "logistics": {
+      "count": 261,
+      "recent": []
+    },
+    "security": {
+      "count": 13,
+      "recent": []
+    },
+    "digital": {
+      "count": 922,
+      "recent": []
+    },
+    "personnel": {
+      "count": 22,
+      "recent": []
+    },
+    "education": {
+      "count": 41,
+      "recent": []
+    }
+  }
+}
