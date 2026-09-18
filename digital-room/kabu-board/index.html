@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>高配当株 判定表（楽天RSS用・自分のPCで動く） — N&#39;s factory</title>
-<meta name="description" content="楽天証券マーケットスピード II RSS で自分の口座のデータを読み、高配当株の生データ（利回り・配当性向・ROE・PER・PBR・50/200日線・RSI・MACD・ボリンジャーバンド・出来高）と、目安から外れた箇所だけを1枚の画面に出す道具。買い・売りの判断や助言はしません。980円（税込）。">
+<title>日本株 自動売買ツール（楽天RSS用）判定表＋ドライラン版 — N&#39;s factory</title>
+<meta name="description" content="楽天証券マーケットスピード II RSS で自分の口座のデータを読み、高配当などの条件で銘柄を絞る判定表（利回り・配当性向・ROE・PER・PBR・50/200日線・RSI・MACD・ボリンジャーバンド・出来高）と、場中に売買条件を監視して注文内容を記録するドライラン。買い・売りの判断や助言はしません。この版は発注しません。980円（税込）。">
 <link rel="canonical" href="https://you0810jmsdf.github.io/ns-factory/digital-room/kabu-board/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="高配当株 判定表（楽天RSS用・自分のPCで動く） — N&#39;s factory">
-<meta property="og:description" content="高配当株の生データと、目安から外れた箇所だけを1枚の画面に。買い・売りの判断はしない道具。楽天証券 RSS・Windows・Excel・Python で動きます。980円（税込）。">
+<meta property="og:title" content="日本株 自動売買ツール（楽天RSS用）判定表＋ドライラン版 — N&#39;s factory">
+<meta property="og:description" content="高配当などの条件で銘柄を絞る判定表と、場中に売買条件を監視して記録するドライラン。買い・売りの判断はしない道具。楽天証券 RSS・Windows・Excel・Python で動きます。980円（税込）。">
 <meta property="og:url" content="https://you0810jmsdf.github.io/ns-factory/digital-room/kabu-board/">
 <meta property="og:image" content="https://you0810jmsdf.github.io/ns-factory/assets/kabu-board/board.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -93,14 +93,14 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
 </div></nav>
 
 <main class="wrap">
-  <p class="crumb"><a href="../">デジタル幕僚室</a> ／ 高配当株 判定表</p>
+  <p class="crumb"><a href="../">デジタル幕僚室</a> ／ 資産形成 ／ 日本株 自動売買ツール</p>
 
   <section class="hero">
-    <div class="ph"><img src="../../assets/kabu-board/board.png" alt="高配当株 判定表の画面。利回り・配当性向・ROE・PER・PBR と 50日・200日線などの列が並び、目安から外れたセルに色が付いている"></div>
+    <div class="ph"><img src="../../assets/kabu-board/board.png" alt="判定表の画面。利回り・配当性向・ROE・PER・PBR と 50日・200日線などの列が並び、目安から外れたセルに色が付いている"></div>
     <div>
-      <p class="eyebrow">Stock screening board — for Rakuten RSS</p>
-      <h1>高配当株 判定表<br><span style="font-size:.6em;font-weight:600;opacity:.85">楽天RSS用・自分のPCで動く</span></h1>
-      <p class="lead">楽天証券「マーケットスピード II RSS」で自分の口座のデータを読み、高配当株の<b>生データ</b>と<b>目安から外れた箇所</b>だけを1枚の画面に出します。買い・売りの結論は出しません。判断はご自身で。</p>
+      <p class="eyebrow">Asset building — Japanese stocks × Rakuten RSS</p>
+      <h1>日本株 自動売買ツール<br><span style="font-size:.6em;font-weight:600;opacity:.85">楽天RSS用・判定表＋ドライラン版</span></h1>
+      <p class="lead">楽天証券「マーケットスピード II RSS」で自分の口座のデータを読み、①高配当などの条件で銘柄を絞る<b>判定表</b>と、②場中に売買条件を監視して当てはまった銘柄と注文内容を記録する<b>ドライラン</b>の2つからなる道具です。買い・売りの結論は出しません。判断はご自身で。<br><b>この版は実際の発注をしません</b>（実発注は次の版で対応予定）。</p>
       <div class="price">¥980<small>税込・ZIP でお渡し</small></div>
       <div class="buy">
       <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
@@ -119,7 +119,8 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
     <h2>この道具がすること・しないこと</h2>
     <div class="warn">
       <b>数値と、目安から外れた箇所を表示するだけです。売買の判断・助言はしません。</b><br>
-      特定の銘柄を勧めることも、買い・売りの結論を示すこともありません。目安の数値は一般に知られた考え方をもとにした初期値で、ご自身で変えられます。投資の判断と結果はすべてご自身の責任となります。FCF・有利子負債・過去の配当の推移は RSS に含まれないため、画面のリンクからご自身で確認していただく作りです。発注機能は含みません。
+      特定の銘柄を勧めることも、買い・売りの結論を示すこともありません。目安の数値は一般に知られた考え方をもとにした初期値で、ご自身で変えられます。投資の判断と結果はすべてご自身の責任となります。FCF・有利子負債・過去の配当の推移は RSS に含まれないため、画面のリンクからご自身で確認していただく作りです。<br>
+      <b>この版は実際の発注をしません。</b> 売買条件（移動平均のクロス・RSI・ボリンジャーバンド・ローソク足・価格・時刻など）に当てはまった銘柄と注文内容を「ドライラン」として記録するところまでです。実発注は、当方で実機の検証を済ませてから次の版で対応する予定です。
     </div>
   </section>
 
@@ -152,7 +153,7 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
       <li>「基本セット」ボタン：利回り 3% 以上・配当性向 60% 以下・ROE 8% 以上・注意なし にひと押しで絞る</li>
       <li>目安の数値は画面で変えられ、理由と変更の履歴（備考つき）が残る</li>
       <li>チェックした銘柄を確認リスト（CSV）に書き出す。メモ欄つき</li>
-      <li>ドライラン：場中に条件（例：日足の RSI が 40 以下）を監視して、当てはまった銘柄を記録する。発注はしない</li>
+      <li>ドライラン：場中に売買条件（例：日足の RSI が 40 以下で現物100株買い）を5秒ごとに監視し、当てはまった銘柄と注文内容を記録する。複数条件の AND、1日1回の制限つき。この版は発注しない</li>
     </ul>
   </section>
 
@@ -166,6 +167,7 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
       <tr><th>Python</th><td>Python 3.11 以降（無料）と部品2つ（pywin32・openpyxl）。入れ方は手順書に書いてあります</td></tr>
       <tr><th>銘柄の一覧</th><td>日本取引所グループ（JPX）が無料で公開している「東証上場銘柄一覧」を月1回ダウンロードして置く</td></tr>
       <tr><th>毎日の操作</th><td>マーケットスピード II のログインと RSS の接続は毎日手で行います。そのあと bat ファイルをダブルクリックするだけ（全銘柄の収集は数分、初回の日足の取り込みは数時間）</td></tr>
+      <tr><th>次の版</th><td>実発注（楽天 RSS の発注関数で現物・信用の注文を出す）は、当方の口座で実機の検証を済ませてから対応します。二重ガード（設定シートと起動時の両方で許可）・1注文の上限金額・1日の回数上限・緊急停止を備えた設計です。ご購入者には次の版をお知らせします</td></tr>
       <tr><th>お届け</th><td>ZIP ファイル（プログラム一式・はじめに（手順書）・利用条件と免責）。カード決済：お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。銀行振込：ご入金を確認してからメールでお送りします</td></tr>
     </table>
   </section>
@@ -185,7 +187,7 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
 
   <section class="sec" id="buy">
     <p class="eyebrow">Buy now</p>
-    <h2>高配当株 判定表を手に入れる</h2>
+    <h2>日本株 自動売買ツール（判定表＋ドライラン版）を手に入れる</h2>
     <div class="price">¥980<small>税込・ZIP でお渡し</small></div>
     <div class="buy">
       <a href="#" class="btn btn-gold" data-checkout="kabu-board" style="display:none"><span>カードで購入する（¥<span data-price>980</span>）</span></a>
