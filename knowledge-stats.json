@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-09-18T10:37:04",
+  "generatedAt": "2026-09-19T07:31:12",
   "departments": [
     {
       "dept": "経営戦略本部",
-      "fileCount": 47,
-      "totalChars": 260935,
-      "lastUpdated": "2026-09-17"
+      "fileCount": 49,
+      "totalChars": 269956,
+      "lastUpdated": "2026-09-19"
     },
     {
       "dept": "監理部",
       "fileCount": 43,
-      "totalChars": 6308936,
-      "lastUpdated": "2026-09-18"
+      "totalChars": 6336102,
+      "lastUpdated": "2026-09-19"
     },
     {
       "dept": "販売部",
@@ -21,21 +21,21 @@
     },
     {
       "dept": "広報部",
-      "fileCount": 117,
-      "totalChars": 698619,
+      "fileCount": 118,
+      "totalChars": 699203,
       "lastUpdated": "2026-09-18"
     },
     {
       "dept": "デジタル部",
-      "fileCount": 920,
-      "totalChars": 9629587,
-      "lastUpdated": "2026-09-17"
+      "fileCount": 921,
+      "totalChars": 9633073,
+      "lastUpdated": "2026-09-19"
     },
     {
       "dept": "後方部",
-      "fileCount": 257,
-      "totalChars": 686139,
-      "lastUpdated": "2026-09-18"
+      "fileCount": 262,
+      "totalChars": 703766,
+      "lastUpdated": "2026-09-19"
     },
     {
       "dept": "保全部",
