@@ -757,6 +757,54 @@ h1,h2,h3{
   text-decoration-color:#8B6525;
 }
 
+/* === 総司令官カード＋3D幕僚網（2026-09-18・Jarvisの網を幕僚室の入口に） === */
+.staff-legacy{display:none}
+.staff-net-row{
+  display:grid;
+  grid-template-columns:minmax(260px,320px) 1fr;
+  gap:28px;
+  align-items:stretch;
+  margin-top:36px;
+}
+.staff-net-row > .commander-slide{align-self:start}
+.staff-net-panel{display:flex;flex-direction:column;gap:10px;min-width:0}
+.staff-net{
+  --bg:#03050c;--text:#e7eef8;--muted:#94a2b7;--border:#222c3d;--accent:#96e4e4;--graph-error:#f0a8b0;
+  position:relative;
+  flex:1;
+  min-height:560px;
+  background:#03050c;
+  border:1px solid #c5a44e;
+  border-radius:var(--radius-lg);
+  box-shadow:0 0 0 1px rgba(240,217,138,.35),0 0 24px rgba(197,164,78,.22),var(--shadow-md);
+  overflow:hidden;
+}
+.staff-net canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#staffNetWebgl{pointer-events:none}
+#staffNetCanvas{touch-action:pan-y;cursor:grab}
+#staffNetCanvas:focus-visible{outline:2px solid #c9a96e;outline-offset:-4px}
+/* 3D表示できたときは読み上げ専用、できない端末では入口として表示 */
+.staff-net-links{
+  position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);
+  margin:0;padding:0;list-style:none;
+}
+.staff-net.is-fallback{min-height:0;background:var(--color-bg);border-color:var(--color-border);box-shadow:none}
+.staff-net.is-fallback canvas{display:none}
+.staff-net.is-fallback .staff-net-links{
+  position:static;width:auto;height:auto;clip:auto;overflow:visible;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:18px;
+}
+.staff-net.is-fallback .staff-net-links a{
+  display:block;padding:10px 14px;border:1px solid #c5a44e;border-radius:6px;
+  color:#8B6525;text-decoration:none;text-align:center;font-size:13px;
+}
+.staff-net-hint{font-size:12px;color:var(--color-text-sub);text-align:center;letter-spacing:.04em;margin:0}
+@media(max-width:768px){
+  .staff-net-row{grid-template-columns:1fr;gap:22px}
+  .staff-net-row > .commander-slide{justify-self:center;width:min(320px,100%)}
+  .staff-net{min-height:440px}
+}
+
 /* 幕僚カード外の任務直リンク列 */
 .staff-tasks{
   margin-top:-12px;
@@ -1669,8 +1717,10 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
         <img src="./assets/staff/all agent 11staff.png" alt="N's factory スタッフ集合">
       </div>
     </div>
-    <!-- 幕僚グリッド（総司令官も同じ列に並べる） -->
-    <div class="staff-grid">
+    <!-- 総司令官カード＋3D幕僚網（2026-09-18 事業主指示：Jarvisの網を幕僚室への入口に）
+         ⛔ 旧カード形式に戻すときは、下の commander-slide を .staff-grid の先頭へ戻し、
+            .staff-legacy の囲みと .staff-net-row を外す（カード9枚は .staff-legacy 内に温存） -->
+    <div class="staff-net-row">
       <div class="staff-slide commander-slide">
         <div class="staff-commander">
           <span class="commander-badge" data-i18n="staff.commander">総司令官</span>
@@ -1684,6 +1734,29 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
           <a href="./shirei-room/" class="staff-cta-secondary" data-i18n="staff.noteCta">司令官室へ（AI経営奮闘記）→</a>
         </div>
       </div>
+      <div class="staff-net-panel">
+        <div class="staff-net" id="staffNet" data-base="./assets/staff-net/">
+          <canvas id="staffNetWebgl" aria-hidden="true"></canvas>
+          <canvas id="staffNetCanvas" tabindex="0" role="group" aria-label="首席幕僚と9幕僚のネットワーク。矢印キーで幕僚を選び、Enterで幕僚室へ移動します。"></canvas>
+          <!-- 3D表示できない端末向けの入口（表示できたときは読み上げ専用） -->
+          <ul class="staff-net-links">
+            <li><a href="./sakusen-room/" data-i18n="staff.cta.sakusen" data-i18n-as-html>作戦室</a></li>
+            <li><a href="./kanri-room/" data-i18n="staff.cta.kanri">監理幕僚室</a></li>
+            <li><a href="./hanbai-room/" data-i18n="staff.cta.hanbai">販売幕僚室</a></li>
+            <li><a href="./pr-room/" data-i18n="staff.cta.pr">広報幕僚室</a></li>
+            <li><a href="./kouhou-room/" data-i18n="staff.cta.kouhou">後方幕僚室</a></li>
+            <li><a href="./hozen-room/" data-i18n="staff.cta.hozen">保全幕僚室</a></li>
+            <li><a href="./digital-room/" data-i18n="staff.cta.digital">デジタル幕僚室</a></li>
+            <li><a href="./jinji-room/" data-i18n="staff.cta.jinji">人事幕僚室</a></li>
+            <li><a href="./hitsuki/" data-i18n="staff.cta.kyouiku">教育幕僚室</a></li>
+          </ul>
+        </div>
+        <p class="staff-net-hint" data-i18n="staff.netHint">球に合わせると担当業務、クリックで各幕僚室へ。ドラッグで回転します。粒は各幕僚が蓄えたノートの数です。</p>
+      </div>
+    </div>
+    <!-- 旧カード形式（非表示で温存・2026-09-18） -->
+    <div class="staff-legacy">
+    <div class="staff-grid">
       <!-- 首席幕僚：紹介のみ（幕僚室は管理画面側に置くため、公開サイトには入口を作らない） -->
       <div class="staff-card" style="cursor:default;">
         <span class="staff-badge" data-i18n="staff.badge.shuseki">首席幕僚</span>
@@ -1824,6 +1897,7 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
         <span class="soon" data-i18n="staff.task.mental">メンタルヘルス管理</span>
       </div>
     </div>
+    </div><!-- /.staff-legacy -->
   </div>
 </section>
 
@@ -2064,6 +2138,7 @@ window.NSF_I18N_DICT = {
   'staff.tagline': 'The commander leading the entire business',
   'staff.profileCta': 'View profile',
   'staff.noteCta': "Commander's Office (AI management chronicle) →",
+  'staff.netHint': "Hover a sphere to see each officer’s duties; click to enter their office. Drag to rotate. The particles show how many notes each officer keeps.",
   'staff.tasksLabel': 'Main duties',
   'staff.badge.shuseki': 'Chief of Staff',
   'staff.copy.shuseki': 'Oversees and coordinates every staff officer, and supports the commander in making decisions.',
@@ -2532,6 +2607,30 @@ function gateConfidential(e, url) {
 <script src="showroom/data/staffData.js"></script>
 <script src="showroom/data/config.js"></script>
 <script src="showroom/data/staffKnowledge.js"></script>
+<script>
+/* 3D幕僚網: three.js（約600KB）は網が画面に近づいてから順に読み込む（トップの表示を重くしない） */
+(function () {
+  var root = document.getElementById('staffNet');
+  if (!root) return;
+  var base = root.getAttribute('data-base') || './assets/staff-net/';
+  var files = ['three.min.js', 'staff-graph.js', 'staff-graph3d.js', 'staff-net.js'];
+  var started = false;
+  function load(i) {
+    if (i >= files.length) return;
+    var s = document.createElement('script');
+    s.src = base + files[i] + '?v=20260918';
+    s.onload = function () { load(i + 1); };
+    s.onerror = function () { root.classList.add('is-fallback'); };
+    document.body.appendChild(s);
+  }
+  function start() { if (!started) { started = true; load(0); } }
+  if (!('IntersectionObserver' in window)) { start(); return; }
+  var io = new IntersectionObserver(function (entries) {
+    if (entries.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); }
+  }, { rootMargin: '800px 0px' });
+  io.observe(root);
+})();
+</script>
 <!-- 2026-07-17 Phase5: hearing-core.js を読み込み、トップページのチャットでも
      業務相談（HearingAI-Proxy振り分け）・革在庫即答・機能メニューチップを有効化する。
      従来は未読込のため window.NSF_HEARING が無く、トップだけ雑談＋作品検索チップのみだった。 -->
@@ -2649,6 +2748,8 @@ function nsfOpenStaffChat(staffId) {
   (function () {
     var grid = document.querySelector('.staff-grid');
     if (!grid) return;
+    // 旧カード形式を非表示で温存している間は動かさない（2026-09-18・3D幕僚網へ切替）
+    if (grid.closest('.staff-legacy')) return;
     var cards = Array.prototype.slice.call(grid.children).filter(function (el) {
       return el.classList.contains('staff-card');
     });
