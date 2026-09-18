@@ -805,6 +805,127 @@ h1,h2,h3{
   .staff-net{min-height:440px}
 }
 
+/* === ヒーロー: 総司令官カード＋3D幕僚網（2026-09-19 事業主指示・黒背景に溶け込ませる／動きのある幻想的な表現） === */
+.hero.hero--staffnet{
+  grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);
+  gap:28px;align-items:center;
+  min-height:680px;
+  padding:64px clamp(20px,4vw,64px) 36px;
+  background:#03050c;
+  isolation:isolate;
+}
+.hero--staffnet .hero-photo{display:none}
+/* オーロラ（網の紫・水色とブランドの金）がゆっくり漂う */
+.hero--staffnet::before{
+  content:'';position:absolute;inset:-25%;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(38% 46% at 22% 30%,rgba(122,72,224,.30),transparent 70%),
+    radial-gradient(34% 44% at 78% 58%,rgba(64,196,232,.22),transparent 70%),
+    radial-gradient(30% 38% at 52% 92%,rgba(201,169,110,.20),transparent 70%);
+  filter:blur(24px);
+  animation:heroAurora 28s ease-in-out infinite alternate;
+}
+/* 星くず（流れながらまたたく） */
+.hero--staffnet::after{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:
+    radial-gradient(1.2px 1.2px at 24px 38px,rgba(255,255,255,.85),transparent 60%),
+    radial-gradient(1px 1px at 142px 96px,rgba(190,230,255,.75),transparent 60%),
+    radial-gradient(1.4px 1.4px at 208px 22px,rgba(233,209,138,.8),transparent 60%),
+    radial-gradient(1px 1px at 86px 176px,rgba(255,255,255,.6),transparent 60%),
+    radial-gradient(1px 1px at 236px 214px,rgba(200,180,255,.7),transparent 60%);
+  background-size:260px 260px;
+  animation:heroStars 120s linear infinite,heroTwinkle 5.5s ease-in-out infinite alternate;
+}
+@keyframes heroAurora{
+  0%{transform:translate3d(-3%,-2%,0) rotate(0deg) scale(1)}
+  50%{transform:translate3d(3%,2%,0) rotate(8deg) scale(1.08)}
+  100%{transform:translate3d(-2%,3%,0) rotate(-6deg) scale(1.03)}
+}
+@keyframes heroStars{from{background-position:0 0}to{background-position:-520px 260px}}
+@keyframes heroTwinkle{from{opacity:.45}to{opacity:.95}}
+/* 総司令官カード（タイトル・ボタン入り）: 黒に溶ける半透明＋金の光 */
+.hero--staffnet .commander-slide{animation:heroFloat 9s ease-in-out infinite}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hero--staffnet .staff-commander{
+  width:100%;
+  display:grid;grid-template-columns:minmax(190px,40%) 1fr;column-gap:28px;align-items:center;
+  padding:26px 26px 22px;
+  background:linear-gradient(160deg,rgba(20,15,34,.62),rgba(5,8,18,.50));
+  border:1px solid rgba(201,169,110,.55);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  animation:heroGlow 6s ease-in-out infinite alternate;
+}
+@keyframes heroGlow{
+  from{box-shadow:0 0 0 1px rgba(240,217,138,.18),0 0 22px rgba(197,164,78,.18),0 0 60px rgba(122,72,224,.10)}
+  to{box-shadow:0 0 0 1px rgba(240,217,138,.40),0 0 38px rgba(197,164,78,.34),0 0 90px rgba(64,196,232,.16)}
+}
+.hero--staffnet .staff-commander::after{background:#05070f;color:#c9a96e}
+.hero--staffnet .staff-commander-link{grid-column:1;grid-row:1 / span 3}
+.hero--staffnet .staff-commander > .staff-quote,
+.hero--staffnet .staff-commander > .hero-content,
+.hero--staffnet .staff-commander > .staff-cta-secondary{grid-column:2}
+.hero--staffnet .staff-commander img{
+  background:transparent;border-bottom:none;border-radius:12px;
+  box-shadow:0 8px 28px rgba(0,0,0,.55);
+}
+.hero--staffnet .staff-commander .staff-card-body{padding:14px 4px 0}
+.hero--staffnet .staff-tagline{color:rgba(255,255,255,.78);font-size:13px;margin-bottom:10px}
+.hero--staffnet .hero-content{padding:0}
+.hero--staffnet .hero-title{
+  font-size:clamp(22px,2.3vw,34px);margin-bottom:18px;
+  background:linear-gradient(100deg,#fff 0%,#fff 38%,#f0d98a 50%,#fff 62%,#fff 100%);
+  background-size:260% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:heroIn .7s cubic-bezier(.22,.61,.36,1) .12s both,heroShimmer 9s ease-in-out 1.2s infinite;
+}
+@keyframes heroShimmer{0%,55%{background-position:100% 0}100%{background-position:-60% 0}}
+.hero--staffnet .hero-desc{max-width:none;font-size:14px;margin-bottom:22px}
+.hero--staffnet .hero-actions .btn{font-size:14px;padding:11px 18px}
+.hero--staffnet .staff-cta-secondary{margin:18px 0 0;text-align:left;color:#e3c987;text-decoration-color:rgba(227,201,135,.45)}
+.hero--staffnet .staff-cta-secondary:hover{text-decoration-color:#e3c987}
+.hero--staffnet .staff-quote{
+  background:rgba(201,169,110,.10);border-color:rgba(201,169,110,.35);color:#efe6d2;margin-bottom:16px;
+}
+.hero--staffnet .staff-quote:hover{background:rgba(201,169,110,.18)}
+.hero--staffnet .staff-quote::before{display:none}
+.hero--staffnet .staff-quote .sq-hint{color:rgba(255,255,255,.45)}
+/* 網: 枠を外して背景に溶かす（canvas は不透明な黒なので screen 合成で背景の光を通す） */
+.hero--staffnet .staff-net{
+  background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible;min-height:600px;
+}
+.hero--staffnet #staffNetWebgl{
+  mix-blend-mode:screen;
+  /* 四角い境目を消す: 縁へ向かって透明にぼかす */
+  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 68%,transparent 100%);
+  mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 68%,transparent 100%);
+}
+.hero--staffnet .staff-net.is-fallback{background:transparent}
+.hero--staffnet .staff-net.is-fallback .staff-net-links a{color:#e3c987}
+.hero--staffnet .staff-net-hint{color:rgba(255,255,255,.5)}
+@media(max-width:1100px){
+  .hero.hero--staffnet{grid-template-columns:1fr;padding-top:56px}
+  .hero--staffnet .staff-net{min-height:520px}
+}
+@media(max-width:600px){
+  .hero.hero--staffnet{padding:44px 16px 28px;gap:18px}
+  .hero--staffnet .staff-commander{grid-template-columns:1fr;padding:22px 18px 18px}
+  .hero--staffnet .staff-commander-link{grid-column:1;grid-row:auto;margin-top:20px}
+  .hero--staffnet .staff-commander > .staff-quote,
+  .hero--staffnet .staff-commander > .hero-content,
+  .hero--staffnet .staff-commander > .staff-cta-secondary{grid-column:1}
+  .hero--staffnet .staff-cta-secondary{text-align:center}
+  .hero--staffnet .staff-net{min-height:440px}
+}
+@media (prefers-reduced-motion: reduce){
+  .hero--staffnet::before,.hero--staffnet::after,
+  .hero--staffnet .commander-slide,.hero--staffnet .staff-commander,.hero--staffnet .hero-title{animation:none}
+}
+
+/* スタッフ欄に移した総司令官の絵（2026-09-19・暗い地の上に出すので文字を明るく） */
+.staff-lead-image .staff-card-body{padding:14px 16px 18px;text-align:center}
+.staff-lead-image .staff-tagline{color:#efe6d2;margin-bottom:10px}
+
 /* 幕僚カード外の任務直リンク列 */
 .staff-tasks{
   margin-top:-12px;
@@ -1610,19 +1731,50 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
 </div>
 
 <!-- ── Hero ── -->
-<section class="hero">
-  <div class="hero-content">
-    <p class="hero-eyebrow">N's factory — Leather Craft</p>
-    <h1 class="hero-title" data-i18n="hero.title" data-i18n-as-html>世界にひとつだけの<br>オリジナルを</h1>
-    <p class="hero-desc" data-i18n="hero.desc" data-i18n-as-html>
-      革は語り、手は応える。<br>
-      作家と使い手が直接交わる場所で、世界にひとつだけの手帳・革小物・印章・アクリル・木工が生まれる。<br><br>
-      素材も意匠も、すべては貴方の手に委ねられる。
-    </p>
-    <div class="hero-actions">
-      <a href="./order_estimate/hearing-ai.html" class="btn btn-primary" data-i18n="hero.cta">オーダー相談 →</a>
-      <a href="./order_estimate/leather-order-estimate-v2.html" class="btn btn-ghost" data-i18n="hero.estimate">システム手帳の金額目安を見る</a>
+<section class="hero hero--staffnet">
+  <!-- 2026-09-19 事業主指示: ヒーローを「総司令官カード（タイトル・ボタン入り）＋3D幕僚網」に。
+       作家の写真（.hero-photo）は非表示で温存。戻すときは hero--staffnet を外し、.hero-content をカードから出す -->
+  <div class="staff-slide commander-slide">
+    <div class="staff-commander">
+      <span class="commander-badge" data-i18n="staff.commander">総司令官</span>
+      <div class="hero-content">
+        <p class="hero-eyebrow">N's factory — Leather Craft</p>
+        <h1 class="hero-title" data-i18n="hero.title" data-i18n-as-html>世界にひとつだけの<br>オリジナルを</h1>
+        <p class="hero-desc" data-i18n="hero.desc" data-i18n-as-html>
+          革は語り、手は応える。<br>
+          作家と使い手が直接交わる場所で、世界にひとつだけの手帳・革小物・印章・アクリル・木工が生まれる。<br><br>
+          素材も意匠も、すべては貴方の手に委ねられる。
+        </p>
+        <div class="hero-actions">
+          <a href="./order_estimate/hearing-ai.html" class="btn btn-primary" data-i18n="hero.cta">オーダー相談 →</a>
+          <a href="./order_estimate/leather-order-estimate-v2.html" class="btn btn-ghost" data-i18n="hero.estimate">システム手帳の金額目安を見る</a>
+        </div>
+      </div>
+      <!-- 2026-09-19 事業主指示: 総司令官の絵と集合写真の位置を入れ替え（総司令官の絵とプロフィールへのリンクは下の「スタッフ」欄へ） -->
+      <div class="staff-commander-link">
+        <img src="./assets/staff/all agent 11staff.png" alt="N's factory スタッフ集合">
+      </div>
+      <a href="./shirei-room/" class="staff-cta-secondary" data-i18n="staff.noteCta">司令官室へ（AI経営奮闘記）→</a>
     </div>
+  </div>
+  <div class="staff-net-panel">
+    <div class="staff-net" id="staffNet" data-base="./assets/staff-net/">
+      <canvas id="staffNetWebgl" aria-hidden="true"></canvas>
+      <canvas id="staffNetCanvas" tabindex="0" role="group" aria-label="首席幕僚と9幕僚のネットワーク。矢印キーで幕僚を選び、Enterで幕僚室へ移動します。"></canvas>
+      <!-- 3D表示できない端末向けの入口（表示できたときは読み上げ専用） -->
+      <ul class="staff-net-links">
+        <li><a href="./sakusen-room/" data-i18n="staff.cta.sakusen" data-i18n-as-html>作戦室</a></li>
+        <li><a href="./kanri-room/" data-i18n="staff.cta.kanri">監理幕僚室</a></li>
+        <li><a href="./hanbai-room/" data-i18n="staff.cta.hanbai">販売幕僚室</a></li>
+        <li><a href="./pr-room/" data-i18n="staff.cta.pr">広報幕僚室</a></li>
+        <li><a href="./kouhou-room/" data-i18n="staff.cta.kouhou">後方幕僚室</a></li>
+        <li><a href="./hozen-room/" data-i18n="staff.cta.hozen">保全幕僚室</a></li>
+        <li><a href="./digital-room/" data-i18n="staff.cta.digital">デジタル幕僚室</a></li>
+        <li><a href="./jinji-room/" data-i18n="staff.cta.jinji">人事幕僚室</a></li>
+        <li><a href="./hitsuki/" data-i18n="staff.cta.kyouiku">教育幕僚室</a></li>
+      </ul>
+    </div>
+    <p class="staff-net-hint" data-i18n="staff.netHint">球に合わせると担当業務、クリックで各幕僚室へ。ドラッグで回転、ピンチで拡大・縮小します。粒は各幕僚が蓄えたノートの数です。</p>
   </div>
   <div class="hero-photo">
     <img src="assets/artisan.jpg" alt="作家 中司 祐樹">
@@ -1714,46 +1866,18 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
         </p>
       </div>
       <div class="staff-lead-image">
-        <img src="./assets/staff/all agent 11staff.png" alt="N's factory スタッフ集合">
+        <a href="./profile.html" class="staff-commander-link" aria-label="個人事業主のプロフィールを見る">
+          <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主（総司令官）。経営方針と行動指針を掲げる N's factory の指揮官。">
+          <div class="staff-card-body">
+            <p class="staff-tagline" data-i18n="staff.tagline">事業全体を率いる総司令官</p>
+            <span class="staff-cta-primary" data-i18n="staff.profileCta">プロフィールを見る</span>
+          </div>
+        </a>
       </div>
     </div>
-    <!-- 総司令官カード＋3D幕僚網（2026-09-18 事業主指示：Jarvisの網を幕僚室への入口に）
-         ⛔ 旧カード形式に戻すときは、下の commander-slide を .staff-grid の先頭へ戻し、
-            .staff-legacy の囲みと .staff-net-row を外す（カード9枚は .staff-legacy 内に温存） -->
-    <div class="staff-net-row">
-      <div class="staff-slide commander-slide">
-        <div class="staff-commander">
-          <span class="commander-badge" data-i18n="staff.commander">総司令官</span>
-          <a href="./profile.html" class="staff-commander-link" aria-label="個人事業主のプロフィールを見る">
-            <img src="./assets/staff/kojinjigyonusi.png" alt="個人事業主（総司令官）。経営方針と行動指針を掲げる N's factory の指揮官。">
-            <div class="staff-card-body">
-              <p class="staff-tagline" data-i18n="staff.tagline">事業全体を率いる総司令官</p>
-              <span class="staff-cta-primary" data-i18n="staff.profileCta">プロフィールを見る</span>
-            </div>
-          </a>
-          <a href="./shirei-room/" class="staff-cta-secondary" data-i18n="staff.noteCta">司令官室へ（AI経営奮闘記）→</a>
-        </div>
-      </div>
-      <div class="staff-net-panel">
-        <div class="staff-net" id="staffNet" data-base="./assets/staff-net/">
-          <canvas id="staffNetWebgl" aria-hidden="true"></canvas>
-          <canvas id="staffNetCanvas" tabindex="0" role="group" aria-label="首席幕僚と9幕僚のネットワーク。矢印キーで幕僚を選び、Enterで幕僚室へ移動します。"></canvas>
-          <!-- 3D表示できない端末向けの入口（表示できたときは読み上げ専用） -->
-          <ul class="staff-net-links">
-            <li><a href="./sakusen-room/" data-i18n="staff.cta.sakusen" data-i18n-as-html>作戦室</a></li>
-            <li><a href="./kanri-room/" data-i18n="staff.cta.kanri">監理幕僚室</a></li>
-            <li><a href="./hanbai-room/" data-i18n="staff.cta.hanbai">販売幕僚室</a></li>
-            <li><a href="./pr-room/" data-i18n="staff.cta.pr">広報幕僚室</a></li>
-            <li><a href="./kouhou-room/" data-i18n="staff.cta.kouhou">後方幕僚室</a></li>
-            <li><a href="./hozen-room/" data-i18n="staff.cta.hozen">保全幕僚室</a></li>
-            <li><a href="./digital-room/" data-i18n="staff.cta.digital">デジタル幕僚室</a></li>
-            <li><a href="./jinji-room/" data-i18n="staff.cta.jinji">人事幕僚室</a></li>
-            <li><a href="./hitsuki/" data-i18n="staff.cta.kyouiku">教育幕僚室</a></li>
-          </ul>
-        </div>
-        <p class="staff-net-hint" data-i18n="staff.netHint">球に合わせると担当業務、クリックで各幕僚室へ。ドラッグで回転、ピンチで拡大・縮小します。粒は各幕僚が蓄えたノートの数です。</p>
-      </div>
-    </div>
+    <!-- 総司令官カード＋3D幕僚網は 2026-09-19 にトップのヒーローへ移動（事業主指示）。
+         ⛔ 旧カード形式に戻すときは、ヒーローの commander-slide を .staff-grid の先頭へ戻し、
+            .staff-legacy の囲みを外す（カード9枚は .staff-legacy 内に温存）。網（#staffNet）は1ページに1つだけ -->
     <!-- 旧カード形式（非表示で温存・2026-09-18） -->
     <div class="staff-legacy">
     <div class="staff-grid">
@@ -2618,12 +2742,18 @@ function gateConfidential(e, url) {
   function load(i) {
     if (i >= files.length) return;
     var s = document.createElement('script');
-    s.src = base + files[i] + '?v=20260918b';
+    s.src = base + files[i] + '?v=20260919';
     s.onload = function () { load(i + 1); };
     s.onerror = function () { root.classList.add('is-fallback'); };
     document.body.appendChild(s);
   }
-  function start() { if (!started) { started = true; load(0); } }
+  // 網はヒーローにあるので、ページの読み込みが終わってから three.js を読む（最初の表示を待たせない）
+  function start() {
+    if (started) return;
+    started = true;
+    if (document.readyState === 'complete') load(0);
+    else window.addEventListener('load', function () { load(0); });
+  }
   if (!('IntersectionObserver' in window)) { start(); return; }
   var io = new IntersectionObserver(function (entries) {
     if (entries.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); }
