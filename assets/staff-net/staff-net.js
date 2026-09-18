@@ -52,6 +52,10 @@
 
   if (typeof window.StaffGraph3D !== 'function' || !window.THREE) { showFallback(); return; }
 
+  // ピンチの寄り・引きの範囲（小さいほど寄る。初期値は下の graph.distance）
+  var ZOOM_MIN = 3.5, ZOOM_MAX = 16;
+  function clampZoom(d) { return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, d)); }
+
   var core = {
     STAFF: STAFF.map(function (s) { return { id: s.id, label: s.label, keywords: [] }; }),
     detectStaff: function () { return []; },
@@ -70,8 +74,13 @@
         .catch(function () { /* 粒なしでも球と線は表示される */ });
     }
 
-    // ホイールはページのスクロールに使う（Jarvisの拡大縮小は無効）
-    wheel() {}
+    // ホイールはページのスクロールに使う（Jarvisの拡大縮小は無効）。
+    // ただしタッチパッドのピンチ（ブラウザには Ctrl＋ホイールで届く）だけは拡大縮小にする。
+    wheel(event) {
+      if (!event.ctrlKey) return;
+      event.preventDefault();
+      this.distance = clampZoom(this.distance * Math.exp(Math.max(-200, Math.min(200, event.deltaY)) * 0.01));
+    }
 
     updateLabels() {
       if (!this.renderer) return;
@@ -141,6 +150,59 @@
   }
   // Jarvisの既定（11.5）より寄せて、枠いっぱいに網を見せる（縦長のスマホは回転で端が切れないよう少し引く）
   graph.distance = ROOT.clientWidth < 520 ? 10.5 : 8.4;
+
+  // 2本指ピンチで寄り・引き（2026-09-18 事業主指示「小さくて見えない。ピンチで拡大したい」）。
+  // 複写元（Jarvis）のファイルは触らず、枠（ROOT）の捕捉段階で先に受けて、ピンチ中は回転・クリックへ渡さない。
+  // 指1本の操作（回転・吹き出し・幕僚室への移動）とページの縦スクロールは従来どおり。
+  (function () {
+    var pts = {}, count = 0, pinch = null, swallow = false;
+    function gap() {
+      var ids = Object.keys(pts);
+      if (ids.length < 2) return 0;
+      var a = pts[ids[0]], b = pts[ids[1]];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+    function isTouch(e) { return e.pointerType === 'touch' && e.target === canvas; }
+    ROOT.addEventListener('pointerdown', function (e) {
+      if (!isTouch(e)) return;
+      if (!pts[e.pointerId]) count++;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (count >= 2) {
+        if (!pinch) {
+          pinch = { d0: Math.max(10, gap()), z0: graph.distance };
+          graph.releaseDrag();
+          graph.tooltipNode = null;
+          armed = null;
+        }
+        swallow = true;
+        e.stopPropagation();
+      }
+    }, true);
+    ROOT.addEventListener('pointermove', function (e) {
+      if (!pts[e.pointerId]) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (pinch && count >= 2) {
+        graph.distance = clampZoom(pinch.z0 * pinch.d0 / Math.max(10, gap()));
+      }
+      if (swallow) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+    function lift(e) {
+      if (!pts[e.pointerId]) return;
+      delete pts[e.pointerId];
+      count--;
+      if (count < 2) pinch = null;
+      if (swallow) {
+        e.stopPropagation();          // ピンチの指を離してもクリック（幕僚室へ移動）にしない
+        if (count === 0) swallow = false;
+      }
+    }
+    ROOT.addEventListener('pointerup', lift, true);
+    ROOT.addEventListener('pointercancel', lift, true);
+    // 2本指のときだけブラウザのページ拡大・スクロールを止める（1本指の縦スクロールは残す）
+    function blockMulti(e) { if (e.touches && e.touches.length >= 2) e.preventDefault(); }
+    canvas.addEventListener('touchstart', blockMulti, { passive: false });
+    canvas.addEventListener('touchmove', blockMulti, { passive: false });
+  })();
 
   // 画面外では描画を止める（LPのスクロールを重くしない）
   if ('IntersectionObserver' in window) {
