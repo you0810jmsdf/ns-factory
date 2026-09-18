@@ -1,0 +1,28 @@
+{
+  "_説明": "作品集閲覧ランキングの週1回SNS配信の設定。ここを書き換えて push すれば次回から反映される。集計は scripts/build_weekly_top.py、投稿は SNS投稿GAS（sns-gas-nsfactory/WeeklyTop.gs）。",
+  "_periodDays": "集計する期間の日数。7=過去7日間、30=過去30日間、0=これまでの全期間（総数）",
+  "periodDays": 7,
+  "_metric": "vv=見てくださった方の人数（同じ人が何度見ても1）、pv=閲覧回数。作家自身の閲覧はどちらも除外済み",
+  "metric": "vv",
+  "_topN": "投稿文に並べる件数",
+  "topN": 10,
+  "_photoCount": "画像に載せる写真の枚数（1〜3）。上位から写真のある作品を順に使う",
+  "photoCount": 3,
+  "_excludeSoldout": "true にすると売約済みの作品を外す（2026-09 時点で作品の9割以上が売約済みのため既定は false）",
+  "excludeSoldout": false,
+  "_onlyInWorks": "true なら今の作品集に載っている作品だけにする（削除済みの作品を出さない）",
+  "onlyInWorks": true,
+  "_nameMaxLength": "投稿文で作品名を切り詰める文字数（Threads は500字まで）",
+  "nameMaxLength": 28,
+  "worksUrl": "https://you0810jmsdf.github.io/ns-factory/works.html",
+  "_platforms": "投稿するSNS。false にしたものには出さない",
+  "platforms": { "threads": true, "instagram": true, "facebook": true },
+  "text": {
+    "title": "作品集閲覧ランキング",
+    "introVv": "作品集で、見てくださった方が多かった作品のトップ{n}です。",
+    "introPv": "作品集で、多く開かれた作品のトップ{n}です。",
+    "outro": "気になる作品があれば、作品集から写真と詳細をご覧ください。",
+    "linkLine": "作品集はこちら",
+    "instagramLinkLine": "作品集はプロフィールのリンクからご覧いただけます。"
+  }
+}
