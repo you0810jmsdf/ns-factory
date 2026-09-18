@@ -1684,6 +1684,14 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
           <a href="./shirei-room/" class="staff-cta-secondary" data-i18n="staff.noteCta">司令官室へ（AI経営奮闘記）→</a>
         </div>
       </div>
+      <!-- 首席幕僚：紹介のみ（幕僚室は管理画面側に置くため、公開サイトには入口を作らない） -->
+      <div class="staff-card" style="cursor:default;">
+        <span class="staff-badge" data-i18n="staff.badge.shuseki">首席幕僚</span>
+        <img src="./assets/staff/shuseki.png" alt="首席幕僚">
+        <div class="staff-card-body">
+          <p class="staff-copy" data-i18n="staff.copy.shuseki">全幕僚の統括と調整、司令官の決断を支える側近。</p>
+        </div>
+      </div>
       <a class="staff-card" href="./sakusen-room/" style="display:block;color:inherit;text-decoration:none;">
         <span class="staff-badge" data-i18n="staff.badge.sakusen">作戦幕僚</span>
         <img src="./assets/staff/sakusen.png" alt="作戦幕僚">
@@ -2056,6 +2064,8 @@ window.NSF_I18N_DICT = {
   'staff.profileCta': 'View profile',
   'staff.noteCta': "Commander's Office (AI management chronicle) →",
   'staff.tasksLabel': 'Main duties',
+  'staff.badge.shuseki': 'Chief of Staff',
+  'staff.copy.shuseki': 'Oversees and coordinates every staff officer, and supports the commander in making decisions.',
   'staff.badge.sakusen': 'Strategy Officer',
   'staff.cta.sakusen': 'Strategy Room<span style="color:#C0392B;font-size:11px;font-weight:700;margin-left:6px;">Restricted</span>',
   'staff.task.shijisho': 'Strategy directives <span style="color:#c00;font-weight:700;">[Restricted]</span>',
