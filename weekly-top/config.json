@@ -15,6 +15,8 @@
   "_nameMaxLength": "投稿文で作品名を切り詰める文字数（Threads は500字まで）",
   "nameMaxLength": 28,
   "worksUrl": "https://you0810jmsdf.github.io/ns-factory/works.html",
+  "_postTime": "集計した日（日曜）の何時に投稿するか（24時間表記）。予約キューは15分おきなので実際は指定時刻から15分以内に出る",
+  "postTime": "20:00",
   "_platforms": "投稿するSNS。false にしたものには出さない",
   "platforms": { "threads": true, "instagram": true, "facebook": true },
   "text": {
