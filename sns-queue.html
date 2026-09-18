@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script src="assets/admin-remember.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>SNS予約キュー | N's factory</title>
+<style>
+/* 講座動画（youtube-stats.html）と同じダーク管制室テーマ */
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#0d1117;color:#e6edf3;min-height:100vh;
+}
+.topbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 20px;border-bottom:1px solid #30363d;background:#161b22;
+}
+.topbar h1{margin:0;font-size:17px;letter-spacing:.04em}
+.meta{font-size:11px;color:#9aa4af;line-height:1.5}
+.wrap{padding:16px 20px 60px;display:grid;gap:14px;max-width:1200px}
+.panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px 16px;min-width:0}
+.panel h2{margin:0 0 10px;font-size:14px;color:#c9d1d9;letter-spacing:.03em}
+button{
+  background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:8px;
+  padding:7px 14px;font-size:13px;cursor:pointer;
+}
+button:hover{border-color:#8b949e}
+button.primary{background:#1f6feb;border-color:#1f6feb}
+input[type=password],input[type=text]{
+  background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;
+  padding:7px 10px;font-size:13px;
+}
+label{font-size:12px;color:#9aa4af}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:8px 10px;border-bottom:1px solid #21262d;text-align:left;vertical-align:top}
+th{color:#9aa4af;font-weight:normal;font-size:11px;letter-spacing:.05em}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:bold}
+.badge.scheduled{background:#0f2a4a;color:#79c0ff;border:1px solid #1f6feb}
+.badge.posted{background:#12331f;color:#4ade80;border:1px solid #2ea043}
+.badge.canceled{background:#2d2d2d;color:#8b949e;border:1px solid #444}
+.badge.failed{background:#3d1214;color:#ff9d9d;border:1px solid #f85149}
+.sns-flags{white-space:nowrap;font-size:11px}
+.sns-flags span{display:inline-block;margin-right:4px;padding:1px 7px;border-radius:6px;background:#21262d;color:#586069}
+.sns-flags span.on{background:#0f2a4a;color:#79c0ff}
+.qtext{max-width:520px;line-height:1.6;color:#c9d1d9;word-break:break-word}
+.qimg{max-width:72px;max-height:72px;border-radius:6px;border:1px solid #30363d;display:block}
+.notice{font-size:12px;color:#e3b341;line-height:1.7}
+.error{color:#ff9d9d;font-size:13px;min-height:1.2em}
+details{font-size:12px;color:#9aa4af}
+pre{white-space:pre-wrap;word-break:break-all;background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px;font-size:11.5px}
+#authOverlay{
+  position:fixed;inset:0;background:#0d1117;display:flex;align-items:center;justify-content:center;z-index:10;
+}
+.auth-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:24px;display:grid;gap:10px;width:300px}
+body.auth-locked .wrap{display:none}
+a{color:#79c0ff}
+</style>
+</head>
+<body class="auth-locked">
+<div id="authOverlay">
+  <div class="auth-box">
+    <h1 style="margin:0;font-size:15px">SNS予約キュー</h1>
+    <label for="authPassword">管理パスワード</label>
+    <input type="password" id="authPassword" autocomplete="current-password">
+    <button class="primary" type="button" onclick="submitAuth()">開く</button>
+    <div class="error" id="authError"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <h1>📮 SNS予約キュー</h1>
+  <div class="meta">Threads / Instagram / Facebook の予約投稿一覧（Nsfactory-SNS-AutoPost）。15分毎のトリガーが処理。<br>Instagram は1日3本の上限に達すると scheduled のまま翌日以降の枠で自動投稿されます。</div>
+</div>
+
+<div class="wrap">
+  <div class="panel">
+    <h2>SNS管理の合言葉（サイトの管理パスワードとは別・2026-07-31発行）</h2>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input type="password" id="snsPass" placeholder="SNS管理の合言葉" style="width:220px">
+      <label><input type="checkbox" id="snsPassRemember"> このPCに覚える</label>
+      <button class="primary" type="button" id="loadBtn" onclick="loadQueue()">読み込む</button>
+      <span class="error" id="loadError"></span>
+    </div>
+    <div class="notice" style="margin-top:8px">
+      合言葉の正本は 保全部\.env の SNS_GAS_ADMIN_PASSPHRASE。取消は各行の通知メールにある取消ボタン、またはキューシートから（この一覧は行IDを持たないため取消ボタンはありません）。
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 style="display:flex;align-items:center;gap:10px">予約一覧 <span class="meta" id="queueMeta"></span>
+      <a href="#" id="sheetLink" target="_blank" rel="noopener" style="display:none;font-size:12px">📄 キューシートを開く</a>
+    </h2>
+    <div id="queueBody" class="meta">合言葉を入れて「読み込む」を押してください。</div>
+    <details style="margin-top:10px"><summary>GASの生の応答を見る</summary><pre id="rawText"></pre></details>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ================================================================
+// 認証（画面側の照合は出し分けにすぎない。一覧はGASが合言葉を確認してから返す）
+// ================================================================
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const SESSION_KEY = 'nsfactory-sns-queue-auth';
+const KEY_STORE = 'nsf_admin_key';  // admin.html と共通
+// Threads自動投稿GAS『Nsfactory-SNS-AutoPost』（一覧は text/plain を返すので直接fetchできる）
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec';
+const SNS_PASS_SAVE = 'nsf_snsq_pass_saved';  // 「このPCに覚える」用（localStorage・このPC限定運用）
+
+function sha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+  );
+}
+function checkSession() {
+  try { return sessionStorage.getItem(SESSION_KEY) === 'ok'; } catch (e) { return false; }
+}
+function unlockAuth() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.classList.remove('auth-locked');
+  try {
+    const saved = localStorage.getItem(SNS_PASS_SAVE) || '';
+    if (saved) {
+      document.getElementById('snsPass').value = saved;
+      document.getElementById('snsPassRemember').checked = true;
+      loadQueue();
+    }
+  } catch (e) {}
+}
+function submitAuth() {
+  const input = document.getElementById('authPassword');
+  const errEl = document.getElementById('authError');
+  sha256(input.value).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      try {
+        sessionStorage.setItem(SESSION_KEY, 'ok');
+        sessionStorage.setItem(KEY_STORE, input.value);
+      } catch (e) {}
+      unlockAuth();
+    } else {
+      errEl.textContent = 'パスワードが違います';
+    }
+  }).catch(() => { errEl.textContent = '照合に失敗しました（https環境で開いてください）'; });
+}
+
+// ================================================================
+// 一覧の取得と描画
+// ================================================================
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// GASのテキスト応答（1行目: キューシートURL / 2行目: 件数 / 以降3行1組）を行に分解する
+function parseQueueText(text) {
+  const lines = String(text).split('\n');
+  const result = { sheetUrl: '', total: null, rows: [] };
+  let current = null;
+  for (const line of lines) {
+    let m;
+    if ((m = line.match(/^キューシート:\s*(\S+)/))) { result.sheetUrl = m[1]; continue; }
+    if ((m = line.match(/^予約件数:\s*(\d+)/))) { result.total = Number(m[1]); continue; }
+    if ((m = line.match(/^\[(\w+)\]\s+(\S+(?:\s+\S+)?)\s+T:(\w+)\s+I:(\w+)\s+F:(\w+)/))) {
+      current = {
+        status: m[1], at: m[2],
+        threads: m[3] === 'true', instagram: m[4] === 'true', facebook: m[5] === 'true',
+        text: '', imageUrl: ''
+      };
+      result.rows.push(current);
+      continue;
+    }
+    if (current && line.startsWith('  ')) {
+      const body = line.slice(2);
+      if (/^https:\/\/\S+$/.test(body.trim())) current.imageUrl = body.trim();
+      else if (body.trim()) current.text = current.text ? current.text + ' ' + body.trim() : body.trim();
+    }
+  }
+  return result;
+}
+
+function renderQueue(parsed) {
+  const bodyEl = document.getElementById('queueBody');
+  document.getElementById('queueMeta').textContent =
+    (parsed.total != null ? `全${parsed.total}件` : '') + `（取得 ${new Date().toLocaleString('ja-JP')}）`;
+  const link = document.getElementById('sheetLink');
+  if (parsed.sheetUrl) { link.href = parsed.sheetUrl; link.style.display = ''; }
+  if (!parsed.rows.length) {
+    bodyEl.textContent = '予約はありません。';
+    return;
+  }
+  // 予約中を上に、あとは新しい日時順
+  const order = { scheduled: 0, failed: 1, posted: 2, canceled: 3 };
+  const rows = parsed.rows.slice().sort((a, b) =>
+    (order[a.status] ?? 9) - (order[b.status] ?? 9) || String(b.at).localeCompare(String(a.at)));
+  const table = document.createElement('table');
+  table.innerHTML = '<thead><tr><th>状態</th><th>予約日時</th><th>送り先</th><th>本文（先頭）</th><th>画像</th></tr></thead>';
+  const tbody = document.createElement('tbody');
+  for (const row of rows) {
+    const tr = document.createElement('tr');
+    const flag = (on, label) => `<span class="${on ? 'on' : ''}">${label}</span>`;
+    tr.innerHTML =
+      `<td><span class="badge ${esc(row.status)}">${esc(row.status)}</span></td>` +
+      `<td style="white-space:nowrap">${esc(row.at)}</td>` +
+      `<td class="sns-flags">${flag(row.threads, 'Threads')}${flag(row.instagram, 'Instagram')}${flag(row.facebook, 'Facebook')}</td>` +
+      `<td class="qtext">${esc(row.text)}</td>` +
+      `<td>${row.imageUrl && /^https:\/\//.test(row.imageUrl) ? `<a href="${esc(row.imageUrl)}" target="_blank" rel="noopener"><img class="qimg" src="${esc(row.imageUrl)}" alt="投稿画像" loading="lazy"></a>` : '—'}</td>`;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  bodyEl.replaceChildren(table);
+}
+
+let loading = false;
+function loadQueue() {
+  if (loading) return;
+  const pass = document.getElementById('snsPass').value.trim();
+  const errEl = document.getElementById('loadError');
+  errEl.textContent = '';
+  if (!pass) { errEl.textContent = '合言葉を入力してください'; return; }
+  loading = true;
+  const btn = document.getElementById('loadBtn');
+  btn.disabled = true; btn.textContent = '読み込み中…';
+  fetch(GAS_URL + '?action=snsqueue&pass=' + encodeURIComponent(pass), { credentials: 'omit' })
+    .then(r => r.text())
+    .then(text => {
+      document.getElementById('rawText').textContent = text;
+      if (/^合言葉が違います/.test(text.trim())) {
+        errEl.textContent = '合言葉が違います';
+        try { localStorage.removeItem(SNS_PASS_SAVE); } catch (e) {}
+        return;
+      }
+      if (text.trim().startsWith('<')) {
+        // GASの間欠404などHTMLが返ったとき（再送はしない。手で押し直す）
+        errEl.textContent = 'GASの応答が読めませんでした。もう一度「読み込む」を押してください。';
+        return;
+      }
+      try {
+        if (document.getElementById('snsPassRemember').checked) localStorage.setItem(SNS_PASS_SAVE, pass);
+        else localStorage.removeItem(SNS_PASS_SAVE);
+      } catch (e) {}
+      renderQueue(parseQueueText(text));
+    })
+    .catch(() => { errEl.textContent = '通信に失敗しました。ネットワークを確認してください。'; })
+    .finally(() => { loading = false; btn.disabled = false; btn.textContent = '読み込む'; });
+}
+
+if (checkSession()) unlockAuth();
+document.getElementById('authPassword').addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); });
+document.getElementById('snsPass').addEventListener('keydown', e => { if (e.key === 'Enter') loadQueue(); });
+</script>
+</body>
+</html>

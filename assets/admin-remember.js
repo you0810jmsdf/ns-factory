@@ -41,6 +41,7 @@
     ['nsfactory-api-costs-auth', 'ok'],            // api-costs.html
     ['nsfactory-staff-monitor-auth', 'ok'],        // staff-monitor.html
     ['nsfactory-youtube-stats-auth', 'ok'],        // youtube-stats.html
+    ['nsfactory-sns-queue-auth', 'ok'],            // sns-queue.html
     ['nsfactory-ring-admin-auth', 'ok']            // order_estimate/admin.html
   ];
   var ROOM_TOKENS = ['kanri_auth_token', 'sakusen_auth_token', 'senryaku_auth_token'];
