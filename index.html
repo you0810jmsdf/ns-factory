@@ -820,6 +820,7 @@ h1,h2,h3{
 
 /* === ヒーロー: 総司令官カード＋3D幕僚網（2026-09-19 事業主指示・黒背景に溶け込ませる／動きのある幻想的な表現） === */
 .hero.hero--staffnet{
+  scroll-margin-top:64px;
   grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);
   gap:28px;align-items:center;
   min-height:680px;
@@ -829,6 +830,7 @@ h1,h2,h3{
 }
 .hero--staffnet .hero-photo{display:none}
 .hero-group-mobile{display:none}
+.lp-hidden{display:none !important}
 /* オーロラ（網の紫・水色とブランドの金）がゆっくり漂う */
 .hero--staffnet::before{
   content:'';position:absolute;inset:-25%;z-index:-2;pointer-events:none;
@@ -876,7 +878,8 @@ h1,h2,h3{
 }
 .hero--staffnet .staff-commander::before,
 .hero--staffnet .staff-commander::after{background:#05070f;color:#c9a96e}
-.hero--staffnet .staff-commander-link{grid-column:1;grid-row:1 / span 2}
+.hero--staffnet .staff-commander-link{grid-column:1;grid-row:1 / span 3}
+.hero--staffnet .staff-cta-secondary + .staff-cta-secondary{margin-top:8px}
 .hero--staffnet .staff-commander > .hero-content,
 .hero--staffnet .staff-commander > .staff-cta-secondary{grid-column:2}
 .hero--staffnet .staff-commander img{
@@ -1765,7 +1768,7 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
 </div>
 
 <!-- ── Hero ── -->
-<section class="hero hero--staffnet">
+<section class="hero hero--staffnet" id="staff">
   <!-- 2026-09-19 事業主指示: ヒーローを「総司令官カード（タイトル・ボタン入り）＋3D幕僚網」に。
        作家の写真（.hero-photo）は非表示で温存。戻すときは hero--staffnet を外し、.hero-content をカードから出す -->
   <div class="staff-slide commander-slide">
@@ -1789,6 +1792,7 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
         <img src="./assets/staff/all agent 11staff.png" alt="N's factory スタッフ集合">
       </div>
       <a href="./shirei-room/" class="staff-cta-secondary" data-i18n="staff.noteCta">司令官室へ（AI経営奮闘記）→</a>
+      <a href="./profile.html" class="staff-cta-secondary" data-i18n="staff.profileLink">作家のプロフィールを見る →</a>
     </div>
   </div>
   <div class="staff-net-panel">
@@ -1820,7 +1824,8 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
 </section>
 
 <!-- ── System Planner Full Order ── -->
-<section class="section" style="background:var(--color-bg);padding-top:56px;padding-bottom:56px;">
+<!-- 2026-09-19 事業主決定: トップを整理。この欄は非表示（コードは温存）。戻すときは lp-hidden を外す -->
+<section class="section lp-hidden" style="background:var(--color-bg);padding-top:56px;padding-bottom:56px;">
   <div class="section-inner">
     <div class="section-header" style="margin-bottom:20px;">
       <p class="section-label">Order Made</p>
@@ -1838,7 +1843,8 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
 </section>
 
 <!-- ── AI Concierge（幕僚AIによる接客） ── -->
-<section class="section ai-concierge">
+<!-- 2026-09-19 事業主決定: トップを整理。この欄は非表示（コードは温存）。戻すときは lp-hidden を外す -->
+<section class="section ai-concierge lp-hidden">
   <div class="section-inner">
     <div class="section-header" style="margin-bottom:20px;">
       <p class="section-label">AI Concierge</p>
@@ -1887,8 +1893,76 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
   </div>
 </section>
 
+<!-- 2026-09-19: お知らせを新着商品のすぐ下へ移動（事業主決定） -->
+<!-- ── NEWS ── -->
+<section class="section" style="background:var(--color-bg-sub)">
+  <div class="section-inner">
+    <div class="section-header">
+      <p class="section-label">News</p>
+      <h2 class="section-title" data-i18n="news.title">お知らせ</h2>
+    </div>
+    <!-- 中身は news-data.json から描画する。以下の <li> は JSON が読めなかった
+         ときのフォールバック（更新は Actions が JSON 側に行うため、こちらは
+         徐々に古くなる。表示に使われるのは fetch 失敗時だけ）。 -->
+    <div class="accordion" id="news-accordion">
+      <div class="accordion-item">
+        <button class="accordion-btn" aria-expanded="true" onclick="toggleAccordion(this)">
+          <span>2026年のお知らせ</span>
+          <span class="accordion-chevron">▾</span>
+        </button>
+        <div class="accordion-body open">
+          <div class="accordion-content">
+            <ul>
+              <li>2026年9月 — N&#39;s refill に日付なしウィークリー・デイリーセット（各6判型セット¥500）を追加しました。</li>
+              <li>2026年9月 — 作品集の在庫がある作品をカード購入できるようになりました。</li>
+              <li>2026年9月 — いんザイ君キーホルダーで刻印デザインを番号で選べるようになりました。</li>
+              <li>2026年9月 — 改善要望機能に写真添付機能を追加しました。</li>
+              <li>2026年9月 — N&#39;s pattern サイトを新設しました。</li>
+              <li>2026年9月 — 見積もりシミュレーターをリニューアルしました。N-Classic商品の見積もり、ベルト加工オプションに対応しています。</li>
+              <li>2026年9月 — PDF販売でStripeカード決済に対応しました。</li>
+              <li>2026年9月 — Mini6・Micro5 のリフィル印刷ツール6本を新設しました。</li>
+              <li>2026年9月 — リング規格図鑑の修正と、PDF販売ページを公開しました。</li>
+              <li>2026年8月 — コストコ共同購入アプリを外部開放しました。</li>
+              <li>2026年8月 — ダイエット管理アプリを公開しました。</li>
+              <li>2026年8月 — オイルの選び方特集ページを公開しました。</li>
+              <li>2026年8月 — サイトの英語版対応を開始しました。</li>
+              <li>2026年8月 — 見積もりシミュレーターの英語版を公開しました。</li>
+              <li>2026年8月 — 作品集カテゴリを3段階構成（大→中→小）に再編しました。</li>
+              <li>2026年8月 — 作品集のSOLDOUT表示を改善しました。</li>
+              <li>2026年7月 — SNS動画メーカーのUIを全面改修しました。</li>
+              <li>2026年5月 — Bitcoin（BTC）決済対応を開始しました。対象はオーダー品・直接お見積もりです。詳細は<a href="#payment-btc">こちら</a>。</li>
+              <li>2026年5月 — N's notebook シリーズに「週間ブロックリフィル印刷ツール」「月間ブロックリフィル印刷ツール」を追加。公式LINE会員限定で公開中</li>
+              <li>2026年5月 — N's notebook「パスワード管理」をWeb版アプリとして公開。終活・家族への引き継ぎ用にA6リフィル印刷にも対応</li>
+              <li>2026年4月 — N's notebook シリーズ第2弾「A6リフィル印刷ツール」を公開（ブラウザ完結・インストール不要）</li>
+              <li>2026年 — note にて手帳・革小物の制作レポートや活用記事を不定期に公開中</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <button class="accordion-btn" aria-expanded="false" onclick="toggleAccordion(this)">
+          <span>過去のお知らせ（2024年）</span>
+          <span class="accordion-chevron">▾</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <ul>
+              <li>2024年 — 各種ECサイト（Creema / minne / BASE / メルカリ / ラクマ / PayPayフリマ / Pinkoi）にて販売中</li>
+              <li>2024年 — Pinkoi（アジア向けECサイト）への出店開始</li>
+              <li>2024年 — JOYFUL HONDA カルチャースクール レザークラフト講座 開講</li>
+              <li>2024年 — システム手帳フルオーダー見積もりシミュレータ 公開</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <!-- ── Staff ── -->
-<section class="section staff-section" id="staff">
+<!-- 2026-09-19 事業主決定: トップを整理。この欄は非表示（コードは温存）。戻すときは lp-hidden を外す -->
+<section class="section staff-section lp-hidden" id="staff-section-legacy">
   <div class="section-inner">
     <div class="section-header">
       <p class="section-label">Staff</p>
@@ -2139,70 +2213,7 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
   </div>
 </section>
 
-<!-- ── NEWS ── -->
-<section class="section" style="background:var(--color-bg-sub)">
-  <div class="section-inner">
-    <div class="section-header">
-      <p class="section-label">News</p>
-      <h2 class="section-title" data-i18n="news.title">お知らせ</h2>
-    </div>
-    <!-- 中身は news-data.json から描画する。以下の <li> は JSON が読めなかった
-         ときのフォールバック（更新は Actions が JSON 側に行うため、こちらは
-         徐々に古くなる。表示に使われるのは fetch 失敗時だけ）。 -->
-    <div class="accordion" id="news-accordion">
-      <div class="accordion-item">
-        <button class="accordion-btn" aria-expanded="true" onclick="toggleAccordion(this)">
-          <span>2026年のお知らせ</span>
-          <span class="accordion-chevron">▾</span>
-        </button>
-        <div class="accordion-body open">
-          <div class="accordion-content">
-            <ul>
-              <li>2026年9月 — N&#39;s refill に日付なしウィークリー・デイリーセット（各6判型セット¥500）を追加しました。</li>
-              <li>2026年9月 — 作品集の在庫がある作品をカード購入できるようになりました。</li>
-              <li>2026年9月 — いんザイ君キーホルダーで刻印デザインを番号で選べるようになりました。</li>
-              <li>2026年9月 — 改善要望機能に写真添付機能を追加しました。</li>
-              <li>2026年9月 — N&#39;s pattern サイトを新設しました。</li>
-              <li>2026年9月 — 見積もりシミュレーターをリニューアルしました。N-Classic商品の見積もり、ベルト加工オプションに対応しています。</li>
-              <li>2026年9月 — PDF販売でStripeカード決済に対応しました。</li>
-              <li>2026年9月 — Mini6・Micro5 のリフィル印刷ツール6本を新設しました。</li>
-              <li>2026年9月 — リング規格図鑑の修正と、PDF販売ページを公開しました。</li>
-              <li>2026年8月 — コストコ共同購入アプリを外部開放しました。</li>
-              <li>2026年8月 — ダイエット管理アプリを公開しました。</li>
-              <li>2026年8月 — オイルの選び方特集ページを公開しました。</li>
-              <li>2026年8月 — サイトの英語版対応を開始しました。</li>
-              <li>2026年8月 — 見積もりシミュレーターの英語版を公開しました。</li>
-              <li>2026年8月 — 作品集カテゴリを3段階構成（大→中→小）に再編しました。</li>
-              <li>2026年8月 — 作品集のSOLDOUT表示を改善しました。</li>
-              <li>2026年7月 — SNS動画メーカーのUIを全面改修しました。</li>
-              <li>2026年5月 — Bitcoin（BTC）決済対応を開始しました。対象はオーダー品・直接お見積もりです。詳細は<a href="#payment-btc">こちら</a>。</li>
-              <li>2026年5月 — N's notebook シリーズに「週間ブロックリフィル印刷ツール」「月間ブロックリフィル印刷ツール」を追加。公式LINE会員限定で公開中</li>
-              <li>2026年5月 — N's notebook「パスワード管理」をWeb版アプリとして公開。終活・家族への引き継ぎ用にA6リフィル印刷にも対応</li>
-              <li>2026年4月 — N's notebook シリーズ第2弾「A6リフィル印刷ツール」を公開（ブラウザ完結・インストール不要）</li>
-              <li>2026年 — note にて手帳・革小物の制作レポートや活用記事を不定期に公開中</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="accordion-item">
-        <button class="accordion-btn" aria-expanded="false" onclick="toggleAccordion(this)">
-          <span>過去のお知らせ（2024年）</span>
-          <span class="accordion-chevron">▾</span>
-        </button>
-        <div class="accordion-body">
-          <div class="accordion-content">
-            <ul>
-              <li>2024年 — 各種ECサイト（Creema / minne / BASE / メルカリ / ラクマ / PayPayフリマ / Pinkoi）にて販売中</li>
-              <li>2024年 — Pinkoi（アジア向けECサイト）への出店開始</li>
-              <li>2024年 — JOYFUL HONDA カルチャースクール レザークラフト講座 開講</li>
-              <li>2024年 — システム手帳フルオーダー見積もりシミュレータ 公開</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+
 
 <!-- ── 特定商取引法 ── -->
 <section class="section tokusho">
@@ -2302,6 +2313,7 @@ window.NSF_I18N_DICT = {
   'staff.tagline': 'The commander leading the entire business',
   'staff.profileCta': 'View profile',
   'staff.noteCta': "Commander's Office (AI management chronicle) →",
+  'staff.profileLink': 'About the maker →',
   'staff.netHint': "Hover a sphere to see each officer’s duties; click to enter their office. Drag to rotate, pinch to zoom, and grab the Chief of Staff in the center to move the network (double-click to reset). The particles show how many notes each officer keeps.",
   'staff.tasksLabel': 'Main duties',
   'staff.badge.shuseki': 'Chief of Staff',
