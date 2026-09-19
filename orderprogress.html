@@ -1246,9 +1246,11 @@ function renderCards(records) {
     const leatherInfo = r['使用革']||'';
     const hearingContent = r['ヒアリング内容']||'';
     // ヒアリング内容にはお客様のメール等が入るため、管理者ログイン後だけ表示する（2026-09-06 公開露出の応急対処）
+    const sheetPdf = orderSheetPdfUrl(r);
     const colorOrderHtml = isAdmin() && (leatherInfo || hearingContent)
       ? `<div class="color-order-info">
            <div class="tl-title">${T('card.colorOrder','🎨 カラーオーダー情報')}</div>
+           ${sheetPdf ? `<div class="color-order-row"><a class="btn btn-edit" href="${esc(sheetPdf)}" target="_blank" rel="noopener">📄 発注票PDF</a></div>` : ''}
            ${leatherInfo ? `<div class="color-order-row"><b>${T('card.leather','使用革:')}</b> ${esc(leatherInfo).replace(/\n/g,'<br>')}</div>` : ''}
            ${hearingContent ? `<div class="color-order-row"><b>${T('card.hearing','ヒアリング内容:')}</b>${hearingThreadHtml(hearingContent)}</div>` : ''}
          </div>`
@@ -1465,7 +1467,9 @@ async function openModal(id) {
     document.getElementById('f-memo').value   = r['メモ（非公開）']||'';
     document.getElementById('f-customer-id').value = r['顧客ID']||'';
     const hearingText = r['ヒアリング内容']||'';
-    document.getElementById('f-hearing-wrap').style.display = hearingText.trim() ? '' : 'none';
+    // メモに通知メールと同じ本文が入っている受付（2026-09-19 以降）は、同じ内容を2回見せない
+    const memoHasHearing = /相談内容（通知メールと同じ）/.test(r['メモ（非公開）']||'');
+    document.getElementById('f-hearing-wrap').style.display = (hearingText.trim() && !memoHasHearing) ? '' : 'none';
     document.getElementById('f-hearing').innerHTML = hearingText.trim() ? hearingThreadHtml(hearingText).replace(/^<br>/, '') : '';
     onCustomerSelectChange();
     // 編集画面もカードと同じ並び（日付の昇順）にする。保存するとこの順で記録される
@@ -1998,6 +2002,13 @@ function hearingBadgeHtml(r) {
   if (!/発注票/.test(h)) return '<div class="hearing-badge">💬 相談の記録あり</div>';
   const m = h.match(/(?:見積もりの目安|概算目安)：\s*(¥[\d,]+(?:\s*〜\s*¥[\d,]+)?)/);
   return '<div class="hearing-badge">📋 発注票あり' + (m ? '　' + esc(m[1]) : '') + '</div>';
+}
+
+// AI相談の受付で GAS が作った発注票PDF（メモ先頭の「発注票PDF: URL」・2026-09-19）。
+// メモは管理者が編集できる欄なので、Drive のファイルURLの形だけを受け付ける。
+function orderSheetPdfUrl(r) {
+  const m = String(r['メモ（非公開）'] || '').match(/発注票PDF:\s*(https:\/\/drive\.google\.com\/file\/d\/[\w-]+\/view[^\s]*)/);
+  return m ? m[1] : '';
 }
 
 function hearingThreadHtml(text) {
