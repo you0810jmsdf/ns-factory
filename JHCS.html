@@ -154,6 +154,25 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .notice-history-title { font-size: 14px; font-weight: 700; }
     .notice-history-text { margin-top: 4px; font-size: 13px; color: var(--gray); white-space: pre-wrap; word-break: break-word; }
 
+    /* 出欠掲示板（hacomono の予約確認・欠席メールをGASが集計・2026-09-19） */
+    .att-lead { font-size: 13px; color: var(--gray); margin-bottom: 10px; }
+    .att-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .att-table-wrap { overflow-x: auto; }
+    .att-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--white); border-radius: 10px; }
+    .att-table th, .att-table td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; }
+    .att-table th { background: #faf7f3; font-size: 12px; color: var(--gray); white-space: nowrap; }
+    .att-table td.att-date { white-space: nowrap; font-weight: 600; }
+    .att-num { font-weight: 700; white-space: nowrap; }
+    .att-names { font-size: 12px; color: var(--gray); min-width: 120px; }
+    .att-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .att-badge.upcoming { background: var(--blue-light); color: var(--blue); }
+    .att-badge.today { background: var(--amber-light); color: var(--amber); }
+    .att-badge.done { background: #eee; color: var(--gray); }
+    .att-rec-ok { color: var(--green); font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .att-rec-no { color: var(--gray); font-size: 12px; white-space: nowrap; }
+    .att-msg { font-size: 12px; margin-top: 8px; line-height: 1.7; }
+    .att-msg.warn { color: var(--amber); }
+
     /* Stats */
     .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
     .stat { background: var(--white); border-radius: 10px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07); min-width: 110px; }
@@ -653,6 +672,24 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <div class="wlb-counter" id="wlb-counter"></div>
   </div>
 
+  <!-- 出欠掲示板（2026-09-19）: hacomono の予約確認・欠席メールをGASが自動集計。公開側は人数だけ、名前は管理者のみ -->
+  <details class="section" id="attendance-section" open>
+    <summary><h2>出欠掲示板</h2></summary>
+    <p class="att-lead">予約システム（hacomono）から届く予約確認・欠席の連絡を、開催日ごとに自動で集計しています。予約の人数は開催前日のメールで確定します。</p>
+    <div class="att-toolbar">
+      <button class="btn btn-secondary" id="btn-att-admin" style="font-size:12px;padding:4px 12px;" onclick="enterAdminView()">🔑 管理者として表示（名前を見る）</button>
+      <button class="btn btn-secondary" style="font-size:12px;padding:4px 12px;" onclick="loadAttendance()">🔄 最新にする</button>
+      <span id="att-updated" style="font-size:12px;color:var(--gray);"></span>
+    </div>
+    <div class="att-table-wrap">
+      <table class="att-table">
+        <thead><tr id="att-head"></tr></thead>
+        <tbody id="att-body"><tr><td class="loading"><span class="spinner"></span>読み込み中...</td></tr></tbody>
+      </table>
+    </div>
+    <div id="att-msg" class="att-msg"></div>
+  </details>
+
   <!-- 実績一覧 -->
   <details class="section">
     <summary><h2>講習実績</h2></summary>
@@ -685,7 +722,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </details>
 
   <!-- 追記フォーム -->
-  <details class="section">
+  <details class="section" id="record-form-section">
     <summary><h2>実績を追記</h2></summary>
     <div class="form-card">
       <div class="form-grid">
@@ -815,6 +852,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     document.getElementById('setup-banner').classList.remove('show');
     loadRecords();
     loadNotice();
+    loadAttendance();
     loadCurriculum();
     loadPhotos();
   }
@@ -829,12 +867,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     localStorage.setItem(GAS_URL_KEY, url);
     loadRecords();
     loadNotice();
+    loadAttendance();
     loadCurriculum();
     loadPhotos();
   }
 
   // ── お知らせ ─────────────────────────────────────
   async function loadNotice() {
+    if (adminMode) { await enterAdminView(); return; }
     const url = getGasUrl();
     if (!url) {
       setNoticeFields('', '', '更新: ―');
@@ -889,7 +929,153 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     return pass;
   }
 
-  function unlockNoticeEditor() {
+  // ── 出欠掲示板・管理者表示（2026-09-19） ──────────────────────
+  // 公開側（GET）は名前を伏せた実績・お知らせと、出欠の人数だけを受け取る。
+  // 管理者パスワードで adminData を取ると実名入りに差し替わる。
+  // ⛔ 編集欄は必ず実名版を読み込んでから開く（伏せ字のまま保存すると実名が消えるため。GAS側にも同じ守りがある）
+  let adminMode = false;
+  let adminLoading = null;
+  let attSessions = [];
+  const ATT_WD = ['日', '月', '火', '水', '木', '金', '土'];
+  const ATT_ADMIN_LABEL = '🔑 管理者として表示（名前を見る）';
+
+  // 読み取り専用の取得。GASが間欠的にHTMLを返したとき（＝処理に届いていない）だけ3回まで取り直す
+  async function fetchJsonRead(url, options) {
+    let lastErr = null;
+    for (let i = 0; i < 3; i++) {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      if (res.ok && !text.trim().startsWith('<')) return JSON.parse(text);
+      lastErr = new Error('サーバーの応答を読めませんでした（HTTP ' + res.status + '）');
+    }
+    throw lastErr;
+  }
+
+  async function loadAttendance() {
+    if (adminMode) { await enterAdminView(); return; }
+    const url = getGasUrl();
+    if (!url) return;
+    try {
+      const data = await fetchJsonRead(`${url}?action=attendance`);
+      renderAttendance(data.sessions || [], false,
+        data.syncFailed ? '予約システムのメールを今は読み取れていません。前回までの集計を表示しています。' : '', []);
+    } catch (e) {
+      document.getElementById('att-head').innerHTML = '';
+      document.getElementById('att-body').innerHTML =
+        `<tr><td class="empty-msg">出欠を読み込めませんでした。<br><small>${esc(e.message)}</small> <button class="btn btn-secondary" style="font-size:12px;padding:2px 10px;" onclick="loadAttendance()">もう一度読み込む</button></td></tr>`;
+    }
+  }
+
+  function enterAdminView() {
+    if (adminLoading) return adminLoading;
+    const password = getNoticePassword();
+    if (!password) return Promise.resolve(false);
+    const btn = document.getElementById('btn-att-admin');
+    adminLoading = (async () => {
+      if (btn) { btn.disabled = true; btn.textContent = '読み込み中...'; }
+      try {
+        const data = await fetchJsonRead(getGasUrl(), {
+          method: 'POST',
+          body: JSON.stringify({ action: 'adminData', password }),
+        });
+        if (!data.ok) {
+          noticeAdminPassword = '';
+          adminMode = false;
+          if (btn) btn.textContent = ATT_ADMIN_LABEL;
+          alert('管理者パスワードが違います。');
+          return false;
+        }
+        adminMode = true;
+        cachedRecords = data.records || [];
+        renderTable(cachedRecords);
+        document.getElementById('last-updated').textContent =
+          '最終更新: ' + new Date().toLocaleTimeString('ja-JP') + '（管理者表示）';
+        const n = data.notice || {};
+        cachedNotice = n.notice || null;
+        renderNotice(n.notice, n.history || []);
+        renderAttendance(data.sessions || [], true,
+          data.syncError ? '予約システムのメールを読み取れませんでした: ' + data.syncError : '',
+          data.unsetMaskNames || []);
+        if (btn) btn.textContent = '🔑 管理者表示中（名前を表示）';
+        return true;
+      } catch (e) {
+        if (btn) btn.textContent = ATT_ADMIN_LABEL;
+        alert('管理者用のデータを読み込めませんでした: ' + e.message);
+        return false;
+      } finally {
+        if (btn) btn.disabled = false;
+        adminLoading = null;
+      }
+    })();
+    return adminLoading;
+  }
+
+  function attDateLabel(ymd) {
+    const m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return esc(ymd || '');
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    return `${Number(m[2])}/${Number(m[3])}（${ATT_WD[d.getDay()]}）`;
+  }
+
+  function renderAttendance(sessions, withNames, warn, unsetNames) {
+    attSessions = sessions.slice(0, 12);
+    const cols = withNames ? 8 : 6;
+    document.getElementById('att-head').innerHTML =
+      '<th>開催日</th><th>クラス</th><th>状態</th><th>出席見込み</th><th>欠席連絡</th>' +
+      (withNames ? '<th>出席予定の方</th><th>欠席の方</th>' : '') + '<th>実績</th>';
+    const body = document.getElementById('att-body');
+    if (!attSessions.length) {
+      body.innerHTML = `<tr><td colspan="${cols}" class="empty-msg">まだ予約・欠席の連絡はありません。</td></tr>`;
+    } else {
+      body.innerHTML = attSessions.map((s, i) => {
+        const cls = s.class === 'A' ? '<span class="tag-a">A（木）</span>'
+                  : s.class === 'B' ? '<span class="tag-b">B（日）</span>' : esc(s.class || '―');
+        const badge = s.status === 'upcoming' ? '<span class="att-badge upcoming">開催前</span>'
+                    : s.status === 'today' ? '<span class="att-badge today">本日</span>'
+                    : '<span class="att-badge done">終了</span>';
+        const expected = (s.status === 'upcoming' && !s.expected) ? '<span class="att-rec-no">前日に確定</span>'
+                       : `<span class="att-num">${Number(s.expected) || 0}名</span>`;
+        let rec = '<span class="att-rec-no">―</span>';
+        if (s.recorded) rec = '<span class="att-rec-ok">登録済み</span>';
+        else if (s.status !== 'upcoming' && withNames) rec = `<button class="btn btn-primary" style="font-size:12px;padding:3px 10px;white-space:nowrap;" onclick="prefillRecordFromAttendance(${i})">実績に登録</button>`;
+        else if (s.status !== 'upcoming') rec = '<span class="att-rec-no">未登録</span>';
+        const names = withNames
+          ? `<td class="att-names">${esc((s.presentNames || []).join('、') || '―')}</td><td class="att-names">${esc((s.absentNames || []).join('、') || '―')}</td>`
+          : '';
+        return `<tr><td class="att-date">${attDateLabel(s.date)}</td><td>${cls}</td><td>${badge}</td><td>${expected}</td><td><span class="att-num">${Number(s.absent) || 0}名</span></td>${names}<td>${rec}</td></tr>`;
+      }).join('');
+    }
+    const msgs = [];
+    if (warn) msgs.push(esc(warn));
+    if (withNames && unsetNames && unsetNames.length) {
+      msgs.push('イニシャル未設定の名前があります（公開側では「（受講生）」と表示）: ' + esc(unsetNames.join('、')) +
+        '。シート「JHCS伏せ字」のイニシャル列に入れると、10分以内に公開側へ反映されます。');
+    }
+    const box = document.getElementById('att-msg');
+    box.className = 'att-msg' + (msgs.length ? ' warn' : '');
+    box.innerHTML = msgs.join('<br>');
+    document.getElementById('att-updated').textContent =
+      '更新: ' + new Date().toLocaleTimeString('ja-JP') + (withNames ? '（管理者表示）' : '');
+  }
+
+  // 出欠掲示板の「実績に登録」: 開催日・クラス・出席者数・時間を追記フォームに入れる（作業内容とメモは手で足して「追加する」）
+  function prefillRecordFromAttendance(i) {
+    const s = attSessions[i];
+    if (!s) return;
+    document.getElementById('f-date').value = s.date;
+    document.getElementById('f-class').value = s.class || '';
+    document.getElementById('f-attendees').value = Number(s.expected) || 0;
+    if (s.defaultHours) document.getElementById('f-hours').value = s.defaultHours;
+    const sec = document.getElementById('record-form-section');
+    sec.open = true;
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('f-work').focus({ preventScroll: true });
+    showMsg('ok', '出欠掲示板から開催日・クラス・出席者数・時間を入れました。作業内容とメモを足して「追加する」を押してください。');
+  }
+
+  async function unlockNoticeEditor() {
+    // 公開側の本文は名前を伏せてあるので、実名の本文を読み込んでから編集欄を開く
+    if (!adminMode && !(await enterAdminView())) return;
     if (!getNoticePassword()) return;
     document.getElementById('notice-title-input').readOnly = false;
     document.getElementById('notice-text-input').readOnly = false;
@@ -1164,6 +1350,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
   // ── データ取得 ────────────────────────────────────
   async function loadRecords() {
+    if (adminMode) { await enterAdminView(); return; }
     const url = getGasUrl();
     if (!url) {
       document.getElementById('records-body').innerHTML =
@@ -1645,7 +1832,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   }
 
   // ── 編集モーダル ──────────────────────────────────
-  function openEditModal(id) {
+  async function openEditModal(id) {
+    // 公開側のメモは名前を伏せてあるので、実名のデータを読み込んでから編集欄に入れる
+    if (!adminMode && !(await enterAdminView())) return;
     const r = cachedRecords.find(x => x['ID'] == id);
     if (!r) return;
     document.getElementById('edit-id').value = id;
@@ -1974,6 +2163,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   if (getGasUrl()) {
     loadRecords();
     loadNotice();
+    loadAttendance();
     loadCurriculum();
     loadPhotos();
   } else {
