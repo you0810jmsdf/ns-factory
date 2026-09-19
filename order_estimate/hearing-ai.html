@@ -68,6 +68,12 @@ body{
 .msg.bot.owner .ic{background:#a07d3e}
 .msg.bot.owner .bubble{background:#fbf3e4;border-color:#ead9b5}
 .bubble .tip{display:block;margin-top:6px;font-size:11.5px;color:#8a6a4f;background:#fdf6ef;border-left:3px solid #d4b896;padding:6px 9px;border-radius:0 6px 6px 0;white-space:pre-wrap}
+.bubble details.tip{white-space:normal}
+.bubble details.tip summary{cursor:pointer;font-weight:700;color:#6b3a1f;list-style:none}
+.bubble details.tip summary::-webkit-details-marker{display:none}
+.bubble details.tip summary::before{content:'▶ ';font-size:10px}
+.bubble details.tip[open] summary::before{content:'▼ '}
+.bubble details.tip div{white-space:pre-wrap;margin-top:4px}
 .msg.bot .bubble b{color:#6b3a1f}
 
 /* quick replies */
@@ -424,7 +430,15 @@ function addMsg(who, text, tip){
       return '<a href="'+url+'" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;word-break:break-all">'+url+'</a>'+tail;
     })
     .replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b>【$1】</b>');
-  if(tip){ const t=document.createElement('span'); t.className='tip'; t.textContent=tip; b.appendChild(t); }
+  // 設問の説明（「▼ 見出し\n本文」）はたたんでおき、押すと開く（2026-09-19 事業主決定）。
+  // 開いたままだとスマホで選択肢が画面の下に押し出されていた（構造の違い＝約15行）。
+  const tipM = tip ? String(tip).match(/^▼\s*(.+)\n([\s\S]+)$/) : null;
+  if(tipM){
+    const d=document.createElement('details'); d.className='tip';
+    const s=document.createElement('summary'); s.textContent=tipM[1]+'を見る';
+    const body=document.createElement('div'); body.textContent=tipM[2];
+    d.appendChild(s); d.appendChild(body); b.appendChild(d);
+  }else if(tip){ const t=document.createElement('span'); t.className='tip'; t.textContent=tip; b.appendChild(t); }
   m.appendChild(ic); m.appendChild(b); chat.appendChild(m); scrollDown();
 }
 function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
