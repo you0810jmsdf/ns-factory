@@ -376,7 +376,12 @@
         quick: function (a) {
           var cat = simCatalog({});
           var list = cat ? cat.brands : KB.models.map(function (m) { return { id: m.id, name: m.name }; });
-          return list.map(function (b) { return { label: b.name, sub: '', val: b.id }; })
+          // 写真は見積もりページのカードの写真（2026-09-19）。押すと拡大して説明を読んでから選べる
+          return list.map(function (b) {
+            var m = modelById(b.id);
+            return { label: b.name, sub: '', val: b.id, image: (b.images && b.images[0]) || '',
+              detail: m ? m.desc : (b.sub || ''), pickLabel: 'これにする' };
+          })
             .concat([{ label: 'おまかせ（職人と相談）', sub: '', val: 'おまかせ' }]);
         }, key: 'brand', priceKey: 'brand' },
       { say: function (a) { return labelOf(a, 'brand') + 'ですね。次にサイズ（リフィルの規格）です。'; },
@@ -404,7 +409,9 @@
         say: 'リング金具の色はどれにしますか？',
         quick: function (a) {
           var cat = simCatalog({ brand: a.brand, size: a.size, ring: a.ring });
-          return (cat ? cat.metals : []).map(function (m) { return { label: m.name, sub: '', val: m.id }; });
+          return (cat ? cat.metals : []).map(function (m) {
+            return { label: m.name, sub: '', val: m.id, image: (m.images && m.images[0]) || '', detail: m.sub || '', pickLabel: 'この色にする' };
+          });
         }, key: 'metal', priceKey: 'metal' },
       { say: function () { return '縫い糸（ステッチ）の色はいかがしますか？\n' + KB.stitchAdvice; },
         tip: function () { return '▼ 在庫あり（納期が早い）\n' + KB.stitchInStock.join(' / '); },
@@ -418,7 +425,9 @@
       { say: '刻印（名入れ・ロゴ）はどうしますか？',
         quick: function (a) {
           var cat = simCatalog({});
-          return (cat ? cat.stamps : STAMP_FALLBACK).map(function (s) { return { label: s.name, sub: s.sub || '', val: s.id }; });
+          return (cat ? cat.stamps : STAMP_FALLBACK).map(function (s) {
+            return { label: s.name, sub: s.sub || '', val: s.id, image: (s.images && s.images[0]) || '', detail: s.sub || '', pickLabel: 'これにする' };
+          });
         }, key: 'stamp', priceKey: 'stamp' },
       { skipIf: function (a) { return STAMP_WITH_TEXT.indexOf(a.stamp) === -1; },
         say: '刻印する文字（イニシャル・お名前など）や、入れたい絵柄を入力してください。',

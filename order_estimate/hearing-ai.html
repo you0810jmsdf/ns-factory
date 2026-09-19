@@ -279,7 +279,7 @@ body{
   <iframe id="simIframe" src="about:blank"></iframe>
 </div>
 
-<script src="./hearing-core.js?v=20260919"></script>
+<script src="./hearing-core.js?v=20260919b"></script>
 <!-- ── 英語辞書＋切替エンジン（2026-08-17） ──
      英語表示時はガイド対話（日本語KB駆動）をスキップしてAI会話モードへ直行し、
      GASへ lang:'en' を渡してAIが英語で応答する。ガイドの定型フロー自体は日本語のみ。 -->
@@ -458,6 +458,7 @@ function renderQuick(items){
   (items||[]).forEach((it,i)=>{
     const btn=document.createElement('button');
     btn.dataset.idx=i;   // 差額を後から書き足すため（annotatePrices）
+    it._idx=i;           // 拡大画面でも同じ差額を出すため（openZoom）
     const pick=()=>{ it.onClick ? it.onClick() : handleAnswer(it.val, it.label); };
     if(it.image){
       btn.className='img-chip';
@@ -500,10 +501,16 @@ function openZoom(i){
   zoomIdx=i;
   const it=zoomList[i];
   zoomImg.src=it.image; zoomImg.alt=it.label||'';
-  zoomNameEl.textContent=it.label||'';
-  zoomSubEl.textContent=it.sub||'';
+  // 構造・刻印など革以外の写真（2026-09-19）: 説明（detail）と差額を出し、ボタンは「これにする」
+  const priceEl=quickEl.querySelector('button[data-idx="'+it._idx+'"] .price');
+  const colorish=!it.pickLabel || /色/.test(it.pickLabel);
+  zoomNameEl.textContent=(it.label||'')+(priceEl && priceEl.textContent ? '　'+priceEl.textContent : '');
+  zoomSubEl.textContent=it.detail||it.sub||'';
   zoomNoteEl.textContent=(zoomList.length>1 ? (i+1)+' / '+zoomList.length+'　' : '')
-    +'写真の色味はご覧の画面によって多少変わります。実物の見え方は職人が最終確認いたします。';
+    +(colorish ? '写真の色味はご覧の画面によって多少変わります。実物の見え方は職人が最終確認いたします。'
+               : '写真は製作例です。革の色・オプションはお選びの内容で作ります。');
+  zoomPrevBtn.textContent=colorish ? '◀ 前の色' : '◀ 前へ';
+  zoomNextBtn.textContent=colorish ? '次の色 ▶' : '次へ ▶';
   // 実物見本の写真など、選択の対象でないものは決定ボタンを出さない
   // 実物見本の写真は選ぶ対象ではないので、前後移動を隠し、原寸で開く導線に差し替える
   // （スマホ幅では330px程度に収まり、糸の番号が読めないため）
@@ -516,7 +523,7 @@ function openZoom(i){
     zoomPickBtn.style.display = '';
     zoomPrevBtn.style.display = '';
     zoomNextBtn.style.display = '';
-    zoomPickBtn.textContent = (state._awaitKey==='leather' || state._awaitKey==='stitch') ? 'この色にする' : 'この色を選びたい';
+    zoomPickBtn.textContent = it.pickLabel || ((state._awaitKey==='leather' || state._awaitKey==='stitch') ? 'この色にする' : 'この色を選びたい');
     zoomPrevBtn.disabled = (i<=0);
     zoomNextBtn.disabled = (i>=zoomList.length-1);
   }
