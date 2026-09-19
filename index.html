@@ -939,6 +939,27 @@ h1,h2,h3{
 .staff-lead-image .staff-card-body{padding:14px 16px 18px;text-align:center}
 .staff-lead-image .staff-tagline{color:#efe6d2;margin-bottom:10px}
 
+/* スタッフ欄を小さくまとめる（2026-09-19 事業主決定: ヒーローに網と集合写真が入り、くどくなったため） */
+.staff-section .staff-lead{grid-template-columns:minmax(0,1fr) 180px;padding:22px 26px;gap:22px}
+.staff-lead-image .staff-card-body{padding:10px 10px 12px}
+.staff-lead-image .staff-tagline{font-size:12px;margin-bottom:8px}
+.staff-lead-image .staff-cta-primary{min-height:0;padding:7px 14px;font-size:11px}
+@media(max-width:768px){
+  .staff-section .staff-lead{grid-template-columns:minmax(0,1fr) 130px;padding:18px;gap:16px}
+  .staff-lead-image img{height:auto;max-height:none;min-height:0}
+  .staff-lead-image .staff-tagline{display:none}
+}
+/* BTC欄の折りたたみ */
+.btc-details{margin-top:4px}
+.btc-details > summary{
+  cursor:pointer;display:inline-block;padding:8px 16px;margin-bottom:14px;
+  border:1px solid var(--color-border);border-radius:999px;
+  font-size:13px;color:var(--color-text-sub);list-style:none;
+}
+.btc-details > summary::-webkit-details-marker{display:none}
+.btc-details > summary::after{content:' ＋'}
+.btc-details[open] > summary::after{content:' −'}
+
 /* 幕僚カード外の任務直リンク列 */
 .staff-tasks{
   margin-top:-12px;
@@ -1877,9 +1898,7 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
       <div>
         <h3 class="section-title" data-i18n="staff.leadTitle">ひとつの工房に、複数の視点を。</h3>
         <p data-i18n="staff.leadDesc">
-          N's factory では、制作・販売・広報・管理・保全・デジタル運用までを役割ごとに整理し、
-          小さな工房でも迷わず動ける体制をつくっています。お客様に届くひとつの作品の裏側で、
-          それぞれの幕僚が品質、段取り、発信、継続運用を支えます。
+          制作・販売・広報から管理・デジタル運用まで、役割ごとの幕僚が、お客様に届くひとつの作品を裏側で支えています。
         </p>
       </div>
       <div class="staff-lead-image">
@@ -2048,25 +2067,29 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
     <div class="notebook-highlight">
       <div>
         <p class="section-label">Payment</p>
-        <h3 data-i18n="btc.title">お支払いについて — Bitcoin（BTC）決済対応のお知らせ</h3>
-        <p data-i18n="btc.lead">N's factory では、オーダー品および直接お見積もりのご依頼について、Bitcoin（BTC）でのお支払いに対応いたしました。</p>
-        <ul style="color:var(--color-text-sub);font-size:15px;line-height:1.9;margin:0 0 18px;padding-left:1.2em;" data-i18n="btc.list" data-i18n-as-html>
-          <li><strong>価格基準</strong>：すべての商品価格は <strong>日本円（税込）</strong> を基準といたします。</li>
-          <li><strong>BTC数量の換算</strong>：<strong>OKJ（OKCoinJapan）の BTC/JPY レート</strong>を参照し、<strong>ご注文日 JST 00:00 時点のレートを当日中固定</strong>で適用して円建て金額をBTC数量に換算してご案内します。お客様側の取引所は問いません。</li>
-          <li><strong>BTC決済割</strong>：BTC決済を選択された場合、<strong>3%&nbsp;OFF（上限&nbsp;1,000円）</strong>を適用いたします。</li>
-          <li><strong>対象</strong>：オーダー品および直接お見積もりからのお取引が対象です（各ECサイトでのご購入には適用されません）。</li>
-          <li><strong>送金手数料</strong>：ネットワーク送金手数料はお客様のご負担となります。</li>
-          <li><strong>返金時の取り扱い</strong>：返金が発生した場合、<strong>ご入金時の円建て金額を基準に、原則 日本円でご返金</strong>いたします。</li>
-        </ul>
-        <p style="color:var(--color-text-sub);font-size:15px;line-height:1.9;margin:0 0 14px;" data-i18n="btc.accumulate" data-i18n-as-html>
-          <strong>BTC積立・口座開設の個別ご案内</strong><br>
-          ご希望のお客様には、BTC積立サービスや暗号資産口座の開設について個別にご案内が可能です。お問い合わせフォームよりご相談ください。
-        </p>
-        <p style="color:var(--color-text-sub);font-size:12px;line-height:1.7;margin:0;" data-i18n="btc.disclaimer" data-i18n-as-html>
-          ※ 口座開設・取引によるご紹介が成立した場合、N's factory に紹介特典が付与される場合があります（利益相反の開示）。<br>
-          ※ 暗号資産は価格変動リスクがあり、価値が大きく変動する可能性があります。お取引・口座開設はお客様ご自身の判断と責任において行ってください。<br>
-          ※ N's factory は暗号資産交換業者ではなく、投資助言・金融商品の販売を行うものではありません。
-        </p>
+        <h3 data-i18n="btc.title">Bitcoin（BTC）決済に対応</h3>
+        <p data-i18n="btc.lead">オーダー品と直接お見積もりのご依頼が対象です。価格は日本円が基準で、BTC決済なら 3% OFF（上限 1,000円）になります。</p>
+        <!-- 2026-09-19 事業主指示: BTC欄を簡素に。条件・積立の案内・注意書きは折りたたみの中へ（文言は変えていない） -->
+        <details class="btc-details">
+          <summary data-i18n="btc.more">詳しい条件を見る</summary>
+          <ul style="color:var(--color-text-sub);font-size:15px;line-height:1.9;margin:0 0 18px;padding-left:1.2em;" data-i18n="btc.list" data-i18n-as-html>
+            <li><strong>価格基準</strong>：すべての商品価格は <strong>日本円（税込）</strong> を基準といたします。</li>
+            <li><strong>BTC数量の換算</strong>：<strong>OKJ（OKCoinJapan）の BTC/JPY レート</strong>を参照し、<strong>ご注文日 JST 00:00 時点のレートを当日中固定</strong>で適用して円建て金額をBTC数量に換算してご案内します。お客様側の取引所は問いません。</li>
+            <li><strong>BTC決済割</strong>：BTC決済を選択された場合、<strong>3%&nbsp;OFF（上限&nbsp;1,000円）</strong>を適用いたします。</li>
+            <li><strong>対象</strong>：オーダー品および直接お見積もりからのお取引が対象です（各ECサイトでのご購入には適用されません）。</li>
+            <li><strong>送金手数料</strong>：ネットワーク送金手数料はお客様のご負担となります。</li>
+            <li><strong>返金時の取り扱い</strong>：返金が発生した場合、<strong>ご入金時の円建て金額を基準に、原則 日本円でご返金</strong>いたします。</li>
+          </ul>
+          <p style="color:var(--color-text-sub);font-size:15px;line-height:1.9;margin:0 0 14px;" data-i18n="btc.accumulate" data-i18n-as-html>
+            <strong>BTC積立・口座開設の個別ご案内</strong><br>
+            ご希望のお客様には、BTC積立サービスや暗号資産口座の開設について個別にご案内が可能です。お問い合わせフォームよりご相談ください。
+          </p>
+          <p style="color:var(--color-text-sub);font-size:12px;line-height:1.7;margin:0;" data-i18n="btc.disclaimer" data-i18n-as-html>
+            ※ 口座開設・取引によるご紹介が成立した場合、N's factory に紹介特典が付与される場合があります（利益相反の開示）。<br>
+            ※ 暗号資産は価格変動リスクがあり、価値が大きく変動する可能性があります。お取引・口座開設はお客様ご自身の判断と責任において行ってください。<br>
+            ※ N's factory は暗号資産交換業者ではなく、投資助言・金融商品の販売を行うものではありません。
+          </p>
+        </details>
       </div>
       <aside class="btc-widget" aria-label="BTC/JPY 換算ウィジェット">
         <div class="btc-widget-head">
@@ -2274,7 +2297,7 @@ window.NSF_I18N_DICT = {
   'showroom.enter': 'Enter →',
   'staff.title': "The staff behind N's factory",
   'staff.leadTitle': 'One studio, many perspectives.',
-  'staff.leadDesc': "At N's factory, making, sales, PR, administration, security and digital operations are each assigned a clear role, so even a small studio can move without hesitation. Behind every piece that reaches you, each staff officer supports quality, planning, communication and continuity.",
+  'staff.leadDesc': "From making, sales and PR to administration and digital operations, staff officers with clear roles support every piece that reaches you.",
   'staff.commander': 'Commander',
   'staff.tagline': 'The commander leading the entire business',
   'staff.profileCta': 'View profile',
@@ -2342,8 +2365,9 @@ window.NSF_I18N_DICT = {
   'staff.task.ethics': 'Ethics & psychology resources',
   'staff.task.mental': 'Mental health management',
   'stage.hint': '― Keep scrolling and the staff officers will appear one by one ―',
-  'btc.title': 'Payment — Bitcoin (BTC) now accepted',
-  'btc.lead': "N's factory now accepts Bitcoin (BTC) for custom orders and direct quote requests.",
+  'btc.title': 'Bitcoin (BTC) accepted',
+  'btc.lead': 'Available for custom orders and direct quote requests. Prices are based on Japanese yen, and paying in BTC gives you 3% OFF (up to 1,000 yen).',
+  'btc.more': 'See the detailed terms',
   'btc.list': '<li><strong>Base currency</strong>: All prices are based on <strong>Japanese yen (tax incl.)</strong>.</li>\n<li><strong>BTC conversion</strong>: We reference the <strong>OKJ (OKCoinJapan) BTC/JPY rate</strong>, fixed at <strong>00:00 JST on your order date for that entire day</strong>, to convert the yen amount into BTC. You may use any exchange on your side.</li>\n<li><strong>BTC discount</strong>: Paying with BTC earns <strong>3% OFF (up to ¥1,000)</strong>.</li>\n<li><strong>Eligibility</strong>: Custom orders and direct quote transactions only (not applicable to purchases on EC marketplaces).</li>\n<li><strong>Network fee</strong>: The network transfer fee is borne by the customer.</li>\n<li><strong>Refunds</strong>: If a refund occurs, it will in principle be made <strong>in Japanese yen, based on the yen amount at the time of payment</strong>.</li>',
   'btc.accumulate': '<strong>Personal guidance on BTC savings & account opening</strong><br>For interested customers, we can individually guide you through BTC accumulation services and opening a crypto-asset account. Please reach out via the contact form.',
   'btc.disclaimer': '※ If a referral results in an account opening or trade, N’s factory may receive a referral benefit (conflict-of-interest disclosure).<br>※ Crypto-assets carry price volatility risk and their value can fluctuate significantly. Please trade and open accounts at your own judgment and responsibility.<br>※ N’s factory is not a crypto-asset exchange operator and does not provide investment advice or sell financial products.',
