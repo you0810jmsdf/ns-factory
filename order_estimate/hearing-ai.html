@@ -114,6 +114,37 @@ body{
 .zoom-close{position:absolute;right:8px;top:8px;background:rgba(0,0,0,.5);color:#fff;border:none;
   width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;line-height:1}
 
+/* 見積もり連動（2026-09-19）: 選択肢の差額・いまの目安・オプション画面・PDF控え */
+.quick button .price{display:block;font-size:11px;font-weight:700;color:#a0522d;margin-top:2px}
+.quick button:hover .price{color:#fff}
+.quick-note{flex-basis:100%;font-size:11px;color:#8a6a52}
+.price-bar{margin:0 14px 4px 52px;font-size:11.5px;color:#8a6a52;text-align:right;line-height:1.4}
+.price-bar[hidden]{display:none}
+.price-bar b{color:#6b3a1f;font-size:13px}
+.price-bar span{display:block;font-size:10.5px;opacity:.85}
+.opt-panel{flex-basis:100%;background:#fff;border:1.5px solid #d4b896;border-radius:12px;padding:10px;display:flex;flex-wrap:wrap;gap:6px}
+.quick .opt-panel .opt-tog{border-radius:10px;text-align:left;display:flex;align-items:center;gap:6px;flex:1 1 44%;min-width:0}
+.opt-tog .ck{display:inline-flex;width:18px;height:18px;border:1.5px solid #d4b896;border-radius:4px;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.quick .opt-panel .opt-tog.on{background:#6b3a1f;color:#fff;border-color:#6b3a1f}
+.opt-tog.on .ck{border-color:#fff}
+.quick .opt-tog .price{margin-left:auto;display:inline;margin-top:0;white-space:nowrap}
+.quick .opt-tog.on .price{color:#ffe2c4}
+.opt-note{flex-basis:100%;font-size:11px;color:#8a6a52;margin:2px 2px 0}
+.opt-acts{flex-basis:100%;display:flex;gap:8px;justify-content:flex-end}
+.quick .opt-acts .opt-ok{background:#6b3a1f;color:#fff;border-color:#6b3a1f}
+#printSheet{display:none}
+@media print{
+  body>*:not(#printSheet){display:none!important}
+  #printSheet{display:block!important;color:#222;font-family:inherit;padding:10mm}
+  #printSheet h1{font-size:18px;margin:0 0 4px}
+  #printSheet .ps-meta{font-size:12px;color:#555;margin:0 0 10px}
+  #printSheet table{width:100%;border-collapse:collapse;font-size:13px}
+  #printSheet th,#printSheet td{border:1px solid #bbb;padding:6px 8px;text-align:left;vertical-align:top}
+  #printSheet th{width:28%;background:#f4efe9}
+  #printSheet .ps-total{font-size:16px;margin:14px 0 4px}
+  #printSheet .ps-note,#printSheet .ps-shop{font-size:11.5px;color:#555;margin:4px 0}
+}
+
 /* お名前・連絡先（常設・送信前必須） */
 .hr-contact{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid #ede0d4;background:#faf7f4;position:sticky;top:0;z-index:5}
 .hr-contact input{flex:1;min-width:0;border:1.5px solid #ede0d4;border-radius:8px;padding:8px 10px;font-size:13px;
@@ -203,6 +234,8 @@ body{
        色を見る手段が画面上に無く、AIが「画面下のボタン」と実在しない案内をしていた。 -->
   <div class="sim-entry" id="paletteEntry"></div>
   <div class="sim-entry" id="simEntry"></div>
+  <!-- いまの目安（手帳の見積もり連動ガイドだけ・2026-09-19） -->
+  <div class="price-bar" id="priceBar" hidden></div>
 
 <!-- 革・ステッチ写真の拡大モーダル（2026-08-31）
      スワッチ104×64pxでは質感が分からず、お客様が「大きくして見たいだけなんですが」と
@@ -240,7 +273,7 @@ body{
   <iframe id="simIframe" src="about:blank"></iframe>
 </div>
 
-<script src="./hearing-core.js"></script>
+<script src="./hearing-core.js?v=20260919"></script>
 <!-- ── 英語辞書＋切替エンジン（2026-08-17） ──
      英語表示時はガイド対話（日本語KB駆動）をスキップしてAI会話モードへ直行し、
      GASへ lang:'en' を渡してAIが英語で応答する。ガイドの定型フロー自体は日本語のみ。 -->
@@ -285,7 +318,7 @@ window.NSF_I18N_DICT = {
    から書き換え可能）。ここではコアを読み込んで使うだけ。
    ========================================================================= */
 let KB = NSF_HEARING.DEFAULT_KB;
-let CORE = NSF_HEARING.build(KB);
+let CORE = NSF_HEARING.build(KB, null, coreOpts());
 let PRODUCTS = CORE.PRODUCTS;
 let COMMON_TAIL = CORE.COMMON_TAIL;
 let SYSTEM_PROMPT = NSF_HEARING.buildSystemPrompt(KB);
@@ -408,8 +441,9 @@ let zoomList=[], zoomIdx=0;
 function renderQuick(items){
   quickEl.innerHTML='';
   zoomList=(items||[]).filter(it=>it.image);
-  (items||[]).forEach(it=>{
+  (items||[]).forEach((it,i)=>{
     const btn=document.createElement('button');
+    btn.dataset.idx=i;   // 差額を後から書き足すため（annotatePrices）
     const pick=()=>{ it.onClick ? it.onClick() : handleAnswer(it.val, it.label); };
     if(it.image){
       btn.className='img-chip';
@@ -595,6 +629,240 @@ window.addEventListener('message', (e)=>{
   }
 });
 
+/* =========================================================================
+   見積もり連動（2026-09-19 事業主決定）
+   システム手帳のガイドは見積もりシミュレーターの項目順に聞き、選択肢ごとに差額（+¥800 など）、
+   画面下に小さく「いまの目安」を出す。金額は見積もりページを見えない枠で読み込み、
+   そのカードを押して借りる（leather-order-estimate-v2.html の NSF_ESTIMATE）。
+   ⛔ ここで金額を計算しない（見積もりページと食い違うため）。借りられない間は金額を出さずに進める。
+   読み込むのは手帳を選んだときだけ（約2.2MB。計算専用モードで画像とアクセス計測は止めてある）。
+   ========================================================================= */
+var SIM = { frame: null, token: 0, pollTimer: null };
+function simLoad(){
+  if(SIM.frame) return;
+  const f=document.createElement('iframe');
+  f.src='./leather-order-estimate-v2.html?embed=calc';
+  f.setAttribute('aria-hidden','true'); f.tabIndex=-1; f.title='見積もり計算';
+  f.style.cssText='position:absolute;left:-9999px;top:0;width:1px;height:1px;border:0;visibility:hidden';
+  document.body.appendChild(f);
+  SIM.frame=f;
+  const t0=Date.now();
+  SIM.pollTimer=setInterval(()=>{
+    if(simApi()){ clearInterval(SIM.pollTimer); onSimReady(); }
+    else if(Date.now()-t0>90000) clearInterval(SIM.pollTimer);   // 読めなければ金額なしで進める
+  }, 400);
+}
+function simApi(){
+  try{
+    const w=SIM.frame && SIM.frame.contentWindow;
+    if(w && w.NSF_ESTIMATE && w.NSF_ESTIMATE.ready()) return w.NSF_ESTIMATE;
+  }catch(e){}
+  return null;
+}
+// 読み込みが間に合わなかった設問は、読めた時点で選択肢を出し直して金額を付ける
+function onSimReady(){
+  updatePriceBar();
+  const step=state.flow && state.flow[state.step];
+  if(!step || state._done || state.liveMode) return;
+  if(step.priceKey && state._awaitKey===step.key && !state.answers[step.key]){
+    const items=typeof step.quick==='function'?step.quick(state.answers):(step.quick||[]);
+    renderQuick(items);
+    annotatePrices(step, items);
+  }else if(step.multi==='options' && state._awaitKey==='options'){
+    renderOptionsPanel();
+  }
+}
+// hearing-core.js へ渡す: 手帳は見積もり連動の設問にし、最後にお名前・連絡先を聞く
+function coreOpts(){
+  return { plannerFlow:'simulator', catalog: simCatalog,
+    contact: ()=>{ const f=contactFields(); return { name: f.nameEl.value.trim(), contact: f.contactEl.value.trim() }; } };
+}
+// 手帳以外（財布など）も最後にお名前・連絡先を聞く（2026-09-19 事業主指示「連絡先と名前を確実に抑えること」）
+function withContact(tail){
+  return tail.map(s=>s.last ? Object.assign({}, s, {last:false}) : s).concat(CORE.CONTACT_STEPS || []);
+}
+function simCatalog(spec){
+  const api=simApi(); if(!api) return null;
+  const s=Object.assign({}, spec||{});
+  if(!s.brand || s.brand==='おまかせ') s.brand='simplist';   // 構造おまかせは Standard で計算する
+  if(s.ring==='おまかせ') delete s.ring;
+  try{ return api.catalog(s); }catch(e){ return null; }
+}
+function leatherIdOf(name){
+  const l=(LEATHERS||[]).find(x=>x.name===name);
+  return l ? l.id : null;
+}
+// ガイドの回答 → 見積もりページに当てる仕様
+function specFrom(a){
+  const s={ brand: (!a.brand || a.brand==='おまかせ') ? 'simplist' : a.brand };
+  if(a.size) s.size=a.size;
+  s.leather=leatherIdOf(a.leather) || 'numer_25';   // 革が未定・おまかせはヌメ革（見積もりの価格基準）で計算
+  if(a.ring && a.ring!=='おまかせ' && !/mm$/.test(a.ring)) s.ring=a.ring;
+  if(a.metal) s.metal=a.metal;
+  if(a._opts) s.options=a._opts;
+  if(a.stamp) s.stamp=a.stamp;
+  return s;
+}
+function simQuote(spec){
+  const api=simApi(); if(!api) return null;
+  try{ return api.quote(spec); }catch(e){ return null; }
+}
+const yen=n=>'¥'+Math.round(n).toLocaleString();
+const nextTick=()=>new Promise(r=>setTimeout(r,0));
+
+// 選択肢の横に差額を出す（いちばん手頃なものとの差）。重いので1件ずつ間をあけて計算する
+async function annotatePrices(step, items){
+  if(!step || !step.priceKey || !simApi() || !state.answers.size && step.priceKey!=='brand' && step.priceKey!=='size') return;
+  const token=++SIM.token;
+  const base=specFrom(state.answers);
+  const res=[];
+  for(let i=0;i<items.length;i++){
+    const it=items[i];
+    if(!it.val || it.val==='おまかせ') continue;
+    await nextTick(); if(token!==SIM.token) return;
+    const spec=Object.assign({}, base, {[step.priceKey]: it.val});
+    if(step.priceKey==='brand' && !spec.size) spec.size='a6';   // 構造の差はA6で比べる（サイズ未定のため）
+    const q=simQuote(spec);
+    if(q && q.total>0) res.push([i, q.total]);
+  }
+  if(token!==SIM.token || !res.length) return;
+  const min=Math.min(...res.map(r=>r[1]));
+  res.forEach(([i,t])=>{
+    const d=t-min;
+    setChipPrice(i, d<=0 ? '追加なし' : '+'+yen(d));
+  });
+  if(step.priceKey==='brand') addChipNote('※ 差額はA6サイズで比べた目安です');
+}
+function setChipPrice(idx, text){
+  const btn=quickEl.querySelector('button[data-idx="'+idx+'"]');
+  if(!btn) return;
+  let p=btn.querySelector('.price'); if(!p){ p=document.createElement('span'); p.className='price'; btn.appendChild(p); }
+  p.textContent=text;
+}
+function addChipNote(text){
+  if(quickEl.querySelector('.quick-note')) return;
+  const n=document.createElement('div'); n.className='quick-note'; n.textContent=text; quickEl.appendChild(n);
+}
+
+// 画面下の小さな「いまの目安」
+const priceBar=document.getElementById('priceBar');
+function updatePriceBar(){
+  if(!priceBar) return;
+  const a=state.answers||{};
+  const show=state.productKey==='planner' && state.prod && state.prod.tail && a.size && !state.liveMode;
+  if(!show){ priceBar.hidden=true; return; }
+  const q=simQuote(specFrom(a));
+  if(!q || !q.total){ priceBar.hidden=true; return; }   // 見積もりが読めていない間は出さない（読めたら onSimReady で出す）
+  a._total=q.total;
+  const notes=[];
+  if(!leatherIdOf(a.leather)) notes.push('革はヌメ革で計算');
+  if(!a.ring || a.ring==='おまかせ') notes.push('リング代は別');
+  if(a.brand==='おまかせ') notes.push('構造はStandardで計算');
+  priceBar.hidden=false;
+  priceBar.innerHTML='いまの目安 <b>'+yen(q.total)+'</b>（税込）'+(notes.length?'<span>'+escapeHtml(notes.join('・'))+'</span>':'');
+}
+
+/* ---------- オプション（1画面でまとめて選ぶ） ---------- */
+const OPTION_DEFS=[
+  { id:'flap',        label:'フラップ（かぶせ）',   set:o=>{o.flap=true},        avail:s=>s.flap.available },
+  { id:'pen1',        label:'ペンホルダー 1本',     set:o=>{o.pen='pen1'},       avail:s=>s.pen.available, group:'pen' },
+  { id:'pen2',        label:'ペンホルダー 2本',     set:o=>{o.pen='pen2'},       avail:s=>s.pen.available, group:'pen' },
+  { id:'belt',        label:'ベルト加工',           set:o=>{o.belt=true},        avail:s=>s.belt.available },
+  { id:'freePocket',  label:'フリーポケット 1枚',   set:o=>{o.freePocket='left'} },
+  { id:'innerPocket', label:'あおりポケット 1枚',   set:o=>{o.innerPocket='left'} },
+  { id:'cardPocket',  label:'カードポケット 1枚',   set:o=>{o.cardPocket=1} },
+  { id:'slit',        label:'スリット加工 1本',     set:o=>{o.slit='left'} },
+  { id:'dkan',        label:'Dカン 1か所',          set:o=>{o.dkan=1},           avail:s=>s.dkan.available },
+  { id:'clearWindow', label:'クリア窓枠 1か所',     set:o=>{o.clearWindow='left'} }
+];
+let optSel=null;
+function optsSpec(set){
+  const o={ flap:false, pen:'pen0', belt:false };
+  OPTION_DEFS.forEach(d=>{ if(set.has(d.id)) d.set(o); });
+  return o;
+}
+function renderOptionsPanel(){
+  const a=state.answers;
+  const base=specFrom(Object.assign({}, a, {_opts:null, stamp:null}));
+  // 最初は構造の既定（N-Pad flap ならフラップ＋ペン1本）を選んだ状態で出す
+  if(!optSel){
+    optSel=new Set();
+    const q0=simQuote(base);
+    if(q0 && q0.options){
+      if(q0.options.flap.on) optSel.add('flap');
+      if(q0.options.pen.value==='pen1') optSel.add('pen1');
+      if(q0.options.pen.value==='pen2') optSel.add('pen2');
+    }
+  }
+  const token=++SIM.token;
+  const cur=simQuote(Object.assign({}, base, {options: optsSpec(optSel)}));
+  const st=cur && cur.options;
+  // 選べなくなったもの（フラップを外したらペン不可 など）は外す
+  if(st) OPTION_DEFS.forEach(d=>{ if(d.avail && !d.avail(st)) optSel.delete(d.id); });
+  quickEl.innerHTML='';
+  const box=document.createElement('div'); box.className='opt-panel';
+  const list=OPTION_DEFS.filter(d=>!st || !d.avail || d.avail(st));
+  box.innerHTML=list.map(d=>
+    '<button type="button" class="opt-tog'+(optSel.has(d.id)?' on':'')+'" data-opt="'+d.id+'" aria-pressed="'+optSel.has(d.id)+'">'+
+    '<span class="ck">'+(optSel.has(d.id)?'✓':'')+'</span>'+escapeHtml(d.label)+'<span class="price"></span></button>').join('')+
+    '<p class="opt-note">枚数・左右の位置などの細かい指定は、あとで職人と決められます。</p>'+
+    '<div class="opt-acts"><button type="button" class="opt-none">付けない</button><button type="button" class="opt-ok">決定</button></div>';
+  quickEl.appendChild(box);
+  box.querySelectorAll('.opt-tog').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.opt, d=OPTION_DEFS.find(x=>x.id===id);
+    if(optSel.has(id)) optSel.delete(id);
+    else { if(d.group) OPTION_DEFS.forEach(x=>{ if(x.group===d.group) optSel.delete(x.id); }); optSel.add(id); }
+    renderOptionsPanel();
+  });
+  box.querySelector('.opt-none').onclick=()=>{ optSel=new Set(); decideOptions(); };
+  box.querySelector('.opt-ok').onclick=decideOptions;
+  // 各オプションの差額（今の組み合わせに足したら／外したらいくら変わるか）
+  if(cur && cur.total){
+    a._total=cur.total;
+    (async()=>{
+      for(const d of list){
+        await nextTick(); if(token!==SIM.token) return;
+        const s2=new Set(optSel);
+        if(s2.has(d.id)) s2.delete(d.id); else { if(d.group) OPTION_DEFS.forEach(x=>{ if(x.group===d.group) s2.delete(x.id); }); s2.add(d.id); }
+        const q=simQuote(Object.assign({}, base, {options: optsSpec(s2)}));
+        if(!q) continue;
+        const diff=optSel.has(d.id) ? cur.total-q.total : q.total-cur.total;
+        const el=box.querySelector('[data-opt="'+d.id+'"] .price');
+        if(el) el.textContent=diff>0 ? '+'+yen(diff) : (diff<0 ? '−'+yen(-diff) : '追加なし');
+      }
+      if(token===SIM.token) priceBarPreview(cur.total);
+    })();
+  }
+}
+function priceBarPreview(total){
+  if(!priceBar || priceBar.hidden) return;
+  const b=priceBar.querySelector('b'); if(b) b.textContent=yen(total);
+}
+function decideOptions(){
+  const a=state.answers;
+  const picked=OPTION_DEFS.filter(d=>optSel && optSel.has(d.id)).map(d=>d.label);
+  a._opts=optsSpec(optSel||new Set());
+  a._optionsText=picked.join('、') || 'なし';
+  optSel=null;
+  handleAnswer(a._optionsText, picked.length ? picked.join('・') : 'オプションは付けない');
+}
+
+/* ---------- 見積もりの控え（PDF保存）2026-09-19 事業主指示 ----------
+   印刷画面から「PDFとして保存」する。スマホ（iPhone・Android）も印刷画面からPDFにできる。
+   ライブラリは使わない（日本語フォントの埋め込みが重いため）。印刷時は #printSheet だけが出る。 */
+function buildPrintSheet(prod, rows, priceText, a){
+  const ps=document.getElementById('printSheet'); if(!ps) return;
+  const d=new Date();
+  const ymd=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
+  ps.innerHTML=
+    '<h1>'+escapeHtml(prod.name)+' オーダーのご相談内容</h1>'+
+    '<p class="ps-meta">'+ymd+(a.custName?'　'+escapeHtml(a.custName)+' 様':'')+(state.orderNo?'　受付番号 '+escapeHtml(state.orderNo):'')+'</p>'+
+    '<table>'+rows.map(r=>'<tr><th>'+escapeHtml(r[0])+'</th><td>'+escapeHtml(String(r[1]))+'</td></tr>').join('')+'</table>'+
+    '<p class="ps-total">見積もりの目安　<b>'+escapeHtml(priceText)+'</b></p>'+
+    '<p class="ps-note">この金額は見積もりシミュレーターによる目安です。正式な金額と納期は、職人が仕様を確認してご連絡します。</p>'+
+    '<p class="ps-shop">N\'s factory（千葉県印西市）　https://you0810jmsdf.github.io/ns-factory/</p>';
+}
+
 /* ---------- ガイド対話ロジック ---------- */
 function productQuickItems(){
   return Object.keys(PRODUCTS).map(k=>({label:`${PRODUCTS[k].emoji} ${PRODUCTS[k].name}`, sub:PRODUCTS[k].sub||'', val:k}));
@@ -625,8 +893,9 @@ function startEnglishLive(){
 }
 function beginProduct(key){
   state.productKey=key; state.prod=PRODUCTS[key];
-  state.flow=state.prod.steps.concat(COMMON_TAIL);
+  state.flow=state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL));
   state.step=0; state._picking=false;
+  if(state.prod.tail) simLoad();   // 手帳（見積もり連動）のときだけ見積もりページを裏で読む
   runStep();
 }
 function runStep(){
@@ -643,9 +912,13 @@ function runStep(){
   setTimeout(()=>{
     hideTyping();
     addMsg('bot', sayText, tipText);
-    const items = typeof step.quick==='function'?step.quick(a):(step.quick||[]);
-    renderQuick(items);
     state._awaitKey = typeof step.key==='function'?step.key(a):step.key;
+    if(step.multi==='options'){ optSel=null; renderOptionsPanel(); }
+    else {
+      const items = typeof step.quick==='function'?step.quick(a):(step.quick||[]);
+      renderQuick(items);
+      annotatePrices(step, items);   // 選択肢の差額（見積もりが読めていれば）
+    }
     renderSimEntry();
     renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
     if(step.freeInput) txt.focus();
@@ -662,10 +935,21 @@ function handleAnswer(val, label){
     beginProduct(val);
     return;
   }
+  // お名前・連絡先など、形を確かめる設問（読めなければ同じ設問のまま聞き直す）
+  const curStep = state.flow && state.flow[state.step];
+  if(curStep && curStep.validate && state._awaitKey===curStep.key){
+    const err = curStep.validate(val);
+    if(err){ addMsg('user', label||val); addMsg('bot', err); txt.focus(); return; }
+  }
   addMsg('user', label||val);
   const key = state._awaitKey;
   if(key) state.answers[key]=val;
+  if(key) state.answers['_label_'+key]=label||val;   // 発注票に出す表示名（val は見積もり用の id）
+  if(key==='custName') contactFields().nameEl.value=String(val).trim();      // 上部の欄にも入れる（送信に使う）
+  if(key==='custContact') contactFields().contactEl.value=String(val).trim();
+  if(key==='options' && !state.answers._opts) state.answers._optionsText=val;  // 文章で答えた場合
   state._awaitKey=null;           // 二重回答ガード
+  updatePriceBar();
   renderQuick([]);
   simEntry.innerHTML='';
   // 進行
@@ -678,6 +962,8 @@ function handleFreeInput(){
   txt.value='';
   if(LIVE.mode==='owner'){ liveCustomerSend(v); return; }   // 職人が引き継ぎ中はAIへ送らない（2026-09-05）
   if(state.liveMode){ liveTurn(v); return; }
+  // お名前・連絡先・刻印の文字は、そのまま回答として受ける（お名前「赤井」を革の色の質問と取り違えない）
+  if(state._awaitKey==='custName'||state._awaitKey==='custContact'||state._awaitKey==='stampText'){ handleAnswer(v, v); return; }
   // ステッチ（縫い糸）の質問は革より先に判定する（「ステッチの色」は色・在庫の単語だけ見ると
   // 革の回答に誤ルーティングされるため。2026-07-20: ステッチ質問が革在庫で返った問題の対策）
   if(detectStitchQuery(v)){
@@ -1085,14 +1371,16 @@ function finish(){
   const a=state.answers;
   const prod=state.prod||PRODUCTS.planner;
   const pr=(prod.price?prod.price(a):[null,null])||[null,null];
-  const rangeTxt = pr[0]? `¥${pr[0].toLocaleString()} 〜 ¥${pr[1].toLocaleString()} 前後`:'お見積り';
+  let rangeTxt = pr[0]? `¥${pr[0].toLocaleString()} 〜 ¥${pr[1].toLocaleString()} 前後`:'お見積り';
+  if(prod.priceText && prod.priceText(a)) rangeTxt = prod.priceText(a);   // 手帳は見積もりシミュレーターの金額
+  if(priceBar) priceBar.hidden=true;   // 発注票に金額を出すので下の目安は消す
 
   showTyping();
   setTimeout(()=>{
     hideTyping();
     addMsg('bot','ありがとうございました！ヒアリング内容を発注票にまとめました。内容をご確認ください👇');
 
-    const rows=[
+    const rows = prod.rows ? prod.rows(a) : [
       ['アイテム', prod.name],
       ...(prod.summary?prod.summary(a):[]),
       ['革の色', a.leather||'-'],
@@ -1109,9 +1397,10 @@ function finish(){
     box.innerHTML='<h3>📋 オーダー発注票（ヒアリングシート）</h3><table>'+
       rows.map(r=>`<tr><td class="k">${escapeHtml(r[0])}</td><td class="v">${escapeHtml(String(r[1]))}</td></tr>`).join('')+
       '</table>'+
-      `<div class="range">💰 概算の目安：<b>${rangeTxt}</b><br><span style="font-size:11px;color:#a08a76">※ 仕様の組み合わせで変わります。正確な金額は職人の確認で確定します。</span></div>`+
+      `<div class="range">💰 ${prod.priceText?'見積もりの目安':'概算の目安'}：<b>${rangeTxt}</b><br><span style="font-size:11px;color:#a08a76">※ ${prod.priceText?'見積もりシミュレーターで計算した目安です':'仕様の組み合わせで変わります'}。正確な金額は職人の確認で確定します。</span></div>`+
       '<div class="sheet-actions">'+
-        '<button class="btn-primary" id="copySheet">📋 発注票をコピー</button>'+
+        '<button class="btn-primary" id="savePdf">📄 PDFで保存</button>'+
+        '<button class="btn-ghost" id="copySheet">📋 発注票をコピー</button>'+
         '<button class="btn-ghost" id="copyLine">💬 工房へ送る文面をコピー</button>'+
         estBtn+
       '</div>'+
@@ -1121,9 +1410,16 @@ function finish(){
     const sheetText = `【N's factory ${prod.name}オーダー 発注票】\n`+rows.map(r=>`${r[0]}：${r[1]}`).join('\n')+`\n概算目安：${rangeTxt}`;
     const lineText = `N's factory 様\n${prod.name}のオーダーを相談したいです。\n\n`+rows.map(r=>`・${r[0]}：${r[1]}`).join('\n')+`\n\nよろしくお願いします。`;
     document.getElementById('copySheet').onclick=()=>copy(sheetText,'発注票をコピーしました');
+    // 控えをPDFで（印刷画面の「PDFとして保存」。スマホも可）2026-09-19 事業主指示
+    document.getElementById('savePdf').onclick=()=>{ buildPrintSheet(prod, rows, rangeTxt, a); window.print(); };
     document.getElementById('copyLine').onclick=()=>copy(lineText,'工房へ送る文面をコピーしました');
 
-    addMsg('bot','このままお店に送っていただければ、職人が仕様を確認して正式なお見積り・制作のご案内をいたします。ありがとうございました🙇\n（内容を変えたい時は、ページを再読み込みしてやり直せます）');
+    const who=contactFields();
+    if(who.nameEl.value.trim() && who.contactEl.value.trim()){
+      addMsg('bot','この内容を工房へお送りします。職人が仕様を確認して、'+who.contactEl.value.trim()+' へ正式なお見積り・制作のご案内をお送りします。\n控えは「📄 PDFで保存」から残せます。ありがとうございました🙇');
+    }else{
+      addMsg('bot','このままお店に送っていただければ、職人が仕様を確認して正式なお見積り・制作のご案内をいたします。ありがとうございました🙇\n（内容を変えたい時は、ページを再読み込みしてやり直せます）');
+    }
     renderQuick([{label:'最初からやり直す',sub:'',val:'__restart'}]);
     quickEl.querySelector('button').onclick=()=>location.reload();
 
@@ -1176,7 +1472,8 @@ function submitToOrderProgress(prod, hearingContent, textureSimulation, client, 
     method:'POST',
     body:JSON.stringify({ action:'submitChatOrder', client:client||'', contact:contact||'', item:prod.name, hearingContent, images })
   }).then(r=>r.json()).then(res=>{
-    if(res.ok){ VISIT.submitted=true; addMsg('bot','📋 オーダー進捗に登録しました（受付番号: '+res.orderNo+'）。'); }
+    if(res.ok){ VISIT.submitted=true; state.orderNo=res.orderNo;
+      addMsg('bot','📨 工房へお送りしました（受付番号: '+res.orderNo+'）。職人が内容を確認して、ご連絡先へ正式なお見積りをお送りします。'); }
     else addMsg('bot','⚠️ オーダー進捗への登録に失敗しました：'+(res.error||'不明なエラー'));
   }).catch(()=>{
     addMsg('bot','⚠️ オーダー進捗への登録通信に失敗しました。お手数ですが、発注票をコピーして直接お問い合わせください。');
@@ -1664,7 +1961,7 @@ Promise.all([
   loadStitchStock()
 ]).then(([kb, leathers, stockMap, stitchColors, stitchStock])=>{
   KB=kb;
-  CORE=NSF_HEARING.build(KB, leathers);
+  CORE=NSF_HEARING.build(KB, leathers, coreOpts());
   PRODUCTS=CORE.PRODUCTS;
   COMMON_TAIL=CORE.COMMON_TAIL;
   SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers, stockMap);
@@ -1686,6 +1983,8 @@ Promise.all([
      表示が相談画面に食い込み、スマホでは「AI会話モード」ボタンに4px、タブレット768pxでは
      「連絡先（必須）」欄に重なった。904px以上なら相談画面の外側に出て何にも重ならない。
      ⛔ 903px の境目は .app の max-width:760px と表示の位置から計算した値。どちらかを変えたら計算し直すこと。 -->
+<!-- 見積もりの控え（印刷画面からPDF保存するときだけ出る・2026-09-19） -->
+<div id="printSheet"></div>
 <style>
 @media (max-width: 903px) { #access-counter { display: none !important; } }
 </style>

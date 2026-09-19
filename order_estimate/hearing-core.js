@@ -336,6 +336,105 @@
       ];
     }
 
+    /* ---------- 見積もり連動のシステム手帳ガイド（2026-09-19 事業主決定） ----------
+       opts.plannerFlow === 'simulator' のときだけ使う（hearing-ai.html）。ショールームのチャットは従来のまま。
+       設問は見積もりシミュレーターの項目順。用途・持ち歩き・挟む量・予算は聞かない（事業主「オーダーにはあまり重要ではない」）。
+       金額（差額・いまの目安）は呼び出し側がシミュレーターから借りて出す。ここでは選択肢の id だけを持つ。
+       opts.catalog(a) : シミュレーターの選択肢 {brands,sizes,rings,metals,stamps} を返す。まだ読めていなければ null
+       opts.contact()  : 画面上部のお名前・連絡先 {name, contact}（入力済みなら設問を飛ばす） */
+    var simCatalog = function (a) { try { return (opts && opts.catalog) ? opts.catalog(a) : null; } catch (e) { return null; } };
+    var STAMP_WITH_TEXT = ['s_1char', 's_name', 's_design', 's_other'];
+    var STAMP_FALLBACK = [
+      { id: 's_text', name: '文字ロゴ', sub: '標準' }, { id: 's_owl', name: 'ふくろうロゴ', sub: 'フクロウ柄' },
+      { id: 's_1char', name: 'イニシャル刻印', sub: '' }, { id: 's_name', name: 'ネーム（〜10文字）', sub: '' },
+      { id: 's_design', name: 'デザイン刻印', sub: 'ロゴ・絵柄など' }, { id: 's_none', name: 'なし', sub: '' }
+    ];
+    function looksLikeContact(v) {
+      v = String(v || '').trim();
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;                       // メール
+      if (/^[0-9０-９\-－ー()（）+＋\s]{10,}$/.test(v) && (v.replace(/[^0-9０-９]/g, '').length >= 10)) return true; // 電話
+      return /[A-Za-z0-9_.@\-]{4,}/.test(v) && !/^(なし|無し|ない|いいえ|no|none|test)$/i.test(v); // LINE ID・Instagram など（4文字以上）
+    }
+    function contactNow() { try { return (opts && opts.contact) ? (opts.contact() || {}) : {}; } catch (e) { return {}; } }
+    function labelOf(a, key) { return a['_label_' + key] || a[key] || '-'; }
+
+    /* お名前・ご連絡先（2026-09-19 事業主指示「連絡先と名前を確実に抑えること」）。
+       ガイドの最後に必ず聞く。画面上部の欄に入力済みなら飛ばす。連絡先は形を確かめ、読めなければ聞き直す。 */
+    var CONTACT_STEPS = [
+      { skipIf: function (a) { var c = contactNow(); if (c.name) { a.custName = c.name; return true; } return false; },
+        say: 'ありがとうございます。この内容と見積もり金額を工房（職人）へお送りします。\nお名前を教えてください。',
+        freeInput: true, noQuick: true, key: 'custName',
+        validate: function (v) { return String(v || '').trim().length ? '' : 'お名前を入力してください。'; } },
+      { skipIf: function (a) { var c = contactNow(); if (looksLikeContact(c.contact)) { a.custContact = c.contact; return true; } return false; },
+        say: function (a) { return (a.custName || '') + ' 様、ご連絡先を教えてください。\nメールアドレス・電話番号・LINE ID・Instagram のどれでも大丈夫です。職人からのお見積りのご連絡に使います。'; },
+        freeInput: true, noQuick: true, key: 'custContact', last: true,
+        validate: function (v) { return looksLikeContact(v) ? '' : 'ご連絡先の形が読み取れませんでした。メールアドレス（例: name@example.com）・電話番号・LINE ID・Instagram のIDを入力してください。'; } }
+    ];
+    var SIM_PLANNER_STEPS = [
+      { say: 'システム手帳のオーダーですね。見積もりシミュレーターと同じ順番でうかがいます。\n選ぶたびに金額の目安が下に出ます。まず、手帳の作り（構造）を選んでください。',
+        tip: function () { return '▼ 構造の違い\n' + KB.models.map(function (m) { return '・' + m.name + '：' + m.desc; }).join('\n'); },
+        quick: function (a) {
+          var cat = simCatalog({});
+          var list = cat ? cat.brands : KB.models.map(function (m) { return { id: m.id, name: m.name }; });
+          return list.map(function (b) { return { label: b.name, sub: '', val: b.id }; })
+            .concat([{ label: 'おまかせ（職人と相談）', sub: '', val: 'おまかせ' }]);
+        }, key: 'brand', priceKey: 'brand' },
+      { say: function (a) { return labelOf(a, 'brand') + 'ですね。次にサイズ（リフィルの規格）です。'; },
+        tip: function () { return '▼ サイズの目安\n' + KB.sizes.map(function (s) { return '・' + s.name + '（' + s.寸 + '）' + s.hint; }).join('\n'); },
+        quick: function (a) {
+          var cat = simCatalog({ brand: a.brand });
+          var list = cat ? cat.sizes : KB.sizes.map(function (s) { return { id: s.id, name: s.name }; });
+          return list.map(function (s) { var k = sizeById(s.id); return { label: s.name, sub: k ? k.寸 : '', val: s.id }; });
+        }, key: 'size', priceKey: 'size' }
+    ];
+    var SIM_PLANNER_TAIL = leatherSteps.concat([
+      { say: function (a) { return a.leather + ' ですね。次はリングの太さです。\n' + KB.ringAdvice; },
+        quick: function (a) {
+          var cat = simCatalog({ brand: a.brand, size: a.size });
+          var list = cat ? cat.rings.map(function (r) {
+            var nm = /^kl/.test(r.id) && r.name.indexOf('クラウゼ') === -1 ? 'クラウゼ ' + r.name : r.name;
+            return { label: nm, sub: '', val: r.id };
+          }) : (KB.rings[a.size] || []).map(function (r) { return { label: r.mm + 'mm', sub: r.type + 'リング', val: r.mm + 'mm' }; });
+          return list.concat([{ label: 'おまかせ（職人と相談）', sub: '', val: 'おまかせ' }]);
+        }, key: 'ring', priceKey: 'ring' },
+      { skipIf: function (a) {
+          var cat = a.ring && a.ring !== 'おまかせ' ? simCatalog({ brand: a.brand, size: a.size, ring: a.ring }) : null;
+          return !cat || !cat.metals.length;
+        },
+        say: 'リング金具の色はどれにしますか？',
+        quick: function (a) {
+          var cat = simCatalog({ brand: a.brand, size: a.size, ring: a.ring });
+          return (cat ? cat.metals : []).map(function (m) { return { label: m.name, sub: '', val: m.id }; });
+        }, key: 'metal', priceKey: 'metal' },
+      { say: function () { return '縫い糸（ステッチ）の色はいかがしますか？\n' + KB.stitchAdvice; },
+        tip: function () { return '▼ 在庫あり（納期が早い）\n' + KB.stitchInStock.join(' / '); },
+        quick: function () { return [
+          { label: '革と同系でまとめる', sub: '上品・落ち着き', val: '革と同系（上品にまとめる）' },
+          { label: '差し色で主役に', sub: '個性を出す', val: '差し色（主役にする）' },
+          { label: 'おまかせ', sub: '職人が最適に', val: 'おまかせ' }
+        ]; }, key: 'stitch' },
+      { say: '付けたいオプションを選んで「決定」を押してください（いくつでも・無しでもOK）。',
+        multi: 'options', key: 'options' },
+      { say: '刻印（名入れ・ロゴ）はどうしますか？',
+        quick: function (a) {
+          var cat = simCatalog({});
+          return (cat ? cat.stamps : STAMP_FALLBACK).map(function (s) { return { label: s.name, sub: s.sub || '', val: s.id }; });
+        }, key: 'stamp', priceKey: 'stamp' },
+      { skipIf: function (a) { return STAMP_WITH_TEXT.indexOf(a.stamp) === -1; },
+        say: '刻印する文字（イニシャル・お名前など）や、入れたい絵柄を入力してください。',
+        freeInput: true, key: 'stampText' },
+      { say: 'ご希望の納期・お渡し時期はありますか？（例：3ヶ月以内 / 〇月の誕生日に）',
+        freeInput: true, key: 'due',
+        quick: [{ label: '急がない', sub: '', val: '急がない' }] }
+    ]).concat(CONTACT_STEPS);
+    function simPlannerRows(a) {
+      var ring = labelOf(a, 'ring') + (a.metal ? '（' + labelOf(a, 'metal') + '）' : '');
+      var stamp = labelOf(a, 'stamp') + (a.stampText ? '：' + a.stampText : '');
+      return [['アイテム', 'システム手帳'], ['構造', labelOf(a, 'brand')], ['サイズ', labelOf(a, 'size')],
+        ['革', a.leather || '-'], ['リング', ring], ['ステッチ', a.stitch || '-'],
+        ['オプション', a._optionsText || 'なし'], ['刻印', stamp], ['ご希望納期', a.due || '相談']];
+    }
+
     var COMMON_TAIL = leatherSteps.concat([
       { say: function (a) { return a.leather + ' で承りました。\n縫い糸（ステッチ）の色はいかがしますか？\n' + KB.stitchAdvice; },
         tip: function () { return '▼ 在庫あり（納期が早い）\n' + KB.stitchInStock.join(' / '); },
@@ -387,6 +486,14 @@
         summary: function (a) { return [['形状', a.coinShape], ['カード収納', a.coinCard]]; },
         price: function () { return KB.price.coincase || [8000, 18000]; } }
     };
+    // 見積もり連動モード: 手帳だけ差し替える。tail があると呼び出し側は COMMON_TAIL の代わりにそれを続ける
+    if (opts && opts.plannerFlow === 'simulator') {
+      PRODUCTS.planner = { name: 'システム手帳', emoji: '📔', sub: 'フルオーダー（金額つき）',
+        steps: SIM_PLANNER_STEPS, tail: SIM_PLANNER_TAIL, rows: simPlannerRows,
+        price: function (a) { return a._total ? [a._total, a._total] : (KB.price.baseRange[a.size] || [null, null]); },
+        priceText: function (a) { return a._total ? '¥' + a._total.toLocaleString() + '（税込・目安）' : ''; },
+        estimateLink: './leather-order-estimate-v2.html' };
+    }
 
     /* 発注票（rows / 概算テキスト） */
     function buildOrderRows(prodKey, a) {
@@ -409,7 +516,8 @@
       KB: KB,
       PRODUCTS: PRODUCTS,
       COMMON_TAIL: COMMON_TAIL,
-      helpers: { sizeById: sizeById, modelById: modelById, recommendSize: recommendSize, recommendRing: recommendRing },
+      CONTACT_STEPS: CONTACT_STEPS,
+      helpers: { sizeById: sizeById, modelById: modelById, recommendSize: recommendSize, recommendRing: recommendRing, looksLikeContact: looksLikeContact },
       buildOrderRows: buildOrderRows
     };
   }
