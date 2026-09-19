@@ -707,7 +707,22 @@ function simCatalog(spec){
   const s=Object.assign({}, spec||{});
   if(!s.brand || s.brand==='おまかせ') s.brand='simplist';   // 構造おまかせは Standard で計算する
   if(s.ring==='おまかせ') delete s.ring;
-  try{ return api.catalog(s); }catch(e){ return null; }
+  try{ return lightenImages(api.catalog(s)); }catch(e){ return null; }
+}
+/* 相談画面では重い構造写真を軽い版に置き換える（2026-09-19 事業主決定）。
+   元は2000px のPNG等で3枚合計 約6.2MB → 長辺800px JPEG で約220KB。見積もりページは元の写真のまま。
+   ⛔ 軽い版は カラーシミュレーター/assets/models/chat/ に手で作ったもの。ここに無い写真は元のまま出す
+   （新しい構造写真を足したら、同じ加工で chat/ に置いて名前をここに足す）。 */
+const CHAT_LIGHT_IMAGES=['simplist_kl-pad-closed','npad_flap_close','npad_non_flap_close'];
+function lightenImages(cat){
+  if(!cat || !cat.brands) return cat;
+  cat.brands.forEach(b=>{
+    b.images=(b.images||[]).map(u=>{
+      const m=String(u).match(/^(.*\/assets\/models\/)([^\/?#]+)\.(png|jpe?g)$/i);
+      return (m && CHAT_LIGHT_IMAGES.includes(decodeURIComponent(m[2]))) ? m[1]+'chat/'+m[2]+'.jpg' : u;
+    });
+  });
+  return cat;
 }
 function leatherIdOf(name){
   const l=(LEATHERS||[]).find(x=>x.name===name);
