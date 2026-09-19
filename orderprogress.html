@@ -172,6 +172,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .card-title .item-name { font-size:.95rem; font-weight:600; }
     .card-title .client-name { font-size:.78rem; color:var(--color-text-sub); margin-top:1px; }
     .card-title .hearing-badge { display:inline-block; margin-top:3px; font-size:.72rem; font-weight:700; color:#6b3a1f; background:#fbf1e4; border:1px solid #e3c9a6; border-radius:10px; padding:1px 8px; }
+    .work-link-box { margin-top:6px; font-size:.8rem; line-height:1.7; }
+    .work-link-box a { color:#6b3a1f; font-weight:700; }
     .f-hearing { font-size:.82rem; line-height:1.6; background:#faf7f4; border:1px solid #ede0d4; border-radius:8px; padding:8px 10px; max-height:260px; overflow:auto; }
     .status-badge {
       font-size:.72rem; font-weight:600; padding:3px 10px;
@@ -549,6 +551,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <div class="field">
       <label>Drive フォルダID（任意）</label>
       <input type="text" id="f-folder" placeholder="Googleドライブのフォルダid">
+      <!-- 注文が決まった受付を作品集（NF番号）のフォルダにつなぐ（2026-09-20）。表示は renderWorkLinkBox -->
+      <div id="work-link-box" class="work-link-box" style="display:none"></div>
     </div>
     <div class="field">
       <label>進捗タイムライン</label>
@@ -1468,6 +1472,7 @@ async function openModal(id) {
     document.getElementById('f-customer-id').value = r['顧客ID']||'';
     const hearingText = r['ヒアリング内容']||'';
     // メモに通知メールと同じ本文が入っている受付（2026-09-19 以降）は、同じ内容を2回見せない
+    renderWorkLinkBox(r);
     const memoHasHearing = /相談内容（通知メールと同じ）/.test(r['メモ（非公開）']||'');
     document.getElementById('f-hearing-wrap').style.display = (hearingText.trim() && !memoHasHearing) ? '' : 'none';
     document.getElementById('f-hearing').innerHTML = hearingText.trim() ? hearingThreadHtml(hearingText).replace(/^<br>/, '') : '';
@@ -1487,6 +1492,7 @@ async function openModal(id) {
     document.getElementById('f-customer-id').value = '';
     document.getElementById('f-hearing-wrap').style.display = 'none';
     document.getElementById('f-hearing').innerHTML = '';
+    document.getElementById('work-link-box').style.display = 'none';   // 新規登録（まだ保存前）では作品集につながない
     const cBox = document.getElementById('customer-info-box');
     if (cBox) cBox.style.display = 'none';
     addTlRow(new Date().toISOString().slice(0,10), 'ご注文ありがとうございます。受け付けいたしました。');
@@ -2002,6 +2008,75 @@ function hearingBadgeHtml(r) {
   if (!/発注票/.test(h)) return '<div class="hearing-badge">💬 相談の記録あり</div>';
   const m = h.match(/(?:見積もりの目安|概算目安)：\s*(¥[\d,]+(?:\s*〜\s*¥[\d,]+)?)/);
   return '<div class="hearing-badge">📋 発注票あり' + (m ? '　' + esc(m[1]) : '') + '</div>';
+}
+
+// ── 作品集（NF番号）のフォルダにつなぐ（2026-09-20 事業主決定「注文が決まったらボタン1つで」）──
+// ① 商品登録GAS（register.html と同じ api=register）で採番・NsFactory_photos にフォルダ・商品マスターに「準備中」の行
+// ② オーダー進捗GAS linkWorkFolder で発注票PDF・相談時の写真をそのフォルダへ移し、DriveフォルダIDとメモを付け替える
+// ⛔ ①は requestId='op-<受付ID>'（6時間の冪等化）、②はメモの「作品集: NF…」で二重実行を止める。再送は「GASに届かなかった応答」だけ。
+// ⛔ 終わったら編集画面の f-folder / f-memo も書き換える。古い値のまま保存するとつないだ内容が消える。
+const PRODUCT_REGISTER_GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
+function workNumberOf(r) {
+  const m = String(r['メモ（非公開）'] || '').match(/作品集:\s*(NF\d{4}_\d{3,})/);
+  return m ? m[1] : '';
+}
+function renderWorkLinkBox(r) {
+  const box = document.getElementById('work-link-box');
+  if (!box) return;
+  const no = workNumberOf(r);
+  box.style.display = '';
+  if (no) {
+    const folder = String(r['DriveフォルダID'] || '');
+    box.innerHTML = '📁 作品集 <b>' + esc(no) + '</b>　' +
+      '<a href="register.html?edit=' + encodeURIComponent(no) + '" target="_blank" rel="noopener">登録画面を開く（完成品の写真・公開）</a>' +
+      (/^[\w-]{10,}$/.test(folder) ? '　<a href="https://drive.google.com/drive/folders/' + esc(folder) + '" target="_blank" rel="noopener">フォルダを開く</a>' : '');
+  } else {
+    box.innerHTML = '<button type="button" class="btn btn-edit" id="work-link-btn">📁 作品集の番号を取る（注文が決まったら）</button>';
+    document.getElementById('work-link-btn').onclick = () => takeWorkNumber(r['ID']);
+  }
+}
+async function postRetryHtml(url, init) {   // GASに届かなかった応答（非200・本文が<）だけ3回まで再送
+  let last = '';
+  for (let i = 1; i <= 3; i++) {
+    try {
+      const res = await fetch(url, init);
+      const text = await res.text();
+      if (res.ok && !text.trim().startsWith('<')) return JSON.parse(text);
+      last = 'HTTP ' + res.status;
+    } catch (e) { throw e; }   // 通信断・タイムアウトは再送しない（処理が済んでいる可能性がある）
+    await new Promise(ok => setTimeout(ok, 1500 * i));
+  }
+  throw new Error('Googleの一時的な応答（' + last + '）が続きました');
+}
+async function takeWorkNumber(id) {
+  const r = allRecords.find(x => x['ID'] === id);
+  const box = document.getElementById('work-link-box');
+  const key = adminWriteKey();
+  if (!r || !box) return;
+  if (!key) { alert('管理者ログインが必要です'); return; }
+  if (!confirm('作品集の番号（NF' + new Date().getFullYear() + '_xxx）を取り、NsFactory_photos にフォルダを作ります。\n' +
+    '商品マスターに「準備中」の行が1つ増えます（サイトには出ません）。\n発注票PDFと相談時の写真はそのフォルダへ移ります。\n\n品名: ' + (r['品名'] || '') + '\nよろしいですか？')) return;
+  box.textContent = '📁 採番しています…';
+  try {
+    const payload = { key, requestId: 'op-' + id, name: r['品名'] || 'オーダー品', size: r['サイズ'] || '',
+      material: String(r['使用革'] || '').split('\n')[0], year: String(new Date().getFullYear()) };
+    const reg = await postRetryHtml(PRODUCT_REGISTER_GAS_URL, { method: 'POST', body: new URLSearchParams({ api: 'register', payload: JSON.stringify(payload) }) });
+    if (!reg.ok) throw new Error('採番に失敗: ' + (reg.error || ''));
+    box.textContent = '📁 ' + reg.productId + ' のフォルダへ移しています…';
+    const res = await postRetryHtml(gasUrl, { method: 'POST', body: JSON.stringify({ action: 'linkWorkFolder', key, id, productId: reg.productId, folderId: reg.folderId }) });
+    if (!res.ok) throw new Error('フォルダの付け替えに失敗: ' + (res.error || ''));
+    r['メモ（非公開）'] = res.memo; r['DriveフォルダID'] = res.folderId;
+    if (document.getElementById('edit-id').value === id) {   // 開いている編集画面も新しい値にする（古い値で保存させない）
+      document.getElementById('f-memo').value = res.memo;
+      document.getElementById('f-folder').value = res.folderId;
+    }
+    renderWorkLinkBox(r);
+    showMsg('作品集 ' + res.productId + ' につなぎました' + (res.moved && res.moved.length ? '（移したもの: ' + res.moved.join('・') + '）' : ''));
+    try { applyFilter(); } catch (e) {}
+  } catch (e) {
+    box.innerHTML = '⚠️ ' + esc(e.message || String(e)) + '　<button type="button" class="btn btn-edit" id="work-link-btn">もう一度</button>';
+    document.getElementById('work-link-btn').onclick = () => takeWorkNumber(id);
+  }
 }
 
 // AI相談の受付で GAS が作った発注票PDF（メモ先頭の「発注票PDF: URL」・2026-09-19）。
