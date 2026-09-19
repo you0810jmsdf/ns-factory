@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="nsfactory-simulator-url" content="../カラーシミュレーター/simulator.html">
 <title data-i18n="meta.title">システム手帳 フルオーダーメイド 見積もり</title>
+<script>
+/* 計算専用モード（?embed=calc・2026-09-19）
+   オーダー相談AI（hearing-ai.html）が見えない枠でこのページを読み込み、金額だけを借りる（末尾の NSF_ESTIMATE）。
+   ・画像を読まない: 通常は約7.5MBのうち5.4MBが画像（2026-09-19 実測）。お客様のスマホの通信量を抑える
+   ・アクセス計測（GA4・右上のPV/UU）を止める: 相談画面を開いただけで見積もりページの閲覧に数えないため
+   ・見えない枠から親の画面をスクロールさせない
+   ⛔ この meta は gtag やどの画像よりも前に書くこと（後ろに置くと効かない）。 */
+window.NSF_EMBED_CALC = /[?&]embed=calc(&|$)/.test(location.search);
+if (window.NSF_EMBED_CALC) {
+  document.write('<meta http-equiv="Content-Security-Policy" content="img-src \'none\'; connect-src \'self\'; script-src \'self\' \'unsafe-inline\' \'unsafe-eval\'">');
+  window['ga-disable-G-ND1T7H067Y'] = true;
+  Element.prototype.scrollIntoView = function () {};
+}
+</script>
 <!-- Google tag (gtag.js) -->
 <script>
 // 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
@@ -4236,6 +4250,94 @@ window.NSF_I18N_DICT = {
     <span>Leather Craft · System Planner · Order Made</span>
   </div>
 </footer>
+<script>
+/* ── 計算専用モードの受け口（2026-09-19 事業主決定）──
+   オーダー相談AIのガイドが「選択肢ごとの差額」と「いまの目安」を出すために呼ぶ（hearing-ai.html の SIM）。
+   画面のカードと既存の set 関数を実際に押して計算させるので、構造ごとの制約
+   （ペンはフラップ必須・クラウゼ非対応の構造など）もふだんの見積もりと同じ経路を通る。
+   ⛔ ここに独自の価格計算を書かない（見積もりページと金額が食い違う）。
+   ⛔ 呼ぶたびに doResetAll() で白紙に戻すので、通常の見積もり画面からは呼ばない。 */
+window.NSF_ESTIMATE = (function () {
+  const SIDES = ['none', 'left', 'right', 'both'];
+  function shown(el) {
+    for (let e = el; e && e !== document.documentElement; e = e.parentElement) {
+      if (getComputedStyle(e).display === 'none') return false;
+    }
+    return !!el;
+  }
+  function txt(el, s) { const t = el && el.querySelector(s); return t ? t.textContent.replace(/\s+/g, ' ').trim() : ''; }
+  function idSel(v) { return '"' + String(v).replace(/["\\]/g, '') + '"'; }
+  function pick(selector) { const el = document.querySelector(selector); if (el) el.click(); return !!el; }
+  function ready() {
+    return !!(document.querySelector('.brand-card') && document.querySelector('#sizeGrid .opt-card') &&
+      document.querySelector('#leatherGrid [data-id]') && document.querySelector('[data-key="ring"]'));
+  }
+  function total() {
+    const n = (document.getElementById('totalDisplay').textContent || '').replace(/[^\d]/g, '');
+    return n ? parseInt(n, 10) : 0;
+  }
+  function optionState() {
+    const pen = ACCESSORIES.find(a => a.name === sel.pen);
+    return {
+      flap: { available: isFlapPriceOptional(), on: isFlapEffectivelyOn() },
+      pen: { available: isPenAvailable(), value: pen ? pen.id : 'pen0' },
+      belt: { available: isBeltAvailable(), on: isBeltEffectivelyOn() },
+      dkan: { available: shown(document.getElementById('dkanRow')) }
+    };
+  }
+  // 仕様を白紙から当てはめる。spec = {brand,size,leather,ring,metal,stamp,options:{flap,pen,belt,freePocket,innerPocket,slit,clearWindow,cardPocket,dkan}}
+  function apply(spec) {
+    spec = spec || {};
+    doResetAll();
+    const ok = {};
+    if (spec.brand) ok.brand = pick('.brand-card[data-id=' + idSel(spec.brand) + ']');
+    if (spec.size) ok.size = pick('#sizeGrid .opt-card[data-id=' + idSel(spec.size) + ']');
+    if (spec.leather) ok.leather = pick('#leatherGrid [data-id=' + idSel(spec.leather) + ']');
+    if (spec.ring) {
+      const card = [...document.querySelectorAll('[data-key="ring"][data-id=' + idSel(spec.ring) + ']')]
+        .find(c => shown(c) && !c.classList.contains('oos'));
+      ok.ring = !!card; if (card) card.click();
+    }
+    if (spec.metal) {
+      const card = document.querySelector('.opt-card[data-key="metal"][data-id=' + idSel(spec.metal) + ']');
+      ok.metal = !!card && card.getAttribute('aria-disabled') !== 'true'; if (ok.metal) card.click();
+    }
+    const o = spec.options || {};
+    if (o.flap != null && isFlapPriceOptional()) setFlap(!!o.flap);
+    if (o.pen && isPenAvailable()) setPen(o.pen);
+    if (o.belt != null) setBelt(!!o.belt);
+    if (SIDES.includes(o.freePocket)) setFreePocket(o.freePocket);
+    if (SIDES.includes(o.innerPocket)) setInnerPocket(o.innerPocket);
+    if (SIDES.includes(o.slit)) setSlitSide(o.slit);
+    if (SIDES.includes(o.clearWindow)) setClearWindowSide(o.clearWindow);
+    for (let i = 0; i < (o.cardPocket | 0); i++) changeNum('cardPocketCC', 1);
+    if (shown(document.getElementById('dkanRow'))) for (let i = 0; i < (o.dkan | 0); i++) changeNum('dkanCount', 1);
+    if (spec.stamp) ok.stamp = pick('.opt-card[data-key="stamp"][data-id=' + idSel(spec.stamp) + ']');
+    return ok;
+  }
+  function quote(spec) {
+    const applied = apply(spec);
+    return { total: total(), applied: applied, options: optionState() };
+  }
+  // spec を当てた状態で選べる選択肢（構造・サイズで変わるもの）を返す
+  function catalog(spec) {
+    apply(spec);
+    const cards = s => [...document.querySelectorAll(s)].filter(shown);
+    return {
+      brands: cards('.brand-card').map(c => ({ id: c.dataset.id, name: txt(c, '.brand-name'), sub: txt(c, '.brand-sub') })),
+      sizes: cards('#sizeGrid .opt-card').map(c => ({ id: c.dataset.id, name: txt(c, '.opt-name'), sub: txt(c, '.opt-sub') })),
+      rings: cards('[data-key="ring"]').filter(c => !c.classList.contains('oos'))
+        .map(c => ({ id: c.dataset.id, name: txt(c, '.ring-text-name'), sub: txt(c, '.ring-text-sub') })),
+      metals: cards('.opt-card[data-key="metal"]').filter(c => c.getAttribute('aria-disabled') !== 'true')
+        .map(c => ({ id: c.dataset.id, name: txt(c, '.opt-name'), sub: txt(c, '.opt-sub') })),
+      stamps: STAMPS.map(s => ({ id: s.id, name: s.name, sub: s.sub })),
+      leathers: [...document.querySelectorAll('#leatherGrid [data-id]')].map(c => c.dataset.id),
+      options: optionState()
+    };
+  }
+  return { ready: ready, quote: quote, catalog: catalog };
+})();
+</script>
 <script src="../assets/access-counter.js"></script>
 </body>
 </html>
