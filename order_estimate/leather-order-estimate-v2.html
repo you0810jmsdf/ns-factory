@@ -4319,18 +4319,24 @@ window.NSF_ESTIMATE = (function () {
     const applied = apply(spec);
     return { total: total(), applied: applied, options: optionState() };
   }
+  // カードの写真（2026-09-19 相談チャットでも写真を見せる）。計算専用モードでは画像を読み込んでいないが、
+  // src はページに埋め込み済みの data: なので、相談画面側で表示しても追加の通信は起きない。
+  function imgs(c) {
+    return [...c.querySelectorAll('img')].map(i => i.getAttribute('src') || '').filter(Boolean)
+      .map(s => /^data:/.test(s) ? s : new URL(s, location.href).href);
+  }
   // spec を当てた状態で選べる選択肢（構造・サイズで変わるもの）を返す
   function catalog(spec) {
     apply(spec);
     const cards = s => [...document.querySelectorAll(s)].filter(shown);
     return {
-      brands: cards('.brand-card').map(c => ({ id: c.dataset.id, name: txt(c, '.brand-name'), sub: txt(c, '.brand-sub') })),
+      brands: cards('.brand-card').map(c => ({ id: c.dataset.id, name: txt(c, '.brand-name'), sub: txt(c, '.brand-sub'), images: imgs(c) })),
       sizes: cards('#sizeGrid .opt-card').map(c => ({ id: c.dataset.id, name: txt(c, '.opt-name'), sub: txt(c, '.opt-sub') })),
       rings: cards('[data-key="ring"]').filter(c => !c.classList.contains('oos'))
         .map(c => ({ id: c.dataset.id, name: txt(c, '.ring-text-name'), sub: txt(c, '.ring-text-sub') })),
       metals: cards('.opt-card[data-key="metal"]').filter(c => c.getAttribute('aria-disabled') !== 'true')
-        .map(c => ({ id: c.dataset.id, name: txt(c, '.opt-name'), sub: txt(c, '.opt-sub') })),
-      stamps: STAMPS.map(s => ({ id: s.id, name: s.name, sub: s.sub })),
+        .map(c => ({ id: c.dataset.id, name: txt(c, '.opt-name'), sub: txt(c, '.opt-sub'), images: imgs(c) })),
+      stamps: STAMPS.map(s => ({ id: s.id, name: s.name, sub: s.sub, images: s.image ? [s.image] : [] })),
       leathers: [...document.querySelectorAll('#leatherGrid [data-id]')].map(c => c.dataset.id),
       options: optionState()
     };
