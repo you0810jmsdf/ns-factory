@@ -119,7 +119,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
 /* ── Reset ──────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+/* overflow-x:clip = 横へはみ出した部品があってもページ全体が横にずれない保険（2026-09-19）。clip は hidden と違い、張り付くナビ（sticky）を壊さない */
+html{scroll-behavior:smooth;overflow-x:clip}
 body{
   background:var(--color-bg);
   /* 羊皮紙の微妙なムラ（ごく薄い金の光沢を対角に2枚重ね） */
@@ -174,10 +175,22 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   .nav-guide{padding:6px 5px}
 }
 .nav-guide-menu{display:none}
-@media(max-width:360px){
-  /* 320px級では印だけでも26pxはみ出す（元々1pxしか余裕がない）。ナビからは外し、幕僚室メニューの先頭に置く */
+@media(max-width:370px){
+  /* 320px級では印だけでも26pxはみ出す（元々1pxしか余裕がない）。ナビからは外し、幕僚室メニューの先頭に置く
+     2026-09-19: 361〜370pxでも5pxはみ出したため、境目を360→370pxに広げた */
   .nav-guide{display:none}
   .nav-guide-menu{display:block}
+}
+/* 2026-09-19: 361〜382px幅（iPhone SE・mini系）で言語切替ボタンが右へ8pxはみ出し、ページ全体が横にずれていた。
+   400px以下は項目の余白を詰めて収める（項目は減らさない）。⛔ .nav-links / .nav に overflow は付けない */
+@media(max-width:400px){
+  .nav-links .nav-link,.nav-links .nav-dropdown-toggle{padding:6px 5px}
+  .nav-links .nav-cta{padding:7px 10px}
+}
+@media(max-width:340px){
+  /* 320px級は上の詰めでも7px出るため、相談ボタンの文字と余白をもう一段詰める */
+  .nav-links .nav-cta{padding:7px 8px;font-size:12px;letter-spacing:-.02em}
+  .nav-links .nav-link,.nav-links .nav-dropdown-toggle{padding:6px 4px}
 }
 .nav-cta{
   font-size:13px;font-weight:600;
