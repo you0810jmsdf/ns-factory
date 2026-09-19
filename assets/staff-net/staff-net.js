@@ -112,8 +112,36 @@
     placeAnchor(a, clientX, clientY, d) {
       this.distance = clampZoom(d);
       var o = this.screenOffset(clientX, clientY), u = this.unitsPerPx(this.distance);
-      this.panX = Math.max(-PAN_MAX, Math.min(PAN_MAX, a.x - o.x * u));
-      this.panY = Math.max(-PAN_MAX, Math.min(PAN_MAX, a.y + o.y * u));
+      this.setPan(a.x - o.x * u, a.y + o.y * u);
+    }
+    // 動かせる範囲。最初の大きさより引いたときは、引くほど狭めて網を中心へ戻す
+    // （2026-09-19 事業主指摘「網が偏っている」: 端で縮小すると小さい網が隅へ逃げ、戻す手段が無かった）
+    panLimit() {
+      var home = this.homeDistance || 8.4;
+      if (this.distance <= home) return PAN_MAX;
+      return PAN_MAX * Math.max(0, (ZOOM_MAX - this.distance) / Math.max(0.1, ZOOM_MAX - home));
+    }
+    setPan(x, y) {
+      var m = this.panLimit();
+      this.panX = Math.max(-m, Math.min(m, x));
+      this.panY = Math.max(-m, Math.min(m, y));
+    }
+    // 最初の位置と大きさに戻す（ダブルクリック／ダブルタップ）
+    resetView() {
+      this.distance = this.homeDistance || this.distance;
+      this.panX = 0;
+      this.panY = 0;
+    }
+    // 首席幕僚（中央の球）の上か。首席幕僚はリンク先が無いので「つかんで網を動かす」取っ手にする
+    overChief(event) {
+      var chief = this.nodes[0], T = window.THREE;
+      if (!chief || !chief.onScreen || !T || !this.world) return false;
+      var r = this.canvas.getBoundingClientRect();
+      var v = this._chiefVec || (this._chiefVec = new T.Vector3());
+      v.copy(chief.mesh.position).applyMatrix4(this.world.matrixWorld);
+      var k = this.height / (2 * Math.tan(25 * Math.PI / 180));
+      var radius = chief.mesh.scale.x * k / Math.max(1, this.camera.position.z - v.z);
+      return Math.hypot(event.clientX - r.left - chief.x, event.clientY - r.top - chief.y) <= Math.max(22, radius) + 6;
     }
 
     updateLabels() {
@@ -179,7 +207,47 @@
 
     pointerDown(event) {
       this.lastPointerType = event.pointerType || 'mouse';
+      if (event.button === 0 && !this.drag && !this.panDrag && this.overChief(event)) {
+        event.preventDefault();
+        this.tooltipNode = null;
+        this.panDrag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+        try { this.canvas.setPointerCapture(event.pointerId); } catch (e) {}
+        this.canvas.style.cursor = 'grabbing';
+        return;
+      }
       super.pointerDown(event);
+    }
+
+    pointerMove(event) {
+      var pd = this.panDrag;
+      if (pd) {
+        if (pd.id !== event.pointerId) return;
+        var u = this.unitsPerPx(this.distance);
+        // 網を指・マウスと同じ向きに動かす＝カメラは逆向きに動かす
+        this.setPan((this.panX || 0) - (event.clientX - pd.x) * u, (this.panY || 0) + (event.clientY - pd.y) * u);
+        pd.x = event.clientX;
+        pd.y = event.clientY;
+        return;
+      }
+      super.pointerMove(event);
+      if (!this.drag && !this.tooltipNode && this.overChief(event)) this.canvas.style.cursor = 'move';
+    }
+
+    pointerUp(event) {
+      if (this.panDrag) {
+        if (this.panDrag.id === event.pointerId) this.releaseDrag();
+        return;
+      }
+      super.pointerUp(event);
+    }
+
+    releaseDrag() {
+      var pd = this.panDrag;
+      this.panDrag = null;
+      if (pd) {
+        try { if (this.canvas.hasPointerCapture(pd.id)) this.canvas.releasePointerCapture(pd.id); } catch (e) {}
+      }
+      super.releaseDrag();
     }
   }
 
@@ -216,6 +284,9 @@
   }
   // Jarvisの既定（11.5）より寄せて、枠いっぱいに網を見せる（縦長のスマホは回転で端が切れないよう少し引く）
   graph.distance = ROOT.clientWidth < 520 ? 10.5 : 8.4;
+  graph.homeDistance = graph.distance;
+  // ダブルクリック／ダブルタップで最初の位置と大きさに戻す
+  canvas.addEventListener('dblclick', function (ev) { ev.preventDefault(); graph.resetView(); });
 
   // 2本指ピンチで寄り・引き（2026-09-18 事業主指示「小さくて見えない。ピンチで拡大したい」）。
   // 複写元（Jarvis）のファイルは触らず、枠（ROOT）の捕捉段階で先に受けて、ピンチ中は回転・クリックへ渡さない。
