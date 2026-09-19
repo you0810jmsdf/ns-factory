@@ -1447,12 +1447,16 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     const url = getGasUrl();
     if (!url) { showMsg('err', 'GAS URLが設定されていません。'); return; }
+    // 実績の追加・編集・削除は管理パスワード必須（2026-09-19）
+    const password = getNoticePassword();
+    if (!password) return;
 
     const btn = document.getElementById('btn-add');
     btn.disabled = true; btn.textContent = '送信中...';
 
     const body = {
       action: 'add',
+      password,
       date,
       class: cls,
       attendees: document.getElementById('f-attendees').value,
@@ -1471,6 +1475,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         showMsg('ok', '追加しました！');
         clearForm();
         await loadRecords();
+      } else if (isWrongPassword(data)) {
+        showMsg('err', '管理者パスワードが違います。もう一度「追加する」を押すと入力し直せます。');
       } else {
         showMsg('err', 'エラー: ' + (data.error || '不明'));
       }
@@ -1484,16 +1490,26 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   // ── 削除 ─────────────────────────────────────────
   async function deleteRecord(id) {
     if (!confirm('この記録を削除しますか？')) return;
+    const password = getNoticePassword();
+    if (!password) return;
     const url = getGasUrl();
     try {
       const res = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({ action: 'delete', id }),
+        body: JSON.stringify({ action: 'delete', id, password }),
       });
       const data = await res.json();
       if (data.ok) { await loadRecords(); }
+      else if (isWrongPassword(data)) { alert('管理者パスワードが違います。削除していません。'); }
       else { alert('削除に失敗しました: ' + (data.error || '不明')); }
     } catch(e) { alert('通信エラー: ' + e.message); }
+  }
+
+  // GASが管理パスワード違いを返したら、覚えていたパスワードを捨てて次回入力し直させる
+  function isWrongPassword(data) {
+    if (!data || data.error !== 'Invalid admin password') return false;
+    noticeAdminPassword = '';
+    return true;
   }
 
   // ── CSV出力 ───────────────────────────────────────
@@ -1859,13 +1875,15 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     if (!date) { document.getElementById('edit-msg').className = 'form-msg err'; document.getElementById('edit-msg').textContent = '開催日を入力してください。'; return; }
     const url = getGasUrl();
     if (!url) return;
+    const password = getNoticePassword();
+    if (!password) return;
     const btn = document.getElementById('btn-update');
     btn.disabled = true; btn.textContent = '保存中...';
     try {
       const res = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
-          action: 'update', id,
+          action: 'update', id, password,
           date, class: cls,
           attendees: document.getElementById('edit-attendees').value,
           hours: document.getElementById('edit-hours').value,
@@ -1879,7 +1897,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         await loadRecords();
       } else {
         document.getElementById('edit-msg').className = 'form-msg err';
-        document.getElementById('edit-msg').textContent = 'エラー: ' + (data.error || '不明');
+        document.getElementById('edit-msg').textContent = isWrongPassword(data)
+          ? '管理者パスワードが違います。もう一度「保存する」を押すと入力し直せます。'
+          : 'エラー: ' + (data.error || '不明');
       }
     } catch(e) {
       document.getElementById('edit-msg').className = 'form-msg err';
