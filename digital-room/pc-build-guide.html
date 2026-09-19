@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自作PC 組み立て手順書（図つき） | N's factory デジタル幕僚室</title>
+<meta name="description" content="MSI B550M-A PRO と Ryzen 5 5600GT で組む自作PCの手順書。静電気対策・ネジの見分け方・CPUの向き・純正クーラー・メモリとM.2・24ピンと4ピンの電源・前面配線・初回起動・BIOSが古いときの対処までを、手描きの線画つきで説明します。A4印刷対応。">
+<!-- Google tag (gtag.js) -->
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+:root{
+  --bg:#16120d; --card:#1e1913; --edge:#2a231a; --gold:#c9a961; --gold-dim:#8a744a;
+  --ink:#e8e2d6; --dim:#a89f8e; --hot:#d46a5a; --line:#6f6455; --soft:#241e17;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);line-height:1.85;font-size:15px;
+  font-family:"Meiryo","メイリオ","Hiragino Sans","Yu Gothic",sans-serif;}
+a{color:var(--gold)}
+header.site{border-bottom:1px solid var(--edge);padding:18px 22px}
+header.site .eyebrow{font-size:11px;letter-spacing:.16em;color:var(--gold-dim);font-weight:bold}
+header.site h1{font-size:23px;color:var(--gold);margin-top:4px;line-height:1.5}
+header.site p{font-size:13px;color:var(--dim);margin-top:6px}
+main{max-width:860px;margin:0 auto;padding:26px 22px 70px}
+section.page{margin-bottom:46px}
+h2{font-size:19px;color:var(--gold);border-left:3px solid var(--gold);padding-left:12px;margin:0 0 14px}
+h3{font-size:15.5px;color:var(--ink);margin:20px 0 8px;border-bottom:1px dotted var(--edge);padding-bottom:4px}
+p{margin-bottom:10px}
+ol,ul{margin:0 0 12px 24px}
+li{margin-bottom:6px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+th,td{border:1px solid var(--edge);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--card);color:var(--gold-dim);font-weight:bold;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--edge);border-left:3px solid var(--gold-dim);
+  border-radius:6px;padding:12px 16px;margin:12px 0;font-size:13.5px;color:var(--dim)}
+.note strong{color:var(--ink)}
+.warn{border-left-color:var(--hot)} .warn strong{color:var(--hot)}
+.chk{list-style:none;margin-left:6px} .chk li:before{content:"☐ ";color:var(--gold-dim)}
+nav.toc{background:var(--card);border:1px solid var(--edge);border-radius:8px;padding:14px 18px;margin-bottom:26px;font-size:14px}
+nav.toc ol{margin:6px 0 0 22px}
+figure.fig{margin:16px 0;background:var(--card);border:1px solid var(--edge);border-radius:8px;padding:14px}
+figure.fig svg{width:100%;height:auto;color:var(--ink)}
+figure.fig figcaption{font-size:12.5px;color:var(--gold-dim);margin-top:8px;font-weight:bold}
+.fignote{font-size:11.5px;color:var(--dim);margin:2px 0 0}
+svg rect,svg circle,svg path,svg line{fill:none;stroke:currentColor;stroke-width:1.4}
+svg text{fill:currentColor;stroke:none}
+svg .bold{font-weight:bold}
+svg .hot,svg text.hot{fill:var(--hot)}
+svg .hotln{stroke:var(--hot);stroke-width:2}
+svg .hotbox{stroke:var(--hot);stroke-width:2}
+svg .fillhot{fill:var(--hot);stroke:var(--hot)}
+svg .fillsoft{fill:var(--line);stroke:var(--line)}
+svg .soft{stroke:var(--line)}
+svg .part{stroke:currentColor}
+svg .pin{stroke:var(--line)}
+svg .pinx{stroke:var(--line);stroke-dasharray:3 3}
+svg .board{stroke:currentColor;stroke-width:2}
+svg .thin{stroke-width:1}
+svg .lead{stroke:var(--line);stroke-width:1;stroke-dasharray:4 3}
+svg .arw{stroke:currentColor;stroke-width:1.6}
+svg .ahd{fill:currentColor;stroke:none}
+svg .lever{stroke-width:3}
+svg .cpu{stroke-width:2}
+svg .ssd{stroke-width:2}
+svg .diag{stroke:var(--line);stroke-dasharray:4 4}
+figure.shot{margin:14px 0}
+figure.shot .ph{border:2px dashed var(--gold-dim);border-radius:8px;height:150px;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--soft)}
+figure.shot .phslot{font-size:11px;color:var(--gold-dim);letter-spacing:.08em}
+figure.shot .phtxt{font-size:13px;color:var(--dim)}
+figure.shot img{width:100%;border-radius:8px;border:1px solid var(--edge)}
+figure.shot figcaption{font-size:12px;color:var(--dim);margin-top:6px}
+.conf{font-size:12px;color:var(--gold-dim);border:1px solid var(--edge);border-radius:4px;padding:1px 7px;margin-left:6px;white-space:nowrap}
+.foot{font-size:12px;color:var(--dim);border-top:1px solid var(--edge);padding-top:12px;margin-top:26px}
+.cover-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:13.5px;margin:14px 0}
+.big{font-size:17px;color:var(--gold);font-weight:bold}
+.pagenum{display:none}
+.dlbtn{display:inline-block;margin-top:6px;padding:7px 16px;border:1px solid var(--gold);
+  border-radius:6px;color:var(--gold);text-decoration:none;font-size:13.5px;font-weight:bold}
+.dlbtn:hover{background:var(--gold);color:#16120d}
+.toc-print{display:none}
+.toc-print ol{columns:2;font-size:12px;margin:6px 0 10px 20px}
+.toc-print li{margin-bottom:2px;break-inside:avoid}
+
+@media print{
+  @page{size:A4;margin:11mm 11mm 12mm}
+  :root{--bg:#fff;--card:#f7f5f1;--edge:#c9c2b4;--gold:#6b4f2a;--gold-dim:#7a6a4e;
+        --ink:#000;--dim:#333;--hot:#a3301f;--line:#6b6b6b;--soft:#f2efe9}
+  body{background:#fff;color:#000;font-size:9.2pt;line-height:1.55;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  header.site{display:none}
+  nav.toc{display:none}
+  .toc-print{display:block}
+  main{max-width:none;padding:0}
+  section.page{page-break-after:always;margin:0}
+  section.page:last-of-type{page-break-after:auto}
+  h2{font-size:13pt;margin-bottom:6px}
+  h3{font-size:10.5pt;margin:9px 0 4px}
+  table{font-size:8.4pt;margin:6px 0} th,td{padding:3px 5px}
+  .note{font-size:8.6pt;padding:6px 9px;margin:6px 0;line-height:1.5}
+  ol,ul{margin:0 0 7px 20px}
+  p,li{margin-bottom:3px}
+  figure.fig{padding:6px;margin:7px 0;break-inside:avoid}
+  figure.fig svg{max-height:58mm}
+  figure.fig.tall svg{max-height:84mm}
+  figure.fig figcaption{font-size:8.2pt;margin-top:4px}
+  .fignote{font-size:7.8pt}
+  figure.shot{break-inside:avoid;margin:7px 0}
+  figure.shot .ph{height:26mm}
+  figure.shot figcaption{font-size:8pt;margin-top:3px}
+  .cover-meta{font-size:9pt;gap:4px 16px;margin:8px 0}
+  .big{font-size:11.5pt}
+  .conf{font-size:7.8pt;padding:0 5px}
+  .foot{font-size:8pt;padding-top:8px;margin-top:12px}
+  .pagenum{display:block;text-align:right;font-size:8pt;color:#666;margin-top:5px}
+  .noprint{display:none}
+}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="eyebrow">N'S FACTORY ／ デジタル幕僚室</div>
+  <h1>自作PC 組み立て手順書（図つき）<br>MSI B550M-A PRO ＋ Ryzen 5 5600GT</h1>
+  <p>展示・体験用のPCを部品から組む手順を、手描きの線画つきでまとめたものです。A4で印刷して手元に置けます。／ 作成 2026-09-20</p>
+  <p class="noprint"><a href="./">← デジタル幕僚室へ戻る</a>　|　ブラウザの印刷（Ctrl+P）でもA4 12ページで刷れます</p>
+  <p class="noprint"><a class="dlbtn" href="pc-build-guide.pdf" download>⬇ PDF（A4・12ページ）をダウンロード</a></p>
+</header>
+<main>
+
+<nav class="toc"><strong>もくじ</strong>
+<ol>
+<li>この手順書について（部品一覧・訂正3点）</li>
+<li>準備（静電気・道具・ネジの見分け方）</li>
+<li>全体の流れと、マザーボードの各部</li>
+<li>CPU を付ける（三角の印とレバー）</li>
+<li>純正クーラーを付ける（グリスは塗布済み）</li>
+<li>メモリと M.2 SSD</li>
+<li>ケースに入れる（I/Oシールド・スタンドオフ・電源）</li>
+<li>電源ケーブルをつなぐ（24ピンと4ピン）</li>
+<li>ケース前面の細い配線（JFP1）</li>
+<li>最初の電源投入と BIOS の確認</li>
+<li>Windows 11 の導入と、Wi-Fi・Bluetooth の確認</li>
+<li>映らないとき／BIOSが古いとき／3Dワールドの保存</li>
+</ol>
+</nav>
+<section class="page" id="p1"><h2>① この手順書について（表紙）</h2>
+<p class="big">武蔵屋マルシェ（2026年11月3日）「白鳥になって空から文化財めぐり」体験用PCを、部品から組み立てる手順です。</p>
+<div class="cover-meta">
+<div><b>作成</b>　2026-09-20（Community Bank INZAI）</div>
+<div><b>対象</b>　自作PCを初めて組む人</div>
+<div><b>所要の目安</b>　組付け2〜3時間／Windows導入1時間／設定1〜2時間</div>
+<div><b>部品の出どころ</b>　events/2026-11-03_武蔵屋/体験PC_購入リスト.md</div>
+</div>
+
+<h3>使う部品（すべて購入済み）</h3>
+<table>
+<tr><th>部品</th><th>型番</th><th>この手順書で関係するところ</th></tr>
+<tr><td>マザーボード</td><td>MSI B550M-A PRO（MicroATX）</td><td>4ページ以降すべて</td></tr>
+<tr><td>CPU</td><td>AMD Ryzen 5 5600GT BOX（クーラー付属）</td><td>4・5ページ</td></tr>
+<tr><td>メモリ</td><td>シリコンパワー DDR4-3200 16GB×2</td><td>6ページ</td></tr>
+<tr><td>SSD</td><td>Lexar NM610 PRO 1TB（M.2 NVMe）</td><td>6ページ</td></tr>
+<tr><td>電源</td><td>ASRock PRO-650B（650W・奥行き140mm）</td><td>7・8ページ</td></tr>
+<tr><td>ケース</td><td>ZALMAN T3 PLUS（MicroATX）</td><td>7・9ページ</td></tr>
+<tr><td>OS</td><td>Windows 11 Home パッケージ版 HAJ-00094（USB付）</td><td>11ページ</td></tr>
+<tr><td>周辺</td><td>K120キーボード／M220マウス／USB Wi-Fi＋Bluetooth／FUNLOGY プロジェクター</td><td>10〜12ページ</td></tr>
+</table>
+
+<h3>読み方</h3>
+<ul>
+<li>ページの順番どおりに進める。飛ばさない。</li>
+<li><b>図はすべて手描きの線画</b>です。実物と細部の形は違います。位置関係と手順を見るために使ってください。</li>
+<li>点線の四角は<b>写真をあとで貼る枠</b>です。組み立て当日に撮った写真を <code>会場PC/写真/</code> に決まった名前で置いて、生成スクリプトを再実行すると差し込まれます。</li>
+<li>確信度の表示：<span class="conf">確信度：高</span>＝メーカー公式資料で確認済み　<span class="conf">確信度：中</span>＝一般的な作法・製品ページの記載　<span class="conf">確信度：低</span>＝未検証</li>
+</ul>
+
+<div class="note warn"><strong>買い物メモ（体験PC_購入リスト.md）から訂正が3点あります。</strong><br>
+① CPUの補助電源は<b>8ピンではなく4ピン</b>（MSI公式マニュアルの内部コネクタ一覧「1x 4-pin ATX 12V power connector」）。<br>
+② このマザーボードに<b>Flash BIOS ボタンは付いていません</b>（公式マニュアルの背面端子一覧・MSIサポートページのどちらにも記載なし）。BIOS更新は画面が出る状態で行う M-FLASH だけです。<br>
+③ Ryzen 5 5600GT に対応する BIOS は <b>7C96v2B 以降</b>（MSIのCPU対応表）。これより古いと、組み立てが正しくても画面が出ません。対処は12ページ。<span class="conf">確信度：高</span></div>
+<div class="toc-print"><b>もくじ</b>
+<ol>
+<li>この手順書について（部品一覧・訂正3点）</li>
+<li>準備（静電気・道具・ネジ）</li>
+<li>全体の流れとマザーボードの各部</li>
+<li>CPU を付ける</li>
+<li>純正クーラーを付ける</li>
+<li>メモリと M.2 SSD</li>
+<li>ケースに入れる</li>
+<li>電源ケーブル（24ピンと4ピン）</li>
+<li>ケース前面の細い配線</li>
+<li>最初の電源投入と BIOS</li>
+<li>Windows 11・Wi-Fi・Bluetooth</li>
+<li>映らないとき／3Dワールドの保存</li>
+</ol></div>
+<div class="pagenum">体験PC 組立手順書 — 1 / 12</div></section><section class="page" id="p2"><h2>② 準備（静電気・道具・ネジ）</h2>
+<h3>場所と道具</h3>
+<table>
+<tr><th>いるもの</th><th>補足</th></tr>
+<tr><td>プラスドライバー（2番）</td><td>先が磁石だとネジを落としにくい</td></tr>
+<tr><td>広い机と明るい照明</td><td>マザーボードの箱を作業台にする</td></tr>
+<tr><td>小皿・空き箱</td><td>外したネジを置く。M.2のネジは特に無くしやすい</td></tr>
+<tr><td>USBメモリ GIGASTONE</td><td>BIOS更新が必要になったときだけ使う（12ページ）</td></tr>
+<tr><td>スマホ</td><td>配線を撮っておくと元に戻せる。手順書の写真にもなる</td></tr>
+</table>
+
+<h3>静電気対策（最初にやる）</h3>
+<ol>
+<li>作業の前に、<b>塗装されていない金属</b>（ドアノブ、ケースの骨組み）を素手で触る。</li>
+<li>部品を触る前に、<b>ときどき同じことを繰り返す</b>（席を立って戻ったら必ず）。</li>
+<li>じゅうたんの上・セーター姿で作業しない。</li>
+<li>基板は<b>ふちを持つ</b>。裏の部品や金色の端子を指でこすらない。</li>
+<li>部品は使う直前まで<b>静電気防止袋（銀色の袋）から出さない</b>。</li>
+</ol>
+<div class="note"><strong>メーカーの注意書き（MSI 公式マニュアル 安全情報より要約）：</strong>静電気防止バンドの使用が望ましい。無い場合は他の金属に触れて放電してから扱う。基板は端を持ち、使わないときは静電気防止袋か静電防止マットの上に置く。電源を入れる前に、ネジや金属片が基板の上や中に落ちていないか確認する。<span class="conf">確信度：高</span></div>
+
+<h3>ネジの見分け方</h3>
+<p>袋から全部出して、<b>種類ごとに小皿に分ける</b>ところから始めます。長さより「太さと山の粗さ」で見ます。</p>
+<figure class="fig "><svg viewBox="0 0 640 205" role="img" aria-label="ネジの見分け方（実物を並べて比べる）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><text x="10" y="20" font-size="13" text-anchor="start" class="">A　太くて山が粗い（インチネジ）</text><rect x="14" y="34" width="6" height="18" rx="1"/><line x1="17" y1="36" x2="17" y2="50"/><rect x="20" y="40" width="72" height="6"/><path d="M22,40 l3.5,6" class="thin"/><path d="M29,40 l3.5,6" class="thin"/><path d="M36,40 l3.5,6" class="thin"/><path d="M43,40 l3.5,6" class="thin"/><path d="M50,40 l3.5,6" class="thin"/><path d="M57,40 l3.5,6" class="thin"/><path d="M64,40 l3.5,6" class="thin"/><path d="M71,40 l3.5,6" class="thin"/><path d="M78,40 l3.5,6" class="thin"/><path d="M85,40 l3.5,6" class="thin"/><text x="14" y="78" font-size="11" text-anchor="start" class="">マザーボード固定・電源・ケースの側板</text><text x="240" y="20" font-size="13" text-anchor="start" class="">B　細くて山が細かい（ミリネジ）</text><rect x="244" y="34" width="6" height="18" rx="1"/><line x1="247" y1="36" x2="247" y2="50"/><rect x="250" y="40" width="60" height="6"/><path d="M252,40 l2.0,6" class="thin"/><path d="M256,40 l2.0,6" class="thin"/><path d="M260,40 l2.0,6" class="thin"/><path d="M264,40 l2.0,6" class="thin"/><path d="M268,40 l2.0,6" class="thin"/><path d="M272,40 l2.0,6" class="thin"/><path d="M276,40 l2.0,6" class="thin"/><path d="M280,40 l2.0,6" class="thin"/><path d="M284,40 l2.0,6" class="thin"/><path d="M288,40 l2.0,6" class="thin"/><path d="M292,40 l2.0,6" class="thin"/><path d="M296,40 l2.0,6" class="thin"/><path d="M300,40 l2.0,6" class="thin"/><path d="M304,40 l2.0,6" class="thin"/><path d="M308,40 l2.0,6" class="thin"/><text x="244" y="78" font-size="11" text-anchor="start" class="">2.5インチSSD・ケースファン</text><text x="460" y="20" font-size="13" text-anchor="start" class="">C　米粒くらいの極小</text><rect x="464" y="34" width="6" height="12" rx="1"/><line x1="467" y1="36" x2="467" y2="44"/><rect x="470" y="37" width="26" height="6"/><path d="M472,37 l1.5,6" class="thin"/><path d="M475,37 l1.5,6" class="thin"/><path d="M478,37 l1.5,6" class="thin"/><path d="M481,37 l1.5,6" class="thin"/><path d="M484,37 l1.5,6" class="thin"/><path d="M487,37 l1.5,6" class="thin"/><path d="M490,37 l1.5,6" class="thin"/><path d="M493,37 l1.5,6" class="thin"/><text x="464" y="78" font-size="11" text-anchor="start" class="">M.2 SSD の固定（1本だけ・無くさない）</text><text x="10" y="118" font-size="13" text-anchor="start" class="">D　スタンドオフ（六角の柱）＝マザーボードを底板から浮かせる部品</text><path d="M60,140 l18,-10 l18,10 l0,26 l-18,10 l-18,-10 z"/><line x1="78" y1="130" x2="78" y2="176" class="thin"/><rect x="72" y="176" width="12" height="14"/><text x="104" y="150" font-size="11" text-anchor="start" class="">上：マザーボードのネジを受ける（メス）</text><text x="104" y="166" font-size="11" text-anchor="start" class="">下：ケースの底板にねじ込む（オス）</text><text x="104" y="186" font-size="11" text-anchor="start" class="hot">⚠ マザーボードのネジ穴が無い場所の柱は必ず外す（裏がショートする）</text><rect x="360" y="128" width="268" height="68" rx="3" class="soft"/><text x="372" y="148" font-size="12" text-anchor="start" class="bold">迷ったときの決め方</text><text x="372" y="166" font-size="11" text-anchor="start" class="">① 2〜3山ぶん指で回してみる</text><text x="372" y="182" font-size="11" text-anchor="start" class="">② 抵抗があったら違うネジ。工具で回さない</text></svg><figcaption>図1　ネジの見分け方（実物を並べて比べる）</figcaption></figure>
+<p>ZALMAN T3 PLUS には必要なネジが同梱されています。<b>足りない・回らないときは、無理に回さずに別の種類を試す</b>のが鉄則です。<span class="conf">確信度：中</span></p>
+<figure class="shot" data-slot="02-screws"><div class="ph"><span class="phslot">02-screws.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：ネジを種類ごとに小皿へ分けたところ</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 2 / 12</div></section><section class="page" id="p3"><h2>③ 全体の流れと、マザーボードの各部</h2>
+<figure class="fig "><svg viewBox="0 0 780 132" role="img" aria-label="組み立ての流れ（この順にやる）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><rect x="10" y="40" width="84" height="58" rx="3" class="soft"/><text x="52.0" y="62" font-size="10" text-anchor="middle" class="">道具と場所</text><text x="52.0" y="76" font-size="10" text-anchor="middle" class="">の準備</text><text x="13" y="34" font-size="11.5" text-anchor="start" class="bold">1</text><line x1="95" y1="69" x2="105" y2="69" class="arw " marker-end="url(#ah)"/><rect x="106" y="40" width="84" height="58" rx="3" class="soft"/><text x="148.0" y="62" font-size="10" text-anchor="middle" class="">部品の</text><text x="148.0" y="76" font-size="10" text-anchor="middle" class="">到着確認</text><text x="109" y="34" font-size="11.5" text-anchor="start" class="bold">2</text><line x1="191" y1="69" x2="201" y2="69" class="arw " marker-end="url(#ah)"/><rect x="202" y="40" width="84" height="58" rx="3" class="soft"/><text x="244.0" y="56" font-size="10" text-anchor="middle" class="">机の上で組む</text><text x="244.0" y="70" font-size="10" text-anchor="middle" class="">CPU→クーラー</text><text x="244.0" y="84" font-size="10" text-anchor="middle" class="">→メモリ→SSD</text><text x="205" y="34" font-size="11.5" text-anchor="start" class="bold">3</text><line x1="287" y1="69" x2="297" y2="69" class="arw " marker-end="url(#ah)"/><rect x="298" y="40" width="84" height="58" rx="3" class="soft"/><text x="340.0" y="56" font-size="10" text-anchor="middle" class="">ケースに入れる</text><text x="340.0" y="70" font-size="10" text-anchor="middle" class="">I/O板→基板</text><text x="340.0" y="84" font-size="10" text-anchor="middle" class="">→電源</text><text x="301" y="34" font-size="11.5" text-anchor="start" class="bold">4</text><line x1="383" y1="69" x2="393" y2="69" class="arw " marker-end="url(#ah)"/><rect x="394" y="40" width="84" height="58" rx="3" class="soft"/><text x="436.0" y="56" font-size="10" text-anchor="middle" class="">配線</text><text x="436.0" y="70" font-size="10" text-anchor="middle" class="">24ピン・4ピン</text><text x="436.0" y="84" font-size="10" text-anchor="middle" class="">前面スイッチ</text><text x="397" y="34" font-size="11.5" text-anchor="start" class="bold">5</text><line x1="479" y1="69" x2="489" y2="69" class="arw " marker-end="url(#ah)"/><rect x="490" y="40" width="84" height="58" rx="3" class="soft"/><text x="532.0" y="62" font-size="10" text-anchor="middle" class="">最初の電源投入</text><text x="532.0" y="76" font-size="10" text-anchor="middle" class="">BIOSが出るか</text><text x="493" y="34" font-size="11.5" text-anchor="start" class="bold">6</text><line x1="575" y1="69" x2="585" y2="69" class="arw " marker-end="url(#ah)"/><rect x="586" y="40" width="84" height="58" rx="3" class="soft"/><text x="628.0" y="62" font-size="10" text-anchor="middle" class="">Windows 11</text><text x="628.0" y="76" font-size="10" text-anchor="middle" class="">を入れる</text><text x="589" y="34" font-size="11.5" text-anchor="start" class="bold">7</text><line x1="671" y1="69" x2="681" y2="69" class="arw " marker-end="url(#ah)"/><rect x="682" y="40" width="84" height="58" rx="3" class="soft"/><text x="724.0" y="62" font-size="10" text-anchor="middle" class="">仕上げ</text><text x="724.0" y="76" font-size="10" text-anchor="middle" class="">会場の設定</text><text x="685" y="34" font-size="11.5" text-anchor="start" class="bold">8</text><text x="10" y="122" font-size="12" text-anchor="start" class="hot">★ 6 で画面が出るまで、ケースのフタは閉めない（やり直しが楽）</text></svg><figcaption>図2　組み立ての流れ（この順にやる）</figcaption></figure>
+<div class="note warn"><strong>いちばん大事な進め方：</strong>机の上でCPU・クーラー・メモリ・SSDまで付けてから、ケースに入れます。ケースの中で細かい作業をすると手が入りません。</div>
+<figure class="fig tall"><svg viewBox="0 0 800 410" role="img" aria-label="マザーボード MSI B550M-A PRO の各部（配置はMSI公式マニュアルによる）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><rect x="24" y="30" width="400" height="330" rx="6" class="board"/><rect x="26" y="52" width="24" height="150" rx="3" class="soft"/><text x="38" y="127" font-size="10" text-anchor="middle" transform="rotate(-90 38 127)">背面I/O</text><circle cx="62" cy="62" r="10" class="part"/><text x="62" y="66" font-size="11" text-anchor="middle" class="numtx">10</text><rect x="150" y="82" width="92" height="92" rx="3" class="part"/><text x="196" y="128" font-size="12" text-anchor="middle" class="">CPU</text><text x="196" y="144" font-size="10.5" text-anchor="middle" class="">ソケット</text><path d="M156,88 l11,0 l-5.5,10 z" class="fillhot"/><circle cx="196" cy="196" r="10" class="part"/><text x="196" y="200" font-size="11" text-anchor="middle" class="numtx">1</text><rect x="318" y="56" width="15" height="190" rx="3" class="part"/><rect x="341" y="56" width="15" height="190" rx="3" class="part"/><text x="326" y="52" font-size="9" text-anchor="middle" class="">A1</text><text x="349" y="52" font-size="9" text-anchor="middle" class="">B1</text><circle cx="337" cy="268" r="10" class="part"/><text x="337" y="272" font-size="11" text-anchor="middle" class="numtx">2</text><rect x="388" y="96" width="30" height="96" rx="3" class="part"/><circle cx="403" cy="212" r="10" class="part"/><text x="403" y="216" font-size="11" text-anchor="middle" class="numtx">3</text><rect x="118" y="44" width="28" height="20" rx="3" class="part"/><circle cx="104" cy="80" r="10" class="part"/><text x="104" y="84" font-size="11" text-anchor="middle" class="numtx">4</text><rect x="258" y="46" width="22" height="15" rx="3" class="part"/><circle cx="284" cy="54" r="10" class="part"/><text x="284" y="58" font-size="11" text-anchor="middle" class="numtx">6</text><rect x="64" y="44" width="22" height="15" rx="3" class="part"/><circle cx="64" cy="80" r="10" class="part"/><text x="64" y="84" font-size="11" text-anchor="middle" class="numtx">7</text><rect x="258" y="206" width="13" height="66" rx="3" class="part"/><circle cx="286" cy="240" r="10" class="part"/><text x="286" y="244" font-size="11" text-anchor="middle" class="numtx">5</text><rect x="110" y="218" width="70" height="12" rx="3" class="part"/><rect x="110" y="258" width="210" height="14" rx="3" class="part"/><text x="110" y="292" font-size="9.5" text-anchor="start" class="">PCIe（今回は使わない）</text><rect x="392" y="220" width="26" height="22" rx="3" class="part"/><rect x="392" y="248" width="26" height="22" rx="3" class="part"/><text x="424" y="286" font-size="9.5" text-anchor="end" class="">SATA（使わない）</text><rect x="60" y="330" width="34" height="16" rx="3" class="part"/><text x="77" y="356" font-size="9" text-anchor="middle" class="">JAUD1</text><rect x="126" y="330" width="34" height="16" rx="3" class="part"/><text x="143" y="356" font-size="9" text-anchor="middle" class="">JUSB1</text><rect x="166" y="330" width="34" height="16" rx="3" class="part"/><text x="183" y="356" font-size="9" text-anchor="middle" class="">JUSB2</text><rect x="212" y="330" width="34" height="16" rx="3" class="part"/><text x="229" y="356" font-size="9" text-anchor="middle" class="">JUSB3</text><rect x="278" y="330" width="34" height="16" rx="3" class="part"/><text x="295" y="356" font-size="9" text-anchor="middle" class="">SATA</text><rect x="348" y="330" width="34" height="16" rx="3" class="part"/><text x="365" y="356" font-size="9" text-anchor="middle" class="">JFP1</text><circle cx="120" cy="314" r="10" class="part"/><text x="120" y="318" font-size="11" text-anchor="middle" class="numtx">9</text><circle cx="365" cy="314" r="10" class="part"/><text x="365" y="318" font-size="11" text-anchor="middle" class="numtx">8</text><text x="448" y="44" font-size="12" text-anchor="start" class="bold">各部の名前</text><circle cx="458" cy="64" r="10" class="part"/><text x="458" y="68" font-size="11" text-anchor="middle" class="numtx">1</text><text x="476" y="68" font-size="11" text-anchor="start" class="">CPU ソケット（▲印は左手前）</text><circle cx="458" cy="90" r="10" class="part"/><text x="458" y="94" font-size="11" text-anchor="middle" class="numtx">2</text><text x="476" y="94" font-size="11" text-anchor="start" class="">DIMMA1／DIMMB1＝メモリ2本</text><circle cx="458" cy="116" r="10" class="part"/><text x="458" y="120" font-size="11" text-anchor="middle" class="numtx">3</text><text x="476" y="120" font-size="11" text-anchor="start" class="">ATX_PWR1＝電源24ピン</text><circle cx="458" cy="142" r="10" class="part"/><text x="458" y="146" font-size="11" text-anchor="middle" class="numtx">4</text><text x="476" y="146" font-size="11" text-anchor="start" class="">CPU_PWR1＝CPUの補助電源（4ピン）</text><circle cx="458" cy="168" r="10" class="part"/><text x="458" y="172" font-size="11" text-anchor="middle" class="numtx">5</text><text x="476" y="172" font-size="11" text-anchor="start" class="">M2_1＝SSD（縦向き・1本だけ）</text><circle cx="458" cy="194" r="10" class="part"/><text x="458" y="198" font-size="11" text-anchor="middle" class="numtx">6</text><text x="476" y="198" font-size="11" text-anchor="start" class="">CPU_FAN1＝クーラーのファン</text><circle cx="458" cy="220" r="10" class="part"/><text x="458" y="224" font-size="11" text-anchor="middle" class="numtx">7</text><text x="476" y="224" font-size="11" text-anchor="start" class="">SYS_FAN1＝ケースファン</text><circle cx="458" cy="246" r="10" class="part"/><text x="458" y="250" font-size="11" text-anchor="middle" class="numtx">8</text><text x="476" y="250" font-size="11" text-anchor="start" class="">JFP1＝前面スイッチとランプ</text><circle cx="458" cy="272" r="10" class="part"/><text x="458" y="276" font-size="11" text-anchor="middle" class="numtx">9</text><text x="476" y="276" font-size="11" text-anchor="start" class="">JAUD1／JUSB1／JUSB2／JUSB3＝前面の音とUSB</text><circle cx="458" cy="298" r="10" class="part"/><text x="458" y="302" font-size="11" text-anchor="middle" class="numtx">10</text><text x="476" y="302" font-size="11" text-anchor="start" class="">背面I/O（HDMI・USB・LAN）</text><text x="24" y="382" font-size="10.5" text-anchor="start" class="">※ 背面端子（HDMI・USB）が左に来る向きで描いてある。実物も同じ向きに置いて見比べる。</text><text x="24" y="398" font-size="10.5" text-anchor="start" class="">※ 基板の上にも白い文字で CPU_PWR1・DIMMA1 などと印刷されている。迷ったら基板の文字を読む。</text></svg><figcaption>図3　マザーボード MSI B550M-A PRO の各部（配置はMSI公式マニュアルによる）</figcaption></figure>
+<p>この図の名前（CPU_PWR1、DIMMA1 など）は、<b>マザーボードの基板にも白い文字で印刷されています</b>。迷ったら基板の文字を読んでください。</p>
+<figure class="shot" data-slot="03-board"><div class="ph"><span class="phslot">03-board.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：箱の上に置いたマザーボード全体</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 3 / 12</div></section><section class="page" id="p4"><h2>④ CPU を付ける（三角の印とレバー）</h2>
+<figure class="fig "><svg viewBox="0 0 640 160" role="img" aria-label="CPU の向きとレバー（三角の印を合わせる）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><text x="10" y="18" font-size="12" text-anchor="start" class="bold">① レバーを横にずらして上げる</text><rect x="20" y="30" width="100" height="100" rx="3" class="part"/><path d="M196,76" /><path d="M124,126 l26,0 l0,-86" class="lever"/><line x1="150" y1="120" x2="150" y2="50" class="arw hotln" marker-end="url(#ah)"/><path d="M26,36 l12,0 l-6,11 z" class="fillhot"/><text x="20" y="146" font-size="11" text-anchor="start" class="">左手前の▲印を覚える</text><text x="230" y="18" font-size="12" text-anchor="start" class="bold">② ▲どうしを合わせ、真上から置く</text><rect x="240" y="30" width="100" height="100" rx="3" class="part"/><path d="M246,36 l12,0 l-6,11 z" class="fillhot"/><rect x="258" y="48" width="64" height="64" rx="3" class="cpu"/><path d="M262,52 l10,0 l-5,9 z" class="fillhot"/><text x="240" y="146" font-size="11" text-anchor="start" class="hot">押し込まない。自重で落ちる</text><text x="450" y="18" font-size="12" text-anchor="start" class="bold">③ レバーをゆっくり下ろす</text><rect x="460" y="30" width="100" height="100" rx="3" class="part"/><rect x="478" y="48" width="64" height="64" rx="3" class="cpu"/><path d="M564,40 l26,0 l0,86" class="lever"/><line x1="590" y1="50" x2="590" y2="120" class="arw hotln" marker-end="url(#ah)"/><text x="460" y="146" font-size="11" text-anchor="start" class="">最後に少し力が要るのは正常</text></svg><figcaption>図4　CPU の向きとレバー（三角の印を合わせる）</figcaption></figure>
+<h3>手順</h3>
+<ol>
+<li>ソケット横の<b>金属レバーを、横に少しずらしてから上に起こす</b>（垂直まで）。</li>
+<li>CPUを箱から出す。<b>裏の金色のピンには絶対に触らない</b>。側面をつまんで持つ。</li>
+<li>CPUの角の<b>▲印</b>と、ソケットの角の<b>▲印</b>を同じ側に合わせる。</li>
+<li><b>真上からそっと置く。押し込まない。</b>向きが合っていれば自重で沈む。</li>
+<li>レバーをゆっくり下ろす。<b>最後に少し力が要るのは正常</b>。</li>
+</ol>
+<div class="note warn"><strong>ここだけは慎重に。</strong>ピンが曲がると修理できません。「押し込む」感触が出たら必ず手を止めて、持ち上げて向きを確かめる。</div>
+<div class="note"><strong>豆知識：</strong>AM4ソケットは「ZIF（力を入れずに挿す）」という仕組みで、レバーが上がっていればCPUは自重で入ります。入らないのは、向きが違うか、レバーが十分上がっていないかのどちらかです。<span class="conf">確信度：高</span></div>
+<figure class="shot" data-slot="04-cpu-mark"><div class="ph"><span class="phslot">04-cpu-mark.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：ソケットの▲印とCPUの▲印を合わせたところ</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 4 / 12</div></section><section class="page" id="p5"><h2>⑤ 純正クーラーを付ける（グリスは塗布済み）</h2>
+<div class="note"><strong>グリス：</strong>Ryzen 5 5600GT BOX に付属するクーラーは、<b>底面に灰色のグリスがあらかじめ塗ってあります</b>。拭き取らない・買い足さない。透明な保護フィルムが貼ってあれば剥がします。<span class="conf">確信度：高（AMD純正クーラーの仕様）</span></div>
+<figure class="fig "><svg viewBox="0 0 640 205" role="img" aria-label="純正クーラーの付け方（AM4は2方式ある）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><text x="10" y="18" font-size="12" text-anchor="start" class="bold">A クリップ式（黒い枠をそのまま使う）</text><rect x="30" y="34" width="150" height="78" rx="3" class="part"/><rect x="20" y="50" width="14" height="46" rx="3" class="soft"/><rect x="176" y="50" width="14" height="46" rx="3" class="soft"/><text x="105" y="78" font-size="11" text-anchor="middle" class="">クーラー</text><line x1="14" y1="72" x2="26" y2="72" class="arw hotln" marker-end="url(#ah)"/><line x1="196" y1="72" x2="184" y2="72" class="arw hotln" marker-end="url(#ah)"/><text x="10" y="130" font-size="11" text-anchor="start" class="">① 片側のツメに金具を掛ける</text><text x="10" y="146" font-size="11" text-anchor="start" class="">② 反対側を掛け、レバーを倒す</text><text x="330" y="18" font-size="12" text-anchor="start" class="bold">B ネジ式（黒い枠を先に外す）</text><rect x="350" y="34" width="150" height="78" rx="3" class="part"/><circle cx="356" cy="40" r="5" class="part"/><circle cx="494" cy="40" r="5" class="part"/><circle cx="356" cy="106" r="5" class="part"/><circle cx="494" cy="106" r="5" class="part"/><text x="425" y="78" font-size="11" text-anchor="middle" class="">クーラー</text><path d="M356,40 L494,106 M494,40 L356,106" class="diag"/><text x="330" y="130" font-size="11" text-anchor="start" class="">① 枠（リテンション）をネジ2本×2で外す</text><text x="330" y="146" font-size="11" text-anchor="start" class="">② 対角の順に少しずつ、4回に分けて締める</text><text x="10" y="174" font-size="12" text-anchor="start" class="hot">★ どちらが入っているかは箱を開けて確かめる。グリスは底面に塗ってある（拭き取らない）。</text><text x="10" y="192" font-size="12" text-anchor="start" class="">★ ファンのコードは CPU_FAN1（ソケットの右上・4ピン）へ。届く向きで載せる。</text></svg><figcaption>図5　純正クーラーの付け方（AM4は2方式ある）</figcaption></figure>
+<h3>付けるとき</h3>
+<ol>
+<li>箱を開けて、<b>クリップ式（金具とレバー）か、ネジ式（4本のネジ）か</b>を確かめる。</li>
+<li>クリップ式：マザーボードの<b>黒いプラスチック枠はそのまま</b>。片側のツメに金具を掛け、反対側を掛け、レバーを倒す。</li>
+<li>ネジ式：<b>黒い枠を先に外す</b>（ネジ2本×2）。クーラーを載せ、<b>対角の順に少しずつ</b>4回に分けて締める。</li>
+<li>クーラーの電源コードを <b>CPU_FAN1</b>（4ピン・ソケットの右上）に挿す。</li>
+<li>クーラーを軽く左右に揺すって、<b>ぐらつかない</b>ことを確認する。</li>
+</ol>
+<div class="note"><strong>MSI 公式マニュアルの注意：</strong>「ネジ式のヒートシンクを取り付ける場合は、先に固定枠（リテンションモジュール）を外すこと」。<span class="conf">確信度：高</span></div>
+<div class="note warn"><strong>向き：</strong>コードが CPU_FAN1 に無理なく届く向きに載せます。一度付けてから回すと、グリスがずれて付け直しになります。</div>
+<figure class="shot" data-slot="05-cooler"><div class="ph"><span class="phslot">05-cooler.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：クーラーを固定し、コードをCPU_FAN1に挿したところ</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 5 / 12</div></section><section class="page" id="p6"><h2>⑥ メモリと M.2 SSD</h2>
+<figure class="fig "><svg viewBox="0 0 640 285" role="img" aria-label="メモリを挿す位置（2枚挿しは両方のスロット）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><text x="10" y="18" font-size="12" text-anchor="start" class="bold">このマザーボードはスロットが2本だけ。16GB×2枚は「両方」に挿す。</text><rect x="60" y="40" width="34" height="150" rx="3" class="part"/><rect x="66" y="46" width="22" height="138" rx="3" class="soft"/><text x="77" y="208" font-size="11" text-anchor="middle" class="">DIMMA1</text><rect x="52" y="34" width="8" height="14" rx="3" class="part"/><rect x="52" y="182" width="8" height="14" rx="3" class="part"/><rect x="180" y="40" width="34" height="150" rx="3" class="part"/><rect x="186" y="46" width="22" height="138" rx="3" class="soft"/><text x="197" y="208" font-size="11" text-anchor="middle" class="">DIMMB1</text><rect x="172" y="34" width="8" height="14" rx="3" class="part"/><rect x="172" y="182" width="8" height="14" rx="3" class="part"/><text x="300" y="60" font-size="11" text-anchor="start" class="">① 両端（または片端）の白いツメを外側に開く</text><text x="300" y="82" font-size="11" text-anchor="start" class="">② メモリの切り欠きとスロットの出っぱりを合わせる</text><text x="300" y="104" font-size="11" text-anchor="start" class="">　（逆向きには入らない）</text><text x="300" y="126" font-size="11" text-anchor="start" class="">③ 両端を親指で同時に、カチッと鳴るまで押す</text><text x="300" y="148" font-size="11" text-anchor="start" class="">④ ツメが自分で閉じ、2枚が同じ高さになれば正解</text><text x="300" y="176" font-size="12" text-anchor="start" class="hot">起動しない原因の第1位が差し込み不足。</text><text x="300" y="194" font-size="12" text-anchor="start" class="hot">「押しすぎかな」と思うくらいでちょうどいい。</text><rect x="60" y="232" width="220" height="22" rx="3" class="part"/><rect x="148" y="232" width="6" height="22" rx="3" class="fillsoft"/><text x="60" y="272" font-size="11" text-anchor="start" class="">切り欠きは真ん中より少し左寄り（左右対称ではない）</text></svg><figcaption>図6　メモリを挿す位置（2枚挿しは両方のスロット）</figcaption></figure>
+<div class="note"><strong>スロットの数：</strong>MSI B550M-A PRO の DDR4 スロットは <b>2本（DIMMA1／DIMMB1）</b>、最大64GBです。4本ある機種のような「1本飛ばしで挿す」判断は不要で、<b>16GB×2枚を両方に挿せば自動的にデュアルチャネル</b>になります。<span class="conf">確信度：高（MSI公式仕様）</span></div>
+<figure class="shot" data-slot="06-memory"><div class="ph"><span class="phslot">06-memory.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：メモリ2枚を挿し、ツメが閉じた状態</figcaption></figure>
+<figure class="fig "><svg viewBox="0 0 640 200" role="img" aria-label="M.2 SSD の挿し方と固定"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><text x="10" y="18" font-size="12" text-anchor="start" class="bold">横から見たところ</text><line x1="20" y1="120" x2="300" y2="120" class="board"/><rect x="24" y="100" width="16" height="20" rx="3" class="part"/><text x="32" y="138" font-size="10" text-anchor="middle" class="">スロット</text><rect x="250" y="112" width="12" height="8"/><text x="256" y="140" font-size="10" text-anchor="middle" class="">ネジ穴</text><path d="M40,112 L244,72" class="ssd"/><path d="M40,104 L244,64" class="ssd"/><text x="120" y="62" font-size="11" text-anchor="start" class="">① 30度くらいの角度で奥まで挿す</text><line x1="250" y1="80" x2="250" y2="108" class="arw hotln" marker-end="url(#ah)"/><text x="268" y="96" font-size="11" text-anchor="start" class="">② 押し下げて</text><text x="268" y="112" font-size="11" text-anchor="start" class="">　 小さいネジで止める（軽く）</text><text x="10" y="172" font-size="12" text-anchor="start" class="hot">★ ネジは先に外して皿に置く（最も無くしやすい部品）。</text><text x="10" y="190" font-size="12" text-anchor="start" class="">★ M2_1 は CPU の下・縦向きのスロット（図3を参照）。基板の表裏を間違えない（部品面が上）。</text></svg><figcaption>図7　M.2 SSD の挿し方と固定</figcaption></figure>
+<div class="note"><strong>M.2 スロット：</strong>このマザーボードの M.2 は <b>M2_1 の1本だけ</b>（2242/2260/2280 対応、B550ではPCIe 4.0）。Lexar NM610 PRO は 2280（長さ80mm）なので、いちばん遠いネジ穴を使います。<span class="conf">確信度：高（MSI公式仕様）</span></div>
+<figure class="shot" data-slot="06-m2"><div class="ph"><span class="phslot">06-m2.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：M.2 SSDを挿してネジ止めしたところ</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 6 / 12</div></section><section class="page" id="p7"><h2>⑦ ケースに入れる（I/Oシールド・スタンドオフ・電源）</h2>
+<figure class="fig "><svg viewBox="0 0 640 300" role="img" aria-label="ケースへの取り付け（I/Oシールドとスタンドオフ）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><rect x="30" y="30" width="240" height="230" rx="6" class="board"/><text x="150" y="22" font-size="11" text-anchor="middle" class="">ケースの底板（マザーボードを載せる面）</text><circle cx="60" cy="60" r="7" class="part"/><circle cx="60" cy="60" r="2.5" class="fillsoft"/><circle cx="150" cy="60" r="7" class="part"/><circle cx="150" cy="60" r="2.5" class="fillsoft"/><circle cx="240" cy="60" r="7" class="part"/><circle cx="240" cy="60" r="2.5" class="fillsoft"/><circle cx="60" cy="170" r="7" class="part"/><circle cx="60" cy="170" r="2.5" class="fillsoft"/><circle cx="150" cy="170" r="7" class="part"/><circle cx="150" cy="170" r="2.5" class="fillsoft"/><circle cx="240" cy="170" r="7" class="part"/><circle cx="240" cy="170" r="2.5" class="fillsoft"/><text x="150" y="290" font-size="11" text-anchor="middle" class="">六角の柱（スタンドオフ）6か所</text><rect x="30" y="30" width="24" height="120" rx="3" class="soft"/><text x="42" y="96" font-size="10" text-anchor="middle" class="">I/O</text><text x="320" y="50" font-size="12" text-anchor="start" class="bold">① 先に I/Oシールド（銀色の板）を</text><text x="320" y="68" font-size="12" text-anchor="start" class="">　 ケースの内側から「パチン」とはめる</text><text x="320" y="90" font-size="11" text-anchor="start" class="hot">　 ⚠ 忘れると基板を外してやり直し</text><text x="320" y="122" font-size="12" text-anchor="start" class="bold">② 柱の位置とマザーボードの穴が</text><text x="320" y="140" font-size="12" text-anchor="start" class="">　 合っているか目で確認（6か所）</text><text x="320" y="158" font-size="11" text-anchor="start" class="hot">　 穴の無い所の柱は外す</text><text x="320" y="190" font-size="12" text-anchor="start" class="bold">③ 端子を I/Oシールドの穴に通しながら</text><text x="320" y="208" font-size="12" text-anchor="start" class="">　 斜めに入れて置く</text><text x="320" y="236" font-size="12" text-anchor="start" class="bold">④ 仮止め6本 → 対角の順に本締め</text><text x="320" y="254" font-size="12" text-anchor="start" class="">　 手応えが出たら止める（締めすぎない）</text></svg><figcaption>図8　ケースへの取り付け（I/Oシールドとスタンドオフ）</figcaption></figure>
+<h3>順番</h3>
+<ol>
+<li>ケースの<b>両側のパネルを外す</b>（背面のネジ）。裏側も外して、配線を裏に通せるようにする。</li>
+<li><b>I/Oシールド（銀色の板）を内側からはめる</b>。四隅を押すとパチンと入る。<b>先にやる</b>。</li>
+<li>スタンドオフ（六角の柱）の位置を、マザーボードの穴と見比べる。<b>穴の無い所の柱は外す</b>。</li>
+<li>端子をI/Oシールドの穴に通しながら基板を置き、<b>6本のネジで仮止め → 対角の順に本締め</b>。</li>
+<li>電源ユニットをケース下部に入れ、背面から太いネジ4本で固定する。</li>
+</ol>
+<div class="note"><strong>電源の向き：</strong>ケースの底に通気の穴とフィルターがあれば<b>ファンを下向き</b>、無ければ上向きにします。ASRock PRO-650B は奥行き140mm・120mmファン。ZALMAN T3 PLUS は ATX電源対応なので、ドライブケージを外さずに入るはずです。<span class="conf">確信度：中（実測は組むときに確認）</span> 入らなければドライブケージをネジで外します（3.5インチHDDは使いません）。</div>
+<div class="note warn"><strong>やりがちな失敗：</strong>I/Oシールドを入れ忘れる／柱の位置がずれたまま無理にネジを回す／ネジを締めすぎて基板を反らせる。<b>手応えが出たら止める</b>。</div>
+<figure class="shot" data-slot="07-case"><div class="ph"><span class="phslot">07-case.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：ケースに固定したマザーボードと電源</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 7 / 12</div></section><section class="page" id="p8"><h2>⑧ 電源ケーブルをつなぐ（24ピンと4ピン）</h2>
+<figure class="fig "><svg viewBox="0 0 640 240" role="img" aria-label="電源ケーブルの挿し場所（★このマザーボードはCPU側が4ピン）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><text x="10" y="18" font-size="12" text-anchor="start" class="bold">A　24ピン（いちばん太い束）→ ATX_PWR1</text><rect x="20" y="30" width="13" height="14" rx="2" class="pin"/><rect x="35" y="30" width="13" height="14" rx="2" class="pin"/><rect x="50" y="30" width="13" height="14" rx="2" class="pin"/><rect x="65" y="30" width="13" height="14" rx="2" class="pin"/><rect x="80" y="30" width="13" height="14" rx="2" class="pin"/><rect x="95" y="30" width="13" height="14" rx="2" class="pin"/><rect x="110" y="30" width="13" height="14" rx="2" class="pin"/><rect x="125" y="30" width="13" height="14" rx="2" class="pin"/><rect x="140" y="30" width="13" height="14" rx="2" class="pin"/><rect x="155" y="30" width="13" height="14" rx="2" class="pin"/><rect x="170" y="30" width="13" height="14" rx="2" class="pin"/><rect x="185" y="30" width="13" height="14" rx="2" class="pin"/><rect x="20" y="46" width="13" height="14" rx="2" class="pin"/><rect x="35" y="46" width="13" height="14" rx="2" class="pin"/><rect x="50" y="46" width="13" height="14" rx="2" class="pin"/><rect x="65" y="46" width="13" height="14" rx="2" class="pin"/><rect x="80" y="46" width="13" height="14" rx="2" class="pin"/><rect x="95" y="46" width="13" height="14" rx="2" class="pin"/><rect x="110" y="46" width="13" height="14" rx="2" class="pin"/><rect x="125" y="46" width="13" height="14" rx="2" class="pin"/><rect x="140" y="46" width="13" height="14" rx="2" class="pin"/><rect x="155" y="46" width="13" height="14" rx="2" class="pin"/><rect x="170" y="46" width="13" height="14" rx="2" class="pin"/><rect x="185" y="46" width="13" height="14" rx="2" class="pin"/><rect x="16" y="26" width="190" height="40" rx="4" class="part"/><text x="20" y="84" font-size="11" text-anchor="start" class="">ツメ（ラッチ）がカチッと鳴るまで押す。斜めに入れない。</text><text x="10" y="122" font-size="12" text-anchor="start" class="bold">B　CPUの補助電源 → CPU_PWR1</text><text x="10" y="142" font-size="12" text-anchor="start" class="hot">電源から出ているのは「4＋4ピン」。このマザーボードの受け口は4ピンだけ。</text><rect x="24" y="156" width="18" height="18" rx="2" class="pin"/><rect x="24" y="176" width="18" height="18" rx="2" class="pin"/><rect x="44" y="156" width="18" height="18" rx="2" class="pin"/><rect x="44" y="176" width="18" height="18" rx="2" class="pin"/><rect x="20" y="152" width="44" height="46" rx="4" class="part"/><text x="42" y="214" font-size="11" text-anchor="middle" class="">片側（4ピン）</text><rect x="94" y="156" width="18" height="18" rx="2" class="pin"/><rect x="94" y="176" width="18" height="18" rx="2" class="pin"/><rect x="114" y="156" width="18" height="18" rx="2" class="pin"/><rect x="114" y="176" width="18" height="18" rx="2" class="pin"/><rect x="90" y="152" width="44" height="46" rx="4" class="part"/><text x="112" y="214" font-size="11" text-anchor="middle" class="">もう片側</text><line x1="150" y1="176" x2="210" y2="176" class="arw " marker-end="url(#ah)"/><rect x="216" y="152" width="60" height="46" rx="4" class="part"/><text x="246" y="180" font-size="8.5" text-anchor="middle" class="">CPU_PWR1</text><text x="246" y="214" font-size="11" text-anchor="middle" class="">基板側（4ピン）</text><text x="300" y="160" font-size="11.5" text-anchor="start" class="">・2つを合体させて8ピンにしない（入らない）</text><text x="300" y="180" font-size="11.5" text-anchor="start" class="">・両方あてがってみて、すっと入る方を使う</text><text x="300" y="200" font-size="11.5" text-anchor="start" class="">・使わない方は結束バンドでまとめて逃がす</text><text x="300" y="224" font-size="11.5" text-anchor="start" class="hot">・24ピンと4ピンの両方を挿す。4ピン忘れが多い</text></svg><figcaption>図9　電源ケーブルの挿し場所（★このマザーボードはCPU側が4ピン）</figcaption></figure>
+<div class="note warn"><strong>この機種でいちばん間違えやすいところ。</strong>ASRock PRO-650B から出ている CPU用ケーブルは <b>EPS 12V 4+4ピン ×1</b>（ASRock公式仕様）。いっぽう MSI B550M-A PRO の受け口 CPU_PWR1 は <b>4ピン</b>（MSI公式マニュアル）。<b>2つを合体させて8ピンにしても挿さりません。片側4ピンだけを挿します。</b><span class="conf">確信度：高</span></div>
+<h3>つなぐもの（この4本だけ）</h3>
+<table>
+<tr><th>#</th><th>ケーブル</th><th>挿す場所</th><th>目印</th></tr>
+<tr><td>1</td><td>24ピン（いちばん太い）</td><td>ATX_PWR1（基板の右端）</td><td>ツメがカチッと鳴るまで</td></tr>
+<tr><td>2</td><td>4+4ピンのうち<b>片側4ピン</b></td><td>CPU_PWR1（基板の左上）</td><td>すっと入る方を使う。逆向きは入らない</td></tr>
+<tr><td>3</td><td>CPUクーラーのファン</td><td>CPU_FAN1</td><td>5ページで挿し済み</td></tr>
+<tr><td>4</td><td>ケースファン</td><td>SYS_FAN1</td><td>T3 PLUS は120mmファンが2基付属</td></tr>
+</table>
+<p>SSDはM.2なので<b>SATAケーブルも電源ケーブルも不要</b>です。PCIe補助電源（6+2ピン）も使いません。余ったケーブルは束ねて裏側へ逃がします。</p>
+<div class="note"><strong>安全：</strong>電源ユニット背面のスイッチは、配線が全部終わるまで「○（OFF）」のままにしておきます。</div>
+<figure class="shot" data-slot="08-power"><div class="ph"><span class="phslot">08-power.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：24ピンと4ピンを挿したところ（両方が見える角度で）</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 8 / 12</div></section><section class="page" id="p9"><h2>⑨ ケース前面の細い配線</h2>
+<figure class="fig "><svg viewBox="0 0 640 222" role="img" aria-label="ケース前面の細い配線（JFP1 のピン配列）"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><text x="10" y="18" font-size="12" text-anchor="start" class="bold">JFP1（前面スイッチとランプ・9本＋欠け1本）</text><rect x="40" y="44" width="26" height="26" rx="2" class="pin"/><text x="53" y="61" font-size="11" text-anchor="middle" class="">2</text><text x="53" y="30" font-size="9" text-anchor="middle" class="">POWER LED +</text><rect x="40" y="76" width="26" height="26" rx="2" class="pin"/><text x="53" y="93" font-size="11" text-anchor="middle" class="">1</text><text x="53" y="118" font-size="9" text-anchor="middle" class="">HDD LED +</text><rect x="132" y="44" width="26" height="26" rx="2" class="pin"/><text x="145" y="61" font-size="11" text-anchor="middle" class="">4</text><text x="145" y="30" font-size="9" text-anchor="middle" class="">POWER LED −</text><rect x="132" y="76" width="26" height="26" rx="2" class="pin"/><text x="145" y="93" font-size="11" text-anchor="middle" class="">3</text><text x="145" y="118" font-size="9" text-anchor="middle" class="">HDD LED −</text><rect x="224" y="44" width="26" height="26" rx="2" class="pin"/><text x="237" y="61" font-size="11" text-anchor="middle" class="">6</text><text x="237" y="30" font-size="9" text-anchor="middle" class="">POWER SW</text><rect x="224" y="76" width="26" height="26" rx="2" class="pin"/><text x="237" y="93" font-size="11" text-anchor="middle" class="">5</text><text x="237" y="118" font-size="9" text-anchor="middle" class="">RESET SW</text><rect x="316" y="44" width="26" height="26" rx="2" class="pin"/><text x="329" y="61" font-size="11" text-anchor="middle" class="">8</text><text x="329" y="30" font-size="9" text-anchor="middle" class="">POWER SW</text><rect x="316" y="76" width="26" height="26" rx="2" class="pin"/><text x="329" y="93" font-size="11" text-anchor="middle" class="">7</text><text x="329" y="118" font-size="9" text-anchor="middle" class="">RESET SW</text><rect x="408" y="44" width="26" height="26" rx="2" class="pin"/><text x="421" y="61" font-size="11" text-anchor="middle" class="">10</text><text x="421" y="30" font-size="9" text-anchor="middle" class="">穴なし</text><rect x="408" y="76" width="26" height="26" rx="2" class="pinx"/><text x="421" y="93" font-size="11" text-anchor="middle" class="">9</text><text x="421" y="118" font-size="9" text-anchor="middle" class="">（予備）</text><rect x="32" y="36" width="460" height="74" rx="4" class="part"/><text x="26" y="62" font-size="10" text-anchor="end" class="">上段</text><text x="26" y="94" font-size="10" text-anchor="end" class="">下段</text><text x="10" y="146" font-size="11.5" text-anchor="start" class="">・スイッチ（SW）2本は向きが無い。ランプ（LED）だけ＋−の向きがある（白い線が−）</text><text x="10" y="166" font-size="11.5" text-anchor="start" class="">・必ず要るのは POWER SW だけ。ランプは後回しでよい</text><text x="10" y="186" font-size="11.5" text-anchor="start" class="hot">・10番はピンが無い。ケーブル側の塞がった穴と合わせると向きが決まる</text><text x="10" y="210" font-size="11.5" text-anchor="start" class="">前面USBなど：青くて大きい端子＝JUSB3（USB3.0）／小さい9ピン＝JUSB1（USB2.0×2）／音＝JAUD1</text></svg><figcaption>図10　ケース前面の細い配線（JFP1 のピン配列）</figcaption><p class="fignote">ピンの並びは MSI 公式マニュアル（B550M-A PRO / A520M-A PRO）の記載どおり。</p></figure>
+<h3>ZALMAN T3 PLUS の前面から出ている線</h3>
+<table>
+<tr><th>線</th><th>挿す場所</th><th>注意</th></tr>
+<tr><td>POWER SW / RESET SW / HDD LED / POWER LED（細い線）</td><td>JFP1</td><td>SWは向きなし。LEDは＋−あり（白い線が−）</td></tr>
+<tr><td>USB 3.0（青くて大きい端子）</td><td>JUSB3</td><td>向きは1つだけ。ピンを曲げない</td></tr>
+<tr><td>USB 2.0（小さい9ピン）</td><td>JUSB1</td><td>10番の穴が塞がっている側で向きが決まる</td></tr>
+<tr><td>HD AUDIO（マイク・ヘッドホン）</td><td>JAUD1</td><td>使わないなら省略可</td></tr>
+</table>
+<div class="note"><strong>T3 PLUS の前面端子：</strong>USB3.0×1、USB2.0×2、マイク、ヘッドホン（製品仕様）。JUSB1（USB2.0コネクタ）1つで2ポート分をまかないます。<span class="conf">確信度：中（ケースの製品ページによる）</span></div>
+<h3>電源を入れる前の最終確認</h3>
+<ul class="chk">
+<li>24ピンと<b>4ピン</b>の両方が挿さっている</li>
+<li>メモリ2枚のツメが閉じている</li>
+<li>CPUファンのコードが CPU_FAN1 に挿さっている</li>
+<li>ケースの中に余ったネジや金属片が落ちていない</li>
+<li>JFP1 の POWER SW が正しい2本のピンに掛かっている</li>
+<li>フタはまだ閉めない</li>
+</ul>
+<figure class="shot" data-slot="09-frontpanel"><div class="ph"><span class="phslot">09-frontpanel.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：JFP1まわりの配線（拡大）</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 9 / 12</div></section><section class="page" id="p10"><h2>⑩ 最初の電源投入と BIOS の確認</h2>
+<figure class="fig "><svg viewBox="0 0 640 175" role="img" aria-label="背面端子とプロジェクターのつなぎ先"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><rect x="10" y="40" width="620" height="76" rx="4" class="board"/><rect x="30" y="56" width="44" height="16" rx="2" class="hotbox"/><text x="52.0" y="68.0" font-size="10" text-anchor="middle" class=""></text><text x="52.0" y="86" font-size="10" text-anchor="middle" class="">HDMI</text><rect x="90" y="52" width="70" height="26" rx="2" class="part"/><text x="125.0" y="69.0" font-size="10" text-anchor="middle" class=""></text><text x="125.0" y="92" font-size="10" text-anchor="middle" class="">DVI-D</text><rect x="180" y="46" width="30" height="60" rx="2" class="part"/><text x="195.0" y="80.0" font-size="10" text-anchor="middle" class=""></text><text x="195.0" y="120" font-size="10" text-anchor="middle" class="">PS/2</text><rect x="226" y="46" width="44" height="58" rx="2" class="part"/><text x="248.0" y="79.0" font-size="10" text-anchor="middle" class=""></text><text x="248.0" y="118" font-size="10" text-anchor="middle" class="">USB 3.2</text><rect x="286" y="46" width="44" height="58" rx="2" class="part"/><text x="308.0" y="79.0" font-size="10" text-anchor="middle" class=""></text><text x="308.0" y="118" font-size="10" text-anchor="middle" class="">USB 3.2</text><rect x="346" y="44" width="44" height="30" rx="2" class="part"/><text x="368.0" y="63.0" font-size="10" text-anchor="middle" class=""></text><text x="368.0" y="88" font-size="10" text-anchor="middle" class="">LAN</text><rect x="346" y="78" width="44" height="28" rx="2" class="part"/><text x="368.0" y="96.0" font-size="10" text-anchor="middle" class=""></text><text x="368.0" y="120" font-size="10" text-anchor="middle" class="">USB 2.0</text><rect x="410" y="46" width="70" height="58" rx="2" class="part"/><text x="445.0" y="79.0" font-size="10" text-anchor="middle" class=""></text><text x="445.0" y="118" font-size="10" text-anchor="middle" class="">音声×3</text><line x1="52" y1="26" x2="52" y2="52" class="arw hotln" marker-end="url(#ah)"/><text x="60" y="24" font-size="12" text-anchor="start" class="hot">プロジェクターはここ（いちばん端のHDMI）につなぐ</text><text x="10" y="146" font-size="11.5" text-anchor="start" class="">★ グラフィックボードは付けない。映像はマザーボードのHDMIから出る（CPUが5600GT＝映像機能つきだから）。</text><text x="10" y="164" font-size="11.5" text-anchor="start" class="hot">★ この背面に「Flash BIOS」ボタンはない（MSI公式マニュアルの背面端子一覧に記載なし）。</text></svg><figcaption>図11　背面端子とプロジェクターのつなぎ先</figcaption></figure>
+<h3>手順</h3>
+<ol>
+<li>プロジェクター（またはテレビ）を<b>マザーボード背面のHDMI</b>につなぐ。付属のHDMIケーブルは約1m。</li>
+<li>キーボード K120 を背面USBに挿す。</li>
+<li>電源コードをつなぎ、電源ユニット背面のスイッチを「I」にする。</li>
+<li>ケース前面の電源ボタンを押す。</li>
+<li>画面が出たら <b>Delete キーを連打</b>して BIOS 画面へ入る。</li>
+</ol>
+<h3>BIOSで確認する</h3>
+<table>
+<tr><th>項目</th><th>正しい表示</th><th>違うときは</th></tr>
+<tr><td>CPU</td><td>AMD Ryzen 5 5600GT</td><td>型番が出ない → 12ページ</td></tr>
+<tr><td>メモリ</td><td><b>32768MB（32GB）</b></td><td>16GBなら1枚が挿さっていない（6ページ）</td></tr>
+<tr><td>ストレージ</td><td>Lexar の名前が出る</td><td>出ない → M.2の挿し直し</td></tr>
+<tr><td>BIOSバージョン</td><td>7C96v2B 以降</td><td>これより古い → 12ページ</td></tr>
+<tr><td>CPU温度</td><td>放置で40〜50℃くらい</td><td>急に上がる → クーラーの密着を疑う</td></tr>
+</table>
+<h3>やっておく設定</h3>
+<ol>
+<li><b>A-XMP を有効</b>にする（メモリが本来の DDR4-3200 で動く）。</li>
+<li>Windows の USBメモリを挿し、<b>起動順の1番目</b>にする。</li>
+<li>F10 で保存して再起動。</li>
+</ol>
+<figure class="shot" data-slot="10-firstboot"><div class="ph"><span class="phslot">10-firstboot.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：初めて映ったBIOS画面</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 10 / 12</div></section><section class="page" id="p11"><h2>⑪ Windows 11 の導入と、Wi-Fi・Bluetooth の確認</h2>
+<div class="note"><strong>ネット接続：</strong>自宅で作業する間は<b>有線LANをつないでおく</b>と確実です（セットアップ中にネットを求められます）。</div>
+<h3>インストール</h3>
+<ol>
+<li>付属のUSBメモリを背面USBに挿して電源を入れる。「Press any key to boot from USB」でキーを押す。</li>
+<li>言語＝日本語 →「今すぐインストール」。</li>
+<li><b>プロダクトキー</b>を入力（パッケージ内のカード。<b>捨てずに保管</b>）。</li>
+<li>「Windows 11 <b>Home</b>」を選ぶ。</li>
+<li>「カスタム：Windowsのみをインストール」→ <b>未割り当ての1TB</b> を選んで次へ。パーティションは作らなくてよい。</li>
+<li>地域＝日本、キーボード＝Microsoft IME。画面の指示どおり進める。</li>
+<li>デスクトップが出たらUSBメモリを抜く。</li>
+</ol>
+<h3>ドライバーと更新</h3>
+<ol>
+<li><b>Windows Update</b> を「更新プログラムのチェック」で全部当てる（何度か再起動）。</li>
+<li>MSI公式サイトから <b>B550M-A PRO のチップセットドライバー</b>を入れる。</li>
+<li>AMD公式サイトから <b>Radeon グラフィックスドライバー</b>を入れる。</li>
+</ol>
+<h3>USB Wi-Fi アダプターと Bluetooth（会場で使う）</h3>
+<ol>
+<li>有線LANを抜き、<b>USB Wi-Fiアダプターを挿して自宅のWi-Fiにつながるか</b>試す。</li>
+<li>続けて<b>スマホのテザリング</b>にもつながるか試す（会場ではこちらを使う可能性が高い）。</li>
+<li>設定 →「Bluetoothとデバイス」で<b>Bluetoothのスイッチが出るか</b>確認する。スピーカーを使うならここでペアリングまでやる。</li>
+</ol>
+<div class="note warn"><strong>「ドライバー不要」は出品者の表記で、まだ検証していません。<span class="conf">確信度：低</span></strong> つながらない場合は、付属CDではなくメーカー配布のドライバーをダウンロードして入れることになります。<b>自宅で必ず試しておく</b>こと（会場で初めて挿すのは危険）。</div>
+<figure class="shot" data-slot="11-wifi"><div class="ph"><span class="phslot">11-wifi.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：USB Wi-Fiアダプターでネットにつながった画面</figcaption></figure>
+<div class="pagenum">体験PC 組立手順書 — 11 / 12</div></section><section class="page" id="p12"><h2>⑫ 映らないとき／BIOSが古いとき／最後に3Dワールドを保存</h2>
+<figure class="fig "><svg viewBox="0 0 700 330" role="img" aria-label="電源を入れて反応がないときの切り分け"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs><rect x="20" y="20" width="200" height="44" rx="4" class="soft"/><text x="120.0" y="46.0" font-size="11.5" text-anchor="middle" class="">電源ボタンを押した</text><rect x="20" y="96" width="200" height="44" rx="4" class="soft"/><text x="120.0" y="122.0" font-size="11.5" text-anchor="middle" class="">ファンは回る？</text><rect x="20" y="172" width="200" height="44" rx="4" class="soft"/><text x="120.0" y="198.0" font-size="11.5" text-anchor="middle" class="">画面は出る？</text><rect x="20" y="248" width="200" height="44" rx="4" class="soft"/><text x="120.0" y="274.0" font-size="11.5" text-anchor="middle" class="">BIOS画面まで出た</text><line x1="120" y1="64" x2="120" y2="96" class="arw " marker-end="url(#ah)"/><line x1="120" y1="140" x2="120" y2="172" class="arw " marker-end="url(#ah)"/><line x1="120" y1="216" x2="120" y2="248" class="arw " marker-end="url(#ah)"/><line x1="226" y1="118" x2="258" y2="118" class="arw " marker-end="url(#ah)"/><text x="264" y="122" font-size="11" text-anchor="start" class="">いいえ：電源の背面スイッチ「I」／24ピンと4ピンの挿し忘れ／JFP1のPOWER SWの位置</text><line x1="226" y1="194" x2="258" y2="194" class="arw " marker-end="url(#ah)"/><text x="264" y="198" font-size="11" text-anchor="start" class="">いいえ：HDMIがマザーボード側か／入力切替／メモリを挿し直す／EZ Debug LEDを見る</text><line x1="226" y1="270" x2="258" y2="270" class="arw " marker-end="url(#ah)"/><text x="264" y="274" font-size="11" text-anchor="start" class="">いいえ：EZ Debug LED が CPU で止まる → BIOSが5600GTに未対応の可能性（12ページ）</text><text x="20" y="314" font-size="11.5" text-anchor="start" class="">EZ Debug LED：CPU＝CPU未検出／DRAM＝メモリ／VGA＝映像／BOOT＝起動ドライブ（MSI公式マニュアル）</text></svg><figcaption>図12　電源を入れて反応がないときの切り分け</figcaption></figure>
+<h3>BIOS が古くて 5600GT で起動しないとき</h3>
+<div class="note warn"><strong>この機種に Flash BIOS ボタンはありません。</strong>MSI公式マニュアルの背面端子一覧にも、MSIサポートページにも記載がありません（背面は HDMI／DVI-D／PS2×2／USB3.2×4／USB2.0×2／LAN／音声×3 のみ）。CPUを載せずにUSBメモリだけでBIOSを書き換える方法は、<b>この基板では使えません</b>。<span class="conf">確信度：高</span><br>
+※ 購入リストの「Flash BIOSボタンあり／USBメモリ GIGASTONE に MSI.ROM を入れて更新」は、この基板には当てはまりません。</div>
+<table>
+<tr><th>状況</th><th>やること</th></tr>
+<tr><td>画面が出て BIOS に入れる（＝CPUは認識されている）</td><td><b>M-FLASH で更新</b>：別PCでMSI公式から最新BIOS（7C96…）をダウンロード→解凍→USBメモリ（FAT32）の一番上に置く→BIOSで「M-FLASH」→ファイルを選ぶ→完了まで電源を切らない</td></tr>
+<tr><td>まったく画面が出ず、EZ Debug LED の CPU が点いたまま</td><td>BIOSが5600GT（7C96v2B以降が必要）に未対応の可能性。<b>対応する古いCPU（Ryzen 3000シリーズなど）を一時的に借りて</b>起動し、M-FLASHで更新する／購入店（ツクモ）にBIOS更新を相談する<span class="conf">確信度：中</span></td></tr>
+</table>
+<h3>最後に：3Dワールドをこの端末に保存する（当日の通信を減らす）</h3>
+<ol>
+<li>ブラウザで <code>https://communitybankinzai.github.io/cbi-site/metaverse/?mode=musashiya</code> を開く。</li>
+<li>「🎮 操作のしかた」の下の表示を見る。</li>
+<li><b>「💾 この端末に保存済み」に変わるまで待つ</b>（約53MB）。途中でタブを閉じない。</li>
+<li>いったんブラウザを閉じ、もう一度開いて<b>最初から「保存済み」と出る</b>ことを確認する。</li>
+</ol>
+<div class="note"><strong>そのほか当日までにやる設定：</strong>スリープなし／画面の電源を切らない／通知オフ／自動ログイン（netplwiz）／Windows Update の一時停止。会場モードの導入は <code>events/2026-11-03_武蔵屋/会場PC/README.md</code> に従う。</div>
+<figure class="shot" data-slot="12-saved"><div class="ph"><span class="phslot">12-saved.jpg</span><span class="phtxt">組み立て当日の写真をここに</span></div><figcaption>写真：「💾 この端末に保存済み」と出た画面</figcaption></figure>
+<div class="foot">Community Bank INZAI（CBI）印西市市民活動団体 登録番号 08-001　communitybankinzai@gmail.com<br>
+出典：MSI B550M-A PRO / A520M-A PRO ユーザーマニュアル（MSI公式）、MSI CPUサポート一覧（B550M-A PRO・5600GT＝7C96v2B）、ASRock PRO-650B 製品仕様、ZALMAN T3 PLUS 製品仕様。図はすべてCBIによる手描きの線画（メーカー写真・生成AI画像は不使用）。</div>
+<div class="pagenum">体験PC 組立手順書 — 12 / 12</div></section></main></body></html>
