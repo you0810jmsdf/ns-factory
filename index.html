@@ -874,9 +874,9 @@ h1,h2,h3{
   from{box-shadow:0 0 0 1px rgba(240,217,138,.18),0 0 22px rgba(197,164,78,.18),0 0 60px rgba(122,72,224,.10)}
   to{box-shadow:0 0 0 1px rgba(240,217,138,.40),0 0 38px rgba(197,164,78,.34),0 0 90px rgba(64,196,232,.16)}
 }
+.hero--staffnet .staff-commander::before,
 .hero--staffnet .staff-commander::after{background:#05070f;color:#c9a96e}
-.hero--staffnet .staff-commander-link{grid-column:1;grid-row:1 / span 3}
-.hero--staffnet .staff-commander > .staff-quote,
+.hero--staffnet .staff-commander-link{grid-column:1;grid-row:1 / span 2}
 .hero--staffnet .staff-commander > .hero-content,
 .hero--staffnet .staff-commander > .staff-cta-secondary{grid-column:2}
 .hero--staffnet .staff-commander img{
@@ -898,12 +898,6 @@ h1,h2,h3{
 .hero--staffnet .hero-actions .btn{font-size:14px;padding:11px 18px}
 .hero--staffnet .staff-cta-secondary{margin:18px 0 0;text-align:left;color:#e3c987;text-decoration-color:rgba(227,201,135,.45)}
 .hero--staffnet .staff-cta-secondary:hover{text-decoration-color:#e3c987}
-.hero--staffnet .staff-quote{
-  background:rgba(201,169,110,.10);border-color:rgba(201,169,110,.35);color:#efe6d2;margin-bottom:16px;
-}
-.hero--staffnet .staff-quote:hover{background:rgba(201,169,110,.18)}
-.hero--staffnet .staff-quote::before{display:none}
-.hero--staffnet .staff-quote .sq-hint{color:rgba(255,255,255,.45)}
 /* 網: 枠を外して背景に溶かす（canvas は不透明な黒なので screen 合成で背景の光を通す） */
 .hero--staffnet .staff-net{
   background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible;min-height:600px;
@@ -931,7 +925,6 @@ h1,h2,h3{
     width:100%;height:auto;display:block;border-radius:12px;
     border:1px solid rgba(201,169,110,.55);box-shadow:0 8px 28px rgba(0,0,0,.55);
   }
-  .hero--staffnet .staff-commander > .staff-quote,
   .hero--staffnet .staff-commander > .hero-content,
   .hero--staffnet .staff-commander > .staff-cta-secondary{grid-column:1}
   .hero--staffnet .staff-cta-secondary{text-align:center}
@@ -1756,13 +1749,13 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
        作家の写真（.hero-photo）は非表示で温存。戻すときは hero--staffnet を外し、.hero-content をカードから出す -->
   <div class="staff-slide commander-slide">
     <div class="staff-commander">
-      <span class="commander-badge" data-i18n="staff.commander">総司令官</span>
+      <!-- 2026-09-19 事業主指示: 「総司令官」の札と、ひとことの吹き出しはヒーローでは出さない -->
       <div class="hero-content">
         <p class="hero-eyebrow">N's factory — Leather Craft</p>
         <h1 class="hero-title" data-i18n="hero.title" data-i18n-as-html>世界にひとつだけの<br>オリジナルを</h1>
         <p class="hero-desc" data-i18n="hero.desc" data-i18n-as-html>
           革は語り、手は応える。<br>
-          作家と使い手が直接交わる場所で、世界にひとつだけの手帳・革小物・印章・アクリル・木工が生まれる。<br><br>
+          作家と使い手が直接交わる場所で、世界にひとつだけの手帳・革小物が生まれる。<br><br>
           素材も意匠も、すべては貴方の手に委ねられる。
         </p>
         <div class="hero-actions">
@@ -1794,7 +1787,7 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
         <li><a href="./hitsuki/" data-i18n="staff.cta.kyouiku">教育幕僚室</a></li>
       </ul>
     </div>
-    <p class="staff-net-hint" data-i18n="staff.netHint">球に合わせると担当業務、クリックで各幕僚室へ。ドラッグで回転、ピンチで拡大・縮小します。粒は各幕僚が蓄えたノートの数です。</p>
+    <p class="staff-net-hint" data-i18n="staff.netHint">球に合わせると担当業務、クリックで各幕僚室へ。ドラッグで回転、ピンチで拡大・縮小、中央の首席幕僚をつかむと網を動かせます（ダブルクリックで元の位置に戻ります）。粒は各幕僚が蓄えたノートの数です。</p>
   </div>
   <!-- スマホ専用: 網をカードの絵より上に出すため、集合写真を網の下にも置く（600px以下でだけ表示・2026-09-19 事業主決定A） -->
   <div class="hero-group-mobile">
@@ -2253,7 +2246,7 @@ window.NSF_I18N_DICT = {
   'nav.qrLabel': 'This page',
   'qr.caption': 'Scan with your phone camera',
   'hero.title': 'One of a kind,<br>made just for you',
-  'hero.desc': 'Leather speaks, and hands answer.<br>Where maker and owner meet directly, one-of-a-kind planners, leather goods, seals, acrylic and woodwork come to life.<br><br>Materials and design — everything is in your hands.',
+  'hero.desc': 'Leather speaks, and hands answer.<br>Where maker and owner meet directly, one-of-a-kind planners and leather goods come to life.<br><br>Materials and design — everything is in your hands.',
   'hero.cta': 'Order Consultation →',
   'hero.estimate': 'Price estimate (system planner)',
   'planner.title': 'Ring Planner Full Order',
@@ -2286,7 +2279,7 @@ window.NSF_I18N_DICT = {
   'staff.tagline': 'The commander leading the entire business',
   'staff.profileCta': 'View profile',
   'staff.noteCta': "Commander's Office (AI management chronicle) →",
-  'staff.netHint': "Hover a sphere to see each officer’s duties; click to enter their office. Drag to rotate, pinch to zoom. The particles show how many notes each officer keeps.",
+  'staff.netHint': "Hover a sphere to see each officer’s duties; click to enter their office. Drag to rotate, pinch to zoom, and grab the Chief of Staff in the center to move the network (double-click to reset). The particles show how many notes each officer keeps.",
   'staff.tasksLabel': 'Main duties',
   'staff.badge.shuseki': 'Chief of Staff',
   'staff.copy.shuseki': 'Oversees and coordinates every staff officer, and supports the commander in making decisions.',
@@ -2766,7 +2759,7 @@ function gateConfidential(e, url) {
   function load(i) {
     if (i >= files.length) return;
     var s = document.createElement('script');
-    s.src = base + files[i] + '?v=20260919';
+    s.src = base + files[i] + '?v=20260919b';
     s.onload = function () { load(i + 1); };
     s.onerror = function () { root.classList.add('is-fallback'); };
     document.body.appendChild(s);
@@ -3055,7 +3048,8 @@ function nsfOpenStaffChat(staffId) {
     // 総司令官
     var cmd = document.querySelector('.staff-commander');
     var cmdSt = K.staffs.kojinjigyonusi;
-    if (cmd && cmdSt && cmdSt.quotes && cmdSt.quotes.length) {
+    // ヒーローのカードには、ひとことを差し込まない（2026-09-19 事業主指示）
+    if (cmd && !cmd.closest('.hero--staffnet') && cmdSt && cmdSt.quotes && cmdSt.quotes.length) {
       cmd.insertBefore(makeQuoteBubble(cmdSt), cmd.firstChild);
     }
     // 今日の幕僚メモ（日替わり・日付シードで幕僚とtipを選択）
