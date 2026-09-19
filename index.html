@@ -815,6 +815,7 @@ h1,h2,h3{
   isolation:isolate;
 }
 .hero--staffnet .hero-photo{display:none}
+.hero-group-mobile{display:none}
 /* オーロラ（網の紫・水色とブランドの金）がゆっくり漂う */
 .hero--staffnet::before{
   content:'';position:absolute;inset:-25%;z-index:-2;pointer-events:none;
@@ -910,7 +911,13 @@ h1,h2,h3{
 @media(max-width:600px){
   .hero.hero--staffnet{padding:44px 16px 28px;gap:18px}
   .hero--staffnet .staff-commander{grid-template-columns:1fr;padding:22px 18px 18px}
-  .hero--staffnet .staff-commander-link{grid-column:1;grid-row:auto;margin-top:20px}
+  /* スマホは「カード（文章・ボタン）→網→集合写真」の順。カードの中の絵は隠し、網の下の絵を出す */
+  .hero--staffnet .staff-commander-link{display:none}
+  .hero-group-mobile{display:block}
+  .hero-group-mobile img{
+    width:100%;height:auto;display:block;border-radius:12px;
+    border:1px solid rgba(201,169,110,.55);box-shadow:0 8px 28px rgba(0,0,0,.55);
+  }
   .hero--staffnet .staff-commander > .staff-quote,
   .hero--staffnet .staff-commander > .hero-content,
   .hero--staffnet .staff-commander > .staff-cta-secondary{grid-column:1}
@@ -1775,6 +1782,10 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
       </ul>
     </div>
     <p class="staff-net-hint" data-i18n="staff.netHint">球に合わせると担当業務、クリックで各幕僚室へ。ドラッグで回転、ピンチで拡大・縮小します。粒は各幕僚が蓄えたノートの数です。</p>
+  </div>
+  <!-- スマホ専用: 網をカードの絵より上に出すため、集合写真を網の下にも置く（600px以下でだけ表示・2026-09-19 事業主決定A） -->
+  <div class="hero-group-mobile">
+    <img src="./assets/staff/all agent 11staff.png" alt="N's factory スタッフ集合" loading="lazy">
   </div>
   <div class="hero-photo">
     <img src="assets/artisan.jpg" alt="作家 中司 祐樹">
