@@ -171,6 +171,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .card-title { flex:1; }
     .card-title .item-name { font-size:.95rem; font-weight:600; }
     .card-title .client-name { font-size:.78rem; color:var(--color-text-sub); margin-top:1px; }
+    .card-title .hearing-badge { display:inline-block; margin-top:3px; font-size:.72rem; font-weight:700; color:#6b3a1f; background:#fbf1e4; border:1px solid #e3c9a6; border-radius:10px; padding:1px 8px; }
+    .f-hearing { font-size:.82rem; line-height:1.6; background:#faf7f4; border:1px solid #ede0d4; border-radius:8px; padding:8px 10px; max-height:260px; overflow:auto; }
     .status-badge {
       font-size:.72rem; font-weight:600; padding:3px 10px;
       border-radius:99px; white-space:nowrap; flex-shrink:0;
@@ -584,6 +586,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <div id="memo-thread"></div>
       <!-- textarea の中の文字はクリックできないため、検出したURLを下にボタンとして出す -->
       <div id="memo-links" class="memo-links"></div>
+    </div>
+    <!-- AI相談から届いた発注票・会話記録（読み取り専用・2026-09-19）。保存しても書き換わらない -->
+    <div class="field" id="f-hearing-wrap" style="display:none">
+      <label>ヒアリング内容（AI相談から・読み取り専用）</label>
+      <div id="f-hearing" class="f-hearing"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal()">キャンセル</button>
@@ -1257,6 +1264,7 @@ function renderCards(records) {
         <div class="card-title">
           <div class="item-name">${esc(r['品名']||T('card.noName','（品名未設定）'))}</div>
           <div class="client-name">${esc(clientDisplay)}</div>
+          ${hearingBadgeHtml(r)}
         </div>
         <span class="status-badge ${cls}">${esc(stLabel(r['ステータス']||''))}</span>
         ${staleBadgeHtml(r)}
@@ -1456,6 +1464,9 @@ async function openModal(id) {
     document.getElementById('f-folder').value = r['DriveフォルダID']||'';
     document.getElementById('f-memo').value   = r['メモ（非公開）']||'';
     document.getElementById('f-customer-id').value = r['顧客ID']||'';
+    const hearingText = r['ヒアリング内容']||'';
+    document.getElementById('f-hearing-wrap').style.display = hearingText.trim() ? '' : 'none';
+    document.getElementById('f-hearing').innerHTML = hearingText.trim() ? hearingThreadHtml(hearingText).replace(/^<br>/, '') : '';
     onCustomerSelectChange();
     // 編集画面もカードと同じ並び（日付の昇順）にする。保存するとこの順で記録される
     const tl = sortTimeline(r['タイムライン']);
@@ -1470,6 +1481,8 @@ async function openModal(id) {
     document.getElementById('f-folder').value = '';
     document.getElementById('f-memo').value   = '';
     document.getElementById('f-customer-id').value = '';
+    document.getElementById('f-hearing-wrap').style.display = 'none';
+    document.getElementById('f-hearing').innerHTML = '';
     const cBox = document.getElementById('customer-info-box');
     if (cBox) cBox.style.display = 'none';
     addTlRow(new Date().toISOString().slice(0,10), 'ご注文ありがとうございます。受け付けいたしました。');
@@ -1977,6 +1990,16 @@ function parseHearingThread(text) {
   });
   return { hasSpeaker: hasSpeaker, blocks: blocks.filter(function (b) { return b.lines.join('\n').trim() !== ''; }) };
 }
+// 閉じたカードでも AI相談の中身があると分かるようにする（2026-09-19 事業主指摘「オーダー進捗に内容が記載されていない」）。
+// ヒアリング内容は管理者ログイン後の全列版にしか入らないので、ログインなしでは何も出ない。
+function hearingBadgeHtml(r) {
+  const h = String(r['ヒアリング内容'] || '');
+  if (!isAdmin() || !h.trim()) return '';
+  if (!/発注票/.test(h)) return '<div class="hearing-badge">💬 相談の記録あり</div>';
+  const m = h.match(/(?:見積もりの目安|概算目安)：\s*(¥[\d,]+(?:\s*〜\s*¥[\d,]+)?)/);
+  return '<div class="hearing-badge">📋 発注票あり' + (m ? '　' + esc(m[1]) : '') + '</div>';
+}
+
 function hearingThreadHtml(text) {
   const parsed = parseHearingThread(text);
   if (!parsed.hasSpeaker) return '<br>' + esc(text).replace(/\n/g, '<br>');
