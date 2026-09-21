@@ -452,6 +452,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <button class="tab-btn" data-size="リメイク・修理" data-i18n="tab.remake">リメイク・修理</button>
   <button class="tab-btn" data-size="手帳カバー" data-i18n="tab.cover">手帳カバー</button>
   <button class="tab-btn" data-size="革小物" data-i18n="tab.goods">革小物</button>
+  <button class="tab-btn" data-size="グッズ" data-i18n="tab.misc">グッズ</button>
   <!-- キャンセル（長期未返信）タブは管理者モードのみ表示。
        お客様の画面に「キャンセル」と出さないため、非管理者では隔離もしない（従来表示のまま）。 -->
   <button class="tab-btn tab-cancel" id="tab-cancel" data-size="__cancel__" style="display:none;">🗂 キャンセル</button>
@@ -515,6 +516,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <option value="リメイク・修理">リメイク・修理</option>
           <option value="手帳カバー">手帳カバー</option>
           <option value="革小物">革小物</option>
+          <option value="グッズ">グッズ</option>
         </select>
       </div>
     </div>
@@ -619,6 +621,7 @@ window.NSF_I18N_DICT = {
   'tab.remake': 'Remake & repair',
   'tab.cover': 'Planner covers',
   'tab.goods': 'Leather goods',
+  'tab.misc': 'Goods',
   'stat.total': 'Total orders',
   'stat.wip': 'In production',
   'stat.done': 'Completed / shipped',
