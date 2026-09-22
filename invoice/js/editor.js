@@ -26,6 +26,9 @@
     // 種別セット
     document.getElementById('doc-type').value = initType;
     updateTitle();
+    // 領収書は受け取り済みの書類なので、振込先を備考へ自動転記しない状態で始める（2026-09-22 事業主指摘
+    // 「手渡しなのに振込先が印字される」）。必要なら画面でチェックを入れれば転記される。
+    if (initType === 'receipt') document.getElementById('bank-auto-write').checked = false;
 
     // 種別変更時にタイトル更新
     document.getElementById('doc-type').addEventListener('change', updateTitle);
@@ -56,6 +59,8 @@
 
     // 振込先口座セレクト → 備考自動転記
     document.getElementById('bank-account-select').addEventListener('change', onBankAccountChange);
+    // 「備考に自動転記」を外したら備考から振込先ブロックを消す／入れたら選択中の口座を転記する（2026-09-22）
+    document.getElementById('bank-auto-write').addEventListener('change', onBankAutoWriteChange);
 
     // 消費税トグル変更で再計算
     document.getElementById('doc-tax-included').addEventListener('change', recalc);
@@ -177,7 +182,7 @@
     sel.innerHTML = opts.join('');
     // 新規かつ既存書類未読込の場合は既定口座を選択
     // 既存書類は loadDocument() の末尾で syncBankSelectWithNote() が備考と揃える（2026-09-03）
-    if (!editId) {
+    if (!editId && document.getElementById('bank-auto-write').checked) {
       const def = bankAccounts.find(a => a.isDefault);
       if (def) {
         sel.value = def.id;
@@ -194,7 +199,11 @@
     const sel = document.getElementById('bank-account-select');
     if (!sel || bankAccounts.length === 0) return;
     const note = document.getElementById('doc-note').value || '';
+    const auto = document.getElementById('bank-auto-write');
     if (note.indexOf(BANK_MARK_START) < 0) {
+      // 領収書は振込先なしで保存されたものを開き直しても差し込まない（手渡しの領収書に振込先が印字されるため）
+      if (document.getElementById('doc-type').value === 'receipt') auto.checked = false;
+      if (!auto.checked) { sel.value = ''; return; }
       const def = bankAccounts.find(a => a.isDefault);
       if (def) {
         sel.value = def.id;
@@ -217,6 +226,20 @@
       return;
     }
     applyBankAccountToNote(acc, /*overwrite=*/false);
+  }
+
+  function onBankAutoWriteChange() {
+    if (!document.getElementById('bank-auto-write').checked) {
+      removeBankBlockFromNote();
+      return;
+    }
+    const sel = document.getElementById('bank-account-select');
+    let acc = bankAccounts.find(a => a.id === sel.value);
+    if (!acc) {
+      acc = bankAccounts.find(a => a.isDefault);
+      if (acc) sel.value = acc.id;
+    }
+    if (acc) applyBankAccountToNote(acc, /*overwrite=*/false);
   }
 
   // ---- 備考textareaに振込先ブロックを差し込む ----
@@ -704,10 +727,13 @@
     document.getElementById('pa-subject').textContent     = doc.subject || '';
 
     // 上部の合計表示ラベル（請求書/見積書/領収書で言い回し変更）
+    // 領収書: 備考に振込先ブロックがある（＝振込で受け取った）ときだけ「ご入金金額」、
+    // 無い（手渡し・現金など）ときは「領収金額」（2026-09-22 事業主指摘）
+    const receiptLabel = String(doc.note || '').indexOf(BANK_MARK_START) >= 0 ? 'ご入金金額' : '領収金額';
     const totalLabel = {
       invoice: 'ご請求金額',
       quote:   'お見積金額',
-      receipt: 'ご入金金額'
+      receipt: receiptLabel
     }[doc.type] || 'ご請求金額';
     document.getElementById('pa-total-label').textContent = totalLabel;
     document.getElementById('pa-total').textContent  = Number(doc.total).toLocaleString();
