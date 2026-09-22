@@ -470,6 +470,11 @@
       document.getElementById('customer-name').value    = doc.customerName || '';
       document.getElementById('customer-id').value      = doc.customerId || '';
       onCustomerNameChange(); // 住所・連絡先を顧客マスタから復元
+      // 宛名がマスタの名前と違っても（会社名宛ての領収書など）保存済みの顧客IDは消さない。
+      // 消えると保存時に syncCustomerIfMissing が空の顧客を新規作成する（2026-09-22 C-177 の実害）
+      if (doc.customerId && !document.getElementById('customer-id').value) {
+        document.getElementById('customer-id').value = doc.customerId;
+      }
       // 台帳に保存された敬称を優先（2026-09-03 から保存。空＝旧書類はマスタの敬称のまま）
       if (doc.customerHonorific) document.getElementById('customer-honorific').value = doc.customerHonorific;
       document.getElementById('doc-source-number').value = doc.sourceNumber || '';
