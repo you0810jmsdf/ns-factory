@@ -186,6 +186,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }
     .tab-btn.tab-cancel { color:#6B7280; }
     .tab-btn.tab-cancel.active { color:#374151; border-bottom-color:#6B7280; }
+    /* 管理者モードのときだけ出る部分の目印（2026-09-22 事業主指示）。お客様の画面には出ない要素にだけ付ける */
+    .admin-only { outline:2px dashed #D62F2F; outline-offset:2px; border-radius:4px; }
+    .tab-btn.admin-only { outline-offset:-3px; }
+    .admin-only-block { border:2px dashed #D62F2F; }
+    .admin-only-block::before { content:'🔒 管理者だけに表示'; display:block; font-size:.7rem; font-weight:700; color:#D62F2F; margin-bottom:6px; }
     .s-相談受付     { background:#F5F3FF; color:#6D28D9; }
     .s-ご連絡先待ち { background:#FEE2E2; color:#B91C1C; }
     .s-ご連絡待ち   { background:#EDE9FE; color:#5B21B6; }
@@ -455,7 +460,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <button class="tab-btn" data-size="グッズ" data-i18n="tab.misc">グッズ</button>
   <!-- キャンセル（長期未返信）タブは管理者モードのみ表示。
        お客様の画面に「キャンセル」と出さないため、非管理者では隔離もしない（従来表示のまま）。 -->
-  <button class="tab-btn tab-cancel" id="tab-cancel" data-size="__cancel__" style="display:none;">🗂 キャンセル</button>
+  <button class="tab-btn tab-cancel admin-only" id="tab-cancel" data-size="__cancel__" style="display:none;">🗂 キャンセル</button>
 </div>
 
 <!-- Main content -->
@@ -1065,7 +1070,7 @@ function daysSinceStatus(r) {
 function staleBadgeHtml(r) {
   if (!isAdmin() || !isStaleContact(r)) return '';
   const days = daysSinceStatus(r);
-  return `<span class="stale-badge">${days}日連絡なし</span>`;
+  return `<span class="stale-badge admin-only">${days}日連絡なし</span>`;
 }
 function isStaleContact(r) {
   if (!CANCEL_WATCH_STATUSES.includes(r['ステータス'])) return false;
@@ -1255,7 +1260,7 @@ function renderCards(records) {
     // ヒアリング内容にはお客様のメール等が入るため、管理者ログイン後だけ表示する（2026-09-06 公開露出の応急対処）
     const sheetPdf = orderSheetPdfUrl(r);
     const colorOrderHtml = isAdmin() && (leatherInfo || hearingContent)
-      ? `<div class="color-order-info">
+      ? `<div class="color-order-info admin-only-block">
            <div class="tl-title">${T('card.colorOrder','🎨 カラーオーダー情報')}</div>
            ${sheetPdf ? `<div class="color-order-row"><a class="btn btn-edit" href="${esc(sheetPdf)}" target="_blank" rel="noopener">📄 発注票PDF</a></div>` : ''}
            ${leatherInfo ? `<div class="color-order-row"><b>${T('card.leather','使用革:')}</b> ${esc(leatherInfo).replace(/\n/g,'<br>')}</div>` : ''}
@@ -1272,7 +1277,7 @@ function renderCards(records) {
         </div>
         <div class="card-title">
           <div class="item-name">${esc(r['品名']||T('card.noName','（品名未設定）'))}</div>
-          <div class="client-name">${esc(clientDisplay)}</div>
+          <div class="client-name${isAdmin() && client ? ' admin-only' : ''}">${esc(clientDisplay)}</div>
           ${hearingBadgeHtml(r)}
         </div>
         <span class="status-badge ${cls}">${esc(stLabel(r['ステータス']||''))}</span>
@@ -1352,7 +1357,7 @@ function renderRrCards(records) {
         <div>${headerSub}</div>
         <div class="card-title">
           <div class="item-name">${esc(itemName)}</div>
-          <div class="client-name">${esc(clientDisplay)}</div>
+          <div class="client-name${isAdmin() && client ? ' admin-only' : ''}">${esc(clientDisplay)}</div>
         </div>
         <span class="status-badge ${cls}">${esc(stLabel(r['ステータス']||''))}</span>
         <span class="chevron">▼</span>
@@ -2008,9 +2013,9 @@ function parseHearingThread(text) {
 function hearingBadgeHtml(r) {
   const h = String(r['ヒアリング内容'] || '');
   if (!isAdmin() || !h.trim()) return '';
-  if (!/発注票/.test(h)) return '<div class="hearing-badge">💬 相談の記録あり</div>';
+  if (!/発注票/.test(h)) return '<div class="hearing-badge admin-only">💬 相談の記録あり</div>';
   const m = h.match(/(?:見積もりの目安|概算目安)：\s*(¥[\d,]+(?:\s*〜\s*¥[\d,]+)?)/);
-  return '<div class="hearing-badge">📋 発注票あり' + (m ? '　' + esc(m[1]) : '') + '</div>';
+  return '<div class="hearing-badge admin-only">📋 発注票あり' + (m ? '　' + esc(m[1]) : '') + '</div>';
 }
 
 // ── 作品集（NF番号）のフォルダにつなぐ（2026-09-20 事業主決定「注文が決まったらボタン1つで」）──
