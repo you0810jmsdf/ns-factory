@@ -256,6 +256,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     /* Carousel */
     .carousel-wrap { margin-top:14px; }
+    .cust-photos { margin-top:12px; padding:10px 12px; border-radius:var(--radius-md); }
+    .car-error { font-size:.8rem; color:var(--color-text-sub); padding:10px 0; }
+    .car-error button { margin-left:8px; }
     .carousel-outer { position:relative; overflow:hidden; border-radius:var(--radius-md); background:var(--color-bg-sub); }
     .carousel-track { display:flex; transition:transform .3s ease; }
     .carousel-track img { flex-shrink:0; width:100%; aspect-ratio:1/1; object-fit:contain; display:block; }
@@ -1409,20 +1412,56 @@ function lazyLoadImages(id) {
   const folderId = el.dataset.folderid;
   const useUrl = el.dataset.gastype === 'rr' ? rrGasUrl : gasUrl;
   if (!folderId || !useUrl) { el.innerHTML = ''; return; }
-  fetch(`${useUrl}?action=images&folderId=${folderId}`)
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok && data.images && data.images.length) {
-        renderCarousel(el, data.images, id);
-      } else { el.innerHTML = ''; }
+  loadDriveImages(el, useUrl, folderId, id, 0);
+}
+
+// Drive の写真を取る（2026-09-22）。
+// ・管理者のときだけ鍵を付ける＝お客様が相談で送った写真（customer: true）も返り、赤い枠の「いただいた写真」欄に分けて出す
+// ・GASの間欠404（HTMLが返る）は2回まで取り直す。30秒で打ち切り、止まったままにせず「もう一度読み込む」ボタンを出す
+const IMG_TIMEOUT_MS = 30000;
+function loadDriveImages(el, useUrl, folderId, id, tries) {
+  const key = isAdmin() ? adminWriteKey() : '';
+  const url = `${useUrl}?action=images&folderId=${encodeURIComponent(folderId)}` + (key ? '&key=' + encodeURIComponent(key) : '');
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), IMG_TIMEOUT_MS);
+  fetch(url, { signal: ctl.signal, cache: 'no-store' })
+    .then(async r => {
+      const text = await r.text();
+      if (!r.ok || text.trim().startsWith('<')) throw { html: true };
+      return JSON.parse(text);
     })
-    .catch(() => { el.innerHTML = ''; });
+    .then(data => {
+      clearTimeout(timer);
+      if (!data.ok) throw { failed: true };
+      const imgs = data.images || [];
+      const pub  = imgs.filter(i => !i.customer);
+      const cust = imgs.filter(i => i.customer);
+      if (!pub.length && !cust.length) { el.innerHTML = ''; return; }
+      el.outerHTML = (pub.length ? carouselHtml(pub, id) : '')
+        + (cust.length ? `<div class="cust-photos admin-only-block"><div class="tl-title">📷 いただいた写真</div>${carouselHtml(cust, id + '-c')}</div>` : '');
+    })
+    .catch(err => {
+      clearTimeout(timer);
+      if (err && err.html && tries < 2) { loadDriveImages(el, useUrl, folderId, id, tries + 1); return; }
+      el.innerHTML = `<div class="car-error">📷 写真を読み込めませんでした。<button class="btn btn-edit" type="button" onclick="retryDriveImages('${id}')">もう一度読み込む</button></div>`;
+    });
+}
+function retryDriveImages(id) {
+  const el = document.getElementById('car-' + id);
+  if (!el) return;
+  el.innerHTML = T('car.loading','📷 画像を読み込み中…');
+  const useUrl = el.dataset.gastype === 'rr' ? rrGasUrl : gasUrl;
+  loadDriveImages(el, useUrl, el.dataset.folderid, id, 0);
 }
 
 function renderCarousel(el, images, id) {
+  el.outerHTML = carouselHtml(images, id);
+}
+
+function carouselHtml(images, id) {
   imgCache[id] = images;
   carState[id] = 0;
-  el.outerHTML = `
+  return `
     <div class="carousel-outer" id="car-${id}">
       <div class="carousel-track" id="track-${id}">
         ${images.map(img=>`<img src="${img.url}" alt="${esc(img.name)}" loading="lazy">`).join('')}
