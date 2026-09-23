@@ -60,10 +60,10 @@ const PrintManager = (() => {
     const label = TYPE_LABEL[h.type] || h.type;
     const lines = [label];
 
-    const creds = [];
-    if (h.username) creds.push(`ID: ${h.username}`);
-    if (!isOther && h.password) creds.push(`PW: ${h.password}`);
-    if (creds.length) lines.push(creds.join('     '));
+    // ⛔ IDとパスワードを1行にまとめない（2026-09-23 事業主決定A）。
+    //    まとめると54字の折り返しでパスワードが途中で割れ、次の行へ続いて読み間違えやすい。
+    if (h.username) lines.push(`ID: ${h.username}`);
+    if (!isOther && h.password) lines.push(`PW: ${h.password}`);
     if (h.note) {
       const noteLines = String(h.note).split(/\r?\n/);
       noteLines.forEach((line, idx) => {
