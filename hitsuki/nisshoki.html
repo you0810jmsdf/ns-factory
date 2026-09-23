@@ -74,7 +74,27 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </dl>
     </section>
 
-    <section id="about" class="section about-section" aria-labelledby="about-title">
+    <a class="progress-strip" href="progress.html" id="progress-strip" aria-label="解説の整備状況を見る">
+      <span class="ps-label">解説の整備状況</span>
+      <span class="ps-num" id="ps-num">–</span>
+      <span class="ps-bar" aria-hidden="true"><i id="ps-fill"></i></span>
+      <span class="ps-last" id="ps-last"></span>
+      <span class="ps-more">グラフで見る →</span>
+    </a>
+    <style>
+      .progress-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; max-width: 1120px; margin: 16px auto 0; padding: 12px 16px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: rgba(24, 36, 27, 0.7); color: var(--ink); text-decoration: none; }
+      .progress-strip:hover { border-color: var(--gold); }
+      .ps-label { color: var(--muted); font-size: .85rem; }
+      .ps-num { font-variant-numeric: tabular-nums; }
+      .ps-num b { color: var(--gold); font-size: 1.2rem; }
+      .ps-bar { position: relative; flex: 1 1 120px; min-width: 120px; height: 8px; border-radius: 4px; background: rgba(245, 239, 225, 0.1); overflow: hidden; }
+      .ps-bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--gold); }
+      .ps-last { color: var(--ink-soft); font-size: .85rem; }
+      .ps-more { color: var(--gold); font-size: .85rem; margin-left: auto; }
+      @media (max-width: 1150px) { .progress-strip { margin-left: 16px; margin-right: 16px; } }
+    </style>
+
+    <section id="about"class="section about-section" aria-labelledby="about-title">
       <div class="section-inner two-column">
         <div class="section-heading">
           <p class="eyebrow">Overview</p>
@@ -178,6 +198,27 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <script src="data/hitsukiStatic.js"></script>
   <script src="data/commentaries.js"></script>
   <script src="app.js"></script>
+  <script>
+  (function () {
+    var vols = window.HITSUKI_VOLUMES || [], tr = window.HITSUKI_TRANSCRIPTS || {};
+    var tot = {}, total = 0, cnt = {}, last = '', lastN = 0;
+    vols.forEach(function (v) { tot[v.id] = v.totalChapters; total += v.totalChapters; });
+    Object.keys(tr).forEach(function (k) {
+      var m = k.match(/^([a-z0-9]+)-\d+$/);
+      if (!m || !tot[m[1]]) return;
+      cnt[m[1]] = (cnt[m[1]] || 0) + 1;
+      var d = String(tr[k].addedAt || '').slice(0, 10);
+      if (d > last) { last = d; lastN = 0; }
+      if (d === last) lastN++;
+    });
+    var done = 0;
+    Object.keys(cnt).forEach(function (id) { done += Math.min(cnt[id], tot[id]); });
+    var pct = total ? done / total * 100 : 0;
+    document.getElementById('ps-num').innerHTML = '<b>' + done + '</b> / ' + total + '帖（' + pct.toFixed(1) + '%）';
+    document.getElementById('ps-fill').style.width = pct + '%';
+    if (last) { var p = last.split('-'); document.getElementById('ps-last').textContent = '最終追加 ' + (+p[1]) + '/' + (+p[2]) + '（' + lastN + '帖）'; }
+  })();
+  </script>
 <script src="../assets/access-counter.js"></script>
 </body>
 </html>
