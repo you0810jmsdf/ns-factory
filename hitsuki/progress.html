@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10130f">
+  <title>解説の整備状況｜日月神示アーカイブ｜N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+  <meta name="description" content="日月神示アーカイブで、帖ごとの解説がどこまで掲載されたかを巻ごとのグラフで示すページ。新しい解説は毎週日曜に確認して追加しています。">
+  <link rel="canonical" href="https://you0810jmsdf.github.io/ns-factory/hitsuki/progress.html">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .pg-main { max-width: 960px; margin: 0 auto; padding: 96px 16px 64px; }
+    .pg-main h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 4px 0 8px; }
+    .pg-lead { color: var(--ink-soft); margin: 0 0 28px; line-height: 1.8; }
+    .pg-card { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(24, 36, 27, 0.55); padding: 20px; margin-bottom: 20px; }
+    .pg-card h2 { font-size: 1.1rem; margin: 0 0 14px; }
+    .pg-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+    .pg-total strong { font-size: clamp(2.4rem, 8vw, 3.4rem); color: var(--gold); line-height: 1; font-variant-numeric: tabular-nums; }
+    .pg-total span { color: var(--ink-soft); }
+    .pg-bar { position: relative; height: 14px; border-radius: 7px; background: rgba(245, 239, 225, 0.08); overflow: hidden; margin: 14px 0 6px; }
+    .pg-bar i { position: absolute; inset: 0 auto 0 0; background: var(--gold); border-radius: 7px; }
+    .pg-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
+    .pg-kpi { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; }
+    .pg-kpi dt { color: var(--muted); font-size: .82rem; }
+    .pg-kpi dd { margin: 4px 0 0; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+    .pg-kpi dd small { font-size: .8rem; color: var(--ink-soft); }
+    .pg-diff { margin: 12px 0 0; padding: 10px 12px; border-left: 3px solid var(--gold); background: rgba(216, 183, 102, 0.08); }
+    .pg-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
+    .pg-legend b { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+    .pg-group { margin: 18px 0 6px; color: var(--muted); font-size: .85rem; letter-spacing: .08em; }
+    .pg-row { display: grid; grid-template-columns: 8.5em 1fr 5.5em; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(245, 239, 225, 0.06); }
+    .pg-row .name { font-size: .92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pg-row .name small { color: var(--muted); margin-left: 4px; }
+    .pg-row .pg-bar { margin: 0; height: 10px; }
+    .pg-row .num { text-align: right; font-variant-numeric: tabular-nums; font-size: .88rem; color: var(--ink-soft); }
+    .pg-row.done .pg-bar i { background: #8fbf7f; }
+    .pg-row.zero .name { color: var(--muted); }
+    .pg-row .new { color: var(--gold); font-size: .75rem; margin-left: 4px; }
+    .pg-hist { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding-top: 18px; overflow-x: auto; }
+    .pg-hist div { flex: 0 0 auto; min-width: 44px; text-align: center; font-size: .75rem; color: var(--ink-soft); display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+    .pg-hist i { display: block; background: var(--gold); border-radius: 3px 3px 0 0; margin: 2px auto 4px; width: 26px; }
+    .pg-note { color: var(--muted); font-size: .85rem; line-height: 1.8; margin: 0; }
+    .pg-back { display: inline-block; margin-top: 8px; color: var(--gold); }
+    @media (max-width: 520px) {
+      .pg-row { grid-template-columns: 8.2em 1fr 4.4em; gap: 6px; }
+      .pg-row .name small { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="nisshoki.html" aria-label="日月神示アーカイブ トップへ">
+      <span class="brand-mark" aria-hidden="true">日月</span>
+      <span>日月神示アーカイブ</span>
+    </a>
+    <nav class="site-nav" aria-label="ページ内ナビゲーション">
+      <a href="#volumes">巻ごとの状況</a>
+      <a href="nisshoki.html#index">巻物索引</a>
+      <a href="nisshoki.html" class="nav-back">← アーカイブへ戻る</a>
+    </nav>
+  </header>
+
+  <main class="pg-main">
+    <p class="eyebrow">Progress</p>
+    <h1>解説の整備状況</h1>
+    <p class="pg-lead">
+      全39巻・各帖のうち、解説をどこまで掲載できたかをまとめています。
+      解説の元は預言天狗みはるさんの動画で、新しい動画は<strong>毎週日曜 9:00</strong>に確認して追加しています。
+    </p>
+
+    <section class="pg-card" aria-labelledby="sum-title">
+      <h2 id="sum-title">全体</h2>
+      <div class="pg-total">
+        <strong id="pg-done">–</strong>
+        <span id="pg-of">/ – 帖に解説あり</span>
+      </div>
+      <div class="pg-bar" role="progressbar" aria-labelledby="sum-title" id="pg-total-bar" aria-valuemin="0" aria-valuemax="100"><i id="pg-total-fill" style="width:0"></i></div>
+      <dl class="pg-kpis">
+        <div class="pg-kpi"><dt>最後に追加した日</dt><dd id="pg-last">–</dd></div>
+        <div class="pg-kpi"><dt>次の確認</dt><dd id="pg-next">–</dd></div>
+        <div class="pg-kpi"><dt>全帖そろった巻</dt><dd id="pg-full">–</dd></div>
+        <div class="pg-kpi"><dt>まだ解説のない巻</dt><dd id="pg-zero">–</dd></div>
+      </dl>
+      <p class="pg-diff" id="pg-diff" hidden></p>
+    </section>
+
+    <section class="pg-card" aria-labelledby="hist-title">
+      <h2 id="hist-title">追加した日ごとの帖数</h2>
+      <div class="pg-hist" id="pg-hist" aria-label="追加日ごとの帖数"></div>
+    </section>
+
+    <section class="pg-card" id="volumes" aria-labelledby="vol-title">
+      <h2 id="vol-title">巻ごとの状況</h2>
+      <p class="pg-legend">
+        <span><b style="background:#8fbf7f"></b>全帖そろった</span>
+        <span><b style="background:var(--gold)"></b>掲載した帖</span>
+        <span><b style="background:rgba(245,239,225,.12)"></b>まだの帖</span>
+        <span><span style="color:var(--gold)">NEW</span> 最後に追加した日に増えた巻</span>
+      </p>
+      <div id="pg-volumes"></div>
+    </section>
+
+    <p class="pg-note">
+      ※ 数字は、このページを開いたときのアーカイブの中身をそのまま数えています。
+      解説の順番は動画の公開順によるため、巻の順には並びません。
+    </p>
+    <a class="pg-back" href="nisshoki.html#index">← 巻物索引で解説を読む</a>
+  </main>
+
+  <script src="data/hitsukiData.js"></script>
+  <script src="data/commentaries.js"></script>
+  <script>
+  (function () {
+    var vols = window.HITSUKI_VOLUMES || [];
+    var tr = window.HITSUKI_TRANSCRIPTS || {};
+    var byVol = {}, byDate = {}, lastDate = '';
+    Object.keys(tr).forEach(function (key) {
+      var m = key.match(/^([a-z0-9]+)-(\d+)$/);
+      if (!m) return;
+      var d = String(tr[key].addedAt || '').slice(0, 10);
+      (byVol[m[1]] = byVol[m[1]] || { n: 0, dates: {} }).n++;
+      if (d) {
+        byVol[m[1]].dates[d] = true;
+        byDate[d] = (byDate[d] || 0) + 1;
+        if (d > lastDate) lastDate = d;
+      }
+    });
+
+    var total = 0, done = 0, full = 0, zero = 0;
+    vols.forEach(function (v) {
+      var n = Math.min((byVol[v.id] || {}).n || 0, v.totalChapters);
+      total += v.totalChapters; done += n;
+      if (n >= v.totalChapters) full++;
+      if (n === 0) zero++;
+    });
+    var pct = total ? done / total * 100 : 0;
+
+    function $(id) { return document.getElementById(id); }
+    function fmt(d) { var p = d.split('-'); return +p[1] + '月' + +p[2] + '日'; }
+
+    $('pg-done').textContent = done;
+    $('pg-of').textContent = '/ ' + total + ' 帖に解説あり（' + pct.toFixed(1) + '%）';
+    $('pg-total-fill').style.width = pct + '%';
+    $('pg-total-bar').setAttribute('aria-valuenow', pct.toFixed(1));
+    $('pg-last').innerHTML = lastDate ? fmt(lastDate) + ' <small>' + (byDate[lastDate] || 0) + '帖</small>' : 'なし';
+    $('pg-full').innerHTML = full + ' <small>/ ' + vols.length + '巻</small>';
+    $('pg-zero').innerHTML = zero + ' <small>巻</small>';
+
+    var now = new Date(), next = new Date(now);
+    next.setHours(9, 0, 0, 0);
+    var add = (7 - now.getDay()) % 7;
+    if (add === 0 && now >= next) add = 7;
+    next.setDate(next.getDate() + add);
+    $('pg-next').innerHTML = (next.getMonth() + 1) + '月' + next.getDate() + '日（日）<small> 9:00</small>';
+
+    // 前回このページを見たときとの差（この端末のみ）
+    try {
+      var prev = JSON.parse(localStorage.getItem('hitsuki_progress_seen') || 'null');
+      if (prev && typeof prev.done === 'number') {
+        var diff = done - prev.done;
+        var el = $('pg-diff');
+        el.textContent = diff > 0
+          ? '前回ご覧になった ' + fmt(prev.at) + ' から、' + diff + '帖増えました。'
+          : '前回ご覧になった ' + fmt(prev.at) + ' から、まだ増えていません。次の確認は上の日付です。';
+        el.hidden = false;
+      }
+      var today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      localStorage.setItem('hitsuki_progress_seen', JSON.stringify({ done: done, at: today }));
+    } catch (e) {}
+
+    // 追加日ごとの棒グラフ
+    var dates = Object.keys(byDate).sort();
+    var maxN = Math.max.apply(null, dates.map(function (d) { return byDate[d]; }).concat([1]));
+    $('pg-hist').innerHTML = dates.map(function (d) {
+      var h = Math.max(2, Math.round(byDate[d] / maxN * 90));
+      return '<div title="' + d + '"><span>' + byDate[d] + '</span><i style="height:' + h + 'px"></i>' + fmt(d) + '</div>';
+    }).join('') || '<p class="pg-note">まだありません</p>';
+
+    // 巻ごとの横棒
+    var groups = [], html = '';
+    vols.forEach(function (v) { if (groups.indexOf(v.group) < 0) groups.push(v.group); });
+    groups.forEach(function (g) {
+      var list = vols.filter(function (v) { return v.group === g; });
+      var gt = 0, gd = 0;
+      list.forEach(function (v) { gt += v.totalChapters; gd += Math.min((byVol[v.id] || {}).n || 0, v.totalChapters); });
+      html += '<p class="pg-group">' + g + '（' + gd + ' / ' + gt + '帖）</p>';
+      list.forEach(function (v) {
+        var info = byVol[v.id] || { n: 0, dates: {} };
+        var n = Math.min(info.n, v.totalChapters), w = n / v.totalChapters * 100;
+        var cls = n >= v.totalChapters ? ' done' : (n === 0 ? ' zero' : '');
+        var isNew = lastDate && info.dates[lastDate] ? '<span class="new">NEW</span>' : '';
+        html += '<div class="pg-row' + cls + '"><span class="name">' + v.title + '<small>' + (v.displayNo || '') + '</small>' + isNew + '</span>' +
+          '<div class="pg-bar" aria-hidden="true"><i style="width:' + w + '%"></i></div>' +
+          '<span class="num">' + n + ' / ' + v.totalChapters + '</span></div>';
+      });
+    });
+    $('pg-volumes').innerHTML = html;
+  })();
+  </script>
+<script src="../assets/access-counter.js"></script>
+</body>
+</html>
