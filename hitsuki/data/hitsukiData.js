@@ -12,7 +12,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和19年6月10日-7月9日',
     totalChapters: 42,
     maxChapter: 42,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E4%B8%8A%E3%81%A4%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/01.html',
     themes: ['はじまり', '身魂磨き', '神の国', '大洗濯'],
     lead: '最初期に記された巻。日月神示全体の入口として、身魂磨きと世の建て替えの語彙が立ち上がる。',
     samplePassages: {
@@ -70,7 +70,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和19年7月12日-8月3日',
     totalChapters: 38,
     maxChapter: 38,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E4%B8%8B%E3%81%A4%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/02.html',
     themes: ['神示の継承', '姿の比喩', '大本'],
     lead: '上つ巻に続く初期巻。神示を後の世に残すという編集上の意識も見える。',
     samplePassages: {
@@ -124,7 +124,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和19年8月10日-8月30日',
     totalChapters: 27,
     maxChapter: 27,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E5%AF%8C%E5%A3%AB%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/03.html',
     themes: ['富士', '鳴門', '火と水', '大峠'],
     lead: '富士・鳴門・火水の象徴が濃く出る巻。災厄表現を世界観として整理する起点。',
     samplePassages: {
@@ -167,7 +167,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和19年8月31日-9月14日',
     totalChapters: 30,
     maxChapter: 30,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E5%A4%A9%E3%81%A4%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/04.html',
     themes: ['三千世界', '神界', '岩戸'],
     lead: '神界や三千世界の語りが広がる巻。日月神示の宇宙観を読む入口になる。',
     samplePassages: {
@@ -213,7 +213,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和19年9月15日-10月11日',
     totalChapters: 36,
     maxChapter: 36,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E5%9C%B0%E3%81%A4%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/05.html',
     themes: ['地', '天明', '身魂', '世直し'],
     lead: '地上の働きと人の身魂に焦点が当たる巻。書記者である岡本天明への言及も重要。',
     samplePassages: {
@@ -265,7 +265,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和19年旧暦9月1日-11月30日',
     totalChapters: 40,
     maxChapter: 40,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%97%A5%E6%9C%88%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/06.html',
     themes: ['日月', '行', '神国', '信仰'],
     lead: '日と月の題を冠する巻。行や信仰を日常の仕事と結び直して読む。',
   },
@@ -279,7 +279,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和19年12月1日-12月29日',
     totalChapters: 23,
     maxChapter: 23,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%97%A5%E3%81%AE%E5%87%BA%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/07.html',
     themes: ['北', '信仰', '日の出', '立て替え'],
     lead: '「北」に関する表現など、後年の予言解説で引用されやすい巻。',
     samplePassages: {
@@ -296,7 +296,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和19年12月30日-昭和19年旧暦11月30日',
     totalChapters: 21,
     maxChapter: 21,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E7%A3%90%E6%88%B8%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/08.html',
     themes: ['岩戸', '真の道', '神話'],
     lead: '岩戸開きの語彙をめぐる巻。神話と現代解釈の橋渡しを置きたい。',
     samplePassages: {
@@ -313,7 +313,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和20年1月29日-3月20日',
     totalChapters: 17,
     maxChapter: 17,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E3%82%AD%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/09.html',
     themes: ['気', '霊', '改心'],
     lead: '「キ」という音の多義性を手がかりに、気・霊・改心の流れを整理する。',
     samplePassages: {
@@ -330,7 +330,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和20年旧暦3月10日-6月23日',
     totalChapters: 17,
     maxChapter: 17,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%B0%B4%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/10.html',
     themes: ['水', '浄化', '火水'],
     lead: '水の象徴を通して浄化や火水の対を読み解く巻。',
     samplePassages: {
@@ -347,7 +347,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和20年6月17日-7月19日',
     totalChapters: 29,
     maxChapter: 29,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%9D%BE%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/11.html',
     themes: ['松', '待つ', '祈り'],
     lead: '松と待つの響きを含め、時を待つ姿勢や祈りの方向を読む。',
     samplePassages: {
@@ -364,7 +364,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和20年7月21日-8月10日',
     totalChapters: 13,
     maxChapter: 13,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E5%A4%9C%E6%98%8E%E3%81%91%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/12.html',
     themes: ['夜明け', '転換', '希望'],
     lead: '戦争末期の時代感と、夜明けという象徴を重ねて読む巻。',
     samplePassages: {
@@ -381,7 +381,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和20年10月13日-12月19日',
     totalChapters: 17,
     maxChapter: 17,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E3%82%A2%E3%83%A1%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/13.html',
     themes: ['雨', '天', '清め'],
     lead: '雨・天の響きが重なる巻。清めと天の働きを主題に整理する。',
     samplePassages: {
@@ -398,7 +398,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和20年12月25日-昭和21年2月16日',
     totalChapters: 17,
     maxChapter: 17,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E3%82%AB%E3%82%BC%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/14.html',
     themes: ['風', '流れ', '知らせ'],
     lead: '風の比喩から、時代の流れと知らせの読み方をまとめる。',
   },
@@ -412,7 +412,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和21年旧暦1月15日',
     totalChapters: 11,
     maxChapter: 11,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E4%B8%80%E5%85%AB%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/15.html',
     themes: ['岩', '数霊', '象徴'],
     lead: '一八と岩の読みを重ねる巻。数霊的な整理も別途必要。',
     samplePassages: {
@@ -429,7 +429,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和21年1月19日',
     totalChapters: 1,
     maxChapter: 1,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E3%82%A2%E3%83%AC%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/16.html',
     themes: ['荒れ', '転換', '短巻'],
     lead: '一帖のみの短い巻。全体の流れの中で位置づける。',
     samplePassages: {
@@ -446,7 +446,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和20年9月10日-10月30日',
     totalChapters: 19,
     maxChapter: 19,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E4%BA%8C%E6%97%A5%E3%82%93%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/17.html',
     themes: ['ジシン', '抽象図', '霊界'],
     lead: '抽象的な絵で書記されたとされる特殊な巻。画像資料の扱いを別に検討する。',
   },
@@ -460,7 +460,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和21年2月24日-7月27日',
     totalChapters: 8,
     maxChapter: 8,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E4%B8%80%E7%81%AB%E3%83%AA%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/18.html',
     themes: ['光', '火', '霊'],
     lead: '光と火の象徴を中心に、浄化と照明のイメージを読む巻。',
     samplePassages: {
@@ -477,7 +477,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和21年8月8日-8月31日',
     totalChapters: 23,
     maxChapter: 23,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E3%80%87%E3%81%A4%E3%82%8A%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/19.html',
     themes: ['祭り', '祀り', '政'],
     lead: '祭り・祀り・政の重なりを読み解く巻。社会観の整理に向く。',
     samplePassages: {
@@ -494,7 +494,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和21年9月28日-12月14日',
     totalChapters: 28,
     maxChapter: 28,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E3%82%93%E3%82%81%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/20.html',
     themes: ['梅', '運命', '岩戸', '人間界'],
     lead: '梅または運命とも読まれる巻。人間界側の努力と岩戸開きの文脈が大きい。',
     samplePassages: {
@@ -511,7 +511,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和22年1月1日-4月5日',
     totalChapters: 14,
     maxChapter: 14,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E4%B8%89%E3%83%A9%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/21.html',
     themes: ['空', '天', '広がり'],
     lead: '空の象徴を通じて、視野を広げる読み方を置く。',
     samplePassages: {
@@ -528,7 +528,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和22年4月26日-8月12日',
     totalChapters: 23,
     maxChapter: 23,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E3%82%A2%E7%81%AB%E3%83%8F%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/22.html',
     themes: ['青葉', '火', '芽吹き'],
     lead: '青葉の響きと火の字を持つ巻。再生と火の働きを併せて見る。',
     samplePassages: {
@@ -545,7 +545,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和22年8月13日-8月23日',
     totalChapters: 19,
     maxChapter: 19,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%EF%BD%9C%E4%B8%89%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/23.html',
     themes: ['海', '水', '広がり'],
     lead: '海の象徴を中心に、流動性と境界の読みを整理する。',
     samplePassages: {
@@ -562,7 +562,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和24年11月17日-昭和25年1月18日',
     totalChapters: 100,
     maxChapter: 100,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E9%BB%84%E9%87%91%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/24.html',
     themes: ['黄金', '改心', '七変り', '長巻'],
     lead: '全100帖の大きな巻。主題別の小索引を別に作る価値が高い。',
     samplePassages: {
@@ -579,7 +579,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和24年12月14日-昭和25年5月8日',
     totalChapters: 7,
     maxChapter: 7,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E7%99%BD%E9%8A%80%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/25.html',
     themes: ['白銀', '清明', '短巻'],
     lead: '短い巻ながら、黄金・黒鉄との対比で位置づけたい巻。',
   },
@@ -593,7 +593,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和25年1月22日-10月18日',
     totalChapters: 39,
     maxChapter: 39,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E9%BB%92%E9%89%84%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/26.html',
     themes: ['黒鉄', '鍛錬', '現実'],
     lead: '黒鉄の硬さを手がかりに、鍛錬や現実面の読みをまとめる。',
     samplePassages: {
@@ -610,7 +610,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和27年旧暦1月1日-2月15日',
     totalChapters: 60,
     maxChapter: 60,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%98%A5%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/27.html',
     themes: ['春', '季節', '再生'],
     lead: '季節巻の始まり。再生と始まりのイメージを中心に整理する。',
   },
@@ -624,7 +624,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和27年3月3日-3月8日',
     totalChapters: 25,
     maxChapter: 25,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E5%A4%8F%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/28.html',
     themes: ['夏', '勢い', '季節'],
     lead: '季節巻の夏。熱量や盛りの象徴を中心に読む。',
     samplePassages: {
@@ -641,7 +641,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和27年4月11日',
     totalChapters: 28,
     maxChapter: 28,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E7%A7%8B%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/29.html',
     themes: ['秋', '実り', '季節'],
     lead: '季節巻の秋。実りや収穫の象徴を整理する。',
     samplePassages: {
@@ -659,7 +659,7 @@ const HITSUKI_VOLUMES = [
     totalChapters: 2,
     maxChapter: 1,
     extraChapters: [{ key: 'supplement', label: '補帖' }],
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E5%86%AC%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/30.html',
     themes: ['冬', '補帖', '節制'],
     lead: '一帖と補帖で構成される巻。季節巻の締めとして読む。',
     samplePassages: {
@@ -676,7 +676,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和36年5月5日',
     totalChapters: 15,
     maxChapter: 15,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%89%B6%E6%A1%91%E3%81%AE%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/501.html',
     themes: ['五十黙示録', '扶桑', '晩年'],
     lead: '五十黙示録の入口。晩年の神示として本巻との違いを整理する。',
     samplePassages: {
@@ -693,7 +693,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和36年5月6日',
     totalChapters: 19,
     maxChapter: 19,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E7%A2%A7%E7%8E%89%E4%B9%8B%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/502.html',
     themes: ['五十黙示録', '碧玉', '霊界'],
     lead: '碧玉という色と石の象徴から、五十黙示録の語りを読んでいく。',
     samplePassages: {
@@ -711,7 +711,7 @@ const HITSUKI_VOLUMES = [
     totalChapters: 24,
     maxChapter: 25,
     missingChapters: [24],
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%98%9F%E5%BA%A7%E4%B9%8B%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/503.html',
     themes: ['五十黙示録', '星座', '欠帖'],
     lead: '第24帖が欠帖とされ、番号上は第25帖まである巻。欠帖の扱いを明示する。',
     samplePassages: {
@@ -728,7 +728,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和36年8月3日',
     totalChapters: 19,
     maxChapter: 19,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E9%BE%8D%E9%9F%B3%E4%B9%8B%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/504.html',
     themes: ['五十黙示録', '龍音', '霊的識別'],
     lead: '霊的な感応や奇跡への距離感を整理したい巻。',
     samplePassages: {
@@ -745,7 +745,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和36年8月5日',
     totalChapters: 20,
     maxChapter: 20,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%A5%B5%E3%82%81%E4%B9%8B%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/505.html',
     themes: ['五十黙示録', '極め', '天明'],
     lead: '岡本天明の御役への言及を含み、全体の締めに近い響きを持つ。',
     samplePassages: {
@@ -762,7 +762,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和36年9月1日',
     totalChapters: 16,
     maxChapter: 16,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E8%87%B3%E6%81%A9%E4%B9%8B%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/506.html',
     themes: ['五十黙示録', '恩', '感謝'],
     lead: '至恩という題から、恩・感謝・受け取り方を軸に整理する。',
     samplePassages: {
@@ -779,7 +779,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和36年9月1日',
     totalChapters: 16,
     maxChapter: 16,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E4%BA%94%E8%91%89%E4%B9%8B%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/507.html',
     themes: ['五十黙示録', '五葉', '食', '転位'],
     lead: '食や節制、天地の転位などの引用候補がある巻。',
     samplePassages: {
@@ -796,7 +796,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和36年（書記日不明）',
     totalChapters: 14,
     maxChapter: 14,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E7%B4%AB%E9%87%91%E4%B9%8B%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/hokan50.html',
     themes: ['五十黙示録', '紫金', '大洗濯'],
     lead: '五十黙示録の最後に置かれる巻。火の雨など災厄表現の整理候補がある。',
     samplePassages: {
@@ -813,7 +813,7 @@ const HITSUKI_VOLUMES = [
     period: '昭和33年12月25日-昭和34年3月2日',
     totalChapters: 62,
     maxChapter: 62,
-    sourceUrl: 'https://wiki.hifumi.online/index.php/%E6%9C%88%E5%85%89%E4%B9%8B%E5%B7%BB',
+    sourceUrl: 'https://hifumi.uresi.org/hokan.html',
     themes: ['補巻', '月光', '七変り'],
     lead: '補巻として扱われる長い巻。本巻・五十黙示録との接続を別途整理する。',
     samplePassages: {
