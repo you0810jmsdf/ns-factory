@@ -25,7 +25,10 @@ const PrintManager = (() => {
     return Array.from(text).reduce((sum, ch) => sum + (ch.charCodeAt(0) <= 0x7f ? 1 : 2), 0);
   }
 
-  function splitPrintText(text, maxUnits = 68) {
+  // カード印刷の履歴欄は 62mm・6pt。68字だと 75.8mm になり右が切れていた（2026-09-23 実測）。
+  // 実測の目安は1字あたり約1.11mm＝約55字。余裕を見て54字で折り返す。
+  // ⛔ この値を上げるときは、必ず描画して欄（.col-hist）からはみ出さないか測ること。
+  function splitPrintText(text, maxUnits = 54) {
     const chunks = [];
     let current = '';
     let units = 0;
@@ -314,8 +317,10 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
 .col-date { width:21mm; border-right:0.3mm solid #000; }
 .col-hist {
   overflow-wrap:anywhere;
-  word-break:break-word;
-  white-space:pre;
+  word-break:break-all;
+  /* pre だと折り返さず、長いパスワードが欄の右で切り捨てられていた（2026-09-23 実測・15.1mmはみ出し）。
+     pre-wrap なら改行・空白はそのままで、入りきらないときだけ欄の中で折り返す。 */
+  white-space:pre-wrap;
 }
 .col-memo { width:100%; }
 .back-title { color:#000; }
