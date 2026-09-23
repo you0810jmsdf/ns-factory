@@ -4,7 +4,9 @@
 
 const HITSUKI_SOURCES = {
   volumeIndex: 'https://hifumi.uresi.org/link.html',
-  wikiRoot: 'https://wiki.hifumi.online/',
+  // ⛔ 旧 wikiRoot（hifumi の wiki サブドメイン）はサイトごと消滅した（2026-09-23 実測・404、TLS証明書も不一致）。
+  //    各巻の sourceUrl も同じ理由で hifumi.uresi.org へ差し替え済み。
+  sourceSite: 'https://hifumi.uresi.org/',
   miharuChannel: 'https://www.youtube.com/@369katakamuna',
   miharuSearch: 'https://www.youtube.com/@369katakamuna/search?query=%E6%97%A5%E6%9C%88%E7%A5%9E%E7%A4%BA'
 };
