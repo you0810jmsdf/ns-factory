@@ -59,6 +59,7 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
 .btn-gold{background:var(--accent);color:#1a140c}
 .btn-line{background:transparent;color:var(--fg);border:1px solid var(--line-2)}
 .buy{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:22px}
+.buy{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:14px}
 .buy .note{font-size:12px;color:var(--fg-3);line-height:1.8}
 .price{font-size:30px;font-weight:700;margin-top:18px}
 .price small{font-size:13px;color:var(--fg-3);font-weight:400;margin-left:6px}
@@ -105,6 +106,7 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
   .nav .wrap{gap:6px}
   .brand small{display:none}
   .btn{width:100%}
+  .buy{align-items:stretch}
   .buy{align-items:stretch}
 }
 </style>
@@ -168,6 +170,15 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
     <div class="set-head" id="set1">
       <div><span class="set-tag">第1セット</span><b>第4弾〜第9弾の6本</b><span class="set-price">¥980<small>税込・6本まとめて</small></span></div>
       <p class="muted">在庫と仕入れ・制作時間・お問い合わせの返信文・発送と送料・経費のまとめ・作品カタログの6本を、まとめてお届けします。どの教材のページからでもお求めいただけます。</p>
+      <div class="buy">
+      <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
+      <a href="#" class="btn btn-gold" data-checkout="aitool-set1" style="display:none"><span>カードで購入する（第1セット・¥<span data-price>980</span>）</span></a>
+      <p class="note" data-checkout-on="aitool-set1" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
+      <a href="mailto:you0810jmsdf@gmail.com?subject=AI%E8%AC%9B%E5%BA%A7%E3%81%AE%E6%95%99%E6%9D%90%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E7%AC%AC1%E3%82%BB%E3%83%83%E3%83%88%EF%BC%88%E7%AC%AC4%E5%BC%BE%E3%80%9C%E7%AC%AC9%E5%BC%BE%E3%81%AE6%E6%9C%AC%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-line" data-checkout-on="aitool-set1" style="display:none">銀行振込で申し込む（メール）</a>
+      <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
+      <a href="mailto:you0810jmsdf@gmail.com?subject=AI%E8%AC%9B%E5%BA%A7%E3%81%AE%E6%95%99%E6%9D%90%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E7%AC%AC1%E3%82%BB%E3%83%83%E3%83%88%EF%BC%88%E7%AC%AC4%E5%BC%BE%E3%80%9C%E7%AC%AC9%E5%BC%BE%E3%81%AE6%E6%9C%AC%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-gold" data-checkout-off="aitool-set1">メールで購入を申し込む（銀行振込）</a>
+      <p class="note" data-checkout-off="aitool-set1">メールをいただければ振込先をご案内し、ご入金確認後にダウンロードリンクをお送りします。</p>
+    </div>
     </div>
     <div class="grid">
     <a class="card" href="04-inventory.html">
@@ -228,6 +239,15 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
     <div class="set-head" id="set2">
       <div><span class="set-tag">第2セット</span><b>第10弾〜第13弾の4本</b><span class="set-price">¥680<small>税込・4本まとめて</small></span></div>
       <p class="muted">価格の決め方・イベント・マルシェ出店・SNS投稿の予定表・販売チャネルの比較の4本を、まとめてお届けします。どの教材のページからでもお求めいただけます。</p>
+      <div class="buy">
+      <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
+      <a href="#" class="btn btn-gold" data-checkout="aitool-set2" style="display:none"><span>カードで購入する（第2セット・¥<span data-price>680</span>）</span></a>
+      <p class="note" data-checkout-on="aitool-set2" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
+      <a href="mailto:you0810jmsdf@gmail.com?subject=AI%E8%AC%9B%E5%BA%A7%E3%81%AE%E6%95%99%E6%9D%90%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E7%AC%AC2%E3%82%BB%E3%83%83%E3%83%88%EF%BC%88%E7%AC%AC10%E5%BC%BE%E3%80%9C%E7%AC%AC13%E5%BC%BE%E3%81%AE4%E6%9C%AC%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-line" data-checkout-on="aitool-set2" style="display:none">銀行振込で申し込む（メール）</a>
+      <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
+      <a href="mailto:you0810jmsdf@gmail.com?subject=AI%E8%AC%9B%E5%BA%A7%E3%81%AE%E6%95%99%E6%9D%90%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E7%AC%AC2%E3%82%BB%E3%83%83%E3%83%88%EF%BC%88%E7%AC%AC10%E5%BC%BE%E3%80%9C%E7%AC%AC13%E5%BC%BE%E3%81%AE4%E6%9C%AC%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-gold" data-checkout-off="aitool-set2">メールで購入を申し込む（銀行振込）</a>
+      <p class="note" data-checkout-off="aitool-set2">メールをいただければ振込先をご案内し、ご入金確認後にダウンロードリンクをお送りします。</p>
+    </div>
     </div>
     <div class="grid">
     <a class="card" href="10-pricing.html">
@@ -270,6 +290,15 @@ a.card:hover{border-color:var(--accent-2);transform:translateY(-2px)}
     <div class="set-head" id="set3">
       <div><span class="set-tag">第3セット</span><b>第14弾〜第17弾の4本</b><span class="set-price">¥680<small>税込・4本まとめて</small></span></div>
       <p class="muted">「受注から発送までの進行表」「ワークショップ・教室の運営」「委託販売・卸の取引先管理」「確定申告に向けた1年のまとめ」の4本を、まとめてお届けします。どの教材のページからでもお求めいただけます。</p>
+      <div class="buy">
+      <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
+      <a href="#" class="btn btn-gold" data-checkout="aitool-set3" style="display:none"><span>カードで購入する（第3セット・¥<span data-price>680</span>）</span></a>
+      <p class="note" data-checkout-on="aitool-set3" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
+      <a href="mailto:you0810jmsdf@gmail.com?subject=AI%E8%AC%9B%E5%BA%A7%E3%81%AE%E6%95%99%E6%9D%90%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E7%AC%AC3%E3%82%BB%E3%83%83%E3%83%88%EF%BC%88%E7%AC%AC14%E5%BC%BE%E3%80%9C%E7%AC%AC17%E5%BC%BE%E3%81%AE4%E6%9C%AC%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-line" data-checkout-on="aitool-set3" style="display:none">銀行振込で申し込む（メール）</a>
+      <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
+      <a href="mailto:you0810jmsdf@gmail.com?subject=AI%E8%AC%9B%E5%BA%A7%E3%81%AE%E6%95%99%E6%9D%90%E8%B3%BC%E5%85%A5%E3%81%AE%E3%81%8A%E5%95%8F%E5%90%88%E3%81%9B&amp;body=%E3%80%8C%E7%AC%AC3%E3%82%BB%E3%83%83%E3%83%88%EF%BC%88%E7%AC%AC14%E5%BC%BE%E3%80%9C%E7%AC%AC17%E5%BC%BE%E3%81%AE4%E6%9C%AC%EF%BC%89%E3%80%8D%E3%82%92%E8%B3%BC%E5%85%A5%E3%81%97%E3%81%9F%E3%81%84%E3%81%A7%E3%81%99%E3%80%82%0A%0A%E3%81%8A%E5%90%8D%E5%89%8D%EF%BC%9A%0A%0A%EF%BC%88%E6%8C%AF%E8%BE%BC%E5%85%88%E3%82%92%E3%81%94%E6%A1%88%E5%86%85%E3%81%97%E3%81%BE%E3%81%99%E3%80%82%E3%81%94%E5%85%A5%E9%87%91%E3%81%AE%E7%A2%BA%E8%AA%8D%E5%BE%8C%E3%80%81%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%A7%E3%81%8A%E9%80%81%E3%82%8A%E3%81%97%E3%81%BE%E3%81%99%EF%BC%89" class="btn btn-gold" data-checkout-off="aitool-set3">メールで購入を申し込む（銀行振込）</a>
+      <p class="note" data-checkout-off="aitool-set3">メールをいただければ振込先をご案内し、ご入金確認後にダウンロードリンクをお送りします。</p>
+    </div>
     </div>
     <div class="grid">
     <a class="card" href="14-progress.html">
