@@ -504,6 +504,12 @@ textarea{min-height:80px;resize:vertical}
   <div id="step1" class="panel">
     <div class="panel-title" id="step1Title">Step 1 — 基本情報</div>
 
+    <!-- 選択肢（カテゴリ・素材・色・サイズ）が読めなかったときの理由と復旧ボタン（2026-09-25） -->
+    <div id="masterNotice" hidden style="margin:0 0 12px;padding:10px 12px;border:1px solid #e0b872;background:#fff8e8;border-radius:8px;font-size:12px;color:#6a4a1a;line-height:1.6">
+      <span id="masterNoticeText"></span>
+      <button type="button" id="masterReloadBtn" onclick="reloadMasterData()" style="margin-left:6px;padding:4px 10px;font-size:12px;border:1px solid #c9a96e;background:#fff;border-radius:6px;cursor:pointer">選択肢を読み込み直す</button>
+    </div>
+
     <div class="form-row">
       <label>商品名<span class="req">*</span></label>
       <input type="text" id="f_name" placeholder="例: システム手帳 A5 ブラック" list="dl_productNames" autocomplete="off">
@@ -874,27 +880,107 @@ const FIELD_MAP = { category: 'categories', material: 'materials', color: 'color
 
 // GASの間欠障害（404・HTML応答）1回で「手動で入力」に落ち、選択肢が選べなくなっていた（2026-09-11）。
 // 読み取り専用なので jsonpCallRetry で再送し、それでも駄目なときだけ手動入力に切り替える。
+// 2026-09-25: GASが3回とも失敗（404・40秒超）して「手動で入力」だけになり、理由も復旧手段も出なかった。
+// 読めた選択肢をこの端末に控え、失敗時は控えを出して裏で読み直す。読み取り専用なので再送は安全。
+const MASTER_CACHE_KEY = 'nsf_register_master_v1';
+const MASTER_BG_RETRY_MS = 30000;
+const MASTER_BG_RETRY_MAX = 5;
+let masterBgTimer = null;
+let masterBgCount = 0;
+let masterLoading = false;
+
+function saveMasterCache(data) {
+  try {
+    localStorage.setItem(MASTER_CACHE_KEY, JSON.stringify({
+      categories: data.categories || [], materials: data.materials || [],
+      colors: data.colors || [], sizes: data.sizes || [], savedAt: Date.now()
+    }));
+  } catch (e) {}
+}
+function readMasterCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(MASTER_CACHE_KEY) || 'null');
+    return (c && Array.isArray(c.categories) && c.categories.length) ? c : null;
+  } catch (e) { return null; }
+}
+
+/** 選択肢を差し替える。選んでいる値は、新しい一覧に無くても消さずに残す */
+function applyMasterData(data) {
+  const fill = (sel, head, items) => {
+    if (!sel) return;
+    const keep = sel.value;
+    sel.innerHTML = head + items.map(v => `<option value="${v}">${v}</option>`).join('');
+    if (keep) setSelectValue(sel.id, keep);
+  };
+  ['category','material','color'].forEach(field => {
+    fill(document.getElementById('f_' + field), '<option value="">選択…</option>', data[FIELD_MAP[field]] || []);
+  });
+  fill(document.getElementById('f_subcategory'), '<option value="">（なし）</option>', data[FIELD_MAP['category']] || []);
+  // サイズはマスターデータシートD列（2026-08-04新設）。既定値とマージして出す
+  MASTER_SIZES = data.sizes || [];
+  initSizeOptions();
+}
+
+function showMasterNotice(text) {
+  const box = document.getElementById('masterNotice');
+  if (!box) return;
+  if (!text) { box.hidden = true; return; }
+  document.getElementById('masterNoticeText').textContent = text;
+  box.hidden = false;
+}
+
+function fmtCacheTime(ms) {
+  const d = new Date(ms);
+  return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
 function fetchMasterData() {
+  masterLoading = true;
+  const btn = document.getElementById('masterReloadBtn');
+  if (btn) btn.disabled = true;
   return jsonpCallRetry({ api: 'getMasterData', key: REGISTER_KEY }, { tries: 3, timeoutMs: 25000 })
     .then((data) => {
-      if (!data || !data.ok) { console.warn('getMasterData error:', data && data.error); setFallbackOptions(); return; }
-      ['category','material','color'].forEach(field => {
-        const sel = document.getElementById('f_' + field);
-        const items = data[FIELD_MAP[field]] || [];
-        sel.innerHTML = '<option value="">選択…</option>' +
-          items.map(v => `<option value="${v}">${v}</option>`).join('');
-      });
-      const subSel = document.getElementById('f_subcategory');
-      if (subSel) {
-        const cats = data[FIELD_MAP['category']] || [];
-        subSel.innerHTML = '<option value="">（なし）</option>' +
-          cats.map(v => `<option value="${v}">${v}</option>`).join('');
-      }
-      // サイズはマスターデータシートD列（2026-08-04新設）。既定値とマージして出す
-      MASTER_SIZES = data.sizes || [];
-      initSizeOptions();
+      if (!data || !data.ok) throw new Error((data && data.error) || 'no data');
+      applyMasterData(data);
+      saveMasterCache(data);
+      showMasterNotice('');
+      clearTimeout(masterBgTimer); masterBgTimer = null; masterBgCount = 0;
     })
-    .catch((e) => { console.warn('getMasterData failed:', e && e.message); setFallbackOptions(); });
+    .catch((e) => {
+      console.warn('getMasterData failed:', e && e.message);
+      const why = (e && e.message === 'unauthorized')
+        ? '選択肢の読み込みが「権限なし」で断られました。'
+        : '選択肢をサーバーから読み込めませんでした（応答が無い・遅い）。';
+      const cache = readMasterCache();
+      if (cache) {
+        // 初回だけ控えを出す（裏の読み直しが失敗しても、選んだ値を触らない）
+        if (!document.getElementById('f_category').querySelector('option[value]:not([value=""])')) applyMasterData(cache);
+      } else {
+        setFallbackOptions();
+      }
+      const shown = cache ? `前回の選択肢（${fmtCacheTime(cache.savedAt)} 時点）を表示しています。` : '選択肢の控えが無いため、手で入力してください。';
+      if (masterBgCount < MASTER_BG_RETRY_MAX) {
+        masterBgCount++;
+        clearTimeout(masterBgTimer);
+        masterBgTimer = setTimeout(fetchMasterData, MASTER_BG_RETRY_MS);
+        showMasterNotice(`${why}${shown} 30秒後に自動で読み直します（${masterBgCount}/${MASTER_BG_RETRY_MAX}回目）。`);
+      } else {
+        showMasterNotice(`${why}${shown} 自動の読み直しは終わりました。下のボタンで読み直せます。`);
+      }
+    })
+    .finally(() => {
+      masterLoading = false;
+      if (btn) btn.disabled = false;
+    });
+}
+
+/** 帯のボタンから手動で読み直す */
+function reloadMasterData() {
+  if (masterLoading) return;
+  clearTimeout(masterBgTimer); masterBgTimer = null;
+  masterBgCount = 0;
+  showMasterNotice('選択肢を読み込み直しています…');
+  fetchMasterData();
 }
 
 function fetchProductNames() {
