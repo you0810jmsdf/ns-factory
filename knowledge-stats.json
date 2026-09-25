@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-09-25T08:49:34",
+  "generatedAt": "2026-09-25T22:01:52",
   "departments": [
     {
       "dept": "経営戦略本部",
       "fileCount": 51,
-      "totalChars": 292163,
+      "totalChars": 297450,
       "lastUpdated": "2026-09-25"
     },
     {
       "dept": "監理部",
-      "fileCount": 46,
-      "totalChars": 6829761,
+      "fileCount": 47,
+      "totalChars": 6853764,
       "lastUpdated": "2026-09-25"
     },
     {
@@ -33,9 +33,9 @@
     },
     {
       "dept": "後方部",
-      "fileCount": 274,
-      "totalChars": 735636,
-      "lastUpdated": "2026-09-24"
+      "fileCount": 276,
+      "totalChars": 741183,
+      "lastUpdated": "2026-09-25"
     },
     {
       "dept": "保全部",
@@ -45,9 +45,9 @@
     },
     {
       "dept": "人事部",
-      "fileCount": 28,
-      "totalChars": 405241,
-      "lastUpdated": "2026-09-24"
+      "fileCount": 30,
+      "totalChars": 450129,
+      "lastUpdated": "2026-09-25"
     },
     {
       "dept": "教育部",
