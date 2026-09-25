@@ -1723,11 +1723,23 @@ function renderMemoLinks() {
 function closeModal() { document.getElementById('modal-bg').classList.remove('open'); }
 function bgClose(e)   { if (e.target.id==='modal-bg') closeModal(); }
 
+// <input type="date"> は YYYY-MM-DD しか受け付けない。'2026.9.19' のような値をそのまま
+// 入れると欄が空になり、気づかず保存すると日付が消える（2026-09-25 OP-2609-009 で6行が実際に消失）。
+// 読める日付は ISO へ直して欄に入れ、直せない値（'旧サイト転載' 等）は data-raw に退避して保存時に戻す。
+function toDateInputValue(v) {
+  const s = String(v || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = parseLooseDate(s);
+  if (!d) return '';
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 function addTlRow(date, text) {
   const row = document.createElement('div');
   row.className = 'tl-edit-row';
   row.innerHTML = `
-    <input type="date" value="${esc(date)}" placeholder="日付">
+    <input type="date" value="${esc(toDateInputValue(date))}" data-raw="${esc(date || '')}" placeholder="日付">
     <input type="text" value="${esc(text)}" placeholder="進捗内容">
     <button class="tl-rm" onclick="this.parentElement.remove()">×</button>`;
   document.getElementById('tl-rows').appendChild(row);
@@ -1736,7 +1748,11 @@ function addTlRow(date, text) {
 function getTlRows() {
   return [...document.querySelectorAll('.tl-edit-row')].map(row => {
     const inputs = row.querySelectorAll('input');
-    return { date: inputs[0].value, text: inputs[1].value };
+    // 欄が空でも、元が入力欄に出せない値だっただけなら元の値を戻す（消さない）。
+    // 元が読める日付だったのに空なら、利用者が消した操作として尊重する。
+    const raw  = inputs[0].dataset.raw || '';
+    const date = inputs[0].value || (toDateInputValue(raw) ? '' : raw);
+    return { date: date, text: inputs[1].value };
   }).filter(t => t.date||t.text);
 }
 
