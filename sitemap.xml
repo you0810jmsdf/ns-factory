@@ -295,21 +295,25 @@
 
   <!-- 講座「AIで作る 作家の道具」（2026-09-17 公開・tools/build_course_pages.js が差し替える） -->
   <!-- COURSE:start -->
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/04-inventory.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/05-worktime.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/06-reply.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/07-shipping.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/08-expenses.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/09-catalog.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/10-pricing.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/11-event.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/12-sns.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/13-channels.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/14-progress.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/15-workshop.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/16-consign.html</loc><lastmod>2026-09-22</lastmod></url>
-  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/17-taxyear.html</loc><lastmod>2026-09-22</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/04-inventory.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/05-worktime.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/06-reply.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/07-shipping.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/08-expenses.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/09-catalog.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/10-pricing.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/11-event.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/12-sns.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/13-channels.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/14-progress.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/15-workshop.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/16-consign.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/17-taxyear.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/18-backup.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/19-voices.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/20-costup.html</loc><lastmod>2026-09-25</lastmod></url>
+  <url><loc>https://you0810jmsdf.github.io/ns-factory/ai-course/21-bestseller.html</loc><lastmod>2026-09-25</lastmod></url>
   <!-- COURSE:end -->
 
   <!-- N's pattern（型紙PDF・2026-09-14 公開）。旧 horseshoe-coin-case.html（¥2,800版・noindex）は載せない -->

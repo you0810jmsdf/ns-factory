@@ -107,6 +107,7 @@ h2{font-size:20px;font-weight:700;margin-bottom:14px}
 .btn-line{background:transparent;color:var(--fg);border:1px solid var(--line-2)}
 .buy{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:22px}
 .buy .note{font-size:12px;color:var(--fg-3);line-height:1.8}
+.set-head .buy{margin-top:14px}
 .price{font-size:30px;font-weight:700;margin-top:18px}
 .price small{font-size:13px;color:var(--fg-3);font-weight:400;margin-left:6px}
 .set-tag{display:inline-block;font-size:12px;font-weight:700;color:#0b0b0c;background:var(--accent);border-radius:999px;padding:2px 10px;margin-right:10px;vertical-align:middle}
@@ -337,6 +338,7 @@ function index() {
     <div class="set-head" id="${esc(g.s.id)}">
       <div><span class="set-tag">${esc(g.s.name)}</span><b>${esc(g.s.range)}</b>${g.s.status === 'sale' ? `<span class="set-price">¥${yen(g.s.price)}<small>税込・${g.list.length}本まとめて</small></span>` : '<span class="badge soon">準備中</span>'}</div>
       <p class="muted">${esc(g.s.desc || '')}</p>
+      ${g.s.status === 'sale' ? buyBlock(g.list[0]) : ''}
     </div>
     <div class="grid">${cards(g.list)}
     </div>` : `
