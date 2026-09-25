@@ -575,7 +575,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <label style="display:flex;align-items:center;gap:6px;">
         🔒 顧客連携（管理者専用・非公開）
       </label>
-      <select id="f-customer-id" onchange="onCustomerSelectChange()" style="margin-bottom:8px;">
+      <select id="f-customer-id" onchange="onCustomerSelectChange(true)" style="margin-bottom:8px;">
         <option value="">— 顧客マスタから選択（任意・選ぶと依頼者名が自動入力）—</option>
       </select>
       <div id="customer-info-box" style="display:none; font-size:.78rem; background:#fff; padding:8px 10px; border-radius:6px; border:1px solid #e9e0d0; margin-bottom:8px;">
@@ -1502,8 +1502,10 @@ async function openModal(id) {
   document.getElementById('edit-id').value = id||'';
   document.getElementById('tl-rows').innerHTML = '';
 
-  // 顧客マスタが未取得なら取得（モーダル開いた時にも保険として）
-  if (customerMaster.length === 0) loadCustomerMaster();
+  // 顧客マスタは編集画面を開くたびに取り直す（2026-09-25 事業主決定A）。
+  // ページを開いた後に登録したお客様（山口様 C-178）が選択肢に無く「選択しない」に落ちて見えた。
+  // 取り直しは非同期なので、開いた案件の顧客IDは data-want に控え、届いたら renderCustomerSelect が選び直す
+  loadCustomerMaster();
 
   if (id) {
     const r = allRecords.find(x => x['ID']===id);
@@ -1516,7 +1518,7 @@ async function openModal(id) {
     document.getElementById('f-end').value    = toInputDate(r['予定完了日']||'');
     document.getElementById('f-folder').value = r['DriveフォルダID']||'';
     document.getElementById('f-memo').value   = r['メモ（非公開）']||'';
-    document.getElementById('f-customer-id').value = r['顧客ID']||'';
+    setCustomerSelect(r['顧客ID']||'');
     const hearingText = r['ヒアリング内容']||'';
     // メモに通知メールと同じ本文が入っている受付（2026-09-19 以降）は、同じ内容を2回見せない
     renderWorkLinkBox(r);
@@ -1536,7 +1538,7 @@ async function openModal(id) {
     document.getElementById('f-end').value    = '';
     document.getElementById('f-folder').value = '';
     document.getElementById('f-memo').value   = '';
-    document.getElementById('f-customer-id').value = '';
+    setCustomerSelect('');
     document.getElementById('f-hearing-wrap').style.display = 'none';
     document.getElementById('f-hearing').innerHTML = '';
     document.getElementById('work-link-box').style.display = 'none';   // 新規登録（まだ保存前）では作品集につながない
@@ -1774,21 +1776,46 @@ async function loadCustomerMaster() {
   }
 }
 
+// 編集画面で選ぶべき顧客IDを控えて選ぶ。選択肢にまだ無いID（取り直し前）は data-want に残し、
+// リストが届いたときに renderCustomerSelect が選び直す。保存は選択欄の値ではなく getCustomerSelect() を読む
+function setCustomerSelect(id) {
+  const sel = document.getElementById('f-customer-id');
+  if (!sel) return;
+  sel.dataset.want = id || '';
+  sel.value = id || '';
+}
+function getCustomerSelect() {
+  const sel = document.getElementById('f-customer-id');
+  if (!sel) return '';
+  // 選択肢に無いIDは sel.value が '' になる。控えがあり、その顧客がまだリストに無い間だけ控えを返す
+  // （事業主が自分で「選択しない」に変えたときは onCustomerSelectChange が控えも消している）
+  return sel.value || sel.dataset.want || '';
+}
+
 function renderCustomerSelect() {
   const sel = document.getElementById('f-customer-id');
   if (!sel) return;
-  const current = sel.value;
+  const current = sel.value || sel.dataset.want || '';
   const opts = ['<option value="">— 選択しない（依頼者名を直接入力）—</option>'];
   customerMaster.forEach(c => {
     const label = `${c.id}　${c.name} ${c.honorific || '様'}`;
     opts.push(`<option value="${c.id}">${label}</option>`);
   });
   sel.innerHTML = opts.join('');
-  if (current) sel.value = current;
+  if (current) {
+    const before = sel.value;
+    sel.value = current;
+    // 取り直しで初めて選べるようになった顧客は、顧客情報の枠も出し直す
+    if (sel.value && sel.value !== before) onCustomerSelectChange();
+  }
 }
 
-function onCustomerSelectChange() {
-  const id = document.getElementById('f-customer-id').value;
+function onCustomerSelectChange(fromUser) {
+  const sel = document.getElementById('f-customer-id');
+  // 利用者が自分で選び直したとき（onchange）だけ控えにも反映する（「選択しない」に戻したら控えも消す）。
+  // 編集画面を開いた直後の呼び出しでは、まだリストに無い顧客IDの控えを消さない
+  if (sel && fromUser === true) sel.dataset.want = sel.value || '';
+  const id = sel ? sel.value : '';
   const box = document.getElementById('customer-info-box');
   if (!id) {
     if (box) box.style.display = 'none';
@@ -1856,7 +1883,7 @@ async function saveRecord(retried) {
     folderId:   document.getElementById('f-folder').value.trim(),
     memo:       document.getElementById('f-memo').value.trim(),
     timeline:   getTlRows(),
-    customerId: document.getElementById('f-customer-id').value,
+    customerId: getCustomerSelect(),
     key:        adminWriteKey(),
   };
   try {
