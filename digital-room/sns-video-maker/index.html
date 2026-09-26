@@ -3990,8 +3990,12 @@ function characterActive(){
 // 口パク用の音声トラック（{sampleRate, data:Float32Array}）。プレビュー・保存の開始時に置き、終わりに外す
 let activeNarrationTrack = null;
 let activeTrackStats = null;
-function setActiveNarrationTrack(track){
+let activeNarrationOwner = null;
+/* 持ち主（owner）: プレビューと保存が重なったとき、先に終わった側の後始末が相手のトラックを外さないようにする
+   （2026-09-26 事業主のMP4で「口パクが最初の数秒だけ」になった原因。プレビューの終了処理が保存中に走っていた）。 */
+function setActiveNarrationTrack(track, owner){
   activeNarrationTrack = track && track.data && track.data.length ? track : null;
+  activeNarrationOwner = activeNarrationTrack ? (owner || null) : null;
   activeTrackStats = null;
   if(!activeNarrationTrack) return;
   // 声の大きさの基準（声が入っている区間のRMSの中央値）。声の小さい人でも口が動くように相対で見る
@@ -4006,6 +4010,12 @@ function setActiveNarrationTrack(track){
   }
   rms.sort((a, b) => a - b);
   activeTrackStats = {reference: rms.length ? rms[Math.floor(rms.length * .6)] : 0};
+}
+function releaseActiveNarrationTrack(owner){
+  if(activeNarrationOwner === owner) setActiveNarrationTrack(null);
+}
+function ensureActiveNarrationTrack(track, owner){
+  if(activeNarrationTrack !== track) setActiveNarrationTrack(track, owner);
 }
 function narrationLevelAt(time){
   if(!activeNarrationTrack || !activeTrackStats || !activeTrackStats.reference) return 0;
@@ -5130,12 +5140,13 @@ async function playPreviewWithVoice(){
   previewAudioSource = source;          // 「停止」で cancelSpeechOutput → stopPreviewAudioSource が止める
   source.onended = () => { if(previewAudioSource === source) previewAudioSource = null; };
   setLog('音声つきプレビューを再生中です（完成動画と同じ声）。聞こえない場合はPC/ブラウザの音量も確認してください。');
-  setActiveNarrationTrack(track);     // 口パク用（販売幕僚）
+  const previewOwner = {kind:'preview'};
+  setActiveNarrationTrack(track, previewOwner);     // 口パク用（販売幕僚）
   narrationCursorStart = performance.now();
   source.start();
   let result;
   try{ result = await playTimeline(false); }
-  finally{ setActiveNarrationTrack(null); stopPreviewAudioSource(); }
+  finally{ releaseActiveNarrationTrack(previewOwner); stopPreviewAudioSource(); }
   if(!result || !result.stopped) previewReviewed = true;
   setLog(result && result.stopped ? '音声つきプレビューを停止しました。' : '音声つきプレビューが終わりました。ここで聞こえた声が、そのまま動画に入ります。');
 }
@@ -6768,6 +6779,7 @@ async function encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, fram
       if(narratedSaveCancelled) throw new Error('AI音声生成を停止しました。');
       encoderDiag.frame = frameIndex + 1;
       const time = Math.min(frameIndex / frameRate, total);
+      if(narrationTrack.__owner) ensureActiveNarrationTrack(narrationTrack, narrationTrack.__owner);   // 途中で外されても戻す
       drawFrame(time);
       els.progressBar.style.width = `${Math.min(100, (frameIndex + 1) / frameCount * 100)}%`;
       const frame = new VideoFrame(canvas, {
@@ -6805,7 +6817,9 @@ async function recordNarratedMp4(){
   console.info(`[診断] AI音声のAAC変換 ${audioSec}秒 / ${encoderDiag.totalFrames}コマ / 最長待ち${Math.round(encoderDiag.longestWaitMs)}ms`);
   let blob = null;
   let lastError = null;
-  setActiveNarrationTrack(narrationTrack);   // 口パク用（販売幕僚）。合成中のフレームは drawFrame → drawSlide で時刻から口を決める
+  const saveOwner = {kind:'save'};
+  setActiveNarrationTrack(narrationTrack, saveOwner);   // 口パク用（販売幕僚）。合成中のフレームは drawFrame → drawSlide で時刻から口を決める
+  narrationTrack.__owner = saveOwner;
   try{
     for(const hardwareAcceleration of ['prefer-hardware', 'prefer-software']){
       try{
@@ -6820,7 +6834,7 @@ async function recordNarratedMp4(){
       }
     }
   }finally{
-    setActiveNarrationTrack(null);
+    releaseActiveNarrationTrack(saveOwner);
   }
   if(!blob) throw new Error(`MP4の映像処理に失敗しました: ${lastError ? lastError.message : '不明なエラー'}`);
   finishRecordingBlob(
@@ -7073,6 +7087,8 @@ async function recordVideoCore(mode = 'silent'){
     return;
   }
   stopSpeech(false);
+  if(playing){ playing = false; }          // 音声つきプレビューが動いていたら止める（止めないと保存と重なる）
+  stopPreviewAudioSource();
   resetRecordingOutput();
   try{
     await ensureCutoutsForSolidBg();
