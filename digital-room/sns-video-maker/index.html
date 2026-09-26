@@ -863,7 +863,16 @@ canvas{
           <input id="endLogoCta" type="checkbox">
           <span><strong>締めのロゴを最後に浮かび上がらせる</strong>動画の最後の約2.6秒、画面がすっと暗くなり金のフクロウとN's factoryのロゴが浮かび上がります。動画の長さは変わりません。プレビューと保存MP4の両方に入ります（フィルムシーン使用中は、フィルム側の締めコマがあるためこの演出は入りません）。</span>
           </label>
-          <label class="check-row" for="owlOverlay">
+          <div class="field">
+          <label for="characterKind">キャラクターを重ねる</label>
+          <select id="characterKind">
+          <option value="none" selected>出さない</option>
+          <option value="owl">フクロウ（講座動画と同じ・ポーズ自動）</option>
+          <option value="hanbai">販売幕僚（口パク・声に合わせて口が動く）</option>
+          </select>
+          <p class="help">写真枠の右下に立ち、字幕がキャラクターのセリフに見えます。<strong>販売幕僚</strong>は「音声つきプレビュー」と「自動ナレーション付きMP4」で声の大きさに合わせて口が開き、声のない保存では口を閉じています。どちらもAIで作った絵のため、動画の左下とSNSキャプションに「※画像はAIで作成しています」が自動で入ります。フィルムシーン使用中は出ません。</p>
+          </div>
+          <label class="check-row" for="owlOverlay" hidden>
           <input id="owlOverlay" type="checkbox">
           <span><strong>フクロウのキャラクターを重ねる</strong>YouTube講座動画と同じ黒いフクロウが写真枠の右下に立ち、字幕がフクロウのセリフに見えます（ずんだもん等のVOICEVOXの声と組み合わせる前提）。ポーズはコマの役割に合わせて自動で変わり、「写真ごと」タブで個別に選べます。AIで作った絵のため、動画の左下とSNSキャプションに「※画像はAIで作成しています」が自動で入ります。フィルムシーン使用中は出ません。</span>
           </label>
@@ -1304,6 +1313,7 @@ const els = {
   filmSpeedAuto: document.getElementById('filmSpeedAuto'),
   endLogoCta: document.getElementById('endLogoCta'),
   owlOverlay: document.getElementById('owlOverlay'),
+  characterKind: document.getElementById('characterKind'),
   owlPose: document.getElementById('owlPose'),
   owlPoseField: document.getElementById('owlPoseField'),
   owlPoseHelp: document.getElementById('owlPoseHelp'),
@@ -3954,6 +3964,114 @@ async function preloadOwlImages(){
     img.addEventListener('error', () => resolve(), {once:true});   // 失敗しても保存は止めない（その絵だけ抜ける）
   })));
 }
+/* ══ 口パクの販売幕僚（2026-09-26 事業主指示・A案＝マスコット版）══
+   絵は assets/hanbai/{closed,half,open}.webp（元絵 広報部\マスコット\20260520-2_髪型髪色差別化\hanbai.png を参照に
+   Gemini で口だけ変えた3枚。体・輪郭は同一に合成済み。正本は 広報部\マスコット\口パク_販売幕僚\）。
+   口の開きは「その時刻の声の大きさ」で決める。声は generateNarrationTimeline() が作る全編の音声トラック
+   （音声つきプレビュー・自動ナレーション付きMP4 が同じものを使う）を activeNarrationTrack に置き、
+   drawSlide の時刻で RMS を取る。声のない保存（動画のみ・自分の声）や声のないコマでは口を閉じる。
+   出す・出さないは「キャラクター」セレクト（none／owl／hanbai）。フクロウとは同じ立ち位置なので同時には出さない。 */
+const HANBAI_MOUTH_STATES = ['closed', 'half', 'open'];
+const hanbaiImages = {};
+function hanbaiImage(state){
+  if(!hanbaiImages[state]) hanbaiImages[state] = loadBrandAsset(`./assets/hanbai/${state}.webp`);
+  return hanbaiImages[state];
+}
+function characterKind(){
+  return (els.characterKind && els.characterKind.value) || 'none';
+}
+function hanbaiActive(){
+  return characterKind() === 'hanbai' && !filmStripActive();
+}
+function characterActive(){
+  return owlOverlayActive() || hanbaiActive();
+}
+
+// 口パク用の音声トラック（{sampleRate, data:Float32Array}）。プレビュー・保存の開始時に置き、終わりに外す
+let activeNarrationTrack = null;
+let activeTrackStats = null;
+function setActiveNarrationTrack(track){
+  activeNarrationTrack = track && track.data && track.data.length ? track : null;
+  activeTrackStats = null;
+  if(!activeNarrationTrack) return;
+  // 声の大きさの基準（声が入っている区間のRMSの中央値）。声の小さい人でも口が動くように相対で見る
+  const data = activeNarrationTrack.data;
+  const win = Math.max(1, Math.round(activeNarrationTrack.sampleRate * .03));
+  const rms = [];
+  for(let start = 0; start + win <= data.length; start += win){
+    let sum = 0;
+    for(let i = start; i < start + win; i++) sum += data[i] * data[i];
+    const value = Math.sqrt(sum / win);
+    if(value > .004) rms.push(value);
+  }
+  rms.sort((a, b) => a - b);
+  activeTrackStats = {reference: rms.length ? rms[Math.floor(rms.length * .6)] : 0};
+}
+function narrationLevelAt(time){
+  if(!activeNarrationTrack || !activeTrackStats || !activeTrackStats.reference) return 0;
+  const {sampleRate, data} = activeNarrationTrack;
+  const half = Math.round(sampleRate * .02);
+  const center = Math.round(time * sampleRate);
+  const from = Math.max(0, center - half);
+  const to = Math.min(data.length, center + half);
+  if(to <= from) return 0;
+  let sum = 0;
+  for(let i = from; i < to; i++) sum += data[i] * data[i];
+  return Math.sqrt(sum / (to - from)) / activeTrackStats.reference;
+}
+// プレビュー再生中の「いまの再生位置（秒）」。口パクの検証や表示に使う
+let narrationCursorStart = 0;
+function narrationCursorSec(){ return (performance.now() - narrationCursorStart) / 1000; }
+function hanbaiMouthState(time){
+  const level = narrationLevelAt(time);
+  if(level < .25) return 'closed';
+  if(level < .7) return 'half';
+  return 'open';
+}
+async function preloadHanbaiImages(){
+  if(!hanbaiActive()) return;
+  updateProgressTicker && updateProgressTicker('販売幕僚の絵を読み込み中');
+  await Promise.all(HANBAI_MOUTH_STATES.map(state => new Promise(resolve => {
+    const img = hanbaiImage(state);
+    if(img.complete && img.naturalWidth) return resolve();
+    img.addEventListener('load', () => resolve(), {once:true});
+    img.addEventListener('error', () => resolve(), {once:true});
+  })));
+}
+async function preloadCharacterImages(){
+  await preloadOwlImages();
+  await preloadHanbaiImages();
+}
+function drawHanbaiCharacter(slide, progress){
+  if(!hanbaiActive()) return;
+  const time = timelineStartForSlide(slide) + progress * (slide.duration || 3.5);
+  const state = String(slide.narration || '').trim() ? hanbaiMouthState(time) : 'closed';
+  const img = hanbaiImage(state);
+  const fallback = hanbaiImage('closed');
+  const use = (img.complete && img.naturalWidth) ? img : ((fallback.complete && fallback.naturalWidth) ? fallback : null);
+  if(!use) return;
+  const photo = REEL_LAYOUT.photo;
+  const spec = REEL_LAYOUT.owl || {h:Math.round(photo.h * .31), right:18};
+  const h = Math.round(spec.h * 1.25);   // 人物は縦長なのでフクロウより少し高く
+  const w = Math.round(h * use.naturalWidth / use.naturalHeight);
+  let bottom = photo.y + photo.h - 22;
+  if(slide.narration && slide.subtitleMotion !== 'none'){
+    bottom = buildSubtitleLayout(trimSubtitle(slide.narration)).box.y - 6;
+  }
+  const t = progress * (slide.duration || 3.5);
+  const bob = Math.sin(t * 2.2) * 4;
+  const enter = easeOut(clamp(progress / .22, 0, 1));
+  const x = photo.x + photo.w - w - spec.right;
+  const y = bottom - h + bob + (1 - enter) * 34;
+  ctx.save();
+  ctx.globalAlpha *= enter;
+  ctx.shadowColor = 'rgba(0,0,0,.38)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 6;
+  ctx.drawImage(use, Math.round(x), Math.round(y), w, h);
+  ctx.restore();
+}
+
 function drawOwlCharacter(slide, progress){
   if(!owlOverlayActive()) return;
   const name = resolvedOwlPose(slide);
@@ -3985,7 +4103,7 @@ function drawOwlCharacter(slide, progress){
 /* AI生成画像の注記。フクロウを出している間、動画の最初から最後まで左下に小さく出す（VOICEVOXクレジットと同じ行・左寄せ）。
    drawFrame の最後で1回だけ描く（切替・暗幕に巻き込まれない）。声なし保存でもフクロウが出る限り描く。 */
 function drawAiImageNote(){
-  if(!owlOverlayActive()) return;
+  if(!characterActive()) return;
   const anchor = REEL_LAYOUT.credit;
   if(!anchor) return;
   const text = OWL_AI_NOTE;
@@ -4189,6 +4307,7 @@ function drawSlide(slide, progress, alpha){
   }
   drawTexts(slide);
   drawOwlCharacter(slide, progress);   // 字幕より先に描く（字幕ボックスの上に立ち、字幕がセリフに見える）
+  drawHanbaiCharacter(slide, progress);
   drawNarrationSubtitle(slide, progress);
   ctx.restore();
 }
@@ -5011,9 +5130,12 @@ async function playPreviewWithVoice(){
   previewAudioSource = source;          // 「停止」で cancelSpeechOutput → stopPreviewAudioSource が止める
   source.onended = () => { if(previewAudioSource === source) previewAudioSource = null; };
   setLog('音声つきプレビューを再生中です（完成動画と同じ声）。聞こえない場合はPC/ブラウザの音量も確認してください。');
+  setActiveNarrationTrack(track);     // 口パク用（販売幕僚）
+  narrationCursorStart = performance.now();
   source.start();
-  const result = await playTimeline(false);
-  stopPreviewAudioSource();
+  let result;
+  try{ result = await playTimeline(false); }
+  finally{ setActiveNarrationTrack(null); stopPreviewAudioSource(); }
   if(!result || !result.stopped) previewReviewed = true;
   setLog(result && result.stopped ? '音声つきプレビューを停止しました。' : '音声つきプレビューが終わりました。ここで聞こえた声が、そのまま動画に入ります。');
 }
@@ -5653,7 +5775,7 @@ function finishRecordingBlob(blob, format, message){
   els.downloadLink.download = `${safeFileName(els.productName.value || 'sns-video')}${currentVideoFormat().suffix}${solidBgActive() ? '_solid' : ''}.${format.ext}`;
   els.downloadBox.style.display = 'block';
   lastRecordingBlob = blob;
-  format.aiImage = owlOverlayActive();   // フクロウ（AI生成画像）入りならキャプションに注記を足す
+  format.aiImage = characterActive();   // キャラクター（AI生成画像）入りならキャプションに注記を足す
   lastRecordingMeta = format;
   refreshUploadButton();
   updateShareToSnsUi();
@@ -6683,17 +6805,22 @@ async function recordNarratedMp4(){
   console.info(`[診断] AI音声のAAC変換 ${audioSec}秒 / ${encoderDiag.totalFrames}コマ / 最長待ち${Math.round(encoderDiag.longestWaitMs)}ms`);
   let blob = null;
   let lastError = null;
-  for(const hardwareAcceleration of ['prefer-hardware', 'prefer-software']){
-    try{
-      updateProgressTicker(hardwareAcceleration === 'prefer-hardware'
-        ? 'AIナレーションをMP4へ合成中'
-        : '端末の映像処理を切り替えて自動再試行中', {resetElapsed:true});
-      blob = await encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, frameRate, hardwareAcceleration);
-      break;
-    }catch(err){
-      lastError = err;
-      if(hardwareAcceleration === 'prefer-hardware') continue;
+  setActiveNarrationTrack(narrationTrack);   // 口パク用（販売幕僚）。合成中のフレームは drawFrame → drawSlide で時刻から口を決める
+  try{
+    for(const hardwareAcceleration of ['prefer-hardware', 'prefer-software']){
+      try{
+        updateProgressTicker(hardwareAcceleration === 'prefer-hardware'
+          ? 'AIナレーションをMP4へ合成中'
+          : '端末の映像処理を切り替えて自動再試行中', {resetElapsed:true});
+        blob = await encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, frameRate, hardwareAcceleration);
+        break;
+      }catch(err){
+        lastError = err;
+        if(hardwareAcceleration === 'prefer-hardware') continue;
+      }
     }
+  }finally{
+    setActiveNarrationTrack(null);
   }
   if(!blob) throw new Error(`MP4の映像処理に失敗しました: ${lastError ? lastError.message : '不明なエラー'}`);
   finishRecordingBlob(
@@ -6880,6 +7007,9 @@ function requestExportGate(mode){
     ...(owlOverlayActive()
       ? [{warn:false, text:`フクロウ: ${activeOwlPoseNames().length}ポーズを重ねます（動画の左下とキャプションに「${OWL_AI_NOTE}」が入ります）`}]
       : []),
+    ...(hanbaiActive()
+      ? [{warn:!narrationMode, text:narrationMode ? `販売幕僚: 声の大きさに合わせて口が動きます（動画の左下とキャプションに「${OWL_AI_NOTE}」が入ります）` : '販売幕僚: この保存には声が入らないため、口は閉じたままになります'}]
+      : []),
     {warn:videoTooLongForSns(), text:`画質と大きさ:${(plannedVideoBitrate() / 1000000).toFixed(1)}Mbps・約${formatMb((plannedVideoBitrate() + AUDIO_BITRATE) * duration / 8)}MB${videoTooLongForSns() ? '（SNSへ投稿するには長すぎます。「Drive用に秒数を短縮」で短くしてください）' : ''}`}
   ];
   els.exportGateList.innerHTML = checks
@@ -6946,7 +7076,7 @@ async function recordVideoCore(mode = 'silent'){
   resetRecordingOutput();
   try{
     await ensureCutoutsForSolidBg();
-    await preloadOwlImages();
+    await preloadCharacterImages();
     if(narrationMode){
       await recordNarratedMp4();
       return;
@@ -8179,6 +8309,23 @@ els.workIdOverlay.addEventListener('change', () => {
 els.workIdOverlayText.addEventListener('input', () => drawSelectedOrFirstFrame());
 els.workIdOverlayText.addEventListener('change', () => {
   if(els.workIdOverlay.checked) resetRecordingOutput();
+});
+els.characterKind.addEventListener('change', () => {
+  const kind = els.characterKind.value;
+  const owlWanted = kind === 'owl';
+  if(els.owlOverlay.checked !== owlWanted){
+    els.owlOverlay.checked = owlWanted;
+    els.owlOverlay.dispatchEvent(new Event('change'));   // フクロウ側の既存処理（ポーズ欄の表示・ログ）を通す
+  }
+  if(kind === 'hanbai'){
+    resetRecordingOutput();
+    HANBAI_MOUTH_STATES.forEach(state => hanbaiImage(state));   // 先に読み込む
+    drawSelectedOrFirstFrame();
+    setLog(`販売幕僚を重ねます。「音声つきプレビュー」「自動ナレーション付きMP4」で声の大きさに合わせて口が動きます。動画の左下とキャプションに「${OWL_AI_NOTE}」が入ります。`);
+  }else if(kind === 'none' && !owlWanted){
+    resetRecordingOutput();
+    drawSelectedOrFirstFrame();
+  }
 });
 els.owlOverlay.addEventListener('change', () => {
   resetRecordingOutput();
