@@ -678,14 +678,24 @@ textarea{min-height:80px;resize:vertical}
          SNSキャプションには「本人が書いた事実」として渡す。空欄の行は出さない。 -->
     <div class="form-row" id="intentBox" style="background:#fff8ec;border:1px solid #d9b466;border-radius:8px;padding:12px">
       <label>この作品について <span style="font-weight:400;color:#a07050">（任意・1行ずつ。書いた言葉がそのまま載ります）</span></label>
-      <input type="text" id="f_intentWho" placeholder="誰のために：例）毎日スーツで通勤する方の、仕事用の手帳として" style="margin-bottom:6px">
-      <input type="text" id="f_intentGoal" placeholder="何のために：例）会議中にすばやくメモを取り、ペンもなくさない" style="margin-bottom:6px">
-      <input type="text" id="f_intentIdea" placeholder="工夫したところ：例）ペンホルダーを外側に付け、片手で抜き差しできる位置にした" style="margin-bottom:6px">
+      <input type="text" id="f_intentWho" placeholder="誰のために：例）毎日スーツで通勤する方の、仕事用の手帳として" style="margin-bottom:4px">
+      <div class="intent-chips" id="chips_f_intentWho"></div>
+      <input type="text" id="f_intentGoal" placeholder="何のために：例）会議中にすばやくメモを取り、ペンもなくさない" style="margin-bottom:4px">
+      <div class="intent-chips" id="chips_f_intentGoal"></div>
+      <input type="text" id="f_intentIdea" placeholder="工夫したところ：例）ペンホルダーを外側に付け、片手で抜き差しできる位置にした" style="margin-bottom:4px">
+      <div class="intent-chips" id="chips_f_intentIdea"></div>
+      <style>
+        .intent-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+        .intent-chips:empty{display:none}
+        .intent-chip{font-size:12px;line-height:1.4;padding:4px 10px;border:1px solid #d9b466;border-radius:999px;background:#fff;color:#5a3a20;cursor:pointer;text-align:left}
+        .intent-chip:hover{background:#fbeccc}
+        .intent-chip.on{background:#6b3a1f;border-color:#6b3a1f;color:#fff}
+      </style>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <button type="button" class="btn btn-secondary" style="font-size:12.5px" onclick="applyIntentBlock(true)">↓ 長い説明の先頭に入れる</button>
         <span id="intentStatus" class="text-sm"></span>
       </div>
-      <div class="text-sm">「✨ AI で生成」を押したときも自動で先頭に入ります。</div>
+      <div class="text-sm">「✨ AI で生成」を押すと、各欄の下にAIの案が3つ出ます（空欄には1つ目が入ります）。押すと差し替わり、長い説明の先頭にも自動で入ります。</div>
     </div>
 
     <div class="form-row">
@@ -1486,6 +1496,33 @@ function loadIntentFields(text) {
     if (m) document.getElementById(map[m[1]]).value = m[2].trim();
   });
 }
+// AIの案を各欄の下にボタンで並べる（2026-09-27 事業主決定）。空欄にだけ1つ目を入れ、書いた欄は上書きしない。
+const INTENT_FIELDS = { who: 'f_intentWho', goal: 'f_intentGoal', idea: 'f_intentIdea' };
+function renderIntentChips(intent) {
+  Object.entries(INTENT_FIELDS).forEach(([key, id]) => {
+    const box = document.getElementById('chips_' + id);
+    const input = document.getElementById(id);
+    const list = (intent && Array.isArray(intent[key]) ? intent[key] : []).filter(Boolean);
+    box.innerHTML = '';
+    if (list.length && !input.value.trim()) input.value = list[0];
+    list.forEach(text => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'intent-chip';
+      b.textContent = text;
+      b.onclick = () => { input.value = text; markIntentChips(id); applyIntentBlock(false); };
+      box.appendChild(b);
+    });
+    markIntentChips(id);
+  });
+}
+document.addEventListener('input', (ev) => {
+  if (Object.values(INTENT_FIELDS).includes(ev.target.id)) markIntentChips(ev.target.id);
+});
+function markIntentChips(id) {
+  const v = document.getElementById(id).value.trim();
+  document.querySelectorAll('#chips_' + id + ' .intent-chip').forEach(b => b.classList.toggle('on', b.textContent === v));
+}
 function applyIntentBlock(manual) {
   const ta = document.getElementById('f_longDesc');
   const st = document.getElementById('intentStatus');
@@ -1509,7 +1546,8 @@ async function generateDesc() {
   btn.disabled = true;
   btn.textContent = '⏳ 生成中…';
 
-  const payload = JSON.stringify({ api: 'generateDesc', key: REGISTER_KEY, name, category, material, color });
+  const size     = document.getElementById('f_size').value;   // 3行の案の根拠（サイズ）に使う
+  const payload = JSON.stringify({ api: 'generateDesc', key: REGISTER_KEY, name, category, material, color, size });
   const MAX_RETRY = 3;
   const RETRY_DELAY = 2500;
 
@@ -1534,6 +1572,7 @@ async function generateDesc() {
       document.getElementById('f_shortDesc').value = d.shortDesc || '';
       document.getElementById('f_longDesc').value  = d.longDesc  || '';
       document.getElementById('f_hashtags').value  = d.hashtags  || '';
+      renderIntentChips(d.intent);
       applyIntentBlock(false);
       scheduleRegisterDraftSave();
       btn.textContent = '✅ 生成完了';
@@ -2383,6 +2422,7 @@ function resetAll() {
    'f_intentWho','f_intentGoal','f_intentIdea'].forEach(id => {
     document.getElementById(id).value = '';
   });
+  renderIntentChips(null);   // 前の作品のAI案を残さない
   document.getElementById('f_category').value = '';
   { const _s = document.getElementById('f_subcategory'); if (_s) _s.value = ''; }
   document.getElementById('f_stock').value = '1';
