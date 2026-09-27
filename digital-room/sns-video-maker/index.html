@@ -2770,22 +2770,31 @@ let lastNarrationLang = 'ja-JP';
 // 作品登録の「この作品について」（2026-09-27）：長い説明の先頭に
 //   【この作品について】\n・誰のために：…\n・何のために：…\n・工夫したところ：…\n\n（本文）
 // の形で入る（register.html の applyIntentBlock）。書式を変えるときは両方そろえる。
+// 2026-09-27（事業主決定A）から宣伝文の形に変わった：
+//   【この作品について】\n見出し\nこだわり\n\nこんな方に\n・…\n・…\n\n（本文）
+// 古い形（・誰のために：…）も読めるようにしてある。区切り方は register.html の intentBlockEnd と同じ。
 const INTENT_HEAD = '【この作品について】';
+const INTENT_FOR_HEAD = 'こんな方に';
 const INTENT_LINE_RE = /^・(誰のために|何のために|工夫したところ)：\s*(.*)$/;
 function splitIntentBlock(text){
   text = String(text || '');
   if(!text.startsWith(INTENT_HEAD)) return {lines: [], body: text};
-  const end = text.indexOf('\n\n');
+  const k = text.indexOf('\n\n' + INTENT_FOR_HEAD + '\n');
+  const end = text.indexOf('\n\n', k >= 0 ? k + 2 : 0);
   const head = end < 0 ? text : text.slice(0, end);
-  const lines = head.slice(INTENT_HEAD.length).split('\n').map(line => line.trim()).filter(line => INTENT_LINE_RE.test(line));
+  // 見出し行（【この作品について】・こんな方に）と空行を除いた中身の行
+  const lines = head.slice(INTENT_HEAD.length).split('\n').map(line => line.trim())
+    .filter(line => line && line !== INTENT_FOR_HEAD);
   return {lines, body: end < 0 ? '' : text.slice(end + 2)};
 }
-// 台本用：見出しと「・誰のために：」などの前置きを外し、中身の文だけにする
+// 台本用：見出し・「こんな方に」・「・誰のために：」などの前置きを外し、中身の文だけにする
 function intentBlockToProse(text){
   const {lines, body} = splitIntentBlock(text);
   if(!lines.length) return String(text || '');
-  const prose = lines.map(line => line.match(INTENT_LINE_RE)[2].trim()).filter(Boolean)
-    .map(s => /[。！？!?]$/.test(s) ? s : s + '。');
+  const prose = lines.map(line => {
+    const m = line.match(INTENT_LINE_RE);
+    return (m ? m[2] : line.replace(/^・\s*/, '')).trim();
+  }).filter(Boolean).map(s => /[。！？!?]$/.test(s) ? s : s + '。');
   return prose.join('\n') + (body ? '\n\n' + body : '');
 }
 
