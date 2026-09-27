@@ -3387,7 +3387,8 @@ function rebuildEnglishNarrationPlan(features, count){
     || `Thank you for viewing this ${product} from N's factory.`;
   const bodyFeatures = features.filter(line => normalizedDistributionLine(line) !== normalizedDistributionLine(closing));
   const used = new Set();
-  const take = pattern => takeUnusedFeature(bodyFeatures, pattern, used);
+  // 言葉が合わなくても、まだ使っていないメモの文を定型文より先に使う（2026-09-27 事業主指摘「メモが活かされていない」）
+  const take = pattern => takeUnusedFeature(bodyFeatures, pattern, used) || takeUnusedFeature(bodyFeatures, /[\s\S]/, used);
   const candidates = [
     take(/introduc|this video|this is|pen holder|refill|organizer/i) || `This video introduces ${product}. Please take in the overall balance, shape, and handmade presence.`,
     take(/material|leather|margot|alaska|color|grain|fuchsia|cobalt|blue|orange|pink/i) || `The material is ${material}. Notice the color, grain, and quiet depth of the leather.`,
@@ -3409,7 +3410,9 @@ function rebuildJapaneseNarrationPlan(features, count){
     || `N's factoryの作品をご覧いただき、ありがとうございます。`;
   const bodyFeatures = features.filter(line => normalizedDistributionLine(line) !== normalizedDistributionLine(closing));
   const used = new Set();
-  const take = pattern => takeUnusedFeature(bodyFeatures, pattern, used);
+  // 言葉が合わなくても、まだ使っていないメモの文を定型文より先に使う（2026-09-27 事業主指摘「メモが活かされていない」）。
+  // 定型文は、メモの文が写真の枚数に足りないときだけ入る。
+  const take = pattern => takeUnusedFeature(bodyFeatures, pattern, used) || takeUnusedFeature(bodyFeatures, /[\s\S]/, used);
   const candidates = [
     take(/紹介|全体|雰囲気|存在感/) || `${product}の全体の雰囲気と、手仕事ならではの存在感をご覧ください。`,
     take(/素材|革|色|表情|質感/) || `素材は${material}です。革の色、表情、質感に注目してください。`,
