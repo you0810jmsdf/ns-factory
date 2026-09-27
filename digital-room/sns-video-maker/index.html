@@ -2767,9 +2767,31 @@ function selectedTranslationTarget(options = {}){
    手直し済みのセリフがあるコマは上書き前に確認し、やめたら言語も元に戻す。 */
 let lastNarrationLang = 'ja-JP';
 
+// 作品登録の「この作品について」（2026-09-27）：長い説明の先頭に
+//   【この作品について】\n・誰のために：…\n・何のために：…\n・工夫したところ：…\n\n（本文）
+// の形で入る（register.html の applyIntentBlock）。書式を変えるときは両方そろえる。
+const INTENT_HEAD = '【この作品について】';
+const INTENT_LINE_RE = /^・(誰のために|何のために|工夫したところ)：\s*(.*)$/;
+function splitIntentBlock(text){
+  text = String(text || '');
+  if(!text.startsWith(INTENT_HEAD)) return {lines: [], body: text};
+  const end = text.indexOf('\n\n');
+  const head = end < 0 ? text : text.slice(0, end);
+  const lines = head.slice(INTENT_HEAD.length).split('\n').map(line => line.trim()).filter(line => INTENT_LINE_RE.test(line));
+  return {lines, body: end < 0 ? '' : text.slice(end + 2)};
+}
+// 台本用：見出しと「・誰のために：」などの前置きを外し、中身の文だけにする
+function intentBlockToProse(text){
+  const {lines, body} = splitIntentBlock(text);
+  if(!lines.length) return String(text || '');
+  const prose = lines.map(line => line.match(INTENT_LINE_RE)[2].trim()).filter(Boolean)
+    .map(s => /[。！？!?]$/.test(s) ? s : s + '。');
+  return prose.join('\n') + (body ? '\n\n' + body : '');
+}
+
 function buildJapaneseScriptFromOriginal(source){
   // 長文紹介の冒頭にある登録名（アンダースコア入り）も、読み上げで「アンダーバー」と読まれないよう空白に直す
-  const text = String(source || '').replace(/_/g, ' ').trim();
+  const text = intentBlockToProse(String(source || '')).replace(/_/g, ' ').trim();
   if(currentWork){
     els.productName.value = displayInfoText(currentWork.title) || els.productName.value;
     els.materialNote.value = formatWorkMeta(currentWork);
@@ -2854,7 +2876,9 @@ async function translateLongDescToFeatureNote(options = {}){
   const target = selectedTranslationTarget(options);
   const sourceLang = target === 'en' ? 'ja' : 'en';
   const targetLabel = target === 'en' ? '英語' : '日本語';
-  const source = translationSourceText(target, options);
+  // 英語の台本にするときも「この作品について」の見出しと前置きは外して訳す（2026-09-27）
+  const rawSource = translationSourceText(target, options);
+  const source = target === 'en' ? intentBlockToProse(rawSource).trim() : rawSource;
   if(!source){
     if(showLog) setLog(target === 'en' ? '作品集の長文紹介を入力してください。' : '見どころメモに英語文を入力してください。');
     return false;
@@ -5590,7 +5614,9 @@ async function generateSnsPostVoiceCaption(){
     api: 'generateSnsCaption', key,
     name: currentWork.title, category: currentWork.category, material: currentWork.material,
     color: currentWork.color, size: currentWork.size, price: currentWork.price,
-    memo: els.snsPostMemo.value.trim(), longDesc: currentWork.longDesc
+    // 「この作品について」の3行は本人が書いた事実なので、ひとことに添える（register.html と同じ扱い・2026-09-27）
+    memo: [els.snsPostMemo.value.trim()].concat(splitIntentBlock(currentWork.longDesc).lines).filter(Boolean).join('\n'),
+    longDesc: splitIntentBlock(currentWork.longDesc).body
   };
   try{
     const res = await fetch(SNS_VIDEO_DRIVE_API, {
