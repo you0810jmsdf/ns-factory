@@ -672,6 +672,22 @@ textarea{min-height:80px;resize:vertical}
       <span class="ai-gen-hint">商品名・カテゴリ・素材・色から<br>説明文とハッシュタグを自動生成します</span>
     </div>
 
+    <!-- この作品について（2026-09-27 知人の助言を反映）
+         「作品を並べただけ」でなく、誰のため・何のため・どこを工夫したかを3行で添える。
+         AIには書かせない（推測で書くと誤案内になる）。本人の言葉をそのまま長い説明の先頭に入れ、
+         SNSキャプションには「本人が書いた事実」として渡す。空欄の行は出さない。 -->
+    <div class="form-row" id="intentBox" style="background:#fff8ec;border:1px solid #d9b466;border-radius:8px;padding:12px">
+      <label>この作品について <span style="font-weight:400;color:#a07050">（任意・1行ずつ。書いた言葉がそのまま載ります）</span></label>
+      <input type="text" id="f_intentWho" placeholder="誰のために：例）毎日スーツで通勤する方の、仕事用の手帳として" style="margin-bottom:6px">
+      <input type="text" id="f_intentGoal" placeholder="何のために：例）会議中にすばやくメモを取り、ペンもなくさない" style="margin-bottom:6px">
+      <input type="text" id="f_intentIdea" placeholder="工夫したところ：例）ペンホルダーを外側に付け、片手で抜き差しできる位置にした" style="margin-bottom:6px">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" style="font-size:12.5px" onclick="applyIntentBlock(true)">↓ 長い説明の先頭に入れる</button>
+        <span id="intentStatus" class="text-sm"></span>
+      </div>
+      <div class="text-sm">「✨ AI で生成」を押したときも自動で先頭に入ります。</div>
+    </div>
+
     <div class="form-row">
       <label>短い説明<span class="req">*</span> <span style="font-weight:400;color:#a07050">（一覧・SNS用 60文字以内）</span></label>
       <input type="text" id="f_shortDesc" placeholder="例: 手縫いで仕上げたA5システム手帳。チョコブラウンのイタリアンレザーが特徴。" maxlength="120">
@@ -1331,6 +1347,7 @@ async function loadProduct() {
     document.getElementById('f_stock').value = p.stock;
     document.getElementById('f_shortDesc').value = p.shortDesc;
     document.getElementById('f_longDesc').value  = p.longDesc;
+    loadIntentFields(p.longDesc);
     document.getElementById('f_hashtags').value  = p.hashtags;
 
     photos = (d.photos || []).map(ph => ({
@@ -1442,6 +1459,43 @@ async function deleteProduct() {
   }
 }
 
+// ====== この作品について（誰のため・何のため・工夫）2026-09-27 ======
+// 長い説明の先頭に【この作品について】を入れる。前に入れたものがあれば差し替える（二重にしない）。
+const INTENT_HEAD = '【この作品について】';
+function intentLines() {
+  return [
+    ['誰のために', val('f_intentWho')],
+    ['何のために', val('f_intentGoal')],
+    ['工夫したところ', val('f_intentIdea')]
+  ].filter(([, v]) => v).map(([k, v]) => '・' + k + '：' + v);
+}
+function stripIntentBlock(text) {
+  if (!text.startsWith(INTENT_HEAD)) return text;
+  const end = text.indexOf('\n\n');
+  return end < 0 ? '' : text.slice(end + 2);
+}
+// 編集で既存作品を開いたとき、先頭の【この作品について】を3欄に戻す（作り直しで消えないように）
+function loadIntentFields(text) {
+  const map = { '誰のために': 'f_intentWho', '何のために': 'f_intentGoal', '工夫したところ': 'f_intentIdea' };
+  Object.values(map).forEach(id => { document.getElementById(id).value = ''; });
+  text = String(text || '');
+  if (!text.startsWith(INTENT_HEAD)) return;
+  const end = text.indexOf('\n\n');
+  text.slice(INTENT_HEAD.length, end < 0 ? undefined : end).split('\n').forEach(line => {
+    const m = line.match(/^・(誰のために|何のために|工夫したところ)：(.*)$/);
+    if (m) document.getElementById(map[m[1]]).value = m[2].trim();
+  });
+}
+function applyIntentBlock(manual) {
+  const ta = document.getElementById('f_longDesc');
+  const st = document.getElementById('intentStatus');
+  const lines = intentLines();
+  const body = stripIntentBlock(ta.value);
+  ta.value = lines.length ? INTENT_HEAD + '\n' + lines.join('\n') + (body ? '\n\n' + body : '') : body;
+  if (manual && st) st.textContent = lines.length ? '✅ 長い説明の先頭に入れました' : '3行とも空欄なので、先頭の【この作品について】を外しました';
+  scheduleRegisterDraftSave();
+}
+
 // ====== AI 説明文生成 ======
 async function generateDesc() {
   const name     = val('f_name');
@@ -1480,6 +1534,7 @@ async function generateDesc() {
       document.getElementById('f_shortDesc').value = d.shortDesc || '';
       document.getElementById('f_longDesc').value  = d.longDesc  || '';
       document.getElementById('f_hashtags').value  = d.hashtags  || '';
+      applyIntentBlock(false);
       scheduleRegisterDraftSave();
       btn.textContent = '✅ 生成完了';
       setTimeout(() => { btn.textContent = '✨ AI で生成'; btn.disabled = false; }, 2000);
@@ -1636,7 +1691,8 @@ const REGISTER_DRAFT_KEY = 'current';
 const REGISTER_DRAFT_META_KEY = 'nsf_register_draft_meta_v1';
 const REGISTER_DRAFT_FIELD_IDS = [
   'f_name','f_category','f_subcategory','f_material','f_color','f_size','f_size_custom',
-  'f_hours','f_cost','f_price','f_stock','f_shortDesc','f_longDesc','f_hashtags'
+  'f_hours','f_cost','f_price','f_stock','f_shortDesc','f_longDesc','f_hashtags',
+  'f_intentWho','f_intentGoal','f_intentIdea'
 ];
 let registerDraftTimer = null;
 let registerDraftRestoring = false;
@@ -2323,7 +2379,8 @@ function resetAll() {
   editingPriceSuffix = '';       // 前に編集した商品の販売状態を次へ持ち越さない
   photos = [];
   mainPhotoIndex = -1;
-  ['f_name','f_material','f_color','f_size','f_hours','f_cost','f_price','f_shortDesc','f_longDesc','f_hashtags'].forEach(id => {
+  ['f_name','f_material','f_color','f_size','f_hours','f_cost','f_price','f_shortDesc','f_longDesc','f_hashtags',
+   'f_intentWho','f_intentGoal','f_intentIdea'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('f_category').value = '';
@@ -3058,8 +3115,9 @@ async function generateSnsCaption() {
     color: document.getElementById('f_color').value,
     size: document.getElementById('f_size').value,
     price: val('f_price'),
-    memo: val('igMemo'),
-    longDesc: val('f_longDesc')
+    // 「この作品について」の3行も本人が書いた事実としてメモに添える（2026-09-27）
+    memo: [val('igMemo')].concat(intentLines()).filter(Boolean).join('\n'),
+    longDesc: stripIntentBlock(val('f_longDesc'))
   };
   try {
     const res = await fetch(GAS_URL, {
