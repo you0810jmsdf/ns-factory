@@ -2798,6 +2798,12 @@ function intentBlockToProse(text){
   return prose.join('\n') + (body ? '\n\n' + body : '');
 }
 
+// 「この作品について」の中身を、見出し・前置きを外した文の配列で返す（無ければ空配列）
+function intentProseLines(text){
+  if(!splitIntentBlock(text).lines.length) return [];
+  return intentBlockToProse(text).split('\n\n')[0].split('\n');
+}
+
 function buildJapaneseScriptFromOriginal(source){
   // 長文紹介の冒頭にある登録名（アンダースコア入り）も、読み上げで「アンダーバー」と読まれないよう空白に直す
   const text = intentBlockToProse(String(source || '')).replace(/_/g, ' ').trim();
@@ -5550,10 +5556,33 @@ const SNS_CAPTION_MAX_CHARS = 1200;
 
 let snsPostGateResolve = null;
 
+// 見どころメモから、expandJapaneseFeatureMemo が足す定型文（どの作品にも入る一般論）を除いた行だけを返す。
+// ⛔ 定型文を変えたらここの一覧もそろえる（一般論が「本人の事実」としてAIに渡ってしまう）。
+const FEATURE_NOTE_TEMPLATE_RES = [
+  /の全体の雰囲気と、手仕事ならではの存在感をご覧ください。$/,
+  /^素材は.*です。革の色、表情、質感に注目してください。$/,
+  /^この角度から見ると、形やバランスがより分かりやすくなります。$/,
+  /^光の当たり方で革の表情が変わり、自然な奥行きが出ています。$/,
+  /^縫い目、コバ、細かな仕立ての部分もゆっくりご覧ください。$/,
+  /^日常で使いやすいシンプルさと、手作りの温かさを両立しています。$/,
+  /^使い込むほど革が育ち、自分だけの表情へ変わっていきます。$/,
+  /^N's factoryの作品をご覧いただき、ありがとうございます。$/
+];
+function featureNoteFacts(){
+  const seen = new Set();
+  return String((els.featureNote && els.featureNote.value) || '').split('\n')
+    .map(line => line.trim())
+    .filter(line => line && !FEATURE_NOTE_TEMPLATE_RES.some(re => re.test(line)))
+    .filter(line => !seen.has(line) && seen.add(line))
+    .join('\n');
+}
+
 function askSnsPostGate(caption){
   // 文章は確認画面で直せる（2026-09-12）。投稿するのは closeSnsPostGate で読む入力欄の値。
   els.snsPostCaption.value = caption;
-  if(els.snsPostMemo) els.snsPostMemo.value = '';
+  // 見どころメモ（セリフの材料）を「ひとこと」に写し、「自分の言葉で作る」の材料にする（2026-09-27 事業主決定A）。
+  // 画面で見えるので、その場で直せる。メモそのものは投稿されない（投稿されるのは下の文章欄だけ）。
+  if(els.snsPostMemo) els.snsPostMemo.value = featureNoteFacts();
   if(els.snsPostVoiceStatus) els.snsPostVoiceStatus.textContent = '';
   refreshSnsPostChecks();
   if(typeof els.snsPostGate.showModal !== 'function'){
@@ -5624,7 +5653,9 @@ async function generateSnsPostVoiceCaption(){
     name: currentWork.title, category: currentWork.category, material: currentWork.material,
     color: currentWork.color, size: currentWork.size, price: currentWork.price,
     // 「この作品について」の3行は本人が書いた事実なので、ひとことに添える（register.html と同じ扱い・2026-09-27）
-    memo: [els.snsPostMemo.value.trim()].concat(splitIntentBlock(currentWork.longDesc).lines).filter(Boolean).join('\n'),
+    // 同じ文が2回渡らないよう、行単位で重複を除く（見どころメモが作品集の説明から作られている場合）
+    memo: [...new Set(els.snsPostMemo.value.split('\n').concat(intentProseLines(currentWork.longDesc))
+      .map(s => s.trim()).filter(Boolean))].join('\n'),
     longDesc: splitIntentBlock(currentWork.longDesc).body
   };
   try{
