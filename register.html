@@ -677,7 +677,7 @@ textarea{min-height:80px;resize:vertical}
          AIには書かせない（推測で書くと誤案内になる）。本人の言葉をそのまま長い説明の先頭に入れ、
          SNSキャプションには「本人が書いた事実」として渡す。空欄の行は出さない。 -->
     <div class="form-row" id="intentBox" style="background:#fff8ec;border:1px solid #d9b466;border-radius:8px;padding:12px">
-      <label>この作品について <span style="font-weight:400;color:#a07050">（任意・1行ずつ。書いた言葉がそのまま載ります）</span></label>
+      <label>この作品について <span style="font-weight:400;color:#a07050">（任意・事実のメモ。AIが宣伝文にして載せます）</span></label>
       <input type="text" id="f_intentWho" placeholder="誰のために：例）毎日スーツで通勤する方の、仕事用の手帳として" style="margin-bottom:4px">
       <div class="intent-chips" id="chips_f_intentWho"></div>
       <input type="text" id="f_intentGoal" placeholder="何のために：例）会議中にすばやくメモを取り、ペンもなくさない" style="margin-bottom:4px">
@@ -692,10 +692,10 @@ textarea{min-height:80px;resize:vertical}
         .intent-chip.on{background:#6b3a1f;border-color:#6b3a1f;color:#fff}
       </style>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <button type="button" class="btn btn-secondary" style="font-size:12.5px" onclick="applyIntentBlock(true)">↓ 長い説明の先頭に入れる</button>
+        <button type="button" class="btn btn-secondary" id="intentCopyBtn" style="font-size:12.5px" onclick="applyIntentBlock(true)">✨ 宣伝文にして先頭に入れる</button>
         <span id="intentStatus" class="text-sm"></span>
       </div>
-      <div class="text-sm">「✨ AI で生成」を押すと、各欄の下にAIの案が3つ出ます（空欄には1つ目が入ります）。押すと差し替わり、長い説明の先頭にも自動で入ります。</div>
+      <div class="text-sm">3つの欄は「事実のメモ」です。「✨ AI で生成」を押すと各欄の下にAIの案が3つ出て（空欄には1つ目が入ります）、その事実から宣伝文（見出し・こだわり・こんな方に）を作って長い説明の先頭に入れます。案を選び直したら「✨ 宣伝文にして先頭に入れる」を押してください。</div>
     </div>
 
     <div class="form-row">
@@ -1479,9 +1479,18 @@ function intentLines() {
     ['工夫したところ', val('f_intentIdea')]
   ].filter(([, v]) => v).map(([k, v]) => '・' + k + '：' + v);
 }
+// 【この作品について】の終わり（本文の始まり）。宣伝文の形（2026-09-27 A）は中に空行と「こんな方に」を含むので、
+// 「こんな方に」の後の最初の空行で区切る。古い形（・誰のために：…）は最初の空行で区切る。
+// ⛔ 書式を変えるときは digital-room/sns-video-maker/index.html の splitIntentBlock もそろえる。
+const INTENT_FOR_HEAD = 'こんな方に';
+function intentBlockEnd(text) {
+  if (!text.startsWith(INTENT_HEAD)) return -1;
+  const k = text.indexOf('\n\n' + INTENT_FOR_HEAD + '\n');
+  return text.indexOf('\n\n', k >= 0 ? k + 2 : 0);   // -1 なら全体が囲み
+}
 function stripIntentBlock(text) {
   if (!text.startsWith(INTENT_HEAD)) return text;
-  const end = text.indexOf('\n\n');
+  const end = intentBlockEnd(text);
   return end < 0 ? '' : text.slice(end + 2);
 }
 // 編集で既存作品を開いたとき、先頭の【この作品について】を3欄に戻す（作り直しで消えないように）
@@ -1510,7 +1519,10 @@ function renderIntentChips(intent) {
       b.type = 'button';
       b.className = 'intent-chip';
       b.textContent = text;
-      b.onclick = () => { input.value = text; markIntentChips(id); applyIntentBlock(false); };
+      b.onclick = () => {
+        input.value = text; markIntentChips(id); scheduleRegisterDraftSave();
+        document.getElementById('intentStatus').textContent = '案を変えました。「✨ 宣伝文にして先頭に入れる」を押すと説明文に反映されます';
+      };
       box.appendChild(b);
     });
     markIntentChips(id);
@@ -1523,14 +1535,55 @@ function markIntentChips(id) {
   const v = document.getElementById(id).value.trim();
   document.querySelectorAll('#chips_' + id + ' .intent-chip').forEach(b => b.classList.toggle('on', b.textContent === v));
 }
-function applyIntentBlock(manual) {
+// 3つの事実を宣伝文（見出し・こだわり・こんな方に）にして長い説明の先頭へ（2026-09-27 事業主決定A）。
+// GAS generateIntentCopy が書く。⛔ 自動の送り直しはしない（AIの二重呼び出しを避ける）。失敗したら理由を出してボタンで押し直す。
+function buildIntentCopyBlock(d) {
+  const head = [d.catchCopy, d.craft].filter(Boolean).join('\n');
+  const forWhom = (d.forWhom || []).filter(Boolean);
+  return INTENT_HEAD + '\n' + head + (forWhom.length ? '\n\n' + INTENT_FOR_HEAD + '\n' + forWhom.map(s => '・' + s).join('\n') : '');
+}
+let intentCopyBusy = false;
+async function applyIntentBlock(manual) {
   const ta = document.getElementById('f_longDesc');
   const st = document.getElementById('intentStatus');
-  const lines = intentLines();
-  const body = stripIntentBlock(ta.value);
-  ta.value = lines.length ? INTENT_HEAD + '\n' + lines.join('\n') + (body ? '\n\n' + body : '') : body;
-  if (manual && st) st.textContent = lines.length ? '✅ 長い説明の先頭に入れました' : '3行とも空欄なので、先頭の【この作品について】を外しました';
-  scheduleRegisterDraftSave();
+  const btn = document.getElementById('intentCopyBtn');
+  if (!intentLines().length) {
+    ta.value = stripIntentBlock(ta.value);
+    if (manual) st.textContent = '3つの欄が空なので、先頭の【この作品について】を外しました';
+    scheduleRegisterDraftSave();
+    return;
+  }
+  if (intentCopyBusy) return;
+  intentCopyBusy = true;
+  if (btn) btn.disabled = true;
+  st.textContent = '⏳ 宣伝文を作っています…（10秒ほど）';
+  try {
+    const payload = JSON.stringify({
+      api: 'generateIntentCopy', key: REGISTER_KEY,
+      name: val('f_name'), category: document.getElementById('f_category').value,
+      material: document.getElementById('f_material').value, color: document.getElementById('f_color').value,
+      size: document.getElementById('f_size').value,
+      who: val('f_intentWho'), goal: val('f_intentGoal'), idea: val('f_intentIdea')
+    });
+    const res = await fetch(GAS_URL, { method: 'POST', body: new URLSearchParams({ payload }) });
+    const text = await res.text();
+    if (text.trim().startsWith('<')) throw new Error('Google側の一時障害です（HTTP ' + res.status + '）。少し待ってもう一度押してください');
+    const d = JSON.parse(text);
+    if (!d.ok) throw new Error(d.error || '作成に失敗しました');
+    // 作っている間に書き換えられた本文も残す（先頭の囲みだけ差し替える）
+    const body = stripIntentBlock(ta.value);
+    ta.value = buildIntentCopyBlock(d) + (body ? '\n\n' + body : '');
+    const ng = d.ngWords || [];
+    st.textContent = ng.length
+      ? '⚠️ 大げさな言い方が入っています：' + ng.join('、') + '（直すか、もう一度押してください）'
+      : '✅ 宣伝文にして長い説明の先頭に入れました。読んで直してから使ってください';
+    scheduleRegisterDraftSave();
+  } catch (e) {
+    st.textContent = '⚠️ ' + e.message;
+  } finally {
+    intentCopyBusy = false;
+    if (btn) btn.disabled = false;
+  }
 }
 
 // ====== AI 説明文生成 ======
