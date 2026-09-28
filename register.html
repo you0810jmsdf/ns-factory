@@ -328,6 +328,10 @@ textarea{min-height:80px;resize:vertical}
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <span style="font-weight:700;color:#5a3a20;font-size:13px">既存商品を編集:</span>
       <input type="text" id="editProductId" placeholder="例: 2026-001" style="padding:6px 10px;border:1px solid #d8b888;border-radius:6px;width:140px;font-size:13px">
+      <!-- 新しい順に選べるドロップリスト（works-data.jsonから作成・2026-09-29）。選ぶとeditProductIdへ値を入れてloadProduct()を呼ぶだけで、読み込み自体は既存のまま -->
+      <select id="editProductSelect" style="padding:6px 10px;border:1px solid #d8b888;border-radius:6px;font-size:13px;max-width:100%">
+        <option value="">▼ 既存商品を選ぶ</option>
+      </select>
       <button type="button" class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="loadProduct()">📂 読み込み</button>
       <button type="button" id="newModeBtn" class="btn btn-secondary hidden" style="padding:6px 14px;font-size:12px" onclick="exitEditMode()">＋ 新規登録に戻る</button>
       <button type="button" id="deleteBtn" class="hidden" style="padding:6px 14px;font-size:12px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700" onclick="deleteProduct()">🗑️ この商品を削除</button>
@@ -1324,6 +1328,59 @@ function priceWithStatus(numText) {
   if (!n) return n;
   return n + (editingPriceSuffix || '');
 }
+
+// 既存商品ドロップリスト（2026-09-29 事業主指示）。
+// GASは呼ばず、同リポジトリ直下の静的ファイル works-data.json から作る（読み込みを遅くしないため）。
+// 選んだら editProductId に値を入れて、既存の loadProduct() をそのまま呼ぶだけ（loadProduct の中身は無改修）。
+function editProductIdKey(id) {
+  // "NF2026_659" → 年×100000＋番号。形式に合わないIDはソート末尾行きの目印として -1 を返す
+  const m = /^NF(\d{4})_(\d+)$/.exec(String(id || ''));
+  if (!m) return -1;
+  return Number(m[1]) * 100000 + Number(m[2]);
+}
+async function loadEditProductOptions() {
+  const sel = document.getElementById('editProductSelect');
+  if (!sel) return;
+  try {
+    const res = await fetch('works-data.json', { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const list = await res.json();
+    if (!Array.isArray(list)) throw new Error('unexpected format');
+
+    // 重複IDは1つに（先に出てきた方を残す）
+    const seen = new Set();
+    const items = [];
+    list.forEach(p => {
+      const id = String((p && p.id) || '').trim();
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      items.push({ id, name: (p && p.name) || '' });
+    });
+
+    // 新しい順（IDの数値降順）。形式に合わないIDは末尾へ
+    items.sort((a, b) => editProductIdKey(b.id) - editProductIdKey(a.id));
+
+    sel.innerHTML = '<option value="">▼ 既存商品を選ぶ</option>' + items.map(it => {
+      let label = it.id;
+      if (it.name) {
+        const name = it.name.length > 30 ? it.name.slice(0, 30) + '…' : it.name;
+        label = it.id + ' — ' + name;
+      }
+      const esc = label.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      return `<option value="${it.id.replace(/"/g, '&quot;')}">${esc}</option>`;
+    }).join('');
+  } catch (e) {
+    // 取得失敗時は手入力・読み込みボタンは従来どおり使える。例外は外に投げない
+    sel.innerHTML = '<option value="">（一覧を読めませんでした・番号を手入力してください）</option>';
+    sel.disabled = true;
+  }
+}
+document.getElementById('editProductSelect').addEventListener('change', function () {
+  if (!this.value) return;
+  document.getElementById('editProductId').value = this.value;
+  loadProduct();
+});
+loadEditProductOptions();
 
 async function loadProduct() {
   const id = document.getElementById('editProductId').value.trim();
