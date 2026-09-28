@@ -1424,6 +1424,8 @@ const VOICEVOX_VOICES = [
 const OWN_VOICE_ENDPOINT = 'http://127.0.0.1:50031';
 const OWN_VOICE_START_FILE = 'C:\\Tools\\qwen3tts\\start_for_sns_video.bat';
 const OWN_VOICE = {value:'own:1', label:'本人の声（AI合成・このPC）', credit:'音声：本人の声をAIで合成'};
+// 急ぐとき用の速い版（0.6B・約1.5倍速い・質は落ちる・2026-09-28 事業主決定B）。表記は同じ
+const OWN_VOICE_FAST = {value:'own:fast', label:'本人の声・速い（AI合成・このPC）'};
 
 const AI_VOICES = {
   // 多言語対応の声にしている。通常の英語の声は日本語を渡すと音声が返らず、
@@ -1440,7 +1442,8 @@ const AI_VOICES = {
     {value:'ja-JP-NanamiNeural', label:'ななみ（日本語・女性）'},
     {value:'ja-JP-KeitaNeural', label:'けいた（日本語・男性）'},
     ...VOICEVOX_VOICES.map(voice => ({value:voice.value, label:voice.label})),
-    {value:OWN_VOICE.value, label:OWN_VOICE.label}
+    {value:OWN_VOICE.value, label:OWN_VOICE.label},
+    {value:OWN_VOICE_FAST.value, label:OWN_VOICE_FAST.label}
   ]
 };
 
@@ -6174,7 +6177,7 @@ function selectedVoicevoxCredit(){
    VOICEVOX と同じく公開ページから http://127.0.0.1:50031 を直接呼ぶ（サーバーが公開オリジンだけ許可）。
    CPU で1.7B版を動かすため1コマ約1分。声の調子のスライダー・アクセント指定は効かない（読み方の辞書は効く）。
    見本の声と文字起こしはサーバー側（ref.wav／ref.txt）。 */
-function isOwnVoice(voice){ return String(voice || '') === OWN_VOICE.value; }
+function isOwnVoice(voice){ return [OWN_VOICE.value, OWN_VOICE_FAST.value].includes(String(voice || '')); }
 // 動画の右下とキャプションに入れる表記（VOICEVOX:キャラ名／本人の声の注記）
 function selectedVoiceCredit(){
   if(isOwnVoice(els.aiVoiceSelect && els.aiVoiceSelect.value)) return OWN_VOICE.credit;
@@ -6192,7 +6195,8 @@ async function ownVoiceStatus(){
   }catch(_){ return null; }
 }
 
-async function generateOwnVoiceNarrationAudio(text){
+async function generateOwnVoiceNarrationAudio(text, voice){
+  const model = voice === OWN_VOICE_FAST.value ? 'fast' : 'standard';   // 速い版は初回だけ読み込みで20秒ほど余計にかかる
   const parts = [];
   let sampleRate = 24000;
   // 読み方の辞書は当てる。長い文は区切って1回ずつ作る（サーバーの上限は400字）
@@ -6200,7 +6204,7 @@ async function generateOwnVoiceNarrationAudio(text){
     let res;
     try{
       res = await fetch(OWN_VOICE_ENDPOINT + '/synthesis', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text:chunk})
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text:chunk, model})
       });
     }catch(_){ throw new Error(OWN_VOICE_HELP); }
     if(!res.ok){
@@ -6494,7 +6498,7 @@ async function generateNarrationAudio(text, voice, language){
 
 async function generateNarrationAudioUncached(text, voice, language){
   if(isVoicevoxVoice(voice)) return await generateVoicevoxNarrationAudio(text, voice);
-  if(isOwnVoice(voice)) return await generateOwnVoiceNarrationAudio(text);
+  if(isOwnVoice(voice)) return await generateOwnVoiceNarrationAudio(text, voice);
   // 日本語・英語とも中継サーバから受け取る（2026-09-06 一本化）。
   // ブラウザ内のAI音声は長い動画で書き出しが止まる原因だったため使わない。
   return await generateRelayNarrationAudio(text, voice);
