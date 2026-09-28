@@ -322,6 +322,16 @@ function main() {
   });
 
   const readyRows = ready.map(baseImportRow);
+
+  // 確認待ち分（価格未設定・個人名候補）も「非公開のまま登録する」用途向けに別ファイルへ出す（2026-09-02 事業主指示）。
+  // 価格未設定は0円で出力されるため、公開前に必ず価格を入れること。
+  const readyIds = new Set(ready.map((w) => w.id));
+  const rest = works.filter((w) => !readyIds.has(w.id));
+  const restRows = rest.map((w, i) => baseImportRow(w, readyRows.length + i));
+  const restImageList = rest.map(imageListRow);
+  fs.writeFileSync(path.join(OUT_DIR, 'base_import_rest.csv'), toCsv(BASE_IMPORT_HEADERS, restRows), 'utf8');
+  fs.writeFileSync(path.join(OUT_DIR, 'base_image_download_list_rest.csv'), toCsv(Object.keys(imageListRow({})), restImageList), 'utf8');
+
   const summaryRows = [
     { 項目: '作品集総件数', 件数: works.length },
     { 項目: 'BASE登録CSVへ出力', 件数: readyRows.length },
