@@ -743,6 +743,11 @@ canvas{
           <button class="secondary" id="voicevoxCheck" type="button">VOICEVOXを起動してつなぐ</button>
           <p class="help" id="voicevoxStatus" aria-live="polite"></p>
           </div>
+          <div id="ownVoiceBox" hidden>
+          <p class="help">「本人の声」は、このパソコンで本人の声をAIで合成します（管理者モード専用・作品紹介向け）。使う前に下のボタンを押してください。初回だけブラウザに「アプリを開きますか」「ローカルネットワークへのアクセス」を聞かれるので、どちらも許可します。1コマの音声づくりに約1分かかります。声の調子のスライダーとアクセントの指定は効きません（読み方の辞書は効きます）。動画の右下とSNSのキャプションに「音声：本人の声をAIで合成」が自動で入ります。</p>
+          <button class="secondary" id="ownVoiceCheck" type="button">本人の声を起動してつなぐ</button>
+          <p class="help" id="ownVoiceStatus" aria-live="polite"></p>
+          </div>
           <details class="lang-bar-dict">
           <summary>読み方の辞書（読み間違いを直す）</summary>
           <p class="help" style="margin-top:6px">屋号や型番の読み間違いを直します。<strong>字幕の文字は変わりません。</strong>「表記=読み」を1行ずつ書いてください（書くとその場で保存されます）。「写真ごと」のセリフ欄で言葉を選んで「選んだ言葉の読みを登録」を押しても足せます。<strong>日本語の声のときだけ効きます</strong>。<br>アクセントも直せます（VOICEVOXの声だけ）：読みの中に <code>'</code> を入れると、その直前の音のあとで声が下がります。例 <code>箸=ハ'シ</code>（頭が高い）／<code>橋=ハシ'</code>（後ろが高い）／最後に <code>_</code> で平ら <code>端=ハシ_</code>。<strong>高くしたい最後の音の直後に <code>'</code></strong> と覚えてください（ズまで高く＝<code>エヌズ'</code>）。読みを空白で区切ったときは、区切りごとに書けます（例 <code>エヌズ' ファ'クトリー</code>）。抑揚の強さを下げていると違いが聞き取りにくくなります。<br>直した言葉だけ聴きたいときは、下の欄でその行をなぞって選ぶ（またはカーソルを置く）→「選んだ行を試聴」。</p>
@@ -1321,6 +1326,9 @@ const els = {
   workIdOverlayText: document.getElementById('workIdOverlayText'),
   voicevoxBox: document.getElementById('voicevoxBox'),
   voicevoxCheck: document.getElementById('voicevoxCheck'),
+  ownVoiceBox: document.getElementById('ownVoiceBox'),
+  ownVoiceCheck: document.getElementById('ownVoiceCheck'),
+  ownVoiceStatus: document.getElementById('ownVoiceStatus'),
   voicevoxStatus: document.getElementById('voicevoxStatus'),
   voiceNarrationBox: document.getElementById('voiceNarrationBox'),
   voiceNarrationGen: document.getElementById('voiceNarrationGen'),
@@ -1410,6 +1418,12 @@ const VOICEVOX_VOICES = [
   {value:'vv:11', name:'玄野武宏',     label:'玄野武宏（VOICEVOX・このPC）'},
   {value:'vv:12', name:'白上虎太郎',   label:'白上虎太郎（VOICEVOX・このPC）'}
 ];
+// 本人の声（Qwen3-TTS で事業主の声を複製・このPCの C:\Tools\qwen3tts\server.py・2026-09-28）。
+// 作品紹介用（講座動画はフクロウ＝ずんだもんで統一し、本人の声は使わない・事業主決定）。管理者モード専用。
+// 動画とキャプションに「音声：本人の声をAIで合成」を小さく入れる（規約上の義務ではなく事業主決定）。
+const OWN_VOICE_ENDPOINT = 'http://127.0.0.1:50031';
+const OWN_VOICE_START_FILE = 'C:\\Tools\\qwen3tts\\start_for_sns_video.bat';
+const OWN_VOICE = {value:'own:1', label:'本人の声（AI合成・このPC）', credit:'音声：本人の声をAIで合成'};
 
 const AI_VOICES = {
   // 多言語対応の声にしている。通常の英語の声は日本語を渡すと音声が返らず、
@@ -1425,7 +1439,8 @@ const AI_VOICES = {
   'ja-JP': [
     {value:'ja-JP-NanamiNeural', label:'ななみ（日本語・女性）'},
     {value:'ja-JP-KeitaNeural', label:'けいた（日本語・男性）'},
-    ...VOICEVOX_VOICES.map(voice => ({value:voice.value, label:voice.label}))
+    ...VOICEVOX_VOICES.map(voice => ({value:voice.value, label:voice.label})),
+    {value:OWN_VOICE.value, label:OWN_VOICE.label}
   ]
 };
 
@@ -4189,7 +4204,7 @@ function recordedAiImageNote(){
 let voicevoxCreditSuppressed = false;
 function drawVoicevoxCredit(){
   if(voicevoxCreditSuppressed) return;
-  const text = selectedVoicevoxCredit();
+  const text = selectedVoiceCredit();   // VOICEVOX:キャラ名／本人の声の注記（2026-09-28）
   const anchor = REEL_LAYOUT.credit;
   if(!text || !anchor) return;
   const size = 21;
@@ -5160,7 +5175,8 @@ async function playPreviewWithVoice(){
   if(els.playPreviewVoice) els.playPreviewVoice.disabled = true;
   try{
     const voiceCredit = selectedVoicevoxCredit();
-    setLog(`完成動画と同じ声（${voiceCredit || 'AI音声'}）でプレビューします。先に全コマの声を作っています…${voiceCredit ? '（VOICEVOXは1コマ15〜20秒。2回目からはすぐ始まります）' : ''}`);
+    const ownVoice = isOwnVoice(els.aiVoiceSelect && els.aiVoiceSelect.value);
+    setLog(`完成動画と同じ声（${ownVoice ? OWN_VOICE.label : (voiceCredit || 'AI音声')}）でプレビューします。先に全コマの声を作っています…${ownVoice ? '（本人の声は1コマ約1分。2回目からはすぐ始まります）' : (voiceCredit ? '（VOICEVOXは1コマ15〜20秒。2回目からはすぐ始まります）' : '')}`);
     track = await generateNarrationTimeline();
   }catch(err){
     setLog(narratedSaveCancelled ? '音声つきプレビューを停止しました。' : `声を作れなかったため、プレビューを始められませんでした（${err && err.message ? err.message : err}）。`);
@@ -5879,7 +5895,8 @@ function refreshAiVoiceOptions(){
   els.aiVoiceSelect.disabled = false;
   const current = els.aiVoiceSelect.value;
   // VOICEVOX はこのPCのエンジンが要るため管理者モードのときだけ出す（一般公開の利用者には出さない・2026-09-13 事業主決定）
-  const voices = AI_VOICES[language].filter(voice => nsfAdminVerified || !isVoicevoxVoice(voice.value));
+  // 本人の声も同じく管理者モード専用（このPCのサーバーが要る）
+  const voices = AI_VOICES[language].filter(voice => nsfAdminVerified || (!isVoicevoxVoice(voice.value) && !isOwnVoice(voice.value)));
   els.aiVoiceSelect.innerHTML = voices
     .map(voice => `<option value="${voice.value}">${voice.label}</option>`)
     .join('');
@@ -6153,6 +6170,90 @@ function selectedVoicevoxCredit(){
   return voice ? `VOICEVOX:${voice.name}` : '';
 }
 
+/* ══ 本人の声（Qwen3-TTS・このPCのサーバー・2026-09-28）══
+   VOICEVOX と同じく公開ページから http://127.0.0.1:50031 を直接呼ぶ（サーバーが公開オリジンだけ許可）。
+   CPU で1.7B版を動かすため1コマ約1分。声の調子のスライダー・アクセント指定は効かない（読み方の辞書は効く）。
+   見本の声と文字起こしはサーバー側（ref.wav／ref.txt）。 */
+function isOwnVoice(voice){ return String(voice || '') === OWN_VOICE.value; }
+// 動画の右下とキャプションに入れる表記（VOICEVOX:キャラ名／本人の声の注記）
+function selectedVoiceCredit(){
+  if(isOwnVoice(els.aiVoiceSelect && els.aiVoiceSelect.value)) return OWN_VOICE.credit;
+  return selectedVoicevoxCredit();
+}
+const OWN_VOICE_HELP = `本人の声のサーバーにつながりませんでした。「本人の声を起動してつなぐ」を押してから、もう一度お試しください。それでもつながらないときは ①ブラウザに「ローカルネットワーク上のデバイスへのアクセス」を聞かれたら「許可」②ボタンで起動しないときは「${OWN_VOICE_START_FILE}」をダブルクリック、を確かめてください。`;
+const OWN_VOICE_LAUNCH_URL = 'nsf-ownvoice://start';
+const OWN_VOICE_REGISTER_FILE = 'C:\\Tools\\qwen3tts\\register_nsf_ownvoice.reg';
+const OWN_VOICE_START_WAIT_MS = 180000;
+
+async function ownVoiceStatus(){
+  try{
+    const res = await fetch(OWN_VOICE_ENDPOINT + '/version', {cache:'no-store'});
+    return res.ok ? await res.json() : null;
+  }catch(_){ return null; }
+}
+
+async function generateOwnVoiceNarrationAudio(text){
+  const parts = [];
+  let sampleRate = 24000;
+  // 読み方の辞書は当てる。長い文は区切って1回ずつ作る（サーバーの上限は400字）
+  for(const chunk of splitTtsText(applyReadingRules(text), 120)){
+    let res;
+    try{
+      res = await fetch(OWN_VOICE_ENDPOINT + '/synthesis', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text:chunk})
+      });
+    }catch(_){ throw new Error(OWN_VOICE_HELP); }
+    if(!res.ok){
+      let detail = '';
+      try{ detail = (await res.json()).error || ''; }catch(_){}
+      if(res.status === 503) throw new Error(`本人の声はまだ準備中です（声のモデルを読み込んでいます）。1〜3分待ってから、もう一度お試しください。${detail && detail !== 'loading' ? `（${detail}）` : ''}`);
+      throw new Error(`本人の声で音声を作れませんでした（${res.status}${detail ? `：${detail}` : ''}）。`);
+    }
+    const decoded = await ensureJpDecodeContext().decodeAudioData(await res.arrayBuffer());
+    sampleRate = decoded.sampleRate;
+    parts.push(new Float32Array(decoded.getChannelData(0)));
+  }
+  return {sampleRate, data: joinAudioParts(parts, sampleRate)};
+}
+
+/* ボタン1つで「確認→（つながらなければ）起動→準備完了まで待つ」。VOICEVOX と同じ作り。
+   サーバーは起動してすぐ返事をするが、声のモデルの読み込みが終わるまでは ready=false。 */
+let ownVoiceStarting = false;
+async function startOwnVoiceServer(){
+  if(ownVoiceStarting || !els.ownVoiceStatus) return;
+  ownVoiceStarting = true;
+  if(els.ownVoiceCheck) els.ownVoiceCheck.disabled = true;
+  try{
+    els.ownVoiceStatus.textContent = '確認しています…';
+    let status = await ownVoiceStatus();
+    const startedAt = Date.now();
+    if(!status){
+      const link = document.createElement('a');
+      link.href = OWN_VOICE_LAUNCH_URL;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+    while(!(status && (status.ready || status.error)) && Date.now() - startedAt < OWN_VOICE_START_WAIT_MS){
+      const sec = Math.round((Date.now() - startedAt) / 1000);
+      els.ownVoiceStatus.textContent = status
+        ? `声のモデルを読み込んでいます…（${sec}秒）`
+        : `起動しています…（${sec}秒）初めてのときはブラウザの「開く」「許可」を押してください。`;
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      status = await ownVoiceStatus();
+    }
+    els.ownVoiceStatus.textContent = status && status.ready
+      ? '✓ つながりました。本人の声で保存できます（1コマ約1分）。'
+      : status && status.error
+        ? `サーバーは動いていますが、声のモデルを読み込めませんでした（${status.error}）。C:\\Tools\\qwen3tts\\server.log を確かめてください。`
+        : `3分待ちましたがつながりませんでした。このPCで初めて使うときは「${OWN_VOICE_REGISTER_FILE}」をダブルクリックして登録してから、もう一度押してください。ボタンで起動しないときは「${OWN_VOICE_START_FILE}」をダブルクリックしてください。`;
+  }finally{
+    ownVoiceStarting = false;
+    if(els.ownVoiceCheck) els.ownVoiceCheck.disabled = false;
+  }
+}
+
 async function voicevoxFetch(path, options){
   try{ return await fetch(VOICEVOX_ENDPOINT + path, options); }
   catch(_){ throw new Error(VOICEVOX_HELP); }
@@ -6326,6 +6427,7 @@ async function generateVoicevoxNarrationAudio(text, voice){
 
 function updateVoicevoxUi(){
   if(els.voicevoxBox) els.voicevoxBox.hidden = !selectedVoicevoxCredit();
+  if(els.ownVoiceBox) els.ownVoiceBox.hidden = !isOwnVoice(els.aiVoiceSelect && els.aiVoiceSelect.value);
 }
 
 async function voicevoxVersion(){
@@ -6392,6 +6494,7 @@ async function generateNarrationAudio(text, voice, language){
 
 async function generateNarrationAudioUncached(text, voice, language){
   if(isVoicevoxVoice(voice)) return await generateVoicevoxNarrationAudio(text, voice);
+  if(isOwnVoice(voice)) return await generateOwnVoiceNarrationAudio(text);
   // 日本語・英語とも中継サーバから受け取る（2026-09-06 一本化）。
   // ブラウザ内のAI音声は長い動画で書き出しが止まる原因だったため使わない。
   return await generateRelayNarrationAudio(text, voice);
@@ -6908,7 +7011,7 @@ async function recordNarratedMp4(){
   if(!blob) throw new Error(`MP4の映像処理に失敗しました: ${lastError ? lastError.message : '不明なエラー'}`);
   finishRecordingBlob(
     blob,
-    {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true, voiceCredit:selectedVoicevoxCredit()},
+    {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true, voiceCredit:selectedVoiceCredit()},
     currentWork && currentWork.folderId
       ? 'AIナレーションを直接合成したMP4を保存しました。ダウンロードまたはDrive保存ができます。'
       : 'AIナレーションを直接合成したMP4を保存しました。完成動画をダウンロードできます。'
@@ -7086,6 +7189,9 @@ function requestExportGate(mode){
     {warn:false, text:`出力: ${narrationMode ? `${narrationVoiceLabel}AIナレーション付きMP4` : (mode === 'mic' ? '自分の声付きMP4' : '動画のみMP4')}`},
     ...(narrationMode && selectedVoicevoxCredit()
       ? [{warn:false, text:`声: ${selectedVoicevoxCredit()}（このPCのVOICEVOXで作成・1コマ15〜20秒・動画の右下とキャプションにクレジットが入ります）`}]
+      : []),
+    ...(narrationMode && isOwnVoice(els.aiVoiceSelect && els.aiVoiceSelect.value)
+      ? [{warn:false, text:`声: ${OWN_VOICE.label}（このPCで作成・1コマ約1分・動画の右下とキャプションに「${OWN_VOICE.credit}」が入ります）`}]
       : []),
     ...(owlOverlayActive()
       ? [{warn:false, text:`フクロウ: ${activeOwlPoseNames().length}ポーズを重ねます（動画の左下とキャプションに「${OWL_AI_NOTE}」が入ります）`}]
@@ -8379,6 +8485,7 @@ els.aiVoiceSelect.addEventListener('change', () => {
   drawSelectedOrFirstFrame();   // クレジット表示の有無が変わるため描き直す
 });
 els.voicevoxCheck.addEventListener('click', startVoicevoxEngine);
+els.ownVoiceCheck.addEventListener('click', startOwnVoiceServer);
 els.voiceNarrationGen.addEventListener('click', generateVoiceNarration);
 els.workIdOverlay.addEventListener('change', () => {
   resetRecordingOutput();
