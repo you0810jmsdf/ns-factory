@@ -4223,8 +4223,33 @@ function drawVoiceCommentCaption(time){
   const box = subtitle.box;
   const revealCount = Math.max(1, Math.ceil(text.length * typeP));
   ctx.save();
+  drawVoiceCommentHeading(box);
   drawSubtitleBox(box.x, box.y, box.w, box.h);
   drawTypewriterLinesLeft(subtitle.layout.lines, revealCount, box.x + subtitle.padX, subtitle.textY, subtitle.layout.lineHeight, subtitle.layout.fontSize, '#fff');
+  ctx.restore();
+}
+/* 評価コメント欄の直上に「CUSTOMER VOICE」（英語eyebrow）＋「購入者の声」（日本語見出し）を
+   ロゴと同じ金色（#c9a96e）で固定表示する（2026-09-29 事業主指示）。タイプライターではなく
+   毎コマそのまま描く＝ phase1・phase2 のどちらで呼ばれても自動的に「ずっと表示」になる
+   （drawVoiceCommentCaption が phase1・phase2 の両方で呼ばれているため）。
+   位置は引数 box（その時点の実際のコメント欄・box.y が内容量で変わる）から逆算するので、
+   コメント欄の高さがどう変わっても常にその直上に収まり、写真枠と重ならない
+   （VOICE_LAYOUT.photo.h を 704→624 に縮めて余白を確保済み）。 */
+function drawVoiceCommentHeading(box){
+  const cx = box.x + box.w / 2;
+  const eyebrowSize = 24;
+  const headingSize = 42;
+  const headingBaselineY = box.y - 16;
+  const eyebrowBaselineY = headingBaselineY - headingSize - 10;
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#c9a96e';
+  ctx.font = canvasFont(700, eyebrowSize);
+  if('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+  ctx.fillText('CUSTOMER VOICE', cx, eyebrowBaselineY);
+  if('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  ctx.font = canvasFont(700, headingSize);
+  ctx.fillText('購入者の声', cx, headingBaselineY);
   ctx.restore();
 }
 // 締め: フクロウのロゴが黒背景にフェードイン→続けて「締めの言葉」「締めのURL」が
@@ -5384,11 +5409,14 @@ function currentVideoFormat(){
    charRow.h を230px（読める大きさ）へ拡大し、その分だけ写真枠を縮めて重なりゼロを確保する。
    各要素の矩形は voiceLayoutDebugRects() で取り出せる（検証用）。 */
 const VOICE_LAYOUT = Object.freeze({
-  photo:{x:60, y:756, w:960, h:704},
+  // photo.h は 704→624（-80px）。subtitle.maxH は 200→180（-20px）。
+  // 評価コメント欄の直上に「CUSTOMER VOICE」eyebrow＋「購入者の声」見出しを固定表示するため、
+  // 写真枠の下端〜コメント欄の上端（最大高さ時）の間に約120pxの余白を確保した（2026-09-29 事業主指示）。
+  photo:{x:60, y:756, w:960, h:624},
   brand:{x:84, y:280, owlHeight:84, wordmarkWidth:236, gap:16},
   title:{x:540, y:420, maxWidth:720, maxSize:40, minSize:28},
   charRow:{y:500, h:230, gap:22},          // フクロウ／販売幕僚＋吹き出しの帯（写真の外・タイトルの下）。吹き出しはこの帯の中だけに描く
-  subtitle:{x:82, w:820, bottom:1680, padX:46, padY:24, minH:120, maxH:200},
+  subtitle:{x:82, w:820, bottom:1680, padX:46, padY:24, minH:120, maxH:180},
   info:{x:76, y:1700, w:850, h:150},
   credit:{right:926, y:1686, h:36},
   owl:{h:150, right:18}
