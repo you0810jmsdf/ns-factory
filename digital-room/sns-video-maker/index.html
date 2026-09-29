@@ -708,13 +708,22 @@ canvas{
       </div>
     </div>
     <div class="field">
-      <label for="voiceComment">評価コメント</label>
-      <textarea id="voiceComment" placeholder="いただいた評価コメントを貼り付けてください"></textarea>
-      <p class="help">下方にタイピング演出で表示します。長くて入りきらない場合は、写真コマに区切って順番に表示します（写真が足りない場合は繰り返し使います）。</p>
+      <label for="voiceCommentGender">お客様の声</label>
+      <select id="voiceCommentGender">
+        <option value="female" selected>女性（ななみ）</option>
+        <option value="male">男性（けいた）</option>
+      </select>
+      <p class="help">評価コメントを読み上げる声です（Microsoft音声・中継経由）。</p>
     </div>
     <div class="field">
-      <label for="voiceThanks">お礼の言葉（キャラクターの吹き出し・編集可）</label>
+      <label for="voiceComment">評価コメント</label>
+      <textarea id="voiceComment" placeholder="いただいた評価コメントを貼り付けてください"></textarea>
+      <p class="help">写真を代表→サブの順で（最大6枚）均等に切り替えながら、左からタイピングで表示し、選んだ声で読み上げます。写真の切り替えとタイピングは独立して進みます（長いコメントは字幕枠に入りきらない分だけ区切って続きから表示）。</p>
+    </div>
+    <div class="field">
+      <label for="voiceThanks">お礼の言葉（キャラクターの吹き出し・テロップ・ずんだもんの声）</label>
       <textarea id="voiceThanks">ご購入ありがとうございました！大切に使っていただけたら嬉しいです</textarea>
+      <p class="help">評価コメントの後、キャラクターの吹き出しとテロップで表示し、VOICEVOX「ずんだもん」の声で読み上げます（このPCのVOICEVOXが起動していないときは声なしで作ります）。最後にフクロウのロゴだけが浮かび上がって締めます。</p>
     </div>
     <p class="help" id="voiceStatus" aria-live="polite"></p>
     <div class="actions">
@@ -1457,6 +1466,7 @@ const els = {
   voiceLoadPhotos: document.getElementById('voiceLoadPhotos'),
   voiceRatingDate: document.getElementById('voiceRatingDate'),
   voiceCharacterKind: document.getElementById('voiceCharacterKind'),
+  voiceCommentGender: document.getElementById('voiceCommentGender'),
   voiceComment: document.getElementById('voiceComment'),
   voiceThanks: document.getElementById('voiceThanks'),
   voiceStatus: document.getElementById('voiceStatus'),
@@ -3781,16 +3791,27 @@ function estimateNarrationDuration(text){
   return clamp(roundDuration(baseSeconds + 1.9), 1.8, MAX_SLIDE_DURATION);
 }
 
-/* ══ 購入者の声モード: 評価コメントの分割・写真コマへの割り当て（2026-09-29 追加）══
-   既存の字幕タイプ表示（typewriter・1090行目のselect／4931〜4935行目のdrawNarrationSubtitle）を
-   そのまま使う。コメントが1コマの字幕箱に収まらない長さのときだけ、複数コマに分けて「順に」表示する
-   （コマごとの narration に分割後の文をセットし、そのコマの表示秒数だけタイプされる＝既存の仕組みのまま）。 */
+/* ══ 購入者の声モード: 写真の均等割り当て・評価コメントの連続タイピング（2026-09-29 作り直し）══
+   事業主指摘: 写真の枚数はコメントの分割数で決めない。代表→サブの順で読み込んだ写真を
+   （上限6枚・超えたら先頭6枚）全部使い、尺を枚数で均等に割って順に切り替える。
+   評価コメントのタイピングは写真の切り替えと独立した「連続した時間割」で進む（写真が変わっても続きから）。
+   コメントが字幕枠に入りきらない長さのときだけ chunkTextForSubtitle で区切り、区切りごとの自然な尺
+   （estimateNarrationDuration の比率）で時間割を作る＝区切りが変わるのは写真の切り替えとは無関係。 */
+const VOICE_MAX_PHOTOS = 6;
+const VOICE_TARGET_MIN = 15, VOICE_TARGET_MAX = 30;
+const VOICE_PHASE2_MIN = 2.5, VOICE_PHASE2_MAX = 9;
+const VOICE_PHASE3_SEC = 2.5;   // 締めのフクロウロゴのみの尺（事業主指示「2〜3秒」）
+
 function voiceCommentText(){
   return String((els.voiceComment && els.voiceComment.value) || '').trim();
 }
 function voiceRatingDateValue(){
   const v = els.voiceRatingDate && els.voiceRatingDate.value;
   return v || new Date().toISOString().slice(0, 10);
+}
+function voiceCommentVoiceValue(){
+  const gender = (els.voiceCommentGender && els.voiceCommentGender.value) || 'female';
+  return gender === 'male' ? 'ja-JP-KeitaNeural' : 'ja-JP-NanamiNeural';
 }
 function chunkTextForSubtitle(text){
   const clean = trimSubtitle(text);
@@ -3820,11 +3841,24 @@ function chunkTextForSubtitle(text){
   if(rest) chunks.push(rest);
   return chunks;
 }
-/* 読み込み済みの写真コマへ、評価コメントの分割後の文を1コマ1文で順番に割り当てる。
-   コメントの区切り数だけ写真を使い、残りは（作品番号でDriveから読み込んだ枚数が多い場合）このモードの間だけ
-   一時的に動画から除外する。除外前の使用可否は voiceModeSlideSnapshot に退避し、「紹介動画を作る」モードへ
-   戻ったとき・別の作品番号を読み込み直したときに復元する（通常モードの構成を壊さないため）。
-   長さは15〜30秒の目安に収まるよう、estimateNarrationDuration の見積もりを比例配分で伸縮する。 */
+// コメントの区切りごとに、phase1（コメント表示）内でのタイピング窓（開始〜終了秒）を作る。
+// 区切りが1つ（大半のケース）なら窓は phase1 全体＝写真が何度切り替わっても同じ文をずっとタイプし続ける。
+function voiceCaptionWindows(phase1Duration){
+  const segments = chunkTextForSubtitle(voiceCommentText());
+  if(!segments.length) return [];
+  const weights = segments.map(text => Math.max(.6, estimateNarrationDuration(text)));
+  const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+  let t = 0;
+  return segments.map((text, i) => {
+    const dur = phase1Duration * (weights[i] / totalWeight);
+    const win = {text, start:t, end:t + dur};
+    t += dur;
+    return win;
+  });
+}
+/* 現在の voicePlan（実音声があれば実音声の長さ、無ければ見積もり）を返す。
+   プレビュー中はここから逆算し、実際の録画直前に buildVoiceNarrationPlan() で実音声版に差し替える。 */
+let voicePlan = null;
 let voiceModeSlideSnapshot = null;
 function restoreVoiceModeSlideSnapshot(){
   if(!voiceModeSlideSnapshot) return;
@@ -3836,8 +3870,10 @@ function restoreVoiceModeSlideSnapshot(){
   if(selected >= 0) loadSelected();
   drawSelectedOrFirstFrame();
 }
+/* 写真の選定・除外・均等割りだけを行う同期版（プレビュー用・実音声は使わない）。
+   実際の録画は buildVoiceNarrationPlan() が実音声の長さで作り直してから行う。 */
 function applyVoiceModeToSlides(){
-  restoreVoiceModeSlideSnapshot();   // 前回この関数で除外した分をいったん戻してから、今回のコメントで選び直す
+  restoreVoiceModeSlideSnapshot();
   const all = playableSlides();
   if(!all.length) return {ok:false, message:'先に「作品番号」で写真を読み込んでください。'};
   const comment = voiceCommentText();
@@ -3846,38 +3882,39 @@ function applyVoiceModeToSlides(){
     els.characterKind.value = 'owl';
     els.characterKind.dispatchEvent(new Event('change'));
   }
-  const chunks = chunkTextForSubtitle(comment);
-  const useCount = clamp(chunks.length, 1, all.length);
-  if(chunks.length > useCount){
-    chunks[useCount - 1] = chunks[useCount - 1] + chunks.slice(useCount).join('');
-    chunks.length = useCount;
-  }
+  const useCount = Math.min(VOICE_MAX_PHOTOS, all.length);
   const used = all.slice(0, useCount);
   if(useCount < all.length){
     voiceModeSlideSnapshot = new Map(all.map(slide => [slide, isSlideEnabled(slide)]));
     all.forEach((slide, i) => { if(i >= useCount) slide.enabled = false; });
+  }else{
+    voiceModeSlideSnapshot = null;
   }
-  let durations = chunks.map(estimateNarrationDuration);
-  const VOICE_TARGET_MIN = 15, VOICE_TARGET_MAX = 30;
-  const total = durations.reduce((a, b) => a + b, 0);
-  if(total > 0 && (total < VOICE_TARGET_MIN || total > VOICE_TARGET_MAX)){
-    const target = clamp(total, VOICE_TARGET_MIN, VOICE_TARGET_MAX);
-    const scale = target / total;
-    durations = durations.map(d => clamp(roundDuration(d * scale), 1.8, MAX_SLIDE_DURATION));
-  }
+  const commentEstimate = estimateNarrationDuration(comment) || VOICE_TARGET_MIN;
+  const thanksEstimate = estimateNarrationDuration(voiceThanksText()) || VOICE_PHASE2_MIN;
+  const phase2 = clamp(roundDuration(thanksEstimate), VOICE_PHASE2_MIN, VOICE_PHASE2_MAX);
+  const phase3 = VOICE_PHASE3_SEC;
+  const phase1 = clamp(roundDuration(commentEstimate), 4, VOICE_TARGET_MAX - phase2 - phase3);
+  const total = phase1 + phase2 + phase3;
+  const perPhoto = clamp(roundDuration(phase1 / useCount), .8, MAX_SLIDE_DURATION);
   saveSelected();
-  used.forEach((slide, i) => {
-    slide.narration = chunks[i];
-    slide.subtitleMotion = 'typewriter';
-    slide.duration = durations[i];
-    slide.narrationSource = 'manual';
+  used.forEach(slide => {
+    slide.duration = perPhoto;
+    slide.narration = '';          // コマ単位の字幕は使わない（連続キャプションを drawFrame 側で別途描く）
+    slide.subtitleMotion = 'none';
   });
   renderList();
   if(selected >= 0) loadSelected();
   resetRecordingOutput();
+  voicePlan = {
+    phase1, phase2, phase3, total,
+    useCount, excluded: all.length - useCount,
+    captionWindows: voiceCaptionWindows(phase1),
+    thanksText: voiceThanksText(),
+    hasRealAudio: false
+  };
   drawSelectedOrFirstFrame();
-  const totalSeconds = durations.reduce((a, b) => a + b, 0);
-  return {ok:true, totalSeconds, segments:useCount, excluded: all.length - useCount};
+  return {ok:true, totalSeconds: total, segments:useCount, excluded: all.length - useCount, phase1, phase2, phase3};
 }
 
 function fitDurationsToNarration(options = {}){
@@ -4104,6 +4141,86 @@ function frameState(time){
   return {type:'hold', slide:list[list.length - 1], index:list.length - 1, progress:1};
 }
 
+/* ══ 購入者の声モード: 3段構成の描画（2026-09-29 追加）══
+   phase1（評価コメント・写真切替）→ phase2（キャラクターの吹き出し＋テロップ＋ずんだもんの声）→
+   phase3（締め・フクロウロゴのみ）。voicePlan（applyVoiceModeToSlides / buildVoiceNarrationPlan が作る）を
+   参照して time で切り替える。phase1中の写真切替は既存の frameState/drawSlide/drawTransition をそのまま使う。 */
+function drawVoiceCommentCaption(time){
+  if(!voicePlan || !voicePlan.captionWindows || !voicePlan.captionWindows.length) return;
+  const windows = voicePlan.captionWindows;
+  let win = windows[windows.length - 1];
+  for(const w of windows){ if(time < w.end){ win = w; break; } }
+  const winDur = Math.max(.3, win.end - win.start);
+  const typeP = clamp((time - win.start) / (winDur * .92), 0, 1);
+  const text = win.text;
+  const visible = text.slice(0, Math.max(1, Math.ceil(text.length * typeP)));
+  const subtitle = buildSubtitleLayout(text);
+  const box = subtitle.box;
+  ctx.save();
+  drawSubtitleBox(box.x, box.y, box.w, box.h);
+  drawSubtitleTextLeft(visible, box.x + subtitle.padX, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
+  ctx.restore();
+}
+function drawVoiceThanksTelop(elapsed){
+  const text = voiceThanksText();
+  if(!text) return;
+  const subtitle = buildSubtitleLayout(text);
+  const box = subtitle.box;
+  ctx.save();
+  ctx.globalAlpha *= clamp(elapsed / .4, 0, 1);
+  drawSubtitleBox(box.x, box.y, box.w, box.h);
+  drawSubtitleTextLeft(text, box.x + subtitle.padX, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
+  ctx.restore();
+}
+// 締め: フクロウだけのロゴが黒背景にフェードイン（事業主指示「文字なし・フクロウだけ」）
+function drawVoiceEndingLogo(elapsed){
+  ctx.save();
+  ctx.fillStyle = '#0A0908';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const owl = (brandAssets.owlGold && brandAssets.owlGold.complete && brandAssets.owlGold.naturalWidth) ? brandAssets.owlGold : brandAssets.owlWhite;
+  const fadeP = clamp(elapsed / 1.0, 0, 1);
+  ctx.globalAlpha = fadeP;
+  if(owl && owl.complete && owl.naturalWidth){
+    const oh = Math.round(canvas.height * .22);
+    const ow = Math.round(oh * owl.naturalWidth / owl.naturalHeight);
+    ctx.drawImage(owl, (canvas.width - ow) / 2, (canvas.height - oh) / 2, ow, oh);
+  }else{
+    ctx.fillStyle = '#D9BE8C';
+    ctx.font = canvasFont(600, Math.round(canvas.height * .032));
+    ctx.textAlign = 'center';
+    ctx.fillText("N's factory", canvas.width / 2, canvas.height / 2);
+  }
+  ctx.restore();
+}
+function drawVoiceFrame(time){
+  const plan = voicePlan;
+  const phase1End = plan.phase1;
+  const phase2End = plan.phase1 + plan.phase2;
+  if(time < phase1End){
+    const state = frameState(time);
+    if(!state) return;
+    if(state.type === 'transition'){
+      drawTransition(state.slide, state.nextSlide, state.progress);
+    }else{
+      drawSlide(state.slide, state.progress, 1);
+    }
+    els.currentScript.textContent = voiceCommentText();
+    drawVoiceCommentCaption(time);
+  }else if(time < phase2End){
+    const list = playableSlides();
+    const last = list[list.length - 1];
+    if(last) drawSlide(last, 1, 1);   // 最後の写真を静止表示したまま、吹き出し（drawSlide内）＋テロップを重ねる
+    els.currentScript.textContent = plan.thanksText;
+    drawVoiceThanksTelop(time - phase1End);
+  }else{
+    drawVoiceEndingLogo(time - phase2End);
+    return;   // 締めはフクロウのロゴだけ（作品ID・VOICEVOXクレジット・AI注記などは重ねない）
+  }
+  drawWorkIdBadge();
+  drawVoicevoxCredit();
+  drawAiImageNote();
+}
+
 function drawFrame(time){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const activeCount = playableSlides().length;
@@ -4111,6 +4228,10 @@ function drawFrame(time){
     ctx.fillStyle = '#151515'; ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = '#f7f2ea'; ctx.font = canvasFont(700, 56); ctx.textAlign = 'center';
     ctx.fillText(slides.length ? '使用する写真を選択してください' : '写真を追加してください', canvas.width/2, canvas.height/2);
+    return;
+  }
+  if(isVoiceMode() && voicePlan){
+    drawVoiceFrame(time);
     return;
   }
   const state = frameState(time);
@@ -4309,6 +4430,30 @@ async function preloadCharacterImages(){
   await preloadOwlImages();
   await preloadHanbaiImages();
 }
+/* 通常モード（写真の右下に重ねる）と購入者の声モード（写真枠の外・専用の帯）で立ち位置の計算式が違うため、
+   共通の座標計算をここにまとめる（drawOwlCharacter・drawHanbaiCharacter・activeCharacterBounds の3箇所が使う）。
+   2026-09-29 事業主指摘「吹き出しとフクロウが写真に重なっている」対応: 購入者の声モードでは
+   REEL_LAYOUT.charRow（写真の外・タイトルの下の専用帯）の右端に立たせ、写真には一切かからない。 */
+function characterAnchor(slide, progress, h){
+  const photo = REEL_LAYOUT.photo;
+  const row = REEL_LAYOUT.charRow;
+  if(isVoiceMode() && row){
+    const t = progress * (slide.duration || 3.5);
+    const bob = Math.sin(t * 2.2) * 4;
+    const enter = easeOut(clamp(progress / .22, 0, 1));
+    // 写真枠の外（帯の右端）に立たせる。右端は canvas 幅から余白ぶん内側（写真の右端とは無関係＝重ならない）
+    return {bottom: row.y + row.h - 10, bob, enter, xForWidth: w => canvas.width - (row.gap || 18) - w};
+  }
+  let bottom = photo.y + photo.h - 22;
+  if(slide.narration && slide.subtitleMotion !== 'none'){
+    bottom = buildSubtitleLayout(trimSubtitle(slide.narration)).box.y - 6;
+  }
+  const t = progress * (slide.duration || 3.5);
+  const bob = Math.sin(t * 2.2) * 5;
+  const enter = easeOut(clamp(progress / .22, 0, 1));
+  const spec = REEL_LAYOUT.owl || {right:18};
+  return {bottom, bob, enter, xForWidth: w => photo.x + photo.w - w - spec.right};
+}
 function drawHanbaiCharacter(slide, progress){
   if(!hanbaiActive()) return;
   const time = timelineStartForSlide(slide) + progress * (slide.duration || 3.5);
@@ -4317,21 +4462,14 @@ function drawHanbaiCharacter(slide, progress){
   const fallback = hanbaiImage('closed');
   const use = (img.complete && img.naturalWidth) ? img : ((fallback.complete && fallback.naturalWidth) ? fallback : null);
   if(!use) return;
-  const photo = REEL_LAYOUT.photo;
-  const spec = REEL_LAYOUT.owl || {h:Math.round(photo.h * .31), right:18};
-  const h = Math.round(spec.h * 1.25);   // 人物は縦長なのでフクロウより少し高く
+  const spec = REEL_LAYOUT.owl || {h:Math.round(REEL_LAYOUT.photo.h * .31), right:18};
+  const h = isVoiceMode() ? (REEL_LAYOUT.charRow ? REEL_LAYOUT.charRow.h - 20 : spec.h) : Math.round(spec.h * 1.25);   // 人物は縦長なのでフクロウより少し高く（通常モードのみ）
   const w = Math.round(h * use.naturalWidth / use.naturalHeight);
-  let bottom = photo.y + photo.h - 22;
-  if(slide.narration && slide.subtitleMotion !== 'none'){
-    bottom = buildSubtitleLayout(trimSubtitle(slide.narration)).box.y - 6;
-  }
-  const t = progress * (slide.duration || 3.5);
-  const bob = Math.sin(t * 2.2) * 4;
-  const enter = easeOut(clamp(progress / .22, 0, 1));
-  const x = photo.x + photo.w - w - spec.right;
-  const y = bottom - h + bob + (1 - enter) * 34;
+  const anchor = characterAnchor(slide, progress, h);
+  const x = anchor.xForWidth(w);
+  const y = anchor.bottom - h + anchor.bob + (1 - anchor.enter) * 34;
   ctx.save();
-  ctx.globalAlpha *= enter;
+  ctx.globalAlpha *= anchor.enter;
   ctx.shadowColor = 'rgba(0,0,0,.38)';
   ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 6;
@@ -4345,22 +4483,14 @@ function drawOwlCharacter(slide, progress){
   if(!name) return;
   const img = owlImage(name);
   if(!img.complete || !img.naturalWidth) return;
-  const photo = REEL_LAYOUT.photo;
-  const spec = REEL_LAYOUT.owl || {h:Math.round(photo.h * .31), right:18};
-  const h = spec.h;
+  const spec = REEL_LAYOUT.owl || {h:Math.round(REEL_LAYOUT.photo.h * .31), right:18};
+  const h = isVoiceMode() && REEL_LAYOUT.charRow ? REEL_LAYOUT.charRow.h - 20 : spec.h;
   const w = Math.round(h * img.naturalWidth / img.naturalHeight);
-  // 立ち位置の下端: 字幕ボックスの真上（字幕が無いコマは写真枠の下端近く）
-  let bottom = photo.y + photo.h - 22;
-  if(slide.narration && slide.subtitleMotion !== 'none'){
-    bottom = buildSubtitleLayout(trimSubtitle(slide.narration)).box.y - 6;
-  }
-  const t = progress * (slide.duration || 3.5);
-  const bob = Math.sin(t * 2.2) * 5;                        // ゆっくり上下（呼吸）
-  const enter = easeOut(clamp(progress / .22, 0, 1));       // コマの最初だけ下からふわっと
-  const x = photo.x + photo.w - w - spec.right;
-  const y = bottom - h + bob + (1 - enter) * 34;
+  const anchor = characterAnchor(slide, progress, h);
+  const x = anchor.xForWidth(w);
+  const y = anchor.bottom - h + anchor.bob + (1 - anchor.enter) * 34;
   ctx.save();
-  ctx.globalAlpha *= enter;
+  ctx.globalAlpha *= anchor.enter;
   ctx.shadowColor = 'rgba(0,0,0,.38)';
   ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 6;
@@ -4369,30 +4499,22 @@ function drawOwlCharacter(slide, progress){
 }
 
 /* ══ 購入者の声モード: キャラクターの吹き出し（2026-09-29 追加）══
-   drawOwlCharacter / drawHanbaiCharacter と同じ位置計算を読み取り専用で複製し（既存関数は変更しない）、
-   その左に尻尾付きの吹き出し（お礼の言葉）を描く。タイトル（写真の上）・評価コメント（写真の下端の字幕箱）とは
-   別領域に収まるよう、字幕箱の上端より上・写真枠の内側に収める。既存のフクロウ／販売幕僚と同じく写真の
-   右下に重なる配置は仕様どおり（両キャラクターとも元々写真に重ねて立たせる設計のため）。 */
+   drawOwlCharacter / drawHanbaiCharacter と同じ位置計算（characterAnchor）を使う。
+   購入者の声モードでは写真枠の外（専用の帯）に立つため、吹き出しも写真・タイトル・評価コメント欄と重ならない。 */
 function activeCharacterBounds(slide, progress){
   if(!characterActive()) return null;
-  const photo = REEL_LAYOUT.photo;
-  const spec = REEL_LAYOUT.owl || {h:Math.round(photo.h * .31), right:18};
+  const spec = REEL_LAYOUT.owl || {h:Math.round(REEL_LAYOUT.photo.h * .31), right:18};
   const isHanbai = hanbaiActive();
-  const h = isHanbai ? Math.round(spec.h * 1.25) : spec.h;
+  const voiceRow = isVoiceMode() && REEL_LAYOUT.charRow;
+  const h = voiceRow ? REEL_LAYOUT.charRow.h - 20 : (isHanbai ? Math.round(spec.h * 1.25) : spec.h);
   const name = isHanbai ? '' : resolvedOwlPose(slide);
   const img = isHanbai ? hanbaiImage('closed') : (name ? owlImage(name) : null);
   const aspect = (img && img.naturalWidth && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : .62;
   const w = Math.round(h * aspect);
-  let bottom = photo.y + photo.h - 22;
-  if(slide.narration && slide.subtitleMotion !== 'none'){
-    bottom = buildSubtitleLayout(trimSubtitle(slide.narration)).box.y - 6;
-  }
-  const t = progress * (slide.duration || 3.5);
-  const bob = Math.sin(t * 2.2) * (isHanbai ? 4 : 5);
-  const enter = easeOut(clamp(progress / .22, 0, 1));
-  const x = photo.x + photo.w - w - spec.right;
-  const y = bottom - h + bob + (1 - enter) * 34;
-  return {x: Math.round(x), y: Math.round(y), w, h, enter};
+  const anchor = characterAnchor(slide, progress, h);
+  const x = anchor.xForWidth(w);
+  const y = anchor.bottom - h + anchor.bob + (1 - anchor.enter) * 34;
+  return {x: Math.round(x), y: Math.round(y), w, h, enter: anchor.enter};
 }
 function voiceThanksText(){
   return String((els.voiceThanks && els.voiceThanks.value) || '').trim();
@@ -5106,7 +5228,23 @@ function currentVideoFormat(){
   return VIDEO_FORMATS[(els.videoFormat && els.videoFormat.value) || 'reel'] || VIDEO_FORMATS.reel;
 }
 
+/* ══ 購入者の声モード専用レイアウト（2026-09-29 追加・事業主指摘「フクロウ・吹き出しが写真に重なる」対応）══
+   通常モード（reel）とはキャラクターの立ち位置が違う（写真枠の外・専用の帯）ため、写真は少し小さくして
+   上に「キャラクター＋吹き出し」の帯を確保する。canvasサイズは reel と同じ 1080×1920 なので
+   canvas.width/height は変更しない（REEL_LAYOUT の差し替えだけで済む）。 */
+const VOICE_LAYOUT = Object.freeze({
+  photo:{x:60, y:690, w:960, h:760},
+  brand:{x:84, y:280, owlHeight:84, wordmarkWidth:236, gap:16},
+  title:{x:540, y:420, maxWidth:720, maxSize:40, minSize:28},
+  charRow:{y:480, h:180, gap:22},          // フクロウ／販売幕僚＋吹き出しの帯（写真の外・タイトルの下）
+  subtitle:{x:82, w:820, bottom:1660, padX:46, padY:24, minH:120, maxH:200},
+  info:{x:76, y:1680, w:850, h:150},
+  credit:{right:926, y:1666, h:36},
+  owl:{h:150, right:18}
+});
+
 // 描画各所が参照するレイアウト。サイズ変更時にapplyVideoFormatで差し替える（既存参照名を維持）。
+// 購入者の声モードの間は setAppMode が VOICE_LAYOUT に差し替える（canvasサイズは reel と同じなので変更不要）。
 let REEL_LAYOUT = VIDEO_FORMATS.reel.layout;
 
 function applyVideoFormat({showLog = true} = {}){
@@ -7460,6 +7598,136 @@ async function recordNarratedMp4(){
   );
 }
 
+/* ══ 購入者の声モード: 実音声での写真割り直し・二声のMP4合成（2026-09-29 追加）══
+   既存の「自動ナレーション付きMP4」の経路（encodeGeneratedAudio・encodeNarratedMp4Attempt・
+   setActiveNarrationTrack・finishRecordingBlob）をそのまま使い、音声タイムラインの作り方だけ
+   このモード専用にする：評価コメント（女性/男性・Microsoft中継）を phase1 の頭から、
+   お礼の言葉（VOICEVOX ずんだもん）を phase2 の頭から重ねて1本のFloat32Arrayに合成する。
+   VOICEVOXにつながらないときは、お礼の言葉だけ声なし（テロップのみ）で作る（止めない）。 */
+async function buildVoiceNarrationPlan(){
+  const base = applyVoiceModeToSlides();   // 写真の選定・均等割り（見積もり）をまず行う
+  if(!base.ok) return base;
+  const comment = voiceCommentText();
+  const thanks = voiceThanksText();
+  const commentVoice = voiceCommentVoiceValue();
+  setLog('評価コメントの音声を作っています…');
+  let commentAudio;
+  try{
+    commentAudio = await generateNarrationAudio(comment, commentVoice, 'ja-JP');
+  }catch(err){
+    return {ok:false, message:`評価コメントの音声を作れませんでした: ${err.message}`};
+  }
+  if(!commentAudio || !commentAudio.data || !commentAudio.data.length){
+    return {ok:false, message:'評価コメントの音声を作れませんでした。'};
+  }
+  let thanksAudio = {sampleRate:24000, data:new Float32Array(0)};
+  let voicevoxOk = false;
+  if(thanks){
+    try{
+      setLog('お礼の言葉（VOICEVOX・ずんだもん）の音声を作っています…');
+      thanksAudio = await generateNarrationAudio(thanks, 'vv:3', 'ja-JP');
+      voicevoxOk = !!(thanksAudio && thanksAudio.data && thanksAudio.data.length);
+    }catch(err){
+      setLog(`VOICEVOXにつながらないため、お礼の言葉は声なし（テロップのみ）で作ります（${err.message}）`);
+      thanksAudio = {sampleRate:24000, data:new Float32Array(0)};
+      voicevoxOk = false;
+    }
+  }
+  const commentSpokenSec = commentAudio.data.length / commentAudio.sampleRate;
+  const thanksSpokenSec = thanksAudio.data.length / thanksAudio.sampleRate;
+  const phase3 = VOICE_PHASE3_SEC;
+  const phase2 = voicevoxOk
+    ? clamp(roundDuration(thanksSpokenSec + .5), VOICE_PHASE2_MIN, VOICE_PHASE2_MAX)
+    : clamp(roundDuration(estimateNarrationDuration(thanks) || VOICE_PHASE2_MIN), VOICE_PHASE2_MIN, VOICE_PHASE2_MAX);
+  const phase1 = clamp(roundDuration(commentSpokenSec + .5), 4, VOICE_TARGET_MAX - phase2 - phase3);
+  const total = phase1 + phase2 + phase3;
+
+  // 実音声の長さで写真の表示秒数を割り直す（見積もりのままだと音声とずれるため）
+  const list = playableSlides();
+  const useCount = Math.max(1, list.length);
+  const perPhoto = clamp(roundDuration(phase1 / useCount), .5, MAX_SLIDE_DURATION);
+  saveSelected();
+  list.forEach(slide => { slide.duration = perPhoto; });
+  renderList();
+  if(selected >= 0) loadSelected();
+
+  voicePlan = {
+    phase1, phase2, phase3, total, useCount,
+    captionWindows: voiceCaptionWindows(phase1),
+    thanksText: thanks,
+    hasRealAudio: true,
+    commentAudio, thanksAudio, commentVoice, voicevoxOk
+  };
+  drawSelectedOrFirstFrame();
+  return {ok:true, totalSeconds: total, phase1, phase2, phase3, voicevoxOk};
+}
+
+async function recordVoiceNarratedMp4(){
+  if(!canEncodeMp4Video() || typeof AudioEncoder === 'undefined' || typeof AudioData === 'undefined'){
+    setLog('この動画作成は最新のEdgeまたはChromeで利用できます。');
+    return;
+  }
+  if(!voicePlan || !voicePlan.hasRealAudio){ setLog('先に音声を作ってください。'); return; }
+  try{
+    await recordVoiceNarratedMp4Core();
+  }finally{
+    stopProgressTicker();   // recordVideo()経由ではなく直接呼ぶ経路のため、ここで必ず止める（消し忘れるとログが動き続ける）
+  }
+}
+async function recordVoiceNarratedMp4Core(){
+  resetRecordingOutput();
+  const frameRate = 30;
+  const outputRate = 48000;
+  const total = voicePlan.total;
+  const timeline = new Float32Array(Math.max(1, Math.ceil(total * outputRate)));
+  const commentResampled = resampleMono(voicePlan.commentAudio.data, voicePlan.commentAudio.sampleRate, outputRate);
+  timeline.set(commentResampled.subarray(0, Math.min(commentResampled.length, timeline.length)), 0);
+  if(voicePlan.voicevoxOk && voicePlan.thanksAudio.data.length){
+    const thanksStart = Math.round(voicePlan.phase1 * outputRate);
+    const thanksResampled = resampleMono(voicePlan.thanksAudio.data, voicePlan.thanksAudio.sampleRate, outputRate);
+    timeline.set(thanksResampled.subarray(0, Math.max(0, timeline.length - thanksStart)), thanksStart);
+  }
+  const narrationTrack = {sampleRate:outputRate, numberOfChannels:1, data:timeline};
+  updateProgressTicker('AI音声をMP4用に変換中');
+  let audioChunks;
+  try{
+    audioChunks = await encodeGeneratedAudio(narrationTrack);
+  }catch(err){
+    setLog(`音声のAAC変換に失敗しました: ${err.message}`);
+    return;
+  }
+  let blob = null;
+  let lastError = null;
+  const saveOwner = {kind:'voice-save'};
+  setActiveNarrationTrack(narrationTrack, saveOwner);
+  narrationTrack.__owner = saveOwner;
+  try{
+    for(const hardwareAcceleration of ['prefer-hardware', 'prefer-software']){
+      try{
+        updateProgressTicker(hardwareAcceleration === 'prefer-hardware'
+          ? 'AIナレーションをMP4へ合成中'
+          : '端末の映像処理を切り替えて自動再試行中', {resetElapsed:true});
+        blob = await encodeNarratedMp4Attempt(narrationTrack, audioChunks, total, frameRate, hardwareAcceleration);
+        break;
+      }catch(err){
+        lastError = err;
+        if(hardwareAcceleration === 'prefer-hardware') continue;
+      }
+    }
+  }finally{
+    releaseActiveNarrationTrack(saveOwner);
+  }
+  if(!blob){ setLog(`MP4の映像処理に失敗しました: ${lastError ? lastError.message : '不明なエラー'}`); return; }
+  const credit = voicePlan.voicevoxOk ? 'VOICEVOX:ずんだもん' : '';
+  finishRecordingBlob(
+    blob,
+    {mime:'video/mp4;codecs="avc1.42002A,mp4a.40.2"', type:'video/mp4', ext:'mp4', instagram:true, encoder:'webcodecs', audio:true, voiceCredit:credit},
+    voicePlan.voicevoxOk
+      ? '購入者の声動画を保存しました（評価コメント＋VOICEVOXずんだもんの声）。'
+      : '購入者の声動画を保存しました（評価コメントの声のみ・VOICEVOXにつながらなかったためお礼はテロップのみ）。'
+  );
+}
+
 async function recordMp4WithWebCodecs(withMic){
   if(!canEncodeMp4Video()) throw new Error('MP4書き出しライブラリを読み込めませんでした。');
   const frameRate = 30;
@@ -8734,7 +9002,13 @@ function updateVoiceButtonsUi(){
 function setAppMode(mode){
   appMode = mode === 'voice' ? 'voice' : 'video';
   const voice = appMode === 'voice';
-  if(!voice) restoreVoiceModeSlideSnapshot();   // 紹介動画モードへ戻すときは、除外した写真を復元する
+  if(!voice){
+    restoreVoiceModeSlideSnapshot();   // 紹介動画モードへ戻すときは、除外した写真を復元する
+    REEL_LAYOUT = currentVideoFormat().layout;   // レイアウトも通常モードへ戻す
+    voicePlan = null;
+  }else{
+    REEL_LAYOUT = VOICE_LAYOUT;
+  }
   if(els.modeVideoTab){
     els.modeVideoTab.classList.toggle('active', !voice);
     els.modeVideoTab.setAttribute('aria-selected', String(!voice));
@@ -8752,6 +9026,7 @@ function setAppMode(mode){
     }
     updateVoiceButtonsUi();
   }
+  resetRecordingOutput();
   drawSelectedOrFirstFrame();
 }
 if(els.modeVideoTab) els.modeVideoTab.addEventListener('click', () => setAppMode('video'));
@@ -8771,11 +9046,22 @@ if(els.voiceComment) els.voiceComment.addEventListener('input', () => { if(isVoi
 if(els.voiceThanks) els.voiceThanks.addEventListener('input', () => { if(isVoiceMode()) drawSelectedOrFirstFrame(); });
 if(els.voiceSaveRating) els.voiceSaveRating.addEventListener('click', () => saveVoiceRating(''));
 if(els.voiceBuildVideo) els.voiceBuildVideo.addEventListener('click', async () => {
-  const result = applyVoiceModeToSlides();
-  if(!result.ok){ setLog(result.message); return; }
-  setLog(`動画を作成します（コマ${result.segments}枚・約${result.totalSeconds.toFixed(1)}秒）。`);
-  if(await requestExportGate('silent')) await recordVideo('silent');
-  updateVoiceButtonsUi();
+  if(els.voiceBuildVideo.dataset.busy === 'true') return;
+  const originalLabel = els.voiceBuildVideo.textContent;
+  els.voiceBuildVideo.dataset.busy = 'true';
+  els.voiceBuildVideo.disabled = true;
+  els.voiceBuildVideo.textContent = '作成中…';
+  try{
+    const plan = await buildVoiceNarrationPlan();
+    if(!plan.ok){ setLog(plan.message); return; }
+    setLog(`動画を作成します（評価コメント約${plan.phase1.toFixed(1)}秒 → お礼約${plan.phase2.toFixed(1)}秒 → 締め${plan.phase3.toFixed(1)}秒・合計約${plan.totalSeconds.toFixed(1)}秒）。`);
+    await recordVoiceNarratedMp4();
+  }finally{
+    delete els.voiceBuildVideo.dataset.busy;
+    els.voiceBuildVideo.disabled = false;
+    els.voiceBuildVideo.textContent = originalLabel;
+    updateVoiceButtonsUi();
+  }
 });
 if(els.voiceUploadDrive) els.voiceUploadDrive.addEventListener('click', voiceUploadAndSaveRating);
 if(els.voiceDownloadMp4) els.voiceDownloadMp4.addEventListener('click', () => {
