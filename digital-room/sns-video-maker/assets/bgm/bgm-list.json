@@ -47,5 +47,12 @@
     "performer": "Musopen Symphony",
     "license": "CC0",
     "mood": "荘厳"
+  },
+  {
+    "file": "08_pachelbel_canon_usaf.mp3",
+    "title": "パッヘルベル カノン ニ長調",
+    "performer": "米空軍バンド Strolling Strings",
+    "license": "PD-USGov",
+    "mood": "優雅"
   }
 ]

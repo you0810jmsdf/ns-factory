@@ -74,3 +74,14 @@
 - 元ファイル名: Peer_Gynt_Suite_No._1,_Op._46_-_II._Aase's_Death.ogg
 - 取り込み日: 2026-09-29
 - 加工内容: 先頭0.90秒の無音をカットし60秒抜粋・末尾2秒フェードアウト・ラウドネス正規化・mp3 96kbps変換
+
+## 08_pachelbel_canon_usaf.mp3
+- 作曲者: ヨハン・パッヘルベル
+- 曲名: カノン ニ長調
+- 演奏者: 米空軍バンド Strolling Strings（Frank Hudson 編・2004年）
+- ライセンス種別: PD-USGov-Military-Air Force（米国政府職員が職務上制作した著作物のため米国内では著作権が発生しない）
+- 根拠ページ: https://commons.wikimedia.org/wiki/File:Canon_(2004)_-_Strolling_Strings_-_United_States_Air_Force_Band.mp3
+- 元ファイル名: Canon_(2004)_-_Strolling_Strings_-_United_States_Air_Force_Band.mp3（元は3:49・10.8MB）
+- 取り込み日: 2026-09-29
+- 加工内容: 先頭0.53秒の無音をカットし60秒抜粋・末尾2秒フェードアウト・ラウドネス正規化・mp3 96kbps変換
+- 注記: 日本国内での扱いは条約上あいまい（確信度：中。米国政府職務著作の著作権不発生は米国法上の規定であり、日本国内での著作権の有無は国際私法・条約解釈により見解が分かれ得る）。事業主が承知の上で採用（2026-09-29）
