@@ -677,6 +677,73 @@ canvas{
     <div class="step"><span class="num">4</span><span><strong>保存</strong>MP4で書き出し</span></div>
   </section>
 
+  <!-- モード切替（2026-09-29 追加）。「購入者の声」は取引のお礼としてストーリーズ用の縦動画を作る専用モード。
+       既存の「紹介動画を作る」モードのUI・処理は無変更（このタブバーと #sec-voice パネルを足しただけ）。 -->
+  <div class="tabs" role="tablist" aria-label="動画メーカーのモード" id="appModeBar">
+    <button class="tab-btn active" id="modeVideoTab" type="button" role="tab" aria-selected="true">🎬 紹介動画を作る</button>
+    <button class="tab-btn" id="modeVoiceTab" type="button" role="tab" aria-selected="false">💬 購入者の声（お礼動画）</button>
+  </div>
+
+  <section class="panel" id="sec-voice" hidden>
+    <h2>購入者の声（お礼動画）</h2>
+    <p class="help">取引の評価をいただいたお礼に、ストーリーズ用の縦動画を作ります。作品番号を入れて写真を読み込み、評価コメントとお礼の言葉を入れてください。</p>
+    <div class="field">
+      <label for="voiceWorkNo">作品番号</label>
+      <input id="voiceWorkNo" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
+      <div class="actions">
+        <button class="secondary" id="voiceLoadPhotos" type="button">写真を読み込む（代表→サブ写真の順）</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="voiceRatingDate">評価日</label>
+        <input id="voiceRatingDate" type="date">
+      </div>
+      <div class="field">
+        <label for="voiceCharacterKind">キャラクター</label>
+        <select id="voiceCharacterKind">
+          <option value="owl">フクロウ（講座動画と同じ・ポーズ自動）</option>
+          <option value="hanbai">販売幕僚（口パク・声に合わせて口が動く）</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="voiceComment">評価コメント</label>
+      <textarea id="voiceComment" placeholder="いただいた評価コメントを貼り付けてください"></textarea>
+      <p class="help">下方にタイピング演出で表示します。長くて入りきらない場合は、写真コマに区切って順番に表示します（写真が足りない場合は繰り返し使います）。</p>
+    </div>
+    <div class="field">
+      <label for="voiceThanks">お礼の言葉（キャラクターの吹き出し・編集可）</label>
+      <textarea id="voiceThanks">ご購入ありがとうございました！大切に使っていただけたら嬉しいです</textarea>
+    </div>
+    <p class="help" id="voiceStatus" aria-live="polite"></p>
+    <div class="actions">
+      <button class="secondary" id="voiceSaveRating" type="button">評価を保存</button>
+      <button class="primary" id="voiceBuildVideo" type="button">動画を作る</button>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="voiceUploadDrive" type="button">Driveへ保存</button>
+      <button class="secondary" id="voiceDownloadMp4" type="button">MP4をダウンロード</button>
+      <button class="primary" id="voiceStoryPost" type="button">📤 ストーリーズへ投稿</button>
+    </div>
+    <p class="help">「評価を保存」「Driveへ保存」「ストーリーズへ投稿」は管理者モードのときだけ使えます。「動画を作る」「MP4をダウンロード」は保存（書き出し）欄と同じ仕組みを使うため、下の「保存の記録」にも残ります。</p>
+  </section>
+
+  <!-- ストーリーズ投稿前の確認（askSnsPostGate 相当・2026-09-29 追加）。押した瞬間に公開されないよう必ず挟む。 -->
+  <dialog class="export-gate" id="voiceStoryGate" aria-labelledby="voiceStoryGateTitle">
+    <div class="export-gate-body">
+      <h2 id="voiceStoryGateTitle">ストーリーズへ投稿する前の確認</h2>
+      <p class="export-gate-lead"><strong>実行すると、この動画がInstagramストーリーズにそのまま公開されます。</strong>フィード・Threadsには投稿しません。取り消しはInstagramアプリから行ってください。</p>
+      <ul class="export-gate-list" id="voiceStoryGateSummary"></ul>
+      <p class="help" style="margin:.6rem 0 .2rem">添える文章（任意・お礼の言葉が入っています）</p>
+      <textarea id="voiceStoryCaption" rows="4" style="width:100%;box-sizing:border-box;padding:.6rem .7rem;border-radius:.5rem;background:rgba(0,0,0,.25);color:inherit;border:1px solid rgba(255,255,255,.2);font-size:16px;line-height:1.75;resize:vertical"></textarea>
+      <div class="export-gate-actions">
+        <button class="secondary" id="voiceStoryGateCancel" type="button">やめる</button>
+        <button class="primary" id="voiceStoryGateConfirm" type="button">この内容で投稿する</button>
+      </div>
+    </div>
+  </dialog>
+
   <div class="studio">
     <div class="stage-col">
       <section id="sec-preview">
@@ -1381,7 +1448,28 @@ const els = {
   addReadingFromSelection: document.getElementById('addReadingFromSelection'),
   saveReadingDict: document.getElementById('saveReadingDict'),
   resetReadingDict: document.getElementById('resetReadingDict'),
-  testReadingDict: document.getElementById('testReadingDict')
+  testReadingDict: document.getElementById('testReadingDict'),
+  // ── 購入者の声（お礼動画）モード（2026-09-29 追加） ──
+  modeVideoTab: document.getElementById('modeVideoTab'),
+  modeVoiceTab: document.getElementById('modeVoiceTab'),
+  secVoice: document.getElementById('sec-voice'),
+  voiceWorkNo: document.getElementById('voiceWorkNo'),
+  voiceLoadPhotos: document.getElementById('voiceLoadPhotos'),
+  voiceRatingDate: document.getElementById('voiceRatingDate'),
+  voiceCharacterKind: document.getElementById('voiceCharacterKind'),
+  voiceComment: document.getElementById('voiceComment'),
+  voiceThanks: document.getElementById('voiceThanks'),
+  voiceStatus: document.getElementById('voiceStatus'),
+  voiceSaveRating: document.getElementById('voiceSaveRating'),
+  voiceBuildVideo: document.getElementById('voiceBuildVideo'),
+  voiceUploadDrive: document.getElementById('voiceUploadDrive'),
+  voiceDownloadMp4: document.getElementById('voiceDownloadMp4'),
+  voiceStoryPost: document.getElementById('voiceStoryPost'),
+  voiceStoryGate: document.getElementById('voiceStoryGate'),
+  voiceStoryGateSummary: document.getElementById('voiceStoryGateSummary'),
+  voiceStoryCaption: document.getElementById('voiceStoryCaption'),
+  voiceStoryGateCancel: document.getElementById('voiceStoryGateCancel'),
+  voiceStoryGateConfirm: document.getElementById('voiceStoryGateConfirm')
 };
 let slides = [];
 let selected = -1;
@@ -1400,6 +1488,8 @@ let currentWork = null;
 let lastRecordingBlob = null;
 let lastRecordingMeta = null;
 let registerKey = '';
+let appMode = 'video';   // 'video'（紹介動画・既定） / 'voice'（購入者の声・お礼動画）
+function isVoiceMode(){ return appMode === 'voice'; }
 let localTtsPromise = null;
 let localTtsWorker = null;
 let localTtsRequestId = 0;
@@ -3691,6 +3781,105 @@ function estimateNarrationDuration(text){
   return clamp(roundDuration(baseSeconds + 1.9), 1.8, MAX_SLIDE_DURATION);
 }
 
+/* ══ 購入者の声モード: 評価コメントの分割・写真コマへの割り当て（2026-09-29 追加）══
+   既存の字幕タイプ表示（typewriter・1090行目のselect／4931〜4935行目のdrawNarrationSubtitle）を
+   そのまま使う。コメントが1コマの字幕箱に収まらない長さのときだけ、複数コマに分けて「順に」表示する
+   （コマごとの narration に分割後の文をセットし、そのコマの表示秒数だけタイプされる＝既存の仕組みのまま）。 */
+function voiceCommentText(){
+  return String((els.voiceComment && els.voiceComment.value) || '').trim();
+}
+function voiceRatingDateValue(){
+  const v = els.voiceRatingDate && els.voiceRatingDate.value;
+  return v || new Date().toISOString().slice(0, 10);
+}
+function chunkTextForSubtitle(text){
+  const clean = trimSubtitle(text);
+  if(!clean) return [];
+  const box = REEL_LAYOUT.subtitle;
+  const fontSize = 28;
+  ctx.save();
+  ctx.font = canvasFont(700, fontSize);
+  const maxWidth = box.w - box.padX * 2;
+  const charW = ctx.measureText('あ').width || fontSize;
+  ctx.restore();
+  const charsPerLine = Math.max(6, Math.floor(maxWidth / charW));
+  const lineHeight = Math.round(fontSize * 1.24);
+  const maxLines = Math.max(2, Math.floor((box.maxH - box.padY * 2) / lineHeight));
+  const maxChars = charsPerLine * maxLines;
+  if(clean.length <= maxChars) return [clean];
+  const chunks = [];
+  let rest = clean;
+  while(rest.length > maxChars){
+    let cut = maxChars;
+    const window = rest.slice(0, maxChars + 1);
+    const m = window.match(/^[\s\S]*[。！？、\s]/);
+    if(m && m[0].length >= maxChars * .5) cut = m[0].length;
+    chunks.push(rest.slice(0, cut).trim());
+    rest = rest.slice(cut).trim();
+  }
+  if(rest) chunks.push(rest);
+  return chunks;
+}
+/* 読み込み済みの写真コマへ、評価コメントの分割後の文を1コマ1文で順番に割り当てる。
+   コメントの区切り数だけ写真を使い、残りは（作品番号でDriveから読み込んだ枚数が多い場合）このモードの間だけ
+   一時的に動画から除外する。除外前の使用可否は voiceModeSlideSnapshot に退避し、「紹介動画を作る」モードへ
+   戻ったとき・別の作品番号を読み込み直したときに復元する（通常モードの構成を壊さないため）。
+   長さは15〜30秒の目安に収まるよう、estimateNarrationDuration の見積もりを比例配分で伸縮する。 */
+let voiceModeSlideSnapshot = null;
+function restoreVoiceModeSlideSnapshot(){
+  if(!voiceModeSlideSnapshot) return;
+  voiceModeSlideSnapshot.forEach((wasEnabled, slide) => {
+    if(slides.includes(slide)) slide.enabled = wasEnabled;
+  });
+  voiceModeSlideSnapshot = null;
+  renderList();
+  if(selected >= 0) loadSelected();
+  drawSelectedOrFirstFrame();
+}
+function applyVoiceModeToSlides(){
+  restoreVoiceModeSlideSnapshot();   // 前回この関数で除外した分をいったん戻してから、今回のコメントで選び直す
+  const all = playableSlides();
+  if(!all.length) return {ok:false, message:'先に「作品番号」で写真を読み込んでください。'};
+  const comment = voiceCommentText();
+  if(!comment) return {ok:false, message:'評価コメントを入力してください。'};
+  if(characterKind() === 'none'){
+    els.characterKind.value = 'owl';
+    els.characterKind.dispatchEvent(new Event('change'));
+  }
+  const chunks = chunkTextForSubtitle(comment);
+  const useCount = clamp(chunks.length, 1, all.length);
+  if(chunks.length > useCount){
+    chunks[useCount - 1] = chunks[useCount - 1] + chunks.slice(useCount).join('');
+    chunks.length = useCount;
+  }
+  const used = all.slice(0, useCount);
+  if(useCount < all.length){
+    voiceModeSlideSnapshot = new Map(all.map(slide => [slide, isSlideEnabled(slide)]));
+    all.forEach((slide, i) => { if(i >= useCount) slide.enabled = false; });
+  }
+  let durations = chunks.map(estimateNarrationDuration);
+  const VOICE_TARGET_MIN = 15, VOICE_TARGET_MAX = 30;
+  const total = durations.reduce((a, b) => a + b, 0);
+  if(total > 0 && (total < VOICE_TARGET_MIN || total > VOICE_TARGET_MAX)){
+    const target = clamp(total, VOICE_TARGET_MIN, VOICE_TARGET_MAX);
+    const scale = target / total;
+    durations = durations.map(d => clamp(roundDuration(d * scale), 1.8, MAX_SLIDE_DURATION));
+  }
+  saveSelected();
+  used.forEach((slide, i) => {
+    slide.narration = chunks[i];
+    slide.subtitleMotion = 'typewriter';
+    slide.duration = durations[i];
+    slide.narrationSource = 'manual';
+  });
+  renderList();
+  if(selected >= 0) loadSelected();
+  resetRecordingOutput();
+  drawSelectedOrFirstFrame();
+  const totalSeconds = durations.reduce((a, b) => a + b, 0);
+  return {ok:true, totalSeconds, segments:useCount, excluded: all.length - useCount};
+}
+
 function fitDurationsToNarration(options = {}){
   const {showLog = true} = options;
   saveSelected();
@@ -4178,6 +4367,95 @@ function drawOwlCharacter(slide, progress){
   ctx.drawImage(img, Math.round(x), Math.round(y), w, h);
   ctx.restore();
 }
+
+/* ══ 購入者の声モード: キャラクターの吹き出し（2026-09-29 追加）══
+   drawOwlCharacter / drawHanbaiCharacter と同じ位置計算を読み取り専用で複製し（既存関数は変更しない）、
+   その左に尻尾付きの吹き出し（お礼の言葉）を描く。タイトル（写真の上）・評価コメント（写真の下端の字幕箱）とは
+   別領域に収まるよう、字幕箱の上端より上・写真枠の内側に収める。既存のフクロウ／販売幕僚と同じく写真の
+   右下に重なる配置は仕様どおり（両キャラクターとも元々写真に重ねて立たせる設計のため）。 */
+function activeCharacterBounds(slide, progress){
+  if(!characterActive()) return null;
+  const photo = REEL_LAYOUT.photo;
+  const spec = REEL_LAYOUT.owl || {h:Math.round(photo.h * .31), right:18};
+  const isHanbai = hanbaiActive();
+  const h = isHanbai ? Math.round(spec.h * 1.25) : spec.h;
+  const name = isHanbai ? '' : resolvedOwlPose(slide);
+  const img = isHanbai ? hanbaiImage('closed') : (name ? owlImage(name) : null);
+  const aspect = (img && img.naturalWidth && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : .62;
+  const w = Math.round(h * aspect);
+  let bottom = photo.y + photo.h - 22;
+  if(slide.narration && slide.subtitleMotion !== 'none'){
+    bottom = buildSubtitleLayout(trimSubtitle(slide.narration)).box.y - 6;
+  }
+  const t = progress * (slide.duration || 3.5);
+  const bob = Math.sin(t * 2.2) * (isHanbai ? 4 : 5);
+  const enter = easeOut(clamp(progress / .22, 0, 1));
+  const x = photo.x + photo.w - w - spec.right;
+  const y = bottom - h + bob + (1 - enter) * 34;
+  return {x: Math.round(x), y: Math.round(y), w, h, enter};
+}
+function voiceThanksText(){
+  return String((els.voiceThanks && els.voiceThanks.value) || '').trim();
+}
+function drawThanksSpeechBubble(slide, progress){
+  const text = voiceThanksText();
+  if(!text) return;
+  const bounds = activeCharacterBounds(slide, progress);
+  if(!bounds) return;
+  const photo = REEL_LAYOUT.photo;
+  const margin = 22;
+  const tailW = 26;
+  const maxWidth = Math.max(200, bounds.x - photo.x - margin * 2 - tailW);
+  let fontSize = 28, lineHeight = 37, lines = [];
+  ctx.save();
+  for(fontSize = 28; fontSize >= 18; fontSize -= 2){
+    ctx.font = canvasFont(700, fontSize);
+    lineHeight = Math.round(fontSize * 1.32);
+    lines = wrapSubtitleLines(text, maxWidth);
+    if(lines.length <= 4) break;
+  }
+  if(lines.length > 4){
+    lines = lines.slice(0, 4);
+    lines[3] = lines[3].replace(/.$/, '…');
+  }
+  const padX = 26, padY = 20;
+  let textW = 0;
+  ctx.font = canvasFont(700, fontSize);
+  lines.forEach(line => { textW = Math.max(textW, ctx.measureText(line).width); });
+  ctx.restore();
+  const boxW = Math.min(maxWidth, textW) + padX * 2;
+  const boxH = lines.length * lineHeight + padY * 2;
+  let boxBottom = bounds.y + bounds.h * .34;
+  let boxY = boxBottom - boxH;
+  if(boxY < photo.y + 16) boxY = photo.y + 16;
+  let boxX = bounds.x - tailW - boxW;
+  if(boxX < photo.x + margin) boxX = photo.x + margin;
+  const tailTipX = bounds.x - 4;
+  const tailTipY = Math.min(boxY + boxH - 14, Math.max(boxY + 14, bounds.y + bounds.h * .3));
+  ctx.save();
+  ctx.globalAlpha *= bounds.enter;
+  ctx.shadowColor = 'rgba(0,0,0,.35)';
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetY = 4;
+  ctx.fillStyle = '#FFFBF2';
+  roundRect(ctx, boxX, boxY, boxW, boxH, 20);
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.beginPath();
+  ctx.moveTo(boxX + boxW - 2, tailTipY - 16);
+  ctx.lineTo(tailTipX, tailTipY);
+  ctx.lineTo(boxX + boxW - 2, tailTipY + 16);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.08)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.fillStyle = '#2A2420';
+  ctx.textAlign = 'left';
+  ctx.font = canvasFont(700, fontSize);
+  lines.forEach((line, i) => ctx.fillText(line, boxX + padX, boxY + padY + fontSize * .86 + i * lineHeight));
+  ctx.restore();
+}
 /* AI生成画像の注記。フクロウを出している間、動画の最初から最後まで左下に小さく出す（VOICEVOXクレジットと同じ行・左寄せ）。
    drawFrame の最後で1回だけ描く（切替・暗幕に巻き込まれない）。声なし保存でもフクロウが出る限り描く。 */
 function drawAiImageNote(){
@@ -4386,6 +4664,7 @@ function drawSlide(slide, progress, alpha){
   drawTexts(slide);
   drawOwlCharacter(slide, progress);   // 字幕より先に描く（字幕ボックスの上に立ち、字幕がセリフに見える）
   drawHanbaiCharacter(slide, progress);
+  if(isVoiceMode()) drawThanksSpeechBubble(slide, progress);   // 購入者の声モード: キャラクターの吹き出し（2026-09-29）
   drawNarrationSubtitle(slide, progress);
   ctx.restore();
 }
@@ -5478,6 +5757,7 @@ function resetRecordingOutput(){
   lastRecordingMeta = null;
   refreshUploadButton();
   updateShareToSnsUi();
+  updateVoiceButtonsUi();
 }
 
 /* ══ SNSへ投稿ボタン（2026-09-01・管理者限定）══
@@ -5876,6 +6156,155 @@ async function shareVideoToSns(){
   }
 }
 
+/* ══ 購入者の声モード: 評価の保存・Drive保存・ストーリーズ投稿（2026-09-29 追加）══
+   商品GAS api=saveVoice（updateProduct と同じURL・deploymentId・版165・key の渡し方も同じ）。
+   引数 key, id, date, comment, videoId（渡した項目だけ更新）。応答 {ok:true} / {ok:false,error:'unauthorized'|'product_not_found'}。
+   ⛔ 実行はしない（別担当のAPIを本番で叩くテスト送信は事業主の初回操作で確認する）。 */
+async function saveVoiceRating(videoId){
+  if(!nsfAdminVerified){ setLog('管理者モードのときだけ使えます。'); return {ok:false}; }
+  if(!currentWork || !currentWork.id){ setLog('作品番号で作品を読み込んでから使ってください。'); return {ok:false}; }
+  const comment = voiceCommentText();
+  if(!comment){ setLog('評価コメントを入力してください。'); return {ok:false}; }
+  const key = await ensureRegisterKey();
+  if(!key) return {ok:false};
+  const payload = {
+    api: 'saveVoice',
+    key,
+    id: currentWork.id,
+    date: voiceRatingDateValue(),
+    comment,
+    videoId: videoId || ''
+  };
+  setLog('評価を保存しています…');
+  try{
+    const response = await fetch(SNS_VIDEO_DRIVE_API, {
+      method: 'POST',
+      body: new URLSearchParams({payload: JSON.stringify(payload)})
+    });
+    const text = await response.text();
+    if(text.trim().startsWith('<')) throw new Error('Google側の一時障害です。少し待ってもう一度お試しください。');
+    const data = JSON.parse(text);
+    if(!data.ok) throw new Error(data.error === 'unauthorized' ? '管理者の鍵が違います。' : (data.error === 'product_not_found' ? `作品番号 ${currentWork.id} が見つかりません。` : (data.error || '保存に失敗しました。')));
+    setLog(`評価を保存しました（作品番号 ${currentWork.id}）。`);
+    return data;
+  }catch(err){
+    setLog(`評価の保存に失敗しました: ${err.message}`);
+    return {ok:false, error: err.message};
+  }
+}
+
+/** 「Driveへ保存」ボタン: 既存 uploadVideoToDrive を流用し、返ってきた fileId を saveVoice の videoId に入れる。 */
+async function voiceUploadAndSaveRating(){
+  if(!nsfAdminVerified){ setLog('管理者モードのときだけ使えます。'); return; }
+  const result = await uploadVideoToDrive();
+  if(result && result.ok && result.fileId){
+    await saveVoiceRating(result.fileId);
+  }
+}
+
+let voiceStoryGateResolve = null;
+
+/** ストーリーズ投稿前の確認（askSnsPostGate 相当の別ダイアログ。Threads/フィードは対象外なので
+    既存ダイアログのチェック欄をそのまま使うと紛らわしいため、専用の簡易ダイアログにしている）。 */
+function askVoiceStoryPostGate(caption){
+  if(!els.voiceStoryGate) return Promise.resolve(null);
+  els.voiceStoryCaption.value = caption || '';
+  const sizeMb = lastRecordingBlob ? (lastRecordingBlob.size / 1048576) : 0;
+  const format = currentVideoFormat();
+  els.voiceStoryGateSummary.innerHTML = [
+    `作品: ${currentWork && (currentWork.name || currentWork.id) || '（未読込）'}`,
+    `動画: ${sizeMb.toFixed(1)}MB・${format.w}×${format.h}`,
+    '投稿先: Instagramストーリーズのみ（フィード・Threadsには投稿しません）',
+    '投稿後、一時的に置いた動画は削除します'
+  ].map(text => `<li>${escapeHtml(text)}</li>`).join('');
+  if(typeof els.voiceStoryGate.showModal !== 'function') return Promise.resolve(null);
+  if(els.voiceStoryGate.open) els.voiceStoryGate.close();
+  els.voiceStoryGate.showModal();
+  return new Promise(resolve => { voiceStoryGateResolve = resolve; });
+}
+function closeVoiceStoryGate(confirmed){
+  if(els.voiceStoryGate.open) els.voiceStoryGate.close();
+  if(!voiceStoryGateResolve) return;
+  const resolve = voiceStoryGateResolve;
+  voiceStoryGateResolve = null;
+  if(!confirmed) return resolve(null);
+  let pass = '';
+  try{ pass = sessionStorage.getItem('nsf_admin_key') || ''; }catch(_){}
+  resolve({caption: els.voiceStoryCaption.value.trim(), pass});
+}
+
+/* SNS投稿GAS action=video_post（v62）。threads=0&instagram=0&ig_story=1 でストーリーズ単独投稿。
+   応答 results[].platform は 'instagram_story'。ストーリーズには caption は使われない（送っても無視される）。
+   ⛔ 実投稿はしない（動作確認は URL・引数の目視のみ）。 */
+async function shareVideoToInstagramStory(){
+  if(!nsfAdminVerified){ setLog('管理者モードのときだけ使えます。'); return; }
+  if(!lastRecordingBlob){ setLog('まだ動画がありません。先に「動画を作る」で保存してから押してください。'); return; }
+  const caption = voiceThanksText() || (currentWork && currentWork.id ? buildSnsVideoCaption(currentWork) : '') || '';
+  const choice = await askVoiceStoryPostGate(caption);
+  if(!choice){ setLog('投稿をやめました。'); return; }
+  if(!choice.pass){ setLog('管理者モードの鍵が見つかりません。管理者モードをONにしてから、もう一度お試しください。'); return; }
+
+  const button = els.voiceStoryPost;
+  const originalLabel = button ? button.textContent : '';
+  if(button){ button.disabled = true; button.textContent = '投稿中…'; }
+
+  let uploadedId = '';
+  try{
+    setLog('動画を投稿用に一時アップロードしています…');
+    const upRes = await fetch(`${SNS_VIDEO_RELAY}/video/upload`, {
+      method:'POST',
+      headers:{'Content-Type': lastRecordingBlob.type || 'video/mp4'},
+      body: lastRecordingBlob
+    });
+    const upJson = await upRes.json().catch(() => ({}));
+    if(!upRes.ok || !upJson.url) throw new Error(upJson.error || `一時アップロードに失敗しました（${upRes.status}）`);
+    uploadedId = upJson.id;
+
+    setLog('Instagramストーリーズへ投稿しています。動画の変換に時間がかかるため、最長で3分ほどかかります…');
+    const requestId = [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join('');
+    const query = new URLSearchParams({
+      action:'video_post',
+      pass: choice.pass,
+      rid: requestId,
+      video: upJson.url,
+      caption: choice.caption || caption,
+      threads: '0',
+      instagram: '0',
+      ig_story: '1'
+    });
+    const postRes = await fetch(`${SNS_POST_GAS_URL}?${query.toString()}`, {
+      method:'GET',
+      cache:'no-store',
+      credentials:'omit'
+    });
+    const raw = await postRes.text();
+    let result;
+    if(raw.trim().startsWith('<')){
+      setLog('⚠️ 投稿の結果を受け取れませんでした（サーバーが一時的に不調）。投稿されている可能性があるので、Instagramを確認してから操作してください。');
+      return;
+    }
+    try{
+      result = JSON.parse(raw);
+    }catch(_){
+      setLog('⚠️ 投稿の結果を読み取れませんでした。投稿されている可能性があるので、Instagramを確認してから操作してください。');
+      return;
+    }
+    if(result.error && !result.results){
+      setLog(`⛔ 投稿できませんでした（${result.error}）。動画は保存済みなので、Instagramアプリから手で投稿することもできます。`);
+      return;
+    }
+    const lines = (result.results || []).map(r => r.ok
+      ? `✅ ストーリーズへ投稿しました（ID: ${r.id}）`
+      : `⛔ ストーリーズ投稿は失敗（${r.error}）`);
+    setLog(lines.join(' / ') || '投稿結果を受け取れませんでした。');
+  }catch(err){
+    setLog(`⛔ 投稿に失敗しました（${err && err.message ? err.message : err}）。動画は保存済みなので、Instagramアプリから手で投稿することもできます。`);
+  }finally{
+    await deleteRelayVideo(uploadedId);
+    if(button){ button.disabled = false; button.textContent = originalLabel; }
+  }
+}
+
 function finishRecordingBlob(blob, format, message){
   const url = URL.createObjectURL(blob);
   els.downloadLink.href = url;
@@ -5886,6 +6315,7 @@ function finishRecordingBlob(blob, format, message){
   lastRecordingMeta = format;
   refreshUploadButton();
   updateShareToSnsUi();
+  updateVoiceButtonsUi();
   const driveWarning = currentWork && currentWork.folderId && blob.size > UPLOAD_VIDEO_MAX_BYTES
     ? ` ただしDrive保存には大きすぎます（${formatMb(blob.size)}MB / 上限${formatMb(UPLOAD_VIDEO_MAX_BYTES)}MB）。「Drive用に秒数を自動短縮」を押してから再録画してください。`
     : '';
@@ -8163,8 +8593,10 @@ async function uploadVideoToDrive(){
     const data = await response.json();
     if(!data.ok) throw new Error(data.message || data.error || 'アップロードに失敗しました。');
     setLog(`Driveへ保存しました（${data.filename}）。作品集ページの「動画を見る」から再生できます。`);
+    return data;   // fileId・previewUrl を含む（呼び出し側が使わなければ無視されるだけ・2026-09-29 購入者の声モードで利用）
   }catch(err){
     setLog(`Drive保存に失敗しました: ${err.message}`);
+    return null;
   }finally{
     refreshUploadButton();
   }
@@ -8290,6 +8722,70 @@ els.snsPostGate.addEventListener('cancel', event => { event.preventDefault(); cl
 els.snsPostVoiceGen.addEventListener('click', generateSnsPostVoiceCaption);
 els.snsPostCaption.addEventListener('input', refreshSnsPostChecks);   // 直すたびに文字数と「投稿する」の可否を出し直す
 els.adminToggle.addEventListener('click', () => { toggleAdminMode(); });
+
+/* ══ モード切替・購入者の声パネルの配線（2026-09-29 追加）══
+   既存の紹介動画モードのDOM・処理には触れず、#sec-voice の表示切替と専用ボタンだけを足す。 */
+function updateVoiceButtonsUi(){
+  const ready = !!lastRecordingBlob;
+  if(els.voiceUploadDrive) els.voiceUploadDrive.disabled = !ready;
+  if(els.voiceDownloadMp4) els.voiceDownloadMp4.disabled = !ready;
+  if(els.voiceStoryPost) els.voiceStoryPost.disabled = !ready;
+}
+function setAppMode(mode){
+  appMode = mode === 'voice' ? 'voice' : 'video';
+  const voice = appMode === 'voice';
+  if(!voice) restoreVoiceModeSlideSnapshot();   // 紹介動画モードへ戻すときは、除外した写真を復元する
+  if(els.modeVideoTab){
+    els.modeVideoTab.classList.toggle('active', !voice);
+    els.modeVideoTab.setAttribute('aria-selected', String(!voice));
+  }
+  if(els.modeVoiceTab){
+    els.modeVoiceTab.classList.toggle('active', voice);
+    els.modeVoiceTab.setAttribute('aria-selected', String(voice));
+  }
+  if(els.secVoice) els.secVoice.hidden = !voice;
+  if(voice){
+    if(els.voiceRatingDate && !els.voiceRatingDate.value) els.voiceRatingDate.value = voiceRatingDateValue();
+    if(els.voiceCharacterKind){
+      const kind = characterKind();
+      els.voiceCharacterKind.value = (kind === 'hanbai') ? 'hanbai' : 'owl';
+    }
+    updateVoiceButtonsUi();
+  }
+  drawSelectedOrFirstFrame();
+}
+if(els.modeVideoTab) els.modeVideoTab.addEventListener('click', () => setAppMode('video'));
+if(els.modeVoiceTab) els.modeVoiceTab.addEventListener('click', () => setAppMode('voice'));
+if(els.voiceCharacterKind) els.voiceCharacterKind.addEventListener('change', () => {
+  els.characterKind.value = els.voiceCharacterKind.value;
+  els.characterKind.dispatchEvent(new Event('change'));
+});
+if(els.voiceLoadPhotos) els.voiceLoadPhotos.addEventListener('click', () => {
+  const no = (els.voiceWorkNo.value || '').trim();
+  if(!no){ setLog('作品番号を入力してください。'); return; }
+  voiceModeSlideSnapshot = null;   // 新しい作品番号を読み込むので、前回の除外分の退避は破棄する
+  els.driveWorkNo.value = no;
+  addDrivePhotos();
+});
+if(els.voiceComment) els.voiceComment.addEventListener('input', () => { if(isVoiceMode()) drawSelectedOrFirstFrame(); });
+if(els.voiceThanks) els.voiceThanks.addEventListener('input', () => { if(isVoiceMode()) drawSelectedOrFirstFrame(); });
+if(els.voiceSaveRating) els.voiceSaveRating.addEventListener('click', () => saveVoiceRating(''));
+if(els.voiceBuildVideo) els.voiceBuildVideo.addEventListener('click', async () => {
+  const result = applyVoiceModeToSlides();
+  if(!result.ok){ setLog(result.message); return; }
+  setLog(`動画を作成します（コマ${result.segments}枚・約${result.totalSeconds.toFixed(1)}秒）。`);
+  if(await requestExportGate('silent')) await recordVideo('silent');
+  updateVoiceButtonsUi();
+});
+if(els.voiceUploadDrive) els.voiceUploadDrive.addEventListener('click', voiceUploadAndSaveRating);
+if(els.voiceDownloadMp4) els.voiceDownloadMp4.addEventListener('click', () => {
+  if(!lastRecordingBlob){ setLog('先に「動画を作る」で保存してください。'); return; }
+  els.downloadLink.click();
+});
+if(els.voiceStoryPost) els.voiceStoryPost.addEventListener('click', shareVideoToInstagramStory);
+if(els.voiceStoryGateCancel) els.voiceStoryGateCancel.addEventListener('click', () => closeVoiceStoryGate(false));
+if(els.voiceStoryGateConfirm) els.voiceStoryGateConfirm.addEventListener('click', () => closeVoiceStoryGate(true));
+if(els.voiceStoryGate) els.voiceStoryGate.addEventListener('cancel', event => { event.preventDefault(); closeVoiceStoryGate(false); });
 els.saveReadingDict.addEventListener('click', () => {
   try{ localStorage.setItem(READING_DICT_KEY, els.readingDict.value); }catch(_){}
   const count = parseReadingRules(els.readingDict.value).length;
