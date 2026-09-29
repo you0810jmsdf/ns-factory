@@ -734,6 +734,14 @@ canvas{
       <input id="voiceClosingUrl" value="you0810jmsdf.github.io/ns-factory/order_estimate/hearing-ai.html">
       <p class="help">最後にフクロウのロゴが浮かび上がり、その下に締めの言葉とURLが続けてフェードインして締めます。実際のリンクスタンプは事業主がInstagramアプリで手で貼るため、ここでは文字だけを出します。</p>
     </div>
+    <div class="field">
+      <label for="voiceBgmTrack">BGM（メーカーで焼き込み・Instagramアプリの音楽は使いません）</label>
+      <select id="voiceBgmTrack"><option value="">読み込み中…</option></select>
+      <div class="tune-row"><label for="voiceBgmVolume">BGMの音量 <output id="voiceBgmVolumeOut">-18dB</output></label><input id="voiceBgmVolume" type="range" min="-30" max="0" step="1" value="-18"></div>
+      <button class="secondary" id="voiceBgmPreview" type="button">▶ 試聴</button>
+      <p class="help" id="voiceBgmStatus">曲一覧を読み込んでいます…</p>
+      <p class="help">評価コメント・お礼の声が鳴っている間はBGMを自動で少し下げます。曲が動画より短いときはループ、長いときは切って使います。</p>
+    </div>
     <p class="help" id="voiceStatus" aria-live="polite"></p>
     <div class="actions">
       <button class="secondary" id="voiceSaveRating" type="button">評価を保存</button>
@@ -1480,6 +1488,11 @@ const els = {
   voiceThanks: document.getElementById('voiceThanks'),
   voiceClosingText: document.getElementById('voiceClosingText'),
   voiceClosingUrl: document.getElementById('voiceClosingUrl'),
+  voiceBgmTrack: document.getElementById('voiceBgmTrack'),
+  voiceBgmVolume: document.getElementById('voiceBgmVolume'),
+  voiceBgmVolumeOut: document.getElementById('voiceBgmVolumeOut'),
+  voiceBgmPreview: document.getElementById('voiceBgmPreview'),
+  voiceBgmStatus: document.getElementById('voiceBgmStatus'),
   voiceStatus: document.getElementById('voiceStatus'),
   voiceSaveRating: document.getElementById('voiceSaveRating'),
   voiceBuildVideo: document.getElementById('voiceBuildVideo'),
@@ -3813,6 +3826,19 @@ const VOICE_TARGET_MIN = 15, VOICE_TARGET_MAX = 25;   // 全体25秒以内（202
 const VOICE_PHASE2_MIN = 2.5, VOICE_PHASE2_MAX = 9;
 const VOICE_PHASE3_SEC = 3.5;   // 締め（フクロウロゴ＋締めの言葉2行）の尺（事業主指示「3〜4秒」）
 
+/* BGM（メーカーで焼き込み・2026-09-29 追加）。assets/bgm/bgm-list.json を読み込んで選曲欄を作る。
+   ファイルは別担当が並行して置くため、読み込み失敗時は「BGM素材が未配置」の案内だけ出し、
+   動画生成そのものは止めない（BGMなしで作れる）。 */
+const VOICE_BGM_LIST_URL = './assets/bgm/bgm-list.json';
+const VOICE_BGM_DIR = './assets/bgm/';
+const VOICE_BGM_DEFAULT_FILE = '02_satie_gymnopedie1.mp3';
+const VOICE_BGM_DEFAULT_VOLUME_DB = -18;
+const VOICE_BGM_FADE_IN_SEC = 1;     // 冒頭フェードイン（事業主指示）
+const VOICE_BGM_FADE_OUT_SEC = 2;    // 末尾（ロゴ場面の終わり）フェードアウト（事業主指示）
+const VOICE_BGM_DUCK_DB = -10;       // 声の区間で下げる量（事業主指示）
+const VOICE_BGM_DUCK_RAMP_SEC = .3;  // 下げ・戻しの滑らかさ（事業主指示「前後0.3秒でなめらかに」）
+const VOICE_AUDIO_OUTPUT_RATE = 48000;   // 購入者の声モードの音声合成（ナレーション・BGM共通）のサンプルレート
+
 function voiceCommentText(){
   return String((els.voiceComment && els.voiceComment.value) || '').trim();
 }
@@ -4609,6 +4635,16 @@ function voiceClosingText(){
 function voiceClosingUrl(){
   // https:// は表示しない（事業主指示）。うっかり付けても剥がす。
   return String((els.voiceClosingUrl && els.voiceClosingUrl.value) || '').trim().replace(/^https?:\/\//i, '');
+}
+function voiceBgmFileValue(){
+  return String((els.voiceBgmTrack && els.voiceBgmTrack.value) || '').trim();
+}
+function voiceBgmVolumeDb(){
+  const raw = els.voiceBgmVolume ? parseFloat(els.voiceBgmVolume.value) : VOICE_BGM_DEFAULT_VOLUME_DB;
+  return clamp(Number.isFinite(raw) ? raw : VOICE_BGM_DEFAULT_VOLUME_DB, -30, 0);
+}
+function dbToLinear(db){
+  return Math.pow(10, db / 20);
 }
 /* revealCount: 吹き出しの中で左から何文字見せるか（タイプライター表示・2026-09-29追加）。
    省略時（undefined）は全文表示。箱の大きさ・位置・行の折り返しは常に全文（最終形）で1回だけ計算し、
@@ -7205,6 +7241,77 @@ function resampleMono(input, fromRate, toRate){
   return output;
 }
 
+/* BGMの音源読み込み（2026-09-29 追加）。mp3をデコードしてモノラルのPCM（Float32Array）にする。
+   ステレオ音源は左右chを平均。resampleMono で narrationTrack と同じサンプルレートに揃える。 */
+async function loadBgmPcm(file, targetRate){
+  const res = await fetch(VOICE_BGM_DIR + file, {cache:'force-cache'});
+  if(!res.ok) throw new Error(`BGM音源を取得できませんでした（HTTP ${res.status}）`);
+  const arrayBuffer = await res.arrayBuffer();
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if(!AudioCtx) throw new Error('このブラウザは音声デコードに対応していません');
+  const ctx = new AudioCtx();
+  let audioBuffer;
+  try{
+    audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+  }finally{
+    ctx.close().catch(() => {});
+  }
+  const ch0 = audioBuffer.getChannelData(0);
+  let mono;
+  if(audioBuffer.numberOfChannels > 1){
+    const ch1 = audioBuffer.getChannelData(1);
+    mono = new Float32Array(ch0.length);
+    for(let i = 0; i < ch0.length; i++) mono[i] = (ch0[i] + ch1[i]) * .5;
+  }else{
+    mono = new Float32Array(ch0);
+  }
+  return resampleMono(mono, audioBuffer.sampleRate, targetRate);
+}
+// 動画の長さぶんBGMを敷く。曲が短ければ先頭からループ、長ければ切る（事業主指示）。
+function buildLoopedBgm(pcm, totalSamples){
+  const out = new Float32Array(totalSamples);
+  if(!pcm || !pcm.length) return out;
+  for(let i = 0; i < totalSamples; i++) out[i] = pcm[i % pcm.length];
+  return out;
+}
+/* BGMの音量エンベロープ（0〜1の倍率・サンプルごと）。
+   ・冒頭 fadeInSec 秒でフェードイン／末尾 fadeOutSec 秒でフェードアウト
+   ・duckWindows（声が鳴っている区間の配列 {start,end} 秒）では duckDb ぶん下げ、
+     前後 duckRampSec 秒でなめらかに下げ・戻しする（事業主指示）
+   ・フェードとダッキングは掛け合わせる（重なる区間はどちらも効く＝自然に更に静かになる） */
+function buildBgmGainEnvelope(totalSec, sampleRate, duckWindows, opts){
+  const fadeInSec = (opts && opts.fadeInSec) || 0;
+  const fadeOutSec = (opts && opts.fadeOutSec) || 0;
+  const duckDb = (opts && opts.duckDb) || 0;
+  const duckRampSec = (opts && opts.duckRampSec) || .1;
+  const total = Math.max(1, Math.round(totalSec * sampleRate));
+  const env = new Float32Array(total).fill(1);
+  const fadeInN = Math.max(1, Math.round(fadeInSec * sampleRate));
+  for(let i = 0; i < Math.min(fadeInN, total); i++) env[i] *= i / fadeInN;
+  const fadeOutN = Math.max(1, Math.round(fadeOutSec * sampleRate));
+  for(let i = 0; i < Math.min(fadeOutN, total); i++){
+    const idx = total - 1 - i;
+    if(idx >= 0) env[idx] *= i / fadeOutN;
+  }
+  const duckLinear = dbToLinear(duckDb);
+  const rampN = Math.max(1, Math.round(duckRampSec * sampleRate));
+  (duckWindows || []).forEach(w => {
+    const startN = Math.max(0, Math.round(w.start * sampleRate));
+    const endN = Math.min(total, Math.round(w.end * sampleRate));
+    if(endN <= startN) return;
+    for(let i = Math.max(0, startN - rampN); i < startN; i++){
+      const p = (i - (startN - rampN)) / rampN;
+      env[i] *= 1 - p * (1 - duckLinear);
+    }
+    for(let i = startN; i < endN; i++) env[i] *= duckLinear;
+    for(let i = endN; i < Math.min(total, endN + rampN); i++){
+      const p = (i - endN) / rampN;
+      env[i] *= duckLinear + p * (1 - duckLinear);
+    }
+  });
+  return env;
+}
+
 async function generateNarrationTimeline(){
   const list = playableSlides();
   const language = els.narrationLang.value === 'en-US' ? 'en-US' : 'ja-JP';
@@ -7761,12 +7868,26 @@ async function buildVoiceNarrationPlan(){
   renderList();
   if(selected >= 0) loadSelected();
 
+  // BGM（メーカーで焼き込み・2026-09-29 追加）。「なし」選択時や素材未配置は bgm:null のまま（BGMなしで作る）。
+  let bgm = null;
+  const bgmFile = voiceBgmFileValue();
+  if(bgmFile){
+    try{
+      setLog('BGMを読み込んでいます…');
+      const pcm = await loadBgmPcm(bgmFile, VOICE_AUDIO_OUTPUT_RATE);
+      bgm = {file: bgmFile, pcm, volumeDb: voiceBgmVolumeDb()};
+    }catch(err){
+      setLog(`BGMを読み込めませんでした。BGMなしで動画を作ります（${err.message}）`);
+      bgm = null;
+    }
+  }
+
   voicePlan = {
     phase1, phase2, phase3, total, useCount,
     captionWindows: voiceCaptionWindows(phase1),
     thanksText: thanks,
     hasRealAudio: true,
-    commentAudio, thanksAudio, commentVoice, voicevoxOk
+    commentAudio, thanksAudio, commentVoice, voicevoxOk, bgm
   };
   drawSelectedOrFirstFrame();
   return {ok:true, totalSeconds: total, phase1, phase2, phase3, voicevoxOk};
@@ -7786,8 +7907,9 @@ async function recordVoiceNarratedMp4(){
 }
 async function recordVoiceNarratedMp4Core(){
   resetRecordingOutput();
+  stopVoiceBgmPreview();   // 試聴中のBGMが完成動画の音と二重に鳴らないように止める
   const frameRate = 30;
-  const outputRate = 48000;
+  const outputRate = VOICE_AUDIO_OUTPUT_RATE;
   const total = voicePlan.total;
   const timeline = new Float32Array(Math.max(1, Math.ceil(total * outputRate)));
   const commentResampled = resampleMono(voicePlan.commentAudio.data, voicePlan.commentAudio.sampleRate, outputRate);
@@ -7796,6 +7918,24 @@ async function recordVoiceNarratedMp4Core(){
     const thanksStart = Math.round(voicePlan.phase1 * outputRate);
     const thanksResampled = resampleMono(voicePlan.thanksAudio.data, voicePlan.thanksAudio.sampleRate, outputRate);
     timeline.set(thanksResampled.subarray(0, Math.max(0, timeline.length - thanksStart)), thanksStart);
+  }
+  // BGMを声のトラックに重ねて焼き込む（2026-09-29 追加）。VOICEVOXが無く声なしのときもBGMだけは入る。
+  if(voicePlan.bgm && voicePlan.bgm.pcm && voicePlan.bgm.pcm.length){
+    const looped = buildLoopedBgm(voicePlan.bgm.pcm, timeline.length);
+    const commentSpokenSec = voicePlan.commentAudio.data.length / voicePlan.commentAudio.sampleRate;
+    const duckWindows = [{start:0, end:commentSpokenSec}];
+    if(voicePlan.voicevoxOk && voicePlan.thanksAudio.data.length){
+      const thanksSpokenSec = voicePlan.thanksAudio.data.length / voicePlan.thanksAudio.sampleRate;
+      duckWindows.push({start: voicePlan.phase1, end: voicePlan.phase1 + thanksSpokenSec});
+    }
+    const envelope = buildBgmGainEnvelope(total, outputRate, duckWindows, {
+      fadeInSec: VOICE_BGM_FADE_IN_SEC, fadeOutSec: VOICE_BGM_FADE_OUT_SEC,
+      duckDb: VOICE_BGM_DUCK_DB, duckRampSec: VOICE_BGM_DUCK_RAMP_SEC
+    });
+    const volumeLinear = dbToLinear(voicePlan.bgm.volumeDb);
+    for(let i = 0; i < timeline.length; i++){
+      timeline[i] = clamp(timeline[i] + looped[i] * envelope[i] * volumeLinear, -1, 1);
+    }
   }
   const narrationTrack = {sampleRate:outputRate, numberOfChannels:1, data:timeline};
   updateProgressTicker('AI音声をMP4用に変換中');
@@ -9109,6 +9249,83 @@ function updateVoiceButtonsUi(){
   if(els.voiceDownloadMp4) els.voiceDownloadMp4.disabled = !ready;
   if(els.voiceStoryPost) els.voiceStoryPost.disabled = !ready;
 }
+
+/* BGM欄（2026-09-29 追加）。曲一覧は assets/bgm/bgm-list.json（[{file,title,performer,license,mood}]）。
+   別担当が並行して assets/bgm/ を用意するため、まだ無い間は「BGM素材が未配置」を出すだけで
+   動画生成は止めない（選曲欄は「なし」だけになる）。 */
+let bgmListCache = null;
+let bgmListLoadPromise = null;
+async function loadBgmList(){
+  if(bgmListCache) return bgmListCache;
+  if(bgmListLoadPromise) return bgmListLoadPromise;
+  bgmListLoadPromise = (async () => {
+    try{
+      const res = await fetch(VOICE_BGM_LIST_URL, {cache:'no-store'});
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if(!Array.isArray(data)) throw new Error('形式が配列ではありません');
+      bgmListCache = data;
+    }catch(err){
+      bgmListCache = [];
+    }
+    return bgmListCache;
+  })();
+  return bgmListLoadPromise;
+}
+async function populateVoiceBgmOptions(){
+  const select = els.voiceBgmTrack;
+  if(!select) return;
+  const list = await loadBgmList();
+  const prevValue = select.value;
+  select.innerHTML = '';
+  const noneOpt = document.createElement('option');
+  noneOpt.value = '';
+  noneOpt.textContent = 'なし';
+  select.appendChild(noneOpt);
+  list.forEach(item => {
+    if(!item || !item.file) return;
+    const opt = document.createElement('option');
+    opt.value = item.file;
+    opt.textContent = item.title ? `${item.title}${item.performer ? '（' + item.performer + '）' : ''}` : item.file;
+    select.appendChild(opt);
+  });
+  if(!list.length){
+    if(els.voiceBgmStatus) els.voiceBgmStatus.textContent = 'BGM素材が未配置です（assets/bgm/ に音源が置かれるまで、BGMなしで動画を作れます）。';
+    select.value = '';
+  }else{
+    const hasPrev = prevValue && list.some(item => item.file === prevValue);
+    const hasDefault = list.some(item => item.file === VOICE_BGM_DEFAULT_FILE);
+    select.value = hasPrev ? prevValue : (hasDefault ? VOICE_BGM_DEFAULT_FILE : list[0].file);
+    if(els.voiceBgmStatus) els.voiceBgmStatus.textContent = `${list.length}曲から選べます（既定はサティ「ジムノペディ第1番」）。`;
+  }
+  updateVoiceBgmPreviewUi();
+}
+let voiceBgmPreviewAudio = null;
+function stopVoiceBgmPreview(){
+  if(voiceBgmPreviewAudio && !voiceBgmPreviewAudio.paused) voiceBgmPreviewAudio.pause();
+}
+function toggleVoiceBgmPreview(){
+  const file = voiceBgmFileValue();
+  if(!file){ setLog('試聴する曲を選んでください（「なし」のときは試聴できません）。'); return; }
+  if(voiceBgmPreviewAudio && !voiceBgmPreviewAudio.paused){
+    voiceBgmPreviewAudio.pause();
+    return;
+  }
+  if(!voiceBgmPreviewAudio){
+    voiceBgmPreviewAudio = new Audio();
+    ['play','pause','ended'].forEach(ev => voiceBgmPreviewAudio.addEventListener(ev, updateVoiceBgmPreviewUi));
+  }
+  voiceBgmPreviewAudio.src = VOICE_BGM_DIR + file;
+  voiceBgmPreviewAudio.volume = clamp(dbToLinear(voiceBgmVolumeDb()), 0, 1);
+  voiceBgmPreviewAudio.currentTime = 0;
+  voiceBgmPreviewAudio.play().catch(err => setLog(`試聴を再生できませんでした: ${err.message}`));
+}
+function updateVoiceBgmPreviewUi(){
+  if(!els.voiceBgmPreview) return;
+  const playing = !!(voiceBgmPreviewAudio && !voiceBgmPreviewAudio.paused && !voiceBgmPreviewAudio.ended);
+  els.voiceBgmPreview.textContent = playing ? '■ 停止' : '▶ 試聴';
+  els.voiceBgmPreview.disabled = !voiceBgmFileValue();
+}
 function setAppMode(mode){
   appMode = mode === 'voice' ? 'voice' : 'video';
   const voice = appMode === 'voice';
@@ -9116,8 +9333,10 @@ function setAppMode(mode){
     restoreVoiceModeSlideSnapshot();   // 紹介動画モードへ戻すときは、除外した写真を復元する
     REEL_LAYOUT = currentVideoFormat().layout;   // レイアウトも通常モードへ戻す
     voicePlan = null;
+    stopVoiceBgmPreview();
   }else{
     REEL_LAYOUT = VOICE_LAYOUT;
+    populateVoiceBgmOptions();
   }
   if(els.modeVideoTab){
     els.modeVideoTab.classList.toggle('active', !voice);
@@ -9155,6 +9374,13 @@ if(els.voiceLoadPhotos) els.voiceLoadPhotos.addEventListener('click', () => {
 if(els.voiceComment) els.voiceComment.addEventListener('input', () => { if(isVoiceMode()) drawSelectedOrFirstFrame(); });
 if(els.voiceThanks) els.voiceThanks.addEventListener('input', () => { if(isVoiceMode()) drawSelectedOrFirstFrame(); });
 if(els.voiceSaveRating) els.voiceSaveRating.addEventListener('click', () => saveVoiceRating(''));
+if(els.voiceBgmTrack) els.voiceBgmTrack.addEventListener('change', () => { stopVoiceBgmPreview(); updateVoiceBgmPreviewUi(); });
+if(els.voiceBgmVolume) els.voiceBgmVolume.addEventListener('input', () => {
+  const db = voiceBgmVolumeDb();
+  if(els.voiceBgmVolumeOut) els.voiceBgmVolumeOut.textContent = `${db}dB`;
+  if(voiceBgmPreviewAudio) voiceBgmPreviewAudio.volume = clamp(dbToLinear(db), 0, 1);
+});
+if(els.voiceBgmPreview) els.voiceBgmPreview.addEventListener('click', toggleVoiceBgmPreview);
 if(els.voiceBuildVideo) els.voiceBuildVideo.addEventListener('click', async () => {
   if(els.voiceBuildVideo.dataset.busy === 'true') return;
   const originalLabel = els.voiceBuildVideo.textContent;
