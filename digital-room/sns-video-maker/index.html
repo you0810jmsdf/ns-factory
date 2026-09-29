@@ -737,7 +737,7 @@ canvas{
     <div class="field">
       <label for="voiceBgmTrack">BGM（メーカーで焼き込み・Instagramアプリの音楽は使いません）</label>
       <select id="voiceBgmTrack"><option value="">読み込み中…</option></select>
-      <div class="tune-row"><label for="voiceBgmVolume">BGMの音量 <output id="voiceBgmVolumeOut">-18dB</output></label><input id="voiceBgmVolume" type="range" min="-30" max="0" step="1" value="-18"></div>
+      <div class="tune-row"><label for="voiceBgmVolume">BGMの音量 <output id="voiceBgmVolumeOut">-8dB</output></label><input id="voiceBgmVolume" type="range" min="-30" max="0" step="1" value="-8"></div>
       <button class="secondary" id="voiceBgmPreview" type="button">▶ 試聴</button>
       <p class="help" id="voiceBgmStatus">曲一覧を読み込んでいます…</p>
       <p class="help">評価コメント・お礼の声が鳴っている間はBGMを自動で少し下げます。曲が動画より短いときはループ、長いときは切って使います。</p>
@@ -3832,7 +3832,7 @@ const VOICE_PHASE3_SEC = 3.5;   // 締め（フクロウロゴ＋締めの言葉
 const VOICE_BGM_LIST_URL = './assets/bgm/bgm-list.json';
 const VOICE_BGM_DIR = './assets/bgm/';
 const VOICE_BGM_DEFAULT_FILE = '02_satie_gymnopedie1.mp3';
-const VOICE_BGM_DEFAULT_VOLUME_DB = -18;
+const VOICE_BGM_DEFAULT_VOLUME_DB = -8;   // 事業主決定（聴き比べでB案）2026-09-29
 const VOICE_BGM_FADE_IN_SEC = 1;     // 冒頭フェードイン（事業主指示）
 const VOICE_BGM_FADE_OUT_SEC = 2;    // 末尾（ロゴ場面の終わり）フェードアウト（事業主指示）
 const VOICE_BGM_DUCK_DB = -10;       // 声の区間で下げる量（事業主指示）
