@@ -117,7 +117,7 @@
     // 動かせる範囲。最初の大きさより引いたときは、引くほど狭めて網を中心へ戻す
     // （2026-09-19 事業主指摘「網が偏っている」: 端で縮小すると小さい網が隅へ逃げ、戻す手段が無かった）
     panLimit() {
-      var home = this.homeDistance || 8.4;
+      var home = this.fullDistance || this.homeDistance || 8.4;  // 全体表示の大きさを基準にする（初期の拡大より引いても、全体表示までは自由に動かせる）
       if (this.distance <= home) return PAN_MAX;
       return PAN_MAX * Math.max(0, (ZOOM_MAX - this.distance) / Math.max(0.1, ZOOM_MAX - home));
     }
@@ -282,11 +282,29 @@
     showFallback();
     return;
   }
-  // Jarvisの既定（11.5）より寄せて、枠いっぱいに網を見せる（縦長のスマホは回転で端が切れないよう少し引く）
-  graph.distance = ROOT.clientWidth < 520 ? 10.5 : 8.4;
-  graph.homeDistance = graph.distance;
-  // ダブルクリック／ダブルタップで最初の位置と大きさに戻す
-  canvas.addEventListener('dblclick', function (ev) { ev.preventDefault(); graph.resetView(); });
+  // 全体表示: Jarvisの既定（11.5）より寄せて、枠いっぱいに網を見せる（縦長のスマホは回転で端が切れないよう少し引く）
+  graph.fullDistance = ROOT.clientWidth < 520 ? 10.5 : 8.4;
+  // 最初は拡大した形で見せる（2026-09-30 事業主指示「最初から拡大した形をデフォルトに」）。
+  // 「全体を表示」ボタンで fullDistance に引き、もう一度押すと拡大に戻る。ダブルクリックは拡大（初期）に戻す。
+  graph.homeDistance = graph.fullDistance * 0.62;
+  graph.distance = graph.homeDistance;
+  function setView(full) {
+    graph.distance = full ? graph.fullDistance : graph.homeDistance;
+    graph.panX = 0;
+    graph.panY = 0;
+    ROOT.setAttribute('data-view', full ? 'full' : 'zoom');
+  }
+  ROOT.setAttribute('data-view', 'zoom');
+  var fitBtn = ROOT.querySelector('.staff-net-fit');
+  if (fitBtn) {
+    fitBtn.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      setView(ROOT.getAttribute('data-view') !== 'full');
+    });
+  }
+  // ダブルクリック／ダブルタップで最初の位置と大きさ（拡大）に戻す
+  canvas.addEventListener('dblclick', function (ev) { ev.preventDefault(); setView(false); });
 
   // 2本指ピンチで寄り・引き（2026-09-18 事業主指示「小さくて見えない。ピンチで拡大したい」）。
   // 複写元（Jarvis）のファイルは触らず、枠（ROOT）の捕捉段階で先に受けて、ピンチ中は回転・クリックへ渡さない。
