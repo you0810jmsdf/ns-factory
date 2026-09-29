@@ -723,7 +723,16 @@ canvas{
     <div class="field">
       <label for="voiceThanks">お礼の言葉（キャラクターの吹き出し・テロップ・ずんだもんの声）</label>
       <textarea id="voiceThanks">ご購入ありがとうございました！大切に使っていただけたら嬉しいです</textarea>
-      <p class="help">評価コメントの後、キャラクターの吹き出しとテロップで表示し、VOICEVOX「ずんだもん」の声で読み上げます（このPCのVOICEVOXが起動していないときは声なしで作ります）。最後にフクロウのロゴだけが浮かび上がって締めます。</p>
+      <p class="help">評価コメントの後、キャラクターの吹き出しに左からのタイプライター表示で出し、VOICEVOX「ずんだもん」の声で読み上げます（このPCのVOICEVOXが起動していないときは声なしで作ります）。</p>
+    </div>
+    <div class="field">
+      <label for="voiceClosingText">締めの言葉（フクロウロゴの下・1行目）</label>
+      <input id="voiceClosingText" value="オーダーをお待ちしています">
+    </div>
+    <div class="field">
+      <label for="voiceClosingUrl">締めのURL（フクロウロゴの下・2行目・https://は付けない）</label>
+      <input id="voiceClosingUrl" value="you0810jmsdf.github.io/ns-factory/order_estimate/hearing-ai.html">
+      <p class="help">最後にフクロウのロゴが浮かび上がり、その下に締めの言葉とURLが続けてフェードインして締めます。実際のリンクスタンプは事業主がInstagramアプリで手で貼るため、ここでは文字だけを出します。</p>
     </div>
     <p class="help" id="voiceStatus" aria-live="polite"></p>
     <div class="actions">
@@ -1469,6 +1478,8 @@ const els = {
   voiceCommentGender: document.getElementById('voiceCommentGender'),
   voiceComment: document.getElementById('voiceComment'),
   voiceThanks: document.getElementById('voiceThanks'),
+  voiceClosingText: document.getElementById('voiceClosingText'),
+  voiceClosingUrl: document.getElementById('voiceClosingUrl'),
   voiceStatus: document.getElementById('voiceStatus'),
   voiceSaveRating: document.getElementById('voiceSaveRating'),
   voiceBuildVideo: document.getElementById('voiceBuildVideo'),
@@ -3798,9 +3809,9 @@ function estimateNarrationDuration(text){
    コメントが字幕枠に入りきらない長さのときだけ chunkTextForSubtitle で区切り、区切りごとの自然な尺
    （estimateNarrationDuration の比率）で時間割を作る＝区切りが変わるのは写真の切り替えとは無関係。 */
 const VOICE_MAX_PHOTOS = 6;
-const VOICE_TARGET_MIN = 15, VOICE_TARGET_MAX = 30;
+const VOICE_TARGET_MIN = 15, VOICE_TARGET_MAX = 25;   // 全体25秒以内（2026-09-29 事業主指示）
 const VOICE_PHASE2_MIN = 2.5, VOICE_PHASE2_MAX = 9;
-const VOICE_PHASE3_SEC = 2.5;   // 締めのフクロウロゴのみの尺（事業主指示「2〜3秒」）
+const VOICE_PHASE3_SEC = 3.5;   // 締め（フクロウロゴ＋締めの言葉2行）の尺（事業主指示「3〜4秒」）
 
 function voiceCommentText(){
   return String((els.voiceComment && els.voiceComment.value) || '').trim();
@@ -4185,25 +4196,72 @@ function drawVoiceCommentCaption(time){
   drawTypewriterLinesLeft(subtitle.layout.lines, revealCount, box.x + subtitle.padX, subtitle.textY, subtitle.layout.lineHeight, subtitle.layout.fontSize, '#fff');
   ctx.restore();
 }
-// 締め: フクロウだけのロゴが黒背景にフェードイン（事業主指示「文字なし・フクロウだけ」）
+// 締め: フクロウのロゴが黒背景にフェードイン→続けて「締めの言葉」「締めのURL」が
+// ロゴと同じ金色（#c9a96e）でフェードイン（2026-09-29 事業主指示）。
+// 実際のリンクスタンプは事業主がInstagramアプリで音楽と一緒に手で貼るため、ここでは文字のみ表示する。
 function drawVoiceEndingLogo(elapsed){
   ctx.save();
   ctx.fillStyle = '#0A0908';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   const owl = (brandAssets.owlGold && brandAssets.owlGold.complete && brandAssets.owlGold.naturalWidth) ? brandAssets.owlGold : brandAssets.owlWhite;
-  const fadeP = clamp(elapsed / 1.0, 0, 1);
-  ctx.globalAlpha = fadeP;
+  const logoFadeP = clamp(elapsed / 1.0, 0, 1);
+  const centerY = Math.round(canvas.height * .40);   // 下に文字が入る分だけロゴを上へ寄せる
+  let logoBottom = centerY;
+  ctx.save();
+  ctx.globalAlpha = logoFadeP;
   if(owl && owl.complete && owl.naturalWidth){
     const oh = Math.round(canvas.height * .22);
     const ow = Math.round(oh * owl.naturalWidth / owl.naturalHeight);
-    ctx.drawImage(owl, (canvas.width - ow) / 2, (canvas.height - oh) / 2, ow, oh);
+    ctx.drawImage(owl, (canvas.width - ow) / 2, centerY - oh / 2, ow, oh);
+    logoBottom = centerY + oh / 2;
   }else{
     ctx.fillStyle = '#D9BE8C';
     ctx.font = canvasFont(600, Math.round(canvas.height * .032));
     ctx.textAlign = 'center';
-    ctx.fillText("N's factory", canvas.width / 2, canvas.height / 2);
+    ctx.fillText("N's factory", canvas.width / 2, centerY);
+    logoBottom = centerY + Math.round(canvas.height * .02);
   }
   ctx.restore();
+  const closingText = voiceClosingText();
+  const closingUrl = voiceClosingUrl();
+  if(closingText || closingUrl){
+    // ロゴのフェードイン（0〜1秒）に続けて、少し遅れて（0.7秒〜）文字がフェードインする
+    const textFadeP = clamp((elapsed - .7) / 1.0, 0, 1);
+    if(textFadeP > 0){
+      ctx.save();
+      ctx.globalAlpha = textFadeP;
+      ctx.fillStyle = '#c9a96e';
+      ctx.textAlign = 'center';
+      const cx = canvas.width / 2;
+      let ty = logoBottom + Math.round(canvas.height * .065);
+      if(closingText){
+        const size1 = Math.round(canvas.height * .026);
+        ctx.font = canvasFont(600, size1);
+        ctx.fillText(closingText, cx, ty);
+        ty += Math.round(size1 * 1.7);
+      }
+      if(closingUrl){
+        const maxWidth = canvas.width * .82;
+        const fit = fitSingleLineFont(closingUrl, maxWidth, Math.round(canvas.height * .02), Math.round(canvas.height * .012), 500);
+        ctx.font = fit.font;
+        ctx.fillText(closingUrl, cx, ty);
+      }
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+}
+// 指定幅に収まるフォントサイズを大きい方から探す（締めのURL行のような長い1行用）
+function fitSingleLineFont(text, maxWidth, startSize, minSize, weight){
+  let size = startSize;
+  ctx.save();
+  for(; size >= minSize; size -= 1){
+    ctx.font = canvasFont(weight, size);
+    if(ctx.measureText(text).width <= maxWidth) break;
+  }
+  const font = canvasFont(weight, size);
+  ctx.restore();
+  return {font, size};
 }
 /* 2026-09-29 事業主指示「お礼の言葉は評価コメント欄に出すと客の言葉と混同する」への対応:
    吹き出しは phase1 の間は出さない（空・非表示）。phase2 でだけ、吹き出しの中に
@@ -4544,6 +4602,13 @@ function activeCharacterBounds(slide, progress){
 }
 function voiceThanksText(){
   return String((els.voiceThanks && els.voiceThanks.value) || '').trim();
+}
+function voiceClosingText(){
+  return String((els.voiceClosingText && els.voiceClosingText.value) || '').trim();
+}
+function voiceClosingUrl(){
+  // https:// は表示しない（事業主指示）。うっかり付けても剥がす。
+  return String((els.voiceClosingUrl && els.voiceClosingUrl.value) || '').trim().replace(/^https?:\/\//i, '');
 }
 /* revealCount: 吹き出しの中で左から何文字見せるか（タイプライター表示・2026-09-29追加）。
    省略時（undefined）は全文表示。箱の大きさ・位置・行の折り返しは常に全文（最終形）で1回だけ計算し、
