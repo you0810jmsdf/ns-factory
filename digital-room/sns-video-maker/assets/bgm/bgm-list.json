@@ -1,0 +1,51 @@
+[
+  {
+    "file": "01_bach_goldberg_aria.mp3",
+    "title": "バッハ ゴルトベルク変奏曲 アリア",
+    "performer": "石坂紀美子",
+    "license": "CC0",
+    "mood": "静か"
+  },
+  {
+    "file": "02_satie_gymnopedie1.mp3",
+    "title": "サティ ジムノペディ第1番",
+    "performer": "Robin Alciatore",
+    "license": "PD",
+    "mood": "静か"
+  },
+  {
+    "file": "03_chopin_nocturne_op9-2.mp3",
+    "title": "ショパン 夜想曲 第2番 変ホ長調",
+    "performer": "Frank Lévy",
+    "license": "CC0",
+    "mood": "優雅"
+  },
+  {
+    "file": "04_chopin_nocturne_op27-2.mp3",
+    "title": "ショパン 夜想曲 第8番 変ニ長調",
+    "performer": "Frank Lévy",
+    "license": "PD",
+    "mood": "切ない"
+  },
+  {
+    "file": "05_schumann_traumerei.mp3",
+    "title": "シューマン トロイメライ",
+    "performer": "Musopen",
+    "license": "PD",
+    "mood": "穏やか"
+  },
+  {
+    "file": "06_massenet_meditation_elman1919.mp3",
+    "title": "マスネ タイスの瞑想曲",
+    "performer": "ミッシャ・エルマン（1919年録音）",
+    "license": "PD",
+    "mood": "感傷的"
+  },
+  {
+    "file": "07_grieg_aases_death.mp3",
+    "title": "グリーグ ペール・ギュント組曲 オーセの死",
+    "performer": "Musopen Symphony",
+    "license": "CC0",
+    "mood": "荘厳"
+  }
+]
