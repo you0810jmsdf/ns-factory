@@ -4142,9 +4142,33 @@ function frameState(time){
 }
 
 /* ══ 購入者の声モード: 3段構成の描画（2026-09-29 追加）══
-   phase1（評価コメント・写真切替）→ phase2（キャラクターの吹き出し＋テロップ＋ずんだもんの声）→
+   phase1（評価コメント・写真切替）→ phase2（キャラクターの吹き出しにタイプライター表示＋ずんだもんの声）→
    phase3（締め・フクロウロゴのみ）。voicePlan（applyVoiceModeToSlides / buildVoiceNarrationPlan が作る）を
-   参照して time で切り替える。phase1中の写真切替は既存の frameState/drawSlide/drawTransition をそのまま使う。 */
+   参照して time で切り替える。phase1中の写真切替は既存の frameState/drawSlide/drawTransition をそのまま使う。
+
+   ⛔ 2026-09-29 事業主指摘「タイピング中に文字がずれる」の原因（コードで確認済み）:
+   旧実装は drawSubtitleTextLeft に「見せる途中までの部分文字列」を渡し、その関数の中で
+   wrapSubtitleLines(部分文字列, maxWidth) を**毎フレーム呼び直して**いた。折り返し（行の切れ目）は
+   文字数によって変わるため、1文字増えるたびに行の切れ目が変わり、既に表示済みの文字まで
+   行送り・横位置が動いて見えていた（見かけ上「文字が滑る」）。
+   直し方: 全文（最終形）で1回だけ行に折り返し、以後は同じ行配列（lines）を使い回して
+   各行の中で先頭から revealCount 文字だけ描く（再折り返みしない）。箱の大きさ・位置も
+   buildSubtitleLayout(text) を全文で1回計算するだけなので、タイピング中に動かない。 */
+// 全文で固定した行（lines）に対し、左から revealCount 文字だけ描く（再折り返みしない＝表示中に文字が動かない）
+function drawTypewriterLinesLeft(lines, revealCount, x, y, lineHeight, fontSize, color){
+  ctx.save();
+  ctx.textAlign = 'left';
+  ctx.fillStyle = color;
+  ctx.font = canvasFont(700, fontSize);
+  let remaining = revealCount;
+  lines.forEach((line, index) => {
+    if(remaining <= 0) return;
+    const show = line.slice(0, Math.max(0, remaining));
+    if(show) ctx.fillText(show, x, y + index * lineHeight);
+    remaining -= line.length;
+  });
+  ctx.restore();
+}
 function drawVoiceCommentCaption(time){
   if(!voicePlan || !voicePlan.captionWindows || !voicePlan.captionWindows.length) return;
   const windows = voicePlan.captionWindows;
@@ -4153,23 +4177,12 @@ function drawVoiceCommentCaption(time){
   const winDur = Math.max(.3, win.end - win.start);
   const typeP = clamp((time - win.start) / (winDur * .92), 0, 1);
   const text = win.text;
-  const visible = text.slice(0, Math.max(1, Math.ceil(text.length * typeP)));
-  const subtitle = buildSubtitleLayout(text);
+  const subtitle = buildSubtitleLayout(text);   // 全文（最終形）で箱・行を1回だけ固定
   const box = subtitle.box;
+  const revealCount = Math.max(1, Math.ceil(text.length * typeP));
   ctx.save();
   drawSubtitleBox(box.x, box.y, box.w, box.h);
-  drawSubtitleTextLeft(visible, box.x + subtitle.padX, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
-  ctx.restore();
-}
-function drawVoiceThanksTelop(elapsed){
-  const text = voiceThanksText();
-  if(!text) return;
-  const subtitle = buildSubtitleLayout(text);
-  const box = subtitle.box;
-  ctx.save();
-  ctx.globalAlpha *= clamp(elapsed / .4, 0, 1);
-  drawSubtitleBox(box.x, box.y, box.w, box.h);
-  drawSubtitleTextLeft(text, box.x + subtitle.padX, subtitle.textY, subtitle.maxWidth, '#fff', {layout:subtitle.layout});
+  drawTypewriterLinesLeft(subtitle.layout.lines, revealCount, box.x + subtitle.padX, subtitle.textY, subtitle.layout.lineHeight, subtitle.layout.fontSize, '#fff');
   ctx.restore();
 }
 // 締め: フクロウだけのロゴが黒背景にフェードイン（事業主指示「文字なし・フクロウだけ」）
@@ -4192,6 +4205,12 @@ function drawVoiceEndingLogo(elapsed){
   }
   ctx.restore();
 }
+/* 2026-09-29 事業主指示「お礼の言葉は評価コメント欄に出すと客の言葉と混同する」への対応:
+   吹き出しは phase1 の間は出さない（空・非表示）。phase2 でだけ、吹き出しの中に
+   タイプライター表示（左から1文字ずつ）で出し、ずんだもんの声と時間を合わせる。
+   評価コメント欄（下のキャプション箱）は phase2 でも客のコメント全文を残したまま表示する
+   （drawVoiceCommentCaption は「今の時刻がどの窓にも入らない＝最後の窓」のときフル表示になるので、
+   phase2 の time をそのまま渡せば自然にフル表示される＝新しい関数を足さずに済む）。 */
 function drawVoiceFrame(time){
   const plan = voicePlan;
   const phase1End = plan.phase1;
@@ -4206,12 +4225,19 @@ function drawVoiceFrame(time){
     }
     els.currentScript.textContent = voiceCommentText();
     drawVoiceCommentCaption(time);
+    // phase1 の間は吹き出しを描かない（非表示。事業主指示）
   }else if(time < phase2End){
     const list = playableSlides();
     const last = list[list.length - 1];
-    if(last) drawSlide(last, 1, 1);   // 最後の写真を静止表示したまま、吹き出し（drawSlide内）＋テロップを重ねる
+    if(last) drawSlide(last, 1, 1);   // 最後の写真を静止表示（drawSlide内で写真・タイトル・キャラクターを描く。吹き出しはここでは描かない）
     els.currentScript.textContent = plan.thanksText;
-    drawVoiceThanksTelop(time - phase1End);
+    drawVoiceCommentCaption(time);   // 評価コメント欄は客の全文を残したまま表示
+    const elapsed = time - phase1End;
+    const typeDur = Math.max(.6, plan.phase2 * .92);   // ずんだもんの声（phase2の尺）とおおむね同期
+    const typeP = clamp(elapsed / typeDur, 0, 1);
+    const thanksLen = String(plan.thanksText || '').trim().length;
+    const revealCount = Math.max(1, Math.ceil(thanksLen * typeP));
+    if(last) drawThanksSpeechBubble(last, 1, revealCount);   // 吹き出しはタイプライター表示
   }else{
     drawVoiceEndingLogo(time - phase2End);
     return;   // 締めはフクロウのロゴだけ（作品ID・VOICEVOXクレジット・AI注記などは重ねない）
@@ -4519,7 +4545,10 @@ function activeCharacterBounds(slide, progress){
 function voiceThanksText(){
   return String((els.voiceThanks && els.voiceThanks.value) || '').trim();
 }
-function drawThanksSpeechBubble(slide, progress){
+/* revealCount: 吹き出しの中で左から何文字見せるか（タイプライター表示・2026-09-29追加）。
+   省略時（undefined）は全文表示。箱の大きさ・位置・行の折り返しは常に全文（最終形）で1回だけ計算し、
+   revealCount が増えても再計算しない＝タイピング中に箱や既存の文字が動かない。 */
+function drawThanksSpeechBubble(slide, progress, revealCount){
   const text = voiceThanksText();
   if(!text) return;
   const bounds = activeCharacterBounds(slide, progress);
@@ -4581,10 +4610,12 @@ function drawThanksSpeechBubble(slide, progress){
   ctx.strokeStyle = 'rgba(0,0,0,.08)';
   ctx.lineWidth = 1.5;
   ctx.stroke();
-  ctx.fillStyle = '#2A2420';
-  ctx.textAlign = 'left';
-  ctx.font = canvasFont(700, fontSize);
-  lines.forEach((line, i) => ctx.fillText(line, boxX + padX, boxY + padY + fontSize * .86 + i * lineHeight));
+  ctx.restore();
+  const totalChars = lines.reduce((a, l) => a + l.length, 0);
+  const reveal = revealCount === undefined ? totalChars : clamp(revealCount, 0, totalChars);
+  ctx.save();
+  ctx.globalAlpha *= bounds.enter;
+  drawTypewriterLinesLeft(lines, reveal, boxX + padX, boxY + padY + fontSize * .86, lineHeight, fontSize, '#2A2420');
   ctx.restore();
   return {x:boxX, y:boxY, w:boxW, h:boxH};   // 検証用（重なりチェック）。通常描画では戻り値は使わない
 }
@@ -4796,7 +4827,8 @@ function drawSlide(slide, progress, alpha){
   drawTexts(slide);
   drawOwlCharacter(slide, progress);   // 字幕より先に描く（字幕ボックスの上に立ち、字幕がセリフに見える）
   drawHanbaiCharacter(slide, progress);
-  if(isVoiceMode()) drawThanksSpeechBubble(slide, progress);   // 購入者の声モード: キャラクターの吹き出し（2026-09-29）
+  // 購入者の声モードの吹き出しはここでは描かない（2026-09-29変更）。phase1は非表示・phase2はタイプライター表示のため
+  // drawVoiceFrame の phase2 分岐から drawThanksSpeechBubble(slide, 1, revealCount) を直接呼ぶ。
   drawNarrationSubtitle(slide, progress);
   ctx.restore();
 }
