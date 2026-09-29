@@ -33,6 +33,7 @@ const ALLOWED_KEYS = [
   'id', 'name', 'category', 'material', 'color', 'size',
   'price', 'soldout', 'noRestock', 'stock', 'date',
   'shortDesc', 'longDesc', 'status', 'folderId', 'mainPhoto',
+  'voiceDate', 'voiceComment', 'voiceVideoId',
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
