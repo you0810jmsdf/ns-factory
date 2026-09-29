@@ -66,6 +66,10 @@ body{
 .msg.bot .bubble{background:#fff;border:1px solid #ede0d4;border-top-left-radius:4px}
 .msg.user .bubble{background:#6b3a1f;color:#fff;border-top-right-radius:4px}
 .msg.bot.owner .ic{background:#a07d3e}
+/* 工房へ送信中の吹き出し（2026-09-30）: 返事が来るまで明滅させ「動いている」と分かるようにする */
+.msg.sending .bubble{animation:sendPulse 1.2s ease-in-out infinite;border-color:#c9a96e}
+@keyframes sendPulse{0%,100%{opacity:1}50%{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.msg.sending .bubble{animation:none}}
 .msg.bot.owner .bubble{background:#fbf3e4;border-color:#ead9b5}
 .bubble .tip{display:block;margin-top:6px;font-size:11.5px;color:#8a6a4f;background:#fdf6ef;border-left:3px solid #d4b896;padding:6px 9px;border-radius:0 6px 6px 0;white-space:pre-wrap}
 .bubble details.tip{white-space:normal}
@@ -303,6 +307,9 @@ window.NSF_I18N_DICT = {
   'live.sendWithImages': '📨 Send this conversation & images to the studio',
   'live.sendNoImages': '📨 Send this conversation to the studio',
   'live.sent': '📨 Sent ✓',
+  'live.sending': '⏳ Sending…',
+  'live.sendingMsg': '📨 Sending to the studio… (this can take 10–30 seconds while images and the summary are saved. Please wait — no need to press the button again.)',
+  'live.sendingMsgNoImg': '📨 Sending to the studio… (this can take a few seconds. Please wait — no need to press the button again.)',
   'live.sentMsg': '📨 Your inquiry has been sent to the studio (reference no.: {no}). The artisan will review it and get back to you.',
   'live.sendFail': '⚠️ Sending failed: {err}. Please try again later.',
   'live.sendNetFail': '⚠️ Could not send due to a network error. Please try again later.',
@@ -440,6 +447,27 @@ function addMsg(who, text, tip){
     d.appendChild(s); d.appendChild(body); b.appendChild(d);
   }else if(tip){ const t=document.createElement('span'); t.className='tip'; t.textContent=tip; b.appendChild(t); }
   m.appendChild(ic); m.appendChild(b); chat.appendChild(m); scrollDown();
+  return m;   // 送信中の吹き出しを後で結果に差し替えるために返す（2026-09-30）
+}
+/* 工房への送信中の表示（2026-09-30 事業主指摘「送信を押しても反応がない」→ 同じ内容が6件届いた）。
+   submitChatOrder は Drive に画像を保存し、発注票PDFを作り、通知を送るため 10〜30秒かかることがある。
+   その間なにも出ないので何度も押されていた。返事が来るまで明滅する吹き出しを出し、
+   結果が返ったら removeSendingMsg で消してから結果の吹き出しを出す。 */
+function showSendingMsg(withImages){
+  const ja = withImages
+    ? '📨 工房へ送信中です…（画像と発注票を保存するため10〜30秒ほどかかります。このままお待ちください。ボタンを押し直す必要はありません）'
+    : '📨 工房へ送信中です…（数秒〜十数秒かかります。このままお待ちください。ボタンを押し直す必要はありません）';
+  const m=addMsg('bot', T(withImages?'live.sendingMsg':'live.sendingMsgNoImg', ja));
+  m.classList.add('sending');
+  return m;
+}
+function removeSendingMsg(m){ if(m && m.parentNode) m.parentNode.removeChild(m); }
+/* 送信の識別子（rid）。同じ内容の送り直しは同じ値になる（GAS 側で二重登録を弾くための下地）。
+   会話や画像が増えれば値が変わるので、内容が変わった送り直しは新しい受付になる。 */
+function makeSendRid(text, imageNames){
+  const s=String(text||'')+'|'+(imageNames||[]).join(',');
+  let h=0; for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; }
+  return 'hearing:'+HEARING_SID+':'+(h>>>0).toString(36);
 }
 function escapeHtml(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function showTyping(){
@@ -1476,7 +1504,9 @@ function markContactMissing(nameEl, contactEl, name, contact){
 
 /* 発注票確定時、お名前・連絡先が埋まっていればそのまま送信。未記入なら送信を保留し、
    発注票の下に案内文と送信ボタンを出す（入力後にボタンを押すと送信される） */
+let orderSubmitting=false;   // 発注票を工房へ送信中（返事待ち）。true の間は送り直さない（2026-09-30）
 function trySubmitOrder(prod, hearingContent, textureSimulation){
+  if(orderSubmitting) return;
   const {nameEl, contactEl} = contactFields();
   const name = nameEl.value.trim(), contact = contactEl.value.trim();
   markContactMissing(nameEl, contactEl, name, contact);
@@ -1496,6 +1526,7 @@ function trySubmitOrder(prod, hearingContent, textureSimulation){
 
 /* 発注票確定時、オーダー進捗シートへ自動登録する（テクスチャシミュレーション画像・お客様添付画像があれば一緒に送る） */
 function submitToOrderProgress(prod, hearingContent, textureSimulation, client, contact){
+  if(orderSubmitting) return;   // 返事待ちの間は送り直さない（二重送信防止・2026-09-30）
   const images=(textureSimulation||[]).map((p,i)=>({
     fileName:`color_sim_${i+1}.png`,
     label:(p.label||('パーツ'+(i+1)))+(p.leatherName?(': '+p.leatherName):''),
@@ -1515,17 +1546,22 @@ function submitToOrderProgress(prod, hearingContent, textureSimulation, client, 
     leather: leather,
     estimate: state._rangeTxt || ''
   };
+  const rid=makeSendRid(hearingContent, images.map(i=>i.fileName));
+  orderSubmitting=true;
+  const pending=showSendingMsg(images.length>0);   // 送信中と分かる吹き出し（2026-09-30）
   fetch(ORDER_PROGRESS_GAS_URL,{
     method:'POST',
-    body:JSON.stringify(Object.assign({ action:'submitChatOrder', client:client||'', contact:contact||'', item:prod.name, hearingContent, images }, fields))
+    body:JSON.stringify(Object.assign({ action:'submitChatOrder', client:client||'', contact:contact||'', item:prod.name, hearingContent, images, rid }, fields))
   }).then(r=>r.json()).then(res=>{
+    removeSendingMsg(pending);
     if(res.ok){ VISIT.submitted=true; state.orderNo=res.orderNo;
       addMsg('bot','📨 工房へお送りしました（受付番号: '+res.orderNo+'）。\n職人が仕様を確認して、'+(contact||'ご連絡先')+' へ正式なお見積り・制作のご案内をお送りします。\n控えは「📄 PDFで保存」から残せます。ありがとうございました🙇'); }
     else { addMsg('bot','⚠️ 工房への送信に失敗しました：'+(res.error||'不明なエラー')+'\nお手数ですが、下のボタンで発注票をコピーし、メールかLINEでお送りください。'); offerCopyFallback(); }
   }).catch(()=>{
+    removeSendingMsg(pending);
     addMsg('bot','⚠️ 工房への送信の通信に失敗しました。お手数ですが、下のボタンで発注票をコピーし、メールかLINEでお送りください。');
     offerCopyFallback();
-  });
+  }).finally(()=>{ orderSubmitting=false; });
 }
 // 送信できなかったときだけ、発注票をコピーして自分で送れるようにする（通常は自動送信のためボタンを出さない）
 function offerCopyFallback(){
@@ -1544,6 +1580,7 @@ let customerImages=[];
 // HearingAI-Proxyへ同梱してVision解釈させ、リクエスト発行時にクリアする（毎ターン再送によるトークン浪費防止）。
 let pendingAIImages=[];
 let liveConsultSent=false;
+let liveConsultSending=false;   // 工房へ送信中（返事待ち）。true の間はボタンを押せない（2026-09-30）
 const MAX_CUSTOMER_IMAGES=3, IMG_MAX_EDGE=1280;
 
 function compressImage(file){
@@ -1591,14 +1628,14 @@ function showLiveSendChip(){
   quickEl.innerHTML='';
   const btn=document.createElement('button');
   const baseLabel = customerImages.length ? T('live.sendWithImages','📨 相談内容と画像を工房へ送信') : T('live.sendNoImages','📨 この相談内容を工房へ送信');
-  btn.textContent = liveConsultSent ? T('live.sent','📨 送信済み✓') : baseLabel;
-  btn.disabled = liveConsultSent;
+  btn.textContent = liveConsultSending ? T('live.sending','⏳ 送信中…') : liveConsultSent ? T('live.sent','📨 送信済み✓') : baseLabel;
+  btn.disabled = liveConsultSent || liveConsultSending;
   btn.onclick=sendLiveConsultation;
   quickEl.appendChild(btn);
 }
 
 function sendLiveConsultation(){
-  if(liveConsultSent) return;
+  if(liveConsultSent || liveConsultSending) return;   // 送信中の連打は無視（二重送信防止・2026-09-30）
   // 2026-08-05: ガイド対話と同様、お名前・連絡先の記入を送信前に必須化
   const {nameEl, contactEl} = contactFields();
   const name = nameEl.value.trim(), contact = contactEl.value.trim();
@@ -1610,24 +1647,32 @@ function sendLiveConsultation(){
   }
   const transcript=history.map(h=>(h.role==='user'?'お客様: ':'AI: ')+h.content).join('\n')||'（会話なし・画像のみ）';
   const images=customerImages.map(ci=>({fileName:ci.fileName,label:ci.label,base64:ci.dataUrl.split(',')[1]}));
+  const rid=makeSendRid(transcript, images.map(i=>i.fileName));
+  liveConsultSending=true;
+  showLiveSendChip();                              // ボタンを「⏳ 送信中…」にして押せなくする
+  const pending=showSendingMsg(images.length>0);   // 吹き出しでも送信中と分かるようにする
   fetch(ORDER_PROGRESS_GAS_URL,{
     method:'POST',
-    body:JSON.stringify({action:'submitChatOrder',client:name,contact:contact,item:'オーダー相談AI（AI会話モード）',hearingContent:transcript,images})
+    body:JSON.stringify({action:'submitChatOrder',client:name,contact:contact,item:'オーダー相談AI（AI会話モード）',hearingContent:transcript,images,rid})
   }).then(r=>r.json()).then(res=>{
+    removeSendingMsg(pending);
     if(res.ok){
       liveConsultSent=true;
       VISIT.submitted=true;   // 相談窓口の訪問記録: 工房へ送った（2026-09-18）
       addMsg('bot', isEN()
         ? T('live.sentMsg','').replace('{no}', res.orderNo)
         : '📨 ご相談内容と画像を工房へお送りしました（受付番号: '+res.orderNo+'）。職人が確認してご案内いたします。');
-      showLiveSendChip();
     }else{
       addMsg('bot', isEN()
         ? T('live.sendFail','').replace('{err}', res.error||'unknown error')
         : '⚠️ 送信に失敗しました：'+(res.error||'不明なエラー')+'。時間をおいて再度お試しください。');
     }
   }).catch(()=>{
+    removeSendingMsg(pending);
     addMsg('bot', T('live.sendNetFail','⚠️ 通信エラーのため送信できませんでした。時間をおいて再度お試しください。'));
+  }).finally(()=>{
+    liveConsultSending=false;
+    showLiveSendChip();   // 成功なら「送信済み✓」、失敗なら元のボタンに戻す
   });
 }
 
