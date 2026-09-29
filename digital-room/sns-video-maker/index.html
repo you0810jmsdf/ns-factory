@@ -3838,6 +3838,11 @@ const VOICE_BGM_FADE_OUT_SEC = 2;    // 末尾（ロゴ場面の終わり）フ�
 const VOICE_BGM_DUCK_DB = -10;       // 声の区間で下げる量（事業主指示）
 const VOICE_BGM_DUCK_RAMP_SEC = .3;  // 下げ・戻しの滑らかさ（事業主指示「前後0.3秒でなめらかに」）
 const VOICE_AUDIO_OUTPUT_RATE = 48000;   // 購入者の声モードの音声合成（ナレーション・BGM共通）のサンプルレート
+// BGMの静かな一節をならす目標値（2026-09-29 追加。詳細は buildBgmLevelingGain のコメント参照）。
+// targetRmsは提供された7曲の実測平均音圧（mean_volume 約-22〜-23dB≒RMS約0.075〜0.08）に合わせた。
+const VOICE_BGM_LEVEL_TARGET_RMS = .08;
+const VOICE_BGM_LEVEL_MIN_GAIN = .6;
+const VOICE_BGM_LEVEL_MAX_GAIN = 3;
 
 function voiceCommentText(){
   return String((els.voiceComment && els.voiceComment.value) || '').trim();
@@ -7274,11 +7279,48 @@ function buildLoopedBgm(pcm, totalSamples){
   for(let i = 0; i < totalSamples; i++) out[i] = pcm[i % pcm.length];
   return out;
 }
+/* BGM自体が持つ自然な強弱（静かな一節など）を軽くならす倍率（2026-09-29 追加）。
+   演奏中の楽曲は場面によって元々の音量差が大きく、動画のどの秒数がたまたま
+   静かな一節に重なるかは曲・写真枚数・声の長さ次第で変わる。何もしないと、
+   声のない場面（締めのロゴ場面など）でBGMがほぼ無音に聞こえることがある
+   （事業主指摘・2026-09-29。ダッキングやループの長さの不具合ではなく、
+   曲そのものの一節が静かだったことをコードと実測で確認済み）。
+   短い時定数でRMSの包絡線を追いかけ、目標値（既定は曲全体の平均的な音圧）に
+   向けてゆっくり（急に変わらないように）ゲインを寄せる。増幅しすぎないよう
+   上限（既定+9.5dB=3倍）を設ける。 */
+function buildBgmLevelingGain(pcm, sampleRate, opts){
+  const n = pcm ? pcm.length : 0;
+  const gain = new Float32Array(n);
+  if(!n) return gain;
+  const targetRms = (opts && opts.targetRms) || .08;
+  const minGain = (opts && opts.minGain) != null ? opts.minGain : .6;
+  const maxGain = (opts && opts.maxGain) != null ? opts.maxGain : 3;
+  const rmsTimeSec = (opts && opts.rmsTimeSec) || .8;
+  const gainSmoothSec = (opts && opts.gainSmoothSec) || 1.2;
+  const rmsAlpha = 1 - Math.exp(-1 / Math.max(1, rmsTimeSec * sampleRate));
+  const gainAlpha = 1 - Math.exp(-1 / Math.max(1, gainSmoothSec * sampleRate));
+  let rmsEnv = targetRms;   // 曲の頭で不自然に持ち上がらないよう、目標値から始める
+  let gainEnv = 1;
+  for(let i = 0; i < n; i++){
+    rmsEnv += (Math.abs(pcm[i]) - rmsEnv) * rmsAlpha;
+    const target = clamp(rmsEnv > 1e-5 ? targetRms / rmsEnv : maxGain, minGain, maxGain);
+    gainEnv += (target - gainEnv) * gainAlpha;
+    gain[i] = gainEnv;
+  }
+  return gain;
+}
 /* BGMの音量エンベロープ（0〜1の倍率・サンプルごと）。
    ・冒頭 fadeInSec 秒でフェードイン／末尾 fadeOutSec 秒でフェードアウト
    ・duckWindows（声が鳴っている区間の配列 {start,end} 秒）では duckDb ぶん下げ、
      前後 duckRampSec 秒でなめらかに下げ・戻しする（事業主指示）
-   ・フェードとダッキングは掛け合わせる（重なる区間はどちらも効く＝自然に更に静かになる） */
+   ・フェードとダッキングは掛け合わせる（重なる区間はどちらも効く＝自然に更に静かになる）
+   ・声の区間どうしの隙間が狭いとき（例: 評価コメント終了〜お礼開始の間）は、
+     前後 duckRampSec をそのまま使うと立ち上がり・立ち下がりだけで隙間を使い切り、
+     戻ったはずの区間がほとんどダッキングされたままになる（2026-09-29 事業主指摘で発覚・
+     実測: 隙間0.688秒に対し0.3秒×2=0.6秒を使い、フルに戻る時間が0.088秒しか無かった）。
+     隙間の長さの最大25%までしかランプに使わないようにし、隙間の少なくとも半分は
+     必ずフル（ダッキングなし）に戻るようにする。隙間が十分広い（duckRampSec×4以上）と
+     きは従来どおり duckRampSec をそのまま使う。 */
 function buildBgmGainEnvelope(totalSec, sampleRate, duckWindows, opts){
   const fadeInSec = (opts && opts.fadeInSec) || 0;
   const fadeOutSec = (opts && opts.fadeOutSec) || 0;
@@ -7295,17 +7337,32 @@ function buildBgmGainEnvelope(totalSec, sampleRate, duckWindows, opts){
   }
   const duckLinear = dbToLinear(duckDb);
   const rampN = Math.max(1, Math.round(duckRampSec * sampleRate));
-  (duckWindows || []).forEach(w => {
-    const startN = Math.max(0, Math.round(w.start * sampleRate));
-    const endN = Math.min(total, Math.round(w.end * sampleRate));
-    if(endN <= startN) return;
-    for(let i = Math.max(0, startN - rampN); i < startN; i++){
-      const p = (i - (startN - rampN)) / rampN;
+  const windows = (duckWindows || [])
+    .filter(w => w.end > w.start)
+    .slice()
+    .sort((a, b) => a.start - b.start)
+    .map(w => ({
+      startN: Math.max(0, Math.round(w.start * sampleRate)),
+      endN: Math.min(total, Math.round(w.end * sampleRate))
+    }))
+    .filter(w => w.endN > w.startN);
+  windows.forEach((w, idx) => {
+    const {startN, endN} = w;
+    // 前の声区間との隙間（無ければ動画の頭まで）に応じて、立ち下がりを短くする
+    const prevEndN = idx > 0 ? windows[idx - 1].endN : 0;
+    const gapBefore = Math.max(0, startN - prevEndN);
+    const rampDownN = Math.max(1, Math.min(rampN, Math.floor(gapBefore * .25)));
+    for(let i = Math.max(0, startN - rampDownN); i < startN; i++){
+      const p = (i - (startN - rampDownN)) / rampDownN;
       env[i] *= 1 - p * (1 - duckLinear);
     }
     for(let i = startN; i < endN; i++) env[i] *= duckLinear;
-    for(let i = endN; i < Math.min(total, endN + rampN); i++){
-      const p = (i - endN) / rampN;
+    // 次の声区間との隙間（無ければ動画の終わりまで）に応じて、立ち上がりを短くする
+    const nextStartN = idx < windows.length - 1 ? windows[idx + 1].startN : total;
+    const gapAfter = Math.max(0, nextStartN - endN);
+    const rampUpN = Math.max(1, Math.min(rampN, Math.floor(gapAfter * .25)));
+    for(let i = endN; i < Math.min(total, endN + rampUpN); i++){
+      const p = (i - endN) / rampUpN;
       env[i] *= duckLinear + p * (1 - duckLinear);
     }
   });
@@ -7932,9 +7989,13 @@ async function recordVoiceNarratedMp4Core(){
       fadeInSec: VOICE_BGM_FADE_IN_SEC, fadeOutSec: VOICE_BGM_FADE_OUT_SEC,
       duckDb: VOICE_BGM_DUCK_DB, duckRampSec: VOICE_BGM_DUCK_RAMP_SEC
     });
+    // 曲自体の静かな一節をならす（2026-09-29 追加。詳細は buildBgmLevelingGain のコメント参照）
+    const levelGain = buildBgmLevelingGain(looped, outputRate, {
+      targetRms: VOICE_BGM_LEVEL_TARGET_RMS, minGain: VOICE_BGM_LEVEL_MIN_GAIN, maxGain: VOICE_BGM_LEVEL_MAX_GAIN
+    });
     const volumeLinear = dbToLinear(voicePlan.bgm.volumeDb);
     for(let i = 0; i < timeline.length; i++){
-      timeline[i] = clamp(timeline[i] + looped[i] * envelope[i] * volumeLinear, -1, 1);
+      timeline[i] = clamp(timeline[i] + looped[i] * levelGain[i] * envelope[i] * volumeLinear, -1, 1);
     }
   }
   const narrationTrack = {sampleRate:outputRate, numberOfChannels:1, data:timeline};
