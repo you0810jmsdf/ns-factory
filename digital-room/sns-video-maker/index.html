@@ -4549,7 +4549,16 @@ function drawThanksSpeechBubble(slide, progress){
   const boxH = lines.length * lineHeight + padY * 2;
   let boxBottom = bounds.y + bounds.h * .34;
   let boxY = boxBottom - boxH;
-  if(boxY < photo.y + 16) boxY = photo.y + 16;
+  const row = isVoiceMode() ? REEL_LAYOUT.charRow : null;
+  if(row){
+    // 購入者の声モード: 吹き出しは必ずフクロウと同じ帯（写真枠の外）の中に収める。
+    // 写真の位置は一切参照しない（写真枠と重ならないことをレイアウト自体で保証する）。
+    const minY = row.y + 6;
+    const maxY = Math.max(minY, row.y + row.h - boxH - 6);
+    boxY = clamp(boxY, minY, maxY);
+  }else if(boxY < photo.y + 16){
+    boxY = photo.y + 16;
+  }
   let boxX = bounds.x - tailW - boxW;
   if(boxX < photo.x + margin) boxX = photo.x + margin;
   const tailTipX = bounds.x - 4;
@@ -4577,6 +4586,7 @@ function drawThanksSpeechBubble(slide, progress){
   ctx.font = canvasFont(700, fontSize);
   lines.forEach((line, i) => ctx.fillText(line, boxX + padX, boxY + padY + fontSize * .86 + i * lineHeight));
   ctx.restore();
+  return {x:boxX, y:boxY, w:boxW, h:boxH};   // 検証用（重なりチェック）。通常描画では戻り値は使わない
 }
 /* AI生成画像の注記。フクロウを出している間、動画の最初から最後まで左下に小さく出す（VOICEVOXクレジットと同じ行・左寄せ）。
    drawFrame の最後で1回だけ描く（切替・暗幕に巻き込まれない）。声なし保存でもフクロウが出る限り描く。 */
@@ -5232,14 +5242,17 @@ function currentVideoFormat(){
    通常モード（reel）とはキャラクターの立ち位置が違う（写真枠の外・専用の帯）ため、写真は少し小さくして
    上に「キャラクター＋吹き出し」の帯を確保する。canvasサイズは reel と同じ 1080×1920 なので
    canvas.width/height は変更しない（REEL_LAYOUT の差し替えだけで済む）。 */
+/* 2026-09-29 事業主確認で帯を拡大（フクロウが小さすぎる・吹き出しが帯からはみ出て写真に重なる）。
+   charRow.h を230px（読める大きさ）へ拡大し、その分だけ写真枠を縮めて重なりゼロを確保する。
+   各要素の矩形は voiceLayoutDebugRects() で取り出せる（検証用）。 */
 const VOICE_LAYOUT = Object.freeze({
-  photo:{x:60, y:690, w:960, h:760},
+  photo:{x:60, y:756, w:960, h:704},
   brand:{x:84, y:280, owlHeight:84, wordmarkWidth:236, gap:16},
   title:{x:540, y:420, maxWidth:720, maxSize:40, minSize:28},
-  charRow:{y:480, h:180, gap:22},          // フクロウ／販売幕僚＋吹き出しの帯（写真の外・タイトルの下）
-  subtitle:{x:82, w:820, bottom:1660, padX:46, padY:24, minH:120, maxH:200},
-  info:{x:76, y:1680, w:850, h:150},
-  credit:{right:926, y:1666, h:36},
+  charRow:{y:500, h:230, gap:22},          // フクロウ／販売幕僚＋吹き出しの帯（写真の外・タイトルの下）。吹き出しはこの帯の中だけに描く
+  subtitle:{x:82, w:820, bottom:1680, padX:46, padY:24, minH:120, maxH:200},
+  info:{x:76, y:1700, w:850, h:150},
+  credit:{right:926, y:1686, h:36},
   owl:{h:150, right:18}
 });
 
