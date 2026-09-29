@@ -327,7 +327,7 @@ function render() {
     report.hidden = true; empty.hidden = false;
     const last = data && data.lastRun;
     document.getElementById('emptyMsg').textContent =
-      '集計は毎月1日 8:00 に先月分を自動で行います。すぐ見たいときは、副業サイト側で先月分を集め直してください。' +
+      '集計は毎月1日 8:00 に先月分を自動で行います。最初は 2026年11月1日 に10月分を集計します（9月は自分たちの閲覧がほとんどのため集計しません）。' +
       (last && last.error ? `　前回の集計で失敗：${last.error}` : '');
     return;
   }
