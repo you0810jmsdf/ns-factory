@@ -818,6 +818,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="youtube-stats" data-admin-cat="keiei" role="tab" aria-selected="false">🎬 講座動画</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="sns-queue" data-admin-cat="keiei" role="tab" aria-selected="false">📮 SNS予約</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="sns-trend" data-admin-cat="keiei" role="tab" aria-selected="false">📈 SNSトレンド</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="side-analytics" data-admin-cat="keiei" role="tab" aria-selected="false">📊 副業サイト</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="jhcs-dl" data-admin-cat="keiei" role="tab" aria-selected="false">🎓 JHCS講習DL管理</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="structure-map" data-admin-cat="keiei" role="tab" aria-selected="false">🗺 構造マップ</button>
       <!-- 📦 在庫管理 -->
@@ -1019,6 +1020,25 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#0d1117"
         title="SNSトレンド"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- 副業サイトのアクセス解析タブ（2026-09-30）。数字は副業サイト側にあり、このリポジトリには置かない -->
+    <div class="panel side-analytics-section admin-section-hidden" id="sideAnalyticsPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:#8a6a4a">副業サイトの月次アクセス（記事ごとの閲覧数・流入元）。毎月1日8時に先月分を自動集計。認証は本画面と共通、接続先と合言葉は初回だけ入力</div>
+        <a href="../side-analytics.html" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット -->
+      <iframe
+        id="sideAnalyticsFrame"
+        data-src="../side-analytics.html"
+        src="about:blank"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#0d1117"
+        title="副業サイト アクセス解析"
         loading="lazy"></iframe>
     </div>
 
@@ -2275,6 +2295,7 @@ function unlockAdmin() {
     sessionStorage.setItem('nsfactory-youtube-stats-auth', 'ok');
     sessionStorage.setItem('nsfactory-sns-queue-auth', 'ok');
     sessionStorage.setItem('nsfactory-sns-trend-auth', 'ok');
+    sessionStorage.setItem('nsfactory-side-analytics-auth', 'ok');
     sessionStorage.setItem('nsfactory-chatlog-auth', 'ok');
   } catch (err) { /* ignore */ }
   tryAutoFetchToken();
@@ -6482,7 +6503,7 @@ async function saveJhcsStudent() {
 }
 
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'merge': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'youtube-stats': 'keiei', 'sns-trend': 'keiei', 'sns-queue': 'keiei', 'jhcs-dl': 'keiei', 'structure-map': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'merge': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'youtube-stats': 'keiei', 'sns-trend': 'keiei', 'side-analytics': 'keiei', 'sns-queue': 'keiei', 'jhcs-dl': 'keiei', 'structure-map': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics',
@@ -6513,13 +6534,14 @@ function setAdminTab(tab) {
   const isApiCosts = tab === 'api-costs';
   const isYoutubeStats = tab === 'youtube-stats';
   const isSnsTrend = tab === 'sns-trend';
+  const isSideAnalytics = tab === 'side-analytics';
   const isSnsQueue = tab === 'sns-queue';
   const isChatlog = tab === 'chatlog';
   const isJhcsDl = tab === 'jhcs-dl';
   const isWaitlist = tab === 'waitlist';
   const isFavorites = tab === 'favorites';
   const isStructureMap = tab === 'structure-map';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isYoutubeStats && !isSnsTrend && !isStructureMap;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -6597,6 +6619,9 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.sns-trend-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isSnsTrend);
+  });
+  document.querySelectorAll('.side-analytics-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isSideAnalytics);
   });
   document.querySelectorAll('.chatlog-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isChatlog);
@@ -6788,6 +6813,13 @@ function setAdminTab(tab) {
     const stFrame = document.getElementById('snsTrendFrame');
     if (stFrame && stFrame.src.indexOf('sns-trend.html') === -1 && stFrame.dataset.src) {
       stFrame.src = stFrame.dataset.src;
+    }
+  }
+  if (isSideAnalytics) {
+    // 初回表示時のみ src をセット（認証は unlockAdmin() が side-analytics 側のセッションキーを付与済み）
+    const saFrame = document.getElementById('sideAnalyticsFrame');
+    if (saFrame && saFrame.src.indexOf('side-analytics.html') === -1 && saFrame.dataset.src) {
+      saFrame.src = saFrame.dataset.src;
     }
   }
   if (isChatlog) {

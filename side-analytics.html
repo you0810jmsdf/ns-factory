@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script src="assets/admin-remember.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>副業サイト アクセス解析 | N's factory</title>
+<style>
+/* SNS予約（sns-queue.html）と同じダーク管制室テーマ */
+*,*::before,*::after{box-sizing:border-box}
+:root{--bar:#388bfd;--surface:#161b22;--line:#30363d;--ink:#e6edf3;--ink2:#c9d1d9;--muted:#9aa4af}
+body{
+  margin:0;
+  font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+  background:#0d1117;color:var(--ink);min-height:100vh;
+}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--surface)}
+.topbar h1{margin:0;font-size:17px;letter-spacing:.04em}
+.meta{font-size:11px;color:var(--muted);line-height:1.6}
+.wrap{padding:16px 20px 60px;display:grid;gap:14px;max-width:1200px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.panel h2{margin:0 0 10px;font-size:14px;color:var(--ink2);letter-spacing:.03em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+button,select{background:#21262d;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer}
+button:hover{border-color:#8b949e}
+button.primary{background:#1f6feb;border-color:#1f6feb}
+button:disabled{opacity:.6;cursor:wait}
+input[type=password],input[type=text]{background:#0d1117;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px;min-width:0}
+label{font-size:12px;color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.error{color:#ff9d9d;font-size:13px;min-height:1.2em}
+.notice{font-size:12px;color:#e3b341;line-height:1.7}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:12px 14px}
+.tile .k{font-size:11px;color:var(--muted)}
+.tile .v{font-size:26px;font-weight:bold;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .d{font-size:11px;color:var(--muted);margin-top:2px}
+.chart{position:relative;width:100%;overflow:hidden}
+.chart svg{display:block;width:100%;height:auto}
+.chart .tip{position:absolute;pointer-events:none;background:#0d1117;border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12px;color:var(--ink);white-space:nowrap;display:none;z-index:2}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:7px 8px;border-bottom:1px solid #21262d;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:normal;font-size:11px;letter-spacing:.05em}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.p{word-break:break-all;color:var(--ink2)}
+.share{display:inline-block;height:6px;border-radius:3px;background:var(--bar);vertical-align:middle;margin-right:6px}
+details{font-size:12px;color:var(--muted)}
+#authOverlay{position:fixed;inset:0;background:#0d1117;display:flex;align-items:center;justify-content:center;z-index:10}
+.auth-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;display:grid;gap:10px;width:300px}
+body.auth-locked .wrap{display:none}
+</style>
+</head>
+<body class="auth-locked">
+<div id="authOverlay">
+  <div class="auth-box">
+    <h1 style="margin:0;font-size:15px">副業サイト アクセス解析</h1>
+    <label for="authPassword">管理パスワード</label>
+    <input type="password" id="authPassword" autocomplete="current-password">
+    <button class="primary" type="button" onclick="submitAuth()">開く</button>
+    <div class="error" id="authError"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <h1>📊 副業サイト アクセス解析</h1>
+  <div class="meta">毎月1日 8:00 に先月分を自動で集計（Cloudflare Web Analytics・Cookieなし）。数字は副業サイト側に保存され、このページには書き込んでいません。</div>
+</div>
+
+<div class="wrap">
+  <div class="panel" id="connPanel">
+    <h2>接続（最初の1回だけ）</h2>
+    <div class="row">
+      <input type="text" id="connUrl" placeholder="接続先（https://…workers.dev）" style="width:320px">
+      <input type="password" id="connKey" placeholder="合言葉" style="width:220px">
+      <label><input type="checkbox" id="connRemember" checked> このPCに覚える</label>
+      <button class="primary" type="button" id="loadBtn" onclick="loadData()">読み込む</button>
+    </div>
+    <div class="error" id="loadError"></div>
+    <div class="notice">接続先と合言葉は副業サイトの手順書（workers/threads/README.md）と 保全部\.env の AFF_THREADS_ADMIN_KEY にあります。この公開ページには書いていません。</div>
+  </div>
+
+  <div id="report" hidden>
+    <div class="panel">
+      <h2>月を選ぶ <select id="monthSel" aria-label="表示する月"></select>
+        <span class="meta" id="collectedMeta"></span>
+        <button type="button" id="recollectBtn" style="margin-left:auto" onclick="recollect()">先月分を集め直す</button>
+      </h2>
+      <div class="tiles" id="tiles"></div>
+    </div>
+
+    <div class="panel">
+      <h2>日別の閲覧数</h2>
+      <div class="chart" id="dayChart"></div>
+      <details style="margin-top:8px"><summary>表で見る</summary><div id="dayTable"></div></details>
+    </div>
+
+    <div class="cols">
+      <div class="panel"><h2>記事ごとの閲覧数</h2><div id="pageTable"></div></div>
+      <div class="panel"><h2>どこから来たか（流入元）</h2><div id="refTable"></div></div>
+    </div>
+
+    <div class="cols">
+      <div class="panel"><h2>端末</h2><div id="devTable"></div></div>
+      <div class="panel" id="trendPanel"><h2>月ごとの推移</h2><div class="chart" id="trendChart"></div></div>
+    </div>
+  </div>
+
+  <div class="panel" id="emptyPanel" hidden>
+    <h2>まだ月次の集計がありません</h2>
+    <div class="meta" id="emptyMsg"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ================================================================
+// 認証（画面側の照合は出し分けにすぎない。数字は副業サイト側が合言葉を確認してから返す）
+// ================================================================
+const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+const SESSION_KEY = 'nsfactory-side-analytics-auth';
+const KEY_STORE = 'nsf_admin_key';  // admin.html と共通
+const CONN_SAVE = 'nsf_side_analytics_conn';  // 「このPCに覚える」用（localStorage・接続先と合言葉）
+
+function sha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
+    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join(''));
+}
+function checkSession() {
+  try { return sessionStorage.getItem(SESSION_KEY) === 'ok'; } catch (e) { return false; }
+}
+function unlockAuth() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.classList.remove('auth-locked');
+  try {
+    const saved = JSON.parse(localStorage.getItem(CONN_SAVE) || 'null');
+    if (saved && saved.url && saved.key) {
+      document.getElementById('connUrl').value = saved.url;
+      document.getElementById('connKey').value = saved.key;
+      loadData();
+    }
+  } catch (e) {}
+}
+function submitAuth() {
+  const input = document.getElementById('authPassword');
+  const errEl = document.getElementById('authError');
+  sha256(input.value).then((hex) => {
+    if (hex === ADMIN_PASS_HASH) {
+      try { sessionStorage.setItem(SESSION_KEY, 'ok'); sessionStorage.setItem(KEY_STORE, input.value); } catch (e) {}
+      unlockAuth();
+    } else {
+      errEl.textContent = 'パスワードが違います';
+    }
+  }).catch(() => { errEl.textContent = '照合に失敗しました（https環境で開いてください）'; });
+}
+
+// ================================================================
+// 取得
+// ================================================================
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = (n) => Number(n || 0).toLocaleString('ja-JP');
+let data = null;
+
+function conn() {
+  const url = document.getElementById('connUrl').value.trim().replace(/\/+$/, '');
+  const key = document.getElementById('connKey').value.trim();
+  return { url, key };
+}
+function validUrl(u) { return /^https:\/\/[a-z0-9.-]+\.workers\.dev$/i.test(u) || /^http:\/\/localhost:\d+$/.test(u); }
+
+let loading = false;
+async function loadData() {
+  if (loading) return;
+  const { url, key } = conn();
+  const errEl = document.getElementById('loadError');
+  errEl.textContent = '';
+  if (!validUrl(url)) { errEl.textContent = '接続先は https://〜.workers.dev の形で入れてください'; return; }
+  if (!key) { errEl.textContent = '合言葉を入れてください'; return; }
+  loading = true;
+  const btn = document.getElementById('loadBtn');
+  btn.disabled = true; btn.textContent = '読み込み中…';
+  try {
+    const res = await fetch(url + '/analytics', { headers: { 'x-admin-key': key }, credentials: 'omit', cache: 'no-store' });
+    if (res.status === 404) {
+      errEl.textContent = '接続先か合言葉が違います（404）。直してもう一度「読み込む」を押してください。';
+      try { localStorage.removeItem(CONN_SAVE); } catch (e) {}
+      return;
+    }
+    if (!res.ok) { errEl.textContent = `読み込めませんでした（HTTP ${res.status}）。もう一度「読み込む」を押してください。`; return; }
+    data = await res.json();
+    let remembered = false;
+    try {
+      if (document.getElementById('connRemember').checked) { localStorage.setItem(CONN_SAVE, JSON.stringify({ url, key })); remembered = true; }
+      else localStorage.removeItem(CONN_SAVE);
+    } catch (e) {}
+    document.getElementById('connPanel').querySelector('h2').textContent =
+      remembered ? '接続（済み・このPCが覚えています）' : '接続（済み・このPCには覚えさせていません）';
+    render();
+  } catch (e) {
+    errEl.textContent = '通信に失敗しました。ネットワークを確認して、もう一度「読み込む」を押してください。';
+  } finally {
+    loading = false; btn.disabled = false; btn.textContent = '読み込む';
+  }
+}
+
+async function recollect() {
+  const { url, key } = conn();
+  const btn = document.getElementById('recollectBtn');
+  btn.disabled = true; btn.textContent = '集計中…';
+  try {
+    const res = await fetch(url + '/analytics/collect', { method: 'POST', headers: { 'x-admin-key': key }, credentials: 'omit' });
+    const body = await res.json().catch(() => ({}));
+    if (!body.ok) alert('集め直せませんでした：' + (body.error || `HTTP ${res.status}`));
+    await loadData();
+  } catch (e) {
+    alert('通信に失敗しました。もう一度押してください。');
+  } finally {
+    btn.disabled = false; btn.textContent = '先月分を集め直す';
+  }
+}
+
+// ================================================================
+// 描画
+// ================================================================
+function refLabel(host) {
+  const h = String(host || '').toLowerCase();
+  if (!h) return '直接・ブックマーク・アプリ内など（不明）';
+  if (data && data.site && (h === data.site || h === 'www.' + data.site)) return 'サイト内の移動';
+  if (h.includes('threads')) return 'Threads（' + host + '）';
+  if (h.includes('google')) return 'Google 検索（' + host + '）';
+  if (h.includes('bing')) return 'Bing 検索（' + host + '）';
+  if (h.includes('yahoo')) return 'Yahoo! 検索（' + host + '）';
+  if (h.includes('instagram')) return 'Instagram（' + host + '）';
+  if (h.includes('facebook')) return 'Facebook（' + host + '）';
+  return host;
+}
+const DEVICE = { desktop: 'パソコン', mobile: 'スマホ', tablet: 'タブレット' };
+
+function table(rows, cols) {
+  if (!rows.length) return '<div class="meta">データがありません。</div>';
+  const total = rows.reduce((s, r) => s + (r.views || 0), 0) || 1;
+  let h = '<table><thead><tr>' + cols.map((c) => `<th class="${c.n ? 'n' : ''}">${esc(c.h)}</th>`).join('') + '</tr></thead><tbody>';
+  for (const r of rows) {
+    h += '<tr>' + cols.map((c) => {
+      if (c.share) {
+        const pct = (r.views || 0) / total * 100;
+        return `<td class="n"><span class="share" style="width:${Math.max(2, pct * 0.6).toFixed(1)}px"></span>${pct.toFixed(1)}%</td>`;
+      }
+      const v = c.get(r);
+      return `<td class="${c.n ? 'n' : 'p'}">${c.n ? fmt(v) : esc(v)}</td>`;
+    }).join('') + '</tr>';
+  }
+  return h + '</tbody></table>';
+}
+
+// 棒グラフ（1系列・縦棒・4px の角丸は上端だけ・棒の間は2px 以上・ホバーで値）
+function barChart(el, items, labelOf) {
+  el.innerHTML = '';
+  if (!items.length) { el.innerHTML = '<div class="meta">データがありません。</div>'; return; }
+  const W = 900, H = 220, padL = 44, padR = 8, padT = 10, padB = 28;
+  const max = Math.max(...items.map((d) => d.views), 1);
+  const step = niceStep(max);
+  const top = Math.ceil(max / step) * step;
+  const iw = W - padL - padR, ih = H - padT - padB;
+  const slot = iw / items.length;
+  const bw = Math.max(2, Math.min(28, slot - Math.max(2, slot * 0.25)));
+  const y = (v) => padT + ih - (v / top) * ih;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="閲覧数の棒グラフ">`;
+  for (let v = 0; v <= top; v += step) {
+    s += `<line x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}" stroke="#21262d" stroke-width="1"/>`;
+    s += `<text x="${padL - 6}" y="${y(v) + 4}" fill="#9aa4af" font-size="11" text-anchor="end">${fmt(v)}</text>`;
+  }
+  const every = Math.ceil(items.length / 10);
+  items.forEach((d, i) => {
+    const x = padL + slot * i + (slot - bw) / 2;
+    const h = Math.max(0, y(0) - y(d.views));
+    const r = Math.min(4, bw / 2, h);
+    const x2 = x + bw, yb = y(0), yt = yb - h;
+    const path = h > 0
+      ? `M${x},${yb} V${yt + r} Q${x},${yt} ${x + r},${yt} H${x2 - r} Q${x2},${yt} ${x2},${yt + r} V${yb} Z`
+      : '';
+    if (path) s += `<path d="${path}" fill="var(--bar)"/>`;
+    s += `<rect class="hit" data-i="${i}" x="${padL + slot * i}" y="${padT}" width="${slot}" height="${ih}" fill="transparent"/>`;
+    if (i % every === 0) s += `<text x="${x + bw / 2}" y="${H - 8}" fill="#9aa4af" font-size="11" text-anchor="middle">${esc(labelOf(d, true))}</text>`;
+  });
+  s += `<line x1="${padL}" x2="${W - padR}" y1="${y(0)}" y2="${y(0)}" stroke="#30363d" stroke-width="1"/></svg>`;
+  el.innerHTML = s + '<div class="tip"></div>';
+  const tip = el.querySelector('.tip');
+  el.querySelectorAll('.hit').forEach((r) => {
+    r.addEventListener('mousemove', (e) => {
+      const d = items[+r.dataset.i];
+      tip.textContent = `${labelOf(d, false)}　閲覧 ${fmt(d.views)}・訪問 ${fmt(d.visits)}`;
+      tip.style.display = 'block';
+      const box = el.getBoundingClientRect();
+      const left = Math.min(e.clientX - box.left + 12, box.width - tip.offsetWidth - 4);
+      tip.style.left = Math.max(4, left) + 'px';
+      tip.style.top = Math.max(4, e.clientY - box.top - 34) + 'px';
+    });
+    r.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+}
+function niceStep(max) {
+  const raw = max / 4;
+  const p = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+  const n = raw / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+}
+
+// 1日〜月末までを埋める（閲覧0の日も棒の位置を空ける）
+function fillDays(m) {
+  const [yy, mm] = m.month.split('-').map(Number);
+  const last = new Date(yy, mm, 0).getDate();
+  const byDate = new Map((m.days || []).map((d) => [d.date, d]));
+  const out = [];
+  for (let d = 1; d <= last; d++) {
+    const k = `${m.month}-${String(d).padStart(2, '0')}`;
+    out.push(byDate.get(k) || { date: k, views: 0, visits: 0 });
+  }
+  return out;
+}
+
+function render() {
+  const months = (data && data.months) || [];
+  const report = document.getElementById('report');
+  const empty = document.getElementById('emptyPanel');
+  if (!months.length) {
+    report.hidden = true; empty.hidden = false;
+    const last = data && data.lastRun;
+    document.getElementById('emptyMsg').textContent =
+      '集計は毎月1日 8:00 に先月分を自動で行います。すぐ見たいときは、副業サイト側で先月分を集め直してください。' +
+      (last && last.error ? `　前回の集計で失敗：${last.error}` : '');
+    return;
+  }
+  empty.hidden = true; report.hidden = false;
+  const sel = document.getElementById('monthSel');
+  const cur = sel.value;
+  const jpMonth = (ym) => `${ym.slice(0, 4)}年${+ym.slice(5)}月`;
+  sel.innerHTML = months.map((m) => `<option value="${esc(m.month)}">${esc(jpMonth(m.month))}</option>`).join('');
+  sel.value = months.some((m) => m.month === cur) ? cur : months[0].month;
+  sel.onchange = () => renderMonth();
+  renderMonth();
+
+  const trend = months.slice().reverse();
+  const tp = document.getElementById('trendPanel');
+  if (trend.length >= 2) {
+    tp.hidden = false;
+    barChart(document.getElementById('trendChart'), trend.map((m) => ({ month: m.month, views: m.views, visits: m.visits })),
+      (d, short) => short ? d.month.slice(2).replace('-', '/') : jpMonth(d.month));
+  } else {
+    tp.hidden = true;
+  }
+}
+
+function renderMonth() {
+  const months = data.months;
+  const ym = document.getElementById('monthSel').value;
+  const i = months.findIndex((m) => m.month === ym);
+  const m = months[i], prev = months[i + 1];
+  const days = fillDays(m);
+  const diff = (a, b) => (b && b > 0) ? `先月比 ${a >= b ? '+' : ''}${((a - b) / b * 100).toFixed(0)}%` : '先月のデータなし';
+  const best = days.reduce((a, d) => (d.views > (a ? a.views : -1) ? d : a), null);
+  document.getElementById('tiles').innerHTML = [
+    ['閲覧数（ページが開かれた回数）', fmt(m.views), diff(m.views, prev && prev.views)],
+    ['訪問数（来訪の回数）', fmt(m.visits), diff(m.visits, prev && prev.visits)],
+    ['1日あたりの閲覧', fmt(Math.round(m.views / days.length)), `${days.length}日で平均`],
+    ['いちばん多かった日', best && best.views ? best.date.slice(5).replace('-', '/') : '—', best && best.views ? `閲覧 ${fmt(best.views)}` : '']
+  ].map(([k, v, d]) => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="d">${esc(d)}</div></div>`).join('');
+  document.getElementById('collectedMeta').textContent = (m.collectedAt ? `集計 ${new Date(m.collectedAt).toLocaleString('ja-JP')}` : '') +
+    (m.estimated ? '　※アクセスの多い日を含むため、Cloudflare の概算値が入っています' : '');
+
+  barChart(document.getElementById('dayChart'), days, (d, short) => short ? String(+d.date.slice(8)) : d.date.slice(5).replace('-', '/'));
+  document.getElementById('dayTable').innerHTML = table(days.filter((d) => d.views > 0),
+    [{ h: '日付', get: (r) => r.date }, { h: '閲覧', n: 1, get: (r) => r.views }, { h: '訪問', n: 1, get: (r) => r.visits }]);
+  document.getElementById('pageTable').innerHTML = table(m.pages || [],
+    [{ h: 'ページ', get: (r) => r.path || '/' }, { h: '閲覧', n: 1, get: (r) => r.views }, { h: '訪問', n: 1, get: (r) => r.visits }, { h: '割合', share: 1 }]);
+  document.getElementById('refTable').innerHTML = table(m.referers || [],
+    [{ h: '流入元', get: (r) => refLabel(r.host) }, { h: '閲覧', n: 1, get: (r) => r.views }, { h: '訪問', n: 1, get: (r) => r.visits }, { h: '割合', share: 1 }]);
+  document.getElementById('devTable').innerHTML = table(m.devices || [],
+    [{ h: '端末', get: (r) => DEVICE[r.device] || r.device || '不明' }, { h: '閲覧', n: 1, get: (r) => r.views }, { h: '割合', share: 1 }]);
+}
+
+if (checkSession()) unlockAuth();
+document.getElementById('authPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitAuth(); });
+document.getElementById('connKey').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadData(); });
+</script>
+</body>
+</html>

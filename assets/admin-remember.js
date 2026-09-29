@@ -37,6 +37,7 @@
     ['op_auth', '1'],                              // orderprogress.html
     ['nsfactory-chatlog-auth', 'ok'],              // chatlog.html
     ['nsfactory-sns-trend-auth', 'ok'],            // sns-trend.html
+    ['nsfactory-side-analytics-auth', 'ok'],       // side-analytics.html
     ['nsfactory-automations-auth', 'ok'],          // automations.html
     ['nsfactory-api-costs-auth', 'ok'],            // api-costs.html
     ['nsfactory-staff-monitor-auth', 'ok'],        // staff-monitor.html
