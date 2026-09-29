@@ -366,7 +366,8 @@ function renderMonth() {
     ['いちばん多かった日', best && best.views ? best.date.slice(5).replace('-', '/') : '—', best && best.views ? `閲覧 ${fmt(best.views)}` : '']
   ].map(([k, v, d]) => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="d">${esc(d)}</div></div>`).join('');
   document.getElementById('collectedMeta').textContent = (m.collectedAt ? `集計 ${new Date(m.collectedAt).toLocaleString('ja-JP')}` : '') +
-    (m.estimated ? '　※アクセスの多い日を含むため、Cloudflare の概算値が入っています' : '');
+    (m.estimated ? '　※アクセスの多い日を含むため、Cloudflare の概算値が入っています' : '') +
+    (m.note ? `　※${m.note}` : '');
 
   barChart(document.getElementById('dayChart'), days, (d, short) => short ? String(+d.date.slice(8)) : d.date.slice(5).replace('-', '/'));
   document.getElementById('dayTable').innerHTML = table(days.filter((d) => d.views > 0),
