@@ -812,6 +812,19 @@ h1,h2,h3{
   color:#8B6525;text-decoration:none;text-align:center;font-size:13px;
 }
 .staff-net-hint{font-size:12px;color:var(--color-text-sub);text-align:center;letter-spacing:.04em;margin:0}
+/* 全体表示⇄拡大の切替ボタン（右下）。表示中の状態に合わせて片方の文言だけ出す */
+.staff-net-fit{
+  position:absolute;right:14px;bottom:14px;z-index:3;
+  padding:7px 14px;border:1px solid rgba(201,169,110,.7);border-radius:999px;
+  background:rgba(3,5,12,.72);color:#e3c987;font-size:12px;letter-spacing:.06em;cursor:pointer;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.staff-net-fit:hover{background:rgba(201,169,110,.18)}
+.staff-net-fit:focus-visible{outline:2px solid #c9a96e;outline-offset:2px}
+.staff-net-fit .staff-net-fit-zoom{display:none}
+.staff-net[data-view="full"] .staff-net-fit .staff-net-fit-full{display:none}
+.staff-net[data-view="full"] .staff-net-fit .staff-net-fit-zoom{display:inline}
+.staff-net.is-fallback .staff-net-fit{display:none}
 @media(max-width:768px){
   .staff-net-row{grid-template-columns:1fr;gap:22px}
   .staff-net-row > .commander-slide{justify-self:center;width:min(320px,100%)}
@@ -1813,8 +1826,10 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
         <li><a href="./jinji-room/" data-i18n="staff.cta.jinji">人事幕僚室</a></li>
         <li><a href="./hitsuki/" data-i18n="staff.cta.kyouiku">教育幕僚室</a></li>
       </ul>
+      <!-- 最初は拡大表示。このボタンで全体表示⇄拡大を切り替える（2026-09-30 事業主指示） -->
+      <button type="button" class="staff-net-fit" id="staffNetFit"><span class="staff-net-fit-full" data-i18n="staff.netFit">全体を表示</span><span class="staff-net-fit-zoom" data-i18n="staff.netZoom">拡大して表示</span></button>
     </div>
-    <p class="staff-net-hint" data-i18n="staff.netHint">球に合わせると担当業務、クリックで各幕僚室へ。ドラッグで回転、ピンチで拡大・縮小、中央の首席幕僚をつかむと網を動かせます（ダブルクリックで元の位置に戻ります）。粒は各幕僚が蓄えたノートの数です。</p>
+    <p class="staff-net-hint" data-i18n="staff.netHint">球に合わせると担当業務、クリックで各幕僚室へ。ドラッグで回転、ピンチで拡大・縮小、中央の首席幕僚をつかむと網を動かせます。「全体を表示」で網の全体、ダブルクリックで最初の拡大表示に戻ります。粒は各幕僚が蓄えたノートの数です。</p>
   </div>
   <!-- スマホ専用: 網をカードの絵より上に出すため、集合写真を網の下にも置く（600px以下でだけ表示・2026-09-19 事業主決定A） -->
   <div class="hero-group-mobile">
@@ -2344,7 +2359,9 @@ window.NSF_I18N_DICT = {
   'staff.noteCta': "Commander's Office (AI management chronicle) →",
   'staff.profileLink': 'About the maker →',
   'staff.courseLink': 'AI course for makers →',
-  'staff.netHint': "Hover a sphere to see each officer’s duties; click to enter their office. Drag to rotate, pinch to zoom, and grab the Chief of Staff in the center to move the network (double-click to reset). The particles show how many notes each officer keeps.",
+  'staff.netHint': "Hover a sphere to see each officer’s duties; click to enter their office. Drag to rotate, pinch to zoom, and grab the Chief of Staff in the center to move the network. “Show all” shows the whole network; double-click returns to the initial close-up. The particles show how many notes each officer keeps.",
+  'staff.netFit': 'Show all',
+  'staff.netZoom': 'Zoom in',
   'staff.tasksLabel': 'Main duties',
   'staff.badge.shuseki': 'Chief of Staff',
   'staff.copy.shuseki': 'Oversees and coordinates every staff officer, and supports the commander in making decisions.',
@@ -2825,7 +2842,7 @@ function gateConfidential(e, url) {
   function load(i) {
     if (i >= files.length) return;
     var s = document.createElement('script');
-    s.src = base + files[i] + '?v=20260919b';
+    s.src = base + files[i] + '?v=20260930a';
     s.onload = function () { load(i + 1); };
     s.onerror = function () { root.classList.add('is-fallback'); };
     document.body.appendChild(s);
