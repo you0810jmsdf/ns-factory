@@ -784,6 +784,78 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .modal-cta.card-buy:disabled { background: #d8dee8; border-color: #d8dee8; color: #667085; cursor: not-allowed; }
     .card-buy-note { margin: -2px 0 4px; font-size: 12px; line-height: 1.6; color: #667085; }
     .card-buy-note[hidden] { display: none; }
+    /* ===== 購入者からの声（2026-09-29）。voiceComment/voiceVideoIdがある作品だけボタンが出る ===== */
+    .modal-cta.voice-cta { background: #1f1a14; border-color: #c9a96e; color: #f3e3bf; }
+    .customer-voice-panel {
+      margin-top: 10px;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: 1px solid #c9a96e;
+      background: #1a1510;
+    }
+    /* ⛔ display を指定したクラスは [hidden] を必ず添えること（hidden属性がdisplay指定に負ける罠。hub_frontend_verify.md） */
+    .customer-voice-panel[hidden] { display: none; }
+    .customer-voice-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .customer-voice-eyebrow {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #c9a96e;
+    }
+    .customer-voice-close {
+      flex-shrink: 0;
+      border: 0;
+      background: transparent;
+      color: #f3e3bf;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+    .customer-voice-close:hover { color: #c9a96e; }
+    .customer-voice-title {
+      margin: 2px 0 10px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .customer-voice-video-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 220px;
+      aspect-ratio: 9 / 16;
+      margin: 0 auto 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #000;
+    }
+    .customer-voice-video-wrap[hidden] { display: none; }
+    .customer-voice-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .customer-voice-date {
+      font-size: 12px;
+      font-weight: 700;
+      color: #c9a96e;
+      margin-bottom: 6px;
+    }
+    .customer-voice-comment {
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #f3e3bf;
+    }
     .card-paid-toast {
       position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 3000;
       width: min(560px, calc(100% - 24px)); display: flex; gap: 10px; align-items: flex-start;
@@ -1385,6 +1457,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
           <!-- 型紙SVG（svg1/svg2）が登録済みの作品でだけ表示される。判定は openWork 時に非同期で行う。 -->
           <button id="texture-sim-cta" class="modal-cta secondary" type="button" hidden data-i18n="modal.textureSim">🎨 革の色を変えて試す</button>
+          <!-- 購入者からの声（2026-09-29 追加）。voiceComment/voiceVideoId のどちらかがある作品だけ出る。
+               表示はお名前・購入先を出さず評価コメントと日付のみ（事業主決定）。 -->
+          <button id="customer-voice-cta" class="modal-cta secondary voice-cta" type="button" hidden data-i18n="modal.customerVoice">💬 購入者の声を見る</button>
+        </div>
+
+        <!-- 押すとその場で開く開閉パネル。別の作品を開いたら configureCustomerVoice が必ず閉じてiframeを外す。 -->
+        <div id="customer-voice-panel" class="customer-voice-panel" hidden>
+          <div class="customer-voice-head">
+            <p class="customer-voice-eyebrow">Customer Voice</p>
+            <button id="customer-voice-close" class="customer-voice-close" type="button" aria-label="閉じる">×</button>
+          </div>
+          <h3 class="customer-voice-title" data-i18n="modal.customerVoiceTitle">購入者からの声</h3>
+          <div id="customer-voice-video-wrap" class="customer-voice-video-wrap" hidden>
+            <iframe id="customer-voice-video" class="customer-voice-video" src="" title="購入者からの声（動画）" allow="autoplay; fullscreen" allowfullscreen></iframe>
+          </div>
+          <div id="customer-voice-date" class="customer-voice-date"></div>
+          <div id="customer-voice-comment" class="customer-voice-comment"></div>
         </div>
 
         <div class="oc-widget">
@@ -1521,6 +1610,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'modal.share': '🔗 Copy the link to this piece',
     'modal.shareCopied': '✓ Copied (ready to paste on SNS)',
     'modal.textureSim': '🎨 Try different leather colors',
+    'modal.customerVoice': '💬 See customer voice',
+    'modal.customerVoiceTitle': 'Customer voice',
     'modal.ocTrigger': '💬 Order consultation AI (ask about leather types & colors)',
     'modal.ocTriggerActive': '💬 Consulting with the order AI',
     'modal.prev': 'Prev',
@@ -2163,6 +2254,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       applyModalRankBadge(work);
       resetOrderChat(work);
       refreshTextureSimCta(work); // 型紙SVGがある作品だけCTAを出す（非同期・判定後に現れる）
+      configureCustomerVoice(work); // 購入者の声（voiceComment/voiceVideoId）を持つ作品だけボタンを出し、パネルは必ず閉じておく
       modal.classList.add('open');
       closeModal.focus();
       try {
@@ -2443,6 +2535,62 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (e.key === 'Escape' && textureSimOverlay.classList.contains('open')) closeTextureSim();
     });
 
+    // ===== 購入者からの声（2026-09-29）。voiceComment/voiceVideoId は商品データ側が用意する。
+    //       表示はお名前・購入先を出さず、評価コメントと日付のみ（事業主決定）。 =====
+    const customerVoiceCta = document.getElementById('customer-voice-cta');
+    const customerVoicePanel = document.getElementById('customer-voice-panel');
+    const customerVoiceClose = document.getElementById('customer-voice-close');
+    const customerVoiceVideoWrap = document.getElementById('customer-voice-video-wrap');
+    const customerVoiceVideo = document.getElementById('customer-voice-video');
+    const customerVoiceDate = document.getElementById('customer-voice-date');
+    const customerVoiceComment = document.getElementById('customer-voice-comment');
+
+    // "YYYY-MM-DD" → "2026年9月29日"。形式が違えば空文字（無理に表示しない）。
+    function formatVoiceDate(ymd) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymd || '').trim());
+      if (!m) return '';
+      return `${Number(m[1])}年${Number(m[2])}月${Number(m[3])}日`;
+    }
+
+    // パネルを閉じ、動画iframeを必ず外す（src=''）。閉じた後も再生が続くのを防ぐため。
+    function closeCustomerVoicePanel() {
+      if (!customerVoicePanel) return;
+      customerVoicePanel.hidden = true;
+      if (customerVoiceVideo) customerVoiceVideo.src = '';
+      if (customerVoiceVideoWrap) customerVoiceVideoWrap.hidden = true;
+    }
+
+    // openWork のたびに呼ぶ。ボタンの表示可否を決め、前の作品のパネルは必ず閉じておく。
+    function configureCustomerVoice(work) {
+      if (!customerVoiceCta) return;
+      closeCustomerVoicePanel();
+      const hasVoice = !!(work && (work.voiceComment || work.voiceVideoId));
+      customerVoiceCta.hidden = !hasVoice;
+    }
+
+    function openCustomerVoicePanel(work) {
+      if (!work || !customerVoicePanel) return;
+      if (customerVoiceDate) customerVoiceDate.textContent = formatVoiceDate(work.voiceDate);
+      // innerHTML にしない（改行はCSSのwhite-space:pre-wrapで保持する。コメントに書かれたHTMLをそのまま実行させないため）
+      if (customerVoiceComment) customerVoiceComment.textContent = work.voiceComment || '';
+      if (work.voiceVideoId && customerVoiceVideo && customerVoiceVideoWrap) {
+        customerVoiceVideo.src = 'https://drive.google.com/file/d/' + encodeURIComponent(work.voiceVideoId) + '/preview';
+        customerVoiceVideoWrap.hidden = false;
+      } else if (customerVoiceVideoWrap) {
+        customerVoiceVideoWrap.hidden = true;
+      }
+      customerVoicePanel.hidden = false;
+    }
+
+    if (customerVoiceCta) {
+      customerVoiceCta.addEventListener('click', () => {
+        if (customerVoicePanel && !customerVoicePanel.hidden) { closeCustomerVoicePanel(); return; }
+        logProductAction(activeWork, '購入者の声を表示');
+        openCustomerVoicePanel(activeWork);
+      });
+    }
+    if (customerVoiceClose) customerVoiceClose.addEventListener('click', closeCustomerVoicePanel);
+
     // 「確定」を押したら、選んだ革色をそのままオーダー相談AIへ引き継ぐ（2026-08-05 事業主指示）。
     // chat-widget.js 側にも同名メッセージのリスナーがあるが、あちらは自前のオーバーレイが
     // 開いているときだけ処理するため、ここで受けても二重には動かない。
@@ -2535,15 +2683,15 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     });
 
     search.addEventListener('input', render);
-    closeModal.addEventListener('click', () => { exitVideoMode(); modal.classList.remove('open'); });
+    closeModal.addEventListener('click', () => { exitVideoMode(); closeCustomerVoicePanel(); modal.classList.remove('open'); });
     prevPhoto.addEventListener('click', () => { activeIndex -= 1; updateModal(); });
     nextPhoto.addEventListener('click', () => { activeIndex += 1; updateModal(); });
     modal.addEventListener('click', (event) => {
-      if (event.target === modal) { exitVideoMode(); modal.classList.remove('open'); }
+      if (event.target === modal) { exitVideoMode(); closeCustomerVoicePanel(); modal.classList.remove('open'); }
     });
     window.addEventListener('keydown', (event) => {
       if (!modal.classList.contains('open')) return;
-      if (event.key === 'Escape') { exitVideoMode(); modal.classList.remove('open'); }
+      if (event.key === 'Escape') { exitVideoMode(); closeCustomerVoicePanel(); modal.classList.remove('open'); }
       if (event.key === 'ArrowLeft') { activeIndex -= 1; updateModal(); }
       if (event.key === 'ArrowRight') { activeIndex += 1; updateModal(); }
     });
