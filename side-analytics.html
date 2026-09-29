@@ -64,7 +64,7 @@ body.auth-locked .wrap{display:none}
 
 <div class="topbar">
   <h1>📊 副業サイト アクセス解析</h1>
-  <div class="meta">毎月1日 8:00 に先月分を自動で集計（Cloudflare Web Analytics・Cookieなし）。数字は副業サイト側に保存され、このページには書き込んでいません。</div>
+  <div class="meta">毎朝 8:00 に今月の1日〜前日を自動で集計（月の途中は途中経過・1日の朝に先月分が確定。Cloudflare Web Analytics・Cookieなし）。数字は副業サイト側に保存され、このページには書き込んでいません。</div>
 </div>
 
 <div class="wrap">
@@ -84,7 +84,7 @@ body.auth-locked .wrap{display:none}
     <div class="panel">
       <h2>月を選ぶ <select id="monthSel" aria-label="表示する月"></select>
         <span class="meta" id="collectedMeta"></span>
-        <button type="button" id="recollectBtn" style="margin-left:auto" onclick="recollect()">先月分を集め直す</button>
+        <button type="button" id="recollectBtn" style="margin-left:auto" onclick="recollect()">今月分を集め直す（前日まで）</button>
       </h2>
       <div class="tiles" id="tiles"></div>
     </div>
@@ -215,7 +215,7 @@ async function recollect() {
   } catch (e) {
     alert('通信に失敗しました。もう一度押してください。');
   } finally {
-    btn.disabled = false; btn.textContent = '先月分を集め直す';
+    btn.disabled = false; btn.textContent = '今月分を集め直す（前日まで）';
   }
 }
 
@@ -306,13 +306,14 @@ function niceStep(max) {
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
 }
 
-// 1日〜月末までを埋める（閲覧0の日も棒の位置を空ける）
+// 集計した最初の日〜最後の日を埋める（閲覧0の日も棒の位置を空ける）。途中経過の月は前日まで・最初の月は開始日から
 function fillDays(m) {
   const [yy, mm] = m.month.split('-').map(Number);
-  const last = new Date(yy, mm, 0).getDate();
+  const first = m.from ? +m.from.slice(8) : 1;
+  const last = m.through ? +m.through.slice(8) : new Date(yy, mm, 0).getDate();
   const byDate = new Map((m.days || []).map((d) => [d.date, d]));
   const out = [];
-  for (let d = 1; d <= last; d++) {
+  for (let d = first; d <= last; d++) {
     const k = `${m.month}-${String(d).padStart(2, '0')}`;
     out.push(byDate.get(k) || { date: k, views: 0, visits: 0 });
   }
@@ -327,7 +328,7 @@ function render() {
     report.hidden = true; empty.hidden = false;
     const last = data && data.lastRun;
     document.getElementById('emptyMsg').textContent =
-      '集計は毎月1日 8:00 に先月分を自動で行います。最初は 2026年11月1日 に10月分を集計します（9月は自分たちの閲覧がほとんどのため集計しません）。' +
+      '毎朝 8:00 に、今月の1日から前日までを自動で集計します（月の途中は途中経過、1日の朝に先月分が確定）。最初は 2026年10月1日の朝に 9/30 の1日分を集計します（9/29 は自分たちの閲覧がほとんどのため集計しません）。' +
       (last && last.error ? `　前回の集計で失敗：${last.error}` : '');
     return;
   }
@@ -357,7 +358,9 @@ function renderMonth() {
   const i = months.findIndex((m) => m.month === ym);
   const m = months[i], prev = months[i + 1];
   const days = fillDays(m);
-  const diff = (a, b) => (b && b > 0) ? `先月比 ${a >= b ? '+' : ''}${((a - b) / b * 100).toFixed(0)}%` : '先月のデータなし';
+  const md = (s) => `${+s.slice(5, 7)}/${+s.slice(8)}`;
+  const diff = (a, b) => m.partial ? `途中経過（${md(m.through)}まで）`
+    : (prev && !prev.partial && b > 0) ? `先月比 ${a >= b ? '+' : ''}${((a - b) / b * 100).toFixed(0)}%` : '先月のデータなし';
   const best = days.reduce((a, d) => (d.views > (a ? a.views : -1) ? d : a), null);
   document.getElementById('tiles').innerHTML = [
     ['閲覧数（ページが開かれた回数）', fmt(m.views), diff(m.views, prev && prev.views)],
@@ -365,7 +368,9 @@ function renderMonth() {
     ['1日あたりの閲覧', fmt(Math.round(m.views / days.length)), `${days.length}日で平均`],
     ['いちばん多かった日', best && best.views ? best.date.slice(5).replace('-', '/') : '—', best && best.views ? `閲覧 ${fmt(best.views)}` : '']
   ].map(([k, v, d]) => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="d">${esc(d)}</div></div>`).join('');
-  document.getElementById('collectedMeta').textContent = (m.collectedAt ? `集計 ${new Date(m.collectedAt).toLocaleString('ja-JP')}` : '') +
+  document.getElementById('collectedMeta').textContent =
+    (m.from && m.through ? `${md(m.from)}〜${md(m.through)}${m.partial ? '（途中経過・毎朝8時に更新）' : '（確定）'}　` : '') +
+    (m.collectedAt ? `集計 ${new Date(m.collectedAt).toLocaleString('ja-JP')}` : '') +
     (m.estimated ? '　※アクセスの多い日を含むため、Cloudflare の概算値が入っています' : '') +
     (m.note ? `　※${m.note}` : '');
 
