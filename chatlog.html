@@ -218,6 +218,34 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
 .live-row.ctx pre{white-space:pre-wrap;word-break:break-word;margin:6px 0 0;font-family:inherit;font-size:12px;max-height:30vh;overflow-y:auto}
 .live-input{display:flex;gap:8px;margin-top:8px;align-items:flex-end}
 .live-input textarea{flex:1;min-width:0;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;padding:8px;font-size:14px;font-family:inherit;resize:vertical}
+/* 📚 ナレッジ候補（2026-09-30）: AIの下書きをボタンで採用・修正・不採用 */
+.kn-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.kn-head .spacer{flex:1}
+.kn-sec{margin:14px 0 6px;font-size:13px;color:#9aa4af;font-weight:bold}
+.kn-card{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.kn-card.done{opacity:.55}
+.kn-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.kn-id{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#79c0ff}
+.kn-type{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid #30363d;background:#161b22;color:#c9d1d9}
+.kn-type.ask{color:#f0b429;border-color:#8a5a10;background:#3a2408}
+.kn-type.case{color:#4ade80;border-color:#2ea043;background:#12331f}
+.kn-type.fb{color:#79c0ff;border-color:#1f6feb;background:#0d2438}
+.kn-type.tidy{color:#d2a8ff;border-color:#8957e5;background:#2d1b3d}
+.kn-when{font-size:11px;color:#6e7681}
+.kn-quote{font-size:12.5px;line-height:1.7;color:#9aa4af;margin:4px 0;white-space:pre-wrap;word-break:break-word}
+.kn-quote b{color:#e6edf3;font-weight:normal}
+.kn-fields{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;align-items:start;margin:8px 0}
+.kn-fields label{font-size:12px;color:#9aa4af;padding-top:7px}
+.kn-fields input,.kn-fields textarea,.kn-answer{width:100%;box-sizing:border-box;background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}
+.kn-fields textarea,.kn-answer{resize:vertical;min-height:52px;line-height:1.6}
+.kn-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.kn-actions .status{font-size:12px;color:#9aa4af}
+.kn-actions .status.ok{color:#4ade80}
+.kn-actions .status.ng{color:#f85149}
+.kn-empty{color:#6e7681;font-size:13px;padding:10px 0}
+.kn-add{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.kn-add input{flex:1;min-width:220px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit}
+@media(max-width:600px){.kn-fields{grid-template-columns:1fr}.kn-fields label{padding-top:0}}
 </style>
 </head>
 <body class="auth-locked">
@@ -230,6 +258,7 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
     <button class="src-btn" type="button" data-src="ai" role="tab">🤖 幕僚キャラ接客</button>
     <button class="src-btn" type="button" data-src="visitor" role="tab">👥 みんなのチャット</button>
     <button class="src-btn" type="button" data-src="archive" role="tab">📦 月次アーカイブ</button>
+    <button class="src-btn" type="button" data-src="knowledge" role="tab">📚 ナレッジ候補</button>
   </div>
   <span class="updated" id="updatedAt">読み込み前</span>
 </div>
@@ -259,6 +288,27 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
     </div>
   </div>
 
+
+  <!-- 📚 ナレッジ候補（2026-09-30）: オーダー進捗GAS knowledge.js が作るAIの下書きを、ボタンで採用・修正・不採用にする。
+       採用すると GAS が GitHub の hearing-kb.json（追加知識）／hearing-cases.json（事例・Q&A）へ書き、数分でAIに届く。
+       通知メールの #knowledge で直接このタブが開く。メール返信でも同じことができる（knProcessReplies）。 -->
+  <div class="panel" id="knPanel" hidden>
+    <h2>📚 ナレッジ候補 <span class="sub">AIが作った下書きを、採用・修正・不採用で知識に育てる</span></h2>
+    <div class="kn-head">
+      <button class="btn sub live-mini" type="button" id="knShowAll">済んだ候補も表示: OFF</button>
+      <span class="spacer"></span>
+      <span class="kn-when" id="knUpdated"></span>
+      <button class="btn sub live-mini" type="button" id="knRefreshBtn">更新</button>
+    </div>
+    <div id="knList"><div class="kn-empty">読み込み中…</div></div>
+    <div class="kn-sec">✍️ 先に答えを用意したい質問を登録（お客様に聞かれる前に）</div>
+    <div class="kn-add">
+      <input type="text" id="knAddQ" placeholder="例: 持ち込みのリングは使えますか" autocomplete="off">
+      <button class="btn sub live-mini" type="button" id="knAddBtn">候補に追加</button>
+      <span class="kn-actions"><span class="status" id="knAddStatus"></span></span>
+    </div>
+    <p class="note">採用した内容は公開ファイルに入ります（事例カードにお客様の名前・連絡先は入れないでください）。追加知識は6,000字が上限で、超えるときは「整理案」を先に採用してください。候補の履歴はスプレッドシート「オーダー進捗」の「ナレッジ候補」シートにあります。</p>
+  </div>
 
   <div class="filters">
     <div class="f live-only"><label for="fFrom">開始日</label><input type="date" id="fFrom"></div>
@@ -562,8 +612,17 @@ function setRange(kind) {
 // タブに応じてフィルタ欄の出し分けをする
 function applySrcUI() {
   const isArchive = currentSrc === 'archive';
+  const isKn = currentSrc === 'knowledge';
   document.querySelectorAll('.live-only').forEach(el => { el.style.display = isArchive ? 'none' : ''; });
   document.querySelectorAll('.archive-only').forEach(el => { el.style.display = isArchive ? '' : 'none'; });
+  // 📚 ナレッジ候補タブは一覧・絞り込み・KPI・ライブ対応を隠し、候補パネルだけを出す（2026-09-30）
+  document.getElementById('knPanel').hidden = !isKn;
+  ['livePanel'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = isKn ? 'none' : ''; });
+  document.querySelectorAll('.filters, .kpis').forEach(el => { el.style.display = isKn ? 'none' : ''; });
+  const listPanel = document.getElementById('tbody').closest('.panel');
+  if (listPanel) listPanel.style.display = isKn ? 'none' : '';
+  const bdPanel = document.getElementById('bdTitle').closest('.panel');
+  if (isKn && bdPanel) bdPanel.style.display = 'none';
 }
 
 // 月次アーカイブ: 保存済みの月一覧を取り、選択中の月・系統の中身を表示する
@@ -639,6 +698,11 @@ async function load() {
   applySrcUI();
   renderMonthlyQuota();   // 当月件数のアラートはログ取得を待たずに出す（GASが遅い日でも見えるように）
   document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">読み込み中…</td></tr>';
+
+  if (currentSrc === 'knowledge') {
+    try { await knLoad(); } catch (e) { showLoadError(String(e.message || e)); } finally { btn.disabled = false; }
+    return;
+  }
 
   if (currentSrc === 'orders') {
     try {
@@ -1181,7 +1245,142 @@ function liveInit() {
   // 通知メールのリンク（#live=<相談ID>）から来たら、その相談を開く
   const m = /[#&]live=([A-Za-z0-9_-]{6,64})/.exec(location.hash || '');
   if (m) liveOpen(m[1]);
+  // ナレッジのメール（#knowledge）から来たら「📚 ナレッジ候補」タブを開く（2026-09-30）
+  if (/#knowledge/.test(location.hash || '')) { const kb = document.querySelector('.src-btn[data-src="knowledge"]'); if (kb) kb.click(); }
 }
+
+// ================================================================
+// 📚 ナレッジ候補（2026-09-30 事業主決定A）
+//   オーダー進捗GAS knowledge.js の候補（作家の回答待ち／指摘候補／整理案／事例カード下書き）を
+//   ボタンで採用・修正して採用・不採用にする。GAS 側は knowledgeApply（POST・管理キー）。
+//   反映先: 回答→hearing-cases.json faq／事例→hearing-cases.json cases／反映→hearing-kb.json extraKnowledge。
+//   ⛔ 採用時に送る edit は画面の入力欄そのまま。GAS が種別ごとに許した項目だけ受け取り、メール・電話番号を除いてから使う。
+// ================================================================
+const KN_GAS = SOURCES.orders.url;
+const KN_TYPE = { ask: '作家の回答待ち', fb: '指摘候補', tidy: '追加知識の整理案', case: '事例カード下書き' };
+let knRows = [];
+let knShowAll = false;
+function knPost(body) {
+  return fetch(KN_GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(Object.assign({ key: getKey() }, body)) })
+    .then(r => r.text()).then(t => { if (!t.trim().startsWith('{')) throw new Error('gas_unavailable'); return JSON.parse(t); });
+}
+async function knLoad() {
+  const list = document.getElementById('knList');
+  list.innerHTML = '<div class="kn-empty">読み込み中…</div>';
+  const d = await knPost({ action: 'knowledgeCandidates' });
+  if (!d.ok) throw new Error(d.error === 'unauthorized' ? 'unauthorized' : (d.error || '不明なエラー'));
+  knRows = d.candidates || [];
+  document.getElementById('knUpdated').textContent = new Date().toLocaleString('ja-JP') + ' 時点・候補 ' + knRows.filter(c => c.status === '候補').length + '件';
+  document.getElementById('updatedAt').innerHTML = new Date().toLocaleString('ja-JP') + ' 時点<br>ナレッジ候補：' + knRows.filter(c => c.status === '候補').length + '件';
+  knRender();
+}
+function knField(label, key, val, multi) {
+  return '<label>' + esc(label) + '</label>' + (multi
+    ? '<textarea data-k="' + key + '" rows="2">' + esc(val) + '</textarea>'
+    : '<input type="text" data-k="' + key + '" value="' + esc(val) + '">');
+}
+function knRender() {
+  const list = document.getElementById('knList');
+  const rowsToShow = knRows.filter(c => knShowAll || c.status === '候補');
+  if (!rowsToShow.length) { list.innerHTML = '<div class="kn-empty">' + (knShowAll ? '候補はまだありません。' : '未処理の候補はありません。毎朝06:30と月曜07:10にAIが下書きを作ります。') + '</div>'; return; }
+  const order = ['ask', 'case', 'fb', 'tidy'];
+  let html = '';
+  order.forEach(type => {
+    const xs = rowsToShow.filter(c => c.type === type);
+    if (!xs.length) return;
+    html += '<div class="kn-sec">' + esc(KN_TYPE[type] || type) + '（' + xs.length + '件）</div>';
+    xs.forEach(c => {
+      const p = c.proposal || {};
+      const done = c.status !== '候補';
+      html += '<div class="kn-card' + (done ? ' done' : '') + '" data-id="' + esc(c.id) + '" data-type="' + esc(c.type) + '">';
+      html += '<div class="kn-top"><span class="kn-id">' + esc(c.id) + '</span><span class="kn-type ' + esc(c.type) + '">' + esc(KN_TYPE[c.type] || c.type) + '</span>'
+        + '<span class="kn-when">' + esc(c.srcDt || c.created || '') + (done ? '　' + esc(c.status) + (c.result ? '（' + esc(c.result) + '）' : '') : '') + '</span></div>';
+      if (c.type === 'ask') {
+        html += '<div class="kn-quote"><b>質問:</b> ' + esc(p.question || c.q) + '</div>';
+        if (c.q && c.q !== p.question) html += '<div class="kn-quote"><b>お客様の言葉:</b> 「' + esc(c.q) + '」</div>';
+        if (c.r) html += '<div class="kn-quote"><b>AIの回答:</b> ' + esc(c.r.slice(0, 200)) + (c.r.length > 200 ? '…' : '') + '</div>';
+        if (!done) html += '<textarea class="kn-answer" rows="3" placeholder="作家としての回答文（次回から同じ質問にAIがこのとおり答えます）"></textarea>';
+        else if (c.status === '反映済') html += '<div class="kn-quote"><b>反映済</b></div>';
+      } else if (c.type === 'case') {
+        html += '<div class="kn-fields">'
+          + knField('題', 'title', p.title || '') + knField('要望', 'request', p.request || '', true) + knField('提案', 'proposal', p.proposal || '', true)
+          + knField('仕様', 'spec', p.spec || '', true) + knField('金額帯', 'priceBand', p.priceBand || '') + knField('納期', 'leadTime', p.leadTime || '')
+          + knField('教訓', 'lesson', p.lesson || '', true) + knField('タグ', 'tags', (p.tags || []).join('・')) + '</div>';
+      } else if (c.type === 'fb') {
+        if (p.customer || c.q) html += '<div class="kn-quote"><b>場面:</b> ' + esc(p.customer || c.q) + '</div>';
+        if (p.problem || c.r) html += '<div class="kn-quote"><b>問題:</b> ' + esc(p.problem || c.r) + '</div>';
+        html += '<div class="kn-fields">' + knField('ルール', 'rule', p.rule || '', true) + '</div>';
+      } else if (c.type === 'tidy') {
+        html += '<div class="kn-quote">' + esc(c.q) + '（採用すると追加知識をこの全文で置き換えます）</div>';
+        html += '<div class="kn-fields"><label>整理後の全文</label><textarea data-k="text" rows="12">' + esc(p.text || '') + '</textarea></div>';
+      }
+      if (!done) {
+        html += '<div class="kn-actions">'
+          + '<button class="btn live-mini" type="button" data-act="adopt">✅ 採用' + (c.type === 'ask' ? '（回答を覚えさせる）' : c.type === 'case' ? '（事例として公開）' : '') + '</button>'
+          + '<button class="btn sub live-mini" type="button" data-act="reject">✕ 不採用</button>'
+          + '<span class="status"></span></div>';
+      }
+      html += '</div>';
+    });
+  });
+  list.innerHTML = html;
+  list.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => knAct(b)));
+  // 入力欄を直したら「採用」を「修正して採用」に変える（何が起きるか分かるように）
+  list.querySelectorAll('.kn-fields input, .kn-fields textarea').forEach(el => el.addEventListener('input', () => {
+    const btn = el.closest('.kn-card').querySelector('[data-act="adopt"]');
+    if (btn && !/修正/.test(btn.textContent)) btn.textContent = '✅ 修正して採用';
+  }));
+}
+async function knAct(btn) {
+  const card = btn.closest('.kn-card');
+  const id = card.dataset.id, type = card.dataset.type, act = btn.dataset.act;
+  const status = card.querySelector('.status');
+  const cmd = act === 'reject' ? '却下' : type === 'ask' ? '回答' : type === 'case' ? '事例' : '反映';
+  let text = '', edit = null;
+  if (cmd === '回答') {
+    text = (card.querySelector('.kn-answer') || {}).value || '';
+    if (!text.trim()) { status.textContent = '回答文を入れてください'; status.className = 'status ng'; return; }
+  }
+  if (act === 'adopt' && type !== 'ask') {
+    edit = {};
+    card.querySelectorAll('[data-k]').forEach(el => { edit[el.dataset.k] = el.value; });
+  }
+  if (act === 'reject' && !confirm(id + ' を不採用にします。知識には入りません。よろしいですか？')) return;
+  card.querySelectorAll('[data-act]').forEach(b => b.disabled = true);
+  status.textContent = '送信中…'; status.className = 'status';
+  try {
+    const d = await knPost({ action: 'knowledgeApply', id, cmd, text, edit });
+    if (!d.ok) throw new Error(d.error || '失敗');
+    status.textContent = '✔ ' + (d.result || '反映しました'); status.className = 'status ok';
+    const row = knRows.find(c => c.id === id);
+    if (row) { row.status = act === 'reject' ? '却下' : '反映済'; row.result = d.result || ''; }
+    setTimeout(knRender, 900);
+  } catch (e) {
+    status.textContent = '⚠️ ' + String(e.message || e); status.className = 'status ng';
+    card.querySelectorAll('[data-act]').forEach(b => b.disabled = false);
+  }
+}
+async function knAdd() {
+  const inp = document.getElementById('knAddQ');
+  const st = document.getElementById('knAddStatus');
+  const q = inp.value.trim();
+  if (!q) { st.textContent = '質問を入れてください'; st.className = 'status ng'; return; }
+  st.textContent = '送信中…'; st.className = 'status';
+  try {
+    const d = await knPost({ action: 'knowledgeAddCandidate', type: 'ask', q });
+    if (!d.ok) throw new Error(d.error || '失敗');
+    inp.value = '';
+    st.textContent = '✔ ' + d.id + ' を追加しました。上の一覧で回答を書いて採用してください'; st.className = 'status ok';
+    await knLoad();
+  } catch (e) { st.textContent = '⚠️ ' + String(e.message || e); st.className = 'status ng'; }
+}
+document.getElementById('knRefreshBtn').addEventListener('click', () => { knLoad().catch(e => showLoadError(String(e.message || e))); });
+document.getElementById('knAddBtn').addEventListener('click', knAdd);
+document.getElementById('knShowAll').addEventListener('click', () => {
+  knShowAll = !knShowAll;
+  document.getElementById('knShowAll').textContent = '済んだ候補も表示: ' + (knShowAll ? 'ON' : 'OFF');
+  knRender();
+});
 
 // ================================================================
 // イベント
