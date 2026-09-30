@@ -1260,9 +1260,21 @@ const KN_GAS = SOURCES.orders.url;
 const KN_TYPE = { ask: '作家の回答待ち', fb: '指摘候補', tidy: '追加知識の整理案', case: '事例カード下書き' };
 let knRows = [];
 let knShowAll = false;
-function knPost(body) {
-  return fetch(KN_GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(Object.assign({ key: getKey() }, body)) })
-    .then(r => r.text()).then(t => { if (!t.trim().startsWith('{')) throw new Error('gas_unavailable'); return JSON.parse(t); });
+// GAS は版の切り替え直後など、間欠的に JSON でなく HTML（404ページ）を返す。その場合だけ最大3回まで送り直す。
+// knowledgeApply は同じ候補に2回届いても「既に反映済」で止まるので、この再送で二重反映にはならない。
+// 通信断（fetch 自体の失敗）は再送しない（GAS に届いていた可能性があるため。届いていれば次の読み込みで反映済と出る）。
+async function knPost(body) {
+  if (!getKey()) throw new Error('ログインし直してください（管理者パスワードが見つかりません）');
+  const payload = JSON.stringify(Object.assign({ key: getKey() }, body));
+  let last = '';
+  for (let i = 0; i < 3; i++) {
+    const r = await fetch(KN_GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: payload });
+    const t = await r.text();
+    if (t.trim().startsWith('{')) return JSON.parse(t);
+    last = 'GASの応答がJSONではありません（HTTP ' + r.status + '）';
+    await new Promise(res => setTimeout(res, 1500 * (i + 1)));
+  }
+  throw new Error(last + '。しばらくして「更新」を押し、もう一度お試しください');
 }
 async function knLoad() {
   const list = document.getElementById('knList');
@@ -1354,10 +1366,12 @@ async function knAct(btn) {
     status.textContent = '✔ ' + (d.result || '反映しました'); status.className = 'status ok';
     const row = knRows.find(c => c.id === id);
     if (row) { row.status = act === 'reject' ? '却下' : '反映済'; row.result = d.result || ''; }
-    setTimeout(knRender, 900);
+    // 画面の印だけで済ませず、サーバーの状態を読み直して表示する（保存されていなければ候補のまま出る）
+    setTimeout(() => { knLoad().catch(() => knRender()); }, 900);
   } catch (e) {
-    status.textContent = '⚠️ ' + String(e.message || e); status.className = 'status ng';
+    status.textContent = '⚠️ 保存できませんでした: ' + String(e.message || e); status.className = 'status ng';
     card.querySelectorAll('[data-act]').forEach(b => b.disabled = false);
+    alert(id + ' を保存できませんでした。\n' + String(e.message || e));
   }
 }
 async function knAdd() {
