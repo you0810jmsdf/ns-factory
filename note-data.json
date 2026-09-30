@@ -1,15 +1,23 @@
 {
- "generatedAt": "2026-09-29T22:10:27",
+ "generatedAt": "2026-09-30T22:10:29",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 263,
+ "count": 264,
  "items": [
+  {
+   "title": "2026-09-30（水） - 相談機能の改善と新しい取り組みの準備",
+   "url": "https://note.com/you0810jmsdf/n/n068dae2977d4",
+   "date": "2026-09-30",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-30_ig.jpg",
+   "key": "n068dae2977d4",
+   "imageSource": "sns"
+  },
   {
    "title": "2026-09-29（火） - サイトデザイン刷新とバックアップの不具合",
    "url": "https://note.com/you0810jmsdf/n/n333fb247463c",
    "date": "2026-09-29",
-   "image": "https://assets.st-note.com/production/uploads/images/318934453/rectangle_large_type_2_4bc695d5184865a801d02ccec875f255.png?fit=bounds&quality=85&width=1280",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-29_ig.jpg",
    "key": "n333fb247463c",
-   "imageSource": "note"
+   "imageSource": "sns"
   },
   {
    "title": "2026-09-28（月） - 縦長動画とAI講座、そして突然の停電",
