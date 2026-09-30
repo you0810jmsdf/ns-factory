@@ -136,7 +136,7 @@ Mini6,m6n20,normal,通常リング,,20mm,20,black,ブラック,ブラック,TRUE
 Mini6,m6n25,normal,通常リング,,25mm,25,gold,ゴールド,ゴールド,TRUE,TRUE,271,,out_of_stock,0,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新
 Mini6,m6n25,normal,通常リング,,25mm,25,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,272,,out_of_stock,0,TRUE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新
 Mini6,m6n25,normal,通常リング,,25mm,25,black,ブラック,ブラック,TRUE,TRUE,273,,out_of_stock,0,TRUE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新
-Mini6,m6n30,normal,通常リング,,30mm,30,gold,ゴールド,ゴールド,TRUE,TRUE,274,,out_of_stock,0,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新
+Mini6,m6n30,normal,通常リング,,30mm,30,gold,ゴールド,ゴールド,TRUE,TRUE,274,,in_stock,5,FALSE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新・2026-09-29入荷5個（事業主報告2026-09-30）
 Mini6,m6n30,normal,通常リング,,30mm,30,pinkgold,ピンクゴールド,ピンクゴールド,TRUE,TRUE,275,1500,in_stock,4,FALSE,,FALSE,1500,1500,AliExpress,https://ja.aliexpress.com/item/1005005840680676.html,1036,,2026-09-27,AliExpress,https://ja.aliexpress.com/item/1005005840680676.html,1036,,2026-09-27,,,,,,,,,,,,,,,A7 Rose Gold 30mm・通常1036円(セール735円)×1.5で見積1500円・事業主決定2026-09-27・送料未確認
 Mini6,m6n30,normal,通常リング,,30mm,30,black,ブラック,ブラック,TRUE,TRUE,276,,out_of_stock,0,TRUE,,FALSE,,,,,,,,,,,,,,,,,,,,,,,,,,,欠品登録2026-09-04・未登録色を在庫記録できるよう追加・入荷時に在庫数/購入先/価格を更新
 A5,a5n26,normal,通常リング,,26mm,26,silver,シルバー,ニッケル,TRUE,TRUE,277,1168,in_stock,1,,,FALSE,,,AliExpress Alice Story Official Store,https://ja.aliexpress.com/item/32262037501.html,668,500,2026-09-08,,,,,,,,,,,,,,,,,,,,事業主の実在庫申告により追加2026-09-08
