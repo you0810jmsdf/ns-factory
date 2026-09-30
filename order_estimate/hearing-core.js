@@ -632,11 +632,77 @@
       '\n【注意】価格は「概算・目安」とし断定しない。在庫や最終仕様は職人が確認する前提で案内する。分からないことは正直に「職人に確認します」と答える。';
   }
 
+  /* ---------- 事例カード・作家回答済みQ&A（hearing-cases.json・2026-09-30） ----------
+     オーダー進捗GAS knowledge.js がナレッジ週報の返信で追記する公開ファイル。
+     全件を毎回AIに渡すと増えるほど費用と読み違いが増えるので、相談内容に近いものだけを選んで
+     system prompt の末尾に足す（selectRelevant → buildCasesSection）。
+     ⛔ ここに独自の知識を書かない。正本は hearing-cases.json。 */
+  function loadCases(url) {
+    return fetch(url, { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { return { cases: (j && Array.isArray(j.cases)) ? j.cases : [], faq: (j && Array.isArray(j.faq)) ? j.faq : [] }; })
+      .catch(function () { return { cases: [], faq: [] }; });
+  }
+  function casesNorm_(s) { return String(s || '').toLowerCase().replace(/[\s　、。，．,.!?！？「」『』（）()\[\]【】・\/／:：;；\-—–〜~*＊#]/g, ''); }
+  function casesBigrams_(s) {
+    var t = casesNorm_(s), set = {};
+    for (var i = 0; i + 1 < t.length; i++) set[t.substr(i, 2)] = true;
+    return set;
+  }
+  /* 会話（長い）に対して短いカードがどれだけ含まれているか＝containment。
+     Jaccard だと会話が長いほど薄まって拾えないため。タグの一致は別に加点する。 */
+  function casesScore_(convBigrams, convNorm, text, tags) {
+    var cb = casesBigrams_(text), n = 0, hit = 0;
+    for (var k in cb) { n++; if (convBigrams[k]) hit++; }
+    var contain = n ? hit / n : 0;
+    var th = 0, tn = 0;
+    (tags || []).forEach(function (t) { var x = casesNorm_(t); if (!x) return; tn++; if (convNorm.indexOf(x) >= 0) th++; });
+    var tagScore = tn ? th / tn : 0;
+    return 0.6 * contain + 0.4 * tagScore;
+  }
+  /* data: {cases, faq}。text: 会話全文。返り値 {cases:[...], faq:[...]}（選ばれたものだけ） */
+  function selectRelevant(data, text, opt) {
+    opt = opt || {};
+    var maxCases = opt.maxCases || 3, maxFaq = opt.maxFaq || 5, minScore = (opt.minScore != null) ? opt.minScore : 0.12;
+    var d = data || {}, cases = d.cases || [], faq = d.faq || [];
+    var convNorm = casesNorm_(text), cb = casesBigrams_(text);
+    var pickedCases = cases.map(function (c) {
+      return { c: c, s: casesScore_(cb, convNorm, [c.title, c.request, c.spec, c.proposal].join(' '), c.tags) };
+    }).filter(function (x) { return x.s >= minScore; }).sort(function (a, b) { return b.s - a.s; }).slice(0, maxCases).map(function (x) { return x.c; });
+    var pickedFaq;
+    if (faq.length <= 10) {
+      pickedFaq = faq.slice();   // 少ないうちは全部渡す（作家の回答はそのまま案内してよい確定情報のため）
+    } else {
+      pickedFaq = faq.map(function (f) { return { f: f, s: casesScore_(cb, convNorm, f.q + ' ' + f.a, []) }; })
+        .filter(function (x) { return x.s >= minScore; }).sort(function (a, b) { return b.s - a.s; }).slice(0, maxFaq).map(function (x) { return x.f; });
+    }
+    return { cases: pickedCases, faq: pickedFaq };
+  }
+  function buildCasesSection(sel) {
+    if (!sel) return '';
+    var out = '';
+    if (sel.faq && sel.faq.length) {
+      out += '\n【作家が答えたQ&A（確定情報。同じ質問にはこのとおり案内してよい。「職人に確認します」と言わない）】\n' +
+        sel.faq.map(function (f) { return 'Q: ' + f.q + '\nA: ' + f.a; }).join('\n') + '\n';
+    }
+    if (sel.cases && sel.cases.length) {
+      out += '\n【似た案件の事例（過去の実績。提案の参考にする。金額・納期は「以前の似た案件では」と目安として伝え、断定しない）】\n' +
+        sel.cases.map(function (c) {
+          return '・' + (c.title || '') + '｜要望: ' + (c.request || '') + '｜提案: ' + (c.proposal || '') + '｜仕様: ' + (c.spec || '') +
+            (c.priceBand ? '｜金額帯: ' + c.priceBand : '') + (c.leadTime ? '｜納期: ' + c.leadTime : '') + (c.lesson ? '｜教訓: ' + c.lesson : '');
+        }).join('\n') + '\n';
+    }
+    return out;
+  }
+
   window.NSF_HEARING = {
     DEFAULT_KB: DEFAULT_KB,
     mergeKB: mergeKB,
     loadKB: loadKB,
     loadLeathers: loadLeathers,
+    loadCases: loadCases,
+    selectRelevant: selectRelevant,
+    buildCasesSection: buildCasesSection,
     resolveTone: resolveTone,
     leathersByTone: leathersByTone,
     build: build,

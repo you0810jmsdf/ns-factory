@@ -1207,6 +1207,7 @@ function colorFamilies(){
    データ: stitch-colors.json（92色・画像はdata URI埋め込み）＋
    stitch-thread-stock.csv（thread_id, available=TRUE/FALSE）。 */
 let STITCH_COLORS=null; // [{id,name,image}]
+let CASES={cases:[],faq:[]};   // 事例カード・作家回答済みQ&A（hearing-cases.json・2026-09-30）
 let STITCH_STOCK=null;  // thread_id -> true/false（未収録は在庫あり扱い＝安全側）
 // 直前に開いたギャラリーの話題（'stitch'|'leather'）。「色のサンプルも確認したい」のような
 // 主語のない続き質問を、直前の話題に振り向けるために使う（2026-07-20）
@@ -1900,7 +1901,9 @@ async function liveTurn(userText, skipEcho){
     // 連絡先の中身は送らない（通知メールには記入の有無だけ載せる）。
     const hasContact = !!(document.getElementById('hr-contact-info')||{}).value?.trim()
                     && !!(document.getElementById('hr-contact-name')||{}).value?.trim();
-    const livePayload={ system:SYSTEM_PROMPT, history, model:'claude-sonnet-5', lang:(isEN()?'en':'ja'), sid:HEARING_SID, hasContact };
+    // 事例カード・作家回答済みQ&A（hearing-cases.json）のうち、この会話に近いものだけを足す（2026-09-30）
+    const casesSection = NSF_HEARING.buildCasesSection(NSF_HEARING.selectRelevant(CASES, history.map(h=>h.content).join('\n')));
+    const livePayload={ system:SYSTEM_PROMPT + casesSection, history, model:'claude-sonnet-5', lang:(isEN()?'en':'ja'), sid:HEARING_SID, hasContact };
     if(pendingAIImages.length){
       livePayload.images=pendingAIImages.slice();
       pendingAIImages=[]; // 1回送ったらクリア（失敗時も再送しない＝有料枠・トークンの浪費防止を優先）
@@ -2058,9 +2061,11 @@ Promise.all([
   NSF_HEARING.loadLeathers('./leather-catalog.json'),
   loadLeatherStockMap(),
   loadStitchColors(),
-  loadStitchStock()
-]).then(([kb, leathers, stockMap, stitchColors, stitchStock])=>{
+  loadStitchStock(),
+  NSF_HEARING.loadCases('./hearing-cases.json')   // 事例カード・作家回答済みQ&A（読めなければ空・2026-09-30）
+]).then(([kb, leathers, stockMap, stitchColors, stitchStock, cases])=>{
   KB=kb;
+  CASES=cases;
   CORE=NSF_HEARING.build(KB, leathers, coreOpts());
   PRODUCTS=CORE.PRODUCTS;
   COMMON_TAIL=CORE.COMMON_TAIL;
