@@ -1518,6 +1518,7 @@ let draggedSlideIndex = null;
 let drivePhotoLoading = false;
 let worksCatalog = [];
 let worksCatalogPromise = null;
+let liveWorksPromise = null;
 let currentWork = null;
 let lastRecordingBlob = null;
 let lastRecordingMeta = null;
@@ -3161,7 +3162,9 @@ async function loadWorksCatalog(){
       if(!isValidWorksData(data)) throw new Error('静的作品データが空です');
       const list = adoptWorksCatalog(data);
       // 裏で最新を取りに行き、取れたら静かに差し替える（失敗しても静的のまま使える）
-      loadJsonp(LIVE_WORKS_API)
+      // 登録直後の作品は静的データにまだ無い（再生成＋Pages反映に数十分）。
+      // 見つからないときに待てるよう Promise を残す（findWorkWithLiveFallback）
+      liveWorksPromise = loadJsonp(LIVE_WORKS_API)
         .then(live => { if(isValidWorksData(live)) adoptWorksCatalog(live); })
         .catch(() => {});
       return list;
@@ -3184,6 +3187,18 @@ async function loadWorksCatalog(){
       return [];
     });
   return worksCatalogPromise;
+}
+
+// 静的データで見つからなければ、最新データ（GAS）の到着を待って探し直す（2026-10-01）
+// 登録直後に「動画をつくる」から来ると、作品名「レザー作品」・説明文なしの台本で組まれていた
+// ⛔ 待つのは LIVE_WORKS_WAIT_MS まで。GAS不調時に写真の読み込みまで止めないため
+const LIVE_WORKS_WAIT_MS = 20000;
+async function findWorkWithLiveFallback(finder){
+  await loadWorksCatalog();
+  const found = finder();
+  if(found || !liveWorksPromise) return found;
+  await Promise.race([liveWorksPromise, new Promise(resolve => setTimeout(resolve, LIVE_WORKS_WAIT_MS))]);
+  return finder();
 }
 
 function normalizeWorkItem(item){
@@ -3253,8 +3268,7 @@ function populateDriveWorkPicker(){
 }
 
 async function applyWorkInfoFromDriveData(data, workNo){
-  await loadWorksCatalog();
-  const work = findWorkForDriveData(data, workNo);
+  const work = await findWorkWithLiveFallback(() => findWorkForDriveData(data, workNo));
   if(!work) return null;
   applyWorkInfo(work, {translate:false, showLog:false});
   return work;
@@ -3390,8 +3404,7 @@ async function syncWorkFromNumber({showLog = true} = {}){
     updateDriveWorkInfo(null, '');
     return null;
   }
-  await loadWorksCatalog();
-  const work = findWorkByNumber(normalized);
+  const work = await findWorkWithLiveFallback(() => findWorkByNumber(normalized));
   syncDriveWorkSelectToNumber();
   updateDriveWorkInfo(work, normalized);
   if(work){
