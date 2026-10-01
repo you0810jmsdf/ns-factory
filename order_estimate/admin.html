@@ -815,6 +815,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="staff-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">🖥 幕僚稼働</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="automations" data-admin-cat="keiei" role="tab" aria-selected="false">⏰ 定期実行</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="api-costs" data-admin-cat="keiei" role="tab" aria-selected="false">💴 API費用</button>
+      <button class="admin-tab-btn" type="button" data-admin-tab="backup-monitor" data-admin-cat="keiei" role="tab" aria-selected="false">💾 バックアップ</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="youtube-stats" data-admin-cat="keiei" role="tab" aria-selected="false">🎬 講座動画</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="sns-queue" data-admin-cat="keiei" role="tab" aria-selected="false">📮 SNS予約</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="sns-trend" data-admin-cat="keiei" role="tab" aria-selected="false">📈 SNSトレンド</button>
@@ -946,6 +947,25 @@ tr.row-out-stock td{
         src="about:blank"
         style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#0d1117"
         title="API費用"
+        loading="lazy"></iframe>
+    </div>
+
+    <!-- バックアップタブ（2026-10-01 事業主決定A）: B2バックアップ状況アプリ /backup-monitor/ をそのまま表示。数字は公開リポジトリに置かず専用GAS（キー確認）経由 -->
+    <div class="panel backup-monitor-section admin-section-hidden" id="backupMonitorPanel">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="font-size:11px;color:#8a6a4a">PC → Backblaze B2 の夜間バックアップの状況と夜ごとの履歴。旧PCが5分ごとに送信。認証は本画面と共通・自動ログイン</div>
+        <a href="../backup-monitor/" target="_blank" rel="noopener"
+           style="margin-left:auto;background:#fff3e0;border:1px solid #eadccf;border-radius:999px;padding:6px 12px;font-size:12px;color:#8B5E3C;text-decoration:none">
+          🔗 別タブで開く
+        </a>
+      </div>
+      <!-- 初回タブ表示時に setAdminTab() が src を遅延セット -->
+      <iframe
+        id="backupMonitorFrame"
+        data-src="../backup-monitor/"
+        src="about:blank"
+        style="width:100%;height:80vh;min-height:600px;border:1px solid #eadccf;border-radius:8px;background:#111"
+        title="バックアップ状況"
         loading="lazy"></iframe>
     </div>
 
@@ -6503,7 +6523,7 @@ async function saveJhcsStudent() {
 }
 
 const ADMIN_TAB_TO_CAT = {
-  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'merge': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'youtube-stats': 'keiei', 'sns-trend': 'keiei', 'side-analytics': 'keiei', 'sns-queue': 'keiei', 'jhcs-dl': 'keiei', 'structure-map': 'keiei',
+  'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'merge': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'backup-monitor': 'keiei', 'youtube-stats': 'keiei', 'sns-trend': 'keiei', 'side-analytics': 'keiei', 'sns-queue': 'keiei', 'jhcs-dl': 'keiei', 'structure-map': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
   'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics',
@@ -6532,6 +6552,7 @@ function setAdminTab(tab) {
   const isStaffMonitor = tab === 'staff-monitor';
   const isAutomations = tab === 'automations';
   const isApiCosts = tab === 'api-costs';
+  const isBackupMonitor = tab === 'backup-monitor';
   const isYoutubeStats = tab === 'youtube-stats';
   const isSnsTrend = tab === 'sns-trend';
   const isSideAnalytics = tab === 'side-analytics';
@@ -6541,7 +6562,7 @@ function setAdminTab(tab) {
   const isWaitlist = tab === 'waitlist';
   const isFavorites = tab === 'favorites';
   const isStructureMap = tab === 'structure-map';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap && !isMerge;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isBackupMonitor && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap && !isMerge;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -6608,6 +6629,9 @@ function setAdminTab(tab) {
   document.querySelectorAll('.api-costs-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isApiCosts);
   });
+  document.querySelectorAll('.backup-monitor-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isBackupMonitor);
+  });
   document.querySelectorAll('.youtube-stats-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isYoutubeStats);
   });
@@ -6636,7 +6660,7 @@ function setAdminTab(tab) {
     el.classList.toggle('admin-section-hidden', !isFavorites);
   });
   document.querySelectorAll('.github-publish-panel').forEach(el => {
-    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isToolstats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites || isApiCosts || isSnsTrend);
+    el.classList.toggle('admin-section-hidden', isCalendar || isAnalytics || isStats || isToolstats || isThreadsSns || isCustomers || isSales || isReceiptChecklist || isStaffMonitor || isJhcsDl || isWaitlist || isFavorites || isApiCosts || isBackupMonitor || isSnsTrend);
   });
   document.querySelectorAll('.ring-publish-action').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isRing);
@@ -6742,6 +6766,8 @@ function setAdminTab(tab) {
       ? '幕僚エージェントの稼働セッション数・さぼり警告・期限超過タスクを監視します。リアルタイム詳細（作業内容・完了操作）は自宅PCのローカルモニタから。'
       : isApiCosts
       ? 'Google Cloud（プロジェクト creators-map）の今月の費用推定です。AI日記の画像生成枚数から計算し、予算¥1,000に届く日と月末の見込みを出します。'
+      : isBackupMonitor
+      ? 'PC → Backblaze B2 の夜間バックアップの状況です。旧PCの起動係が5分ごとに送る最新の状況と、夜ごとの結果の履歴を表示します。'
       : isSnsTrend
       ? "週次で集計したSNSトレンドのレポートです。トレンド要約・N's factoryへの示唆・推奨アクション・収集記事を週ごとに確認できます。"
       : isChatlog
@@ -6785,6 +6811,13 @@ function setAdminTab(tab) {
     const acFrame = document.getElementById('apiCostsFrame');
     if (acFrame && acFrame.src.indexOf('api-costs.html') === -1 && acFrame.dataset.src) {
       acFrame.src = acFrame.dataset.src;
+    }
+  }
+  if (isBackupMonitor) {
+    // 初回表示時のみ src をセット（認証は同じタブの nsf_admin_key をアプリ側が読む）
+    const bmFrame = document.getElementById('backupMonitorFrame');
+    if (bmFrame && bmFrame.src.indexOf('backup-monitor') === -1 && bmFrame.dataset.src) {
+      bmFrame.src = bmFrame.dataset.src;
     }
   }
   if (isYoutubeStats) {
