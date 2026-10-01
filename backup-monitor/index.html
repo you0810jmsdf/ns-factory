@@ -85,6 +85,7 @@
   <div class="eyebrow">Offsite Backup</div>
   <h1>バックアップ状況<span id="badge" class="badge" hidden></span></h1>
   <div class="sub" id="sub">PC → Backblaze B2（暗号化・一方向コピー）</div>
+  <div class="muted" id="loadingMsg" style="font-size:13px;margin:8px 0 16px">読み込み中…（GASの応答に数十秒かかることがあります）</div>
 
   <!-- 合言葉（このPCは自動。スマホは1回入れれば覚える） -->
   <section id="login" class="login panel" hidden>
@@ -200,13 +201,22 @@
   function currentKey() { return ss('nsf_admin_key') || ls('nsf_admin_remember_key') || ls(LOCAL_KEY); }
 
   function showLogin(msg) {
+    $('loadingMsg').hidden = true;
     $('app').hidden = true; $('login').hidden = false;
     $('loginErr').textContent = msg || '';
   }
 
   // GASは200でもHTMLを返すことがある（間欠障害）。読み取り専用なので、HTML・非200のときだけ取り直す
+  // 1回の通信は45秒で打ち切って取り直す（GASが100秒以上返さないことがあった・2026-10-01）
   function getJson(url, tries) {
-    return fetch(url, { credentials: 'omit', cache: 'no-store' })
+    var ac = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ac ? setTimeout(function () { ac.abort(); }, 45000) : null;
+    return fetch(url, { credentials: 'omit', cache: 'no-store', signal: ac ? ac.signal : undefined })
+      .catch(function (e) {
+        if (ac && ac.signal.aborted && tries > 1) return { text: function () { return Promise.resolve('<timeout>'); }, status: 0 };
+        throw e;
+      })
+      .finally(function () { if (timer) clearTimeout(timer); })
       .then(function (r) { return r.text().then(function (t) { return { status: r.status, text: t }; }); })
       .then(function (res) {
         if (res.status === 200 && res.text.charAt(0) !== '<') return JSON.parse(res.text);
@@ -244,6 +254,7 @@
   }
 
   function render(d, offlineNote) {
+    $('loadingMsg').hidden = true;
     $('login').hidden = true; $('app').hidden = false;
     var L = d.latest || {};
     var H = (d.history || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
@@ -525,8 +536,13 @@
   document.addEventListener('visibilitychange', function () { if (!document.hidden && currentKey()) load(currentKey()); });
   setInterval(function () { if (!document.hidden && currentKey()) load(currentKey()); }, 5 * 60 * 1000);
 
+  // 前回読み込んだ内容があれば先に出し、裏で最新を読み込む（GASが遅いときも画面が空にならないように）
   var k0 = currentKey();
-  if (k0) load(k0); else showLogin();
+  if (k0) {
+    var c0 = null; try { c0 = JSON.parse(ls(CACHE_KEY) || 'null'); } catch (x) {}
+    if (c0 && c0.data) render(c0.data, ago((Date.now() - c0.at) / 60000) + '前に取得した内容です。最新を読み込んでいます…');
+    load(k0);
+  } else showLogin();
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function () {});
 })();
