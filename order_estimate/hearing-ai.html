@@ -361,7 +361,7 @@ const ORDER_PROGRESS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy
    ⛔ 連絡先・入力した文章は送らない。送るのは滞在秒・端末の種類・来た場所・押したボタン名だけ。
    ⛔ 事業主の端末（管理者として覚えさせたPC）と自動操作（Playwright等）からは送らない。
       動作確認は URL に ?nsf_visit_test=1 を付けると送られ、メール件名に【テスト】が付き、集計からは外れる。 */
-const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent: false };
+const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent: false, test: false };
 (function setupVisitBeacon(){
   let test = false, skip = false;
   try { test = new URLSearchParams(location.search).get('nsf_visit_test') === '1'; } catch(e){}
@@ -404,7 +404,7 @@ const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent
       from: fromLabel(),
       acts: VISIT.acts,
       lang: (typeof isEN === 'function' && isEN()) ? 'en' : 'ja',
-      test: test
+      test: test || VISIT.test   // 工房へ送った内容がテスト受付なら印を付ける（2026-10-01 事業主決定C）
     });
     try {
       const ok = navigator.sendBeacon && navigator.sendBeacon(ORDER_PROGRESS_GAS_URL, new Blob([body], { type: 'text/plain' }));
@@ -1555,7 +1555,7 @@ function submitToOrderProgress(prod, hearingContent, textureSimulation, client, 
     body:JSON.stringify(Object.assign({ action:'submitChatOrder', client:client||'', contact:contact||'', item:prod.name, hearingContent, images, rid }, fields))
   }).then(r=>r.json()).then(res=>{
     removeSendingMsg(pending);
-    if(res.ok){ VISIT.submitted=true; state.orderNo=res.orderNo;
+    if(res.ok){ VISIT.submitted=true; if(res.test) VISIT.test=true; state.orderNo=res.orderNo;
       addMsg('bot','📨 工房へお送りしました（受付番号: '+res.orderNo+'）。\n職人が仕様を確認して、'+(contact||'ご連絡先')+' へ正式なお見積り・制作のご案内をお送りします。\n控えは「📄 PDFで保存」から残せます。ありがとうございました🙇'); }
     else { addMsg('bot','⚠️ 工房への送信に失敗しました：'+(res.error||'不明なエラー')+'\nお手数ですが、下のボタンで発注票をコピーし、メールかLINEでお送りください。'); offerCopyFallback(); }
   }).catch(()=>{
@@ -1660,6 +1660,7 @@ function sendLiveConsultation(){
     if(res.ok){
       liveConsultSent=true;
       VISIT.submitted=true;   // 相談窓口の訪問記録: 工房へ送った（2026-09-18）
+      if(res.test) VISIT.test=true;   // テスト受付なら訪問記録にもテストの印（集計から外す・2026-10-01）
       addMsg('bot', isEN()
         ? T('live.sentMsg','').replace('{no}', res.orderNo)
         : '📨 ご相談内容と画像を工房へお送りしました（受付番号: '+res.orderNo+'）。職人が確認してご案内いたします。');
