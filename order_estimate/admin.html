@@ -6541,7 +6541,7 @@ function setAdminTab(tab) {
   const isWaitlist = tab === 'waitlist';
   const isFavorites = tab === 'favorites';
   const isStructureMap = tab === 'structure-map';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap && !isMerge;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
