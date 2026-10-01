@@ -248,7 +248,8 @@
     // 全体の進み具合
     $('pct').textContent = L.pct != null ? L.pct : '―';
     $('pctBar').style.width = Math.min(100, Number(L.pct) || 0) + '%';
-    $('amount').textContent = (L.storedGB != null ? L.storedGB + ' GB / ' + L.totalGB + ' GB' : '') + (L.storedCount ? '（' + num(L.storedCount) + ' 件）' : '');
+    $('amount').textContent = L.storedGB != null ? 'OneDrive分：PC側 ' + L.totalGB + ' GB に対し B2 ' + L.storedGB + ' GB' + (L.storedCount ? '（' + num(L.storedCount) + ' 件）' : '') +
+      (L.storedGB > L.totalGB ? '。B2の方が多いのは、PC側で消したファイルもB2には残す方式（コピー）のためです。' : '') : '';
     var live = $('live');
     live.hidden = !(L.running && L.liveLine);
     live.textContent = L.running && L.liveLine ? 'いま転送中: ' + L.liveLine : '';
@@ -256,7 +257,8 @@
     // 要点
     var kv = [
       ['最後に実行', L.lastRun], ['次回の予定', L.nextRun], ['自動実行の状態', L.taskState], ['前回の結果', L.lastResultText],
-      ['転送する時間帯', '0:00〜7:00（日中は止める）'], ['B2の測定時刻', L.measuredAt], ['今の月額の目安', L.costYen != null ? '約 ' + num(L.costYen) + ' 円' : '―'],
+      ['転送する時間帯', '0:00〜7:00（日中は止める）'], ['B2の測定時刻', L.measuredAt],
+      ['B2の保管量（全体）', L.bucketGB != null ? L.bucketGB + ' GB（' + num(L.bucketCount) + ' 件）' : '―'], ['今の月額の目安', L.costYen != null ? '約 ' + num(L.costYen) + ' 円' : '―'],
       ['転送プロセス', L.generatedAt ? (L.running ? '稼働中' : '停止') : '―']
     ];
     $('kv').innerHTML = kv.map(function (p) { return '<dl class="kv"><dt>' + esc(p[0]) + '</dt><dd>' + esc(p[1] || '―') + '</dd></dl>'; }).join('');
