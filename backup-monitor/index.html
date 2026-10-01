@@ -77,6 +77,10 @@
   .hit button, .req a.btn { padding:7px 12px; font-size:12px; white-space:nowrap; text-decoration:none; display:inline-block; }
   .hit button.armed { background:var(--ng); color:#fff; }
   .hit .dir { color:var(--accent); }
+  .crumbs { font-size:13px; margin:2px 0 6px; line-height:1.9; word-break:break-all; }
+  .crumbs a, .hit a.enter { color:var(--accent); text-decoration:none; cursor:pointer; }
+  .crumbs a:hover, .hit a.enter:hover { text-decoration:underline; }
+  .crumbs b { color:var(--text); font-weight:600; }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -156,8 +160,9 @@
         <span class="muted" style="font-size:12px" id="indexInfo"></span>
       </div>
       <div id="searchBox" hidden>
-        <input type="search" id="searchInput" placeholder="ファイル名・フォルダ名（空白で区切ると全部を含むもの）" autocomplete="off"
+        <input type="search" id="searchInput" placeholder="名前で探す（空のときは下のフォルダから選ぶ）" autocomplete="off"
                style="width:100%;padding:11px;font-size:16px;border-radius:6px;border:1px solid var(--line);background:#000;color:var(--text)">
+        <div id="treeView" style="margin-top:10px"></div>
         <div id="searchResult" style="margin-top:10px"></div>
       </div>
     </div>
@@ -395,8 +400,9 @@
           });
           idx = { paths: paths, lower: paths.map(function (p) { return p.toLowerCase(); }), sizes: sizes, times: times, at: d.at, count: paths.length };
           $('indexInfo').textContent = num(paths.length) + ' 件・' + String(d.at).slice(5).replace('-', '/') + ' 時点の一覧';
+          buildTree(); cwd = '';
           $('searchBox').hidden = false; $('loadIndex').hidden = true;
-          $('searchInput').focus();
+          renderTree();
         });
       })
       .catch(function (e) { $('indexInfo').textContent = e.message; })
@@ -406,7 +412,8 @@
   function search() {
     if (!idx) return;
     var terms = $('searchInput').value.toLowerCase().split(/[\s　]+/).filter(Boolean);
-    if (!terms.length) { $('searchResult').innerHTML = ''; return; }
+    if (!terms.length) { $('searchResult').innerHTML = ''; $('treeView').hidden = false; renderTree(); return; }
+    $('treeView').hidden = true;
     var hits = [], folders = {}, nf = 0;
     for (var i = 0; i < idx.lower.length; i++) {
       var lp = idx.lower[i], okAll = true;
@@ -435,9 +442,53 @@
     if (hits.length >= 100) $('searchResult').insertAdjacentHTML('beforeend', '<div class="muted" style="font-size:12px;margin-top:6px">多いので先頭100件だけ出しています。言葉を足して絞ってください。</div>');
   }
 
-  function hitRow(kind, path, size, extra) {
+  // ── フォルダから選ぶ（2026-10-01 事業主指示「フォルダ名がわからない」）─────────────
+  // 一覧から フォルダごとの合計（大きさ・件数）・下のフォルダ・直下のファイル をまとめて作る（このページの中だけ）
+  var tree = null, cwd = '';
+  var TOP_NOTE = { 'OneDrive': 'OneDrive のファイル', 'PC': 'PC環境（Claude・Codex の設定、git の本体など）', '_generations': '上書きされる前の旧版（日付ごと）' };
+  function buildTree() {
+    var dirs = { '': { size: 0, count: 0, kids: {} } }, files = { '': [] };
+    for (var i = 0; i < idx.paths.length; i++) {
+      var p = idx.paths[i], sz = idx.sizes[i], parent = '', pos = 0, cut;
+      dirs[''].size += sz; dirs[''].count++;
+      while ((cut = p.indexOf('/', pos)) > 0) {
+        var f = p.slice(0, cut), node = dirs[f];
+        if (!node) { node = dirs[f] = { size: 0, count: 0, kids: {} }; dirs[parent].kids[f] = 1; files[f] = []; }
+        node.size += sz; node.count++;
+        parent = f; pos = cut + 1;
+      }
+      files[parent].push(i);
+    }
+    tree = { dirs: dirs, files: files };
+  }
+  function leafOf(path) { return path.slice(path.lastIndexOf('/') + 1); }
+  function renderTree() {
+    if (!tree) return;
+    if (!tree.dirs[cwd]) cwd = '';
+    var node = tree.dirs[cwd];
+    var parts = cwd ? cwd.split('/') : [];
+    var crumbs = '<div class="crumbs">' + (cwd ? '<a data-enter="">B2（全体）</a>' : '<b>B2（全体）</b>');
+    parts.forEach(function (name, i) {
+      var full = parts.slice(0, i + 1).join('/');
+      crumbs += ' › ' + (i === parts.length - 1 ? '<b>' + esc(name) + '</b>' : '<a data-enter="' + esc(full) + '">' + esc(name) + '</a>');
+    });
+    crumbs += '<span class="muted" style="font-size:12px">　' + num(node.count) + ' 件・' + fmtSize(node.size) + '</span></div>';
+    var kids = Object.keys(node.kids).sort(function (a, b) { return leafOf(a).localeCompare(leafOf(b), 'ja'); });
+    var html = kids.map(function (f) {
+      var d = tree.dirs[f], note = cwd ? '' : (TOP_NOTE[leafOf(f)] ? '・' + TOP_NOTE[leafOf(f)] : '');
+      return hitRow('dir', f, d.size, num(d.count) + ' 件' + note, leafOf(f));
+    }).join('');
+    var fl = (tree.files[cwd] || []).slice().sort(function (a, b) { return leafOf(idx.paths[a]).localeCompare(leafOf(idx.paths[b]), 'ja'); });
+    html += fl.slice(0, 300).map(function (i) { return hitRow('file', idx.paths[i], idx.sizes[i], String(idx.times[i]).slice(0, 16), leafOf(idx.paths[i])); }).join('');
+    if (fl.length > 300) html += '<div class="muted" style="font-size:12px;margin-top:6px">ファイルが ' + num(fl.length) + ' 件あるため、名前順の先頭300件だけ出しています。上の欄で名前を入れると絞れます。</div>';
+    if (!kids.length && !fl.length) html = '<div class="muted" style="font-size:13px">空のフォルダです</div>';
+    $('treeView').innerHTML = crumbs + html;
+  }
+
+  function hitRow(kind, path, size, extra, label) {
     var over = size > LIMIT;
-    return '<div class="hit"><span class="p' + (kind === 'dir' ? ' dir' : '') + '">' + (kind === 'dir' ? '📁 ' : '') + esc(path) +
+    var name = kind === 'dir' ? '<a class="enter" data-enter="' + esc(path) + '">📁 ' + esc(label || path) + '</a>' : (label ? '📄 ' : '') + esc(label || path);
+    return '<div class="hit"><span class="p' + (kind === 'dir' ? ' dir' : '') + '">' + name +
       '<small>' + esc(fmtSize(size)) + '・' + esc(extra) + '</small></span>' +
       (over ? '<span class="muted" style="font-size:11px;white-space:nowrap">2GB超</span>'
             : '<button type="button" data-kind="' + kind + '" data-path="' + esc(path) + '" data-size="' + size + '">取り出す</button>') + '</div>';
@@ -446,7 +497,14 @@
   $('loadIndex').addEventListener('click', loadIndex);
   var searchTimer = null;
   $('searchInput').addEventListener('input', function () { clearTimeout(searchTimer); searchTimer = setTimeout(search, 250); });
-  $('searchResult').addEventListener('click', function (e) {
+  $('searchBox').addEventListener('click', function (e) {
+    var en = e.target.closest('[data-enter]');
+    if (en) {   // フォルダへ入る（検索結果のフォルダを押したときもフォルダ表示に切り替える）
+      e.preventDefault(); cwd = en.getAttribute('data-enter');
+      $('searchInput').value = ''; $('searchResult').innerHTML = ''; $('treeView').hidden = false; renderTree();
+      $('treeView').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     var b = e.target.closest('button[data-path]'); if (!b) return;
     if (!b.classList.contains('armed')) {   // 2段押し（埋め込みブラウザでは confirm が出ないため）
       Array.prototype.forEach.call(document.querySelectorAll('.hit button.armed'), function (x) { x.classList.remove('armed'); x.textContent = '取り出す'; });
