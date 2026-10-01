@@ -70,6 +70,13 @@
   .login label { font-size:13px; color:var(--muted); display:flex; gap:8px; align-items:center; margin-bottom:14px; }
   .err { color:var(--ng); font-size:13px; min-height:1.4em; }
   footer { color:var(--muted); font-size:12px; margin-top:22px; line-height:1.9; }
+  .req, .hit { display:flex; gap:10px; align-items:flex-start; padding:9px 2px; border-bottom:1px solid var(--line); font-size:13px; }
+  .req .p, .hit .p { flex:1; min-width:0; word-break:break-all; }
+  .req .p small, .hit .p small { display:block; color:var(--muted); font-size:11px; margin-top:2px; }
+  .req .tag { font-size:11px; padding:2px 9px; border-radius:999px; color:#111; font-weight:600; white-space:nowrap; }
+  .hit button, .req a.btn { padding:7px 12px; font-size:12px; white-space:nowrap; text-decoration:none; display:inline-block; }
+  .hit button.armed { background:var(--ng); color:#fff; }
+  .hit .dir { color:var(--accent); }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -134,6 +141,24 @@
     <div class="panel">
       <h2>対象ごとの進み具合（B2の実測時点）</h2>
       <div class="rows" id="rows"></div>
+    </div>
+
+    <div class="panel" id="restorePanel">
+      <h2>B2から取り出す</h2>
+      <div class="muted" style="font-size:12px;line-height:1.7;margin-bottom:10px">
+        探して「取り出す」を押すと、旧PCが5分以内にB2から取り出し、Googleドライブ（Nsfactory／B2復元）に置きます。
+        同期が済むとここにリンクが出ます。1回2GBまで・置いたファイルは7日後にゴミ箱へ。B2側は読むだけで消しません。
+      </div>
+      <div id="reqList"></div>
+      <div class="toolbar" style="margin:12px 0 8px">
+        <button type="button" id="loadIndex">🔍 ファイルを探す</button>
+        <span class="muted" style="font-size:12px" id="indexInfo"></span>
+      </div>
+      <div id="searchBox" hidden>
+        <input type="search" id="searchInput" placeholder="ファイル名・フォルダ名（空白で区切ると全部を含むもの）" autocomplete="off"
+               style="width:100%;padding:11px;font-size:16px;border-radius:6px;border:1px solid var(--line);background:#000;color:var(--text)">
+        <div id="searchResult" style="margin-top:10px"></div>
+      </div>
     </div>
 
     <div class="panel">
@@ -306,7 +331,132 @@
     }).join('') : '<div class="muted">まだ履歴がありません</div>';
 
     $('result').textContent = L.resultText || '（まだありません）';
+    renderRequests(d);
   }
+
+  // ── B2から取り出す（2026-10-01）──────────────────────────────
+  var LIMIT = 2 * 1024 * 1024 * 1024;
+  var REQ_COLORS = { '待ち': 'var(--none)', '取り出し中': 'var(--run)', '同期待ち': 'var(--warn)', '完了': 'var(--ok)', '失敗': 'var(--ng)', '片付け済み': 'var(--none)' };
+  var REQ_NOTE = { '待ち': '旧PCが5分以内に受け取ります', '取り出し中': 'B2から取り出しています', '同期待ち': 'Googleドライブへ同期しています（数分）', '片付け済み': '7日たったのでゴミ箱へ移しました（もう一度取り出せます）' };
+  var idx = null;        // { paths, sizes, times, at, count }（このページを開いている間だけ・保存しない）
+  var pollTimer = null;
+
+  function fmtSize(b) {
+    b = Number(b) || 0;
+    if (b >= 1073741824) return (b / 1073741824).toFixed(2) + ' GB';
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b >= 1024) return Math.round(b / 1024) + ' KB';
+    return b + ' B';
+  }
+
+  function renderRequests(d) {
+    if (d.restoreLimit) LIMIT = Number(d.restoreLimit);
+    var R = d.requests || [];
+    $('indexInfo').textContent = d.indexAt ? '一覧 ' + d.indexAt.slice(5).replace('-', '/') + ' 時点' : (idx ? '' : '一覧はまだ届いていません（毎晩のバックアップ後に作られます）');
+    $('reqList').innerHTML = R.length ? R.slice(0, 10).map(function (r) {
+      var act = '';
+      if (r.status === '完了' && r.link) act = '<a class="btn" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + (r.kind === 'file' ? '⬇ ダウンロード' : '📁 ドライブで開く') + '</a>';
+      var note = r.status === '失敗' ? r.message : (REQ_NOTE[r.status] || '');
+      return '<div class="req"><span class="tag" style="background:' + (REQ_COLORS[r.status] || 'var(--none)') + '">' + esc(r.status) + '</span>' +
+        '<span class="p">' + (r.kind === 'dir' ? '📁 ' : '') + esc(r.path) + '<small>' + esc(fmtSize(r.size)) + '・' + esc(String(r.requestedAt).slice(5, 16)) + ' 依頼' + (note ? '・' + esc(note) : '') + '</small></span>' + act + '</div>';
+    }).join('') : '';
+    var active = R.some(function (r) { return r.status === '待ち' || r.status === '取り出し中' || r.status === '同期待ち'; });
+    clearTimeout(pollTimer);
+    if (active) pollTimer = setTimeout(function () { var k = currentKey(); if (k && !document.hidden) load(k); }, 60000);
+  }
+
+  function loadIndex() {
+    var k = currentKey(); if (!k) return showLogin();
+    if (typeof DecompressionStream === 'undefined') { $('indexInfo').textContent = 'このブラウザは一覧の読み込みに対応していません（Safari 16.4以降・Chrome・Edge で開いてください）'; return; }
+    $('loadIndex').disabled = true;
+    $('indexInfo').textContent = '一覧を読み込み中…（数MBあります）';
+    getJson(API + '?action=index&key=' + encodeURIComponent(k), 3)
+      .then(function (d) {
+        if (!d.ok) throw new Error(d.error === 'no_index' ? '一覧がまだ届いていません（毎晩のバックアップ後に作られます）' : (d.error || '読み込めませんでした'));
+        var bin = atob(d.gz); var u8 = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        var stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'));
+        return new Response(stream).text().then(function (txt) {
+          var paths = [], sizes = [], times = [];
+          txt.split('\n').forEach(function (line) {
+            if (!line) return;
+            var a = line.split('\t'); paths.push(a[0]); sizes.push(Number(a[1]) || 0); times.push(a[2] || '');
+          });
+          idx = { paths: paths, lower: paths.map(function (p) { return p.toLowerCase(); }), sizes: sizes, times: times, at: d.at, count: paths.length };
+          $('indexInfo').textContent = num(paths.length) + ' 件・' + String(d.at).slice(5).replace('-', '/') + ' 時点の一覧';
+          $('searchBox').hidden = false; $('loadIndex').hidden = true;
+          $('searchInput').focus();
+        });
+      })
+      .catch(function (e) { $('indexInfo').textContent = e.message; })
+      .finally(function () { $('loadIndex').disabled = false; });
+  }
+
+  function search() {
+    if (!idx) return;
+    var terms = $('searchInput').value.toLowerCase().split(/[\s　]+/).filter(Boolean);
+    if (!terms.length) { $('searchResult').innerHTML = ''; return; }
+    var hits = [], folders = {}, nf = 0;
+    for (var i = 0; i < idx.lower.length; i++) {
+      var lp = idx.lower[i], okAll = true;
+      for (var t = 0; t < terms.length; t++) if (lp.indexOf(terms[t]) < 0) { okAll = false; break; }
+      if (!okAll) continue;
+      if (hits.length < 100) hits.push(i);
+      // 名前が当たったフォルダも候補に（ファイルの親をたどり、フォルダの道のりだけで全部の言葉を含むもの）
+      var p = idx.paths[i], cut = p.lastIndexOf('/');
+      while (cut > 0 && nf < 30) {
+        var f = p.slice(0, cut), fl = f.toLowerCase(), fo = true;
+        for (var u = 0; u < terms.length; u++) if (fl.indexOf(terms[u]) < 0) { fo = false; break; }
+        if (!fo) break;
+        if (!folders[f]) { folders[f] = { size: 0, count: 0 }; nf++; }
+        cut = f.lastIndexOf('/');
+      }
+    }
+    var fkeys = Object.keys(folders).sort(function (a, b) { return a.length - b.length; }).slice(0, 15);
+    if (fkeys.length) {
+      for (var j = 0; j < idx.paths.length; j++) {
+        for (var q = 0; q < fkeys.length; q++) if (idx.paths[j].lastIndexOf(fkeys[q] + '/', 0) === 0) { folders[fkeys[q]].size += idx.sizes[j]; folders[fkeys[q]].count++; }
+      }
+    }
+    var html = fkeys.map(function (f) { return hitRow('dir', f, folders[f].size, num(folders[f].count) + ' 件'); }).join('') +
+      hits.map(function (i) { return hitRow('file', idx.paths[i], idx.sizes[i], String(idx.times[i]).slice(0, 16)); }).join('');
+    $('searchResult').innerHTML = html || '<div class="muted" style="font-size:13px">見つかりませんでした</div>';
+    if (hits.length >= 100) $('searchResult').insertAdjacentHTML('beforeend', '<div class="muted" style="font-size:12px;margin-top:6px">多いので先頭100件だけ出しています。言葉を足して絞ってください。</div>');
+  }
+
+  function hitRow(kind, path, size, extra) {
+    var over = size > LIMIT;
+    return '<div class="hit"><span class="p' + (kind === 'dir' ? ' dir' : '') + '">' + (kind === 'dir' ? '📁 ' : '') + esc(path) +
+      '<small>' + esc(fmtSize(size)) + '・' + esc(extra) + '</small></span>' +
+      (over ? '<span class="muted" style="font-size:11px;white-space:nowrap">2GB超</span>'
+            : '<button type="button" data-kind="' + kind + '" data-path="' + esc(path) + '" data-size="' + size + '">取り出す</button>') + '</div>';
+  }
+
+  $('loadIndex').addEventListener('click', loadIndex);
+  var searchTimer = null;
+  $('searchInput').addEventListener('input', function () { clearTimeout(searchTimer); searchTimer = setTimeout(search, 250); });
+  $('searchResult').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-path]'); if (!b) return;
+    if (!b.classList.contains('armed')) {   // 2段押し（埋め込みブラウザでは confirm が出ないため）
+      Array.prototype.forEach.call(document.querySelectorAll('.hit button.armed'), function (x) { x.classList.remove('armed'); x.textContent = '取り出す'; });
+      b.classList.add('armed'); b.textContent = 'もう一度押すと依頼'; return;
+    }
+    var k = currentKey(); if (!k) return showLogin();
+    b.disabled = true; b.textContent = '依頼中…';
+    var rid = 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    getJson(API + '?action=request&key=' + encodeURIComponent(k) + '&kind=' + b.dataset.kind + '&size=' + b.dataset.size +
+            '&path=' + encodeURIComponent(b.dataset.path) + '&rid=' + rid, 3)
+      .then(function (d) {
+        if (!d.ok) throw new Error(d.error === 'too_large' ? '2GBを超えています' : d.error === 'unauthorized' ? '合言葉が違います' : (d.error || '依頼できませんでした'));
+        b.textContent = d.already ? '依頼済み' : '依頼しました';
+        b.classList.remove('armed');
+        load(k);
+      })
+      .catch(function (e2) {   // alert は埋め込み表示で出ないためボタンに書く
+        b.classList.remove('armed'); b.textContent = '失敗：' + e2.message;
+        setTimeout(function () { b.disabled = false; b.textContent = '取り出す'; }, 5000);
+      });
+  });
 
   // 記録が始まって以降、直近n晩のうち夜間ログの無い日
   function missingNights(H, n) {
