@@ -182,6 +182,8 @@ body{
   color:#6b3a1f;
   background:transparent;
 }
+.admin-tab-link{ text-decoration:none; display:inline-block; }
+.admin-tab-link:hover{ background:rgba(107,58,31,.08); }
 .admin-tab-btn.active{
   color:#fff;
   background:#6b3a1f;
@@ -822,6 +824,8 @@ tr.row-out-stock td{
       <button class="admin-tab-btn" type="button" data-admin-tab="side-analytics" data-admin-cat="keiei" role="tab" aria-selected="false">📊 副業サイト</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="jhcs-dl" data-admin-cat="keiei" role="tab" aria-selected="false">🎓 JHCS講習DL管理</button>
       <button class="admin-tab-btn" type="button" data-admin-tab="structure-map" data-admin-cat="keiei" role="tab" aria-selected="false">🗺 構造マップ</button>
+      <!-- 家族アルバム（個人・2026-10-01）: Google ログインが要るので別タブで開く。data-admin-tab は付けない（タブ切替の対象外） -->
+      <a class="admin-tab-btn admin-tab-link" data-admin-cat="keiei" href="../kodomo-album/" target="_blank" rel="noopener" title="こども成長アルバム（家族用・別タブで開く）">👶 家族アルバム ↗</a>
       <!-- 📦 在庫管理 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ring" data-admin-cat="stock" role="tab" aria-selected="false">リング在庫</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="leather" data-admin-cat="stock" role="tab" aria-selected="false">🎨 革在庫</button>
