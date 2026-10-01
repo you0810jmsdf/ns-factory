@@ -1,7 +1,7 @@
 // バックアップ状況アプリ（2026-10-01）
 // 画面はネット優先（つながらないときだけ控えを出す）。GASのデータはキャッシュしない（画面側が前回分を持つ）。
 // ASSETS のファイルを変えたら CACHE の番号を上げること。
-const CACHE = 'backup-monitor-v4';
+const CACHE = 'backup-monitor-v5';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
