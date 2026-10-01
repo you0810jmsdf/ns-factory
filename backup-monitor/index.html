@@ -179,11 +179,21 @@
     $('loginErr').textContent = msg || '';
   }
 
+  // GASは200でもHTMLを返すことがある（間欠障害）。読み取り専用なので、HTML・非200のときだけ取り直す
+  function getJson(url, tries) {
+    return fetch(url, { credentials: 'omit', cache: 'no-store' })
+      .then(function (r) { return r.text().then(function (t) { return { status: r.status, text: t }; }); })
+      .then(function (res) {
+        if (res.status === 200 && res.text.charAt(0) !== '<') return JSON.parse(res.text);
+        if (tries > 1) return new Promise(function (ok) { setTimeout(ok, 1500); }).then(function () { return getJson(url, tries - 1); });
+        throw new Error('GASから正しい応答が返りませんでした');
+      });
+  }
+
   function load(key, fromLogin) {
     $('reload').disabled = true;
     $('fetched').textContent = '読み込み中…';
-    return fetch(API + '?action=get&key=' + encodeURIComponent(key), { credentials: 'omit', cache: 'no-store' })
-      .then(function (r) { return r.json(); })
+    return getJson(API + '?action=get&key=' + encodeURIComponent(key), 3)
       .then(function (d) {
         if (!d.ok) {
           if (d.error === 'unauthorized') {
