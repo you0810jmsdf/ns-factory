@@ -1555,7 +1555,7 @@ function submitToOrderProgress(prod, hearingContent, textureSimulation, client, 
     body:JSON.stringify(Object.assign({ action:'submitChatOrder', client:client||'', contact:contact||'', item:prod.name, hearingContent, images, rid }, fields))
   }).then(r=>r.json()).then(res=>{
     removeSendingMsg(pending);
-    if(res.ok){ VISIT.submitted=true; if(res.test) VISIT.test=true; state.orderNo=res.orderNo;
+    if(res.ok){ VISIT.submitted=true; if(res.test){ VISIT.test=true; markHearingTest(); } state.orderNo=res.orderNo;
       addMsg('bot','📨 工房へお送りしました（受付番号: '+res.orderNo+'）。\n職人が仕様を確認して、'+(contact||'ご連絡先')+' へ正式なお見積り・制作のご案内をお送りします。\n控えは「📄 PDFで保存」から残せます。ありがとうございました🙇'); }
     else { addMsg('bot','⚠️ 工房への送信に失敗しました：'+(res.error||'不明なエラー')+'\nお手数ですが、下のボタンで発注票をコピーし、メールかLINEでお送りください。'); offerCopyFallback(); }
   }).catch(()=>{
@@ -1660,7 +1660,9 @@ function sendLiveConsultation(){
     if(res.ok){
       liveConsultSent=true;
       VISIT.submitted=true;   // 相談窓口の訪問記録: 工房へ送った（2026-09-18）
-      if(res.test) VISIT.test=true;   // テスト受付なら訪問記録にもテストの印（集計から外す・2026-10-01）
+      // 「前回の続きから」で再開して、このページでは話さずに送った場合も AIと相談した訪問として数える（2026-10-01 事業主決定）
+      if(history.some(h=>h.role==='user')) VISIT.chatted=true;
+      if(res.test){ VISIT.test=true; markHearingTest(); }   // テスト受付なら訪問記録・AI相談の往復数の両方から外す（2026-10-01）
       addMsg('bot', isEN()
         ? T('live.sentMsg','').replace('{no}', res.orderNo)
         : '📨 ご相談内容と画像を工房へお送りしました（受付番号: '+res.orderNo+'）。職人が確認してご案内いたします。');
@@ -1745,6 +1747,12 @@ function toast(msg){
 /* =========================================================================
    ライブAIモード（GAS経由・APIキーはサーバー側のみで保持）
    ========================================================================= */
+/* 工房への送信がテスト受付と判定されたら、この相談（HEARING_SID）の往復を AI相談の集計から外すよう知らせる
+   （2026-10-01 事業主決定A・9/30 は本物らしい質問で試したテストの5往復がお客様の往復として数えられた）。
+   ⛔ 集計の印だけ。失敗しても相談は止めない。AIは呼ばないので費用はかからない。 */
+function markHearingTest(){
+  try{ fetch(HEARING_AI_PROXY_URL,{method:'POST',body:JSON.stringify({action:'markTest',sid:HEARING_SID}),keepalive:true}).catch(()=>{}); }catch(e){}
+}
 const HEARING_AI_PROXY_URL='https://script.google.com/macros/s/AKfycbwABbFeZucU9N4k8YyhIKbUUo3JUTGX0vXPBuuX0mSEqIpblyZFtf66w7lCB9R_xkCE-w/exec';
 
 document.getElementById('modeBtn').onclick=()=>{
