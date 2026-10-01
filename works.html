@@ -784,17 +784,48 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .modal-cta.card-buy:disabled { background: #d8dee8; border-color: #d8dee8; color: #667085; cursor: not-allowed; }
     .card-buy-note { margin: -2px 0 4px; font-size: 12px; line-height: 1.6; color: #667085; }
     .card-buy-note[hidden] { display: none; }
-    /* ===== 購入者からの声（2026-09-29）。voiceComment/voiceVideoIdがある作品だけボタンが出る ===== */
-    .modal-cta.voice-cta { background: #1f1a14; border-color: #c9a96e; color: #f3e3bf; }
+    /* ===== 購入者からの声（2026-09-29・10-01 紹介カードへ移設）。voiceComment/voiceVideoIdがある作品だけカードに札が出る ===== */
+    .badge-voice {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #c9a96e;
+      background: #1f1a14;
+      color: #f3e3bf;
+      font-size: 11px;
+      font-weight: 700;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+    .badge-voice:hover, .badge-voice:focus-visible { background: #c9a96e; color: #1f1a14; outline: none; }
+    /* 一覧の上に重ねる小窓。商品モーダル(.modal z-index:30)より上・相談チャット(4000)より下 */
+    .customer-voice-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: rgba(10, 16, 22, .78);
+    }
+    /* ⛔ display を指定したクラスは [hidden] を必ず添えること（hidden属性がdisplay指定に負ける罠。hub_frontend_verify.md） */
+    .customer-voice-overlay[hidden] { display: none; }
     .customer-voice-panel {
-      margin-top: 10px;
+      width: min(360px, 100%);
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
       padding: 14px;
       border-radius: var(--radius);
       border: 1px solid #c9a96e;
       background: #1a1510;
     }
-    /* ⛔ display を指定したクラスは [hidden] を必ず添えること（hidden属性がdisplay指定に負ける罠。hub_frontend_verify.md） */
-    .customer-voice-panel[hidden] { display: none; }
+    .customer-voice-work {
+      margin: -6px 0 10px;
+      font-size: 12px;
+      color: #c9a96e;
+      overflow-wrap: anywhere;
+    }
     .customer-voice-head {
       display: flex;
       align-items: center;
@@ -1457,23 +1488,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
           <!-- 型紙SVG（svg1/svg2）が登録済みの作品でだけ表示される。判定は openWork 時に非同期で行う。 -->
           <button id="texture-sim-cta" class="modal-cta secondary" type="button" hidden data-i18n="modal.textureSim">🎨 革の色を変えて試す</button>
-          <!-- 購入者からの声（2026-09-29 追加）。voiceComment/voiceVideoId のどちらかがある作品だけ出る。
-               表示はお名前・購入先を出さず評価コメントと日付のみ（事業主決定）。 -->
-          <button id="customer-voice-cta" class="modal-cta secondary voice-cta" type="button" hidden data-i18n="modal.customerVoice">💬 購入者の声を見る</button>
-        </div>
-
-        <!-- 押すとその場で開く開閉パネル。別の作品を開いたら configureCustomerVoice が必ず閉じてiframeを外す。 -->
-        <div id="customer-voice-panel" class="customer-voice-panel" hidden>
-          <div class="customer-voice-head">
-            <p class="customer-voice-eyebrow">Customer Voice</p>
-            <button id="customer-voice-close" class="customer-voice-close" type="button" aria-label="閉じる">×</button>
-          </div>
-          <h3 class="customer-voice-title" data-i18n="modal.customerVoiceTitle">購入者からの声</h3>
-          <div id="customer-voice-video-wrap" class="customer-voice-video-wrap" hidden>
-            <iframe id="customer-voice-video" class="customer-voice-video" src="" title="購入者からの声（動画）" allow="autoplay; fullscreen" allowfullscreen></iframe>
-          </div>
-          <div id="customer-voice-date" class="customer-voice-date"></div>
-          <div id="customer-voice-comment" class="customer-voice-comment"></div>
+          <!-- 購入者からの声は 2026-10-01 に紹介カードの札へ移した（詳細画面には出さない・事業主決定） -->
         </div>
 
         <div class="oc-widget">
@@ -1486,6 +1501,24 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <div class="modal-foot">
       <button id="prev-photo" class="modal-btn" type="button" data-i18n="modal.prev">前へ</button>
       <button id="next-photo" class="modal-btn" type="button" data-i18n="modal.next">次へ</button>
+    </div>
+  </div>
+
+  <!-- 購入者からの声（2026-09-29 新設・10-01 紹介カードの札から開く小窓に変更）。
+       表示はお名前・購入先を出さず評価コメントと日付のみ（事業主決定）。閉じたら必ず iframe を外す。 -->
+  <div id="customer-voice-overlay" class="customer-voice-overlay" role="dialog" aria-modal="true" aria-labelledby="customer-voice-title" hidden>
+    <div id="customer-voice-panel" class="customer-voice-panel">
+      <div class="customer-voice-head">
+        <p class="customer-voice-eyebrow">Customer Voice</p>
+        <button id="customer-voice-close" class="customer-voice-close" type="button" aria-label="閉じる">×</button>
+      </div>
+      <h3 id="customer-voice-title" class="customer-voice-title" data-i18n="modal.customerVoiceTitle">購入者からの声</h3>
+      <p id="customer-voice-work" class="customer-voice-work"></p>
+      <div id="customer-voice-video-wrap" class="customer-voice-video-wrap" hidden>
+        <iframe id="customer-voice-video" class="customer-voice-video" src="" title="購入者からの声（動画）" allow="autoplay; fullscreen" allowfullscreen></iframe>
+      </div>
+      <div id="customer-voice-date" class="customer-voice-date"></div>
+      <div id="customer-voice-comment" class="customer-voice-comment"></div>
     </div>
   </div>
 
@@ -1610,7 +1643,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'modal.share': '🔗 Copy the link to this piece',
     'modal.shareCopied': '✓ Copied (ready to paste on SNS)',
     'modal.textureSim': '🎨 Try different leather colors',
-    'modal.customerVoice': '💬 See customer voice',
+    'badge.customerVoice': '💬 Customer voice',
     'modal.customerVoiceTitle': 'Customer voice',
     'modal.ocTrigger': '💬 Order consultation AI (ask about leather types & colors)',
     'modal.ocTriggerActive': '💬 Consulting with the order AI',
@@ -1988,7 +2021,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
             : '<span class="thumb-placeholder">' + T('gallery.loadingPhoto', '写真を読み込み中') + '</span>'}
           <span class="card-body">
             ${work.id ? `<span class="work-id" data-id="${esc(work.id)}" onclick="copyWorkId(event, this)" title="クリックでIDをコピー">ID: ${esc(work.id)}</span>` : ''}
-            <span class="work-title">${esc(work.title)}${badge}${work.videos && work.videos.length ? '<span class="badge-video">🎬 動画</span>' : ''}</span>
+            <span class="work-title">${esc(work.title)}${badge}${work.videos && work.videos.length ? '<span class="badge-video">🎬 動画</span>' : ''}${hasCustomerVoice(work) ? '<span class="badge-voice" role="button" tabindex="0">' + T('badge.customerVoice', '💬 購入者の声') + '</span>' : ''}</span>
             <span class="work-details">
               ${compact([work.category, work.material, work.color]) ? `<span>${esc(compact([work.category, work.material, work.color]))}</span>` : ''}
               ${compact([work.size, formatPrice(work.price)]) ? `<span>${esc(compact([work.size, formatPrice(work.price)]))}</span>` : ''}
@@ -2254,7 +2287,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       applyModalRankBadge(work);
       resetOrderChat(work);
       refreshTextureSimCta(work); // 型紙SVGがある作品だけCTAを出す（非同期・判定後に現れる）
-      configureCustomerVoice(work); // 購入者の声（voiceComment/voiceVideoId）を持つ作品だけボタンを出し、パネルは必ず閉じておく
+      closeCustomerVoicePanel(); // 購入者の声の小窓が開いていたら閉じる（声はカードの札から開く・10-01）
       modal.classList.add('open');
       closeModal.focus();
       try {
@@ -2535,15 +2568,20 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (e.key === 'Escape' && textureSimOverlay.classList.contains('open')) closeTextureSim();
     });
 
-    // ===== 購入者からの声（2026-09-29）。voiceComment/voiceVideoId は商品データ側が用意する。
-    //       表示はお名前・購入先を出さず、評価コメントと日付のみ（事業主決定）。 =====
-    const customerVoiceCta = document.getElementById('customer-voice-cta');
-    const customerVoicePanel = document.getElementById('customer-voice-panel');
+    // ===== 購入者からの声（2026-09-29 新設・10-01 紹介カードの札から開く小窓へ移設）。
+    //       voiceComment/voiceVideoId は商品データ側が用意する。
+    //       表示はお名前・購入先を出さず、評価コメントと日付のみ（事業主決定）。詳細画面には出さない（10-01 事業主決定）。 =====
+    const customerVoiceOverlay = document.getElementById('customer-voice-overlay');
     const customerVoiceClose = document.getElementById('customer-voice-close');
+    const customerVoiceWork = document.getElementById('customer-voice-work');
     const customerVoiceVideoWrap = document.getElementById('customer-voice-video-wrap');
     const customerVoiceVideo = document.getElementById('customer-voice-video');
     const customerVoiceDate = document.getElementById('customer-voice-date');
     const customerVoiceComment = document.getElementById('customer-voice-comment');
+
+    function hasCustomerVoice(work) {
+      return !!(work && (work.voiceComment || work.voiceVideoId));
+    }
 
     // "YYYY-MM-DD" → "2026年9月29日"。形式が違えば空文字（無理に表示しない）。
     function formatVoiceDate(ymd) {
@@ -2552,24 +2590,17 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       return `${Number(m[1])}年${Number(m[2])}月${Number(m[3])}日`;
     }
 
-    // パネルを閉じ、動画iframeを必ず外す（src=''）。閉じた後も再生が続くのを防ぐため。
+    // 小窓を閉じ、動画iframeを必ず外す（src=''）。閉じた後も再生が続くのを防ぐため。
     function closeCustomerVoicePanel() {
-      if (!customerVoicePanel) return;
-      customerVoicePanel.hidden = true;
+      if (!customerVoiceOverlay) return;
+      customerVoiceOverlay.hidden = true;
       if (customerVoiceVideo) customerVoiceVideo.src = '';
       if (customerVoiceVideoWrap) customerVoiceVideoWrap.hidden = true;
     }
 
-    // openWork のたびに呼ぶ。ボタンの表示可否を決め、前の作品のパネルは必ず閉じておく。
-    function configureCustomerVoice(work) {
-      if (!customerVoiceCta) return;
-      closeCustomerVoicePanel();
-      const hasVoice = !!(work && (work.voiceComment || work.voiceVideoId));
-      customerVoiceCta.hidden = !hasVoice;
-    }
-
     function openCustomerVoicePanel(work) {
-      if (!work || !customerVoicePanel) return;
+      if (!hasCustomerVoice(work) || !customerVoiceOverlay) return;
+      if (customerVoiceWork) customerVoiceWork.textContent = displayVoiceWorkName(work);
       if (customerVoiceDate) customerVoiceDate.textContent = formatVoiceDate(work.voiceDate);
       // innerHTML にしない（改行はCSSのwhite-space:pre-wrapで保持する。コメントに書かれたHTMLをそのまま実行させないため）
       if (customerVoiceComment) customerVoiceComment.textContent = work.voiceComment || '';
@@ -2579,17 +2610,30 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       } else if (customerVoiceVideoWrap) {
         customerVoiceVideoWrap.hidden = true;
       }
-      customerVoicePanel.hidden = false;
+      customerVoiceOverlay.hidden = false;
+      if (customerVoiceClose) customerVoiceClose.focus();
     }
 
-    if (customerVoiceCta) {
-      customerVoiceCta.addEventListener('click', () => {
-        if (customerVoicePanel && !customerVoicePanel.hidden) { closeCustomerVoicePanel(); return; }
-        logProductAction(activeWork, '購入者の声を表示');
-        openCustomerVoicePanel(activeWork);
+    // 作品名の _ は空白にして読みやすく（SNS動画メーカーの見出しと同じ扱い）
+    function displayVoiceWorkName(work) {
+      return String(work.title || work.id || '').replace(/_/g, ' ');
+    }
+
+    // 声の動画は作品の紹介動画（「🎬 動画」「▶ 動画を見る」）から外す（10-01 事業主決定：紹介動画と声の動画を分ける）。
+    //   商品マスターV列の動画ID、または動画メーカーが付けるファイル名「購入者の声_…」で判定する
+    //   （作り直し前の古い声の動画がフォルダに残っていても紹介動画に混ざらないように）。
+    function isCustomerVoiceVideo(work, item) {
+      if (!item) return false;
+      if (work && work.voiceVideoId && item.videoId === work.voiceVideoId) return true;
+      return /^購入者の声_/.test(String(item.name || ''));
+    }
+
+    if (customerVoiceClose) customerVoiceClose.addEventListener('click', closeCustomerVoicePanel);
+    if (customerVoiceOverlay) {
+      customerVoiceOverlay.addEventListener('click', (event) => {
+        if (event.target === customerVoiceOverlay) closeCustomerVoicePanel();
       });
     }
-    if (customerVoiceClose) customerVoiceClose.addEventListener('click', closeCustomerVoicePanel);
 
     // 「確定」を押したら、選んだ革色をそのままオーダー相談AIへ引き継ぐ（2026-08-05 事業主指示）。
     // chat-widget.js 側にも同名メッセージのリスナーがあるが、あちらは自前のオーバーレイが
@@ -2672,6 +2716,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       const card = event.target.closest('.work-card');
       if (!card) return;
       const work = filtered[Number(card.dataset.index)];
+      // カードの「💬 購入者の声」札：詳細は開かず、声の小窓だけ開く（10-01 事業主決定）
+      if (event.target.closest('.badge-voice')) {
+        event.preventDefault();
+        logProductAction(work, '購入者の声を表示');
+        openCustomerVoicePanel(work);
+        return;
+      }
       if (!work.photosLoaded) {
         loadDrivePhotos(work).then(() => {
           if (work.photos.length) openWork(work);
@@ -2690,6 +2741,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (event.target === modal) { exitVideoMode(); closeCustomerVoicePanel(); modal.classList.remove('open'); }
     });
     window.addEventListener('keydown', (event) => {
+      // 購入者の声の小窓が開いていれば、Escape はそれだけを閉じる
+      if (customerVoiceOverlay && !customerVoiceOverlay.hidden) {
+        if (event.key === 'Escape') closeCustomerVoicePanel();
+        return;
+      }
+      // カードの札にフォーカスして Enter／Space を押したら声の小窓を開く（詳細は開かない）
+      const voiceBadge = event.target && event.target.closest && event.target.closest('.badge-voice');
+      if (voiceBadge && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        voiceBadge.click();
+        return;
+      }
       if (!modal.classList.contains('open')) return;
       if (event.key === 'Escape') { exitVideoMode(); closeCustomerVoicePanel(); modal.classList.remove('open'); }
       if (event.key === 'ArrowLeft') { activeIndex -= 1; updateModal(); }
@@ -3277,7 +3340,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           const items = Array.isArray(photos) ? photos.filter(Boolean) : [];
           // 動画（SNS動画メーカーでDrive保存したWebM等）は kind:'video' で届く
           work.videos = items
-            .filter((item) => item && item.kind === 'video' && item.videoId)
+            .filter((item) => item && item.kind === 'video' && item.videoId && !isCustomerVoiceVideo(work, item))
             .map((item) => ({ name: item.name || '', id: item.videoId }));
           const urls = items
             .filter((item) => !(item && item.kind === 'video'))
