@@ -173,6 +173,17 @@ a{color:inherit;text-decoration:none}
 .launch-btn:hover{background:var(--accent-dark)}
 .launch-status{font-size:12px;color:var(--muted);margin-top:6px;min-height:18px}
 
+/* カテゴリ別インデックス（各アプリカードへのアンカー）。固定ヘッダー分だけ飛び先をずらす */
+.idx{margin:0 0 40px;padding:20px 22px;background:var(--soft);border:1px solid var(--line);border-radius:var(--radius)}
+.idx-title{color:var(--accent-dark);font-size:11px;font-weight:800;letter-spacing:.14em;margin-bottom:14px}
+.idx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px 24px}
+.idx-head{display:block;font-size:13px;font-weight:800;color:var(--ink);padding-bottom:4px;margin-bottom:6px;border-bottom:2px solid var(--accent)}
+.idx-links{display:flex;flex-direction:column;gap:2px}
+.idx-links a{font-size:13px;color:var(--accent-dark);padding:3px 0}
+.idx-links a:hover,.idx-head:hover{text-decoration:underline}
+.tool-card[id^="app-"],.section-label[id^="cat-"]{scroll-margin-top:72px}
+html{scroll-behavior:smooth}
+
 @media(max-width:520px){
   .hero{padding:32px 18px 20px}
   .hero-portrait{width:96px;height:96px}
@@ -226,16 +237,27 @@ a{color:inherit;text-decoration:none}
       </div>
     </section>
 
+    <nav class="idx" aria-label="アプリのカテゴリ別インデックス">
+      <div class="idx-title">INDEX / カテゴリ別インデックス</div>
+      <div class="idx-grid">
+        <div class="idx-cat"><a class="idx-head" href="#cat-1">くらし・家計</a><div class="idx-links"><a href="#app-kodomo-album">📷 こども成長アルバム</a><a href="#app-sodatelog">👶 そだてろぐ（育児記録）</a><a href="#app-diet">⚖ ダイエット管理</a><a href="#app-bp">🩺 血圧手帳</a><a href="#app-costco">🛒 コストコ共同購入</a><a href="#app-arch-modeler">🏠 建築3Dモデラー</a></div></div>
+        <div class="idx-cat"><a class="idx-head" href="#cat-2">手帳・ものづくり</a><div class="idx-links"><a href="#app-refill">📅 手帳リフィル印刷ツール</a><a href="#app-password-note">🔐 N's notebook パスワード管理</a><a href="#app-svg-trace">🖋 イラストSVG変換</a></div></div>
+        <div class="idx-cat"><a class="idx-head" href="#cat-3">発信・制作</a><div class="idx-links"><a href="#app-ai-course">🦉 AIで作る 作家の道具</a><a href="#app-sns-video-maker">🎞 SNS紹介動画メーカー</a><a href="#app-live-telop">📡 ライブテロップ（配信中）</a><a href="#app-telop-player">📺 テロッププレーヤー（上映用）</a></div></div>
+        <div class="idx-cat"><a class="idx-head" href="#cat-4">実験・展示</a><div class="idx-links"><a href="#app-site-design-lab">🧪 サイトデザイン研究室</a><a href="#app-showroom">🏬 3D ショールーム（メタバース店舗）</a><a href="#app-pc-build-guide">🔧 自作PCを組み立ててみよう</a></div></div>
+        <div class="idx-cat"><a class="idx-head" href="#cat-5">資産形成</a><div class="idx-links"><a href="#app-kabu-board">📈 日本株 自動売買ツール（楽天RSS用）判定表＋ドライラン版</a><a href="#app-okj-notify">🔔 BTC価格 帯跨ぎ通知テンプレート</a></div></div>
+      </div>
+    </nav>
+
     <!-- ⛔ 各カードは画像付き・data-app 付きで統一すること。
          data-app を消すとGA4でどのアプリが押されたか分からなくなる。
          告知画像は 広報部\告知画像\promo_template.py で生成する（手作りしない）。
          ⛔ カテゴリは「くらし・家計 / 手帳・ものづくり / 発信・制作 / 実験・展示 / 準備中」の5本立て。
             すべて無料なので、特定のツールだけ独立セクションに出さないこと（2026-08-25 整理）。 -->
 
-    <div class="section-label">くらし・家計</div>
+    <div class="section-label" id="cat-1">くらし・家計</div>
     <div class="tool-grid">
 
-      <div class="tool-card" data-app="kodomo-album" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-kodomo-album" data-app="kodomo-album" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/kodomo-album-announce.jpg" alt="こども成長アルバム 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -253,61 +275,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
 
-      <div class="tool-card" data-app="diet" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/diet-announce.png" alt="ダイエット管理アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="tag">WEB APP</span>
-            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
-          </div>
-          <h3><a href="../diet/">⚖ ダイエット管理</a></h3>
-          <p style="color:var(--ink);">朝夜の体重、食べたもの、運動、水分を記録すると、目標まであと何kgか・今日はあとどれくらい食べられるかが一目でわかります。BMI・基礎代謝・PFCバランス・7日移動平均・停滞期の目安まで自動で計算します。</p>
-          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-            <strong style="color:var(--ink);">記録は端末の中だけに保存されます。</strong>サーバーへ送られることは一切ありません（そもそも送信できない作りです）。<br>
-            入力は最短2タップ。食事は「ごはん 納豆」と打つだけ、量は「茶碗1杯」で選べます。<br>
-            ホーム画面に追加すると、電波がなくても使えます。
-          </div>
-          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">機種変更の前に、設定画面からバックアップを保存してください。</p>
-        </div>
-      </div>
-
-      <div class="tool-card" data-app="bp" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/bp-announce.png" alt="血圧手帳 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="tag">WEB APP</span>
-            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
-          </div>
-          <h3><a href="../bp/">🩺 血圧手帳</a></h3>
-          <p style="color:var(--ink);">朝と夜の血圧を入れておくと、推移のグラフと、生活習慣との関係が自動で見えてきます。「飲酒の翌朝は平均いくつ高い」「朝が夜より高い早朝高血圧の傾向がある」といったことを、記録がたまるにつれて教えてくれます。</p>
-          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-            <strong style="color:var(--ink);">記録は端末の中だけに保存されます。</strong>血圧は医療情報にあたるため、外部へ送信する経路をそもそも持たない作りにしています。<br>
-            入力は上・下・脈拍の3つだけ。飲酒／塩分多め／睡眠不足などのメモはタップで付けられます。<br>
-            診察用のサマリー画面をそのまま医師に見せられます。
-          </div>
-          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">機種変更の前に、記録タブの下から記録をファイルに保存してください。</p>
-        </div>
-      </div>
-
-      <div class="tool-card" data-app="costco" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
-        <img src="../assets/costco-announce.png" alt="コストコ共同購入アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
-        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="tag">WEB APP</span>
-            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
-          </div>
-          <h3><a href="../costco/">🛒 コストコ共同購入</a></h3>
-          <p style="color:var(--ink);">コストコのセール案内から商品・写真・価格を自動で取り込み、参加者は自分の注文だけを確認できます。取りまとめ役だけが全体集計・請求額・受領記録を一画面で管理できます。</p>
-          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
-            <strong style="color:var(--ink);">チェックする側はアカウント登録不要です。</strong><br>
-            GitHub Pages上で開くため、通常利用ではGoogleの画面へ移動しません。ホーム画面に追加するとアプリのように使えます。
-          </div>
-          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">グループは自分ですぐ作れます（申し込み不要）。他の人の注文内容は、取りまとめ役以外には表示されません。</p>
-        <p style="font-size:12px;margin-top:6px;"><span style="color:var(--muted);">はじめての方は</span> <a href="../costco/guide.html" style="color:var(--accent-dark);font-weight:700;" onclick="event.stopPropagation();">📖 使い方ガイド</a></p>
-        </div>
-      </div>
-
-      <div class="tool-card" data-app="sodatelog" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-sodatelog" data-app="sodatelog" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/sodatelog-announce.png" alt="そだてろぐ 育児記録アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -326,7 +294,61 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
 
-      <div class="tool-card" data-app="arch-modeler" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-diet" data-app="diet" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/diet-announce.png" alt="ダイエット管理アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3><a href="../diet/">⚖ ダイエット管理</a></h3>
+          <p style="color:var(--ink);">朝夜の体重、食べたもの、運動、水分を記録すると、目標まであと何kgか・今日はあとどれくらい食べられるかが一目でわかります。BMI・基礎代謝・PFCバランス・7日移動平均・停滞期の目安まで自動で計算します。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">記録は端末の中だけに保存されます。</strong>サーバーへ送られることは一切ありません（そもそも送信できない作りです）。<br>
+            入力は最短2タップ。食事は「ごはん 納豆」と打つだけ、量は「茶碗1杯」で選べます。<br>
+            ホーム画面に追加すると、電波がなくても使えます。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">機種変更の前に、設定画面からバックアップを保存してください。</p>
+        </div>
+      </div>
+
+      <div class="tool-card" id="app-bp" data-app="bp" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/bp-announce.png" alt="血圧手帳 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3><a href="../bp/">🩺 血圧手帳</a></h3>
+          <p style="color:var(--ink);">朝と夜の血圧を入れておくと、推移のグラフと、生活習慣との関係が自動で見えてきます。「飲酒の翌朝は平均いくつ高い」「朝が夜より高い早朝高血圧の傾向がある」といったことを、記録がたまるにつれて教えてくれます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">記録は端末の中だけに保存されます。</strong>血圧は医療情報にあたるため、外部へ送信する経路をそもそも持たない作りにしています。<br>
+            入力は上・下・脈拍の3つだけ。飲酒／塩分多め／睡眠不足などのメモはタップで付けられます。<br>
+            診察用のサマリー画面をそのまま医師に見せられます。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">機種変更の前に、記録タブの下から記録をファイルに保存してください。</p>
+        </div>
+      </div>
+
+      <div class="tool-card" id="app-costco" data-app="costco" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/costco-announce.png" alt="コストコ共同購入アプリ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3><a href="../costco/">🛒 コストコ共同購入</a></h3>
+          <p style="color:var(--ink);">コストコのセール案内から商品・写真・価格を自動で取り込み、参加者は自分の注文だけを確認できます。取りまとめ役だけが全体集計・請求額・受領記録を一画面で管理できます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">チェックする側はアカウント登録不要です。</strong><br>
+            GitHub Pages上で開くため、通常利用ではGoogleの画面へ移動しません。ホーム画面に追加するとアプリのように使えます。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">グループは自分ですぐ作れます（申し込み不要）。他の人の注文内容は、取りまとめ役以外には表示されません。</p>
+        <p style="font-size:12px;margin-top:6px;"><span style="color:var(--muted);">はじめての方は</span> <a href="../costco/guide.html" style="color:var(--accent-dark);font-weight:700;" onclick="event.stopPropagation();">📖 使い方ガイド</a></p>
+        </div>
+      </div>
+
+      <div class="tool-card" id="app-arch-modeler" data-app="arch-modeler" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/arch-modeler-announce.png" alt="建築3Dモデラー 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -348,10 +370,10 @@ a{color:inherit;text-decoration:none}
 
     </div>
 
-    <div class="section-label">手帳・ものづくり</div>
+    <div class="section-label" id="cat-2">手帳・ものづくり</div>
     <div class="tool-grid">
 
-      <div class="tool-card" data-app="refill" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-refill" data-app="refill" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/refill-announce.png" alt="手帳リフィル印刷ツール 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -369,7 +391,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
 
-      <div class="tool-card" data-app="password-note" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-password-note" data-app="password-note" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/password-note-announce.png" alt="N's notebook パスワード管理 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -386,7 +408,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
 
-      <div class="tool-card" data-app="svg-trace" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-svg-trace" data-app="svg-trace" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/svg-trace-announce.png" alt="イラストSVG変換 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -405,10 +427,10 @@ a{color:inherit;text-decoration:none}
 
     </div>
 
-    <div class="section-label">発信・制作</div>
+    <div class="section-label" id="cat-3">発信・制作</div>
     <div class="tool-grid">
 
-      <div class="tool-card" data-app="ai-course" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-ai-course" data-app="ai-course" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/sns/ai-tool-course-set3-on-sale.jpg" alt="AIで作る 作家の道具 第3セットの案内画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -423,7 +445,7 @@ a{color:inherit;text-decoration:none}
           </div>
         </div>
       </div>
-      <div class="tool-card" data-app="sns-video-maker" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-sns-video-maker" data-app="sns-video-maker" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/sns-video-maker-announce.png" alt="SNS紹介動画メーカー 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -472,7 +494,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
 
-      <div class="tool-card" data-app="live-telop" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-live-telop" data-app="live-telop" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/live-telop-announce.png" alt="ライブテロップ 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -491,7 +513,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
 
-      <div class="tool-card" data-app="telop-player" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-telop-player" data-app="telop-player" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/telop-player-announce.png" alt="テロッププレーヤー 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -511,19 +533,19 @@ a{color:inherit;text-decoration:none}
 
     </div>
 
-    <div class="section-label">実験・展示</div>
+    <div class="section-label" id="cat-4">実験・展示</div>
     <div class="tool-grid">
-      <div class="tool-card" data-app="site-design-lab">
+      <div class="tool-card" id="app-site-design-lab" data-app="site-design-lab">
         <span class="tag">LIVE</span>
         <h3><a href="site-design-lab/">🧪 サイトデザイン研究室</a></h3>
         <p>インタラクティブ表現・UI表現の試作サンプルを集めた実験室。第一弾は水面インタラクションページ。</p>
       </div>
-      <div class="tool-card" data-app="showroom">
+      <div class="tool-card" id="app-showroom" data-app="showroom">
         <span class="tag">LIVE</span>
         <h3><a href="../showroom/">🏬 3D ショールーム（メタバース店舗）</a></h3>
         <p>バーチャル空間に展開した N's factory の店舗。革小物・システム手帳が並ぶ 3D ショールームです。</p>
       </div>
-      <div class="tool-card" data-app="pc-build-guide" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-pc-build-guide" data-app="pc-build-guide" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/pc-build-guide-announce.png" alt="自作PC 組み立て手順書の告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -542,9 +564,9 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
 
-    <div class="section-label">資産形成</div>
+    <div class="section-label" id="cat-5">資産形成</div>
     <div class="tool-grid">
-      <div class="tool-card" data-app="kabu-board" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-kabu-board" data-app="kabu-board" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/kabu-board/board.png" alt="日本株 自動売買ツールの判定表画面" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -561,7 +583,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
 
-      <div class="tool-card" data-app="okj-notify" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+      <div class="tool-card" id="app-okj-notify" data-app="okj-notify" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
         <img src="../assets/okj-notify-announce.png" alt="BTC価格 帯跨ぎ通知テンプレート 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
         <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -579,7 +601,7 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
 
-    <div class="section-label">準備中（デジタルコンテンツ販売）</div>
+    <div class="section-label" id="cat-6">準備中（デジタルコンテンツ販売）</div>
     <div class="tool-grid">
       <div class="tool-card disabled">
         <span class="tag soon">準備中</span>
