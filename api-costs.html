@@ -218,6 +218,19 @@ function reachText(r, month) {
   return m + '/' + r.day + (r.kind === 'actual' ? '（到達済み）' : 'ごろ');
 }
 
+// Gemini前払い残高の推定カード（balance_monitor.py の状態を upload_monitor が同梱・無ければ出さない）
+function balanceCards(b) {
+  if (!b) return [];
+  if (b.level === 'unset' || b.balance == null) {
+    return [['Gemini残高（推定）', '起点が未設定', 'チャージ額と日付を記録すると表示されます', '']];
+  }
+  const days = b.daysLeft == null ? '' : '約' + Math.floor(b.daysLeft) + '日分・';
+  const asOf = b.asOf ? new Date(b.asOf).getMonth() + 1 + '/' + new Date(b.asOf).getDate() + '末' : '';
+  const cls = (b.level === 'low' || b.level === 'empty') ? 'bad' : 'ok';
+  const val = b.level === 'empty' ? '尽きた可能性' : yen(b.balance);
+  return [['Gemini残高（推定）', val, days + asOf + '時点・手動の画像/動画は含まず' + (b.note ? '・' + b.note : ''), cls]];
+}
+
 function render(a) {
   const s = a.summary;
   const n = a.daysInMonth;
@@ -226,14 +239,14 @@ function render(a) {
 
   const over = s.projEnd >= a.budget;
   const mt = a.mapTiles || {};
-  document.getElementById('cards').innerHTML = [
+  document.getElementById('cards').innerHTML = balanceCards(a.balance).concat([
     ['今月の累計（推定）', yen(s.cum), '昨日まで・' + last + '日分', s.cum >= a.budget ? 'bad' : ''],
     ['月末の見込み', yen(s.projEnd), '以降は毎晩の自動処理だけと仮定', over ? 'bad' : 'ok'],
     ['予算に届く日', reachText(s.reach, a.month), '予算 ' + yen(a.budget), s.reach ? 'bad' : 'ok'],
     ['一括生成がなければ', yen(s.projEndNoBatch), '予算到達: ' + reachText(s.reachNoBatch, a.month), s.reachNoBatch ? 'bad' : 'ok'],
     ['今月の画像', (s.imagesAuto + s.imagesBatch) + '枚', '自動 ' + s.imagesAuto + '枚 / 一括 ' + s.imagesBatch + '枚', ''],
     ['Map Tiles 課金対象', mt.rootMonth == null ? '—' : mt.rootMonth + '回', '無料枠 ' + (mt.freePerMonth || 1000) + '回/月・上限' + (mt.capPerDay || 30) + '回/日', (mt.rootMonth || 0) >= (mt.freePerMonth || 1000) ? 'bad' : 'ok'],
-  ].map(([l, v, sub, cls]) => '<div class="card ' + cls + '"><div class="l">' + esc(l) + '</div><div class="n">' + esc(v) + '</div><div class="s">' + esc(sub) + '</div></div>').join('');
+  ]).map(([l, v, sub, cls]) => '<div class="card ' + cls + '"><div class="l">' + esc(l) + '</div><div class="n">' + esc(v) + '</div><div class="s">' + esc(sub) + '</div></div>').join('');
 
   const labels = Array.from({length: n}, (_, i) => (i + 1) + '日');
   const pace = a.autoPaceYenPerDay;
