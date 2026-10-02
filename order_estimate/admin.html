@@ -8017,7 +8017,9 @@ function mergeRun(){
     if(bank) bank.used = true;
     // 既に台帳側で決まっているものは処理済みとして扱う
     const st = r.mf_status || '未登録';
-    const decided = (st === 'MF登録済') ? 'mf' : (st === 'MF対象外' ? 'skip' : '');
+    // 「CSVに入れる／保留」は台帳の merge_decision に保存してある（2026-10-02〜）。月をまたいでも判断をやり直さない
+    const saved = (r.merge_decision === 'csv' || r.merge_decision === 'hold') ? r.merge_decision : '';
+    const decided = (st === 'MF登録済') ? 'mf' : (st === 'MF対象外' ? 'skip' : saved);
     return { rec: r, mf, uncertain: mf ? null : uncertain, em, bank, selfDup: selfDup.has(r.id), decision: decided };
   });
   mergeRenderCards();
@@ -8232,9 +8234,11 @@ async function mergeDecide(g, kind, btn){
   buttons.forEach(b => b.disabled = true);
   if(msg) msg.textContent = '保存中…';
   try{
-    if((g.rec.mf_status || '未登録') !== next){
-      await mergeGas('update', { id: g.rec.id, patch: { mf_status: next } }, 3);
+    const nextDec = (kind === 'csv' || kind === 'hold') ? kind : '';
+    if((g.rec.mf_status || '未登録') !== next || (g.rec.merge_decision || '') !== nextDec){
+      await mergeGas('update', { id: g.rec.id, patch: { mf_status: next, merge_decision: nextDec } }, 3);
       g.rec.mf_status = next;
+      g.rec.merge_decision = nextDec;
     }
     g.decision = kind;
     if(msg) msg.textContent = '';

@@ -44,6 +44,9 @@ h1{font-size:20px;margin:6px 0 2px}
 .preview{margin-top:12px;display:none}
 .preview.show{display:block}
 .preview img{width:100%;max-height:46vh;object-fit:contain;border-radius:8px;background:#222}
+.preview .back{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.preview .back img{width:72px;height:72px;max-height:none;object-fit:cover;border:1px solid #444}
+.preview .back .hint{font-size:12px;color:var(--muted);flex:1 1 160px}
 .preview .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;gap:8px}
 .queue-note{font-size:12px;color:var(--muted);margin-top:10px;min-height:1em}
 .scan-queue{display:flex;gap:8px;overflow-x:auto;padding:6px 0 2px;-webkit-overflow-scrolling:touch}
@@ -183,6 +186,12 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
       <div class="preview" id="preview">
         <img id="previewImg" alt="プレビュー">
         <div class="meta"><span id="previewName"></span><span id="previewSize"></span></div>
+        <div class="back" id="backBox">
+          <label class="btn" style="cursor:pointer">➕ 裏面（2枚目）を追加<input type="file" id="backInput" accept="image/*" capture="environment" style="display:none"></label>
+          <img id="backImg" alt="裏面" style="display:none">
+          <button class="btn" id="backDel" type="button" style="display:none">裏面を外す</button>
+          <span class="hint" id="backHint">宅急便コンパクトなど、表と裏で情報が分かれる伝票は2枚で1件にできます</span>
+        </div>
         <div class="actions">
           <button class="btn primary block" id="analyzeBtn" type="button">🤖 AIで読み取る</button>
         </div>
@@ -642,7 +651,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     queueBusy = true; item.status = 'analyzing'; renderQueue();
     try{
       const slimRules = { accounts: (rules.accounts || []).map(a => ({ name: a.name, keywords: (a.keywords || []).slice(0, 8) })) };
-      const r = await gas('analyze', { image: item.dataUrl, rules: slimRules }, 2);
+      const r = await gas('analyze', { image: item.dataUrl, image2: item.dataUrl2 || undefined, rules: slimRules }, 2);
       const list = (Array.isArray(r.receipts) && r.receipts.length) ? r.receipts : [r.data || {}];
       if(item.splitTotal){
         // 分割済みの1件の取り直し: 自分の番号だけ受け取る（再分割して増やさない）
@@ -684,6 +693,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     $('previewName').textContent = item.name;
     $('previewSize').textContent = Math.round(item.bytes / 1024) + ' KB（縮小後' + (item.deskew ? '・傾き ' + Math.abs(item.deskew).toFixed(1) + '° を補正' : '') + '）';
     $('preview').classList.add('show');
+    renderBack(item);
     $('analyzeBtn').disabled = false; $('analyzeBtn').textContent = '🤖 もう一度読み取る';
     setStatus('registerStatus', '');
     fillForm(item.data || {});
@@ -715,6 +725,29 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   }
   $('camInput').addEventListener('change', onPick);
   $('fileInput').addEventListener('change', onPick);
+
+  // 裏面（2枚目）: 追加すると表裏を合わせて1件として読み直す。外すと表だけで読み直す
+  function renderBack(item){
+    const has = !!(item && item.dataUrl2);
+    $('backImg').style.display = has ? 'block' : 'none';
+    $('backDel').style.display = has ? 'inline-block' : 'none';
+    if(has) $('backImg').src = item.dataUrl2;
+    $('backHint').textContent = has ? '表裏の2枚で1件として読み取ります。登録すると2枚とも保存されます' : '宅急便コンパクトなど、表と裏で情報が分かれる伝票は2枚で1件にできます';
+  }
+  $('backInput').addEventListener('change', async ev => {
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = '';
+    if(!file || !currentItem) { if(file) toast('先に表面を撮影してください'); return; }
+    try{
+      currentItem.dataUrl2 = await fileToResizedDataUrl(file);
+      renderBack(currentItem);
+      $('analyzeBtn').click();
+    }catch(e){ setStatus('captureStatus', '裏面の画像を読み込めませんでした: ' + e.message, 'err'); }
+  });
+  $('backDel').addEventListener('click', () => {
+    if(!currentItem) return;
+    currentItem.dataUrl2 = null; renderBack(currentItem); $('analyzeBtn').click();
+  });
 
   // 「もう一度読み取る」＝いま開いている1枚だけ。待機列の先頭へ動かして即解析する
   $('analyzeBtn').addEventListener('click', () => {
@@ -764,7 +797,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     const btn=$('registerBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 保存中…';
     setStatus('registerStatus','Driveへ保存し、台帳に追記しています…');
     try{
-      const r = await gas('register', { requestId: item.requestId, record: rec, image: item.dataUrl, imageIndex: item.splitIndex || 0 }, 3);
+      const r = await gas('register', { requestId: item.requestId, record: rec, image: item.dataUrl, image2: item.dataUrl2 || undefined, imageIndex: item.splitIndex || 0 }, 3);
       ledgerCache = [];
       scanQueue = scanQueue.filter(q => q.id !== item.id);
       currentItem = null;
@@ -781,7 +814,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   });
   $('resetBtn').addEventListener('click', ()=>{ if(currentItem) dropItem(currentItem); });
   // 互換用（全部捨てて初期状態へ）。画面のボタンからは呼ばない
-  function resetCapture(){ scanQueue=[]; currentItem=null; queueBusy=false; $('preview').classList.remove('show'); $('formCard').style.display='none'; $('analyzeBtn').textContent='🤖 AIで読み取る'; setStatus('captureStatus',''); setStatus('registerStatus',''); renderQueue(); window.scrollTo(0,0); }
+  function resetCapture(){ scanQueue=[]; currentItem=null; queueBusy=false; $('preview').classList.remove('show'); renderBack(null); $('formCard').style.display='none'; $('analyzeBtn').textContent='🤖 AIで読み取る'; setStatus('captureStatus',''); setStatus('registerStatus',''); renderQueue(); window.scrollTo(0,0); }
   function collectForm(){
     const date=$('fDate').value, amount=Number($('fAmount').value||0), store=$('fStore').value.trim();
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){ toast('日付を入力してください'); $('fDate').focus(); return null; }
