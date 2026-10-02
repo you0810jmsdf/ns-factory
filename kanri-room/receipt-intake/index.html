@@ -41,6 +41,12 @@ h1{font-size:20px;margin:6px 0 2px}
 .big-btn .ic{font-size:28px}
 .big-btn.primary{border-style:solid;border-color:var(--accent);background:#fbf7f2}
 .big-btn input{display:none}
+.reread{margin-top:10px;padding:10px;border:1px dashed var(--accent,#c9a96e);border-radius:10px;font-size:13px}
+.reread[hidden]{display:none}
+.rr-table{width:100%;border-collapse:collapse;margin-bottom:6px}
+.rr-table th,.rr-table td{padding:4px 6px;text-align:left;border-bottom:1px solid #333}
+.rr-table td.chg{color:var(--accent,#c9a96e);font-weight:700}
+.warn-line{color:#f0a8b0}
 .preview{margin-top:12px;display:none}
 .preview.show{display:block}
 .preview img{width:100%;max-height:46vh;object-fit:contain;border-radius:8px;background:#222}
@@ -878,8 +884,10 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
             ${r.file_url?`<a class="btn sm" href="${esc(r.file_url)}" target="_blank" rel="noopener">画像を開く</a>`:''}
             ${r.file_url2?`<a class="btn sm" href="${esc(r.file_url2)}" target="_blank" rel="noopener">2枚目を開く</a>`:''}
             <label class="btn sm" style="cursor:pointer">➕ ${r.file_url2?'2枚目を差し替え':'2枚目を足す'}<input type="file" data-act="attach" accept="image/*" capture="environment" style="display:none"></label>
+            <button class="btn sm" data-act="reread" type="button">🤖 ${r.file_url2?'2枚で':''}読み直す</button>
             <button class="btn sm danger" data-act="del" type="button">削除</button>
           </div>
+          <div class="reread" data-box="reread" hidden></div>
         </div>`;
       div.querySelector('.row1').addEventListener('click',()=>div.classList.toggle('open'));
       div.querySelector('[data-act="save"]').addEventListener('click', async ()=>{
@@ -900,6 +908,38 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
           const res=await gas('attachImage',{id:r.id,image2:dataUrl,replace},3);
           Object.assign(r,res.record||{}); toast('2枚目を保存しました'); renderLedger();
         }catch(e){ toast('2枚目を保存できませんでした: '+e.message); }
+      });
+      // AIで読み直す（2026-10-02 事業主指示）。保存済みの表裏の画像から金額・税額・日付を読み直し、提案を並べて見せる。
+      // 台帳に書くのは「この内容で反映」を押したときだけ（金額・税額・日付）。
+      div.querySelector('[data-act="reread"]').addEventListener('click', async ev=>{
+        const btn=ev.currentTarget, box=div.querySelector('[data-box="reread"]');
+        btn.disabled=true; box.hidden=false; box.textContent='AIが画像を読み直しています（10秒ほど）…';
+        try{
+          const res=await gas('reanalyze',{id:r.id},2);
+          const cur=res.current||{}, sug=res.suggested||{};
+          const total=Number(sug.total_amount)||0, tax=Number(sug.tax_amount)||0;
+          const warns=(sug.warnings||[]).slice();
+          if(total>0 && tax>0 && Math.abs(tax-Math.floor(total*10/110))>1) warns.push('税額が金額（10%）と合いません。画像で確かめてください');
+          if(!(total>0)) warns.push('金額を読み取れませんでした。反映できません');
+          const rowHtml=(label,a,b2)=>`<tr><th>${label}</th><td>${esc(a)}</td><td class="${String(a)===String(b2)?'':'chg'}">${esc(b2)}</td></tr>`;
+          box.innerHTML=`<table class="rr-table"><thead><tr><th></th><th>今の値</th><th>AIの提案${res.twoSided?'（表裏2枚）':'（1枚）'}</th></tr></thead><tbody>`
+            + rowHtml('金額（税込）',yen(cur.total_amount),yen(total))
+            + rowHtml('税額',yen(cur.tax_amount),yen(tax))
+            + rowHtml('日付',cur.date,sug.date||'')
+            + `</tbody></table>`
+            + (sug.memo?`<p class="hint">メモ案: ${esc(sug.memo)}</p>`:'')
+            + warns.map(w=>`<p class="hint warn-line">⚠ ${esc(w)}</p>`).join('')
+            + `<div class="actions"><button class="btn sm primary" data-rr="apply" type="button" ${total>0?'':'disabled'}>この内容で反映</button><button class="btn sm" data-rr="close" type="button">閉じる</button></div>`;
+          box.querySelector('[data-rr="close"]').addEventListener('click',()=>{ box.hidden=true; box.textContent=''; });
+          box.querySelector('[data-rr="apply"]').addEventListener('click', async e2=>{
+            e2.currentTarget.disabled=true;
+            const patch={ total_amount:total, tax_amount:tax };
+            if(/^\d{4}-\d{2}-\d{2}$/.test(sug.date||'')) patch.date=sug.date;
+            try{ const u=await gas('update',{id:r.id,patch},3); Object.assign(r,u.record||patch); toast('金額・税額を反映しました'); renderLedger(); }
+            catch(err){ e2.currentTarget.disabled=false; toast('反映できませんでした: '+err.message); }
+          });
+        }catch(err){ box.textContent='読み直せませんでした: '+err.message; }
+        finally{ btn.disabled=false; }
       });
       div.querySelector('[data-act="del"]').addEventListener('click', async ()=>{
         if(!confirm('この記録を削除しますか？（Driveの画像は残ります）')) return;
