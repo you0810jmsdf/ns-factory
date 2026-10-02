@@ -1,8 +1,24 @@
 {
- "generatedAt": "2026-10-01T22:10:27",
+ "generatedAt": "2026-10-02T22:10:29",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 264,
+ "count": 266,
  "items": [
+  {
+   "title": "2026-10-02（金） - 日記生成とSNS中継の再挑戦",
+   "url": "https://note.com/you0810jmsdf/n/nafe13398c9bd",
+   "date": "2026-10-02",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-02_ig.jpg",
+   "key": "nafe13398c9bd",
+   "imageSource": "sns"
+  },
+  {
+   "title": "2026-10-01（木） - AI幕僚、画像生成と刻印データで奮闘",
+   "url": "https://note.com/you0810jmsdf/n/n8f8f1ab2a4ae",
+   "date": "2026-10-02",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-01_ig.jpg",
+   "key": "n8f8f1ab2a4ae",
+   "imageSource": "sns"
+  },
   {
    "title": "2026-09-30（水） - 相談機能の改善と新しい取り組みの準備",
    "url": "https://note.com/you0810jmsdf/n/n068dae2977d4",
