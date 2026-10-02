@@ -3745,13 +3745,18 @@ function openPrint() {
     'td{padding:5px 8px;border-bottom:1px solid #eee}',
     'td:last-child{text-align:right}',
     '.note{font-size:11px;color:#666;margin-top:16px}',
-    '@media print{@page{margin:15mm}}'
+    '.printbar{margin-bottom:16px}.printbar button{font-size:14px;padding:8px 16px;border:1px solid #6b3a1f;background:#6b3a1f;color:#fff;border-radius:6px;cursor:pointer}',
+    '@media print{@page{margin:15mm}.printbar{display:none}}'
   ].join('');
+  // 印刷は新しいウィンドウの中から呼ぶ（元のタブは裏に回り、Edge が裏のタブからの print() を無視することがあるため）。ボタンは自動で出ないときの保険。
+  const printBar = '<div class="printbar"><button type="button" onclick="window.print()">' + (isEN() ? '🖨️ Print / Save as PDF' : '🖨️ 印刷 / PDF保存') + '</button></div>';
+  const printScript = '<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},400)})<\/script>';
   const sellDiv = sellHtml ? '<div class="sell-box">' + sellHtml + '</div>' : '';
   const body = [
     '<!DOCTYPE html><html lang="' + (isEN() ? 'en' : 'ja') + '"><head><meta charset="UTF-8">',
     '<title>' + (isEN() ? "N's factory Quote" : 'N\'s factory \u898b\u7a4d\u3082\u308a') + '</title>',
     '<style>' + css + '</style></head><body>',
+    printBar,
     '<h1>' + (isEN() ? "\uD83D\uDCCB N's factory Ring Planner Full Order \u2014 Quote" : '\uD83D\uDCCB N\'s factory \u30b7\u30b9\u30c6\u30e0\u624b\u5e33\u30d5\u30eb\u30aa\u30fc\u30c0\u30fc \u898b\u7a4d\u3082\u308a') + '</h1>',
     '<div class="date">' + date + (isEN() ? '' : ' \u4f5c\u6210') + '</div>',
     '<div class="total-box">' + totalHtml + '</div>' + sellDiv,
@@ -3759,6 +3764,7 @@ function openPrint() {
     '<p class="note">' + (isEN()
       ? '\u203b This is a rough estimate. A formal quote will be sent after your order is confirmed.<br>\u203b Prices include tax. Please ask about lead times.'
       : '\u203b\u672c\u898b\u7a4d\u3082\u308a\u306f\u6982\u7b97\u3067\u3059\u3002\u6b63\u5f0f\u306a\u304a\u898b\u7a4d\u3082\u308a\u306f\u3054\u6ce8\u6587\u78ba\u8a8d\u5f8c\u306b\u304a\u9001\u308a\u3057\u307e\u3059\u3002<br>\u203b\u4fa1\u683c\u306f\u7a0e\u8fbc\u8868\u793a\u3067\u3059\u3002\u7d0d\u671f\u306f\u3054\u76f8\u8ac7\u304f\u3060\u3055\u3044\u3002') + '</p>',
+    printScript,
     '</body></html>'
   ].join('');
   const w = window.open('', '_blank');
@@ -3769,7 +3775,6 @@ function openPrint() {
   w.document.write(body);
   w.document.close();
   w.focus();
-  setTimeout(function(){ w.print(); }, 600);
 }
 
 function openEmailModal() {
