@@ -380,6 +380,8 @@ body{
 }
 .component-parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .component-part-title{font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:8px}
+.img-card.lining-selected{outline:3px solid #2a7fb8;outline-offset:-3px}
+.img-card.lining-selected::after{content:"内装";position:absolute;top:6px;right:6px;background:#2a7fb8;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;z-index:2}
 .component-swatch-grid{display:flex;flex-wrap:wrap;gap:8px}
 .component-swatch{
   width:46px;border:none;background:none;cursor:pointer;padding:0;
@@ -810,15 +812,16 @@ body{
     <div class="filter-tags" id="leatherTags"></div>
   </div>
   <div id="patchworkNote" style="display:none;font-size:11px;color:#b06820;background:#fff8ee;border:1px solid #e8c87a;border-radius:6px;padding:6px 10px;margin-bottom:8px" data-i18n="ui.patchworkNote">🎨 パッチワーク加工ON：革を複数選択できます</div>
-  <div class="img-grid" id="leatherGrid"></div>
-  <!-- 内張り革（2026-09-04追加）: 構造の lining_ratio が 0 のときは非表示。既定は外装と同じ革 -->
-  <div id="liningRow" style="display:none;margin-top:12px;padding:10px 12px;background:#fbf7f1;border:1px solid #e6d9c6;border-radius:8px">
-    <label for="liningSelect" style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">🧵 内張り革 <span style="font-weight:normal;font-size:11px;color:#8a7a66" id="liningRatioNote"></span></label>
-    <select id="liningSelect" onchange="onLiningChange(this.value)" style="width:100%;max-width:420px;padding:7px 10px;font-size:13px;border:1px solid #d8c8b0;border-radius:6px;background:#fff">
-      <option value="">外装と同じ革</option>
-    </select>
-    <div style="font-size:11px;color:#8a7a66;margin-top:5px">内張りをヌメ革にすると原材料費が下がります（面積比は構造ごとの設定値）。</div>
+  <!-- 外装/内装の革切替（2026-10-02）: 構造の lining_ratio が 0 のときは非表示。内装の既定は外装と同じ革 -->
+  <div id="liningRow" style="display:none;margin-bottom:10px;padding:10px 12px;background:#fbf7f1;border:1px solid #e6d9c6;border-radius:8px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <button type="button" id="leatherTargetOuter" class="filter-tag active" onclick="setLeatherTarget('outer')" style="cursor:pointer">🧥 外装の革を選ぶ</button>
+      <button type="button" id="leatherTargetInner" class="filter-tag" onclick="setLeatherTarget('inner')" style="cursor:pointer">🧵 内装の革を選ぶ</button>
+      <span style="font-weight:normal;font-size:11px;color:#8a7a66" id="liningRatioNote"></span>
+    </div>
+    <div style="font-size:12px;margin-top:6px" id="liningStatus"></div>
   </div>
+  <div class="img-grid" id="leatherGrid"></div>
 </div>
 
 <div class="section" id="retiredColorSimulatorSection" hidden>
@@ -2879,33 +2882,43 @@ function getLiningRatio() {
   const b = BRANDS.find(x => x.id === sel.brandId);
   return b?.liningRatio ?? 0;
 }
-function getLiningCandidates() {
-  // 内張りは実運用でほぼヌメのため、名前かタグに「ヌメ」を含む革だけを候補にする（将来は全革へ拡張可）
-  return LEATHERS.filter(l => /ヌメ/.test(l.name || '') || (l.tags || []).some(t => /ヌメ/.test(t)));
+// 外装/内装の革の選択対象（'outer' | 'inner'）。内装は全革から選べる（2026-10-02）
+let leatherTarget = 'outer';
+function setLeatherTarget(t) {
+  leatherTarget = (t === 'inner' && getLiningRatio() > 0 && !window._patchworkOn) ? 'inner' : 'outer';
+  refreshLiningUi();
 }
-function buildLiningSelect() {
-  const el = document.getElementById('liningSelect');
-  if (!el) return;
-  const cur = el.value;
-  el.innerHTML = '<option value="">外装と同じ革</option>';
-  getLiningCandidates().forEach(l => {
-    const o = document.createElement('option');
-    o.value = l.id; o.textContent = `${l.name}（¥${l.dsPrice}/ds）`;
-    el.appendChild(o);
+function refreshLiningUi() {
+  const outerBtn = document.getElementById('leatherTargetOuter');
+  const innerBtn = document.getElementById('leatherTargetInner');
+  if (outerBtn) outerBtn.classList.toggle('active', leatherTarget === 'outer');
+  if (innerBtn) innerBtn.classList.toggle('active', leatherTarget === 'inner');
+  document.querySelectorAll('#leatherGrid .img-card').forEach(c => {
+    c.classList.toggle('lining-selected', !!sel.liningId && c.dataset.id === sel.liningId);
   });
-  el.value = (cur && [...el.options].some(o => o.value === cur)) ? cur : '';
+  const st = document.getElementById('liningStatus');
+  if (st) {
+    const outer = sel.leather || '未選択';
+    const inner = sel.lining || '外装と同じ革';
+    st.innerHTML = `外装：<b>${outer}</b>　／　内装：<b>${inner}</b>` +
+      (leatherTarget === 'inner' ? '<br><span style="font-size:11px;color:#8a7a66">内装にしたい革のカードを押してください（もう一度押すと「外装と同じ革」に戻ります）</span>' : '');
+  }
 }
+function buildLiningSelect() { refreshLiningUi(); }  // 拡張カタログのマージ後に再描画するための入口
 function updateLiningRow() {
   const row = document.getElementById('liningRow');
   if (!row) return;
   const r = getLiningRatio();
-  row.style.display = r > 0 ? '' : 'none';
+  row.style.display = r > 0 && !window._patchworkOn ? '' : 'none';
   const note = document.getElementById('liningRatioNote');
-  if (note) note.textContent = r > 0 ? `（革面積の${Math.round(r * 100)}%）` : '';
-  if (r <= 0 && sel.liningId) onLiningChange('');  // 内張りなし構造へ変えたら解除
+  if (note) note.textContent = r > 0 ? `（内装は革面積の${Math.round(r * 100)}%）` : '';
+  if (r <= 0 || window._patchworkOn) {
+    if (sel.liningId) onLiningChange('');  // 内張りなし構造・パッチワークでは解除
+    leatherTarget = 'outer';
+  }
+  refreshLiningUi();
 }
 function onLiningChange(id) {
-  const el = document.getElementById('liningSelect');
   if (!id) {
     sel.liningId = null; sel.lining = null; prices.lining = null;
   } else {
@@ -2913,7 +2926,7 @@ function onLiningChange(id) {
     if (!l) return;
     sel.liningId = l.id; sel.lining = l.name; prices.lining = l.dsPrice;
   }
-  if (el && el.value !== (id || '')) el.value = id || '';
+  refreshLiningUi();
   updateSummary();
 }
 
@@ -2948,6 +2961,11 @@ function buildLeatherGrid() {
     if (OUT_OF_STOCK.has(d.id)) div.classList.add('oos');
     div.onclick = () => {
       if (OUT_OF_STOCK.has(d.id)) return;
+      if (leatherTarget === 'inner' && !window._patchworkOn) {
+        // 内装：同じ革をもう一度押すと「外装と同じ革」に戻る
+        onLiningChange(sel.liningId === d.id ? '' : d.id);
+        return;
+      }
       if (window._patchworkOn) {
         // パッチワーク：複数選択トグル、ds単価は¥160固定
         div.classList.toggle('selected');
@@ -2964,10 +2982,12 @@ function buildLeatherGrid() {
         prices.leather = d.dsPrice;   // ds単価 (¥/ds)
       }
       syncMainColorConfigWithLeather();
+      refreshLiningUi();
       updateSummary();
     };
     grid.appendChild(div);
   });
+  refreshLiningUi();
 }
 
 // ── 革カタログ拡張（280色）＋カワムラ公式ds単価＋在庫バッジの実行時マージ ──
@@ -3176,6 +3196,7 @@ function setPatchworkSide(val) {
   _applyRadio('pw_', val);
   // パッチワーク ON/OFF に合わせて革グリッドを再描画
   buildLeatherGrid && buildLeatherGrid();
+  updateLiningRow();
   updateSummary();
 }
 // 後方互換
