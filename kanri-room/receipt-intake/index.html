@@ -876,6 +876,8 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
           <div class="actions">
             <button class="btn sm primary" data-act="save" type="button">保存</button>
             ${r.file_url?`<a class="btn sm" href="${esc(r.file_url)}" target="_blank" rel="noopener">画像を開く</a>`:''}
+            ${r.file_url2?`<a class="btn sm" href="${esc(r.file_url2)}" target="_blank" rel="noopener">2枚目を開く</a>`:''}
+            <label class="btn sm" style="cursor:pointer">➕ ${r.file_url2?'2枚目を差し替え':'2枚目を足す'}<input type="file" data-act="attach" accept="image/*" capture="environment" style="display:none"></label>
             <button class="btn sm danger" data-act="del" type="button">削除</button>
           </div>
         </div>`;
@@ -885,6 +887,19 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
         patch.business_ratio=Number(patch.business_ratio);
         try{ const res=await gas('update',{id:r.id,patch},3); Object.assign(r,res.record||patch); toast('保存しました'); renderLedger(); }
         catch(e){ toast('保存失敗: '+e.message); }
+      });
+      // 既存の行に2枚目（裏面）を足す。撮り直して別の行ができる（重複する）のを避けるための機能（2026-10-02 事業主指示）
+      div.querySelector('[data-act="attach"]').addEventListener('change', async ev=>{
+        const file=ev.target.files&&ev.target.files[0]; ev.target.value='';
+        if(!file) return;
+        const replace=!!r.file_url2;
+        if(replace && !window.confirm('すでに2枚目があります。差し替えますか？（古い画像はDriveに残ります）')) return;
+        try{
+          toast('2枚目を保存しています…');
+          const dataUrl=await fileToResizedDataUrl(file);
+          const res=await gas('attachImage',{id:r.id,image2:dataUrl,replace},3);
+          Object.assign(r,res.record||{}); toast('2枚目を保存しました'); renderLedger();
+        }catch(e){ toast('2枚目を保存できませんでした: '+e.message); }
       });
       div.querySelector('[data-act="del"]').addEventListener('click', async ()=>{
         if(!confirm('この記録を削除しますか？（Driveの画像は残ります）')) return;
