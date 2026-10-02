@@ -1025,6 +1025,16 @@ body{
   <div class="section-title"><span class="num">12</span> <span data-i18n="sec.remarks">自由記述・ご要望</span></div>
   <div style="font-size:11px;color:#8a6644;margin:-4px 0 10px" data-i18n="ui.remarksNote" data-i18n-as-html>シミュレーションでは表現しきれない仕様、参考URL、仕上がりイメージ、納期希望などはこちらへご記入ください。<br>本体の寸法（カバーの縦横・厚みなど）についてご希望がある場合もこちらにご記入ください。</div>
   <textarea class="t-input" id="remarks" rows="4" placeholder="例：本体の縦を少し長めにしたい、右ポケットを深めに、参考にしたい作品URL、納期のご相談 など" data-i18n-placeholder="ui.remarksPh"></textarea>
+  <!-- 作家追記（2026-10-02）: ?admin のときだけ表示。見積書を作る作家がテキストと税込金額を最大3行追加する。お客様画面には出ない -->
+  <div id="artistExtras" style="display:none;margin-top:14px;padding:10px 12px;background:#fff7ec;border:1px solid #dcc5a9;border-radius:8px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px">✍️ 作家追記（見積書に載せる項目・最大3行）</div>
+    <div style="font-size:11px;color:#8a6644;margin-bottom:8px">金額は税込・注文全体に1回だけ加算します（割引・数量倍の対象外）。金額を空にするとテキストだけ載ります。マイナスは値引き。</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;gap:6px"><input type="text" class="t-input" id="aeText0" placeholder="例：革ベルト追加（ブラウン）" oninput="updateSummary()" style="flex:1"><input type="number" class="t-input" id="aeAmt0" placeholder="税込金額" step="100" oninput="updateSummary()" style="width:120px"></div>
+      <div style="display:flex;gap:6px"><input type="text" class="t-input" id="aeText1" placeholder="項目2" oninput="updateSummary()" style="flex:1"><input type="number" class="t-input" id="aeAmt1" placeholder="税込金額" step="100" oninput="updateSummary()" style="width:120px"></div>
+      <div style="display:flex;gap:6px"><input type="text" class="t-input" id="aeText2" placeholder="項目3" oninput="updateSummary()" style="flex:1"><input type="number" class="t-input" id="aeAmt2" placeholder="税込金額" step="100" oninput="updateSummary()" style="width:120px"></div>
+    </div>
+  </div>
 </div>
 
 <!-- BOTTOM ACTIONS -->
@@ -1172,6 +1182,7 @@ const I = (id, ext='jpg') => `https://img07.shop-pro.jp/PA01426/148/product/${id
 
 // 管理者モード: URLに ?admin=1 を付けると内部情報を表示
 const isAdmin = new URLSearchParams(location.search).has('admin');
+document.addEventListener('DOMContentLoaded', () => { const el = document.getElementById('artistExtras'); if (el && isAdmin) el.style.display = ''; });
 
 /* ── 英語モード（2026-08-18）──
    静的部分は data-i18n＋../assets/i18n.js（ページ末尾で読込）。
@@ -3277,6 +3288,21 @@ function changeNum(field, delta) {
 }
 
 // ── SUMMARY ──
+// 作家追記（?admin のみ有効）: [{text, amount|null}] 最大3行。金額は税込。
+function getArtistExtras() {
+  if (!isAdmin) return [];
+  const rows = [];
+  for (let i = 0; i < 3; i++) {
+    const text = (document.getElementById('aeText' + i)?.value || '').trim();
+    const raw = document.getElementById('aeAmt' + i)?.value;
+    const amt = (raw === '' || raw == null || !Number.isFinite(Number(raw))) ? null : Math.round(Number(raw));
+    if (!text && amt === null) continue;
+    rows.push({ text: text || '追加項目', amount: amt });
+  }
+  return rows;
+}
+function artistExtraAmountText(a) { return a === null ? '' : `${a < 0 ? '−' : '+'}¥${Math.abs(a).toLocaleString()}（税込）`; }
+
 function updateSummary(options = {}) {
   ensureComponentColors();
   const qty = parseInt(document.getElementById('qty').value) || 1;
@@ -3373,7 +3399,9 @@ function updateSummary(options = {}) {
   const baseTax = Math.round((afterDisc + initDesignFee) * taxRate / 100);
   const tax = baseTax + Math.round(fulfillment.totalFees * taxRate / (100 + taxRate));
   // 新たな別途料金は税込設定。既存価格の割引・100円丸め後に加算して二重課税を防止。
-  const total = Math.floor((afterDisc + initDesignFee + baseTax) / 100) * 100 + fulfillment.totalFees;
+  const artistExtras = getArtistExtras();
+  const artistExtraTotal = artistExtras.reduce((n, x) => n + (x.amount || 0), 0);  // 税込・注文全体・割引対象外（2026-10-02）
+  const total = Math.floor((afterDisc + initDesignFee + baseTax) / 100) * 100 + fulfillment.totalFees + artistExtraTotal;
 
   NSFLaborCurves.updateCurrent();
   updateSizePrices();
@@ -3475,6 +3503,7 @@ function updateSummary(options = {}) {
     if(initDesignFee > 1000) add(T('sum.initFeeTotal', '　初度設計費 合計'), `+¥${initDesignFee.toLocaleString()}`);
     if (fulfillment.skiving) add('革漉き加工料（税込）', `¥${fulfillment.skiving.toLocaleString()}（${qty}冊分）`);
     if (fulfillment.ringShipping) add('リング取寄せ送料（税込）', `¥${fulfillment.ringShipping.toLocaleString()}（1注文）`);
+    artistExtras.forEach(x => add('✍️ ' + x.text, x.amount === null ? '（金額なし）' : artistExtraAmountText(x.amount)));
     add('納期目安', fulfillment.lead);
     if (getSelectedRingRow() && !(Number(getSelectedRingRow().price_jpy) > 0)) add('リング価格', '参考価格・正式価格は要確認');
     add(T('sum.total', '▶ 合計'), '', 'lbl-title');
@@ -3510,6 +3539,7 @@ function updateSummary(options = {}) {
       + row('その他オプション', (opts - ringMaterials) * qty)
       + (fulfillment.skiving ? row('革漉き加工料（税込）', fulfillment.skiving) : '')
       + (fulfillment.ringShipping ? row('取寄せ送料（税込）', fulfillment.ringShipping) : '')
+      + (artistExtraTotal ? row('作家追記（税込）', artistExtraTotal) : '')
       + row('販売手数料分の加算（丸め込み）', platformFeeAmt);
     list.prepend(panel);
   }
@@ -3599,6 +3629,7 @@ function buildPrintDetail(unit, qty, sub, volDisc, volRate, manDisc, discRate, t
   const rem = document.getElementById('remarks').value;
   if(rem) h += r(T('pd.remarks', '備考'), rem);
   const fulfillment = getFulfillment(qty);
+  getArtistExtras().forEach(x => { h += r(x.text, x.amount === null ? '' : artistExtraAmountText(x.amount)); });
   h += r('納期目安', fulfillment.lead);
   h += r('━━━━━━━', '━━━━━━━');
   // 製作費（工数×時給）・原価概算は原価類推可能なため依頼人向け見積書から除外
@@ -3675,6 +3706,8 @@ function buildEstText() {
   if(st) t += `${T('ui.stampText', '刻印内容')}：${st}\n`;
   t += `${T('pd.qty', '数量')}：${isEN() ? qty + ' pcs' : qty + '個'}\n`;
   if(discRate>0) t += `${T('est.discRate', '割引率')}：${discRate}%\n`;
+  getArtistExtras().forEach(x => { t += `${x.text}${x.amount === null ? '' : '：' + artistExtraAmountText(x.amount)}
+`; });
   t += `\n${T('pd.totalTax', '合計（税込）')}：${document.getElementById('totalDisplay').textContent.trim()}\n`;
   const _pfRate = prices.platform || 0;
   if (sel.platform && _pfRate > 0) {
@@ -3854,6 +3887,7 @@ function doResetAll() {
   document.getElementById('qty').value = 1;
   document.getElementById('stampText').value = '';
   document.getElementById('remarks').value = '';
+  for (let i = 0; i < 3; i++) { const a = document.getElementById('aeText' + i), b = document.getElementById('aeAmt' + i); if (a) a.value = ''; if (b) b.value = ''; }
   if(document.getElementById('discountRate')) document.getElementById('discountRate').value = 0;
   document.getElementById('stampTextOpt').classList.add('hide');
   setFreePocket('none');
