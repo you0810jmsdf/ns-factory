@@ -332,6 +332,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
 </main>
 
 <div class="toast" id="toast"></div>
+<div id="timingNote" style="position:fixed;left:6px;bottom:4px;z-index:5;font-size:10px;color:#8a8a8a;pointer-events:none;max-width:90vw"></div>
 
 <script>
 (function(){
@@ -402,6 +403,17 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   async function gas(action, body, tries){
     tries = tries || 3;
     let lastErr = null;
+    const t0 = performance.now();
+    // 所要時間の表示専用（処理には影響しない）。再送を含む合計秒と試行回数を画面下に小さく出す
+    const showTiming = (n, ok) => { try{
+      const labels = { analyze:'解析', register:'登録', reanalyze:'読み直し', list:'台帳取得' };
+      if(!labels[action]) return;
+      const note = document.getElementById('timingNote'); if(!note) return;
+      const sec = ((performance.now()-t0)/1000).toFixed(1);
+      const parts = (note._parts = note._parts || {});
+      parts[action] = labels[action] + sec + '秒' + (n>1 ? '（'+n+'回目）' : '') + (ok ? '' : '失敗');
+      note.textContent = Object.keys(parts).map(k=>parts[k]).join('・');
+    }catch(e){} };
     for(let i=0;i<tries;i++){
       try{
         const res = await fetch(GAS_URL,{ method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({action, key: adminKey()}, body||{})) });
@@ -409,8 +421,10 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
         let json;
         try{ json = JSON.parse(text); }catch(e){ throw new Error('GAS応答がJSONではありません（HTTP '+res.status+'）'); }
         if(json && json.error) throw new Error(json.error);
+        showTiming(i+1, true);
         return json;
       }catch(e){
+        if(i === tries-1 || /unauthorized|上限|不正|がありません|id がありません/.test(String(e.message))) showTiming(i+1, false);
         lastErr = e;
         if(/unauthorized|上限|不正|がありません|id がありません/.test(String(e.message))) break; // 再送しても変わらない
         await new Promise(r=>setTimeout(r, 700*(i+1)));
