@@ -1,0 +1,92 @@
+{
+ "tracks": [
+  {
+   "file": "01_brahms_lullaby_rickbrewin.mp3",
+   "title": "ブラームスの子守唄（古いオルゴール）",
+   "author": "Rickbrewin",
+   "license": "CC0 1.0",
+   "source": "Freesound",
+   "page": "https://freesound.org/people/Rickbrewin/sounds/158206/",
+   "download": "https://cdn.freesound.org/previews/158/158206_94105-hq.mp3",
+   "bytes": 815137,
+   "seconds": 33.8
+  },
+  {
+   "file": "02_brahms_lullaby_field_garuda1982.mp3",
+   "title": "ブラームスの子守唄（オルゴールの録音）",
+   "author": "Garuda1982",
+   "license": "CC0 1.0",
+   "source": "Freesound",
+   "page": "https://freesound.org/people/Garuda1982/sounds/416384/",
+   "download": "https://cdn.freesound.org/previews/416/416384_2061858-hq.mp3",
+   "bytes": 2470560,
+   "seconds": 101.7
+  },
+  {
+   "file": "03_music_box_lullaby_clip_audiobitsandbytes.mp3",
+   "title": "オルゴールの子守唄",
+   "author": "AudioBitsAndBytes",
+   "license": "CC0 1.0",
+   "source": "Freesound",
+   "page": "https://freesound.org/s/163644/",
+   "download": "https://cdn.freesound.org/previews/163/163644_1060482-hq.mp3",
+   "bytes": 1083839,
+   "seconds": 45.4
+  },
+  {
+   "file": "04_brahms_op39_waltz3_flying_deer_fx.mp3",
+   "title": "ブラームス ワルツ 作品39-3（オルゴール）",
+   "author": "Flying_Deer_Fx",
+   "license": "CC0 1.0",
+   "source": "Freesound",
+   "page": "https://freesound.org/people/Flying_Deer_Fx/sounds/369405/",
+   "download": "https://cdn.freesound.org/previews/369/369405_6812364-hq.mp3",
+   "bytes": 1404559,
+   "seconds": 59.1
+  },
+  {
+   "file": "05_bach_menuet_flying_deer_fx.mp3",
+   "title": "バッハ メヌエット（オルゴール）",
+   "author": "Flying_Deer_Fx",
+   "license": "CC0 1.0",
+   "source": "Freesound",
+   "page": "https://freesound.org/people/Flying_Deer_Fx/sounds/369404/",
+   "download": "https://cdn.freesound.org/previews/369/369404_6812364-hq.mp3",
+   "bytes": 1213758,
+   "seconds": 51.2
+  },
+  {
+   "file": "06_flea_waltz_flying_deer_fx.mp3",
+   "title": "蚤のワルツ（オルゴール）",
+   "author": "Flying_Deer_Fx",
+   "license": "CC0 1.0",
+   "source": "Freesound",
+   "page": "https://freesound.org/people/Flying_Deer_Fx/sounds/369148/",
+   "download": "https://cdn.freesound.org/previews/369/369148_6812364-hq.mp3",
+   "bytes": 668133,
+   "seconds": 27.8
+  },
+  {
+   "file": "07_guten_abend_wound_up_clock_stephan.ogg",
+   "title": "眠りの歌 Guten Abend, gute Nacht（ぜんまい式の音）",
+   "author": "stephan",
+   "license": "パブリックドメイン",
+   "source": "Wikimedia Commons",
+   "page": "https://commons.wikimedia.org/wiki/File:Lullaby_wound_up_clock_guten_abend_gute_nacht.ogg",
+   "download": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Lullaby_wound_up_clock_guten_abend_gute_nacht.ogg",
+   "bytes": 1336394,
+   "seconds": 46.4
+  },
+  {
+   "file": "08_twinkle_plain.ogg",
+   "title": "きらきら星（シンプル）",
+   "author": "（Wikimedia Commons の投稿者）",
+   "license": "パブリックドメイン",
+   "source": "Wikimedia Commons",
+   "page": "https://commons.wikimedia.org/wiki/File:Twinkle_Twinkle_Little_Star_plain.ogg",
+   "download": "https://upload.wikimedia.org/wikipedia/commons/b/bd/Twinkle_Twinkle_Little_Star_plain.ogg",
+   "bytes": 398032,
+   "seconds": 23.9
+  }
+ ]
+}
