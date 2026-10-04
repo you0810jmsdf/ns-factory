@@ -138,7 +138,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           </div>
           <div class="field-row" id="url-row">
             <label for="e-url">URL</label>
-            <input type="url" id="e-url" placeholder="https://...">
+            <div class="url-wrap">
+              <input type="url" id="e-url" placeholder="https://...">
+              <button type="button" class="btn-gen" onclick="openEntryUrl()" title="サイトを新しいタブで開く">開く ↗</button>
+            </div>
           </div>
         </div>
 
