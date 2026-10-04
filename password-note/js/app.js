@@ -187,6 +187,11 @@ async function handleLogin(e) {
         return;
       }
     }
+    // 開けた合言葉だけを記憶する（チェックなしなら既存の記憶も消す）
+    try {
+      if (document.getElementById('remember-chk').checked) await Remember.save(pw);
+      else await Remember.clear();
+    } catch (e) { /* 記憶に失敗しても開くのは続ける */ }
     showApp();
   } catch (err) {
     toast('合言葉が正しくありません', 'error');
@@ -197,6 +202,37 @@ async function handleLogin(e) {
       ? '作成して始める'
       : '開く';
   }
+}
+
+// 記憶した合言葉で開く。開けなければ記憶を消して通常のログイン画面に戻す。
+async function loginWithRemembered() {
+  const pw = await Remember.load();
+  if (!pw) { await updateRememberUi(); return false; }
+  try {
+    masterPassword = pw;
+    const ok = await loadVaultLocal();
+    if (!ok) { masterPassword = ''; return false; }
+    showApp();
+    return true;
+  } catch (err) {
+    masterPassword = '';
+    await Remember.clear();
+    await updateRememberUi();
+    toast('記憶した合言葉では開けませんでした。合言葉を入力してください', 'error');
+    return false;
+  }
+}
+
+async function updateRememberUi() {
+  const on = await Remember.isSet();
+  document.getElementById('remember-actions').style.display = on ? 'flex' : 'none';
+  document.getElementById('remember-chk').checked = on;
+}
+
+async function clearRemembered() {
+  await Remember.clear();
+  await updateRememberUi();
+  toast('この端末の記憶を消しました', 'success');
 }
 
 function setAuthMode(isNew) {
@@ -263,6 +299,7 @@ function handleLogout() {
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('master-pw').value = '';
   document.getElementById('master-pw-confirm').value = '';
+  updateRememberUi();
 }
 
 async function exportBackup() {
@@ -795,7 +832,12 @@ document.addEventListener('DOMContentLoaded', () => {
     input.type = input.type === 'password' ? 'text' : 'password';
   });
 
+  document.getElementById('remember-open-btn').addEventListener('click', loginWithRemembered);
+  document.getElementById('remember-clear-btn').addEventListener('click', clearRemembered);
+
   DB.get('vault').then(enc => {
     setAuthMode(!enc);
+    updateRememberUi();
+    if (enc) loginWithRemembered();
   });
 });

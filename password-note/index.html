@@ -55,8 +55,17 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         </div>
       </div>
 
+      <label class="remember-row" for="remember-chk">
+        <input type="checkbox" id="remember-chk">
+        <span>この端末で記憶する（30日・次回から自動で開く）</span>
+      </label>
+
       <button type="submit" id="login-btn" class="btn-primary" data-mode="login">開く</button>
     </form>
+    <div id="remember-actions" class="remember-actions" style="display:none">
+      <button type="button" id="remember-open-btn" class="btn-text">記憶した合言葉で開く</button>
+      <button type="button" id="remember-clear-btn" class="btn-text">この端末の記憶を消す</button>
+    </div>
 
     <p class="auth-note">通常は販売者のサーバーへパスワード一覧を送信しません。合言葉を忘れると復旧できません。</p>
     <button type="button" id="toggle-mode-btn" class="btn-text">初めて使う方はこちら</button>
@@ -218,6 +227,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <script src="config.js?v=28"></script>
 <script src="js/crypto.js?v=28"></script>
 <script src="js/db.js?v=28"></script>
+<script src="js/remember.js?v=44"></script>
 <script src="js/gist.js?v=28"></script>
 <script src="js/print.js?v=28"></script>
 <script src="js/autobackup.js?v=34"></script>
