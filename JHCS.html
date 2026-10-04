@@ -184,7 +184,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toolbar-right { display: flex; gap: 8px; }
 
     /* Buttons */
-    .btn { padding: 8px 20px; border-radius: 22px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity .2s; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 20px; border-radius: 22px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity .2s; }
     .btn:hover { opacity: .82; }
     .btn:disabled { opacity: .4; cursor: not-allowed; }
     .btn-primary { background: var(--tan); color: #fff; }
