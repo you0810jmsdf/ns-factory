@@ -3212,7 +3212,10 @@ function normalizeWorkItem(item){
     shortDesc: String(item.shortDesc || '').trim(),
     longDesc: String(item.longDesc || '').trim(),
     price: String(item.price == null ? '' : item.price).trim(),   // 自分の言葉でキャプション（価格の行）用
-    folderId: String(item.folderId || '').trim()
+    folderId: String(item.folderId || '').trim(),
+    // 購入者の声（saveVoice で記録済みの評価日・コメント）。お礼動画の欄へ自動で入れる（2026-10-04）
+    voiceDate: String(item.voiceDate || '').trim(),
+    voiceComment: String(item.voiceComment || '').trim()
   };
 }
 
@@ -3313,6 +3316,7 @@ function applyWorkInfo(work, {translate = false, showLog = false} = {}){
   els.materialNote.value = formatWorkMeta(work);
   if(work.shortDesc) els.featureNote.value = work.shortDesc;
   if(work.longDesc) els.workLongDesc.value = work.longDesc;
+  fillVoiceFromWork(work);
   const presetValue = `work:${work.id}`;
   if([...els.productNamePreset.options].some(option => option.value === presetValue)){
     els.productNamePreset.value = presetValue;
@@ -3857,6 +3861,16 @@ const VOICE_BGM_LEVEL_TARGET_RMS = .08;
 const VOICE_BGM_LEVEL_MIN_GAIN = .6;
 const VOICE_BGM_LEVEL_MAX_GAIN = 3;
 
+// 記録済みの購入者の声を、空欄（または前に自動で入れたまま）のときだけ入れる。手で打った内容は上書きしない。
+// 自動で入れた欄は data-auto="1"。利用者が書き換えると input で外れる
+function fillVoiceFromWork(work){
+  [[els.voiceRatingDate, work.voiceDate, new Date().toISOString().slice(0, 10)], [els.voiceComment, work.voiceComment, '']].forEach(([el, value, fallback]) => {
+    if(!el) return;
+    if(el.value && el.dataset.auto !== '1') return;
+    el.value = value || fallback;
+    el.dataset.auto = el.value ? '1' : '';
+  });
+}
 function voiceCommentText(){
   return String((els.voiceComment && els.voiceComment.value) || '').trim();
 }
@@ -9450,7 +9464,10 @@ function setAppMode(mode){
   }
   if(els.secVoice) els.secVoice.hidden = !voice;
   if(voice){
-    if(els.voiceRatingDate && !els.voiceRatingDate.value) els.voiceRatingDate.value = voiceRatingDateValue();
+    if(els.voiceRatingDate && !els.voiceRatingDate.value){
+      els.voiceRatingDate.value = voiceRatingDateValue();
+      els.voiceRatingDate.dataset.auto = '1';  // 今日の既定値。記録済みの評価日があれば fillVoiceFromWork が差し替える
+    }
     if(els.voiceCharacterKind){
       const kind = characterKind();
       els.voiceCharacterKind.value = (kind === 'hanbai') ? 'hanbai' : 'owl';
@@ -9473,7 +9490,8 @@ if(els.voiceLoadPhotos) els.voiceLoadPhotos.addEventListener('click', () => {
   els.driveWorkNo.value = no;
   addDrivePhotos();
 });
-if(els.voiceComment) els.voiceComment.addEventListener('input', () => { if(isVoiceMode()) drawSelectedOrFirstFrame(); });
+if(els.voiceComment) els.voiceComment.addEventListener('input', () => { els.voiceComment.dataset.auto = ''; if(isVoiceMode()) drawSelectedOrFirstFrame(); });
+if(els.voiceRatingDate) els.voiceRatingDate.addEventListener('input', () => { els.voiceRatingDate.dataset.auto = ''; });
 if(els.voiceThanks) els.voiceThanks.addEventListener('input', () => { if(isVoiceMode()) drawSelectedOrFirstFrame(); });
 if(els.voiceSaveRating) els.voiceSaveRating.addEventListener('click', () => saveVoiceRating(''));
 if(els.voiceBgmTrack) els.voiceBgmTrack.addEventListener('change', () => { stopVoiceBgmPreview(); updateVoiceBgmPreviewUi(); });
