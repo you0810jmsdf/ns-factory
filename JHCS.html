@@ -702,8 +702,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <div class="toolbar">
       <span id="last-updated" style="font-size:12px; color:var(--gray);"></span>
       <div class="toolbar-right">
-        <button class="btn btn-reload" onclick="loadRecords()">🔄 再読み込み</button>
-        <button class="btn btn-export" onclick="exportCSV()">CSV出力</button>
+        <button class="btn btn-reload" style="min-height:auto;" onclick="loadRecords()">🔄 再読み込み</button>
+        <button class="btn btn-export" style="min-height:auto;" onclick="exportCSV()">CSV出力</button>
       </div>
     </div>
     <div class="table-wrap">
