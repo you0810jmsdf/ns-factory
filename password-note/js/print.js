@@ -334,8 +334,8 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
 .back-title { color:#000; }
 .hist-table tbody tr {
   border-bottom:0.25mm solid #000;
-  height:7.8mm;
-  max-height:7.8mm;
+  height:7.6mm;
+  max-height:7.6mm;
 }
 .hist-table tbody td {
   padding:0.4mm 1.2mm;
