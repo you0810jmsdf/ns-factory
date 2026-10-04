@@ -246,10 +246,37 @@ function setAuthMode(isNew) {
     : '開くための合言葉を入力してください。';
 }
 
-// 放置で自動的に閉じる（最後の操作から 5 分）。経過は時刻で判定する
+// 放置で自動的に閉じる（最後の操作から N 分・既定5分・設定画面で変更）。経過は時刻で判定する
 // （バックグラウンドのタブはタイマーが遅れるため、カウントダウン方式にしない）。
 // 閉じてもこの端末の「記憶」は残す（ログイン画面に戻るだけ）。
-const IDLE_CLOSE_MS = 5 * 60 * 1000;
+const IDLE_MINUTES_KEY = 'pw-idle-minutes';
+const IDLE_MINUTES_CHOICES = [1, 5, 15, 30];
+const IDLE_MINUTES_DEFAULT = 5;
+
+function getIdleMinutes() {
+  try {
+    const n = parseInt(localStorage.getItem(IDLE_MINUTES_KEY), 10);
+    if (IDLE_MINUTES_CHOICES.includes(n)) return n;
+  } catch (e) { /* 読めなければ既定値 */ }
+  return IDLE_MINUTES_DEFAULT;
+}
+
+function setIdleMinutes(n) {
+  if (!IDLE_MINUTES_CHOICES.includes(n)) return;
+  try { localStorage.setItem(IDLE_MINUTES_KEY, String(n)); } catch (e) { /* 保存できなくても今回は有効 */ }
+  markActivity();
+  toast('放置で閉じる時間を ' + n + ' 分にしました', 'success');
+}
+
+function openSettingsModal() {
+  document.getElementById('idle-minutes').value = String(getIdleMinutes());
+  document.getElementById('settings-modal').style.display = 'flex';
+}
+
+function closeSettingsModal() {
+  document.getElementById('settings-modal').style.display = 'none';
+}
+
 let lastActivityAt = Date.now();
 let idleCheckTimer = null;
 
@@ -267,7 +294,7 @@ function stopIdleWatch() {
 }
 
 function checkIdle() {
-  if (Date.now() - lastActivityAt < IDLE_CLOSE_MS) return;
+  if (Date.now() - lastActivityAt < getIdleMinutes() * 60 * 1000) return;
   closeAllModals();
   handleLogout();
   toast('しばらく操作がなかったため閉じました', 'info');
@@ -277,6 +304,7 @@ function closeAllModals() {
   document.getElementById('entry-modal').style.display = 'none';
   document.getElementById('gist-modal').style.display = 'none';
   document.getElementById('snapshot-modal').style.display = 'none';
+  document.getElementById('settings-modal').style.display = 'none';
   editingId = null;
 }
 
@@ -872,6 +900,9 @@ document.addEventListener('DOMContentLoaded', () => {
     input.type = input.type === 'password' ? 'text' : 'password';
   });
 
+  document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
+  document.getElementById('close-settings-modal-btn').addEventListener('click', closeSettingsModal);
+  document.getElementById('idle-minutes').addEventListener('change', e => setIdleMinutes(parseInt(e.target.value, 10)));
   document.getElementById('remember-open-btn').addEventListener('click', loginWithRemembered);
   document.getElementById('remember-clear-btn').addEventListener('click', clearRemembered);
 
