@@ -1632,6 +1632,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'gallery.loadingPhoto': 'Loading photo',
     'gallery.loadError': 'Could not load the gallery data. Please reload after a while.',
     'badge.noRestock': 'No restock',
+    'badge.orderMaking': 'Custom order in progress',
+    'avail.orderMaking': 'Custom order in progress',
     'avail.soldout': 'SOLDOUT (no longer for sale)',
     'avail.noRestock': 'No restock planned',
     'cta.reorder': 'Request a re-make (create a quote)',
@@ -1874,7 +1876,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       const planner = isSystemPlannerWork(work);
       const unavailable = !!(work.soldout || work.noRestock);
       const hasPrice = Number(work.price) > 0;
-      const noticeLabel = work.soldout ? T('avail.soldout', 'SOLDOUT（販売終了）') : T('avail.noRestock', '再販予定なし');
+      const noticeLabel = work.orderMaking ? T('avail.orderMaking', 'オーダー製作中') : work.soldout ? T('avail.soldout', 'SOLDOUT（販売終了）') : T('avail.noRestock', '再販予定なし');
 
       if (availabilityNotice) {
         if (unavailable) {
@@ -1886,12 +1888,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         }
       }
 
-      configureWaitlist(work, unavailable);
+      configureWaitlist(work, unavailable && !work.orderMaking); // オーダー製作中は「知らせてもらう」を出さない
 
       // 価格が入っていない（0円）商品は、金額の出ない見積り帳票を表示しても意味が無いため
       // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
       const quoteIntent = unavailable ? 'similar_order_quote' : 'stock_purchase_quote';
-      const quoteConf = hasPrice
+      const quoteConf = (hasPrice && !work.orderMaking) // オーダー製作中は「同じものを再注文したい」を出さない
         ? { href: buildStockQuoteUrl(work, quoteIntent), label: unavailable ? T('cta.reorder', '同じものを再注文したい（受注製作・名前と連絡先を送る）') : T('cta.buyQuote', 'この在庫品の購入相談をする（名前・連絡先を送る）'), action: unavailable ? '見積フォームを開いた（同一作品の再注文相談）' : '見積フォームを開いた（在庫品購入相談）' }
         : null;
       const estimateConf = null;
@@ -2008,7 +2010,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       renderRankTop3();
       gallery.innerHTML = filtered.map((work, index) => {
         const unavailable = work.soldout || work.noRestock;
-        const badge = work.soldout
+        const badge = work.orderMaking
+          ? '<span class="badge-unavailable">' + T('badge.orderMaking', 'オーダー製作中') + '</span>'
+          : work.soldout
           ? '<span class="badge-unavailable">SOLDOUT</span>'
           : work.noRestock
             ? '<span class="badge-unavailable">' + T('badge.noRestock', '再販予定なし') + '</span>'
@@ -2774,14 +2778,19 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     // GAS(api=products)はこのフラグを返さないため、あとでGASデータに差し替わった時に
     // ここから復元しないとテクスチャシミュレーターの導線が消えてしまう。
     const patternIds = new Set();
+    // 写真が無く、型紙・塗り履歴・完成イメージだけの商品のID（works-data.json の orderMaking）。
+    // 「オーダー製作中」と表示する（2026-10-04 事業主指示）。patternIds と同じ理由でここから復元する
+    const orderMakingIds = new Set();
 
     function toWorks(data) {
       if (Array.isArray(data)) {
         data.forEach((item) => {
           if (item && item.hasPattern) patternIds.add(item.id || item.name || item.title);
+          if (item && item.orderMaking) orderMakingIds.add(item.id || item.name || item.title);
         });
         return data.map((item) => ({
           hasPattern: !!item.hasPattern || patternIds.has(item.id || item.name || item.title),
+          orderMaking: !!item.orderMaking || orderMakingIds.has(item.id || item.name || item.title),
           id: item.id || item.name || item.title,
           title: item.name || item.title || item.id || '作品',
           category: item.category || '',
