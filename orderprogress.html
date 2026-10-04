@@ -1002,8 +1002,10 @@ function updateStats(records) {
   document.getElementById('stat-done').textContent  = done;
 }
 
+// 完了＝お客様の手元に渡ったもの（2026-10-05 事業主決定B）。『完成』『発送済み』はお渡し済みになるまで進行中のまま。
+// ⛔ 首席幕僚(Jarvis)の report.py ORDER_DONE_STATUSES と必ず揃える。
 function isDone(r) {
-  return ['完成','発送済み','お渡し済み','作業完了','受領評価済'].includes(r['ステータス']);
+  return ['お渡し済み','作業完了','受領評価済'].includes(r['ステータス']);
 }
 function isWip(r) {
   return !isDone(r);
