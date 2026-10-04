@@ -263,7 +263,7 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
 
 /* ヘッダー — 高さ固定で表裏の罫線位置を揃える */
 .card-header {
-  height:18mm; flex-shrink:0; overflow:hidden;
+  height:20mm; flex-shrink:0; overflow:hidden;
   margin-bottom:1mm;
   position:relative;
   z-index:1;
@@ -283,11 +283,11 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
   font-size:7.5pt; font-weight:600; color:#000;
   margin-top:1mm;
   line-height:1.2;
-  /* 1行固定だと長いURLが右で「…」に切られていた。最大2行で折り返す（ヘッダー高18mmは表裏の罫線をそろえるため固定） */
+  /* 1行固定だと長いURLが右で「…」に切られていた。最大2行で折り返す（ヘッダー高20mmは表裏の罫線をそろえるため固定） */
   white-space:normal; overflow-wrap:anywhere; word-break:break-all;
-  max-height:7.2mm; overflow:hidden;
+  max-height:9.2mm; overflow:hidden;
 }
-.svc-sub--long { font-size:6pt; line-height:1.15; max-height:7.4mm; }
+.svc-sub--long { font-size:6pt; line-height:1.15; max-height:9.4mm; }
 .header-rule {
   border-bottom:0.5mm solid #000;
   margin-bottom:0;
