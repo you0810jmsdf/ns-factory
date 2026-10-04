@@ -224,11 +224,11 @@ function buyBlock(it) {
   const code = esc(s ? s.code : it.code);
   return `<div class="buy">
       <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
-      <a href="#" class="btn btn-gold" data-checkout="${code}" style="display:none"><span>カードで購入する（${s ? esc(s.name) + '・' : ''}¥<span data-price>${yen(priceOf(it))}</span>）</span></a>
+      <a href="#" class="btn btn-gold" data-checkout="${code}" style="display:none"><span>教材を購入する（${s ? esc(s.name) + '・' : ''}¥<span data-price>${yen(priceOf(it))}</span>）</span></a>
       <p class="note" data-checkout-on="${code}" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
       <a href="${esc(mailHref(it))}" class="btn btn-line" data-checkout-on="${code}" style="display:none">銀行振込で申し込む（メール）</a>
       <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
-      <a href="${esc(mailHref(it))}" class="btn btn-gold" data-checkout-off="${code}">メールで購入を申し込む（銀行振込）</a>
+      <a href="${esc(mailHref(it))}" class="btn btn-gold" data-checkout-off="${code}">教材を購入する（銀行振込・メールで申込）</a>
       <p class="note" data-checkout-off="${code}">メールをいただければ振込先をご案内し、ご入金確認後にダウンロードリンクをお送りします。</p>
     </div>`;
 }

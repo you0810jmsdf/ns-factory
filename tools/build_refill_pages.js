@@ -498,8 +498,8 @@ function ctaSection(it) {
     <div class="cta-price-block"><span class="cta-price">¥${yen(it.price)} <small>${esc(it.priceNote || '税込')}</small></span></div>
     <div class="cta-actions">
       <!-- カード決済は assets/pdf-checkout.js が配信GAS（商品シート）に販売可否を問い合わせて出す。使えない間はメール申込だけが見える。 -->
-      <a href="#" data-checkout="${code}" class="btn btn-primary btn-large" style="display:none">カードで購入する（¥<span data-price>${yen(it.price)}</span>）</a>
-      <a href="#" data-checkout-off="${code}" class="btn btn-primary btn-large js-refill-mail">メールで購入を申し込む（銀行振込）</a>
+      <a href="#" data-checkout="${code}" class="btn btn-primary btn-large" style="display:none">リフィルPDFを購入する（¥<span data-price>${yen(it.price)}</span>）</a>
+      <a href="#" data-checkout-off="${code}" class="btn btn-primary btn-large js-refill-mail">リフィルPDFを購入する（銀行振込・メールで申込）</a>
       <p data-checkout-on="${code}" style="display:none;margin-top:12px;font-size:12px;color:rgba(255,255,255,.55)">Stripe の安全な決済画面に移動します。お支払い後、ダウンロードリンクが表示され、メールでも届きます。</p>
       <div data-checkout-on="${code}" style="display:none;margin-top:14px;width:100%">
         <a href="#" class="btn btn-large btn-outline-w js-refill-mail">銀行振込で申し込む（メール）</a>

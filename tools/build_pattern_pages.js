@@ -194,11 +194,11 @@ function buyBlock(it) {
   const code = esc(it.code);
   return `<div class="buy">
       <!-- カード購入: pdf-checkout.js が商品シートで販売中のときだけ表示（テスト鍵の間は ?stripe_test=1 のときだけ） -->
-      <a href="#" class="btn btn-gold" data-checkout="${code}" style="display:none"><span>カードで購入する（¥<span data-price>${yen(it.price)}</span>）</span></a><!-- 文字を1つの span に包む（.btn の gap が金額の前後に空きを作ったため・2026-09-14） -->
+      <a href="#" class="btn btn-gold" data-checkout="${code}" style="display:none"><span>型紙PDFを購入する（¥<span data-price>${yen(it.price)}</span>）</span></a><!-- 文字を1つの span に包む（.btn の gap が金額の前後に空きを作ったため・2026-09-14） -->
       <p class="note" data-checkout-on="${code}" style="display:none">Stripe の安全な決済画面に移動します。お支払い後すぐにダウンロードでき、同じリンクをメールでもお送りします。</p>
       <a href="${esc(mailHref(it))}" class="btn btn-line" data-checkout-on="${code}" style="display:none">銀行振込で申し込む（メール）</a>
       <!-- カード決済が使えないとき（鍵未設定・販売停止・通信失敗）はメール申込だけ -->
-      <a href="${esc(mailHref(it))}" class="btn btn-gold" data-checkout-off="${code}">メールで購入を申し込む（銀行振込）</a>
+      <a href="${esc(mailHref(it))}" class="btn btn-gold" data-checkout-off="${code}">型紙PDFを購入する（銀行振込・メールで申込）</a>
       <p class="note" data-checkout-off="${code}">メールをいただければ振込先をご案内し、ご入金確認後に型紙PDFをお送りします。</p>
     </div>`;
 }
