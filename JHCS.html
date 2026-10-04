@@ -621,7 +621,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <div class="works-lead">
       <span class="works-count" id="works-count"></span>
       <p>受講生のみなさんが講座で仕上げた作品です。クリックすると拡大表示できます。</p>
-      <button class="btn btn-secondary" id="btn-works-admin" style="margin-left:auto;font-size:12px;padding:4px 12px;" onclick="worksAdminLogin()">🛠 作品を登録</button>
+      <button class="btn btn-secondary" id="btn-works-admin" style="min-height:auto;margin-left:auto;font-size:12px;padding:4px 12px;" onclick="worksAdminLogin()">🛠 作品を登録</button>
     </div>
     <div class="works-grid" id="works-grid" aria-label="生徒作品ギャラリー"></div>
 
@@ -657,7 +657,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <div class="loading">GASに接続するとここに作品写真が表示されます。</div>
         </div>
         <div style="text-align:right; margin-top:8px;">
-          <button class="btn btn-secondary" style="font-size:12px;" onclick="(function(){var b=document.getElementById('photo-setup-banner');b.style.display='block';b.scrollIntoView({behavior:'smooth',block:'center'});})()">⚙️ フォルダ変更</button>
+          <button class="btn btn-secondary" style="min-height:auto;font-size:12px;" onclick="(function(){var b=document.getElementById('photo-setup-banner');b.style.display='block';b.scrollIntoView({behavior:'smooth',block:'center'});})()">⚙️ フォルダ変更</button>
         </div>
       </div>
     </details>
@@ -677,8 +677,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <summary><h2>出欠掲示板</h2></summary>
     <p class="att-lead">予約システム（hacomono）から届く予約確認・欠席の連絡を、開催日ごとに自動で集計しています。予約の人数は開催前日のメールで確定します。</p>
     <div class="att-toolbar">
-      <button class="btn btn-secondary" id="btn-att-admin" style="font-size:12px;padding:4px 12px;" onclick="enterAdminView()">🔑 管理者として表示（名前を見る）</button>
-      <button class="btn btn-secondary" style="font-size:12px;padding:4px 12px;" onclick="loadAttendance()">🔄 最新にする</button>
+      <button class="btn btn-secondary" id="btn-att-admin" style="min-height:auto;font-size:12px;padding:4px 12px;" onclick="enterAdminView()">🔑 管理者として表示（名前を見る）</button>
+      <button class="btn btn-secondary" style="min-height:auto;font-size:12px;padding:4px 12px;" onclick="loadAttendance()">🔄 最新にする</button>
       <span id="att-updated" style="font-size:12px;color:var(--gray);"></span>
     </div>
     <div class="att-table-wrap">
@@ -767,7 +767,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
   <!-- GAS URL 変更 -->
   <div style="text-align:right; margin-top:-20px;">
-    <button class="btn btn-secondary" style="font-size:12px;" onclick="changeGasUrl()">⚙️ GAS URL を変更</button>
+    <button class="btn btn-secondary" style="min-height:auto;font-size:12px;" onclick="changeGasUrl()">⚙️ GAS URL を変更</button>
   </div>
 </div>
 
@@ -907,7 +907,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <div class="notice-history-item">
         <div class="notice-history-head">
           <div class="notice-history-title">${esc(item['タイトル'] || 'お知らせ')}</div>
-          <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteNotice('${escAttr(item['ID'])}')">削除</button>
+          <button class="btn btn-danger" style="min-height:auto;padding:4px 10px;font-size:12px;" onclick="deleteNotice('${escAttr(item['ID'])}')">削除</button>
         </div>
         <div class="notice-meta">掲載: ${fmtDateTime(item['更新日時'])} / 終了: ${fmtDateTime(item['掲載終了日時'])}</div>
         <div class="notice-history-text">${esc(item['本文'] || '')}</div>
@@ -962,7 +962,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     } catch (e) {
       document.getElementById('att-head').innerHTML = '';
       document.getElementById('att-body').innerHTML =
-        `<tr><td class="empty-msg">出欠を読み込めませんでした。<br><small>${esc(e.message)}</small> <button class="btn btn-secondary" style="font-size:12px;padding:2px 10px;" onclick="loadAttendance()">もう一度読み込む</button></td></tr>`;
+        `<tr><td class="empty-msg">出欠を読み込めませんでした。<br><small>${esc(e.message)}</small> <button class="btn btn-secondary" style="min-height:auto;font-size:12px;padding:2px 10px;" onclick="loadAttendance()">もう一度読み込む</button></td></tr>`;
     }
   }
 
@@ -1037,7 +1037,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
                        : `<span class="att-num">${Number(s.expected) || 0}名</span>`;
         let rec = '<span class="att-rec-no">―</span>';
         if (s.recorded) rec = '<span class="att-rec-ok">登録済み</span>';
-        else if (s.status !== 'upcoming' && withNames) rec = `<button class="btn btn-primary" style="font-size:12px;padding:3px 10px;white-space:nowrap;" onclick="prefillRecordFromAttendance(${i})">実績に登録</button>`;
+        else if (s.status !== 'upcoming' && withNames) rec = `<button class="btn btn-primary" style="min-height:auto;font-size:12px;padding:3px 10px;white-space:nowrap;" onclick="prefillRecordFromAttendance(${i})">実績に登録</button>`;
         else if (s.status !== 'upcoming') rec = '<span class="att-rec-no">未登録</span>';
         const names = withNames
           ? `<td class="att-names">${esc((s.presentNames || []).join('、') || '―')}</td><td class="att-names">${esc((s.absentNames || []).join('、') || '―')}</td>`
@@ -1268,9 +1268,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
             <div class="curriculum-head">
               <div class="notice-meta">更新: ${fmtDateTime(item['更新日時'])}</div>
               <div>
-                <button class="btn btn-secondary btn-cur-edit" style="padding:4px 10px;font-size:12px;" onclick="unlockCurriculum(${lesson})">編集</button>
-                <button class="btn btn-primary btn-cur-save" style="display:none;padding:4px 10px;font-size:12px;" onclick="saveCurriculum(${lesson})">保存</button>
-                <button class="btn btn-secondary btn-cur-cancel" style="display:none;padding:4px 10px;font-size:12px;" onclick="loadCurriculum()">キャンセル</button>
+                <button class="btn btn-secondary btn-cur-edit" style="min-height:auto;padding:4px 10px;font-size:12px;" onclick="unlockCurriculum(${lesson})">編集</button>
+                <button class="btn btn-primary btn-cur-save" style="min-height:auto;display:none;padding:4px 10px;font-size:12px;" onclick="saveCurriculum(${lesson})">保存</button>
+                <button class="btn btn-secondary btn-cur-cancel" style="min-height:auto;display:none;padding:4px 10px;font-size:12px;" onclick="loadCurriculum()">キャンセル</button>
               </div>
             </div>
             <div class="curriculum-fields">
@@ -1428,8 +1428,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <td><div style="max-width:180px;word-break:break-word;white-space:pre-wrap;color:var(--gray);font-size:12px;">${esc(memo)}</div></td>
           <td style="font-size:11px;color:var(--gray);white-space:nowrap;">${fmtDate(r['登録日時'])}</td>
           <td style="white-space:nowrap;">
-            <button class="btn btn-edit" style="padding:4px 10px;font-size:12px;" onclick="openEditModal('${id}')">✏️</button>
-            <button class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteRecord('${id}')">🗑</button>
+            <button class="btn btn-edit" style="min-height:auto;padding:4px 10px;font-size:12px;" onclick="openEditModal('${id}')">✏️</button>
+            <button class="btn btn-danger" style="min-height:auto;padding:4px 10px;font-size:12px;" onclick="deleteRecord('${id}')">🗑</button>
           </td>
         </tr>`;
       });
