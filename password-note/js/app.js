@@ -246,7 +246,46 @@ function setAuthMode(isNew) {
     : '開くための合言葉を入力してください。';
 }
 
+// 放置で自動的に閉じる（最後の操作から 5 分）。経過は時刻で判定する
+// （バックグラウンドのタブはタイマーが遅れるため、カウントダウン方式にしない）。
+// 閉じてもこの端末の「記憶」は残す（ログイン画面に戻るだけ）。
+const IDLE_CLOSE_MS = 5 * 60 * 1000;
+let lastActivityAt = Date.now();
+let idleCheckTimer = null;
+
+function markActivity() { lastActivityAt = Date.now(); }
+
+function startIdleWatch() {
+  stopIdleWatch();
+  markActivity();
+  idleCheckTimer = setInterval(checkIdle, 10000);
+}
+
+function stopIdleWatch() {
+  clearInterval(idleCheckTimer);
+  idleCheckTimer = null;
+}
+
+function checkIdle() {
+  if (Date.now() - lastActivityAt < IDLE_CLOSE_MS) return;
+  closeAllModals();
+  handleLogout();
+  toast('しばらく操作がなかったため閉じました', 'info');
+}
+
+function closeAllModals() {
+  document.getElementById('entry-modal').style.display = 'none';
+  document.getElementById('gist-modal').style.display = 'none';
+  document.getElementById('snapshot-modal').style.display = 'none';
+  editingId = null;
+}
+
+['pointerdown', 'keydown', 'wheel', 'scroll', 'touchstart'].forEach(ev =>
+  document.addEventListener(ev, markActivity, { passive: true, capture: true }));
+document.addEventListener('visibilitychange', () => { if (!document.hidden && idleCheckTimer) checkIdle(); });
+
 function showApp() {
+  startIdleWatch();
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'flex';
   applyLaunchQuery();
@@ -292,6 +331,7 @@ function applyLaunchQuery() {
 }
 
 function handleLogout() {
+  stopIdleWatch();
   masterPassword = '';
   vault = { entries: [], lastModified: null };
   selectedIds.clear();
