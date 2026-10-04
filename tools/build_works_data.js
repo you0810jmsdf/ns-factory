@@ -82,7 +82,10 @@ async function fetchPatternFolders(maxRounds = 6) {
         const j = JSON.parse(text);
         if (j.ok && Array.isArray(j.folders)) {
           console.log(`  試行${i}: 成功 (${Date.now() - started}ms) ${j.folders.length}フォルダ`);
-          return new Set(j.folders.map((f) => f.folderId));
+          const set = new Set(j.folders.map((f) => f.folderId));
+          // 写真が無く、型紙・塗り履歴・完成イメージだけのフォルダ（作品集で「オーダー製作中」を出す・2026-10-04）
+          set.onlyPattern = new Set(j.folders.filter((f) => f.onlyPattern).map((f) => f.folderId));
+          return set;
         }
       }
       console.log(`  試行${i}: 失敗 (${Date.now() - started}ms)`);
@@ -123,18 +126,21 @@ function sanitize(products) {
   console.log('型紙SVGを持つフォルダを取得します…');
   const patternFolders = await fetchPatternFolders();
   let marked = 0;
+  let made = 0;
   if (patternFolders) {
     data.forEach((p) => {
       if (p.folderId && patternFolders.has(p.folderId)) { p.hasPattern = true; marked++; }
+      if (p.folderId && patternFolders.onlyPattern && patternFolders.onlyPattern.has(p.folderId)) { p.orderMaking = true; made++; }
     });
-    console.log(`  hasPattern: ${marked}件`);
+    console.log(`  hasPattern: ${marked}件 / orderMaking（オーダー製作中）: ${made}件`);
   } else {
     // 取得できなかった。GASは断続的に落ちるので、ここで消さず前回値を引き継ぐ
     console.log('  ※ 取得できませんでした。前回の hasPattern を引き継ぎます。');
     try {
       const prev = JSON.parse(fs.readFileSync(OUT, 'utf8'));
       const prevIds = new Set(prev.filter((p) => p.hasPattern).map((p) => p.id));
-      data.forEach((p) => { if (prevIds.has(p.id)) { p.hasPattern = true; marked++; } });
+      const prevMaking = new Set(prev.filter((p) => p.orderMaking).map((p) => p.id));
+      data.forEach((p) => { if (prevIds.has(p.id)) { p.hasPattern = true; marked++; } if (prevMaking.has(p.id)) p.orderMaking = true; });
     } catch (e) { /* 前回ファイルが無ければ引き継がない */ }
     console.log(`  引き継ぎ: ${marked}件`);
   }
