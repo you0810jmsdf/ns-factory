@@ -1,4 +1,4 @@
-const CACHE = 'pw-manager-v42';
+const CACHE = 'pw-manager-v43';
 const ASSETS = [
   './',
   './index.html',
