@@ -445,9 +445,35 @@ function renderList() {
         ${creds ? `<div class="entry-creds"><span class="cred-id">${escHtml(creds.username || '(IDなし)')}</span><span class="cred-dot">パスワード登録済み</span></div>` : ''}
         <div class="entry-date">更新: ${fmtDate(entry.updatedAt)}</div>
       </div>
+      ${creds ? `<div class="entry-copy-btns">
+        <button class="entry-copy-btn" onclick="event.stopPropagation(); copyCardCred('${entryId}', 'username')" title="IDをコピー">IDコピー</button>
+        <button class="entry-copy-btn" onclick="event.stopPropagation(); copyCardCred('${entryId}', 'password')" title="パスワードをコピー">PWコピー</button>
+      </div>` : ''}
       <button class="entry-edit-btn" onclick="event.stopPropagation(); openEntry('${entryId}')" title="編集">編集</button>
     </div>`;
   }).join('');
+}
+
+async function copyCardCred(id, field) {
+  const entry = vault.entries.find(e => e.id === id);
+  const creds = entry && getLatestCreds(entry);
+  const label = field === 'username' ? 'ID' : 'パスワード';
+  const text = creds && creds[field];
+  if (!text) { toast(label + 'が登録されていません', 'error'); return; }
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    if (!ok) { toast('コピーできませんでした', 'error'); return; }
+  }
+  toast(label + 'をコピーしました', 'success');
 }
 
 function toggleSelect(id) {
