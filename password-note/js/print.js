@@ -127,6 +127,7 @@ const PrintManager = (() => {
   };
 
   const TOTAL_ROWS = 13;
+  const SUB_LONG_UNITS = 100; // これを超えたら .svc-sub--long（実測で調整済みの値を入れる）
 
   function cardFrontHTML(entry) {
     const maxRows = TOTAL_ROWS + 1;
@@ -134,9 +135,12 @@ const PrintManager = (() => {
     const blankRows = Array(Math.max(0, maxRows - printRows.length))
       .fill('<tr class="blank-row"><td class="col-date"></td><td class="col-hist"></td></tr>');
 
-    const ownerLine = entry.owner
-      ? `<div class="svc-sub">${entry.owner}${entry.type === 'website' && entry.url ? '　' + entry.url : ''}</div>`
-      : (entry.type === 'website' && entry.url ? `<div class="svc-sub">${entry.url}</div>` : '');
+    const subText = entry.owner
+      ? `${entry.owner}${entry.type === 'website' && entry.url ? '　' + entry.url : ''}`
+      : (entry.type === 'website' && entry.url ? entry.url : '');
+    // 長いURLは字を小さくして3行まで入れる（2行・7.5ptで約110字、3行・6ptで約190字が目安）
+    const subCls = textUnits(subText) > SUB_LONG_UNITS ? 'svc-sub svc-sub--long' : 'svc-sub';
+    const ownerLine = subText ? `<div class="${subCls}">${subText}</div>` : '';
 
     return `
     <div class="card-front">
@@ -276,10 +280,14 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
   line-height:1.15;
 }
 .svc-sub {
-  font-size:9pt; font-weight:600; color:#000;
+  font-size:7.5pt; font-weight:600; color:#000;
   margin-top:1mm;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  line-height:1.2;
+  /* 1行固定だと長いURLが右で「…」に切られていた。最大2行で折り返す（ヘッダー高18mmは表裏の罫線をそろえるため固定） */
+  white-space:normal; overflow-wrap:anywhere; word-break:break-all;
+  max-height:7.2mm; overflow:hidden;
 }
+.svc-sub--long { font-size:6pt; line-height:1.15; max-height:7.4mm; }
 .header-rule {
   border-bottom:0.5mm solid #000;
   margin-bottom:0;
