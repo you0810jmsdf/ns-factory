@@ -324,6 +324,27 @@ a.url-open-btn:hover {
   transition: color 0.2s;
 }
 .entry-edit-btn:hover { color: var(--accent); }
+.entry-copy-btns {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.3rem;
+}
+.entry-copy-btn {
+  padding: 0.3rem 0.55rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.entry-copy-btn:hover { border-color: var(--accent); }
+@media (max-width: 600px) {
+  .entry-creds .cred-dot { display: none; }
+  .entry-creds .cred-id { word-break: break-all; }
+}
 
 /* ── FAB ── */
 .fab {
