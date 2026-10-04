@@ -522,9 +522,13 @@ function renderHistoryForm(history) {
         <button type="button" class="btn-icon btn-danger" onclick="removeHistoryRow(${i})" title="削除">削除</button>
       </div>
       <div class="hr-creds">
-        <input type="text" class="h-user" value="${escHtml(h.username || '')}" placeholder="ID / ユーザー名">
+        <div class="pw-wrap">
+          <input type="text" class="h-user" value="${escHtml(h.username || '')}" placeholder="ID / ユーザー名">
+          <button type="button" class="btn-gen" onclick="copyField(this, 'ID')" title="IDをコピー">コピー</button>
+        </div>
         <div class="pw-wrap">
           <input type="text" class="h-pass" value="${escHtml(h.password || '')}" placeholder="パスワード">
+          <button type="button" class="btn-gen" onclick="copyField(this, 'パスワード')" title="パスワードをコピー">コピー</button>
           <button type="button" class="btn-gen" onclick="genAndFill(this)" title="自動生成">生成</button>
         </div>
       </div>
@@ -552,9 +556,13 @@ function addHistoryRow() {
       <button type="button" class="btn-icon btn-danger" onclick="removeHistoryRow(${idx})" title="削除">削除</button>
     </div>
     <div class="hr-creds">
-      <input type="text" class="h-user" placeholder="ID / ユーザー名">
+      <div class="pw-wrap">
+        <input type="text" class="h-user" placeholder="ID / ユーザー名">
+        <button type="button" class="btn-gen" onclick="copyField(this, 'ID')" title="IDをコピー">コピー</button>
+      </div>
       <div class="pw-wrap">
         <input type="text" class="h-pass" placeholder="パスワード">
+        <button type="button" class="btn-gen" onclick="copyField(this, 'パスワード')" title="パスワードをコピー">コピー</button>
         <button type="button" class="btn-gen" onclick="genAndFill(this)" title="自動生成">生成</button>
       </div>
     </div>
@@ -571,6 +579,27 @@ function removeHistoryRow(idx) {
     const btn = r.querySelector('.btn-danger');
     if (btn) btn.setAttribute('onclick', `removeHistoryRow(${i})`);
   });
+}
+
+async function copyField(btn, label) {
+  const input = btn.closest('.pw-wrap').querySelector('input');
+  const text = input.value;
+  if (!text) { toast(label + 'が空です', 'error'); return; }
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    input.select();
+    if (!document.execCommand('copy')) { toast('コピーできませんでした', 'error'); return; }
+  }
+  toast(label + 'をコピーしました', 'success');
+}
+
+function openEntryUrl() {
+  let url = document.getElementById('e-url').value.trim();
+  if (!url) { toast('URLが空です', 'error'); return; }
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(url)) url = 'https://' + url;
+  if (!/^https?:\/\//i.test(url)) { toast('http(s)のURLのみ開けます', 'error'); return; }
+  window.open(url, '_blank', 'noopener');
 }
 
 function genAndFill(btn) {
