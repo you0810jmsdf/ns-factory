@@ -105,6 +105,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <button class="icon-btn" id="autobackup-btn" title="保存先フォルダを記憶して自動で予備コピーを書き出す">自動保存</button>
     <button class="icon-btn" id="import-btn" title="暗号化済みの予備コピーを読み込む">予備コピー読込</button>
     <button class="icon-btn" id="snapshot-btn" title="保存のたびに自動で残る履歴から復元">自動復元</button>
+    <button class="icon-btn" id="settings-btn" title="放置で自動的に閉じるまでの時間を変更">設定</button>
     <input type="file" id="import-file" accept=".json,application/json" style="display:none">
   </div>
 
@@ -218,6 +219,29 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         保存操作のたびに直近5回分の状態を端末内に自動で残しています。うっかり上書き・削除してしまった場合はここから戻せます（他の端末やPC初期化には対応できません）。
       </p>
       <div id="snapshot-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="settings-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+  <div class="modal-card" style="max-width:420px">
+    <div class="modal-header">
+      <h2 id="settings-modal-title">設定</h2>
+      <button class="btn-icon" id="close-settings-modal-btn" title="閉じる">×</button>
+    </div>
+    <div class="modal-body" style="gap:12px">
+      <div class="field-row">
+        <label for="idle-minutes">放置で自動的に閉じるまでの時間</label>
+        <select id="idle-minutes">
+          <option value="1">1分</option>
+          <option value="5">5分（標準）</option>
+          <option value="15">15分</option>
+          <option value="30">30分</option>
+        </select>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin:0">
+        操作（クリック・キー入力・スクロール・タッチ）がないまま、この時間がたつと自動で閉じます。この設定は、この端末のこのブラウザだけに保存されます。
+      </p>
     </div>
   </div>
 </div>
