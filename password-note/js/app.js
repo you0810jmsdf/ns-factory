@@ -473,7 +473,28 @@ async function copyCardCred(id, field) {
     ta.remove();
     if (!ok) { toast('コピーできませんでした', 'error'); return; }
   }
-  toast(label + 'をコピーしました', 'success');
+  if (field === 'password') {
+    scheduleClipboardClear(text);
+    toast(label + 'をコピーしました（30秒後に自動で消去）', 'success');
+  } else {
+    toast(label + 'をコピーしました', 'success');
+  }
+}
+
+const CLIPBOARD_CLEAR_MS = 30000;
+let clipboardClearTimer = null;
+
+// パスワードをコピーしたら30秒後にクリップボードを空にする。
+// 別の内容をコピーし直していたら（読み取れた場合のみ判定）消さない。
+function scheduleClipboardClear(text) {
+  clearTimeout(clipboardClearTimer);
+  clipboardClearTimer = setTimeout(async () => {
+    try {
+      let current = text;
+      try { current = await navigator.clipboard.readText(); } catch (e) { /* 読めない環境では消去を優先 */ }
+      if (current === text) await navigator.clipboard.writeText('');
+    } catch (e) { /* タブが非アクティブ等で消せない場合は何もしない */ }
+  }, CLIPBOARD_CLEAR_MS);
 }
 
 function toggleSelect(id) {
@@ -617,7 +638,12 @@ async function copyField(btn, label) {
     input.select();
     if (!document.execCommand('copy')) { toast('コピーできませんでした', 'error'); return; }
   }
-  toast(label + 'をコピーしました', 'success');
+  if (input.classList.contains('h-pass')) {
+    scheduleClipboardClear(text);
+    toast(label + 'をコピーしました（30秒後に自動で消去）', 'success');
+  } else {
+    toast(label + 'をコピーしました', 'success');
+  }
 }
 
 function openEntryUrl() {
