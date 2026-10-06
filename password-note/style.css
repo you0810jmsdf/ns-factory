@@ -720,3 +720,5 @@ a.url-open-btn:hover {
 .pw-age { margin-left: 0.5rem; padding: 0.05rem 0.45rem; border-radius: 999px; border: 1px solid var(--border); font-size: 0.68rem; white-space: nowrap; }
 .pw-age-warn { border-color: var(--warning); color: var(--warning); }
 .pw-age-old { border-color: var(--error); color: var(--error); }
+.env-key small { display: block; font-weight: 400; font-size: 0.7rem; color: var(--text-muted); overflow-wrap: anywhere; }
+.env-nodesc { opacity: 0.6; }
