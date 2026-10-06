@@ -241,7 +241,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         </select>
       </div>
       <p style="font-size:0.8rem;color:var(--text-muted);margin:0">
-        操作（クリック・キー入力・スクロール・タッチ）がないまま、この時間がたつと自動で閉じます。この設定は、この端末のこのブラウザだけに保存されます。
+        操作（クリック・キー入力・スクロール・タッチ）がないまま、この時間がたつと自動で閉じます。ただし、ログイン画面の「この端末で記憶する」をオンにしている端末では、放置しても閉じません。この設定は、この端末のこのブラウザだけに保存されます。
       </p>
     </div>
   </div>
@@ -280,7 +280,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <script src="js/gist.js?v=28"></script>
 <script src="js/print.js?v=28"></script>
 <script src="js/autobackup.js?v=34"></script>
-<script src="js/app.js?v=29"></script>
+<script src="js/app.js?v=30"></script>
 <script src="js/envimport.js?v=29"></script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
