@@ -293,8 +293,11 @@ function stopIdleWatch() {
   idleCheckTimer = null;
 }
 
-function checkIdle() {
+// 「この端末で記憶する」がオンの端末は、放置しても閉じない（記憶で1クリックで開ける端末なので、閉じる意味が薄い。
+// 事業主指示 2026-10-06）。記憶オフの端末だけ従来どおり閉じる。
+async function checkIdle() {
   if (Date.now() - lastActivityAt < getIdleMinutes() * 60 * 1000) return;
+  if (await Remember.isSet()) { markActivity(); return; }
   closeAllModals();
   handleLogout();
   toast('しばらく操作がなかったため閉じました', 'info');
