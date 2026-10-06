@@ -164,6 +164,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .att-table td.att-date { white-space: nowrap; font-weight: 600; }
     .att-num { font-weight: 700; white-space: nowrap; }
     .att-names { font-size: 12px; color: var(--gray); min-width: 120px; }
+    .att-unset { color: var(--amber); }
+    .att-unset-names { color: var(--amber); }
     .att-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .att-badge.upcoming { background: var(--blue-light); color: var(--blue); }
     .att-badge.today { background: var(--amber-light); color: var(--amber); }
@@ -629,11 +631,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <!-- 出欠掲示板（2026-09-19）: hacomono の予約確認・欠席メールをGASが自動集計。公開側は人数だけ、名前は管理者のみ -->
   <details class="section" id="attendance-section" open>
     <summary><h2>出欠掲示板</h2></summary>
-    <p class="att-lead">予約システム（hacomono）から届く予約確認・欠席の連絡を、開催日ごとに自動で集計しています。予約の人数は開催前日のメールで確定します。</p>
+    <p class="att-lead">予約システム（hacomono）から届く予約確認・欠席の連絡を、開催日ごとに自動で集計しています。「未処理」は、在籍していて予約確認も欠席連絡もまだ届いていない人です。退会された方は退会日以降の開催では数えません。予約の人数は開催前日のメールで確定します。</p>
     <div class="att-toolbar">
       <button class="btn btn-secondary" id="btn-att-admin" style="min-height:auto;font-size:12px;padding:4px 12px;" onclick="enterAdminView()">🔑 管理者として表示（名前を見る）</button>
       <button class="btn btn-secondary" style="min-height:auto;font-size:12px;padding:4px 12px;" onclick="loadAttendance()">🔄 最新にする</button>
       <span id="att-updated" style="font-size:12px;color:var(--gray);"></span>
+      <a id="att-hacomono-link" class="btn btn-secondary" style="display:none;min-height:auto;font-size:12px;padding:4px 12px;text-decoration:none;" href="https://joyfulhonda-admin.hacomono.jp/#/schedule/tables/8/studio-rooms/8/studio-lessons/3383/reservation/" target="_blank" rel="noopener noreferrer">📋 hacomono の予約画面（管理者用）</a>
     </div>
     <div class="att-table-wrap">
       <table class="att-table">
@@ -1022,10 +1025,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
   function renderAttendance(sessions, withNames, warn, unsetNames) {
     attSessions = sessions.slice(0, 12);
-    const cols = withNames ? 8 : 6;
+    const cols = withNames ? 10 : 7;
     document.getElementById('att-head').innerHTML =
-      '<th>開催日</th><th>クラス</th><th>状態</th><th>出席見込み</th><th>欠席連絡</th>' +
-      (withNames ? '<th>出席予定の方</th><th>欠席の方</th>' : '') + '<th>実績</th>';
+      '<th>開催日</th><th>クラス</th><th>状態</th><th>出席見込み</th><th>欠席連絡</th><th>未処理</th>' +
+      (withNames ? '<th>出席予定の方</th><th>欠席の方</th><th>未処理の方</th>' : '') + '<th>実績</th>';
     const body = document.getElementById('att-body');
     if (!attSessions.length) {
       body.innerHTML = `<tr><td colspan="${cols}" class="empty-msg">まだ予約・欠席の連絡はありません。</td></tr>`;
@@ -1043,9 +1046,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         else if (s.status !== 'upcoming' && withNames) rec = `<button class="btn btn-primary" style="min-height:auto;font-size:12px;padding:3px 10px;white-space:nowrap;" onclick="prefillRecordFromAttendance(${i})">実績に登録</button>`;
         else if (s.status !== 'upcoming') rec = '<span class="att-rec-no">未登録</span>';
         const names = withNames
-          ? `<td class="att-names">${esc((s.presentNames || []).join('、') || '―')}</td><td class="att-names">${esc((s.absentNames || []).join('、') || '―')}</td>`
+          ? `<td class="att-names">${esc((s.presentNames || []).join('、') || '―')}</td><td class="att-names">${esc((s.absentNames || []).join('、') || '―')}</td><td class="att-names att-unset-names">${esc((s.unsetNames || []).join('、') || '―')}</td>`
           : '';
-        return `<tr><td class="att-date">${attDateLabel(s.date)}</td><td>${cls}</td><td>${badge}</td><td>${expected}</td><td><span class="att-num">${Number(s.absent) || 0}名</span></td>${names}<td>${rec}</td></tr>`;
+        return `<tr><td class="att-date">${attDateLabel(s.date)}</td><td>${cls}</td><td>${badge}</td><td>${expected}</td><td><span class="att-num">${Number(s.absent) || 0}名</span></td><td><span class="att-num${s.unsetCount ? ' att-unset' : ''}">${Number(s.unsetCount) || 0}名</span></td>${names}<td>${rec}</td></tr>`;
       }).join('');
     }
     const msgs = [];
@@ -1057,6 +1060,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     const box = document.getElementById('att-msg');
     box.className = 'att-msg' + (msgs.length ? ' warn' : '');
     box.innerHTML = msgs.join('<br>');
+    document.getElementById('att-hacomono-link').style.display = withNames ? '' : 'none';
     document.getElementById('att-updated').textContent =
       '更新: ' + new Date().toLocaleTimeString('ja-JP') + (withNames ? '（管理者表示）' : '');
   }
