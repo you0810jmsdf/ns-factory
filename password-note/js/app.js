@@ -498,6 +498,24 @@ function getLatestCreds(entry) {
     .sort((a, b) => new Date(b.date) - new Date(a.date))[0] || null;
 }
 
+// パスワードを最後に変えた日からの日数（履歴の日付基準。パスワード未登録・日付なしは null）
+function daysSinceChange(entry) {
+  const c = getLatestCreds(entry);
+  const m = c && c.password && /^(\d{4})-(\d{2})-(\d{2})/.exec(c.date || '');
+  if (!m) return null;
+  const t = new Date();
+  const days = Math.round((new Date(t.getFullYear(), t.getMonth(), t.getDate()) - new Date(+m[1], +m[2] - 1, +m[3])) / 86400000);
+  return Math.max(days, 0);
+}
+
+// 90日以上で黄、180日以上で赤（目安。変更を促す表示）
+function pwAgeBadge(entry) {
+  const d = daysSinceChange(entry);
+  if (d === null) return '';
+  const cls = d >= 180 ? ' pw-age-old' : d >= 90 ? ' pw-age-warn' : '';
+  return ` <span class="pw-age${cls}" title="パスワードを最後に変更した日からの日数">PW変更から ${d}日</span>`;
+}
+
 const TYPE_LABELS = { website: 'Web', app: 'アプリ', service: 'サービス', other: 'その他' };
 
 function renderList() {
@@ -548,7 +566,7 @@ function renderList() {
           ${entry.url ? `<a class="url-tag url-open-btn" href="${escHtml(entry.url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="ブラウザで開く">${escHtml(entry.url)}</a>` : ''}
         </div>
         ${creds ? `<div class="entry-creds"><span class="cred-id">${escHtml(creds.username || '(IDなし)')}</span><span class="cred-dot">パスワード登録済み</span></div>` : ''}
-        <div class="entry-date">更新: ${fmtDate(entry.updatedAt)}</div>
+        <div class="entry-date">更新: ${fmtDate(entry.updatedAt)}${pwAgeBadge(entry)}</div>
       </div>
       ${creds ? `<div class="entry-copy-btns">
         <button class="entry-copy-btn" onclick="event.stopPropagation(); copyCardCred('${entryId}', 'username')" title="IDをコピー">IDコピー</button>

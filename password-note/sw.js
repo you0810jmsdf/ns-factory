@@ -1,4 +1,4 @@
-const CACHE = 'pw-manager-v46';
+const CACHE = 'pw-manager-v47';
 const ASSETS = [
   './',
   './index.html',
@@ -10,7 +10,8 @@ const ASSETS = [
   './js/gist.js',
   './js/print.js',
   './js/autobackup.js',
-  './js/app.js'
+  './js/app.js',
+  './js/envimport.js'
 ];
 
 self.addEventListener('install', e => {
