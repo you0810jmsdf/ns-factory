@@ -58,6 +58,7 @@ async function saveVaultLocal() {
   await DB.set('vault', enc);
   await DB.pushSnapshot(enc);
   AutoBackup.notifyChange('change');
+  if (typeof Guard !== 'undefined') Guard.ping('save');
 }
 
 async function loadVaultLocal() {
@@ -192,8 +193,10 @@ async function handleLogin(e) {
       if (document.getElementById('remember-chk').checked) await Remember.save(pw);
       else await Remember.clear();
     } catch (e) { /* 記憶に失敗しても開くのは続ける */ }
+    if (typeof Guard !== 'undefined') Guard.ping('login');
     showApp();
   } catch (err) {
+    if (typeof Guard !== 'undefined') Guard.pingFail();
     toast('合言葉が正しくありません', 'error');
     masterPassword = '';
   } finally {
@@ -212,6 +215,7 @@ async function loginWithRemembered() {
     masterPassword = pw;
     const ok = await loadVaultLocal();
     if (!ok) { masterPassword = ''; return false; }
+    if (typeof Guard !== 'undefined') Guard.ping('auto');
     showApp();
     return true;
   } catch (err) {
@@ -271,6 +275,7 @@ function setIdleMinutes(n) {
 function openSettingsModal() {
   document.getElementById('idle-minutes').value = String(getIdleMinutes());
   document.getElementById('settings-modal').style.display = 'flex';
+  if (typeof Guard !== 'undefined') Guard.render();
 }
 
 function closeSettingsModal() {
