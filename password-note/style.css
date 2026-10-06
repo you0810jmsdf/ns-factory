@@ -682,3 +682,41 @@ a.url-open-btn:hover {
   .auth-card { padding: 1.5rem 1rem; }
   .modal-footer { flex-wrap: wrap; }
 }
+
+/* ── .env 取り込み・PW変更からの日数 ── */
+#env-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 201;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.6);
+}
+.env-summary { font-size: 0.85rem; color: var(--text2); }
+.env-rows { display: flex; flex-direction: column; gap: 0.35rem; max-height: 50vh; overflow-y: auto; }
+.env-hint { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+.env-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.4fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+.env-row input { width: auto; accent-color: var(--accent); }
+.env-key { font-weight: 700; overflow-wrap: anywhere; }
+.env-val { color: var(--text2); overflow-wrap: anywhere; }
+.env-val small { display: block; font-size: 0.7rem; color: var(--text-muted); }
+.env-badge { font-size: 0.7rem; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text2); white-space: nowrap; }
+.env-new .env-badge { border-color: var(--success); color: var(--success); }
+.env-changed .env-badge { border-color: var(--warning); color: var(--warning); }
+.env-same, .env-empty { opacity: 0.6; }
+.pw-age { margin-left: 0.5rem; padding: 0.05rem 0.45rem; border-radius: 999px; border: 1px solid var(--border); font-size: 0.68rem; white-space: nowrap; }
+.pw-age-warn { border-color: var(--warning); color: var(--warning); }
+.pw-age-old { border-color: var(--error); color: var(--error); }

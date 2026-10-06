@@ -104,6 +104,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <button class="icon-btn" id="export-btn" title="暗号化済みの予備コピーを保存">予備コピー保存</button>
     <button class="icon-btn" id="autobackup-btn" title="保存先フォルダを記憶して自動で予備コピーを書き出す">自動保存</button>
     <button class="icon-btn" id="import-btn" title="暗号化済みの予備コピーを読み込む">予備コピー読込</button>
+    <button class="icon-btn" id="env-btn" title=".env の内容をまとめて登録・上書きする">.env取り込み</button>
     <button class="icon-btn" id="snapshot-btn" title="保存のたびに自動で残る履歴から復元">自動復元</button>
     <button class="icon-btn" id="settings-btn" title="放置で自動的に閉じるまでの時間を変更">設定</button>
     <input type="file" id="import-file" accept=".json,application/json" style="display:none">
@@ -246,6 +247,30 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </div>
 </div>
 
+<div id="env-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="env-modal-title">
+  <div class="modal-card" style="max-width:640px">
+    <div class="modal-header">
+      <h2 id="env-modal-title">.env から一括登録・上書き</h2>
+      <button class="btn-icon" id="close-env-modal-btn" title="閉じる">×</button>
+    </div>
+    <div class="modal-body" style="gap:12px">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:0">
+        .env ファイルを選ぶと、サービス名＝キー名で照合して「新規・更新・変更なし」を表示します。値が変わったキーだけ履歴に「パスワード変更」を追加し、古い値は履歴に残ります。ファイルはこの端末のブラウザ内で読むだけで、外部へは送りません。値は伏字で表示します。
+      </p>
+      <div>
+        <button type="button" class="btn-add-history" id="env-choose-btn">.env ファイルを選ぶ</button>
+        <input type="file" id="env-file" style="display:none">
+      </div>
+      <div id="env-summary" class="env-summary"></div>
+      <div id="env-rows" class="env-rows"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" id="env-cancel-btn">キャンセル</button>
+      <button type="button" class="btn-save" id="env-apply-btn" disabled>反映する項目がありません</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
 <script src="config.js?v=28"></script>
@@ -255,7 +280,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <script src="js/gist.js?v=28"></script>
 <script src="js/print.js?v=28"></script>
 <script src="js/autobackup.js?v=34"></script>
-<script src="js/app.js?v=28"></script>
+<script src="js/app.js?v=29"></script>
+<script src="js/envimport.js?v=29"></script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
 </html>
