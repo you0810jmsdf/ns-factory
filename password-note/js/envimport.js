@@ -54,6 +54,13 @@ const EnvImport = (() => {
     return '●'.repeat(Math.min(len, 8)) + `（${len}文字）`;
   }
 
+  // 説明欄が空、または取り込み時の仮の文言（「.env から取り込み（…）」だけ）のままなら、説明ファイルの説明で埋めてよい。
+  // 手で書いた説明は上書きしない。
+  function needsDesc(entry) {
+    return !entry.description || /^\.env から取り込み（/.test(entry.description);
+  }
+  function descText(r) { return `${r.desc}\n（${fileName} から取り込み）`; }
+
   function buildRows(map, descMap) {
     const out = [];
     map.forEach((value, key) => {
@@ -63,17 +70,15 @@ const EnvImport = (() => {
       if (!entry) { out.push({ key, value, desc, status: 'new', entryId: null, checked: true }); return; }
       const creds = getLatestCreds(entry);
       const same = creds && creds.password === value;
-      out.push({
-        key, value, desc, status: same ? 'same' : 'changed', entryId: entry.id,
-        checked: !same, days: daysSinceChange(entry)
-      });
+      const status = !same ? 'changed' : (desc && needsDesc(entry) ? 'fill' : 'same');
+      out.push({ key, value, desc, status, entryId: entry.id, checked: status !== 'same', days: daysSinceChange(entry) });
     });
     return out;
   }
 
-  const STATUS_LABEL = { new: '新規', changed: '更新', same: '変更なし', empty: '値が空' };
+  const STATUS_LABEL = { new: '新規', changed: '更新', fill: '説明のみ', same: '変更なし', empty: '値が空' };
 
-  function applicable(r) { return r.status === 'new' || r.status === 'changed'; }
+  function applicable(r) { return r.status === 'new' || r.status === 'changed' || r.status === 'fill'; }
 
   function descLine(r) {
     if (r.desc) return `<small class="env-desc">${escHtml(r.desc.split('\n')[0].slice(0, 70))}</small>`;
@@ -82,12 +87,12 @@ const EnvImport = (() => {
   }
 
   function render() {
-    const cnt = { new: 0, changed: 0, same: 0, empty: 0 };
+    const cnt = { new: 0, changed: 0, fill: 0, same: 0, empty: 0 };
     rows.forEach(r => { cnt[r.status]++; });
     const targets = rows.filter(applicable).length;
     const withDesc = rows.filter(r => r.desc && applicable(r)).length;
     document.getElementById('env-summary').textContent = rows.length
-      ? `${fileName}：新規 ${cnt.new}件 ／ 更新 ${cnt.changed}件 ／ 変更なし ${cnt.same}件 ／ 値が空 ${cnt.empty}件` +
+      ? `${fileName}：新規 ${cnt.new}件 ／ 更新 ${cnt.changed}件 ／ ${cnt.fill ? `説明のみ ${cnt.fill}件 ／ ` : ''}変更なし ${cnt.same}件 ／ 値が空 ${cnt.empty}件` +
         (hasDescFile ? `（説明つき ${withDesc}／${targets}件）` : '')
       : '';
     document.getElementById('env-rows').innerHTML = rows.length ? rows.map((r, i) => `
@@ -141,16 +146,22 @@ const EnvImport = (() => {
 
   async function apply() {
     const today = localToday();
-    let added = 0, changed = 0;
+    let added = 0, changed = 0, filled = 0;
     rows.filter(r => r.checked && applicable(r)).forEach(r => {
       if (r.status === 'new') {
         vault.entries.unshift({
           id: uuid(), type: 'service', title: r.key, owner: '', url: '',
-          description: r.desc ? `${r.desc}\n（${fileName} から取り込み）` : `.env から取り込み（${fileName}）`,
+          description: r.desc ? descText(r) : `.env から取り込み（${fileName}）`,
           createdAt: now(), updatedAt: now(),
           history: [{ id: uuid(), date: today, type: 'initial', username: '', password: r.value, note: '' }]
         });
         added++;
+      } else if (r.status === 'fill') {
+        const entry = vault.entries.find(e => e.id === r.entryId);
+        if (!entry) return;
+        entry.description = descText(r);
+        entry.updatedAt = now();
+        filled++;
       } else {
         const entry = vault.entries.find(e => e.id === r.entryId);
         if (!entry) return;
@@ -161,18 +172,18 @@ const EnvImport = (() => {
           username: (prev && prev.username) || '', password: r.value,
           note: `.env 取り込みで更新（${fileName}）`
         });
-        if (r.desc && !entry.description) entry.description = r.desc;
+        if (r.desc && needsDesc(entry)) entry.description = descText(r);
         entry.updatedAt = now();
         changed++;
       }
     });
-    if (!added && !changed) return;
+    if (!added && !changed && !filled) return;
     try {
       await saveVaultLocal();
       renderList();
       if (GistManager.isConfigured()) syncToGist();
       close();
-      toast(`.env を反映しました（新規 ${added}件・更新 ${changed}件）`, 'success');
+      toast(`.env を反映しました（新規 ${added}件・更新 ${changed}件${filled ? `・説明のみ ${filled}件` : ''}）`, 'success');
     } catch (e) {
       toast('反映できませんでした: ' + e.message, 'error');
     }

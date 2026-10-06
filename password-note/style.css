@@ -722,3 +722,4 @@ a.url-open-btn:hover {
 .pw-age-old { border-color: var(--error); color: var(--error); }
 .env-key small { display: block; font-weight: 400; font-size: 0.7rem; color: var(--text-muted); overflow-wrap: anywhere; }
 .env-nodesc { opacity: 0.6; }
+.env-fill .env-badge { border-color: var(--accent); color: var(--accent); }
