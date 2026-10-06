@@ -25,7 +25,15 @@ const CryptoManager = (() => {
     combined.set(salt);
     combined.set(iv, SALT_LEN);
     combined.set(new Uint8Array(ciphertext), SALT_LEN + IV_LEN);
-    return btoa(String.fromCharCode(...combined));
+    // 大きい保管庫でも落ちないよう、一定サイズずつ文字列に変換する。
+    // ⛔ String.fromCharCode(...combined) と一括展開しない（約12万バイトを超えると
+    //    「Maximum call stack size exceeded」で保存できなくなる。2026-10-06 .env 82件の取り込みで発生）。
+    // 出力は一括展開と同じ base64（既存データ・予備コピーと互換）。
+    let bin = '';
+    for (let i = 0; i < combined.length; i += 0x8000) {
+      bin += String.fromCharCode.apply(null, combined.subarray(i, i + 0x8000));
+    }
+    return btoa(bin);
   }
 
   async function decrypt(b64, password) {
