@@ -617,54 +617,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </div>
   </details>
 
-  <!-- 生徒作品集 -->
-  <details class="section" open>
-    <summary><h2>生徒作品集</h2></summary>
-    <div class="works-lead">
-      <span class="works-count" id="works-count"></span>
-      <p>受講生のみなさんが講座で仕上げた作品です。クリックすると拡大表示できます。</p>
-      <button class="btn btn-secondary" id="btn-works-admin" style="min-height:auto;margin-left:auto;font-size:12px;padding:4px 12px;" onclick="worksAdminLogin()">🛠 作品を登録</button>
-    </div>
-    <div class="works-grid" id="works-grid" aria-label="生徒作品ギャラリー"></div>
-
-    <!-- 管理者用: 作品アップロードパネル -->
-    <div class="form-card" id="works-admin-panel" style="display:none; margin-top:14px;">
-      <div class="card-title">🛠 作品の登録（管理者）</div>
-      <p style="font-size:12px; color:var(--gray); margin-bottom:10px;">
-        画像は自動で長辺1400pxに縮小・JPEG変換され、GitHub（assets/jhcs/works/uploads/）に保存されます。複数選択できます。
-      </p>
-      <input type="file" id="works-file-input" accept="image/*" multiple style="margin-bottom:12px;">
-      <div class="form-actions">
-        <button class="btn btn-primary" id="btn-works-upload" onclick="uploadWorks()">アップロード</button>
-        <button class="btn btn-secondary" onclick="NSFGitHubToken.prompt()">⚙️ GitHubトークン</button>
-        <span id="works-admin-msg" class="form-msg"></span>
-      </div>
-      <p style="font-size:11px; color:var(--gray); margin-top:8px;">
-        登録済み作品の削除はギャラリー上の ✕ ボタンから（このパネルで登録した作品のみ）。初期の29枚はサイト同梱のため、ここからは削除できません。
-      </p>
-    </div>
-
-    <details class="works-archive">
-      <summary>過去のアルバム（Google Drive）を見る</summary>
-      <div class="archive-body">
-        <div id="photo-setup-banner" class="photo-setup" style="display:none;">
-          <strong>📷 Google Drive フォルダIDを設定してください</strong>
-          <p>作品写真を保存したDriveフォルダのIDを入力するとカルーセル表示されます。</p>
-          <div class="setup-row">
-            <input type="text" id="photo-folder-input" placeholder="フォルダID（URLの末尾の文字列）">
-            <button onclick="savePhotoFolder()">設定</button>
-          </div>
-        </div>
-        <div id="photo-carousel">
-          <div class="loading">GASに接続するとここに作品写真が表示されます。</div>
-        </div>
-        <div style="text-align:right; margin-top:8px;">
-          <button class="btn btn-secondary" style="min-height:auto;font-size:12px;" onclick="(function(){var b=document.getElementById('photo-setup-banner');b.style.display='block';b.scrollIntoView({behavior:'smooth',block:'center'});})()">⚙️ フォルダ変更</button>
-        </div>
-      </div>
-    </details>
-  </details>
-
   <!-- 作品ライトボックス -->
   <div class="wlb" id="works-lightbox" role="dialog" aria-modal="true" aria-label="作品の拡大表示" onclick="if(event.target===this)wlbClose()">
     <button class="wlb-close" onclick="wlbClose()" aria-label="閉じる">✕</button>
@@ -765,6 +717,54 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <span id="form-msg" class="form-msg"></span>
       </div>
     </div>
+  </details>
+
+  <!-- 生徒作品集 -->
+  <details class="section" open>
+    <summary><h2>生徒作品集</h2></summary>
+    <div class="works-lead">
+      <span class="works-count" id="works-count"></span>
+      <p>受講生のみなさんが講座で仕上げた作品です。クリックすると拡大表示できます。</p>
+      <button class="btn btn-secondary" id="btn-works-admin" style="min-height:auto;margin-left:auto;font-size:12px;padding:4px 12px;" onclick="worksAdminLogin()">🛠 作品を登録</button>
+    </div>
+    <div class="works-grid" id="works-grid" aria-label="生徒作品ギャラリー"></div>
+
+    <!-- 管理者用: 作品アップロードパネル -->
+    <div class="form-card" id="works-admin-panel" style="display:none; margin-top:14px;">
+      <div class="card-title">🛠 作品の登録（管理者）</div>
+      <p style="font-size:12px; color:var(--gray); margin-bottom:10px;">
+        画像は自動で長辺1400pxに縮小・JPEG変換され、GitHub（assets/jhcs/works/uploads/）に保存されます。複数選択できます。
+      </p>
+      <input type="file" id="works-file-input" accept="image/*" multiple style="margin-bottom:12px;">
+      <div class="form-actions">
+        <button class="btn btn-primary" id="btn-works-upload" onclick="uploadWorks()">アップロード</button>
+        <button class="btn btn-secondary" onclick="NSFGitHubToken.prompt()">⚙️ GitHubトークン</button>
+        <span id="works-admin-msg" class="form-msg"></span>
+      </div>
+      <p style="font-size:11px; color:var(--gray); margin-top:8px;">
+        登録済み作品の削除はギャラリー上の ✕ ボタンから（このパネルで登録した作品のみ）。初期の29枚はサイト同梱のため、ここからは削除できません。
+      </p>
+    </div>
+
+    <details class="works-archive">
+      <summary>過去のアルバム（Google Drive）を見る</summary>
+      <div class="archive-body">
+        <div id="photo-setup-banner" class="photo-setup" style="display:none;">
+          <strong>📷 Google Drive フォルダIDを設定してください</strong>
+          <p>作品写真を保存したDriveフォルダのIDを入力するとカルーセル表示されます。</p>
+          <div class="setup-row">
+            <input type="text" id="photo-folder-input" placeholder="フォルダID（URLの末尾の文字列）">
+            <button onclick="savePhotoFolder()">設定</button>
+          </div>
+        </div>
+        <div id="photo-carousel">
+          <div class="loading">GASに接続するとここに作品写真が表示されます。</div>
+        </div>
+        <div style="text-align:right; margin-top:8px;">
+          <button class="btn btn-secondary" style="min-height:auto;font-size:12px;" onclick="(function(){var b=document.getElementById('photo-setup-banner');b.style.display='block';b.scrollIntoView({behavior:'smooth',block:'center'});})()">⚙️ フォルダ変更</button>
+        </div>
+      </div>
+    </details>
   </details>
 
   <!-- GAS URL 変更 -->
