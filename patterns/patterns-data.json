@@ -22,6 +22,16 @@
       "photo": "patterns/jhcs/jhcs-03a-pass-case.jpg"
     },
     {
+      "code": "jhcs-03B",
+      "slug": "jhcs-03b-card-case",
+      "lesson": "第03回B",
+      "title": "名刺入れ",
+      "en": "Card Case",
+      "price": 1500,
+      "summary": "名刺サイズ（91×55mm）を基準にCADで型紙を設計します。内ポケット付きの革製名刺入れを仕上げます。",
+      "photo": "patterns/jhcs/jhcs-03b-card-case.jpg"
+    },
+    {
       "code": "jhcs-05B",
       "slug": "jhcs-05b-tote-key-case",
       "lesson": "第05回B",
