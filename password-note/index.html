@@ -255,10 +255,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </div>
     <div class="modal-body" style="gap:12px">
       <p style="font-size:0.85rem;color:var(--text-muted);margin:0">
-        .env ファイルを選ぶと、サービス名＝キー名で照合して「新規・更新・変更なし」を表示します。値が変わったキーだけ履歴に「パスワード変更」を追加し、古い値は履歴に残ります。ファイルはこの端末のブラウザ内で読むだけで、外部へは送りません。値は伏字で表示します。説明ファイル（.json・{"キー名": "説明"} の形）を .env と一緒に選ぶ（Ctrl を押しながら2つ選ぶ）と、キーごとの説明が説明欄に入ります。
+        .env ファイルを選ぶと、サービス名＝キー名で照合して「新規・更新・変更なし」を表示します。値が変わったキーだけ履歴に「パスワード変更」を追加し、古い値は履歴に残ります。ファイルはこの端末のブラウザ内で読むだけで、外部へは送りません。値は伏字で表示します。説明ファイル（.json・{"キー名": "説明"} の形）も選ぶと、キーごとの説明が説明欄に入ります。.env と説明ファイルは、同じフォルダにあれば Ctrl を押しながら2つ同時に、別のフォルダなら1つずつ続けて選べます（順番は問いません）。
       </p>
       <div>
-        <button type="button" class="btn-add-history" id="env-choose-btn">.env（と説明ファイル）を選ぶ</button>
+        <button type="button" class="btn-add-history" id="env-choose-btn">.env・説明ファイルを選ぶ（1つずつでも可）</button>
         <input type="file" id="env-file" multiple style="display:none">
       </div>
       <div id="env-summary" class="env-summary"></div>
@@ -282,7 +282,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <script src="js/autobackup.js?v=34"></script>
 <script src="js/guard.js?v=1"></script>
 <script src="js/app.js?v=31"></script>
-<script src="js/envimport.js?v=31"></script>
+<script src="js/envimport.js?v=32"></script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
 </html>

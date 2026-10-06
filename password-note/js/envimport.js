@@ -1,6 +1,7 @@
 // .env 一括取り込み（N's notebook）
-// 選んだ .env を読み、サービス名＝キー名で照合して「新規／更新／変更なし」を確認してから反映する。
-// 説明ファイル（.json）を一緒に選ぶと、キーごとの説明（どういうときに使うキーか）を説明欄に入れる。
+// 選んだ .env を読み、サービス名＝キー名で照合して「新規／更新／説明のみ／変更なし」を確認してから反映する。
+// 説明ファイル（.json）を選ぶと、キーごとの説明（どういうときに使うキーか）を説明欄に入れる。
+// ファイルは何回かに分けて選んでよい（別のフォルダにある .env と説明ファイルも、1つずつ続けて選べる）。順番も問わない。
 // ⛔ 値は画面に平文で出さない（伏字）。ブラウザ内で処理するだけで、外部へは送らない。
 // ⛔ 値が変わったキーだけ履歴に「パスワード変更」の行を足す（古い値は履歴に残る）。変更なしは触らない
 //    （「PW変更から N日」のカウントを途切れさせないため）。
@@ -10,6 +11,11 @@ const EnvImport = (() => {
   let rows = [];
   let fileName = '';
   let hasDescFile = false;
+  // 選んだファイルの蓄積（開き直すまで残す）
+  let envMap = new Map();
+  let descMap = new Map();
+  let envNames = [];
+  let descCount = 0;
 
   function localToday() {
     const d = new Date();
@@ -61,11 +67,11 @@ const EnvImport = (() => {
   }
   function descText(r) { return `${r.desc}\n（${fileName} から取り込み）`; }
 
-  function buildRows(map, descMap) {
+  function buildRows(map, dMap) {
     const out = [];
     map.forEach((value, key) => {
       const entry = vault.entries.find(e => e.title === key) || null;
-      const desc = (descMap && descMap.get(key)) || '';
+      const desc = (dMap && dMap.get(key)) || '';
       if (value === '') { out.push({ key, value, desc, status: 'empty', entryId: entry && entry.id, checked: false }); return; }
       if (!entry) { out.push({ key, value, desc, status: 'new', entryId: null, checked: true }); return; }
       const creds = getLatestCreds(entry);
@@ -91,10 +97,14 @@ const EnvImport = (() => {
     rows.forEach(r => { cnt[r.status]++; });
     const targets = rows.filter(applicable).length;
     const withDesc = rows.filter(r => r.desc && applicable(r)).length;
-    document.getElementById('env-summary').textContent = rows.length
-      ? `${fileName}：新規 ${cnt.new}件 ／ 更新 ${cnt.changed}件 ／ ${cnt.fill ? `説明のみ ${cnt.fill}件 ／ ` : ''}変更なし ${cnt.same}件 ／ 値が空 ${cnt.empty}件` +
-        (hasDescFile ? `（説明つき ${withDesc}／${targets}件）` : '')
-      : '';
+    let summary = '';
+    if (rows.length) {
+      summary = `${fileName}：新規 ${cnt.new}件 ／ 更新 ${cnt.changed}件 ／ ${cnt.fill ? `説明のみ ${cnt.fill}件 ／ ` : ''}変更なし ${cnt.same}件 ／ 値が空 ${cnt.empty}件` +
+        (hasDescFile ? `（説明つき ${withDesc}／${targets}件）` : '');
+    } else if (descCount > 0 && !envNames.length) {
+      summary = `説明ファイル（${descMap.size}件）を読み込みました。続けて .env を選んでください。`;
+    }
+    document.getElementById('env-summary').textContent = summary;
     document.getElementById('env-rows').innerHTML = rows.length ? rows.map((r, i) => `
       <label class="env-row env-${r.status}">
         <input type="checkbox" data-i="${i}" ${r.checked ? 'checked' : ''} ${applicable(r) ? '' : 'disabled'}>
@@ -112,30 +122,38 @@ const EnvImport = (() => {
     btn.textContent = n ? `選んだ ${n}件を反映` : '反映する項目がありません';
   }
 
-  // .env と説明ファイル（.json）を、同時に選んでもよい（ファイルの中身で自動判別）
+  // .env と説明ファイル（.json）を、何回かに分けて選んでもよい（ファイルの中身で自動判別・選んだ内容は蓄積する）
   async function onFiles(fileList) {
     const files = Array.from(fileList || []);
     if (!files.length) return;
     try {
-      const envMap = new Map(), descMap = new Map();
-      const envNames = [];
-      let descCount = 0;
+      // 先に全部読んで、1つでも壊れていたら何も変えずに中断する
+      const addEnv = new Map(), addDesc = new Map();
+      const addNames = [];
+      let addDescCount = 0;
       for (const f of files) {
         const text = await f.text();
         const looksJson = /\.json$/i.test(f.name || '') || /^\s*\{/.test(text.replace(/^﻿/, ''));
         if (looksJson) {
-          try { parseDescriptions(text).forEach((v, k) => descMap.set(k, v)); descCount++; }
+          try { parseDescriptions(text).forEach((v, k) => addDesc.set(k, v)); addDescCount++; }
           catch (e) { toast('説明ファイル（.json）の形式が正しくありません', 'error'); return; }
         } else {
-          parseEnv(text).forEach((v, k) => envMap.set(k, v));
-          envNames.push(f.name || '.env');
+          parseEnv(text).forEach((v, k) => addEnv.set(k, v));
+          addNames.push(f.name || '.env');
         }
       }
-      if (!envNames.length) { toast('.env ファイルも一緒に選んでください', 'error'); return; }
-      fileName = envNames.join('・');
+      // 開いたままのチェックの状態を引き継ぐ（後から説明ファイルを足しても、外したチェックは戻さない）
+      // （反映できる行だけ。「変更なし」だった行が説明ファイルで「説明のみ」に変わったときは、初期のチェックを入れる）
+      const wasChecked = new Map(rows.filter(applicable).map(r => [r.key, r.checked]));
+      addEnv.forEach((v, k) => envMap.set(k, v));
+      addDesc.forEach((v, k) => descMap.set(k, v));
+      addNames.forEach(n => { if (!envNames.includes(n)) envNames.push(n); });
+      descCount += addDescCount;
       hasDescFile = descCount > 0;
-      rows = buildRows(envMap, descMap);
-      if (!rows.length) toast('KEY=値 の形の行が見つかりませんでした', 'error');
+      fileName = envNames.join('・');
+      rows = envMap.size ? buildRows(envMap, descMap) : [];
+      rows.forEach(r => { if (applicable(r) && wasChecked.has(r.key)) r.checked = wasChecked.get(r.key); });
+      if (envMap.size && !rows.length) toast('KEY=値 の形の行が見つかりませんでした', 'error');
       render();
     } catch (e) {
       toast('ファイルを読み込めませんでした', 'error');
@@ -189,16 +207,24 @@ const EnvImport = (() => {
     }
   }
 
-  function open() {
+  function reset() {
     rows = [];
     fileName = '';
     hasDescFile = false;
+    envMap = new Map();
+    descMap = new Map();
+    envNames = [];
+    descCount = 0;
+  }
+
+  function open() {
+    reset();
     render();
     document.getElementById('env-modal').style.display = 'flex';
   }
 
   function close() {
-    rows = [];
+    reset();
     document.getElementById('env-modal').style.display = 'none';
   }
 
