@@ -1555,7 +1555,8 @@ const VOICEVOX_VOICES = [
 // 作品紹介用（講座動画はフクロウ＝ずんだもんで統一し、本人の声は使わない・事業主決定）。管理者モード専用。
 // 動画とキャプションに「音声：本人の声をAIで合成」を小さく入れる（規約上の義務ではなく事業主決定）。
 const OWN_VOICE_ENDPOINT = 'http://127.0.0.1:50031';
-const OWN_VOICE_START_FILE = 'C:\\Tools\\qwen3tts\\start_for_sns_video.bat';
+// 2026-10-07: サーバーは WSL（Ubuntu）で動かす（Windows の Smart App Control が venv の DLL を止めるため）。手で起動するときもこのバッチ
+const OWN_VOICE_START_FILE = 'C:\\Tools\\qwen3tts\\wsl\\start_for_sns_video_wsl.bat';
 const OWN_VOICE = {value:'own:1', label:'本人の声（AI合成・このPC）', credit:'音声：本人の声をAIで合成'};
 // 急ぐとき用の速い版（0.6B・約1.5倍速い・質は落ちる・2026-09-28 事業主決定B）。表記は同じ
 const OWN_VOICE_FAST = {value:'own:fast', label:'本人の声・速い（AI合成・このPC）'};
