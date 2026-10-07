@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+<script src="assets/admin-remember.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JHCS 講習案内 | N's factory</title>
   <!-- Google tag (gtag.js) -->
@@ -184,6 +185,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .prog-legend-item { display: flex; gap: 8px; align-items: baseline; }
     .prog-legend-num { flex: none; min-width: 34px; text-align: center; font-weight: 700; color: var(--green); background: var(--green-light); border-radius: 6px; padding: 0 4px; }
     .prog-legend-sum { color: var(--gray); }
+    .admin-toggle { position: fixed; right: 14px; bottom: 14px; z-index: 50; border: 1px solid #d8d0c6; background: var(--white); color: var(--gray); border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+    .admin-toggle.on { background: var(--green-light); border-color: #A5D6A7; color: var(--green); }
     .prog-input { width: 118px; font-size: 12px; padding: 2px 4px; }
     .prog-edit { display: inline-flex; gap: 4px; align-items: center; }
     .prog-nodate { min-height: 26px; border: 1px solid #A5D6A7; background: var(--green-light); color: var(--green); border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; padding: 2px 8px; }
@@ -804,6 +807,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </details>
   </details>
 
+  <button type="button" class="admin-toggle" id="admin-toggle" onclick="toggleAdminMode()">🔑 管理者モード：OFF</button>
+
   <!-- GAS URL 変更 -->
   <div style="text-align:right; margin-top:-20px;">
     <button class="btn btn-secondary" style="min-height:auto;font-size:12px;" onclick="changeGasUrl()">⚙️ GAS URL を変更</button>
@@ -961,8 +966,15 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     noticeDraft = { title, text };
   }
 
+  // このPCに覚えさせてあれば admin-remember.js がタブの sessionStorage（nsf_admin_key）へ写すので、入力を求めない
+  function storedAdminKey() {
+    try { return sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) { return ''; }
+  }
+
   function getNoticePassword() {
     if (noticeAdminPassword) return noticeAdminPassword;
+    const stored = storedAdminKey();
+    if (stored) { noticeAdminPassword = stored; return stored; }
     const pass = prompt('管理者パスワードを入力してください:');
     if (pass === null) return '';
     noticeAdminPassword = pass;
@@ -1006,7 +1018,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }
   }
 
-  function enterAdminView() {
+  function enterAdminView(silent) {
     if (adminLoading) return adminLoading;
     const password = getNoticePassword();
     if (!password) return Promise.resolve(false);
@@ -1022,10 +1034,17 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           noticeAdminPassword = '';
           adminMode = false;
           if (btn) btn.textContent = ATT_ADMIN_LABEL;
-          alert('管理者パスワードが違います。');
+          // 覚えていた合言葉が古い（変更された）場合は記憶ごと消す。自動の入室では黙って公開表示に戻す
+          try { if (sessionStorage.getItem('nsf_admin_key') === password) sessionStorage.removeItem('nsf_admin_key'); } catch (e) {}
+          updateAdminToggle();
+          if (!silent) alert('管理者パスワードが違います。');
           return false;
         }
         adminMode = true;
+        // 正しい合言葉はタブへ保存する。admin-remember.js が「このPCに覚えさせますか？」と1回だけ聞く
+        try { if (!storedAdminKey()) sessionStorage.setItem('nsf_admin_key', password); } catch (e) {}
+        try { sessionStorage.removeItem('nsf_jhcs_public'); } catch (e) {}
+        updateAdminToggle();
         cachedRecords = data.records || [];
         renderTable(cachedRecords);
         document.getElementById('last-updated').textContent =
@@ -1041,7 +1060,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         return true;
       } catch (e) {
         if (btn) btn.textContent = ATT_ADMIN_LABEL;
-        alert('管理者用のデータを読み込めませんでした: ' + e.message);
+        if (!silent) alert('管理者用のデータを読み込めませんでした: ' + e.message);
         return false;
       } finally {
         if (btn) btn.disabled = false;
@@ -1158,6 +1177,26 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       msg.textContent = '保存できませんでした: ' + e.message + '（もう一度お試しください）';
     }
     renderProgress();
+  }
+
+  // ── 管理者モードの切替ボタン（画面右下に常時表示・2026-10-07） ──
+  function updateAdminToggle() {
+    const t = document.getElementById('admin-toggle');
+    if (!t) return;
+    t.textContent = adminMode ? '🔑 管理者モード：ON' : '🔑 管理者モード：OFF';
+    t.classList.toggle('on', adminMode);
+    t.title = adminMode ? '押すと公開表示（実名なし）に戻します。このPCの記憶は残ります' : '押すと管理者表示にします（このPCに覚えさせてあれば入力は要りません）';
+  }
+
+  function toggleAdminMode() {
+    if (adminMode) {
+      // 公開表示に戻すだけ。このPCの記憶は消さない（消すのは URL に ?forget-admin=1）
+      try { sessionStorage.setItem('nsf_jhcs_public', '1'); } catch (e) {}
+      location.reload();
+    } else {
+      try { sessionStorage.removeItem('nsf_jhcs_public'); } catch (e) {}
+      enterAdminView();
+    }
   }
 
   function attDateLabel(ymd) {
@@ -2327,6 +2366,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   }
 
   // ── 初期化 ────────────────────────────────────────
+  updateAdminToggle();
   renderWorksGallery();
   loadMaterials();
   loadWorksManifest();
@@ -2337,6 +2377,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     loadAttendance();
     loadCurriculum();
     loadPhotos();
+    try {
+      if (sessionStorage.getItem('nsf_admin_key') && !sessionStorage.getItem('nsf_jhcs_public')) enterAdminView(true);
+    } catch (e) { /* 保存領域が使えない環境では手動で切り替える */ }
   } else {
     renderCurriculum(DEFAULT_CURRICULUM);
     document.getElementById('records-body').innerHTML =
