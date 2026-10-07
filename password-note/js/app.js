@@ -400,6 +400,9 @@ async function exportBackup() {
     a.remove();
     URL.revokeObjectURL(url);
     toast('暗号化済みの予備コピーを保存しました', 'success');
+    // 利用状況の目安として「保存ボタンが成功した」ことだけを数える（GA4 のイベント名だけ。中身は送らない）。
+    // 自動保存（autobackup.js）は数えない。GA4 を除外した端末（nsf_ga_optout）では送られない。
+    try { if (typeof gtag === 'function') gtag('event', 'backup_save'); } catch (e) { /* 計測の失敗で保存は止めない */ }
   } catch (e) {
     toast('予備コピーを保存できませんでした: ' + e.message, 'error');
   }
