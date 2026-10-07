@@ -240,7 +240,7 @@ html{scroll-behavior:smooth}
     <nav class="idx" aria-label="アプリのカテゴリ別インデックス">
       <div class="idx-title">INDEX / カテゴリ別インデックス</div>
       <div class="idx-grid">
-        <div class="idx-cat"><a class="idx-head" href="#cat-1">くらし・家計</a><div class="idx-links"><a href="#app-kodomo-album">📷 こども成長アルバム</a><a href="#app-sodatelog">👶 そだてろぐ（育児記録）</a><a href="#app-diet">⚖ ダイエット管理</a><a href="#app-bp">🩺 血圧手帳</a><a href="#app-costco">🛒 コストコ共同購入</a><a href="#app-arch-modeler">🏠 建築3Dモデラー</a></div></div>
+        <div class="idx-cat"><a class="idx-head" href="#cat-1">くらし・家計</a><div class="idx-links"><a href="#app-kodomo-album">📷 こども成長アルバム</a><a href="#app-sodatelog">👶 そだてろぐ（育児記録）</a><a href="#app-diet">⚖ ダイエット管理</a><a href="#app-bp">🩺 血圧手帳</a><a href="#app-costco">🛒 コストコ共同購入</a><a href="#app-arch-modeler">🏠 建築3Dモデラー</a><a href="#app-pascal-editor">🏗 建築3Dエディタ（Pascal日本語版）</a></div></div>
         <div class="idx-cat"><a class="idx-head" href="#cat-2">手帳・ものづくり</a><div class="idx-links"><a href="#app-refill">📅 手帳リフィル印刷ツール</a><a href="#app-password-note">🔐 N's notebook パスワード管理</a><a href="#app-svg-trace">🖋 イラストSVG変換</a></div></div>
         <div class="idx-cat"><a class="idx-head" href="#cat-3">発信・制作</a><div class="idx-links"><a href="#app-ai-course">🦉 AIで作る 作家の道具</a><a href="#app-sns-video-maker">🎞 SNS紹介動画メーカー</a><a href="#app-live-telop">📡 ライブテロップ（配信中）</a><a href="#app-telop-player">📺 テロッププレーヤー（上映用）</a></div></div>
         <div class="idx-cat"><a class="idx-head" href="#cat-4">実験・展示</a><div class="idx-links"><a href="#app-site-design-lab">🧪 サイトデザイン研究室</a><a href="#app-showroom">🏬 3D ショールーム（メタバース店舗）</a><a href="#app-pc-build-guide">🔧 自作PCを組み立ててみよう</a></div></div>
@@ -364,6 +364,25 @@ html{scroll-behavior:smooth}
           </div>
           <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">マウスでの作図を前提としているため、パソコンでのご利用をおすすめします。</p>
           <p style="font-size:12px;margin-top:6px;"><span style="color:var(--muted);">くわしくは</span> <a href="arch-modeler/docs/manual.html" style="color:var(--accent-dark);font-weight:700;" onclick="event.stopPropagation();">📖 取扱説明書（全13章）</a></p>
+        </div>
+      </div>
+
+      <div class="tool-card" id="app-pascal-editor" data-app="pascal-editor" style="border-color:var(--accent);background:#fff;padding:0;overflow:hidden;">
+        <img src="../assets/pascal-editor-announce.jpg" alt="建築3Dエディタ（Pascal日本語版） 告知画像" style="width:100%;display:block;border-radius:var(--radius) var(--radius) 0 0;" loading="lazy">
+        <div style="padding:22px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="tag">WEB APP</span>
+            <span style="font-size:10px;font-weight:800;color:var(--accent-dark);letter-spacing:.08em;">FREE / 登録不要</span>
+          </div>
+          <h3><a href="https://you0810jmsdf.github.io/pascal-editor/">🏗 建築3Dエディタ（Pascal日本語版）</a></h3>
+          <p style="color:var(--ink);">オープンソースの建築3Dエディタ「Pascal Editor」を、日本語のメニューで使えるようにしたものです。部屋を作って壁・ドア・窓・屋根・階段を3Dで組み、家具カタログ111点を置けます。</p>
+          <div style="padding:12px;background:var(--soft);border-radius:6px;font-size:12px;color:var(--muted);line-height:1.8;">
+            <strong style="color:var(--ink);">データは端末の中だけに保存されます。</strong>サーバーへ送られることはありません。<br>
+            保存できる間取りは1つです（複数の間取りの保存は未対応）。初回の表示に10〜20秒かかります。<br>
+            日照・部屋の明るさ・壁量チェック・STL出力は、上の「建築3Dモデラー」をお使いください。
+          </div>
+          <p style="font-size:12px;color:var(--accent-dark);font-weight:700;">マウスでの作図を前提としているため、パソコンでのご利用をおすすめします。</p>
+          <p style="font-size:12px;margin-top:6px;color:var(--muted);">Pascal Editor（MIT License）をもとに N's factory が日本語化・改変しています。<a href="https://github.com/you0810jmsdf/pascal-editor" style="color:var(--accent-dark);font-weight:700;" onclick="event.stopPropagation();">ソースコード</a></p>
         </div>
       </div>
 
