@@ -177,7 +177,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .prog-cell { min-width: 44px; min-height: 28px; border: 1px dashed #d8d0c6; background: transparent; border-radius: 6px; color: #c4b8aa; font-size: 12px; cursor: pointer; padding: 2px 4px; }
     .prog-cell.done { border: 1px solid #A5D6A7; background: var(--green-light); color: var(--green); font-weight: 600; }
     .prog-cell:hover { border-color: var(--green); }
-    .prog-th { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .prog-table thead th { vertical-align: bottom; }
+    .prog-th { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; }
+    .prog-th-num { font-weight: 700; color: var(--green); }
     .prog-th-title { writing-mode: vertical-rl; font-size: 11px; font-weight: 500; color: var(--text, #333); line-height: 1.2; letter-spacing: .02em; }
     .prog-legend { margin-top: 12px; }
     .prog-legend summary { cursor: pointer; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
@@ -1097,7 +1099,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     const shortTitle = it => String(titles[it] || '').replace(/（選択[AB]）/, '');
     document.getElementById('prog-head').innerHTML =
       '<th class="prog-name">受講生</th>' +
-      items.map(it => `<th class="${hasAB(it) ? 'prog-ab' : ''}" title="${escAttr(titles[it] || '')}"><div class="prog-th"><span>第${esc(it)}回</span><span class="prog-th-title">${esc(shortTitle(it))}</span></div></th>`).join('') +
+      items.map(it => `<th class="${hasAB(it) ? 'prog-ab' : ''}" title="${escAttr(titles[it] || '')}"><div class="prog-th"><span class="prog-th-title">${esc(shortTitle(it))}</span><span class="prog-th-num">第${esc(it)}回</span></div></th>`).join('') +
       '<th>完了数</th>';
     document.getElementById('prog-legend-body').innerHTML = DEFAULT_CURRICULUM.map(c =>
       `<div class="prog-legend-item"><span class="prog-legend-num">${esc(c.num)}</span><span><b>${esc(c.title)}</b><br><span class="prog-legend-sum">${esc(c.summary)}</span></span></div>`
