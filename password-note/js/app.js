@@ -59,6 +59,7 @@ async function saveVaultLocal() {
   await DB.pushSnapshot(enc);
   AutoBackup.notifyChange('change');
   if (typeof Guard !== 'undefined') Guard.ping('save');
+  if (typeof Sync !== 'undefined') Sync.notifyChange();
 }
 
 async function loadVaultLocal() {
@@ -142,6 +143,7 @@ async function restoreSnapshot(idx) {
     if (!ok) return;
     vault = loaded;
     await DB.set('vault', snap.enc);
+    if (typeof Sync !== 'undefined') await Sync.noteReplaced();
     selectedIds.clear();
     renderList();
     closeSnapshotModal();
@@ -276,6 +278,7 @@ function openSettingsModal() {
   document.getElementById('idle-minutes').value = String(getIdleMinutes());
   document.getElementById('settings-modal').style.display = 'flex';
   if (typeof Guard !== 'undefined') Guard.render();
+  if (typeof Sync !== 'undefined') Sync.render();
 }
 
 function closeSettingsModal() {
@@ -328,6 +331,7 @@ function showApp() {
   renderList();
   initGist();
   AutoBackup.run('login');
+  if (typeof Sync !== 'undefined') Sync.onOpen();
 }
 
 // 外部（管理画面など）から「このサービスを開きたい」と指定して起動されたときに、
@@ -367,6 +371,7 @@ function applyLaunchQuery() {
 }
 
 function handleLogout() {
+  if (typeof Sync !== 'undefined') Sync.flush();
   stopIdleWatch();
   masterPassword = '';
   vault = { entries: [], lastModified: null };
@@ -432,6 +437,7 @@ async function importBackupFile(file) {
 
     vault = loaded;
     await DB.set('vault', encryptedVault);
+    if (typeof Sync !== 'undefined') await Sync.noteReplaced();
     selectedIds.clear();
     renderList();
     if (GistManager.isConfigured()) syncToGist();
@@ -842,6 +848,7 @@ async function saveEntry(e) {
 async function deleteEntry() {
   if (!editingId) return;
   if (!confirm('この登録を削除しますか？')) return;
+  if (typeof Sync !== 'undefined') Sync.noteDeleted([editingId]);
   vault.entries = vault.entries.filter(e => e.id !== editingId);
   selectedIds.delete(editingId);
   await saveVaultLocal();
@@ -861,6 +868,7 @@ async function deleteSelectedEntries() {
   const ok = confirm(`選択した${count}件の登録を削除します。続けますか？`);
   if (!ok) return;
 
+  if (typeof Sync !== 'undefined') Sync.noteDeleted([...selectedIds]);
   vault.entries = vault.entries.filter(e => !selectedIds.has(e.id));
   selectedIds.clear();
   await saveVaultLocal();
@@ -934,6 +942,33 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('idle-minutes').addEventListener('change', e => setIdleMinutes(parseInt(e.target.value, 10)));
   document.getElementById('remember-open-btn').addEventListener('click', loginWithRemembered);
   document.getElementById('remember-clear-btn').addEventListener('click', clearRemembered);
+
+  if (typeof Sync !== 'undefined') Sync.init();
+
+  // スマホ幅ではツールバーの予備コピー保存などを「⋯ メニュー」（下から出る一覧）にまとめる。PC幅ではそのまま並ぶ（CSS）。
+  const moreBtn = document.getElementById('more-btn');
+  const moreSheet = document.getElementById('toolbar-more');
+  const moreBackdrop = document.getElementById('more-backdrop');
+  function closeMore() { moreSheet.classList.remove('open'); moreBackdrop.classList.remove('open'); }
+  if (moreBtn && moreSheet && moreBackdrop) {
+    moreBtn.addEventListener('click', () => {
+      const on = !moreSheet.classList.contains('open');
+      moreSheet.classList.toggle('open', on);
+      moreBackdrop.classList.toggle('open', on);
+    });
+    moreBackdrop.addEventListener('click', closeMore);
+    document.getElementById('more-close-btn').addEventListener('click', closeMore);
+    moreSheet.addEventListener('click', e => { if (e.target.closest('button')) closeMore(); });
+  }
+  // 無料のお知らせ: PC幅は常に開く。スマホ幅は初回だけ開き、2回目からは1行にたたむ
+  const notice = document.getElementById('nsf-free-notice');
+  if (notice && notice.tagName === 'DETAILS') {
+    try {
+      const seen = localStorage.getItem('pwn_notice_seen') === '1';
+      notice.open = window.innerWidth >= 600 || !seen;
+      localStorage.setItem('pwn_notice_seen', '1');
+    } catch (e) { notice.open = true; }
+  }
 
   DB.get('vault').then(enc => {
     setAuthMode(!enc);
