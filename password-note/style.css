@@ -723,3 +723,72 @@ a.url-open-btn:hover {
 .env-key small { display: block; font-weight: 400; font-size: 0.7rem; color: var(--text-muted); overflow-wrap: anywhere; }
 .env-nodesc { opacity: 0.6; }
 .env-fill .env-badge { border-color: var(--accent); color: var(--accent); }
+
+/* ── スマホ向け（2026-10-07）──
+   ツールバーの「⋯ メニュー」は 600px 以下でだけ下から出る一覧になる。PC幅では中身がそのままツールバーに並ぶ（display: contents）。 */
+html { -webkit-text-size-adjust: 100%; }
+.free-notice summary { list-style: none; cursor: pointer; font-weight: 700; }
+.free-notice summary::-webkit-details-marker { display: none; }
+.free-notice summary::after { content: ' ▾'; color: #7A5540; }
+.free-notice[open] summary::after { content: ' ▴'; }
+.free-notice-hint { font-weight: 400; }
+.free-notice[open] .free-notice-hint { display: none; }
+.free-notice-body { margin-top: 4px; }
+#more-btn, .more-head { display: none; }
+.toolbar-more { display: contents; }
+#more-backdrop { display: none; }
+
+@media (max-width: 600px) {
+  /* 16px 未満の入力欄は iPhone が勝手に拡大するため */
+  input, select, textarea { font-size: 16px; }
+  header { padding: 0.45rem 0.75rem; gap: 0.4rem; }
+  .free-notice { margin: 8px auto !important; }
+  .free-notice-hint { display: none; }  /* 2行に折り返して高くなるので、スマホでは見出しだけ */
+  .app-title { font-size: 0.95rem; }
+  .icon-btn { min-height: 40px; padding: 0.4rem 0.7rem; }
+  .toolbar { padding: 0.5rem 0.75rem; gap: 0.4rem; }
+  .search-wrap input { padding: 0.55rem 0; }
+  #more-btn { display: flex; }
+  .toolbar-more {
+    display: none;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 150;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem calc(1rem + env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    box-shadow: var(--shadow);
+    max-height: 75dvh;
+    overflow-y: auto;
+  }
+  .toolbar-more.open { display: flex; }
+  .toolbar-more .icon-btn { width: 100%; min-height: 48px; font-size: 1rem; justify-content: flex-start; }
+  .more-head { display: flex; align-items: center; justify-content: space-between; font-weight: 700; color: var(--text2); }
+  .more-head .icon-btn { width: auto; min-height: 36px; font-size: 0.85rem; }
+  #more-backdrop.open { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 149; }
+  /* 一覧カード: 指で押せる大きさ（44px 目安）に */
+  #entry-list { padding: 0 0.75rem 6rem; }
+  .entry-checkbox { padding: 0 0.6rem; }
+  .entry-checkbox input[type=checkbox] { width: 22px; height: 22px; }
+  .entry-main { min-width: 0; padding: 0.7rem 0.4rem 0.7rem 0; }  /* min-width:0 が無いと長いURLで本文欄が広がり、コピー・編集ボタンが枠の外へ押し出される */
+  .entry-copy-btns { gap: 0.4rem; padding: 0.4rem 0.3rem; }
+  .entry-copy-btn { min-height: 40px; padding: 0.45rem 0.6rem; font-size: 0.8rem; }
+  .entry-edit-btn { min-width: 44px; }
+  .url-tag { max-width: 100%; }
+  .fab { bottom: calc(1.25rem + env(safe-area-inset-bottom)); right: 1.25rem; }
+  /* 編集画面: 全画面にして、保存ボタンを下に固定 */
+  #entry-modal { padding: 0; }
+  #entry-modal .modal-card { max-width: none; min-height: 100dvh; border-radius: 0; border: none; display: flex; flex-direction: column; overflow: visible; }  /* overflow:hidden のままだと保存ボタンの sticky（下に固定）が効かない */
+  #entry-modal form { display: flex; flex-direction: column; flex: 1; }
+  #entry-modal .modal-body { flex: 1; }
+  #entry-modal .modal-footer { position: sticky; bottom: 0; background: var(--surface); padding-bottom: calc(0.9rem + env(safe-area-inset-bottom)); z-index: 1; }
+  .modal-footer .btn-save { flex: 1; min-height: 48px; font-size: 1rem; }
+  .modal-footer .btn-cancel { min-height: 48px; }
+  .btn-add-history { min-height: 40px; }
+  .btn-icon { min-height: 36px; }
+  #toast-container { left: 1rem; right: 1rem; bottom: calc(5.5rem + env(safe-area-inset-bottom)); align-items: stretch; }
+  .toast { max-width: none; }
+}

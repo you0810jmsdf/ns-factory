@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0f1117">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,16 +21,19 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     gtag('config', 'G-ND1T7H067Y');
   </script>
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <!-- 無料開放のお知らせ（2026-08-24 追加。STORES販売は終了し無料公開へ移行） -->
-<div id="nsf-free-notice" style="max-width:760px;margin:12px auto;padding:12px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:1.8;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;">
-  <strong>無料でお使いください。</strong>
+<details id="nsf-free-notice" class="free-notice" open style="max-width:760px;margin:12px auto;padding:10px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:1.8;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;">
+  <summary>無料でお使いください。<span class="free-notice-hint">（登録・費用不要／この端末の中だけに保存）</span></summary>
+  <div class="free-notice-body">
   登録も費用も不要です。入力した内容はこの端末の中だけに保存され、どこにも送信されません。<br>
   ⚠ 合言葉を忘れると復旧できません。大切な情報は印刷して紙でも残してください。<br>
   不具合やご要望は <a href="../links.html" style="color:#7A5540;font-weight:700;">こちら</a> からお知らせください。
-</div>
+  </div>
+</details>
 
 
 <div id="auth-screen">
@@ -84,8 +87,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <button class="icon-btn danger-btn" id="delete-selected-btn" style="display:none">
       削除 <span>(<span id="delete-count">0</span>)</span>
     </button>
-    <button class="icon-btn" id="sync-btn" style="display:none" title="家族共有データを読み込む">共有読込</button>
-    <button class="icon-btn" id="gist-btn" style="display:none" title="家族共有設定">共有設定</button>
     <button class="icon-btn" id="logout-btn" title="閉じる">閉じる</button>
   </header>
 
@@ -101,15 +102,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </select>
     <span class="entry-count" id="entry-count">0件</span>
     <button class="icon-btn" id="select-all-btn" onclick="toggleSelectAll()" style="display:none">すべて選択</button>
-    <button class="icon-btn" id="export-btn" title="暗号化済みの予備コピーを保存">予備コピー保存</button>
-    <button class="icon-btn" id="autobackup-btn" title="保存先フォルダを記憶して自動で予備コピーを書き出す">自動保存</button>
-    <button class="icon-btn" id="import-btn" title="暗号化済みの予備コピーを読み込む">予備コピー読込</button>
-    <button class="icon-btn" id="env-btn" title=".env の内容をまとめて登録・上書きする">.env取り込み</button>
-    <button class="icon-btn" id="snapshot-btn" title="保存のたびに自動で残る履歴から復元">自動復元</button>
-    <button class="icon-btn" id="settings-btn" title="放置で自動的に閉じるまでの時間を変更">設定</button>
+    <button class="icon-btn" id="more-btn" type="button" title="その他の操作">⋯ メニュー</button>
+    <div class="toolbar-more" id="toolbar-more">
+      <div class="more-head"><span>メニュー</span><button class="icon-btn" id="more-close-btn" type="button">閉じる</button></div>
+      <button class="icon-btn" id="export-btn" title="暗号化済みの予備コピーを保存">予備コピー保存</button>
+      <button class="icon-btn" id="autobackup-btn" title="保存先フォルダを記憶して自動で予備コピーを書き出す">自動保存</button>
+      <button class="icon-btn" id="import-btn" title="暗号化済みの予備コピーを読み込む">予備コピー読込</button>
+      <button class="icon-btn" id="env-btn" title=".env の内容をまとめて登録・上書きする">.env取り込み</button>
+      <button class="icon-btn" id="snapshot-btn" title="保存のたびに自動で残る履歴から復元">自動復元</button>
+      <button class="icon-btn" id="sync-btn" style="display:none" title="家族共有データを読み込む">共有読込</button>
+      <button class="icon-btn" id="gist-btn" style="display:none" title="家族共有設定">共有設定</button>
+      <button class="icon-btn" id="settings-btn" title="放置で自動的に閉じるまでの時間を変更・スマホと同期">設定</button>
+    </div>
     <input type="file" id="import-file" accept=".json,application/json" style="display:none">
   </div>
 
+  <div id="more-backdrop"></div>
   <div id="entry-list"></div>
 
   <button class="fab" id="add-btn" title="新しく登録">＋</button>
@@ -281,7 +289,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <script src="js/print.js?v=28"></script>
 <script src="js/autobackup.js?v=34"></script>
 <script src="js/guard.js?v=1"></script>
-<script src="js/app.js?v=32"></script>
+<script src="js/sync.js?v=1"></script>
+<script src="js/app.js?v=33"></script>
 <script src="js/envimport.js?v=32"></script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>

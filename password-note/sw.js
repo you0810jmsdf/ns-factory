@@ -1,4 +1,4 @@
-const CACHE = 'pw-manager-v54';
+const CACHE = 'pw-manager-v55';
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const ASSETS = [
   './js/print.js',
   './js/autobackup.js',
   './js/guard.js',
+  './js/sync.js',
   './js/app.js',
   './js/envimport.js'
 ];
