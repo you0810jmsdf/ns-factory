@@ -61,6 +61,15 @@ h1{font-size:clamp(26px,4.4vw,38px);font-weight:700;letter-spacing:.04em;margin-
   background:linear-gradient(90deg,transparent,var(--color-accent),transparent);
 }
 
+.switch{display:flex;justify-content:center;gap:10px;margin-top:22px;flex-wrap:wrap}
+.switch a{
+  padding:8px 22px;border-radius:999px;font-size:14px;letter-spacing:.06em;
+  border:1px solid var(--color-border);background:var(--paper);color:var(--color-text-sub);
+  transition:.2s ease;
+}
+.switch a:hover{background:var(--color-accent-light)}
+.switch a.on{background:var(--color-primary);color:#F7F1E3;border-color:var(--color-primary);pointer-events:none}
+
 .toolbar{
   display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
   margin:34px 0 22px;
@@ -153,6 +162,10 @@ footer{
       うまくいったことも、つまずいたことも、そのまま書いています。全文を note で無料公開しています。
     </p>
     <div class="rule"></div>
+    <nav class="switch" aria-label="連載の切り替え">
+      <a class="on" href="./note.html" aria-current="page">AI経営奮闘記</a>
+      <a href="./note-jarvis.html">革職人のAI秘書 Jarvis開発録</a>
+    </nav>
   </header>
 
   <div class="toolbar">
@@ -247,7 +260,10 @@ footer{
       return r.json();
     })
     .then(function (d) {
-      all = (d && d.items) || [];
+      // Jarvis の記事（題名に Jarvis を含む）は note-jarvis.html に分けてある
+      all = ((d && d.items) || []).filter(function (it) {
+        return !/jarvis/i.test(String(it.title || ''));
+      });
       if (d && d.profileUrl) document.getElementById('profileLink').href = d.profileUrl;
       if (!all.length) throw new Error('記事が0件です');
       filtered = all;
