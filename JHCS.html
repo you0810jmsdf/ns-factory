@@ -176,7 +176,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .prog-cell { min-width: 44px; min-height: 28px; border: 1px dashed #d8d0c6; background: transparent; border-radius: 6px; color: #c4b8aa; font-size: 12px; cursor: pointer; padding: 2px 4px; }
     .prog-cell.done { border: 1px solid #A5D6A7; background: var(--green-light); color: var(--green); font-weight: 600; }
     .prog-cell:hover { border-color: var(--green); }
+    .prog-th { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .prog-th-title { writing-mode: vertical-rl; font-size: 11px; font-weight: 500; color: var(--text, #333); line-height: 1.2; letter-spacing: .02em; }
+    .prog-legend { margin-top: 12px; }
+    .prog-legend summary { cursor: pointer; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .prog-legend-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 14px; font-size: 12px; line-height: 1.6; }
+    .prog-legend-item { display: flex; gap: 8px; align-items: baseline; }
+    .prog-legend-num { flex: none; min-width: 34px; text-align: center; font-weight: 700; color: var(--green); background: var(--green-light); border-radius: 6px; padding: 0 4px; }
+    .prog-legend-sum { color: var(--gray); }
     .prog-input { width: 118px; font-size: 12px; padding: 2px 4px; }
+    .prog-edit { display: inline-flex; gap: 4px; align-items: center; }
+    .prog-nodate { min-height: 26px; border: 1px solid #A5D6A7; background: var(--green-light); color: var(--green); border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; padding: 2px 8px; }
+    .prog-cell.done.nodate { font-weight: 700; letter-spacing: .05em; }
     .att-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .att-badge.upcoming { background: var(--blue-light); color: var(--blue); }
     .att-badge.today { background: var(--amber-light); color: var(--amber); }
@@ -736,9 +747,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <!-- 受講生の進捗マトリクス（2026-10-07）: 管理者表示のときだけ出す。順番を変える生徒がいるため、各マスは完了日 -->
   <details class="section" id="progress-section" style="display:none;" open>
     <summary><h2>受講生の進捗</h2></summary>
-    <p class="att-lead">各マスに、その講座を完了した日を入れます。マスを押すと日付を選べます（選び直しで上書き、消すと未完了に戻ります）。順番を変えて進める生徒も、日付で追えます。</p>
+    <p class="att-lead">各マスに、その講座を完了した日を入れます。マスを押すと日付を選べます（日付が分からない完了は「済」ボタン。選び直しで上書き、日付を消すと未完了に戻ります）。順番を変えて進める生徒も、日付で追えます。</p>
     <div class="prog-wrap"><table class="prog-table"><thead><tr id="prog-head"></tr></thead><tbody id="prog-body"></tbody></table></div>
     <div id="prog-msg" class="att-msg"></div>
+    <details class="prog-legend" open>
+      <summary>各回の内容</summary>
+      <div class="prog-legend-body" id="prog-legend-body"></div>
+    </details>
   </details>
 
   <!-- 生徒作品集 -->
@@ -1040,11 +1055,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   // ⛔ 実名を扱うので、管理者表示（adminData）で受け取ったときだけ描く。公開側のGETには進捗を含めない
   let progressData = { progress: [], members: [], items: [] };
 
+  // 日付が分からない完了は日付の代わりに「済」を入れる（GAS の PROGRESS_DONE_NO_DATE と同じ文字）
+  const PROG_DONE = '済';
+
   function progKey(name, item) { return String(name).replace(/\s+/g, '') + '|' + item; }
 
   function progShortDate(ymd) {
     const m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    return m ? `${Number(m[2])}/${Number(m[3])}` : '';
+    return m ? `${Number(m[2])}/${Number(m[3])}` : (ymd === PROG_DONE ? PROG_DONE : '');
   }
 
   function renderProgress(pd) {
@@ -1056,10 +1074,15 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     const titles = {};
     DEFAULT_CURRICULUM.forEach(c => { titles[c.num] = c.title; });
     const hasAB = it => /[AB]$/.test(it);
+    // 見出しに講座名を縦書きで並べ、別ページを見なくても内容が分かるようにする（A/Bは番号側に出るので「（選択A）」は省く）
+    const shortTitle = it => String(titles[it] || '').replace(/（選択[AB]）/, '');
     document.getElementById('prog-head').innerHTML =
       '<th class="prog-name">受講生</th>' +
-      items.map(it => `<th class="${hasAB(it) ? 'prog-ab' : ''}" title="${escAttr(titles[it] || '')}">第${esc(it)}回</th>`).join('') +
+      items.map(it => `<th class="${hasAB(it) ? 'prog-ab' : ''}" title="${escAttr(titles[it] || '')}"><div class="prog-th"><span>第${esc(it)}回</span><span class="prog-th-title">${esc(shortTitle(it))}</span></div></th>`).join('') +
       '<th>完了数</th>';
+    document.getElementById('prog-legend-body').innerHTML = DEFAULT_CURRICULUM.map(c =>
+      `<div class="prog-legend-item"><span class="prog-legend-num">${esc(c.num)}</span><span><b>${esc(c.title)}</b><br><span class="prog-legend-sum">${esc(c.summary)}</span></span></div>`
+    ).join('');
     const done = {};
     (progressData.progress || []).forEach(p => { done[progKey(p.name, p.item)] = p.date; });
     const members = progressData.members || [];
@@ -1074,8 +1097,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         const d = done[progKey(name, it)] || '';
         if (d) n++;
         const label = d ? progShortDate(d) : '＋';
-        const tip = (titles[it] || '') + (d ? '（完了 ' + d + '）' : '（未完了）');
-        return `<td class="${hasAB(it) ? 'prog-ab' : ''}"><button class="prog-cell${d ? ' done' : ''}" data-m="${mi}" data-i="${ii}" title="${escAttr(tip)}" onclick="editProgressCell(this)">${label}</button></td>`;
+        const tip = (titles[it] || '') + (d === PROG_DONE ? '（完了・日付不明）' : d ? '（完了 ' + d + '）' : '（未完了）');
+        return `<td class="${hasAB(it) ? 'prog-ab' : ''}"><button class="prog-cell${d ? ' done' : ''}${d === PROG_DONE ? ' nodate' : ''}" data-m="${mi}" data-i="${ii}" title="${escAttr(tip)}" onclick="editProgressCell(this)">${label}</button></td>`;
       }).join('');
       return `<tr><td class="prog-name">${esc(name)}</td>${cells}<td class="prog-count">${n}/${items.length}</td></tr>`;
     }).join('');
@@ -1086,23 +1109,32 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     const name = progressData.members[mi], item = progressData.items[ii];
     const key = progKey(name, item);
     const cur = ((progressData.progress || []).find(p => progKey(p.name, p.item) === key) || {}).date || '';
+    const wrap = document.createElement('span');
+    wrap.className = 'prog-edit';
     const input = document.createElement('input');
     input.type = 'date';
     input.className = 'prog-input';
-    input.value = cur;
-    btn.replaceWith(input);
+    input.value = /^\d{4}-/.test(cur) ? cur : '';
+    const nodate = document.createElement('button');
+    nodate.type = 'button';
+    nodate.className = 'prog-nodate';
+    nodate.textContent = PROG_DONE;
+    nodate.title = '日付が分からない完了として「済」を入れる';
+    wrap.append(input, nodate);
+    btn.replaceWith(wrap);
     input.focus();
     try { input.showPicker(); } catch (e) { /* 非対応環境では手で入力できる */ }
     let finished = false;
-    const finish = (save) => {
+    const finish = (value) => {
       if (finished) return;
       finished = true;
-      if (save && input.value !== cur) saveProgressCell(name, item, input.value);
+      if (value !== null && value !== cur) saveProgressCell(name, item, value);
       else renderProgress();
     };
-    input.addEventListener('change', () => finish(true));
-    input.addEventListener('blur', () => setTimeout(() => finish(false), 200));
-    input.addEventListener('keydown', ev => { if (ev.key === 'Escape') finish(false); });
+    input.addEventListener('change', () => finish(input.value));
+    nodate.addEventListener('click', () => finish(PROG_DONE));
+    wrap.addEventListener('focusout', () => setTimeout(() => { if (!wrap.contains(document.activeElement)) finish(null); }, 200));
+    input.addEventListener('keydown', ev => { if (ev.key === 'Escape') finish(null); });
   }
 
   async function saveProgressCell(name, item, date) {
@@ -1118,7 +1150,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (!data.ok) throw new Error(data.error === 'Invalid admin password' ? '管理者パスワードが違います' : (data.error || '不明なエラー'));
       progressData.progress = (progressData.progress || []).filter(p => progKey(p.name, p.item) !== key);
       if (date) progressData.progress.push({ name, item, date });
-      msg.textContent = date ? `${name}さんの第${item}回を ${date} 完了で保存しました。` : `${name}さんの第${item}回を未完了に戻しました。`;
+      msg.textContent = date === PROG_DONE ? `${name}さんの第${item}回を「済」（日付不明の完了）で保存しました。`
+        : date ? `${name}さんの第${item}回を ${date} 完了で保存しました。` : `${name}さんの第${item}回を未完了に戻しました。`;
       setTimeout(() => { if (/保存しました|戻しました/.test(msg.textContent)) msg.textContent = ''; }, 4000);
     } catch (e) {
       msg.className = 'att-msg warn';
