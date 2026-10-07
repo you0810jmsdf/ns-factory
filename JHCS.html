@@ -166,6 +166,17 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .att-names { font-size: 12px; color: var(--gray); min-width: 120px; }
     .att-unset { color: var(--amber); }
     .att-unset-names { color: var(--amber); }
+    .prog-wrap { overflow-x: auto; }
+    .prog-table { border-collapse: separate; border-spacing: 0; font-size: 12px; background: var(--white); border-radius: 10px; min-width: 100%; }
+    .prog-table th, .prog-table td { padding: 5px 4px; border-bottom: 1px solid #eee; text-align: center; white-space: nowrap; }
+    .prog-table th { background: #faf7f3; font-size: 11px; color: var(--gray); }
+    .prog-table th.prog-name, .prog-table td.prog-name { position: sticky; left: 0; background: #faf7f3; text-align: left; padding-left: 10px; padding-right: 10px; font-weight: 600; z-index: 1; }
+    .prog-table td.prog-count { color: var(--gray); font-size: 11px; padding: 5px 8px; }
+    .prog-table th.prog-ab, .prog-table td.prog-ab { background: #fbf9f6; }
+    .prog-cell { min-width: 44px; min-height: 28px; border: 1px dashed #d8d0c6; background: transparent; border-radius: 6px; color: #c4b8aa; font-size: 12px; cursor: pointer; padding: 2px 4px; }
+    .prog-cell.done { border: 1px solid #A5D6A7; background: var(--green-light); color: var(--green); font-weight: 600; }
+    .prog-cell:hover { border-color: var(--green); }
+    .prog-input { width: 118px; font-size: 12px; padding: 2px 4px; }
     .att-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .att-badge.upcoming { background: var(--blue-light); color: var(--blue); }
     .att-badge.today { background: var(--amber-light); color: var(--amber); }
@@ -722,6 +733,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </div>
   </details>
 
+  <!-- 受講生の進捗マトリクス（2026-10-07）: 管理者表示のときだけ出す。順番を変える生徒がいるため、各マスは完了日 -->
+  <details class="section" id="progress-section" style="display:none;" open>
+    <summary><h2>受講生の進捗</h2></summary>
+    <p class="att-lead">各マスに、その講座を完了した日を入れます。マスを押すと日付を選べます（選び直しで上書き、消すと未完了に戻ります）。順番を変えて進める生徒も、日付で追えます。</p>
+    <div class="prog-wrap"><table class="prog-table"><thead><tr id="prog-head"></tr></thead><tbody id="prog-body"></tbody></table></div>
+    <div id="prog-msg" class="att-msg"></div>
+  </details>
+
   <!-- 生徒作品集 -->
   <details class="section" open>
     <summary><h2>生徒作品集</h2></summary>
@@ -1002,6 +1021,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         renderAttendance(data.sessions || [], true,
           data.syncError ? '予約システムのメールを読み取れませんでした: ' + data.syncError : '',
           data.unsetMaskNames || []);
+        renderProgress(data.progressData);
         if (btn) btn.textContent = '🔑 管理者表示中（名前を表示）';
         return true;
       } catch (e) {
@@ -1014,6 +1034,97 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       }
     })();
     return adminLoading;
+  }
+
+  // ── 受講生の進捗マトリクス（2026-10-07） ───────────────────
+  // ⛔ 実名を扱うので、管理者表示（adminData）で受け取ったときだけ描く。公開側のGETには進捗を含めない
+  let progressData = { progress: [], members: [], items: [] };
+
+  function progKey(name, item) { return String(name).replace(/\s+/g, '') + '|' + item; }
+
+  function progShortDate(ymd) {
+    const m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${Number(m[2])}/${Number(m[3])}` : '';
+  }
+
+  function renderProgress(pd) {
+    if (pd) progressData = pd;
+    const sec = document.getElementById('progress-section');
+    if (!sec || !adminMode) return;
+    sec.style.display = '';
+    const items = progressData.items || [];
+    const titles = {};
+    DEFAULT_CURRICULUM.forEach(c => { titles[c.num] = c.title; });
+    const hasAB = it => /[AB]$/.test(it);
+    document.getElementById('prog-head').innerHTML =
+      '<th class="prog-name">受講生</th>' +
+      items.map(it => `<th class="${hasAB(it) ? 'prog-ab' : ''}" title="${escAttr(titles[it] || '')}">第${esc(it)}回</th>`).join('') +
+      '<th>完了数</th>';
+    const done = {};
+    (progressData.progress || []).forEach(p => { done[progKey(p.name, p.item)] = p.date; });
+    const members = progressData.members || [];
+    const body = document.getElementById('prog-body');
+    if (!members.length) {
+      body.innerHTML = `<tr><td colspan="${items.length + 2}" class="empty-msg">在籍者がいません。</td></tr>`;
+      return;
+    }
+    body.innerHTML = members.map((name, mi) => {
+      let n = 0;
+      const cells = items.map((it, ii) => {
+        const d = done[progKey(name, it)] || '';
+        if (d) n++;
+        const label = d ? progShortDate(d) : '＋';
+        const tip = (titles[it] || '') + (d ? '（完了 ' + d + '）' : '（未完了）');
+        return `<td class="${hasAB(it) ? 'prog-ab' : ''}"><button class="prog-cell${d ? ' done' : ''}" data-m="${mi}" data-i="${ii}" title="${escAttr(tip)}" onclick="editProgressCell(this)">${label}</button></td>`;
+      }).join('');
+      return `<tr><td class="prog-name">${esc(name)}</td>${cells}<td class="prog-count">${n}/${items.length}</td></tr>`;
+    }).join('');
+  }
+
+  function editProgressCell(btn) {
+    const mi = Number(btn.dataset.m), ii = Number(btn.dataset.i);
+    const name = progressData.members[mi], item = progressData.items[ii];
+    const key = progKey(name, item);
+    const cur = ((progressData.progress || []).find(p => progKey(p.name, p.item) === key) || {}).date || '';
+    const input = document.createElement('input');
+    input.type = 'date';
+    input.className = 'prog-input';
+    input.value = cur;
+    btn.replaceWith(input);
+    input.focus();
+    try { input.showPicker(); } catch (e) { /* 非対応環境では手で入力できる */ }
+    let finished = false;
+    const finish = (save) => {
+      if (finished) return;
+      finished = true;
+      if (save && input.value !== cur) saveProgressCell(name, item, input.value);
+      else renderProgress();
+    };
+    input.addEventListener('change', () => finish(true));
+    input.addEventListener('blur', () => setTimeout(() => finish(false), 200));
+    input.addEventListener('keydown', ev => { if (ev.key === 'Escape') finish(false); });
+  }
+
+  async function saveProgressCell(name, item, date) {
+    const msg = document.getElementById('prog-msg');
+    msg.className = 'att-msg';
+    msg.textContent = '保存中...';
+    const key = progKey(name, item);
+    try {
+      const data = await fetchJsonRead(getGasUrl(), {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveProgress', password: getNoticePassword(), name, item, date }),
+      });
+      if (!data.ok) throw new Error(data.error === 'Invalid admin password' ? '管理者パスワードが違います' : (data.error || '不明なエラー'));
+      progressData.progress = (progressData.progress || []).filter(p => progKey(p.name, p.item) !== key);
+      if (date) progressData.progress.push({ name, item, date });
+      msg.textContent = date ? `${name}さんの第${item}回を ${date} 完了で保存しました。` : `${name}さんの第${item}回を未完了に戻しました。`;
+      setTimeout(() => { if (/保存しました|戻しました/.test(msg.textContent)) msg.textContent = ''; }, 4000);
+    } catch (e) {
+      msg.className = 'att-msg warn';
+      msg.textContent = '保存できませんでした: ' + e.message + '（もう一度お試しください）';
+    }
+    renderProgress();
   }
 
   function attDateLabel(ymd) {
