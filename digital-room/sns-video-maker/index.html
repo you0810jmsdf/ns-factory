@@ -6208,6 +6208,7 @@ const SNS_POST_GAS_URL = 'https://script.google.com/macros/s/AKfycbxZztUxgw06jJX
 const SNS_VIDEO_RELAY = 'https://nsfactory-tts-relay.bouncy-xenoposeidon.workers.dev';
 const SNS_VIDEO_MAX_BYTES = 24 * 1024 * 1024;
 const SNS_CAPTION_MAX_CHARS = 1200;
+const SNS_THREADS_MAX_CHARS = 500;   // Threads の本文上限（超えるとAPIが "Param text must be at most 500 characters" で拒否）
 
 let snsPostGateResolve = null;
 
@@ -6256,18 +6257,19 @@ function refreshSnsPostChecks(){
   const tooBig = lastRecordingBlob.size > SNS_VIDEO_MAX_BYTES;
   // 投稿はGASへGETで渡すため、本文が長すぎるとURLの上限に当たる
   const tooLong = caption.length > SNS_CAPTION_MAX_CHARS;
+  const threadsTooLong = !!(els.snsPostThreads && els.snsPostThreads.checked) && caption.length > SNS_THREADS_MAX_CHARS;
   const checks = [
     {warn:false, text:`作品: ${currentWork.name || currentWork.id}（${currentWork.id}）`},
     {warn:tooBig, text:`動画: ${sizeMb.toFixed(1)}MB・${format.w}×${format.h}${tooBig ? '（大きすぎます。上限24MB）' : ''}`},
-    {warn:tooLong, text:`本文: ${caption.length}文字${tooLong ? `（長すぎます。${SNS_CAPTION_MAX_CHARS}文字まで）` : ''}`},
+    {warn:tooLong || threadsTooLong, text:`本文: ${caption.length}文字${tooLong ? `（長すぎます。${SNS_CAPTION_MAX_CHARS}文字まで）` : (threadsTooLong ? `（Threadsは${SNS_THREADS_MAX_CHARS}文字まで。短くするか、Threadsのチェックを外してください）` : '')}`},
     {warn:false, text:'投稿後、一時的に置いた動画は削除します'}
   ];
   els.snsPostSummary.innerHTML = checks
     .map(check => `<li class="${check.warn ? 'warn' : ''}"><strong>${check.warn ? '要確認' : 'OK'}</strong>　${escapeHtml(check.text)}</li>`)
     .join('');
   const empty = !caption.trim();
-  els.snsPostConfirm.disabled = tooBig || tooLong || empty;
-  els.snsPostConfirm.textContent = tooBig ? '動画を短くしてください' : (tooLong ? '本文を短くしてください' : (empty ? '本文が空です' : 'この内容で投稿する'));
+  els.snsPostConfirm.disabled = tooBig || tooLong || threadsTooLong || empty;
+  els.snsPostConfirm.textContent = tooBig ? '動画を短くしてください' : (tooLong ? '本文を短くしてください' : (threadsTooLong ? `Threadsは${SNS_THREADS_MAX_CHARS}文字までです` : (empty ? '本文が空です' : 'この内容で投稿する')));
 }
 
 function closeSnsPostGate(confirmed){
@@ -9355,6 +9357,7 @@ els.snsPostCancel.addEventListener('click', () => closeSnsPostGate(false));
 els.snsPostConfirm.addEventListener('click', () => closeSnsPostGate(true));
 els.snsPostGate.addEventListener('cancel', event => { event.preventDefault(); closeSnsPostGate(false); });
 els.snsPostVoiceGen.addEventListener('click', generateSnsPostVoiceCaption);
+els.snsPostThreads.addEventListener('change', refreshSnsPostChecks);   // Threadsの切替で500文字判定を出し直す
 els.snsPostCaption.addEventListener('input', refreshSnsPostChecks);   // 直すたびに文字数と「投稿する」の可否を出し直す
 els.adminToggle.addEventListener('click', () => { toggleAdminMode(); });
 
