@@ -394,16 +394,63 @@ const Sync = (() => {
   }
   function uiVisible() { return isConfigured() || ls.get(UI_FLAG) === '1'; }
 
-  // QR は PC で鍵をスマホに渡すときだけ使う。ライブラリは押したときに初めて読み込む（普段は何も読み込まない）
-  function loadQrLib() {
-    if (window.QRCode) return Promise.resolve();
+  // 外部ライブラリは押したときに初めて読み込む（普段は何も読み込まない）
+  function loadScript(src, ready, label) {
+    if (ready()) return Promise.resolve();
     return new Promise((res, rej) => {
       const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-      s.onload = () => res();
-      s.onerror = () => rej(new Error('QR ライブラリを読み込めませんでした'));
+      s.src = src;
+      s.onload = () => (ready() ? res() : rej(new Error(label + 'を読み込めませんでした')));
+      s.onerror = () => rej(new Error(label + 'を読み込めませんでした（ネット接続を確認）'));
       document.head.appendChild(s);
     });
+  }
+  // QR の表示（PC で鍵をスマホに渡すとき）
+  function loadQrLib() {
+    return loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js', () => !!window.QRCode, 'QR 表示のライブラリ');
+  }
+
+  // QR の読み取り（スマホのアプリで PC の画面を撮るとき）。ブラウザ内蔵の読み取りがあればそれを使い、無ければ jsQR（MIT）。
+  // ホーム画面のアプリは Safari と保存領域が別で、アドレス欄も無い。カメラで撮った写真から鍵を取り出せば、アプリの中だけで設定できる（2026-10-07 事業主提案）。
+  async function decodeQr(bmp) {
+    try {
+      if ('BarcodeDetector' in window) {
+        const fmts = await window.BarcodeDetector.getSupportedFormats();
+        if (fmts.includes('qr_code')) {
+          const found = await new window.BarcodeDetector({ formats: ['qr_code'] }).detect(bmp);
+          if (found && found[0] && found[0].rawValue) return found[0].rawValue;
+        }
+      }
+    } catch (e) { /* 内蔵が使えなければ jsQR へ */ }
+    await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js', () => typeof window.jsQR === 'function', 'QR 読み取りのライブラリ');
+    // 写真は大きいので縮めて読む。読めなければ別の大きさでも試す
+    for (const maxW of [1000, 1600, 640]) {
+      const scale = Math.min(1, maxW / bmp.width);
+      const w = Math.max(1, Math.round(bmp.width * scale));
+      const h = Math.max(1, Math.round(bmp.height * scale));
+      const c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(bmp, 0, 0, w, h);
+      const r = window.jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'attemptBoth' });
+      if (r && r.data) return r.data;
+    }
+    return '';
+  }
+
+  async function readQrKey(file) {
+    let text = '';
+    try {
+      const bmp = await createImageBitmap(file);
+      try { text = await decodeQr(bmp); } finally { if (bmp.close) bmp.close(); }
+    } catch (e) {
+      return { ok: false, msg: e && e.message && /ライブラリ/.test(e.message) ? e.message : '写真を読み込めませんでした。' };
+    }
+    if (!text) return { ok: false, msg: 'QR を見つけられませんでした。QR 全体が入るように、少し近づいて撮り直してください。' };
+    const m = /#sync=([A-Za-z0-9]{20,128})\s*$/.exec(text) || /^\s*([A-Za-z0-9]{20,128})\s*$/.exec(text);
+    if (!m) return { ok: false, msg: 'この QR は同期の鍵ではありません。' };
+    return { ok: true, key: m[1] };
   }
 
   function render(firstMsg) {
@@ -413,17 +460,38 @@ const Sync = (() => {
     if (!modal || modal.style.display === 'none') return;
     const old = document.getElementById('sync-section');
     if (old) old.remove();
-    if (!uiVisible()) return;
 
-    const sec = el('div', { id: 'sync-section', style: 'border-top:1px solid var(--border,#444);padding-top:12px;display:flex;flex-direction:column;gap:8px' });
-    sec.appendChild(el('strong', null, 'スマホと同期'));
+    // 鍵も印も無い端末（ほかの利用者・ホーム画面のアプリで初めて開いたとき）は、折りたたみで小さく出す。
+    // ホーム画面のアプリはアドレス欄が無く #sync-setup で開けないため、完全に隠すと鍵を入れる手段が無くなる（2026-10-07）。
+    const quiet = !uiVisible();
+    const sec = el(quiet ? 'details' : 'div', { id: 'sync-section', style: 'border-top:1px solid var(--border,#444);padding-top:12px' });
+    if (quiet) sec.appendChild(el('summary', { style: 'cursor:pointer;font-weight:700' }, 'スマホと同期（鍵を持っている方向け）'));
+    else sec.appendChild(el('strong', null, 'スマホと同期'));
+    const box = el('div', { style: 'display:flex;flex-direction:column;gap:8px;margin-top:8px' });
+    sec.appendChild(box);
     const note = el('p', { style: 'font-size:0.8rem;color:var(--text-muted);margin:0' });
-    sec.appendChild(note);
+    box.appendChild(note);
     const msg = el('p', { id: 'sync-msg', style: 'font-size:0.85rem;margin:0' }, firstMsg || '');
 
     if (!isConfigured()) {
-      note.textContent = 'PC とスマホで同じ内容にする機能です。鍵を持っている人だけが設定できます。中継には合言葉で暗号化した内容だけを置き、合言葉は送りません。両方の端末で同じ合言葉を使ってください。';
-      const input = el('input', { type: 'password', id: 'sync-key-input', placeholder: '同期の鍵を貼り付け', autocomplete: 'off' });
+      note.textContent = 'PC とスマホで同じ内容にする機能です。鍵を持っている人だけが設定できます（鍵が無い方は何もしなくて大丈夫です）。中継には合言葉で暗号化した内容だけを置き、合言葉は送りません。両方の端末で同じ合言葉を使ってください。';
+      const scanBtn = el('button', { type: 'button', class: 'btn-add-history', id: 'sync-scan-btn' }, 'PC の画面の QR を撮って読み取る');
+      const file = el('input', { type: 'file', id: 'sync-qr-file', accept: 'image/*', capture: 'environment', style: 'display:none' });
+      scanBtn.addEventListener('click', () => file.click());
+      file.addEventListener('change', async () => {
+        const f = file.files && file.files[0];
+        file.value = '';
+        if (!f) return;
+        scanBtn.disabled = true;
+        msg.textContent = '読み取っています…';
+        const r = await readQrKey(f);
+        if (!r.ok) { msg.textContent = r.msg; scanBtn.disabled = false; return; }
+        const s = await saveKey(r.key);
+        msg.textContent = s.msg;
+        scanBtn.disabled = false;
+        if (s.ok) render(s.msg);
+      });
+      const input = el('input', { type: 'password', id: 'sync-key-input', placeholder: '鍵を貼り付ける場合はこちら', autocomplete: 'off' });
       const btn = el('button', { type: 'button', class: 'btn-add-history' }, '設定する');
       btn.addEventListener('click', async () => {
         btn.disabled = true;
@@ -433,11 +501,11 @@ const Sync = (() => {
         btn.disabled = false;
         if (r.ok) render(r.msg);
       });
-      sec.append(input, btn, msg);
+      box.append(scanBtn, file, input, btn, msg);
     } else {
       note.textContent = 'この端末で同期が有効です。開いたとき・保存したときに中継と合わせます。' +
-        (isMobile() ? '' : ' スマホに入れるには、下の QR をスマホのカメラで読むか、鍵をコピーしてスマホの設定画面に貼り付けます。');
-      sec.appendChild(el('p', { id: 'sync-last', style: 'font-size:0.8rem;margin:0' }, lastText()));
+        (isMobile() ? '' : ' スマホに入れるには、下の QR を表示し、スマホのアプリの 設定 →「スマホと同期」→「PC の画面の QR を撮って読み取る」で読みます。');
+      box.appendChild(el('p', { id: 'sync-last', style: 'font-size:0.8rem;margin:0' }, lastText()));
 
       const row = el('div', { style: 'display:flex;flex-wrap:wrap;gap:8px' });
       const nowBtn = el('button', { type: 'button', class: 'btn-add-history' }, '今すぐ同期');
@@ -447,12 +515,14 @@ const Sync = (() => {
       });
       row.appendChild(nowBtn);
 
+      const copyBtn = el('button', { type: 'button', class: 'btn-add-history' }, '鍵をコピー');
+      copyBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(key()); msg.textContent = '鍵をコピーしました。別の端末の設定画面「スマホと同期」に貼り付けてください。'; }
+        catch (e) { msg.textContent = 'コピーできませんでした。'; }
+      });
+      row.appendChild(copyBtn);
+
       if (!isMobile()) {
-        const copyBtn = el('button', { type: 'button', class: 'btn-add-history' }, '鍵をコピー');
-        copyBtn.addEventListener('click', async () => {
-          try { await navigator.clipboard.writeText(key()); msg.textContent = '鍵をコピーしました。スマホの設定画面「スマホと同期」に貼り付けてください。'; }
-          catch (e) { msg.textContent = 'コピーできませんでした。'; }
-        });
         const qrBtn = el('button', { type: 'button', class: 'btn-add-history' }, 'スマホ用の QR を表示');
         const qrBox = el('div', { id: 'sync-qr', style: 'display:none;background:#fff;padding:12px;border-radius:8px;width:max-content;max-width:100%' });
         qrBtn.addEventListener('click', async () => {
@@ -461,19 +531,19 @@ const Sync = (() => {
           try {
             await loadQrLib();
             qrBox.innerHTML = '';
-            new window.QRCode(qrBox, { text: location.origin + location.pathname + '#sync=' + key(), width: 200, height: 200, correctLevel: window.QRCode.CorrectLevel.M });
+            new window.QRCode(qrBox, { text: location.origin + location.pathname + '#sync=' + key(), width: 260, height: 260, correctLevel: window.QRCode.CorrectLevel.M });
             qrBox.style.display = 'block';
             qrBtn.textContent = 'QR を隠す';
-            msg.textContent = 'スマホのカメラで読むと、このページが鍵付きで開きます。開いた側（Safari かホーム画面のアプリ）に鍵が入ります。読み終えたら QR を隠してください。';
+            msg.textContent = 'スマホのアプリの 設定 →「スマホと同期」→「PC の画面の QR を撮って読み取る」で、この QR を撮ってください（カメラアプリで読むと Safari 側に鍵が入ります）。読み終えたら QR を隠してください。';
           } catch (e) {
             msg.textContent = e && e.message ? e.message : 'QR を表示できませんでした。';
           }
           qrBtn.disabled = false;
         });
-        row.append(copyBtn, qrBtn);
-        sec.append(row, qrBox);
+        row.append(qrBtn);
+        box.append(row, qrBox);
       } else {
-        sec.append(row);
+        box.append(row);
       }
 
       const rm = el('button', { type: 'button', class: 'btn-add-history', id: 'sync-remove-btn' }, 'この端末の同期をやめる');
@@ -487,7 +557,7 @@ const Sync = (() => {
         await removeKey();
         render();
       });
-      sec.append(msg, rm);
+      box.append(msg, rm);
     }
     body.appendChild(sec);
   }
