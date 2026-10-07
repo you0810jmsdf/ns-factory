@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI経営奮闘記 記事一覧 | N's factory</title>
+<title>革職人のAI秘書 Jarvis開発録 記事一覧 | N's factory</title>
 <script>
 // 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
 try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
@@ -15,9 +15,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   gtag('js', new Date());
   gtag('config', 'G-ND1T7H067Y');
 </script>
-<meta name="description" content="千葉県印西市の革工房 N's factory の店主が、AIを相棒に個人事業を回した日々の記録「AI経営奮闘記」の記事一覧です。note で全文を無料公開しています。">
-<meta property="og:title" content="AI経営奮闘記 記事一覧 | N's factory">
-<meta property="og:description" content="革工房の店主がAIと一緒に事業を回した日々の記録。note で全文無料公開中。">
+<meta name="description" content="千葉県印西市の革工房 N's factory の店主が、自作のAI秘書「Jarvis」を作りながら書いた開発録と日記の記事一覧です。note で全文を無料公開しています。">
+<meta property="og:title" content="革職人のAI秘書 Jarvis開発録 記事一覧 | N's factory">
+<meta property="og:description" content="革職人が自作のAI秘書を作った記録。note で全文無料公開中。">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -155,16 +155,16 @@ footer{
 
 <div class="wrap">
   <header class="head">
-    <p class="eyebrow">AI MANAGEMENT DIARY</p>
-    <h1>AI経営奮闘記</h1>
+    <p class="eyebrow">JARVIS DEVELOPMENT LOG</p>
+    <h1>革職人のAI秘書 Jarvis開発録</h1>
     <p class="lead">
-      千葉の小さな革工房で、店主がAIを相棒に事業を回した日々の記録です。
-      うまくいったことも、つまずいたことも、そのまま書いています。全文を note で無料公開しています。
+      革職人が、自分専用のAI秘書「Jarvis」を作っていく記録です。
+      失敗も、動いたコードも、そのまま書いています。全文を note で無料公開しています。
     </p>
     <div class="rule"></div>
     <nav class="switch" aria-label="連載の切り替え">
-      <a class="on" href="./note.html" aria-current="page">AI経営奮闘記</a>
-      <a href="./note-jarvis.html">革職人のAI秘書 Jarvis開発録</a>
+      <a href="./note.html">AI経営奮闘記</a>
+      <a class="on" href="./note-jarvis.html" aria-current="page">革職人のAI秘書 Jarvis開発録</a>
     </nav>
   </header>
 
@@ -260,9 +260,9 @@ footer{
       return r.json();
     })
     .then(function (d) {
-      // Jarvis の記事（題名に Jarvis を含む）は note-jarvis.html に分けてある
+      // 題名に Jarvis を含む記事だけを出す（それ以外は note.html）
       all = ((d && d.items) || []).filter(function (it) {
-        return !/jarvis/i.test(String(it.title || ''));
+        return /jarvis/i.test(String(it.title || ''));
       });
       if (d && d.profileUrl) document.getElementById('profileLink').href = d.profileUrl;
       if (!all.length) throw new Error('記事が0件です');
