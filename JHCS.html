@@ -190,8 +190,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .admin-toggle { position: fixed; right: 14px; bottom: 14px; z-index: 50; border: 1px solid #d8d0c6; background: var(--white); color: var(--gray); border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
     .admin-toggle.on { background: var(--green-light); border-color: #A5D6A7; color: var(--green); }
     .prog-input { width: 118px; font-size: 12px; padding: 2px 4px; }
-    .prog-edit { display: inline-flex; gap: 4px; align-items: center; }
-    .prog-nodate { min-height: 26px; border: 1px solid #A5D6A7; background: var(--green-light); color: var(--green); border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; padding: 2px 8px; }
+    .prog-pop { position: fixed; z-index: 60; background: var(--white); border: 1px solid #d8d0c6; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.22); padding: 12px; width: 230px; font-size: 13px; }
+    .prog-pop-title { font-weight: 700; margin-bottom: 2px; }
+    .prog-pop-sub { font-size: 11px; color: var(--gray); margin-bottom: 10px; line-height: 1.5; }
+    .prog-pop label { display: block; font-size: 11px; color: var(--gray); margin: 8px 0 3px; }
+    .prog-pop .prog-input { width: 100%; box-sizing: border-box; padding: 5px 6px; }
+    .prog-pop-btn { display: block; width: 100%; box-sizing: border-box; min-height: 34px; margin-top: 6px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #d8d0c6; background: var(--white); color: var(--text, #333); }
+    .prog-pop-btn.prog-nodate { border-color: #A5D6A7; background: var(--green-light); color: var(--green); }
+    .prog-pop-btn.prog-clear { color: var(--amber); }
     .prog-cell.done.nodate { font-weight: 700; letter-spacing: .05em; }
     .att-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .att-badge.upcoming { background: var(--blue-light); color: var(--blue); }
@@ -752,7 +758,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <!-- 受講生の進捗マトリクス（2026-10-07）: 管理者表示のときだけ出す。順番を変える生徒がいるため、各マスは完了日 -->
   <details class="section" id="progress-section" style="display:none;" open>
     <summary><h2>受講生の進捗</h2></summary>
-    <p class="att-lead">各マスに、その講座を完了した日を入れます。マスを押すと日付を選べます（日付が分からない完了は「済」ボタン。選び直しで上書き、日付を消すと未完了に戻ります）。順番を変えて進める生徒も、日付で追えます。</p>
+    <p class="att-lead">各マスに、その講座を完了した日を入れます。マスを押すと選択ウィンドウが開きます（日付が分からない完了は「済」ボタン、日付を選ぶと日付で記録、「未完了に戻す」で空に戻ります）。順番を変えて進める生徒も、日付で追えます。</p>
     <div class="prog-wrap"><table class="prog-table"><thead><tr id="prog-head"></tr></thead><tbody id="prog-body"></tbody></table></div>
     <div id="prog-msg" class="att-msg"></div>
     <details class="prog-legend" open>
@@ -1125,37 +1131,58 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     }).join('');
   }
 
+  // マスを押すと小さな選択ウィンドウを出す（日付を選ぶ／「済」＝日付不明の完了／未完了に戻す）。
+  // カレンダーは自動では開かない（開くと「済」ボタンが隠れて見えないため）
+  function closeProgressPop() {
+    const old = document.getElementById('prog-pop');
+    if (old) old.remove();
+    document.removeEventListener('mousedown', progPopOutside, true);
+    document.removeEventListener('keydown', progPopKey, true);
+  }
+  function progPopOutside(ev) {
+    const pop = document.getElementById('prog-pop');
+    if (pop && !pop.contains(ev.target)) closeProgressPop();
+  }
+  function progPopKey(ev) { if (ev.key === 'Escape') closeProgressPop(); }
+
   function editProgressCell(btn) {
+    closeProgressPop();
     const mi = Number(btn.dataset.m), ii = Number(btn.dataset.i);
     const name = progressData.members[mi], item = progressData.items[ii];
     const key = progKey(name, item);
     const cur = ((progressData.progress || []).find(p => progKey(p.name, p.item) === key) || {}).date || '';
-    const wrap = document.createElement('span');
-    wrap.className = 'prog-edit';
-    const input = document.createElement('input');
-    input.type = 'date';
-    input.className = 'prog-input';
-    input.value = /^\d{4}-/.test(cur) ? cur : '';
-    const nodate = document.createElement('button');
-    nodate.type = 'button';
-    nodate.className = 'prog-nodate';
-    nodate.textContent = PROG_DONE;
-    nodate.title = '日付が分からない完了として「済」を入れる';
-    wrap.append(input, nodate);
-    btn.replaceWith(wrap);
-    input.focus();
-    try { input.showPicker(); } catch (e) { /* 非対応環境では手で入力できる */ }
-    let finished = false;
-    const finish = (value) => {
-      if (finished) return;
-      finished = true;
-      if (value !== null && value !== cur) saveProgressCell(name, item, value);
-      else renderProgress();
+    const titles = {};
+    DEFAULT_CURRICULUM.forEach(c => { titles[c.num] = c.title; });
+    const pop = document.createElement('div');
+    pop.id = 'prog-pop';
+    pop.className = 'prog-pop';
+    pop.innerHTML =
+      `<div class="prog-pop-title">${esc(name)}</div>` +
+      `<div class="prog-pop-sub">第${esc(item)}回 ${esc(titles[item] || '')}<br>いまの状態: ${cur === PROG_DONE ? '済（日付不明）' : cur ? esc(cur) + ' 完了' : '未完了'}</div>` +
+      `<button type="button" class="prog-pop-btn prog-nodate">${PROG_DONE}（日付が分からない完了）</button>` +
+      `<label>完了日を選ぶ</label>` +
+      `<input type="date" class="prog-input" value="${/^\d{4}-/.test(cur) ? cur : ''}">` +
+      `<button type="button" class="prog-pop-btn prog-clear">未完了に戻す</button>` +
+      `<button type="button" class="prog-pop-btn prog-close">閉じる</button>`;
+    document.body.appendChild(pop);
+    // マスの近くに置く（画面からはみ出さないよう調整）
+    const r = btn.getBoundingClientRect();
+    const w = pop.offsetWidth, h = pop.offsetHeight;
+    let left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+    let top = r.bottom + 6;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6);
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+    const done = (value) => {
+      closeProgressPop();
+      if (value !== cur) saveProgressCell(name, item, value);
     };
-    input.addEventListener('change', () => finish(input.value));
-    nodate.addEventListener('click', () => finish(PROG_DONE));
-    wrap.addEventListener('focusout', () => setTimeout(() => { if (!wrap.contains(document.activeElement)) finish(null); }, 200));
-    input.addEventListener('keydown', ev => { if (ev.key === 'Escape') finish(null); });
+    pop.querySelector('.prog-nodate').addEventListener('click', () => done(PROG_DONE));
+    pop.querySelector('.prog-clear').addEventListener('click', () => done(''));
+    pop.querySelector('.prog-close').addEventListener('click', closeProgressPop);
+    pop.querySelector('.prog-input').addEventListener('change', ev => { if (ev.target.value) done(ev.target.value); });
+    document.addEventListener('mousedown', progPopOutside, true);
+    document.addEventListener('keydown', progPopKey, true);
   }
 
   async function saveProgressCell(name, item, date) {
