@@ -809,11 +809,28 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   }
 
   // ── 登録 ─────────────────────────────────────────────
+  // メモが空のまま登録しようとしたら1回止めて警告する（2026-10-08 事業主指示: メモが無いと後で何に使ったか分からない）。
+  // 禁止ではない: 警告が出た状態で同じ写真のボタンをもう一度押せば、空のまま登録できる。メモを入れれば警告は消える。
+  let memoWarnedFor = null;  // 警告を出した写真（item.id）。別の写真に移れば改めて警告する
+  function memoEmptyWarning(item){
+    if($('fMemo').value.trim()){ memoWarnedFor = null; return false; }
+    if(memoWarnedFor === item.id) return false;  // 2回目はそのまま登録
+    memoWarnedFor = item.id;
+    setStatus('registerStatus','⚠ メモが空です。何に使ったか（用途・相手・目的）を「摘要・メモ」に入れてください。空のまま登録するなら、もう一度ボタンを押してください。','err');
+    $('fMemo').focus();
+    return true;
+  }
+  $('fMemo').addEventListener('input', ()=>{
+    if(!$('fMemo').value.trim()) return;
+    memoWarnedFor = null;
+    if(/メモが空です/.test($('registerStatus').textContent)) setStatus('registerStatus','');
+  });
   $('registerBtn').addEventListener('click', async ()=>{
     if(!currentItem){ toast('画像がありません'); return; }
     const item = currentItem;
     const rec = collectForm();
     if(!rec) return;
+    if(memoEmptyWarning(item)) return;
     const btn=$('registerBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 保存中…';
     setStatus('registerStatus','Driveへ保存し、台帳に追記しています…');
     try{
