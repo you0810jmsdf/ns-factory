@@ -208,7 +208,7 @@ function showTour() {
   render(); $('tourDialog').showModal();
 }
 function initStitch() {
-  $('chainOffset').checked=false; $('offsetJoin').value='miter';
+  $('chainOffset').checked=false; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse';
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'0.5',defaultMark:'tool'};
   for(const [id,value]of Object.entries(values))$(id).value=value;
   for(const id of ['chain','followTangent','constrainHole'])$(id).checked=true;
@@ -1224,6 +1224,8 @@ function trimClick(p, keep) {
     selected = new Set(added);
   });
 }
+/** 反転コピーの菱目が順目（keep）のとき、反転後の穴の傾きを元の値に戻す。位置は変えない。 */
+function keepHoleSlant(mirrored, original) { return $('mirrorHoles').value === 'keep' && 'pathId' in original ? { ...mirrored, angleDeg: original.angleDeg } : mirrored; }
 function mirrorCopy(a, b) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
   cancel();
@@ -1234,7 +1236,7 @@ function mirrorCopy(a, b) {
       const id = freshId(doc.paths, 'p'); doc.paths.push({ ...JSON.parse(JSON.stringify(p)), id, shapeIds: p.shapeIds.map(x => map.get(x)) });
       const route = resolvePath(doc, doc.paths.at(-1));
       for (const h of holes.filter(h => h.pathId === p.id)) {
-        const reflected = reflectAcross(h, a, b);
+        const reflected = keepHoleSlant(reflectAcross(h, a, b), h);
         doc.holes.push({ ...reflected, s: route ? projectOnPath(route, reflected).s : h.s, id: freshId(doc.holes, 'h'), pathId: id });
       }
     }
@@ -1367,7 +1369,7 @@ function transformAboutCenter(kind) {
   const b = bboxOfDoc({ shapes, holes: [] }), center = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
   const angle = kind === 'rotate' ? askNumber('rotation', 90) : 0;
   if (angle === null) return;
-  transformSelected(s => kind === 'rotate' ? rotate(s, angle, center) : kind === 'mirrorX' ? mirrorX(s, center.x) : mirrorY(s, center.y));
+  transformSelected(s => kind === 'rotate' ? rotate(s, angle, center) : keepHoleSlant(kind === 'mirrorX' ? mirrorX(s, center.x) : mirrorY(s, center.y), s));
   if (kind !== 'rotate' && doc.shapes.some(s => selected.has(s.id) && partOf(s))) { const ids = new Set(selected); commit(() => flipMark(ids)); }
 }
 function askNumber(key, initial) {
