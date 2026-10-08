@@ -1247,8 +1247,8 @@ function runCommand(raw) {
   if (!parsed) { $('hint').textContent = t('invalidInput'); return; }
   const point = 'x' in parsed ? parsed : null, value = 'value' in parsed ? parsed.value : null;
   if (mode === 'line') {
-    if (!stage || stage.kind !== 'cmd') { if (!point) { $('hint').textContent = t('needPoint'); return; } stage = { kind: 'cmd', start: point, cmdLast: point }; }
-    else { if (!point) { $('hint').textContent = t('needPoint'); return; } addShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: point.x, y2: point.y }); stage = { kind: 'cmd', start: point, cmdLast: point }; lastPoint = point; }
+    if (!stage || stage.kind !== 'cmd') { if (!point) { $('hint').textContent = t('needPoint'); return; } stage = { kind: 'cmd', start: point, cmdLast: point }; $('hint').textContent = t('lineChainHint'); }
+    else { if (!point) { $('hint').textContent = t('needPoint'); return; } if (distance(point, stage.start) < 1e-6) return; addShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: point.x, y2: point.y }); stage = { kind: 'cmd', start: point, cmdLast: point }; lastPoint = point; $('hint').textContent = t('lineChainHint'); }
   } else if (mode === 'polyline') {
     if (!point) { $('hint').textContent = t('needPoint'); return; }
     if (stage?.kind !== 'polyline') stage = { kind: 'polyline', points: [point], cmdLast: point }; else { stage.points.push(point); stage.cmdLast = point; }
@@ -1611,10 +1611,10 @@ function fit() {
   draw();
 }
 canvas.addEventListener('pointerdown', e => {
-  if (e.button !== 0 && e.button !== 1) return;
+  if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
   if (isMac && e.ctrlKey && e.button === 0) return;
   e.preventDefault(); canvas.focus(); const p = local(e); canvas.setPointerCapture(e.pointerId);
-  if (e.button === 1 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; }
+  if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
@@ -1663,6 +1663,7 @@ canvas.addEventListener('pointermove', e => {
 canvas.addEventListener('dblclick', e => {
   const p = local(e), w = world(p);
   if (mode === 'path') { finishPath(false); return; }
+  if (mode === 'line' && stage?.kind === 'cmd') { stage = null; $('hint').textContent = t('hint.line'); draw(); return; } // 終点でダブルクリック＝連続線の確定
   if (mode === 'select') {
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); }
