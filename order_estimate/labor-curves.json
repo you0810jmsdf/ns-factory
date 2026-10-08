@@ -214,42 +214,42 @@
     "npadw": [
       {
         "area": 0.9072,
-        "hours": 1.5,
+        "hours": 1.9,
         "label": "Micro 5"
       },
       {
         "area": 1.407,
-        "hours": 2.325,
+        "hours": 2.945,
         "label": "mini 6"
       },
       {
         "area": 1.4112,
-        "hours": 2.34,
+        "hours": 2.964,
         "label": "Micro 5 スクエア"
       },
       {
         "area": 2.205,
-        "hours": 3.645,
+        "hours": 4.617,
         "label": "mini 6 スクエア"
       },
       {
         "area": 3.108,
-        "hours": 5.145,
+        "hours": 6.517,
         "label": "A6"
       },
       {
         "area": 3.249,
-        "hours": 5.37,
+        "hours": 6.802,
         "label": "バイブル"
       },
       {
         "area": 4.62,
-        "hours": 7.635,
+        "hours": 9.671,
         "label": "A5スリム"
       },
       {
         "area": 6.216,
-        "hours": 10.275,
+        "hours": 13.015,
         "label": "A5"
       }
     ],
