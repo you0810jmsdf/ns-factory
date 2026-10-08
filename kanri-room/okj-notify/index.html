@@ -685,8 +685,15 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     setStatus('', '読み込み中…');
     lockUi(true);
     try{
-      const url = ENDPOINT + '?t=' + Date.now();
-      const res = await fetch(url, { method:'GET' });
+      // 設定は鍵つき POST で取る（2026-10-09）。GET は認証なしで ntfy トピック名まで返してしまうため生存確認だけに変えた。
+      const apiKey = await requireKey();
+      if(!apiKey){ throw new Error('認証が必要です（パスワード未入力または不一致）'); }
+      // preflight 回避のため text/plain で送信（saveConfig と同じ）
+      const res = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getConfig', key: apiKey }),
+      });
       const data = await res.json();
       if(!data.ok){ throw new Error(data.error || 'unknown error'); }
       const c = data.config || {};
