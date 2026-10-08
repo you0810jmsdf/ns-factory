@@ -1,0 +1,1 @@
+export const DATA_DESIGNS = {"_comment":"公開版には事業主の設計カタログを含めない","generatedAt":"","source":"","items":[]};

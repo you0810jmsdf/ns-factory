@@ -1,0 +1,81 @@
+{
+ "id": "fclassic",
+ "names": {
+  "ja": "Franklin Classic",
+  "en": "Franklin Classic",
+  "aliases": [
+   "フランクリン クラシック"
+  ]
+ },
+ "holes": {
+  "count": 7,
+  "pitchMm": [
+   25.4,
+   25.4,
+   19.05,
+   19.05,
+   25.4,
+   25.4
+  ],
+  "centerPitchMm": null,
+  "span1toLastMm": 139.7
+ },
+ "refill": {
+  "wMm": 140,
+  "hMm": 216
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   20,
+   25,
+   30,
+   40
+  ],
+  "shape": "round",
+  "countPerSide": 7
+ },
+ "plate": {
+  "lengthMm": 163.7,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -75.85,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 75.85,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/fclassic.plan.svg",
+  "side": "binder/fclassic.side.svg",
+  "front": "binder/fclassic.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 163.7,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [
+  {
+   "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。7穴・A5 6穴とは互換しない"
+  }
+ ],
+ "confidence": "spec"
+}

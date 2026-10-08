@@ -1,0 +1,3 @@
+{
+  "_comment": "台本id → {ja: URL, en: URL}。YouTube 等に上げたら書く。空なら docs/videos/<id>.<lang>.mp4 を探す。"
+}

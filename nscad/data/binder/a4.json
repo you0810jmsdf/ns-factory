@@ -1,0 +1,78 @@
+{
+ "id": "a4",
+ "names": {
+  "ja": "A4 4穴",
+  "en": "A4 4-ring",
+  "aliases": [
+   "ISO 4穴"
+  ]
+ },
+ "holes": {
+  "count": 4,
+  "pitchMm": [
+   80,
+   80,
+   80
+  ],
+  "centerPitchMm": 80,
+  "span1toLastMm": 240
+ },
+ "refill": {
+  "wMm": 210,
+  "hMm": 297
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   25,
+   30,
+   35,
+   40
+  ],
+  "shape": "round",
+  "countPerSide": 4
+ },
+ "plate": {
+  "lengthMm": 264,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -126.0,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 126.0,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/a4.plan.svg",
+  "side": "binder/a4.side.svg",
+  "front": "binder/a4.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 264,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [
+  {
+   "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。80mm 等間隔。A4＝必ず 4 穴ではない"
+  }
+ ],
+ "confidence": "spec"
+}

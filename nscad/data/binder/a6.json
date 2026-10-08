@@ -1,0 +1,81 @@
+{
+ "id": "a6",
+ "names": {
+  "ja": "A6 6穴",
+  "en": "A6 6-ring",
+  "aliases": [
+   "Gillio",
+   "Van der Spek",
+   "Mulberry"
+  ]
+ },
+ "holes": {
+  "count": 6,
+  "pitchMm": [
+   19,
+   19,
+   38,
+   19,
+   19
+  ],
+  "centerPitchMm": 38,
+  "span1toLastMm": 114
+ },
+ "refill": {
+  "wMm": 105,
+  "hMm": 148
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   20,
+   25,
+   30
+  ],
+  "shape": "round",
+  "countPerSide": 6
+ },
+ "plate": {
+  "lengthMm": 138,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -63.0,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 63.0,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/a6.plan.svg",
+  "side": "binder/a6.side.svg",
+  "front": "binder/a6.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 138,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [
+  {
+   "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。中央だけ 38mm。当工房在庫 20mm・30mm（KRAUSE）"
+  }
+ ],
+ "confidence": "spec"
+}

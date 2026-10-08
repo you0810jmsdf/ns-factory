@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" width="640" height="220" role="img" aria-label="N's CAD">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6c87a"/><stop offset="1" stop-color="#b08d2a"/></linearGradient>
+    <clipPath id="r"><rect x="0" y="0" width="640" height="220" rx="28"/></clipPath>
+  </defs>
+  <rect width="640" height="220" rx="28" fill="#111214"/>
+  <g clip-path="url(#r)">
+    <!-- 革の型紙：角丸の片と縫い線 -->
+    <path d="M36 44 h120 a16 16 0 0 1 16 16 v100 a16 16 0 0 1 -16 16 h-120 a16 16 0 0 1 -16 -16 v-100 a16 16 0 0 1 16 -16 z" fill="none" stroke="url(#g)" stroke-width="3"/>
+    <path d="M44 56 h104 a8 8 0 0 1 8 8 v92 a8 8 0 0 1 -8 8 h-104 a8 8 0 0 1 -8 -8 v-92 a8 8 0 0 1 8 -8 z" fill="none" stroke="#c9a96e" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/>
+    <!-- 菱目の縫い穴 -->
+    <g fill="url(#g)">
+      <g transform="translate(60 66) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(80 66) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(100 66) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(120 66) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(140 66) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(60 86) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(60 106) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(60 126) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(60 146) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+      <g transform="translate(60 166) rotate(45)"><rect x="-2" y="-5" width="4" height="10" rx="1"/></g>
+    </g>
+    <!-- 寸法線 -->
+    <path d="M96 150 h40 m-40 -4 v8 m40 -8 v8" stroke="#c9a96e" stroke-width="1.5" fill="none"/>
+    <!-- ワードマーク -->
+    <text x="208" y="118" font-family="'Helvetica Neue',Helvetica,Arial,'Hiragino Sans','Yu Gothic UI',sans-serif" font-weight="700" font-size="84" fill="#f3ead6" letter-spacing="2">N<tspan fill="url(#g)">'</tspan>s <tspan fill="url(#g)">CAD</tspan></text>
+    <text x="211" y="158" font-family="'Helvetica Neue',Helvetica,Arial,'Hiragino Sans','Yu Gothic UI',sans-serif" font-weight="500" font-size="18" fill="#c9a96e" letter-spacing="6">LEATHER PATTERN CAD</text>
+    <text x="211" y="186" font-family="'Hiragino Sans','Yu Gothic UI','Helvetica Neue',sans-serif" font-size="16" fill="#9a8f7a" letter-spacing="2">革の型紙を、ブラウザで。— N's factory</text>
+  </g>
+</svg>

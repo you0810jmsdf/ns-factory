@@ -1,0 +1,80 @@
+{
+ "id": "fmonarch",
+ "names": {
+  "ja": "Franklin Monarch",
+  "en": "Franklin Monarch",
+  "aliases": [
+   "フランクリン モナーク"
+  ]
+ },
+ "holes": {
+  "count": 7,
+  "pitchMm": [
+   25.4,
+   25.4,
+   57.15,
+   57.15,
+   25.4,
+   25.4
+  ],
+  "centerPitchMm": null,
+  "span1toLastMm": 215.9
+ },
+ "refill": {
+  "wMm": 216,
+  "hMm": 280
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   25,
+   30,
+   40
+  ],
+  "shape": "round",
+  "countPerSide": 7
+ },
+ "plate": {
+  "lengthMm": 239.9,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -113.95,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 113.95,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/fmonarch.plan.svg",
+  "side": "binder/fmonarch.side.svg",
+  "front": "binder/fmonarch.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 239.9,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [
+  {
+   "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。最大級の 7 穴"
+  }
+ ],
+ "confidence": "spec"
+}
