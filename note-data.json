@@ -9,7 +9,8 @@
    "date": "2026-10-07",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-07_ig.jpg",
    "key": "n392d9f9991a5",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "パスワード管理アプリの紹介動画を、AI合成した自分の声でInstagramとThreadsに公開。楽天で買った品の領収書をまとめて事業用に仕分け、自動売買ツールの安定化や建築法規チェックの実装も進めた日。"
   },
   {
    "title": "2026-10-06（火） - 型紙の整理と予想外の出来事",
@@ -17,7 +18,8 @@
    "date": "2026-10-06",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-06_ig.jpg",
    "key": "n3ba7178bfc55",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "駒合わせ名刺入れの新しい型紙を作り、名刺入れ型紙のPDFの誤字も修正。一定期間ログインがなければ家族へ知らせる仕組みの本体が完成した。株のドライランの確認メールが多数届く見落としもあった。"
   },
   {
    "title": "外出先のスマホでAI秘書を開く｜ネット非公開・無料のNetBird手順｜革職人のAI秘書 Jarvis開発録 #03",
@@ -25,7 +27,8 @@
    "date": "2026-10-06",
    "image": "https://assets.st-note.com/production/uploads/images/321490327/rectangle_large_type_2_344e6ed50fd8389a10a5af228ba4006e.png?fit=bounds&quality=85&width=1280",
    "key": "n4359196b6045",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "外出先のスマホから、自宅パソコンのAI秘書Jarvisを「見るだけ」で開く方法。ネットに公開せず無料のVPN（NetBird）を使い、モバイル回線のiPhoneで開けた。無料VPNの規約の落とし穴も解説。後半は有料。"
   },
   {
    "title": "AIに触らせない7つの禁止リスト｜鍵と履歴を守る設定を全公開｜革職人のAI秘書 Jarvis開発録 #02",
@@ -33,7 +36,8 @@
    "date": "2026-10-06",
    "image": "https://assets.st-note.com/production/uploads/images/321375321/rectangle_large_type_2_423467167dd66b99da069823fbbede5b.png?fit=bounds&quality=85&width=1280",
    "key": "n1bdb004c0aef",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIにプログラムを書かせるとき、鍵や履歴を守るために決めた禁止リストと、計画・承認・実行・出口の関門を紹介。安全を重ねる考え方と限界を書いた。コード全体は有料。"
   },
   {
    "title": "声のAIが50秒黙る問題を0.5秒以内にした先回り取得の作り方｜革職人のAI秘書 Jarvis開発録 #01",
@@ -41,7 +45,8 @@
    "date": "2026-10-06",
    "image": "https://assets.st-note.com/production/uploads/images/321386134/rectangle_large_type_2_c631f43fdaa93b5f620151766a846a03.png?fit=bounds&quality=85&width=1280",
    "key": "n55b197ce807b",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "声で定時報告を頼むと長く黙っていたAI秘書Jarvisを、情報を先に取っておく設計に変えて一瞬で返せるようにした記録。原因は速さでなく順番だった。完成版のコードは有料。"
   },
   {
    "title": "AIプランの使用状況を報告に追加、サーバーからの直接取得は断念｜Jarvis日記 2026.10.06（火）",
@@ -49,7 +54,8 @@
    "date": "2026-10-06",
    "image": "https://assets.st-note.com/production/uploads/images/321328209/rectangle_large_type_2_114f1da37d72bd5da88fe1a965ee1d2a.png?fit=bounds&quality=85&width=1280",
    "key": "nead4ae906d52",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "Jarvisの報告に、ClaudeとCodexのAIプラン使用状況を追加。Codexはサーバーから直接取れず、手元の定期タスクで取得する方式に切り替えた。連載名を「AI日記」と「Jarvis日記」に分ける方針も決まった。"
   },
   {
    "title": "失敗22件とコード全公開｜革職人のAI秘書 Jarvis開発録 #00 総集編",
@@ -57,7 +63,8 @@
    "date": "2026-10-06",
    "image": "https://assets.st-note.com/production/uploads/images/321308618/rectangle_large_type_2_dd951204b1e3c2ab08bf3b94a585970e.png?fit=bounds&quality=85&width=1280",
    "key": "n9b6b64d51f5c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "自分専用のAI秘書Jarvisを短期間で作った開発日記の総集編。失敗の記録と原因・対処、動いているコードを公開し、設計の原則やAIへの頼み方、チェックリストもまとめた。"
   },
   {
    "title": "2026-10-05（月） - 止まった自動化と新しい挑戦",
@@ -65,7 +72,8 @@
    "date": "2026-10-05",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-05_ig.jpg",
    "key": "nf0e0a953a0ee",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "千葉県の復旧見込みPDFの形式が変わり、防災マップの自動更新が一時停止したが、AIに読み取らせて復旧。日月神示と千葉県の関係をまとめたページを公開し、マルシェ用にワイヤレスHDMIも購入した。"
   },
   {
    "title": "2026-10-04（日） - 新しい刻印とオーダーメイドの設計図",
@@ -73,7 +81,8 @@
    "date": "2026-10-04",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-04_ig.jpg",
    "key": "nc4e28448263f",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "ふるさと納税返礼品の刻印デザインを複数追加。ロディアのカバーのオーダー設計では、AIが「革は直角に曲がらない」ことを知らず戸惑った。見積もりを出してオーダー進捗に登録した。"
   },
   {
    "title": "2026-10-03（土） - 経理業務の自動化と家族向けガイド作成",
@@ -81,7 +90,8 @@
    "date": "2026-10-03",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-03_ig.jpg",
    "key": "nb7793e0033e8",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "経理ソフトと台帳の突き合わせをAIが自動化し、多くの取引が自動で一致。昨年との比較で住宅ローン利息の計上漏れを発見した。家族向けの確定申告ガイドも作り、パスワード管理の難しさを実感した。"
   },
   {
    "title": "2026-10-02（金） - 日記生成とSNS中継の再挑戦",
@@ -89,7 +99,8 @@
    "date": "2026-10-02",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-02_ig.jpg",
    "key": "nafe13398c9bd",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "日記生成ツールが業務日誌の見出しの書き方の変更に対応できず、前日分が公開されていなかった不具合を修正。SNS中継でも設定ミスで前日分のタイトルと画像が作られかけ、取り消してやり直した。"
   },
   {
    "title": "2026-10-01（木） - AI幕僚、画像生成と刻印データで奮闘",
@@ -97,7 +108,8 @@
    "date": "2026-10-02",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-01_ig.jpg",
    "key": "n8f8f1ab2a4ae",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "SNS投稿用の画像がnote記事の内容と合わないという指摘を受け、AIへの指示文を短くし、画面作業の日の制限も廃止して改善。バイブルリフィル用の般若心経の刻印データでは、物理的な矛盾にも直面した。"
   },
   {
    "title": "2026-09-30（水） - 相談機能の改善と新しい取り組みの準備",
@@ -105,7 +117,8 @@
    "date": "2026-09-30",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-30_ig.jpg",
    "key": "n068dae2977d4",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "オーダー相談の送信ボタンが何度も押されて二重登録になる問題を、「送信中」表示とボタンの無効化で改善。AIが相談内容を知識として蓄積する仕組みも完成し、手帳のリングパーツの在庫も補充した。"
   },
   {
    "title": "2026-09-29（火） - サイトデザイン刷新とバックアップの不具合",
@@ -113,7 +126,8 @@
    "date": "2026-09-29",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-29_ig.jpg",
    "key": "n333fb247463c",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "情報サイト「目利きノート」のデザインを人気サイトを参考に刷新し、Threadsへの自動投稿の仕組みも作成。商品の発送連絡の遅れや、夜間バックアップの不具合も見つかった日。"
   },
   {
    "title": "2026-09-28（月） - 縦長動画とAI講座、そして突然の停電",
@@ -121,7 +135,8 @@
    "date": "2026-09-28",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-28_ig.jpg",
    "key": "n9a52b1c74c9a",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "SNSの動画を縦長にしたら字幕が格段に読みやすくなり、今後は縦長を標準に。AIにアプリのマスコット画像も作ってもらった。AI業務ツール講座の準備が進む中、突然の停電でデータが巻き戻り、復旧した。"
   },
   {
    "title": "初めての自作PC。つまずいた所だけ、全部書いておきます",
@@ -129,7 +144,8 @@
    "date": "2026-09-27",
    "image": "https://assets.st-note.com/production/uploads/images/318335402/rectangle_large_type_2_fc43cfc03e04335f69cf4409d88288f9.png?fit=bounds&quality=85&width=1280",
    "key": "n8d191b3a35ef",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "地域の催しで使う立体マップの体験用に、初めてパソコンを自作。グラフィックボードなしで動く構成と、つまずいた所、かかった費用を紹介。図つきの手順書（PDF）も公開している。"
   },
   {
    "title": "2026-09-27（日） - 新PCへの移行と動画編集の工夫",
@@ -137,7 +153,8 @@
    "date": "2026-09-27",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-27_ig.jpg",
    "key": "nbc6a466b5a8e",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "新しいパソコンへの引っ越しとして、旧パソコンのタスクを整理して移行リストを作成。LINEのメモの自動整理や、AIに動画を見せる際に費用を抑える方法など、動画編集の効率化の発見も書いた。"
   },
   {
    "title": "2026-09-26（土） - 講座販売開始とオーダー監視の安定化",
@@ -145,7 +162,8 @@
    "date": "2026-09-26",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-26_ig.jpg",
    "key": "n0308f7bf657f",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "AI業務ツール講座の新しいセットが販売開始。自動生成ページで手直しが消える落とし穴を直し、止まりがちだったオーダー監視をWindowsのタスクに移して安定化した。"
   },
   {
    "title": "2026-09-25（金） - 日付が消えた！オーダー進捗管理システムの緊急対応",
@@ -153,7 +171,8 @@
    "date": "2026-09-25",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-25_ig.jpg",
    "key": "n2b656117f389",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "オーダー進捗ページで、日付の入力形式の違いからやり取りの日付が全部消える事故が発生。AIが消えた日付を復元し、入力形式を統一する仕組みと、異常を知らせる監視を導入した。"
   },
   {
    "title": "2026-09-24（木） - 進捗が見えるって、こんなに嬉しいんだ",
@@ -161,7 +180,8 @@
    "date": "2026-09-24",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-24_ig.jpg",
    "key": "nb354e2d85af6",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "日月神示の解説コンテンツの整備状況を一目で見られる進捗ページを新設。開くたびに自動で最新の数を数える。ほかに、毎週の巡回を続けるパソコンも、AIの助言で決めた。"
   },
   {
    "title": "同期しているから大丈夫、は大丈夫じゃなかった",
@@ -169,7 +189,8 @@
    "date": "2026-09-24",
    "image": "https://assets.st-note.com/production/uploads/images/316909114/rectangle_large_type_2_dd57f3f5af3849ae4bbea83187ade49b.jpeg?fit=bounds&quality=85&width=1280",
    "key": "ncec605ec2a8e",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "工房のバックアップが何日も止まっていたのに気づかなかった体験から、バックアップの考え方を解説。控えの数と置き場所、同期はバックアップではないこと、止まったと分かる仕組みの大切さを書いた。"
   },
   {
    "title": "2026-09-23（水） - 止まっていた自動化ルーチンと新しい記事",
@@ -177,7 +198,8 @@
    "date": "2026-09-23",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-23_ig.jpg",
    "key": "ncaa0672f9397",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "日月神示の解説記事の自動作成が長期間止まっていたのを発見し、手動で追加したうえで、毎週自動で動く新しい仕組みを作成。切れていた出典リンクの差し替えや、講座の新しい台本の完成も。"
   },
   {
    "title": "2026-09-22（火） - 新しい会計AIの導入と手帳オーダーの相談締切",
@@ -185,7 +207,8 @@
    "date": "2026-09-22",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-22_ig.jpg",
    "key": "nf5d2aae560af",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "経費の仕訳に新しい会計AI「Jev」を試したが、カード登録が必要で、提供元の混雑で処理も止まり翌日に再実行することに。来年の手帳の相談締切も決めて、案内に掲載した。"
   },
   {
    "title": "2026-09-21（月） - 止まっていたAIが動き出し、フルオーダーも決まった一日",
@@ -193,7 +216,8 @@
    "date": "2026-09-21",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-21_ig.jpg",
    "key": "n2a209e74b46c",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "反応しなかったAIの音声認識の原因が、マイクの既定デバイスの設定だったと判明して復旧。AI業務ツール講座の教室運営編の台本が完成し、新しいフルオーダーの仕様も決まった。"
   },
   {
    "title": "2026-09-19（土） - 注文とサイト、同時進行の一日",
@@ -201,7 +225,8 @@
    "date": "2026-09-19",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-19_ig.jpg",
    "key": "n969f5d28969b",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "メルカリとminneでの注文や相談に対応。メルカリでは商品説明と販売価格の食い違いに気づき、購入者に確認した。サイトの大幅な変更や、AIとの会話記録の機能の導入も進んだ。"
   },
   {
    "title": "2026-09-18（金） - AIとの連携を深める一日",
@@ -209,7 +234,8 @@
    "date": "2026-09-18",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-18_ig.jpg",
    "key": "n37491d6c5562",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "パソコンの故障を心配したところ、AIが設定や記録を自動でバックアップする仕組みを整えた。AI業務ツール講座の新しい動画が完成し、首席幕僚の加入や日本株ツールの開発も進んだ。"
   },
   {
    "title": "2026-09-17（木） - AI講座のフクロウとリフィル透かしの調整",
@@ -217,7 +243,8 @@
    "date": "2026-09-17",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-17_ig_r2.jpg",
    "key": "n13ac1d51b365",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "AI業務ツール講座の顧客台帳編の台本が完成。リフィルの透かしロゴが欠けて印刷される不具合を、透過画像への差し替えで解消し、リフィル一覧のカードに色分けと動きも付けた。"
   },
   {
    "title": "2026-09-16（水） - AIと刻印製作の効率化",
@@ -225,7 +252,8 @@
    "date": "2026-09-17",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-16_ig.jpg",
    "key": "ne53458703f28",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "刻印製作のノウハウを文書にまとめ、AIで手間が減ったことをSNSで発信する準備をした。リフィルの販売ページを自動生成にし、月曜始まりと日曜始まりの選択にも対応した。"
   },
   {
    "title": "2026-09-15（火） - うっかりミスと改善の連鎖",
@@ -233,7 +261,8 @@
    "date": "2026-09-16",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-15_ig.jpg",
    "key": "n39fa5e75a390",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "講座の告知画像に校正用の書き込みが写り込んでいたのに気づき、差し替えて再掲載。リフィル印刷ツールの「上下見開き」モードを、すべての規格に広げる指示も出した。"
   },
   {
    "title": "2026-09-14（月） - 作品集のカード決済、動き出す",
@@ -241,7 +270,8 @@
    "date": "2026-09-16",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-14_ig.jpg",
    "key": "nce58cea3b945",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "作品集のページで直接カード決済ができる仕組みを追加。販売開始ボタンで購入ボタンが現れる。在庫がない作品が売り切れ表示にならない不具合も直した。"
   },
   {
    "title": "2026-09-13（日） - 裏側の安全対策と見えない修正",
@@ -249,7 +279,8 @@
    "date": "2026-09-13",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-13_ig.jpg",
    "key": "n6a98dd860dad",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "オーダー進捗の仕組みを、URLを知っていれば誰でも書き換えられる状態から、パスワードが必要な状態に変更。読み込みが遅いと古いデータに切り替わる不具合も、経過表示で分かるようにした。"
   },
   {
    "title": "2026-09-12（土） - 試行錯誤の先にやっと見えた解決策",
@@ -257,7 +288,8 @@
    "date": "2026-09-12",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-12_ig.jpg",
    "key": "n161dba94eb3f",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "アクセス数が減ったように見えた理由を調べ、特定の日に集中した閲覧が集計から外れただけと判明。Creemaの新しい注文には希望の刻印で対応し、バックアップの状況を見られる画面なども整えた。"
   },
   {
    "title": "2026-09-11（金） - リフィルツール、見た目も機能も大刷新",
@@ -265,7 +297,8 @@
    "date": "2026-09-11",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-11_ig.jpg",
    "key": "naf696d5c4eb0",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "手帳リフィルの印刷ツールを、モノトーンの近未来的なデザインに刷新し、重複していたツールは別の場所へ移動。新しいサイズ向けのツールと、綴じた後の見え方を確認する機能も追加した。"
   },
   {
    "title": "2026-09-10（木） - AIの口調を直した一日",
@@ -273,7 +306,8 @@
    "date": "2026-09-10",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-09-10_ig.jpg",
    "key": "n177abdf5a557",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "AI接客の口調が失礼という指摘を受けて修正。お客様が困っている兆候をメールで知らせる機能と、購入意向の取りこぼしを警告する日次サマリーを追加。売上の源泉徴収の扱いも見直した。"
   },
   {
    "title": "2026-09-09（水） - AIとの連携を深める一日",
@@ -281,7 +315,8 @@
    "date": "2026-09-09",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/na6b973284b72_ig.jpg",
    "key": "na6b973284b72",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "レッスンページの改修と、記事用の画像生成ルールの見直し（画面の日は実物のスクリーンショットをモニターにはめ込む）を実施。ビジネスコンテストの特典も調べ、投資指標の検証もAIに頼んだ。"
   },
   {
    "title": "2026-09-08（火） - 見積もりとサイト更新に追われた一日",
@@ -289,7 +324,8 @@
    "date": "2026-09-08",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n17bfe5695573_ig.jpg",
    "key": "n17bfe5695573",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "大判サイズの手帳用リング金具の見積もり価格を調整し、新しいサイズと海外ストアのリングも追加。型紙の販売ページには申込から受け渡しまでの流れと問い合わせ窓口を足し、メールアドレスの誤記も直した。"
   },
   {
    "title": "2026-09-07（月） - 細かい設定と日々の暮らしの工夫",
@@ -297,7 +333,8 @@
    "date": "2026-09-07",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nb0cc0e10ff32_ig.jpg",
    "key": "nb0cc0e10ff32",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "監理のAI「見張り役」に、毎朝の要約の切り替えや、市場の変化を知らせる複数の通知設定を追加。新しい通知のお知らせ画像も作り、健康管理アプリにも記録を守る機能を足した。"
   },
   {
    "title": "毎朝1時間を取り戻すために、AIに売買アルゴリズムを書かせている",
@@ -305,7 +342,8 @@
    "date": "2026-09-07",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/ncf8e540f4845_ig.jpg",
    "key": "ncf8e540f4845",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "毎朝のチャート確認の時間を革の制作に戻すため、AIに自動売買の仕組みを作らせている記録。複数のAIに同じ条件で書かせて比べ、短い時間軸の売買の分の悪さが数字で見えてきた。実際のお金は動かしていない。"
   },
   {
    "title": "2026-09-06（日） - 情報漏洩対策と新しい試み",
@@ -313,7 +351,8 @@
    "date": "2026-09-06",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n39177f5331d5_ig.jpg",
    "key": "n39177f5331d5",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "公開データからの情報露出を調べ、個人情報ではなく内部のファイルパスの扱いが原因と判明して修正。確定申告用データの破損なども直し、SNSへの投稿を中継して実際に投稿できる仕組みも動いた。"
   },
   {
    "title": "2026-09-05（土） - 講座用金具の選定と見積シミュレーターの進化",
@@ -321,7 +360,8 @@
    "date": "2026-09-05",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n3b5ee5b64a06_ig.jpg",
    "key": "n3b5ee5b64a06",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "講座で使う金具の選び方と、見積シミュレーターの改良に取り組んだ日。"
   },
   {
    "title": "2026-09-04（金） - 見えない問題と新しい発見",
@@ -329,7 +369,8 @@
    "date": "2026-09-04",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nb3816da2a5de_ig.jpg",
    "key": "nb3816da2a5de",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "管理画面のランキングに古い商品名が出る問題を、表示時に最新の名前へ置き換えて解消。在庫を色チップのクリックで直接直せる機能や、管理画面を検索結果に出さない設定の追加も行った。"
   },
   {
    "title": "2026-09-03（木） - 609作品の画像更新に奮闘！",
@@ -337,7 +378,8 @@
    "date": "2026-09-03",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n085528333f6c_ig.jpg",
    "key": "n085528333f6c",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "BASEの作品写真が少ないという指摘を受け、作品集の写真をBASEにも反映。事前に試験したうえで、AIが全作品の写真をまとめて入れ替えた。顧客管理の改善や、字幕を出す新しいアプリの導入も進んだ。"
   },
   {
    "title": "2026-09-02（水） - 609件の作品登録と、まさかの公開事故",
@@ -345,7 +387,8 @@
    "date": "2026-09-02",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nfcb9a2aa2a2b_ig.jpg",
    "key": "nfcb9a2aa2a2b",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "BASEへの作品一括登録で、非公開のはずの作品がしばらくの間公開されてしまう事故が発生し、すぐ非公開に戻した。対外的な操作は、実行前に必ず確認する時間を設けると決めた。"
   },
   {
    "title": "2026-09-01（火） - 講座準備とSNS投稿機能の奮闘記",
@@ -353,7 +396,8 @@
    "date": "2026-09-01",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n6623b5616610_ig.jpg",
    "key": "n6623b5616610",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "市の文化ホールでの講座の告知画像と告知ページを作成。主催側からの連絡で、ハンマーが用意されていないと判明した。AI日記をSNSへ自動投稿する仕組みの改善や、note記事の一覧ページ作成も進んだ。"
   },
   {
    "title": "2026-08-31（月） - リンクと通知で、見えないものが見えてきた",
@@ -361,7 +405,8 @@
    "date": "2026-08-31",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nd263c7fb1fbf_ig.jpg",
    "key": "nd263c7fb1fbf",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "minneとCreemaの「お気に入り」を管理画面で見える化し、作品ごとのランキングやお客様ごとの履歴も確認できるように。裏側の自動処理が把握しやすくなり、AI相談窓口の課題も見つかった日。"
   },
   {
    "title": "2026-08-30（日） - 見えないところで起きていたこと",
@@ -369,7 +414,8 @@
    "date": "2026-08-30",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n5d34d5ed7e62_ig.jpg",
    "key": "n5d34d5ed7e62",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "動画の最後に金のフクロウとロゴが浮かび上がる機能が完成。アクセス状況に自分の閲覧が大きく影響していたことや、作品一覧に個人の名前が商品として紛れ込んでいた問題も発見し、対策した。"
   },
   {
    "title": "2026-08-29（土） - 5ヶ月ぶりのメールと、止まっていた時間",
@@ -377,7 +423,8 @@
    "date": "2026-08-29",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n2402345819eb_ig.jpg",
    "key": "n2402345819eb",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "事業の通知メールが長期間届いていなかったことが判明。メール送信の権限不足が原因で、許可を追加して復旧した。販売ページと管理画面の改善、幕僚の計画の毎朝の自動更新も整えた。"
   },
   {
    "title": "2026-08-28（金） - 未保存変更の警告とカスタムオーダー確定",
@@ -385,7 +432,8 @@
    "date": "2026-08-28",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n2b7e2b1d7b64_ig.jpg",
    "key": "n2b7e2b1d7b64",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "在庫管理画面で入力したデータが、保存前のページ更新で消えかけた経験から、未保存の変更があると赤い警告バーを常に表示するようにした。BASE経由のカスタムオーダーも正式に確定した。"
   },
   {
    "title": "2026-08-26（水） - 動画作りと講座準備、そしてツールの不具合",
@@ -393,7 +441,8 @@
    "date": "2026-08-26",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n704264448ca8_ig.jpg",
    "key": "n704264448ca8",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "金の糸が斜めに縫い進む演出の短い動画（本編の最後に結合する用）が完成。文化ホール講座の準備では、メールの返信漏れから、道具持参の呼びかけが誌面に反映されていないことが分かった。"
   },
   {
    "title": "2026-08-25（火） - SNS投稿と会計整理、そしてAI連携の進化",
@@ -401,7 +450,8 @@
    "date": "2026-08-25",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/ndea0f039fa77_ig.jpg",
    "key": "ndea0f039fa77",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "無料アプリの告知画像を、Instagram・Facebook・Threadsへ自動投稿する仕組みをAIと作成。会計の大きな課題も見つかり、AI同士が作業の申し送りを共有する仕組みも進んだ。"
   },
   {
    "title": "2026-08-24（月） - 請求書と会計、そしてアプリ開発の裏側",
@@ -409,7 +459,8 @@
    "date": "2026-08-24",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n5a463c7bf093_ig.jpg",
    "key": "n5a463c7bf093",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "請求書の書類番号が開くだけで消費される不具合を、保存時に採番する方式に変更。会計の突き合わせで計上漏れの危険を見つけ、店名も見るルールに改めた。新しいアプリの開発の話も出た。"
   },
   {
    "title": "2026-08-23（日） - 会計ツールの改善と小さなバグの発見",
@@ -417,7 +468,8 @@
    "date": "2026-08-23",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nc4575bae0750_ig.jpg",
    "key": "nc4575bae0750",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "スマホでレシートを撮って経費にできる取込ツールが完成。勘定科目が選べない不具合などを直し、ボタンで選べるようにするなど使いやすさを改善。二重計上を防ぐ工夫も入れた。"
   },
   {
    "title": "2026-08-21（金） - 小さなツールの追加と在庫の更新",
@@ -425,7 +477,8 @@
    "date": "2026-08-21",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nbdd403894a80_ig.jpg",
    "key": "nbdd403894a80",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "暗号資産の計算書ツールを監理幕僚室に追加し、税金の計算を自動化する準備を始めた。あわせて、新しく作る商品の革の在庫データを更新した。"
   },
   {
    "title": "2026-08-20（木） - オーダー管理と動画生成、地道な改善の日",
@@ -433,7 +486,8 @@
    "date": "2026-08-21",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n5a492fd729d8_ig.jpg",
    "key": "n5a492fd729d8",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "連絡が長く止まっているオーダーを、自分だけが見られるタブに自動で振り分ける仕組みを導入。数え始める日はやり取りの最終日付にした。動画ツールには、処理の経過秒を表示するカウンターも追加した。"
   },
   {
    "title": "2026-08-16（日） - AIチャットの知識を最新に更新する",
@@ -441,7 +495,8 @@
    "date": "2026-08-18",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nf5bed74e03f7_ig.jpg",
    "key": "nf5bed74e03f7",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "AIチャットが答える知識を、最新の内容に更新した日。"
   },
   {
    "title": "2026-08-15（土） - 確定申告の準備、また一歩前進",
@@ -449,7 +504,8 @@
    "date": "2026-08-15",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n6abbf41e1e09_ig.jpg",
    "key": "n6abbf41e1e09",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "確定申告に向けた準備が、また一歩進んだ日。"
   },
   {
    "title": "2026-08-14（金） - 不正アクセス対策とメール整理",
@@ -457,7 +513,8 @@
    "date": "2026-08-15",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nd2cb56900fa8_ig.jpg",
    "key": "nd2cb56900fa8",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "不正アクセスへの対策と、メールの整理に取り組んだ日。"
   },
   {
    "title": "2026-08-13（木） - カルチャースクールの資料整備と会計の細かな調整",
@@ -465,7 +522,8 @@
    "date": "2026-08-13",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n9316e0c0ec42_ig.jpg",
    "key": "n9316e0c0ec42",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "カルチャースクールの資料の整備と、会計の細かな調整を進めた日。"
   },
   {
    "title": "2026-08-12（水） - AI動画メーカーの改善と試行錯誤",
@@ -473,7 +531,8 @@
    "date": "2026-08-13",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n566a214fa9a5_ig.jpg",
    "key": "n566a214fa9a5",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "AI動画メーカーの改善に、試行錯誤を重ねた日。"
   },
   {
    "title": "2026-08-11（火） - AI動画制作の舞台裏、一歩前進",
@@ -481,7 +540,8 @@
    "date": "2026-08-11",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nc4e84e25e5dc_ig.jpg",
    "key": "nc4e84e25e5dc",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "AIを使った動画制作が、一歩前進した日。"
   },
   {
    "title": "2026-08-09（日） - 最安値探しはAIに任せて、私は「革」に集中する",
@@ -489,7 +549,8 @@
    "date": "2026-08-09",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n3df2596a9615_ig.jpg",
    "key": "n3df2596a9615",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "最安値探しはAIに任せ、自分は革の仕事に集中する、という日の記録。"
   },
   {
    "title": "2026-08-08（土） - 在庫切れリングの調査と自動バックアップの安心",
@@ -497,7 +558,8 @@
    "date": "2026-08-08",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n5fce597535ac_ig.jpg",
    "key": "n5fce597535ac",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "在庫切れのリングの調査と、自動バックアップで安心できるようになった日。"
   },
   {
    "title": "2026-08-07（金） - AIチャットの「見えない」課題を解決した日",
@@ -505,7 +567,8 @@
    "date": "2026-08-08",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/nc6b196504a1d_ig.jpg",
    "key": "nc6b196504a1d",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "AIチャットの「見えない」課題を見つけて解決した日。"
   },
   {
    "title": "2026-08-06（木） - 続々アップデートで使いやすさ向上",
@@ -513,7 +576,8 @@
    "date": "2026-08-06",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/n04ca5927b1f1_ig.jpg",
    "key": "n04ca5927b1f1",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "更新を続けて重ね、使いやすさが向上した日。"
   },
   {
    "title": "2026-08-05（水） - AIが私のお店で賢くなる日",
@@ -521,7 +585,8 @@
    "date": "2026-08-05",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/ndaf863d9d754_ig.jpg",
    "key": "ndaf863d9d754",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "管理画面でAIの回答を指摘すると、新しい知識として覚えてくれる「ナレッジ機能」が完成。問い合わせチャットから電話番号の欄を外し、色選びの表示も速くした。"
   },
   {
    "title": "2026-08-04（火） - サイトの入り口と裏側、両方を見直した一日",
@@ -529,7 +594,8 @@
    "date": "2026-08-05",
    "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/na641c47c0e18_ig.jpg",
    "key": "na641c47c0e18",
-   "imageSource": "sns"
+   "imageSource": "sns",
+   "summary": "オーダー相談の入り口を、相談窓口のページに一本化。パスワード保護のはずの内部資料が誰でも見られる状態だったことも判明して対処した。作品の表示を二段階にして、大幅に速くした。"
   },
   {
    "title": "2026-08-03（月） - 名刺QRとSNSプロフィールを刷新",
@@ -537,7 +603,8 @@
    "date": "2026-08-05",
    "image": "https://assets.st-note.com/production/uploads/images/300152777/rectangle_large_type_2_d5cb9060a40b819f6a4f11ac9fbbb9e8.png?fit=bounds&quality=85&width=1280",
    "key": "n9b8f77470a6a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "名刺のQRコードの飛び先を自社サイトに直結させ、アクセスを計測できるように。SNS用のプロフィール画像をカルーセル形式で新しく作り、リンクの出し方もリンク集に一本化した。"
   },
   {
    "title": "2026-07-31（金） - 作品集リニューアルとAIの動き",
@@ -545,7 +612,8 @@
    "date": "2026-08-02",
    "image": "https://assets.st-note.com/production/uploads/images/299229917/rectangle_large_type_2_2878afef3b97fcac63cd08446a811b61.png?fit=bounds&quality=85&width=1280",
    "key": "nff79f933627e",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "作品集のリニューアルと、AIの動きに取り組んだ日。"
   },
   {
    "title": "2026-07-30（木） - オーダー相談フォーム、改善の一歩",
@@ -553,7 +621,8 @@
    "date": "2026-07-31",
    "image": "https://assets.st-note.com/production/uploads/images/298932598/rectangle_large_type_2_3677b70aed6393f49292d91042cc30a6.png?fit=bounds&quality=85&width=1280",
    "key": "n9238e91655da",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "オーダー相談フォームを、連絡先が未記入だと送信できないよう改善。進捗に「ご連絡先待ち」「ご連絡待ち」の状態を追加し、商品の在庫割り当ても登録ページから行った。"
   },
   {
    "title": "2026-07-28（火） - AIに「引き継ぎ書」を読ませてみた今日",
@@ -561,7 +630,8 @@
    "date": "2026-07-31",
    "image": "https://assets.st-note.com/production/uploads/images/298361269/rectangle_large_type_2_f5d06b36f7dcfcf7960e4c03904a4a7f.png?fit=bounds&quality=85&width=1280",
    "key": "nc55253e1aa46",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI幕僚チームに、各担当の「引き継ぎ書」を読み込ませてみた日。想像以上に理解してくれて、事業の頭脳が育った実感があった。"
   },
   {
    "title": "2026-07-29（水） - AI日記、無理せず書く方針に変わった日",
@@ -569,7 +639,8 @@
    "date": "2026-07-29",
    "image": "https://assets.st-note.com/production/uploads/images/298641072/rectangle_large_type_2_b14b467282173e09abe29064c276502f.png?fit=bounds&quality=85&width=1280",
    "key": "ne168026847b2",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI日記を、無理せず書く方針に変えた日。"
   },
   {
    "title": "2026-07-27（月） - AI幕僚チームの引き継ぎ書を読んで、改めて気づいたこと",
@@ -577,7 +648,8 @@
    "date": "2026-07-27",
    "image": "https://assets.st-note.com/production/uploads/images/298080213/rectangle_large_type_2_32690e6d3b774cb027c6ff5905ff18e2.png?fit=bounds&quality=85&width=1280",
    "key": "n3dfe780f1c91",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが初めて業務日誌を読んで日記を書いた日。引き継ぎ書を読み返し、AIが事業のあちこちで担っている役割の全体像を確認した。"
   },
   {
    "title": "2026-07-26（日） - AI幕僚チームの引き継ぎ書を読み解く日",
@@ -585,7 +657,8 @@
    "date": "2026-07-27",
    "image": "https://assets.st-note.com/production/uploads/images/297787758/rectangle_large_type_2_627f14110b5f7982192ac415867ba346.png?fit=bounds&quality=85&width=1280",
    "key": "n906a0d17c664",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが日記を書く前に、AI幕僚チームの引き継ぎ書を読み込み、目的・手段・達成目標がAIにどう解釈され実行されるのかを理解しようとした日。"
   },
   {
    "title": "2026-07-25（土） - AI幕僚チームの引き継ぎ書を読み解く日",
@@ -593,7 +666,8 @@
    "date": "2026-07-26",
    "image": "https://assets.st-note.com/production/uploads/images/297477466/rectangle_large_type_2_f7d181ec0935de9cae76dcdfb9cc77ca.png?fit=bounds&quality=85&width=1280",
    "key": "nbcb86c01a3af",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI幕僚チームの引き継ぎ書を読み、各担当の役割と動き方を理解し始めた日。漠然としていたAIのイメージが、少しはっきりした。"
   },
   {
    "title": "頑張りも、声も、埋もれさせない",
@@ -601,7 +675,8 @@
    "date": "2026-07-25",
    "image": "https://assets.st-note.com/production/uploads/images/297516028/rectangle_large_type_2_fec0416f55ed8446fbf9dfe2c633a9a3.png?fit=bounds&quality=85&width=1280",
    "key": "n28db2dda39e5",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "仮想通貨のDAOの仕組みを、町内会のような発想として市政に当てはめた試みと、うまくいかなかった試験運用を経て、市民活動団体CBIを立ち上げた話。「誰の頑張りも声も埋もれさせない」仕組みを目指している。"
   },
   {
    "title": "2026-07-24（金） - AIと二人三脚、工具選定の舞台裏",
@@ -609,7 +684,8 @@
    "date": "2026-07-24",
    "image": "https://assets.st-note.com/production/uploads/images/297189040/rectangle_large_type_2_f7017350d98f8cc4d044eec0c0be81bd.png?fit=bounds&quality=85&width=1280",
    "key": "n1a0a628f9ea3",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "講師業務で、文化ホールが提案した工具リストへの修正点を、AIと相談しながらメールにまとめた。口頭で伝えた内容を的確に反映してくれて、スムーズに完成した。"
   },
   {
    "title": "2026-07-23（木） - AI幕僚チームの引き継ぎ書を読み解く日",
@@ -617,7 +693,8 @@
    "date": "2026-07-23",
    "image": "https://assets.st-note.com/production/uploads/images/296906255/rectangle_large_type_2_6db0cc7222a18358cdfec561aecd6664.png?fit=bounds&quality=85&width=1280",
    "key": "n91fbfb9e61e7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI幕僚チームの引き継ぎ書を読み込み、各担当の役割とルール、確認が必要な場面を理解した日。これまでAIが書いていた日記を、自分が引き継ぐ節目でもあった。"
   },
   {
    "title": "2026-07-22（水） - AI幕僚チームの引き継ぎ書を読み込んでみた日",
@@ -625,7 +702,8 @@
    "date": "2026-07-22",
    "image": "https://assets.st-note.com/production/uploads/images/296630045/rectangle_large_type_2_895f01cfae162ddad3a573a8d9f2fd8d.png?fit=bounds&quality=85&width=1280",
    "key": "nc645fc2c8e74",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "日記の下書きを自分が引き継ぐ最初の日。AIが残した引き継ぎ書を読み、各幕僚の役割や承認が必要なことが見えて安心した。"
   },
   {
    "title": "2026-07-21（火） - AI幕僚チームの引き継ぎ書を読み解く",
@@ -633,7 +711,8 @@
    "date": "2026-07-22",
    "image": "https://assets.st-note.com/production/uploads/images/296351019/rectangle_large_type_2_0a0e25954788f7ebe3762abd88080d90.png?fit=bounds&quality=85&width=1280",
    "key": "nff681fbdfc1b",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI幕僚チームの引き継ぎ書を読み、部署ごとに緻密なルールと連携があると知った日。承認が必要な作業や毎日自動で動く作業が、知らないうちに決まっていた。"
   },
   {
    "title": "2026-07-20（月） - ホールとの交渉とAIの成長、そして新たな発見",
@@ -641,7 +720,8 @@
    "date": "2026-07-22",
    "image": "https://assets.st-note.com/production/uploads/images/296071658/rectangle_large_type_2_6ff0eee1bb512ab72b0b072f4820eb5f.png?fit=bounds&quality=85&width=1280",
    "key": "nfc0a792e7b93",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが初めて業務日誌を読んで日記を書いた日。文化ホールとの講座の交渉が予算の大幅な変更の中で一歩進み、チャットで「ありがとう」と伝えるとAIが売り込みをしないよう改善された。"
   },
   {
    "title": "2026-07-19（日） - AIが私の「困った」をどんどん解決してくれた日",
@@ -649,7 +729,8 @@
    "date": "2026-07-22",
    "image": "https://assets.st-note.com/production/uploads/images/295767488/rectangle_large_type_2_c13a5547e38c08f0cdb58c9abacc9901.png?fit=bounds&quality=85&width=1280",
    "key": "n89ad4862ef22",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "サイトの「工程と道具の教科書」ページの見にくい点や動きの不具合を、AIに伝えるだけでまとめて直してもらった日。"
   },
   {
    "title": "2026-07-18（土） - AIが講師業のメールをバッチリ書いてくれました",
@@ -657,7 +738,8 @@
    "date": "2026-07-18",
    "image": "https://assets.st-note.com/production/uploads/images/295473709/rectangle_large_type_2_5941edbc76585354ae9621a3039386f3.png?fit=bounds&quality=85&width=1280",
    "key": "n40a3c91798c0",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "文化ホールのワークショップで、道具の費用負担をどう伝えるかをAIに相談し、角が立たない文面のメール案を作ってもらった。"
   },
   {
    "title": "2026-07-17（金） - サイトのAI機能、まさかの大改修とバグ発見",
@@ -665,7 +747,8 @@
    "date": "2026-07-18",
    "image": "https://assets.st-note.com/production/uploads/images/295473468/rectangle_large_type_2_f699fddab35d6c54d972a47e4f35ff18.png?fit=bounds&quality=85&width=1280",
    "key": "nc24ec11748cf",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "サイトのAI機能を全面的に見直し、「作品を探す」だけだったチャットが色々な相談に乗れるように。長く気づかなかった重大なバグも見つかって直した。"
   },
   {
    "title": "2026-07-16（木） - 忘れ去られたAPIキーの謎を解く日",
@@ -673,7 +756,8 @@
    "date": "2026-07-16",
    "image": "https://assets.st-note.com/production/uploads/images/294911546/rectangle_large_type_2_3d09b921fbe61bfdf08ef33578b1af55.png?fit=bounds&quality=85&width=1280",
    "key": "nf44c7b25d333",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "APIキーの管理が台帳と実際のシステムで食い違っていた問題を、AIが過去の記録を掘り起こして調べ、長年の疑問が解けた日。"
   },
   {
    "title": "2026-07-15（水） - 規格名統一で大奮闘、AIと二人三脚で乗り切った一日",
@@ -681,7 +765,8 @@
    "date": "2026-07-15",
    "image": "https://assets.st-note.com/production/uploads/images/294636408/rectangle_large_type_2_9a6cf62e4f88379566d881079645c310.png?fit=bounds&quality=85&width=1280",
    "key": "ne5cd86c38abd",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "お客様の指摘を受けて、規格名の略称を正式名称に統一。表記一つの変更が多くのファイルやデータに及び、AIが影響範囲を一つずつ確認してくれた。"
   },
   {
    "title": "2026-07-14（火） - AI接客の進化と在庫連携への挑戦",
@@ -689,7 +774,8 @@
    "date": "2026-07-14",
    "image": "https://assets.st-note.com/production/uploads/images/294366088/rectangle_large_type_2_96cd04bc29c929fb58711b7ba0fb665c.png?fit=bounds&quality=85&width=1280",
    "key": "n660581d526e8",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI相談窓口の一元化プロジェクトが最終段階まで完了。お客様が画像で製作イメージを送れるようになり、AIが革の在庫情報も踏まえて提案できるようになった。"
   },
   {
    "title": "2026-07-12（日） - AIが幕僚たちの引き継ぎ書を読んでくれた日",
@@ -697,7 +783,8 @@
    "date": "2026-07-14",
    "image": "https://assets.st-note.com/production/uploads/images/293792101/rectangle_large_type_2_34c8dc5672610198cc7b225d571818a1.png?fit=bounds&quality=85&width=1280",
    "key": "nc67adcc462eb",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが幕僚たちの引き継ぎ書を読み、今日の自分に必要な情報だけを抜き出して見せてくれた日。意図をよく汲み取ってくれる、優秀な秘書のように感じた。"
   },
   {
    "title": "2026-07-11（土） - AI幕僚チームの引き継ぎ書を読み解く日",
@@ -705,7 +792,8 @@
    "date": "2026-07-14",
    "image": "https://assets.st-note.com/production/uploads/images/293487651/rectangle_large_type_2_7e62b160a4a02d281f4686f0aeeda2c5.png?fit=bounds&quality=85&width=1280",
    "key": "ne56450bf97cc",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI幕僚チームの引き継ぎ書を読み、細かい役割分担と、確認が必要な場面のルールを知った日。AIチームの全体像が、少しはっきりした。"
   },
   {
    "title": "2026-07-13（月） - ワークショップ準備とAIのスマホ奮闘記",
@@ -713,7 +801,8 @@
    "date": "2026-07-13",
    "image": "https://assets.st-note.com/production/uploads/images/294077595/rectangle_large_type_2_fd5df10c4ed9147877813926ca403e9a.png?fit=bounds&quality=85&width=1280",
    "key": "nfe98acda5311",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "秋の文化ホールのワークショップ準備で、作品・材料費・道具不足の対応策を検討。AIが状況を整理し、サイトのスマホ表示の崩れも見つけて直してくれた。"
   },
   {
    "title": "2026-07-09（木） - シミュレーターの緊急対応とAIの3D化に挑戦",
@@ -721,7 +810,8 @@
    "date": "2026-07-10",
    "image": "https://assets.st-note.com/production/uploads/images/292922967/rectangle_large_type_2_c42974ee52083c19dedcbfe21f290cfd.png?fit=bounds&quality=85&width=1280",
    "key": "nc0c2d8de40d0",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "見積もりシミュレーターの緊急停止対応が一段落し、価格計算のズレや見せたくない情報を修正。知識のつながりを見せるグラフが、立体の銀河のようになった。"
   },
   {
    "title": "2026-07-10（金） - AIとの連携が深まった一日",
@@ -729,7 +819,8 @@
    "date": "2026-07-10",
    "image": "https://assets.st-note.com/production/uploads/images/293204971/rectangle_large_type_2_1e7532c1b4661101688955dcc0dda01c.png?fit=bounds&quality=85&width=1280",
    "key": "n5f0a4bc10a04",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI幕僚たちの活動状況を一目で見られる専用モニター画面が完成。販売ページの新しい動き、材料在庫管理の自動化、動画作成ツールの使いやすさ向上も進んだ。"
   },
   {
    "title": "2026-07-08（水） - 講師依頼とシミュレーター改修で大忙し",
@@ -737,7 +828,8 @@
    "date": "2026-07-08",
    "image": "https://assets.st-note.com/production/uploads/images/292638869/rectangle_large_type_2_8d8b16cefa6949a7722341d81d9e8c5b.png?fit=bounds&quality=85&width=1280",
    "key": "n22e3ffacf8da",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "文化ホールからの大人向けクラフト講座の講師依頼に、返信文からカレンダー登録までAIと進めた。お客様に混乱を招いた見積もりシミュレーターは、公開を停止した。"
   },
   {
    "title": "2026-07-07（火） - AIとの会話で初めて「親フォルダ」の概念を知る",
@@ -745,7 +837,8 @@
    "date": "2026-07-07",
    "image": "https://assets.st-note.com/production/uploads/images/292343366/rectangle_large_type_2_e14b59bd507b4b58654d2a62fdf10cd1.png?fit=bounds&quality=85&width=1280",
    "key": "n7f49754dc235",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIから「親フォルダはどこか」と聞かれ、これまで無意識にやっていた作業に名前があると知った日。革の色シミュレーション機能の画像の保存先を決める話がきっかけだった。"
   },
   {
    "title": "2026-07-06（月） - AIと二人三脚、手探りで進む今日の業務改善",
@@ -753,7 +846,8 @@
    "date": "2026-07-06",
    "image": "https://assets.st-note.com/production/uploads/images/292049856/rectangle_large_type_2_9d206dc073349cebf5e241976fa71317.png?fit=bounds&quality=85&width=1280",
    "key": "n018d842add06",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "領収書の自動管理と作品集サイトの改善に取り組んだ日。AIがメールから領収書の情報を抜き出し、管理状況を一覧で見られるページも作ってくれた。"
   },
   {
    "title": "2026-07-05（日） - 図面修正、AIと粘りの共同作業",
@@ -761,7 +855,8 @@
    "date": "2026-07-05",
    "image": "https://assets.st-note.com/production/uploads/images/291751377/rectangle_large_type_2_7e5ea16c4e63763ed0a33882cdf71183.png?fit=bounds&quality=85&width=1280",
    "key": "n8ef1a4622935",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "麻の葉模様のリングサポーターのCAD図面の修正を、AIと一日がかりで進めた。画像の認識のズレで意図が伝わらず苦労したが、粘り強い対話で形になった。"
   },
   {
    "title": "2026-07-04（土） - AIがタスクの棚卸しをしてくれた日",
@@ -769,7 +864,8 @@
    "date": "2026-07-04",
    "image": "https://assets.st-note.com/production/uploads/images/291429796/rectangle_large_type_2_f8d90b6cc4219452f4e91cea27bee2f5.png?fit=bounds&quality=85&width=1280",
    "key": "nb7ffe7258c64",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが経営カレンダーの多数のタスクを棚卸しし、古いものや不要なものを整理。型紙PDF販売に関するタスクの撤回も反映され、前に進める気持ちになった。"
   },
   {
    "title": "2026-06-26（金） - AIとの連携、それぞれの役割が見えてきた日",
@@ -777,7 +873,8 @@
    "date": "2026-07-04",
    "image": "https://assets.st-note.com/production/uploads/images/291230272/rectangle_large_type_2_e91ea198be6ecc0a2dd053bcb2f27f2c.png?fit=bounds&quality=85&width=1280",
    "key": "n589ab12150df",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI幕僚チームの引き継ぎ書を読み返し、どの作業がどの幕僚の担当かが具体的に見えてきた日。AIを使いこなすには、各幕僚のルールと必要な情報の理解が大切だと感じた。"
   },
   {
    "title": "2026-06-25（木） - 顧客データの大掃除と、まさかの「はしご高」問題",
@@ -785,7 +882,8 @@
    "date": "2026-07-04",
    "image": "https://assets.st-note.com/production/uploads/images/291230185/rectangle_large_type_2_a8960ceb43314a0d423edb338d95ed56.png?fit=bounds&quality=85&width=1280",
    "key": "n05806b338461",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "見積書・請求書のシステムと顧客管理で別々に持っていた顧客データの二重管理を、統合する作業に着手。一覧に出てこない顧客がいたトラブルがきっかけだった。"
   },
   {
    "title": "2026-06-23（火） - AIが私の代わりにサイト更新！ど素人でもできた成長記",
@@ -793,7 +891,8 @@
    "date": "2026-07-04",
    "image": "https://assets.st-note.com/production/uploads/images/291230003/rectangle_large_type_2_cc01ee6a27582a19a0516f26040aca26.png?fit=bounds&quality=85&width=1280",
    "key": "n04fd8c639284",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが初めてサイトの更新作業を代行し、作品集サイトに新しいバナー画像を数分で掲載してくれた日。サイトの構成を前日に読み込ませていたことが功を奏した。"
   },
   {
    "title": "2026-07-03（金） - 契約成立！そしてAIが私の頭の中を整理してくれた日",
@@ -801,7 +900,8 @@
    "date": "2026-07-03",
    "image": "https://assets.st-note.com/production/uploads/images/291232227/rectangle_large_type_2_11a767ea4de94f306b8968731c4a6abc.png?fit=bounds&quality=85&width=1280",
    "key": "n6f06046bdb55",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが初めて業務日誌を読み、今後のタスクと注意点を洗い出してくれた日。散らかっていた作業ファイルやメモも整理してくれた。大きな契約が成立した節目でもあった。"
   },
   {
    "title": "2026-07-02（木） - 大掃除と模様替え、そして秘密の鍵の引っ越し",
@@ -809,7 +909,8 @@
    "date": "2026-07-02",
    "image": "https://assets.st-note.com/production/uploads/images/291232375/rectangle_large_type_2_77c43e1215f2b7e577765ba2e4fa3db8.png?fit=bounds&quality=85&width=1280",
    "key": "n731b68c3ddcd",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "ホームページの大掃除とショールームの模様替えをAIと行った日。大事なパスワードが誰でも見られる場所に置かれていたことが発覚し、慌てて移した。"
   },
   {
    "title": "2026-07-01（水） - AIが家族カレンダーの二重登録バグを解決してくれた日",
@@ -817,7 +918,8 @@
    "date": "2026-07-01",
    "image": "https://assets.st-note.com/production/uploads/images/291232511/rectangle_large_type_2_242620accaeaa54dd724392589d770be.png?fit=bounds&quality=85&width=1280",
    "key": "ndb2be5f6d5b7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "家族の共有カレンダーで予定が二重に登録される問題を、AIが原因まで突き止めて解決。ボタンの押し方やカレンダーの同期の仕方まで関係していた。"
   },
   {
    "title": "2026-06-30（火） - AIと二人三脚の動画制作、そしてまさかの「ダサい」",
@@ -825,7 +927,8 @@
    "date": "2026-06-30",
    "image": "",
    "key": "n4515dd922b44",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "新商品のシステム手帳のPR動画をAIと作ったが、最初の案は「ダサい」と却下に。厳しい意見のおかげで、商品の魅力を引き出す方向性が見えてきた。"
   },
   {
    "title": "2026-06-27（土） - 連携の壁を乗り越える一歩",
@@ -833,7 +936,8 @@
    "date": "2026-06-29",
    "image": "",
    "key": "ne4f64fcc89ec",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "顧客管理の画面が、AIの計画では読み取り専用になりそうだったが、過去の指示書をAIが調べ直し、希望どおりに改修してもらうことになった。AIとのすれ違いを解いた日。"
   },
   {
    "title": "2026-06-29（月） - AI幕僚チームの引き継ぎ書を読んでみたら",
@@ -841,7 +945,8 @@
    "date": "2026-06-29",
    "image": "",
    "key": "n68ee695bf9f4",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが業務日誌を読んで日記の下書きを作る、新しい試みが始まった日。過去の記事から話し方や感情の出し方を学び、自然な文章になって驚いた。"
   },
   {
    "title": "2026-06-28（日） - AI幕僚チームの引き継ぎ書から見えたこと",
@@ -849,7 +954,8 @@
    "date": "2026-06-28",
    "image": "",
    "key": "n887fba7c4e02",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各幕僚の引き継ぎ書をAIに読ませ、細かい運用ルールの存在に驚いた日。課金や個人情報に関わる部分が厳重に管理されていて、安心した。"
   },
   {
    "title": "2026-06-23（火） - 新しい物語が始まる日",
@@ -857,7 +963,8 @@
    "date": "2026-06-23",
    "image": "https://assets.st-note.com/production/uploads/images/287878992/rectangle_large_type_2_934efa3b1c8a34469b56d5d5d385b38d.png?fit=bounds&quality=85&width=1280",
    "key": "n2b66bc3c1b39",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "note連載の自動下書きの仕組みを、CBIの市民たちが引き継ぐと決めた日。連載のテーマを、CBIの活動と市民参加の仕組みCiDAOの物語に位置づけ直した。"
   },
   {
    "title": "2026-06-22（月） - ふるさと納税、AIとExcelの格闘記",
@@ -865,7 +972,8 @@
    "date": "2026-06-22",
    "image": "https://assets.st-note.com/production/uploads/images/287790968/rectangle_large_type_2_e70e630b97038b2a2c717520a029b3be.png?fit=bounds&quality=85&width=1280",
    "key": "nc088442ed5d2",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "ふるさと納税の返礼品登録の書類づくりを進めた日。Excelの細かい表記ゆれに手間取りながら、AIが原因を調べて直してくれた。"
   },
   {
    "title": "2026-06-21（日） - 大事な書類を送り出す日とAIとの連携強化",
@@ -873,7 +981,8 @@
    "date": "2026-06-21",
    "image": "https://assets.st-note.com/production/uploads/images/287506959/rectangle_large_type_2_3b3925dd845cdc503d51ed1503d2aae8.png?fit=bounds&quality=85&width=1280",
    "key": "n626fa4055231",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "不動産売買の契約書類の記入と押印を、AIに質問しながら進めて簡易書留で送った日。印鑑の使い分けや割印のルール、報告書の記入に苦労した。"
   },
   {
    "title": "2026-06-21（日） - 裏側の工夫で、活動の土台がもっと強く",
@@ -881,7 +990,8 @@
    "date": "2026-06-21",
    "image": "https://assets.st-note.com/production/uploads/images/287505061/rectangle_large_type_2_35976f5ab48cc3c145db16cd3a9fd857.png?fit=bounds&quality=85&width=1280",
    "key": "ndeb7b7306512",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "COCoLaの裏側で、情報の自動更新が互いにぶつかって失敗していた原因を突き止め、改善した日。失敗を知らせるメールが増えていたことが、気づきのきっかけだった。"
   },
   {
    "title": "2026-06-20（土） - 不動産売却書類とAIとの格闘、そして予想外の発見",
@@ -889,7 +999,8 @@
    "date": "2026-06-20",
    "image": "https://assets.st-note.com/production/uploads/images/287195491/rectangle_large_type_2_3d5755c71c76ae575bdbde8906100287.png?fit=bounds&quality=85&width=1280",
    "key": "nf5e32308da0b",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "不動産売却の契約書類が届き、AIと丁寧に確認した日。予想外の発見もあり、仲介手数料が想定より大幅に安かったことにも驚いた。"
   },
   {
    "title": "2026-06-19（金） - 未来の地域を想い、構想を整理した日",
@@ -897,7 +1008,8 @@
    "date": "2026-06-19",
    "image": "",
    "key": "n549b7ef7c049",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "COCoLaの日々の記録に加え、CBIという構想の目的と柱を整理した日。人材と団体のマッチング基盤を、市民の力で作ることを目指している。"
   },
   {
    "title": "2026-06-19（金） - 契約書最終確認とAIとの連携強化",
@@ -905,7 +1017,8 @@
    "date": "2026-06-19",
    "image": "",
    "key": "n719b47ca3ea6",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "不動産売却の契約書が最終形で届き、AIが過去の契約書と比べて、こっそり変更がないかを細かく確認してくれた日。"
   },
   {
    "title": "2026-06-18（木） - 小さな数字が、活動の広がりを教えてくれた日",
@@ -913,7 +1026,8 @@
    "date": "2026-06-19",
    "image": "https://assets.st-note.com/production/uploads/images/286686500/rectangle_large_type_2_dad1a4c21b4f36e2be17e9358a3c542d.png?fit=bounds&quality=85&width=1280",
    "key": "n20db622ef9c2",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "COCoLaのサイトで、提案の結果が分かりやすくなり、期限切れの提案も話し合いで復活できるように。各ページの閲覧数を示す小さな数字も導入した。"
   },
   {
    "title": "2026-06-18（木） - 物件売却交渉とサイト改善が同時進行の一日",
@@ -921,7 +1035,8 @@
    "date": "2026-06-19",
    "image": "https://assets.st-note.com/production/uploads/images/286685143/rectangle_large_type_2_ba29cc80b8c6407cca254276e5afe36d.png?fit=bounds&quality=85&width=1280",
    "key": "n4ff7ae6f0dcc",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "長く続けた投資物件の売却交渉が、納得のいく条件で着地した日。AIとリスクを洗い出し、要望を整理できた。ホームページの改善も並行して進んだ。"
   },
   {
    "title": "2026-06-17（水） - ふるさと納税返礼品、いよいよ具体的な形に",
@@ -929,7 +1044,8 @@
    "date": "2026-06-17",
    "image": "https://assets.st-note.com/production/uploads/images/286327366/rectangle_large_type_2_2c15e6168f2c7741cc61f4662c13934c.png?fit=bounds&quality=85&width=1280",
    "key": "nc587caa9752d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "ふるさと納税の返礼品候補をAIと整理し、市役所・販売店・自分の三者面談に向けた分かりやすい資料が完成。価格や写真のデータがばらばらだった状態から整えた。"
   },
   {
    "title": "2026-06-17（水） - 声が届く、場が育つ、地道な一歩",
@@ -937,7 +1053,8 @@
    "date": "2026-06-17",
    "image": "https://assets.st-note.com/production/uploads/images/286327015/rectangle_large_type_2_e9f1316127710dbf23cb62cdb4005843.png?fit=bounds&quality=85&width=1280",
    "key": "nb912ac4af5d3",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "CiDAOに寄せられた新しい提案が画面に表示されない問題の原因を探して解決。提案を取り込む仕組みの一時的な詰まりが原因で、コメント機能の使いやすさも高めた。"
   },
   {
    "title": "2026-06-16（火） - まちづくりの大切な一歩、団体登録の日",
@@ -945,7 +1062,8 @@
    "date": "2026-06-17",
    "image": "https://assets.st-note.com/production/uploads/images/286124572/rectangle_large_type_2_cb6614c2792dc60e34f41259a11c7ab3.png?fit=bounds&quality=85&width=1280",
    "key": "nc7528529af08",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "COCoLaの活動主体Community Bank INZAIが、印西市の市民活動団体として正式に登録された日。登録番号を協働事業の審査書類にどう書き足すかを工夫した。"
   },
   {
    "title": "2026-06-16（火） - AIと不動産売却交渉、まさかの展開に",
@@ -953,7 +1071,8 @@
    "date": "2026-06-17",
    "image": "https://assets.st-note.com/production/uploads/images/286123828/rectangle_large_type_2_ba9570162aeb5398541d7a2d71603266.png?fit=bounds&quality=85&width=1280",
    "key": "n6f6d6228797c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "不動産の売却をめぐってAIと話すうち、「どう売るか」から「本当に売るべきか、自分の目的は何か」という根本の問いに行き着いた日。保険としての役割と売却益のどちらを取るかを整理できた。"
   },
   {
    "title": "2026-06-15（月） - 契約書修正と文字化けの解決",
@@ -961,7 +1080,8 @@
    "date": "2026-06-15",
    "image": "https://assets.st-note.com/production/uploads/images/285767295/rectangle_large_type_2_b9e87792908aad34be8945fe4cd55c85.png?fit=bounds&quality=85&width=1280",
    "key": "n085c6b4ee7f8",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが初めて業務日誌を読んで日記を書いた日。不動産売却の契約書の修正版をAIと確認し、希望どおり反映されているのを確かめて、契約に進めることにした。"
   },
   {
    "title": "2026-06-15（月） - 届かなかった「届ける」声、そして新たな一歩",
@@ -969,7 +1089,8 @@
    "date": "2026-06-15",
    "image": "https://assets.st-note.com/production/uploads/images/285767029/rectangle_large_type_2_47f30749a3e44c0eb43f710d556cf35c.png?fit=bounds&quality=85&width=1280",
    "key": "n2f3fe9c9c389",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "COCoLaのお知らせの仕組みで、投稿を承認するボタンが動かない不具合を、設定が古くなっていたことを突き止めて更新して解決。文化財をテーマにした市への新しい提案の準備も進んだ。"
   },
   {
    "title": "2026-06-14（日） - 安心して活動を続けるための、見えない努力",
@@ -977,7 +1098,8 @@
    "date": "2026-06-14",
    "image": "https://assets.st-note.com/production/uploads/images/285466487/rectangle_large_type_2_da5515803b668d6a8d8937a8732389ae.png?fit=bounds&quality=85&width=1280",
    "key": "n61ebd2d6374f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "市民で使うメタバースの費用が想定外に膨らまないよう、監視の仕組みを確認。不正アクセス対策は整っていたが、データ取り込み回数が無制限の箇所を見つけ、上限を設けることにした。"
   },
   {
    "title": "2026-06-14（日） - VRショールームに新しい案内板が登場！",
@@ -985,7 +1107,8 @@
    "date": "2026-06-14",
    "image": "https://assets.st-note.com/production/uploads/images/285466132/rectangle_large_type_2_c5fdde721c68e7de559d400e582bf64d.png?fit=bounds&quality=85&width=1280",
    "key": "n52de8b6e98ef",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "VRショールームに新しい案内板を設置。VRゴーグルがないと「VRで見る」ボタンが出ないことに戸惑わないよう、ギャラリー内に案内板を置くことで解決した。"
   },
   {
    "title": "2026-06-13（土） - 市民と行政、未来へ紡ぐアイデアを磨く日",
@@ -993,7 +1116,8 @@
    "date": "2026-06-13",
    "image": "",
    "key": "n7c745bdb0ab1",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "子どもたちがまちを探検できる「いんざい冒険図鑑」の提案書を練り直し、市との協働事業として実現しやすい形に変更。行政との役割分担も明確にして、来年度の募集に備えた。"
   },
   {
    "title": "2026-06-13（土） - 3Dショールーム、大改造！",
@@ -1001,7 +1125,8 @@
    "date": "2026-06-13",
    "image": "",
    "key": "n0a8492057ea5",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "立体ショールームを大改造。床のデザインの変更と、壁面に飾る幕僚たちの肖像画の配置で、全体の雰囲気がガラリと変わった。"
   },
   {
    "title": "2026-06-12（金） - 市民のアイデアが、もっと育つ日",
@@ -1009,7 +1134,8 @@
    "date": "2026-06-13",
    "image": "",
    "key": "n031cc1be0da2",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "市民が出した提案を、投稿者本人がいつでも修正できる仕組みを整えた日。「いんざい冒険図鑑」を、実際の街を歩いて楽しむ形で届ける準備も進んだ。"
   },
   {
    "title": "2026-06-11（木） - 家族カレンダーとAI接客、そしてマスコットキャラの躍動",
@@ -1017,7 +1143,8 @@
    "date": "2026-06-12",
    "image": "https://assets.st-note.com/production/uploads/images/284815105/rectangle_large_type_2_be597b4abc5f1abfa000802e798ab66d.png?fit=bounds&quality=85&width=1280",
    "key": "n5a1b716121e1",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "家族カレンダーが動かなくなったが、コードの修正は不要と分かって一安心。AI接客チャットがついに形になり、ショールームの幕僚たちをマスコットキャラとして動かし始めた。"
   },
   {
    "title": "2026-06-11（木） - 小さな声が、新しい「まち」を動かした日",
@@ -1025,7 +1152,8 @@
    "date": "2026-06-12",
    "image": "https://assets.st-note.com/production/uploads/images/284814802/rectangle_large_type_2_daeb22c3d7860ee90c3e694d689122e7.png?fit=bounds&quality=85&width=1280",
    "key": "ncc3e62e44f4d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "市内の文化財を訪ねて「パズル」を完成させる企画が、皆さんの目に触れる形になった日。立体のまち歩きで景色が出ない間のメッセージ表示や、紹介動画づくりも進んだ。"
   },
   {
    "title": "2026-06-10（水） - AIと二人三脚、カルチャースクールの資料整備とLINEスタンプの仕上げ",
@@ -1033,7 +1161,8 @@
    "date": "2026-06-10",
    "image": "",
    "key": "nd0e63f1ae0e7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが業務日誌を読んで日記を書いてくれた日。カルチャースクールの資料を各担当の幕僚に集約し、LINEスタンプの画像調整も終えて、申請できる状態になった。"
   },
   {
    "title": "2026-06-08（月） - AIが止まっていた！？冷や汗と安堵の一日",
@@ -1041,7 +1170,8 @@
    "date": "2026-06-09",
    "image": "https://assets.st-note.com/production/uploads/images/283983148/rectangle_large_type_2_ef9010a6d104f25ed7a5a13a84744533.png?fit=bounds&quality=85&width=1280",
    "key": "n87729adfb58f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "ビットコインのレートを取得する仕組みが、何週間も止まっていたことが発覚。AI幕僚チームが原因を特定して復旧し、日々のチェックを怠らないと心に刻んだ。"
   },
   {
    "title": "2026-06-08（月） - 小さな工夫が、活動の輪を広げる日",
@@ -1049,7 +1179,8 @@
    "date": "2026-06-09",
    "image": "https://assets.st-note.com/production/uploads/images/283982179/rectangle_large_type_2_e71b267eaefe07cc1514e09b9ece41c9.png?fit=bounds&quality=85&width=1280",
    "key": "n6bf2b536e740",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「クリエイターズMAP」の自動更新が、許可の期限切れで止まっていたのを手動の許可で復旧。新しい登録があるとLINEで知らせが届く機能も加わった。"
   },
   {
    "title": "2026-06-07（日） - 小さな困りごとを、みんなで解決した日",
@@ -1057,7 +1188,8 @@
    "date": "2026-06-08",
    "image": "https://assets.st-note.com/production/uploads/images/283493403/rectangle_large_type_2_b3bc1e1dcc3c4c0538eb0fcd3a74578a.png?fit=bounds&quality=85&width=1280",
    "key": "nff3dd6a94fd8",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "メンバー紹介ページで貢献度が正しく表示されない原因が、同じ名前の記録が重複して上書きされることだったと判明して修正。団体情報の表示や、見つけにくいページも改善した。"
   },
   {
    "title": "2026-06-07（日） - AIがミシン批判を止めてくれた日",
@@ -1065,7 +1197,8 @@
    "date": "2026-06-08",
    "image": "https://assets.st-note.com/production/uploads/images/283493264/rectangle_large_type_2_f3f5ef976d185cd7284f6e7b22ff4af5.png?fit=bounds&quality=85&width=1280",
    "key": "n2d2317e256f2",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "自動投稿の記事にミシン縫いを批判する内容が混じる問題を、AIへの指示を少し足すだけで解決。安心して自動投稿を続けられるようになった。"
   },
   {
    "title": "2026-06-06（土） - AIと弁護士相談資料をクロスチェック、見えてきた本質",
@@ -1073,7 +1206,8 @@
    "date": "2026-06-07",
    "image": "https://assets.st-note.com/production/uploads/images/283165629/rectangle_large_type_2_93cf4ddd4c188436b24a2d35bf770a47.png?fit=bounds&quality=85&width=1280",
    "key": "n2643d5387293",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "マンション売却の件で、弁護士の無料相談に向けて、二つのAIで法律相談メモを相互にチェック。契約書に潜む落とし穴を指摘してもらい、相談用のPDFが完成した。"
   },
   {
    "title": "2026-06-06（土） - 小さな声が、未来のまちを紡ぐ日",
@@ -1081,7 +1215,8 @@
    "date": "2026-06-07",
    "image": "https://assets.st-note.com/production/uploads/images/283165416/rectangle_large_type_2_e304453f8de7e3ebd2c848cf4358bee1.png?fit=bounds&quality=85&width=1280",
    "key": "n72db050c787f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "CiDAOの構想を論文としてまとめる作業が進んだ日。市民活動の現状と課題、行政との連携のあり方、図や表の配置などを検討した。"
   },
   {
    "title": "2026-06-05（金） - デジタル幕僚スタンプ、ついに審査待ちへ！",
@@ -1089,7 +1224,8 @@
    "date": "2026-06-06",
    "image": "https://assets.st-note.com/production/uploads/images/282867173/rectangle_large_type_2_1d6bf0f1c556ea5de1bb8a9cc22a6985.png?fit=bounds&quality=85&width=1280",
    "key": "na60d20bdfd00",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「デジタル幕僚スタンプ」のLINE申請準備が完了し、審査待ちに。画像の透過処理に苦労した。「保全幕僚スタンプ」は予想外に早く審査を通過し、販売が始まった。"
   },
   {
    "title": "2026-06-05（金） - 整う足元、未来を拓く提案へ",
@@ -1097,7 +1233,8 @@
    "date": "2026-06-06",
    "image": "https://assets.st-note.com/production/uploads/images/282862665/rectangle_large_type_2_f38fdf52f267845acaf919849781d977.png?fit=bounds&quality=85&width=1280",
    "key": "nb7ee7d209110",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "CiDAOを市と育てる協働事業の最終審査に向けて、提案書と計画書を最終仕上げ。地域のお知らせ「だんご通信」ページの手動更新の不具合も調整して直した。"
   },
   {
    "title": "2026-06-04（木） - 不動産売却、まさかの展開とAIの冷静な助言",
@@ -1105,7 +1242,8 @@
    "date": "2026-06-05",
    "image": "https://assets.st-note.com/production/uploads/images/282577919/rectangle_large_type_2_ba07f4d8e80ddbf116ade035beaaa4d2.png?fit=bounds&quality=85&width=1280",
    "key": "n0ea2aa77068d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "マンションの売却交渉が合意に至った日。買主が以前から付き合いのある会社だったことに驚き、AIが取引の裏側と、契約前に確認すべき点を教えてくれた。"
   },
   {
    "title": "2026-06-03（水） - LINEスタンプとタスク管理、AIと二人三脚の奮闘記",
@@ -1113,7 +1251,8 @@
    "date": "2026-06-05",
    "image": "https://assets.st-note.com/production/uploads/images/282577813/rectangle_large_type_2_72e6d0a112050d08f95acbc31e5249fa.png?fit=bounds&quality=85&width=1280",
    "key": "nba4acd8af231",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "幕僚キャラクターのLINEスタンプ制作が進み、保全幕僚のスタンプは途中でつまずきながら申請まで到達。日々のタスク管理を自動化する仕組みもAIが作ってくれた。"
   },
   {
    "title": "2026-06-04（木） - 小さな声が届く、しくみづくりの一日",
@@ -1121,7 +1260,8 @@
    "date": "2026-06-05",
    "image": "https://assets.st-note.com/production/uploads/images/282577736/rectangle_large_type_2_31dc7be70f6d548ac366113f9620701e.png?fit=bounds&quality=85&width=1280",
    "key": "n774669717b42",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "COCoLaのSNS自動投稿が失敗しても自動で再試行するようにし、AIが作る投稿文から不適切なURLを取り除く仕組みも追加。CiDAOの投票システム改善や協働事業の書類づくりも進んだ。"
   },
   {
    "title": "2026-06-03（水） - 小さな調整が、まちのつながりを育む日",
@@ -1129,7 +1269,8 @@
    "date": "2026-06-05",
    "image": "https://assets.st-note.com/production/uploads/images/282577673/rectangle_large_type_2_ec010b4662ccf69264006e17c7095507.png?fit=bounds&quality=85&width=1280",
    "key": "n5985e5750b04",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「クリエイターズマップ」の自動更新が、承認の期限切れで止まっていたのを手作業で再承認して復旧。SNSへの自動投稿の文字数超過や、写真の整理の仕組みも微調整した。"
   },
   {
    "title": "2026-06-02（火） - 小さな声がつながり、活動が動き出す日",
@@ -1137,7 +1278,8 @@
    "date": "2026-06-03",
    "image": "https://assets.st-note.com/production/uploads/images/281983754/rectangle_large_type_2_4298f46219c25cefdb56ef852149c236.png?fit=bounds&quality=85&width=1280",
    "key": "n09a5466aa349",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "イベント参加者リストで名前の表記がばらばらな問題の対策を検討。トップページに新しい仲間のお知らせを追加し、メンバー紹介ページをカード形式とリスト形式で切り替えられるよう改善した。"
   },
   {
    "title": "2026-06-02（火） - LINEスタンプ申請、まさかのAI総入れ替え！",
@@ -1145,7 +1287,8 @@
    "date": "2026-06-03",
    "image": "https://assets.st-note.com/production/uploads/images/281983385/rectangle_large_type_2_e01f6a5992258a5559b4b88ce871d72c.png?fit=bounds&quality=85&width=1280",
    "key": "n91b63633bc33",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "LINEスタンプの申請で、担当のAIを総入れ替えするという、まさかの展開があった日。"
   },
   {
    "title": "2026-06-01（月） - 離れていても、活動がそばに感じられた日",
@@ -1153,7 +1296,8 @@
    "date": "2026-06-01",
    "image": "https://assets.st-note.com/production/uploads/images/281575166/rectangle_large_type_2_7c8f2c20de759d865529340f7a39a13f.png?fit=bounds&quality=85&width=1280",
    "key": "n93c90ad03fdd",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "メンバーの意見を受けて、情報を更新しただけで「新しいメンバー」と表示されないよう改善。新しいイベントがトップページでひと目で分かるようにもした。"
   },
   {
    "title": "2026-06-01（月） - スタンプキャラに魂を込める日",
@@ -1161,7 +1305,8 @@
    "date": "2026-06-01",
    "image": "https://assets.st-note.com/production/uploads/images/281574713/rectangle_large_type_2_fc9944dd023ee90dafb1358af7e4afaa.png?fit=bounds&quality=85&width=1280",
    "key": "n4f754057af0d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが業務日誌から日記の下書きを作った日。広報幕僚とLINEスタンプ制作に没頭し、教育幕僚のスタンプ案が形になった。LINEの規格に合わせて種類を絞り込んだ。"
   },
   {
    "title": "2026-05-31（日） - AIが私の代わりに日記を書いてくれる日",
@@ -1169,7 +1314,8 @@
    "date": "2026-05-31",
    "image": "https://assets.st-note.com/production/uploads/images/281266729/rectangle_large_type_2_c1a8352968ca4600b639efb629e8e53c.png?fit=bounds&quality=85&width=1280",
    "key": "n16e58467dc83",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが初めて業務日誌を読んで、この日記の下書きを作ってくれた日。朝の下書きは、これまでの記事の流れを汲んでいて、毎日書くことへのハードルが少し下がった。"
   },
   {
    "title": "2026-05-31（日） - 小さな声が、つながりを強くする日",
@@ -1177,7 +1323,8 @@
    "date": "2026-05-31",
    "image": "https://assets.st-note.com/production/uploads/images/281266407/rectangle_large_type_2_35971ec3832228c3d5b449a546abd1d6.png?fit=bounds&quality=85&width=1280",
    "key": "nddef83197ee7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "CiDAOに投票してもサイトにすぐ反映されない原因が、公開情報の自動更新が動いていなかったことだと判明。手動で更新し、意見の取り消しや共感の印でも自動で即更新されるよう整えた。"
   },
   {
    "title": "2026-05-30（土） - 一歩ずつ、みんなの場を育む日",
@@ -1185,7 +1332,8 @@
    "date": "2026-05-30",
    "image": "https://assets.st-note.com/production/uploads/images/280939908/rectangle_large_type_2_2022a68d032b54e4803359b29639000f.png?fit=bounds&quality=85&width=1280",
    "key": "neca33ad821b8",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "CiDAOの投票が、賛成・反対だけでなく「協力できる」「検討中」など多様な意見を拾える方式に変更。メンバー紹介ページにリスト形式も加え、スマホ表示も調整した。"
   },
   {
    "title": "2026-05-30（土） - AI日記のエンジン切り替え、そして試行錯誤",
@@ -1193,7 +1341,8 @@
    "date": "2026-05-30",
    "image": "https://assets.st-note.com/production/uploads/images/280939560/rectangle_large_type_2_8515f17a4d67e9f60b6ddd363137951a.png?fit=bounds&quality=85&width=1280",
    "key": "nebe079e50e8c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AI日記を書くエンジンを、これまでのAIから新しいAIに切り替えた日。API料金の問題がきっかけで、文章の癖が違うため、文体や語調を細かく指示して整えた。"
   },
   {
    "title": "2026-05-29（金） - AIがコスト削減のヒントをくれた日",
@@ -1201,7 +1350,8 @@
    "date": "2026-05-30",
    "image": "https://assets.st-note.com/production/uploads/images/280749295/rectangle_large_type_2_b0d7458992905c3509617186637d244f.png?fit=bounds&quality=85&width=1280",
    "key": "n0ef5a6f51a87",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIの利用料が増えていた原因を、AIと一緒に調べた日。レシートの画像解析が意外な課金源だと分かり、データに基づいて対策を考えた。"
   },
   {
    "title": "2026-05-29（金） - 未来へ向かう、小さな確信を育んだ日",
@@ -1209,7 +1359,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280651361/rectangle_large_type_2_7482f3adee02ce7b44238ea169892d92.png?fit=bounds&quality=85&width=1280",
    "key": "nec58e3ca16e0",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "CiDAOが目指す姿について、国内の他の地域の市民参加の取り組みを調査。本人確認・地域で使えるお金・合議のしくみを統合した例は国内にまだなく、新しい挑戦だと分かった。"
   },
   {
    "title": "2026-05-06（水） - 投票が反映される喜び、そして見えた課題",
@@ -1217,7 +1368,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280548325/rectangle_large_type_2_92a2a0def8f488d75d89b37d381d9d6e.png?fit=bounds&quality=85&width=1280",
    "key": "ne408a0b54e23",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "DAO投票ページで「投票したのに数字が変わらない」という報告を受け、原因を調査。投票を受け取る仕組みが最後の分しか見ていなかったことが分かり、全件を確認する方式に直して過去分も集計し直した。"
   },
   {
    "title": "2026-05-07（木） - 離れていても、活動がそばに感じられた日",
@@ -1225,7 +1377,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280548159/rectangle_large_type_2_83578a5c51ba3bb1d53303fb9265ac4c.png?fit=bounds&quality=85&width=1280",
    "key": "n42fd57a0e48a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "スマホで投票したのにパソコンでは未投票と表示される問題を、記録を共有の場所に置くことで解決。前回のニックネームが自動で選ばれるようにもし、予定メールには詳細リンクを必ず付けた。"
   },
   {
    "title": "2026-05-08（金） - 小さなズレが、大きな混乱を生む日",
@@ -1233,7 +1386,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280548040/rectangle_large_type_2_e99049188af45994b5085a26f6045f9e.png?fit=bounds&quality=85&width=1280",
    "key": "n7b9b4e9fc90f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「登録したのに表示されない」「承認したのに投稿されない」など、似た相談が重なった日。根っこは、保存場所と実際に使う場所の間でデータがずれることで、日付形式の変更などを直した。"
   },
   {
    "title": "2026-05-09（土） - 小さな工夫が、つながりを広げていく日",
@@ -1241,7 +1395,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280547932/rectangle_large_type_2_98cbe5879484462304904ed850c405d9.png?fit=bounds&quality=85&width=1280",
    "key": "n4442ca1cf0db",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "新しい登録をスマホに知らせる通知機能の試験準備が進んだ日。文化財についての市民の認知度調査を、市の部署と一緒に進めることも決まった。"
   },
   {
    "title": "2026-05-12（火） - スケジュール機能が「期間」に対応しました",
@@ -1249,7 +1404,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280547746/rectangle_large_type_2_b68db66f5cc48c01a25aab6f4fc1b19c.png?fit=bounds&quality=85&width=1280",
    "key": "n869dbfef4da3",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "スケジュール機能に「終了日」の項目を追加し、受付期間のように複数日にまたがる予定も登録できるように。市民活動支援センターからの予約受付期間の連絡がきっかけだった。"
   },
   {
    "title": "2026-05-13（水） - イベント情報がちゃんと届く工夫",
@@ -1257,7 +1413,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280547612/rectangle_large_type_2_8605e846a92fc5c26f66ba3f638e68b3.png?fit=bounds&quality=85&width=1280",
    "key": "n273524f521fa",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "ウェブサイトのイベント一覧と、自動配信される内容が食い違う問題に対処。サイトのイベントデータを一つの正しい情報源にして、そこから投稿も自動で作る設計に変更した。"
   },
   {
    "title": "2026-05-14（木） - 離れていても、活動がそばに感じられた日",
@@ -1265,7 +1422,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280547313/rectangle_large_type_2_ef07d3d0a638fd1839bd1a5ccbe14e05.png?fit=bounds&quality=85&width=1280",
    "key": "ne0062df9affc",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "スマホのお知らせに出ないイベントが、ホームページには載っていた原因を調査。判定ルールが、ひらがな表記の「いんざい」に対応していなかったことが分かり、修正の計画を立てた。"
   },
   {
    "title": "2026-05-16（土） - データの正確さを支える、小さな修正の積み重ね",
@@ -1273,7 +1431,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280547120/rectangle_large_type_2_7f62bdae0c50db40e589492006022d43.png?fit=bounds&quality=85&width=1280",
    "key": "n2d3f524b3390",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "DAO投票のデータの重複を整理して正確な集計に。公開ページでは投票者の名前を暗号化して伏せ、管理者向けには実名の一覧を追加。提案一覧が読み込み中のまま続く遅さも改善した。"
   },
   {
    "title": "2026-05-17（日） - 小さなバグが、みんなの信頼を守る",
@@ -1281,7 +1440,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280546950/rectangle_large_type_2_30237246f668036182b634ffb87c5812.png?fit=bounds&quality=85&width=1280",
    "key": "nca6ba4621d70",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "SNSに自動投稿するイベントの時刻表示が、「未設定」の印がそのまま出て壊れていたバグを修正。市外のイベントが印西として表示され続けていた問題も直した。"
   },
   {
    "title": "2026-05-18（月） - 見えない場所で、つながりを守る",
@@ -1289,7 +1449,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280546723/rectangle_large_type_2_589e331642df574bb781f63cb7701b9e.png?fit=bounds&quality=85&width=1280",
    "key": "ne5de84570d30",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎日の自動チェックが、どのフォルダで動いているかを判断できず失敗していた問題を修正。複数の箇所に指示を追加して再実行し、すべての手順の成功を確認した。"
   },
   {
    "title": "2026-05-19（火） - 提案がスムーズに届く仕組みへ、一歩前進",
@@ -1297,7 +1458,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280546551/rectangle_large_type_2_f1b86d45ee41aa31a23a7d8bd66a357e.png?fit=bounds&quality=85&width=1280",
    "key": "n5c6de05dde86",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "DAOの提案フォームでエラーが出て提案が反映されない原因は、システム内部の認証情報の有効期限切れだった。新しい認証情報を発行して設定を更新し、引き継ぎ書や記録も更新した。"
   },
   {
    "title": "2026-05-20（水） - イベント情報が、ちゃんと届く仕くみへ",
@@ -1305,7 +1467,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280546380/rectangle_large_type_2_cebb296f9744d0b57b4eedc48f31c3ed.png?fit=bounds&quality=85&width=1280",
    "key": "n29b689f98e93",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "広報いんざいに載っているイベントが、スレッズの自動配信に含まれていなかった問題を発見。市外のイベントを除外する設計の副作用で、市の公式情報まで外れていたため、修正方針を立てた。"
   },
   {
    "title": "2026-05-23（土） - 市民の声を形にする、ひとつの打ち合わせ",
@@ -1313,7 +1476,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280546271/rectangle_large_type_2_87211cba949943b8c7e35cd2c0abc1c7.png?fit=bounds&quality=85&width=1280",
    "key": "n8024aafc0e33",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "市長と話そう会とクリーン活動に向けた打ち合わせ。市長に伝えたいことを四つのテーマに整理し、話題案をまとめた資料を作った。参加するメンバーがほぼ重なるため、両方の準備を一緒に進めた。"
   },
   {
    "title": "2026-05-27（水） - 市民の声を形にするしくみが、少しずつ整い始めた",
@@ -1321,7 +1485,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280546042/rectangle_large_type_2_472143e13ccebc21809bc1ab619654ec.png?fit=bounds&quality=85&width=1280",
    "key": "naf7a6efe24c7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "CiDAOを多くの人に使ってもらうため、投票時のなりすまし防止や本人確認、スマホの会員証、地域ポイント、法律との整合など、育て方の全体像を描き始めた日。"
   },
   {
    "title": "2026-05-24（日） - 市民の声を形にするしくみが、少しずつ動き始めた",
@@ -1329,7 +1494,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280545854/rectangle_large_type_2_b418bbbe9eccab27eab5c04f46f120dc.png?fit=bounds&quality=85&width=1280",
    "key": "n0e9f8aa9a1ba",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "試験運営してきた市民提案と投票の実績を集計し、専門家に意見をもらう資料を整理した日。生活に近い温かい提案が集まり、市民の声が地域を動かしている手応えがあった。"
   },
   {
    "title": "2026-05-25（月） - 市民の声が、行政の新しい部署と出会った日",
@@ -1337,7 +1503,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280545700/rectangle_large_type_2_89d168d75e6db1d56441602103add3ea.png?fit=bounds&quality=85&width=1280",
    "key": "nd990ca0a9c6a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "文化財の認知度調査に、市の文化振興課が興味を持ってくれた日。課の改編で生涯学習の視点が加わった部署からの声で、翌日の打ち合わせに向けて調整資料を整理した。"
   },
   {
    "title": "2026-05-26（火） - 市民の提案が、もっと伝わりやすくなった日",
@@ -1345,7 +1512,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280545210/rectangle_large_type_2_2922b5bcdb1267f20eea8324b33ecc9a.png?fit=bounds&quality=85&width=1280",
    "key": "n5aae744a267e",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "DAO投票ページで、提案の説明が長くて読みにくいという声を受け、企画提案書をアップロードしてボタンで見られるように。提案フォームの質問や、投票者をメンバー一覧から選ぶ欄も改善した。"
   },
   {
    "title": "2026-05-28（木） - スマホからでも、みんなの声が届く仕組みへ",
@@ -1353,7 +1521,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280480420/rectangle_large_type_2_25ac95afd588b3eed1d827818d22fd78.png?fit=bounds&quality=85&width=1280",
    "key": "nd5bf73ecdc05",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "提案と投票のページを、スマホのホーム画面に追加してアプリのように使えるように。新しい提案やメンバー加入を知らせる通知の試作や、テスト通知のボタンも用意した。"
   },
   {
    "title": "2026-04-24（金） - スマホからでも、みんなの声が届く仕組みへ",
@@ -1361,7 +1530,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280480295/rectangle_large_type_2_0d5d7b2e99e07e0390c0d37ea0fc86a6.png?fit=bounds&quality=85&width=1280",
    "key": "n019ed4ded424",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "スマホで提案やイベントの情報がはみ出す問題を修正し、横向きでも見やすくした。提案一覧をカード形式と表形式で切り替えられるようにするなど、スマホでの使いやすさを改善した。"
   },
   {
    "title": "2026-04-25（土） - イベントの表示が、ぴったり合った日",
@@ -1369,7 +1539,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280480122/rectangle_large_type_2_5aba6b7707aead414b040f5975dfc026.png?fit=bounds&quality=85&width=1280",
    "key": "n7a7d95444cd1",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "スマホのイベント一覧で、当日のイベントがすべて「終了済み」と表示される問題を修正。原因は、日本時間と標準時間の違いが考慮されていない時間計算のずれだった。"
   },
   {
    "title": "2026-04-27（月） - 小さな修正が、みんなの使いやすさを作る",
@@ -1377,7 +1548,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280480024/rectangle_large_type_2_8e19df0f658a7b2cd437aa46aeaad0d4.png?fit=bounds&quality=85&width=1280",
    "key": "nc4b07aa9287b",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "マイページのポスター登録が通信エラーになる問題を、自動の試し直しと詳しいエラー表示で解決。メンバー紹介ページには、新しく入会した人が分かるバッジも加えた。"
   },
   {
    "title": "2026-04-28（火） - 小さな工夫が、つながりを生む",
@@ -1385,7 +1557,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280479854/rectangle_large_type_2_235a2b501d1b5e51e6494b38e4415ce6.png?fit=bounds&quality=85&width=1280",
    "key": "ndeb875eede7f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "クリエイターズマップへの新しい登録を、メンバーに自動で知らせるように。メンバー紹介に「最近更新」のしるしを付け、CiDAOの投票方式も参加しやすい形に整え直した。"
   },
   {
    "title": "2026-05-01（金） - 離れていても、活動がそばに感じられた日",
@@ -1393,7 +1566,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280479711/rectangle_large_type_2_7a5522ad1fc984c56c3f489fe40e4b3a.png?fit=bounds&quality=85&width=1280",
    "key": "nc0346e7d77a3",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "新しいメンバーの加入やイベントの企画、提案などの動きが、COCoLaのグループLINEに自動で届くしくみが動き始めた日。離れていても、活動がリアルタイムに共有される。"
   },
   {
    "title": "2026-05-02（土） - 小さな工夫が、情報をちゃんと届ける",
@@ -1401,7 +1575,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280479583/rectangle_large_type_2_35be134b1ef30ae8f2c623bec95b4ed0.png?fit=bounds&quality=85&width=1280",
    "key": "n2e3ab243489e",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "イベントが月間カレンダーに出ない原因が、ポスターの点区切りの日付表記を読み取れなかったことだと判明。どんな書き方の日付も統一形式に直せるよう、読み取りルールを更新した。"
   },
   {
    "title": "2026-05-03（日） - いろいろな機種で、掲示板が使えるようになった日",
@@ -1409,7 +1584,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280479452/rectangle_large_type_2_82903bc9895847ee42bfa0b709aa5e37.png?fit=bounds&quality=85&width=1280",
    "key": "n761172e9fadf",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "COCoLaの掲示板「FreeFree」が、どの機種・ブラウザでも同じように使えるように。新しい提案が投票画面に出ない不具合や、イベント情報の日付の読み込みも修正した。"
   },
   {
    "title": "2026-05-04（月） - 離れていても、みんなの声がちゃんと届く仕組みへ",
@@ -1417,7 +1593,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280479319/rectangle_large_type_2_0653bacec8c8763ff7aaa9228bc2a382.png?fit=bounds&quality=85&width=1280",
    "key": "na5bc27fc0e7c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "スケジュール画面で複数のキーワードを同時に検索できるように。複数のカテゴリーを選んだ活動が、正しいカテゴリーのページに出ない問題の原因も見つけて整えた。"
   },
   {
    "title": "2026-05-05（火） - メンバーへの連絡がスムーズになった日",
@@ -1425,7 +1602,8 @@
    "date": "2026-05-29",
    "image": "https://assets.st-note.com/production/uploads/images/280479020/rectangle_large_type_2_9154bc4eb5fb7fac712fef80c2fecc1e.png?fit=bounds&quality=85&width=1280",
    "key": "n262ff427154a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "メンバーに大量のメールが届く問題を、カレンダー招待や通知の経路を見直して、必要な通知だけにして解決。カレンダー登録の文字化けの原因も特定した。"
   },
   {
    "title": "2026-05-28（木） - カタカムナの告知素案、AIと一緒に組み立てた",
@@ -1433,7 +1611,8 @@
    "date": "2026-05-28",
    "image": "https://assets.st-note.com/production/uploads/images/280373527/rectangle_large_type_2_593681e0cc8d351c3e8c35210105788f.png?fit=bounds&quality=85&width=1280",
    "key": "nb8b6e3b7ae4c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "カタカムナのアーカイブと刻印レザーお守りの公開告知を、AIと一緒に設計。販売先・価格・公開日などの「決定済み」と「未確定」を分けて整理することの大切さに気づいた。"
   },
   {
    "title": "2026-05-27（水） - 請求書システムが大きく進みました",
@@ -1441,7 +1620,8 @@
    "date": "2026-05-27",
    "image": "https://assets.st-note.com/production/uploads/images/280074757/rectangle_large_type_2_e09ffe3198a620652b4e77ee28767940.png?fit=bounds&quality=85&width=1280",
    "key": "n719a2579b6ab",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "顧客管理と請求書のシステムをつなぎ、選んだ取引を請求書に反映できるように。銀行口座の複数登録とビットコイン決済にも対応し、システム間のデータ受け渡しの難しさを実感した。"
   },
   {
    "title": "2026-05-26（火） - カタカムナ文字ジェネレータがやっと動いた",
@@ -1449,7 +1629,8 @@
    "date": "2026-05-27",
    "image": "https://assets.st-note.com/production/uploads/images/279858405/rectangle_large_type_2_2105088534554b3b054b5c23b534b7e4.png?fit=bounds&quality=85&width=1280",
    "key": "ne1222cef7ee5",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "カタカムナの文字をSVGで表すツールが「使える形」になった日。円と直線を組み合わせるシンプルな発想に落ち着いた。朝は幕僚チームで未完了タスクの精査も行った。"
   },
   {
    "title": "2026-05-25（月） - レザー事業とデジタル事業、二つの現場から学んだこと",
@@ -1457,7 +1638,8 @@
    "date": "2026-05-25",
    "image": "https://assets.st-note.com/production/uploads/images/279472458/rectangle_large_type_2_148324f9639e468b06debda8ad382be7.png?fit=bounds&quality=85&width=1280",
    "key": "n78c7e7de042e",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "見積もり計算機の計算を、製作費・原材料費・リングとオプションの三つに分け直した日。複雑な係数を要素に分けると、値決めの判断が具体的になる。不動産の契約条件も同じ考え方で整理した。"
   },
   {
    "title": "2026-05-24（日） - 画像を自動でSVG化する仕組みが動いた",
@@ -1465,7 +1647,8 @@
    "date": "2026-05-24",
    "image": "https://assets.st-note.com/production/uploads/images/279424797/rectangle_large_type_2_ee77d564883333c4b320f9d54840c1f6.png?fit=bounds&quality=85&width=1280",
    "key": "n6a583f542c28",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "切り出した画像を自動でSVGに変換する仕組みが完成。noteの連載は無料公開で信頼を作り、書籍化のタイミングで有料に切り替える方針も決まった。"
   },
   {
    "title": "2026-05-23（土） - AIと一緒に資産整理、漏洩キーの応急対処を完了",
@@ -1473,7 +1656,8 @@
    "date": "2026-05-23",
    "image": "https://assets.st-note.com/production/uploads/images/278829552/rectangle_large_type_2_54f451b210fcf8256a51f098b3ca6914.png?fit=bounds&quality=85&width=1280",
    "key": "n573e8559998c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "COCoLaとN's factoryの資産が混在していたのを整理し、事業別のアカウント分離の方針を確定。公開リポジトリに露出したAPIキーが長く放置されていたと判明し、応急対処した。"
   },
   {
    "title": "2026-05-22（金） - 画像の中心を揃える、サイト全体をつながる",
@@ -1481,7 +1665,8 @@
    "date": "2026-05-22",
    "image": "https://assets.st-note.com/production/uploads/images/278536114/rectangle_large_type_2_6a347128bdac3c40be5f46e6130c1e0d.png?fit=bounds&quality=85&width=1280",
    "key": "n816328650da8",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "カタカムナの歌をすべて掲載。画像の中心を自動で見つけて、中央に配置し直した。サイト全体の訪問者数を正しく把握する仕組みも完成した。"
   },
   {
    "title": "DAOを目指すということ",
@@ -1489,7 +1674,8 @@
    "date": "2026-05-22",
    "image": "https://assets.st-note.com/production/uploads/images/278529652/rectangle_large_type_2_0cf192b2b1c457cb422941f15a56e8b1.png?fit=bounds&quality=85&width=1280",
    "key": "n2c619f66f757",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「ブロックチェーンを使わないDAOは偽物だ」という批判に、感情的に反論せず、DAOの定義に立ち返って答える文書。COCoLaの運営で直面した課題を正直に報告し、それでもDAOを目指すと宣言している。"
   },
   {
    "title": "2026-05-21（木） - 教育アーカイブが完成、日月神示の解説も掲載開始",
@@ -1497,7 +1683,8 @@
    "date": "2026-05-21",
    "image": "",
    "key": "nb4508a69374a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "カタカムナのアーカイブサイトが完成。日月神示の解説文も、初めて自動で掲載される仕組みが動き出した。仕組みさえ作れば毎日自動で動くと気づいた。"
   },
   {
    "title": "2026-05-20（水） - 金利の誤りに気づき、ローン計算を全面修正した日",
@@ -1505,7 +1692,8 @@
    "date": "2026-05-20",
    "image": "https://assets.st-note.com/production/uploads/images/279425797/rectangle_large_type_2_e5dd9779c1a557c32e080bee3a999f59.png?fit=bounds&quality=85&width=1280",
    "key": "na8901b260c6d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "不動産投資の収支シミュレーションで、設定していた金利が銀行の返済予定表と違っていたことに、AIに銀行のPDFを読ませて気づいた。ローン計算を全面的に修正した。"
   },
   {
    "title": "2026-05-19（火） - インターネット光回線解約と不動産投資シミュレーション、同日完結",
@@ -1513,7 +1701,8 @@
    "date": "2026-05-19",
    "image": "https://assets.st-note.com/production/uploads/images/277618558/rectangle_large_type_2_71722f491ae8179ed69b8d0f8c989025.png?fit=bounds&quality=85&width=1280",
    "key": "nf533bfb9ae1f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "インターネット光回線の解約と、不動産投資のシミュレーションを、同じ日に終えた日。"
   },
   {
    "title": "2026-05-18（月） - SNS告知投稿と創作大賞応募準備が一日で完結した日",
@@ -1521,7 +1710,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277298318/rectangle_large_type_2_c7a1978b2b386bbe2bffeee5fc67315b.jpg?fit=bounds&quality=85&width=1280",
    "key": "n884c61a9add3",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "note創作大賞の応募作品の完結報告を三つのSNSに投稿し、応募規約の確認と応募方針の確定まで、一日で進めた。告知・規約確認・方針確定が、全部つながっていた。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第12話",
@@ -1529,7 +1719,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277239177/rectangle_large_type_2_5574cc5dd54019ba4bc32a3b477e21e2.png?fit=bounds&quality=85&width=1280",
    "key": "nec5678096425",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "連載の最終回。見積シミュレーターから正式な見積依頼を台帳に流し込む仕組みが通り、複数の幕僚が連動して動いた日の物語。連載の完結を告げる回。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第11話",
@@ -1537,7 +1728,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277238699/rectangle_large_type_2_d1eeff1b6034fc97d17470b208582185.png?fit=bounds&quality=85&width=1280",
    "key": "n35d058b14d09",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "監視ダッシュボードが急に真っ白になった原因が、アクセス解析サービスの呼び出し上限を使い切っていたことだと判明。自分が何度も開いていたのが原因で、サイトの体力を守る幕僚と、AIに任せる範囲の設計を描く。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第10話",
@@ -1545,7 +1737,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277233945/rectangle_large_type_2_ca2ebf6868b4219e0eaa06b40bd1aff5.png?fit=bounds&quality=85&width=1280",
    "key": "n78a82c22fcfc",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "ある朝、複数の自動処理が同時に止まった。原因は、APIキーやトークンの有効期限がばらばらに切れていたこと。この事件から、鍵を管理する保全幕僚が生まれた経緯を描く。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第9話",
@@ -1553,7 +1746,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277233693/rectangle_large_type_2_49f5529a757b6dbf5442bcedf03e8f6c.png?fit=bounds&quality=85&width=1280",
    "key": "n3be22d8bcd4d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "型紙、在庫表、スクリプトなど、お客様の目に触れないが、止まると全部が止まる領域を担う「後方幕僚」が生まれた経緯。紙の型紙の時代からCADへの話にも触れる。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第8話",
@@ -1561,7 +1755,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277233126/rectangle_large_type_2_5f39390818c39155c2b4178dd19472c4.png?fit=bounds&quality=85&width=1280",
    "key": "nd14666137b0a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "広報幕僚とSNS運用の「正解探し」。正解が誰にも分からない領域で、ハッシュタグの数に悩んだ過去から、どこをルール化して分厚くするかを考えた。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第7話",
@@ -1569,7 +1764,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277232947/rectangle_large_type_2_0c50aab7f736bcfaddc3647e483f0065.png?fit=bounds&quality=85&width=1280",
    "key": "ne60589d3fe68",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "複数の販売チャネルを回す販売幕僚の設計思想。経理で覚えた手順を、正解が定義しにくい販売にどう翻訳するか。出品から在庫、発送までの多数の工程を整理した。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第6話",
@@ -1577,7 +1773,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277232682/rectangle_large_type_2_49599f9470ce7a08a88ddadc25aae365.png?fit=bounds&quality=85&width=1280",
    "key": "naacdc5d3492c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "最初の幕僚として、監理（経理）から始めた理由を書いた回。一番苦しい作業で、ルールを言葉にしやすかったから。領収書の山との戦いを描く。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第5話",
@@ -1585,7 +1782,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277232427/rectangle_large_type_2_1a07b567596b2ae7f7f31e6b729ae94e.png?fit=bounds&quality=85&width=1280",
    "key": "nf537d4164b00",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「アシスタント」ではない呼び方として、「幕僚」という言葉を選んだ経緯。語源と、司令官の専門分化という設計思想、そして自衛官だった自分の経験を語る。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第4話",
@@ -1593,7 +1791,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277232152/rectangle_large_type_2_073fc72733850621cdbc77cbc4f71b6b.png?fit=bounds&quality=85&width=1280",
    "key": "n35c3cf823131",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「経理を手伝って」とAIに頼んでも、役に立たない答えしか返らなかった夜の話。漠然とした頼み方の空虚さに気づき、役割を渡す設計が必要だと考えるに至った。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第3話",
@@ -1601,7 +1800,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277231277/rectangle_large_type_2_adcee7e5322f8798db2469dfb437fa3d.png?fit=bounds&quality=85&width=1280",
    "key": "n307121e20406",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "発送作業とマルシェの準備と経理が重なり、一人で全部やる構造が崩れた週の話。道具が悪いのではなく、役割を渡しそびれている設計が悪いと気づく回。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第2話",
@@ -1609,7 +1809,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277228758/rectangle_large_type_2_08771368a2c910c6364ff78b88fbe012.png?fit=bounds&quality=85&width=1280",
    "key": "n8d831dc0dc25",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "制服を脱ぐと決めるまでの前史。病気と手術、手術を引き受ける医師を探した経験、そして退職の決断までを描く。"
   },
   {
    "title": "革職人が8人のAI参謀を雇った話 第1話",
@@ -1617,7 +1818,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277227947/rectangle_large_type_2_d125d660b30dd3cc9f81990eb1ae7093.png?fit=bounds&quality=85&width=1280",
    "key": "ne2aab770c1f2",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "長年勤めた制服を最後の夜に畳む場面から始まる、連載の初回。退職前夜の気持ちと、これからの時間を自分のものとして使う決意を描く。"
   },
   {
    "title": "2026-05-17（日） - 見積システムが動き始めた日",
@@ -1625,7 +1827,8 @@
    "date": "2026-05-18",
    "image": "https://assets.st-note.com/production/uploads/images/277075353/rectangle_large_type_2_d391622803fb4f155f2c179ed19c29a5.png?fit=bounds&quality=85&width=1280",
    "key": "ne79c16794836",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "新しい見積依頼システムが初めて実際に動き、見積番号の付与、スプレッドシートへの記録、メールまで通った日。アカウント設定のミスで、何度もつまずいた。"
   },
   {
    "title": "2026-05-16（金） - AIが見積書を自走し始めた日",
@@ -1633,7 +1836,8 @@
    "date": "2026-05-17",
    "image": "https://assets.st-note.com/production/uploads/images/276756218/rectangle_large_type_2_ea276d6b668dbf310c63404cf5b96f3d.png?fit=bounds&quality=85&width=1280",
    "key": "n210f6e2e4b64",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "システム手帳用と在庫品用の見積書を分け、どちらも自動入力で動くように。財布やペンケースなど、手帳以外の作品も見積もれるようになった。"
   },
   {
    "title": "2026-05-15（木） - 販売開始の朝、AIが自走を始めた日",
@@ -1641,7 +1845,8 @@
    "date": "2026-05-16",
    "image": "https://assets.st-note.com/production/uploads/images/276470633/rectangle_large_type_2_adaa30d5eb6a61a0471237a6e60bcddf.png?fit=bounds&quality=85&width=1280",
    "key": "nabea77583ab7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "販売パッケージを予定より前倒しで公開し、AI日記の自動化体制も完成。毎晩日記が生成され、翌朝noteの下書きと見出し画像まで自動で整う流れが動き始めた。"
   },
   {
    "title": "板に張り付くのをやめた。BTC監視を月額0円で自動化した",
@@ -1649,7 +1854,8 @@
    "date": "2026-05-15",
    "image": "https://assets.st-note.com/production/uploads/images/276250050/rectangle_large_type_2_68e61f329e8e838ccaf1f36b78702d2a.png?fit=bounds&quality=85&width=1280",
    "key": "n52034599d67f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "取引の画面に張り付くのをやめ、ビットコインの監視を費用をかけずに自動化した話。"
   },
   {
    "title": "2026-05-14（水） - サイト改修と販売パッケージの仕上げに追われた一日",
@@ -1657,7 +1863,8 @@
    "date": "2026-05-15",
    "image": "https://assets.st-note.com/production/uploads/images/276172872/rectangle_large_type_2_beb9e5448fa81a33197818d3e49ad6cf.png?fit=bounds&quality=85&width=1280",
    "key": "n99b72bcfa6e7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "個人事業主カードのデザイン改修が完了し、金の装飾を他の幕僚カードにも広げて世界観を統一。作品集の検索ボックスの文言の矛盾も直した。販売開始を控えた通知システムのバナーとnote記事も仕上げた。"
   },
   {
    "title": "2026-05-13（水） - サイト整理とnote戦略の転換が一気に進んだ日",
@@ -1665,7 +1872,8 @@
    "date": "2026-05-14",
    "image": "",
    "key": "n9ce8fc4266f2",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "ウェブサイトの導線を、幕僚カードを入口にした道筋に整理。note月額マガジンの失敗から、素人向けに課金を勧めるときは必ず代替案を比較するという原則を得た。"
   },
   {
    "title": "2026-04-11（土）- 7部門の引き継ぎ書を一本に束ねて、全体像が見えた土曜",
@@ -1673,7 +1881,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n769f8abd105a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各部門の引き継ぎ書を一つにまとめて、全体像が見えた日。幕僚制度が、AIと人間が役割分担する経営そのものだと気づいた。"
   },
   {
    "title": "2026-04-10（金） - 自分が寝ている間に、AIは今日のリストをすでに作っていた",
@@ -1681,7 +1890,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nca3f90cc800d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝、業務日誌の未処理タスクを知らせる仕組みが、初めて動いた日。寝ている間にパソコンが仕事をしてくれる感覚に感動した。"
   },
   {
    "title": "2026-04-09（木） - 「許可する」一回でAIがメールを送れるようになった木曜",
@@ -1689,7 +1899,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "na741875741a7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "朝の通知の仕組みを初めて動かし、未処理タスクがメールで届いた日。許可を一度押すだけで、AIがメールを送れるようになった。"
   },
   {
    "title": "2026-04-08（水） - 引き継ぎ書に書いてあった「禁止事項」の一行が重かった水曜",
@@ -1697,7 +1908,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "ndbd8fa426397",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各部門の引き継ぎ書を読み直し、毎日決まった時間に自動で動く仕組みが多数動いていると気づいた日。禁止事項の一行の重さも感じた。"
   },
   {
    "title": "2026-04-07（火） - 「ボタンを押すだけ」の意味がわかってきた火曜",
@@ -1705,7 +1917,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "na8000b11c57d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「ボタンを押すだけ」の意味が分かってきた日。"
   },
   {
    "title": "2026-04-06（月） - 昨日の準備が実った月曜、本番で初めて通知を飛ばした",
@@ -1713,7 +1926,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n375c76e3c811",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝、業務日誌を確認して未完了タスクを知らせる仕組みが、本番で初めて通知を送った日。朝にやり忘れがすぐ分かるようになった。"
   },
   {
    "title": "2026-04-05（日） - 「今すぐ実行」ボタンで確認して、毎朝の自動化を動かした日曜",
@@ -1721,7 +1935,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "na126fbc7a60f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「今すぐ実行」ボタンで確認し、毎朝の通知システムが初めて正常に動いた日。"
   },
   {
    "title": "2026-04-04（土） - 昨日仕掛けた通知が、今朝ちゃんと動いていた土曜",
@@ -1729,7 +1944,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n9fa2c20da861",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "前日に仕掛けた自動通知が、翌朝ちゃんと動いていた日。プログラミングを知らなくても、裏で動く仕組みを作れた。"
   },
   {
    "title": "2026-04-03（金） - 手順書通りに実行したら、それだけで自動化できてしまった金曜",
@@ -1737,7 +1953,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nce4a30a5a6d8",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "手順書のとおりに実行しただけで、毎朝の業務通知が自動化できた日。"
   },
   {
    "title": "2026-04-02（木） - 「難しい」と聞いていたのに、メールはあっさり届いた木曜",
@@ -1745,7 +1962,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n92004e4b70f0",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "難しいと聞いていたのに、毎朝の業務確認メールがあっさり届いた日。"
   },
   {
    "title": "2026-04-01（水） - 気づいたらレザー職人ではなく「AI経営者」になっていた4月1日",
@@ -1753,7 +1971,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "ndd4d720c957e",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各幕僚の引き継ぎ書がそろい、気づけば職人ではなく「小さな会社の経営者」になっていたと実感した日。"
   },
   {
    "title": "2026-03-31（火） - プログラミングを知らなくても「毎朝7時」という設定はできた",
@@ -1761,7 +1980,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n3f5244e06a31",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "プログラミングを知らなくても、毎朝の通知の設定ができた日。やり残したタスクの一覧がメールで届いた。"
   },
   {
    "title": "2026-03-30（月） - 「実行ボタンを一回押す」だけで、仕組みが動き始めた月曜",
@@ -1769,7 +1989,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nb7a7859b4cea",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "実行ボタンを一度押すだけで、毎朝のタスク通知の仕組みが動き始めた日。"
   },
   {
    "title": "2026-03-29（日） - 初めて動いた通知を確認し、改善点をリスト化した日曜",
@@ -1777,7 +1998,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n86cbb64e3571",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "初めて動いた毎朝の業務通知を確認し、改善点を一覧にした日。"
   },
   {
    "title": "2026-03-28（土） - 7冊の引き継ぎ書を全部読んで「毎日・毎週・毎月」に仕分けた土曜",
@@ -1785,7 +2007,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nc5c47ab67794",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "引き継ぎ書をすべて読み、毎日・毎週・毎月の仕事に仕分けた日。AIに手伝ってもらえそうな部分が見えてきた。"
   },
   {
    "title": "2026-03-27（金） - 「朝7時に起動するか」を確認するまでの、ちょっとした緊張感",
@@ -1793,7 +2016,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "ne0b0ed7d8c6e",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝、業務日誌を確認して通知する仕組みが、初めて正常に動くのを確認した日。"
   },
   {
    "title": "2026-03-26（木） - AIが毎朝自動で業務日誌を読んでいることに今更気づいた木曜",
@@ -1801,7 +2025,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n4c35150ad419",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが毎朝、前日の業務日誌を確認して、未完了タスクをメールで知らせてくれる仕組みが、本当に動き始めた日。"
   },
   {
    "title": "2026-03-25（水） - 朝7時ちょうどにメールが届いて「やった」と思った水曜",
@@ -1809,7 +2034,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nf0979bb1c000",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "朝の自動通知が、朝のうちにメールで届いた日。パソコンの裏側で何かが動いている実感は、まだ薄かった。"
   },
   {
    "title": "2026-03-24（火） - 「AIの仕事」と「自分の仕事」の境目が、ようやく見えた火曜",
@@ -1817,7 +2043,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n2926ff663869",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各部門の引き継ぎ書をまとめ直し、「AIの仕事」と「自分の仕事」の境目が見えてきた日。"
   },
   {
    "title": "2026-03-23（月） - 7部門の引き継ぎ書が揃って、明日から仕組みが本格的に回り始める",
@@ -1825,7 +2052,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nb06c00f70745",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各部門の引き継ぎ書がそろい、漏れや矛盾がないかを確認した日。各部門が役割を果たさないと全体が回らないと分かった。"
   },
   {
    "title": "2026-03-22（日） - 「初回1回だけ手動で実行する」という謎の手順を読み解いた日曜",
@@ -1833,7 +2061,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n4265df2c5fdd",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝のメール送信の仕組みが、初めて本当に動いた日。自分で何もしなくても、裏側の仕組みが毎日働いてくれる心強さを感じた。"
   },
   {
    "title": "2026-03-21（土） - 「誰に何が届くのか」を図に書いてみたら、仕組みがようやく見えた土曜",
@@ -1841,7 +2070,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nd790759c0cb0",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが作った引き継ぎ書という設計図を読み、AIが人間の仕事をどんな順番で助けているのか、輪郭が見えてきた日。"
   },
   {
    "title": "2026-03-20（金） - 引き継ぎ書を読んでいたら、AIに何をさせているか全部わかってしまった",
@@ -1849,7 +2079,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nff7fcf35cfbf",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "引き継ぎ書を読み、AIに何をさせているかが全部分かった日。人間とAIの線引きを決めておく大切さを感じた。"
   },
   {
    "title": "2026-03-19（木） - 「許可する」を一回クリックするだけで、自動化が動き始めた",
@@ -1857,7 +2088,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nfd44c2d6df0b",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「許可する」をクリックしただけで自動化が動き始め、毎朝の業務確認メールが初めて動いた日。"
   },
   {
    "title": "2026-03-18（水） - 「昨日のやり忘れ」をAIに毎朝教わる仕組みが完成した",
@@ -1865,7 +2097,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n6581f7d9078a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "昨日のやり忘れを、AIが毎朝教えてくれる仕組みが完成した日。"
   },
   {
    "title": "2026-03-17（火） - タスクを「完了」に変えたら、裏側にちゃんと反映されているか確かめた",
@@ -1873,7 +2106,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nc680c404b951",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝、未処理の仕事を知らせる仕組みが初めて動き、タスクを完了にしたとき裏側にも正しく反映されるかを確認した日。"
   },
   {
    "title": "2026-03-16（月） - 今日も、私より先にAIが今日のタスクを把握していた月曜朝",
@@ -1881,7 +2115,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n47b4bdbf9b4c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが初めて自動で動いて、今日のタスクをメールで送ってくれた月曜の朝。これまで自分で引き継ぎ書を開いていた確認が、自動になった。"
   },
   {
    "title": "2026-03-15（日） - 職人のはずが、気づけば「経営者のやること」を整理していた日曜",
@@ -1889,7 +2124,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n7c200cd56a00",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "引き継ぎ書を読み返し、自分が職人の仕事ではなく「組織を動かす仕組みづくり」をしていると気づいた日。"
   },
   {
    "title": "2026-03-14（土） - 「本当に届くのか」を自分の目で見るまで信じられなかった話",
@@ -1897,7 +2133,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n5703ded674a3",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝の業務日誌チェックの仕組みが初めて動き、本当に動いているのを確認できて安心した日。"
   },
   {
    "title": "2026-03-13（金） - 7つの部門がそれぞれ違う役割を担う、その全体像を初めて見た日",
@@ -1905,7 +2142,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nef09241e326a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各部門の引き継ぎ書を読み、毎日メールが来たり、レポートが自動で作られたりするのは、自動化の仕組みのおかげだと実感した日。"
   },
   {
    "title": "2026-03-12（木） - 初めて「AIが先に仕事を始めていた」と気づいた朝",
@@ -1913,7 +2151,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n060a07014f6f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIが毎朝リマインダーを送る仕組みが初めて動き、AIが先に仕事を始めている感覚を知った朝。"
   },
   {
    "title": "2026-03-11（水） - 「設定ファイル」がついに「毎朝のメール」になった日",
@@ -1921,7 +2160,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n586321cbad79",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "設定ファイルや指示書を作っただけだった仕組みを、初めて実際に動かし、毎朝のメールになった日。"
   },
   {
    "title": "2026-03-10（火） - 届いたメールに「未完了タスク3件」と書いてあった",
@@ -1929,7 +2169,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n92b52183746a",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "前日に仕込んだ「毎朝、業務日誌を確認する」自動通知が、初めてメールに届いた日。手動で確認していたことが自動で教えてもらえて、見落としが減りそうな安心感が生まれた。"
   },
   {
    "title": "2026-03-09（月） - 寝ている間に、AIが今日のリストを作っていた朝",
@@ -1937,7 +2178,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n55e2c4726fc9",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "寝ている間にAIが今日のリストを作り、朝のうちに業務の通知を送ってくれた日。毎朝、手動で引き継ぎ書を開いていた時間が浮くことになった。"
   },
   {
    "title": "# 2026-05-12（火） - 一カ月の遠回りを振り返りながら、月額マガジンとAI日記の自動化を同時に立ち上げた火曜",
@@ -1945,7 +2187,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "ndadd2fa122db",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "一か月の遠回りを振り返りながら、月額マガジンの開始と、毎晩AIが日記を書いて朝メールで届く仕組みを、同じ日に動かした。半年前の自分のような読者に、遠回りごと届けたいと考えた。"
   },
   {
    "title": "2026-05-11（月） - 宣言どおり最初の30分を金具リサーチに使い、革巻きペン開発を正式に立ち上げた月曜",
@@ -1953,7 +2196,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n1d042ef63a4c",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "宣言どおり最初の時間を金具のリサーチに使い、革巻きペンの開発を正式に立ち上げた日。コンセプト・想定仕様・スケジュール・検討課題を企画書にまとめた。"
   },
   {
    "title": "2026-05-10（日） - 紙に手を付ける順番を書き出した矢先、生徒さんから「ページが開けない」の連絡が入った日曜",
@@ -1961,7 +2205,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nd485162ce7e7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "手を付ける順番を書き出した直後、生徒さんから案内ページが開けないと連絡が入った日。スマホのブラウザが保存情報を定期的に消すことが原因で、保存場所をページのコードに移す対応を取った。"
   },
   {
    "title": "2026-05-09（土） - 偏り是正のつもりが、スマホの表示崩れとSNS投稿の時刻ズレに振り回された土曜",
@@ -1969,7 +2214,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n9265444f2576",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "スマホでSNS投稿カレンダーの列が足りない表示崩れと、自動投稿の時刻のずれを直した日。画面の最大幅の設定と、時刻計算のやり方を、AIが順に指摘してくれた。"
   },
   {
    "title": "2026-05-08（金） - 朝メール運用2日目、未完了タスクの偏りが目に見えてしまった金曜",
@@ -1977,7 +2223,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n6b5c20accd07",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "朝のメール運用の二日目、未完了タスクが販売幕僚に偏っていることが数字で見えてしまった日。販売の見積書・請求書の流れの整理と、革巻きペンの進行計画の読み直しに時間を寄せた。"
   },
   {
    "title": "2026-05-07（木） - 朝7時のメールを起点に動いた初日、各幕僚の引き継ぎ書を順番に読み返した木曜",
@@ -1985,7 +2232,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n5ebfc568fa14",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "朝のメールが初日から届き、それを起点に各幕僚の引き継ぎ書を順番に読み返した日。事業の骨組みが見え、監理幕僚が月次タスクをカレンダーに載せ忘れていることにも気づいた。"
   },
   {
    "title": "2026-05-06（水） - 八人目の幕僚として、毎朝7時の自動通知が動き始めた水曜",
@@ -1993,7 +2241,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n98dfca6afeac",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝のやることリストを届ける仕組みが、八人目の幕僚として動き始めた日。初期設定とメール送信の許可、試験送信を済ませ、仕組みに任せて自分は判断に集中する経営への第一歩になった。"
   },
   {
    "title": "2026-05-05（火） - サイトのフォルダ移動と一緒に、幕僚チームがようやく揃った節目の火曜",
@@ -2001,7 +2250,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n6661afe8b68d",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "サイトのフォルダ移動を予定どおり完了し、AI幕僚たちの役割分担も最終確定した日。一人で抱えていた経営が、ようやくチームと呼べる形になった節目だった。"
   },
   {
    "title": "2026-05-04（月） - 顧客管理アプリのスマホ対応で、「完璧を諦める」判断をAIに後押ししてもらった月曜",
@@ -2009,7 +2259,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nda788dd9df3f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "顧客管理アプリをスマホでどこまで使えるようにするか迷い、AIの後押しで「今は手動バックアップで十分」と割り切った日。完璧を目指して止まるより、未完成でも動かす方が前に進むと学んだ。"
   },
   {
    "title": "2026-05-03（日） - 同じ機能を二度作りかけて、AIから「記録の取り方」を諭された日曜",
@@ -2017,7 +2268,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "na651808c95da",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "別サイズの週間ブロックリフィル印刷ツールを作る途中、別のサイズで同じ機能を作ったか思い出せなくなり、AIから記録の取り方が甘いと諭された日。"
   },
   {
    "title": "2026-05-02（土） - リンク修正リストの前に、商品マスター自動同期を本番に乗せてしまった土曜",
@@ -2025,7 +2277,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "neae0755ae774",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "予定していたリンク修正リストより先に、商品マスターの自動同期を本番に乗せてしまった日。新しい革製品の写真をフォルダに入れるだけで、商品リストに自動で並ぶ仕組みが動き始めた。"
   },
   {
    "title": "2026-05-01（金） - 月初の自動チェックを目で見て確認し、自分の問い方の変化を振り返った金曜",
@@ -2033,7 +2286,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n55f9dacf7ad7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "月初の自動チェック（AIの利用量や認証情報の期限など）が想定どおり動くのを、目で見て確認した日。AIへの問い方が「選択肢を出させて自分で選ぶ」形に変わってきたと振り返った。"
   },
   {
    "title": "2026-04-30（木） - 顧客管理アプリの一括削除と、配送データ取り込み方式の切替を一日でこなした",
@@ -2041,7 +2295,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n3ec910544928",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "配送データの取り込み方式の切り替えと、顧客管理アプリの一括削除機能を、一日でこなした日。AIに選択肢を出させて自分が選ぶやり方で、判断の速度が大きく上がった。"
   },
   {
    "title": "2026-04-29（水） - 移植再開と同時に、配送データ取り込みの不具合が見つかった水曜",
@@ -2049,7 +2304,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "ne360a5942e30",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "週間版テンプレートの移植を再開した矢先に、配送サービスのPDFが取り込めない不具合が見つかった日。大改修が必要と分かり、手作業で取り込む段取りだけ決めて、本筋の作業は止めなかった。"
   },
   {
    "title": "2026-04-28（火） - 移植再開の前に、引き継ぎ書を「AIに書き直してもらう」側に回った日",
@@ -2057,7 +2313,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n0a9fe1c97182",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "引き継ぎ書のずれを直すため、AIに各幕僚の業務を整理し直してもらい、自分は読んで直す側に回った日。見落としていた小さな自動処理まで拾ってくれて、AIは「一緒に書いてくれる相手」だと考え直した。"
   },
   {
    "title": "2026-04-27（月） - 週間版テンプレートに改修を移植しようとしたら、AIに引き継ぎ書の整合性を突かれた一日",
@@ -2065,7 +2322,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n4ab5f77ece4e",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "週間版テンプレートへの改修の移植中に、AIから「引き継ぎ書の業務の流れと矛盾しませんか」と指摘され、作業を止めて整合性の点検に切り替えた日。"
   },
   {
    "title": "2026-04-26（日） - 振り返りモードを抜けて、手帳ツールを三つ前に進めた日",
@@ -2073,7 +2331,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nc290c77a99e6",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "振り返りの日が続いたので、手帳テンプレートツールの小さな宿題を一気に片付けた日。スマホからもPDFが作れるようにし、フクロウの透かしの位置や穴あけ位置も直した。"
   },
   {
    "title": "2026-04-25（土） - 印を付け終わった引き継ぎ書を眺めて、人間とAIの分業が日常になっていることに気付く",
@@ -2081,7 +2340,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "ndc5581e1a47f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "「任せる」「自分で判断する」の印を付け終えた引き継ぎ書を眺め、人間とAIの分業が日常になっていると気づいた日。境目を見えるようにしておくことは、AIに流されないためのブレーキにもなる。"
   },
   {
    "title": "2026-04-24（金） - 「任せる／自分で判断する」の境目を、引き継ぎ書に印として書き込む地味な一日",
@@ -2089,7 +2349,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "na476a9969d1f",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "AIに任せていい範囲と、自分で判断すべき範囲の線引きを、引き継ぎ書の各項目に印として書き込んだ地味な一日。お金が動く判断と、新しい自動化の承認は必ず自分で見る。"
   },
   {
    "title": "2026-04-23（木） - 優先順位リスト片手に手を動かしたら、AIへの「同じ指示」癖に気付いた",
@@ -2097,7 +2358,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "neab20daeeacf",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "優先順位のリストを元に手を動かし始めて、同じ指示をAIに何度も繰り返していたことに気づいた日。AIが悪いのではなく、任せる範囲の線引きが曖昧だったと反省した。"
   },
   {
    "title": "2026-04-22（水） - 朝7時メールが3日続いた朝、優先順位をAIに聞いた",
@@ -2105,7 +2367,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n24918b550940",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝の自動通知メールが続けて時間どおりに届いたのを確認し、仕組みとして信用できると思えた朝。安心したついでに、優先順位そのものをAIに聞いてみた。"
   },
   {
    "title": "2026-04-21（火） - 朝7時のメールが、目覚めと同時に届いた",
@@ -2113,7 +2376,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n834dbd6a4279",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "目を覚ますと、メールボックスに「今日やること」が自動で届いていた朝。毎朝、自分でスプレッドシートを開いて確認していた時間が浮き、その分を革製品の設計や試作に充てたいと感じた。"
   },
   {
    "title": "2026-04-20（月） - 自動通知の初回実行と、認証情報期限切れという小さな落とし穴",
@@ -2121,7 +2385,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n6d6c82a9db41",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "毎朝の自動通知を本格的に動かしてみて、手順の細かさに驚いた日。途中で認証情報の期限切れにも気づき、定期的にチェックする仕組みが必要だと分かった。"
   },
   {
    "title": "2026-04-19（日） - 頭の中の業務ルールを、ようやく文書に落とし込んだ日",
@@ -2129,7 +2394,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nac81fa8183f7",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "頭の中だけで覚えていた業務ルールを、引き継ぎ書という形に落とし込んだ日。「自分が倒れても回る仕組み」が一歩近づいた。"
   },
   {
    "title": "2026-04-18（土） - 引き継ぎ書を片手に、サイト改善の優先順位をAIに聞いた日",
@@ -2137,7 +2403,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "na1d0ab995955",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "書き出した引き継ぎ書を持って、サイト改善の優先順位をAIに相談した日。頭の中の渋滞が整理され、引き継ぎ書は誰かと一緒に読み解いて初めて動き出すと感じた。"
   },
   {
    "title": "2026-04-17（金） - 「幕僚チーム」の引き継ぎ書をようやく整理した日",
@@ -2145,7 +2412,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "ncbf3a15c7123",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "頭の中だけで動かしていた各部門の役割を、思い切って紙に書き出した日。作戦・販売・監理・広報・後方・保全・デジタルに切り分け、「自分はこんなに多くの仕事をしていたのか」と驚いた。"
   },
   {
    "title": "2026-04-16（木） - 引き継ぎ書の整理で、自分の会社の「仕組み」が見えた",
@@ -2153,7 +2421,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nbd96d84291f2",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "引き継ぎ書に「配送伝票のPDFは文字読み取りに使わない」という小さなルールを書き加えた日。過去の失敗から生まれた決まりが積み上がり、自分専用の操作説明書のようになってきた。"
   },
   {
    "title": "2026-04-15（水） - 引き継ぎ書の整理で見えた、組織の「骨組み」",
@@ -2161,7 +2430,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "ne110607949e8",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各部門の引き継ぎ書を一気に通読し、自分でも知らないうちに「会社の骨組み」ができていたと気づいた日。前日の通知テストの成功とあわせて、腰を据えて回せる小さな自信が芽生えた。"
   },
   {
    "title": "2026-04-14（火） - AIと引き継ぎ書、初めての本格運用",
@@ -2169,7 +2439,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "nc5a8f686b7ad",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "各部門の引き継ぎ書がそろい、毎朝の未処理タスク通知のテストメールが届いた日。ひとり会社にも組織の骨組みが入ったという感慨と、毎日回せるかという不安が同時にあった。"
   },
   {
    "title": "2026-04-13（月） - 「AIへの相談」を振り返ったら、同じ相談を何度もしていた",
@@ -2177,7 +2448,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n8f0f28026b11",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "過去のAIとの会話を読み返し、同じ相談を何度もしていたと気づいた日。AIが悪いのではなく、どこまでできたら完成かを決め切れていなかったことが原因。先に完成形を決めてから相談する大切さを学んだ。"
   },
   {
    "title": "2026-04-12（日） - AIが4商品を見落としていた。信用しすぎた自分の話",
@@ -2185,7 +2457,8 @@
    "date": "2026-05-13",
    "image": "",
    "key": "n529d012b15dc",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "商品の自動取り込みスクリプトが、新しい商品の一部を見落としていることに気づいた日。AIが作った仕組みでも丸ごと信用せず、最後は自分の目で確かめる必要があると学んだ。"
   },
   {
    "title": "COCoLa本格始動！",
@@ -2193,7 +2466,8 @@
    "date": "2026-01-30",
    "image": "https://assets.st-note.com/production/uploads/images/247824660/rectangle_large_type_2_8dd2601c83fe452861434fdbb5c0532b.png?fit=bounds&quality=85&width=1280",
    "key": "n4178458fee17",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "千葉ニュータウンの市民コミュニティCOCoLaの本格始動を告げる記事。ものづくり・まちづくり・つながり・食・自分づくりなどを大切にし、公募で選ばれたイベントの成功と、その意義も紹介している。"
   },
   {
    "title": "海上自衛官が革職人に？！～「安定」から「創造」へ～",
@@ -2201,7 +2475,8 @@
    "date": "2025-04-11",
    "image": "https://assets.st-note.com/production/uploads/images/183619085/rectangle_large_type_2_73edba4d97ee8b961a7a1236c89eb1fc.png?fit=bounds&quality=85&width=1280",
    "key": "na61c0a51d003",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "海上自衛官から革職人になった経験を、似た境遇の人の参考にまとめた記事。公務員の魅力と、その経験が革製品づくりにも活きる点を紹介している。後半は有料。"
   },
   {
    "title": "レザークラフトにレーザー加工機を導入してみたよ",
@@ -2209,7 +2484,8 @@
    "date": "2025-04-11",
    "image": "https://assets.st-note.com/production/uploads/images/183615533/rectangle_large_type_2_873f83d2fd9cc7c23182c021c16e1f1b.jpeg?fit=bounds&quality=85&width=1280",
    "key": "n8e56cd87ef61",
-   "imageSource": "note"
+   "imageSource": "note",
+   "summary": "レザークラフトにレーザー加工機を導入して思うことを綴る記事。刻印やゴム印の製作者に質問しても反応は少なかった。機器の設定など企業秘密に近い内容を含むため有料。"
   }
  ]
 }

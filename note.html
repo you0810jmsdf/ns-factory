@@ -110,6 +110,7 @@ h1{font-size:clamp(26px,4.4vw,38px);font-weight:700;letter-spacing:.04em;margin-
 .card-body{padding:16px 18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
 .card-date{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.12em;color:var(--color-accent-dark)}
 .card-title{font-size:16px;line-height:1.65;font-weight:700}
+.card-sum{font-size:13px;line-height:1.75;font-weight:400;color:var(--color-text-sub)}
 .card-more{margin-top:auto;font-size:12px;color:var(--color-text-mute);letter-spacing:.06em}
 
 .more-wrap{text-align:center;margin-top:40px}
@@ -142,6 +143,7 @@ footer{
   .wrap{padding:32px 16px 60px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
   .card-title{font-size:14px}
+  .card-sum{font-size:12px}
   .card-body{padding:12px 13px 16px}
 }
 </style>
@@ -233,6 +235,7 @@ footer{
              '<div class="card-body">' +
                '<span class="card-date">' + fmtDate(it.date) + '</span>' +
                '<span class="card-title">' + esc(title) + '</span>' +
+               (it.summary ? '<span class="card-sum">' + esc(it.summary) + '</span>' : '') +
                '<span class="card-more">note で読む →</span>' +
              '</div></a>';
     }).join('');
