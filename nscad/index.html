@@ -380,6 +380,8 @@
 <label><input id="chainOffset" type="checkbox"><span data-i18n="chainOffset"></span></label>
 <label><span data-i18n="offsetJoin"></span><select id="offsetJoin"><option value="miter" data-i18n="miter"></option><option value="round" data-i18n="roundJoin"></option></select></label>
 <label><span data-i18n="mirrorHoles"></span><select id="mirrorHoles"><option value="reverse" data-i18n="mirrorHolesReverse"></option><option value="keep" data-i18n="mirrorHolesKeep"></option></select></label>
+<label><span data-i18n="arcMethod"></span><select id="arcMethod"><option value="radius" data-i18n="arcMethodRadius"></option><option value="three" data-i18n="arcMethodThree"></option></select></label>
+<label><span data-i18n="arcRadius"></span><input id="arcRadius" type="number" min="0" step="0.5"></label>
 </div></details>
 </div>
 </main>
@@ -1168,6 +1170,13 @@ const MESSAGES = {
     "mirrorHoles": "反転コピーの菱目",
     "mirrorHolesReverse": "逆目（鏡像・内装向き）",
     "mirrorHolesKeep": "順目（傾きを保つ）",
+    "arcMethod": "円弧の描き方",
+    "arcMethodRadius": "中心と半径",
+    "arcMethodThree": "3点（始点・通過点・終点）",
+    "arcRadius": "円弧の半径 (mm・空欄はドラッグで決める)",
+    "arcThreeHint": "3点：始点をクリック → 通過点 → 終点の順にクリック（Esc で中止）。",
+    "arcRadiusHint": "半径は入力値で固定：中心をクリック → 始点方向をクリック → 終点方向をクリック（時計回り）。",
+    "arcCollinear": "3点が一直線上にあり円弧になりません。通過点か終点をずらしてください。",
     "fillet": "丸め (R)",
     "chamferSize": "C 面の寸法 (mm)",
     "hint.fillet": "2本の線をクリックして半径を指定します。",
@@ -1765,6 +1774,13 @@ const MESSAGES = {
     "mirrorHoles": "Slant of mirrored holes",
     "mirrorHolesReverse": "Reverse (mirrored, for lining)",
     "mirrorHolesKeep": "Same direction (keep slant)",
+    "arcMethod": "Arc method",
+    "arcMethodRadius": "Center and radius",
+    "arcMethodThree": "3 points (start, through, end)",
+    "arcRadius": "Arc radius (mm; blank = set by dragging)",
+    "arcThreeHint": "3 points: click the start, then a point on the arc, then the end (Esc cancels).",
+    "arcRadiusHint": "Radius fixed by the entered value: click the center, then the start direction, then the end direction (clockwise).",
+    "arcCollinear": "The 3 points are collinear, so no arc fits. Move the middle or end point.",
     "fillet": "Fillet (R)",
     "chamferSize": "Chamfer size (mm)",
     "hint.fillet": "Click two connected lines and enter a radius.",
@@ -8152,7 +8168,7 @@ const HELP_JA = {
     {
       "id": "drawing",
       "title": "作図と座標",
-      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。"
+      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。"
     },
     {
       "id": "stitching",
@@ -8291,7 +8307,7 @@ const HELP_EN = {
     {
       "id": "drawing",
       "title": "Drawing and coordinates",
-      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius."
+      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels)."
     },
     {
       "id": "stitching",
@@ -8633,7 +8649,7 @@ function showTour() {
   render(); $('tourDialog').showModal();
 }
 function initStitch() {
-  $('chainOffset').checked=false; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse';
+  $('chainOffset').checked=false; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'0.5',defaultMark:'tool'};
   for(const [id,value]of Object.entries(values))$(id).value=value;
   for(const id of ['chain','followTangent','constrainHole'])$(id).checked=true;
@@ -9882,6 +9898,26 @@ function shapeFromDrag(a, b) {
   if (mode === 'circle') return { type: 'circle', cx: a.x, cy: a.y, r: distance(a, b) };
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
+/** 円弧の作図方式が「3点」か。 */
+function arcThreePoint() { return $('arcMethod').value === 'three'; }
+/** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
+function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
+/** 3点（始点・通過点・終点）を通る円弧。一直線上なら null。通過点が弧の途中に来る向きに start/end を決める。 */
+function arcThroughPoints(a, b, c) {
+  const d = 2 * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)); if (!Number.isFinite(d) || Math.abs(d) < 1e-9) return null;
+  const sa = a.x * a.x + a.y * a.y, sb = b.x * b.x + b.y * b.y, sc = c.x * c.x + c.y * c.y;
+  const cx = (sa * (b.y - c.y) + sb * (c.y - a.y) + sc * (a.y - b.y)) / d, cy = (sa * (c.x - b.x) + sb * (a.x - c.x) + sc * (b.x - a.x)) / d, r = Math.hypot(a.x - cx, a.y - cy);
+  if (!(r > 1e-9) || r > 1e6) return null;
+  const degA = Math.atan2(a.y - cy, a.x - cx) * 180 / Math.PI, degC = Math.atan2(c.y - cy, c.x - cx) * 180 / Math.PI, counter = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) > 0;
+  return counter ? { type: 'arc', cx, cy, r, startDeg: degA, endDeg: degC } : { type: 'arc', cx, cy, r, startDeg: degC, endDeg: degA };
+}
+/** 3点方式のクリックを1点受け取る。3点そろったら円弧にする。 */
+function arc3Click(p) {
+  const pts = stage.pts; if (pts.some(q => distance(q, p) < 1e-8)) return;
+  if (pts.length < 2) { pts.push(p); return; }
+  const s = arcThroughPoints(pts[0], pts[1], p); if (!s) { $('hint').textContent = t('arcCollinear'); return; }
+  stage = null; addShape(s); lastPoint = p; $('hint').textContent = t('hint.arc');
+}
 function arcShape(p) {
   const angle = Math.atan2(p.y - stage.center.y, p.x - stage.center.x) * 180 / Math.PI;
   return { type: 'arc', cx: stage.center.x, cy: stage.center.y, r: stage.r, startDeg: stage.startDeg, endDeg: angle };
@@ -9996,6 +10032,8 @@ function draw() {
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
+  if (stage?.kind === 'arc3') { const pv = stage.pts.length >= 2 ? arcThroughPoints(stage.pts[0], stage.pts[1], cursor) : null; strokeShape(pv || { type: 'line', x1: stage.pts[0].x, y1: stage.pts[0].y, x2: (stage.pts[1] || cursor).x, y2: (stage.pts[1] || cursor).y }, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
+  if (stage?.kind === 'arcR') { const ang = Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x); strokeShape({ type: 'line', x1: stage.center.x, y1: stage.center.y, x2: stage.center.x + stage.r * Math.cos(ang), y2: stage.center.y + stage.r * Math.sin(ang) }, '#c9a96e'); }
   if (stage?.kind === 'polyline') strokeShape({ type: 'polyline', points: [...stage.points, cursor], closed: false }, '#c9a96e');
   if (stage?.kind === 'path') { const pv = pathPreview(); if (pv) { strokeShape(pv, '#c9a96e'); drawNodes({ ...pv, nodes: stage.nodes }); } }
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
@@ -10127,6 +10165,12 @@ canvas.addEventListener('pointerup', e => {
     }
   } else if (g.kind === 'draw' && mode === 'line' && stage?.kind === 'cmd' && distance(stage.start, cursor) < 6 / scale) {
     /* 連続線の直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */
+  } else if (g.kind === 'draw' && mode === 'arc' && arcThreePoint()) {
+    stage = { kind: 'arc3', pts: [g.start] }; $('hint').textContent = t('arcThreeHint');
+  } else if (g.kind === 'draw' && mode === 'arc' && arcFixedRadius() > 0) {
+    const fixedR = arcFixedRadius();
+    stage = distance(g.start, cursor) > 1e-8 ? { kind: 'arc', center: g.start, r: fixedR, startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI } : { kind: 'arcR', center: g.start, r: fixedR };
+    $('hint').textContent = t('arcRadiusHint');
   } else if (g.kind === 'draw' && distance(g.start, cursor) > 1e-8) {
     if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
     else if (mode === 'arc') stage = { kind: 'arc', center: g.start, r: distance(g.start, cursor), startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI };
@@ -10140,7 +10184,9 @@ canvas.addEventListener('pointerup', e => {
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
-    if (stage.kind === 'arc') { const s = arcShape(cursor); if (arcSweep(s) > 1e-8) { stage = null; addShape(s); } }
+    if (stage.kind === 'arc3') arc3Click(cursor);
+    else if (stage.kind === 'arcR') { if (distance(stage.center, cursor) > 1e-8) stage = { kind: 'arc', center: stage.center, r: stage.r, startDeg: Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI }; }
+    else if (stage.kind === 'arc') { const s = arcShape(cursor); if (arcSweep(s) > 1e-8) { stage = null; addShape(s); } }
     else if (stage.kind === 'bezier') { if (!stage.c1) stage.c1 = cursor; else { const s = bezierShape(cursor); stage = null; addShape(s); } }
     else if (stage.kind === 'polyline') {
       if (stage.points.length >= 3 && distance(cursor, stage.points[0]) < 9 / scale) finishPolyline(true);
