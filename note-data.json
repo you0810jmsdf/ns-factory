@@ -1,8 +1,26 @@
 {
- "generatedAt": "2026-10-07T22:10:30",
+ "generatedAt": "2026-10-08T22:10:31",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 276,
+ "count": 278,
  "items": [
+  {
+   "title": "2026-10-08（木） - レシート誤読と二つのサイト",
+   "url": "https://note.com/you0810jmsdf/n/nafbc2238da39",
+   "date": "2026-10-08",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-08_ig_r2.jpg",
+   "key": "nafbc2238da39",
+   "imageSource": "sns",
+   "summary": "マンション売却手続きの確認や、AI日記サイトの分離、新規オーダーへの対応など、多数の作業を行った。レシートの金額をAIが誤読した件では、指示文の強化や検算の仕組みを導入し、正確な読み取りができるよう改善した。"
+  },
+  {
+   "title": "マイク・カメラの物理的なON/OFFボタンをデスクトップに実装｜Jarvis日記 2026.10.07（水）",
+   "url": "https://note.com/you0810jmsdf/n/n5e21f80afa75",
+   "date": "2026-10-08",
+   "image": "https://assets.st-note.com/production/uploads/images/321967906/rectangle_large_type_2_dd5bbd62c5c62def65efa7b448a3e193.png?fit=bounds&quality=85&width=1280",
+   "key": "n5e21f80afa75",
+   "imageSource": "note",
+   "summary": "WEBカメラとマイクのON/OFFを、デスクトップのボタンで切り替えられる機能を実装。スマホ向けのJarvis画面の作り込みにも着手し、実機で見た目を確認できた。表現辞書の保存や、商品の画像生成も検討した。"
+  },
   {
    "title": "2026-10-07（水） - パスワード管理アプリの動画公開と楽天仕分け",
    "url": "https://note.com/you0810jmsdf/n/n392d9f9991a5",
