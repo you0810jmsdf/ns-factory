@@ -472,6 +472,7 @@ textarea { resize: vertical; min-height: 72px; }
   const PRIORITY_ORDER = { '必須': 0, '推奨': 1, 'あると便利': 2 };
 
   let toolGuideData = null;
+  let mekikiLinks = null; // 目利きノートの選び方記事（道具IDごと）。読めなくても道具ガイドは動かす（2026-10-09）
   let activeProcessId = null;
   const rakutenCache = new Map();
   let priorityOverrides = {};
@@ -489,6 +490,12 @@ textarea { resize: vertical; min-height: 72px; }
     } catch(e) {
       listEl.innerHTML = `<div class="tool-empty">道具ガイドを読み込めませんでした。<br><small>${esc(e.message)}</small></div>`;
       return;
+    }
+    try {
+      const mkRes = await fetch('./data/mekiki-links.json', { cache: 'no-store' });
+      if (mkRes.ok) mekikiLinks = await mkRes.json();
+    } catch(e) {
+      mekikiLinks = null; // 取得失敗時はリンクなしで表示（機能停止させない）
     }
     try {
       const ovRes = await fetch(`${RAKUTEN_API_URL}?action=priorityOverrides`, { cache: 'no-store' });
@@ -613,6 +620,7 @@ textarea { resize: vertical; min-height: 72px; }
         <div class="guide-tool-meta"><b>選び方:</b> ${esc(t.advice)}</div>
         <div class="guide-tool-footer">
           <div class="guide-price-range">価格目安: ${esc(t.priceRange)}</div>
+          ${mekikiLinks && mekikiLinks.tools && mekikiLinks.tools[t.id] ? mekikiLinks.tools[t.id].map(a => `<a class="tool-link" href="${escAttr(mekikiLinks.base + a.slug)}" target="_blank" rel="noopener"><span>選び方の記事を読む</span><span class="tool-link-note">目利きノート</span></a>`).join('') : ''}
           ${t.roomUrl ? `<a class="tool-link" href="${escAttr(t.roomUrl)}" target="_blank" rel="noopener sponsored"><span>楽天ROOMで見る</span><span class="tool-link-note">厳選品</span></a>` : ''}
           <button class="btn btn-secondary guide-rakuten-btn" onclick="toggleRakutenResults('${escAttr(t.id)}', '${escAttr(t.rakutenKeyword)}', this)">楽天市場で探す</button>
           <div class="guide-rakuten-results" id="rakuten-${escAttr(t.id)}" style="display:none;"></div>
