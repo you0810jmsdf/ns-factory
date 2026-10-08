@@ -1722,8 +1722,6 @@ canvas.addEventListener('pointerup', e => {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
       for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) selected.add(s.id); }
     }
-  } else if (g.kind === 'draw' && mode === 'line' && stage?.kind === 'cmd' && distance(stage.start, cursor) < 6 / scale) {
-    /* 連続線の直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */
   } else if (g.kind === 'draw' && mode === 'arc' && arcThreePoint()) {
     stage = { kind: 'arc3', pts: [g.start] }; $('hint').textContent = t('arcThreeHint');
   } else if (g.kind === 'draw' && mode === 'arc' && arcFixedRadius() > 0) {
@@ -1739,7 +1737,7 @@ canvas.addEventListener('pointerup', e => {
     runCommand(`${cursor.x},${cursor.y}`);
   } else if (g.kind === 'stage') {
     if (stage.kind === 'cmd') {
-      if (mode === 'line') runCommand(`${cursor.x},${cursor.y}`);
+      if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) runCommand(`${cursor.x},${cursor.y}`); /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
