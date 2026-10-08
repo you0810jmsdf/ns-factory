@@ -208,7 +208,7 @@ function showTour() {
   render(); $('tourDialog').showModal();
 }
 function initStitch() {
-  $('chainOffset').checked=false; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse';
+  $('chainOffset').checked=false; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'0.5',defaultMark:'tool'};
   for(const [id,value]of Object.entries(values))$(id).value=value;
   for(const id of ['chain','followTangent','constrainHole'])$(id).checked=true;
@@ -1457,6 +1457,26 @@ function shapeFromDrag(a, b) {
   if (mode === 'circle') return { type: 'circle', cx: a.x, cy: a.y, r: distance(a, b) };
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
+/** 円弧の作図方式が「3点」か。 */
+function arcThreePoint() { return $('arcMethod').value === 'three'; }
+/** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
+function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
+/** 3点（始点・通過点・終点）を通る円弧。一直線上なら null。通過点が弧の途中に来る向きに start/end を決める。 */
+function arcThroughPoints(a, b, c) {
+  const d = 2 * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)); if (!Number.isFinite(d) || Math.abs(d) < 1e-9) return null;
+  const sa = a.x * a.x + a.y * a.y, sb = b.x * b.x + b.y * b.y, sc = c.x * c.x + c.y * c.y;
+  const cx = (sa * (b.y - c.y) + sb * (c.y - a.y) + sc * (a.y - b.y)) / d, cy = (sa * (c.x - b.x) + sb * (a.x - c.x) + sc * (b.x - a.x)) / d, r = Math.hypot(a.x - cx, a.y - cy);
+  if (!(r > 1e-9) || r > 1e6) return null;
+  const degA = Math.atan2(a.y - cy, a.x - cx) * 180 / Math.PI, degC = Math.atan2(c.y - cy, c.x - cx) * 180 / Math.PI, counter = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) > 0;
+  return counter ? { type: 'arc', cx, cy, r, startDeg: degA, endDeg: degC } : { type: 'arc', cx, cy, r, startDeg: degC, endDeg: degA };
+}
+/** 3点方式のクリックを1点受け取る。3点そろったら円弧にする。 */
+function arc3Click(p) {
+  const pts = stage.pts; if (pts.some(q => distance(q, p) < 1e-8)) return;
+  if (pts.length < 2) { pts.push(p); return; }
+  const s = arcThroughPoints(pts[0], pts[1], p); if (!s) { $('hint').textContent = t('arcCollinear'); return; }
+  stage = null; addShape(s); lastPoint = p; $('hint').textContent = t('hint.arc');
+}
 function arcShape(p) {
   const angle = Math.atan2(p.y - stage.center.y, p.x - stage.center.x) * 180 / Math.PI;
   return { type: 'arc', cx: stage.center.x, cy: stage.center.y, r: stage.r, startDeg: stage.startDeg, endDeg: angle };
@@ -1571,6 +1591,8 @@ function draw() {
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
+  if (stage?.kind === 'arc3') { const pv = stage.pts.length >= 2 ? arcThroughPoints(stage.pts[0], stage.pts[1], cursor) : null; strokeShape(pv || { type: 'line', x1: stage.pts[0].x, y1: stage.pts[0].y, x2: (stage.pts[1] || cursor).x, y2: (stage.pts[1] || cursor).y }, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
+  if (stage?.kind === 'arcR') { const ang = Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x); strokeShape({ type: 'line', x1: stage.center.x, y1: stage.center.y, x2: stage.center.x + stage.r * Math.cos(ang), y2: stage.center.y + stage.r * Math.sin(ang) }, '#c9a96e'); }
   if (stage?.kind === 'polyline') strokeShape({ type: 'polyline', points: [...stage.points, cursor], closed: false }, '#c9a96e');
   if (stage?.kind === 'path') { const pv = pathPreview(); if (pv) { strokeShape(pv, '#c9a96e'); drawNodes({ ...pv, nodes: stage.nodes }); } }
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
@@ -1702,6 +1724,12 @@ canvas.addEventListener('pointerup', e => {
     }
   } else if (g.kind === 'draw' && mode === 'line' && stage?.kind === 'cmd' && distance(stage.start, cursor) < 6 / scale) {
     /* 連続線の直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */
+  } else if (g.kind === 'draw' && mode === 'arc' && arcThreePoint()) {
+    stage = { kind: 'arc3', pts: [g.start] }; $('hint').textContent = t('arcThreeHint');
+  } else if (g.kind === 'draw' && mode === 'arc' && arcFixedRadius() > 0) {
+    const fixedR = arcFixedRadius();
+    stage = distance(g.start, cursor) > 1e-8 ? { kind: 'arc', center: g.start, r: fixedR, startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI } : { kind: 'arcR', center: g.start, r: fixedR };
+    $('hint').textContent = t('arcRadiusHint');
   } else if (g.kind === 'draw' && distance(g.start, cursor) > 1e-8) {
     if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
     else if (mode === 'arc') stage = { kind: 'arc', center: g.start, r: distance(g.start, cursor), startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI };
@@ -1715,7 +1743,9 @@ canvas.addEventListener('pointerup', e => {
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
-    if (stage.kind === 'arc') { const s = arcShape(cursor); if (arcSweep(s) > 1e-8) { stage = null; addShape(s); } }
+    if (stage.kind === 'arc3') arc3Click(cursor);
+    else if (stage.kind === 'arcR') { if (distance(stage.center, cursor) > 1e-8) stage = { kind: 'arc', center: stage.center, r: stage.r, startDeg: Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI }; }
+    else if (stage.kind === 'arc') { const s = arcShape(cursor); if (arcSweep(s) > 1e-8) { stage = null; addShape(s); } }
     else if (stage.kind === 'bezier') { if (!stage.c1) stage.c1 = cursor; else { const s = bezierShape(cursor); stage = null; addShape(s); } }
     else if (stage.kind === 'polyline') {
       if (stage.points.length >= 3 && distance(cursor, stage.points[0]) < 9 / scale) finishPolyline(true);

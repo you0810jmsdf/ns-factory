@@ -4,7 +4,7 @@ export const HELP_EN = {
     {
       "id": "drawing",
       "title": "Drawing and coordinates",
-      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius."
+      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels)."
     },
     {
       "id": "stitching",
