@@ -1,0 +1,81 @@
+{
+ "id": "m5",
+ "names": {
+  "ja": "Micro5 / M5",
+  "en": "Micro5 / M5",
+  "aliases": [
+   "マイクロ5",
+   "ミニ5穴",
+   "Filofax Mini"
+  ]
+ },
+ "holes": {
+  "count": 5,
+  "pitchMm": [
+   19,
+   19,
+   19,
+   19
+  ],
+  "centerPitchMm": null,
+  "span1toLastMm": 76
+ },
+ "refill": {
+  "wMm": 62,
+  "hMm": 105
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   8,
+   11,
+   13,
+   15
+  ],
+  "shape": "round",
+  "countPerSide": 5
+ },
+ "plate": {
+  "lengthMm": 100,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -44.0,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 44.0,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/m5.plan.svg",
+  "side": "binder/m5.side.svg",
+  "front": "binder/m5.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 100,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [
+  {
+   "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。N's factory 基準: 62×105mm・5穴（上端から 15/34/53/72/91mm・綴じ側端から 6mm）"
+  }
+ ],
+ "confidence": "spec"
+}

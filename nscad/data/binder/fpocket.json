@@ -1,0 +1,79 @@
+{
+ "id": "fpocket",
+ "names": {
+  "ja": "Franklin Pocket",
+  "en": "Franklin Pocket",
+  "aliases": [
+   "フランクリン ポケット"
+  ]
+ },
+ "holes": {
+  "count": 6,
+  "pitchMm": [
+   19.05,
+   19.05,
+   38.1,
+   19.05,
+   19.05
+  ],
+  "centerPitchMm": 38.1,
+  "span1toLastMm": 114.3
+ },
+ "refill": {
+  "wMm": 89,
+  "hMm": 153
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   15,
+   20,
+   25
+  ],
+  "shape": "round",
+  "countPerSide": 6
+ },
+ "plate": {
+  "lengthMm": 138.3,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -63.150000000000006,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 63.150000000000006,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/fpocket.plan.svg",
+  "side": "binder/fpocket.side.svg",
+  "front": "binder/fpocket.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 138.3,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [
+  {
+   "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。公式 0.75\"/0.75\"/1.5\"/0.75\"/0.75\"。A6 6穴とは公式互換ではない"
+  }
+ ],
+ "confidence": "spec"
+}

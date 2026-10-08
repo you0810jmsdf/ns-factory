@@ -1,0 +1,83 @@
+{
+ "id": "mini6",
+ "names": {
+  "ja": "Mini6 / M6",
+  "en": "Mini6 / M6",
+  "aliases": [
+   "ミニ6穴",
+   "ポケット",
+   "Filofax Pocket"
+  ]
+ },
+ "holes": {
+  "count": 6,
+  "pitchMm": [
+   19.2,
+   19.2,
+   19.2,
+   19.2,
+   19.2
+  ],
+  "centerPitchMm": 19.2,
+  "span1toLastMm": 96
+ },
+ "refill": {
+  "wMm": 80,
+  "hMm": 128
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   11,
+   13,
+   15,
+   19,
+   20
+  ],
+  "shape": "round",
+  "countPerSide": 6
+ },
+ "plate": {
+  "lengthMm": 120,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -54.0,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 54.0,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/mini6.plan.svg",
+  "side": "binder/mini6.side.svg",
+  "front": "binder/mini6.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 120,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [
+  {
+   "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。N's factory 基準データ: 80×128mm・6穴（上端から 16.3/35.5/54.7/73.9/93.1/112.3mm・綴じ側端から 6.3mm）。Filofax Pocket は 81×120mm・19mm 間隔"
+  }
+ ],
+ "confidence": "spec"
+}

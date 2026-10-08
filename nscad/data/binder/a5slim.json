@@ -1,0 +1,81 @@
+{
+ "id": "a5slim",
+ "names": {
+  "ja": "A5 Slim",
+  "en": "A5 Slim",
+  "aliases": [
+   "A5スリム",
+   "odoru",
+   "monta"
+  ]
+ },
+ "holes": {
+  "count": 6,
+  "pitchMm": [
+   19,
+   19,
+   70,
+   19,
+   19
+  ],
+  "centerPitchMm": 70,
+  "span1toLastMm": 146
+ },
+ "refill": {
+  "wMm": 110,
+  "hMm": 210
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   16,
+   20,
+   25
+  ],
+  "shape": "round",
+  "countPerSide": 6
+ },
+ "plate": {
+  "lengthMm": 170,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -79.0,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 79.0,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/a5slim.plan.svg",
+  "side": "binder/a5slim.side.svg",
+  "front": "binder/a5slim.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 170,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [
+  {
+   "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。高さは A5 と同じ・幅 110mm。KRAUSE 210-6-16 が候補"
+  }
+ ],
+ "confidence": "spec"
+}
