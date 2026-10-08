@@ -379,6 +379,7 @@
 <label><span data-i18n="dimOffset"></span><input id="dimOffset" type="number" step="0.5" value="8"></label>
 <label><input id="chainOffset" type="checkbox"><span data-i18n="chainOffset"></span></label>
 <label><span data-i18n="offsetJoin"></span><select id="offsetJoin"><option value="miter" data-i18n="miter"></option><option value="round" data-i18n="roundJoin"></option></select></label>
+<label><span data-i18n="mirrorHoles"></span><select id="mirrorHoles"><option value="reverse" data-i18n="mirrorHolesReverse"></option><option value="keep" data-i18n="mirrorHolesKeep"></option></select></label>
 </div></details>
 </div>
 </main>
@@ -1164,6 +1165,9 @@ const MESSAGES = {
     "offsetJoin": "結合",
     "miter": "交点",
     "roundJoin": "丸め",
+    "mirrorHoles": "反転コピーの菱目",
+    "mirrorHolesReverse": "逆目（鏡像・内装向き）",
+    "mirrorHolesKeep": "順目（傾きを保つ）",
     "fillet": "丸め (R)",
     "chamferSize": "C 面の寸法 (mm)",
     "hint.fillet": "2本の線をクリックして半径を指定します。",
@@ -1758,6 +1762,9 @@ const MESSAGES = {
     "offsetJoin": "Join",
     "miter": "Miter",
     "roundJoin": "Round",
+    "mirrorHoles": "Slant of mirrored holes",
+    "mirrorHolesReverse": "Reverse (mirrored, for lining)",
+    "mirrorHolesKeep": "Same direction (keep slant)",
     "fillet": "Fillet (R)",
     "chamferSize": "Chamfer size (mm)",
     "hint.fillet": "Click two connected lines and enter a radius.",
@@ -8175,7 +8182,7 @@ const HELP_JA = {
     {
       "id": "trim-mirror",
       "title": "トリムと線対称コピー",
-      "body": "トリムは消したい部分をクリックすると、その図形を交点（と端点）で区切った区間のうち、クリックした区間だけを消します。突き出た端も同じ操作で消せます。Shift+クリックは逆に「クリックした区間だけ残す」。縫い穴付きの線では確認を表示し、続行すると接続経路の穴と縫い合わせ設定を解除します。元に戻すでまとめて復元できます。\n線対称は、図形を選択してから軸にする直線をクリック（または2点をクリックして軸を指定）すると、折り返したコピーを作ります。縫い穴も一緒に写り、傾きは反転します。"
+      "body": "トリムは消したい部分をクリックすると、その図形を交点（と端点）で区切った区間のうち、クリックした区間だけを消します。突き出た端も同じ操作で消せます。Shift+クリックは逆に「クリックした区間だけ残す」。縫い穴付きの線では確認を表示し、続行すると接続経路の穴と縫い合わせ設定を解除します。元に戻すでまとめて復元できます。\n線対称は、図形を選択してから軸にする直線をクリック（または2点をクリックして軸を指定）すると、折り返したコピーを作ります。縫い穴も一緒に写り、既定では傾きが鏡像（逆目）になります。作図オプションの「反転コピーの菱目」を「順目」にすると傾きを保ちます（外装を順目・内装を逆目にしたいときの選択用）。位置はどちらでも重なります。左右反転・上下反転も同じ設定に従います。"
     },
     {
       "id": "output",
@@ -8314,7 +8321,7 @@ const HELP_EN = {
     {
       "id": "trim-mirror",
       "title": "Trim and mirror copy",
-      "body": "Trim removes the clicked span of a shape between its intersections (and endpoints), including overhanging ends. Shift+click keeps the clicked span instead. Shapes with stitching prompt before removing holes and seam settings on connected paths. Undo restores everything together.\nMirror copies the selection across an axis: select shapes, then click an axis line or two points. Holes are copied too, with their slant mirrored."
+      "body": "Trim removes the clicked span of a shape between its intersections (and endpoints), including overhanging ends. Shift+click keeps the clicked span instead. Shapes with stitching prompt before removing holes and seam settings on connected paths. Undo restores everything together.\nMirror copies the selection across an axis: select shapes, then click an axis line or two points. Holes are copied too; by default their slant is mirrored (reverse). Set 'Slant of mirrored holes' in Drawing options to 'Same direction' to keep the slant. Positions coincide either way. Flip horizontally/vertically follows the same setting."
     },
     {
       "id": "output",
@@ -8626,7 +8633,7 @@ function showTour() {
   render(); $('tourDialog').showModal();
 }
 function initStitch() {
-  $('chainOffset').checked=false; $('offsetJoin').value='miter';
+  $('chainOffset').checked=false; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse';
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'0.5',defaultMark:'tool'};
   for(const [id,value]of Object.entries(values))$(id).value=value;
   for(const id of ['chain','followTangent','constrainHole'])$(id).checked=true;
@@ -9642,6 +9649,8 @@ function trimClick(p, keep) {
     selected = new Set(added);
   });
 }
+/** 反転コピーの菱目が順目（keep）のとき、反転後の穴の傾きを元の値に戻す。位置は変えない。 */
+function keepHoleSlant(mirrored, original) { return $('mirrorHoles').value === 'keep' && 'pathId' in original ? { ...mirrored, angleDeg: original.angleDeg } : mirrored; }
 function mirrorCopy(a, b) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
   cancel();
@@ -9652,7 +9661,7 @@ function mirrorCopy(a, b) {
       const id = freshId(doc.paths, 'p'); doc.paths.push({ ...JSON.parse(JSON.stringify(p)), id, shapeIds: p.shapeIds.map(x => map.get(x)) });
       const route = resolvePath(doc, doc.paths.at(-1));
       for (const h of holes.filter(h => h.pathId === p.id)) {
-        const reflected = reflectAcross(h, a, b);
+        const reflected = keepHoleSlant(reflectAcross(h, a, b), h);
         doc.holes.push({ ...reflected, s: route ? projectOnPath(route, reflected).s : h.s, id: freshId(doc.holes, 'h'), pathId: id });
       }
     }
@@ -9785,7 +9794,7 @@ function transformAboutCenter(kind) {
   const b = bboxOfDoc({ shapes, holes: [] }), center = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
   const angle = kind === 'rotate' ? askNumber('rotation', 90) : 0;
   if (angle === null) return;
-  transformSelected(s => kind === 'rotate' ? rotate(s, angle, center) : kind === 'mirrorX' ? mirrorX(s, center.x) : mirrorY(s, center.y));
+  transformSelected(s => kind === 'rotate' ? rotate(s, angle, center) : keepHoleSlant(kind === 'mirrorX' ? mirrorX(s, center.x) : mirrorY(s, center.y), s));
   if (kind !== 'rotate' && doc.shapes.some(s => selected.has(s.id) && partOf(s))) { const ids = new Set(selected); commit(() => flipMark(ids)); }
 }
 function askNumber(key, initial) {

@@ -34,7 +34,7 @@ export const HELP_EN = {
     {
       "id": "trim-mirror",
       "title": "Trim and mirror copy",
-      "body": "Trim removes the clicked span of a shape between its intersections (and endpoints), including overhanging ends. Shift+click keeps the clicked span instead. Shapes with stitching prompt before removing holes and seam settings on connected paths. Undo restores everything together.\nMirror copies the selection across an axis: select shapes, then click an axis line or two points. Holes are copied too, with their slant mirrored."
+      "body": "Trim removes the clicked span of a shape between its intersections (and endpoints), including overhanging ends. Shift+click keeps the clicked span instead. Shapes with stitching prompt before removing holes and seam settings on connected paths. Undo restores everything together.\nMirror copies the selection across an axis: select shapes, then click an axis line or two points. Holes are copied too; by default their slant is mirrored (reverse). Set 'Slant of mirrored holes' in Drawing options to 'Same direction' to keep the slant. Positions coincide either way. Flip horizontally/vertically follows the same setting."
     },
     {
       "id": "output",
