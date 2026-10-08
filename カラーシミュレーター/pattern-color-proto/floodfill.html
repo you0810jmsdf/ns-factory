@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<script src="../../assets/admin-remember.js"></script>
 <meta charset="UTF-8">
 <title>N's factory カラー・テクスチャシミュレーター</title>
 <style>
@@ -659,6 +660,14 @@ async function confirmColorOrder(){
     return;
   }
 
+  // 管理者のみ保存できる（2026-10-09）。鍵は管理室ゲート通過時に sessionStorage へ入る（orderprogress.html と同じ）
+  let adminKey = '';
+  try { adminKey = sessionStorage.getItem('nsf_admin_key') || ''; } catch(e) {}
+  if(!adminKey){
+    statusEl.textContent = '保存には管理者ログインが必要です（管理室で一度ログインしてから開き直してください）';
+    return;
+  }
+
   statusEl.textContent = '送信中…';
   const tabKeys = Object.keys(TABS);
   const images = tabKeys.map((tabKey, i) => {
@@ -674,7 +683,7 @@ async function confirmColorOrder(){
   try{
     const res = await fetch(ORDER_PROGRESS_GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'uploadColorSimImage', folderId, images, metalColor })
+      body: JSON.stringify({ action: 'uploadColorSimImage', key: adminKey, folderId, images, metalColor })
     });
     const json = await res.json();
     statusEl.textContent = json.ok
