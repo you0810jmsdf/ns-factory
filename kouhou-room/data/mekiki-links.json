@@ -1,0 +1,240 @@
+{
+  "updated": "2026-10-09",
+  "base": "https://mekiki-note.com/articles/",
+  "tools": {
+    "letter-stamp": [
+      {
+        "slug": "alphabet-kokuin-erabikata",
+        "title": "アルファベット・数字の刻印セットの選び方"
+      }
+    ],
+    "cutting-mat": [
+      {
+        "slug": "cutter-mat-erabikata",
+        "title": "レザークラフト用カッターマットの選び方"
+      }
+    ],
+    "silver-pen": [
+      {
+        "slug": "gin-pen-divider-erabikata",
+        "title": "型紙を写す銀ペンとディバイダーの選び方"
+      }
+    ],
+    "divider": [
+      {
+        "slug": "gin-pen-divider-erabikata",
+        "title": "型紙を写す銀ペンとディバイダーの選び方"
+      }
+    ],
+    "rubber-board": [
+      {
+        "slug": "gomuita-boon-mat-erabikata",
+        "title": "レザークラフトのゴム板と防音マットの選び方"
+      }
+    ],
+    "felt-mat": [
+      {
+        "slug": "gomuita-boon-mat-erabikata",
+        "title": "レザークラフトのゴム板と防音マットの選び方"
+      }
+    ],
+    "punch-set": [
+      {
+        "slug": "hatome-nuki-erabikata",
+        "title": "ハトメ抜き（丸ポンチ）の選び方"
+      }
+    ],
+    "edge-beveler": [
+      {
+        "slug": "heri-otoshi-erabikata",
+        "title": "ヘリ落としの選び方"
+      }
+    ],
+    "diamond-awl": [
+      {
+        "slug": "hishigiri-marugiri-erabikata",
+        "title": "菱ギリと丸ギリの選び方"
+      }
+    ],
+    "round-awl": [
+      {
+        "slug": "hishigiri-marugiri-erabikata",
+        "title": "菱ギリと丸ギリの選び方"
+      }
+    ],
+    "diamond-chisel": [
+      {
+        "slug": "hishime-uchi-erabikata",
+        "title": "菱目打ちの選び方"
+      }
+    ],
+    "punching-machine": [
+      {
+        "slug": "hishime-uchi-erabikata",
+        "title": "菱目打ちの選び方"
+      }
+    ],
+    "hook-setter": [
+      {
+        "slug": "hock-kashime-uchigu-erabikata",
+        "title": "バネホック・カシメの打ち具の選び方"
+      }
+    ],
+    "rivet-setter": [
+      {
+        "slug": "hock-kashime-uchigu-erabikata",
+        "title": "バネホック・カシメの打ち具の選び方"
+      }
+    ],
+    "hand-press": [
+      {
+        "slug": "hock-kashime-uchigu-erabikata",
+        "title": "バネホック・カシメの打ち具の選び方"
+      }
+    ],
+    "craft-dye": [
+      {
+        "slug": "kawa-senryo-erabikata",
+        "title": "革の染料の選び方"
+      }
+    ],
+    "alcohol-dye": [
+      {
+        "slug": "kawa-senryo-erabikata",
+        "title": "革の染料の選び方"
+      }
+    ],
+    "leather-knife": [
+      {
+        "slug": "kawabocho-erabikata",
+        "title": "革包丁の選び方"
+      }
+    ],
+    "art-knife": [
+      {
+        "slug": "kawabocho-erabikata",
+        "title": "革包丁の選び方"
+      }
+    ],
+    "leather-scissors": [
+      {
+        "slug": "kawakiri-hasami-rotary-erabikata",
+        "title": "革切りはさみとロータリーカッターの選び方"
+      }
+    ],
+    "rotary-cutter": [
+      {
+        "slug": "kawakiri-hasami-rotary-erabikata",
+        "title": "革切りはさみとロータリーカッターの選び方"
+      }
+    ],
+    "edge-paint": [
+      {
+        "slug": "koba-shiagezai-erabikata",
+        "title": "コバ仕上げ剤の選び方"
+      }
+    ],
+    "edge-roller-pen": [
+      {
+        "slug": "koba-shiagezai-erabikata",
+        "title": "コバ仕上げ剤の選び方"
+      }
+    ],
+    "cone-slicker": [
+      {
+        "slug": "kobamigaki-slicker-erabikata",
+        "title": "コバ磨きのスリッカーの選び方"
+      }
+    ],
+    "wood-slicker": [
+      {
+        "slug": "kobamigaki-slicker-erabikata",
+        "title": "コバ磨きのスリッカーの選び方"
+      }
+    ],
+    "mame-kanna": [
+      {
+        "slug": "mamekanna-safety-beveler-erabikata",
+        "title": "豆カンナとセーフティベベラーの選び方"
+      }
+    ],
+    "safety-beveler": [
+      {
+        "slug": "mamekanna-safety-beveler-erabikata",
+        "title": "豆カンナとセーフティベベラーの選び方"
+      }
+    ],
+    "wooden-mallet": [
+      {
+        "slug": "mokutsuchi-erabikata",
+        "title": "レザークラフトの木槌の選び方"
+      }
+    ],
+    "round-maul": [
+      {
+        "slug": "mokutsuchi-erabikata",
+        "title": "レザークラフトの木槌の選び方"
+      }
+    ],
+    "screw-crease": [
+      {
+        "slug": "nejinen-erabikata",
+        "title": "ネジ捻とステッチンググルーバーの選び方"
+      }
+    ],
+    "stitching-groover": [
+      {
+        "slug": "nejinen-erabikata",
+        "title": "ネジ捻とステッチンググルーバーの選び方"
+      }
+    ],
+    "stitch-wheel": [
+      {
+        "slug": "stitch-roulette-erabikata",
+        "title": "ステッチルレットの選び方"
+      }
+    ],
+    "swivel-knife": [
+      {
+        "slug": "swivel-cutter-erabikata",
+        "title": "スーベルカッターの選び方"
+      }
+    ],
+    "sewing-needle": [
+      {
+        "slug": "teanui-hari-erabikata",
+        "title": "レザークラフトの手縫い針の選び方"
+      }
+    ],
+    "linen-thread": [
+      {
+        "slug": "teanui-ito-erabikata",
+        "title": "レザークラフトの手縫い糸の選び方"
+      }
+    ],
+    "escord-thread": [
+      {
+        "slug": "teanui-ito-erabikata",
+        "title": "レザークラフトの手縫い糸の選び方"
+      }
+    ],
+    "tokonole": [
+      {
+        "slug": "tokomen-shiagezai-erabikata",
+        "title": "床面仕上げ剤の選び方"
+      }
+    ],
+    "cmc": [
+      {
+        "slug": "tokomen-shiagezai-erabikata",
+        "title": "床面仕上げ剤の選び方"
+      }
+    ],
+    "funori": [
+      {
+        "slug": "tokomen-shiagezai-erabikata",
+        "title": "床面仕上げ剤の選び方"
+      }
+    ]
+  }
+}
