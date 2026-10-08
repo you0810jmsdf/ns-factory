@@ -590,7 +590,8 @@ export const MESSAGES = {
     "spineResult": "輪の外径 {ring}／内幅 {inner}／折り代 {fold}×2 → 背幅 {spine} mm（輪の天井 {top} mm）",
     "spineCalibrated": "すき間を {play} mm にしました。",
     "spineApplied": "レシピの背幅を {spine} mm にしました。",
-    "prototype": "試作中"
+    "prototype": "試作中",
+    "lineChainHint": "クリックで続けて線を引けます。終点でダブルクリックすると確定（Esc でも終了・右ドラッグで画面を移動）。"
   },
   "en": {
     "chainOffset": "Chain offset",
@@ -1183,7 +1184,8 @@ export const MESSAGES = {
     "spineResult": "Ring OD {ring} / inner {inner} / fold {fold}×2 → spine {spine} mm (ring top {top} mm)",
     "spineCalibrated": "Clearance set to {play} mm.",
     "spineApplied": "Recipe spine set to {spine} mm.",
-    "prototype": "PROTOTYPE"
+    "prototype": "PROTOTYPE",
+    "lineChainHint": "Click to keep adding lines. Double-click at the end point to finish (Esc also ends; right-drag pans)."
   }
 };
 let language = 'ja';
