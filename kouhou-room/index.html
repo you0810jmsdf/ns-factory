@@ -491,11 +491,17 @@ textarea { resize: vertical; min-height: 72px; }
       listEl.innerHTML = `<div class="tool-empty">道具ガイドを読み込めませんでした。<br><small>${esc(e.message)}</small></div>`;
       return;
     }
-    try {
-      const mkRes = await fetch('./data/mekiki-links.json', { cache: 'no-store' });
-      if (mkRes.ok) mekikiLinks = await mkRes.json();
-    } catch(e) {
-      mekikiLinks = null; // 取得失敗時はリンクなしで表示（機能停止させない）
+    // 目利きノートが公開のたびに作る最新の対応表を優先し、読めなければ手元の控え（data/mekiki-links.json）を使う
+    for (const url of ['https://mekiki-note.com/social/tool-links.json', './data/mekiki-links.json']) {
+      try {
+        const ctl = new AbortController();
+        const timer = setTimeout(() => ctl.abort(), 5000);
+        const mkRes = await fetch(url, { cache: 'no-store', signal: ctl.signal });
+        clearTimeout(timer);
+        if (!mkRes.ok) continue;
+        const d = await mkRes.json(); // 存在しないURLがHTMLを返す場合はここで例外→次の候補へ
+        if (d && d.tools && typeof d.base === 'string') { mekikiLinks = d; break; }
+      } catch(e) { /* 次の候補へ。両方だめならリンクなしで表示（機能停止させない） */ }
     }
     try {
       const ovRes = await fetch(`${RAKUTEN_API_URL}?action=priorityOverrides`, { cache: 'no-store' });

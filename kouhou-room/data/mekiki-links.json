@@ -235,6 +235,108 @@
         "slug": "tokomen-shiagezai-erabikata",
         "title": "床面仕上げ剤の選び方"
       }
+    ],
+    "grid-ruler": [
+      {
+        "slug": "hougan-stainless-jogi-erabikata",
+        "title": "型紙と裁断に使う定規の選び方"
+      }
+    ],
+    "stainless-ruler": [
+      {
+        "slug": "hougan-stainless-jogi-erabikata",
+        "title": "型紙と裁断に使う定規の選び方"
+      }
+    ],
+    "pattern-paper": [
+      {
+        "slug": "katagami-yoshi-erabikata",
+        "title": "型紙に使う紙の選び方"
+      }
+    ],
+    "tracing-paper": [
+      {
+        "slug": "katagami-yoshi-erabikata",
+        "title": "型紙に使う紙の選び方"
+      }
+    ],
+    "curve-ruler": [
+      {
+        "slug": "kumogata-en-jogi-erabikata",
+        "title": "雲形定規と円定規の選び方"
+      }
+    ],
+    "circle-template": [
+      {
+        "slug": "kumogata-en-jogi-erabikata",
+        "title": "雲形定規と円定規の選び方"
+      }
+    ],
+    "antique-dye": [
+      {
+        "slug": "antique-dye-leather-coat-erabikata",
+        "title": "アンティックダイとレザーコートの選び方"
+      }
+    ],
+    "leather-coat": [
+      {
+        "slug": "antique-dye-leather-coat-erabikata",
+        "title": "アンティックダイとレザーコートの選び方"
+      }
+    ],
+    "corner-cutter": [
+      {
+        "slug": "corner-cutter-erabikata",
+        "title": "コーナーカッター（角丸抜き）の選び方"
+      }
+    ],
+    "strap-cutter": [
+      {
+        "slug": "strap-cutter-erabikata",
+        "title": "ストラップカッター（革紐裁断機）の選び方"
+      }
+    ],
+    "lacing-chisel": [
+      {
+        "slug": "hirameuchi-lacing-needle-erabikata",
+        "title": "かがり縫いの平目打ちとレース針の選び方"
+      }
+    ],
+    "lacing-needle": [
+      {
+        "slug": "hirameuchi-lacing-needle-erabikata",
+        "title": "かがり縫いの平目打ちとレース針の選び方"
+      }
+    ],
+    "stitching-pony": [
+      {
+        "slug": "lacing-pony-erabikata",
+        "title": "レーシングポニーの選び方"
+      }
+    ],
+    "double-tape": [
+      {
+        "slug": "ryomen-tape-assaku-roller-erabikata",
+        "title": "革の仮止めに使う両面テープと圧着ローラーの選び方"
+      }
+    ],
+    "roller": [
+      {
+        "slug": "ryomen-tape-assaku-roller-erabikata",
+        "title": "革の仮止めに使う両面テープと圧着ローラーの選び方"
+      }
+    ],
+    "dye-brush": [
+      {
+        "slug": "senshoku-fude-wool-erabikata",
+        "title": "革を染める道具の選び方"
+      }
+    ],
+    "wool-piece": [
+      {
+        "slug": "senshoku-fude-wool-erabikata",
+        "title": "革を染める道具の選び方"
+      }
     ]
   }
 }
