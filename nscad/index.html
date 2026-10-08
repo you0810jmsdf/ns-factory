@@ -1181,7 +1181,7 @@ const MESSAGES = {
     "arcCollinear": "3点が一直線上にあり円弧になりません。通過点か終点をずらしてください。",
     "fillet": "丸め (R)",
     "chamferSize": "C 面の寸法 (mm)",
-    "hint.fillet": "2本の線をクリックして半径を指定します。",
+    "hint.fillet": "2本の線、または折れ線をクリックして半径を指定します。折れ線は角の近くでその角だけ、辺の途中で全部の角を丸めます。",
     "stitch": "目打ち",
     "hint.stitch": "線をクリックして配置。手動は繰り返しクリック、Alt/⌥ は1穴。",
     "stitchSettings": "目打ち・穴編集",
@@ -1286,7 +1286,7 @@ const MESSAGES = {
     "hint.arc": "中心から始点へドラッグ → 終点方向をクリック（時計回り）。",
     "hint.bezier": "始点から終点へドラッグ → 第1制御点 → 第2制御点をクリック。",
     "hint.polyline": "最初の辺をドラッグ → 頂点をクリック。Enter で確定／始点で閉じる。",
-    "hint.chamfer": "共有端点を持つ2本の直線をクリック。両辺を指定の C 寸法で切り取ります。",
+    "hint.chamfer": "共有端点を持つ2本の直線、または折れ線をクリック。折れ線は角の近くでその角だけ、辺の途中で全部の角を、指定の C 寸法で切り取ります。",
     "hint.offset": "図形をクリック。正は閉図形・円の外側、開いた線の進行方向の左側。",
     "secondLine": "2本目の直線をクリックしてください。",
     "radius": "丸面取りの半径 (mm)",
@@ -1786,7 +1786,7 @@ const MESSAGES = {
     "arcCollinear": "The 3 points are collinear, so no arc fits. Move the middle or end point.",
     "fillet": "Fillet (R)",
     "chamferSize": "Chamfer size (mm)",
-    "hint.fillet": "Click two connected lines and enter a radius.",
+    "hint.fillet": "Click two connected lines or a polyline and enter a radius. On a polyline, click near a corner for that corner only, or along an edge for every corner.",
     "stitch": "Stitching",
     "hint.stitch": "Click a path to place holes. Repeat clicks in manual mode; Alt/⌥ places one hole.",
     "stitchSettings": "Stitching / hole editing",
@@ -1891,7 +1891,7 @@ const MESSAGES = {
     "hint.arc": "Drag from center to start, then click the end direction (clockwise).",
     "hint.bezier": "Drag from start to end, then click the first and second control points.",
     "hint.polyline": "Drag the first edge, then click vertices. Enter finishes; click the start to close.",
-    "hint.chamfer": "Click two lines sharing an endpoint. Both edges are trimmed by the C distance.",
+    "hint.chamfer": "Click two lines sharing an endpoint, or a polyline. On a polyline, click near a corner for that corner only, or along an edge for every corner; edges are trimmed by the C distance.",
     "hint.offset": "Click a shape. Positive: outward for closed shapes / circles, left of travel for open paths.",
     "secondLine": "Click the second line.",
     "radius": "Fillet radius (mm)",
@@ -8171,7 +8171,7 @@ const HELP_JA = {
     {
       "id": "drawing",
       "title": "作図と座標",
-      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。"
+      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。"
     },
     {
       "id": "stitching",
@@ -8310,7 +8310,7 @@ const HELP_EN = {
     {
       "id": "drawing",
       "title": "Drawing and coordinates",
-      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox."
+      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox.\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first."
     },
     {
       "id": "stitching",
@@ -9851,8 +9851,48 @@ function askNumber(key, initial) {
   if (!raw.trim() || !Number.isFinite(Number(raw))) { $('hint').textContent = t('invalidNumber'); return null; }
   return Number(raw);
 }
+/** 折れ線の角を丸め(fillet)／面取り(chamfer)した直線と円弧の列を返す。only は角の頂点番号（null=全部）。不成立は null。 */
+function roundPolylineCorners(poly, only, r, kind) {
+  const V = poly.points, n = V.length, closed = !!poly.closed, make = kind === 'fillet' ? filletCorner : chamferCorner;
+  const seg = k => ({ type: 'line', x1: V[k].x, y1: V[k].y, x2: V[(k + 1) % n].x, y2: V[(k + 1) % n].y });
+  const corners = new Map();
+  for (let i = 0; i < n; i++) {
+    if ((!closed && (i === 0 || i === n - 1)) || (only && !only.includes(i))) continue;
+    const prev = V[(i - 1 + n) % n], next = V[(i + 1) % n], cross = (V[i].x - prev.x) * (next.y - V[i].y) - (V[i].y - prev.y) * (next.x - V[i].x);
+    if (!only && Math.abs(cross) < 1e-9 * Math.max(1, distance(prev, V[i]) * distance(V[i], next))) continue; /* 一直線上の頂点は角ではない */
+    const inc = seg((i - 1 + n) % n), out = seg(i), shape = make(inc, out, r); if (!shape) return null;
+    const ends = shape.type === 'arc' ? [circlePoint(shape, shape.startDeg), circlePoint(shape, shape.endDeg)] : [{ x: shape.x1, y: shape.y1 }, { x: shape.x2, y: shape.y2 }];
+    const a = distToShape(inc, ends[0]) <= distToShape(inc, ends[1]) ? ends[0] : ends[1]; corners.set(i, { shape, a, b: a === ends[0] ? ends[1] : ends[0] });
+  }
+  if (!corners.size) return null;
+  const result = [];
+  for (let k = 0; k < (closed ? n : n - 1); k++) {
+    const k2 = (k + 1) % n, start = corners.get(k)?.b ?? V[k], end = corners.get(k2)?.a ?? V[k2];
+    if ((end.x - start.x) * (V[k2].x - V[k].x) + (end.y - start.y) * (V[k2].y - V[k].y) < -1e-9) return null; /* 隣の角と重なる＝半径が大きすぎる */
+    if (distance(start, end) > 1e-9) result.push({ type: 'line', x1: start.x, y1: start.y, x2: end.x, y2: end.y });
+    if (corners.has(k2)) result.push(corners.get(k2).shape);
+  }
+  return result;
+}
+/** 折れ線をクリック：頂点の近くならその角だけ、辺の途中なら全部の角を丸める／面取りする。 */
+function roundPolylineAt(poly, p) {
+  cancel();
+  const affected = new Set(doc.paths.filter(q => q.shapeIds.includes(poly.id)).map(q => q.id));
+  if (doc.holes.some(h => affected.has(h.pathId))) { $('hint').textContent = t('holeChamfer'); return; }
+  const near = poly.points.map((v, i) => [distance(v, p), i]).filter(([d]) => d <= 9 / scale).sort((x, y) => x[0] - y[0])[0];
+  const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
+  const shapes = roundPolylineCorners(poly, near ? [near[1]] : null, r, mode);
+  if (!shapes) { $('hint').textContent = t('impossible'); return; }
+  commit(() => {
+    doc.paths = doc.paths.filter(q => !affected.has(q.id)); doc.shapes = doc.shapes.filter(s => s.id !== poly.id);
+    const ids = shapes.map(s => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: poly.layer }); return id; });
+    for (const part of doc.parts) if (part.shapeIds.includes(poly.id)) part.shapeIds = [...part.shapeIds.filter(x => x !== poly.id), ...ids];
+    selected = new Set(ids);
+  });
+  $('hint').textContent = t('hint.' + mode);
+}
 function editAt(p) {
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line'));
+  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline'));
   if (!hit) return;
   if (mode === 'offset') {
     const d = askNumber('offsetDistance', 3); if (d === null) return;
@@ -9861,6 +9901,7 @@ function editAt(p) {
     if (!result) { $('hint').textContent = t('impossible'); return; }
     addShape({ ...result, id: freshId(doc.shapes, 's'), layer: hit.layer }); return;
   }
+  if (hit.type === 'polyline') { roundPolylineAt(hit, p); return; }
   if (!stage) { stage = { kind: 'chamfer', id: hit.id }; selected = new Set([hit.id]); draw(); $('hint').textContent = t('secondLine'); return; }
   if (stage.id === hit.id) return;
   const first = doc.shapes.find(s => s.id === stage.id && editable(s));

@@ -1407,8 +1407,48 @@ function askNumber(key, initial) {
   if (!raw.trim() || !Number.isFinite(Number(raw))) { $('hint').textContent = t('invalidNumber'); return null; }
   return Number(raw);
 }
+/** 折れ線の角を丸め(fillet)／面取り(chamfer)した直線と円弧の列を返す。only は角の頂点番号（null=全部）。不成立は null。 */
+function roundPolylineCorners(poly, only, r, kind) {
+  const V = poly.points, n = V.length, closed = !!poly.closed, make = kind === 'fillet' ? filletCorner : chamferCorner;
+  const seg = k => ({ type: 'line', x1: V[k].x, y1: V[k].y, x2: V[(k + 1) % n].x, y2: V[(k + 1) % n].y });
+  const corners = new Map();
+  for (let i = 0; i < n; i++) {
+    if ((!closed && (i === 0 || i === n - 1)) || (only && !only.includes(i))) continue;
+    const prev = V[(i - 1 + n) % n], next = V[(i + 1) % n], cross = (V[i].x - prev.x) * (next.y - V[i].y) - (V[i].y - prev.y) * (next.x - V[i].x);
+    if (!only && Math.abs(cross) < 1e-9 * Math.max(1, distance(prev, V[i]) * distance(V[i], next))) continue; /* 一直線上の頂点は角ではない */
+    const inc = seg((i - 1 + n) % n), out = seg(i), shape = make(inc, out, r); if (!shape) return null;
+    const ends = shape.type === 'arc' ? [circlePoint(shape, shape.startDeg), circlePoint(shape, shape.endDeg)] : [{ x: shape.x1, y: shape.y1 }, { x: shape.x2, y: shape.y2 }];
+    const a = distToShape(inc, ends[0]) <= distToShape(inc, ends[1]) ? ends[0] : ends[1]; corners.set(i, { shape, a, b: a === ends[0] ? ends[1] : ends[0] });
+  }
+  if (!corners.size) return null;
+  const result = [];
+  for (let k = 0; k < (closed ? n : n - 1); k++) {
+    const k2 = (k + 1) % n, start = corners.get(k)?.b ?? V[k], end = corners.get(k2)?.a ?? V[k2];
+    if ((end.x - start.x) * (V[k2].x - V[k].x) + (end.y - start.y) * (V[k2].y - V[k].y) < -1e-9) return null; /* 隣の角と重なる＝半径が大きすぎる */
+    if (distance(start, end) > 1e-9) result.push({ type: 'line', x1: start.x, y1: start.y, x2: end.x, y2: end.y });
+    if (corners.has(k2)) result.push(corners.get(k2).shape);
+  }
+  return result;
+}
+/** 折れ線をクリック：頂点の近くならその角だけ、辺の途中なら全部の角を丸める／面取りする。 */
+function roundPolylineAt(poly, p) {
+  cancel();
+  const affected = new Set(doc.paths.filter(q => q.shapeIds.includes(poly.id)).map(q => q.id));
+  if (doc.holes.some(h => affected.has(h.pathId))) { $('hint').textContent = t('holeChamfer'); return; }
+  const near = poly.points.map((v, i) => [distance(v, p), i]).filter(([d]) => d <= 9 / scale).sort((x, y) => x[0] - y[0])[0];
+  const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
+  const shapes = roundPolylineCorners(poly, near ? [near[1]] : null, r, mode);
+  if (!shapes) { $('hint').textContent = t('impossible'); return; }
+  commit(() => {
+    doc.paths = doc.paths.filter(q => !affected.has(q.id)); doc.shapes = doc.shapes.filter(s => s.id !== poly.id);
+    const ids = shapes.map(s => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: poly.layer }); return id; });
+    for (const part of doc.parts) if (part.shapeIds.includes(poly.id)) part.shapeIds = [...part.shapeIds.filter(x => x !== poly.id), ...ids];
+    selected = new Set(ids);
+  });
+  $('hint').textContent = t('hint.' + mode);
+}
 function editAt(p) {
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line'));
+  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline'));
   if (!hit) return;
   if (mode === 'offset') {
     const d = askNumber('offsetDistance', 3); if (d === null) return;
@@ -1417,6 +1457,7 @@ function editAt(p) {
     if (!result) { $('hint').textContent = t('impossible'); return; }
     addShape({ ...result, id: freshId(doc.shapes, 's'), layer: hit.layer }); return;
   }
+  if (hit.type === 'polyline') { roundPolylineAt(hit, p); return; }
   if (!stage) { stage = { kind: 'chamfer', id: hit.id }; selected = new Set([hit.id]); draw(); $('hint').textContent = t('secondLine'); return; }
   if (stage.id === hit.id) return;
   const first = doc.shapes.find(s => s.id === stage.id && editable(s));
