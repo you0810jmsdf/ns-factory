@@ -1,13 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="N's CAD">
   <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6c87a"/><stop offset="1" stop-color="#b08d2a"/></linearGradient></defs>
   <rect width="64" height="64" rx="14" fill="#111214"/>
-  <path d="M14 14 h30 a6 6 0 0 1 6 6 v30 a6 6 0 0 1 -6 6 h-30 a6 6 0 0 1 -6 -6 v-30 a6 6 0 0 1 6 -6 z" fill="none" stroke="url(#g)" stroke-width="2.2"/>
-  <g fill="url(#g)">
-    <g transform="translate(20 20) rotate(45)"><rect x="-1.6" y="-4" width="3.2" height="8" rx="0.8"/></g>
-    <g transform="translate(30 20) rotate(45)"><rect x="-1.6" y="-4" width="3.2" height="8" rx="0.8"/></g>
-    <g transform="translate(40 20) rotate(45)"><rect x="-1.6" y="-4" width="3.2" height="8" rx="0.8"/></g>
-    <g transform="translate(20 30) rotate(45)"><rect x="-1.6" y="-4" width="3.2" height="8" rx="0.8"/></g>
-    <g transform="translate(20 40) rotate(45)"><rect x="-1.6" y="-4" width="3.2" height="8" rx="0.8"/></g>
+  <!-- N's factory の N マーク（広報部\ロゴ\N\N_刻印.svg） -->
+  <g transform="translate(9 11) scale(0.3045)">
+    <path fill="url(#g)" fill-rule="evenodd" d="M 30.219542,0 C 39.683319,1.892363 47.333228,2.6725701 55.841448,7.1773221 58.089152,8.4173945 84.6161,37.366608 94.436068,49 L 111.43456,70 115.212,68 V 36 l -0.94436,-4 c -2.85105,-5.179136 -5.3974,-7.886165 -10.38796,-10 H 95.380428 V 19 L 108.60148,2 h 34.94134 l 0.94437,1 -0.94437,4 -9.4436,12 -3.77744,8 v 62 c 3.07671,4.18614 7.08244,6.42841 11.33232,9 l 8.49925,2 0.94436,2 -7.55489,12 H 101.99095 C 81.327622,95.943219 64.956653,73.586455 48.162394,52 l -4.721803,2 v 45 l 3.777443,5 10.387967,4 -1.888721,6 H 13.221049 L 22.664656,104 28.33082,93 V 39 C 27.04677,34.770347 24.113304,33.355999 20.775935,31 13.922294,28.766475 8.5045501,29.651387 1.4353371,29.651387 L 0,28 15.109771,12 C 19.568361,7.087484 24.820046,3.573513 30.219542,0 Z"/>
   </g>
-  <text x="31" y="47" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="17" fill="#f3ead6">N<tspan fill="url(#g)">'</tspan>s</text>
 </svg>
