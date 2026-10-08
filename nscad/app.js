@@ -1700,6 +1700,8 @@ canvas.addEventListener('pointerup', e => {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
       for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) selected.add(s.id); }
     }
+  } else if (g.kind === 'draw' && mode === 'line' && stage?.kind === 'cmd' && distance(stage.start, cursor) < 6 / scale) {
+    /* 連続線の直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */
   } else if (g.kind === 'draw' && distance(g.start, cursor) > 1e-8) {
     if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
     else if (mode === 'arc') stage = { kind: 'arc', center: g.start, r: distance(g.start, cursor), startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI };
@@ -1762,6 +1764,7 @@ window.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage) { cancel(); draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
+  else if (e.key === 'Enter' && mode === 'line' && stage?.kind === 'cmd') { e.preventDefault(); stage = null; $('hint').textContent = t('hint.line'); draw(); }
   else if (e.key === 'Enter' && stage?.kind === 'polyline') { e.preventDefault(); finishPolyline(); }
   else if (e.key === 'Enter' && stage?.kind === 'path') { e.preventDefault(); finishPath(false); }
 });
