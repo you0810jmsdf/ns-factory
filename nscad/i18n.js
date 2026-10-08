@@ -594,7 +594,7 @@ export const MESSAGES = {
     "spineCalibrated": "すき間を {play} mm にしました。",
     "spineApplied": "レシピの背幅を {spine} mm にしました。",
     "prototype": "試作中",
-    "lineChainHint": "クリックで続けて線を引けます。終点でダブルクリックすると確定（Esc でも終了・右ドラッグで画面を移動）。"
+    "lineChainHint": "クリックで続けて線を引けます。終点でダブルクリックか Enter で確定（Esc でも終了・右ドラッグで画面を移動）。"
   },
   "en": {
     "chainOffset": "Chain offset",
@@ -1191,7 +1191,7 @@ export const MESSAGES = {
     "spineCalibrated": "Clearance set to {play} mm.",
     "spineApplied": "Recipe spine set to {spine} mm.",
     "prototype": "PROTOTYPE",
-    "lineChainHint": "Click to keep adding lines. Double-click at the end point to finish (Esc also ends; right-drag pans)."
+    "lineChainHint": "Click to keep adding lines. Double-click at the end point or press Enter to finish (Esc also ends; right-drag pans)."
   }
 };
 let language = 'ja';
