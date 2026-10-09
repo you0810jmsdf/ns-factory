@@ -353,6 +353,9 @@
 <label><span data-i18n="patchCols"></span><input id="patchCols" type="number" step="1" value="3"></label>
 <label><span data-i18n="patchRows"></span><input id="patchRows" type="number" step="1" value="3"></label>
 <button id="makeGrid" data-i18n="makeGrid"></button>
+<label><span data-i18n="patchPattern"></span><select id="patchPattern"><option value="argyle" data-i18n="patchArgyle"></option><option value="ichimatsu" data-i18n="patchIchimatsu"></option></select></label>
+<label><span data-i18n="patchCell"></span><input id="patchCell" type="number" min="2" step="1" value="20"></label>
+<button id="patchFill" data-i18n="patchFill"></button>
 </details>
 </div></details>
 <details class="card" id="outputCard"><summary data-i18n="output"></summary><div class="body">
@@ -1343,6 +1346,15 @@ const MESSAGES = {
     "patchCols": "列",
     "patchRows": "行",
     "makeGrid": "格子を作る",
+    "patchPattern": "柄",
+    "patchArgyle": "アーガイル",
+    "patchIchimatsu": "市松",
+    "patchCell": "1マスの大きさ (mm・アーガイルは菱形の幅)",
+    "patchFill": "囲まれた図形に柄を描く",
+    "hint.patchfill": "実線で囲まれた図形の内側をクリック。選んだ柄のピースで埋めます（点線は囲みに使いません・Esc で終了）。",
+    "patchNoRegion": "クリックした位置を囲む閉じた図形がありません。実線で閉じた図形（点線は除く）の内側をクリックしてください。",
+    "patchTooMany": "マスが多すぎます（{n} 個）。1マスの大きさを大きくしてください。",
+    "patchFilled": "{n} ピースを描きました（小さすぎる端切れ {d} 個は省きました）。",
     "partCreated": "{n} 図形を部品（厚み {t}mm）にしました。",
     "selectFold": "折り線を選択してください。",
     "noPartForFold": "折り線をまたぐ閉じた図形がありません。",
@@ -1961,6 +1973,15 @@ const MESSAGES = {
     "patchCols": "Columns",
     "patchRows": "Rows",
     "makeGrid": "Make grid",
+    "patchPattern": "Pattern",
+    "patchArgyle": "Argyle",
+    "patchIchimatsu": "Ichimatsu (checker)",
+    "patchCell": "Cell size (mm; Argyle = diamond width)",
+    "patchFill": "Fill enclosed shape with pattern",
+    "hint.patchfill": "Click inside a shape closed by solid lines. It is filled with pieces of the chosen pattern (dashed lines do not count as boundaries; Esc exits).",
+    "patchNoRegion": "No closed shape surrounds that point. Click inside a shape closed by solid lines (dashed lines excluded).",
+    "patchTooMany": "Too many cells ({n}). Increase the cell size.",
+    "patchFilled": "Drew {n} pieces (skipped {d} tiny scraps).",
     "partCreated": "{n} shape(s) grouped as a part ({t} mm).",
     "selectFold": "Select a fold line.",
     "noPartForFold": "No closed shape crosses the fold line.",
@@ -2897,7 +2918,7 @@ return {LC_LAYER_MAP, LC_EXPORT_MAP, beamStudioSvg, leathercraftDxf, importLeath
 __mods['design'] = (function(){
 // 革の厚みを考慮した設計：折り代・重ね補正・コバ帯・駒合わせ・パッチワークの目打ち最適化・ピース寸法提案。
 // 純粋関数のみ（DOM 禁止）。単位 mm・角度は度。
-const { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide } = __mods['geometry'];
+const { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf } = __mods['geometry'];
 const DEPS = 1e-9;
 /** 折り代 ΔL = θ[rad] × (r + K·t)。t=厚み、angleDeg=折り角、r=内曲げ半径（既定 0）、k=中立係数（既定 0.5）。 */
 function foldAllowance(thickness, angleDeg, { k = 0.5, r = 0 } = {}) {
@@ -3052,7 +3073,93 @@ function komaStitchLine(edge, thicknessB, inward = 1) {
   return { type: 'line', x1: edge.x1 + n.x * d, y1: edge.y1 + n.y * d, x2: edge.x2 + n.x * d, y2: edge.y2 + n.y * d };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine};
+
+/* ---- パッチワークの柄（アーガイル・市松）：囲まれた図形を柄のピースに分ける ---- */
+const signedAreaOf = ps => ps.reduce((s, q, i) => { const r = ps[(i + 1) % ps.length]; return s + q.x * r.y - r.x * q.y; }, 0) / 2;
+/** パッチワークの柄の登録表。tiles(bbox, cell) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。 */
+const PATCH_PATTERNS = {
+  ichimatsu: {
+    ja: '市松', en: 'Ichimatsu (checker)',
+    tiles(b, cell) {
+      const cols = Math.ceil((b.maxX - b.minX) / cell), rows = Math.ceil((b.maxY - b.minY) / cell), out = [];
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const x = b.minX + i * cell, y = b.minY + j * cell; out.push({ parity: (i + j) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
+      return out;
+    },
+  },
+  argyle: {
+    ja: 'アーガイル', en: 'Argyle',
+    tiles(b, cell) {
+      const w = cell, h = cell * 1.5, kMax = Math.ceil((b.maxY - b.minY) / (h / 2)) + 1, iMax = Math.ceil((b.maxX - b.minX) / w) + 1, out = [];
+      for (let k = -1; k <= kMax; k++) for (let i = -1; i <= iMax; i++) {
+        const odd = ((k % 2) + 2) % 2, cx = b.minX + i * w + odd * w / 2, cy = b.minY + k * h / 2;
+        if (cx + w / 2 < b.minX || cx - w / 2 > b.maxX || cy + h / 2 < b.minY || cy - h / 2 > b.maxY) continue;
+        out.push({ parity: ((i + k) % 2 + 2) % 2, points: [{ x: cx, y: cy - h / 2 }, { x: cx + w / 2, y: cy }, { x: cx, y: cy + h / 2 }, { x: cx - w / 2, y: cy }] });
+      }
+      return out;
+    },
+  },
+};
+/** 多角形から、重なった頂点と一直線上の頂点を取り除く。 */
+function cleanPolygon(points, eps = 1e-7) {
+  let ps = points.filter((q, i) => distance(q, points[(i + points.length - 1) % points.length]) > eps);
+  for (let changed = true; changed && ps.length >= 3;) {
+    changed = false;
+    for (let i = 0; i < ps.length; i++) {
+      const a = ps[(i + ps.length - 1) % ps.length], b = ps[i], c = ps[(i + 1) % ps.length];
+      if (Math.abs((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x)) <= eps * Math.max(1, distance(a, b) * distance(b, c))) { ps = ps.filter((_, j) => j !== i); changed = true; break; }
+    }
+  }
+  return ps;
+}
+/** 凸な clip で任意の多角形 subject を切り抜く（Sutherland–Hodgman）。面積のない結果は []。 */
+function clipPolygonByConvex(subject, clip) {
+  const win = signedAreaOf(clip) >= 0 ? clip : [...clip].reverse();
+  let out = subject;
+  for (let i = 0; i < win.length && out.length; i++) {
+    const a = win[i], c = win[(i + 1) % win.length], input = out; out = [];
+    const side = q => (c.x - a.x) * (q.y - a.y) - (c.y - a.y) * (q.x - a.x);
+    const cut = (q, r) => { const d1 = side(q), d2 = side(r), t = d1 / (d1 - d2); return { x: q.x + (r.x - q.x) * t, y: q.y + (r.y - q.y) * t }; };
+    for (let j = 0; j < input.length; j++) {
+      const q = input[j], r = input[(j + 1) % input.length], qi = side(q) >= -1e-9, ri = side(r) >= -1e-9;
+      if (qi && ri) out.push(r); else if (qi) out.push(cut(q, r)); else if (ri) { out.push(cut(q, r)); out.push(r); }
+    }
+  }
+  out = cleanPolygon(out);
+  return out.length >= 3 && Math.abs(signedAreaOf(out)) > 1e-9 ? out : [];
+}
+/** 実線だけで囲まれた閉じた経路（連結した線・閉じた折れ線・円など）の多角形を返す。点線（lineStyle 'dashed'）は辺に使わない。 */
+function closedRegions(shapes, tol = 0.01) {
+  const solid = shapes.filter(s => s.lineStyle !== 'dashed' && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)), out = [];
+  for (const chain of chainShapes(solid, tol)) {
+    if (!chain.closed) continue;
+    const pts = [];
+    for (const it of chain.items) { let ps = flattenShape(it.shape, 0.05); if (it.reversed) ps = [...ps].reverse(); pts.push(...(pts.length && distance(pts.at(-1), ps[0]) < tol ? ps.slice(1) : ps)); }
+    if (pts.length > 1 && distance(pts[0], pts.at(-1)) < tol) pts.pop();
+    if (pts.length >= 3) out.push({ shapeIds: chain.shapeIds, points: pts, area: areaOf(pts) });
+  }
+  return out;
+}
+const insidePolygon = (p, ps) => { let inside = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > p.y) !== (ps[j].y > p.y) && p.x < (ps[j].x - ps[i].x) * (p.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) inside = !inside; return inside; };
+/** 点 p を内側に含む、最も内側（面積最小）の囲まれた図形。無ければ null。 */
+function regionAt(shapes, p, tol = 0.01) {
+  return closedRegions(shapes, tol).filter(r => insidePolygon(p, r.points)).sort((a, b) => a.area - b.area)[0] || null;
+}
+/** 囲まれた図形（closedRegions の要素）を柄のマスで切り分け、ピース多角形を返す。マスの面積比が minAreaRatio 未満の端切れは除く。 */
+function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio = 0.05, maxTiles = 4000 } = {}) {
+  const pattern = PATCH_PATTERNS[patternId]; if (!pattern || !(cell > 0) || !region) return null;
+  const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), box = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+  const tiles = pattern.tiles(box, cell); if (tiles.length > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: tiles.length };
+  const pieces = []; let dropped = 0;
+  for (const tile of tiles) {
+    const clipped = clipPolygonByConvex(region.points, tile.points); if (!clipped.length) continue;
+    const area = areaOf(clipped), full = areaOf(tile.points);
+    if (area < full * minAreaRatio) { dropped++; continue; }
+    pieces.push({ points: clipped, area, parity: tile.parity, whole: Math.abs(area - full) < 1e-6 });
+  }
+  return { pieces, dropped, tiles: tiles.length };
+}
+
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -8177,7 +8284,7 @@ const HELP_JA = {
     {
       "id": "design",
       "title": "厚み・折り代・駒合わせ・パッチワーク",
-      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。\nパッチワーク：縫い合わせツールで辺 A の区間→辺 B の区間をドラッグして組にします。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。"
+      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。\nパッチワーク：縫い合わせツールで辺 A の区間→辺 B の区間をドラッグして組にします。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。縫い合わせや縫い穴は作りません。"
     },
     {
       "id": "formats",
@@ -8316,7 +8423,7 @@ const HELP_EN = {
     {
       "id": "design",
       "title": "Thickness, folds, box stitch, patchwork",
-      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: with the Seam tool drag along edge A, then along edge B. Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams."
+      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: with the Seam tool drag along edge A, then along edge B. Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. No seams or stitch holes are created."
     },
     {
       "id": "formats",
@@ -8436,7 +8543,7 @@ const { DATA_STITCH_COLORS } = __mods['data/stitch-colors'];
 const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
-const { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -8869,10 +8976,23 @@ function makeGrid() {
   });
   renderSeams(); $('hint').textContent = t('gridMade', { n: grid.pieces.length, w: grid.size.cutW.toFixed(1), h: grid.size.cutH.toFixed(1) }); fit();
 }
+/** 囲まれた図形（実線で閉じた経路・点線は除く）の内側をクリックして、選んだ柄（アーガイル・市松）のピースで埋める。 */
+function patchFillAt(p) {
+  const region = regionAt(doc.shapes.filter(s => visible(s) && stitchable(s)), p);
+  if (!region) { $('hint').textContent = t('patchNoRegion'); return; }
+  const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
+  const fill = fillRegionPattern(region, $('patchPattern').value, { cell: Number($('patchCell').value) });
+  if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
+  if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
+  if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
+  commit(() => { selected = new Set(fill.pieces.map(pc => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points: pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })) }); return id; })); });
+  $('hint').textContent = t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
+}
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
+  $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
@@ -10145,6 +10265,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
   if (mode === 'mark') { stampAt(world(p), true, 'dot'); return; }
+  if (mode === 'patchfill') { patchFillAt(world(p)); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
   if (mode === 'hardware') { placeHardware(cursor); return; }

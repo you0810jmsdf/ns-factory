@@ -1,6 +1,6 @@
 // 革の厚みを考慮した設計：折り代・重ね補正・コバ帯・駒合わせ・パッチワークの目打ち最適化・ピース寸法提案。
 // 純粋関数のみ（DOM 禁止）。単位 mm・角度は度。
-import { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide } from './geometry.js';
+import { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf } from './geometry.js';
 
 const DEPS = 1e-9;
 /** 折り代 ΔL = θ[rad] × (r + K·t)。t=厚み、angleDeg=折り角、r=内曲げ半径（既定 0）、k=中立係数（既定 0.5）。 */
@@ -154,4 +154,90 @@ export function komaStitchLine(edge, thicknessB, inward = 1) {
   const v = { x: edge.x2 - edge.x1, y: edge.y2 - edge.y1 }, len = Math.hypot(v.x, v.y); if (len < DEPS) return null;
   const n = { x: -v.y / len * inward, y: v.x / len * inward }, d = thicknessB / 2;
   return { type: 'line', x1: edge.x1 + n.x * d, y1: edge.y1 + n.y * d, x2: edge.x2 + n.x * d, y2: edge.y2 + n.y * d };
+}
+
+
+/* ---- パッチワークの柄（アーガイル・市松）：囲まれた図形を柄のピースに分ける ---- */
+const signedAreaOf = ps => ps.reduce((s, q, i) => { const r = ps[(i + 1) % ps.length]; return s + q.x * r.y - r.x * q.y; }, 0) / 2;
+/** パッチワークの柄の登録表。tiles(bbox, cell) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。 */
+export const PATCH_PATTERNS = {
+  ichimatsu: {
+    ja: '市松', en: 'Ichimatsu (checker)',
+    tiles(b, cell) {
+      const cols = Math.ceil((b.maxX - b.minX) / cell), rows = Math.ceil((b.maxY - b.minY) / cell), out = [];
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const x = b.minX + i * cell, y = b.minY + j * cell; out.push({ parity: (i + j) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
+      return out;
+    },
+  },
+  argyle: {
+    ja: 'アーガイル', en: 'Argyle',
+    tiles(b, cell) {
+      const w = cell, h = cell * 1.5, kMax = Math.ceil((b.maxY - b.minY) / (h / 2)) + 1, iMax = Math.ceil((b.maxX - b.minX) / w) + 1, out = [];
+      for (let k = -1; k <= kMax; k++) for (let i = -1; i <= iMax; i++) {
+        const odd = ((k % 2) + 2) % 2, cx = b.minX + i * w + odd * w / 2, cy = b.minY + k * h / 2;
+        if (cx + w / 2 < b.minX || cx - w / 2 > b.maxX || cy + h / 2 < b.minY || cy - h / 2 > b.maxY) continue;
+        out.push({ parity: ((i + k) % 2 + 2) % 2, points: [{ x: cx, y: cy - h / 2 }, { x: cx + w / 2, y: cy }, { x: cx, y: cy + h / 2 }, { x: cx - w / 2, y: cy }] });
+      }
+      return out;
+    },
+  },
+};
+/** 多角形から、重なった頂点と一直線上の頂点を取り除く。 */
+function cleanPolygon(points, eps = 1e-7) {
+  let ps = points.filter((q, i) => distance(q, points[(i + points.length - 1) % points.length]) > eps);
+  for (let changed = true; changed && ps.length >= 3;) {
+    changed = false;
+    for (let i = 0; i < ps.length; i++) {
+      const a = ps[(i + ps.length - 1) % ps.length], b = ps[i], c = ps[(i + 1) % ps.length];
+      if (Math.abs((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x)) <= eps * Math.max(1, distance(a, b) * distance(b, c))) { ps = ps.filter((_, j) => j !== i); changed = true; break; }
+    }
+  }
+  return ps;
+}
+/** 凸な clip で任意の多角形 subject を切り抜く（Sutherland–Hodgman）。面積のない結果は []。 */
+export function clipPolygonByConvex(subject, clip) {
+  const win = signedAreaOf(clip) >= 0 ? clip : [...clip].reverse();
+  let out = subject;
+  for (let i = 0; i < win.length && out.length; i++) {
+    const a = win[i], c = win[(i + 1) % win.length], input = out; out = [];
+    const side = q => (c.x - a.x) * (q.y - a.y) - (c.y - a.y) * (q.x - a.x);
+    const cut = (q, r) => { const d1 = side(q), d2 = side(r), t = d1 / (d1 - d2); return { x: q.x + (r.x - q.x) * t, y: q.y + (r.y - q.y) * t }; };
+    for (let j = 0; j < input.length; j++) {
+      const q = input[j], r = input[(j + 1) % input.length], qi = side(q) >= -1e-9, ri = side(r) >= -1e-9;
+      if (qi && ri) out.push(r); else if (qi) out.push(cut(q, r)); else if (ri) { out.push(cut(q, r)); out.push(r); }
+    }
+  }
+  out = cleanPolygon(out);
+  return out.length >= 3 && Math.abs(signedAreaOf(out)) > 1e-9 ? out : [];
+}
+/** 実線だけで囲まれた閉じた経路（連結した線・閉じた折れ線・円など）の多角形を返す。点線（lineStyle 'dashed'）は辺に使わない。 */
+export function closedRegions(shapes, tol = 0.01) {
+  const solid = shapes.filter(s => s.lineStyle !== 'dashed' && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)), out = [];
+  for (const chain of chainShapes(solid, tol)) {
+    if (!chain.closed) continue;
+    const pts = [];
+    for (const it of chain.items) { let ps = flattenShape(it.shape, 0.05); if (it.reversed) ps = [...ps].reverse(); pts.push(...(pts.length && distance(pts.at(-1), ps[0]) < tol ? ps.slice(1) : ps)); }
+    if (pts.length > 1 && distance(pts[0], pts.at(-1)) < tol) pts.pop();
+    if (pts.length >= 3) out.push({ shapeIds: chain.shapeIds, points: pts, area: areaOf(pts) });
+  }
+  return out;
+}
+const insidePolygon = (p, ps) => { let inside = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > p.y) !== (ps[j].y > p.y) && p.x < (ps[j].x - ps[i].x) * (p.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) inside = !inside; return inside; };
+/** 点 p を内側に含む、最も内側（面積最小）の囲まれた図形。無ければ null。 */
+export function regionAt(shapes, p, tol = 0.01) {
+  return closedRegions(shapes, tol).filter(r => insidePolygon(p, r.points)).sort((a, b) => a.area - b.area)[0] || null;
+}
+/** 囲まれた図形（closedRegions の要素）を柄のマスで切り分け、ピース多角形を返す。マスの面積比が minAreaRatio 未満の端切れは除く。 */
+export function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio = 0.05, maxTiles = 4000 } = {}) {
+  const pattern = PATCH_PATTERNS[patternId]; if (!pattern || !(cell > 0) || !region) return null;
+  const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), box = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+  const tiles = pattern.tiles(box, cell); if (tiles.length > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: tiles.length };
+  const pieces = []; let dropped = 0;
+  for (const tile of tiles) {
+    const clipped = clipPolygonByConvex(region.points, tile.points); if (!clipped.length) continue;
+    const area = areaOf(clipped), full = areaOf(tile.points);
+    if (area < full * minAreaRatio) { dropped++; continue; }
+    pieces.push({ points: clipped, area, parity: tile.parity, whole: Math.abs(area - full) < 1e-6 });
+  }
+  return { pieces, dropped, tiles: tiles.length };
 }
