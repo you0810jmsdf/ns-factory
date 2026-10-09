@@ -2018,7 +2018,11 @@ canvas.addEventListener('dblclick', e => {
   if (mode === 'line' && stage?.kind === 'cmd') { stage = null; $('hint').textContent = t('hint.line'); draw(); return; } // 終点でダブルクリック＝連続線の確定
   if (mode === 'select') {
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
-    if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); }
+    const hit = doc.shapes.filter(x => visible(x) && editable(x) && stitchable(x)).reverse().find(x => distToShape(x, w) <= 7 / scale);
+    const chain = hit ? chainShapes(doc.shapes.filter(x => visible(x) && stitchable(x))).find(c => c.shapeIds.includes(hit.id)) : null;
+    if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
+    else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
+      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; $('hint').textContent = t('chainSelected', { n: ids.length }); draw(); }
   }
 });
 canvas.addEventListener('pointerup', e => {
