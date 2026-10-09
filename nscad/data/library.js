@@ -221,6 +221,12 @@ export const DATA_LIBRARY = {
         "E": 6,
         "D": 5
       },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
+      },
       "shapes": [
         {
           "type": "polyline",
@@ -289,6 +295,12 @@ export const DATA_LIBRARY = {
         "H": 210,
         "E": 6,
         "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
       },
       "shapes": [
         {
@@ -373,6 +385,12 @@ export const DATA_LIBRARY = {
         "E": 6,
         "D": 5
       },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
+      },
       "shapes": [
         {
           "type": "polyline",
@@ -455,6 +473,12 @@ export const DATA_LIBRARY = {
         "H": 148,
         "E": 6,
         "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
       },
       "shapes": [
         {
@@ -539,6 +563,12 @@ export const DATA_LIBRARY = {
         "E": 6,
         "D": 5
       },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
+      },
       "shapes": [
         {
           "type": "polyline",
@@ -621,6 +651,12 @@ export const DATA_LIBRARY = {
         "H": 216,
         "E": 6,
         "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
       },
       "shapes": [
         {
@@ -712,6 +748,12 @@ export const DATA_LIBRARY = {
         "E": 6,
         "D": 5
       },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
+      },
       "shapes": [
         {
           "type": "polyline",
@@ -794,6 +836,12 @@ export const DATA_LIBRARY = {
         "H": 280,
         "E": 6,
         "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
       },
       "shapes": [
         {
@@ -885,6 +933,12 @@ export const DATA_LIBRARY = {
         "E": 6,
         "D": 5
       },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
+      },
       "shapes": [
         {
           "type": "polyline",
@@ -968,6 +1022,12 @@ export const DATA_LIBRARY = {
         "E": 6,
         "D": 5
       },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
+      },
       "shapes": [
         {
           "type": "polyline",
@@ -1043,6 +1103,12 @@ export const DATA_LIBRARY = {
         "H": 128,
         "E": 6,
         "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "E": 0.1,
+        "D": 0.1
       },
       "shapes": [
         {

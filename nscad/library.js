@@ -3,6 +3,8 @@ import { evalExpr } from './hardware.js';
 import { bboxOfDoc, resolvePath, projectOnPath, arcLength } from './geometry.js';
 import { makeNextId } from './interop.js';
 
+/** 寸法変数の入力欄の刻み（mm）。項目が varSteps で指定した変数はその刻み、無ければ 0.5。 */
+export function varStep(item, key) { const s = item?.varSteps?.[key]; return Number.isFinite(s) && s > 0 ? s : 0.5; }
 export const CLIP_PREFIX = 'nscad-clip:';
 const NUMERIC_KEYS = ['x', 'y', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'cx', 'cy', 'r', 'startDeg', 'endDeg', 'sizeMm', 'angleDeg', 'offset'];
 /** 図形の座標（数値または式の文字列）を変数で実体化する。points/nodes の要素も対象。 */
