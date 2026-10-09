@@ -1707,7 +1707,9 @@ function runOffset(override = null) {
   const sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
   let d; if (override !== null) d = override; else { const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; } d = $('offsetSide').value === 'in' ? -dist : dist; }
   const result = offsetSpanResult(sel, d, { join: $('offsetJoin').value }); if (!result) { $('hint').textContent = t('impossible'); return; }
-  offsetSelection = null; addShape({ ...result, id: freshId(doc.shapes, 's'), layer: sel.layer, color: 'yellow', lineStyle: 'dashed' });
+  /* 結果は作図先の層に入れる（作図先が非表示・ロック中なら、見えなくならないよう元の図形の層） */
+  const dest = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || sel.layer;
+  offsetSelection = null; addShape({ ...result, id: freshId(doc.shapes, 's'), layer: dest, color: 'yellow', lineStyle: 'dashed' });
   $('hint').textContent = t('offsetDone', { d: Math.abs(d), side: t(d < 0 ? 'offsetIn' : 'offsetOut') }); draw();
 }
 function editAt(p) {
