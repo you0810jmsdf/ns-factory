@@ -385,7 +385,8 @@ function applyInfo(field) {
   else if (field === 'text') { const text = $('info-text').value; if (!text) { $('hint').textContent = t('invalidNumber'); return; } next.text = text; }
   else if (field === 'closed') { if (s.type === 'polyline' && s.points.length < 3) return; next.closed = $('info-closed').checked; }
   else if (field === 'inner') { next.inner = $('info-inner').checked; }
-  else if (field === 'color' || field === 'lineStyle') { const v = $('info-' + field).value; if (v) next[field] = v; else delete next[field]; }
+  else if (field === 'color' || field === 'lineStyle') { const v = $('info-' + field).value; if (v) next[field] = v; else delete next[field];
+    if (field === 'lineStyle' && v === 'dashed' && s.lineStyle !== 'dashed' && s.layer !== 'guide' && doc.layers.some(l => l.id === 'guide')) { next.layer = 'guide'; const g = doc.layers.find(l => l.id === 'guide'); $('hint').textContent = t(g.visible && !g.locked ? 'dashedToGuide' : 'dashedToGuideHidden'); } } /* 実線を点線にしたら、ガイドの層の図形として扱う（色は問わない） */
   else if (field === 'length') {
     const len = num('length'); if (!(len > 0)) { $('hint').textContent = t('invalidNumber'); return; }
     if (s.type === 'line' || s.type === 'dimension') { const cur = distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }); if (cur < 1e-9) return; next.x2 = s.x1 + (s.x2 - s.x1) * len / cur; next.y2 = s.y1 + (s.y2 - s.y1) * len / cur; }
@@ -1588,7 +1589,8 @@ function addShape(shape) {
   let id = 's1', n = 1;
   const ids = new Set(doc.shapes.map(s => s.id)); while (ids.has(id)) id = `s${++n}`;
   const { layer: wanted, ...rest } = shape, target = wanted && doc.layers.some(l => l.id === wanted && l.visible && !l.locked) ? wanted : layer.id; // 呼び元の layer はロック・非表示でなければ尊重
-  commit(() => { doc.shapes.push({ id, layer: target, ...rest }); selected = new Set([id]); });
+  const dashed = target === 'guide' && ['line', 'circle', 'arc', 'bezier', 'polyline', 'path'].includes(rest.type) && !rest.lineStyle ? { lineStyle: 'dashed' } : {}; /* ガイドの層に描く線は、自動で点線 */
+  commit(() => { doc.shapes.push({ id, layer: target, ...dashed, ...rest }); selected = new Set([id]); });
 }
 function freshId(items, prefix) {
   const used = new Set(items.map(s => s.id)); /* 空き番号の検索を Set で速くする（結果は同じ：未使用で最小の番号） */
