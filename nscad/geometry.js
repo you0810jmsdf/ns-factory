@@ -655,7 +655,11 @@ export function allIntersections(shapes, tol = 0.01) {
 export function trimAt(s, p, others, { keep = false, tol = 0.01 } = {}) {
   const len = arcLength(s); if (len < EPS || s.type === 'text' || s.type === 'dimension') return null;
   const cuts = allIntersections([s, ...others.filter(o => o.id !== s.id)], tol).filter(q => q.ids.includes(s.id)).map(q => projectOnPath(s, q).s);
-  const parts = splitShapeAt(s, cuts); if (parts.length < 2 && !(s.type === 'circle')) return null;
+  const parts = splitShapeAt(s, cuts);
+  if (parts.length < 2 && s.type !== 'circle') { /* 端だけが他の図形に接している線（飛び出した線）：交点の外側は線全体なので、切り取ると線ごと消える */
+    const open = !s.closed, atEnd = cuts.some(c => c < 1e-6 + tol || c > len - tol - 1e-6);
+    return open && atEnd ? (keep ? [s] : []) : null;
+  }
   const hit = parts.reduce((best, part) => distToShape(part, p) < distToShape(best, p) ? part : best);
   return keep ? [hit] : parts.filter(part => part !== hit);
 }
