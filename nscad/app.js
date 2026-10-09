@@ -322,6 +322,12 @@ function fixActiveLayer() { const l = doc.layers.find(x => x.id === activeLayer)
 /** 作図先の層だけを表示し、他の層を隠す。 */
 function soloLayer() { const keep = doc.layers.find(x => x.id === activeLayer); if (!keep) return; commit(() => { for (const l of doc.layers) l.visible = l === keep; selected.clear(); }); renderLayers(); $('hint').textContent = t('layerSoloDone', { name: layerName(keep) }); }
 function showAllLayers() { commit(() => { for (const l of doc.layers) l.visible = true; }); renderLayers(); }
+/** 見えていて編集できる図形のうち、黄色の点線（オフセット線など）をすべて選ぶ。 */
+function pickYellowDashed() {
+  const ids = doc.shapes.filter(s => visible(s) && editable(s) && s.color === 'yellow' && s.lineStyle === 'dashed').map(s => s.id);
+  if (!ids.length) { $('hint').textContent = t('layerPickNoneYellow'); return; }
+  selected = new Set(ids); nodeSel = null; $('hint').textContent = t('layerPickedYellow', { n: ids.length }); draw();
+}
 /** 選んだ図形（複数でもよい）を、作図先の層へ移す。移し先が非表示・ロック中なら何もしない。 */
 function moveSelectedToLayer() {
   const dest = doc.layers.find(x => x.id === activeLayer); if (!dest) return;
@@ -334,7 +340,7 @@ function initLayers() {
   $('layerList').addEventListener('change', () => { activeLayer = $('layerList').value; renderLayers(); });
   $('layerName').addEventListener('change', () => { const name = $('layerName').value.trim(); if (name) commit(() => { doc.layers.find(l => l.id === activeLayer).name = name; }); renderLayers(); });
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
-  $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer;
+  $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
   $('removeLayer').onclick = () => {
