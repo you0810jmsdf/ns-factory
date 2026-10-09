@@ -327,6 +327,7 @@ let infoBusy = false;
 function infoShape() { if (selected.size !== 1) return null; const id = [...selected][0]; return doc.shapes.find(s => s.id === id) || null; }
 function refreshInfo() {
   const s = infoShape(); infoBusy = true;
+  $('infoCard').style.display = s ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
   for (const f of ALL_FIELDS) $('l-' + f).hidden = !s || !INFO_FIELDS[s.type]?.includes(f);
   $('l-type').hidden = $('l-layer').hidden = !s;
   if (s) {
