@@ -324,6 +324,12 @@ export function classifyJunctions(shapes, tol = 0.01) {
   for (const k of loose.keys()) joined.delete(k);
   return { joined: [...joined.values()], loose: [...loose.values()] };
 }
+/** 開いた線が折れ曲がっているとき、「曲がりの内側」がどちら側かを返す（挟まれた2直線の鋭角側など）。
+ *  戻り値 +1＝画面で進行方向の左が内側、-1＝右が内側、0＝ほぼまっすぐで決められない。点列は画面座標（Y 下向き）。 */
+export function bendInnerSign(points) {
+  let turn = 0; for (let i = 1; i < points.length - 1; i++) { const a = points[i - 1], b = points[i], c = points[i + 1], u = { x: b.x - a.x, y: b.y - a.y }, v = { x: c.x - b.x, y: c.y - b.y }; if (Math.hypot(u.x, u.y) < 1e-9 || Math.hypot(v.x, v.y) < 1e-9) continue; turn += Math.atan2(u.x * v.y - u.y * v.x, u.x * v.x + u.y * v.y); }
+  return Math.abs(turn) < 0.02 ? 0 : turn > 0 ? -1 : 1; /* 画面（Y 下向き）で turn>0 は右曲がり＝内側は右 */
+}
 /* ---- オフセットの選択：1回クリック＝交点から交点まで、ダブルクリック＝つながった図形全体 ---- */
 /** クリックした図形の「つながった線」（結合点は通過点）から、オフセットする範囲を求める。
  *  whole=false：他の図形との交点から交点までの区間（交点が無ければ全体）。whole=true：つながった図形全体（閉じていれば閉じた図形）。
