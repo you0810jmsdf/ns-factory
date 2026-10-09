@@ -1,4 +1,4 @@
-import { distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } from './geometry.js';
+import { equalDivide, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } from './geometry.js';
 import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
@@ -25,7 +25,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, pieceCenterLine } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -211,7 +211,7 @@ function showTour() {
   render(); $('tourDialog').showModal();
 }
 function initStitch() {
-  $('offsetDist').value='3'; $('offsetSide').value='out'; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
+  $('patchCenter').checked=false; $('patchCenterDir').value='v'; $('offsetDist').value='3'; $('offsetSide').value='out'; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
   try { const saved = localStorage.getItem('leather-cad.snapDist'); $('snapDist').value = saved !== null && Number.isFinite(Number(saved)) && Number(saved) >= 0 ? saved : '10'; } catch { $('snapDist').value = '10'; }
   $('snapDist').addEventListener('change', () => { try { localStorage.setItem('leather-cad.snapDist', String(Math.max(0, Number($('snapDist').value) || 0))); } catch { /* 保存できなくても続ける */ } draw(); });
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'2',defaultMark:'tool'};
@@ -451,14 +451,40 @@ function makeGrid() {
   const grid = patchGrid({ cols: Number($('patchCols').value) || 2, rows: Number($('patchRows').value) || 2, pitch: Number($('patchPitch').value) || 4, seamAllowanceMm: Number($('patchAllowance').value) || 3, pieceW: Number($('patchTargetW').value) || 40, pieceH: Number($('patchTargetH').value) || 40, style: seamStyleValue(), thickness: Number($('partThickness').value) || 1.5, origin: { x: 0, y: 0 } });
   if (!grid) { $('hint').textContent = t('invalidNumber'); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
-  cancel();
+  cancel(); let centered = null;
   commit(() => {
     const shapeIds = [], pathIds = [], W = grid.size.cutW, H = grid.size.cutH, range = edge => [[0, W], [W, W + H], [W + H, 2 * W + H], [2 * W + H, 2 * W + 2 * H]][edge];
     for (const piece of grid.pieces) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points: piece.points }); shapeIds.push(id); const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [id], reversed: false, closed: true, segments: [], mark: 'tool' }); pathIds.push(pid); }
     for (const s of grid.seams) { const [af, at] = range(s.a.edge), [bf, bt] = range(s.b.edge); doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathIds[s.a.piece], from: af, to: at }, b: { pathId: pathIds[s.b.piece], from: bf, to: bt }, style: seamStyleValue(), reversed: true }); }
     selected = new Set(shapeIds);
+    const centerTool = $('patchCenter').checked ? stitchToolCurrent() : null;
+    if (centerTool) centered = addCenterStitch(grid.pieces.map(pc => pc.points), layer, centerTool, $('patchEdgeBan').checked && centerTool.kind === 'diamond');
   });
-  renderSeams(); $('hint').textContent = t('gridMade', { n: grid.pieces.length, w: grid.size.cutW.toFixed(1), h: grid.size.cutH.toFixed(1) }); fit();
+  renderSeams(); $('hint').textContent = t('gridMade', { n: grid.pieces.length, w: grid.size.cutW.toFixed(1), h: grid.size.cutH.toFixed(1) }) + (centered ? ' ' + t('patchCentered', { c: centered.lines, h: centered.holes }) : ''); fit();
+}
+/** 各ピースの中心を通る縦／横の線（黄色の点線・目印レイヤー）を作り、その線に現在の工具の穴を「両端均等余白・等分割」で置く。commit の中で呼ぶ。 */
+function addCenterStitch(polys, layer, tool, banEdge) {
+  const dir = $('patchCenterDir').value === 'h' ? 'h' : 'v', pitch = Number($('patchPitch').value) || tool.pitch;
+  const margin = banEdge ? PATCH_EDGE_MIN_MM : Math.max(Number($('offsetStart').value) || 0, tool.kind === 'round' ? (tool.holeD || 1) / 2 + 1 : 0);
+  const markLayer = doc.layers.find(l => l.id === 'marks' && l.visible && !l.locked)?.id || layer, r4 = v => +v.toFixed(4);
+  let lines = 0, holes = 0, banned = 0;
+  for (const poly of polys) {
+    const seg = pieceCenterLine(poly, dir); if (!seg || distance(seg.a, seg.b) < 2 * margin + 1e-6) continue;
+    const outline = { type: 'polyline', closed: true, points: poly };
+    const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: markLayer, type: 'line', x1: r4(seg.a.x), y1: r4(seg.a.y), x2: r4(seg.b.x), y2: r4(seg.b.y), color: 'yellow', lineStyle: 'dashed' });
+    const saved = { id: freshId(doc.paths, 'p'), shapeIds: [sid], reversed: false, closed: false, segments: [], mark: 'tool' }; doc.paths.push(saved);
+    const route = resolvePath(doc, saved); if (!route) continue;
+    const L = arcLength(route); let lo = 0, hi = L;
+    if (banEdge) { /* 菱目：縁から2.5mm以上になる区間（ひし形の頂点付近は線の端から2.5mm以上離れる）の両端を余白ゼロの端にして等分割 */
+      const ok = s => distToShape(outline, pointAtLength(route, s)) >= PATCH_EDGE_MIN_MM - 1e-9, step = Math.max(0.02, L / 2000);
+      const edge = (from, to) => { let prev = from, s = from; for (let i = 0; i <= Math.ceil(L / step); i++) { s = from + (to - from) * Math.min(1, i * step / L); if (ok(s)) { if (i === 0) return s; let bad = prev, good = s; for (let k = 0; k < 40; k++) { const mid = (bad + good) / 2; if (ok(mid)) good = mid; else bad = mid; } return good; } prev = s; } return null; };
+      const a = edge(0, L), b = edge(L, 0); if (a === null || b === null || a >= b - 1e-6) { doc.paths.pop(); doc.shapes.pop(); continue; } lo = a; hi = b;
+    }
+    let pts = equalDivide(hi - lo, pitch, banEdge ? 0 : margin).map(s => pointAtLength(route, lo + s));
+    if (banEdge) { const before = pts.length; pts = pts.filter(h => distToShape(outline, h) >= PATCH_EDGE_MIN_MM - 1e-3); banned += before - pts.length; } /* 念のための検査 */
+    placeHoles(saved, route, pts, { ...tool, pitch }); lines++; holes += pts.length;
+  }
+  return { lines, holes, banned };
 }
 /** 縫い合わせ（doc.seams）に沿って共有辺の縫い穴を最適化して置く（「最適化」ボタンと同じ計算）。置いた穴の数を返す。commit の中で呼ぶ。 */
 function autoPatchHoles(tool) {
@@ -480,7 +506,7 @@ function patchFillAt(p) {
   const tool = $('patchStitch').checked ? stitchToolCurrent() : null, inset = Number($('patchInset').value), banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
   if (tool && !(inset > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   if (banEdge && inset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: inset, m: PATCH_EDGE_MIN_MM }); return; } /* 菱目は縁から2.5mm以内に置かない（外すと解除） */
-  let stitched = null;
+  const centerTool = $('patchCenter').checked ? stitchToolCurrent() : null; let stitched = null, centered = null;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
     const ids = polys.map(points => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points }); return id; });
@@ -500,9 +526,10 @@ function patchFillAt(p) {
       }
       stitched = { seams: stitch.seams.length, holes, banned, inset };
     }
+    if (centerTool) centered = addCenterStitch(polys, layer, centerTool, $('patchEdgeBan').checked && centerTool.kind === 'diamond');
   });
   renderSeams();
-  $('hint').textContent = stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
+  $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (centered ? ' ' + t('patchCentered', { c: centered.lines, h: centered.holes }) : '');
 }
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
