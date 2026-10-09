@@ -218,7 +218,7 @@ function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', Str
 const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD settings";
 const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
   'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
-  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'seamStyle', 'patchPattern', 'patchCell', 'patchStitch', 'patchInset', 'patchEdgeBan',
+  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'seamStyle', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan',
   'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
 /** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
 function captureSettings() {
@@ -508,6 +508,23 @@ function autoPatchHoles(tool) {
   for (const [pathId, points] of result.holesByPath) { const saved = doc.paths.find(p => p.id === pathId), route = saved && resolvePath(doc, saved); if (route) placeHoles(saved, route, points, { ...tool, pitch }); }
   return [...result.holesByPath.values()].reduce((a, b) => a + b.length, 0);
 }
+/** パッチワークで自動に打つ穴の工具。「使用中の工具のまま」か、使用中の工具が選んだ種類（菱目／丸目）ならそれ。違えば同じ種類の登録工具、無ければ使用中の工具から作る。 */
+function patchHoleTool() {
+  const cur = stitchToolCurrent(), kind = $('patchHole').value;
+  if ((kind !== 'diamond' && kind !== 'round') || cur.kind === kind) return cur;
+  const same = doc.tools.filter(x => x.kind === kind), near = same.find(x => x.pitch === cur.pitch && x.teeth === cur.teeth) || same.find(x => x.pitch === cur.pitch) || same[0];
+  return near || { ...cur, id: 'patch-' + kind, name: 'patch-' + kind, kind, holeW: kind === 'round' ? 1 : 2, holeH: kind === 'round' ? 1 : 0.8, angleDeg: kind === 'round' ? 0 : 45 };
+}
+let lastPatch = null; /* 直前の柄の塗りつぶし {p: クリックした点, before: そのときの取り消し用の記録}。数値を変えたら作りなおす */
+/** 柄の設定を変えたとき、直前の柄の塗りつぶしを取り消して同じ場所に作りなおす（取り消しは1回分のまま）。作れない値のときは元のまま。 */
+function regenPatch() {
+  if (!lastPatch || undo.at(-1) !== lastPatch.before) return; /* 塗りつぶしの後に別の操作をしていれば何もしない */
+  const snap = JSON.stringify(doc), savedUndo = undo.slice(), savedRedo = redo.slice(), p = lastPatch.p;
+  history(undo, redo); const depth = undo.length; patchFillAt(p);
+  if (undo.length === depth) { /* 作れなかった：画面の記録を元に戻す（案内の文言は残す） */
+    const msg = $('hint').textContent; doc = JSON.parse(snap); undo = savedUndo; redo = savedRedo; selected.clear(); refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw(); $('hint').textContent = msg;
+  }
+}
 /** 囲まれた図形（実線で閉じた経路・点線は除く）の内側をクリックして、選んだ柄（アーガイル・市松）のピースで埋める。 */
 function patchFillAt(p) {
   const region = regionAt(doc.shapes.filter(s => visible(s) && stitchable(s)), p);
@@ -517,14 +534,15 @@ function patchFillAt(p) {
   if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
-  const tool = $('patchStitch').checked ? stitchToolCurrent() : null, inset = Number($('patchInset').value), banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
+  const tool = $('patchStitch').checked ? patchHoleTool() : null, inset = Number($('patchInset').value), banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
   if (tool && !(inset > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   if (banEdge && inset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: inset, m: PATCH_EDGE_MIN_MM }); return; } /* 菱目は縁から2.5mm以内に置かない（外すと解除） */
-  let stitched = null;
+  let stitched = null; const depth0 = undo.length;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
     const ids = polys.map(points => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points }); return id; });
     selected = new Set(ids);
+    if (tool && !doc.tools.some(x => x.id === tool.id)) doc.tools.push({ ...tool }); /* 穴が指す工具が無いと困るので、新しく作った工具は登録する */
     if (tool) { /* クロスステッチ：穴は境界の上ではなく、各ピースの縁から inset mm 内側の縫い線（黄色の点線）の上に打ち、境界をはさんで向かい合う穴を対にする */
       const stitch = patchInsetStitch(polys, inset), stitchLayer = doc.layers.find(l => l.id === 'marks' && l.visible && !l.locked)?.id || layer, style = seamStyleValue();
       const pathOfPiece = stitch.insets.map(pts => {
@@ -541,7 +559,7 @@ function patchFillAt(p) {
       stitched = { seams: stitch.seams.length, holes, banned, inset };
     }
   });
-  renderSeams();
+  renderSeams(); if (undo.length > depth0) lastPatch = { p, before: undo.at(-1) };
   $('hint').textContent = stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
 }
 function initDesign() {
@@ -558,6 +576,7 @@ function initDesign() {
   $('of-run').onclick = () => runOffset();
   $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
+  for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
