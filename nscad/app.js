@@ -567,6 +567,7 @@ function initDesign() {
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
+  for (const id of ['rb-ax', 'rb-ay', 'rb-bx', 'rb-by']) $(id).addEventListener('input', rulerFromBar);
   /* 図形のそばの入力欄：右のカードの距離・向きと値を共有する */
   $('of-dist').addEventListener('input', () => { $('offsetDist').value = $('of-dist').value; });
   $('of-side').addEventListener('change', () => { $('offsetSide').value = $('of-side').value; });
@@ -1431,6 +1432,20 @@ function rulerText({ a, b }) {
   const dx = b.x - a.x, dy = b.y - a.y, deg = ((Math.atan2(-dy, dx) * 180 / Math.PI) % 360 + 360) % 360;
   return t('rulerResult', { d: distance(a, b).toFixed(2), dx: Math.abs(dx).toFixed(2), dy: Math.abs(dy).toFixed(2), a: deg.toFixed(1) });
 }
+/** 定規ツール中だけ、画面の上に始点・終点の座標と距離の入力欄を出す。クリック・移動に合わせて値を写す（入力中の欄は書き換えない）。 */
+function syncRulerBar() {
+  const bar = $('rulerBar'); bar.hidden = mode !== 'ruler'; if (bar.hidden) return;
+  const cur = stage?.kind === 'ruler' ? { a: stage.a, b: cursor } : ruler, active = typeof document !== 'undefined' ? document.activeElement?.id : '';
+  const set = (id, v) => { if (active !== id) $(id).value = v === undefined ? '' : String(Math.round(v * 100) / 100); };
+  set('rb-ax', cur?.a.x); set('rb-ay', cur?.a.y); set('rb-bx', cur?.b.x); set('rb-by', cur?.b.y);
+  $('rb-out').textContent = cur ? distance(cur.a, cur.b).toFixed(2) + ' mm' : t('rbEmpty');
+}
+/** 入力欄の4つの数値から測定を作る（全部そろったときだけ）。 */
+function rulerFromBar() {
+  const v = ['rb-ax', 'rb-ay', 'rb-bx', 'rb-by'].map(id => $(id).value.trim() === '' ? NaN : Number($(id).value));
+  if (!v.every(Number.isFinite)) return;
+  stage = null; ruler = { a: { x: v[0], y: v[1] }, b: { x: v[2], y: v[3] } }; $('hint').textContent = rulerText(ruler); draw();
+}
 /** 定規の線・両端・距離の数字を描く（図面の図形ではない）。 */
 function drawRuler({ a, b }) {
   ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#4fd0ff'; ctx.fillStyle = '#4fd0ff'; ctx.lineWidth = 1.5 / scale;
@@ -1861,7 +1876,7 @@ function draw() {
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
   drawCenterMarks();
-  placeOffsetFloat();
+  placeOffsetFloat(); syncRulerBar();
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
