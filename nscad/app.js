@@ -305,11 +305,36 @@ function renderLayers() {
   }
   const l = doc.layers.find(l => l.id === activeLayer);
   $('layerList').value = activeLayer; $('layerName').value = layerName(l); $('layerVisible').checked = l.visible; $('layerLocked').checked = l.locked;
+  /* 各層の表示・ロックを一覧で切り替える（層を1つずつ選ばなくてよい） */
+  const rows = $('layerRows'); rows.textContent = '';
+  for (const lay of doc.layers) {
+    const row = document.createElement('div'); row.className = 'row';
+    const box = (key, text) => { const label = document.createElement('label'), input = document.createElement('input'), span = document.createElement('span'); input.type = 'checkbox'; input.checked = !!lay[key]; span.textContent = text;
+      input.addEventListener('change', () => setLayerFlag(lay.id, key, input.checked)); label.appendChild(input); label.appendChild(span); return label; };
+    const name = document.createElement('span'); name.textContent = layerName(lay); name.style.flex = '1'; row.appendChild(name); row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked'))); rows.appendChild(row);
+  }
+}
+/** 層の表示／ロックを1つ変える（元に戻せる）。作図先が使えなくなったら、表示中でロックされていない層へ移す。 */
+function setLayerFlag(id, key, value) {
+  commit(() => { const l = doc.layers.find(x => x.id === id); if (l) l[key] = value; selected.clear(); }); fixActiveLayer(); renderLayers();
+}
+function fixActiveLayer() { const l = doc.layers.find(x => x.id === activeLayer); if (!l || !l.visible || l.locked) { const n = doc.layers.find(x => x.visible && !x.locked); if (n) activeLayer = n.id; } }
+/** 作図先の層だけを表示し、他の層を隠す。 */
+function soloLayer() { const keep = doc.layers.find(x => x.id === activeLayer); if (!keep) return; commit(() => { for (const l of doc.layers) l.visible = l === keep; selected.clear(); }); renderLayers(); $('hint').textContent = t('layerSoloDone', { name: layerName(keep) }); }
+function showAllLayers() { commit(() => { for (const l of doc.layers) l.visible = true; }); renderLayers(); }
+/** 選んだ図形（複数でもよい）を、作図先の層へ移す。移し先が非表示・ロック中なら何もしない。 */
+function moveSelectedToLayer() {
+  const dest = doc.layers.find(x => x.id === activeLayer); if (!dest) return;
+  if (!dest.visible || dest.locked) { $('hint').textContent = t('layerMoveBlocked', { name: layerName(dest) }); return; }
+  const targets = doc.shapes.filter(s => selected.has(s.id) && editable(s) && s.layer !== dest.id);
+  if (!targets.length) { $('hint').textContent = t('layerMoveNone'); return; }
+  commit(() => { for (const s of targets) s.layer = dest.id; }); renderLayers(); $('hint').textContent = t('layerMoved', { n: targets.length, name: layerName(dest) });
 }
 function initLayers() {
   $('layerList').addEventListener('change', () => { activeLayer = $('layerList').value; renderLayers(); });
   $('layerName').addEventListener('change', () => { const name = $('layerName').value.trim(); if (name) commit(() => { doc.layers.find(l => l.id === activeLayer).name = name; }); renderLayers(); });
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
+  $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
   $('removeLayer').onclick = () => {
