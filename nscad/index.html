@@ -177,6 +177,14 @@
 <div class="row"><button id="toolReassign" data-i18n="toolReassign"></button><button id="toolReassignSel" data-i18n="toolReassignSel"></button></div></details>
 </details>
 </div></details>
+<details class="card" id="presetCard"><summary data-i18n="presetCard"></summary><div class="body">
+<p class="note" data-i18n="presetNote"></p>
+<label><span data-i18n="presetList"></span><select id="presetList"></select></label>
+<div class="row"><button id="presetLoad" data-i18n="presetLoad"></button><button id="presetDelete" data-i18n="presetDelete"></button></div>
+<label><span data-i18n="presetName"></span><input id="presetName" type="text" maxlength="60"></label>
+<div class="row"><button id="presetSave" data-i18n="presetSave"></button></div>
+<div class="row"><button id="presetExport" data-i18n="presetExport"></button><button id="presetImport" data-i18n="presetImport"></button><input id="presetFile" type="file" accept=".json,application/json" hidden></div>
+</div></details>
 <details class="card" id="colorCard"><summary data-i18n="colors"></summary><div class="body">
 <p class="note" data-i18n="colorHow"></p>
 <div id="leatherGrid" class="swatches"></div>
@@ -404,8 +412,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=ff378999","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=fffceca9","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=97a4535b","./help/ja.js":"./help/ja.js?v=34f8b990","./i18n.js":"./i18n.js?v=2733d3b4","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=ff378999"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=779d2d7e","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=fffceca9","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=807170a3","./help/ja.js":"./help/ja.js?v=3c85799d","./i18n.js":"./i18n.js?v=1d5b51c4","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=779d2d7e"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1078,6 +1086,23 @@ __mods['i18n'] = (function(){
 const MESSAGES = {
   "ja": {
     "offsetDist": "オフセット距離 (mm)",
+    "presetCard": "設定セット（保存・呼び出し）",
+    "presetNote": "目打ち・パッチワーク・オフセットなどの設定値と、登録した工具をまとめて名前を付けて保存します。このブラウザに残り、ファイルでも持ち出せます。",
+    "presetList": "保存した設定",
+    "presetName": "名前（保存・書き出し用）",
+    "presetSave": "いまの設定を保存",
+    "presetLoad": "選んだ設定を呼び出す",
+    "presetDelete": "選んだ設定を削除",
+    "presetExport": "設定ファイルに書き出す",
+    "presetImport": "設定ファイルを読み込む",
+    "presetDefaultName": "設定 {d}",
+    "presetSaved": "「{name}」を保存しました。",
+    "presetLoaded": "「{name}」の設定を呼び出しました（元に戻すで工具の変更を戻せます）。",
+    "presetDeleted": "「{name}」を削除しました。",
+    "presetNone": "呼び出す設定が選ばれていません。",
+    "presetExported": "設定ファイルを書き出しました。",
+    "presetImported": "「{name}」を読み込んで一覧に加えました。",
+    "presetInvalid": "設定ファイルとして読み込めません。N's CAD から書き出したファイルを選んでください。",
     "offsetSide": "オフセットの向き",
     "offsetOut": "外側（開いた線は進行方向の左）",
     "offsetIn": "内側（開いた線は進行方向の右）",
@@ -1721,6 +1746,23 @@ const MESSAGES = {
   },
   "en": {
     "offsetDist": "Offset distance (mm)",
+    "presetCard": "Settings sets (save / recall)",
+    "presetNote": "Saves punching, patchwork, offset and other settings together with your registered tools under a name. They stay in this browser and can also be taken away as a file.",
+    "presetList": "Saved settings",
+    "presetName": "Name (for saving / exporting)",
+    "presetSave": "Save current settings",
+    "presetLoad": "Recall the selected settings",
+    "presetDelete": "Delete the selected settings",
+    "presetExport": "Export to a settings file",
+    "presetImport": "Import a settings file",
+    "presetDefaultName": "Settings {d}",
+    "presetSaved": "Saved \"{name}\".",
+    "presetLoaded": "Recalled \"{name}\" (Undo reverts tool changes).",
+    "presetDeleted": "Deleted \"{name}\".",
+    "presetNone": "No settings are selected to recall.",
+    "presetExported": "Exported a settings file.",
+    "presetImported": "Imported \"{name}\" and added it to the list.",
+    "presetInvalid": "Cannot read this as a settings file. Choose a file exported from N's CAD.",
     "offsetSide": "Offset side",
     "offsetOut": "Outside (left of travel for open lines)",
     "offsetIn": "Inside (right of travel for open lines)",
@@ -8395,7 +8437,7 @@ const HELP_JA = {
     {
       "id": "stitching",
       "title": "目打ちの配置・編集",
-      "body": "目打ちで線をクリックすると連続経路へ配置します。分岐では経路を分けます。固定／可変／両端等分割／手動を選び、始終端の余白や区間の s（逆向き指定後の始点からの距離）を指定できます。区間だけを再配置して工具を混在させます。手動の送りは (刃数−1)×ピッチ。1本刃は1ピッチ進みます。Alt/⌥+クリックはその場所に1穴。金色の四角は次の先頭刃です。閉経路の穴は重複しません。返し縫いで2〜3目を重ねる場合も穴は共有します。\n選択ツールで穴を選んでドラッグ（線上拘束／自由）。Shift で複数選択。角度・逆目・削除は選択穴、または選択図形の経路全体に適用。図形の移動・コピーは縫い経路全体を対象にします。ロックされたレイヤーの穴は変更しません。\n点の既定径は0.5mm。形は穴→経路→全体→工具の順で解決します。丸目は工具の穴径、circle指定はholeWを使用。工具更新は寸法を更新し、既存穴のピッチと角度は維持します（再配置で反映）。工具設定をブラウザに、全工具と穴を文書JSONにも保存。駒合わせはSTEP 6、SVG/PDF/DXF出力は後続STEP。\n現物の菱目に合わせる：目打ちカードの工具欄で穴の幅・高さ（刃の長さ）・傾きを実測値にして「更新」。「テスト片を印刷」で 10 穴と 50mm 目盛りを実寸印刷し、現物の刃を当てて確かめます。読み込んだ図面（.lcc など）の穴が描画用の小さな工具になっているときは「付け替え」で登録済みの工具に移すと、穴の大きさが現物どおりになります。\n目印ツール：線や曲線の上をクリックすると、その位置に点の目印を1つ打ちます（始点を自分で決められ、線上のどこにでも打てます）。つながった線は結合点をまたいで1本の線として扱い、結合点も通過点になります。目印は縫い穴と同じ経路上の点で、点の直径は目打ちカードの「点の直径」で変えられます。選択して削除や移動もできます。"
+      "body": "目打ちで線をクリックすると連続経路へ配置します。分岐では経路を分けます。固定／可変／両端等分割／手動を選び、始終端の余白や区間の s（逆向き指定後の始点からの距離）を指定できます。区間だけを再配置して工具を混在させます。手動の送りは (刃数−1)×ピッチ。1本刃は1ピッチ進みます。Alt/⌥+クリックはその場所に1穴。金色の四角は次の先頭刃です。閉経路の穴は重複しません。返し縫いで2〜3目を重ねる場合も穴は共有します。\n選択ツールで穴を選んでドラッグ（線上拘束／自由）。Shift で複数選択。角度・逆目・削除は選択穴、または選択図形の経路全体に適用。図形の移動・コピーは縫い経路全体を対象にします。ロックされたレイヤーの穴は変更しません。\n点の既定径は0.5mm。形は穴→経路→全体→工具の順で解決します。丸目は工具の穴径、circle指定はholeWを使用。工具更新は寸法を更新し、既存穴のピッチと角度は維持します（再配置で反映）。工具設定をブラウザに、全工具と穴を文書JSONにも保存。駒合わせはSTEP 6、SVG/PDF/DXF出力は後続STEP。\n現物の菱目に合わせる：目打ちカードの工具欄で穴の幅・高さ（刃の長さ）・傾きを実測値にして「更新」。「テスト片を印刷」で 10 穴と 50mm 目盛りを実寸印刷し、現物の刃を当てて確かめます。読み込んだ図面（.lcc など）の穴が描画用の小さな工具になっているときは「付け替え」で登録済みの工具に移すと、穴の大きさが現物どおりになります。\n目印ツール：線や曲線の上をクリックすると、その位置に点の目印を1つ打ちます（始点を自分で決められ、線上のどこにでも打てます）。つながった線は結合点をまたいで1本の線として扱い、結合点も通過点になります。目印は縫い穴と同じ経路上の点で、点の直径は目打ちカードの「点の直径」で変えられます。選択して削除や移動もできます。\n菱目の角度と菱目・丸目の選択：「目打ち・穴編集」の「工具の登録・更新」で、種類（菱目・欧州目打ち・丸目）、刃の傾き（角度・度で数値指定）、菱目の幅と高さ、丸目の直径、刃の数、ピッチを決めて「追加」（または「更新」）します。登録した工具は「使用する工具」から選べます。配置済みの穴の向きは「穴の編集」の「穴の角度」で数値指定できます。\n設定セット：右の「設定セット（保存・呼び出し）」で、目打ち・パッチワーク・オフセットなどの設定値と、登録した工具をまとめて名前を付けて保存できます（このブラウザに最大30件・新しい順）。「選んだ設定を呼び出す」で戻り（工具の変更は元に戻すで戻せます）、「設定ファイルに書き出す」「設定ファイルを読み込む」で JSON ファイルとして別のパソコンへ持ち出せます。"
     },
     {
       "id": "pen",
@@ -8534,7 +8576,7 @@ const HELP_EN = {
     {
       "id": "stitching",
       "title": "Stitching and editing",
-      "body": "Click a shape with Stitching to place holes along a connected path. Branches split paths. Choose fixed, variable, equal margins, or manual placement; set margins and an s section measured from the chosen start direction. Replacing only a section allows mixed tools. Manual advance is (teeth−1) × pitch; a single-tooth tool advances one pitch. Alt/⌥+click places one hole at the clicked position. The gold square marks the next first tooth. Closed paths never duplicate the seam hole; backstitching reuses 2–3 holes.\nUse Select to drag holes freely or constrained to the path. Shift selects multiple holes. Angle, slant and deletion affect selected holes or the selected shape’s whole path. Shape moves and copies include the entire stitch path. Locked layers are protected.\nDots default to 0.5mm diameter. Mark precedence is hole, path, document, tool. Round tools use holeD; an explicit circle mark uses holeW. Tool updates change dimensions but keep existing hole pitch and angle; replace holes to apply these settings. Tools persist in browser storage and document JSON. Matched stitching is STEP 6; SVG/PDF/DXF exports are later steps.\nMatching the real iron: in the Stitch card set hole width, height (blade length) and slant to measured values and press Update. \"Print test strip\" prints 10 holes with a 50 mm scale at actual size to compare with the iron. If an imported drawing (.lcc etc.) uses a small drawing-only tool, reassign its holes to a registered tool so the hole size matches the real iron.\nMark tool: click on a line or curve to drop a dot mark at that spot, one at a time (you choose the start and can mark anywhere along the line). Connected lines are treated as one path and their joints are passed through. Marks are points on the same path as stitch holes; the size is \"Dot diameter\" in the Stitching card. You can select, move or delete them."
+      "body": "Click a shape with Stitching to place holes along a connected path. Branches split paths. Choose fixed, variable, equal margins, or manual placement; set margins and an s section measured from the chosen start direction. Replacing only a section allows mixed tools. Manual advance is (teeth−1) × pitch; a single-tooth tool advances one pitch. Alt/⌥+click places one hole at the clicked position. The gold square marks the next first tooth. Closed paths never duplicate the seam hole; backstitching reuses 2–3 holes.\nUse Select to drag holes freely or constrained to the path. Shift selects multiple holes. Angle, slant and deletion affect selected holes or the selected shape’s whole path. Shape moves and copies include the entire stitch path. Locked layers are protected.\nDots default to 0.5mm diameter. Mark precedence is hole, path, document, tool. Round tools use holeD; an explicit circle mark uses holeW. Tool updates change dimensions but keep existing hole pitch and angle; replace holes to apply these settings. Tools persist in browser storage and document JSON. Matched stitching is STEP 6; SVG/PDF/DXF exports are later steps.\nMatching the real iron: in the Stitch card set hole width, height (blade length) and slant to measured values and press Update. \"Print test strip\" prints 10 holes with a 50 mm scale at actual size to compare with the iron. If an imported drawing (.lcc etc.) uses a small drawing-only tool, reassign its holes to a registered tool so the hole size matches the real iron.\nMark tool: click on a line or curve to drop a dot mark at that spot, one at a time (you choose the start and can mark anywhere along the line). Connected lines are treated as one path and their joints are passed through. Marks are points on the same path as stitch holes; the size is \"Dot diameter\" in the Stitching card. You can select, move or delete them.\nDiamond angle and diamond / round choice: in Stitching > \"Tool editor\", set the kind (diamond, European, round), the blade slant (angle in degrees), the diamond width and height, the round diameter, the number of teeth and the pitch, then press Add (or Update). Registered tools appear in \"Tool to use\". The direction of holes already placed can be set numerically with \"Hole angle\" in \"Hole editing\".\nSettings sets: in the \"Settings sets (save / recall)\" card on the right, save the punching, patchwork, offset and other settings together with your registered tools under a name (up to 30 in this browser, newest first). \"Recall the selected settings\" restores them (tool changes can be undone), and \"Export to a settings file\" / \"Import a settings file\" carry them to another computer as a JSON file."
     },
     {
       "id": "pen",
@@ -8873,10 +8915,64 @@ function showTour() {
   $('tourSkip').onclick = () => { $('tourDialog').close(); if ($('tourSkipAlways').checked) { try { localStorage.setItem('leather-cad.tourDone', '1'); } catch { /* 省略 */ } } };
   render(); $('tourDialog').showModal();
 }
+function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', String(Math.max(0, Number($('snapDist').value) || 0))); } catch { /* 保存できなくても続ける */ } }
+/* ---- 設定セット：設定値と登録した工具をまとめて名前を付けて保存・呼び出し（ブラウザ内の一覧＋JSON ファイル） ---- */
+const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD settings";
+const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
+  'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
+  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'seamStyle', 'patchPattern', 'patchCell', 'patchStitch', 'patchInset', 'patchEdgeBan', 'patchCenter', 'patchCenterDir',
+  'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
+/** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
+function captureSettings() {
+  const values = {};
+  for (const id of PRESET_FIELDS) { const el = document.getElementById(id); if (!el) continue; values[id] = el.type === 'checkbox' ? !!el.checked : String(el.value); }
+  return { app: PRESET_APP, version: 1, savedAt: new Date().toISOString(), tools: JSON.parse(JSON.stringify(doc.tools)), values };
+}
+/** 保存した設定を画面に戻す。工具は同じ id を置き換え・無ければ追加（元に戻せる）。読み込めないデータなら false。 */
+function applySettings(data) {
+  if (!data || data.app !== PRESET_APP || !data.values || typeof data.values !== 'object' || !Array.isArray(data.tools) || !data.tools.length) return false;
+  const sample = newDoc(); sample.tools = data.tools; if (!validateDoc(sample)) return false;
+  commit(() => {
+    for (const tool of data.tools) { const i = doc.tools.findIndex(x => x.id === tool.id); if (i >= 0) doc.tools[i] = tool; else doc.tools.push(tool); }
+    if (['tool', 'diamond', 'dot', 'circle', 'slit'].includes(data.values.defaultMark)) doc.mark = data.values.defaultMark;
+    const d = Number(data.values.dotD); if (Number.isFinite(d) && d > 0) doc.dotD = d;
+  });
+  refreshTools(); persistTools();
+  for (const id of PRESET_FIELDS) {
+    if (!(id in data.values)) continue; const el = document.getElementById(id); if (!el) continue; const v = data.values[id];
+    if (el.type === 'checkbox') el.checked = !!v; else if (el.tagName === 'SELECT') { if ([...el.options].some(o => o.value === String(v))) el.value = String(v); } else el.value = String(v);
+  }
+  fillTool(); saveSnapDist(); manualNext = null; draw(); return true;
+}
+function loadPresets() { try { const list = JSON.parse(localStorage.getItem(PRESET_KEY)); return Array.isArray(list) ? list.filter(p => p && typeof p.name === 'string' && p.data) : []; } catch { return []; } }
+function persistPresets(list) { try { localStorage.setItem(PRESET_KEY, JSON.stringify(list.slice(0, PRESET_MAX))); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
+function renderPresets(selectName = null) {
+  const sel = $('presetList'); sel.textContent = '';
+  for (const p of loadPresets()) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name + '（' + String(p.savedAt || '').slice(0, 16).replace('T', ' ') + '）'; sel.appendChild(o); }
+  if (selectName !== null) sel.value = selectName;
+}
+function storePreset(name, data) {
+  const list = loadPresets().filter(p => p.name !== name); list.unshift({ name, savedAt: data.savedAt || new Date().toISOString(), data });
+  if (persistPresets(list)) renderPresets(name);
+}
+function initPresets() {
+  renderPresets();
+  $('presetSave').onclick = () => { const name = $('presetName').value.trim().slice(0, 60) || t('presetDefaultName', { d: new Date().toISOString().slice(0, 16).replace('T', ' ') }); storePreset(name, captureSettings()); $('hint').textContent = t('presetSaved', { name }); };
+  $('presetLoad').onclick = () => { const name = $('presetList').value, p = loadPresets().find(x => x.name === name); if (!p) { $('hint').textContent = t('presetNone'); return; } $('hint').textContent = applySettings(p.data) ? t('presetLoaded', { name }) : t('presetInvalid'); };
+  $('presetDelete').onclick = () => { const name = $('presetList').value; if (!loadPresets().some(p => p.name === name)) { $('hint').textContent = t('presetNone'); return; } if (persistPresets(loadPresets().filter(p => p.name !== name))) { renderPresets(); $('hint').textContent = t('presetDeleted', { name }); } };
+  $('presetExport').onclick = () => { const name = $('presetName').value.trim().slice(0, 60) || $('presetList').value || 'settings'; download('ncad-settings-' + name.replace(/[^\p{L}\p{N}_-]+/gu, '_') + '.json', JSON.stringify({ ...captureSettings(), name }, null, 2), 'application/json'); $('hint').textContent = t('presetExported'); };
+  $('presetImport').onclick = () => $('presetFile').click();
+  $('presetFile').addEventListener('change', async e => {
+    const file = e.target.files?.[0]; if (!file) return;
+    try { const data = JSON.parse(await file.text()); if (!applySettings(data)) throw new Error('invalid'); const name = String(data.name || file.name || '').replace(/\.json$/i, '').slice(0, 60) || t('presetDefaultName', { d: '' }).trim(); storePreset(name, data); $('hint').textContent = t('presetImported', { name }); }
+    catch { $('hint').textContent = t('presetInvalid'); }
+    e.target.value = '';
+  });
+}
 function initStitch() {
   $('patchCenter').checked=false; $('patchCenterDir').value='v'; $('offsetDist').value='3'; $('offsetSide').value='out'; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
   try { const saved = localStorage.getItem('leather-cad.snapDist'); $('snapDist').value = saved !== null && Number.isFinite(Number(saved)) && Number(saved) >= 0 ? saved : '10'; } catch { $('snapDist').value = '10'; }
-  $('snapDist').addEventListener('change', () => { try { localStorage.setItem('leather-cad.snapDist', String(Math.max(0, Number($('snapDist').value) || 0))); } catch { /* 保存できなくても続ける */ } draw(); });
+  $('snapDist').addEventListener('change', () => { saveSnapDist(); draw(); });
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'2',defaultMark:'tool'};
   for(const [id,value]of Object.entries(values))$(id).value=value;
   for(const id of ['chain','followTangent','constrainHole'])$(id).checked=true;
@@ -10665,7 +10761,7 @@ $('cmd').addEventListener('keydown', e => {
 window.addEventListener('keyup', e => { if (e.code === 'Space') space = false; });
 window.addEventListener('blur', () => { space = false; gesture = null; draw(); });
 window.addEventListener('resize', resize);
-doc.tools = loadTools(); initStitch(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); initHardware(); initSpineSim(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); initHardware(); initSpineSim(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang);
