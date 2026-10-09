@@ -112,6 +112,8 @@ function registerTool(replace) {
   commit(()=>{const i=doc.tools.findIndex(t=>t.id===tool.id);if(i>=0)doc.tools[i]=tool;else doc.tools.push(tool);});
   refreshTools();$('stitchTool').value=tool.id;fillTool();manualNext=null;persistTools();
 }
+/** 新しく置く穴の刃の傾き（度）。既定は順目＝左から右の線で「／」（工具の傾きの符号を反転）。「逆目」にチェックすると「＼」（工具の傾きのまま）。 */
+function slantOf(tool) { return $('reverseSlant').checked ? tool.angleDeg : -tool.angleDeg; }
 function stitchOptions() {
   const start=Number($('offsetStart').value),end=Number($('offsetEnd').value),from=Number($('segmentFrom').value),raw=$('segmentTo').value,to=raw.trim()===''?Infinity:Number(raw);
   if(![start,end,from].every(n=>Number.isFinite(n)&&n>=0)||!(to>=from))throw new Error(t('invalidNumber'));
@@ -162,7 +164,7 @@ function stampAt(p,single=false,markKind='tool') {
       for(const p of points){
         const position=saved.closed && Math.abs(p.s-len)<1e-7?0:p.s;
         if(doc.holes.some(h=>h.pathId===saved.id&&Math.abs(h.s-position)<1e-5))continue;
-        const angle=isMark?p.angleDeg:($('followTangent').checked?p.angleDeg:0)+($('reverseSlant').checked?-tool.angleDeg:tool.angleDeg),id=freshId(doc.holes,'h');
+        const angle=isMark?p.angleDeg:($('followTangent').checked?p.angleDeg:0)+slantOf(tool),id=freshId(doc.holes,'h');
         doc.holes.push({...p,s:position,id,pathId:saved.id,toolId:tool.id,angleDeg:angle,mark:markKind});added.push(id);
       }
       saved.segments.push({from:manual?(points[0]?.s??from):from,to:manual?(points.at(-1)?.s??from):to,toolId:tool.id,pitch:tool.pitch,mode:manual?'manual':$('placement').value});
@@ -435,7 +437,7 @@ function flipMark(ids) {
 // ---- 駒合わせ・パッチワーク ----
 function stitchToolCurrent() { return doc.tools.find(t => t.id === $('stitchTool').value) || doc.tools[0]; }
 function placeHoles(saved, route, points, tool) {
-  for (const p of points) { const id = freshId(doc.holes, 'h'); doc.holes.push({ id, pathId: saved.id, s: p.s, x: p.x, y: p.y, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + ($('reverseSlant').checked ? -tool.angleDeg : tool.angleDeg), toolId: tool.id, mark: 'tool' }); }
+  for (const p of points) { const id = freshId(doc.holes, 'h'); doc.holes.push({ id, pathId: saved.id, s: p.s, x: p.x, y: p.y, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), toolId: tool.id, mark: 'tool' }); }
   saved.segments = [{ from: 0, to: arcLength(route), toolId: tool.id, pitch: tool.pitch, mode: 'variable' }];
 }
 function komaClick(p) {
