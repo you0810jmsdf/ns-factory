@@ -38,6 +38,7 @@ const $ = id => document.getElementById(id);
 let longPressed = false; // ツールボタンを長押ししてヘルプを開いた直後のクリックは無視する
 const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false;
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
+let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
@@ -186,7 +187,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { ruler: 'text-dimension', rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -1406,6 +1407,21 @@ function runCommand(raw) {
   $('cmd').value = ''; draw();
 }
 
+/** 定規の測定結果の文言（距離・横・縦・角度。角度は右向きを 0 として反時計回り）。 */
+function rulerText({ a, b }) {
+  const dx = b.x - a.x, dy = b.y - a.y, deg = ((Math.atan2(-dy, dx) * 180 / Math.PI) % 360 + 360) % 360;
+  return t('rulerResult', { d: distance(a, b).toFixed(2), dx: Math.abs(dx).toFixed(2), dy: Math.abs(dy).toFixed(2), a: deg.toFixed(1) });
+}
+/** 定規の線・両端・距離の数字を描く（図面の図形ではない）。 */
+function drawRuler({ a, b }) {
+  ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#4fd0ff'; ctx.fillStyle = '#4fd0ff'; ctx.lineWidth = 1.5 / scale;
+  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  for (const p of [a, b]) { ctx.beginPath(); ctx.arc(p.x, p.y, 3.5 / scale, 0, Math.PI * 2); ctx.fill(); }
+  const label = distance(a, b).toFixed(2) + ' mm', px = 13 / scale, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  ctx.font = px + 'px sans-serif'; const w = ctx.measureText?.(label)?.width ?? label.length * px * 0.6;
+  ctx.fillStyle = 'rgba(20,20,22,0.85)'; ctx.fillRect(mx - w / 2 - 4 / scale, my - px - 6 / scale, w + 8 / scale, px + 6 / scale);
+  ctx.fillStyle = '#4fd0ff'; ctx.textAlign = 'center'; ctx.fillText(label, mx, my - 5 / scale); ctx.restore();
+}
 /** 磁石の候補：端点（線・折れ線の頂点・円弧の両端・ベジェ両端・パス節点）と、円・円弧の中心。 */
 function magnetPointsOf(shapes) {
   const ends = [], centers = [];
@@ -1421,7 +1437,7 @@ function magnetPointsOf(shapes) {
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
 function magnetRadiusMm() { const px = Number($('snapDist').value); return Number.isFinite(px) && px > 0 ? px / scale : 0; }
-const MAGNET_DRAW_MODES = ['line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror'];
+const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror'];
 /** 作図ツール中だけ自動で仮表示する中心点。 */
 function centerMarkPoints() { return MAGNET_DRAW_MODES.includes(mode) ? magnetCenters : []; }
 function drawCenterMarks() {
@@ -1457,7 +1473,7 @@ function commit(fn) {
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   draw();
 }
-function cancel() { gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
+function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
 function setMode(next) {
   cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open;
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
@@ -1673,7 +1689,7 @@ function anchor() {
   if (gesture?.kind === 'draw' || gesture?.kind === 'move' || gesture?.kind === 'pen') return gesture.start;
   if (stage?.points) return stage.points.at(-1);
   if (stage?.kind === 'path') return stage.nodes.at(-1) || null;
-  if (stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw') return stage.a;
+  if (stage?.kind === 'ruler' || stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw') return stage.a;
   if (stage?.kind === 'arc') return stage.center;
   if (stage?.kind === 'cmd' && mode === 'rect') return stage.start;
   if (stage?.kind === 'bezier') return stage.c1 ? stage.end : stage.start;
@@ -1836,6 +1852,7 @@ function draw() {
   if (stage?.kind === 'polyline') strokeShape({ type: 'polyline', points: [...stage.points, cursor], closed: false }, '#c9a96e');
   if (stage?.kind === 'path') { const pv = pathPreview(); if (pv) { strokeShape(pv, '#c9a96e'); drawNodes({ ...pv, nodes: stage.nodes }); } }
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
+  if (mode === 'ruler') { if (stage?.kind === 'ruler') drawRuler({ a: stage.a, b: cursor }); else if (ruler) drawRuler(ruler); }
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
@@ -1892,6 +1909,11 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
   if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); lastPoint = cursor; } return; }
+  if (mode === 'ruler') {
+    if (stage?.kind !== 'ruler') { ruler = null; stage = { kind: 'ruler', a: cursor }; $('hint').textContent = t('rulerSecond'); }
+    else { ruler = { a: stage.a, b: cursor }; stage = null; $('hint').textContent = rulerText(ruler); }
+    draw(); return;
+  }
   if (mode === 'dimension') { if (stage?.kind !== 'dim') stage = { kind: 'dim', a: cursor }; else { addShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }); stage = null; } lastPoint = cursor; draw(); return; }
   if (mode === 'mirror') {
     const axis = doc.shapes.filter(s => visible(s) && s.type === 'line' && !selected.has(s.id)).reverse().find(s => distToShape(s, world(p)) <= 7 / scale);

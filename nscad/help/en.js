@@ -19,7 +19,7 @@ export const HELP_EN = {
     {
       "id": "text-dimension",
       "title": "Text and dimensions",
-      "body": "The Text tool asks for the text after you click its position. Size and angle are edited in the Info card.\nThe Dimension tool takes two clicks and draws a dimension line with the value in mm. The offset is set in Drawing options and can be edited later. Text and dimensions are ignored by stitching and offsetting."
+      "body": "The Text tool asks for the text after you click its position. Size and angle are edited in the Info card.\nThe Dimension tool takes two clicks and draws a dimension line with the value in mm. The offset is set in Drawing options and can be edited later. Text and dimensions are ignored by stitching and offsetting.\nThe Ruler tool shows the distance, horizontal, vertical and angle between a start and an end point you click (it snaps to endpoints and centers; Shift = horizontal / vertical). Nothing is added to the drawing."
     },
     {
       "id": "numeric",
