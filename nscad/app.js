@@ -25,7 +25,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchSeamsFromPieces } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -476,20 +476,32 @@ function patchFillAt(p) {
   if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
+  const tool = $('patchStitch').checked ? stitchToolCurrent() : null, inset = Number($('patchInset').value), banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
+  if (tool && !(inset > 0)) { $('hint').textContent = t('invalidNumber'); return; }
+  if (banEdge && inset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: inset, m: PATCH_EDGE_MIN_MM }); return; } /* 菱目は縁から2.5mm以内に置かない（外すと解除） */
   let stitched = null;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
     const ids = polys.map(points => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points }); return id; });
     selected = new Set(ids);
-    const tool = $('patchStitch').checked ? stitchToolCurrent() : null;
-    if (tool) { /* 縫い合わせと縫い穴：ピースごとに経路、共有辺ごとに縫い合わせ、穴は共有辺の両側が重なるように最適化 */
-      const pathIds = ids.map(id => { const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [id], reversed: false, closed: true, segments: [], mark: 'tool' }); return pid; }), style = seamStyleValue(), seams = patchSeamsFromPieces(polys);
-      for (const s of seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathIds[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathIds[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
-      stitched = { seams: seams.length, holes: seams.length ? autoPatchHoles(tool) : 0 };
+    if (tool) { /* クロスステッチ：穴は境界の上ではなく、各ピースの縁から inset mm 内側の縫い線（黄色の点線）の上に打ち、境界をはさんで向かい合う穴を対にする */
+      const stitch = patchInsetStitch(polys, inset), stitchLayer = doc.layers.find(l => l.id === 'marks' && l.visible && !l.locked)?.id || layer, style = seamStyleValue();
+      const pathOfPiece = stitch.insets.map(pts => {
+        if (!pts) return null;
+        const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: pts.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })), color: 'yellow', lineStyle: 'dashed' });
+        const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool' }); return pid;
+      });
+      for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
+      let holes = stitch.seams.length ? autoPatchHoles(tool) : 0, banned = 0;
+      if (banEdge) { /* 念のための検査：縁から2.5mm未満の菱目は取り除く（座標を4桁に丸める誤差 0.001mm は許す） */
+        const drop = new Set(doc.holes.filter(h => { const i = pathOfPiece.indexOf(h.pathId); return i >= 0 && distToShape({ type: 'polyline', closed: true, points: polys[i] }, h) < PATCH_EDGE_MIN_MM - 1e-3; }).map(h => h.id));
+        if (drop.size) { doc.holes = doc.holes.filter(h => !drop.has(h.id)); banned = drop.size; holes -= banned; }
+      }
+      stitched = { seams: stitch.seams.length, holes, banned, inset };
     }
   });
   renderSeams();
-  $('hint').textContent = stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
+  $('hint').textContent = stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
 }
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);

@@ -78,7 +78,7 @@ export function optimizePatchHoles(doc, { pitch = 4, tolerancePct = 15, junction
   // 2. 縫い合わせごと・区間ごとに N を決めて穴を置く
   const holesByPath = new Map(), pairs = [], warnings = [];
   const placed = (pathId, s) => (holesByPath.get(pathId) || []).some(h => Math.abs(h.s - s) < 1e-6);
-  const put = (pathId, s) => { const r = route(pathId); if (!r || placed(pathId, s)) return; const list = holesByPath.get(pathId) || []; list.push(pointAtLength(r, s)); holesByPath.set(pathId, list); };
+  const put = (pathId, s) => { const r = route(pathId); if (r && r.closed && Math.abs(s - arcLength(r)) < 1e-6) s = 0; if (!r || placed(pathId, s)) return; const list = holesByPath.get(pathId) || []; list.push(pointAtLength(r, s)); holesByPath.set(pathId, list); };
   for (const seam of doc.seams || []) {
     const ra = route(seam.a.pathId), rb = route(seam.b.pathId); if (!ra || !rb) continue;
     const inRange = (side, b) => b.s >= side.from - 1e-6 && b.s <= side.to + 1e-6;
@@ -259,9 +259,37 @@ export function patchSeamsFromPieces(pieces, { minOverlap = 0.5, tol = 1e-3 } = 
         const t0 = along(b0), t1 = along(b1), lo = Math.max(0, Math.min(t0, t1)), hi = Math.min(lenE, Math.max(t0, t1));
         if (hi - lo < minOverlap) continue;
         const u = t => (t - t0) / (t1 - t0) * lenF, qa = u(lo), qb = u(hi);
-        seams.push({ a: { piece: i, from: P.cum[e] + lo, to: P.cum[e] + hi }, b: { piece: j, from: Q.cum[f] + Math.min(qa, qb), to: Q.cum[f] + Math.max(qa, qb) }, reversed: t1 < t0 });
+        seams.push({ a: { piece: i, from: P.cum[e] + lo, to: P.cum[e] + hi, edge: e, lo, hi }, b: { piece: j, from: Q.cum[f] + Math.min(qa, qb), to: Q.cum[f] + Math.max(qa, qb), edge: f, lo: Math.min(qa, qb), hi: Math.max(qa, qb) }, reversed: t1 < t0 });
       }
     }
   }
   return seams;
+}
+
+/** 縫い穴を縁から置いてはいけない距離（mm）。革の縁が裂けるのを避けるため、菱目は縁から 2.5mm 以内に置かない。 */
+export const PATCH_EDGE_MIN_MM = 2.5;
+/** 多角形のピースを縁から d mm 内側へ縮めた縫い線の多角形（頂点は元と1対1）。つぶれる・辺が裏返るときは null。 */
+export function insetPolygon(points, d) {
+  if (!(d > 0) || points.length < 3) return null;
+  const r = offsetPolyline(points, -d, true); if (r.length !== points.length) return null;
+  if (!(areaOf(r) > 1e-6) || areaOf(r) >= areaOf(points) - 1e-9) return null;
+  for (let i = 0; i < points.length; i++) { const a = points[i], b = points[(i + 1) % points.length], c = r[i], e = r[(i + 1) % r.length]; if ((b.x - a.x) * (e.x - c.x) + (b.y - a.y) * (e.y - c.y) <= 0) return null; }
+  return r;
+}
+/** パッチワークのクロスステッチ用の縫い線：各ピースの縁から d mm 内側の縫い線（insets）と、隣り合うピースの縫い線どうしの縫い合わせ（seams）を返す。
+ *  seams は縫い線の経路上の道のり（from/to）で、共有辺（外形）の重なりを縫い線へ垂直に写したもの。縫い線がつぶれたピースは対象外。 */
+export function patchInsetStitch(polys, d, opts = {}) {
+  const insets = polys.map(p => insetPolygon(p, d)?.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) }))), cumOf = ps => { const c = [0]; for (let i = 0; i < ps.length; i++) c.push(c[i] + distance(ps[i], ps[(i + 1) % ps.length])); return c; };
+  const cums = insets.map(ps => ps && cumOf(ps));
+  const mapSide = (side) => {
+    const O = polys[side.piece], I = insets[side.piece], k = side.edge, o0 = O[k], o1 = O[(k + 1) % O.length], i0 = I[k], i1 = I[(k + 1) % I.length];
+    const lenO = distance(o0, o1), lenI = distance(i0, i1); if (lenO < DEPS || lenI < DEPS) return null;
+    const ux = (o1.x - o0.x) / lenO, uy = (o1.y - o0.y) / lenO, wx = (i1.x - i0.x) / lenI, wy = (i1.y - i0.y) / lenI;
+    const along = t => { const px = o0.x + ux * t, py = o0.y + uy * t; return Math.max(0, Math.min(lenI, (px - i0.x) * wx + (py - i0.y) * wy)); };
+    const s0 = cums[side.piece][k] + along(side.lo), s1 = cums[side.piece][k] + along(side.hi), from = Math.min(s0, s1), to = Math.max(s0, s1);
+    return to - from > (opts.minOverlap ?? 0.5) ? { piece: side.piece, from, to } : null;
+  };
+  const seams = [];
+  for (const s of patchSeamsFromPieces(polys, opts)) { if (!insets[s.a.piece] || !insets[s.b.piece]) continue; const a = mapSide(s.a), b = mapSide(s.b); if (a && b) seams.push({ a, b, reversed: s.reversed }); }
+  return { insets, seams };
 }

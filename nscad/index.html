@@ -357,6 +357,8 @@
 <label><span data-i18n="patchPattern"></span><select id="patchPattern"><option value="argyle" data-i18n="patchArgyle"></option><option value="ichimatsu" data-i18n="patchIchimatsu"></option></select></label>
 <label><span data-i18n="patchCell"></span><input id="patchCell" type="number" min="2" step="1" value="20"></label>
 <label><input id="patchStitch" type="checkbox" checked><span data-i18n="patchStitch"></span></label>
+<label><span data-i18n="patchInset"></span><input id="patchInset" type="number" min="0.5" step="0.5" value="2.5"></label>
+<label><input id="patchEdgeBan" type="checkbox" checked><span data-i18n="patchEdgeBan"></span></label>
 <button id="patchFill" data-i18n="patchFill"></button>
 </details>
 </div></details>
@@ -399,8 +401,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=08d4a0da","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=bc31410c","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=4e2705b0","./help/ja.js":"./help/ja.js?v=d7951e64","./i18n.js":"./i18n.js?v=e74fcb7b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=06386efb","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=aa068256"}}</script>
-<script type="module" src="app.js?v=08d4a0da"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=5d88282b","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=e74215bd","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=0ec6c469","./help/ja.js":"./help/ja.js?v=e75e9b68","./i18n.js":"./i18n.js?v=64767702","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=06386efb","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=aa068256"}}</script>
+<script type="module" src="app.js?v=5d88282b"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1359,7 +1361,10 @@ const MESSAGES = {
     "patchCell": "1マスの大きさ (mm・アーガイルは菱形の幅)",
     "patchFill": "囲まれた図形に柄を描く",
     "patchStitch": "縫い合わせと縫い穴も付ける",
-    "patchStitched": "{n} ピースを描き、縫い合わせ {s} か所・縫い穴 {h} 個を付けました（小さすぎる端切れ {d} 個は省きました）。",
+    "patchInset": "縫い線の縁からの距離 (mm・クロスステッチ用)",
+    "patchEdgeBan": "縁から2.5mm以内に菱目を置かない（外すと解除）",
+    "patchEdgeBanned": "縫い線を縁から {d}mm にすると、菱目が縁から {m}mm 以内に入るため作れません。{m}mm 以上にするか、「縁から2.5mm以内に菱目を置かない」を外してください。",
+    "patchStitched": "{n} ピースを描き、縁から {i}mm の縫い線（黄色の点線）に縫い合わせ {s} か所・縫い穴 {h} 個を付けました（小さすぎる端切れ {d} 個は省きました）。",
     "hint.patchfill": "実線で囲まれた図形の内側をクリック。選んだ柄のピースで埋めます（点線は囲みに使いません・Esc で終了）。",
     "patchNoRegion": "クリックした位置を囲む閉じた図形がありません。実線で閉じた図形（点線は除く）の内側をクリックしてください。",
     "patchTooMany": "マスが多すぎます（{n} 個）。1マスの大きさを大きくしてください。",
@@ -1992,7 +1997,10 @@ const MESSAGES = {
     "patchCell": "Cell size (mm; Argyle = diamond width)",
     "patchFill": "Fill enclosed shape with pattern",
     "patchStitch": "Also add seams and stitch holes",
-    "patchStitched": "Drew {n} pieces with {s} seams and {h} stitch holes (skipped {d} tiny scraps).",
+    "patchInset": "Stitch line distance from edge (mm; for cross-stitch)",
+    "patchEdgeBan": "No diamond holes within 2.5 mm of an edge (uncheck to allow)",
+    "patchEdgeBanned": "A stitch line {d} mm from the edge would put diamond holes within {m} mm of the edge, so it was not made. Use {m} mm or more, or uncheck \"No diamond holes within 2.5 mm of an edge\".",
+    "patchStitched": "Drew {n} pieces with stitch lines (yellow dashed) {i} mm from the edge: {s} seams and {h} stitch holes (skipped {d} tiny scraps).",
     "hint.patchfill": "Click inside a shape closed by solid lines. It is filled with pieces of the chosen pattern (dashed lines do not count as boundaries; Esc exits).",
     "patchNoRegion": "No closed shape surrounds that point. Click inside a shape closed by solid lines (dashed lines excluded).",
     "patchTooMany": "Too many cells ({n}). Increase the cell size.",
@@ -3010,7 +3018,7 @@ function optimizePatchHoles(doc, { pitch = 4, tolerancePct = 15, junctionClearMm
   // 2. 縫い合わせごと・区間ごとに N を決めて穴を置く
   const holesByPath = new Map(), pairs = [], warnings = [];
   const placed = (pathId, s) => (holesByPath.get(pathId) || []).some(h => Math.abs(h.s - s) < 1e-6);
-  const put = (pathId, s) => { const r = route(pathId); if (!r || placed(pathId, s)) return; const list = holesByPath.get(pathId) || []; list.push(pointAtLength(r, s)); holesByPath.set(pathId, list); };
+  const put = (pathId, s) => { const r = route(pathId); if (r && r.closed && Math.abs(s - arcLength(r)) < 1e-6) s = 0; if (!r || placed(pathId, s)) return; const list = holesByPath.get(pathId) || []; list.push(pointAtLength(r, s)); holesByPath.set(pathId, list); };
   for (const seam of doc.seams || []) {
     const ra = route(seam.a.pathId), rb = route(seam.b.pathId); if (!ra || !rb) continue;
     const inRange = (side, b) => b.s >= side.from - 1e-6 && b.s <= side.to + 1e-6;
@@ -3191,14 +3199,42 @@ function patchSeamsFromPieces(pieces, { minOverlap = 0.5, tol = 1e-3 } = {}) {
         const t0 = along(b0), t1 = along(b1), lo = Math.max(0, Math.min(t0, t1)), hi = Math.min(lenE, Math.max(t0, t1));
         if (hi - lo < minOverlap) continue;
         const u = t => (t - t0) / (t1 - t0) * lenF, qa = u(lo), qb = u(hi);
-        seams.push({ a: { piece: i, from: P.cum[e] + lo, to: P.cum[e] + hi }, b: { piece: j, from: Q.cum[f] + Math.min(qa, qb), to: Q.cum[f] + Math.max(qa, qb) }, reversed: t1 < t0 });
+        seams.push({ a: { piece: i, from: P.cum[e] + lo, to: P.cum[e] + hi, edge: e, lo, hi }, b: { piece: j, from: Q.cum[f] + Math.min(qa, qb), to: Q.cum[f] + Math.max(qa, qb), edge: f, lo: Math.min(qa, qb), hi: Math.max(qa, qb) }, reversed: t1 < t0 });
       }
     }
   }
   return seams;
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces};
+/** 縫い穴を縁から置いてはいけない距離（mm）。革の縁が裂けるのを避けるため、菱目は縁から 2.5mm 以内に置かない。 */
+const PATCH_EDGE_MIN_MM = 2.5;
+/** 多角形のピースを縁から d mm 内側へ縮めた縫い線の多角形（頂点は元と1対1）。つぶれる・辺が裏返るときは null。 */
+function insetPolygon(points, d) {
+  if (!(d > 0) || points.length < 3) return null;
+  const r = offsetPolyline(points, -d, true); if (r.length !== points.length) return null;
+  if (!(areaOf(r) > 1e-6) || areaOf(r) >= areaOf(points) - 1e-9) return null;
+  for (let i = 0; i < points.length; i++) { const a = points[i], b = points[(i + 1) % points.length], c = r[i], e = r[(i + 1) % r.length]; if ((b.x - a.x) * (e.x - c.x) + (b.y - a.y) * (e.y - c.y) <= 0) return null; }
+  return r;
+}
+/** パッチワークのクロスステッチ用の縫い線：各ピースの縁から d mm 内側の縫い線（insets）と、隣り合うピースの縫い線どうしの縫い合わせ（seams）を返す。
+ *  seams は縫い線の経路上の道のり（from/to）で、共有辺（外形）の重なりを縫い線へ垂直に写したもの。縫い線がつぶれたピースは対象外。 */
+function patchInsetStitch(polys, d, opts = {}) {
+  const insets = polys.map(p => insetPolygon(p, d)?.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) }))), cumOf = ps => { const c = [0]; for (let i = 0; i < ps.length; i++) c.push(c[i] + distance(ps[i], ps[(i + 1) % ps.length])); return c; };
+  const cums = insets.map(ps => ps && cumOf(ps));
+  const mapSide = (side) => {
+    const O = polys[side.piece], I = insets[side.piece], k = side.edge, o0 = O[k], o1 = O[(k + 1) % O.length], i0 = I[k], i1 = I[(k + 1) % I.length];
+    const lenO = distance(o0, o1), lenI = distance(i0, i1); if (lenO < DEPS || lenI < DEPS) return null;
+    const ux = (o1.x - o0.x) / lenO, uy = (o1.y - o0.y) / lenO, wx = (i1.x - i0.x) / lenI, wy = (i1.y - i0.y) / lenI;
+    const along = t => { const px = o0.x + ux * t, py = o0.y + uy * t; return Math.max(0, Math.min(lenI, (px - i0.x) * wx + (py - i0.y) * wy)); };
+    const s0 = cums[side.piece][k] + along(side.lo), s1 = cums[side.piece][k] + along(side.hi), from = Math.min(s0, s1), to = Math.max(s0, s1);
+    return to - from > (opts.minOverlap ?? 0.5) ? { piece: side.piece, from, to } : null;
+  };
+  const seams = [];
+  for (const s of patchSeamsFromPieces(polys, opts)) { if (!insets[s.a.piece] || !insets[s.b.piece]) continue; const a = mapSide(s.a), b = mapSide(s.b); if (a && b) seams.push({ a, b, reversed: s.reversed }); }
+  return { insets, seams };
+}
+
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -8323,7 +8359,7 @@ const HELP_JA = {
     {
       "id": "design",
       "title": "厚み・折り代・駒合わせ・パッチワーク",
-      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。\nパッチワーク：縫い合わせツールで辺 A の区間→辺 B の区間をドラッグして組にします。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。「縫い合わせと縫い穴も付ける」にチェックがあれば（既定）、ピースごとに経路を作り、隣り合うピースの共有辺を縫い合わせとして登録し、共有辺の縫い穴を両側で重なるように自動で打ちます（「最適化」ボタンと同じ計算で、ピッチ・許容・交点のすき間はパッチワークの設定を使います）。共有辺では両側の穴が同じ位置に重なります。"
+      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。\nパッチワーク：縫い合わせツールで辺 A の区間→辺 B の区間をドラッグして組にします。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。「縫い合わせと縫い穴も付ける」にチェックがあれば（既定）、クロスステッチ用に、各ピースの縁から「縫い線の縁からの距離」（既定2.5mm）内側へ縮めた縫い線（黄色の点線・目印レイヤー）を作り、その上に縫い穴を打ちます。穴は境界の上には置かず、境界をはさんで向かい合う穴を対にします（隣り合う縫い線どうしを縫い合わせとして登録し、「最適化」と同じ計算でピッチを合わせます）。「縁から2.5mm以内に菱目を置かない」にチェックがあれば（既定）、菱目の目打ちでは縁から2.5mm未満の距離を指定しても作りません。外すと解除でき、丸目など菱目以外の目打ちには適用しません。"
     },
     {
       "id": "formats",
@@ -8462,7 +8498,7 @@ const HELP_EN = {
     {
       "id": "design",
       "title": "Thickness, folds, box stitch, patchwork",
-      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: with the Seam tool drag along edge A, then along edge B. Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. If \"Also add seams and stitch holes\" is checked (default), each piece gets a path, shared edges between neighboring pieces are registered as seams, and stitch holes on shared edges are placed automatically so both sides coincide (same calculation as the Optimize button, using the Patchwork pitch, tolerance and junction clearance). On a shared edge the holes of both pieces sit at the same positions."
+      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: with the Seam tool drag along edge A, then along edge B. Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. If \"Also add seams and stitch holes\" is checked (default), for cross-stitching each piece gets a stitch line (yellow dashed, Marks layer) shrunk inward from its edge by the \"Stitch line distance from edge\" (default 2.5 mm), and the stitch holes go on it. Holes are never placed on the boundary; holes facing each other across the boundary are paired (neighboring stitch lines are registered as seams, and the pitch is matched with the same calculation as Optimize). If \"No diamond holes within 2.5 mm of an edge\" is checked (default), nothing is made when a distance under 2.5 mm is given for a diamond punch. Uncheck it to allow; it does not apply to round or other non-diamond punches."
     },
     {
       "id": "formats",
@@ -8582,7 +8618,7 @@ const { DATA_STITCH_COLORS } = __mods['data/stitch-colors'];
 const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
-const { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchSeamsFromPieces } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -9032,20 +9068,32 @@ function patchFillAt(p) {
   if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
+  const tool = $('patchStitch').checked ? stitchToolCurrent() : null, inset = Number($('patchInset').value), banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
+  if (tool && !(inset > 0)) { $('hint').textContent = t('invalidNumber'); return; }
+  if (banEdge && inset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: inset, m: PATCH_EDGE_MIN_MM }); return; } /* 菱目は縁から2.5mm以内に置かない（外すと解除） */
   let stitched = null;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
     const ids = polys.map(points => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points }); return id; });
     selected = new Set(ids);
-    const tool = $('patchStitch').checked ? stitchToolCurrent() : null;
-    if (tool) { /* 縫い合わせと縫い穴：ピースごとに経路、共有辺ごとに縫い合わせ、穴は共有辺の両側が重なるように最適化 */
-      const pathIds = ids.map(id => { const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [id], reversed: false, closed: true, segments: [], mark: 'tool' }); return pid; }), style = seamStyleValue(), seams = patchSeamsFromPieces(polys);
-      for (const s of seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathIds[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathIds[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
-      stitched = { seams: seams.length, holes: seams.length ? autoPatchHoles(tool) : 0 };
+    if (tool) { /* クロスステッチ：穴は境界の上ではなく、各ピースの縁から inset mm 内側の縫い線（黄色の点線）の上に打ち、境界をはさんで向かい合う穴を対にする */
+      const stitch = patchInsetStitch(polys, inset), stitchLayer = doc.layers.find(l => l.id === 'marks' && l.visible && !l.locked)?.id || layer, style = seamStyleValue();
+      const pathOfPiece = stitch.insets.map(pts => {
+        if (!pts) return null;
+        const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: pts.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })), color: 'yellow', lineStyle: 'dashed' });
+        const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool' }); return pid;
+      });
+      for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
+      let holes = stitch.seams.length ? autoPatchHoles(tool) : 0, banned = 0;
+      if (banEdge) { /* 念のための検査：縁から2.5mm未満の菱目は取り除く（座標を4桁に丸める誤差 0.001mm は許す） */
+        const drop = new Set(doc.holes.filter(h => { const i = pathOfPiece.indexOf(h.pathId); return i >= 0 && distToShape({ type: 'polyline', closed: true, points: polys[i] }, h) < PATCH_EDGE_MIN_MM - 1e-3; }).map(h => h.id));
+        if (drop.size) { doc.holes = doc.holes.filter(h => !drop.has(h.id)); banned = drop.size; holes -= banned; }
+      }
+      stitched = { seams: stitch.seams.length, holes, banned, inset };
     }
   });
   renderSeams();
-  $('hint').textContent = stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
+  $('hint').textContent = stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
 }
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
