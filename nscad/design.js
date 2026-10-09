@@ -1,6 +1,6 @@
 // 革の厚みを考慮した設計：折り代・重ね補正・コバ帯・駒合わせ・パッチワークの目打ち最適化・ピース寸法提案。
 // 純粋関数のみ（DOM 禁止）。単位 mm・角度は度。
-import { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf, allIntersections, offsetShape } from './geometry.js';
+import { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf, allIntersections, offsetShape, intersections, distToShape, bboxOf, circlePoint } from './geometry.js';
 
 const DEPS = 1e-9;
 /** 折り代 ΔL = θ[rad] × (r + K·t)。t=厚み、angleDeg=折り角、r=内曲げ半径（既定 0）、k=中立係数（既定 0.5）。 */
@@ -294,6 +294,36 @@ export function patchInsetStitch(polys, d, opts = {}) {
   return { insets, seams };
 }
 
+/* ---- 交点の表示：端点どうしで接している点（結合）／途中で交差している点（未結合）---- */
+/** 図形の端点（線・折れ線の頂点・円弧の両端・ベジェの両端・パスの節点）。円には端点が無い。 */
+export function shapeEndpoints(s) {
+  if (s.type === 'line') return [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }];
+  if (s.type === 'polyline') return s.points.map(p => ({ x: p.x, y: p.y }));
+  if (s.type === 'bezier') return [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }];
+  if (s.type === 'path') return s.nodes.map(n => ({ x: n.x, y: n.y }));
+  if (s.type === 'arc') return [circlePoint(s, s.startDeg), circlePoint(s, s.endDeg)];
+  return [];
+}
+/** 図形どうしの交点を2つに分ける。joined＝両方の図形の端点どうしで接している点、loose＝どちらかの図形の途中で交差・接している点（T字を含む）。
+ *  同じ点に両方あれば loose を優先。同じ図形の中（折れ線の頂点など）は数えない。戻り値 {joined:[{x,y}], loose:[{x,y}]}。 */
+export function classifyJunctions(shapes, tol = 0.01) {
+  const ends = new Map(shapes.map(s => [s.id, shapeEndpoints(s)])), near = (id, p) => ends.get(id).some(q => distance(p, q) < tol);
+  const edgesOf = s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s];
+  const edges = new Map(shapes.map(s => [s.id, edgesOf(s)])), boxes = new Map(shapes.map(s => [s.id, bboxOf(s)])), joined = new Map(), loose = new Map(), key = p => Math.round(p.x * 100) + ',' + Math.round(p.y * 100);
+  for (let i = 0; i < shapes.length; i++) for (let j = i + 1; j < shapes.length; j++) {
+    const A = shapes[i], B = shapes[j], a = boxes.get(A.id), b = boxes.get(B.id);
+    if (!a || !b || a.maxX < b.minX - tol || b.maxX < a.minX - tol || a.maxY < b.minY - tol || b.maxY < a.minY - tol) continue;
+    for (const ea of edges.get(A.id)) for (const eb of edges.get(B.id)) {
+      const ia = ea.type === 'arc' ? { ...ea, type: 'circle' } : ea, ib = eb.type === 'arc' ? { ...eb, type: 'circle' } : eb;
+      for (const p of intersections(ia, ib)) {
+        if (!(distToShape(ea, p) < 1e-7 && distToShape(eb, p) < 1e-7)) continue;
+        (near(A.id, p) && near(B.id, p) ? joined : loose).set(key(p), { x: p.x, y: p.y });
+      }
+    }
+  }
+  for (const k of loose.keys()) joined.delete(k);
+  return { joined: [...joined.values()], loose: [...loose.values()] };
+}
 /* ---- オフセットの選択：1回クリック＝交点から交点まで、ダブルクリック＝つながった図形全体 ---- */
 /** クリックした図形の「つながった線」（結合点は通過点）から、オフセットする範囲を求める。
  *  whole=false：他の図形との交点から交点までの区間（交点が無ければ全体）。whole=true：つながった図形全体（閉じていれば閉じた図形）。
