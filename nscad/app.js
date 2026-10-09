@@ -184,7 +184,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -407,23 +407,6 @@ function makeKomaLine() {
   const thickness = Number($('komaThickness').value); if (!(thickness > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   const line = komaStitchLine(edge, thickness, $('komaInward').checked ? 1 : -1); if (!line) return;
   addShape({ ...line, layer: edge.layer }); $('hint').textContent = t('komaLineMade', { d: (thickness / 2).toFixed(2) });
-}
-/** 縫い合わせ線ツール：図形上でドラッグした区間を記録し、2 回目で組にする。 */
-function seamDown(p) {
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale); if (!hit) return false;
-  const state = routeForHit(hit); if (!state?.route) return false;
-  gesture = { kind: 'seam', state, from: projectOnPath(state.route, p).s, screen: local({ clientX: 0, clientY: 0 }) }; return true;
-}
-function seamUp(p) {
-  const g = gesture; gesture = null; const to = projectOnPath(g.state.route, p).s, side = { state: g.state, from: Math.min(g.from, to), to: Math.max(g.from, to), forward: to >= g.from };
-  if (side.to - side.from < 0.5) { $('hint').textContent = t('seamTooShort'); draw(); return; }
-  if (stage?.kind !== 'seam') { stage = { kind: 'seam', a: side }; $('hint').textContent = t('seamSecond'); draw(); return; }
-  const a = stage.a; stage = null; if (a.state.saved.shapeIds.join() === side.state.saved.shapeIds.join()) { $('hint').textContent = t('seamSame'); draw(); return; }
-  commit(() => {
-    for (const s of [a, side]) if (s.state.fresh) { s.state.saved.id = freshId(doc.paths, 'p'); doc.paths.push(s.state.saved); s.state.fresh = false; }
-    doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: a.state.saved.id, from: a.from, to: a.to }, b: { pathId: side.state.saved.id, from: side.from, to: side.to }, style: seamStyleValue(), reversed: a.forward !== side.forward });
-  });
-  $('hint').textContent = t('seamMade', { n: doc.seams.length }); renderSeams(); draw();
 }
 function renderSeams() { $('seamCount').textContent = String(doc.seams.length); }
 function seamStyleValue() { const v = $('seamStyle').value; return ['butt', 'overlap', 'felled'].includes(v) ? v : 'butt'; }
@@ -1817,7 +1800,6 @@ function draw() {
   if (doc.seams.length) { ctx.save(); ctx.setLineDash([2 / scale, 2 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = '#ff9f43'; ctx.beginPath();
     for (const m of doc.seams) { const pts = [m.a, m.b].map(side => { const saved = doc.paths.find(p => p.id === side.pathId); const route = saved && resolvePath(doc, saved); return route ? pointAtLength(route, (side.from + side.to) / 2) : null; }); if (pts[0] && pts[1]) { ctx.moveTo(pts[0].x, pts[0].y); ctx.lineTo(pts[1].x, pts[1].y); } }
     ctx.stroke(); ctx.restore(); }
-  if (stage?.kind === 'seam') { const r = stage.a.state.route, p = pointAtLength(r, (stage.a.from + stage.a.to) / 2); ctx.strokeStyle = '#ff9f43'; ctx.lineWidth = 1 / scale; ctx.strokeRect(p.x - 3 / scale, p.y - 3 / scale, 6 / scale, 6 / scale); }
   if (stage?.kind === 'bezier') {
     const s = bezierShape(cursor); strokeShape(s, '#c9a96e');
     strokeShape({ type: 'line', x1: s.x1, y1: s.y1, x2: s.c1x, y2: s.c1y }, '#888');
@@ -1860,7 +1842,6 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'hardware') { placeHardware(cursor); return; }
   if (mode === 'library') { placeLibrary(cursor); return; }
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
-  if (mode === 'seam') { if (seamDown(world(p))) gesture.screen = p; draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
   if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); lastPoint = cursor; } return; }
   if (mode === 'dimension') { if (stage?.kind !== 'dim') stage = { kind: 'dim', a: cursor }; else { addShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }); stage = null; } lastPoint = cursor; draw(); return; }
@@ -1914,7 +1895,6 @@ canvas.addEventListener('pointerup', e => {
   gesture = null;
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
-  } else if (g.kind === 'seam') { gesture = g; seamUp(cursor); return;
   } else if (g.kind === 'pen') {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
   } else if (g.kind === 'node') {

@@ -17,7 +17,6 @@ const TOOL_WORDS = {
   mirror: { ja: ['線対称', '対称コピー', 'ミラー'], en: ['mirror', 'symmetry'] },
   fold: { ja: ['折り線', '折れ目'], en: ['fold'] },
   koma: { ja: ['駒合わせ', 'こまあわせ'], en: ['koma', 'butt stitch'] },
-  seam: { ja: ['縫い合わせ', '縫い代'], en: ['seam', 'allowance'] },
   stitch: { ja: ['目打ち', 'めうち', '縫い穴', '菱目'], en: ['stitch', 'stitching', 'holes', 'pricking'] },
 };
 const ACTION_WORDS = {
