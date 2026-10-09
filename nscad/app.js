@@ -187,7 +187,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { ruler: 'text-dimension', rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -1508,8 +1508,12 @@ function commit(fn) {
   draw();
 }
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
+/** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
+function syncToolCards() {
+  $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill';
+}
 function setMode(next) {
-  cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open; if (mode === 'patchfill') $('patchCard').open = true;
+  cancel(); manualNext = null; nodeSel = null; mode = next; syncToolCards();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = t('hint.' + mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }

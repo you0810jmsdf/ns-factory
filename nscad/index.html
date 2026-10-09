@@ -102,6 +102,7 @@
 <button data-tool="koma"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10h12v10M6 7l3 3-3 3M15 13l3 3-3 3"/></svg><span data-i18n="koma"></span></button>
 <button data-tool="stitch"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M7 10l2 2-2 2M12 10l2 2-2 2M17 10l2 2-2 2"/></svg><span data-i18n="stitch"></span></button>
 <button data-tool="mark"><svg class="ic" viewBox="0 0 24 24"><path d="M3 18C8 18 8 6 13 6s5 12 8 12"/><circle cx="13" cy="6" r="2" fill="currentColor"/></svg><span data-i18n="markTool"></span></button>
+<button data-tool="patchfill"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9zM12 3v18M3 12h18"/></svg><span data-i18n="patchTool"></span></button>
 <div class="group" data-i18n="selection"></div>
 <button id="copy" data-i18n="copy"></button><button id="mirrorX" data-i18n="mirrorX"></button><button id="mirrorY" data-i18n="mirrorY"></button><button id="rotate" data-i18n="rotate"></button><button id="toPath" data-i18n="toPath"></button><button id="delete" data-i18n="delete"></button>
 </aside>
@@ -139,7 +140,7 @@
 <div class="row"><label><input id="layerVisible" type="checkbox" checked><span data-i18n="visible"></span></label><label><input id="layerLocked" type="checkbox"><span data-i18n="locked"></span></label></div>
 <div class="row"><button id="addLayer" data-i18n="addLayer"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
 </div></details>
-<details class="card" id="stitchCard" open><summary data-i18n="stitchSettings"></summary><div class="body" id="stitchPanel">
+<details class="card" id="stitchCard"><summary data-i18n="stitchSettings"></summary><div class="body" id="stitchPanel">
 <label><span data-i18n="stitchTool"></span><select id="stitchTool"></select></label>
 <label><span data-i18n="placement"></span><select id="placement"><option value="fixed" data-i18n="fixed"></option><option value="variable" data-i18n="variable"></option><option value="equal" data-i18n="equal"></option><option value="manual" data-i18n="manual"></option></select></label>
 <label><input id="chain" type="checkbox" checked><span data-i18n="chain"></span></label>
@@ -414,8 +415,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=3c4bf197","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=4052f6b7","./help/ja.js":"./help/ja.js?v=f1099f04","./i18n.js":"./i18n.js?v=f11dcebe","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=3c4bf197"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=f9ed0b36","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=4052f6b7","./help/ja.js":"./help/ja.js?v=f1099f04","./i18n.js":"./i18n.js?v=b260232f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=f9ed0b36"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1264,6 +1265,7 @@ const MESSAGES = {
     "hint.text": "置きたい位置をクリックして文字を入力。",
     "dimension": "寸法",
     "ruler": "定規",
+    "patchTool": "柄（パッチワーク）",
     "hint.ruler": "始点と終点をクリックすると距離が出ます（端点・中心点に吸い付きます）。もう一度クリックで測りなおし。Shift で水平・垂直。",
     "rulerSecond": "終点をクリックしてください。",
     "rbA": "始点 X,Y",
@@ -1933,6 +1935,7 @@ const MESSAGES = {
     "hint.text": "Click where the text goes, then type it.",
     "dimension": "Dimension",
     "ruler": "Ruler",
+    "patchTool": "Pattern fill",
     "hint.ruler": "Click a start and an end point to see the distance (it snaps to endpoints and centers). Click again to measure anew. Shift = horizontal / vertical.",
     "rulerSecond": "Click the end point.",
     "rbA": "Start X,Y",
@@ -8895,7 +8898,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { ruler: 'text-dimension', rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -10216,8 +10219,12 @@ function commit(fn) {
   draw();
 }
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
+/** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
+function syncToolCards() {
+  $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill';
+}
 function setMode(next) {
-  cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open; if (mode === 'patchfill') $('patchCard').open = true;
+  cancel(); manualNext = null; nodeSel = null; mode = next; syncToolCards();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = t('hint.' + mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
