@@ -1511,6 +1511,8 @@ function cancel() { ruler = null; gesture = null; stage = null; snap = null; off
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill';
+  const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
+  if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
 function setMode(next) {
   cancel(); manualNext = null; nodeSel = null; mode = next; syncToolCards();
