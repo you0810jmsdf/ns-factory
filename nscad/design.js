@@ -1,6 +1,6 @@
 // 革の厚みを考慮した設計：折り代・重ね補正・コバ帯・駒合わせ・パッチワークの目打ち最適化・ピース寸法提案。
 // 純粋関数のみ（DOM 禁止）。単位 mm・角度は度。
-import { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf } from './geometry.js';
+import { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf, allIntersections, offsetShape } from './geometry.js';
 
 const DEPS = 1e-9;
 /** 折り代 ΔL = θ[rad] × (r + K·t)。t=厚み、angleDeg=折り角、r=内曲げ半径（既定 0）、k=中立係数（既定 0.5）。 */
@@ -292,4 +292,40 @@ export function patchInsetStitch(polys, d, opts = {}) {
   const seams = [];
   for (const s of patchSeamsFromPieces(polys, opts)) { if (!insets[s.a.piece] || !insets[s.b.piece]) continue; const a = mapSide(s.a), b = mapSide(s.b); if (a && b) seams.push({ a, b, reversed: s.reversed }); }
   return { insets, seams };
+}
+
+/* ---- オフセットの選択：1回クリック＝交点から交点まで、ダブルクリック＝つながった図形全体 ---- */
+/** クリックした図形の「つながった線」（結合点は通過点）から、オフセットする範囲を求める。
+ *  whole=false：他の図形との交点から交点までの区間（交点が無ければ全体）。whole=true：つながった図形全体（閉じていれば閉じた図形）。
+ *  戻り値 {points, closed, shapeIds, whole, single}。points は平坦化した点列。single は全体が1つの図形のときその図形。 */
+export function offsetSpan(shapes, hit, p, whole = false, tol = 0.01) {
+  const chain = chainShapes(shapes, tol).find(c => c.shapeIds.includes(hit.id)); if (!chain) return null;
+  const members = chain.items.map(i => i.shape), closed = chain.closed;
+  let pts = []; chain.items.forEach((item, i) => { let ps = flattenShape(item.shape, 0.01); if (item.reversed) ps = [...ps].reverse(); pts.push(...(i ? ps.slice(1) : ps)); });
+  if (closed && pts.length > 1 && distance(pts[0], pts.at(-1)) < tol) pts.pop();
+  if (pts.length < 2) return null;
+  const all = { points: pts, closed, shapeIds: chain.shapeIds, whole: true, single: members.length === 1 ? members[0] : null };
+  if (whole) return all;
+  const ring = closed ? [...pts, pts[0]] : pts, cum = [0]; for (let i = 1; i < ring.length; i++) cum.push(cum[i - 1] + distance(ring[i - 1], ring[i]));
+  const total = cum.at(-1); if (!(total > 0)) return null;
+  const project = q => { let best = { s: 0, d: Infinity }; for (let i = 1; i < ring.length; i++) { const a = ring[i - 1], c = ring[i], len = cum[i] - cum[i - 1], t = len ? Math.max(0, Math.min(1, ((q.x - a.x) * (c.x - a.x) + (q.y - a.y) * (c.y - a.y)) / (len * len))) : 0, d = Math.hypot(q.x - (a.x + (c.x - a.x) * t), q.y - (a.y + (c.y - a.y) * t)); if (d < best.d) best = { s: cum[i - 1] + t * len, d }; } return best; };
+  const others = shapes.filter(o => !chain.shapeIds.includes(o.id)), cuts = [];
+  for (const q of allIntersections([...members, ...others], tol)) { if (!q.ids.some(id => chain.shapeIds.includes(id)) || !q.ids.some(id => !chain.shapeIds.includes(id))) continue; const pr = project(q); if (pr.d < 0.05) cuts.push(pr.s); }
+  const sorted = [...new Set(cuts.map(s => Math.round((closed && total - s < 1e-4 ? 0 : s) * 1e4) / 1e4))].sort((x, y) => x - y);
+  if (!sorted.length || (closed && sorted.length === 1)) return all;
+  const sc = project(p).s; let a, c;
+  if (closed) { const prev = sorted.filter(s => s <= sc), next = sorted.filter(s => s > sc); a = prev.length ? prev.at(-1) : sorted.at(-1) - total; c = next.length ? next[0] : sorted[0] + total; }
+  else { const bounds = [0, ...sorted.filter(s => s > 1e-4 && s < total - 1e-4), total]; let k = 0; while (k + 2 < bounds.length && sc > bounds[k + 1]) k++; a = bounds[k]; c = bounds[k + 1]; }
+  const at = s => { const u = ((s % total) + total) % total; const x = closed ? u : Math.max(0, Math.min(total, s)); let i = 1; while (i < ring.length - 1 && cum[i] < x - 1e-9) i++; const len = cum[i] - cum[i - 1], t = len ? (x - cum[i - 1]) / len : 0; return { x: ring[i - 1].x + (ring[i].x - ring[i - 1].x) * t, y: ring[i - 1].y + (ring[i].y - ring[i - 1].y) * t }; };
+  const sub = [at(a)]; for (let k = -1; k <= 1; k++) for (let i = 0; i < ring.length - (closed ? 1 : 0); i++) { const s = cum[i] + k * total; if (s > a + 1e-6 && s < c - 1e-6) sub.push({ ...ring[i] }); } sub.push(at(c));
+  const clean = sub.filter((q, i) => !i || distance(q, sub[i - 1]) > 1e-9);
+  return clean.length >= 2 ? { points: clean, closed: false, shapeIds: chain.shapeIds, whole: false, single: null } : null;
+}
+/** オフセットの結果図形を返す（不成立は null）。d>0 は閉じた図形の外側／開いた線の進行方向の左、d<0 は内側／右。
+ *  全体が1つの円・円弧・線などなら正確な図形、つながった線や区間は平坦化した折れ線（閉じていれば閉じた折れ線）。 */
+export function offsetSpanResult(sel, d, { join = 'miter' } = {}) {
+  if (!sel || !Number.isFinite(d) || d === 0) return null;
+  if (sel.whole && sel.single && sel.single.type !== 'polyline') return offsetShape(sel.single, d);
+  const points = offsetPolyline(sel.points, d, sel.closed, { join });
+  return points.length >= (sel.closed ? 3 : 2) ? { type: 'polyline', points, closed: sel.closed } : null;
 }

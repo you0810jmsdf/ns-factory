@@ -25,7 +25,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -40,6 +40,7 @@ const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
+let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
@@ -210,7 +211,7 @@ function showTour() {
   render(); $('tourDialog').showModal();
 }
 function initStitch() {
-  $('chainOffset').checked=false; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
+  $('offsetDist').value='3'; $('offsetSide').value='out'; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
   try { const saved = localStorage.getItem('leather-cad.snapDist'); $('snapDist').value = saved !== null && Number.isFinite(Number(saved)) && Number(saved) >= 0 ? saved : '10'; } catch { $('snapDist').value = '10'; }
   $('snapDist').addEventListener('change', () => { try { localStorage.setItem('leather-cad.snapDist', String(Math.max(0, Number($('snapDist').value) || 0))); } catch { /* 保存できなくても続ける */ } draw(); });
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'2',defaultMark:'tool'};
@@ -507,6 +508,8 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
+  $('offsetRun').onclick = () => runOffset();
+  $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
@@ -1407,7 +1410,7 @@ function commit(fn) {
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   draw();
 }
-function cancel() { gesture = null; stage = null; snap = null; }
+function cancel() { gesture = null; stage = null; snap = null; offsetSelection = null; }
 function setMode(next) {
   cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open;
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
@@ -1529,16 +1532,27 @@ function roundPolylineAt(poly, p) {
   });
   $('hint').textContent = t('hint.' + mode);
 }
+/** オフセットの選択：1回クリック＝他の図形との交点から交点までの区間、ダブルクリック＝つながった図形全体。 */
+function offsetClick(p, whole) {
+  const shapes = doc.shapes.filter(s => visible(s) && stitchable(s)), hit = shapes.filter(s => editable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale);
+  if (!hit) { offsetSelection = null; $('hint').textContent = t('offsetNone'); draw(); return; }
+  const sel = offsetSpan(shapes, hit, p, whole); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
+  offsetSelection = { ...sel, layer: hit.layer }; draw();
+  if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
+  $('hint').textContent = t(sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
+}
+/** 選んだ範囲を、距離と向き（内側／外側）でオフセットする。結果は黄色の点線。 */
+function runOffset(override = null) {
+  const sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
+  let d; if (override !== null) d = override; else { const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; } d = $('offsetSide').value === 'in' ? -dist : dist; }
+  const result = offsetSpanResult(sel, d, { join: $('offsetJoin').value }); if (!result) { $('hint').textContent = t('impossible'); return; }
+  offsetSelection = null; addShape({ ...result, id: freshId(doc.shapes, 's'), layer: sel.layer, color: 'yellow', lineStyle: 'dashed' });
+  $('hint').textContent = t('offsetDone', { d: Math.abs(d), side: t(d < 0 ? 'offsetIn' : 'offsetOut') }); draw();
+}
 function editAt(p) {
+  if (mode === 'offset') { offsetClick(p, false); return; }
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline'));
   if (!hit) return;
-  if (mode === 'offset') {
-    const d = askNumber('offsetDistance', 3); if (d === null) return;
-    const route=chainShapes(doc.shapes.filter(s=>editable(s)&&stitchable(s))).find(p=>p.shapeIds.includes(hit.id));
-    const result = $('chainOffset').checked && route?.items.length>1 ? offsetPath(route,d,{join:$('offsetJoin').value}) : hit.type==='polyline' && $('offsetJoin').value==='round' ? offsetPath(chainShapes([hit])[0],d,{join:'round'}) : offsetShape(hit, d);
-    if (!result) { $('hint').textContent = t('impossible'); return; }
-    addShape({ ...result, id: freshId(doc.shapes, 's'), layer: hit.layer }); return;
-  }
   if (hit.type === 'polyline') { roundPolylineAt(hit, p); return; }
   if (!stage) { stage = { kind: 'chamfer', id: hit.id }; selected = new Set([hit.id]); draw(); $('hint').textContent = t('secondLine'); return; }
   if (stage.id === hit.id) return;
@@ -1755,6 +1769,7 @@ function draw() {
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
   drawCenterMarks();
+  if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
@@ -1858,6 +1873,7 @@ canvas.addEventListener('pointermove', e => {
 canvas.addEventListener('dblclick', e => {
   const p = local(e), w = world(p);
   if (mode === 'path') { finishPath(false); return; }
+  if (mode === 'offset') { offsetClick(w, true); return; } /* ダブルクリック＝つながった図形全体を選ぶ */
   if (mode === 'line' && stage?.kind === 'cmd') { stage = null; $('hint').textContent = t('hint.line'); draw(); return; } // 終点でダブルクリック＝連続線の確定
   if (mode === 'select') {
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
@@ -1967,6 +1983,7 @@ window.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
+  else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }
   else if (e.key === 'Enter' && mode === 'line' && stage?.kind === 'cmd') { e.preventDefault(); stage = null; $('hint').textContent = t('hint.line'); draw(); }
   else if (e.key === 'Enter' && stage?.kind === 'polyline') { e.preventDefault(); finishPolyline(); }
   else if (e.key === 'Enter' && stage?.kind === 'path') { e.preventDefault(); finishPath(false); }

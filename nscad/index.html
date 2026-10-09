@@ -387,7 +387,9 @@
 <details class="card" id="drawCard"><summary data-i18n="drawOptions"></summary><div class="body">
 <label><span data-i18n="sizeMm"></span><input id="textSize" type="number" step="0.5" value="5"></label>
 <label><span data-i18n="dimOffset"></span><input id="dimOffset" type="number" step="0.5" value="8"></label>
-<label><input id="chainOffset" type="checkbox"><span data-i18n="chainOffset"></span></label>
+<label><span data-i18n="offsetDist"></span><input id="offsetDist" type="number" min="0" step="0.5" value="3"></label>
+<label><span data-i18n="offsetSide"></span><select id="offsetSide"><option value="out" data-i18n="offsetOut"></option><option value="in" data-i18n="offsetIn"></option></select></label>
+<button id="offsetRun" data-i18n="offsetRun"></button>
 <label><span data-i18n="offsetJoin"></span><select id="offsetJoin"><option value="miter" data-i18n="miter"></option><option value="round" data-i18n="roundJoin"></option></select></label>
 <label><span data-i18n="mirrorHoles"></span><select id="mirrorHoles"><option value="reverse" data-i18n="mirrorHolesReverse"></option><option value="keep" data-i18n="mirrorHolesKeep"></option></select></label>
 <label><span data-i18n="arcMethod"></span><select id="arcMethod"><option value="radius" data-i18n="arcMethodRadius"></option><option value="three" data-i18n="arcMethodThree"></option></select></label>
@@ -401,8 +403,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=766fc233","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=e74215bd","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=04a241a9","./help/ja.js":"./help/ja.js?v=4bd055f9","./i18n.js":"./i18n.js?v=f7a0ef82","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=aa068256"}}</script>
-<script type="module" src="app.js?v=766fc233"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=83791ec8","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=a3d81098","./help/ja.js":"./help/ja.js?v=3daa49de","./i18n.js":"./i18n.js?v=12f75b0e","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=aa068256"}}</script>
+<script type="module" src="app.js?v=83791ec8"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1074,7 +1076,15 @@ return {distance, dot, rotate, translate, mirrorX, mirrorY, chamferCorner, fille
 __mods['i18n'] = (function(){
 const MESSAGES = {
   "ja": {
-    "chainOffset": "連続オフセット",
+    "offsetDist": "オフセット距離 (mm)",
+    "offsetSide": "オフセットの向き",
+    "offsetOut": "外側（開いた線は進行方向の左）",
+    "offsetIn": "内側（開いた線は進行方向の右）",
+    "offsetRun": "選んだ範囲をオフセット（Enter）",
+    "offsetPickedSpan": "交点から交点までの区間を選びました（ダブルクリックでつながった図形全体）。距離と向きを確かめて Enter で実行。",
+    "offsetPickedWhole": "つながった図形全体を選びました。距離と向きを確かめて Enter で実行。",
+    "offsetNone": "オフセットする図形が見つかりません。図形の線の上をクリックしてください。",
+    "offsetDone": "{d}mm {side}にオフセットしました（黄色の点線）。続けて選べます。",
     "offsetJoin": "結合",
     "miter": "交点",
     "roundJoin": "丸め",
@@ -1204,10 +1214,9 @@ const MESSAGES = {
     "hint.bezier": "始点から終点へドラッグ → 第1制御点 → 第2制御点をクリック。",
     "hint.polyline": "最初の辺をドラッグ → 頂点をクリック。Enter で確定／始点で閉じる。",
     "hint.chamfer": "共有端点を持つ2本の直線、または折れ線をクリック。折れ線は角の近くでその角だけ、辺の途中で全部の角を、指定の C 寸法で切り取ります。",
-    "hint.offset": "図形をクリック。正は閉図形・円の外側、開いた線の進行方向の左側。",
+    "hint.offset": "クリック＝他の図形との交点から交点まで／ダブルクリック＝つながった図形全体を選び、Enter で実行（距離と内側・外側は作図オプション）。結果は黄色の点線。",
     "secondLine": "2本目の直線をクリックしてください。",
     "radius": "丸面取りの半径 (mm)",
-    "offsetDistance": "オフセット距離 (mm)：正は外側／開いた線の左側",
     "rotation": "回転角度 (度・正は時計回り)：選択全体の中心まわり",
     "invalidNumber": "有限の数値を入力してください。",
     "impossible": "作成できません。共有端点・半径・距離・図形の大きさを確認してください。",
@@ -1711,7 +1720,15 @@ const MESSAGES = {
     "lineChainHint": "クリックで続けて線を引けます。終点でダブルクリックか Enter で確定（Esc でも終了・右ドラッグで画面を移動）。"
   },
   "en": {
-    "chainOffset": "Chain offset",
+    "offsetDist": "Offset distance (mm)",
+    "offsetSide": "Offset side",
+    "offsetOut": "Outside (left of travel for open lines)",
+    "offsetIn": "Inside (right of travel for open lines)",
+    "offsetRun": "Offset the selected part (Enter)",
+    "offsetPickedSpan": "Selected the part between intersections (double-click for the whole connected shape). Check the distance and side, then press Enter.",
+    "offsetPickedWhole": "Selected the whole connected shape. Check the distance and side, then press Enter.",
+    "offsetNone": "No shape to offset here. Click on a line of a shape.",
+    "offsetDone": "Offset {d} mm {side} (yellow dashed). You can keep selecting.",
     "offsetJoin": "Join",
     "miter": "Miter",
     "roundJoin": "Round",
@@ -1841,10 +1858,9 @@ const MESSAGES = {
     "hint.bezier": "Drag from start to end, then click the first and second control points.",
     "hint.polyline": "Drag the first edge, then click vertices. Enter finishes; click the start to close.",
     "hint.chamfer": "Click two lines sharing an endpoint, or a polyline. On a polyline, click near a corner for that corner only, or along an edge for every corner; edges are trimmed by the C distance.",
-    "hint.offset": "Click a shape. Positive: outward for closed shapes / circles, left of travel for open paths.",
+    "hint.offset": "Click = the part between intersections / double-click = the whole connected shape, then press Enter (distance and inside/outside are in Drawing options). The result is a yellow dashed line.",
     "secondLine": "Click the second line.",
     "radius": "Fillet radius (mm)",
-    "offsetDistance": "Offset (mm): positive outward / left of open paths",
     "rotation": "Rotation (degrees, positive clockwise), about the selection center",
     "invalidNumber": "Enter a finite number.",
     "impossible": "Cannot create this geometry. Check the shared endpoint, radius, distance and shape size.",
@@ -2945,7 +2961,7 @@ return {LC_LAYER_MAP, LC_EXPORT_MAP, beamStudioSvg, leathercraftDxf, importLeath
 __mods['design'] = (function(){
 // 革の厚みを考慮した設計：折り代・重ね補正・コバ帯・駒合わせ・パッチワークの目打ち最適化・ピース寸法提案。
 // 純粋関数のみ（DOM 禁止）。単位 mm・角度は度。
-const { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf } = __mods['geometry'];
+const { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf, allIntersections, offsetShape } = __mods['geometry'];
 const DEPS = 1e-9;
 /** 折り代 ΔL = θ[rad] × (r + K·t)。t=厚み、angleDeg=折り角、r=内曲げ半径（既定 0）、k=中立係数（既定 0.5）。 */
 function foldAllowance(thickness, angleDeg, { k = 0.5, r = 0 } = {}) {
@@ -3238,7 +3254,43 @@ function patchInsetStitch(polys, d, opts = {}) {
   return { insets, seams };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch};
+/* ---- オフセットの選択：1回クリック＝交点から交点まで、ダブルクリック＝つながった図形全体 ---- */
+/** クリックした図形の「つながった線」（結合点は通過点）から、オフセットする範囲を求める。
+ *  whole=false：他の図形との交点から交点までの区間（交点が無ければ全体）。whole=true：つながった図形全体（閉じていれば閉じた図形）。
+ *  戻り値 {points, closed, shapeIds, whole, single}。points は平坦化した点列。single は全体が1つの図形のときその図形。 */
+function offsetSpan(shapes, hit, p, whole = false, tol = 0.01) {
+  const chain = chainShapes(shapes, tol).find(c => c.shapeIds.includes(hit.id)); if (!chain) return null;
+  const members = chain.items.map(i => i.shape), closed = chain.closed;
+  let pts = []; chain.items.forEach((item, i) => { let ps = flattenShape(item.shape, 0.01); if (item.reversed) ps = [...ps].reverse(); pts.push(...(i ? ps.slice(1) : ps)); });
+  if (closed && pts.length > 1 && distance(pts[0], pts.at(-1)) < tol) pts.pop();
+  if (pts.length < 2) return null;
+  const all = { points: pts, closed, shapeIds: chain.shapeIds, whole: true, single: members.length === 1 ? members[0] : null };
+  if (whole) return all;
+  const ring = closed ? [...pts, pts[0]] : pts, cum = [0]; for (let i = 1; i < ring.length; i++) cum.push(cum[i - 1] + distance(ring[i - 1], ring[i]));
+  const total = cum.at(-1); if (!(total > 0)) return null;
+  const project = q => { let best = { s: 0, d: Infinity }; for (let i = 1; i < ring.length; i++) { const a = ring[i - 1], c = ring[i], len = cum[i] - cum[i - 1], t = len ? Math.max(0, Math.min(1, ((q.x - a.x) * (c.x - a.x) + (q.y - a.y) * (c.y - a.y)) / (len * len))) : 0, d = Math.hypot(q.x - (a.x + (c.x - a.x) * t), q.y - (a.y + (c.y - a.y) * t)); if (d < best.d) best = { s: cum[i - 1] + t * len, d }; } return best; };
+  const others = shapes.filter(o => !chain.shapeIds.includes(o.id)), cuts = [];
+  for (const q of allIntersections([...members, ...others], tol)) { if (!q.ids.some(id => chain.shapeIds.includes(id)) || !q.ids.some(id => !chain.shapeIds.includes(id))) continue; const pr = project(q); if (pr.d < 0.05) cuts.push(pr.s); }
+  const sorted = [...new Set(cuts.map(s => Math.round((closed && total - s < 1e-4 ? 0 : s) * 1e4) / 1e4))].sort((x, y) => x - y);
+  if (!sorted.length || (closed && sorted.length === 1)) return all;
+  const sc = project(p).s; let a, c;
+  if (closed) { const prev = sorted.filter(s => s <= sc), next = sorted.filter(s => s > sc); a = prev.length ? prev.at(-1) : sorted.at(-1) - total; c = next.length ? next[0] : sorted[0] + total; }
+  else { const bounds = [0, ...sorted.filter(s => s > 1e-4 && s < total - 1e-4), total]; let k = 0; while (k + 2 < bounds.length && sc > bounds[k + 1]) k++; a = bounds[k]; c = bounds[k + 1]; }
+  const at = s => { const u = ((s % total) + total) % total; const x = closed ? u : Math.max(0, Math.min(total, s)); let i = 1; while (i < ring.length - 1 && cum[i] < x - 1e-9) i++; const len = cum[i] - cum[i - 1], t = len ? (x - cum[i - 1]) / len : 0; return { x: ring[i - 1].x + (ring[i].x - ring[i - 1].x) * t, y: ring[i - 1].y + (ring[i].y - ring[i - 1].y) * t }; };
+  const sub = [at(a)]; for (let k = -1; k <= 1; k++) for (let i = 0; i < ring.length - (closed ? 1 : 0); i++) { const s = cum[i] + k * total; if (s > a + 1e-6 && s < c - 1e-6) sub.push({ ...ring[i] }); } sub.push(at(c));
+  const clean = sub.filter((q, i) => !i || distance(q, sub[i - 1]) > 1e-9);
+  return clean.length >= 2 ? { points: clean, closed: false, shapeIds: chain.shapeIds, whole: false, single: null } : null;
+}
+/** オフセットの結果図形を返す（不成立は null）。d>0 は閉じた図形の外側／開いた線の進行方向の左、d<0 は内側／右。
+ *  全体が1つの円・円弧・線などなら正確な図形、つながった線や区間は平坦化した折れ線（閉じていれば閉じた折れ線）。 */
+function offsetSpanResult(sel, d, { join = 'miter' } = {}) {
+  if (!sel || !Number.isFinite(d) || d === 0) return null;
+  if (sel.whole && sel.single && sel.single.type !== 'polyline') return offsetShape(sel.single, d);
+  const points = offsetPolyline(sel.points, d, sel.closed, { join });
+  return points.length >= (sel.closed ? 3 : 2) ? { type: 'polyline', points, closed: sel.closed } : null;
+}
+
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, offsetSpan, offsetSpanResult};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -8323,7 +8375,7 @@ const HELP_JA = {
     {
       "id": "drawing",
       "title": "作図と座標",
-      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。"
+      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。\nオフセット：先に作図オプションで「オフセット距離」と「向き」（外側／内側）を決めておきます。図形をクリックすると、他の図形との交点から交点までの区間を選び（橙色で表示）、ダブルクリックするとつながった図形全体（閉じていれば閉じた図形）を選びます。Enter か「選んだ範囲をオフセット」で実行します。つながった線は結合点をまたいで1つとして扱います。閉じた図形は外側と内側、開いた線は進行方向の左（外側）と右（内側）。結果は黄色の点線で、色と線種は情報カードで変えられます。"
     },
     {
       "id": "stitching",
@@ -8462,7 +8514,7 @@ const HELP_EN = {
     {
       "id": "drawing",
       "title": "Drawing and coordinates",
-      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox.\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0."
+      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox.\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0.\nOffset: first set the Offset distance and Side (outside / inside) in Drawing options. Click a shape to select the part between intersections with other shapes (shown in orange); double-click to select the whole connected shape (a closed shape if it is closed). Press Enter or the Offset button to run it. Connected lines are treated as one, passing through their joints. Closed shapes go outside or inside; open lines go to the left (outside) or right (inside) of travel. The result is a yellow dashed line; change color and line style in the Info card."
     },
     {
       "id": "stitching",
@@ -8622,7 +8674,7 @@ const { DATA_STITCH_COLORS } = __mods['data/stitch-colors'];
 const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
-const { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -8636,6 +8688,7 @@ const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
+let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
@@ -8806,7 +8859,7 @@ function showTour() {
   render(); $('tourDialog').showModal();
 }
 function initStitch() {
-  $('chainOffset').checked=false; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
+  $('offsetDist').value='3'; $('offsetSide').value='out'; $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
   try { const saved = localStorage.getItem('leather-cad.snapDist'); $('snapDist').value = saved !== null && Number.isFinite(Number(saved)) && Number(saved) >= 0 ? saved : '10'; } catch { $('snapDist').value = '10'; }
   $('snapDist').addEventListener('change', () => { try { localStorage.setItem('leather-cad.snapDist', String(Math.max(0, Number($('snapDist').value) || 0))); } catch { /* 保存できなくても続ける */ } draw(); });
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'2',defaultMark:'tool'};
@@ -9103,6 +9156,8 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
+  $('offsetRun').onclick = () => runOffset();
+  $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
@@ -10003,7 +10058,7 @@ function commit(fn) {
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   draw();
 }
-function cancel() { gesture = null; stage = null; snap = null; }
+function cancel() { gesture = null; stage = null; snap = null; offsetSelection = null; }
 function setMode(next) {
   cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open;
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
@@ -10125,16 +10180,27 @@ function roundPolylineAt(poly, p) {
   });
   $('hint').textContent = t('hint.' + mode);
 }
+/** オフセットの選択：1回クリック＝他の図形との交点から交点までの区間、ダブルクリック＝つながった図形全体。 */
+function offsetClick(p, whole) {
+  const shapes = doc.shapes.filter(s => visible(s) && stitchable(s)), hit = shapes.filter(s => editable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale);
+  if (!hit) { offsetSelection = null; $('hint').textContent = t('offsetNone'); draw(); return; }
+  const sel = offsetSpan(shapes, hit, p, whole); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
+  offsetSelection = { ...sel, layer: hit.layer }; draw();
+  if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
+  $('hint').textContent = t(sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
+}
+/** 選んだ範囲を、距離と向き（内側／外側）でオフセットする。結果は黄色の点線。 */
+function runOffset(override = null) {
+  const sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
+  let d; if (override !== null) d = override; else { const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; } d = $('offsetSide').value === 'in' ? -dist : dist; }
+  const result = offsetSpanResult(sel, d, { join: $('offsetJoin').value }); if (!result) { $('hint').textContent = t('impossible'); return; }
+  offsetSelection = null; addShape({ ...result, id: freshId(doc.shapes, 's'), layer: sel.layer, color: 'yellow', lineStyle: 'dashed' });
+  $('hint').textContent = t('offsetDone', { d: Math.abs(d), side: t(d < 0 ? 'offsetIn' : 'offsetOut') }); draw();
+}
 function editAt(p) {
+  if (mode === 'offset') { offsetClick(p, false); return; }
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline'));
   if (!hit) return;
-  if (mode === 'offset') {
-    const d = askNumber('offsetDistance', 3); if (d === null) return;
-    const route=chainShapes(doc.shapes.filter(s=>editable(s)&&stitchable(s))).find(p=>p.shapeIds.includes(hit.id));
-    const result = $('chainOffset').checked && route?.items.length>1 ? offsetPath(route,d,{join:$('offsetJoin').value}) : hit.type==='polyline' && $('offsetJoin').value==='round' ? offsetPath(chainShapes([hit])[0],d,{join:'round'}) : offsetShape(hit, d);
-    if (!result) { $('hint').textContent = t('impossible'); return; }
-    addShape({ ...result, id: freshId(doc.shapes, 's'), layer: hit.layer }); return;
-  }
   if (hit.type === 'polyline') { roundPolylineAt(hit, p); return; }
   if (!stage) { stage = { kind: 'chamfer', id: hit.id }; selected = new Set([hit.id]); draw(); $('hint').textContent = t('secondLine'); return; }
   if (stage.id === hit.id) return;
@@ -10351,6 +10417,7 @@ function draw() {
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
   drawCenterMarks();
+  if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
@@ -10454,6 +10521,7 @@ canvas.addEventListener('pointermove', e => {
 canvas.addEventListener('dblclick', e => {
   const p = local(e), w = world(p);
   if (mode === 'path') { finishPath(false); return; }
+  if (mode === 'offset') { offsetClick(w, true); return; } /* ダブルクリック＝つながった図形全体を選ぶ */
   if (mode === 'line' && stage?.kind === 'cmd') { stage = null; $('hint').textContent = t('hint.line'); draw(); return; } // 終点でダブルクリック＝連続線の確定
   if (mode === 'select') {
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
@@ -10563,6 +10631,7 @@ window.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
+  else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }
   else if (e.key === 'Enter' && mode === 'line' && stage?.kind === 'cmd') { e.preventDefault(); stage = null; $('hint').textContent = t('hint.line'); draw(); }
   else if (e.key === 'Enter' && stage?.kind === 'polyline') { e.preventDefault(); finishPolyline(); }
   else if (e.key === 'Enter' && stage?.kind === 'path') { e.preventDefault(); finishPath(false); }
