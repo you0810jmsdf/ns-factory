@@ -127,15 +127,16 @@ function routeForHit(hit) {
   saved={id:freshId(doc.paths,'p'),shapeIds:route.shapeIds,reversed:$('reversePath').checked,closed:route.closed,segments:[],mark:'tool'};
   return {saved,route:{...route,reversed:saved.reversed},fresh:true};
 }
-function stampAt(p,single=false) {
+/** 目打ち／目印ツールのクリック処理。markKind が 'tool' 以外（'dot'）なら、線・曲線の上の最寄り位置に点の目印を1つ打つ。 */
+function stampAt(p,single=false,markKind='tool') {
   const hit=doc.shapes.filter(s=>editable(s)&&stitchable(s)).reverse().find(s=>distToShape(s,p)<=8/scale),tool=doc.tools.find(t=>t.id===$('stitchTool').value);
   if(!hit||!tool)return;
   try {
     const state=routeForHit(hit);if(!state?.route)return;
     const {saved,fresh}=state;
     if(!saved.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id))))return;
-    const reverse=$('reversePath').checked, route={...state.route,reversed:reverse},len=arcLength(route),opts=stitchOptions(),manual=$('placement').value==='manual'||single;
-    const from=Math.max(opts.from,opts.offsetStart),to=Math.min(opts.to,len-opts.offsetEnd);
+    const isMark=markKind!=='tool',reverse=isMark?!!saved.reversed:$('reversePath').checked, route={...state.route,reversed:reverse},len=arcLength(route),opts=stitchOptions(),manual=$('placement').value==='manual'||single;
+    const from=isMark?0:Math.max(opts.from,opts.offsetStart),to=isMark?len:Math.min(opts.to,len-opts.offsetEnd); /* 目印は始端の空き・区間設定に縛られず、線上のどこにでも打てる */
     if(from>to || len<1e-9){$('hint').textContent=t('invalidRange');return;}
     let points,next=null;
     if(manual){
@@ -160,8 +161,8 @@ function stampAt(p,single=false) {
       for(const p of points){
         const position=saved.closed && Math.abs(p.s-len)<1e-7?0:p.s;
         if(doc.holes.some(h=>h.pathId===saved.id&&Math.abs(h.s-position)<1e-5))continue;
-        const angle=($('followTangent').checked?p.angleDeg:0)+($('reverseSlant').checked?-tool.angleDeg:tool.angleDeg),id=freshId(doc.holes,'h');
-        doc.holes.push({...p,s:position,id,pathId:saved.id,toolId:tool.id,angleDeg:angle,mark:'tool'});added.push(id);
+        const angle=isMark?p.angleDeg:($('followTangent').checked?p.angleDeg:0)+($('reverseSlant').checked?-tool.angleDeg:tool.angleDeg),id=freshId(doc.holes,'h');
+        doc.holes.push({...p,s:position,id,pathId:saved.id,toolId:tool.id,angleDeg:angle,mark:markKind});added.push(id);
       }
       saved.segments.push({from:manual?(points[0]?.s??from):from,to:manual?(points.at(-1)?.s??from):to,toolId:tool.id,pitch:tool.pitch,mode:manual?'manual':$('placement').value});
       selected=new Set(added);
@@ -182,7 +183,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -1341,7 +1342,7 @@ function commit(fn) {
 }
 function cancel() { gesture = null; stage = null; snap = null; }
 function setMode(next) {
-  cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || $('stitchCard').open;
+  cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open;
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = t('hint.' + mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
@@ -1733,6 +1734,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
+  if (mode === 'mark') { stampAt(world(p), true, 'dot'); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
   if (mode === 'hardware') { placeHardware(cursor); return; }

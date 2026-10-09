@@ -98,6 +98,7 @@
 <button data-tool="koma"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10h12v10M6 7l3 3-3 3M15 13l3 3-3 3"/></svg><span data-i18n="koma"></span></button>
 <button data-tool="seam"><svg class="ic" viewBox="0 0 24 24"><path d="M4 12h7M13 12h7" /><path d="M8 8l-3 4 3 4M16 8l3 4-3 4"/></svg><span data-i18n="seam"></span></button>
 <button data-tool="stitch"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M7 10l2 2-2 2M12 10l2 2-2 2M17 10l2 2-2 2"/></svg><span data-i18n="stitch"></span></button>
+<button data-tool="mark"><svg class="ic" viewBox="0 0 24 24"><path d="M3 18C8 18 8 6 13 6s5 12 8 12"/><circle cx="13" cy="6" r="2" fill="currentColor"/></svg><span data-i18n="markTool"></span></button>
 <div class="group" data-i18n="selection"></div>
 <button id="copy" data-i18n="copy"></button><button id="mirrorX" data-i18n="mirrorX"></button><button id="mirrorY" data-i18n="mirrorY"></button><button id="rotate" data-i18n="rotate"></button><button id="toPath" data-i18n="toPath"></button><button id="delete" data-i18n="delete"></button>
 </aside>
@@ -1085,6 +1086,8 @@ const MESSAGES = {
     "hint.fillet": "2本の線、または折れ線をクリックして半径を指定します。折れ線は角の近くでその角だけ、辺の途中で全部の角を丸めます。",
     "stitch": "目打ち",
     "hint.stitch": "線をクリックして配置。手動は繰り返しクリック、Alt/⌥ は1穴。",
+    "markTool": "目印",
+    "hint.mark": "線・曲線の上をクリックした位置に、点の目印を1つずつ打ちます。つながった線は結合点をまたいで1本の線として扱います。点の大きさは目打ちカードの「点の直径」。",
     "stitchSettings": "目打ち・穴編集",
     "stitchTool": "使用する工具",
     "placement": "配置方法",
@@ -1701,6 +1704,8 @@ const MESSAGES = {
     "hint.fillet": "Click two connected lines or a polyline and enter a radius. On a polyline, click near a corner for that corner only, or along an edge for every corner.",
     "stitch": "Stitching",
     "hint.stitch": "Click a path to place holes. Repeat clicks in manual mode; Alt/⌥ places one hole.",
+    "markTool": "Mark",
+    "hint.mark": "Click on a line or curve to drop a dot mark at that spot, one at a time. Connected lines are treated as one path, passing through their joints. Dot size is \"Dot diameter\" in the Stitching card.",
     "stitchSettings": "Stitching / hole editing",
     "stitchTool": "Current tool",
     "placement": "Placement",
@@ -8137,7 +8142,7 @@ const HELP_JA = {
     {
       "id": "stitching",
       "title": "目打ちの配置・編集",
-      "body": "目打ちで線をクリックすると連続経路へ配置します。分岐では経路を分けます。固定／可変／両端等分割／手動を選び、始終端の余白や区間の s（逆向き指定後の始点からの距離）を指定できます。区間だけを再配置して工具を混在させます。手動の送りは (刃数−1)×ピッチ。1本刃は1ピッチ進みます。Alt/⌥+クリックはその場所に1穴。金色の四角は次の先頭刃です。閉経路の穴は重複しません。返し縫いで2〜3目を重ねる場合も穴は共有します。\n選択ツールで穴を選んでドラッグ（線上拘束／自由）。Shift で複数選択。角度・逆目・削除は選択穴、または選択図形の経路全体に適用。図形の移動・コピーは縫い経路全体を対象にします。ロックされたレイヤーの穴は変更しません。\n点の既定径は0.5mm。形は穴→経路→全体→工具の順で解決します。丸目は工具の穴径、circle指定はholeWを使用。工具更新は寸法を更新し、既存穴のピッチと角度は維持します（再配置で反映）。工具設定をブラウザに、全工具と穴を文書JSONにも保存。駒合わせはSTEP 6、SVG/PDF/DXF出力は後続STEP。\n現物の菱目に合わせる：目打ちカードの工具欄で穴の幅・高さ（刃の長さ）・傾きを実測値にして「更新」。「テスト片を印刷」で 10 穴と 50mm 目盛りを実寸印刷し、現物の刃を当てて確かめます。読み込んだ図面（.lcc など）の穴が描画用の小さな工具になっているときは「付け替え」で登録済みの工具に移すと、穴の大きさが現物どおりになります。"
+      "body": "目打ちで線をクリックすると連続経路へ配置します。分岐では経路を分けます。固定／可変／両端等分割／手動を選び、始終端の余白や区間の s（逆向き指定後の始点からの距離）を指定できます。区間だけを再配置して工具を混在させます。手動の送りは (刃数−1)×ピッチ。1本刃は1ピッチ進みます。Alt/⌥+クリックはその場所に1穴。金色の四角は次の先頭刃です。閉経路の穴は重複しません。返し縫いで2〜3目を重ねる場合も穴は共有します。\n選択ツールで穴を選んでドラッグ（線上拘束／自由）。Shift で複数選択。角度・逆目・削除は選択穴、または選択図形の経路全体に適用。図形の移動・コピーは縫い経路全体を対象にします。ロックされたレイヤーの穴は変更しません。\n点の既定径は0.5mm。形は穴→経路→全体→工具の順で解決します。丸目は工具の穴径、circle指定はholeWを使用。工具更新は寸法を更新し、既存穴のピッチと角度は維持します（再配置で反映）。工具設定をブラウザに、全工具と穴を文書JSONにも保存。駒合わせはSTEP 6、SVG/PDF/DXF出力は後続STEP。\n現物の菱目に合わせる：目打ちカードの工具欄で穴の幅・高さ（刃の長さ）・傾きを実測値にして「更新」。「テスト片を印刷」で 10 穴と 50mm 目盛りを実寸印刷し、現物の刃を当てて確かめます。読み込んだ図面（.lcc など）の穴が描画用の小さな工具になっているときは「付け替え」で登録済みの工具に移すと、穴の大きさが現物どおりになります。\n目印ツール：線や曲線の上をクリックすると、その位置に点の目印を1つ打ちます（始点を自分で決められ、線上のどこにでも打てます）。つながった線は結合点をまたいで1本の線として扱い、結合点も通過点になります。目印は縫い穴と同じ経路上の点で、点の直径は目打ちカードの「点の直径」で変えられます。選択して削除や移動もできます。"
     },
     {
       "id": "pen",
@@ -8276,7 +8281,7 @@ const HELP_EN = {
     {
       "id": "stitching",
       "title": "Stitching and editing",
-      "body": "Click a shape with Stitching to place holes along a connected path. Branches split paths. Choose fixed, variable, equal margins, or manual placement; set margins and an s section measured from the chosen start direction. Replacing only a section allows mixed tools. Manual advance is (teeth−1) × pitch; a single-tooth tool advances one pitch. Alt/⌥+click places one hole at the clicked position. The gold square marks the next first tooth. Closed paths never duplicate the seam hole; backstitching reuses 2–3 holes.\nUse Select to drag holes freely or constrained to the path. Shift selects multiple holes. Angle, slant and deletion affect selected holes or the selected shape’s whole path. Shape moves and copies include the entire stitch path. Locked layers are protected.\nDots default to 0.5mm diameter. Mark precedence is hole, path, document, tool. Round tools use holeD; an explicit circle mark uses holeW. Tool updates change dimensions but keep existing hole pitch and angle; replace holes to apply these settings. Tools persist in browser storage and document JSON. Matched stitching is STEP 6; SVG/PDF/DXF exports are later steps.\nMatching the real iron: in the Stitch card set hole width, height (blade length) and slant to measured values and press Update. \"Print test strip\" prints 10 holes with a 50 mm scale at actual size to compare with the iron. If an imported drawing (.lcc etc.) uses a small drawing-only tool, reassign its holes to a registered tool so the hole size matches the real iron."
+      "body": "Click a shape with Stitching to place holes along a connected path. Branches split paths. Choose fixed, variable, equal margins, or manual placement; set margins and an s section measured from the chosen start direction. Replacing only a section allows mixed tools. Manual advance is (teeth−1) × pitch; a single-tooth tool advances one pitch. Alt/⌥+click places one hole at the clicked position. The gold square marks the next first tooth. Closed paths never duplicate the seam hole; backstitching reuses 2–3 holes.\nUse Select to drag holes freely or constrained to the path. Shift selects multiple holes. Angle, slant and deletion affect selected holes or the selected shape’s whole path. Shape moves and copies include the entire stitch path. Locked layers are protected.\nDots default to 0.5mm diameter. Mark precedence is hole, path, document, tool. Round tools use holeD; an explicit circle mark uses holeW. Tool updates change dimensions but keep existing hole pitch and angle; replace holes to apply these settings. Tools persist in browser storage and document JSON. Matched stitching is STEP 6; SVG/PDF/DXF exports are later steps.\nMatching the real iron: in the Stitch card set hole width, height (blade length) and slant to measured values and press Update. \"Print test strip\" prints 10 holes with a 50 mm scale at actual size to compare with the iron. If an imported drawing (.lcc etc.) uses a small drawing-only tool, reassign its holes to a registered tool so the hole size matches the real iron.\nMark tool: click on a line or curve to drop a dot mark at that spot, one at a time (you choose the start and can mark anywhere along the line). Connected lines are treated as one path and their joints are passed through. Marks are points on the same path as stitch holes; the size is \"Dot diameter\" in the Stitching card. You can select, move or delete them."
     },
     {
       "id": "pen",
@@ -8532,15 +8537,16 @@ function routeForHit(hit) {
   saved={id:freshId(doc.paths,'p'),shapeIds:route.shapeIds,reversed:$('reversePath').checked,closed:route.closed,segments:[],mark:'tool'};
   return {saved,route:{...route,reversed:saved.reversed},fresh:true};
 }
-function stampAt(p,single=false) {
+/** 目打ち／目印ツールのクリック処理。markKind が 'tool' 以外（'dot'）なら、線・曲線の上の最寄り位置に点の目印を1つ打つ。 */
+function stampAt(p,single=false,markKind='tool') {
   const hit=doc.shapes.filter(s=>editable(s)&&stitchable(s)).reverse().find(s=>distToShape(s,p)<=8/scale),tool=doc.tools.find(t=>t.id===$('stitchTool').value);
   if(!hit||!tool)return;
   try {
     const state=routeForHit(hit);if(!state?.route)return;
     const {saved,fresh}=state;
     if(!saved.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id))))return;
-    const reverse=$('reversePath').checked, route={...state.route,reversed:reverse},len=arcLength(route),opts=stitchOptions(),manual=$('placement').value==='manual'||single;
-    const from=Math.max(opts.from,opts.offsetStart),to=Math.min(opts.to,len-opts.offsetEnd);
+    const isMark=markKind!=='tool',reverse=isMark?!!saved.reversed:$('reversePath').checked, route={...state.route,reversed:reverse},len=arcLength(route),opts=stitchOptions(),manual=$('placement').value==='manual'||single;
+    const from=isMark?0:Math.max(opts.from,opts.offsetStart),to=isMark?len:Math.min(opts.to,len-opts.offsetEnd); /* 目印は始端の空き・区間設定に縛られず、線上のどこにでも打てる */
     if(from>to || len<1e-9){$('hint').textContent=t('invalidRange');return;}
     let points,next=null;
     if(manual){
@@ -8565,8 +8571,8 @@ function stampAt(p,single=false) {
       for(const p of points){
         const position=saved.closed && Math.abs(p.s-len)<1e-7?0:p.s;
         if(doc.holes.some(h=>h.pathId===saved.id&&Math.abs(h.s-position)<1e-5))continue;
-        const angle=($('followTangent').checked?p.angleDeg:0)+($('reverseSlant').checked?-tool.angleDeg:tool.angleDeg),id=freshId(doc.holes,'h');
-        doc.holes.push({...p,s:position,id,pathId:saved.id,toolId:tool.id,angleDeg:angle,mark:'tool'});added.push(id);
+        const angle=isMark?p.angleDeg:($('followTangent').checked?p.angleDeg:0)+($('reverseSlant').checked?-tool.angleDeg:tool.angleDeg),id=freshId(doc.holes,'h');
+        doc.holes.push({...p,s:position,id,pathId:saved.id,toolId:tool.id,angleDeg:angle,mark:markKind});added.push(id);
       }
       saved.segments.push({from:manual?(points[0]?.s??from):from,to:manual?(points.at(-1)?.s??from):to,toolId:tool.id,pitch:tool.pitch,mode:manual?'manual':$('placement').value});
       selected=new Set(added);
@@ -8587,7 +8593,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -9746,7 +9752,7 @@ function commit(fn) {
 }
 function cancel() { gesture = null; stage = null; snap = null; }
 function setMode(next) {
-  cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || $('stitchCard').open;
+  cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open;
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = t('hint.' + mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
@@ -10138,6 +10144,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
+  if (mode === 'mark') { stampAt(world(p), true, 'dot'); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
   if (mode === 'hardware') { placeHardware(cursor); return; }
