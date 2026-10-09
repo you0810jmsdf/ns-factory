@@ -386,7 +386,8 @@ function applyInfo(field) {
   else if (field === 'closed') { if (s.type === 'polyline' && s.points.length < 3) return; next.closed = $('info-closed').checked; }
   else if (field === 'inner') { next.inner = $('info-inner').checked; }
   else if (field === 'color' || field === 'lineStyle') { const v = $('info-' + field).value; if (v) next[field] = v; else delete next[field];
-    if (field === 'lineStyle' && v === 'dashed' && s.lineStyle !== 'dashed' && s.layer !== 'guide' && doc.layers.some(l => l.id === 'guide')) { next.layer = 'guide'; const g = doc.layers.find(l => l.id === 'guide'); $('hint').textContent = t(g.visible && !g.locked ? 'dashedToGuide' : 'dashedToGuideHidden'); } } /* 実線を点線にしたら、ガイドの層の図形として扱う（色は問わない） */
+    if (field === 'lineStyle' && v !== 'dashed' && s.lineStyle === 'dashed' && s.layer === 'guide' && doc.layers.some(l => l.id === 'pattern')) { next.layer = 'pattern'; $('hint').textContent = t('solidToPattern'); } /* 実線は型紙 */
+    else if (field === 'lineStyle' && v === 'dashed' && s.lineStyle !== 'dashed' && s.layer !== 'guide' && doc.layers.some(l => l.id === 'guide')) { next.layer = 'guide'; const g = doc.layers.find(l => l.id === 'guide'); $('hint').textContent = t(g.visible && !g.locked ? 'dashedToGuide' : 'dashedToGuideHidden'); } } /* 実線を点線にしたら、ガイドの層の図形として扱う（色は問わない） */
   else if (field === 'length') {
     const len = num('length'); if (!(len > 0)) { $('hint').textContent = t('invalidNumber'); return; }
     if (s.type === 'line' || s.type === 'dimension') { const cur = distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }); if (cur < 1e-9) return; next.x2 = s.x1 + (s.x2 - s.x1) * len / cur; next.y2 = s.y1 + (s.y2 - s.y1) * len / cur; }
@@ -1588,7 +1589,8 @@ function addShape(shape) {
   if (layer.id !== activeLayer) $('hint').textContent = t('drawnOnLayer', { name: layer.name });
   let id = 's1', n = 1;
   const ids = new Set(doc.shapes.map(s => s.id)); while (ids.has(id)) id = `s${++n}`;
-  const { layer: wanted, ...rest } = shape, target = wanted && doc.layers.some(l => l.id === wanted && l.visible && !l.locked) ? wanted : layer.id; // 呼び元の layer はロック・非表示でなければ尊重
+  const { layer: wanted, ...rest } = shape; let target = wanted && doc.layers.some(l => l.id === wanted && l.visible && !l.locked) ? wanted : layer.id; // 呼び元の layer はロック・非表示でなければ尊重
+  if ((rest.type === 'text' || rest.type === 'dimension') && doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked)) target = 'guide'; /* 基本方針：文字・寸法線はガイド、実線は型紙 */
   const dashed = target === 'guide' && ['line', 'circle', 'arc', 'bezier', 'polyline', 'path'].includes(rest.type) && !rest.lineStyle ? { lineStyle: 'dashed' } : {}; /* ガイドの層に描く線は、自動で点線 */
   commit(() => { doc.shapes.push({ id, layer: target, ...dashed, ...rest }); selected = new Set([id]); });
 }
@@ -1715,8 +1717,8 @@ function runOffset(override = null) {
   const sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
   let d; if (override !== null) d = override; else { const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; } d = $('offsetSide').value === 'in' ? -dist : dist; }
   const result = offsetSpanResult(sel, d, { join: $('offsetJoin').value }); if (!result) { $('hint').textContent = t('impossible'); return; }
-  /* 結果は作図先の層に入れる（作図先が非表示・ロック中なら、見えなくならないよう元の図形の層） */
-  const dest = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || sel.layer;
+  /* 結果は点線なのでガイドの層へ（ガイドが非表示・ロック中なら、見えなくならないよう作図先、なければ元の図形の層） */
+  const dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || sel.layer; /* 点線はガイド。ガイドが使えないときだけ作図先・元の層 */
   offsetSelection = null; addShape({ ...result, id: freshId(doc.shapes, 's'), layer: dest, color: 'yellow', lineStyle: 'dashed' });
   $('hint').textContent = t('offsetDone', { d: Math.abs(d), side: t(d < 0 ? 'offsetIn' : 'offsetOut') }); draw();
 }
