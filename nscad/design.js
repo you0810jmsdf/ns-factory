@@ -329,20 +329,3 @@ export function offsetSpanResult(sel, d, { join = 'miter' } = {}) {
   const points = offsetPolyline(sel.points, d, sel.closed, { join });
   return points.length >= (sel.closed ? 3 : 2) ? { type: 'polyline', points, closed: sel.closed } : null;
 }
-
-/** 多角形ピースの中心（重心）を通る縦（dir='v'）または横（dir='h'）の線分を返す。多角形の内側にある区間（端から端まで）のうち、中心を含むもの（無ければ最長）。不成立は null。 */
-export function pieceCenterLine(points, dir = 'v') {
-  if (!Array.isArray(points) || points.length < 3) return null;
-  let a2 = 0, cx = 0, cy = 0;
-  for (let i = 0; i < points.length; i++) { const p = points[i], q = points[(i + 1) % points.length], cr = p.x * q.y - q.x * p.y; a2 += cr; cx += (p.x + q.x) * cr; cy += (p.y + q.y) * cr; }
-  if (Math.abs(a2) < 1e-9) return null; cx /= 3 * a2; cy /= 3 * a2;
-  const vertical = dir !== 'h', c = vertical ? cx : cy, along = vertical ? cy : cx, hits = [];
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i], q = points[(i + 1) % points.length], pu = vertical ? p.x : p.y, qu = vertical ? q.x : q.y, pv = vertical ? p.y : p.x, qv = vertical ? q.y : q.x;
-    if ((pu > c) !== (qu > c)) hits.push(pv + (c - pu) / (qu - pu) * (qv - pv));
-  }
-  hits.sort((x, y) => x - y); let best = null;
-  for (let i = 0; i + 1 < hits.length; i += 2) { const seg = [hits[i], hits[i + 1]]; if (seg[1] - seg[0] < 1e-6) continue; if (!best || (along >= seg[0] && along <= seg[1]) || (!(along >= best[0] && along <= best[1]) && seg[1] - seg[0] > best[1] - best[0])) best = seg; }
-  if (!best) return null;
-  return vertical ? { a: { x: c, y: best[0] }, b: { x: c, y: best[1] } } : { a: { x: best[0], y: c }, b: { x: best[1], y: c } };
-}
