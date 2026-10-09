@@ -6,7 +6,7 @@ import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, v
 import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
-import { instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem } from './library.js';
+import { varStep, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem } from './library.js';
 import { docToAiJson, validateActions, estimateYen, roughTokens } from './ai_schema.js';
 import { buildDoc, check, threadEstimate, defaultRecipe } from './autodesign.js';
 import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
@@ -1182,7 +1182,7 @@ function renderLibrary() {
   for (const it of libraryItems().filter(it => !q || (it.name + ' ' + (it.name_en || '') + ' ' + (it.tags || []).join(' ')).toLowerCase().includes(q))) { const o = document.createElement('option'); o.value = it.id; o.textContent = (document.documentElement.lang === 'en' && it.name_en ? it.name_en : it.name) + (userLibrary.includes(it) ? ' *' : ''); sel.appendChild(o); }
   if (libraryItems().some(i => i.id === keep)) sel.value = keep;
   const it = libCurrent(), box = $('libVars'); box.textContent = ''; $('libDesc').textContent = it ? (it.desc || '') : '';
-  if (it) for (const [k, v] of Object.entries(it.vars || {})) { const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.5'; input.value = String(v); input.dataset.var = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
+  if (it) for (const [k, v] of Object.entries(it.vars || {})) { const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = String(varStep(it, k)); input.value = String(v); input.dataset.var = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
 }
 function libVars() { const out = {}; for (const el of ($('libVars').children || [])) { const input = el.querySelector ? el.querySelector('input') : null; if (input && input.dataset?.var) out[input.dataset.var] = Number(input.value); } return out; }
 function placeLibrary(at) {
