@@ -53,7 +53,14 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
   const d = parseLcc(input); if (!d) throw new Error('not-lcc');
   const doc = newDoc(), warnings = [];
   const layerNames = (d.layers || []).map((l, i) => ({ idx: String(l.id ?? i), name: String(l.nam || `layer ${i + 1}`) }));
-  const layerId = s => { const key = String(s.layer ?? '0'); const l = layerNames.find(x => x.idx === key); if (!l) return 'pattern'; const id = 'lc' + key; if (!doc.layers.some(x => x.id === id)) doc.layers.push({ id, name: l.name, visible: true, locked: false }); return id; };
+  // .lcc は 1 レイヤーに全図形がフラットに入っていることが多く、代わりに色で用途を区別している（革の色ではない）。
+  // 実測：Aqua＝輪郭（カット線）、Lime＝パッチ分割線、Orange＝寸法（線・文字）、Yellow＝目印。それ以外は元のレイヤー番号へ。
+  const COLOR_LAYER = { Aqua: { id: 'lcc-outline', name: '輪郭（Aqua）' }, Lime: { id: 'lcc-patch', name: 'パッチ線（Lime）' }, Orange: { id: 'lcc-dim', name: '寸法（Orange）' }, Yellow: { id: 'lcc-mark', name: '目印（Yellow）' } };
+  const layerId = s => {
+    const col = COLOR_LAYER[s.color];
+    if (col) { if (!doc.layers.some(x => x.id === col.id)) doc.layers.push({ id: col.id, name: col.name, visible: true, locked: false }); return col.id; }
+    const key = String(s.layer ?? '0'); const l = layerNames.find(x => x.idx === key); if (!l) return 'pattern'; const id = 'lc' + key; if (!doc.layers.some(x => x.id === id)) doc.layers.push({ id, name: l.name, visible: true, locked: false }); return id;
+  };
   let n = 0; const sid = () => 's' + (++n);
   const holes = [];
   for (const s of d.shapes) {
