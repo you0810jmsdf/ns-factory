@@ -241,3 +241,27 @@ export function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio =
   }
   return { pieces, dropped, tiles: tiles.length };
 }
+
+/** 隣り合う多角形ピースの共有辺（一直線上で重なる辺）から縫い合わせを求める。
+ *  pieces は閉じた多角形の頂点配列（最初の頂点から順に周る経路）。戻り値 [{a:{piece,from,to}, b:{piece,from,to}, reversed}]。
+ *  from/to は各ピースの経路上の道のり(mm・昇順)。reversed は b の辺が a の辺と逆向きに走るとき true。重なりが minOverlap 未満は無視。 */
+export function patchSeamsFromPieces(pieces, { minOverlap = 0.5, tol = 1e-3 } = {}) {
+  const info = pieces.map(ps => { const cum = [0]; for (let i = 0; i < ps.length; i++) cum.push(cum[i] + distance(ps[i], ps[(i + 1) % ps.length])); const xs = ps.map(q => q.x), ys = ps.map(q => q.y); return { ps, cum, minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) }; });
+  const seams = [];
+  for (let i = 0; i < pieces.length; i++) for (let j = i + 1; j < pieces.length; j++) {
+    const P = info[i], Q = info[j];
+    if (P.maxX < Q.minX - tol || Q.maxX < P.minX - tol || P.maxY < Q.minY - tol || Q.maxY < P.minY - tol) continue;
+    for (let e = 0; e < P.ps.length; e++) {
+      const a0 = P.ps[e], a1 = P.ps[(e + 1) % P.ps.length], lenE = P.cum[e + 1] - P.cum[e]; if (lenE < DEPS) continue;
+      const ux = (a1.x - a0.x) / lenE, uy = (a1.y - a0.y) / lenE, along = q => (q.x - a0.x) * ux + (q.y - a0.y) * uy, off = q => Math.abs((q.x - a0.x) * uy - (q.y - a0.y) * ux);
+      for (let f = 0; f < Q.ps.length; f++) {
+        const b0 = Q.ps[f], b1 = Q.ps[(f + 1) % Q.ps.length], lenF = Q.cum[f + 1] - Q.cum[f]; if (lenF < DEPS || off(b0) > tol || off(b1) > tol) continue;
+        const t0 = along(b0), t1 = along(b1), lo = Math.max(0, Math.min(t0, t1)), hi = Math.min(lenE, Math.max(t0, t1));
+        if (hi - lo < minOverlap) continue;
+        const u = t => (t - t0) / (t1 - t0) * lenF, qa = u(lo), qb = u(hi);
+        seams.push({ a: { piece: i, from: P.cum[e] + lo, to: P.cum[e] + hi }, b: { piece: j, from: Q.cum[f] + Math.min(qa, qb), to: Q.cum[f] + Math.max(qa, qb) }, reversed: t1 < t0 });
+      }
+    }
+  }
+  return seams;
+}
