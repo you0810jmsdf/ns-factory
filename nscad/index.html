@@ -138,6 +138,9 @@
 <label><span data-i18n="activeLayer"></span><select id="layerList"></select></label>
 <label><span data-i18n="layerName"></span><input id="layerName" type="text" maxlength="40"></label>
 <div class="row"><label><input id="layerVisible" type="checkbox" checked><span data-i18n="visible"></span></label><label><input id="layerLocked" type="checkbox"><span data-i18n="locked"></span></label></div>
+<div id="layerRows"></div>
+<div class="row"><button id="layerSolo" data-i18n="layerSolo"></button><button id="layerAll" data-i18n="layerAll"></button></div>
+<div class="row"><button id="layerMove" data-i18n="layerMove"></button></div>
 <div class="row"><button id="addLayer" data-i18n="addLayer"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
 </div></details>
 <details class="card" id="stitchCard"><summary data-i18n="stitchSettings"></summary><div class="body" id="stitchPanel">
@@ -419,8 +422,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=f3faae6c","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=302938e0","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=4052f6b7","./help/ja.js":"./help/ja.js?v=f1099f04","./i18n.js":"./i18n.js?v=a26b5a47","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=cc7d3d59","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=f3faae6c"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=cecf6051","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=302938e0","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=4052f6b7","./help/ja.js":"./help/ja.js?v=f1099f04","./i18n.js":"./i18n.js?v=1aafe170","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=cc7d3d59","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=cecf6051"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1313,6 +1316,13 @@ const MESSAGES = {
     "activeLayer": "作図先",
     "layerName": "名前",
     "visible": "表示",
+    "layerSolo": "作図先の層だけ表示（他を隠す）",
+    "layerAll": "すべて表示",
+    "layerMove": "選んだ図形を、作図先の層へ移す",
+    "layerMoved": "{n} 個の図形を「{name}」へ移しました。",
+    "layerMoveNone": "移す図形が選ばれていません（ロック中の層の図形は移せません）。",
+    "layerMoveBlocked": "「{name}」は非表示かロック中なので、図形を移せません。",
+    "layerSoloDone": "「{name}」だけを表示しました。",
     "locked": "ロック",
     "addLayer": "追加",
     "removeLayer": "削除",
@@ -1991,6 +2001,13 @@ const MESSAGES = {
     "activeLayer": "Draw on",
     "layerName": "Name",
     "visible": "Visible",
+    "layerSolo": "Show only the drawing layer (hide others)",
+    "layerAll": "Show all",
+    "layerMove": "Move selected shapes to the drawing layer",
+    "layerMoved": "Moved {n} shapes to \"{name}\".",
+    "layerMoveNone": "No shapes to move are selected (shapes on locked layers cannot be moved).",
+    "layerMoveBlocked": "\"{name}\" is hidden or locked, so shapes cannot be moved there.",
+    "layerSoloDone": "Showing only \"{name}\".",
     "locked": "Locked",
     "addLayer": "Add",
     "removeLayer": "Remove",
@@ -10061,11 +10078,36 @@ function renderLayers() {
   }
   const l = doc.layers.find(l => l.id === activeLayer);
   $('layerList').value = activeLayer; $('layerName').value = layerName(l); $('layerVisible').checked = l.visible; $('layerLocked').checked = l.locked;
+  /* 各層の表示・ロックを一覧で切り替える（層を1つずつ選ばなくてよい） */
+  const rows = $('layerRows'); rows.textContent = '';
+  for (const lay of doc.layers) {
+    const row = document.createElement('div'); row.className = 'row';
+    const box = (key, text) => { const label = document.createElement('label'), input = document.createElement('input'), span = document.createElement('span'); input.type = 'checkbox'; input.checked = !!lay[key]; span.textContent = text;
+      input.addEventListener('change', () => setLayerFlag(lay.id, key, input.checked)); label.appendChild(input); label.appendChild(span); return label; };
+    const name = document.createElement('span'); name.textContent = layerName(lay); name.style.flex = '1'; row.appendChild(name); row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked'))); rows.appendChild(row);
+  }
+}
+/** 層の表示／ロックを1つ変える（元に戻せる）。作図先が使えなくなったら、表示中でロックされていない層へ移す。 */
+function setLayerFlag(id, key, value) {
+  commit(() => { const l = doc.layers.find(x => x.id === id); if (l) l[key] = value; selected.clear(); }); fixActiveLayer(); renderLayers();
+}
+function fixActiveLayer() { const l = doc.layers.find(x => x.id === activeLayer); if (!l || !l.visible || l.locked) { const n = doc.layers.find(x => x.visible && !x.locked); if (n) activeLayer = n.id; } }
+/** 作図先の層だけを表示し、他の層を隠す。 */
+function soloLayer() { const keep = doc.layers.find(x => x.id === activeLayer); if (!keep) return; commit(() => { for (const l of doc.layers) l.visible = l === keep; selected.clear(); }); renderLayers(); $('hint').textContent = t('layerSoloDone', { name: layerName(keep) }); }
+function showAllLayers() { commit(() => { for (const l of doc.layers) l.visible = true; }); renderLayers(); }
+/** 選んだ図形（複数でもよい）を、作図先の層へ移す。移し先が非表示・ロック中なら何もしない。 */
+function moveSelectedToLayer() {
+  const dest = doc.layers.find(x => x.id === activeLayer); if (!dest) return;
+  if (!dest.visible || dest.locked) { $('hint').textContent = t('layerMoveBlocked', { name: layerName(dest) }); return; }
+  const targets = doc.shapes.filter(s => selected.has(s.id) && editable(s) && s.layer !== dest.id);
+  if (!targets.length) { $('hint').textContent = t('layerMoveNone'); return; }
+  commit(() => { for (const s of targets) s.layer = dest.id; }); renderLayers(); $('hint').textContent = t('layerMoved', { n: targets.length, name: layerName(dest) });
 }
 function initLayers() {
   $('layerList').addEventListener('change', () => { activeLayer = $('layerList').value; renderLayers(); });
   $('layerName').addEventListener('change', () => { const name = $('layerName').value.trim(); if (name) commit(() => { doc.layers.find(l => l.id === activeLayer).name = name; }); renderLayers(); });
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
+  $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
   $('removeLayer').onclick = () => {
