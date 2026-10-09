@@ -25,7 +25,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -42,6 +42,7 @@ let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だ�
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
+let junctions = { joined: [], loose: [] }, blinkOn = true; /* 交点の表示：結合＝赤い点／未結合＝赤い点滅 */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
@@ -612,6 +613,8 @@ function initDesign() {
   $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
+  $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
+  if (typeof setInterval === 'function') setInterval(() => { if (junctions.loose.length && $('showJunctions').checked && !(typeof document !== 'undefined' && document.hidden)) { blinkOn = !blinkOn; draw(); } else blinkOn = true; }, 500); /* 未結合の交点だけ点滅させる */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') window.open('guide.html', '_blank'); }; /* 図解ガイド（日本語）を別タブで開く */
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
@@ -1530,6 +1533,14 @@ function magnetRadiusMm() { const px = Number($('snapDist').value); return Numbe
 const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror'];
 /** 作図ツール中だけ自動で仮表示する中心点。 */
 function centerMarkPoints() { return MAGNET_DRAW_MODES.includes(mode) ? magnetCenters : []; }
+/** 交点の印：端点どうしで接している点＝赤い点、途中で交差している点＝赤い点（点滅）。 */
+function drawJunctions() {
+  if (!$('showJunctions').checked) return; const r = 3.5 / scale;
+  ctx.save(); ctx.setLineDash([]); ctx.fillStyle = '#ff2a2a';
+  for (const p of junctions.joined) { ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); }
+  if (blinkOn) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1 / scale; for (const p of junctions.loose) { ctx.beginPath(); ctx.arc(p.x, p.y, r * 1.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } }
+  ctx.restore();
+}
 function drawCenterMarks() {
   const pts = centerMarkPoints(); if (!pts.length) return;
   ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(138,180,248,0.75)'; ctx.lineWidth = 1 / scale; ctx.beginPath();
@@ -1540,6 +1551,7 @@ function rebuildSnaps() {
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
   snapCache = shapes.flatMap(snapPoints);
   const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
+  junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
   for (let i = 0; i < edges.length; i++) for (let j = i + 1; j < edges.length; j++) {
@@ -1941,7 +1953,7 @@ function draw() {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  drawCenterMarks();
+  drawCenterMarks(); drawJunctions();
   placeOffsetFloat(); syncRulerBar();
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   ctx.setLineDash([5 / scale, 4 / scale]);
