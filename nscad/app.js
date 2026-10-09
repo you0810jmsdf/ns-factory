@@ -579,6 +579,7 @@ function initDesign() {
   $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
+  $('guideBtn').onclick = () => { if (typeof window.open === 'function') window.open('guide.html', '_blank'); }; /* 図解ガイド（日本語）を別タブで開く */
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
