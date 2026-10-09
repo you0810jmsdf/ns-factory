@@ -287,7 +287,7 @@ export function bboxOfDoc(doc) { return bounds([...doc.shapes.flatMap(s => { con
 export const SHAPE_COLORS = ['blue', 'green', 'red', 'white', 'yellow'];
 export const LINE_STYLES = ['solid', 'dashed'];
 /** 新しい独立した version:7 の mm 文書を返す。副作用なし。既定レイヤーは型紙・目印・ガイド（名前が id と同じときは UI 側で翻訳する）。parts＝部品（厚み）、seams＝縫い合わせ線。 */
-export function newDoc() { return { version: 7, unit: 'mm', shapes: [], holes: [], paths: [], parts: [], seams: [], mark: 'tool', dotD: 0.5, layers: [{ id: 'pattern', name: 'pattern', visible: true, locked: false }, { id: 'marks', name: 'marks', visible: true, locked: false }, { id: 'guide', name: 'guide', visible: true, locked: false }], tools: [] }; }
+export function newDoc() { return { version: 7, unit: 'mm', shapes: [], holes: [], paths: [], parts: [], seams: [], mark: 'tool', dotD: 2, layers: [{ id: 'pattern', name: 'pattern', visible: true, locked: false }, { id: 'marks', name: 'marks', visible: true, locked: false }, { id: 'guide', name: 'guide', visible: true, locked: false }], tools: [] }; }
 /** 任意の JSON 値を受け取り、文書構造・有限数・ID参照が正しい場合 true を返す。入力は変更しない。 */
 export function validateDoc(d) {
   const obj = x => x !== null && typeof x === 'object' && !Array.isArray(x);
