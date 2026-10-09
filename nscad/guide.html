@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>N's CAD 図解ガイド</title>
+<style>
+  :root { --bg: #fbf8f2; --card: #ffffff; --ink: #2a2622; --sub: #6b6258; --line: #e3dccf; --accent: #9a6f1d; --pat: #2a2622; --mark: #c98a00; --guide: #3b82c4; --soft: #f3ecde; --ok: #2f7d4f; --warn: #b54a2a; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #151413; --card: #1f1d1a; --ink: #ece6da; --sub: #a79d8e; --line: #36322b; --accent: #c9a96e; --pat: #f0ebe0; --mark: #e8b739; --guide: #6aaee6; --soft: #2a2620; --ok: #6fc28f; --warn: #e68a6a; } }
+  :root[data-theme="dark"] { --bg: #151413; --card: #1f1d1a; --ink: #ece6da; --sub: #a79d8e; --line: #36322b; --accent: #c9a96e; --pat: #f0ebe0; --mark: #e8b739; --guide: #6aaee6; --soft: #2a2620; --ok: #6fc28f; --warn: #e68a6a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.75 "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 26px; margin: 8px 0 4px; } h2 { font-size: 21px; margin: 44px 0 6px; padding-top: 18px; border-top: 2px solid var(--line); } h3 { font-size: 17px; margin: 22px 0 4px; }
+  .lead { color: var(--sub); margin: 0 0 18px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 6px; } nav.toc a { color: var(--accent); background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; text-decoration: none; font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 14px 0; }
+  .card svg { display: block; width: 100%; height: auto; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } @media (max-width: 640px) { .two { grid-template-columns: 1fr; } }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 10px; border-radius: 999px; border: 1px solid var(--accent); color: var(--accent); margin-right: 6px; vertical-align: 2px; }
+  .step { display: flex; gap: 12px; margin: 10px 0; } .step b.n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--bg); display: grid; place-items: center; font-size: 14px; }
+  .say { background: var(--soft); border-left: 4px solid var(--accent); border-radius: 6px; padding: 10px 14px; margin: 12px 0; }
+  .note { color: var(--sub); font-size: 14px; }
+  kbd { background: var(--soft); border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; } th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; } th { background: var(--soft); }
+  svg text { font-family: inherit; fill: var(--ink); } svg .s { fill: var(--sub); } svg .a { fill: var(--accent); font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>N's CAD 図解ガイド</h1>
+<p class="lead">ヘルプを読んでも分かりにくいところを、絵で説明します。最初は「レイヤー」。そのあと主な機能を順番に。</p>
+<nav class="toc"><a href="#layer">1 レイヤー</a><a href="#screen">2 画面の見かた</a><a href="#stitch">3 目打ちと目印</a><a href="#offset">4 オフセット</a><a href="#ruler">5 定規</a><a href="#patch">6 柄（パッチワーク）</a><a href="#refill">7 リフィルの型紙</a><a href="#views">8 手帳の3面図</a></nav>
+
+<h2 id="layer">1 レイヤーとは</h2>
+<p class="lead">一言でいうと、<b>「透明なシートを何枚か重ねて描く」</b>仕組みです。シートごとに「見せる・隠す」「触れないようにする」ができます。</p>
+
+<div class="card">
+<svg viewBox="0 0 760 330" role="img" aria-label="3枚の透明シートを重ねると、1枚の図面に見えるイラスト">
+  <!-- 3枚のシート -->
+  <g transform="translate(20,200)"><polygon points="0,40 180,40 230,0 50,0" fill="var(--soft)" stroke="var(--guide)" stroke-width="2"/>
+    <line x1="30" y1="22" x2="190" y2="22" stroke="var(--guide)" stroke-dasharray="6 4"/><line x1="110" y1="4" x2="110" y2="38" stroke="var(--guide)" stroke-dasharray="6 4"/>
+    <text x="0" y="68" class="a">ガイド</text><text x="58" y="68" class="s">補助線・目盛り</text></g>
+  <g transform="translate(20,110)"><polygon points="0,40 180,40 230,0 50,0" fill="var(--soft)" stroke="var(--mark)" stroke-width="2"/>
+    <rect x="62" y="10" width="100" height="22" rx="6" fill="none" stroke="var(--mark)" stroke-dasharray="5 3" stroke-width="2"/>
+    <g fill="var(--mark)"><circle cx="72" cy="21" r="2.6"/><circle cx="86" cy="21" r="2.6"/><circle cx="100" cy="21" r="2.6"/><circle cx="114" cy="21" r="2.6"/><circle cx="128" cy="21" r="2.6"/><circle cx="142" cy="21" r="2.6"/><circle cx="154" cy="21" r="2.6"/></g>
+    <text x="0" y="68" class="a">目印</text><text x="40" y="68" class="s">縫い線・位置の印・金具の外形</text></g>
+  <g transform="translate(20,20)"><polygon points="0,40 180,40 230,0 50,0" fill="var(--soft)" stroke="var(--pat)" stroke-width="2"/>
+    <rect x="52" y="6" width="116" height="30" rx="9" fill="none" stroke="var(--pat)" stroke-width="2.4"/>
+    <text x="0" y="68" class="a">型紙</text><text x="46" y="68" class="s">切り抜く線（革を切る形）</text></g>
+  <!-- 矢印 -->
+  <path d="M300 170 h70" stroke="var(--sub)" stroke-width="3" fill="none" marker-end="url(#ar)"/><defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--sub)"/></marker></defs>
+  <text x="298" y="150" class="s">重ねる</text>
+  <!-- 重ねた結果 -->
+  <g transform="translate(400,100)"><rect x="0" y="0" width="330" height="130" rx="10" fill="var(--card)" stroke="var(--line)"/>
+    <line x1="14" y1="65" x2="316" y2="65" stroke="var(--guide)" stroke-dasharray="6 4"/><line x1="165" y1="10" x2="165" y2="120" stroke="var(--guide)" stroke-dasharray="6 4"/>
+    <rect x="40" y="26" width="250" height="78" rx="20" fill="none" stroke="var(--pat)" stroke-width="3"/>
+    <rect x="52" y="38" width="226" height="54" rx="12" fill="none" stroke="var(--mark)" stroke-dasharray="6 4" stroke-width="2"/>
+    <g fill="var(--mark)"><circle cx="70" cy="38" r="3"/><circle cx="90" cy="38" r="3"/><circle cx="110" cy="38" r="3"/><circle cx="130" cy="38" r="3"/><circle cx="150" cy="38" r="3"/></g>
+    <text x="100" y="152" class="s">画面で見えている図面（3枚が重なった状態）</text></g>
+  <text x="20" y="318" class="s">※ 実際の画面では色分けはしません。レイヤーごとに表示・非表示を切り替えます。</text>
+</svg>
+</div>
+
+<h3>右上の「レイヤー」カードの使いかた</h3>
+<div class="card">
+<svg viewBox="0 0 760 270" role="img" aria-label="レイヤーカードの4つの項目に番号を付けた図">
+  <rect x="20" y="14" width="330" height="240" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <text x="38" y="44" class="a">レイヤー</text>
+  <text x="38" y="82" class="s">作図先</text><rect x="120" y="62" width="210" height="30" rx="6" fill="var(--card)" stroke="var(--accent)" stroke-width="2.2"/><text x="136" y="83">型紙　▾</text>
+  <text x="38" y="124" class="s">名前</text><rect x="120" y="104" width="210" height="30" rx="6" fill="var(--card)" stroke="var(--line)"/><text x="136" y="125">型紙</text>
+  <rect x="40" y="152" width="20" height="20" rx="4" fill="var(--accent)"/><path d="M44 162 l5 5 l9 -10" stroke="var(--bg)" stroke-width="2.6" fill="none"/><text x="68" y="168">表示</text>
+  <rect x="140" y="152" width="20" height="20" rx="4" fill="var(--card)" stroke="var(--line)" stroke-width="2"/><text x="168" y="168">ロック</text>
+  <rect x="40" y="196" width="130" height="34" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="82" y="218">追加</text><rect x="190" y="196" width="130" height="34" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="232" y="218">削除</text>
+  <g fill="var(--accent)"><circle cx="380" cy="77" r="13"/><circle cx="380" cy="119" r="13"/><circle cx="380" cy="167" r="13"/><circle cx="380" cy="211" r="13"/></g>
+  <g fill="var(--bg)" font-weight="bold" text-anchor="middle"><text x="380" y="82">1</text><text x="380" y="124">2</text><text x="380" y="172">3</text><text x="380" y="216">4</text></g>
+  <g font-size="15"><text x="406" y="72"><tspan font-weight="bold">作図先</tspan>：これから描く線が入るシート。</text><text x="406" y="92" class="s">ここを選んでから線を引く。</text>
+  <text x="406" y="114"><tspan font-weight="bold">名前</tspan>：シートの名前を変えられる。</text>
+  <text x="406" y="160"><tspan font-weight="bold">表示</tspan>：☑で見える、□で隠れる。</text><text x="406" y="180" class="s">ロックは「触れなくする」。</text>
+  <text x="406" y="206"><tspan font-weight="bold">追加／削除</tspan>：シートを増やす・消す。</text></g>
+</svg>
+</div>
+
+<h3>こんなとき、どうする？</h3>
+<div class="two">
+  <div class="card"><span class="tag">困りごと</span>補助線を引きたい。でも型紙に混ぜたくない。<div class="say"><b>作図先を「ガイド」にしてから</b>線を引く。あとで「ガイド」の表示を外せば、まとめて消えたように見えます。</div></div>
+  <div class="card"><span class="tag">困りごと</span>型紙を、うっかり動かしてしまう。<div class="say"><b>「型紙」をロック</b>する。ロックしたシートの図形は、クリックしても選べません。</div></div>
+  <div class="card"><span class="tag">困りごと</span>縫い穴や印が多くて、型紙の形が見にくい。<div class="say"><b>「目印」の表示を外す。</b>型紙の線だけが見えます。</div></div>
+  <div class="card"><span class="tag">困りごと</span>書き出し（SVG）に、補助線を入れたくない。<div class="say"><b>書き出す前に「ガイド」の表示を外す。</b>表示を外したシートは SVG に出ません。</div></div>
+</div>
+<p class="note">覚えるのはこれだけ：<b>描く前に「作図先」を確認する</b>。迷ったら、まず「型紙」のままで大丈夫です。</p>
+
+<h2 id="screen">2 画面の見かた</h2>
+<p class="lead">左のボタンでツールを選ぶと、<b>右に、そのツールの設定だけが開きます</b>。スクロールして探す必要はありません。</p>
+<div class="card">
+<svg viewBox="0 0 760 300" role="img" aria-label="左のツールと右のカードの対応図">
+  <rect x="10" y="10" width="740" height="280" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <rect x="24" y="24" width="120" height="252" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="36" y="48" class="s">左：ツール</text>
+  <g font-size="15"><text x="40" y="76">選択</text><text x="40" y="100">直線</text><text x="40" y="124">円</text><text x="40" y="148">オフセット</text><rect x="30" y="160" width="108" height="26" rx="13" fill="var(--accent)"/><text x="46" y="178" fill="var(--bg)" style="fill:var(--bg)">目打ち</text><text x="40" y="204">目印</text><text x="40" y="228">定規</text><text x="40" y="252">柄</text></g>
+  <rect x="168" y="24" width="360" height="252" rx="8" fill="var(--card)" stroke="var(--line)"/><text x="182" y="48" class="s">中央：図面</text>
+  <path d="M200 140 q60 -60 120 0 t120 0" stroke="var(--pat)" stroke-width="2.4" fill="none"/>
+  <g fill="var(--mark)"><circle cx="226" cy="116" r="3.5"/><circle cx="262" cy="104" r="3.5"/><circle cx="298" cy="108" r="3.5"/></g>
+  <text x="200" y="196" class="s">線をクリックすると穴が並びます</text>
+  <rect x="552" y="24" width="190" height="252" rx="8" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><text x="566" y="48" class="a">右：目打ちの設定</text>
+  <g font-size="14" class="s"><text x="566" y="78">使う工具</text><text x="566" y="104">配置方法</text><text x="566" y="130">始端の空き</text><text x="566" y="156">終端の空き</text></g>
+  <path d="M146 173 C 330 230 420 230 548 160" stroke="var(--accent)" stroke-width="3" fill="none" stroke-dasharray="7 5" marker-end="url(#ar2)"/><defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--accent)"/></marker></defs>
+  <text x="300" y="262" class="a">「目打ち」を押すと、ここが開く</text>
+</svg>
+</div>
+<table><tr><th>左で押すボタン</th><th>右に開くカード</th></tr>
+<tr><td>目打ち／目印</td><td>目打ち・穴編集</td></tr><tr><td>柄（パッチワーク）</td><td>パッチワーク</td></tr><tr><td>図形を選ぶ（選択）</td><td>情報（その図形の数値）</td></tr><tr><td>それ以外（直線・円など）</td><td>どれも閉じます</td></tr></table>
+<p class="note">「情報」カードは、図形を選んだときだけ出ます。長さや座標を数字で直したいときに使います。</p>
+
+<h2 id="stitch">3 目打ちと目印</h2>
+<p class="lead">どちらも、<b>線の上に印をつける</b>機能です。違いは「何個、どう並べるか」。</p>
+<div class="card">
+<svg viewBox="0 0 760 250" role="img" aria-label="目打ちと目印の違い">
+  <g transform="translate(20,20)"><rect width="340" height="210" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+    <text x="16" y="30" class="a">目打ち</text><text x="82" y="30" class="s">線に沿って、まとめて並べる</text>
+    <path d="M30 130 q70 -80 140 -10 t130 -20" stroke="var(--pat)" stroke-width="2.4" fill="none"/>
+    <g stroke="var(--mark)" stroke-width="3" stroke-linecap="round"><line x1="36" y1="118" x2="46" y2="104"/><line x1="62" y1="100" x2="72" y2="86"/><line x1="94" y1="86" x2="104" y2="72"/><line x1="126" y1="82" x2="136" y2="68"/><line x1="156" y1="88" x2="166" y2="76"/><line x1="188" y1="100" x2="198" y2="90"/><line x1="220" y1="106" x2="230" y2="98"/><line x1="252" y1="108" x2="262" y2="98"/></g>
+    <text x="16" y="176" class="s">ピッチ（間隔）どおりに、</text><text x="16" y="198" class="s">菱目や丸目の穴が並ぶ。</text></g>
+  <g transform="translate(400,20)"><rect width="340" height="210" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+    <text x="16" y="30" class="a">目印</text><text x="64" y="30" class="s">好きな位置に、1つずつ打つ</text>
+    <path d="M30 130 q70 -80 140 -10 t130 -20" stroke="var(--pat)" stroke-width="2.4" fill="none"/>
+    <g fill="var(--mark)"><circle cx="64" cy="98" r="6"/><circle cx="160" cy="84" r="6"/><circle cx="262" cy="108" r="6"/></g>
+    <text x="16" y="176" class="s">金具の位置・折り目など、</text><text x="16" y="198" class="s">「ここ」という印に使う。</text></g>
+</svg>
+</div>
+<div class="step"><b class="n">1</b><div>左で<b>「目打ち」</b>を押す。右に設定が開きます。</div></div>
+<div class="step"><b class="n">2</b><div>「使用する工具」で、菱目3mmなどを選ぶ。</div></div>
+<div class="step"><b class="n">3</b><div>図面の<b>線をクリック</b>。線の上に穴が並びます。</div></div>
+<div class="say"><b>順目と逆目：</b>穴の傾きです。左から右へ引いた線で「／」が順目（標準）、「＼」が逆目。「配置する穴を逆目にする」にチェックすると逆になります。</div>
+
+<h2 id="offset">4 オフセット</h2>
+<p class="lead">線の<b>平行コピー</b>です。縫い代や、縁から○mm内側の縫い線を作るときに使います。</p>
+<div class="card">
+<svg viewBox="0 0 760 230" role="img" aria-label="オフセットの前後">
+  <g transform="translate(20,20)"><rect width="340" height="190" rx="12" fill="var(--soft)" stroke="var(--line)"/><text x="16" y="28" class="a">① 線をクリック</text>
+    <rect x="50" y="50" width="240" height="110" rx="22" fill="none" stroke="var(--pat)" stroke-width="2.6"/>
+    <rect x="292" y="56" width="0" height="0"/><g transform="translate(300,52)"><rect width="150" height="40" rx="8" fill="var(--card)" stroke="var(--accent)" stroke-width="2" transform="translate(-30,60)"/><text x="-18" y="86" font-size="13">距離 3　内側　実行</text></g></g>
+  <path d="M370 115 h40" stroke="var(--sub)" stroke-width="3" marker-end="url(#ar)"/>
+  <g transform="translate(400,20)"><rect width="340" height="190" rx="12" fill="var(--soft)" stroke="var(--line)"/><text x="16" y="28" class="a">② 内側に3mm</text>
+    <rect x="50" y="50" width="240" height="110" rx="22" fill="none" stroke="var(--pat)" stroke-width="2.6"/>
+    <rect x="62" y="62" width="216" height="86" rx="12" fill="none" stroke="var(--mark)" stroke-width="2.4" stroke-dasharray="7 4"/></g>
+</svg>
+</div>
+<div class="step"><b class="n">1</b><div>左で<b>「オフセット」</b>を押し、図形の線を<b>1回クリック</b>（交点から交点まで）。<b>ダブルクリック</b>でつながった図形全体を選びます。</div></div>
+<div class="step"><b class="n">2</b><div>図形のそばの入力欄に<b>距離</b>と<b>外側／内側</b>を入れて「実行」（または <kbd>Enter</kbd>）。</div></div>
+<div class="step"><b class="n">3</b><div>結果は<b>黄色の点線</b>で出ます。色と線種は情報カードで変えられます。</div></div>
+
+<h2 id="ruler">5 定規</h2>
+<p class="lead">2点をクリックして、<b>距離</b>を測ります。図面には何も残りません。</p>
+<div class="card">
+<svg viewBox="0 0 760 210" role="img" aria-label="定規で2点間の距離を測る図">
+  <rect x="20" y="14" width="720" height="182" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <rect x="190" y="26" width="380" height="36" rx="8" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><text x="204" y="50" font-size="14">始点 51, 60　　終点 131, 92　　<tspan class="a">86.16 mm</tspan></text>
+  <path d="M120 156 C 60 80 140 70 210 110" stroke="var(--pat)" stroke-width="2.4" fill="none"/>
+  <line x1="160" y1="150" x2="540" y2="150" stroke="var(--guide)" stroke-width="2.4"/><circle cx="160" cy="150" r="6" fill="var(--guide)"/><circle cx="540" cy="150" r="6" fill="var(--guide)"/>
+  <text x="300" y="140" fill="var(--guide)" style="fill:var(--guide)" font-size="15">距離 86.16 mm</text>
+  <text x="560" y="180" class="s" font-size="13">端点・円の中心に、磁石のように吸い付く</text>
+</svg>
+</div>
+<ul><li>始点と終点は、線の<b>端点</b>と円の<b>中心</b>に吸い付きます。</li><li>上の入力欄に<b>数字を打っても</b>測れます。</li><li><kbd>Shift</kbd> を押すと、水平・垂直に固定されます。</li></ul>
+
+<h2 id="patch">6 柄（パッチワーク）</h2>
+<p class="lead">囲んだ図形の中を、<b>アーガイル柄や市松柄のピース</b>で埋めて、縫い穴まで自動で打ちます。</p>
+<div class="card">
+<svg viewBox="0 0 760 230" role="img" aria-label="四角を柄で埋める前後">
+  <g transform="translate(20,20)"><rect width="340" height="190" rx="12" fill="var(--soft)" stroke="var(--line)"/><text x="16" y="28" class="a">① 四角を描く</text><rect x="60" y="50" width="220" height="120" fill="none" stroke="var(--pat)" stroke-width="2.6"/></g>
+  <path d="M370 115 h40" stroke="var(--sub)" stroke-width="3" marker-end="url(#ar)"/>
+  <g transform="translate(400,20)"><rect width="340" height="190" rx="12" fill="var(--soft)" stroke="var(--line)"/><text x="16" y="28" class="a">② 中をクリック</text>
+    <g stroke="var(--pat)" stroke-width="2" fill="none"><rect x="60" y="50" width="220" height="120"/><path d="M60 110 L115 50 L170 110 L225 50 L280 110 M60 110 L115 170 L170 110 L225 170 L280 110"/></g>
+    <g fill="none" stroke="var(--mark)" stroke-dasharray="5 3" stroke-width="1.6"><path d="M72 110 L115 62 L158 110 L115 158z M182 110 L225 62 L268 110 L225 158z"/></g></g>
+</svg>
+</div>
+<div class="step"><b class="n">1</b><div>先に<b>実線の四角（閉じた図形）</b>を描く。点線は囲みに使えません。</div></div>
+<div class="step"><b class="n">2</b><div>左で<b>「柄（パッチワーク）」</b>を押す。右に設定が開きます。</div></div>
+<div class="step"><b class="n">3</b><div>柄（アーガイル／市松）・セルの大きさ・縫い穴の種類（<b>菱目／丸目</b>）を決め、四角の<b>内側をクリック</b>。</div></div>
+<div class="say"><b>数字を変えると、柄が変わります。</b>描いたあとで「セルの大きさ」などを変えると、同じ場所で作りなおされます。（描いたあとに別の操作をしたあとは、作りなおされません）</div>
+
+<h2 id="refill">7 リフィルの型紙</h2>
+<p class="lead">システム手帳の中身（リフィル）の型紙が、<b>全11規格</b>、部品として入っています。</p>
+<div class="card">
+<svg viewBox="0 0 760 330" role="img" aria-label="リフィルの穴の位置の寸法図">
+  <rect x="20" y="14" width="720" height="302" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <rect x="260" y="30" width="230" height="270" fill="var(--card)" stroke="var(--pat)" stroke-width="2.6"/>
+  <g fill="none" stroke="var(--mark)" stroke-width="2.4"><circle cx="282" cy="62" r="9"/><circle cx="282" cy="98" r="9"/><circle cx="282" cy="134" r="9"/><circle cx="282" cy="196" r="9"/><circle cx="282" cy="232" r="9"/><circle cx="282" cy="268" r="9"/></g>
+  <line x1="260" y1="320" x2="260" y2="320"/>
+  <g stroke="var(--accent)" stroke-width="1.6" fill="none"><line x1="260" y1="46" x2="282" y2="46"/><line x1="260" y1="40" x2="260" y2="52"/><line x1="282" y1="40" x2="282" y2="52"/></g>
+  <text x="196" y="44" class="a" font-size="14">左端から6mm</text>
+  <g stroke="var(--accent)" stroke-width="1.6" fill="none"><line x1="318" y1="98" x2="318" y2="134"/><line x1="310" y1="98" x2="326" y2="98"/><line x1="310" y1="134" x2="326" y2="134"/></g>
+  <text x="332" y="120" class="a" font-size="14">19mm（規格の間隔）</text>
+  <text x="330" y="168" class="s" font-size="14">間隔は規格ごとに違います</text>
+  <text x="330" y="190" class="s" font-size="14">穴の列は、高さの中央にそろう</text>
+  <text x="530" y="270" class="s" font-size="13">穴径 5mm（0.1mm単位で変更可）</text>
+</svg>
+</div>
+<div class="step"><b class="n">1</b><div>右の<b>「部品ライブラリ」</b>カードを開く。</div></div>
+<div class="step"><b class="n">2</b><div>「部品」で<b>「リフィル型紙 A5 Slim（110×210）」</b>などを選ぶ。</div></div>
+<div class="step"><b class="n">3</b><div>「W」「H」（大きさ）、「E」（穴の位置）、「D」（穴径）を必要なら変えて、<b>「図面に置く（クリック）」</b>を押し、図面をクリック。</div></div>
+<p class="note">規格：A4、A5、A5 Slim、A6、バイブル、Franklin Classic／Compact／Monarch／Pocket、Micro5、Mini6。</p>
+
+<h2 id="views">8 閉じた手帳の3面図</h2>
+<p class="lead">リング径・革の厚み・リフィルの束の厚みから、<b>閉じた手帳の「天・正面・右側面」</b>を自動で描きます。</p>
+<div class="card">
+<svg viewBox="0 0 760 330" role="img" aria-label="3面図の並び方">
+  <rect x="20" y="14" width="720" height="302" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <!-- 天 -->
+  <g transform="translate(120,34)"><path d="M0 30 a26 26 0 0 1 30 -26 H260 V12 H34 a16 16 0 0 0 -16 18 a16 16 0 0 0 16 18 H260 V56 H30 A26 26 0 0 1 0 30z" fill="none" stroke="var(--pat)" stroke-width="2.4"/><circle cx="46" cy="30" r="12" fill="none" stroke="var(--mark)" stroke-width="2.4"/><rect x="40" y="26" width="214" height="8" fill="none" stroke="var(--mark)" stroke-width="2"/></g>
+  <text x="400" y="74" class="s" font-size="14">天（真上から見た断面）… 背が丸くなってリングを包む</text>
+  <!-- 正面 -->
+  <g transform="translate(120,110)"><rect width="260" height="190" fill="none" stroke="var(--pat)" stroke-width="2.4"/><line x1="26" y1="0" x2="26" y2="190" stroke="var(--pat)" stroke-width="1.6"/>
+    <g fill="none" stroke="var(--mark)" stroke-dasharray="5 4" stroke-width="1.8"><rect x="14" y="14" width="10" height="162"/><rect x="2" y="44" width="34" height="8"/><rect x="2" y="90" width="34" height="8"/><rect x="2" y="136" width="34" height="8"/></g></g>
+  <text x="140" y="324" class="s" font-size="14">正面（破線＝裏にあって見えない部分）</text>
+  <!-- 側面 -->
+  <g transform="translate(410,110)"><rect width="56" height="190" fill="none" stroke="var(--pat)" stroke-width="2.4"/><line x1="6" y1="0" x2="6" y2="190" stroke="var(--pat)"/><line x1="50" y1="0" x2="50" y2="190" stroke="var(--pat)"/><rect x="22" y="10" width="12" height="170" fill="none" stroke="var(--mark)" stroke-width="2"/></g>
+  <text x="490" y="210" class="s" font-size="14">右側面（小口側から）</text>
+  <text x="490" y="232" class="s" font-size="14">天は正面の上、側面は正面の右</text>
+  <text x="490" y="254" class="s" font-size="14">（第三角法の並び）</text>
+</svg>
+</div>
+<div class="step"><b class="n">1</b><div>右の<b>「金具」カード</b>の中の<b>「背幅シミュレーション（断面）」</b>を開く。</div></div>
+<div class="step"><b class="n">2</b><div>リング径、革の厚み、リフィルの束の厚みなどを入れる。下に3面図のプレビューが出ます。</div></div>
+<div class="step"><b class="n">3</b><div><b>「閉じた手帳の3面図…を図面に描く」</b>を押す。図面の中央に、ガイドのレイヤーで描かれます。</div></div>
+<p class="note">リフィルの束の厚み6mm・穴中心からリフィルの縁まで6mmは仮の値です。実物を測って入れてください。</p>
+
+<hr style="border:0;border-top:1px solid var(--line);margin:40px 0 14px">
+<p class="note">このガイドは N's CAD の画面と同じ言葉で書いています。分からない点があれば、画面のスクリーンショットを添えて教えてください。説明を足します。</p>
+</div>
+</body>
+</html>
