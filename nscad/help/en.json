@@ -28,7 +28,7 @@
     {
       "id": "layers-info",
       "title": "Layers and the Info card",
-      "body": "Choose the drawing layer, visibility, lock and name in the Layers card. Defaults are Pattern, Marks and Guide. Shapes on locked layers cannot be selected.\nThe Info card shows coordinates, length, radius and angles of the selected shape; editing a value updates the shape, and stitching holes follow."
+      "body": "Choose the drawing layer, visibility, lock and name in the Layers card. Defaults are Pattern, Marks and Guide. Shapes on locked layers cannot be selected.\nThe Info card shows coordinates, length, radius and angles of the selected shape; editing a value updates the shape, and stitching holes follow.\nThe Info card also lets you pick a shape color (blue, green, red, white or yellow) and line style (solid or dashed); not available for text, dimensions or fold lines. These are reflected in SVG, DXF and PDF export. Importing a .lcc file maps its original colors (Aqua=outline to blue, Lime=patch lines to green, Orange=dimensions and Yellow=marks to yellow) onto these five colors automatically."
     },
     {
       "id": "trim-mirror",

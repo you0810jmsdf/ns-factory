@@ -73,7 +73,7 @@
 <body data-prototype="1">
 <header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><button id="save" data-i18n="save"></button><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
-<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label>
+<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
 <select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><button id="help" data-i18n="help"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
 <main>
@@ -121,6 +121,8 @@
 <label id="l-area"><span data-i18n="area"></span><output id="info-area"></output></label>
 <div class="row" id="l-nodeOps"><button id="toggleSmooth" data-i18n="toggleSmooth"></button><button id="removeNode" data-i18n="removeNode"></button></div>
 <label id="l-inner"><span data-i18n="innerSide"></span><input id="info-inner" type="checkbox"></label>
+<label id="l-color"><span data-i18n="color"></span><select id="info-color"><option value="" data-i18n="colorNone"></option><option value="blue" data-i18n="colorBlue"></option><option value="green" data-i18n="colorGreen"></option><option value="red" data-i18n="colorRed"></option><option value="white" data-i18n="colorWhite"></option><option value="yellow" data-i18n="colorYellow"></option></select></label>
+<label id="l-lineStyle"><span data-i18n="lineStyle"></span><select id="info-lineStyle"><option value="" data-i18n="lineStyleSolid"></option><option value="dashed" data-i18n="lineStyleDashed"></option></select></label>
 <label id="l-part"><span data-i18n="part"></span><select id="info-part"></select></label>
 <label id="l-partName"><span data-i18n="partName"></span><input id="info-partName" type="text" maxlength="40"></label>
 <label id="l-thickness"><span data-i18n="thickness"></span><input id="info-thickness" type="number" step="0.1" min="0"></label>
@@ -681,15 +683,18 @@ function bboxOfDoc(doc) { return bounds([...doc.shapes.flatMap(s => { const b = 
   const pts=a.kind==='diamond'?[{x:-a.width/2,y:0},{x:a.width/2,y:0},{x:0,y:-a.height/2},{x:0,y:a.height/2}]:[{x:-a.width/2,y:-a.height/2},{x:a.width/2,y:-a.height/2},{x:a.width/2,y:a.height/2},{x:-a.width/2,y:a.height/2}];
   return pts.map(p=>{const q=rotate(p,h.angleDeg);return {x:q.x+h.x,y:q.y+h.y};});
 })]); }
-/** 新しい独立した version:6 の mm 文書を返す。副作用なし。既定レイヤーは型紙・目印・ガイド（名前が id と同じときは UI 側で翻訳する）。parts＝部品（厚み）、seams＝縫い合わせ線。 */
-function newDoc() { return { version: 6, unit: 'mm', shapes: [], holes: [], paths: [], parts: [], seams: [], mark: 'tool', dotD: 0.5, layers: [{ id: 'pattern', name: 'pattern', visible: true, locked: false }, { id: 'marks', name: 'marks', visible: true, locked: false }, { id: 'guide', name: 'guide', visible: true, locked: false }], tools: [] }; }
+/** 図形の色（5色のみ）と線種（2種のみ）。どちらも省略可（既定の見た目を使う）。 */
+const SHAPE_COLORS = ['blue', 'green', 'red', 'white', 'yellow'];
+const LINE_STYLES = ['solid', 'dashed'];
+/** 新しい独立した version:7 の mm 文書を返す。副作用なし。既定レイヤーは型紙・目印・ガイド（名前が id と同じときは UI 側で翻訳する）。parts＝部品（厚み）、seams＝縫い合わせ線。 */
+function newDoc() { return { version: 7, unit: 'mm', shapes: [], holes: [], paths: [], parts: [], seams: [], mark: 'tool', dotD: 0.5, layers: [{ id: 'pattern', name: 'pattern', visible: true, locked: false }, { id: 'marks', name: 'marks', visible: true, locked: false }, { id: 'guide', name: 'guide', visible: true, locked: false }], tools: [] }; }
 /** 任意の JSON 値を受け取り、文書構造・有限数・ID参照が正しい場合 true を返す。入力は変更しない。 */
 function validateDoc(d) {
   const obj = x => x !== null && typeof x === 'object' && !Array.isArray(x);
   const id = x => typeof x === 'string' && x.length > 0;
   const nums = (x, keys) => keys.every(k => Number.isFinite(x[k]));
   const unique = xs => xs.every(x => obj(x) && id(x.id)) && new Set(xs.map(x => x.id)).size === xs.length;
-  if (!obj(d) || d.version !== 6 || d.unit !== 'mm' || !['shapes', 'holes', 'layers', 'tools', 'paths', 'parts', 'seams'].every(k => Array.isArray(d[k]) && unique(d[k])) || !d.layers.length) return false;
+  if (!obj(d) || d.version !== 7 || d.unit !== 'mm' || !['shapes', 'holes', 'layers', 'tools', 'paths', 'parts', 'seams'].every(k => Array.isArray(d[k]) && unique(d[k])) || !d.layers.length) return false;
   const partIds = new Set(d.parts.map(p => p.id));
   if (!d.parts.every(p => typeof p.name === 'string' && Number.isFinite(p.thickness) && p.thickness >= 0 && Array.isArray(p.shapeIds) && p.shapeIds.every(id => d.shapes.some(s => s.id === id)) && (p.skive === undefined || (Array.isArray(p.skive) && p.skive.every(k => obj(k) && Number.isFinite(k.toThickness) && k.toThickness >= 0))))) return false;
   if (!d.shapes.every(s => s.type !== 'fold' || (nums(s, ['x1', 'y1', 'x2', 'y2', 'angleDeg']) && typeof s.inner === 'boolean' && (s.partId === null || s.partId === undefined || partIds.has(s.partId))))) return false;
@@ -698,6 +703,8 @@ function validateDoc(d) {
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
     if (!layers.has(s.layer)) return false;
+    if (s.color != null && !SHAPE_COLORS.includes(s.color)) return false;
+    if (s.lineStyle != null && !LINE_STYLES.includes(s.lineStyle)) return false;
     if (s.type === 'line' || s.type === 'fold') return nums(s, ['x1', 'y1', 'x2', 'y2']);
     if (s.type === 'circle' || s.type === 'arc') return nums(s, ['cx', 'cy', 'r']) && s.r > 0 && (s.type === 'circle' || nums(s, ['startDeg', 'endDeg']));
     if (s.type === 'bezier') return nums(s, ['x1', 'y1', 'c1x', 'c1y', 'c2x', 'c2y', 'x2', 'y2']);
@@ -745,6 +752,7 @@ function migrateDoc(input) {
     d.version = 5;
   }
   if (d.version === 5) { d.version = 6; } // v6：image（下絵）型を追加
+  if (d.version === 6) { d.version = 7; } // v7：図形の色・線種（任意・既定は従来の見た目）を追加
   return d;
 }
 /** 画像（下絵）の回転前ローカル矩形。 */
@@ -1052,7 +1060,7 @@ function trimAt(s, p, others, { keep = false, tol = 0.01 } = {}) {
   return keep ? [hit] : parts.filter(part => part !== hit);
 }
 
-return {distance, dot, rotate, translate, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, reflectAcross, splitShapeAt, allIntersections, trimAt};
+return {distance, dot, rotate, translate, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, reflectAcross, splitShapeAt, allIntersections, trimAt};
 })();
 __mods['i18n'] = (function(){
 const MESSAGES = {
@@ -1147,6 +1155,7 @@ const MESSAGES = {
     "grid": "グリッド",
     "spacing": "間隔",
     "snap": "スナップ",
+    "printOverlay": "印刷割付を表示",
     "zoomOut": "縮小",
     "zoomIn": "拡大",
     "fit": "全体表示",
@@ -1217,6 +1226,16 @@ const MESSAGES = {
     "area": "面積",
     "toggleSmooth": "滑らか／角",
     "removeNode": "節点を削除",
+    "color": "色",
+    "colorNone": "既定",
+    "colorBlue": "青",
+    "colorGreen": "緑",
+    "colorRed": "赤",
+    "colorWhite": "白",
+    "colorYellow": "黄色",
+    "lineStyle": "線種",
+    "lineStyleSolid": "実線",
+    "lineStyleDashed": "点線",
     "layer": "レイヤー",
     "layers": "レイヤー",
     "activeLayer": "作図先",
@@ -1752,6 +1771,7 @@ const MESSAGES = {
     "grid": "Grid",
     "spacing": "Spacing",
     "snap": "Snap",
+    "printOverlay": "Show print layout",
     "zoomOut": "Zoom out",
     "zoomIn": "Zoom in",
     "fit": "Fit all",
@@ -1822,6 +1842,16 @@ const MESSAGES = {
     "area": "Area",
     "toggleSmooth": "Smooth / corner",
     "removeNode": "Delete node",
+    "color": "Color",
+    "colorNone": "Default",
+    "colorBlue": "Blue",
+    "colorGreen": "Green",
+    "colorRed": "Red",
+    "colorWhite": "White",
+    "colorYellow": "Yellow",
+    "lineStyle": "Line style",
+    "lineStyleSolid": "Solid",
+    "lineStyleDashed": "Dashed",
     "layer": "Layer",
     "layers": "Layers",
     "activeLayer": "Draw on",
@@ -2295,6 +2325,13 @@ function svgSweep() { return 1; }
 
 const f = n => (Math.round(n * 1000) / 1000).toString();
 function holesOnShapes(doc, shapes) { const ids = new Set(shapes.map(s => s.id)), okPaths = new Set(doc.paths.filter(p => p.shapeIds.every(id => ids.has(id))).map(p => p.id)); return doc.holes.filter(h => okPaths.has(h.pathId)); }
+/** 図形の色（5色）→ 出力用の色。SVG/PDF は 16進・CSS 名、DXF は ACI（AutoCAD Color Index）番号。 */
+const SHAPE_COLOR_HEX = { blue: '#2060ff', green: '#2a9d3f', red: '#e02020', white: '#ffffff', yellow: '#e6c300' };
+const SHAPE_COLOR_ACI = { blue: 5, green: 3, red: 1, white: 7, yellow: 2 };
+/** 線種（実線／点線）から SVG の stroke-dasharray を返す（mm 単位、strokeMm に比例）。実線は null。 */
+function dashArrayMm(lineStyle, strokeMm) { return lineStyle === 'dashed' ? `${f(strokeMm * 8)} ${f(strokeMm * 5)}` : null; }
+/** #rrggbb を PDF の RG 用 0..1 の [r,g,b] に変換する。 */
+function hexToRgb01(hex) { const v = parseInt(hex.slice(1), 16); return [v >> 16 & 255, v >> 8 & 255, v & 255].map(c => Math.round(c / 255 * 1000) / 1000); }
 /** 色は #rgb/#rrggbb/#rrggbbaa だけ通す（属性への差し込み防止）。 */
 const safeColor = (c, fallback = '#d9c7a0') => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? String(c) : fallback;
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -2336,7 +2373,9 @@ function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marg
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(fontFamily)}" fill="#000" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `<path d="M${f(d.a.x)} ${f(d.a.y)}L${f(d.b.x)} ${f(d.b.y)}${d.ext.map(([p, q]) => `M${f(p.x)} ${f(p.y)}L${f(q.x)} ${f(q.y)}`).join('')}"/><text x="${f(d.textPos.x)}" y="${f(d.textPos.y)}" font-size="2.5" font-family="${esc(fontFamily)}" text-anchor="middle" fill="#000" stroke="none" transform="rotate(${f(d.angleDeg)} ${f(d.textPos.x)} ${f(d.textPos.y)})">${f(d.value)}</text>`; }
       const d = shapeToSvgD(s); const partColor = fill ? safeColor((doc.parts || []).find(p => p.shapeIds.includes(s.id))?.color) : null;
-      return d ? `<path id="${safeId(s.id)}" d="${d}"${fill && (s.closed || s.type === 'circle') ? ` fill="${partColor}"` : ''}/>` : '';
+      const strokeAttr = s.color && SHAPE_COLOR_HEX[s.color] ? ` stroke="${SHAPE_COLOR_HEX[s.color]}"` : '';
+      const dash = dashArrayMm(s.lineStyle, strokeMm), dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
+      return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${partColor}"` : ''}/>` : '';
     }).join('');
     return `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
   }).join('');
@@ -2397,13 +2436,20 @@ function dxfPolyline(layer, pts, closed, bulges = null) {
   pts.forEach((p, i) => { out.push('0', 'VERTEX', '8', layer, '10', dxfNum(p.x), '20', dxfNum(-p.y), '30', '0'); if (bulges && bulges[i]) out.push('42', dxfNum(bulges[i])); });
   out.push('0', 'SEQEND', '8', layer); return out;
 }
+/** エンティティ先頭（'0',TYPE,'8',layer）の直後に図形の色（62＝ACI番号）・線種（6＝線種名）を挿入する。対象が無ければそのまま。 */
+function withStyle(codes, s) {
+  const extra = [];
+  if (s.color && SHAPE_COLOR_ACI[s.color]) extra.push('62', String(SHAPE_COLOR_ACI[s.color]));
+  if (s.lineStyle === 'dashed') extra.push('6', 'DASHED');
+  return extra.length ? [...codes.slice(0, 4), ...extra, ...codes.slice(4)] : codes;
+}
 /** 図形から DXF エンティティのコード列を返す。 */
 function shapeToDxf(s, layer, { tolerance = 0.02 } = {}) {
-  if (s.type === 'line') return dxfLine(layer, { x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
-  if (s.type === 'circle') return ['0', 'CIRCLE', '8', layer, '10', dxfNum(s.cx), '20', dxfNum(-s.cy), '30', '0', '40', dxfNum(s.r)];
-  if (s.type === 'arc') { const sweep = arcSweep(s); if (sweep >= 360) return shapeToDxf({ ...s, type: 'circle' }, layer); const end = s.startDeg + sweep; return ['0', 'ARC', '8', layer, '10', dxfNum(s.cx), '20', dxfNum(-s.cy), '30', '0', '40', dxfNum(s.r), '50', dxfNum(((-end % 360) + 360) % 360), '51', dxfNum(((-s.startDeg % 360) + 360) % 360)]; }
-  if (s.type === 'polyline') return dxfPolyline(layer, s.points, !!s.closed);
-  if (s.type === 'bezier' || s.type === 'path') { const pts = flattenShape(s, tolerance); const closed = !!s.closed; return dxfPolyline(layer, closed && pts.length > 1 ? pts.slice(0, -1) : pts, closed); }
+  if (s.type === 'line') return withStyle(dxfLine(layer, { x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }), s);
+  if (s.type === 'circle') return withStyle(['0', 'CIRCLE', '8', layer, '10', dxfNum(s.cx), '20', dxfNum(-s.cy), '30', '0', '40', dxfNum(s.r)], s);
+  if (s.type === 'arc') { const sweep = arcSweep(s); if (sweep >= 360) return shapeToDxf({ ...s, type: 'circle' }, layer); const end = s.startDeg + sweep; return withStyle(['0', 'ARC', '8', layer, '10', dxfNum(s.cx), '20', dxfNum(-s.cy), '30', '0', '40', dxfNum(s.r), '50', dxfNum(((-end % 360) + 360) % 360), '51', dxfNum(((-s.startDeg % 360) + 360) % 360)], s); }
+  if (s.type === 'polyline') return withStyle(dxfPolyline(layer, s.points, !!s.closed), s);
+  if (s.type === 'bezier' || s.type === 'path') { const pts = flattenShape(s, tolerance); const closed = !!s.closed; return withStyle(dxfPolyline(layer, closed && pts.length > 1 ? pts.slice(0, -1) : pts, closed), s); }
   if (s.type === 'text') return ['0', 'TEXT', '8', layer, '10', dxfNum(s.x), '20', dxfNum(-s.y), '30', '0', '40', dxfNum(s.sizeMm), '1', String(s.text).replace(/[\r\n]/g, ' '), '50', dxfNum(-s.angleDeg)];
   if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return [...dxfLine(layer, d.a, d.b), ...d.ext.flatMap(([p, q]) => dxfLine(layer, p, q)), '0', 'TEXT', '8', layer, '10', dxfNum(d.textPos.x), '20', dxfNum(-d.textPos.y), '30', '0', '40', '2.5', '1', dxfNum(d.value), '50', dxfNum(-d.angleDeg), '72', '1', '11', dxfNum(d.textPos.x), '21', dxfNum(-d.textPos.y), '31', '0']; }
   return [];
@@ -2429,7 +2475,12 @@ function docToDxfR12(doc, { includeHoles = true, dotAsPoint = false, originAtCor
   const layers = doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(layerName);
   const tableLayers = [...layers, ...(holes.length ? ['Stitch_Holes'] : [])];
   const out = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '9', '$EXTMIN', '10', dxfNum((b.minX + dx) * fx), '20', dxfNum(-(b.maxY + dy) * fy), '30', '0', '9', '$EXTMAX', '10', dxfNum((b.maxX + dx) * fx), '20', dxfNum(-(b.minY + dy) * fy), '30', '0', '0', 'ENDSEC',
-    '0', 'SECTION', '2', 'TABLES', '0', 'TABLE', '2', 'LAYER', '70', String(tableLayers.length)];
+    '0', 'SECTION', '2', 'TABLES',
+    '0', 'TABLE', '2', 'LTYPE', '70', '2',
+    '0', 'LTYPE', '2', 'CONTINUOUS', '70', '0', '3', 'Solid line', '72', '65', '73', '0', '40', '0.0',
+    '0', 'LTYPE', '2', 'DASHED', '70', '0', '3', 'Dashed line', '72', '65', '73', '2', '40', '0.75', '49', '0.5', '74', '0', '49', '-0.25', '74', '0',
+    '0', 'ENDTAB',
+    '0', 'TABLE', '2', 'LAYER', '70', String(tableLayers.length)];
   for (const name of tableLayers) out.push('0', 'LAYER', '2', name, '70', '0', '62', name === 'Stitch_Holes' ? '1' : '7', '6', 'CONTINUOUS');
   out.push('0', 'ENDTAB', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES');
   for (const l of doc.layers) for (const s of shapes.filter(s => s.layer === l.id)) out.push(...shapeToDxf(move(s), layerName(l), { tolerance }));
@@ -2457,7 +2508,10 @@ function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlap
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `${X(d.a.x)} ${Y(d.a.y)} m ${X(d.b.x)} ${Y(d.b.y)} l ${d.ext.map(([p, q]) => `${X(p.x)} ${Y(p.y)} m ${X(q.x)} ${Y(q.y)} l`).join(' ')} S BT /F1 ${n(2.5 * PT)} Tf 1 0 0 1 ${X(d.textPos.x)} ${Y(d.textPos.y)} Tm (${n(d.value)}) Tj ET`; }
       if (s.type === 'fold' || s.type === 'image') return '';
       const pts = flattenShape(s, 0.02); if (pts.length < 2) return '';
-      return `${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${s.closed || s.type === 'circle' ? ' h' : ''} S`;
+      const rgb = s.color && SHAPE_COLOR_HEX[s.color] ? hexToRgb01(SHAPE_COLOR_HEX[s.color]) : null;
+      const colorOn = rgb ? `${rgb.join(' ')} RG ` : '', colorOff = rgb ? ' 0 0 0 RG' : '';
+      const dashOn = s.lineStyle === 'dashed' ? `[${n(3 * PT)} ${n(2 * PT)}] 0 d ` : '', dashOff = s.lineStyle === 'dashed' ? ' [] 0 d' : '';
+      return `${colorOn}${dashOn}${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${s.closed || s.type === 'circle' ? ' h' : ''} S${dashOff}${colorOff}`;
     };
     for (const s of shapes) ops.push(pathOps(s));
     ops.push('1 0 0 RG');
@@ -2499,7 +2553,7 @@ function dxfToShapes(text) {
   return shapes;
 }
 
-return {flipFormatY, svgSweep, holesOnShapes, safeColor, shapeToSvgD, holeToSvg, docToSvg, calibrationFactor, applyCalibration, pagesFor, printLayout, pageSvg, calibrationScale, shapeToDxf, holeToDxf, docToDxfR12, docToPdf, dxfToShapes};
+return {flipFormatY, svgSweep, holesOnShapes, SHAPE_COLOR_HEX, SHAPE_COLOR_ACI, safeColor, shapeToSvgD, holeToSvg, docToSvg, calibrationFactor, applyCalibration, pagesFor, printLayout, pageSvg, calibrationScale, shapeToDxf, holeToDxf, docToDxfR12, docToPdf, dxfToShapes};
 })();
 __mods['importers'] = (function(){
 // 取り込み（SVG・DXF）。純粋関数のみ。SVG は自前の軽量 XML 字句解析（DOM に挿入しない）。内部は Y 下向き・mm。
@@ -4088,6 +4142,8 @@ const num = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
 const pt = a => Array.isArray(a) && a.length >= 2 ? { x: num(a[0]), y: num(a[1]) } : { x: 0, y: 0 };
 /** .lcc の工具記号（pr.bt）→ N's CAD の工具種別。D=菱目・R=丸・E=ヨーロッパ目・F=平目。不明は菱目。 */
 const LCC_TOOL_KIND = { D: 'diamond', R: 'round', E: 'european', F: 'flat' };
+/** .lcc の色（Aqua=輪郭・Lime=パッチ線・Orange=寸法・Yellow=目印）→ N's CAD の図形色（5色のうち4色。白は目打ち穴用で図形には使わない）。 */
+const LCC_SHAPE_COLOR = { Aqua: 'blue', Lime: 'green', Orange: 'yellow', Yellow: 'yellow' };
 /** 文字列または JSON を受け取り、.lcc らしければ解析結果を返す。違えば null。 */
 function parseLcc(input) {
   let d = input;
@@ -4137,6 +4193,8 @@ function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {}) {
   // .lcc は 1 レイヤーに全図形がフラットに入っていることが多く、代わりに色で用途を区別している（革の色ではない）。
   // 実測：Aqua＝輪郭（カット線）、Lime＝パッチ分割線、Orange＝寸法（線・文字）、Yellow＝目印。それ以外は元のレイヤー番号へ。
   const COLOR_LAYER = { Aqua: { id: 'lcc-outline', name: '輪郭（Aqua）' }, Lime: { id: 'lcc-patch', name: 'パッチ線（Lime）' }, Orange: { id: 'lcc-dim', name: '寸法（Orange）' }, Yellow: { id: 'lcc-mark', name: '目印（Yellow）' } };
+  // レイヤー振り分け（上）とは別に、N's CAD の図形プロパティ色（5色）にも復元する。White（目打ち穴）は S_HOLE 側で別処理のため対象外。
+  const colorOf = s => LCC_SHAPE_COLOR[s.color];
   const layerId = s => {
     const col = COLOR_LAYER[s.color];
     if (col) { if (!doc.layers.some(x => x.id === col.id)) doc.layers.push({ id: col.id, name: col.name, visible: true, locked: false }); return col.id; }
@@ -4149,7 +4207,8 @@ function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {}) {
     if (s.type === 'S_HOLE') { holes.push(lccHole(s)); continue; }
     const layer = s.type === 'DOT' ? 'marks' : layerId(s);
     const out = lccShapeToShapes(s); if (!out.length) warnings.push(`skip:${s.type}:${s.id}`);
-    for (const sh of out) doc.shapes.push({ id: sid(), layer, ...sh });
+    const color = colorOf(s);
+    for (const sh of out) doc.shapes.push({ id: sid(), layer, ...(color ? { color } : {}), ...sh });
   }
   // 穴：鎖ごとに近い図形へ付ける。近い図形が無い鎖は中心を結ぶ折れ線（marks 層）を作って付ける。
   const chains = holeChains(holes); let attached = 0, viaChain = 0;
@@ -4204,7 +4263,7 @@ function styleSummary(style, lang = 'ja') {
     : `Owner's past ${style.files} designs: stitch pitch ${p ?? '?'} mm (${tk ?? '?'}, hole ${hs ?? '?'} mm), common corner radii ${r || '?'}, text ${ts ?? '?'} mm ${f || ''}, median part size ${b ? `${b.w}×${b.h} mm` : '?'}.`;
 }
 
-return {LCC_TOOL_KIND, parseLcc, lccShapeToShapes, lccHole, holeChains, lccToDoc, lccStats, aggregateStyle, styleSummary};
+return {LCC_TOOL_KIND, LCC_SHAPE_COLOR, parseLcc, lccShapeToShapes, lccHole, holeChains, lccToDoc, lccStats, aggregateStyle, styleSummary};
 })();
 __mods['designs'] = (function(){
 // 事業主の過去設計カタログ（designs/<id>.json・tools/import_lcc.js が生成）を読む。fetch はここだけ（app.js には置かない）。
@@ -8098,7 +8157,7 @@ const HELP_JA = {
     {
       "id": "layers-info",
       "title": "レイヤーと情報カード",
-      "body": "レイヤーカードで作図先を選び、表示・ロック・名前を変えます。既定は「型紙」「目印」「ガイド」。ロックしたレイヤーの図形は選べません。\n情報カードは選択中の図形の座標・長さ・半径・角度などを表示し、数値を書き換えると図形が更新されます。縫い穴がある線は穴も追従します。"
+      "body": "レイヤーカードで作図先を選び、表示・ロック・名前を変えます。既定は「型紙」「目印」「ガイド」。ロックしたレイヤーの図形は選べません。\n情報カードは選択中の図形の座標・長さ・半径・角度などを表示し、数値を書き換えると図形が更新されます。縫い穴がある線は穴も追従します。\n図形の色（青・緑・赤・白・黄色の5色）と線種（実線・点線）も情報カードで選べます（文字・寸法・折り線は対象外）。選んだ色・線種は SVG・DXF・PDF の書き出しに反映されます。.lcc を取り込むと、元の色分け（Aqua＝輪郭→青、Lime＝パッチ線→緑、Orange＝寸法・Yellow＝目印→黄色）がこの5色に自動で割り振られます。"
     },
     {
       "id": "trim-mirror",
@@ -8237,7 +8296,7 @@ const HELP_EN = {
     {
       "id": "layers-info",
       "title": "Layers and the Info card",
-      "body": "Choose the drawing layer, visibility, lock and name in the Layers card. Defaults are Pattern, Marks and Guide. Shapes on locked layers cannot be selected.\nThe Info card shows coordinates, length, radius and angles of the selected shape; editing a value updates the shape, and stitching holes follow."
+      "body": "Choose the drawing layer, visibility, lock and name in the Layers card. Defaults are Pattern, Marks and Guide. Shapes on locked layers cannot be selected.\nThe Info card shows coordinates, length, radius and angles of the selected shape; editing a value updates the shape, and stitching holes follow.\nThe Info card also lets you pick a shape color (blue, green, red, white or yellow) and line style (solid or dashed); not available for text, dimensions or fold lines. These are reflected in SVG, DXF and PDF export. Importing a .lcc file maps its original colors (Aqua=outline to blue, Lime=patch lines to green, Orange=dimensions and Yellow=marks to yellow) onto these five colors automatically."
     },
     {
       "id": "trim-mirror",
@@ -8607,8 +8666,9 @@ function initLayers() {
 }
 
 // ---- 情報パネル（選択図形の数値編集）----
-const INFO_FIELDS = { line: ['x1','y1','x2','y2','length'], circle: ['cx','cy','r'], arc: ['cx','cy','r','startDeg','endDeg','length'], bezier: ['x1','y1','x2','y2','length'], polyline: ['nodes','closed','length','area'], path: ['nodes','closed','length','area','nodeOps'], text: ['text','sizeMm','angleDeg','x','y'], dimension: ['x1','y1','x2','y2','offset','length'], fold: ['x1','y1','x2','y2','angleDeg','inner'] };
-const ALL_FIELDS = ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','nodes','area','nodeOps','inner'];
+const COLOR_FIELDS = ['color','lineStyle'];
+const INFO_FIELDS = { line: ['x1','y1','x2','y2','length',...COLOR_FIELDS], circle: ['cx','cy','r',...COLOR_FIELDS], arc: ['cx','cy','r','startDeg','endDeg','length',...COLOR_FIELDS], bezier: ['x1','y1','x2','y2','length',...COLOR_FIELDS], polyline: ['nodes','closed','length','area',...COLOR_FIELDS], path: ['nodes','closed','length','area','nodeOps',...COLOR_FIELDS], text: ['text','sizeMm','angleDeg','x','y'], dimension: ['x1','y1','x2','y2','offset','length'], fold: ['x1','y1','x2','y2','angleDeg','inner'] };
+const ALL_FIELDS = ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','nodes','area','nodeOps','inner',...COLOR_FIELDS];
 let infoBusy = false;
 function infoShape() { if (selected.size !== 1) return null; const id = [...selected][0]; return doc.shapes.find(s => s.id === id) || null; }
 function refreshInfo() {
@@ -8622,6 +8682,7 @@ function refreshInfo() {
     if ('text' in s && !typing($('info-text'))) $('info-text').value = s.text;
     if ('closed' in s) $('info-closed').checked = s.closed;
     if ('inner' in s) $('info-inner').checked = s.inner;
+    if (INFO_FIELDS[s.type]?.includes('color')) { $('info-color').value = s.color || ''; $('info-lineStyle').value = s.lineStyle || ''; }
     $('info-length').value = (s.type === 'fold' ? distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }) : arcLength(s)).toFixed(2);
     renderPartInfo(s);
     if (s.type === 'polyline' || s.type === 'path') { $('info-nodes').textContent = String((s.points || s.nodes).length); $('info-area').textContent = s.closed ? areaOf(s.type === 'path' ? flattenForArea(s) : s.points).toFixed(1) + ' mm²' : '—'; }
@@ -8638,6 +8699,7 @@ function applyInfo(field) {
   else if (field === 'text') { const text = $('info-text').value; if (!text) { $('hint').textContent = t('invalidNumber'); return; } next.text = text; }
   else if (field === 'closed') { if (s.type === 'polyline' && s.points.length < 3) return; next.closed = $('info-closed').checked; }
   else if (field === 'inner') { next.inner = $('info-inner').checked; }
+  else if (field === 'color' || field === 'lineStyle') { const v = $('info-' + field).value; if (v) next[field] = v; else delete next[field]; }
   else if (field === 'length') {
     const len = num('length'); if (!(len > 0)) { $('hint').textContent = t('invalidNumber'); return; }
     if (s.type === 'line' || s.type === 'dimension') { const cur = distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }); if (cur < 1e-9) return; next.x2 = s.x1 + (s.x2 - s.x1) * len / cur; next.y2 = s.y1 + (s.y2 - s.y1) * len / cur; }
@@ -8812,7 +8874,7 @@ function initDesign() {
 }
 
 function initInfo() {
-  for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer']) $('info-' + f).addEventListener('change', () => applyInfo(f));
+  for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer','color','lineStyle']) $('info-' + f).addEventListener('change', () => applyInfo(f));
   $('toggleSmooth').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const nodes = s.nodes.map(n => ({ ...n })), n = nodes[nodeSel.index];
     if (n.smooth) { n.smooth = false; } else { const prev = nodes[(nodeSel.index - 1 + nodes.length) % nodes.length], nx = nodes[(nodeSel.index + 1) % nodes.length], d = { x: nx.x - prev.x, y: nx.y - prev.y }, l = Math.hypot(d.x, d.y) || 1, k = Math.min(distance(n, prev), distance(n, nx)) / 3; n.smooth = true; n.inX = n.x - d.x / l * k; n.inY = n.y - d.y / l * k; n.outX = n.x + d.x / l * k; n.outY = n.y + d.y / l * k; }
     transformSelectedTo({ ...s, nodes }); };
@@ -8908,6 +8970,16 @@ function exportDxf() {
   const preset = $('exportPreset').value;
   const dxf = preset === 'leathercraft' ? leathercraftDxf(doc, { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(doc, { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
   download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf'); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' });
+}
+/** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
+function drawPrintOverlay() {
+  const shapes = doc.shapes.filter(visible), overlapMm = 10, pageMm = PAGES[$('paper').value] || PAGES.a4;
+  const holes = $('outHoles').checked ? doc.holes.filter(h => doc.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => shapes.some(s => s.id === id)))) : [];
+  const b = bboxOfDoc({ ...doc, shapes, holes }); if (!b) return;
+  const layout = printLayout(b, pageMm, overlapMm, null);
+  ctx.save(); ctx.setLineDash([4 / scale, 3 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = 'rgba(255,90,90,0.5)'; ctx.fillStyle = 'rgba(255,120,120,0.7)'; ctx.font = `${12 / scale}px system-ui, sans-serif`;
+  layout.pages.forEach((p, i) => { ctx.strokeRect(p.x, p.y, p.w, p.h); ctx.fillText(`${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, p.x + 2, p.y + 12 / scale); });
+  ctx.restore();
 }
 /** 用紙キー（a4/a4l/a3/a3l）から @page を書く。CSS のセレクタ内 @page は無効なので style 要素を差し替える。 */
 function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 10mm; } }`; return size; }
@@ -9924,8 +9996,11 @@ function path(s) {
   }
 }
 const segmentBoundsCache = new WeakMap();
-function strokeShape(s, color = '#d8d8d8') {
+/** 図形の色（5色）の画面表示用（黒背景向け）カラーコード。 */
+const SHAPE_DRAW_COLOR = { blue: '#4da6ff', green: '#4ecb6b', red: '#ff5a5a', white: '#ffffff', yellow: '#f0d050' };
+function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (!s) return;
+  ctx.setLineDash(dashed ? [4 / scale, 3 / scale] : []);
   if (s.type === 'path') {
     const margin = 3 / scale, a = world({ x: 0, y: 0 }), b = world({ x: width, y: height });
     ctx.beginPath();
@@ -9977,13 +10052,15 @@ function draw() {
     for (let y = Math.ceil(lo.y / step) * step; y <= hi.y; y += step) { ctx.moveTo(lo.x, y); ctx.lineTo(hi.x, y); }
     ctx.strokeStyle = '#242424'; ctx.stroke();
   }
+  if ($('printOverlay').checked) drawPrintOverlay();
   ctx.beginPath(); ctx.moveTo(lo.x, 0); ctx.lineTo(hi.x, 0); ctx.moveTo(0, lo.y); ctx.lineTo(0, hi.y); ctx.strokeStyle = '#454039'; ctx.stroke();
   ctx.lineWidth = 1.5 / scale;
   const hl = aiHighlight.until > Date.now() ? aiHighlight.ids : null;
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
   // 革色：部品の閉図形を半透明で塗る（カラーシミュレーション）
   for (const part of doc.parts.filter(p => p.color)) for (const s of doc.shapes.filter(s => part.shapeIds.includes(s.id) && visible(s) && (s.closed || s.type === 'circle'))) { path(previewMoved(s)); ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = part.color; ctx.fill(); ctx.restore(); }
-  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : '#d8d8d8');
+  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
+  ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   for (const originalHole of doc.holes) {
     if (!holeVisible(originalHole)) continue;
@@ -10188,6 +10265,7 @@ $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history
 $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
+for (const id of ['printOverlay', 'paper', 'outHoles']) $(id).addEventListener('change', () => draw());
 function save() {
   const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = (tabs[activeTab]?.name ? tabs[activeTab].name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);

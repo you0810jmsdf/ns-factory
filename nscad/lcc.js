@@ -7,6 +7,8 @@ const num = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
 const pt = a => Array.isArray(a) && a.length >= 2 ? { x: num(a[0]), y: num(a[1]) } : { x: 0, y: 0 };
 /** .lcc の工具記号（pr.bt）→ N's CAD の工具種別。D=菱目・R=丸・E=ヨーロッパ目・F=平目。不明は菱目。 */
 export const LCC_TOOL_KIND = { D: 'diamond', R: 'round', E: 'european', F: 'flat' };
+/** .lcc の色（Aqua=輪郭・Lime=パッチ線・Orange=寸法・Yellow=目印）→ N's CAD の図形色（5色のうち4色。白は目打ち穴用で図形には使わない）。 */
+export const LCC_SHAPE_COLOR = { Aqua: 'blue', Lime: 'green', Orange: 'yellow', Yellow: 'yellow' };
 /** 文字列または JSON を受け取り、.lcc らしければ解析結果を返す。違えば null。 */
 export function parseLcc(input) {
   let d = input;
@@ -56,6 +58,8 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
   // .lcc は 1 レイヤーに全図形がフラットに入っていることが多く、代わりに色で用途を区別している（革の色ではない）。
   // 実測：Aqua＝輪郭（カット線）、Lime＝パッチ分割線、Orange＝寸法（線・文字）、Yellow＝目印。それ以外は元のレイヤー番号へ。
   const COLOR_LAYER = { Aqua: { id: 'lcc-outline', name: '輪郭（Aqua）' }, Lime: { id: 'lcc-patch', name: 'パッチ線（Lime）' }, Orange: { id: 'lcc-dim', name: '寸法（Orange）' }, Yellow: { id: 'lcc-mark', name: '目印（Yellow）' } };
+  // レイヤー振り分け（上）とは別に、N's CAD の図形プロパティ色（5色）にも復元する。White（目打ち穴）は S_HOLE 側で別処理のため対象外。
+  const colorOf = s => LCC_SHAPE_COLOR[s.color];
   const layerId = s => {
     const col = COLOR_LAYER[s.color];
     if (col) { if (!doc.layers.some(x => x.id === col.id)) doc.layers.push({ id: col.id, name: col.name, visible: true, locked: false }); return col.id; }
@@ -68,7 +72,8 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
     if (s.type === 'S_HOLE') { holes.push(lccHole(s)); continue; }
     const layer = s.type === 'DOT' ? 'marks' : layerId(s);
     const out = lccShapeToShapes(s); if (!out.length) warnings.push(`skip:${s.type}:${s.id}`);
-    for (const sh of out) doc.shapes.push({ id: sid(), layer, ...sh });
+    const color = colorOf(s);
+    for (const sh of out) doc.shapes.push({ id: sid(), layer, ...(color ? { color } : {}), ...sh });
   }
   // 穴：鎖ごとに近い図形へ付ける。近い図形が無い鎖は中心を結ぶ折れ線（marks 層）を作って付ける。
   const chains = holeChains(holes); let attached = 0, viaChain = 0;
