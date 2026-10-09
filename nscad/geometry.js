@@ -391,8 +391,7 @@ export function pathNode(x, y, inH = null, outH = null, smooth = !!(inH || outH)
 /** line／bezier／polyline／path 図形から同じ形の path 図形を返す。他は null。 */
 export function toPath(s) {
   if (s.type === 'path') return { ...s, nodes: s.nodes.map(n => ({ ...n })) };
-  const { x1, y1, x2, y2, c1x, c1y, c2x, c2y, points, ...metadata } = s;
-  const base = { ...metadata, type: 'path' };
+  const base = { id: s.id, layer: s.layer, type: 'path' };
   if (s.type === 'line') return { ...base, closed: false, nodes: [pathNode(s.x1, s.y1), pathNode(s.x2, s.y2)] };
   if (s.type === 'bezier') return { ...base, closed: false, nodes: [pathNode(s.x1, s.y1, null, { x: s.c1x, y: s.c1y }, false), pathNode(s.x2, s.y2, { x: s.c2x, y: s.c2y }, null, false)] };
   if (s.type === 'polyline') { const pts = s.closed && distance(s.points[0], s.points.at(-1)) < EPS ? s.points.slice(0, -1) : s.points; return { ...base, closed: !!s.closed, nodes: pts.map(p => pathNode(p.x, p.y)) }; }
@@ -404,7 +403,6 @@ export function pathInsertNode(s, position) {
   let base = 0, i = 0;
   for (; i < segs.length - 1; i++) { const n = arcLength(segs[i]); if (target <= base + n + EPS) break; base += n; }
   const seg = segs[i], local = target - base, nodes = s.nodes.map(n => ({ ...n })), a = nodes[i], b = nodes[(i + 1) % nodes.length];
-  if (local <= EPS || arcLength(seg) - local <= EPS) return s;
   if (seg.type === 'line') {
     const f = arcLength(seg) > EPS ? local / arcLength(seg) : 0, p = { x: seg.x1 + (seg.x2 - seg.x1) * f, y: seg.y1 + (seg.y2 - seg.y1) * f };
     nodes.splice(i + 1, 0, pathNode(p.x, p.y));
@@ -420,36 +418,7 @@ export function pathInsertNode(s, position) {
 /** path と節点番号から、その節点を除いた新 path を返す。最小節点数を下回るときは null。 */
 export function pathRemoveNode(s, index) {
   if (s.nodes.length - 1 < (s.closed ? 3 : 2) || index < 0 || index >= s.nodes.length) return null;
-  const nodes = s.nodes.map(n => ({ ...n }));
-  if (s.closed || (index > 0 && index < nodes.length - 1)) {
-    const a = nodes[(index - 1 + nodes.length) % nodes.length], m = nodes[index], b = nodes[(index + 1) % nodes.length];
-    // De Casteljau 分割の接線長比から元のパラメータを復元。保存・読込後も有効。
-    let l = Math.hypot(m.x - m.inX, m.y - m.inY), r = Math.hypot(m.outX - m.x, m.outY - m.y);
-    if (l + r < EPS) {
-      l = Math.sqrt(Math.hypot(m.x - 2 * m.inX + a.outX, m.y - 2 * m.inY + a.outY));
-      r = Math.sqrt(Math.hypot(b.inX - 2 * m.outX + m.x, b.inY - 2 * m.outY + m.y));
-      if (l + r < EPS) { l = Math.cbrt(distance(a, m)); r = Math.cbrt(distance(m, b)); }
-    }
-    const t = l / (l + r);
-    if (t > EPS && t < 1 - EPS) {
-      const c1 = { x: a.x + (a.outX - a.x) / t, y: a.y + (a.outY - a.y) / t };
-      const c2 = { x: b.x + (b.inX - b.x) / (1 - t), y: b.y + (b.inY - b.y) / (1 - t) };
-      const mix = (p, q) => ({ x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t });
-      const mid = mix(c1, c2), left = mix({ x: a.outX, y: a.outY }, mid), right = mix(mid, { x: b.inX, y: b.inY });
-      if (distance(left, { x: m.inX, y: m.inY }) < 1e-7 && distance(right, { x: m.outX, y: m.outY }) < 1e-7 && distance(mix(left, right), m) < 1e-7) {
-        a.outX = c1.x; a.outY = c1.y; b.inX = c2.x; b.inY = c2.y;
-      }
-    }
-  }
-  nodes.splice(index, 1); return { ...s, nodes };
-}
-
-const pathLengthCache = new WeakMap();
-/** 不変の区間配列から累積弧長を返す。節点編集では配列を交換してキャッシュを更新する。 */
-function pathLengths(s) {
-  const segments = pathSegments(s); let values = pathLengthCache.get(segments);
-  if (!values) { values = [0]; for (const seg of segments) values.push(values.at(-1) + arcLength(seg)); pathLengthCache.set(segments, values); }
-  return values;
+  const nodes = s.nodes.map(n => ({ ...n })); nodes.splice(index, 1); return { ...s, nodes };
 }
 
 /** 図形と公差(mm)から平坦化点列を返す。ベジェは制御多角形の弦からの距離で適応分割。 */
@@ -490,7 +459,7 @@ function bezierLength(s,t=1) {
 /** 図形または chainShapes の経路から弧長(mm)を返す。 */
 export function arcLength(s) {
   if (s.items) return s.items.reduce((n,i)=>n+arcLength(i.shape),0);
-  if (s.type==='path') return pathLengths(s).at(-1);
+  if (s.type==='path') return pathSegments(s).reduce((n,seg)=>n+arcLength(seg),0);
   if (s.type==='text'||s.type==='dimension'||s.type==='fold'||s.type==='image') return 0;
   if (s.type==='circle' || s.type==='arc') return s.r*Math.PI/180*(s.type==='circle'?360:arcSweep(s));
   if (s.type==='bezier') return bezierLength(s);
@@ -509,9 +478,8 @@ export function pointAtLength(shape, position) {
     return {...p,s,angleDeg:norm(p.angleDeg+(item.reversed?180:0)+(shape.reversed?180:0))};
   }
   if (shape.type==='path') {
-    const segs=pathSegments(shape), lengths=pathLengths(shape); let lo=0, hi=segs.length-1;
-    while(lo<hi){const mid=(lo+hi)>>1;if(s<=lengths[mid+1])hi=mid;else lo=mid+1;}
-    const seg=segs[lo], left=s-lengths[lo];
+    const segs=pathSegments(shape); let left=s, seg=segs.at(-1);
+    for (const candidate of segs) { seg=candidate; const n=arcLength(seg); if(left<=n+EPS)break; left-=n; }
     if (!seg) return {x:shape.nodes[0]?.x??0,y:shape.nodes[0]?.y??0,s,angleDeg:0};
     return {...pointAtLength(seg,left),s};
   }
@@ -593,8 +561,7 @@ export function cornerHoles(shape,mode='place') {
     if(s.type==='path'){let n=0;const segs=pathSegments(s);for(let i=0;i<segs.length;i++){n+=arcLength(segs[i]);if(i<segs.length-1||s.closed)positions.push(base+(reverse?arcLength(s)-n:n));}if(s.closed)positions.push(base);}
   };
   visit(shape); const len=arcLength(shape), closed=shape.closed||shape.type==='circle';
-  // 閉経路の継ぎ目は逆向きでも s=0 に統一し、始終点の角穴を重ねない。
-  return [...new Set(positions.map(s=>{const position=shape.reversed?len-s:s;return closed&&Math.abs(position-len)<EPS?0:position;}))].map(s=>{
+  return [...new Set(positions.map(s=>shape.reversed?len-s:s))].map(s=>{
     const e=Math.min(1e-5,len/100000), before=pointAtLength(shape,s===0&&closed?len-e:s-e),after=pointAtLength(shape,s===len&&closed?e:s+e), delta=((after.angleDeg-before.angleDeg+540)%360)-180;
     return Math.abs(delta)>30+1e-5 ? {...pointAtLength(shape,s),angleDeg:mode==='bisect'?norm(before.angleDeg+delta/2):after.angleDeg} : null;
   }).filter(Boolean);
@@ -648,9 +615,8 @@ export function reflectAcross(s, a, b) {
 }
 /** 図形と弧長位置の配列から、その位置で切り分けた図形配列を返す。円は 2 点以上で円弧になる。切れない型は [図形]。 */
 export function splitShapeAt(s, positions) {
-  const len = arcLength(s), closed = s.type === 'circle' || s.closed;
-  const cuts = [...new Set(positions.filter(Number.isFinite).map(p => closed && Math.abs(p - len) < 1e-6 ? 0 : p).filter(p => (closed ? p >= 0 : p > 1e-6) && p < len - 1e-6).map(p => +p.toFixed(9)))].sort((x, y) => x - y);
-  if (!cuts.length || (closed && cuts.length < 2) || !['line','arc','circle','bezier','polyline','path'].includes(s.type)) return [s];
+  const len = arcLength(s), cuts = [...new Set(positions.filter(p => Number.isFinite(p) && p > 1e-6 && p < len - 1e-6).map(p => +p.toFixed(9)))].sort((x, y) => x - y);
+  if (!cuts.length || s.type === 'text' || s.type === 'dimension') return [s];
   const strip = o => { const { id, ...rest } = o; return rest; };
   if (s.type === 'circle') {
     if (cuts.length < 2) return [s];
@@ -683,80 +649,7 @@ export function allIntersections(shapes, tol = 0.01) {
 export function trimAt(s, p, others, { keep = false, tol = 0.01 } = {}) {
   const len = arcLength(s); if (len < EPS || s.type === 'text' || s.type === 'dimension') return null;
   const cuts = allIntersections([s, ...others.filter(o => o.id !== s.id)], tol).filter(q => q.ids.includes(s.id)).map(q => projectOnPath(s, q).s);
-  const parts = splitShapeAt(s, cuts); if (parts.length < 2) return null;
+  const parts = splitShapeAt(s, cuts); if (parts.length < 2 && !(s.type === 'circle')) return null;
   const hit = parts.reduce((best, part) => distToShape(part, p) < distToShape(best, p) ? part : best);
   return keep ? [hit] : parts.filter(part => part !== hit);
-}
-
-/** SVG は内部と同じ Y 下向き。正の掃引をそのまま sweep=1 にする。 */
-export function svgSweep() { return 1; }
-
-/** mm値をSVGの数値文字列にする（小数6桁、校正係数の精度を保持）。 */
-export const svgNumber = n => (Math.round(n * 1e6) / 1e6).toString();
-/** 対象図形に属する経路の穴を返す。 */
-export function holesOnShapes(doc, shapes) { const ids = new Set(shapes.map(s => s.id)), okPaths = new Set(doc.paths.filter(p => p.shapeIds.every(id => ids.has(id))).map(p => p.id)); return doc.holes.filter(h => okPaths.has(h.pathId)); }
-/** 色は #rgb/#rrggbb/#rrggbbaa だけ通す（属性への差し込み防止）。 */
-export const safeColor = (c, fallback = '#d9c7a0') => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? String(c) : fallback;
-/** 文字列をXMLのテキスト・属性値用にエスケープする。 */
-export const svgEscape = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-/** 識別子をSVG/DXF用の英数字と区切りに制限する。 */
-export const svgId = s => String(s).replace(/[^A-Za-z0-9_-]/g, '_');
-
-/** 図形 1 つから SVG の path d 文字列を返す（円・円弧は arc コマンド、ベジェは C、path は区間ごと）。文字・寸法は null。 */
-export function shapeToSvgD(s) {
-  if (s.type === 'line') return `M${svgNumber(s.x1)} ${svgNumber(s.y1)}L${svgNumber(s.x2)} ${svgNumber(s.y2)}`;
-  if (s.type === 'circle') return `M${svgNumber(s.cx - s.r)} ${svgNumber(s.cy)}A${svgNumber(s.r)} ${svgNumber(s.r)} 0 1 1 ${svgNumber(s.cx + s.r)} ${svgNumber(s.cy)}A${svgNumber(s.r)} ${svgNumber(s.r)} 0 1 1 ${svgNumber(s.cx - s.r)} ${svgNumber(s.cy)}Z`;
-  if (s.type === 'arc') {
-    const sweep = arcSweep(s), a0 = s.startDeg * Math.PI / 180, a1 = (s.startDeg + sweep) * Math.PI / 180;
-    if (sweep >= 360) return shapeToSvgD({ ...s, type: 'circle' });
-    return `M${svgNumber(s.cx + s.r * Math.cos(a0))} ${svgNumber(s.cy + s.r * Math.sin(a0))}A${svgNumber(s.r)} ${svgNumber(s.r)} 0 ${sweep > 180 ? 1 : 0} ${svgSweep()} ${svgNumber(s.cx + s.r * Math.cos(a1))} ${svgNumber(s.cy + s.r * Math.sin(a1))}`;
-  }
-  if (s.type === 'bezier') return `M${svgNumber(s.x1)} ${svgNumber(s.y1)}C${svgNumber(s.c1x)} ${svgNumber(s.c1y)} ${svgNumber(s.c2x)} ${svgNumber(s.c2y)} ${svgNumber(s.x2)} ${svgNumber(s.y2)}`;
-  if (s.type === 'polyline') return s.points.map((p, i) => `${i ? 'L' : 'M'}${svgNumber(p.x)} ${svgNumber(p.y)}`).join('') + (s.closed ? 'Z' : '');
-  if (s.type === 'path') {
-    const segs = pathSegments(s); if (!segs.length) return null;
-    return `M${svgNumber(segs[0].x1)} ${svgNumber(segs[0].y1)}` + segs.map(g => g.type === 'line' ? `L${svgNumber(g.x2)} ${svgNumber(g.y2)}` : `C${svgNumber(g.c1x)} ${svgNumber(g.c1y)} ${svgNumber(g.c2x)} ${svgNumber(g.c2y)} ${svgNumber(g.x2)} ${svgNumber(g.y2)}`).join('') + (s.closed ? 'Z' : '');
-  }
-  return null;
-}
-/** 穴 1 つの SVG 要素文字列を返す（mark に従う：菱形は polygon、点・丸は circle、線分は line）。 */
-export function holeToSvg(h, doc, color = '#e00000') {
-  const a = holeAppearance(h, doc); if (!a) return '';
-  if (a.kind === 'dot' || a.kind === 'circle') return `<circle cx="${svgNumber(h.x)}" cy="${svgNumber(h.y)}" r="${svgNumber(a.width / 2)}" fill="none" stroke="${color}"/>`;
-  const pts = (a.kind === 'slit' ? [{ x: -a.width / 2, y: 0 }, { x: a.width / 2, y: 0 }] : [{ x: -a.width / 2, y: 0 }, { x: 0, y: -a.height / 2 }, { x: a.width / 2, y: 0 }, { x: 0, y: a.height / 2 }]).map(p => { const q = rotate(p, h.angleDeg); return `${svgNumber(q.x + h.x)},${svgNumber(q.y + h.y)}`; });
-  return a.kind === 'slit' ? `<line x1="${pts[0].split(',')[0]}" y1="${pts[0].split(',')[1]}" x2="${pts[1].split(',')[0]}" y2="${pts[1].split(',')[1]}" stroke="${color}"/>` : `<polygon points="${pts.join(' ')}" fill="none" stroke="${color}"/>`;
-}
-/** 文書から SVG 文字列を返す。1 ユーザー単位＝1mm、width/height は mm、レイヤーごとに <g id>。線は黒 strokeMm、穴は赤。 */
-export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 0, layerIds = null, calibration = null, fontFamily = 'sans-serif' } = {}) {
-  const shapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible));
-  const holes = includeHoles ? holesOnShapes(doc, shapes) : [];
-  const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
-  const fx = calibration?.fx ?? 1, fy = calibration?.fy ?? 1;
-  if (![fx,fy,strokeMm].every(v=>Number.isFinite(v)&&v>0) || !Number.isFinite(marginMm) || marginMm<0) throw new RangeError('SVG dimensions');
-  const padX = b.maxX === b.minX ? strokeMm / 2 : 0, padY = b.maxY === b.minY ? strokeMm / 2 : 0;
-  const x0 = b.minX - marginMm - padX, y0 = b.minY - marginMm - padY, w = b.maxX - b.minX + 2 * (marginMm + padX), h = b.maxY - b.minY + 2 * (marginMm + padY);
-  const groups = doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => {
-    const body = shapes.filter(s => s.layer === l.id).map(s => {
-      if (s.type === 'text') return `<text x="${svgNumber(s.x)}" y="${svgNumber(s.y)}" font-size="${svgNumber(s.sizeMm)}" font-family="${svgEscape(fontFamily)}" fill="#000" stroke="none" transform="rotate(${svgNumber(s.angleDeg)} ${svgNumber(s.x)} ${svgNumber(s.y)})">${svgEscape(s.text)}</text>`;
-      if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `<path d="M${svgNumber(d.a.x)} ${svgNumber(d.a.y)}L${svgNumber(d.b.x)} ${svgNumber(d.b.y)}${d.ext.map(([p, q]) => `M${svgNumber(p.x)} ${svgNumber(p.y)}L${svgNumber(q.x)} ${svgNumber(q.y)}`).join('')}"/><text x="${svgNumber(d.textPos.x)}" y="${svgNumber(d.textPos.y)}" font-size="2.5" font-family="${svgEscape(fontFamily)}" text-anchor="middle" fill="#000" stroke="none" transform="rotate(${svgNumber(d.angleDeg)} ${svgNumber(d.textPos.x)} ${svgNumber(d.textPos.y)})">${svgNumber(d.value)}</text>`; }
-      const d = shapeToSvgD(s); const partColor = fill ? safeColor((doc.parts || []).find(p => p.shapeIds.includes(s.id))?.color) : null;
-      return d ? `<path id="${svgId(s.id)}" d="${d}"${fill && (s.closed || s.type === 'circle') ? ` fill="${partColor}"` : ''}/>` : '';
-    }).join('');
-    return `<g id="${svgId('layer-' + l.id)}" data-name="${svgEscape(l.name)}">${body}</g>`;
-  }).join('');
-  const threadHex = h => { const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
-  const holeGroup = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${svgNumber(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h))).join('')}</g>` : '';
-  const inner = `<g fill="none" stroke="#000" stroke-width="${svgNumber(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${groups}${holeGroup}</g>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${svgNumber(w * fx)}mm" height="${svgNumber(h * fy)}mm" viewBox="${svgNumber(x0 * fx)} ${svgNumber(y0 * fy)} ${svgNumber(w * fx)} ${svgNumber(h * fy)}">${fx === 1 && fy === 1 ? inner : `<g transform="scale(${svgNumber(fx)} ${svgNumber(fy)})">${inner}</g>`}</svg>`;
-}
-/** 校正係数：期待値 ÷ 実測値。実測が正でなければ null。 */
-export function calibrationFactor(expectedMm, measuredMm) { const factor=expectedMm/measuredMm; return Number.isFinite(expectedMm) && Number.isFinite(measuredMm) && expectedMm > 0 && measuredMm > 0 && Number.isFinite(factor) && factor>0 ? factor : null; }
-/** SVG 文字列に縦横の補正係数を掛けた新しい SVG を返す（width/height/viewBox と transform）。文書を渡した場合は docToSvg に委ねる。 */
-export function applyCalibration(svgOrDoc, fx = 1, fy = 1) {
-  if (![fx,fy].every(v=>Number.isFinite(v)&&v>0)) throw new RangeError('calibration');
-  if (typeof svgOrDoc !== 'string') return docToSvg(svgOrDoc, { calibration: { fx, fy } });
-  const m = svgOrDoc.match(/^<svg([^>]*) width="([\d.]+)mm" height="([\d.]+)mm" viewBox="([-\d.]+) ([-\d.]+) ([\d.]+) ([\d.]+)">([\s\S]*)<\/svg>$/);
-  if (!m) return svgOrDoc;
-  const [, attrs, w, h, x0, y0, vw, vh, inner] = m;
-  return `<svg${attrs} width="${svgNumber(w * fx)}mm" height="${svgNumber(h * fy)}mm" viewBox="${svgNumber(x0 * fx)} ${svgNumber(y0 * fy)} ${svgNumber(vw * fx)} ${svgNumber(vh * fy)}"><g transform="scale(${svgNumber(fx)} ${svgNumber(fy)})">${inner}</g></svg>`;
 }
