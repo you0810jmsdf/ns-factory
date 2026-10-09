@@ -179,6 +179,30 @@
 <div class="row"><button id="toolReassign" data-i18n="toolReassign"></button><button id="toolReassignSel" data-i18n="toolReassignSel"></button></div></details>
 </details>
 </div></details>
+<details class="card" id="patchCard"><summary data-i18n="patchSection"></summary><div class="body">
+<label><span data-i18n="seamStyle"></span><select id="seamStyle"><option value="butt" data-i18n="styleButt"></option><option value="overlap" data-i18n="styleOverlap"></option><option value="felled" data-i18n="styleFelled"></option></select></label>
+<label><span data-i18n="patchPitch"></span><input id="patchPitch" type="number" step="0.1" value="4"></label>
+<label><span data-i18n="patchTol"></span><input id="patchTol" type="number" step="1" value="15"></label>
+<label><span data-i18n="patchClear"></span><input id="patchClear" type="number" step="0.1" value=""></label>
+<label><span data-i18n="seamCount"></span><output id="seamCount">0</output></label>
+<div class="row"><button id="optimizePatch" data-i18n="optimizePatch"></button><button id="clearSeams" data-i18n="clearSeams"></button><button id="clearPairs" data-i18n="clearPairs"></button></div>
+<output id="patchWarnings" class="note"></output>
+<label><span data-i18n="patchTargetW"></span><input id="patchTargetW" type="number" step="1" value="40"></label>
+<label><span data-i18n="patchTargetH"></span><input id="patchTargetH" type="number" step="1" value="40"></label>
+<label><span data-i18n="patchAllowance"></span><input id="patchAllowance" type="number" step="0.5" value="3"></label>
+<button id="suggestSizes" data-i18n="suggestSizes"></button>
+<output id="patchSuggest" class="note"></output>
+<label><span data-i18n="patchCols"></span><input id="patchCols" type="number" step="1" value="3"></label>
+<label><span data-i18n="patchRows"></span><input id="patchRows" type="number" step="1" value="3"></label>
+<button id="makeGrid" data-i18n="makeGrid"></button>
+<label><span data-i18n="patchPattern"></span><select id="patchPattern"><option value="argyle" data-i18n="patchArgyle"></option><option value="ichimatsu" data-i18n="patchIchimatsu"></option></select></label>
+<label><span data-i18n="patchCell"></span><input id="patchCell" type="number" min="2" step="1" value="20"></label>
+<label><span data-i18n="patchHole"></span><select id="patchHole"><option value="tool" data-i18n="patchHoleTool"></option><option value="diamond" data-i18n="diamond"></option><option value="round" data-i18n="round"></option></select></label>
+<label><input id="patchStitch" type="checkbox" checked><span data-i18n="patchStitch"></span></label>
+<label><span data-i18n="patchInset"></span><input id="patchInset" type="number" min="0.5" step="0.5" value="2.5"></label>
+<label><input id="patchEdgeBan" type="checkbox" checked><span data-i18n="patchEdgeBan"></span></label>
+<button id="patchFill" data-i18n="patchFill"></button>
+</div></details>
 <details class="card" id="presetCard"><summary data-i18n="presetCard"></summary><div class="body">
 <p class="note" data-i18n="presetNote"></p>
 <label><span data-i18n="presetList"></span><select id="presetList"></select></label>
@@ -347,30 +371,6 @@
 <label><input id="komaInward" type="checkbox" checked><span data-i18n="komaInward"></span></label>
 <button id="makeKomaLine" data-i18n="makeKomaLine"></button>
 </details>
-<details class="sub"><summary data-i18n="patchSection"></summary>
-<label><span data-i18n="seamStyle"></span><select id="seamStyle"><option value="butt" data-i18n="styleButt"></option><option value="overlap" data-i18n="styleOverlap"></option><option value="felled" data-i18n="styleFelled"></option></select></label>
-<label><span data-i18n="patchPitch"></span><input id="patchPitch" type="number" step="0.1" value="4"></label>
-<label><span data-i18n="patchTol"></span><input id="patchTol" type="number" step="1" value="15"></label>
-<label><span data-i18n="patchClear"></span><input id="patchClear" type="number" step="0.1" value=""></label>
-<label><span data-i18n="seamCount"></span><output id="seamCount">0</output></label>
-<div class="row"><button id="optimizePatch" data-i18n="optimizePatch"></button><button id="clearSeams" data-i18n="clearSeams"></button><button id="clearPairs" data-i18n="clearPairs"></button></div>
-<output id="patchWarnings" class="note"></output>
-<label><span data-i18n="patchTargetW"></span><input id="patchTargetW" type="number" step="1" value="40"></label>
-<label><span data-i18n="patchTargetH"></span><input id="patchTargetH" type="number" step="1" value="40"></label>
-<label><span data-i18n="patchAllowance"></span><input id="patchAllowance" type="number" step="0.5" value="3"></label>
-<button id="suggestSizes" data-i18n="suggestSizes"></button>
-<output id="patchSuggest" class="note"></output>
-<label><span data-i18n="patchCols"></span><input id="patchCols" type="number" step="1" value="3"></label>
-<label><span data-i18n="patchRows"></span><input id="patchRows" type="number" step="1" value="3"></label>
-<button id="makeGrid" data-i18n="makeGrid"></button>
-<label><span data-i18n="patchPattern"></span><select id="patchPattern"><option value="argyle" data-i18n="patchArgyle"></option><option value="ichimatsu" data-i18n="patchIchimatsu"></option></select></label>
-<label><span data-i18n="patchCell"></span><input id="patchCell" type="number" min="2" step="1" value="20"></label>
-<label><span data-i18n="patchHole"></span><select id="patchHole"><option value="tool" data-i18n="patchHoleTool"></option><option value="diamond" data-i18n="diamond"></option><option value="round" data-i18n="round"></option></select></label>
-<label><input id="patchStitch" type="checkbox" checked><span data-i18n="patchStitch"></span></label>
-<label><span data-i18n="patchInset"></span><input id="patchInset" type="number" min="0.5" step="0.5" value="2.5"></label>
-<label><input id="patchEdgeBan" type="checkbox" checked><span data-i18n="patchEdgeBan"></span></label>
-<button id="patchFill" data-i18n="patchFill"></button>
-</details>
 </div></details>
 <details class="card" id="outputCard"><summary data-i18n="output"></summary><div class="body">
 <label><span data-i18n="paper"></span><select id="paper"><option value="a4">A4</option><option value="a4l" data-i18n="paperA4L"></option><option value="a3">A3</option><option value="a3l" data-i18n="paperA3L"></option></select></label>
@@ -413,8 +413,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=040c19b8","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=4052f6b7","./help/ja.js":"./help/ja.js?v=f1099f04","./i18n.js":"./i18n.js?v=e2c520fd","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=040c19b8"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=efe206ba","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=4052f6b7","./help/ja.js":"./help/ja.js?v=f1099f04","./i18n.js":"./i18n.js?v=e2c520fd","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=efe206ba"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -10195,7 +10195,7 @@ function commit(fn) {
 }
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
 function setMode(next) {
-  cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open;
+  cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open; if (mode === 'patchfill') $('patchCard').open = true;
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = t('hint.' + mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
