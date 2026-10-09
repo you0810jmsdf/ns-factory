@@ -1,6 +1,11 @@
 export const MESSAGES = {
   "ja": {
     "offsetDist": "オフセット距離 (mm)",
+    "ofDist": "距離 (mm)",
+    "ofOut": "外側",
+    "ofIn": "内側",
+    "ofRun": "実行",
+    "ofClose": "×",
     "presetCard": "設定セット（保存・呼び出し）",
     "presetNote": "目打ち・パッチワーク・オフセットなどの設定値と、登録した工具をまとめて名前を付けて保存します。このブラウザに残り、ファイルでも持ち出せます。",
     "presetList": "保存した設定",
@@ -656,6 +661,11 @@ export const MESSAGES = {
   },
   "en": {
     "offsetDist": "Offset distance (mm)",
+    "ofDist": "Distance (mm)",
+    "ofOut": "Outside",
+    "ofIn": "Inside",
+    "ofRun": "Run",
+    "ofClose": "×",
     "presetCard": "Settings sets (save / recall)",
     "presetNote": "Saves punching, patchwork, offset and other settings together with your registered tools under a name. They stay in this browser and can also be taken away as a file.",
     "presetList": "Saved settings",

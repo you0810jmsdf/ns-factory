@@ -25,6 +25,7 @@
     .workspace { position: relative; min-width: 0; min-height: 0; }
     canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
     #canvas3d { position: absolute; inset: 0; background: #101010; }
+    .floatbox { position: absolute; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #1c1c1ef2; border: 1px solid #c9a96e; border-radius: 8px; font-size: 12px; white-space: nowrap; } .floatbox[hidden] { display: none; } .floatbox label { display: flex; align-items: center; gap: 4px; } .floatbox input { width: 64px; } .floatbox select, .floatbox button { height: 26px; }
     #tabBar { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 2; } #tabBar button { height: 24px; padding: 0 10px; font-size: 12px; background: #1c1c1ee6; }
     #status { position: absolute; bottom: 10px; right: 10px; padding: 5px 9px; background: #141414e6; border: 1px solid var(--line); border-radius: 6px; font: 11px ui-monospace, Menlo, monospace; pointer-events: none; }
     #side { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid var(--line); background: #181818; }
@@ -102,7 +103,7 @@
 <div class="group" data-i18n="selection"></div>
 <button id="copy" data-i18n="copy"></button><button id="mirrorX" data-i18n="mirrorX"></button><button id="mirrorY" data-i18n="mirrorY"></button><button id="rotate" data-i18n="rotate"></button><button id="toPath" data-i18n="toPath"></button><button id="delete" data-i18n="delete"></button>
 </aside>
-<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><output id="status"></output></div>
+<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="3"></label><select id="of-side"><option value="out" data-i18n="ofOut"></option><option value="in" data-i18n="ofIn"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><output id="status"></output></div>
 <div id="side">
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
@@ -410,8 +411,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=19b5a7c1","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=36e7043a","./help/ja.js":"./help/ja.js?v=b4125c0e","./i18n.js":"./i18n.js?v=45ed62b2","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=19b5a7c1"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=687f5c3a","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=91998248","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=36e7043a","./help/ja.js":"./help/ja.js?v=b4125c0e","./i18n.js":"./i18n.js?v=a89df248","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=687f5c3a"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1084,6 +1085,11 @@ __mods['i18n'] = (function(){
 const MESSAGES = {
   "ja": {
     "offsetDist": "オフセット距離 (mm)",
+    "ofDist": "距離 (mm)",
+    "ofOut": "外側",
+    "ofIn": "内側",
+    "ofRun": "実行",
+    "ofClose": "×",
     "presetCard": "設定セット（保存・呼び出し）",
     "presetNote": "目打ち・パッチワーク・オフセットなどの設定値と、登録した工具をまとめて名前を付けて保存します。このブラウザに残り、ファイルでも持ち出せます。",
     "presetList": "保存した設定",
@@ -1739,6 +1745,11 @@ const MESSAGES = {
   },
   "en": {
     "offsetDist": "Offset distance (mm)",
+    "ofDist": "Distance (mm)",
+    "ofOut": "Outside",
+    "ofIn": "Inside",
+    "ofRun": "Run",
+    "ofClose": "×",
     "presetCard": "Settings sets (save / recall)",
     "presetNote": "Saves punching, patchwork, offset and other settings together with your registered tools under a name. They stay in this browser and can also be taken away as a file.",
     "presetList": "Saved settings",
@@ -9224,6 +9235,14 @@ function initDesign() {
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
+  /* 図形のそばの入力欄：右のカードの距離・向きと値を共有する */
+  $('of-dist').addEventListener('input', () => { $('offsetDist').value = $('of-dist').value; });
+  $('of-side').addEventListener('change', () => { $('offsetSide').value = $('of-side').value; });
+  $('offsetDist').addEventListener('input', () => { $('of-dist').value = $('offsetDist').value; });
+  $('offsetSide').addEventListener('change', () => { $('of-side').value = $('offsetSide').value; });
+  for (const id of ['of-dist', 'of-side']) $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
+  $('of-run').onclick = () => runOffset();
+  $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
@@ -10125,7 +10144,7 @@ function commit(fn) {
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   draw();
 }
-function cancel() { gesture = null; stage = null; snap = null; offsetSelection = null; }
+function cancel() { gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
 function setMode(next) {
   cancel(); manualNext = null; nodeSel = null; mode = next; $('stitchCard').open = mode === 'stitch' || mode === 'mark' || $('stitchCard').open;
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
@@ -10252,9 +10271,19 @@ function offsetClick(p, whole) {
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s)), hit = shapes.filter(s => editable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale);
   if (!hit) { offsetSelection = null; $('hint').textContent = t('offsetNone'); draw(); return; }
   const sel = offsetSpan(shapes, hit, p, whole); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
-  offsetSelection = { ...sel, layer: hit.layer }; draw();
+  offsetSelection = { ...sel, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
   $('hint').textContent = t(sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
+}
+/** 選んだ範囲のそばに、距離・内側/外側・実行の小さな入力欄を出す（選んだ範囲が無ければ隠す）。画面の端では見切れないように寄せる。 */
+function placeOffsetFloat() {
+  const box = $('offsetFloat'), sel = offsetSelection;
+  if (!sel || mode !== 'offset') { box.hidden = true; return; }
+  const xs = sel.points.map(q => q.x), ys = sel.points.map(q => q.y), w = box.offsetWidth || 230, h = box.offsetHeight || 40;
+  let x = origin.x + Math.max(...xs) * scale + 12, y = origin.y + Math.min(...ys) * scale - 4;
+  if (x + w > width - 8) x = origin.x + Math.min(...xs) * scale - w - 12; /* 右に入らなければ図形の左に */
+  x = Math.max(8, Math.min(width - w - 8, x)); y = Math.max(36, Math.min(height - h - 8, y));
+  box.style.left = Math.round(x) + 'px'; box.style.top = Math.round(y) + 'px'; box.hidden = false;
 }
 /** 選んだ範囲を、距離と向き（内側／外側）でオフセットする。結果は黄色の点線。 */
 function runOffset(override = null) {
@@ -10484,6 +10513,7 @@ function draw() {
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
   drawCenterMarks();
+  placeOffsetFloat();
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
