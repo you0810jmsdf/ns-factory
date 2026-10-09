@@ -25,7 +25,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1727,12 +1727,12 @@ function placeOffsetFloat() {
 /** 選んだ範囲を、距離と向き（内側／外側）でオフセットする。結果は黄色の点線。 */
 function runOffset(override = null) {
   const sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
-  let d; if (override !== null) d = override; else { const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; } d = $('offsetSide').value === 'in' ? -dist : dist; }
+  let d, sideKey = null; if (override !== null) d = override; else { const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; } const inner = $('offsetSide').value === 'in'; d = inner ? -dist : dist; if (!sel.closed) { const k = bendInnerSign(sel.points); if (k) d = (inner ? k : -k) * dist; sideKey = inner ? 'offsetIn' : 'offsetOut'; } } /* 折れた開いた線の「内側」は、曲がりの内側（挟まれた2直線なら鋭角側） */
   const result = offsetSpanResult(sel, d, { join: $('offsetJoin').value }); if (!result) { $('hint').textContent = t('impossible'); return; }
   /* 結果は点線なのでガイドの層へ（ガイドが非表示・ロック中なら、見えなくならないよう作図先、なければ元の図形の層） */
   const dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || sel.layer; /* 点線はガイド。ガイドが使えないときだけ作図先・元の層 */
   offsetSelection = null; addShape({ ...result, id: freshId(doc.shapes, 's'), layer: dest, color: 'yellow', lineStyle: 'dashed' });
-  $('hint').textContent = t('offsetDone', { d: Math.abs(d), side: t(d < 0 ? 'offsetIn' : 'offsetOut') }); draw();
+  $('hint').textContent = t('offsetDone', { d: Math.abs(d), side: t(sideKey || (d < 0 ? 'offsetIn' : 'offsetOut')) }); draw();
 }
 function editAt(p) {
   if (mode === 'offset') { offsetClick(p, false); return; }
