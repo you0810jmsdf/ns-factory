@@ -688,6 +688,12 @@ canvas{
     <h2>購入者の声（お礼動画）</h2>
     <p class="help">取引の評価をいただいたお礼に、ストーリーズ用の縦動画を作ります。作品番号を入れて写真を読み込み、評価コメントとお礼の言葉を入れてください。</p>
     <div class="field">
+      <label for="voiceWorkSelect">作品をリストから選択</label>
+      <select id="voiceWorkSelect">
+        <option value="">作品集を読み込み中 / 番号を直接入力</option>
+      </select>
+    </div>
+    <div class="field">
       <label for="voiceWorkNo">作品番号</label>
       <input id="voiceWorkNo" placeholder="例: 12 / 012" inputmode="numeric" autocomplete="off">
       <div class="actions">
@@ -1479,6 +1485,7 @@ const els = {
   modeVideoTab: document.getElementById('modeVideoTab'),
   modeVoiceTab: document.getElementById('modeVoiceTab'),
   secVoice: document.getElementById('sec-voice'),
+  voiceWorkSelect: document.getElementById('voiceWorkSelect'),
   voiceWorkNo: document.getElementById('voiceWorkNo'),
   voiceLoadPhotos: document.getElementById('voiceLoadPhotos'),
   voiceRatingDate: document.getElementById('voiceRatingDate'),
@@ -3185,6 +3192,9 @@ async function loadWorksCatalog(){
       if(els.driveWorkSelect && els.driveWorkSelect.options[0]){
         els.driveWorkSelect.options[0].textContent = '作品集を読み込めませんでした（次の操作で自動再試行）/ 番号を直接入力';
       }
+      if(els.voiceWorkSelect && els.voiceWorkSelect.options[0]){
+        els.voiceWorkSelect.options[0].textContent = '作品集を読み込めませんでした（次の操作で自動再試行）/ 番号を直接入力';
+      }
       return [];
     });
   return worksCatalogPromise;
@@ -3251,21 +3261,42 @@ function populateDriveWorkPicker(){
   manual.textContent = worksCatalog.length ? '作品番号・作品名から選ぶ' : '作品集を読み込み中 / 番号を直接入力';
   els.driveWorkSelect.appendChild(manual);
   els.driveWorkNoList.innerHTML = '';
+  // 購入者の声パネルの作品セレクトも同じ作品集で同時に作る（2026-10-09 追加）
+  const voiceSelect = els.voiceWorkSelect;
+  const voiceCurrent = voiceSelect ? voiceSelect.value : '';
+  if(voiceSelect){
+    voiceSelect.innerHTML = '';
+    const voiceManual = document.createElement('option');
+    voiceManual.value = '';
+    voiceManual.textContent = worksCatalog.length ? '作品番号・作品名から選ぶ' : '作品集を読み込み中 / 番号を直接入力';
+    voiceSelect.appendChild(voiceManual);
+  }
   worksCatalog.forEach(work => {
     const workNo = workNumberOf(work);
     if(!workNo) return;
+    const label = `${work.id} / ${work.title} / ${work.folderId ? 'Driveあり' : 'Drive未登録'}`;
     const option = document.createElement('option');
     option.value = workNo;
-    option.textContent = `${work.id} / ${work.title} / ${work.folderId ? 'Driveあり' : 'Drive未登録'}`;
+    option.textContent = label;
     els.driveWorkSelect.appendChild(option);
 
     const numberOption = document.createElement('option');
     numberOption.value = workNo;
-    numberOption.label = `${work.id} / ${work.title} / ${work.folderId ? 'Driveあり' : 'Drive未登録'}`;
+    numberOption.label = label;
     els.driveWorkNoList.appendChild(numberOption);
+
+    if(voiceSelect){
+      const voiceOption = document.createElement('option');
+      voiceOption.value = workNo;
+      voiceOption.textContent = label;
+      voiceSelect.appendChild(voiceOption);
+    }
   });
   if(current && [...els.driveWorkSelect.options].some(option => option.value === current)){
     els.driveWorkSelect.value = current;
+  }
+  if(voiceSelect && voiceCurrent && [...voiceSelect.options].some(option => option.value === voiceCurrent)){
+    voiceSelect.value = voiceCurrent;
   }
   syncDriveWorkSelectToNumber();
   updateDriveWorkInfo(findWorkByNumber(els.driveWorkNo.value), els.driveWorkNo.value);
@@ -9486,6 +9517,10 @@ if(els.modeVoiceTab) els.modeVoiceTab.addEventListener('click', () => setAppMode
 if(els.voiceCharacterKind) els.voiceCharacterKind.addEventListener('change', () => {
   els.characterKind.value = els.voiceCharacterKind.value;
   els.characterKind.dispatchEvent(new Event('change'));
+});
+if(els.voiceWorkSelect) els.voiceWorkSelect.addEventListener('change', () => {
+  if(!els.voiceWorkSelect.value) return;
+  els.voiceWorkNo.value = els.voiceWorkSelect.value;
 });
 if(els.voiceLoadPhotos) els.voiceLoadPhotos.addEventListener('click', () => {
   const no = (els.voiceWorkNo.value || '').trim();
