@@ -81,6 +81,7 @@
 <div class="group" data-i18n="drawing"></div>
 <button data-tool="select"><svg class="ic" viewBox="0 0 24 24"><path d="M5 3l14 9-6 1 3 6-2 1-3-6-4 5z"/></svg><span data-i18n="select"></span></button>
 <button data-tool="line"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20L20 4"/></svg><span data-i18n="line"></span></button>
+<button data-tool="rect"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12"/></svg><span data-i18n="rect"></span></button>
 <button data-tool="circle"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg><span data-i18n="circle"></span></button>
 <button data-tool="arc"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18a9 9 0 0 1 16 0"/></svg><span data-i18n="arc"></span></button>
 <button data-tool="bezier"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19C4 7 20 17 20 5"/></svg><span data-i18n="bezier"></span></button>
@@ -1168,6 +1169,10 @@ const MESSAGES = {
     "fit": "全体表示",
     "select": "選択",
     "line": "直線",
+    "rect": "矩形",
+    "hint.rect": "対角の2点をドラッグ（またはクリック→クリック）。Shift で正方形。入力欄は1点目「x,y」・2点目「@幅,高さ」。",
+    "rectSecond": "反対側の角をクリックしてください（Shift で正方形・入力欄は「@幅,高さ」）。",
+    "rectFlat": "幅か高さが0のため矩形にできません。対角の2点を離して指定してください。",
     "circle": "円",
     "arc": "円弧",
     "bezier": "ベジェ",
@@ -1797,6 +1802,10 @@ const MESSAGES = {
     "fit": "Fit all",
     "select": "Select",
     "line": "Line",
+    "rect": "Rectangle",
+    "hint.rect": "Drag between two opposite corners (or click, then click). Shift makes a square. In the entry box: first \"x,y\", then \"@width,height\".",
+    "rectSecond": "Click the opposite corner (Shift makes a square; in the entry box type \"@width,height\").",
+    "rectFlat": "Width or height is 0, so no rectangle can be made. Pick two corners that are apart.",
     "circle": "Circle",
     "arc": "Arc",
     "bezier": "Bézier",
@@ -8273,7 +8282,7 @@ const HELP_JA = {
     {
       "id": "drawing",
       "title": "作図と座標",
-      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。"
+      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。"
     },
     {
       "id": "stitching",
@@ -8412,7 +8421,7 @@ const HELP_EN = {
     {
       "id": "drawing",
       "title": "Drawing and coordinates",
-      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox.\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first."
+      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox.\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0."
     },
     {
       "id": "stitching",
@@ -8729,7 +8738,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -9851,6 +9860,9 @@ function runCommand(raw) {
     if (!point) { $('hint').textContent = t('needPoint'); return; }
     if (stage?.kind !== 'polyline') stage = { kind: 'polyline', points: [point], cmdLast: point }; else { stage.points.push(point); stage.cmdLast = point; }
     lastPoint = point;
+  } else if (mode === 'rect') {
+    if (!stage || stage.kind !== 'cmd') { if (!point) { $('hint').textContent = t('needPoint'); return; } stage = { kind: 'cmd', start: point, cmdLast: point }; $('hint').textContent = t('rectSecond'); }
+    else { if (!point) { $('hint').textContent = t('needPoint'); return; } const rect = rectShape(stage.start, point); if (!rect) { $('hint').textContent = t('rectFlat'); return; } addShape(rect); lastPoint = point; stage = null; $('hint').textContent = t('hint.rect'); }
   } else if (mode === 'circle') {
     if (!stage || stage.kind !== 'cmd') { if (!point) { $('hint').textContent = t('needPoint'); return; } stage = { kind: 'cmd', center: point, cmdLast: point }; }
     else { if (!(value > 0)) { $('hint').textContent = t('needRadius'); return; } addShape({ type: 'circle', cx: stage.center.x, cy: stage.center.y, r: value }); lastPoint = stage.center; stage = null; }
@@ -10106,7 +10118,8 @@ function snapped(p, shift, anchor) {
     for (const c of [...snapCache, ...(stage?.points || [])]) { const d = distance(p, c); if (d < best) { best = d; result = { ...c }; snap = c; } }
     if (!snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
   }
-  if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
+  if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
+  else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
   return result;
 }
 function anchor() {
@@ -10115,10 +10128,17 @@ function anchor() {
   if (stage?.kind === 'path') return stage.nodes.at(-1) || null;
   if (stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw') return stage.a;
   if (stage?.kind === 'arc') return stage.center;
+  if (stage?.kind === 'cmd' && mode === 'rect') return stage.start;
   if (stage?.kind === 'bezier') return stage.c1 ? stage.end : stage.start;
   return null;
 }
+/** 対角の2点から矩形（閉じた折れ線・4点）。幅か高さが 0 なら null。 */
+function rectShape(a, b) {
+  if (Math.abs(a.x - b.x) < 1e-6 || Math.abs(a.y - b.y) < 1e-6) return null;
+  return { type: 'polyline', closed: true, points: [{ x: a.x, y: a.y }, { x: b.x, y: a.y }, { x: b.x, y: b.y }, { x: a.x, y: b.y }] };
+}
 function shapeFromDrag(a, b) {
+  if (mode === 'rect') return rectShape(a, b) || { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
   if (mode === 'circle') return { type: 'circle', cx: a.x, cy: a.y, r: distance(a, b) };
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
@@ -10269,7 +10289,8 @@ function draw() {
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
-  if (stage?.kind === 'cmd' && stage.start) strokeShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
+  if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
+  else if (stage?.kind === 'cmd' && stage.start) strokeShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && mode === 'circle' && stage.center && distance(stage.center, cursor) > 1e-8) strokeShape(shapeFromDrag(stage.center, cursor), '#c9a96e'); /* 中心クリック後は中心固定で半径が伸縮 */
   if (stage?.kind === 'foldDraw') strokeShape({ type: 'fold', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'imgScale') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
@@ -10402,19 +10423,22 @@ canvas.addEventListener('pointerup', e => {
     stage = distance(g.start, cursor) > 1e-8 ? { kind: 'arc', center: g.start, r: fixedR, startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI } : { kind: 'arcR', center: g.start, r: fixedR };
     $('hint').textContent = t('arcRadiusHint');
   } else if (g.kind === 'draw' && distance(g.start, cursor) > 1e-8) {
-    if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
+    if (mode === 'rect') { const rect = rectShape(g.start, cursor); if (rect) { addShape(rect); lastPoint = cursor; } else $('hint').textContent = t('rectFlat'); }
+    else if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
     else if (mode === 'arc') stage = { kind: 'arc', center: g.start, r: distance(g.start, cursor), startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI };
     else if (mode === 'bezier') stage = { kind: 'bezier', start: g.start, end: cursor };
     else if (mode === 'polyline') stage = { kind: 'polyline', points: [g.start, cursor] };
-  } else if (g.kind === 'draw' && ['line', 'circle', 'arc', 'polyline'].includes(mode)) {
+  } else if (g.kind === 'draw' && ['line', 'circle', 'arc', 'polyline', 'rect'].includes(mode)) {
     runCommand(`${cursor.x},${cursor.y}`);
   } else if (g.kind === 'stage') {
     if (stage.kind === 'cmd') {
-      if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) runCommand(`${cursor.x},${cursor.y}`); /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
+      if (mode === 'rect') runCommand(`${cursor.x},${cursor.y}`);
+      else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) runCommand(`${cursor.x},${cursor.y}`); /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
-    if (stage.kind === 'arc3') arc3Click(cursor);
+    if (!stage) { /* 直前の入力で図形が確定済み */ }
+    else if (stage.kind === 'arc3') arc3Click(cursor);
     else if (stage.kind === 'arcR') { if (distance(stage.center, cursor) > 1e-8) stage = { kind: 'arc', center: stage.center, r: stage.r, startDeg: Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI }; }
     else if (stage.kind === 'arc') { const s = arcShape(cursor); if (arcSweep(s) > 1e-8) { stage = null; addShape(s); } }
     else if (stage.kind === 'bezier') { if (!stage.c1) stage.c1 = cursor; else { const s = bezierShape(cursor); stage = null; addShape(s); } }

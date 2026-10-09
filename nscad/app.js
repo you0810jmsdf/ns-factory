@@ -183,7 +183,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', seam: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -1305,6 +1305,9 @@ function runCommand(raw) {
     if (!point) { $('hint').textContent = t('needPoint'); return; }
     if (stage?.kind !== 'polyline') stage = { kind: 'polyline', points: [point], cmdLast: point }; else { stage.points.push(point); stage.cmdLast = point; }
     lastPoint = point;
+  } else if (mode === 'rect') {
+    if (!stage || stage.kind !== 'cmd') { if (!point) { $('hint').textContent = t('needPoint'); return; } stage = { kind: 'cmd', start: point, cmdLast: point }; $('hint').textContent = t('rectSecond'); }
+    else { if (!point) { $('hint').textContent = t('needPoint'); return; } const rect = rectShape(stage.start, point); if (!rect) { $('hint').textContent = t('rectFlat'); return; } addShape(rect); lastPoint = point; stage = null; $('hint').textContent = t('hint.rect'); }
   } else if (mode === 'circle') {
     if (!stage || stage.kind !== 'cmd') { if (!point) { $('hint').textContent = t('needPoint'); return; } stage = { kind: 'cmd', center: point, cmdLast: point }; }
     else { if (!(value > 0)) { $('hint').textContent = t('needRadius'); return; } addShape({ type: 'circle', cx: stage.center.x, cy: stage.center.y, r: value }); lastPoint = stage.center; stage = null; }
@@ -1560,7 +1563,8 @@ function snapped(p, shift, anchor) {
     for (const c of [...snapCache, ...(stage?.points || [])]) { const d = distance(p, c); if (d < best) { best = d; result = { ...c }; snap = c; } }
     if (!snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
   }
-  if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
+  if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
+  else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
   return result;
 }
 function anchor() {
@@ -1569,10 +1573,17 @@ function anchor() {
   if (stage?.kind === 'path') return stage.nodes.at(-1) || null;
   if (stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw') return stage.a;
   if (stage?.kind === 'arc') return stage.center;
+  if (stage?.kind === 'cmd' && mode === 'rect') return stage.start;
   if (stage?.kind === 'bezier') return stage.c1 ? stage.end : stage.start;
   return null;
 }
+/** 対角の2点から矩形（閉じた折れ線・4点）。幅か高さが 0 なら null。 */
+function rectShape(a, b) {
+  if (Math.abs(a.x - b.x) < 1e-6 || Math.abs(a.y - b.y) < 1e-6) return null;
+  return { type: 'polyline', closed: true, points: [{ x: a.x, y: a.y }, { x: b.x, y: a.y }, { x: b.x, y: b.y }, { x: a.x, y: b.y }] };
+}
 function shapeFromDrag(a, b) {
+  if (mode === 'rect') return rectShape(a, b) || { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
   if (mode === 'circle') return { type: 'circle', cx: a.x, cy: a.y, r: distance(a, b) };
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
@@ -1723,7 +1734,8 @@ function draw() {
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
-  if (stage?.kind === 'cmd' && stage.start) strokeShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
+  if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
+  else if (stage?.kind === 'cmd' && stage.start) strokeShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && mode === 'circle' && stage.center && distance(stage.center, cursor) > 1e-8) strokeShape(shapeFromDrag(stage.center, cursor), '#c9a96e'); /* 中心クリック後は中心固定で半径が伸縮 */
   if (stage?.kind === 'foldDraw') strokeShape({ type: 'fold', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'imgScale') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
@@ -1856,19 +1868,22 @@ canvas.addEventListener('pointerup', e => {
     stage = distance(g.start, cursor) > 1e-8 ? { kind: 'arc', center: g.start, r: fixedR, startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI } : { kind: 'arcR', center: g.start, r: fixedR };
     $('hint').textContent = t('arcRadiusHint');
   } else if (g.kind === 'draw' && distance(g.start, cursor) > 1e-8) {
-    if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
+    if (mode === 'rect') { const rect = rectShape(g.start, cursor); if (rect) { addShape(rect); lastPoint = cursor; } else $('hint').textContent = t('rectFlat'); }
+    else if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
     else if (mode === 'arc') stage = { kind: 'arc', center: g.start, r: distance(g.start, cursor), startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI };
     else if (mode === 'bezier') stage = { kind: 'bezier', start: g.start, end: cursor };
     else if (mode === 'polyline') stage = { kind: 'polyline', points: [g.start, cursor] };
-  } else if (g.kind === 'draw' && ['line', 'circle', 'arc', 'polyline'].includes(mode)) {
+  } else if (g.kind === 'draw' && ['line', 'circle', 'arc', 'polyline', 'rect'].includes(mode)) {
     runCommand(`${cursor.x},${cursor.y}`);
   } else if (g.kind === 'stage') {
     if (stage.kind === 'cmd') {
-      if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) runCommand(`${cursor.x},${cursor.y}`); /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
+      if (mode === 'rect') runCommand(`${cursor.x},${cursor.y}`);
+      else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) runCommand(`${cursor.x},${cursor.y}`); /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
-    if (stage.kind === 'arc3') arc3Click(cursor);
+    if (!stage) { /* 直前の入力で図形が確定済み */ }
+    else if (stage.kind === 'arc3') arc3Click(cursor);
     else if (stage.kind === 'arcR') { if (distance(stage.center, cursor) > 1e-8) stage = { kind: 'arc', center: stage.center, r: stage.r, startDeg: Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI }; }
     else if (stage.kind === 'arc') { const s = arcShape(cursor); if (arcSweep(s) > 1e-8) { stage = null; addShape(s); } }
     else if (stage.kind === 'bezier') { if (!stage.c1) stage.c1 = cursor; else { const s = bezierShape(cursor); stage = null; addShape(s); } }
