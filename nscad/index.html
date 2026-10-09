@@ -401,8 +401,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=5d88282b","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=e74215bd","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=0ec6c469","./help/ja.js":"./help/ja.js?v=e75e9b68","./i18n.js":"./i18n.js?v=64767702","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=06386efb","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=aa068256"}}</script>
-<script type="module" src="app.js?v=5d88282b"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=766fc233","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=d6fec036","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=e74215bd","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=58393588","./hardware.js":"./hardware.js?v=54a8eefc","./help/en.js":"./help/en.js?v=04a241a9","./help/ja.js":"./help/ja.js?v=4bd055f9","./i18n.js":"./i18n.js?v=f7a0ef82","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=aeca95fe","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=aa068256"}}</script>
+<script type="module" src="app.js?v=766fc233"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1280,6 +1280,7 @@ const MESSAGES = {
     "holeTrimConfirm": "この図形に接続した経路の縫い穴と縫い合わせ設定を解除してトリムします。続けますか？（元に戻すで復元できます）",
     "noIntersection": "交点がありません。",
     "selectFirst": "先に図形を選択してください。",
+    "selectedAll": "{n} 個の図形をすべて選択しました。",
     "output": "出力",
     "paper": "用紙",
     "outHoles": "縫い穴を含める",
@@ -1916,6 +1917,7 @@ const MESSAGES = {
     "holeTrimConfirm": "Trim and remove stitching holes and seam settings on paths connected to this shape? Undo restores them.",
     "noIntersection": "No intersection found.",
     "selectFirst": "Select shapes first.",
+    "selectedAll": "Selected all {n} shapes.",
     "output": "Output",
     "paper": "Paper",
     "outHoles": "Include stitching holes",
@@ -2358,10 +2360,12 @@ function isShortcut(e, key) { return !!(e.ctrlKey || e.metaKey) && !e.altKey && 
 function isUndo(e) { return isShortcut(e, 'z') && !e.shiftKey; }
 function isRedo(e) { return isShortcut(e, 'y') || (isShortcut(e, 'z') && !!e.shiftKey); }
 function isCopy(e) { return isShortcut(e, 'd'); }
+/** Windows 標準の Ctrl（Mac は ⌘）+ A（全選択）。Shift 付きはブラウザに任せる。 */
+function isSelectAll(e) { return isShortcut(e, 'a') && !e.shiftKey; }
 /** KeyboardEvent 相当から Delete / Mac Backspace を判定する。 */
 function isDelete(e) { return !e.ctrlKey && !e.metaKey && !e.altKey && ['Delete', 'Backspace'].includes(e.key); }
 
-return {isShortcut, isUndo, isRedo, isCopy, isDelete};
+return {isShortcut, isUndo, isRedo, isCopy, isSelectAll, isDelete};
 })();
 __mods['formats'] = (function(){
 // 書き出し形式（SVG・DXF R12）・分割印刷・印刷補正。純粋関数のみ（DOM 禁止）。
@@ -8414,7 +8418,7 @@ const HELP_JA = {
     {
       "id": "shortcuts",
       "title": "ショートカット一覧",
-      "body": "キーボードの近道をまとめたページです。\nCtrl/⌘+Z 元に戻す／Ctrl+Y・⌘⇧Z やり直し／Delete・Backspace 削除／Ctrl/⌘+D コピー／Ctrl/⌘+S 保存／Ctrl/⌘+O 開く／Ctrl/⌘+C・V クリップボード転活用／Esc 作図を中止して選択へ／Enter 折れ線・ペンを確定／Space+ドラッグ パン／Shift 水平・垂直固定／Alt(⌥)+クリック 1 穴だけ／F1 ショートカット／? ヘルプ。\nマウス：ホイール＝ズーム、中ボタン＝パン、ダブルクリック＝ペンの確定・節点追加。トラックパッド：ピンチ＝ズーム、二本指＝パン。"
+      "body": "キーボードの近道をまとめたページです。\nCtrl/⌘+Z 元に戻す／Ctrl+Y・⌘⇧Z やり直し／Delete・Backspace 削除／Ctrl/⌘+D コピー／Ctrl/⌘+S 保存／Ctrl/⌘+O 開く／Ctrl/⌘+C コピー／Ctrl/⌘+X 切り取り／Ctrl/⌘+V 貼り付け（図形を選んでいれば、ボタンにフォーカスがあっても効きます。文字入力欄の中では普通の文字のコピー・貼り付け）／Ctrl/⌘+A 全選択／Esc 作図を中止して「選択」ツールに戻る（ペンは節点を1つずつ戻し、なくなったら選択へ）／Enter 折れ線・ペンを確定／Space+ドラッグ パン／Shift 水平・垂直固定／Alt(⌥)+クリック 1 穴だけ／F1 ショートカット／? ヘルプ。\nマウス：ホイール＝ズーム、中ボタン＝パン、ダブルクリック＝ペンの確定・節点追加。トラックパッド：ピンチ＝ズーム、二本指＝パン。\nF5・Ctrl+R（再読み込み）、Ctrl+W、F12、Ctrl+F などブラウザ標準のキーはそのまま使えます。"
     },
     {
       "id": "troubleshooting",
@@ -8553,7 +8557,7 @@ const HELP_EN = {
     {
       "id": "shortcuts",
       "title": "Keyboard shortcuts",
-      "body": "All the keyboard shortcuts on one page.\nCtrl/⌘+Z undo / Ctrl+Y, ⌘⇧Z redo / Delete, Backspace delete / Ctrl/⌘+D duplicate / Ctrl/⌘+S save / Ctrl/⌘+O open / Ctrl/⌘+C, V clipboard transfer / Esc cancel to Select / Enter finish polyline or pen / Space+drag pan / Shift constrain / Alt(⌥)+click single hole / F1 shortcuts / ? help.\nMouse: wheel zoom, middle button pan, double-click finishes the pen or adds a node. Trackpad: pinch zoom, two fingers pan."
+      "body": "All the keyboard shortcuts on one page.\nCtrl/⌘+Z undo / Ctrl+Y, ⌘⇧Z redo / Delete, Backspace delete / Ctrl/⌘+D duplicate / Ctrl/⌘+S save / Ctrl/⌘+O open / Ctrl/⌘+C copy / Ctrl/⌘+X cut / Ctrl/⌘+V paste (work with shapes selected even when a button has focus; inside text fields they act on text) / Ctrl/⌘+A select all / Esc cancel and return to the Select tool (the pen steps back one node at a time, then Select) / Enter finish polyline or pen / Space+drag pan / Shift constrain / Alt(⌥)+click single hole / F1 shortcuts / ? help.\nMouse: wheel zoom, middle button pan, double-click finishes the pen or adds a node. Trackpad: pinch zoom, two fingers pan.\nBrowser keys such as F5, Ctrl+R (reload), Ctrl+W, F12 and Ctrl+F keep working as usual."
     },
     {
       "id": "troubleshooting",
@@ -8620,7 +8624,7 @@ const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
 const { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
-const { isShortcut, isUndo, isRedo, isCopy, isDelete } = __mods['shortcuts'];
+const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
 const { HELP_EN } = __mods['help/en'];
 if (globalThis.__LC_BOOTED) { /* file 互換ブロックが起動済み */ } else {
@@ -9722,6 +9726,24 @@ function removeFromLibrary() { const it = libCurrent(); if (!it || !userLibrary.
 function exportLibrary() { download('leather-library.nscad-lib.json', JSON.stringify({ version: 1, items: userLibrary }, null, 2), 'application/json'); }
 async function importLibrary(file) { try { const data = JSON.parse(await file.text()); const items = (data.items || []).filter(it => checkLibraryItem(it).length === 0); userLibrary.push(...items); persistLibrary(); renderLibrary(); $('hint').textContent = t('libImported', { n: items.length }); } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); } }
 /** 選択をクリップボード文字列にする（copy イベントで使う）。 */
+/** 文字を入力する欄（テキスト入力・複数行・選択リスト・編集可能な要素）か。ここではブラウザ標準のコピー・貼り付けに任せる。 */
+function isTextEntry(el) {
+  if (!el) return false; if (el.isContentEditable) return true;
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
+  return el.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'range', 'color', 'file', 'submit'].includes(el.type);
+}
+/** コピー／切り取り：図形を選んでいれば、フォーカスがボタンなどにあっても効く。文字入力欄・文字の範囲選択があるときはブラウザ標準に任せる。 */
+function onClipCopy(e, cut) {
+  if (isTextEntry(e.target) || isTextEntry(document.activeElement) || globalThis.getSelection?.()?.toString()) return;
+  const text = clipboardText(); if (!text) return;
+  e.clipboardData?.setData('text/plain', text); e.preventDefault();
+  if (cut) removeSelected();
+}
+/** 全選択（Ctrl+A）：見えていて編集できる図形をすべて選ぶ。 */
+function selectAllShapes() {
+  setMode('select'); selected = new Set(doc.shapes.filter(s => visible(s) && editable(s)).map(s => s.id)); draw();
+  $('hint').textContent = selected.size ? t('selectedAll', { n: selected.size }) : t('selectFirst');
+}
 function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids), tabs[activeTab]?.name || 'untitled'); }
 function pasteText(text, at = null) {
   const data = decodeClipboard(text); if (!data) return false;
@@ -9766,8 +9788,9 @@ function initLibrary() {
   $('sendCopy').onclick = () => sendToTab(false); $('sendMove').onclick = () => sendToTab(true);
   $('pasteBtn').onclick = () => { const text = $('pasteBox').value; if (!pasteText(text)) $('hint').textContent = t('pasteInvalid'); };
   $('copyBtn').onclick = () => { const text = clipboardText(); if (!text) { $('hint').textContent = t('selectFirst'); return; } $('pasteBox').value = text; if (typeof document.execCommand === 'function') { try { $('pasteBox').select(); document.execCommand('copy'); } catch { /* 手動コピー */ } } $('hint').textContent = t('copied'); };
-  document.addEventListener?.('copy', e => { if (document.activeElement && document.activeElement !== canvas && document.activeElement !== document.body) return; const text = clipboardText(); if (!text) return; e.clipboardData?.setData('text/plain', text); e.preventDefault(); });
-  document.addEventListener?.('paste', e => { const target = e.target; if (target && target !== canvas && target !== document.body && target.tagName && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return; const text = e.clipboardData?.getData('text/plain'); if (text && pasteText(text)) e.preventDefault(); });
+  document.addEventListener?.('copy', e => onClipCopy(e, false));
+  document.addEventListener?.('cut', e => onClipCopy(e, true));
+  document.addEventListener?.('paste', e => { if (isTextEntry(e.target) || isTextEntry(document.activeElement)) return; const text = e.clipboardData?.getData('text/plain'); if (text && pasteText(text)) e.preventDefault(); });
   tabs = [{ name: t('tabDefault', { n: 1 }), doc, undo, redo, selected, activeLayer, dirty: false }]; activeTab = 0; renderTabs();
 }
 
@@ -10535,8 +10558,9 @@ window.addEventListener('keydown', e => {
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
   if (isUndo(e) || isRedo(e)) { e.preventDefault(); if (isRedo(e)) history(redo, undo); else history(undo, redo); }
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
+  else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage) { cancel(); draw(); } else setMode('select'); }
+  else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
   else if (e.key === 'Enter' && mode === 'line' && stage?.kind === 'cmd') { e.preventDefault(); stage = null; $('hint').textContent = t('hint.line'); draw(); }
@@ -10545,7 +10569,7 @@ window.addEventListener('keydown', e => {
 });
 $('cmd').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); runCommand($('cmd').value); }
-  else if (e.key === 'Escape') { e.preventDefault(); $('cmd').value = ''; cancel(); draw(); canvas.focus(); }
+  else if (e.key === 'Escape') { e.preventDefault(); $('cmd').value = ''; setMode('select'); canvas.focus(); }
 });
 window.addEventListener('keyup', e => { if (e.code === 'Space') space = false; });
 window.addEventListener('blur', () => { space = false; gesture = null; draw(); });

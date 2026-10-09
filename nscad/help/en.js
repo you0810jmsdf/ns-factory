@@ -99,7 +99,7 @@ export const HELP_EN = {
     {
       "id": "shortcuts",
       "title": "Keyboard shortcuts",
-      "body": "All the keyboard shortcuts on one page.\nCtrl/⌘+Z undo / Ctrl+Y, ⌘⇧Z redo / Delete, Backspace delete / Ctrl/⌘+D duplicate / Ctrl/⌘+S save / Ctrl/⌘+O open / Ctrl/⌘+C, V clipboard transfer / Esc cancel to Select / Enter finish polyline or pen / Space+drag pan / Shift constrain / Alt(⌥)+click single hole / F1 shortcuts / ? help.\nMouse: wheel zoom, middle button pan, double-click finishes the pen or adds a node. Trackpad: pinch zoom, two fingers pan."
+      "body": "All the keyboard shortcuts on one page.\nCtrl/⌘+Z undo / Ctrl+Y, ⌘⇧Z redo / Delete, Backspace delete / Ctrl/⌘+D duplicate / Ctrl/⌘+S save / Ctrl/⌘+O open / Ctrl/⌘+C copy / Ctrl/⌘+X cut / Ctrl/⌘+V paste (work with shapes selected even when a button has focus; inside text fields they act on text) / Ctrl/⌘+A select all / Esc cancel and return to the Select tool (the pen steps back one node at a time, then Select) / Enter finish polyline or pen / Space+drag pan / Shift constrain / Alt(⌥)+click single hole / F1 shortcuts / ? help.\nMouse: wheel zoom, middle button pan, double-click finishes the pen or adds a node. Trackpad: pinch zoom, two fingers pan.\nBrowser keys such as F5, Ctrl+R (reload), Ctrl+W, F12 and Ctrl+F keep working as usual."
     },
     {
       "id": "troubleshooting",

@@ -27,7 +27,7 @@ import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM } from './design.js';
 import { t, setLang } from './i18n.js';
-import { isShortcut, isUndo, isRedo, isCopy, isDelete } from './shortcuts.js';
+import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
 import { HELP_EN } from './help/en.js';
 
@@ -1130,6 +1130,24 @@ function removeFromLibrary() { const it = libCurrent(); if (!it || !userLibrary.
 function exportLibrary() { download('leather-library.nscad-lib.json', JSON.stringify({ version: 1, items: userLibrary }, null, 2), 'application/json'); }
 async function importLibrary(file) { try { const data = JSON.parse(await file.text()); const items = (data.items || []).filter(it => checkLibraryItem(it).length === 0); userLibrary.push(...items); persistLibrary(); renderLibrary(); $('hint').textContent = t('libImported', { n: items.length }); } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); } }
 /** 選択をクリップボード文字列にする（copy イベントで使う）。 */
+/** 文字を入力する欄（テキスト入力・複数行・選択リスト・編集可能な要素）か。ここではブラウザ標準のコピー・貼り付けに任せる。 */
+function isTextEntry(el) {
+  if (!el) return false; if (el.isContentEditable) return true;
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
+  return el.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'range', 'color', 'file', 'submit'].includes(el.type);
+}
+/** コピー／切り取り：図形を選んでいれば、フォーカスがボタンなどにあっても効く。文字入力欄・文字の範囲選択があるときはブラウザ標準に任せる。 */
+function onClipCopy(e, cut) {
+  if (isTextEntry(e.target) || isTextEntry(document.activeElement) || globalThis.getSelection?.()?.toString()) return;
+  const text = clipboardText(); if (!text) return;
+  e.clipboardData?.setData('text/plain', text); e.preventDefault();
+  if (cut) removeSelected();
+}
+/** 全選択（Ctrl+A）：見えていて編集できる図形をすべて選ぶ。 */
+function selectAllShapes() {
+  setMode('select'); selected = new Set(doc.shapes.filter(s => visible(s) && editable(s)).map(s => s.id)); draw();
+  $('hint').textContent = selected.size ? t('selectedAll', { n: selected.size }) : t('selectFirst');
+}
 function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids), tabs[activeTab]?.name || 'untitled'); }
 function pasteText(text, at = null) {
   const data = decodeClipboard(text); if (!data) return false;
@@ -1174,8 +1192,9 @@ function initLibrary() {
   $('sendCopy').onclick = () => sendToTab(false); $('sendMove').onclick = () => sendToTab(true);
   $('pasteBtn').onclick = () => { const text = $('pasteBox').value; if (!pasteText(text)) $('hint').textContent = t('pasteInvalid'); };
   $('copyBtn').onclick = () => { const text = clipboardText(); if (!text) { $('hint').textContent = t('selectFirst'); return; } $('pasteBox').value = text; if (typeof document.execCommand === 'function') { try { $('pasteBox').select(); document.execCommand('copy'); } catch { /* 手動コピー */ } } $('hint').textContent = t('copied'); };
-  document.addEventListener?.('copy', e => { if (document.activeElement && document.activeElement !== canvas && document.activeElement !== document.body) return; const text = clipboardText(); if (!text) return; e.clipboardData?.setData('text/plain', text); e.preventDefault(); });
-  document.addEventListener?.('paste', e => { const target = e.target; if (target && target !== canvas && target !== document.body && target.tagName && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return; const text = e.clipboardData?.getData('text/plain'); if (text && pasteText(text)) e.preventDefault(); });
+  document.addEventListener?.('copy', e => onClipCopy(e, false));
+  document.addEventListener?.('cut', e => onClipCopy(e, true));
+  document.addEventListener?.('paste', e => { if (isTextEntry(e.target) || isTextEntry(document.activeElement)) return; const text = e.clipboardData?.getData('text/plain'); if (text && pasteText(text)) e.preventDefault(); });
   tabs = [{ name: t('tabDefault', { n: 1 }), doc, undo, redo, selected, activeLayer, dirty: false }]; activeTab = 0; renderTabs();
 }
 
@@ -1943,8 +1962,9 @@ window.addEventListener('keydown', e => {
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
   if (isUndo(e) || isRedo(e)) { e.preventDefault(); if (isRedo(e)) history(redo, undo); else history(undo, redo); }
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
+  else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage) { cancel(); draw(); } else setMode('select'); }
+  else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
   else if (e.key === 'Enter' && mode === 'line' && stage?.kind === 'cmd') { e.preventDefault(); stage = null; $('hint').textContent = t('hint.line'); draw(); }
@@ -1953,7 +1973,7 @@ window.addEventListener('keydown', e => {
 });
 $('cmd').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); runCommand($('cmd').value); }
-  else if (e.key === 'Escape') { e.preventDefault(); $('cmd').value = ''; cancel(); draw(); canvas.focus(); }
+  else if (e.key === 'Escape') { e.preventDefault(); $('cmd').value = ''; setMode('select'); canvas.focus(); }
 });
 window.addEventListener('keyup', e => { if (e.code === 'Space') space = false; });
 window.addEventListener('blur', () => { space = false; gesture = null; draw(); });
