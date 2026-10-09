@@ -25,7 +25,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -459,10 +459,23 @@ function makeGrid() {
   });
   renderSeams(); $('hint').textContent = t('gridMade', { n: grid.pieces.length, w: grid.size.cutW.toFixed(1), h: grid.size.cutH.toFixed(1) }); fit();
 }
+/** 囲まれた図形（実線で閉じた経路・点線は除く）の内側をクリックして、選んだ柄（アーガイル・市松）のピースで埋める。 */
+function patchFillAt(p) {
+  const region = regionAt(doc.shapes.filter(s => visible(s) && stitchable(s)), p);
+  if (!region) { $('hint').textContent = t('patchNoRegion'); return; }
+  const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
+  const fill = fillRegionPattern(region, $('patchPattern').value, { cell: Number($('patchCell').value) });
+  if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
+  if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
+  if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
+  commit(() => { selected = new Set(fill.pieces.map(pc => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points: pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })) }); return id; })); });
+  $('hint').textContent = t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
+}
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
+  $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
@@ -1735,6 +1748,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
   if (mode === 'mark') { stampAt(world(p), true, 'dot'); return; }
+  if (mode === 'patchfill') { patchFillAt(world(p)); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
   if (mode === 'hardware') { placeHardware(cursor); return; }
