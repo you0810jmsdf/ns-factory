@@ -25,7 +25,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchSeamsFromPieces } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -459,6 +459,14 @@ function makeGrid() {
   });
   renderSeams(); $('hint').textContent = t('gridMade', { n: grid.pieces.length, w: grid.size.cutW.toFixed(1), h: grid.size.cutH.toFixed(1) }); fit();
 }
+/** 縫い合わせ（doc.seams）に沿って共有辺の縫い穴を最適化して置く（「最適化」ボタンと同じ計算）。置いた穴の数を返す。commit の中で呼ぶ。 */
+function autoPatchHoles(tool) {
+  const pitch = Number($('patchPitch').value) || tool.pitch, tolerancePct = Number($('patchTol').value) || 15, raw = Number($('patchClear').value), junctionClearMm = Number.isFinite(raw) && raw >= 0 ? raw : null;
+  const result = optimizePatchHoles(doc, { pitch, tolerancePct, junctionClearMm }), pathIds = new Set([...result.holesByPath.keys()]);
+  doc.holes = doc.holes.filter(h => !pathIds.has(h.pathId));
+  for (const [pathId, points] of result.holesByPath) { const saved = doc.paths.find(p => p.id === pathId), route = saved && resolvePath(doc, saved); if (route) placeHoles(saved, route, points, { ...tool, pitch }); }
+  return [...result.holesByPath.values()].reduce((a, b) => a + b.length, 0);
+}
 /** 囲まれた図形（実線で閉じた経路・点線は除く）の内側をクリックして、選んだ柄（アーガイル・市松）のピースで埋める。 */
 function patchFillAt(p) {
   const region = regionAt(doc.shapes.filter(s => visible(s) && stitchable(s)), p);
@@ -468,8 +476,20 @@ function patchFillAt(p) {
   if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
-  commit(() => { selected = new Set(fill.pieces.map(pc => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points: pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })) }); return id; })); });
-  $('hint').textContent = t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
+  let stitched = null;
+  commit(() => {
+    const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
+    const ids = polys.map(points => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points }); return id; });
+    selected = new Set(ids);
+    const tool = $('patchStitch').checked ? stitchToolCurrent() : null;
+    if (tool) { /* 縫い合わせと縫い穴：ピースごとに経路、共有辺ごとに縫い合わせ、穴は共有辺の両側が重なるように最適化 */
+      const pathIds = ids.map(id => { const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [id], reversed: false, closed: true, segments: [], mark: 'tool' }); return pid; }), style = seamStyleValue(), seams = patchSeamsFromPieces(polys);
+      for (const s of seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathIds[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathIds[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
+      stitched = { seams: seams.length, holes: seams.length ? autoPatchHoles(tool) : 0 };
+    }
+  });
+  renderSeams();
+  $('hint').textContent = stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
 }
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
@@ -1377,7 +1397,8 @@ function addShape(shape) {
   commit(() => { doc.shapes.push({ id, layer: target, ...rest }); selected = new Set([id]); });
 }
 function freshId(items, prefix) {
-  let n = 1; while (items.some(s => s.id === prefix + n)) n++;
+  const used = new Set(items.map(s => s.id)); /* 空き番号の検索を Set で速くする（結果は同じ：未使用で最小の番号） */
+  let n = 1; while (used.has(prefix + n)) n++;
   return prefix + n;
 }
 function transformSelected(fn) {
