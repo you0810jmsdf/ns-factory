@@ -283,15 +283,18 @@ export function bboxOfDoc(doc) { return bounds([...doc.shapes.flatMap(s => { con
   const pts=a.kind==='diamond'?[{x:-a.width/2,y:0},{x:a.width/2,y:0},{x:0,y:-a.height/2},{x:0,y:a.height/2}]:[{x:-a.width/2,y:-a.height/2},{x:a.width/2,y:-a.height/2},{x:a.width/2,y:a.height/2},{x:-a.width/2,y:a.height/2}];
   return pts.map(p=>{const q=rotate(p,h.angleDeg);return {x:q.x+h.x,y:q.y+h.y};});
 })]); }
-/** 新しい独立した version:6 の mm 文書を返す。副作用なし。既定レイヤーは型紙・目印・ガイド（名前が id と同じときは UI 側で翻訳する）。parts＝部品（厚み）、seams＝縫い合わせ線。 */
-export function newDoc() { return { version: 6, unit: 'mm', shapes: [], holes: [], paths: [], parts: [], seams: [], mark: 'tool', dotD: 0.5, layers: [{ id: 'pattern', name: 'pattern', visible: true, locked: false }, { id: 'marks', name: 'marks', visible: true, locked: false }, { id: 'guide', name: 'guide', visible: true, locked: false }], tools: [] }; }
+/** 図形の色（5色のみ）と線種（2種のみ）。どちらも省略可（既定の見た目を使う）。 */
+export const SHAPE_COLORS = ['blue', 'green', 'red', 'white', 'yellow'];
+export const LINE_STYLES = ['solid', 'dashed'];
+/** 新しい独立した version:7 の mm 文書を返す。副作用なし。既定レイヤーは型紙・目印・ガイド（名前が id と同じときは UI 側で翻訳する）。parts＝部品（厚み）、seams＝縫い合わせ線。 */
+export function newDoc() { return { version: 7, unit: 'mm', shapes: [], holes: [], paths: [], parts: [], seams: [], mark: 'tool', dotD: 0.5, layers: [{ id: 'pattern', name: 'pattern', visible: true, locked: false }, { id: 'marks', name: 'marks', visible: true, locked: false }, { id: 'guide', name: 'guide', visible: true, locked: false }], tools: [] }; }
 /** 任意の JSON 値を受け取り、文書構造・有限数・ID参照が正しい場合 true を返す。入力は変更しない。 */
 export function validateDoc(d) {
   const obj = x => x !== null && typeof x === 'object' && !Array.isArray(x);
   const id = x => typeof x === 'string' && x.length > 0;
   const nums = (x, keys) => keys.every(k => Number.isFinite(x[k]));
   const unique = xs => xs.every(x => obj(x) && id(x.id)) && new Set(xs.map(x => x.id)).size === xs.length;
-  if (!obj(d) || d.version !== 6 || d.unit !== 'mm' || !['shapes', 'holes', 'layers', 'tools', 'paths', 'parts', 'seams'].every(k => Array.isArray(d[k]) && unique(d[k])) || !d.layers.length) return false;
+  if (!obj(d) || d.version !== 7 || d.unit !== 'mm' || !['shapes', 'holes', 'layers', 'tools', 'paths', 'parts', 'seams'].every(k => Array.isArray(d[k]) && unique(d[k])) || !d.layers.length) return false;
   const partIds = new Set(d.parts.map(p => p.id));
   if (!d.parts.every(p => typeof p.name === 'string' && Number.isFinite(p.thickness) && p.thickness >= 0 && Array.isArray(p.shapeIds) && p.shapeIds.every(id => d.shapes.some(s => s.id === id)) && (p.skive === undefined || (Array.isArray(p.skive) && p.skive.every(k => obj(k) && Number.isFinite(k.toThickness) && k.toThickness >= 0))))) return false;
   if (!d.shapes.every(s => s.type !== 'fold' || (nums(s, ['x1', 'y1', 'x2', 'y2', 'angleDeg']) && typeof s.inner === 'boolean' && (s.partId === null || s.partId === undefined || partIds.has(s.partId))))) return false;
@@ -300,6 +303,8 @@ export function validateDoc(d) {
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
     if (!layers.has(s.layer)) return false;
+    if (s.color != null && !SHAPE_COLORS.includes(s.color)) return false;
+    if (s.lineStyle != null && !LINE_STYLES.includes(s.lineStyle)) return false;
     if (s.type === 'line' || s.type === 'fold') return nums(s, ['x1', 'y1', 'x2', 'y2']);
     if (s.type === 'circle' || s.type === 'arc') return nums(s, ['cx', 'cy', 'r']) && s.r > 0 && (s.type === 'circle' || nums(s, ['startDeg', 'endDeg']));
     if (s.type === 'bezier') return nums(s, ['x1', 'y1', 'c1x', 'c1y', 'c2x', 'c2y', 'x2', 'y2']);
@@ -347,6 +352,7 @@ export function migrateDoc(input) {
     d.version = 5;
   }
   if (d.version === 5) { d.version = 6; } // v6：image（下絵）型を追加
+  if (d.version === 6) { d.version = 7; } // v7：図形の色・線種（任意・既定は従来の見た目）を追加
   return d;
 }
 /** 画像（下絵）の回転前ローカル矩形。 */

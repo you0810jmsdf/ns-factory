@@ -9,6 +9,13 @@ export function svgSweep() { return 1; }
 
 const f = n => (Math.round(n * 1000) / 1000).toString();
 export function holesOnShapes(doc, shapes) { const ids = new Set(shapes.map(s => s.id)), okPaths = new Set(doc.paths.filter(p => p.shapeIds.every(id => ids.has(id))).map(p => p.id)); return doc.holes.filter(h => okPaths.has(h.pathId)); }
+/** 図形の色（5色）→ 出力用の色。SVG/PDF は 16進・CSS 名、DXF は ACI（AutoCAD Color Index）番号。 */
+export const SHAPE_COLOR_HEX = { blue: '#2060ff', green: '#2a9d3f', red: '#e02020', white: '#ffffff', yellow: '#e6c300' };
+export const SHAPE_COLOR_ACI = { blue: 5, green: 3, red: 1, white: 7, yellow: 2 };
+/** 線種（実線／点線）から SVG の stroke-dasharray を返す（mm 単位、strokeMm に比例）。実線は null。 */
+function dashArrayMm(lineStyle, strokeMm) { return lineStyle === 'dashed' ? `${f(strokeMm * 8)} ${f(strokeMm * 5)}` : null; }
+/** #rrggbb を PDF の RG 用 0..1 の [r,g,b] に変換する。 */
+function hexToRgb01(hex) { const v = parseInt(hex.slice(1), 16); return [v >> 16 & 255, v >> 8 & 255, v & 255].map(c => Math.round(c / 255 * 1000) / 1000); }
 /** 色は #rgb/#rrggbb/#rrggbbaa だけ通す（属性への差し込み防止）。 */
 export const safeColor = (c, fallback = '#d9c7a0') => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? String(c) : fallback;
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -50,7 +57,9 @@ export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = fals
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(fontFamily)}" fill="#000" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `<path d="M${f(d.a.x)} ${f(d.a.y)}L${f(d.b.x)} ${f(d.b.y)}${d.ext.map(([p, q]) => `M${f(p.x)} ${f(p.y)}L${f(q.x)} ${f(q.y)}`).join('')}"/><text x="${f(d.textPos.x)}" y="${f(d.textPos.y)}" font-size="2.5" font-family="${esc(fontFamily)}" text-anchor="middle" fill="#000" stroke="none" transform="rotate(${f(d.angleDeg)} ${f(d.textPos.x)} ${f(d.textPos.y)})">${f(d.value)}</text>`; }
       const d = shapeToSvgD(s); const partColor = fill ? safeColor((doc.parts || []).find(p => p.shapeIds.includes(s.id))?.color) : null;
-      return d ? `<path id="${safeId(s.id)}" d="${d}"${fill && (s.closed || s.type === 'circle') ? ` fill="${partColor}"` : ''}/>` : '';
+      const strokeAttr = s.color && SHAPE_COLOR_HEX[s.color] ? ` stroke="${SHAPE_COLOR_HEX[s.color]}"` : '';
+      const dash = dashArrayMm(s.lineStyle, strokeMm), dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
+      return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${partColor}"` : ''}/>` : '';
     }).join('');
     return `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
   }).join('');
@@ -111,13 +120,20 @@ function dxfPolyline(layer, pts, closed, bulges = null) {
   pts.forEach((p, i) => { out.push('0', 'VERTEX', '8', layer, '10', dxfNum(p.x), '20', dxfNum(-p.y), '30', '0'); if (bulges && bulges[i]) out.push('42', dxfNum(bulges[i])); });
   out.push('0', 'SEQEND', '8', layer); return out;
 }
+/** エンティティ先頭（'0',TYPE,'8',layer）の直後に図形の色（62＝ACI番号）・線種（6＝線種名）を挿入する。対象が無ければそのまま。 */
+function withStyle(codes, s) {
+  const extra = [];
+  if (s.color && SHAPE_COLOR_ACI[s.color]) extra.push('62', String(SHAPE_COLOR_ACI[s.color]));
+  if (s.lineStyle === 'dashed') extra.push('6', 'DASHED');
+  return extra.length ? [...codes.slice(0, 4), ...extra, ...codes.slice(4)] : codes;
+}
 /** 図形から DXF エンティティのコード列を返す。 */
 export function shapeToDxf(s, layer, { tolerance = 0.02 } = {}) {
-  if (s.type === 'line') return dxfLine(layer, { x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
-  if (s.type === 'circle') return ['0', 'CIRCLE', '8', layer, '10', dxfNum(s.cx), '20', dxfNum(-s.cy), '30', '0', '40', dxfNum(s.r)];
-  if (s.type === 'arc') { const sweep = arcSweep(s); if (sweep >= 360) return shapeToDxf({ ...s, type: 'circle' }, layer); const end = s.startDeg + sweep; return ['0', 'ARC', '8', layer, '10', dxfNum(s.cx), '20', dxfNum(-s.cy), '30', '0', '40', dxfNum(s.r), '50', dxfNum(((-end % 360) + 360) % 360), '51', dxfNum(((-s.startDeg % 360) + 360) % 360)]; }
-  if (s.type === 'polyline') return dxfPolyline(layer, s.points, !!s.closed);
-  if (s.type === 'bezier' || s.type === 'path') { const pts = flattenShape(s, tolerance); const closed = !!s.closed; return dxfPolyline(layer, closed && pts.length > 1 ? pts.slice(0, -1) : pts, closed); }
+  if (s.type === 'line') return withStyle(dxfLine(layer, { x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }), s);
+  if (s.type === 'circle') return withStyle(['0', 'CIRCLE', '8', layer, '10', dxfNum(s.cx), '20', dxfNum(-s.cy), '30', '0', '40', dxfNum(s.r)], s);
+  if (s.type === 'arc') { const sweep = arcSweep(s); if (sweep >= 360) return shapeToDxf({ ...s, type: 'circle' }, layer); const end = s.startDeg + sweep; return withStyle(['0', 'ARC', '8', layer, '10', dxfNum(s.cx), '20', dxfNum(-s.cy), '30', '0', '40', dxfNum(s.r), '50', dxfNum(((-end % 360) + 360) % 360), '51', dxfNum(((-s.startDeg % 360) + 360) % 360)], s); }
+  if (s.type === 'polyline') return withStyle(dxfPolyline(layer, s.points, !!s.closed), s);
+  if (s.type === 'bezier' || s.type === 'path') { const pts = flattenShape(s, tolerance); const closed = !!s.closed; return withStyle(dxfPolyline(layer, closed && pts.length > 1 ? pts.slice(0, -1) : pts, closed), s); }
   if (s.type === 'text') return ['0', 'TEXT', '8', layer, '10', dxfNum(s.x), '20', dxfNum(-s.y), '30', '0', '40', dxfNum(s.sizeMm), '1', String(s.text).replace(/[\r\n]/g, ' '), '50', dxfNum(-s.angleDeg)];
   if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return [...dxfLine(layer, d.a, d.b), ...d.ext.flatMap(([p, q]) => dxfLine(layer, p, q)), '0', 'TEXT', '8', layer, '10', dxfNum(d.textPos.x), '20', dxfNum(-d.textPos.y), '30', '0', '40', '2.5', '1', dxfNum(d.value), '50', dxfNum(-d.angleDeg), '72', '1', '11', dxfNum(d.textPos.x), '21', dxfNum(-d.textPos.y), '31', '0']; }
   return [];
@@ -143,7 +159,12 @@ export function docToDxfR12(doc, { includeHoles = true, dotAsPoint = false, orig
   const layers = doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(layerName);
   const tableLayers = [...layers, ...(holes.length ? ['Stitch_Holes'] : [])];
   const out = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '9', '$EXTMIN', '10', dxfNum((b.minX + dx) * fx), '20', dxfNum(-(b.maxY + dy) * fy), '30', '0', '9', '$EXTMAX', '10', dxfNum((b.maxX + dx) * fx), '20', dxfNum(-(b.minY + dy) * fy), '30', '0', '0', 'ENDSEC',
-    '0', 'SECTION', '2', 'TABLES', '0', 'TABLE', '2', 'LAYER', '70', String(tableLayers.length)];
+    '0', 'SECTION', '2', 'TABLES',
+    '0', 'TABLE', '2', 'LTYPE', '70', '2',
+    '0', 'LTYPE', '2', 'CONTINUOUS', '70', '0', '3', 'Solid line', '72', '65', '73', '0', '40', '0.0',
+    '0', 'LTYPE', '2', 'DASHED', '70', '0', '3', 'Dashed line', '72', '65', '73', '2', '40', '0.75', '49', '0.5', '74', '0', '49', '-0.25', '74', '0',
+    '0', 'ENDTAB',
+    '0', 'TABLE', '2', 'LAYER', '70', String(tableLayers.length)];
   for (const name of tableLayers) out.push('0', 'LAYER', '2', name, '70', '0', '62', name === 'Stitch_Holes' ? '1' : '7', '6', 'CONTINUOUS');
   out.push('0', 'ENDTAB', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES');
   for (const l of doc.layers) for (const s of shapes.filter(s => s.layer === l.id)) out.push(...shapeToDxf(move(s), layerName(l), { tolerance }));
@@ -171,7 +192,10 @@ export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, 
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `${X(d.a.x)} ${Y(d.a.y)} m ${X(d.b.x)} ${Y(d.b.y)} l ${d.ext.map(([p, q]) => `${X(p.x)} ${Y(p.y)} m ${X(q.x)} ${Y(q.y)} l`).join(' ')} S BT /F1 ${n(2.5 * PT)} Tf 1 0 0 1 ${X(d.textPos.x)} ${Y(d.textPos.y)} Tm (${n(d.value)}) Tj ET`; }
       if (s.type === 'fold' || s.type === 'image') return '';
       const pts = flattenShape(s, 0.02); if (pts.length < 2) return '';
-      return `${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${s.closed || s.type === 'circle' ? ' h' : ''} S`;
+      const rgb = s.color && SHAPE_COLOR_HEX[s.color] ? hexToRgb01(SHAPE_COLOR_HEX[s.color]) : null;
+      const colorOn = rgb ? `${rgb.join(' ')} RG ` : '', colorOff = rgb ? ' 0 0 0 RG' : '';
+      const dashOn = s.lineStyle === 'dashed' ? `[${n(3 * PT)} ${n(2 * PT)}] 0 d ` : '', dashOff = s.lineStyle === 'dashed' ? ' [] 0 d' : '';
+      return `${colorOn}${dashOn}${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${s.closed || s.type === 'circle' ? ' h' : ''} S${dashOff}${colorOff}`;
     };
     for (const s of shapes) ops.push(pathOps(s));
     ops.push('1 0 0 RG');

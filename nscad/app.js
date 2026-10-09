@@ -261,8 +261,9 @@ function initLayers() {
 }
 
 // ---- 情報パネル（選択図形の数値編集）----
-const INFO_FIELDS = { line: ['x1','y1','x2','y2','length'], circle: ['cx','cy','r'], arc: ['cx','cy','r','startDeg','endDeg','length'], bezier: ['x1','y1','x2','y2','length'], polyline: ['nodes','closed','length','area'], path: ['nodes','closed','length','area','nodeOps'], text: ['text','sizeMm','angleDeg','x','y'], dimension: ['x1','y1','x2','y2','offset','length'], fold: ['x1','y1','x2','y2','angleDeg','inner'] };
-const ALL_FIELDS = ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','nodes','area','nodeOps','inner'];
+const COLOR_FIELDS = ['color','lineStyle'];
+const INFO_FIELDS = { line: ['x1','y1','x2','y2','length',...COLOR_FIELDS], circle: ['cx','cy','r',...COLOR_FIELDS], arc: ['cx','cy','r','startDeg','endDeg','length',...COLOR_FIELDS], bezier: ['x1','y1','x2','y2','length',...COLOR_FIELDS], polyline: ['nodes','closed','length','area',...COLOR_FIELDS], path: ['nodes','closed','length','area','nodeOps',...COLOR_FIELDS], text: ['text','sizeMm','angleDeg','x','y'], dimension: ['x1','y1','x2','y2','offset','length'], fold: ['x1','y1','x2','y2','angleDeg','inner'] };
+const ALL_FIELDS = ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','nodes','area','nodeOps','inner',...COLOR_FIELDS];
 let infoBusy = false;
 function infoShape() { if (selected.size !== 1) return null; const id = [...selected][0]; return doc.shapes.find(s => s.id === id) || null; }
 function refreshInfo() {
@@ -276,6 +277,7 @@ function refreshInfo() {
     if ('text' in s && !typing($('info-text'))) $('info-text').value = s.text;
     if ('closed' in s) $('info-closed').checked = s.closed;
     if ('inner' in s) $('info-inner').checked = s.inner;
+    if (INFO_FIELDS[s.type]?.includes('color')) { $('info-color').value = s.color || ''; $('info-lineStyle').value = s.lineStyle || ''; }
     $('info-length').value = (s.type === 'fold' ? distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }) : arcLength(s)).toFixed(2);
     renderPartInfo(s);
     if (s.type === 'polyline' || s.type === 'path') { $('info-nodes').textContent = String((s.points || s.nodes).length); $('info-area').textContent = s.closed ? areaOf(s.type === 'path' ? flattenForArea(s) : s.points).toFixed(1) + ' mm²' : '—'; }
@@ -292,6 +294,7 @@ function applyInfo(field) {
   else if (field === 'text') { const text = $('info-text').value; if (!text) { $('hint').textContent = t('invalidNumber'); return; } next.text = text; }
   else if (field === 'closed') { if (s.type === 'polyline' && s.points.length < 3) return; next.closed = $('info-closed').checked; }
   else if (field === 'inner') { next.inner = $('info-inner').checked; }
+  else if (field === 'color' || field === 'lineStyle') { const v = $('info-' + field).value; if (v) next[field] = v; else delete next[field]; }
   else if (field === 'length') {
     const len = num('length'); if (!(len > 0)) { $('hint').textContent = t('invalidNumber'); return; }
     if (s.type === 'line' || s.type === 'dimension') { const cur = distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }); if (cur < 1e-9) return; next.x2 = s.x1 + (s.x2 - s.x1) * len / cur; next.y2 = s.y1 + (s.y2 - s.y1) * len / cur; }
@@ -466,7 +469,7 @@ function initDesign() {
 }
 
 function initInfo() {
-  for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer']) $('info-' + f).addEventListener('change', () => applyInfo(f));
+  for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer','color','lineStyle']) $('info-' + f).addEventListener('change', () => applyInfo(f));
   $('toggleSmooth').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const nodes = s.nodes.map(n => ({ ...n })), n = nodes[nodeSel.index];
     if (n.smooth) { n.smooth = false; } else { const prev = nodes[(nodeSel.index - 1 + nodes.length) % nodes.length], nx = nodes[(nodeSel.index + 1) % nodes.length], d = { x: nx.x - prev.x, y: nx.y - prev.y }, l = Math.hypot(d.x, d.y) || 1, k = Math.min(distance(n, prev), distance(n, nx)) / 3; n.smooth = true; n.inX = n.x - d.x / l * k; n.inY = n.y - d.y / l * k; n.outX = n.x + d.x / l * k; n.outY = n.y + d.y / l * k; }
     transformSelectedTo({ ...s, nodes }); };
@@ -562,6 +565,16 @@ function exportDxf() {
   const preset = $('exportPreset').value;
   const dxf = preset === 'leathercraft' ? leathercraftDxf(doc, { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(doc, { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
   download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf'); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' });
+}
+/** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
+function drawPrintOverlay() {
+  const shapes = doc.shapes.filter(visible), overlapMm = 10, pageMm = PAGES[$('paper').value] || PAGES.a4;
+  const holes = $('outHoles').checked ? doc.holes.filter(h => doc.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => shapes.some(s => s.id === id)))) : [];
+  const b = bboxOfDoc({ ...doc, shapes, holes }); if (!b) return;
+  const layout = printLayout(b, pageMm, overlapMm, null);
+  ctx.save(); ctx.setLineDash([4 / scale, 3 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = 'rgba(255,90,90,0.5)'; ctx.fillStyle = 'rgba(255,120,120,0.7)'; ctx.font = `${12 / scale}px system-ui, sans-serif`;
+  layout.pages.forEach((p, i) => { ctx.strokeRect(p.x, p.y, p.w, p.h); ctx.fillText(`${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, p.x + 2, p.y + 12 / scale); });
+  ctx.restore();
 }
 /** 用紙キー（a4/a4l/a3/a3l）から @page を書く。CSS のセレクタ内 @page は無効なので style 要素を差し替える。 */
 function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 10mm; } }`; return size; }
@@ -1578,8 +1591,11 @@ function path(s) {
   }
 }
 const segmentBoundsCache = new WeakMap();
-function strokeShape(s, color = '#d8d8d8') {
+/** 図形の色（5色）の画面表示用（黒背景向け）カラーコード。 */
+const SHAPE_DRAW_COLOR = { blue: '#4da6ff', green: '#4ecb6b', red: '#ff5a5a', white: '#ffffff', yellow: '#f0d050' };
+function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (!s) return;
+  ctx.setLineDash(dashed ? [4 / scale, 3 / scale] : []);
   if (s.type === 'path') {
     const margin = 3 / scale, a = world({ x: 0, y: 0 }), b = world({ x: width, y: height });
     ctx.beginPath();
@@ -1631,13 +1647,15 @@ function draw() {
     for (let y = Math.ceil(lo.y / step) * step; y <= hi.y; y += step) { ctx.moveTo(lo.x, y); ctx.lineTo(hi.x, y); }
     ctx.strokeStyle = '#242424'; ctx.stroke();
   }
+  if ($('printOverlay').checked) drawPrintOverlay();
   ctx.beginPath(); ctx.moveTo(lo.x, 0); ctx.lineTo(hi.x, 0); ctx.moveTo(0, lo.y); ctx.lineTo(0, hi.y); ctx.strokeStyle = '#454039'; ctx.stroke();
   ctx.lineWidth = 1.5 / scale;
   const hl = aiHighlight.until > Date.now() ? aiHighlight.ids : null;
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
   // 革色：部品の閉図形を半透明で塗る（カラーシミュレーション）
   for (const part of doc.parts.filter(p => p.color)) for (const s of doc.shapes.filter(s => part.shapeIds.includes(s.id) && visible(s) && (s.closed || s.type === 'circle'))) { path(previewMoved(s)); ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = part.color; ctx.fill(); ctx.restore(); }
-  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : '#d8d8d8');
+  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
+  ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   for (const originalHole of doc.holes) {
     if (!holeVisible(originalHole)) continue;
@@ -1842,6 +1860,7 @@ $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history
 $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
+for (const id of ['printOverlay', 'paper', 'outHoles']) $(id).addEventListener('change', () => draw());
 function save() {
   const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = (tabs[activeTab]?.name ? tabs[activeTab].name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
