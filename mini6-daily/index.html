@@ -82,7 +82,7 @@ body.panel-open #preview { margin-left: 280px; }
 .cut-line-v { position: absolute; top: 0; bottom: 0; width: 0; border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
 
 /* === MODULE: 穴ストリップ（綴じ側端から6mm・径5mm・当工房基準） === */
-.hole-strip { width: 12.6mm; flex-shrink: 0; position: relative; }
+.hole-strip { width: 12mm; flex-shrink: 0; position: relative; }
 .hole-strip.left { border-right: 0.3mm solid #e0e0e0; order: -1; }
 .hole-strip.right { border-left: 0.3mm solid #e0e0e0; order: 1; }
 .hole { position: absolute; left: 50%; transform: translate(-50%, -50%); width: 5mm; height: 5mm; border: 0.3mm solid #c8c8c8; border-radius: 50%; background: white; }
@@ -435,7 +435,7 @@ body.panel-open #preview { margin-left: 280px; }
       <ul style="padding-left:18px; margin:4px 0;">
         <li>A4を <b>縦向き</b> に使い、Mini6（80×128mm）を2列×2段に4面並べます。周囲の余白（カット線の外側）は切り落とします</li>
         <li>表面は「1日目（左穴）／3日目（右穴）」、裏面は「4日目／2日目」。切り分けると各片の表裏で1・2日目、3・4日目が対になります</li>
-        <li>穴は6穴（上端から 16.3 / 35.5 / 54.7 / 73.9 / 93.1 / 112.3 mm、綴じ側の端から6.3mm。当工房の基準データ（Mini6 Refill.svg）と同じ。穴間隔19.2mm）</li>
+        <li>穴は6穴（上端から 16.3 / 35.5 / 54.7 / 73.9 / 93.1 / 112.3 mm、綴じ側の端から6mm（当工房の共通ルール）。上端からの位置は当工房の基準データ（Mini6 Refill.svg）と同じ。穴間隔19.2mm）</li>
         <li>※ 両面の面付けは実物での組み立て確認が済んでいません。まず1枚で試してから本番印刷をおすすめします</li>
       </ul>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
@@ -941,6 +941,7 @@ const clGroups = [
   { show: false, title: 'チェックリスト1', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 15 },
   { show: false, title: 'チェックリスト2', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 80 },
   { show: false, title: 'チェックリスト3', items: '', font: "'Noto Sans JP', sans-serif", size: 2.5, x: 2, y: 145 },
+  { date: '2026-10-10', type: 'fix', title: '穴の中心を綴じ側の端から6mmに統一', detail: '穴の中心が、綴じ側の端から6.3mmの位置にありました（穴帯の幅12.6mmの真ん中）。当工房のリフィルの共通ルール「端から6mm」に合わせて、穴帯の幅を12mmにし、穴の中心を6mmにしました。上端からの位置と穴の間隔は変えていません。紙の内側の領域は0.6mm広くなります。' },
 ];
 function initCLFontSelectors() {
   for (let i = 0; i < 3; i++) {
