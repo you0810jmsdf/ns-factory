@@ -9,6 +9,8 @@
     button, input, select { font: inherit; }
     button { background: #262628; color: #ddd; border: 1px solid #3a3a3c; border-radius: 7px; padding: 5px 10px; height: 28px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
     button:hover { border-color: var(--accent); }
+        .hmenu { position: relative; display: inline-flex; }
+    .hmenu-panel[hidden] { display: none; } .hmenu-panel { position: absolute; z-index: 20; top: 34px; left: 0; display: flex; flex-direction: column; gap: 6px; min-width: 190px; padding: 10px; background: #1c1c1ef7; border: 1px solid var(--accent); border-radius: 8px; } .hmenu-panel .note { margin: 2px 0 0; font-size: 12px; color: #aaa; white-space: normal; }
     button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
     button:disabled { opacity: .35; cursor: default; }
     button.active { color: #111; border-color: var(--accent); background: var(--accent); }
@@ -74,7 +76,7 @@
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
 <header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span>
-<button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><button id="save" data-i18n="save"></button><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
+<button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
 <select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><button id="help" data-i18n="help"></button><button id="guideBtn" data-i18n="guideBtn"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
@@ -424,8 +426,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=fcd3503d","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=302938e0","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=91f5211f","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=4052f6b7","./help/ja.js":"./help/ja.js?v=f1099f04","./i18n.js":"./i18n.js?v=ed3916ed","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=cc7d3d59","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=fcd3503d"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=9c088d55","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=302938e0","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=91f5211f","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=4052f6b7","./help/ja.js":"./help/ja.js?v=f1099f04","./i18n.js":"./i18n.js?v=5624b61e","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=cc7d3d59","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=9c088d55"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1220,6 +1222,13 @@ const MESSAGES = {
     "new": "新規",
     "open": "開く",
     "save": "保存",
+    "saveBtn": "保存 ▾",
+    "saveNativeFor": "N's CAD 形式（続きを編集する用）",
+    "exportSvgFor": "SVG（レーザー加工用）",
+    "exportPdfFor": "PDF（型紙の配布用）",
+    "exportDxfFor": "DXF（他の人へ図面を渡す用）",
+    "exportPngFor": "PNG（画像）",
+    "saveMenuNote": "用紙・穴を入れるか・校正などの設定は、右の「出力」カードです。Ctrl+S は N's CAD 形式でそのまま保存します。",
     "undo": "元に戻す",
     "redo": "やり直し",
     "grid": "グリッド",
@@ -1912,6 +1921,13 @@ const MESSAGES = {
     "new": "New",
     "open": "Open",
     "save": "Save",
+    "saveBtn": "Save ▾",
+    "saveNativeFor": "N's CAD format (to keep editing)",
+    "exportSvgFor": "SVG (for laser cutting)",
+    "exportPdfFor": "PDF (for distributing patterns)",
+    "exportDxfFor": "DXF (for handing drawings to others)",
+    "exportPngFor": "PNG (image)",
+    "saveMenuNote": "Paper, holes, calibration and other settings are in the Output card on the right. Ctrl+S saves in N's CAD format directly.",
     "undo": "Undo",
     "redo": "Redo",
     "grid": "Grid",
@@ -11988,7 +12004,11 @@ function save() {
   if (tabs[activeTab]) { tabs[activeTab].dirty = false; renderTabs(); }
 }
 window.addEventListener('beforeunload', e => { if (tabs.some(tb => tb.dirty)) { e.preventDefault(); e.returnValue = ''; } });
-$('save').onclick = save; $('open').onclick = () => $('file').click();
+/* 「保存」を押すと、保存と書き出し（SVG・PDF・DXF・PNG）のメニューが出る。普段は隠れている。Ctrl+S は N's CAD 形式でそのまま保存 */
+$('save').onclick = () => { $('saveMenu').hidden = !$('saveMenu').hidden; };
+$('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
+for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
+document.addEventListener?.('click', e => { const m = $('saveMenu'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && e.target !== $('save')) m.hidden = true; }); $('open').onclick = () => $('file').click();
 $('file').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
   await openFile(file);
