@@ -434,8 +434,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=f43a9289","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=fb8fb0b0","./help/ja.js":"./help/ja.js?v=50d8d42b","./i18n.js":"./i18n.js?v=e7f4deb5","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=adf675dc","./threeview.js":"./threeview.js?v=c82827a1","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=f43a9289"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=4e1b4691","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=1c0de90e","./help/ja.js":"./help/ja.js?v=2c6824a3","./i18n.js":"./i18n.js?v=e7f4deb5","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=adf675dc","./threeview.js":"./threeview.js?v=c82827a1","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=4e1b4691"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -10264,7 +10264,7 @@ const HELP_JA = {
     {
       "id": "drawing",
       "title": "作図と座標",
-      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。\nオフセット：先に作図オプションで「オフセット距離」と「向き」（外側／内側）を決めておきます。図形をクリックすると、他の図形との交点から交点までの区間を選び（橙色で表示）、ダブルクリックするとつながった図形全体（閉じていれば閉じた図形）を選びます。Enter か「選んだ範囲をオフセット」で実行します。つながった線は結合点をまたいで1つとして扱います。閉じた図形は外側と内側、開いた線は進行方向の左（外側）と右（内側）。結果は黄色の点線で、色と線種は情報カードで変えられます。"
+      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。円の上下左右と斜め45度の8か所にも、同じ距離で吸い付きます。作図ツールでポインタが円の点に近づく（約40px以内）と、その点が小さなひし形の印で出ます（円弧は対象外）。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。\nオフセット：先に作図オプションで「オフセット距離」と「向き」（外側／内側）を決めておきます。図形をクリックすると、他の図形との交点から交点までの区間を選び（橙色で表示）、ダブルクリックするとつながった図形全体（閉じていれば閉じた図形）を選びます。Enter か「選んだ範囲をオフセット」で実行します。つながった線は結合点をまたいで1つとして扱います。閉じた図形は外側と内側、開いた線は進行方向の左（外側）と右（内側）。結果は黄色の点線で、色と線種は情報カードで変えられます。"
     },
     {
       "id": "stitching",
@@ -10408,7 +10408,7 @@ const HELP_EN = {
     {
       "id": "drawing",
       "title": "Drawing and coordinates",
-      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox.\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0.\nOffset: first set the Offset distance and Side (outside / inside) in Drawing options. Click a shape to select the part between intersections with other shapes (shown in orange); double-click to select the whole connected shape (a closed shape if it is closed). Press Enter or the Offset button to run it. Connected lines are treated as one, passing through their joints. Closed shapes go outside or inside; open lines go to the left (outside) or right (inside) of travel. The result is a yellow dashed line; change color and line style in the Info card."
+      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox. The 8 points of a circle (top, bottom, left, right and the four 45° points) also attract the cursor at the same distance; with a drawing tool, they appear as small diamonds when the pointer comes within about 40 px (arcs are not included).\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0.\nOffset: first set the Offset distance and Side (outside / inside) in Drawing options. Click a shape to select the part between intersections with other shapes (shown in orange); double-click to select the whole connected shape (a closed shape if it is closed). Press Enter or the Offset button to run it. Connected lines are treated as one, passing through their joints. Closed shapes go outside or inside; open lines go to the left (outside) or right (inside) of travel. The result is a yellow dashed line; change color and line style in the Info card."
     },
     {
       "id": "stitching",
@@ -10591,6 +10591,7 @@ let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
 let junctions = { joined: [], loose: [] }, blinkOn = true; /* 交点の表示：結合＝赤い点／未結合＝赤い点滅 */
+let magnetCircle = []; /* 円の上下左右と斜め45度の8点（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
@@ -12245,21 +12246,26 @@ function drawRuler({ a, b }) {
 }
 /** 磁石の候補：端点（線・折れ線の頂点・円弧の両端・ベジェ両端・パス節点）と、円・円弧の中心。 */
 function magnetPointsOf(shapes) {
-  const ends = [], centers = [];
+  const ends = [], centers = [], circle = [];
   for (const s of shapes) {
     if (s.type === 'line') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
     else if (s.type === 'polyline') ends.push(...s.points.map(p => ({ x: p.x, y: p.y })));
     else if (s.type === 'bezier') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
     else if (s.type === 'path') ends.push(...s.nodes.map(n => ({ x: n.x, y: n.y })));
     else if (s.type === 'arc') { ends.push(circlePoint(s, s.startDeg), circlePoint(s, s.endDeg)); centers.push({ x: s.cx, y: s.cy }); }
-    else if (s.type === 'circle') centers.push({ x: s.cx, y: s.cy });
+    else if (s.type === 'circle') { centers.push({ x: s.cx, y: s.cy }); for (let k = 0; k < 8; k++) circle.push(circlePoint(s, k * 45)); }
   }
-  return { ends, centers };
+  return { ends, centers, circle };
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
 function magnetRadiusMm() { const px = Number($('snapDist').value); return Number.isFinite(px) && px > 0 ? px / scale : 0; }
 const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror'];
 /** 作図ツール中だけ自動で仮表示する中心点。 */
+/** ポインタの近く（画面で 40px 以内）にある円の 8 点。作図ツールのときだけ、磁石が有効（吸着距離が 1px 以上）のときだけ。 */
+function circleMarkPoints() {
+  if (!MAGNET_DRAW_MODES.includes(mode) || !(magnetRadiusMm() > 0)) return [];
+  const reach = 40 / scale; return magnetCircle.filter(c => distance(cursor, c) <= reach);
+}
 function centerMarkPoints() { return MAGNET_DRAW_MODES.includes(mode) ? magnetCenters : []; }
 /** 交点の印：端点どうしで接している点＝赤い点、途中で交差している点＝赤い点（点滅）。 */
 function drawJunctions() {
@@ -12270,16 +12276,17 @@ function drawJunctions() {
   ctx.restore();
 }
 function drawCenterMarks() {
-  const pts = centerMarkPoints(); if (!pts.length) return;
+  const pts = centerMarkPoints(), near = circleMarkPoints(); if (!pts.length && !near.length) return;
   ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(138,180,248,0.75)'; ctx.lineWidth = 1 / scale; ctx.beginPath();
   for (const c of pts) { ctx.moveTo(c.x - 4 / scale, c.y); ctx.lineTo(c.x + 4 / scale, c.y); ctx.moveTo(c.x, c.y - 4 / scale); ctx.lineTo(c.x, c.y + 4 / scale); }
+  for (const c of near) { const r = 4 / scale; ctx.moveTo(c.x - r, c.y); ctx.lineTo(c.x, c.y - r); ctx.lineTo(c.x + r, c.y); ctx.lineTo(c.x, c.y + r); ctx.closePath(); } /* 円の 8 点＝小さなひし形（中心の十字と区別） */
   ctx.stroke(); ctx.restore();
 }
 function rebuildSnaps() {
   rebuildThreeViewMarks();
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
   snapCache = shapes.flatMap(snapPoints);
-  const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
+  const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers; magnetCircle = magnet.circle;
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
@@ -12517,7 +12524,7 @@ function snapped(p, shift, anchor) {
   snap = null;
   let result = { ...p };
   const reach = magnetRadiusMm();
-  if (reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetCenters]) { const d = distance(p, c); if (d < near) { near = d; result = { ...c }; snap = c; } } }
+  if (reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetCenters, ...magnetCircle]) { const d = distance(p, c); if (d < near) { near = d; result = { ...c }; snap = c; } } }
   if ($('snap').checked && !snap) {
     let best = 9 / scale;
     for (const c of [...snapCache, ...(stage?.points || [])]) { const d = distance(p, c); if (d < best) { best = d; result = { ...c }; snap = c; } }
