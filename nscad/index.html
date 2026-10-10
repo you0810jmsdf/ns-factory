@@ -29,6 +29,7 @@
     #canvas3d { position: absolute; inset: 0; background: #101010; }
     .floatbox { position: absolute; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #1c1c1ef2; border: 1px solid #c9a96e; border-radius: 8px; font-size: 12px; white-space: nowrap; } .floatbox[hidden] { display: none; } .floatbox label { display: flex; align-items: center; gap: 4px; } .floatbox input { width: 64px; } .floatbox select, .floatbox button { height: 26px; }
     #rulerBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
+    .ctx { flex-direction: column; align-items: stretch; padding: 4px; z-index: 6; } .ctx button { height: 30px; text-align: left; }
     #tabBar { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 2; } #tabBar button { height: 24px; padding: 0 10px; font-size: 12px; background: #1c1c1ee6; }
     #status { position: absolute; bottom: 10px; right: 10px; padding: 5px 9px; background: #141414e6; border: 1px solid var(--line); border-radius: 6px; font: 11px ui-monospace, Menlo, monospace; pointer-events: none; }
     #side { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid var(--line); background: #181818; }
@@ -108,7 +109,7 @@
 <div class="group" data-i18n="selection"></div>
 <button id="copy" data-i18n="copy"></button><button id="mirrorX" data-i18n="mirrorX"></button><button id="mirrorY" data-i18n="mirrorY"></button><button id="rotate" data-i18n="rotate"></button><button id="toPath" data-i18n="toPath"></button><button id="delete" data-i18n="delete"></button>
 </aside>
-<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><output id="status"></output></div>
+<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><output id="status"></output></div>
 <div id="side">
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
@@ -297,6 +298,9 @@
 <label><span data-i18n="libTags"></span><input id="libTags" type="text" maxlength="100"></label>
 <div class="row"><button id="libSave" data-i18n="libSave"></button><button id="libRemove" data-i18n="libRemove"></button></div>
 <div class="row"><button id="libExport" data-i18n="libExport"></button><button id="libImport" data-i18n="libImport"></button></div>
+<label><span data-i18n="libBackupList"></span><select id="libBackupSel" size="4"></select></label>
+<div class="row"><button id="libBackupNow" data-i18n="libBackupNow"></button><button id="libBackupRestore" data-i18n="libBackupRestore"></button></div>
+<p class="note" data-i18n="libWhereNote"></p>
 <input id="libFile" type="file" accept=".json,application/json" hidden>
 </details>
 <details class="sub"><summary data-i18n="tabsSection"></summary>
@@ -427,8 +431,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=97bfce4c","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=f4b53c8d","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=fc36b3ac","./help/ja.js":"./help/ja.js?v=184a0f56","./i18n.js":"./i18n.js?v=085d48fe","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=8d080a2b","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=97bfce4c"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=c47a2497","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=f4b53c8d","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=fc36b3ac","./help/ja.js":"./help/ja.js?v=184a0f56","./i18n.js":"./i18n.js?v=0471e907","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=fa9c8154","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=c47a2497"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1357,6 +1361,8 @@ const MESSAGES = {
     "visible": "表示",
     "layerSolo": "作図先の層だけ表示（他を隠す）",
     "layerAll": "すべて表示",
+    "ctxLib": "部品ライブラリに登録…",
+    "libNamePrompt": "部品の名前を入力してください",
     "varOutOfRange": "{k} は {min}〜{max} の範囲で入力してください。",
     "showJunctions": "交点を表示（端点で結合＝赤い点／途中で交差＝赤い点滅）",
     "solidToPattern": "実線にしたので、型紙の層へ戻しました。",
@@ -1565,8 +1571,19 @@ const MESSAGES = {
     "libTags": "タグ",
     "libSave": "選択を登録",
     "libRemove": "削除",
-    "libExport": "書き出し",
-    "libImport": "取り込み",
+    "libExport": "ライブラリをファイルに保存",
+    "libImport": "ライブラリをファイルから開く",
+    "libBackupList": "自動バックアップ（新しい順・最新10件）",
+    "libBackupNow": "いまバックアップ",
+    "libBackupRestore": "選んだバックアップに戻す",
+    "libWhereNote": "登録した部品は、このブラウザの中に保存されます（このパソコン・このブラウザだけ）。ほかのパソコンや人に渡すときは「ファイルに保存」で書き出し、相手が「ファイルから開く」で読み込みます。同梱の部品（リフィル型紙など）は、誰でも使えます。自動バックアップも、このブラウザの中です。ブラウザのデータを消す前に、ファイルへ保存してください。",
+    "libBackupNone": "戻すバックアップが選ばれていません。",
+    "libBackupEmpty": "登録した部品がまだありません。",
+    "libBackedUp": "いまの部品 {n} 件をバックアップしました。",
+    "libRestoreConfirm": "「{label}」に戻します。もう一度「選んだバックアップに戻す」を押すと実行します（いまの状態もバックアップに残ります）。",
+    "libRestored": "「{label}」に戻しました（{n} 件）。",
+    "libSavedFile": "登録した部品 {n} 件をファイルに保存しました。",
+    "libFileInvalid": "N's CAD の部品ライブラリのファイルではありません。",
     "tabsSection": "タブ（複数ファイル）",
     "tabName": "タブ名",
     "tabNew": "新しいタブ",
@@ -1582,7 +1599,7 @@ const MESSAGES = {
     "needName": "名前を入力してください。",
     "libSaved": "「{name}」をライブラリに登録しました。",
     "libBuiltin": "同梱の部品は削除できません。",
-    "libImported": "{n} 件を取り込みました。",
+    "libImported": "{n} 件を読み込みました（追加 {a}・更新 {u}・読めなかった {s}）。",
     "pasted": "{n} 図形を貼り付けました（{from}）。",
     "pasteInvalid": "この CAD のコピー形式ではありません。",
     "copied": "コピーしました。別のタブや PC で貼り付けできます。",
@@ -2068,6 +2085,8 @@ const MESSAGES = {
     "visible": "Visible",
     "layerSolo": "Show only the drawing layer (hide others)",
     "layerAll": "Show all",
+    "ctxLib": "Register in the parts library…",
+    "libNamePrompt": "Enter a name for the part",
     "varOutOfRange": "{k} must be between {min} and {max}.",
     "showJunctions": "Show intersections (joined at endpoints = red dot / crossing mid-line = blinking red)",
     "solidToPattern": "Made it solid, so it was moved back to the Pattern layer.",
@@ -2276,8 +2295,19 @@ const MESSAGES = {
     "libTags": "Tags",
     "libSave": "Register selection",
     "libRemove": "Remove",
-    "libExport": "Export",
-    "libImport": "Import",
+    "libExport": "Save the library to a file",
+    "libImport": "Open a library file",
+    "libBackupList": "Automatic backups (newest first, latest 10)",
+    "libBackupNow": "Back up now",
+    "libBackupRestore": "Restore the selected backup",
+    "libWhereNote": "Parts you register are stored inside this browser (this computer and browser only). To share them, use \"Save to a file\" and have the other person \"Open a library file\". Built-in parts (refill patterns etc.) are available to everyone. Automatic backups are also inside this browser, so save a file before clearing browser data.",
+    "libBackupNone": "No backup is selected.",
+    "libBackupEmpty": "No registered parts yet.",
+    "libBackedUp": "Backed up {n} part(s).",
+    "libRestoreConfirm": "This will restore \"{label}\". Press \"Restore the selected backup\" again to do it (the current state is backed up too).",
+    "libRestored": "Restored \"{label}\" ({n} parts).",
+    "libSavedFile": "Saved {n} part(s) to a file.",
+    "libFileInvalid": "This is not an N's CAD parts library file.",
     "tabsSection": "Tabs (multiple files)",
     "tabName": "Tab name",
     "tabNew": "New tab",
@@ -2293,7 +2323,7 @@ const MESSAGES = {
     "needName": "Enter a name.",
     "libSaved": "Registered “{name}” in the library.",
     "libBuiltin": "Built-in parts cannot be removed.",
-    "libImported": "Imported {n} item(s).",
+    "libImported": "Read {n} item(s) (added {a}, updated {u}, unreadable {s}).",
     "pasted": "Pasted {n} shape(s) (from {from}).",
     "pasteInvalid": "Not this CAD's clipboard format.",
     "copied": "Copied. Paste in another tab or PC.",
@@ -3900,6 +3930,31 @@ __mods['library'] = (function(){
 const { evalExpr } = __mods['hardware'];
 const { bboxOfDoc, resolvePath, projectOnPath, arcLength } = __mods['geometry'];
 const { makeNextId } = __mods['interop'];
+/* ---- 部品ライブラリのファイル保存・読み込み・バックアップ（登録した部品はブラウザの中に保存されるので、ファイルとバックアップで守る） ---- */
+const LIBRARY_FILE_APP = "N's CAD parts library";
+/** 登録した部品をファイル用の文字列にする。 */
+function libraryFileText(items, savedAt = new Date().toISOString()) { return JSON.stringify({ app: LIBRARY_FILE_APP, version: 2, savedAt, count: items.length, items }, null, 2); }
+/** ファイルの文字列から部品を取り出す。古い形式（version 1・app なし）も読む。検証に通らない部品は skipped に数える。形式が違えば null。 */
+function parseLibraryFile(text) {
+  let data; try { data = JSON.parse(text); } catch { return null; }
+  if (!data || !Array.isArray(data.items) || (data.app && data.app !== LIBRARY_FILE_APP)) return null;
+  const items = data.items.filter(it => it && typeof it === 'object' && checkLibraryItem(it).length === 0);
+  return { items, skipped: data.items.length - items.length };
+}
+/** 今の部品に、読み込んだ部品を合流させる。同じ id は更新、無ければ追加。戻り値 {items, added, updated}。 */
+function mergeLibraryItems(current, incoming) {
+  const items = current.map(x => x), idx = new Map(items.map((x, i) => [x.id, i])); let added = 0, updated = 0;
+  for (const it of incoming) { if (idx.has(it.id)) { items[idx.get(it.id)] = it; updated++; } else { idx.set(it.id, items.length); items.push(it); added++; } }
+  return { items, added, updated };
+}
+/** バックアップの一覧（新しい順）に、いまの部品の写しを足す。直前と同じ内容なら足さない。最大 max 件。 */
+function pushLibraryBackup(backups, items, at = new Date().toISOString(), max = 10) {
+  const list = Array.isArray(backups) ? backups : [], json = JSON.stringify(items);
+  if (list[0] && JSON.stringify(list[0].items) === json) return list;
+  return [{ at, count: items.length, items: JSON.parse(json) }, ...list].slice(0, max);
+}
+/** バックアップの表示名「2026-10-10 17:30（12件）」。 */
+function libraryBackupLabel(b) { return String(b.at).slice(0, 16).replace('T', ' ') + '（' + b.count + '件）'; }
 /** 寸法変数の範囲（項目の varLimits）から外れた変数を返す。例：リフィルの穴の位置 E は 3〜9mm。範囲の無い変数は何でもよい。戻り値 [{key, min, max}]。 */
 function varOutOfRange(item, vars = {}) {
   const v = { ...(item?.vars || {}), ...vars }, out = [];
@@ -3974,7 +4029,7 @@ function checkLibraryItem(item) {
   return out;
 }
 
-return {varOutOfRange, varStep, CLIP_PREFIX, instantiateShape, instantiateItem, transformPayload, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem};
+return {LIBRARY_FILE_APP, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel, varOutOfRange, varStep, CLIP_PREFIX, instantiateShape, instantiateItem, transformPayload, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem};
 })();
 __mods['ai_schema'] = (function(){
 // AI 連携の契約：画面（app.js）と Worker（worker/src/ai_schema.js はこのファイルのコピー）が共有する。純粋データ・純粋関数のみ。
@@ -9983,7 +10038,7 @@ const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, vi
 const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
-const { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem } = __mods['library'];
+const { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } = __mods['library'];
 const { docToAiJson, validateActions, estimateYen, roughTokens } = __mods['ai_schema'];
 const { buildDoc, check, threadEstimate, defaultRecipe } = __mods['autodesign'];
 const { traceImage, scaleFromTwoPoints, scaleFromDpi } = __mods['trace'];
@@ -10592,6 +10647,7 @@ function initDesign() {
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   if (typeof setInterval === 'function') setInterval(() => { if (junctions.loose.length && $('showJunctions').checked && !(typeof document !== 'undefined' && document.hidden)) { blinkOn = !blinkOn; draw(); } else blinkOn = true; }, 500); /* 未結合の交点だけ点滅させる */
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
+  $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') window.open('guide.html', '_blank'); }; /* 図解ガイド（日本語）を別タブで開く */
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
@@ -11188,7 +11244,20 @@ function initAi() {
 // ---- 部品ライブラリ・タブ・クリップボード ----
 let userLibrary = [], tabs = [], activeTab = 0;
 function loadLibrary() { try { const list = JSON.parse(localStorage.getItem('leather-cad.library')); if (Array.isArray(list)) userLibrary = list.filter(it => checkLibraryItem(it).length === 0); } catch { /* 保存不可は空のまま。 */ } }
-function persistLibrary() { try { localStorage.setItem('leather-cad.library', JSON.stringify(userLibrary)); } catch { $('hint').textContent = t('storageUnavailable'); } }
+function persistLibrary() { try { localStorage.setItem('leather-cad.library', JSON.stringify(userLibrary)); } catch { $('hint').textContent = t('storageUnavailable'); return; } snapshotLibrary(); }
+/* 登録した部品の自動バックアップ：変更のたびに、ブラウザの中へ最新10件まで残す（直前と同じ内容なら足さない） */
+const LIB_BACKUP_KEY = 'leather-cad.library.backups';
+function loadLibBackups() { try { const l = JSON.parse(localStorage.getItem(LIB_BACKUP_KEY)); return Array.isArray(l) ? l.filter(b => b && Array.isArray(b.items)) : []; } catch { return []; } }
+function saveLibBackups(list) { try { localStorage.setItem(LIB_BACKUP_KEY, JSON.stringify(list)); return true; } catch { return false; } }
+function snapshotLibrary() { if (!userLibrary.length && !loadLibBackups().length) return; saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); if (typeof renderLibBackups === 'function' && $('libBackupSel')) renderLibBackups(); }
+function renderLibBackups() { const sel = $('libBackupSel'); sel.textContent = ''; for (const [i, b] of loadLibBackups().entries()) { const o = document.createElement('option'); o.value = String(i); o.textContent = libraryBackupLabel(b); sel.appendChild(o); } if (sel.options && sel.options.length) sel.value = '0'; }
+let libRestoreArmed = 0;
+function restoreLibBackup() { /* 2回押しで戻す（1回目は確認の案内）。戻す前に、いまの状態もバックアップに残す */
+  const list = loadLibBackups(), b = list[Number($('libBackupSel').value)]; if (!b) { $('hint').textContent = t('libBackupNone'); return; }
+  if (Date.now() - libRestoreArmed > 6000) { libRestoreArmed = Date.now(); $('hint').textContent = t('libRestoreConfirm', { label: libraryBackupLabel(b) }); return; }
+  libRestoreArmed = 0; saveLibBackups(pushLibraryBackup(list, userLibrary)); userLibrary = b.items.filter(it => checkLibraryItem(it).length === 0); persistLibrary(); renderLibrary(); renderLibBackups(); $('hint').textContent = t('libRestored', { label: libraryBackupLabel(b), n: userLibrary.length });
+}
+function backupLibraryNow() { if (!userLibrary.length) { $('hint').textContent = t('libBackupEmpty'); return; } saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); renderLibBackups(); $('hint').textContent = t('libBackedUp', { n: userLibrary.length }); }
 function libraryItems() { return [...DATA_LIBRARY.items, ...userLibrary]; }
 function libCurrent() { return libraryItems().find(i => i.id === $('libItem').value) || libraryItems()[0] || null; }
 function renderLibrary() {
@@ -11207,15 +11276,19 @@ function placeLibrary(at) {
   commit(() => { ids = mergePayload(doc, { ...payload, layers: [] }, { freshId, source: 'library:' + it.id }); selected = new Set(ids); });
   renderLayers(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length });
 }
-function saveToLibrary() {
+/** 登録した部品の id。同じ瞬間に2つ登録しても、既にある id と重ならないようにする。 */
+function uniqueLibraryId() { let id = 'user-' + Date.now().toString(36); while (userLibrary.some(x => x.id === id)) id += 'x'; return id; }
+function saveToLibrary(nameArg = null) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
-  const name = ($('libName').value || '').trim(); if (!name) { $('hint').textContent = t('needName'); return; }
-  const payload = extractSelection(doc, ids), item = { id: 'user-' + Date.now().toString(36), name, tags: ($('libTags').value || '').split(/[\s,]+/).filter(Boolean), desc: '', vars: {}, shapes: payload.shapes, holes: payload.holes, paths: payload.paths, parts: payload.parts, tools: payload.tools };
+  const name = (nameArg ?? ($('libName').value || '')).trim(); if (!name) { $('hint').textContent = t('needName'); return; }
+  const payload = extractSelection(doc, ids), item = { id: uniqueLibraryId(), name, tags: ($('libTags').value || '').split(/[\s,]+/).filter(Boolean), desc: '', vars: {}, shapes: payload.shapes, holes: payload.holes, paths: payload.paths, parts: payload.parts, tools: payload.tools };
   userLibrary.push(item); persistLibrary(); renderLibrary(); $('libItem').value = item.id; renderLibrary(); $('hint').textContent = t('libSaved', { name });
 }
 function removeFromLibrary() { const it = libCurrent(); if (!it || !userLibrary.includes(it)) { $('hint').textContent = t('libBuiltin'); return; } userLibrary = userLibrary.filter(x => x !== it); persistLibrary(); renderLibrary(); }
-function exportLibrary() { download('leather-library.nscad-lib.json', JSON.stringify({ version: 1, items: userLibrary }, null, 2), 'application/json'); }
-async function importLibrary(file) { try { const data = JSON.parse(await file.text()); const items = (data.items || []).filter(it => checkLibraryItem(it).length === 0); userLibrary.push(...items); persistLibrary(); renderLibrary(); $('hint').textContent = t('libImported', { n: items.length }); } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); } }
+function exportLibrary() { if (!userLibrary.length) { $('hint').textContent = t('libBackupEmpty'); return; } const d = new Date(), z = n => String(n).padStart(2, '0'); download(`nscad-parts-library-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}.json`, libraryFileText(userLibrary), 'application/json'); $('hint').textContent = t('libSavedFile', { n: userLibrary.length }); }
+async function importLibrary(file) { /* 同じ名前（id）の部品は更新、無いものは追加。読み込む前の状態もバックアップに残す */
+  try { const r = parseLibraryFile(await file.text()); if (!r) throw new Error(t('libFileInvalid')); if (userLibrary.length) saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); const m = mergeLibraryItems(userLibrary, r.items); userLibrary = m.items; persistLibrary(); renderLibrary(); renderLibBackups(); $('hint').textContent = t('libImported', { n: r.items.length, a: m.added, u: m.updated, s: r.skipped }); }
+  catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); } }
 /** 選択をクリップボード文字列にする（copy イベントで使う）。 */
 /** 文字を入力する欄（テキスト入力・複数行・選択リスト・編集可能な要素）か。ここではブラウザ標準のコピー・貼り付けに任せる。 */
 function isTextEntry(el) {
@@ -11271,7 +11344,7 @@ function sendToTab(move) {
   renderTabs(); $('hint').textContent = t('sentToTab', { n: newIds.length, name: tabs[target].name });
 }
 function initLibrary() {
-  loadLibrary(); renderLibrary();
+  loadLibrary(); renderLibrary(); renderLibBackups(); $('libBackupNow').onclick = backupLibraryNow; $('libBackupRestore').onclick = restoreLibBackup;
   $('libItem').addEventListener('change', renderLibrary); $('libSearch').addEventListener('input', renderLibrary);
   $('libPlace').onclick = () => setMode('library'); $('libSave').onclick = saveToLibrary; $('libRemove').onclick = removeFromLibrary; $('libExport').onclick = exportLibrary;
   $('libImport').onclick = () => $('libFile').click(); $('libFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importLibrary(f); });
@@ -11999,6 +12072,7 @@ function fit() {
   draw();
 }
 canvas.addEventListener('pointerdown', e => {
+  hideCtxMenu(); /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
   if (isMac && e.ctrlKey && e.button === 0) return;
   e.preventDefault(); canvas.focus(); const p = local(e); canvas.setPointerCapture(e.pointerId);
@@ -12056,9 +12130,16 @@ canvas.addEventListener('pointermove', e => {
   draw();
 });
 /** 右クリック：曲線（ペン・ベジェ）の経由点を、その場で足す／消す。点の上＝その点を削除、曲線の上＝そこに経由点を追加。描いている途中は何もしない。 */
+/** 右クリックのメニュー（選んだ図形を部品ライブラリに登録する）を、クリックした位置のそばに出す。 */
+function showCtxMenu(e) {
+  const menu = $('ctxMenu'), p = local(e), w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;
+  menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px'; menu.hidden = false;
+}
+function hideCtxMenu() { $('ctxMenu').hidden = true; }
 canvas.addEventListener('contextmenu', e => {
-  e.preventDefault();
+  e.preventDefault(); hideCtxMenu();
   if (!['select', 'bezier', 'path'].includes(mode) || stage) return;
+  if (mode === 'select' && selected.size > 1) { showCtxMenu(e); return; } /* 複数選択（全体選択など）：メニュー。ペンの経由点の編集は、選択が1つ以下のとき */
   const w = world(local(e)), r = 7 / scale, curves = doc.shapes.filter(s => visible(s) && editable(s) && (s.type === 'path' || s.type === 'bezier')).reverse();
   for (const s0 of curves) { /* まず、経由点の上かどうか */
     const s = s0.type === 'path' ? s0 : toPath(s0), i = s.nodes.findIndex(n => distance(n, w) <= r);
@@ -12068,6 +12149,7 @@ canvas.addEventListener('contextmenu', e => {
     if (distToShape(s0, w) > r) continue; const s = s0.type === 'path' ? s0 : toPath(s0), next = pathInsertNode(s, projectOnPath(s, w).s);
     selected = new Set([s0.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('nodeAdded'); return;
   }
+  if (mode === 'select' && selected.size >= 1) showCtxMenu(e); /* 経由点・曲線の上でなければ、選んだ図形のメニュー */
 });
 canvas.addEventListener('dblclick', e => {
   const p = local(e), w = world(p);
@@ -12186,7 +12268,7 @@ window.addEventListener('keydown', e => {
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
   else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }
