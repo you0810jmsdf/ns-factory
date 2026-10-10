@@ -99,6 +99,14 @@ function makeThreeViewOutlines() {
   const fmt = v => String(+v.toFixed(2));
   $('hint').textContent = t('threeViewMakeDone', { w: fmt(r.width), h: fmt(r.height), d: fmt(r.depth) });
 }
+/** 円を描いている最中の読み：中心 c とカーソル p から半径・直径（mm）と表示する文字。 */
+function circleReadout(c, p) { const r = distance(c, p); return { r, d: r * 2, text: t('circleLive', { r: r.toFixed(1), d: (r * 2).toFixed(1) }) }; }
+/** 円ツールで中心から円周へドラッグしている間、カーソルのそばに「半径・直径」をリアルタイムで出す。 */
+function drawCircleReadout() {
+  if (mode !== 'circle' || gesture?.kind !== 'draw') return;
+  const { text } = circleReadout(gesture.start, cursor);
+  ctx.save(); ctx.setLineDash([]); ctx.fillStyle = '#c9a96e'; ctx.font = `${11 / scale}px sans-serif`; ctx.fillText(text, cursor.x + 8 / scale, cursor.y - 8 / scale); ctx.restore();
+}
 /** カーソルから他の 2 つの枠へ伸ばす線（水色）。上・右の図では 45°の線を通って奥行きを移し、奥行きの数字も出す。 */
 function drawThreeViewGuides() {
   const g = threeViewCursorLines(cursor, threeViewLayout); if (!g) return;
@@ -2059,6 +2067,7 @@ function draw() {
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
+  drawCircleReadout();
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
   if (stage?.kind === 'arc3') { const pv = stage.pts.length >= 2 ? arcThroughPoints(stage.pts[0], stage.pts[1], cursor) : null; strokeShape(pv || { type: 'line', x1: stage.pts[0].x, y1: stage.pts[0].y, x2: (stage.pts[1] || cursor).x, y2: (stage.pts[1] || cursor).y }, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
   if (stage?.kind === 'arcR') { const ang = Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x); strokeShape({ type: 'line', x1: stage.center.x, y1: stage.center.y, x2: stage.center.x + stage.r * Math.cos(ang), y2: stage.center.y + stage.r * Math.sin(ang) }, '#c9a96e'); }
