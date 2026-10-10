@@ -434,8 +434,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=7ae93f8a","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=650672da","./help/ja.js":"./help/ja.js?v=d1667dad","./i18n.js":"./i18n.js?v=3a91be58","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=adf675dc","./threeview.js":"./threeview.js?v=c82827a1","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=7ae93f8a"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=f43a9289","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=fb8fb0b0","./help/ja.js":"./help/ja.js?v=50d8d42b","./i18n.js":"./i18n.js?v=e7f4deb5","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=adf675dc","./threeview.js":"./threeview.js?v=c82827a1","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=f43a9289"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1286,6 +1286,8 @@ const MESSAGES = {
     "threeViewFrameWhere": "その四角は右上（どの枠でもない場所）にあります。正面・上・右のどこかに置いてください",
     "threeViewFrameDone": "{view}の枠にしました（正面の枠：幅 {w}・高さ {h}・奥行き {d} mm）。残りの枠は奥行きから作りました。描いた形がはみ出せば、枠はさらに広がります",
     "threeViewFrameResetDone": "枠を標準の大きさに戻しました",
+    "threeViewMini": "立体（ここをドラッグで回す）",
+    "threeViewMiniNone": "正面に閉じた形を描くと、ここに立体が出ます",
     "threeViewSolidInfo": "三面図から組み立てた立体：幅 {w}・高さ {h}・奥行き {d} mm（輪切り {n} 段）",
     "threeViewSolidNone": "正面の枠に閉じた形（四角など）を描くと、ここに立体が出ます。上・右の枠の閉じた形も使います",
     "hint3dThreeView": "三面図から組み立てた立体です。左ドラッグ：回転／右ドラッグ・Shift：移動／ホイール：ズーム。「4分割」で正面・上・右から見た図と比べられます",
@@ -2042,6 +2044,8 @@ const MESSAGES = {
     "threeViewFrameWhere": "That rectangle sits at the upper right (no view there). Place it in the front, top or right area",
     "threeViewFrameDone": "Set as the {view} box (front box: width {w}, height {h}, depth {d} mm). The other boxes were made from the depth. Boxes still grow if you draw beyond them",
     "threeViewFrameResetDone": "Boxes reset to the standard size",
+    "threeViewMini": "Solid (drag here to turn)",
+    "threeViewMiniNone": "Draw a closed shape in the front view and the solid appears here",
     "threeViewSolidInfo": "Solid built from the three views: width {w}, height {h}, depth {d} mm ({n} slices)",
     "threeViewSolidNone": "Draw a closed shape (such as a rectangle) in the Front view box and the solid appears here. Closed shapes in the top and right boxes are used too",
     "hint3dThreeView": "This solid is built from your three views. Left drag: rotate / right drag or Shift: pan / wheel: zoom. Quad view compares it with the front, top and right views",
@@ -10320,7 +10324,7 @@ const HELP_JA = {
     {
       "id": "three-view",
       "title": "三面図から立体まで（正面・上・右から見た図）",
-      "body": "正面・上・右から見た3つの図を描いて、最後に立体で確かめる機能です。順番にやれば、中学生でもできます。\n【準備】上の「三面図（正面・上・横）」にチェックを入れます。画面に3つの枠が出ます。左下が「正面から見た図」、その真上が「上から見た図」、その真右が「右から見た図」です。\n【枠を自分で決めたいとき】まっすぐな四角を描いて選び、「選んだ四角を枠にする」を押します。正面の場所に描いた四角なら正面の枠に（奥行きは「奥行き」の数字）、上の場所なら幅と奥行きを、右の場所なら高さと奥行きを決めます。残りの枠はそこから自動で作られ、この指定は保存にも残ります。「枠を標準に戻す」で元に戻ります。\n【手順1 正面を描く】「正面から見た図」の枠の中に、正面の形を描きます（四角・円・折れ線など、閉じた形）。形の角や端から、上の枠へ縦の点線、右の枠へ横の点線が伸びます。点線は「正面の図とそろう場所」です。\n【手順2 上と右の外形を作る】「奥行き」に手前から奥までの長さ（mm）を入れて「上と右の図を作る」を押します。正面の形をぜんぶ囲む四角と奥行きから、上の図と右の図の外形（四角）が自動で描かれます。同じ四角がもうあるときは作りません。「元に戻す」で取り消せます。\n【手順3 細かい形を足す】上の図・右の図の枠の中に、点線に合わせて描き足します。点線の近くでクリックすると、横か縦の位置が点線にぴったり合います（上の「スナップ」が切でも働きます）。上・右の枠では、カーソルのそばに奥行きの数字（mm）が出ます。上の図で描いた奥行きは、右上の45°の線を通って右の図へ移ります（上の図は枠の下の辺が手前、右の図は枠の左の辺が手前）。\n【手順4 立体で確かめる】上の「3D」を押すと、三面図から組み立てた立体が出ます。左ドラッグで回転、右ドラッグ（またはShift+ドラッグ）で移動、ホイールで拡大縮小。右の「3D（折りたたみ）」カードで「4分割」にすると、正面・上・右から見た図と並べて比べられます。「三面図 SVG」「三面図を印刷」も同じ立体から作ります。\n【しくみ】正面の形の高さを薄い輪切りにして、それぞれを上の形と右の形で切り取り、積み上げています。上や右の枠に閉じた形が無いときは四角として扱います。\n【覚えておくこと】枠は目安で、図形ではありません（保存や書き出しには入りません）。枠は描いた形に合わせて自動で広がります。手前の線（上の枠の下の辺・右の枠の左の辺）は、正面の図が上や右へ大きくはみ出さない限り動きません。細かいくぼみ・穴・複数の部品は、まだ立体にできません。まだ作っている途中の機能です。"
+      "body": "正面・上・右から見た3つの図を描いて、最後に立体で確かめる機能です。順番にやれば、中学生でもできます。\n【準備】上の「三面図（正面・上・横）」にチェックを入れます。画面に3つの枠が出ます。左下が「正面から見た図」、その真上が「上から見た図」、その真右が「右から見た図」です。\n【枠を自分で決めたいとき】まっすぐな四角を描いて選び、「選んだ四角を枠にする」を押します。正面の場所に描いた四角なら正面の枠に（奥行きは「奥行き」の数字）、上の場所なら幅と奥行きを、右の場所なら高さと奥行きを決めます。残りの枠はそこから自動で作られ、この指定は保存にも残ります。「枠を標準に戻す」で元に戻ります。\n【手順1 正面を描く】「正面から見た図」の枠の中に、正面の形を描きます（四角・円・折れ線など、閉じた形）。形の角や端から、上の枠へ縦の点線、右の枠へ横の点線が伸びます。点線は「正面の図とそろう場所」です。\n【手順2 上と右の外形を作る】「奥行き」に手前から奥までの長さ（mm）を入れて「上と右の図を作る」を押します。正面の形をぜんぶ囲む四角と奥行きから、上の図と右の図の外形（四角）が自動で描かれます。同じ四角がもうあるときは作りません。「元に戻す」で取り消せます。\n【手順3 細かい形を足す】上の図・右の図の枠の中に、点線に合わせて描き足します。点線の近くでクリックすると、横か縦の位置が点線にぴったり合います（上の「スナップ」が切でも働きます）。上・右の枠では、カーソルのそばに奥行きの数字（mm）が出ます。上の図で描いた奥行きは、右上の45°の線を通って右の図へ移ります（上の図は枠の下の辺が手前、右の図は枠の左の辺が手前）。\n【右上の立体】正面に閉じた形があると、右上の空き（45°の線のある区画）に小さな立体がいつも出ていて、描くたびに変わります。その中をドラッグすると回ります。\n【手順4 立体で確かめる】上の「3D」を押すと、三面図から組み立てた立体が出ます。左ドラッグで回転、右ドラッグ（またはShift+ドラッグ）で移動、ホイールで拡大縮小。右の「3D（折りたたみ）」カードで「4分割」にすると、正面・上・右から見た図と並べて比べられます。「三面図 SVG」「三面図を印刷」も同じ立体から作ります。\n【しくみ】正面の形の高さを薄い輪切りにして、それぞれを上の形と右の形で切り取り、積み上げています。上や右の枠に閉じた形が無いときは四角として扱います。\n【覚えておくこと】枠は目安で、図形ではありません（保存や書き出しには入りません）。枠は描いた形に合わせて自動で広がります。手前の線（上の枠の下の辺・右の枠の左の辺）は、正面の図が上や右へ大きくはみ出さない限り動きません。細かいくぼみ・穴・複数の部品は、まだ立体にできません。まだ作っている途中の機能です。"
     },
     {
       "id": "hardware",
@@ -10464,7 +10468,7 @@ const HELP_EN = {
     {
       "id": "three-view",
       "title": "From three views to a solid (front / top / right)",
-      "body": "Draw the front, top and right views, then check the result as a solid. Follow the steps in order.\n[Setup] Tick “3 views (front / top / right)” at the top. Three boxes appear: the front view at the lower left, the top view right above it, and the right view to its right.\n[Choosing the boxes yourself] Draw a straight rectangle, select it and press “Use selected rectangle as box”. A rectangle in the front area becomes the front box (depth from the “Depth” field); one in the top area sets the width and depth; one in the right area sets the height and depth. The other boxes are made from it, and the choice is saved with the file. “Reset boxes” returns to the standard size.\n[Step 1 Draw the front] Draw the front shape inside the Front view box (a closed shape such as a rectangle, circle or polyline). Dotted lines run from its corners and ends: vertical ones into the top box and horizontal ones into the right box. They mark where the other views line up with the front view.\n[Step 2 Make the top and right outlines] Type the depth (front to back, in mm) into “Depth” and press “Make top & right views”. From the box enclosing everything in the front view and that depth, the outlines (rectangles) of the top and right views are drawn. Nothing is made if the same rectangles already exist. Undo removes them.\n[Step 3 Add the details] Draw the details inside the top and right boxes, following the dotted lines. Clicking near a dotted line pulls the point exactly onto it, sideways or up-and-down (this works even when Snap is off). In the top and right boxes the depth in mm is shown next to the cursor. The depth you draw in the top view travels along the 45° line at the upper right into the right view (the bottom edge of the top box and the left edge of the right box are the near side).\n[Step 4 Check it as a solid] Press 3D at the top and a solid built from your three views appears. Left-drag rotates, right-drag (or Shift+drag) pans, the wheel zooms. In the “3D (folding)” card on the right, choose Quad view to see it next to the front, top and right views. “Views SVG” and “Print views” use the same solid.\n[How it works] The height of the front shape is cut into thin slices; each slice is trimmed by the top shape and the right shape, then they are stacked. If the top or right box has no closed shape, a rectangle is assumed.\n[Keep in mind] The boxes are only guides, not shapes (they are not saved or exported). They grow automatically to fit what you draw. The near-side lines (bottom edge of the top box, left edge of the right box) stay put unless the front view grows far upward or to the right. Small hollows, holes and multiple parts cannot be turned into a solid yet. This feature is still being built."
+      "body": "Draw the front, top and right views, then check the result as a solid. Follow the steps in order.\n[Setup] Tick “3 views (front / top / right)” at the top. Three boxes appear: the front view at the lower left, the top view right above it, and the right view to its right.\n[Choosing the boxes yourself] Draw a straight rectangle, select it and press “Use selected rectangle as box”. A rectangle in the front area becomes the front box (depth from the “Depth” field); one in the top area sets the width and depth; one in the right area sets the height and depth. The other boxes are made from it, and the choice is saved with the file. “Reset boxes” returns to the standard size.\n[Step 1 Draw the front] Draw the front shape inside the Front view box (a closed shape such as a rectangle, circle or polyline). Dotted lines run from its corners and ends: vertical ones into the top box and horizontal ones into the right box. They mark where the other views line up with the front view.\n[Step 2 Make the top and right outlines] Type the depth (front to back, in mm) into “Depth” and press “Make top & right views”. From the box enclosing everything in the front view and that depth, the outlines (rectangles) of the top and right views are drawn. Nothing is made if the same rectangles already exist. Undo removes them.\n[Step 3 Add the details] Draw the details inside the top and right boxes, following the dotted lines. Clicking near a dotted line pulls the point exactly onto it, sideways or up-and-down (this works even when Snap is off). In the top and right boxes the depth in mm is shown next to the cursor. The depth you draw in the top view travels along the 45° line at the upper right into the right view (the bottom edge of the top box and the left edge of the right box are the near side).\n[Solid at the upper right] Once the front view has a closed shape, a small solid is always shown in the empty upper-right area (where the 45° line is) and changes as you draw. Drag inside it to turn it.\n[Step 4 Check it as a solid] Press 3D at the top and a solid built from your three views appears. Left-drag rotates, right-drag (or Shift+drag) pans, the wheel zooms. In the “3D (folding)” card on the right, choose Quad view to see it next to the front, top and right views. “Views SVG” and “Print views” use the same solid.\n[How it works] The height of the front shape is cut into thin slices; each slice is trimmed by the top shape and the right shape, then they are stacked. If the top or right box has no closed shape, a rectangle is assumed.\n[Keep in mind] The boxes are only guides, not shapes (they are not saved or exported). They grow automatically to fit what you draw. The near-side lines (bottom edge of the top box, left edge of the right box) stay put unless the front view grows far upward or to the right. Small hollows, holes and multiple parts cannot be turned into a solid yet. This feature is still being built."
     },
     {
       "id": "hardware",
@@ -10605,12 +10609,32 @@ function applyLanguage(lang) {
 const world = p => ({ x: (p.x - origin.x) / scale, y: (p.y - origin.y) / scale });
 const local = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 /* 三面図（正面・上・右から見た図）の手伝い。計算は threeview.js。ここでは枠・45°の線・点線・奥行きの読みを描く。枠は目安で図形ではなく、描いた形に合わせて広がる。 */
-let threeViewLayout = THREE_VIEW_LAYOUT, threeViewMarksCache = threeViewMarks([]);
+let threeViewLayout = THREE_VIEW_LAYOUT, threeViewMarksCache = threeViewMarks([]), threeViewSolidCache = null, miniCam = { yaw: -35, pitch: -55 };
 const threeViewOn = () => $('threeView').checked;
 /** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
 /** 枠の出発点：文書に「枠の指定」（選んだ四角を枠にしたもの）があればそれ、無ければ標準の枠。 */
 function threeViewBase() { const f = doc.threeView; return threeViewFrameValid(f) ? threeViewBaseFrom(f.front, f.depth) : THREE_VIEW_LAYOUT; }
-function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); }
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout) : null; }
+/** 右上の空き（45°の線のある区画）：ここに小さな立体画面を出す。文書座標の四角。 */
+function threeViewMiniBox() { const { top, side } = threeViewLayout; return { x: side.x, y: top.y, w: side.w, h: top.h }; }
+/** 小さな立体画面：三面図から組み立てた立体を、右上の空きに描く（描くたびに更新・この中をドラッグすると回る）。点線はこの上に描かれる。 */
+function drawThreeViewMini() {
+  const b = threeViewMiniBox(); if (!(b.w > 0) || !(b.h > 0)) return;
+  ctx.save(); ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(8,8,8,0.82)'; ctx.fillRect(b.x, b.y, b.w, b.h); ctx.strokeStyle = '#6a5a30'; ctx.lineWidth = 1 / scale; ctx.strokeRect(b.x, b.y, b.w, b.h);
+  const solid = threeViewSolidCache;
+  ctx.font = `${11 / scale}px sans-serif`; ctx.fillStyle = '#8a7a50'; ctx.fillText(t(solid ? 'threeViewMini' : 'threeViewMiniNone'), b.x + 4 / scale, b.y + b.h - 5 / scale);
+  if (!solid) { ctx.restore(); return; }
+  const W = b.w * scale, H = b.h * scale, pts = solid.faces.flatMap(f => f.points);
+  const lo = k => Math.min(...pts.map(p => p[k])), hi = k => Math.max(...pts.map(p => p[k]));
+  const size = Math.max(hi('x') - lo('x'), hi('y') - lo('y'), hi('z') - lo('z'), 1);
+  const camMini = { yaw: miniCam.yaw, pitch: miniCam.pitch, distance: size * 4, ortho: true, zoom: Math.min(W, H) * 0.5 / size, target: v3((lo('x') + hi('x')) / 2, -(lo('y') + hi('y')) / 2, (lo('z') + hi('z')) / 2) };
+  const flipped = solid.faces.map(f => ({ ...f, points: f.points.map(p => v3(p.x, -p.y, p.z)) })); /* 3D 画面（WebGL）と同じく y を反転して同じ向きに見せる */
+  const proj = project(flipped, camMini, { width: W, height: H });
+  ctx.beginPath(); ctx.rect(b.x, b.y, b.w, b.h); ctx.clip(); ctx.lineWidth = 0.5 / scale; ctx.strokeStyle = '#141414';
+  for (const f of proj) { if (f.points.length < 3) continue; const c = partColor(f, false).map(v => Math.round(v * 255 * f.shade)); ctx.beginPath(); f.points.forEach((q, i) => { const x = b.x + q.x / scale, y = b.y + q.y / scale; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath(); ctx.fillStyle = `rgb(${c.join(',')})`; ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+}
 /** 「選んだ四角を枠にする」：まっすぐな四角を 1 つ選んで押すと、その四角がある枠（正面・上・右）の枠そのものにし、残りの枠は奥行きから作る。文書に残る（保存される）。 */
 function setThreeViewFrame() {
   const picked = doc.shapes.filter(s => selected.has(s.id) && editable(s));
@@ -12651,7 +12675,7 @@ function draw() {
     ctx.strokeStyle = '#242424'; ctx.stroke();
   }
   if ($('printOverlay').checked) drawPrintOverlay();
-  if ($('threeView').checked) { drawThreeViewFrames(); drawThreeViewStaticGuides(); }
+  if ($('threeView').checked) { drawThreeViewMini(); drawThreeViewFrames(); drawThreeViewStaticGuides(); }
   ctx.beginPath(); ctx.moveTo(lo.x, 0); ctx.lineTo(hi.x, 0); ctx.moveTo(0, lo.y); ctx.lineTo(0, hi.y); ctx.strokeStyle = '#454039'; ctx.stroke();
   ctx.lineWidth = 1.5 / scale;
   const hl = aiHighlight.until > Date.now() ? aiHighlight.ids : null;
@@ -12747,6 +12771,7 @@ canvas.addEventListener('pointerdown', e => {
   if (isMac && e.ctrlKey && e.button === 0) return;
   e.preventDefault(); canvas.focus(); const p = local(e); canvas.setPointerCapture(e.pointerId);
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
+  if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
@@ -12794,6 +12819,7 @@ canvas.addEventListener('pointerdown', e => {
 });
 canvas.addEventListener('pointermove', e => {
   const p = local(e);
+  if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
   else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
@@ -12842,6 +12868,7 @@ canvas.addEventListener('pointerup', e => {
   cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   gesture = null;
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+  if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
