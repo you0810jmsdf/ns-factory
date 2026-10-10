@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>首席幕僚室 | N's factory</title>
+<!-- Google tag (gtag.js) -->
+<script>
+// 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
+// GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<meta name="description" content="N's factory 首席幕僚室。各幕僚を束ねる自作のAI秘書「Jarvis」の部屋です。司令官（事業主）専用の入口と、開発録の一覧があります。">
+<style>
+:root{
+  --ink:#1D1D1F;
+  --muted:#636366;
+  --line:#E8E8ED;
+  --soft:#F5F5F7;
+  --paper:#FFFFFF;
+  --accent:#A0785A;
+  --accent-soft:#F3ECE4;
+  --accent-dark:#7A5540;
+  --danger:#C0392B;
+  --ok:#2E7D32;
+  --radius:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.10);
+  font-family:-apple-system,'SF Pro Display','SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.nav{
+  position:sticky;top:0;z-index:10;
+  height:56px;
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.nav-title{font-size:14px;font-weight:800;letter-spacing:.04em}
+.nav-spacer{flex:1}
+.nav-link{font-size:13px;color:var(--muted);padding:6px 10px;border-radius:var(--radius)}
+.nav-link:hover{background:var(--soft);color:var(--ink)}
+
+.hero{
+  padding:48px 24px 24px;
+  background:linear-gradient(135deg,#fff,var(--accent-soft));
+  border-bottom:1px solid var(--line);
+}
+.hero-inner{
+  max-width:1040px;margin:0 auto;
+  display:flex;align-items:center;gap:28px;
+}
+.hero-portrait{
+  width:132px;height:132px;flex:none;object-fit:contain;
+}
+.hero-text{flex:1;min-width:0}
+.hero-eyebrow{
+  font-size:11px;letter-spacing:.18em;color:var(--accent-dark);
+  font-weight:700;margin-bottom:6px;
+}
+.hero-text h1{font-size:28px;font-weight:800;letter-spacing:.02em;margin-bottom:8px}
+.lead{color:var(--muted);font-size:15px}
+
+.hub{padding:44px 24px 72px}
+.hub-inner{max-width:1040px;margin:0 auto}
+.section-label{
+  font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--accent-dark);
+  padding-bottom:8px;margin:34px 0 16px;border-bottom:1px solid var(--line);
+}
+.section-label:first-child{margin-top:0}
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.tool-card{
+  display:block;padding:20px 22px;border:1px solid var(--line);border-radius:12px;
+  background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.05);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.tool-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.tool-card h3{font-size:16px;font-weight:800;margin:8px 0 6px}
+.tool-card p{font-size:13px;color:var(--muted);line-height:1.7}
+.tag{
+  display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
+  padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent-dark);
+}
+.tag.ext{background:#EAF3EA;color:var(--ok)}
+.tag.lock{background:#F8E9E7;color:var(--danger)}
+
+/* 司令官専用の入口 */
+.gate{
+  padding:22px 24px;border:1px dashed #D9B8B3;border-radius:12px;background:#FFFAF9;
+}
+.gate h3{font-size:16px;font-weight:800;margin:8px 0 8px}
+.gate p{font-size:13px;color:var(--muted);line-height:1.85}
+.gate-status{margin-top:12px;font-weight:700;color:var(--ink)}
+.gate-btn,.gate-open{
+  display:inline-block;margin-top:14px;padding:10px 18px;border-radius:999px;
+  font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;
+}
+.gate-btn{border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.gate-btn:hover{background:var(--soft)}
+.gate-btn[disabled]{opacity:.55;cursor:default}
+.gate-open{border:0;background:var(--accent-dark);color:#fff}
+.gate-open:hover{background:var(--accent)}
+.gate [hidden]{display:none}
+
+.note{
+  margin-top:36px;padding:18px 20px;border-radius:12px;
+  background:var(--soft);font-size:13px;color:var(--muted);line-height:1.85;
+}
+@media(max-width:640px){
+  .hero{padding:32px 18px 20px}
+  .hero-inner{flex-direction:column;align-items:flex-start;gap:16px}
+  .hero-portrait{width:96px;height:96px}
+  .hero-text h1{font-size:23px}
+  .hub{padding:36px 18px 64px}
+  .tool-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">首席幕僚室</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="/ns-factory/">TOPへ戻る</a>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <img class="hero-portrait" src="../assets/staff/shuseki.png" alt="首席幕僚">
+    <div class="hero-text">
+      <div class="hero-eyebrow">SHUSEKI-SHITSU / CHIEF OF STAFF</div>
+      <h1>首席幕僚室</h1>
+      <p class="lead">各幕僚を束ねる、自作のAI秘書「Jarvis」の部屋です。</p>
+    </div>
+  </div>
+</section>
+
+<main class="hub">
+  <div class="hub-inner">
+
+    <div class="section-label">司令官専用の入口</div>
+    <section class="gate" aria-labelledby="gate-title">
+      <span class="tag lock">立入制限</span>
+      <h3 id="gate-title">司令官（事業主）のみ立ち入り可</h3>
+      <p>
+        この先の Jarvis は、事業主のパソコンの中だけで動いています。<br>
+        リンクの行き先は、パソコン自身（127.0.0.1）です。ほかの方のパソコンや、スマホでは開きません。
+      </p>
+      <p class="gate-status" id="gate-status" role="status"></p>
+      <button type="button" class="gate-btn" id="gate-check">司令官の方：このパソコンで Jarvis を確認する</button>
+      <a class="gate-open" id="gate-open" href="http://127.0.0.1:8765/" hidden>Jarvis を開く（このパソコンのみ）</a>
+    </section>
+
+    <div class="section-label">開発の記録</div>
+    <div class="tool-grid">
+      <a class="tool-card" href="/ns-factory/note-jarvis.html">
+        <span class="tag">LIVE</span>
+        <h3>革職人のAI秘書 Jarvis開発録・日記 記事一覧</h3>
+        <p>自作のAI秘書を作りながら書いた、開発録と日記の一覧。画像とタイトルから、note の記事へ飛べます。</p>
+      </a>
+      <a class="tool-card" href="https://note.com/you0810jmsdf/m/m2d7033488f89" target="_blank" rel="noopener">
+        <span class="tag ext">note</span>
+        <h3>連載マガジン「革職人のAI秘書 Jarvis開発録」</h3>
+        <p>コードや設計、つまずきを書いた連載。前半は無料、後半の実装編は有料です。</p>
+      </a>
+    </div>
+
+    <div class="note">
+      首席幕僚室は、各幕僚室を束ねる窓口です。<br>
+      Jarvis そのものは、一般には公開していません。ここにあるのは、事業主本人の入口と、開発の記録の入口だけです。
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  var JARVIS = 'http://127.0.0.1:8765/';
+  var statusEl = document.getElementById('gate-status');
+  var checkBtn = document.getElementById('gate-check');
+  var openLink = document.getElementById('gate-open');
+  if (!statusEl || !checkBtn || !openLink) return;
+
+  function isOwnerDevice() {
+    // 管理画面で「この端末は作家自身」と設定したブラウザだけ、自動で確認する
+    try { return localStorage.getItem('nsf_ga_optout') === '1'; } catch (e) { return false; }
+  }
+
+  function probe() {
+    statusEl.textContent = '確認中…';
+    checkBtn.disabled = true;
+    var controller = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (controller) controller.abort(); }, 3000);
+    fetch(JARVIS + 'api/status', { mode: 'no-cors', cache: 'no-store', signal: controller ? controller.signal : undefined })
+      .then(function () {
+        clearTimeout(timer);
+        statusEl.textContent = 'このパソコンで Jarvis が動いています。';
+        openLink.hidden = false;
+        checkBtn.hidden = true;
+      })
+      .catch(function () {
+        clearTimeout(timer);
+        // 本番(https)のページから 127.0.0.1 への確認は、ブラウザが遮断することがある。
+        // 確認できなくても、リンクそのものは開ける（遷移は遮断されない）ので、出しておく
+        statusEl.textContent = 'Jarvis を確認できませんでした。Jarvis が起動していないか、ブラウザの「ローカルネットワークへのアクセス」の許可が必要かもしれません。確認せずに開くこともできます（司令官のパソコンのみ）。';
+        openLink.textContent = 'Jarvis を開く（確認せずに・このパソコンのみ）';
+        openLink.hidden = false;
+        checkBtn.disabled = false;
+      });
+  }
+
+  checkBtn.addEventListener('click', probe);
+  // 利用者のクリックなしに、127.0.0.1 へ接続を試みるのは、作家自身の端末だけにする
+  if (isOwnerDevice()) probe();
+})();
+</script>
+
+<script src="../assets/access-counter.js"></script>
+</body>
+</html>
