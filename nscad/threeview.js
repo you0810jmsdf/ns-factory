@@ -94,15 +94,18 @@ export function threeViewGuidePoints(s) {
  *  front: {xs 横の位置, ys 高さ}　top: {xs 横の位置, depths 奥行き}　side: {ys 高さ, depths 奥行き}（それぞれ小さい順・重複なし） */
 export function threeViewMarks(shapes, layout = THREE_VIEW_LAYOUT) {
   const sets = { front: { xs: new Set(), ys: new Set() }, top: { xs: new Set(), depths: new Set() }, side: { ys: new Set(), depths: new Set() } };
+  /* 点線の「出発点」：同じ位置の点が複数あるときは、行き先に一番近い点から伸ばす（線が図形の角や端から切れ目なくつながって見えるように） */
+  const from = { front: { xFrom: {}, yFrom: {} }, top: { xFrom: {}, depthFrom: {} }, side: { yFrom: {}, depthFrom: {} } };
+  const keep = (map, key, value, pick) => { map[key] = key in map ? pick(map[key], value) : value; };
   for (const s of shapes || []) for (const p of threeViewGuidePoints(s)) {
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
     const area = threeViewShapeArea(s, layout); if (!area) continue;
-    if (area === 'front') { sets.front.xs.add(keyOf(p.x)); sets.front.ys.add(keyOf(p.y)); }
-    else if (area === 'top') { sets.top.xs.add(keyOf(p.x)); sets.top.depths.add(keyOf(threeViewDepthOfTopY(p.y, layout))); }
-    else { sets.side.ys.add(keyOf(p.y)); sets.side.depths.add(keyOf(threeViewDepthOfSideX(p.x, layout))); }
+    if (area === 'front') { const kx = keyOf(p.x), ky = keyOf(p.y); sets.front.xs.add(kx); sets.front.ys.add(ky); keep(from.front.xFrom, kx, p.y, Math.min); keep(from.front.yFrom, ky, p.x, Math.max); }
+    else if (area === 'top') { const kx = keyOf(p.x), kd = keyOf(threeViewDepthOfTopY(p.y, layout)); sets.top.xs.add(kx); sets.top.depths.add(kd); keep(from.top.xFrom, kx, p.y, Math.max); keep(from.top.depthFrom, kd, p.x, Math.max); }
+    else { const ky = keyOf(p.y), kd = keyOf(threeViewDepthOfSideX(p.x, layout)); sets.side.ys.add(ky); sets.side.depths.add(kd); keep(from.side.yFrom, ky, p.x, Math.min); keep(from.side.depthFrom, kd, p.y, Math.min); }
   }
   const sorted = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, [...v].sort((a, b) => a - b)]));
-  return { front: sorted(sets.front), top: sorted(sets.top), side: sorted(sets.side) };
+  return { front: { ...sorted(sets.front), ...from.front }, top: { ...sorted(sets.top), ...from.top }, side: { ...sorted(sets.side), ...from.side } };
 }
 
 /** ある枠で描くときに合わせたい位置 {xs, ys}（文書座標）。
@@ -118,20 +121,22 @@ export function threeViewTargets(area, marks, layout = THREE_VIEW_LAYOUT) {
 }
 
 /** 描いてある図形から他の枠へ伸ばす点線（いつも表示）。{x1,y1,x2,y2, from:元の枠, to:行き先の枠} の配列。
- *  奥行きを移す線は 45° の線との交点まで伸ばす（上の図の横線 → 45°線 → 右の図の縦線、の形になる）。 */
+ *  線は図形の角や端そのものから出発し、行き先の枠の向こう側のふちまで切れ目なく伸ばす（どの線がどこへ行くか見失わないように）。
+ *  奥行きを移す線は、点 → 45° の線 → 行き先の枠、の折れ線（2 本）になる。 */
 export function threeViewGuideLines(marks, layout = THREE_VIEW_LAYOUT) {
-  const { front, top, side } = layout, out = [];
-  const tf = threeViewTargets('front', marks, layout), tt = threeViewTargets('top', marks, layout), ts = threeViewTargets('side', marks, layout);
-  const bottomOfTop = top.y + top.h;
-  for (const x of tf.xs) out.push({ x1: x, y1: bottomOfTop, x2: x, y2: front.y + front.h, from: 'top', to: 'front' });            /* 上の図 → 正面（縦線） */
-  for (const y of tf.ys) out.push({ x1: side.x, y1: y, x2: front.x, y2: y, from: 'side', to: 'front' });                           /* 右の図 → 正面（横線） */
-  for (const x of tt.xs) out.push({ x1: x, y1: front.y, x2: x, y2: top.y, from: 'front', to: 'top' });                           /* 正面 → 上の図（縦線） */
-  for (const y of tt.ys) out.push({ x1: top.x, y1: y, x2: threeViewSideXOfDepth(threeViewDepthOfTopY(y, layout), layout), y2: y, from: 'side', to: 'top' }); /* 右の図の奥行き → 45°線 → 上の図（横線） */
-  for (const y of ts.ys) out.push({ x1: front.x + front.w, y1: y, x2: side.x + side.w, y2: y, from: 'front', to: 'side' });       /* 正面 → 右の図（横線） */
-  for (const x of ts.xs) out.push({ x1: x, y1: threeViewTopYOfDepth(threeViewDepthOfSideX(x, layout), layout), x2: x, y2: side.y + side.h, from: 'top', to: 'side' }); /* 上の図の奥行き → 45°線 → 右の図（縦線） */
+  if (!marks) return [];
+  const { front, top, side } = layout, out = [], bottomOfTop = top.y + top.h;
+  const at = (map, key, fallback) => { const v = map && map[keyOf(key)]; return Number.isFinite(v) ? v : fallback; };
+  for (const x of marks.front.xs) out.push({ x1: x, y1: at(marks.front.xFrom, x, front.y), x2: x, y2: top.y, from: 'front', to: 'top' });                         /* 正面の横の位置 → 上の図（縦線） */
+  for (const y of marks.front.ys) out.push({ x1: at(marks.front.yFrom, y, front.x + front.w), y1: y, x2: side.x + side.w, y2: y, from: 'front', to: 'side' });     /* 正面の高さ → 右の図（横線） */
+  for (const x of marks.top.xs) out.push({ x1: x, y1: at(marks.top.xFrom, x, bottomOfTop), x2: x, y2: front.y + front.h, from: 'top', to: 'front' });               /* 上の図の横の位置 → 正面（縦線） */
+  for (const d of marks.top.depths) { const y = threeViewTopYOfDepth(d, layout), mx = threeViewSideXOfDepth(d, layout);                                              /* 上の図の奥行き → 45° の線 → 右の図（縦線） */
+    out.push({ x1: at(marks.top.depthFrom, d, top.x + top.w), y1: y, x2: mx, y2: y, from: 'top', to: 'side' }); out.push({ x1: mx, y1: y, x2: mx, y2: side.y + side.h, from: 'top', to: 'side' }); }
+  for (const y of marks.side.ys) out.push({ x1: at(marks.side.yFrom, y, side.x), y1: y, x2: front.x, y2: y, from: 'side', to: 'front' });                           /* 右の図の高さ → 正面（横線） */
+  for (const d of marks.side.depths) { const x = threeViewSideXOfDepth(d, layout), my = threeViewTopYOfDepth(d, layout);                                             /* 右の図の奥行き → 45° の線 → 上の図（横線） */
+    out.push({ x1: x, y1: at(marks.side.depthFrom, d, side.y), x2: x, y2: my, from: 'side', to: 'top' }); out.push({ x1: x, y1: my, x2: top.x, y2: my, from: 'side', to: 'top' }); }
   return out;
 }
-
 /** カーソルの位置から他の 2 つの枠へ伸ばす線と、奥行きの読み。{area, lines, depth}。枠の外なら null。 */
 export function threeViewCursorLines(p, layout = THREE_VIEW_LAYOUT) {
   const area = threeViewAreaAt(p, layout); if (!area) return null;
