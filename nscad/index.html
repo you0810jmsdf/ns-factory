@@ -433,8 +433,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=8bde7421","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=b4b30924","./help/ja.js":"./help/ja.js?v=c9efec02","./i18n.js":"./i18n.js?v=d45f025f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./threeview.js":"./threeview.js?v=3e47dc68","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=8bde7421"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=ed041d98","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=15251ba1","./help/ja.js":"./help/ja.js?v=cbc2122f","./i18n.js":"./i18n.js?v=9e7b9129","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=adf675dc","./threeview.js":"./threeview.js?v=c7acbbf8","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=ed041d98"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1272,6 +1272,9 @@ const MESSAGES = {
     "threeViewMakeNoFront": "先に「正面から見た図」の枠の中に、幅と高さのある形を描いてください",
     "threeViewMakeExists": "同じ外形がもうあります",
     "threeViewMakeDone": "上と右の図の外形を作りました（幅 {w}・高さ {h}・奥行き {d} mm）。細かい形はこの四角の上に、点線に合わせて描き足してください",
+    "threeViewSolidInfo": "三面図から組み立てた立体：幅 {w}・高さ {h}・奥行き {d} mm（輪切り {n} 段）",
+    "threeViewSolidNone": "正面の枠に閉じた形（四角など）を描くと、ここに立体が出ます。上・右の枠の閉じた形も使います",
+    "hint3dThreeView": "三面図から組み立てた立体です。左ドラッグ：回転／右ドラッグ・Shift：移動／ホイール：ズーム。「4分割」で正面・上・右から見た図と比べられます",
     "zoomOut": "縮小",
     "zoomIn": "拡大",
     "fit": "全体表示",
@@ -2009,6 +2012,9 @@ const MESSAGES = {
     "threeViewMakeNoFront": "First draw a shape with width and height inside the Front view box",
     "threeViewMakeExists": "Those outlines already exist",
     "threeViewMakeDone": "Made the top and right outlines (width {w}, height {h}, depth {d} mm). Draw the details on these boxes, following the dotted lines",
+    "threeViewSolidInfo": "Solid built from the three views: width {w}, height {h}, depth {d} mm ({n} slices)",
+    "threeViewSolidNone": "Draw a closed shape (such as a rectangle) in the Front view box and the solid appears here. Closed shapes in the top and right boxes are used too",
+    "hint3dThreeView": "This solid is built from your three views. Left drag: rotate / right drag or Shift: pan / wheel: zoom. Quad view compares it with the front, top and right views",
     "zoomOut": "Zoom out",
     "zoomIn": "Zoom in",
     "fit": "Fit all",
@@ -3693,10 +3699,10 @@ function foldMatrices(panels, folds, t = 1) {
 }
 /** 折り線を適用した全板の面（3D）を返す。 */
 function applyFolds(panels, folds, t = 1) { const ms = foldMatrices(panels, folds, t); return panels.flatMap(p => panelFaces(p, ms.get(p.id))); }
-/** カメラ {yaw, pitch, distance, zoom, target:{x,y,z}, ortho:true|false} から視線変換行列を返す。 */
+/** カメラ {yaw, pitch, roll, distance, zoom, target:{x,y,z}, ortho:true|false} から視線変換行列を返す。roll は視線まわりの回転（度・省略時 0）。 */
 function viewMatrix(cam) {
-  const target = cam.target || v3(), ry = rotationAxis(v3(0, 1, 0), cam.yaw || 0), rx = rotationAxis(v3(1, 0, 0), cam.pitch || 0);
-  return multiply(multiply(translation(0, 0, -(cam.distance || 300)), multiply(rx, ry)), translation(-target.x, -target.y, -target.z));
+  const target = cam.target || v3(), ry = rotationAxis(v3(0, 1, 0), cam.yaw || 0), rx = rotationAxis(v3(1, 0, 0), cam.pitch || 0), rz = rotationAxis(v3(0, 0, 1), cam.roll || 0);
+  return multiply(multiply(translation(0, 0, -(cam.distance || 300)), multiply(rz, multiply(rx, ry))), translation(-target.x, -target.y, -target.z));
 }
 /** 面を画面座標に投影：{points:[{x,y}], depth, shade, ...面}。平行投影は zoom[px/mm]、透視は distance で割る。 */
 function project(faces, cam, { width = 800, height = 600, light = v3(0.3, -0.5, 0.8) } = {}) {
@@ -3721,8 +3727,8 @@ function collisions(panels, folds, t = 1, { eps = 0.2 } = {}) {
   }
   return out;
 }
-/** 三面図（第三角法）のカメラ：上面＝革の表を正面から（2D と同じ向き）・正面＝手前の縁から・右側面＝右の縁から。 */
-function orthoViews() { return { top: { yaw: 0, pitch: 0, distance: 1000, ortho: true }, front: { yaw: 0, pitch: -90, distance: 1000, ortho: true }, right: { yaw: -90, pitch: 0, distance: 1000, ortho: true } }; }
+/** 三面図（第三角法）のカメラ：上面＝革の表を正面から（2D と同じ向き）・正面＝手前の縁から・右側面＝右の縁から（roll -90 で正面と同じく厚み（z）が上・手前が左になる）。 */
+function orthoViews() { return { top: { yaw: 0, pitch: 0, distance: 1000, ortho: true }, front: { yaw: 0, pitch: -90, distance: 1000, ortho: true }, right: { yaw: -90, pitch: 0, roll: -90, distance: 1000, ortho: true } }; }
 /** 三面図を SVG にする（mm 単位・ビューごとに <g id>・ラベル付き）。scale は 1=実寸。 */
 function viewsToSvg(faces3d, { scale = 1, gapMm = 20, labels = { front: 'FRONT', top: 'TOP', right: 'RIGHT' } } = {}) {
   const views = orthoViews(), groups = [], boxes = {};
@@ -3782,7 +3788,8 @@ __mods['threeview'] = (function(){
 //   右から見た図   … 高さ（y）は正面と同じ。横（x）が「奥行き」。枠の左の辺が手前、右に行くほど奥。
 // 上から見た図の奥行きを右から見た図へ移すときは、2つの枠の「手前どうし」が出会う角から
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
-const { bboxOf } = __mods['geometry'];
+const { bboxOf, flattenShape } = __mods['geometry'];
+const { v3, faceNormal } = __mods['sim3d'];
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
 const THREE_VIEW_LAYOUT = {
   top: { x: 0, y: 0, w: 300, h: 220 },
@@ -3970,7 +3977,74 @@ function threeViewSameRect(a, b, eps = 1e-6) {
   return pa.every((p, i) => Math.abs(p.x - pb[i].x) < eps && Math.abs(p.y - pb[i].y) < eps);
 }
 
-return {THREE_VIEW_LAYOUT, THREE_VIEW_MARGIN, threeViewAreaAt, threeViewShapeArea, threeViewFitLayout, threeViewDepthOfTopY, threeViewTopYOfDepth, threeViewDepthOfSideX, threeViewSideXOfDepth, threeViewMiter, threeViewGuidePoints, threeViewMarks, threeViewTargets, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect};
+// ---- 三面図から立体を組み立てる（3D 表示用） ----
+/** 閉じた図形（折れ線・なめらかな線・円）を点の列にする。閉じていなければ null。 */
+function closedPolygon(s, tol) {
+  if (!s || !['polyline', 'path', 'circle'].includes(s.type) || !(s.closed || s.type === 'circle')) return null;
+  let pts; try { pts = flattenShape(s, tol); } catch { return null; }
+  if (pts.length > 1 && Math.hypot(pts[0].x - pts.at(-1).x, pts[0].y - pts.at(-1).y) < 1e-9) pts = pts.slice(0, -1);
+  return pts.length >= 3 ? pts : null;
+}
+const polyArea = pts => Math.abs(pts.reduce((a, p, i) => { const q = pts[(i + 1) % pts.length]; return a + p.x * q.y - q.x * p.y; }, 0) / 2);
+/** 高さ y の横線が多角形と交わる区間（[x0, x1] の列・小さい順）。 */
+function threeViewSpansAt(poly, y) {
+  const xs = [];
+  for (let i = 0; i < poly.length; i++) { const p = poly[i], q = poly[(i + 1) % poly.length]; if ((p.y > y) !== (q.y > y)) xs.push(p.x + (y - p.y) * (q.x - p.x) / (q.y - p.y)); }
+  xs.sort((a, b) => a - b); const out = []; for (let i = 0; i + 1 < xs.length; i += 2) if (xs[i + 1] - xs[i] > 1e-9) out.push([xs[i], xs[i + 1]]); return out;
+}
+/** 多角形を長方形 [x0,x1]×[y0,y1] で切り取る（辺ごとに順に切る）。 */
+function threeViewClipToRect(poly, x0, x1, y0, y1) {
+  const lerp = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+  const clip = (pts, inside, cross) => { const out = []; for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length], ia = inside(a), ib = inside(b); if (ia) out.push(a); if (ia !== ib) out.push(cross(a, b)); } return out; };
+  let p = poly;
+  p = clip(p, q => q.x >= x0, (a, b) => lerp(a, b, (x0 - a.x) / (b.x - a.x)));
+  p = clip(p, q => q.x <= x1, (a, b) => lerp(a, b, (x1 - a.x) / (b.x - a.x)));
+  p = clip(p, q => q.y >= y0, (a, b) => lerp(a, b, (y0 - a.y) / (b.y - a.y)));
+  p = clip(p, q => q.y <= y1, (a, b) => lerp(a, b, (y1 - a.y) / (b.y - a.y)));
+  return p.filter((q, i) => i === 0 || Math.hypot(q.x - p[i - 1].x, q.y - p[i - 1].y) > 1e-9);
+}
+/** 三面図から立体を組み立てる。
+ *  正面の枠の閉じた形（いちばん大きいもの）＝正面の輪郭、上の枠の閉じた形＝上の輪郭（横 x × 奥行き）、右の枠の閉じた形＝右の輪郭（奥行き × 高さ）。
+ *  高さを薄い輪切りにし、各輪切りで「正面の横幅 × 右の奥行き」の長方形で上の輪郭を切り取った形を、輪切りの厚みぶん積み上げる。
+ *  上の輪郭が無ければ長方形（奥行きは右の輪郭から・それも無ければ depthDefault）。右の輪郭が無ければ奥行きいっぱい。正面に閉じた形が無ければ null。
+ *  3D の置き方（sim3d と同じ座標）：x はそのまま、高さは正面の下端を z=0 として上へ（z = 下端 − y）、奥行きは正面の下端の y を手前として奥へ y が小さくなる（y = 下端 − 奥行き）。
+ *  返り値：{ faces（sim3d.applyFolds と同じ形）, slabs, width, height, depth, hasTop, hasSide } */
+function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
+  const groups = { front: [], top: [], side: [] };
+  for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (!area) continue; const poly = closedPolygon(s, tolerance); if (poly) groups[area].push(poly); }
+  const biggest = list => list.length ? list.reduce((a, b) => polyArea(b) > polyArea(a) ? b : a) : null;
+  const F = biggest(groups.front); if (!F) return null;
+  const bottomOfTop = layout.top.y + layout.top.h, leftOfSide = layout.side.x;
+  const topPoly = biggest(groups.top), sidePoly = biggest(groups.side);
+  const T = topPoly ? topPoly.map(p => ({ x: p.x, y: bottomOfTop - p.y })) : null;      /* (x, 奥行き) */
+  const S = sidePoly ? sidePoly.map(p => ({ x: p.x - leftOfSide, y: p.y })) : null;    /* (奥行き, 高さ y) */
+  const fy = F.map(p => p.y), minY = Math.min(...fy), maxY = Math.max(...fy);
+  const depthMax = T ? Math.max(...T.map(p => p.y)) : S ? Math.max(...S.map(p => p.x)) : depthDefault;
+  if (!(maxY - minY > 1e-9) || !(depthMax > 1e-9)) return null;
+  let levels = [...new Set([...fy, ...(S ? S.map(p => p.y) : [])].map(v => Math.round(v * 1e6) / 1e6))].filter(v => v >= minY - 1e-9 && v <= maxY + 1e-9).sort((a, b) => a - b);
+  if (levels.length - 1 > maxSlices) levels = Array.from({ length: maxSlices + 1 }, (_, i) => minY + (maxY - minY) * i / maxSlices);
+  const base = maxY, to3 = (x, d, y) => v3(x, base - d, base - y);
+  const mean = pts => pts.reduce((a, p) => v3(a.x + p.x / pts.length, a.y + p.y / pts.length, a.z + p.z / pts.length), v3());
+  const faces = []; let slabs = 0;
+  for (let i = 0; i + 1 < levels.length; i++) {
+    const ya = levels[i], yb = levels[i + 1]; if (yb - ya < 1e-9) continue;
+    const ym = (ya + yb) / 2, xSpans = threeViewSpansAt(F, ym), dSpans = S ? threeViewSpansAt(S, ym) : [[0, depthMax]];
+    for (const [x0, x1] of xSpans) for (const [d0, d1] of dSpans) {
+      const poly = T ? threeViewClipToRect(T, x0, x1, d0, d1) : [{ x: x0, y: d0 }, { x: x1, y: d0 }, { x: x1, y: d1 }, { x: x0, y: d1 }];
+      if (poly.length < 3 || polyArea(poly) < 1e-6) continue;
+      slabs++;
+      const top = poly.map(p => to3(p.x, p.y, ya)), bottom = poly.map(p => to3(p.x, p.y, yb)), centre = mean(top.concat(bottom));
+      const push = (kind, pts) => { let n = faceNormal(pts); const c = mean(pts); if ((c.x - centre.x) * n.x + (c.y - centre.y) * n.y + (c.z - centre.z) * n.z < 0) { pts = [...pts].reverse(); n = faceNormal(pts); } faces.push({ kind, points: pts, normal: n, center: c, panelId: 'threeView', partId: 'threeView', color: null }); };
+      push('top', top); push('bottom', bottom);
+      for (let k = 0; k < poly.length; k++) { const j = (k + 1) % poly.length; push('side', [top[k], top[j], bottom[j], bottom[k]]); }
+    }
+  }
+  if (!slabs) return null;
+  const xs = F.map(p => p.x);
+  return { faces, slabs, width: Math.max(...xs) - Math.min(...xs), height: maxY - minY, depth: depthMax, hasTop: !!T, hasSide: !!S };
+}
+
+return {THREE_VIEW_LAYOUT, THREE_VIEW_MARGIN, threeViewAreaAt, threeViewShapeArea, threeViewFitLayout, threeViewDepthOfTopY, threeViewTopYOfDepth, threeViewDepthOfSideX, threeViewSideXOfDepth, threeViewMiter, threeViewGuidePoints, threeViewMarks, threeViewTargets, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSpansAt, threeViewClipToRect, threeViewSolid};
 })();
 __mods['hardware'] = (function(){
 // 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
@@ -10175,7 +10249,7 @@ const HELP_JA = {
     {
       "id": "three-view",
       "title": "三面図を描く手伝い（正面・上・右から見た図）",
-      "body": "上の「三面図（正面・上・横）」にチェックを入れると、画面に 3 つの枠が出ます。左下が「正面から見た図」、その真上が「上から見た図」、その真右が「右から見た図」です。\nまず、正面から見た図の枠に、正面の形を描きます。すると、形の角や端から、上の枠には縦の点線、右の枠には横の点線が伸びます。点線は「正面の図とそろう場所」です。\n上から見た図は、横の長さが正面と同じなので、縦の点線に合わせて描きます。この枠の縦の方向が「奥行き」です（枠の下の辺が手前・上に行くほど奥）。奥行きは自分で決めて描きます。描いている間、カーソルのそばに奥行きの数字（mm）が出ます。\n右から見た図は、高さが正面と同じなので、横の点線に合わせて描きます。奥行きは、上から見た図で描いた奥行きが、右上の 45° の線を通って右の枠へ移ってくるので、その点線に合わせます（枠の左の辺が手前・右に行くほど奥）。\n手早く始めるには、「奥行き」の数字（mm）を入れて「上と右の図を作る」を押します。正面の枠に描いた形をぜんぶ囲む四角と奥行きから、上の図と右の図の外形（四角）が自動で描かれます。細かい形は、その四角の上に点線に合わせて描き足してください。同じ四角がもうあるときは作りません。「元に戻す」で取り消せます。\n点線の近くでクリックすると、横か縦の位置が点線にぴったり合います（上の「スナップ」が切でも働きます）。合わせたくないときは「三面図」のチェックを外してください。\n枠は目安で、図形ではありません。枠と点線は保存や書き出しには入りません。枠は描いた形に合わせて自動で広がります（正面が大きければ、上と右の枠も同じ幅・高さに。奥行きが深ければ、上の枠の高さと右の枠の幅が同じだけ伸びます）。手前の線（上の枠の下の辺・右の枠の左の辺）は、正面の図が上や右へ大きく広がらない限り動きません。\nまだ作っている途中の機能です。"
+      "body": "上の「三面図（正面・上・横）」にチェックを入れると、画面に 3 つの枠が出ます。左下が「正面から見た図」、その真上が「上から見た図」、その真右が「右から見た図」です。\nまず、正面から見た図の枠に、正面の形を描きます。すると、形の角や端から、上の枠には縦の点線、右の枠には横の点線が伸びます。点線は「正面の図とそろう場所」です。\n上から見た図は、横の長さが正面と同じなので、縦の点線に合わせて描きます。この枠の縦の方向が「奥行き」です（枠の下の辺が手前・上に行くほど奥）。奥行きは自分で決めて描きます。描いている間、カーソルのそばに奥行きの数字（mm）が出ます。\n右から見た図は、高さが正面と同じなので、横の点線に合わせて描きます。奥行きは、上から見た図で描いた奥行きが、右上の 45° の線を通って右の枠へ移ってくるので、その点線に合わせます（枠の左の辺が手前・右に行くほど奥）。\n手早く始めるには、「奥行き」の数字（mm）を入れて「上と右の図を作る」を押します。正面の枠に描いた形をぜんぶ囲む四角と奥行きから、上の図と右の図の外形（四角）が自動で描かれます。細かい形は、その四角の上に点線に合わせて描き足してください。同じ四角がもうあるときは作りません。「元に戻す」で取り消せます。\n点線の近くでクリックすると、横か縦の位置が点線にぴったり合います（上の「スナップ」が切でも働きます）。合わせたくないときは「三面図」のチェックを外してください。\n上の「3D」ボタンを押すと、三面図から組み立てた立体が出ます（正面の閉じた形の高さを薄い輪切りにして、それぞれを上の形と右の形で切り取り、積み上げたもの）。左ドラッグで回して確かめられ、「4分割」で正面・上・右から見た図と並べて比べられます。上や右の枠に閉じた形が無いときは四角として扱います。細かいくぼみや穴はまだ再現しません。\n枠は目安で、図形ではありません。枠と点線は保存や書き出しには入りません。枠は描いた形に合わせて自動で広がります（正面が大きければ、上と右の枠も同じ幅・高さに。奥行きが深ければ、上の枠の高さと右の枠の幅が同じだけ伸びます）。手前の線（上の枠の下の辺・右の枠の左の辺）は、正面の図が上や右へ大きく広がらない限り動きません。\nまだ作っている途中の機能です。"
     },
     {
       "id": "hardware",
@@ -10319,7 +10393,7 @@ const HELP_EN = {
     {
       "id": "three-view",
       "title": "Help for drawing three views (front / top / right)",
-      "body": "Tick “3 views (front / top / right)” at the top and three boxes appear: the front view at the lower left, the top view right above it, and the right view to its right.\nDraw the front shape in the front box first. Dotted lines then run from its corners and ends: vertical lines into the top box and horizontal lines into the right box. They mark where the other views line up with the front view.\nThe top view has the same width as the front view, so draw it along the vertical dotted lines. The up-and-down direction in that box is the depth (the bottom edge is the near side; higher is further back). You choose the depth yourself. While drawing, the depth in mm is shown next to the cursor.\nThe right view has the same height as the front view, so draw it along the horizontal dotted lines. Its depth comes from the top view: the depth you drew there travels along the 45° line at the upper right into the right box (the left edge is the near side; further right is further back), so follow that dotted line.\nFor a quick start, type the depth (mm) into “Depth” and press “Make top & right views”. From the box that encloses everything drawn in the Front view and that depth, the outlines (rectangles) of the top and right views are drawn for you. Then draw the details on those rectangles, following the dotted lines. Nothing is made if the same rectangles already exist. Undo removes them.\nClicking near a dotted line pulls the point exactly onto it, sideways or up-and-down (this works even when Snap is off). Untick “3 views” when you do not want that.\nThe boxes are only guides, not shapes. Boxes and dotted lines are not saved or exported. The boxes grow automatically to fit what you draw (a bigger front view makes the top and right boxes the same width and height; a deeper depth makes the top box taller and the right box wider by the same amount). The near-side lines (bottom edge of the top box, left edge of the right box) stay put unless the front view grows far upward or to the right.\nThis feature is still being built."
+      "body": "Tick “3 views (front / top / right)” at the top and three boxes appear: the front view at the lower left, the top view right above it, and the right view to its right.\nDraw the front shape in the front box first. Dotted lines then run from its corners and ends: vertical lines into the top box and horizontal lines into the right box. They mark where the other views line up with the front view.\nThe top view has the same width as the front view, so draw it along the vertical dotted lines. The up-and-down direction in that box is the depth (the bottom edge is the near side; higher is further back). You choose the depth yourself. While drawing, the depth in mm is shown next to the cursor.\nThe right view has the same height as the front view, so draw it along the horizontal dotted lines. Its depth comes from the top view: the depth you drew there travels along the 45° line at the upper right into the right box (the left edge is the near side; further right is further back), so follow that dotted line.\nFor a quick start, type the depth (mm) into “Depth” and press “Make top & right views”. From the box that encloses everything drawn in the Front view and that depth, the outlines (rectangles) of the top and right views are drawn for you. Then draw the details on those rectangles, following the dotted lines. Nothing is made if the same rectangles already exist. Undo removes them.\nClicking near a dotted line pulls the point exactly onto it, sideways or up-and-down (this works even when Snap is off). Untick “3 views” when you do not want that.\nPress the 3D button and a solid built from your three views appears (the height of the closed front shape is cut into thin slices, each trimmed by the top and right shapes, then stacked). Left-drag to turn it, and Quad view shows it next to the front, top and right views. If the top or right box has no closed shape, a rectangle is assumed. Small hollows and holes are not reproduced yet.\nThe boxes are only guides, not shapes. Boxes and dotted lines are not saved or exported. The boxes grow automatically to fit what you draw (a bigger front view makes the top and right boxes the same width and height; a deeper depth makes the top box taller and the right box wider by the same amount). The near-side lines (bottom edge of the top box, left edge of the right box) stay put unless the front view grows far upward or to the right.\nThis feature is still being built."
     },
     {
       "id": "hardware",
@@ -10402,7 +10476,7 @@ const { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibra
 const { svgToShapes, dxfToShapesFull } = __mods['importers'];
 const { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } = __mods['interop'];
 const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } = __mods['sim3d'];
-const { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect } = __mods['threeview'];
+const { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid } = __mods['threeview'];
 const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
@@ -11236,11 +11310,24 @@ function hexToRgb(hex) { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m)
 function perspective(fov, aspect, near, far) { const f = 1 / Math.tan(fov / 2); return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, 2 * far * near / (near - far), 0]; }
 function orthographic(hw, hh, near, far) { return [1 / hw, 0, 0, 0, 0, 1 / hh, 0, 0, 0, 0, -2 / (far - near), 0, 0, 0, -(far + near) / (far - near), 1]; }
 /** 3D を描く。gl があれば WebGL、無ければ 2D の画家アルゴリズム。戻り値は統計（テスト用）。 */
+/** 3D に出すもの：三面図が入なら三面図から組み立てた立体（threeview.js）、切なら折りたたみの板。 */
+function scene3d() {
+  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout); return { faces: solid ? solid.faces : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
+  const panels = buildPanels(doc), fl = folds();
+  return { faces: applyFolds(panels, fl, foldT / 100), hits: collisions(panels, fl, foldT / 100), panels, solid: null };
+}
+/** 三面図の立体を見るときの最初のカメラ：立体の真ん中を向き、少し斜め上・右手前から。 */
+function threeViewCamera(faces) {
+  const pts = faces.flatMap(f => f.points); if (!pts.length) return defaultCamera(doc);
+  const lo = k => Math.min(...pts.map(p => p[k])), hi = k => Math.max(...pts.map(p => p[k]));
+  const size = Math.max(hi('x') - lo('x'), hi('y') - lo('y'), hi('z') - lo('z'), 10);
+  return { ...defaultCamera(doc), yaw: -35, pitch: -55, target: v3((lo('x') + hi('x')) / 2, (lo('y') + hi('y')) / 2, (lo('z') + hi('z')) / 2), distance: size * 3 };
+}
 function render3d() {
-  const panels = buildPanels(doc), fl = folds(), faces = applyFolds(panels, fl, foldT / 100), hits = collisions(panels, fl, foldT / 100), hitSet = new Set(hits.flatMap(h => [h.a, h.b]));
-  lastStats = { faces: faces.length, collisions: hits.length, panels: panels.length };
-  if (!cam) cam = defaultCamera(doc);
-  $('collisionInfo').textContent = hits.length ? t('collisionCount', { n: hits.length }) : t('noCollision');
+  const { faces, hits, panels, solid } = scene3d(), hitSet = new Set(hits.flatMap(h => [h.a, h.b]));
+  lastStats = { faces: faces.length, collisions: hits.length, panels: panels.length, solid: !!solid, slabs: solid ? solid.slabs : 0 };
+  if (!cam) cam = solid && faces.length ? threeViewCamera(faces) : defaultCamera(doc);
+  $('collisionInfo').textContent = solid ? (solid.empty ? t('threeViewSolidNone') : t('threeViewSolidInfo', { w: +solid.width.toFixed(1), h: +solid.height.toFixed(1), d: +solid.depth.toFixed(1), n: solid.slabs })) : hits.length ? t('collisionCount', { n: hits.length }) : t('noCollision');
   if (!view3d) return lastStats;
   const quad = $('viewMode').value === 'quad', W = canvas3d.width || 1, H = canvas3d.height || 1;
   const views = quad ? [['free', cam, 0, 0], ['front', { ...cam, ...orthoViews().front, ortho: true }, 1, 0], ['top', { ...cam, ...orthoViews().top, ortho: true }, 0, 1], ['right', { ...cam, ...orthoViews().right, ortho: true }, 1, 1]] : [['free', cam, 0, 0]];
@@ -11272,7 +11359,7 @@ function render3d() {
 }
 function setView3d(on) {
   view3d = on; canvas3d.hidden = !on; $('view3d').classList.toggle('active', on); $('view3d').setAttribute('aria-pressed', String(on));
-  if (on) { initGl(); const r = canvas3d.getBoundingClientRect(); canvas3d.width = Math.max(1, Math.round(r.width * (window.devicePixelRatio || 1))); canvas3d.height = Math.max(1, Math.round(r.height * (window.devicePixelRatio || 1))); if (!cam) cam = defaultCamera(doc); render3d(); $('hint').textContent = t('hint3d'); }
+  if (on) { initGl(); const r = canvas3d.getBoundingClientRect(); canvas3d.width = Math.max(1, Math.round(r.width * (window.devicePixelRatio || 1))); canvas3d.height = Math.max(1, Math.round(r.height * (window.devicePixelRatio || 1))); if (threeViewOn() && (!cam || (!cam.yaw && !cam.pitch))) { const { faces } = scene3d(); if (faces.length) cam = threeViewCamera(faces); } if (!cam) cam = defaultCamera(doc); render3d(); $('hint').textContent = t(threeViewOn() ? 'hint3dThreeView' : 'hint3d'); }
   else { if (playing) { clearInterval(playing); playing = null; } draw(); $('hint').textContent = t('hint.' + mode); }
 }
 function togglePlay() {
@@ -11280,7 +11367,7 @@ function togglePlay() {
   let dir = foldT >= 100 ? -1 : 1; $('play').textContent = t('pause');
   playing = setInterval(() => { foldT = Math.max(0, Math.min(100, foldT + dir * 4)); if (foldT === 0 || foldT === 100) dir = -dir; $('foldT').value = String(foldT); render3d(); }, 40);
 }
-function exportViews() { const panels = buildPanels(doc), faces = applyFolds(panels, folds(), foldT / 100); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: t('views') }); }
+function exportViews() { const { faces } = scene3d(); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: t('views') }); }
 /** 展開図：折り線で繋がる板を平面に戻し、縫い代付きの型紙を新しいタブに作る。 */
 function makeUnfold() {
   const panels = buildPanels(doc), fl = folds(); if (!panels.length) { $('hint').textContent = t('noPanels'); return; }
@@ -11289,13 +11376,13 @@ function makeUnfold() {
   cancel(); commit(() => { let n = 1; for (const piece of u.pieces) { doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'polyline', closed: true, points: piece.points }); } for (const f of u.folds) doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'fold', x1: f.x1, y1: f.y1, x2: f.x2, y2: f.y2, angleDeg: f.angleDeg, partId: null, inner: true }); doc.provenance = [{ source: 'unfold', at: new Date().toISOString() }]; });
   tabs[activeTab].doc = doc; renderLayers(); fit(); $('hint').textContent = t('unfoldDone', { n: u.pieces.length, e: u.allowanceEdges });
 }
-function printViews() { setPageStyle('a4'); const faces = applyFolds(buildPanels(doc), folds(), foldT / 100); $('printArea').innerHTML = `<div class="page">${viewsToSvg(faces, { scale: 1 })}</div>`; $('printArea').dataset.pages = '1'; if (typeof window.print === 'function') window.print(); }
+function printViews() { setPageStyle('a4'); const { faces } = scene3d(); $('printArea').innerHTML = `<div class="page">${viewsToSvg(faces, { scale: 1 })}</div>`; $('printArea').dataset.pages = '1'; if (typeof window.print === 'function') window.print(); }
 function init3d() {
   $('view3d').onclick = () => setView3d(!view3d);
   $('foldT').addEventListener('input', () => { foldT = Number($('foldT').value) || 0; render3d(); });
   $('foldT').addEventListener('change', () => { foldT = Number($('foldT').value) || 0; render3d(); });
   $('play').onclick = togglePlay; $('viewMode').addEventListener('change', () => render3d()); $('exportViews').onclick = exportViews; $('printViews').onclick = printViews; $('unfoldBtn').onclick = makeUnfold;
-  $('resetCam').onclick = () => { cam = defaultCamera(doc); render3d(); };
+  $('resetCam').onclick = () => { cam = threeViewOn() ? threeViewCamera(scene3d().faces) : defaultCamera(doc); render3d(); };
   let drag = null;
   canvas3d.addEventListener('pointerdown', e => { e.preventDefault(); drag = { x: e.clientX, y: e.clientY, button: e.button, cam: { ...cam, target: { ...cam.target } } }; canvas3d.setPointerCapture?.(e.pointerId); });
   canvas3d.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (drag.button === 2 || e.shiftKey) { const k = drag.cam.distance / 600; cam = { ...cam, target: { x: drag.cam.target.x - dx * k, y: drag.cam.target.y - dy * k, z: drag.cam.target.z } }; } else cam = { ...cam, yaw: drag.cam.yaw + dx * 0.5, pitch: Math.max(-89, Math.min(89, drag.cam.pitch - dy * 0.5)) }; render3d(); });
@@ -12665,7 +12752,7 @@ $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = 
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
 for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
-$('threeView').addEventListener('change', () => { $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildThreeViewMarks(); });
+$('threeView').addEventListener('change', () => { $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildThreeViewMarks(); if (view3d) render3d(); });
 $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
 function save() {

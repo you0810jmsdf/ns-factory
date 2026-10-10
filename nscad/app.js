@@ -3,7 +3,7 @@ import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibr
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
-import { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect } from './threeview.js';
+import { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid } from './threeview.js';
 import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
@@ -838,11 +838,24 @@ function hexToRgb(hex) { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m)
 function perspective(fov, aspect, near, far) { const f = 1 / Math.tan(fov / 2); return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / (near - far), -1, 0, 0, 2 * far * near / (near - far), 0]; }
 function orthographic(hw, hh, near, far) { return [1 / hw, 0, 0, 0, 0, 1 / hh, 0, 0, 0, 0, -2 / (far - near), 0, 0, 0, -(far + near) / (far - near), 1]; }
 /** 3D を描く。gl があれば WebGL、無ければ 2D の画家アルゴリズム。戻り値は統計（テスト用）。 */
+/** 3D に出すもの：三面図が入なら三面図から組み立てた立体（threeview.js）、切なら折りたたみの板。 */
+function scene3d() {
+  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout); return { faces: solid ? solid.faces : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
+  const panels = buildPanels(doc), fl = folds();
+  return { faces: applyFolds(panels, fl, foldT / 100), hits: collisions(panels, fl, foldT / 100), panels, solid: null };
+}
+/** 三面図の立体を見るときの最初のカメラ：立体の真ん中を向き、少し斜め上・右手前から。 */
+function threeViewCamera(faces) {
+  const pts = faces.flatMap(f => f.points); if (!pts.length) return defaultCamera(doc);
+  const lo = k => Math.min(...pts.map(p => p[k])), hi = k => Math.max(...pts.map(p => p[k]));
+  const size = Math.max(hi('x') - lo('x'), hi('y') - lo('y'), hi('z') - lo('z'), 10);
+  return { ...defaultCamera(doc), yaw: -35, pitch: -55, target: v3((lo('x') + hi('x')) / 2, (lo('y') + hi('y')) / 2, (lo('z') + hi('z')) / 2), distance: size * 3 };
+}
 function render3d() {
-  const panels = buildPanels(doc), fl = folds(), faces = applyFolds(panels, fl, foldT / 100), hits = collisions(panels, fl, foldT / 100), hitSet = new Set(hits.flatMap(h => [h.a, h.b]));
-  lastStats = { faces: faces.length, collisions: hits.length, panels: panels.length };
-  if (!cam) cam = defaultCamera(doc);
-  $('collisionInfo').textContent = hits.length ? t('collisionCount', { n: hits.length }) : t('noCollision');
+  const { faces, hits, panels, solid } = scene3d(), hitSet = new Set(hits.flatMap(h => [h.a, h.b]));
+  lastStats = { faces: faces.length, collisions: hits.length, panels: panels.length, solid: !!solid, slabs: solid ? solid.slabs : 0 };
+  if (!cam) cam = solid && faces.length ? threeViewCamera(faces) : defaultCamera(doc);
+  $('collisionInfo').textContent = solid ? (solid.empty ? t('threeViewSolidNone') : t('threeViewSolidInfo', { w: +solid.width.toFixed(1), h: +solid.height.toFixed(1), d: +solid.depth.toFixed(1), n: solid.slabs })) : hits.length ? t('collisionCount', { n: hits.length }) : t('noCollision');
   if (!view3d) return lastStats;
   const quad = $('viewMode').value === 'quad', W = canvas3d.width || 1, H = canvas3d.height || 1;
   const views = quad ? [['free', cam, 0, 0], ['front', { ...cam, ...orthoViews().front, ortho: true }, 1, 0], ['top', { ...cam, ...orthoViews().top, ortho: true }, 0, 1], ['right', { ...cam, ...orthoViews().right, ortho: true }, 1, 1]] : [['free', cam, 0, 0]];
@@ -874,7 +887,7 @@ function render3d() {
 }
 function setView3d(on) {
   view3d = on; canvas3d.hidden = !on; $('view3d').classList.toggle('active', on); $('view3d').setAttribute('aria-pressed', String(on));
-  if (on) { initGl(); const r = canvas3d.getBoundingClientRect(); canvas3d.width = Math.max(1, Math.round(r.width * (window.devicePixelRatio || 1))); canvas3d.height = Math.max(1, Math.round(r.height * (window.devicePixelRatio || 1))); if (!cam) cam = defaultCamera(doc); render3d(); $('hint').textContent = t('hint3d'); }
+  if (on) { initGl(); const r = canvas3d.getBoundingClientRect(); canvas3d.width = Math.max(1, Math.round(r.width * (window.devicePixelRatio || 1))); canvas3d.height = Math.max(1, Math.round(r.height * (window.devicePixelRatio || 1))); if (threeViewOn() && (!cam || (!cam.yaw && !cam.pitch))) { const { faces } = scene3d(); if (faces.length) cam = threeViewCamera(faces); } if (!cam) cam = defaultCamera(doc); render3d(); $('hint').textContent = t(threeViewOn() ? 'hint3dThreeView' : 'hint3d'); }
   else { if (playing) { clearInterval(playing); playing = null; } draw(); $('hint').textContent = t('hint.' + mode); }
 }
 function togglePlay() {
@@ -882,7 +895,7 @@ function togglePlay() {
   let dir = foldT >= 100 ? -1 : 1; $('play').textContent = t('pause');
   playing = setInterval(() => { foldT = Math.max(0, Math.min(100, foldT + dir * 4)); if (foldT === 0 || foldT === 100) dir = -dir; $('foldT').value = String(foldT); render3d(); }, 40);
 }
-function exportViews() { const panels = buildPanels(doc), faces = applyFolds(panels, folds(), foldT / 100); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: t('views') }); }
+function exportViews() { const { faces } = scene3d(); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: t('views') }); }
 /** 展開図：折り線で繋がる板を平面に戻し、縫い代付きの型紙を新しいタブに作る。 */
 function makeUnfold() {
   const panels = buildPanels(doc), fl = folds(); if (!panels.length) { $('hint').textContent = t('noPanels'); return; }
@@ -891,13 +904,13 @@ function makeUnfold() {
   cancel(); commit(() => { let n = 1; for (const piece of u.pieces) { doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'polyline', closed: true, points: piece.points }); } for (const f of u.folds) doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'fold', x1: f.x1, y1: f.y1, x2: f.x2, y2: f.y2, angleDeg: f.angleDeg, partId: null, inner: true }); doc.provenance = [{ source: 'unfold', at: new Date().toISOString() }]; });
   tabs[activeTab].doc = doc; renderLayers(); fit(); $('hint').textContent = t('unfoldDone', { n: u.pieces.length, e: u.allowanceEdges });
 }
-function printViews() { setPageStyle('a4'); const faces = applyFolds(buildPanels(doc), folds(), foldT / 100); $('printArea').innerHTML = `<div class="page">${viewsToSvg(faces, { scale: 1 })}</div>`; $('printArea').dataset.pages = '1'; if (typeof window.print === 'function') window.print(); }
+function printViews() { setPageStyle('a4'); const { faces } = scene3d(); $('printArea').innerHTML = `<div class="page">${viewsToSvg(faces, { scale: 1 })}</div>`; $('printArea').dataset.pages = '1'; if (typeof window.print === 'function') window.print(); }
 function init3d() {
   $('view3d').onclick = () => setView3d(!view3d);
   $('foldT').addEventListener('input', () => { foldT = Number($('foldT').value) || 0; render3d(); });
   $('foldT').addEventListener('change', () => { foldT = Number($('foldT').value) || 0; render3d(); });
   $('play').onclick = togglePlay; $('viewMode').addEventListener('change', () => render3d()); $('exportViews').onclick = exportViews; $('printViews').onclick = printViews; $('unfoldBtn').onclick = makeUnfold;
-  $('resetCam').onclick = () => { cam = defaultCamera(doc); render3d(); };
+  $('resetCam').onclick = () => { cam = threeViewOn() ? threeViewCamera(scene3d().faces) : defaultCamera(doc); render3d(); };
   let drag = null;
   canvas3d.addEventListener('pointerdown', e => { e.preventDefault(); drag = { x: e.clientX, y: e.clientY, button: e.button, cam: { ...cam, target: { ...cam.target } } }; canvas3d.setPointerCapture?.(e.pointerId); });
   canvas3d.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (drag.button === 2 || e.shiftKey) { const k = drag.cam.distance / 600; cam = { ...cam, target: { x: drag.cam.target.x - dx * k, y: drag.cam.target.y - dy * k, z: drag.cam.target.z } }; } else cam = { ...cam, yaw: drag.cam.yaw + dx * 0.5, pitch: Math.max(-89, Math.min(89, drag.cam.pitch - dy * 0.5)) }; render3d(); });
@@ -2267,7 +2280,7 @@ $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = 
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
 for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
-$('threeView').addEventListener('change', () => { $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildThreeViewMarks(); });
+$('threeView').addEventListener('change', () => { $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildThreeViewMarks(); if (view3d) render3d(); });
 $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
 function save() {

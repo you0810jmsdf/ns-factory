@@ -7,7 +7,8 @@
 //   右から見た図   … 高さ（y）は正面と同じ。横（x）が「奥行き」。枠の左の辺が手前、右に行くほど奥。
 // 上から見た図の奥行きを右から見た図へ移すときは、2つの枠の「手前どうし」が出会う角から
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
-import { bboxOf } from './geometry.js';
+import { bboxOf, flattenShape } from './geometry.js';
+import { v3, faceNormal } from './sim3d.js';
 
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
 export const THREE_VIEW_LAYOUT = {
@@ -194,4 +195,71 @@ export function threeViewSameRect(a, b, eps = 1e-6) {
   const key = p => [...p].sort((u, v) => u.x - v.x || u.y - v.y);
   const pa = key(a.points), pb = key(b.points);
   return pa.every((p, i) => Math.abs(p.x - pb[i].x) < eps && Math.abs(p.y - pb[i].y) < eps);
+}
+
+// ---- 三面図から立体を組み立てる（3D 表示用） ----
+/** 閉じた図形（折れ線・なめらかな線・円）を点の列にする。閉じていなければ null。 */
+function closedPolygon(s, tol) {
+  if (!s || !['polyline', 'path', 'circle'].includes(s.type) || !(s.closed || s.type === 'circle')) return null;
+  let pts; try { pts = flattenShape(s, tol); } catch { return null; }
+  if (pts.length > 1 && Math.hypot(pts[0].x - pts.at(-1).x, pts[0].y - pts.at(-1).y) < 1e-9) pts = pts.slice(0, -1);
+  return pts.length >= 3 ? pts : null;
+}
+const polyArea = pts => Math.abs(pts.reduce((a, p, i) => { const q = pts[(i + 1) % pts.length]; return a + p.x * q.y - q.x * p.y; }, 0) / 2);
+/** 高さ y の横線が多角形と交わる区間（[x0, x1] の列・小さい順）。 */
+export function threeViewSpansAt(poly, y) {
+  const xs = [];
+  for (let i = 0; i < poly.length; i++) { const p = poly[i], q = poly[(i + 1) % poly.length]; if ((p.y > y) !== (q.y > y)) xs.push(p.x + (y - p.y) * (q.x - p.x) / (q.y - p.y)); }
+  xs.sort((a, b) => a - b); const out = []; for (let i = 0; i + 1 < xs.length; i += 2) if (xs[i + 1] - xs[i] > 1e-9) out.push([xs[i], xs[i + 1]]); return out;
+}
+/** 多角形を長方形 [x0,x1]×[y0,y1] で切り取る（辺ごとに順に切る）。 */
+export function threeViewClipToRect(poly, x0, x1, y0, y1) {
+  const lerp = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+  const clip = (pts, inside, cross) => { const out = []; for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length], ia = inside(a), ib = inside(b); if (ia) out.push(a); if (ia !== ib) out.push(cross(a, b)); } return out; };
+  let p = poly;
+  p = clip(p, q => q.x >= x0, (a, b) => lerp(a, b, (x0 - a.x) / (b.x - a.x)));
+  p = clip(p, q => q.x <= x1, (a, b) => lerp(a, b, (x1 - a.x) / (b.x - a.x)));
+  p = clip(p, q => q.y >= y0, (a, b) => lerp(a, b, (y0 - a.y) / (b.y - a.y)));
+  p = clip(p, q => q.y <= y1, (a, b) => lerp(a, b, (y1 - a.y) / (b.y - a.y)));
+  return p.filter((q, i) => i === 0 || Math.hypot(q.x - p[i - 1].x, q.y - p[i - 1].y) > 1e-9);
+}
+/** 三面図から立体を組み立てる。
+ *  正面の枠の閉じた形（いちばん大きいもの）＝正面の輪郭、上の枠の閉じた形＝上の輪郭（横 x × 奥行き）、右の枠の閉じた形＝右の輪郭（奥行き × 高さ）。
+ *  高さを薄い輪切りにし、各輪切りで「正面の横幅 × 右の奥行き」の長方形で上の輪郭を切り取った形を、輪切りの厚みぶん積み上げる。
+ *  上の輪郭が無ければ長方形（奥行きは右の輪郭から・それも無ければ depthDefault）。右の輪郭が無ければ奥行きいっぱい。正面に閉じた形が無ければ null。
+ *  3D の置き方（sim3d と同じ座標）：x はそのまま、高さは正面の下端を z=0 として上へ（z = 下端 − y）、奥行きは正面の下端の y を手前として奥へ y が小さくなる（y = 下端 − 奥行き）。
+ *  返り値：{ faces（sim3d.applyFolds と同じ形）, slabs, width, height, depth, hasTop, hasSide } */
+export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
+  const groups = { front: [], top: [], side: [] };
+  for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (!area) continue; const poly = closedPolygon(s, tolerance); if (poly) groups[area].push(poly); }
+  const biggest = list => list.length ? list.reduce((a, b) => polyArea(b) > polyArea(a) ? b : a) : null;
+  const F = biggest(groups.front); if (!F) return null;
+  const bottomOfTop = layout.top.y + layout.top.h, leftOfSide = layout.side.x;
+  const topPoly = biggest(groups.top), sidePoly = biggest(groups.side);
+  const T = topPoly ? topPoly.map(p => ({ x: p.x, y: bottomOfTop - p.y })) : null;      /* (x, 奥行き) */
+  const S = sidePoly ? sidePoly.map(p => ({ x: p.x - leftOfSide, y: p.y })) : null;    /* (奥行き, 高さ y) */
+  const fy = F.map(p => p.y), minY = Math.min(...fy), maxY = Math.max(...fy);
+  const depthMax = T ? Math.max(...T.map(p => p.y)) : S ? Math.max(...S.map(p => p.x)) : depthDefault;
+  if (!(maxY - minY > 1e-9) || !(depthMax > 1e-9)) return null;
+  let levels = [...new Set([...fy, ...(S ? S.map(p => p.y) : [])].map(v => Math.round(v * 1e6) / 1e6))].filter(v => v >= minY - 1e-9 && v <= maxY + 1e-9).sort((a, b) => a - b);
+  if (levels.length - 1 > maxSlices) levels = Array.from({ length: maxSlices + 1 }, (_, i) => minY + (maxY - minY) * i / maxSlices);
+  const base = maxY, to3 = (x, d, y) => v3(x, base - d, base - y);
+  const mean = pts => pts.reduce((a, p) => v3(a.x + p.x / pts.length, a.y + p.y / pts.length, a.z + p.z / pts.length), v3());
+  const faces = []; let slabs = 0;
+  for (let i = 0; i + 1 < levels.length; i++) {
+    const ya = levels[i], yb = levels[i + 1]; if (yb - ya < 1e-9) continue;
+    const ym = (ya + yb) / 2, xSpans = threeViewSpansAt(F, ym), dSpans = S ? threeViewSpansAt(S, ym) : [[0, depthMax]];
+    for (const [x0, x1] of xSpans) for (const [d0, d1] of dSpans) {
+      const poly = T ? threeViewClipToRect(T, x0, x1, d0, d1) : [{ x: x0, y: d0 }, { x: x1, y: d0 }, { x: x1, y: d1 }, { x: x0, y: d1 }];
+      if (poly.length < 3 || polyArea(poly) < 1e-6) continue;
+      slabs++;
+      const top = poly.map(p => to3(p.x, p.y, ya)), bottom = poly.map(p => to3(p.x, p.y, yb)), centre = mean(top.concat(bottom));
+      const push = (kind, pts) => { let n = faceNormal(pts); const c = mean(pts); if ((c.x - centre.x) * n.x + (c.y - centre.y) * n.y + (c.z - centre.z) * n.z < 0) { pts = [...pts].reverse(); n = faceNormal(pts); } faces.push({ kind, points: pts, normal: n, center: c, panelId: 'threeView', partId: 'threeView', color: null }); };
+      push('top', top); push('bottom', bottom);
+      for (let k = 0; k < poly.length; k++) { const j = (k + 1) % poly.length; push('side', [top[k], top[j], bottom[j], bottom[k]]); }
+    }
+  }
+  if (!slabs) return null;
+  const xs = F.map(p => p.x);
+  return { faces, slabs, width: Math.max(...xs) - Math.min(...xs), height: maxY - minY, depth: depthMax, hasTop: !!T, hasSide: !!S };
 }

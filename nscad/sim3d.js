@@ -131,10 +131,10 @@ export function foldMatrices(panels, folds, t = 1) {
 }
 /** 折り線を適用した全板の面（3D）を返す。 */
 export function applyFolds(panels, folds, t = 1) { const ms = foldMatrices(panels, folds, t); return panels.flatMap(p => panelFaces(p, ms.get(p.id))); }
-/** カメラ {yaw, pitch, distance, zoom, target:{x,y,z}, ortho:true|false} から視線変換行列を返す。 */
+/** カメラ {yaw, pitch, roll, distance, zoom, target:{x,y,z}, ortho:true|false} から視線変換行列を返す。roll は視線まわりの回転（度・省略時 0）。 */
 export function viewMatrix(cam) {
-  const target = cam.target || v3(), ry = rotationAxis(v3(0, 1, 0), cam.yaw || 0), rx = rotationAxis(v3(1, 0, 0), cam.pitch || 0);
-  return multiply(multiply(translation(0, 0, -(cam.distance || 300)), multiply(rx, ry)), translation(-target.x, -target.y, -target.z));
+  const target = cam.target || v3(), ry = rotationAxis(v3(0, 1, 0), cam.yaw || 0), rx = rotationAxis(v3(1, 0, 0), cam.pitch || 0), rz = rotationAxis(v3(0, 0, 1), cam.roll || 0);
+  return multiply(multiply(translation(0, 0, -(cam.distance || 300)), multiply(rz, multiply(rx, ry))), translation(-target.x, -target.y, -target.z));
 }
 /** 面を画面座標に投影：{points:[{x,y}], depth, shade, ...面}。平行投影は zoom[px/mm]、透視は distance で割る。 */
 export function project(faces, cam, { width = 800, height = 600, light = v3(0.3, -0.5, 0.8) } = {}) {
@@ -159,8 +159,8 @@ export function collisions(panels, folds, t = 1, { eps = 0.2 } = {}) {
   }
   return out;
 }
-/** 三面図（第三角法）のカメラ：上面＝革の表を正面から（2D と同じ向き）・正面＝手前の縁から・右側面＝右の縁から。 */
-export function orthoViews() { return { top: { yaw: 0, pitch: 0, distance: 1000, ortho: true }, front: { yaw: 0, pitch: -90, distance: 1000, ortho: true }, right: { yaw: -90, pitch: 0, distance: 1000, ortho: true } }; }
+/** 三面図（第三角法）のカメラ：上面＝革の表を正面から（2D と同じ向き）・正面＝手前の縁から・右側面＝右の縁から（roll -90 で正面と同じく厚み（z）が上・手前が左になる）。 */
+export function orthoViews() { return { top: { yaw: 0, pitch: 0, distance: 1000, ortho: true }, front: { yaw: 0, pitch: -90, distance: 1000, ortho: true }, right: { yaw: -90, pitch: 0, roll: -90, distance: 1000, ortho: true } }; }
 /** 三面図を SVG にする（mm 単位・ビューごとに <g id>・ラベル付き）。scale は 1=実寸。 */
 export function viewsToSvg(faces3d, { scale = 1, gapMm = 20, labels = { front: 'FRONT', top: 'TOP', right: 'RIGHT' } } = {}) {
   const views = orthoViews(), groups = [], boxes = {};
