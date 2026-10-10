@@ -198,8 +198,8 @@ body.panel-open #preview { margin-left: 280px; }
 
 /* === MODULE: CSS Variables === */
 :root {
-  --mg-label-w: 7mm; --mg-line-w: 0.12mm; --mg-col-border-w: 0.15mm; --mg-head-h: 6mm;
-  --mg-head-wd-font: 2mm; --mg-head-date-font: 2.6mm; --mg-hour-font: 1.5mm;
+  --mg-label-w: 7mm; --mg-line-w: 0.12mm; --mg-col-border-w: 0.15mm; --mg-head-h: 8mm;
+  --mg-head-wd-font: 2.6mm; --mg-head-date-font: 3.2mm; --mg-hour-font: 1.8mm;
   --day-label-w: 15mm; --day-num-font: 6mm; --day-wd-font: 2.2mm; --day-block-h: 20mm;
   --text-wm-size: 6mm; --text-wm-angle: -30deg; --text-wm-x: 0mm; --text-wm-y: 0mm;
   --month-cal-top: 10mm; --month-cal-right: 0mm;
@@ -377,12 +377,12 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>開始時刻</label><input type="range" id="mgStartHour" min="0" max="6" step="1" value="1" oninput="updateMgStartHour(this.value)"><span class="val" id="mgStartHourVal">1</span>時</div>
     <div class="ctrl-row"><label>表示時間数</label><input type="range" id="mgHourSpan" min="12" max="24" step="1" value="24" oninput="updateMgHourSpan(this.value)"><span class="val" id="mgHourSpanVal">24</span>時間</div>
     <div class="ctrl-row"><label>時刻ラベル幅</label><input type="range" id="mgLabelW" min="4" max="15" step="0.5" value="7" oninput="setCSSVar('--mg-label-w', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">7</span>mm</div>
-    <div class="ctrl-row"><label>時刻ラベル文字</label><input type="range" id="mgHourFont" min="1" max="3" step="0.1" value="1.5" oninput="setCSSVar('--mg-hour-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">1.5</span>mm</div>
+    <div class="ctrl-row"><label>時刻ラベル文字</label><input type="range" id="mgHourFont" min="1" max="3" step="0.1" value="1.8" oninput="setCSSVar('--mg-hour-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">1.8</span>mm</div>
     <div class="ctrl-row"><label>時刻罫線の太さ</label><input type="range" id="mgLineW" min="0.05" max="0.4" step="0.01" value="0.12" oninput="setCSSVar('--mg-line-w', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">0.12</span>mm</div>
     <div class="ctrl-row"><label>曜日列の仕切線</label><input type="range" id="mgColBorderW" min="0.05" max="0.4" step="0.01" value="0.15" oninput="setCSSVar('--mg-col-border-w', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">0.15</span>mm</div>
-    <div class="ctrl-row"><label>見出し欄の高さ</label><input type="range" id="mgHeadH" min="3" max="12" step="0.5" value="6" oninput="setCSSVar('--mg-head-h', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">6</span>mm</div>
-    <div class="ctrl-row"><label>見出し曜日文字</label><input type="range" id="mgHeadWdFont" min="1" max="4" step="0.1" value="2" oninput="setCSSVar('--mg-head-wd-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">2</span>mm</div>
-    <div class="ctrl-row"><label>見出し日付文字</label><input type="range" id="mgHeadDateFont" min="1" max="5" step="0.1" value="2.6" oninput="setCSSVar('--mg-head-date-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">2.6</span>mm</div>
+    <div class="ctrl-row"><label>見出し欄の高さ</label><input type="range" id="mgHeadH" min="3" max="12" step="0.5" value="8" oninput="setCSSVar('--mg-head-h', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">8</span>mm</div>
+    <div class="ctrl-row"><label>見出し曜日文字</label><input type="range" id="mgHeadWdFont" min="1" max="4" step="0.1" value="2.6" oninput="setCSSVar('--mg-head-wd-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">2.6</span>mm</div>
+    <div class="ctrl-row"><label>見出し日付文字</label><input type="range" id="mgHeadDateFont" min="1" max="5" step="0.1" value="3.2" oninput="setCSSVar('--mg-head-date-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">3.2</span>mm</div>
     <div style="font-size:9px;color:#888;line-height:1.5;margin-top:4px;">「管理型（試作）」モードだけで使う設定です。寸法・幅・位置は全てここで自由に変えられます（2026-10-10 事業主指示）。他のモードには影響しません。</div>
   </div>
 
@@ -390,9 +390,9 @@ body.panel-open #preview { margin-left: 280px; }
     <h3>管理型（試作）: 月名チェック欄</h3>
     <div class="btn-row"><button class="btn-toggle on" id="btnMgMc" onclick="toggleMgWidget('mc','btnMgMc')">表示</button></div>
     <div class="ctrl-row"><label>X位置</label><input type="range" id="mgMcX" min="0" max="190" step="0.5" value="24" oninput="mgWidgets.mc.x=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">24</span>mm</div>
-    <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgMcY" min="0" max="92" step="0.5" value="86" oninput="mgWidgets.mc.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">86</span>mm</div>
+    <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgMcY" min="0" max="92" step="0.5" value="85" oninput="mgWidgets.mc.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">85</span>mm</div>
     <div class="ctrl-row"><label>幅</label><input type="range" id="mgMcW" min="30" max="198" step="1" value="150" oninput="mgWidgets.mc.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">150</span>mm</div>
-    <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="mgMcFont" min="1" max="4" step="0.1" value="1.4" oninput="mgWidgets.mc.font=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">1.4</span>mm</div>
+    <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="mgMcFont" min="1" max="4" step="0.1" value="1.8" oninput="mgWidgets.mc.font=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">1.8</span>mm</div>
     <div style="font-size:9px;color:#888;line-height:1.5;margin-top:4px;">JAN〜DECが横並びになります。既定では時間軸グリッドをその分だけ縮めて下に本当の余白を作り、その余白の中に収まる位置に置いています（重ねて隠す表示ではありません）。文字サイズを変えると余白も自動で追従します。好きな位置へX/Y位置で動かすこともできます。</div>
   </div>
 
@@ -404,6 +404,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>欄の幅</label><input type="range" id="mgTkW" min="30" max="198" step="1" value="190" oninput="mgWidgets.tasks.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">190</span>mm</div>
     <div class="ctrl-row"><label>1枠のサイズ（付箋）</label><input type="range" id="mgTkSize" min="20" max="70" step="1" value="50" oninput="mgWidgets.tasks.size=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">50</span>mm</div>
     <div class="ctrl-row"><label>枠の数</label><input type="range" id="mgTkCount" min="1" max="9" step="1" value="3" oninput="mgWidgets.tasks.count=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">3</span>枚</div>
+    <div class="ctrl-row"><label>見出し文字サイズ</label><input type="range" id="mgTkFont" min="1.5" max="6" step="0.1" value="3.2" oninput="mgWidgets.tasks.font=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">3.2</span>mm</div>
   </div>
 
   <div class="ctrl-section">
@@ -413,6 +414,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgExY" min="0" max="92" step="0.5" value="58" oninput="mgWidgets.expense.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">58</span>mm</div>
     <div class="ctrl-row"><label>幅</label><input type="range" id="mgExW" min="30" max="198" step="1" value="90" oninput="mgWidgets.expense.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">90</span>mm</div>
     <div class="ctrl-row"><label>行数</label><input type="range" id="mgExRows" min="1" max="15" step="1" value="6" oninput="mgWidgets.expense.rows=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">6</span>行</div>
+    <div class="ctrl-row"><label>見出し文字サイズ</label><input type="range" id="mgExFont" min="1.5" max="6" step="0.1" value="2.8" oninput="mgWidgets.expense.font=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">2.8</span>mm</div>
   </div>
 
   <div class="ctrl-section">
@@ -423,6 +425,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>幅</label><input type="range" id="mgHbW" min="30" max="198" step="1" value="94" oninput="mgWidgets.habit.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">94</span>mm</div>
     <div class="ctrl-row"><label>行数（習慣の数）</label><input type="range" id="mgHbRows" min="1" max="10" step="1" value="5" oninput="mgWidgets.habit.rows=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">5</span>行</div>
     <div class="ctrl-row"><label>1行の高さ</label><input type="range" id="mgHbRowH" min="2" max="10" step="0.5" value="4" oninput="mgWidgets.habit.rowH=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">4</span>mm</div>
+    <div class="ctrl-row"><label>見出し文字サイズ</label><input type="range" id="mgHbFont" min="1.5" max="6" step="0.1" value="2.8" oninput="mgWidgets.habit.font=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">2.8</span>mm</div>
   </div>
 
   <div class="ctrl-section">
@@ -652,10 +655,10 @@ let customImgDataUrl = null;
 let mgStartHour = 1;   // 時間軸の開始時刻（例:1=AM1:00）
 let mgHourSpan = 24;   // 表示する時間数（コマ数）
 const mgWidgets = {
-  mc:      { show: true, x: 24,  y: 86, w: 150, font: 1.4 },                 // 月名チェック欄（JAN〜DEC横並び・既定で時間軸グリッドの下の余白に収まる位置）
-  tasks:   { show: true, x: 2,   y: 2,  w: 190, size: 50, count: 3 },        // WEEKLY TASKS欄（付箋サイズの枠）
-  expense: { show: true, x: 2,   y: 58, w: 90,  rows: 6 },                   // 支出メモ欄
-  habit:   { show: true, x: 100, y: 58, w: 94,  rows: 5, rowH: 4 }           // 習慣トラッカー欄
+  mc:      { show: true, x: 24,  y: 85, w: 150, font: 1.8 },                         // 月名チェック欄（JAN〜DEC横並び・既定で時間軸グリッドの下の余白に収まる位置）
+  tasks:   { show: true, x: 2,   y: 2,  w: 190, size: 50, count: 3, font: 3.2 },     // WEEKLY TASKS欄（付箋サイズの枠・font=見出し文字）
+  expense: { show: true, x: 2,   y: 58, w: 90,  rows: 6, font: 2.8 },                // 支出メモ欄（font=見出し文字）
+  habit:   { show: true, x: 100, y: 58, w: 94,  rows: 5, rowH: 4, font: 2.8 }        // 習慣トラッカー欄（font=見出し文字）
 };
 function updateMgStartHour(v) { mgStartHour = parseInt(v); document.getElementById('mgStartHourVal').textContent = v; rerender(); }
 function updateMgHourSpan(v) { mgHourSpan = parseInt(v); document.getElementById('mgHourSpanVal').textContent = v; rerender(); }
@@ -982,13 +985,13 @@ function buildMgTasksHTML() {
   const t = mgWidgets.tasks;
   if (!t.show) return '';
   const notes = Array.from({ length: Math.round(t.count) }, () => `<div class="mg-task-note" style="width:${t.size}mm;height:${t.size}mm;"></div>`).join('');
-  return `<div class="mg-widget" style="left:${t.x}mm;top:${t.y}mm;width:${t.w}mm;"><div class="mg-widget-title" style="font-size:2.4mm;">WEEKLY TASKS</div><div class="mg-tasks-grid">${notes}</div></div>`;
+  return `<div class="mg-widget" style="left:${t.x}mm;top:${t.y}mm;width:${t.w}mm;"><div class="mg-widget-title" style="font-size:${t.font}mm;">WEEKLY TASKS</div><div class="mg-tasks-grid">${notes}</div></div>`;
 }
 function buildMgExpenseHTML() {
   const e = mgWidgets.expense;
   if (!e.show) return '';
   const lines = Array.from({ length: Math.round(e.rows) }, () => `<div class="mg-expense-line" style="margin-top:4mm;"></div>`).join('');
-  return `<div class="mg-widget" style="left:${e.x}mm;top:${e.y}mm;width:${e.w}mm;"><div class="mg-widget-title" style="font-size:2.2mm;">支出メモ</div>${lines}</div>`;
+  return `<div class="mg-widget" style="left:${e.x}mm;top:${e.y}mm;width:${e.w}mm;"><div class="mg-widget-title" style="font-size:${e.font}mm;">支出メモ</div>${lines}</div>`;
 }
 function buildMgHabitHTML() {
   const h = mgWidgets.habit;
@@ -997,7 +1000,7 @@ function buildMgHabitHTML() {
     const cells = Array.from({ length: 7 }, () => `<div class="mg-habit-cell"><span class="mg-habit-check"></span></div>`).join('');
     return `<div class="mg-habit-row" style="height:${h.rowH}mm;"><div class="mg-habit-label"></div>${cells}</div>`;
   }).join('');
-  return `<div class="mg-widget" style="left:${h.x}mm;top:${h.y}mm;width:${h.w}mm;"><div class="mg-widget-title" style="font-size:2.2mm;">習慣トラッカー</div>${rows}</div>`;
+  return `<div class="mg-widget" style="left:${h.x}mm;top:${h.y}mm;width:${h.w}mm;"><div class="mg-widget-title" style="font-size:${h.font}mm;">習慣トラッカー</div>${rows}</div>`;
 }
 function buildLowerManagementHTML() {
   return `<div class="mg-lower-wrap">${buildMgTasksHTML()}${buildMgExpenseHTML()}${buildMgHabitHTML()}</div>`;
@@ -1284,6 +1287,8 @@ const HISTORY_ENTRIES = [
     detail: '月名チェック欄の最初に表示される位置が時間軸の罫線と重なって見づらかったのを、下寄りに白い帯を敷いた位置へ変更しました（場所はこれまでどおりX・Y位置のスライダーで動かせます）。また「使う向き」の説明文が古いままで、月名チェック・WEEKLY TASKS・支出メモ・習慣トラッカーが未実装のように書かれていたのを、実装済みであることが伝わる文言に直しました。' },
   { date: '2026-10-10', type: 'fix', title: '「管理型（試作）」の月名チェック欄が時間軸の罫線と重なって見える不具合を根本から修正',
     detail: '前回の修正は白い帯で重なりを覆い隠すだけの応急処置でした。今回は、月名チェック欄を表示するぶんだけ時間軸のグリッドを実際に縮めて、下に本当の余白を作ってから、その余白の中に月名チェック欄を置く形に作り直しました。文字サイズを大きくしても、余白の広さが自動でついてくるので重なりません。' },
+  { date: '2026-10-10', type: 'improve', title: '「管理型（試作）」の文字サイズをまとめて見やすく・WEEKLY TASKS/支出メモ/習慣トラッカーにも文字サイズの調整を追加',
+    detail: 'WEEKLY TASKS欄・支出メモ欄・習慣トラッカー欄の見出し文字が、他の欄と違ってスライダーで調整できませんでした。3つとも「見出し文字サイズ」のスライダーを追加しました。あわせて、時間軸の見出し（曜日・日付・時刻ラベル）と月名チェック欄の既定の文字サイズを一回り大きくし、見出し欄の高さも広げました（全体的に文字が小さいというご意見を受けて）。大きくした後も、これまでどおり好きなサイズへ調整できます。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
