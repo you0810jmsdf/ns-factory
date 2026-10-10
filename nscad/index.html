@@ -209,7 +209,7 @@
 <input id="textureSearch" type="text" data-i18n-placeholder="textureSearch" autocomplete="off">
 <label><span data-i18n="textureSel"></span><select id="textureSel"></select></label>
 <div class="row"><span id="texturePreview" class="swatch big"></span><button id="applyTexture" data-i18n="applyTexture"></button></div>
-<label><span data-i18n="textureMm"></span><input id="textureMm" type="number" min="1" step="1" value="30"></label>
+<label><span data-i18n="textureMm"></span><input id="textureMm" type="number" min="1" step="1" data-i18n-placeholder="textureMmHint"></label>
 </details>
 <input id="threadSearch" type="text" data-i18n-placeholder="threadSearch" autocomplete="off">
 <label><span data-i18n="threadSel"></span><select id="threadSel"></select></label>
@@ -444,8 +444,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=db9097dd","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=8c368576","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=3fab1d2d","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=0827ccc4","./help/ja.js":"./help/ja.js?v=4073af65","./i18n.js":"./i18n.js?v=6f24c9c6","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=8d2bea55","./threeview.js":"./threeview.js?v=f51986d4","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=db9097dd"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=3553c1b7","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=edb254cc","./help/ja.js":"./help/ja.js?v=acb4365c","./i18n.js":"./i18n.js?v=a8e19543","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=8d2bea55","./threeview.js":"./threeview.js?v=f51986d4","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=3553c1b7"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1792,7 +1792,8 @@ const MESSAGES = {
     "textureSel": "革の質感",
     "textureNone": "なし（革色のまま）",
     "applyTexture": "選んだ部品に質感を付ける",
-    "textureMm": "質感1枚の大きさ (mm)",
+    "textureMm": "質感1枚の大きさ (mm・空欄なら写真ごとの実寸)",
+    "textureMmHint": "空欄＝写真ごと",
     "textureApplied": "{n} 部品に質感「{name}」を付けました。",
     "textureCleared": "{n} 部品の質感を外しました（革色に戻ります）。",
     "threadApplied": "{n} 経路に糸色 {name} を適用。",
@@ -2576,7 +2577,8 @@ const MESSAGES = {
     "textureSel": "Leather texture",
     "textureNone": "None (flat color)",
     "applyTexture": "Apply texture to selected parts",
-    "textureMm": "Texture tile size (mm)",
+    "textureMm": "Texture tile size (mm; blank = each photo’s own size)",
+    "textureMmHint": "blank = per photo",
     "textureApplied": "Applied texture \"{name}\" to {n} part(s).",
     "textureCleared": "Removed texture from {n} part(s) (back to flat color).",
     "threadApplied": "Applied thread {name} to {n} path(s).",
@@ -2770,7 +2772,7 @@ function holeToSvg(h, doc, color = '#e00000') {
   return a.kind === 'slit' ? `<line x1="${pts[0].split(',')[0]}" y1="${pts[0].split(',')[1]}" x2="${pts[1].split(',')[0]}" y2="${pts[1].split(',')[1]}" stroke="${color}"/>` : `<polygon points="${pts.join(' ')}" fill="none" stroke="${color}"/>`;
 }
 /** 文書から SVG 文字列を返す。1 ユーザー単位＝1mm、width/height は mm、レイヤーごとに <g id>。線は黒 strokeMm、穴は赤。 */
-/** textures：革の質感 { id: { avg: '#rrggbb', href: 'data:image/jpeg;base64,…'（無ければ平均色で塗る） } }、textureMm：1枚の画像が実物で何 mm 四方か。fill のときだけ使う。 */
+/** textures：革の質感 { id: { avg: '#rrggbb', href: 'data:image/jpeg;base64,…'（無ければ平均色で塗る）, mm: その質感1枚の実寸（省略可） } }、textureMm：mm の無い質感に使う1枚の大きさ。fill のときだけ使う。 */
 function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30 } = {}) {
   const shapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible));
   const holes = includeHoles ? holesOnShapes(doc, shapes) : [];
@@ -2795,8 +2797,8 @@ function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marg
   const threadHex = h => { const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
   const holeGroup = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h))).join('')}</g>` : '';
   const inner = `<g fill="none" stroke="#000" stroke-width="${f(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${groups}${holeGroup}</g>`;
-  const mm = textureMm > 0 ? textureMm : 30; /* 質感の繰り返し模様：1 ユーザー単位＝1mm なので、画像 1 枚を mm 四方に貼る */
-  const defs = usedTex.size ? `<defs>${[...usedTex].map(id => `<pattern id="tex-${safeId(id)}" patternUnits="userSpaceOnUse" width="${f(mm)}" height="${f(mm)}"><image href="${esc(textures[id].href)}" x="0" y="0" width="${f(mm)}" height="${f(mm)}" preserveAspectRatio="none"/></pattern>`).join('')}</defs>` : '';
+  const mmOf = id => (Number(textures[id].mm) > 0 ? Number(textures[id].mm) : textureMm > 0 ? textureMm : 30); /* 質感の繰り返し模様：1 ユーザー単位＝1mm。写真ごとの実寸（mm）があればそれ、無ければ textureMm */
+  const defs = usedTex.size ? `<defs>${[...usedTex].map(id => { const mm = f(mmOf(id)); return `<pattern id="tex-${safeId(id)}" patternUnits="userSpaceOnUse" width="${mm}" height="${mm}"><image href="${esc(textures[id].href)}" x="0" y="0" width="${mm}" height="${mm}" preserveAspectRatio="none"/></pattern>`; }).join('')}</defs>` : '';
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w * fx)}mm" height="${f(h * fy)}mm" viewBox="${f(x0 * fx)} ${f(y0 * fy)} ${f(w * fx)} ${f(h * fy)}">${defs}${fx === 1 && fy === 1 ? inner : `<g transform="scale(${f(fx)} ${f(fy)})">${inner}</g>`}</svg>`;
 }
 /** 校正係数：期待値 ÷ 実測値。実測が正でなければ null。 */
@@ -5600,7 +5602,7 @@ __mods['data/textures'] = (function(){
 // Generated by tools/build_data.js; edit JSON instead.
 const DATA_TEXTURES = {
   "_comment": "革の質感（継ぎ目なしの革写真）。tools/build_textures.py が後方部のテクスチャライブラリと ns-factory の革目録から作る。手で直さない。",
-  "generatedAt": "2026-10-10",
+  "generatedAt": "2026-10-11",
   "tileMm": 30,
   "textures": [
     {
@@ -8955,8 +8957,9 @@ const DATA_TEXTURES = {
         "グリーン系"
       ],
       "file": "assets/textures/mfog_all.jpg",
-      "px": 384,
-      "avg": "#8d8d8b"
+      "px": 1152,
+      "avg": "#8d8e8b",
+      "mm": 330
     },
     {
       "id": "mfog_brn",
@@ -8969,8 +8972,9 @@ const DATA_TEXTURES = {
         "ブラウン系"
       ],
       "file": "assets/textures/mfog_brn.jpg",
-      "px": 384,
-      "avg": "#ada39d"
+      "px": 1152,
+      "avg": "#aea5a0",
+      "mm": 330
     },
     {
       "id": "mfog_cas",
@@ -8983,8 +8987,9 @@ const DATA_TEXTURES = {
         "ブラウン系"
       ],
       "file": "assets/textures/mfog_cas.jpg",
-      "px": 384,
-      "avg": "#a0a09e"
+      "px": 1152,
+      "avg": "#999997",
+      "mm": 330
     },
     {
       "id": "mfog_cob",
@@ -8997,8 +9002,9 @@ const DATA_TEXTURES = {
         "ブルー系"
       ],
       "file": "assets/textures/mfog_cob.jpg",
-      "px": 384,
-      "avg": "#878d95"
+      "px": 1152,
+      "avg": "#818790",
+      "mm": 330
     },
     {
       "id": "mfog_fra",
@@ -9011,8 +9017,9 @@ const DATA_TEXTURES = {
         "レッド系"
       ],
       "file": "assets/textures/mfog_fra.jpg",
-      "px": 384,
-      "avg": "#c89098"
+      "px": 1152,
+      "avg": "#c8969e",
+      "mm": 330
     },
     {
       "id": "mfog_fux",
@@ -9025,8 +9032,9 @@ const DATA_TEXTURES = {
         "レッド系"
       ],
       "file": "assets/textures/mfog_fux.jpg",
-      "px": 256,
-      "avg": "#b77488"
+      "px": 1152,
+      "avg": "#c87e96",
+      "mm": 330
     },
     {
       "id": "mfog_gir",
@@ -9039,8 +9047,9 @@ const DATA_TEXTURES = {
         "イエロー系"
       ],
       "file": "assets/textures/mfog_gir.jpg",
-      "px": 384,
-      "avg": "#ae916a"
+      "px": 1152,
+      "avg": "#ad906a",
+      "mm": 330
     },
     {
       "id": "mfog_nat",
@@ -9053,8 +9062,9 @@ const DATA_TEXTURES = {
         "ナチュラル系"
       ],
       "file": "assets/textures/mfog_nat.jpg",
-      "px": 384,
-      "avg": "#d0b29f"
+      "px": 1152,
+      "avg": "#d0b7aa",
+      "mm": 330
     },
     {
       "id": "mfog_nav",
@@ -9067,8 +9077,9 @@ const DATA_TEXTURES = {
         "ブルー系"
       ],
       "file": "assets/textures/mfog_nav.jpg",
-      "px": 384,
-      "avg": "#96979e"
+      "px": 1152,
+      "avg": "#909299",
+      "mm": 330
     },
     {
       "id": "mfog_ner",
@@ -9081,8 +9092,9 @@ const DATA_TEXTURES = {
         "ダーク系"
       ],
       "file": "assets/textures/mfog_ner.jpg",
-      "px": 384,
-      "avg": "#78797b"
+      "px": 1152,
+      "avg": "#74767b",
+      "mm": 330
     },
     {
       "id": "mfog_top",
@@ -9095,8 +9107,9 @@ const DATA_TEXTURES = {
         "ダーク系"
       ],
       "file": "assets/textures/mfog_top.jpg",
-      "px": 384,
-      "avg": "#91908d"
+      "px": 1152,
+      "avg": "#959492",
+      "mm": 330
     },
     {
       "id": "mfog_tur",
@@ -9109,8 +9122,9 @@ const DATA_TEXTURES = {
         "ブルー系"
       ],
       "file": "assets/textures/mfog_tur.jpg",
-      "px": 384,
-      "avg": "#7f8f93"
+      "px": 1152,
+      "avg": "#839497",
+      "mm": 330
     },
     {
       "id": "mg_all",
@@ -14540,7 +14554,7 @@ const HELP_JA = {
     {
       "id": "colors",
       "title": "カラーシミュレーション",
-      "body": "カラーカードで、部品ごとの革色（16 色の見本か #RRGGBB）と、縫い経路ごとの糸色（ビニモ MBT 92 色・色番と和名で検索・よく使う色はピン留め）を選べます。2D では部品の閉図形が半透明で塗られ、穴が糸色になります。3D でも板の面色に反映されます。\n色の組み合わせは名前を付けて文書に保存し、切り替えられます。「色付き SVG」は塗りと糸色付きで書き出し、「3D を PNG」は 3D 表示をそのまま画像にします。革の質感：カラーカードの「革の質感」で革の名前（例：ALASKA ピンク）を探して選び、部品（図形）を選んで「選んだ部品に質感を付ける」を押すと、継ぎ目なしの革写真（カワムラレザーの革 280 種）が繰り返し貼られます。「質感1枚の大きさ (mm)」は写真1枚が実物で何 mm 四方かで、文書ごとに保存されます。「なし」を付けると革色に戻ります。部品に入っていない閉じた図形には図形自身に付きます（図形の指定が部品より優先）。「色付き SVG」には写真ごと埋め込まれます。3D は写真の平均色のベタ塗りです。"
+      "body": "カラーカードで、部品ごとの革色（16 色の見本か #RRGGBB）と、縫い経路ごとの糸色（ビニモ MBT 92 色・色番と和名で検索・よく使う色はピン留め）を選べます。2D では部品の閉図形が半透明で塗られ、穴が糸色になります。3D でも板の面色に反映されます。\n色の組み合わせは名前を付けて文書に保存し、切り替えられます。「色付き SVG」は塗りと糸色付きで書き出し、「3D を PNG」は 3D 表示をそのまま画像にします。革の質感：カラーカードの「革の質感」で革の名前（例：ALASKA ピンク）を探して選び、部品（図形）を選んで「選んだ部品に質感を付ける」を押すと、継ぎ目なしの革写真（カワムラレザーの革 280 種）が繰り返し貼られます。「質感1枚の大きさ (mm)」は空欄なら写真ごとの実寸（革ごとに記録した値・無い革は 30mm）、数値を入れると全部の質感をその大きさで貼ります（文書ごとに保存）。マルゴーフォグは取引先の元写真から作り直し、隣り合う切れ端を任意の角度で回して境目をぼかした大きな1枚（約330mm四方）なので、同じ模様が規則的に並びません。「なし」を付けると革色に戻ります。部品に入っていない閉じた図形には図形自身に付きます（図形の指定が部品より優先）。「色付き SVG」には写真ごと埋め込まれます。3D は写真の平均色のベタ塗りです。"
     },
     {
       "id": "shortcuts",
@@ -14689,7 +14703,7 @@ const HELP_EN = {
     {
       "id": "colors",
       "title": "Color simulation",
-      "body": "In the Colors card choose a leather color per part (16 swatches or #RRGGBB) and a thread color per stitched path (92 Vinymo MBT colors, searchable by number and Japanese name, pin favorites). In 2D closed part shapes are tinted and holes take the thread color; 3D uses the part color on panels.\nColor sets can be saved by name in the document and switched. “Colored SVG” exports fills and thread colors; “3D as PNG” saves the current 3D view. Leather texture: in the Colors card’s \"Leather texture\", search a leather by name (e.g. ALASKA pink), select a part’s shape and press \"Apply texture to selected parts\"; a seamless leather photo (280 Kawamura leathers) is tiled over it. \"Texture tile size (mm)\" is how many mm one photo covers and is saved per document. Apply \"None\" to return to the flat color. A closed shape outside any part gets the texture itself (a shape’s own texture wins over its part’s). \"Colored SVG\" embeds the photos; 3D uses the photo’s average color."
+      "body": "In the Colors card choose a leather color per part (16 swatches or #RRGGBB) and a thread color per stitched path (92 Vinymo MBT colors, searchable by number and Japanese name, pin favorites). In 2D closed part shapes are tinted and holes take the thread color; 3D uses the part color on panels.\nColor sets can be saved by name in the document and switched. “Colored SVG” exports fills and thread colors; “3D as PNG” saves the current 3D view. Leather texture: in the Colors card’s \"Leather texture\", search a leather by name (e.g. ALASKA pink), select a part’s shape and press \"Apply texture to selected parts\"; a seamless leather photo (280 Kawamura leathers) is tiled over it. \"Texture tile size (mm)\": leave it blank to use each photo’s own real size (recorded per leather; 30 mm when unknown), or enter a number to tile every texture at that size (saved per document). MARGOT FOG was rebuilt from the supplier’s original photos as one large sheet (about 330 mm) of randomly rotated, edge-blended pieces, so the same pattern does not repeat in a regular grid. Apply \"None\" to return to the flat color. A closed shape outside any part gets the texture itself (a shape’s own texture wins over its part’s). \"Colored SVG\" embeds the photos; 3D uses the photo’s average color."
     },
     {
       "id": "shortcuts",
@@ -16056,8 +16070,8 @@ function applyLeather(hex) {
 }
 /* ---- 革の質感（テクスチャ）：継ぎ目なしの革写真を部品やピースに繰り返し貼る（カラーシミュレーション） ---- */
 const TEXTURES = DATA_TEXTURES.textures, textureById = id => (id && TEXTURES.find(x => x.id === id)) || null, texImages = new Map();
-/** 1枚の画像が実物で何 mm 四方か（文書の設定・無ければ既定） */
-function textureMm() { const v = Number(doc.textureMm); return v > 0 ? v : DATA_TEXTURES.tileMm; }
+/** 1枚の画像が実物で何 mm 四方か：文書の設定（数値）があれば全部それ、無ければ写真ごとの実寸（データの mm）、それも無ければ既定 */
+function textureMm(id) { const v = Number(doc.textureMm); if (v > 0) return v; const x = id ? textureById(id) : null; return x && Number(x.mm) > 0 ? Number(x.mm) : DATA_TEXTURES.tileMm; }
 /** 部品の板の色（3D）：質感が付いていれば写真の平均色、無ければ革色 */
 const partPanelColor = p => (p.texture && textureById(p.texture)?.avg) || p.color || null;
 /** 図形に貼る質感の id：図形自身の指定が優先、無ければ部品の指定 */
@@ -16071,14 +16085,14 @@ function texImage(id) {
 /** 画面の塗り：画像が読めていれば繰り返し模様（図面の mm に合わせて拡大縮小し、図面の原点に固定）、まだなら平均色 */
 function textureFill(id) {
   const x = textureById(id), img = texImage(id), pat = img && typeof ctx.createPattern === 'function' ? ctx.createPattern(img, 'repeat') : null;
-  if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = scale * textureMm() / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, origin.x, origin.y])); return pat; }
+  if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = scale * textureMm(id) / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, origin.x, origin.y])); return pat; }
   return x ? x.avg : '#d9c7a0';
 }
 /** SVG 書き出し用：使っている質感の画像を埋め込む（読み込めていないものは平均色で塗られる） */
 function svgTextures() {
   const used = new Set([...doc.parts.map(p => p.texture), ...doc.shapes.map(s => s.texture)].filter(Boolean)), out = {};
   for (const id of used) {
-    const x = textureById(id); if (!x) continue; out[id] = { avg: x.avg };
+    const x = textureById(id); if (!x) continue; out[id] = { avg: x.avg, mm: textureMm(id) };
     const img = texImage(id); if (!img) continue;
     try { const c = document.createElement('canvas'); if (typeof c.getContext !== 'function') continue; c.width = img.width; c.height = img.height; c.getContext('2d').drawImage(img, 0, 0); out[id].href = c.toDataURL('image/jpeg', 0.85); } catch { /* 画像を取り出せないときは平均色 */ }
   }
@@ -16091,7 +16105,7 @@ function renderTextures() {
   fillSel($('textureSel'), textureList());
   for (const id of ['patchTexA', 'patchTexB']) fillSel($(id), TEXTURES);
   const cur = textureById($('textureSel').value), pv = $('texturePreview'); pv.style.background = cur ? `${cur.avg} url("${cur.file}") center / 48px` : 'transparent'; pv.title = cur ? cur.name + (cur.sub ? ' / ' + cur.sub : '') : '';
-  $('textureMm').value = String(textureMm());
+  $('textureMm').value = Number(doc.textureMm) > 0 ? String(doc.textureMm) : ''; /* 空欄＝写真ごとの実寸 */
 }
 /** 選んだ図形の部品に質感を付ける（id が空なら外して革色に戻す）。部品に入っていない閉じた図形には、図形自身に付ける */
 function applyTexture(id) {
@@ -16128,7 +16142,11 @@ function initColors() {
   $('leatherHex').addEventListener('change', () => { const v = $('leatherHex').value; if (/^#[0-9a-fA-F]{6}$/.test(v)) applyLeather(v); });
   $('textureSearch').addEventListener('input', renderTextures); $('textureSel').addEventListener('change', renderTextures);
   $('applyTexture').onclick = () => applyTexture($('textureSel').value);
-  $('textureMm').addEventListener('change', () => { const v = Number($('textureMm').value); if (v > 0) commit(() => { doc.textureMm = v; }); else $('textureMm').value = String(textureMm()); });
+  $('textureMm').addEventListener('change', () => { /* 数値＝全部その大きさ・空欄＝写真ごとの実寸に戻す・数でなければ元の表示に戻す */
+    const raw = String($('textureMm').value ?? '').trim(), v = Number(raw);
+    if (raw !== '' && !(v > 0)) { $('textureMm').value = Number(doc.textureMm) > 0 ? String(doc.textureMm) : ''; return; }
+    if (v > 0 ? doc.textureMm !== v : doc.textureMm !== undefined) commit(() => { if (v > 0) doc.textureMm = v; else delete doc.textureMm; });
+  });
   $('savePattern').onclick = savePattern; $('loadPattern').onclick = loadPattern; $('exportPng3d').onclick = exportPng3d;
   $('exportSvgFill').onclick = () => { download('leather-pattern-color.svg', docToSvg(doc, { includeHoles: true, fill: true }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: 'SVG (color)' }); };
 }
