@@ -2159,7 +2159,11 @@ function save() {
   if (tabs[activeTab]) { tabs[activeTab].dirty = false; renderTabs(); }
 }
 window.addEventListener('beforeunload', e => { if (tabs.some(tb => tb.dirty)) { e.preventDefault(); e.returnValue = ''; } });
-$('save').onclick = save; $('open').onclick = () => $('file').click();
+/* 「保存」を押すと、保存と書き出し（SVG・PDF・DXF・PNG）のメニューが出る。普段は隠れている。Ctrl+S は N's CAD 形式でそのまま保存 */
+$('save').onclick = () => { $('saveMenu').hidden = !$('saveMenu').hidden; };
+$('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
+for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
+document.addEventListener?.('click', e => { const m = $('saveMenu'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && e.target !== $('save')) m.hidden = true; }); $('open').onclick = () => $('file').click();
 $('file').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
   await openFile(file);
