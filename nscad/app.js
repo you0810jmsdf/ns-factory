@@ -269,7 +269,7 @@ function initPresets() {
   });
 }
 function initStitch() {
-  $('offsetDist').value='2.5'; $('offsetSide').value='in'; /* 標準：2.5mm・内側（事業主指示 2026-10-10） */ $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='radius'; $('arcRadius').value='';
+  $('offsetDist').value='2.5'; $('offsetSide').value='in'; /* 標準：2.5mm・内側（事業主指示 2026-10-10） */ $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='three'; /* 標準：3点（始点→通過点→終点のクリックだけ） */ $('arcRadius').value='';
   try { const saved = localStorage.getItem('leather-cad.snapDist'); $('snapDist').value = saved !== null && Number.isFinite(Number(saved)) && Number(saved) >= 0 ? saved : '10'; } catch { $('snapDist').value = '10'; }
   $('snapDist').addEventListener('change', () => { saveSnapDist(); draw(); });
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'2',defaultMark:'tool'};
@@ -615,6 +615,7 @@ function initDesign() {
   for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   if (typeof setInterval === 'function') setInterval(() => { if (junctions.loose.length && $('showJunctions').checked && !(typeof document !== 'undefined' && document.hidden)) { blinkOn = !blinkOn; draw(); } else blinkOn = true; }, 500); /* 未結合の交点だけ点滅させる */
+  $('arcMethod').addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') window.open('guide.html', '_blank'); }; /* 図解ガイド（日本語）を別タブで開く */
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
@@ -1578,14 +1579,14 @@ function commit(fn) {
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
-  $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill';
-  const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
+  $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
+  const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
 function setMode(next) {
   cancel(); manualNext = null; nodeSel = null; mode = next; syncToolCards();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
-  $('hint').textContent = t('hint.' + mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
+  $('hint').textContent = modeHint(mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
 function history(from, to) {
   if (!from.length) return;
@@ -1820,6 +1821,8 @@ function shapeFromDrag(a, b) {
 }
 /** 円弧の作図方式が「3点」か。 */
 function arcThreePoint() { return $('arcMethod').value === 'three'; }
+/** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
+function modeHint(m) { return m === 'arc' && arcThreePoint() ? t('hint.arc3') : t('hint.' + m); }
 /** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
 function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
 /** 3点（始点・通過点・終点）を通る円弧。一直線上なら null。通過点が弧の途中に来る向きに start/end を決める。 */
@@ -1836,7 +1839,7 @@ function arc3Click(p) {
   const pts = stage.pts; if (pts.some(q => distance(q, p) < 1e-8)) return;
   if (pts.length < 2) { pts.push(p); return; }
   const s = arcThroughPoints(pts[0], pts[1], p); if (!s) { $('hint').textContent = t('arcCollinear'); return; }
-  stage = null; addShape(s); lastPoint = p; $('hint').textContent = t('hint.arc');
+  stage = null; addShape(s); lastPoint = p; $('hint').textContent = modeHint('arc');
 }
 function arcShape(p) {
   const angle = Math.atan2(p.y - stage.center.y, p.x - stage.center.x) * 180 / Math.PI;
