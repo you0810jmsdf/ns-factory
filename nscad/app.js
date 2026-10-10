@@ -69,7 +69,7 @@ const threeViewOn = () => $('threeView').checked;
 /** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
 /** 枠の出発点：文書に「枠の指定」（選んだ四角を枠にしたもの）があればそれ、無ければ標準の枠。 */
 function threeViewBase() { const f = doc.threeView; return threeViewFrameValid(f) ? threeViewBaseFrom(f.front, f.depth) : THREE_VIEW_LAYOUT; }
-function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout) : null; }
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout, { specOf: binderSpec }) : null; }
 /** 右上の空き（45°の線のある区画）：ここに小さな立体画面を出す。文書座標の四角。 */
 function threeViewMiniBox() { const { top, side } = threeViewLayout; return { x: side.x, y: top.y, w: side.w, h: top.h }; }
 /** 小さな立体画面（枠方式）：右上の空きに、三面図から組み立てた立体を描く（描くたびに更新・この中をドラッグすると回る）。点線はこの上に描かれる。 */
@@ -238,7 +238,7 @@ function rebuildQuad() {
   if (!quadOn()) { quadMarksCache = null; quadSolidCache = null; return; }
   const shapesOf = role => { const d = sheetDoc(role); return d ? d.shapes.filter(s => d.layers.find(l => l.id === s.layer)?.visible && s.type !== 'image') : []; };
   const f = shapesOf('front'), tp = shapesOf('top'), sd = shapesOf('side');
-  quadMarksCache = threeViewSheetMarks(f, tp, sd); quadSolidCache = threeViewSolidFromSheets(f, tp, sd);
+  quadMarksCache = threeViewSheetMarks(f, tp, sd); quadSolidCache = threeViewSolidFromSheets(f, tp, sd, { specOf: binderSpec });
 }
 /** ほかの紙の図形を、その紙の区画に描く（選択や作図中の線は無し）。sc はその紙の拡大率。 */
 function drawPlainSheet(d, sc, lo, hi) {
@@ -279,7 +279,7 @@ function drawSolidInRect(solid, b, label) {
   const flipped = solid.faces.map(f => ({ ...f, points: f.points.map(q => v3(q.x, -q.y, q.z)) })); /* 3D 画面（WebGL）と同じく y を反転して同じ向きに見せる */
   const proj = project(flipped, camMini, { width: b.w, height: b.h });
   ctx.beginPath(); ctx.rect(b.x, b.y, b.w, b.h); ctx.clip(); ctx.lineWidth = 0.5; ctx.strokeStyle = '#141414';
-  for (const f of proj) { if (f.points.length < 3) continue; const c = partColor(f, false).map(v => Math.round(v * 255 * f.shade)); ctx.beginPath(); f.points.forEach((q, i) => { if (i) ctx.lineTo(b.x + q.x, b.y + q.y); else ctx.moveTo(b.x + q.x, b.y + q.y); }); ctx.closePath(); ctx.fillStyle = `rgb(${c.join(',')})`; ctx.fill(); ctx.stroke(); }
+  for (const f of proj) { if (f.points.length < 3) continue; const c = partColor(f, false).map(v => Math.round(v * 255 * f.shade)); ctx.globalAlpha = ghostFace(f, solid) ? GHOST_ALPHA : 1; ctx.beginPath(); f.points.forEach((q, i) => { if (i) ctx.lineTo(b.x + q.x, b.y + q.y); else ctx.moveTo(b.x + q.x, b.y + q.y); }); ctx.closePath(); ctx.fillStyle = `rgb(${c.join(',')})`; ctx.fill(); ctx.stroke(); }
   ctx.restore();
 }
 /** 4分割の描画：3 枚の紙の区画（いま描いている紙は普段どおり・ほかは図形だけ）＋右上の立体＋区画の枠と名前。 */
@@ -1130,6 +1130,9 @@ function initOutput() {
 // ---- 3D（折りたたみ・三面図）----
 const canvas3d = $('canvas3d');
 let view3d = false, cam = null, foldT = 0, playing = null, gl = null, glProg = null, ctx3 = null, lastStats = { faces: 0, collisions: 0 };
+/** 「革を透かして見る」がオンの間、三面図の立体の革の面（金具以外）を半透明にして描く。 */
+const GHOST_ALPHA = 0.3;
+const ghostFace = (f, solid) => !!solid && f.partId !== 'binder' && !!$('ghost3d')?.checked;
 function folds() { return doc.shapes.filter(s => s.type === 'fold' && visible(s)); }
 function initGl() {
   if (gl !== null || typeof canvas3d.getContext !== 'function') return;
@@ -1137,7 +1140,7 @@ function initGl() {
   if (!gl) { ctx3 = canvas3d.getContext('2d'); return; }
   const vs = 'attribute vec3 p;attribute vec3 n;attribute vec3 c;attribute vec2 uv;uniform mat4 view;uniform mat4 proj;varying vec3 vc;varying vec3 vn;varying vec2 vuv;varying vec3 vpos;varying vec3 vwn;void main(){gl_Position=proj*view*vec4(p,1.0);vn=mat3(view)*n;vc=c;vuv=uv;vpos=p;vwn=n;}';
   /* uMode：0＝色だけ・1＝板の表裏（uv＝平らに置いたときの mm）・2＝立体の面（面の向きに応じて x/y・x/z・y/z の mm を使う）。uMm＝写真 1 枚の実寸。画像は 2 のべき乗でないので繰り返しは fract で */
-  const fs = 'precision mediump float;varying vec3 vc;varying vec3 vn;varying vec2 vuv;varying vec3 vpos;varying vec3 vwn;uniform sampler2D uTex;uniform float uMode;uniform float uMm;void main(){vec3 L=normalize(vec3(0.3,0.5,0.8));float d=0.35+0.65*max(0.0,dot(normalize(vn),L));vec3 base=vc;if(uMode>0.5){vec2 tc=vuv;if(uMode>1.5){vec3 a=abs(vwn);tc=(a.z>=a.x&&a.z>=a.y)?vpos.xy:((a.y>=a.x)?vpos.xz:vpos.yz);}base=texture2D(uTex,fract(tc/uMm)).rgb;}gl_FragColor=vec4(base*d,1.0);}';
+  const fs = 'precision mediump float;varying vec3 vc;varying vec3 vn;varying vec2 vuv;varying vec3 vpos;varying vec3 vwn;uniform sampler2D uTex;uniform float uMode;uniform float uMm;uniform float uAlpha;void main(){vec3 L=normalize(vec3(0.3,0.5,0.8));float d=0.35+0.65*max(0.0,dot(normalize(vn),L));vec3 base=vc;if(uMode>0.5){vec2 tc=vuv;if(uMode>1.5){vec3 a=abs(vwn);tc=(a.z>=a.x&&a.z>=a.y)?vpos.xy:((a.y>=a.x)?vpos.xz:vpos.yz);}base=texture2D(uTex,fract(tc/uMm)).rgb;}gl_FragColor=vec4(base*d,uAlpha);}';
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
   glProg = gl.createProgram(); gl.attachShader(glProg, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(glProg, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(glProg); gl.useProgram(glProg);
   gl.enable(gl.DEPTH_TEST); glProg.buf = gl.createBuffer();
@@ -1160,7 +1163,7 @@ function orthographic(hw, hh, near, far) { return [1 / hw, 0, 0, 0, 0, 1 / hh, 0
 /** 3D に出すもの：三面図が入なら三面図から組み立てた立体（threeview.js）、切なら折りたたみの板。 */
 function scene3d() {
   if (quadOn()) { const solid = quadSolidCache; return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('quad')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
-  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
+  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout, { specOf: binderSpec }); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
   const panels = buildPanels(doc, { colorOf: partPanelColor, textureOf: (part, s) => s.texture || part.texture || null }), fl = folds();
   return { faces: applyFolds(panels, fl, foldT / 100), hits: collisions(panels, fl, foldT / 100), panels, solid: null };
 }
@@ -1174,7 +1177,7 @@ function solidTextureOf(kind) {
   return front ? textureOf(front, d) : null;
 }
 /** 立体の全部の面に同じ質感を付ける（uv は無いので、面の向きで貼る） */
-const withSolidTexture = (faces, tex) => tex ? faces.map(f => ({ ...f, texture: tex })) : faces;
+const withSolidTexture = (faces, tex) => tex ? faces.map(f => f.partId === 'binder' ? f : ({ ...f, texture: tex })) : faces; /* 金具には革の質感を貼らない */
 /** 三面図の立体を見るときの最初のカメラ：立体の真ん中を向き、少し斜め上・右手前から。 */
 function threeViewCamera(faces) {
   const pts = faces.flatMap(f => f.points); if (!pts.length) return defaultCamera(doc);
@@ -1194,8 +1197,8 @@ function render3d() {
     gl.viewport(0, 0, W, H); gl.clearColor(0.06, 0.06, 0.06, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     const groups = new Map(); /* 質感ごとにまとめて描く（色だけの面は '' の組・板の表裏は uv・立体は面の向き） */
     for (const f of faces) {
-      const hit = hitSet.has(f.panelId), tex = !hit && f.texture && glTexture(f.texture) ? f.texture : '', key = tex ? tex + (f.uv ? '|uv' : '|tri') : '', col = partColor(f, hit), n = f.normal, idx = new Map(f.points.map((p, i) => [p, i]));
-      let g = groups.get(key); if (!g) { g = { tex, data: [], mode: tex ? (f.uv ? 1 : 2) : 0, mm: tex ? textureMm(tex) : 1 }; groups.set(key, g); }
+      const ghost = ghostFace(f, solid), hit = hitSet.has(f.panelId), tex = !hit && f.texture && glTexture(f.texture) ? f.texture : '', key = (tex ? tex + (f.uv ? '|uv' : '|tri') : '') + (ghost ? '|ghost' : ''), col = partColor(f, hit), n = f.normal, idx = new Map(f.points.map((p, i) => [p, i]));
+      let g = groups.get(key); if (!g) { g = { tex, ghost, data: [], mode: tex ? (f.uv ? 1 : 2) : 0, mm: tex ? textureMm(tex) : 1 }; groups.set(key, g); }
       for (const tri of triangulate(f.points)) for (const p of tri) { const u = f.uv ? f.uv[idx.get(p)] : null; g.data.push(p.x, -p.y, p.z, n.x, -n.y, n.z, col[0], col[1], col[2], u ? u.x : 0, u ? u.y : 0); }
     }
     const stride = 11 * 4, loc = name => gl.getAttribLocation(glProg, name), uni = name => gl.getUniformLocation(glProg, name);
@@ -1207,7 +1210,11 @@ function render3d() {
       const flipped = { ...c, target: { x: c.target.x, y: -c.target.y, z: c.target.z } };
       gl.uniformMatrix4fv(gl.getUniformLocation(glProg, 'view'), false, new Float32Array(viewMatrix(flipped)));
       gl.uniformMatrix4fv(gl.getUniformLocation(glProg, 'proj'), false, new Float32Array(c.ortho ? orthographic(size * aspect, size, -5000, 5000) : perspective(0.6, aspect, 1, 20000)));
-      for (const g of groups.values()) { gl.uniform1f(uni('uMode'), g.mode); gl.uniform1f(uni('uMm'), g.mm); if (g.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, glTexture(g.tex)); gl.uniform1i(uni('uTex'), 0); } gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.data), gl.DYNAMIC_DRAW); gl.drawArrays(gl.TRIANGLES, 0, g.data.length / 11); }
+      for (const ghostPass of [false, true]) { /* 不透明の面を先に、半透明の革は後から（奥行きは書き込まず）重ねる */
+        gl.uniform1f(uni('uAlpha'), ghostPass ? GHOST_ALPHA : 1); if (ghostPass) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); }
+      for (const g of groups.values()) { if (g.ghost !== ghostPass) continue; gl.uniform1f(uni('uMode'), g.mode); gl.uniform1f(uni('uMm'), g.mm); if (g.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, glTexture(g.tex)); gl.uniform1i(uni('uTex'), 0); } gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.data), gl.DYNAMIC_DRAW); gl.drawArrays(gl.TRIANGLES, 0, g.data.length / 11); }
+        if (ghostPass) { gl.depthMask(true); gl.disable(gl.BLEND); }
+      }
     }
     gl.disable(gl.SCISSOR_TEST);
   } else if (ctx3) {
@@ -1215,7 +1222,7 @@ function render3d() {
     for (const [, c, col, row] of views) {
       const vw = quad ? W / 2 : W, vh = quad ? H / 2 : H;
       const proj = project(faces, { ...c, target: { x: c.target.x, y: -c.target.y, z: c.target.z } }, { width: vw, height: vh }).map(f => ({ ...f, points: f.points.map(p => ({ x: p.x + col * vw, y: p.y + row * vh })) }));
-      for (const f of proj) { if (f.points.length < 3) continue; const col3 = partColor(f, hitSet.has(f.panelId)).map(v => Math.round(v * 255 * f.shade)); ctx3.beginPath(); f.points.forEach((p, i) => i ? ctx3.lineTo(p.x, p.y) : ctx3.moveTo(p.x, p.y)); ctx3.closePath(); ctx3.fillStyle = `rgb(${col3.join(',')})`; ctx3.fill(); ctx3.strokeStyle = '#222'; ctx3.lineWidth = 0.5; ctx3.stroke(); }
+      for (const f of proj) { if (f.points.length < 3) continue; const col3 = partColor(f, hitSet.has(f.panelId)).map(v => Math.round(v * 255 * f.shade)); ctx3.beginPath(); f.points.forEach((p, i) => i ? ctx3.lineTo(p.x, p.y) : ctx3.moveTo(p.x, p.y)); ctx3.closePath(); ctx3.fillStyle = `rgb(${col3.join(',')})`; ctx3.globalAlpha = ghostFace(f, solid) ? GHOST_ALPHA : 1; ctx3.fill(); ctx3.globalAlpha = 1; ctx3.strokeStyle = '#222'; ctx3.lineWidth = 0.5; ctx3.stroke(); }
     }
   }
   return lastStats;
@@ -1244,7 +1251,7 @@ function init3d() {
   $('view3d').onclick = () => setView3d(!view3d);
   $('foldT').addEventListener('input', () => { foldT = Number($('foldT').value) || 0; render3d(); });
   $('foldT').addEventListener('change', () => { foldT = Number($('foldT').value) || 0; render3d(); });
-  $('play').onclick = togglePlay; $('viewMode').addEventListener('change', () => render3d()); $('exportViews').onclick = exportViews; $('printViews').onclick = printViews; $('unfoldBtn').onclick = makeUnfold;
+  $('play').onclick = togglePlay; $('viewMode').addEventListener('change', () => render3d()); $('ghost3d').addEventListener('change', () => { render3d(); draw(); }); $('exportViews').onclick = exportViews; $('printViews').onclick = printViews; $('unfoldBtn').onclick = makeUnfold;
   $('resetCam').onclick = () => { cam = threeViewOn() ? threeViewCamera(scene3d().faces) : defaultCamera(doc); render3d(); };
   let drag = null;
   canvas3d.addEventListener('pointerdown', e => { e.preventDefault(); drag = { x: e.clientX, y: e.clientY, button: e.button, cam: { ...cam, target: { ...cam.target } } }; canvas3d.setPointerCapture?.(e.pointerId); });

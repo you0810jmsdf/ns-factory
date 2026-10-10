@@ -225,7 +225,7 @@
 <details class="card" id="card3d"><summary data-i18n="sim3d"></summary><div class="body">
 <label><span data-i18n="foldT"></span><input id="foldT" type="range" min="0" max="100" step="1" value="0"></label>
 <div class="row"><button id="play" data-i18n="play"></button><button id="resetCam" data-i18n="resetCam"></button></div>
-<label><span data-i18n="viewMode"></span><select id="viewMode"><option value="free" data-i18n="viewFree"></option><option value="quad" data-i18n="viewQuad"></option></select></label>
+<label><input id="ghost3d" type="checkbox"><span data-i18n="ghost3d"></span></label><label><span data-i18n="viewMode"></span><select id="viewMode"><option value="free" data-i18n="viewFree"></option><option value="quad" data-i18n="viewQuad"></option></select></label>
 <output id="collisionInfo" class="note"></output>
 <div class="row"><button id="exportViews" data-i18n="exportViews"></button><button id="printViews" data-i18n="printViews"></button></div>
 <label><span data-i18n="unfoldAllowance"></span><input id="unfoldAllowance" type="number" step="0.5" value="3"></label>
@@ -444,8 +444,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=e62353e8","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=30bcd8df","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=fc00b5de","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=e62353e8"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=ac004f85","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=0a4bad26","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=676a6191","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=ac004f85"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1605,6 +1605,7 @@ const MESSAGES = {
     "pause": "停止",
     "resetCam": "視点を戻す",
     "viewMode": "表示",
+    "ghost3d": "革を透かして見る",
     "viewFree": "自由視点",
     "viewQuad": "4分割（正面・上面・側面・自由）",
     "exportViews": "三面図 SVG",
@@ -2399,6 +2400,7 @@ const MESSAGES = {
     "pause": "Pause",
     "resetCam": "Reset view",
     "viewMode": "View",
+    "ghost3d": "See through the leather",
     "viewFree": "Free",
     "viewQuad": "Quad (front, top, right, free)",
     "exportViews": "Views SVG",
@@ -3929,6 +3931,187 @@ function edgeNormal(a, b, sign) { const dx = b.x - a.x, dy = b.y - a.y, l = Math
 
 return {v3, add3, sub3, scale3, dot3, cross3, len3, norm3, identity, multiply, translation, rotationAxis, transformPoint, rotationAbout, splitPolygon, buildPanels, pointInPolygon, panelFaces, triangulate, faceNormal, foldMatrices, applyFolds, viewMatrix, project, collisions, orthoViews, viewsToSvg, defaultCamera, unfold};
 })();
+__mods['hardware'] = (function(){
+// 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
+// 式（"innerW+2*wireD" など）は params を使った四則だけを許す安全な評価器で解く。
+const { rotate } = __mods['geometry'];
+/** params を使う四則の式を解く（数値・+ - * / ( ) ・識別子のみ。eval 禁止）。 */
+function evalExpr(expr, params = {}) {
+  if (typeof expr === 'number') return expr;
+  const s = String(expr).replace(/\s+/g, ''); if (!/^[\w.+\-*/()]+$/.test(s)) throw new Error('expr');
+  let i = 0;
+  const peek = () => s[i], num = () => { const m = s.slice(i).match(/^(\d+(?:\.\d+)?|[A-Za-z_]\w*)/); if (!m) throw new Error('expr'); i += m[0].length; if (/^[A-Za-z_]/.test(m[0])) { if (!(m[0] in params) || !Number.isFinite(params[m[0]])) throw new Error('param:' + m[0]); return params[m[0]]; } return Number(m[0]); };
+  const factor = () => { if (peek() === '(') { i++; const v = expr3(); if (s[i++] !== ')') throw new Error('expr'); return v; } if (peek() === '-') { i++; return -factor(); } return num(); };
+  const term = () => { let v = factor(); while (peek() === '*' || peek() === '/') { const op = s[i++], r = factor(); v = op === '*' ? v * r : v / r; } return v; };
+  const expr3 = () => { let v = term(); while (peek() === '+' || peek() === '-') { const op = s[i++], r = term(); v = op === '+' ? v + r : v - r; } return v; };
+  const v = expr3(); if (i !== s.length) throw new Error('expr'); return v;
+}
+const roundRect = (w, h, r) => { const pts = [], n = 4, R = Math.min(r || 0, w / 2, h / 2); if (R <= 0) return [{ x: -w / 2, y: -h / 2 }, { x: w / 2, y: -h / 2 }, { x: w / 2, y: h / 2 }, { x: -w / 2, y: h / 2 }]; const corners = [[w / 2 - R, h / 2 - R, 0], [-w / 2 + R, h / 2 - R, 90], [-w / 2 + R, -h / 2 + R, 180], [w / 2 - R, -h / 2 + R, 270]]; for (const [cx, cy, a0] of corners) for (let k = 0; k <= n; k++) { const a = (a0 + 90 * k / n) * Math.PI / 180; pts.push({ x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }); } return pts; };
+/** 金具 1 件と上書きパラメータから、ローカル座標（中心 0,0）の {outline:[shape], holes:[shape], solid} を返す。binder は spec（data/binder）が要る。 */
+function hardwareFootprint(item, overrides = {}, binderSpec = null) {
+  const p = { ...item.params, ...overrides }, E = x => evalExpr(x, p), fp = item.footprint2d, outline = [], holes = [];
+  if (fp.kind === 'circle') outline.push({ type: 'circle', cx: 0, cy: 0, r: E(fp.d) / 2 });
+  else if (fp.kind === 'rect') outline.push({ type: 'polyline', closed: true, points: roundRect(E(fp.w), E(fp.h), fp.r !== undefined ? E(fp.r) : 0) });
+  else if (fp.kind === 'dring') { const w = E(fp.w), d = E(fp.wireD), h = w * 0.6; const pts = [{ x: -w / 2 - d, y: -h / 2 - d }, { x: w / 2 + d, y: -h / 2 - d }]; for (let k = 0; k <= 8; k++) { const a = (-90 + 180 * k / 8) * Math.PI / 180; pts.push({ x: w / 2 + d + 0 + (h / 2 + d) * Math.cos(a) * 0.0 + 0, y: 0 }); } outline.push({ type: 'polyline', closed: true, points: roundRect(w + 2 * d, h + 2 * d, (h + 2 * d) / 2) }); }
+  else if (fp.kind === 'zipper') { const L = E(fp.len), tw = E(fp.tapeW), ew = E(fp.elementW); outline.push({ type: 'polyline', closed: true, points: roundRect(L, tw, 0) }, { type: 'line', x1: -L / 2, y1: -ew / 2, x2: L / 2, y2: -ew / 2 }, { type: 'line', x1: -L / 2, y1: ew / 2, x2: L / 2, y2: ew / 2 }); }
+  else if (fp.kind === 'binder') {
+    if (!binderSpec) throw new Error('binderSpec');
+    const L = binderSpec.plate.lengthMm, W = binderSpec.plate.widthMm, ringD = p.ringD || binderSpec.rings.diameterOptionsMm[0];
+    outline.push({ type: 'polyline', closed: true, points: roundRect(L, W, binderSpec.plate.cornerRMm || 0) });
+    let x = -binderSpec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of binderSpec.holes.pitchMm) { x += pitch; xs.push(x); }
+    for (const hx of xs) outline.push({ type: 'circle', cx: hx, cy: 0, r: ringD / 2 });
+    for (const rv of binderSpec.rivets) holes.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
+    return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: ringD + binderSpec.plate.thicknessMm }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
+  }
+  for (const h of item.holes || []) {
+    const x = E(h.x), y = E(h.y);
+    if (h.d !== undefined) holes.push({ type: 'circle', cx: x, cy: y, r: E(h.d) / 2 });
+    else holes.push({ type: 'polyline', closed: true, points: roundRect(E(h.slotL), E(h.slotW), E(h.slotW) / 2).map(q => ({ x: q.x + x, y: q.y + y })) });
+  }
+  const sd = item.solid3d, solid = sd.kind === 'cylinder' ? { kind: 'cylinder', d: E(sd.d), z: E(sd.h) } : sd.kind === 'box' ? { kind: 'box', w: E(sd.w), h: E(sd.h), z: E(sd.z) } : { kind: 'box', w: 10, h: 10, z: 2 };
+  return { outline, holes, solid };
+}
+/** ローカル図形を配置点・角度（度・時計回り）へ移す。 */
+function placeFootprint(fp, at, angleDeg = 0) {
+  const move = s => { const r = rotate(s, angleDeg); const q = { ...r }; for (const [x, y] of [['x', 'y'], ['x1', 'y1'], ['x2', 'y2'], ['cx', 'cy']]) if (x in q) { q[x] += at.x; q[y] += at.y; } if (q.points) q.points = q.points.map(pt => ({ x: pt.x + at.x, y: pt.y + at.y })); return q; };
+  return { outline: fp.outline.map(move), holes: fp.holes.map(move), solid: fp.solid, ringCenters: fp.ringCenters ? fp.ringCenters.map(c => { const r = rotate(c, angleDeg); return { x: r.x + at.x, y: r.y + at.y }; }) : undefined };
+}
+/** バインダー金具の立体（台座の箱＋リングの輪＋リベット）を面の配列で返す（sim3d の面形式）。openAngle は 0〜90°。 */
+function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z0 = 0, segments = 16 } = {}) {
+  const L = spec.plate.lengthMm, W = spec.plate.widthMm, T = spec.plate.thicknessMm, faces = [];
+  const box = (cx, cy, w, h, zb, zt) => { const c = [{ x: cx - w / 2, y: cy - h / 2 }, { x: cx + w / 2, y: cy - h / 2 }, { x: cx + w / 2, y: cy + h / 2 }, { x: cx - w / 2, y: cy + h / 2 }]; faces.push({ kind: 'top', points: c.map(p => ({ x: p.x, y: p.y, z: zt })) }, { kind: 'bottom', points: [...c].reverse().map(p => ({ x: p.x, y: p.y, z: zb })) }); for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; faces.push({ kind: 'side', points: [{ x: a.x, y: a.y, z: zt }, { x: b.x, y: b.y, z: zt }, { x: b.x, y: b.y, z: zb }, { x: a.x, y: a.y, z: zb }] }); } };
+  box(at.x, at.y, L, W, z0, z0 + T);
+  let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
+  const R = ringD / 2, wire = 2, open = openAngle * Math.PI / 180;
+  for (const hx of xs) for (const side of [-1, 1]) {
+    // 半リング：台座中心から y 方向 side に開く。開くときは上端で ±open だけ離れる
+    // 輪は台座の上に立つ直径 ringD の円。片側ずつ下端（−90°）から上端（+90°）へ。開くときは上端ほど外へ離す
+    const pts = []; for (let k = 0; k <= segments; k++) { const a = -Math.PI / 2 + Math.PI * k / segments, lift = (Math.sin(a) + 1) / 2; pts.push({ x: at.x + hx, y: at.y + side * (R * Math.cos(a) + Math.sin(open) * R * lift), z: z0 + T + R + R * Math.sin(a) }); }
+    for (let k = 0; k < pts.length - 1; k++) { const a = pts[k], b = pts[k + 1]; faces.push({ kind: 'side', points: [{ x: a.x - wire / 2, y: a.y, z: a.z }, { x: a.x + wire / 2, y: a.y, z: a.z }, { x: b.x + wire / 2, y: b.y, z: b.z }, { x: b.x - wire / 2, y: b.y, z: b.z }] }); }
+  }
+  for (const rv of spec.rivets) box(at.x + rv.xMm, at.y + rv.yMm, rv.dMm, rv.dMm, z0 - 1, z0);
+  return faces.map(f => ({ ...f, panelId: 'binder', partId: 'binder', color: '#c8b060' }));
+}
+/** 必要な背幅：リング径 + 金具ベース厚 + 革厚×2 + 遊び。 */
+function spineWidth(ringD, baseThickness = 2, leatherThickness = 1.5, playMm = 2) { return ringD + baseThickness + 2 * leatherThickness + playMm; }
+/** 背幅の断面シミュレーション（純関数）。閉じた手帳の断面：台座（厚さ plateT）の上に外径 ringD+2*wireD の輪が立ち、表紙は背の両端で 90° 折れて輪の両脇を通る。
+ *  内幅 = 輪の外径 + 2*遊び（輪と表紙内面のすき間）。背の型紙幅 = 内幅 + 2*折り代（θ(r + K t)・θ=90°）。輪の高さが表紙の張り出し（サポータ厚＋台座厚）を超える分は干渉として返す。
+ *  params: {ringD（内径）, wireD（線径）, plateT, leatherT, supporterT, playMm, foldR（曲げ内半径）, k} → {innerW, outerRingD, foldEach, spineW, ringTop, coverGap, section} */
+function spineSim({ ringD = 20, wireD = 2, plateT = 2, leatherT = 1.5, supporterT = 0, playMm = 1.5, foldR = 0, k = 0.5 } = {}) {
+  const num = v => Number.isFinite(v) && v >= 0;
+  if (![ringD, wireD, plateT, leatherT, supporterT, playMm, foldR, k].every(num) || ringD <= 0) return null;
+  const outerRingD = ringD + 2 * wireD, innerW = outerRingD + 2 * playMm, foldEach = (Math.PI / 2) * (foldR + k * leatherT), spineW = innerW + 2 * foldEach;
+  const ringTop = supporterT + plateT + outerRingD; // 背の内面からの輪の天井高さ
+  const section = { // 断面図用（mm・背の内面中央を原点・上向き正）
+    plate: { x: -12, y: supporterT, w: 24, h: plateT }, supporter: supporterT > 0 ? { x: -innerW / 2, y: 0, w: innerW, h: supporterT } : null,
+    ring: { cx: 0, cy: supporterT + plateT + outerRingD / 2, rOuter: outerRingD / 2, rInner: ringD / 2 },
+    coverL: { x: -innerW / 2 - leatherT, y: 0, w: leatherT, h: ringTop + 10 }, coverR: { x: innerW / 2, y: 0, w: leatherT, h: ringTop + 10 }, spine: { x: -innerW / 2 - leatherT, y: -leatherT, w: innerW + 2 * leatherT, h: leatherT },
+  };
+  return { innerW: spineRound(innerW), outerRingD: spineRound(outerRingD), foldEach: spineRound(foldEach), spineW: spineRound(spineW), ringTop: spineRound(ringTop), section };
+}
+/** 実測の背幅（型紙の幅）から遊びを逆算する。戻り値 playMm（負なら実測が理論値より狭い）。 */
+function spinePlayFromMeasured(measuredSpineW, params = {}) {
+  const base = spineSim({ ...params, playMm: 0 }); if (!base || !Number.isFinite(measuredSpineW)) return null;
+  return spineRound((measuredSpineW - base.spineW) / 2);
+}
+/** 断面図 SVG（mm・1:1）。 */
+function spineSectionSvg(result, { label = '' } = {}) {
+  if (!result) return ''; const s = result.section, f = n => (Math.round(n * 100) / 100).toString();
+  const minX = s.coverL.x - 6, maxX = s.coverR.x + s.coverR.w + 6, minY = -s.spine.h - 6, maxY = result.ringTop + 14, W = maxX - minX, H = maxY - minY;
+  const rect = (r, fill) => `<rect x="${f(r.x)}" y="${f(-(r.y + r.h))}" width="${f(r.w)}" height="${f(r.h)}" fill="${fill}" stroke="#000" stroke-width="0.2"/>`;
+  const body = [rect(s.spine, '#d9c7a0'), rect(s.coverL, '#d9c7a0'), rect(s.coverR, '#d9c7a0'), s.supporter ? rect(s.supporter, '#c4ad7f') : '', rect(s.plate, '#9a9a9a'),
+    `<circle cx="${f(s.ring.cx)}" cy="${f(-s.ring.cy)}" r="${f(s.ring.rOuter)}" fill="none" stroke="#b08d2a" stroke-width="${f(s.ring.rOuter - s.ring.rInner)}"/>`,
+    `<line x1="${f(-result.innerW / 2)}" y1="${f(-(result.ringTop + 6))}" x2="${f(result.innerW / 2)}" y2="${f(-(result.ringTop + 6))}" stroke="#e00" stroke-width="0.2"/>`,
+    `<text x="0" y="${f(-(result.ringTop + 8))}" font-size="3" text-anchor="middle" font-family="sans-serif">${label || ''} inner ${f(result.innerW)} / spine ${f(result.spineW)} mm</text>`].join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="${f(minX)} ${f(-maxY)} ${f(W)} ${f(H)}">${body}</svg>`;
+}
+/** 閉じた手帳を天（真上）から見た断面（mm・Y 下向き・左端＝背の外面・Y が大きい側が手前＝表側の表紙）。背の革・表裏の表紙・サポータ・台座・リング（内外2円）・リフィルの束を図形で返す。
+ *  p は spineSim と同じ引数に加え {stackT（リフィルの束の厚み）, refillW（リフィル幅）, holeEdge（穴中心からリフィル縁まで）, coverW（背の内面からの表紙の長さ。省略で束の先から4mm）, plateW（台座の幅）}。
+ *  戻り値 {shapes, thickness（手帳の厚み）, coverW, ringX（背の外面からリング中心まで）, ringFits（束がリングの内径に収まるか）}。不正な数値は null。 */
+function closedBinderTop(p = {}) {
+  const sim = spineSim(p); if (!sim) return null;
+  const { leatherT = 1.5, supporterT = 0, plateT = 2 } = p, stackT = p.stackT ?? 6, refillW = p.refillW ?? 110, holeEdge = p.holeEdge ?? 6, plateW = Math.min(p.plateW ?? 24, sim.innerW);
+  if (![stackT, refillW, holeEdge, plateW].every(v => Number.isFinite(v) && v >= 0) || refillW <= holeEdge) return null;
+  const t = leatherT, T = sim.innerW + 2 * t, mid = T / 2, rIn = sim.innerW / 2, xc = t + rIn; /* 背は半円：中心 (xc, mid)・内半径 rIn・外半径 rIn+t。表裏の表紙は xc から右へ接続する */
+  const plateLeft = xc - Math.sqrt(Math.max(0, rIn * rIn - (plateW / 2) ** 2)), ringX = plateLeft + supporterT + plateT + sim.outerRingD / 2, tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
+  const coverW = p.coverW > 0 ? p.coverW : tipX + 4 - xc;
+  const rect = (x1, y1, x2, y2, role, hidden = false) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
+  const arc = (r, a0, a1, n) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + (a1 - a0) * i / n; return { x: xc + r * Math.cos(a), y: mid + r * Math.sin(a) }; }), segs = 36;
+  const spine = { type: 'polyline', closed: true, role: 'spine', points: [...arc(rIn + t, -Math.PI / 2, -3 * Math.PI / 2, segs), ...arc(rIn, -3 * Math.PI / 2, -Math.PI / 2, segs)] }; /* 外周を上→左→下、内周を下→左→上 */
+  const shapes = [spine, rect(xc, 0, xc + coverW, t, 'back-cover'), rect(xc, T - t, xc + coverW, T, 'front-cover')];
+  if (supporterT > 0) shapes.push(rect(plateLeft, mid - plateW / 2, plateLeft + supporterT, mid + plateW / 2, 'supporter'));
+  shapes.push(rect(plateLeft + supporterT, mid - plateW / 2, plateLeft + supporterT + plateT, mid + plateW / 2, 'plate'),
+    { type: 'circle', cx: ringX, cy: mid, r: sim.outerRingD / 2, role: 'ring-outer' }, { type: 'circle', cx: ringX, cy: mid, r: p.ringD / 2, role: 'ring-inner' },
+    rect(ringX - holeEdge, mid - stackT / 2, tipX, mid + stackT / 2, 'refills'));
+  return { shapes, thickness: Math.round(T * 100) / 100, coverW: Math.round(coverW * 100) / 100, ringX: Math.round(ringX * 100) / 100, xc: Math.round(xc * 100) / 100, plateLeft: Math.round(plateLeft * 100) / 100, ringFits: stackT <= p.ringD, sim };
+}
+/** 閉じた手帳の3面図（第三角法）：天を正面の上、右側面を正面の右に置く。mm・Y 下向き・正面の左上が原点。隠れる部分は hidden（破線）。
+ *  p は closedBinderTop の引数に加え {refillH（リフィル高さ）, coverH（表紙の高さ。省略でリフィル高さ+6）, ringPos（リング中心の高さ方向の位置の配列。省略時は中央に等間隔 3 個）, plateL（台座の長さ）, gap（図の間隔）}。
+ *  戻り値 {shapes, width, height, views:{front,top,side}, thickness, coverW}。不正な数値は null。 */
+function closedBinderViews(p = {}) {
+  const top = closedBinderTop(p); if (!top) return null;
+  const t = p.leatherT ?? 1.5, T = top.thickness, Wf = top.xc + top.coverW, refillH = p.refillH ?? 210, H = p.coverH > 0 ? p.coverH : refillH + 6, gap = p.gap ?? 14, plateL = Math.min(p.plateL ?? 170, H), wire = p.wireD ?? 2;
+  if (![refillH, H, gap, plateL, wire].every(v => Number.isFinite(v) && v > 0)) return null;
+  const rpos = Array.isArray(p.ringPos) && p.ringPos.length ? p.ringPos : [H / 2 - 35, H / 2, H / 2 + 35], outerD = top.sim.outerRingD, sx = Wf + gap, topY = -gap - T;
+  const rect = (x1, y1, x2, y2, role, hidden) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden: true } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
+  const shapes = [];
+  /* 天：断面をそのまま、正面の上に */
+  for (const s of top.shapes) shapes.push(s.type === 'circle' ? { ...s, cy: s.cy + topY } : { ...s, points: s.points.map(q => ({ x: q.x, y: q.y + topY })) });
+  /* 正面：表紙の外形。背（左 t）と表紙の線。隠れ線＝台座・リング（真横から見ると細長い長方形）・リフィルの縁 */
+  shapes.push(rect(0, 0, Wf, H, 'front-outline'), { type: 'line', role: 'spine-line', x1: top.xc, y1: 0, x2: top.xc, y2: H }); /* 丸い背が表紙に変わる線 */
+  const px = top.plateLeft + (p.supporterT ?? 0); shapes.push(rect(px, H / 2 - plateL / 2, px + (p.plateT ?? 2), H / 2 + plateL / 2, 'plate', true));
+  for (const y of rpos) shapes.push(rect(top.ringX - outerD / 2, y - wire, top.ringX + outerD / 2, y + wire, 'ring', true));
+  const rh = Math.min(refillH, H); shapes.push(rect(top.ringX - (p.holeEdge ?? 6), (H - rh) / 2, Wf - 4 + 0, (H + rh) / 2, 'refills', true));
+  /* 右側面（小口側から）：手前＝表の表紙が左。表紙の厚み・リフィルの束の端 */
+  shapes.push(rect(sx, 0, sx + T, H, 'side-outline'), { type: 'line', role: 'cover-line', x1: sx + t, y1: 0, x2: sx + t, y2: H }, { type: 'line', role: 'cover-line', x1: sx + T - t, y1: 0, x2: sx + T - t, y2: H });
+  const stack = p.stackT ?? 6, sm = T / 2; shapes.push(rect(sx + T - sm - stack / 2, (H - rh) / 2, sx + T - sm + stack / 2, (H + rh) / 2, 'refills'));
+  /* 寸法 */
+  shapes.push({ type: 'dimension', role: 'dim', x1: 0, y1: H, x2: Wf, y2: H, offset: -8 }, { type: 'dimension', role: 'dim', x1: 0, y1: 0, x2: 0, y2: H, offset: 8 }, { type: 'dimension', role: 'dim', x1: sx, y1: H, x2: sx + T, y2: H, offset: -8 });
+  return { shapes, width: sx + T, height: H - topY, views: { front: { x: 0, y: 0, w: Wf, h: H }, top: { x: 0, y: topY, w: Wf, h: T }, side: { x: sx, y: 0, w: T, h: H } }, thickness: T, coverW: top.coverW, ringFits: top.ringFits };
+}
+/** closedBinderViews の結果をプレビュー用 SVG にする（mm・1:1。隠れ線は破線）。 */
+function closedBinderViewsSvg(res) {
+  if (!res) return ''; const f = n => (Math.round(n * 100) / 100).toString(), fill = { spine: '#d9c7a0', 'back-cover': '#d9c7a0', 'front-cover': '#d9c7a0', supporter: '#c4ad7f', plate: '#9a9a9a', refills: '#f2f2f2' };
+  const ys = res.shapes.flatMap(s => s.type === 'circle' ? [s.cy - s.r, s.cy + s.r] : s.points ? s.points.map(q => q.y) : [s.y1, s.y2]), minY = Math.min(...ys) - 4, W = res.width + 24, H = Math.max(...ys) - minY + 20;
+  const body = res.shapes.filter(s => s.type !== 'dimension').map(s => { const dash = s.hidden ? ' stroke-dasharray="2 1.5"' : ''; return s.type === 'circle' ? `<circle cx="${f(s.cx)}" cy="${f(s.cy)}" r="${f(s.r)}" fill="none" stroke="#b08d2a" stroke-width="0.4"/>` : s.type === 'line' ? `<line x1="${f(s.x1)}" y1="${f(s.y1)}" x2="${f(s.x2)}" y2="${f(s.y2)}" stroke="#000" stroke-width="0.2"/>` : `<polygon points="${s.points.map(q => f(q.x) + ',' + f(q.y)).join(' ')}" fill="${s.hidden ? 'none' : fill[s.role] || 'none'}" stroke="#000" stroke-width="0.2"${dash}/>`; }).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="-4 ${f(minY)} ${f(W)} ${f(H)}">${body}</svg>`;
+}
+function spineRound(n) { return Math.round(n * 100) / 100; }
+/** バインダー規格の平面図（上から）SVG。穴中心・リング径・台座外形・リベット・寸法線。mm 単位。 */
+function binderPlanSvg(spec, ringD = null) {
+  const L = spec.plate.lengthMm, W = spec.plate.widthMm, D = ringD || spec.rings.diameterOptionsMm[0], f = n => (Math.round(n * 100) / 100).toString();
+  let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
+  const pad = 12, w = L + 2 * pad, h = Math.max(W, D) + 2 * pad + 10;
+  const parts = [`<rect x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(spec.plate.cornerRMm || 0)}" fill="none" stroke="#000" stroke-width="0.2"/>`];
+  for (const hx of xs) parts.push(`<circle cx="${f(hx)}" cy="0" r="${f(D / 2)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(hx)}" cy="0" r="0.6" fill="#000"/>`);
+  for (const rv of spec.rivets) parts.push(`<circle cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}" fill="none" stroke="#000" stroke-width="0.2" stroke-dasharray="1 0.5"/>`);
+  const dy = Math.max(W, D) / 2 + 5;
+  for (let i = 0; i + 1 < xs.length; i++) parts.push(`<line x1="${f(xs[i])}" y1="${f(dy)}" x2="${f(xs[i + 1])}" y2="${f(dy)}" stroke="#000" stroke-width="0.15"/><text x="${f((xs[i] + xs[i + 1]) / 2)}" y="${f(dy - 1)}" font-size="2.5" text-anchor="middle" font-family="sans-serif">${f(spec.holes.pitchMm[i])}</text>`);
+  parts.push(`<text x="${f(-L / 2)}" y="${f(-Math.max(W, D) / 2 - 4)}" font-size="3" font-family="sans-serif">${spec.names.ja} ${spec.holes.count}穴 / ring ${f(D)}mm / span ${f(spec.holes.span1toLastMm)}mm</text>`);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h / 2)} ${f(w)} ${f(h)}"><g id="plan">${parts.join('')}</g></svg>`;
+}
+/** 側面図（リングの輪が見える向き）と正面図（台座の長手方向）。 */
+function binderSideSvg(spec, ringD = null) {
+  const W = spec.plate.widthMm, T = spec.plate.thicknessMm, D = ringD || spec.rings.diameterOptionsMm[0], f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = Math.max(W, D) + 2 * pad, h = D + T + 2 * pad;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h + pad)} ${f(w)} ${f(h)}"><g id="side"><rect x="${f(-W / 2)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/><path d="M${f(-D / 2)} 0A${f(D / 2)} ${f(D / 2)} 0 0 1 ${f(D / 2)} 0" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(D)}mm</text></g></svg>`;
+}
+function binderFrontSvg(spec, ringD = null) {
+  const L = spec.plate.lengthMm, T = spec.plate.thicknessMm, D = ringD || spec.rings.diameterOptionsMm[0], f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = L + 2 * pad, h = D + T + 2 * pad;
+  let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
+  const rings = xs.map(hx => `<rect x="${f(hx - 1)}" y="${f(-D)}" width="2" height="${f(D)}" fill="none" stroke="#000" stroke-width="0.2"/>`).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h + pad)} ${f(w)} ${f(h)}"><g id="front"><rect x="${f(-L / 2)}" y="0" width="${f(L)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>${rings}</g></svg>`;
+}
+/** 規格 JSON の整合検査：必須キー・ピッチの合計＝span。問題を文字列配列で返す（空＝OK）。 */
+function checkBinderSpec(spec) {
+  const out = [];
+  for (const k of ['id', 'names', 'holes', 'refill', 'rings', 'plate', 'rivets', 'confidence']) if (!(k in spec)) out.push('missing:' + k);
+  if (spec.holes) { if (spec.holes.pitchMm.length !== spec.holes.count - 1) out.push('pitch-count'); const sum = spec.holes.pitchMm.reduce((a, b) => a + b, 0); if (Math.abs(sum - spec.holes.span1toLastMm) > 0.1) out.push('span-mismatch'); }
+  if (spec.rings && !spec.rings.diameterOptionsMm?.length) out.push('rings-empty');
+  return out;
+}
+
+return {evalExpr, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec};
+})();
 __mods['threeview'] = (function(){
 // 三面図（正面から見た図・上から見た図・右から見た図）を描くときの手伝い。
 // ここは計算だけ（画面に描くのは app.js）。依存は geometry.js の bboxOf だけ。
@@ -3941,6 +4124,7 @@ __mods['threeview'] = (function(){
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
 const { bboxOf, flattenShape, chainShapes } = __mods['geometry'];
 const { v3, faceNormal } = __mods['sim3d'];
+const { binderSolid } = __mods['hardware'];
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
 const THREE_VIEW_LAYOUT = {
   top: { x: 0, y: 0, w: 300, h: 220 },
@@ -4275,8 +4459,25 @@ function solidFromPolys(F, T, S, { depthDefault = 30, maxSlices = 80 } = {}) {
   }
   if (!slabs) return null;
   const xs = F.map(p => p.x);
-  return { faces, slabs, width: Math.max(...xs) - Math.min(...xs), height: maxY - minY, depth: depthMax, hasTop: !!T, hasSide: !!S };
+  return { faces, slabs, width: Math.max(...xs) - Math.min(...xs), height: maxY - minY, depth: depthMax, base, hasTop: !!T, hasSide: !!S };
 }
+/** 正面に置いたバインダー金具（hw.id が binder- で始まる図形）の3Dを、立体の奥行きの中央に重ねた面の配列で返す。
+ *  金具の平面（x, y）が正面図の（x, y）、金具の厚み・リングの立ち上がり（z）が奥行き方向（手前向き）。specOf(specId) が null を返す金具は飛ばす。 */
+function threeViewHardwareFaces(solid, hwShapes, specOf) {
+  const out = [], base = solid.base, dc = solid.depth / 2;
+  for (const s of hwShapes || []) {
+    const hw = s?.hw; if (!hw || !String(hw.id).startsWith('binder') || !specOf) continue;
+    const spec = specOf(hw.params?.spec); if (!spec) continue;
+    const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], at = hw.at || { x: 0, y: 0 }, a = (Number(hw.angleDeg) || 0) * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
+    const local = binderSolid(spec, ringD, 0), zs = local.flatMap(f => f.points.map(p => p.z)), zmid = (Math.min(...zs) + Math.max(...zs)) / 2;
+    const map = p => v3(at.x + p.x * cs - p.y * sn, base - dc + (p.z - zmid), base - (at.y + p.x * sn + p.y * cs));
+    const mean = pts => pts.reduce((m, p) => v3(m.x + p.x / pts.length, m.y + p.y / pts.length, m.z + p.z / pts.length), v3());
+    const faces = local.map(f => ({ ...f, points: f.points.map(map) })), centre = mean(faces.flatMap(f => f.points));
+    for (const f of faces) { let pts = f.points, n = faceNormal(pts); const c = mean(pts); if ((c.x - centre.x) * n.x + (c.y - centre.y) * n.y + (c.z - centre.z) * n.z < 0) { pts = [...pts].reverse(); n = faceNormal(pts); } out.push({ ...f, points: pts, normal: n, center: c }); }
+  }
+  return out;
+}
+const withHardware = (solid, hwShapes, specOf) => { if (!solid || !specOf) return solid; const extra = threeViewHardwareFaces(solid, hwShapes, specOf); return extra.length ? { ...solid, faces: [...solid.faces, ...extra], hardware: extra.length } : solid; };
 const biggestPoly = list => list.length ? list.reduce((a, b) => polyArea(b) > polyArea(a) ? b : a) : null;
 /** 三面図（枠方式）から立体を組み立てる。
  *  正面の枠の閉じた形（いちばん大きいもの）＝正面の輪郭、上の枠の閉じた形＝上の輪郭（横 x × 奥行き）、右の枠の閉じた形＝右の輪郭（奥行き × 高さ）。
@@ -4284,7 +4485,7 @@ const biggestPoly = list => list.length ? list.reduce((a, b) => polyArea(b) > po
  *  上の輪郭が無ければ長方形（奥行きは右の輪郭から・それも無ければ depthDefault）。右の輪郭が無ければ奥行きいっぱい。正面に閉じた形が無ければ null。
  *  3D の置き方（sim3d と同じ座標）：x はそのまま、高さは正面の下端を z=0 として上へ（z = 下端 − y）、奥行きは正面の下端の y を手前として奥へ y が小さくなる（y = 下端 − 奥行き）。
  *  返り値：{ faces（sim3d.applyFolds と同じ形）, slabs, width, height, depth, hasTop, hasSide } */
-function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
+function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80, specOf = null } = {}) {
   const groups = { front: [], top: [], side: [] };
   const byArea = { front: [], top: [], side: [] };
   for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (area) byArea[area].push(s); }
@@ -4294,200 +4495,19 @@ function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30,
   const topPoly = biggestPoly(groups.top), sidePoly = biggestPoly(groups.side);
   const T = topPoly ? topPoly.map(p => ({ x: p.x, y: bottomOfTop - p.y })) : null;      /* (x, 奥行き) */
   const S = sidePoly ? sidePoly.map(p => ({ x: p.x - leftOfSide, y: p.y })) : null;    /* (奥行き, 高さ y) */
-  return solidFromPolys(F, T, S, { depthDefault, maxSlices });
+  return withHardware(solidFromPolys(F, T, S, { depthDefault, maxSlices }), byArea.front, specOf);
 }
 /** 紙を分けた三面図（4分割）から立体を組み立てる。上の紙は y=−奥行き、右の紙は x=奥行き（手前の線が 0）。 */
-function threeViewSolidFromSheets(frontShapes, topShapes, sideShapes, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
+function threeViewSolidFromSheets(frontShapes, topShapes, sideShapes, { depthDefault = 30, tolerance = 0.3, maxSlices = 80, specOf = null } = {}) {
   const polys = list => closedPolygons(list, tolerance);
   const F = biggestPoly(polys(frontShapes)); if (!F) return null;
   const tp = biggestPoly(polys(topShapes)), sp = biggestPoly(polys(sideShapes));
   const T = tp ? tp.map(p => ({ x: p.x, y: -p.y })) : null;
   const S = sp ? sp.map(p => ({ x: p.x, y: p.y })) : null;
-  return solidFromPolys(F, T, S, { depthDefault, maxSlices });
+  return withHardware(solidFromPolys(F, T, S, { depthDefault, maxSlices }), frontShapes, specOf);
 }
 
-return {THREE_VIEW_LAYOUT, THREE_VIEW_MARGIN, threeViewAreaAt, threeViewShapeArea, threeViewFitLayout, threeViewDepthOfTopY, threeViewTopYOfDepth, threeViewDepthOfSideX, threeViewSideXOfDepth, threeViewMiter, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewGuidePoints, threeViewMarks, threeViewTargets, threeViewGuideLines, threeViewCursorLines, threeViewSnapToLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSheetMarks, threeViewSheetTargets, threeViewFollowDelta, threeViewSheetCursor, threeViewSpansAt, threeViewClipToRect, threeViewSolid, threeViewSolidFromSheets};
-})();
-__mods['hardware'] = (function(){
-// 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
-// 式（"innerW+2*wireD" など）は params を使った四則だけを許す安全な評価器で解く。
-const { rotate } = __mods['geometry'];
-/** params を使う四則の式を解く（数値・+ - * / ( ) ・識別子のみ。eval 禁止）。 */
-function evalExpr(expr, params = {}) {
-  if (typeof expr === 'number') return expr;
-  const s = String(expr).replace(/\s+/g, ''); if (!/^[\w.+\-*/()]+$/.test(s)) throw new Error('expr');
-  let i = 0;
-  const peek = () => s[i], num = () => { const m = s.slice(i).match(/^(\d+(?:\.\d+)?|[A-Za-z_]\w*)/); if (!m) throw new Error('expr'); i += m[0].length; if (/^[A-Za-z_]/.test(m[0])) { if (!(m[0] in params) || !Number.isFinite(params[m[0]])) throw new Error('param:' + m[0]); return params[m[0]]; } return Number(m[0]); };
-  const factor = () => { if (peek() === '(') { i++; const v = expr3(); if (s[i++] !== ')') throw new Error('expr'); return v; } if (peek() === '-') { i++; return -factor(); } return num(); };
-  const term = () => { let v = factor(); while (peek() === '*' || peek() === '/') { const op = s[i++], r = factor(); v = op === '*' ? v * r : v / r; } return v; };
-  const expr3 = () => { let v = term(); while (peek() === '+' || peek() === '-') { const op = s[i++], r = term(); v = op === '+' ? v + r : v - r; } return v; };
-  const v = expr3(); if (i !== s.length) throw new Error('expr'); return v;
-}
-const roundRect = (w, h, r) => { const pts = [], n = 4, R = Math.min(r || 0, w / 2, h / 2); if (R <= 0) return [{ x: -w / 2, y: -h / 2 }, { x: w / 2, y: -h / 2 }, { x: w / 2, y: h / 2 }, { x: -w / 2, y: h / 2 }]; const corners = [[w / 2 - R, h / 2 - R, 0], [-w / 2 + R, h / 2 - R, 90], [-w / 2 + R, -h / 2 + R, 180], [w / 2 - R, -h / 2 + R, 270]]; for (const [cx, cy, a0] of corners) for (let k = 0; k <= n; k++) { const a = (a0 + 90 * k / n) * Math.PI / 180; pts.push({ x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }); } return pts; };
-/** 金具 1 件と上書きパラメータから、ローカル座標（中心 0,0）の {outline:[shape], holes:[shape], solid} を返す。binder は spec（data/binder）が要る。 */
-function hardwareFootprint(item, overrides = {}, binderSpec = null) {
-  const p = { ...item.params, ...overrides }, E = x => evalExpr(x, p), fp = item.footprint2d, outline = [], holes = [];
-  if (fp.kind === 'circle') outline.push({ type: 'circle', cx: 0, cy: 0, r: E(fp.d) / 2 });
-  else if (fp.kind === 'rect') outline.push({ type: 'polyline', closed: true, points: roundRect(E(fp.w), E(fp.h), fp.r !== undefined ? E(fp.r) : 0) });
-  else if (fp.kind === 'dring') { const w = E(fp.w), d = E(fp.wireD), h = w * 0.6; const pts = [{ x: -w / 2 - d, y: -h / 2 - d }, { x: w / 2 + d, y: -h / 2 - d }]; for (let k = 0; k <= 8; k++) { const a = (-90 + 180 * k / 8) * Math.PI / 180; pts.push({ x: w / 2 + d + 0 + (h / 2 + d) * Math.cos(a) * 0.0 + 0, y: 0 }); } outline.push({ type: 'polyline', closed: true, points: roundRect(w + 2 * d, h + 2 * d, (h + 2 * d) / 2) }); }
-  else if (fp.kind === 'zipper') { const L = E(fp.len), tw = E(fp.tapeW), ew = E(fp.elementW); outline.push({ type: 'polyline', closed: true, points: roundRect(L, tw, 0) }, { type: 'line', x1: -L / 2, y1: -ew / 2, x2: L / 2, y2: -ew / 2 }, { type: 'line', x1: -L / 2, y1: ew / 2, x2: L / 2, y2: ew / 2 }); }
-  else if (fp.kind === 'binder') {
-    if (!binderSpec) throw new Error('binderSpec');
-    const L = binderSpec.plate.lengthMm, W = binderSpec.plate.widthMm, ringD = p.ringD || binderSpec.rings.diameterOptionsMm[0];
-    outline.push({ type: 'polyline', closed: true, points: roundRect(L, W, binderSpec.plate.cornerRMm || 0) });
-    let x = -binderSpec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of binderSpec.holes.pitchMm) { x += pitch; xs.push(x); }
-    for (const hx of xs) outline.push({ type: 'circle', cx: hx, cy: 0, r: ringD / 2 });
-    for (const rv of binderSpec.rivets) holes.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
-    return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: ringD + binderSpec.plate.thicknessMm }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
-  }
-  for (const h of item.holes || []) {
-    const x = E(h.x), y = E(h.y);
-    if (h.d !== undefined) holes.push({ type: 'circle', cx: x, cy: y, r: E(h.d) / 2 });
-    else holes.push({ type: 'polyline', closed: true, points: roundRect(E(h.slotL), E(h.slotW), E(h.slotW) / 2).map(q => ({ x: q.x + x, y: q.y + y })) });
-  }
-  const sd = item.solid3d, solid = sd.kind === 'cylinder' ? { kind: 'cylinder', d: E(sd.d), z: E(sd.h) } : sd.kind === 'box' ? { kind: 'box', w: E(sd.w), h: E(sd.h), z: E(sd.z) } : { kind: 'box', w: 10, h: 10, z: 2 };
-  return { outline, holes, solid };
-}
-/** ローカル図形を配置点・角度（度・時計回り）へ移す。 */
-function placeFootprint(fp, at, angleDeg = 0) {
-  const move = s => { const r = rotate(s, angleDeg); const q = { ...r }; for (const [x, y] of [['x', 'y'], ['x1', 'y1'], ['x2', 'y2'], ['cx', 'cy']]) if (x in q) { q[x] += at.x; q[y] += at.y; } if (q.points) q.points = q.points.map(pt => ({ x: pt.x + at.x, y: pt.y + at.y })); return q; };
-  return { outline: fp.outline.map(move), holes: fp.holes.map(move), solid: fp.solid, ringCenters: fp.ringCenters ? fp.ringCenters.map(c => { const r = rotate(c, angleDeg); return { x: r.x + at.x, y: r.y + at.y }; }) : undefined };
-}
-/** バインダー金具の立体（台座の箱＋リングの輪＋リベット）を面の配列で返す（sim3d の面形式）。openAngle は 0〜90°。 */
-function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z0 = 0, segments = 16 } = {}) {
-  const L = spec.plate.lengthMm, W = spec.plate.widthMm, T = spec.plate.thicknessMm, faces = [];
-  const box = (cx, cy, w, h, zb, zt) => { const c = [{ x: cx - w / 2, y: cy - h / 2 }, { x: cx + w / 2, y: cy - h / 2 }, { x: cx + w / 2, y: cy + h / 2 }, { x: cx - w / 2, y: cy + h / 2 }]; faces.push({ kind: 'top', points: c.map(p => ({ x: p.x, y: p.y, z: zt })) }, { kind: 'bottom', points: [...c].reverse().map(p => ({ x: p.x, y: p.y, z: zb })) }); for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; faces.push({ kind: 'side', points: [{ x: a.x, y: a.y, z: zt }, { x: b.x, y: b.y, z: zt }, { x: b.x, y: b.y, z: zb }, { x: a.x, y: a.y, z: zb }] }); } };
-  box(at.x, at.y, L, W, z0, z0 + T);
-  let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
-  const R = ringD / 2, wire = 2, open = openAngle * Math.PI / 180;
-  for (const hx of xs) for (const side of [-1, 1]) {
-    // 半リング：台座中心から y 方向 side に開く。開くときは上端で ±open だけ離れる
-    // 輪は台座の上に立つ直径 ringD の円。片側ずつ下端（−90°）から上端（+90°）へ。開くときは上端ほど外へ離す
-    const pts = []; for (let k = 0; k <= segments; k++) { const a = -Math.PI / 2 + Math.PI * k / segments, lift = (Math.sin(a) + 1) / 2; pts.push({ x: at.x + hx, y: at.y + side * (R * Math.cos(a) + Math.sin(open) * R * lift), z: z0 + T + R + R * Math.sin(a) }); }
-    for (let k = 0; k < pts.length - 1; k++) { const a = pts[k], b = pts[k + 1]; faces.push({ kind: 'side', points: [{ x: a.x - wire / 2, y: a.y, z: a.z }, { x: a.x + wire / 2, y: a.y, z: a.z }, { x: b.x + wire / 2, y: b.y, z: b.z }, { x: b.x - wire / 2, y: b.y, z: b.z }] }); }
-  }
-  for (const rv of spec.rivets) box(at.x + rv.xMm, at.y + rv.yMm, rv.dMm, rv.dMm, z0 - 1, z0);
-  return faces.map(f => ({ ...f, panelId: 'binder', partId: 'binder', color: '#c8b060' }));
-}
-/** 必要な背幅：リング径 + 金具ベース厚 + 革厚×2 + 遊び。 */
-function spineWidth(ringD, baseThickness = 2, leatherThickness = 1.5, playMm = 2) { return ringD + baseThickness + 2 * leatherThickness + playMm; }
-/** 背幅の断面シミュレーション（純関数）。閉じた手帳の断面：台座（厚さ plateT）の上に外径 ringD+2*wireD の輪が立ち、表紙は背の両端で 90° 折れて輪の両脇を通る。
- *  内幅 = 輪の外径 + 2*遊び（輪と表紙内面のすき間）。背の型紙幅 = 内幅 + 2*折り代（θ(r + K t)・θ=90°）。輪の高さが表紙の張り出し（サポータ厚＋台座厚）を超える分は干渉として返す。
- *  params: {ringD（内径）, wireD（線径）, plateT, leatherT, supporterT, playMm, foldR（曲げ内半径）, k} → {innerW, outerRingD, foldEach, spineW, ringTop, coverGap, section} */
-function spineSim({ ringD = 20, wireD = 2, plateT = 2, leatherT = 1.5, supporterT = 0, playMm = 1.5, foldR = 0, k = 0.5 } = {}) {
-  const num = v => Number.isFinite(v) && v >= 0;
-  if (![ringD, wireD, plateT, leatherT, supporterT, playMm, foldR, k].every(num) || ringD <= 0) return null;
-  const outerRingD = ringD + 2 * wireD, innerW = outerRingD + 2 * playMm, foldEach = (Math.PI / 2) * (foldR + k * leatherT), spineW = innerW + 2 * foldEach;
-  const ringTop = supporterT + plateT + outerRingD; // 背の内面からの輪の天井高さ
-  const section = { // 断面図用（mm・背の内面中央を原点・上向き正）
-    plate: { x: -12, y: supporterT, w: 24, h: plateT }, supporter: supporterT > 0 ? { x: -innerW / 2, y: 0, w: innerW, h: supporterT } : null,
-    ring: { cx: 0, cy: supporterT + plateT + outerRingD / 2, rOuter: outerRingD / 2, rInner: ringD / 2 },
-    coverL: { x: -innerW / 2 - leatherT, y: 0, w: leatherT, h: ringTop + 10 }, coverR: { x: innerW / 2, y: 0, w: leatherT, h: ringTop + 10 }, spine: { x: -innerW / 2 - leatherT, y: -leatherT, w: innerW + 2 * leatherT, h: leatherT },
-  };
-  return { innerW: spineRound(innerW), outerRingD: spineRound(outerRingD), foldEach: spineRound(foldEach), spineW: spineRound(spineW), ringTop: spineRound(ringTop), section };
-}
-/** 実測の背幅（型紙の幅）から遊びを逆算する。戻り値 playMm（負なら実測が理論値より狭い）。 */
-function spinePlayFromMeasured(measuredSpineW, params = {}) {
-  const base = spineSim({ ...params, playMm: 0 }); if (!base || !Number.isFinite(measuredSpineW)) return null;
-  return spineRound((measuredSpineW - base.spineW) / 2);
-}
-/** 断面図 SVG（mm・1:1）。 */
-function spineSectionSvg(result, { label = '' } = {}) {
-  if (!result) return ''; const s = result.section, f = n => (Math.round(n * 100) / 100).toString();
-  const minX = s.coverL.x - 6, maxX = s.coverR.x + s.coverR.w + 6, minY = -s.spine.h - 6, maxY = result.ringTop + 14, W = maxX - minX, H = maxY - minY;
-  const rect = (r, fill) => `<rect x="${f(r.x)}" y="${f(-(r.y + r.h))}" width="${f(r.w)}" height="${f(r.h)}" fill="${fill}" stroke="#000" stroke-width="0.2"/>`;
-  const body = [rect(s.spine, '#d9c7a0'), rect(s.coverL, '#d9c7a0'), rect(s.coverR, '#d9c7a0'), s.supporter ? rect(s.supporter, '#c4ad7f') : '', rect(s.plate, '#9a9a9a'),
-    `<circle cx="${f(s.ring.cx)}" cy="${f(-s.ring.cy)}" r="${f(s.ring.rOuter)}" fill="none" stroke="#b08d2a" stroke-width="${f(s.ring.rOuter - s.ring.rInner)}"/>`,
-    `<line x1="${f(-result.innerW / 2)}" y1="${f(-(result.ringTop + 6))}" x2="${f(result.innerW / 2)}" y2="${f(-(result.ringTop + 6))}" stroke="#e00" stroke-width="0.2"/>`,
-    `<text x="0" y="${f(-(result.ringTop + 8))}" font-size="3" text-anchor="middle" font-family="sans-serif">${label || ''} inner ${f(result.innerW)} / spine ${f(result.spineW)} mm</text>`].join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="${f(minX)} ${f(-maxY)} ${f(W)} ${f(H)}">${body}</svg>`;
-}
-/** 閉じた手帳を天（真上）から見た断面（mm・Y 下向き・左端＝背の外面・Y が大きい側が手前＝表側の表紙）。背の革・表裏の表紙・サポータ・台座・リング（内外2円）・リフィルの束を図形で返す。
- *  p は spineSim と同じ引数に加え {stackT（リフィルの束の厚み）, refillW（リフィル幅）, holeEdge（穴中心からリフィル縁まで）, coverW（背の内面からの表紙の長さ。省略で束の先から4mm）, plateW（台座の幅）}。
- *  戻り値 {shapes, thickness（手帳の厚み）, coverW, ringX（背の外面からリング中心まで）, ringFits（束がリングの内径に収まるか）}。不正な数値は null。 */
-function closedBinderTop(p = {}) {
-  const sim = spineSim(p); if (!sim) return null;
-  const { leatherT = 1.5, supporterT = 0, plateT = 2 } = p, stackT = p.stackT ?? 6, refillW = p.refillW ?? 110, holeEdge = p.holeEdge ?? 6, plateW = Math.min(p.plateW ?? 24, sim.innerW);
-  if (![stackT, refillW, holeEdge, plateW].every(v => Number.isFinite(v) && v >= 0) || refillW <= holeEdge) return null;
-  const t = leatherT, T = sim.innerW + 2 * t, mid = T / 2, rIn = sim.innerW / 2, xc = t + rIn; /* 背は半円：中心 (xc, mid)・内半径 rIn・外半径 rIn+t。表裏の表紙は xc から右へ接続する */
-  const plateLeft = xc - Math.sqrt(Math.max(0, rIn * rIn - (plateW / 2) ** 2)), ringX = plateLeft + supporterT + plateT + sim.outerRingD / 2, tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
-  const coverW = p.coverW > 0 ? p.coverW : tipX + 4 - xc;
-  const rect = (x1, y1, x2, y2, role, hidden = false) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
-  const arc = (r, a0, a1, n) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + (a1 - a0) * i / n; return { x: xc + r * Math.cos(a), y: mid + r * Math.sin(a) }; }), segs = 36;
-  const spine = { type: 'polyline', closed: true, role: 'spine', points: [...arc(rIn + t, -Math.PI / 2, -3 * Math.PI / 2, segs), ...arc(rIn, -3 * Math.PI / 2, -Math.PI / 2, segs)] }; /* 外周を上→左→下、内周を下→左→上 */
-  const shapes = [spine, rect(xc, 0, xc + coverW, t, 'back-cover'), rect(xc, T - t, xc + coverW, T, 'front-cover')];
-  if (supporterT > 0) shapes.push(rect(plateLeft, mid - plateW / 2, plateLeft + supporterT, mid + plateW / 2, 'supporter'));
-  shapes.push(rect(plateLeft + supporterT, mid - plateW / 2, plateLeft + supporterT + plateT, mid + plateW / 2, 'plate'),
-    { type: 'circle', cx: ringX, cy: mid, r: sim.outerRingD / 2, role: 'ring-outer' }, { type: 'circle', cx: ringX, cy: mid, r: p.ringD / 2, role: 'ring-inner' },
-    rect(ringX - holeEdge, mid - stackT / 2, tipX, mid + stackT / 2, 'refills'));
-  return { shapes, thickness: Math.round(T * 100) / 100, coverW: Math.round(coverW * 100) / 100, ringX: Math.round(ringX * 100) / 100, xc: Math.round(xc * 100) / 100, plateLeft: Math.round(plateLeft * 100) / 100, ringFits: stackT <= p.ringD, sim };
-}
-/** 閉じた手帳の3面図（第三角法）：天を正面の上、右側面を正面の右に置く。mm・Y 下向き・正面の左上が原点。隠れる部分は hidden（破線）。
- *  p は closedBinderTop の引数に加え {refillH（リフィル高さ）, coverH（表紙の高さ。省略でリフィル高さ+6）, ringPos（リング中心の高さ方向の位置の配列。省略時は中央に等間隔 3 個）, plateL（台座の長さ）, gap（図の間隔）}。
- *  戻り値 {shapes, width, height, views:{front,top,side}, thickness, coverW}。不正な数値は null。 */
-function closedBinderViews(p = {}) {
-  const top = closedBinderTop(p); if (!top) return null;
-  const t = p.leatherT ?? 1.5, T = top.thickness, Wf = top.xc + top.coverW, refillH = p.refillH ?? 210, H = p.coverH > 0 ? p.coverH : refillH + 6, gap = p.gap ?? 14, plateL = Math.min(p.plateL ?? 170, H), wire = p.wireD ?? 2;
-  if (![refillH, H, gap, plateL, wire].every(v => Number.isFinite(v) && v > 0)) return null;
-  const rpos = Array.isArray(p.ringPos) && p.ringPos.length ? p.ringPos : [H / 2 - 35, H / 2, H / 2 + 35], outerD = top.sim.outerRingD, sx = Wf + gap, topY = -gap - T;
-  const rect = (x1, y1, x2, y2, role, hidden) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden: true } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
-  const shapes = [];
-  /* 天：断面をそのまま、正面の上に */
-  for (const s of top.shapes) shapes.push(s.type === 'circle' ? { ...s, cy: s.cy + topY } : { ...s, points: s.points.map(q => ({ x: q.x, y: q.y + topY })) });
-  /* 正面：表紙の外形。背（左 t）と表紙の線。隠れ線＝台座・リング（真横から見ると細長い長方形）・リフィルの縁 */
-  shapes.push(rect(0, 0, Wf, H, 'front-outline'), { type: 'line', role: 'spine-line', x1: top.xc, y1: 0, x2: top.xc, y2: H }); /* 丸い背が表紙に変わる線 */
-  const px = top.plateLeft + (p.supporterT ?? 0); shapes.push(rect(px, H / 2 - plateL / 2, px + (p.plateT ?? 2), H / 2 + plateL / 2, 'plate', true));
-  for (const y of rpos) shapes.push(rect(top.ringX - outerD / 2, y - wire, top.ringX + outerD / 2, y + wire, 'ring', true));
-  const rh = Math.min(refillH, H); shapes.push(rect(top.ringX - (p.holeEdge ?? 6), (H - rh) / 2, Wf - 4 + 0, (H + rh) / 2, 'refills', true));
-  /* 右側面（小口側から）：手前＝表の表紙が左。表紙の厚み・リフィルの束の端 */
-  shapes.push(rect(sx, 0, sx + T, H, 'side-outline'), { type: 'line', role: 'cover-line', x1: sx + t, y1: 0, x2: sx + t, y2: H }, { type: 'line', role: 'cover-line', x1: sx + T - t, y1: 0, x2: sx + T - t, y2: H });
-  const stack = p.stackT ?? 6, sm = T / 2; shapes.push(rect(sx + T - sm - stack / 2, (H - rh) / 2, sx + T - sm + stack / 2, (H + rh) / 2, 'refills'));
-  /* 寸法 */
-  shapes.push({ type: 'dimension', role: 'dim', x1: 0, y1: H, x2: Wf, y2: H, offset: -8 }, { type: 'dimension', role: 'dim', x1: 0, y1: 0, x2: 0, y2: H, offset: 8 }, { type: 'dimension', role: 'dim', x1: sx, y1: H, x2: sx + T, y2: H, offset: -8 });
-  return { shapes, width: sx + T, height: H - topY, views: { front: { x: 0, y: 0, w: Wf, h: H }, top: { x: 0, y: topY, w: Wf, h: T }, side: { x: sx, y: 0, w: T, h: H } }, thickness: T, coverW: top.coverW, ringFits: top.ringFits };
-}
-/** closedBinderViews の結果をプレビュー用 SVG にする（mm・1:1。隠れ線は破線）。 */
-function closedBinderViewsSvg(res) {
-  if (!res) return ''; const f = n => (Math.round(n * 100) / 100).toString(), fill = { spine: '#d9c7a0', 'back-cover': '#d9c7a0', 'front-cover': '#d9c7a0', supporter: '#c4ad7f', plate: '#9a9a9a', refills: '#f2f2f2' };
-  const ys = res.shapes.flatMap(s => s.type === 'circle' ? [s.cy - s.r, s.cy + s.r] : s.points ? s.points.map(q => q.y) : [s.y1, s.y2]), minY = Math.min(...ys) - 4, W = res.width + 24, H = Math.max(...ys) - minY + 20;
-  const body = res.shapes.filter(s => s.type !== 'dimension').map(s => { const dash = s.hidden ? ' stroke-dasharray="2 1.5"' : ''; return s.type === 'circle' ? `<circle cx="${f(s.cx)}" cy="${f(s.cy)}" r="${f(s.r)}" fill="none" stroke="#b08d2a" stroke-width="0.4"/>` : s.type === 'line' ? `<line x1="${f(s.x1)}" y1="${f(s.y1)}" x2="${f(s.x2)}" y2="${f(s.y2)}" stroke="#000" stroke-width="0.2"/>` : `<polygon points="${s.points.map(q => f(q.x) + ',' + f(q.y)).join(' ')}" fill="${s.hidden ? 'none' : fill[s.role] || 'none'}" stroke="#000" stroke-width="0.2"${dash}/>`; }).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="-4 ${f(minY)} ${f(W)} ${f(H)}">${body}</svg>`;
-}
-function spineRound(n) { return Math.round(n * 100) / 100; }
-/** バインダー規格の平面図（上から）SVG。穴中心・リング径・台座外形・リベット・寸法線。mm 単位。 */
-function binderPlanSvg(spec, ringD = null) {
-  const L = spec.plate.lengthMm, W = spec.plate.widthMm, D = ringD || spec.rings.diameterOptionsMm[0], f = n => (Math.round(n * 100) / 100).toString();
-  let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
-  const pad = 12, w = L + 2 * pad, h = Math.max(W, D) + 2 * pad + 10;
-  const parts = [`<rect x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(spec.plate.cornerRMm || 0)}" fill="none" stroke="#000" stroke-width="0.2"/>`];
-  for (const hx of xs) parts.push(`<circle cx="${f(hx)}" cy="0" r="${f(D / 2)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(hx)}" cy="0" r="0.6" fill="#000"/>`);
-  for (const rv of spec.rivets) parts.push(`<circle cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}" fill="none" stroke="#000" stroke-width="0.2" stroke-dasharray="1 0.5"/>`);
-  const dy = Math.max(W, D) / 2 + 5;
-  for (let i = 0; i + 1 < xs.length; i++) parts.push(`<line x1="${f(xs[i])}" y1="${f(dy)}" x2="${f(xs[i + 1])}" y2="${f(dy)}" stroke="#000" stroke-width="0.15"/><text x="${f((xs[i] + xs[i + 1]) / 2)}" y="${f(dy - 1)}" font-size="2.5" text-anchor="middle" font-family="sans-serif">${f(spec.holes.pitchMm[i])}</text>`);
-  parts.push(`<text x="${f(-L / 2)}" y="${f(-Math.max(W, D) / 2 - 4)}" font-size="3" font-family="sans-serif">${spec.names.ja} ${spec.holes.count}穴 / ring ${f(D)}mm / span ${f(spec.holes.span1toLastMm)}mm</text>`);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h / 2)} ${f(w)} ${f(h)}"><g id="plan">${parts.join('')}</g></svg>`;
-}
-/** 側面図（リングの輪が見える向き）と正面図（台座の長手方向）。 */
-function binderSideSvg(spec, ringD = null) {
-  const W = spec.plate.widthMm, T = spec.plate.thicknessMm, D = ringD || spec.rings.diameterOptionsMm[0], f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = Math.max(W, D) + 2 * pad, h = D + T + 2 * pad;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h + pad)} ${f(w)} ${f(h)}"><g id="side"><rect x="${f(-W / 2)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/><path d="M${f(-D / 2)} 0A${f(D / 2)} ${f(D / 2)} 0 0 1 ${f(D / 2)} 0" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(D)}mm</text></g></svg>`;
-}
-function binderFrontSvg(spec, ringD = null) {
-  const L = spec.plate.lengthMm, T = spec.plate.thicknessMm, D = ringD || spec.rings.diameterOptionsMm[0], f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = L + 2 * pad, h = D + T + 2 * pad;
-  let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
-  const rings = xs.map(hx => `<rect x="${f(hx - 1)}" y="${f(-D)}" width="2" height="${f(D)}" fill="none" stroke="#000" stroke-width="0.2"/>`).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h + pad)} ${f(w)} ${f(h)}"><g id="front"><rect x="${f(-L / 2)}" y="0" width="${f(L)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>${rings}</g></svg>`;
-}
-/** 規格 JSON の整合検査：必須キー・ピッチの合計＝span。問題を文字列配列で返す（空＝OK）。 */
-function checkBinderSpec(spec) {
-  const out = [];
-  for (const k of ['id', 'names', 'holes', 'refill', 'rings', 'plate', 'rivets', 'confidence']) if (!(k in spec)) out.push('missing:' + k);
-  if (spec.holes) { if (spec.holes.pitchMm.length !== spec.holes.count - 1) out.push('pitch-count'); const sum = spec.holes.pitchMm.reduce((a, b) => a + b, 0); if (Math.abs(sum - spec.holes.span1toLastMm) > 0.1) out.push('span-mismatch'); }
-  if (spec.rings && !spec.rings.diameterOptionsMm?.length) out.push('rings-empty');
-  return out;
-}
-
-return {evalExpr, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec};
+return {THREE_VIEW_LAYOUT, THREE_VIEW_MARGIN, threeViewAreaAt, threeViewShapeArea, threeViewFitLayout, threeViewDepthOfTopY, threeViewTopYOfDepth, threeViewDepthOfSideX, threeViewSideXOfDepth, threeViewMiter, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewGuidePoints, threeViewMarks, threeViewTargets, threeViewGuideLines, threeViewCursorLines, threeViewSnapToLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSheetMarks, threeViewSheetTargets, threeViewFollowDelta, threeViewSheetCursor, threeViewSpansAt, threeViewClipToRect, threeViewHardwareFaces, threeViewSolid, threeViewSolidFromSheets};
 })();
 __mods['library'] = (function(){
 // 部品ライブラリ・寸法変数・クリップボード経由の転活用。純粋関数のみ。
@@ -14864,7 +14884,7 @@ const threeViewOn = () => $('threeView').checked;
 /** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
 /** 枠の出発点：文書に「枠の指定」（選んだ四角を枠にしたもの）があればそれ、無ければ標準の枠。 */
 function threeViewBase() { const f = doc.threeView; return threeViewFrameValid(f) ? threeViewBaseFrom(f.front, f.depth) : THREE_VIEW_LAYOUT; }
-function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout) : null; }
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout, { specOf: binderSpec }) : null; }
 /** 右上の空き（45°の線のある区画）：ここに小さな立体画面を出す。文書座標の四角。 */
 function threeViewMiniBox() { const { top, side } = threeViewLayout; return { x: side.x, y: top.y, w: side.w, h: top.h }; }
 /** 小さな立体画面（枠方式）：右上の空きに、三面図から組み立てた立体を描く（描くたびに更新・この中をドラッグすると回る）。点線はこの上に描かれる。 */
@@ -15033,7 +15053,7 @@ function rebuildQuad() {
   if (!quadOn()) { quadMarksCache = null; quadSolidCache = null; return; }
   const shapesOf = role => { const d = sheetDoc(role); return d ? d.shapes.filter(s => d.layers.find(l => l.id === s.layer)?.visible && s.type !== 'image') : []; };
   const f = shapesOf('front'), tp = shapesOf('top'), sd = shapesOf('side');
-  quadMarksCache = threeViewSheetMarks(f, tp, sd); quadSolidCache = threeViewSolidFromSheets(f, tp, sd);
+  quadMarksCache = threeViewSheetMarks(f, tp, sd); quadSolidCache = threeViewSolidFromSheets(f, tp, sd, { specOf: binderSpec });
 }
 /** ほかの紙の図形を、その紙の区画に描く（選択や作図中の線は無し）。sc はその紙の拡大率。 */
 function drawPlainSheet(d, sc, lo, hi) {
@@ -15074,7 +15094,7 @@ function drawSolidInRect(solid, b, label) {
   const flipped = solid.faces.map(f => ({ ...f, points: f.points.map(q => v3(q.x, -q.y, q.z)) })); /* 3D 画面（WebGL）と同じく y を反転して同じ向きに見せる */
   const proj = project(flipped, camMini, { width: b.w, height: b.h });
   ctx.beginPath(); ctx.rect(b.x, b.y, b.w, b.h); ctx.clip(); ctx.lineWidth = 0.5; ctx.strokeStyle = '#141414';
-  for (const f of proj) { if (f.points.length < 3) continue; const c = partColor(f, false).map(v => Math.round(v * 255 * f.shade)); ctx.beginPath(); f.points.forEach((q, i) => { if (i) ctx.lineTo(b.x + q.x, b.y + q.y); else ctx.moveTo(b.x + q.x, b.y + q.y); }); ctx.closePath(); ctx.fillStyle = `rgb(${c.join(',')})`; ctx.fill(); ctx.stroke(); }
+  for (const f of proj) { if (f.points.length < 3) continue; const c = partColor(f, false).map(v => Math.round(v * 255 * f.shade)); ctx.globalAlpha = ghostFace(f, solid) ? GHOST_ALPHA : 1; ctx.beginPath(); f.points.forEach((q, i) => { if (i) ctx.lineTo(b.x + q.x, b.y + q.y); else ctx.moveTo(b.x + q.x, b.y + q.y); }); ctx.closePath(); ctx.fillStyle = `rgb(${c.join(',')})`; ctx.fill(); ctx.stroke(); }
   ctx.restore();
 }
 /** 4分割の描画：3 枚の紙の区画（いま描いている紙は普段どおり・ほかは図形だけ）＋右上の立体＋区画の枠と名前。 */
@@ -15925,6 +15945,9 @@ function initOutput() {
 // ---- 3D（折りたたみ・三面図）----
 const canvas3d = $('canvas3d');
 let view3d = false, cam = null, foldT = 0, playing = null, gl = null, glProg = null, ctx3 = null, lastStats = { faces: 0, collisions: 0 };
+/** 「革を透かして見る」がオンの間、三面図の立体の革の面（金具以外）を半透明にして描く。 */
+const GHOST_ALPHA = 0.3;
+const ghostFace = (f, solid) => !!solid && f.partId !== 'binder' && !!$('ghost3d')?.checked;
 function folds() { return doc.shapes.filter(s => s.type === 'fold' && visible(s)); }
 function initGl() {
   if (gl !== null || typeof canvas3d.getContext !== 'function') return;
@@ -15932,7 +15955,7 @@ function initGl() {
   if (!gl) { ctx3 = canvas3d.getContext('2d'); return; }
   const vs = 'attribute vec3 p;attribute vec3 n;attribute vec3 c;attribute vec2 uv;uniform mat4 view;uniform mat4 proj;varying vec3 vc;varying vec3 vn;varying vec2 vuv;varying vec3 vpos;varying vec3 vwn;void main(){gl_Position=proj*view*vec4(p,1.0);vn=mat3(view)*n;vc=c;vuv=uv;vpos=p;vwn=n;}';
   /* uMode：0＝色だけ・1＝板の表裏（uv＝平らに置いたときの mm）・2＝立体の面（面の向きに応じて x/y・x/z・y/z の mm を使う）。uMm＝写真 1 枚の実寸。画像は 2 のべき乗でないので繰り返しは fract で */
-  const fs = 'precision mediump float;varying vec3 vc;varying vec3 vn;varying vec2 vuv;varying vec3 vpos;varying vec3 vwn;uniform sampler2D uTex;uniform float uMode;uniform float uMm;void main(){vec3 L=normalize(vec3(0.3,0.5,0.8));float d=0.35+0.65*max(0.0,dot(normalize(vn),L));vec3 base=vc;if(uMode>0.5){vec2 tc=vuv;if(uMode>1.5){vec3 a=abs(vwn);tc=(a.z>=a.x&&a.z>=a.y)?vpos.xy:((a.y>=a.x)?vpos.xz:vpos.yz);}base=texture2D(uTex,fract(tc/uMm)).rgb;}gl_FragColor=vec4(base*d,1.0);}';
+  const fs = 'precision mediump float;varying vec3 vc;varying vec3 vn;varying vec2 vuv;varying vec3 vpos;varying vec3 vwn;uniform sampler2D uTex;uniform float uMode;uniform float uMm;uniform float uAlpha;void main(){vec3 L=normalize(vec3(0.3,0.5,0.8));float d=0.35+0.65*max(0.0,dot(normalize(vn),L));vec3 base=vc;if(uMode>0.5){vec2 tc=vuv;if(uMode>1.5){vec3 a=abs(vwn);tc=(a.z>=a.x&&a.z>=a.y)?vpos.xy:((a.y>=a.x)?vpos.xz:vpos.yz);}base=texture2D(uTex,fract(tc/uMm)).rgb;}gl_FragColor=vec4(base*d,uAlpha);}';
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
   glProg = gl.createProgram(); gl.attachShader(glProg, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(glProg, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(glProg); gl.useProgram(glProg);
   gl.enable(gl.DEPTH_TEST); glProg.buf = gl.createBuffer();
@@ -15955,7 +15978,7 @@ function orthographic(hw, hh, near, far) { return [1 / hw, 0, 0, 0, 0, 1 / hh, 0
 /** 3D に出すもの：三面図が入なら三面図から組み立てた立体（threeview.js）、切なら折りたたみの板。 */
 function scene3d() {
   if (quadOn()) { const solid = quadSolidCache; return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('quad')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
-  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
+  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout, { specOf: binderSpec }); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
   const panels = buildPanels(doc, { colorOf: partPanelColor, textureOf: (part, s) => s.texture || part.texture || null }), fl = folds();
   return { faces: applyFolds(panels, fl, foldT / 100), hits: collisions(panels, fl, foldT / 100), panels, solid: null };
 }
@@ -15969,7 +15992,7 @@ function solidTextureOf(kind) {
   return front ? textureOf(front, d) : null;
 }
 /** 立体の全部の面に同じ質感を付ける（uv は無いので、面の向きで貼る） */
-const withSolidTexture = (faces, tex) => tex ? faces.map(f => ({ ...f, texture: tex })) : faces;
+const withSolidTexture = (faces, tex) => tex ? faces.map(f => f.partId === 'binder' ? f : ({ ...f, texture: tex })) : faces; /* 金具には革の質感を貼らない */
 /** 三面図の立体を見るときの最初のカメラ：立体の真ん中を向き、少し斜め上・右手前から。 */
 function threeViewCamera(faces) {
   const pts = faces.flatMap(f => f.points); if (!pts.length) return defaultCamera(doc);
@@ -15989,8 +16012,8 @@ function render3d() {
     gl.viewport(0, 0, W, H); gl.clearColor(0.06, 0.06, 0.06, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     const groups = new Map(); /* 質感ごとにまとめて描く（色だけの面は '' の組・板の表裏は uv・立体は面の向き） */
     for (const f of faces) {
-      const hit = hitSet.has(f.panelId), tex = !hit && f.texture && glTexture(f.texture) ? f.texture : '', key = tex ? tex + (f.uv ? '|uv' : '|tri') : '', col = partColor(f, hit), n = f.normal, idx = new Map(f.points.map((p, i) => [p, i]));
-      let g = groups.get(key); if (!g) { g = { tex, data: [], mode: tex ? (f.uv ? 1 : 2) : 0, mm: tex ? textureMm(tex) : 1 }; groups.set(key, g); }
+      const ghost = ghostFace(f, solid), hit = hitSet.has(f.panelId), tex = !hit && f.texture && glTexture(f.texture) ? f.texture : '', key = (tex ? tex + (f.uv ? '|uv' : '|tri') : '') + (ghost ? '|ghost' : ''), col = partColor(f, hit), n = f.normal, idx = new Map(f.points.map((p, i) => [p, i]));
+      let g = groups.get(key); if (!g) { g = { tex, ghost, data: [], mode: tex ? (f.uv ? 1 : 2) : 0, mm: tex ? textureMm(tex) : 1 }; groups.set(key, g); }
       for (const tri of triangulate(f.points)) for (const p of tri) { const u = f.uv ? f.uv[idx.get(p)] : null; g.data.push(p.x, -p.y, p.z, n.x, -n.y, n.z, col[0], col[1], col[2], u ? u.x : 0, u ? u.y : 0); }
     }
     const stride = 11 * 4, loc = name => gl.getAttribLocation(glProg, name), uni = name => gl.getUniformLocation(glProg, name);
@@ -16002,7 +16025,11 @@ function render3d() {
       const flipped = { ...c, target: { x: c.target.x, y: -c.target.y, z: c.target.z } };
       gl.uniformMatrix4fv(gl.getUniformLocation(glProg, 'view'), false, new Float32Array(viewMatrix(flipped)));
       gl.uniformMatrix4fv(gl.getUniformLocation(glProg, 'proj'), false, new Float32Array(c.ortho ? orthographic(size * aspect, size, -5000, 5000) : perspective(0.6, aspect, 1, 20000)));
-      for (const g of groups.values()) { gl.uniform1f(uni('uMode'), g.mode); gl.uniform1f(uni('uMm'), g.mm); if (g.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, glTexture(g.tex)); gl.uniform1i(uni('uTex'), 0); } gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.data), gl.DYNAMIC_DRAW); gl.drawArrays(gl.TRIANGLES, 0, g.data.length / 11); }
+      for (const ghostPass of [false, true]) { /* 不透明の面を先に、半透明の革は後から（奥行きは書き込まず）重ねる */
+        gl.uniform1f(uni('uAlpha'), ghostPass ? GHOST_ALPHA : 1); if (ghostPass) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); }
+      for (const g of groups.values()) { if (g.ghost !== ghostPass) continue; gl.uniform1f(uni('uMode'), g.mode); gl.uniform1f(uni('uMm'), g.mm); if (g.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, glTexture(g.tex)); gl.uniform1i(uni('uTex'), 0); } gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.data), gl.DYNAMIC_DRAW); gl.drawArrays(gl.TRIANGLES, 0, g.data.length / 11); }
+        if (ghostPass) { gl.depthMask(true); gl.disable(gl.BLEND); }
+      }
     }
     gl.disable(gl.SCISSOR_TEST);
   } else if (ctx3) {
@@ -16010,7 +16037,7 @@ function render3d() {
     for (const [, c, col, row] of views) {
       const vw = quad ? W / 2 : W, vh = quad ? H / 2 : H;
       const proj = project(faces, { ...c, target: { x: c.target.x, y: -c.target.y, z: c.target.z } }, { width: vw, height: vh }).map(f => ({ ...f, points: f.points.map(p => ({ x: p.x + col * vw, y: p.y + row * vh })) }));
-      for (const f of proj) { if (f.points.length < 3) continue; const col3 = partColor(f, hitSet.has(f.panelId)).map(v => Math.round(v * 255 * f.shade)); ctx3.beginPath(); f.points.forEach((p, i) => i ? ctx3.lineTo(p.x, p.y) : ctx3.moveTo(p.x, p.y)); ctx3.closePath(); ctx3.fillStyle = `rgb(${col3.join(',')})`; ctx3.fill(); ctx3.strokeStyle = '#222'; ctx3.lineWidth = 0.5; ctx3.stroke(); }
+      for (const f of proj) { if (f.points.length < 3) continue; const col3 = partColor(f, hitSet.has(f.panelId)).map(v => Math.round(v * 255 * f.shade)); ctx3.beginPath(); f.points.forEach((p, i) => i ? ctx3.lineTo(p.x, p.y) : ctx3.moveTo(p.x, p.y)); ctx3.closePath(); ctx3.fillStyle = `rgb(${col3.join(',')})`; ctx3.globalAlpha = ghostFace(f, solid) ? GHOST_ALPHA : 1; ctx3.fill(); ctx3.globalAlpha = 1; ctx3.strokeStyle = '#222'; ctx3.lineWidth = 0.5; ctx3.stroke(); }
     }
   }
   return lastStats;
@@ -16039,7 +16066,7 @@ function init3d() {
   $('view3d').onclick = () => setView3d(!view3d);
   $('foldT').addEventListener('input', () => { foldT = Number($('foldT').value) || 0; render3d(); });
   $('foldT').addEventListener('change', () => { foldT = Number($('foldT').value) || 0; render3d(); });
-  $('play').onclick = togglePlay; $('viewMode').addEventListener('change', () => render3d()); $('exportViews').onclick = exportViews; $('printViews').onclick = printViews; $('unfoldBtn').onclick = makeUnfold;
+  $('play').onclick = togglePlay; $('viewMode').addEventListener('change', () => render3d()); $('ghost3d').addEventListener('change', () => { render3d(); draw(); }); $('exportViews').onclick = exportViews; $('printViews').onclick = printViews; $('unfoldBtn').onclick = makeUnfold;
   $('resetCam').onclick = () => { cam = threeViewOn() ? threeViewCamera(scene3d().faces) : defaultCamera(doc); render3d(); };
   let drag = null;
   canvas3d.addEventListener('pointerdown', e => { e.preventDefault(); drag = { x: e.clientX, y: e.clientY, button: e.button, cam: { ...cam, target: { ...cam.target } } }; canvas3d.setPointerCapture?.(e.pointerId); });
