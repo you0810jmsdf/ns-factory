@@ -47,9 +47,17 @@ export function instantiateShape(shape, vars = {}) {
   return out;
 }
 /** ライブラリ項目（vars 既定値＋図形）を変数で実体化し、位置へ移した {shapes, holes, paths, parts} を返す。 */
+/** 角を丸めた長方形の外形（左上が原点・幅 W・高さ H・角の半径 R）を、4本の線と4つの円弧（時計回り・Y 下向き）で返す。R は短い辺の半分までに丸める。R が0以下なら null。 */
+export function roundedRectShapes(W, H, R, layer = 'pattern') {
+  const r = Math.min(R, W / 2, H / 2); if (!(r > 0)) return null;
+  const line = (x1, y1, x2, y2) => ({ type: 'line', layer, x1, y1, x2, y2 }), arc = (cx, cy, startDeg, endDeg) => ({ type: 'arc', layer, cx, cy, r, startDeg, endDeg });
+  return [line(r, 0, W - r, 0), arc(W - r, r, 270, 360), line(W, r, W, H - r), arc(W - r, H - r, 0, 90), line(W - r, H, r, H), arc(r, H - r, 90, 180), line(0, H - r, 0, r), arc(r, r, 180, 270)];
+}
 export function instantiateItem(item, vars = {}, at = { x: 0, y: 0 }, { scale = 1 } = {}) {
   const v = { ...(item.vars || {}), ...vars };
-  const shapes = (item.shapes || []).map(s => instantiateShape(s, v));
+  let shapes = (item.shapes || []).map(s => instantiateShape(s, v));
+  /* 項目の outlineRect（{w, h, r} は変数名）があり、角の半径が0より大きいときは、最初の図形（長方形の外形）を、角を丸めた外形に置き換える */
+  if (item.outlineRect && shapes[0]) { const rr = roundedRectShapes(Number(v[item.outlineRect.w]), Number(v[item.outlineRect.h]), Number(v[item.outlineRect.r]), shapes[0].layer); if (rr) shapes = [...rr, ...shapes.slice(1)]; }
   const payload = { shapes, holes: (item.holes || []).map(h => ({ ...h })), paths: (item.paths || []).map(p => ({ ...p, shapeIds: [...p.shapeIds], segments: (p.segments || []).map(s => ({ ...s })) })), parts: (item.parts || []).map(p => ({ ...p, shapeIds: [...p.shapeIds] })) };
   return transformPayload(payload, at, scale);
 }
