@@ -391,6 +391,7 @@
 <label><span data-i18n="offsetJoin"></span><select id="offsetJoin"><option value="miter" data-i18n="miter"></option><option value="round" data-i18n="roundJoin"></option></select></label>
 <label><span data-i18n="mirrorHoles"></span><select id="mirrorHoles"><option value="reverse" data-i18n="mirrorHolesReverse"></option><option value="keep" data-i18n="mirrorHolesKeep"></option></select></label>
 <label><span data-i18n="arcMethod"></span><select id="arcMethod"><option value="three" data-i18n="arcMethodThree"></option><option value="radius" data-i18n="arcMethodRadius"></option></select></label>
+<label><span data-i18n="arcDir"></span><select id="arcDir"><option value="cw" data-i18n="arcCw"></option><option value="ccw" data-i18n="arcCcw"></option></select></label>
 <label><span data-i18n="arcRadius"></span><input id="arcRadius" type="number" min="0" step="0.5"></label>
 <label><span data-i18n="snapDist"></span><input id="snapDist" type="number" min="0" max="60" step="1" value="10"></label>
 <label><input id="showJunctions" type="checkbox" checked><span data-i18n="showJunctions"></span></label>
@@ -426,8 +427,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=fd8f7412","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=302938e0","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=fc36b3ac","./help/ja.js":"./help/ja.js?v=184a0f56","./i18n.js":"./i18n.js?v=dd3b2492","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=cc7d3d59","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=fd8f7412"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=fcaada12","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=302938e0","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=fc36b3ac","./help/ja.js":"./help/ja.js?v=184a0f56","./i18n.js":"./i18n.js?v=d3f3be7e","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=cc7d3d59","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=fcaada12"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1160,6 +1161,11 @@ const MESSAGES = {
     "arcRadius": "円弧の半径 (mm・空欄はドラッグで決める)",
     "arcThreeHint": "3点：始点をクリック → 通過点 → 終点の順にクリック（Esc で中止）。",
     "arcRadiusHint": "半径は入力値で固定：中心をクリック → 始点方向をクリック → 終点方向をクリック（時計回り）。",
+    "arcRadiusHintCcw": "半径は入力値で固定：中心をクリック → 始点方向をクリック → 終点方向をクリック（反時計回り）。",
+    "hint.arcCcw": "中心から始点へドラッグ → 終点方向をクリック（反時計回り）。",
+    "arcDir": "円弧の向き（中心と半径のとき）",
+    "arcCw": "時計回り",
+    "arcCcw": "反時計回り",
     "arcCollinear": "3点が一直線上にあり円弧になりません。通過点か終点をずらしてください。",
     "fillet": "丸め (R)",
     "chamferSize": "C 面の寸法 (mm)",
@@ -1865,6 +1871,11 @@ const MESSAGES = {
     "arcRadius": "Arc radius (mm; blank = set by dragging)",
     "arcThreeHint": "3 points: click the start, then a point on the arc, then the end (Esc cancels).",
     "arcRadiusHint": "Radius fixed by the entered value: click the center, then the start direction, then the end direction (clockwise).",
+    "arcRadiusHintCcw": "Radius fixed by the entered value: click the center, then the start direction, then the end direction (counterclockwise).",
+    "hint.arcCcw": "Drag from center to start, then click the end direction (counterclockwise).",
+    "arcDir": "Arc direction (center and radius)",
+    "arcCw": "Clockwise",
+    "arcCcw": "Counterclockwise",
     "arcCollinear": "The 3 points are collinear, so no arc fits. Move the middle or end point.",
     "fillet": "Fillet (R)",
     "chamferSize": "Chamfer size (mm)",
@@ -10087,7 +10098,7 @@ function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', Str
 /* ---- 設定セット：設定値と登録した工具をまとめて名前を付けて保存・呼び出し（ブラウザ内の一覧＋JSON ファイル） ---- */
 const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD settings";
 const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
-  'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
+  'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcDir', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
   'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'seamStyle', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan',
   'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
 /** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
@@ -10484,7 +10495,7 @@ function initDesign() {
   for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   if (typeof setInterval === 'function') setInterval(() => { if (junctions.loose.length && $('showJunctions').checked && !(typeof document !== 'undefined' && document.hidden)) { blinkOn = !blinkOn; draw(); } else blinkOn = true; }, 500); /* 未結合の交点だけ点滅させる */
-  $('arcMethod').addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
+  for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') window.open('guide.html', '_blank'); }; /* 図解ガイド（日本語）を別タブで開く */
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
@@ -11691,7 +11702,7 @@ function shapeFromDrag(a, b) {
 /** 円弧の作図方式が「3点」か。 */
 function arcThreePoint() { return $('arcMethod').value === 'three'; }
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
-function modeHint(m) { return m === 'arc' && arcThreePoint() ? t('hint.arc3') : t('hint.' + m); }
+function modeHint(m) { return m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
 /** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
 function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
 /** 3点（始点・通過点・終点）を通る円弧。一直線上なら null。通過点が弧の途中に来る向きに start/end を決める。 */
@@ -11712,7 +11723,8 @@ function arc3Click(p) {
 }
 function arcShape(p) {
   const angle = Math.atan2(p.y - stage.center.y, p.x - stage.center.x) * 180 / Math.PI;
-  return { type: 'arc', cx: stage.center.x, cy: stage.center.y, r: stage.r, startDeg: stage.startDeg, endDeg: angle };
+  /* 反時計回りは、向きを入れ替えて（終点の角度から始点の角度まで）時計回りに描く＝同じ円弧 */
+  return $('arcDir').value === 'ccw' ? { type: 'arc', cx: stage.center.x, cy: stage.center.y, r: stage.r, startDeg: angle, endDeg: stage.startDeg } : { type: 'arc', cx: stage.center.x, cy: stage.center.y, r: stage.r, startDeg: stage.startDeg, endDeg: angle };
 }
 function bezierShape(p) {
   const c1 = stage.c1 || p, c2 = stage.c1 ? p : stage.end;
@@ -12007,7 +12019,7 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'draw' && mode === 'arc' && arcFixedRadius() > 0) {
     const fixedR = arcFixedRadius();
     stage = distance(g.start, cursor) > 1e-8 ? { kind: 'arc', center: g.start, r: fixedR, startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI } : { kind: 'arcR', center: g.start, r: fixedR };
-    $('hint').textContent = t('arcRadiusHint');
+    $('hint').textContent = t($('arcDir').value === 'ccw' ? 'arcRadiusHintCcw' : 'arcRadiusHint');
   } else if (g.kind === 'draw' && distance(g.start, cursor) > 1e-8) {
     if (mode === 'rect') { const rect = rectShape(g.start, cursor); if (rect) { addShape(rect); lastPoint = cursor; } else $('hint').textContent = t('rectFlat'); }
     else if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
