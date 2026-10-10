@@ -159,22 +159,27 @@ export function komaStitchLine(edge, thicknessB, inward = 1) {
 
 /* ---- パッチワークの柄（アーガイル・市松）：囲まれた図形を柄のピースに分ける ---- */
 const signedAreaOf = ps => ps.reduce((s, q, i) => { const r = ps[(i + 1) % ps.length]; return s + q.x * r.y - r.x * q.y; }, 0) / 2;
+const TILE_EPS = 1e-6; /* マスの数を決めるときの浮動小数の誤差（マス数に対する比） */
 /** パッチワークの柄の登録表。tiles(bbox, cell) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。 */
 export const PATCH_PATTERNS = {
   ichimatsu: {
     ja: '市松', en: 'Ichimatsu (checker)',
     tiles(b, cell) {
-      const cols = Math.ceil((b.maxX - b.minX) / cell), rows = Math.ceil((b.maxY - b.minY) / cell), out = [];
-      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const x = b.minX + i * cell, y = b.minY + j * cell; out.push({ parity: (i + j) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
+      /* 図形の中心を基準に並べる＝端の半端なピースが左右・上下で同じ大きさになる（左上から並べると右と下にだけ半端が集まる）。
+         幅がちょうど整数倍のとき浮動小数の誤差で列が1つ増える（＝全部が半端にずれる）のを TILE_EPS で防ぐ */
+      const cols = Math.max(1, Math.ceil((b.maxX - b.minX) / cell - TILE_EPS)), rows = Math.max(1, Math.ceil((b.maxY - b.minY) / cell - TILE_EPS)), out = [];
+      const x0 = (b.minX + b.maxX) / 2 - cols * cell / 2, y0 = (b.minY + b.maxY) / 2 - rows * cell / 2;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const x = x0 + i * cell, y = y0 + j * cell; out.push({ parity: (i + j) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
       return out;
     },
   },
   argyle: {
     ja: 'アーガイル', en: 'Argyle',
     tiles(b, cell) {
-      const w = cell, h = cell * 1.5, kMax = Math.ceil((b.maxY - b.minY) / (h / 2)) + 1, iMax = Math.ceil((b.maxX - b.minX) / w) + 1, out = [];
-      for (let k = -1; k <= kMax; k++) for (let i = -1; i <= iMax; i++) {
-        const odd = ((k % 2) + 2) % 2, cx = b.minX + i * w + odd * w / 2, cy = b.minY + k * h / 2;
+      /* 図形の中心にひし形の中心を置き、そこから上下左右へ並べる＝端の半端なひし形が左右・上下で対称になる */
+      const w = cell, h = cell * 1.5, cx0 = (b.minX + b.maxX) / 2, cy0 = (b.minY + b.maxY) / 2, kMax = Math.ceil((b.maxY - b.minY) / 2 / (h / 2)) + 1, iMax = Math.ceil((b.maxX - b.minX) / 2 / w) + 1, out = [];
+      for (let k = -kMax; k <= kMax; k++) for (let i = -iMax; i <= iMax; i++) {
+        const odd = ((k % 2) + 2) % 2, cx = cx0 + i * w + odd * w / 2, cy = cy0 + k * h / 2;
         if (cx + w / 2 < b.minX || cx - w / 2 > b.maxX || cy + h / 2 < b.minY || cy - h / 2 > b.maxY) continue;
         out.push({ parity: odd /* 辺で接する隣のひし形は必ず行が1つずれる＝行の偶奇で2色に塗り分けられる */, points: [{ x: cx, y: cy - h / 2 }, { x: cx + w / 2, y: cy }, { x: cx, y: cy + h / 2 }, { x: cx - w / 2, y: cy }] });
       }

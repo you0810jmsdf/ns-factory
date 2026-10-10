@@ -109,12 +109,13 @@
 <button data-tool="mark"><svg class="ic" viewBox="0 0 24 24"><path d="M3 18C8 18 8 6 13 6s5 12 8 12"/><circle cx="13" cy="6" r="2" fill="currentColor"/></svg><span data-i18n="markTool"></span></button>
 <button data-tool="patchfill"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9zM12 3v18M3 12h18"/></svg><span data-i18n="patchTool"></span></button>
 <div class="group" data-i18n="selection"></div>
-<button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
+<button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
 </aside>
 <div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side">
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
+<label id="l-totalLength" hidden><span data-i18n="totalLength"></span><output id="info-totalLength"></output></label>
 <label id="l-x"><span>X</span><input id="info-x" type="number" step="0.01"></label><label id="l-y"><span>Y</span><input id="info-y" type="number" step="0.01"></label>
 <label id="l-x1"><span>X1</span><input id="info-x1" type="number" step="0.01"></label><label id="l-y1"><span>Y1</span><input id="info-y1" type="number" step="0.01"></label>
 <label id="l-x2"><span>X2</span><input id="info-x2" type="number" step="0.01"></label><label id="l-y2"><span>Y2</span><input id="info-y2" type="number" step="0.01"></label>
@@ -434,8 +435,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=a54bd198","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=7c521476","./help/ja.js":"./help/ja.js?v=071f9bda","./i18n.js":"./i18n.js?v=7a35150c","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=adf675dc","./threeview.js":"./threeview.js?v=f51986d4","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=a54bd198"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=3409b5eb","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=2b0bcffb","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=f410bbbd","./help/ja.js":"./help/ja.js?v=c6eb81f1","./i18n.js":"./i18n.js?v=79f1206b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=adf675dc","./threeview.js":"./threeview.js?v=f51986d4","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=3409b5eb"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1152,6 +1153,13 @@ const MESSAGES = {
     "offsetRun": "選んだ範囲をオフセット（Enter）",
     "offsetPickedSpan": "交点から交点までの区間を選びました（ダブルクリックでつながった図形全体）。距離と向きを確かめて Enter で実行。",
     "chainSelected": "つながった図形 {n} 個をすべて選びました。",
+    "chainSelectedLen": "つながった図形 {n} 個をすべて選びました。全体の長さ {len} mm。",
+    "totalLength": "全体の長さ (mm)",
+    "unroll": "直線に展開",
+    "unrollTip": "選んだ線（曲線・円弧を含む）の全体の長さと同じ長さの、水平な直線を、右横に足します。元の線は残ります。",
+    "unrolled": "選んだ {n} 個の線を、全体の長さ {len} mm の直線にして、右横に足しました（元の線は残してあります）。",
+    "unrollNone": "長さのある線を選んでください。",
+    "unrolledHoles": "選んだ {n} 個の線を、全体の長さ {len} mm の直線にして、右横に足しました。目打ち {m} 個も同じ並びで写しました（元の線と目打ちは残してあります）。",
     "offsetPickedWhole": "つながった図形全体を選びました。距離と向きを確かめて Enter で実行。",
     "offsetNone": "オフセットする図形が見つかりません。図形の線の上をクリックしてください。",
     "offsetDone": "{d}mm {side}にオフセットしました（黄色の点線）。続けて選べます。",
@@ -1915,6 +1923,13 @@ const MESSAGES = {
     "offsetRun": "Offset the selected part (Enter)",
     "offsetPickedSpan": "Selected the part between intersections (double-click for the whole connected shape). Check the distance and side, then press Enter.",
     "chainSelected": "Selected all {n} connected shapes.",
+    "chainSelectedLen": "Selected all {n} connected shapes. Total length {len} mm.",
+    "totalLength": "Total length (mm)",
+    "unroll": "Unroll",
+    "unrollTip": "Adds a horizontal straight line, as long as the whole selected line (curves and arcs included), to the right. The original stays.",
+    "unrolled": "Added a {len} mm straight line to the right for the {n} selected shapes (the originals are kept).",
+    "unrollNone": "Select a line that has length.",
+    "unrolledHoles": "Added a {len} mm straight line to the right for the {n} selected shapes, with its {m} stitching holes copied in the same order (the originals are kept).",
     "offsetPickedWhole": "Selected the whole connected shape. Check the distance and side, then press Enter.",
     "offsetNone": "No shape to offset here. Click on a line of a shape.",
     "offsetDone": "Offset {d} mm {side} (yellow dashed). You can keep selecting.",
@@ -3404,22 +3419,27 @@ function komaStitchLine(edge, thicknessB, inward = 1) {
 
 /* ---- パッチワークの柄（アーガイル・市松）：囲まれた図形を柄のピースに分ける ---- */
 const signedAreaOf = ps => ps.reduce((s, q, i) => { const r = ps[(i + 1) % ps.length]; return s + q.x * r.y - r.x * q.y; }, 0) / 2;
+const TILE_EPS = 1e-6; /* マスの数を決めるときの浮動小数の誤差（マス数に対する比） */
 /** パッチワークの柄の登録表。tiles(bbox, cell) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。 */
 const PATCH_PATTERNS = {
   ichimatsu: {
     ja: '市松', en: 'Ichimatsu (checker)',
     tiles(b, cell) {
-      const cols = Math.ceil((b.maxX - b.minX) / cell), rows = Math.ceil((b.maxY - b.minY) / cell), out = [];
-      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const x = b.minX + i * cell, y = b.minY + j * cell; out.push({ parity: (i + j) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
+      /* 図形の中心を基準に並べる＝端の半端なピースが左右・上下で同じ大きさになる（左上から並べると右と下にだけ半端が集まる）。
+         幅がちょうど整数倍のとき浮動小数の誤差で列が1つ増える（＝全部が半端にずれる）のを TILE_EPS で防ぐ */
+      const cols = Math.max(1, Math.ceil((b.maxX - b.minX) / cell - TILE_EPS)), rows = Math.max(1, Math.ceil((b.maxY - b.minY) / cell - TILE_EPS)), out = [];
+      const x0 = (b.minX + b.maxX) / 2 - cols * cell / 2, y0 = (b.minY + b.maxY) / 2 - rows * cell / 2;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const x = x0 + i * cell, y = y0 + j * cell; out.push({ parity: (i + j) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
       return out;
     },
   },
   argyle: {
     ja: 'アーガイル', en: 'Argyle',
     tiles(b, cell) {
-      const w = cell, h = cell * 1.5, kMax = Math.ceil((b.maxY - b.minY) / (h / 2)) + 1, iMax = Math.ceil((b.maxX - b.minX) / w) + 1, out = [];
-      for (let k = -1; k <= kMax; k++) for (let i = -1; i <= iMax; i++) {
-        const odd = ((k % 2) + 2) % 2, cx = b.minX + i * w + odd * w / 2, cy = b.minY + k * h / 2;
+      /* 図形の中心にひし形の中心を置き、そこから上下左右へ並べる＝端の半端なひし形が左右・上下で対称になる */
+      const w = cell, h = cell * 1.5, cx0 = (b.minX + b.maxX) / 2, cy0 = (b.minY + b.maxY) / 2, kMax = Math.ceil((b.maxY - b.minY) / 2 / (h / 2)) + 1, iMax = Math.ceil((b.maxX - b.minX) / 2 / w) + 1, out = [];
+      for (let k = -kMax; k <= kMax; k++) for (let i = -iMax; i <= iMax; i++) {
+        const odd = ((k % 2) + 2) % 2, cx = cx0 + i * w + odd * w / 2, cy = cy0 + k * h / 2;
         if (cx + w / 2 < b.minX || cx - w / 2 > b.maxX || cy + h / 2 < b.minY || cy - h / 2 > b.maxY) continue;
         out.push({ parity: odd /* 辺で接する隣のひし形は必ず行が1つずれる＝行の偶奇で2色に塗り分けられる */, points: [{ x: cx, y: cy - h / 2 }, { x: cx + w / 2, y: cy }, { x: cx, y: cy + h / 2 }, { x: cx - w / 2, y: cy }] });
       }
@@ -10343,7 +10363,7 @@ const HELP_JA = {
     {
       "id": "layers-info",
       "title": "レイヤーと情報カード",
-      "body": "レイヤーカードで作図先を選び、表示・ロック・名前を変えます。既定は「型紙」「目印」「ガイド」。ロックしたレイヤーの図形は選べません。\n情報カードは選択中の図形の座標・長さ・半径・角度などを表示し、数値を書き換えると図形が更新されます。縫い穴がある線は穴も追従します。\n図形の色（青・緑・赤・白・黄色の5色）と線種（実線・点線）も情報カードで選べます（文字・寸法・折り線は対象外）。選んだ色・線種は SVG・DXF・PDF の書き出しに反映されます。.lcc を取り込むと、元の色分け（Aqua＝輪郭→青、Lime＝パッチ線→緑、Orange＝寸法・Yellow＝目印→黄色）がこの5色に自動で割り振られます。\n複数の図形をまとめて変える：Shift を押しながらクリックするか、何もない所をドラッグして囲むと、複数の図形を選べます（囲みの中に全部入った図形が選ばれます。Ctrl/⌘+A で全部）。2個以上選ぶと情報カードに「層・色・線の種類」だけが出て、変えると選んだ全部に反映されます（元に戻すは1回）。「線の種類」を「点線」にすると、選んだ全部がガイドの層へ移ります。値がばらばらのときは、その欄が空白に見えます。"
+      "body": "レイヤーカードで作図先を選び、表示・ロック・名前を変えます。既定は「型紙」「目印」「ガイド」。ロックしたレイヤーの図形は選べません。\n情報カードは選択中の図形の座標・長さ・半径・角度などを表示し、数値を書き換えると図形が更新されます。縫い穴がある線は穴も追従します。\n図形の色（青・緑・赤・白・黄色の5色）と線種（実線・点線）も情報カードで選べます（文字・寸法・折り線は対象外）。選んだ色・線種は SVG・DXF・PDF の書き出しに反映されます。.lcc を取り込むと、元の色分け（Aqua＝輪郭→青、Lime＝パッチ線→緑、Orange＝寸法・Yellow＝目印→黄色）がこの5色に自動で割り振られます。\n複数の図形をまとめて変える：Shift を押しながらクリックするか、何もない所をドラッグして囲むと、複数の図形を選べます（囲みの中に全部入った図形が選ばれます。Ctrl/⌘+A で全部）。2個以上選ぶと情報カードに「層・色・線の種類」だけが出て、変えると選んだ全部に反映されます（元に戻すは1回）。「線の種類」を「点線」にすると、選んだ全部がガイドの層へ移ります。値がばらばらのときは、その欄が空白に見えます。つながった線（直線・円弧・曲線）は、選択ツールでダブルクリックするとまとめて選べます。そのとき案内と情報カードに「全体の長さ」（選んだ線の長さの合計）が出ます。囲み選択や Shift+クリックで選んだ複数の図形でも、情報カードに合計が出ます。選んだ線（曲線・円弧を含む）は、左メニュー「選択中」の「直線に展開」で、全体の長さと同じ長さの水平な直線にして、選んだ図形の右横（10mm 離した所）に足せます。元の線は残り、元に戻すは1回です。曲線を含む線の長さを、まっすぐな帯として見たいときに使います。選んだ線の上に目打ちがあるときは、目打ちも同じ並び（線に沿った位置と向き）で新しい直線に写します（選んだ線だけでできた目打ちの経路に限ります。元の目打ちは残ります）。"
     },
     {
       "id": "trim-mirror",
@@ -10358,7 +10378,7 @@ const HELP_JA = {
     {
       "id": "design",
       "title": "厚み・折り代・駒合わせ・パッチワーク",
-      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。\nパッチワーク：縫い合わせ（隣り合う辺の組）は、「格子を作る」や「囲まれた図形に柄を描く」で自動的に作られます（手動で辺を組にするツールはありません）。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。「縫い合わせと縫い穴も付ける」にチェックがあれば（既定）、クロスステッチ用に、各ピースの縁から「縫い線の縁からの距離」（既定2.5mm）内側へ縮めた縫い線（黄色の点線・目印レイヤー）を作り、その上に縫い穴を打ちます。穴は境界の上には置かず、境界をはさんで向かい合う穴を対にします（隣り合う縫い線どうしを縫い合わせとして登録し、「最適化」と同じ計算でピッチを合わせます）。「縁から2.5mm以内に菱目を置かない」にチェックがあれば（既定）、菱目の目打ちでは縁から2.5mm未満の距離を指定しても作りません。外すと解除でき、丸目など菱目以外の目打ちには適用しません。"
+      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。\nパッチワーク：縫い合わせ（隣り合う辺の組）は、「格子を作る」や「囲まれた図形に柄を描く」で自動的に作られます（手動で辺を組にするツールはありません）。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。マスは図形の中心を基準に並べるので、端の半端なピースは上下・左右で同じ大きさになります（図形の幅や高さが1マスの整数倍なら半端は出ません）。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。「縫い合わせと縫い穴も付ける」にチェックがあれば（既定）、クロスステッチ用に、各ピースの縁から「縫い線の縁からの距離」（既定2.5mm）内側へ縮めた縫い線（黄色の点線・目印レイヤー）を作り、その上に縫い穴を打ちます。穴は境界の上には置かず、境界をはさんで向かい合う穴を対にします（隣り合う縫い線どうしを縫い合わせとして登録し、「最適化」と同じ計算でピッチを合わせます）。「縁から2.5mm以内に菱目を置かない」にチェックがあれば（既定）、菱目の目打ちでは縁から2.5mm未満の距離を指定しても作りません。外すと解除でき、丸目など菱目以外の目打ちには適用しません。"
     },
     {
       "id": "formats",
@@ -10492,7 +10512,7 @@ const HELP_EN = {
     {
       "id": "layers-info",
       "title": "Layers and the Info card",
-      "body": "Choose the drawing layer, visibility, lock and name in the Layers card. Defaults are Pattern, Marks and Guide. Shapes on locked layers cannot be selected.\nThe Info card shows coordinates, length, radius and angles of the selected shape; editing a value updates the shape, and stitching holes follow.\nThe Info card also lets you pick a shape color (blue, green, red, white or yellow) and line style (solid or dashed); not available for text, dimensions or fold lines. These are reflected in SVG, DXF and PDF export. Importing a .lcc file maps its original colors (Aqua=outline to blue, Lime=patch lines to green, Orange=dimensions and Yellow=marks to yellow) onto these five colors automatically.\nChanging several shapes at once: Shift+click, or drag over empty space to box-select (shapes that fit entirely inside the box are selected; Ctrl/⌘+A selects all). With two or more selected, the Info card shows only Layer, Color and Line style; changing one applies to every selected shape in a single undo step. Setting Line style to Dashed moves them all to the Guide layer. A blank field means the selected shapes have different values."
+      "body": "Choose the drawing layer, visibility, lock and name in the Layers card. Defaults are Pattern, Marks and Guide. Shapes on locked layers cannot be selected.\nThe Info card shows coordinates, length, radius and angles of the selected shape; editing a value updates the shape, and stitching holes follow.\nThe Info card also lets you pick a shape color (blue, green, red, white or yellow) and line style (solid or dashed); not available for text, dimensions or fold lines. These are reflected in SVG, DXF and PDF export. Importing a .lcc file maps its original colors (Aqua=outline to blue, Lime=patch lines to green, Orange=dimensions and Yellow=marks to yellow) onto these five colors automatically.\nChanging several shapes at once: Shift+click, or drag over empty space to box-select (shapes that fit entirely inside the box are selected; Ctrl/⌘+A selects all). With two or more selected, the Info card shows only Layer, Color and Line style; changing one applies to every selected shape in a single undo step. Setting Line style to Dashed moves them all to the Guide layer. A blank field means the selected shapes have different values. Double-click with the Select tool to select a whole connected chain (lines, arcs and curves); the hint and the Info card then show the Total length (the sum of the selected shapes). The Info card also shows the total for shapes picked by box selection or Shift+click. \"Unroll\" in the Selection group of the left menu adds a horizontal straight line, as long as the whole selected line (curves and arcs included), 10 mm to the right of the selection. The original stays, and one Undo removes the new line. Use it to see the length of a curved line as a straight strip. Stitching holes on the selected line are copied onto the new line in the same order (position along the line and angle to the line); only stitch paths made entirely of selected shapes are copied, and the original holes stay."
     },
     {
       "id": "trim-mirror",
@@ -10507,7 +10527,7 @@ const HELP_EN = {
     {
       "id": "design",
       "title": "Thickness, folds, box stitch, patchwork",
-      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: seams (pairs of neighboring edges) are created automatically by \"Make grid\" and \"Fill enclosed shape with pattern\" (there is no manual tool for pairing edges). Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. If \"Also add seams and stitch holes\" is checked (default), for cross-stitching each piece gets a stitch line (yellow dashed, Marks layer) shrunk inward from its edge by the \"Stitch line distance from edge\" (default 2.5 mm), and the stitch holes go on it. Holes are never placed on the boundary; holes facing each other across the boundary are paired (neighboring stitch lines are registered as seams, and the pitch is matched with the same calculation as Optimize). If \"No diamond holes within 2.5 mm of an edge\" is checked (default), nothing is made when a distance under 2.5 mm is given for a diamond punch. Uncheck it to allow; it does not apply to round or other non-diamond punches."
+      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: seams (pairs of neighboring edges) are created automatically by \"Make grid\" and \"Fill enclosed shape with pattern\" (there is no manual tool for pairing edges). Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Cells are laid out from the center of the shape, so partial pieces at the edges come out the same size on the left and right, and on the top and bottom (no partial pieces when the width and height are whole multiples of the cell). Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. If \"Also add seams and stitch holes\" is checked (default), for cross-stitching each piece gets a stitch line (yellow dashed, Marks layer) shrunk inward from its edge by the \"Stitch line distance from edge\" (default 2.5 mm), and the stitch holes go on it. Holes are never placed on the boundary; holes facing each other across the boundary are paired (neighboring stitch lines are registered as seams, and the pitch is matched with the same calculation as Optimize). If \"No diamond holes within 2.5 mm of an edge\" is checked (default), nothing is made when a distance under 2.5 mm is given for a diamond punch. Uncheck it to allow; it does not apply to round or other non-diamond punches."
     },
     {
       "id": "formats",
@@ -11168,6 +11188,40 @@ const INFO_FIELDS = { line: ['x1','y1','x2','y2','length',...COLOR_FIELDS], circ
 const ALL_FIELDS = ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','nodes','area','nodeOps','inner',...COLOR_FIELDS];
 let infoBusy = false;
 function infoShape() { if (selected.size !== 1) return null; const id = [...selected][0]; return doc.shapes.find(s => s.id === id) || null; }
+/** 図形の全体の長さ(mm)＝線・円弧・曲線・折れ線・円（外周）の長さの合計。文字・寸法・折り線・画像は含めない。 */
+function totalLengthOf(shapes) { return shapes.filter(stitchable).reduce((sum, s) => sum + arcLength(s), 0); }
+/** 選んだ線（曲線・円弧を含む）の全体の長さと同じ長さの、水平な直線を 1 本、選んだ図形の右横（10mm 離す）に足して選ぶ。元の線は残す。元に戻すは 1 回。 */
+function unrollSelection() {
+  const list = doc.shapes.filter(s => selected.has(s.id) && editable(s) && stitchable(s)); if (!list.length) { $('hint').textContent = t('selectFirst'); return; }
+  const len = totalLengthOf(list); if (!(len > 1e-6)) { $('hint').textContent = t('unrollNone'); return; }
+  const b = bboxOfDoc({ shapes: list, holes: [] }), y = +((b.minY + b.maxY) / 2).toFixed(4), x1 = +(b.maxX + 10).toFixed(4);
+  /* 目打ち（縫い穴）：選んだ線だけでできている経路の穴を、線に沿った位置と向き（線に対する傾き）のまま、新しい直線にも写す。つながった線は長さ順に、離れた線は続けて並べる */
+  const placed = []; let offset = 0;
+  for (const chain of chainShapes(list)) {
+    const ids = new Set(chain.shapeIds), paths = doc.paths.filter(p => p.shapeIds.every(id => ids.has(id)));
+    const clen = arcLength(chain), turn = (a, c) => Math.abs(((a - c + 540) % 360) - 180);
+    for (const h of doc.holes.filter(h => paths.some(p => p.id === h.pathId))) {
+      const q = projectOnPath(chain, h), before = pointAtLength(chain, Math.max(0, q.s - 1e-4)).angleDeg, after = pointAtLength(chain, Math.min(clen, q.s + 1e-4)).angleDeg;
+      placed.push({ h, s: offset + q.s, angleDeg: ((h.angleDeg - q.angleDeg) % 360 + 360) % 360, corner: turn(after, before) > 1, path: paths.find(p => p.id === h.pathId) }); /* corner＝線の曲がり角にある穴 */
+    }
+    offset += clen;
+  }
+  /* 角の穴は角を二等分する向きで置かれている。まっすぐな線には角がないので、同じ道具の他の穴で一番多い向きにそろえる */
+  for (const toolId of new Set(placed.map(p => p.h.toolId))) {
+    const same = placed.filter(p => p.h.toolId === toolId), counts = new Map();
+    for (const p of same.filter(p => !p.corner)) { const k = p.angleDeg.toFixed(3); counts.set(k, (counts.get(k) || 0) + 1); }
+    const best = [...counts.entries()].sort((a, c) => c[1] - a[1])[0]; if (best) for (const p of same.filter(p => p.corner)) p.angleDeg = Number(best[0]);
+  }
+  cancel(); commit(() => {
+    const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: list[0].layer, type: 'line', x1, y1: y, x2: +(x1 + len).toFixed(4), y2: y }); selected = new Set([id]); nodeSel = null;
+    if (!placed.length) return;
+    placed.sort((a, c) => a.s - c.s); const pid = freshId(doc.paths, 'p'), segments = [], { id: _i, shapeIds: _s, segments: _g, reversed: _r, closed: _c, ...keep } = placed[0].path;
+    for (const p of placed) { const last = segments.at(-1); if (last && last.toolId === p.h.toolId) last.to = p.s; else segments.push({ from: p.s, to: p.s, toolId: p.h.toolId, pitch: doc.tools.find(t => t.id === p.h.toolId)?.pitch ?? 0, mode: 'manual' }); }
+    doc.paths.push({ ...keep, id: pid, shapeIds: [id], reversed: false, closed: false, segments });
+    for (const p of placed) doc.holes.push({ ...p.h, id: freshId(doc.holes, 'h'), pathId: pid, x: +(x1 + p.s).toFixed(4), y, s: p.s, angleDeg: p.angleDeg });
+  });
+  $('hint').textContent = t(placed.length ? 'unrolledHoles' : 'unrolled', { n: list.length, len: len.toFixed(2), m: placed.length });
+}
 /** 2 個以上の図形を選んでいるとき、その図形の一覧（編集できるものだけ）。1 個以下なら空。 */
 function infoShapes() { const list = doc.shapes.filter(s => selected.has(s.id) && editable(s)); return list.length >= 2 ? list : []; }
 /** 色・線の種類を 1 図形に当てた結果。実線にしたらガイドの層から型紙の層へ、点線にしたらガイドの層へ移す。hint は出す文言のキー。 */
@@ -11182,6 +11236,7 @@ function commonValue(list, get) { const v = get(list[0]); return list.every(s =>
 function refreshInfo() {
   const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true;
   $('infoCard').style.display = s || many.length ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
+  $('l-totalLength').hidden = !many.length; if (many.length) $('info-totalLength').textContent = totalLengthOf(many).toFixed(2); /* 2 個以上：全体の長さ（読み取り専用） */
   if (many.length) { /* 2 個以上：層・色・線の種類だけ。変えると選んだ全部に効く */
     const colorable = many.filter(x => INFO_FIELDS[x.type]?.includes('color'));
     for (const f of ALL_FIELDS) $('l-' + f).hidden = !(colorable.length && COLOR_FIELDS.includes(f));
@@ -11471,6 +11526,7 @@ function initInfo() {
     if (n.smooth) { n.smooth = false; } else { const prev = nodes[(nodeSel.index - 1 + nodes.length) % nodes.length], nx = nodes[(nodeSel.index + 1) % nodes.length], d = { x: nx.x - prev.x, y: nx.y - prev.y }, l = Math.hypot(d.x, d.y) || 1, k = Math.min(distance(n, prev), distance(n, nx)) / 3; n.smooth = true; n.inX = n.x - d.x / l * k; n.inY = n.y - d.y / l * k; n.outX = n.x + d.x / l * k; n.outY = n.y + d.y / l * k; }
     transformSelectedTo({ ...s, nodes }); };
   $('removeNode').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const next = pathRemoveNode(s, nodeSel.index); if (!next) { $('hint').textContent = t('impossible'); return; } nodeSel = null; transformSelectedTo(next); };
+  $('unroll').onclick = unrollSelection;
   $('toPath').onclick = () => { const ids = selectedShapeIds(); cancel(); commit(() => { doc.shapes = doc.shapes.map(s => ids.has(s.id) && ['line','bezier','polyline'].includes(s.type) ? toPath(s) : s); }); };
 }
 
@@ -12451,6 +12507,7 @@ function updateUI() {
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
+  $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   $('count').textContent = t('count', { shapes: doc.shapes.length, selected: selected.size });
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
@@ -13030,7 +13087,7 @@ canvas.addEventListener('dblclick', e => {
     const chain = hit ? chainShapes(doc.shapes.filter(x => visible(x) && stitchable(x))).find(c => c.shapeIds.includes(hit.id)) : null;
     if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
     else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
-      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; $('hint').textContent = t('chainSelected', { n: ids.length }); draw(); }
+      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }); draw(); }
   }
 });
 canvas.addEventListener('pointerup', e => {
