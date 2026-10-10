@@ -28,7 +28,7 @@
     canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
     #canvas3d { position: absolute; inset: 0; background: #101010; }
     .floatbox { position: absolute; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #1c1c1ef2; border: 1px solid #c9a96e; border-radius: 8px; font-size: 12px; white-space: nowrap; } .floatbox[hidden] { display: none; } .floatbox label { display: flex; align-items: center; gap: 4px; } .floatbox input { width: 64px; } .floatbox select, .floatbox button { height: 26px; }
-    #rulerBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
+    #rulerBar, #rectBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input, #rectBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
     .ctx { flex-direction: column; align-items: stretch; padding: 4px; z-index: 6; } .ctx button { height: 30px; text-align: left; }
     #tabBar { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 2; } #tabBar button { height: 24px; padding: 0 10px; font-size: 12px; background: #1c1c1ee6; }
     #status { position: absolute; bottom: 10px; right: 10px; padding: 5px 9px; background: #141414e6; border: 1px solid var(--line); border-radius: 6px; font: 11px ui-monospace, Menlo, monospace; pointer-events: none; }
@@ -111,7 +111,7 @@
 <div class="group" data-i18n="selection"></div>
 <button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
 </aside>
-<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
+<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side">
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
@@ -444,8 +444,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=b2a69808","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=88680da0","./help/ja.js":"./help/ja.js?v=ebe74e42","./i18n.js":"./i18n.js?v=a8e19543","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=a6edfea8","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=b2a69808"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=e62353e8","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=30bcd8df","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=a6edfea8","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=e62353e8"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1308,6 +1308,8 @@ const MESSAGES = {
     "threeViewMini": "立体（ここをドラッグで回す）",
     "threeViewMiniNone": "正面に閉じた形を描くと、ここに立体が出ます",
     "quadView": "三面図（4分割）",
+    "quadToFramesDone": "上の紙・右の紙の図形 {n} 個を、正面の紙の上の枠・右の枠へ移しました（4分割に戻すと紙へ戻ります）。",
+    "framesToQuadDone": "上の枠・右の枠の図形 {n} 個を、上の紙・右の紙へ移しました。",
     "quadOnHint": "4分割：左下＝正面・左上＝上・右下＝右・右上＝立体。描きたい区画をクリックしてから描きます。点線はほかの紙から来ています",
     "quadSolidNone": "正面の紙に閉じた形を描くと、ここに立体が出ます",
     "sheetNear": "手前の線",
@@ -1321,7 +1323,14 @@ const MESSAGES = {
     "select": "選択",
     "line": "直線",
     "rect": "矩形",
-    "hint.rect": "対角の2点をドラッグ（またはクリック→クリック）。Shift で正方形。入力欄は1点目「x,y」・2点目「@幅,高さ」。",
+    "hint.rect": "上の「幅・高さ」を入れてクリックすると、その位置にその大きさの矩形を置きます。空なら、対角の2点をドラッグ（またはクリック→クリック）。Shift で正方形。",
+    "rectW": "幅 (mm)",
+    "rectH": "高さ (mm)",
+    "rectAnchor": "基準",
+    "rectAnchorCorner": "左上の角",
+    "rectAnchorCenter": "中心",
+    "rectBarTip": "幅と高さを入れると、クリックした位置にその大きさの矩形を置きます（基準は左上の角か中心）。空にすると、ドラッグで自由に描きます。",
+    "rectPlaced": "幅 {w} × 高さ {h} mm の矩形を置きました。続けて置けます。",
     "rectSecond": "反対側の角をクリックしてください（Shift で正方形・入力欄は「@幅,高さ」）。",
     "rectFlat": "幅か高さが0のため矩形にできません。対角の2点を離して指定してください。",
     "circle": "円",
@@ -2093,6 +2102,8 @@ const MESSAGES = {
     "threeViewMini": "Solid (drag here to turn)",
     "threeViewMiniNone": "Draw a closed shape in the front view and the solid appears here",
     "quadView": "3 views (4 panes)",
+    "quadToFramesDone": "Moved {n} shape(s) from the top and right sheets into the top and right boxes of the front sheet (turning 4 panes back on returns them to the sheets).",
+    "framesToQuadDone": "Moved {n} shape(s) from the top and right boxes to the top and right sheets.",
     "quadOnHint": "4 panes: front at lower left, top above it, right at lower right, solid at upper right. Click a pane, then draw. Dotted lines come from the other sheets",
     "quadSolidNone": "Draw a closed shape on the front sheet and the solid appears here",
     "sheetNear": "near side line",
@@ -2106,7 +2117,14 @@ const MESSAGES = {
     "select": "Select",
     "line": "Line",
     "rect": "Rectangle",
-    "hint.rect": "Drag between two opposite corners (or click, then click). Shift makes a square. In the entry box: first \"x,y\", then \"@width,height\".",
+    "hint.rect": "Enter Width and Height above, then click to place a rectangle of that size. If empty, drag between two opposite corners (or click, then click). Shift makes a square.",
+    "rectW": "Width (mm)",
+    "rectH": "Height (mm)",
+    "rectAnchor": "Anchor",
+    "rectAnchorCorner": "Top-left corner",
+    "rectAnchorCenter": "Center",
+    "rectBarTip": "Enter a width and height, then click to place a rectangle of that size (anchor: top-left corner or center). Leave them empty to drag freely.",
+    "rectPlaced": "Placed a {w} × {h} mm rectangle. You can keep placing.",
     "rectSecond": "Click the opposite corner (Shift makes a square; in the entry box type \"@width,height\").",
     "rectFlat": "Width or height is 0, so no rectangle can be made. Pick two corners that are apart.",
     "circle": "Circle",
@@ -14470,7 +14488,7 @@ const HELP_JA = {
     {
       "id": "drawing",
       "title": "作図と座標",
-      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。直線・折れ線の各辺・ベジェや曲線（ペン）の各区間の中点と両端、円弧の中点（弧の真ん中）と両端、円の上下左右と斜め45度の8か所、目打ちの縫い穴と目印の中心（画面に見えている穴）にも、同じ距離で吸い付きます（定規で穴の間隔を測るときに使えます）（これらはスナップのチェックと関係なく効きます。曲線の中点は長さの真ん中です）。作図ツールでポインタがこれらの点に近づく（約40px以内）と、その点が小さなひし形の印で出ます。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。\nオフセット：先に作図オプションで「オフセット距離」と「向き」（外側／内側）を決めておきます。図形をクリックすると、他の図形との交点から交点までの区間を選び（橙色で表示）、ダブルクリックするとつながった図形全体（閉じていれば閉じた図形）を選びます。Enter か「選んだ範囲をオフセット」で実行します。つながった線は結合点をまたいで1つとして扱います。閉じた図形は外側と内側、開いた線は進行方向の左（外側）と右（内側）。結果は黄色の点線で、色と線種は情報カードで変えられます。"
+      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。直線・折れ線の各辺・ベジェや曲線（ペン）の各区間の中点と両端、円弧の中点（弧の真ん中）と両端、円の上下左右と斜め45度の8か所、目打ちの縫い穴と目印の中心（画面に見えている穴）にも、同じ距離で吸い付きます（定規で穴の間隔を測るときに使えます）（これらはスナップのチェックと関係なく効きます。曲線の中点は長さの真ん中です）。作図ツールでポインタがこれらの点に近づく（約40px以内）と、その点が小さなひし形の印で出ます。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、入力した半径（C 寸法）で丸め（切り取り）ます。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。大きさを指定して描くには、「矩形」ツールを選ぶと画面の上に出る「幅 (mm)」「高さ (mm)」の欄に数字を入れ、置きたい位置をクリックします。その位置を矩形の「左上の角」にするか「中心」にするかは「基準」で選べます。何度でも続けて置け、クリックには端点などの磁石・スナップが効きます。置く前にカーソルへ薄い仮の矩形が付いてきます。幅か高さを空にすると、これまでのドラッグで自由に描く動きに戻ります。\nオフセット：先に作図オプションで「オフセット距離」と「向き」（外側／内側）を決めておきます。図形をクリックすると、他の図形との交点から交点までの区間を選び（橙色で表示）、ダブルクリックするとつながった図形全体（閉じていれば閉じた図形）を選びます。Enter か「選んだ範囲をオフセット」で実行します。つながった線は結合点をまたいで1つとして扱います。閉じた図形は外側と内側、開いた線は進行方向の左（外側）と右（内側）。結果は黄色の点線で、色と線種は情報カードで変えられます。"
     },
     {
       "id": "stitching",
@@ -14535,7 +14553,7 @@ const HELP_JA = {
     {
       "id": "three-view-quad",
       "title": "三面図（4分割）：紙を分けて描く",
-      "body": "正面・上・右から見た図を、それぞれ別の紙（タブ）に描き、画面を4つに分けて同時に見る方式です。枠や45°の線はなく、紙どうしのつながりは点線だけです。\n【入れ方】上の「三面図（4分割）」にチェックを入れます。いまの図面が「正面から見た図」の紙になり、「上から見た図」「右から見た図」の紙（タブ）が自動でできます。画面は、左上＝上から見た図、左下＝正面から見た図、右下＝右から見た図、右上＝立体、の4つの区画になります。\n【描き方】描きたい区画をクリックすると、その紙が「いま描く紙」になります（枠が金色になり、タブも切り替わります）。あとはいつもどおり描くだけです。区画ごとに拡大縮小や移動ができます。\n【紙の向き】上から見た図の紙には「手前の線」が横に引いてあり、その線より上が奥です（線からの距離が奥行き）。右から見た図の紙には「手前の線」が縦に引いてあり、その線より右が奥です。正面の紙は普通の図面と同じです。\n【点線】ほかの紙の形から来る点線が出ます。正面の角の横位置は上の紙に縦の点線、正面の高さは右の紙に横の点線、上の紙の奥行きは右の紙に縦の点線、右の紙の奥行きは上の紙に横の点線。点線の近くでクリックすると、横か縦の位置がぴったり合います。描いている紙のカーソルに合わせて、ほかの紙にも水色の線が出ます。\n【立体】右上の区画に、3枚の紙から組み立てた立体がいつも出ていて、描くたびに変わります。その中をドラッグすると回ります。「3D」ボタン・「三面図 SVG」・「三面図を印刷」も同じ立体を使います。\n【保存】どの紙のタブから保存しても、3枚の紙が1つのファイルに入ります。読み込むと3枚のタブに戻ります。\n【覚えておくこと】「三面図（4分割）」と「三面図（正面・上・横）」（枠方式）は同時には入りません。4分割を切っても紙（タブ）は残ります。細かいくぼみ・穴・複数の部品は、まだ立体にできません。"
+      "body": "正面・上・右から見た図を、それぞれ別の紙（タブ）に描き、画面を4つに分けて同時に見る方式です。枠や45°の線はなく、紙どうしのつながりは点線だけです。4分割から「三面図（正面・上・横）」（枠方式）に切り替えると、上の紙・右の紙の図形は正面の紙の上の枠・右の枠へ移り、4分割に戻すと紙へ戻ります。\n【入れ方】上の「三面図（4分割）」にチェックを入れます。いまの図面が「正面から見た図」の紙になり、「上から見た図」「右から見た図」の紙（タブ）が自動でできます。画面は、左上＝上から見た図、左下＝正面から見た図、右下＝右から見た図、右上＝立体、の4つの区画になります。\n【描き方】描きたい区画をクリックすると、その紙が「いま描く紙」になります（枠が金色になり、タブも切り替わります）。あとはいつもどおり描くだけです。区画ごとに拡大縮小や移動ができます。\n【紙の向き】上から見た図の紙には「手前の線」が横に引いてあり、その線より上が奥です（線からの距離が奥行き）。右から見た図の紙には「手前の線」が縦に引いてあり、その線より右が奥です。正面の紙は普通の図面と同じです。\n【点線】ほかの紙の形から来る点線が出ます。正面の角の横位置は上の紙に縦の点線、正面の高さは右の紙に横の点線、上の紙の奥行きは右の紙に縦の点線、右の紙の奥行きは上の紙に横の点線。点線の近くでクリックすると、横か縦の位置がぴったり合います。描いている紙のカーソルに合わせて、ほかの紙にも水色の線が出ます。\n【立体】右上の区画に、3枚の紙から組み立てた立体がいつも出ていて、描くたびに変わります。その中をドラッグすると回ります。「3D」ボタン・「三面図 SVG」・「三面図を印刷」も同じ立体を使います。\n【保存】どの紙のタブから保存しても、3枚の紙が1つのファイルに入ります。読み込むと3枚のタブに戻ります。\n【覚えておくこと】「三面図（4分割）」と「三面図（正面・上・横）」（枠方式）は同時には入りません。4分割を切っても紙（タブ）は残ります。細かいくぼみ・穴・複数の部品は、まだ立体にできません。"
     },
     {
       "id": "hardware",
@@ -14619,7 +14637,7 @@ const HELP_EN = {
     {
       "id": "drawing",
       "title": "Drawing and coordinates",
-      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox. The midpoint and both ends of a line, of each side of a polyline and of each span of a Bezier or pen curve (the midpoint of a curve is the middle of its length), the midpoint (middle of the curve) and both ends of an arc, the 8 points of a circle (top, bottom, left, right and the four 45° points), and the center of each visible stitching hole and mark also attract the cursor at the same distance (so the Ruler can measure the pitch between holes), regardless of the Snap checkbox; with a drawing tool, these points appear as small diamonds when the pointer comes within about 40 px.\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0.\nOffset: first set the Offset distance and Side (outside / inside) in Drawing options. Click a shape to select the part between intersections with other shapes (shown in orange); double-click to select the whole connected shape (a closed shape if it is closed). Press Enter or the Offset button to run it. Connected lines are treated as one, passing through their joints. Closed shapes go outside or inside; open lines go to the left (outside) or right (inside) of travel. The result is a yellow dashed line; change color and line style in the Info card."
+      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox. The midpoint and both ends of a line, of each side of a polyline and of each span of a Bezier or pen curve (the midpoint of a curve is the middle of its length), the midpoint (middle of the curve) and both ends of an arc, the 8 points of a circle (top, bottom, left, right and the four 45° points), and the center of each visible stitching hole and mark also attract the cursor at the same distance (so the Ruler can measure the pitch between holes), regardless of the Snap checkbox; with a drawing tool, these points appear as small diamonds when the pointer comes within about 40 px.\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) you enter. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0. To draw a rectangle of a given size, choose the Rectangle tool, enter Width (mm) and Height (mm) in the bar at the top of the canvas, and click where you want it. Anchor chooses whether the click is the top-left corner or the center. You can keep placing it, and magnets and snapping work on the click. A faint preview follows the cursor. Leave Width or Height empty to go back to dragging freely.\nOffset: first set the Offset distance and Side (outside / inside) in Drawing options. Click a shape to select the part between intersections with other shapes (shown in orange); double-click to select the whole connected shape (a closed shape if it is closed). Press Enter or the Offset button to run it. Connected lines are treated as one, passing through their joints. Closed shapes go outside or inside; open lines go to the left (outside) or right (inside) of travel. The result is a yellow dashed line; change color and line style in the Info card."
     },
     {
       "id": "stitching",
@@ -14684,7 +14702,7 @@ const HELP_EN = {
     {
       "id": "three-view-quad",
       "title": "Three views (4 panes): separate sheets",
-      "body": "Draw the front, top and right views on separate sheets (tabs) and see all of them at once in four panes. There are no boxes or 45° line; the sheets are linked only by dotted lines.\n[Turning it on] Tick “3 views (4 panes)” at the top. The current drawing becomes the Front sheet, and Top and Right sheets (tabs) are created for you. The screen splits into four panes: top view at the upper left, front view at the lower left, right view at the lower right, and the solid at the upper right.\n[Drawing] Click the pane you want to draw in; that sheet becomes the active one (its border turns gold and the tab switches). Then draw as usual. Each pane can be zoomed and panned on its own.\n[Sheet directions] The Top sheet has a horizontal “near side line”; above it is further back (the distance from the line is the depth). The Right sheet has a vertical near side line; to its right is further back. The Front sheet is a normal drawing.\n[Dotted lines] Lines coming from the other sheets: the x of front corners appear as vertical lines on the Top sheet, front heights as horizontal lines on the Right sheet, Top-sheet depths as vertical lines on the Right sheet, and Right-sheet depths as horizontal lines on the Top sheet. Clicking near a dotted line pulls the point onto it. Light-blue lines on the other sheets follow your cursor.\n[Solid] The upper-right pane always shows the solid built from the three sheets and changes as you draw. Drag inside it to turn it. The 3D button, Views SVG and Print views use the same solid.\n[Saving] Saving from any of the sheet tabs puts all three sheets into one file. Loading it brings the three tabs back.\n[Keep in mind] “3 views (4 panes)” and “3 views (front / top / right)” (the box method) cannot be on at the same time. Turning 4 panes off keeps the sheets (tabs). Small hollows, holes and multiple parts cannot be turned into a solid yet."
+      "body": "Draw the front, top and right views on separate sheets (tabs) and see all of them at once in four panes. There are no boxes or 45° line; the sheets are linked only by dotted lines.\n[Turning it on] Tick “3 views (4 panes)” at the top. The current drawing becomes the Front sheet, and Top and Right sheets (tabs) are created for you. The screen splits into four panes: top view at the upper left, front view at the lower left, right view at the lower right, and the solid at the upper right.\n[Drawing] Click the pane you want to draw in; that sheet becomes the active one (its border turns gold and the tab switches). Then draw as usual. Each pane can be zoomed and panned on its own.\n[Sheet directions] The Top sheet has a horizontal “near side line”; above it is further back (the distance from the line is the depth). The Right sheet has a vertical near side line; to its right is further back. The Front sheet is a normal drawing.\n[Dotted lines] Lines coming from the other sheets: the x of front corners appear as vertical lines on the Top sheet, front heights as horizontal lines on the Right sheet, Top-sheet depths as vertical lines on the Right sheet, and Right-sheet depths as horizontal lines on the Top sheet. Clicking near a dotted line pulls the point onto it. Light-blue lines on the other sheets follow your cursor.\n[Solid] The upper-right pane always shows the solid built from the three sheets and changes as you draw. Drag inside it to turn it. The 3D button, Views SVG and Print views use the same solid.\n[Saving] Saving from any of the sheet tabs puts all three sheets into one file. Loading it brings the three tabs back.\n[Keep in mind] “3 views (4 panes)” and “3 views (front / top / right)” (the box method) cannot be on at the same time. Turning 4 panes off keeps the sheets (tabs). Switching from 4 panes to the box method moves the shapes on the top and right sheets into the top and right boxes of the front sheet; turning 4 panes back on returns them to the sheets. Small hollows, holes and multiple parts cannot be turned into a solid yet."
     },
     {
       "id": "hardware",
@@ -14767,7 +14785,7 @@ const { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibra
 const { svgToShapes, dxfToShapesFull } = __mods['importers'];
 const { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } = __mods['interop'];
 const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } = __mods['sim3d'];
-const { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } = __mods['threeview'];
+const { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } = __mods['threeview'];
 const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
@@ -14951,6 +14969,51 @@ function ensureSheetSet() {
   switchTab(cur); renderTabs();
 }
 function switchSheet(role) { const tb = quadSheets()[role]; if (!tb) return false; const i = tabs.indexOf(tb); if (i !== activeTab) switchTab(i); return true; }
+/** 図形（と、その図形だけで成り立つ経路・穴）を紙 src から紙 dst へ移す。座標は (dx, dy) だけずらす。id は移し先で付け直す。下絵は移さない。移した図形の数を返す */
+function transferShapes(src, dst, ids, dx, dy) {
+  const idSet = new Set(ids); if (!idSet.size) return 0;
+  const layerOk = l => dst.layers.some(x => x.id === l) ? l : (dst.layers[0]?.id || 'pattern'), shapeMap = new Map(), pathMap = new Map();
+  for (const s of src.shapes.filter(s => idSet.has(s.id) && s.type !== 'image')) { const id = freshId(dst.shapes, 's'); shapeMap.set(s.id, id); const moved = { ...translate(s, dx, dy), id, layer: layerOk(s.layer) }; if (moved.type === 'fold') moved.partId = null; dst.shapes.push(moved); }
+  for (const p of src.paths.filter(p => p.shapeIds.length && p.shapeIds.every(i => shapeMap.has(i)))) { const id = freshId(dst.paths, 'p'); pathMap.set(p.id, id); dst.paths.push({ ...p, id, shapeIds: p.shapeIds.map(i => shapeMap.get(i)) }); }
+  for (const h of src.holes.filter(h => pathMap.has(h.pathId))) dst.holes.push({ ...translate(h, dx, dy), id: freshId(dst.holes, 'h'), pathId: pathMap.get(h.pathId) });
+  src.seams = (src.seams || []).filter(m => !pathMap.has(m.a.pathId) && !pathMap.has(m.b.pathId));
+  src.holes = src.holes.filter(h => !pathMap.has(h.pathId)); src.paths = src.paths.filter(p => !pathMap.has(p.id)); src.shapes = src.shapes.filter(s => !shapeMap.has(s.id));
+  for (const pt of src.parts || []) pt.shapeIds = pt.shapeIds.filter(i => !shapeMap.has(i));
+  return shapeMap.size;
+}
+/** ほかの紙のタブに「元に戻す」の記録を積む（quadFollowMove と同じ） */
+function pushTabUndo(tb, before) { tb.undo = tb.undo || []; tb.undo.push(before); if (tb.undo.length > 100) tb.undo.shift(); tb.redo = []; tb.dirty = true; }
+/** 4分割 → 枠方式：上の紙・右の紙の図形を、正面の紙の上の枠・右の枠へ移す（手前の線＝枠の下の辺／左の辺に合わせる）。正面の図形が正面の枠の外にあれば枠の中へずらす（上・右も同じだけ）。移した数を返す */
+function quadToFrames() {
+  const sheets = quadSheets(); if (!sheets.front || (!sheets.top && !sheets.side)) return 0;
+  switchSheet('front'); /* 枠方式は正面の紙 1 枚で見る */
+  const base = threeViewBase(), bottomOfTop = base.top.y + base.top.h, leftOfSide = base.side.x, margin = THREE_VIEW_MARGIN;
+  const own = doc.shapes.filter(s => visible(s) && s.type !== 'image'); let dx = 0, dy = 0;
+  if (own.length) { const b = bboxOfDoc({ shapes: own, holes: [] }); if (b && threeViewAreaAt({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }, base) !== 'front') { dx = base.front.x + margin - b.minX; dy = base.front.y + margin - b.minY; } }
+  let moved = 0;
+  commit(() => {
+    if (dx || dy) { doc.shapes = doc.shapes.map(s => s.type === 'image' ? s : translate(s, dx, dy)); doc.holes = doc.holes.map(h => translate(h, dx, dy)); }
+    for (const [role, ox, oy] of [['top', dx, bottomOfTop], ['side', leftOfSide, dy]]) {
+      const tb = sheets[role]; if (!tb) continue; const src = tb.doc, before = JSON.stringify(src);
+      const n = transferShapes(src, doc, src.shapes.map(s => s.id), ox, oy); if (n) { pushTabUndo(tb, before); moved += n; }
+    }
+  });
+  rebuildThreeViewMarks(); renderTabs(); return moved;
+}
+/** 枠方式 → 4分割：正面の紙の上の枠・右の枠にある図形を、上の紙・右の紙へ移す（手前の線を 0 に）。紙は作ってから呼ぶ。移した数を返す */
+function framesToQuad() {
+  const sheets = quadSheets(); if (!sheets.top && !sheets.side) return 0;
+  const layout = threeViewLayout, bottomOfTop = layout.top.y + layout.top.h, leftOfSide = layout.side.x, byArea = { top: [], side: [] };
+  for (const s of doc.shapes) { if (s.type === 'image') continue; const a = threeViewShapeArea(s, layout); if (a === 'top' || a === 'side') byArea[a].push(s.id); }
+  let moved = 0;
+  commit(() => {
+    for (const [role, ox, oy] of [['top', 0, -bottomOfTop], ['side', -leftOfSide, 0]]) {
+      const tb = sheets[role], ids = byArea[role]; if (!tb || !ids.length || tb === tabs[activeTab]) continue; const before = JSON.stringify(tb.doc);
+      const n = transferShapes(doc, tb.doc, ids, ox, oy); if (n) { pushTabUndo(tb, before); moved += n; }
+    }
+  });
+  renderTabs(); return moved;
+}
 /** 3 枚の紙から「合わせたい位置」と立体を作り直す（図形が変わるたび・rebuildSnaps から）。 */
 function rebuildQuad() {
   if (!quadOn()) { quadMarksCache = null; quadSolidCache = null; return; }
@@ -16779,6 +16842,7 @@ function commit(fn) {
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
+  $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
@@ -17022,6 +17086,18 @@ function anchor() {
   return null;
 }
 /** 対角の2点から矩形（閉じた折れ線・4点）。幅か高さが 0 なら null。 */
+/** 矩形の「幅・高さ」欄（mm）。どちらも 0 より大きい数のときだけ { w, h }。それ以外（空・0・不正）は null＝ドラッグで自由に描く。 */
+function rectSizeNow() { const w = Number($('rectW').value), h = Number($('rectH').value); return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0 ? { w, h } : null; }
+/** 幅・高さを指定した矩形。基準点 p を「左上の角」か「中心」にして、右下へ幅×高さぶん広げる。 */
+function rectBySizeAt(p) {
+  const z = rectSizeNow(); if (!z) return null; const c = $('rectAnchor').value === 'center', r4 = v => +v.toFixed(4), x = c ? p.x - z.w / 2 : p.x, y = c ? p.y - z.h / 2 : p.y;
+  return rectShape({ x: r4(x), y: r4(y) }, { x: r4(x + z.w), y: r4(y + z.h) });
+}
+/** 幅・高さが入っているときの矩形ツールのクリック：その位置に、指定した大きさの矩形を置く（続けて置ける）。 */
+function placeRectBySize(p) {
+  const rect = rectBySizeAt(p), z = rectSizeNow(); if (!rect) return;
+  cancel(); addShape(rect); lastPoint = p; $('hint').textContent = t('rectPlaced', { w: z.w, h: z.h });
+}
 function rectShape(a, b) {
   if (Math.abs(a.x - b.x) < 1e-6 || Math.abs(a.y - b.y) < 1e-6) return null;
   return { type: 'polyline', closed: true, points: [{ x: a.x, y: a.y }, { x: b.x, y: a.y }, { x: b.x, y: b.y }, { x: a.x, y: b.y }] };
@@ -17195,6 +17271,7 @@ function drawSheetBody(lo, hi) {
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
+  if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
   drawCircleReadout();
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
   if (stage?.kind === 'arc3') { const pv = stage.pts.length >= 2 ? arcThroughPoints(stage.pts[0], stage.pts[1], cursor) : null; strokeShape(pv || { type: 'line', x1: stage.pts[0].x, y1: stage.pts[0].y, x2: (stage.pts[1] || cursor).x, y2: (stage.pts[1] || cursor).y }, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
@@ -17270,6 +17347,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
   if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); lastPoint = cursor; } return; }
+  if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { bezierClick(cursor); return; }
   if (mode === 'ruler') {
     if (stage?.kind !== 'ruler') { ruler = null; stage = { kind: 'ruler', a: cursor }; $('hint').textContent = t('rulerSecond'); }
@@ -17429,8 +17507,8 @@ $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = 
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
 for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
-$('threeView').addEventListener('change', () => { if (threeViewOn() && quadOn()) $('quadView').checked = false; $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); });
-$('quadView').addEventListener('change', () => { if (quadOn()) { if ($('threeView').checked) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); } rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? t('quadOnHint') : t('hint.' + mode); });
+$('threeView').addEventListener('change', () => { let moved = 0; if (threeViewOn() && quadOn()) { $('quadView').checked = false; moved = quadToFrames(); } $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); if (moved) { draw(); $('hint').textContent = t('quadToFramesDone', { n: moved }); } });
+$('quadView').addEventListener('change', () => { let moved = 0; if (quadOn()) { const wasFrames = $('threeView').checked; if (wasFrames) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); if (wasFrames) moved = framesToQuad(); } rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? (moved ? t('framesToQuadDone', { n: moved }) + ' ' : '') + t('quadOnHint') : t('hint.' + mode); });
 $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewFrame').onclick = setThreeViewFrame; $('threeViewFrameReset').onclick = resetThreeViewFrame;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
