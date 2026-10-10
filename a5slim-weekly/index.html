@@ -176,9 +176,10 @@ body.panel-open #preview { margin-left: 280px; }
 .mg-day-col.is-sun { background-color: rgba(255,235,235,0.35); }
 
 /* === MODULE: 管理型（試作）月名チェック欄 ===
-   時間軸の上に重ねる絶対配置。既定位置（下寄り・不透明な帯）は下の罫線を隠して読みやすくしている。
-   位置はスライダーで自由に動かせる（時間軸と重ねたくない場合はX/Y位置で調整）。 */
-.mg-monthcheck { position: absolute; display: flex; background: rgba(255,255,255,0.94); border-top: 0.2mm solid #ccc; box-sizing: border-box; padding-top: 0.8mm; }
+   絶対配置。既定では mg-timeaxis の下に margin-bottom で本当の余白を作ってから、その余白の中に収まる
+   位置（mgWidgets.mc.y）に置く。重なりを隠すための背景は使っていない（2026-10-10 事業主指示で対症療法を廃止）。
+   位置・サイズはスライダーで自由に動かせる。 */
+.mg-monthcheck { position: absolute; display: flex; border-top: 0.2mm solid #ccc; box-sizing: border-box; padding-top: 0.8mm; }
 .mg-mc-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
 .mg-mc-label { font-weight: 700; line-height: 1.3; }
 .mg-mc-mark { border: 0.2mm solid #999; border-radius: 50%; margin-top: 0.4mm; box-sizing: border-box; }
@@ -389,10 +390,10 @@ body.panel-open #preview { margin-left: 280px; }
     <h3>管理型（試作）: 月名チェック欄</h3>
     <div class="btn-row"><button class="btn-toggle on" id="btnMgMc" onclick="toggleMgWidget('mc','btnMgMc')">表示</button></div>
     <div class="ctrl-row"><label>X位置</label><input type="range" id="mgMcX" min="0" max="190" step="0.5" value="24" oninput="mgWidgets.mc.x=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">24</span>mm</div>
-    <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgMcY" min="0" max="92" step="0.5" value="80" oninput="mgWidgets.mc.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">80</span>mm</div>
+    <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgMcY" min="0" max="92" step="0.5" value="86" oninput="mgWidgets.mc.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">86</span>mm</div>
     <div class="ctrl-row"><label>幅</label><input type="range" id="mgMcW" min="30" max="198" step="1" value="150" oninput="mgWidgets.mc.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">150</span>mm</div>
     <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="mgMcFont" min="1" max="4" step="0.1" value="1.4" oninput="mgWidgets.mc.font=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">1.4</span>mm</div>
-    <div style="font-size:9px;color:#888;line-height:1.5;margin-top:4px;">JAN〜DECが横並びになります。既定位置は時間軸の下寄りに白い帯で重ねて表示します（下の罫線が透けないようにしています）。好きな位置へX/Y位置で動かせます。</div>
+    <div style="font-size:9px;color:#888;line-height:1.5;margin-top:4px;">JAN〜DECが横並びになります。既定では時間軸グリッドをその分だけ縮めて下に本当の余白を作り、その余白の中に収まる位置に置いています（重ねて隠す表示ではありません）。文字サイズを変えると余白も自動で追従します。好きな位置へX/Y位置で動かすこともできます。</div>
   </div>
 
   <div class="ctrl-section">
@@ -651,7 +652,7 @@ let customImgDataUrl = null;
 let mgStartHour = 1;   // 時間軸の開始時刻（例:1=AM1:00）
 let mgHourSpan = 24;   // 表示する時間数（コマ数）
 const mgWidgets = {
-  mc:      { show: true, x: 24,  y: 80, w: 150, font: 1.4 },                 // 月名チェック欄（JAN〜DEC横並び）
+  mc:      { show: true, x: 24,  y: 86, w: 150, font: 1.4 },                 // 月名チェック欄（JAN〜DEC横並び・既定で時間軸グリッドの下の余白に収まる位置）
   tasks:   { show: true, x: 2,   y: 2,  w: 190, size: 50, count: 3 },        // WEEKLY TASKS欄（付箋サイズの枠）
   expense: { show: true, x: 2,   y: 58, w: 90,  rows: 6 },                   // 支出メモ欄
   habit:   { show: true, x: 100, y: 58, w: 94,  rows: 5, rowH: 4 }           // 習慣トラッカー欄
@@ -960,6 +961,15 @@ function buildMgDayCol(wd) {
   return `<div class="mg-day-col ${wdClass}" style="background-image:${grad}"></div>`;
 }
 // === MODULE: 管理型（試作）月名チェック欄 Builder ===
+// 時間軸グリッドの下に実際の余白を確保して重ねない（白帯で隠す対症療法はしない・2026-10-10 事業主指示）。
+// 欄の高さ分だけ .mg-timeaxis の下に margin を取り、グリッド自体をその分だけ縮める＝文字サイズを変えても自動で追従する。
+function mgMcBandHeight() {
+  const mc = mgWidgets.mc;
+  if (!mc.show) return 0;
+  const labelH = mc.font * 1.3;
+  const markSize = mc.font * 1.1;
+  return labelH + 0.4 /*mark上の余白*/ + markSize + 0.8 /*帯の上パディング*/ + 0.2 /*帯の上罫線*/ + 0.6 /*予備（グリッド側の安全マージン）*/;
+}
 function buildMgMonthCheckHTML() {
   const mc = mgWidgets.mc;
   if (!mc.show) return '';
@@ -1010,9 +1020,10 @@ function buildTimeAxisHTML(weekStart, startDay, U) {
     if (opts.showWeekMeta) metaHTML = `<div class="week-meta"><div class="week-range">${rangeStr}</div><div class="week-num">W${pad(getWeekNumber(weekStart))} · ${weekStart.getFullYear()}</div></div>`;
     if (opts.showMonthAbbr) monthAbbr = `<div class="week-month-abbr">${isEN ? MONTH_EN_ABB[weekStart.getMonth()] : `${weekStart.getMonth()+1}月`}</div>`;
   }
+  const mcReserve = mgMcBandHeight(); // 月名チェック欄のぶんだけグリッドを縮め、本当の余白を作る（重ねて隠さない）
   return `<div class="mg-upper-wrap">
     <div class="week-header">${metaHTML}<div class="week-brand">N's factory</div>${monthAbbr}</div>
-    <div class="mg-timeaxis">
+    <div class="mg-timeaxis" style="margin-bottom:${mcReserve}mm;">
       <div class="mg-day-heads"><div class="mg-time-label-col-spacer"></div>${heads}</div>
       <div class="mg-grid-wrap">
         <div class="mg-hour-labels">${buildHourLabelsHTML()}</div>
@@ -1271,6 +1282,8 @@ const HISTORY_ENTRIES = [
     detail: '左パネルに「管理型（試作）」専用の設定を追加しました。時間軸（開始時刻・表示時間数・ラベルの幅や文字サイズ・罫線の太さなど）、月名チェック欄（JAN〜DECが横並び・位置と文字サイズ）、WEEKLY TASKS欄（付箋のサイズと枚数・位置・幅）、支出メモ欄（行数・位置・幅）、習慣トラッカー欄（行数・1行の高さ・位置・幅）を、それぞれスライダーで動かすとその場で絵が変わります。固定の決め打ちレイアウトではありません。初期配置はまだ調整しきれていないので、重なって見える場合はX・Y位置のスライダーで動かしてください。' },
   { date: '2026-10-10', type: 'fix', title: '「管理型（試作）」の月名チェック欄の初期位置と、向きの説明文を修正',
     detail: '月名チェック欄の最初に表示される位置が時間軸の罫線と重なって見づらかったのを、下寄りに白い帯を敷いた位置へ変更しました（場所はこれまでどおりX・Y位置のスライダーで動かせます）。また「使う向き」の説明文が古いままで、月名チェック・WEEKLY TASKS・支出メモ・習慣トラッカーが未実装のように書かれていたのを、実装済みであることが伝わる文言に直しました。' },
+  { date: '2026-10-10', type: 'fix', title: '「管理型（試作）」の月名チェック欄が時間軸の罫線と重なって見える不具合を根本から修正',
+    detail: '前回の修正は白い帯で重なりを覆い隠すだけの応急処置でした。今回は、月名チェック欄を表示するぶんだけ時間軸のグリッドを実際に縮めて、下に本当の余白を作ってから、その余白の中に月名チェック欄を置く形に作り直しました。文字サイズを大きくしても、余白の広さが自動でついてくるので重なりません。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
