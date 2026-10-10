@@ -6,7 +6,7 @@ import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, v
 import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
-import { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem } from './library.js';
+import { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
 import { docToAiJson, validateActions, estimateYen, roughTokens } from './ai_schema.js';
 import { buildDoc, check, threadEstimate, defaultRecipe } from './autodesign.js';
 import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
@@ -616,6 +616,7 @@ function initDesign() {
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   if (typeof setInterval === 'function') setInterval(() => { if (junctions.loose.length && $('showJunctions').checked && !(typeof document !== 'undefined' && document.hidden)) { blinkOn = !blinkOn; draw(); } else blinkOn = true; }, 500); /* 未結合の交点だけ点滅させる */
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
+  $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') window.open('guide.html', '_blank'); }; /* 図解ガイド（日本語）を別タブで開く */
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
@@ -1212,7 +1213,20 @@ function initAi() {
 // ---- 部品ライブラリ・タブ・クリップボード ----
 let userLibrary = [], tabs = [], activeTab = 0;
 function loadLibrary() { try { const list = JSON.parse(localStorage.getItem('leather-cad.library')); if (Array.isArray(list)) userLibrary = list.filter(it => checkLibraryItem(it).length === 0); } catch { /* 保存不可は空のまま。 */ } }
-function persistLibrary() { try { localStorage.setItem('leather-cad.library', JSON.stringify(userLibrary)); } catch { $('hint').textContent = t('storageUnavailable'); } }
+function persistLibrary() { try { localStorage.setItem('leather-cad.library', JSON.stringify(userLibrary)); } catch { $('hint').textContent = t('storageUnavailable'); return; } snapshotLibrary(); }
+/* 登録した部品の自動バックアップ：変更のたびに、ブラウザの中へ最新10件まで残す（直前と同じ内容なら足さない） */
+const LIB_BACKUP_KEY = 'leather-cad.library.backups';
+function loadLibBackups() { try { const l = JSON.parse(localStorage.getItem(LIB_BACKUP_KEY)); return Array.isArray(l) ? l.filter(b => b && Array.isArray(b.items)) : []; } catch { return []; } }
+function saveLibBackups(list) { try { localStorage.setItem(LIB_BACKUP_KEY, JSON.stringify(list)); return true; } catch { return false; } }
+function snapshotLibrary() { if (!userLibrary.length && !loadLibBackups().length) return; saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); if (typeof renderLibBackups === 'function' && $('libBackupSel')) renderLibBackups(); }
+function renderLibBackups() { const sel = $('libBackupSel'); sel.textContent = ''; for (const [i, b] of loadLibBackups().entries()) { const o = document.createElement('option'); o.value = String(i); o.textContent = libraryBackupLabel(b); sel.appendChild(o); } if (sel.options && sel.options.length) sel.value = '0'; }
+let libRestoreArmed = 0;
+function restoreLibBackup() { /* 2回押しで戻す（1回目は確認の案内）。戻す前に、いまの状態もバックアップに残す */
+  const list = loadLibBackups(), b = list[Number($('libBackupSel').value)]; if (!b) { $('hint').textContent = t('libBackupNone'); return; }
+  if (Date.now() - libRestoreArmed > 6000) { libRestoreArmed = Date.now(); $('hint').textContent = t('libRestoreConfirm', { label: libraryBackupLabel(b) }); return; }
+  libRestoreArmed = 0; saveLibBackups(pushLibraryBackup(list, userLibrary)); userLibrary = b.items.filter(it => checkLibraryItem(it).length === 0); persistLibrary(); renderLibrary(); renderLibBackups(); $('hint').textContent = t('libRestored', { label: libraryBackupLabel(b), n: userLibrary.length });
+}
+function backupLibraryNow() { if (!userLibrary.length) { $('hint').textContent = t('libBackupEmpty'); return; } saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); renderLibBackups(); $('hint').textContent = t('libBackedUp', { n: userLibrary.length }); }
 function libraryItems() { return [...DATA_LIBRARY.items, ...userLibrary]; }
 function libCurrent() { return libraryItems().find(i => i.id === $('libItem').value) || libraryItems()[0] || null; }
 function renderLibrary() {
@@ -1231,15 +1245,19 @@ function placeLibrary(at) {
   commit(() => { ids = mergePayload(doc, { ...payload, layers: [] }, { freshId, source: 'library:' + it.id }); selected = new Set(ids); });
   renderLayers(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length });
 }
-function saveToLibrary() {
+/** 登録した部品の id。同じ瞬間に2つ登録しても、既にある id と重ならないようにする。 */
+function uniqueLibraryId() { let id = 'user-' + Date.now().toString(36); while (userLibrary.some(x => x.id === id)) id += 'x'; return id; }
+function saveToLibrary(nameArg = null) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
-  const name = ($('libName').value || '').trim(); if (!name) { $('hint').textContent = t('needName'); return; }
-  const payload = extractSelection(doc, ids), item = { id: 'user-' + Date.now().toString(36), name, tags: ($('libTags').value || '').split(/[\s,]+/).filter(Boolean), desc: '', vars: {}, shapes: payload.shapes, holes: payload.holes, paths: payload.paths, parts: payload.parts, tools: payload.tools };
+  const name = (nameArg ?? ($('libName').value || '')).trim(); if (!name) { $('hint').textContent = t('needName'); return; }
+  const payload = extractSelection(doc, ids), item = { id: uniqueLibraryId(), name, tags: ($('libTags').value || '').split(/[\s,]+/).filter(Boolean), desc: '', vars: {}, shapes: payload.shapes, holes: payload.holes, paths: payload.paths, parts: payload.parts, tools: payload.tools };
   userLibrary.push(item); persistLibrary(); renderLibrary(); $('libItem').value = item.id; renderLibrary(); $('hint').textContent = t('libSaved', { name });
 }
 function removeFromLibrary() { const it = libCurrent(); if (!it || !userLibrary.includes(it)) { $('hint').textContent = t('libBuiltin'); return; } userLibrary = userLibrary.filter(x => x !== it); persistLibrary(); renderLibrary(); }
-function exportLibrary() { download('leather-library.nscad-lib.json', JSON.stringify({ version: 1, items: userLibrary }, null, 2), 'application/json'); }
-async function importLibrary(file) { try { const data = JSON.parse(await file.text()); const items = (data.items || []).filter(it => checkLibraryItem(it).length === 0); userLibrary.push(...items); persistLibrary(); renderLibrary(); $('hint').textContent = t('libImported', { n: items.length }); } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); } }
+function exportLibrary() { if (!userLibrary.length) { $('hint').textContent = t('libBackupEmpty'); return; } const d = new Date(), z = n => String(n).padStart(2, '0'); download(`nscad-parts-library-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}.json`, libraryFileText(userLibrary), 'application/json'); $('hint').textContent = t('libSavedFile', { n: userLibrary.length }); }
+async function importLibrary(file) { /* 同じ名前（id）の部品は更新、無いものは追加。読み込む前の状態もバックアップに残す */
+  try { const r = parseLibraryFile(await file.text()); if (!r) throw new Error(t('libFileInvalid')); if (userLibrary.length) saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); const m = mergeLibraryItems(userLibrary, r.items); userLibrary = m.items; persistLibrary(); renderLibrary(); renderLibBackups(); $('hint').textContent = t('libImported', { n: r.items.length, a: m.added, u: m.updated, s: r.skipped }); }
+  catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); } }
 /** 選択をクリップボード文字列にする（copy イベントで使う）。 */
 /** 文字を入力する欄（テキスト入力・複数行・選択リスト・編集可能な要素）か。ここではブラウザ標準のコピー・貼り付けに任せる。 */
 function isTextEntry(el) {
@@ -1295,7 +1313,7 @@ function sendToTab(move) {
   renderTabs(); $('hint').textContent = t('sentToTab', { n: newIds.length, name: tabs[target].name });
 }
 function initLibrary() {
-  loadLibrary(); renderLibrary();
+  loadLibrary(); renderLibrary(); renderLibBackups(); $('libBackupNow').onclick = backupLibraryNow; $('libBackupRestore').onclick = restoreLibBackup;
   $('libItem').addEventListener('change', renderLibrary); $('libSearch').addEventListener('input', renderLibrary);
   $('libPlace').onclick = () => setMode('library'); $('libSave').onclick = saveToLibrary; $('libRemove').onclick = removeFromLibrary; $('libExport').onclick = exportLibrary;
   $('libImport').onclick = () => $('libFile').click(); $('libFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importLibrary(f); });
@@ -2023,6 +2041,7 @@ function fit() {
   draw();
 }
 canvas.addEventListener('pointerdown', e => {
+  hideCtxMenu(); /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
   if (isMac && e.ctrlKey && e.button === 0) return;
   e.preventDefault(); canvas.focus(); const p = local(e); canvas.setPointerCapture(e.pointerId);
@@ -2080,9 +2099,16 @@ canvas.addEventListener('pointermove', e => {
   draw();
 });
 /** 右クリック：曲線（ペン・ベジェ）の経由点を、その場で足す／消す。点の上＝その点を削除、曲線の上＝そこに経由点を追加。描いている途中は何もしない。 */
+/** 右クリックのメニュー（選んだ図形を部品ライブラリに登録する）を、クリックした位置のそばに出す。 */
+function showCtxMenu(e) {
+  const menu = $('ctxMenu'), p = local(e), w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;
+  menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px'; menu.hidden = false;
+}
+function hideCtxMenu() { $('ctxMenu').hidden = true; }
 canvas.addEventListener('contextmenu', e => {
-  e.preventDefault();
+  e.preventDefault(); hideCtxMenu();
   if (!['select', 'bezier', 'path'].includes(mode) || stage) return;
+  if (mode === 'select' && selected.size > 1) { showCtxMenu(e); return; } /* 複数選択（全体選択など）：メニュー。ペンの経由点の編集は、選択が1つ以下のとき */
   const w = world(local(e)), r = 7 / scale, curves = doc.shapes.filter(s => visible(s) && editable(s) && (s.type === 'path' || s.type === 'bezier')).reverse();
   for (const s0 of curves) { /* まず、経由点の上かどうか */
     const s = s0.type === 'path' ? s0 : toPath(s0), i = s.nodes.findIndex(n => distance(n, w) <= r);
@@ -2092,6 +2118,7 @@ canvas.addEventListener('contextmenu', e => {
     if (distToShape(s0, w) > r) continue; const s = s0.type === 'path' ? s0 : toPath(s0), next = pathInsertNode(s, projectOnPath(s, w).s);
     selected = new Set([s0.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('nodeAdded'); return;
   }
+  if (mode === 'select' && selected.size >= 1) showCtxMenu(e); /* 経由点・曲線の上でなければ、選んだ図形のメニュー */
 });
 canvas.addEventListener('dblclick', e => {
   const p = local(e), w = world(p);
@@ -2210,7 +2237,7 @@ window.addEventListener('keydown', e => {
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
   else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }

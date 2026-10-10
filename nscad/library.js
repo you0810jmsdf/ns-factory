@@ -3,6 +3,31 @@ import { evalExpr } from './hardware.js';
 import { bboxOfDoc, resolvePath, projectOnPath, arcLength } from './geometry.js';
 import { makeNextId } from './interop.js';
 
+/* ---- 部品ライブラリのファイル保存・読み込み・バックアップ（登録した部品はブラウザの中に保存されるので、ファイルとバックアップで守る） ---- */
+export const LIBRARY_FILE_APP = "N's CAD parts library";
+/** 登録した部品をファイル用の文字列にする。 */
+export function libraryFileText(items, savedAt = new Date().toISOString()) { return JSON.stringify({ app: LIBRARY_FILE_APP, version: 2, savedAt, count: items.length, items }, null, 2); }
+/** ファイルの文字列から部品を取り出す。古い形式（version 1・app なし）も読む。検証に通らない部品は skipped に数える。形式が違えば null。 */
+export function parseLibraryFile(text) {
+  let data; try { data = JSON.parse(text); } catch { return null; }
+  if (!data || !Array.isArray(data.items) || (data.app && data.app !== LIBRARY_FILE_APP)) return null;
+  const items = data.items.filter(it => it && typeof it === 'object' && checkLibraryItem(it).length === 0);
+  return { items, skipped: data.items.length - items.length };
+}
+/** 今の部品に、読み込んだ部品を合流させる。同じ id は更新、無ければ追加。戻り値 {items, added, updated}。 */
+export function mergeLibraryItems(current, incoming) {
+  const items = current.map(x => x), idx = new Map(items.map((x, i) => [x.id, i])); let added = 0, updated = 0;
+  for (const it of incoming) { if (idx.has(it.id)) { items[idx.get(it.id)] = it; updated++; } else { idx.set(it.id, items.length); items.push(it); added++; } }
+  return { items, added, updated };
+}
+/** バックアップの一覧（新しい順）に、いまの部品の写しを足す。直前と同じ内容なら足さない。最大 max 件。 */
+export function pushLibraryBackup(backups, items, at = new Date().toISOString(), max = 10) {
+  const list = Array.isArray(backups) ? backups : [], json = JSON.stringify(items);
+  if (list[0] && JSON.stringify(list[0].items) === json) return list;
+  return [{ at, count: items.length, items: JSON.parse(json) }, ...list].slice(0, max);
+}
+/** バックアップの表示名「2026-10-10 17:30（12件）」。 */
+export function libraryBackupLabel(b) { return String(b.at).slice(0, 16).replace('T', ' ') + '（' + b.count + '件）'; }
 /** 寸法変数の範囲（項目の varLimits）から外れた変数を返す。例：リフィルの穴の位置 E は 3〜9mm。範囲の無い変数は何でもよい。戻り値 [{key, min, max}]。 */
 export function varOutOfRange(item, vars = {}) {
   const v = { ...(item?.vars || {}), ...vars }, out = [];
