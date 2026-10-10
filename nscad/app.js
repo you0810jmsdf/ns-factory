@@ -44,7 +44,7 @@ let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
 let junctions = { joined: [], loose: [] }, blinkOn = true; /* 交点の表示：結合＝赤い点／未結合＝赤い点滅 */
-let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
+let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
@@ -1743,8 +1743,8 @@ function rebuildSnaps() {
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
   snapCache = shapes.flatMap(snapPoints);
   const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
-  const markCenters = doc.holes.filter(h => holeVisible(h) && holeAppearance(h, doc)?.kind === 'dot').map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に点として見えている目印の中心 */
-  magnetGuide = [...magnet.guide, ...markCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
+  const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
+  magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
