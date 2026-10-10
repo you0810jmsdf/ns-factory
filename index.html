@@ -1750,7 +1750,8 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
         <a href="./hitsuki/" class="nav-dropdown-item" role="menuitem" data-i18n="nav.room.kyouiku">教育幕僚室</a>
       </div>
     </div>
-    <a href="#staff" class="nav-link" data-i18n="nav.staff">スタッフ</a>
+    <!-- 2026-10-11 事業主指示で ナビ「スタッフ」（href="#staff"）を削除。飛び先がヒーロー自身（id="staff"）で押しても動かないため。
+         id="staff" は site-guide.html の index.html#staff（3本）が使うので残す -->
     <!-- 2026-09-16 事業主決定A: 迷子対策の案内ページ（目的別の入口）。ナビ末尾に1つだけ。
          狭い幅（≤520px）では文字を隠しコンパス印だけにする（.nav-links に overflow を付けずに収めるため）。
          i18n は内側の span の文言だけ差し替えるので表示切替と干渉しない -->
@@ -2320,7 +2321,6 @@ window.NSF_I18N_DICT = {
   'nav.room.digital': 'Digital Office',
   'nav.room.jinji': 'HR Office',
   'nav.room.kyouiku': 'Education Office',
-  'nav.staff': 'Staff',
   'nav.guide': 'Site Guide',
   'nav.order': 'Order Consultation',
   'nav.qrLabel': 'This page',
