@@ -2074,6 +2074,20 @@ canvas.addEventListener('pointermove', e => {
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
   draw();
 });
+/** 右クリック：曲線（ペン・ベジェ）の経由点を、その場で足す／消す。点の上＝その点を削除、曲線の上＝そこに経由点を追加。描いている途中は何もしない。 */
+canvas.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  if (!['select', 'bezier', 'path'].includes(mode) || stage) return;
+  const w = world(local(e)), r = 7 / scale, curves = doc.shapes.filter(s => visible(s) && editable(s) && (s.type === 'path' || s.type === 'bezier')).reverse();
+  for (const s0 of curves) { /* まず、経由点の上かどうか */
+    const s = s0.type === 'path' ? s0 : toPath(s0), i = s.nodes.findIndex(n => distance(n, w) <= r);
+    if (i >= 0) { const next = pathRemoveNode(s, i); if (!next) { $('hint').textContent = t('nodeRemoveImpossible'); return; } selected = new Set([s0.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('nodeRemoved'); return; }
+  }
+  for (const s0 of curves) { /* 次に、曲線の上かどうか */
+    if (distToShape(s0, w) > r) continue; const s = s0.type === 'path' ? s0 : toPath(s0), next = pathInsertNode(s, projectOnPath(s, w).s);
+    selected = new Set([s0.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('nodeAdded'); return;
+  }
+});
 canvas.addEventListener('dblclick', e => {
   const p = local(e), w = world(p);
   if (mode === 'path') { finishPath(false); return; }
@@ -2157,7 +2171,6 @@ canvas.addEventListener('wheel', e => {
   else zoom(Math.exp(-Math.max(-200, Math.min(200, e.deltaY)) * 0.0015), local(e));
 }, { passive: false });
 canvas.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
-canvas.addEventListener('contextmenu', e => e.preventDefault());
 document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.tool)));
 $('delete').onclick = removeSelected;
 $('copy').onclick = copySelected;
