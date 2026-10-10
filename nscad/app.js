@@ -3,7 +3,7 @@ import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibr
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
-import { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets } from './threeview.js';
+import { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } from './threeview.js';
 import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
@@ -157,6 +157,23 @@ function viewW() { return quadOn() ? width / 2 : width; }
 function viewH() { return quadOn() ? height / 2 : height; }
 /** 同じ組（id）の紙のタブ：{ front, top, side } */
 function quadSheets() { const id = tabs[activeTab]?.doc?.threeViewSheet?.id; const out = {}; if (!id) return out; for (const tb of tabs) if (tb.doc?.threeViewSheet?.id === id) out[tb.doc.threeViewSheet.role] = tb; return out; }
+/** 4分割で、いまの紙の（見えていて動かせる）図形を全部選んでいるか。 */
+function quadAllSelected() { if (!quadOn() || !sheetRole()) return false; const all = doc.shapes.filter(s => visible(s) && editable(s)); return all.length > 0 && all.every(s => selected.has(s.id)); }
+/** 全選択で動かしたとき、残り2枚の紙の図形（ロックされた層を除く）も共有する軸の分だけ動かす。それぞれの紙の「元に戻す」に積む。 */
+function quadFollowMove(dx, dy) {
+  const follow = threeViewFollowDelta(sheetRole(), dx, dy), sheets = quadSheets(); let moved = 0;
+  for (const [role, d] of Object.entries(follow)) {
+    const tb = sheets[role]; if (!tb || tb === tabs[activeTab] || (!d.x && !d.y)) continue;
+    const td = tb.doc, free = s => { const l = td.layers.find(x => x.id === s.layer || x.name === s.layer); return !l || !l.locked; };
+    const before = JSON.stringify(td), ids = new Set(td.shapes.filter(free).map(s => s.id));
+    if (!ids.size) continue;
+    td.shapes = td.shapes.map(s => ids.has(s.id) ? translate(s, d.x, d.y) : s);
+    const paths = new Set(td.paths.filter(p => p.shapeIds.every(id => ids.has(id))).map(p => p.id));
+    td.holes = td.holes.map(h => paths.has(h.pathId) ? translate(h, d.x, d.y) : h);
+    tb.undo = tb.undo || []; tb.undo.push(before); if (tb.undo.length > 100) tb.undo.shift(); tb.redo = []; tb.dirty = true; moved++;
+  }
+  if (moved) { renderTabs(); draw(); }
+}
 function sheetDoc(role) { const tb = quadSheets()[role]; return tb ? (tb === tabs[activeTab] ? doc : tb.doc) : null; }
 /** 4分割を入れたとき：いまのタブを正面の紙にし、上の紙・右の紙のタブを作る（既にあればそのまま）。 */
 function ensureSheetSet() {
@@ -2583,7 +2600,7 @@ canvas.addEventListener('pointerup', e => {
     const s = doc.shapes.find(s => s.id === g.id);
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
   } else if (g.kind === 'move') {
-    if (distance(p, g.screen) >= 4) transformSelected(s => translate(s, cursor.x - g.start.x, cursor.y - g.start.y));
+    if (distance(p, g.screen) >= 4) { const dx = cursor.x - g.start.x, dy = cursor.y - g.start.y, all = quadAllSelected(); transformSelected(s => translate(s, dx, dy)); if (all) quadFollowMove(dx, dy); }
     else if (g.insertId) {
       const s = doc.shapes.find(s => s.id === g.insertId);
       if (s && editable(s)) { const next = pathInsertNode(s, projectOnPath(s, cursor).s); nodeSel = null; transformSelectedTo(next); }

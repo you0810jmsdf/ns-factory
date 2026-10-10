@@ -258,6 +258,13 @@ export function threeViewSheetTargets(role, marks) {
   if (role === 'side') return { xs: marks.top.depths.slice(), ys: marks.front.ys.slice() };
   return { xs: [], ys: [] };
 }
+/** 紙 role の図形を (dx, dy) 動かしたとき、ほかの紙が共有する軸の分だけ動く量。正面=(x,高さ)・上=(x,−奥行き)・右=(奥行き,高さ)。 */
+export function threeViewFollowDelta(role, dx, dy) {
+  if (role === 'front') return { top: { x: dx, y: 0 }, side: { x: 0, y: dy } };
+  if (role === 'top') return { front: { x: dx, y: 0 }, side: { x: -dy, y: 0 } };
+  if (role === 'side') return { front: { x: 0, y: dy }, top: { x: 0, y: -dx } };
+  return {};
+}
 /** いま描いている紙（role）のカーソル p に対応する、ほかの紙の線。{ top:{x}|{y}, front:{...}, side:{...} } */
 export function threeViewSheetCursor(role, p) {
   if (role === 'front') return { top: { x: p.x }, side: { y: p.y } };
@@ -292,6 +299,12 @@ export function threeViewClipToRect(poly, x0, x1, y0, y1) {
   p = clip(p, q => q.y <= y1, (a, b) => lerp(a, b, (y1 - a.y) / (b.y - a.y)));
   return p.filter((q, i) => i === 0 || Math.hypot(q.x - p[i - 1].x, q.y - p[i - 1].y) > 1e-9);
 }
+/** 点の列を、外接の四角が [x0,x1]×[y0,y1] にぴったり入るよう伸縮する（幅や高さが 0 のときはそのまま）。 */
+function fitToRange(pts, [x0, x1], [y0, y1]) {
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y), ax = Math.min(...xs), bx = Math.max(...xs), ay = Math.min(...ys), by = Math.max(...ys);
+  if (!(bx - ax > 1e-9) || !(by - ay > 1e-9)) return pts;
+  return pts.map(p => ({ x: x0 + (p.x - ax) / (bx - ax) * (x1 - x0), y: y0 + (p.y - ay) / (by - ay) * (y1 - y0) }));
+}
 /** 輪郭 3 つ（F：正面 (x,y)・T：上 (x,奥行き)・S：右 (奥行き,y)、T と S は無くてもよい）から立体を組み立てる共通部分。 */
 function solidFromPolys(F, T, S, { depthDefault = 30, maxSlices = 80 } = {}) {
   const fy = F.map(p => p.y), minY = Math.min(...fy), maxY = Math.max(...fy);
@@ -305,8 +318,10 @@ function solidFromPolys(F, T, S, { depthDefault = 30, maxSlices = 80 } = {}) {
   for (let i = 0; i + 1 < levels.length; i++) {
     const ya = levels[i], yb = levels[i + 1]; if (yb - ya < 1e-9) continue;
     const ym = (ya + yb) / 2, xSpans = threeViewSpansAt(F, ym), dSpans = S ? threeViewSpansAt(S, ym) : [[0, depthMax]];
+    /* 上の輪郭は、この段の横幅×奥行きの範囲に合わせて伸縮してから、区間ごとに切り取る（球なら各段が円になる） */
+    const fit = T && xSpans.length && dSpans.length ? fitToRange(T, [xSpans[0][0], xSpans.at(-1)[1]], [dSpans[0][0], dSpans.at(-1)[1]]) : T;
     for (const [x0, x1] of xSpans) for (const [d0, d1] of dSpans) {
-      const poly = T ? threeViewClipToRect(T, x0, x1, d0, d1) : [{ x: x0, y: d0 }, { x: x1, y: d0 }, { x: x1, y: d1 }, { x: x0, y: d1 }];
+      const poly = fit ? threeViewClipToRect(fit, x0, x1, d0, d1) : [{ x: x0, y: d0 }, { x: x1, y: d0 }, { x: x1, y: d1 }, { x: x0, y: d1 }];
       if (poly.length < 3 || polyArea(poly) < 1e-6) continue;
       slabs++;
       const top = poly.map(p => to3(p.x, p.y, ya)), bottom = poly.map(p => to3(p.x, p.y, yb)), centre = mean(top.concat(bottom));
