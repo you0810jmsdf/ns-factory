@@ -62,12 +62,32 @@ function applyLanguage(lang) {
 const world = p => ({ x: (p.x - origin.x) / scale, y: (p.y - origin.y) / scale });
 const local = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 /* 三面図（正面・上・右から見た図）の手伝い。計算は threeview.js。ここでは枠・45°の線・点線・奥行きの読みを描く。枠は目安で図形ではなく、描いた形に合わせて広がる。 */
-let threeViewLayout = THREE_VIEW_LAYOUT, threeViewMarksCache = threeViewMarks([]);
+let threeViewLayout = THREE_VIEW_LAYOUT, threeViewMarksCache = threeViewMarks([]), threeViewSolidCache = null, miniCam = { yaw: -35, pitch: -55 };
 const threeViewOn = () => $('threeView').checked;
 /** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
 /** 枠の出発点：文書に「枠の指定」（選んだ四角を枠にしたもの）があればそれ、無ければ標準の枠。 */
 function threeViewBase() { const f = doc.threeView; return threeViewFrameValid(f) ? threeViewBaseFrom(f.front, f.depth) : THREE_VIEW_LAYOUT; }
-function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); }
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout) : null; }
+/** 右上の空き（45°の線のある区画）：ここに小さな立体画面を出す。文書座標の四角。 */
+function threeViewMiniBox() { const { top, side } = threeViewLayout; return { x: side.x, y: top.y, w: side.w, h: top.h }; }
+/** 小さな立体画面：三面図から組み立てた立体を、右上の空きに描く（描くたびに更新・この中をドラッグすると回る）。点線はこの上に描かれる。 */
+function drawThreeViewMini() {
+  const b = threeViewMiniBox(); if (!(b.w > 0) || !(b.h > 0)) return;
+  ctx.save(); ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(8,8,8,0.82)'; ctx.fillRect(b.x, b.y, b.w, b.h); ctx.strokeStyle = '#6a5a30'; ctx.lineWidth = 1 / scale; ctx.strokeRect(b.x, b.y, b.w, b.h);
+  const solid = threeViewSolidCache;
+  ctx.font = `${11 / scale}px sans-serif`; ctx.fillStyle = '#8a7a50'; ctx.fillText(t(solid ? 'threeViewMini' : 'threeViewMiniNone'), b.x + 4 / scale, b.y + b.h - 5 / scale);
+  if (!solid) { ctx.restore(); return; }
+  const W = b.w * scale, H = b.h * scale, pts = solid.faces.flatMap(f => f.points);
+  const lo = k => Math.min(...pts.map(p => p[k])), hi = k => Math.max(...pts.map(p => p[k]));
+  const size = Math.max(hi('x') - lo('x'), hi('y') - lo('y'), hi('z') - lo('z'), 1);
+  const camMini = { yaw: miniCam.yaw, pitch: miniCam.pitch, distance: size * 4, ortho: true, zoom: Math.min(W, H) * 0.5 / size, target: v3((lo('x') + hi('x')) / 2, -(lo('y') + hi('y')) / 2, (lo('z') + hi('z')) / 2) };
+  const flipped = solid.faces.map(f => ({ ...f, points: f.points.map(p => v3(p.x, -p.y, p.z)) })); /* 3D 画面（WebGL）と同じく y を反転して同じ向きに見せる */
+  const proj = project(flipped, camMini, { width: W, height: H });
+  ctx.beginPath(); ctx.rect(b.x, b.y, b.w, b.h); ctx.clip(); ctx.lineWidth = 0.5 / scale; ctx.strokeStyle = '#141414';
+  for (const f of proj) { if (f.points.length < 3) continue; const c = partColor(f, false).map(v => Math.round(v * 255 * f.shade)); ctx.beginPath(); f.points.forEach((q, i) => { const x = b.x + q.x / scale, y = b.y + q.y / scale; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.closePath(); ctx.fillStyle = `rgb(${c.join(',')})`; ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+}
 /** 「選んだ四角を枠にする」：まっすぐな四角を 1 つ選んで押すと、その四角がある枠（正面・上・右）の枠そのものにし、残りの枠は奥行きから作る。文書に残る（保存される）。 */
 function setThreeViewFrame() {
   const picked = doc.shapes.filter(s => selected.has(s.id) && editable(s));
@@ -2108,7 +2128,7 @@ function draw() {
     ctx.strokeStyle = '#242424'; ctx.stroke();
   }
   if ($('printOverlay').checked) drawPrintOverlay();
-  if ($('threeView').checked) { drawThreeViewFrames(); drawThreeViewStaticGuides(); }
+  if ($('threeView').checked) { drawThreeViewMini(); drawThreeViewFrames(); drawThreeViewStaticGuides(); }
   ctx.beginPath(); ctx.moveTo(lo.x, 0); ctx.lineTo(hi.x, 0); ctx.moveTo(0, lo.y); ctx.lineTo(0, hi.y); ctx.strokeStyle = '#454039'; ctx.stroke();
   ctx.lineWidth = 1.5 / scale;
   const hl = aiHighlight.until > Date.now() ? aiHighlight.ids : null;
@@ -2204,6 +2224,7 @@ canvas.addEventListener('pointerdown', e => {
   if (isMac && e.ctrlKey && e.button === 0) return;
   e.preventDefault(); canvas.focus(); const p = local(e); canvas.setPointerCapture(e.pointerId);
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
+  if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
@@ -2251,6 +2272,7 @@ canvas.addEventListener('pointerdown', e => {
 });
 canvas.addEventListener('pointermove', e => {
   const p = local(e);
+  if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
   else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
@@ -2299,6 +2321,7 @@ canvas.addEventListener('pointerup', e => {
   cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   gesture = null;
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+  if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
