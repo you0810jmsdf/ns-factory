@@ -3,6 +3,7 @@ import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibr
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
+import { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect } from './threeview.js';
 import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
@@ -60,6 +61,51 @@ function applyLanguage(lang) {
 }
 const world = p => ({ x: (p.x - origin.x) / scale, y: (p.y - origin.y) / scale });
 const local = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+/* 三面図（正面・上・右から見た図）の手伝い。計算は threeview.js。ここでは枠・45°の線・点線・奥行きの読みを描く。枠は目安で図形ではなく、描いた形に合わせて広がる。 */
+let threeViewLayout = THREE_VIEW_LAYOUT, threeViewMarksCache = threeViewMarks([]);
+const threeViewOn = () => $('threeView').checked;
+/** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); }
+function strokeGuideLines(lines) { ctx.beginPath(); for (const l of lines) { ctx.moveTo(l.x1, l.y1); ctx.lineTo(l.x2, l.y2); } ctx.stroke(); }
+function drawThreeViewFrames() {
+  const labels = { front: t('threeViewFront'), top: t('threeViewTop'), side: t('threeViewSide') }, m = threeViewMiter(threeViewLayout);
+  ctx.save(); ctx.setLineDash([4 / scale, 3 / scale]); ctx.strokeStyle = '#4a4a3a'; ctx.lineWidth = 1 / scale;
+  for (const key of ['front', 'top', 'side']) { const a = threeViewLayout[key]; ctx.strokeRect(a.x, a.y, a.w, a.h); }
+  ctx.strokeStyle = '#7a6a38'; strokeGuideLines([m]); /* 45°の線：上の図の奥行きを右の図へ移すための線 */
+  ctx.setLineDash([]); ctx.fillStyle = '#8a7a50'; ctx.font = `${12 / scale}px sans-serif`;
+  for (const key of ['front', 'top', 'side']) { const a = threeViewLayout[key]; ctx.fillText(labels[key], a.x + 2 / scale, a.y - 3 / scale); }
+  ctx.fillText(t('threeViewMiter'), m.x2 + 3 / scale, m.y2 + 12 / scale);
+  ctx.restore();
+}
+/** 描いてある図形の角や端から、他の枠へ伸ばした点線（いつも表示・淡い色）。描いた線の高さ・横の位置・奥行きに合わせやすくする。 */
+function drawThreeViewStaticGuides() {
+  ctx.save(); ctx.setLineDash([3 / scale, 3 / scale]); ctx.strokeStyle = '#3f8aa0'; ctx.lineWidth = 0.9 / scale;
+  strokeGuideLines(threeViewGuideLines(threeViewMarksCache, threeViewLayout)); ctx.restore();
+}
+/** 「上と右の図を作る」：正面の枠にある図形をぜんぶ囲む四角と「奥行き」の数字から、上から見た図と右から見た図の外形（四角）を描き足す。
+ *  同じ四角が既にあれば作らない。元に戻すで取り消せる。細かい形は、この四角の上に点線に合わせて描き足してもらう。 */
+function makeThreeViewOutlines() {
+  const depth = Number($('threeViewDepthIn').value);
+  if (!(depth > 0)) { $('hint').textContent = t('threeViewMakeBadDepth'); return; }
+  const r = threeViewOutlines(doc.shapes.filter(s => visible(s)), depth, threeViewLayout);
+  if (!r) { $('hint').textContent = t('threeViewMakeNoFront'); return; }
+  const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
+  if (!layer) { $('hint').textContent = t('noLayer'); return; }
+  const fresh = [r.top, r.side].filter(rect => !doc.shapes.some(s => visible(s) && threeViewSameRect(s, rect)));
+  if (!fresh.length) { $('hint').textContent = t('threeViewMakeExists'); return; }
+  cancel();
+  commit(() => { const ids = []; for (const rect of fresh) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: layer.id, type: 'polyline', closed: true, points: rect.points.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4) })) }); ids.push(id); } selected = new Set(ids); });
+  updateUI();
+  const fmt = v => String(+v.toFixed(2));
+  $('hint').textContent = t('threeViewMakeDone', { w: fmt(r.width), h: fmt(r.height), d: fmt(r.depth) });
+}
+/** カーソルから他の 2 つの枠へ伸ばす線（水色）。上・右の図では 45°の線を通って奥行きを移し、奥行きの数字も出す。 */
+function drawThreeViewGuides() {
+  const g = threeViewCursorLines(cursor, threeViewLayout); if (!g) return;
+  ctx.save(); ctx.setLineDash([3 / scale, 3 / scale]); ctx.strokeStyle = '#4fd0ff'; ctx.lineWidth = 1 / scale; strokeGuideLines(g.lines);
+  if (g.depth !== null) { ctx.setLineDash([]); ctx.fillStyle = '#4fd0ff'; ctx.font = `${11 / scale}px sans-serif`; ctx.fillText(t('threeViewDepth', { d: g.depth.toFixed(1) }), cursor.x + 8 / scale, cursor.y - 8 / scale); }
+  ctx.restore();
+}
 const visible = s => doc.layers.find(l => l.id === s.layer)?.visible;
 const editable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked; };
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
@@ -1568,6 +1614,7 @@ function drawCenterMarks() {
   ctx.stroke(); ctx.restore();
 }
 function rebuildSnaps() {
+  rebuildThreeViewMarks();
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
   snapCache = shapes.flatMap(snapPoints);
   const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
@@ -1811,8 +1858,13 @@ function snapped(p, shift, anchor) {
   if ($('snap').checked && !snap) {
     let best = 9 / scale;
     for (const c of [...snapCache, ...(stage?.points || [])]) { const d = distance(p, c); if (d < best) { best = d; result = { ...c }; snap = c; } }
-    if (!snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
   }
+  /* 三面図：他の枠から伸ばした点線に、横か縦だけぴったり合わせる。合わなかった向きは、スナップが入のときだけ目盛りに丸める */
+  if (!snap && threeViewOn()) {
+    const hit = threeViewSnap(p, threeViewMarksCache, 9 / scale, threeViewLayout);
+    if (hit) { const grid = Number($('spacing').value) || 1, onGrid = v => $('snap').checked ? Math.round(v / grid) * grid : v; result = { x: hit.snappedX ? hit.point.x : onGrid(p.x), y: hit.snappedY ? hit.point.y : onGrid(p.y) }; snap = result; }
+  }
+  if ($('snap').checked && !snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
   if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
   else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
   return result;
@@ -1959,6 +2011,7 @@ function draw() {
     ctx.strokeStyle = '#242424'; ctx.stroke();
   }
   if ($('printOverlay').checked) drawPrintOverlay();
+  if ($('threeView').checked) { drawThreeViewFrames(); drawThreeViewStaticGuides(); }
   ctx.beginPath(); ctx.moveTo(lo.x, 0); ctx.lineTo(hi.x, 0); ctx.moveTo(0, lo.y); ctx.lineTo(0, hi.y); ctx.strokeStyle = '#454039'; ctx.stroke();
   ctx.lineWidth = 1.5 / scale;
   const hl = aiHighlight.until > Date.now() ? aiHighlight.ids : null;
@@ -2009,6 +2062,7 @@ function draw() {
   if (stage?.kind === 'foldDraw') strokeShape({ type: 'fold', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'imgScale') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (tracePreviewShapes.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.2 / scale; for (const s of tracePreviewShapes) strokeShape(s, '#ff4040'); ctx.restore(); }
+  if ($('threeView').checked) drawThreeViewGuides();
   if (pairLines.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 0.6 / scale; ctx.strokeStyle = '#ff9f4388'; ctx.beginPath(); for (const [a, b] of pairLines) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); } ctx.stroke(); ctx.restore(); }
   if (doc.seams.length) { ctx.save(); ctx.setLineDash([2 / scale, 2 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = '#ff9f43'; ctx.beginPath();
     for (const m of doc.seams) { const pts = [m.a, m.b].map(side => { const saved = doc.paths.find(p => p.id === side.pathId); const route = saved && resolvePath(doc, saved); return route ? pointAtLength(route, (side.from + side.to) / 2) : null; }); if (pts[0] && pts[1]) { ctx.moveTo(pts[0].x, pts[0].y); ctx.lineTo(pts[1].x, pts[1].y); } }
@@ -2212,7 +2266,10 @@ $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history
 $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
-for (const id of ['printOverlay', 'paper', 'outHoles']) $(id).addEventListener('change', () => draw());
+for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
+$('threeView').addEventListener('change', () => { $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildThreeViewMarks(); });
+$('threeViewMake').onclick = makeThreeViewOutlines;
+$('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
 function save() {
   const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = (tabs[activeTab]?.name ? tabs[activeTab].name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
