@@ -3,7 +3,7 @@ import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibr
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
-import { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid } from './threeview.js';
+import { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect } from './threeview.js';
 import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
@@ -65,7 +65,23 @@ const local = e => { const r = canvas.getBoundingClientRect(); return { x: e.cli
 let threeViewLayout = THREE_VIEW_LAYOUT, threeViewMarksCache = threeViewMarks([]);
 const threeViewOn = () => $('threeView').checked;
 /** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
-function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); }
+/** 枠の出発点：文書に「枠の指定」（選んだ四角を枠にしたもの）があればそれ、無ければ標準の枠。 */
+function threeViewBase() { const f = doc.threeView; return threeViewFrameValid(f) ? threeViewBaseFrom(f.front, f.depth) : THREE_VIEW_LAYOUT; }
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); }
+/** 「選んだ四角を枠にする」：まっすぐな四角を 1 つ選んで押すと、その四角がある枠（正面・上・右）の枠そのものにし、残りの枠は奥行きから作る。文書に残る（保存される）。 */
+function setThreeViewFrame() {
+  const picked = doc.shapes.filter(s => selected.has(s.id) && editable(s));
+  const rect = picked.length === 1 ? threeViewRectOf(picked[0]) : null;
+  if (!rect) { $('hint').textContent = t('threeViewFrameNeedRect'); return; }
+  const area = threeViewShapeArea(picked[0], threeViewLayout);
+  const frame = area ? threeViewFrameFromRect(rect, area, threeViewBase(), Number($('threeViewDepthIn').value)) : null;
+  if (!frame) { $('hint').textContent = t('threeViewFrameWhere'); return; }
+  commit(() => { doc.threeView = frame; });
+  $('threeViewDepthIn').value = String(+frame.depth.toFixed(2));
+  const fmt = v => String(+v.toFixed(2)), view = t(area === 'front' ? 'threeViewFront' : area === 'top' ? 'threeViewTop' : 'threeViewSide');
+  $('hint').textContent = t('threeViewFrameDone', { view, w: fmt(frame.front.w), h: fmt(frame.front.h), d: fmt(frame.depth) });
+}
+function resetThreeViewFrame() { if (doc.threeView) commit(() => { delete doc.threeView; }); $('hint').textContent = t('threeViewFrameResetDone'); }
 function strokeGuideLines(lines) { ctx.beginPath(); for (const l of lines) { ctx.moveTo(l.x1, l.y1); ctx.lineTo(l.x2, l.y2); } ctx.stroke(); }
 function drawThreeViewFrames() {
   const labels = { front: t('threeViewFront'), top: t('threeViewTop'), side: t('threeViewSide') }, m = threeViewMiter(threeViewLayout);
@@ -230,6 +246,34 @@ function stampAt(p,single=false,markKind='tool') {
     $('hint').textContent=t(manualNext?'nextStamp':'placed',{count:points.length,s:next?.toFixed(2)});draw();
   }catch(err){$('hint').textContent=err.message;}
 }
+/** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
+function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
+/** 線に沿って位置 s から距離 d 離れた位置。開いた線で端をはみ出すなら null。閉じた線は 1 周して戻る。 */
+function markTargetS(s, d, closed, len) { const v = s + d; if (closed) return ((v % len) + len) % len; return v < -1e-9 || v > len + 1e-9 ? null : Math.max(0, Math.min(len, v)); }
+/** 目印ツールの距離指定。1 回目のクリック＝基準の点（線の端・角は磁石で正確に）、2 回目のクリック＝進む向き。開いた線の端が基準なら向きは線の内側に決まるので 1 回で打つ。距離は線に沿って測る（つながった線は結合点をまたぐ）。 */
+function markByDistance(click) {
+  const d = markDistance(), reach = magnetRadiusMm(), second = stage?.kind === 'markBase'; let base = click;
+  if (!second && reach > 0) { let near = reach; for (const c of magnetEnds) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
+  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, base) <= 8 / scale);
+  if (!hit) { $('hint').textContent = t('markNoLine'); return; }
+  const state = routeForHit(hit); if (!state?.route) return;
+  const closed = !!state.saved.closed, route = { ...state.route, reversed: !!state.saved.reversed }, len = arcLength(route);
+  const key = [...state.saved.shapeIds].sort().join(','), s0 = projectOnPath(route, base).s;
+  const place = (from, dir) => {
+    const s = markTargetS(from, dir * d, closed, len);
+    if (s === null) { $('hint').textContent = t('markOutside', { len: len.toFixed(1), d: d }); return false; }
+    stage = null; stampAt(pointAtLength(route, s), true, 'dot'); return true;
+  };
+  if (!second || stage.key !== key) { /* 1 回目（別の線をクリックしたときも、そこから基準をやり直す） */
+    const atStart = !closed && s0 < 1e-4, atEnd = !closed && s0 > len - 1e-4;
+    if (atStart || atEnd) { place(s0, atStart ? 1 : -1); return; }
+    const cand = [-1, 1].map(dir => { const s = markTargetS(s0, dir * d, closed, len); return s === null ? null : pointAtLength(route, s); });
+    stage = { kind: 'markBase', key, at: pointAtLength(route, s0), s: s0, cand }; $('hint').textContent = t('markPickSide', { d: d }); draw(); return;
+  }
+  let diff = s0 - stage.s; if (closed) diff = ((diff + len / 2) % len + len) % len - len / 2;
+  if (Math.abs(diff) < 1e-6) { $('hint').textContent = t('markSameSpot'); return; }
+  place(stage.s, diff > 0 ? 1 : -1);
+}
 function holePosition(h,p) {
   if(!$('constrainHole').checked)return {...h,x:p.x,y:p.y};
   const saved=doc.paths.find(path=>path.id===h.pathId),route=saved&&resolvePath(doc,saved);if(!route)return h;
@@ -342,6 +386,7 @@ function initStitch() {
   $('applyAngle').onclick=()=>{const a=Number($('holeAngle').value);if(Number.isFinite(a))commit(()=>affectedHoles().forEach(h=>h.angleDeg=a));};
   $('flipSlant').onclick=()=>commit(()=>affectedHoles().forEach(h=>{const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));const tangent=$('followTangent').checked?pointAtLength(route,h.s).angleDeg:0;h.angleDeg=2*tangent-h.angleDeg;}));
   $('defaultMark').addEventListener('change',()=>commit(()=>doc.mark=$('defaultMark').value));
+  $('markDist').addEventListener('input',()=>{if(mode==='mark'){cancel();$('hint').textContent=modeHint('mark');draw();}}); /* 距離を変えたら、途中の基準の点は捨てて、ヒントも切り替える */
   $('dotD').addEventListener('change',()=>{const d=Number($('dotD').value);if(Number.isFinite(d)&&d>0)commit(()=>doc.dotD=d);else $('dotD').value=doc.dotD;});
   $('help').onclick=()=>showHelp();$('closeHelp').onclick=()=>$('helpDialog').close();
   $('helpSearch').addEventListener('input',()=>showHelp(false));$('helpPage').addEventListener('change',()=>showHelp(false));
@@ -411,11 +456,31 @@ const INFO_FIELDS = { line: ['x1','y1','x2','y2','length',...COLOR_FIELDS], circ
 const ALL_FIELDS = ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','nodes','area','nodeOps','inner',...COLOR_FIELDS];
 let infoBusy = false;
 function infoShape() { if (selected.size !== 1) return null; const id = [...selected][0]; return doc.shapes.find(s => s.id === id) || null; }
+/** 2 個以上の図形を選んでいるとき、その図形の一覧（編集できるものだけ）。1 個以下なら空。 */
+function infoShapes() { const list = doc.shapes.filter(s => selected.has(s.id) && editable(s)); return list.length >= 2 ? list : []; }
+/** 色・線の種類を 1 図形に当てた結果。実線にしたらガイドの層から型紙の層へ、点線にしたらガイドの層へ移す。hint は出す文言のキー。 */
+function restyled(s, field, v) {
+  const next = { ...s }; let hint = null; if (v) next[field] = v; else delete next[field];
+  if (field === 'lineStyle' && v !== 'dashed' && s.lineStyle === 'dashed' && s.layer === 'guide' && doc.layers.some(l => l.id === 'pattern')) { next.layer = 'pattern'; hint = 'solidToPattern'; } /* 実線は型紙 */
+  else if (field === 'lineStyle' && v === 'dashed' && s.lineStyle !== 'dashed' && s.layer !== 'guide' && doc.layers.some(l => l.id === 'guide')) { next.layer = 'guide'; const g = doc.layers.find(l => l.id === 'guide'); hint = g.visible && !g.locked ? 'dashedToGuide' : 'dashedToGuideHidden'; } /* 実線を点線にしたら、ガイドの層の図形として扱う（色は問わない） */
+  return { next, hint };
+}
+/** 全部同じ値ならその値、ばらばらなら存在しない値（欄が空白に見える）。 */
+function commonValue(list, get) { const v = get(list[0]); return list.every(s => get(s) === v) ? v : '__mixed'; }
 function refreshInfo() {
-  const s = infoShape(); infoBusy = true;
-  $('infoCard').style.display = s ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
+  const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true;
+  $('infoCard').style.display = s || many.length ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
+  if (many.length) { /* 2 個以上：層・色・線の種類だけ。変えると選んだ全部に効く */
+    const colorable = many.filter(x => INFO_FIELDS[x.type]?.includes('color'));
+    for (const f of ALL_FIELDS) $('l-' + f).hidden = !(colorable.length && COLOR_FIELDS.includes(f));
+    $('l-type').hidden = $('l-layer').hidden = false;
+    for (const id of ['l-part', 'l-partName', 'l-thickness', 'l-partOrder']) $(id).hidden = true;
+    $('info-type').textContent = t('multiSelected', { n: many.length }); $('info-layer').value = commonValue(many, x => x.layer);
+    if (colorable.length) { $('info-color').value = commonValue(colorable, x => x.color || ''); $('info-lineStyle').value = commonValue(colorable, x => x.lineStyle || ''); }
+    infoBusy = false; return;
+  }
   for (const f of ALL_FIELDS) $('l-' + f).hidden = !s || !INFO_FIELDS[s.type]?.includes(f);
-  $('l-type').hidden = $('l-layer').hidden = !s;
+  $('l-type').hidden = $('l-layer').hidden = !s; if (s) $('l-part').hidden = false;
   if (s) {
     $('info-type').textContent = t(s.type); $('info-layer').value = s.layer;
     const typing = el => typeof document.activeElement !== 'undefined' && document.activeElement === el; // 打ちかけの欄は巻き戻さない
@@ -432,17 +497,26 @@ function refreshInfo() {
   infoBusy = false;
 }
 function flattenForArea(s) { const pts = pathSegments(s).flatMap((seg, i) => { const ps = seg.type === 'line' ? [{ x: seg.x1, y: seg.y1 }, { x: seg.x2, y: seg.y2 }] : Array.from({ length: 17 }, (_, k) => { const t = k / 16, u = 1 - t; return { x: u**3*seg.x1 + 3*u*u*t*seg.c1x + 3*u*t*t*seg.c2x + t**3*seg.x2, y: u**3*seg.y1 + 3*u*u*t*seg.c1y + 3*u*t*t*seg.c2y + t**3*seg.y2 }; }); return i ? ps.slice(1) : ps; }); return pts; }
+/** 2 個以上選んでいるときの層・色・線の種類。選んだ全部に当て、元に戻すは 1 回。 */
+function applyInfoMulti(field, list) {
+  if (!['layer', 'color', 'lineStyle'].includes(field)) return;
+  const v = $('info-' + field).value; if (v === '__mixed') return;
+  const targets = field === 'layer' ? list : list.filter(x => INFO_FIELDS[x.type]?.includes('color')), hints = [], nexts = new Map();
+  for (const x of targets) { if (field === 'layer') nexts.set(x.id, { ...x, layer: v }); else { const r = restyled(x, field, v); nexts.set(x.id, r.next); if (r.hint) hints.push(r.hint); } }
+  if (!nexts.size || !validateDoc({ ...doc, shapes: doc.shapes.map(x => nexts.get(x.id) || x) })) { $('hint').textContent = t('invalidNumber'); refreshInfo(); return; }
+  cancel(); commit(() => { doc.shapes = doc.shapes.map(x => nexts.get(x.id) || x); });
+  $('hint').textContent = t('multiApplied', { n: nexts.size }) + (hints.length ? ' ' + t(hints[0]) : '');
+}
 function applyInfo(field) {
-  if (infoBusy) return; const s = infoShape(); if (!s || !editable(s)) return;
+  if (infoBusy) return; const many = infoShapes(); if (many.length) { applyInfoMulti(field, many); return; }
+  const s = infoShape(); if (!s || !editable(s)) return;
   const num = f => Number($('info-' + f).value);
-  const next = { ...s };
+  let next = { ...s };
   if (field === 'layer') { next.layer = $('info-layer').value; }
   else if (field === 'text') { const text = $('info-text').value; if (!text) { $('hint').textContent = t('invalidNumber'); return; } next.text = text; }
   else if (field === 'closed') { if (s.type === 'polyline' && s.points.length < 3) return; next.closed = $('info-closed').checked; }
   else if (field === 'inner') { next.inner = $('info-inner').checked; }
-  else if (field === 'color' || field === 'lineStyle') { const v = $('info-' + field).value; if (v) next[field] = v; else delete next[field];
-    if (field === 'lineStyle' && v !== 'dashed' && s.lineStyle === 'dashed' && s.layer === 'guide' && doc.layers.some(l => l.id === 'pattern')) { next.layer = 'pattern'; $('hint').textContent = t('solidToPattern'); } /* 実線は型紙 */
-    else if (field === 'lineStyle' && v === 'dashed' && s.lineStyle !== 'dashed' && s.layer !== 'guide' && doc.layers.some(l => l.id === 'guide')) { next.layer = 'guide'; const g = doc.layers.find(l => l.id === 'guide'); $('hint').textContent = t(g.visible && !g.locked ? 'dashedToGuide' : 'dashedToGuideHidden'); } } /* 実線を点線にしたら、ガイドの層の図形として扱う（色は問わない） */
+  else if (field === 'color' || field === 'lineStyle') { const r = restyled(s, field, $('info-' + field).value); next = r.next; if (r.hint) $('hint').textContent = t(r.hint); }
   else if (field === 'length') {
     const len = num('length'); if (!(len > 0)) { $('hint').textContent = t('invalidNumber'); return; }
     if (s.type === 'line' || s.type === 'dimension') { const cur = distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }); if (cur < 1e-9) return; next.x2 = s.x1 + (s.x2 - s.x1) * len / cur; next.y2 = s.y1 + (s.y2 - s.y1) * len / cur; }
@@ -1666,6 +1740,7 @@ function commit(fn) {
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
+  $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
@@ -1914,7 +1989,7 @@ function shapeFromDrag(a, b) {
 /** 円弧の作図方式が「3点」か。 */
 function arcThreePoint() { return $('arcMethod').value === 'three'; }
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
-function modeHint(m) { return m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
+function modeHint(m) { return m === 'mark' && markDistance() > 0 ? t('hint.markDist') : m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
 /** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
 function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
 /** 3点（始点・通過点・終点）を通る円弧。一直線上なら null。通過点が弧の途中に来る向きに start/end を決める。 */
@@ -2076,6 +2151,12 @@ function draw() {
   if (stage?.kind === 'path') { const pv = pathPreview(); if (pv) { strokeShape(pv, '#c9a96e'); drawNodes({ ...pv, nodes: stage.nodes }); } }
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
   if (mode === 'ruler') { if (stage?.kind === 'ruler') drawRuler({ a: stage.a, b: cursor }); else if (ruler) drawRuler(ruler); }
+  if (stage?.kind === 'markBase') { /* 基準の点＝金色の丸、打てる場所の候補（線に沿って両側に○mm）＝小さな丸 */
+    ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 1.5 / scale;
+    ctx.beginPath(); ctx.arc(stage.at.x, stage.at.y, 6 / scale, 0, Math.PI * 2); ctx.stroke();
+    for (const c of stage.cand) if (c) { ctx.beginPath(); ctx.arc(c.x, c.y, 3 / scale, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.restore();
+  }
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
@@ -2125,7 +2206,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
-  if (mode === 'mark') { stampAt(world(p), true, 'dot'); return; }
+  if (mode === 'mark') { if (markDistance() > 0) markByDistance(world(p)); else stampAt(world(p), true, 'dot'); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
@@ -2291,6 +2372,7 @@ for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', (
 for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
 $('threeView').addEventListener('change', () => { $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildThreeViewMarks(); if (view3d) render3d(); });
 $('threeViewMake').onclick = makeThreeViewOutlines;
+$('threeViewFrame').onclick = setThreeViewFrame; $('threeViewFrameReset').onclick = resetThreeViewFrame;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
 function save() {
   const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));

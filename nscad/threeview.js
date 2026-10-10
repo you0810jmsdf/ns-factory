@@ -54,10 +54,13 @@ export function threeViewFitLayout(shapes, base = THREE_VIEW_LAYOUT, margin = TH
     const pts = { front: [], top: [], side: [] };
     for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (!area) continue; for (const p of threeViewGuidePoints(s)) if (Number.isFinite(p.x) && Number.isFinite(p.y)) pts[area].push(p); }
     let x0 = base.front.x, x1 = base.front.x + base.front.w, y0 = base.front.y, y1 = base.front.y + base.front.h, depth = Math.max(base.top.h, base.side.w);
-    for (const p of [...pts.front, ...pts.top]) { x0 = Math.min(x0, p.x - margin); x1 = Math.max(x1, p.x + margin); }
-    for (const p of [...pts.front, ...pts.side]) { y0 = Math.min(y0, p.y - margin); y1 = Math.max(y1, p.y + margin); }
-    for (const p of pts.top) depth = Math.max(depth, threeViewDepthOfTopY(p.y, layout) + margin);
-    for (const p of pts.side) depth = Math.max(depth, threeViewDepthOfSideX(p.x, layout) + margin);
+    const eps = 1e-9, inside = (p, a) => p.x >= a.x - eps && p.x <= a.x + a.w + eps && p.y >= a.y - eps && p.y <= a.y + a.h + eps;
+    /* 出発点の枠の内側（ふちの上を含む）にある点では広げない。四角をそのまま枠にしたとき、枠が余白ぶん大きくならないように */
+    const outside = { front: pts.front.filter(p => !inside(p, base.front)), top: pts.top.filter(p => !inside(p, base.top)), side: pts.side.filter(p => !inside(p, base.side)) };
+    for (const p of [...outside.front, ...outside.top]) { x0 = Math.min(x0, p.x - margin); x1 = Math.max(x1, p.x + margin); }
+    for (const p of [...outside.front, ...outside.side]) { y0 = Math.min(y0, p.y - margin); y1 = Math.max(y1, p.y + margin); }
+    for (const p of outside.top) depth = Math.max(depth, threeViewDepthOfTopY(p.y, layout) + margin);
+    for (const p of outside.side) depth = Math.max(depth, threeViewDepthOfSideX(p.x, layout) + margin);
     const bottomOfTop = Math.min(base.top.y + base.top.h, y0 - gap), leftOfSide = Math.max(base.side.x, x1 + gap);
     const next = { top: { x: x0, y: bottomOfTop - depth, w: x1 - x0, h: depth }, front: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }, side: { x: leftOfSide, y: y0, w: depth, h: y1 - y0 } };
     if (same(next, layout)) break;
@@ -77,6 +80,36 @@ export function threeViewSideXOfDepth(d, layout = THREE_VIEW_LAYOUT) { return la
 export function threeViewMiter(layout = THREE_VIEW_LAYOUT) {
   const x0 = layout.side.x, y0 = layout.top.y + layout.top.h, len = Math.max(layout.top.h, layout.side.w);
   return { x1: x0, y1: y0, x2: x0 + len, y2: y0 - len };
+}
+
+/** 「枠の指定」{ front:{x,y,w,h}, depth } が正しい形か。 */
+export function threeViewFrameValid(v) {
+  return !!v && typeof v === 'object' && !!v.front && ['x', 'y', 'w', 'h'].every(k => Number.isFinite(v.front[k])) && v.front.w > 0 && v.front.h > 0 && Number.isFinite(v.depth) && v.depth > 0;
+}
+/** 正面の枠と奥行きから 3 つの枠を作る（出発点として使う）。上の枠は正面の真上（すき間 gap）・同じ幅・高さは奥行き。右の枠は正面の真右・同じ高さ・幅は奥行き。 */
+export function threeViewBaseFrom(front, depth, gap = THREE_VIEW_GAP) {
+  return { top: { x: front.x, y: front.y - gap - depth, w: front.w, h: depth }, front: { x: front.x, y: front.y, w: front.w, h: front.h }, side: { x: front.x + front.w + gap, y: front.y, w: depth, h: front.h } };
+}
+/** 図形が「まっすぐな四角」（閉じた折れ線・角 4 つ・辺が縦横）なら {x,y,w,h}、違えば null。 */
+export function threeViewRectOf(s) {
+  if (!s || s.type !== 'polyline' || !s.closed || !Array.isArray(s.points) || s.points.length !== 4) return null;
+  const xs = [...new Set(s.points.map(p => keyOf(p.x)))], ys = [...new Set(s.points.map(p => keyOf(p.y)))];
+  if (xs.length !== 2 || ys.length !== 2) return null;
+  if (!s.points.every((p, i) => { const q = s.points[(i + 1) % 4]; return Math.abs(p.x - q.x) < 1e-6 || Math.abs(p.y - q.y) < 1e-6; })) return null;
+  const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  return w > 0 && h > 0 ? { x, y, w, h } : null;
+}
+/** 選んだ四角 rect を、それがある枠（area）の枠そのものにして、「枠の指定」{ front, depth } を返す。
+ *  正面の四角：そのまま正面の枠。奥行きは depthIn（0 以下なら今の奥行き）。
+ *  上の四角：横の位置と幅を正面に写し、奥行きは四角の高さ。正面はその真下（すき間 gap）・高さは今のまま。
+ *  右の四角：高さを正面に写し、奥行きは四角の幅。正面はその真左（すき間 gap）・幅は今のまま。 */
+export function threeViewFrameFromRect(rect, area, current = THREE_VIEW_LAYOUT, depthIn = 0, gap = THREE_VIEW_GAP) {
+  if (!rect || !area) return null;
+  const curDepth = Math.max(current.top.h, current.side.w);
+  if (area === 'front') return { front: { x: rect.x, y: rect.y, w: rect.w, h: rect.h }, depth: depthIn > 0 ? depthIn : curDepth };
+  if (area === 'top') return { front: { x: rect.x, y: rect.y + rect.h + gap, w: rect.w, h: current.front.h }, depth: rect.h };
+  if (area === 'side') return { front: { x: rect.x - gap - current.front.w, y: rect.y, w: current.front.w, h: rect.h }, depth: rect.w };
+  return null;
 }
 
 /** 図形の目印になる点：線の両はし・折れ線の角・なめらかな線の節・円の上下左右・円弧を囲む四角の角。曲線を細かくは刻まない。 */
