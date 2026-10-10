@@ -1,0 +1,4034 @@
+{
+ "_comment": "革の質感（継ぎ目なしの革写真）。tools/build_textures.py が後方部のテクスチャライブラリと ns-factory の革目録から作る。手で直さない。",
+ "generatedAt": "2026-10-10",
+ "tileMm": 30,
+ "textures": [
+  {
+   "id": "kw139897477",
+   "name": "BULGARO ブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw139897477.jpg",
+   "px": 384,
+   "avg": "#6f3014"
+  },
+  {
+   "id": "kw139898846",
+   "name": "TENDER コニャック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw139898846.jpg",
+   "px": 384,
+   "avg": "#954824"
+  },
+  {
+   "id": "kw140633732",
+   "name": "NEBRASKA ダークブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw140633732.jpg",
+   "px": 384,
+   "avg": "#33201c"
+  },
+  {
+   "id": "kw140634418",
+   "name": "AMAZZONIA チョコ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw140634418.jpg",
+   "px": 384,
+   "avg": "#4b2721"
+  },
+  {
+   "id": "kw141882810",
+   "name": "AMAZZONIA ブラック",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw141882810.jpg",
+   "px": 384,
+   "avg": "#1e1d1a"
+  },
+  {
+   "id": "kw141886381",
+   "name": "AMAZZONIA ブラウン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw141886381.jpg",
+   "px": 384,
+   "avg": "#d08d4a"
+  },
+  {
+   "id": "kw141887558",
+   "name": "AMAZZONIA レッド",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw141887558.jpg",
+   "px": 384,
+   "avg": "#a94a3f"
+  },
+  {
+   "id": "kw142026124",
+   "name": "MARGOT コバルト",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "Virgilio",
+    "MARGOT",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw142026124.jpg",
+   "px": 384,
+   "avg": "#255580"
+  },
+  {
+   "id": "kw142044123",
+   "name": "BULGARO ダークブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw142044123.jpg",
+   "px": 384,
+   "avg": "#453a37"
+  },
+  {
+   "id": "kw142053258",
+   "name": "BULGARO コニャック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw142053258.jpg",
+   "px": 384,
+   "avg": "#e1713e"
+  },
+  {
+   "id": "kw142064093",
+   "name": "NEBRASKA ブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw142064093.jpg",
+   "px": 384,
+   "avg": "#613121"
+  },
+  {
+   "id": "kw142086646",
+   "name": "BULGARO ブラック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw142086646.jpg",
+   "px": 384,
+   "avg": "#636466"
+  },
+  {
+   "id": "kw142098205",
+   "name": "NEBRASKA イエロー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw142098205.jpg",
+   "px": 384,
+   "avg": "#b96a18"
+  },
+  {
+   "id": "kw142098655",
+   "name": "NEBRASKA コニャック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw142098655.jpg",
+   "px": 384,
+   "avg": "#bc6740"
+  },
+  {
+   "id": "kw142099497",
+   "name": "NEBRASKA ネイビー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw142099497.jpg",
+   "px": 384,
+   "avg": "#212530"
+  },
+  {
+   "id": "kw142100093",
+   "name": "NEBRASKA ブラック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw142100093.jpg",
+   "px": 384,
+   "avg": "#212121"
+  },
+  {
+   "id": "kw142101001",
+   "name": "NEBRASKA オリーブ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw142101001.jpg",
+   "px": 384,
+   "avg": "#413619"
+  },
+  {
+   "id": "kw142102656",
+   "name": "BULGARO ネイビー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw142102656.jpg",
+   "px": 384,
+   "avg": "#3c4150"
+  },
+  {
+   "id": "kw142151264",
+   "name": "CRUST ジアロ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw142151264.jpg",
+   "px": 384,
+   "avg": "#a96308"
+  },
+  {
+   "id": "kw142151566",
+   "name": "CRUST エバノ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw142151566.jpg",
+   "px": 384,
+   "avg": "#42342d"
+  },
+  {
+   "id": "kw142151671",
+   "name": "CRUST ロッソ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw142151671.jpg",
+   "px": 384,
+   "avg": "#b5221a"
+  },
+  {
+   "id": "kw142151977",
+   "name": "CRUST コバルト",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw142151977.jpg",
+   "px": 384,
+   "avg": "#0c3f87"
+  },
+  {
+   "id": "kw142152473",
+   "name": "CRUST ネロ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw142152473.jpg",
+   "px": 384,
+   "avg": "#1e1e1d"
+  },
+  {
+   "id": "kw142174893",
+   "name": "BULGARO イエロー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw142174893.jpg",
+   "px": 384,
+   "avg": "#d97b15"
+  },
+  {
+   "id": "kw142174985",
+   "name": "BULGARO オリーブ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw142174985.jpg",
+   "px": 384,
+   "avg": "#614f32"
+  },
+  {
+   "id": "kw142277231",
+   "name": "TENDER ブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw142277231.jpg",
+   "px": 384,
+   "avg": "#6e4035"
+  },
+  {
+   "id": "kw142277492",
+   "name": "TENDER ダークブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw142277492.jpg",
+   "px": 384,
+   "avg": "#b5a49d"
+  },
+  {
+   "id": "kw142277908",
+   "name": "TENDER イエロー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw142277908.jpg",
+   "px": 384,
+   "avg": "#d4bea3"
+  },
+  {
+   "id": "kw142278005",
+   "name": "TENDER オリーブ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw142278005.jpg",
+   "px": 384,
+   "avg": "#51493d"
+  },
+  {
+   "id": "kw142278106",
+   "name": "TENDER ネイビー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw142278106.jpg",
+   "px": 384,
+   "avg": "#77746e"
+  },
+  {
+   "id": "kw142278160",
+   "name": "TENDER ブラック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw142278160.jpg",
+   "px": 384,
+   "avg": "#989692"
+  },
+  {
+   "id": "kw143375840",
+   "name": "AMAZZONIA ブルー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw143375840.jpg",
+   "px": 384,
+   "avg": "#192f5c"
+  },
+  {
+   "id": "kw144503079",
+   "name": "CHROMEXCEL ナチュラル",
+   "sub": "HORWEEN / コンビ鞣し",
+   "tags": [
+    "HORWEEN",
+    "CHROMEXCEL",
+    "コンビ鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw144503079.jpg",
+   "px": 384,
+   "avg": "#ab7a65"
+  },
+  {
+   "id": "kw144863774",
+   "name": "BULGARO キャメル",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw144863774.jpg",
+   "px": 384,
+   "avg": "#c4732d"
+  },
+  {
+   "id": "kw144864221",
+   "name": "BULGARO レッド",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw144864221.jpg",
+   "px": 384,
+   "avg": "#b61a16"
+  },
+  {
+   "id": "kw145547570",
+   "name": "NEBRASKA キャメル",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw145547570.jpg",
+   "px": 384,
+   "avg": "#cb7b45"
+  },
+  {
+   "id": "kw145547651",
+   "name": "NEBRASKA レッド",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw145547651.jpg",
+   "px": 384,
+   "avg": "#9a191f"
+  },
+  {
+   "id": "kw145958035",
+   "name": "TWIST ナチュラル",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw145958035.jpg",
+   "px": 384,
+   "avg": "#dea071"
+  },
+  {
+   "id": "kw145958291",
+   "name": "TWIST ブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw145958291.jpg",
+   "px": 384,
+   "avg": "#b57b51"
+  },
+  {
+   "id": "kw145958402",
+   "name": "TWIST ダークブラウン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw145958402.jpg",
+   "px": 384,
+   "avg": "#785852"
+  },
+  {
+   "id": "kw145958466",
+   "name": "TWIST グレー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw145958466.jpg",
+   "px": 384,
+   "avg": "#a9896e"
+  },
+  {
+   "id": "kw145958545",
+   "name": "TWIST イエロー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw145958545.jpg",
+   "px": 384,
+   "avg": "#c68530"
+  },
+  {
+   "id": "kw145958630",
+   "name": "TWIST ワイン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw145958630.jpg",
+   "px": 384,
+   "avg": "#86303b"
+  },
+  {
+   "id": "kw145959044",
+   "name": "TWIST オリーブ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw145959044.jpg",
+   "px": 384,
+   "avg": "#6b5e3e"
+  },
+  {
+   "id": "kw145959279",
+   "name": "TWIST ネイビー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw145959279.jpg",
+   "px": 384,
+   "avg": "#3d4c5f"
+  },
+  {
+   "id": "kw152579135",
+   "name": "生成りヌメ革 3.5-4.0mm",
+   "sub": "国産 / 植物タンニン鞣し・素上げ",
+   "tags": [
+    "国産",
+    "ヌメ革",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw152579135.jpg",
+   "px": 384,
+   "avg": "#edcbb0"
+  },
+  {
+   "id": "kw153122754",
+   "name": "BULGARO グレー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw153122754.jpg",
+   "px": 384,
+   "avg": "#977f5b"
+  },
+  {
+   "id": "kw153128716",
+   "name": "BULGARO ワイン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw153128716.jpg",
+   "px": 384,
+   "avg": "#822a38"
+  },
+  {
+   "id": "kw153747469",
+   "name": "NEBRASKA グレー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw153747469.jpg",
+   "px": 384,
+   "avg": "#654d38"
+  },
+  {
+   "id": "kw154473133",
+   "name": "DELOREAN ブラック",
+   "sub": "ECCO LEATHER / ダイニーマ・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DELOREAN",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw154473133.jpg",
+   "px": 384,
+   "avg": "#717171"
+  },
+  {
+   "id": "kw155042339",
+   "name": "TWIST ブラック",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw155042339.jpg",
+   "px": 384,
+   "avg": "#67696a"
+  },
+  {
+   "id": "kw155490988",
+   "name": "DELOREAN ホワイト",
+   "sub": "ECCO LEATHER / ダイニーマ・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DELOREAN",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw155490988.jpg",
+   "px": 384,
+   "avg": "#c9c9c6"
+  },
+  {
+   "id": "kw155504309",
+   "name": "DELOREAN ライトグレー",
+   "sub": "ECCO LEATHER / ダイニーマ・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DELOREAN",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw155504309.jpg",
+   "px": 384,
+   "avg": "#cec9c4"
+  },
+  {
+   "id": "kw155709863",
+   "name": "ホースバット ナチュラル",
+   "sub": "MARYAM / 馬革・タンニン鞣し",
+   "tags": [
+    "MARYAM",
+    "HORSE BUTT",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "馬革",
+    "ホースバット"
+   ],
+   "file": "assets/textures/kw155709863.jpg",
+   "px": 384,
+   "avg": "#dc9565"
+  },
+  {
+   "id": "kw155783293",
+   "name": "BULGARO グリーン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw155783293.jpg",
+   "px": 384,
+   "avg": "#52635b"
+  },
+  {
+   "id": "kw155783348",
+   "name": "NEBRASKA ワイン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw155783348.jpg",
+   "px": 384,
+   "avg": "#561e25"
+  },
+  {
+   "id": "kw155784895",
+   "name": "AMAZZONIA ダークブラウン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw155784895.jpg",
+   "px": 384,
+   "avg": "#312521"
+  },
+  {
+   "id": "kw156742684",
+   "name": "AMAZZONIA ワイン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw156742684.jpg",
+   "px": 384,
+   "avg": "#591a21"
+  },
+  {
+   "id": "kw156744560",
+   "name": "AMAZZONIA グリーン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw156744560.jpg",
+   "px": 384,
+   "avg": "#465b58"
+  },
+  {
+   "id": "kw156744633",
+   "name": "AMAZZONIA オリーブ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw156744633.jpg",
+   "px": 384,
+   "avg": "#676243"
+  },
+  {
+   "id": "kw156744695",
+   "name": "AMAZZONIA グレー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw156744695.jpg",
+   "px": 384,
+   "avg": "#453c32"
+  },
+  {
+   "id": "kw156744751",
+   "name": "AMAZZONIA ネイビー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw156744751.jpg",
+   "px": 384,
+   "avg": "#665f5e"
+  },
+  {
+   "id": "kw156838098",
+   "name": "CHROMEXCEL バーガンディ",
+   "sub": "HORWEEN / コンビ鞣し",
+   "tags": [
+    "HORWEEN",
+    "CHROMEXCEL",
+    "コンビ鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw156838098.jpg",
+   "px": 384,
+   "avg": "#66333a"
+  },
+  {
+   "id": "kw156838223",
+   "name": "CHROMEXCEL ティンバー",
+   "sub": "HORWEEN / コンビ鞣し",
+   "tags": [
+    "HORWEEN",
+    "CHROMEXCEL",
+    "コンビ鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw156838223.jpg",
+   "px": 384,
+   "avg": "#e2d5c3"
+  },
+  {
+   "id": "kw156838252",
+   "name": "CHROMEXCEL ブラック",
+   "sub": "HORWEEN / コンビ鞣し",
+   "tags": [
+    "HORWEEN",
+    "CHROMEXCEL",
+    "コンビ鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw156838252.jpg",
+   "px": 384,
+   "avg": "#3b3b3b"
+  },
+  {
+   "id": "kw157331202",
+   "name": "シェルコードバン(HORWEEN) ブラック",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ダーク系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw157331202.jpg",
+   "px": 384,
+   "avg": "#61502e"
+  },
+  {
+   "id": "kw157911205",
+   "name": "DROID ブラック",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw157911205.jpg",
+   "px": 384,
+   "avg": "#48484d"
+  },
+  {
+   "id": "kw158501313",
+   "name": "シェルコードバン(HORWEEN) #4 チョコ",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw158501313.jpg",
+   "px": 384,
+   "avg": "#693a31"
+  },
+  {
+   "id": "kw158501354",
+   "name": "シェルコードバン(HORWEEN) #8 バーガンディ",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw158501354.jpg",
+   "px": 384,
+   "avg": "#976951"
+  },
+  {
+   "id": "kw158501390",
+   "name": "シェルコードバン(HORWEEN) Dコニャック",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw158501390.jpg",
+   "px": 384,
+   "avg": "#6f5334"
+  },
+  {
+   "id": "kw158695092",
+   "name": "生成りヌメベリー 2.5-3.0mm",
+   "sub": "国産 / 植物タンニン鞣し・素上げ",
+   "tags": [
+    "国産",
+    "ヌメ革",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw158695092.jpg",
+   "px": 384,
+   "avg": "#bcadae"
+  },
+  {
+   "id": "kw159050069",
+   "name": "DROID ホワイト",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw159050069.jpg",
+   "px": 384,
+   "avg": "#cfcfcb"
+  },
+  {
+   "id": "kw159050134",
+   "name": "DROID パウダー",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw159050134.jpg",
+   "px": 384,
+   "avg": "#a58266"
+  },
+  {
+   "id": "kw159050298",
+   "name": "DROID サンド",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw159050298.jpg",
+   "px": 384,
+   "avg": "#b1987d"
+  },
+  {
+   "id": "kw159050491",
+   "name": "DROID ムーンロック",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw159050491.jpg",
+   "px": 384,
+   "avg": "#9e877a"
+  },
+  {
+   "id": "kw159050762",
+   "name": "DROID マッシュルーム",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159050762.jpg",
+   "px": 384,
+   "avg": "#9d8877"
+  },
+  {
+   "id": "kw159050790",
+   "name": "DROID ストーン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw159050790.jpg",
+   "px": 384,
+   "avg": "#87766e"
+  },
+  {
+   "id": "kw159050842",
+   "name": "DROID ナット",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159050842.jpg",
+   "px": 384,
+   "avg": "#9a653c"
+  },
+  {
+   "id": "kw159050897",
+   "name": "DROID アーモンド",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159050897.jpg",
+   "px": 384,
+   "avg": "#a46945"
+  },
+  {
+   "id": "kw159054208",
+   "name": "DROID コニャック",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159054208.jpg",
+   "px": 384,
+   "avg": "#a4623b"
+  },
+  {
+   "id": "kw159055623",
+   "name": "DROID アンバー",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw159055623.jpg",
+   "px": 384,
+   "avg": "#a46945"
+  },
+  {
+   "id": "kw159056093",
+   "name": "DROID ウィスキー",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159056093.jpg",
+   "px": 384,
+   "avg": "#b05844"
+  },
+  {
+   "id": "kw159056300",
+   "name": "DROID ブラウン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159056300.jpg",
+   "px": 384,
+   "avg": "#995742"
+  },
+  {
+   "id": "kw159056332",
+   "name": "DROID レッド",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw159056332.jpg",
+   "px": 384,
+   "avg": "#c3322f"
+  },
+  {
+   "id": "kw159056366",
+   "name": "DROID ブリック",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159056366.jpg",
+   "px": 384,
+   "avg": "#9e3c40"
+  },
+  {
+   "id": "kw159056414",
+   "name": "DROID プラム",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw159056414.jpg",
+   "px": 384,
+   "avg": "#53344d"
+  },
+  {
+   "id": "kw159056439",
+   "name": "DROID ワイン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw159056439.jpg",
+   "px": 384,
+   "avg": "#7b4653"
+  },
+  {
+   "id": "kw159056532",
+   "name": "DROID ロイヤル",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw159056532.jpg",
+   "px": 384,
+   "avg": "#34497f"
+  },
+  {
+   "id": "kw159056616",
+   "name": "DROID オーシャン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw159056616.jpg",
+   "px": 384,
+   "avg": "#4c5a6f"
+  },
+  {
+   "id": "kw159056681",
+   "name": "DROID マリーン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw159056681.jpg",
+   "px": 384,
+   "avg": "#5b5c63"
+  },
+  {
+   "id": "kw159056848",
+   "name": "DROID アルパイン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw159056848.jpg",
+   "px": 384,
+   "avg": "#6a5d4b"
+  },
+  {
+   "id": "kw159056893",
+   "name": "DROID グリーン",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw159056893.jpg",
+   "px": 384,
+   "avg": "#5c6a62"
+  },
+  {
+   "id": "kw159056917",
+   "name": "DROID オリーブ",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw159056917.jpg",
+   "px": 384,
+   "avg": "#595447"
+  },
+  {
+   "id": "kw159056956",
+   "name": "DROID コーラ",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159056956.jpg",
+   "px": 384,
+   "avg": "#56332a"
+  },
+  {
+   "id": "kw159056995",
+   "name": "DROID エスプレッソ",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159056995.jpg",
+   "px": 384,
+   "avg": "#6d4c48"
+  },
+  {
+   "id": "kw159057050",
+   "name": "DROID モカ",
+   "sub": "ECCO LEATHER / クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DROID",
+    "クロム鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159057050.jpg",
+   "px": 384,
+   "avg": "#5e5153"
+  },
+  {
+   "id": "kw159561041",
+   "name": "ホースバット 茶芯ブラック",
+   "sub": "MARYAM / 馬革・タンニン鞣し",
+   "tags": [
+    "MARYAM",
+    "HORSE BUTT",
+    "タンニン鞣し",
+    "ダーク系",
+    "馬革",
+    "ホースバット"
+   ],
+   "file": "assets/textures/kw159561041.jpg",
+   "px": 384,
+   "avg": "#39383c"
+  },
+  {
+   "id": "kw159732478",
+   "name": "REVERSO ブラック",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw159732478.jpg",
+   "px": 384,
+   "avg": "#998a71"
+  },
+  {
+   "id": "kw159732492",
+   "name": "REVERSO コニャック",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159732492.jpg",
+   "px": 384,
+   "avg": "#e17531"
+  },
+  {
+   "id": "kw159732507",
+   "name": "REVERSO シエナ",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159732507.jpg",
+   "px": 384,
+   "avg": "#d4855e"
+  },
+  {
+   "id": "kw159732522",
+   "name": "REVERSO ブラウン",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159732522.jpg",
+   "px": 384,
+   "avg": "#51210f"
+  },
+  {
+   "id": "kw159732534",
+   "name": "REVERSO ダークブラウン",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw159732534.jpg",
+   "px": 384,
+   "avg": "#775142"
+  },
+  {
+   "id": "kw159732548",
+   "name": "REVERSO レッド",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw159732548.jpg",
+   "px": 384,
+   "avg": "#df2919"
+  },
+  {
+   "id": "kw159732568",
+   "name": "REVERSO ワイン",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw159732568.jpg",
+   "px": 384,
+   "avg": "#84423a"
+  },
+  {
+   "id": "kw159732602",
+   "name": "REVERSO ネイビー",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw159732602.jpg",
+   "px": 384,
+   "avg": "#636465"
+  },
+  {
+   "id": "kw159732636",
+   "name": "REVERSO トープ",
+   "sub": "Lo Stivale / リバースレザー・タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "REVERSO",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw159732636.jpg",
+   "px": 384,
+   "avg": "#83715e"
+  },
+  {
+   "id": "kw159900455",
+   "name": "NEBRASKA グリーン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw159900455.jpg",
+   "px": 384,
+   "avg": "#232f25"
+  },
+  {
+   "id": "kw161703649",
+   "name": "NEBRASKA シエナ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw161703649.jpg",
+   "px": 384,
+   "avg": "#73301e"
+  },
+  {
+   "id": "kw161703674",
+   "name": "BULGARO シエナ",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw161703674.jpg",
+   "px": 384,
+   "avg": "#ad4e3e"
+  },
+  {
+   "id": "kw161703696",
+   "name": "TWIST アイボリー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TWIST",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw161703696.jpg",
+   "px": 384,
+   "avg": "#bdaf9b"
+  },
+  {
+   "id": "kw162805150",
+   "name": "TENDER キャメル",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw162805150.jpg",
+   "px": 384,
+   "avg": "#db8240"
+  },
+  {
+   "id": "kw163434620",
+   "name": "COUNTRY ホワイト",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw163434620.jpg",
+   "px": 384,
+   "avg": "#bdb7ac"
+  },
+  {
+   "id": "kw163434660",
+   "name": "COUNTRY ナチュラル",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw163434660.jpg",
+   "px": 384,
+   "avg": "#c3986f"
+  },
+  {
+   "id": "kw163434683",
+   "name": "COUNTRY ブラウン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw163434683.jpg",
+   "px": 384,
+   "avg": "#ac7b5e"
+  },
+  {
+   "id": "kw163434696",
+   "name": "COUNTRY ダークブラウン",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw163434696.jpg",
+   "px": 384,
+   "avg": "#896a58"
+  },
+  {
+   "id": "kw163438818",
+   "name": "COUNTRY ヴァイオレット",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw163438818.jpg",
+   "px": 384,
+   "avg": "#78303c"
+  },
+  {
+   "id": "kw163438954",
+   "name": "COUNTRY レッド",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw163438954.jpg",
+   "px": 384,
+   "avg": "#df360a"
+  },
+  {
+   "id": "kw163439020",
+   "name": "COUNTRY ブルー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw163439020.jpg",
+   "px": 384,
+   "avg": "#354478"
+  },
+  {
+   "id": "kw163439070",
+   "name": "COUNTRY ベージュ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw163439070.jpg",
+   "px": 384,
+   "avg": "#c99f76"
+  },
+  {
+   "id": "kw163439114",
+   "name": "COUNTRY グレー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw163439114.jpg",
+   "px": 384,
+   "avg": "#b19671"
+  },
+  {
+   "id": "kw163439240",
+   "name": "COUNTRY ブラック",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "COUNTRY",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw163439240.jpg",
+   "px": 384,
+   "avg": "#473e3a"
+  },
+  {
+   "id": "kw164301924",
+   "name": "TENDER グレー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw164301924.jpg",
+   "px": 384,
+   "avg": "#9a8774"
+  },
+  {
+   "id": "kw167124351",
+   "name": "LAUNDERED オフホワイト",
+   "sub": "ECCO LEATHER / ウォッシャブル・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "LAUNDERED",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw167124351.jpg",
+   "px": 384,
+   "avg": "#e8e8e8"
+  },
+  {
+   "id": "kw167124375",
+   "name": "LAUNDERED ブラック",
+   "sub": "ECCO LEATHER / ウォッシャブル・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "LAUNDERED",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw167124375.jpg",
+   "px": 384,
+   "avg": "#323235"
+  },
+  {
+   "id": "kw168270372",
+   "name": "DRITTON G8 ホワイト",
+   "sub": "ECCO LEATHER / GORE-TEX・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DRITTON G8",
+    "クロム鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw168270372.jpg",
+   "px": 384,
+   "avg": "#d5d5d5"
+  },
+  {
+   "id": "kw168271857",
+   "name": "DRITTON G8 ブラック",
+   "sub": "ECCO LEATHER / GORE-TEX・クロム鞣し",
+   "tags": [
+    "ECCO LEATHER",
+    "DRITTON G8",
+    "クロム鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw168271857.jpg",
+   "px": 384,
+   "avg": "#2f2f30"
+  },
+  {
+   "id": "kw168532402",
+   "name": "SIBILLA Liscio デセルト",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532402.jpg",
+   "px": 384,
+   "avg": "#bda98d"
+  },
+  {
+   "id": "kw168532417",
+   "name": "SIBILLA Liscio トルトラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532417.jpg",
+   "px": 384,
+   "avg": "#bba697"
+  },
+  {
+   "id": "kw168532438",
+   "name": "SIBILLA Liscio ティー・モロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ブラウン系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532438.jpg",
+   "px": 384,
+   "avg": "#9b999b"
+  },
+  {
+   "id": "kw168532449",
+   "name": "SIBILLA Liscio フクシア",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "レッド系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532449.jpg",
+   "px": 384,
+   "avg": "#d98a8c"
+  },
+  {
+   "id": "kw168532457",
+   "name": "SIBILLA Liscio マスタード",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "イエロー系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532457.jpg",
+   "px": 384,
+   "avg": "#cfb75f"
+  },
+  {
+   "id": "kw168532468",
+   "name": "SIBILLA Liscio トルケーゼ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532468.jpg",
+   "px": 384,
+   "avg": "#7eb1ae"
+  },
+  {
+   "id": "kw168532516",
+   "name": "SIBILLA Liscio マリーネ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532516.jpg",
+   "px": 384,
+   "avg": "#7c90ac"
+  },
+  {
+   "id": "kw168532544",
+   "name": "SIBILLA Liscio ネイビー",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532544.jpg",
+   "px": 384,
+   "avg": "#9da6af"
+  },
+  {
+   "id": "kw168532565",
+   "name": "SIBILLA Liscio イリス",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "レッド系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532565.jpg",
+   "px": 384,
+   "avg": "#a3a2a9"
+  },
+  {
+   "id": "kw168532629",
+   "name": "SIBILLA Liscio チェネレ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532629.jpg",
+   "px": 384,
+   "avg": "#abacad"
+  },
+  {
+   "id": "kw168532634",
+   "name": "SIBILLA Liscio グラファイト",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532634.jpg",
+   "px": 384,
+   "avg": "#9b9a9d"
+  },
+  {
+   "id": "kw168532644",
+   "name": "SIBILLA Liscio ネロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw168532644.jpg",
+   "px": 384,
+   "avg": "#92959f"
+  },
+  {
+   "id": "kw169160973",
+   "name": "AMAZZONIA イエロー",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw169160973.jpg",
+   "px": 384,
+   "avg": "#e89127"
+  },
+  {
+   "id": "kw169161060",
+   "name": "AMAZZONIA ターコイズ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "AMAZZONIA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw169161060.jpg",
+   "px": 384,
+   "avg": "#469da9"
+  },
+  {
+   "id": "kw171321838",
+   "name": "CRUST マローネ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw171321838.jpg",
+   "px": 384,
+   "avg": "#b16639"
+  },
+  {
+   "id": "kw171321870",
+   "name": "CRUST ミリターレ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw171321870.jpg",
+   "px": 384,
+   "avg": "#6e5a38"
+  },
+  {
+   "id": "kw171930317",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ウィスキー",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930317.jpg",
+   "px": 384,
+   "avg": "#dcbfa9"
+  },
+  {
+   "id": "kw171930324",
+   "name": "シェルコードバン(ROCADO/CLASSIC) コニャック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930324.jpg",
+   "px": 384,
+   "avg": "#bf7a54"
+  },
+  {
+   "id": "kw171930332",
+   "name": "シェルコードバン(ROCADO/CLASSIC) シエナ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930332.jpg",
+   "px": 384,
+   "avg": "#ab3624"
+  },
+  {
+   "id": "kw171930338",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ダークブラウン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930338.jpg",
+   "px": 384,
+   "avg": "#45322f"
+  },
+  {
+   "id": "kw171930342",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ダークバーガンディ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930342.jpg",
+   "px": 384,
+   "avg": "#624243"
+  },
+  {
+   "id": "kw171930351",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ピンク",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930351.jpg",
+   "px": 384,
+   "avg": "#c73554"
+  },
+  {
+   "id": "kw171930353",
+   "name": "シェルコードバン(ROCADO/CLASSIC) レッド",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930353.jpg",
+   "px": 384,
+   "avg": "#cb806e"
+  },
+  {
+   "id": "kw171930360",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ペトロリオ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930360.jpg",
+   "px": 384,
+   "avg": "#1a2b27"
+  },
+  {
+   "id": "kw171930365",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ブルー",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930365.jpg",
+   "px": 384,
+   "avg": "#686c77"
+  },
+  {
+   "id": "kw171930369",
+   "name": "シェルコードバン(ROCADO/CLASSIC) ブラック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ダーク系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930369.jpg",
+   "px": 384,
+   "avg": "#181818"
+  },
+  {
+   "id": "kw171930388",
+   "name": "シェルコードバン(ROCADO/MARBLED) ブラウン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930388.jpg",
+   "px": 384,
+   "avg": "#c28964"
+  },
+  {
+   "id": "kw171930394",
+   "name": "シェルコードバン(ROCADO/MARBLED) シエナ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930394.jpg",
+   "px": 384,
+   "avg": "#b56351"
+  },
+  {
+   "id": "kw171930400",
+   "name": "シェルコードバン(ROCADO/MARBLED) バーガンディ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930400.jpg",
+   "px": 384,
+   "avg": "#7e433a"
+  },
+  {
+   "id": "kw171930407",
+   "name": "シェルコードバン(ROCADO/MARBLED) ピンク",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930407.jpg",
+   "px": 384,
+   "avg": "#de7682"
+  },
+  {
+   "id": "kw171930411",
+   "name": "シェルコードバン(ROCADO/MARBLED) レッド",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930411.jpg",
+   "px": 384,
+   "avg": "#962822"
+  },
+  {
+   "id": "kw171930418",
+   "name": "シェルコードバン(ROCADO/MARBLED) グリーン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "グリーン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930418.jpg",
+   "px": 384,
+   "avg": "#848069"
+  },
+  {
+   "id": "kw171930424",
+   "name": "シェルコードバン(ROCADO/MARBLED) トルケーゼ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930424.jpg",
+   "px": 384,
+   "avg": "#598473"
+  },
+  {
+   "id": "kw171930430",
+   "name": "シェルコードバン(ROCADO/MARBLED) ブルー",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930430.jpg",
+   "px": 384,
+   "avg": "#937966"
+  },
+  {
+   "id": "kw171930433",
+   "name": "シェルコードバン(ROCADO/MARBLED) ブラック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ダーク系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw171930433.jpg",
+   "px": 384,
+   "avg": "#beb0a9"
+  },
+  {
+   "id": "kw172107644",
+   "name": "TENDER ワイン",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "TENDER",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw172107644.jpg",
+   "px": 384,
+   "avg": "#943c42"
+  },
+  {
+   "id": "kw172113060",
+   "name": "SIBILLA Liscio アガベ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "グリーン系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw172113060.jpg",
+   "px": 384,
+   "avg": "#96acae"
+  },
+  {
+   "id": "kw173296707",
+   "name": "BULGARO ブルー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "BULGARO",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw173296707.jpg",
+   "px": 384,
+   "avg": "#24394d"
+  },
+  {
+   "id": "kw173297104",
+   "name": "NEBRASKA ブルー",
+   "sub": "Lo Stivale / タンニン鞣し",
+   "tags": [
+    "Lo Stivale",
+    "NEBRASKA",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw173297104.jpg",
+   "px": 384,
+   "avg": "#223a56"
+  },
+  {
+   "id": "kw175192406",
+   "name": "SIBILLA Liscio クロロフィラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "SIBILLA Liscio",
+    "タンニン鞣し",
+    "グリーン系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw175192406.jpg",
+   "px": 384,
+   "avg": "#819c47"
+  },
+  {
+   "id": "kw175312185",
+   "name": "シェルコードバン(ROCADO/MUSEUM) コニャック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw175312185.jpg",
+   "px": 384,
+   "avg": "#7a2817"
+  },
+  {
+   "id": "kw175312193",
+   "name": "シェルコードバン(ROCADO/MUSEUM) ブラウン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw175312193.jpg",
+   "px": 384,
+   "avg": "#784130"
+  },
+  {
+   "id": "kw175312202",
+   "name": "シェルコードバン(ROCADO/MUSEUM) バーガンディ",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw175312202.jpg",
+   "px": 384,
+   "avg": "#7f3946"
+  },
+  {
+   "id": "kw175312207",
+   "name": "シェルコードバン(ROCADO/MUSEUM) レッド",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "レッド系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw175312207.jpg",
+   "px": 384,
+   "avg": "#a21e19"
+  },
+  {
+   "id": "kw175312214",
+   "name": "シェルコードバン(ROCADO/MUSEUM) グリーン",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "グリーン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw175312214.jpg",
+   "px": 384,
+   "avg": "#525450"
+  },
+  {
+   "id": "kw175312220",
+   "name": "シェルコードバン(ROCADO/MUSEUM) ブルー",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブルー系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw175312220.jpg",
+   "px": 384,
+   "avg": "#6e6c85"
+  },
+  {
+   "id": "kw176146678",
+   "name": "TEXAS キャメロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw176146678.jpg",
+   "px": 384,
+   "avg": "#c99372"
+  },
+  {
+   "id": "kw176481776",
+   "name": "CRUST ナチュラーレ",
+   "sub": "La Perla Azzurra / タンニン鞣し",
+   "tags": [
+    "La Perla Azzurra",
+    "CRUST",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/kw176481776.jpg",
+   "px": 384,
+   "avg": "#ca9d73"
+  },
+  {
+   "id": "kw176617989",
+   "name": "TEXAS アンブラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw176617989.jpg",
+   "px": 384,
+   "avg": "#c58450"
+  },
+  {
+   "id": "kw176618223",
+   "name": "TEXAS クオイオ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw176618223.jpg",
+   "px": 384,
+   "avg": "#a2613e"
+  },
+  {
+   "id": "kw176618274",
+   "name": "TEXAS シエナ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw176618274.jpg",
+   "px": 384,
+   "avg": "#853d39"
+  },
+  {
+   "id": "kw176618285",
+   "name": "TEXAS パパヤ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw176618285.jpg",
+   "px": 384,
+   "avg": "#6e3e26"
+  },
+  {
+   "id": "kw176618310",
+   "name": "TEXAS ティー・モロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/kw176618310.jpg",
+   "px": 384,
+   "avg": "#4d3932"
+  },
+  {
+   "id": "kw176618328",
+   "name": "TEXAS プルーニャ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw176618328.jpg",
+   "px": 384,
+   "avg": "#7b323f"
+  },
+  {
+   "id": "kw176618348",
+   "name": "TEXAS フィエスタ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw176618348.jpg",
+   "px": 384,
+   "avg": "#ab2b2a"
+  },
+  {
+   "id": "kw176618366",
+   "name": "TEXAS オクラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "イエロー系"
+   ],
+   "file": "assets/textures/kw176618366.jpg",
+   "px": 384,
+   "avg": "#cb8c34"
+  },
+  {
+   "id": "kw176618374",
+   "name": "TEXAS ラトゥーガ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw176618374.jpg",
+   "px": 384,
+   "avg": "#8a9761"
+  },
+  {
+   "id": "kw176618381",
+   "name": "TEXAS ヴェルデ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw176618381.jpg",
+   "px": 384,
+   "avg": "#2c382e"
+  },
+  {
+   "id": "kw176618416",
+   "name": "TEXAS アガベ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw176618416.jpg",
+   "px": 384,
+   "avg": "#507274"
+  },
+  {
+   "id": "kw176618431",
+   "name": "TEXAS ネイビー",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw176618431.jpg",
+   "px": 384,
+   "avg": "#374662"
+  },
+  {
+   "id": "kw176618445",
+   "name": "TEXAS ヴィオラ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "レッド系"
+   ],
+   "file": "assets/textures/kw176618445.jpg",
+   "px": 384,
+   "avg": "#6f4467"
+  },
+  {
+   "id": "kw176618472",
+   "name": "TEXAS ピオンボ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw176618472.jpg",
+   "px": 384,
+   "avg": "#655a56"
+  },
+  {
+   "id": "kw176618488",
+   "name": "TEXAS ネロ",
+   "sub": "TEMPESTI / タンニン鞣し",
+   "tags": [
+    "TEMPESTI",
+    "TEXAS",
+    "タンニン鞣し",
+    "ダーク系"
+   ],
+   "file": "assets/textures/kw176618488.jpg",
+   "px": 384,
+   "avg": "#36393e"
+  },
+  {
+   "id": "kw177973864",
+   "name": "LINEA VASCA Liscio セサンタ（60）",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブラウン系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973864.jpg",
+   "px": 384,
+   "avg": "#9c4221"
+  },
+  {
+   "id": "kw177973871",
+   "name": "LINEA VASCA Liscio ダークブラウン",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブラウン系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973871.jpg",
+   "px": 384,
+   "avg": "#3c221d"
+  },
+  {
+   "id": "kw177973886",
+   "name": "LINEA VASCA Liscio カスターニャ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブラウン系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973886.jpg",
+   "px": 384,
+   "avg": "#2c1715"
+  },
+  {
+   "id": "kw177973910",
+   "name": "LINEA VASCA Liscio フクシア",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "レッド系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973910.jpg",
+   "px": 384,
+   "avg": "#bd1e42"
+  },
+  {
+   "id": "kw177973918",
+   "name": "LINEA VASCA Liscio フラゴラ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "レッド系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973918.jpg",
+   "px": 384,
+   "avg": "#952224"
+  },
+  {
+   "id": "kw177973924",
+   "name": "LINEA VASCA Liscio ヴェルデ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "グリーン系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973924.jpg",
+   "px": 384,
+   "avg": "#0b5125"
+  },
+  {
+   "id": "kw177973946",
+   "name": "LINEA VASCA Liscio オルティーカ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "グリーン系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973946.jpg",
+   "px": 384,
+   "avg": "#282a1d"
+  },
+  {
+   "id": "kw177973956",
+   "name": "LINEA VASCA Liscio コバルト",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973956.jpg",
+   "px": 384,
+   "avg": "#1c3353"
+  },
+  {
+   "id": "kw177973960",
+   "name": "LINEA VASCA Liscio ネイビー",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973960.jpg",
+   "px": 384,
+   "avg": "#2f303b"
+  },
+  {
+   "id": "kw177973968",
+   "name": "LINEA VASCA Liscio トッポ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973968.jpg",
+   "px": 384,
+   "avg": "#47403d"
+  },
+  {
+   "id": "kw177973979",
+   "name": "LINEA VASCA Liscio ネロ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ダーク系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw177973979.jpg",
+   "px": 384,
+   "avg": "#292927"
+  },
+  {
+   "id": "kw179755605",
+   "name": "シェルコードバン(ROCADO/NATURAL) ナチュラル",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw179755605.jpg",
+   "px": 384,
+   "avg": "#bd744c"
+  },
+  {
+   "id": "kw180263913",
+   "name": "シェルコードバン(HORWEEN) グリーン",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "グリーン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw180263913.jpg",
+   "px": 384,
+   "avg": "#171f1d"
+  },
+  {
+   "id": "kw180707712",
+   "name": "LINEA VASCA Liscio ナチュラーレ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw180707712.jpg",
+   "px": 384,
+   "avg": "#ce915d"
+  },
+  {
+   "id": "kw180707713",
+   "name": "LINEA VASCA Liscio トルケーゼ",
+   "sub": "Virgilio / ピット槽鞣し",
+   "tags": [
+    "Virgilio",
+    "LINEA VASCA Liscio",
+    "タンニン鞣し",
+    "ブルー系",
+    "リスシオ"
+   ],
+   "file": "assets/textures/kw180707713.jpg",
+   "px": 384,
+   "avg": "#013c4b"
+  },
+  {
+   "id": "kw186275867",
+   "name": "シェルコードバン(ROCADO/MUSEUM) ブラック",
+   "sub": "ROCADO / コードバン",
+   "tags": [
+    "ROCADO",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ダーク系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw186275867.jpg",
+   "px": 384,
+   "avg": "#2f2625"
+  },
+  {
+   "id": "kw186289162",
+   "name": "AVANCORPI ナチュラル",
+   "sub": "ROCADO / 馬・ホースフロント",
+   "tags": [
+    "ROCADO",
+    "AVANCORPI",
+    "タンニン鞣し",
+    "ナチュラル系",
+    "馬革"
+   ],
+   "file": "assets/textures/kw186289162.jpg",
+   "px": 384,
+   "avg": "#c48b5c"
+  },
+  {
+   "id": "kw187307532",
+   "name": "シェルコードバン(HORWEEN) バーボン",
+   "sub": "HORWEEN / コードバン",
+   "tags": [
+    "HORWEEN",
+    "SHELL CORDOVAN",
+    "タンニン鞣し",
+    "ブラウン系",
+    "コードバン",
+    "馬革"
+   ],
+   "file": "assets/textures/kw187307532.jpg",
+   "px": 384,
+   "avg": "#794b30"
+  },
+  {
+   "id": "kw188691341",
+   "name": "MARGOT プラト",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "Virgilio",
+    "MARGOT",
+    "タンニン鞣し",
+    "グリーン系"
+   ],
+   "file": "assets/textures/kw188691341.jpg",
+   "px": 384,
+   "avg": "#3b7d3b"
+  },
+  {
+   "id": "kw188691587",
+   "name": "MARGOT アヴィオ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "Virgilio",
+    "MARGOT",
+    "タンニン鞣し",
+    "ブルー系"
+   ],
+   "file": "assets/textures/kw188691587.jpg",
+   "px": 384,
+   "avg": "#526b69"
+  },
+  {
+   "id": "kw191060393",
+   "name": "AVANCORPI ブラウン",
+   "sub": "ROCADO / 馬・ホースフロント",
+   "tags": [
+    "ROCADO",
+    "AVANCORPI",
+    "タンニン鞣し",
+    "ブラウン系",
+    "馬革"
+   ],
+   "file": "assets/textures/kw191060393.jpg",
+   "px": 384,
+   "avg": "#5a342b"
+  },
+  {
+   "id": "kw191473385",
+   "name": "AVANCORPI ブラック",
+   "sub": "ROCADO / 馬・ホースフロント",
+   "tags": [
+    "ROCADO",
+    "AVANCORPI",
+    "タンニン鞣し",
+    "ダーク系",
+    "馬革"
+   ],
+   "file": "assets/textures/kw191473385.jpg",
+   "px": 384,
+   "avg": "#171717"
+  },
+  {
+   "id": "lvb_cas",
+   "name": "LINEA VASCA Box カスターニャ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/lvb_cas.jpg",
+   "px": 384,
+   "avg": "#26181a"
+  },
+  {
+   "id": "lvb_cob",
+   "name": "LINEA VASCA Box コバルト",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "file": "assets/textures/lvb_cob.jpg",
+   "px": 384,
+   "avg": "#112d44"
+  },
+  {
+   "id": "lvb_dkb",
+   "name": "LINEA VASCA Box ダークブラウン",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/lvb_dkb.jpg",
+   "px": 384,
+   "avg": "#2b1515"
+  },
+  {
+   "id": "lvb_fra",
+   "name": "LINEA VASCA Box フラゴラ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/lvb_fra.jpg",
+   "px": 384,
+   "avg": "#7d0e19"
+  },
+  {
+   "id": "lvb_fux",
+   "name": "LINEA VASCA Box フクシア",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/lvb_fux.jpg",
+   "px": 384,
+   "avg": "#b12a58"
+  },
+  {
+   "id": "lvb_nat",
+   "name": "LINEA VASCA Box ナチュラーレ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/lvb_nat.jpg",
+   "px": 384,
+   "avg": "#d99d68"
+  },
+  {
+   "id": "lvb_nav",
+   "name": "LINEA VASCA Box ネイビー",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "file": "assets/textures/lvb_nav.jpg",
+   "px": 384,
+   "avg": "#32323c"
+  },
+  {
+   "id": "lvb_ner",
+   "name": "LINEA VASCA Box ネロ（黒）",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "file": "assets/textures/lvb_ner.jpg",
+   "px": 384,
+   "avg": "#232427"
+  },
+  {
+   "id": "lvb_ort",
+   "name": "LINEA VASCA Box オルティーカ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "file": "assets/textures/lvb_ort.jpg",
+   "px": 384,
+   "avg": "#292e25"
+  },
+  {
+   "id": "lvb_ses",
+   "name": "LINEA VASCA Box セサンタ（60）",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/lvb_ses.jpg",
+   "px": 384,
+   "avg": "#963416"
+  },
+  {
+   "id": "lvb_top",
+   "name": "LINEA VASCA Box トッポ（灰）",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "file": "assets/textures/lvb_top.jpg",
+   "px": 384,
+   "avg": "#4e4441"
+  },
+  {
+   "id": "lvb_tur",
+   "name": "LINEA VASCA Box トルケーゼ",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "file": "assets/textures/lvb_tur.jpg",
+   "px": 384,
+   "avg": "#023a46"
+  },
+  {
+   "id": "lvb_ver",
+   "name": "LINEA VASCA Box ヴェルデ（緑）",
+   "sub": "Virgilio / ボックスカーフ仕上げ",
+   "tags": [
+    "LINEA VASCA Box",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "file": "assets/textures/lvb_ver.jpg",
+   "px": 384,
+   "avg": "#186d3d"
+  },
+  {
+   "id": "mano01",
+   "name": "MARIANO ナチュラル",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ナチュラル系",
+    "NEW"
+   ],
+   "file": "assets/textures/mano01.jpg",
+   "px": 384,
+   "avg": "#8f6248"
+  },
+  {
+   "id": "mano06",
+   "name": "MARIANO ブラウン",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ブラウン系",
+    "NEW"
+   ],
+   "file": "assets/textures/mano06.jpg",
+   "px": 384,
+   "avg": "#35251f"
+  },
+  {
+   "id": "mano07",
+   "name": "MARIANO ブラック",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ダーク系",
+    "NEW"
+   ],
+   "file": "assets/textures/mano07.jpg",
+   "px": 384,
+   "avg": "#1f1f1f"
+  },
+  {
+   "id": "mano08",
+   "name": "MARIANO オリーブ",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "グリーン系",
+    "NEW"
+   ],
+   "file": "assets/textures/mano08.jpg",
+   "px": 384,
+   "avg": "#322d25"
+  },
+  {
+   "id": "mano13",
+   "name": "MARIANO グレー",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ダーク系",
+    "NEW"
+   ],
+   "file": "assets/textures/mano13.jpg",
+   "px": 384,
+   "avg": "#4a3e31"
+  },
+  {
+   "id": "mano18",
+   "name": "MARIANO ネイビー",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ブルー系",
+    "NEW"
+   ],
+   "file": "assets/textures/mano18.jpg",
+   "px": 384,
+   "avg": "#202c31"
+  },
+  {
+   "id": "mano32",
+   "name": "MARIANO ダークブラウン",
+   "sub": "La Perla Azzurra / 植物タンニン鞣し ★NEW",
+   "tags": [
+    "MARIANO",
+    "タンニン鞣し",
+    "La Perla Azzurra",
+    "ブラウン系",
+    "NEW"
+   ],
+   "file": "assets/textures/mano32.jpg",
+   "px": 384,
+   "avg": "#3c302c"
+  },
+  {
+   "id": "mfog_all",
+   "name": "MARGOT FOG アローロ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "file": "assets/textures/mfog_all.jpg",
+   "px": 384,
+   "avg": "#8d8d8b"
+  },
+  {
+   "id": "mfog_brn",
+   "name": "MARGOT FOG ブラウン",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/mfog_brn.jpg",
+   "px": 384,
+   "avg": "#ada39d"
+  },
+  {
+   "id": "mfog_cas",
+   "name": "MARGOT FOG カスターニャ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/mfog_cas.jpg",
+   "px": 384,
+   "avg": "#a0a09e"
+  },
+  {
+   "id": "mfog_cob",
+   "name": "MARGOT FOG コバルト",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "file": "assets/textures/mfog_cob.jpg",
+   "px": 384,
+   "avg": "#878d95"
+  },
+  {
+   "id": "mfog_fra",
+   "name": "MARGOT FOG フラゴラ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/mfog_fra.jpg",
+   "px": 384,
+   "avg": "#c89098"
+  },
+  {
+   "id": "mfog_fux",
+   "name": "MARGOT FOG フクシア",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/mfog_fux.jpg",
+   "px": 256,
+   "avg": "#b77488"
+  },
+  {
+   "id": "mfog_gir",
+   "name": "MARGOT FOG ジラソーレ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "イエロー系"
+   ],
+   "file": "assets/textures/mfog_gir.jpg",
+   "px": 384,
+   "avg": "#ae916a"
+  },
+  {
+   "id": "mfog_nat",
+   "name": "MARGOT FOG ナチュラーレ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/mfog_nat.jpg",
+   "px": 384,
+   "avg": "#d0b29f"
+  },
+  {
+   "id": "mfog_nav",
+   "name": "MARGOT FOG ネイビー",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "file": "assets/textures/mfog_nav.jpg",
+   "px": 384,
+   "avg": "#96979e"
+  },
+  {
+   "id": "mfog_ner",
+   "name": "MARGOT FOG ネロ（黒）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "file": "assets/textures/mfog_ner.jpg",
+   "px": 384,
+   "avg": "#78797b"
+  },
+  {
+   "id": "mfog_top",
+   "name": "MARGOT FOG トッポ（灰）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "file": "assets/textures/mfog_top.jpg",
+   "px": 384,
+   "avg": "#91908d"
+  },
+  {
+   "id": "mfog_tur",
+   "name": "MARGOT FOG トルケーゼ（青緑）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT FOG",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "file": "assets/textures/mfog_tur.jpg",
+   "px": 384,
+   "avg": "#7f8f93"
+  },
+  {
+   "id": "mg_all",
+   "name": "MARGOT アローロ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "file": "assets/textures/mg_all.jpg",
+   "px": 384,
+   "avg": "#363f2f"
+  },
+  {
+   "id": "mg_bos",
+   "name": "MARGOT ボスコ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/mg_bos.jpg",
+   "px": 384,
+   "avg": "#544427"
+  },
+  {
+   "id": "mg_brn",
+   "name": "MARGOT ブラウン",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/mg_brn.jpg",
+   "px": 384,
+   "avg": "#95512b"
+  },
+  {
+   "id": "mg_bur",
+   "name": "MARGOT バーガンディ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/mg_bur.jpg",
+   "px": 384,
+   "avg": "#7f3e33"
+  },
+  {
+   "id": "mg_cas",
+   "name": "MARGOT カスターニャ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/mg_cas.jpg",
+   "px": 384,
+   "avg": "#472d28"
+  },
+  {
+   "id": "mg_dkb",
+   "name": "MARGOT ダークブラウン",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/mg_dkb.jpg",
+   "px": 384,
+   "avg": "#6b3e2e"
+  },
+  {
+   "id": "mg_fie",
+   "name": "MARGOT フィエーノ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/mg_fie.jpg",
+   "px": 384,
+   "avg": "#a95829"
+  },
+  {
+   "id": "mg_fra",
+   "name": "MARGOT フラゴラ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/mg_fra.jpg",
+   "px": 384,
+   "avg": "#ed3120"
+  },
+  {
+   "id": "mg_fux",
+   "name": "MARGOT フクシア",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/mg_fux.jpg",
+   "px": 384,
+   "avg": "#d12f5e"
+  },
+  {
+   "id": "mg_gir",
+   "name": "MARGOT ジラソーレ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "イエロー系"
+   ],
+   "file": "assets/textures/mg_gir.jpg",
+   "px": 384,
+   "avg": "#f0aa2c"
+  },
+  {
+   "id": "mg_lil",
+   "name": "MARGOT リラ（薄紫）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/mg_lil.jpg",
+   "px": 384,
+   "avg": "#b75272"
+  },
+  {
+   "id": "mg_man",
+   "name": "MARGOT マンダリーノ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "イエロー系"
+   ],
+   "file": "assets/textures/mg_man.jpg",
+   "px": 384,
+   "avg": "#ec672a"
+  },
+  {
+   "id": "mg_men",
+   "name": "MARGOT メンタ（薄緑）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "file": "assets/textures/mg_men.jpg",
+   "px": 384,
+   "avg": "#53886d"
+  },
+  {
+   "id": "mg_nat",
+   "name": "MARGOT ナチュラーレ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/mg_nat.jpg",
+   "px": 384,
+   "avg": "#d6a071"
+  },
+  {
+   "id": "mg_nav",
+   "name": "MARGOT ネイビー",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "file": "assets/textures/mg_nav.jpg",
+   "px": 384,
+   "avg": "#444f64"
+  },
+  {
+   "id": "mg_ner",
+   "name": "MARGOT ネロ（黒）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "file": "assets/textures/mg_ner.jpg",
+   "px": 384,
+   "avg": "#1f1f1f"
+  },
+  {
+   "id": "mg_olm",
+   "name": "MARGOT オルモ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "グリーン系"
+   ],
+   "file": "assets/textures/mg_olm.jpg",
+   "px": 384,
+   "avg": "#b46527"
+  },
+  {
+   "id": "mg_ros",
+   "name": "MARGOT ローサ（桃）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "レッド系"
+   ],
+   "file": "assets/textures/mg_ros.jpg",
+   "px": 384,
+   "avg": "#b1564a"
+  },
+  {
+   "id": "mg_top",
+   "name": "MARGOT トッポ（灰）",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ダーク系"
+   ],
+   "file": "assets/textures/mg_top.jpg",
+   "px": 384,
+   "avg": "#8d817c"
+  },
+  {
+   "id": "mg_tur",
+   "name": "MARGOT トルケーゼ",
+   "sub": "Virgilio / 植物タンニン鞣し",
+   "tags": [
+    "MARGOT",
+    "タンニン鞣し",
+    "Virgilio",
+    "ブルー系"
+   ],
+   "file": "assets/textures/mg_tur.jpg",
+   "px": 384,
+   "avg": "#026879"
+  },
+  {
+   "id": "numer_25",
+   "name": "生成りヌメ革 2.5-3.0mm",
+   "sub": "国産 / 植物タンニン鞣し・素上げ",
+   "tags": [
+    "国産",
+    "ヌメ革",
+    "タンニン鞣し",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/numer_25.jpg",
+   "px": 384,
+   "avg": "#b4987c"
+  },
+  {
+   "id": "ska01",
+   "name": "ALASKA ナチュラル",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/ska01.jpg",
+   "px": 384,
+   "avg": "#d3b193"
+  },
+  {
+   "id": "ska05",
+   "name": "ALASKA ビリジアン",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "グリーン系"
+   ],
+   "file": "assets/textures/ska05.jpg",
+   "px": 384,
+   "avg": "#79a09d"
+  },
+  {
+   "id": "ska06",
+   "name": "ALASKA ラズベリー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "レッド系"
+   ],
+   "file": "assets/textures/ska06.jpg",
+   "px": 384,
+   "avg": "#aa5f65"
+  },
+  {
+   "id": "ska08",
+   "name": "ALASKA ブラウン",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/ska08.jpg",
+   "px": 384,
+   "avg": "#997052"
+  },
+  {
+   "id": "ska10",
+   "name": "ALASKA チョコ",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブラウン系"
+   ],
+   "file": "assets/textures/ska10.jpg",
+   "px": 384,
+   "avg": "#63524a"
+  },
+  {
+   "id": "ska12",
+   "name": "ALASKA ブラック",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ダーク系"
+   ],
+   "file": "assets/textures/ska12.jpg",
+   "px": 384,
+   "avg": "#575a63"
+  },
+  {
+   "id": "ska13",
+   "name": "ALASKA グレー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ダーク系"
+   ],
+   "file": "assets/textures/ska13.jpg",
+   "px": 384,
+   "avg": "#65615a"
+  },
+  {
+   "id": "ska16",
+   "name": "ALASKA ブルー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブルー系"
+   ],
+   "file": "assets/textures/ska16.jpg",
+   "px": 384,
+   "avg": "#839bc7"
+  },
+  {
+   "id": "ska31",
+   "name": "ALASKA オレンジ",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "イエロー系"
+   ],
+   "file": "assets/textures/ska31.jpg",
+   "px": 384,
+   "avg": "#f5884e"
+  },
+  {
+   "id": "ska33",
+   "name": "ALASKA レッド",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "レッド系"
+   ],
+   "file": "assets/textures/ska33.jpg",
+   "px": 384,
+   "avg": "#e07061"
+  },
+  {
+   "id": "ska34",
+   "name": "ALASKA ターコイズ",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブルー系"
+   ],
+   "file": "assets/textures/ska34.jpg",
+   "px": 384,
+   "avg": "#44666f"
+  },
+  {
+   "id": "ska40",
+   "name": "ALASKA イエロー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "イエロー系"
+   ],
+   "file": "assets/textures/ska40.jpg",
+   "px": 384,
+   "avg": "#eebe61"
+  },
+  {
+   "id": "ska41",
+   "name": "ALASKA ピンク",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "レッド系"
+   ],
+   "file": "assets/textures/ska41.jpg",
+   "px": 384,
+   "avg": "#c299a3"
+  },
+  {
+   "id": "ska42",
+   "name": "ALASKA アイボリー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ナチュラル系"
+   ],
+   "file": "assets/textures/ska42.jpg",
+   "px": 384,
+   "avg": "#beb8b3"
+  },
+  {
+   "id": "ska43",
+   "name": "ALASKA グリーン",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "グリーン系"
+   ],
+   "file": "assets/textures/ska43.jpg",
+   "px": 384,
+   "avg": "#63836c"
+  },
+  {
+   "id": "ska46",
+   "name": "ALASKA アイスブルー",
+   "sub": "La Perla Azzurra / ロウ引き",
+   "tags": [
+    "ALASKA",
+    "タンニン鞣し",
+    "ロウ引き",
+    "ブルー系"
+   ],
+   "file": "assets/textures/ska46.jpg",
+   "px": 384,
+   "avg": "#7fafb5"
+  }
+ ]
+}

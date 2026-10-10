@@ -40,6 +40,23 @@ export function routeBreaks(route) {
   if (route.items) { let s = 0; for (let i = 0; i < route.items.length - 1; i++) { s += arcLength(route.items[i].shape); const a = route.items[i].shape.type, b = route.items[i + 1].shape.type; if ((a === 'line') !== (b === 'line')) out.add(+(route.reversed ? len - s : s).toFixed(6)); } }
   return [...out].sort((a, b) => a - b);
 }
+/** 片方の経路の穴（経路に沿った距離 sList）を、もう片方の経路の距離へ対応づける（駒合わせで、片方の目打ちの数をもう片方へ写すとき）。
+ *  向き：始点・終点が近い側どうしを対応させる（向き合う線が逆向きに引かれていれば reversed＝true）。
+ *  位置：曲がり角（routeBreaks）の数が同じなら角ごとの区間どうしを比例で、違えば全体の長さの比で対応させる。戻り値の s は、写し先の経路に沿った距離。 */
+export function mapHoleDistances(routeSrc, routeDst, sList) {
+  const lenS = arcLength(routeSrc), lenD = arcLength(routeDst);
+  const a0 = pointAtLength(routeSrc, 0), a1 = pointAtLength(routeSrc, lenS), b0 = pointAtLength(routeDst, 0), b1 = pointAtLength(routeDst, lenD);
+  const reversed = distance(a0, b1) + distance(a1, b0) < distance(a0, b0) + distance(a1, b1) - 1e-9;
+  let bS = routeBreaks(routeSrc), bD = routeBreaks(routeDst);
+  if (bS.length !== bD.length) { bS = []; bD = []; }
+  const edgesS = [0, ...bS, lenS], edgesU = [0, ...(reversed ? bD.map(x => lenD - x).reverse() : bD), lenD]; /* U＝写し先を、対応させる向きに測った距離 */
+  const mapOne = s => {
+    let i = 0; while (i + 2 < edgesS.length && s > edgesS[i + 1] + DEPS) i++;
+    const span = edgesS[i + 1] - edgesS[i], u = span > DEPS ? edgesU[i] + (s - edgesS[i]) * (edgesU[i + 1] - edgesU[i]) / span : edgesU[i];
+    return Math.max(0, Math.min(lenD, u));
+  };
+  return { reversed, s: sList.map(s => { const u = mapOne(s); return reversed ? lenD - u : u; }) };
+}
 /** 駒合わせ：2 経路（resolvePath 済み）を区間ごとに合わせ、両側の穴位置と対応表を返す。区間数が合わないときは 1 区間として扱う。 */
 export function matchRoutes(routeA, routeB, pitch, opts = {}) {
   const lenA = arcLength(routeA), lenB = arcLength(routeB);

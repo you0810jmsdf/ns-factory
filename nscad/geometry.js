@@ -300,6 +300,8 @@ export function validateDoc(d) {
   if (!d.shapes.every(s => s.type !== 'fold' || (nums(s, ['x1', 'y1', 'x2', 'y2', 'angleDeg']) && typeof s.inner === 'boolean' && (s.partId === null || s.partId === undefined || partIds.has(s.partId))))) return false;
   if (!d.seams.every(m => obj(m.a) && obj(m.b) && ['butt', 'overlap', 'felled'].includes(m.style) && typeof m.reversed === 'boolean' && [m.a, m.b].every(side => d.paths.some(p => p.id === side.pathId) && nums(side, ['from', 'to']) && side.from >= 0 && side.to >= side.from))) return false;
   if (!d.layers.every(l => typeof l.name === 'string' && typeof l.visible === 'boolean' && typeof l.locked === 'boolean')) return false;
+  const texOk = x => x.texture === undefined || x.texture === null || (typeof x.texture === 'string' && x.texture.length > 0 && x.texture.length <= 40); /* 革の質感（テクスチャ）の id。部品にも図形にも付けられる（図形の指定が優先） */
+  if (!d.parts.every(texOk) || !d.shapes.every(texOk) || (d.textureMm !== undefined && d.textureMm !== null && !(Number.isFinite(d.textureMm) && d.textureMm > 0))) return false;
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
     if (!layers.has(s.layer)) return false;

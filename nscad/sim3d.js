@@ -35,7 +35,7 @@ export function splitPolygon(pts, a, b) {
   return [clean(pos).length >= 3 ? clean(pos) : [], clean(neg).length >= 3 ? clean(neg) : []];
 }
 /** 文書から板の配列を作る。部品（parts）の閉図形ごとに 1 枚、折り線で分割して子板にする。各板 {id, partId, polygon, thickness, foldId, parentId, color}。 */
-export function buildPanels(doc, { tolerance = 0.2 } = {}) {
+export function buildPanels(doc, { tolerance = 0.2, colorOf = p => p.color || null } = {}) { /* colorOf：部品の板の色（革の質感が付いた部品は平均色を返す） */
   const panels = [];
   const parts = doc.parts?.length ? [...doc.parts].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [{ id: '_all', name: 'all', thickness: 1.5, shapeIds: doc.shapes.filter(s => (s.type === 'polyline' || s.type === 'path' || s.type === 'circle') && (s.closed || s.type === 'circle')).map(s => s.id), color: null }];
   // 重ね順：下の部品の厚みの合計だけ上に積む（z0 = 表面の高さ）
@@ -61,7 +61,7 @@ export function buildPanels(doc, { tolerance = 0.2 } = {}) {
         pieces = next;
       }
       pieces.forEach((p, i) => { p.id = `${s.id}#${i}`; });
-      for (const p of pieces) panels.push({ id: p.id, partId: part.id, shapeId: s.id, polygon: p.polygon, thickness: part.thickness, z0, foldId: p.foldId, parentId: p.parentRef ? p.parentRef.id : null, side: p.side, color: part.color || null });
+      for (const p of pieces) panels.push({ id: p.id, partId: part.id, shapeId: s.id, polygon: p.polygon, thickness: part.thickness, z0, foldId: p.foldId, parentId: p.parentRef ? p.parentRef.id : null, side: p.side, color: colorOf(part) });
     }
   }
   // 金具（hw 付きの図形）：中心を含む板に乗せ、折りに追従させる。高さは solid.z。

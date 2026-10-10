@@ -46,27 +46,34 @@ export function holeToSvg(h, doc, color = '#e00000') {
   return a.kind === 'slit' ? `<line x1="${pts[0].split(',')[0]}" y1="${pts[0].split(',')[1]}" x2="${pts[1].split(',')[0]}" y2="${pts[1].split(',')[1]}" stroke="${color}"/>` : `<polygon points="${pts.join(' ')}" fill="none" stroke="${color}"/>`;
 }
 /** 文書から SVG 文字列を返す。1 ユーザー単位＝1mm、width/height は mm、レイヤーごとに <g id>。線は黒 strokeMm、穴は赤。 */
-export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif' } = {}) {
+/** textures：革の質感 { id: { avg: '#rrggbb', href: 'data:image/jpeg;base64,…'（無ければ平均色で塗る） } }、textureMm：1枚の画像が実物で何 mm 四方か。fill のときだけ使う。 */
+export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30 } = {}) {
   const shapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible));
   const holes = includeHoles ? holesOnShapes(doc, shapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
   const fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const x0 = b.minX - marginMm, y0 = b.minY - marginMm, w = b.maxX - b.minX + 2 * marginMm, h = b.maxY - b.minY + 2 * marginMm;
+  const usedTex = new Set(); /* 画像を埋め込んだ質感の id（<defs> に pattern を作る） */
   const groups = doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => {
     const body = shapes.filter(s => s.layer === l.id).map(s => {
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(fontFamily)}" fill="#000" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `<path d="M${f(d.a.x)} ${f(d.a.y)}L${f(d.b.x)} ${f(d.b.y)}${d.ext.map(([p, q]) => `M${f(p.x)} ${f(p.y)}L${f(q.x)} ${f(q.y)}`).join('')}"/><text x="${f(d.textPos.x)}" y="${f(d.textPos.y)}" font-size="2.5" font-family="${esc(fontFamily)}" text-anchor="middle" fill="#000" stroke="none" transform="rotate(${f(d.angleDeg)} ${f(d.textPos.x)} ${f(d.textPos.y)})">${f(d.value)}</text>`; }
-      const d = shapeToSvgD(s); const partColor = fill ? safeColor((doc.parts || []).find(p => p.shapeIds.includes(s.id))?.color) : null;
+      const d = shapeToSvgD(s), part = fill ? (doc.parts || []).find(p => p.shapeIds.includes(s.id)) : null;
+      const texId = fill ? (s.texture || part?.texture || null) : null, tex = texId && textures ? textures[texId] : null; /* 革の質感：図形自身の指定が優先、無ければ部品の指定 */
+      if (tex?.href) usedTex.add(texId);
+      const fillValue = tex?.href ? `url(#tex-${safeId(texId)})` : fill ? safeColor(tex ? tex.avg : part?.color) : null;
       const strokeAttr = s.color && SHAPE_COLOR_HEX[s.color] ? ` stroke="${SHAPE_COLOR_HEX[s.color]}"` : '';
       const dash = dashArrayMm(s.lineStyle, strokeMm), dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
-      return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${partColor}"` : ''}/>` : '';
+      return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}/>` : '';
     }).join('');
     return `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
   }).join('');
   const threadHex = h => { const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
   const holeGroup = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h))).join('')}</g>` : '';
   const inner = `<g fill="none" stroke="#000" stroke-width="${f(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${groups}${holeGroup}</g>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w * fx)}mm" height="${f(h * fy)}mm" viewBox="${f(x0 * fx)} ${f(y0 * fy)} ${f(w * fx)} ${f(h * fy)}">${fx === 1 && fy === 1 ? inner : `<g transform="scale(${f(fx)} ${f(fy)})">${inner}</g>`}</svg>`;
+  const mm = textureMm > 0 ? textureMm : 30; /* 質感の繰り返し模様：1 ユーザー単位＝1mm なので、画像 1 枚を mm 四方に貼る */
+  const defs = usedTex.size ? `<defs>${[...usedTex].map(id => `<pattern id="tex-${safeId(id)}" patternUnits="userSpaceOnUse" width="${f(mm)}" height="${f(mm)}"><image href="${esc(textures[id].href)}" x="0" y="0" width="${f(mm)}" height="${f(mm)}" preserveAspectRatio="none"/></pattern>`).join('')}</defs>` : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w * fx)}mm" height="${f(h * fy)}mm" viewBox="${f(x0 * fx)} ${f(y0 * fy)} ${f(w * fx)} ${f(h * fy)}">${defs}${fx === 1 && fy === 1 ? inner : `<g transform="scale(${f(fx)} ${f(fy)})">${inner}</g>`}</svg>`;
 }
 /** 校正係数：期待値 ÷ 実測値。実測が正でなければ null。 */
 export function calibrationFactor(expectedMm, measuredMm) { return Number.isFinite(expectedMm) && Number.isFinite(measuredMm) && expectedMm > 0 && measuredMm > 0 ? expectedMm / measuredMm : null; }
