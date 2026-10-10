@@ -394,6 +394,18 @@ export function pathSegments(s) {
 }
 /** 節点を作る。ハンドル省略時は節点に一致（角）。 */
 export function pathNode(x, y, inH = null, outH = null, smooth = !!(inH || outH)) { return { x, y, inX: inH ? inH.x : x, inY: inH ? inH.y : y, outX: outH ? outH.x : x, outY: outH ? outH.y : y, smooth }; }
+/** 通る点の列から、すべての点を通る滑らかなパスの節点を返す（Catmull-Rom 風：内側の点の接線は両隣を結ぶ向き、両端は隣へ向かう）。
+ *  重なった点（距離が EPS 以下）は除く。点が2つ未満なら null。 */
+export function smoothPathNodes(points) {
+  const pts = points.filter((p, i) => !i || distance(p, points[i - 1]) > 1e-9); if (pts.length < 2) return null;
+  return pts.map((p, i) => {
+    const prev = pts[i - 1], next = pts[i + 1];
+    if (!prev) return pathNode(p.x, p.y, null, { x: p.x + (next.x - p.x) / 3, y: p.y + (next.y - p.y) / 3 }, true);
+    if (!next) return pathNode(p.x, p.y, { x: p.x + (prev.x - p.x) / 3, y: p.y + (prev.y - p.y) / 3 }, null, true);
+    const tx = (next.x - prev.x) / 6, ty = (next.y - prev.y) / 6; /* 接線 (next-prev)/2 の 1/3 */
+    return pathNode(p.x, p.y, { x: p.x - tx, y: p.y - ty }, { x: p.x + tx, y: p.y + ty }, true);
+  });
+}
 /** line／bezier／polyline／path 図形から同じ形の path 図形を返す。他は null。 */
 export function toPath(s) {
   if (s.type === 'path') return { ...s, nodes: s.nodes.map(n => ({ ...n })) };
