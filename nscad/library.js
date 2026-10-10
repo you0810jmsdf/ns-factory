@@ -3,6 +3,12 @@ import { evalExpr } from './hardware.js';
 import { bboxOfDoc, resolvePath, projectOnPath, arcLength } from './geometry.js';
 import { makeNextId } from './interop.js';
 
+/** 寸法変数の範囲（項目の varLimits）から外れた変数を返す。例：リフィルの穴の位置 E は 3〜9mm。範囲の無い変数は何でもよい。戻り値 [{key, min, max}]。 */
+export function varOutOfRange(item, vars = {}) {
+  const v = { ...(item?.vars || {}), ...vars }, out = [];
+  for (const [key, lim] of Object.entries(item?.varLimits || {})) { const x = Number(v[key]); if (!Number.isFinite(x) || x < lim[0] - 1e-9 || x > lim[1] + 1e-9) out.push({ key, min: lim[0], max: lim[1] }); }
+  return out;
+}
 /** 寸法変数の入力欄の刻み（mm）。項目が varSteps で指定した変数はその刻み、無ければ 0.5。 */
 export function varStep(item, key) { const s = item?.varSteps?.[key]; return Number.isFinite(s) && s > 0 ? s : 0.5; }
 export const CLIP_PREFIX = 'nscad-clip:';
