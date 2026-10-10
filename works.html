@@ -80,23 +80,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       border-bottom: 1px solid var(--line);
     }
     .hero-inner { max-width: 1080px; margin: 0 auto; }
-    .hero-inner--qr {
-      display: flex;
-      gap: 32px;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
     .hero-text { flex: 1 1 480px; min-width: 0; }
-    .hero-qr {
-      flex: 0 0 auto;
-      text-align: center;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px 14px 10px;
-      box-shadow: 0 4px 18px rgba(0,0,0,.04);
+    .qr-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(20,20,20,.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 500;
+      padding: 20px;
     }
+    .qr-modal-overlay[hidden] { display: none; }
+    .qr-modal-box {
+      position: relative;
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px 22px 18px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    }
+    .qr-modal-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,.06);
+      font-size: 17px;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--ink);
+    }
+    .qr-modal-close:hover { background: rgba(0,0,0,.12); }
     .hero-qr-img { width: 160px; height: 160px; margin: 0 auto; }
     .hero-qr-img img,
     .hero-qr-img canvas { display: block; width: 160px !important; height: 160px !important; }
@@ -1283,8 +1301,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       .nav { gap: 10px 12px; flex-wrap: wrap; }
       .nav-spacer { flex-basis: 100%; height: 0; }
       .hero { padding: 46px 18px 28px; }
-      .hero-inner--qr { gap: 18px; }
-      .hero-qr { margin: 4px auto 0; padding: 12px 12px 8px; }
       .hero-qr-img,
       .hero-qr-img img,
       .hero-qr-img canvas { width: 140px !important; height: 140px !important; }
@@ -1313,21 +1329,26 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <a href="links.html" class="nav-link" data-i18n="nav.links">リンク集</a>
     <a href="register.html" class="nav-link" id="nav-register" hidden>📦 商品登録</a>
     <a href="size-sort.html" class="nav-link" id="nav-size-sort" hidden>📏 サイズ仕分け</a>
+    <button type="button" id="nsf-qr-toggle" class="nav-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;" data-i18n="nav.qr">📱 QRコード表示</button>
     <button type="button" id="nsf-admin-toggle" class="nav-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;">🔒 管理者モード</button>
     <button type="button" id="nsfLangToggle" class="nav-link" style="border:1px solid currentColor;border-radius:9999px;padding:4px 12px;background:none;cursor:pointer;font:inherit;">EN</button>
   </nav>
 
+  <div id="qrModalOverlay" class="qr-modal-overlay" hidden>
+    <div class="qr-modal-box" role="dialog" aria-modal="true" aria-label="このページのQRコード">
+      <button type="button" class="qr-modal-close" id="qrModalClose" aria-label="閉じる">×</button>
+      <div id="page-qr" class="hero-qr-img"></div>
+      <p class="hero-qr-caption" data-i18n="hero.qr" data-i18n-as-html>スマホで読み取って<br>このページを見る</p>
+    </div>
+  </div>
+
   <header class="hero">
-    <div class="hero-inner hero-inner--qr">
+    <div class="hero-inner">
       <div class="hero-text">
         <p class="eyebrow">Works</p>
         <h1 data-i18n="hero.title">作品集</h1>
         <p class="lead" data-i18n="hero.lead">システム手帳を中心に、これまで制作した革製品をまとめています。気になる作品は、写真を開いて細部までご覧ください。</p>
       </div>
-      <aside class="hero-qr" aria-label="このページのQRコード">
-        <div id="page-qr" class="hero-qr-img"></div>
-        <p class="hero-qr-caption" data-i18n="hero.qr" data-i18n-as-html>スマホで読み取って<br>このページを見る</p>
-      </aside>
     </div>
   </header>
 
@@ -1604,6 +1625,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'card.emptyList': 'No items are available for card purchase right now. You can ask about any item from its page.',
     'nav.jhcs': 'JHCS workshops',
     'nav.links': 'Links',
+    'nav.qr': '📱 Show QR code',
     'hero.title': 'Gallery',
     'hero.lead': 'A collection of the leather goods we have made so far, centered on ring planners. Open any piece to see it in detail.',
     'hero.qr': 'Scan with your phone<br>to open this page',
@@ -3475,8 +3497,26 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         target.dataset.rendered = '1';
         target.title = url;
       }
-      if (document.readyState === 'complete') renderPageQr();
-      else window.addEventListener('load', renderPageQr);
+      var toggle = document.getElementById('nsf-qr-toggle');
+      var overlay = document.getElementById('qrModalOverlay');
+      var closeBtn = document.getElementById('qrModalClose');
+      function openQrModal() {
+        if (!overlay) return;
+        renderPageQr();
+        overlay.hidden = false;
+      }
+      function closeQrModal() {
+        if (!overlay) return;
+        overlay.hidden = true;
+      }
+      if (toggle) toggle.addEventListener('click', openQrModal);
+      if (closeBtn) closeBtn.addEventListener('click', closeQrModal);
+      if (overlay) overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeQrModal();
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && overlay && !overlay.hidden) closeQrModal();
+      });
     })();
   </script>
 <script src="assets/access-counter.js"></script>
