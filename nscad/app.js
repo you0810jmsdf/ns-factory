@@ -3,7 +3,7 @@ import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibr
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
-import { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } from './threeview.js';
+import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } from './threeview.js';
 import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
@@ -188,6 +188,51 @@ function ensureSheetSet() {
   switchTab(cur); renderTabs();
 }
 function switchSheet(role) { const tb = quadSheets()[role]; if (!tb) return false; const i = tabs.indexOf(tb); if (i !== activeTab) switchTab(i); return true; }
+/** 図形（と、その図形だけで成り立つ経路・穴）を紙 src から紙 dst へ移す。座標は (dx, dy) だけずらす。id は移し先で付け直す。下絵は移さない。移した図形の数を返す */
+function transferShapes(src, dst, ids, dx, dy) {
+  const idSet = new Set(ids); if (!idSet.size) return 0;
+  const layerOk = l => dst.layers.some(x => x.id === l) ? l : (dst.layers[0]?.id || 'pattern'), shapeMap = new Map(), pathMap = new Map();
+  for (const s of src.shapes.filter(s => idSet.has(s.id) && s.type !== 'image')) { const id = freshId(dst.shapes, 's'); shapeMap.set(s.id, id); const moved = { ...translate(s, dx, dy), id, layer: layerOk(s.layer) }; if (moved.type === 'fold') moved.partId = null; dst.shapes.push(moved); }
+  for (const p of src.paths.filter(p => p.shapeIds.length && p.shapeIds.every(i => shapeMap.has(i)))) { const id = freshId(dst.paths, 'p'); pathMap.set(p.id, id); dst.paths.push({ ...p, id, shapeIds: p.shapeIds.map(i => shapeMap.get(i)) }); }
+  for (const h of src.holes.filter(h => pathMap.has(h.pathId))) dst.holes.push({ ...translate(h, dx, dy), id: freshId(dst.holes, 'h'), pathId: pathMap.get(h.pathId) });
+  src.seams = (src.seams || []).filter(m => !pathMap.has(m.a.pathId) && !pathMap.has(m.b.pathId));
+  src.holes = src.holes.filter(h => !pathMap.has(h.pathId)); src.paths = src.paths.filter(p => !pathMap.has(p.id)); src.shapes = src.shapes.filter(s => !shapeMap.has(s.id));
+  for (const pt of src.parts || []) pt.shapeIds = pt.shapeIds.filter(i => !shapeMap.has(i));
+  return shapeMap.size;
+}
+/** ほかの紙のタブに「元に戻す」の記録を積む（quadFollowMove と同じ） */
+function pushTabUndo(tb, before) { tb.undo = tb.undo || []; tb.undo.push(before); if (tb.undo.length > 100) tb.undo.shift(); tb.redo = []; tb.dirty = true; }
+/** 4分割 → 枠方式：上の紙・右の紙の図形を、正面の紙の上の枠・右の枠へ移す（手前の線＝枠の下の辺／左の辺に合わせる）。正面の図形が正面の枠の外にあれば枠の中へずらす（上・右も同じだけ）。移した数を返す */
+function quadToFrames() {
+  const sheets = quadSheets(); if (!sheets.front || (!sheets.top && !sheets.side)) return 0;
+  switchSheet('front'); /* 枠方式は正面の紙 1 枚で見る */
+  const base = threeViewBase(), bottomOfTop = base.top.y + base.top.h, leftOfSide = base.side.x, margin = THREE_VIEW_MARGIN;
+  const own = doc.shapes.filter(s => visible(s) && s.type !== 'image'); let dx = 0, dy = 0;
+  if (own.length) { const b = bboxOfDoc({ shapes: own, holes: [] }); if (b && threeViewAreaAt({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }, base) !== 'front') { dx = base.front.x + margin - b.minX; dy = base.front.y + margin - b.minY; } }
+  let moved = 0;
+  commit(() => {
+    if (dx || dy) { doc.shapes = doc.shapes.map(s => s.type === 'image' ? s : translate(s, dx, dy)); doc.holes = doc.holes.map(h => translate(h, dx, dy)); }
+    for (const [role, ox, oy] of [['top', dx, bottomOfTop], ['side', leftOfSide, dy]]) {
+      const tb = sheets[role]; if (!tb) continue; const src = tb.doc, before = JSON.stringify(src);
+      const n = transferShapes(src, doc, src.shapes.map(s => s.id), ox, oy); if (n) { pushTabUndo(tb, before); moved += n; }
+    }
+  });
+  rebuildThreeViewMarks(); renderTabs(); return moved;
+}
+/** 枠方式 → 4分割：正面の紙の上の枠・右の枠にある図形を、上の紙・右の紙へ移す（手前の線を 0 に）。紙は作ってから呼ぶ。移した数を返す */
+function framesToQuad() {
+  const sheets = quadSheets(); if (!sheets.top && !sheets.side) return 0;
+  const layout = threeViewLayout, bottomOfTop = layout.top.y + layout.top.h, leftOfSide = layout.side.x, byArea = { top: [], side: [] };
+  for (const s of doc.shapes) { if (s.type === 'image') continue; const a = threeViewShapeArea(s, layout); if (a === 'top' || a === 'side') byArea[a].push(s.id); }
+  let moved = 0;
+  commit(() => {
+    for (const [role, ox, oy] of [['top', 0, -bottomOfTop], ['side', -leftOfSide, 0]]) {
+      const tb = sheets[role], ids = byArea[role]; if (!tb || !ids.length || tb === tabs[activeTab]) continue; const before = JSON.stringify(tb.doc);
+      const n = transferShapes(doc, tb.doc, ids, ox, oy); if (n) { pushTabUndo(tb, before); moved += n; }
+    }
+  });
+  renderTabs(); return moved;
+}
 /** 3 枚の紙から「合わせたい位置」と立体を作り直す（図形が変わるたび・rebuildSnaps から）。 */
 function rebuildQuad() {
   if (!quadOn()) { quadMarksCache = null; quadSolidCache = null; return; }
@@ -2016,6 +2061,7 @@ function commit(fn) {
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
+  $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
@@ -2259,6 +2305,18 @@ function anchor() {
   return null;
 }
 /** 対角の2点から矩形（閉じた折れ線・4点）。幅か高さが 0 なら null。 */
+/** 矩形の「幅・高さ」欄（mm）。どちらも 0 より大きい数のときだけ { w, h }。それ以外（空・0・不正）は null＝ドラッグで自由に描く。 */
+function rectSizeNow() { const w = Number($('rectW').value), h = Number($('rectH').value); return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0 ? { w, h } : null; }
+/** 幅・高さを指定した矩形。基準点 p を「左上の角」か「中心」にして、右下へ幅×高さぶん広げる。 */
+function rectBySizeAt(p) {
+  const z = rectSizeNow(); if (!z) return null; const c = $('rectAnchor').value === 'center', r4 = v => +v.toFixed(4), x = c ? p.x - z.w / 2 : p.x, y = c ? p.y - z.h / 2 : p.y;
+  return rectShape({ x: r4(x), y: r4(y) }, { x: r4(x + z.w), y: r4(y + z.h) });
+}
+/** 幅・高さが入っているときの矩形ツールのクリック：その位置に、指定した大きさの矩形を置く（続けて置ける）。 */
+function placeRectBySize(p) {
+  const rect = rectBySizeAt(p), z = rectSizeNow(); if (!rect) return;
+  cancel(); addShape(rect); lastPoint = p; $('hint').textContent = t('rectPlaced', { w: z.w, h: z.h });
+}
 function rectShape(a, b) {
   if (Math.abs(a.x - b.x) < 1e-6 || Math.abs(a.y - b.y) < 1e-6) return null;
   return { type: 'polyline', closed: true, points: [{ x: a.x, y: a.y }, { x: b.x, y: a.y }, { x: b.x, y: b.y }, { x: a.x, y: b.y }] };
@@ -2432,6 +2490,7 @@ function drawSheetBody(lo, hi) {
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
+  if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
   drawCircleReadout();
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
   if (stage?.kind === 'arc3') { const pv = stage.pts.length >= 2 ? arcThroughPoints(stage.pts[0], stage.pts[1], cursor) : null; strokeShape(pv || { type: 'line', x1: stage.pts[0].x, y1: stage.pts[0].y, x2: (stage.pts[1] || cursor).x, y2: (stage.pts[1] || cursor).y }, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
@@ -2507,6 +2566,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
   if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); lastPoint = cursor; } return; }
+  if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { bezierClick(cursor); return; }
   if (mode === 'ruler') {
     if (stage?.kind !== 'ruler') { ruler = null; stage = { kind: 'ruler', a: cursor }; $('hint').textContent = t('rulerSecond'); }
@@ -2666,8 +2726,8 @@ $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = 
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
 for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
-$('threeView').addEventListener('change', () => { if (threeViewOn() && quadOn()) $('quadView').checked = false; $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); });
-$('quadView').addEventListener('change', () => { if (quadOn()) { if ($('threeView').checked) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); } rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? t('quadOnHint') : t('hint.' + mode); });
+$('threeView').addEventListener('change', () => { let moved = 0; if (threeViewOn() && quadOn()) { $('quadView').checked = false; moved = quadToFrames(); } $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); if (moved) { draw(); $('hint').textContent = t('quadToFramesDone', { n: moved }); } });
+$('quadView').addEventListener('change', () => { let moved = 0; if (quadOn()) { const wasFrames = $('threeView').checked; if (wasFrames) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); if (wasFrames) moved = framesToQuad(); } rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? (moved ? t('framesToQuadDone', { n: moved }) + ' ' : '') + t('quadOnHint') : t('hint.' + mode); });
 $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewFrame').onclick = setThreeViewFrame; $('threeViewFrameReset').onclick = resetThreeViewFrame;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
