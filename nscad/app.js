@@ -44,6 +44,7 @@ let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
 let junctions = { joined: [], loose: [] }, blinkOn = true; /* 交点の表示：結合＝赤い点／未結合＝赤い点滅 */
+let magnetCircle = []; /* 円の上下左右と斜め45度の8点（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
@@ -1698,21 +1699,26 @@ function drawRuler({ a, b }) {
 }
 /** 磁石の候補：端点（線・折れ線の頂点・円弧の両端・ベジェ両端・パス節点）と、円・円弧の中心。 */
 function magnetPointsOf(shapes) {
-  const ends = [], centers = [];
+  const ends = [], centers = [], circle = [];
   for (const s of shapes) {
     if (s.type === 'line') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
     else if (s.type === 'polyline') ends.push(...s.points.map(p => ({ x: p.x, y: p.y })));
     else if (s.type === 'bezier') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
     else if (s.type === 'path') ends.push(...s.nodes.map(n => ({ x: n.x, y: n.y })));
     else if (s.type === 'arc') { ends.push(circlePoint(s, s.startDeg), circlePoint(s, s.endDeg)); centers.push({ x: s.cx, y: s.cy }); }
-    else if (s.type === 'circle') centers.push({ x: s.cx, y: s.cy });
+    else if (s.type === 'circle') { centers.push({ x: s.cx, y: s.cy }); for (let k = 0; k < 8; k++) circle.push(circlePoint(s, k * 45)); }
   }
-  return { ends, centers };
+  return { ends, centers, circle };
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
 function magnetRadiusMm() { const px = Number($('snapDist').value); return Number.isFinite(px) && px > 0 ? px / scale : 0; }
 const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror'];
 /** 作図ツール中だけ自動で仮表示する中心点。 */
+/** ポインタの近く（画面で 40px 以内）にある円の 8 点。作図ツールのときだけ、磁石が有効（吸着距離が 1px 以上）のときだけ。 */
+function circleMarkPoints() {
+  if (!MAGNET_DRAW_MODES.includes(mode) || !(magnetRadiusMm() > 0)) return [];
+  const reach = 40 / scale; return magnetCircle.filter(c => distance(cursor, c) <= reach);
+}
 function centerMarkPoints() { return MAGNET_DRAW_MODES.includes(mode) ? magnetCenters : []; }
 /** 交点の印：端点どうしで接している点＝赤い点、途中で交差している点＝赤い点（点滅）。 */
 function drawJunctions() {
@@ -1723,16 +1729,17 @@ function drawJunctions() {
   ctx.restore();
 }
 function drawCenterMarks() {
-  const pts = centerMarkPoints(); if (!pts.length) return;
+  const pts = centerMarkPoints(), near = circleMarkPoints(); if (!pts.length && !near.length) return;
   ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(138,180,248,0.75)'; ctx.lineWidth = 1 / scale; ctx.beginPath();
   for (const c of pts) { ctx.moveTo(c.x - 4 / scale, c.y); ctx.lineTo(c.x + 4 / scale, c.y); ctx.moveTo(c.x, c.y - 4 / scale); ctx.lineTo(c.x, c.y + 4 / scale); }
+  for (const c of near) { const r = 4 / scale; ctx.moveTo(c.x - r, c.y); ctx.lineTo(c.x, c.y - r); ctx.lineTo(c.x + r, c.y); ctx.lineTo(c.x, c.y + r); ctx.closePath(); } /* 円の 8 点＝小さなひし形（中心の十字と区別） */
   ctx.stroke(); ctx.restore();
 }
 function rebuildSnaps() {
   rebuildThreeViewMarks();
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
   snapCache = shapes.flatMap(snapPoints);
-  const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
+  const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers; magnetCircle = magnet.circle;
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
@@ -1970,7 +1977,7 @@ function snapped(p, shift, anchor) {
   snap = null;
   let result = { ...p };
   const reach = magnetRadiusMm();
-  if (reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetCenters]) { const d = distance(p, c); if (d < near) { near = d; result = { ...c }; snap = c; } } }
+  if (reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetCenters, ...magnetCircle]) { const d = distance(p, c); if (d < near) { near = d; result = { ...c }; snap = c; } } }
   if ($('snap').checked && !snap) {
     let best = 9 / scale;
     for (const c of [...snapCache, ...(stage?.points || [])]) { const d = distance(p, c); if (d < best) { best = d; result = { ...c }; snap = c; } }
