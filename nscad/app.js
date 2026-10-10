@@ -12,6 +12,7 @@ import { docToAiJson, validateActions, estimateYen, roughTokens } from './ai_sch
 import { buildDoc, check, threadEstimate, defaultRecipe } from './autodesign.js';
 import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
 import { DATA_LEATHER_COLORS } from './data/leather-colors.js';
+import { DATA_TEXTURES } from './data/textures.js';
 import { createPlayer } from './tutorial.js';
 import { parseVoice, labelOf } from './voice.js';
 import { lccToDoc, styleSummary } from './lcc.js';
@@ -26,7 +27,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { foldAllowance, stackOffset, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -418,7 +419,7 @@ function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', Str
 const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD settings";
 const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
   'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcDir', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
-  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'seamStyle', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan',
+  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'seamStyle', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchTexA', 'patchTexB',
   'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
 /** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
 function captureSettings() {
@@ -743,10 +744,12 @@ function placeHoles(saved, route, points, tool) {
 function komaClick(p) {
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale); if (!hit) return;
   const state = routeForHit(hit); if (!state?.route) return;
-  if (stage?.kind !== 'koma') { stage = { kind: 'koma', a: state }; selected = new Set([hit.id]); $('hint').textContent = t('komaSecond'); draw(); return; }
+  if (stage?.kind !== 'koma') { const n = doc.holes.filter(h => h.pathId === state.saved.id).length; stage = { kind: 'koma', a: state }; selected = new Set([hit.id]); $('hint').textContent = n ? t('komaSecondFrom', { n }) : t('komaSecond'); draw(); return; }
   if (state.saved.shapeIds.join() === stage.a.saved.shapeIds.join()) return;
+  const holesOf = side => doc.holes.filter(h => h.pathId === side.saved.id), ha = holesOf(stage.a), hb = holesOf(state);
+  if (!!ha.length !== !!hb.length) { const [src, dst] = ha.length ? [stage.a, state] : [state, stage.a]; stage = null; komaCopy(src, dst, ha.length ? 'A' : 'B', ha.length ? 'B' : 'A'); return; } /* 片方だけ目打ちがある：それは残して、もう片方に同じ数を写す */
   const tool = stitchToolCurrent(); if (!tool) return;
-  const a = stage.a, b = state, opts = { prefer: $('komaPrefer').value, marginStart: Number($('offsetStart').value) || 0, marginEnd: Number($('offsetEnd').value) || 0, tolerancePct: Number($('patchTol').value) || 15 };
+  const a = stage.a, b = state, both = !!ha.length && !!hb.length, opts = { prefer: $('komaPrefer').value, marginStart: Number($('offsetStart').value) || 0, marginEnd: Number($('offsetEnd').value) || 0, tolerancePct: Number($('patchTol').value) || 15 };
   const result = matchRoutes(a.route, b.route, tool.pitch, opts); stage = null;
   if (!result.holesA.length) { $('hint').textContent = t('impossible'); draw(); return; }
   commit(() => {
@@ -755,7 +758,24 @@ function komaClick(p) {
     selected = new Set([hit.id, ...a.saved.shapeIds]);
   });
   pairLines = result.pairs.map(pr => [result.holesA[pr.a], result.holesB[pr.b]]);
-  $('hint').textContent = result.warn ? t('komaWarn', { n: result.holesA.length, pct: Math.max(...result.segments.map(s => s.diffPct)).toFixed(1) }) : t('komaDone', { n: result.holesA.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) });
+  $('hint').textContent = (result.warn ? t('komaWarn', { n: result.holesA.length, pct: Math.max(...result.segments.map(s => s.diffPct)).toFixed(1) }) : t('komaDone', { n: result.holesA.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) })) + (both ? ' ' + t('komaBoth') : '');
+  draw();
+}
+/** 駒合わせで、片方（src）の目打ちはそのまま残して、もう片方（dst）に同じ数を写す。位置は長さの割合（曲がり角の数が同じなら角ごと）、向きは線に対する傾きのまま。 */
+function komaCopy(src, dst, from, to) {
+  const holes = doc.holes.filter(h => h.pathId === src.saved.id).sort((p, q) => p.s - q.s), map = mapHoleDistances(src.route, dst.route, holes.map(h => h.s)), made = [];
+  commit(() => {
+    if (dst.fresh) { dst.saved.id = freshId(doc.paths, 'p'); doc.paths.push(dst.saved); dst.fresh = false; }
+    holes.forEach((h, i) => {
+      const q = pointAtLength(dst.route, map.s[i]), srcTan = pointAtLength(src.route, h.s).angleDeg, tan = q.angleDeg + (map.reversed ? 180 : 0), nh = { ...h, id: freshId(doc.holes, 'h'), pathId: dst.saved.id, s: map.s[i], x: q.x, y: q.y, angleDeg: ((h.angleDeg - srcTan + tan) % 360 + 360) % 360 };
+      doc.holes.push(nh); made.push(nh);
+    });
+    const tool = doc.tools.find(x => x.id === holes[0].toolId); dst.saved.segments = [{ from: 0, to: arcLength(dst.route), toolId: holes[0].toolId, pitch: tool?.pitch ?? 0, mode: 'variable' }];
+    selected = new Set([...dst.saved.shapeIds]);
+  });
+  pairLines = holes.map((h, i) => [{ x: h.x, y: h.y }, { x: made[i].x, y: made[i].y }]);
+  const gap = list => list.length > 1 ? (Math.max(...list.map(h => h.s)) - Math.min(...list.map(h => h.s))) / (list.length - 1) : 0; /* 穴の間隔の平均 */
+  $('hint').textContent = t('komaCopied', { from, to, n: holes.length, pa: gap(holes).toFixed(2), pb: gap(made).toFixed(2) });
   draw();
 }
 function makeKomaLine() {
@@ -839,7 +859,8 @@ function patchFillAt(p) {
   let stitched = null; const depth0 = undo.length;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
-    const ids = polys.map(points => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'polyline', closed: true, points }); return id; });
+    const texA = textureById($('patchTexA').value)?.id || null, texB = textureById($('patchTexB').value)?.id || null; /* 柄の2色に貼る革の質感（選んでいなければ貼らない） */
+    const ids = polys.map((points, i) => { const id = freshId(doc.shapes, 's'), tex = fill.pieces[i].parity ? texB : texA; doc.shapes.push({ id, layer, type: 'polyline', closed: true, points, ...(tex ? { texture: tex } : {}) }); return id; });
     selected = new Set(ids);
     if (tool && !doc.tools.some(x => x.id === tool.id)) doc.tools.push({ ...tool }); /* 穴が指す工具が無いと困るので、新しく作った工具は登録する */
     if (tool) { /* クロスステッチ：穴は境界の上ではなく、各ピースの縁から inset mm 内側の縫い線（黄色の点線）の上に打ち、境界をはさんで向かい合う穴を対にする */
@@ -876,7 +897,7 @@ function initDesign() {
   $('of-run').onclick = () => runOffset();
   $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
-  for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
+  for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   if (typeof setInterval === 'function') setInterval(() => { if (junctions.loose.length && $('showJunctions').checked && !(typeof document !== 'undefined' && document.hidden)) { blinkOn = !blinkOn; draw(); } else blinkOn = true; }, 500); /* 未結合の交点だけ点滅させる */
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
@@ -911,7 +932,7 @@ function download(name, text, type) {
 }
 function exportSvg() {
   const preset = $('exportPreset').value;
-  const svg = preset === 'beam' ? beamStudioSvg(doc, { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(doc, { includeHoles: $('outHoles').checked, fill: $('outFill').checked });
+  const svg = preset === 'beam' ? beamStudioSvg(doc, { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(doc, { includeHoles: $('outHoles').checked, fill: $('outFill').checked, textures: $('outFill').checked ? svgTextures() : null, textureMm: textureMm() });
   download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml'); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' });
 }
 function exportPdf() {
@@ -1063,7 +1084,7 @@ function orthographic(hw, hh, near, far) { return [1 / hw, 0, 0, 0, 0, 1 / hh, 0
 function scene3d() {
   if (quadOn()) { const solid = quadSolidCache; return { faces: solid ? solid.faces : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
   if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout); return { faces: solid ? solid.faces : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
-  const panels = buildPanels(doc), fl = folds();
+  const panels = buildPanels(doc, { colorOf: partPanelColor }), fl = folds();
   return { faces: applyFolds(panels, fl, foldT / 100), hits: collisions(panels, fl, foldT / 100), panels, solid: null };
 }
 /** 三面図の立体を見るときの最初のカメラ：立体の真ん中を向き、少し斜め上・右手前から。 */
@@ -1120,7 +1141,7 @@ function togglePlay() {
 function exportViews() { const { faces } = scene3d(); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: t('views') }); }
 /** 展開図：折り線で繋がる板を平面に戻し、縫い代付きの型紙を新しいタブに作る。 */
 function makeUnfold() {
-  const panels = buildPanels(doc), fl = folds(); if (!panels.length) { $('hint').textContent = t('noPanels'); return; }
+  const panels = buildPanels(doc, { colorOf: partPanelColor }), fl = folds(); if (!panels.length) { $('hint').textContent = t('noPanels'); return; }
   const u = unfold(panels, fl, { allowanceMm: Number($('unfoldAllowance').value) || 0 });
   newTab(t('unfoldTab'));
   cancel(); commit(() => { let n = 1; for (const piece of u.pieces) { doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'polyline', closed: true, points: piece.points }); } for (const f of u.folds) doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'fold', x1: f.x1, y1: f.y1, x2: f.x2, y2: f.y2, angleDeg: f.angleDeg, partId: null, inner: true }); doc.provenance = [{ source: 'unfold', at: new Date().toISOString() }]; });
@@ -1294,10 +1315,59 @@ function renderColors() {
   for (const p of (doc.palettes || [])) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; pal.appendChild(o); }
   if ((doc.palettes || []).some(p => p.id === keepP)) pal.value = keepP;
   const th = DATA_STITCH_COLORS.stitchColors.find(c => c.id === sel.value); $('threadPreview').style.background = th ? th.hex : 'transparent';
+  renderTextures();
 }
 function applyLeather(hex) {
   const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(id => okIds.has(id))); if (!parts.length) { $('hint').textContent = t('selectPartFirst'); return; }
   commit(() => { for (const p of parts) p.color = hex; }); $('hint').textContent = t('leatherApplied', { n: parts.length, hex });
+}
+/* ---- 革の質感（テクスチャ）：継ぎ目なしの革写真を部品やピースに繰り返し貼る（カラーシミュレーション） ---- */
+const TEXTURES = DATA_TEXTURES.textures, textureById = id => (id && TEXTURES.find(x => x.id === id)) || null, texImages = new Map();
+/** 1枚の画像が実物で何 mm 四方か（文書の設定・無ければ既定） */
+function textureMm() { const v = Number(doc.textureMm); return v > 0 ? v : DATA_TEXTURES.tileMm; }
+/** 部品の板の色（3D）：質感が付いていれば写真の平均色、無ければ革色 */
+const partPanelColor = p => (p.texture && textureById(p.texture)?.avg) || p.color || null;
+/** 図形に貼る質感の id：図形自身の指定が優先、無ければ部品の指定 */
+const textureOf = s => s.texture || doc.parts.find(p => p.shapeIds.includes(s.id))?.texture || null;
+/** 質感の画像。読み込み済みなら返し、初回は読み込みを始めて null（読み込めたら描き直す）。Image が無い環境（テスト）では null */
+function texImage(id) {
+  if (texImages.has(id)) { const img = texImages.get(id); return img && img.complete && img.naturalWidth ? img : null; }
+  const x = textureById(id); if (!x || typeof Image === 'undefined') { texImages.set(id, null); return null; }
+  const img = new Image(); img.onload = () => draw(); img.onerror = () => texImages.set(id, null); img.src = x.file; texImages.set(id, img); return null;
+}
+/** 画面の塗り：画像が読めていれば繰り返し模様（図面の mm に合わせて拡大縮小し、図面の原点に固定）、まだなら平均色 */
+function textureFill(id) {
+  const x = textureById(id), img = texImage(id), pat = img && typeof ctx.createPattern === 'function' ? ctx.createPattern(img, 'repeat') : null;
+  if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = scale * textureMm() / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, origin.x, origin.y])); return pat; }
+  return x ? x.avg : '#d9c7a0';
+}
+/** SVG 書き出し用：使っている質感の画像を埋め込む（読み込めていないものは平均色で塗られる） */
+function svgTextures() {
+  const used = new Set([...doc.parts.map(p => p.texture), ...doc.shapes.map(s => s.texture)].filter(Boolean)), out = {};
+  for (const id of used) {
+    const x = textureById(id); if (!x) continue; out[id] = { avg: x.avg };
+    const img = texImage(id); if (!img) continue;
+    try { const c = document.createElement('canvas'); if (typeof c.getContext !== 'function') continue; c.width = img.width; c.height = img.height; c.getContext('2d').drawImage(img, 0, 0); out[id].href = c.toDataURL('image/jpeg', 0.85); } catch { /* 画像を取り出せないときは平均色 */ }
+  }
+  return out;
+}
+function textureList() { const q = String($('textureSearch').value ?? '').toLowerCase(); return TEXTURES.filter(x => !q || (x.name + ' ' + (x.sub || '') + ' ' + (x.tags || []).join(' ') + ' ' + x.id).toLowerCase().includes(q)); }
+/** 色カードの質感の一覧・見本と、柄カードの質感A／Bの一覧を作り直す */
+function renderTextures() {
+  const fillSel = (sel, list) => { const keep = sel.value; sel.textContent = ''; const none = document.createElement('option'); none.value = ''; none.textContent = t('textureNone'); sel.appendChild(none); for (const x of list) { const o = document.createElement('option'); o.value = x.id; o.textContent = x.name; sel.appendChild(o); } sel.value = list.some(x => x.id === keep) ? keep : ''; };
+  fillSel($('textureSel'), textureList());
+  for (const id of ['patchTexA', 'patchTexB']) fillSel($(id), TEXTURES);
+  const cur = textureById($('textureSel').value), pv = $('texturePreview'); pv.style.background = cur ? `${cur.avg} url("${cur.file}") center / 48px` : 'transparent'; pv.title = cur ? cur.name + (cur.sub ? ' / ' + cur.sub : '') : '';
+  $('textureMm').value = String(textureMm());
+}
+/** 選んだ図形の部品に質感を付ける（id が空なら外して革色に戻す）。部品に入っていない閉じた図形には、図形自身に付ける */
+function applyTexture(id) {
+  const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(i => okIds.has(i)));
+  const loose = doc.shapes.filter(sh => okIds.has(sh.id) && (sh.closed || sh.type === 'circle') && !doc.parts.some(p => p.shapeIds.includes(sh.id)));
+  if (!parts.length && !loose.length) { $('hint').textContent = t('selectPartFirst'); return; }
+  const x = id ? textureById(id) : null; if (id && !x) return;
+  commit(() => { for (const p of parts) p.texture = x ? x.id : null; for (const s of loose) s.texture = x ? x.id : null; });
+  $('hint').textContent = x ? t('textureApplied', { n: parts.length + loose.length, name: x.name }) : t('textureCleared', { n: parts.length + loose.length });
 }
 function applyThread() {
   const th = DATA_STITCH_COLORS.stitchColors.find(c => c.id === $('threadSel').value); if (!th) return;
@@ -1323,6 +1393,9 @@ function initColors() {
   $('threadSearch').addEventListener('input', renderColors); $('threadSel').addEventListener('change', renderColors);
   $('applyThread').onclick = applyThread; $('pinThread').onclick = () => { const id = $('threadSel').value; if (!id) return; colorPins = colorPins.includes(id) ? colorPins.filter(x => x !== id) : [...colorPins, id]; persistPins(); renderColors(); };
   $('leatherHex').addEventListener('change', () => { const v = $('leatherHex').value; if (/^#[0-9a-fA-F]{6}$/.test(v)) applyLeather(v); });
+  $('textureSearch').addEventListener('input', renderTextures); $('textureSel').addEventListener('change', renderTextures);
+  $('applyTexture').onclick = () => applyTexture($('textureSel').value);
+  $('textureMm').addEventListener('change', () => { const v = Number($('textureMm').value); if (v > 0) commit(() => { doc.textureMm = v; }); else $('textureMm').value = String(textureMm()); });
   $('savePattern').onclick = savePattern; $('loadPattern').onclick = loadPattern; $('exportPng3d').onclick = exportPng3d;
   $('exportSvgFill').onclick = () => { download('leather-pattern-color.svg', docToSvg(doc, { includeHoles: true, fill: true }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: 'SVG (color)' }); };
 }
@@ -2275,8 +2348,11 @@ function drawSheetBody(lo, hi) {
   ctx.lineWidth = 1.5 / scale;
   const hl = aiHighlight.until > Date.now() ? aiHighlight.ids : null;
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
-  // 革色：部品の閉図形を半透明で塗る（カラーシミュレーション）
-  for (const part of doc.parts.filter(p => p.color)) for (const s of doc.shapes.filter(s => part.shapeIds.includes(s.id) && visible(s) && (s.closed || s.type === 'circle'))) { path(previewMoved(s)); ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = part.color; ctx.fill(); ctx.restore(); }
+  // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
+  for (const s of doc.shapes.filter(s => visible(s) && (s.closed || s.type === 'circle'))) {
+    const tex = textureOf(s), part = tex ? null : doc.parts.find(p => p.color && p.shapeIds.includes(s.id)); if (!tex && !part) continue;
+    path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
+  }
   for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
