@@ -511,6 +511,8 @@ footer.ft a { color: var(--tan-light); }
 /* ============================================================
    規格データ（出典: 後方部 リング規格一覧 2026-09-04）
    pitch = 穴中心間隔の配列（mm）／ span = 1番穴〜最終穴の中心距離
+   holeTop = 上端から1番穴の中心までの距離（mm・実測値がある規格だけ。無い規格は上下中央）
+   ※ この表が元データ。N's CAD のリフィル型紙の部品（tools/gen_refill_parts.mjs）はここを読んで作る
    ============================================================ */
 var GROUPS = {
   e19:   { c: '#1565C0', label: '19mm 等間隔', pitch: '19 / 19 / …', desc: '穴がすべて19mm間隔で並ぶ最も素直な並び。穴数だけが違います。' },
@@ -528,7 +530,7 @@ var FORMATS = [
   {
     k: 'm5', name: 'Micro5 / M5', badge: 'MICRO5 · M5 · ミニ5穴',
     alias: 'マイクロ5 / ミニ5穴（M5）/ Filofax Mini', paper: [62, 105], holes: 5, tool: 'micro5',
-    pitch: [19, 19, 19, 19], span: 76, grp: 'e19', fam: 'std', match: /micro\s*5|mini\s*5|^m5$/i,
+    pitch: [19, 19, 19, 19], span: 76, holeTop: 15, grp: 'e19', fam: 'std', match: /micro\s*5|mini\s*5|^m5$/i,
     lead: '手のひらに収まる最小の5穴サイズ。リフィルは 62 × 105 mm、穴はすべて 19 mm 間隔。日本では「Micro5」「M5」「ミニ5穴」と呼ばれます。',
     notes: ['N\'s factory 基準: 62 × 105 mm・5穴（穴中心は上端から 15 / 34 / 53 / 72 / 91 mm・綴じ側の端から 6 mm）。', 'Filofax Mini は幅 67 mm（高さ・穴位置は同じ）。幅はブランドで異なるため、実物確認を推奨。', '印刷ツール（週間・月間・日次）あり。A4縦に3列×2段の6面付け。'],
     ringEx: '製品例で15mm（Filofax Mini）'
@@ -536,7 +538,7 @@ var FORMATS = [
   {
     k: 'm6', name: 'Mini6 / M6', badge: 'MINI6 · M6 · POCKET',
     alias: 'ミニ6穴（M6）/ ポケット / Filofax Pocket', paper: [80, 128], holes: 6, tool: 'mini6',
-    pitch: [19.2, 19.2, 19.2, 19.2, 19.2], span: 96, grp: 'e19', fam: 'std', match: /mini\s*6|^m6$|（m6）/i,
+    pitch: [19.2, 19.2, 19.2, 19.2, 19.2], span: 96, holeTop: 16.3, grp: 'e19', fam: 'std', match: /mini\s*6|^m6$|（m6）/i,
     lead: "6穴の小型サイズ。リフィルは 80 × 128 mm、穴は 19.2 mm の等間隔（当工房の基準データ）。N's factory でいちばん製作数の多いサイズです。",
     notes: ['N\'s factory 基準データ（Mini6 Refill）: 80 × 128 mm・6穴（穴中心は上端から 16.3 / 35.5 / 54.7 / 73.9 / 93.1 / 112.3 mm・綴じ側の端から 6.3 mm）。', 'Filofax Pocket は 81 × 120 mm・19 mm 間隔。呼び名が同じでもブランドで高さが違うので、穴位置は実物で確認を。', '印刷ツール（週間・月間・日次）あり。A4縦に2列×2段の4面付け。'],
     ringEx: '製品例で19mm（Filofax Pocket）'

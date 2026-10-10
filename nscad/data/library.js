@@ -207,807 +207,6 @@ export const DATA_LIBRARY = {
       ]
     },
     {
-      "id": "refill-a4",
-      "name": "リフィル型紙 A4 4穴（210×297）",
-      "name_en": "Refill pattern A4 4-ring (210×297)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "A4 4穴 のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 4 個・間隔 80 / 80 / 80 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 210,
-        "H": 297,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-120",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-40",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+40",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+120",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
-      "id": "refill-a5",
-      "name": "リフィル型紙 A5 6穴（148×210）",
-      "name_en": "Refill pattern A5 6-ring (148×210)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "A5 6穴 のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 148,
-        "H": 210,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-73",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-54",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-35",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+35",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+54",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+73",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
-      "id": "refill-a5slim",
-      "name": "リフィル型紙 A5 Slim（110×210）",
-      "name_en": "Refill pattern A5 Slim (110×210)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "A5 Slim のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 110,
-        "H": 210,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-73",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-54",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-35",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+35",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+54",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+73",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
-      "id": "refill-a6",
-      "name": "リフィル型紙 A6 6穴（105×148）",
-      "name_en": "Refill pattern A6 6-ring (105×148)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "A6 6穴 のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 6 個・間隔 19 / 19 / 38 / 19 / 19 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 105,
-        "H": 148,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-57",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-38",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-19",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+19",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+38",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+57",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
-      "id": "refill-bible",
-      "name": "リフィル型紙 Personal / バイブル（95×171）",
-      "name_en": "Refill pattern Personal / Bible (95×171)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "Personal / バイブル のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 95,
-        "H": 171,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-63.5",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-44.45",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-25.4",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+25.4",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+44.45",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+63.5",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
-      "id": "refill-fclassic",
-      "name": "リフィル型紙 Franklin Classic（140×216）",
-      "name_en": "Refill pattern Franklin Classic (140×216)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "Franklin Classic のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 7 個・間隔 25.4 / 25.4 / 19.05 / 19.05 / 25.4 / 25.4 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 140,
-        "H": 216,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-69.85",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-44.45",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-19.05",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+0",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+19.05",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+44.45",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+69.85",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
-      "id": "refill-fcompact",
-      "name": "リフィル型紙 Franklin Compact（108×172）",
-      "name_en": "Refill pattern Franklin Compact (108×172)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "Franklin Compact のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 108,
-        "H": 172,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-63.5",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-44.45",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-25.4",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+25.4",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+44.45",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+63.5",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
-      "id": "refill-fmonarch",
-      "name": "リフィル型紙 Franklin Monarch（216×280）",
-      "name_en": "Refill pattern Franklin Monarch (216×280)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "Franklin Monarch のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 7 個・間隔 25.4 / 25.4 / 57.15 / 57.15 / 25.4 / 25.4 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 216,
-        "H": 280,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-107.95",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-82.55",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-57.15",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+0",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+57.15",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+82.55",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+107.95",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
-      "id": "refill-fpocket",
-      "name": "リフィル型紙 Franklin Pocket（89×153）",
-      "name_en": "Refill pattern Franklin Pocket (89×153)",
-      "tags": [
-        "refill",
-        "binder"
-      ],
-      "desc": "Franklin Pocket のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 6 個・間隔 19.05 / 19.05 / 38.1 / 19.05 / 19.05 mm（規格表どおり）・高さの中央にそろえる。",
-      "vars": {
-        "W": 89,
-        "H": 153,
-        "E": 6,
-        "D": 5
-      },
-      "varSteps": {
-        "W": 1,
-        "H": 1,
-        "E": 0.1,
-        "D": 0.1
-      },
-      "shapes": [
-        {
-          "type": "polyline",
-          "closed": true,
-          "layer": "pattern",
-          "points": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": 0
-            },
-            {
-              "x": "W",
-              "y": "H"
-            },
-            {
-              "x": 0,
-              "y": "H"
-            }
-          ]
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-57.15",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-38.1",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2-19.05",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+19.05",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+38.1",
-          "r": "D/2"
-        },
-        {
-          "type": "circle",
-          "layer": "pattern",
-          "cx": "E",
-          "cy": "H/2+57.15",
-          "r": "D/2"
-        }
-      ]
-    },
-    {
       "id": "refill-m5",
       "name": "リフィル型紙 Micro5 / M5（62×105）",
       "name_en": "Refill pattern Micro5 / M5 (62×105)",
@@ -1015,18 +214,26 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Micro5 / M5 のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 5 個・間隔 19 / 19 / 19 / 19 mm（規格表どおり）・高さの中央にそろえる。",
+      "desc": "Micro5 / M5 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 5 個・間隔 19 / 19 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 62,
         "H": 105,
+        "T": 15,
         "E": 6,
         "D": 5
       },
       "varSteps": {
         "W": 1,
         "H": 1,
+        "T": 0.1,
         "E": 0.1,
         "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
       },
       "shapes": [
         {
@@ -1056,35 +263,35 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2-38",
+          "cy": "T+0",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2-19",
+          "cy": "T+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2+0",
+          "cy": "T+38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2+19",
+          "cy": "T+57",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2+38",
+          "cy": "T+76",
           "r": "D/2"
         }
       ]
@@ -1097,18 +304,26 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Mini6 / M6 のリフィル。W=幅 H=高さ E=穴中心から左端 D=穴径。穴は 6 個・間隔 19.2 / 19.2 / 19.2 / 19.2 / 19.2 mm（規格表どおり）・高さの中央にそろえる。",
+      "desc": "Mini6 / M6 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 6 個・間隔 19.2 / 19.2 / 19.2 / 19.2 / 19.2 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 80,
         "H": 128,
+        "T": 16.3,
         "E": 6,
         "D": 5
       },
       "varSteps": {
         "W": 1,
         "H": 1,
+        "T": 0.1,
         "E": 0.1,
         "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
       },
       "shapes": [
         {
@@ -1138,42 +353,915 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2-48",
+          "cy": "T+0",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2-28.8",
+          "cy": "T+19.2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2-9.6",
+          "cy": "T+38.4",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2+9.6",
+          "cy": "T+57.6",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2+28.8",
+          "cy": "T+76.8",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "H/2+48",
+          "cy": "T+96",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-a6",
+      "name": "リフィル型紙 A6 6穴（105×148）",
+      "name_en": "Refill pattern A6 6-ring (105×148)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "A6 6穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 6 個・間隔 19 / 19 / 38 / 19 / 19 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 105,
+        "H": 148,
+        "T": 17,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+19",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+38",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+76",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+95",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+114",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-bible",
+      "name": "リフィル型紙 Personal / バイブル（95×171）",
+      "name_en": "Refill pattern Personal / Bible (95×171)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "Personal / バイブル のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 95,
+        "H": 171,
+        "T": 22,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+19.05",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+38.1",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+88.9",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+107.95",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+127",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-a5",
+      "name": "リフィル型紙 A5 6穴（148×210）",
+      "name_en": "Refill pattern A5 6-ring (148×210)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "A5 6穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 148,
+        "H": 210,
+        "T": 32,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+19",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+38",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+108",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+127",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+146",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-a5slim",
+      "name": "リフィル型紙 A5 Slim（110×210）",
+      "name_en": "Refill pattern A5 Slim (110×210)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "A5 Slim のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 110,
+        "H": 210,
+        "T": 32,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+19",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+38",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+108",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+127",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+146",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-a4",
+      "name": "リフィル型紙 A4 4穴（210×297）",
+      "name_en": "Refill pattern A4 4-ring (210×297)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "A4 4穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 4 個・間隔 80 / 80 / 80 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 210,
+        "H": 297,
+        "T": 28.5,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+80",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+160",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+240",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-fpocket",
+      "name": "リフィル型紙 Franklin Pocket（89×153）",
+      "name_en": "Refill pattern Franklin Pocket (89×153)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "Franklin Pocket のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 6 個・間隔 19.05 / 19.05 / 38.1 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 89,
+        "H": 153,
+        "T": 19.35,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+19.05",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+38.1",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+76.2",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+95.25",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+114.3",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-fcompact",
+      "name": "リフィル型紙 Franklin Compact（108×172）",
+      "name_en": "Refill pattern Franklin Compact (108×172)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "Franklin Compact のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 108,
+        "H": 172,
+        "T": 22.5,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+19.05",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+38.1",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+88.9",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+107.95",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+127",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-fclassic",
+      "name": "リフィル型紙 Franklin Classic（140×216）",
+      "name_en": "Refill pattern Franklin Classic (140×216)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "Franklin Classic のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 7 個・間隔 25.4 / 25.4 / 19.05 / 19.05 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 140,
+        "H": 216,
+        "T": 38.15,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+25.4",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+50.8",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+69.85",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+88.9",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+114.3",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+139.7",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-fmonarch",
+      "name": "リフィル型紙 Franklin Monarch（216×280）",
+      "name_en": "Refill pattern Franklin Monarch (216×280)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "Franklin Monarch のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径。穴は 7 個・間隔 25.4 / 25.4 / 57.15 / 57.15 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
+      "vars": {
+        "W": 216,
+        "H": 280,
+        "T": 32.05,
+        "E": 6,
+        "D": 5
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "T": 0.1,
+        "E": 0.1,
+        "D": 0.1
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+0",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+25.4",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+50.8",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+107.95",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+165.1",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+190.5",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "T+215.9",
           "r": "D/2"
         }
       ]
