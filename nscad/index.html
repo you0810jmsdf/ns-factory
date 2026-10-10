@@ -444,8 +444,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=3553c1b7","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=edb254cc","./help/ja.js":"./help/ja.js?v=acb4365c","./i18n.js":"./i18n.js?v=a8e19543","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=8d2bea55","./threeview.js":"./threeview.js?v=f51986d4","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=3553c1b7"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=81636589","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=88680da0","./help/ja.js":"./help/ja.js?v=ebe74e42","./i18n.js":"./i18n.js?v=a8e19543","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=f51986d4","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=81636589"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3735,7 +3735,7 @@ function splitPolygon(pts, a, b) {
   return [clean(pos).length >= 3 ? clean(pos) : [], clean(neg).length >= 3 ? clean(neg) : []];
 }
 /** 文書から板の配列を作る。部品（parts）の閉図形ごとに 1 枚、折り線で分割して子板にする。各板 {id, partId, polygon, thickness, foldId, parentId, color}。 */
-function buildPanels(doc, { tolerance = 0.2, colorOf = p => p.color || null } = {}) { /* colorOf：部品の板の色（革の質感が付いた部品は平均色を返す） */
+function buildPanels(doc, { tolerance = 0.2, colorOf = p => p.color || null, textureOf = () => null } = {}) { /* colorOf：部品の板の色（革の質感が付いた部品は平均色を返す）。textureOf(part, shape)：板に貼る質感の id（無ければ null） */
   const panels = [];
   const parts = doc.parts?.length ? [...doc.parts].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [{ id: '_all', name: 'all', thickness: 1.5, shapeIds: doc.shapes.filter(s => (s.type === 'polyline' || s.type === 'path' || s.type === 'circle') && (s.closed || s.type === 'circle')).map(s => s.id), color: null }];
   // 重ね順：下の部品の厚みの合計だけ上に積む（z0 = 表面の高さ）
@@ -3761,7 +3761,7 @@ function buildPanels(doc, { tolerance = 0.2, colorOf = p => p.color || null } = 
         pieces = next;
       }
       pieces.forEach((p, i) => { p.id = `${s.id}#${i}`; });
-      for (const p of pieces) panels.push({ id: p.id, partId: part.id, shapeId: s.id, polygon: p.polygon, thickness: part.thickness, z0, foldId: p.foldId, parentId: p.parentRef ? p.parentRef.id : null, side: p.side, color: colorOf(part) });
+      for (const p of pieces) panels.push({ id: p.id, partId: part.id, shapeId: s.id, polygon: p.polygon, thickness: part.thickness, z0, foldId: p.foldId, parentId: p.parentRef ? p.parentRef.id : null, side: p.side, color: colorOf(part), texture: textureOf(part, s) || null });
     }
   }
   // 金具（hw 付きの図形）：中心を含む板に乗せ、折りに追従させる。高さは solid.z。
@@ -3780,9 +3780,10 @@ function pointInPolygon(p, poly) { let inside = false; for (let i = 0, j = poly.
 /** 板に面（上面・下面・側面）の 3D 頂点を付けた配列を返す。 */
 function panelFaces(panel, matrix = identity()) {
   const t = panel.thickness, z0 = panel.z0 || 0, top = panel.polygon.map(p => transformPoint(matrix, v3(p.x, p.y, z0))), bottom = panel.polygon.map(p => transformPoint(matrix, v3(p.x, p.y, z0 - t)));
-  const faces = [{ kind: 'top', points: top }, { kind: 'bottom', points: [...bottom].reverse() }];
+  /* uv：板を平らに置いたときの mm 座標（表は輪郭どおり・裏は並びを逆に）。質感をその座標で貼ると、2D の図面と同じ模様の位置になる */
+  const faces = [{ kind: 'top', points: top, uv: panel.polygon.map(p => ({ x: p.x, y: p.y })) }, { kind: 'bottom', points: [...bottom].reverse(), uv: [...panel.polygon].reverse().map(p => ({ x: p.x, y: p.y })) }];
   for (let i = 0; i < top.length; i++) { const j = (i + 1) % top.length; faces.push({ kind: 'side', points: [top[i], top[j], bottom[j], bottom[i]] }); }
-  return faces.map(f => { const n = faceNormal(f.points); return { ...f, normal: n, center: f.points.reduce((a, p) => add3(a, scale3(p, 1 / f.points.length)), v3()), panelId: panel.id, partId: panel.partId, color: panel.color }; });
+  return faces.map(f => { const n = faceNormal(f.points); return { ...f, normal: n, center: f.points.reduce((a, p) => add3(a, scale3(p, 1 / f.points.length)), v3()), panelId: panel.id, partId: panel.partId, color: panel.color, texture: f.kind === 'side' ? null : (panel.texture || null) }; });
 }
 /** 平面多角形（3D 点列・凹あり・自己交差なし）を耳切りで三角形の配列 [[a,b,c],…] にする。扇形分割だと凹形で面が欠けるため。 */
 function triangulate(points) {
@@ -14554,7 +14555,7 @@ const HELP_JA = {
     {
       "id": "colors",
       "title": "カラーシミュレーション",
-      "body": "カラーカードで、部品ごとの革色（16 色の見本か #RRGGBB）と、縫い経路ごとの糸色（ビニモ MBT 92 色・色番と和名で検索・よく使う色はピン留め）を選べます。2D では部品の閉図形が半透明で塗られ、穴が糸色になります。3D でも板の面色に反映されます。\n色の組み合わせは名前を付けて文書に保存し、切り替えられます。「色付き SVG」は塗りと糸色付きで書き出し、「3D を PNG」は 3D 表示をそのまま画像にします。革の質感：カラーカードの「革の質感」で革の名前（例：ALASKA ピンク）を探して選び、部品（図形）を選んで「選んだ部品に質感を付ける」を押すと、継ぎ目なしの革写真（カワムラレザーの革 280 種）が繰り返し貼られます。「質感1枚の大きさ (mm)」は空欄なら写真ごとの実寸（革ごとに記録した値・無い革は 30mm）、数値を入れると全部の質感をその大きさで貼ります（文書ごとに保存）。マルゴーフォグは取引先の元写真から作り直し、隣り合う切れ端を任意の角度で回して境目をぼかした大きな1枚（約330mm四方）なので、同じ模様が規則的に並びません。「なし」を付けると革色に戻ります。部品に入っていない閉じた図形には図形自身に付きます（図形の指定が部品より優先）。「色付き SVG」には写真ごと埋め込まれます。3D は写真の平均色のベタ塗りです。"
+      "body": "カラーカードで、部品ごとの革色（16 色の見本か #RRGGBB）と、縫い経路ごとの糸色（ビニモ MBT 92 色・色番と和名で検索・よく使う色はピン留め）を選べます。2D では部品の閉図形が半透明で塗られ、穴が糸色になります。3D でも板の面色に反映されます。\n色の組み合わせは名前を付けて文書に保存し、切り替えられます。「色付き SVG」は塗りと糸色付きで書き出し、「3D を PNG」は 3D 表示をそのまま画像にします。革の質感：カラーカードの「革の質感」で革の名前（例：ALASKA ピンク）を探して選び、部品（図形）を選んで「選んだ部品に質感を付ける」を押すと、継ぎ目なしの革写真（カワムラレザーの革 280 種）が繰り返し貼られます。「質感1枚の大きさ (mm)」は空欄なら写真ごとの実寸（革ごとに記録した値・無い革は 30mm）、数値を入れると全部の質感をその大きさで貼ります（文書ごとに保存）。マルゴーフォグは取引先の元写真から作り直し、隣り合う切れ端を任意の角度で回して境目をぼかした大きな1枚（約330mm四方）なので、同じ模様が規則的に並びません。「なし」を付けると革色に戻ります。部品に入っていない閉じた図形には図形自身に付きます（図形の指定が部品より優先）。「色付き SVG」には写真ごと埋め込まれます。3D にも写真を貼ります（板の表と裏・三面図から組み立てた立体の面。板の側面と、WebGL が使えない環境は平均色）。4分割の三面図ではほかの紙にも貼り、「上と右の図を作る」で作った外形には正面の形の質感が付きます。右上の小さな立体は平均色です。"
     },
     {
       "id": "shortcuts",
@@ -14703,7 +14704,7 @@ const HELP_EN = {
     {
       "id": "colors",
       "title": "Color simulation",
-      "body": "In the Colors card choose a leather color per part (16 swatches or #RRGGBB) and a thread color per stitched path (92 Vinymo MBT colors, searchable by number and Japanese name, pin favorites). In 2D closed part shapes are tinted and holes take the thread color; 3D uses the part color on panels.\nColor sets can be saved by name in the document and switched. “Colored SVG” exports fills and thread colors; “3D as PNG” saves the current 3D view. Leather texture: in the Colors card’s \"Leather texture\", search a leather by name (e.g. ALASKA pink), select a part’s shape and press \"Apply texture to selected parts\"; a seamless leather photo (280 Kawamura leathers) is tiled over it. \"Texture tile size (mm)\": leave it blank to use each photo’s own real size (recorded per leather; 30 mm when unknown), or enter a number to tile every texture at that size (saved per document). MARGOT FOG was rebuilt from the supplier’s original photos as one large sheet (about 330 mm) of randomly rotated, edge-blended pieces, so the same pattern does not repeat in a regular grid. Apply \"None\" to return to the flat color. A closed shape outside any part gets the texture itself (a shape’s own texture wins over its part’s). \"Colored SVG\" embeds the photos; 3D uses the photo’s average color."
+      "body": "In the Colors card choose a leather color per part (16 swatches or #RRGGBB) and a thread color per stitched path (92 Vinymo MBT colors, searchable by number and Japanese name, pin favorites). In 2D closed part shapes are tinted and holes take the thread color; 3D uses the part color on panels.\nColor sets can be saved by name in the document and switched. “Colored SVG” exports fills and thread colors; “3D as PNG” saves the current 3D view. Leather texture: in the Colors card’s \"Leather texture\", search a leather by name (e.g. ALASKA pink), select a part’s shape and press \"Apply texture to selected parts\"; a seamless leather photo (280 Kawamura leathers) is tiled over it. \"Texture tile size (mm)\": leave it blank to use each photo’s own real size (recorded per leather; 30 mm when unknown), or enter a number to tile every texture at that size (saved per document). MARGOT FOG was rebuilt from the supplier’s original photos as one large sheet (about 330 mm) of randomly rotated, edge-blended pieces, so the same pattern does not repeat in a regular grid. Apply \"None\" to return to the flat color. A closed shape outside any part gets the texture itself (a shape’s own texture wins over its part’s). \"Colored SVG\" embeds the photos; 3D shows the photo too (the top and bottom of each panel, and the faces of a solid built from the three views; panel edges and non-WebGL browsers use the average color). In the 4-pane three-view mode the other sheets are textured as well, and outlines made by \"Make top and right views\" inherit the front shape’s texture. The small solid in the corner uses the average color."
     },
     {
       "id": "shortcuts",
@@ -14869,7 +14870,7 @@ function makeThreeViewOutlines() {
   const fresh = [r.top, r.side].filter(rect => !doc.shapes.some(s => visible(s) && threeViewSameRect(s, rect)));
   if (!fresh.length) { $('hint').textContent = t('threeViewMakeExists'); return; }
   cancel();
-  commit(() => { const ids = []; for (const rect of fresh) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: layer.id, type: 'polyline', closed: true, points: rect.points.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4) })) }); ids.push(id); } selected = new Set(ids); });
+  commit(() => { const ids = [], tex = solidTextureOf('frame'); /* 正面の形の質感を、作った外形にも付ける（三面図・立体で同じ革に見える） */ for (const rect of fresh) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: layer.id, type: 'polyline', closed: true, points: rect.points.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4) })), ...(tex ? { texture: tex } : {}) }); ids.push(id); } selected = new Set(ids); });
   updateUI();
   const fmt = v => String(+v.toFixed(2));
   $('hint').textContent = t('threeViewMakeDone', { w: fmt(r.width), h: fmt(r.height), d: fmt(r.depth) });
@@ -14932,6 +14933,10 @@ function drawPlainSheet(d, sc, lo, hi) {
   ctx.beginPath(); ctx.moveTo(lo.x, 0); ctx.lineTo(hi.x, 0); ctx.moveTo(0, lo.y); ctx.lineTo(0, hi.y); ctx.strokeStyle = '#454039'; ctx.stroke();
   ctx.lineWidth = 1.5 / sc;
   const vis = s => d.layers.find(l => l.id === s.layer)?.visible;
+  for (const s of d.shapes.filter(s => vis(s) && (s.closed || s.type === 'circle'))) { /* ほかの紙でも革色・質感を塗る（いま描いている紙と同じ見え方） */
+    const tex = textureOf(s, d), part = tex ? null : (d.parts || []).find(p => p.color && p.shapeIds.includes(s.id)); if (!tex && !part) continue;
+    path(s); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
+  }
   for (const s of d.shapes.filter(s => vis(s) && s.type !== 'image')) strokeShape(s, s.type === 'dimension' || s.type === 'text' ? '#6f8898' : '#a0a0a0', s.lineStyle === 'dashed');
   ctx.setLineDash([]);
   for (const h of d.holes) { const a = holeAppearance(h, d); if (!a) continue; const pth = d.paths.find(q => q.id === h.pathId); if (pth && !pth.shapeIds.every(id => d.shapes.some(x => x.id === id && vis(x)))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.fillStyle = ctx.strokeStyle = '#bbb'; if (a.kind === 'slit') { ctx.lineWidth = a.height; ctx.stroke(); } else ctx.fill(); ctx.restore(); }
@@ -15816,11 +15821,22 @@ function initGl() {
   if (gl !== null || typeof canvas3d.getContext !== 'function') return;
   gl = canvas3d.getContext('webgl', { antialias: true, preserveDrawingBuffer: true }) || false;
   if (!gl) { ctx3 = canvas3d.getContext('2d'); return; }
-  const vs = 'attribute vec3 p;attribute vec3 n;attribute vec3 c;uniform mat4 view;uniform mat4 proj;varying vec3 vc;varying vec3 vn;void main(){gl_Position=proj*view*vec4(p,1.0);vn=mat3(view)*n;vc=c;}';
-  const fs = 'precision mediump float;varying vec3 vc;varying vec3 vn;void main(){vec3 L=normalize(vec3(0.3,0.5,0.8));float d=0.35+0.65*max(0.0,dot(normalize(vn),L));gl_FragColor=vec4(vc*d,1.0);}';
+  const vs = 'attribute vec3 p;attribute vec3 n;attribute vec3 c;attribute vec2 uv;uniform mat4 view;uniform mat4 proj;varying vec3 vc;varying vec3 vn;varying vec2 vuv;varying vec3 vpos;varying vec3 vwn;void main(){gl_Position=proj*view*vec4(p,1.0);vn=mat3(view)*n;vc=c;vuv=uv;vpos=p;vwn=n;}';
+  /* uMode：0＝色だけ・1＝板の表裏（uv＝平らに置いたときの mm）・2＝立体の面（面の向きに応じて x/y・x/z・y/z の mm を使う）。uMm＝写真 1 枚の実寸。画像は 2 のべき乗でないので繰り返しは fract で */
+  const fs = 'precision mediump float;varying vec3 vc;varying vec3 vn;varying vec2 vuv;varying vec3 vpos;varying vec3 vwn;uniform sampler2D uTex;uniform float uMode;uniform float uMm;void main(){vec3 L=normalize(vec3(0.3,0.5,0.8));float d=0.35+0.65*max(0.0,dot(normalize(vn),L));vec3 base=vc;if(uMode>0.5){vec2 tc=vuv;if(uMode>1.5){vec3 a=abs(vwn);tc=(a.z>=a.x&&a.z>=a.y)?vpos.xy:((a.y>=a.x)?vpos.xz:vpos.yz);}base=texture2D(uTex,fract(tc/uMm)).rgb;}gl_FragColor=vec4(base*d,1.0);}';
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
   glProg = gl.createProgram(); gl.attachShader(glProg, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(glProg, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(glProg); gl.useProgram(glProg);
   gl.enable(gl.DEPTH_TEST); glProg.buf = gl.createBuffer();
+}
+const glTextures = new Map();
+/** WebGL 用の質感：画像が読めていれば作って保存する（2 のべき乗でない画像なので繰り返しはシェーダー側）。まだ読めていなければ null（読めたら 3D も描き直す） */
+function glTexture(id) {
+  if (!gl) return null; if (glTextures.has(id)) return glTextures.get(id);
+  const img = texImage(id); if (!img) return null;
+  const tx = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tx); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  glTextures.set(id, tx); return tx;
 }
 const partColor = (f, hit) => hit ? [0.9, 0.2, 0.2] : f.color ? hexToRgb(f.color) : f.kind === 'top' ? [0.80, 0.68, 0.46] : f.kind === 'bottom' ? [0.62, 0.52, 0.36] : [0.70, 0.58, 0.40];
 function hexToRgb(hex) { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return [0.8, 0.68, 0.46]; const n = parseInt(m[1], 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; }
@@ -15829,11 +15845,22 @@ function orthographic(hw, hh, near, far) { return [1 / hw, 0, 0, 0, 0, 1 / hh, 0
 /** 3D を描く。gl があれば WebGL、無ければ 2D の画家アルゴリズム。戻り値は統計（テスト用）。 */
 /** 3D に出すもの：三面図が入なら三面図から組み立てた立体（threeview.js）、切なら折りたたみの板。 */
 function scene3d() {
-  if (quadOn()) { const solid = quadSolidCache; return { faces: solid ? solid.faces : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
-  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout); return { faces: solid ? solid.faces : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
-  const panels = buildPanels(doc, { colorOf: partPanelColor }), fl = folds();
+  if (quadOn()) { const solid = quadSolidCache; return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('quad')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
+  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
+  const panels = buildPanels(doc, { colorOf: partPanelColor, textureOf: (part, s) => s.texture || part.texture || null }), fl = folds();
   return { faces: applyFolds(panels, fl, foldT / 100), hits: collisions(panels, fl, foldT / 100), panels, solid: null };
 }
+/** 三面図の立体に貼る質感：正面の閉じた形（いちばん大きいもの）の質感（図形自身の指定→部品）。枠方式は正面の枠の中から、4分割は正面の紙から。無ければ null */
+function solidTextureOf(kind) {
+  let d = doc, list;
+  if (kind === 'quad') { d = sheetDoc('front'); list = d ? d.shapes.filter(s => d.layers.find(l => l.id === s.layer)?.visible) : []; }
+  else list = doc.shapes.filter(s => visible(s) && threeViewShapeArea(s, threeViewLayout) === 'front');
+  const areaOf = s => { try { const b = bboxOf(s); return (b.maxX - b.minX) * (b.maxY - b.minY); } catch { return 0; } };
+  const front = list.filter(s => s.type !== 'image' && (s.closed || s.type === 'circle')).sort((a, b) => areaOf(b) - areaOf(a))[0];
+  return front ? textureOf(front, d) : null;
+}
+/** 立体の全部の面に同じ質感を付ける（uv は無いので、面の向きで貼る） */
+const withSolidTexture = (faces, tex) => tex ? faces.map(f => ({ ...f, texture: tex })) : faces;
 /** 三面図の立体を見るときの最初のカメラ：立体の真ん中を向き、少し斜め上・右手前から。 */
 function threeViewCamera(faces) {
   const pts = faces.flatMap(f => f.points); if (!pts.length) return defaultCamera(doc);
@@ -15851,18 +15878,22 @@ function render3d() {
   const views = quad ? [['free', cam, 0, 0], ['front', { ...cam, ...orthoViews().front, ortho: true }, 1, 0], ['top', { ...cam, ...orthoViews().top, ortho: true }, 0, 1], ['right', { ...cam, ...orthoViews().right, ortho: true }, 1, 1]] : [['free', cam, 0, 0]];
   if (gl) {
     gl.viewport(0, 0, W, H); gl.clearColor(0.06, 0.06, 0.06, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    const data = [];
-    for (const f of faces) { const col = partColor(f, hitSet.has(f.panelId)); const n = f.normal; for (const tri of triangulate(f.points)) for (const p of tri) data.push(p.x, -p.y, p.z, n.x, -n.y, n.z, col[0], col[1], col[2]); }
-    gl.bindBuffer(gl.ARRAY_BUFFER, glProg.buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
-    const stride = 9 * 4, loc = name => gl.getAttribLocation(glProg, name);
-    for (const [name, off] of [['p', 0], ['n', 12], ['c', 24]]) { gl.enableVertexAttribArray(loc(name)); gl.vertexAttribPointer(loc(name), 3, gl.FLOAT, false, stride, off); }
+    const groups = new Map(); /* 質感ごとにまとめて描く（色だけの面は '' の組・板の表裏は uv・立体は面の向き） */
+    for (const f of faces) {
+      const hit = hitSet.has(f.panelId), tex = !hit && f.texture && glTexture(f.texture) ? f.texture : '', key = tex ? tex + (f.uv ? '|uv' : '|tri') : '', col = partColor(f, hit), n = f.normal, idx = new Map(f.points.map((p, i) => [p, i]));
+      let g = groups.get(key); if (!g) { g = { tex, data: [], mode: tex ? (f.uv ? 1 : 2) : 0, mm: tex ? textureMm(tex) : 1 }; groups.set(key, g); }
+      for (const tri of triangulate(f.points)) for (const p of tri) { const u = f.uv ? f.uv[idx.get(p)] : null; g.data.push(p.x, -p.y, p.z, n.x, -n.y, n.z, col[0], col[1], col[2], u ? u.x : 0, u ? u.y : 0); }
+    }
+    const stride = 11 * 4, loc = name => gl.getAttribLocation(glProg, name), uni = name => gl.getUniformLocation(glProg, name);
+    gl.bindBuffer(gl.ARRAY_BUFFER, glProg.buf);
+    for (const [name, size, off] of [['p', 3, 0], ['n', 3, 12], ['c', 3, 24], ['uv', 2, 36]]) { gl.enableVertexAttribArray(loc(name)); gl.vertexAttribPointer(loc(name), size, gl.FLOAT, false, stride, off); }
     for (const [, c, col, row] of views) {
       const vw = quad ? W / 2 : W, vh = quad ? H / 2 : H; gl.viewport(col * vw, (quad ? 1 - row : 0) * vh, vw, vh); gl.enable(gl.SCISSOR_TEST); gl.scissor(col * vw, (quad ? 1 - row : 0) * vh, vw, vh);
       const aspect = vw / vh, size = c.distance / (c.zoom || 2) * 0.5;
       const flipped = { ...c, target: { x: c.target.x, y: -c.target.y, z: c.target.z } };
       gl.uniformMatrix4fv(gl.getUniformLocation(glProg, 'view'), false, new Float32Array(viewMatrix(flipped)));
       gl.uniformMatrix4fv(gl.getUniformLocation(glProg, 'proj'), false, new Float32Array(c.ortho ? orthographic(size * aspect, size, -5000, 5000) : perspective(0.6, aspect, 1, 20000)));
-      gl.drawArrays(gl.TRIANGLES, 0, data.length / 9);
+      for (const g of groups.values()) { gl.uniform1f(uni('uMode'), g.mode); gl.uniform1f(uni('uMm'), g.mm); if (g.tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, glTexture(g.tex)); gl.uniform1i(uni('uTex'), 0); } gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.data), gl.DYNAMIC_DRAW); gl.drawArrays(gl.TRIANGLES, 0, g.data.length / 11); }
     }
     gl.disable(gl.SCISSOR_TEST);
   } else if (ctx3) {
@@ -15888,7 +15919,7 @@ function togglePlay() {
 function exportViews() { const { faces } = scene3d(); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: t('views') }); }
 /** 展開図：折り線で繋がる板を平面に戻し、縫い代付きの型紙を新しいタブに作る。 */
 function makeUnfold() {
-  const panels = buildPanels(doc, { colorOf: partPanelColor }), fl = folds(); if (!panels.length) { $('hint').textContent = t('noPanels'); return; }
+  const panels = buildPanels(doc, { colorOf: partPanelColor, textureOf: (part, s) => s.texture || part.texture || null }), fl = folds(); if (!panels.length) { $('hint').textContent = t('noPanels'); return; }
   const u = unfold(panels, fl, { allowanceMm: Number($('unfoldAllowance').value) || 0 });
   newTab(t('unfoldTab'));
   cancel(); commit(() => { let n = 1; for (const piece of u.pieces) { doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'polyline', closed: true, points: piece.points }); } for (const f of u.folds) doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'fold', x1: f.x1, y1: f.y1, x2: f.x2, y2: f.y2, angleDeg: f.angleDeg, partId: null, inner: true }); doc.provenance = [{ source: 'unfold', at: new Date().toISOString() }]; });
@@ -16075,17 +16106,17 @@ function textureMm(id) { const v = Number(doc.textureMm); if (v > 0) return v; c
 /** 部品の板の色（3D）：質感が付いていれば写真の平均色、無ければ革色 */
 const partPanelColor = p => (p.texture && textureById(p.texture)?.avg) || p.color || null;
 /** 図形に貼る質感の id：図形自身の指定が優先、無ければ部品の指定 */
-const textureOf = s => s.texture || doc.parts.find(p => p.shapeIds.includes(s.id))?.texture || null;
+const textureOf = (s, d = doc) => s.texture || (d.parts || []).find(p => p.shapeIds.includes(s.id))?.texture || null;
 /** 質感の画像。読み込み済みなら返し、初回は読み込みを始めて null（読み込めたら描き直す）。Image が無い環境（テスト）では null */
 function texImage(id) {
   if (texImages.has(id)) { const img = texImages.get(id); return img && img.complete && img.naturalWidth ? img : null; }
   const x = textureById(id); if (!x || typeof Image === 'undefined') { texImages.set(id, null); return null; }
-  const img = new Image(); img.onload = () => draw(); img.onerror = () => texImages.set(id, null); img.src = x.file; texImages.set(id, img); return null;
+  const img = new Image(); img.onload = () => { draw(); if (view3d) render3d(); }; img.onerror = () => texImages.set(id, null); img.src = x.file; texImages.set(id, img); return null;
 }
 /** 画面の塗り：画像が読めていれば繰り返し模様（図面の mm に合わせて拡大縮小し、図面の原点に固定）、まだなら平均色 */
 function textureFill(id) {
   const x = textureById(id), img = texImage(id), pat = img && typeof ctx.createPattern === 'function' ? ctx.createPattern(img, 'repeat') : null;
-  if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = scale * textureMm(id) / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, origin.x, origin.y])); return pat; }
+  if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = textureMm(id) / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, 0, 0])); return pat; } /* ctx は mm に変換済み（draw()）なので、画像 1px＝k mm・図面の原点に固定 */
   return x ? x.avg : '#d9c7a0';
 }
 /** SVG 書き出し用：使っている質感の画像を埋め込む（読み込めていないものは平均色で塗られる） */

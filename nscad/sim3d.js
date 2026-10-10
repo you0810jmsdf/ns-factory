@@ -35,7 +35,7 @@ export function splitPolygon(pts, a, b) {
   return [clean(pos).length >= 3 ? clean(pos) : [], clean(neg).length >= 3 ? clean(neg) : []];
 }
 /** 文書から板の配列を作る。部品（parts）の閉図形ごとに 1 枚、折り線で分割して子板にする。各板 {id, partId, polygon, thickness, foldId, parentId, color}。 */
-export function buildPanels(doc, { tolerance = 0.2, colorOf = p => p.color || null } = {}) { /* colorOf：部品の板の色（革の質感が付いた部品は平均色を返す） */
+export function buildPanels(doc, { tolerance = 0.2, colorOf = p => p.color || null, textureOf = () => null } = {}) { /* colorOf：部品の板の色（革の質感が付いた部品は平均色を返す）。textureOf(part, shape)：板に貼る質感の id（無ければ null） */
   const panels = [];
   const parts = doc.parts?.length ? [...doc.parts].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [{ id: '_all', name: 'all', thickness: 1.5, shapeIds: doc.shapes.filter(s => (s.type === 'polyline' || s.type === 'path' || s.type === 'circle') && (s.closed || s.type === 'circle')).map(s => s.id), color: null }];
   // 重ね順：下の部品の厚みの合計だけ上に積む（z0 = 表面の高さ）
@@ -61,7 +61,7 @@ export function buildPanels(doc, { tolerance = 0.2, colorOf = p => p.color || nu
         pieces = next;
       }
       pieces.forEach((p, i) => { p.id = `${s.id}#${i}`; });
-      for (const p of pieces) panels.push({ id: p.id, partId: part.id, shapeId: s.id, polygon: p.polygon, thickness: part.thickness, z0, foldId: p.foldId, parentId: p.parentRef ? p.parentRef.id : null, side: p.side, color: colorOf(part) });
+      for (const p of pieces) panels.push({ id: p.id, partId: part.id, shapeId: s.id, polygon: p.polygon, thickness: part.thickness, z0, foldId: p.foldId, parentId: p.parentRef ? p.parentRef.id : null, side: p.side, color: colorOf(part), texture: textureOf(part, s) || null });
     }
   }
   // 金具（hw 付きの図形）：中心を含む板に乗せ、折りに追従させる。高さは solid.z。
@@ -80,9 +80,10 @@ export function pointInPolygon(p, poly) { let inside = false; for (let i = 0, j 
 /** 板に面（上面・下面・側面）の 3D 頂点を付けた配列を返す。 */
 export function panelFaces(panel, matrix = identity()) {
   const t = panel.thickness, z0 = panel.z0 || 0, top = panel.polygon.map(p => transformPoint(matrix, v3(p.x, p.y, z0))), bottom = panel.polygon.map(p => transformPoint(matrix, v3(p.x, p.y, z0 - t)));
-  const faces = [{ kind: 'top', points: top }, { kind: 'bottom', points: [...bottom].reverse() }];
+  /* uv：板を平らに置いたときの mm 座標（表は輪郭どおり・裏は並びを逆に）。質感をその座標で貼ると、2D の図面と同じ模様の位置になる */
+  const faces = [{ kind: 'top', points: top, uv: panel.polygon.map(p => ({ x: p.x, y: p.y })) }, { kind: 'bottom', points: [...bottom].reverse(), uv: [...panel.polygon].reverse().map(p => ({ x: p.x, y: p.y })) }];
   for (let i = 0; i < top.length; i++) { const j = (i + 1) % top.length; faces.push({ kind: 'side', points: [top[i], top[j], bottom[j], bottom[i]] }); }
-  return faces.map(f => { const n = faceNormal(f.points); return { ...f, normal: n, center: f.points.reduce((a, p) => add3(a, scale3(p, 1 / f.points.length)), v3()), panelId: panel.id, partId: panel.partId, color: panel.color }; });
+  return faces.map(f => { const n = faceNormal(f.points); return { ...f, normal: n, center: f.points.reduce((a, p) => add3(a, scale3(p, 1 / f.points.length)), v3()), panelId: panel.id, partId: panel.partId, color: panel.color, texture: f.kind === 'side' ? null : (panel.texture || null) }; });
 }
 /** 平面多角形（3D 点列・凹あり・自己交差なし）を耳切りで三角形の配列 [[a,b,c],…] にする。扇形分割だと凹形で面が欠けるため。 */
 export function triangulate(points) {
