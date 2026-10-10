@@ -24,6 +24,18 @@
     return Number(n || 0).toLocaleString('ja-JP');
   }
 
+  // ナビが折り返して行数が増えるページ（ボタンの多いworks.html等）では
+  // 固定値76pxだとナビのリンクと重なるため、実際のナビ下端に合わせて位置を決める。
+  function positionBadge(badge) {
+    const nav = document.querySelector('nav');
+    let top = 76;
+    if (nav) {
+      const rect = nav.getBoundingClientRect();
+      if (rect.height > 0) top = Math.round(rect.bottom) + 8;
+    }
+    badge.style.top = top + 'px';
+  }
+
   function addBadge(pv, uu, hasUu) {
     if (document.getElementById('access-counter')) return;
     const badge = document.createElement('div');
@@ -52,6 +64,8 @@
       minWidth: '60px'
     });
     document.body.appendChild(badge);
+    positionBadge(badge);
+    window.addEventListener('resize', () => positionBadge(badge));
   }
 
   // 明らかに外部でない閲覧（事業主の端末・撮影や検証の自動操作）は数えない（2026-09-16 事業主指示）。
